@@ -1,7 +1,7 @@
 -- Global Config
 Config = {}
 
-IS_STEVE = false
+IS_STEVE = true
 
 -- General parameters
 Config.PLATFORM_NAME = 'THOROP'

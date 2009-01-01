@@ -62,11 +62,11 @@ function movearm.goto_q(lwrist, rwrist)
 	local lPathIter, rPathIter
 	if lwrist then
 		local qLArm = Body.get_larm_command_position()
-		lPathIter = lPlanner:joint_iter(lwrist, qLArm, dqLimit)
+		lPathIter = lPlanner:joint_iter(lwrist, qLArm, dqLimit, true)
 	end
 	if rwrist then
 		local qRArm = Body.get_rarm_command_position()
-		rPathIter = rPlanner:joint_iter(rwrist, qRArm, dqLimit)
+		rPathIter = rPlanner:joint_iter(rwrist, qRArm, dqLimit, true)
 	end
 	return lPathIter, rPathIter
 end

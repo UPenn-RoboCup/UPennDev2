@@ -25,7 +25,7 @@ function state.update()
   -- Save this at the last update time
   t_update = t
 
-	local centerAngles = {0, 40*DEG_TO_RAD-Body.get_rpy()[2]}
+	local centerAngles = {0, 0*DEG_TO_RAD-Body.get_rpy()[2]}
 	local headNow = Body.get_head_command_position()
   local apprAng, doneHead = util.approachTol(headNow, centerAngles, headSpeed, dt)
 	Body.set_head_command_position(apprAng)

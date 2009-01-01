@@ -1,8 +1,6 @@
 local util = {}
 local vector = require'vector'
-local min = require'math'.min
-local max = require'math'.max
-
+local sformat = string.format
 local abs = math.abs
 
 function util.mod_angle(a)
@@ -88,7 +86,7 @@ end
 
 --Piecewise linear function for IMU feedback
 local function procFunc(a,deadband,maxvalue)
-  local b = min( max(0,math.abs(a)-deadband), maxvalue)
+  local b = math.min( math.max(0,math.abs(a)-deadband), maxvalue)
   if a<=0 then return -b end
   return b
 end
@@ -96,15 +94,58 @@ end
 
 local function p_feedback(org,target, p_gain, max_vel, dt)
   local err = target-org
-  local vel = max(-max_vel,min( max_vel, err*p_gain ))
+  local vel = math.max(-max_vel,math.min( max_vel, err*p_gain ))
   return org + vel*dt
 end
+
+function util.pid_feedback(err, vel, dt)
+  err_deadband = 0*math.pi/180
+  max_vel = 2.5 --close to spec
+  vel_p_gain = 30 --at 3 degree (3*math.pi/180) reach max accelleration
+  acc_p_gain = 20 --Very stiff
+
+
+  --very soft
+  max_vel = 2 
+  acc_p_gain = 2 
+
+  max_acc =  math.huge --max accelleration (m/s^2)  
+  vel_d_gain = -1
+    
+  local velTarget=vector.zeros(7)  
+  local accTarget=vector.zeros(7)  
+  local acc=vector.zeros(7)
+  for i=1,#err do
+    local err_clamped = math.max(0,math.abs(err[i])-err_deadband)
+    if err[i]<0 then err_clamped = -err_clamped end
+    velTarget[i] = math.max(-max_vel,math.min( max_vel, err_clamped*vel_p_gain ))
+    accTarget[i] = math.max(-max_acc,math.min( max_acc,  acc_p_gain*(velTarget[i]-vel[i]) ))
+    acc[i] = accTarget[i] + vel[i]*vel_d_gain
+  end
+  return acc,velTarget
+end
+
+function util.linearize(torque0, vel, damping_factor, static_friction)
+  local torque=vector.zeros(#torque0);  
+  for i=1,#torque0 do
+    local t1 = torque0[i]+vel[i]*damping_factor[i];
+    if t1>0.05 then
+      torque[i]=static_friction[i]+t1;
+    elseif t1<-0.05 then
+      torque[i]=-static_friction[i]+t1;
+    else
+      torque[i]=0;
+    end
+  end
+  return torque
+end
+
 
 
 function util.clamp_vector(values,min_values,max_values)
 	local clamped = vector.new()
 	for i,v in ipairs(values) do
-		clamped[i] = max(min(v,max_values[i]),min_values[i])
+		clamped[i] = math.max(math.min(v,max_values[i]),min_values[i])
 	end
 	return clamped
 end
@@ -133,7 +174,7 @@ function util.approachTol(values, targets, speedlimits, dt, tolerance)
     end
   else
     tolerance = tolerance or 1e-6
-    local delta = targets - values
+    local delta = targets - values      
     if abs(delta) > tolerance then
       within_tolerance = false
       -- Ensure that we do not move motors too quickly
@@ -150,38 +191,40 @@ end
 
 --SJ: This approaches to the DIRECTION of the target position
 
-function util.approachTolTransform(values, targets, vellimit, dt, tolerance)
-  tolerance = tolerance or 1e-6
+function util.approachTolTransform(values, targets, vellimit, dt)
+  local tolerance_dist = 0.001
+  local tolerance_angle = 0.1*math.pi/180
+
   -- Tolerance check (Asumme within tolerance)
   local within_tolerance = true
   -- Iterate through the limits of movements to approach
   local linearvellimit = vellimit[1] --hack for now
 
-  local cur_pos = vector.slice(values,1,3)
-  local target_pos = vector.slice(targets,1,3)
+  local cur_pos = vector.slice(values,1,3)  
+  local target_pos = vector.slice(targets,1,3)  
   local delta = target_pos - cur_pos
   local mag_delta = math.sqrt(delta[1]*delta[1] + delta[2]*delta[2] + delta[3]*delta[3])
-
-  if math.abs(mag_delta)>tolerance then
-    movement = min(mag_delta, linearvellimit*dt)
-    values[1] = values[1] + delta[1]/mag_delta * movement
-    values[2] = values[2] + delta[2]/mag_delta * movement
-    values[3] = values[3] + delta[3]/mag_delta * movement
+  
+  if math.abs(mag_delta)>tolerance_dist then
+    movement = math.min(mag_delta, linearvellimit*dt)
+    values[1] = values[1] + delta[1]/mag_delta * movement 
+    values[2] = values[2] + delta[2]/mag_delta * movement 
+    values[3] = values[3] + delta[3]/mag_delta * movement 
     within_tolerance = false
   end
+  
 
-
-  for i=4,6 do --Transform
+  for i=4,6 do --Transform 
     -- Target value minus present value
-    local delta = targets[i] - values[i]
-    if math.abs(delta) > tolerance then
+    local delta = targets[i] - values[i]    
+    if math.abs(delta) > tolerance_angle then
       within_tolerance = false
       -- Ensure that we do not move motors too quickly
       delta = util.procFunc(delta,0,vellimit[i]*dt)
       values[i] = values[i]+delta
-    end
+    end    
   end
-
+  
   -- Return the next values to take and if we are within tolerance
   return values, within_tolerance
 end
@@ -191,18 +234,18 @@ function util.approachTolWristTransform( values, targets, vellimit, dt, toleranc
   -- Tolerance check (Asumme within tolerance)
   local within_tolerance = true
   -- Iterate through the limits of movements to approach
-
-  for i=4,6 do --Transform
+  
+  for i=4,6 do --Transform 
     -- Target value minus present value
-    local delta = targets[i] - values[i]
+    local delta = targets[i] - values[i]    
     if math.abs(delta) > tolerance then
       within_tolerance = false
       -- Ensure that we do not move motors too quickly
       delta = util.procFunc(delta,0,vellimit[i]*dt)
       values[i] = values[i]+delta
-    end
+    end    
   end
-
+  
   -- Return the next values to take and if we are within tolerance
   return values, within_tolerance
 end
@@ -244,7 +287,7 @@ function util.pose_global(pRelative, pose)
 --                    util.mod_angle(pose[3] + pRelative[3])}
                     pose[3] + pRelative[3]}
 
---SJ: Using modangle here makes the yaw angle jump which kills walk
+--SJ: Using modangle here makes the yaw angle jump which kills walk 
 
 end
 
@@ -313,14 +356,14 @@ function util.bezier( alpha, s )
   elseif M==6 then
     k={1,6,15,20,15,6,1}
   end
-
+  
   local x = vector.ones(M+1)
   local y = vector.ones(M+1)
   for i=1,M do
     x[i+1] = s*x[i]
     y[i+1] = (1-s)*y[i]
   end
-
+  
   local value = vector.zeros(n)
   for i=1,n do
     --value[i] = 0
@@ -338,25 +381,40 @@ function util.spline(breaks,coefs,ph)
       xf = coefs[i][1]*x^3 + coefs[i][2]*x^2 + coefs[i][3]*x + coefs[i][4]
       break;
     end
-    x_offset = breaks[i]
+    x_offset = breaks[i]    
   end
   return xf
 end
 
 function util.get_ph_single(ph,phase1,phase2)
-  return min(1, max(0, (ph-phase1)/(phase2-phase1) ))
+  return math.min(1, math.max(0, (ph-phase1)/(phase2-phase1) ))
 end
 
 
 function util.tablesize(table)
   local count = 0
   for _ in pairs(table) do count = count + 1 end
-  return count
+  return count 
 end
 
 function util.ptable(t)
   -- print a table key, value pairs
   for k,v in pairs(t) do print(k,v) end
+end
+
+function util.print_transform(tr)
+  if not tr then return end
+  local str= sformat("%.2f %.2f %.2f (%.1f %.1f %.1f)",
+    tr[1],tr[2],tr[3],tr[4]*180/math.pi,tr[5]*180/math.pi,tr[6]*180/math.pi)
+  return str
+end
+
+function util.print_jangle(q)
+  if #q==6 then
+    return sformat("%d %d %d %d %d %d", unpack(vector.new(q)*180/math.pi)  )
+  elseif #q==7 then
+    return sformat("%d %d %d %d %d %d %d", unpack(vector.new(q)*180/math.pi)  ) 
+  end
 end
 
 function util.ptorch(data, W, Precision)
@@ -372,8 +430,8 @@ function util.ptorch(data, W, Precision)
     if dim == 1 then
       for i = 1, row do print(data[i]) end
       print('\n'..tp..' - size: '..row..'\n')
-    elseif dim == 2 then
-      col = data:size(2)
+    elseif dim == 2 then 
+      col = data:size(2) 
       for r = 1, row do
         for c = 1, col do
           io.write(string.format("%"..w.."."..precision.."f",data[r][c])..' ')

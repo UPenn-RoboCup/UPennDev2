@@ -6,7 +6,7 @@ local state = {}
 state._NAME = ...
 
 local NO_YAW_FIRST = true
-local USE_TR = true
+local USE_TR = false
 
 local Body   = require'Body'
 local vector = require'vector'
@@ -37,19 +37,22 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
 
+	local qL = Body.get_larm_position()
+	local qR = Body.get_rarm_position()
+
   -- To get to the IK solution
 	if USE_TR then
   	lPathIter, rPathIter, qLGoal, qRGoal = movearm.goto_tr_via_q(trLGoal, trRGoal, {shoulderLGoal}, {shoulderRGoal})
 	else
-  -- Given the IK solution
-	  lPathIter, rPathIter = movearm.goto_q(qLGoal, qRGoal)
+		-- Given the IK solution
+		lPathIter, rPathIter = movearm.goto_q(qLGoal, qRGoal)
+		print('qL0', qL*RAD_TO_DEG, qLGoal*RAD_TO_DEG)
+		print('qR0',qR*RAD_TO_DEG, qRGoal*RAD_TO_DEG)
 	end
   if NO_YAW_FIRST then
     setShoulderYaw = true
   else
     -- First, ignore the shoulderYaw, since it can cause issues of self collision
-    local qL = Body.get_larm_position()
-    local qR = Body.get_rarm_position()
     qL[3] = -20*DEG_TO_RAD
     qR[3] = 20*DEG_TO_RAD
     lPathIter, rPathIter = movearm.goto_q(qL, qR)
@@ -78,22 +81,22 @@ function state.update()
   if t-t_entry > timeout then return'timeout' end
 
 	-- Timing necessary
-	----[[
+	--[[
 	local qLArm = Body.get_larm_command_position()
 	local moreL, q_lWaypoint = lPathIter(qLArm, dt)
 	--]]
 	-- No time needed
-	--[[
+	----[[
 	local qLArm = Body.get_larm_position()
 	local moreL, q_lWaypoint = lPathIter(qLArm)
 	--]]
 	Body.set_larm_command_position(q_lWaypoint)
 
-	----[[
+	--[[
 	local qRArm = Body.get_rarm_command_position()
 	local moreR, q_rWaypoint = rPathIter(qRArm, dt)
 	--]]
-	--[[
+	----[[
 	local qRArm = Body.get_rarm_position()
 	local moreR, q_rWaypoint = rPathIter(qRArm)
 	--]]

@@ -22,8 +22,8 @@ local trRGoal = T.transform6D{0.1, -0.32, -0.28, 15*DEG_TO_RAD, 35*DEG_TO_RAD, 7
 --]]
 -- From the IK solution above, in webots
 ----[[
-local qLGoal = vector.new{140.055, 14.5738, 5, -82.3928, 65.0266, 38.4997, -59.7267} * DEG_TO_RAD
-local qRGoal = vector.new{157.166, -50.6751, -5, -101.136, -55.7423, -26.6821, 63.5934} * DEG_TO_RAD
+local qLGoal = vector.new{115, 30, 5, -80, -40, -30, 30} * DEG_TO_RAD
+local qRGoal = vector.new{145, -50, -5, -101.136, -55.7423, -25, 60} * DEG_TO_RAD
 --]]
 
 local shoulderLGoal, shoulderRGoal = 5*DEG_TO_RAD, -5*DEG_TO_RAD

@@ -1,5 +1,6 @@
 # Log files
 Logs
+Data/*
 
 # Python compiled files and saved data files
 *.pyc

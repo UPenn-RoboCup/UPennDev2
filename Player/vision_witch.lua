@@ -5,6 +5,7 @@
 -- and send to UDP/TCP
 -- (c) Stephen McGill, Seung Joon Yi, 2013
 ---------------------------------
+local IS_LOG = false
 -- TODO: Critical section for include
 -- Something there is non-reentrant
 dofile'../include.lua'
@@ -14,7 +15,6 @@ local simple_ipc = require'simple_ipc'
 local mp = require'msgpack.MessagePack'
 -- Camera
 local cam_metadata = Config.camera[tonumber(arg[1]) or 1]
-local IS_LOG = false
 
 -- Libraries
 local mp    = require'msgpack.MessagePack'
@@ -85,7 +85,7 @@ local yuyv_j, lA_z
 -- On ctrl-c, saev some data
 local function shutdown()
   -- Stop logging
-  logger:stop()
+  if IS_LOG then logger:stop() end
   -- Save data to files
   print('Saving labelA',labelA_t:size(1),labelA_t:size(2))
   local f_l = torch.DiskFile('labelA.raw', 'w')
@@ -124,13 +124,15 @@ local meta = {
 -- We do not trust the Aldebaran implementation
 local sz = w * h * 2
 while true do
-	-- Grab the image
-	img, sz_bad, cnt, t = camera:get_image()
+  -- Grab the image
+  img, sz_bad, cnt, t = camera:get_image()
   local t0 = unix.time()
   -- Set into a torch container
   lV.yuyv_to_labelA(img)
   lV.form_labelB()
-  lV.ball()
+  local ball = lV.ball()
+  --if type(ball)=='string' then print(ball) end
+  meta.ball = ball
   -- Now we can detect the ball, etc.
   -- Send to the monitor
   local t1 = unix.time()

@@ -61,7 +61,7 @@ Config = nil
 local img, sz, cnt, t
 local labelA_t, labelB_t = lV.get_labels()
 local a_sz = labelA_t:nElement()
-local lA_d = labelA_t:data()
+local lA_d, lA_z = labelA_t:data()
 
 -- On ctrl-c, saev some data
 local function shutdown()
@@ -73,10 +73,20 @@ local function shutdown()
   f_l:writeByte(labelA_t:storage())
   f_l:close()
   --
+  print('Saving zlib labelA',#lA_z)
+  local f_z = io.open('labelA_z.raw','w')
+  f_z:write(lA_z)
+  f_z:close()
+  --[[
+  --MATLAB
+  fid = fopen('labelA_z.raw');Az = fread(fid,Inf,'uint8');fclose(fid);
+  A = reshape(zlibUncompress(cast(Az,'uint8')),[320,240]);
+  --]]
+  --
   local jpeg = require'jpeg'
   c_yuyv = jpeg.compressor('yuyv')
   local str = c_yuyv:compress(img,w,h)
-  local f_y = io.open('yuyv.jpeg','w')
+  local f_y = io.open('labelA.jpeg','w')
   f_y:write(str)
   f_y:close()
   --
@@ -95,7 +105,7 @@ while true do
   lV.form_labelB()
   -- Now we can detect the ball, etc.
   -- Send to the monitor
-  local str = c_zlib( lA_d, a_sz, true )
+  lA_z = c_zlib( lA_d, a_sz, true )
   local t1 = unix.time()
-  print(t1-t0,#str)
+  print(t1-t0,#lA_z)
 end

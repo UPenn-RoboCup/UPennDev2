@@ -4,7 +4,7 @@ OSTYPE=$(shell uname -s|awk '{print tolower($$0)}')
 # Compiler Definitions
 CXX=c++
 CC=cc
-CXXFLAGS=-O3 -fpic -std=c++03 -pedantic -Wall
+CXXFLAGS=-O3 -fpic -pedantic -Wall
 CFLAGS=-O3 -fpic -pedantic -Wall
 
 # Linker Definitions
@@ -24,8 +24,10 @@ ifeq ($(OSTYPE),darwin)
 	#  LDFLAGS=-lstdc++ -bundle -undefined dynamic_lookup
   LIBRT=
 else # Linux
-  CFLAGS+= -mtune=native -march=native `pkg-config lua5.1 --cflags`
-  CXXFLAGS+= -mtune=native -march=native `pkg-config lua5.1 --cflags`
+#  CFLAGS+= -mtune=native -march=native `pkg-config lua5.1 --cflags`
+#  CXXFLAGS+= -mtune=native -march=native `pkg-config lua5.1 --cflags`
+  CFLAGS+= -mtune=native -march=native
+  CXXFLAGS+= -mtune=native -march=native
 endif
 
 # Verbose mode check

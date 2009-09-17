@@ -13,7 +13,7 @@ local simple_ipc = require'simple_ipc'
 -- For all threads
 local mp = require'msgpack.MessagePack'
 -- Camera
-local cam_metadata = Config.camera[1]
+local cam_metadata = Config.camera[tonumber(arg[1]) or 1]
 
 -- Libraries
 local mp    = require'msgpack.MessagePack'
@@ -29,10 +29,14 @@ local fps = cam_metadata.fps
 local fmt = cam_metadata.format
 local name = cam_metadata.name
 local dev = cam_metadata.dev
+local udp_port = cam_metadata.port
 
 -- For broadcasting the labeled image
 local zlib = require'zlib.ffi'
 local c_zlib = zlib.compress_cdata
+-- For broadcasting the YUYV image
+local jpeg = require'jpeg'
+c_yuyv = jpeg.compressor'yuyv'
 
 -- For colortable logging, set fps to 5
 fps = 5
@@ -61,7 +65,6 @@ end
 
 -- Network
 local operator = Config.net.operator.wired
-local udp_port = 54321
 local udp_ch = udp.new_sender(operator, udp_port)
 
 -- Remove unneeded
@@ -72,7 +75,8 @@ Config = nil
 local img, sz, cnt, t
 local labelA_t, labelB_t = lV.get_labels()
 local a_sz = labelA_t:nElement()
-local lA_d, lA_z = labelA_t:data()
+local lA_d = labelA_t:data()
+local yuyv_j, lA_z
 
 -- On ctrl-c, saev some data
 local function shutdown()
@@ -95,8 +99,6 @@ local function shutdown()
   A = reshape(zlibUncompress(cast(Az,'uint8')),[320,240]);
   --]]
   --
-  local jpeg = require'jpeg'
-  c_yuyv = jpeg.compressor('yuyv')
   local str = c_yuyv:compress(img,w,h)
   local f_y = io.open('labelA.jpeg','w')
   f_y:write(str)
@@ -111,6 +113,7 @@ signal.signal("SIGTERM", shutdown)
 local meta = {
   w = labelA_t:size(2),
   h = labelA_t:size(1),
+  c = 'zlib',
 }
 
 while true do
@@ -122,10 +125,16 @@ while true do
   lV.form_labelB()
   -- Now we can detect the ball, etc.
   -- Send to the monitor
-  lA_z = c_zlib( lA_d, a_sz, true )
-  local udp_ret, err = udp_ch:send( mp.pack(meta)..lA_z )
   local t1 = unix.time()
-  print(t1-t0,#lA_z)
+  print(t1-t0)
   -- Log the raw YUYV for colortables
   logger:record({w = w, h = h, rsz=sz}, img, sz)
+  -- Send labelA
+  lA_z = c_zlib( lA_d, a_sz, true )
+  meta.c = 'zlib'
+  local udp_ret, err = udp_ch:send( mp.pack(meta)..lA_z )
+  -- Send JPEG image
+  yuyv_j = c_yuyv:compress(img,w,h)
+  meta.c = 'jpeg'
+  local udp_ret, err = udp_ch:send( mp.pack(meta)..yuyv_j )
 end

@@ -13,7 +13,8 @@ local simple_ipc = require'simple_ipc'
 -- For all threads
 local mp = require'msgpack.MessagePack'
 -- Camera
-local cam_metadata = Config.camera[1]
+local cam_metadata = 
+  Config.camera[tonumber(arg[1]) or 1]
 
 -- Libraries
 local lV    = require'libVision'
@@ -63,9 +64,12 @@ signal.signal("SIGINT", shutdown)
 signal.signal("SIGTERM", shutdown)
 
 while true do
-	-- Grab the image
-	img, sz, cnt, t = camera:get_image()
+  -- Grab the image
+  img, sz, cnt, t = camera:get_image()
+  --t0 = unix.time()
   -- Set into a torch container
   lV.yuyv_to_labelA(img)
   lV.form_labelB()
+  --t1 = unix.time()
+  --print(t1-t0)
 end

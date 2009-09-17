@@ -21,13 +21,12 @@ local uvc   = require'uvc'
 local torch = require'torch'
 
 -- Extract cam_metadata information
-local w = cam_metadata.width
-local h = cam_metadata.height
+local w = cam_metadata.w
+local h = cam_metadata.h
 local fps = cam_metadata.fps
 local fmt = cam_metadata.format
 local name = cam_metadata.name
 local dev = cam_metadata.dev
-cam_metadata = nil
 
 -- Setup the Vision system
 lV.setup(w, h)
@@ -35,16 +34,22 @@ lV.load_lut(HOME.."/Data/"..cam_metadata.lut)
 -- Open the camera
 local camera = uvc.init(dev, w, h, fmt, 1, fps)
 -- Setup the parameters
-for k,v in ipairs(cam_metadata.auto_param) do
-  camera:set_param(k,v)
+for _,v in ipairs(cam_metadata.auto_param) do
+  local param, val = v[1], v[2]
+  camera:set_param(param,val)
   unix.usleep(1e5)
-  camera:get_param(k)
+  camera:get_param(param)
 end
-for k,v in ipairs(cam_metadata.param) do
-  camera:set_param(k,v)
+for _,v in ipairs(cam_metadata.param) do
+  local param, val = v[1], v[2]
+  camera:set_param(param,val)
   unix.usleep(1e5)
-  camera:get_param(k)
+  camera:get_param(param)
 end
+
+-- Remove unneeded
+cam_metadata = nil
+Config = nil
 
 -- Loop temp vars
 local img, sz, cnt, t
@@ -72,9 +77,6 @@ local signal = require'signal'
 signal.signal("SIGINT", shutdown)
 signal.signal("SIGTERM", shutdown)
 
--- Free some memory
-Config = nil
-
 while true do
 	-- Grab the image
 	img, sz, cnt, t = camera:get_image()
@@ -84,5 +86,5 @@ while true do
   lV.form_labelB()
   -- Now we can detect the ball, etc.
   local t1 = unix.time()
-  --print(t1-t0)
+  print(t1-t0)
 end

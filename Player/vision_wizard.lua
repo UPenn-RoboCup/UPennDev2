@@ -54,23 +54,8 @@ Config = nil
 -- Loop temp vars
 local img, sz, cnt, t
 
--- On ctrl-c, saev some data
+-- On ctrl-c
 local function shutdown()
-  local labelA_t, labelB_t = lV.get_labels()
-  -- Save to file
-  print('Saving labelA',labelA_t:size(1),labelA_t:size(2))
-  local f_l = torch.DiskFile('labelA.raw', 'w')
-  f_l.binary(f_l)
-  f_l:writeByte(labelA_t:storage())
-  f_l:close()
-  --
-  local jpeg = require'jpeg'
-  c_yuyv = jpeg.compressor('yuyv')
-  local str = c_yuyv:compress(img,w,h)
-  local f_y = io.open('yuyv.jpeg','w')
-  f_y:write(str)
-  f_y:close()
-  --
   os.exit()
 end
 local signal = require'signal'
@@ -80,11 +65,7 @@ signal.signal("SIGTERM", shutdown)
 while true do
 	-- Grab the image
 	img, sz, cnt, t = camera:get_image()
-  local t0 = unix.time()
   -- Set into a torch container
   lV.yuyv_to_labelA(img)
   lV.form_labelB()
-  -- Now we can detect the ball, etc.
-  local t1 = unix.time()
-  print(t1-t0)
 end

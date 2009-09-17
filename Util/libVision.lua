@@ -42,10 +42,6 @@ function libVision.load_lut (fname)
   lut_t = torch.ByteTensor(lut_s)
   -- Raw data
   lut_d = lut_t:data()
-  for i=0,lut_t:nElement()-1 do
-    local cdt = lut_d[i]
-    if cdt~=0 then print('cdt',cdt,i) end
-  end 
 end
 
 -- Take in a pointer (or string) to the image

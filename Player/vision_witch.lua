@@ -16,8 +16,10 @@ local mp = require'msgpack.MessagePack'
 local cam_metadata = Config.camera[1]
 
 -- Libraries
+local mp    = require'msgpack.MessagePack'
 local lV    = require'libVision'
 local uvc   = require'uvc'
+local udp   = require'udp'
 local torch = require'torch'
 
 -- Extract cam_metadata information
@@ -28,11 +30,15 @@ local fmt = cam_metadata.format
 local name = cam_metadata.name
 local dev = cam_metadata.dev
 
+-- For broadcasting the labeled image
+local zlib = require'zlib.ffi'
+local c_zlib = zlib.compress_cdata
+
 -- For colortable logging, set fps to 5
 fps = 5
-local zlib = require'zlib.ffi'
---local c_zlib = zlib.compress
-local c_zlib = zlib.compress_cdata
+local libLog = require'libLog'
+-- Make the logger
+local logger = libLog.new('yuyv',true)
 
 -- Setup the Vision system
 lV.setup(w, h)
@@ -53,6 +59,11 @@ for _,v in ipairs(cam_metadata.param) do
   camera:get_param(param)
 end
 
+-- Network
+local operator = Config.net.operator.wired
+local udp_port = 54321
+local udp_ch = udp.new_sender(operator, udp_port)
+
 -- Remove unneeded
 cam_metadata = nil
 Config = nil
@@ -65,8 +76,9 @@ local lA_d, lA_z = labelA_t:data()
 
 -- On ctrl-c, saev some data
 local function shutdown()
-  local labelA_t, labelB_t = lV.get_labels()
-  -- Save to file
+  -- Stop logging
+  logger:stop()
+  -- Save data to files
   print('Saving labelA',labelA_t:size(1),labelA_t:size(2))
   local f_l = torch.DiskFile('labelA.raw', 'w')
   f_l.binary(f_l)
@@ -96,6 +108,11 @@ local signal = require'signal'
 signal.signal("SIGINT", shutdown)
 signal.signal("SIGTERM", shutdown)
 
+local meta = {
+  w = labelA_t:size(2),
+  h = labelA_t:size(1),
+}
+
 while true do
 	-- Grab the image
 	img, sz, cnt, t = camera:get_image()
@@ -106,6 +123,9 @@ while true do
   -- Now we can detect the ball, etc.
   -- Send to the monitor
   lA_z = c_zlib( lA_d, a_sz, true )
+  local udp_ret, err = udp_ch:send( mp.pack(meta)..lA_z )
   local t1 = unix.time()
   print(t1-t0,#lA_z)
+  -- Log the raw YUYV for colortables
+  logger:record({w = w, h = h, rsz=sz}, img, sz)
 end

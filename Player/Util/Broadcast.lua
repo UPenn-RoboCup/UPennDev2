@@ -111,13 +111,12 @@ end
 function sendB()
   -- labelB --
   labelB = vcm.get_image_labelB();
-  width = vcm.get_image_width()/8; 
-  height = vcm.get_image_height()/8;
+  width = vcm.get_image_width()/2/Config.vision.scaleB; 
+  height = vcm.get_image_height()/2/Config.vision.scaleB;
   count = vcm.get_image_count();
   
 --  array = serialization.serialize_label_double(
 --	labelB, width, height, 'uint8', 'labelB',count);
-
   array = serialization.serialize_label_rle(
 	labelB, width, height, 'uint8', 'labelB',count);
 

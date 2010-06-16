@@ -4,7 +4,7 @@ require('Comm');
 require('gcm');
 require 'serialization'
 require 'unix'
-wired = false;
+wired = true;
 ps = false;
 
 if (string.find(Config.platform.name,'Webots')) then

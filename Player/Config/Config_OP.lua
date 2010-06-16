@@ -345,12 +345,11 @@ fsm.headTrack.minDist = 0.30;
 
 ------------------------------------------------------------------
 -- Boxer
---[[
+
 fsm.game = 'RoboCup';
-fsm.head = {'GeneralPlayer'};
+fsm.head = {'Boxer'};
 fsm.body = {'Boxer'};
 dev.team = 'TeamBox'
-dev.walk='B5Walk';
 game.gcTimeout = 2;
 team.msgTimeout = 1.0;
 game.playerID = 1
@@ -359,10 +358,11 @@ use_rollback_getup = 0;
 --
 -----------------------------------------------------------------
 -- avoider
+--[[
 fsm.head = {'ObstacleChallenge'}
 fsm.body = {'ObstacleChallenge'}
 fsm.avoidance_mode = 1 -- ball dribble
 fsm.avoidance_mode = 0 -- walk towards goal, no ball 
 fsm.avoidance_mode = 2 -- walk towards goal, no ball 
 use_rollback_getup = 0;
-
+--]]

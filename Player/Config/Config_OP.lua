@@ -12,9 +12,6 @@ platform.name = 'OP'
 -- Parameters Files
 params = {}
 params.name = {"Robot", "Walk", "World", "Kick", "Vision", "FSM", "Camera"};
-if (robotName == 'sally') then 
-  params.Robot = "Sally_Robot" 
-end
 params.Kick = "Slow"
 params.World = "Grasp"
 
@@ -160,10 +157,6 @@ km.standup_back = 'km_NSLOP_StandupFromBack.lua';
 km.standup_back2 = 'km_NSLOP_StandupFromBack3.lua';
 
 
-if (robotName=='sally') then 
-  km.standup_front = 'km_NSLOP_StandupFromFrontSally.lua'; 
-  km.standup_back = 'km_NSLOP_StandupFromBackSally.lua';
-end
 
 -- Low battery level
 -- Need to implement this api better...

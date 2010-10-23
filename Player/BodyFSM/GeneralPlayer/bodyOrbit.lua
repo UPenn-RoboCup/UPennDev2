@@ -73,7 +73,11 @@ function update()
 
   dir,angle = get_orbit_direction();
 
-  if (math.abs(angle) < thAlign) then
+
+  is_confused = wcm.get_robot_is_confused();
+
+
+  if (math.abs(angle) < thAlign) or is_confused>0 then
     return 'done';
   end
 

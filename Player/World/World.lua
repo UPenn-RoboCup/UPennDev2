@@ -22,7 +22,13 @@ end
 
 mod_angle = util.mod_angle;
 
-require('Velocity');	
+use_kalman_velocity = Config.use_kalman_velocity or 0;
+
+if use_kalman_velocity>0 then
+  Velocity = require('kVelocity');	
+else
+  require('Velocity');	
+end
 
 --Use ground truth pose and ball information for webots?
 use_gps_only = Config.use_gps_only or 0;
@@ -195,6 +201,7 @@ function update_vision()
 
   --We may use ground truth data only (for behavior testing)
   if use_gps_only>0 then
+--print("WEREINTROUBLE")
     --Use GPS pose instead of using particle filter
     pose.x,pose.y,pose.a=gps_pose[1],gps_pose[2],gps_pose[3];
     --Use GPS ball pose instead of ball filter
@@ -205,24 +212,25 @@ function update_vision()
 
     ball_gamma = 0.3;
     if vcm.get_ball_detect()==1 then
-      ball.p = (1-ball_gamma)*ball.p+ball_gamma;
       ball.t = Body.get_time();
+      ball.p = (1-ball_gamma)*ball.p+ball_gamma;
       -- Update the velocity
-      Velocity.update(ball.x,ball.y);
+      Velocity.update(ball.x,ball.y,ball.t);
       ball.vx, ball.vy, dodge  = Velocity.getVelocity();
     else
       ball.p = (1-ball_gamma)*ball.p;
-      Velocity.update_noball();--notify that ball is missing
+      Velocity.update_noball(Body.get_time());--notify that ball is missing
+      ball.vx, ball.vy, dodge  = Velocity.getVelocity();
     end
     update_shm();
 
     return;
   end
 
-  -- only addnoise / resample while robot is moving
-  if mcm.get_walk_isMoving()>0 then
-    if count % cResample == 0 then
-      PoseFilter.resample();
+  -- only add noise while robot is moving
+  if count % cResample == 0 then
+    PoseFilter.resample();
+    if mcm.get_walk_isMoving()>0 then
       PoseFilter.add_noise();
     end
   end
@@ -280,9 +288,11 @@ function update_vision()
     
   -- ball
   ball_gamma = 0.3;
+  t=Body.get_time();
+
+
   if (vcm.get_ball_detect() == 1) then
     tVisionBall = Body.get_time();
-    ball.t = Body.get_time();
     ball.p = (1-ball_gamma)*ball.p+ball_gamma;
     local v = vcm.get_ball_v();
     local dr = vcm.get_ball_dr();
@@ -293,15 +303,22 @@ function update_vision()
     ball_led={1,0,0}; 
 
     -- Update the velocity
---    Velocity.update(v[1],v[2]);
     -- use centroid info only
     ball_v_inf = wcm.get_ball_v_inf();
-    Velocity.update(ball_v_inf[1],ball_v_inf[2]);
+    ball.t = Body.get_time();
 
-    ball.vx, ball.vy, dodge  = Velocity.getVelocity();
+    t_locked = wcm.get_ball_t_locked_on();
+    th_locked = 1.5;
+
+    if (t_locked > th_locked ) and wcm.get_ball_locked_on() == 1 then
+      Velocity.update(ball_v_inf[1],ball_v_inf[2],ball.t);
+      ball.vx, ball.vy, dodge  = Velocity.getVelocity();
+    else
+      Velocity.update_noball(ball.t);--notify that ball is missing
+    end
   else
     ball.p = (1-ball_gamma)*ball.p;
-    Velocity.update_noball();--notify that ball is missing
+    Velocity.update_noball(Body.get_time());--notify that ball is missing
     ball_led={0,0,0};
   end
   -- TODO: handle goal detections more generically

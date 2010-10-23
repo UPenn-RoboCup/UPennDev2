@@ -165,6 +165,10 @@ function h=show_monitor()
 
       MONITOR.hDebugText=uicontrol('Style','text',...
 	'Units','Normalized', 'Position',[.76 .10 .22 .83]);
+
+set(MONITOR.hDebugText,'FontSize',6);
+set(MONITOR.hDebugText,'FontSize',10);
+
     end
   end
 
@@ -227,9 +231,9 @@ function h=show_monitor()
 
       %webots use non-subsampled label (2x size of yuyv)
       if MONITOR.enable0
-        if MONITOR.is_webots
-          plot_overlay(r_mon,2*MONITOR.enable1,1);
-        else
+%        if MONITOR.is_webots
+%          plot_overlay(r_mon,2*MONITOR.enable1,1);
+%        else
 				  if yuyv_type==1
             plot_overlay(r_mon,1,1);
 				  elseif yuyv_type==2
@@ -239,7 +243,7 @@ function h=show_monitor()
 					else
 						return;
 				  end
-        end
+%        end
       end
 
       if MONITOR.logging

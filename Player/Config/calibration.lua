@@ -390,7 +390,99 @@ cal["andy"].servoBias={0,0,0,0,0,0,0,0,-16,-14,0,0,};
 cal["andy"].footXComp=-0.003;
 cal["andy"].kickXComp=0.000;
 
+<<<<<<< HEAD
 -- Updated date: Fri Oct 22 16:14:29 2010
 cal["sally"].servoBias={-33,-22,-6,0,29,-8,0,0,-4,0,0,0,};
 cal["sally"].footXComp=-0.001;
 cal["sally"].kickXComp=0.000;
+=======
+-- Updated date: Wed Jun 19 20:43:50 2013
+cal["linus"].servoBias={21,-16,37,-13,-8,-3,-31,-4,-30,10,0,16,};
+cal["linus"].footXComp=-0.001;
+cal["linus"].kickXComp=0.005;
+-- Updated date: Mon Jun 17 17:27:48 2013
+
+cal["betty"].servoBias={8,-10,18,-67,39,-8,-5,6,-81,-24,-43,10,};
+cal["betty"].footXComp=0.004;
+cal["betty"].kickXComp=0.000;
+
+-- Updated date: Mon Jun 17 17:30:06 2013
+cal["betty"].servoBias={8,-10,18,-67,39,-8,-5,6,-81,-24,-43,10,};
+cal["betty"].footXComp=-0.007;
+cal["betty"].kickXComp=0.000;
+
+-- Updated date: Mon Jun 17 17:32:11 2013
+cal["betty"].servoBias={8,-10,0,-67,39,-8,-5,6,-51,-24,-43,10,};
+cal["betty"].footXComp=-0.007;
+cal["betty"].kickXComp=0.000;
+
+-- Updated date: Mon Jun 17 17:32:45 2013
+cal["betty"].servoBias={8,-10,0,-67,39,-8,-5,6,-51,-24,-43,10,};
+cal["betty"].footXComp=-0.001;
+cal["betty"].kickXComp=0.000;
+
+-- Updated date: Mon Jun 17 17:39:26 2013
+cal["betty"].servoBias={8,-10,0,-67,39,-8,-5,6,-51,-24,-43,10,};
+cal["betty"].footXComp=-0.001;
+cal["betty"].kickXComp=0.000;
+
+-- Updated date: Mon Jun 17 17:40:03 2013
+cal["betty"].servoBias={8,-10,0,-67,39,-8,-5,6,-51,-24,-43,10,};
+cal["betty"].footXComp=-0.001;
+cal["betty"].kickXComp=0.000;
+
+-- Updated date: Mon Jun 17 17:42:42 2013
+cal["betty"].servoBias={8,-10,0,-67,39,-8,-5,6,-51,-24,-43,10,};
+cal["betty"].footXComp=-0.001;
+cal["betty"].kickXComp=0.000;
+
+-- Updated date: Mon Jun 17 17:51:39 2013
+cal["betty"].servoBias={8,-10,0,-67,39,-8,-5,6,-51,-24,-43,10,};
+cal["betty"].footXComp=-0.008;
+cal["betty"].kickXComp=-0.005;
+
+-- Updated date: Wed Jun 19 17:26:55 2013
+cal["betty"].servoBias={8,-10,0,-67,39,-8,-5,6,-51,-24,-43,10,};
+cal["betty"].footXComp=-0.008;
+cal["betty"].kickXComp=0.010;
+
+-- Updated date: Wed Jun 19 23:23:51 2013
+cal["lucy"].servoBias={19,4,27,0,18,-13,3,0,-20,2,-7,-4,};
+cal["lucy"].footXComp=-0.003;
+cal["lucy"].kickXComp=0.000;
+
+-- Updated date: Wed Jun 19 23:34:02 2013
+cal["annie"].servoBias={0,0,0,0,0,0,-18,0,0,0,0,0,};
+cal["annie"].footXComp=-0.005;
+cal["annie"].kickXComp=-0.005;
+
+-- Updated date: Wed Jun 19 17:37:20 2013
+cal["betty"].servoBias={8,-10,0,-67,39,-8,-5,14,-51,-24,-43,6,};
+cal["betty"].footXComp=-0.003;
+cal["betty"].kickXComp=0.010;
+
+-- Updated date: Wed Jun 19 21:53:42 2013
+cal["betty"].servoBias={8,-10,0,-67,39,-8,-5,14,-51,-24,-43,6,};
+cal["betty"].footXComp=-0.007;
+cal["betty"].kickXComp=0.010;
+
+-- Updated date: Thu Jun 20 11:08:52 2013
+cal["betty"].servoBias={8,-10,43,-67,39,-8,-5,14,-104,-24,-43,6,};
+cal["betty"].footXComp=-0.007;
+cal["betty"].kickXComp=0.010;
+
+-- Updated date: Thu Jun 20 11:18:59 2013
+cal["betty"].servoBias={8,-10,43,-67,39,-8,-5,14,-104,-24,-43,6,};
+cal["betty"].footXComp=0.005;
+cal["betty"].kickXComp=0.010;
+
+-- Updated date: Thu Jun 20 11:24:00 2013
+cal["betty"].servoBias={8,-10,43,-67,39,-8,-5,14,-104,-24,-43,6,};
+cal["betty"].footXComp=0.005;
+cal["betty"].kickXComp=0.005;
+
+-- Updated date: Fri Jun 21 00:52:36 2013
+cal["lucy"].servoBias={19,4,27,0,18,-13,3,0,-20,2,-7,-4,};
+cal["lucy"].footXComp=-0.003;
+cal["lucy"].kickXComp=0.000;
+>>>>>>> 165e1760928feb01b8d4b779a3d3760d42145daa

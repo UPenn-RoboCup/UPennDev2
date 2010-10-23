@@ -85,15 +85,32 @@ function update()
     thSideKick2 = Config.fsm.thSideKick2 or 135*math.pi/180;  
     thDistSideKick = Config.fsm.thDistSideKick or 3.0;
 
+    thDistStationaryKick = Config.fsm.thDistStationaryKick or 4.5;
+
     ball = wcm.get_ball();
+    ballxy=vector.new( {ball.x,ball.y,0} );  
+    posexya=vector.new( {pose.x, pose.y, pose.a} );
+    ballGlobal=util.pose_global(ballxy,posexya);
+    goalGlobal=wcm.get_goal_attack();
+    rGoalBall = math.sqrt( (goalGlobal[2]-ballGlobal[2])^2+
+      (goalGlobal[1]-ballGlobal[1])^2);
+
+
     rBall = math.sqrt(ball.x^2+ball.y^2);
 
-    if rBall > thDistSideKick or
+
+    if rGoalBall > thDistSideKick or
        math.abs(angleRot)<thSideKick1 or 
        math.abs(angleRot)>thSideKick2 	then
 --print("STRAIGHT",angleRot*180/math.pi)
       kickDir=1;
       kickAngle = 0;
+
+      if rGoalBall > thDistStationaryKick then
+        kickType = 1;
+      end
+
+
     elseif angleRot>0 then --should kick to the left
 --print("LEFT",angleRot*180/math.pi)
       kickDir=2;
@@ -103,12 +120,19 @@ function update()
       kickDir=3;
       kickAngle = -70*math.pi/180;
     end
+
+
+
+
+
   else --Demo mode
     if kickDir>1 then 
       kickDir=5-kickDir; --Switch sidekick direction for demo mode
     end
     kickAngle = 0;
   end
+
+
 
   if walk.canWalkKick ~= 1 or Config.fsm.enable_walkkick == 0 then
     kickType=1;
@@ -117,6 +141,34 @@ function update()
   if Config.fsm.enable_sidekick==0 and kickDir~=1 then
     kickDir=1;
     kickAngle=0;
+  end
+
+  --If robot is confused
+  --Always kick to the side
+  --Always use the walkkick and walk sidekick
+
+  is_confused = wcm.get_robot_is_confused();
+  if is_confused>0 then
+    kickType=2;
+    if math.abs(angleRot)<40*math.pi/180 or
+       math.abs(angleRot)>140*math.pi/180 then
+      --We are facing one of the goal.... do the sidekick
+      print("CONFUSED: SIDE KICK", angleRot*180/math.pi)
+
+      --TODO: kick towards OUTSIDE of the field      
+      kickDir=2; --Sidekick to the left
+      kickAngle = 90*math.pi/180;
+
+--[[
+      kickDir=3; --Sidekick to the right
+      kickAngle = -90*math.pi/180;
+--]]
+    else  --We are facing sideways, do straight kick
+      print("CONFUSED: FRONT KICK", angleRot*180/math.pi)
+
+      kickDir=1; 
+      kickAngle = 0*math.pi/180; --Straight kick
+    end
   end
 
 --[[

@@ -210,6 +210,15 @@ function process_keyinput_test_walk(byte)
   elseif byte==string.byte("y") then
     walk.doSideKickRight();
 
+  elseif byte==string.byte("f") then
+    grip.throw=0;
+    Motion.event("pickup");
+
+  elseif byte==string.byte("g") then
+    grip.throw=1;
+    Motion.event("throw");
+
+
     -- footXComp calibration
   elseif byte==string.byte("-") then
     footXComp = footXComp - 0.001; 

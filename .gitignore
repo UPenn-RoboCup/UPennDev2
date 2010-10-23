@@ -74,6 +74,9 @@ remotes/
 # ball logs
 Player/Data/*.txt
 
+# game controller log
+Tools/GameController/logs/*.txt
+
 # screen log
 *screenlog*
 

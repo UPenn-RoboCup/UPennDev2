@@ -338,13 +338,15 @@ global MONITOR %for sending the webots check information
       select = h.vcmImage.get_select();
       width = h.vcmImage.get_width();
       height = h.vcmImage.get_height();
+			scaleA = h.vcmImage.get_scaleA();
 			scaleB = h.vcmImage.get_scaleB();
       bodyHeight=h.vcmCamera.get_bodyHeight();
       bodyTilt=h.vcmCamera.get_bodyTilt();
       headAngles=h.vcmImage.get_headAngles();
       rollAngle=h.vcmCamera.get_rollAngle();
       lutFileName = char(h.vcmCamera.get_lut_filename());
-      r.camera = struct('select',select,'width',width,'height',height,'scaleB',scaleB,...
+      r.camera = struct('select',select,'width',width,'height',height,...
+                        'scaleA', scaleA, 'scaleB',scaleB,...
                       	'bodyHeight',bodyHeight,'bodyTilt',bodyTilt,...
                       	'headAngles',headAngles,'rollAngle',rollAngle,...
                         'lutFileName',lutFileName);
@@ -530,7 +532,7 @@ global MONITOR %for sending the webots check information
 
       % add horizon line
       r.horizon = {};
-      labelAm = h.vcmImage.get_width()/2;
+      labelAm = h.vcmImage.get_width()/h.vcmImage.get_scaleA();
       labelBm = labelAm/h.vcmImage.get_scaleB();
 	    horizonDir = h.vcmImage.get_horizonDir();
       horizonA = h.vcmImage.get_horizonA();
@@ -584,17 +586,17 @@ global MONITOR %for sending the webots check information
 
   function labelA = get_labelA()  % returns the labeled image
     rawData = h.vcmImage.get_labelA();
-    width = h.vcmImage.get_width()/2;
-    height = h.vcmImage.get_height()/2;
+    width = h.vcmImage.get_width()/h.vcmImage.get_scaleA();
+    height = h.vcmImage.get_height()/h.vcmImage.get_scaleA();
 
     %Webots vision check 
     %for webots with non-subsampling vision code, use full width/height 
-    scale= length(rawData)*2/width/height;
-    if scale==1
-      width = h.vcmImage.get_width();
-      height = h.vcmImage.get_height();
-      MONITOR.is_webots=1;
-    end
+%    scale= length(rawData)*2/width/height;
+%    if scale==1
+%      width = h.vcmImage.get_width();
+%      height = h.vcmImage.get_height();
+%      MONITOR.is_webots=1;
+%    end
     labelA = raw2label(rawData, width, height)';
   end
 
@@ -603,22 +605,20 @@ global MONITOR %for sending the webots check information
     h.vcmImage.set_labelA(rawData);
   end
 
-
-
   function labelB = get_labelB()
     % returns the bit-ored labeled image
-    width = h.vcmImage.get_width()/2/h.vcmImage.get_scaleB();
-    height = h.vcmImage.get_height()/2/h.vcmImage.get_scaleB();
+    width = h.vcmImage.get_width()/h.vcmImage.get_scaleA()/h.vcmImage.get_scaleB();
+    height = h.vcmImage.get_height()/h.vcmImage.get_scaleA()/h.vcmImage.get_scaleB();
     rawData = h.vcmImage.get_labelB();
 
     %Webots vision check 
     %for webots with non-subsampling vision code, use 2x width/height 
-    scale= length(rawData)*2/width/height;
-    if scale==1 % TODO: check with webots
-      width = h.vcmImage.get_width()/h.vcmImage.get_scaleB();
-      height = h.vcmImage.get_height()/h.vcmImage.get_scaleB();
-      MONITOR.is_webots=1;
-    end
+%    scale= length(rawData)*2/width/height;
+%    if scale==1 % TODO: check with webots
+%      width = h.vcmImage.get_width()/h.vcmImage.get_scaleB();
+%      height = h.vcmImage.get_height()/h.vcmImage.get_scaleB();
+%      MONITOR.is_webots=1;
+%    end
     labelB = raw2label(rawData, width, height)';
   end
 

@@ -25,11 +25,13 @@ direction = 1;
 
 function entry()
   print("Head SM:".._NAME.." entry");
+  wcm.set_ball_t_locked_on(0);
 
   --Goalie need wider scan
   role = gcm.get_team_role();
   if role==0 then
     yawMag=Config.fsm.headScan.yawMagGoalie;
+    mcm.set_walk_isSearching(0);
   else
     yawMag=Config.fsm.headScan.yawMag;
   end

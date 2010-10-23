@@ -82,6 +82,9 @@ vision.ball.field_margin = 2.0;
 vision.goal={};
 vision.goal.th_min_color_count=100;
 vision.goal.th_nPostB = 10;
+
+vision.goal.th_nPostB = 5;
+
 vision.goal.th_min_area = 40;
 vision.goal.th_min_orientation = 60*math.pi/180;
 vision.goal.th_min_fill_extent=0.65;
@@ -149,4 +152,5 @@ vision.ball.th_headAngle = -15*math.pi/180;
 -----------------------------------------------------
 -- GRASP FIELD VALUES
 
-vision.goal.distanceFactorYellow = 1.1; 
+--vision.goal.distanceFactorYellow = 1.1; 
+vision.goal.distanceFactorYellow = 1.22; 

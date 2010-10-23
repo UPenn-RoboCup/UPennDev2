@@ -118,7 +118,6 @@ function check_approach_type()
     wcm.set_kick_type(kick_type);
     wcm.set_kick_angle(kickAngle);
 
---    check_angle = 0; --Don't check angle during approaching
     check_angle = 1; --CHECK angle during approaching
   end
 
@@ -240,7 +239,9 @@ function update()
   scale = math.min(maxStep/math.sqrt(vStep[1]^2+vStep[2]^2), 1);
   vStep = scale*vStep;
 
-  if Config.fsm.playMode==1 then 
+  is_confused = wcm.get_robot_is_confused();
+
+  if Config.fsm.playMode==1 or is_confused>0 then 
     --Demo FSM, just turn towards the ball
     ballA = math.atan2(ball.y - math.max(math.min(ball.y, 0.05), -0.05),
             ball.x+0.10);

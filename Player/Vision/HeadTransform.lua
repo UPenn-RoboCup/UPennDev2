@@ -28,13 +28,8 @@ horizonB = 1;
 horizonDir = 0;
 
 labelA = {};
-if( webots ) then
-  labelA.m = Config.camera.width;
-  labelA.n = Config.camera.height;
-else
-  labelA.m = Config.camera.width/2;
-  labelA.n = Config.camera.height/2;
-end
+labelA.m = Config.camera.width / Config.vision.scaleA
+labelA.n = Config.camera.height / Config.vision.scaleA
 
 nxA = labelA.m;
 x0A = 0.5 * (nxA-1);

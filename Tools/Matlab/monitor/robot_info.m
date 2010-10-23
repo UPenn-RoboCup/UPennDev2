@@ -1,6 +1,9 @@
 function [str textcolor]=robot_info(robot,r_mon,level,name,bodystate)
     robotnames = {'Bot1','Bot2','Bot3','Bot4','Bot5'};
-    rolenames = {'Goalie','Attacker','Defender','Supporter','W. player','W. goalie','Unknown'};
+
+    rolenames = {'Goalie','Attacker','Defender','Supporter','Defender2',...
+							'CONFUSED', 'W. player','W. goalie','Unknown'};
+
     colornames={'red','blue'};
  
     role=robot.role;

@@ -98,14 +98,13 @@ function learn_lut_from_mask()
     -- get labelA
     if webots == 1 then
       labelA_mask = Camera.get_labelA_obs( carray.pointer(LUT.Obstacle) );
-      labelA_m = Config.camera.width;
-      labelA_n = Config.camera.height;
     else
       labelA_mask  = ImageProc.yuyv_to_label_obs(vcm.get_image_yuyv(),
                                     carray.pointer(LUT.Obstacle), image_width/2, image_height);
-      labelA_m = Config.camera.width/2;
-      labelA_n = Config.camera.height/2;
     end
+    labelA_m = Config.camera.width/Config.vision.scaleA
+    labelA_n = Config.camera.height/Config.vision.scaleA
+
     print("learn new colortable for random ball from mask");
     mask = ImageProc.label_to_mask(labelA_mask, labelA_m, labelA_n);
 

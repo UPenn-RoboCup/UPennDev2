@@ -56,6 +56,12 @@ rSigmaDouble1 = Config.world.rSigmaSingle1 or .25;
 rSigmaDouble2 = Config.world.rSigmaSingle2 or .20;
 aSigmaDouble = Config.world.aSigmaSingle or 50*math.pi/180;
 
+daNoise = Config.world.daNoise or 2.0*math.pi/180.0;
+drNoise = Config.world.drNoise or 0.01;
+
+dont_reset_orientation = Config.world.dont_reset_orientation or 0;
+
+
 
 xp = .5*xMax*vector.new(util.randn(n)); -- x coordinate of each particle
 yp = .5*yMax*vector.new(util.randn(n)); -- y coordinate
@@ -87,6 +93,16 @@ function initialize_manual_placement(p0, dp)
 end
 
 function initialize_unified(p0,p1,dp)
+  init_override = Config.world.init_override or 0;
+  if init_override == 1 then --High kick challenge
+    for i=1,n do
+      xp[i]=0;
+      yp[i]=0;
+      ap[i]=5*math.pi/180  * (math.random()-.5);
+    end
+    wp = vector.zeros(n);
+    return;
+  end
   --Particle initialization for the same-colored goalpost
   --Half of the particles at p0
   --Half of the particles at p1
@@ -120,8 +136,12 @@ end
 ---Sets headings of all particles to random angles with 0 weight
 --@usage For when robot falls down
 function reset_heading()
-  ap = 2*math.pi*vector.new(util.randu(n));
-  wp = vector.zeros(n);
+  if dont_reset_orientation == 0 then
+    ap = 2*math.pi*vector.new(util.randu(n));
+    wp = vector.zeros(n);
+  else
+
+  end
 end
 
 function flip_particles()
@@ -191,11 +211,22 @@ end
 --@param aLandmarkFilter How much to adjust particles according to 
 --angle to landmark
 function landmark_observation(pos, v, rLandmarkFilter, aLandmarkFilter,dont_update_position)
+
+  local p = wcm.get_pose()
+  if math.sqrt(p.x^2 + p.y^2) < 1 then
+      dont_update_position = 1
+  end
+
   local r = math.sqrt(v[1]^2 + v[2]^2);
   local a = math.atan2(v[2], v[1]);
 
   local rSigma = rSigmaSingle1 * r + rSigmaSingle2;
   local aSigma = aSigmaSingle;
+
+--[[
+    print("rSigma "..rSigma.." "..r);
+    print("aSigma "..aSigma);
+--]]
 
   local rFilter = rLandmarkFilter or 0.02;
   local aFilter = aLandmarkFilter or 0.04;
@@ -236,19 +267,12 @@ function landmark_observation(pos, v, rLandmarkFilter, aLandmarkFilter,dont_upda
     dxp[ip] = dx[imin];
     dyp[ip] = dy[imin];
     dap[ip] = da[imin];
-  
-    --If the ditstance is too close, do not update angle for the particle
-    if dr[imin]< angle_update_threshold then
-      dap[ip] = 0;
+--[[
+    if ip % 40 == 0 then
+        print("drp[ip] "..math.sqrt(dxp[ip]^2 + dyp[ip]^2));
+        print("dap[ip] "..dap[ip]);
     end
-
-    --If the distance is too large, do not update position for the particles
-    if dr[imin]> position_update_threshold then
-      dxp[ip] = 0;
-      dyp[ip] = 0;
-    end
-
-
+]]--
   end
   --Filter toward best matching landmark position:
   for ip = 1,n do
@@ -489,10 +513,12 @@ function goal_observation_unified(pos1,pos2,v)
 
     local rSigma = rSigmaDouble1 * dGoal1 + rSigmaDouble2;
     local aSigma = aSigmaDouble;
-
+--[[
+    print("rSigma "..rSigma.." "..r);
+    print("aSigma "..aSigma);
+--]]
     local rFilter = rGoalFilter;
     local aFilter = aGoalFilter;
-
 
     for ip = 1,n do
       local xErr1 = x1 - xp[ip];
@@ -674,8 +700,8 @@ end
 
 ---Adds noise to particle x,y coordinates and angle.
 function add_noise()
-  da = 2.0*math.pi/180.0;
-  dr = 0.01;
+  da = daNoise;
+  dr = drNoise;
   xp = xp + dr * vector.new(util.randn(n));
   yp = yp + dr * vector.new(util.randn(n));
   ap = ap + da * vector.new(util.randn(n));
@@ -778,46 +804,6 @@ end
 
 
 
---Obsolete functions 
-
---[[
-
-
-function goal_observation(pos, v)
-  --Get estimate using triangulation
-  if use_new_goalposts==1 then
-    pose,dGoal,aGoal=triangulate2(pos,v);
-  else
-    pose,dGoal,aGoal=triangulate(pos,v);
-  end
---  vcm.add_debug_message(string.format("aGoal: %d\n",aGoal*180/math.pi))
---  vcm.add_debug_message(string.format("pos: %.1f %.1f\n",pos[1][1],pos[1][2]))
-  local x,y,a=pose.x,pose.y,pose.a;
-  local rSigma = .25*dGoal + 0.20;
-  local aSigma = 5*math.pi/180;
-  local rFilter = rKnownGoalFilter;
-  local aFilter = aKnownGoalFilter;
-
-  if dGoal<triangulation_threshold then 
-    for ip = 1,n do
-      local xErr = x - xp[ip];
-      local yErr = y - yp[ip];
-      local rErr = math.sqrt(xErr^2 + yErr^2);
-      local aErr = mod_angle(a - ap[ip]);
-      local err = (rErr/rSigma)^2 + (aErr/aSigma)^2;
-      wp[ip] = wp[ip] - err;
-      --Filter towards goal:
-      xp[ip] = xp[ip] + rFilter*xErr;
-      yp[ip] = yp[ip] + rFilter*yErr;
-      ap[ip] = ap[ip] + aFilter*aErr;
-    end
-  else
-  --Don't use triangulation for far goals
-    goalpos={{(pos[1][1]+pos[2][1])/2, (pos[1][2]+pos[2][2])/2}}
-    goalv={(v[1][1]+v[2][1])/2, (v[1][2]+v[2][2])/2}
-    landmark_observation(goalpos, goalv , rKnownGoalFilter, aKnownGoalFilter);
-  end
-end
 
 function landmark_cyan(v)
   landmark_observation({landmarkCyan}, v, rLandmarkFilter, aLandmarkFilter);

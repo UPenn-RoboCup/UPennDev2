@@ -118,15 +118,19 @@ function process_keyinput()
 	elseif byte==string.byte("d") then
 	        dive.set_dive("diveRight");
 		Motion.event("dive");
---[[
-	elseif byte==string.byte("z") then
+
+
+	elseif byte==string.byte("b") then
 		grip.throw=0;
 		Motion.event("pickup");
 
-	elseif byte==string.byte("x") then
+	elseif byte==string.byte("n") then
 		grip.throw=1;
 		Motion.event("throw");
---]]
+
+	elseif byte==string.byte("m") then
+		Motion.event("align");
+
 
 
 	elseif byte==string.byte("f") then

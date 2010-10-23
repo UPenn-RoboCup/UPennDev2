@@ -22,7 +22,7 @@ vision.scaleB = 4;
 vision.enable_line_detection = 1;
 vision.enable_corner_detection = 1;
 -- use this to enable spot detection
-vision.enable_spot_detection = 0;
+vision.enable_spot_detection = 1;
 -- use this to enable midfield landmark detection
 vision.enable_midfield_landmark_detection = 0;
 -- use this to enable copying images to shm (for colortables, testing)
@@ -76,7 +76,7 @@ vision.goal.th_min_color_count=100;
 vision.goal.th_nPostB = 5;
 vision.goal.th_min_area = 40;
 vision.goal.th_min_orientation = 60*math.pi/180;
-vision.goal.th_min_fill_extent=0.75;
+vision.goal.th_min_fill_extent=0.65;
 vision.goal.th_aspect_ratio={2.5, 15};
 vision.goal.th_edge_margin= 5;
 vision.goal.th_bottom_boundingbox=0.9;

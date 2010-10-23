@@ -77,7 +77,7 @@ function update()
   --If the player is attacker and about to reach the ball
 
   eta = wcm.get_team_my_eta();
-  if eta<min_eta_look then
+  if eta<min_eta_look and eta>0 then
     return 'timeout';
   end
 

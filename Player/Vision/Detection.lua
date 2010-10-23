@@ -122,7 +122,7 @@ function update()
 
   -- spot detection
   if enableSpot == 1 then
---    spot = detectSpot.detect();
+     spot = detectSpot.detect();
   end
 
   -- Global robot detection
@@ -223,7 +223,7 @@ function update_shm()
     vcm.set_corner_v2(corner.v2)
   end
 
-  --vcm.set_spot_detect(spot.detect);
+  vcm.set_spot_detect(spot.detect);
   if (spot.detect == 1) then
   end
 

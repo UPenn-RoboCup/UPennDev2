@@ -24,7 +24,20 @@ ballLostPenalty = Config.team.ballLostPenalty;
 walkSpeed = Config.team.walkSpeed;
 turnSpeed = Config.team.turnSpeed;
 
+
+
 flip_correction = Config.team.flip_correction or 0;
+
+confused_threshold_x= Config.team.confused_threshold_x or 3.0;
+confused_threshold_y= Config.team.confused_threshold_y or 3.0;
+flip_threshold_x= Config.team.flip_threshold_x or 1.0;
+flip_threshold_y= Config.team.flip_threshold_y or 1.5;
+flip_threshold_t= Config.team.flip_threshold_t or 0.5;
+flip_check_t = Config.team_flip_check_t or 3.0;
+
+confusion_handling = Config.confusion_handling or 0;
+
+
 goalie_ball={0,0,0};
 
 --Player ID: 1 to 5
@@ -34,8 +47,9 @@ ROLE_ATTACKER = 1;
 ROLE_DEFENDER = 2;
 ROLE_SUPPORTER = 3;
 ROLE_DEFENDER2 = 4;
-ROLE_RESERVE_PLAYER = 5;
-ROLE_RESERVE_GOALIE = 6;
+ROLE_CONFUSED = 5;
+ROLE_RESERVE_PLAYER = 6;
+ROLE_RESERVE_GOALIE = 7;
 
 count = 0;
 
@@ -187,7 +201,15 @@ function update()
   state.tm_latency=Body.get_time()-tLastMessage;
 
   pack_vision_info(); --Vision info
-  pack_labelB(); --labelB info
+
+  vision_send_interval = Config.team.vision_send_interval or 10;
+
+  --Now send labelB once in a while
+  if count%vision_send_interval==0 then
+    pack_labelB(); --labelB info
+  end
+
+
 
   --Now pack state name too
   state.body_state = gcm.get_fsm_body_state();
@@ -233,8 +255,7 @@ function update()
       roles[id]=states[id].role;
       dgoalPosition = vector.new(wcm.get_goal_defend());-- distance to our goal
 
-      ddefend[id] = 
-	math.sqrt((states[id].pose.x - dgoalPosition[1])^2 +
+      ddefend[id] = 	math.sqrt((states[id].pose.x - dgoalPosition[1])^2 +
 		 (states[id].pose.y - dgoalPosition[2])^2);
 
       if (states[id].role ~= ROLE_ATTACKER ) then       -- Non attacker penalty:
@@ -255,12 +276,10 @@ function update()
         wcm.set_team_my_eta(eta[id]);
       end
 
-
-
-      --Ignore goalie, reserver, penalized player
+      --Ignore goalie, reserver, penalized player, confused player
       if (states[id].penalty > 0) or 
         (t - states[id].tReceive > msgTimeout) or
-        (states[id].role >=ROLE_RESERVE_PLAYER) or 
+        (states[id].role >=ROLE_CONFUSED) or 
         (states[id].role ==0) then
         eta[id] = math.huge;
         ddefend[id] = math.huge;
@@ -297,8 +316,8 @@ function update()
 
 
   if gcm.get_game_state()==3 and force_defender ==0 then
-    -- goalie and reserve player never changes role
-    if role~=ROLE_GOALIE and role<ROLE_RESERVE_PLAYER then 
+    -- goalie, confused player  and reserve player never changes role
+    if role~=ROLE_GOALIE and role<ROLE_CONFUSED then 
       minETA, minEtaID = util.min(eta);
       if minEtaID == playerID then --Lowest ETA : attacker
         set_role(ROLE_ATTACKER);
@@ -316,7 +335,7 @@ function update()
           --goalie, current attacker and and reserve don't count
           if id ~= minEtaID and 	  
             roles[id]~=ROLE_ATTACKER and 
-            roles[id]<ROLE_RESERVE_PLAYER then 
+            roles[id]<ROLE_CONFUSED then 
 	    --Dead players have infinite ddefend
             if ddefend[id] > maxDDef and ddefend[id]<20.0 then
               maxDDefID = id;
@@ -335,11 +354,27 @@ function update()
           set_role(ROLE_SUPPORTER);    -- support
         else --other players go defend
           set_role(ROLE_DEFENDER);    -- defense 
-	  --TODO: WHICH defender?
-
         end
       end
     end
+
+    --Switch roles between left and right defender
+    if role==ROLE_DEFENDER then
+      --Are there any other defender?
+      goalDefend =  wcm.get_goal_defend();
+      for id = 1,5 do
+        if id ~= playerID and 	  
+          (roles[id]==ROLE_DEFENDER or roles[id]==ROLE_DEFENDER2) then          
+          --Check if he is on my right side
+          if state.pose.y * goalDefend[1] < 
+							states[id].pose.y * goalDefend[1] then
+					  set_role(ROLE_DEFENDER2);
+          end
+        end
+      end
+    end
+
+
     --We assign role based on player ID during initial and ready state
   elseif gcm.get_game_state()<2 then 
     if role==ROLE_ATTACKER then
@@ -366,7 +401,8 @@ function update()
   update_shm() 
   update_teamdata();
   update_obstacle();
-  check_flip();
+  check_confused();
+  check_flip2();
 end
 
 function update_teamdata()
@@ -412,11 +448,11 @@ function update_teamdata()
         goalie_alive =1;
         goalie_pose = {
           states[id].pose.x,states[id].pose.y,states[id].pose.a};
-
         goalie_ball = util.pose_global(
-          {states[id].ball.x,states[id].ball.y,0},
-	  goalie_pose);
-        goalie_ball[3] = states[id].ball.t;	
+          {states[id].ball.x,states[id].ball.y,0},	  goalie_pose);
+        goalie_ball[3] = states[id].time - states[id].ball.t ;
+
+
 
       elseif states[id].role==ROLE_ATTACKER then
           attacker_pose = {states[id].pose.x,states[id].pose.y,states[id].pose.a};
@@ -463,6 +499,7 @@ function set_role(r)
     elseif role == ROLE_SUPPORTER then Speak.talk('Support');
     elseif role == ROLE_GOALIE then Speak.talk('Goalie');
     elseif role == ROLE_DEFENDER2 then Speak.talk('Defender Two')
+    elseif role == ROLE_CONFUSED then Speak.talk('Confused')
     elseif role == ROLE_RESERVE_PLAYER then Speak.talk('Player waiting')
     elseif role == ROLE_RESERVE_GOALIE then Speak.talk('Goalie waiting')
     else Speak.talk('ERROR: Unknown Role');
@@ -517,59 +554,126 @@ function pack_vision_info()
   end
 end
 
-function check_flip()
-  if flip_correction ==0 then return; end
-  if state.role==0 then return; end
+function check_flip2()
+  local is_confused = wcm.get_robot_is_confused();
+  if is_confused==0 then return; end
 
-  --print("Goalie ball");
-  --util.ptable(goalie_ball);
-  --print("Player ball");
-  --util.ptable(state_ball);
-  --d = math.sqrt((-state_ball[1] - goalie_ball[1])^2 + (-state_ball[2] $
+  local pose = wcm.get_pose();
+  local ball = wcm.get_ball();
+  local ball_global = util.pose_global({ball.x,ball.y,0},{pose.x,pose.y,pose.a});
+  local t = Body.get_time();
+  local t_confused = wcm.get_robot_t_confused();
 
-  pose = wcm.get_pose();
-  ball = wcm.get_ball();
+  --Wait a bit before trying correction
+  if t-t_confused < flip_check_t then return; end
+
+--[[
+  print(string.format("Goalie ball :%.1f %.1f %.1f",
+		goalie_ball[1],goalie_ball[2],goalie_ball[3] ));
+  print(string.format("Player ball: %.1f %.1f %.1f", 
+		ball_global[1],ball_global[2],t-ball.t));
+--]]
 
 
-  ball_global = util.pose_global({ball.x,ball.y,0},{pose.x,pose.y,pose.a});
+  if t-ball.t<flip_threshold_t	and goalie_ball[3]<flip_threshold_t then
+     --Check X position
+     if (math.abs(ball_global[1])>flip_threshold_x) and
+        (math.abs(goalie_ball[1])>flip_threshold_x) then
+       if ball_global[1]*goalie_ball[1]<0 then
+         wcm.set_robot_flipped(1);
+       end
+       --Now we are sure about our position
+       wcm.set_robot_is_confused(0);
+       if confusion_handling == 1 then
+         set_role(ROLE_ATTACKER);
+       end
 
-  ball_flip_dist_threshold = 1;
-  ball_flip_x_threshold = 0.6;
-  ball_flip_y_threshold = 0.6;
-  ball_flip_t_threshold = 0.5; --Both robot should be looking at the ball
-  local dist_balls = math.abs(ball_global[1]-goalie_ball[1]);
+     --Check Y position
+     elseif (math.abs(ball_global[2])>flip_threshold_y) and
+            (math.abs(goalie_ball[2])>flip_threshold_y) then
+       if ball_global[2]*goalie_ball[2]<0 then
+         wcm.set_robot_flipped(1);
+       end
 
-  --print("Ball global");
-  --util.ptable(ball_global);
-  --print("Goalie ball");
-  --util.ptable(goalie_ball);
+       --Now we are sure about our position
+       wcm.set_robot_is_confused(0);
+       if confusion_handling == 1 then
+         set_role(ROLE_ATTACKER);
+       end
+     end
+  end
 
-  if (math.abs(ball_global[1]) > ball_flip_x_threshold or
-     math.abs(ball_global[2]) > ball_flip_y_threshold) and
-     ball_global[1]*goalie_ball[1] < 0 and
-     dist_balls > ball_flip_dist_threshold and
-     gcm.get_game_state() == 3 then
-     --ball.t < ball_flip_t_threshold and
-     --goalie_ball[3] < ball_flip_t_threshold and
-     --goalie_alive >0 and
-
-    print("FLIP DETECTED, CORRECTING");
-    print("FLIP DETECTED, CORRECTING");
-    print("FLIP DETECTED, CORRECTING");
-    print("FLIP DETECTED, CORRECTING");
-    print("FLIP DETECTED, CORRECTING");
-    print("FLIP DETECTED, CORRECTING");
-    print("FLIP DETECTED, CORRECTING");
-    print("FLIP DETECTED, CORRECTING");
-    print("FLIP DETECTED, CORRECTING");
-    print("FLIP DETECTED, CORRECTING");
-    print("FLIP DETECTED, CORRECTING");
-    print("FLIP DETECTED, CORRECTING");
-    wcm.set_robot_flipped(1);
+  if wcm.get_robot_is_confused()==0 then
+    print("CONFUSION FIXED")
+    print("CONFUSION FIXED")
+    print("CONFUSION FIXED")
+    print("CONFUSION FIXED")
+    print("CONFUSION FIXED")
+    print("CONFUSION FIXED")
+    print("CONFUSION FIXED")
+    print("CONFUSION FIXED")
+    print("CONFUSION FIXED")
+    print("CONFUSION FIXED")
+    print("CONFUSION FIXED")
   end
 end
 
+function check_confused()
 
+  if flip_correction==0 then 
+    wcm.set_robot_is_confused(0);
+	  return; 
+  end
+  goalie_alive =  wcm.get_team_goalie_alive();
+  if goalie_alive==0 then 
+    wcm.set_robot_is_confused(0);
+	  return; 
+  end --Goalie's dead, we cannot correct flip
+
+  pose = wcm.get_pose();
+  t = Body.get_time();
+
+  --Goalie or reserve players never get confused
+  if role==ROLE_GOALIE or role >= ROLE_RESERVE_PLAYER then 
+    wcm.set_robot_is_confused(0);
+		return; 
+	end
+  is_confused = wcm.get_robot_is_confused();
+
+  if is_confused>0 then
+    --Currently confused
+    if gcm.get_game_state() ~= 3 --If game state is not gamePlaying
+       or gcm.in_penalty() --Or the robot is penalized
+       then 
+      --Robot gets out of confused state!
+      wcm.set_robot_is_confused(0);
+      if role==ROLE_CONFUSED then
+        set_role(ROLE_ATTACKER); 
+      end
+    end
+  else
+    --Should we turn confused?
+    if wcm.get_robot_is_fall_down()>0 
+       and math.abs(pose.x)<confused_threshold_x 
+       and math.abs(pose.y)<confused_threshold_y 
+       and gcm.get_game_state() == 3 --Only get confused during playing
+			  then
+      wcm.set_robot_is_confused(1);
+      wcm.set_robot_t_confused(t);
+      print("CONFUSED")
+      print("CONFUSED")
+      print("CONFUSED")
+      print("CONFUSED")
+      print("CONFUSED")
+
+      if confusion_handling == 1 then
+        set_role(ROLE_CONFUSED); --Robot gets confused!
+      elseif confusion_handling == 2 then
+        --Robot maintains current role
+      end
+    end
+  end
+end
 
 --NSL role can be set arbitarily, so use config value
 set_role(Config.game.role or 1);

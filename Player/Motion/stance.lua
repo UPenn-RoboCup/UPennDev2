@@ -8,6 +8,7 @@ require('vector')
 require('Transform')
 require('vcm')
 require('mcm')
+require('walk')
 
 active = true;
 t0 = 0;
@@ -56,6 +57,7 @@ function entry()
   walk.active=false;
   vcm.set_vision_enable(1);
   mcm.set_walk_isMoving(1); --start walk
+  mcm.set_walk_isStepping(0);
 end
 
 function update()
@@ -120,16 +122,30 @@ function update()
   vcm.set_camera_bodyTilt(pTorso[5]);
 --print("BodyHeight/Tilt:",pTorso[3],pTorso[5]*180/math.pi)
 
-  q = Kinematics.inverse_legs(pLLeg, pRLeg, pTorso, 0);
+  pTorsoActual = {
+	pTorso[1],
+	pTorso[2],
+	pTorso[3],
+	pTorso[4],
+	pTorso[5],
+	pTorso[6]}
+
+  if walk.has_ball and walk.has_ball>0 then
+    pTorsoActual[1] = pTorsoActual[1] - 0.01;
+  end
+
+  q = Kinematics.inverse_legs(pLLeg, pRLeg, pTorsoActual, 0);
   Body.set_lleg_command(q);
 
   if (tol) then
     if tFinish==0 then
       tFinish=t;
+--[[
       Body.set_larm_command(qLArm);
       Body.set_rarm_command(qRArm);
       Body.set_larm_hardness(.1);
       Body.set_rarm_hardness(.1);
+--]]
     else
       if t-tFinish>tEndWait then
 	print("Stand done, time elapsed",t-tStart)

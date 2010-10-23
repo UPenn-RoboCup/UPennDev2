@@ -20,13 +20,15 @@ Motion.entry();
 darwin = false;
 webots = false;
 
+--to prevent confusion, now we use these definitions
 ROLE_GOALIE = 0;
 ROLE_ATTACKER = 1;
 ROLE_DEFENDER = 2;
 ROLE_SUPPORTER = 3;
 ROLE_DEFENDER2 = 4;
-ROLE_RESERVE_PLAYER = 5;
-ROLE_RESERVE_GOALIE = 6;
+ROLE_CONFUSED = 5;
+ROLE_RESERVE_PLAYER = 6;
+ROLE_RESERVE_GOALIE = 7;
 
 
 -- Enable OP specific 

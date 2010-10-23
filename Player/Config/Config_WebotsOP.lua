@@ -28,8 +28,11 @@ dev.walk='EvenBetterWalk'; --Walk with generalized walkkick definitions
 dev.walk='AwesomeWalk';
 dev.kick='PunchKick'; --Extended kick that supports upper body motion
 
-largestep_enable = false;
 largestep_enable = true;
+
+--
+--
+
 dev.largestep = 'ZMPStepKick';--ZMP Preview motion 
 
 
@@ -103,21 +106,33 @@ team.team_ball_threshold = 0.5;
 team.avoid_own_team = 1;
 team.avoid_other_team = 1;
 
+team.flip_correction = 1;
+team.flip_threshold_x = 3.0;
+team.flip_threshold_y = 3.0;
+
+
+
+
 -- Keyframe files
 km = {};
 km.standup_front = 'km_NSLOP_StandupFromFront.lua';
 km.standup_back = 'km_NSLOP_StandupFromBack.lua';
 km.standup_back2 = 'km_NSLOP_StandupFromBack3.lua';
 
-goalie_dive = 2; --1 for arm only, 2 for actual diving
+goalie_dive = 1; --1 for arm only, 2 for actual diving
 goalie_dive_waittime = 6.0; --How long does goalie lie down?
 --fsm.goalie_type = 1;--moving/move+stop/stop+dive/stop+dive+move
 --fsm.goalie_type = 2;--moving/move+stop/stop+dive/stop+dive+move
 fsm.goalie_type = 3;--moving/move+stop/stop+dive/stop+dive+move
 --fsm.goalie_type = 4;--moving/move+stop/stop+dive/stop+dive+move
---fsm.goalie_reposition=0; --No reposition
-fsm.goalie_reposition=1; --Yaw reposition
+
+--fsm.goalie_reposition=0; --No reposition except for clearing the ball
+--fsm.goalie_reposition=1; --Yaw reposition
 --fsm.goalie_reposition=2; --Position reposition
+fsm.goalie_reposition=3; --No reposition at all (for testing)
+
+
+
 fsm.bodyAnticipate.thFar = {0.4,0.4,30*math.pi/180};
 fsm.goalie_use_walkkick = 1;--should goalie use walkkick or long kick?
 
@@ -139,6 +154,7 @@ use_rollback_getup = 0;
 fallAngle = 40*math.pi/180;
 falling_timeout = 0.3;
 
+listen_monitor = 1;
 -- Shutdown Vision and use ground truth gps info only
 --Now auto-detect from 3rd parameter
 use_gps_only = tonumber(os.getenv('USEGPS')) or 0;
@@ -176,9 +192,7 @@ team.test_teamplay = 0;
 world.use_new_goalposts = 1;
 world.triangulation_threshold = 4.0; 
 world.angle_update_threshold = 1.0;
-team.flip_correction = 1;
 world.position_update_threshold = 4.5;--Goalie position shouldn't move 
-
 
 
 
@@ -186,3 +200,75 @@ vision.enable_corner_detection = 1;
 
 --fsm.playMode = 1;--Demo testing
 min_eta_look = 1.0; 
+--
+
+--FILP CORRECTION VARIABLES-------------------------
+team.flip_correction = 1;
+team.confused_threshold_x = 4.0;
+team.confused_threshold_y = 4.0;
+team.flip_threshold_x = 1.0;
+team.flip_threshold_y = 1.5;
+team.flip_check_t = 5.0; --keep confused for 5 sec
+
+team.confusion_handling = 0; --don't check for flipping
+team.confusion_handling = 1; --use CONFUSED role 
+team.confusion_handling = 2; --keep the current role, move the ball to the side
+
+----------------------------------------------------
+
+
+
+--[[
+dev.team='TeamNull'; --Turn off teamplay for challenges
+fsm.body = {'HighKickChallenge'};
+world.init_override = 1; --Init at the center circle, facing red goal
+game.teamColor = 0; --Blue team, kicking to red goal
+--]]
+
+
+
+
+
+
+--For THROW-IN---------------------------------------------------
+--[[
+walk.qLArm=math.pi/180*vector.new({90,25,-20});
+walk.qRArm=math.pi/180*vector.new({90,-25,-20});
+stance.qLArmSit = math.pi/180*vector.new({140,25,-40});
+stance.qRArmSit = math.pi/180*vector.new({140,-25,-40});
+use_rollback_getup = 0;
+km.standup_front = 'km_NSLOP_StandupFromFront_Throw.lua';
+km.standup_back = 'km_NSLOP_StandupFromBack_Throw.lua';
+fsm.head = {'GeneralPlayer'};
+fsm.body = {'ThrowinChallenge'};
+--]]
+-----------------------------------------------------------------
+
+--INITIAL TEST
+--Disable walkkicks and sidekicks 
+
+led_on = 1; --turn on eye led
+--Slow down maximum speed (for testing)
+fsm.bodyPosition.maxStep1 = 0.04; 
+fsm.bodyPosition.maxStep2 = 0.05;
+fsm.bodyPosition.maxStep3 = 0.05;
+--Disable walkkicks and sidekicks 
+fsm.enable_walkkick = 0;  
+fsm.enable_walkkick = 1;  
+fsm.enable_sidekick = 0;
+
+--Disable stepkick
+dev.walk='CleanWalk';
+largestep_enable = false;
+
+
+fsm.playMode = 2;--Orbit FSM
+fsm.thDistStationaryKick = 2.0; --try do some stationary kick
+
+
+
+
+
+--goalie testing
+use_kalman_velocity = 1;
+goalie_log_balls =1;

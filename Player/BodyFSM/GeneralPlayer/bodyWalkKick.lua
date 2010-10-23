@@ -38,13 +38,15 @@ print("WalkKick: Ball pos:",ball.x,ball.y);
       if (ball.x>walkkick_th) or Config.fsm.enable_walkkick<2 then
         walk.doWalkKickLeft();
       else
-        walk.doWalkKickLeft2();
+--        walk.doWalkKickLeft2();
+        walk.doWalkKickLeft();
       end
     else
       if (ball.x>walkkick_th) or Config.fsm.enable_walkkick<2 then
         walk.doWalkKickRight();
       else
-        walk.doWalkKickRight2();
+--        walk.doWalkKickRight2();
+        walk.doWalkKickRight();
       end
     end
   elseif kick_dir==2 then --sidekick to left
@@ -59,8 +61,14 @@ end
 function update()
   local t = Body.get_time();
 
-  if (t - t0 > timeout) then
-    return "done";
+  if kick_dir==1 and Config.largestep_enable==true then 
+    if mcm.get_walk_isStepping()==0 then
+      return "done";
+    end   
+  else
+    if (t - t0 > timeout) then
+      return "done";
+    end
   end
 
   --SJ: should be done in better way?

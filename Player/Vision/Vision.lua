@@ -44,15 +44,10 @@ if use_gps_only==0 then
   camera.ncamera = Config.camera.ncamera;
   -- Initialize the Labeling
   labelA = {};
-  -- labeled image is 1/4 the size of the original
-  labelA.m = camera.width/2;
-  labelA.n = camera.height/2;
+  labelA.m = camera.width / Config.vision.scaleA
+  labelA.n = camera.height / Config.vision.scaleA
   labelA.npixel = labelA.m*labelA.n;
-  if  webots == 1 then
-    labelA.m = camera.width;
-    labelA.n = camera.height;
-    labelA.npixel = labelA.m*labelA.n;
-  end
+  vcm.set_image_scaleA(Config.vision.scaleA);
   scaleB = Config.vision.scaleB;
   labelB = {};
   labelB.m = labelA.m/scaleB;
@@ -205,15 +200,11 @@ function update()
   end
   
   -- perform the initial labeling
-  if (webots) then
-    --SJ: this fixes the error
-    labelA.data = Camera.get_labelA(vcm.get_image_lut());
-  else
-    labelA.data  = ImageProc.yuyv_to_label(vcm.get_image_yuyv(),
-                                          vcm.get_image_lut(),
-                                          camera.width,
-                                          camera.height);
-  end
+  labelA.data  = ImageProc.yuyv_to_label(vcm.get_image_yuyv(),
+                                        vcm.get_image_lut(),
+                                        camera.width,
+                                        camera.height,
+                                        Config.vision.scaleA);
 
   -- determine total number of pixels of each color/label
   colorCount = ImageProc.color_count(labelA.data, labelA.npixel);

@@ -146,7 +146,7 @@ vision.goal.distanceFactorYellow = 1.1;
 vision.landmark.distanceFactorCyan = 1.05; 
 vision.landmark.distanceFactorYellow = 1.05; 
 
-vision.ball.th_headAngle = -15*math.pi/180;
+vision.ball.th_headAngle = -20*math.pi/180;
 
 
 -----------------------------------------------------
@@ -154,3 +154,9 @@ vision.ball.th_headAngle = -15*math.pi/180;
 
 --vision.goal.distanceFactorYellow = 1.1; 
 vision.goal.distanceFactorYellow = 1.22; 
+
+
+------------------------------------------------
+-- NEWNEWNEWNEWNEW
+vision.ball.th_headAngle = -20*math.pi/180;
+vision.ball.th_min_green2 = 50;

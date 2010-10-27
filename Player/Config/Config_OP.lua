@@ -14,8 +14,8 @@ params = {}
 params.name = {"Robot", "Walk", "World", "Kick", "Vision", "FSM", "Camera"};
 params.Kick = "Slow"
 
----Location Specific Camera Parameters--
---params.Camera = "Eindhoven_A_morning"
+---Location Specific Camera Parameters-
+params.Camera = "Eindhoven_A_morning"
 --params.Camera = "Eindhoven_A_noon"
 --params.Camera = "Eindhoven_A_night"
 
@@ -27,7 +27,7 @@ params.Kick = "Slow"
 --params.Camera = "Eindhoven_C_noon"
 --params.Camera = "Eindhoven_C_night"
 
-params.Camera = "Eindhoven_D_morning"
+--params.Camera = "Eindhoven_D_morning"
 --params.Camera = "Eindhoven_D_noon"
 --params.Camera = "Eindhoven_D_night"
 
@@ -410,7 +410,8 @@ bat_low = 113; -- 11.7V warning for head LED (red blinking)
 
 
 ----------------------------------------------
--- TESTING SETUP FOR FIELD D
-vision.white_wall_min_rate = 0.5;
+-- TESTING SETUP FOR FIELD A
+vision.white_wall_min_rate = 0.6;
 vision.nonwhite_wall_max_rate = 0.2;
+vision.white_wall_is_blue = 1; --white wall is on the red side
 

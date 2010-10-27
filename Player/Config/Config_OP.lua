@@ -15,7 +15,7 @@ params.name = {"Robot", "Walk", "World", "Kick", "Vision", "FSM", "Camera"};
 params.Kick = "Slow"
 
 ---Location Specific Camera Parameters--
---params.Camera = "Eindhoven_A_morning"
+params.Camera = "Eindhoven_A_morning"
 --params.Camera = "Eindhoven_A_noon"
 --params.Camera = "Eindhoven_A_night"
 
@@ -24,7 +24,7 @@ params.Kick = "Slow"
 --params.Camera = "Eindhoven_B_night"
 
 --params.Camera = "Eindhoven_C_morning"
-params.Camera = "Eindhoven_C_noon"
+--params.Camera = "Eindhoven_C_noon"
 --params.Camera = "Eindhoven_C_night"
 
 --params.Camera = "Eindhoven_D_morning"

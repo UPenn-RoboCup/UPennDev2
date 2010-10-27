@@ -15,7 +15,7 @@ params.name = {"Robot", "Walk", "World", "Kick", "Vision", "FSM", "Camera"};
 params.Kick = "Slow"
 
 ---Location Specific Camera Parameters--
-params.Camera = "Eindhoven_A_morning"
+--params.Camera = "Eindhoven_A_morning"
 --params.Camera = "Eindhoven_A_noon"
 --params.Camera = "Eindhoven_A_night"
 
@@ -407,3 +407,10 @@ vision.white_wall_min_rate = 0.5;
 vision.nonwhite_wall_max_rate = 0.15;
 bat_med = 117; -- Slow down walking if voltage drops below this 
 bat_low = 113; -- 11.7V warning for head LED (red blinking)
+
+
+----------------------------------------------
+-- TESTING SETUP FOR FIELD D
+vision.white_wall_min_rate = 0.5;
+vision.nonwhite_wall_max_rate = 0.2;
+

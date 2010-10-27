@@ -138,16 +138,17 @@ function detect(line)
   linepairtype={}
 
   -- Check perpendicular lines
-  vcm.add_debug_message(string.format("\nCorner: total %d lines\n",line.nLines))
+--  vcm.add_debug_message(string.format("\nCorner: total %d 
+--lines\n",line.nLines))
   for i=1,line.nLines-1 do
     for j=i+1,line.nLines do
       ang=math.abs(util.mod_angle(line.angle[i]-line.angle[j]));
      if math.abs(ang-math.pi/2)<20*math.pi/180 then
 	--Check endpoint distances in labelB
 	mindist, vc0, v10, v20, cornertype = get_min_dist(line,i,j);
-        vcm.add_debug_message(string.format(
-		"line %d-%d :angle %d mindist %d type %d\n",
-		i,j,ang*180/math.pi, mindist,cornertype));
+       -- vcm.add_debug_message(string.format(
+	--	"line %d-%d :angle %d mindist %d type %d\n",
+--		i,j,ang*180/math.pi, mindist,cornertype));
      --  print('i is '..i..' j is '..j..' ang is '..ang*180/math.pi..' mindist is '..mindist..' type is '..cornertype);
     -- print('line length 1 is '..get_line_length(line,i)..'line length 2 is '..get_line_length(line,j)..'mind dist is '..mindist); 
     	if mindist<dist_threshold and
@@ -216,8 +217,8 @@ function detect(line)
   cornerpos = util.pose_global(corner.v,pose);
   center_dist = math.sqrt(cornerpos[1]^2+cornerpos[2]^2);
   if center_dist < min_center_dist then     
-    vcm.add_debug_message(string.format(
-     "Corner: center circle check fail at %.2f\n",center_dist))
+ --   vcm.add_debug_message(string.format(
+   --  "Corner: center circle check fail at %.2f\n",center_dist))
     return corner;
   end
 
@@ -227,7 +228,7 @@ function detect(line)
     corner_distance_filter_threshold = Config.vision.distance_filter_threshold or 3;
     d = math.sqrt((cornerpos[1]-pose[1])^2 + (cornerpos[2]-pose[2])^2);
     if(d > corner_distance_filter_threshold) then
-      vcm.add_debug_message("Corner too far away from the robot");
+      --vcm.add_debug_message("Corner too far away from the robot");
       return corner;
     end
   end

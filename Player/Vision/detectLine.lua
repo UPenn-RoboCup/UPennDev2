@@ -96,8 +96,9 @@ function detect()
   horizonA = vcm.get_image_horizonA();
   horizonB = vcm.get_image_horizonB(); 
   
-  vcm.add_debug_message(string.format(
-    "Total %d lines detected\n HorizonA: %d, HorizonB: %d\n" ,nLines, horizonA, horizonB));
+--  vcm.add_debug_message(string.format(
+--    "Total %d lines detected\n HorizonA: %d, HorizonB: %d\n" ,nLines, 
+--horizonA, horizonB));
 
   if (nLines==0) then
     return line; 
@@ -172,8 +173,9 @@ function detect()
     --  and (goal_posX >= 0.15 or (goal_posX < 0.15 and lineX > goal_posX)) 
 --vendpoint[1][1] > goal_posX and vendpoint[2][1] > goal_posX
   then 
-   vcm.add_debug_message(string.format(
-    " Length is %d\nLW ratio is %d\nvendpoint 1 is %d\nvendpoint 2 is %d\n",length, LWratio, vendpoint_old[1][3], vendpoint_old[2][3]));
+ --  vcm.add_debug_message(string.format(
+ --   " Length is %d\nLW ratio is %d\nvendpoint 1 is %d\nvendpoint 2 is 
+--%d\n",length, LWratio, vendpoint_old[1][3], vendpoint_old[2][3]));
       linecount=linecount+1;
       line.length[linecount]=length;
       line.endpoint[linecount]= line.propsB[i].endpoint;

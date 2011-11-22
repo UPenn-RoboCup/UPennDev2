@@ -561,7 +561,7 @@ function update()
 
   -- Broadcast to the joints
   Body.set_lleg_command(qLegs);
-  recordLegJointAngles();
+  recordLegJointAngles( qLegs );
 
 end
 
@@ -725,15 +725,23 @@ function procFunc(a,deadband,maxvalue)
   return b;
 end
 
-function recordLegJointAngles()
+function recordLegJointAngles( qLegs1 )
   local trial_num = 0;
   local filename = "/tmp/leg_angles_"..trial_num..".txt";
   local f = io.open(filename, "a"); -- append
   assert(f, "Could not open joint angles file");
   --f:write(string.format("%f %f %d %f %f %f %f %f %f %f %f %d %d %d %d\n", Body.get_time(), stillTime, vcm.get_ball_detect(), ball.x, ball.y, 0, ball.vx, ball.vy, 0, velData[3], velData[4], wcm.get_ball_learned()[1], wcm.get_ball_learned()[2], wcm.get_ball_innate()[1],wcm.get_ball_innate()[2] ));
+  f:write( Body.get_time() );
+--  f:write( " " );
+  for i=1,12 do
+    f:write( string.format(" %f",qLegs1[i]) );
+  end
+--  f:write( string.format( unpack(qLegs1) ) );
+  f:write( "\n" )
   f:close();
-  print( "Leg Joint Angles: ", unpack(qLegs) );
+--  print( "Leg Joint Angles: ", unpack(qLegs1) );
 end
 
 entry();
+
 

@@ -61,6 +61,7 @@ uRight = vector.new({0, -footY, 0});
 pLLeg = vector.new({0, footY, 0, 0,0,0});
 pRLeg = vector.new({0, -footY, 0, 0,0,0});
 pTorso = vector.new({supportX, 0, bodyHeight, 0,0,0});
+qLegs = Kinematics.inverse_legs(pLLeg, pRLeg, pTorso, 0);
 
 velCurrent = vector.new({0, 0, 0});
 velCommand = vector.new({0, 0, 0});
@@ -558,9 +559,9 @@ function update()
   qLegs[11] = qLegs[11]  + 
 	Config.walk.anklePitchComp[2]*math.cos(spread);
 
-
+  -- Broadcast to the joints
   Body.set_lleg_command(qLegs);
-
+  recordLegJointAngles();
 
 end
 
@@ -722,6 +723,16 @@ function procFunc(a,deadband,maxvalue)
 	b=-math.min( math.max(0,math.abs(a)-deadband), maxvalue);
   end
   return b;
+end
+
+function recordLegJointAngles()
+  local trial_num = 0;
+  local filename = "/tmp/leg_angles_"..trial_num..".txt";
+  local f = io.open(filename, "a"); -- append
+  assert(f, "Could not open joint angles file");
+  --f:write(string.format("%f %f %d %f %f %f %f %f %f %f %f %d %d %d %d\n", Body.get_time(), stillTime, vcm.get_ball_detect(), ball.x, ball.y, 0, ball.vx, ball.vy, 0, velData[3], velData[4], wcm.get_ball_learned()[1], wcm.get_ball_learned()[2], wcm.get_ball_innate()[1],wcm.get_ball_innate()[2] ));
+  f:close();
+  print( "Leg Joint Angles: ", unpack(qLegs) );
 end
 
 entry();

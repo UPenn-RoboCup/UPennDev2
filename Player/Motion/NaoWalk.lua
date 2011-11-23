@@ -98,6 +98,7 @@ hipImuParamY = Config.walk.hipImuParamY;
 --active = true;
 iStep0 = -1;
 iStep = 0;
+supportLeg = iStep % 2;
 t0 = Body.get_time();
 delay2=0;
 delaycount=0;
@@ -725,21 +726,26 @@ function procFunc(a,deadband,maxvalue)
   return b;
 end
 
-function recordLegJointAngles( qLegs1 )
+lognum_leg = 0;
+function recordLegJointAngles()
   local trial_num = 0;
   local filename = "/tmp/leg_angles_"..trial_num..".txt";
   local f = io.open(filename, "a"); -- append
   assert(f, "Could not open joint angles file");
-  --f:write(string.format("%f %f %d %f %f %f %f %f %f %f %f %d %d %d %d\n", Body.get_time(), stillTime, vcm.get_ball_detect(), ball.x, ball.y, 0, ball.vx, ball.vy, 0, velData[3], velData[4], wcm.get_ball_learned()[1], wcm.get_ball_learned()[2], wcm.get_ball_innate()[1],wcm.get_ball_innate()[2] ));
-  f:write( Body.get_time() );
---  f:write( " " );
-  for i=1,12 do
-    f:write( string.format(" %f",qLegs1[i]) );
+  if (lognum_leg == 0) then
+--    f:write("time Left Right LHipYawPitch LHipRoll LHipPitch LKneePitch LAnklePitch LAnkleRoll RHipYawPitch RHipRoll RHipPitch RKneePitch RAnklePitch RAnkleRoll\n");
+    f:write("time,Left,Right,LHipYawPitch,LHipRoll,LHipPitch,LKneePitch,LAnklePitch,LAnkleRoll,RHipYawPitch,RHipRoll,RHipPitch,RKneePitch,RAnklePitch,RAnkleRoll\n");
   end
---  f:write( string.format( unpack(qLegs1) ) );
+  f:write( Body.get_time()-t0 );
+  f:write( ","..1-supportLeg ); -- suuportLeg=0 is left
+  f:write( ","..supportLeg );
+  for i=1,12 do
+    f:write( string.format(",%f",qLegs[i]) );
+  end
   f:write( "\n" )
   f:close();
---  print( "Leg Joint Angles: ", unpack(qLegs1) );
+  lognum_leg = lognum_leg + 1;
+--  print( "Leg Joint Angles: ", unpack(qLegs) );
 end
 
 entry();

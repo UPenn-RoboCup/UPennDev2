@@ -25,21 +25,21 @@ endif
 ifeq ($(OSTYPE),darwin)
   SHLIBEXT= dylib
   LIBOPTS= -bundle -undefined dynamic_lookup
-  CXXFLAGS= -O2
+  CXXFLAGS= -02
 ifeq ($(MODE),32)
   CC=gcc -arch i386
   CXX=g++ -arch i386
   LD=g++ -arch i386
 endif
-
 endif
 
-INCLUDE_DIRS = -I/usr/local/include -I/usr/include/lua5.1
-LIB_DIR = /usr/local/lib
+INCLUDE_DIRS = -I/usr/local/include -I/usr/include -I/usr/include/lua -I/usr/include/lua5.1
+LIB_DIR = /usr/local/lib -L/usr/lib
 
-LIBNAME= DarwinOPKinematics
+LIBNAME= OPGameControlReceiver
 
-all:: kinematics
+
+all: game_control_receiver
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) $(INCLUDE_DIRS) -o $@ -c $<
@@ -48,7 +48,7 @@ all:: kinematics
 %.o: %.c
 	$(CC) $(CXXFLAGS) $(INCLUDE_DIRS) -o $@ -c $<
 
-kinematics:: luaDarwinOPKinematics.o DarwinOPKinematics.o Transform.o
+game_control_receiver: luaOPGameControlReceiver.o timeScalar.o
 	$(LD) $(LDFLAGS) -o $(LIBNAME).$(SHLIBEXT) $(LIBOPTS) $^ -L$(LIB_DIR) -lm
 
 clean:

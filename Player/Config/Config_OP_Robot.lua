@@ -2,17 +2,17 @@ module(..., package.seeall);
 require('vector')
 
 platform = {};
-platform.name = 'darwinop'
+platform.name = 'OP'
 
 -- Device Interface Libraries
 dev = {};
-dev.body = 'DarwinOPBody'; 
-dev.camera = 'darwinCam';
-dev.kinematics = 'DarwinOPKinematics';
---dev.comm='NSLComm';
+dev.body = 'OPBody'; 
+dev.camera = 'OPCam';
+dev.kinematics = 'OPKinematics';
+--dev.comm='OPComm';
 dev.comm='NullComm';
-dev.monitor_comm = 'NSLCommWired';
-dev.game_control='NSLGameControl';
+dev.monitor_comm = 'OPCommWired';
+dev.game_control='OPGameControl';
 dev.walk='NaoWalk';
 --dev.kick='NaoKick';
 dev.kick = 'ik_kick'

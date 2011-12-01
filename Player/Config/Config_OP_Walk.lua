@@ -34,10 +34,10 @@ walk.velDelta={0.02,0.02,0.15}
 walk.bodyHeight = 0.295; --Using new corrected IK
 walk.footX= -0.020; 
 walk.footY = 0.035;
-walk.bodyTilt=20*math.pi/180; --Commanded tilt angle
-walk.bodyTiltActual=20*math.pi/180;--Actual body tilt angle considering flex
---walk.bodyTilt=0*math.pi/180; --Commanded tilt angle
---walk.bodyTiltActual=0*math.pi/180;--Actual body tilt angle considering flex
+--walk.bodyTilt=20*math.pi/180; --Commanded tilt angle
+--walk.bodyTiltActual=20*math.pi/180;--Actual body tilt angle considering flex
+walk.bodyTilt=0*math.pi/180; --Commanded tilt angle
+walk.bodyTiltActual=0*math.pi/180;--Actual body tilt angle considering flex
 
 
 --Support movement parameters

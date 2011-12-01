@@ -10,7 +10,8 @@ function loadconfig(configName)
   end
 end
 
-loadconfig('Config_OP_Walk_old')
+--loadconfig('Config_OP_Walk_old')
+loadconfig('Config_OP_Walk')
 loadconfig('Config_OP_World')
 loadconfig('Config_OP_Kick')
 loadconfig('Config_OP_Vision')

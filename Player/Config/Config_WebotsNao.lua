@@ -1,10 +1,11 @@
 module(..., package.seeall);
 
-require('vector')
 require('parse_hostname')
+require('vector')
+require('os')
 
 platform = {};
-platform.name = 'Nao'
+platform.name = 'WebotsNao'
 
 function loadconfig(configName)
   local localConfig=require(configName);
@@ -13,45 +14,46 @@ function loadconfig(configName)
   end
 end
 
-loadconfig('Config_Nao_Walk_Demo')
 loadconfig('Config_Nao_World')
-loadconfig('Config_Nao_Kick')
-loadconfig('Config_Nao_Vision')
+loadconfig('Config_WebotsNao_Walk')
+loadconfig('Config_WebotsNao_Kick')
+loadconfig('Config_WebotsNao_Vision')
 
 --Location Specific Camera Parameters--
-loadconfig('Config_Nao_Camera_Grasp')
+loadconfig('Config_WebotsNao_Camera')
 
--- Devive Interface Libraries
+-- Device Interface Libraries
 dev = {};
-dev.body = 'NaoBody'; 
-dev.camera = 'NaoCam';
-dev.kinematics = 'NaoKinematics';
-dev.comm = 'NaoComm';
+dev.body = 'NaoWebotsBody'; 
+dev.camera = 'NaoWebotsCam';
+dev.kinematics = 'NaoWebotsKinematics';
+dev.comm = 'WebotsNaoComm';
 dev.monitor_comm = 'NaoMonitorComm';
-dev.game_control = 'NaoGameControl';
+dev.game_control = 'WebotsNaoGameControl';
 dev.walk = 'NaoWalk';
 dev.kick = 'NaoKick';
 
 -- Game Parameters
 
 game = {};
-game.teamNumber = 26;
-game.playerID = parse_hostname.get_player_id();
+game.teamNumber = (os.getenv('TEAM_ID') or 0) + 0;
+-- webots player ids begin at 0 but we use 1 as the first id
+game.playerID = (os.getenv('PLAYER_ID') or 0) + 1;
 game.robotID = game.playerID;
-game.teamColor = parse_hostname.get_team_color();
+game.teamColor = 1;
 game.nPlayers = 4;
 
 
 -- FSM Parameters
 
 fsm = {};
-fsm.game = 'NaoDemo';
+fsm.game = 'RoboCup';
 if (game.playerID == 1) then
-  fsm.body = {'NaoDemo'};
-  fsm.head = {'NaoDemo'};
+  fsm.body = {'NaoGoalie'};
+  fsm.head = {'NaoGoalie'};
 else
-  fsm.body = {'NaoDemo'};
-  fsm.head = {'NaoDemo'};
+  fsm.body = {'NaoPlayer'};
+  fsm.head = {'NaoPlayer'};
 end
 
 
@@ -61,6 +63,7 @@ team = {};
 team.msgTimeout = 5.0;
 team.nonAttackerPenalty = 6.0; -- eta sec
 team.nonDefenderPenalty = 0.5; -- dist from goal
+
 
 --Head Parameters
 
@@ -78,15 +81,14 @@ head.neckZ=0.14; --From CoM to neck joint
 head.neckX=0;  
 head.bodyTilt = 0;
 
+
 -- keyframe files
 
 km = {};
-km.kick_right = 'km_Nao_KickForwardRight.lua';
-km.kick_left = 'km_Nao_KickForwardLeft.lua';
---km.kick_right = 'km_Nao_KickForwardRight_old.lua';
---km.kick_left = 'km_Nao_KickForwardLeft_old.lua';
-km.standup_front = 'km_Nao_StandupFromFrontFaster.lua';
-km.standup_back = 'km_Nao_StandupFromBackFasterNew.lua';
+km.kick_right = 'km_Webots_KickForwardRight.lua';
+km.kick_left = 'km_Webots_KickForwardLeft.lua';
+km.standup_front = 'km_Webots_StandupFromFront.lua';
+km.standup_back = 'km_Webots_StandupFromBack.lua';
 
 
 -- sitting parameters
@@ -108,5 +110,4 @@ stance.delay = 80; --amount of time to stand still after standing to regain bala
 -- enable obstacle detection
 BodyFSM = {}
 BodyFSM.enable_obstacle_detection = 1;
-
 

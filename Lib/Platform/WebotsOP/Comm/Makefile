@@ -25,17 +25,18 @@ endif
 ifeq ($(OSTYPE),darwin)
   SHLIBEXT= dylib
   LIBOPTS= -bundle -undefined dynamic_lookup
-  CXXFLAGS= -O2 -arch i386
-  LDFLAGS= -arch i386
+  CXXFLAGS= -O2
+ifeq ($(MODE),32)
+  CC=gcc -arch i386
+  CXX=g++ -arch i386
+  LD=g++ -arch i386
+endif
 endif
 
 INCLUDE_DIRS = -I/usr/local/include -I/usr/include -I/usr/include/lua -I/usr/include/lua5.1
 LIB_DIR = /usr/local/lib -L/usr/lib
 
-LIBNAME= OPGameControlReceiver
-
-
-all: game_control_receiver
+all: comm commwired monitorcomm monitorcommwired
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) $(INCLUDE_DIRS) -o $@ -c $<
@@ -44,8 +45,17 @@ all: game_control_receiver
 %.o: %.c
 	$(CC) $(CXXFLAGS) $(INCLUDE_DIRS) -o $@ -c $<
 
-game_control_receiver: luaOPGameControlReceiver.o timeScalar.o
-	$(LD) $(LDFLAGS) -o $(LIBNAME).$(SHLIBEXT) $(LIBOPTS) $^ -L$(LIB_DIR) -lm
+comm: luaOPComm.o 
+	$(LD) $(LDFLAGS) -o OPComm.$(SHLIBEXT) $(LIBOPTS) $^ -L$(LIB_DIR) -lm
+
+commwired: luaOPCommWired.o 
+	$(LD) $(LDFLAGS) -o OPCommWired.$(SHLIBEXT) $(LIBOPTS) $^ -L$(LIB_DIR) -lm
+
+monitorcommwired: luaOPMonitorCommWired.o
+	$(LD) $(LDFLAGS) -o OPMonitorCommWired.$(SHLIBEXT) $(LIBOPTS) $^ -L$(LIB_DIR) -lm
+
+monitorcomm: luaOPMonitorComm.o
+	$(LD) $(LDFLAGS) -o OPMonitorComm.$(SHLIBEXT) $(LIBOPTS) $^ -L$(LIB_DIR) -lm
 
 clean:
 	rm -f *.$(SHLIBEXT) *.o

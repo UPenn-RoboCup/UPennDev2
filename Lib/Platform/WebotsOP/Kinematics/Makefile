@@ -1,16 +1,17 @@
-# Makefile used to build Webots files
+# Makefile used to build libraries
 
 TARGETS = all clean
 .PHONY: $(TARGETS)
 
 CXX=g++
 CC=gcc
-LD=ld
+LD=g++
 STRIP=strip
-CXXFLAGS= -O1 -fpic
+CXXFLAGS= -O2 -fpic
+LDFLAGS=
 
 SHLIBEXT= so
-LIBOPTS= -shared -fpic
+LIBOPTS= -shared
 
 ifndef OSTYPE
   OSTYPE = $(shell uname -s|awk '{print tolower($$0)}')
@@ -19,37 +20,36 @@ endif
 
 ifeq ($(OSTYPE),linux)
   SHLIBEXT= so
-  LIBOPTS= -shared -fpic
-  LIBRT= -lrt
+  LIBOPTS= -shared
 endif
 ifeq ($(OSTYPE),darwin)
   SHLIBEXT= dylib
   LIBOPTS= -bundle -undefined dynamic_lookup
+  CXXFLAGS= -O2
 ifeq ($(MODE),32)
   CC=gcc -arch i386
   CXX=g++ -arch i386
   LD=g++ -arch i386
 endif
-  CXXFLAGS= -O2
-  LIBRT=
+
 endif
 
-BOOST_INCLUDE_DIRS = -I/usr/local/include/boost
-
-INCLUDE_DIRS = -I/usr/local/include -I/usr/include/lua -I/usr/include/lua5.1 $(BOOST_INCLUDE_DIRS)
+INCLUDE_DIRS = -I/usr/local/include -I/usr/include/lua5.1
 LIB_DIR = /usr/local/lib
 
-all: shm 
+LIBNAME= OPKinematics
 
-%.o: %.cc
-	$(CXX) $(CXXFLAGS) $(INCLUDE_DIRS) -o $@ -c $<
+all:: kinematics
+
 %.o: %.cpp
+	$(CXX) $(CXXFLAGS) $(INCLUDE_DIRS) -o $@ -c $<
+%.o: %.cc
 	$(CXX) $(CXXFLAGS) $(INCLUDE_DIRS) -o $@ -c $<
 %.o: %.c
 	$(CC) $(CXXFLAGS) $(INCLUDE_DIRS) -o $@ -c $<
 
-shm: luashm.o
-	$(CXX) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ $(LIBRT)
+kinematics:: luaOPKinematics.o OPKinematics.o Transform.o
+	$(LD) $(LDFLAGS) -o $(LIBNAME).$(SHLIBEXT) $(LIBOPTS) $^ -L$(LIB_DIR) -lm
 
 clean:
-	rm -f *.o *.$(SHLIBEXT) *.$(MEXEXT)
+	rm -f *.$(SHLIBEXT) *.o

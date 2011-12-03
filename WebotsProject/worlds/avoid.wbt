@@ -1,0 +1,89 @@
+#VRML_SIM V6.0 utf8
+WorldInfo {
+  info [
+    "Simulation of the Robocup Standard Platform League"
+    "Authors: Olivier Michel, Yvan Bourquin, Fabien Rohrer"
+    "Webpage: http://www.robotstadium.org"
+  ]
+  title "Robotstadium"
+  basicTimeStep 40
+  runRealTime TRUE
+}
+Viewpoint {
+  orientation 0.280847 0.952493 0.117824 5.32782
+  position -3.73499 1.93977 3.48327
+}
+Background {
+  skyColor [
+    0.678431 0.847059 0.901961
+  ]
+}
+DirectionalLight {
+  ambientIntensity 1.6
+  direction -0.5 -2 -0.5
+  intensity 0.3
+  castShadows TRUE
+}
+DirectionalLight {
+  ambientIntensity 1.6
+  direction 0.5 -0.5 0.5
+  intensity 0.5
+}
+SoccerField {
+}
+Walls {
+}
+
+
+DEF YELLOW_GOAL Goal {
+  translation 3 0 0
+  postColor 0.992157 0.854902 0.219608
+}
+DEF BLUE_GOAL Goal {
+  translation -3 0 0
+  rotation 0 1 0 3.14159
+  postColor 0.152941 0.505882 0.733333
+}
+DEF BALL Ball {
+}
+
+DEF PLAYER_1_0 DARwInOP {
+  translation -0.610843  0.212101 -0.0195361
+  rotation 0 1 0 1.57 
+  plasticColor 0.886275 0.278431 0.239216
+  controller "avoid_lua_merge"
+  controllerArgs "1 1"
+  waistBand TRUE
+}
+
+DEF OBSTACLE1 cylinder {
+  translation 0.807813 0.25 0.417305
+  obstColor 0 0 0
+  height 0.5
+  radius 0.1
+}
+DEF OBSTACLE2 cylinder {
+  translation 2.21685 0.25 -0.407563
+  obstColor 0 0 0
+  height 0.5
+  radius 0.1
+}
+
+DEF OBSTACLE3 cylinder {
+  translation 1.79214 0.25 0.66633
+  obstColor 0 0 0
+  height 0.5
+  radius 0.1
+}
+DEF OBSTACLE4 cylinder {
+  translation 1.44155 0.25 -0.109735
+  obstColor 0 0 0
+  height 0.5
+  radius 0.1
+}
+DEF OBSTACLE5 cylinder {
+  translation 1.06702 0.25 -0.943702
+  obstColor 0 0 0
+  height 0.5
+  radius 0.1
+}

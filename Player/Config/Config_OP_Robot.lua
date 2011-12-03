@@ -13,10 +13,6 @@ dev.kinematics = 'OPKinematics';
 dev.comm='NullComm';
 dev.monitor_comm = 'OPCommWired';
 dev.game_control='OPGameControl';
---[[
-dev.walk='NaoWalk';
-dev.kick = 'ik_kick'
---]]
 dev.walk='NSLWalk';
 dev.kick='NSLKick';
 

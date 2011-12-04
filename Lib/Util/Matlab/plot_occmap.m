@@ -3,7 +3,7 @@ function plot_occmap(robot)
 
 %while 1 
 	maxr = 1.0;
-	Div = 72;
+	Div = 36;
 	Interval = 2*pi/Div;
 	HalfInter = Interval/2;
 	occumap = {};

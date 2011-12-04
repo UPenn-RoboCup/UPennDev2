@@ -6,6 +6,7 @@ camera.ncamera = 1;
 camera.switchFreq = 0; --unused for OP
 camera.width = 160; 
 camera.height = 120;
+
 camera.x_center = 160;
 camera.y_center = 120;
 

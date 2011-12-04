@@ -16,6 +16,13 @@ vision.ball_diameter = 0.065;
 vision.ball_height_max = 0.20; -- -0.20
 vision.yellow_goal_count_thres = 150;
 
+vision.freespace_scanColA = 40;
+vision.freespace_scanRowA = 16;
+
+-- use this to enable visible boundary detection
+vision.enable_visible_boundary = 1;
+-- use this to enable freespace detection
+vision.enable_freespace_detection = 1;
 -- use this to enable line detection
 vision.enable_line_detection = 1;
 -- use this to enable spot detection

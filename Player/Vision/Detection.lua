@@ -13,20 +13,20 @@ require('detectGoal');
 require('detectLine');
 require('detectLandmarks'); -- for NSL
 require('detectSpot');
---[[
 require('detectFreespace');
+require('detectBoundary');
+--[[
 require('detectObstacles');
 require('detectEyes');
 require('detectStretcher');
 --]]
 
 -- Define Color
-colorObstacle = 0;
-colorOrange = 1;
-colorYellow = 2;
-colorCyan = 4;
-colorField = 8;
-colorWhite = 16;
+colorOrange = Config.color.orange;
+colorYellow = Config.color.yellow;
+colorCyan = Config.color.cyan;
+colorField = Config.color.field;
+colorWhite = Config.color.white;
 
 use_point_goal=Config.vision.use_point_goal;
 headInverted=Config.vision.headInverted;
@@ -35,13 +35,15 @@ yellowGoalCountThres = Config.vision.yellow_goal_count_thres;
 enableLine = Config.vision.enable_line_detection;
 enableSpot = Config.vision.enable_spot_detection;
 enableMidfieldLandmark = Config.vision.enable_midfield_landmark_detection;
+enableFreespace = Config.vision.enable_freespace_detection;
+enableBoundary = Config.vision.enable_visible_boundary;
 
 function entry()
 	-- Initiate Detection
 	ball = {};
 	ball.detect = 0;
 
-  ballYellow={};
+    ballYellow={};
 	ballYellow.detect=0;
 	
 	ballCyan={};
@@ -70,6 +72,9 @@ function entry()
 
 	freespace={};
 	freespace.detect=0;
+
+    boundary={};
+	boundary.detect=0;
 
 end
 
@@ -113,6 +118,20 @@ function update()
   if enableMidfieldLandmark == 1 then
   	landmarkCyan = detectLandmarks.detect(colorCyan,colorYellow);
     landmarkYellow = detectLandmarks.detect(colorYellow,colorCyan);
+  end
+
+  -- freespace detection
+  if enableFreespace == 1 then
+    freespace = detectFreespace.detect(colorField);
+  end
+
+  -- visible boundary detection
+  if enableBoundary == 1 then
+    boundary = detectBoundary.detect();
+	-- Use Freespace bound as top boundary
+	if (freespace.detect == 1) then
+	  boundary.top = freespace.bound;
+	end
   end
 
 end
@@ -171,6 +190,24 @@ function update_shm()
 
   --vcm.set_spot_detect(spot.detect);
   if (spot.detect == 1) then
+  end
+
+  vcm.set_freespace_detect(freespace.detect);
+  if (freespace.detect == 1) then
+	vcm.set_freespace_block(freespace.block);
+    vcm.set_freespace_nCol(freespace.nCol);
+    vcm.set_freespace_nRow(freespace.nRow);
+    vcm.set_freespace_bound(freespace.bound);
+    vcm.set_freespace_boundA(freespace.boundA);
+	vcm.set_freespace_turn(freespace.turn);
+--	vcm.set_freespace_a(freespace.a);
+--	vcm.set_freespace_b(freespace.b);
+  end
+
+  vcm.set_boundary_detect(boundary.detect);
+  if (boundary.detect == 1) then
+    vcm.set_boundary_top(boundary.top);
+	vcm.set_boundary_bottom(boundary.bottom);
   end
 
 end

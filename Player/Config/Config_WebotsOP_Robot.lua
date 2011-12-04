@@ -3,15 +3,20 @@ require('vector')
 
 -- Device Interface Libraries
 dev = {};
-dev.body = 'OPBody'; 
-dev.camera = 'OPCam';
+dev.body = 'WebotsOPBody'; 
+dev.camera = 'WebotsOPCam';
 dev.kinematics = 'OPKinematics';
---dev.comm='OPComm';
+--dev.comm='WebotsOPComm';
 dev.comm='NullComm';
 dev.monitor_comm = 'OPCommWired';
 dev.game_control='OPGameControl';
+dev.walk='NaoWalk';
+--dev.kick='NaoKick';
+dev.kick = 'ik_kick'
+--[[
 dev.walk='NSLWalk';
 dev.kick='NSLKick';
+--]]
 
 --Sitting parameters
 sit={};
@@ -55,7 +60,6 @@ servo.dirReverse={
 	18,19,20,--RArm
 	}
 
---[[
 -- For old firmware
 servo.steps=vector.new({
 	1024,1024,
@@ -83,8 +87,7 @@ servo.moveRange=vector.new({
 	300,300,300,
 	300,		--For aux
 	})*math.pi/180;
---]]
-
+--[[
 -- For new, PID, firmware
 servo.steps=vector.new({
 	4096,4096,
@@ -111,7 +114,7 @@ servo.moveRange=vector.new({
 	360,		--For aux
 	})*math.pi/180;
 -- End motor definitions
-
+--]]
 --Measured IMU bias parameters
 
 gyro={};
@@ -144,8 +147,8 @@ head.pitchMax = 68*math.pi/180;
 head.yawMin = -90*math.pi/180;
 head.yawMax = 90*math.pi/180;
 
-head.cameraPos = {{0.034, 0.0, 0.0332}} --OP, spec value, may need to be recalibrated
-head.cameraAngle = {{0.0, 40*math.pi/180, 0.0}}; --Default value for production OP
+head.cameraPos = {{0.05, 0.0, 0.05}} --OP, spec value, may need to be recalibrated
+head.cameraAngle = {{0.0, 0.0, 0.0}}; --Default value for production OP
 head.neckZ=0.0765; --From CoM to neck joint 
 head.neckX=0.013; --From CoM to neck joint
 head.bodyTilt = 0;

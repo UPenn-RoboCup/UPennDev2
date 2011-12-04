@@ -10,18 +10,19 @@ dev.kinematics = 'OPKinematics';
 dev.comm='NullComm';
 dev.monitor_comm = 'OPCommWired';
 dev.game_control='OPGameControl';
-dev.walk='NaoWalk';
---dev.kick='NaoKick';
+dev.walk='OPWalk';
 dev.kick = 'ik_kick'
---[[
-dev.walk='NSLWalk';
-dev.kick='NSLKick';
---]]
+dev.walk='OPWalk';
+
 
 --Sitting parameters
 sit={};
 sit.bodyHeight=0.18+0.05; --Fixed with new kinematics
 sit.bodyHeight=0.17+0.05; --Fixed with new kinematics
+
+sit.bodyHeight=0.20; --Fixed 
+
+
 sit.supportX=-0.020;
 sit.supportX=-0.010;
 

@@ -8,16 +8,14 @@ require('Body');
 
 require('shm');
 require('vcm');
-
-require('Detection');
 require('Debug');
 
 -- Define Color
-colorOrange = 1;
-colorYellow = 2;
-colorCyan = 4;
-colorField = 8;
-colorWhite = 16;
+colorOrange = Config.color.orange;
+colorYellow = Config.color.yellow;
+colorCyan = Config.color.cyan;
+colorField = Config.color.field;
+colorWhite = Config.color.white;
 
 use_point_goal=Config.vision.use_point_goal;
 headInverted=Config.vision.headInverted;

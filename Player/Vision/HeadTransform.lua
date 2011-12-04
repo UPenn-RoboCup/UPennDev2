@@ -16,7 +16,6 @@ yawMax = Config.head.yawMax;
 
 cameraPos = Config.head.cameraPos;
 cameraAngle = Config.head.cameraAngle;
-pitch0 = Config.head.cameraAngle[1][2];
 
 horizonA = 1;
 horizonB = 1;
@@ -59,7 +58,20 @@ bodyHeight=Config.walk.bodyHeight;
 function entry()
 end
 
+
 function update(sel, headAngles)
+  if (string.find(Config.platform.name,'OP')) then
+    update_op(sel, headAngles);
+	--print("Update OP HeadTransform");
+  else
+    update_nao(sel, headAngles);
+	--print("Update Nao HeadTransform");
+  end 
+  update_horizon(sel,headAngles);
+end
+
+
+function update_nao(sel, headAngles)
   -- cameras are 0 indexed so add one for use here
   sel = sel + 1;
 
@@ -69,13 +81,6 @@ function update(sel, headAngles)
   tHead = tHead*Transform.rotY(cameraAngle[sel][2]);
   tHead = tHead*Transform.rotZ(cameraAngle[sel][3]);
 
-  -- update horizon
-  pa = headAngles[2] + cameraAngle[sel][2];
-  horizonA = (labelA.n/2.0) - focalA*math.tan(pa) - 2;
-  horizonA = math.min(labelA.n, math.max(math.floor(horizonA), 0));
-  horizonB = (labelB.n/2.0) - focalB*math.tan(pa) - 1;
-  horizonB = math.min(labelB.n, math.max(math.floor(horizonB), 0));
-  --print('horizon-- pitch: '..pa..'  A: '..horizonA..'  B: '..horizonB);
 end
 
 -- From OP
@@ -87,7 +92,19 @@ function update_op(sel,headAngles)
   tNeck = tNeck*Transform.trans(neckX,0,neckZ);
   tNeck = tNeck*Transform.rotZ(headAngles[1])*Transform.rotY(headAngles[2]);
   tHead = tNeck*Transform.trans(cameraPos[sel][1], cameraPos[sel][2], cameraPos[sel][3]);
-  tHead = tHead*Transform.rotY( pitch0 );
+  tHead = tHead*Transform.rotY(cameraPos[sel][2]);
+
+end
+
+function update_horizon(sel,headAngles)
+  sel = sel + 1;
+  -- update horizon
+  pa = headAngles[2] + cameraAngle[sel][2];
+  horizonA = (labelA.n/2.0) - focalA*math.tan(pa) - 2;
+  horizonA = math.min(labelA.n, math.max(math.floor(horizonA), 0));
+  horizonB = (labelB.n/2.0) - focalB*math.tan(pa) - 1;
+  horizonB = math.min(labelB.n, math.max(math.floor(horizonB), 0));
+  --print('horizon-- pitch: '..pa..'  A: '..horizonA..'  B: '..horizonB);
 end
 
 function exit()
@@ -103,12 +120,10 @@ end
 
 function coordinatesA(c, scale)
   scale = scale or 1;
-
   local v = vector.new({focalA,
                        -(c[1] - x0A),
                        -(c[2] - y0A),
                        scale});
-
   v = tHead*v;
   v = v/v[4];
   return v;
@@ -125,12 +140,23 @@ function coordinatesB(c, scale)
   return v;
 end
 
+
 function ikineCam(x, y, z, select)
+  if (string.find(Config.platform.name,'OP')) then
+    return ikineCam_op(x, y, z, select);
+	--print("OP inverse Kinematics");
+  else
+    return ikineCam_nao(x, y, z, select);
+	--print("Nao inverse Kinematics");
+  end
+end
+
+
+function ikineCam_nao(x, y, z, select)
   --Bottom camera by default (cameras are 0 indexed so add 1)
   select = (select or 0) + 1;
   --Look at ground by default
   z = z or 0;
-
 
   z = z-camOffsetZ;
   local norm = math.sqrt(x^2 + y^2 + z^2);
@@ -138,10 +164,8 @@ function ikineCam(x, y, z, select)
   local pitch = math.asin(-z/(norm + 1E-10));
 
   pitch = pitch - cameraAngle[select][2];
-
   yaw = math.min(math.max(yaw, yawMin), yawMax);
   pitch = math.min(math.max(pitch, pitchMin), pitchMax);
-
   return yaw, pitch;
 end
 
@@ -153,6 +177,7 @@ function ikineCam_op(x, y, z, select)
 
   --Look at ground by default
   z = z or 0;
+
   z=z-v[3]; -- Les the offset
 
   -- IDK what this does...
@@ -166,7 +191,7 @@ function ikineCam_op(x, y, z, select)
   local yaw = math.atan2(y, x);
   local pitch = math.asin(-z/(norm + 1E-10));
 
-  pitch = pitch - pitch0;
+  pitch = pitch - cameraAngle[select][2];
   yaw = math.min(math.max(yaw, yawMin), yawMax);
   pitch = math.min(math.max(pitch, pitchMin), pitchMax);
   return yaw, pitch;

@@ -10,7 +10,14 @@ function h = shm_robot(teamNumber, playerID)
   h.gcmTeam = shm(sprintf('gcmTeam%d%d%s', h.teamNumber, h.playerID, h.user));
   h.wcmRobot = shm(sprintf('wcmRobot%d%d%s', h.teamNumber, h.playerID, h.user));
   h.wcmBall = shm(sprintf('wcmBall%d%d%s', h.teamNumber, h.playerID, h.user));
+  h.wcmGoal = shm(sprintf('wcmGoal%d%d%s', h.teamNumber, h.playerID, h.user));
+  h.wcmOccumap = shm(sprintf('wcmOccumap%d%d%s', h.teamNumber, h.playerID, h.user));
   h.vcmImage = shm(sprintf('vcmImage%d%d%s', h.teamNumber, h.playerID, h.user));
+  h.vcmBall = shm(sprintf('vcmBall%d%d%s',h.teamNumber, h.playerID, h.user));
+  h.vcmGoal = shm(sprintf('vcmGoal%d%d%s',h.teamNumber, h.playerID, h.user));
+  h.vcmFreespace = shm(sprintf('vcmFreespace%d%d%s', h.teamNumber, h.playerID, h.user));
+  h.vcmBoundary = shm(sprintf('vcmBoundary%d%d%s', h.teamNumber, h.playerID, h.user));
+  
 
   % set function pointers
   h.update = @update;

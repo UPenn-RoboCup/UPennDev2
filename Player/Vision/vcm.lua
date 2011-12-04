@@ -14,8 +14,8 @@ shsize = {};
 processed_img_width = Config.camera.width;
 processed_img_height = Config.camera.height;
 --if( Config.vision.subsampling==1 ) then
---processed_img_width = processed_img_width / 2;
---processed_img_height = processed_img_height / 2;
+processed_img_width = processed_img_width / 2;
+processed_img_height = processed_img_height / 2;
 --end
 
 shared.camera = {};

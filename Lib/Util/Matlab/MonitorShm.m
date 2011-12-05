@@ -4,7 +4,7 @@ cmap=[cbk;cr;cy;cy;cb;cb;cb;cb;cg;cg;cg;cg;cg;cg;cg;cg;cw];
 
 % Players and team to track
 nPlayers = 1;
-teamNumbers = [18];
+teamNumbers = 1;
 
 %% Enter loop
 figure(1);

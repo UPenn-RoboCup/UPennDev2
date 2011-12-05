@@ -17,6 +17,7 @@ yawMax = Config.head.yawMax;
 
 cameraPos = Config.head.cameraPos;
 cameraAngle = Config.head.cameraAngle;
+pitch0 = Config.head.cameraAngle[1][2];
 
 horizonA = 1;
 horizonB = 1;
@@ -119,17 +120,6 @@ end
 
 
 function ikineCam(x, y, z, select)
-  if (string.find(Config.platform.name,'OP')) then
-    return ikineCam_op(x, y, z, select);
-	--print("OP inverse Kinematics");
-  else
-    return ikineCam_nao(x, y, z, select);
-	--print("Nao inverse Kinematics");
-  end
-end
-
-
-function ikineCam_nao(x, y, z, select)
   --Bottom camera by default (cameras are 0 indexed so add 1)
   select = (select or 0) + 1;
 

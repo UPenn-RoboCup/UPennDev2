@@ -53,13 +53,14 @@ neckZ    = Config.head.neckZ;
 footX    = Config.walk.footX + Config.walk.footXComp;
 supportX = Config.walk.supportX;
 --TODO: use actual bodyHeight and bodyTilt using shm
-bodyTilt=Config.walk.bodyTiltActual; --Original
+bodyTilt=Config.walk.bodyTilt; --Original
 bodyHeight=Config.walk.bodyHeight;
 
 function entry()
 end
 
 
+<<<<<<< HEAD
 function update(sel, headAngles)
   if (string.find(Config.platform.name,'OP')) then
     update_op(sel, headAngles);
@@ -73,15 +74,23 @@ end
 
 
 function update_nao(sel, headAngles)
+=======
+function update(sel,headAngles)
+>>>>>>> 7fe4fd81ecc514e73ce534f98fc58e9e766f96c8
   -- cameras are 0 indexed so add one for use here
   sel = sel + 1;
 
-  tHead = Transform.rotZ(headAngles[1])*Transform.rotY(headAngles[2]);
-  tHead = tHead*Transform.trans(cameraPos[sel][1], cameraPos[sel][2], cameraPos[sel][3]);
-  tHead = tHead*Transform.rotX(cameraAngle[sel][1]);
-  tHead = tHead*Transform.rotY(cameraAngle[sel][2]);
-  tHead = tHead*Transform.rotZ(cameraAngle[sel][3]);
+  tNeck = Transform.trans(-footX,0,bodyHeight); 
+  tNeck = tNeck*Transform.rotY(bodyTilt);
+  tNeck = tNeck*Transform.trans(neckX,0,neckZ);
+  tNeck = tNeck*Transform.rotZ(headAngles[1])*Transform.rotY(headAngles[2]);
 
+  tHead = tNeck*Transform.trans(cameraPos[sel][1], cameraPos[sel][2], cameraPos[sel][3]);
+  --Robot specific head angle bias
+  tHead = tHead*Transform.rotY( pitch0 );
+  tHead = tHead*Transform.rotY( cameraAngle[sel][2]);
+
+<<<<<<< HEAD
 end
 
 -- From OP
@@ -106,6 +115,16 @@ function update_horizon(sel,headAngles)
   horizonB = (labelB.n/2.0) - focalB*math.tan(pa) - 1;
   horizonB = math.min(labelB.n, math.max(math.floor(horizonB), 0));
   --print('horizon-- pitch: '..pa..'  A: '..horizonA..'  B: '..horizonB);
+=======
+  -- update horizon
+  pa = headAngles[2] + cameraAngle[sel][2];
+  horizonA = (labelA.n/2.0) - focalA*math.tan(pa) - 2;
+  horizonA = math.min(labelA.n, math.max(math.floor(horizonA), 0));
+  horizonB = (labelB.n/2.0) - focalB*math.tan(pa) - 1;
+  horizonB = math.min(labelB.n, math.max(math.floor(horizonB), 0));
+  --print('horizon-- pitch: '..pa..'  A: '..horizonA..'  B: '..horizonB);
+
+>>>>>>> 7fe4fd81ecc514e73ce534f98fc58e9e766f96c8
 end
 
 function exit()
@@ -156,9 +175,11 @@ end
 function ikineCam_nao(x, y, z, select)
   --Bottom camera by default (cameras are 0 indexed so add 1)
   select = (select or 0) + 1;
+
   --Look at ground by default
   z = z or 0;
 
+<<<<<<< HEAD
   z = z-camOffsetZ;
   local norm = math.sqrt(x^2 + y^2 + z^2);
   local yaw = math.atan2(y, x);
@@ -174,8 +195,14 @@ end
 function ikineCam_op(x, y, z, select)
   --Bottom camera by default (cameras are 0 indexed so add 1)
   select = (select or 0) + 1;
+=======
+  --Cancel out the neck X and Z offset 
+>>>>>>> 7fe4fd81ecc514e73ce534f98fc58e9e766f96c8
   v = getNeckOffset();
+  x = x-v[1]; 
+  z = z-v[3]; 
 
+<<<<<<< HEAD
   --Look at ground by default
   z = z or 0;
 
@@ -184,9 +211,12 @@ function ikineCam_op(x, y, z, select)
   -- IDK what this does...
   x = x-v[1];
   
+=======
+>>>>>>> 7fe4fd81ecc514e73ce534f98fc58e9e766f96c8
   --Cancel out body tilt angle
   v = Transform.rotY(-bodyTilt)*vector.new({x,y,z,1});
   v=v/v[4];
+
   x,y,z=v[1],v[2],v[3];
   local norm = math.sqrt(x^2 + y^2 + z^2);
   local yaw = math.atan2(y, x);
@@ -198,7 +228,6 @@ function ikineCam_op(x, y, z, select)
   return yaw, pitch;
 end
 
--- FOR OP
 function getCameraOffset() 
     local v=vector.new({0,0,0,1});
     v=tHead*v;
@@ -212,3 +241,26 @@ function getNeckOffset()
     v=v/v[4];
     return v;
 end
+
+--Project 3d point to level plane with some height
+function projectGround(v,targetheight)
+
+  targetheight=targetheight or 0;
+  local cameraOffset=getCameraOffset();
+  local vout=vector.new(v);
+
+  --Project to plane
+  if v[3]<targetheight then
+        vout= cameraOffset+
+           (v-cameraOffset)*(
+           (cameraOffset[3]-targetheight) / (cameraOffset[3] - v[3] )
+           );
+  end
+
+  --Discount body offset
+  uBodyOffset = mcm.get_walk_bodyOffset();
+  vout[1] = vout[1] + uBodyOffset[1];
+  vout[2] = vout[2] + uBodyOffset[2];
+  return vout;
+end
+

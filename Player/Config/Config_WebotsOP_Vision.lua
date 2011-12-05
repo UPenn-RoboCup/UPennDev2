@@ -50,4 +50,4 @@ vision.goal1Color = color.yellow;
 vision.goal2Color = color.cyan;
 
 -- Subsample image?
-vision.subsampling = 1;
+vision.subsampling = 0;

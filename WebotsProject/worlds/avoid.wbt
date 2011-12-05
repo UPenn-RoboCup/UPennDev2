@@ -51,7 +51,7 @@ DEF PLAYER_1_0 DARwInOP {
   translation -0.610843  0.212101 -0.0195361
   rotation 0 1 0 1.57 
   plasticColor 0.886275 0.278431 0.239216
-  controller "avoid_lua_merge"
+  controller "nao_team_0"
   controllerArgs "1 1"
   waistBand TRUE
 }

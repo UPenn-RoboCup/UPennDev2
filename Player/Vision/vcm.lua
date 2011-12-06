@@ -76,11 +76,7 @@ shared.freespace.nCol = vector.zeros(1);
 shared.freespace.nRow = vector.zeros(1);
 shared.freespace.bound = vector.zeros(2*Config.vision.freespace_scanColA);
 shared.freespace.boundA = vector.zeros(2*Config.vision.freespace_scanColA);
-shared.freespace.turn = vector.zeros(Config.vision.freespace_scanColA);
---[[
-shared.freespace.a = vector.zeros(1);
-shared.freespace.b = vector.zeros(2);
---]]
+shared.freespace.horizonA = vector.zeros(4);
 
 shared.boundary = {};
 shared.boundary.detect = vector.zeros(1);

@@ -41,8 +41,8 @@ if (adflag == 1)
 	% Monitor Size for Advanced Monitor
 	scrz = get(0,'ScreenSize');
 	% Monitor Ratio 2:1
-	fSizeX = scrz(3)/6*3;
-	fSizeY = scrz(3)/12*3;
+	fSizeX = scrz(3)/3*3;
+	fSizeY = scrz(3)/6*3;
 	figure('Pos',[scrz(3)/2-fSizeX/2 scrz(4)/2-fSizeY/2 fSizeX fSizeY]);
 	% advanced monitor 2x3 subplots
 	nCol = 3;
@@ -101,22 +101,12 @@ while cont
 		if (robot.vcmFreespace.get_detect() == 1)
 			freeColA = robot.vcmFreespace.get_nCol();
 			freeValueA = robot.vcmFreespace.get_boundA();
+			freehorizonA = robot.vcmFreespace.get_horizonA();
 			freeA.x = freeValueA(1:numel(freeValueA)/2);
 			freeA.y = freeValueA(numel(freeValueA)/2+1:...
 											numel(freeValueA));
-			TurnPnt = robot.vcmFreespace.get_turn();
-			posTurnPntUp = find(TurnPnt == 1);
-			posTurnPntDn = find(TurnPnt == -1);
-            freeA.xTurnUp = freeValueA(posTurnPntUp);
-			freeA.yTurnUp = freeValueA(posTurnPntUp + freeColA);
-			freeA.xTurnDn = freeValueA(posTurnPntDn);
-			freeA.yTurnDn = freeValueA(posTurnPntDn + freeColA);
-		%{
-			freeARegAlpha = robot.vcmFreespace.get_a();
-			freeARegBeta = robot.vcmFreespace.get_b();
-			freeA.xReg = 1 : wlabelA;
-			freeA.yReg = freeARegAlpha + freeARegBeta * freeA.xReg; 
-		%}
+			freeA.hx = [freehorizonA(1),freehorizonA(3)];
+			freeA.hy = [freehorizonA(4),freehorizonA(2)];
 		end
 		% show boundary in robot coordinate
 		bd = {};
@@ -238,9 +228,7 @@ while cont
 
 				% Show freespace as image boundary
 				plot(freeA.x,freeA.y,'m--','LineWidth',2);
-				plot(freeA.xTurnUp,freeA.yTurnUp,'^r');
-				plot(freeA.xTurnDn,freeA.yTurnDn,'vr');	
-				%plot(freeA.xReg,freeA.yReg,'w--','LineWidth',2);
+				plot(freeA.hx,freeA.hy,'r--','LineWidth',2);
 				hold off;
 			end
 	        if ~isempty(a)

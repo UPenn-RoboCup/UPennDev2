@@ -7,11 +7,8 @@ camera.switchFreq = 0; --unused for OP
 camera.width = 160; 
 camera.height = 120;
 
-camera.x_center = 160;
-camera.y_center = 120;
-
-camera.x_center = 80;
-camera.y_center = 60;
+camera.x_center = camera.width/2;
+camera.y_center = camera.height/2;
 
 camera.auto_param = {};
 camera.auto_param[1] = {key='auto_exposure',      val={0}};

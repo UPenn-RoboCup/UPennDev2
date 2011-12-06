@@ -68,11 +68,13 @@ function update(sel,headAngles)
   tNeck = Transform.trans(-footX,0,bodyHeight); 
   tNeck = tNeck*Transform.rotY(bodyTilt);
   tNeck = tNeck*Transform.trans(neckX,0,neckZ);
+  pNeck = tNeck;
   tNeck = tNeck*Transform.rotZ(headAngles[1])*Transform.rotY(headAngles[2]);
 
   tHead = tNeck*Transform.trans(cameraPos[sel][1], cameraPos[sel][2], cameraPos[sel][3]);
+  pNeck = pNeck*Transform.trans(cameraPos[sel][1], cameraPos[sel][2], cameraPos[sel][3]);
   --Robot specific head angle bias
-  tHead = tHead*Transform.rotY( pitch0 );
+--  tHead = tHead*Transform.rotY( pitch0 );
   tHead = tHead*Transform.rotY( cameraAngle[sel][2]);
 
   -- update horizon
@@ -83,6 +85,37 @@ function update(sel,headAngles)
   horizonB = math.min(labelB.n, math.max(math.floor(horizonB), 0));
   --print('horizon-- pitch: '..pa..'  A: '..horizonA..'  B: '..horizonB);
 
+end
+
+function viewhorizonA()
+  local ref = vector.new({0,1,0,1});
+  local ref1 = vector.new({0,-1,0,1});
+  local p0 = vector.new({0,0,0,1});
+  p0 = tHead*p0;
+  ref = tHead*ref;
+  ref1 = tHead*ref1
+  ref = ref - p0; 
+  ref1 = ref1 - p0; 
+  --print(unpack(ref1));
+  --print(unpack(ref));
+  local v = {};
+  -- leftx, lefty, rightx, righty
+  v[1] = math.floor(-math.abs(ref1[1]) * focalA / 4 + x0A + 0.5);
+  v[2] = math.floor(ref1[3] * focalA / 4 + y0A + 0.5);
+  v[3] = math.floor(math.abs(ref[1]) * focalA / 4 + x0A + 0.5);
+  v[4] = math.floor(ref[3] * focalA / 4 + y0A + 0.5);  
+  return v;
+end
+
+function rayIntersectA(c)
+  local p0 = vector.new({0.0,0.0,0.0,1.0});
+  local v = vector.new({1,-(c[1]-x0A)/focalA,-(c[2]-y0A)/focalA,1});
+  v = tHead*v;
+  p0 = tHead*p0;
+  v = v - p0;
+  local s = -p0[3]/v[3];
+  local p = p0 + s * v;
+  return p;
 end
 
 function exit()

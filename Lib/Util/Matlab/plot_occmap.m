@@ -3,7 +3,7 @@ function plot_occmap(robot)
 
 %while 1 
 	maxr = 1.0;
-	Div = 36;
+	Div = 72;
 	Interval = 2*pi/Div;
 	HalfInter = Interval/2;
 	occumap = {};
@@ -27,7 +27,7 @@ function plot_occmap(robot)
 	idx = find(occumap.theta<0);
 	occumap.theta(idx) = occumap.theta(idx) + 2*pi;
 	polar(occumap.theta,occumap.rho);
-	[occumap.x,occumap.y] = pol2cart(occumap.theta,occumap.rho);
+	[occumap.x,occumap.y] = pol2cart(occumap.theta,occumap.rho,'b');
 	patch(occumap.x,occumap.y,[0 0 1]);
 	view(-90,90);
 %	drawnow;

@@ -53,8 +53,8 @@ DEF PLAYER_1_0 DARwInOP {
   plasticColor 0.886275 0.278431 0.239216
   controller "nao_team_0"
   controllerArgs "1 1"
-  cameraWidth 320
-  cameraHeight 240
+#  cameraWidth 320
+#  cameraHeight 240
   waistBand TRUE
 }
 

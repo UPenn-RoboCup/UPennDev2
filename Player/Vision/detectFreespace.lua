@@ -50,15 +50,20 @@ function detect(color)
                                         labelA.n, colorField, bbox);
 	local lines = ImageProc.color_stats(labelA.data, labelA.m,
 										labelA.n, colorWhite, bbox);
---	local balls = ImageProc.color_stats(labelA.data, labelA.m,
---										labelA.n, colorOrange, bbox);
-	if ((field.area + lines.area)> 0) then
+	local ball = ImageProc.color_stats(labelA.data, labelA.m,
+										labelA.n, colorOrange, bbox);
+	if ((field.area + lines.area + ball.area)> 0) then
 	  local boundary = field.axisMajor or 0; 
 	  -- white compensation when white occupy the image
 	  local wComThres = 0.2; -- white compensation threshold
 	  if (lines.area > wComThres * field.area) then
 		--print("white compensation"); 
 	    boundary = boundary + lines.area/Xoff;
+	  end
+      local oComThres = 0.05; -- orange compensation threshold
+      if (ball.area > oComThres * field.area) then
+		--print("orange compensation");
+		boundary = boundary + ball.area/Xoff;
 	  end
       boundA[2] = math.floor(labelA.n - math.min(labelA.n,boundary)+1.5); 
 	else
@@ -69,6 +74,7 @@ function detect(color)
     local boundV = HeadTransform.rayIntersectA(boundA); 
 	-- Discount body offset
 	uBodyOffset = mcm.get_walk_bodyOffset();
+--	print("BodyOffset"..uBodyOffset[1],uBodyOffset[2]);
 	boundV[1] = boundV[1] - uBodyOffset[1];
 	boundV[2] = boundV[2] - uBodyOffset[2];
     freespace.bound[nC],freespace.bound[nC+nCol] = boundV[1],boundV[2];

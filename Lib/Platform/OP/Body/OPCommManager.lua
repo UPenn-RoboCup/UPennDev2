@@ -295,7 +295,7 @@ function nonsync_read()
 	    if id then
 	        raw=Dynamixel.get_position(id);
 	        if raw then
-		    sensor.position[i] = (raw-posZero[i])/scale[i] - actuator.offset[i];
+		    sensor.position[ idToRead[i] ] = (raw-posZero[i])/scale[i] - actuator.offset[i];
 	    	end
 	    end
 	end
@@ -490,13 +490,13 @@ function update_imu()
 	tTrans=tTrans*tTransDelta;
 	iAngle=Transform.getRPY(tTrans);
 
-  local accMag=sensor.imuAcc[1]^2+sensor.imuAcc[2]^2+sensor.imuAcc[3]^2;
-	if accMag>Config.angle.gMin and accMag<Config.angle.gMax then
-    local angY=math.atan2(-sensor.imuAcc[1], math.sqrt(sensor.imuAcc[2]^2+sensor.imuAcc[3]^2) );
-    local angX=math.atan2(sensor.imuAcc[2], math.sqrt(sensor.imuAcc[1]^2+sensor.imuAcc[3]^2) );
-    iAngle[1], iAngle[2] =
+        local accMag=sensor.imuAcc[1]^2+sensor.imuAcc[2]^2+sensor.imuAcc[3]^2;
+ 	if accMag>Config.angle.gMin and accMag<Config.angle.gMax then
+           local angY=math.atan2(sensor.imuAcc[1], math.sqrt(sensor.imuAcc[2]^2+sensor.imuAcc[3]^2) );
+           local angX=math.atan2(sensor.imuAcc[2], math.sqrt(sensor.imuAcc[1]^2+sensor.imuAcc[3]^2) );
+           iAngle[1], iAngle[2] =
  	        (1-Config.angle.accFactor)*iAngle[1]+Config.angle.accFactor*angX,
-          (1-Config.angle.accFactor)*iAngle[2]+Config.angle.accFactor*angY;
+           (1-Config.angle.accFactor)*iAngle[2]+Config.angle.accFactor*angY;
 	end
 
 	sensor.imuAngle[1],sensor.imuAngle[2],sensor.imuAngle[3] = iAngle[1],iAngle[2],iAngle[3];

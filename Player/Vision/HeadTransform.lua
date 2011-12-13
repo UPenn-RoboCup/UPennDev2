@@ -153,6 +153,7 @@ end
 
 
 function ikineCam(x, y, z, select)
+
   --Bottom camera by default (cameras are 0 indexed so add 1)
   select = (select or 0) + 1;
 
@@ -169,9 +170,21 @@ function ikineCam(x, y, z, select)
   v=v/v[4];
 
   x,y,z=v[1],v[2],v[3];
-  local norm = math.sqrt(x^2 + y^2 + z^2);
   local yaw = math.atan2(y, x);
+
+  local norm = math.sqrt(x^2 + y^2 + z^2);
   local pitch = math.asin(-z/(norm + 1E-10));
+
+  --SJ: new IKcam that takes camera offset into account
+  -------------------------------------------------------------
+  -- sin(pitch)x + cos (pitch) z = c , c=camera z offset
+  -- pitch = atan2(x,z) - acos(b/r),  r= sqrt(x^2+z^2)
+  -------------------------------------------------------------
+  local c=cameraPos[select][3];
+  local r = math.sqrt(x^2+y^2);
+  local d = math.sqrt(x^2+z^2);
+  local p0 = math.atan2(r,z) - math.acos(c/d);
+  pitch=p0;
 
   pitch = pitch - cameraAngle[select][2];
   yaw = math.min(math.max(yaw, yawMin), yawMax);

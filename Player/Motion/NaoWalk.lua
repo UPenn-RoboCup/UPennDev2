@@ -11,6 +11,9 @@ active = true;
 --stopRequest = false;
 stopRequest = 2;
 
+--Can we do walkkick with this walk code?
+canWalkKick = 0;
+
 -- Walk Parameters
 tStep = Config.walk.tStep;
 tZmp = Config.walk.tZmp;
@@ -29,6 +32,11 @@ maxZ = Config.walk.maxZ or {-.4, .4};
 maxVelX = Config.walk.maxVelX or {-.02, .03};
 maxVelY = Config.walk.maxVelY or {-.015, .015};
 maxVelZ = Config.walk.maxVelZ or {-.15, .15};
+
+--Added for supporting smaller robots like OP
+stanceLimitX=Config.walk.stanceLimitX or {-0.10 , 0.10};
+stanceLimitY=Config.walk.stanceLimitY or {0.09 , 0.20};
+stanceLimitA=Config.walk.stanceLimitA or {-0*math.pi/180, 40*math.pi/180};
 
 --Check to make sure robot does not stop at innapropriate times--
 --stopping = false;
@@ -180,7 +188,7 @@ function entry()
 
   pLLeg = vector.new{uLeft[1], uLeft[2], 0, 0, 0, uLeft[3]};
   pRLeg = vector.new{uRight[1], uRight[2], 0, 0, 0, uRight[3]};
-  pTorso = vector.new{uTorso[1], uTorso[2], bodyHeight, 0, 0, uTorso[3]};
+  pTorso = vector.new{uTorso[1], uTorso[2], bodyHeight, 0, bodyTilt, uTorso[3]};
    
   qLegs = Kinematics.inverse_legs(pLLeg, pRLeg, pTorso, 0);
   -- This assumes RLeg follows LLeg in servo order:
@@ -421,6 +429,7 @@ function update()
           math.min(1, phSingle/.1, (1-phSingle)/.1);
   end
 
+
   if supportLeg == 0 then
     -- Left support
     uRight = se2_interpolate(xFoot, uRight1, uRight2);
@@ -610,9 +619,11 @@ function step_left_destination(vel, uLeft, uRight)
   local uLeftPredict = pose_global({0, footY, 0}, u2);
   local uLeftRight = pose_relative(uLeftPredict, uRight);
   -- Do not pidgeon toe, cross feet:
-  uLeftRight[1] = math.min(math.max(uLeftRight[1], -0.10), 0.10);
-  uLeftRight[2] = math.min(math.max(uLeftRight[2], 0.09), 0.20);
-  uLeftRight[3] = math.min(math.max(uLeftRight[3], -0*math.pi/180), 40*math.pi/180);
+
+  uLeftRight[1] = math.min(math.max(uLeftRight[1], stanceLimitX[1]), stanceLimitX[2]);
+  uLeftRight[2] = math.min(math.max(uLeftRight[2], stanceLimitY[1]), stanceLimitY[2]);
+  uLeftRight[3] = math.min(math.max(uLeftRight[3], stanceLimitA[1]), stanceLimitA[2]);
+
   return pose_global(uLeftRight, uRight);
 end
 
@@ -624,9 +635,11 @@ function step_right_destination(vel, uLeft, uRight)
   local uRightPredict = pose_global({0, -footY, 0}, u2);
   local uRightLeft = pose_relative(uRightPredict, uLeft);
   -- Do not pidgeon toe, cross feet:
-  uRightLeft[1] = math.min(math.max(uRightLeft[1], -0.10), 0.10);
-  uRightLeft[2] = math.min(math.max(uRightLeft[2], -0.20), -0.09);
-  uRightLeft[3] = math.min(math.max(uRightLeft[3], -40*math.pi/180), 0*math.pi/180);
+
+  uRightLeft[1] = math.min(math.max(uRightLeft[1], stanceLimitX[1]), stanceLimitX[2]);
+  uRightLeft[2] = math.min(math.max(uRightLeft[2], -stanceLimitY[2]), -stanceLimitY[1]);
+  uRightLeft[3] = math.min(math.max(uRightLeft[3], -stanceLimitA[2]), -stanceLimitA[1]);
+
   return pose_global(uRightLeft, uLeft);
 end
 
@@ -645,9 +658,14 @@ function set_velocity(vx, vy, vz)
   local stepMag=math.sqrt(vx^2+vy^2);
   local magFactor=math.min(0.06,stepMag)/(stepMag+0.000001);
 
-
   velCommand[1]=vx*magFactor*angleFactor;
   velCommand[2]=vy*magFactor*angleFactor;
+  velCommand[3]=vz;
+
+--Skip velocity limitation
+
+  velCommand[1]=vx;
+  velCommand[2]=vy;
   velCommand[3]=vz;
 
   --print("Velocity :",unpack(velCommand))

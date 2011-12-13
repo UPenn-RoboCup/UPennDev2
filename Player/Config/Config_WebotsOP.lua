@@ -21,6 +21,24 @@ loadconfig('Config_WebotsOP_Robot')
 --Location Specific Camera Parameters--
 loadconfig('Config_WebotsOP_Camera')
 
+-- Device Interface Libraries
+dev = {};
+dev.body = 'WebotsOPBody'; 
+dev.camera = 'WebotsOPCam';
+dev.kinematics = 'OPKinematics';
+dev.comm='WebotsOPComm';
+dev.monitor_comm = 'NullComm';
+dev.game_control='WebotsOPGameControl';
+dev.kick = 'SimpleKick'
+dev.walk='NaoWalk';
+--dev.walk='NSLWalk';
+--dev.kick='NSLKick';
+--dev.kick='Jump';
+--dev.kick='kickKeyframe';
+--dev.walk='EKWalk';
+--dev.kick='NSLPunch';
+
+
 -- Game Parameters
 
 game = {};
@@ -52,6 +70,9 @@ if( fsm.game == 'RoboCup' ) then
   fsm.body = {'OpPlayer'};
   fsm.head = {'OpPlayer'};
 
+--fsm.head = {'OpPlayerNSL'};
+--fsm.body = {'OpPlayerNSL'};
+
 elseif( fsm.game == 'Dodgeball' ) then
   fsm.body = {'Dodgeball'};
   fsm.head = {'Dodgeball'};
@@ -70,7 +91,6 @@ end
 BodyFSM = {}
 BodyFSM.enable_obstacle_detection = 1;
 
-
 -- Team Parameters
 
 team = {};
@@ -81,26 +101,13 @@ team.nonDefenderPenalty = 0.5; -- dist from goal
 -- keyframe files
 
 km = {};
-km.kick_right = 'km_WebotsOP_KickForwardRight.lua';
-km.kick_left = 'km_WebotsOP_KickForwardLeft.lua';
 km.standup_front = 'km_WebotsOP_StandupFromFront.lua';
 km.standup_back = 'km_WebotsOP_StandupFromBack.lua';
-
--- Load the Sitting and standing paramters from the RObot config file
--- See up top
---[[
--- sitting parameters
-
-sit = {};
-sit.bodyHeight = 0.22;
-sit.supportX = 0;
-sit.dpLimit = vector.new({.1,.01,.03,.1,.3,.1});
+--km.standup_front = 'km_NSLOP_StandupFromFront.lua';
+--km.standup_back = 'km_NSLOP_StandupFromBack.lua';
+--km.standup_front = 'km_NSLOP_StandupFromFront2.lua';
 
 
--- standing parameters
+km.kick_right = 'km_NSLOP_taunt1.lua';
+km.kick_left = 'km_NSLOP_StandupFromFront2.lua';
 
-stance = {};
-stance.dpLimit = vector.new({.04, .03, .04, .05, .4, .1});
-stance.delay = 80; --amount of time to stand still after standing to regain balance.
-
---]]

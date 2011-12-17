@@ -42,7 +42,7 @@ jointReverse={
 
 
 jointBias={
-        -math.pi/2,0,
+        0,0,
 	-90*math.pi/180,0,0,0,
 	0,0,0,0,0,0,
 	0,0,0,0,0,0,
@@ -280,6 +280,10 @@ function update()
     imuAngle[2] = imuAngle[2] + aImuFilter*(math.asin(accX) - imuAngle[2]);
   end
 
+  --Yaw angle generation by gyro integration
+  imuAngle[3] = imuAngle[3] + tDelta * (gyro[3]-512) / 0.273 *
+        math.pi/180 *
+        0.9; --to compensate bodyTilt
 
 
 
@@ -317,12 +321,21 @@ end
 
 function get_sensor_imuGyr( )
   gyro = controller.wb_gyro_get_values(tags.gyro);
---  gyro_proc={0, (gyro[2]-512)/0.273,(gyro[1]-512)/0.273};
---SJ: Hubo model has rotated IMU
-
-  gyro_proc={0, -(gyro[1]-512)/0.273,(gyro[2]-512)/0.273};
+  --Roll Pitch Yaw
+  --SJ: Checked and fine
+  gyro_proc={-(gyro[2]-512)/0.273, (gyro[1]-512)/0.273,(gyro[3]-512)/0.273};
   return gyro_proc;
 end
+
+--Roll, Pitch, Yaw in degree per seconds unit
+function get_sensor_imuGyrRPY( )
+  gyro = controller.wb_gyro_get_values(tags.gyro);
+  --Roll Pitch Yaw
+  --SJ: Checked and fine
+  gyro_proc={-(gyro[2]-512)/0.273, (gyro[1]-512)/0.273,(gyro[3]-512)/0.273};
+  return gyro_proc;
+end
+
 
 function get_sensor_imuAcc( )
   accel = controller.wb_accelerometer_get_values(tags.accelerometer);

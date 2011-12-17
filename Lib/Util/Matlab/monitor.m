@@ -41,8 +41,8 @@ if (adflag == 1)
 	% Monitor Size for Advanced Monitor
 	scrz = get(0,'ScreenSize');
 	% Monitor Ratio 2:1
-	fSizeX = scrz(3)/3*3;
-	fSizeY = scrz(3)/6*3;
+	fSizeX = scrz(3)/6*3;
+	fSizeY = scrz(3)/12*3;
 	figure('Pos',[scrz(3)/2-fSizeX/2 scrz(4)/2-fSizeY/2 fSizeX fSizeY]);
 	% advanced monitor 2x3 subplots
 	nCol = 3;
@@ -59,7 +59,7 @@ while cont
 	if (webots == 1)
 		% Record information from shm
     	y = robot.get_yuyv()';
-		a = robot.get_labelA()';
+		a = robot.get_labelA();
 		b = robot.get_labelB()';
 		wlabelA = robot.vcmImage.get_width()/2;
 		hlabelA = robot.vcmImage.get_height()/2;

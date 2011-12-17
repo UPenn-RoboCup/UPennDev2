@@ -1,3 +1,4 @@
+--Steve
 --Ashleigh
 --This code is used to broadcast each robot's information over network
 --Sent string is in lua format (for monitoring)
@@ -6,13 +7,10 @@ module(..., package.seeall);
 
 
 require('MonitorComm')
+-- Only send items from shared memory
 require('vcm')
 require('gcm')
 require('wcm')
-require('Team')
-require('World')
-require('Body')
-require('Config')
 require('serialization');
 require('ImageProc')
 
@@ -79,6 +77,7 @@ function sendAsub()
     -- Need to sleep in order to stop drinking out of firehose
     unix.usleep(pktDelay);
   end
+end
 
 function sendImg()
   -- yuyv --
@@ -133,8 +132,11 @@ function update(enable)
   send = {};
 
   send.robot = {};
+--[[
   local robotpose = wcm.get_robot_pose();
   send.robot.pose = {x=robotpose[1], y=robotpose[2], a=robotpose[3]};
+--]]
+  send.robot.pose = wcm.get_pose();
 
   send.ball = {};
   send.ball.detect = vcm.get_ball_detect();
@@ -160,17 +162,16 @@ function update(enable)
   local bb2 = vcm.get_goal_postBoundingBox2();
   send.goal.postBoundingBox2 = {x1=bb2[1], x2=bb2[2], y1=bb2[3], y2=bb2[4]};
 
-  send.time = Body.get_time();
+  send.time = unix.time();
 
   send.team = {};
   send.team.number = gcm.get_team_number();
   send.team.player_id = gcm.get_team_player_id();
   send.team.color = gcm.get_team_color();
   send.team.role = gcm.get_team_role();
+  send.team.attackBearing = wcm.get_attack_bearing();
+  send.team.penalty = gcm.get_game_penalty( gcm.get_team_player_id() );
 
-  -- Send information about other players
-  send.team.states = Team.states;
-  
   MonitorComm.send(serialization.serialize(send));
   
   -- Send camera frames
@@ -185,4 +186,7 @@ function update(enable)
     sendImg();
   end
 
+end
+
+function update_img()
 end

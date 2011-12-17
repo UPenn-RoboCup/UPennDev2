@@ -21,7 +21,6 @@ if webots_vision==1 then
   detectGoal = require('detectGoalWebots');
 end
 
---[[
 require('detectFreespace');
 require('detectBoundary');
 --[[

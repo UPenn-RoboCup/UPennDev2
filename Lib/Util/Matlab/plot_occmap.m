@@ -1,36 +1,23 @@
-function plot_occmap(robot)
+function [] = plot_occmap( handle, occ )
 % plots the occupancy map on robot coordinate
-
-%while 1 
+    cla(handle);
+    
 	maxr = 1.0;
-	Div = 72;
-	Interval = 2*pi/Div;
-	HalfInter = Interval/2;
-	occumap = {};
-	occumap.r = robot.wcmOccumap.get_r();
-	occumap.theta = zeros(Div*4,1);
-	occumap.rho = zeros(Div*4,1);
-	occumap.x = zeros(Div*4,1);
-	occumap.y = zeros(Div*4,1);
-	for Order = 1 : Div 
+	for Order = 1 : occ.div 
 		Idx = (Order-1) * 4 + 1;
-		midTheta = (Order-1)*Interval;
-		occumap.theta(Idx) = midTheta - HalfInter;
-		occumap.theta(Idx+1) = midTheta - HalfInter;
-		occumap.theta(Idx+2) = midTheta + HalfInter;
-	 	occumap.theta(Idx+3) = midTheta + HalfInter;
-		occumap.rho(Idx) = 0;
-		occumap.rho(Idx+1) = min(occumap.r(Order),maxr);
-		occumap.rho(Idx+2) = min(occumap.r(Order),maxr);
-		occumap.rho(Idx+3) = 0;
+		midTheta = (Order-1)*occ.interval;
+		occ.theta(Idx) = midTheta - occ.halfInter;
+		occ.theta(Idx+1) = midTheta - occ.halfInter;
+		occ.theta(Idx+2) = midTheta + occ.halfInter;
+	 	occ.theta(Idx+3) = midTheta + occ.halfInter;
+		occ.rho(Idx) = 0;
+		occ.rho(Idx+1) = min(occ.r(Order),maxr);
+		occ.rho(Idx+2) = min(occ.r(Order),maxr);
+		occ.rho(Idx+3) = 0;
 	end
-	idx = find(occumap.theta<0);
-	occumap.theta(idx) = occumap.theta(idx) + 2*pi;
-	polar(occumap.theta,occumap.rho);
-	[occumap.x,occumap.y] = pol2cart(occumap.theta,occumap.rho,'b');
-	patch(occumap.x,occumap.y,[0 0 1]);
+	idx = find(occ.theta<0);
+	occ.theta(idx) = occ.theta(idx) + 2*pi;
+	polar(occ.theta,occ.rho);
+	[occ.x,occ.y] = pol2cart(occ.theta,occ.rho,'b');
+	patch(occ.x,occ.y,[0 0 1]);
 	view(-90,90);
-%	drawnow;
-%end
-
-%end

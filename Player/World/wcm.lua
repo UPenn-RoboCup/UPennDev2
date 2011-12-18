@@ -29,7 +29,7 @@ shared.goal.defend_angle = vector.zeros(1);
 
 shared.occumap = {};
 shared.occumap.t = vector.zeros(1);
-shared.occumap.r = vector.zeros(36);
+shared.occumap.r = vector.zeros(Config.occumap.div);
 
 util.init_shm_segment(getfenv(), _NAME, shared, shsize);
 

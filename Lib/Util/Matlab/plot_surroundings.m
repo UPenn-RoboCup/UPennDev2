@@ -1,8 +1,16 @@
-function [ ] = plot_surroundings( mon_struct )
+function [ ] = plot_surroundings( handle, mon_struct )
     % NOTE: x and y are reversed because for the robot,
     % x is forward backward, but for plotting, y is up and down
     % Also, there is a negative one, since for the robot left is positive
     % TODO: check that this is right...
+    
+    cla( handle );
+    % Assume that we can only see 3 meters left and right
+    % Assume that we do not see objects very far behind us
+
+    xlim([-3 3]);
+    ylim([-1 4]);
+    hold on;
     
     ball = mon_struct.ball;
     if( ball.detect )
@@ -27,6 +35,18 @@ function [ ] = plot_surroundings( mon_struct )
             plot(-1*goal.v2.y, goal.v2.x, marker,'MarkerSize',12);
         end
     end
+    
+    bd = mon_struct.bd;
+    if( bd.detect == 1 )
+        % show top boundary
+		plot(bd.topx,bd.topy,'--');
+		% show bottom boundary
+		plot(bd.btmx,bd.btmy,'--');
+		% close boundary
+		plot([bd.topx(1),bd.btmx(1)],[bd.topy(1),bd.btmy(1)],'--');
+		plot([bd.topx(bd.nCol),bd.btmx(bd.nCol)],[bd.topy(bd.nCol),bd.btmy(bd.nCol)],'--');    
+    end
 
+    hold off;
 end
 

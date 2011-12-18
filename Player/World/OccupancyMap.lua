@@ -9,7 +9,7 @@ require('vcm');
 require('unix'); -- Get Time
 require('wcm');
 
-Div = 72;
+Div = Config.occumap.div;
 Interval = 2*math.pi/Div;
 HalfInter = Interval/2;
 

@@ -1,3 +1,4 @@
+--Steve
 --Ashleigh
 --This code is used to broadcast each robot's information over network
 --Sent string is in lua format (for monitoring)
@@ -6,14 +7,12 @@ module(..., package.seeall);
 
 
 require('MonitorComm')
+-- Only send items from shared memory
 require('vcm')
 require('gcm')
 require('wcm')
-require('Team')
-require('World')
-require('Body')
-require('Config')
 require('serialization');
+require('ImageProc')
 
 -- Add a little delay between packet sending
 pktDelay = 500; -- time in us
@@ -58,6 +57,28 @@ function sendA()
   end
 end
 
+-- labelA (subsampled) --
+function sendAsub()
+  labelA = vcm.get_image_labelA();
+  labelAsub = ImageProc.subsample( labelA );
+  width = vcm.get_image_width()/4;
+  height = vcm.get_image_height()/4;
+  count = vcm.get_image_count();
+  
+  array = serialization.serialize_array(labelAsub, width, height, 'uint8', 'labelAsub', count);
+  sendlabelAsub = {};
+  sendlabelAsub.team = {};
+  sendlabelAsub.team.number = gcm.get_team_number();
+  sendlabelAsub.team.player_id = gcm.get_team_player_id();
+  
+  for i=1,#array do
+    sendlabelAsub.arr = array[i];
+  	MonitorComm.send(serialization.serialize(sendlabelAsub));
+    -- Need to sleep in order to stop drinking out of firehose
+    unix.usleep(pktDelay);
+  end
+end
+
 function sendImg()
   -- yuyv --
   yuyv = vcm.get_image_yuyv();
@@ -80,14 +101,42 @@ function sendImg()
 
 end
 
+-- yuv (subsampled from yuyv) --
+function sendImgSub()
+  yuyv = vcm.get_image_yuyv();
+  yuvSub = ImageProc.subsample_yuyv2yuv( yuyv );
+  -- TODO: I am sending 3 bytes per pixel.
+  width = vcm.get_image_width()/2; -- number of yuyv packages
+  height = vcm.get_image_height()/2;
+  count = vcm.get_image_count();
+  
+  array = serialization.serialize_array(yuvSub, width, height, 'uint8', 'yuvSub', count);
+  sendyuvSub = {};
+  sendyuvSub.team = {};
+  sendyuvSub.team.number = gcm.get_team_number();
+  sendyuvSub.team.player_id = gcm.get_team_player_id();
+  
+  for i=1,#array do
+    sendyuvSub.arr = array[i];
+  	MonitorComm.send(serialization.serialize(sendyuvSub));
+    -- Need to sleep in order to stop drinking out of firehose
+    unix.usleep(pktDelay);
+  end
+
+end
+
+
 function update(enable)
   if enable==0 then return; end
   
   send = {};
 
   send.robot = {};
+--[[
   local robotpose = wcm.get_robot_pose();
   send.robot.pose = {x=robotpose[1], y=robotpose[2], a=robotpose[3]};
+--]]
+  send.robot.pose = wcm.get_pose();
 
   send.ball = {};
   send.ball.detect = vcm.get_ball_detect();
@@ -113,26 +162,31 @@ function update(enable)
   local bb2 = vcm.get_goal_postBoundingBox2();
   send.goal.postBoundingBox2 = {x1=bb2[1], x2=bb2[2], y1=bb2[3], y2=bb2[4]};
 
-  send.time = Body.get_time();
+  send.time = unix.time();
 
   send.team = {};
   send.team.number = gcm.get_team_number();
   send.team.player_id = gcm.get_team_player_id();
   send.team.color = gcm.get_team_color();
   send.team.role = gcm.get_team_role();
-  
-  MonitorComm.send(serialization.serialize(send));
+  send.team.attackBearing = wcm.get_attack_bearing();
+  send.team.penalty = gcm.get_game_penalty( gcm.get_team_player_id() );
 
-  -- If level 1, then just send the data, no vision
-  if enable==1 then
+  MonitorComm.send(serialization.serialize(send));
+  
+  -- Send camera frames
+  if enable==1 then -- just send the data, no vision
     return;
-  elseif enable==2 then -- If level 2, then just send labelB 
+  elseif enable==2 then -- send labelB in addition to data
     sendB();
-  elseif enable==3 then
+  elseif enable==3 then -- send labelA in addition to data
     -- Send labelA image      
     sendA();
-    --Send image packets--
+    -- Send image packets
     sendImg();
   end
 
+end
+
+function update_img()
 end

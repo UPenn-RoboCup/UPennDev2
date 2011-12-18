@@ -12,6 +12,7 @@ require('stance')
 require('nullstate')
 require('walk')
 require('sit')
+require('standstill') -- This makes torso straight (for webots robostadium)
 
 require('falling')
 require('standup')
@@ -25,6 +26,7 @@ sm:add_state(sit);
 sm:add_state(standup);
 sm:add_state(falling);
 sm:add_state(kick);
+sm:add_state(standstill);
 
 
 sm:set_transition(sit, 'done', relax);
@@ -43,6 +45,11 @@ sm:set_transition(stance, 'sit', sit);
 
 sm:set_transition(walk, 'sit', sit);
 sm:set_transition(walk, 'stance', stance);
+sm:set_transition(walk, 'standstill', standstill);
+
+--standstill makes the robot stand still with 0 bodytilt (for webots)
+sm:set_transition(standstill, 'stance', stance);
+sm:set_transition(standstill, 'walk', stance);
 
 -- falling behaviours
 sm:set_transition(walk, 'fall', falling);
@@ -64,6 +71,10 @@ sm:set_state_debug_handle(gcm.set_fsm_motion_state);
 --added for OP... bodyTilt consideration for detecting falldown
 bodyTilt = Config.walk.bodyTilt or 0;
 
+--OP requires large fall angel detection threshold
+--Default value is 30 degree
+fallAngle = Config.walk.fallAngle or 30*math.pi/180;
+
 -- For still time measurement (dodgeball)
 stillTime = 0;
 stillTime0 = 0;
@@ -82,10 +93,20 @@ function update()
   UltraSound.update();
 
   -- check if the robot is falling
+  --TODO: Imu angle should be in RPY
+  --Counter-clockwise rotation in X,Y,Z axis
+  --Current imuAngle is inverted
+
   local imuAngle = Body.get_sensor_imuAngle();
 
+  --[[
+  local imuGyrRPY = Body.get_sensor_imuGyrRPY();
+  print("Imu RPY:",unpack(vector.new(imuAngle)*180/math.pi))
+  print("Imu Gyr RPY:",unpack(vector.new(imuGyrRPY)*180/math.pi))
+  --]]
+
   local maxImuAngle = math.max(math.abs(imuAngle[1]), math.abs(imuAngle[2]-bodyTilt));
-  if (maxImuAngle > 30*math.pi/180) then
+  if (maxImuAngle > fallAngle) then
     sm:add_event("fall");
     mcm.set_walk_isFallDown(1); --Notify world to reset heading 
   else

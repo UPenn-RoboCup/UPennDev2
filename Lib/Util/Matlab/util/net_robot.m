@@ -1,4 +1,4 @@
-function h = shm_robot(teamNumber, playerID)
+function h = net_robot(teamNumber, playerID)
 % function create the same struct as the team message from
 % shared memory. for local debugging use
 
@@ -6,6 +6,7 @@ h.teamNumber = teamNumber;
 h.playerID = playerID;
 h.user = getenv('USER');
 h.robot_msg = {};
+h.team_msg = {};
 h.yuyv = [];
 h.labelA = [];
 h.labelB = [];
@@ -26,25 +27,36 @@ h.get_labelA = @get_labelA;
 h.get_labelB = @get_labelB;
 
     function scale = update( msg )
-        if (isfield(msg, 'arr'))
-            h.yuyv  = h.yuyv_arr.update_always(msg.arr);
-            h.labelA = h.labelA_arr.update_always(msg.arr);
-            h.labelB = h.labelB_arr.update(msg.arr);
-            if(~isempty(h.labelB)) % labelB is gotten in one packet
-                h.scale = 4;
+        %fprintf('msg.team# / h.team#:\t %d / %d\n',msg.team.number,h.teamNumber);
+        %fprintf('msg.playerid# / h.playerid#:\t %d / %d\n', msg.team.id, h.playerID);
+        % Check if the id field is correct before updating this robot
+        if( msg.team.player_id == h.playerID && msg.team.number == h.teamNumber )
+            if (isfield(msg, 'arr'))
+                h.yuyv  = h.yuyv_arr.update_always(msg.arr);
+                h.labelA = h.labelA_arr.update_always(msg.arr);
+                h.labelB = h.labelB_arr.update(msg.arr);
+                if(~isempty(h.labelB)) % labelB is gotten in one packet
+                    h.scale = 4;
+                else
+                    h.scale = 1;
+                end
             else
-                h.scale = 1;
+                % Update the robot
+                h.robot_msg = msg;
+                h.team_msg = msg.team;
+                h.team_msg.id = h.playerID;
+                h.team_msg.teamNumber = h.teamNumber;
+                h.team_msg.ball = msg.ball;
+                h.team_msg.pose = msg.robot.pose;
+                h.team_msg.teamColor = msg.team.color;
             end
-        else
-            % Update the robot
-            h.robot_msg = msg;
         end
         scale = h.scale;
     end
 
     function r = get_team_struct()
         % returns the robot struct (in the same form as the team messages)
-        r = h.robot_msg;
+        r = h.team_msg;
         %{
         r = [];
         try

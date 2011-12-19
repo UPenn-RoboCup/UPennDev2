@@ -33,3 +33,6 @@ WebotsController/controller_wrap.c
 
 # Webots 
 *.project
+
+# Webots Control
+WebotsProject/controllers

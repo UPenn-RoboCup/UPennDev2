@@ -11,8 +11,8 @@ function [] = plot_occmap( handle, occ )
 		occ.theta(Idx+2) = midTheta + occ.halfInter;
 	 	occ.theta(Idx+3) = midTheta + occ.halfInter;
 		occ.rho(Idx) = 0;
-		occ.rho(Idx+1) = min(occ.r(Order),maxr);
-		occ.rho(Idx+2) = min(occ.r(Order),maxr);
+		occ.rho(Idx+1) = min(occ.r(occ.div-Order+1),maxr);
+		occ.rho(Idx+2) = min(occ.r(occ.div-Order+1),maxr);
 		occ.rho(Idx+3) = 0;
 	end
 	idx = find(occ.theta<0);

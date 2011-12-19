@@ -172,7 +172,7 @@ h.get_labelB = @get_labelB;
         width = h.vcmImage.get_width()/2/4;
         height = h.vcmImage.get_height()/2/4;
         rawData = h.vcmImage.get_labelB();
-        labelB = raw2label(rawData, width, height);
+        labelB = raw2label(rawData, width, height)';
     end
 end
 

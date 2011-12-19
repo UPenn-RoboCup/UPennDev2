@@ -51,11 +51,11 @@ h4 = subplot(2,2,4);
         % Process label
         cla(handle);
         if( ~isempty(label) )
-            imagesc(label);
+            image(label);
             colormap(cmap);
-            xlim([0 size(label,2)]);
-            ylim([0 size(label,1)]);
-    
+            xlim([1 size(label,2)]);
+            ylim([1 size(label,1)]);
+            
             if(r_mon.ball.detect==1)
                 hold on;
                 plot_ball( r_mon.ball, scale );
@@ -84,6 +84,7 @@ h4 = subplot(2,2,4);
             if ( r_mon.free.detect == 1 )
                 plot_freespace( r_mon.free, scale );
             end
+            
         end 
     end
 

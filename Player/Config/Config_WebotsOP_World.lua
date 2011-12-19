@@ -40,5 +40,5 @@ world.rPostFilter = 0.02;
 world.aPostFilter = 0.20;
 
 -- Occupancy Map parameters
-occumap = {};
-occumap.div = 36;
+occmap = {};
+occmap.div = 72;

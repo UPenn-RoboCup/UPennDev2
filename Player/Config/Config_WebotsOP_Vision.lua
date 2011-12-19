@@ -17,7 +17,7 @@ vision.ball_height_max = 0.20; -- -0.20
 vision.yellow_goal_count_thres = 150;
 
 vision.freespace_scanColA = 40;
-vision.freespace_scanRowA = 16;
+vision.freespace_scanRowA = 10;
 
 -- use this to enable visible boundary detection
 vision.enable_visible_boundary = 1;

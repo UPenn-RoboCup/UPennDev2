@@ -73,6 +73,7 @@ static int lua_subsample_yuyv2yuv(lua_State *L){
     }
     // Skip every other line (to maintain image ratio)
     yuyv += m;
+    j++;
   }
 
   // Pushing light data

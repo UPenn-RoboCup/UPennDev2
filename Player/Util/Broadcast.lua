@@ -104,13 +104,13 @@ end
 -- yuv (subsampled from yuyv) --
 function sendImgSub()
   yuyv = vcm.get_image_yuyv();
-  yuvSub = ImageProc.subsample_yuyv2yuv( yuyv );
-  -- TODO: I am sending 3 bytes per pixel.
-  width = vcm.get_image_width()/2; -- number of yuyv packages
-  height = vcm.get_image_height()/2;
+  width = vcm.get_image_width() / 2; -- number of yuyv packages
+  height = vcm.get_image_height() / 2;
   count = vcm.get_image_count();
+  yuvSub = ImageProc.subsample_yuyv2yuv( yuyv, width, height*2, 1 );
   
-  array = serialization.serialize_array(yuvSub, width, height, 'uint8', 'yuvSub', count);
+  -- TODO: I am sending 3 bytes per pixel.  Is this the best way to do it?
+  array = serialization.serialize_array(yuvSub, 3*width*height, 1, 'uint8', 'yuvSub', count);
   sendyuvSub = {};
   sendyuvSub.team = {};
   sendyuvSub.team.number = gcm.get_team_number();
@@ -188,5 +188,8 @@ function update(enable)
 
 end
 
-function update_img()
+function update_img( enable )
+  if(enable>0) then
+    sendImgSub();
+  end
 end

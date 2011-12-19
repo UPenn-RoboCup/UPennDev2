@@ -30,3 +30,6 @@ WebotsController/controller_wrap.c
 # Temp and Swap files
 *~
 *.swp
+
+# Webots 
+*.project

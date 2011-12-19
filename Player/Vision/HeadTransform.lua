@@ -100,13 +100,17 @@ function viewhorizonA()
 end
 
 function rayIntersectA(c)
-  local p0 = vector.new({0.0,0.0,0.0,1.0});
-  local v = vector.new({1,-(c[1]-x0A)/focalA,-(c[2]-y0A)/focalA,1});
-  v = tHead*v;
-  p0 = tHead*p0;
-  v = v - p0;
-  local s = -p0[3]/v[3];
-  local p = p0 + s * v;
+  local p0 = vector.new({0,0,0,1.0});
+  local p1 = vector.new({focalA,-(c[1]-x0A),-(c[2]-y0A),1.0});
+
+  p1 = tHead * p1;
+  local p0 = tNeck * p0;
+  local v = p1 - p0;
+  local t = -p0[3]/v[3];
+  local p = p0 + t * v;
+  local uBodyOffset = mcm.get_walk_bodyOffset();
+  p[1] = p[1] + uBodyOffset[1];
+  p[2] = p[2] + uBodyOffset[2];
   return p;
 end
 

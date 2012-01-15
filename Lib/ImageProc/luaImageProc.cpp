@@ -30,6 +30,7 @@ extern "C" {
 #include "lua_goal_posts.h"
 #include "lua_field_lines.h"
 #include "lua_field_spots.h"
+#include "lua_field_occupancy.h"
 
 static int lua_subsample_yuyv2yuv(lua_State *L){
   // Structure this is an array of 8bit channels
@@ -318,6 +319,7 @@ static const struct luaL_reg imageProc_lib [] = {
   {"goal_posts", lua_goal_posts},
   {"field_lines", lua_field_lines},
   {"field_spots", lua_field_spots},
+  {"field_occupancy", lua_field_occupancy},
   {"subsample_yuyv2yuv", lua_subsample_yuyv2yuv},
 //  {"field_spots", lua_field_spots},
   {NULL, NULL}

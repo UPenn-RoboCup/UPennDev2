@@ -85,6 +85,8 @@ h4 = subplot(2,2,4);
                 plot_freespace( r_mon.free, scale );
             end
             
+            % Show horizon line
+            plot_horizon( r_mon.horizon, scale);
         end 
     end
 

@@ -9,7 +9,7 @@ function [ ] = plot_surroundings( handle, mon_struct )
     % Assume that we do not see objects very far behind us
 
     xlim([-3 3]);
-    ylim([-1 4]);
+    ylim([0 4]);
     hold on;
     
     ball = mon_struct.ball;
@@ -35,7 +35,7 @@ function [ ] = plot_surroundings( handle, mon_struct )
             plot(-1*goal.v2.y, goal.v2.x, marker,'MarkerSize',12);
         end
     end
-    
+
     bd = mon_struct.bd;
     if( bd.detect == 1 )
         % show top boundary

@@ -9,11 +9,11 @@ require('vcm');
 require('unix'); -- Get Time
 require('wcm');
 
-nCol = Config.vision.freespace_scanColA;
+nCol = Config.camera.width/2;
 Div = Config.occmap.div;
 Interval = 2*math.pi/Div;
 HalfInter = Interval/2;
-occDa = 5*math.pi/180;
+occDa = 2.5*math.pi/180;
 occDr = 0.1;
 
 occFilter = {};
@@ -81,7 +81,7 @@ function update()
   if (vcm.get_freespace_detect() == 1) then
 --  print("update occmap");
     occmap.t = Body.get_time();
-    local freeBound = vcm.get_freespace_bound();
+    local freeBound = vcm.get_freespace_vboundA();
 	-- Filter Update
     for i = 1,nCol do
       local v = vector.new({freeBound[i],freeBound[i+nCol]});

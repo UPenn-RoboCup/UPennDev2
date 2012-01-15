@@ -78,6 +78,7 @@ function detect(color)
     -- Coordinates of ball
     scale = math.max(dArea/diameter, ball.propsA.axisMajor/diameter);
     v = HeadTransform.coordinatesA(ballCentroid, scale);
+    -- v = HeadTransform.rayIntersectA(ballCentroid);
     --[[
     print('scale: '..scale);
     print('v0: '..v[1]..', '..v[2]..', '..v[3]);

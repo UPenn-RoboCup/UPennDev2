@@ -218,6 +218,7 @@ function update_shm(status)
   vcm.set_image_headAngles({status.joint[1], status.joint[2]});
   vcm.set_image_horizonA(HeadTransform.get_horizonA());
   vcm.set_image_horizonB(HeadTransform.get_horizonB());
+  vcm.set_image_horizonDir(HeadTransform.get_horizonDir())
 
   Detection.update_shm();
 

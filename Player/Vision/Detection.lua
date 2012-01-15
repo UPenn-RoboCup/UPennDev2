@@ -136,10 +136,6 @@ function update()
   -- visible boundary detection
   if enableBoundary == 1 then
     boundary = detectBoundary.detect();
-	-- Use Freespace bound as top boundary
-	if (freespace.detect == 1) then
-	  boundary.top = freespace.bound;
-	end
   end
 
 end
@@ -205,14 +201,19 @@ function update_shm()
 	vcm.set_freespace_block(freespace.block);
     vcm.set_freespace_nCol(freespace.nCol);
     vcm.set_freespace_nRow(freespace.nRow);
-    vcm.set_freespace_bound(freespace.bound);
-    vcm.set_freespace_boundA(freespace.boundA);
-    vcm.set_freespace_horizonA(freespace.horizonA);
+    vcm.set_freespace_vboundA(freespace.vboundA);
+    vcm.set_freespace_pboundA(freespace.pboundA);
+    vcm.set_freespace_vboundB(freespace.vboundB);
+    vcm.set_freespace_pboundB(freespace.pboundB);
   end
 
   vcm.set_boundary_detect(boundary.detect);
   if (boundary.detect == 1) then
-    vcm.set_boundary_top(boundary.top);
+	if (freespace.detect == 1) then
+		vcm.set_boundary_top(freespace.vboundA);
+	else
+		vcm.set_boundary_top(boundary.top);
+	end
 	vcm.set_boundary_bottom(boundary.bottom);
   end
 

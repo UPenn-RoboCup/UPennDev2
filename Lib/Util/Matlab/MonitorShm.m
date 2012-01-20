@@ -13,8 +13,8 @@ clf;
 tDisplay = .1; % Display every x seconds
 tStart = tic;
 nUpdate = 0;
-scale = 1; % 1: labelA, 4: labelB
-%scale = 4; % 1: labelA, 4: labelB
+%scale = 1; % 1: labelA, 4: labelB
+scale = 4; % 1: labelA, 4: labelB
 
 %% Initialize data
 t0=tic;

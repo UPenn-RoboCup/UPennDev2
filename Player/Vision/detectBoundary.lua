@@ -17,17 +17,17 @@ function detect(color)
   boundary.top = {};
   boundary.bottom = {};
 
-  local nCol = Config.camera.width/2; -- Search space column
+  local nCol = Config.camera.width/2/Config.vision.scaleB; -- Search space column
 
   -- Search label A column by column for freespace
   for nC = 1 , nCol do
     -- Search box width
-    local topA = vector.new({nC,1});
-	local bottomA = vector.new({nC,Vision.labelA.n});
+    local topB = vector.new({nC,1});
+	local bottomB = vector.new({nC,Vision.labelB.n});
 
     --Project to 2D coordinate
-    local topV = HeadTransform.rayIntersectA(topA); 
-    local bottomV = HeadTransform.rayIntersectA(bottomA); 
+    local topV = HeadTransform.rayIntersectB(topB); 
+    local bottomV = HeadTransform.rayIntersectB(bottomB); 
 
     boundary.top[nC],boundary.top[nC+nCol] = topV[1],topV[2];
     boundary.bottom[nC],boundary.bottom[nC+nCol] = bottomV[1],bottomV[2];

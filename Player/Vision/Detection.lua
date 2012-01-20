@@ -210,7 +210,7 @@ function update_shm()
   vcm.set_boundary_detect(boundary.detect);
   if (boundary.detect == 1) then
 	if (freespace.detect == 1) then
-		vcm.set_boundary_top(freespace.vboundA);
+		vcm.set_boundary_top(freespace.vboundB);
 	else
 		vcm.set_boundary_top(boundary.top);
 	end

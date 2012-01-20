@@ -82,8 +82,8 @@ shared.freespace.pboundB = vector.zeros(2*Config.camera.width/(Config.vision.sca
 
 shared.boundary = {};
 shared.boundary.detect = vector.zeros(1);
-shared.boundary.top = vector.zeros(2*Config.camera.width);
-shared.boundary.bottom = vector.zeros(2*Config.camera.width);
+shared.boundary.top = vector.zeros(2*Config.camera.width/Config.vision.scaleB);
+shared.boundary.bottom = vector.zeros(2*Config.camera.width/Config.vision.scaleB);
 
 shared.debug = {};
 shared.debug.enable_shm_copy = vector.zeros(1);

@@ -28,7 +28,7 @@ shared.goal.attack_angle = vector.zeros(1);
 shared.goal.defend_angle = vector.zeros(1);
 
 shared.occmap = {};
-shared.occmap.t = vector.zeros(1);
+shared.occmap.t = vector.zeros(Config.occmap.div);
 shared.occmap.r = vector.zeros(Config.occmap.div);
 
 util.init_shm_segment(getfenv(), _NAME, shared, shsize);

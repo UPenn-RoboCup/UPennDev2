@@ -8,8 +8,8 @@ function [ ] = plot_surroundings( handle, mon_struct )
     % Assume that we can only see 3 meters left and right
     % Assume that we do not see objects very far behind us
 
-    xlim([-3 3]);
-    ylim([0 4]);
+    xlim([-0.5 0.5]);
+    ylim([0 1.5]);
     hold on;
     
     ball = mon_struct.ball;
@@ -39,12 +39,12 @@ function [ ] = plot_surroundings( handle, mon_struct )
     bd = mon_struct.bd;
     if( bd.detect == 1 )
         % show top boundary
-		plot(bd.topx,bd.topy,'--');
+		plot(bd.topx,bd.topy);
 		% show bottom boundary
-		plot(bd.btmx,bd.btmy,'--');
+		plot(bd.btmx,bd.btmy);
 		% close boundary
-		plot([bd.topx(1),bd.btmx(1)],[bd.topy(1),bd.btmy(1)],'--');
-		plot([bd.topx(bd.nCol),bd.btmx(bd.nCol)],[bd.topy(bd.nCol),bd.btmy(bd.nCol)],'--');    
+		plot([bd.topx(1),bd.btmx(1)],[bd.topy(1),bd.btmy(1)]);
+		plot([bd.topx(bd.nCol),bd.btmx(bd.nCol)],[bd.topy(bd.nCol),bd.btmy(bd.nCol)]);    
     end
 
     hold off;

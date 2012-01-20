@@ -8,26 +8,37 @@ require('shm');
 require('vcm');
 require('unix'); -- Get Time
 require('wcm');
+require('mcm');
 
-nCol = Config.camera.width/2;
+nCol = Config.camera.width/2/Config.vision.scaleB;
 Div = Config.occmap.div;
 Interval = 2*math.pi/Div;
 HalfInter = Interval/2;
 occDa = 2.5*math.pi/180;
 occDr = 0.1;
 
+-- IMU based Navigation
+imuYaw = Config.world.imuYaw or 0;
+yaw0 = 0;
+yawAcc = 0;
+xAcc = 0;
+yAcc = 0;
+uOdometry0 = vector.new({0, 0, 0});
+odomScale = Config.world.odomScale;
+
 occFilter = {};
 
 occmap = {};
-occmap.t = 0;
+occmap.t = vector.zeros(Div);
 occmap.x = {};
 occmap.y = {};
 occmap.r = vector.zeros(Div);
 
 function entry()
+  print("initial occmap");
   for i = 1,Div do
     occFilter[i] = Filter2D.new();
-	occFilter[i]:observation_xy(0.0,0.0,occDa,occDr);
+	occFilter[i]:observation_ra(0.0,0.0,occDa,occDr);
   end
 end
 
@@ -40,61 +51,84 @@ function getIdx(theta)
   return fanIdx
 end
 
-function update_odometry()
+function updateOdometry()
+  uOdometry, uOdometry0 = mcm.get_odometry(uOdometry0);
+  uOdometry[1] = odomScale[1]*uOdometry[1];
+  uOdometry[2] = odomScale[2]*uOdometry[2];
+  xAcc = xAcc + uOdometry[1];
+  yAcc = yAcc + uOdometry[2]; 
+  if (math.abs(xAcc)>=0.01) or (math.abs(yAcc)>=0.01) then
+    for i = 1,Div do
+      local xyOcc = vector.new({0,0});
+      xyOcc[1],xyOcc[2] = occFilter[i]:get_xy();
+      xyOcc[1] = xyOcc[1] - xAcc;
+      xyOcc[2] = xyOcc[2] - yAcc;
+      occFilter[i]:observation_xy(xyOcc[1],xyOcc[2],occDr,occDa);
+    end
+    xAcc = 0.0;
+    yAcc = 0.0;
+  end
   
+--  print(unpack(uOdometry));
+  if imuYaw == 1 then
+    yaw = Body.get_sensor_imuAngle(3);
+    --print("Body Yaw:",yaw*180/math.pi, " odom3 ",(yaw-yaw0)*180/math.pi);
+    yawAcc = yawAcc + (yaw-yaw0);
+    if (math.abs(yawAcc) >= Interval) then
+      -- Rotation Update
+      shiftDir = yawAcc/math.abs(yawAcc);
+      if (shiftDir == 1) then
+        stpin = 1; edpin = Div; inc = 1;
+      else
+        stpin = Div; edpin = 1; inc = -1;
+      end
+      -- rotate occumap
+      tempFilter = Filter2D.new();
+      tempFilter = occFilter[stpin];
+      for cnt = stpin, edpin-inc , inc do
+        occFilter[cnt] = occFilter[cnt+inc];
+      end 
+      occFilter[edpin] = tempFilter; 
+      yawAcc = 0;
+    end
+    yaw0 = yaw;
+  end 
 end
 
---[[ Another Approach for testing
-function update_occ()
-  local noccmap = {};
-  noccmap.r = vector.zeros(Div);
-  noccmap.n = vector.zeros(Div);
-  if (vcm.get_freespace_detect() == 1) then
---  print("update occmap");
-    occmap.t = Body.get_time();
-    local freeBound = vcm.get_freespace_bound();
-	-- Filter Update
-    for i = 1,nCol do
-      local v = vector.new({freeBound[i],freeBound[i+nCol]});
-	  occFilter[i]:observation_xy(v[1],v[2],occDa,occDr);
-      local xyOcc = vector.new({0,0});
-      xyOcc[1],xyOcc[2] = occFilter[i]:get_ra();
-      local r = math.sqrt(xyOcc[1]^2+xyOcc[2]^2);
-      local a = math.atan2(xyOcc[2],xyOcc[1]);
-	  local idx = getIdx(a);
-	  noccmap.r[idx] = noccmap.r[idx] + r;
-      noccmap.n[idx] = noccmap.n[idx] + 1; 
+function timeDecay()
+  --occmap.t = wcm.get_occmap_t();
+  for i = 1,Div do
+    t1 = Body.get_time();
+    dt = t1 - occmap.t[i];
+    local raOcc = vector.new({0,0});
+    raOcc[1],raOcc[2] = occFilter[i]:get_ra();
+    if (raOcc[1] > 0.05) then
+      raOcc[1] = math.min(10,raOcc[1] * (math.log(dt+1)/20+1));
+      occFilter[i]:observation_ra(raOcc[1],raOcc[2],occDa,occDr);
     end
-    for i = 1,Div do
-	  if (noccmap.n[i]~=0) then
-        noccmap.r[i] = noccmap.r[i]/noccmap.n[i];
-        occmap.r[i] = noccmap.r[i];
-      end
-	end
   end
-  wcm.set_occmap_t(occmap.t);
-  wcm.set_occmap_r(occmap.r);
 end
---]]
 
 function update()
+  timeDecay();
+  updateOdometry();
+
   if (vcm.get_freespace_detect() == 1) then
---  print("update occmap");
-    occmap.t = Body.get_time();
-    local freeBound = vcm.get_freespace_vboundA();
+    local freeBound = vcm.get_freespace_vboundB();
 	-- Filter Update
     for i = 1,nCol do
       local v = vector.new({freeBound[i],freeBound[i+nCol]});
 	  local r = math.sqrt(v[1]^2 + v[2]^2);
       local a = math.atan2(v[2], v[1]);
       local idx = getIdx(a);
+      -- record update timestamp
+      occmap.t[idx] = Body.get_time();
 	  occFilter[idx]:observation_ra(r,a,occDa,occDr);
     end
   end
   for i = 1,Div do
 	  local raOcc = vector.new({0,0});
       raOcc[1],raOcc[2] = occFilter[i]:get_ra();
---	  print(string.format('%d %1.3f %3.3f',i,raOcc[1],raOcc[2]*180/math.pi));
       occmap.r[i] = raOcc[1];
   end
   wcm.set_occmap_t(occmap.t);

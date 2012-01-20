@@ -86,7 +86,7 @@ h4 = subplot(2,2,4);
             end
             
             % Show horizon line
-            plot_horizon( r_mon.horizon, scale);
+            % plot_horizon( r_mon.horizon, scale);
         end 
     end
 

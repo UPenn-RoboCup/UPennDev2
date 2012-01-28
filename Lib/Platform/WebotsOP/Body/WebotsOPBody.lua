@@ -29,7 +29,7 @@ indexRArm = 18; 		--RArm: 18 19 20
 nJointRArm = 3;
 
 jointReverse={
---	1,--Head: 1,2
+	1,--Head: 1,2
 	--LArm: 3,4,5
 	7,8,9,--LLeg: 6,7,8,9,10,11,
 	16,--RLeg: 12,13,14,15,16,17
@@ -276,13 +276,11 @@ print("Accel:",unpack(accel))
 print("Gyro:",unpack(gyro))
 --]]
 
---[[
   --Yaw angle generation by gyro integration
   imuAngle[3] = imuAngle[3] + tDelta * (gyro[3]-512) / 0.273 *
         math.pi/180 *
         0.9; --to compensate bodyTilt
---]]
-  --  print("Yaw:",imuAngle[3]*180/math.pi)
+  --print("Yaw:",imuAngle[3]*180/math.pi)
 
 
 
@@ -315,9 +313,20 @@ end
 function get_sensor_imuGyr( )
   --SJ: modified the controller wrapper function
   gyro = controller.wb_gyro_get_values(tags.gyro);
-  gyro_proc={0, (gyro[2]-512)/0.273,(gyro[1]-512)/0.273};
+  gyro_proc={(gyro[1]-512)/0.273, (gyro[2]-512)/0.273,(gyro[3]-512)/0.273};
   return gyro_proc;
 end
+
+--SJ: added this for Nao support
+--Roll, Pitch Yaw angles in degree per seconds unit 
+
+function get_sensor_imuGyrRPY( )
+  --SJ: modified the controller wrapper function
+  gyro = controller.wb_gyro_get_values(tags.gyro);
+  gyro_proc={(gyro[1]-512)/0.273, (gyro[2]-512)/0.273,(gyro[3]-512)/0.273};
+  return gyro_proc;
+end
+
 
 function get_sensor_imuAcc( )
   accel = controller.wb_accelerometer_get_values(tags.accelerometer);

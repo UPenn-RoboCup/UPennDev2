@@ -33,6 +33,10 @@ playerID = Config.game.playerID;
 
 odomScale = Config.world.odomScale;
 
+--SJ: they are for IMU based navigation
+imuYaw = Config.world.imuYaw or 0;
+yaw0 =0;
+
 enableVelocity = Config.vision.enable_velocity_detection;
 if( enableVelocity == 1 ) then
   require('Velocity');	-- Add Velocity for Ball
@@ -54,6 +58,14 @@ function update_odometry()
   uOdometry[2] = odomScale[2]*uOdometry[2];
   uOdometry[3] = odomScale[3]*uOdometry[3];
 
+  --Gyro integration based IMU
+  if imuYaw==1 then
+    yaw = Body.get_sensor_imuAngle(3);
+    uOdometry[3] = yaw-yaw0;
+    yaw0 = yaw;
+--     print("Body yaw:",yaw*180/math.pi, " Pose yaw ",pose.a*180/math.pi)
+  end
+
   ballFilter:odometry(uOdometry[1], uOdometry[2], uOdometry[3]);
   PoseFilter.odometry(uOdometry[1], uOdometry[2], uOdometry[3]);
 end
@@ -64,6 +76,11 @@ function update_vision()
   if count % cResample == 0 then
     PoseFilter.resample();
     PoseFilter.add_noise();
+  end
+
+  -- Reset heading if robot is down
+  if mcm.get_walk_isFallDown() ==1 then
+    PoseFilter.reset_heading();
   end
 
   -- ball

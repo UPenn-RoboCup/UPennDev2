@@ -10,10 +10,10 @@ require('walk')
 active = true;
 t0 = 0;
 
-bodyHeight = 0.20;
+bodyHeight = Config.sit.bodyHeight;
 supportX = 0.0;
-footY = walk.footY;
-bodyTilt=walk.bodyTilt;
+footY = Config.walk.footY;
+bodyTilt = Config.walk.bodyTilt;
 
 -- pTorso fixed for stance:
 pTorso = vector.new({supportX, 0, bodyHeight, 0,0,0});
@@ -22,7 +22,7 @@ pLLegStance = vector.new({0, footY, 0, 0,0,0});
 pRLegStance = vector.new({0, -footY, 0, 0,0,0});
 
 -- Max change in postion6D to reach stance:
-dpLimit=vector.new({.1,.01,.03,.1,.3,.1});
+dpLimit=Config.sit.dpLimit or vector.new({.1,.01,.03,.1,.3,.1});
 
 function entry()
   print("Motion SM:".._NAME.." entry");

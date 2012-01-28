@@ -13,7 +13,8 @@ function loadconfig(configName)
   end
 end
 
-loadconfig('Config_OP_Walk_old')
+--loadconfig('Config_OP_Walk_old')
+loadconfig('Config_OP_Walk')
 loadconfig('Config_OP_World')
 loadconfig('Config_OP_Kick')
 loadconfig('Config_OP_Vision')
@@ -29,15 +30,11 @@ dev.camera = 'OPCam';
 dev.kinematics = 'OPKinematics';
 --dev.comm='OPComm';
 dev.comm='NullComm';
-dev.monitor_comm = 'OPCommWired';
+dev.monitor_comm = 'OPMonitorCommWired';
 dev.game_control='OPGameControl';
-dev.walk='NaoWalk';
---dev.kick='NaoKick';
-dev.kick = 'ik_kick'
---[[
-dev.walk='NSLWalk';
-dev.kick='NSLKick';
---]]
+dev.walk='NewWalk';
+--dev.walk='HZDWalk';
+dev.kick = 'NewKick'
 
 -- Game Parameters
 
@@ -97,3 +94,6 @@ km.standup_back = 'km_OP_StandupFromBack.lua';
 -- Need to implement this api better...
 bat_low = 100; -- 10V warning
 
+
+speedFactor = 1.0; --all SM work in real time
+webots_vision = 0; --use full vision

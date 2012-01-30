@@ -9,6 +9,5 @@ else
     Y = free.Ay;
 end
 plot(X,Y,'m--','LineWidth',2);
-%plot(free.hDirX,free.hDirY+free.h,'r--','LineWidth',2);
 hold off;
 end

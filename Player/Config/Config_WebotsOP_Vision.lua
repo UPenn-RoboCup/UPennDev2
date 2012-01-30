@@ -14,7 +14,7 @@ vision.maxFPS = 30;
 vision.scaleB = 4;
 vision.ball_diameter = 0.065;
 vision.ball_height_max = 0.20; -- -0.20
-vision.yellow_goal_count_thres = 150;
+vision.yellow_goal_count_thres = 10;
 
 -- use this to enable visible boundary detection
 vision.enable_visible_boundary = 1;

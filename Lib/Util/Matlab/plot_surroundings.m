@@ -8,8 +8,8 @@ function [ ] = plot_surroundings( handle, mon_struct )
     % Assume that we can only see 3 meters left and right
     % Assume that we do not see objects very far behind us
 
-    xlim([-0.5 0.5]);
-    ylim([0 1.5]);
+    xlim([-2 2]);
+    ylim([0 4]);
     hold on;
     
     ball = mon_struct.ball;

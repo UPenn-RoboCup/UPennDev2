@@ -14,12 +14,18 @@
 #include "mex.h"
 #include "math.h"
 #include "stdlib.h"
+#include "stdio.h"
 
 typedef unsigned char uint8;
 
 uint8 colorBall = 0x01;
 uint8 colorField = 0x08;
 uint8 colorWhite = 0x10;
+
+inline bool isFree(uint8 label) 
+{
+  return (label & colorField) || (label & colorBall) || (label & colorWhite);
+}
 
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
@@ -32,21 +38,39 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   int nj = mxGetN(prhs[0]);
   const int nRegions = ni;
 
+  int countup[nRegions];
+  int countdown[nRegions];
   int count[nRegions];
-  int flag[nRegions];
+  int flag[nRegions] ;
+
   for (int i = 0; i < nRegions; i++) {
     count[i] = 0;
     flag[i] = 0;
+    countup[i] = 0;
+    countdown[i] = 0;
   }
 
-  // Scan vertical lines:
+  // Scan vertical lines: Uphalf
   for (int i = 0; i < ni; i++) {
     int iRegion = nRegions*i/ni;
     uint8 *im_row = im_ptr + i;
-    for (int j = 0; j < nj; j++) {
+    for (int j = 0; j < nj/2; j++) {
       uint8 label = *im_row;
-      if ((label & colorField) || (label & colorBall) || (label & colorWhite)) {
-        count[iRegion]++;
+      if (isFree(label)) {
+        countup[iRegion]++;
+      }
+      im_row += ni;
+    }
+  }
+  uint8 *im_ptrdown = im_ptr + (int)(ni * round(nj/2));
+  // Scan vertical lines: downhalf
+  for (int i = 0; i < ni; i++) {
+    int iRegion = nRegions*i/ni;
+    uint8 *im_row = im_ptrdown + i;
+    for (int j = nj/2; j < nj; j++) {
+      uint8 label = *im_row;
+      if (isFree(label)) {
+        countdown[iRegion]++;
       }
       im_row += ni;
     }
@@ -54,9 +78,21 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   
   // Evaluate bound
   for (int i = 0; i < nRegions; i++){
+    count[i] = countup[i] + countdown[i];
+    // whole free, flag <- 2;
+    if (countup[i] == nj/2){
+      count[i] = nj;
+      flag[i] = 2;
+      continue;
+    }
+    // whole block, flag <- 3
+    if (count[i] == 0){
+      flag[i] = 3;
+      continue;
+    }
     int pxIdx = (nj - count[i] + 1) * ni + i;
     uint8 label = *(im_ptr + pxIdx);
-    if ((label & colorField) || (label & colorBall) || (label & colorWhite))
+    if (isFree(label)) 
       flag[i] = 1;
     else {
       //printf("Seeking\n");
@@ -64,18 +100,18 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       for (; j < nj; j++){
         int searchIdx = j * ni + i;
         uint8 searchLabel = *(im_ptr + searchIdx);
-        if ((searchLabel & colorField) || (searchLabel & colorBall) || (searchLabel & colorWhite))
+        if (isFree(searchLabel)) 
             break;
       }
-      count[i] = nj - j;
+      count[i] = nj - j + 1;
       flag[i] = 1;
     }
   }
 
   plhs[0] = mxCreateDoubleMatrix(1, nRegions, mxREAL);
-  //plhs[1] = mxCreateDoubleMatrix(1, nRegions, mxREAL);
+  plhs[1] = mxCreateDoubleMatrix(1, nRegions, mxREAL);
   for (int i = 0; i < nRegions; i++){
     mxGetPr(plhs[0])[i] = count[i];
-    //mxGetPr(plhs[1])[i] = flag[i];
+    mxGetPr(plhs[1])[i] = flag[i];
   }
 }

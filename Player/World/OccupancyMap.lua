@@ -115,15 +115,27 @@ function update()
 
   if (vcm.get_freespace_detect() == 1) then
     local freeBound = vcm.get_freespace_vboundB();
+    local freeType = vcm.get_freespace_tboundB();
 	-- Filter Update
     for i = 1,nCol do
       local v = vector.new({freeBound[i],freeBound[i+nCol]});
 	  local r = math.sqrt(v[1]^2 + v[2]^2);
       local a = math.atan2(v[2], v[1]);
       local idx = getIdx(a);
+      local raOcc = vector.new({0,0});
+      raOcc[1],raOcc[2] = occFilter[idx]:get_ra();
+      local update = true;
+      if (freeType[i]==2) and (r<raOcc[1]) then
+	    update = false;
+      end
+      if (freeType[i]==3) and (r>raOcc[1]) then
+	    update = false;
+      end
       -- record update timestamp
-      occmap.t[idx] = Body.get_time();
-	  occFilter[idx]:observation_ra(r,a,occDa,occDr);
+      if update then
+        occmap.t[idx] = Body.get_time();
+	    occFilter[idx]:observation_ra(r,a,occDa,occDr);
+      end
     end
   end
   for i = 1,Div do

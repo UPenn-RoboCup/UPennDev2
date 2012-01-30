@@ -79,6 +79,8 @@ shared.freespace.vboundA = vector.zeros(2*Config.camera.width);
 shared.freespace.pboundA = vector.zeros(2*Config.camera.width);
 shared.freespace.vboundB = vector.zeros(2*Config.camera.width/(Config.vision.scaleB));
 shared.freespace.pboundB = vector.zeros(2*Config.camera.width/(Config.vision.scaleB));
+shared.freespace.tboundA = vector.zeros(Config.camera.width);
+shared.freespace.tboundB = vector.zeros(Config.camera.width/(Config.vision.scaleB));
 
 shared.boundary = {};
 shared.boundary.detect = vector.zeros(1);

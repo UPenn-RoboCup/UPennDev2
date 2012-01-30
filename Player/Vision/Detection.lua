@@ -203,8 +203,10 @@ function update_shm()
     vcm.set_freespace_nRow(freespace.nRow);
     vcm.set_freespace_vboundA(freespace.vboundA);
     vcm.set_freespace_pboundA(freespace.pboundA);
+    vcm.set_freespace_tboundA(freespace.tboundA);
     vcm.set_freespace_vboundB(freespace.vboundB);
     vcm.set_freespace_pboundB(freespace.pboundB);
+    vcm.set_freespace_tboundB(freespace.tboundB);
   end
 
   vcm.set_boundary_detect(boundary.detect);

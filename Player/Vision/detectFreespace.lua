@@ -28,25 +28,30 @@ function detect(color)
   freespace.vboundA = {}; -- freespace boundary in mm from labelA
   freespace.vboundB = {}; -- freespace boundary in mm from labelB
   freespace.pboundA = {}; -- freespace boundary in labelA
+  freespace.tboundA = {}; -- freespace boundary type in labelA
   freespace.pboundB = {}; -- freespace boundary in labelB
+  freespace.tboundB = {}; -- freespace boundary type in labelB
+
   -- Get label handle
   labelA = Vision.labelA;
   labelB = Vision.labelB;
   
-  local pboundA = ImageProc.field_occupancy(labelA.data,labelA.m,labelA.n);
-  local pboundB = ImageProc.field_occupancy(labelB.data,labelB.m,labelB.n);
+  local FreeA = ImageProc.field_occupancy(labelA.data,labelA.m,labelA.n);
+  local FreeB = ImageProc.field_occupancy(labelB.data,labelB.m,labelB.n);
   for i = 1,labelA.m do
-    local pbound = vector.new({i,labelA.n-pboundA[i]});
-	freespace.pboundA[i],freespace.pboundA[i+labelA.m] =pbound[1],pbound[2];
+    local pbound = vector.new({i,labelA.n-FreeA.range[i]});
+	freespace.pboundA[i],freespace.pboundA[i+labelA.m] = pbound[1],pbound[2];
     local vbound = HeadTransform.rayIntersectA(pbound);
     freespace.vboundA[i],freespace.vboundA[i+labelA.m] = vbound[1],vbound[2];   
+    freespace.tboundA[i] = FreeA.flag[i];
   end
   
   for i = 1,labelB.m do
-    local pbound = vector.new({i,labelB.n-pboundB[i]});
-	freespace.pboundB[i],freespace.pboundB[i+labelB.m] =pbound[1],pbound[2];
+    local pbound = vector.new({i,labelB.n-FreeB.range[i]});
+	freespace.pboundB[i],freespace.pboundB[i+labelB.m] = pbound[1],pbound[2];
     local vbound = HeadTransform.rayIntersectB(pbound);
     freespace.vboundB[i],freespace.vboundB[i+labelB.m] = vbound[1],vbound[2];   
+    freespace.tboundB[i] = FreeB.flag[i];
   end
 
 

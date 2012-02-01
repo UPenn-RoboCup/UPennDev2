@@ -1,0 +1,217 @@
+# The Goal proto correspond to the goals used in the Robocup 2008
+# Standard Platform League, Nao division.
+# The color of the goal and the support polygons can be modified.
+#
+# Author: 15 FEB 2008: Çetin Meriçli <cetin.mericli@boun.edu.tr>
+# on behalf of SPL TC and OC <spl_tech@tzi.de>,<spl_orga@tzi.de>
+# Modified: 12 JUNE 2008: added a bounding object for the net
+# Modified: 29 OCTOBER 2009: Reviewed by Yvan Bourquin - www.cyberbotics.com
+#  -merged various IndexFaceSet for better performance
+#  -fixed unwanted black color in support triangles
+# Modified: 22 APRIL 2010: by Yvan Bourquin - www.cyberbotics.com
+#  -modified to hold net 350 mm back from posts (according to SPL 2010 specs)
+#  -removed unused Shapes/Materials in boundingObject
+
+PROTO Landmark [
+  field SFVec3f translation 0 0 0 
+  field SFRotation rotation 0 1 0 0
+  field SFFloat postRadius 0.05
+  field SFColor postColor 0.152941 0.505882 0.733333
+
+]
+{
+
+
+Solid {
+  translation IS translation
+  rotation IS rotation
+  children [
+ 
+# General conversion units - 1 unit = 100cm
+
+# START OF BLUE POST
+
+# Displace posts by 2+0.4 to get it at the std distance
+
+    DEF BLUE_FIRST_POST_TRANS Transform {
+     
+	# translation defines the position of the object from origin
+	# the 0.075 is to keep the object above the ground, as the height is 0.15
+
+      translation 0 0.075 2.4
+
+      children [
+        Shape {
+        
+	    
+	
+	    appearance DEF BLUE_POST_APP Appearance {
+            material Material {
+
+	# Defining the color of the first section of the post - BLUE
+
+            diffuseColor IS postColor
+            specularColor IS postColor         
+	  }
+        }
+
+          geometry Cylinder {
+            bottom FALSE
+            height 0.15
+            radius IS postRadius
+          }
+        }
+      ]
+    }
+
+	DEF BLUE_SECOND_POST_TRANS Transform {
+     
+	# translation defines the position of the object from origin
+	# the 0.225 is to keep the object above the first post, as the height is 0.15
+
+      translation 0 0.225 2.4
+
+      children [
+        Shape {
+        
+	   
+	    appearance DEF YELLOW_POST_APP Appearance {
+            material Material {
+
+	# Defining the color of the second section - YELLOW	
+
+            diffuseColor 0.992157 0.854902 0.219608
+            specularColor 0.992157 0.854902 0.219608
+           }
+        }
+
+          geometry Cylinder {
+            bottom FALSE
+            height 0.15
+            radius IS postRadius
+          }
+        }
+      ]
+    }
+
+	DEF BLUE_THIRD_POST_TRANS Transform {
+     
+	# translation defines the position of the object from origin
+	# the 0.375 is to keep the object above the second post, as the height is 0.15
+
+      translation 0 0.375 2.4
+
+      children [
+        Shape {
+        
+		appearance USE BLUE_POST_APP
+	  
+
+        	geometry Cylinder {
+         	bottom FALSE
+         	height 0.15
+           	radius IS postRadius
+          }	
+        }
+      ]
+    }
+ 
+# END OF BLUE POST
+
+# START OF YELLOW POST
+
+
+# Displace posts by -2-0.4 to get it at the std distance
+
+    DEF YELLOW_FIRST_POST_TRANS Transform {
+     
+	# translation defines the position of the object from origin
+	# the 0.075 is to keep the object above the ground, as the height is 0.15
+
+      translation 0 0.075 -2.4
+
+      children [
+        Shape {
+        
+	    
+	
+	  appearance USE YELLOW_POST_APP
+
+          geometry Cylinder {
+            bottom FALSE
+            height 0.15
+            radius IS postRadius
+          }
+        }
+      ]
+    }
+
+	DEF YELLOW_SECOND_POST_TRANS Transform {
+     
+	# translation defines the position of the object from origin
+	# the 0.225 is to keep the object above the first post, as the height is 0.15
+
+      translation 0 0.225 -2.4
+
+      children [
+        Shape {
+        
+	   
+	    appearance USE BLUE_POST_APP
+
+          geometry Cylinder {
+            bottom FALSE
+            height 0.15
+            radius IS postRadius
+          }
+        }
+      ]
+    }
+
+	DEF YELLOW_THIRD_POST_TRANS Transform {
+     
+	# translation defines the position of the object from origin
+	# the 0.375 is to keep the object above the second post, as the height is 0.15
+
+      translation 0 0.375 -2.4
+
+      children [
+        Shape {
+        
+		appearance USE YELLOW_POST_APP
+	  
+
+        	geometry Cylinder {
+         	bottom FALSE
+         	height 0.15
+           	radius IS postRadius
+          }	
+        }
+      ]
+    }
+
+# END OF YELLOW POST
+
+]
+   
+
+  boundingObject Group {
+    children [
+  
+
+      	USE BLUE_FIRST_POST_TRANS
+	USE BLUE_SECOND_POST_TRANS
+	USE BLUE_THIRD_POST_TRANS
+	
+
+	USE YELLOW_FIRST_POST_TRANS
+	USE YELLOW_SECOND_POST_TRANS
+	USE YELLOW_THIRD_POST_TRANS
+
+
+    ]
+  }
+
+locked TRUE
+}
+}

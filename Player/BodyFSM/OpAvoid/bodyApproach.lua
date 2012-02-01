@@ -6,20 +6,23 @@ require('walk')
 require('vector')
 
 t0 = 0;
-timeout = 10.0;
+timeout = 10.0*Config.speedFactor;
 
 -- maximum walk velocity
-maxStep = 0.025;
+maxStep = 0.03;
 
 -- ball detection timeout
-tLost = 3.0;
+tLost = 3.0*Config.speedFactor;
 
 -- kick threshold
-xKick = 0.17;
-xTarget = 0.15;
+xKick = 0.14;
+xTarget = 0.13;
 yKickMin = 0.01;
 yKickMax = 0.05;
 yTarget0 = 0.04;
+
+
+
 
 -- maximum ball distance threshold
 rFar = 0.45;
@@ -47,7 +50,9 @@ function update()
 
   ballA = math.atan2(ball.y - math.max(math.min(ball.y, 0.05), -0.05),
             ball.x+0.10);
-  vStep[3] = 0.5*ballA;
+  --  vStep[3] = 0.5*ballA;
+  vStep[3]=0;
+
   walk.set_velocity(vStep[1],vStep[2],vStep[3]);
 
 

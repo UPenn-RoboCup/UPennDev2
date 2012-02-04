@@ -76,6 +76,22 @@ function set_waist_hardness(val)
 
 end
 
+function set_lleg_pid(val)
+  --Usage: {P gain, I gain, D gain}
+  set_actuator_p_param(val[1],indexLLeg);
+  set_actuator_i_param(val[1],indexLLeg);
+  set_actuator_d_param(val[1],indexLLeg);
+  set_actuator_slopeChanged(1,1);
+end
+
+function set_rleg_pid(val)
+  --Usage: {P gain, I gain, D gain}
+  set_actuator_p_param(val[1],indexRLeg);
+  set_actuator_i_param(val[1],indexRLeg);
+  set_actuator_d_param(val[1],indexRLeg);
+  set_actuator_slopeChanged(1,1);
+end
+
 function set_body_hardness(val)
   if (type(val) == "number") then
     val = val*vector.ones(nJoint);

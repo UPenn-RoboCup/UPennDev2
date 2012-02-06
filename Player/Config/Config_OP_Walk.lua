@@ -92,18 +92,50 @@ walk.headPitch = 40* math.pi / 180; --Pitch angle offset of OP
 walk.headPitchComp = 0;
 
 local robotName = unix.gethostname();
-print("Hi all, I'm "..robotName)
+print(robotName.." walk parameters loaded")
 local robotID = 0;
 
 if( robotName=='felix' ) then
   robotID = 8;
+
+  walk.servoBias={0,-6,2,9,12,0,0,0,-6,-5,-2,-1}
+  walk.footXComp = -0.009;    
+  walk.footYComp = 0.002;  
+  walk.kickXComp = -0.010;
+  walk.headPitchComp = 4*math.pi/180;
 elseif( robotName=='betty' ) then
   robotID = 9;
+
+  walk.servoBias={0,0,2,-6,-1,0,0,0,-13,-1,0,0}
+  walk.footXComp = -0.006;    
+  walk.footYComp = 0.002;  
+  walk.kickXComp = 0.005;
+  walk.headPitchComp = 3*math.pi/180;
 elseif( robotName=='linus' ) then
   robotID = 10;
+
+  walk.servoBias={3,1,2,1,1,-3,-8,-3,-13,-4,1,-5}
+  walk.footXComp = 0.00;
+  walk.kickXComp = -0.004;
+  walk.footYComp = 0.0025;  -- 0.04
+  walk.headPitchComp = 3*math.pi/180;
+elseif( robotName=='lucy' ) then
+  robotID = 11;
+
+  walk.servoBias={-3,1,3,-1,-3,4,1,-3,-9,-1,-8,-1} --4/21, measured by chris
+  walk.footXComp = 0.002; 
+  walk.footYComp = 0.0020;
+  walk.kickXComp = -0.004;
+
 elseif( robotName=='scarface' ) then
   robotID = 5;
+
+  walk.footXComp = -0.007;
+  walk.kickXComp = 0.005;
 end
+
+
+
 
 --Apply robot specific compensation to default values
 walk.footX = walk.footX + walk.footXComp;

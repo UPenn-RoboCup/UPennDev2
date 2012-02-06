@@ -17,10 +17,6 @@ stance.dpLimit=vector.new({.04, .03, .07, .4, .4, .4});--Faster standup
 
 servo={}
 
-servo.type = 1; --1 for CM730, 0 for seeeduino
-servo.pid = 0; --old version of rx28M
-servo.syncread= 0; 
-
 servo.idMap={
 	19,20,		--Head
 	2,4,6,		--LArm
@@ -30,6 +26,8 @@ servo.idMap={
 --	21, 		--Aux servo
 	}
 
+nJoint = #servo.idMap;
+
 servo.dirReverse={
 	2,	--Head
 	4,	--LArm
@@ -38,18 +36,24 @@ servo.dirReverse={
 	18,19,20,--RArm
 	}
 
--- For old firmware
---
-servo.steps=vector.new({
-	1024,1024,
-	1024,1024,1024,
-	1024,1024,1024,1024,1024,1024,
-	1024,1024,1024,1024,1024,1024,
-	1024,1024,1024,
-	1024,		--For aux
-	});
+--Robot-specific firmware version handling
+servo.pid = 0; --old firmware default
+servo.armBias = {0,0,0,0,0,0}; --in degree
 
-servo.posZero={
+local robotName = unix.gethostname();
+if( robotName=='felix' ) then
+elseif( robotName=='betty' ) then
+elseif( robotName=='linus' ) then
+elseif( robotName=='lucy' ) then
+  servo.pid = 1;
+elseif( robotName=='scarface' ) then
+end
+
+if servo.pid ==0 then -- For old firmware with 12-bit precision
+  print(robotName.." has 12-bit firmware")
+  servo.steps=vector.ones(nJoint)*1024;
+  servo.moveRange=vector.ones(nJoint)*300*math.pi/180;
+  servo.posZero={
 	512,512,
 	205,665,819,
 	512,512,512,512,512,512,
@@ -57,46 +61,23 @@ servo.posZero={
 	819,358,205,
 	512,		--For aux
 	}
-
-servo.moveRange=vector.new({
-	300,300,
-	300,300,300,
-	300,300,300,300,300,300,
-	300,300,300,300,300,300,
-	300,300,300,
-	300,		--For aux
-	})*math.pi/180;
---
-
--- For new, PID, firmware
---
-servo.pid = 1; --new firmware version of rx28M
-servo.steps=vector.new({
-	4096,4096,
-	4096,4096,4096,
-	4096,4096,4096,4096,4096,4096,
-	4096,4096,4096,4096,4096,4096,
-	4096,4096,4096,
-	4096,		--For aux
-	});
-
-servo.posZero={
+else -- For new, PID firmware with 14-bit precision
+  print(robotName.." has 14-bit firmware")
+  servo.steps=vector.ones(nJoint)*4096;
+  servo.posZero={
 	2048,2048, --Head
 	1024,2560,3072, --LArm
 	2048,2048,2048,2048,2048,2048, --LLeg
 	2048,2048,2048,2048,2048,2048, --RLeg
 	3072,1536,1024, --RArm
-};
-servo.moveRange=vector.new({
-	360,360,
-	360,360,360,
-	360,360,360,360,360,360,
-	360,360,360,360,360,360,
-	360,360,360,
-	360,		--For aux
-	})*math.pi/180;
---
--- End motor definitions
+  };
+  servo.moveRange=vector.ones(nJoint)*360*math.pi/180;
+end
+
+--Lucy specific arm installation bias
+if( robotName=='lucy' ) then
+  servo.armBias = vector.new({0,20,0,0,0,-20})*math.pi/180*servo.steps[1]/servo.moveRange[1];
+end
 
 --Measured IMU bias parameters
 

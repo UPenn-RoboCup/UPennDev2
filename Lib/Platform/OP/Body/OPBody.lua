@@ -76,32 +76,6 @@ function set_waist_hardness(val)
 
 end
 
-function set_lleg_pid(val)
-  --Usage: {P gain, I gain, D gain}
-
-  p_param = val[1]*vector.ones(nJointLLeg);
-  i_param = val[2]*vector.ones(nJointLLeg);
-  d_param = val[3]*vector.ones(nJointLLeg);
-
-  set_actuator_p_param(p_param,indexLLeg);
-  set_actuator_i_param(i_param,indexLLeg);
-  set_actuator_d_param(d_param,indexLLeg);
-  set_actuator_slopeChanged(1,1);
-end
-
-function set_rleg_pid(val)
-  --Usage: {P gain, I gain, D gain}
-  p_param = val[1]*vector.ones(nJointRLeg);
-  i_param = val[2]*vector.ones(nJointRLeg);
-  d_param = val[3]*vector.ones(nJointRLeg);
-
-  set_actuator_p_param(p_param,indexRLeg);
-  set_actuator_i_param(i_param,indexRLeg);
-  set_actuator_d_param(d_param,indexRLeg);
-
-  set_actuator_slopeChanged(1,1);
-end
-
 function set_body_hardness(val)
   if (type(val) == "number") then
     val = val*vector.ones(nJoint);
@@ -192,18 +166,42 @@ function set_syncread_enable(val)
 end
 
 function set_lleg_slope(val)
-  if (type(val) == "number") then
+  if Config.servo.pid==0 then 
+    --Usage: compliance slope
     val = val*vector.ones(nJointLLeg);
+    set_actuator_slope(val, indexLLeg);
+  else
+print("Shouldn't called")
+--[[
+    --Usage: {P gain, I gain, D gain}
+    p_param = val[1]*vector.ones(nJointLLeg);
+    i_param = val[2]*vector.ones(nJointLLeg);
+    d_param = val[3]*vector.ones(nJointLLeg);
+    set_actuator_p_param(p_param,indexLLeg);
+    set_actuator_i_param(i_param,indexLLeg);
+    set_actuator_d_param(d_param,indexLLeg);
+--]]
   end
-  set_actuator_slope(val, indexLLeg);
   set_actuator_slopeChanged(1,1);
 end
 
 function set_rleg_slope(val)
-  if (type(val) == "number") then
+  if Config.servo.pid==0 then 
+    --Usage: compliance slope
     val = val*vector.ones(nJointRLeg);
+    set_actuator_slope(val, indexRLeg);
+  else
+print("Shouldn't called")
+--[[
+    --Usage: {P gain, I gain, D gain}
+    p_param = val[1]*vector.ones(nJointRLeg);
+    i_param = val[2]*vector.ones(nJointRLeg);
+    d_param = val[3]*vector.ones(nJointRLeg);
+    set_actuator_p_param(p_param,indexRLeg);
+    set_actuator_i_param(i_param,indexRLeg);
+    set_actuator_d_param(d_param,indexRLeg);
+--]]
   end
-  set_actuator_slope(val, indexRLeg);
   set_actuator_slopeChanged(1,1);
 end
 

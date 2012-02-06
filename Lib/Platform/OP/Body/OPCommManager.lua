@@ -20,7 +20,6 @@ dirReverse = Config.servo.dirReverse;
 posZero=Config.servo.posZero;
 gyrZero=Config.gyro.zero;
 legBias=Config.walk.servoBias;
-armBias=Config.servo.armBias;
 idMap = Config.servo.idMap;
 nJoint = #idMap;
 scale={};
@@ -29,10 +28,6 @@ for i=1,nJoint do
 end
 for i=1,12 do 	
   posZero[i+5]=posZero[i+5]+legBias[i];
-end
-for i=1,3 do 	
-  posZero[i+2]=posZero[i+2]+armBias[i];
-  posZero[i+17]=posZero[i+17]+armBias[i+3];
 end
 
 tLast=0;
@@ -179,6 +174,7 @@ end
 
 function sync_slope()
    if Config.servo.pid==0 then --Old firmware.. compliance slope
+print("Old firmware")
      --28,29: Compliance slope positive / negative
      local addr={28,29};
      local ids = {};
@@ -191,7 +187,13 @@ function sync_slope()
      end
      Dynamixel.sync_write_byte(ids, addr[1], data);
      Dynamixel.sync_write_byte(ids, addr[2], data);
+
+     --Setting compliance margin
+--     Dynamixel.sync_write_byte(ids, 26, vector.zeros(nJoint));
+--     Dynamixel.sync_write_byte(ids, 27, vector.zeros(nJoint));
+
    else --New firmware: PID parameters
+print("New firmware")
      -- P: 26, I: 27, D: 28
      local addr={26,27,28};
      local ids = {};
@@ -207,7 +209,6 @@ function sync_slope()
 	 data_d[n] = actuator.d_param[i];
      end
 
---print("P gain:",unpack(data_p))
      Dynamixel.sync_write_byte(ids, addr[1], data_p);
 --SJ: for whatever reason, setting I or D values kills the servo
 --     Dynamixel.sync_write_byte(ids, addr[2], data_i);

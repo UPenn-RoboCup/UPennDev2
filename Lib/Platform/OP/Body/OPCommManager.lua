@@ -99,7 +99,7 @@ function shm_init()
    --0: Head only 1: All servos 2: Head+Leg
    --readID: 1 for readable, 0 for non-readable
    actuatorShm.readType=vector.zeros(1);   
-   actuatorShm.readID=vector.zeros(nJoint); -
+   actuatorShm.readID=vector.zeros(nJoint); 
 end
 
 -- Setup CArray mappings into shared memory
@@ -201,9 +201,12 @@ function sync_slope()
 	 data_i[n] = actuator.i_param[i];
 	 data_d[n] = actuator.d_param[i];
      end
+
+--print("P gain:",unpack(data_p))
      Dynamixel.sync_write_byte(ids, addr[1], data_p);
-     Dynamixel.sync_write_byte(ids, addr[2], data_i);
-     Dynamixel.sync_write_byte(ids, addr[3], data_d);
+--SJ: for whatever reason, setting I or D values kills the servo
+--     Dynamixel.sync_write_byte(ids, addr[2], data_i);
+--     Dynamixel.sync_write_byte(ids, addr[3], data_d);
    end
 end
 

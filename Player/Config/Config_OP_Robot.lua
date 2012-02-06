@@ -69,7 +69,8 @@ servo.moveRange=vector.new({
 --
 
 -- For new, PID, firmware
---[[
+--
+servo.pid = 1; --new firmware version of rx28M
 servo.steps=vector.new({
 	4096,4096,
 	4096,4096,4096,
@@ -94,7 +95,7 @@ servo.moveRange=vector.new({
 	360,360,360,
 	360,		--For aux
 	})*math.pi/180;
---]]
+--
 -- End motor definitions
 
 --Measured IMU bias parameters

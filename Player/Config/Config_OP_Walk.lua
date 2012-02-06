@@ -60,7 +60,7 @@ walk.ankleMod = vector.new({-1,0})/0.12 * 10*math.pi/180;
 --Imu feedback parameters, alpha / gain / deadband / max
 --------------------------------------------------------------
 gyroFactor = 0.273*math.pi/180 * 300 / 1024; --dps to rad/s conversion
-gyroFactor=0.273*math.pi/180 *300/1024;  --For degree per second unit
+
 walk.ankleImuParamX={0.9,-0.3*gyroFactor, 0, 25*math.pi/180};
 walk.kneeImuParamX={0.9,-1.2*gyroFactor, 0, 25*math.pi/180};
 walk.ankleImuParamY={0.9,-0.7*gyroFactor, 0, 25*math.pi/180};
@@ -125,7 +125,7 @@ elseif( robotName=='lucy' ) then
   walk.servoBias={-3,1,3,-1,-3,4,1,-3,-9,-1,-8,-1} --4/21, measured by chris
   walk.footXComp = 0.002; 
   walk.footYComp = 0.0020;
-  walk.kickXComp = -0.004;
+  walk.kickXComp = -0.005;
 
 elseif( robotName=='scarface' ) then
   robotID = 5;

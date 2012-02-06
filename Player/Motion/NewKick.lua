@@ -147,7 +147,7 @@ function update()
   -- Tosro X position offxet (for differetly calibrated robots)
   if kickStepType==6 then
      torsoShiftX=kickXComp*(1-ph);
-  elseif torsoShiftX<kickXComp*0.9 then
+  elseif math.abs(torsoShiftX)<math.abs(kickXComp)*0.9 then
      torsoShiftX=kickXComp*ph;
   end
 
@@ -205,7 +205,7 @@ function update()
   pLLeg[1],pLLeg[2],pLLeg[3],pLLeg[5],pLLeg[6]=uLeftActual[1],uLeftActual[2],zLeft,aLeft,uLeftActual[3];
   pRLeg[1],pRLeg[2],pRLeg[3],pRLeg[5],pRLeg[6]=uRightActual[1],uRightActual[2],zRight,aRight,uRightActual[3];
 
-  uTorso=util.pose_global(vector.new({-footX-torsoShiftX,0,0}),uBody);
+  uTorso=util.pose_global(vector.new({-footX+torsoShiftX,0,0}),uBody);
 
   pTorso[1],pTorso[2],pTorso[6]=uTorso[1],uTorso[2],uTorso[3];
   pTorso[3],pTorso[4]=zBody,bodyRoll;

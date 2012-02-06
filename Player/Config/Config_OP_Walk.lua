@@ -130,10 +130,11 @@ elseif( robotName=='lucy' ) then
 elseif( robotName=='scarface' ) then
   robotID = 5;
 
-  walk.footXComp = -0.007;
-  walk.kickXComp = 0.005;
+  --02/04/12 - Larry V.
+  walk.servoBias={0,0,0,0,0,0,0,0,0,-9,-4,0} 
+  walk.footXComp = 0.00;
+  walk.kickXComp = -0.005;
 end
-
 
 
 

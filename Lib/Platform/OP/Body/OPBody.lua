@@ -171,10 +171,15 @@ function set_lleg_slope(val)
     val = val*vector.ones(nJointLLeg);
     set_actuator_slope(val, indexLLeg);
   else
-print("Shouldn't called")
+--SJ: default P gain:4, stiffened P gain: 8 for new firmware
+--    default c.slope:32, stiffened c.slope: 16 for old firmware
+
+    p_param = 128/val *vector.ones(nJointLLeg);
+    set_actuator_p_param(p_param,indexLLeg);
+
 --[[
     --Usage: {P gain, I gain, D gain}
-    p_param = val[1]*vector.ones(nJointLLeg);
+    p_param = val[2]*vector.ones(nJointLLeg);
     i_param = val[2]*vector.ones(nJointLLeg);
     d_param = val[3]*vector.ones(nJointLLeg);
     set_actuator_p_param(p_param,indexLLeg);
@@ -191,7 +196,9 @@ function set_rleg_slope(val)
     val = val*vector.ones(nJointRLeg);
     set_actuator_slope(val, indexRLeg);
   else
-print("Shouldn't called")
+    p_param = 128/val *vector.ones(nJointRLeg);
+    set_actuator_p_param(p_param,indexRLeg);
+
 --[[
     --Usage: {P gain, I gain, D gain}
     p_param = val[1]*vector.ones(nJointRLeg);

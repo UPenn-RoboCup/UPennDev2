@@ -20,6 +20,7 @@ dirReverse = Config.servo.dirReverse;
 posZero=Config.servo.posZero;
 gyrZero=Config.gyro.zero;
 legBias=Config.walk.servoBias;
+armBias=Config.servo.armBias;
 idMap = Config.servo.idMap;
 nJoint = #idMap;
 scale={};
@@ -28,6 +29,10 @@ for i=1,nJoint do
 end
 for i=1,12 do 	
   posZero[i+5]=posZero[i+5]+legBias[i];
+end
+for i=1,3 do 	
+  posZero[i+2]=posZero[i+2]+armBias[i];
+  posZero[i+17]=posZero[i+17]+armBias[i+3];
 end
 
 tLast=0;

@@ -111,6 +111,11 @@ elseif( robotName=='betty' ) then
   walk.footYComp = 0.002;  
   walk.kickXComp = 0.005;
   walk.headPitchComp = 3*math.pi/180;
+
+  --2/6/2012
+  walk.servoBias={0,0,2,-6,-1,0,0,0,-3,-1,-10,0}
+  walk.footXComp = 0.010;    
+
 elseif( robotName=='linus' ) then
   robotID = 10;
 

@@ -48,7 +48,7 @@ DEF BALL Ball {
 }
 
 DEF PLAYER_1_0 DARwInOP {
-  translation -0.610843  0.212101 -0.0195361
+  translation 0.317929 0.317227 0.0148292
   rotation 0 1 0 1.57 
   plasticColor 0.886275 0.278431 0.239216
   controller "nao_team_0"

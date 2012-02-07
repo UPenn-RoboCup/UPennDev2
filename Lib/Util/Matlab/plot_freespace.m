@@ -4,10 +4,11 @@ hold on;
 if (scale == 4)
     X = free.Bx;
     Y = free.By;
+    plot(X,Y,'m--','LineWidth',2);
 else
-    X = free.Ax;
-    Y = free.Ay;
+    %X = free.Ax;
+    %Y = free.Ay;
 end
-plot(X,Y,'m--','LineWidth',2);
+
 hold off;
 end

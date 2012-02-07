@@ -28,7 +28,7 @@ h.get_rgb = @get_rgb;
 h.get_labelA = @get_labelA;
 h.get_labelB = @get_labelB;
 
-    function update(vargin)
+    function update(~)
         % do nothing
     end
 
@@ -107,13 +107,13 @@ h.get_labelB = @get_labelB;
         % Add freespace boundary
         r.free = {};
         freeCol = h.vcmFreespace.get_nCol();
-		freeValueA = h.vcmFreespace.get_pboundA();
+%		freeValueA = h.vcmFreespace.get_pboundA();
         freeValueB = h.vcmFreespace.get_pboundB();
         labelAm = h.vcmImage.get_width()/2;
         labelBm = labelAm/4;
-        r.free = struct('Ax',freeValueA(1:labelAm),...
-                        'Ay',freeValueA(labelAm+1:2*labelAm),...
-                        'Bx',freeValueB(1:labelBm),...
+%         r.free = struct('Ax',freeValueA(1:labelAm),
+%                         'Ay',freeValueA(labelAm+1:2*labelAm),
+        r.free = struct('Bx',freeValueB(1:labelBm),...
                         'By',freeValueB(labelBm+1:2*labelBm),...
                         'nCol',freeCol,...
                         'detect',h.vcmFreespace.get_detect());

@@ -8,6 +8,15 @@ sit.supportX=-0.010;
 sit.bodyTilt=5*math.pi/180;
 sit.dpLimit=vector.new({.1,.01,.06,.1,.3,.1});
 
+--Init angle for start-up
+sit.initangle = {
+  0,0,
+  105*math.pi/180, 30*math.pi/180, -45*math.pi/180,
+  0,  0.055, -0.77, 2.08, -1.31, -0.055, 
+  0, -0.055, -0.77, 2.08, -1.31, 0.055,
+  105*math.pi/180, -30*math.pi/180, -45*math.pi/180,
+}
+
 --Standing parameters
 stance={};
 stance.dpLimit=vector.new({.04, .03, .04, .4, .4, .4});

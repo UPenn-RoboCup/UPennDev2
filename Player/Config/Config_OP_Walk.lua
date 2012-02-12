@@ -15,6 +15,9 @@ walk.velLimitY={-.04,.04};
 walk.velLimitA={-.4,.4};
 walk.velDelta={0.02,0.02,0.15} 
 
+walk.velLimitX={-.04,.09};
+
+
 ----------------------------------------------
 -- Stance parameters
 ---------------------------------------------
@@ -69,11 +72,19 @@ walk.armImuParamX={0.3,-10*gyroFactor, 20*math.pi/180, 45*math.pi/180};
 walk.armImuParamY={0.3,-10*gyroFactor, 20*math.pi/180, 45*math.pi/180};
 
 --------------------------------------------
+-- Support point modulation values
+--------------------------------------------
+
+walk.supportFront = 0.01; --Lean front when walking fast forward
+walk.supportBack = -0.01; --Lean back when walking backward
+walk.supportSide = 0.01; --Lean sideways when sidestepping
+
+--------------------------------------------
 -- WalkKick parameters
 --------------------------------------------
-walk.walkKickVel = {0.06, 0.14} --step / kick / follow 
+walk.walkKickVel = {0.06, 0.12} --step / kick / follow 
 walk.walkKickSupportMod = {{0,0},{0,0}}
-walk.walkKickHeightFactor = 1.5;
+walk.walkKickHeightFactor = 2.0;
 
 --Fall detection angle... OP requires large angle
 walk.fallAngle = 50*math.pi/180;
@@ -139,6 +150,9 @@ elseif( robotName=='scarface' ) then
   walk.servoBias={0,0,0,0,0,0,0,0,0,-9,-4,0} 
   walk.footXComp = 0.00;
   walk.kickXComp = -0.005;
+
+  walk.footXComp = -0.005;
+
 end
 
 

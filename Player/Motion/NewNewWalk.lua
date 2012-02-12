@@ -58,6 +58,8 @@ armImuParamY = Config.walk.armImuParamY;
 walkKickVel = Config.walk.walkKickVel;
 walkKickSupportMod = Config.walk.walkKickSupportMod;
 walkKickHeightFactor = Config.walk.walkKickHeightFactor;
+tStepWalkKick = Config.walk.tStepWalkKick or tStep;
+
 
 --Support bias parameters to reduce backlash-based instability
 supportFront = Config.walk.supportFront or 0;
@@ -99,7 +101,6 @@ stopRequest = 2;
 canWalkKick = 1; --Can we do walkkick with this walk code?
 walkKickRequest = 0; 
 walkKickType = 0;
-tStepWalkKick = 0.30;
 
 initdone=false;
 initial_step=2;
@@ -173,6 +174,7 @@ function update()
     shiftFactor = 0.5; --How much should we shift final Torso pose?
 
     if walkKickRequest ==1 then --If support foot is right, skip 1st step
+      print("NEWNEWKICK: WALKKICK START")
       if supportLeg==walkKickType then 
 	walkKickRequest = 2;
       end

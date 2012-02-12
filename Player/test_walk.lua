@@ -48,6 +48,7 @@ if(Config.platform.name == 'OP') then
   Body.set_body_hardness(0.3);
   Body.set_actuator_command(Config.sit.initangle);
   unix.usleep(1E6*1.0);
+  Body.set_body_hardness(0);
 end
 
 getch.enableblock(1);

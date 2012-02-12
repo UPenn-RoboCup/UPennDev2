@@ -20,6 +20,7 @@ dirReverse = Config.servo.dirReverse;
 posZero=Config.servo.posZero;
 gyrZero=Config.gyro.zero;
 legBias=Config.walk.servoBias;
+armBias=Config.servo.armBias;
 idMap = Config.servo.idMap;
 nJoint = #idMap;
 scale={};
@@ -28,6 +29,10 @@ for i=1,nJoint do
 end
 for i=1,12 do 	
   posZero[i+5]=posZero[i+5]+legBias[i];
+end
+for i=1,3 do 	
+  posZero[i+2]=posZero[i+2]+armBias[i];
+  posZero[i+17]=posZero[i+17]+armBias[i+3];
 end
 
 tLast=0;
@@ -90,8 +95,8 @@ function shm_init()
    actuatorShm.ledChest=vector.zeros(24);
 
    --New PID parameters variables
-   --Default value is (32,0,0)
-   actuatorShm.p_param=vector.ones(nJoint)*32; 
+   --Default value is (6,0,0)
+   actuatorShm.p_param=vector.ones(nJoint)*6; 
    actuatorShm.i_param=vector.ones(nJoint)*0; 
    actuatorShm.d_param=vector.ones(nJoint)*0; 
 
@@ -100,6 +105,9 @@ function shm_init()
    --readID: 1 for readable, 0 for non-readable
    actuatorShm.readType=vector.zeros(1);   
    actuatorShm.readID=vector.zeros(nJoint); 
+
+   --SJ: battery testing mode (read voltage from all joints)
+   actuatorShm.battTest=vector.zeros(1);   
 end
 
 -- Setup CArray mappings into shared memory
@@ -174,6 +182,7 @@ end
 
 function sync_slope()
    if Config.servo.pid==0 then --Old firmware.. compliance slope
+print("Old firmware")
      --28,29: Compliance slope positive / negative
      local addr={28,29};
      local ids = {};
@@ -186,7 +195,14 @@ function sync_slope()
      end
      Dynamixel.sync_write_byte(ids, addr[1], data);
      Dynamixel.sync_write_byte(ids, addr[2], data);
+
+     --Setting compliance margin
+--     Dynamixel.sync_write_byte(ids, 26, vector.zeros(nJoint));
+--     Dynamixel.sync_write_byte(ids, 27, vector.zeros(nJoint));
+
    else --New firmware: PID parameters
+print("New firmware")
+--
      -- P: 26, I: 27, D: 28
      local addr={26,27,28};
      local ids = {};
@@ -202,8 +218,9 @@ function sync_slope()
 	 data_d[n] = actuator.d_param[i];
      end
 
---print("P gain:",unpack(data_p))
      Dynamixel.sync_write_byte(ids, addr[1], data_p);
+--
+
 --SJ: for whatever reason, setting I or D values kills the servo
 --     Dynamixel.sync_write_byte(ids, addr[2], data_i);
 --     Dynamixel.sync_write_byte(ids, addr[3], data_d);
@@ -211,10 +228,17 @@ function sync_slope()
 end
 
 function sync_battery()
---DarwinOP specific: only check leg servos
-   chk_servo_no=(chk_servo_no%12)+1;
-   sensor.battery[chk_servo_no+5]=Dynamixel.get_battery(chk_servo_no+5);
-   sensor.temperature[chk_servo_no+5]=Dynamixel.get_temperature(chk_servo_no+5);
+   --battery test mode... read from ALL servos
+   if actuator.battTest[1]==1 then 
+     chk_servo_no=(chk_servo_no%nJoint)+1;
+     sensor.battery[chk_servo_no]=Dynamixel.get_battery(idMap[chk_servo_no]);
+     sensor.temperature[chk_servo_no]=Dynamixel.get_temperature(idMap[chk_servo_no]);
+   else
+     --Normal check mode: only check leg servos one by one
+     chk_servo_no=(chk_servo_no%12)+1;
+     sensor.battery[chk_servo_no+5]=Dynamixel.get_battery(idMap[chk_servo_no+5]);
+     sensor.temperature[chk_servo_no+5]=Dynamixel.get_temperature(idMap[chk_servo_no+5]);
+   end
 
    local bat_min=200;
    for i=6,17 do
@@ -418,8 +442,11 @@ function update()
 
    count=count+1;
    sensor.updatedCount[1]=count%100; --This count indicates whether DCM has processed current reading or not
-   if count%100==0 then 
+
+   if actuator.battTest[1]==1 then --in test mode, refresh faster
 	sync_battery();
+   else
+	if count%100==0 then sync_battery();end
    end
    if actuator.hardnessChanged[1]==1 then
 	sync_hardness();

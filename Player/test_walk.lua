@@ -44,6 +44,10 @@ webots = false;
 -- Enable OP specific 
 if(Config.platform.name == 'OP') then
   darwin = true;
+  --SJ: OP specific initialization posing (to prevent twisting)
+  Body.set_body_hardness(0.3);
+  Body.set_actuator_command(Config.sit.initangle);
+  unix.usleep(1E6*1.0);
 end
 
 getch.enableblock(1);
@@ -62,8 +66,6 @@ end
 
 smindex = 0;
 initToggle = true;
-
-
 
 targetvel=vector.zeros(3);
 
@@ -112,6 +114,8 @@ local str=getch.get();
 		walk.start();
 	end
 	walk.set_velocity(unpack(targetvel));
+
+	print("Command velocity:",unpack(walk.velCommand))
   end
 end
 

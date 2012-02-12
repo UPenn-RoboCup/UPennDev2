@@ -85,6 +85,7 @@ walk.supportSide = 0.01; --Lean sideways when sidestepping
 walk.walkKickVel = {0.06, 0.12} --step / kick / follow 
 walk.walkKickSupportMod = {{0,0},{0,0}}
 walk.walkKickHeightFactor = 2.0;
+walk.tStepWalkKick = 0.30;
 
 --Fall detection angle... OP requires large angle
 walk.fallAngle = 50*math.pi/180;

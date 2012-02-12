@@ -34,6 +34,9 @@ dev.walk='NewWalk';
 dev.kick='NewKick';
 --dev.kick='NSLKickPunch';
 
+dev.walk='NewNewWalk';
+
+
 -- Game Parameters
 
 game = {};

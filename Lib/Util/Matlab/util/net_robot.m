@@ -8,13 +8,17 @@ h.user = getenv('USER');
 h.robot_msg = {};
 h.team_msg = {};
 h.yuyv = [];
+h.yuvSub = [];
 h.labelA = [];
+h.labelAsub = [];
 h.labelB = [];
 h.scale = 1;
 
 % Setup arrays to track the images
 h.yuyv_arr = construct_array('yuyv');
+h.yuvSub_arr = construct_array('yuvSub');
 h.labelA_arr = construct_array('labelA');
+h.labelAsub_arr = construct_array('labelAsub');
 h.labelB_arr = construct_array('labelB');
 
 % set function pointers
@@ -22,8 +26,10 @@ h.update = @update;
 h.get_team_struct = @get_team_struct;
 h.get_monitor_struct = @get_monitor_struct;
 h.get_yuyv = @get_yuyv;
+h.get_yuvSub = @get_yuvSub;
 h.get_rgb = @get_rgb;
 h.get_labelA = @get_labelA;
+h.get_labelAsub = @get_labelAsub;
 h.get_labelB = @get_labelB;
 
     function scale = update( msg )
@@ -35,10 +41,12 @@ h.get_labelB = @get_labelB;
                 h.yuyv  = h.yuyv_arr.update_always(msg.arr);
                 h.labelA = h.labelA_arr.update_always(msg.arr);
                 h.labelB = h.labelB_arr.update(msg.arr);
+                h.labelAsub = h.labelAsub_arr.update_always(msg.arr);
+                h.yuvSub = h.yuvSub_arr.update_always(msg.arr);
                 if(~isempty(h.labelB)) % labelB is gotten in one packet
                     h.scale = 4;
                 else
-                    h.scale = 1;
+                    h.scale = 2;
                 end
             else
                 % Update the robot
@@ -113,15 +121,32 @@ h.get_labelB = @get_labelB;
         yuyv = h.yuyv;
     end
 
+    function yuv = get_yuvSub()
+        % returns the raw YUV image
+        yuv = h.yuvSub;
+    end
+
     function rgb = get_rgb()
         % returns the raw RGB image (not full size)
         yuyv = h.get_yuyv();
         rgb = yuyv2rgb(yuyv);
     end
 
+    function rgbsub = get_rgb_sub()
+        % returns the raw RGB image (not full size)
+        yuv = h.get_yuvSub();
+        yuv = reshape(yuv, [size(yuv,1) size(yuv,2)/3 3] );
+        rgbsub = ycbcr2rgb(yuv);
+    end
+
     function labelA = get_labelA()
         % returns the labeled image
         labelA = h.labelA;
+    end
+
+    function labelAsub = get_labelAsub()
+        % returns the labeled image
+        labelAsub = h.labelAsub;
     end
 
     function labelB = get_labelB()

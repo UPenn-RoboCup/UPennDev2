@@ -10,6 +10,8 @@ end
 
 if( scale == 1 )
     label = robots{playerNumber,teamNumber}.get_labelA();
+elseif( scale == 2 )
+    label = robots{playerNumber,teamNumber}.get_labelAsub();
 else
     label = robots{playerNumber,teamNumber}.get_labelB();
 end

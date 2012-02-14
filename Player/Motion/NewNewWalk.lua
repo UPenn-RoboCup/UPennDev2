@@ -174,7 +174,7 @@ function update()
 
     if walkKickRequest>0 then
       check_walkkick(); 
-
+      check_side_walkkick(); 
     --If stop signal sent, put two feet together
     elseif (stopRequest==1) then  --Final step
       stopRequest=2;
@@ -244,10 +244,22 @@ function update()
   if initial_step>0 then zFoot=0;  end --Don't lift foot at initial step
   pLLeg[3], pRLeg[3] = 0;
   if supportLeg == 0 then    -- Left support
-    uRight = util.se2_interpolate(xFoot, uRight1, uRight2);
+    if walkKickRequest == 4 and walkKickType>1 then --Side kick
+      if xFoot<0.5 then uRight = util.se2_interpolate(xFoot*2, uRight1, uRight15);
+      else uRight = util.se2_interpolate(xFoot*2-1, uRight15, uRight2);
+      end
+    else
+      uRight = util.se2_interpolate(xFoot, uRight1, uRight2);
+    end
     pRLeg[3] = stepHeight*zFoot;
   else    -- Right support
-    uLeft = util.se2_interpolate(xFoot, uLeft1, uLeft2);
+    if walkKickRequest == 4 and walkKickType>1 then --side kick 
+      if xFoot<0.5 then uLeft = util.se2_interpolate(xFoot*2, uLeft1, uLeft15);
+      else uLeft = util.se2_interpolate(xFoot*2-1, uLeft15, uLeft2);      
+      end
+    else
+      uLeft = util.se2_interpolate(xFoot, uLeft1, uLeft2);
+    end
     pLLeg[3] = stepHeight*zFoot;
   end
 
@@ -263,8 +275,14 @@ function update()
   motion_arms();
 end
 
+
+
+
+
 function check_walkkick()
     --Check walking kick phases
+    if walkKickType>1 then return; end
+
 
     if walkKickRequest ==1 then --If support foot is right, skip 1st step
       print("NEWNEWKICK: WALKKICK START")
@@ -313,6 +331,80 @@ function check_walkkick()
 
     end
 end
+
+
+function check_side_walkkick()
+    if walkKickType<2 then return; end
+
+    --Check walking kick phases
+
+    walkKickSupportMod={{0,0},{0,0}};
+
+--Those values work for webots nao and op----
+    supportVelX = 0.04;    
+    supportVelY = 0.04;    
+
+    sideKickVel1 = 0.09;
+    sideKickVel2 = 0.05;
+    sideKickVel3 = -0.02;
+
+    tStepWalkKick = 0.70;
+--------------------------------------------
+
+
+    if walkKickRequest ==1 then --If support foot is right, skip 1st step
+      print("NEWNEWKICK: SIDE WALKKICK START")
+      if supportLeg==walkKickType-2 then 
+	walkKickRequest = 2;
+      end
+    end
+
+    if walkKickRequest == 1 then 
+      -- Feet together
+      if supportLeg == 0 then uRight2 = util.pose_global({0,-2*footY,0}, uLeft1); 
+      else uLeft2 = util.pose_global({0,2*footY,0}, uRight1); 
+      end
+      walkKickRequest = walkKickRequest + 1;
+
+    elseif walkKickRequest ==2 then 
+      -- Support step side
+      if supportLeg == 0 then 
+	uRight2 = util.pose_global({supportVelX,-2*footY-supportVelY,0}, uLeft1);
+        shiftFactor = 0.7; --shift final torso to right foot
+      else 
+	uLeft2 = util.pose_global({supportVelX,2*footY+supportVelY,0}, uRight1); 
+        shiftFactor = 0.3; --shift final torso to left foot
+      end
+      supportMod = walkKickSupportMod[1];
+      walkKickRequest = walkKickRequest + 1;
+
+      --Slow down tStep for two kick step
+      tStep=tStepWalkKick;
+
+    elseif walkKickRequest ==3 then 
+      -- Kicking step side
+      if supportLeg == 0 then 
+	uRight15 = util.pose_global({sideKickVel1,-2*footY-sideKickVel2,0}, uLeft1);
+	uRight2 = util.pose_global({sideKickVel1,-2*footY-sideKickVel3,0}, uLeft1);
+      else 
+	uLeft15 = util.pose_global({sideKickVel1,2*footY+sideKickVel2,0}, uRight1);--RS
+	uLeft2 = util.pose_global({sideKickVel1,2*footY+sideKickVel3,0}, uRight1);--RS
+      end
+      supportMod = walkKickSupportMod[2];
+      walkKickRequest = walkKickRequest + 1;
+
+    elseif walkKickRequest == 4 then 
+      -- Feet together
+      if supportLeg == 0 then uRight2 = util.pose_global({0,-2*footY,0}, uLeft1); 
+      else uLeft2 = util.pose_global({0,2*footY,0}, uRight1); 
+      end
+      walkKickRequest = 0;
+      tStep=tStep0; 
+
+    end
+end
+
+
 
 
 function update_still()
@@ -540,6 +632,22 @@ function doWalkKickRight()
   end
 end
 
+function doSideKickLeft()
+ if walkKickRequest==0 then
+    walkKickRequest = 1; 
+    walkKickType = 2; 
+  end
+end
+
+function doSideKickRight()
+ if walkKickRequest==0 then
+    walkKickRequest = 1; 
+    walkKickType = 3; 
+  end
+end
+
+
+
 --dummy function for NSL kick, depreciated
 function zero_velocity()
 end
@@ -619,10 +727,14 @@ function foot_phase(ph)
   --Check for walkkick step
   if walkKickRequest == 4 then 
     zf = zf * walkKickHeightFactor; --Increase step height
+
+--[[
     local kickN = 1.5; --Different trajectory 
     if phSingle<0.5 then xf=kickN*phSingle;
     else xf = (1-kickN)*(2*phSingle-1) + kickN;
     end
+--]]
+
   end
 
   return xf, zf;

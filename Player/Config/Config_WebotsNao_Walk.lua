@@ -8,12 +8,12 @@ walk = {};
 -- Stance and velocity limit values
 ----------------------------------------------
 walk.stanceLimitX={-0.10,0.10};
-walk.stanceLimitY={0.07,0.20};
-walk.stanceLimitA={-10*math.pi/180,30*math.pi/180};
-walk.velLimitX={-.06,.06};
-walk.velLimitY={-.045,.045};
-walk.velLimitA={-.3,.3};
-walk.velDelta={0.02,0.02,0.15} 
+walk.stanceLimitY={0.09,0.20};
+walk.stanceLimitA={0*math.pi/180,40*math.pi/180};
+walk.velLimitX={-.06,.08};
+walk.velLimitY={-.06,.06};
+walk.velLimitA={-.4,.4};
+walk.velDelta={0.03,0.015,0.15} 
 
 ----------------------------------------------
 -- Stance parameters
@@ -30,6 +30,12 @@ walk.qRArm = math.pi/180*vector.new({105, -12, 85, 30});
 walk.hardnessSupport = .7;
 walk.hardnessSwing = .5;
 walk.hardnessArm=.3;
+
+--fix by SJ
+walk.supportX = 0.010;
+walk.supportY = 0.035;
+
+
 ---------------------------------------------
 -- Gait parameters
 ---------------------------------------------
@@ -47,7 +53,7 @@ walk.ankleMod = vector.new({-1,0})/0.12 * 10*math.pi/180;
 --------------------------------------------------------------
 --Imu feedback parameters, alpha / gain / deadband / max
 --------------------------------------------------------------
---gyroFactor = 0.273*math.pi/180 * 300 / 1024; --dps to rad/s conversion
+gyroFactor = 0.273*math.pi/180 * 300 / 1024; --dps to rad/s conversion
 gyroFactor = 0;
 walk.ankleImuParamX={1,-0.75*gyroFactor, 2*math.pi/180, 10*math.pi/180};
 walk.kneeImuParamX={1,-1.5*gyroFactor, 2*math.pi/180, 10*math.pi/180};

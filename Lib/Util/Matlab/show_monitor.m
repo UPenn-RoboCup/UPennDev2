@@ -15,7 +15,8 @@ elseif( scale == 2 )
 else
     label = robots{playerNumber,teamNumber}.get_labelB();
 end
-rgb = robots{playerNumber,teamNumber}.get_rgb();
+%rgb = robots{playerNumber,teamNumber}.get_rgb();
+rgb = robots{playerNumber,teamNumber}.get_rgb_sub();
 
 nTeams = size(robots,2);
 nPlayers = size(robots,1);
@@ -26,11 +27,14 @@ cmap=[cbk;cr;cy;cy;cb;cb;cb;cb;cg;cg;cg;cg;cg;cg;cg;cg;cw];
 
 
 h1 = subplot(2,2,1);
+if( ~isempty(rgb) )
     plot_yuyv( h1, rgb );
+end
 
 h2 = subplot(2,2,2);
-    plot_label( h2, label, r_mon, scale, cmap);
-
+if( ~isempty(label) )
+plot_label( h2, label, r_mon, scale, cmap);
+end
 
 h3 = subplot(2,2,3);
     plot_team( h3, robots, nTeams, nPlayers);

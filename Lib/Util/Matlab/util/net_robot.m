@@ -28,6 +28,7 @@ h.get_monitor_struct = @get_monitor_struct;
 h.get_yuyv = @get_yuyv;
 h.get_yuvSub = @get_yuvSub;
 h.get_rgb = @get_rgb;
+h.get_rgb_sub = @get_rgb_sub;
 h.get_labelA = @get_labelA;
 h.get_labelAsub = @get_labelAsub;
 h.get_labelB = @get_labelB;
@@ -41,8 +42,8 @@ h.get_labelB = @get_labelB;
                 h.yuyv  = h.yuyv_arr.update_always(msg.arr);
                 h.labelA = h.labelA_arr.update_always(msg.arr);
                 h.labelB = h.labelB_arr.update(msg.arr);
-                h.labelAsub = h.labelAsub_arr.update_always(msg.arr);
-                h.yuvSub = h.yuvSub_arr.update_always(msg.arr);
+                h.labelAsub = h.labelAsub_arr.update(msg.arr);
+                h.yuvSub = h.yuvSub_arr.update(msg.arr);
                 if(~isempty(h.labelB)) % labelB is gotten in one packet
                     h.scale = 4;
                 else
@@ -124,6 +125,7 @@ h.get_labelB = @get_labelB;
     function yuv = get_yuvSub()
         % returns the raw YUV image
         yuv = h.yuvSub;
+        yuv = yuv';
     end
 
     function rgb = get_rgb()
@@ -135,7 +137,8 @@ h.get_labelB = @get_labelB;
     function rgbsub = get_rgb_sub()
         % returns the raw RGB image (not full size)
         yuv = h.get_yuvSub();
-        yuv = reshape(yuv, [size(yuv,1) size(yuv,2)/3 3] );
+        yuv = reshape(yuv(:), [3 size(yuv,1)/3 size(yuv,2)]);
+        yuv = permute(yuv, [3 2 1]);
         rgbsub = ycbcr2rgb(yuv);
     end
 

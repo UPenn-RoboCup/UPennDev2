@@ -87,6 +87,12 @@ walk.walkKickSupportMod = {{0,0},{0,0}}
 walk.walkKickHeightFactor = 2.0;
 walk.tStepWalkKick = 0.30;
 
+walk.sideKickVel1 = {0.04,0.04};
+walk.sideKickVel2 = {0.09,0.05};
+walk.sideKickVel3 = {0.09,-0.02};
+walk.sideKickSupportMod = {{0,0},{0,0}};
+walk.tStepSideKick = 0.30;
+
 --Fall detection angle... OP requires large angle
 walk.fallAngle = 50*math.pi/180;
 

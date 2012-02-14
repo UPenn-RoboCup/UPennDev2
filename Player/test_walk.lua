@@ -101,7 +101,8 @@ local str=getch.get();
         elseif byte==string.byte("5") then
                 walk.doWalkKickLeft();
         elseif byte==string.byte("6") then
-                walk.doWalkKickRight();
+--                walk.doWalkKickRight();
+                walk.doSideKickRight();
 
 	elseif byte==string.byte("7") then	
 		Motion.event("sit");

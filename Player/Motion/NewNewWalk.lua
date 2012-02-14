@@ -169,9 +169,102 @@ function update()
     uRight1 = uRight2;
     uTorso1 = uTorso2;
 
-    --Check walking kick phases
     supportMod = {0,0}; --Support Point modulation for walkkick
     shiftFactor = 0.5; --How much should we shift final Torso pose?
+
+    if walkKickRequest>0 then
+      check_walkkick(); 
+
+    --If stop signal sent, put two feet together
+    elseif (stopRequest==1) then  --Final step
+      stopRequest=2;
+      velCurrent=vector.new({0,0,0});
+      velCommand=vector.new({0,0,0});
+      if supportLeg == 0 then        -- Left support
+        uRight2 = util.pose_global({0,-2*footY,0}, uLeft1);
+      else        -- Right support
+        uLeft2 = util.pose_global({0,2*footY,0}, uRight1);
+      end
+    else --Normal walk, advance steps
+      tStep=tStep0; 
+      if supportLeg == 0 then-- Left support
+        uRight2 = step_right_destination(velCurrent, uLeft1, uRight1);
+      else  -- Right support
+        uLeft2 = step_left_destination(velCurrent, uLeft1, uRight1);
+      end
+
+      --Velocity-based support point modulation
+      if velCurrent[1]>0.06 then
+        supportMod[1] = supportFront;
+      elseif velCurrent[1]<0 then
+        supportMod[1] = supportBack; 
+      end
+      if velCurrent[2]>0.015 then
+        supportMod[2] = supportSide; 
+      elseif velCurrent[2]<-0.015 then
+        supportMod[2] = -supportSide; 
+      end
+    end
+
+    uTorso2 = step_torso(uLeft2, uRight2,shiftFactor);
+
+    --Apply velocity-based support point modulation for uSupport
+    if supportLeg == 0 then --LS
+	local uLeftTorso = util.pose_relative(uLeft1,uTorso1);
+        local uTorsoModded = util.pose_global(
+	  vector.new({supportMod[1],supportMod[2],0}),uTorso);
+	local uLeftModded = util.pose_global (uLeftTorso,uTorsoModded); 
+        uSupport = util.pose_global(
+	  {supportX, supportY, 0},uLeftModded);
+        Body.set_lleg_hardness(hardnessSupport);
+        Body.set_rleg_hardness(hardnessSwing);
+    else --RS
+	local uRightTorso = util.pose_relative(uRight1,uTorso1);
+        local uTorsoModded = util.pose_global(
+	  vector.new({supportMod[1],supportMod[2],0}),uTorso);
+	local uRightModded = util.pose_global (uRightTorso,uTorsoModded); 
+        uSupport = util.pose_global(
+	  {supportX, -supportY, 0}, uRightModded);
+        Body.set_lleg_hardness(hardnessSwing);
+        Body.set_rleg_hardness(hardnessSupport);
+    end
+
+    --Compute ZMP coefficients
+    m1X = (uSupport[1]-uTorso1[1])/(tStep*ph1Zmp);
+    m2X = (uTorso2[1]-uSupport[1])/(tStep*(1-ph2Zmp));
+    m1Y = (uSupport[2]-uTorso1[2])/(tStep*ph1Zmp);
+    m2Y = (uTorso2[2]-uSupport[2])/(tStep*(1-ph2Zmp));
+    aXP, aXN = zmp_solve(uSupport[1], uTorso1[1], uTorso2[1],
+                          uTorso1[1], uTorso2[1]);
+    aYP, aYN = zmp_solve(uSupport[2], uTorso1[2], uTorso2[2],
+                          uTorso1[2], uTorso2[2]);
+  end --End new step
+  
+  xFoot, zFoot = foot_phase(ph);  
+  if initial_step>0 then zFoot=0;  end --Don't lift foot at initial step
+  pLLeg[3], pRLeg[3] = 0;
+  if supportLeg == 0 then    -- Left support
+    uRight = util.se2_interpolate(xFoot, uRight1, uRight2);
+    pRLeg[3] = stepHeight*zFoot;
+  else    -- Right support
+    uLeft = util.se2_interpolate(xFoot, uLeft1, uLeft2);
+    pLLeg[3] = stepHeight*zFoot;
+  end
+
+  uTorso = zmp_com(ph);
+  uTorsoActual = util.pose_global(vector.new({-footX,0,0}),uTorso);
+
+  pLLeg[1], pLLeg[2], pLLeg[6] = uLeft[1], uLeft[2], uLeft[3];
+  pRLeg[1], pRLeg[2], pRLeg[6] = uRight[1], uRight[2], uRight[3];
+  pTorso[1], pTorso[2], pTorso[6] = uTorsoActual[1], uTorsoActual[2], uTorsoActual[3];
+
+  qLegs = Kinematics.inverse_legs(pLLeg, pRLeg, pTorso, supportLeg);
+  motion_legs(qLegs);
+  motion_arms();
+end
+
+function check_walkkick()
+    --Check walking kick phases
 
     if walkKickRequest ==1 then --If support foot is right, skip 1st step
       print("NEWNEWKICK: WALKKICK START")
@@ -218,94 +311,9 @@ function update()
       walkKickRequest = 0;
       tStep=tStep0; 
 
-    --If stop signal sent, put two feet together
-    elseif (stopRequest==1) then  --Final step
-      stopRequest=2;
-      velCurrent=vector.new({0,0,0});
-      velCommand=vector.new({0,0,0});
-      if supportLeg == 0 then        -- Left support
-        uRight2 = util.pose_global({0,-2*footY,0}, uLeft1);
-      else        -- Right support
-        uLeft2 = util.pose_global({0,2*footY,0}, uRight1);
-      end
-    else --Normal walk, advance steps
-      tStep=tStep0; 
-      if supportLeg == 0 then-- Left support
-        uRight2 = step_right_destination(velCurrent, uLeft1, uRight1);
-      else  -- Right support
-        uLeft2 = step_left_destination(velCurrent, uLeft1, uRight1);
-      end
     end
-
-    uTorso2 = step_torso(uLeft2, uRight2,shiftFactor);
-
-    --Velocity-based support point modulation
-    supportXMod, supportYMod =0,0;
-    if velCurrent[1]>0.06 then
-      supportXMod = supportFront;
-    elseif velCurrent[1]<0 then
-      supportXMod = supportBack; 
-    end
-    if velCurrent[2]>0.015 then
-      supportYMod = supportSide; 
-    elseif velCurrent[2]<-0.015 then
-      supportYMod = -supportSide; 
-    end
-
-    --Apply velocity-based support point modulation for uSupport
-    if supportLeg == 0 then --LS
-	local uLeftTorso = util.pose_relative(uLeft1,uTorso1);
-        local uTorsoModded = util.pose_global(
-	  vector.new({supportXMod,supportYMod,0}),uTorso);
-	local uLeftModded = util.pose_global (uLeftTorso,uTorsoModded); 
-        uSupport = util.pose_global(
-	  {supportX+supportMod[1], supportY+supportMod[2], 0},	uLeftModded);
-        Body.set_lleg_hardness(hardnessSupport);
-        Body.set_rleg_hardness(hardnessSwing);
-    else --RS
-	local uRightTorso = util.pose_relative(uRight1,uTorso1);
-        local uTorsoModded = util.pose_global(
-	  vector.new({supportXMod,supportYMod,0}),uTorso);
-	local uRightModded = util.pose_global (uRightTorso,uTorsoModded); 
-        uSupport = util.pose_global(
-	  {supportX+supportMod[1], -supportY-supportMod[2], 0}, uRightModded);
-        Body.set_lleg_hardness(hardnessSwing);
-        Body.set_rleg_hardness(hardnessSupport);
-    end
-
-    --Compute ZMP coefficients
-    m1X = (uSupport[1]-uTorso1[1])/(tStep*ph1Zmp);
-    m2X = (uTorso2[1]-uSupport[1])/(tStep*(1-ph2Zmp));
-    m1Y = (uSupport[2]-uTorso1[2])/(tStep*ph1Zmp);
-    m2Y = (uTorso2[2]-uSupport[2])/(tStep*(1-ph2Zmp));
-    aXP, aXN = zmp_solve(uSupport[1], uTorso1[1], uTorso2[1],
-                          uTorso1[1], uTorso2[1]);
-    aYP, aYN = zmp_solve(uSupport[2], uTorso1[2], uTorso2[2],
-                          uTorso1[2], uTorso2[2]);
-  end --End new step
-  
-  xFoot, zFoot = foot_phase(ph);  
-  if initial_step>0 then zFoot=0;  end --Don't lift foot at initial step
-  pLLeg[3], pRLeg[3] = 0;
-  if supportLeg == 0 then    -- Left support
-    uRight = util.se2_interpolate(xFoot, uRight1, uRight2);
-    pRLeg[3] = stepHeight*zFoot;
-  else    -- Right support
-    uLeft = util.se2_interpolate(xFoot, uLeft1, uLeft2);
-    pLLeg[3] = stepHeight*zFoot;
-  end
-
-  uTorso = zmp_com(ph);
-  uTorsoActual = util.pose_global(vector.new({-footX,0,0}),uTorso);
-
-  pLLeg[1], pLLeg[2], pLLeg[6] = uLeft[1], uLeft[2], uLeft[3];
-  pRLeg[1], pRLeg[2], pRLeg[6] = uRight[1], uRight[2], uRight[3];
-  pTorso[1], pTorso[2], pTorso[6] = uTorsoActual[1], uTorsoActual[2], uTorsoActual[3];
-
-  qLegs = Kinematics.inverse_legs(pLLeg, pRLeg, pTorso, supportLeg);
-  motion_legs(qLegs);
-  motion_arms();
 end
+
 
 function update_still()
   uTorso = step_torso(uLeft, uRight,0.5);

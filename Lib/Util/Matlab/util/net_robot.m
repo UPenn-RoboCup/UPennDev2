@@ -134,9 +134,9 @@ h.get_labelB = @get_labelB;
         u = reshape(yuv(2,:), [width height]);
         v = reshape(yuv(3,:), [width height]);
         yuv = zeros(width,height,3);
-        yuv(:,:,1) = y;
+        yuv(:,:,1) = v;
         yuv(:,:,2) = u;
-        yuv(:,:,3) = v;
+        yuv(:,:,3) = y;
         yuv = permute(yuv,[2 1 3]);
         yuv = uint8(yuv);
     end

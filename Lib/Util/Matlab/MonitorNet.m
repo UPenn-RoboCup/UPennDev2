@@ -36,8 +36,8 @@ while continuous
         tStart = tic;
         % Show the monitor
         show_monitor( robots, scale, team2track, player2track );
-        %rgb_sub = robots{player2track,team2track}.get_rgb_sub();
-        %yuv_sub = robots{player2track,team2track}.get_yuvSub();
+        rgb = robots{player2track,team2track}.get_rgb_sub();
+        [yuv yuv_raw] = robots{player2track,team2track}.get_yuvSub();
         drawnow;
     end
     

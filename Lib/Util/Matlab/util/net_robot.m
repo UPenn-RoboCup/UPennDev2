@@ -122,10 +122,23 @@ h.get_labelB = @get_labelB;
         yuyv = h.yuyv;
     end
 
-    function yuv = get_yuvSub()
+    function [yuv yuv_raw] = get_yuvSub()
         % returns the raw YUV image
         yuv = h.yuvSub;
+        width = size(yuv,2)/3;
+        height = size(yuv,1);
         yuv = yuv';
+        yuv_raw = yuv(:);
+        yuv = reshape(yuv(:), [3 height*width]);
+        y = reshape(yuv(1,:), [width height]);
+        u = reshape(yuv(2,:), [width height]);
+        v = reshape(yuv(3,:), [width height]);
+        yuv = zeros(width,height,3);
+        yuv(:,:,1) = y;
+        yuv(:,:,2) = u;
+        yuv(:,:,3) = v;
+        yuv = permute(yuv,[2 1 3]);
+        yuv = uint8(yuv);
     end
 
     function rgb = get_rgb()
@@ -136,9 +149,7 @@ h.get_labelB = @get_labelB;
 
     function rgbsub = get_rgb_sub()
         % returns the raw RGB image (not full size)
-        yuv = h.get_yuvSub();
-        yuv = reshape(yuv(:), [3 size(yuv,1)/3 size(yuv,2)]);
-        yuv = permute(yuv, [3 2 1]);
+        [yuv yuv_raw] = h.get_yuvSub();
         rgbsub = ycbcr2rgb(yuv);
     end
 

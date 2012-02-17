@@ -31,11 +31,11 @@ h2 = subplot(2,2,2);
 
 h3 = subplot(2,2,3);
     %plot_team( h3, robots, nTeams, nPlayers);
-    plot_surroundings( h3, r_mon );
+%     plot_surroundings( h3, r_mon );
     
 h4 = subplot(2,2,4);
     %plot_surroundings( h4, r_mon );
-    plot_occmap( h4, r_mon.occ );
+%     plot_occmap( h4, r_mon.occ );
 
 
 % Function details

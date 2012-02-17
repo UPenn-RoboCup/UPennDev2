@@ -117,7 +117,9 @@ h.get_labelB = @get_labelB;
                         'By',freeValueB(labelBm+1:2*labelBm),...
                         'nCol',freeCol,...
                         'detect',h.vcmFreespace.get_detect());
-        % Add visible boundary
+        % Add visible boundary        
+
+        
         r.bd = {};
         bdTop = h.vcmBoundary.get_top();
 		bdBtm = h.vcmBoundary.get_bottom();
@@ -129,6 +131,7 @@ h.get_labelB = @get_labelB;
                       'btmy',bdBtm(1,1:bdCol),...
                       'btmx',-bdBtm(1,bdCol+1:2*bdCol));
         % Add occupancy map
+
         r.occ = {};
         div = size(h.wcmOccmap.get_r(),2);
         interval = 2*pi/div;
@@ -174,16 +177,16 @@ h.get_labelB = @get_labelB;
 
     function labelA = get_labelA()
         % returns the labeled image
-        width = h.vcmImage.get_width()/2;
-        height = h.vcmImage.get_height()/2;
+        width = h.vcmImage.get_width();
+        height = h.vcmImage.get_height();
         rawData = h.vcmImage.get_labelA();
         labelA = raw2label(rawData, width, height)';
     end
 
     function labelB = get_labelB()
         % returns the bit-ored labeled image
-        width = h.vcmImage.get_width()/2/4;
-        height = h.vcmImage.get_height()/2/4;
+        width = h.vcmImage.get_width()/4;
+        height = h.vcmImage.get_height()/4;
         rawData = h.vcmImage.get_labelB();
         labelB = raw2label(rawData, width, height)';
     end

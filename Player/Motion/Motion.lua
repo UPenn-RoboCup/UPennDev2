@@ -61,7 +61,6 @@ sm:set_transition(standup, 'fail', standup);
 sm:set_transition(walk, 'kick', kick);
 sm:set_transition(kick, 'done', walk);
 
-
 -- set state debug handle to shared memory settor
 sm:set_state_debug_handle(gcm.set_fsm_motion_state);
 

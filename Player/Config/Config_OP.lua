@@ -52,13 +52,19 @@ fsm = {};
 fsm.game = 'OpDemo'
 --fsm.game = 'RoboCup';
 if( fsm.game == 'RoboCup' ) then
+--[[
   if (game.playerID == 1) then
     fsm.body = {'OpGoalie'};
     fsm.head = {'OpGoalie'};
   else
-    fsm.body = {'OpPlayer'};
-    fsm.head = {'OpPlayer'};
+    fsm.body = {'OpPlayerNSL'};
+    fsm.head = {'OpPlayerNSL'};
   end
+--]]
+
+  fsm.body = {'OpPlayerNSL'};
+  fsm.head = {'OpPlayerNSL'};
+
 elseif( fsm.game == 'Dodgeball' ) then
   fsm.body = {'Dodgeball'};
   fsm.head = {'Dodgeball'};
@@ -87,8 +93,9 @@ team.nonDefenderPenalty = 0.5; -- dist from goal
 -- keyframe files
 
 km = {};
-km.standup_front = 'km_OP_StandupFromFront.lua';
-km.standup_back = 'km_OP_StandupFromBack.lua';
+km.standup_front = 'km_NSLOP_StandupFromFront.lua';
+km.standup_back = 'km_NSLOP_StandupFromBack.lua';
+
 
 -- Low battery level
 -- Need to implement this api better...

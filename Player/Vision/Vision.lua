@@ -50,8 +50,8 @@ camera.ncamera = Config.camera.ncamera;
 -- Initialize the Labeling
 labelA = {};
 -- labeled image is 1/4 the size of the original
-labelA.m = camera.width/2;
-labelA.n = camera.height/2;
+labelA.m = camera.width;
+labelA.n = camera.height;
 labelA.npixel = labelA.m*labelA.n;
 
 scaleB = 4;
@@ -164,7 +164,7 @@ function update()
   end
 
   -- perform the initial labeling
-  labelA.data  = ImageProc.yuyv_to_label(camera.image,
+  labelA.data  = ImageProc.yuyv_to_label_full(camera.image,
                                           carray.pointer(camera.lut),
                                           camera.width/2,
                                           camera.height);

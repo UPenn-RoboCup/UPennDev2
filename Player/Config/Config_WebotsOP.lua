@@ -48,7 +48,6 @@ game.nPlayers = 3;
 
 fsm = {};
 --fsm.game = 'Dodgeball';
-fsm.game = 'OpDemo'
 fsm.game = 'RoboCup';
 
 if( fsm.game == 'RoboCup' ) then
@@ -62,10 +61,8 @@ if( fsm.game == 'RoboCup' ) then
   end
 --]]
 
-  fsm.body = {'OpPlayer'};
-  fsm.head = {'OpPlayer'};
---fsm.head = {'OpPlayerNSL'};
---fsm.body = {'OpPlayerNSL'};
+  fsm.head = {'OpPlayerNSL'};
+  fsm.body = {'OpPlayerNSL'};
 
 elseif( fsm.game == 'Dodgeball' ) then
   fsm.body = {'Dodgeball'};
@@ -95,15 +92,11 @@ team.nonDefenderPenalty = 0.5; -- dist from goal
 -- keyframe files
 
 km = {};
-km.standup_front = 'km_WebotsOP_StandupFromFront.lua';
-km.standup_back = 'km_WebotsOP_StandupFromBack.lua';
---km.standup_front = 'km_NSLOP_StandupFromFront.lua';
---km.standup_back = 'km_NSLOP_StandupFromBack.lua';
---km.standup_front = 'km_NSLOP_StandupFromFront2.lua';
+km.standup_front = 'km_NSLOP_StandupFromFront.lua';
+km.standup_back = 'km_NSLOP_StandupFromBack.lua';
 
-
-km.kick_right = 'km_NSLOP_taunt1.lua';
-km.kick_left = 'km_NSLOP_StandupFromFront2.lua';
+--km.kick_right = 'km_NSLOP_taunt1.lua';
+--km.kick_left = 'km_NSLOP_StandupFromFront2.lua';
 
 
 --Webots tStep is 2x of real robot

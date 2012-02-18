@@ -46,7 +46,7 @@ function get_image()
   return ImageProc.rgb_to_yuyv(carray.pointer(image), width, height);
 end
 
-function get_labelA()
+function get_labelA(lut)
   --rgb2label
   return ImageProc.rgb_to_label(carray.pointer(image), lut, width, height);
 

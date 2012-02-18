@@ -47,8 +47,9 @@ function get_image()
 end
 
 function get_labelA()
-  --rgb2index
-  return ImageProc.rgb_to_index(carray.pointer(image), width, height);
+  --rgb2label
+  return ImageProc.rgb_to_label(carray.pointer(image), lut, width, height);
+
 end
 
 function get_camera_status()

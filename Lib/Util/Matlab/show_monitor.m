@@ -77,12 +77,14 @@ h4 = subplot(2,2,4);
                     pBBoxA = r_mon.goal.postBoundingBox2;
                     pBBoxB = r_mon.goal.postBoundingBox1;
                 end
+%{
                 postStats = bboxStats( label, r_mon.goal.color, pBBoxA, scale );
                 plot_goalposts( postStats, scale );
                 if(r_mon.goal.type==3)
                     postStats = bboxStats( label, r_mon.goal.color, pBBoxB, scale );
                     plot_goalposts( postStats, scale );
                 end
+%}
                 hold off;
             end
         end 

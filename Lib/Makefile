@@ -147,7 +147,7 @@ setup_webots_op: webots_op setup_util setup_image
 	cd $(WEBOTSCONTDIR) && rm Player && ln -s ../Player Player && cd $(CWD)
 	@echo "\n"
 
-setup_webots_hubo: webots_generic setup_util setup_image 
+setup_webots_hubo: webots_hubo setup_util setup_image 
 	@echo "Setting up Webots Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
 	find $(WEBOTSHUBODIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
@@ -169,15 +169,6 @@ setup_webots_generic: webots_generic setup_util setup_image
 	cd $(WEBOTSCONTDIR) && rm Player && ln -s ../Player Player && cd $(CWD)
 	@echo "\n"
 
-
-#setup_lc2: lc2 setup_util setup_image
-#	@echo "Setting up LC2 Lua/C++ Libraries...\n"
-#	mkdir -p $(INSTDIR)
-#	find $(LC2DIR) -regex '.*\($(SHLIBEXT)\|$(LUAEXT)\)' -exec cp -v {} $(INSTDIR) \;
-#	touch $(PLAYERDIR)/Config/Config.lua
-#	cd $(PLAYERDIR)/Config && ln -s Config_LC2.lua Config.lua && cd $(CWD)
-#	cp $(INSTDIR)/unix.$(SHLIBEXT) $(PLAYERDIR)/
-#	@echo "\n"
 
 setup_hp: hp setup_util setup_image
 	@echo "Setting up HP Lua/C++ Libraries...\n"

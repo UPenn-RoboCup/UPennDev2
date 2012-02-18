@@ -35,6 +35,8 @@ dev.game_control = 'WebotsNaoGameControl';
 dev.walk = 'NewWalk';
 dev.kick = 'NewKick';
 
+dev.walk = 'NewNewWalk';
+
 -- Game Parameters
 
 game = {};
@@ -58,7 +60,7 @@ else
   fsm.head = {'NaoPlayer'};
 end
 
---fsm.body = {'OpPlayerNSL'};
+fsm.body = {'OpPlayerNSL'};
 
 -- Team Parameters
 
@@ -112,3 +114,5 @@ BodyFSM.enable_obstacle_detection = 1;
 
 --Skip all checks in vision for 160*120 image 
 webots_vision = 1; 
+
+speedFactor = 2.0; 

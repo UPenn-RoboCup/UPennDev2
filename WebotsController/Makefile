@@ -46,8 +46,8 @@ all: controller
 %.o: %.c
 	$(CC) $(CXXFLAGS) $(LUAINCLUDE) -I$(INCLUDE_DIR) -I$(INCLUDE_DIR)/controller/c -o $@ -c $<
 
-controller_wrap.c: controller.i
-	swig -lua -I$(WEBOTS_HOME)/include/controller/c controller.i
+#controller_wrap.c: controller.i
+#	swig -lua -I$(WEBOTS_HOME)/include/controller/c controller.i
 
 controller: controller_wrap.o
 	$(LD) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ -L$(LIB_DIR) -lController

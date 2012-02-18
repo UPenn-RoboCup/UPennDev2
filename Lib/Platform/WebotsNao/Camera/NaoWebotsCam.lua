@@ -46,6 +46,11 @@ function get_image()
   return ImageProc.rgb_to_yuyv(carray.pointer(image), width, height);
 end
 
+function get_labelA()
+  --rgb2index
+  return ImageProc.rgb_to_index(carray.pointer(image), width, height);
+end
+
 function get_camera_status()
   status = {};
   status.select = get_select();

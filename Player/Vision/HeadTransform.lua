@@ -1,5 +1,10 @@
 module(..., package.seeall);
 require('Config');
+-- Enable Webots specific
+if (string.find(Config.platform.name,'Webots')) then
+  webots = true;
+end
+
 require('Transform');
 require('vector');
 
@@ -27,6 +32,11 @@ labelA = {};
 -- labeled image is 1/4 the size of the original
 labelA.m = Config.camera.width/2;
 labelA.n = Config.camera.height/2;
+if( webots ) then
+  labelA.m = Config.camera.width;
+  labelA.n = Config.camera.height;
+end
+
 nxA = labelA.m;
 x0A = 0.5 * (nxA-1);
 nyA = labelA.n;

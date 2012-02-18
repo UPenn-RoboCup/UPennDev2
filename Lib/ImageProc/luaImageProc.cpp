@@ -189,6 +189,47 @@ static int lua_yuyv_to_label(lua_State *L) {
   return 1;
 }
 
+static int lua_rgb_to_label(lua_State *L) {
+  static std::vector<uint8_t> label;
+
+  // 1st Input: Original RGB-format input image
+  uint8_t *rgb = (uint8_t *) lua_touserdata(L, 1);
+  if ((rgb == NULL) || !lua_islightuserdata(L, 1)) {
+    return luaL_error(L, "Input RGB not light user data");
+  }
+
+  // 2nd Input: YUYV->Label Lookup Table
+  uint8_t *cdt = (uint8_t *) lua_touserdata(L, 2);
+  if (cdt == NULL) {
+    return luaL_error(L, "Input CDT not light user data");
+  }
+
+  // 3rd Input: Width (in pixels) of the original RGB image  
+  int m = luaL_checkint(L, 3);
+  // 4th Input: Width (in pixels) of the original RGB image
+  int n = luaL_checkint(L, 4);
+
+  label.resize(m*n);
+
+  int count=0;
+  for (int i = 0; i < n; i++){
+    for (int j = 0; j < m; j++) {
+      uint8_t r = *rgb++;
+      uint8_t g = *rgb++;
+      uint8_t b = *rgb++;
+
+      uint8_t y = g;
+      uint8_t u = 128 + (b-g)/2;
+      uint8_t v = 128 + (r-g)/2;
+
+      // Construct Y6U6V6 index
+      uint32_t index = ((v & 0xFC) >> 2) | ((u & 0xFC) << 4) | ((y & 0xFC) << 10);
+      label[i] = cdt[index];
+    }
+  }
+  lua_pushlightuserdata(L, &label[0]);
+  return 1;
+}
 
 static int lua_index_to_label(lua_State *L) {
   static std::vector<uint8_t> label;
@@ -310,6 +351,7 @@ static int lua_connected_regions(lua_State *L) {
 static const struct luaL_reg imageProc_lib [] = {
   {"rgb_to_index", lua_rgb_to_index},
   {"rgb_to_yuyv", lua_rgb_to_yuyv},
+  {"rgb_to_label", lua_rgb_to_label},
   {"yuyv_to_label", lua_yuyv_to_label},
   {"index_to_label", lua_index_to_label},
   {"color_count", lua_color_count},

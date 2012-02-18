@@ -3,7 +3,7 @@ nPlayers = 1;
 
 %Only monitoring team 1
 %teamNumbers = [0 1];
-teamNumbers = [1];
+teamNumbers = [0];
 
 team2track = 1;
 player2track = 1;

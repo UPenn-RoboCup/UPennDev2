@@ -44,6 +44,11 @@ webots = false;
 -- Enable OP specific 
 if(Config.platform.name == 'OP') then
   darwin = true;
+  --SJ: OP specific initialization posing (to prevent twisting)
+  Body.set_body_hardness(0.3);
+  Body.set_actuator_command(Config.sit.initangle);
+  unix.usleep(1E6*1.0);
+  Body.set_body_hardness(0);
 end
 
 getch.enableblock(1);
@@ -96,7 +101,8 @@ local str=getch.get();
         elseif byte==string.byte("5") then
                 walk.doWalkKickLeft();
         elseif byte==string.byte("6") then
-                walk.doWalkKickRight();
+--                walk.doWalkKickRight();
+                walk.doSideKickRight();
 
 	elseif byte==string.byte("7") then	
 		Motion.event("sit");
@@ -110,6 +116,8 @@ local str=getch.get();
 		walk.start();
 	end
 	walk.set_velocity(unpack(targetvel));
+
+	print("Command velocity:",unpack(walk.velCommand))
   end
 end
 

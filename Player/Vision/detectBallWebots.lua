@@ -56,8 +56,8 @@ function detect(color)
   ball.bboxA = Vision.bboxB2A(ballPropsB[1].boundingBox);
 
   -- threshold checks on the region properties
---  if ((ball.propsA.area < 6) or (ball.propsA.area < 0.35*Vision.bboxArea(ball.propsA.boundingBox))) then
-  if true then
+  if ((ball.propsA.area < 6) or (ball.propsA.area < 0.35*Vision.bboxArea(ball.propsA.boundingBox))) then
+--  if true then
     Debug.vprint(2,1,'Threshold check fail');
     return ball;
   else

@@ -210,8 +210,7 @@ static int lua_rgb_to_label(lua_State *L) {
   int n = luaL_checkint(L, 4);
 
   label.resize(m*n);
-
-  int count=0;
+  uint32_t label_ind = 0;
   for (int i = 0; i < n; i++){
     for (int j = 0; j < m; j++) {
       uint8_t r = *rgb++;
@@ -224,7 +223,8 @@ static int lua_rgb_to_label(lua_State *L) {
 
       // Construct Y6U6V6 index
       uint32_t index = ((v & 0xFC) >> 2) | ((u & 0xFC) << 4) | ((y & 0xFC) << 10);
-      label[i] = cdt[index];
+      label[label_ind] = cdt[index];
+      label_ind++;
     }
   }
   lua_pushlightuserdata(L, &label[0]);

@@ -5,13 +5,16 @@ require('carray');
 require('vector');
 
 
+---
+--Print a table in the form of key, value pairs
 function ptable(t)
-  -- print a table key, value pairs
   for k,v in pairs(t) do print(k,v) end
 end
 
+---
+--Reduce an angle to [-pi, pi)
+--@param a The angle to be modified
 function mod_angle(a)
-  -- Reduce angle to [-pi, pi)
   a = a % (2*math.pi);
   if (a >= math.pi) then
     a = a - 2*math.pi;
@@ -19,14 +22,22 @@ function mod_angle(a)
   return a;
 end
 
+---
+--Return the sign of a number (-1, 0, 1) in the form of a unit vector
+--@param x The number to grab the sign of
+--@return -1 if the number is negative, 0 if the number is zero, 1 if the number is positive
 function sign(x)
-  -- return sign of the number (-1, 0, 1)
   if (x > 0) then return 1;
   elseif (x < 0) then return -1;
   else return 0;
   end
 end
 
+---
+--Find the minimum element in an array table
+--@param t the table to be parsed
+--@return The minimum value
+--@return The index of the minimum value
 function min(t)
   -- find the minimum element in the array table
   -- returns the min value and its index
@@ -41,6 +52,9 @@ function min(t)
   return tmin, imin;
 end
 
+
+---
+--Smooth out a motion using a weighted average
 function se2_interpolate(t, u1, u2)
   -- helps smooth out the motions using a weighted average
   return vector.new{u1[1]+t*(u2[1]-u1[1]),

@@ -56,12 +56,16 @@ end
 ---
 --Smooth out a motion using a weighted average
 --@param t The weight to be applied
+--@param u1 The original pose
+--@param u2 The new pose
+--@return A pose between the two poses with weight t
 function se2_interpolate(t, u1, u2)
   -- helps smooth out the motions using a weighted average
   return vector.new{u1[1]+t*(u2[1]-u1[1]),
                     u1[2]+t*(u2[2]-u1[2]),
                     u1[3]+t*mod_angle(u2[3]-u1[3])};
 end
+
 
 function procFunc(a,deadband,maxvalue)
   --Piecewise linear function for IMU feedback
@@ -73,6 +77,11 @@ function procFunc(a,deadband,maxvalue)
   return b;
 end
 
+---
+--Computes the global pose of some object
+--@param pRelative The pose of the object relative to some other object
+--@param pose The pose of the object pRelative is relative to
+--@return The global pose of the relative object
 function pose_global(pRelative, pose)
   local ca = math.cos(pose[3]);
   local sa = math.sin(pose[3]);
@@ -81,6 +90,13 @@ function pose_global(pRelative, pose)
                     pose[3] + pRelative[3]};
 end
 
+---
+--Computes the pose of some object relative to some other object
+--@param pGlobal The global pose of some object
+--@param pose The global pose of the object to compute the relative position
+--of the first object
+--@return The relative pose of the first object with respect to the second
+--object
 function pose_relative(pGlobal, pose)
   local ca = math.cos(pose[3]);
   local sa = math.sin(pose[3]);

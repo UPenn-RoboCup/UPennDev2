@@ -55,6 +55,7 @@ end
 
 ---
 --Smooth out a motion using a weighted average
+--@param t The weight to be applied
 function se2_interpolate(t, u1, u2)
   -- helps smooth out the motions using a weighted average
   return vector.new{u1[1]+t*(u2[1]-u1[1]),

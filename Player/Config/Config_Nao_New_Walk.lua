@@ -68,6 +68,7 @@ walk.armImuParamY={0.3,-10*walk.gyroFactor, 20*math.pi/180, 45*math.pi/180};
 walk.walkKickVel = {0.06, 0.14} --step / kick / follow 
 walk.walkKickSupportMod = {{-0.03,0},{-0.03,0}}
 walk.walkKickHeightFactor = 3.0;
+walk.motionArms = false;
 
 --------------------------------------------
 -- Robot - specific calibration parameters

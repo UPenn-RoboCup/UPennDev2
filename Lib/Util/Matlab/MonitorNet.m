@@ -1,8 +1,8 @@
 % Players and team to track
 nPlayers = 3;
 teamNumbers = [18];
-team2track = 1;
-player2track = 2;
+team2track = 1; % The order of teamNumber. 1st teamNumber or 2nd
+player2track = 2; % PlayerID
 
 % Should monitor run continuously?
 continuous = 1;

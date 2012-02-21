@@ -1,6 +1,7 @@
 module(..., package.seeall);
 
 require('Body')
+require('walk')
 
 t0 = 0;
 timeout = 0.3;
@@ -12,6 +13,8 @@ function entry()
   Body.set_body_hardness(0);
   t0 = Body.get_time();
   Body.set_syncread_enable(1); --OP specific
+
+  walk.stance_reset();--reset current stance
 end
 
 function update()

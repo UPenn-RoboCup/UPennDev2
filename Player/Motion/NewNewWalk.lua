@@ -650,6 +650,20 @@ end
 function zero_velocity()
 end
 
+function doPunch(punchtype)
+end
+
+function stance_reset() --standup/sitdown/falldown handling
+end
+
+function switch_stance(stance)
+end
+
+
+
+
+
+
 function get_odometry(u0)
   if (not u0) then
     u0 = vector.new({0, 0, 0});

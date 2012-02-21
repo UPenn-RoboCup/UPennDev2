@@ -329,6 +329,8 @@ function motion_legs(qLegs)
   --HZDWalk.record_joint_angles( supportLeg, qLegs );
 end
 
+---
+--Update arm motion depending on state of global variables
 function motion_arms()
   qLArm[1],qLArm[2]=qLArm0[1]+armShift[1],qLArm0[2]+armShift[2];
   qRArm[1],qRArm[2]=qRArm0[1]+armShift[1],qRArm0[2]+armShift[2];
@@ -339,9 +341,16 @@ function motion_arms()
   Body.set_rarm_command(qRArm);
 end
 
+---
+--Exit the new walk state.
 function exit()
 end
 
+---
+--Calculate destination for case in which left foot is stepping
+--@param vel The current velocity in the form of a table containing [x,y,z]
+--@param uLeft The global pose of the left foot
+--@param uRight The global pose of the right foot
 function step_left_destination(vel, uLeft, uRight)
   local u0 = util.se2_interpolate(.5, uLeft, uRight); --Get the global pose of the body center
   -- Determine nominal midpoint position 1.5 steps in future
@@ -358,6 +367,11 @@ function step_left_destination(vel, uLeft, uRight)
   return util.pose_global(uLeftRight, uRight);
 end
 
+---
+--Calculate destination for case in which right foot is stepping
+--@param vel The current velocity in the form of a table containing [x,y,z]
+--@param uLeft The global pose of the left foot
+--@param uRight The global pose of the right foot
 function step_right_destination(vel, uLeft, uRight)
   local u0 = util.se2_interpolate(.5, uLeft, uRight);
   -- Determine nominal midpoint position 1.5 steps in future
@@ -505,6 +519,7 @@ function get_body_offset()
   return util.pose_relative(uTorso, uFoot);
 end
 
+--TODO: Understand this function
 ---
 --Solve the zmp equation
 --
@@ -528,6 +543,8 @@ function zmp_solve(zs, z1, z2, x1, x2)
   return aP, aN;
 end
 
+--TODO: Understand this function
+---
 --Finds the necessary COM for stability and returns it
 function zmp_com(ph)
   local com = vector.new({0, 0, 0});
@@ -550,6 +567,11 @@ function zmp_com(ph)
   return com;
 end
 
+--TODO: Get a better understanding of this
+---
+--Computes the relative x,z motion of the foot during single support phase
+--@param ph The desired phase of the robot's step
+--@return The relative x,z motion of the foot during single support phase 
 function foot_phase(ph)
   -- Computes relative x,z motion of foot during single support phase
   -- phSingle = 0: x=0, z=0, phSingle = 1: x=1,z=0

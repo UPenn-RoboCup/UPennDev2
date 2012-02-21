@@ -60,6 +60,7 @@ armImuParamY = Config.walk.armImuParamY;
 walkKickVel = Config.walk.walkKickVel;
 walkKickSupportMod = Config.walk.walkKickSupportMod;
 walkKickHeightFactor = Config.walk.walkKickHeightFactor;
+motionArms = Config.walk.motionArms or false;
 
 ----------------------------------------------------------
 -- Walk state variables
@@ -267,7 +268,9 @@ function update()
 
   qLegs = Kinematics.inverse_legs(pLLeg, pRLeg, pTorso, supportLeg);
   motion_legs(qLegs);
-  motion_arms();
+  if motionArms then
+  	motion_arms();
+  end
 end
 
 

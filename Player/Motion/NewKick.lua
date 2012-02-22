@@ -293,6 +293,6 @@ end
 
 function set_kick(newKick)
     if (kickDefList[newKick]) then
-	kickType = newKick;
+	    kickType = newKick;
     end
 end

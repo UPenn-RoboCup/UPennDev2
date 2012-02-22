@@ -62,7 +62,7 @@ walk.armImuParamY={0.3,-10*gyroFactor, 20*math.pi/180, 45*math.pi/180};
 --------------------------------------------
 -- WalkKick parameters
 --------------------------------------------
-walk.walkKickVel = {0.06, 0.14} --step / kick / follow 
+walk.walkKickVel = {0.06, 0.12} --step / kick / follow 
 walk.walkKickSupportMod = {{0,0},{0,0}}
 walk.walkKickHeightFactor = 1.5;
 	

@@ -5,6 +5,8 @@ require('util');
 require('vector');
 require('Config');
 
+enable_occmap = Config.vision.enable_freespace_detection or 0;
+
 -- shared properties
 shared = {};
 shsize = {};
@@ -27,9 +29,11 @@ shared.goal.attack_bearing = vector.zeros(1);
 shared.goal.attack_angle = vector.zeros(1);
 shared.goal.defend_angle = vector.zeros(1);
 
-shared.occmap = {};
-shared.occmap.t = vector.zeros(Config.occmap.div);
-shared.occmap.r = vector.zeros(Config.occmap.div);
+if (enable_occmap == 1) then
+	shared.occmap = {};
+	shared.occmap.t = vector.zeros(Config.occmap.div);
+	shared.occmap.r = vector.zeros(Config.occmap.div);
+end
 
 util.init_shm_segment(getfenv(), _NAME, shared, shsize);
 

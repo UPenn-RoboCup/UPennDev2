@@ -43,8 +43,8 @@ yellowGoalCountThres = Config.vision.yellow_goal_count_thres;
 enableLine = Config.vision.enable_line_detection;
 enableSpot = Config.vision.enable_spot_detection;
 enableMidfieldLandmark = Config.vision.enable_midfield_landmark_detection;
-enableFreespace = Config.vision.enable_freespace_detection;
-enableBoundary = Config.vision.enable_visible_boundary;
+enableFreespace = Config.vision.enable_freespace_detection or 0;
+enableBoundary = Config.vision.enable_visible_boundary or 0;
 
 function entry()
 	-- Initiate Detection

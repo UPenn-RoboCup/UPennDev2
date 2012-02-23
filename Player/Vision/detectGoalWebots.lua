@@ -34,6 +34,9 @@ function detect(color)
   end
   --print("Enough post color");
 
+--if(true) then
+--  return goal; 
+--end
   local npost = 0;
   local ivalidB = {};
   local postA = {};

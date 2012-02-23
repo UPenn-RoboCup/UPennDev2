@@ -115,5 +115,6 @@ function update()
 end
 
 function exit()
+  walk.stance_reset();
   walk.start();
 end

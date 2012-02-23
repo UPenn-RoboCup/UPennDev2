@@ -14,9 +14,13 @@ kick.hipImuParamY={0.9,-0.3*gyroFactor, 0, 25*math.pi/180};
 kick.armImuParamX={0.3,-10*gyroFactor, 20*math.pi/180, 45*math.pi/180};
 kick.armImuParamY={0.3,-10*gyroFactor, 20*math.pi/180, 45*math.pi/180};
 
+
 --Less feedback values
 kick.ankleImuParamX={0.6,-0.3*gyroFactor, 0, 25*math.pi/180};
 kick.kneeImuParamX={0.6,-0.7*gyroFactor, 0, 25*math.pi/180};
+kick.armImuParamX={0.3,-5*gyroFactor, 20*math.pi/180, 45*math.pi/180};
+kick.armImuParamY={0.3,-5*gyroFactor, 20*math.pi/180, 45*math.pi/180};
+
 
 --Kick arm pose
 kick.qLArm=math.pi/180*vector.new({95,22,-135});

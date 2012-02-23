@@ -4,16 +4,21 @@ require("shm");
 require("util");
 require("vector");
 require('Config');
+-- Enable Webots specific
+if (string.find(Config.platform.name,'Webots')) then
+  webots = true;
+end
 
 -- shared properties
 shared = {};
 shsize = {};
 
--- Subsambling means half width, and process every other line in the ImageProc
---TODO:
 processed_img_width = Config.camera.width;
 processed_img_height = Config.camera.height;
-if( Config.vision.subsampling==1 ) then
+if( webots ) then
+  processed_img_width = processed_img_width;
+  processed_img_height = processed_img_height;
+else
   processed_img_width = processed_img_width / 2;
   processed_img_height = processed_img_height / 2;
 end
@@ -34,6 +39,7 @@ shared.image.horizonDir = vector.zeros(4); -- Angle of horizon line rotation
 shared.image.yuyv = 2*Config.camera.width*Config.camera.height; -- 2 bytes per pixel (32 bits describes 2 pixels)
 shared.image.width = vector.zeros(1);
 shared.image.height = vector.zeros(1);
+
 shared.image.labelA = (processed_img_width)*(processed_img_height);
 shared.image.labelB = ((processed_img_width)/Config.vision.scaleB)*((processed_img_height)/Config.vision.scaleB);
 -- calculate image shm size

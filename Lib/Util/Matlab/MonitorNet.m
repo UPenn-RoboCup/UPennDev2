@@ -1,8 +1,8 @@
 % Players and team to track
 nPlayers = 3;
 teamNumbers = [18];
-team2track = 1;
-player2track = 2;
+team2track = 1; % The order of teamNumber. 1st teamNumber or 2nd
+player2track = 2; % PlayerID
 
 % Should monitor run continuously?
 continuous = 1;
@@ -36,6 +36,8 @@ while continuous
         tStart = tic;
         % Show the monitor
         show_monitor( robots, scale, team2track, player2track );
+        rgb = robots{player2track,team2track}.get_rgb_sub();
+        [yuv yuv_raw] = robots{player2track,team2track}.get_yuvSub();
         drawnow;
     end
     

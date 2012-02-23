@@ -60,12 +60,12 @@ end
 -- labelA (subsampled) --
 function sendAsub()
   labelA = vcm.get_image_labelA();
-  labelAsub = ImageProc.subsample( labelA );
-  width = vcm.get_image_width()/4;
-  height = vcm.get_image_height()/4;
+  width = vcm.get_image_width()/2;
+  height = vcm.get_image_height()/2;
   count = vcm.get_image_count();
+  labelAsub = ImageProc.block_bitor(labelA, width, height, 2, 2);
   
-  array = serialization.serialize_array(labelAsub, width, height, 'uint8', 'labelAsub', count);
+  array = serialization.serialize_array(labelAsub, width/2, height/2, 'uint8', 'labelAsub', count);
   sendlabelAsub = {};
   sendlabelAsub.team = {};
   sendlabelAsub.team.number = gcm.get_team_number();
@@ -102,15 +102,15 @@ function sendImg()
 end
 
 -- yuv (subsampled from yuyv) --
-function sendImgSub()
+function sendImgSub( level )
   yuyv = vcm.get_image_yuyv();
-  yuvSub = ImageProc.subsample_yuyv2yuv( yuyv );
-  -- TODO: I am sending 3 bytes per pixel.
-  width = vcm.get_image_width()/2; -- number of yuyv packages
-  height = vcm.get_image_height()/2;
+  width = vcm.get_image_width() / 2; -- number of yuyv packages
+  height = vcm.get_image_height() / 2;
   count = vcm.get_image_count();
+  yuvSub = ImageProc.subsample_yuyv2yuv( yuyv, width, height*2, level or 1 );
   
-  array = serialization.serialize_array(yuvSub, width, height, 'uint8', 'yuvSub', count);
+  -- TODO: I am sending 3 bytes per pixel.  Is this the best way to do it?
+  array = serialization.serialize_array(yuvSub, 3*width*height, 1, 'uint8', 'yuvSub', count);
   sendyuvSub = {};
   sendyuvSub.team = {};
   sendyuvSub.team.number = gcm.get_team_number();
@@ -174,19 +174,14 @@ function update(enable)
 
   MonitorComm.send(serialization.serialize(send));
   
-  -- Send camera frames
-  if enable==1 then -- just send the data, no vision
-    return;
-  elseif enable==2 then -- send labelB in addition to data
-    sendB();
-  elseif enable==3 then -- send labelA in addition to data
-    -- Send labelA image      
-    sendA();
-    -- Send image packets
-    sendImg();
-  end
-
 end
 
-function update_img()
+function update_img( enable )
+  if(enable==2) then
+    sendB();
+    sendImgSub( 2 ); -- half of sub image
+  elseif(enable==3) then
+    sendImgSub();
+    sendAsub();
+  end
 end

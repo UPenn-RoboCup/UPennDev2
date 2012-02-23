@@ -187,6 +187,7 @@ setup_op: op setup_util setup_image
 #	touch $(PLAYERDIR)/Config/Config.lua
 	rm -f $(PLAYERDIR)/Config/Config.lua
 	cd $(PLAYERDIR)/Config && ln -s Config_OP.lua Config.lua && cd $(CWD)
+	cp -r $(UTILDIR)/mp3 $(PLAYERDIR)
 	@echo "\n"
 
 setup_image: image
@@ -233,3 +234,6 @@ clean:
 	cd $(OPDIR) && make clean && cd $(CWD)
 	cd $(PLAYERDIR)/Config && rm -f Config.lua && cd $(CWD)
 	cd $(PLAYERDIR) && rm -rf Lib && cd $(CWD)
+	cd $(PLAYERDIR) && rm -rf mp3 && cd $(CWD)
+
+

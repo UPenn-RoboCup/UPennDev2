@@ -31,9 +31,3 @@ WebotsController/controller_wrap.c
 *~
 *.swp
 .DS_Store
-
-# Webots 
-*.project
-
-# Webots Control
-WebotsProject/controllers

@@ -32,7 +32,11 @@ dev.monitor_comm = 'NullComm';
 dev.game_control='WebotsOPGameControl';
 dev.walk='NewWalk';
 dev.kick='NewKick';
---dev.kick='NSLKickPunch';
+--dev.kick='NSLKickPunch'; --Extended kick that supports upper body motion
+dev.walk='NewNewWalk'; --New robocup walk that supports walking kicks
+
+dev.walk='BoxWalk'; --New walk that supports different foot stance
+
 
 -- Game Parameters
 
@@ -63,10 +67,8 @@ if( fsm.game == 'RoboCup' ) then
   end
 --]]
 
-  fsm.body = {'OpPlayer'};
-  fsm.head = {'OpPlayer'};
---fsm.head = {'OpPlayerNSL'};
---fsm.body = {'OpPlayerNSL'};
+  fsm.head = {'OpPlayerNSL'};
+  fsm.body = {'OpPlayerNSL'};
 
 elseif( fsm.game == 'Dodgeball' ) then
   fsm.body = {'Dodgeball'};
@@ -99,15 +101,11 @@ team.nonDefenderPenalty = 0.5; -- dist from goal
 -- keyframe files
 
 km = {};
-km.standup_front = 'km_WebotsOP_StandupFromFront.lua';
-km.standup_back = 'km_WebotsOP_StandupFromBack.lua';
---km.standup_front = 'km_NSLOP_StandupFromFront.lua';
---km.standup_back = 'km_NSLOP_StandupFromBack.lua';
---km.standup_front = 'km_NSLOP_StandupFromFront2.lua';
+km.standup_front = 'km_NSLOP_StandupFromFront.lua';
+km.standup_back = 'km_NSLOP_StandupFromBack.lua';
 
-
-km.kick_right = 'km_NSLOP_taunt1.lua';
-km.kick_left = 'km_NSLOP_StandupFromFront2.lua';
+--km.kick_right = 'km_NSLOP_taunt1.lua';
+--km.kick_left = 'km_NSLOP_StandupFromFront2.lua';
 
 
 --Webots tStep is 2x of real robot

@@ -10,10 +10,13 @@ end
 
 if( scale == 1 )
     label = robots{playerNumber,teamNumber}.get_labelA();
+elseif( scale == 2 )
+    label = robots{playerNumber,teamNumber}.get_labelAsub();
 else
     label = robots{playerNumber,teamNumber}.get_labelB();
 end
 rgb = robots{playerNumber,teamNumber}.get_rgb();
+%rgb = robots{playerNumber,teamNumber}.get_rgb_sub();
 
 nTeams = size(robots,2);
 nPlayers = size(robots,1);
@@ -24,10 +27,14 @@ cmap=[cbk;cr;cy;cy;cb;cb;cb;cb;cg;cg;cg;cg;cg;cg;cg;cg;cw];
 
  
 h1 = subplot(2,2,1);
+if( ~isempty(rgb) )
     plot_yuyv( h1, rgb );
+end
 
 h2 = subplot(2,2,2);
-    plot_label( h2, label, r_mon, scale, cmap);
+if( ~isempty(label) )
+	plot_label( h2, label, r_mon, scale, cmap);
+end
 
 h3 = subplot(2,2,3);
     %plot_team( h3, robots, nTeams, nPlayers);
@@ -72,12 +79,14 @@ h4 = subplot(2,2,4);
                     pBBoxA = r_mon.goal.postBoundingBox2;
                     pBBoxB = r_mon.goal.postBoundingBox1;
                 end
+%{
                 postStats = bboxStats( label, r_mon.goal.color, pBBoxA, scale );
                 plot_goalposts( postStats, scale );
                 if(r_mon.goal.type==3)
                     postStats = bboxStats( label, r_mon.goal.color, pBBoxB, scale );
                     plot_goalposts( postStats, scale );
                 end
+%}
                 hold off;
             end
             % Show freespace boundary in label

@@ -3,6 +3,10 @@ module(..., package.seeall);
 require('carray');
 require('vector');
 require('Config');
+-- Enable Webots specific
+if (string.find(Config.platform.name,'Webots')) then
+  webots = true;
+end
 
 require('ImageProc');
 require('HeadTransform');
@@ -53,6 +57,11 @@ labelA = {};
 labelA.m = camera.width;
 labelA.n = camera.height;
 labelA.npixel = labelA.m*labelA.n;
+if( webots ) then
+  labelA.m = camera.width;
+  labelA.n = camera.height;
+  labelA.npixel = labelA.m*labelA.n;
+end
 
 scaleB = 4;
 labelB = {};
@@ -164,10 +173,14 @@ function update()
   end
 
   -- perform the initial labeling
-  labelA.data  = ImageProc.yuyv_to_label_full(camera.image,
+  if(webots) then
+    labelA.data = Camera.get_labelA( carray.pointer(camera.lut) );
+  else
+    labelA.data  = ImageProc.yuyv_to_label(camera.image,
                                           carray.pointer(camera.lut),
                                           camera.width/2,
                                           camera.height);
+  end
 
   -- determine total number of pixels of each color/label
   colorCount = ImageProc.color_count(labelA.data, labelA.npixel);

@@ -52,8 +52,8 @@ game.nPlayers = 3;
 
 fsm = {};
 --fsm.game = 'Dodgeball';
-fsm.game = 'OpDemo';
---fsm.game = 'RoboCup';
+--fsm.game = 'OpDemo';
+fsm.game = 'RoboCup';
 
 if( fsm.game == 'RoboCup' ) then
 --[[

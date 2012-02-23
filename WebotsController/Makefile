@@ -53,7 +53,6 @@ controller: controller_wrap.o
 	$(LD) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ -L$(LIB_DIR) -lController 
 ifeq ($(OSTYPE),darwin)
 	ln -s controller.dylib controller.so
-	ln -s unix.dylib unix.so
 endif
 
 # Old handwritten controller code:

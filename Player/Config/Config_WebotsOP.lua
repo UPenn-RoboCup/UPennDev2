@@ -53,7 +53,6 @@ game.nPlayers = 3;
 fsm = {};
 --fsm.game = 'Dodgeball';
 fsm.game = 'OpDemo';
-fsm.game = 'OpAvoid';
 --fsm.game = 'RoboCup';
 
 if( fsm.game == 'RoboCup' ) then
@@ -73,9 +72,6 @@ if( fsm.game == 'RoboCup' ) then
 elseif( fsm.game == 'Dodgeball' ) then
   fsm.body = {'Dodgeball'};
   fsm.head = {'Dodgeball'};
-elseif( fsm.game == 'OpAvoid' ) then
-	fsm.body = {'OpAvoid'};
-	fsm.head = {'OpDemo'};
 else
   fsm.body = {'OpDemo'};
   fsm.head = {'OpDemo'};

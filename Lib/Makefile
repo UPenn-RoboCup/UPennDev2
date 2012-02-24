@@ -2,7 +2,6 @@
 
 CWD= $(shell pwd)
 
-
 NAODIR= Platform/Nao
 NAOQIDIR= NaoQi
 WEBOTSNAODIR= Platform/WebotsNao
@@ -12,12 +11,13 @@ WEBOTSHUBODIR= Platform/WebotsHubo
 LC2DIR= Platform/LC2
 HPDIR= Platform/HP2
 OPDIR= Platform/OP
+XOSDIR=Platform/XOS
 IMAGEDIR= ImageProc
 UTILDIR= Util
 MATLABDIR= Matlab
 COLORTABLEDIR= Colortable
 VELODIR= Velocity
-PLATFORMS = setup_nao setup_op setup_webots_nao setup_webots_op setup_webots_generic setup_webots_hubo
+PLATFORMS = setup_nao setup_op setup_webots_nao setup_webots_op setup_webots_generic setup_webots_hubo setup_xos
 INSTDIR= ../Player/Lib
 WEBOTSCONTDIR= ../WebotsController
 PLAYERDIR= ../Player
@@ -76,6 +76,12 @@ lc2:
 hp:
 	@echo "Compiling HP Lua/C++ Libraries...\n"
 	@cd $(HPDIR) && make && cd $(CWD)
+	@echo "\n"
+
+xos:
+	@echo "Compiling XOS Lua/C++ Libraries...\n"
+	@cd $(XOSDIR) && MODE=$(MODE) make && cd $(CWD)
+	@echo "Done compiling XOS Specific set!"
 	@echo "\n"
 
 op:
@@ -190,6 +196,17 @@ setup_op: op setup_util setup_image
 	cp -r $(UTILDIR)/mp3 $(PLAYERDIR)
 	@echo "\n"
 
+setup_xos: xos setup_util setup_image
+	@echo "Setting up Darwin XOS Lua/C++ Libraries...\n"
+	mkdir -p $(INSTDIR)
+#	find $(XOSDIR) -regex '.*\($(SHLIBEXT)\|$(LUAEXT)\)' -exec cp -v {} $(INSTDIR) \;
+	find $(XOSDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
+#	touch $(PLAYERDIR)/Config/Config.lua
+	rm -f $(PLAYERDIR)/Config/Config.lua
+	cd $(PLAYERDIR)/Config && ln -s Config_XOS.lua Config.lua && cd $(CWD)
+#	cp -r $(UTILDIR)/mp3 $(PLAYERDIR)
+	@echo "\n"
+
 setup_image: image
 	@echo "Setting up Image Processing Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
@@ -228,6 +245,7 @@ clean:
 #	cd $(LC2DIR) && make clean && cd $(CWD)
 	cd $(WEBOTSNAODIR) && make clean && cd $(CWD)
 	cd $(WEBOTSOPDIR) && make clean && cd $(CWD)
+	cd $(XOSDIR) && make clean && cd $(CWD)
 	cd $(WEBOTSGENERICDIR) && make clean && cd $(CWD)
 	cd $(WEBOTSCONTDIR) && make clean && cd $(CWD)
 #	cd $(HPDIR) && make clean && cd $(CWD)

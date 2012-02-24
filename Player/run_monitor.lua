@@ -1,15 +1,20 @@
-module(... or "", package.seeall)
+module(... or '', package.seeall)
 
-require('unix')
-
-local cwd = unix.getcwd();
-computer = os.getenv('COMPUTER') or "";
-if (string.find(computer, "Darwin")) then
-   -- MacOS X uses .dylib:
-   package.cpath = cwd.."/Lib/?.dylib;"..package.cpath;
-else
-   package.cpath = cwd.."/Lib/?.so;"..package.cpath;
+-- Get Platform for package path
+cwd = '.';
+local platform = os.getenv('PLATFORM') or '';
+if (string.find(platform,'webots')) then cwd = cwd .. '/Player';
 end
+
+-- Get Computer for Lib suffix
+local computer = os.getenv('COMPUTER') or '';
+if (string.find(computer, 'Darwin')) then
+  -- MacOS X uses .dylib:
+  package.cpath = cwd .. '/Lib/?.dylib;' .. package.cpath;
+else
+  package.cpath = cwd .. '/Lib/?.so;' .. package.cpath;
+end
+
 
 package.path = cwd .. '/?.lua;' .. package.path;
 package.path = cwd .. '/Util/?.lua;' .. package.path;
@@ -22,6 +27,7 @@ package.path = cwd .. '/Vision/?.lua;' .. package.path;
 package.path = cwd .. '/World/?.lua;' .. package.path;
 
 --require 'Config'
+require('unix')
 require('getch')
 require('Broadcast')
 

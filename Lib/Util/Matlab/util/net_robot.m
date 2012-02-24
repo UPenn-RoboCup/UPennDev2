@@ -40,6 +40,7 @@ h.get_labelB = @get_labelB;
         if( msg.team.player_id == h.playerID && msg.team.number == h.teamNumber )
             if (isfield(msg, 'arr'))
                 h.yuyv  = h.yuyv_arr.update_always(msg.arr);
+								h.yuyv  = h.yuyv_arr.update(msg.arr);
                 h.labelA = h.labelA_arr.update_always(msg.arr);
                 h.labelB = h.labelB_arr.update(msg.arr);
                 h.labelAsub = h.labelAsub_arr.update(msg.arr);
@@ -66,55 +67,63 @@ h.get_labelB = @get_labelB;
     function r = get_team_struct()
         % returns the robot struct (in the same form as the team messages)
         r = h.team_msg;
-        %{
-        r = [];
+%        r = [];
         try
-            r.teamNumber = h.gcmTeam.get_number();
-            r.teamColor = h.gcmTeam.get_color();
-            r.id = h.gcmTeam.get_player_id();
-            r.role = h.gcmTeam.get_role();
-            
-            pose = h.wcmRobot.get_pose();
-            r.pose = struct('x', pose(1), 'y', pose(2), 'a', pose(3));
-            
-            ballxy = h.wcmBall.get_xy();
-            ballt = h.wcmBall.get_t();
-            r.ball = struct('x', ballxy(1), 'y', ballxy(2), 't', ballt );
+%            r.teamNumber = h.gcmTeam.get_number();
+%            r.teamColor = h.gcmTeam.get_color();
+%            r.id = h.gcmTeam.get_player_id();
+%            r.role = h.gcmTeam.get_role();
+%            
+%            pose = h.wcmRobot.get_pose();
+%            r.pose = struct('x', pose(1), 'y', pose(2), 'a', pose(3));
+%            
+%            ballxy = h.wcmBall.get_xy();
+%            ballt = h.wcmBall.get_t();
+%            r.ball = struct('x', ballxy(1), 'y', ballxy(2), 't', ballt );
             
         catch
         end
-        %}
     end
 
     function r = get_monitor_struct()
         % returns the monitor struct (in the same form as the monitor messages)
         r = h.robot_msg;
-        %{
-        r = [];
+%        r = [];
         try
-            r.teamNumber = h.gcmTeam.get_number();
-            r.teamColor = h.gcmTeam.get_color();
-            r.id = h.gcmTeam.get_player_id();
-            r.role = h.gcmTeam.get_role();
-            
-            pose = h.wcmRobot.get_pose();
-            r.pose = struct('x', pose(1), 'y', pose(2), 'a', pose(3));
-            
-            ballxy = h.wcmBall.get_xy();
-            ballt = h.wcmBall.get_t();
-            ball = {};
-            ball.detect = h.vcmBall.get_detect();
-            ball.centroid = {};
-            centroid = h.vcmBall.get_centroid();
-            ball.centroid.x = centroid(1);
-            ball.centroid.y = centroid(2);
-            ball.axisMajor = h.vcmBall.get_axisMajor();
-            r.ball = struct('x', ballxy(1), 'y', ballxy(2), 't', ballt, ...
-                'centroid', ball.centroid, 'axisMajor', ball.axisMajor, ...
-                'detect', ball.detect);
+%            r.teamNumber = h.gcmTeam.get_number();
+%            r.teamColor = h.gcmTeam.get_color();
+%            r.id = h.gcmTeam.get_player_id();
+%            r.role = h.gcmTeam.get_role();
+%            
+%            pose = h.wcmRobot.get_pose();
+%            r.pose = struct('x', pose(1), 'y', pose(2), 'a', pose(3));
+%            
+%            ballxy = h.wcmBall.get_xy();
+%            ballt = h.wcmBall.get_t();
+%            ball = {};
+%            ball.detect = h.vcmBall.get_detect();
+%            ball.centroid = {};
+%            centroid = h.vcmBall.get_centroid();
+%            ball.centroid.x = centroid(1);
+%            ball.centroid.y = centroid(2);
+%            ball.axisMajor = h.vcmBall.get_axisMajor();
+%            r.ball = struct('x', ballxy(1), 'y', ballxy(2), 't', ballt, ...
+%                'centroid', ball.centroid, 'axisMajor', ball.axisMajor, ...
+%                'detect', ball.detect);
+%
+%						r.goal = {};
+%						r.goal.detect = 0;
+%
+%						r.free = {};
+%						r.free.detect = 0;
+%
+%						r.bd = {};
+%						r.bd.detect = 0;
+%
+%						r.occ = {};
+%						r.occ.detect = 0;
         catch
         end
-        %}
     end
 
     function yuyv = get_yuyv()
@@ -144,7 +153,7 @@ h.get_labelB = @get_labelB;
     function rgb = get_rgb()
         % returns the raw RGB image (not full size)
         yuyv = h.get_yuyv();
-        rgb = yuyv2rgb(yuyv);
+        rgb = yuyv2rgb(yuyv');
     end
 
     function rgbsub = get_rgb_sub()

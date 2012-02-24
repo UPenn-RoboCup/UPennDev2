@@ -1,6 +1,6 @@
 % Players and team to track
 nPlayers = 3;
-teamNumbers = [18];
+teamNumbers = [26,18];
 team2track = 1; % The order of teamNumber. 1st teamNumber or 2nd
 player2track = 2; % PlayerID
 
@@ -13,7 +13,7 @@ clf;
 tDisplay = .2; % Display every x seconds
 tStart = tic;
 nUpdate = 0;
-scale = 1; % 1: labelA, 4: labelB
+scale = 4; % 1: labelA, 4: labelB
 
 %% Initialize data
 t0=tic;
@@ -36,8 +36,9 @@ while continuous
         tStart = tic;
         % Show the monitor
         show_monitor( robots, scale, team2track, player2track );
-        rgb = robots{player2track,team2track}.get_rgb_sub();
-        [yuv yuv_raw] = robots{player2track,team2track}.get_yuvSub();
+        %rgb = robots{player2track,team2track}.get_rgb_sub();
+				rgb = robots{player2track,team2track}.get_rgb();
+        %[yuv yuv_raw] = robots{player2track,team2track}.get_yuvSub();
         drawnow;
     end
     

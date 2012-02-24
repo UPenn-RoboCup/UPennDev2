@@ -1,7 +1,8 @@
 #ifndef __LIBMONITOR
 #define __LIBMONITOR
 
-#define IP "192.168.123.255"
+#define IP "192.168.0.255" // IP for Nao
+#define IP "192.168.123.255" // IP for OP
 #define PORT 111111
 #define MDELAY 2
 #define TTL 16

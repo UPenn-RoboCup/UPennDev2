@@ -112,7 +112,7 @@ walk.headPitchComp = 0;
 local robotName = unix.gethostname();
 print(robotName.." walk parameters loaded")
 local robotID = 23;
-walk.servoBias = {-1,-371,-9,-1478,5,5,  7,352,-5,1465,-2,-7}
+walk.servoBias = {0,0,0,0,0,0, 0,0,0,0,0,0}
 
 --[[
 if( robotName=='pippy' ) then

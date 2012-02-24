@@ -27,6 +27,19 @@ jointNames = {"HeadYaw", "HeadPitch",
 ----]]
 
 nJoint = controller.nJoint; --DLC
+print('Body nJoint:',nJoint)
+indexHead = 1;			--Head: 1 2
+nJointHead = 2;
+indexLArm = 3;			--LArm: 3 4 5 
+nJointLArm = 3; 		
+indexLLeg = 6;			--LLeg: 6 7 8 9 10 11
+nJointLLeg = 6;
+indexRLeg = 12; 		--RLeg: 12 13 14 15 16 17
+nJointRLeg = 6;
+indexRArm = 18; 		--RArm: 18 19 20
+nJointRArm = 3; 
+indexWaist= 21;
+nJointWaist=1;
 
 indexHead = 1;			--Head: 1 2
 nJointHead = 2;
@@ -40,6 +53,7 @@ indexRArm = 18; 		--RArm: 18 19 20
 nJointRArm = 3; 
 indexWaist= 21;
 nJointWaist=1;
+
 
 -- No aux for HP right now
 --Aux servo (for gripper / etc) 

@@ -1,7 +1,19 @@
+-- General Includes
 module(... or "", package.seeall)
 
-require('unix')
+cwd = '.';
+local computer = 'Darwin'
+if (string.find(computer, 'Darwin')) then
+	-- MacOS X uses .dylib:
+	package.cpath = cwd .. './Lib/?.dylib;' .. package.cpath;
+else
+	package.cpath = cwd .. './Lib/?.so;' .. package.cpath;
+end
 
+require('unix')
+require('os')
+
+----------------------------
 -- mv up to Player directory
 unix.chdir('..');
 

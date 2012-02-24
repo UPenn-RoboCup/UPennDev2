@@ -22,8 +22,8 @@ jointNames = {"HeadYaw", "HeadPitch",
               "RHipYawPitch", "RHipRoll", "RHipPitch",
               "RKneePitch", "RAnklePitch", "RAnkleRoll",
               "RShoulderPitch", "RShoulderRoll",
-              "RElbowYaw", "RElbowRoll"};
-
+              "RElbowYaw", "RElbowRoll",
+              "Waist"};
 ----]]
 
 nJoint = controller.nJoint; --DLC
@@ -38,10 +38,13 @@ indexRLeg = 12; 		--RLeg: 12 13 14 15 16 17
 nJointRLeg = 6;
 indexRArm = 18; 		--RArm: 18 19 20
 nJointRArm = 3; 
+indexWaist= 21;
+nJointWaist=1;
 
---Aux servo (for gripper / etc)
-indexAux= 21; 
-nJointAux=nJoint-20; 
+-- No aux for HP right now
+--Aux servo (for gripper / etc) 
+--indexAux= 21; 
+--nJointAux=nJoint-20; 
 
 --get_time = function() return dcm.get_sensor_time(1); end
 get_time = unix.time; --DLC specific
@@ -70,10 +73,17 @@ function get_rleg_position()
   local q = get_sensor_position();
   return {unpack(q, indexRLeg, indexRLeg+nJointRLeg-1)};
 end
-
+function get_waist_position()
+  local q = get_sensor_position();
+  return {unpack(q, indexWaist, indexWaist+nJointWaist-1)};
+end
 
 function set_waist_hardness(val)
-
+  if (type(val) == "number") then
+    val = val*vector.ones(nJointWaist);
+  end
+  set_actuator_hardness(val, indexWaist);
+  set_actuator_hardnessChanged(1);
 end
 
 function set_body_hardness(val)
@@ -132,7 +142,7 @@ function set_aux_hardness(val)
 end
 
 function set_waist_command(val)
-  --Do nothing
+  set_actuator_command(val, indexWaist);
 end
 
 function set_head_command(val)
@@ -312,5 +322,27 @@ function get_sensor_usRight()
 end
 
 function calibrate( count )
-  return true
+  -- TODO: Is this the right usage?
+  return imu_init(count)
+--  return true
+end
+
+-- Copied from old HP code
+function imu_init(iter)
+    gyroBias=vector.new({0,0,0});
+    print("Calibrating gyro...");
+    local imuSensorDelay=0.030;
+    for i=1,iter do
+        controller.update();
+        local imuGyro = get_sensor_imuGyr();
+        gyroBias=gyroBias+imuGyro;
+        time0=get_time();
+        time1=get_time();
+        while time1-time0<imuSensorDelay do
+            time1=get_time();
+        end
+    end
+    print("Calibrating gyro done");
+    gyroBias=gyroBias/iter;
+    print(unpack(gyroBias));
 end

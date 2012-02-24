@@ -50,10 +50,10 @@ while (loop) do
    local t1 = unix.time();
    local tPassed=math.max(math.min(t1-t_timing,0.010),0); --Check for timer overflow
    readtype = actuatorShm:get('readType') ;
-   if readtype==0 then ncount=1;
-     else ncount = 1;
+   if readtype==0 then ncount=200;
+     else ncount = 40;
    end 
-   print('count',count,'ncount:',ncount)
+--   print('count',count,'ncount:',ncount)
 
    if 1/fpsdesired > tPassed then
 --      unix.usleep(1E6*(1/fpsdesired - tPassed));

@@ -66,7 +66,7 @@ function shm_init()
 
    shm.destroy('dcmActuator');
    actuatorShm = shm.new('dcmActuator');
-   print(nJoint)
+   print('Number of Joints:',nJoint)
    actuatorShm.command = vector.zeros(nJoint);
    actuatorShm.velocity = vector.zeros(nJoint);
    actuatorShm.hardness = vector.zeros(nJoint);
@@ -127,7 +127,7 @@ function sync_command()
 	 ids[n] = idMap[i];
 	--SJ: HP head linkage is handled here 
          local word=0;
-	 if Config.platform.name=='darwinhp' and i==2 then
+	 if (Config.platform.name=='darwinhp' or Config.platform.name=='xos') and i==2 then
 	    linkangle=Config.head.invlinkParam[2]+
 		actuator.command[2]*Config.head.invlinkParam[1];
 	    word = posZero[i] + scale[i]*
@@ -367,6 +367,7 @@ function nonsync_read()
 end
 
 function sync_read(timeout)
+  --print("Syncing reading!")
   local idCM = 128; -- CM-7xx board
   local addr = 64;
   local len = 120;
@@ -577,7 +578,7 @@ end
      nonsync_read();
      update_imu();
    end
-   if Config.platform.name=='darwinhp' then
+   if Config.platform.name=='darwinhp' or Config.platform.name=='xos' then
 	    sensor.position[2]=Config.head.linkParam[2]+
 		sensor.position[2]*Config.head.linkParam[1];
    end

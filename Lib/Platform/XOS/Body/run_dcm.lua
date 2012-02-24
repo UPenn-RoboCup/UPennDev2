@@ -78,7 +78,7 @@ while (loop) do
 
       print(string.format("Button: %d %d",  unpack(sensorShm:get('button'))));      
 
-      print(string.format("Position:\n Head: %.1f %.1f\n Larm: %.1f %.1f %.1f\n Lleg: %.1f %.1f %.1f %.1f %.1f %.1f\n Rleg: %.1f %.1f %.1f %.1f %.1f %.1f\n Rarm: %.1f %.1f %.1f\n",
+      print(string.format("Position:\n Head: %.1f %.1f\n Larm: %.1f %.1f %.1f %.1f\n Lleg: %.1f %.1f %.1f %.1f %.1f %.1f\n Rleg: %.1f %.1f %.1f %.1f %.1f %.1f\n Rarm: %.1f %.1f %.1f %.1f\n",
 			  unpack(vector.new(sensorShm:get('position'))*180/math.pi)
 		    ));
 

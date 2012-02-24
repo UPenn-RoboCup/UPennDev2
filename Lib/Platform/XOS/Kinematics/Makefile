@@ -32,7 +32,7 @@ endif
 INCLUDE_DIRS = -I/usr/local/include -I/usr/include -I/usr/include/lua -I/usr/include/lua5.1
 LIB_DIR = -L/usr/local/lib -L/usr/lib
 
-LIBNAME= OPKinematics
+LIBNAME= XOSKinematics
 
 all:: kinematics
 
@@ -43,7 +43,7 @@ all:: kinematics
 %.o: %.c
 	$(CC) $(CXXFLAGS) $(INCLUDE_DIRS) -o $@ -c $<
 
-kinematics:: luaOPKinematics.o OPKinematics.o Transform.o
+kinematics:: luaXOSKinematics.o XOSKinematics.o Transform.o
 	$(LD) $(LDFLAGS) -o $(LIBNAME).$(SHLIBEXT) $(LIBOPTS) $^ $(LIB_DIR) -lm
 
 clean:

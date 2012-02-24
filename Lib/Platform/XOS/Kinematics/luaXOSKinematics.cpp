@@ -1,11 +1,11 @@
 /* 
-  Lua interface to OP Kinematics
+  Lua interface to Darwin Kinematics
 
   To compile on Mac OS X:
-  g++ -arch i386 -o OPKinematics.dylib -bundle -undefined dynamic_lookup luaOPKinematics.pp OPKinematics.cc Transform.cc -lm
+  g++ -arch i386 -o DarwinKinematics.dylib -bundle -undefined dynamic_lookup luaDarwinKinematics.pp DarwinKinematics.cc Transform.cc -lm
 */
 
-#include "OPKinematics.h"
+#include "XOSKinematics.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -57,63 +57,63 @@ static void lua_pushtransform(lua_State *L, Transform t) {
 
 static int forward_head(lua_State *L) {
   std::vector<double> q = lua_checkvector(L, 1);
-  Transform t = darwinop_kinematics_forward_head(&q[0]);
+  Transform t = darwin_kinematics_forward_head(&q[0]);
   lua_pushtransform(L, t);
   return 1;
 }
 
 static int forward_larm(lua_State *L) {
   std::vector<double> q = lua_checkvector(L, 1);
-  Transform t = darwinop_kinematics_forward_larm(&q[0]);
+  Transform t = darwin_kinematics_forward_larm(&q[0]);
   lua_pushtransform(L, t);
   return 1;
 }
 
 static int forward_rarm(lua_State *L) {
   std::vector<double> q = lua_checkvector(L, 1);
-  Transform t = darwinop_kinematics_forward_rarm(&q[0]);
+  Transform t = darwin_kinematics_forward_rarm(&q[0]);
   lua_pushtransform(L, t);
   return 1;
 }
 
 static int forward_lleg(lua_State *L) {
   std::vector<double> q = lua_checkvector(L, 1);
-  Transform t = darwinop_kinematics_forward_lleg(&q[0]);
+  Transform t = darwin_kinematics_forward_lleg(&q[0]);
   lua_pushtransform(L, t);
   return 1;
 }
 
 static int forward_rleg(lua_State *L) {
   std::vector<double> q = lua_checkvector(L, 1);
-  Transform t = darwinop_kinematics_forward_rleg(&q[0]);
+  Transform t = darwin_kinematics_forward_rleg(&q[0]);
   lua_pushtransform(L, t);
   return 1;
 }
 
 static int lleg_torso(lua_State *L) {
   std::vector<double> q = lua_checkvector(L, 1);
-  Transform t = darwinop_kinematics_forward_lleg(&q[0]);
+  Transform t = darwin_kinematics_forward_lleg(&q[0]);
   lua_pushvector(L, position6D(t));
   return 1;
 }
 
 static int torso_lleg(lua_State *L) {
   std::vector<double> q = lua_checkvector(L, 1);
-  Transform t = inv(darwinop_kinematics_forward_lleg(&q[0]));
+  Transform t = inv(darwin_kinematics_forward_lleg(&q[0]));
   lua_pushvector(L, position6D(t));
   return 1;
 }
 
 static int rleg_torso(lua_State *L) {
   std::vector<double> q = lua_checkvector(L, 1);
-  Transform t = darwinop_kinematics_forward_rleg(&q[0]);
+  Transform t = darwin_kinematics_forward_rleg(&q[0]);
   lua_pushvector(L, position6D(t));
   return 1;
 }
 
 static int torso_rleg(lua_State *L) {
   std::vector<double> q = lua_checkvector(L, 1);
-  Transform t = inv(darwinop_kinematics_forward_rleg(&q[0]));
+  Transform t = inv(darwin_kinematics_forward_rleg(&q[0]));
   lua_pushvector(L, position6D(t));
   return 1;
 }
@@ -122,9 +122,9 @@ static int inverse_leg(lua_State *L) {
   std::vector<double> qLeg;
   std::vector<double> pLeg = lua_checkvector(L, 1);
   int leg = luaL_checkint(L, 2);
-  double hipYawPitch = 0;
+  double hipYawPitch = luaL_optnumber(L, 3, 0);
   Transform trLeg = transform6D(&pLeg[0]);
-  qLeg = darwinop_kinematics_inverse_leg(trLeg, leg, hipYawPitch);
+  qLeg = darwin_kinematics_inverse_leg(trLeg, leg, hipYawPitch);
   lua_pushvector(L, qLeg);
   return 1;
 }
@@ -134,8 +134,8 @@ static int inverse_legs(lua_State *L) {
   std::vector<double> pLLeg = lua_checkvector(L, 1);
   std::vector<double> pRLeg = lua_checkvector(L, 2);
   std::vector<double> pTorso = lua_checkvector(L, 3);
-  int leg = 0;
-  qLegs = darwinop_kinematics_inverse_legs(&pLLeg[0], 
+  int leg = luaL_checkint(L, 4);
+  qLegs = darwin_kinematics_inverse_legs(&pLLeg[0], 
 				      &pRLeg[0],
 				      &pTorso[0], leg);
   lua_pushvector(L, qLegs);
@@ -159,8 +159,8 @@ static const struct luaL_reg kinematics_lib [] = {
 };
 
 extern "C"
-int luaopen_OPKinematics (lua_State *L) {
-  luaL_register(L, "OPKinematics", kinematics_lib);
+int luaopen_DarwinHPKinematics (lua_State *L) {
+  luaL_register(L, "DarwinHPKinematics", kinematics_lib);
   
   return 1;
 }

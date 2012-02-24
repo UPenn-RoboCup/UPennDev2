@@ -13,6 +13,7 @@ require('gcm')
 require('wcm')
 require('serialization');
 require('ImageProc')
+require('Config');
 
 -- Add a little delay between packet sending
 pktDelay = 500; -- time in us
@@ -179,9 +180,11 @@ end
 function update_img( enable )
   if(enable==2) then
     sendB();
-    sendImgSub( 2 ); -- half of sub image
+    sendImg(); -- half of sub image
   elseif(enable==3) then
-    sendImgSub();
-    sendAsub();
+		if (Config.platform.name ~= "Nao") then
+	    sendImgSub();
+  	  sendAsub();
+		end
   end
 end

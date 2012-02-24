@@ -12,11 +12,11 @@ function loadconfig(configName)
   end
 end
 
-loadconfig('Config_OP_Walk')
+loadconfig('Config_XOS_Walk')
 loadconfig('Config_OP_World')
 loadconfig('Config_OP_Kick')
 loadconfig('Config_OP_Vision')
-loadconfig('Config_OP_Robot')
+loadconfig('Config_XOS_Robot')
 
 --Location Specific Camera Parameters--
 loadconfig('Config_OP_Camera_Grasp')

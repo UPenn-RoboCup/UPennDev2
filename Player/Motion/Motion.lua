@@ -39,7 +39,7 @@ sm:set_transition(sit, 'standup', stance);
 sm:set_transition(relax, 'standup', stance);
 sm:set_transition(relax, 'sit', sit);
 -- Added for test_XOS
-sm:set_transition(relax, 'keyframe_walk', walkKeyframe);
+sm:set_transition(relax, 'walkKeyframe', walkKeyframe);
 sm:set_transition(walkKeyframe, 'done', relax);
 
 sm:set_transition(stance, 'done', walk);

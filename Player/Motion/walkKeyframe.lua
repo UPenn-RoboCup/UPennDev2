@@ -43,8 +43,8 @@ function exit()
 	walk.active=true;
 end
 
-function set_walk_dir(newDir)
-	-- set the kick type (left/right)
-	walkDir = newKick;
+function set_walk_dir(wd)
+	-- set the swing foot (left/right)
+	walkDir = wd;
 end
 

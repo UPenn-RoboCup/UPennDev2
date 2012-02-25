@@ -35,6 +35,7 @@ require('Speak')
 require('getch')
 require('Body')
 require('Motion')
+require('walkKeyframe')
 
 Motion.entry();
 
@@ -78,25 +79,15 @@ function process_keyinput()
 		local byte=string.byte(str,1);
 
 		-- Walk velocity setting
-		if byte==string.byte("i") then	targetvel[1]=targetvel[1]+0.02;
-		elseif byte==string.byte("j") then	targetvel[3]=targetvel[3]+0.1;
-		elseif byte==string.byte("k") then	targetvel[1],targetvel[2],targetvel[3]=0,0,0;
-		elseif byte==string.byte("l") then	targetvel[3]=targetvel[3]-0.1;
-		elseif byte==string.byte(",") then	targetvel[1]=targetvel[1]-0.02;
-		elseif byte==string.byte("h") then	targetvel[2]=targetvel[2]+0.02;
-		elseif byte==string.byte(";") then	targetvel[2]=targetvel[2]-0.02;
-
-		elseif byte==string.byte("1") then	
-			kick.set_kick("kickForwardLeft");
-			Motion.event("kick");
-		elseif byte==string.byte("2") then	
+		if byte==string.byte("f") then	
+			walkKeyframe.set_walk_dir("walkForward");
+			Motion.event("walkKeyframe");
+		elseif byte==string.byte("b") then	
+			walkKeyframe.set_walk_dir("walkBackward");
+			Motion.event("walkKeyframe");
+		elseif byte==string.byte("0") then	
 			kick.set_kick("kickForwardRight");
 			Motion.event("kick");
-		elseif byte==string.byte("9") then	
-			Motion.event("walk");
-			walk.start();
-		elseif byte==string.byte("0") then	
-			Motion.event("keyframe_walk");
 		end
 		walk.set_velocity(unpack(targetvel));
 

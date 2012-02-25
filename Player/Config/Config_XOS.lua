@@ -3,7 +3,7 @@ module(..., package.seeall);
 require('vector')
 
 platform = {}; 
-platform.name = 'XOS'
+platform.name = 'xos'
 
 function loadconfig(configName)
   local localConfig=require(configName);

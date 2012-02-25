@@ -88,10 +88,13 @@ function process_keyinput()
 		elseif byte==string.byte("0") then	
 			kick.set_kick("kickForwardRight");
 			Motion.event("kick");
+		elseif byte==string.byte("w") then
+			Motion.event("standup");
+			--print('Trying to walk!')
+			--Motion.event("walk");
+			--walk.start();
+			--walk.set_velocity(unpack(targetvel));
 		end
-		walk.set_velocity(unpack(targetvel));
-
-		print("Command velocity:",unpack(walk.velCommand))
 	end
 end
 

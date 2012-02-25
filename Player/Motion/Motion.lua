@@ -18,6 +18,9 @@ require('falling')
 require('standup')
 require('kick')
 
+-- Added for test_XOS
+require 'walkKeyframe'
+
 sm = fsm.new(relax);
 sm:add_state(stance);
 sm:add_state(nullstate);
@@ -27,13 +30,17 @@ sm:add_state(standup);
 sm:add_state(falling);
 sm:add_state(kick);
 sm:add_state(standstill);
-
+-- Added for test_XOS
+sm:add_state(walkKeyframe);
 
 sm:set_transition(sit, 'done', relax);
 sm:set_transition(sit, 'standup', stance);
 
 sm:set_transition(relax, 'standup', stance);
 sm:set_transition(relax, 'sit', sit);
+-- Added for test_XOS
+sm:set_transition(relax, 'keyframe_walk', walkKeyframe);
+sm:set_transition(walkKeyframe, 'done', relax);
 
 sm:set_transition(stance, 'done', walk);
 sm:set_transition(stance, 'sit', sit);

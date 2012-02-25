@@ -8,19 +8,19 @@ sit.supportX=-0.010;
 sit.bodyTilt=5*math.pi/180;
 sit.dpLimit=vector.new({.1,.01,.06,.1,.3,.1});
 
---Init angle for start-up
-sit.initangle = {
-  0,0,
-  105*math.pi/180, 30*math.pi/180, -45*math.pi/180,
-  0,  0.055, -0.77, 2.08, -1.31, -0.055, 
-  0, -0.055, -0.77, 2.08, -1.31, 0.055,
-  105*math.pi/180, -30*math.pi/180, -45*math.pi/180,
-}
-
 --Standing parameters
 stance={};
 stance.dpLimit=vector.new({.04, .03, .04, .4, .4, .4});
 stance.dpLimit=vector.new({.04, .03, .07, .4, .4, .4});--Faster standup
+--Init angle for start-up
+stance.initangle = vector.new({
+  -0.6, -75.8,
+  77.9, 0.3, 0.0, -8.8,
+  -1.2, -17.5, 42.2, 0.0, 0.0, 0.0,
+  -2.9, -3.4, 1.2, -3.2, 0.3, 5.3,
+  66.5, -17.9, 0.0, 19.0,}
+ ) * math.pi/180;
+
 
 --Servo parameters
 
@@ -100,7 +100,7 @@ end
 --Measured IMU bias parameters
 
 gyro={};
-gyro.rpy={3,2,1}	--axis remap, rotation in x,y,z
+gyro.rpy={2,3,1}	--axis remap, rotation in x,y,z
 acc={};
 acc.xyz={2,1,3};	--axis remap
 
@@ -109,8 +109,10 @@ angle.gMax = 1.3;
 angle.gMin= 0.7;
 angle.accFactor=0.2;
 
-gyro.sensitivity=vector.new({1,1,1})/0.273 -- Spec, 0.0008 V/dps  / (1.5/512) V/step 
-gyro.zero=vector.new({512,512,512});
+-- OP Spec, 0.0008 V/dps  / (1.5/512) V/step
+-- Changed for HP... TODO: double check
+gyro.sensitivity=vector.new({-1,-1,1})/0.02435
+gyro.zero=vector.new({499,495,496});
 
 --Those biases can be measured using test_imu.lua
 acc.sensitivity=vector.new({1,-1,-1})/110; --Measured value

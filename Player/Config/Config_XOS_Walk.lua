@@ -27,8 +27,8 @@ walk.footX= -0.020;
 walk.footY = 0.045;
 walk.supportX = 0;
 walk.supportY = 0.010;
-walk.qLArm=math.pi/180*vector.new({90,8,-40});
-walk.qRArm=math.pi/180*vector.new({90,-8,-40});
+walk.qLArm=math.pi/180*vector.new({77.6, 12.3, 0.0, -30.2});
+walk.qRArm=math.pi/180*vector.new({68.6, -28.7, 0.0, 30.5});
 
 walk.hardnessSupport = 1;
 walk.hardnessSwing = 1;

@@ -61,14 +61,14 @@ if servo.pid ==0 then -- For old firmware with 12-bit precision
     1024,1024,1024,1024,
     1024,
   }
-  servo.moveRange = {
+  servo.moveRange = vector.new({
     300,300,
     300,300,300,300,
     300,251,300,251,300,300,
     300,251,300,251,300,300,
     300,300,300,300,
     300,
-  }
+  })*math.pi/180;
 --]]
   servo.posZero={
     512,512,
@@ -130,4 +130,5 @@ head.cameraAngle = {{0.0,0}}; -- We set it zero here
 head.neckZ=0.0765; --From CoM to neck joint 
 head.neckX=0.013; --From CoM to neck joint
 head.linkParam = {1.0242,-0.6363};
+head.invlinkParam={1.5839,0.0397};
 

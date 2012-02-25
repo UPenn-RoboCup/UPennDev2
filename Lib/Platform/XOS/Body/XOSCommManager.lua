@@ -409,7 +409,7 @@ function sync_read(timeout)
 				local low = data[offset+3*id+1];
 				local high = data[offset+3*id+2];
 				local raw = DynamixelPacket.byte_to_word(low, high);
-				sensor.position[i] = ( (raw-posZero[i])/scale[i] - actuator.offset[i] ) * math.pi/180;
+				sensor.position[i] = ( (raw-posZero[i])/scale[i] - actuator.offset[i] );
 				-- Old way
 				--sensor.position[i] = (raw-servoBias[i]-servoSteps[i]/2)/scale[i] - actuator.offset[i];
 				-- So, posZero = servoBias[i]+servoSteps[i]/2

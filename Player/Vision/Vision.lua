@@ -54,8 +54,8 @@ camera.ncamera = Config.camera.ncamera;
 -- Initialize the Labeling
 labelA = {};
 -- labeled image is 1/4 the size of the original
-labelA.m = camera.width;
-labelA.n = camera.height;
+labelA.m = camera.width/2;
+labelA.n = camera.height/2;
 labelA.npixel = labelA.m*labelA.n;
 if( webots ) then
   labelA.m = camera.width;

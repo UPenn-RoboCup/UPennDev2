@@ -50,10 +50,9 @@ game.nPlayers = 3;
 
 fsm = {};
 --fsm.game = 'Dodgeball';
-fsm.game = 'OpDemo'
---fsm.game = 'RoboCup';
+--fsm.game = 'OpDemo'
+fsm.game = 'RoboCup';
 if( fsm.game == 'RoboCup' ) then
---[[
   if (game.playerID == 1) then
     fsm.body = {'OpGoalie'};
     fsm.head = {'OpGoalie'};
@@ -61,7 +60,6 @@ if( fsm.game == 'RoboCup' ) then
     fsm.body = {'OpPlayerNSL'};
     fsm.head = {'OpPlayerNSL'};
   end
---]]
 
   fsm.body = {'OpPlayerNSL'};
   fsm.head = {'OpPlayerNSL'};

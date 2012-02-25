@@ -14,7 +14,7 @@ end
 
 loadconfig('Config_XOS_Walk')
 loadconfig('Config_OP_World')
-loadconfig('Config_OP_Kick')
+loadconfig('Config_XOS_Kick')
 loadconfig('Config_OP_Vision')
 loadconfig('Config_XOS_Robot')
 
@@ -26,14 +26,11 @@ dev = {};
 dev.body = 'XOSBody'; 
 dev.camera = 'OPCam';
 dev.kinematics = 'XOSKinematics';
---dev.comm='OPComm';
 dev.comm='NullComm';
 dev.monitor_comm = 'OPMonitorCommWired';
 dev.game_control='OPGameControl';
-dev.walk='NewWalk';
 dev.walk='NewNewWalk';
---dev.walk='HZDWalk';
-dev.kick = 'NewKick'
+dev.kick = 'kickKeyframe'
 
 -- Game Parameters
 
@@ -94,7 +91,10 @@ team.nonDefenderPenalty = 0.5; -- dist from goal
 km = {};
 km.standup_front = 'km_HP_StandupFromFront.lua';
 km.standup_back  = 'km_HP_StandupFromBack.lua';
-
+km.kick_right = 'km_HP_kickRight.lua';
+km.kick_left = 'km_HP_kickLeft.lua';
+km.walk_forward  = 'km_HP_walkForward.lua';
+km.walk_backward  = 'km_HP_walkBackward.lua';
 
 -- Low battery level
 -- Need to implement this api better...

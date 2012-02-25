@@ -21,10 +21,10 @@ walk.velLimitX={-.04,.09};
 ----------------------------------------------
 -- Stance parameters
 ---------------------------------------------
-walk.bodyHeight = 0.295; 
-walk.bodyTilt=20*math.pi/180; 
+walk.bodyHeight = 0.33; 
+walk.bodyTilt=3*math.pi/180; 
 walk.footX= -0.020; 
-walk.footY = 0.035;
+walk.footY = 0.045;
 walk.supportX = 0;
 walk.supportY = 0.010;
 walk.qLArm=math.pi/180*vector.new({90,8,-40});
@@ -36,22 +36,10 @@ walk.hardnessArm=.3;
 ---------------------------------------------
 -- Gait parameters
 ---------------------------------------------
-walk.tStep = 0.25;
-walk.tZmp = 0.165;
-walk.stepHeight = 0.035;
-walk.phSingle={0.1,0.9};
-
---[[
--- Slow walk
-walk.tZmp = 0.165;
-walk.tStep = 0.5;
-walk.phSingle={0.1,0.9};
-walk.supportY = 0.010;
-walk.supportX = -0.005;
-walk.stepHeight = 0.06;
-walk.qLArm=math.pi/180*vector.new({90,0,-80});
-walk.qRArm=math.pi/180*vector.new({90,0,-80});
---]]
+walk.tStep = 0.4;
+walk.tZmp = 0.167;
+walk.stepHeight = 0.030;
+walk.phSingle={0.3,0.8};
 
 --------------------------------------------
 -- Compensation parameters
@@ -113,12 +101,6 @@ local robotName = unix.gethostname();
 print(robotName.." walk parameters loaded")
 local robotID = 23;
 walk.servoBias = {0,0,0,0,0,0, 0,0,0,0,0,0}
-
---[[
-if( robotName=='pippy' ) then
-  walk.servoBias = {-1,-371,-9,-1478,5,5,  7,352,-5,1465,-2,-7}
-end
---]]
 
 --Apply robot specific compensation to default values
 walk.footX = walk.footX + walk.footXComp;

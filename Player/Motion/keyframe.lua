@@ -91,7 +91,6 @@ function update()
 	h = math.min(h, 1);
 
 	q = q1 + h*(mot.keyframes[iFrame].angles - q1);
-	print(q)
 
 	if is_upper then --upper body only motion
 		print('upper');

@@ -25,8 +25,14 @@ endif
 ifeq ($(OSTYPE),darwin)
   SHLIBEXT= dylib
   LIBOPTS= -bundle -undefined dynamic_lookup
-  CXXFLAGS= -O2 -arch i386
-  LDFLAGS= -arch i386
+  MEXEXT=mexmaci
+ifeq ($(MODE),32)
+  CC=gcc -arch i386
+  CXX=g++ -arch i386
+  LD=g++ -arch i386
+endif
+  CXXFLAGS= -O2
+  LIBRT=
 endif
 
 INCLUDE_DIRS = -I/usr/local/include -I/usr/include -I/usr/include/lua -I/usr/include/lua5.1

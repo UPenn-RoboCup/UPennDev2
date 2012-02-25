@@ -55,13 +55,12 @@ getch.enableblock(1);
 -- initialize 
 jp = Body.get_sensor_position();
 Body.set_actuator_command(jp);
-rlhardness = 1;
-llhardness = 1;
-rahardness = 1;
-lahardness = 1;
-hardness = 1;
+rlhardness = 0;
+llhardness = 0;
+rahardness = 0;
+lahardness = 0;
+hardness = 0;
 Body.set_body_hardness(hardness);
-
 
 jointNames = {
 	'HeadYaw',
@@ -126,7 +125,7 @@ function inc_res()
 end
 
 function dec_res()
-	print(string.format('dencreasing resolution from %0.4f to %0.4f rad', resolution, resolution-dresolution));
+	print(string.format('decreasing resolution from %0.4f to %0.4f rad', resolution, resolution-dresolution));
 	resolution = resolution - dresolution;
 end
 
@@ -285,17 +284,19 @@ function exit()
 	os.exit();
 end
 
-utilFunctions = {inc_res,
-dec_res,
-toggle_hardness,
-toggle_rleg,
-toggle_lleg,
-toggle_rarm,
-toggle_larm, 
-print_help,
-save_frame,
-remove_last_frame,
-exit};
+utilFunctions = {
+	inc_res,
+	dec_res,
+	toggle_hardness,
+	toggle_rleg,
+	toggle_lleg,
+	toggle_rarm,
+	toggle_larm, 
+	print_help,
+	save_frame,
+	remove_last_frame,
+	exit
+};
 
 utilCommands = {
 	'+',

@@ -9,6 +9,6 @@ extern "C"
 }
 
 extern "C"
-int luaopen_DarwinKinematics(lua_State *L);
+int luaopen_XOSKinematics(lua_State *L);
 
 #endif

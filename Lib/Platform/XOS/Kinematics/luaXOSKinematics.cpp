@@ -159,8 +159,8 @@ static const struct luaL_reg kinematics_lib [] = {
 };
 
 extern "C"
-int luaopen_DarwinHPKinematics (lua_State *L) {
-  luaL_register(L, "DarwinHPKinematics", kinematics_lib);
+int luaopen_XOSKinematics (lua_State *L) {
+  luaL_register(L, "XOSKinematics", kinematics_lib);
   
   return 1;
 }

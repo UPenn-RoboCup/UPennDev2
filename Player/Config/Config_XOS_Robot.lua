@@ -129,4 +129,5 @@ head.cameraPos = {{0.034, 0.0, 0.0332}} --OP, spec value, may need to be recalib
 head.cameraAngle = {{0.0,0}}; -- We set it zero here
 head.neckZ=0.0765; --From CoM to neck joint 
 head.neckX=0.013; --From CoM to neck joint
+head.linkParam = {1.0242,-0.6363};
 

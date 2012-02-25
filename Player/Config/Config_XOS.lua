@@ -92,8 +92,8 @@ team.nonDefenderPenalty = 0.5; -- dist from goal
 -- keyframe files
 
 km = {};
-km.standup_front = 'km_NSLOP_StandupFromFront.lua';
-km.standup_back = 'km_NSLOP_StandupFromBack.lua';
+km.standup_front = 'km_HP_StandupFromFront.lua';
+km.standup_back  = 'km_HP_StandupFromBack.lua';
 
 
 -- Low battery level

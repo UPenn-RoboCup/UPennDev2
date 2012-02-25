@@ -90,14 +90,12 @@ while (loop) do
 			  unpack(vector.slice(sensorShm:get('temperature'),6,18))
 		    ));
 
---[[
-      print(string.format("Command:\n %f %f\n %f %f %f\n %f %f %f %f %f %f\n %f %f %f %f %f %f\n %f %f %f\n",
+      print(string.format("Command:\n %f %f\n %f %f %f %f\n %f %f %f %f %f %f\n %f %f %f %f %f %f\n %f %f %f %f\n",
 			  unpack(vector.new(actuatorShm:get('command'))*180/math.pi)
 		    ));
-      print(string.format("Hardness:\n %f %f\n %f %f %f\n %f %f %f %f %f %f\n %f %f %f %f %f %f\n %f %f %f\n",
+      print(string.format("Hardness:\n %f %f\n %f %f %f %f\n %f %f %f %f %f %f\n %f %f %f %f %f %f\n %f %f %f %f\n",
 			  unpack(actuatorShm:get('hardness'))
 		    ));
---]]
    end
 end
 

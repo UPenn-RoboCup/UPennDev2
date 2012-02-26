@@ -37,6 +37,7 @@ unix.usleep(1E6*1.0);
 
 local count = 0;
 local ncount = 100;
+local imagecount = 0;
 local t0 = unix.time();
 local tUpdate = t0;
 
@@ -60,10 +61,11 @@ function update()
     end
   end
   -- Always send non-image data
-  Broadcast.update(broadcast_enable);
+--  Broadcast.update(broadcast_enable);
   -- Send image data every so often
   if( count % imgRate == 0 ) then
-    Broadcast.update_img(broadcast_enable);    
+		imagecount = imagecount + 1;
+    Broadcast.update_img(broadcast_enable,imagecount);    
   end
 end
 

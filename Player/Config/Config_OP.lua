@@ -31,6 +31,7 @@ dev.kinematics = 'OPKinematics';
 --dev.comm='OPComm';
 dev.comm='NullComm';
 dev.monitor_comm = 'OPMonitorCommWired';
+dev.ip = '192.168.123.255';
 dev.game_control='OPGameControl';
 dev.walk='NewWalk';
 dev.walk='NewNewWalk';

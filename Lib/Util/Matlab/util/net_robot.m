@@ -10,7 +10,7 @@ h.team_msg = {};
 h.y = [];
 h.v = [];
 h.u = [];
-h.yuyv = [];
+h.yuv = [];
 h.labelA = [];
 h.labelB = [];
 h.scale = 1;
@@ -47,9 +47,18 @@ h.get_labelB = @get_labelB;
 								h.v  = h.v_arr.update(msg.image);
 								h.labelA = h.labelA_arr.update(msg.image);
 								h.labelB = h.labelB_arr.update(msg.image);
+								
+								% yuyv
+                if (!isempty(h.y) && !isempty(h.u) && !isempty(h.v))
+									y_width = h.y_arr.get_width();
+									y_height = h.y_arr.get_height();
+									h.yuv(:,:,1) = reshape(h.y,[y_width,y_height]);
+									h.yuv(:,:,2) = reshape(h.v,[y_width,y_height]);
+									h.yuv(:,:,3) = reshape(h.v,[y_width,y_height]);
+										
+								end
 
-								% form yuyv
-                if(~isempty(h.labelB)) % labelB is gotten in one packet
+								if(~isempty(h.labelB)) % labelB is gotten in one packet
                     h.scale = 4;
                 else
                     h.scale = 2;

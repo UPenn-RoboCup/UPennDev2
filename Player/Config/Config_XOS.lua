@@ -29,7 +29,7 @@ dev.kinematics = 'XOSKinematics';
 dev.comm='NullComm';
 dev.monitor_comm = 'OPMonitorCommWired';
 dev.game_control='OPGameControl';
-dev.walk='NewNewWalk';
+dev.walk='XOSWalk';
 dev.kick = 'kickKeyframe'
 
 -- Game Parameters

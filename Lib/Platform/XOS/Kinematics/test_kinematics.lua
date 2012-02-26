@@ -1,3 +1,17 @@
+local cwd = '.';
+-- Get Computer for Lib suffix
+local computer = os.getenv('COMPUTER') or '';
+local computer = 'Darwin' -- can get from uname
+if (string.find(computer, 'Darwin')) then
+  -- MacOS X uses .dylib:
+  print('Mac!')
+  package.cpath = cwd..'/Lib/?.dylib;' .. package.cpath;
+  package.cpath = cwd .. '/?.dylib;' .. package.cpath
+else
+  print('Comp:', computer)
+  package.cpath = cwd .. '/Lib/?.so;' .. package.cpath;
+end
+
 kinematics = require('XOSKinematics')
 
 function print_table(t)

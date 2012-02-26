@@ -1,6 +1,14 @@
+% Robot to Track
+RobotType = 'OP';  % 'Nao' or 'OP'
+if (RobotType == 'OP')
+	IP = '192.168.123.255';
+elseif (RobotType == 'Nao')
+  IP = '192.168.0.255';
+end
+
 % Players and team to track
 nPlayers = 3;
-teamNumbers = [26,18];
+teamNumbers = [18];
 team2track = 1; % The order of teamNumber. 1st teamNumber or 2nd
 player2track = 2; % PlayerID
 
@@ -34,21 +42,22 @@ while continuous
     tElapsed=toc(tStart);
     if( tElapsed>tDisplay )
         tStart = tic;
-        % Show the monitor
-        show_monitor( robots, scale, team2track, player2track );
-        %rgb = robots{player2track,team2track}.get_rgb_sub();
-				rgb = robots{player2track,team2track}.get_rgb();
-        %[yuv yuv_raw] = robots{player2track,team2track}.get_yuvSub();
-        drawnow;
+%        % Show the monitor
+%        show_monitor( robots, scale, team2track, player2track );
+%        rgb = robots{player2track,team2track}.get_rgb_sub();
+%				%rgb = robots{player2track,team2track}.get_rgb();
+%        [yuv yuv_raw] = robots{player2track,team2track}.get_yuvSub();
+%        drawnow;
     end
     
     %% Update our information
-    if(monitorComm('getQueueSize') > 0)
-        msg = monitorComm('receive');
+    if(monitorComm('getQueueSize',IP) > 0)
+        msg = monitorComm('receive',IP);
+%				disp([msg(1),tElapsed]);
         if ~isempty(msg)
-            msg = lua2mat(char(msg));
-            % Only track one robot...
-            scale = robots{player2track,team2track}.update( msg );
+            message = lua2mat(msg);
+%            % Only track one robot...
+            scale = robots{player2track,team2track}.update( message );
         end
     end
     

@@ -7,19 +7,22 @@ h.playerID = playerID;
 h.user = getenv('USER');
 h.robot_msg = {};
 h.team_msg = {};
+h.y = [];
+h.v = [];
+h.u = [];
 h.yuyv = [];
-h.yuvSub = [];
 h.labelA = [];
-h.labelAsub = [];
 h.labelB = [];
 h.scale = 1;
 
-% Setup arrays to track the images
-h.yuyv_arr = construct_array('yuyv');
-h.yuvSub_arr = construct_array('yuvSub');
-h.labelA_arr = construct_array('labelA');
-h.labelAsub_arr = construct_array('labelAsub');
-h.labelB_arr = construct_array('labelB');
+% Setup arrays to track the images 
+	% Number defined in sending function
+h.labelA_arr = image_array(16);
+h.labelB_arr = image_array(17);
+h.y_arr = image_array(18);
+h.u_arr = image_array(19);
+h.v_arr = image_array(20);
+
 
 % set function pointers
 h.update = @update;
@@ -38,13 +41,14 @@ h.get_labelB = @get_labelB;
         %fprintf('msg.playerid# / h.playerid#:\t %d / %d\n', msg.team.id, h.playerID);
         % Check if the id field is correct before updating this robot
         if( msg.team.player_id == h.playerID && msg.team.number == h.teamNumber )
-            if (isfield(msg, 'arr'))
-                h.yuyv  = h.yuyv_arr.update_always(msg.arr);
-								h.yuyv  = h.yuyv_arr.update(msg.arr);
-                h.labelA = h.labelA_arr.update_always(msg.arr);
-                h.labelB = h.labelB_arr.update(msg.arr);
-                h.labelAsub = h.labelAsub_arr.update(msg.arr);
-                h.yuvSub = h.yuvSub_arr.update(msg.arr);
+            if (isfield(msg,'image'))
+								h.y  = h.y_arr.update(msg.image);
+								h.u  = h.u_arr.update(msg.image);
+								h.v  = h.v_arr.update(msg.image);
+								h.labelA = h.labelA_arr.update(msg.image);
+								h.labelB = h.labelB_arr.update(msg.image);
+
+								% form yuyv
                 if(~isempty(h.labelB)) % labelB is gotten in one packet
                     h.scale = 4;
                 else
@@ -128,38 +132,14 @@ h.get_labelB = @get_labelB;
 
     function yuyv = get_yuyv()
         % returns the raw YUYV image
+										
         yuyv = h.yuyv;
-    end
-
-    function [yuv yuv_raw] = get_yuvSub()
-        % returns the raw YUV image
-        yuv = h.yuvSub;
-        width = size(yuv,2)/3;
-        height = size(yuv,1);
-        yuv = yuv';
-        yuv_raw = yuv(:);
-        yuv = reshape(yuv(:), [3 height*width]);
-        y = reshape(yuv(1,:), [width height]);
-        u = reshape(yuv(2,:), [width height]);
-        v = reshape(yuv(3,:), [width height]);
-        yuv = zeros(width,height,3);
-        yuv(:,:,1) = v;
-        yuv(:,:,2) = u;
-        yuv(:,:,3) = y;
-        yuv = permute(yuv,[2 1 3]);
-        yuv = uint8(yuv);
     end
 
     function rgb = get_rgb()
         % returns the raw RGB image (not full size)
         yuyv = h.get_yuyv();
         rgb = yuyv2rgb(yuyv');
-    end
-
-    function rgbsub = get_rgb_sub()
-        % returns the raw RGB image (not full size)
-        [yuv yuv_raw] = h.get_yuvSub();
-        rgbsub = ycbcr2rgb(yuv);
     end
 
     function labelA = get_labelA()

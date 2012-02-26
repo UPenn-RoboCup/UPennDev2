@@ -35,9 +35,9 @@ void close_comm(){
     close(recv_fd);
 }
 
-int init_comm(){
+int init_comm(char * ip){
 
-  struct hostent *hostptr = gethostbyname(IP);
+  struct hostent *hostptr = gethostbyname(ip);
     if (hostptr == NULL)
       return -5;
       

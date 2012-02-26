@@ -23,22 +23,37 @@ package.path = cwd .. '/Lib/?.lua;' .. package.path;
 package.path = cwd .. '/Dev/?.lua;' .. package.path;
 package.path = cwd .. '/Motion/?.lua;' .. package.path;
 package.path = cwd .. '/Motion/keyframes/?.lua;' .. package.path;
+package.path = cwd .. '/Vision/?.lua;' .. package.path;
+package.path = cwd .. '/World/?.lua;' .. package.path;
 
 require('unix')
 require('Config')
+require('shm')
 require('vector')
+require('mcm')
+require('Speak')
 require('getch')
 require('Body')
+require('Motion')
 require('walkKeyframe')
 
---SJ: OP specific initialization posing (to prevent twisting)
-Body.set_body_hardness(0.3);
-Body.set_actuator_command(Config.stance.initangle);
---Body.set_waist_command(0);
---print(Config.stance.initangle)
-unix.usleep(1E6*1.0);
---Body.set_body_hardness(0);
-Body.set_body_hardness(1);
+Motion.entry();
+
+darwin = false;
+webots = false;
+
+
+-- Enable OP specific 
+if(Config.platform.name == 'xos') then
+	darwin = true;
+	--SJ: OP specific initialization posing (to prevent twisting)
+	Body.set_body_hardness(0.3);
+	Body.set_actuator_command(Config.stance.initangle);
+	Body.set_waist_command(0);
+        print(Config.stance.initangle)
+	unix.usleep(1E6*1.0);
+	Body.set_body_hardness(0);
+end
 
 getch.enableblock(1);
 unix.usleep(1E6*1.0);
@@ -49,16 +64,15 @@ webots = false;
 init = false;
 calibrating = false;
 ready = false;
+if( webots or darwin) then
+	ready = true;
+end
+
+
+smindex = 0;
 initToggle = true;
 
-require 'walk'
-walk.start()
-walk.update();
-walk.set_velocity(.1,0,0)
-while(true) do
-  walk.update()
-  unix.usleep(1E3*1.0);
-end
+targetvel=vector.zeros(3);
 
 function process_keyinput()
 
@@ -69,23 +83,18 @@ function process_keyinput()
 		-- Walk velocity setting
 		if byte==string.byte("f") then	
 			walkKeyframe.set_walk_dir("walkForward");
-			walkKeyframe.entry();
-			while( walkKeyframe.update() ~= 'done' ) do
-				unix.usleep(1E3*1.0);  -- Wait a little bit
-			end;
-			walkKeyframe.exit();
---			Motion.event("walkKeyframe");
+			Motion.event("walkKeyframe");
 		elseif byte==string.byte("b") then	
---			walkKeyframe.set_walk_dir("walkBackward");
---			Motion.event("walkKeyframe");
+			walkKeyframe.set_walk_dir("walkBackward");
+			Motion.event("walkKeyframe");
 		elseif byte==string.byte("0") then
 			Body.set_body_hardness(0.7);
-			Body.set_actuator_command(Config.stance.standangle);
---			Body.set_waist_command(0);
-			--			kick.set_kick("kickForwardRight");
-			--			Motion.event("kick");
-			--		elseif byte==string.byte("w") then
-			--			Motion.event("standup");
+		        Body.set_actuator_command(Config.stance.initangle);
+			Body.set_waist_command(0);
+--			kick.set_kick("kickForwardRight");
+--			Motion.event("kick");
+--		elseif byte==string.byte("w") then
+--			Motion.event("standup");
 			--print('Trying to walk!')
 			--Motion.event("walk");
 			--walk.start();
@@ -134,7 +143,7 @@ function update()
 
 	else
 		-- update state machines 
---		Motion.update();
+		Motion.update();
 		Body.update();
 	end
 
@@ -156,9 +165,20 @@ function update()
 	end
 end
 
-local tDelay = 0.005 * 1E6; -- Loop every 5ms
-while 1 do
-	update();
-	process_keyinput();
-	unix.usleep(tDelay);
+-- if using Webots simulator just run update
+if (webots) then
+	while (true) do
+		-- update motion process
+		update();
+		io.stdout:flush();
+	end
+end
+
+if( darwin ) then
+	local tDelay = 0.005 * 1E6; -- Loop every 5ms
+	while 1 do
+		update();
+		process_keyinput();
+		unix.usleep(tDelay);
+	end
 end

@@ -21,24 +21,24 @@ walk.velLimitX={-.04,.09};
 ----------------------------------------------
 -- Stance parameters
 ---------------------------------------------
-walk.bodyHeight = 0.33; 
+walk.bodyHeight = .7;
 walk.bodyTilt=3*math.pi/180; 
 walk.footX= -0.020; 
 walk.footY = 0.045;
-walk.supportX = 0;
+walk.supportX = -.150;
 walk.supportY = 0.010;
 walk.qLArm=math.pi/180*vector.new({77.6, 12.3, 0.0, -30.2});
 walk.qRArm=math.pi/180*vector.new({68.6, -28.7, 0.0, 30.5});
 
 walk.hardnessSupport = 1;
-walk.hardnessSwing = 1;
-walk.hardnessArm=.3;
+walk.hardnessSwing = .5;
+walk.hardnessArm = .1;
 ---------------------------------------------
 -- Gait parameters
 ---------------------------------------------
-walk.tStep = 0.4;
-walk.tZmp = 0.167;
-walk.stepHeight = 0.030;
+walk.tStep = 0.8;
+walk.tZmp = 0.167; -- TODO: what is this value??
+walk.stepHeight = 0.03;
 walk.phSingle={0.3,0.8};
 
 --------------------------------------------

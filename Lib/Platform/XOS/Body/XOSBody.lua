@@ -28,6 +28,7 @@ jointNames = {"HeadYaw", "HeadPitch",
 
 nJoint = controller.nJoint; --DLC
 print('Body nJoint:',nJoint)
+--[[
 indexHead = 1;			--Head: 1 2
 nJointHead = 2;
 indexLArm = 3;			--LArm: 3 4 5 
@@ -40,18 +41,19 @@ indexRArm = 18; 		--RArm: 18 19 20
 nJointRArm = 3; 
 indexWaist= 21;
 nJointWaist=1;
+--]]
 
-indexHead = 1;			--Head: 1 2
+indexHead = 1;			--Head: 1  2
 nJointHead = 2;
-indexLArm = 3;			--LArm: 3 4 5 
-nJointLArm = 3; 		
-indexLLeg = 6;			--LLeg: 6 7 8 9 10 11
+indexLArm = 3;			--LArm: 3  4  5  6
+nJointLArm = 4; 		
+indexLLeg = 7;			--LLeg: 7  8  9  10 11 12
 nJointLLeg = 6;
-indexRLeg = 12; 		--RLeg: 12 13 14 15 16 17
+indexRLeg = 13; 		--RLeg: 13 14 15 16 17 18
 nJointRLeg = 6;
-indexRArm = 18; 		--RArm: 18 19 20
-nJointRArm = 3; 
-indexWaist= 21;
+indexRArm = 19; 		--RArm: 19 20 21 22
+nJointRArm = 4; 
+indexWaist= 23;			--Waist: 23
 nJointWaist=1;
 
 

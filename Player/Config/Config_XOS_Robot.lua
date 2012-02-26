@@ -13,6 +13,7 @@ stance={};
 stance.dpLimit=vector.new({.04, .03, .04, .4, .4, .4});
 stance.dpLimit=vector.new({.04, .03, .07, .4, .4, .4});--Faster standup
 --Init angle for start-up
+--[[
 stance.initangle = vector.new({
   -0.6, -75.8,
   77.9, 0.3, 0.0, -8.8,
@@ -20,10 +21,24 @@ stance.initangle = vector.new({
   -2.9, -3.4, 1.2, -3.2, 0.3, 5.3,
   66.5, -17.9, 0.0, 19.0,}
  ) * math.pi/180;
-
-
+--]]
+stance.initangle = vector.new( { 
+ -0.6, -108.5,
+ 72.9, 1.8, 0.0, -0.3,
+ -0.6, -1.0, 0.9, 2.9, -0.3, -0.9,
+ 0.9, -0.4, -0.0, 1.2, 1.2, 2.9,
+ 51.6, 0.3, 0.0, 5.6,
+ 0.0,
+}) * math.pi/180;
+stance.standangle = vector.new( {
+ -1.8, -110.9,
+ 68.8, 13.5, 0.0, -19.9,
+ -8.8, 5.8, 14.1, -1.9, -7.0, -5.6,
+ -8.8, -10.1, 15.2, 2.7, -2.6, 11.7,
+ 65.6, -5.9, 0.0, 17.3,
+ 29.0,
+}) * math.pi/180;
 --Servo parameters
-
 servo={}
 
 servo.idMap = {
@@ -39,9 +54,10 @@ nJoint = #servo.idMap;
 
 servo.dirReverse = {
 --   2, -- Head
-   7,11, -- LLeg
+   7,10,11, -- LLeg
    12,13,15,16, --RLeg
    18,19, -- RArm
+   23,
 };
 
 --Robot-specific firmware version handling
@@ -73,8 +89,8 @@ if servo.pid ==0 then -- For old firmware with 12-bit precision
   servo.posZero={
     512,512,
     512,512,512,512,
-    511,1850,420,2400,517,517,
-    519,2400,580,3400,510,505,
+    511,1650,450,1650,580,508,
+    508,2440,490,2100,578,360,
     512,512,512,512,
     512, --For waist
   }

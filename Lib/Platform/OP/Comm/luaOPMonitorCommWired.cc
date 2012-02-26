@@ -279,7 +279,11 @@ static int lua_darwinopcomm_send_label(lua_State *L) {
   int m = luaL_checkint(L, 2);    //Width 
   int n = luaL_checkint(L, 3);    //Height
   int samplerate = luaL_checkint(L, 4);    //downsample rate
-  int robotid = luaL_checkint(L, 5);    //robot ID
+  int teamid = luaL_checkint(L,5);	// team ID
+  int playerid = luaL_checkint(L, 6);	// player ID
+  int division = 1;    //How many division?
+  int section = 0; //Which section? 
+
 
   int m_sample=m/samplerate;
   int n_sample=n/samplerate;
@@ -289,7 +293,10 @@ static int lua_darwinopcomm_send_label(lua_State *L) {
   dataStr.push_back(m_sample%256); //Low bit of width
   dataStr.push_back(n_sample/256); //High bit of height
   dataStr.push_back(n_sample%256); //Low bit of height
-  dataStr.push_back(robotid);	//robot ID
+  dataStr.push_back(teamid);	// team ID
+  dataStr.push_back(playerid);	// player ID
+  dataStr.push_back(division);	//division
+  dataStr.push_back(section);	//section
 
   for (int j = 0; j < n; j++) {
           for (int i = 0; i < m; i++) {
@@ -331,7 +338,7 @@ static int lua_darwinopcomm_send_yuyv2(lua_State *L) {
   dataStrY.push_back(m%256); //Low bit of width
   dataStrY.push_back(n/256); //High bit of height
   dataStrY.push_back(n%256); //Low bit of height
-	dataStrY.push_back(teamid);	// team ID
+  dataStrY.push_back(teamid);	// team ID
   dataStrY.push_back(playerid);	// player ID
   dataStrY.push_back(division);	//division
   dataStrY.push_back(section);	//section

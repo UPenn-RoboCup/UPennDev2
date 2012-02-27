@@ -5,40 +5,31 @@ require 'unix'
 walk = {};
 
 ----------------------------------------------
--- Stance and velocity limit values
-----------------------------------------------
-walk.stanceLimitX={-0.10,0.10};
-walk.stanceLimitY={0.07,0.20};
-walk.stanceLimitA={0*math.pi/180,30*math.pi/180};
-walk.velLimitX={-.04,.08};
-walk.velLimitY={-.04,.04};
-walk.velLimitA={-.4,.4};
-walk.velDelta={0.02,0.02,0.15} 
-
-walk.velLimitX={-.04,.09};
-
-
-----------------------------------------------
 -- Stance parameters
 ---------------------------------------------
-walk.bodyHeight = .71;
+walk.bodyHeight = .72;
 walk.bodyTilt=0*math.pi/180; 
-walk.footX= -0.020; 
+--walk.footX= -0.020; 
+--walk.footX= -0.040; 
+walk.footX = -0.04;
 --walk.footY = 0.045;
 --walk.footY = 0.048
-walk.footY = 0.047;
+--walk.footY = 0.047;
+walk.footY = 0.060;
 --walk.supportX = .050;
 --walk.supportX = 0.035;
 --walk.supportX = 0.023;
 --walk.supportX = 0.010;
-walk.supportX = 0.005;
+--walk.supportX = -0.005;
+walk.supportX = -0.005;
 --walk.supportY = -0.010;
 --walk.supportY = 0.010; -- SJ says increase supportY
-walk.supportY = 0.020;
---walk.qLArm=math.pi/180*vector.new({77.6, 12.3, 0.0, -30.2});
---walk.qRArm=math.pi/180*vector.new({68.6, -28.7, 0.0, 30.5});
-walk.qLArm=math.pi/180*vector.new({77.6, 80, 0.0, -30.2});
-walk.qRArm=math.pi/180*vector.new({68.6, -80, 0.0, 30.5});
+--walk.supportY = 0.025;
+walk.supportY = 0.000;
+walk.qLArm=math.pi/180*vector.new({77.6, 12.3, 0.0, -30.2});
+walk.qRArm=math.pi/180*vector.new({68.6, -28.7, 0.0, 30.5});
+--walk.qLArm=math.pi/180*vector.new({77.6, 80, 0.0, -30.2});
+--walk.qRArm=math.pi/180*vector.new({68.6, -80, 0.0, 30.5});
 
 walk.hardnessSupport = 1;
 walk.hardnessSwing = .9;
@@ -46,11 +37,36 @@ walk.hardnessArm = .1;
 ---------------------------------------------
 -- Gait parameters
 ---------------------------------------------
-walk.tStep = 0.8;
+walk.tStep = 0.9;
 --walk.tZmp = 0.167; -- TODO: what is this value??
-walk.tZmp = 0.2338; -- multiply old value by 1.4 says SJ
-walk.stepHeight = 0.03;
-walk.phSingle={0.3,0.7};
+--walk.tZmp = 0.2338; -- multiply old value by 1.4 says SJ
+walk.tZmp = 0.3
+walk.stepHeight = 0.00;
+walk.phSingle={0.2,0.8};
+
+
+
+----------------------------------------------
+-- Stance and velocity limit values
+----------------------------------------------
+--[[
+walk.stanceLimitX={-0.10,0.10};
+walk.stanceLimitY={0.07,0.20};
+walk.stanceLimitA={0*math.pi/180,30*math.pi/180};
+walk.velLimitX={-.04,.08};
+walk.velLimitY={-.04,.04};
+walk.velLimitA={-.4,.4};
+walk.velDelta={0.02,0.02,0.15} 
+walk.velLimitX={-.04,.09};
+--]]
+-- New for XOS
+walk.stanceLimitX={-0.10,0.10};
+walk.stanceLimitY={0.12,0.27};
+walk.stanceLimitA={0*math.pi/180,30*math.pi/180};
+walk.velLimitX={-.04,.08};
+walk.velLimitY={-.075,.075};
+walk.velLimitA={-.4,.4};
+walk.velDelta={0.02,0.02,0.15} 
 
 --------------------------------------------
 -- Compensation parameters

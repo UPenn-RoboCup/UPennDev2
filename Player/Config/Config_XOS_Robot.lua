@@ -63,7 +63,8 @@ servo.dirReverse = {
 --Robot-specific firmware version handling
 servo.pid = 0; --old firmware default
 servo.armBias = {0,0,0,0,0,0}; --in degree
-servo.syncread = 1;
+--servo.syncread = 1;
+servo.synread = 0;
 
 local robotName = unix.gethostname();
 

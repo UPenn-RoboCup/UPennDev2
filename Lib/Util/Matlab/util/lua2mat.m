@@ -7,7 +7,7 @@ function st = lua2mat(msg)
 % 18 Y small
 % 19 U small
 % 20 V small
-imageid = [18,19,20];
+imageid = [16,17,18,19,20];
 	if (msg(1) == 11)
 			str = char(msg(2:end));	
 		%
@@ -55,7 +55,8 @@ imageid = [18,19,20];
 		str.team.player_id = double(msg(7));
 		 
 		st = str;
-		%disp('image update recived!');
+%		disp('image update received!');
+%		disp(str.image.section);
 	else
 		str = {};
 		str.team = {};

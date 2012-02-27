@@ -11,12 +11,12 @@ end
 if( scale == 1 )
     label = robots{playerNumber,teamNumber}.get_labelA();
 elseif( scale == 2 )
-    label = robots{playerNumber,teamNumber}.get_labelAsub();
+%    label = robots{playerNumber,teamNumber}.get_labelAsub();
 else
     label = robots{playerNumber,teamNumber}.get_labelB();
 end
-%rgb = robots{playerNumber,teamNumber}.get_rgb();
-rgb = robots{playerNumber,teamNumber}.get_rgb_sub();
+rgb = robots{playerNumber,teamNumber}.get_rgb();
+%rgb = robots{playerNumber,teamNumber}.get_rgb_sub();
 
 nTeams = size(robots,2);
 nPlayers = size(robots,1);

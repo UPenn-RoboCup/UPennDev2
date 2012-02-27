@@ -19,7 +19,7 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 
-const int maxQueueSize = 16;
+const int maxQueueSize = 64;
 
 static std::deque<std::string> recvQueue;
 static int send_fd, recv_fd;

@@ -38,26 +38,24 @@ fprintf('Initialization time: %f\n',t);
 while continuous
     nUpdate = nUpdate + 1;
     
-    %% Draw our information
+%    %% Draw our information
     tElapsed=toc(tStart);
     if( tElapsed>tDisplay )
         tStart = tic;
-%        % Show the monitor
-%        show_monitor( robots, scale, team2track, player2track );
-%        rgb = robots{player2track,team2track}.get_rgb_sub();
-%				%rgb = robots{player2track,team2track}.get_rgb();
-%        [yuv yuv_raw] = robots{player2track,team2track}.get_yuvSub();
-%        drawnow;
-    end
+        % Show the monitor
+        show_monitor( robots, scale, team2track, player2track );
+        drawnow;
+    end;
+%		disp('update show');
     
     %% Update our information
-    if(monitorComm('getQueueSize',IP) > 0)
+		while (monitorComm('getQueneSize',IP)>0)
         msg = monitorComm('receive',IP);
-%				disp([msg(1),tElapsed]);
+%				disp([msg(1),msg(9)]);
         if ~isempty(msg)
             message = lua2mat(msg);
-%            % Only track one robot...
-            scale = robots{player2track,team2track}.update( message );
+            % Only track one robot...
+            ret = robots{player2track,team2track}.update( message );
         end
     end
     

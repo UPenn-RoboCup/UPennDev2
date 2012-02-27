@@ -5,7 +5,7 @@
 #define MDELAY 2
 #define TTL 16
 #define MAX_LENGTH 160000 //Needed for 640*480 yuyv
-int init_comm(char *);
+int init_comm(const char *);
 void close_comm();
 void process_message();
 int send_message( void* data, int num_data );

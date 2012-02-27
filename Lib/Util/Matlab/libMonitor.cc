@@ -35,7 +35,7 @@ void close_comm(){
     close(recv_fd);
 }
 
-int init_comm(char * ip){
+int init_comm(const char * ip){
 
   struct hostent *hostptr = gethostbyname(ip);
     if (hostptr == NULL)

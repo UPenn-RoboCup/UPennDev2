@@ -60,6 +60,7 @@ armImuParamY = Config.walk.armImuParamY;
 walkKickVel = Config.walk.walkKickVel;
 walkKickSupportMod = Config.walk.walkKickSupportMod;
 walkKickHeightFactor = Config.walk.walkKickHeightFactor;
+motionArms = Config.walk.motionArms or false;
 
 ----------------------------------------------------------
 -- Walk state variables
@@ -170,7 +171,7 @@ function update()
    
     if walkKickRequest ==1 then --If step is right skip 1st step
       if supportLeg==walkKickType then 
-	walkKickRequest = 2;
+		walkKickRequest = 2;
       end
     end
 
@@ -267,7 +268,9 @@ function update()
 
   qLegs = Kinematics.inverse_legs(pLLeg, pRLeg, pTorso, supportLeg);
   motion_legs(qLegs);
-  motion_arms();
+  if motionArms then
+  	motion_arms();
+  end
 end
 
 
@@ -329,6 +332,8 @@ function motion_legs(qLegs)
   --HZDWalk.record_joint_angles( supportLeg, qLegs );
 end
 
+---
+--Update arm motion depending on state of global variables
 function motion_arms()
   qLArm[1],qLArm[2]=qLArm0[1]+armShift[1],qLArm0[2]+armShift[2];
   qRArm[1],qRArm[2]=qRArm0[1]+armShift[1],qRArm0[2]+armShift[2];
@@ -339,11 +344,18 @@ function motion_arms()
   Body.set_rarm_command(qRArm);
 end
 
+---
+--Exit the new walk state.
 function exit()
 end
 
+---
+--Calculate destination for case in which left foot is stepping
+--@param vel The current velocity in the form of a table containing [x,y,z]
+--@param uLeft The global pose of the left foot
+--@param uRight The global pose of the right foot
 function step_left_destination(vel, uLeft, uRight)
-  local u0 = util.se2_interpolate(.5, uLeft, uRight);
+  local u0 = util.se2_interpolate(.5, uLeft, uRight); --Get the global pose of the body center
   -- Determine nominal midpoint position 1.5 steps in future
   local u1 = util.pose_global(vel, u0);
   local u2 = util.pose_global(.5*vel, u1);
@@ -358,6 +370,11 @@ function step_left_destination(vel, uLeft, uRight)
   return util.pose_global(uLeftRight, uRight);
 end
 
+---
+--Calculate destination for case in which right foot is stepping
+--@param vel The current velocity in the form of a table containing [x,y,z]
+--@param uLeft The global pose of the left foot
+--@param uRight The global pose of the right foot
 function step_right_destination(vel, uLeft, uRight)
   local u0 = util.se2_interpolate(.5, uLeft, uRight);
   -- Determine nominal midpoint position 1.5 steps in future
@@ -374,6 +391,11 @@ function step_right_destination(vel, uLeft, uRight)
   return util.pose_global(uRightLeft, uLeft);
 end
 
+---
+--Determine the desired global pose of the torso
+--@param uLeft The desired global pose of the left foot
+--@param uRight The desired global pose of the right foot
+--@return The center between the desired poses of the left and right foot
 function step_torso(uLeft, uRight)
   local u0 = util.se2_interpolate(.5, uLeft, uRight);
   local uLeftSupport = util.pose_global({supportX, supportY, 0}, uLeft);
@@ -381,6 +403,11 @@ function step_torso(uLeft, uRight)
   return util.se2_interpolate(.5, uLeftSupport, uRightSupport);
 end
 
+---
+--Set the desired velocity of the robot (this is technically in m/s, but fairly inaccuarate)
+--@param vx The desired x component of velocity
+--@param vy The desired y component of velocity
+--@param vz The desired z component of velocity
 function set_velocity(vx, vy, vz)
   --Filter the commanded speed
 --[[
@@ -395,6 +422,8 @@ function set_velocity(vx, vy, vz)
   velCommand[3]=vz;
 end
 
+---
+--Update the walking velocity with the velCommand=[x,y,z] table
 function update_velocity()
   local velDiff={};
   velDiff[1]= math.min(math.max(velCommand[1]-velCurrent[1],
@@ -417,10 +446,15 @@ function update_velocity()
   end
 end
 
+---
+--Returns the current velocity
+--@return velCurrent The current velocity in a table containing [x,y,z]
 function get_velocity()
   return velCurrent;
 end
 
+---
+--Initializes the walking state
 function start()
   stopRequest = 0;
   if (not active) then
@@ -432,15 +466,20 @@ function start()
   end
 end
 
+---
+--Elegantly exit the walking state by putting in a 'stopRequest'
 function stop()
   stopRequest = math.max(1,stopRequest);
 --  stopRequest = 2;
 end
 
+--TODO: Remove this poltergeist from the code base
 function stopAlign()
   stop()
 end
 
+---
+--Request a left walking kick
 function doWalkKickLeft()
   if walkKickRequest==0 then
     walkKickRequest = 1; 
@@ -448,6 +487,8 @@ function doWalkKickLeft()
   end
 end
 
+---
+--Request a right walking kick
 function doWalkKickRight()
   if walkKickRequest==0 then
     walkKickRequest = 1; 
@@ -455,23 +496,36 @@ function doWalkKickRight()
   end
 end
 
+--TODO: Remove this poltergeist
 --dummy function for NSL kick
 function zero_velocity()
 end
 
+---
+--Get the odometry (amount moved) of the robot 
+--@param u0 An optional table parameter which defines the starting point. [0,0,0] by default.
+--@return The distance from u0 to the robot's body
+--@return The global pose of the robot's body
 function get_odometry(u0)
   if (not u0) then
     u0 = vector.new({0, 0, 0});
   end
-  local uFoot = util.se2_interpolate(.5, uLeft, uRight);
-  return util.pose_relative(uFoot, u0), uFoot;
+  local uFoot = util.se2_interpolate(.5, uLeft, uRight); --Set uFoot to be approximate center of body
+  return util.pose_relative(uFoot, u0), uFoot; --Return
 end
 
+---
+--Return the current body offset with respect to the optimal center of mass
+--@return The offset of the torso with respect to the center of mass (between the two feet)
 function get_body_offset()
   local uFoot = util.se2_interpolate(.5, uLeft, uRight);
   return util.pose_relative(uTorso, uFoot);
 end
 
+--TODO: Understand this function
+---
+--Solve the zmp equation
+--
 function zmp_solve(zs, z1, z2, x1, x2)
   --[[
     Solves ZMP equation:
@@ -492,6 +546,8 @@ function zmp_solve(zs, z1, z2, x1, x2)
   return aP, aN;
 end
 
+--TODO: Understand this function
+---
 --Finds the necessary COM for stability and returns it
 function zmp_com(ph)
   local com = vector.new({0, 0, 0});
@@ -514,6 +570,11 @@ function zmp_com(ph)
   return com;
 end
 
+--TODO: Get a better understanding of this
+---
+--Computes the relative x,z motion of the foot during single support phase
+--@param ph The desired phase of the robot's step
+--@return The relative x,z motion of the foot during single support phase 
 function foot_phase(ph)
   -- Computes relative x,z motion of foot during single support phase
   -- phSingle = 0: x=0, z=0, phSingle = 1: x=1,z=0

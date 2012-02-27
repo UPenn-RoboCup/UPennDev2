@@ -18,7 +18,7 @@ loadconfig('Config_Nao_New_Walk')
 
 
 loadconfig('Config_Nao_World')
-loadconfig('Config_Nao_Kick')
+loadconfig('Config_Nao_New_Kick')
 loadconfig('Config_Nao_Vision')
 
 --Location Specific Camera Parameters--
@@ -98,10 +98,10 @@ km.standup_back = 'km_Nao_StandupFromBackFasterNew.lua';
 -- sitting parameters
 
 sit = {};
-sit.bodyHeight = 0.22;
-sit.supportX = 0;
+sit.bodyHeight = 0.18;
+sit.supportX = 0.020;
 sit.dpLimit = vector.new({.1,.01,.03,.1,.3,.1});
-
+sit.footY = 0.0375;
 
 -- standing parameters
 

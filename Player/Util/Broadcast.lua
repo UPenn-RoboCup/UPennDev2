@@ -184,12 +184,17 @@ function update_img( enable, imagecount )
   local division = 4; -- for image sending part by part
   if(enable==2) then
 		local yuyv = vcm.get_image_yuyv();
+		local labelB = vcm.get_image_labelB();
 		local height = vcm.get_image_height();
 		local width = vcm.get_image_width()/2;
+		local heightB = vcm.get_image_height()/8;
+		local widthB = vcm.get_image_width()/8;
 		local teamID = gcm.get_team_number();
 		local playerID = gcm.get_team_player_id();
 --    print(width..'.'..height);
-		ret = MonitorComm.send_yuyv2(yuyv,width,height,teamID,playerID,division,imagecount%division); 
+		ret1,ret2,ret3 = MonitorComm.send_yuyv2(yuyv,width,height,teamID,playerID,division,imagecount%division); 
+		ret = MonitorComm.send_label(labelB,widthB,heightB,1,teamID,playerID);
+--		print('section',imagecount%division,'Returned:',ret1,ret2,ret3);
 		--print('divions sending '..imagecount%division..' Done? '..ret);
 --    sendB();
 --    sendImg(); -- half of sub image

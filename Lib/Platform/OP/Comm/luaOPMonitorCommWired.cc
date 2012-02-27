@@ -32,7 +32,7 @@ extern "C"
 #define TTL 16
 #define MAX_LENGTH 160000 //Size for sending 640*480 yuyv data without resampling
 
-const int maxQueueSize = 6;
+const int maxQueueSize = 12;
 static std::string IP;
 
 static std::deque<std::string> recvQueue;
@@ -378,8 +378,11 @@ static int lua_darwinopcomm_send_yuyv2(lua_State *L) {
   int ret1 = send(send_fd, dataStrY.c_str(), dataStrY.size(), 0);
   int ret2 = send(send_fd, dataStrU.c_str(), dataStrU.size(), 0);
   int ret3 = send(send_fd, dataStrV.c_str(), dataStrV.size(), 0);
-  lua_pushinteger(L,ret1+ret2+ret3);
-  return 1;
+  lua_pushinteger(L,ret1);
+  lua_pushinteger(L,ret2);
+  lua_pushinteger(L,ret3);
+
+  return 3;
 }
 
 

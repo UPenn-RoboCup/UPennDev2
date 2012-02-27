@@ -54,7 +54,7 @@ initToggle = true;
 require 'walk'
 walk.start()
 walk.update();
-walk.set_velocity(.02,0,0)
+walk.set_velocity(0.05,0,0)
 while(true) do
   walk.update()
   unix.usleep(1E3*1.0);

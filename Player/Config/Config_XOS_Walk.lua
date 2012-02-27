@@ -21,27 +21,36 @@ walk.velLimitX={-.04,.09};
 ----------------------------------------------
 -- Stance parameters
 ---------------------------------------------
-walk.bodyHeight = .7;
-walk.bodyTilt=3*math.pi/180; 
+walk.bodyHeight = .71;
+walk.bodyTilt=0*math.pi/180; 
 walk.footX= -0.020; 
-walk.footY = 0.045;
+--walk.footY = 0.045;
+--walk.footY = 0.048
+walk.footY = 0.047;
 --walk.supportX = .050;
 --walk.supportX = 0.035;
-walk.supportX = 0.023;
-walk.supportY = 0.010;
-walk.qLArm=math.pi/180*vector.new({77.6, 12.3, 0.0, -30.2});
-walk.qRArm=math.pi/180*vector.new({68.6, -28.7, 0.0, 30.5});
+--walk.supportX = 0.023;
+--walk.supportX = 0.010;
+walk.supportX = 0.005;
+--walk.supportY = -0.010;
+--walk.supportY = 0.010; -- SJ says increase supportY
+walk.supportY = 0.020;
+--walk.qLArm=math.pi/180*vector.new({77.6, 12.3, 0.0, -30.2});
+--walk.qRArm=math.pi/180*vector.new({68.6, -28.7, 0.0, 30.5});
+walk.qLArm=math.pi/180*vector.new({77.6, 80, 0.0, -30.2});
+walk.qRArm=math.pi/180*vector.new({68.6, -80, 0.0, 30.5});
 
 walk.hardnessSupport = 1;
-walk.hardnessSwing = .5;
+walk.hardnessSwing = .9;
 walk.hardnessArm = .1;
 ---------------------------------------------
 -- Gait parameters
 ---------------------------------------------
 walk.tStep = 0.8;
-walk.tZmp = 0.167; -- TODO: what is this value??
+--walk.tZmp = 0.167; -- TODO: what is this value??
+walk.tZmp = 0.2338; -- multiply old value by 1.4 says SJ
 walk.stepHeight = 0.03;
-walk.phSingle={0.3,0.8};
+walk.phSingle={0.3,0.7};
 
 --------------------------------------------
 -- Compensation parameters

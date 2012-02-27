@@ -60,15 +60,14 @@ int main(int argc, char ** argv)
   }
 
   // Process incoming messages:
-  process_message();
 	while (true) {
+	  process_message();
+
 		double Qsize = getQueueSize();
-		std::cout << Qsize << std::endl;
 		while (!queueIsEmpty()) {
-			std::cout << "received!" << std::endl;
-   		size_t n = get_front_size();
+   		int n = get_front_size();
     	std::string packet((const char *)get_front_data());
-			std::cout << packet[1] << std::endl;
+			std::cout << (int)packet[0] << std::endl;
     	pop_data();
 	  }
 	} 

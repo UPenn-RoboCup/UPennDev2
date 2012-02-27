@@ -11,7 +11,8 @@ walk.bodyHeight = .72;
 walk.bodyTilt=0*math.pi/180; 
 --walk.footX= -0.020; 
 --walk.footX= -0.040; 
-walk.footX = -0.04;
+--walk.footX = -0.04;
+walk.footX = -0.025;
 --walk.footY = 0.045;
 --walk.footY = 0.048
 --walk.footY = 0.047;
@@ -20,28 +21,32 @@ walk.footY = 0.060;
 --walk.supportX = 0.035;
 --walk.supportX = 0.023;
 --walk.supportX = 0.010;
---walk.supportX = -0.005;
 walk.supportX = -0.005;
+--walk.supportX = -0.020;
+
 --walk.supportY = -0.010;
 --walk.supportY = 0.010; -- SJ says increase supportY
 --walk.supportY = 0.025;
 walk.supportY = 0.000;
+
 walk.qLArm=math.pi/180*vector.new({77.6, 12.3, 0.0, -30.2});
 walk.qRArm=math.pi/180*vector.new({68.6, -28.7, 0.0, 30.5});
 --walk.qLArm=math.pi/180*vector.new({77.6, 80, 0.0, -30.2});
 --walk.qRArm=math.pi/180*vector.new({68.6, -80, 0.0, 30.5});
 
 walk.hardnessSupport = 1;
-walk.hardnessSwing = .9;
+walk.hardnessSwing = 1;
 walk.hardnessArm = .1;
 ---------------------------------------------
 -- Gait parameters
 ---------------------------------------------
-walk.tStep = 0.9;
+--walk.tStep = 0.9;
+--walk.tStep = 1.5
+walk.tStep = 1.1;
 --walk.tZmp = 0.167; -- TODO: what is this value??
 --walk.tZmp = 0.2338; -- multiply old value by 1.4 says SJ
 walk.tZmp = 0.3
-walk.stepHeight = 0.00;
+walk.stepHeight = 0.03;
 walk.phSingle={0.2,0.8};
 
 

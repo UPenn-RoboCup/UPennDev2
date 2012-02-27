@@ -1595,15 +1595,11 @@ static int _wrap_wb_accelerometer_get_values(lua_State* L) {
   result = (double *)wb_accelerometer_get_values(arg1);
   {
     int len, i;
-//SJ: Force len value to be 3 to read 3 values from ACC
-/*
-
     if (strcmp("wb_accelerometer_get_values", "_vec2f") != 0)
     len = 2;
     else if (strcmp("wb_accelerometer_get_values", "_sf_rotation") == 0)
     len = 4;
     else
-*/
     len = 3;
     lua_createtable(L, len, 0);
     for (i = 0; i < len; i++) {
@@ -1679,27 +1675,6 @@ static int _wrap_wb_camera_get_image(lua_State* L) {
     lua_pushlightuserdata(L, result);
     SWIG_arg++;
   }
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_wb_camera_get_range_image(lua_State* L) {
-  int SWIG_arg = 0;
-  WbDeviceTag arg1 ;
-  float *result = 0 ;
-  
-  SWIG_check_num_args("wb_camera_get_range_image",1,1)
-  if(!lua_isnumber(L,1)) SWIG_fail_arg("wb_camera_get_range_image",1,"WbDeviceTag");
-  SWIG_contract_assert((lua_tonumber(L,1)>=0),"number must not be negative")
-  arg1 = (WbDeviceTag)lua_tonumber(L, 1);
-  result = (float *)wb_camera_get_range_image(arg1);
-  SWIG_NewPointerObj(L,result,SWIGTYPE_p_float,0); SWIG_arg++; 
   return SWIG_arg;
   
   if(0) SWIG_fail;
@@ -3159,16 +3134,12 @@ static int _wrap_wb_gyro_get_values(lua_State* L) {
   arg1 = (WbDeviceTag)lua_tonumber(L, 1);
   result = (double *)wb_gyro_get_values(arg1);
   {
-
     int len, i;
-//SJ: Force the len variable to be 3 to read 3 values from gyro
-/*
     if (strcmp("wb_gyro_get_values", "_vec2f") != 0)
     len = 2;
     else if (strcmp("wb_gyro_get_values", "_sf_rotation") == 0)
     len = 4;
     else
-*/
     len = 3;
     lua_createtable(L, len, 0);
     for (i = 0; i < len; i++) {
@@ -6418,7 +6389,6 @@ static const struct luaL_reg swig_commands[] = {
     { "wb_camera_enable", _wrap_wb_camera_enable},
     { "wb_camera_disable", _wrap_wb_camera_disable},
     { "wb_camera_get_image", _wrap_wb_camera_get_image},
-    { "wb_camera_get_range_image", _wrap_wb_camera_get_range_image},
     { "wb_camera_get_width", _wrap_wb_camera_get_width},
     { "wb_camera_get_height", _wrap_wb_camera_get_height},
     { "wb_camera_get_fov", _wrap_wb_camera_get_fov},
@@ -6665,8 +6635,6 @@ static swig_lua_const_info swig_constants[] = {
 { SWIG_LUA_INT,     (char *)"WB_NODE_PHYSICS", (long) 51, 0, 0, 0},
 { SWIG_LUA_INT,     (char *)"WB_NODE_CAMERA_ZOOM", (long) 52, 0, 0, 0},
 { SWIG_LUA_INT,     (char *)"WB_NODE_CHARGER", (long) 53, 0, 0, 0},
-{ SWIG_LUA_INT,     (char *)"WB_NODE_DAMPING", (long) 54, 0, 0, 0},
-{ SWIG_LUA_INT,     (char *)"WB_NODE_CONTACT_PROPERTIES", (long) 55, 0, 0, 0},
 { SWIG_LUA_INT,     (char *)"WB_NODE_ACCELEROMETER", (long) 60, 0, 0, 0},
 { SWIG_LUA_INT,     (char *)"WB_NODE_CAMERA", (long) 61, 0, 0, 0},
 { SWIG_LUA_INT,     (char *)"WB_NODE_COMPASS", (long) 62, 0, 0, 0},

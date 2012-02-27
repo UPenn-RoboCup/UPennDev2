@@ -257,7 +257,8 @@ function update()
     else
       uRight = util.se2_interpolate(xFoot, uRight1, uRight2);
     end
-    pRLeg[3] = stepHeight*zFoot;
+    pRLeg[3] = stepHeight * zFoot * 1.5;
+    pRLeg[2] = pRLeg[2] * 1.2;
   else    -- Right support
     if walkKickRequest == 4 and walkKickType>1 then --side kick 
       if xFoot<0.5 then uLeft = util.se2_interpolate(xFoot*2, uLeft1, uLeft15);
@@ -266,7 +267,7 @@ function update()
     else
       uLeft = util.se2_interpolate(xFoot, uLeft1, uLeft2);
     end
-    pLLeg[3] = stepHeight*zFoot;
+    pLLeg[3] = stepHeight * zFoot;
   end
 
   uTorso = zmp_com(ph);

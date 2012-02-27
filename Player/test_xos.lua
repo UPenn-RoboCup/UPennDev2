@@ -54,7 +54,7 @@ initToggle = true;
 require 'walk'
 walk.start()
 walk.update();
-walk.set_velocity(0.05,0,0);
+walk.set_velocity(0.03,0,0);
 -- 18.1volts
 if( false ) then
 	walk.stop()

@@ -12,7 +12,8 @@ walk.bodyTilt=0*math.pi/180;
 --walk.footX= -0.020; 
 --walk.footX= -0.040; 
 --walk.footX = -0.04;
-walk.footX = -0.025;
+--walk.footX = -0.025;
+walk.footX = -0.035;
 --walk.footY = 0.045;
 --walk.footY = 0.048
 --walk.footY = 0.047;
@@ -43,10 +44,11 @@ walk.hardnessArm = .1;
 --walk.tStep = 0.9;
 --walk.tStep = 1.5
 walk.tStep = 1.1;
+walk.tStep = 1.0;
 --walk.tZmp = 0.167; -- TODO: what is this value??
 --walk.tZmp = 0.2338; -- multiply old value by 1.4 says SJ
 walk.tZmp = 0.3
-walk.stepHeight = 0.03;
+walk.stepHeight = 0.02;
 walk.phSingle={0.2,0.8};
 
 

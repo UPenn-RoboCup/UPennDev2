@@ -67,7 +67,9 @@ int main(int argc, char ** argv)
 		while (!queueIsEmpty()) {
    		int n = get_front_size();
     	std::string packet((const char *)get_front_data());
-			std::cout << (int)packet[0] << std::endl;
+//			std::cout << (int)packet[0] << std::endl;
+			if (packet[0] == 11) 
+				std::cout << packet << std::endl;
     	pop_data();
 	  }
 	} 

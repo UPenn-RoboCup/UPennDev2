@@ -30,7 +30,7 @@ dev.comm='NullComm';
 dev.monitor_comm = 'OPMonitorCommWired';
 dev.game_control='OPGameControl';
 dev.walk='XOSWalk';
-dev.kick = 'kickKeyframe'
+dev.kick = 'NewKick'
 
 -- Game Parameters
 

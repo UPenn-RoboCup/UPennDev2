@@ -7,28 +7,29 @@ walk = {};
 ----------------------------------------------
 -- Stance parameters
 ---------------------------------------------
-walk.bodyHeight = .72;
-walk.bodyTilt=0*math.pi/180; 
+walk.bodyHeight = .71;
+walk.bodyTilt=-2*math.pi/180; 
 --walk.footX= -0.020; 
---walk.footX= -0.040; 
---walk.footX = -0.04;
---walk.footX = -0.025;
-walk.footX = -0.035;
---walk.footY = 0.045;
---walk.footY = 0.048
---walk.footY = 0.047;
-walk.footY = 0.060;
+--walk.footX = -0.035;
+--walk.footX = -0.00;
+--walk.footX = -0.015;
+--walk.footX = -0.055;
+--walk.footX = -0.060;
+walk.footX = -0.080;
+--walk.footX = -0.075;
+
+walk.footY = 0.045;
+--walk.footY = 0.060;
 --walk.supportX = .050;
---walk.supportX = 0.035;
---walk.supportX = 0.023;
---walk.supportX = 0.010;
-walk.supportX = -0.005;
---walk.supportX = -0.020;
+--walk.supportX = -0.005;
+--walk.supportX = -0.0045;
+walk.supportX = -0.008;
+--walk.supportX = -0.007;
 
 --walk.supportY = -0.010;
---walk.supportY = 0.010; -- SJ says increase supportY
---walk.supportY = 0.025;
-walk.supportY = 0.000;
+--walk.supportY = 0.000;
+walk.supportY = 0.010;
+--walk.supportY = 0.020;
 
 walk.qLArm=math.pi/180*vector.new({77.6, 12.3, 0.0, -30.2});
 walk.qRArm=math.pi/180*vector.new({68.6, -28.7, 0.0, 30.5});
@@ -41,15 +42,17 @@ walk.hardnessArm = .1;
 ---------------------------------------------
 -- Gait parameters
 ---------------------------------------------
---walk.tStep = 0.9;
+walk.tStep = 0.9;
+--walk.tStep = 1;
 --walk.tStep = 1.5
-walk.tStep = 1.1;
-walk.tStep = 1.0;
+--walk.tStep = 1.1;
 --walk.tZmp = 0.167; -- TODO: what is this value??
 --walk.tZmp = 0.2338; -- multiply old value by 1.4 says SJ
-walk.tZmp = 0.3
+walk.tZmp = 0.5 -- barely moving, but ok...
 walk.stepHeight = 0.02;
-walk.phSingle={0.2,0.8};
+--walk.stepHeight = 0.0;
+--walk.stepHeight = 0.02;
+walk.phSingle={0.3,0.7};
 
 
 
@@ -125,7 +128,11 @@ walk.fallAngle = 50*math.pi/180;
 walk.kickXComp = 0;
 walk.supportCompL = {0,0,0};
 walk.supportCompR = {0,0,0};
-walk.servoBias = {0,0,0,0,0,0,0,0,0,0,0,0};
+--walk.servoBias={0,0,-99,35,0,0,0,0,-176,-45,0,0}
+--walk.servoBias={0,0,-69,50,0,0,0,0,-333,-69,0,0}
+walk.servoBias={0,0,0,0,0,0,0,0,0,0,0,0}
+
+
 walk.footXComp = 0;
 walk.footYComp = 0;
 walk.headPitch = 40* math.pi / 180; --Pitch angle offset of OP 
@@ -134,7 +141,6 @@ walk.headPitchComp = 0;
 local robotName = unix.gethostname();
 print(robotName.." walk parameters loaded")
 local robotID = 23;
-walk.servoBias = {0,0,0,0,0,0, 0,0,0,0,0,0}
 
 --Apply robot specific compensation to default values
 walk.footX = walk.footX + walk.footXComp;

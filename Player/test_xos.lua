@@ -54,16 +54,25 @@ initToggle = true;
 require 'walk'
 walk.start()
 walk.update();
-walk.set_velocity(0.03,0,0);
+walk.set_velocity(0.03,-0.01,0);
 -- 18.1volts
-if( false ) then
-	walk.stop()
-	return;
-end
+local t0 = unix.time();
 while(true) do
-  walk.update()
-  unix.usleep(1E3*1.0);
+	walk.update()
+--Body.set_waist_command(10);
+	
+	unix.usleep(1E3*1.0);
+	local t = unix.time();	
+	if( false and t-t0>4) then
+--		walk.doWalkKickRight();
+--		walk.doSideKickLeft();
+		walk.stop();
+		return;
+	end
 end
+
+require 'kick'
+
 
 function process_keyinput()
 
@@ -79,14 +88,14 @@ function process_keyinput()
 				unix.usleep(1E3*1.0);  -- Wait a little bit
 			end;
 			walkKeyframe.exit();
---			Motion.event("walkKeyframe");
+			--			Motion.event("walkKeyframe");
 		elseif byte==string.byte("b") then	
---			walkKeyframe.set_walk_dir("walkBackward");
---			Motion.event("walkKeyframe");
+			--			walkKeyframe.set_walk_dir("walkBackward");
+			--			Motion.event("walkKeyframe");
 		elseif byte==string.byte("0") then
 			Body.set_body_hardness(0.7);
 			Body.set_actuator_command(Config.stance.standangle);
---			Body.set_waist_command(0);
+			--			Body.set_waist_command(0);
 			--			kick.set_kick("kickForwardRight");
 			--			Motion.event("kick");
 			--		elseif byte==string.byte("w") then
@@ -139,7 +148,7 @@ function update()
 
 	else
 		-- update state machines 
---		Motion.update();
+		--		Motion.update();
 		Body.update();
 	end
 

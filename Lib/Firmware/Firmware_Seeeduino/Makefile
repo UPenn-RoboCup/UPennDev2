@@ -3,6 +3,8 @@
 # Copyright: <insert your copyright message here>
 # License: <insert your license reference here>
 
+# NOTE: press and relsae button on Seeeduino, then immediate issue `make flash` to flash the board
+
 # This is a prototype Makefile. Modify it according to your needs.
 # You should at least check the settings for
 # DEVICE ....... The AVR device you compile for
@@ -23,7 +25,7 @@ ifeq ($(OSTYPE),linux)
   USBDEVICE = /dev/ttyUSB0
 endif
 ifeq ($(OSTYPE),darwin)
-  USBDEVICE = /dev/cu.usbserial-A700dBil
+  USBDEVICE = /dev/cu.usbserial-A900caWK
 endif
 
 DEVICE     = atmega1280

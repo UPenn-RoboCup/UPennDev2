@@ -32,8 +32,8 @@ h.get_labelB = @get_labelB;
         % Check if the id field is correct before updating this robot
         if( msg.team.player_id == h.playerID && msg.team.number == h.teamNumber )
             if (isfield(msg, 'arr'))
-                h.yuyv  = h.yuyv_arr.update_always(msg.arr);
-                h.labelA = h.labelA_arr.update_always(msg.arr);
+                h.yuyv  = h.yuyv_arr.update(msg.arr)'; %used to be always
+                h.labelA = h.labelA_arr.update(msg.arr); %used to be always
                 h.labelB = h.labelB_arr.update(msg.arr);
                 if(~isempty(h.labelB)) % labelB is gotten in one packet
                     h.scale = 4;

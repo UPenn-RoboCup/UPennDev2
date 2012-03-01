@@ -16,6 +16,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
   static bool init = false;
   if (!init) {
+    printf("MonitorComm connecting to %s\n", IP);
     printf("Initializing monitorComm...\n");
     int ret = init_comm();
     switch( ret ){

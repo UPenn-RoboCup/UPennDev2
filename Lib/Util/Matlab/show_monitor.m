@@ -1,5 +1,6 @@
 function show_monitor( robots, scale, teamNumber, playerNumber )
 
+
 % Robot to display
 
 r_mon = robots{playerNumber,teamNumber}.get_monitor_struct();
@@ -15,12 +16,26 @@ else
 end
 rgb = robots{playerNumber,teamNumber}.get_rgb();
 
+% transpose images for Nao
+if ( robots{playerNumber,teamNumber}.teamNumber == 26 ) 
+  if ( size(rgb) > 0 )
+    %rgb = permute(rgb,[2 1 3]);
+    label = permute(label,[2 1 3]);
+  end
+end
+
+
 nTeams = size(robots,2);
 nPlayers = size(robots,1);
 
 % Colormap
 cbk=[0 0 0];cr=[1 0 0];cg=[0 1 0];cb=[0 0 1];cy=[1 1 0];cw=[1 1 1];
 cmap=[cbk;cr;cy;cy;cb;cb;cb;cb;cg;cg;cg;cg;cg;cg;cg;cg;cw];
+
+% set up logging
+global CAMERADATA
+global logging
+uicontrol('String','Log','Style', 'togglebutton','Callback','logging=~logging');
 
 
 h1 = subplot(2,2,1);
@@ -40,16 +55,23 @@ h4 = subplot(2,2,4);
 
     function plot_yuyv( handle, rgb )
         % Process YUYV
-        cla(handle);
         if( ~isempty(rgb) )
+            cla(handle);
             imagesc( rgb );
+            if ( logging )
+              disp('.');
+              CAMERADATA.yuyv = robots{playerNumber,teamNumber}.get_yuyv();;
+              CAMERADATA.headAngles = [];
+              CAMERADATA.select = 0;
+              Logger( robots{playerNumber,teamNumber}.teamNumber , robots{playerNumber,teamNumber}.playerID );
+            end
         end
     end
 
     function plot_label( handle, label, r_mon, scale, cmap)
         % Process label
-        cla(handle);
         if( ~isempty(label) )
+            cla(handle);
             imagesc(label);
             colormap(cmap);
             xlim([0 size(label,2)]);

@@ -32,6 +32,7 @@ for fileIter = 1:length(nameList);
 	
     % create the yuyv montage array
     %   an array of just the image data
+    size(logmat.LOG.(cam)(1).yuyv)
     for i = 1:length(logmat.LOG.(cam))
       yuyvMontage(:,:,1,i) = logmat.LOG.(cam)(i).yuyv;
     end

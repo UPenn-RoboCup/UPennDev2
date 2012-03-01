@@ -64,6 +64,8 @@ static int lua_naocomm_update(lua_State *L) {
 
   static bool init = false;
   if (!init) {
+    printf("MonitorComm connecting to %s\n", IP);
+    printf("MonitorComm connecting to %s\n", PORT);
     struct hostent *hostptr = gethostbyname(IP);
     if (hostptr == NULL) {
       printf("Could not get hostname\n");

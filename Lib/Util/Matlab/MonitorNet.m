@@ -1,8 +1,14 @@
+% Displays camera and localization information
+
+global CAMERADATA;
+global logging;
+logging = 0;
+
 % Players and team to track
 nPlayers = 3;
-teamNumbers = [18];
-team2track = 1;
-player2track = 2;
+teamNumbers = [18 26];
+team2track = 2;
+player2track = 3;
 
 % Should monitor run continuously?
 continuous = 1;

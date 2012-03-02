@@ -8,7 +8,7 @@ logging = 0;
 nPlayers = 3;
 teamNumbers = [18 26];
 team2track = 2;
-player2track = 3;
+player2track = 2;
 
 % Should monitor run continuously?
 continuous = 1;

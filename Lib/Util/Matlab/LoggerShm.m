@@ -1,4 +1,4 @@
-function ret = Logger(teamNumber, playerID);
+function ret = LoggerShm(teamNumber, playerID)
 
 if (nargin < 2)
   playerID = parse_hostname();

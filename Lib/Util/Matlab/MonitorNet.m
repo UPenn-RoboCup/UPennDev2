@@ -6,9 +6,15 @@ logging = 0;
 
 % Players and team to track
 nPlayers = 3;
+<<<<<<< HEAD
 teamNumbers = [18 26];
 team2track = 2;
 player2track = 2;
+=======
+teamNumbers = [18];
+team2track = 1; % The order of teamNumber. 1st teamNumber or 2nd
+player2track = 2; % PlayerID
+>>>>>>> master
 
 % Should monitor run continuously?
 continuous = 1;

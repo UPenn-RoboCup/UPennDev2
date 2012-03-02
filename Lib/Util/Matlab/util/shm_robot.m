@@ -18,7 +18,8 @@ h.vcmGoal  = shm(sprintf('vcmGoal%d%d%s',  h.teamNumber, h.playerID, h.user));
 h.wcmOccmap = shm(sprintf('wcmOccmap%d%d%s', h.teamNumber, h.playerID, h.user));
 h.vcmFreespace = shm(sprintf('vcmFreespace%d%d%s', h.teamNumber, h.playerID, h.user));
 h.vcmBoundary = shm(sprintf('vcmBoundary%d%d%s', h.teamNumber, h.playerID, h.user));
- 
+h.image = shm('netImage');
+
 % set function pointers
 h.update = @update;
 h.get_team_struct = @get_team_struct;
@@ -163,10 +164,11 @@ h.get_labelB = @get_labelB;
 
     function yuyv = get_yuyv()
         % returns the raw YUYV image
-        width = h.vcmImage.get_width();
-        height = h.vcmImage.get_height();
-        rawData = h.vcmImage.get_yuyv();
-        yuyv = raw2yuyv(rawData, width, height);
+%         width = h.vcmImage.get_width();
+%         height = h.vcmImage.get_height();
+%         rawData = h.vcmImage.get_yuyv();
+        rawData = h.image.get_yuyv();
+        yuyv = raw2yuyv(rawData, 640, 480);
     end
 
     function rgb = get_rgb()

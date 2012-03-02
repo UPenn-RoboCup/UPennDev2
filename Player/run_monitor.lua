@@ -1,8 +1,9 @@
 module(... or "", package.seeall)
 
-cwd = '.';
+require('unix')
 
-local computer = os.getenv('COMPUTER') or '';
+local cwd = unix.getcwd();
+computer = os.getenv('COMPUTER') or "";
 if (string.find(computer, "Darwin")) then
    -- MacOS X uses .dylib:
    package.cpath = cwd.."/Lib/?.dylib;"..package.cpath;
@@ -21,7 +22,6 @@ package.path = cwd .. '/Vision/?.lua;' .. package.path;
 package.path = cwd .. '/World/?.lua;' .. package.path;
 
 --require 'Config'
-require('unix')
 require('getch')
 require('Broadcast')
 

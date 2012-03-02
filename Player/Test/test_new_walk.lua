@@ -42,8 +42,14 @@ require('Body')
 require("getch")
 require('kick')
 require('Speak')
+--require('World')
+--require('Team')
+require('battery')
 Vision = require 'vcm' -- Steve
 Speak.talk("Starting test parameters.")
+
+--World.entry();
+--Team.entry();
 
 -- initialize state machines
 Motion.entry();
@@ -70,7 +76,6 @@ init = false;
 calibrating = false;
 ready = false;
 calibrated=false;
-walkKick=false;
 
 function update()
 
@@ -85,6 +90,23 @@ function update()
       end
       
     elseif (ready) then
+    --[[
+      -- initialize state machines
+      package.path = cwd..'/BodyFSM/'..Config.fsm.body[smindex+1]..'/?.lua;'..package.path;
+      package.path = cwd..'/HeadFSM/'..Config.fsm.head[smindex+1]..'/?.lua;'..package.path;
+      package.path = cwd..'/GameFSM/'..Config.fsm.game..'/?.lua;'..package.path;
+      require('BodyFSM')
+      require('HeadFSM')
+      require('GameFSM')
+
+      BodyFSM.entry();
+      HeadFSM.entry();
+      GameFSM.entry();
+      
+      if( webots ) then
+        BodyFSM.sm:add_event('button');
+      end
+			--]]
       init = true;
     else
       if (count % 20 == 0) then
@@ -112,7 +134,7 @@ function update()
   t=unix.time();
   Motion.update();
   Body.set_head_hardness(0.2);
-  --battery.monitor();
+  battery.monitor();
 
   local str=getch.get();
   if #str>0 then
@@ -170,39 +192,17 @@ function update()
 		elseif byte==string.byte("C") then
 			Config.walk.supportX = Config.walk.supportX + .001;
 		elseif byte==string.byte("v") then
-    Config.walk.supportY = Config.walk.supportY - .001;
+			Config.walk.supportY = Config.walk.supportY - .001;
 		elseif byte==string.byte("V") then
 			Config.walk.supportY = Config.walk.supportY + .001;
 		elseif byte==string.byte('y') then
 			Config.walk.bodyHeight = Config.walk.bodyHeight - .001;
 		elseif byte== string.byte('Y') then
 			Config.walk.bodyHeight = Config.walk.bodyHeight + .001;
-                elseif byte==string.byte('n') then
-                        Config.walk.walkKickVel[1] = Config.walk.walkKickVel[1]
-                                - .01;
-                elseif byte==string.byte('N') then
-                        Config.walk.walkKickVel[2] = Config.walk.walkKickVel[1] + .01;
-                
-    elseif byte==string.byte('\\') then
-      walkKick=not walkKick;
-      print("walkKick is now ", walkKick);
-
-    elseif byte==string.byte("1") then	
-        if walkKick == true then
-	  walk.doWalkKickLeft();
-        elseif walkKick == false then
-          print "Normal kick left";
-          kick.set_kick("kickLeft");
-          Motion.event("kick");
-        end
-    elseif byte==string.byte("2") then	
-        if walkKick == true then
-          walk.doWalkKickRight();	
-        elseif walkKick == false then
-          print "Normal kick left";
-          kick.set_kick("kickRight");
-          Motion.event("kick");
-        end
+		elseif byte==string.byte("1") then	
+			walk.doWalkKickLeft();
+		elseif byte==string.byte("2") then	
+		  walk.doWalkKickRight();	
 		--turn assorted stability checks on/off--
 		elseif byte==string.byte("3") then
 		  Config.walk.imuOn = not Config.walk.imuOn;
@@ -221,13 +221,14 @@ function update()
 		end
 		print(string.format("\n Walk Velocity: (%.2f, %.2f, %.2f)",unpack(targetvel)));
 		walk.set_velocity(unpack(targetvel));
+		print "huh?";
 		Body.set_head_command(headangle);
 		print(string.format("Head angle: %d, %d",
 			headangle[1]*180/math.pi,
 			headangle[2]*180/math.pi));
-		print(string.format("Walk settings:\n tStep: %.2f\t phSingle: {%.2f, %.2f}\t stepHeight: %.3f\n supportX: %.3f\t supportY: %.3f\t", Config.walk.tStep, Config.walk.phSingle[1], Config.walk.phSingle[2], Config.walk.stepHeight, 
-Config.walk.supportX, Config.walk.supportY));
-  --  print(string.format("Foot sensor threshold: %.3f\t Delay length multiplier: %.2f", Config.walk.fsr_threshold, Config.walk.tDelayBalance));  
+		print(string.format("Walk settings:\n tStep: %.2f\t phSingle: {%.2f, %.2f}\t stepHeight: %.3f\n supportX: %.3f\t supportY: %.3f\t Ankle Pitch (rad): {%.2f, %.2f}", Config.walk.tStep, Config.walk.phSingle[1], Config.walk.phSingle[2], Config.walk.stepHeight, 
+Config.walk.supportX, Config.walk.supportY, Config.walk.anklePitchComp[1]*180/math.pi, Config.walk.anklePitchComp[2]*180/math.pi));
+    print(string.format("Foot sensor threshold: %.3f\t Delay length multiplier: %.2f", Config.walk.fsr_threshold, Config.walk.tDelayBalance));  
     print("IMU feedback is on: ",Config.walk.imuOn,"\nJoint encoder feedback is on: ",Config.walk.jointFeedbackOn,"\nFoot sensor feedback is on: ",Config.walk.fsrOn);  		
  
 

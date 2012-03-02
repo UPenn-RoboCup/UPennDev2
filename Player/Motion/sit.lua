@@ -11,7 +11,7 @@ active = true;
 t0 = 0;
 
 bodyHeight = Config.sit.bodyHeight;
-supportX = Config.sit.supportX or  0.0;
+supportX = 0.0;
 footY = Config.walk.footY;
 bodyTilt = Config.walk.bodyTilt;
 

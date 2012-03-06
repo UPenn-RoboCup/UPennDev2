@@ -31,6 +31,7 @@ dev.kinematics = 'OPKinematics';
 --dev.comm='OPComm';
 dev.comm='NullComm';
 dev.monitor_comm = 'OPMonitorCommWired';
+dev.ip = '192.168.123.255';
 dev.game_control='OPGameControl';
 dev.walk='NewWalk';
 dev.walk='NewNewWalk';
@@ -50,10 +51,9 @@ game.nPlayers = 3;
 
 fsm = {};
 --fsm.game = 'Dodgeball';
-fsm.game = 'OpDemo'
---fsm.game = 'RoboCup';
+--fsm.game = 'OpDemo'
+fsm.game = 'RoboCup';
 if( fsm.game == 'RoboCup' ) then
---[[
   if (game.playerID == 1) then
     fsm.body = {'OpGoalie'};
     fsm.head = {'OpGoalie'};
@@ -61,7 +61,6 @@ if( fsm.game == 'RoboCup' ) then
     fsm.body = {'OpPlayerNSL'};
     fsm.head = {'OpPlayerNSL'};
   end
---]]
 
   fsm.body = {'OpPlayerNSL'};
   fsm.head = {'OpPlayerNSL'};

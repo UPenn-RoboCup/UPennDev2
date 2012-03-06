@@ -23,16 +23,16 @@ function detect(color)
   local goal = {};
   goal.detect = 0;
 
-
   local postDiameter = 0.10;
   local postHeight = 0.80;
   local goalWidth = 1.40;
-  local nPostB = 5;  -- appropriate for scaleB = 4
-
+  local nPostB = 3;  -- appropriate for scaleB = 4
   local postB = ImageProc.goal_posts(Vision.labelB.data, Vision.labelB.m, Vision.labelB.n, color, nPostB);
   if (not postB) then 
+	--print("no enough post color");
     return goal; 
   end
+  --print("Enough post color");
 
 --if(true) then
 --  return goal; 

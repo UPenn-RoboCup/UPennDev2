@@ -1,15 +1,20 @@
-module(... or "", package.seeall)
+module(... or '', package.seeall)
 
-require('unix')
-
-local cwd = unix.getcwd();
-computer = os.getenv('COMPUTER') or "";
-if (string.find(computer, "Darwin")) then
-   -- MacOS X uses .dylib:
-   package.cpath = cwd.."/Lib/?.dylib;"..package.cpath;
-else
-   package.cpath = cwd.."/Lib/?.so;"..package.cpath;
+-- Get Platform for package path
+cwd = '.';
+local platform = os.getenv('PLATFORM') or '';
+if (string.find(platform,'webots')) then cwd = cwd .. '/Player';
 end
+
+-- Get Computer for Lib suffix
+local computer = os.getenv('COMPUTER') or '';
+if (string.find(computer, 'Darwin')) then
+  -- MacOS X uses .dylib:
+  package.cpath = cwd .. '/Lib/?.dylib;' .. package.cpath;
+else
+  package.cpath = cwd .. '/Lib/?.so;' .. package.cpath;
+end
+
 
 package.path = cwd .. '/?.lua;' .. package.path;
 package.path = cwd .. '/Util/?.lua;' .. package.path;
@@ -22,6 +27,7 @@ package.path = cwd .. '/Vision/?.lua;' .. package.path;
 package.path = cwd .. '/World/?.lua;' .. package.path;
 
 --require 'Config'
+require('unix')
 require('getch')
 require('Broadcast')
 
@@ -31,6 +37,7 @@ unix.usleep(1E6*1.0);
 
 local count = 0;
 local ncount = 100;
+local imagecount = 0;
 local t0 = unix.time();
 local tUpdate = t0;
 
@@ -57,7 +64,8 @@ function update()
   Broadcast.update(broadcast_enable);
   -- Send image data every so often
   if( count % imgRate == 0 ) then
-    Broadcast.update_img(broadcast_enable);    
+		imagecount = imagecount + 1;
+    Broadcast.update_img(broadcast_enable,imagecount);    
   end
 end
 

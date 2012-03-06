@@ -3,7 +3,7 @@ nPlayers = 1;
 
 %Only monitoring team 1
 %teamNumbers = [0 1];
-teamNumbers = [0];
+teamNumbers = 1;
 
 team2track = 1;
 player2track = 1;
@@ -14,10 +14,11 @@ continuous = 1;
 %% Enter loop
 figure(1);
 clf;
-tDisplay = .2; % Display every x seconds
+tDisplay = .1; % Display every x seconds
 tStart = tic;
 nUpdate = 0;
-scale = 1; % 1: labelA, 4: labelB
+%scale = 1; % 1: labelA, 4: labelB
+scale = 4; % 1: labelA, 4: labelB
 
 %% Initialize data
 t0=tic;

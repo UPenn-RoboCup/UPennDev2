@@ -247,7 +247,7 @@ function foot_phase(ph)
 
 --	walkphase=3;
   elseif walktype==3 then
-	zf=zf*2.0;
+        zf=zf*2.0;
 	local kickN=3;
 	if ph<0.5 then xf=kickN*phSingle;
 	else xf=(2-kickN)*(phSingle-0.5) + kickN/2;

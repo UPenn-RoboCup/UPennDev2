@@ -3,10 +3,8 @@ module(..., package.seeall);
 require('Body')
 require('keyframe')
 require('walk')
-require('step')
 require('vector')
 require('Config')
-require 'util'
 
 local cwd = unix.getcwd();
 if string.find(cwd, "WebotsController") then
@@ -18,8 +16,8 @@ cwd = cwd.."/Motion"
 kickType = "kickForwardLeft";
 active = false;
 
-qLArm0 = Config.kick.qLArm;
-qRArm0 = Config.kick.qRArm;
+qLArm0 = Config.kick.qLArm2;
+qRArm0 = Config.kick.qRArm2;
 qLArm = vector.new({qLArm0[1],qLArm0[2],qLArm0[3]});
 qRArm = vector.new({qRArm0[1],qRArm0[2],qRArm0[3]});
 
@@ -63,9 +61,6 @@ kickBackLeft=Config.kick.kickBackLeft;
 kickBackRight=Config.kick.kickBackRight;
 kickSlowSideLeft=Config.kick.kickSlowSideLeft;
 kickSlowSideRight=Config.kick.kickSlowSideRight;
-avoidLeft=Config.kick.avoidLeft;
-avoidRight=Config.kick.avoidRight;
-
 
 kickState=1;
 
@@ -79,35 +74,30 @@ function entry()
   print("Motion SM:".._NAME.." entry");
   walk.stop();
   walk.zero_velocity();
-
-  -- Reset some values
+  qLArm0 = Config.kick.qLArm2;
+  qRArm0 = Config.kick.qRArm2;
   qLArm = vector.new({qLArm0[1],qLArm0[2],qLArm0[3]});
   qRArm = vector.new({qRArm0[1],qRArm0[2],qRArm0[3]});
-  torsoShiftX=0;  
+  torsoShiftX=0;
   
   started = false;
   active = true;
   if kickType=="kickForwardLeft" then 
-    kickDef=kickLeft;
+	kickDef=kickLeft;
   elseif kickType=="kickForwardRight" then 
-    kickDef=kickRight;
+	kickDef=kickRight;
   elseif kickType=="kickSideLeft" then 
-    kickDef=kickSideLeft;
+	kickDef=kickSideLeft;
   elseif kickType=="kickSideRight" then 
-    kickDef=kickSideRight;
+	kickDef=kickSideRight;
   elseif kickType=="kickSlowSideLeft" then 
-    kickDef=kickSlowSideLeft;
+	kickDef=kickSlowSideLeft;
   elseif kickType=="kickSlowSideRight" then 
-    kickDef=kickSlowSideRight;
+	kickDef=kickSlowSideRight;
   elseif kickType=="kickBackLeft" then 
-    kickDef=kickBackLeft;
+	kickDef=kickBackLeft;
   elseif kickType=="kickBackRight" then 
-    kickDef=kickBackRight;
-  elseif kickType=="avoidLeft" then 
-    kickDef=avoidLeft;
-  elseif kickType=="avoidRight" then 
-    kickDef=avoidRight;
-
+	kickDef=kickBackRight;
   end
 
   -- disable joint encoder reading
@@ -132,35 +122,44 @@ function entry()
 end
 
 function update()
-
   if (not started and walk.active) then
-    walk.update();
-    return;
+	walk.update();
+	return;
   elseif not started then
-    started = true;
-    Body.set_head_hardness(.5);
-    Body.set_larm_hardness(hardnessArm);
-    Body.set_rarm_hardness(hardnessArm);
-    Body.set_lleg_hardness(hardnessLeg);
-    Body.set_rleg_hardness(hardnessLeg);
-    kickState=1;
-    t0 = Body.get_time();
+	started=true;
+	Body.set_head_hardness(.5);
+	Body.set_larm_hardness(hardnessArm);
+	Body.set_rarm_hardness(hardnessArm);
+	Body.set_lleg_hardness(hardnessLeg);
+	Body.set_rleg_hardness(hardnessLeg);
+  	kickState=1;
+	t0 = Body.get_time();
   end
 
 
-  local t = Body.get_time();
-  local ph = (t-t0)/kickDef[kickState][2];
+  local t=Body.get_time();
+  ph=(t-t0)/kickDef[kickState][2];
   if ph>1 then
-    kickState=kickState+1;
-    uLeft1[1],uLeft1[2],uLeft1[3]=uLeft[1],uLeft[2],uLeft[3];
-    uRight1[1],uRight1[2],uRight1[3]=uRight[1],uRight[2],uRight[3];
-    uBody1[1],uBody1[2],uBody1[3]=uBody[1],uBody[2],uBody[3];
-	  zLeft1,zRight1=zLeft,zRight;
-    aLeft1,aRight1=aLeft,aRight;
-    bodyRoll1=bodyRoll;
-    zBody1=zBody;
+	kickState=kickState+1;
+	uLeft1[1],uLeft1[2],uLeft1[3]=uLeft[1],uLeft[2],uLeft[3];
+	uRight1[1],uRight1[2],uRight1[3]=uRight[1],uRight[2],uRight[3];
+	uBody1[1],uBody1[2],uBody1[3]=uBody[1],uBody[2],uBody[3];
+	zLeft1,zRight1=zLeft,zRight;
+	aLeft1,aRight1=aLeft,aRight;
+	bodyRoll1=bodyRoll;
 
-  if kickState>#kickDef then return "done";end
+	zBody1=zBody;
+	if kickState>#kickDef then return "done";end
+
+--[[
+	if Config.BodyFSM.level.quotes==1 and
+           (kickDef[kickState][1]==4 or
+           kickDef[kickState][1]==5) and
+           ( kickType=="kickForwardLeft" or
+	    kickType=="kickForwardRight") then 
+--   	    Speak2.play('./mp3/boom.mp3',50)
+        end
+--]]
 
 	ph=0;
 	t0=Body.get_time();
@@ -185,7 +184,11 @@ function update()
 
 
   if kickType==1 or kickType==6 then
-	uBody=util.se2_interpolate(ph,uBody1,kickDef[kickState][3]);	
+
+	qLHipRollCompensation=0;
+	qRHipRollCompensation=0;
+
+	uBody=se2_interpolate(ph,uBody1,kickDef[kickState][3]);	
 	if #kickDef[kickState]>=4 then
 		zBody=ph*kickDef[kickState][4] + (1-ph)*zBody1;
 	end
@@ -202,7 +205,7 @@ function update()
 
   elseif kickType==2 then --Lifting / Landing Left foot
 --	uZmp2=kickDef[kickState][3];
-	uLeft=util.se2_interpolate(ph,uLeft1,util.pose_global(kickDef[kickState][4],uLeft1));
+	uLeft=se2_interpolate(ph,uLeft1,pose_global(kickDef[kickState][4],uLeft1));
 	zLeft=ph*kickDef[kickState][5] + (1-ph)*zLeft1;
 	aLeft=ph*kickDef[kickState][6] + (1-ph)*aLeft1;
 
@@ -211,7 +214,7 @@ function update()
 
   elseif kickType==3 then --Lifting / Landing Right foot
 --	uZmp2=kickDef[kickState][3];
-	uRight=util.se2_interpolate(ph,uRight1,util.pose_global(kickDef[kickState][4],uRight1));
+	uRight=se2_interpolate(ph,uRight1,pose_global(kickDef[kickState][4],uRight1));
 	zRight=ph*kickDef[kickState][5] + (1-ph)*zRight1;
 	aRight=ph*kickDef[kickState][6] + (1-ph)*aRight1;
 
@@ -219,7 +222,7 @@ function update()
 	qRHipRollCompensation=0;
 
   elseif kickType==4 then --Kicking Left foot
-	uLeft=util.pose_global(kickDef[kickState][4],uLeft1);
+	uLeft=pose_global(kickDef[kickState][4],uLeft1);
 	zLeft=kickDef[kickState][5]
         aLeft=kickDef[kickState][6]
 
@@ -227,7 +230,7 @@ function update()
 	qRHipRollCompensation=-5*math.pi/180;
 
   elseif kickType==5 then --Kicking Right foot
-	uRight=util.pose_global(kickDef[kickState][4],uRight1);
+	uRight=pose_global(kickDef[kickState][4],uRight1);
 	zRight=kickDef[kickState][5]
         aRight=kickDef[kickState][6]
 
@@ -239,13 +242,13 @@ function update()
 --  pLLeg[1],pLLeg[2],pLLeg[3],pLLeg[5],pLLeg[6]=uLeft[1],uLeft[2],zLeft,aLeft,uLeft[3];
 --  pRLeg[1],pRLeg[2],pRLeg[3],pRLeg[5],pRLeg[6]=uRight[1],uRight[2],zRight,aRight,uRight[3];
 
-  uLeftActual=util.pose_global(supportCompL, uLeft);
-  uRightActual=util.pose_global(supportCompR, uRight);
+  uLeftActual=pose_global(supportCompL, uLeft);
+  uRightActual=pose_global(supportCompR, uRight);
 
   pLLeg[1],pLLeg[2],pLLeg[3],pLLeg[5],pLLeg[6]=uLeftActual[1],uLeftActual[2],zLeft,aLeft,uLeftActual[3];
   pRLeg[1],pRLeg[2],pRLeg[3],pRLeg[5],pRLeg[6]=uRightActual[1],uRightActual[2],zRight,aRight,uRightActual[3];
 
-  uTorso=util.pose_global(vector.new({-footX-torsoShiftX,0,0}),uBody);
+  uTorso=pose_global(vector.new({-footX-torsoShiftX,0,0}),uBody);
 
   pTorso[1],pTorso[2],pTorso[6]=uTorso[1],uTorso[2],uTorso[3];
   pTorso[3]=zBody;
@@ -258,8 +261,8 @@ function motion_arms()
   qLArm[1],qLArm[2]=qLArm0[1]+armShift[1],qLArm0[2]+armShift[2];
   qRArm[1],qRArm[2]=qRArm0[1]+armShift[1],qRArm0[2]+armShift[2];
 
-  local uBodyLeft=util.pose_global(uLeft,uBody);
-  local uBodyRight=util.pose_global(uRight,uBody);
+  local uBodyLeft=pose_relative(uLeft,uBody);
+  local uBodyRight=pose_relative(uRight,uBody);
   local footRel=uBodyLeft[1]-uBodyRight[1];
 
   local armAngle=math.min(50*math.pi/180,
@@ -334,12 +337,35 @@ function exit()
   Body.set_rleg_slope(32);
 
   walk.start();
+--  step.stepqueue={};
 end
 
 function set_kick(newKick)
     kickType = newKick;
 end
 
+function pose_global(pRelative, pose)
+  local ca = math.cos(pose[3]);
+  local sa = math.sin(pose[3]);
+  return vector.new{pose[1] + ca*pRelative[1] - sa*pRelative[2],
+                    pose[2] + sa*pRelative[1] + ca*pRelative[2],
+                    pose[3] + pRelative[3]};
+end
+
+function pose_relative(pGlobal, pose)
+  local ca = math.cos(pose[3]);
+  local sa = math.sin(pose[3]);
+  local px = pGlobal[1]-pose[1];
+  local py = pGlobal[2]-pose[2];
+  local pa = pGlobal[3]-pose[3];
+  return vector.new{ca*px + sa*py, -sa*px + ca*py, mod_angle(pa)};
+end
+
+function se2_interpolate(t, u1, u2)
+  return vector.new{u1[1]+t*(u2[1]-u1[1]),
+                    u1[2]+t*(u2[2]-u1[2]),
+                    u1[3]+t*mod_angle(u2[3]-u1[3])};
+end
 
 function procFunc(a,deadband,maxvalue)
 	if a>0 then b=math.min( math.max(0,math.abs(a)-deadband), maxvalue);
@@ -348,6 +374,20 @@ function procFunc(a,deadband,maxvalue)
 	return b;
 end
 
+function mod_angle(a)
+  -- Reduce angle to [-pi, pi)
+  a = a % (2*math.pi);
+  if (a >= math.pi) then
+    a = a - 2*math.pi;
+  end
+  return a;
+end
 
-
+function pose_global(pRelative, pose)
+  local ca = math.cos(pose[3]);
+  local sa = math.sin(pose[3]);
+  return vector.new{pose[1] + ca*pRelative[1] - sa*pRelative[2],
+                    pose[2] + sa*pRelative[1] + ca*pRelative[2],
+                    pose[3] + pRelative[3]};
+end
 

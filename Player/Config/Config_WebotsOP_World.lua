@@ -38,3 +38,7 @@ world.rGoalFilter = 0.02;
 world.aGoalFilter = 0.05;
 world.rPostFilter = 0.02;
 world.aPostFilter = 0.20;
+
+-- Occupancy Map parameters
+occmap = {};
+occmap.div = 72;

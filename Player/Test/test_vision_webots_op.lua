@@ -52,6 +52,7 @@ require('Vision')
 require('World')
 require('Team')
 require('util')
+require('OccupancyMap')
 require('wcm')
 darwin = false;
 webots = false;
@@ -79,6 +80,7 @@ Motion.entry();
 World.entry();
 Team.entry();
 Vision.entry();
+OccupancyMap.entry();
 
 Body.set_head_hardness({0.4,0.4});
 HeadFSM.sm:set_state('headScan');
@@ -118,7 +120,7 @@ function print_debug()
 --  local goalRelative = util.pose_relative(goal, {robot.x, robot.y, robot.a})
 --  util.ptable(goalRelative);
   --print(string.format("Goal: (%f, %f) seen %.1f sec ago",goal.attack, t-goal.t));
---  local occr = wcm.get_occumap_r();
+--  local occr = wcm.get_occmap_r();
 --  print(unpack(occr));
 --  local block = vcm.get_freespace_block();
 --  print(block);
@@ -264,6 +266,7 @@ function update()
   -- Update localization
   if imageProcessed then 
     World.update_vision();
+	OccupancyMap.update();
 --    Team.update();
   end
    

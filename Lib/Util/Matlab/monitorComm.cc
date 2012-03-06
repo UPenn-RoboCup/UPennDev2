@@ -14,10 +14,15 @@ void mexExit(void) { close_comm(); }
 
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
+  if ((nrhs < 2) || (!mxIsChar(prhs[0])) || (!mxIsChar(prhs[1])))
+    mexErrMsgTxt("Incorrect input argument");
+
+	char* ip = mxArrayToString(prhs[1]);
+
   static bool init = false;
   if (!init) {
     printf("Initializing monitorComm...\n");
-    int ret = init_comm();
+    int ret = init_comm(ip);
     switch( ret ){
       case 0:
         printf("Success!\n");
@@ -53,9 +58,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   // Process incoming messages:
   process_message();
-  
-  if ((nrhs < 1) || (!mxIsChar(prhs[0])))
-    mexErrMsgTxt("Incorrect input argument");
 
   char* str = mxArrayToString(prhs[0]);
   if( str[0] =='g' ) {//  if (str == "getQueueSize") {

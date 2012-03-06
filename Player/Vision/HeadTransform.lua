@@ -24,6 +24,7 @@ pitch0 = Config.walk.headPitch or 0; --Robot specific head angle bias
 
 horizonA = 1;
 horizonB = 1;
+horizonDir = 0;
 
 -- COPIED FROM Vision
 -- Initialize the Labeling
@@ -80,13 +81,60 @@ function update(sel,headAngles)
   tHead = tHead*Transform.rotY(cameraAngle[sel][2]);
 
   -- update horizon
-  pa = headAngles[2] + cameraAngle[sel][2];
+  pa = headAngles[2] + cameraAngle[sel][2]; --+ bodyTilt;
   horizonA = (labelA.n/2.0) - focalA*math.tan(pa) - 2;
   horizonA = math.min(labelA.n, math.max(math.floor(horizonA), 0));
   horizonB = (labelB.n/2.0) - focalB*math.tan(pa) - 1;
   horizonB = math.min(labelB.n, math.max(math.floor(horizonB), 0));
   --print('horizon-- pitch: '..pa..'  A: '..horizonA..'  B: '..horizonB);
+  -- horizon direction
+  local ref = vector.new({0,1,0,1});
+  local p0 = vector.new({0,0,0,1});
+  local ref1 = vector.new({0,-1,0,1});
+  p0 = tHead*p0;
+  ref = tHead*ref;
+  ref1 = tHead*ref1;
+  ref = ref - p0;
+  ref1 = ref1 - p0;
+  -- print(ref,' ',ref1);
+  local v = {};
+  v[1] = -math.abs(ref1[1]) * focalA / 4 + x0A; 
+  v[2] = ref1[3] * focalA / 4 + y0A;
+  v[3] = math.abs(ref[1]) * focalA / 4 + x0A;
+  v[4] = ref[3] * focalA / 4 + y0A;
+  horizonDir = math.atan2(ref1[3],math.sqrt(ref1[1]^2+ref1[2]^2));
+  --print('horizion angle: '..horizonDir*180/math.pi);
+end
 
+function rayIntersectA(c)
+  local p0 = vector.new({0,0,0,1.0});
+  local p1 = vector.new({focalA,-(c[1]-x0A),-(c[2]-y0A),1.0});
+
+  p1 = tHead * p1;
+  local p0 = tNeck * p0;
+  local v = p1 - p0;
+  local t = -p0[3]/v[3];
+  local p = p0 + t * v;
+  local uBodyOffset = mcm.get_walk_bodyOffset();
+  p[1] = p[1] + uBodyOffset[1];
+  p[2] = p[2] + uBodyOffset[2];
+  return p;
+end
+
+
+function rayIntersectB(c)
+  local p0 = vector.new({0,0,0,1.0});
+  local p1 = vector.new({focalB,-(c[1]-x0B),-(c[2]-y0B),1.0});
+
+  p1 = tHead * p1;
+  local p0 = tNeck * p0;
+  local v = p1 - p0;
+  local t = -p0[3]/v[3];
+  local p = p0 + t * v;
+  local uBodyOffset = mcm.get_walk_bodyOffset();
+  p[1] = p[1] + uBodyOffset[1];
+  p[2] = p[2] + uBodyOffset[2];
+  return p;
 end
 
 function exit()
@@ -100,14 +148,16 @@ function get_horizonB()
   return horizonB;
 end
 
+function get_horizonDir()
+  return horizonDir;
+end
+
 function coordinatesA(c, scale)
   scale = scale or 1;
-
   local v = vector.new({focalA,
                        -(c[1] - x0A),
                        -(c[2] - y0A),
                        scale});
-
   v = tHead*v;
   v = v/v[4];
 
@@ -124,6 +174,7 @@ function coordinatesB(c, scale)
   v = v/v[4];
   return v;
 end
+
 
 function ikineCam(x, y, z, select)
 

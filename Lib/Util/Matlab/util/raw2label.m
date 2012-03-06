@@ -1,4 +1,4 @@
-function label = raw2label(raw, width, height);
+function label = raw2label(raw, width, height)
 % converts the raw data matrix to labeled image format
 
 rawu8 = typecast(raw(:), 'uint8');

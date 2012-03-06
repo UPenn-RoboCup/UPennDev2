@@ -1,41 +1,37 @@
-/*
-  x = field_occupancy(im);
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-  Matlab 7.4 MEX file to compute field occupancy.
+#include "lua.h"
+#include "lualib.h"
+#include "lauxlib.h"
 
-  Compile with:
-  mex -O field_occupancy.cc
+#ifdef __cplusplus
+}
+#endif
 
-  Author: Daniel D. Lee <ddlee@seas.upenn.edu>, 6/09
-  Modified: Yida Zhang <yida@seas.upenn.edu>, 12/11
-
-*/
-
-#include "mex.h"
-#include "math.h"
-#include "stdlib.h"
-#include "stdio.h"
+#include <stdint.h>
+#include <math.h>
 
 typedef unsigned char uint8;
 
-uint8 colorBall = 0x01;
-uint8 colorField = 0x08;
-uint8 colorWhite = 0x10;
+static uint8 colorBall = 0x01;
+static uint8 colorField = 0x08;
+static uint8 colorWhite = 0x10;
 
 inline bool isFree(uint8 label) 
 {
   return (label & colorField) || (label & colorBall) || (label & colorWhite);
 }
 
-void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
-{
+int lua_field_occupancy(lua_State *L) {
   // Check arguments
-  if ((nrhs < 1)  || !((mxGetClassID(prhs[0]) == mxUINT8_CLASS)))
-    mexErrMsgTxt("Need uint8 input image.");
-
-  uint8 *im_ptr = (uint8 *) mxGetData(prhs[0]);
-  int ni = mxGetM(prhs[0]);
-  int nj = mxGetN(prhs[0]);
+  uint8_t *im_ptr = (uint8_t *) lua_touserdata(L, 1);
+  if ((im_ptr == NULL) || !lua_islightuserdata(L, 1)) {
+    return luaL_error(L, "Input image not light user data");
+  }  
+  int ni = luaL_checkint(L, 2);
+  int nj = luaL_checkint(L, 3);
   const int nRegions = ni;
 
   int countup[nRegions];
@@ -107,11 +103,25 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       flag[i] = 1;
     }
   }
-
-  plhs[0] = mxCreateDoubleMatrix(1, nRegions, mxREAL);
-  plhs[1] = mxCreateDoubleMatrix(1, nRegions, mxREAL);
+  
+  // return state
+  lua_createtable(L,0,2);
+  
+  lua_pushstring(L,"range");
+  lua_createtable(L,nRegions,0);
   for (int i = 0; i < nRegions; i++){
-    mxGetPr(plhs[0])[i] = count[i];
-    mxGetPr(plhs[1])[i] = flag[i];
+    lua_pushinteger(L, count[i]);
+    lua_rawseti(L, -2, i+1);
   }
+  lua_settable(L, -3);
+  
+  lua_pushstring(L,"flag");
+  lua_createtable(L,nRegions,0);
+  for (int i = 0; i < nRegions; i++){
+    lua_pushinteger(L, flag[i]);
+    lua_rawseti(L, -2, i+1);
+  }
+  lua_settable(L, -3);
+  
+  return 1;
 }

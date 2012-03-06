@@ -13,8 +13,6 @@ end
 shared = {};
 shsize = {};
 
--- Subsambling means half width, and process every other line in the ImageProc
---TODO:
 processed_img_width = Config.camera.width;
 processed_img_height = Config.camera.height;
 if( webots ) then
@@ -37,6 +35,7 @@ shared.image.headAngles = vector.zeros(2);
 shared.image.fps = vector.zeros(1);
 shared.image.horizonA = vector.zeros(1);
 shared.image.horizonB = vector.zeros(1);
+shared.image.horizonDir = vector.zeros(4); -- Angle of horizon line rotation
 shared.image.yuyv = 2*Config.camera.width*Config.camera.height; -- 2 bytes per pixel (32 bits describes 2 pixels)
 shared.image.width = vector.zeros(1);
 shared.image.height = vector.zeros(1);
@@ -76,6 +75,24 @@ shared.line.vendpoint = vector.zeros(4);
 shared.spot = {};
 shared.spot.detect = vector.zeros(1);
 --]]
+
+shared.freespace = {};
+shared.freespace.detect = vector.zeros(1);
+shared.freespace.block = vector.zeros(1);
+shared.freespace.nCol = vector.zeros(1);
+shared.freespace.nRow = vector.zeros(1);
+--shared.freespace.vboundA = vector.zeros(2*Config.camera.width);
+--shared.freespace.pboundA = vector.zeros(2*Config.camera.width);
+--shared.freespace.tboundA = vector.zeros(Config.camera.width);
+shared.freespace.vboundB = vector.zeros(2*Config.camera.width/(Config.vision.scaleB));
+shared.freespace.pboundB = vector.zeros(2*Config.camera.width/(Config.vision.scaleB));
+shared.freespace.tboundB = vector.zeros(Config.camera.width/(Config.vision.scaleB));
+
+shared.boundary = {};
+shared.boundary.detect = vector.zeros(1);
+shared.boundary.top = vector.zeros(2*Config.camera.width/Config.vision.scaleB);
+shared.boundary.bottom = vector.zeros(2*Config.camera.width/Config.vision.scaleB);
+
 shared.debug = {};
 shared.debug.enable_shm_copy = vector.zeros(1);
 shared.debug.store_goal_detections = vector.zeros(1);
@@ -83,4 +100,3 @@ shared.debug.store_ball_detections = vector.zeros(1);
 shared.debug.store_all_images = vector.zeros(1);
 
 util.init_shm_segment(getfenv(), _NAME, shared, shsize);
-

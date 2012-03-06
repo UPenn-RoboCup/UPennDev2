@@ -111,7 +111,7 @@ function print_debug()
 --  local goalRelative = util.pose_relative(goal, {robot.x, robot.y, robot.a})
 --  util.ptable(goalRelative);
   --print(string.format("Goal: (%f, %f) seen %.1f sec ago",goal.attack, t-goal.t));
---  local occr = wcm.get_occumap_r();
+--  local occr = wcm.get_occmap_r();
 --  print(unpack(occr));
 --  local block = vcm.get_freespace_block();
 --  print(block);

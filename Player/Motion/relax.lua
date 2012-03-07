@@ -5,6 +5,8 @@ require('Body')
 t0 = 0;
 timeout = 1.0;
 
+---
+--Prepare robot to enter relax state; set body hardnesses to zero.
 function entry()
   print(_NAME.." entry");
 
@@ -13,6 +15,8 @@ function entry()
   Body.set_syncread_enable(1);
 end
 
+---
+--Set actuator commands to resting position, as gotten from joint encoders.
 function update()
   local t = Body.get_time();
 

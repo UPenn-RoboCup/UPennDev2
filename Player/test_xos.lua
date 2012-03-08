@@ -54,7 +54,7 @@ initToggle = true;
 require 'walk'
 walk.start()
 walk.update();
-walk.set_velocity(0.03,-0.01,0);
+walk.set_velocity(0.03,-0.0,0);
 -- 18.1volts
 local t0 = unix.time();
 while(true) do

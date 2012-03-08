@@ -9,26 +9,27 @@ walk = {};
 ---------------------------------------------
 walk.bodyHeight = .71;
 walk.bodyTilt=-2*math.pi/180; 
---walk.footX= -0.020; 
+--walk.footX= 0.020; 
 --walk.footX = -0.035;
---walk.footX = -0.00;
+walk.footX = -0.00;
 --walk.footX = -0.015;
 --walk.footX = -0.055;
 --walk.footX = -0.060;
-walk.footX = -0.080;
---walk.footX = -0.075;
+--walk.footX = -0.080;
+--walk.footX = -0.095;
 
 walk.footY = 0.045;
 --walk.footY = 0.060;
---walk.supportX = .050;
+--walk.supportX = .020;
+--walk.supportX = .030;
 --walk.supportX = -0.005;
 --walk.supportX = -0.0045;
 walk.supportX = -0.008;
 --walk.supportX = -0.007;
 
 --walk.supportY = -0.010;
---walk.supportY = 0.000;
-walk.supportY = 0.010;
+walk.supportY = 0.000;
+--walk.supportY = 0.010;
 --walk.supportY = 0.020;
 
 walk.qLArm=math.pi/180*vector.new({77.6, 12.3, 0.0, -30.2});
@@ -130,7 +131,10 @@ walk.supportCompL = {0,0,0};
 walk.supportCompR = {0,0,0};
 --walk.servoBias={0,0,-99,35,0,0,0,0,-176,-45,0,0}
 --walk.servoBias={0,0,-69,50,0,0,0,0,-333,-69,0,0}
-walk.servoBias={0,0,0,0,0,0,0,0,0,0,0,0}
+--walk.servoBias={0,0,0,0,0,0,0,0,0,0,0,0}
+walk.servoBias={0,0,69,-11,0,0,0,0,70,0,0,0}
+walk.servoBias={0,0,69,-21,0,0,0,0,70,-34,0,0}
+walk.servoBias={0,0,69,-57,0,0,0,0,70,-34,0,0}
 
 
 walk.footXComp = 0;

@@ -21,6 +21,8 @@ motion = '';
 
 active = false;
 
+---
+--Prepare to execute a keyframe. This includes stopping the walk.
 function entry()
   print(_NAME..' entry');
   walk.stop();
@@ -28,6 +30,9 @@ function entry()
   active = true;
 end
 
+---
+--Update at each iteration of the keyframe. This effectively executes the 
+--update code which already exists in the keyframe.lua file.
 function update()
   if (not started and not walk.active) then
     started = true;
@@ -44,12 +49,17 @@ function update()
   end
 end
 
+---
+--Exit the keyframe.
 function exit()
   print(_NAME..' exit');
   keyframe.exit();
   active = false;
 end
 
+---
+--Set a new keyframed motion to execute.
+--@param m The motion table to be executed.
 function set_motion(m)
   motion = m;
 end

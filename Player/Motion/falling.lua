@@ -5,6 +5,9 @@ require('Body')
 t0 = 0;
 timeout = 0.3;
 
+---
+--Prepare the body to safely fall. This primarily involves setting all joints
+--to zero hardness, so that the motors will be safe after the fall.
 function entry()
   print(_NAME.." entry");
 
@@ -14,6 +17,10 @@ function entry()
   Body.set_syncread_enable(1); --OP specific
 end
 
+---
+--Update the body after the fall has occurred. This is primarily used to set
+--the actuator commands to the values of the motors in the robot's position
+--after it has completed its fall.
 function update()
   local t = Body.get_time();
 

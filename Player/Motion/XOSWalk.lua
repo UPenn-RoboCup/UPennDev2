@@ -268,7 +268,7 @@ function update()
 			uLeft = util.se2_interpolate(xFoot, uLeft1, uLeft2);
 		end
 		pLLeg[3] = stepHeight * zFoot;
-		uLeft[1] = uLeft[1] + 0.02;
+--		uLeft[1] = uLeft[1] + 0.05;
 	end
 
 	uTorso = zmp_com(ph);

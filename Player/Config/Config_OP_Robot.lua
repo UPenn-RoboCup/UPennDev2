@@ -10,11 +10,11 @@ sit.dpLimit=vector.new({.1,.01,.06,.1,.3,.1});
 
 --Init angle for start-up
 sit.initangle = {
-  0,0,
-  105*math.pi/180, 30*math.pi/180, -45*math.pi/180,
-  0,  0.055, -0.77, 2.08, -1.31, -0.055, 
-  0, -0.055, -0.77, 2.08, -1.31, 0.055,
-  105*math.pi/180, -30*math.pi/180, -45*math.pi/180,
+	0,0,
+	105*math.pi/180, 30*math.pi/180, -45*math.pi/180,
+	0,  0.055, -0.77, 2.08, -1.31, -0.055, 
+	0, -0.055, -0.77, 2.08, -1.31, 0.055,
+	105*math.pi/180, -30*math.pi/180, -45*math.pi/180,
 }
 
 --Standing parameters
@@ -32,8 +32,7 @@ servo.idMap={
 	8,10,12,14,16,18,--LLeg
 	7,9,11,13,15,17,--RLeg
 	1,3,5,		--RArm
---	21, 		--Aux servo
-	}
+}
 
 nJoint = #servo.idMap;
 
@@ -43,7 +42,7 @@ servo.dirReverse={
 	6,7,8,9,--LLeg
 	12,13,16,--RLeg
 	18,19,20,--RArm
-	}
+}
 
 --Robot-specific firmware version handling
 servo.pid = 0; --old firmware default
@@ -54,38 +53,46 @@ if( robotName=='felix' ) then
 elseif( robotName=='betty' ) then
 elseif( robotName=='linus' ) then
 elseif( robotName=='lucy' ) then
-  servo.pid = 1;
+	servo.pid = 1;
 elseif( robotName=='scarface' ) then
 end
 
 if servo.pid ==0 then -- For old firmware with 12-bit precision
-  print(robotName.." has 12-bit firmware")
-  servo.steps=vector.ones(nJoint)*1024;
-  servo.moveRange=vector.ones(nJoint)*300*math.pi/180;
-  servo.posZero={
-	512,512,
-	205,665,819,
-	512,512,512,512,512,512,
-	512,512,512,512,512,512,
-	819,358,205,
-	512,		--For aux
+	print(robotName.." has 12-bit firmware")
+	servo.steps=vector.ones(nJoint)*1024;
+	servo.moveRange=vector.ones(nJoint)*300*math.pi/180;
+	servo.posZero={
+		512,512,
+		205,665,819,
+		512,512,512,512,512,512,
+		512,512,512,512,512,512,
+		819,358,205,
+		512,		--For aux
 	}
 else -- For new, PID firmware with 14-bit precision
-  print(robotName.." has 14-bit firmware")
-  servo.steps=vector.ones(nJoint)*4096;
-  servo.posZero={
-	2048,2048, --Head
-	1024,2560,3072, --LArm
-	2048,2048,2048,2048,2048,2048, --LLeg
-	2048,2048,2048,2048,2048,2048, --RLeg
-	3072,1536,1024, --RArm
-  };
-  servo.moveRange=vector.ones(nJoint)*360*math.pi/180;
+	print(robotName.." has 14-bit firmware")
+	servo.steps=vector.ones(nJoint)*4096;
+	servo.posZero={
+		2048,2048, --Head
+		1024,2560,3072, --LArm
+		2048,2048,2048,2048,2048,2048, --LLeg
+		2048,2048,2048,2048,2048,2048, --RLeg
+		3072,1536,1024, --RArm
+	};
+	servo.moveRange=vector.ones(nJoint)*360*math.pi/180;
 end
 
 --Lucy specific arm installation bias
 if( robotName=='lucy' ) then
-  servo.armBias = vector.new({0,20,0,0,0,-20})*math.pi/180*servo.steps[1]/servo.moveRange[1];
+	servo.armBias = vector.new({0,20,0,0,0,-20})*math.pi/180*servo.steps[1]/servo.moveRange[1];
+	servo.idMap = {
+		19,20,		--Head
+		2,4,6,		--LArm
+		8,10,12,14,16,18,--LLeg
+		7,9,11,13,15,17,--RLeg
+		1,3,5,		--RArm
+		21, 		--Aux servo
+	}
 end
 
 --Measured IMU bias parameters

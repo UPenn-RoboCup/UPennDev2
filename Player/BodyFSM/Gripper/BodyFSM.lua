@@ -6,6 +6,7 @@ require('bodySearch')
 require('bodyChase')
 require('bodyApproach')
 require('bodyPickup')
+require('bodyAim')
 require('bodyThrow')
 
 sm = fsm.new(bodyIdle);
@@ -13,6 +14,7 @@ sm:add_state(bodySearch);
 sm:add_state(bodyChase);
 sm:add_state(bodyApproach);
 sm:add_state(bodyPickup);
+sm:add_state(bodyAim);
 sm:add_state(bodyThrow);
 
 -- Search for the ball
@@ -32,7 +34,11 @@ sm:set_transition(bodyApproach, 'timeout', bodyChase);
 
 -- Pickup the ball
 sm:set_transition(bodyPickup, 'timeout', bodyApproach);
-sm:set_transition(bodyPickup, 'done', bodyThrow);
+sm:set_transition(bodyPickup, 'done', bodyAim);
+
+-- Aim the throw
+sm:set_transition(bodyAim, 'done', bodyThrow);
+sm:set_transition(bodyAim, 'timeout', bodyThrow);
 
 -- Throw the ball
 sm:set_transition(bodyThrow, 'done', bodySearch);

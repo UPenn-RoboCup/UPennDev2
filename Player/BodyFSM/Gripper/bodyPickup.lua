@@ -24,21 +24,17 @@ function entry()
 	local ball = wcm.get_ball();
 	if( t0 - ball.t < .5 ) then -- Just saw it
 		grip.set_distance( ball.x );
+		print('Picking up ball (x,y):',ball.x, ball.y);
 	end
 
 	-- Start the pickup motion
-	pickable = walk.active;  
-	grip.start_pickup();
+	grip.throw = 0;	-- Do a pickup, not a throw
 	Motion.event("pickup");
 	started = false;
 end
 
 function update()
 	local t = Body.get_time();
-	if not pickable then 
-		print("bodyPickup escape");
-		return "done";
-	end
 
 	if (not started and grip.active) then
 		started = true;

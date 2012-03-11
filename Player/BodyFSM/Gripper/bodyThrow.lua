@@ -17,7 +17,7 @@ function entry()
 	ball = wcm.get_ball();
 
 	-- Start the throwing motion
-	grip.start_throw();
+	grip.throw = 1;
 	Motion.event("throw");
 	started = false;
 end

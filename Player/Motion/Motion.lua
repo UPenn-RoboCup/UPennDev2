@@ -59,7 +59,7 @@ sm:set_transition(standstill, 'walk', stance);
 
 -- Grip
 sm:set_transition(grip, 'timeout', grip);
-sm:set_transition(grip, 'done', walk);
+sm:set_transition(grip, 'done', stance);
 
 -- falling behaviours
 sm:set_transition(walk, 'fall', falling);

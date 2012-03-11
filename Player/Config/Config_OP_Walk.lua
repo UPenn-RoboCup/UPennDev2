@@ -53,6 +53,18 @@ walk.qLArm=math.pi/180*vector.new({90,0,-80});
 walk.qRArm=math.pi/180*vector.new({90,0,-80});
 --]]
 
+-- Grip walk
+walk.bodyHeight = 0.29;
+walk.bodyTilt=30*math.pi/180;
+walk.tZmp = 0.165;
+walk.tStep = 0.7;
+walk.phSingle={0.2,0.8};
+walk.supportY = 0.010;
+walk.supportX = 0.000;
+walk.stepHeight = 0.04;
+walk.qLArm=math.pi/180*vector.new({90,0,-80});
+walk.qRArm=math.pi/180*vector.new({90,0,-80});
+
 --------------------------------------------
 -- Compensation parameters
 --------------------------------------------
@@ -114,51 +126,52 @@ print(robotName.." walk parameters loaded")
 local robotID = 0;
 
 if( robotName=='felix' ) then
-  robotID = 8;
+	robotID = 8;
 
-  walk.servoBias={0,-6,2,9,12,0,0,0,-6,-5,-2,-1}
-  walk.footXComp = -0.009;    
-  walk.footYComp = 0.002;  
-  walk.kickXComp = -0.010;
-  walk.headPitchComp = 4*math.pi/180;
+	walk.servoBias={0,-6,2,9,12,0,0,0,-6,-5,-2,-1}
+	walk.footXComp = -0.009;    
+	walk.footYComp = 0.002;  
+	walk.kickXComp = -0.010;
+	walk.headPitchComp = 4*math.pi/180;
 elseif( robotName=='betty' ) then
-  robotID = 9;
+	robotID = 9;
 
-  walk.servoBias={0,0,2,-6,-1,0,0,0,-13,-1,0,0}
-  walk.footXComp = -0.006;    
-  walk.footYComp = 0.002;  
-  walk.kickXComp = 0.005;
-  walk.headPitchComp = 3*math.pi/180;
+	walk.servoBias={0,0,2,-6,-1,0,0,0,-13,-1,0,0}
+	walk.footXComp = -0.006;    
+	walk.footYComp = 0.002;  
+	walk.kickXComp = 0.005;
+	walk.headPitchComp = 3*math.pi/180;
 
-  --2/6/2012
-  walk.servoBias={0,0,2,-6,-1,0,0,0,-3,-1,-10,0}
-  walk.footXComp = 0.010;    
+	--2/6/2012
+	walk.servoBias={0,0,2,-6,-1,0,0,0,-3,-1,-10,0}
+	walk.footXComp = 0.010;    
 
 elseif( robotName=='linus' ) then
-  robotID = 10;
+	robotID = 10;
 
-  walk.servoBias={3,1,2,1,1,-3,-8,-3,-13,-4,1,-5}
-  walk.footXComp = 0.00;
-  walk.kickXComp = -0.004;
-  walk.footYComp = 0.0025;  -- 0.04
-  walk.headPitchComp = 3*math.pi/180;
+	walk.servoBias={3,1,2,1,1,-3,-8,-3,-13,-4,1,-5}
+	walk.footXComp = 0.00;
+	walk.kickXComp = -0.004;
+	walk.footYComp = 0.0025;  -- 0.04
+	walk.headPitchComp = 3*math.pi/180;
 elseif( robotName=='lucy' ) then
-  robotID = 11;
-
-  walk.servoBias={-3,1,3,-1,-3,4,1,-3,-9,-1,-8,-1} --4/21, measured by chris
-  walk.footXComp = 0.002; 
-  walk.footYComp = 0.0020;
-  walk.kickXComp = -0.005;
+	robotID = 11;
+	walk.servoBias={29,7,321,16,16,340,15,5,427,10,7,7}	
+	--walk.servoBias={32,6,327,18,16,338,15,9,423,6,11,11}
+	--  walk.servoBias={-3,1,3,-1,-3,4,1,-3,-9,-1,-8,-1} --4/21, measured by chris
+	walk.footXComp = 0.002; 
+	walk.footYComp = 0.0020;
+	walk.kickXComp = -0.005;
 
 elseif( robotName=='scarface' ) then
-  robotID = 5;
+	robotID = 5;
 
-  --02/04/12 - Larry V.
-  walk.servoBias={0,0,0,0,0,0,0,0,0,-9,-4,0} 
-  walk.footXComp = 0.00;
-  walk.kickXComp = -0.005;
+	--02/04/12 - Larry V.
+	walk.servoBias={0,0,0,0,0,0,0,0,0,-9,-4,0} 
+	walk.footXComp = 0.00;
+	walk.kickXComp = -0.005;
 
-  walk.footXComp = -0.005;
+	walk.footXComp = -0.005;
 
 end
 

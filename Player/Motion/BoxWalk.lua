@@ -130,6 +130,9 @@ qRArm1=math.pi/180*vector.new({90,-40,-160});
 qLArm2=math.pi/180*vector.new({-20,40,0});
 qRArm2=math.pi/180*vector.new({-20,-40,0});
 
+qLArm2=math.pi/180*vector.new({-20,30,0});
+qRArm2=math.pi/180*vector.new({-20,-30,0});
+
 --Current arm pose
 qLArm=math.pi/180*vector.new({90,40,-160});
 qRArm=math.pi/180*vector.new({90,-40,-160});
@@ -144,7 +147,13 @@ uTorsoOffset = {-footX,0,0};
 --Punch 
 tPunch=0;
 punchType=1;
-punchTime={{0,0.12,0.12},{0.2,0.2,0.2}};
+punchTime={{0,0.12,0.12},{0.3,0.2,0.2}};
+
+--punchTime={{0.4,0.4,0.4},{0.2,0.2,0.2}};
+
+
+--For torso offset change
+tStance0,tStance1 = 0,0;
 
 ----------------------------------------------------------
 -- End initialization 
@@ -186,7 +195,10 @@ function update()
 
   if not active then
     if walkKickRequest==0 then 
-      update_still(); return; 
+      uTorso = step_torso(uLeft, uRight,0.5);
+      pLLeg[3], pRLeg[3] = 0;
+      motion_body();
+      return; 
     elseif walkKickRequest==1 then
       tLastStep=t-tStep-0.001;
     end
@@ -212,15 +224,14 @@ function update()
   if (iStep > iStep0) then
     update_velocity();
     iStep0 = iStep;
---    supportLeg = iStep % 2; -- 0 for left support, 1 for right support
     uLeft1 = uLeft2;
     uRight1 = uRight2;
     uTorso1 = uTorso2;
+    check_stance();
 
     supportMod = {0,0}; --Support Point modulation for walkkick
     shiftFactor = 0.5; --How much should we shift final Torso pose?
 
-    check_stance();
     if walkKickRequest>0 then
       check_walkkick(); 
       check_side_walkkick(); 
@@ -243,7 +254,6 @@ function update()
         uLeft2 = step_left_destination(velCurrent, uLeft1, uRight1);
       end
     end
-
     uTorso2 = step_torso(uLeft2, uRight2,shiftFactor);
 
     if supportLeg == 0 then --LS
@@ -272,54 +282,58 @@ function update()
   pLLeg[3], pRLeg[3] = 0;
   if supportLeg == 0 then    -- Left support
     if walkKickRequest == 4 and walkKickType>1 then --Side kick
-      if xFoot<0.5 then uRight = util.se2_interpolate(xFoot*2, uRight1, uRight15);
-      else uRight = util.se2_interpolate(xFoot*2-1, uRight15, uRight2);
-      end
+      uRight = util.se3_interpolate(xFoot, uRight1, uRight15, uRight2);
     else
       uRight = util.se2_interpolate(xFoot, uRight1, uRight2);
     end
     pRLeg[3] = stepHeight*zFoot;
   else    -- Right support
     if walkKickRequest == 4 and walkKickType>1 then --side kick 
-      if xFoot<0.5 then uLeft = util.se2_interpolate(xFoot*2, uLeft1, uLeft15);
-      else uLeft = util.se2_interpolate(xFoot*2-1, uLeft15, uLeft2);      
-      end
+      uLeft = util.se3_interpolate(xFoot, uLeft1, uLeft15, uLeft2);
     else
       uLeft = util.se2_interpolate(xFoot, uLeft1, uLeft2);
     end
     pLLeg[3] = stepHeight*zFoot;
   end
-
-  uTorsoOffset = util.se2_interpolate(ph,uTorsoOffset0,uTorsoOffsetTarget);
-
   uTorso = zmp_com(ph);
-  uTorsoActual = util.pose_global(uTorsoOffset,uTorso);
+  motion_body();
+end
 
+function motion_body()
+  if t<tStance1 then -- Body stance changing
+    torso_ph = (t-tStance0)/(tStance1-tStance0);
+    uTorsoOffset = util.se2_interpolate(torso_ph,uTorsoOffset0,uTorsoOffsetTarget);
+  else
+    uTorsoOffset0 = uTorsoOffsetTarget;
+  end    
+
+
+  uTorsoActual = util.pose_global(uTorsoOffset,uTorso);
   pLLeg[1], pLLeg[2], pLLeg[6] = uLeft[1], uLeft[2], uLeft[3];
   pRLeg[1], pRLeg[2], pRLeg[6] = uRight[1], uRight[2], uRight[3];
   pTorso[1], pTorso[2], pTorso[6] = uTorsoActual[1], uTorsoActual[2], uTorsoActual[3];
-
   qLegs = Kinematics.inverse_legs(pLLeg, pRLeg, pTorso, supportLeg);
   motion_legs(qLegs);
   motion_arms();
-
   Body.set_head_hardness(0.3);
   Body.set_head_command({-uTorsoOffset[3],0});
 end
 
 function check_stance()
+  t=Body.get_time();
   uTorsoOffset0 = {uTorsoOffset[1],uTorsoOffset[2],uTorsoOffset[3]};
   if stance1==0 then    --Standard stance
     uLRFootOffset = vector.new({0,footY,0});
     uTorsoOffsetTarget = {-footX,0,0};
+    tStance0=t;tStance1 = t+tStep;
   elseif stance1==1 then    --Left-front stance
     uLRFootOffset = vector.new({0.03,footY,0});
-    uTorsoOffsetTarget = {-footX+0.01,0,-30*math.pi/180};
     uTorsoOffsetTarget = {-footX+0.01,0,-45*math.pi/180};
+    tStance0=t;tStance1 = t+tStep;
   else    --Right-front stance
     uLRFootOffset = vector.new({-0.03,footY,0});
-    uTorsoOffsetTarget = {-footX+0.01,0,30*math.pi/180};
     uTorsoOffsetTarget = {-footX+0.01,0,45*math.pi/180};
+    tStance0=t;tStance1 = t+tStep;
   end
   stance=stance1;
 end
@@ -451,18 +465,6 @@ function start_punch(ptype)
     tPunch=t; 
     punchType=ptype;
   end
-end
-
-function update_still()
-  uTorso = step_torso(uLeft, uRight,0.5);
-  uTorsoActual = util.pose_global(uTorsoOffset,uTorso);
-  pLLeg[1], pLLeg[2], pLLeg[6] = uLeft[1], uLeft[2], uLeft[3];
-  pRLeg[1], pRLeg[2], pRLeg[6] = uRight[1], uRight[2], uRight[3];
-  pLLeg[3], pRLeg[3] = 0;
-  pTorso[1], pTorso[2], pTorso[6] = uTorsoActual[1], uTorsoActual[2], uTorsoActual[3];
-  qLegs = Kinematics.inverse_legs(pLLeg, pRLeg, pTorso, supportLeg);
-  motion_legs(qLegs);
-  motion_arms();
 end
 
 

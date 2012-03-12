@@ -131,7 +131,7 @@ end
 
 
 function update()
-  if (not active) then return; end
+  if (not active) then  return;   end
 
   t = Body.get_time();
   iStep, ph = math.modf((t-t0)/tStep);

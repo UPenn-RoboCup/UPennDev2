@@ -18,17 +18,17 @@ walk.velDelta={0.10,0.10,0.15}
 ----------------------------------------------
 -- Stance parameters
 ---------------------------------------------
-walk.bodyHeight = 0.80; 
-walk.bodyTilt=10*math.pi/180; 
+walk.bodyHeight = 0.75; 
+walk.bodyTilt=4*math.pi/180; 
 walk.footX= 0.01; 
 walk.footY = 0.10;
 walk.supportX = 0;
 walk.supportY = 0.0;
 walk.qLArm = math.pi/180*vector.new({110, 12, -0, -40});
 walk.qRArm = math.pi/180*vector.new({110, -12, 0, 40});
-walk.hardnessSupport = .7;
-walk.hardnessSwing = 0.5;
-walk.hardnessArm=.3;
+walk.hardnessSupport = 1;
+walk.hardnessSwing = 1;
+walk.hardnessArm=.1;
 ---------------------------------------------
 -- Gait parameters
 ---------------------------------------------
@@ -44,9 +44,9 @@ walk.phZmp={0.1,0.9};
 walk.hipRollCompensation = 0*math.pi/180;
 walk.ankleMod = vector.new({-1,0})/0.12 * 10*math.pi/180;
 
---------------------------------------------------------------
---Imu feedback parameters, alpha / gain / deadband / max
---------------------------------------------------------------
+-------------------------------------------------------------- 
+--Imu feedback parameters, alpha / gain / deadband / max 
+-------------------------------------------------------------- 
 gyroFactor = 0.273*math.pi/180 * 300 / 1024; --dps to rad/s conversion
 walk.ankleImuParamX={1,-0.75*gyroFactor, 2*math.pi/180, 10*math.pi/180};
 walk.kneeImuParamX={1,-1.5*gyroFactor, 2*math.pi/180, 10*math.pi/180};
@@ -96,3 +96,17 @@ walk.velLimitY={-.10,.10};
 walk.supportY = -0.01;
 walk.tZmp = 0.20;
 walk.supportX = -0.01;
+walk.stepHeight = 0.08;
+walk.phSingle={0.15,0.85};
+walk.phZmp={0.15,0.85};
+
+
+walk.velLimitX={-.20,.30};
+walk.velDelta={0.10,0.10,0.3} 
+
+
+--fast test
+walk.tStep = 0.6;
+walk.supportY = -0.01;
+walk.footY = 0.09;
+walk.velLimitA={-.2,.2};

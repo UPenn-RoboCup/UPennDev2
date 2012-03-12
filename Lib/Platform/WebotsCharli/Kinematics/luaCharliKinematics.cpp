@@ -243,15 +243,15 @@ static int inverse_legs(lua_State *L) {
 
 static const struct luaL_reg kinematics_lib [] = {
   {"forward_head", forward_head},
-  {"forward_l_arm", forward_l_arm},
-  {"forward_r_arm", forward_r_arm},
-  {"forward_l_leg", forward_l_leg},
-  {"forward_r_leg", forward_r_leg},
+  {"forward_larm", forward_l_arm},
+  {"forward_rarm", forward_r_arm},
+  {"forward_lleg", forward_l_leg},
+  {"forward_rleg", forward_r_leg},
   {"forward_joints", forward_joints},
-  {"l_leg_torso", l_leg_torso},
-  {"torso_l_leg", torso_l_leg},
-  {"r_leg_torso", r_leg_torso},
-  {"torso_r_leg", torso_r_leg},
+  {"lleg_torso", l_leg_torso},
+  {"torso_lleg", torso_l_leg},
+  {"rleg_torso", r_leg_torso},
+  {"torso_rleg", torso_r_leg},
   {"l_arm_torso", l_arm_torso},
   {"torso_l_arm", torso_l_arm},
   {"r_arm_torso", r_arm_torso},
@@ -267,8 +267,8 @@ static const struct luaL_reg kinematics_lib [] = {
 };
 
 extern "C"
-int luaopen_Charli_Kinematics (lua_State *L) {
-  luaL_register(L, "Charli_Kinematics", kinematics_lib);
+int luaopen_CharliKinematics (lua_State *L) {
+  luaL_register(L, "CharliKinematics", kinematics_lib);
   
   return 1;
 }

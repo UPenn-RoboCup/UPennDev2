@@ -16,11 +16,11 @@ maxStep = 0.025;
 tLost = 3.0;
 
 -- kick threshold
-xKick = 0.16;
-xTarget = 0.14;
-yKickMin = 0.01;
-yKickMax = 0.05;
-yTarget0 = 0.04;
+xKick = -0.05;
+xTarget = -0.10;
+yKickMin = 0.1;
+yKickMax = 0.15;
+yTarget0 = 0.12;
 
 -- maximum ball distance threshold
 rFar = 0.45;
@@ -29,7 +29,7 @@ function entry()
 	print("Body FSM:".._NAME.." entry");
 	t0 = Body.get_time();
 	ball = wcm.get_ball();
-	yTarget= util.sign(ball.y) * yTarget0;
+	yTarget = yTarget0; -- Always on left hand side
 end
 
 function update()

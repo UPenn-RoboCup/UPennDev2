@@ -441,6 +441,9 @@ function stopAlign()
   stop()
 end
 
+function stance_reset()
+end
+
 function doWalkKickLeft()
   if walkKickRequest==0 then
     walkKickRequest = 1; 

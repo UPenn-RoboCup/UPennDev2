@@ -27,8 +27,9 @@ walk.footX= -0.020;
 walk.footY = 0.035;
 walk.supportX = 0;
 walk.supportY = 0.010;
-walk.qLArm=math.pi/180*vector.new({90,8,-40});
-walk.qRArm=math.pi/180*vector.new({90,-8,-40});
+walk.qLArm=math.pi/180*vector.new({90,20,-40});
+walk.qRArm=math.pi/180*vector.new({90,20,-40});
+
 
 walk.hardnessSupport = 1;
 walk.hardnessSwing = 1;
@@ -41,8 +42,8 @@ walk.tZmp = 0.165;
 walk.stepHeight = 0.035;
 walk.phSingle={0.1,0.9};
 
---[[
 -- Slow walk
+--[[
 walk.tZmp = 0.165;
 walk.tStep = 0.5;
 walk.phSingle={0.1,0.9};
@@ -54,16 +55,20 @@ walk.qRArm=math.pi/180*vector.new({90,0,-80});
 --]]
 
 -- Grip walk
-walk.bodyHeight = 0.29;
-walk.bodyTilt=30*math.pi/180;
+--[[
+--walk.bodyHeight = 0.285;
+--walk.bodyTilt=0*math.pi/180;
 walk.tZmp = 0.165;
-walk.tStep = 0.7;
-walk.phSingle={0.2,0.8};
-walk.supportY = 0.010;
+walk.tStep = 0.5;
+walk.phSingle={0.25,0.75};
+walk.footX = -0.010;
+walk.footY = 0.050;
+walk.supportY = 0.000;
 walk.supportX = 0.000;
 walk.stepHeight = 0.04;
-walk.qLArm=math.pi/180*vector.new({90,0,-80});
-walk.qRArm=math.pi/180*vector.new({90,0,-80});
+walk.qLArm=math.pi/180*vector.new({26.2, 90, 33.4});
+walk.qRArm=math.pi/180*vector.new({0,50,120});
+--]]
 
 --------------------------------------------
 -- Compensation parameters
@@ -156,8 +161,8 @@ elseif( robotName=='linus' ) then
 	walk.headPitchComp = 3*math.pi/180;
 elseif( robotName=='lucy' ) then
 	robotID = 11;
-	walk.servoBias={29,7,321,16,16,340,15,5,427,10,7,7}	
-	--walk.servoBias={32,6,327,18,16,338,15,9,423,6,11,11}
+	walk.servoBias={1,-28,-207,108,-26,-15,-43,-51,110,35,84,-29}; -- new firmware
+--	walk.servoBias={29,7,321,16,16,340,15,5,427,10,7,7}
 	--  walk.servoBias={-3,1,3,-1,-3,4,1,-3,-9,-1,-8,-1} --4/21, measured by chris
 	walk.footXComp = 0.002; 
 	walk.footYComp = 0.0020;

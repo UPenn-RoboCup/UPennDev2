@@ -1,0 +1,850 @@
+# NaoV3 "Robocup Edition".
+# This Nao model includes most of the sensors and actuators of the real robot.
+# It does not include the wrist and hand joints.
+# Model designed by Cyberbotics Ltd. according to the "Red" documentation provided by Aldebaran Robotics.
+# Model authors: Yvan Bourquin & Olivier Michel - www.cyberbotics.com
+# Changes:
+#   April 16, 2009 - Added a second bumper in each foot and changed foot shapes
+#   May 2, 2009    - Fixed 15 mm error in Chest mass center
+#   May 28, 2009   - Changed joint limits (minPosition/maxPosition) to Choregraphe values
+#  Minihubo prototype file made by SJ, jan 2010
+
+
+PROTO Minihubo2 [
+  field SFVec3f translation 0 0.325 0
+  field SFRotation rotation 0 1 0 0
+#  field SFColor color 0 0 1
+#  field SFInt32 channel 0
+#  field MFString texture "textures/button_blue.png"
+  field SFString controller "void"
+  field SFString controllerArgs ""
+  field SFBool synchronization TRUE
+  field SFString name "minihubo"
+  field SFVec2f windowPosition 0 0
+  field SFFloat camera_pixelSize 1.0
+#  field SFFloat gpsResolution 0.0
+]
+{
+Robot {
+  translation IS translation
+  rotation IS rotation
+  controller IS controller
+  controllerArgs IS controllerArgs
+  synchronization IS synchronization
+  name IS name
+  children [
+        Transform { translation 0 0.045 0 #todo
+            children[
+              DEF CHEST_MAIN_SKIN Shape {
+              appearance DEF MAIN_SKIN_APP Appearance {
+              material DEF MAIN_SKIN_MAT Material {
+              #ambientIntensity 0.15
+              ambientIntensity 0.5
+              diffuseColor 1 1 1
+              shininess 0.1
+              #specularColor 0.4 0.4 0.4
+                specularColor 0.4 0.4 0.4
+            }
+          }
+          geometry Box{size  0.11 0.1 0.055} #done
+        }]}    
+        Transform { translation 0 -0.045 0 #todo
+                    children[
+                    Shape {                        
+                      appearance USE MAIN_SKIN_APP                      
+                      geometry Box{size 0.1 0.08 0.045} #done
+                    } ]}
+
+    DEF ACCELEROMETER Accelerometer {
+      translation 0 0.098 0.025
+      rotation 0.57735 0.57735 0.57735 -2.0944
+      name "accelerometer"
+      lookupTable [
+        -19.62 -19.62 0.01
+        19.62 19.62 0.01
+      ]
+    }
+    DEF GYRO Gyro {
+      rotation 0.57735 0.57735 0.57735 -2.0944
+      name "gyro"
+      lookupTable [
+        -8.726 -8.726 0.01
+        8.726 8.726 0.01
+      ]
+      zAxis FALSE
+    }
+    DEF HeadYaw Servo {
+      translation 0 0.1 0 #todo
+      children [
+        DEF NECK Transform {
+          rotation 0 1 0 0.7854
+          children [
+            Shape {
+              geometry Cylinder {
+                bottom FALSE
+                height 0.01
+                radius 0.016
+                top FALSE
+                subdivision 4
+              }
+            }
+          ]
+        }
+        DEF HeadPitch Servo {
+          rotation 1 0 0 0
+          children [
+            Transform {
+                translation 0 0.04 0  #done
+                children[
+                DEF HEAD_MAIN_SKIN Shape {
+                appearance USE MAIN_SKIN_APP
+                #geometry Box{size 0.08 0.08 0.08} #done
+                geometry Sphere {radius 0.04}
+            }]}
+            DEF CameraSelect Servo {
+              translation 0 0.0679 0
+              rotation 1 0 0 0
+              children [
+                DEF NaoCam Camera {
+                  windowPosition IS windowPosition
+                  pixelSize IS camera_pixelSize
+                  translation 0 0 0.0539
+                  rotation 0 1 0 3.1416
+                  name "camera"
+                  fieldOfView 0.81
+                  width 160
+                  height 120
+                  near 0.002
+                }
+              ]
+              name "CameraSelect"
+              maxVelocity 1e+14
+              maxForce 1e+14
+              maxPosition 0.6981
+            } 
+          ]
+          name "HeadPitch"
+          boundingObject Transform {
+            #translation 0 0.055 0
+            translation 0 0.04 0  #done
+            children [
+              #Box{size 0.08 0.08 0.08} #done
+              #Sphere {radius 0.062}
+              Sphere {radius 0.04}
+            ]
+          }
+          physics Physics {
+            density -1
+            mass 0.391
+            centerOfMass 0 0.044399 -0.000247
+          }
+          maxVelocity 7.19
+          maxForce 2.61
+          minPosition -0.7854
+          maxPosition 0.7854
+        }
+      ]
+      name "HeadYaw"
+      boundingObject Sphere {
+        radius 0.01
+      }
+      physics Physics {
+        density -1
+        mass 0.01
+      }
+      maxVelocity 8.27
+      maxForce 2.27
+      minPosition -1.5708
+      maxPosition 1.5708
+    }
+    DEF RShoulderPitch Servo {
+      #translation -0.098 0.1 0
+      translation -0.085 0.080 0 #todo
+      rotation 1 0 0 0
+      children [
+        Transform {
+            translation 0.01 0 0  #done
+            children[
+            Shape {
+                appearance DEF MAIN_STRUCTURE_APP Appearance{
+                            material DEF MAIN_STRUCTURE_MAT Material {
+                            ambientIntensity 0.15
+                            diffuseColor 1 1 1
+                            shininess 0.5
+                            specularColor 0.4 0.4 0.4
+                            }}                
+                geometry Box{size 0.055 0.03 0.03}
+        }]}
+        DEF RShoulderRoll Servo {          
+          children [
+            Transform {
+                translation 0 0 0.055  #done
+                children[
+                Shape {
+                      appearance USE MAIN_SKIN_APP
+                      geometry Box{size 0.035 0.035 0.11} #done
+                      } ] }
+            DEF RElbowYaw Servo {
+              translation 0 0 0.11 #done
+              rotation 0 0 1 0
+              children [
+                DEF RElbowRoll Servo {
+                  children [
+                    Transform { translation 0 0 0.05 #done
+                    children[
+                    Shape {                        
+                      appearance USE MAIN_SKIN_APP                      
+                      geometry Box{size 0.035 0.035 0.1} #done
+                    } ] } ]
+                  name "RElbowRoll"
+                  boundingObject Transform {
+                    #translation 0 0 0.065
+                    translation 0 0 0.05
+                    children [
+                      DEF WHIRST_BO Box {
+                        #size 0.05 0.05 0.125
+                        size 0.035 0.035 0.1 #done
+                      }
+                    ]
+                  }
+                  physics Physics {
+                    density -1
+                    mass 0.077
+                    centerOfMass -0.002 0 0.07615
+                  }
+                  maxVelocity 7.19
+                  maxForce 2.61
+                  maxPosition 1.658
+                }
+              ]
+              name "RElbowYaw"
+              boundingObject Sphere {
+                radius 0.01
+              }
+              physics Physics {
+                density -1
+                mass 0.01
+              }
+              maxVelocity 8.27
+              maxForce 2.27
+              minPosition -2.0944
+              maxPosition 2.0944
+            }
+          ]
+          name "RShoulderRoll"
+          boundingObject Transform {
+            #translation 0 0 0.02
+            translation 0 0 0.055
+            children [
+              DEF SHOULDER_BO Box {
+#                size 0.05 0.06 0.12
+                size 0.035 0.035 0.11 #done
+              }
+            ]
+          }
+          physics Physics {
+            density -1
+            mass 0.153
+            centerOfMass -0.002 0 0.0595
+          }
+          maxVelocity 7.19
+          maxForce 2.61
+          minPosition -1.658
+        }
+      ]
+      name "RShoulderPitch"
+      boundingObject Sphere {
+        radius 0.01
+      }
+      physics Physics {
+        density -1
+        mass 0.01
+      }
+      maxVelocity 8.27
+      maxForce 2.27
+      minPosition -2.0944
+      maxPosition 2.0944
+    }
+    DEF LShoulderPitch Servo {
+      #translation 0.098 0.1 0 
+      translation 0.085 0.080 0 #todo
+      rotation 1 0 0 0
+      children [
+        Transform {
+            translation -0.01 0 0  #done
+            children[
+            Shape {
+                appearance USE MAIN_STRUCTURE_APP
+                geometry Box{size 0.055 0.03 0.03}
+        }]}
+        DEF LShoulderRoll Servo {
+          children [
+            Transform {
+                translation 0 0 0.055  #done
+                children[
+                Shape {
+                      appearance USE MAIN_SKIN_APP
+                      geometry Box{size 0.035 0.035 0.11} #done
+                      } ] }
+            DEF LElbowYaw Servo {
+              translation 0 0 0.11 #done
+              rotation 0 0 1 0
+              children [
+                DEF LElbowRoll Servo {
+                  children [
+                     Transform { translation 0 0 0.05 #done
+                    children[
+                    Shape {                        
+                      appearance USE MAIN_SKIN_APP                      
+                      geometry Box{size 0.035 0.035 0.1} #done
+                    } ] } ]
+                  name "LElbowRoll"
+                  boundingObject Transform {
+                    #translation 0 0 0.065
+                    translation 0 0 0.05
+                    children [
+                      USE WHIRST_BO
+                    ]
+                  }
+                  physics Physics {
+                    density -1
+                    mass 0.077
+                    centerOfMass 0.002 0 0.07615
+                  }
+                  maxVelocity 7.19
+                  maxForce 2.61
+                  minPosition -1.658
+                }
+              ]
+              name "LElbowYaw"
+              boundingObject Sphere {
+                radius 0.01
+              }
+              physics Physics {
+                density -1
+                mass 0.01
+              }
+              maxVelocity 8.27
+              maxForce 2.27
+              minPosition -2.0944
+              maxPosition 2.0944
+            }
+          ]
+          name "LShoulderRoll"
+          boundingObject Transform {
+            #translation 0 0 0.02
+            translation 0 0 0.055 #done
+            children [
+              USE SHOULDER_BO
+            ]
+          }
+          physics Physics {
+            density -1
+            mass 0.153
+            centerOfMass 0.002 0 0.0595
+          }
+          maxVelocity 7.19
+          maxForce 2.61
+          maxPosition 1.658
+        }
+      ]
+      name "LShoulderPitch"
+      boundingObject Sphere {
+        radius 0.01
+      }
+      physics Physics {
+        density -1
+        mass 0.01
+      }
+      maxVelocity 8.27
+      maxForce 2.27
+      minPosition -2.0944
+      maxPosition 2.0944
+    }
+#    DEF RHipYawPitch Servo {
+    DEF RHipYaw Servo {
+#todo
+#      translation -0.05 -0.085 0
+      translation -0.0385 -0.085 0 #todo
+#     rotation 0.707107 0.707107 0 0
+      children [        
+        DEF RHipRoll Servo {
+          rotation 0 0 1 0
+          children [
+            DEF RHipPitch Servo {
+              rotation 1 0 0 0
+              children [
+                Transform{
+                        translation 0 -0.045 0 #done
+                        rotation 1 0 0 0 # todo
+                        children[
+                        Shape {appearance USE MAIN_SKIN_APP
+                            geometry Box{size 0.043 0.09 0.035} #done
+                            }
+                        ]}
+                DEF RKneePitch Servo {
+                  translation 0 -0.09 0 #done
+                  rotation 1 0 0 0
+                  children [
+                    Transform{
+                        translation 0 -0.045 0.01054 #done
+                        rotation 1 0 0 0.2363 # done
+                        children[
+                        Shape {appearance USE MAIN_SKIN_APP
+                            geometry Box{size 0.043 0.09 0.035} #done
+                            }
+                        ]}                    
+                    DEF RAnklePitch Servo {
+                      translation 0 -0.0875 0 #done
+                      rotation 1 0 0 0
+                      children [  
+                        Shape {
+                            appearance USE MAIN_STRUCTURE_APP
+                            geometry Box{size 0.035 0.035 0.035}
+                        }                                      
+                        DEF RAnkleRoll Servo {
+                          rotation 0 0 1 0
+                          children [
+                            Transform{
+                            translation 0 -0.0325 0 #todo
+                            rotation 1 0 0 0 # todo
+                            children[
+                            Shape {appearance USE MAIN_SKIN_APP
+                                geometry Box{size 0.065 0.032 0.11} #done
+                                }
+                            ]}
+                            DEF RFsrFL TouchSensor {
+#0.065 0.032 0.11
+                              #translation 0.023 -0.045 0.0701
+                                translation 0.023 -0.048 0.045 #done
+                              rotation 1 0 0 1.57
+                              children [
+                                DEF FSR_BO Shape {
+                                  geometry Sphere {
+                                    radius 0.005
+                                  }
+                                }
+                              ]
+                              name "RFsrFL"
+                              boundingObject USE FSR_BO
+                              physics DEF FSR_PHYSICS Physics {
+                                density -1
+                                mass 0.005
+                              }
+                              type "force"
+                              lookupTable [
+                                0 0 0
+                                25 25 0
+                              ]
+                            }
+                            DEF RFsrFR TouchSensor {
+                              #translation -0.03 -0.045 0.0701
+                                translation -0.023 -0.048 0.045 #done
+                              rotation 1 0 0 1.57
+                              children [
+                                USE FSR_BO
+                              ]
+                              name "RFsrFR"
+                              boundingObject USE FSR_BO
+                              physics USE FSR_PHYSICS
+                              type "force"
+                              lookupTable [
+                                0 0 0
+                                25 25 0
+                              ]
+                            }
+                            DEF RFsrBR TouchSensor {
+#0.065 0.032 0.11
+                              #translation -0.03 -0.045 -0.0304
+                                translation -0.023 -0.048 -0.045 #done
+                              rotation 1 0 0 1.57
+                              children [
+                                USE FSR_BO
+                              ]
+                              name "RFsrBR"
+                              boundingObject USE FSR_BO
+                              physics USE FSR_PHYSICS
+                              type "force"
+                              lookupTable [
+                                0 0 0
+                                25 25 0
+                              ]
+                            }
+                            DEF RFsrBL TouchSensor {
+                              #translation 0.019 -0.045 -0.0298
+                                translation 0.023 -0.048 -0.045 #done
+                              rotation 1 0 0 1.57
+                              children [
+                                USE FSR_BO
+                              ]
+                              name "RFsrBL"
+                              boundingObject USE FSR_BO
+                              physics USE FSR_PHYSICS
+                              type "force"
+                              lookupTable [
+                                0 0 0
+                                25 25 0
+                              ]
+                            }      
+                          ]
+                          name "RAnkleRoll"
+                          boundingObject Transform {
+                            #translation -0.005 -0.03 0.02
+                            translation 0 -0.0325 0 #todo
+                            children [
+                              DEF FOOT_BO Box {
+                                #size 0.076 0.03 0.148
+                                size 0.065 0.032 0.11 #done
+                              }
+                            ]
+                          }
+                          physics Physics {
+                            density -1
+                            mass 0.128
+                            centerOfMass 0 -0.03 0.018015
+                          }
+                          maxVelocity 4.16
+                          maxForce 11.97
+                          minPosition -0.7854
+                          maxPosition 0.7854
+                        }
+                      ]
+                      name "RAnklePitch"
+                      boundingObject Sphere {
+                        radius 0.01
+                      }
+                      physics Physics {
+                        density -1
+                        mass 0.01
+                      }
+                      maxVelocity 6.4
+                      maxForce 7.78
+                      minPosition -1.2217
+                      maxPosition 0.7854
+                    }
+                  ]
+                  name "RKneePitch"
+                  boundingObject Transform {
+                    #translation 0 -0.045 0.01
+                    #rotation 1 0 0 0.15
+                    translation 0 -0.045 0.01054 #done
+                    rotation 1 0 0 0.2363 # done
+                    children [
+                      Box {
+                        #size 0.08 0.11 0.07
+                        size 0.043 0.09 0.035 #done
+                      }
+                    ]
+                  }
+                  physics Physics {
+                    density -1
+                    mass 0.423
+                    centerOfMass 0 -0.0691 -0.000511
+                  }
+                  maxVelocity 6.4
+                  maxForce 7.78
+                  maxPosition 2.2689
+                }
+              ]
+              name "RHipPitch"
+              boundingObject Transform {
+                #translation 0 -0.05 0
+                translation 0 -0.045 0 #done
+                #rotation 1 0 0 6
+                rotation 1 0 0 0 # todo
+                children [
+                  DEF THIGH_BO Box {
+                    #size 0.08 0.14 0.07
+                    size 0.043 0.09 0.035 #done
+                  }
+                ]
+              }
+              physics Physics {
+                density -1
+                mass 0.513
+                centerOfMass 0 -0.038 -0.005579
+              }
+              maxVelocity 6.4
+              maxForce 7.78
+              minPosition -1.5708
+              maxPosition 0.5236
+            }
+          ]
+          name "RHipRoll"
+          boundingObject Sphere {
+            radius 0.01
+          }
+          physics Physics {
+            density -1
+            mass 0.01
+          }
+          maxVelocity 4.16
+          maxForce 11.97
+          minPosition -0.7854
+          maxPosition 0.4363
+        }
+      ]
+      #name "RHipYawPitch"
+      name "RHipYaw"
+      boundingObject Sphere {
+        radius 0.01
+      }
+      physics Physics {
+        density -1
+        mass 0.01
+      }
+      maxVelocity 4.16
+      maxForce 11.97
+      minPosition -0.9425
+      maxPosition 0.6807
+    }
+#    DEF LHipYawPitch Servo {
+     DEF LHipYaw Servo {
+   #   translation 0.05 -0.085 0
+    translation 0.0385 -0.085 0
+#      rotation 0.707107 -0.707107 0 0
+      children [
+        DEF LHipRoll Servo {
+          rotation 0 0 1 0
+          children [
+            DEF LHipPitch Servo {
+              rotation 1 0 0 0
+              children [
+                Transform{
+                        translation 0 -0.045 0 #done
+                        rotation 1 0 0 0 # todo
+                        children[
+                        Shape {appearance USE MAIN_SKIN_APP
+                            geometry Box{size 0.043 0.09 0.035} #done
+                            }
+                        ]}
+                DEF LKneePitch Servo {
+                  translation 0 -0.09 0 #done
+                  rotation 1 0 0 0
+                  children [
+                    Transform{
+                        translation 0 -0.045 0.01054 #done
+                        rotation 1 0 0 0.2363 # done
+                        children[
+                        Shape {appearance USE MAIN_SKIN_APP
+                            geometry Box{size 0.043 0.09 0.035} #done
+                            }
+                        ]}    
+                    DEF LAnklePitch Servo {
+                      translation 0 -0.0875 0 #done
+                      rotation 1 0 0 0
+                      children [
+                        Shape {
+                            appearance USE MAIN_STRUCTURE_APP
+                            geometry Box{size 0.035 0.035 0.035}
+                        }
+                        DEF LAnkleRoll Servo {
+                          rotation 0 0 1 0
+                          children [
+                            Transform{
+                            translation 0 -0.0325 0 #todo
+                            rotation 1 0 0 0 # todo
+                            children[
+                            Shape {appearance USE MAIN_SKIN_APP
+                                geometry Box{size 0.065 0.032 0.11} #done
+                                }
+                            ]}
+                            DEF LFsrFL TouchSensor {
+                              #translation 0.03 -0.045 0.0701
+                                translation 0.023 -0.048 0.045 #done
+                              rotation 1 0 0 1.57
+                              children [
+                                USE FSR_BO
+                              ]
+                              name "LFsrFL"
+                              boundingObject USE FSR_BO
+                              physics USE FSR_PHYSICS
+                              type "force"
+                              lookupTable [
+                                0 0 0
+                                25 25 0
+                              ]
+                            }
+                            DEF LFsrFR TouchSensor {
+                              #translation -0.023 -0.045 0.0701
+                                translation -0.023 -0.048 0.045 #done
+                              rotation 1 0 0 1.57
+                              children [
+                                USE FSR_BO
+                              ]
+                              name "LFsrFR"
+                              boundingObject USE FSR_BO
+                              physics USE FSR_PHYSICS
+                              type "force"
+                              lookupTable [
+                                0 0 0
+                                25 25 0
+                              ]
+                            }
+                            DEF LFsrBR TouchSensor {
+                              #translation -0.019 -0.045 -0.0298
+                               translation -0.023 -0.048 -0.045 #done
+                              rotation 1 0 0 1.57
+                              children [
+                                USE FSR_BO
+                              ]
+                              name "LFsrBR"
+                              boundingObject USE FSR_BO
+                              physics USE FSR_PHYSICS
+                              type "force"
+                              lookupTable [
+                                0 0 0
+                                25 25 0
+                              ]
+                            }
+                            DEF LFsrBL TouchSensor {
+                             # translation 0.03 -0.045 -0.0304
+                              translation 0.023 -0.048 -0.045 #done
+                              rotation 1 0 0 1.57
+                              children [
+                                USE FSR_BO
+                              ]
+                              name "LFsrBL"
+                              boundingObject USE FSR_BO
+                              physics USE FSR_PHYSICS
+                              type "force"
+                              lookupTable [
+                                0 0 0
+                                25 25 0
+                              ]
+                            }  
+                          ]
+                          name "LAnkleRoll"
+                          boundingObject Transform {
+                            #translation 0.005 -0.03 0.02
+                            translation 0 -0.0325 0 #todo
+                            children [
+                              USE FOOT_BO
+                            ]
+                          }
+                          physics Physics {
+                            density -1
+                            mass 0.128
+                            centerOfMass 0 -0.03 0.018015
+                          }
+                          maxVelocity 4.16
+                          maxForce 11.97
+                          minPosition -0.7854
+                          maxPosition 0.7854
+                        }
+                      ]
+                      name "LAnklePitch"
+                      boundingObject Sphere {
+                        radius 0.01
+                      }
+                      physics Physics {
+                        density -1
+                        mass 0.01
+                      }
+                      maxVelocity 6.4
+                      maxForce 7.78
+                      minPosition -1.2217
+                      maxPosition 0.7854
+                    }
+                  ]
+                  name "LKneePitch"
+                  boundingObject Transform {
+                    #translation 0 -0.045 0.01
+                    #rotation 1 0 0 0.15
+                    translation 0 -0.045 0.01054 #done
+                    rotation 1 0 0 0.2363 # done
+                    children [
+                      Box {
+                        #size 0.08 0.11 0.07
+                        size 0.043 0.09 0.035
+                      }
+                    ]
+                  }
+                  physics Physics {
+                    density -1
+                    mass 0.423
+                    centerOfMass 0 -0.0691 -0.000511
+                  }
+                  maxVelocity 6.4
+                  maxForce 7.78
+                  maxPosition 2.2689
+                }
+              ]
+              name "LHipPitch"
+              boundingObject Transform {
+                #translation 0 -0.05 0
+                #rotation 1 0 0 6
+                translation 0 -0.045 0 #done
+                rotation 1 0 0 0 # todo
+                children [
+                  USE THIGH_BO
+                ]
+              }
+              physics Physics {
+                density -1
+                mass 0.513
+                centerOfMass 0 -0.038 -0.005579
+              }
+              maxVelocity 6.4
+              maxForce 7.78
+              minPosition -1.5708
+              maxPosition 0.5236
+            }
+          ]
+          name "LHipRoll"
+          boundingObject Sphere {
+            radius 0.01
+          }
+          physics Physics {
+            density -1
+            mass 0.01
+          }
+          maxVelocity 4.16
+          maxForce 11.97
+          minPosition -0.4363
+          maxPosition 0.7854
+        }
+      ]
+      #name "LHipYawPitch"
+        name "LHipYaw"
+      boundingObject Sphere {
+        radius 0.01
+      }
+      physics Physics {
+        density -1
+        mass 0.01
+      }
+      maxVelocity 4.16
+      maxForce 11.97
+      minPosition -0.9425
+      maxPosition 0.6807
+    }
+  ]
+  #torso bounding box
+  boundingObject Transform {
+    #translation 0 0.03 0
+    translation 0 0.045 0 #todo
+    children [
+      Box {
+        #size 0.1 0.18 0.1
+        size  0.11 0.1 0.055
+      }
+    ]
+  }
+  #hip bounding box
+  boundingObject Transform {
+    translation 0 -0.045 0 #todo
+    children [
+      Box {
+        size 0.1 0.08 0.045 #done
+      }
+    ]
+  }
+  physics Physics {
+    density -1
+    mass 1.2171
+    centerOfMass 0 0.046466 -0.007829
+  }
+  controller "test"
+}
+}

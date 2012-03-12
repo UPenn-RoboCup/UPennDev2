@@ -267,13 +267,8 @@ function update()
 
   gyro = controller.wb_gyro_get_values(tags.gyro);
   local gAccel = 9.80;
---  accY = (accel[1]-512)/128;
---  accX = -(accel[2]-512)/128;
-
---SJ: Hubo model has rotated IMU
-
-  accY = (accel[2]-512)/128;
-  accX = (accel[1]-512)/128;
+  accY = (accel[1]-512)/128;
+  accX = -(accel[2]-512)/128;
 
   if ((accX > -1) and (accX < 1) and (accY > -1) and (accY < 1)) then
     imuAngle[1] = imuAngle[1] + aImuFilter*(math.asin(accY) - imuAngle[1]);
@@ -324,6 +319,7 @@ function get_sensor_imuGyr( )
   --Roll Pitch Yaw
   --SJ: Checked and fine
   gyro_proc={-(gyro[2]-512)/0.273, (gyro[1]-512)/0.273,(gyro[3]-512)/0.273};
+
   return gyro_proc;
 end
 
@@ -331,8 +327,8 @@ end
 function get_sensor_imuGyrRPY( )
   gyro = controller.wb_gyro_get_values(tags.gyro);
   --Roll Pitch Yaw
-  --SJ: Checked and fine
-  gyro_proc={-(gyro[2]-512)/0.273, (gyro[1]-512)/0.273,(gyro[3]-512)/0.273};
+  --SJ: Checked and fine with charli
+  gyro_proc={(gyro[1]-512)/0.273, (gyro[2]-512)/0.273,(gyro[3]-512)/0.273};
   return gyro_proc;
 end
 

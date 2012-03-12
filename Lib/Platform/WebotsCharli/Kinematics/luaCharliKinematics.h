@@ -9,6 +9,6 @@ extern "C"
 }
 
 extern "C"
-int luaopen_Charli_Kinematics(lua_State *L);
+int luaopen_CharliKinematics(lua_State *L);
 
 #endif

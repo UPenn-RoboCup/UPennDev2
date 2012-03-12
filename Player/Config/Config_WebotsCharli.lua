@@ -5,7 +5,7 @@ require('vector')
 require('os')
 
 platform = {};
-platform.name = 'WebotsHubo'
+platform.name = 'WebotsCharli'
 
 function loadconfig(configName)
   local localConfig=require(configName);
@@ -27,7 +27,7 @@ loadconfig('Config_WebotsOP_Camera')
 dev = {};
 dev.body = 'WebotsCharliBody'; 
 dev.camera = 'WebotsOPCam';
-dev.kinematics = 'HuboKinematics';
+dev.kinematics = 'CharliKinematics';
 dev.comm = 'WebotsNaoComm';
 dev.monitor_comm = 'NullComm';
 dev.game_control='WebotsOPGameControl';
@@ -80,8 +80,8 @@ head.neckX=0.03; --From CoM to neck joint , Hubo prototype
 -- keyframe files
 
 km = {};
-km.standup_front = 'km_Hubo_StandupFromFront.lua';
-km.standup_back = 'km_Hubo_StandupFromBack.lua';
+km.standup_front = 'km_Charli_StandupFromFront.lua';
+km.standup_back = 'km_Charli_StandupFromBack.lua';
 
 
 -- sitting parameters
@@ -89,13 +89,13 @@ km.standup_back = 'km_Hubo_StandupFromBack.lua';
 sit = {};
 sit.bodyHeight=0.40; --For Hubo
 sit.supportX = 0;
-sit.dpLimit = vector.new({.1,.01,.03,.1,.3,.1});
+sit.dpLimit = vector.new({.1,.01,.03,.1,.3,.1})*2;
 
 -- standing parameters
 
 stance = {};
 --stance.dpLimit = vector.new({.04, .03, .04, .05, .4, .1});
-stance.dpLimit = vector.new({.4, .3, .4, .05, .4, .1});
+stance.dpLimit = vector.new({.4, .3, .4, .05, .4, .1})*0.6;
 stance.delay = 80; --amount of time to stand still after standing to regain balance.
 
 -- enable obstacle detection

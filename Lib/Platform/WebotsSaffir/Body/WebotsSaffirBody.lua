@@ -1,5 +1,6 @@
 module(..., package.seeall);
 require('controller');
+require('Kinematics');
 
 controller.wb_robot_init();
 timeStep = controller.wb_robot_get_basic_time_step();
@@ -8,71 +9,88 @@ tDelta = .001*timeStep;
 -- Get webots tags:
 tags = {};
 
--- Minihubo joint names in webots
-jointNames = {"Head","Neck",
-              "L_Shoulder_Pitch", "L_Shoulder_Roll", "L_Shoulder_Yaw","L_Elbow",
-              "L_Hip_Yaw", "L_Hip_Roll", "L_Hip_Pitch", "L_Knee_Pitch", "L_Ankle_Pitch", "L_Ankle_Roll",
-              "R_Hip_Yaw", "R_Hip_Roll", "R_Hip_Pitch", "R_Knee_Pitch", "R_Ankle_Pitch", "R_Ankle_Roll",
-              "R_Shoulder_Pitch", "R_Shoulder_Roll", "R_Shoulder_Yaw","R_Elbow",
-	      "Waist_Roll",
-             };
-
+--joint names:
+jointNames = {
+  "L_Hip_Yaw", "L_Hip_Roll", "L_Hip_Pitch", "L_Knee_Pitch", "L_Ankle_Pitch", "L_Ankle_Roll",
+  "R_Hip_Yaw", "R_Hip_Roll", "R_Hip_Pitch", "R_Knee_Pitch", "R_Ankle_Pitch", "R_Ankle_Roll",
+}
 nJoint = #jointNames;
-indexHead = 1;			
-nJointHead = 2;
-indexLArm = 3;			--LArm: 3 4 5 6
-nJointLArm = 4; 		
-indexLLeg = 7;			--LLeg:7 8 9 10 11 12
-nJointLLeg = 6;
-indexRLeg = 13; 		--RLeg: 13 14 15 16 17 18
-nJointRLeg = 6;
-indexRArm = 19; 		--RArm: 19 20 21 22
-nJointRArm = 4;
-indexWaist = 23;
-nJointWaist = 1;
 
+--servo names
+servoNames = { 
+  'l_hipyaw', 'li_hip_servo', 'lo_hip_servo',
+  'l_knee_servo', 'li_ankle_servo', 'lo_ankle_servo',
+  'r_hipyaw', 'ri_hip_servo', 'ro_hip_servo',
+  'r_knee_servo', 'ri_ankle_servo', 'ro_ankle_servo',
+}
+
+nServo = #servoNames;
+
+indexLLeg = 1;			--LLeg:7 8 9 10 11 12
+nJointLLeg = 6;
+indexRLeg = 7; 		--RLeg: 13 14 15 16 17 18
+nJointRLeg = 6;
 
 jointReverse={
-	 3,4,5,6,--LArm:  3 4 5 6
-         --LLeg: 7 8 9 10 11 12
-	 --RLeg: 13 14 15 16 17 18
-	 22,--RArm: 19 20 21 22
-	 --Waist: 23
+  2,3,4,5,6,         --LLeg: 1 2 3 4 5 6
+  8,9,10,11,       --RLeg: 7 8 9 10 11 12
 }
-
 
 jointBias={
-        0,0,
-	-90*math.pi/180,0,0,0,
-	0,0,0,0,0,0,
-	0,0,0,0,0,0,
-	-90*math.pi/180,0,0,0,
-	0,
+  0,0,0,0,0,0,
+  0,0,0,0,0,0,
 }
+
+controlP = 50;
+maxForce = 1000;
+maxVelocity = 10;
+maxAcceleration = -1;
 
 moveDir={};
 for i=1,nJoint do moveDir[i]=1; end
 for i=1,#jointReverse do moveDir[jointReverse[i]]=-1; end
 
-tags.joints = {};
-for i,v in ipairs(jointNames) do
-  tags.joints[i] = controller.wb_robot_get_device(v);
-  controller.wb_servo_enable_position(tags.joints[i], timeStep);
+tags.servo = {};
+for i,v in ipairs(servoNames) do
+  tags.servo[i] = controller.wb_robot_get_device(v);
+  controller.wb_servo_enable_position(tags.servo[i], timeStep);
+  controller.wb_servo_enable_motor_force_feedback(tags.servo[i], timeStep)
+  controller.wb_servo_set_control_p(tags.servo[i], controlP)
+  controller.wb_servo_set_motor_force(tags.servo[i], maxForce)
+  controller.wb_servo_set_velocity(tags.servo[i], maxVelocity)
+  controller.wb_servo_set_acceleration(tags.servo[i], maxAcceleration)
+
+  controller.wb_servo_set_force(tags.servo[i],0);
 end
 
-tags.accelerometer = controller.wb_robot_get_device("Accelerometer");
-controller.wb_accelerometer_enable(tags.accelerometer, timeStep);
-tags.gyro = controller.wb_robot_get_device("Gyro");
-controller.wb_gyro_enable(tags.gyro, timeStep);
-tags.gps = controller.wb_robot_get_device("zero");
-controller.wb_gps_enable(tags.gps, timeStep);
-tags.eyeled = controller.wb_robot_get_device("EyeLed");
-controller.wb_led_set(tags.eyeled,0xffffff)
-tags.headled = controller.wb_robot_get_device("HeadLed");
+tags.accelerometer = controller.wb_robot_get_device("accelerometer"); 
+controller.wb_accelerometer_enable(tags.accelerometer, timeStep); 
+tags.gyro = controller.wb_robot_get_device("gyro"); 
+controller.wb_gyro_enable(tags.gyro, timeStep); 
+tags.l_fts = controller.wb_robot_get_device('left_fts_receiver')
+controller.wb_receiver_enable(tags.l_fts, timeStep)
+tags.r_fts = controller.wb_robot_get_device('right_fts_receiver')
+controller.wb_receiver_enable(tags.r_fts, timeStep)
+	
+--[[
+controller.wb_robot_get_device("zero"); 
+controller.wb_gps_enable(tags.gps, timeStep); 
+tags.eyeled = controller.wb_robot_get_device("EyeLed"); 
+controller.wb_led_set(tags.eyeled,0xffffff) tags.headled = 
+controller.wb_robot_get_device("HeadLed"); 
 controller.wb_led_set(tags.headled,0x00ff00);
-
+--]]
 
 controller.wb_robot_step(timeStep);
+get_time = controller.wb_robot_get_time;
+
+t0=get_time();
+
+--SJ: actuator and sensor are used to control virtual joint-servos 
+-------------------------------
+--TODO: Direct servo-based control
+------------------------------
+
 
 actuator = {};
 actuator.command = {};
@@ -80,11 +98,15 @@ actuator.velocity = {};
 actuator.position = {};
 actuator.hardness = {};
 
+sensor = {};
+sensor.position = {};
+
 for i = 1,nJoint do
   actuator.command[i] = 0;
   actuator.velocity[i] = 0;
   actuator.position[i] = 0;
   actuator.hardness[i] = 0;
+  sensor.position[i] = 0;
 end
 
 function set_actuator_command(a, index)
@@ -97,8 +119,6 @@ function set_actuator_command(a, index)
     end
   end
 end
-
-get_time = controller.wb_robot_get_time;
 
 function set_actuator_velocity(a, index)
   index = index or 1;
@@ -124,11 +144,11 @@ end
 
 function get_sensor_position(index)
   if (index) then
-    return moveDir[index]*controller.wb_servo_get_position(tags.joints[index])-jointBias[index];
+    return sensor.position[index];
   else
     local t = {};
     for i = 1,nJoint do
-      t[i] = moveDir[i]*controller.wb_servo_get_position(tags.joints[i])-jointBias[i];
+      t[i] = sensor.position[index];
     end
     return t;
   end
@@ -154,18 +174,20 @@ function get_sensor_button(index)
   end
 end
 
-
 function get_head_position()
-    local q = get_sensor_position();
-    return {unpack(q, indexHead, indexHead+nJointHead-1)};
+--    local q = get_sensor_position();
+--    return {unpack(q, indexHead, indexHead+nJointHead-1)};
+  return 0,0;
 end
 function get_larm_position()
-  local q = get_sensor_position();
-  return {unpack(q, indexLArm, indexLArm+nJointLArm-1)};
+--  local q = get_sensor_position();
+--  return {unpack(q, indexLArm, indexLArm+nJointLArm-1)};
+  return;
 end
 function get_rarm_position()
-  local q = get_sensor_position();
-  return {unpack(q, indexRArm, indexRArm+nJointRArm-1)};
+--  local q = get_sensor_position();
+--  return {unpack(q, indexRArm, indexRArm+nJointRArm-1)};
+  return;
 end
 function get_lleg_position()
   local q = get_sensor_position();
@@ -187,19 +209,19 @@ function set_head_hardness(val)
   if (type(val) == "number") then
     val = val*vector.ones(nJointHead);
   end
-  set_actuator_hardness(val, indexHead);
+--  set_actuator_hardness(val, indexHead);
 end
 function set_larm_hardness(val)
   if (type(val) == "number") then
     val = val*vector.ones(nJointLArm);
   end
-  set_actuator_hardness(val, indexLArm);
+--  set_actuator_hardness(val, indexLArm);
 end
 function set_rarm_hardness(val)
   if (type(val) == "number") then
     val = val*vector.ones(nJointRArm);
   end
-  set_actuator_hardness(val, indexRArm);
+--  set_actuator_hardness(val, indexRArm);
 end
 function set_lleg_hardness(val)
   if (type(val) == "number") then
@@ -214,10 +236,10 @@ function set_rleg_hardness(val)
   set_actuator_hardness(val, indexRLeg);
 end
 function set_waist_hardness( val )
-  set_actuator_hardness(val, indexWaist);
+--  set_actuator_hardness(val, indexWaist);
 end
 function set_head_command(val)
-  set_actuator_command(val, indexHead);
+--  set_actuator_command(val, indexHead);
 end
 function set_lleg_command(val)
   set_actuator_command(val, indexLLeg);
@@ -226,15 +248,22 @@ function set_rleg_command(val)
   set_actuator_command(val, indexRLeg);
 end
 function set_larm_command(val)
-  set_actuator_command(val, indexLArm);
+--  set_actuator_command(val, indexLArm);
 end
 function set_rarm_command(val)
-  set_actuator_command(val, indexRArm);
+--  set_actuator_command(val, indexRArm);
 end
 function set_waist_command(val)
-  set_actuator_command(val, indexWaist);
+--  set_actuator_command(val, indexWaist);
 end
 
+function update_servo()
+  local servoCommand = Kinematics.inverse_joints(actuator.position);
+  for i=1,nServo do
+      controller.wb_servo_set_position(tags.servo[i],
+					servoCommand[i]);
+  end
+end
 
 function update()
   -- Set actuators
@@ -250,18 +279,23 @@ function update()
         end
         actuator.position[i] = actuator.position[i]+delta;
       else
-	    actuator.position[i] = actuator.command[i];
+        actuator.position[i] = actuator.command[i];
       end
-      controller.wb_servo_set_position(tags.joints[i],
-                                        actuator.position[i]);
+-- SJ: Instead of reading from servos and run FK to get joint angles,
+-- Just use commanded joint angle for current sensor angles for now
+-- TODO: FK based joint angle calculation
+      sensor.position[i] = actuator.command[i];
     end
   end
+--Update servo based on commanded joint angle
+  update_servo();
 
   if (controller.wb_robot_step(timeStep) < 0) then
-    --Shut down controller:
-    os.exit();
+    os.exit()
   end
 
+
+--[[
   -- Process sensors
   accel = controller.wb_accelerometer_get_values(tags.accelerometer);
 
@@ -279,8 +313,7 @@ function update()
   imuAngle[3] = imuAngle[3] + tDelta * (gyro[3]-512) / 0.273 *
         math.pi/180 *
         0.9; --to compensate bodyTilt
-
-
+--]]
 
 --[[
   -- Process sensors
@@ -299,7 +332,6 @@ function update()
   end
   imuAngle[3] = imuAngle[3] + tDelta * gyro[2];
 --]]
-
 end
 
 
@@ -315,44 +347,48 @@ function get_sensor_imuGyr0( )
 end
 
 function get_sensor_imuGyr( )
-  gyro = controller.wb_gyro_get_values(tags.gyro);
-  --Roll Pitch Yaw
-  --SJ: Checked and fine
-  gyro_proc={-(gyro[2]-512)/0.273, (gyro[1]-512)/0.273,(gyro[3]-512)/0.273};
-
-  return gyro_proc;
+  return get_sensor_imuGyrRPY();
 end
 
 --Roll, Pitch, Yaw in degree per seconds unit
 function get_sensor_imuGyrRPY( )
+
+--[[
   gyro = controller.wb_gyro_get_values(tags.gyro);
   --Roll Pitch Yaw
-  --SJ: Checked and fine with charli
   gyro_proc={(gyro[1]-512)/0.273, (gyro[2]-512)/0.273,(gyro[3]-512)/0.273};
   return gyro_proc;
+--]]
+  return {0,0,0};
+
 end
 
 
 function get_sensor_imuAcc( )
+--[[
   accel = controller.wb_accelerometer_get_values(tags.accelerometer);
   return {accel[1]-512,accel[2]-512,0};
+--]]
+  return {0,0,0};
+
 end
 
 function get_sensor_gps()
-  gps = controller.wb_gps_get_values(tags.gps);
-  return gps;
+--  gps = controller.wb_gps_get_values(tags.gps);
+--  return gps;
+  return {0,0,0};
 end
 
 function set_actuator_eyeled(color)
 --input color is 0 to 31, so multiply by 8 to make 0-255
   code= color[1] * 0x80000 + color[2] * 0x800 + color[3]*8;
-  controller.wb_led_set(tags.eyeled,code)
+--  controller.wb_led_set(tags.eyeled,code)
 end
 
 function set_actuator_headled(color)
  --input color is 0 to 31, so multiply by 8 to make 0-255
   code= color[1] * 0x80000 + color[2] * 0x800 + color[3]*8;
-  controller.wb_led_set(tags.headled,code)
+--  controller.wb_led_set(tags.headled,code)
 end
 
 function set_indicator_state(color)

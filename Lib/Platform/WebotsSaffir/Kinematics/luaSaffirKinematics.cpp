@@ -6,7 +6,7 @@
 */
 
 #include "SaffirKinematics.h"
-#include "luaWebotsSaffirKinematics.h"
+#include "luaSaffirKinematics.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -268,7 +268,7 @@ static const struct luaL_reg kinematics_lib [] = {
 };
 
 extern "C"
-int luaopen_Webots_Saffir_Kinematics (lua_State *L) {
+int luaopen_SaffirKinematics (lua_State *L) {
   luaL_register(L, "SaffirKinematics", kinematics_lib);
   
   return 1;

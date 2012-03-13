@@ -32,7 +32,7 @@ endif
 INCLUDE_DIR = /usr/local/include -I/usr/include -I/usr/include/lua -I/usr/include/lua5.1
 LIB_DIR = -L/usr/local/lib -L/usr/lib
 
-LIBNAME= Webots_Saffir_Kinematics
+LIBNAME= SaffirKinematics
 
 all:: kinematics test_kinematics
 
@@ -43,7 +43,7 @@ all:: kinematics test_kinematics
 %.o: %.c
 	$(CC) $(CXXFLAGS) -I$(INCLUDE_DIR) -o $@ -c $<
 
-kinematics:: fk_tables.h luaWebotsSaffirKinematics.o SaffirKinematics.o Transform.o Lut.o
+kinematics:: fk_tables.h luaSaffirKinematics.o SaffirKinematics.o Transform.o Lut.o
 	$(LD) $(LDFLAGS) -o $(LIBNAME).$(SHLIBEXT) $(LIBOPTS) $^ $(LIB_DIR) -lm
 
 test_kinematics:: fk_tables.h test_kinematics.o SaffirKinematics.o Transform.o Lut.o

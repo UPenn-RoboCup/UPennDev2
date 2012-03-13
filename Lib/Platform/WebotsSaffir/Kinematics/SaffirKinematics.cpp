@@ -106,6 +106,7 @@ saffir_kinematics_forward_r_arm(const double *q)
   return t;
 }
 
+
 Transform
 saffir_kinematics_forward_l_leg(const double *q) //tested DFL
 {

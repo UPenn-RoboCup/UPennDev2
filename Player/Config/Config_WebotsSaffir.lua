@@ -5,7 +5,7 @@ require('vector')
 require('os')
 
 platform = {};
-platform.name = 'WebotsCharli'
+platform.name = 'WebotsSaffir'
 
 function loadconfig(configName)
   local localConfig=require(configName);
@@ -28,6 +28,7 @@ dev = {};
 dev.body = 'WebotsSaffirBody'; 
 dev.camera = 'WebotsOPCam';
 dev.kinematics = 'SaffirKinematics';
+--dev.kinematics = 'CharliKinematics';
 dev.comm = 'WebotsNaoComm';
 dev.monitor_comm = 'NullComm';
 dev.game_control='WebotsOPGameControl';

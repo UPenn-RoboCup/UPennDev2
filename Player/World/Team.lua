@@ -36,6 +36,7 @@ state.tReceive = Body.get_time();
 states = {};
 states[playerID] = state;
 
+---Receives messages from teammates
 function recv_msgs()
   while (Comm.size() > 0) do 
     t = serialization.deserialize(Comm.receive());
@@ -167,10 +168,14 @@ end
 function exit()
 end
 
+---Returns current role
+--@return int role, 1=attacker, 2=defender, 3=supporter, 0=goalie
 function get_role()
   return role;
 end
 
+---Sets role
+--@param r Role 
 function set_role(r)
   if role ~= r then 
     role = r;

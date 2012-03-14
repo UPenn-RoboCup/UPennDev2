@@ -19,6 +19,10 @@ colorWhite = 16;
 use_point_goal=Config.vision.use_point_goal;
 headInverted=Config.vision.headInverted;
 
+---Detects a goal of a given color.
+--@param color The color to use for detection, represented by an int
+--@return Table containing whether a ball was detected
+--If a goal is detected, also contains additional stats about the goal
 function detect(color)
   local goal = {};
   goal.detect = 0;

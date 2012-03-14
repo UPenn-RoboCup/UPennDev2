@@ -17,6 +17,7 @@ require('Config');
 
 -- Initiate Sending Address
 MonitorComm.init(Config.dev.ip);
+print(Config.dev.ip);
 
 -- Add a little delay between packet sending
 pktDelay = 500; -- time in us
@@ -147,9 +148,9 @@ end
 function update_img( enable, imagecount )
   local division = 4; -- for image sending part by part
   if(enable==2) then
---    sendImg(); -- half of sub image
---		sendA();
---		sendB();
+    sendB();
+    sendImg(); -- half of sub image
+    sendA();
 --    sendImgSub(2);
   elseif(enable==3) then
 	if (Config.platform.name ~= "Nao") then

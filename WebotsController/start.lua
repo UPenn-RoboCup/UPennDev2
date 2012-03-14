@@ -10,4 +10,5 @@ teamID = os.getenv('TEAM_ID') + 0;
 --dofile("Player/Test/test_vision_webots_op.lua");
 dofile("Player/Test/test_walk_webots_op.lua");
 --dofile("Player/Test/test_punch_webots_op.lua");
+--dofile("Player/Test/test_joints.lua");
 

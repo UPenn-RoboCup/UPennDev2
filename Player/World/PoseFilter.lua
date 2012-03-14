@@ -298,13 +298,17 @@ function odometry(dx, dy, da)
   end
 end
 
----
+---Set all particles to x,y,a=0,0,0.
+--This function does not update the weights
 function zero_pose()
   xp = vector.zeros(n);
   yp = vector.zeros(n);
   ap = vector.zeros(n);
 end
 
+---Return the largest value of a table and it's index
+--@param t table of values
+--@return largest value and it's index
 function max(t)
   local imax = 0;
   local tmax = -math.huge;
@@ -351,6 +355,7 @@ function addNoise()
   add_noise();
 end
 
+---Adds noise to particle x,y coordinates and angle.
 function add_noise()
   da = 2.0*math.pi/180.0;
   dr = 0.01;
@@ -360,6 +365,9 @@ function add_noise()
 end
 
 ---Resample particles.
+--If enough particles have low enough weights, then
+--replaces low-weighted particles with new random particles
+--and new particles that are nearby high-weighted particles
 function resample()
   -- resample particles
 

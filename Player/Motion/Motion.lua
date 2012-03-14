@@ -18,8 +18,8 @@ require('falling')
 require('standup')
 require('kick')
 
--- Added for test_XOS
-require 'walkKeyframe'
+-- Aux
+require 'grip'
 
 sm = fsm.new(relax);
 sm:add_state(stance);
@@ -30,17 +30,13 @@ sm:add_state(standup);
 sm:add_state(falling);
 sm:add_state(kick);
 sm:add_state(standstill);
--- Added for test_XOS
-sm:add_state(walkKeyframe);
+sm:add_state(grip);
 
 sm:set_transition(sit, 'done', relax);
 sm:set_transition(sit, 'standup', stance);
 
 sm:set_transition(relax, 'standup', stance);
 sm:set_transition(relax, 'sit', sit);
--- Added for test_XOS
-sm:set_transition(relax, 'walkKeyframe', walkKeyframe);
-sm:set_transition(walkKeyframe, 'done', relax);
 
 sm:set_transition(stance, 'done', walk);
 sm:set_transition(stance, 'sit', sit);
@@ -53,10 +49,16 @@ sm:set_transition(stance, 'sit', sit);
 sm:set_transition(walk, 'sit', sit);
 sm:set_transition(walk, 'stance', stance);
 sm:set_transition(walk, 'standstill', standstill);
+sm:set_transition(walk, 'pickup', grip);
+sm:set_transition(walk, 'throw', grip);
 
 --standstill makes the robot stand still with 0 bodytilt (for webots)
 sm:set_transition(standstill, 'stance', stance);
 sm:set_transition(standstill, 'walk', stance);
+
+-- Grip
+sm:set_transition(grip, 'timeout', grip);
+sm:set_transition(grip, 'done', stance);
 
 -- falling behaviours
 sm:set_transition(walk, 'fall', falling);

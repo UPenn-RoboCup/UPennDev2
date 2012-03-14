@@ -11,7 +11,7 @@ end
 if( scale == 1 )
     label = robots{playerNumber,teamNumber}.get_labelA();
 elseif( scale == 2 )
-    label = robots{playerNumber,teamNumber}.get_labelAsub();
+%    label = robots{playerNumber,teamNumber}.get_labelAsub();
 else
     label = robots{playerNumber,teamNumber}.get_labelB();
 end
@@ -90,9 +90,9 @@ h4 = subplot(2,2,4);
                 hold off;
             end
             % Show freespace boundary in label
-            if ( r_mon.free.detect == 1 )
-                plot_freespace( r_mon.free, scale );
-            end
+%            if ( r_mon.free.detect == 1 )
+%                plot_freespace( r_mon.free, scale );
+%            end
             
             % Show horizon line
             % plot_horizon( r_mon.horizon, scale);

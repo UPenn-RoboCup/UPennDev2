@@ -35,7 +35,7 @@ dev.kick='NewKick';
 --dev.kick='NSLKickPunch'; --Extended kick that supports upper body motion
 dev.walk='NewNewWalk'; --New robocup walk that supports walking kicks
 
-dev.walk='BoxWalk'; --New walk that supports different foot stance
+--dev.walk='BoxWalk'; --New walk that supports different foot stance
 
 
 -- Game Parameters

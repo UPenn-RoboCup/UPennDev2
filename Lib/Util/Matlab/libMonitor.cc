@@ -19,7 +19,7 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 
-const int maxQueueSize = 16;
+const int maxQueueSize = 64;
 
 static std::deque<std::string> recvQueue;
 static int send_fd, recv_fd;
@@ -35,9 +35,9 @@ void close_comm(){
     close(recv_fd);
 }
 
-int init_comm(){
+int init_comm(char * ip){
 
-  struct hostent *hostptr = gethostbyname(IP);
+  struct hostent *hostptr = gethostbyname(ip);
     if (hostptr == NULL)
       return -5;
       

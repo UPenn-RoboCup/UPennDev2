@@ -289,14 +289,14 @@ static int lua_darwinopcomm_send_label(lua_State *L) {
   int n_sample=n/samplerate;
 
   dataStr.push_back(17);	//Label data
-  dataStr.push_back(m_sample/256); //High bit of width
-  dataStr.push_back(m_sample%256); //Low bit of width
-  dataStr.push_back(n_sample/256); //High bit of height
-  dataStr.push_back(n_sample%256); //Low bit of height
+  dataStr.push_back(m_sample/128); //High bit of width
+  dataStr.push_back(m_sample%128); //Low bit of width
+  dataStr.push_back(n_sample/128); //High bit of height
+  dataStr.push_back(n_sample%128); //Low bit of height
   dataStr.push_back(teamid);	// team ID
   dataStr.push_back(playerid);	// player ID
   dataStr.push_back(division);	//division
-  dataStr.push_back(section);	//section
+  dataStr.push_back(section+1);	//section
 
   for (int j = 0; j < n; j++) {
           for (int i = 0; i < m; i++) {
@@ -334,34 +334,34 @@ static int lua_darwinopcomm_send_yuyv2(lua_State *L) {
   yuyv=yuyv+ m*(n/division)*section;   //Skip unused section
 
   dataStrY.push_back(18);	//Partitioned yuyv data Y
-  dataStrY.push_back(m/256); //High bit of width
-  dataStrY.push_back(m%256); //Low bit of width
-  dataStrY.push_back(n/256); //High bit of height
-  dataStrY.push_back(n%256); //Low bit of height
+  dataStrY.push_back(m/128); //High bit of width
+  dataStrY.push_back(m%128); //Low bit of width
+  dataStrY.push_back(n/128); //High bit of height
+  dataStrY.push_back(n%128); //Low bit of height
   dataStrY.push_back(teamid);	// team ID
   dataStrY.push_back(playerid);	// player ID
   dataStrY.push_back(division);	//division
-  dataStrY.push_back(section);	//section
+  dataStrY.push_back(section+1);	//section
 
   dataStrU.push_back(19);	//Partitioned yuyv data U
-  dataStrU.push_back(m/256); //High bit of width
-  dataStrU.push_back(m%256); //Low bit of width
-  dataStrU.push_back(n/256); //High bit of height
-  dataStrU.push_back(n%256); //Low bit of height
+  dataStrU.push_back(m/128); //High bit of width
+  dataStrU.push_back(m%128); //Low bit of width
+  dataStrU.push_back(n/128); //High bit of height
+  dataStrU.push_back(n%128); //Low bit of height
 	dataStrU.push_back(teamid);	// team ID
   dataStrU.push_back(playerid);	// player ID
   dataStrU.push_back(division);	//division
-  dataStrU.push_back(section);	//section
+  dataStrU.push_back(section+1);	//section
 
   dataStrV.push_back(20);	//Partitioned yuyv data V
-  dataStrV.push_back(m/256); //High bit of width
-  dataStrV.push_back(m%256); //Low bit of width
-  dataStrV.push_back(n/256); //High bit of height
-  dataStrV.push_back(n%256); //Low bit of height
+  dataStrV.push_back(m/128); //High bit of width
+  dataStrV.push_back(m%128); //Low bit of width
+  dataStrV.push_back(n/128); //High bit of height
+  dataStrV.push_back(n%128); //Low bit of height
   dataStrV.push_back(teamid);	//team ID
 	dataStrV.push_back(playerid);	// player ID
   dataStrV.push_back(division);	//division
-  dataStrV.push_back(section);	//section
+  dataStrV.push_back(section+1);	//section
 
 
   for (int j = 0; j < n/division; j++) {

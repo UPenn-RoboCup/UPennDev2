@@ -60,15 +60,18 @@ function update()
  	if dt>0.2 then
   	  started=true;
 
-	  local qSensor = Body.get_sensor_position();
-	  local dpLLeg = Kinematics.torso_lleg(Body.get_lleg_position());
-	  local dpRLeg = Kinematics.torso_rleg(Body.get_rleg_position());
+	  local qLLeg = Body.get_lleg_position();
+	  local qRLeg = Body.get_rleg_position();
+
+	  local dpLLeg = Kinematics.torso_lleg(qLLeg);
+	  local dpRLeg = Kinematics.torso_rleg(qRLeg);
 
 	  pTorsoL=pLLeg+dpLLeg;
 	  pTorsoR=pRLeg+dpRLeg;
           pTorso=(pTorsoL+pTorsoR)*0.5;
 
-	  Body.set_lleg_command(vector.slice(qSensor,6,17));
+	  Body.set_lleg_command(qLLeg);
+	  Body.set_rleg_command(qRLeg);
 	  Body.set_lleg_hardness(1);
 	  Body.set_rleg_hardness(1);
 	  t0 = Body.get_time();

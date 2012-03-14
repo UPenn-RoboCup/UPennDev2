@@ -51,7 +51,7 @@ if( robotName=='felix' ) then
 elseif( robotName=='betty' ) then
 elseif( robotName=='linus' ) then
 elseif( robotName=='lucy' ) then
-	--	servo.pid = 1;
+	servo.pid = 1;
 --	servo.armBias = vector.new({0,20,0,0,0,-20}) * math.pi/180 * servo.steps[1]/servo.moveRange[1];
 	servo.idMap = {
 		19,20,		--Head
@@ -81,14 +81,29 @@ if servo.pid ==0 then -- For old firmware with 12-bit precision
 else -- For new, PID firmware with 14-bit precision
 	print(robotName.." has 14-bit firmware")
 	servo.steps=vector.ones(nJoint)*4096;
+--[[
 	servo.posZero={
 		2048,2048, --Head
 		1024,2560,3072, --LArm
 		2048,2048,2048,2048,2048,2048, --LLeg
 		2048,2048,2048,2048,2048,2048, --RLeg
-		3072,1536,1024, --RArm
+		3072,1036,1024, --RArm
+		512, -- For aux
 	};
+--]]
+        servo.posZero={
+                2048,2048, --Head
+                2048,2560,2048, --LArm
+                2048,2048,2048,2048,2048,2048, --LLeg
+                2048,2048,2048,2048,2048,2048, --RLeg
+                2048,1529,2048, --RArm
+                660, -- For aux
+        };
 	servo.moveRange=vector.ones(nJoint)*360*math.pi/180;
+	
+	servo.moveRange[21] = 300;
+	servo.steps[21] = 1024;
+
 end
 
 --Measured IMU bias parameters

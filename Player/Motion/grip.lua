@@ -16,32 +16,35 @@ footY = Config.walk.footY;
 supportX = Config.walk.supportX;
 
 bodyTilt = Config.walk.bodyTilt;
-bodyTilt1=40*math.pi/180;
+--bodyTilt1=40*math.pi/180;
 --bodyTilt1=20*math.pi/180; --With long hand
 bodyTilt1 = Config.walk.bodyTilt;
 
 bodyHeight = Config.walk.bodyHeight;
 bodyHeight0 = bodyHeight;
-bodyHeight1 = 0.21;
+--bodyHeight1 = 0.21;
+bodyHeight1 = 0.195;
 bodyHeight2 = 0.22;
 
 --bodyShift1 = 0.035;
 bodyShift = 0;
---bodyShift0 = 0;
-bodyShift0 = 0.035;
+bodyShift0 = 0;
+--bodyShift0 = 0.035;
 --bodyShift1 = 0.015; --with long hand
-bodyShift1 = 0.035; --with long hand
---bodyShift2 = -0.020;
-bodyShift2 = 0.035;
+--bodyShift1 = 0.035; --with long hand
+bodyShift1 = -0.015; --with long hand
+bodyShift2 = -0.010;
+--bodyShift2 = 0.035;
 --bodyShift3 = -0.010;
 bodyShift3 = 0.015;
 
 bodyShift_windup = -0.015;
+bodyShift_throw = 0;
 
 -- Times
 t_throw = {1.0,2.0,3.0};
 --t_grab  = {1.0,1.5,2.0,3.0,4.0};
-t_grab  = {.75,1.5,2.0,3.0,4.0};
+t_grab  = {1.2,2.5,3.0,4.0,5.0};
 
 qRArm= vector.zeros(3);
 -- Starting Arm pose
@@ -49,19 +52,24 @@ qLArm0 = Config.walk.qLArm;
 qRArm0 = Config.walk.qRArm;
 
 --Pickup
-qLArm1 = math.pi/180*vector.new({90, -50,0});	
-qRArm1 = math.pi/180*vector.new({90,-5,0});	
+--qLArm1 = math.pi/180*vector.new({0, 50,90});
+--qLArm1 = qLArm0;
+--qLArm1[1],qLArm1[2] = 0,50;
+qLArm1 = math.pi/180*vector.new({90, 50,90});
+qRArm1 = math.pi/180*vector.new({0,-5,0});
+
+qLArm_position = math.pi/180*vector.new({0, 40,90});
 
 --Grasp
-qLArm2 = math.pi/180*vector.new({70, -50,0});	
-qRArm2 = math.pi/180*vector.new({70, 5,0});	
+qLArm2 = math.pi/180*vector.new({0, 50,90});	
+qRArm2 = math.pi/180*vector.new({0, 5,0});	
 
 --Windup
-qLArm3 = math.pi/180*vector.new({-90,-50,-120});	
+qLArm3 = math.pi/180*vector.new({50, 75,-120});	
 qRArm3 = math.pi/180*vector.new({-90,5,-120});	
 
 --Throw
-qLArm4 = math.pi/180*vector.new({40,-50,-0});	
+qLArm4 = math.pi/180*vector.new({-20,50,-0});	
 qRArm4 = math.pi/180*vector.new({40,5,-0});	
 
 --[[
@@ -69,9 +77,14 @@ qLArm4 = math.pi/180*vector.new({20,20,-0});
 qRArm4 = math.pi/180*vector.new({20,-20,-0});
 --]]
 
+--[[
 qGrip0 = 0*math.pi/180;
 qGrip1 = 45*math.pi/180;
 qGrip2 = 60*math.pi/180;
+--]]
+qGrip0 = -2400*math.pi/180;
+qGrip1 = 0*math.pi/180;
+qGrip2 = 0*math.pi/180;
 qGrip = 0;
 
 -- Shifting and compensation parameters
@@ -140,8 +153,8 @@ function update()
 			Body.set_larm_hardness({0.5,0.3,0.5});
 			Body.set_rarm_hardness({0.5,0.3,0.5});
 			--]]
-			Body.set_larm_hardness({0.5,1,0.5});
-			Body.set_rarm_hardness({0.5,1,0.5});
+			Body.set_larm_hardness({0.5,.3,0.5});
+			Body.set_rarm_hardness({0.5,.3,0.5});
 		else
 			Body.set_larm_hardness({1,0.3,1});
 			Body.set_rarm_hardness({1,0.3,1});
@@ -162,6 +175,7 @@ function update()
 			ph = t/t_pickup[1];
 			qLArm = ph*qLArm1 + (1-ph)*qLArm0;
 			qRArm = ph*qRArm1 + (1-ph)*qRArm0;
+			qRArm = qRArm1;
 			qGrip = ph*qGrip1 + (1-ph)*qGrip0;
 			bodyHeight = ph*bodyHeight1 + (1-ph)*bodyHeight0;
 			bodyShift=bodyShift0*(1-ph)+ bodyShift1*ph;
@@ -169,10 +183,12 @@ function update()
 			--bend front
 			ph=(t-t_pickup[1])/(t_pickup[2]-t_pickup[1]);
 			bodyTilt = ph* bodyTilt1 + (1-ph)*Config.walk.bodyTilt;
+			qLArm = ph*qLArm_position + (1-ph)*qLArm1;
 		elseif t<t_pickup[3] then
 			--Grasp
 			ph=(t-t_pickup[2])/(t_pickup[3]-t_pickup[2]);
 			qLArm= ph * qLArm2 + (1-ph)*qLArm1;
+			qLArm= ph * qLArm2 + (1-ph)*qLArm_position;
 			qRArm= ph * qRArm2 + (1-ph)*qRArm1;
 			qGrip=ph*qGrip0 + (1-ph)*qGrip1;
 		elseif t<t_pickup[4] then
@@ -206,12 +222,12 @@ function update()
 			qLArm= ph * qLArm4 + (1-ph)*qLArm3;
 			qRArm= ph * qRArm4 + (1-ph)*qRArm3;
 			qGrip = ph*qGrip2 + (1-ph)*qGrip0;
-			bodyShift = bodyShift3*ph + bodyShift_windup*(1-ph);			-- For speed, just command the final position
+--			bodyShift = bodyShift_throw*ph + bodyShift_windup*(1-ph);			-- For speed, just command the final position
 			Body.set_aux_hardness(1);
 			qGrip = qGrip2;
 			qLArm = qLArm4;
 			qRArm = qRArm4;
-			bodyShift = bodyShift3;
+--			bodyShift = bodyShift3;
 		elseif t<t_pickup[3] then
 			--Reposition
 			ph = (t-t_pickup[2])/(t_pickup[3]-t_pickup[2]);

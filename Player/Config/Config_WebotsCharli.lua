@@ -28,6 +28,7 @@ dev = {};
 dev.body = 'WebotsCharliBody'; 
 dev.camera = 'WebotsOPCam';
 dev.kinematics = 'CharliKinematics';
+dev.kinematics = 'SaffirKinematics'; --for saffir IK test
 dev.comm = 'WebotsNaoComm';
 dev.monitor_comm = 'NullComm';
 dev.game_control='WebotsOPGameControl';

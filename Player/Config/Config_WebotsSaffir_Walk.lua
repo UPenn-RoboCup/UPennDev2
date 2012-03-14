@@ -110,3 +110,23 @@ walk.tStep = 0.6;
 walk.supportY = -0.01;
 walk.footY = 0.09;
 walk.velLimitA={-.2,.2};
+
+
+--for SAFFIR
+walk.stepHeight = 0.04;
+walk.supportY = -0.01;
+walk.tZmp = 0.25;
+walk.velLimitA={-.3,.3};
+
+walk.footX= 0.01; 
+walk.supportX = -0.03;
+
+walk.hipRollCompensation = 1.5*math.pi/180;
+
+
+--[[
+--Faster walking 
+walk.tStep = 0.5;
+walk.bodyTilt=2*math.pi/180; 
+walk.velLimitX={-.20,.30};
+--]]

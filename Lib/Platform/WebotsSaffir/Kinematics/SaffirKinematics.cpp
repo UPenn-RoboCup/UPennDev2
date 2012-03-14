@@ -106,30 +106,38 @@ saffir_kinematics_forward_r_arm(const double *q)
   return t;
 }
 
-
 Transform
-saffir_kinematics_forward_l_leg(const double *q) //tested DFL
+saffir_kinematics_forward_l_leg(const double *q)
 {
   Transform t;
-  t = t.translateY(hipOffsetY)
-    .rotateZ(q[0]).rotateX(q[1]).rotateY(q[2])
-    .translateZ(-1*thighLength).translateX(kneeOffsetX)
-    .rotateY(q[3]).translateZ(-1*tibiaLength)
-    .rotateY(q[4]).rotateX(q[5]).translateZ(-1*footHeight);
+  t = t.translateY(hipOffsetY).translateZ(-hipOffsetZ)
+    .mDH(0, 0, PI/2+q[0], 0)
+    .mDH(PI/2, 0, PI/2+q[1], 0)
+    .mDH(PI/2, 0, aThigh+q[2], 0)
+    .mDH(0, -dThigh, -aThigh-aTibia+q[3], 0)
+    .mDH(0, -dTibia, aTibia+q[4], 0)
+    .mDH(-PI/2, 0, q[5], 0)
+    .rotateZ(PI).rotateY(-PI/2).translateZ(-footHeight);
   return t;
 }
 
 Transform
-saffir_kinematics_forward_r_leg(const double *q) //tested DFL
+saffir_kinematics_forward_r_leg(const double *q)
 {
   Transform t;
-  t = t.translateY(-1*hipOffsetY)
-    .rotateZ(q[6]).rotateX(q[7]).rotateY(q[8])
-    .translateZ(-1*thighLength).translateX(kneeOffsetX)
-    .rotateY(q[9]).translateZ(-1*tibiaLength)
-    .rotateY(q[10]).rotateX(q[11]).translateZ(-1*footHeight);
+  t = t.translateY(-hipOffsetY).translateZ(-hipOffsetZ)
+    .mDH(0, 0, PI/2+q[0], 0)
+    .mDH(PI/2, 0, PI/2+q[1], 0)
+    .mDH(PI/2, 0, aThigh+q[2], 0)
+    .mDH(0, -dThigh, -aThigh-aTibia+q[3], 0)
+    .mDH(0, -dTibia, aTibia+q[4], 0)
+    .mDH(-PI/2, 0, q[5], 0)
+    .rotateZ(PI).rotateY(-PI/2).translateZ(-footHeight);
   return t;
 }
+
+
+
 
 std::vector<double>
 saffir_kinematics_inverse_joints(const double *q)  //dereks code to write

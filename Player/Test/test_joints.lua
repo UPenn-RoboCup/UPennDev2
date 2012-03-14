@@ -35,6 +35,7 @@ package.path = cwd..'/GameFSM/'..Config.fsm.game..'/?.lua;'..package.path;
 require('shm')
 require('Body')
 require('vector')
+require('Kinematics')
 
 BodyFSM=require('BodyFSM');
 HeadFSM=require('HeadFSM');
@@ -61,15 +62,24 @@ getch.enableblock(1);
 
 
 -- initialize state machines
-
 Body.set_head_hardness({0.4,0.4});
 
+tx=0;ty=0;tz=0.8;ta=0;
+local l_foot_pos = {0,0.10,0,0,0,0}
+local r_foot_pos = {0,-0.10,0,0,0,0}
+torso_pos = {tx,ty,tz,0,0,ta};
+local q_legs = Kinematics.inverse_legs(l_foot_pos, r_foot_pos, torso_pos)
+Body.set_lleg_command(q_legs)
 Body.set_body_hardness(1);
-Body.set_actuator_command(math.pi/180*vector.new({
-	0,0,-30,60,-30,0,
-	0,0,-30,60,-30,0,
-	}));
-	
+
+llegpos=Body.get_lleg_position();
+
+
+--[[
+dpLLeg = Kinematics.lleg_torso(Body.get_lleg_position());
+dpRLeg = Kinematics.rleg_torso(Body.get_rleg_position());
+print("Left leg kinematics:",unpack(dpLLeg));
+--]]
 
 
 controller.wb_robot_keyboard_enable(100);
@@ -103,6 +113,7 @@ jointNames={"HipYaw","HipRoll","HipPitch","KneePitch","AnklePitch","AnkleRoll"};
 
 
 function process_keyinput()
+
   local str = controller.wb_robot_keyboard_get_key();
   if str>0 then
     byte = str;
@@ -110,7 +121,7 @@ function process_keyinput()
 	if byte>=65 and byte<=90 then
 		byte = byte + 32;
 	end
-
+--[[
 	if byte==string.byte("i") then	
 		langle[jointToCheck]=langle[jointToCheck]+5;
 	elseif byte==string.byte("j") then
@@ -128,11 +139,41 @@ function process_keyinput()
 	elseif byte==string.byte("2") then	
 		jointToCheck=jointToCheck%6+1;	
 	end
-
 	Body.set_actuator_command(math.pi/180*langle);
 	print(string.format("%s : L %d R %d",jointNames[jointToCheck],
 		langle[jointToCheck],langle[jointToCheck+6]));
+--]]
+
+	if byte==string.byte("i") then	
+	    tx=tx+0.01;
+	elseif byte==string.byte("j") then
+	    ty=ty+0.01;
+	elseif byte==string.byte("k") then	
+	    tx=0;ty=0;
+	elseif byte==string.byte("h") then
+	    ta=ta+0.03;
+	elseif byte==string.byte(";") then	
+	    ta=ta-0.03;
+	elseif byte==string.byte("l") then	
+	    ty=ty-0.01;
+	elseif byte==string.byte(",") then	
+	    tx=tx-0.01;
+	elseif byte==string.byte("u") then	
+	    tz=tz+0.005;
+	elseif byte==string.byte("m") then	
+	    tz=tz-0.005;
+	end
+	torso_pos = {tx,ty,tz,0,0,ta};
+	local q_legs = Kinematics.inverse_legs(l_foot_pos, r_foot_pos, torso_pos)
+	Body.set_lleg_command(q_legs)
+
   end
+
+
+
+
+
+
 
 end
 

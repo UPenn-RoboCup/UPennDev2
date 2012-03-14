@@ -16,24 +16,14 @@ jointNames = {
 }
 nJoint = #jointNames;
 
---servo names
-servoNames = { 
-  'l_hipyaw', 'li_hip_servo', 'lo_hip_servo',
-  'l_knee_servo', 'li_ankle_servo', 'lo_ankle_servo',
-  'r_hipyaw', 'ri_hip_servo', 'ro_hip_servo',
-  'r_knee_servo', 'ri_ankle_servo', 'ro_ankle_servo',
-}
-
-nServo = #servoNames;
-
 indexLLeg = 1;			--LLeg:7 8 9 10 11 12
 nJointLLeg = 6;
 indexRLeg = 7; 		--RLeg: 13 14 15 16 17 18
 nJointRLeg = 6;
 
 jointReverse={
-  2,3,4,5,6,         --LLeg: 1 2 3 4 5 6
-  8,9,10,11,       --RLeg: 7 8 9 10 11 12
+         --LLeg: 1 2 3 4 5 6
+         --RLeg: 7 8 9 10 11 12
 }
 
 jointBias={
@@ -41,14 +31,38 @@ jointBias={
   0,0,0,0,0,0,
 }
 
+moveDir={};
+for i=1,nJoint do moveDir[i]=1; end
+for i=1,#jointReverse do moveDir[jointReverse[i]]=-1; end
+
+
+--servo names
+servoNames = { 
+  'l_hipyaw', 'li_hip_servo', 'lo_hip_servo',
+  'l_knee_servo', 'li_ankle_servo', 'lo_ankle_servo',
+  'r_hipyaw', 'ri_hip_servo', 'ro_hip_servo',
+  'r_knee_servo', 'ri_ankle_servo', 'ro_ankle_servo',
+}
+nServo = #servoNames;
+
+servoReverse={
+  2,3,4,5,6,  --LLeg: 1 2-3  4  5-6
+  8,9,10,11,12, --RLeg: 7 8-9  10 11-12
+}
+
+servoBias={
+  0,0,0,0,0,0,
+  0,0,0,0,0,0,
+}
+
+servoDir={};
+for i=1,nServo do servoDir[i]=1; end
+for i=1,#servoReverse do servoDir[servoReverse[i]]=-1; end
+
 controlP = 50;
 maxForce = 1000;
 maxVelocity = 10;
 maxAcceleration = -1;
-
-moveDir={};
-for i=1,nJoint do moveDir[i]=1; end
-for i=1,#jointReverse do moveDir[jointReverse[i]]=-1; end
 
 tags.servo = {};
 for i,v in ipairs(servoNames) do
@@ -148,7 +162,7 @@ function get_sensor_position(index)
   else
     local t = {};
     for i = 1,nJoint do
-      t[i] = sensor.position[index];
+      t[i] = sensor.position[i];
     end
     return t;
   end
@@ -206,22 +220,28 @@ function set_body_hardness(val)
   set_actuator_hardness(val);
 end
 function set_head_hardness(val)
+--[[
   if (type(val) == "number") then
     val = val*vector.ones(nJointHead);
   end
---  set_actuator_hardness(val, indexHead);
+  set_actuator_hardness(val, indexHead);
+--]]
 end
 function set_larm_hardness(val)
+--[[
   if (type(val) == "number") then
     val = val*vector.ones(nJointLArm);
   end
---  set_actuator_hardness(val, indexLArm);
+  set_actuator_hardness(val, indexLArm);
+--]]
 end
 function set_rarm_hardness(val)
+--[[
   if (type(val) == "number") then
     val = val*vector.ones(nJointRArm);
   end
---  set_actuator_hardness(val, indexRArm);
+  set_actuator_hardness(val, indexRArm);
+--]]
 end
 function set_lleg_hardness(val)
   if (type(val) == "number") then
@@ -261,9 +281,19 @@ function update_servo()
   local servoCommand = Kinematics.inverse_joints(actuator.position);
   for i=1,nServo do
       controller.wb_servo_set_position(tags.servo[i],
-					servoCommand[i]);
+	servoCommand[i]*servoDir[i]+servoBias[i]);
   end
 end
+
+function update_sensor()
+-- SJ: Instead of reading from servos and run FK to get joint angles,
+-- Just use commanded joint angle for current sensor angles for now
+-- TODO: FK based joint angle calculation
+  for i=1,nJoint do
+      sensor.position[i] = actuator.command[i];
+  end
+end
+
 
 function update()
   -- Set actuators
@@ -281,19 +311,15 @@ function update()
       else
         actuator.position[i] = actuator.command[i];
       end
--- SJ: Instead of reading from servos and run FK to get joint angles,
--- Just use commanded joint angle for current sensor angles for now
--- TODO: FK based joint angle calculation
-      sensor.position[i] = actuator.command[i];
     end
   end
 --Update servo based on commanded joint angle
   update_servo();
+  update_sensor();
 
   if (controller.wb_robot_step(timeStep) < 0) then
     os.exit()
   end
-
 
 --[[
   -- Process sensors

@@ -61,28 +61,6 @@ function sendA()
   end
 end
 
--- labelA (subsampled) --
-function sendAsub()
-  labelA = vcm.get_image_labelA();
-  width = vcm.get_image_width()/2;
-  height = vcm.get_image_height()/2;
-  count = vcm.get_image_count();
-  labelAsub = ImageProc.block_bitor(labelA, width, height, 2, 2);
-  
-  array = serialization.serialize_array(labelAsub, width/2, height/2, 'uint8', 'labelAsub', count);
-  sendlabelAsub = {};
-  sendlabelAsub.team = {};
-  sendlabelAsub.team.number = gcm.get_team_number();
-  sendlabelAsub.team.player_id = gcm.get_team_player_id();
-  
-  for i=1,#array do
-    sendlabelAsub.arr = array[i];
-  	MonitorComm.send(serialization.serialize(sendlabelAsub));
-    -- Need to sleep in order to stop drinking out of firehose
-    unix.usleep(pktDelay);
-  end
-end
-
 function sendImg()
   -- yuyv --
   yuyv = vcm.get_image_yuyv();
@@ -105,32 +83,18 @@ function sendImg()
 
 end
 
--- yuv (subsampled from yuyv) --
-function sendImgSub( level )
-  yuyv = vcm.get_image_yuyv();
-  width = vcm.get_image_width() / 2; -- number of yuyv packages
-  height = vcm.get_image_height() / 2;
-  count = vcm.get_image_count();
-  yuvSub = ImageProc.subsample_yuyv2yuv( yuyv, width, height*2, level or 1 );
-  
-  -- TODO: I am sending 3 bytes per pixel.  Is this the best way to do it?
-  array = serialization.serialize_array(yuvSub, 3*width*height, 1, 'uint8', 'yuvSub', count);
-  sendyuvSub = {};
-  sendyuvSub.team = {};
-  sendyuvSub.team.number = gcm.get_team_number();
-  sendyuvSub.team.player_id = gcm.get_team_player_id();
-  
-  for i=1,#array do
-    sendyuvSub.arr = array[i];
-  	MonitorComm.send(serialization.serialize(sendyuvSub));
-    -- Need to sleep in order to stop drinking out of firehose
-    unix.usleep(pktDelay);
-  end
+function update(enable)
+	if enable == 0 then return; end
+	 
+	for key,value in pairs(wcm) do 
+		if (string.find(key,'get')) then
+			print(key);
+		end
 
+	end	
 end
 
-
-function update(enable)
+function update_bak(enable)
   if enable==0 then return; end
   
   send = {};
@@ -183,21 +147,9 @@ end
 function update_img( enable, imagecount )
   local division = 4; -- for image sending part by part
   if(enable==2) then
-		local yuyv = vcm.get_image_yuyv();
-		local labelB = vcm.get_image_labelB();
-		local height = vcm.get_image_height();
-		local width = vcm.get_image_width()/2;
-		local heightB = vcm.get_image_height()/8;
-		local widthB = vcm.get_image_width()/8;
-		local teamID = gcm.get_team_number();
-		local playerID = gcm.get_team_player_id();
---    print(width..'.'..height);
-		ret1,ret2,ret3 = MonitorComm.send_yuyv2(yuyv,width,height,teamID,playerID,division,imagecount%division); 
-		ret = MonitorComm.send_label(labelB,widthB,heightB,1,teamID,playerID);
---		print('section',imagecount%division,'Returned:',ret1,ret2,ret3);
-		--print('divions sending '..imagecount%division..' Done? '..ret);
---    sendB();
 --    sendImg(); -- half of sub image
+--		sendA();
+--		sendB();
 --    sendImgSub(2);
   elseif(enable==3) then
 	if (Config.platform.name ~= "Nao") then

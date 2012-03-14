@@ -35,6 +35,7 @@ package.path = cwd..'/GameFSM/'..Config.fsm.game..'/?.lua;'..package.path;
 require('shm')
 require('Body')
 require('vector')
+require('Kinematics')
 
 BodyFSM=require('BodyFSM');
 HeadFSM=require('HeadFSM');
@@ -61,10 +62,25 @@ getch.enableblock(1);
 
 
 -- initialize state machines
-Motion.entry();
---Motion.event("standup");
-
 Body.set_head_hardness({0.4,0.4});
+
+tx=0;ty=0;tz=0.8;ta=0;
+local l_foot_pos = {0,0.10,0,0,0,0}
+local r_foot_pos = {0,-0.10,0,0,0,0}
+torso_pos = {tx,ty,tz,0,0,ta};
+local q_legs = Kinematics.inverse_legs(l_foot_pos, r_foot_pos, torso_pos)
+Body.set_lleg_command(q_legs)
+Body.set_body_hardness(1);
+
+llegpos=Body.get_lleg_position();
+
+
+--[[
+dpLLeg = Kinematics.lleg_torso(Body.get_lleg_position());
+dpRLeg = Kinematics.rleg_torso(Body.get_rleg_position());
+print("Left leg kinematics:",unpack(dpLLeg));
+--]]
+
 
 controller.wb_robot_keyboard_enable(100);
 -- main loop
@@ -91,12 +107,13 @@ buttontime=0;
 
 
 
-
---Hack for saffire
-Body.set_lleg_command({0,0,0,0,0,0,0,0,0,0,0,0})
+langle=vector.new({0,0,0,0,0,0, 0,0,0,0,0,0});
+jointToCheck =1;
+jointNames={"HipYaw","HipRoll","HipPitch","KneePitch","AnklePitch","AnkleRoll"};
 
 
 function process_keyinput()
+
   local str = controller.wb_robot_keyboard_get_key();
   if str>0 then
     byte = str;
@@ -104,49 +121,59 @@ function process_keyinput()
 	if byte>=65 and byte<=90 then
 		byte = byte + 32;
 	end
-
-  -- Walk velocity setting
-	if byte==string.byte("i") then	targetvel[1]=targetvel[1]+0.02;
-	elseif byte==string.byte("j") then	targetvel[3]=targetvel[3]+0.1;
-	elseif byte==string.byte("k") then	targetvel[1],targetvel[2],targetvel[3]=0,0,0;
-	elseif byte==string.byte("l") then	targetvel[3]=targetvel[3]-0.1;
-	elseif byte==string.byte(",") then	targetvel[1]=targetvel[1]-0.02;
-	elseif byte==string.byte("h") then	targetvel[2]=targetvel[2]+0.02;
-	elseif byte==string.byte(";") then	targetvel[2]=targetvel[2]-0.02;
-
+--[[
+	if byte==string.byte("i") then	
+		langle[jointToCheck]=langle[jointToCheck]+5;
+	elseif byte==string.byte("j") then
+		langle[jointToCheck+6]=langle[jointToCheck+6]-5;
+	elseif byte==string.byte("k") then	
+		langle[jointToCheck]=0;
+		langle[jointToCheck+6]=0;
+	elseif byte==string.byte("l") then	
+		langle[jointToCheck+6]=langle[jointToCheck+6]+5;
+	elseif byte==string.byte(",") then	
+		langle[jointToCheck]=langle[jointToCheck]-5;
 	elseif byte==string.byte("1") then	
-		kick.set_kick("kickForwardLeft");
-		Motion.event("kick");
+		jointToCheck=jointToCheck-1;	
+		if jointToCheck==0 then jointToCheck=6;end	
 	elseif byte==string.byte("2") then	
-		kick.set_kick("kickForwardRight");
-		Motion.event("kick");
-	elseif byte==string.byte("3") then	
-		kick.set_kick("kickSideLeft");
-		Motion.event("kick");
-	elseif byte==string.byte("4") then	
-		kick.set_kick("kickSideRight");
-		Motion.event("kick");
-
-        elseif byte==string.byte("5") then
-                walk.doWalkKickLeft();
-        elseif byte==string.byte("6") then
---                walk.doWalkKickRight();
-                walk.doSideKickRight();
-
-	elseif byte==string.byte("7") then	Motion.event("sit");
-	elseif byte==string.byte("8") then	
-		if walk.active then 
-			walk.stopAlign();
-		end
-		Motion.event("standup");
-	
-	elseif byte==string.byte("9") then	
-		Motion.event("walk");
-		walk.start();
+		jointToCheck=jointToCheck%6+1;	
 	end
-        print("Target vel:",unpack(targetvel))
-	walk.set_velocity(unpack(targetvel));
+	Body.set_actuator_command(math.pi/180*langle);
+	print(string.format("%s : L %d R %d",jointNames[jointToCheck],
+		langle[jointToCheck],langle[jointToCheck+6]));
+--]]
+
+	if byte==string.byte("i") then	
+	    tx=tx+0.01;
+	elseif byte==string.byte("j") then
+	    ty=ty+0.01;
+	elseif byte==string.byte("k") then	
+	    tx=0;ty=0;
+	elseif byte==string.byte("h") then
+	    ta=ta+0.03;
+	elseif byte==string.byte(";") then	
+	    ta=ta-0.03;
+	elseif byte==string.byte("l") then	
+	    ty=ty-0.01;
+	elseif byte==string.byte(",") then	
+	    tx=tx-0.01;
+	elseif byte==string.byte("u") then	
+	    tz=tz+0.005;
+	elseif byte==string.byte("m") then	
+	    tz=tz-0.005;
+	end
+	torso_pos = {tx,ty,tz,0,0,ta};
+	local q_legs = Kinematics.inverse_legs(l_foot_pos, r_foot_pos, torso_pos)
+	Body.set_lleg_command(q_legs)
+
   end
+
+
+
+
+
+
 
 end
 
@@ -155,8 +182,6 @@ function update()
    
   -- Update the relevant engines
   Body.update();
-
-  Motion.update();
   
   -- Get a keypress
   process_keyinput();

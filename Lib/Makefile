@@ -10,6 +10,7 @@ WEBOTSOPDIR= Platform/WebotsOP
 WEBOTSGENERICDIR= Platform/WebotsGeneric
 WEBOTSHUBODIR= Platform/WebotsHubo
 WEBOTSCHARLIDIR= Platform/WebotsCharli
+WEBOTSSAFFIRDIR= Platform/WebotsSaffir
 LC2DIR= Platform/LC2
 HPDIR= Platform/HP2
 OPDIR= Platform/OP
@@ -109,6 +110,12 @@ webots_charli:
 	@cd $(WEBOTSCHARLIDIR) && MODE=$(MODE) make && cd $(CWD)
 	@echo "\n"
 
+webots_saffir:
+	@echo "Compiling Webots SAFFIR Lua/C++ Libraries...\n"
+	@cd $(WEBOTSSAFFIRDIR) && MODE=$(MODE) make && cd $(CWD)
+	@echo "\n"
+
+
 image:
 	@echo "Compiling Image Processing Lua/C++ Libraries...\n"
 	@cd $(IMAGEDIR) && MODE=$(MODE) make && cd $(CWD)
@@ -186,6 +193,18 @@ setup_webots_charli: webots_charli setup_util setup_image
 	cd $(WEBOTSCONTDIR) && rm Player && ln -s ../Player Player && cd $(CWD)
 	@echo "\n"
 
+setup_webots_saffir: webots_saffir setup_util setup_image 
+	@echo "Setting up Webots Lua/C++ Libraries...\n"
+	mkdir -p $(INSTDIR)
+	find $(WEBOTSSAFFIRDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
+	rm -f $(PLAYERDIR)/Config/Config.lua
+	cd $(PLAYERDIR)/Config && ln -s Config_WebotsSaffir.lua Config.lua && cd $(CWD)
+	cd $(WEBOTSCONTDIR) && MODE=$(MODE) make && cd $(CWD)
+	cd $(WEBOTSCONTDIR) && touch Player && cd $(CWD)  
+	cd $(WEBOTSCONTDIR) && rm Player && ln -s ../Player Player && cd $(CWD)
+	@echo "\n"
+
+
 setup_hp: hp setup_util setup_image
 	@echo "Setting up HP Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
@@ -246,6 +265,8 @@ clean:
 	cd $(WEBOTSOPDIR) && make clean && cd $(CWD)
 	cd $(WEBOTSGENERICDIR) && make clean && cd $(CWD)
 	cd $(WEBOTSCONTDIR) && make clean && cd $(CWD)
+	cd $(WEBOTSCHARLIDIR) && make clean && cd $(CWD)
+	cd $(WEBOTSSAFFIRDIR) && make clean && cd $(CWD)
 #	cd $(HPDIR) && make clean && cd $(CWD)
 	cd $(OPDIR) && make clean && cd $(CWD)
 	cd $(PLAYERDIR)/Config && rm -f Config.lua && cd $(CWD)

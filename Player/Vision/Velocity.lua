@@ -60,6 +60,10 @@ end
 function exit()
 end
 
+---Returns velocity of ball
+--@return vx the x component of the velocity
+--@return vy the y component of the velocity
+--@return isdodge whether or not to try to dodge the ball		
 function getVelocity()
   return vx, vy, isdodge;
 end

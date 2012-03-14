@@ -20,6 +20,10 @@ headInverted=Config.vision.headInverted;
 
 headZ = Config.head.camOffsetZ;
 
+---Detects a white line.
+--Chooses the "best" line and returns only stats on that line.
+--@return Table containing whether a line was detected
+--If a line is detected, also contains additional stats about the line
 function detect()
   --TODO: test line detection
   line = {};

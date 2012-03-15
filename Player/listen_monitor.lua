@@ -42,8 +42,8 @@ labelA_flag = {}
 FIRST_YUYV = true
 FIRST_LABELA = true
 
-Comm.init(Config.dev.ip);
-print('Receiving from',Config.dev.ip);
+Comm.init(Config.dev.ip_wired,111111);
+print('Receiving from',Config.dev.ip_wired);
 
 function check_flag(flag)
 	sum = 0;

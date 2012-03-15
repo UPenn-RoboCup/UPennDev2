@@ -18,6 +18,10 @@ ifndef OSTYPE
   #export OSTYPE
 endif
 
+ifndef ARCH
+  ARCH= $(shell uname -m)
+endif
+
 ifeq ($(OSTYPE),linux)
   SHLIBEXT= so
   LIBOPTS= -shared
@@ -26,7 +30,7 @@ ifeq ($(OSTYPE),darwin)
   SHLIBEXT= dylib
   LIBOPTS= -bundle -undefined dynamic_lookup
   CXXFLAGS= -O2
-ifeq ($(MODE),32)
+ifeq ($(ARCH), i386)
   CC=gcc -arch i386
   CXX=g++ -arch i386
   LD=g++ -arch i386

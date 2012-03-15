@@ -171,21 +171,21 @@ h.get_labelB = @get_labelB;
   end
 
   function rgb = get_rgb()
-      % returns the raw RGB image (not full size)
+    % returns the raw RGB image (not full size)
     yuyv = h.get_yuyv();
     rgb = yuyv2rgb(yuyv);
   end
 
   function labelA = get_labelA()
-      % returns the labeled image
-    width = h.vcmImage.get_width();
-    height = h.vcmImage.get_height();
+    % returns the labeled image
+    width = h.vcmImage.get_width()
+    height = h.vcmImage.get_height()
     rawData = h.vcmImage.get_labelA();
     labelA = raw2label(rawData, width, height)';
   end
 
   function labelB = get_labelB()
-      % returns the bit-ored labeled image
+    % returns the bit-ored labeled image
     width = h.vcmImage.get_width()/4;
     height = h.vcmImage.get_height()/4;
     rawData = h.vcmImage.get_labelB();

@@ -8,15 +8,9 @@ if( isempty(r_mon) )
     %return;
 end
 
-if( scale == 1 )
-    label = robots{playerNumber,teamNumber}.get_labelA();
-elseif( scale == 2 )
-%    label = robots{playerNumber,teamNumber}.get_labelAsub();
-else
-    label = robots{playerNumber,teamNumber}.get_labelB();
-end
+labelA = robots{playerNumber,teamNumber}.get_labelA();
+labelB = robots{playerNumber,teamNumber}.get_labelB();
 rgb = robots{playerNumber,teamNumber}.get_rgb();
-%rgb = robots{playerNumber,teamNumber}.get_rgb_sub();
 
 nTeams = size(robots,2);
 nPlayers = size(robots,1);
@@ -29,18 +23,18 @@ cmap=[cbk;cr;cy;cy;cb;cb;cb;cb;cg;cg;cg;cg;cg;cg;cg;cg;cw];
 h1 = subplot(2,2,1);
 if( ~isempty(rgb) )
   plot_yuyv( h1, rgb );
-  disp('plotted yuyv');  
+%  disp('plotted yuyv');  
 end
 
 h2 = subplot(2,2,2);
-if( ~isempty(label) )
-	plot_label( h2, label, r_mon, scale, cmap);
-  disp('plotted label');
+if( ~isempty(labelA) )
+	plot_label( h2, labelA, r_mon, 1, cmap);
+  disp('plotted labelA');
 end
 
 h3 = subplot(2,2,3);
-    %plot_team( h3, robots, nTeams, nPlayers);
-%     plot_surroundings( h3, r_mon );
+  plot_label( h3, labelB, r_mon, 4, cmap);
+  disp('plotted labelB');
     
 h4 = subplot(2,2,4);
     %plot_surroundings( h4, r_mon );

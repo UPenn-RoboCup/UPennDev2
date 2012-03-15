@@ -4,7 +4,7 @@ function show_monitor( robots, scale, teamNumber, playerNumber )
 
 r_mon = robots{playerNumber,teamNumber}.get_monitor_struct();
 if( isempty(r_mon) )
-    disp('Empty monitor struct!');
+    %disp('Empty monitor struct!');
     %return;
 end
 
@@ -29,13 +29,13 @@ end
 h2 = subplot(2,2,2);
 if( ~isempty(labelA) )
 	plot_label( h2, labelA, r_mon, 1, cmap);
-  disp('plotted labelA');
+  %disp('plotted labelA');
 end
 
 h3 = subplot(2,2,3);
 if( ~isempty(labelB) )
   plot_label( h3, labelB, r_mon, 4, cmap);
-  disp('plotted labelB');
+  %disp('plotted labelB');
 end
     
 h4 = subplot(2,2,4);

@@ -6,7 +6,7 @@
 module(..., package.seeall);
 
 
-require('MonitorComm')
+require('Comm')
 -- Only send items from shared memory
 require('vcm')
 require('gcm')
@@ -16,8 +16,8 @@ require('ImageProc')
 require('Config');
 
 -- Initiate Sending Address
-MonitorComm.init(Config.dev.ip);
-print(Config.dev.ip);
+Comm.init(Config.dev.ip);
+print('Sending to',Config.dev.ip);
 
 -- Add a little delay between packet sending
 pktDelay = 500; -- time in us

@@ -134,7 +134,7 @@ end
 
 while( true ) do
 
-  msg = MonitorComm.receive();
+  msg = Comm.receive();
   if( msg ) then
     local obj = serialization.deserialize(msg);
     if( obj.arr ) then

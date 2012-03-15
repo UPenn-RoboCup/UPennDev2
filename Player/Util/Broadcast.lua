@@ -151,8 +151,8 @@ end
 function update_img( enable, imagecount )
   local division = 4; -- for image sending part by part
   if(enable==2) then
---    sendB();
---    sendImg(); -- half of sub image
+    sendB();
+    sendImg(); -- half of sub image
     sendA();
 --    sendImgSub(2);
   elseif(enable==3) then

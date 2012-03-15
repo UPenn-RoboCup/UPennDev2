@@ -22,15 +22,15 @@ endif
 endif
 ifeq ($(OSTYPE),darwin)
   SHLIBEXT=dylib
+ifeq ($(ARCH),x86_64)
+  MEXEXT=mexmaci64
+else
   MEXEXT=mexmaci
+endif
   INCLUDES=-I/usr/include
 endif
 
-all: monitorComm time mexshm
-
-monitorComm: monitorComm.cc
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -fPIC -o libMonitor.o -c libMonitor.cc
-	mex -O $^ libMonitor.o $(INCLUDES)
+all: time mexshm
 
 time: time.cc timeScalar.cc
 	mex -O $^ $(BOOST_INCLUDE_DIRS) $(LIBRT)

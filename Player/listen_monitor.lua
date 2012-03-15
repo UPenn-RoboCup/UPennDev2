@@ -7,7 +7,6 @@ if (string.find(platform,'webots')) then cwd = cwd .. '/Player';
 end
 
 -- Get Computer for Lib suffix
-os.execute('export COMPUTER=`uname`');
 local computer = os.getenv('COMPUTER') or '';
 if (string.find(computer, 'Darwin')) then
   -- MacOS X uses .dylib:
@@ -30,7 +29,7 @@ require ('Config')
 require ('cutil')
 require ('vector')
 require ('serialization')
-require ('MonitorComm')
+require ('Comm')
 require ('util')
 
 require ('wcm')
@@ -43,8 +42,8 @@ labelA_flag = {}
 FIRST_YUYV = true
 FIRST_LABELA = true
 
-MonitorComm.init(Config.dev.ip);
-print(Config.dev.ip);
+Comm.init(Config.dev.ip);
+print('Receiving from',Config.dev.ip);
 
 function check_flag(flag)
 	sum = 0;

@@ -1,5 +1,5 @@
 % Players and team to track
-nPlayers = 1;
+nPlayers = 2;
 
 %Only monitoring team 1
 %teamNumbers = [0 1];

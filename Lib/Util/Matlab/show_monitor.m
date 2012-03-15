@@ -5,7 +5,7 @@ function show_monitor( robots, scale, teamNumber, playerNumber )
 r_mon = robots{playerNumber,teamNumber}.get_monitor_struct();
 if( isempty(r_mon) )
     disp('Empty monitor struct!');
-    return;
+    %return;
 end
 
 if( scale == 1 )
@@ -28,12 +28,14 @@ cmap=[cbk;cr;cy;cy;cb;cb;cb;cb;cg;cg;cg;cg;cg;cg;cg;cg;cw];
  
 h1 = subplot(2,2,1);
 if( ~isempty(rgb) )
-    plot_yuyv( h1, rgb );
+  plot_yuyv( h1, rgb );
+  disp('plotted yuyv');  
 end
 
 h2 = subplot(2,2,2);
 if( ~isempty(label) )
 	plot_label( h2, label, r_mon, scale, cmap);
+  disp('plotted label');
 end
 
 h3 = subplot(2,2,3);

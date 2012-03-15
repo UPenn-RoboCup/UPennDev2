@@ -33,7 +33,10 @@ require ('Comm')
 require ('util')
 
 require ('wcm')
+require ('gcm')
 require ('vcm')
+
+require 'unix'
 
 yuyv_all = {}
 labelA_all = {}
@@ -41,6 +44,7 @@ yuyv_flag = {}
 labelA_flag = {}
 FIRST_YUYV = true
 FIRST_LABELA = true
+t_full = unix.time();
 
 Comm.init(Config.dev.ip_wired,111111);
 print('Receiving from',Config.dev.ip_wired);
@@ -79,7 +83,9 @@ function push_yuyv(obj)
 	yuyv_all[name.partnum] = obj.data
 --	print(check_flag(yuyv_flag));
 	if (check_flag(yuyv_flag) == name.parts) then
-		print("full yuyv");
+--		print("full yuyv\t"..1/(unix.time()-t_full).." fps" );
+                t_full = unix.time();
+                
 --		print(obj.width,obj.height);
 		yuyv_flag = vector.zeros(name.parts);
 		local yuyv_str = "";
@@ -105,7 +111,7 @@ function push_labelA(obj)
 	labelA_flag[name.partnum] = 1;
 	labelA_all[name.partnum] = obj.data;
 	if (check_flag(labelA_flag) == name.parts) then
-		print("full labelA");
+--		print("full labelA");
 		labelA_flag = vector.zeros(name.parts);
 		local labelA_str = "";
 		for i = 1 , name.partnum do
@@ -128,11 +134,20 @@ end
 
 function push_data(obj)
 --	print('receive data');
+	for shmkey,shmHandler in pairs(obj) do
+		for sharedkey,sharedHandler in pairs(shmHandler) do
+			for itemkey,itemHandler in pairs(sharedHandler) do
+				local shmk = string.sub(shmkey,1,string.find(shmkey,'shm')-1);
+				local shm = _G[shmk];
+				shm['set_'..sharedkey..'_'..itemkey](itemHandler);
+			end
+		end
+	end
 end
 
 while( true ) do
 
-  msg = MonitorComm.receive();
+  msg = Comm.receive();
   if( msg ) then
     local obj = serialization.deserialize(msg);
     if( obj.arr ) then

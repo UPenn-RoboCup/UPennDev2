@@ -33,8 +33,10 @@ if( ~isempty(labelA) )
 end
 
 h3 = subplot(2,2,3);
+if( ~isempty(labelB) )
   plot_label( h3, labelB, r_mon, 4, cmap);
   disp('plotted labelB');
+end
     
 h4 = subplot(2,2,4);
     %plot_surroundings( h4, r_mon );
@@ -58,32 +60,33 @@ h4 = subplot(2,2,4);
             colormap(cmap);
             xlim([1 size(label,2)]);
             ylim([1 size(label,1)]);
-            
-            if(r_mon.ball.detect==1)
-                hold on;
-                plot_ball( r_mon.ball, scale );
-                hold off;
-            end
-            if( r_mon.goal.detect == 1 )
-                hold on;
-                %disp('Goal detected!');
-                % Determine which bounding box:
-                if(r_mon.goal.v1.scale~=0)
-                    pBBoxA = r_mon.goal.postBoundingBox1;
-                    pBBoxB = r_mon.goal.postBoundingBox2;
-                else
-                    pBBoxA = r_mon.goal.postBoundingBox2;
-                    pBBoxB = r_mon.goal.postBoundingBox1;
-                end
-%{
-                postStats = bboxStats( label, r_mon.goal.color, pBBoxA, scale );
-                plot_goalposts( postStats, scale );
-                if(r_mon.goal.type==3)
-                    postStats = bboxStats( label, r_mon.goal.color, pBBoxB, scale );
-                    plot_goalposts( postStats, scale );
-                end
-%}
-                hold off;
+            if( ~isempty(r_mon) )
+              if(r_mon.ball.detect==1)
+                  hold on;
+                  plot_ball( r_mon.ball, scale );
+                  hold off;
+              end
+              if( r_mon.goal.detect == 1 )
+                  hold on;
+                  %disp('Goal detected!');
+                  % Determine which bounding box:
+                  if(r_mon.goal.v1.scale~=0)
+                      pBBoxA = r_mon.goal.postBoundingBox1;
+                      pBBoxB = r_mon.goal.postBoundingBox2;
+                  else
+                      pBBoxA = r_mon.goal.postBoundingBox2;
+                      pBBoxB = r_mon.goal.postBoundingBox1;
+                  end
+  %{
+                  postStats = bboxStats( label, r_mon.goal.color, pBBoxA, scale );
+                  plot_goalposts( postStats, scale );
+                  if(r_mon.goal.type==3)
+                      postStats = bboxStats( label, r_mon.goal.color, pBBoxB, scale );
+                      plot_goalposts( postStats, scale );
+                  end
+  %}
+                  hold off;
+              end
             end
             % Show freespace boundary in label
 %            if ( r_mon.free.detect == 1 )

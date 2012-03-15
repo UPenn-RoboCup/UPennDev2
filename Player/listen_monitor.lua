@@ -89,6 +89,8 @@ function push_yuyv(obj)
 --		print(yuyv_str);
 		cutil.string2userdata(yuyv,yuyv_str);
 		vcm.set_image_yuyv(yuyv);
+    vcm.set_image_width(obj.width);
+    vcm.set_image_height(obj.height*name.parts/2);
 		yuyv_all = {}
 	end
 end
@@ -132,7 +134,7 @@ end
 
 while( true ) do
 
-  msg = MonitorComm.receive();
+  msg = Comm.receive();
   if( msg ) then
     local obj = serialization.deserialize(msg);
     if( obj.arr ) then

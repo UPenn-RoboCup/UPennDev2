@@ -167,9 +167,11 @@ function update_shm()
   -- update shm values
   wcm.set_robot_pose({pose.x, pose.y, pose.a});
 
-  wcm.set_ball_xy({ball.x, ball.y});
+  wcm.set_ball_x(ball.x);
+  wcm.set_ball_y(ball.y);
   wcm.set_ball_t(ball.t);
-  wcm.set_ball_velocity( {ball.vx, ball.vy} );
+  wcm.set_ball_velx(ball.vx);
+  wcm.set_ball_vely(ball.vy);
 
   wcm.set_goal_t(pose.tGoal);
   wcm.set_goal_attack(get_goal_attack());

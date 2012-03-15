@@ -166,8 +166,8 @@ h.get_labelB = @get_labelB;
       % returns the raw YUYV image
 %         width = h.vcmImage.get_width();
 %         height = h.vcmImage.get_height();
-    width = h.vcmImage.get_width();
-    height = h.vcmImage.get_height()*2;
+    width = h.vcmImage.get_width()/2;
+    height = h.vcmImage.get_height();
     rawData = h.vcmImage.get_yuyv()*2;
     yuyv = raw2yuyv(rawData, width, height); %for Nao, double for OP
   end
@@ -180,16 +180,16 @@ h.get_labelB = @get_labelB;
 
   function labelA = get_labelA()
     % returns the labeled image
-    width = h.vcmImage.get_width();
-    height = h.vcmImage.get_height();
+    width = h.vcmImage.get_width()/2;
+    height = h.vcmImage.get_height()/2;
     rawData = h.vcmImage.get_labelA();
     labelA = raw2label(rawData, width, height)';
   end
 
   function labelB = get_labelB()
     % returns the bit-ored labeled image
-    width = h.vcmImage.get_width()/4;
-    height = h.vcmImage.get_height()/4;
+    width = h.vcmImage.get_width()/4/2;
+    height = h.vcmImage.get_height()/4/2;
     rawData = h.vcmImage.get_labelB();
     labelB = raw2label(rawData, width, height)';
   end

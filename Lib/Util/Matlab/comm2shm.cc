@@ -8,6 +8,7 @@
 #include <deque>
 #include <boost/interprocess/managed_shared_memory.hpp>
 #include <bitset>
+#include <regex>
 
 using namespace boost::interprocess;
 
@@ -141,6 +142,11 @@ int restoreYUYV(const char *data, size_t size) {
 int parseMsgs(const char * msg, size_t size)
 {
 	size_t type = msg[0];
+	std::cout << msg << std::endl;
+	std::string str(msg);
+//	std::smatch result;
+//	std::regex rx("\{\[+?");
+//	std::cout << std::regex_search(str.c_str(),result,rx,0) << std::endl;
 	switch (type)
 	{
 		case 11:
@@ -152,7 +158,7 @@ int parseMsgs(const char * msg, size_t size)
 		case 18:
 		case 19:
 		case 20:
-			restoreYUYV(msg, size);
+		//	restoreYUYV(msg, size);
 			break;
 	}
 	return 1;

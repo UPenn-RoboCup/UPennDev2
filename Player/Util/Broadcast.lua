@@ -84,18 +84,21 @@ function sendImg()
 
 end
 
-function update(enable)
+function update_new(enable)
 	if enable == 0 then return; end
-	 
-	for key,value in pairs(wcm) do 
-		if (string.find(key,'get')) then
---			print(key);
-		end
+        local g = wcm.get_goal()
+--        util.ptable( g );
+--        util.ptable( g.attack );
+	for key,value in pairs(wcm.shared) do 
+	--	if (string.find(key,'get')) then
+			print('\nget_',key);
+                util.ptable( wcm['get_'..key]() )
+	--	end
 
 	end	
 end
 
-function update_bak(enable)
+function update(enable)
   if enable==0 then return; end
   
   send = {};
@@ -148,8 +151,8 @@ end
 function update_img( enable, imagecount )
   local division = 4; -- for image sending part by part
   if(enable==2) then
-    sendB();
-    sendImg(); -- half of sub image
+--    sendB();
+--    sendImg(); -- half of sub image
     sendA();
 --    sendImgSub(2);
   elseif(enable==3) then

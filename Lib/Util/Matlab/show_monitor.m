@@ -28,13 +28,13 @@ end
 
 h2 = subplot(2,2,2);
 if( ~isempty(labelA) )
-	plot_label( h2, labelA, r_mon, 1, cmap);
+%	plot_label( h2, labelA, r_mon, 1, cmap);
   %disp('plotted labelA');
 end
 
 h3 = subplot(2,2,3);
 if( ~isempty(labelB) )
-  plot_label( h3, labelB, r_mon, 4, cmap);
+%  plot_label( h3, labelB, r_mon, 4, cmap);
   %disp('plotted labelB');
 end
     

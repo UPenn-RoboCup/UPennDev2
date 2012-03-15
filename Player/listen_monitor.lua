@@ -29,7 +29,7 @@ require ('Config')
 require ('cutil')
 require ('vector')
 require ('serialization')
-require ('MonitorComm')
+require ('Comm')
 require ('util')
 
 require ('wcm')
@@ -42,7 +42,7 @@ labelA_flag = {}
 FIRST_YUYV = true
 FIRST_LABELA = true
 
-MonitorComm.init(Config.dev.ip);
+Comm.init(Config.dev.ip);
 print('Receiving from',Config.dev.ip);
 
 function check_flag(flag)

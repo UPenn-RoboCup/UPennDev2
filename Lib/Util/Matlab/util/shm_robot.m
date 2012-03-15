@@ -166,8 +166,10 @@ h.get_labelB = @get_labelB;
       % returns the raw YUYV image
 %         width = h.vcmImage.get_width();
 %         height = h.vcmImage.get_height();
-    rawData = h.vcmImage.get_yuyv();
-    yuyv = raw2yuyv(rawData, 320, 240); %for Nao, double for OP
+    width = h.vcmImage.get_width();
+    height = h.vcmImage.get_height()*2;
+    rawData = h.vcmImage.get_yuyv()*2;
+    yuyv = raw2yuyv(rawData, width, height); %for Nao, double for OP
   end
 
   function rgb = get_rgb()
@@ -178,8 +180,8 @@ h.get_labelB = @get_labelB;
 
   function labelA = get_labelA()
     % returns the labeled image
-    width = h.vcmImage.get_width()
-    height = h.vcmImage.get_height()
+    width = h.vcmImage.get_width();
+    height = h.vcmImage.get_height();
     rawData = h.vcmImage.get_labelA();
     labelA = raw2label(rawData, width, height)';
   end

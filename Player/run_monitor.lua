@@ -61,7 +61,7 @@ function update()
     end
   end
   -- Always send non-image data
-  Broadcast.update(broadcast_enable);
+  Broadcast.update_new(broadcast_enable);
   -- Send image data every so often
   if( count % imgRate == 0 ) then
 		imagecount = imagecount + 1;
@@ -77,10 +77,9 @@ while true do
   local tstart = unix.time();
   update();
   -- Get time after sending packets
-  tloop = unix.time() - tstart;
-  -- Sleep in order to get the right FPS
-  if (tloop < 0.025) then
-    unix.usleep((.025 - tloop)*(1E6));
+  tloop = unix.time() - tstart;  -- Sleep in order to get the right FPS
+  if (tloop < 0.1) then
+    unix.usleep((0.1 - tloop)*(1E6));
   end
 
   -- Display our FPS and broadcast level

@@ -16,8 +16,8 @@ require('ImageProc')
 require('Config');
 
 -- Initiate Sending Address
-Comm.init(Config.dev.ip);
-print('Sending to',Config.dev.ip);
+Comm.init(Config.dev.ip_wired,111111);
+print('Sending to',Config.dev.ip_wired);
 
 -- Add a little delay between packet sending
 pktDelay = 500; -- time in us
@@ -37,7 +37,7 @@ function sendB()
   
   for i=1,#array do
     sendlabelB.arr = array[i];
-    MonitorComm.send(serialization.serialize(sendlabelB));
+    Comm.send(serialization.serialize(sendlabelB));
   end 
 end
 
@@ -56,7 +56,7 @@ function sendA()
   
   for i=1,#array do
     sendlabelA.arr = array[i];
-  	MonitorComm.send(serialization.serialize(sendlabelA));
+  	Comm.send(serialization.serialize(sendlabelA));
     -- Need to sleep in order to stop drinking out of firehose
     unix.usleep(pktDelay);
   end
@@ -77,25 +77,28 @@ function sendImg()
   
   for i=1,#array do
     sendyuyv.arr = array[i];
-  	MonitorComm.send(serialization.serialize(sendyuyv));
+  	Comm.send(serialization.serialize(sendyuyv));
     -- Need to sleep in order to stop drinking out of firehose
     unix.usleep(pktDelay);
   end
 
 end
 
-function update(enable)
+function update_new(enable)
 	if enable == 0 then return; end
-	 
-	for key,value in pairs(wcm) do 
-		if (string.find(key,'get')) then
-			print(key);
-		end
+        local g = wcm.get_goal()
+--        util.ptable( g );
+--        util.ptable( g.attack );
+	for key,value in pairs(wcm.shared) do 
+	--	if (string.find(key,'get')) then
+			print('\nget_',key);
+                util.ptable( wcm['get_'..key]() )
+	--	end
 
 	end	
 end
 
-function update_bak(enable)
+function update(enable)
   if enable==0 then return; end
   
   send = {};
@@ -141,15 +144,15 @@ function update_bak(enable)
   send.team.attackBearing = wcm.get_attack_bearing();
   send.team.penalty = gcm.get_game_penalty( gcm.get_team_player_id() );
 
-  MonitorComm.send(serialization.serialize(send));
+  Comm.send(serialization.serialize(send));
   
 end
 
 function update_img( enable, imagecount )
   local division = 4; -- for image sending part by part
   if(enable==2) then
-    sendB();
-    sendImg(); -- half of sub image
+--    sendB();
+--    sendImg(); -- half of sub image
     sendA();
 --    sendImgSub(2);
   elseif(enable==3) then

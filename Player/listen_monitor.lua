@@ -46,9 +46,9 @@ FIRST_LABELA = true
 function check_flag(flag)
 	sum = 0;
 	for i = 1 , #flag do
-		sum = sum + flag;
+		sum = sum + flag[i];
 	end
-	return 0;
+	return sum;
 end
 
 function parse_name(namestr)
@@ -65,20 +65,54 @@ end
 
 function push_yuyv(obj)
 --	print('receive yuyv parts');
-	local yuyv = cutil.test_array();
-	local name = parse_name(obj.name);
-	if (FIRST_YUYV) then
+	yuyv = cutil.test_array();
+	name = parse_name(obj.name);
+	if (FIRST_YUYV == true) then
+		print("initiate yuyv flag");
 		yuyv_flag = vector.zeros(name.parts);
+		FIRST_YUYV = false;
 	end
-	
+
+	yuyv_flag[name.partnum] = 1;
+	yuyv_all[name.partnum] = obj.data
+--	print(check_flag(yuyv_flag));
+	if (check_flag(yuyv_flag) == name.parts) then
+		print("full yuyv");
+--		print(obj.width,obj.height);
+		yuyv_flag = vector.zeros(name.parts);
+		local yuyv_str = "";
+		for i = 1 , name.partnum do
+			yuyv_str = yuyv_str .. yuyv_all[i];
+		end
+--		print(yuyv_str);
+		cutil.string2userdata(yuyv,yuyv_str);
+		vcm.set_image_yuyv(yuyv);
+		yuyv_all = {}
+	end
 end
 
 function push_labelA(obj)
 --	print('receive labelA parts');
 	local labelA = cutil.test_array();
 	local name = parse_name(obj.name);
-	if (FIRST_LABELA) then
+	if (FIRST_LABELA == true) then
 		labelA_flag = vector.zeros(name.parts);
+		FIRST_LABELA = false;
+	end
+
+	labelA_flag[name.partnum] = 1;
+	labelA_all[name.partnum] = obj.data;
+	if (check_flag(labelA_flag) == name.parts) then
+		print("full labelA");
+		labelA_flag = vector.zeros(name.parts);
+		local labelA_str = "";
+		for i = 1 , name.partnum do
+			labelA_str = labelA_str .. labelA_all[i];
+		end
+
+		cutil.string2userdata(labelA,labelA_str);
+		vcm.set_image_labelA(labelA);
+		labelA_all = {};
 	end
 end
 

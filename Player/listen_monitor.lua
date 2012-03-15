@@ -30,7 +30,7 @@ require ('Config')
 require ('cutil')
 require ('vector')
 require ('serialization')
-require ('OPMonitorComm')
+require ('MonitorComm')
 require ('util')
 
 require ('wcm')
@@ -42,6 +42,9 @@ yuyv_flag = {}
 labelA_flag = {}
 FIRST_YUYV = true
 FIRST_LABELA = true
+
+MonitorComm.init(Config.dev.ip);
+print(Config.dev.ip);
 
 function check_flag(flag)
 	sum = 0;
@@ -64,7 +67,7 @@ function parse_name(namestr)
 end
 
 function push_yuyv(obj)
---	print('receive yuyv parts');
+--  print('receive yuyv parts');
 	local yuyv = cutil.test_array();
 	local name = parse_name(obj.name);
 	if (FIRST_YUYV) then
@@ -96,7 +99,7 @@ end
 
 while( true ) do
 
-  msg = OPMonitorComm.receive();
+  msg = MonitorComm.receive();
   if( msg ) then
     local obj = serialization.deserialize(msg);
     if( obj.arr ) then

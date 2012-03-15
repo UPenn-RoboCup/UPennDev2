@@ -17,6 +17,7 @@ require('Config');
 
 -- Initiate Sending Address
 MonitorComm.init(Config.dev.ip);
+print(Config.dev.ip);
 
 -- Add a little delay between packet sending
 pktDelay = 500; -- time in us
@@ -183,6 +184,7 @@ end
 function update_img( enable, imagecount )
   local division = 4; -- for image sending part by part
   if(enable==2) then
+--[[
 		local yuyv = vcm.get_image_yuyv();
 		local labelB = vcm.get_image_labelB();
 		local height = vcm.get_image_height();
@@ -196,8 +198,10 @@ function update_img( enable, imagecount )
 		ret = MonitorComm.send_label(labelB,widthB,heightB,1,teamID,playerID);
 --		print('section',imagecount%division,'Returned:',ret1,ret2,ret3);
 		--print('divions sending '..imagecount%division..' Done? '..ret);
---    sendB();
---    sendImg(); -- half of sub image
+--]]
+    sendB();
+    sendImg(); -- half of sub image
+    sendA();
 --    sendImgSub(2);
   elseif(enable==3) then
 	if (Config.platform.name ~= "Nao") then

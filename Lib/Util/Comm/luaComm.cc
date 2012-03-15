@@ -27,13 +27,13 @@ extern "C"
 #include <vector>
 #include <stdint.h>
 
-#define PORT 111111
 #define MDELAY 2
 #define TTL 16
 #define MAX_LENGTH 160000 //Size for sending 640*480 yuyv data without resampling
 
 const int maxQueueSize = 12;
 static std::string IP;
+static int PORT = 0;
 
 static std::deque<std::string> recvQueue;
 static int send_fd, recv_fd;
@@ -50,7 +50,9 @@ void mexExit(void)
 
 static int lua_comm_init(lua_State *L) {
 	const char *ip = luaL_checkstring(L, 1);
+	int port = luaL_checkint(L,2);
 	IP = ip;
+	PORT = port;
  	return 1;
 }
 
@@ -60,6 +62,9 @@ static int lua_comm_update(lua_State *L) {
 
 	// Check whether initiated
   assert(IP.empty()!=1);	
+
+	// Check port
+	assert(PORT!=0);
 
   static bool init = false;
   if (!init) {

@@ -26,7 +26,6 @@ require('mcm')
 require('Body')
 
 require('GameControl')
-require('Comm')
 
 require('Vision')
 

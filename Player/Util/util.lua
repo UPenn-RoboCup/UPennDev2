@@ -135,16 +135,6 @@ function init_shm_segment(fenv, name, shared, shsize)
     fenv[shmPointerName] = {};
     local shmPointer = fenv[shmPointerName];
 
-    fenv['get_'..shtable] =
-      function()
-        print('Giving you the ',shtable)
-        local tmp = {}
-        for k,v in pairs(shared[shtable]) do
-          tmp[k] = shmHandle:get(k);
-        end
-        return tmp;
-      end
-    
     for k,v in pairs(shared[shtable]) do
       shmPointer[k] = carray.cast(shmHandle:pointer(k));
       if (type(v) == 'string') then

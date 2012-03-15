@@ -61,7 +61,7 @@ function update()
     end
   end
   -- Always send non-image data
-  Broadcast.update_new(broadcast_enable);
+  Broadcast.update(broadcast_enable);
   -- Send image data every so often
   if( count % imgRate == 0 ) then
 		imagecount = imagecount + 1;

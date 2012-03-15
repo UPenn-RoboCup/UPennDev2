@@ -134,7 +134,7 @@ function init_shm_segment(fenv, name, shared, shsize)
     local shmPointerName = shtable..'Ptr';
     fenv[shmPointerName] = {};
     local shmPointer = fenv[shmPointerName];
-    
+
     for k,v in pairs(shared[shtable]) do
       shmPointer[k] = carray.cast(shmHandle:pointer(k));
       if (type(v) == 'string') then

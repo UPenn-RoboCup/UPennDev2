@@ -19,7 +19,7 @@ end
 package.path = cwd .. '/../Util/?.lua;' .. package.path;
 package.path = cwd .. '/../Config/?.lua;' .. package.path;
 
-ps = require 'primesense'
+require 'primesense'
 require 'unix';
 require 'primecm'
 
@@ -27,14 +27,16 @@ require 'primecm'
 --unix.sleep(10);
 t0 = unix.time()
 while(true) do
-  local torso = ps.get_torso()
+  local torso = primesense.get_torso()
+  
   if( torso ) then
---    print("Raw torso: ", torso)
     print( "Torso: ", unpack(torso) );
     print();
     -- Update Shm
     primecm.set_skeleton_torso( torso );
+    primecm.set_skeleton_found( 1 );
   else
+    primecm.set_skeleton_found( 0 );    
     print("No user detected... Waiting 1 second...")
     unix.sleep(1);
   end

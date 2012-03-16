@@ -40,7 +40,7 @@ extern "C"
 //---------------------------------------------------------------------------
 #define SAMPLE_XML_PATH "./Config/SamplesConfig.xml"
 #define SAMPLE_XML_PATH_LOCAL "SamplesConfig.xml"
-#define MAX_NUM_USERS 2
+#define MAX_NUM_USERS 1
 
 //---------------------------------------------------------------------------
 // Globals
@@ -234,16 +234,33 @@ void close(){
   g_Context.Release();
 }
 
+// NOTE: Does not work yet...
+static int lua_get_user_found(lua_State *L) {
+  int user_id = luaL_checkint(L, 1);
+  nUsers = MAX_NUM_USERS;  
+  if( user_id > nUsers ){
+    lua_pushnil(L);
+  } else {
+    g_Context.WaitOneUpdateAll(g_UserGenerator);
+    // print the torso information for the first user already tracking
+    g_UserGenerator.GetUsers(aUsers, nUsers);
+    if(g_UserGenerator.GetSkeletonCap().IsTracking(aUsers[user_id])==FALSE){
+      lua_pushinteger(L, 0);
+    } else {
+      lua_pushinteger(L, 1);
+    }
+  }
+  return 1;
+}
+
 static int lua_get_torso(lua_State *L) {
 
   g_Context.WaitOneUpdateAll(g_UserGenerator);
-//  printf("Waited one update...\n");
+  //  printf("Waited one update...\n");
   // print the torso information for the first user already tracking
   nUsers=MAX_NUM_USERS;
   g_UserGenerator.GetUsers(aUsers, nUsers);
-//  printf("Got all users...\n");
-  int numTracked=0;
-  int userToPrint=-1;
+  //  printf("Got all users...\n");
 
   int ret = -1;
 
@@ -264,11 +281,11 @@ static int lua_get_torso(lua_State *L) {
     lua_pushnumber(L, torsoJoint.position.position.Y);
     lua_rawseti(L, -2, 3);
     /*
-    printf("user %d: head at (%6.2f,%6.2f,%6.2f)\n",aUsers[i],
-        torsoJoint.position.position.X,
-        torsoJoint.position.position.Y,
-        torsoJoint.position.position.Z);
-    */
+       printf("user %d: head at (%6.2f,%6.2f,%6.2f)\n",aUsers[i],
+       torsoJoint.position.position.X,
+       torsoJoint.position.position.Y,
+       torsoJoint.position.position.Z);
+       */
   }
   if(ret==-1){
     lua_pushnil(L);
@@ -279,13 +296,14 @@ static int lua_get_torso(lua_State *L) {
 
 static const struct luaL_reg primesense_lib [] = {
   {"get_torso", lua_get_torso},
+  {"get_user_found", lua_get_user_found},
 
   {NULL, NULL}
 };
 
 extern "C"
 int luaopen_primesense (lua_State *L) {
-  luaL_register(L, "PrimeSense", primesense_lib);
+  luaL_register(L, "primesense", primesense_lib);
   init();
 
   return 1;

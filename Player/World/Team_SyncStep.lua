@@ -8,7 +8,7 @@ require('vector');
 require('Config')
 require('serialization')
 require('vcm')
-
+require 'walk'
 
 playerID = Config.game.playerID;
 role = Config.game.role;
@@ -20,8 +20,10 @@ state.id = playerID;
 state.time = Body.get_time();
 state.role = role;
 state.task = task;
-state.step = step.supportLeg;
-state.phase = step.getPhase( Body.get_time() );
+state.step = walk.supportLeg;
+--state.phase = walk.getPhase( Body.get_time() );
+state.phase = 0;
+
 state.tStep = walk.tStep
 state.stretcher = 1;
 
@@ -77,17 +79,17 @@ function processMessage( t )
   -- Act on the step changes now...
   tDiff = 0;
 
-  myStep = step.supportLeg;
+  myStep = walk.supportLeg;
 
   -- Add the continuous phase lag/leading
 --[[
   myPhase = myPhase + omega;
   if( myPhase > walk.tStep ) then
     --print("Omega: "..omega);
-    --print("Before: "..myPhase..", "..myStep.." walk.tStep: "..walk.tStep);
+    --print("Before: "..myPhase..", "..mywalk.." walk.tStep: "..walk.tStep);
     myStep = 1-myStep;
     myPhase = myPhase - walk.tStep;
-    --print("After: "..myPhase..", "..myStep.." walk.tStep: "..walk.tStep);
+    --print("After: "..myPhase..", "..mywalk.." walk.tStep: "..walk.tStep);
   elseif( myPhase<0 ) then
     myStep = 1-myStep;
     myPhase = myPhase + walk.tStep;
@@ -145,7 +147,8 @@ function update()
         walk.set_velocity(unpack(myvel));
 --  print("SyncStep technology");
   count = count + 1;
-  myPhase = step.getPhase( Body.get_time() );
+--  myPhase = walk.getPhase( Body.get_time() );
+myPhase = 0;
 
   -- Update my state
   state.time = Body.get_time();
@@ -165,7 +168,7 @@ function update()
 
     state.task = task;
     state.role = role;
-    state.step = step.supportLeg;
+    state.step = walk.supportLeg;
     state.phase = myPhase + 0.002 + omega; -- Add 2ms transport time.  Sampl rate of 100Hz (2x this)
     state.tStep = walk.tStep
 

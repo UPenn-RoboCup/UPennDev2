@@ -15,7 +15,7 @@ else
   package.cpath = cwd .. '/Lib/?.so;' .. package.cpath;
 end
 
-package.path = cwd .. '/?.lua;' .. package.HeadFSM.update();path;
+package.path = cwd .. '/?.lua;' .. package.path;
 package.path = cwd .. '/Util/?.lua;' .. package.path;
 package.path = cwd .. '/Config/?.lua;' .. package.path;
 package.path = cwd .. '/Lib/?.lua;' .. package.path;

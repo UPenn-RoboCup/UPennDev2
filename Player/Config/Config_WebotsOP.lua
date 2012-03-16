@@ -82,6 +82,8 @@ end
 
 if( fsm.game == 'Stretcher' ) then
   loadconfig( 'Config_Stretcher' );
+  game.teamNumber = 18;
+  game.playerID = 1;
 end
 
 -- enable obstacle detection

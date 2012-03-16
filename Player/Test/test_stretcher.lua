@@ -75,8 +75,7 @@ vcmcount=0;
 local t0=Body.get_time();
 local last_update_time=t0;
 local headangle=vector.new({0,10*math.pi/180});
-local headsm_running=0;
-local bodysm_running=0;
+local sm_running=0;
 local last_vision_upfasfdsaasfgate_time=t0;
 targetvel=vector.zeros(3);
 t_update=2;
@@ -149,11 +148,12 @@ function process_keyinput()
 
     -- Stretcher specific
     elseif byte==string.byte("s") then -- Search for the stretcher
+      sm_running = 1-sm_running;
       BodyFSM.sm:set_state('bodySearch');
-
+--[[
     elseif byte==string.byte("p") then -- Execute pickup motion
       BodyFSM.sm:set_state('bodyPickup');
-
+--]]
     end
 
     walk.set_velocity(unpack(targetvel));

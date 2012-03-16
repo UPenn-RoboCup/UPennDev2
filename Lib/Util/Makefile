@@ -14,9 +14,12 @@ unix::
 shm::
 	cd Shm && MODE=$(MODE) make && cd $(CWD)
 
+primesense::
+	cd PrimeSense && MODE=$(MODE) make && cd $(CWD)
+
 clean::
 	cd CArray && make clean && cd $(CWD)
 	cd CUtil && make clean && cd $(CWD)
 	cd Unix && make clean && cd $(CWD)
 	cd Shm && make clean && cd $(CWD)
-	
+	cd PrimeSense && make clean && cd(CWD)

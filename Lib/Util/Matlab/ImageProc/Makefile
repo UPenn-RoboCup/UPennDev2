@@ -12,7 +12,7 @@ ifeq ($(OSTYPE),linux)
   MEXSUFFIX = mexglx
 endif
 ifeq ($(OSTYPE),darwin)
-  MEXSUFFIX = mexmaci
+  MEXSUFFIX = mexmaci64
 endif
 
 MEX = mex

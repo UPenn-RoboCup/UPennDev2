@@ -3,6 +3,10 @@ module(..., package.seeall);
 require('carray');
 require('vector');
 require('Config');
+-- Enable Webots specific
+if (string.find(Config.platform.name,'Webots')) then
+  webots = true;
+end
 
 require('ImageProc');
 require('HeadTransform');
@@ -53,6 +57,11 @@ labelA = {};
 labelA.m = camera.width/2;
 labelA.n = camera.height/2;
 labelA.npixel = labelA.m*labelA.n;
+if( webots ) then
+  labelA.m = camera.width;
+  labelA.n = camera.height;
+  labelA.npixel = labelA.m*labelA.n;
+end
 
 scaleB = 4;
 labelB = {};
@@ -81,7 +90,8 @@ t0 = unix.time()
 function entry()
   -- Start the HeadTransform machine
   HeadTransform.entry();
-
+	
+	-- Initiate Detection
   Detection.entry();
 
   -- Load the lookup table
@@ -104,35 +114,6 @@ function entry()
       unix.usleep(100000);
     end
   end
-
-  ball = {};
-  ball.detect = 0;
-
-  ballYellow={};
-  ballYellow.detect=0;
-
-  ballCyan={};
-  ballCyan.detect=0;
-
-  goalYellow = {};
-  goalYellow.detect = 0;
-
-  goalCyan = {};
-  goalCyan.detect = 0;
-
-  landmarkYellow = {};
-  landmarkYellow.detect = 0;
-
-  landmarkCyan = {};
-  landmarkCyan.detect = 0;
-
-  line = {};
-  line.detect = 0;
-
-  spot = {};
-  spot.detect = 0;
-
-  visionBoundary = {{0,0},{0,0},{0,0},{0,0}};
 
 end
 
@@ -164,10 +145,14 @@ function update()
   end
 
   -- perform the initial labeling
-  labelA.data  = ImageProc.yuyv_to_label(camera.image,
+  if(webots) then
+    labelA.data = Camera.get_labelA( carray.pointer(camera.lut) );
+  else
+    labelA.data  = ImageProc.yuyv_to_label(camera.image,
                                           carray.pointer(camera.lut),
                                           camera.width/2,
                                           camera.height);
+  end
 
   -- determine total number of pixels of each color/label
   colorCount = ImageProc.color_count(labelA.data, labelA.npixel);
@@ -190,10 +175,9 @@ function update()
     if (cmd >= 0 and cmd < camera.ncamera) then
       Camera.select_camera(cmd);
     else
-      print('WARNING: attempting to switch to unkown camera select = '..cmd);
+      --print('WARNING: attempting to switch to unkown camera select = '..cmd);
     end
   end
-
   return true;
 end
 
@@ -219,16 +203,10 @@ function update_shm(status)
   vcm.set_image_headAngles({status.joint[1], status.joint[2]});
   vcm.set_image_horizonA(HeadTransform.get_horizonA());
   vcm.set_image_horizonB(HeadTransform.get_horizonB());
+  vcm.set_image_horizonDir(HeadTransform.get_horizonDir())
 
   Detection.update_shm();
 
-  -- TODO: add boundary to vcm shm (for NSL support)
-  --[[
-  for i = 1,5 do
-	  vcm.etc.boundaryX[i] = visionBoundary[i][1];
-	  vcm.etc.boundaryY[i] = visionBoundary[i][2];
-  end
-  --]]
 end
 
 function exit()
@@ -255,20 +233,6 @@ end
 
 function bboxArea(bbox)
   return (bbox[2] - bbox[1] + 1) * (bbox[4] - bbox[3] + 1);
-end
-
-function update_vision_boundary()
-  --This function projects the boundary of current labeled image
-  --To see where the robot is looking at in local and global coordinate
-
-  local image_boundary={{0,0},{camera.width,0},	{0,camera.height},
-	{camera.width,camera.height},{camera.width/2,camera.height/2}};
-  local_boundary={};
-  for i=1,5 do
-	local v=HeadTransform.coordinatesA(image_boundary[i],0.1);
-	v=HeadTransform.projectGround(v);
-	visionBoundary[i]=vector.new(v);
-  end
 end
 
 function load_lut(fname)

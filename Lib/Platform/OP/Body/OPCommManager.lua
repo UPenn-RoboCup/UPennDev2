@@ -100,6 +100,9 @@ function shm_init()
    --readID: 1 for readable, 0 for non-readable
    actuatorShm.readType=vector.zeros(1);   
    actuatorShm.readID=vector.zeros(nJoint); 
+
+   --SJ: battery testing mode (read voltage from all joints)
+   actuatorShm.battTest=vector.zeros(1);   
 end
 
 -- Setup CArray mappings into shared memory
@@ -211,10 +214,17 @@ function sync_slope()
 end
 
 function sync_battery()
---DarwinOP specific: only check leg servos
-   chk_servo_no=(chk_servo_no%12)+1;
-   sensor.battery[chk_servo_no+5]=Dynamixel.get_battery(chk_servo_no+5);
-   sensor.temperature[chk_servo_no+5]=Dynamixel.get_temperature(chk_servo_no+5);
+   --battery test mode... read from ALL servos
+   if actuator.battTest[1]==1 then 
+     chk_servo_no=(chk_servo_no%nJoint)+1;
+     sensor.battery[chk_servo_no]=Dynamixel.get_battery(idMap[chk_servo_no]);
+     sensor.temperature[chk_servo_no]=Dynamixel.get_temperature(idMap[chk_servo_no]);
+   else
+     --Normal check mode: only check leg servos one by one
+     chk_servo_no=(chk_servo_no%12)+1;
+     sensor.battery[chk_servo_no+5]=Dynamixel.get_battery(idMap[chk_servo_no+5]);
+     sensor.temperature[chk_servo_no+5]=Dynamixel.get_temperature(idMap[chk_servo_no+5]);
+   end
 
    local bat_min=200;
    for i=6,17 do
@@ -418,8 +428,11 @@ function update()
 
    count=count+1;
    sensor.updatedCount[1]=count%100; --This count indicates whether DCM has processed current reading or not
-   if count%100==0 then 
+
+   if actuator.battTest[1]==1 then --in test mode, refresh faster
 	sync_battery();
+   else
+	if count%100==0 then sync_battery();end
    end
    if actuator.hardnessChanged[1]==1 then
 	sync_hardness();

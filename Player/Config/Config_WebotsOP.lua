@@ -32,7 +32,11 @@ dev.monitor_comm = 'NullComm';
 dev.game_control='WebotsOPGameControl';
 dev.walk='NewWalk';
 dev.kick='NewKick';
---dev.kick='NSLKickPunch';
+--dev.kick='NSLKickPunch'; --Extended kick that supports upper body motion
+dev.walk='NewNewWalk'; --New robocup walk that supports walking kicks
+
+--dev.walk='BoxWalk'; --New walk that supports different foot stance
+
 
 -- Game Parameters
 
@@ -48,6 +52,7 @@ game.nPlayers = 3;
 
 fsm = {};
 --fsm.game = 'Dodgeball';
+--fsm.game = 'OpDemo';
 fsm.game = 'RoboCup';
 
 if( fsm.game == 'RoboCup' ) then

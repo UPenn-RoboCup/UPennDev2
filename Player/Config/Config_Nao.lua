@@ -31,6 +31,7 @@ dev.camera = 'NaoCam';
 dev.kinematics = 'NaoKinematics';
 dev.comm = 'NaoComm';
 dev.monitor_comm = 'NaoMonitorComm';
+dev.ip = '192.168.0.255';
 dev.game_control = 'NaoGameControl';
 --dev.walk = 'NaoWalk';
 --dev.kick = 'NaoKick';

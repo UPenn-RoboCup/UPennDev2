@@ -19,6 +19,7 @@ UTILDIR= Util
 MATLABDIR= Matlab
 COLORTABLEDIR= Colortable
 VELODIR= Velocity
+PRIMEDIR= Util/PrimeSense
 PLATFORMS = setup_nao setup_op setup_webots_nao setup_webots_op setup_webots_generic setup_webots_hubo
 INSTDIR= ../Player/Lib
 WEBOTSCONTDIR= ../WebotsController
@@ -131,6 +132,11 @@ velocity:
 	@echo "Compiling Velocity Code...\n"
 	@cd $(VELODIR) && MODE=$(MODE) make && cd $(CWD)
 	@echo "\n"
+
+primesense:
+	@echo "Compiling PrimeSense Code...\n"
+	@cd $(PRIMEDIR) && MODE=$(MODE) make && cd $(CWD)
+	@echo "\n"
 	
 setup_nao: nao setup_util setup_image
 	@echo "Setting up Nao Lua/C++ Libraries...\n"
@@ -149,7 +155,7 @@ setup_webots_nao: webots_nao setup_util setup_image
 	@echo "\n"
 
 #setup_webots_op: webots_op setup_util setup_image setup_velocity
-setup_webots_op: webots_op setup_util setup_image 
+setup_webots_op: webots_op setup_util setup_image
 	@echo "Setting up Webots Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
 	find $(WEBOTSOPDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
@@ -246,6 +252,14 @@ setup_velocity: velocity
 	find $(VELODIR) $(REGEX) -exec cp -v {} $(WEBOTSCONTDIR) \;
 	find $(VELODIR) $(REGEX) -exec cp -v {} $(NAODEPLUA51DIR) \;
 #	cp $(VELODIR)/testmodel.xml $(INSTDIR)/../Vision/
+	@echo "\n"
+
+setup_primesense: primesense
+	@echo "Setting up PrimeSense Lua/C++ Libraries...\n"
+	mkdir -p $(INSTDIR)
+	find $(PRIMEDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
+#	find $(PRIMEDIR) $(REGEX) -exec cp -v {} $(NAODEPLUA51DIR) \;
+	cp $(PRIMEDIR)/SamplesConfig.xml $(INSTDIR)
 	@echo "\n"
 
 setup_naoqi: naoqi setup_util

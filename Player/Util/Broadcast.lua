@@ -13,6 +13,10 @@ require('gcm')
 require('wcm')
 require('serialization');
 require('ImageProc')
+require('Config');
+
+-- Initiate Sending Address
+MonitorComm.init(Config.dev.ip);
 
 -- Add a little delay between packet sending
 pktDelay = 500; -- time in us
@@ -60,12 +64,12 @@ end
 -- labelA (subsampled) --
 function sendAsub()
   labelA = vcm.get_image_labelA();
-  labelAsub = ImageProc.subsample( labelA );
-  width = vcm.get_image_width()/4;
-  height = vcm.get_image_height()/4;
+  width = vcm.get_image_width()/2;
+  height = vcm.get_image_height()/2;
   count = vcm.get_image_count();
+  labelAsub = ImageProc.block_bitor(labelA, width, height, 2, 2);
   
-  array = serialization.serialize_array(labelAsub, width, height, 'uint8', 'labelAsub', count);
+  array = serialization.serialize_array(labelAsub, width/2, height/2, 'uint8', 'labelAsub', count);
   sendlabelAsub = {};
   sendlabelAsub.team = {};
   sendlabelAsub.team.number = gcm.get_team_number();
@@ -102,15 +106,15 @@ function sendImg()
 end
 
 -- yuv (subsampled from yuyv) --
-function sendImgSub()
+function sendImgSub( level )
   yuyv = vcm.get_image_yuyv();
-  yuvSub = ImageProc.subsample_yuyv2yuv( yuyv );
-  -- TODO: I am sending 3 bytes per pixel.
-  width = vcm.get_image_width()/2; -- number of yuyv packages
-  height = vcm.get_image_height()/2;
+  width = vcm.get_image_width() / 2; -- number of yuyv packages
+  height = vcm.get_image_height() / 2;
   count = vcm.get_image_count();
+  yuvSub = ImageProc.subsample_yuyv2yuv( yuyv, width, height*2, level or 1 );
   
-  array = serialization.serialize_array(yuvSub, width, height, 'uint8', 'yuvSub', count);
+  -- TODO: I am sending 3 bytes per pixel.  Is this the best way to do it?
+  array = serialization.serialize_array(yuvSub, 3*width*height, 1, 'uint8', 'yuvSub', count);
   sendyuvSub = {};
   sendyuvSub.team = {};
   sendyuvSub.team.number = gcm.get_team_number();
@@ -174,19 +178,31 @@ function update(enable)
 
   MonitorComm.send(serialization.serialize(send));
   
-  -- Send camera frames
-  if enable==1 then -- just send the data, no vision
-    return;
-  elseif enable==2 then -- send labelB in addition to data
-    sendB();
-  elseif enable==3 then -- send labelA in addition to data
-    -- Send labelA image      
-    sendA();
-    -- Send image packets
-    sendImg();
-  end
-
 end
 
-function update_img()
+function update_img( enable, imagecount )
+  local division = 4; -- for image sending part by part
+  if(enable==2) then
+		local yuyv = vcm.get_image_yuyv();
+		local labelB = vcm.get_image_labelB();
+		local height = vcm.get_image_height();
+		local width = vcm.get_image_width()/2;
+		local heightB = vcm.get_image_height()/8;
+		local widthB = vcm.get_image_width()/8;
+		local teamID = gcm.get_team_number();
+		local playerID = gcm.get_team_player_id();
+--    print(width..'.'..height);
+		ret1,ret2,ret3 = MonitorComm.send_yuyv2(yuyv,width,height,teamID,playerID,division,imagecount%division); 
+		ret = MonitorComm.send_label(labelB,widthB,heightB,1,teamID,playerID);
+--		print('section',imagecount%division,'Returned:',ret1,ret2,ret3);
+		--print('divions sending '..imagecount%division..' Done? '..ret);
+--    sendB();
+--    sendImg(); -- half of sub image
+--    sendImgSub(2);
+  elseif(enable==3) then
+	if (Config.platform.name ~= "Nao") then
+--	    sendImgSub();
+-- 	  sendAsub();
+		end
+  end
 end

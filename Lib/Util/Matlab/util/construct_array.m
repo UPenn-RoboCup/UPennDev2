@@ -53,10 +53,18 @@ function h = construct_array(name)
   function arr = update_always(packet)
     arr = [];
 
-    [name, imgnum, partnum, parts] = parse_name(packet.name);
+    [myname, imgnum, partnum, parts] = parse_name(packet.name);
+    [h.nparts parts];
+    if( parts ~= h.nparts)
+      % new image: clear data and start over
+      h.cimg = imgnum;
+      h.nparts = parts;
+      h.part = zeros(parts,1);
+      h.arrparts = {};
+    end
     
     % check to make sure correct array
-    if (strcmp(name,h.name) == 0)
+    if (strcmp(myname,h.name) == 0)
       return;
     end
 

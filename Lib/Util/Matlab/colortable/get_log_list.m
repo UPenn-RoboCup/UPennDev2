@@ -22,7 +22,7 @@ for fileIter = 1:size(dirList,1)
 	% if it is not ., .., or a directory
 	if(~strcmp(fileName, '.') & ~strcmp(fileName, '..') & ~dirList(fileIter).isdir)
 
-		[pathString name ext version] = fileparts(fileName);
+		[pathString name ext] = fileparts(fileName);
 		
 		% check the extension is .mat and the name starts with log
 		if(strcmp(ext,'.mat') && strcmp(name(1:3),'log'))

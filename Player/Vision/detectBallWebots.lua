@@ -56,8 +56,8 @@ function detect(color)
   ball.bboxA = Vision.bboxB2A(ballPropsB[1].boundingBox);
 
   -- threshold checks on the region properties
---  if ((ball.propsA.area < 6) or (ball.propsA.area < 0.35*Vision.bboxArea(ball.propsA.boundingBox))) then
-  if false then
+  if ((ball.propsA.area < 6) or (ball.propsA.area < 0.35*Vision.bboxArea(ball.propsA.boundingBox))) then
+--  if true then
     Debug.vprint(2,1,'Threshold check fail');
     return ball;
   else
@@ -78,6 +78,7 @@ function detect(color)
     -- Coordinates of ball
     scale = math.max(dArea/diameter, ball.propsA.axisMajor/diameter);
     v = HeadTransform.coordinatesA(ballCentroid, scale);
+    -- v = HeadTransform.rayIntersectA(ballCentroid);
     --[[
     print('scale: '..scale);
     print('v0: '..v[1]..', '..v[2]..', '..v[3]);

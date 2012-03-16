@@ -8,7 +8,10 @@ require('Body')
 require('Kinematics')
 require('Config');
 require('vector')
-require('step')
+step=require('NSLStep')
+
+--Can we do walkkick with this walk code?
+canWalkKick = 1; 
 
 -- Walk Parameters
 footX = Config.walk.footX+Config.walk.footXComp;
@@ -77,8 +80,6 @@ tWalkKickDelay=1.0;
 
 function entry()
   print("Walk entry")
-  still = false;
-
   velCurrent = vector.new({0, 0, 0});
   velCommand = vector.new({0, 0, 0});
   uLeft1 = uLeft;uLeft2 = uLeft;
@@ -117,11 +118,10 @@ function update()
     update_velocity();
 
     if (stopRequest) then
-      print("Walk stopped");
-      still = true;
+      print("Walk stopped")
       stopRequest = false;
       active = false;
-      tWalkKick = 0;
+      tWalkKick=0;
       return "stop";
     end
     uLeft1 = step.uLeft2;
@@ -136,23 +136,23 @@ function update()
     local supportYMod=0;
 
     if initial_step==1 then
-      velCurrent=vector.new({0,0,0});
-      initial_step=2;
+	velCurrent=vector.new({0,0,0});
+        initial_step=2;
     elseif initial_step==2 then
-      velCurrent=vector.new({0,0,0});
-      initial_step=0;
+	velCurrent=vector.new({0,0,0});
+        initial_step=0;
     end
 
-    --Support bias for fast walking forward
+--Support bias for fast walking forward
     if velCurrent[1]>0.08 then
-      supportXMod=Config.walk.supportXfactor0*1.3;
+	supportXMod=Config.walk.supportXfactor0*1.3;
     elseif velCurrent[1]>0.06 then
-      supportXMod=Config.walk.supportXfactor0;
+	supportXMod=Config.walk.supportXfactor0;
     end
 
-    --Support bias for walking backward
+--Support bias for walking backward
     if velCurrent[1]<0 then
-      supportXMod=velCurrent[1]*Config.walk.supportXfactor1+Config.walk.supportXfactor2;
+	supportXMod=velCurrent[1]*Config.walk.supportXfactor1+Config.walk.supportXfactor2;
     end
 
 --Support bias for sidestepping
@@ -294,16 +294,16 @@ function update_velocity()
 	velCommand[2]-velCurrent[2],
 	velCommand[3]-velCurrent[3]});
 
---[[
-  if Config.BodyFSM.level.speed==2 and velCommand[1]>0.04 then
-     velChange[1]=math.min(0.01,math.max(-velDelta[1],velChange[1]));
-  else
-     velChange[1]=math.min(velDelta[1],math.max(-velDelta[1],velChange[1]));
-  end
---]]
+
   velChange[1]=math.min(velDelta[1],math.max(-velDelta[1],velChange[1]));
   velChange[2]=math.min(velDelta[2],math.max(-velDelta[2],velChange[2]));
   velChange[3]=math.min(velDelta[3],math.max(-velDelta[3],velChange[3]));
+
+--[[
+  if Config.BodyFSM.level.speed==2 and velCommand[1]>0.04 then
+     velChange[1]=math.min(0.01,math.max(-velDelta[1],velChange[1]));
+  end
+--]]
 
   velCurrent[1],velCurrent[2],velCurrent[3]=
 	  velCurrent[1]+velChange[1],
@@ -343,6 +343,11 @@ function doWalkKickLeft()
     local uSupport, uBody2;
     vel1={0.06,0,0};    vel2={0.12,0,0};
 
+    --Hack for webots stability
+    supportXWK={0 ,0};
+    if tStep>0.3 then supportXWK = {0.05 ,0.02};end
+
+
     if supportLeg == 1 then  --Right support
 	uLeft2[1],uLeft2[2],uLeft2[3]=uLeft1[1],uLeft1[2],uLeft1[3];
 	uRight2[1],uRight2[2],uRight2[3]=uRight1[1],uRight1[2],uRight1[3];
@@ -356,18 +361,18 @@ function doWalkKickLeft()
     uRight2=pose_global(vel1,uRight1);
     uSupport=pose_global({supportX,supportY,0},uLeft2);
     uBody2= se2_interpolate(.7, uLeft2,uRight2);
-    step.enque(uLeft2,uBody2,uRight2,uSupport,supportLeg,0.30,1);
+    step.enque(uLeft2,uBody2,uRight2,uSupport,supportLeg,tStep*1.2,1);
 
     supportLeg=1-supportLeg;
     uLeft2=pose_global(vel2,uLeft1);
-    uSupport=pose_global({supportX,-supportY,0},uRight2);
+    uSupport=pose_global({supportX+supportXWK[1],-supportY,0},uRight2);
     uBody2= se2_interpolate(.5, uLeft2,uRight2);
     uBody2=pose_global({Config.walk.walkKickFrontComp,0,0},uBody2);
-    step.enque(uLeft2,uBody2,uRight2,uSupport,supportLeg,0.30,3);
+    step.enque(uLeft2,uBody2,uRight2,uSupport,supportLeg,tStep*1.2,3);
 
     supportLeg=1-supportLeg;
     uRight2=pose_global(vel1,uRight2);
-    uSupport=pose_global({supportX,-supportY,0},uRight2);
+    uSupport=pose_global({supportX+supportXWK[2],supportY,0},uLeft2);
     uBody2= se2_interpolate(.5, uLeft2,uRight2);
     step.enque(uLeft2,uBody2,uRight2,uSupport,supportLeg,tStep,1);
 
@@ -388,6 +393,9 @@ function doWalkKickRight()
     local uSupport, uBody2;
 
     vel1={0.06,0,0};    vel2={0.12,0,0};
+    --Hack for webots stability
+    supportXWK={0 ,0};
+    if tStep>0.3 then supportXWK = {0.05, 0.02};end
 
     if supportLeg == 0 then  --Left support
 	uLeft2[1],uLeft2[2],uLeft2[3]=uLeft1[1],uLeft1[2],uLeft1[3];
@@ -403,20 +411,19 @@ function doWalkKickRight()
     uLeft2=pose_global(vel1,uLeft1);
     uSupport=pose_global({supportX,-supportY,0},uRight2);
     uBody2= se2_interpolate(.3, uLeft2,uRight2);
-    step.enque(uLeft2,uBody2,uRight2,uSupport,supportLeg,0.30,1);
-
+    step.enque(uLeft2,uBody2,uRight2,uSupport,supportLeg,tStep*1.2,1);
 
     --left support kick
     supportLeg=1-supportLeg;
     uRight2=pose_global(vel2,uRight1);
-    uSupport=pose_global({supportX,supportY,0},uLeft2);
+    uSupport=pose_global({supportX+supportXWK[1],supportY,0},uLeft2);
     uBody2= se2_interpolate(.5, uLeft2,uRight2);
     uBody2=pose_global({Config.walk.walkKickFrontComp,0,0},uBody2);
-    step.enque(uLeft2,uBody2,uRight2,uSupport,supportLeg,0.30,3);
+    step.enque(uLeft2,uBody2,uRight2,uSupport,supportLeg,tStep*1.2,3);
 
     supportLeg=1-supportLeg;
     uLeft2=pose_global(vel1,uLeft2);
-    uSupport=pose_global({supportX,-supportY,0},uRight2);
+    uSupport=pose_global({supportX+supportXWK[2],-supportY,0},uRight2);
     uBody2= se2_interpolate(.5, uLeft2,uRight2);
     step.enque(uLeft2,uBody2,uRight2,uSupport,supportLeg,tStep,1);
 

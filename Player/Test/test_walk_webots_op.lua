@@ -62,7 +62,7 @@ getch.enableblock(1);
 
 -- initialize state machines
 Motion.entry();
-Motion.event("standup");
+--Motion.event("standup");
 
 Body.set_head_hardness({0.4,0.4});
 
@@ -88,6 +88,13 @@ hires_broadcast=0;
 cameraparamcount=1;
 broadcast_count=0;
 buttontime=0;
+
+
+
+
+--Hack for saffire
+Body.set_lleg_command({0,0,0,0,0,0,0,0,0,0,0,0})
+
 
 function process_keyinput()
   local str = controller.wb_robot_keyboard_get_key();
@@ -123,7 +130,8 @@ function process_keyinput()
         elseif byte==string.byte("5") then
                 walk.doWalkKickLeft();
         elseif byte==string.byte("6") then
-                walk.doWalkKickRight();
+--                walk.doWalkKickRight();
+                walk.doSideKickRight();
 
 	elseif byte==string.byte("7") then	Motion.event("sit");
 	elseif byte==string.byte("8") then	

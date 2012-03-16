@@ -65,7 +65,6 @@ end
 smindex = 0;
 initToggle = true;
 
-
 -- main loop
 count = 0;
 lcount = 0;

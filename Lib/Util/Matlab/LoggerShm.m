@@ -32,7 +32,7 @@ while (1)
   end
 
   if (rem(ilog, 100) == 0)
-    savefile = ['/tmp/log_' datestr(now,30) '.mat'];
+    savefile = ['./colortable/log_' datestr(now,30) '.mat'];
     fprintf('\nSaving Log file: %s...', savefile)
     save(savefile, 'LOG');
     fprintf('done\n');

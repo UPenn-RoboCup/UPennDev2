@@ -1,0 +1,38 @@
+from openni import *
+
+try:
+
+    # Start OpenNI
+    print "Initializing..."
+    ctx = Context()
+    ctx.init()
+    gest = GestureGenerator()
+    gest.create(ctx)
+
+    # Add some gestures to look for
+    print "Registering listeners..."
+    gest.add_gesture("Wave")
+    gest.add_gesture("Click")
+
+    # Register callbacks
+    def gesture_detected(src, gesture, id, endPoint):
+        print "Detected gesture:", gesture
+
+    def gesture_progress(src, gesture, point, progress): pass
+
+    gest.register_gesture_cb(gesture_detected, gesture_progress)
+
+    # Start generating
+    print "Ready! Starting to detect gestures."
+    ctx.start_generating_all()
+
+    # Main loop:
+    # process every frame until the user interrupts
+    try:
+        print "Press Control-C to quit.\n"
+        while True: ctx.wait_any_update_all()
+    except KeyboardInterrupt: print
+
+except OpenNIError, error:
+    # When an error occurs:
+    print "OpenNI raised an error:", error

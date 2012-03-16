@@ -192,7 +192,7 @@ static int init() {
   nRetVal = g_UserGenerator.RegisterUserCallbacks(User_NewUser, User_LostUser, NULL, hUserCallbacks);
   CHECK_RC(nRetVal, "Register to user callbacks");
   printf("User callbacks\n");  
-  
+
   nRetVal = g_UserGenerator.GetSkeletonCap().RegisterToCalibrationStart(UserCalibration_CalibrationStart, NULL, hCalibrationStart);
   CHECK_RC(nRetVal, "Register to calibration start");
   printf("Starting calibration\n");  
@@ -237,11 +237,11 @@ void close(){
 static int lua_get_torso(lua_State *L) {
 
   g_Context.WaitOneUpdateAll(g_UserGenerator);
-  printf("Waited one update...\n");
+//  printf("Waited one update...\n");
   // print the torso information for the first user already tracking
   nUsers=MAX_NUM_USERS;
   g_UserGenerator.GetUsers(aUsers, nUsers);
-  printf("Got all users...\n");
+//  printf("Got all users...\n");
   int numTracked=0;
   int userToPrint=-1;
 
@@ -252,15 +252,28 @@ static int lua_get_torso(lua_State *L) {
     if(g_UserGenerator.GetSkeletonCap().IsTracking(aUsers[i])==FALSE){
       continue;
     } else {
+      ret = i;
     }
 
     g_UserGenerator.GetSkeletonCap().GetSkeletonJoint(aUsers[i],XN_SKEL_TORSO,torsoJoint);
+    lua_createtable(L, 3, 0);
+    lua_pushnumber(L, torsoJoint.position.position.X);
+    lua_rawseti(L, -2, 1);
+    lua_pushnumber(L, torsoJoint.position.position.Y);
+    lua_rawseti(L, -2, 2);
+    lua_pushnumber(L, torsoJoint.position.position.Y);
+    lua_rawseti(L, -2, 3);
+    /*
     printf("user %d: head at (%6.2f,%6.2f,%6.2f)\n",aUsers[i],
         torsoJoint.position.position.X,
         torsoJoint.position.position.Y,
         torsoJoint.position.position.Z);
+    */
   }
-  lua_pushinteger(L, ret);
+  if(ret==-1){
+    lua_pushnil(L);
+  }
+  //lua_pushinteger(L, ret);
   return 1;
 }
 

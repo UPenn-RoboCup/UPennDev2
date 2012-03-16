@@ -168,7 +168,7 @@ h.get_labelB = @get_labelB;
 %         height = h.vcmImage.get_height();
     width = h.vcmImage.get_width()/2;
     height = h.vcmImage.get_height();
-    rawData = h.vcmImage.get_yuyv()*2;
+    rawData = h.vcmImage.get_yuyv();
     yuyv = raw2yuyv(rawData, width, height); %for Nao, double for OP
   end
 

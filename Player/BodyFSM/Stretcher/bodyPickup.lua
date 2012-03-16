@@ -4,7 +4,7 @@ require('Body')
 require('World')
 require('vector')
 require('Motion');
-require('pickup');
+require('grip');
 require('walk');
 require('wcm');
 
@@ -24,26 +24,26 @@ function entry()
 
   local ball = wcm.get_ball();
   if( t0 - ball.t < .5 ) then -- Just saw it
-	  pickup.setdistance( ball.x );
+	  grip.setdistance( ball.x );
   end
 
   --SJ - only initiate kick while walking
   kickable = walk.active;  
-  pickup.throw = 0;
-  Motion.event("pickup");
+  grip.throw = 0;
+  Motion.event("grip");
   started = false;
 end
 
 function update()
   local t = Body.get_time();
   if not kickable then 
-   print("bodyPickup escape");
+   print("bodygrip escape");
    return "done";
   end
   
-  if (not started and pickup.active) then
+  if (not started and grip.active) then
     started = true;
-  elseif (started and not pickup.active) then
+  elseif (started and not grip.active) then
     return "done";
   end
 

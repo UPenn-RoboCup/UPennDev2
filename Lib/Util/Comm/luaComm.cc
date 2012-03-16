@@ -1,3 +1,4 @@
+#include <iostream>
 #include <string>
 #include <deque>
 #include "string.h"
@@ -9,6 +10,8 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+#include <stdio.h>
+#include <assert.h>
 
 #ifdef __cplusplus
 extern "C"
@@ -24,19 +27,13 @@ extern "C"
 #include <vector>
 #include <stdint.h>
 
-/*
-#define IP "192.168.123.255" // OP wired
-#define PORT 111111
-*/
-
-char bcast_addr[16]; // Initialize our Broadcast address on the on opening module
-int comm_port = 55555; // Defaul port - should change on initialization
-
 #define MDELAY 2
 #define TTL 16
 #define MAX_LENGTH 160000 //Size for sending 640*480 yuyv data without resampling
 
-const int maxQueueSize = 6;
+const int maxQueueSize = 12;
+static std::string IP;
+static int PORT = 0;
 
 static std::deque<std::string> recvQueue;
 static int send_fd, recv_fd;
@@ -51,13 +48,27 @@ void mexExit(void)
 }
 */
 
-static int lua_darwinopcomm_update(lua_State *L) {
+static int lua_comm_init(lua_State *L) {
+	const char *ip = luaL_checkstring(L, 1);
+	int port = luaL_checkint(L,2);
+	IP = ip;
+	PORT = port;
+ 	return 1;
+}
+
+static int lua_comm_update(lua_State *L) {
   static sockaddr_in source_addr;
   static char data[MAX_LENGTH];
 
+	// Check whether initiated
+  assert(IP.empty()!=1);	
+
+	// Check port
+	assert(PORT!=0);
+
   static bool init = false;
   if (!init) {
-    struct hostent *hostptr = gethostbyname( bcast_addr );
+    struct hostent *hostptr = gethostbyname(IP.c_str());
     if (hostptr == NULL) {
       printf("Could not get hostname\n");
       return -1;
@@ -79,7 +90,7 @@ static int lua_darwinopcomm_update(lua_State *L) {
     bzero((char *) &dest_addr, sizeof(dest_addr));
     dest_addr.sin_family = AF_INET;
     bcopy(hostptr->h_addr, (char *) &dest_addr.sin_addr, hostptr->h_length);
-    dest_addr.sin_port = htons(comm_port);
+    dest_addr.sin_port = htons(PORT);
 
     if (connect(send_fd, (struct sockaddr *) &dest_addr, sizeof(dest_addr)) < 0) {
       printf("Could not connect to destination address\n");
@@ -96,7 +107,7 @@ static int lua_darwinopcomm_update(lua_State *L) {
     bzero((char *) &local_addr, sizeof(local_addr));
     local_addr.sin_family = AF_INET;
     local_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-    local_addr.sin_port = htons(comm_port);
+    local_addr.sin_port = htons(PORT);
     if (bind(recv_fd, (struct sockaddr *) &local_addr, sizeof(local_addr)) < 0) {
       printf("Could not bind to port\n");
       return -1;
@@ -133,15 +144,15 @@ static int lua_darwinopcomm_update(lua_State *L) {
   return 1;
 }
 
-static int lua_darwinopcomm_size(lua_State *L) {
-  int updateRet = lua_darwinopcomm_update(L);
+static int lua_comm_size(lua_State *L) {
+  int updateRet = lua_comm_update(L);
 
   lua_pushinteger(L, recvQueue.size());
   return 1;
 }
 
-static int lua_darwinopcomm_receive(lua_State *L) {
-  int updateRet = lua_darwinopcomm_update(L);
+static int lua_comm_receive(lua_State *L) {
+  int updateRet = lua_comm_update(L);
 
   if (recvQueue.empty()) {
     lua_pushnil(L);
@@ -166,49 +177,35 @@ static int lua_darwinopcomm_receive(lua_State *L) {
 }
 
 
-static int lua_darwinopcomm_send(lua_State *L) {
-  int updateRet = lua_darwinopcomm_update(L);
+static int lua_comm_send(lua_State *L) {
+  int updateRet = lua_comm_update(L);
 
   const char *data = luaL_checkstring(L, 1);
-  std::string dataStr(data);
+	std::string header;
+  std::string dataStr;
+	std::string contents(data);
+  header.push_back(11);
+	dataStr = header + contents;
   int ret = send(send_fd, dataStr.c_str(), dataStr.size(), 0);
     
   lua_pushinteger(L, ret);
 
-  // TODO: Put in receive queue as well?
-
-  /*
-  if (nrhs < 2)
-    mexErrMsgTxt("No input argument");
-  int n = mxGetNumberOfElements(prhs[1])*mxGetElementSize(prhs[1]);
-  int ret = send(send_fd, mxGetData(prhs[1]), n, 0);
-  plhs[0] = mxCreateDoubleScalar(ret);
-
-  // Put it in receive queue as well:
-  //std::string msg((const char *) mxGetData(prhs[1]), n);
-  //recvQueue.push_back(msg);
-  */
-
   return 1;
 }
 
-static const struct luaL_reg OPComm2_lib [] = {
-  {"size", lua_darwinopcomm_size},
-  {"receive", lua_darwinopcomm_receive},
-  {"send", lua_darwinopcomm_send},
+static const struct luaL_reg Comm_lib [] = {
+  {"init", lua_comm_init},
+  {"size", lua_comm_size},
+  {"receive", lua_comm_receive},
+  {"send", lua_comm_send},
   {NULL, NULL}
 };
 
 #ifdef __cplusplus
 extern "C"
 #endif
-int luaopen_OPComm2 (lua_State *L) {
-  luaL_register(L, "OPComm2", OPComm2_lib);
-
-  const char *broadcast_address = luaL_checkstring(L, 1); 
-  int len = strlen( broadcast_address ) + 1; // include the \0 termination character
-  memcpy( bcast_addr, str1, len );
-  comm_port = luaL_checkint(L, 2);
+int luaopen_Comm (lua_State *L) {
+  luaL_register(L, "Comm", Comm_lib);
 
   return 1;
 }

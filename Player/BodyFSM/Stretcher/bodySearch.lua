@@ -5,12 +5,10 @@ require('wcm')
 require('walk')
 ps = false;
 
-if( Config.stretcher.primesense ) then
-  require 'primecm'
-  -- Check if lead
-  if( Config.game.playerID==1 ) then
-    ps = true;
-  end
+if( Config.stretcher.primesense and Config.game.playerID==1 ) then
+  print('Using the PrimeSense for control!')  
+  require 'primecm'    
+  ps = true;
 end
 
 t0 = 0;
@@ -27,35 +25,40 @@ function entry()
 
   t0 = Body.get_time();
 
-  -- set turn direction to last known ball position
-  stretcher = wcm.get_stretcher();
-  if (stretcher.y > 0) then
-    direction = 1;
-  else
-    direction = -1;
+  if( not ps ) then  
+    -- set turn direction to last known ball position
+    stretcher = wcm.get_stretcher();
+    if (stretcher.y > 0) then
+      direction = 1;
+    else
+      direction = -1;
+    end
   end
 end
 
 function update()
   local t = Body.get_time();
 
-  stretcher = wcm.get_stretcher();
-
   if( ps ) then
     if( primecm.get_skeleton_found()==1 ) then
+      print('Updating via PrimeSense')
       local torso = primecm.get_skeleton_torso();
-      local vx = torso[3] / 200;
-      local vy = torso[1] / 200;
+      local vx = -1*torso[3] - 240;
+      local vy = -1*torso[1] - 200;
       local va = 0;
       scale = math.min(maxStep/math.sqrt(vx^2+vy^2), 1);
-      vx = vx / scale;
-      vy = vy / scale;
+      vx = vx * scale;
+      vy = vy * scale;
+      print('torso',unpack(torso))
+      print('vel:',vx,vy)
+      print()
       walk.set_velocity( vx, vy, va );
     else
       print('User not found...')
       walk.set_velocity( 0,0,0 );      
     end
   else
+    stretcher = wcm.get_stretcher();    
     -- search/spin until the ball is found
     walk.set_velocity(0, 0, direction*vSpin);
 

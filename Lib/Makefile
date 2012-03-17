@@ -33,23 +33,24 @@ REGEX=-regex '.*\($(SHLIBEXT)\|$(LUAEXT)\)'
 ifndef OSTYPE
   OSTYPE = $(shell uname -s|awk '{print tolower($$0)}')
 endif
+
+ifndef ARCH
+  ARCH= $(shell uname -m)
+endif
+
 ifeq ($(OSTYPE),linux)
-	MODE ?= 32
   SHLIBEXT= so
 endif
 ifeq ($(OSTYPE),darwin)
-	MODE ?= 64
   SHLIBEXT= dylib
   REGEX=\( -regex '.*.$(LUAEXT)' -or -regex '.*.$(SHLIBEXT)' \)
 endif
 
 all none:
 	@echo "Please do:"
-	@echo "   make [ARCH] PLATFORM"
+	@echo "   make PLATFORM"
 	@echo "where PLATFORM is one of following:"
 	@echo "   $(PLATFORMS)"
-	@echo "and ARCH is one of following:"
-	@echo "   MODE=32(Default) MODE=64"
 
 colortable:
 	@echo "Compiling Colortable Mex Files...\n"
@@ -88,27 +89,27 @@ op:
 
 webots_nao:
 	@echo "Compiling Webots Lua/C++ Libraries...\n"
-	@cd $(WEBOTSNAODIR) && MODE=$(MODE) make && cd $(CWD)
+	@cd $(WEBOTSNAODIR) && make && cd $(CWD)
 	@echo "\n"
 
 webots_op:
 	@echo "Compiling Webots OP Lua/C++ Libraries...\n"
-	@cd $(WEBOTSOPDIR) && MODE=$(MODE) make && cd $(CWD)
+	@cd $(WEBOTSOPDIR) && make && cd $(CWD)
 	@echo "\n"
 
 webots_hubo:
 	@echo "Compiling Webots HUBO Lua/C++ Libraries...\n"
-	@cd $(WEBOTSHUBODIR) && MODE=$(MODE) make && cd $(CWD)
+	@cd $(WEBOTSHUBODIR) && make && cd $(CWD)
 	@echo "\n"
 
 webots_generic:
 	@echo "Compiling Webots Generic Lua/C++ Libraries...\n"
-	@cd $(WEBOTSGENERICDIR) && MODE=$(MODE) make && cd $(CWD)
+	@cd $(WEBOTSGENERICDIR) && make && cd $(CWD)
 	@echo "\n"
 
 webots_charli:
 	@echo "Compiling Webots CHARLI Lua/C++ Libraries...\n"
-	@cd $(WEBOTSCHARLIDIR) && MODE=$(MODE) make && cd $(CWD)
+	@cd $(WEBOTSCHARLIDIR) && make && cd $(CWD)
 	@echo "\n"
 
 webots_saffir:
@@ -119,18 +120,18 @@ webots_saffir:
 
 image:
 	@echo "Compiling Image Processing Lua/C++ Libraries...\n"
-	@cd $(IMAGEDIR) && MODE=$(MODE) make && cd $(CWD)
+	@cd $(IMAGEDIR) && make && cd $(CWD)
 	@echo "\n"
 
 util::
 	@echo "Mode: $(MODE)"
 	@echo "Compiling Utility Lua/C++ Libraries...\n"
-	@cd $(UTILDIR) && MODE=$(MODE) make && cd $(CWD)
+	@cd $(UTILDIR) && make && cd $(CWD)
 	@echo "\n"
 
 velocity:
 	@echo "Compiling Velocity Code...\n"
-	@cd $(VELODIR) && MODE=$(MODE) make && cd $(CWD)
+	@cd $(VELODIR) && make && cd $(CWD)
 	@echo "\n"
 
 primesense:
@@ -151,7 +152,7 @@ setup_webots_nao: webots_nao setup_util setup_image
 	find $(WEBOTSNAODIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
 	rm -f $(PLAYERDIR)/Config/Config.lua
 	cd $(PLAYERDIR)/Config && ln -s Config_WebotsNao.lua Config.lua && cd $(CWD)
-	cd $(WEBOTSCONTDIR) && MODE=$(MODE) make && cd $(CWD)
+	cd $(WEBOTSCONTDIR) && make && cd $(CWD)
 	@echo "\n"
 
 #setup_webots_op: webots_op setup_util setup_image setup_velocity
@@ -161,7 +162,7 @@ setup_webots_op: webots_op setup_util setup_image
 	find $(WEBOTSOPDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
 	rm -f $(PLAYERDIR)/Config/Config.lua
 	cd $(PLAYERDIR)/Config && ln -s Config_WebotsOP.lua Config.lua && cd $(CWD)
-	cd $(WEBOTSCONTDIR) && MODE=$(MODE) make && cd $(CWD)
+	cd $(WEBOTSCONTDIR) && make && cd $(CWD)
 	cd $(WEBOTSCONTDIR) && touch Player && cd $(CWD)  
 	cd $(WEBOTSCONTDIR) && rm Player && ln -s ../Player Player && cd $(CWD)
 	@echo "\n"
@@ -172,7 +173,7 @@ setup_webots_hubo: webots_hubo setup_util setup_image
 	find $(WEBOTSHUBODIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
 	rm -f $(PLAYERDIR)/Config/Config.lua
 	cd $(PLAYERDIR)/Config && ln -s Config_WebotsHubo.lua Config.lua && cd $(CWD)
-	cd $(WEBOTSCONTDIR) && MODE=$(MODE) make && cd $(CWD)
+	cd $(WEBOTSCONTDIR) && make && cd $(CWD)
 	cd $(WEBOTSCONTDIR) && touch Player && cd $(CWD)  
 	cd $(WEBOTSCONTDIR) && rm Player && ln -s ../Player Player && cd $(CWD)
 	@echo "\n"
@@ -183,7 +184,7 @@ setup_webots_generic: webots_generic setup_util setup_image
 	find $(WEBOTSGENERICDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
 	rm -f $(PLAYERDIR)/Config/Config.lua
 	cd $(PLAYERDIR)/Config && ln -s Config_WebotsGeneric.lua Config.lua && cd $(CWD)
-	cd $(WEBOTSCONTDIR) && MODE=$(MODE) make && cd $(CWD)
+	cd $(WEBOTSCONTDIR) && make && cd $(CWD)
 	cd $(WEBOTSCONTDIR) && touch Player && cd $(CWD)  
 	cd $(WEBOTSCONTDIR) && rm Player && ln -s ../Player Player && cd $(CWD)
 	@echo "\n"
@@ -194,7 +195,7 @@ setup_webots_charli: webots_charli setup_util setup_image
 	find $(WEBOTSCHARLIDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
 	rm -f $(PLAYERDIR)/Config/Config.lua
 	cd $(PLAYERDIR)/Config && ln -s Config_WebotsCharli.lua Config.lua && cd $(CWD)
-	cd $(WEBOTSCONTDIR) && MODE=$(MODE) make && cd $(CWD)
+	cd $(WEBOTSCONTDIR) && make && cd $(CWD)
 	cd $(WEBOTSCONTDIR) && touch Player && cd $(CWD)  
 	cd $(WEBOTSCONTDIR) && rm Player && ln -s ../Player Player && cd $(CWD)
 	@echo "\n"

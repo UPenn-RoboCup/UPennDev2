@@ -68,6 +68,8 @@ end
 smindex = 0;
 initToggle = true;
 
+
+
 targetvel=vector.zeros(3);
 
 function process_keyinput()

@@ -32,7 +32,6 @@ sm:add_state(kick);
 sm:add_state(standstill);
 sm:add_state(grip);
 
-
 sm:set_transition(sit, 'done', relax);
 sm:set_transition(sit, 'standup', stance);
 

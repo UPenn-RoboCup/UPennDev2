@@ -244,6 +244,8 @@ function update()
 		elseif byte==string.byte("9") then	
 			Motion.event("walk");
 			walk.start();
+    elseif byte==string.byte("`") then
+      print(instructions);
 	  end	
   else
     if byte==string.byte("i") then		

@@ -84,3 +84,8 @@ walk.kickXComp = 0;
 walk.supportCompL = {0,0,0};
 walk.supportCompR = {0,0,0};
 
+walk.footHeight = 0.0355;
+walk.legLength = 0.093+0.093;
+walk.hipOffsetX = 0.008;
+walk.hipOffsetY = 0.037;
+walk.hipOffsetZ = 0.096;

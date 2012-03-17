@@ -25,7 +25,7 @@ loadconfig('Config_WebotsOP_Camera')
 
 -- Device Interface Libraries
 dev = {};
-dev.body = 'WebotsSaffirBody'; 
+dev.body = 'WebotsSaffir3Body'; 
 dev.camera = 'WebotsOPCam';
 dev.kinematics = 'SaffirKinematics';
 --dev.kinematics = 'CharliKinematics';
@@ -37,6 +37,8 @@ dev.game_control='WebotsOPGameControl';
 
 dev.walk = 'NewWalk';
 dev.kick = 'NewKick';
+--dev.walk = 'HTWalk';
+
 
 -- Game Parameters
 game = {};

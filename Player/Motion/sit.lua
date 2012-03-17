@@ -11,7 +11,7 @@ active = true;
 t0 = 0;
 
 bodyHeight = Config.sit.bodyHeight;
-supportX = 0.0;
+supportX = Config.sit.supportX or  0.0;
 footY = Config.walk.footY;
 bodyTilt = Config.walk.bodyTilt;
 
@@ -55,7 +55,7 @@ function update()
 	  local dpRLeg = Kinematics.rleg_torso(Body.get_rleg_position());
   	  pLLeg = pTorso + dpLLeg;
 	  pRLeg = pTorso + dpRLeg;
-	  Body.set_actuator_command(qSensor);
+--	  Body.set_actuator_command(qSensor);
 	  Body.set_syncread_enable(0);
 	  Body.set_lleg_hardness(.7);
 	  Body.set_rleg_hardness(.7);

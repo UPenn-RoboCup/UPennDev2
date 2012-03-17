@@ -10,6 +10,8 @@ require('util')
 
 --require 'HZDWalk'
 
+testing = Config.walk.testing or false;
+
 -- Walk Parameters
 -- Stance and velocity limit values
 stanceLimitX=Config.walk.stanceLimitX or {-0.10 , 0.10};
@@ -132,6 +134,34 @@ end
 
 function update()
   if (not active) then  return;   end
+
+  if testing then
+    bodyHeight = Config.walk.bodyHeight;
+    bodyTilt=Config.walk.bodyTilt or 0;
+    footX = Config.walk.footX or 0;
+    footY = Config.walk.footY;
+    supportX = Config.walk.supportX;
+    supportY = Config.walk.supportY;
+    tStep = Config.walk.tStep;
+    stepHeight = Config.walk.stepHeight;
+
+    --Gyro stabilization parameters
+    ankleImuParamX = Config.walk.ankleImuParamX;
+    ankleImuParamY = Config.walk.ankleImuParamY;
+    kneeImuParamX = Config.walk.kneeImuParamX;
+    hipImuParamY = Config.walk.hipImuParamY;
+    armImuParamX = Config.walk.armImuParamX;
+    armImuParamY = Config.walk.armImuParamY;
+
+    --WalkKick parameters
+    walkKickVel = Config.walk.walkKickVel;
+    walkKickSupportMod = Config.walk.walkKickSupportMod;
+    walkKickHeightFactor = Config.walk.walkKickHeightFactor;
+
+    ph1Single = Config.walk.phSingle[1];
+    ph2Single = Config.walk.phSingle[2];
+
+  end
 
   t = Body.get_time();
   iStep, ph = math.modf((t-t0)/tStep);

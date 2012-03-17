@@ -18,7 +18,7 @@ if string.find(cwd, "WebotsController") then
 end
 
 computer = os.getenv('COMPUTER') or "";
-computer = 'Darwin'
+--computer = 'Darwin'
 if (string.find(computer, "Darwin")) then
    -- MacOS X uses .dylib:
    package.cpath = cwd.."/Lib/?.dylib;"..package.cpath;

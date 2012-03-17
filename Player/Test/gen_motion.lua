@@ -1,7 +1,7 @@
 module(... or "", package.seeall)
 
 cwd = '.';
-local computer = 'Darwin'
+local computer = computer = os.getenv('COMPUTER') or "";
 if (string.find(computer, 'Darwin')) then
 	-- MacOS X uses .dylib:
 	package.cpath = cwd .. './Lib/?.dylib;' .. package.cpath;
@@ -25,7 +25,6 @@ if string.find(cwd, "WebotsController") then
 	package.path = cwd.."/?.lua;"..package.path;
 end
 
---computer = os.getenv('COMPUTER') or "";
 if (string.find(computer, "Darwin")) then
 	-- MacOS X uses .dylib:
 	package.cpath = cwd.."/Lib/?.dylib;"..package.cpath;

@@ -2,7 +2,8 @@
 module(... or "", package.seeall)
 
 cwd = '.';
-local computer = 'Darwin'
+local computer = os.getenv('COMPUTER') or "";
+--local computer = 'Darwin'
 if (string.find(computer, 'Darwin')) then
 	-- MacOS X uses .dylib:
 	package.cpath = cwd .. './Lib/?.dylib;' .. package.cpath;

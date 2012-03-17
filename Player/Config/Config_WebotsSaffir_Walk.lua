@@ -130,3 +130,13 @@ walk.tStep = 0.5;
 walk.bodyTilt=2*math.pi/180; 
 walk.velLimitX={-.20,.30};
 --]]
+
+------------------------------
+--For extended-knee walking
+walk.footHeight = 0.0487;
+walk.legLength = 0.379025+0.3800;
+walk.hipOffsetX = 0.00;
+walk.hipOffsetY = 0.097;
+walk.hipOffsetZ = 0.0;
+--walk.bodyTilt=0*math.pi/180; 
+-------------------------------

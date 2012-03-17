@@ -18,7 +18,7 @@ end
 loadconfig('Config_WebotsCharli_Walk')
 loadconfig('Config_WebotsCharli_Kick')
 loadconfig('Config_WebotsOP_World')
-loadconfig('Config_WebotsOP_Vision')
+loadconfig('Config_WebotsCharli_Vision')
 
 --Location Specific Camera Parameters--
 loadconfig('Config_WebotsOP_Camera')
@@ -52,8 +52,6 @@ fsm = {};
 fsm.game = 'OpDemo'
 fsm.body = {'HuboPlayer'};
 fsm.head = {'OpPlayer'};
-
-
 fsm.head = {'OpPlayerNSL'}; 
 
 -- Team Parameters

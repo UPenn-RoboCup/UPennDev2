@@ -60,6 +60,8 @@ hardnessLeg=Config.kick.hardnessLeg;
 
 kickState=1;
 
+qHipRollCompensation1 = Config.kick.qHipRollCompensation1 or 5*math.pi/180;
+
 pTorso = vector.new({0, 0, bodyHeight, 0,bodyTilt,0});
 pLLeg=vector.zeros(6);
 pRLeg=vector.zeros(6);
@@ -175,7 +177,8 @@ function update()
 	util.pose_global(kickDef[kickState][4],uLeft1));
     zLeft=ph*kickDef[kickState][5] + (1-ph)*zLeft1;
     aLeft=ph*kickDef[kickState][6] + (1-ph)*aLeft1;
-    qRHipRollCompensation= -5*math.pi/180;
+    qRHipRollCompensation= -qHipRollCompensation1;
+
 
   elseif kickStepType==3 then --Lifting / Landing Right foot
 --	uZmp2=kickDef[kickState][3];
@@ -183,19 +186,19 @@ function update()
 	util.pose_global(kickDef[kickState][4],uRight1));
     zRight=ph*kickDef[kickState][5] + (1-ph)*zRight1;
     aRight=ph*kickDef[kickState][6] + (1-ph)*aRight1;
-    qLHipRollCompensation= 5*math.pi/180;
+    qRHipRollCompensation= qHipRollCompensation1;
 
   elseif kickStepType==4 then --Kicking Left foot
     uLeft=util.pose_global(kickDef[kickState][4],uLeft1);
     zLeft=kickDef[kickState][5]
     aLeft=kickDef[kickState][6]
-    qRHipRollCompensation=-5*math.pi/180;
+    qRHipRollCompensation= -qHipRollCompensation1;
 
   elseif kickStepType==5 then --Kicking Right foot
     uRight=util.pose_global(kickDef[kickState][4],uRight1);
     zRight=kickDef[kickState][5]
     aRight=kickDef[kickState][6]
-    qLHipRollCompensation=5*math.pi/180;
+    qRHipRollCompensation= qHipRollCompensation1;
 
   end
 

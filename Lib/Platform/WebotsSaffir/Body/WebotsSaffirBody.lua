@@ -35,7 +35,6 @@ moveDir={};
 for i=1,nJoint do moveDir[i]=1; end
 for i=1,#jointReverse do moveDir[jointReverse[i]]=-1; end
 
-
 --servo names
 servoNames = { 
   'l_hipyaw', 'li_hip_servo', 'lo_hip_servo',
@@ -63,6 +62,8 @@ controlP = 50;
 maxForce = 1000;
 maxVelocity = 10;
 maxAcceleration = -1;
+imuAngle = {0, 0, 0};
+aImuFilter = 1 - math.exp(-tDelta/0.5);
 
 tags.servo = {};
 for i,v in ipairs(servoNames) do
@@ -85,10 +86,10 @@ tags.l_fts = controller.wb_robot_get_device('left_fts_receiver')
 controller.wb_receiver_enable(tags.l_fts, timeStep)
 tags.r_fts = controller.wb_robot_get_device('right_fts_receiver')
 controller.wb_receiver_enable(tags.r_fts, timeStep)
-	
---[[
-controller.wb_robot_get_device("zero"); 
+tags.gps=controller.wb_robot_get_device("zero"); 
 controller.wb_gps_enable(tags.gps, timeStep); 
+
+--[[
 tags.eyeled = controller.wb_robot_get_device("EyeLed"); 
 controller.wb_led_set(tags.eyeled,0xffffff) tags.headled = 
 controller.wb_robot_get_device("HeadLed"); 
@@ -100,11 +101,9 @@ get_time = controller.wb_robot_get_time;
 
 t0=get_time();
 
---SJ: actuator and sensor are used to control virtual joint-servos 
--------------------------------
---TODO: Direct servo-based control
+------------------------------- 
+--TODO: Force control/feedback 
 ------------------------------
-
 
 actuator = {};
 actuator.command = {};
@@ -168,8 +167,6 @@ function get_sensor_position(index)
   end
 end
 
-imuAngle = {0, 0, 0};
-aImuFilter = 1 - math.exp(-tDelta/0.5);
 function get_sensor_imuAngle(index)
   if (not index) then
     return imuAngle;
@@ -292,6 +289,21 @@ function update_sensor()
   for i=1,nJoint do
       sensor.position[i] = actuator.command[i];
   end
+
+  -- Process sensors
+  gyro = get_sensor_imuGyrRPY();
+  acc = get_sensor_imuAcc();
+
+  accX = acc[1];
+  accY = acc[2];
+
+  if ((accX > -1) and (accX < 1) and (accY > -1) and (accY < 1)) then
+    imuAngle[1] = imuAngle[1] + aImuFilter*(math.asin(accY) - imuAngle[1]);
+    imuAngle[2] = imuAngle[2] + aImuFilter*(math.asin(accX) - imuAngle[2]);
+  end
+
+  --Yaw angle generation by gyro integration
+  imuAngle[3] = imuAngle[3] + tDelta * gyro[3] * math.pi/180;
 end
 
 
@@ -313,51 +325,13 @@ function update()
       end
     end
   end
---Update servo based on commanded joint angle
+  --Update servo based on commanded joint angle
   update_servo();
   update_sensor();
 
   if (controller.wb_robot_step(timeStep) < 0) then
     os.exit()
   end
-
---[[
-  -- Process sensors
-  accel = controller.wb_accelerometer_get_values(tags.accelerometer);
-
-  gyro = controller.wb_gyro_get_values(tags.gyro);
-  local gAccel = 9.80;
-  accY = (accel[1]-512)/128;
-  accX = -(accel[2]-512)/128;
-
-  if ((accX > -1) and (accX < 1) and (accY > -1) and (accY < 1)) then
-    imuAngle[1] = imuAngle[1] + aImuFilter*(math.asin(accY) - imuAngle[1]);
-    imuAngle[2] = imuAngle[2] + aImuFilter*(math.asin(accX) - imuAngle[2]);
-  end
-
-  --Yaw angle generation by gyro integration
-  imuAngle[3] = imuAngle[3] + tDelta * (gyro[3]-512) / 0.273 *
-        math.pi/180 *
-        0.9; --to compensate bodyTilt
---]]
-
---[[
-  -- Process sensors
-  accel = controller.wb_accelerometer_get_values(tags.accelerometer);
-  gyro = controller.wb_gyro_get_values(tags.gyro);
-
---  print("acc",unpack(accel))
---  print("gyr",unpack(gyro))
-
-  local gAccel = 9.80;
-  accX = - accel[3]/gAccel;
-  accY = -accel[1]/gAccel;
-  if ((accX > -1) and (accX < 1) and (accY > -1) and (accY < 1)) then
-    imuAngle[1] = imuAngle[1] + aImuFilter*(math.asin(accY) - imuAngle[1]);
-    imuAngle[2] = imuAngle[2] + aImuFilter*(math.asin(accX) - imuAngle[2]);
-  end
-  imuAngle[3] = imuAngle[3] + tDelta * gyro[2];
---]]
 end
 
 
@@ -378,31 +352,22 @@ end
 
 --Roll, Pitch, Yaw in degree per seconds unit
 function get_sensor_imuGyrRPY( )
-
---[[
-  gyro = controller.wb_gyro_get_values(tags.gyro);
-  --Roll Pitch Yaw
-  gyro_proc={(gyro[1]-512)/0.273, (gyro[2]-512)/0.273,(gyro[3]-512)/0.273};
+  gyro = controller.wb_gyro_get_values(tags.gyro); 
+  --tested correct with saffir model
+  gyro_proc=vector.new({(gyro[1]-512), (gyro[2]-512),(gyro[3]-512)})/0.273;
   return gyro_proc;
---]]
-  return {0,0,0};
-
 end
 
-
-function get_sensor_imuAcc( )
---[[
+--X,Y,Z in g(9.8m/s^2)  unit
+function get_sensor_imuAcc( ) 
   accel = controller.wb_accelerometer_get_values(tags.accelerometer);
-  return {accel[1]-512,accel[2]-512,0};
---]]
-  return {0,0,0};
-
+  --tested with saffir model
+  return (vector.new({-(accel[1]-512),-(accel[2]-512),-(accel[3]-512)})/128);
 end
 
 function get_sensor_gps()
---  gps = controller.wb_gps_get_values(tags.gps);
---  return gps;
-  return {0,0,0};
+  gps = controller.wb_gps_get_values(tags.gps);
+  return gps;
 end
 
 function set_actuator_eyeled(color)
@@ -412,9 +377,9 @@ function set_actuator_eyeled(color)
 end
 
 function set_actuator_headled(color)
- --input color is 0 to 31, so multiply by 8 to make 0-255
+  --input color is 0 to 31, so multiply by 8 to make 0-255
   code= color[1] * 0x80000 + color[2] * 0x800 + color[3]*8;
---  controller.wb_led_set(tags.headled,code)
+  --  controller.wb_led_set(tags.headled,code)
 end
 
 function set_indicator_state(color)
@@ -433,7 +398,7 @@ function set_indicator_role(role)
 end
 
 function set_indicator_ball(color)
--- color is a 3 element vector
+  -- color is a 3 element vector
   -- convention is all zero indicates no detection
   if( color[1]==0 and color[2]==0 and color[3]==0 ) then
     set_actuator_eyeled({15,15,15});

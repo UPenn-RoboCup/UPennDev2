@@ -104,10 +104,8 @@ walk.stepHeight = 0.08;
 walk.phSingle={0.15,0.85};
 walk.phZmp={0.15,0.85};
 
-
 walk.velLimitX={-.20,.30};
 walk.velDelta={0.10,0.10,0.3} 
-
 
 --fast test
 walk.tStep = 0.6;
@@ -137,7 +135,18 @@ walk.hipOffsetZ = 0.0;
 --walk.bodyTilt=0*math.pi/180; 
 -------------------------------
 
---Faster walking 
+--Running test
+--------------------------------
 walk.tStep = 0.4;
 walk.bodyTilt=2*math.pi/180; 
 walk.velLimitX={-.20,.30};
+walk.footX= 0.01; 
+walk.bodyTilt=1*math.pi/180; 
+--------------------------------
+
+
+walk.bodyTilt=2*math.pi/180; 
+walk.phSingle={0.05,0.95};
+walk.phZmp={0.05,0.95};
+--walk.footX= 0.03; 
+--walk.bodyHeight = 0.77; 

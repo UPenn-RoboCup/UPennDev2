@@ -259,6 +259,7 @@ function update()
   end
 
   uTorso = zmp_com(ph);
+  motion_torso();
   uTorsoActual = util.pose_global(vector.new({-footX,0,0}),uTorso);
 
   pLLeg[1], pLLeg[2], pLLeg[6] = uLeft[1], uLeft[2], uLeft[3];
@@ -271,7 +272,7 @@ function update()
 
   qLegs = Kinematics.inverse_legs(pLLeg, pRLeg, pTorso, supportLeg);
   motion_legs(qLegs);
-  --motion_arms();
+  motion_arms2();
 end
 
 function motion_legs(qLegs)
@@ -599,6 +600,47 @@ function get_z_mod()
   return zMod,aMod; 
 end
 
+
+
+function motion_torso() --Torso swing during walking
+  armGain = 0.40;
+  torsoAngleMax = 20*math.pi/180;
+  local uBodyLeft=util.pose_relative(uLeft,uTorso);
+  local uBodyRight=util.pose_relative(uRight,uTorso);
+  local footRel=uBodyLeft[1]-uBodyRight[1];
+  local torsoAngle=math.min(torsoAngleMax,
+        math.max(-torsoAngleMax,
+        footRel/armGain * torsoAngleMax
+        ));
+  uTorso[3]=uTorso[3] + torsoAngle;
+end
+
+
+function motion_arms2()
+   armGain = 0.40;
+
+   local uBodyLeft=util.pose_relative(uLeft,uTorso);
+   local uBodyRight=util.pose_relative(uRight,uTorso);
+   local footRel=uBodyLeft[1]-uBodyRight[1];
+   local armAngle=math.min(50*math.pi/180,
+        math.max(-50*math.pi/180,
+        footRel/armGain * 50*math.pi/180
+        ));
+
+--armAngle=0;
+
+    qLArm[1],qLArm[2]=qLArm0[1]+armShift[1],qLArm0[2]+armShift[2];
+    qRArm[1],qRArm[2]=qRArm0[1]+armShift[1],qRArm0[2]+armShift[2];
+    qLArm[1]=qLArm[1]+armAngle;
+    qRArm[1]=qRArm[1]-armAngle;
+
+  qLArm[2]=math.max(8*math.pi/180,qLArm[2])
+  qRArm[2]=math.min(-8*math.pi/180,qRArm[2]);
+
+  Body.set_larm_command(qLArm);
+  Body.set_rarm_command(qRArm);
+
+end
 	
 
 entry();

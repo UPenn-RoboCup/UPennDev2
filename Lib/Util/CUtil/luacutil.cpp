@@ -175,7 +175,7 @@ static int lua_sizeof(lua_State *L) {
 
 static int lua_testarray(lua_State *L) {
   static uint32_t *ptr = NULL;
-  int size = 160*230;
+  int size = 640*480;
   if (ptr == NULL) {
     ptr = (uint32_t*)malloc(size*sizeof(uint32_t));
     for (int i = 0; i < size; i++) {

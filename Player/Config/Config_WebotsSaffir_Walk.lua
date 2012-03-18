@@ -47,7 +47,11 @@ walk.ankleMod = vector.new({-1,0})/0.12 * 10*math.pi/180;
 -------------------------------------------------------------- 
 --Imu feedback parameters, alpha / gain / deadband / max 
 -------------------------------------------------------------- 
-gyroFactor = 0.273*math.pi/180 * 300 / 1024; --dps to rad/s conversion
+gyroFactor = 0.273*math.pi/180 * 300 / 1024; --based on deg/s unit
+
+
+gyroFactor = 0.273*math.pi/180 * 300 / 1024*0.1; --based on deg/s unit
+
 walk.ankleImuParamX={1,-0.75*gyroFactor, 2*math.pi/180, 10*math.pi/180};
 walk.kneeImuParamX={1,-1.5*gyroFactor, 2*math.pi/180, 10*math.pi/180};
 walk.ankleImuParamY={1,-1*gyroFactor, 2*math.pi/180, 10*math.pi/180};
@@ -124,9 +128,9 @@ walk.supportX = -0.03;
 walk.hipRollCompensation = 1.5*math.pi/180;
 
 
---[[
+
 --Faster walking 
-walk.tStep = 0.5;
+walk.tStep = 0.4;
 walk.bodyTilt=2*math.pi/180; 
 walk.velLimitX={-.20,.30};
---]]
+--

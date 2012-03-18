@@ -60,6 +60,8 @@ hardnessLeg=Config.kick.hardnessLeg;
 
 kickState=1;
 
+qHipRollCompensation1 = Config.kick.qHipRollCompensation1 or 5*math.pi/180;
+
 pTorso = vector.new({0, 0, bodyHeight, 0,bodyTilt,0});
 pLLeg=vector.zeros(6);
 pRLeg=vector.zeros(6);
@@ -147,7 +149,7 @@ function update()
   -- Tosro X position offxet (for differetly calibrated robots)
   if kickStepType==6 then
      torsoShiftX=kickXComp*(1-ph);
-  elseif math.abs(torsoShiftX)<math.abs(kickXComp)*0.9 then
+  elseif torsoShiftX<kickXComp*0.9 then
      torsoShiftX=kickXComp*ph;
   end
 
@@ -175,7 +177,8 @@ function update()
 	util.pose_global(kickDef[kickState][4],uLeft1));
     zLeft=ph*kickDef[kickState][5] + (1-ph)*zLeft1;
     aLeft=ph*kickDef[kickState][6] + (1-ph)*aLeft1;
-    qRHipRollCompensation= -5*math.pi/180;
+    qRHipRollCompensation= -qHipRollCompensation1;
+
 
   elseif kickStepType==3 then --Lifting / Landing Right foot
 --	uZmp2=kickDef[kickState][3];
@@ -183,19 +186,19 @@ function update()
 	util.pose_global(kickDef[kickState][4],uRight1));
     zRight=ph*kickDef[kickState][5] + (1-ph)*zRight1;
     aRight=ph*kickDef[kickState][6] + (1-ph)*aRight1;
-    qLHipRollCompensation= 5*math.pi/180;
+    qRHipRollCompensation= qHipRollCompensation1;
 
   elseif kickStepType==4 then --Kicking Left foot
     uLeft=util.pose_global(kickDef[kickState][4],uLeft1);
     zLeft=kickDef[kickState][5]
     aLeft=kickDef[kickState][6]
-    qRHipRollCompensation=-5*math.pi/180;
+    qRHipRollCompensation= -qHipRollCompensation1;
 
   elseif kickStepType==5 then --Kicking Right foot
     uRight=util.pose_global(kickDef[kickState][4],uRight1);
     zRight=kickDef[kickState][5]
     aRight=kickDef[kickState][6]
-    qLHipRollCompensation=5*math.pi/180;
+    qRHipRollCompensation= qHipRollCompensation1;
 
   end
 
@@ -205,7 +208,7 @@ function update()
   pLLeg[1],pLLeg[2],pLLeg[3],pLLeg[5],pLLeg[6]=uLeftActual[1],uLeftActual[2],zLeft,aLeft,uLeftActual[3];
   pRLeg[1],pRLeg[2],pRLeg[3],pRLeg[5],pRLeg[6]=uRightActual[1],uRightActual[2],zRight,aRight,uRightActual[3];
 
-  uTorso=util.pose_global(vector.new({-footX+torsoShiftX,0,0}),uBody);
+  uTorso=util.pose_global(vector.new({-footX-torsoShiftX,0,0}),uBody);
 
   pTorso[1],pTorso[2],pTorso[6]=uTorso[1],uTorso[2],uTorso[3];
   pTorso[3],pTorso[4]=zBody,bodyRoll;

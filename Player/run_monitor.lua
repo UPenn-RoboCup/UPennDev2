@@ -77,10 +77,9 @@ while true do
   local tstart = unix.time();
   update();
   -- Get time after sending packets
-  tloop = unix.time() - tstart;
-  -- Sleep in order to get the right FPS
-  if (tloop < 0.025) then
-    unix.usleep((.025 - tloop)*(1E6));
+  tloop = unix.time() - tstart;  -- Sleep in order to get the right FPS
+  if (tloop < 0.1) then
+    unix.usleep((0.1 - tloop)*(1E6));
   end
 
   -- Display our FPS and broadcast level

@@ -14,13 +14,13 @@ function loadconfig(configName)
   end
 end
 
-loadconfig('Config_Nao_World')
-loadconfig('Config_WebotsNao_Walk')
-loadconfig('Config_WebotsNao_Kick')
-loadconfig('Config_WebotsNao_Vision')
+loadconfig('World/Config_Nao_World')
+loadconfig('Walk/Config_WebotsNao_Walk')
+loadconfig('Kick/Config_WebotsNao_Kick')
+loadconfig('Vision/Config_WebotsNao_Vision')
 
 --Location Specific Camera Parameters--
-loadconfig('Config_WebotsNao_Camera')
+loadconfig('Vision/Config_WebotsNao_Camera')
 
 -- Device Interface Libraries
 dev = {};

@@ -14,15 +14,15 @@ function loadconfig(configName)
 end
 
 --loadconfig('Config_Nao_Walk_NaoWalk')
-loadconfig('Config_Nao_New_Walk')
+loadconfig('Walk/Config_Nao_New_Walk')
 
 
-loadconfig('Config_Nao_World')
-loadconfig('Config_Nao_New_Kick')
-loadconfig('Config_Nao_Vision')
+loadconfig('World/Config_Nao_World')
+loadconfig('Kick/Config_Nao_New_Kick')
+loadconfig('Vision/Config_Nao_Vision')
 
 --Location Specific Camera Parameters--
-loadconfig('Config_Nao_Camera_Grasp')
+loadconfig('Vision/Config_Nao_Camera_Grasp')
 
 -- Devive Interface Libraries
 dev = {};

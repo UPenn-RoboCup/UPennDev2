@@ -15,13 +15,13 @@ function loadconfig(configName)
 end
 
 
-loadconfig('Config_WebotsCharli_Walk')
-loadconfig('Config_WebotsCharli_Kick')
-loadconfig('Config_WebotsOP_World')
-loadconfig('Config_WebotsCharli_Vision')
+loadconfig('Walk/Config_WebotsCharli_Walk')
+loadconfig('Kick/Config_WebotsCharli_Kick')
+loadconfig('World/Config_WebotsOP_World')
+loadconfig('Vision/Config_WebotsOP_Vision')
 
 --Location Specific Camera Parameters--
-loadconfig('Config_WebotsOP_Camera')
+loadconfig('Vision/Config_WebotsOP_Camera')
 
 -- Device Interface Libraries
 dev = {};

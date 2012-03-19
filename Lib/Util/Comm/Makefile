@@ -23,6 +23,10 @@ ARCH=$(shell uname -m)
 ifeq ($(OSTYPE),linux)
   SHLIBEXT= so
   LIBOPTS= -shared
+ifeq ($(ARCH),x86_64)
+  CXXFLAGS= -m64 -O2 -fpic
+  LDFLAGS= -m64
+endif
 endif
 ifeq ($(OSTYPE),darwin)
   SHLIBEXT= dylib

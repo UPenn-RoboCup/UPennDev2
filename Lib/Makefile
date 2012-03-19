@@ -1,6 +1,7 @@
 # Master Makefile to compile all Lua/C++ libraries
 
 CWD= $(shell pwd)
+MODE= $(shell getconf LONG_BIT)
 
 NAODIR= Platform/Nao
 NAOQIDIR= NaoQi

@@ -1,11 +1,11 @@
 % Players and team to track
-nPlayers = 2;
+nPlayers = 4;
 
 %Only monitoring team 1
-teamNumbers = 26;
+teamNumbers = 18;
 
 team2track = 1;
-player2track = 2;
+player2track = 4;
 
 % Should monitor run continuously?
 continuous = 1;

@@ -38,9 +38,23 @@ DEF SAFFiR Supervisor {
   translation 2.77308 -3.58451 0.8
   rotation 0 -1 0 -0
   children [
+#SJ: Gyro and acc params are set to be same as OP
+    DEF zero GPS {
+      name "zero"
+    }
     Gyro {
+      name "gyro"
+      lookupTable [
+        -27.925 0 0
+        27.925 1024 0
+      ]
     }
     Accelerometer {
+      name "accelerometer"
+      lookupTable [
+        -39.24 0 0
+        39.24 1024 0
+      ]
     }
     DEF L_FTS Receiver {
       name "left_fts_receiver"

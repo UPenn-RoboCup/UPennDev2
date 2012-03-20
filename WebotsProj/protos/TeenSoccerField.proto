@@ -24,22 +24,22 @@ Solid {
         }
         texture ImageTexture {
           url [
-            "textures/field_quarter.png"
+            "textures/teen_field_quarter.png"
           ]
         }
       }
       geometry IndexedFaceSet {
         coord DEF QUATER_COORDS Coordinate {
           point [
-            3.7 0 2.7
-            0 0 2.7
-            -3.7 0 2.7
-            3.7 0 0
+            5.55 0 4.05
+            0 0 4.05
+            -5.55 0 4.05
+            5.55 0 0
             0 0 0
-            -3.7 0 0
-            3.7 0 -2.7
-            0 0 -2.7
-            -3.7 0 -2.7
+            -5.55 0 0
+            5.55 0 -4.05
+            0 0 -4.05
+            -5.55 0 -4.05
           ]
         }
         texCoord TextureCoordinate {
@@ -67,7 +67,7 @@ Solid {
   ]
   contactMaterial IS contactMaterial
   boundingObject Plane {
-    size 7.4 5.4
+    size 11.1 8.1
   }
   locked IS locked
 }

@@ -4,6 +4,8 @@ require 'unix'
 
 walk = {};
 
+walk.testing = true; --Testing value; if true do extra variable sets in update
+
 ----------------------------------------------
 -- Stance and velocity limit values
 ----------------------------------------------

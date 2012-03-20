@@ -46,7 +46,7 @@ function entry()
   motQueue = {};
   iFrame = 0;
 
---OP specific : Wait for a bit to read current joint angles
+  --OP specific : Wait for a bit to read current joint angles
   Body.set_syncread_enable(1);
   t0=Body.get_time();
   started=false;
@@ -65,8 +65,8 @@ function update()
   local mot = motQueue[1];
   local t = Body.get_time();
   if not started then
-	if t-t0<0.1 then return;end--wait 0.1sec to read joint positions
-	started=true;
+    if t-t0<0.1 then return;end--wait 0.1sec to read joint positions
+    started=true;
   end
   if (iFrame == 0) then
     -- starting a new keyframe motion
@@ -94,22 +94,22 @@ function update()
   if is_upper then --upper body only motion
     print('upper');
     for i=1,5 do
-	    Body.set_actuator_command(q[i], mot.servos[i]);
+      Body.set_actuator_command(q[i], mot.servos[i]);
     end
     for i=18,20 do
-	    Body.set_actuator_command(q[i], mot.servos[i]);
+      Body.set_actuator_command(q[i], mot.servos[i]);
     end
   else
     -- set joint stiffnesses if specified
     local stiffnesses = mot.keyframes[iFrame].stiffness;
     if (stiffnesses and (#stiffnesses == nServo)) then
-       for i = 1,nServo do
-          Body.set_actuator_hardness(stiffnesses[i], mot.servos[i]);
-       end
+      for i = 1,nServo do
+        Body.set_actuator_hardness(stiffnesses[i], mot.servos[i]);
+      end
     end
     for i = 1,nServo do
-    Body.set_actuator_command(q[i], mot.servos[i]);
-    end
+      Body.set_actuator_command(q[i], mot.servos[i]);
+    end		
   end
 
 
@@ -126,10 +126,11 @@ function update()
   end
 end
 
-function showAngles()
-    --print vector positions for debugging--
-    local str = vector.tostring(joints);
-    return str;
+function getJoints()
+  return joints;
+  --print vector positions for debugging--
+  --	local str = vector.tostring(joints);
+  --	return str;
 end
 
 function exit()

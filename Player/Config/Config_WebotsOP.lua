@@ -37,8 +37,8 @@ dev.walk='NewNewWalk'; --New robocup walk that supports walking kicks
 -- Game Parameters
 game = {};
 game.teamNumber = (os.getenv('TEAM_ID') or 0) + 0; 
-game.robotID = game.playerID;
 game.playerID = (os.getenv('PLAYER_ID') or 0) + 0;
+game.robotID = game.playerID;
 game.teamColor = 1;
 game.nPlayers = 3;
 
@@ -47,7 +47,12 @@ game.nPlayers = 3;
 fsm = {};
 --fsm.game = 'Dodgeball';
 --fsm.game = 'OpDemo';
-fsm.game = 'RoboCup';
+--fsm.game = 'RoboCup';
+fsm.game = 'Stretcher';
+
+-- Set the Body and Head FSMs based on GameFSM
+fsm.body = {fsm.game};
+fsm.head = {fsm.game};
 
 if( fsm.game == 'RoboCup' ) then
 --[[
@@ -59,22 +64,20 @@ if( fsm.game == 'RoboCup' ) then
     fsm.head = {'OpPlayer'};
   end
 --]]
-
   fsm.head = {'OpPlayerNSL'};
   fsm.body = {'OpPlayerNSL'};
-
-elseif( fsm.game == 'Dodgeball' ) then
-  fsm.body = {'Dodgeball'};
-  fsm.head = {'Dodgeball'};
-else
-  fsm.body = {'OpDemo'};
-  fsm.head = {'OpDemo'};
 end
 
 -- Game specific settings
 if( fsm.game == 'Dodgeball' ) then
   Config.vision.enable_line_detection = 0;
   Config.vision.enable_midfield_landmark_detection = 0;
+end
+
+if( fsm.game == 'Stretcher' ) then
+  loadconfig( 'Config_Stretcher' );
+  game.teamNumber = 18;
+  game.playerID = 1;
 end
 
 -- enable obstacle detection

@@ -25,6 +25,8 @@ kick.armGain= 0.10;
 kick.hardnessArm=.3;
 kick.hardnessLeg=1;
 
+kick.qHipRollCompensation1 =2*math.pi/180;
+
 kick.def={};
 
 kick.def["kickForwardLeft"]={

@@ -12,14 +12,14 @@ function loadconfig(configName)
   end
 end
 
-loadconfig('Config_XOS_Walk')
-loadconfig('Config_OP_World')
-loadconfig('Config_XOS_Kick')
-loadconfig('Config_OP_Vision')
-loadconfig('Config_XOS_Robot')
+loadconfig('Walk/Config_XOS_Walk')
+loadconfig('World/Config_OP_World')
+loadconfig('Kick/Config_XOS_Kick')
+loadconfig('Vision/Config_OP_Vision')
+loadconfig('Robot/Config_XOS_Robot')
 
 --Location Specific Camera Parameters--
-loadconfig('Config_OP_Camera_Grasp')
+loadconfig('Vision/Config_OP_Camera_Grasp')
 
 -- Device Interface Libraries
 dev = {};

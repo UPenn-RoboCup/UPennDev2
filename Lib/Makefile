@@ -10,7 +10,6 @@ WEBOTSGENERICDIR= Platform/WebotsGeneric
 WEBOTSHUBODIR= Platform/WebotsHubo
 WEBOTSCHARLIDIR= Platform/WebotsCharli
 WEBOTSSAFFIRDIR= Platform/WebotsSaffir
-LC2DIR= Platform/LC2
 HPDIR= Platform/HP2
 OPDIR= Platform/OP
 XOSDIR=Platform/XOS
@@ -70,11 +69,6 @@ nao:
 naoqi:
 	@echo "Compiling Custom Naoqi Modules...\n"
 	@cd $(NAOQIDIR) && make && cd $(CWD)
-	@echo "\n"
-
-lc2:
-	@echo "Compiling LC2 Lua/C++ Libraries...\n"
-	@cd $(LC2DIR) && make && cd $(CWD)
 	@echo "\n"
 
 hp:
@@ -292,7 +286,6 @@ clean:
 #	cd $(VELODIR) && make clean && cd $(CWD)
 	cd $(NAODIR) && make clean && cd $(CWD)
 	cd $(NAOQIDIR) && make clean && cd $(CWD)
-#	cd $(LC2DIR) && make clean && cd $(CWD)
 	cd $(WEBOTSNAODIR) && make clean && cd $(CWD)
 	cd $(WEBOTSOPDIR) && make clean && cd $(CWD)
 	cd $(XOSDIR) && make clean && cd $(CWD)

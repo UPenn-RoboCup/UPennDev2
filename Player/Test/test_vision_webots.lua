@@ -72,7 +72,6 @@ end
 getch.enableblock(1);
 --unix.usleep(1E6*1.0);
 
-
 -- initialize state machines
 HeadFSM.entry();
 Motion.entry();
@@ -84,6 +83,7 @@ OccupancyMap.entry();
 
 Body.set_head_hardness({0.4,0.4});
 HeadFSM.sm:set_state('headScan');
+
 --BodyFSM.sm:set_state('bodySearch');
 --Motion.sm:set_state('stance');
 --walk.entry();
@@ -98,9 +98,12 @@ local last_update_time=t0;
 local headangle=vector.new({0,10*math.pi/180});
 local headsm_running=0;
 local bodysm_running=0;
-local last_vision_upfasfdsaasfgate_time=t0;
+local last_vision_update_time=t0;
 targetvel=vector.zeros(3);
 t_update=2;
+
+vision_update_interval = 0.04; --25fps update
+
 
 --Motion.fall_check=0;
 --Motion.fall_check=1;
@@ -257,16 +260,22 @@ local str=getch.get();
 end
 
 function update()
+
+  local t = Body.get_time();
   Body.set_syncread_enable(0); --read from only head servos
  
   -- Update the Vision
-  imageProcessed = Vision.update();
+  if t-last_vision_update_time>vision_update_interval then
+    last_vision_update_time = t;
+    imageProcessed = Vision.update();
+  end
+
   World.update_odometry();
   
   -- Update localization
   if imageProcessed then 
     World.update_vision();
-	OccupancyMap.update();
+    OccupancyMap.update();
 --    Team.update();
   end
    

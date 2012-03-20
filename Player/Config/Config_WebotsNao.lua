@@ -113,4 +113,4 @@ BodyFSM.enable_obstacle_detection = 1;
 --Skip all checks in vision for 160*120 image 
 webots_vision = 1; 
 
-speedFactor = 2.0; 
+speedFactor = 1.0; 

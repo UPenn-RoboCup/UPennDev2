@@ -17,7 +17,6 @@ loadconfig('World/Config_WebotsOP_World')
 loadconfig('Kick/Config_WebotsOP_Kick')
 --loadconfig('Kick/Config_WebotsOP_KickPunch')
 loadconfig('Vision/Config_WebotsOP_Vision')
-loadconfig('Robot/Config_WebotsOP_Robot')
 
 --Location Specific Camera Parameters--
 loadconfig('Vision/Config_WebotsOP_Camera')

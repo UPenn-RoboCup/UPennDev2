@@ -21,24 +21,23 @@ function entry()
   print("Head SM:".._NAME.." entry");
 
   t0 = Body.get_time();
--- TODO: side kick
--- kickType = wcm.get_kick_type();
-  kickType = 0; --straight kick
+  kick_dir=wcm.get_kick_dir();
+
 end
 
 function update()
   local t = Body.get_time();
   local ph = (t-t0)/tFollow;
 
-  if kickType == 0 then --front kick
+  if kick_dir == 1 then --front kick
       pitch = (1-ph)*pitch0 + ph*pitch1;
       yaw=0;
-  elseif vcm.kickdir==1 then --sidekick left
+  elseif kick_dir==2 then --sidekick to the left
+      pitch = (1-ph)*pitch0 + ph*pitch1;
+      yaw = ph*yawMagSide;
+  else --sidekick to the right
       pitch = (1-ph)*pitch0 + ph*pitch1;
       yaw = ph*-yawMagSide;
-  else --sidekick right
-      pitch = (1-ph)*pitch0 + ph*pitch1;
-      yaw = ph*yawMagSie;
   end
   local pitch_actual = pitch - Config.head.cameraAngle[1][2];
   Body.set_head_command({yaw, pitch_actual});

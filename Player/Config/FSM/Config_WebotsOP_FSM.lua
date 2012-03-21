@@ -11,9 +11,9 @@ fsm={};
 --Should we consider obstacle?
 fsm.enable_obstacle_detection = 1;
 
---fsm.playMode = 1; --For Demo without orbit
+fsm.playMode = 1; --For Demo without orbit
 --fsm.playMode = 2; --Simple Behavior with orbit
-fsm.playMode = 3; --Advanced Behavior 
+--fsm.playMode = 3; --Advanced Behavior 
 
 fsm.enable_walkkick = 1;
 
@@ -78,17 +78,29 @@ fsm.bodyApproach.timeout = 10.0*speedFactor;
 fsm.bodyApproach.rFar = 0.45; --Max ball distance
 fsm.bodyApproach.tLost = 3.0*speedFactor;--ball detection timeout
 
---x and y target position for straight kick
-fsm.bodyApproach.xTarget0={0, 0.13,0.14}; --min, target, max
-fsm.bodyApproach.yTarget0={0.03, 0.05, 0.06}; --min, target ,max
+--x and y target position for stationary straight kick
+fsm.bodyApproach.xTarget11={0, 0.13,0.14}; --min, target, max
+fsm.bodyApproach.yTarget11={0.03, 0.05, 0.06}; --min, target ,max
+
+--x and y target position for stationary kick to left
+fsm.bodyApproach.xTarget12={0, 0.13,0.14}; --min, target, max
+fsm.bodyApproach.yTarget12={-0.01, 0.015, 0.04}; --min, target ,max
+
+--x and y target position for stationary kick to right
+fsm.bodyApproach.xTarget13={0, 0.13,0.14}; --min, target, max
+fsm.bodyApproach.yTarget13={-0.04, -0.015, 0.01}; --min, target ,max
 
 --Target position for straight walkkick 
-fsm.bodyApproach.xTarget1={0, 0.17,0.20}; --min, target, max
-fsm.bodyApproach.yTarget1={0.03, 0.05, 0.06}; --min, target ,max
+fsm.bodyApproach.xTarget21={0, 0.17,0.20}; --min, target, max
+fsm.bodyApproach.yTarget21={0.03, 0.05, 0.06}; --min, target ,max
 
---Target position for side walkkick 
-fsm.bodyApproach.xTarget2={0, 0.13,0.14}; --min, target, max
-fsm.bodyApproach.yTarget2={0.03, 0.05, 0.06}; --min, target ,max
+--Target position for side walkkick to left
+fsm.bodyApproach.xTarget22={0, 0.17,0.20}; --min, target, max
+fsm.bodyApproach.yTarget22={-0.01, 0.01, 0.03}; --min, target ,max
+
+--Target position for side walkkick to right
+fsm.bodyApproach.xTarget23={0, 0.17,0.20}; --min, target, max
+fsm.bodyApproach.yTarget23={-0.03, -0.01, 0.01}; --min, target ,max
 
 --------------------------------------------------
 --BodyKick : Stationary Kick

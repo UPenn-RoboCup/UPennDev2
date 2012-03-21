@@ -16,6 +16,7 @@ fsm.playMode = 2; --Simple Behavior with orbit
 --fsm.playMode = 3; --Advanced Behavior 
 
 fsm.enable_walkkick = 0;
+fsm.enable_sidekick = 0;
 
 --------------------------------------------------
 --BodyReady : make robot move to initial position
@@ -78,17 +79,9 @@ fsm.bodyApproach.timeout = 10.0*speedFactor;
 fsm.bodyApproach.rFar = 0.90; --Max ball distance
 fsm.bodyApproach.tLost = 3.0*speedFactor;--ball detection timeout
 
---x and y target position for straight kick
-fsm.bodyApproach.xTarget0={0, 0.30,0.34}; --min, target, max
-fsm.bodyApproach.yTarget0={0.04, 0.07, 0.10}; --min, target ,max
-
---Target position for straight walkkick 
-fsm.bodyApproach.xTarget1={0, 0.30,0.34}; --min, target, max
-fsm.bodyApproach.yTarget1={0.04, 0.07, 0.10}; --min, target ,max
-
---Target position for side walkkick 
-fsm.bodyApproach.xTarget2={0, 0.30,0.34}; --min, target, max
-fsm.bodyApproach.yTarget2={0.04, 0.07, 0.10}; --min, target ,max
+--x and y target position for stationary straight kick
+fsm.bodyApproach.xTarget11={0, 0.30,0.34}; --min, target, max
+fsm.bodyApproach.yTarget11={0.03, 0.06, 0.09}; --min, target ,max
 
 --------------------------------------------------
 --BodyKick : Stationary Kick

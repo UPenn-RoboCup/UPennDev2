@@ -3,8 +3,8 @@ require('vector')
 
 --FSM parameters
 
---How much should we slow down all SM timings compared to real robot?
-speedFactor = 1.0;
+--How much should we slow down all SM timings?
+speedFactor = 2.0;
 
 fsm={};
 

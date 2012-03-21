@@ -28,15 +28,16 @@ dev.camera = 'WebotsOPCam';
 dev.kinematics = 'OPKinematics';
 dev.game_control='WebotsOPGameControl';
 dev.walk='NewWalk';
-dev.kick='NewKick';
---dev.kick='NSLKickPunch'; --Extended kick that supports upper body motion
 dev.walk='NewNewWalk'; --New robocup walk that supports walking kicks
 --dev.walk='BoxWalk'; --New walk that supports different foot stance
+dev.kick='NewKick';
+--dev.kick='NSLKickPunch'; --Extended kick that supports upper body motion
 
 -- Game Parameters
 game = {};
-game.teamNumber = (os.getenv('TEAM_ID') or 0) + 0; 
-game.playerID = (os.getenv('PLAYER_ID') or 0) + 0;
+game.teamNumber = (os.getenv('TEAM_ID') or 0) + 0;
+--Webots player id begins at 0 but we use 1 as the first id 
+game.playerID = (os.getenv('PLAYER_ID') or 0) + 1;
 game.robotID = game.playerID;
 game.teamColor = 1;
 game.nPlayers = 3;
@@ -44,14 +45,19 @@ game.nPlayers = 3;
 
 -- FSM Parameters
 fsm = {};
+
+--SJ: this will kill the variable fsm, so should be called first
+loadconfig('FSM/Config_WebotsOP_FSM')
+
 --fsm.game = 'Dodgeball';
 --fsm.game = 'OpDemo';
---fsm.game = 'RoboCup';
-fsm.game = 'Stretcher';
+fsm.game = 'RoboCup';
+--fsm.game = 'Stretcher';
 
 -- Set the Body and Head FSMs based on GameFSM
 fsm.body = {fsm.game};
 fsm.head = {fsm.game};
+
 
 if( fsm.game == 'RoboCup' ) then
 --[[
@@ -63,8 +69,15 @@ if( fsm.game == 'RoboCup' ) then
     fsm.head = {'OpPlayer'};
   end
 --]]
-  fsm.head = {'OpPlayerNSL'};
-  fsm.body = {'OpPlayerNSL'};
+
+
+
+--  fsm.head = {'OpPlayerNSL'};
+--  fsm.body = {'OpPlayerNSL'};
+
+  fsm.head = {'GeneralPlayer'};
+  fsm.body = {'GeneralPlayer'};
+
 end
 
 -- Game specific settings
@@ -72,6 +85,7 @@ if( fsm.game == 'Dodgeball' ) then
   Config.vision.enable_line_detection = 0;
   Config.vision.enable_midfield_landmark_detection = 0;
 end
+
 
 if( fsm.game == 'Stretcher' ) then
   loadconfig( 'Config_Stretcher' );

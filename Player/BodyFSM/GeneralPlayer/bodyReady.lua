@@ -10,11 +10,9 @@ require('gcm')
 
 t0 = 0;
 
-maxStep = 0.06;
-
-rClose = 0.20;
-
-thClose = 10.0 * math.pi/180.0;
+maxStep = Config.fsm.bodyReady.maxStep;
+rClose = Config.fsm.bodyReady.thClose[1];
+thClose = Config.fsm.bodyReady.thClose[2];
 
 -- don't start moving right away
 tstart = 5.0;

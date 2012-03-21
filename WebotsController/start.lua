@@ -21,7 +21,8 @@ else
 end
 --]]
 
-  dofile("Player/Test/test_walk_webots.lua");
+--  dofile("Player/Test/test_walk_webots.lua");
+  dofile("Player/Test/test_vision_webots.lua");
 
 
 --dofile("Player/Test/test_joints_webots.lua");

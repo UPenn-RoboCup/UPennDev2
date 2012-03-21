@@ -6,12 +6,16 @@ IF ( COMMAND cmake_policy )
 	cmake_policy( SET CMP0003 NEW )
 ENDIF( COMMAND cmake_policy )
 
+
+
 # Define Project
 PROJECT( UPennalizer_Library )
 MESSAGE( STATUS "Configuring Project ${PROJECT_NAME}" )
 
+set( CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/Lib/Modules" )
+
 # Find lua
-FIND_PACKAGE(Lua51 REQUIRED)
+FIND_PACKAGE(lua REQUIRED)
 
 # Find boost
 FIND_PACKAGE(boost REQUIRED)
@@ -23,10 +27,8 @@ OPTION( WEBOTS "Compile Libraries and Configure for Webots Controller" ON )
 
 set( LIB_SRC "${PROJECT_SOURCE_DIR}/Lib" )
 set( CMAKE_INSTALL_PREFIX "${PROJECT_SOURCE_DIR}" )
-set( CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/Lib/Modules" )
 set( LIBRARY_INST "/Player/Lib" )
 set( WEBOTSCONTROLLER_INST "/WebotsController" )
-
 INCLUDE_DIRECTORIES( ${LUA_INCLUDE_DIR} ${BOOST_INCLUDE_DIR} )
 set( COMMLIBS LUA)
 

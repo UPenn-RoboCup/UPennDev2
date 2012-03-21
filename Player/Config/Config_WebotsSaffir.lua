@@ -53,12 +53,11 @@ game.nPlayers = 4;
 
 -- FSM Parameters
 fsm = {};
+loadconfig('FSM/Config_WebotsCharli_FSM')
+
 fsm.game = 'OpDemo'
-fsm.body = {'HuboPlayer'};
-fsm.head = {'OpPlayer'};
-
-
-fsm.head = {'OpPlayerNSL'}; 
+fsm.body = {'GeneralPlayer'};
+fsm.head = {'GeneralPlayer'};
 
 -- Team Parameters
 

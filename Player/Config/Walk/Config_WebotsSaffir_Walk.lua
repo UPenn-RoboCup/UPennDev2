@@ -50,14 +50,14 @@ walk.ankleMod = vector.new({-1,0})/0.12 * 10*math.pi/180;
 gyroFactor = 0.273*math.pi/180 * 300 / 1024; --based on deg/s unit
 
 
-gyroFactor = 0.273*math.pi/180 * 300 / 1024*0.1; --based on deg/s unit
+gyroFactor = 0.273*math.pi/180 * 300 / 1024*0.2; --based on deg/s unit
 
-walk.ankleImuParamX={1,-0.75*gyroFactor, 2*math.pi/180, 10*math.pi/180};
-walk.kneeImuParamX={1,-1.5*gyroFactor, 2*math.pi/180, 10*math.pi/180};
-walk.ankleImuParamY={1,-1*gyroFactor, 2*math.pi/180, 10*math.pi/180};
-walk.hipImuParamY={1,-1*gyroFactor, 2*math.pi/180, 10*math.pi/180};
-walk.armImuParamX={0.3,-10*gyroFactor, 20*math.pi/180, 45*math.pi/180};
-walk.armImuParamY={0.3,-10*gyroFactor, 20*math.pi/180, 45*math.pi/180};
+walk.ankleImuParamX={1,0.75*gyroFactor, 2*math.pi/180, 10*math.pi/180};
+walk.kneeImuParamX={1,1.5*gyroFactor, 2*math.pi/180, 10*math.pi/180};
+walk.ankleImuParamY={1,1*gyroFactor, 2*math.pi/180, 10*math.pi/180};
+walk.hipImuParamY={1,1*gyroFactor, 2*math.pi/180, 10*math.pi/180};
+walk.armImuParamX={0.3,10*gyroFactor, 20*math.pi/180, 45*math.pi/180};
+walk.armImuParamY={0.3,10*gyroFactor, 20*math.pi/180, 45*math.pi/180};
 
 --------------------------------------------
 -- WalkKick parameters

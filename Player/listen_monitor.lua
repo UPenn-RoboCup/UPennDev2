@@ -44,7 +44,10 @@ yuyv_flag = {}
 labelA_flag = {}
 FIRST_YUYV = true
 FIRST_LABELA = true
-t_full = unix.time();
+yuyv_t_full = unix.time();
+labelA_t_full = unix.time();
+labelB_t_full = unix.time();
+data_t_full = unix.time();
 
 Comm.init(Config.dev.ip_wired,111111);
 print('Receiving from',Config.dev.ip_wired);
@@ -83,8 +86,8 @@ function push_yuyv(obj)
 	yuyv_all[name.partnum] = obj.data
 --	print(check_flag(yuyv_flag));
 	if (check_flag(yuyv_flag) == name.parts) then
---		print("full yuyv\t"..1/(unix.time()-t_full).." fps" );
-                t_full = unix.time();
+--		print("full yuyv\t"..1/(unix.time() - yuyv_t_full).." fps" );
+--    yuyv_t_full = unix.time();
                 
 --		print(obj.width,obj.height);
 		yuyv_flag = vector.zeros(name.parts);
@@ -92,11 +95,8 @@ function push_yuyv(obj)
 		for i = 1 , name.partnum do
 			yuyv_str = yuyv_str .. yuyv_all[i];
 		end
---		print(yuyv_str);
 		cutil.string2userdata(yuyv,yuyv_str);
 		vcm.set_image_yuyv(yuyv);
---    vcm.set_image_width(obj.width);
---    vcm.set_image_height(obj.height*name.parts/2);
 		yuyv_all = {}
 	end
 end
@@ -113,7 +113,8 @@ function push_labelA(obj)
 	labelA_flag[name.partnum] = 1;
 	labelA_all[name.partnum] = obj.data;
 	if (check_flag(labelA_flag) == name.parts) then
---		print("full labelA");
+--		print("full labelA\t",.1/(unix.time() - labelA_t_full).."fps" );
+--		labelA_t_full = unix.time();
 		labelA_flag = vector.zeros(name.parts);
 		local labelA_str = "";
 		for i = 1 , name.partnum do
@@ -128,6 +129,9 @@ end
 
 function push_labelB(obj)
 --	print('receive labelB parts');
+--  print("full labelB\t",.1/(unix.time() - labelB_t_full).."fps");
+--	labelB_t_full = unix.time();
+
 	local name = parse_name(obj.name);
 	local labelB = cutil.test_array();
 	cutil.string2userdata(labelB,obj.data);	
@@ -136,6 +140,9 @@ end
 
 function push_data(obj)
 --	print('receive data');
+--  print("data\t",.1/(unix.time() - data_t_full).."fps");
+--	data_t_full = unix.time();
+
 	for shmkey,shmHandler in pairs(obj) do
 		for sharedkey,sharedHandler in pairs(shmHandler) do
 			for itemkey,itemHandler in pairs(sharedHandler) do

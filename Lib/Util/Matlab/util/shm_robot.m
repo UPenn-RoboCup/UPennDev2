@@ -45,11 +45,13 @@ h.get_labelB = @get_labelB;
         pose = h.wcmRobot.get_pose();
         r.pose = struct('x', pose(1), 'y', pose(2), 'a', pose(3));
         
-        ballxy = h.wcmBall.get_xy();
+        ballx = h.wcmBall.get_x();
+				bally = h.wcmBall.get_y();
         ballt = h.wcmBall.get_t();
-        ballvel = h.wcmBall.get_velocity();
-        r.ball = struct('x', ballxy(1), 'y', ballxy(2), 't', ballt, ...
-            'vx', ballvel(1), 'vy', ballvel(2) );
+        ballvelx = h.wcmBall.get_velx();
+        ballvely = h.wcmBall.get_vely();
+        r.ball = struct('x', ballx, 'y', bally, 't', ballt, ...
+            'vx', ballvelx, 'vy', ballvely );
         
         % TODO: implement penalty and time
         r.penalty = 0;
@@ -76,7 +78,8 @@ h.get_labelB = @get_labelB;
       r.robot = {};
       r.robot.pose = struct('x', pose(1), 'y', pose(2), 'a', pose(3));
           
-      ballxy = h.wcmBall.get_xy();
+      ballx = h.wcmBall.get_x();
+			bally = h.wcmBall.get_y();
       ballt = h.wcmBall.get_t();
       ball = {};
       ball.detect = h.vcmBall.get_detect();
@@ -85,7 +88,7 @@ h.get_labelB = @get_labelB;
       ball.centroid.x = centroid(1);
       ball.centroid.y = centroid(2);
       ball.axisMajor = h.vcmBall.get_axisMajor();
-      r.ball = struct('x', ballxy(1), 'y', ballxy(2), 't', ballt, ...
+      r.ball = struct('x', ballx, 'y', bally, 't', ballt, ...
           'centroid', ball.centroid, 'axisMajor', ball.axisMajor, ...
           'detect', ball.detect);
       r.goal = {};

@@ -1,0 +1,4 @@
+
+ADD_LIBRARY( Shm SHARED luaShm.cpp )
+
+TARGET_LINK_LIBRARIES( Shm ${COMMLIBS} )

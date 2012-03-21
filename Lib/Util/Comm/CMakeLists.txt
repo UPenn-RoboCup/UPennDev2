@@ -1,0 +1,4 @@
+
+ADD_LIBRARY( Comm SHARED luaComm.cpp )
+
+TARGET_LINK_LIBRARIES( Comm ${COMMLIBS} )

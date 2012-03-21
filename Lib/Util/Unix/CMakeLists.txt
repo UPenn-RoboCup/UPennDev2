@@ -1,0 +1,16 @@
+
+ADD_LIBRARY( getch SHARED getch.c)
+
+TARGET_LINK_LIBRARIES( getch ${COMMLIBS} )
+
+ADD_LIBRARY( serial SHARED luaserial.c)
+
+TARGET_LINK_LIBRARIES( serial ${COMMLIBS} )
+
+ADD_LIBRARY( stty SHARED luastty.cpp)
+
+TARGET_LINK_LIBRARIES( stty ${COMMLIBS} )
+
+ADD_LIBRARY( unix SHARED luaunix.c)
+
+TARGET_LINK_LIBRARIES( unix ${COMMLIBS} )

@@ -323,22 +323,39 @@ function update_sensor()
   for i=1,nJoint do
       sensor.position[i] = actuator.command[i];
   end
+end
 
-  -- Process sensors
-  gyro = get_sensor_imuGyrRPY();
-  acc = get_sensor_imuAcc();
 
-  accX = acc[1];
-  accY = acc[2];
+function update_IMU()
+    
+  acc=get_sensor_imuAcc();
+  gyr=get_sensor_imuGyrRPY();
 
-  if ((accX > -1) and (accX < 1) and (accY > -1) and (accY < 1)) then
-    imuAngle[1] = imuAngle[1] + aImuFilter*(math.asin(accY) - imuAngle[1]);
-    imuAngle[2] = imuAngle[2] + aImuFilter*(math.asin(accX) - imuAngle[2]);
+  local tTrans = Transform.rotZ(imuAngle[3]);
+  tTrans= tTrans * Transform.rotY(imuAngle[2]);
+  tTrans= tTrans * Transform.rotX(imuAngle[1]);
+
+  gyrFactor = 0.85; --Empirical compensation value 
+  gyrDelta = vector.new(gyr)*math.pi/180*tDelta*gyrFactor;
+
+  local tTransDelta = Transform.rotZ(gyrDelta[3]);
+  tTransDelta= tTransDelta * Transform.rotY(gyrDelta[2]);
+  tTransDelta= tTransDelta * Transform.rotX(gyrDelta[1]);
+
+  tTrans=tTrans*tTransDelta;
+  imuAngle = Transform.getRPY(tTrans);
+
+  local accMag = acc[1]^2+acc[2]^2+acc[3]^2;
+  if accMag>0.8 and accMag<1 then
+    local angR=math.asin(-acc[2]);
+    local angP=math.asin(acc[1]);
+    imuAngle[1] = imuAngle[1] + aImuFilter*(angR - imuAngle[1]);
+    imuAngle[2] = imuAngle[2] + aImuFilter*(angP - imuAngle[2]);
   end
 
-  --Yaw angle generation by gyro integration
-  imuAngle[3] = imuAngle[3] + tDelta * gyro[3] * math.pi/180;
+--  print("RPY:",unpack(imuAngle*180/math.pi))
 end
+
 
 
 function update()
@@ -362,6 +379,7 @@ function update()
   --Update servo based on commanded joint angle
   update_servo();
   update_sensor();
+  update_IMU();
 
   if (controller.wb_robot_step(timeStep) < 0) then
     os.exit()

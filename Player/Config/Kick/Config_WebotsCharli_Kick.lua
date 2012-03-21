@@ -8,12 +8,12 @@ kick={};
 --Imu feedback parameters, alpha / gain / deadband / max
 gyroFactor=0.273*math.pi/180 *300/1024;  --For degree per second unit
 gyroFactor = 0; --disable stabilization for now
-kick.ankleImuParamX={0.6,-0.3*gyroFactor, 0, 25*math.pi/180};
-kick.kneeImuParamX={0.6,-1.2*gyroFactor, 0, 25*math.pi/180};
-kick.ankleImuParamY={0.9,-0.7*gyroFactor, 0, 25*math.pi/180};
-kick.hipImuParamY={0.9,-0.3*gyroFactor, 0, 25*math.pi/180};
-kick.armImuParamX={0.3,-10*gyroFactor, 20*math.pi/180, 45*math.pi/180};
-kick.armImuParamY={0.3,-10*gyroFactor, 20*math.pi/180, 45*math.pi/180};
+kick.ankleImuParamX={0.6,0.3*gyroFactor, 0, 25*math.pi/180};
+kick.kneeImuParamX={0.6,1.2*gyroFactor, 0, 25*math.pi/180};
+kick.ankleImuParamY={0.9,0.7*gyroFactor, 0, 25*math.pi/180};
+kick.hipImuParamY={0.9,0.3*gyroFactor, 0, 25*math.pi/180};
+kick.armImuParamX={0.3,10*gyroFactor, 20*math.pi/180, 45*math.pi/180};
+kick.armImuParamY={0.3,10*gyroFactor, 20*math.pi/180, 45*math.pi/180};
 
 --Kick arm pose
 kick.qLArm = math.pi/180*vector.new({110, 12, -0, -40});

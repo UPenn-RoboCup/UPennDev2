@@ -5,5 +5,5 @@ SUBDIRS(
 	CUtil
 	Shm
 	Unix
-	WebotsController
+	Controller
 )

@@ -37,3 +37,6 @@ WebotsController/controller_wrap.c
 *~
 *.swp
 .DS_Store
+
+# Build file with CMAKE
+build

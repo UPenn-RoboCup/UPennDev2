@@ -24,8 +24,8 @@ walk.footX= 0.01;
 walk.footY = 0.10;
 walk.supportX = 0;
 walk.supportY = 0.0;
-walk.qLArm = math.pi/180*vector.new({110, 12, -0, -60});
-walk.qRArm = math.pi/180*vector.new({110, -12, 0, 60});
+walk.qLArm = math.pi/180*vector.new({110, 12, -0, -90});
+walk.qRArm = math.pi/180*vector.new({110, -12, 0, 90});
 walk.hardnessSupport = 1;
 walk.hardnessSwing = 1;
 walk.hardnessArm=.1;
@@ -141,12 +141,12 @@ walk.tStep = 0.4;
 walk.bodyTilt=2*math.pi/180; 
 walk.velLimitX={-.20,.30};
 walk.footX= 0.01; 
-walk.bodyTilt=1*math.pi/180; 
---------------------------------
-
-
 walk.bodyTilt=2*math.pi/180; 
 walk.phSingle={0.05,0.95};
 walk.phZmp={0.05,0.95};
---walk.footX= 0.03; 
---walk.bodyHeight = 0.77; 
+
+--------------------------------
+
+
+walk.tStep = 0.3;
+walk.velLimitX={-.20,.30};

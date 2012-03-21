@@ -25,12 +25,19 @@ function entry()
 
   t0 = Body.get_time();
 
-  -- set kick depending on ball position
-  ball = wcm.get_ball();
-  if (ball.y > 0) then
-    kick.set_kick("kickForwardLeft");
-  else
-    kick.set_kick("kickForwardRight");
+  kick_dir=wcm.get_kick_dir();
+  if kick_dir==1 then
+    -- straight kick, set kick depending on ball position
+    ball = wcm.get_ball();
+    if (ball.y > 0) then
+      kick.set_kick("kickForwardLeft");
+    else
+      kick.set_kick("kickForwardRight");
+    end
+  elseif kick_dir==2 then --Kick to left
+      kick.set_kick("kickSideRight");
+  else --Kick to right
+      kick.set_kick("kickSideLeft");
   end
 
   --SJ - only initiate kick while walking

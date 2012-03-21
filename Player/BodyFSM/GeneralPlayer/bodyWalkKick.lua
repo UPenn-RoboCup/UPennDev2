@@ -22,12 +22,19 @@ function entry()
 
   t0 = Body.get_time();
   follow=false;
-  -- set kick depending on ball position
-  ball = wcm.get_ball();
-  if (ball.y > 0) then
-    walk.doWalkKickLeft();
+  kick_dir=wcm.get_kick_dir();
+  if kick_dir==1 then --straight walkkick
+    -- set kick depending on ball position
+    ball = wcm.get_ball();
+    if (ball.y > 0) then
+      walk.doWalkKickLeft();
+    else
+      walk.doWalkKickRight();
+    end
+  elseif kick_dir==2 then --sidekick to left
+    walk.doSideKickRight();
   else
-    walk.doWalkKickRight();
+    walk.doSideKickLeft(); --sidekick to right
   end
   HeadFSM.sm:set_state('headTrack');
 --  HeadFSM.sm:set_state('headIdle');

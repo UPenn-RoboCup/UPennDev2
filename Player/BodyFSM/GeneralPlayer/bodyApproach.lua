@@ -12,27 +12,46 @@ rFar = Config.fsm.bodyApproach.rFar;-- maximum ball distance threshold
 tLost = Config.fsm.bodyApproach.tLost; --ball lost timeout
 
 -- default kick threshold
-xTarget = Config.fsm.bodyApproach.xTarget0;
-yTarget = Config.fsm.bodyApproach.yTarget0;
+xTarget = Config.fsm.bodyApproach.xTarget11;
+yTarget = Config.fsm.bodyApproach.yTarget11;
 
-kick_type=1;
+function check_approach_type()
+  --Testing
+  wcm.set_kick_dir(1);
+  wcm.set_kick_type(2);
 
-function set_approach_type(type)
-  kick_type=type;
+  kick_dir=wcm.get_kick_dir();
+  kick_type=wcm.get_kick_type();
 
-  --Check if walkkick is available
+  --Check if front walkkick is available
   if kick_type==2 then
     if walk.canWalkKick ~= 1 or Config.fsm.enable_walkkick == 0 then
       kick_type=1;
     end
   end
 
-  if kick_type==1 then --Stationary Front kick
-    xTarget = Config.fsm.bodyApproach.xTarget0;
-    yTarget = Config.fsm.bodyApproach.yTarget0;
-  elseif kick_type==2 then --Front walkkick
-    xTarget = Config.fsm.bodyApproach.xTarget1;
-    yTarget = Config.fsm.bodyApproach.yTarget1;
+  if kick_type==1 then --Stationary 
+    if kick_dir==1 then --Front kick
+      xTarget = Config.fsm.bodyApproach.xTarget11;
+      yTarget = Config.fsm.bodyApproach.yTarget11;
+    elseif kick_dir==2 then --Kick to left
+      xTarget = Config.fsm.bodyApproach.xTarget12;
+      yTarget = Config.fsm.bodyApproach.yTarget12;
+    else
+      xTarget = Config.fsm.bodyApproach.xTarget13;
+      yTarget = Config.fsm.bodyApproach.yTarget13;
+    end
+  else --walkkick
+    if kick_dir==1 then --Front kick
+      xTarget = Config.fsm.bodyApproach.xTarget21;
+      yTarget = Config.fsm.bodyApproach.yTarget21;
+    elseif kick_dir==2 then --Kick to left
+      xTarget = Config.fsm.bodyApproach.xTarget22;
+      yTarget = Config.fsm.bodyApproach.yTarget22;
+    else
+      xTarget = Config.fsm.bodyApproach.xTarget23;
+      yTarget = Config.fsm.bodyApproach.yTarget23;
+    end
   end
 end
 
@@ -40,12 +59,17 @@ function entry()
   print("Body FSM:".._NAME.." entry");
   t0 = Body.get_time();
   ball = wcm.get_ball();
-  yTarget1= sign(ball.y) * yTarget[2];
+  check_approach_type(2); --walkkick if available
+  if kick_dir==1 then
+    yTarget1= sign(ball.y) * yTarget[2];
+  else
+    yTarget1 = yTarget[2];
+  end
   HeadFSM.sm:set_state('headTrack');
-  set_approach_type(2); --walkkick if available
 end
 
 function update()
+
   local t = Body.get_time();
 
   -- get ball position
@@ -61,9 +85,11 @@ function update()
 
   ballA = math.atan2(ball.y - math.max(math.min(ball.y, 0.05), -0.05),
             ball.x+0.10);
+--  vStep[3] = 0.5*ballA;--turn torwads the ball for approachSimple
 
-  --  vStep[3] = 0.5*allA;
-  --SJ: turn towards the goal, not the ball  
+
+--
+  --turn towards the goal, not the ball  
   attackBearing, daPost = wcm.get_attack_bearing();
   if attackBearing > 10*math.pi/180 then
     vStep[3]=0.2;
@@ -72,8 +98,9 @@ function update()
   else
     vStep[3]=0;
   end
+--
 
-  --SJ: when the ball is on the side, backstep a bit
+  --when the ball is on the side, backstep a bit
   local wAngle = math.atan2 (vStep[2], vStep[1]);
   if math.abs(wAngle) > 70*math.pi/180 then
     vStep[1]=vStep[1] - 0.03;
@@ -91,13 +118,17 @@ function update()
     return "ballFar";
   end
 
-  if ((ball.x < xTarget[3]) and (math.abs(ball.y) < yTarget[3]) and
-      (math.abs(ball.y) >= yTarget[1])) and (t- ball.t < 0.5) then
-    if kick_type==1 then 
-      return "kick";
-    elseif kick_type==2 then
-	print("WALKKICK")
-      return "walkkick";
+  if (ball.x < xTarget[3]) and (t-ball.t < 0.3) then
+    if (kick_dir==1 and 
+	(math.abs(ball.y) < yTarget[3]) and 
+	(math.abs(ball.y) >= yTarget[1])) or
+       (kick_dir~=1 and 
+	(ball.y > yTarget[1]) and 
+	(ball.y < yTarget[3])) 
+    then
+      if kick_type==1 then return "kick";
+      elseif kick_type==2 then return "walkkick";
+      end
     end
   end
   if (t - t0 > 1.0 and Body.get_sensor_button()[1] > 0) then

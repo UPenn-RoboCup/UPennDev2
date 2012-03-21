@@ -21,8 +21,10 @@ function set_approach_type(type)
   kick_type=type;
 
   --Check if walkkick is available
-  if kick_type==2 and walk.canWalkKick ~= 1 then
-    kick_type=1;
+  if kick_type==2 then
+    if walk.canWalkKick ~= 1 or Config.fsm.enable_walkkick == 0 then
+      kick_type=1;
+    end
   end
 
   if kick_type==1 then --Stationary Front kick

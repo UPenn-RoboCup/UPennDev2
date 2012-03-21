@@ -17,8 +17,8 @@ end
 
 loadconfig('Walk/Config_WebotsCharli_Walk')
 loadconfig('Kick/Config_WebotsCharli_Kick')
-loadconfig('World/Config_WebotsOP_World')
-loadconfig('Vision/Config_WebotsOP_Vision')
+loadconfig('World/Config_Charli_World')
+loadconfig('Vision/Config_WebotsCharli_Vision')
 
 --Location Specific Camera Parameters--
 loadconfig('Vision/Config_WebotsOP_Camera')
@@ -47,10 +47,18 @@ game.nPlayers = 4;
 
 -- FSM Parameters
 fsm = {};
-fsm.game = 'OpDemo'
+
+loadconfig('FSM/Config_WebotsCharli_FSM')
+
+--[[
 fsm.body = {'HuboPlayer'};
-fsm.head = {'OpPlayer'};
 fsm.head = {'OpPlayerNSL'}; 
+--]]
+
+fsm.game = 'RoboCup';
+fsm.body = {'GeneralPlayer'};
+fsm.head = {'GeneralPlayer'}; 
+
 
 -- Team Parameters
 
@@ -70,8 +78,8 @@ head.yawMin = -120*math.pi/180;
 head.yawMax = 120*math.pi/180;
 head.cameraPos = {{0.05, 0.0, 0.05}} --OP, spec value, may need to be recalibrated
 head.cameraAngle = {{0.0, 0.0, 0.0}}; --Default value for production OP
-head.neckZ=0.15; --From CoM to neck joint , Hubo prototype
-head.neckX=0.03; --From CoM to neck joint , Hubo prototype
+head.neckZ=0.42; --From CoM to neck joint , CHARLI
+head.neckX=0.0; --From CoM to neck joint , CHARLI
 
 -- keyframe files
 
@@ -99,7 +107,7 @@ BodyFSM = {}
 BodyFSM.enable_obstacle_detection = 1;
 
 --How slow is the walking compared to real OP?
-speedFactor = 4.0;
+--speedFactor = 4.0;
 
 --Skip all checks in vision for 160*120 image 
 webots_vision = 1; 

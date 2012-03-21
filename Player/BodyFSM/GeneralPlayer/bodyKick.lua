@@ -18,7 +18,7 @@ started = false;
 kickable = true;
 follow = false;
 
-tFollowDelay = Config.bodyKick.tFollowDelay;
+tFollowDelay = Config.fsm.bodyKick.tFollowDelay;
 
 function entry()
   print(_NAME.." entry");

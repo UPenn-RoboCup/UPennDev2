@@ -23,7 +23,7 @@ FIND_PACKAGE(boost REQUIRED)
 OPTION( NAO "Compile Libraries and Configure for Nao" OFF )
 OPTION( OP "Compile Libraries and Configure for OP" OFF )
 OPTION( XOS "Compile Libraries and Configure for XOS" OFF )
-OPTION( WEBOTS "Compile Libraries and Configure for Webots Controller" ON )
+OPTION( WEBOTS "Compile Libraries and Configure for Webots Controller" OFF )
 
 set( LIB_SRC "${PROJECT_SOURCE_DIR}/Lib" )
 set( CMAKE_INSTALL_PREFIX "${PROJECT_SOURCE_DIR}" )

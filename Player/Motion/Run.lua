@@ -260,15 +260,20 @@ function update()
 
   uTorso = zmp_com(ph);
   motion_torso();
-  uTorsoActual = util.pose_global(vector.new({-footX,0,0}),uTorso);
+
+--Experimental body height modulation
+  zMod,footMod,aMod=get_z_mod();
+
+--drift compensation
+--  uTorsoActual = util.pose_global(vector.new({-footX,0,0}),uTorso);
+  torsoFactor = 2.0;
+  uTorsoActual = util.pose_global(vector.new({-footX+zMod*torsoFactor,0,0}),uTorso);
 
   pLLeg[1], pLLeg[2], pLLeg[6] = uLeft[1], uLeft[2], uLeft[3];
   pRLeg[1], pRLeg[2], pRLeg[6] = uRight[1], uRight[2], uRight[3];
   pTorso[1], pTorso[2], pTorso[6] = uTorsoActual[1], uTorsoActual[2], uTorsoActual[3];
 
---Experimental body height modulation
-  zMod,aMod=get_z_mod();
-  pTorso[3] = bodyHeight +zMod;
+  pTorso[3] = bodyHeight +zMod-footMod;
 
   qLegs = Kinematics.inverse_legs(pLLeg, pRLeg, pTorso, supportLeg);
   motion_legs(qLegs);
@@ -568,6 +573,7 @@ function foot_phase(ph)
   return xf, zf;
 end
 
+--[[
 function get_z_mod()
   bodyZ0 = -0.01; --landing
   bodyZ1 = 0.03; --thrust
@@ -589,7 +595,7 @@ function get_z_mod()
   elseif ph<phZ1 then -- thrust phase
     phRun = (ph-phZ0)/(phZ1-phZ0);
     zMod = bodyZ0 + (bodyZ1-bodyZ0)*phRun^k1;
-    aMod = phRun*ankleA;
+    aMod = -3*math.pi/180;
   elseif ph<phZ2 then --aerial phase
     phRun = (ph-phZ1)/(phZ2-phZ1);
     zMod = bodyZ1 + (bodyZ2-bodyZ1)*phRun^k2;
@@ -599,6 +605,47 @@ function get_z_mod()
   end
   return zMod,aMod; 
 end
+--]]
+
+
+function get_z_mod()
+
+  bodyZ0 = 0.03; -- Aerial 
+  bodyZ1 = 0.02; -- Landing
+  bodyZ2 = -0.02; --Min
+
+  footZ0 = 0.03; --Foot fly height
+
+  phZ0 = 0.15;  phZ1 = 0.5;  phZ2 = 0.85;
+  k0 = 2; k1 = 2;  k2 = 2;  fk0 =2;
+
+  ankleA = 1*math.pi/180;
+  aMod = 0;
+  --Aerial phase: 0 to ph0
+  --Landing phase :ph0 to ph1
+  --Thrust phase: ph1 to ph2
+  --Aerial phase: ph2 to 1 
+
+  if ph<phZ0 then --Aerial phase
+    phRun = (ph)/(phZ0);
+    zMod = bodyZ0 + (bodyZ1-bodyZ0)*(phRun)^k0;
+    footMod=footZ0+ (-footZ0)*(phRun)^fk0;
+  elseif ph<phZ1 then -- landing phase
+    phRun = (ph-phZ0)/(phZ1-phZ0);
+    zMod = bodyZ1 + (bodyZ2-bodyZ1)*phRun^k1;
+    footMod=0;
+  elseif ph<phZ2 then --thrust phase
+    phRun = (ph-phZ1)/(phZ2-phZ1);
+    zMod = bodyZ2 + (bodyZ1-bodyZ2)*phRun^k2;
+    footMod=0;
+  else --aerial phase
+    phRun = (ph-phZ2)/(1-phZ2);
+    zMod = bodyZ0 + (bodyZ1-bodyZ0)*(1-phRun)^k0;
+    footMod=footZ0+ (-footZ0)*(1-phRun)^fk0;
+  end
+  return zMod,footMod,aMod; 
+end
+
 
 
 

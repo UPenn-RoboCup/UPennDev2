@@ -83,8 +83,8 @@ head.neckX=0.03; --From CoM to neck joint , Hubo prototype
 -- keyframe files
 
 km = {};
-km.standup_front = 'km_Charli_StandupFromFront.lua';
-km.standup_back = 'km_Charli_StandupFromBack.lua';
+km.standup_front = 'km_Saffir_StandupFromFront.lua';
+km.standup_back = 'km_Saffir_StandupFromBack.lua';
 
 
 -- sitting parameters

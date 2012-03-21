@@ -59,9 +59,11 @@ function update()
 
   ballA = math.atan2(ball.y - math.max(math.min(ball.y, 0.05), -0.05),
             ball.x+0.10);
+   vStep[3] = 0.5*ballA;--turn torwads the ball for approachSimple
 
-  --  vStep[3] = 0.5*allA;
-  --SJ: turn towards the goal, not the ball  
+
+--[[
+  --turn towards the goal, not the ball  
   attackBearing, daPost = wcm.get_attack_bearing();
   if attackBearing > 10*math.pi/180 then
     vStep[3]=0.2;
@@ -70,8 +72,8 @@ function update()
   else
     vStep[3]=0;
   end
-
-  --SJ: when the ball is on the side, backstep a bit
+--]]
+  --when the ball is on the side, backstep a bit
   local wAngle = math.atan2 (vStep[2], vStep[1]);
   if math.abs(wAngle) > 70*math.pi/180 then
     vStep[1]=vStep[1] - 0.03;
@@ -90,11 +92,11 @@ function update()
   end
 
   if ((ball.x < xTarget[3]) and (math.abs(ball.y) < yTarget[3]) and
-      (math.abs(ball.y) >= yTarget[1])) and (t- ball.t < 0.5) then
+      (math.abs(ball.y) >= yTarget[1])) and (t-ball.t < 0.3) then
     if kick_type==1 then 
       return "kick";
     elseif kick_type==2 then
-	print("WALKKICK")
+print("WALKKICK")
       return "walkkick";
     end
   end

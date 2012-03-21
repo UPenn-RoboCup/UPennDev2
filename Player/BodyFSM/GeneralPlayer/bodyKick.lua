@@ -18,8 +18,7 @@ started = false;
 kickable = true;
 follow = false;
 
-tFollowDelay = 2.2; --for straight kick
-
+tFollowDelay = Config.bodyKick.tFollowDelay;
 
 function entry()
   print(_NAME.." entry");

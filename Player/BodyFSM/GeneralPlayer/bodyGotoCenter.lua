@@ -8,14 +8,11 @@ require('wcm')
 require('gcm')
 
 t0 = 0;
-timeout = 10.0;
 
-maxStep = 0.06;
-
-rClose = 0.30;
-
-tLost = 3.0;
-
+maxStep = Config.fsm.bodyGotoCenter.maxStep;
+rClose = Config.fsm.bodyGotoCenter.rClose;
+timeout = Config.fsm.bodyGotoCenter.timeout;
+--TODO: Goalie handling, velocity limit 
 
 function entry()
   print(_NAME.." entry");

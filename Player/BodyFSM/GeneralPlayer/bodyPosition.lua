@@ -20,6 +20,7 @@ rTurn2= Config.fsm.bodyPosition.rTurn2;
 rDist1= Config.fsm.bodyPosition.rDist1;
 rDist2= Config.fsm.bodyPosition.rDist2;
 rOrbit= Config.fsm.bodyPosition.rOrbit;
+thClose = Config.fsm.bodyPosition.thClose;
 
 function entry()
   print(_NAME.." entry");

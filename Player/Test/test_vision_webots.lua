@@ -57,7 +57,6 @@ require('wcm')
 darwin = false;
 webots = false;
 
-
 -- Enable OP specific 
 if(Config.platform.name == 'OP') then
   darwin = true;
@@ -68,7 +67,6 @@ if (string.find(Config.platform.name,'Webots')) then
   webots = true;
 end
 
-
 getch.enableblock(1);
 --unix.usleep(1E6*1.0);
 
@@ -77,7 +75,7 @@ HeadFSM.entry();
 Motion.entry();
 
 World.entry();
-Team.entry();
+--Team.entry();
 Vision.entry();
 OccupancyMap.entry();
 
@@ -169,7 +167,7 @@ local str=getch.get();
 
 
 
-    HeadFSM.sm:set_state('headFigure8');
+--    HeadFSM.sm:set_state('headFigure8');
 
 --[[
   --Broadcast selection
@@ -318,7 +316,7 @@ while 1 do
     count = 1;
     print(fps.." FPS")
     -- Print the debug information
-    print_debug();
+    --print_debug();
   end
 
   --Wait until dcm has done reading/writing

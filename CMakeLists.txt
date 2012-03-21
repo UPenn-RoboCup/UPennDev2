@@ -14,12 +14,18 @@ FIND_PACKAGE(boost REQUIRED)
 
 OPTION( NAO "Compile Libraries and Configure for Nao" OFF )
 OPTION( OP "Compile Libraries and Configure for OP" OFF )
+OPTION( WEBOTS "Compile Libraries and Configure for Webots Controller" OFF )
 
-set( LIB_SRC "${CMAKE_HOME_DIRECTORY}/Lib" )
-set( CMAKE_INSTALL_PREFIX "${CMAKE_HOME_DIRECTORY}/Player/Lib" )
+set( LIB_SRC "${PROJECT_SOURCE_DIR}/Lib" )
+set( CMAKE_INSTALL_PREFIX "${PROJECT_SOURCE_DIR}/Player/Lib" )
+set( CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/Lib/Modules" )
 
 INCLUDE_DIRECTORIES( ${LUA_INCLUDE_DIR} ${BOOST_INCLUDE_DIR} )
 set( COMMLIBS LUA)
+
+IF ( APPLE )
+	MESSAGE( STATUS "Configure for APPLE" )
+ENDIF( APPLE )
 
 SUBDIRS( 
 	${LIB_SRC}/ImageProc

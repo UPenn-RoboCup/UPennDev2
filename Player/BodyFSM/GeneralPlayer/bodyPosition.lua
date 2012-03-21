@@ -66,11 +66,12 @@ function update()
   --Basic chase code
   vStep = vector.new({0,0,0});
   aTurn=math.exp(-0.5*(rRelative/rTurn)^2);
-   
+
+  --TODO: generalize   
   if rRelative>0.6 and 
     math.abs(pRelative[3])<45*math.pi/180 
   then
-      maxStep = 0.12;
+      maxStep = maxStep2;
       if max_speed==0 and 
         math.abs(pRelative[3])<30*math.pi/180 
       then
@@ -81,10 +82,9 @@ function update()
   elseif rRelative>0.4 and 
     math.abs(pRelative[3])<45*math.pi/180  
   then
-    maxStep=maxStep2; --front dash
     if max_speed==0 and 
       math.abs(pRelative[3])<30*math.pi/180 then
-      maxStep=0.08; --36cm/s
+      maxStep=maxStep2; --front dash
       max_speed=1;
 --      Speak2.play('./mp3/max_speed.mp3',50)
     end

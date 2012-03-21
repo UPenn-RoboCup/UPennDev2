@@ -11,9 +11,11 @@ fsm={};
 --Should we consider obstacle?
 fsm.enable_obstacle_detection = 1;
 
-fsm.playMode = 1; --For Demo without orbit
+--fsm.playMode = 1; --For Demo without orbit
 --fsm.playMode = 2; --Simple Behavior with orbit
---fsm.playMode = 3; --Advanced Behavior 
+fsm.playMode = 3; --Advanced Behavior 
+
+fsm.enable_walkkick = 1;
 
 --------------------------------------------------
 --BodyReady : make robot move to initial position

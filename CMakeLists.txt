@@ -1,0 +1,28 @@
+
+CMAKE_MINIMUM_REQUIRED ( VERSION 2.4.6 )
+MARK_AS_ADVANCED( CMAKE_BACKARDS_COMPATIBILITY )
+
+# Define Project
+PROJECT( UPennalizer_Library )
+MESSAGE( STATUS "Configuring Project ${PROJECT_NAME}" )
+
+# Find lua
+FIND_PACKAGE(Lua51 REQUIRED)
+
+# Find boost
+FIND_PACKAGE(boost REQUIRED)
+
+OPTION( NAO "Compile Libraries and Configure for Nao" OFF )
+OPTION( OP "Compile Libraries and Configure for OP" OFF )
+
+set( LIB_SRC "${CMAKE_HOME_DIRECTORY}/Lib" )
+set( CMAKE_INSTALL_PREFIX "${CMAKE_HOME_DIRECTORY}/Player/Lib" )
+
+INCLUDE_DIRECTORIES( ${LUA_INCLUDE_DIR} ${BOOST_INCLUDE_DIR} )
+set( COMMLIBS LUA)
+
+SUBDIRS( 
+	${LIB_SRC}/ImageProc
+	${LIB_SRC}/Util
+)
+

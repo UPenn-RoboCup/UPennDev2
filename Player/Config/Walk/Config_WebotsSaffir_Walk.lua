@@ -144,9 +144,13 @@ walk.footX= 0.01;
 walk.bodyTilt=2*math.pi/180; 
 walk.phSingle={0.05,0.95};
 walk.phZmp={0.05,0.95};
-
+walk.bodyZ={0.03,0.02,-0.02,0.03};
+walk.bodyK={2,2,2,2};
+walk.phZ={0.15,0.5,0.85};
+walk.torsoFactor=2.0;
 --------------------------------
-
 
 walk.tStep = 0.3;
 walk.velLimitX={-.20,.30};
+
+

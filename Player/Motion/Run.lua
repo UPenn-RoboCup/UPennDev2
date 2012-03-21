@@ -8,8 +8,6 @@ require('mcm')
 require('unix')
 require('util')
 
---require 'HZDWalk'
-
 -- Walk Parameters
 -- Stance and velocity limit values
 stanceLimitX=Config.walk.stanceLimitX or {-0.10 , 0.10};
@@ -43,6 +41,14 @@ stepHeight = Config.walk.stepHeight;
 ph1Single = Config.walk.phSingle[1];
 ph2Single = Config.walk.phSingle[2];
 ph1Zmp,ph2Zmp=ph1Single,ph2Single;
+armGain = Config.walk.armGain or 0.40;
+torsoAngleMax = Config.walk.torsoAngleMax or  20*math.pi/180;
+
+--Run parameters
+bodyZ=Config.walk.bodyZ or {0.03,0.02,-0.02,0.03};
+bodyK=Config.walk.bodyK or {2,2,2,2};
+phZ=Config.walk.phZ or {0.15,0.5,0.85};
+torsoFactor = Config.walk.torsoFactor or 0;
 
 --Compensation parameters
 hipRollCompensation = Config.walk.hipRollCompensation;
@@ -261,13 +267,9 @@ function update()
   uTorso = zmp_com(ph);
   motion_torso();
 
---Experimental body height modulation
-  zMod,footMod,aMod=get_z_mod();
-
---drift compensation
---  uTorsoActual = util.pose_global(vector.new({-footX,0,0}),uTorso);
-  torsoFactor = 2.0;
-  uTorsoActual = util.pose_global(vector.new({-footX+zMod*torsoFactor,0,0}),uTorso);
+  --Torso trajectory modulation for Running
+  zMod,footMod,torsoMod=get_z_mod(); 
+  uTorsoActual = util.pose_global(vector.new({-footX+torsoMod,0,0}),uTorso);
 
   pLLeg[1], pLLeg[2], pLLeg[6] = uLeft[1], uLeft[2], uLeft[3];
   pRLeg[1], pRLeg[2], pRLeg[6] = uRight[1], uRight[2], uRight[3];
@@ -326,7 +328,7 @@ function motion_legs(qLegs)
   if supportLeg == 0 then  -- Left support
     qLegs[2] = qLegs[2] + hipShift[2];    --Hip roll stabilization
     qLegs[4] = qLegs[4] + kneeShift;    --Knee pitch stabilization
-    qLegs[5] = qLegs[5]  + ankleShift[1] + aMod;    --Ankle pitch stabilization
+    qLegs[5] = qLegs[5]  + ankleShift[1];    --Ankle pitch stabilization
     qLegs[6] = qLegs[6] + ankleShift[2];    --Ankle roll stabilization
     qLegs[11] = qLegs[11]  + toeTipCompensation;
 
@@ -334,7 +336,7 @@ function motion_legs(qLegs)
   else
     qLegs[8] = qLegs[8]  + hipShift[2];    --Hip roll stabilization
     qLegs[10] = qLegs[10] + kneeShift;    --Knee pitch stabilization
-    qLegs[11] = qLegs[11]  + ankleShift[1] + aMod;    --Ankle pitch stabilization
+    qLegs[11] = qLegs[11]  + ankleShift[1];    --Ankle pitch stabilization
     qLegs[12] = qLegs[12] + ankleShift[2];    --Ankle roll stabilization
 
     --Lifting toetip
@@ -573,63 +575,20 @@ function foot_phase(ph)
   return xf, zf;
 end
 
---[[
 function get_z_mod()
-  bodyZ0 = -0.01; --landing
-  bodyZ1 = 0.03; --thrust
-  bodyZ2 = 0; --aerial
-  ankleA = -5*math.pi/180;
-  phZ0 = 0.1;  phZ1 = 0.6;  phZ2 = 0.7;
-  k0 = 2; k1 = 2;  k2 = 2; --aerial
-
-  ankleA = 1*math.pi/180;
-
-  aMod = 0;
-  --Thrust phase :ph0 to ph1
-  --Aerial phase: ph1 to ph2
-  --Landing phaes: ph2 to 1, 0 to ph0
-
-  if ph<phZ0 then --landing phase
-    phRun = (ph-phZ2+1)/(phZ0-phZ2+1);
-    zMod = bodyZ2 + (bodyZ0-bodyZ2)*(phRun)^k0;
-  elseif ph<phZ1 then -- thrust phase
-    phRun = (ph-phZ0)/(phZ1-phZ0);
-    zMod = bodyZ0 + (bodyZ1-bodyZ0)*phRun^k1;
-    aMod = -3*math.pi/180;
-  elseif ph<phZ2 then --aerial phase
-    phRun = (ph-phZ1)/(phZ2-phZ1);
-    zMod = bodyZ1 + (bodyZ2-bodyZ1)*phRun^k2;
-  else --landing phase 
-    phRun = (ph-phZ2)/(phZ0-phZ2+1);
-    zMod = bodyZ2 + (bodyZ0-bodyZ2)*(phRun)^k0;
-  end
-  return zMod,aMod; 
-end
---]]
-
-
-function get_z_mod()
-
-  bodyZ0 = 0.03; -- Aerial 
-  bodyZ1 = 0.02; -- Landing
-  bodyZ2 = -0.02; --Min
-
-  footZ0 = 0.03; --Foot fly height
-
-  phZ0 = 0.15;  phZ1 = 0.5;  phZ2 = 0.85;
-  k0 = 2; k1 = 2;  k2 = 2;  fk0 =2;
-
-  ankleA = 1*math.pi/180;
-  aMod = 0;
   --Aerial phase: 0 to ph0
   --Landing phase :ph0 to ph1
   --Thrust phase: ph1 to ph2
   --Aerial phase: ph2 to 1 
 
+  phZ0,phZ1,phZ2= phZ[1],phZ[2],phZ[3];
+  k0,k1,k2,footK=bodyK[1],bodyK[2],bodyK[3],bodyK[4];
+  bodyZ0,bodyZ1,bodyZ2,footZ=bodyZ[1],bodyZ[2],bodyZ[3],bodyZ[4];
+
   if ph<phZ0 then --Aerial phase
     phRun = (ph)/(phZ0);
     zMod = bodyZ0 + (bodyZ1-bodyZ0)*(phRun)^k0;
-    footMod=footZ0+ (-footZ0)*(phRun)^fk0;
+    footMod=footZ+ (-footZ)*(phRun)^footK;
   elseif ph<phZ1 then -- landing phase
     phRun = (ph-phZ0)/(phZ1-phZ0);
     zMod = bodyZ1 + (bodyZ2-bodyZ1)*phRun^k1;
@@ -641,17 +600,14 @@ function get_z_mod()
   else --aerial phase
     phRun = (ph-phZ2)/(1-phZ2);
     zMod = bodyZ0 + (bodyZ1-bodyZ0)*(1-phRun)^k0;
-    footMod=footZ0+ (-footZ0)*(1-phRun)^fk0;
+    footMod=footZ+ (-footZ)*(1-phRun)^footK;
   end
-  return zMod,footMod,aMod; 
+  torsoMod = zMod * torsoFactor;
+  return zMod,footMod,torsoMod; 
 end
 
 
-
-
 function motion_torso() --Torso swing during walking
-  armGain = 0.40;
-  torsoAngleMax = 20*math.pi/180;
   local uBodyLeft=util.pose_relative(uLeft,uTorso);
   local uBodyRight=util.pose_relative(uRight,uTorso);
   local footRel=uBodyLeft[1]-uBodyRight[1];
@@ -664,8 +620,6 @@ end
 
 
 function motion_arms2()
-   armGain = 0.40;
-
    local uBodyLeft=util.pose_relative(uLeft,uTorso);
    local uBodyRight=util.pose_relative(uRight,uTorso);
    local footRel=uBodyLeft[1]-uBodyRight[1];
@@ -674,19 +628,16 @@ function motion_arms2()
         footRel/armGain * 50*math.pi/180
         ));
 
---armAngle=0;
-
-    qLArm[1],qLArm[2]=qLArm0[1]+armShift[1],qLArm0[2]+armShift[2];
-    qRArm[1],qRArm[2]=qRArm0[1]+armShift[1],qRArm0[2]+armShift[2];
-    qLArm[1]=qLArm[1]+armAngle;
-    qRArm[1]=qRArm[1]-armAngle;
+  qLArm[1],qLArm[2]=qLArm0[1]+armShift[1],qLArm0[2]+armShift[2];
+  qRArm[1],qRArm[2]=qRArm0[1]+armShift[1],qRArm0[2]+armShift[2];
+  qLArm[1]=qLArm[1]+armAngle;
+  qRArm[1]=qRArm[1]-armAngle;
 
   qLArm[2]=math.max(8*math.pi/180,qLArm[2])
   qRArm[2]=math.min(-8*math.pi/180,qRArm[2]);
 
   Body.set_larm_command(qLArm);
   Body.set_rarm_command(qRArm);
-
 end
 	
 

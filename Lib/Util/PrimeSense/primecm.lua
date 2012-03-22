@@ -41,11 +41,11 @@ XN_SKEL_RIGHT_ANKLE
 XN_SKEL_RIGHT_FOOT
 --]]
 
-jointNames = { "Head", "Neck", "Torso", "Waist",
-              "CollarL","ShoulderL", "ElbowL", "WristL", "HandL", "FingerL",
-              "CollarR","ShoulderR", "ElbowR", "WristR", "HandR", "FingerR",              
-              "HipL", "KneeL", "AnkleL", "FootL", 
-              "HipR", "KneeR", "AnkleR", "FootR",
+jointNames = { 'Head', 'Neck', 'Torso', 'Waist',
+              'CollarL','ShoulderL', 'ElbowL', 'WristL', 'HandL', 'FingerL',
+              'CollarR','ShoulderR', 'ElbowR', 'WristR', 'HandR', 'FingerR',              
+              'HipL', 'KneeL', 'AnkleL', 'FootL', 
+              'HipR', 'KneeR', 'AnkleR', 'FootR',
              };
 
 shared.skeleton = {};

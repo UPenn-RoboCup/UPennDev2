@@ -34,7 +34,7 @@ LIB_DIR = -L/usr/local/lib -L/usr/lib
 
 LIBNAME= SaffirKinematics
 
-all:: kinematics test_kinematics
+all:: kinematics #test_kinematics
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -I$(INCLUDE_DIR) -o $@ -c $<

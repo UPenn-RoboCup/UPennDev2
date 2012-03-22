@@ -1,9 +1,13 @@
 module(..., package.seeall);
 require('controller');
+require('Transform');
 
 controller.wb_robot_init();
 timeStep = controller.wb_robot_get_basic_time_step();
 tDelta = .001*timeStep;
+imuAngle = {0, 0, 0};
+aImuFilter = 1 - math.exp(-tDelta/0.5);
+
 
 -- Get webots tags:
 tags = {};
@@ -133,8 +137,6 @@ function get_sensor_position(index)
   end
 end
 
-imuAngle = {0, 0, 0};
-aImuFilter = 1 - math.exp(-tDelta/0.5);
 function get_sensor_imuAngle(index)
   if (not index) then
     return imuAngle;
@@ -145,18 +147,8 @@ end
 
 -- Two buttons in the array
 function get_sensor_button(index)
---[[
-  local randThreshold = 0.001;
-  if (math.random() < randThreshold) then
-    return {1,0};
-  else
-    return {0,0};
-  end
---]]
   return {0,0};
 end
-
-
 
 function get_head_position()
   local q = get_sensor_position();
@@ -178,8 +170,6 @@ function get_rleg_position()
   local q = get_sensor_position();
   return {unpack(q, indexRLeg, indexRLeg+nJointRLeg-1)};
 end
-
-
 
 function set_body_hardness(val)
   if (type(val) == "number") then
@@ -260,29 +250,7 @@ function update()
   end
 
   -- Process sensors
-  accel = controller.wb_accelerometer_get_values(tags.accelerometer);
-
-  gyro = controller.wb_gyro_get_values(tags.gyro);
-  local gAccel = 9.80;
-  accY = (accel[1]-512)/128;
-  accX = -(accel[2]-512)/128;
-  if ((accX > -1) and (accX < 1) and (accY > -1) and (accY < 1)) then
-    imuAngle[1] = imuAngle[1] + aImuFilter*(math.asin(accY) - imuAngle[1]);
-    imuAngle[2] = imuAngle[2] + aImuFilter*(math.asin(accX) - imuAngle[2]);
-  end
-
---[[
-print("Accel:",unpack(accel))
-print("Gyro:",unpack(gyro))
---]]
-
-  --Yaw angle generation by gyro integration
-  imuAngle[3] = imuAngle[3] + tDelta * (gyro[3]-512) / 0.273 *
-        math.pi/180 *
-        0.9; --to compensate bodyTilt
-  --print("Yaw:",imuAngle[3]*180/math.pi)
-
-
+  update_IMU();
 
 --[[
   -- Bumper Touch Sensor
@@ -292,6 +260,35 @@ print("Gyro:",unpack(gyro))
 
 end
 
+function update_IMU()
+    
+  acc=get_sensor_imuAcc();
+  gyr=get_sensor_imuGyrRPY();
+
+  local tTrans = Transform.rotZ(imuAngle[3]);
+  tTrans= tTrans * Transform.rotY(imuAngle[2]);
+  tTrans= tTrans * Transform.rotX(imuAngle[1]);
+
+  gyrFactor = 0.85; --Empirical compensation value 
+  gyrDelta = vector.new(gyr)*math.pi/180*tDelta*gyrFactor;
+
+  local tTransDelta = Transform.rotZ(gyrDelta[3]);
+  tTransDelta= tTransDelta * Transform.rotY(gyrDelta[2]);
+  tTransDelta= tTransDelta * Transform.rotX(gyrDelta[1]);
+
+  tTrans=tTrans*tTransDelta;
+  imuAngle = Transform.getRPY(tTrans);
+
+  local accMag = acc[1]^2+acc[2]^2+acc[3]^2;
+  if accMag>0.8 and accMag<1 then
+    local angR=math.asin(-acc[2]);
+    local angP=math.asin(acc[1]);
+    imuAngle[1] = imuAngle[1] + aImuFilter*(angR - imuAngle[1]);
+    imuAngle[2] = imuAngle[2] + aImuFilter*(angP - imuAngle[2]);
+  end
+
+--  print("RPY:",unpack(imuAngle*180/math.pi))
+end
 
 -- Extra for compatibility
 function set_syncread_enable(val)
@@ -311,26 +308,22 @@ function get_sensor_imuGyr0()
 end
 
 function get_sensor_imuGyr( )
-  --SJ: modified the controller wrapper function
-  gyro = controller.wb_gyro_get_values(tags.gyro);
-  gyro_proc={(gyro[1]-512)/0.273, (gyro[2]-512)/0.273,(gyro[3]-512)/0.273};
-  return gyro_proc;
+  return get_sensor_imuGyrRPY();
 end
 
---SJ: added this for Nao support
 --Roll, Pitch Yaw angles in degree per seconds unit 
-
 function get_sensor_imuGyrRPY( )
-  --SJ: modified the controller wrapper function
   gyro = controller.wb_gyro_get_values(tags.gyro);
-  gyro_proc={(gyro[1]-512)/0.273, (gyro[2]-512)/0.273,(gyro[3]-512)/0.273};
+  --Checked with webots OP model
+  gyro_proc={-(gyro[1]-512)/0.273, -(gyro[2]-512)/0.273,(gyro[3]-512)/0.273};
   return gyro_proc;
 end
 
-
+--Acceleration in X,Y,Z axis in g unit
 function get_sensor_imuAcc( )
   accel = controller.wb_accelerometer_get_values(tags.accelerometer);
-  return {accel[1]-512,accel[2]-512,0};
+  --Checked with webots OP model
+  return {-(accel[2]-512)/128,-(accel[1]-512)/128,(accel[3]-512)/128};
 end
 
 function set_actuator_eyeled(color)

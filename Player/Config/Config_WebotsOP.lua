@@ -13,7 +13,7 @@ function loadconfig(configName)
 end
 
 loadconfig('Walk/Config_WebotsOP_Walk')
-loadconfig('World/Config_WebotsOP_World')
+loadconfig('World/Config_OP_World')
 loadconfig('Kick/Config_WebotsOP_Kick')
 --loadconfig('Kick/Config_WebotsOP_KickPunch')
 loadconfig('Vision/Config_WebotsOP_Vision')

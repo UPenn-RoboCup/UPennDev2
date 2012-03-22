@@ -46,7 +46,7 @@ h.get_labelB = @get_labelB;
         r.pose = struct('x', pose(1), 'y', pose(2), 'a', pose(3));
         
         ballx = h.wcmBall.get_x();
-				bally = h.wcmBall.get_y();
+	bally = h.wcmBall.get_y();
         ballt = h.wcmBall.get_t();
         ballvelx = h.wcmBall.get_velx();
         ballvely = h.wcmBall.get_vely();
@@ -79,7 +79,7 @@ h.get_labelB = @get_labelB;
       r.robot.pose = struct('x', pose(1), 'y', pose(2), 'a', pose(3));
           
       ballx = h.wcmBall.get_x();
-			bally = h.wcmBall.get_y();
+      bally = h.wcmBall.get_y();
       ballt = h.wcmBall.get_t();
       ball = {};
       ball.detect = h.vcmBall.get_detect();
@@ -108,19 +108,21 @@ h.get_labelB = @get_labelB;
       gbb2 = h.vcmGoal.get_postBoundingBox2();
       r.goal.postBoundingBox2 = struct('x1',gbb2(1), 'x2',gbb2(2), 'y1',gbb2(3), 'y2',gbb2(4));
 
-      %add goal post stats
-%{
-      gc1 = h.vcmGoal.get_postCentroid1();
-      gc2 = h.vcmGoal.get_postCentroid2();
-      ga1 = h.vcmGoal.get_postAxis1();
-      ga2 = h.vcmGoal.get_postAxis2();
-      go1 = h.vcmGoal.get_postOrientation1();
-      go2 = h.vcmGoal.get_postOrientation2();
-      r.goal.postStat1 = struct('x',gc1(1), 'y',gc1(2), 'a',ga1(1), 'b',ga1(2),'o',go1(1));
-      r.goal.postStat2 = struct('x',gc2(1), 'y',gc2(2), 'a',ga2(1), 'b',ga2(2),'o',go2(1));
-%}
+      r.goal.postStat1 = struct('x',0,'y',0, 'a',0, 'b',0,'o',0);
+      r.goal.postStat2 = struct('x',0,'y',0, 'a',0, 'b',0,'o',0);
 
-      
+      if r.goal.detect==1 
+         %add goal post stats
+        gc1 = h.vcmGoal.get_postCentroid1();
+        gc2 = h.vcmGoal.get_postCentroid2();
+        ga1 = h.vcmGoal.get_postAxis1();
+        ga2 = h.vcmGoal.get_postAxis2();
+        go1 = h.vcmGoal.get_postOrientation1();
+        go2 = h.vcmGoal.get_postOrientation2();
+        r.goal.postStat1 = struct('x',gc1(1), 'y',gc1(2), 'a',ga1(1), 'b',ga1(2),'o',go1(1));
+        r.goal.postStat2 = struct('x',gc2(1), 'y',gc2(2), 'a',ga2(1), 'b',ga2(2),'o',go2(1));
+      end
+
       % Add freespace boundary
       r.free = {};
       freeCol = h.vcmFreespace.get_nCol();
@@ -180,8 +182,8 @@ h.get_labelB = @get_labelB;
 
   function yuyv = get_yuyv()
       % returns the raw YUYV image
-%         width = h.vcmImage.get_width();
-%         height = h.vcmImage.get_height();
+%   width = h.vcmImage.get_width();
+%   height = h.vcmImage.get_height();
     width = h.vcmImage.get_width()/2;
     height = h.vcmImage.get_height();
     rawData = h.vcmImage.get_yuyv();

@@ -65,6 +65,14 @@ shared.goal.v2 = vector.zeros(4);
 shared.goal.postBoundingBox1 = vector.zeros(4);
 shared.goal.postBoundingBox2 = vector.zeros(4);
 
+--added for monitor
+shared.goal.postCentroid1 = vector.zeros(2);
+shared.goal.postAxis1 = vector.zeros(2);
+shared.goal.postOrientation1 = vector.zeros(1);
+shared.goal.postCentroid2 = vector.zeros(2);
+shared.goal.postAxis2 = vector.zeros(2);
+shared.goal.postOrientation2 = vector.zeros(1);
+
 shared.line = {};
 shared.line.detect = vector.zeros(1);
 shared.line.v = vector.zeros(4);

@@ -20,6 +20,7 @@ use_point_goal=Config.vision.use_point_goal;
 headInverted=Config.vision.headInverted;
 
 function detect(color)
+
   local goal = {};
   goal.detect = 0;
 
@@ -152,14 +153,26 @@ function detect(color)
     end
   end
   
-  -- added for test_vision.m
+-- added for test_vision.m
   if Config.vision.copy_image_to_shm then
-    vcm.set_goal_postBoundingBox1(postB[ivalidB[1]].boundingBox);
-    if npost == 2 then
-      vcm.set_goal_postBoundingBox2(postB[ivalidB[2]].boundingBox);
-    else
-      vcm.set_goal_postBoundingBox2(vector.zeros(4));
-    end
+--      vcm.set_goal_postBoundingBox1(postB[ivalidB[1]].boundingBox);
+      --added 
+      vcm.set_goal_postBoundingBox1(vector.zeros(4));
+
+      vcm.set_goal_postCentroid1({postA[1].centroid[1],postA[1].centroid[2]});
+      vcm.set_goal_postAxis1({postA[1].axisMajor,postA[1].axisMinor});
+      vcm.set_goal_postOrientation1(postA[1].orientation);
+
+      if npost == 2 then
+--        vcm.set_goal_postBoundingBox2({postB[ivalidB[2]].boundingBox});
+        vcm.set_goal_postBoundingBox2(vector.zeros(4));
+
+        vcm.set_goal_postCentroid2({postA[2].centroid[1],postA[2].centroid[2]});
+        vcm.set_goal_postAxis2({postA[2].axisMajor,postA[2].axisMinor});
+        vcm.set_goal_postOrientation2(postA[2].orientation);
+      else
+        vcm.set_goal_postBoundingBox2(vector.zeros(4));
+      end
   end
 
   goal.detect = 1;

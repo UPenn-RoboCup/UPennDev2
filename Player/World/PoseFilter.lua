@@ -26,6 +26,8 @@ aGoalFilter = Config.world.aGoalFilter;
 rPostFilter = Config.world.rPostFilter;
 aPostFilter = Config.world.aPostFilter;
 
+--To fix OP's really bad goalpost detection
+use_new_goalposts= Config.world.use_new_goalposts or 0;
 
 xp = .5*xMax*vector.new(util.randn(n));
 yp = .5*yMax*vector.new(util.randn(n));
@@ -132,6 +134,12 @@ function landmark_observation(pos, v, rLandmarkFilter, aLandmarkFilter)
 end
 
 function goal_observation(pos, v)
+
+  if use_new_goalposts==1 then
+    goal_observation_new(pos,v);
+    return;
+  end
+
   -- Use angle between posts (most accurate)
   -- as well as combination of post distances to triangulate
   local aPost = {};
@@ -183,6 +191,116 @@ function goal_observation(pos, v)
     ap[ip] = ap[ip] + aFilter*aErr;
   end
 end
+
+
+--SJ: A new goal observation code 
+function goal_observation_new(pos, v)
+   local aPost = {};
+   local d2Post = {};
+
+   aPost[1] = math.atan2(v[1][2], v[1][1]);
+   aPost[2] = math.atan2(v[2][2], v[2][1]);
+   d2Post[1] = v[1][1]^2 + v[1][2]^2;
+   d2Post[2] = v[2][1]^2 + v[2][2]^2;
+
+   --Triangulation to fix the thick nearest post problem with OP
+   if d2Post[1]<d2Post[2] then
+	-- v1=kcos(a1),ksin(a1)
+	--k^2 - 2k(v[2][1]cos(a1)+v[2][2]sin(a1)) + d2Post[2]-goalWidth^2 = 0
+	local ca=math.cos(aPost[1]);
+	local sa=math.sin(aPost[1]);
+	local b=v[2][1]*ca+ v[2][2]*sa;
+	local c=d2Post[2]-goalWidth^2;
+
+        if b*b-c>0 then
+		k1=b-math.sqrt(b*b-c);
+		k2=b+math.sqrt(b*b-c);
+--		print("Original v1:",v[1][1],v[1][2]);
+--		print("v1_1:",k1*ca,k1*sa);
+--		print("v1_2:",k2*ca,k2*sa);
+		if k1>d2Post[1] then
+			v[1][1],v[2][1]=k1*ca,k1*sa;
+		end
+	end
+   else
+	-- v2=kcos(a2),ksin(a2)
+	--k^2 - 2k(v[2][1]cos(a1)+v[2][2]sin(a1)) + d2Post[2]-goalWidth^2 = 0
+	local ca=math.cos(aPost[2]);
+	local sa=math.sin(aPost[2]);
+	local b=v[1][1]*ca+ v[1][2]*sa;
+	local c=d2Post[1]-goalWidth^2;
+	
+	if b*b-c>0 then
+		k1=b-math.sqrt(b*b-c);
+		k2=b+math.sqrt(b*b-c);
+--		print("Original v1:",v[2][1],v[2][2]);
+--		print("v1_1:",k1*ca,k1*sa);
+--		print("v1_2:",k2*ca,k2*sa);
+		if k1>d2Post[2] then
+			v[2][1],v[2][2]=k1*ca,k1*sa;
+		end
+	end
+   end
+
+   --Use center of the post 
+   vGoalX=0.5*(v[1][1]+v[2][1]);
+   vGoalY=0.5*(v[1][2]+v[2][2]);
+   rGoal = math.sqrt(vGoalX^2+vGoalY^2);
+
+   if aPost[1]<aPost[2] then
+     aGoal=-math.atan2 ( v[1][1]-v[2][1] , -(v[1][2]-v[2][2]) ) ;
+   else
+     aGoal=-math.atan2 ( v[2][1]-v[1][1] , -(v[2][2]-v[1][2]) ) ;
+   end   
+
+   ca=math.cos(aGoal);
+   sa=math.sin(aGoal);
+   
+   local dx = ca*vGoalX-sa*vGoalY;
+   local dy = sa*vGoalX+ca*vGoalY;
+
+   local x0 = 0.5*(pos[1][1]+pos[2][1]);
+   local y0 = 0.5*(pos[1][2]+pos[2][2]);
+
+   local x = x0 - sign(x0)*dx;
+   local y = -sign(x0)*dy;
+
+   local a=aGoal;
+   if x0<0 then a=mod_angle(a+math.pi); end
+
+   local dGoal = rGoal;
+   local rSigma = .25*dGoal + 0.20;
+   local aSigma = 5*math.pi/180;
+   for ip = 1,n do
+      local xErr = x - xp[ip];
+      local yErr = y - yp[ip];
+      local rErr = math.sqrt(xErr^2 + yErr^2);
+      local aErr = mod_angle(a - ap[ip]);
+      local err = (rErr/rSigma)^2 + (aErr/aSigma)^2;
+      wp[ip] = wp[ip] - err;
+
+      local rFilter = rGoalFilter;
+      local aFilter = aGoalFilter;
+
+      xp[ip] = xp[ip] + rFilter*xErr;
+      yp[ip] = yp[ip] + rFilter*yErr;
+      ap[ip] = ap[ip] + aFilter*aErr;
+   end
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 function ball_yellow(v)
   goal_observation(ballYellow, v);

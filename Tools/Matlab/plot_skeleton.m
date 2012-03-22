@@ -1,5 +1,5 @@
 %% Plot the skeleton
-clear all;
+%clear all;
 sk = shm_primesense();
 
 jointNames = { 'Head', 'Neck', 'Torso', 'Waist', ...
@@ -20,7 +20,9 @@ while(1)
         joint = sk.get_joint( jName );
         positions(j,:) = joint.position;
     end
-    plot3( positions(:,1), positions(:,2), positions(:,3), 'o', ...
+    %plot3( positions(:,1), positions(:,2), positions(:,3), 'o', ...
+    %    'MarkerEdgeColor','k', 'MarkerFaceColor',[.49 1 .63], 'MarkerSize',10 );
+    plot( positions(:,1), positions(:,2), 'o', ...
         'MarkerEdgeColor','k', 'MarkerFaceColor',[.49 1 .63], 'MarkerSize',10 );
     
     % Run at 30Hz

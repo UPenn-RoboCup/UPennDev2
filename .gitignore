@@ -43,3 +43,6 @@ build
 
 # Webot World File temp
 *.project
+
+# svn 
+.svn

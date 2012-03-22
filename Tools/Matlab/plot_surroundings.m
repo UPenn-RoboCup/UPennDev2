@@ -11,6 +11,13 @@ function [ ] = plot_surroundings( handle, mon_struct )
     xlim([-2 2]);
     ylim([0 4]);
     hold on;
+
+    %draw vision boundary
+    fov=mon_struct.fov;
+    plot(-[fov.TL(2) fov.TR(2)],[fov.TL(1) fov.TR(1)],'k--');
+    plot(-[fov.BL(2) fov.BR(2)],[fov.BL(1) fov.BR(1)],'k--');
+    plot(-[fov.TL(2) fov.BL(2)],[fov.TL(1) fov.BL(1)],'k--');
+    plot(-[fov.TR(2) fov.BR(2)],[fov.TR(1) fov.BR(1)],'k--');
     
     ball = mon_struct.ball;
     if( ball.detect )
@@ -40,6 +47,22 @@ function [ ] = plot_surroundings( handle, mon_struct )
 	    set(g_name2,'FontSize',8);
         end
     end
+
+    landmark = mon_struct.landmark;
+    if (landmark.detect==1)
+	if (landmark.color==2) % yellow
+	  marker1='m';marker2='b';
+        else
+	  marker1='b';marker2='m';
+	end
+
+        marker1 = strcat(marker1,'x');
+        plot(-1*landmark.v(2), landmark.v(1), marker1,'MarkerSize',12);
+        g_name2=text(-1*landmark.v(2)-0.30,landmark.v(1)+0.3,sprintf('%.2f,%.2f',landmark.v(1),landmark.v(2)));
+        set(g_name2,'FontSize',8);
+
+    end
+
 %{
     bd = mon_struct.bd;
     if( bd.detect == 1 )

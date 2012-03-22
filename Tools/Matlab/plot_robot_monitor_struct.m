@@ -25,21 +25,37 @@ hr = fill(xr, yr, teamColors(robot_struct.teamColor+1));
 % disp attack bearing
 xab = cos(robot_struct.attackBearing)*ca - sin(robot_struct.attackBearing)*sa;
 yab = cos(robot_struct.attackBearing)*sa + sin(robot_struct.attackBearing)*ca;
-quiver(robot_struct.pose.x, robot_struct.pose.y, xab,yab,teamColors(2-robot_struct.teamColor)  );
+ab_scale = 1.5;
+quiver(robot_struct.pose.x, robot_struct.pose.y, xab*ab_scale,yab*ab_scale, 'k' );
 
 
 x0 = robot_struct.pose.x;
 y0 = robot_struct.pose.y;
 
+%draw vision boundary
+fov=r_mon.fov;
+x1 = fov.TL(1)*ca - fov.TL(2)*sa + robot_struct.pose.x;
+y1 = fov.TL(1)*sa + fov.TL(2)*ca + robot_struct.pose.y;
 
-if ~isempty(robot_struct.ball),
-    ball = [robot_struct.ball.x robot_struct.ball.y];
-    xb = xr(1) + ball(1)*ca - ball(2)*sa;
-    yb = yr(1) + ball(1)*sa + ball(2)*ca;
+x2 = fov.TR(1)*ca - fov.TR(2)*sa + robot_struct.pose.x;
+y2 = fov.TR(1)*sa + fov.TR(2)*ca + robot_struct.pose.y;
+plot([x1 x2],[y1 y2], 'k--');
+plot([x0 x1],[y0 y1], 'k--');
+plot([x0 x2],[y0 y2], 'k--');
+
+
+
+
+if ~isempty(robot_struct.ball) 
+    if r_mon.ball.detect==1
+      ball = [robot_struct.ball.x robot_struct.ball.y];
+      xb = xr(1) + ball(1)*ca - ball(2)*sa;
+      yb = yr(1) + ball(1)*sa + ball(2)*ca;
 %    hb = plot(xb, yb, [idColors(robot_struct.id) 'o']);
-    hb = plot(xb, yb, 'ro');
-    plot([x0 xb],[y0 yb],'r');
-    set(hb, 'MarkerSize', scale*2);
+      hb = plot(xb, yb, 'ro');
+      plot([x0 xb],[y0 yb],'r');
+      set(hb, 'MarkerSize', scale*4);
+   end
 end
 
 
@@ -66,6 +82,20 @@ end
         end
     end
 
+    landmark = r_mon.landmark;
+    if (landmark.detect==1)
+	if (landmark.color==2) % yellow
+	  marker='m';
+        else
+	  marker='b';
+	end
+        marker2 = strcat(marker,'x');
+
+        x1 = landmark.v(1)*ca - landmark.v(2)*sa + robot_struct.pose.x;
+        y1 = landmark.v(1)*sa + landmark.v(2)*ca + robot_struct.pose.y;
+        plot(x1,y1,marker2,'MarkerSize',12);
+        plot([x0 x1],[y0 y1],marker);
+    end
 
 hold off;
 

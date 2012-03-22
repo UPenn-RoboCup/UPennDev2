@@ -19,7 +19,7 @@ colorWhite = Config.color.white;
 use_point_goal=Config.vision.use_point_goal;
 headInverted=Config.vision.headInverted;
 
-function detect(color)
+function detect(color,color2)
   local goal = {};
   goal.detect = 0;
 

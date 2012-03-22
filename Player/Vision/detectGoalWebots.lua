@@ -19,7 +19,10 @@ colorWhite = 16;
 use_point_goal=Config.vision.use_point_goal;
 headInverted=Config.vision.headInverted;
 
-function detect(color)
+--Cut top portion of detected post (for OP)
+cut_top_post = Config.vision.cut_top_post or 0;
+
+function detect(color,color2)
 
   local goal = {};
   goal.detect = 0;
@@ -43,7 +46,29 @@ function detect(color)
   local postA = {};
   for i = 1,#postB do
     local valid = true;
-    local postStats = Vision.bboxStats(color, postB[i].boundingBox);
+
+    postStats = Vision.bboxStats(color, postB[i].boundingBox);
+
+    if cut_top_post ==1 then --cut top of the post for OP
+      local leftX = postB[i].boundingBox[1];
+      local rightX = postB[i].boundingBox[2];
+      local topY = postB[i].boundingBox[3];
+      local bottomY = postB[i].boundingBox[4];
+      local topY2 = topY-(topY-bottomY)*0.4;
+      boundingBoxLower={leftX,rightX,topY2,bottomY};
+      postStats2 = Vision.bboxStats(color, boundingBoxLower);
+
+      --Compare thickness
+      --[[
+      local thickness1 = postStats.axisMinor;
+      local thickness2 = postStats2.axisMinor;
+      if thickness1 > 1.1* thickness2 then
+	postStats=postStats2;
+      end
+      --]]
+
+      postStats=postStats2;
+    end
     -- size and orientation
     --print("Size and orientation check ", postStats.area, 180/math.pi*postStats.orientation)
     if (math.abs(postStats.orientation) < 60*math.pi/180) then
@@ -53,6 +78,14 @@ function detect(color)
     --fill extent check
     local extent = postStats.area / (postStats.axisMajor * postStats.axisMinor);
     --print("Fill extent check ", extent)
+
+    --bad color check (to check landmarks out)
+    local badColorStats=Vision.bboxStats(color2,postB[i].boundingBox);
+    local extent2= badColorStats.area /
+          (postStats.axisMajor * postStats.axisMinor);
+    if extent2/extent>0.1 then
+       valid = false; 
+    end
 
     --aspect ratio check
     local aspect = postStats.axisMajor/postStats.axisMinor;
@@ -131,17 +164,18 @@ function detect(color)
     local topY = postA[1].boundingBox[3]-postWidth;
     local bottomY = postA[1].boundingBox[3]+2*postWidth;
     local bboxA = {leftX, rightX, topY, bottomY};
+
     local crossbarStats = ImageProc.color_stats(Vision.labelA.data, Vision.labelA.m, Vision.labelA.n, color, bboxA);
     local dxCrossbar = crossbarStats.centroid[1] - postA[1].centroid[1];
     if (math.abs(dxCrossbar) > 0.6*postWidth) then
       if (dxCrossbar > 0) then
         -- left post
---        goal.type = 1;
-	goal.type = 0;
+        goal.type = 1;
+--	goal.type = 0;
       else
         -- right post
---        goal.type = 2;
-	goal.type = 0;
+        goal.type = 2;
+--	goal.type = 0;
       end
     else
       -- unknown post

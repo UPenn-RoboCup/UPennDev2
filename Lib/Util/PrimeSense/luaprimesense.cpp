@@ -254,7 +254,8 @@ static int lua_get_jointtables(lua_State *L) {
     return 1;
   }
   joint--; // Lua Input is [1,24], C/C++ is [0,23]
-  //  printf("Joint %u = (%lf,%lf,%lf)\n",joint,posTable[joint].X,posTable[joint].Y,posTable[joint].Z);
+
+  // Push the position  
   lua_createtable(L, 3, 0);
   lua_pushnumber(L, posTable[joint].X);
   lua_rawseti(L, -2, 1);
@@ -262,14 +263,19 @@ static int lua_get_jointtables(lua_State *L) {
   lua_rawseti(L, -2, 2);
   lua_pushnumber(L, posTable[joint].Z);
   lua_rawseti(L, -2, 3);
+  //printf("Joint %u\t(%lf,%lf,%lf)\n",joint+1,posTable[joint].X,posTable[joint].Y,posTable[joint].Z);
+
 
   // Push the orientation
   lua_createtable(L, 9, 0);
+  //printf("Joint %u\t( ",joint+1);  
   for (int i = 0; i < 9; i++) {
     XnFloat* tmp = rotTable[joint].elements;
     lua_pushnumber(L, tmp[i]);   /* Push the table index */
     lua_rawseti(L, -2, i+1);
+    //printf( "%lf ", tmp[i] );
   }
+  //printf(")\n");  
 
   // Push the confidences
   lua_createtable(L, 2, 0);  
@@ -277,9 +283,9 @@ static int lua_get_jointtables(lua_State *L) {
   lua_rawseti(L, -2, 1);
   lua_pushnumber(L, rotConfTable[joint] );
   lua_rawseti(L, -2, 2);
+  //printf("Joint %u\t(%lf,%lf)\n",joint+1,posConfTable[joint],rotConfTable[joint]);
 
-
-  return 2;
+  return 3;
 }
 
 static int lua_update_joints(lua_State *L) {

@@ -51,8 +51,8 @@ loadconfig('FSM/Config_WebotsOP_FSM')
 
 --fsm.game = 'Dodgeball';
 --fsm.game = 'OpDemo';
-fsm.game = 'RoboCup';
---fsm.game = 'Stretcher';
+--fsm.game = 'RoboCup';
+fsm.game = 'Stretcher';
 
 -- Set the Body and Head FSMs based on GameFSM
 fsm.body = {fsm.game};

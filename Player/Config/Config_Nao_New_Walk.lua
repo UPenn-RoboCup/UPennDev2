@@ -1,1 +1,0 @@
-NaoWalk/Config_Nao_Walk_Blimp_Room.lua

@@ -7,11 +7,11 @@ WorldInfo {
   ]
   title "Robotstadium"
   basicTimeStep 15
-  runRealTime TRUE
+  displayRefresh 3
 }
 Viewpoint {
-  orientation 0.00928402 0.961307 0.275324 3.14754
-  position -0.109676 4.57162 -7.23895
+  orientation 0.00926903 0.962671 0.270514 3.14763
+  position -0.111268 4.50378 -7.28437
 }
 Background {
   skyColor [
@@ -29,34 +29,35 @@ DirectionalLight {
   direction 0.5 -0.5 0.5
   intensity 0.5
 }
-SoccerField {
+TeenSoccerField {
 }
 Charli {
   translation 0.313766 1 0.0476478
   controller "darwin-op_team_0"
   controllerArgs "0 0"
 }
-Walls {
+TeenWalls {
 }
 DEF YELLOW_GOAL TeenGoal {
-  translation 3 0 0
+  translation 4.5 0 0
   postColor 0.992157 0.854902 0.219608
 }
 DEF BLUE_GOAL TeenGoal {
-  translation -3 0 0
+  translation -4.5 0 0
   rotation 0 1 0 3.14159
   postColor 0.152941 0.505882 0.733333
 }
 DEF YELLOW_LANDMARK Landmark {
-  translation 0 0 -2.4
+  translation 0 0 -3.4
   postColor1 0.992157 0.854902 0.219608
   postColor2 0.152941 0.505882 0.733333
 }
 DEF BLUE_LANDMARK Landmark {
-  translation 0 0 2.4
+  translation 0 0 3.4
   postColor1 0.152941 0.505882 0.733333
   postColor2 0.992157 0.854902 0.219608
 }
 DEF BALL Ball {
-  translation 0 0.0323921 0
+  translation -1.01515 0.132392 0.307558
+  radius 0.1
 }

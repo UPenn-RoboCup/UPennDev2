@@ -15,20 +15,20 @@ function loadconfig(configName)
 end
 
 
-loadconfig('Config_WebotsSaffir_Walk')
-loadconfig('Config_WebotsSaffir_Kick')
-loadconfig('Config_WebotsOP_World')
-loadconfig('Config_WebotsOP_Vision')
+loadconfig('Walk/Config_WebotsSaffir_Walk')
+loadconfig('Kick/Config_WebotsSaffir_Kick')
+loadconfig('World/Config_WebotsOP_World')
+loadconfig('Vision/Config_WebotsOP_Vision')
 
 --Location Specific Camera Parameters--
-loadconfig('Config_WebotsOP_Camera')
+loadconfig('Vision/Config_WebotsOP_Camera')
 
 -- Device Interface Libraries
 dev = {};
-dev.body = 'WebotsSaffirBody'; 
+--dev.body = 'WebotsSaffirBody'; 
+dev.body = 'WebotsSaffirPennBody'; 
 dev.camera = 'WebotsOPCam';
 dev.kinematics = 'SaffirKinematics';
---dev.kinematics = 'CharliKinematics';
 dev.comm = 'WebotsNaoComm';
 dev.monitor_comm = 'NullComm';
 dev.game_control='WebotsOPGameControl';
@@ -37,6 +37,9 @@ dev.game_control='WebotsOPGameControl';
 
 dev.walk = 'NewWalk';
 dev.kick = 'NewKick';
+--dev.walk = 'HTWalk';
+dev.walk = 'Run';
+
 
 -- Game Parameters
 game = {};
@@ -50,12 +53,11 @@ game.nPlayers = 4;
 
 -- FSM Parameters
 fsm = {};
+loadconfig('FSM/Config_WebotsCharli_FSM')
+
 fsm.game = 'OpDemo'
-fsm.body = {'HuboPlayer'};
-fsm.head = {'OpPlayer'};
-
-
-fsm.head = {'OpPlayerNSL'}; 
+fsm.body = {'GeneralPlayer'};
+fsm.head = {'GeneralPlayer'};
 
 -- Team Parameters
 
@@ -81,8 +83,8 @@ head.neckX=0.03; --From CoM to neck joint , Hubo prototype
 -- keyframe files
 
 km = {};
-km.standup_front = 'km_Charli_StandupFromFront.lua';
-km.standup_back = 'km_Charli_StandupFromBack.lua';
+km.standup_front = 'km_Saffir_StandupFromFront.lua';
+km.standup_back = 'km_Saffir_StandupFromBack.lua';
 
 
 -- sitting parameters

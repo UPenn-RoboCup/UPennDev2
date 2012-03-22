@@ -14,13 +14,13 @@ function loadconfig(configName)
   end
 end
 
-loadconfig('Config_Nao_World')
-loadconfig('Config_WebotsNao_Walk')
-loadconfig('Config_WebotsNao_Kick')
-loadconfig('Config_WebotsNao_Vision')
+loadconfig('World/Config_Nao_World')
+loadconfig('Walk/Config_WebotsNao_Walk')
+loadconfig('Kick/Config_WebotsNao_Kick')
+loadconfig('Vision/Config_WebotsNao_Vision')
 
 --Location Specific Camera Parameters--
-loadconfig('Config_WebotsNao_Camera')
+loadconfig('Vision/Config_WebotsNao_Camera')
 
 -- Device Interface Libraries
 dev = {};
@@ -113,4 +113,4 @@ BodyFSM.enable_obstacle_detection = 1;
 --Skip all checks in vision for 160*120 image 
 webots_vision = 1; 
 
-speedFactor = 2.0; 
+speedFactor = 1.0; 

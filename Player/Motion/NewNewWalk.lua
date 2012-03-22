@@ -424,9 +424,22 @@ function motion_legs(qLegs)
   --Ankle stabilization using gyro feedback
   imuGyr = Body.get_sensor_imuGyrRPY();
 
-  gyro_roll=imuGyr[1];
-  gyro_pitch=imuGyr[2];
+  gyro_roll0=imuGyr[1];
+  gyro_pitch0=imuGyr[2];
   --print("Gyro RPY", unpack(imuGyr))
+
+  --get effective gyro angle considering body angle offset
+  if not active then --double support
+    yawAngle = (uLeft[3]+uRight[3])/2-uTorsoActual[3];
+  elseif supportLeg == 0 then  -- Left support
+    yawAngle = uLeft[3]-uTorsoActual[3];
+  elseif supportLeg==1 then
+    yawAngle = uRight[3]-uTorsoActual[3];
+  end
+  gyro_roll = gyro_roll0*math.cos(yawAngle) +
+    -gyro_pitch0* math.sin(yawAngle);
+  gyro_pitch = gyro_pitch0*math.cos(yawAngle)
+    -gyro_roll0* math.sin(yawAngle);
 
   ankleShiftX=util.procFunc(gyro_pitch*ankleImuParamX[2],ankleImuParamX[3],ankleImuParamX[4]);
   ankleShiftY=util.procFunc(gyro_roll*ankleImuParamY[2],ankleImuParamY[3],ankleImuParamY[4]);

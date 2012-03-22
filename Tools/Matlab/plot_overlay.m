@@ -5,7 +5,7 @@ function plot_overlay(r_mon,scale)
         plot_ball( r_mon.ball, scale );
         hold off;
       end
-%{
+%
       if( r_mon.goal.detect == 1 )
         hold on;
         if (~isempty(r_mon.goal.postStat1))
@@ -16,7 +16,7 @@ function plot_overlay(r_mon,scale)
         end
         hold off;
       end
-%}
+%
     end
 
 
@@ -44,7 +44,7 @@ function plot_overlay(r_mon,scale)
     a0=postStats.o;
     x0=x0/scale;y0=y0/scale;
     w0=w0/scale;h0=h0/scale;
-    r=[cos(a0) -sin(a0);sin(a0) cos(a0)];
+    r=[cos(a0) sin(a0);-sin(a0) cos(a0)];
     x11=[x0 y0]+(r*[w0 h0]')';
     x12=[x0 y0]+(r*[-w0 h0]')';
     x21=[x0 y0]+(r*[w0 -h0]')';

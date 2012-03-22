@@ -35,7 +35,7 @@ h.get_labelB = @get_labelB;
   function r = get_team_struct()
     % returns the robot struct (in the same form as the team messages)
     r = [];
-    disp('get team struct');
+%    disp('get team struct');
     try
         r.teamNumber = h.gcmTeam.get_number();
         r.teamColor = h.gcmTeam.get_color();
@@ -107,6 +107,19 @@ h.get_labelB = @get_labelB;
       r.goal.postBoundingBox1 = struct('x1',gbb1(1), 'x2',gbb1(2), 'y1',gbb1(3), 'y2',gbb1(4));
       gbb2 = h.vcmGoal.get_postBoundingBox2();
       r.goal.postBoundingBox2 = struct('x1',gbb2(1), 'x2',gbb2(2), 'y1',gbb2(3), 'y2',gbb2(4));
+
+      %add goal post stats
+%{
+      gc1 = h.vcmGoal.get_postCentroid1();
+      gc2 = h.vcmGoal.get_postCentroid2();
+      ga1 = h.vcmGoal.get_postAxis1();
+      ga2 = h.vcmGoal.get_postAxis2();
+      go1 = h.vcmGoal.get_postOrientation1();
+      go2 = h.vcmGoal.get_postOrientation2();
+      r.goal.postStat1 = struct('x',gc1(1), 'y',gc1(2), 'a',ga1(1), 'b',ga1(2),'o',go1(1));
+      r.goal.postStat2 = struct('x',gc2(1), 'y',gc2(2), 'a',ga2(1), 'b',ga2(2),'o',go2(1));
+%}
+
       
       % Add freespace boundary
       r.free = {};
@@ -185,14 +198,21 @@ h.get_labelB = @get_labelB;
     % returns the labeled image
     width = h.vcmImage.get_width()/2;
     height = h.vcmImage.get_height()/2;
+
+%for webots
+    width = h.vcmImage.get_width();
+    height = h.vcmImage.get_height();
+
     rawData = h.vcmImage.get_labelA();
     labelA = raw2label(rawData, width, height)';
   end
 
   function labelB = get_labelB()
     % returns the bit-ored labeled image
-    width = h.vcmImage.get_width()/4/2;
-    height = h.vcmImage.get_height()/4/2;
+
+%for webots
+    width = h.vcmImage.get_width()/4;
+    height = h.vcmImage.get_height()/4;
     rawData = h.vcmImage.get_labelB();
     labelB = raw2label(rawData, width, height)';
   end

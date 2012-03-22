@@ -17,7 +17,8 @@ function [ ] = plot_surroundings( handle, mon_struct )
         plot(-1*ball.y, ball.x,'ro');
         strballpos = strcat('Ball: ',num2str(-1*ball.y,'%1.2f'),',',...
                             num2str(ball.x,'%1.2f'));
-        text(-1*ball.y, ball.x+0.3, strballpos);
+        b_name=text(-1*ball.y-0.3, ball.x+0.3, strballpos);
+        set(b_name,'FontSize',8);
     end
     % TODO: Plot the right color
     goal = mon_struct.goal;
@@ -27,15 +28,19 @@ function [ ] = plot_surroundings( handle, mon_struct )
         else
             marker = 'b';
         end
-        marker = strcat(marker,'x');
+        marker = strcat(marker,'+');
         if( goal.v1.scale ~= 0 )
             plot(-1*goal.v1.y, goal.v1.x, marker,'MarkerSize',12);
+	    g_name1=text(-1*goal.v1.y-0.30,goal.v1.x+0.3,sprintf('%.2f,%.2f',goal.v1.x,goal.v1.y));
+	    set(g_name1,'FontSize',8);
         end
         if( goal.v2.scale ~= 0 )
             plot(-1*goal.v2.y, goal.v2.x, marker,'MarkerSize',12);
+	    g_name2=text(-1*goal.v2.y-0.30,goal.v2.x+0.3,sprintf('%.2f,%.2f',goal.v2.x,goal.v2.y));
+	    set(g_name2,'FontSize',8);
         end
     end
-
+%{
     bd = mon_struct.bd;
     if( bd.detect == 1 )
         % show top boundary
@@ -46,7 +51,7 @@ function [ ] = plot_surroundings( handle, mon_struct )
 		plot([bd.topx(1),bd.btmx(1)],[bd.topy(1),bd.btmy(1)]);
 		plot([bd.topx(bd.nCol),bd.btmx(bd.nCol)],[bd.topy(bd.nCol),bd.btmy(bd.nCol)]);    
     end
-
+%}
     hold off;
 end
 

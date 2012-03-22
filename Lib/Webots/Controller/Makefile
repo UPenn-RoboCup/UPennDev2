@@ -52,7 +52,7 @@ all: controller
 controller: controller_wrap.o
 	$(LD) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ -L$(LIB_DIR) -lController 
 ifeq ($(OSTYPE),darwin)
-	ln -s controller.dylib controller.so
+	ln -s -f controller.dylib controller.so
 endif
 
 # Old handwritten controller code:

@@ -5,5 +5,4 @@ SUBDIRS(
 	CUtil
 	Shm
 	Unix
-	Controller
 )

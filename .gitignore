@@ -40,3 +40,6 @@ WebotsController/controller_wrap.c
 
 # Build file with CMAKE
 build
+
+# Webot World File temp
+*.project

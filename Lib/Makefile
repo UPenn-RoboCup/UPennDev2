@@ -15,10 +15,12 @@ LC2DIR= Platform/LC2
 HPDIR= Platform/HP2
 OPDIR= Platform/OP
 XOSDIR= Platform/XOS
+WEBOTSDIR = Webots
 IMAGEDIR= ImageProc
+COMMDIR= Comm
 UTILDIR= Util
 MATLABDIR= ../Tools/Matlab
-COLORTABLEDIR= Colortable
+COLORTABLEDIR= $(MATLABDIR)/Colortable
 VELODIR= Velocity
 PRIMEDIR= Util/PrimeSense
 PLATFORMS = setup_nao setup_op setup_webots_nao setup_webots_op setup_webots_generic setup_webots_hubo setup_xos
@@ -29,7 +31,7 @@ NAODEPDIR= ../Install/dependencies
 NAODEPLUA51DIR= $(NAODEPDIR)/usr/local/lib/lua/5.1
 
 LUAEXT= lua
-REGEX=-regex '.*\($(SHLIBEXT)\|$(LUAEXT)\)'
+REGEX=-regex '.*\($(SHLIBEXT)\|$(LUAEXT)\|sh)'
 
 ifndef OSTYPE
   OSTYPE = $(shell uname -s|awk '{print tolower($$0)}')
@@ -44,7 +46,7 @@ ifeq ($(OSTYPE),linux)
 endif
 ifeq ($(OSTYPE),darwin)
   SHLIBEXT= dylib
-  REGEX=\( -regex '.*.$(LUAEXT)' -or -regex '.*.$(SHLIBEXT)' \)
+  REGEX=\( -regex '.*.$(LUAEXT)' -or -regex '.*.$(SHLIBEXT)' -or -regex '.*.sh' \)
 endif
 
 all none:
@@ -125,9 +127,20 @@ webots_saffir:
 	@echo "\n"
 
 
+webot:
+	@echo "Compiling Webots Lua/C++ Libraries...\n"
+	@cd $(WEBOTSDIR) && MODE=$(MODE) make && cd $(CWD)
+	@echo "\n"
+
 image:
 	@echo "Compiling Image Processing Lua/C++ Libraries...\n"
 	@cd $(IMAGEDIR) && make && cd $(CWD)
+	@echo "\n"
+
+comm::
+	@echo "Mode: $(MODE)"
+	@echo "Compiling Communication Lua/C++ Libraries...\n"
+	@cd $(COMMDIR) && make && cd $(CWD)
 	@echo "\n"
 
 util::
@@ -146,80 +159,65 @@ primesense:
 	@cd $(PRIMEDIR) && MODE=$(MODE) make && cd $(CWD)
 	@echo "\n"
 	
-setup_nao: nao setup_util setup_image
+setup_nao: nao setup_util setup_image setup_comm
 	@echo "Setting up Nao Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
 	find $(NAODIR) -regex '.*\($(SHLIBEXT)\|$(LUAEXT)\)' -exec cp -v {} $(INSTDIR) \;
 	cd $(PLAYERDIR)/Config && ln -s Config_Nao.lua Config.lua && cd $(CWD)
+	find $(UTILDIR) $(REGEX) -exec cp -v {} $(NAODEPLUA51DIR) \;
 	@echo "\n"
 
-setup_webots_nao: webots_nao setup_util setup_image
+setup_webots_nao: webots_nao setup_util setup_image setup_webots
 	@echo "Setting up Webots Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
 	find $(WEBOTSNAODIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
 	rm -f $(PLAYERDIR)/Config/Config.lua
 	cd $(PLAYERDIR)/Config && ln -s Config_WebotsNao.lua Config.lua && cd $(CWD)
-	cd $(WEBOTSCONTDIR) && make && cd $(CWD)
 	@echo "\n"
 
 #setup_webots_op: webots_op setup_util setup_image setup_velocity
-setup_webots_op: webots_op setup_util setup_image
+setup_webots_op: webots_op setup_util setup_image setup_webots
 	@echo "Setting up Webots Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
 	find $(WEBOTSOPDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
 	rm -f $(PLAYERDIR)/Config/Config.lua
 	cd $(PLAYERDIR)/Config && ln -s Config_WebotsOP.lua Config.lua && cd $(CWD)
-	cd $(WEBOTSCONTDIR) && make && cd $(CWD)
-	cd $(WEBOTSCONTDIR) && touch Player && cd $(CWD)  
-	cd $(WEBOTSCONTDIR) && rm Player && ln -s ../Player Player && cd $(CWD)
 	@echo "\n"
 
-setup_webots_hubo: webots_hubo setup_util setup_image 
+setup_webots_hubo: webots_hubo setup_util setup_image setup_webots
 	@echo "Setting up Webots Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
 	find $(WEBOTSHUBODIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
 	rm -f $(PLAYERDIR)/Config/Config.lua
 	cd $(PLAYERDIR)/Config && ln -s Config_WebotsHubo.lua Config.lua && cd $(CWD)
-	cd $(WEBOTSCONTDIR) && make && cd $(CWD)
-	cd $(WEBOTSCONTDIR) && touch Player && cd $(CWD)  
-	cd $(WEBOTSCONTDIR) && rm Player && ln -s ../Player Player && cd $(CWD)
 	@echo "\n"
 
-setup_webots_generic: webots_generic setup_util setup_image 
+setup_webots_generic: webots_generic setup_util setup_image  setup_webots
 	@echo "Setting up Webots Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
 	find $(WEBOTSGENERICDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
 	rm -f $(PLAYERDIR)/Config/Config.lua
 	cd $(PLAYERDIR)/Config && ln -s Config_WebotsGeneric.lua Config.lua && cd $(CWD)
-	cd $(WEBOTSCONTDIR) && make && cd $(CWD)
-	cd $(WEBOTSCONTDIR) && touch Player && cd $(CWD)  
-	cd $(WEBOTSCONTDIR) && rm Player && ln -s ../Player Player && cd $(CWD)
 	@echo "\n"
 
-setup_webots_charli: webots_charli setup_util setup_image 
+setup_webots_charli: webots_charli setup_util setup_image setup_webots
 	@echo "Setting up Webots Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
 	find $(WEBOTSCHARLIDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
 	rm -f $(PLAYERDIR)/Config/Config.lua
 	cd $(PLAYERDIR)/Config && ln -s Config_WebotsCharli.lua Config.lua && cd $(CWD)
-	cd $(WEBOTSCONTDIR) && make && cd $(CWD)
-	cd $(WEBOTSCONTDIR) && touch Player && cd $(CWD)  
-	cd $(WEBOTSCONTDIR) && rm Player && ln -s ../Player Player && cd $(CWD)
 	@echo "\n"
 
-setup_webots_saffir: webots_saffir setup_util setup_image 
+setup_webots_saffir: webots_saffir setup_util setup_image setup_webots
 	@echo "Setting up Webots Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
 	find $(WEBOTSSAFFIRDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
 	rm -f $(PLAYERDIR)/Config/Config.lua
 	cd $(PLAYERDIR)/Config && ln -s Config_WebotsSaffir.lua Config.lua && cd $(CWD)
-	cd $(WEBOTSCONTDIR) && MODE=$(MODE) make && cd $(CWD)
-	cd $(WEBOTSCONTDIR) && touch Player && cd $(CWD)  
-	cd $(WEBOTSCONTDIR) && rm Player && ln -s ../Player Player && cd $(CWD)
 	@echo "\n"
 
 
-setup_hp: hp setup_util setup_image
+setup_hp: hp setup_util setup_image setup_comm
 	@echo "Setting up HP Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
 	find $(HPDIR) -regex '.*\($(SHLIBEXT)\|$(LUAEXT)\)' -exec cp -v {} $(INSTDIR) \;
@@ -229,7 +227,7 @@ setup_hp: hp setup_util setup_image
 	@echo "\n"
 
 #setup_op: op setup_util setup_image setup_velocity
-setup_op: op setup_util setup_image 
+setup_op: op setup_util setup_image setup_comm
 	@echo "Setting up Darwin OP Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
 	find $(OPDIR) -regex '.*\($(SHLIBEXT)\|$(LUAEXT)\)' -exec cp -v {} $(INSTDIR) \;
@@ -239,7 +237,7 @@ setup_op: op setup_util setup_image
 	cp -r $(UTILDIR)/mp3 $(PLAYERDIR)
 	@echo "\n"
 
-setup_xos: xos setup_util setup_image
+setup_xos: xos setup_util setup_image setup_comm
 	@echo "Setting up Darwin XOS Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
 #	find $(XOSDIR) -regex '.*\($(SHLIBEXT)\|$(LUAEXT)\)' -exec cp -v {} $(INSTDIR) \;
@@ -248,6 +246,23 @@ setup_xos: xos setup_util setup_image
 	rm -f $(PLAYERDIR)/Config/Config.lua
 	cd $(PLAYERDIR)/Config && ln -s Config_XOS.lua Config.lua && cd $(CWD)
 #	cp -r $(UTILDIR)/mp3 $(PLAYERDIR)
+	@echo "\n"
+
+setup_webots_cont: webot
+	@echo "Setting up WebotsController Lua/C++ Libraries...\n"
+	mkdir -p $(WEBOTSCONTDIR)
+	find $(WEBOTSDIR)/Controller $(REGEX) -exec cp -v {} $(WEBOTSCONTDIR) \;
+	cd $(WEBOTSCONTDIR) && ln -sf $(PLAYERDIR) Player && cd $(CWD)
+	cd $(WEBOTSCONTDIR) && ln -sf lua_set.sh nao_team_0 && cd $(CWD)
+	cd $(WEBOTSCONTDIR) && ln -sf lua_set.sh nao_team_1 && cd $(CWD)
+	cd $(WEBOTSCONTDIR) && ln -sf lua_set.sh darwin-op_team_0 && cd $(CWD)
+	cd $(WEBOTSCONTDIR) && ln -sf lua_set.sh darwin-op_team_1 && cd $(CWD)
+	@echo "\n"
+
+setup_webots: setup_webots_cont
+	@echo "Setting up Webots Lua/C++ Libraries...\n"
+	mkdir -p $(INSTDIR)
+	find $(WEBOTSDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
 	@echo "\n"
 
 setup_image: image
@@ -260,8 +275,13 @@ setup_util: util
 	@echo "Setting up Utility Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
 	find $(UTILDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
-#	find $(UTILDIR) $(REGEX) -exec cp -v {} $(WEBOTSCONTDIR) \;
-	find $(UTILDIR) $(REGEX) -exec cp -v {} $(NAODEPLUA51DIR) \;
+
+	@echo "\n"
+
+setup_comm: comm
+	@echo "Setting up Communication Lua/C++ Libraries...\n"
+	mkdir -p $(INSTDIR)
+	find $(COMMDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
 	@echo "\n"
 
 setup_velocity: velocity
@@ -269,7 +289,6 @@ setup_velocity: velocity
 	mkdir -p $(INSTDIR)
 	find $(VELODIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
 	find $(VELODIR) $(REGEX) -exec cp -v {} $(WEBOTSCONTDIR) \;
-	find $(VELODIR) $(REGEX) -exec cp -v {} $(NAODEPLUA51DIR) \;
 #	cp $(VELODIR)/testmodel.xml $(INSTDIR)/../Vision/
 	@echo "\n"
 
@@ -277,7 +296,6 @@ setup_primesense: primesense
 	@echo "Setting up PrimeSense Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
 	find $(PRIMEDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
-#	find $(PRIMEDIR) $(REGEX) -exec cp -v {} $(NAODEPLUA51DIR) \;
 	cp $(PRIMEDIR)/SamplesConfig.xml $(INSTDIR)
 	@echo "\n"
 
@@ -290,6 +308,7 @@ setup_naoqi: naoqi setup_util
 clean: 
 	cd $(IMAGEDIR) && make clean && cd $(CWD)
 	cd $(UTILDIR) && make clean && cd $(CWD)
+	cd $(WEBOTSDIR) && make clean && cd $(CWD)
 #	cd $(VELODIR) && make clean && cd $(CWD)
 	cd $(NAODIR) && make clean && cd $(CWD)
 	cd $(NAOQIDIR) && make clean && cd $(CWD)
@@ -298,7 +317,8 @@ clean:
 	cd $(WEBOTSOPDIR) && make clean && cd $(CWD)
 	cd $(XOSDIR) && make clean && cd $(CWD)
 	cd $(WEBOTSGENERICDIR) && make clean && cd $(CWD)
-	cd $(WEBOTSCONTDIR) && make clean && cd $(CWD)
+#	cd $(WEBOTSCONTDIR) && make clean && cd $(CWD)
+	rm -rf $(WEBOTSCONTDIR) 
 	cd $(WEBOTSCHARLIDIR) && make clean && cd $(CWD)
 	cd $(WEBOTSSAFFIRDIR) && make clean && cd $(CWD)
 #	cd $(HPDIR) && make clean && cd $(CWD)
@@ -306,5 +326,3 @@ clean:
 	cd $(PLAYERDIR)/Config && rm -f Config.lua && cd $(CWD)
 	cd $(PLAYERDIR) && rm -rf Lib && cd $(CWD)
 	cd $(PLAYERDIR) && rm -rf mp3 && cd $(CWD)
-
-

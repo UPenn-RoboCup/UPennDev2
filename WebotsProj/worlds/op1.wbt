@@ -7,7 +7,6 @@ WorldInfo {
   ]
   title "Robotstadium"
   basicTimeStep 40
-  runRealTime TRUE
 }
 Viewpoint {
   orientation -0.483622 0.854639 0.188947 0.761485
@@ -42,6 +41,16 @@ DEF BLUE_GOAL KidGoal {
   rotation 0 1 0 3.14159
   postColor 0.152941 0.505882 0.733333
 }
+DEF YELLOW_LANDMARK Landmark {
+  translation 0 0 -2.4
+  postColor1 0.992157 0.854902 0.219608
+  postColor2 0.152941 0.505882 0.733333
+}
+DEF BLUE_LANDMARK Landmark {
+  translation 0 0 2.4
+  postColor1 0.152941 0.505882 0.733333
+  postColor2 0.992157 0.854902 0.219608
+}
 DEF BALL Ball {
   translation 0 0.0323921 0
 }
@@ -49,7 +58,7 @@ DARwInOP {
   translation 1 0.3 0
   rotation 0 1 0 -1.56
   controller "darwin-op_team_0"
-  controllerArgs "1 1"
+  controllerArgs "0 1"
   plasticColor 1 0 0
   waistBand TRUE
   waistBandColor 1 0 0

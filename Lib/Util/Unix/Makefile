@@ -21,6 +21,11 @@ ifeq ($(OSTYPE),linux)
   SHLIBEXT= so
   LIBOPTS= -shared -fpic
   LIBRT= -lrt
+ifeq ($(MODE),64)
+  CC=gcc -arch x86_64
+  CXX=g++ -arch x86_64
+  LD=g++ -arch x86_64
+endif
 endif
 ifeq ($(OSTYPE),darwin)
   SHLIBEXT= dylib

@@ -20,6 +20,8 @@ controller.wb_emitter_set_channel(emitterTag, channel);
 -- needed because webots sends all information on same 'socket'
 gameControlData = nil;
 
+function init()
+end
 
 function receive()
   while (controller.wb_receiver_get_queue_length(receiverTag) > 0) do

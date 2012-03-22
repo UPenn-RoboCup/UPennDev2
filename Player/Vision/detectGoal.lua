@@ -97,7 +97,7 @@ function detect(color)
         end
       end
     end
-
+--[[
     -- check for posts in the ball
     if (valid and color == colorYellow and Vision.ball.detect == 1) then
       -- is the centroid of the post in the bounding box of the ball?  
@@ -112,7 +112,7 @@ function detect(color)
         valid = false;
       end
     end
-
+--]]
 
     --TODO: we need to check any bad color near post 
     --to get rid of any false positives (landmarks)

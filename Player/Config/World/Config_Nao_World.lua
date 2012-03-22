@@ -32,6 +32,9 @@ world.aGoalFilter = 0.05;
 world.rPostFilter = 0.02;
 world.aPostFilter = 0.20;
 
+--New two-goalpost localization
+world.use_new_goalposts=1;
+
 -- Occupancy Map parameters
 occmap = {};
 occmap.div = 72;

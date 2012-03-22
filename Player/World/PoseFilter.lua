@@ -289,19 +289,6 @@ function goal_observation_new(pos, v)
 end
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 function ball_yellow(v)
   goal_observation(ballYellow, v);
 end
@@ -341,6 +328,18 @@ end
 function post_cyan_right(v)
   landmark_observation({postCyan[2]}, v[1], rPostFilter, aPostFilter);
 end
+
+function landmark_cyan(v)
+  landmark_observation({landmarkCyan}, v, rPostFilter, aPostFilter);
+end
+
+function landmark_yellow(v)
+  landmark_observation({landmarkYellow}, v, rPostFilter, aPostFilter);
+end
+
+
+
+
 
 function line(v, a)
   -- line center

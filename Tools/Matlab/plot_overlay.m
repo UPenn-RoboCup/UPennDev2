@@ -5,7 +5,6 @@ function plot_overlay(r_mon,scale)
         plot_ball( r_mon.ball, scale );
         hold off;
       end
-%
       if( r_mon.goal.detect == 1 )
         hold on;
         if (~isempty(r_mon.goal.postStat1))
@@ -16,7 +15,11 @@ function plot_overlay(r_mon,scale)
         end
         hold off;
       end
-%
+      if( r_mon.landmark.detect == 1 )
+        hold on;
+	plot_landmark(r_mon.landmark,scale)
+	hold off;
+      end
     end
 
 
@@ -60,7 +63,27 @@ function plot_overlay(r_mon,scale)
   end
 
 
+  function plot_landmark(landmarkStats,scale)
+    c1=landmarkStats.centroid1/scale;
+    c2=landmarkStats.centroid2/scale;
+    c3=landmarkStats.centroid3/scale;
+    color=landmarkStats.color;
 
+
+    m1=(c1+c2)/2; m2=(c2+c3)/2;
+    c0 = c1-(m1-c1);c4=c3+(c3-m2);
+
+    if color==2 % yellow 
+	marker1='y';marker2='b';
+    else
+	marker1='b';marker2='y';
+    end
+
+    plot([c0(1) c4(1)],[c0(2) c4(2)],'g','LineWidth',8);
+    plot([c0(1) m1(1)],[c0(2) m1(2)],marker1,'LineWidth',6);
+    plot([m1(1) m2(1)],[m1(2) m2(2)],marker2,'LineWidth',6);
+    plot([m2(1) c4(1)],[m2(2) c4(2)],marker1,'LineWidth',6);
+  end
 
 end
 

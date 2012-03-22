@@ -45,6 +45,13 @@ shared.image.labelB = ((processed_img_width)/Config.vision.scaleB)*((processed_i
 -- calculate image shm size
 shsize.image = (shared.image.yuyv + shared.image.labelA + shared.image.labelB) + 2^16;
 
+--Image field-of-view information
+shared.image.fovTL=vector.zeros(2);
+shared.image.fovTR=vector.zeros(2);
+shared.image.fovBL=vector.zeros(2);
+shared.image.fovBR=vector.zeros(2);
+shared.image.fovC=vector.zeros(2);
+
 shared.ball = {};
 shared.ball.detect = vector.zeros(1);
 shared.ball.centroid = vector.zeros(2); --in pixels, (x,y), of camera image
@@ -55,7 +62,6 @@ shared.ball.da = vector.zeros(1);
 shared.ball.axisMajor = vector.zeros(1);
 shared.ball.axisMinor = vector.zeros(1);
 
-
 shared.goal = {};
 shared.goal.detect = vector.zeros(1);
 shared.goal.color = vector.zeros(1);
@@ -64,7 +70,6 @@ shared.goal.v1 = vector.zeros(4);
 shared.goal.v2 = vector.zeros(4);
 shared.goal.postBoundingBox1 = vector.zeros(4);
 shared.goal.postBoundingBox2 = vector.zeros(4);
-
 --added for monitor
 shared.goal.postCentroid1 = vector.zeros(2);
 shared.goal.postAxis1 = vector.zeros(2);
@@ -72,6 +77,15 @@ shared.goal.postOrientation1 = vector.zeros(1);
 shared.goal.postCentroid2 = vector.zeros(2);
 shared.goal.postAxis2 = vector.zeros(2);
 shared.goal.postOrientation2 = vector.zeros(1);
+
+--Midfield landmark for non-nao robots
+shared.landmark = {};
+shared.landmark.detect = vector.zeros(1);
+shared.landmark.color = vector.zeros(1);
+shared.landmark.v = vector.zeros(4);
+shared.landmark.centroid1 = vector.zeros(2);
+shared.landmark.centroid2 = vector.zeros(2);
+shared.landmark.centroid3 = vector.zeros(2);
 
 shared.line = {};
 shared.line.detect = vector.zeros(1);

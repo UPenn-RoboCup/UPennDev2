@@ -14,6 +14,8 @@ h.wcmGoal  = shm(sprintf('wcmGoal%d%d%s',  h.teamNumber, h.playerID, h.user));
 h.vcmImage = shm(sprintf('vcmImage%d%d%s', h.teamNumber, h.playerID, h.user));
 h.vcmBall  = shm(sprintf('vcmBall%d%d%s',  h.teamNumber, h.playerID, h.user));
 h.vcmGoal  = shm(sprintf('vcmGoal%d%d%s',  h.teamNumber, h.playerID, h.user));
+h.vcmLandmark  = shm(sprintf('vcmLandmark%d%d%s',  h.teamNumber, h.playerID, h.user));
+
 % shm wrappers for freespace, occumap, boundary
 h.wcmOccmap = shm(sprintf('wcmOccmap%d%d%s', h.teamNumber, h.playerID, h.user));
 h.vcmFreespace = shm(sprintf('vcmFreespace%d%d%s', h.teamNumber, h.playerID, h.user));
@@ -77,7 +79,17 @@ h.get_labelB = @get_labelB;
       pose = h.wcmRobot.get_pose();
       r.robot = {};
       r.robot.pose = struct('x', pose(1), 'y', pose(2), 'a', pose(3));
+
+    %Image FOV boundary
           
+      fovC=h.vcmImage.get_fovC();
+      fovTL=h.vcmImage.get_fovTL();
+      fovTR=h.vcmImage.get_fovTR();
+      fovBL=h.vcmImage.get_fovBL();
+      fovBR=h.vcmImage.get_fovBR();
+      r.fov= struct('C',fovC, 'TL',fovTL, 'TR',fovTR, 'BL',fovBL, 'BR', fovBR);
+
+   %ball info
       ballx = h.wcmBall.get_x();
       bally = h.wcmBall.get_y();
       ballt = h.wcmBall.get_t();
@@ -91,6 +103,7 @@ h.get_labelB = @get_labelB;
       r.ball = struct('x', ballx, 'y', bally, 't', ballt, ...
           'centroid', ball.centroid, 'axisMajor', ball.axisMajor, ...
           'detect', ball.detect);
+  %goal info
       r.goal = {};
       r.goal.detect = h.vcmGoal.get_detect();
       r.goal.type = h.vcmGoal.get_type();
@@ -122,6 +135,14 @@ h.get_labelB = @get_labelB;
         r.goal.postStat1 = struct('x',gc1(1), 'y',gc1(2), 'a',ga1(1), 'b',ga1(2),'o',go1(1));
         r.goal.postStat2 = struct('x',gc2(1), 'y',gc2(2), 'a',ga2(1), 'b',ga2(2),'o',go2(1));
       end
+  %landmark info
+      r.landmark = {};
+      r.landmark.detect = h.vcmLandmark.get_detect();
+      r.landmark.color = h.vcmLandmark.get_color();
+      r.landmark.v = h.vcmLandmark.get_v();
+      r.landmark.centroid1 = h.vcmLandmark.get_centroid1();
+      r.landmark.centroid2 = h.vcmLandmark.get_centroid2();
+      r.landmark.centroid3 = h.vcmLandmark.get_centroid3();
 
       % Add freespace boundary
       r.free = {};

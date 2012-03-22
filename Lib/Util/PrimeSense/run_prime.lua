@@ -27,19 +27,26 @@ require 'primecm'
 --unix.sleep(10);
 t0 = unix.time()
 while(true) do
-  local torso = primesense.get_torso()
-  
-  if( torso ) then
-    print( "Torso: ", unpack(torso) );
+  -- Head is first joint
+  local ret = primesense.update_joints()
+
+  if( ret ) then
+    for i,v in ipairs(primecm.jointNames) do
+      local rot, confidence = primesense.get_jointtables(i);
+      print( #rot );
+      print( #confidence );
+      
+      --primecm['set_position_'..v]( pos );
+      primecm['set_orientation_'..v]( rot );
+      primecm['set_confidence_'..v]( confidence );
+    end
     print();
     -- Update Shm
-    primecm.set_skeleton_torso( torso );
     primecm.set_skeleton_found( 1 );
   else
     primecm.set_skeleton_found( 0 );    
-    print("No user detected... Waiting 1 second...")
-    unix.sleep(1);
   end
-  --Pause .1 seconds
+
+  -- Run at 10Hz
   unix.usleep(1E5);
 end

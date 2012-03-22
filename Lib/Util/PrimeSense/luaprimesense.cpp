@@ -41,6 +41,7 @@ extern "C"
 #define SAMPLE_XML_PATH "./Config/SamplesConfig.xml"
 #define SAMPLE_XML_PATH_LOCAL "SamplesConfig.xml"
 #define MAX_NUM_USERS 1
+#define MAX_NUM_JOINTS 24
 
 //---------------------------------------------------------------------------
 // Globals
@@ -57,6 +58,17 @@ XnUserID aUsers[MAX_NUM_USERS];
 XnUInt16 nUsers;
 XnSkeletonJointTransformation torsoJoint;
 XnUInt32 epochTime = 0;
+
+// New
+XnSkeletonJoint aJoints[MAX_NUM_JOINTS];
+XnUInt16 nJoints;
+
+// Tables
+XnVector3D   posTable[MAX_NUM_JOINTS];
+XnConfidence posConfTable[MAX_NUM_JOINTS];
+XnMatrix3X3  rotTable[MAX_NUM_JOINTS]; // 9 element float array
+XnConfidence rotConfTable[MAX_NUM_JOINTS];
+
 //---------------------------------------------------------------------------
 // Code
 //---------------------------------------------------------------------------
@@ -234,26 +246,43 @@ void close(){
   g_Context.Release();
 }
 
-// NOTE: Does not work yet...
-static int lua_get_user_found(lua_State *L) {
-  int user_id = luaL_checkint(L, 1);
-  nUsers = MAX_NUM_USERS;  
-  if( user_id > nUsers ){
+
+static int lua_get_jointtables(lua_State *L) {
+  int joint = luaL_checkint(L, 1);
+  if( joint>MAX_NUM_JOINTS || joint<=0 ) {
     lua_pushnil(L);
-  } else {
-    g_Context.WaitOneUpdateAll(g_UserGenerator);
-    // print the torso information for the first user already tracking
-    g_UserGenerator.GetUsers(aUsers, nUsers);
-    if(g_UserGenerator.GetSkeletonCap().IsTracking(aUsers[user_id])==FALSE){
-      lua_pushinteger(L, 0);
-    } else {
-      lua_pushinteger(L, 1);
-    }
+    return 1;
   }
-  return 1;
+  joint--; // Lua Input is [1,24], C/C++ is [0,23]
+  //  printf("Joint %u = (%lf,%lf,%lf)\n",joint,posTable[joint].X,posTable[joint].Y,posTable[joint].Z);
+  lua_createtable(L, 3, 0);
+  lua_pushnumber(L, posTable[joint].X);
+  lua_rawseti(L, -2, 1);
+  lua_pushnumber(L, posTable[joint].Y);
+  lua_rawseti(L, -2, 2);
+  lua_pushnumber(L, posTable[joint].Z);
+  lua_rawseti(L, -2, 3);
+
+  // Push the orientation
+  lua_createtable(L, 9, 0);
+  for (int i = 0; i < 9; i++) {
+    XnFloat* tmp = rotTable[joint].elements;
+    lua_pushnumber(L, tmp[i]);   /* Push the table index */
+    lua_rawseti(L, -2, i+1);
+  }
+
+  // Push the confidences
+  lua_createtable(L, 2, 0);  
+  lua_pushnumber(L, posConfTable[joint] );
+  lua_rawseti(L, -2, 1);
+  lua_pushnumber(L, rotConfTable[joint] );
+  lua_rawseti(L, -2, 2);
+
+
+  return 2;
 }
 
-static int lua_get_torso(lua_State *L) {
+static int lua_update_joints(lua_State *L) {
 
   g_Context.WaitOneUpdateAll(g_UserGenerator);
   //  printf("Waited one update...\n");
@@ -265,39 +294,43 @@ static int lua_get_torso(lua_State *L) {
   int ret = -1;
 
   for(XnUInt16 i=0; i<nUsers; i++)
-  {
-    if(g_UserGenerator.GetSkeletonCap().IsTracking(aUsers[i])==FALSE){
+  { 
+    if( g_UserGenerator.GetSkeletonCap().IsTracking(aUsers[i])==FALSE){
       continue;
     } else {
       ret = i;
     }
 
-    g_UserGenerator.GetSkeletonCap().GetSkeletonJoint(aUsers[i],XN_SKEL_TORSO,torsoJoint);
-    lua_createtable(L, 3, 0);
-    lua_pushnumber(L, torsoJoint.position.position.X);
-    lua_rawseti(L, -2, 1);
-    lua_pushnumber(L, torsoJoint.position.position.Y);
-    lua_rawseti(L, -2, 2);
-    lua_pushnumber(L, torsoJoint.position.position.Y);
-    lua_rawseti(L, -2, 3);
-    /*
-       printf("user %d: head at (%6.2f,%6.2f,%6.2f)\n",aUsers[i],
-       torsoJoint.position.position.X,
-       torsoJoint.position.position.Y,
-       torsoJoint.position.position.Z);
-       */
+    // TODO: Error check
+    //g_UserGenerator.GetSkeletonCap().EnumerateActiveJoints( aJoints, nJoints );
+    //printf("Entering loop with %d joints...\n", nJoints);    
+    for( XnUInt16 jj=0; jj<MAX_NUM_JOINTS; jj++ ){
+      XnSkeletonJoint j = XnSkeletonJoint(jj);
+      // Use torsoJoint as a temporary joint
+      g_UserGenerator.GetSkeletonCap().GetSkeletonJoint(aUsers[i], j, torsoJoint);
+      XnVector3D   tmpPos  = torsoJoint.position.position;
+      XnConfidence posConf = torsoJoint.position.fConfidence;
+      XnMatrix3X3  tmpRot  = torsoJoint.orientation.orientation; // 9 element float array
+      XnConfidence rotConf = torsoJoint.orientation.fConfidence;
+      //printf("Joint %u = (%lf,%lf,%lf)\n",j,tmpPos.X,tmpPos.Y,tmpPos.Z);
+      // Set the right table value posTable
+      posTable[jj] = tmpPos;
+      rotTable[jj] = tmpRot;
+      posConfTable[jj] = posConf;
+      rotConfTable[jj] = rotConf;
+    }
   }
   if(ret==-1){
     lua_pushnil(L);
+  } else {
+    lua_pushinteger(L, ret);
   }
-  //lua_pushinteger(L, ret);
   return 1;
 }
 
 static const struct luaL_reg primesense_lib [] = {
-  {"get_torso", lua_get_torso},
-  {"get_user_found", lua_get_user_found},
-
+  {"update_joints", lua_update_joints},
+  {"get_jointtables", lua_get_jointtables},
   {NULL, NULL}
 };
 

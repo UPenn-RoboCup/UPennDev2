@@ -286,11 +286,12 @@ setup_velocity: velocity
 #	cp $(VELODIR)/testmodel.xml $(INSTDIR)/../Vision/
 	@echo "\n"
 
-setup_primesense: primesense
+setup_primesense: primesense setup_util
 	@echo "Setting up PrimeSense Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
 	find $(PRIMEDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
 	cp $(PRIMEDIR)/SamplesConfig.xml $(INSTDIR)
+	cd $(PLAYERDIR)/Config && ln -s Config_WebotsOP.lua Config.lua && cd $(CWD)	
 	@echo "\n"
 
 setup_naoqi: naoqi setup_util

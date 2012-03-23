@@ -28,8 +28,8 @@ function detect(color,color2)
   goal.detect = 0;
 
   local postDiameter = 0.10;
-  local postHeight = 0.80;
-  local goalWidth = 1.40;
+  local postHeight = Config.world.goalHeight or 0.80;
+  local goalWidth = Config.world.goalWidth or 1.40;
   local nPostB = 3;  -- appropriate for scaleB = 4
   local postB = ImageProc.goal_posts(Vision.labelB.data, Vision.labelB.m, Vision.labelB.n, color, nPostB);
   if (not postB) then 
@@ -94,7 +94,6 @@ function detect(color,color2)
 --      valid = false; 
     end
 
-
     -- ground check
     -- is post at the bottom
     local bboxA = Vision.bboxB2A(postB[i].boundingBox);
@@ -143,6 +142,7 @@ function detect(color,color2)
     scale = math.max(postA[i].axisMinor / postDiameter,
                       postA[i].axisMajor / postHeight,
                       math.sqrt(postA[i].area / (postDiameter*postHeight)));
+
     goal.v[i] = HeadTransform.coordinatesA(postA[i].centroid, scale);
 
     --print(string.format("post[%d] = %.2f %.2f %.2f", i, goal.v[i][1], goal.v[i][2], goal.v[i][3]));

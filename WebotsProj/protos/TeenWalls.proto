@@ -114,7 +114,7 @@ Solid {
         translation 5.55 0.15 0
         children [
           Plane {
-            size 0.3 5.4
+            size 0.3 5.8
           }
         ]
       }
@@ -123,15 +123,15 @@ Solid {
         translation -5.55 0.15 0
         children [
           Plane {
-            size 0.3 5.4
+            size 0.3 5.8
           }
         ]
       }
       Transform {
-        translation 0 5 3.5
+        translation 0 5 4.88
         children [
           Box {
-            size 7.4 10 1.6
+            size 11.1 10 1.6
           }
         ]
       }
@@ -140,7 +140,7 @@ Solid {
         translation 0 0.15 -4.05
         children [
           Plane {
-            size 7.4 0.3
+            size 11.1 0.3
           }
         ]
       }

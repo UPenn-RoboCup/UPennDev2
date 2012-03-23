@@ -45,7 +45,7 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale)
     quiver(x0, y0, xab*ab_scale,yab*ab_scale, 'k' );
 
     robotnames = {'Bot1','Bot2','Bot3','Bot4'};
-    rolenames = {'Attack','Defend','Support','Goalie','Waiting'};
+    rolenames = {'','Attack','Defend','Support','Goalie','Waiting'};
     colornames={'red','blue'};
 
     %robotID robotName robotRole 
@@ -54,7 +54,7 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale)
     %Voltage info
 
     str=sprintf('%s\n%s',...
-	 robotnames{robot.id}, rolenames{robot.role});
+	 robotnames{robot.id}, rolenames{robot.role+1});
     xtext=-1/scale;   xtext2=-0.4/scale;
    
     xt = xtext*ca + x0+xtext2;

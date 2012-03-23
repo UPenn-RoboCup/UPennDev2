@@ -37,7 +37,6 @@ function MonitorShmSingle(team,player)
       disp('Team/Player ID error!');
       return;
     end
-    robots = cell(player2track, 1);
     robots{player2track,1}=shm_robot(team2track,player2track);
   end
 
@@ -68,9 +67,9 @@ function MonitorShmSingle(team,player)
     nUpdate = nUpdate + 1;
     tStart = tic;
     if draw_team>0
-      m.update_team( robots, scale, team2track, player2track,mod(nUpdate,dInterval));
+      m.update_team( robots, scale, 1, player2track,mod(nUpdate,dInterval));
     else
-      m.update( robots, scale, team2track, player2track );
+      m.update( robots, scale, 1, player2track );
     end
     drawnow;
     tElapsed=toc(tStart);

@@ -39,73 +39,61 @@ game.teamNumber = (os.getenv('TEAM_ID') or 0) + 0;
 --Webots player id begins at 0 but we use 1 as the first id 
 game.playerID = (os.getenv('PLAYER_ID') or 0) + 1;
 game.robotID = game.playerID;
-game.teamColor = 1;
-game.nPlayers = 3;
+game.teamColor = 1;--Red team
+--game.teamColor = 0;--Blue team
+game.nPlayers = 4;
 
 
--- FSM Parameters
+
+--FSM and behavior settings
 fsm = {};
-
---SJ: this will kill the variable fsm, so should be called first
+--SJ: loading FSM config  kills the variable fsm, so should be called first
 loadconfig('FSM/Config_WebotsOP_FSM')
-
---fsm.game = 'Dodgeball';
---fsm.game = 'OpDemo';
 fsm.game = 'RoboCup';
---fsm.game = 'Stretcher';
-
--- Set the Body and Head FSMs based on GameFSM
-fsm.body = {fsm.game};
-fsm.head = {fsm.game};
-
-
-if( fsm.game == 'RoboCup' ) then
---[[
-  if (game.playerID == 1) then
-    fsm.body = {'OpGoalie'};
-    fsm.head = {'OpGoalie'};
-  else
-    fsm.body = {'OpPlayer'};
-    fsm.head = {'OpPlayer'};
-  end
---]]
-
-
-
---  fsm.head = {'OpPlayerNSL'};
---  fsm.body = {'OpPlayerNSL'};
-
+if (game.playerID == 1) then
+  fsm.head = {'GeneralGoalie'};
+  fsm.body = {'GeneralGoalie'};
+else
   fsm.head = {'GeneralPlayer'};
   fsm.body = {'GeneralPlayer'};
-
 end
 
--- Game specific settings
-if( fsm.game == 'Dodgeball' ) then
-  Config.vision.enable_line_detection = 0;
-  Config.vision.enable_midfield_landmark_detection = 0;
-end
+--Behavior flags, defined in FSM Configs and overrided here
+fsm.enable_obstacle_detection = 1;
+fsm.playMode = 3; --1 for demo, 2 for orbit, 3 for direct approach
+fsm.enable_walkkick = 1;
 
+--SJ: I separated non-robocup FSMs here
+--Dodgeball FSM
+--[[
+loadconfig('FSM/Config_WebotsOP_FSM')
+fsm.game = 'Dodgeball';
+fsm.head = {'GeneralPlayer'};
+fsm.body = {'GeneralPlayer'};
+Config.vision.enable_line_detection = 0;
+Config.vision.enable_midfield_landmark_detection = 0;
+--]]
 
-if( fsm.game == 'Stretcher' ) then
-  loadconfig( 'Config_Stretcher' );
-  game.teamNumber = 18;
-  game.playerID = 1;
-end
-
--- enable obstacle detection
-BodyFSM = {}
-BodyFSM.enable_obstacle_detection = 1;
+--Stretcher FSM
+--[[
+loadconfig('FSM/Config_WebotsOP_FSM')
+loadconfig( 'Config_Stretcher' );
+game.teamNumber = 18;
+game.playerID = 1;
+fsm.game = 'Stretcher';
+fsm.head = {'GeneralPlayer'};
+fsm.body = {'GeneralPlayer'};
+Config.vision.enable_line_detection = 0;
+Config.vision.enable_midfield_landmark_detection = 0;
+--]]
 
 -- Team Parameters
-
 team = {};
 team.msgTimeout = 5.0;
 team.nonAttackerPenalty = 6.0; -- eta sec
 team.nonDefenderPenalty = 0.5; -- dist from goal
 
 -- keyframe files
-
 km = {};
 km.standup_front = 'km_NSLOP_StandupFromFront.lua';
 km.standup_back = 'km_NSLOP_StandupFromBack.lua';
@@ -114,9 +102,7 @@ km.standup_back = 'km_NSLOP_StandupFromBack.lua';
 sit={};
 sit.bodyHeight=0.20; --Fixed for webots
 sit.supportX=-0.010;
-
 sit.bodyTilt=5*math.pi/180;
-
 sit.dpLimit=vector.new({.1,.01,.03,.1,.3,.1});
 sit.dpLimit=vector.new({.1,.01,.06,.1,.3,.1});--Faster sit
 
@@ -126,14 +112,12 @@ stance.dpLimit=vector.new({.04, .03, .04, .4, .4, .4});
 stance.dpLimit=vector.new({.04, .03, .07, .4, .4, .4});--Faster standup
 
 -- Head Parameters
-
 head = {};
 head.camOffsetZ = 0.37;
 head.pitchMin = -35*math.pi/180;
 head.pitchMax = 68*math.pi/180;
 head.yawMin = -90*math.pi/180;
 head.yawMax = 90*math.pi/180;
-
 head.cameraPos = {{0.05, 0.0, 0.05}} --OP, spec value, may need to be recalibrated
 head.cameraAngle = {{0.0, 0.0, 0.0}}; --Default value for production OP
 head.neckZ=0.0765; --From CoM to neck joint 
@@ -142,11 +126,3 @@ head.bodyTilt = 0;
 
 --km.kick_right = 'km_NSLOP_taunt1.lua';
 --km.kick_left = 'km_NSLOP_StandupFromFront2.lua';
-
-
---Webots tStep is 2x of real robot
---So slow down SM durations
-speedFactor = 2.0; 
-
---Skip all checks in vision for 160*120 image 
-webots_vision = 1; 

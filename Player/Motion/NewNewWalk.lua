@@ -27,8 +27,8 @@ supportX = Config.walk.supportX;
 supportY = Config.walk.supportY;
 qLArm=Config.walk.qLArm;
 qRArm=Config.walk.qRArm;
-qLArm0={qLArm[1],qLArm[2]};
-qRArm0={qRArm[1],qRArm[2]};
+qLArm0={qLArm[1],qLArm[2],qLArm[3]};
+qRArm0={qRArm[1],qRArm[2],qLArm[3]};
 hardnessSupport = Config.walk.hardnessSupport or 0.7;
 hardnessSwing = Config.walk.hardnessSwing or 0.5;
 hardnessArm = Config.walk.hardnessArm or 0.2;
@@ -497,13 +497,18 @@ function motion_legs(qLegs)
 end
 
 function motion_arms()
-  qLArm[1],qLArm[2]=qLArm0[1]+armShift[1],qLArm0[2]+armShift[2];
-  qRArm[1],qRArm[2]=qRArm0[1]+armShift[1],qRArm0[2]+armShift[2];
-  qLArm[2]=math.max(8*math.pi/180,qLArm[2])
-  qRArm[2]=math.min(-8*math.pi/180,qRArm[2]);
+  qLArmActual={};   
+  qRArmActual={};   
 
-  Body.set_larm_command(qLArm);
-  Body.set_rarm_command(qRArm);
+  qLArmActual[1],qLArmActual[2]=qLArm0[1]+armShift[1],qLArm0[2]+armShift[2];
+  qRArmActual[1],qRArmActual[2]=qRArm0[1]+armShift[1],qRArm0[2]+armShift[2];
+  qLArmActual[2]=math.max(8*math.pi/180,qLArmActual[2])
+  qRArmActual[2]=math.min(-8*math.pi/180,qRArmActual[2]);
+  qLArmActual[3]=qLArm0[3];
+  qRArmActual[3]=qRArm0[3];
+
+  Body.set_larm_command(qLArmActual);
+  Body.set_rarm_command(qRArmActual);
 end
 
 function exit()

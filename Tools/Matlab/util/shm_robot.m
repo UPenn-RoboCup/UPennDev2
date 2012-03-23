@@ -8,6 +8,7 @@ h.user = getenv('USER');
 
 % create shm wrappers
 h.gcmTeam  = shm(sprintf('gcmTeam%d%d%s',  h.teamNumber, h.playerID, h.user));
+h.gcmFsm  = shm(sprintf('gcmFsm%d%d%s',  h.teamNumber, h.playerID, h.user));
 h.wcmRobot = shm(sprintf('wcmRobot%d%d%s', h.teamNumber, h.playerID, h.user));
 h.wcmBall  = shm(sprintf('wcmBall%d%d%s',  h.teamNumber, h.playerID, h.user));
 h.wcmGoal  = shm(sprintf('wcmGoal%d%d%s',  h.teamNumber, h.playerID, h.user));
@@ -60,7 +61,8 @@ h.get_labelB = @get_labelB;
         r.attackBearing = h.wcmGoal.get_attack_bearing();
         r.time = 0;
         r.tReceive = 0;
-        
+        r.battery_level = h.wcmRobot.get_battery_level();
+
     catch
     end
   end
@@ -75,6 +77,13 @@ h.get_labelB = @get_labelB;
           'player_id', h.gcmTeam.get_player_id(),...
           'role', h.gcmTeam.get_role()...
           );
+
+      r.fsm = struct(...
+	 'body', h.gcmFsm.get_body_state(),...
+	 'head', h.gcmFsm.get_head_state(),...
+	 'motion', h.gcmFsm.get_motion_state(),...
+	 'game', h.gcmFsm.get_game_state()...
+	);
    
       pose = h.wcmRobot.get_pose();
       r.robot = {};
@@ -222,7 +231,7 @@ h.get_labelB = @get_labelB;
     width = h.vcmImage.get_width()/2;
     height = h.vcmImage.get_height()/2;
 
-%for webots
+    %for webots, use full width/height 
     width = h.vcmImage.get_width();
     height = h.vcmImage.get_height();
 
@@ -233,7 +242,7 @@ h.get_labelB = @get_labelB;
   function labelB = get_labelB()
     % returns the bit-ored labeled image
 
-%for webots
+    %for webots
     width = h.vcmImage.get_width()/4;
     height = h.vcmImage.get_height()/4;
     rawData = h.vcmImage.get_labelB();

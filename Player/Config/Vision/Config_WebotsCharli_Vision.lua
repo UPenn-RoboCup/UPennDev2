@@ -12,8 +12,8 @@ color.white = 16;
 vision = {};
 vision.maxFPS = 30;
 vision.scaleB = 4;
-vision.ball_diameter = 0.20;
-vision.ball_height_max = 0.20; -- -0.20
+vision.ball_diameter = 0.20; --for teen and adult balls
+vision.ball_height_max = 0.30; -- -0.20
 vision.yellow_goal_count_thres = 10;
 
 -- use this to enable visible boundary detection
@@ -48,3 +48,9 @@ vision.goal2Color = color.cyan;
 
 -- Subsample image?
 vision.subsampling = 0;
+
+-- Cut top part of the detected goalpost
+vision.cut_top_post = 1;
+
+--Skip checks for webots (temporary)
+vision.use_webots_vision = 1;

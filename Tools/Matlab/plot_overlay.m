@@ -1,4 +1,7 @@
 function plot_overlay(r_mon,scale)
+%This function plots overlaid vision information 
+%Over the camera yuyv feed or labeled images
+
     if( ~isempty(r_mon) )
       if(r_mon.ball.detect==1)
         hold on;
@@ -27,7 +30,6 @@ function plot_overlay(r_mon,scale)
 
 
   function plot_ball( ballStats, scale )
-    % TODO: use the scale when displaying labelB data
     radius = (ballStats.axisMajor / 2) / scale;
     centroid = [ballStats.centroid.x ballStats.centroid.y] / scale;
     ballBox = [centroid(1)-radius centroid(2)-radius 2*radius 2*radius];
@@ -83,6 +85,32 @@ function plot_overlay(r_mon,scale)
     plot([c0(1) m1(1)],[c0(2) m1(2)],marker1,'LineWidth',6);
     plot([m1(1) m2(1)],[m1(2) m2(2)],marker2,'LineWidth',6);
     plot([m2(1) c4(1)],[m2(2) c4(2)],marker1,'LineWidth',6);
+  end
+  
+  function plot_freespace(free, scale)
+    % TODO: Show freespace boundary in labelB
+    hold on
+    if (scale == 4)
+      X = free.Bx;
+      Y = free.By;
+      plot(X,Y,'m--','LineWidth',2);
+   else
+      %X = free.Ax;
+      %Y = free.Ay;
+   end
+   hold off;
+  end
+
+  function plot_horizon( horizon, scale )
+    hold on;
+    if (scale == 4)
+      % labelB
+      plot(horizon.hXB,horizon.hYB,'m--');
+    else
+      % labelA
+      plot(horizon.hXA,horizon.hYA,'m--');
+    end
+    hold off;
   end
 
 end

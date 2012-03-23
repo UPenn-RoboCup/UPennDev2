@@ -180,10 +180,11 @@ function detect(color,color2)
     else
       -- unknown post
       goal.type = 0;
---      if (postA[1].area < 200) then
         -- eliminate small posts without cross bars
---        return goal;
---      end
+
+      if (postA[1].area < 50) then
+        return goal;
+      end
     end
   end
   

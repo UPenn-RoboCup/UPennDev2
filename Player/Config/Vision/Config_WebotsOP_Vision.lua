@@ -51,3 +51,6 @@ vision.subsampling = 0;
 
 -- Cut top part of the detected goalpost
 vision.cut_top_post = 1;
+
+--Skip checks for webots (temporary)
+vision.use_webots_vision = 1;

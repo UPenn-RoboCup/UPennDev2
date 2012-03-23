@@ -15,7 +15,8 @@ require('detectLandmarks'); -- for NSL
 require('detectSpot');
 
 --For webots (160*120)
-webots_vision = Config.webots_vision or 0;
+--Should be removed once we make resolution-spefic checks
+webots_vision = Config.vision.use_webots_vision or 0;
 if webots_vision==1 then
   detectBall = require('detectBallWebots');
   detectGoal = require('detectGoalWebots');

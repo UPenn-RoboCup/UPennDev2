@@ -43,3 +43,6 @@ vision.use_point_goal = 0;
 vision.ballColor = color.orange;
 vision.goal1Color = color.yellow;
 vision.goal2Color = color.cyan;
+
+--Skip checks for webots (temporary)
+vision.use_webots_vision = 1;

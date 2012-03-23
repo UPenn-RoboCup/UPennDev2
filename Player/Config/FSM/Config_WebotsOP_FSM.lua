@@ -65,7 +65,7 @@ fsm.bodyPosition.rDist2 = 0.20;
 fsm.bodyPosition.rTurn2 = 0.08; 
 fsm.bodyPosition.rOrbit = 0.60; 
 
-fsm.bodyPosition.thClose = {0.08,0.15,10*math.pi/180};
+fsm.bodyPosition.thClose = {0.15,0.15,10*math.pi/180};
 fsm.bodyPosition.tLost =  5.0*speedFactor; 
 fsm.bodyPosition.timeout = 30*speedFactor; 
 
@@ -92,6 +92,10 @@ fsm.bodyApproach.yTarget13={-0.04, -0.015, 0.01}; --min, target ,max
 
 --Target position for straight walkkick 
 fsm.bodyApproach.xTarget21={0, 0.17,0.20}; --min, target, max
+fsm.bodyApproach.yTarget21={0.03, 0.05, 0.06}; --min, target ,max
+
+--reduced
+fsm.bodyApproach.xTarget21={0, 0.14,0.17}; --min, target, max
 fsm.bodyApproach.yTarget21={0.03, 0.05, 0.06}; --min, target ,max
 
 --Target position for side walkkick to left

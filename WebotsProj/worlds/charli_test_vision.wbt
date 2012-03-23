@@ -35,7 +35,7 @@ Charli {
   translation 0 0.8 0
   rotation 0 1 0 -1.57
   controller "darwin-op_team_0"
-  controllerArgs "1 1"
+  controllerArgs "1 99"
   cameraWindowPosition 0.125 0 
 }
 DEF BALL Ball {

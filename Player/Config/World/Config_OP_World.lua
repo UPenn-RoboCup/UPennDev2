@@ -10,6 +10,7 @@ world.yLineBoundary = 2.0;
 world.xMax = 3.2;
 world.yMax = 2.2;
 world.goalWidth = 1.60;
+world.goalHeight= 0.85;
 world.ballYellow= {{3.0,0.0}};
 world.ballCyan= {{-3.0,0.0}};
 world.postYellow = {};

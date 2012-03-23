@@ -89,11 +89,11 @@ function h=show_monitor()
 
   function plot_info(robot,r_mon)
     robotnames = {'Bot1','Bot2','Bot3','Bot4'};
-    rolenames = {'Attacker','Defender','Supporter','Goalie','Waiting'};
+    rolenames = {'','Attacker','Defender','Supporter','Goalie','Waiting'};
     colornames={'red','blue'};
 
     str=sprintf('#%d %s  %s\n%s %s\n %.1fV',...
-	 robot.id, robotnames{robot.id}, rolenames{robot.role},...
+	 robot.id, robotnames{robot.id}, rolenames{robot.role+1},...
          char(r_mon.fsm.head),   char(r_mon.fsm.body), robot.battery_level);
 
 

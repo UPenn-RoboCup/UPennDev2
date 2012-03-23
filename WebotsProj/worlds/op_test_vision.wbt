@@ -41,37 +41,28 @@ DEF BLUE_GOAL KidGoal {
   rotation 0 1 0 3.14159
   postColor 0.152941 0.505882 0.733333
 }
-#DEF YELLOW_LANDMARK  Landmark {
-#  translation 0 0 -2.4
-#  postColor1 0.992157 0.854902 0.219608
-#  postColor2 0.152941 0.505882 0.733333
-#}
-#DEF BLUE_LANDMARK Landmark {
-#  translation 0 0 2.4
-#  postColor1 0.152941 0.505882 0.733333
-#  postColor2 0.992157 0.854902 0.219608
-#}
+DEF YELLOW_LANDMARK  Landmark {
+  translation 0 0 -2.4
+  postColor1 0.992157 0.854902 0.219608
+  postColor2 0.152941 0.505882 0.733333
+}
+DEF BLUE_LANDMARK Landmark {
+  translation 0 0 2.4
+  postColor1 0.152941 0.505882 0.733333
+  postColor2 0.992157 0.854902 0.219608
+}
 DEF BALL Ball {
   translation 0 0.0323921 0
 }
-DEF PLAYER_1_1 DARwInOP {
-  translation 1 0.3 0
+#PlayerId 0 for goalie
+#TeamID 99 for test_vision
+DEF PLAYER_1_99 DARwInOP {
+  translation 1.5 0.3 0.8
   rotation 0 1 0 -1.56
   controller "darwin-op_team_0"
-  controllerArgs "1 1"
+  controllerArgs "1 99"
   waistBand TRUE
   waistBandColor 1 0 0
   plasticColor 1 0 0
   cameraWindowPosition 0.125 0 
 }
-DEF PLAYER_1_0 DARwInOP {
-  translation -1.3 0.3 0
-  rotation 0 1 0 1.56
-  controller "darwin-op_team_0"
-  controllerArgs "1 0"
-  waistBand TRUE
-  waistBandColor 0.5 0 0.5
-  plasticColor 0.5 0 0.5
-  cameraWindowPosition 0.125 1
-}
-

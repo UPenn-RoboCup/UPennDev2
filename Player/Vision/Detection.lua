@@ -15,7 +15,8 @@ require('detectLandmarks'); -- for NSL
 require('detectSpot');
 
 --For webots (160*120)
-webots_vision = Config.webots_vision or 0;
+--Should be removed once we make resolution-spefic checks
+webots_vision = Config.vision.use_webots_vision or 0;
 if webots_vision==1 then
   detectBall = require('detectBallWebots');
   detectGoal = require('detectGoalWebots');
@@ -51,7 +52,7 @@ function entry()
 	ball = {};
 	ball.detect = 0;
 
-    ballYellow={};
+        ballYellow={};
 	ballYellow.detect=0;
 	
 	ballCyan={};
@@ -81,7 +82,7 @@ function entry()
 	freespace={};
 	freespace.detect=0;
 
-    boundary={};
+        boundary={};
 	boundary.detect=0;
 
 end
@@ -101,14 +102,24 @@ function update()
     ballYellow = detectBall.detect(colorYellow);
     ballCyan = detectBall.detect(colorCyan);
   else
+--SJ: detect both colored goalposts (due to landmarks)
+    if (Vision.colorCount[colorYellow] > yellowGoalCountThres) then
+      goalYellow = detectGoal.detect(colorYellow,colorCyan);
+    end
+    if (Vision.colorCount[colorCyan] > yellowGoalCountThres) then
+      goalCyan = detectGoal.detect(colorCyan,colorYellow);
+    end
+
+--[[
     --if (colorCount[colorYellow] > colorCount[colorCyan]) then
     if (Vision.colorCount[colorYellow] > yellowGoalCountThres) then
-      goalYellow = detectGoal.detect(colorYellow);
+      goalYellow = detectGoal.detect(colorYellow,colorCyan);
       goalCyan.detect = 0;
     else
-      goalCyan = detectGoal.detect(colorCyan);
+      goalCyan = detectGoal.detect(colorCyan,colorYellow);
       goalYellow.detect = 0;
     end
+--]]
   end
 
   -- line detection
@@ -124,7 +135,7 @@ function update()
   -- TODO: add landmarks to vcm shm (for NSL support)
   -- midfield landmark detection
   if enableMidfieldLandmark == 1 then
-  	landmarkCyan = detectLandmarks.detect(colorCyan,colorYellow);
+    landmarkCyan = detectLandmarks.detect(colorCyan,colorYellow);
     landmarkYellow = detectLandmarks.detect(colorYellow,colorCyan);
   end
 
@@ -169,19 +180,17 @@ function update_shm()
 
   -- midfield landmark detection
   if enableMidfieldLandmark == 1 then
-    --[[
-    vcm.etc.landmarkCyan[1]=landmarkCyan.detect;
-    if( landmarkCyan.detect == 1 ) then
-      vcm.etc.landmarkCyan[2] = landmarkCyan.v[1];
-      vcm.etc.landmarkCyan[3] = landmarkCyan.v[2];
+    if landmarkYellow.detect==1 then
+       vcm.set_landmark_detect(1);
+       vcm.set_landmark_color(colorYellow);
+       vcm.set_landmark_v(landmarkYellow.v);
+    elseif landmarkCyan.detect==1 then
+       vcm.set_landmark_detect(1);
+       vcm.set_landmark_color(colorCyan);
+       vcm.set_landmark_v(landmarkCyan.v);
+    else
+       vcm.set_landmark_detect(0);
     end
-
-    vcm.etc.landmarkYellow[1] = landmarkYellow.detect;
-    if (landmarkYellow.detect == 1) then
-      vcm.etc.landmarkYellow[2] = landmarkYellow.v[1];
-      vcm.etc.landmarkYellow[3] = landmarkYellow.v[2];
-    end
-    --]]
   end
 
   vcm.set_line_detect(line.detect);

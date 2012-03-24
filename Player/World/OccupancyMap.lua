@@ -10,8 +10,11 @@ require('unix'); -- Get Time
 require('wcm');
 require('mcm');
 
+--Should be checked for compatibility
+enable_occmap = Config.vision.enable_freespace_detection or 0;
+
 nCol = Config.camera.width/2/Config.vision.scaleB;
-Div = Config.occmap.div;
+Div = Config.occmap.div or 72; --Fixed
 Interval = 2*math.pi/Div;
 HalfInter = Interval/2;
 occDa = 2.5*math.pi/180;
@@ -35,6 +38,8 @@ occmap.y = {};
 occmap.r = vector.zeros(Div);
 
 function entry()
+  if enable_occmap ==0 then return; end
+
   print("initial occmap");
   for i = 1,Div do
     occFilter[i] = Filter2D.new();
@@ -43,6 +48,7 @@ function entry()
 end
 
 function getIdx(theta)
+
   theta = -theta;
   if theta < 0 then theta = theta + 2*math.pi; end
   theta = theta + HalfInter;
@@ -96,6 +102,7 @@ function updateOdometry()
 end
 
 function timeDecay()
+
   --occmap.t = wcm.get_occmap_t();
   for i = 1,Div do
     t1 = Body.get_time();
@@ -110,6 +117,8 @@ function timeDecay()
 end
 
 function update()
+  if enable_occmap ==0 then return; end
+
   timeDecay();
   updateOdometry();
 

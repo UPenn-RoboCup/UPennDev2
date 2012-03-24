@@ -25,7 +25,7 @@ vision.enable_line_detection = 1;
 -- use this to enable spot detection
 vision.enable_spot_detection = 0;
 -- use this to enable midfield landmark detection
-vision.enable_midfield_landmark_detection = 0;
+vision.enable_midfield_landmark_detection = 1;
 -- Enable Velocity filter
 vision.enable_velocity_detection = 0;
 -- use this to enable copying images to shm (for colortables, testing)
@@ -48,3 +48,9 @@ vision.goal2Color = color.cyan;
 
 -- Subsample image?
 vision.subsampling = 0;
+
+-- Cut top part of the detected goalpost
+vision.cut_top_post = 1;
+
+--Skip checks for webots (temporary)
+vision.use_webots_vision = 1;

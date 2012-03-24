@@ -10,6 +10,7 @@ world.yLineBoundary = 3.0;
 world.xMax = 4.7;
 world.yMax = 3.2;
 world.goalWidth = 2.70;
+world.goalHeight= 1.85;
 world.ballYellow= {{3.0,0.0}};
 world.ballCyan= {{-3.0,0.0}};
 world.postYellow = {};
@@ -24,7 +25,10 @@ world.spot[2] = {2.40, 0};
 world.landmarkCyan = {0.0, -3.4};
 world.landmarkYellow = {0.0, 3.4};
 world.cResample = 10; --Resampling interval
-world.odomScale = {1, 1, 0.06};
+
+--SJ: OP does not use yaw odometry data (only use gyro)
+world.odomScale = {1, 1, 0};  
+world.imuYaw = 1;
 
 -- filter weights
 world.rGoalFilter = 0.02;

@@ -44,9 +44,9 @@ function detect(color1,color2)
 
   -- Find the boundingbox stats of each blob
   -- TODO: These only use the largest of the blobs.  Is this optimal?
-  landmark.propsA1= Detection.bboxStats(color1, landmarkPropsB1[1].boundingBox);
-  landmark.propsA2= Detection.bboxStats(color2, landmarkPropsB2[1].boundingBox);
-  landmark.propsA3= Detection.bboxStats(color1, landmarkPropsB1[2].boundingBox);
+  landmark.propsA1= Vision.bboxStats(color1, landmarkPropsB1[1].boundingBox);
+  landmark.propsA2= Vision.bboxStats(color2, landmarkPropsB2[1].boundingBox);
+  landmark.propsA3= Vision.bboxStats(color1, landmarkPropsB1[2].boundingBox);
 
   --SJ: Robot can see both goal and landmark at once
   --Need to find out landmarks using position check
@@ -55,7 +55,7 @@ function detect(color1,color2)
       local B12 = vector.new(landmarkPropsB1[2].centroid);
       local B13 = vector.new(landmarkPropsB1[3].centroid);
       if math.abs(B12[1]-B13[1])<10 then
-         landmark.propsA1= Detection.bboxStats(color1, 
+         landmark.propsA1= Vision.bboxStats(color1, 
 landmarkPropsB1[3].boundingBox);
       end
    end
@@ -65,7 +65,7 @@ landmarkPropsB1[3].boundingBox);
       local B22 = vector.new(landmarkPropsB2[2].centroid);
 --      print(B11[1],B22[1],B12[1]);
       if math.abs(B11[1]-B22[1])<10 and math.abs(B12[1]-B22[1])<10  then
-         landmark.propsA2= Detection.bboxStats(color2, 
+         landmark.propsA2= Vision.bboxStats(color2, 
 landmarkPropsB2[2].boundingBox);
       end
    end
@@ -99,19 +99,19 @@ landmarkPropsB2[2].boundingBox);
   end
 
   --Fill rate check
-  if dArea1 < Config.vision.landmarkfillextent*Detection.bboxArea(landmark.propsA1.boundingBox)	then 
+  if dArea1 < Config.vision.landmarkfillextent*Vision.bboxArea(landmark.propsA1.boundingBox)	then 
     if (DEBUG==1) then print('Fails fill rate check 1');end
     return landmark;
   end
 
   --Fill rate check (2)
-  if dArea2 < Config.vision.landmarkfillextent*Detection.bboxArea(landmark.propsA2.boundingBox)	then
+  if dArea2 < Config.vision.landmarkfillextent*Vision.bboxArea(landmark.propsA2.boundingBox)	then
     if (DEBUG==1) then print('Fails fill rate check 2');end
     return landmark;
   end
 
   --Fill rate check (3)
-  if dArea3 < Config.vision.landmarkfillextent*Detection.bboxArea(landmark.propsA3.boundingBox)	then
+  if dArea3 < Config.vision.landmarkfillextent*Vision.bboxArea(landmark.propsA3.boundingBox)	then
     if (DEBUG==1) then print('Fails fill rate check 3');end
     return landmark;
   end
@@ -171,6 +171,14 @@ debugprint('Landmark axis ratio check\n');
   landmark.detect = 1;
   landmark.v = v;
 --  print("Landmark detected")
+
+-- added for test_vision.m
+  if Config.vision.copy_image_to_shm then
+      vcm.set_landmark_centroid1(landmarkCentroid1);
+      vcm.set_landmark_centroid2(landmarkCentroid2);
+      vcm.set_landmark_centroid3(landmarkCentroid3);
+  end
+
   return landmark;
 end
 

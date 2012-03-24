@@ -157,6 +157,16 @@ function update_vision()
     PoseFilter.line(v, a);
   end
 
+  if vcm.get_landmark_detect() == 1 then
+    local color = vcm.get_landmark_color();
+    local v = vcm.get_landmark_v();
+    if color == Config.color.yellow then
+        PoseFilter.landmark_yellow(v);
+    else
+        PoseFilter.landmark_cyan(v);
+    end
+  end
+
   ball.x, ball.y = ballFilter:get_xy();
   pose.x,pose.y,pose.a = PoseFilter.get_pose();
 

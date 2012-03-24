@@ -12,8 +12,8 @@ fsm={};
 fsm.enable_obstacle_detection = 1;
 
 --fsm.playMode = 1; --For Demo without orbit
-fsm.playMode = 2; --Simple Behavior with orbit
---fsm.playMode = 3; --Advanced Behavior 
+--fsm.playMode = 2; --Simple Behavior with orbit
+fsm.playMode = 3; --Advanced Behavior 
 
 fsm.enable_walkkick = 0;
 fsm.enable_sidekick = 0;
@@ -109,18 +109,17 @@ fsm.bodyGotoCenter.timeout=20.0*speedFactor;
 --HeadTrack : Track the ball
 --------------------------------------------------
 fsm.headTrack = {};
-fsm.headTrack.timeout = 6.0 * speedFactor;
+fsm.headTrack.timeout = 2.0 * speedFactor;
 fsm.headTrack.tLost = 1.5 * speedFactor;
 fsm.headTrack.minDist = 0.30; --If ball is closer than this, don't look up
 fsm.headTrack.fixTh={0.20,0.08}; --Fix yaw axis if ball is within this box
-
 
 --------------------------------------------------
 --HeadReady : Track the horizonal line for localization
 --------------------------------------------------
 fsm.headReady={}
 fsm.headReady.dist = 3.0; 
-fsm.headReady.height = 0.5; 
+fsm.headReady.height = 1.0; 
 fsm.headReady.tScan= 5.0*speedFactor; 
 
 --------------------------------------------------
@@ -137,7 +136,7 @@ fsm.headScan.pitch0 = 45*math.pi/180;
 fsm.headScan.pitchMag = 25*math.pi/180;
 fsm.headScan.yawMag = 90*math.pi/180;
 fsm.headScan.pitchTurn0 = 45*math.pi/180;
-fsm.headScan.pitchTurnMag = 25*math.pi/180;
+fsm.headScan.pitchTurnMag = 45*math.pi/180;
 fsm.headScan.yawMagTurn = 45*math.pi/180;
 fsm.headScan.tScan = 3.0*speedFactor;
 

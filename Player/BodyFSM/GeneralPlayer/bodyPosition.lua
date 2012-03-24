@@ -56,7 +56,14 @@ function update()
 
   angle1=util.mod_angle(aGoal-aBall);
 
-  homePose=getAttackerHomePose();	
+  role = gcm.get_team_role();
+  if (role == 2) then
+    homePose = getDefenderHomePose();
+  elseif (role==3) then
+    homePose = getSupporterHomePose();
+  else
+    homePose=getAttackerHomePose();	
+  end
 
   uPose=vector.new({pose.x,pose.y,pose.a})
   pRelative=util.pose_relative(homePose,uPose);
@@ -152,6 +159,38 @@ function getAttackerHomePose()
 	aBall};
     return homepose;
   end
+end
+
+function getDefenderHomePose()
+    -- defend
+  homePosition = .6 * ballGlobal;
+  homePosition[1] = homePosition[1] - 0.50*util.sign(homePosition[1]);
+  homePosition[2] = homePosition[2] - 0.80*util.sign(homePosition[2]);
+  return homePosition;
+end
+
+function getSupporterHomePose()
+
+    -- support
+    attackGoalPosition = vector.new(wcm.get_goal_attack());
+
+    --[[
+    homePosition = ballGlobal;
+    homePosition[1] = homePosition[1] + 0.75*util.sign(homePosition[1]);
+    homePosition[1] = util.sign(homePosition[1])*math.min(2.0, math.abs(homePosition[1]));
+    homePosition[2] = 
+    --]]
+
+    -- move near attacking goal
+    homePosition = attackGoalPosition;
+    -- stay in the field (.75 m from end line)
+    homePosition[1] = homePosition[1] - util.sign(homePosition[1]) * 1.0;
+    -- go to far post (.75 m from center)
+    homePosition[2] = -1*util.sign(ballGlobal[2]) * .75;
+
+    -- face ball 
+    homePosition[3] = ballGlobal[3];
+    return homePosition;
 end
 
 function exit()

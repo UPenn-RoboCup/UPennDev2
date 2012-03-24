@@ -72,6 +72,8 @@ tUpdate = unix.time();
 
 function update()
   count = count + 1;
+  --Update battery info
+  wcm.set_robot_battery_level(Body.get_battery_level());
 
   if (not init)  then
     if (calibrating) then
@@ -126,7 +128,6 @@ function update()
     GameFSM.update();
     BodyFSM.update();
     HeadFSM.update();
-
     Motion.update();
     Body.update();
   end

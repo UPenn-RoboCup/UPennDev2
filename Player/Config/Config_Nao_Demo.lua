@@ -92,8 +92,10 @@ km.standup_back = 'km_Nao_StandupFromBackFasterNew.lua';
 -- sitting parameters
 
 sit = {};
-sit.bodyHeight = 0.22;
-sit.supportX = 0;
+sit.bodyHeight = 0.18;
+sit.footY = 0.0375;
+sit.supportX = 0.023; 
+
 sit.dpLimit = vector.new({.1,.01,.03,.1,.3,.1});
 
 

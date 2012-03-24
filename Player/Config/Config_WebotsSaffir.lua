@@ -31,7 +31,7 @@ dev.camera = 'WebotsOPCam';
 dev.kinematics = 'SaffirKinematics';
 dev.comm = 'WebotsNaoComm';
 dev.monitor_comm = 'NullComm';
-dev.game_control='WebotsOPGameControl';
+dev.game_control='GameControl';
 --dev.walk = 'NaoWalk';
 --dev.kick = 'NaoKick';
 

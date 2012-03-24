@@ -48,8 +48,9 @@ game.nPlayers = 4;
 
 
 -- FSM Parameters
-
 fsm = {};
+loadconfig('FSM/Config_WebotsNao_FSM')--For generalPlayer FSM
+
 fsm.game = 'RoboCup';
 if (game.playerID == 1) then
   fsm.body = {'NaoGoalie'};
@@ -59,10 +60,18 @@ else
   fsm.head = {'NaoPlayer'};
 end
 
-fsm.body = {'OpPlayerNSL'};
+--[[
+--GeneralPlayer FSM test
+fsm.body = {'GeneralPlayer'};
+fsm.enable_obstacle_detection = 1;
+fsm.playMode = 1; --1 for demo, 2 for orbit, 3 for direct approach
+fsm.enable_walkkick = 1;
+--]]
+
+
+
 
 -- Team Parameters
-
 team = {};
 team.msgTimeout = 5.0;
 team.nonAttackerPenalty = 6.0; -- eta sec

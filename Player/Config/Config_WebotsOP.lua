@@ -40,10 +40,10 @@ game.teamNumber = (os.getenv('TEAM_ID') or 0) + 0;
 --Webots player id begins at 0 but we use 1 as the first id 
 game.playerID = (os.getenv('PLAYER_ID') or 0) + 1;
 game.robotID = game.playerID;
+if game.playerID==1 then game.role = 4; end --Goalie handling 
 game.teamColor = 1;--Red team
 --game.teamColor = 0;--Blue team
 game.nPlayers = 4;
-
 
 --FSM and behavior settings
 fsm = {};
@@ -53,48 +53,10 @@ fsm.game = 'RoboCup';
 fsm.head = {'GeneralPlayer'};
 fsm.body = {'GeneralPlayer'};
 
---Behavior flags, defined in FSM Configs and overrided here
+--Behavior flags, defined in FSM Configs and can be overrided here
 fsm.enable_obstacle_detection = 1;
 fsm.playMode = 3; --1 for demo, 2 for orbit, 3 for direct approach
 fsm.enable_walkkick = 1;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
---SJ: I separated non-robocup FSMs here
---Dodgeball FSM
---[[
-loadconfig('FSM/Config_WebotsOP_FSM')
-fsm.game = 'Dodgeball';
-fsm.head = {'GeneralPlayer'};
-fsm.body = {'GeneralPlayer'};
-Config.vision.enable_line_detection = 0;
-Config.vision.enable_midfield_landmark_detection = 0;
---]]
-
---Stretcher FSM
---[[
-loadconfig('FSM/Config_WebotsOP_FSM')
-loadconfig( 'Config_Stretcher' );
-game.teamNumber = 18;
-game.playerID = 1;
-fsm.game = 'Stretcher';
-fsm.head = {'GeneralPlayer'};
-fsm.body = {'GeneralPlayer'};
-Config.vision.enable_line_detection = 0;
-Config.vision.enable_midfield_landmark_detection = 0;
---]]
 
 -- Team Parameters
 team = {};
@@ -135,3 +97,28 @@ head.bodyTilt = 0;
 
 --km.kick_right = 'km_NSLOP_taunt1.lua';
 --km.kick_left = 'km_NSLOP_StandupFromFront2.lua';
+
+
+--SJ: I separated non-robocup FSMs here
+--Dodgeball FSM
+--[[
+loadconfig('FSM/Config_WebotsOP_FSM')
+fsm.game = 'Dodgeball';
+fsm.head = {'GeneralPlayer'};
+fsm.body = {'GeneralPlayer'};
+Config.vision.enable_line_detection = 0;
+Config.vision.enable_midfield_landmark_detection = 0;
+--]]
+
+--Stretcher FSM
+--[[
+loadconfig('FSM/Config_WebotsOP_FSM')
+loadconfig( 'Config_Stretcher' );
+game.teamNumber = 18;
+game.playerID = 1;
+fsm.game = 'Stretcher';
+fsm.head = {'GeneralPlayer'};
+fsm.body = {'GeneralPlayer'};
+Config.vision.enable_line_detection = 0;
+Config.vision.enable_midfield_landmark_detection = 0;
+--]]

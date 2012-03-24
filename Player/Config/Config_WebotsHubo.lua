@@ -28,7 +28,7 @@ dev = {};
 dev.body = 'WebotsHuboBody'; 
 dev.camera = 'WebotsOPCam';
 dev.kinematics = 'HuboKinematics';
-dev.game_control='GameControl';
+dev.game_control='WebotsGameControl';
 --dev.walk = 'NaoWalk';
 --dev.kick = 'NaoKick';
 

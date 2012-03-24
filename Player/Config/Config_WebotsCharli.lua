@@ -29,6 +29,7 @@ dev.body = 'WebotsCharliBody';
 dev.camera = 'WebotsOPCam';
 dev.kinematics = 'CharliKinematics';
 dev.game_control='WebotsOPGameControl';
+dev.team='TeamNull';
 --dev.walk = 'NewNewWalk';
 dev.walk = 'NewWalk';
 dev.kick = 'NewKick';

@@ -32,6 +32,7 @@ dev.kinematics = 'SaffirKinematics';
 dev.comm = 'WebotsNaoComm';
 dev.monitor_comm = 'NullComm';
 dev.game_control='WebotsOPGameControl';
+dev.team='TeamNull';
 --dev.walk = 'NaoWalk';
 --dev.kick = 'NaoKick';
 

@@ -121,6 +121,9 @@ end
 function update()
   tstart = unix.time();
 
+  vcm.refresh_debug_message();
+--  vcm.add_debug_message(string.format("Testing, count %d\n",count))
+
   -- get image from camera
   camera.image = Camera.get_image();
   local status = Camera.get_camera_status();
@@ -216,21 +219,16 @@ function update_shm_fov()
   local fovTL={0,0};
   local fovTR={camera.width,0};
 
-  vcm.set_image_fovC(
-	vector.slice(HeadTransform.projectGround(
- 	  HeadTransform.coordinatesA(fovC,0.1)),1,2)    );
-  vcm.set_image_fovTL(
-	vector.slice(HeadTransform.projectGround(
- 	  HeadTransform.coordinatesA(fovTL,0.1)),1,2)    );
-  vcm.set_image_fovTR(
-	vector.slice(HeadTransform.projectGround(
- 	  HeadTransform.coordinatesA(fovTR,0.1)),1,2)    );
-  vcm.set_image_fovBL(
-	vector.slice(HeadTransform.projectGround(
- 	  HeadTransform.coordinatesA(fovBL,0.1)),1,2)    );
-  vcm.set_image_fovBR(
-	vector.slice(HeadTransform.projectGround(
- 	  HeadTransform.coordinatesA(fovBR,0.1)),1,2)    );
+  vcm.set_image_fovC(vector.slice(HeadTransform.projectGround(
+ 	  HeadTransform.coordinatesA(fovC,0.1)),1,2));
+  vcm.set_image_fovTL(vector.slice(HeadTransform.projectGround(
+ 	  HeadTransform.coordinatesA(fovTL,0.1)),1,2));
+  vcm.set_image_fovTR(vector.slice(HeadTransform.projectGround(
+ 	  HeadTransform.coordinatesA(fovTR,0.1)),1,2));
+  vcm.set_image_fovBL(vector.slice(HeadTransform.projectGround(
+ 	  HeadTransform.coordinatesA(fovBL,0.1)),1,2));
+  vcm.set_image_fovBR(vector.slice(HeadTransform.projectGround(
+ 	  HeadTransform.coordinatesA(fovBR,0.1)),1,2));
 end
 
 

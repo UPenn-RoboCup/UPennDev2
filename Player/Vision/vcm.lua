@@ -93,6 +93,7 @@ shared.line.v = vector.zeros(4);
 shared.line.angle = vector.zeros(1);
 shared.line.vcentroid = vector.zeros(4);
 shared.line.vendpoint = vector.zeros(4);
+
 --[[
 shared.spot = {};
 shared.spot.detect = vector.zeros(1);
@@ -120,5 +121,18 @@ shared.debug.enable_shm_copy = vector.zeros(1);
 shared.debug.store_goal_detections = vector.zeros(1);
 shared.debug.store_ball_detections = vector.zeros(1);
 shared.debug.store_all_images = vector.zeros(1);
+shared.debug.message='';
+debug_message='';
 
 util.init_shm_segment(getfenv(), _NAME, shared, shsize);
+
+--For vision debugging
+function refresh_debug_message()
+  set_debug_message(debug_message);
+  debug_message='';
+print("Debug message:",get_debug_message())
+
+end
+function add_debug_message(message)
+  debug_message=debug_message..message;
+end

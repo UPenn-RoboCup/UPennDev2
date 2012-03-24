@@ -16,6 +16,7 @@ h.vcmImage = shm(sprintf('vcmImage%d%d%s', h.teamNumber, h.playerID, h.user));
 h.vcmBall  = shm(sprintf('vcmBall%d%d%s',  h.teamNumber, h.playerID, h.user));
 h.vcmGoal  = shm(sprintf('vcmGoal%d%d%s',  h.teamNumber, h.playerID, h.user));
 h.vcmLandmark  = shm(sprintf('vcmLandmark%d%d%s',  h.teamNumber, h.playerID, h.user));
+h.vcmDebug  = shm(sprintf('vcmDebug%d%d%s',  h.teamNumber, h.playerID, h.user));
 
 % shm wrappers for freespace, occumap, boundary
 h.wcmOccmap = shm(sprintf('wcmOccmap%d%d%s', h.teamNumber, h.playerID, h.user));
@@ -153,7 +154,11 @@ h.get_labelB = @get_labelB;
       r.landmark.centroid2 = h.vcmLandmark.get_centroid2();
       r.landmark.centroid3 = h.vcmLandmark.get_centroid3();
 
-      % Add freespace boundary
+  %Vision debug message
+      r.debug={};
+      r.debug.message = char(h.vcmDebug.get_message());
+
+  % Add freespace boundary
       r.free = {};
       freeCol = h.vcmFreespace.get_nCol();
 %		   freeValueA = h.vcmFreespace.get_pboundA();

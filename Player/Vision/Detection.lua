@@ -102,6 +102,15 @@ function update()
     ballYellow = detectBall.detect(colorYellow);
     ballCyan = detectBall.detect(colorCyan);
   else
+--SJ: detect both colored goalposts (due to landmarks)
+    if (Vision.colorCount[colorYellow] > yellowGoalCountThres) then
+      goalYellow = detectGoal.detect(colorYellow,colorCyan);
+    end
+    if (Vision.colorCount[colorCyan] > yellowGoalCountThres) then
+      goalCyan = detectGoal.detect(colorCyan,colorYellow);
+    end
+
+--[[
     --if (colorCount[colorYellow] > colorCount[colorCyan]) then
     if (Vision.colorCount[colorYellow] > yellowGoalCountThres) then
       goalYellow = detectGoal.detect(colorYellow,colorCyan);
@@ -110,6 +119,7 @@ function update()
       goalCyan = detectGoal.detect(colorCyan,colorYellow);
       goalYellow.detect = 0;
     end
+--]]
   end
 
   -- line detection

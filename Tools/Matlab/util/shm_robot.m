@@ -8,12 +8,16 @@ h.user = getenv('USER');
 
 % create shm wrappers
 h.gcmTeam  = shm(sprintf('gcmTeam%d%d%s',  h.teamNumber, h.playerID, h.user));
+h.gcmFsm  = shm(sprintf('gcmFsm%d%d%s',  h.teamNumber, h.playerID, h.user));
 h.wcmRobot = shm(sprintf('wcmRobot%d%d%s', h.teamNumber, h.playerID, h.user));
 h.wcmBall  = shm(sprintf('wcmBall%d%d%s',  h.teamNumber, h.playerID, h.user));
 h.wcmGoal  = shm(sprintf('wcmGoal%d%d%s',  h.teamNumber, h.playerID, h.user));
 h.vcmImage = shm(sprintf('vcmImage%d%d%s', h.teamNumber, h.playerID, h.user));
 h.vcmBall  = shm(sprintf('vcmBall%d%d%s',  h.teamNumber, h.playerID, h.user));
 h.vcmGoal  = shm(sprintf('vcmGoal%d%d%s',  h.teamNumber, h.playerID, h.user));
+h.vcmLandmark  = shm(sprintf('vcmLandmark%d%d%s',  h.teamNumber, h.playerID, h.user));
+h.vcmDebug  = shm(sprintf('vcmDebug%d%d%s',  h.teamNumber, h.playerID, h.user));
+
 % shm wrappers for freespace, occumap, boundary
 h.wcmOccmap = shm(sprintf('wcmOccmap%d%d%s', h.teamNumber, h.playerID, h.user));
 h.vcmFreespace = shm(sprintf('vcmFreespace%d%d%s', h.teamNumber, h.playerID, h.user));
@@ -46,7 +50,7 @@ h.get_labelB = @get_labelB;
         r.pose = struct('x', pose(1), 'y', pose(2), 'a', pose(3));
         
         ballx = h.wcmBall.get_x();
-				bally = h.wcmBall.get_y();
+	bally = h.wcmBall.get_y();
         ballt = h.wcmBall.get_t();
         ballvelx = h.wcmBall.get_velx();
         ballvely = h.wcmBall.get_vely();
@@ -58,7 +62,8 @@ h.get_labelB = @get_labelB;
         r.attackBearing = h.wcmGoal.get_attack_bearing();
         r.time = 0;
         r.tReceive = 0;
-        
+        r.battery_level = h.wcmRobot.get_battery_level();
+
     catch
     end
   end
@@ -73,13 +78,30 @@ h.get_labelB = @get_labelB;
           'player_id', h.gcmTeam.get_player_id(),...
           'role', h.gcmTeam.get_role()...
           );
+
+      r.fsm = struct(...
+	 'body', h.gcmFsm.get_body_state(),...
+	 'head', h.gcmFsm.get_head_state(),...
+	 'motion', h.gcmFsm.get_motion_state(),...
+	 'game', h.gcmFsm.get_game_state()...
+	);
    
       pose = h.wcmRobot.get_pose();
       r.robot = {};
       r.robot.pose = struct('x', pose(1), 'y', pose(2), 'a', pose(3));
+
+    %Image FOV boundary
           
+      fovC=h.vcmImage.get_fovC();
+      fovTL=h.vcmImage.get_fovTL();
+      fovTR=h.vcmImage.get_fovTR();
+      fovBL=h.vcmImage.get_fovBL();
+      fovBR=h.vcmImage.get_fovBR();
+      r.fov= struct('C',fovC, 'TL',fovTL, 'TR',fovTR, 'BL',fovBL, 'BR', fovBR);
+
+   %ball info
       ballx = h.wcmBall.get_x();
-			bally = h.wcmBall.get_y();
+      bally = h.wcmBall.get_y();
       ballt = h.wcmBall.get_t();
       ball = {};
       ball.detect = h.vcmBall.get_detect();
@@ -91,6 +113,7 @@ h.get_labelB = @get_labelB;
       r.ball = struct('x', ballx, 'y', bally, 't', ballt, ...
           'centroid', ball.centroid, 'axisMajor', ball.axisMajor, ...
           'detect', ball.detect);
+  %goal info
       r.goal = {};
       r.goal.detect = h.vcmGoal.get_detect();
       r.goal.type = h.vcmGoal.get_type();
@@ -108,20 +131,34 @@ h.get_labelB = @get_labelB;
       gbb2 = h.vcmGoal.get_postBoundingBox2();
       r.goal.postBoundingBox2 = struct('x1',gbb2(1), 'x2',gbb2(2), 'y1',gbb2(3), 'y2',gbb2(4));
 
-      %add goal post stats
-%{
-      gc1 = h.vcmGoal.get_postCentroid1();
-      gc2 = h.vcmGoal.get_postCentroid2();
-      ga1 = h.vcmGoal.get_postAxis1();
-      ga2 = h.vcmGoal.get_postAxis2();
-      go1 = h.vcmGoal.get_postOrientation1();
-      go2 = h.vcmGoal.get_postOrientation2();
-      r.goal.postStat1 = struct('x',gc1(1), 'y',gc1(2), 'a',ga1(1), 'b',ga1(2),'o',go1(1));
-      r.goal.postStat2 = struct('x',gc2(1), 'y',gc2(2), 'a',ga2(1), 'b',ga2(2),'o',go2(1));
-%}
+      r.goal.postStat1 = struct('x',0,'y',0, 'a',0, 'b',0,'o',0);
+      r.goal.postStat2 = struct('x',0,'y',0, 'a',0, 'b',0,'o',0);
 
-      
-      % Add freespace boundary
+      if r.goal.detect==1 
+         %add goal post stats
+        gc1 = h.vcmGoal.get_postCentroid1();
+        gc2 = h.vcmGoal.get_postCentroid2();
+        ga1 = h.vcmGoal.get_postAxis1();
+        ga2 = h.vcmGoal.get_postAxis2();
+        go1 = h.vcmGoal.get_postOrientation1();
+        go2 = h.vcmGoal.get_postOrientation2();
+        r.goal.postStat1 = struct('x',gc1(1), 'y',gc1(2), 'a',ga1(1), 'b',ga1(2),'o',go1(1));
+        r.goal.postStat2 = struct('x',gc2(1), 'y',gc2(2), 'a',ga2(1), 'b',ga2(2),'o',go2(1));
+      end
+  %landmark info
+      r.landmark = {};
+      r.landmark.detect = h.vcmLandmark.get_detect();
+      r.landmark.color = h.vcmLandmark.get_color();
+      r.landmark.v = h.vcmLandmark.get_v();
+      r.landmark.centroid1 = h.vcmLandmark.get_centroid1();
+      r.landmark.centroid2 = h.vcmLandmark.get_centroid2();
+      r.landmark.centroid3 = h.vcmLandmark.get_centroid3();
+
+  %Vision debug message
+      r.debug={};
+      r.debug.message = char(h.vcmDebug.get_message());
+
+  % Add freespace boundary
       r.free = {};
       freeCol = h.vcmFreespace.get_nCol();
 %		   freeValueA = h.vcmFreespace.get_pboundA();
@@ -180,8 +217,8 @@ h.get_labelB = @get_labelB;
 
   function yuyv = get_yuyv()
       % returns the raw YUYV image
-%         width = h.vcmImage.get_width();
-%         height = h.vcmImage.get_height();
+%   width = h.vcmImage.get_width();
+%   height = h.vcmImage.get_height();
     width = h.vcmImage.get_width()/2;
     height = h.vcmImage.get_height();
     rawData = h.vcmImage.get_yuyv();
@@ -199,7 +236,7 @@ h.get_labelB = @get_labelB;
     width = h.vcmImage.get_width()/2;
     height = h.vcmImage.get_height()/2;
 
-%for webots
+    %for webots, use full width/height 
     width = h.vcmImage.get_width();
     height = h.vcmImage.get_height();
 
@@ -210,7 +247,7 @@ h.get_labelB = @get_labelB;
   function labelB = get_labelB()
     % returns the bit-ored labeled image
 
-%for webots
+    %for webots
     width = h.vcmImage.get_width()/4;
     height = h.vcmImage.get_height()/4;
     rawData = h.vcmImage.get_labelB();

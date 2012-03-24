@@ -1,88 +1,141 @@
-function h = plot_robot(scale)
+function h = plot_robot_monitor_struct(robot_struct,r_mon,scale)
+%This function shows the robot over the field map
 
-  if (nargin < 1)
-    scale = 3;
-  end
+  x0 = robot_struct.pose.x;
+  y0 = robot_struct.pose.y;
+  ca = cos(robot_struct.pose.a);
+  sa = sin(robot_struct.pose.a);
+   
+  hold on;
+  plot_robot(robot_struct,scale);
+%  plot_ball(robot_struct.ball);
+  plot_ball_mon(r_mon.ball,scale);
+  plot_fov(r_mon.fov);
+  plot_goal(r_mon.goal,scale);
+  plot_landmark(r_mon.landmark,scale);
+  hold off;
 
-  h.teamColors = ['b', 'r'];
-  h.idColors = ['k', 'r', 'g', 'b'];
-  h.roleColors = ['g', 'k', 'y'];
+  %subfunctions
 
-  h.x0 = scale*[0 -.25 -.25];
-  h.y0 = scale*[0 -.10 +.10];
-  h.xm = mean(h.x0);
-  h.ym = mean(h.y0);
+  function plot_robot(robot,scale)
+    xRobot = [0 -.25 -.25]*2/scale;
+    yRobot = [0 -.10 +.10]*2/scale;
+    xr = xRobot*ca - yRobot*sa + x0;
+    yr = xRobot*sa + yRobot*ca + y0;
+    xm = mean(xRobot);
+    ym = mean(yRobot);
 
-  % initialize robot plot
-  ca = cos(0);
-  sa = sin(0);
-  xr = h.x0*ca - h.y0*sa;
-  yr = h.x0*sa - h.y0*ca;
-  h.plotHandle = fill(xr, yr, 'k', 'LineWidth', 2);
+    teamColors = ['b', 'r'];
+    idColors = ['k', 'r', 'g', 'b'];
+    % Role:  1:Attack / 2:Defend / 3:Support / 4: Goalie
+    roleColors = {'m','k', 'k--','g'};
 
-  % initialize ID display
-  xt = h.xm*ca - h.ym*sa;
-  yt = h.xm*sa + h.ym*ca;
-  h.textHandle = text(xt, yt, '0', 'FontSize', 24, ...
-                                   'Color', 'k', ...
-                                   'VerticalAlignment', 'middle', ...
-                                   'HorizontalAlignment', 'center');
+    teamColors = ['b', 'r'];
+    hr = fill(xr, yr, teamColors(robot.teamColor+1));
 
-  % initialize ball plot
-  h.ballHandle = plot(0, 0, 'o', 'MarkerSize', 2*scale);
-
-  % intialize the plots to inivisible
-  set(h.textHandle, 'Visible', 'off');
-  set(h.plotHandle, 'Visible', 'off');
-  set(h.ballHandle, 'Visible', 'off');
-
-  h.update = @update;
-
-  function update(robot)
-  % updates the robot plot from the robot data struct
-
-    if (isempty(robot))
-      % set invisible
-      set(h.textHandle, 'Visible', 'off');
-      set(h.plotHandle, 'Visible', 'off');
-      set(h.ballHandle, 'Visible', 'off');
-
-    else
-      % set visible
-      set(h.textHandle, 'Visible', 'on');
-      set(h.plotHandle, 'Visible', 'on');
-      set(h.ballHandle, 'Visible', 'on');
-
-      % update robot plot
-      ca = cos(robot.pose.a);
-      sa = sin(robot.pose.a);
-      xr = h.x0*ca - h.y0*sa + robot.pose.x;
-      yr = h.x0*sa + h.y0*ca + robot.pose.y;
-      if (robot.id > 1)
-        set(h.plotHandle, 'XData', xr, 'YData', yr, ...
-                          'EdgeColor', h.roleColors(robot.role),  ...
-                          'FaceColor', h.teamColors(robot.teamColor+1));
-      else
-        set(h.plotHandle, 'XData', xr, 'YData', yr, ...
-                          'EdgeColor', h.teamColors(robot.teamColor+1), ...
-                          'FaceColor', h.teamColors(robot.teamColor+1));
-      end
-
-      % update ID string
-      xt = h.xm*ca - h.ym*sa + robot.pose.x;
-      yt = h.xm*sa + h.ym*ca + robot.pose.y;
-      set(h.textHandle, 'Position', [xt yt], ...
-                        'String', num2str(robot.id));
-
-      % update ball plot 
-      if (~isempty(robot.ball))
-        ball = [robot.ball.x robot.ball.y];
-        xb = xr(1) + robot.ball.x*ca - robot.ball.y*sa;
-        yb = yr(1) + robot.ball.x*sa + robot.ball.y*ca;
-        set(h.ballHandle, 'XData', xb, 'YData', yb, ...
-                          'Color', h.idColors(robot.id));
-      end
+    if robot.role>1 
+      h_role=plot([xr xr(1)],[yr yr(1)],roleColors{robot.role});
+      set(h_role,'LineWidth',3);
     end
 
+    % disp attack bearing
+    xab = cos(robot.attackBearing)*ca - sin(robot.attackBearing)*sa;
+    yab = cos(robot.attackBearing)*sa + sin(robot.attackBearing)*ca;
+    ab_scale = 1/scale;
+    quiver(x0, y0, xab*ab_scale,yab*ab_scale, 'k' );
+
+    robotnames = {'Bot1','Bot2','Bot3','Bot4'};
+    rolenames = {'','Attack','Defend','Support','Goalie','Waiting'};
+    colornames={'red','blue'};
+
+    %robotID robotName robotRole 
+    %BodyFSM HeadFSM
+    %Team info
+    %Voltage info
+
+    str=sprintf('%s\n%s',...
+	 robotnames{robot.id}, rolenames{robot.role+1});
+    xtext=-1/scale;   xtext2=-0.4/scale;
+   
+    xt = xtext*ca + x0+xtext2;
+    yt = xtext*sa + y0;
+
+    b_name=text(xt, yt, str);
+    set(b_name,'FontSize',8/scale);
+
   end
+
+  function plot_ball(ball,scale)
+    if (~isempty(ball))
+      ball = [ball.x ball.y];
+      %TODO: ball.t info
+      xb = x0 + ball(1)*ca - ball(2)*sa;   
+      yb = y0 + ball(1)*sa + ball(2)*ca;
+      %hb = plot(xb, yb, [idColors(robot_struct.id) 'o']);
+      hb = plot(xb, yb, 'ro');
+      plot([x0 xb],[y0 yb],'r');
+      set(hb, 'MarkerSize', 8/scale);
+      %TODO: add last seen time info
+    end
+  end
+
+  function plot_ball_mon(ball,scale)
+    if ball.detect==1
+      ball = [ball.x ball.y];
+      %TODO: ball.t info
+      xb = x0 + ball(1)*ca - ball(2)*sa;
+      yb = y0 + ball(1)*sa + ball(2)*ca;
+  %   hb = plot(xb, yb, [idColors(robot_struct.id) 'o']);
+      hb = plot(xb, yb, 'ro');
+      plot([x0 xb],[y0 yb],'r');
+      set(hb, 'MarkerSize', 8/scale);
+    end
+  end
+%}
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  %% Monitor struct based plots (optional)
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  
+  function plot_fov(fov)  %draw fov boundary
+    x1 = fov.TL(1)*ca - fov.TL(2)*sa + x0;
+    y1 = fov.TL(1)*sa + fov.TL(2)*ca + y0;
+    x2 = fov.TR(1)*ca - fov.TR(2)*sa + x0;
+    y2 = fov.TR(1)*sa + fov.TR(2)*ca + y0;
+    plot([x1 x2],[y1 y2], 'k--');
+    plot([x0 x1],[y0 y1], 'k--');
+    plot([x0 x2],[y0 y2], 'k--');
+  end
+  
+  function plot_goal(goal,scale)
+    if( goal.detect==1 )
+      if(goal.color==2) marker = 'm';% yellow
+      else marker = 'b';end
+      marker2 = strcat(marker,'+');
+      if( goal.v1.scale ~= 0 )
+        x1 = goal.v1.x*ca - goal.v1.y*sa + robot_struct.pose.x;
+        y1 = goal.v1.x*sa + goal.v1.y*ca + robot_struct.pose.y;
+        plot(x1,y1,marker2,'MarkerSize',12/scale);
+        plot([x0 x1],[y0 y1],marker);
+      end
+      if( goal.v2.scale ~= 0 )
+        x2 = goal.v2.x*ca - goal.v2.y*sa + robot_struct.pose.x;
+        y2 = goal.v2.x*sa + goal.v2.y*ca + robot_struct.pose.y;
+        plot(x2,y2,marker2,'MarkerSize',12/scale);
+        plot([x0 x2],[y0 y2],marker);
+      end
+    end
+  end
+
+  function plot_landmark(landmark,scale)
+    if (landmark.detect==1)
+      if (landmark.color==2) marker='m';% yellow
+      else marker='b';	end
+      marker2 = strcat(marker,'x');
+      x1 = landmark.v(1)*ca - landmark.v(2)*sa + robot_struct.pose.x;
+      y1 = landmark.v(1)*sa + landmark.v(2)*ca + robot_struct.pose.y;
+      plot(x1,y1,marker2,'MarkerSize',12/scale);
+      plot([x0 x1],[y0 y1],marker);
+    end
+  end
+
 end

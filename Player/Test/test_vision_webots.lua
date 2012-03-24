@@ -258,6 +258,8 @@ local str=getch.get();
 end
 
 function update()
+  --Update battery info
+  wcm.set_robot_battery_level(Body.get_battery_level());
 
   local t = Body.get_time();
   Body.set_syncread_enable(0); --read from only head servos

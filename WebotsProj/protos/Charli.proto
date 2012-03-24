@@ -18,11 +18,11 @@ PROTO Charli [
   field SFInt32    cameraWidth 160
   field SFInt32    cameraHeight 120
   field SFInt32    channel 0
-  field SFFloat    servoForce1 0.650000 #in Nm unit
-  field SFFloat    servoVelocity1 100
-  field SFFloat    servoForce2 65 #in Nm unit
-  field SFFloat    servoVelocity2 100
-  field SFFloat    servoP 15
+#  field SFFloat    servoForce1 0.650000 #in Nm unit
+#  field SFFloat    servoVelocity1 100
+#  field SFFloat    servoForce2 65 #in Nm unit
+#  field SFFloat    servoVelocity2 100
+#  field SFFloat    servoP 15
 ]
 {
 Robot {
@@ -33,16 +33,17 @@ Robot {
   synchronization IS synchronization
   name IS name
   children [
-
     DEF HipGroup Group {
       children [
         Shape {
-          material DEF DMetalMaterial Material { # New body material
+	  appearance Appearance {
+            material DEF DMetalMaterial Material { # New body material
               diffuseColor 0.7 0.7 0.7
               specularColor 0.401201 0.401201 0.401201
+            }
           }
           geometry Box {
-            size 0.186 0.022 0.069
+          size 0.186 0.022 0.069
           }
         }
       ]
@@ -145,7 +146,7 @@ Robot {
                     mass 0.783
                     centerOfMass -0.001 -0.16 0                   
                   }
-                  maxVelocity IS servoVelocity1
+                  maxVelocity 100
                   maxForce 100
                 }
               ]

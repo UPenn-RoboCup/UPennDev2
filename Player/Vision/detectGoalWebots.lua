@@ -19,13 +19,17 @@ colorWhite = 16;
 use_point_goal=Config.vision.use_point_goal;
 headInverted=Config.vision.headInverted;
 
-function detect(color)
+--Cut top portion of detected post (for OP)
+cut_top_post = Config.vision.cut_top_post or 0;
+
+function detect(color,color2)
+
   local goal = {};
   goal.detect = 0;
 
   local postDiameter = 0.10;
-  local postHeight = 0.80;
-  local goalWidth = 1.40;
+  local postHeight = Config.world.goalHeight or 0.80;
+  local goalWidth = Config.world.goalWidth or 1.40;
   local nPostB = 3;  -- appropriate for scaleB = 4
   local postB = ImageProc.goal_posts(Vision.labelB.data, Vision.labelB.m, Vision.labelB.n, color, nPostB);
   if (not postB) then 
@@ -42,7 +46,29 @@ function detect(color)
   local postA = {};
   for i = 1,#postB do
     local valid = true;
-    local postStats = Vision.bboxStats(color, postB[i].boundingBox);
+
+    postStats = Vision.bboxStats(color, postB[i].boundingBox);
+
+    if cut_top_post ==1 then --cut top of the post for OP
+      local leftX = postB[i].boundingBox[1];
+      local rightX = postB[i].boundingBox[2];
+      local topY = postB[i].boundingBox[3];
+      local bottomY = postB[i].boundingBox[4];
+      local topY2 = topY-(topY-bottomY)*0.4;
+      boundingBoxLower={leftX,rightX,topY2,bottomY};
+      postStats2 = Vision.bboxStats(color, boundingBoxLower);
+
+      --Compare thickness
+      --[[
+      local thickness1 = postStats.axisMinor;
+      local thickness2 = postStats2.axisMinor;
+      if thickness1 > 1.1* thickness2 then
+	postStats=postStats2;
+      end
+      --]]
+
+      postStats=postStats2;
+    end
     -- size and orientation
     --print("Size and orientation check ", postStats.area, 180/math.pi*postStats.orientation)
     if (math.abs(postStats.orientation) < 60*math.pi/180) then
@@ -53,13 +79,20 @@ function detect(color)
     local extent = postStats.area / (postStats.axisMajor * postStats.axisMinor);
     --print("Fill extent check ", extent)
 
+    --bad color check (to check landmarks out)
+    local badColorStats=Vision.bboxStats(color2,postB[i].boundingBox);
+    local extent2= badColorStats.area /
+          (postStats.axisMajor * postStats.axisMinor);
+    if extent2/extent>0.1 then
+       valid = false; 
+    end
+
     --aspect ratio check
     local aspect = postStats.axisMajor/postStats.axisMinor;
     --print("Aspect check ", aspect)
     if ((aspect < 2.5) or (aspect > 15)) then 
 --      valid = false; 
     end
-
 
     -- ground check
     -- is post at the bottom
@@ -109,6 +142,7 @@ function detect(color)
     scale = math.max(postA[i].axisMinor / postDiameter,
                       postA[i].axisMajor / postHeight,
                       math.sqrt(postA[i].area / (postDiameter*postHeight)));
+
     goal.v[i] = HeadTransform.coordinatesA(postA[i].centroid, scale);
 
     --print(string.format("post[%d] = %.2f %.2f %.2f", i, goal.v[i][1], goal.v[i][2], goal.v[i][3]));
@@ -130,36 +164,50 @@ function detect(color)
     local topY = postA[1].boundingBox[3]-postWidth;
     local bottomY = postA[1].boundingBox[3]+2*postWidth;
     local bboxA = {leftX, rightX, topY, bottomY};
+
     local crossbarStats = ImageProc.color_stats(Vision.labelA.data, Vision.labelA.m, Vision.labelA.n, color, bboxA);
     local dxCrossbar = crossbarStats.centroid[1] - postA[1].centroid[1];
     if (math.abs(dxCrossbar) > 0.6*postWidth) then
       if (dxCrossbar > 0) then
         -- left post
---        goal.type = 1;
-	goal.type = 0;
+        goal.type = 1;
+--	goal.type = 0;
       else
         -- right post
---        goal.type = 2;
-	goal.type = 0;
+        goal.type = 2;
+--	goal.type = 0;
       end
     else
       -- unknown post
       goal.type = 0;
---      if (postA[1].area < 200) then
         -- eliminate small posts without cross bars
---        return goal;
---      end
+
+      if (postA[1].area < 50) then
+        return goal;
+      end
     end
   end
   
-  -- added for test_vision.m
+-- added for test_vision.m
   if Config.vision.copy_image_to_shm then
-    vcm.set_goal_postBoundingBox1(postB[ivalidB[1]].boundingBox);
-    if npost == 2 then
-      vcm.set_goal_postBoundingBox2(postB[ivalidB[2]].boundingBox);
-    else
-      vcm.set_goal_postBoundingBox2(vector.zeros(4));
-    end
+--      vcm.set_goal_postBoundingBox1(postB[ivalidB[1]].boundingBox);
+      --added 
+      vcm.set_goal_postBoundingBox1(vector.zeros(4));
+
+      vcm.set_goal_postCentroid1({postA[1].centroid[1],postA[1].centroid[2]});
+      vcm.set_goal_postAxis1({postA[1].axisMajor,postA[1].axisMinor});
+      vcm.set_goal_postOrientation1(postA[1].orientation);
+
+      if npost == 2 then
+--        vcm.set_goal_postBoundingBox2({postB[ivalidB[2]].boundingBox});
+        vcm.set_goal_postBoundingBox2(vector.zeros(4));
+
+        vcm.set_goal_postCentroid2({postA[2].centroid[1],postA[2].centroid[2]});
+        vcm.set_goal_postAxis2({postA[2].axisMajor,postA[2].axisMinor});
+        vcm.set_goal_postOrientation2(postA[2].orientation);
+      else
+        vcm.set_goal_postBoundingBox2(vector.zeros(4));
+      end
   end
 
   goal.detect = 1;

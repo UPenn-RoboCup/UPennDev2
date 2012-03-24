@@ -31,11 +31,6 @@ walk.hardnessSupport = .7;
 walk.hardnessSwing = .5;
 walk.hardnessArm=.3;
 
---fix by SJ
-walk.supportX = 0.010;
-walk.supportY = 0.035;
-
-
 ---------------------------------------------
 -- Gait parameters
 ---------------------------------------------
@@ -49,6 +44,18 @@ walk.phSingle={0.16,0.84};
 --------------------------------------------
 walk.hipRollCompensation = 0*math.pi/180;
 walk.ankleMod = vector.new({-1,0})/0.12 * 10*math.pi/180;
+
+
+
+
+
+--Webots FIX
+walk.tStep = 0.48;
+walk.supportX = 0.010;
+walk.supportY = 0.035;
+walk.phSingle={0.2,0.8};
+walk.velLimitY={-.05,.05};
+walk.hipRollCompensation = 2*math.pi/180;
 
 --------------------------------------------------------------
 --Imu feedback parameters, alpha / gain / deadband / max

@@ -19,7 +19,7 @@ colorWhite = Config.color.white;
 use_point_goal=Config.vision.use_point_goal;
 headInverted=Config.vision.headInverted;
 
-function detect(color)
+function detect(color,color2)
   local goal = {};
   goal.detect = 0;
 
@@ -66,7 +66,7 @@ function detect(color)
 
     --check edge
     if ((postStats.centroid[1] <= 5) or
-        (postStats.centroid[1] >= 155)) then
+        (postStats.centroid[1] >= Vision.labelA.m-5)) then
       --print("Centroid too close to image border")
       valid = false;
     end

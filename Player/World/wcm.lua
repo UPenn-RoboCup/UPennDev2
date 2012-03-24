@@ -14,6 +14,7 @@ shsize = {};
 shared.robot = {};
 shared.robot.pose = vector.zeros(3);
 shared.robot.uTorso = vector.zeros(3);
+shared.robot.battery_level = vector.zeros(1);
 
 shared.ball = {};
 shared.ball.x = vector.zeros(1);
@@ -71,4 +72,3 @@ end
 function get_defend_angle()
   return get_goal_defend_angle();
 end
-

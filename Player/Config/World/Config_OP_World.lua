@@ -10,6 +10,7 @@ world.yLineBoundary = 2.0;
 world.xMax = 3.2;
 world.yMax = 2.2;
 world.goalWidth = 1.60;
+world.goalHeight= 0.85;
 world.ballYellow= {{3.0,0.0}};
 world.ballCyan= {{-3.0,0.0}};
 world.postYellow = {};
@@ -24,10 +25,24 @@ world.spot[2] = {1.20, 0};
 world.landmarkCyan = {0.0, -2.4};
 world.landmarkYellow = {0.0, 2.4};
 world.cResample = 10; --Resampling interval
-world.odomScale = {1, 1, 0.06};
+
+--SJ: OP does not use yaw odometry data (only use gyro)
+world.odomScale = {1, 1, 0};  
+world.imuYaw = 1;
+
+--Vision only
+--world.odomScale = {1, 1, 1};  
+--world.imuYaw = 0;
 
 -- filter weights
 world.rGoalFilter = 0.02;
 world.aGoalFilter = 0.05;
 world.rPostFilter = 0.02;
 world.aPostFilter = 0.20;
+
+--New two-goalpost localization
+world.use_new_goalposts=1;
+
+-- Occupancy Map parameters
+occmap = {};
+occmap.div = 72;

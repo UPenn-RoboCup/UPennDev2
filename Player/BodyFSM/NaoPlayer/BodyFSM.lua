@@ -15,6 +15,7 @@ require('bodyOrbit')
 require('bodyGotoCenter')
 require('bodyPosition')
 require('bodyObstacle')
+require('bodyWalkKick');
 require('bodyObstacleAvoid')
 
 sm = fsm.new(bodyIdle);
@@ -29,6 +30,7 @@ sm:add_state(bodyGotoCenter);
 sm:add_state(bodyPosition);
 sm:add_state(bodyObstacle);
 sm:add_state(bodyObstacleAvoid);
+sm:add_state(bodyWalkKick);
 
 sm:set_transition(bodyStart, 'done', bodyPosition);
 

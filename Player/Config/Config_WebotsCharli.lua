@@ -14,7 +14,6 @@ function loadconfig(configName)
   end
 end
 
-
 loadconfig('Walk/Config_WebotsCharli_Walk')
 loadconfig('Kick/Config_WebotsCharli_Kick')
 loadconfig('World/Config_Charli_World')
@@ -22,16 +21,16 @@ loadconfig('Vision/Config_WebotsCharli_Vision')
 
 --Location Specific Camera Parameters--
 loadconfig('Vision/Config_WebotsOP_Camera')
+--loadconfig('Vision/Config_WebotsCharli_Camera') --high-res
 
 -- Device Interface Libraries
 dev = {};
 dev.body = 'WebotsCharliBody'; 
 dev.camera = 'WebotsOPCam';
 dev.kinematics = 'CharliKinematics';
-dev.game_control='WebotsOPGameControl';
---dev.walk = 'NaoWalk';
---dev.kick = 'NaoKick';
-
+dev.game_control='WebotsGameControl';
+dev.team='TeamNull';
+--dev.walk = 'NewNewWalk';
 dev.walk = 'NewWalk';
 dev.kick = 'NewKick';
 
@@ -44,21 +43,14 @@ game.robotID = game.playerID;
 game.teamColor = 1;
 game.nPlayers = 4;
 
-
 -- FSM Parameters
 fsm = {};
 
 loadconfig('FSM/Config_WebotsCharli_FSM')
 
---[[
-fsm.body = {'HuboPlayer'};
-fsm.head = {'OpPlayerNSL'}; 
---]]
-
 fsm.game = 'RoboCup';
 fsm.body = {'GeneralPlayer'};
 fsm.head = {'GeneralPlayer'}; 
-
 
 -- Team Parameters
 
@@ -67,9 +59,7 @@ team.msgTimeout = 5.0;
 team.nonAttackerPenalty = 6.0; -- eta sec
 team.nonDefenderPenalty = 0.5; -- dist from goal
 
-
 --Head Parameters
-
 head = {};
 head.camOffsetZ = 0.41;
 head.pitchMin = -35*math.pi/180;
@@ -82,14 +72,11 @@ head.neckZ=0.42; --From CoM to neck joint , CHARLI
 head.neckX=0.0; --From CoM to neck joint , CHARLI
 
 -- keyframe files
-
 km = {};
 km.standup_front = 'km_Charli_StandupFromFront.lua';
 km.standup_back = 'km_Charli_StandupFromBack.lua';
 
-
 -- sitting parameters
-
 sit = {};
 sit.bodyHeight=0.40; --For Hubo
 sit.supportX = 0;
@@ -105,9 +92,3 @@ stance.delay = 80; --amount of time to stand still after standing to regain bala
 -- enable obstacle detection
 BodyFSM = {}
 BodyFSM.enable_obstacle_detection = 1;
-
---How slow is the walking compared to real OP?
---speedFactor = 4.0;
-
---Skip all checks in vision for 160*120 image 
-webots_vision = 1; 

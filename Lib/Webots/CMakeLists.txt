@@ -1,0 +1,4 @@
+IF ( WEBOTS )
+	FIND_PACKAGE( Webots REQUIRED )
+	SUBDIRS( Comm Controller )
+ENDIF( WEBOTS )

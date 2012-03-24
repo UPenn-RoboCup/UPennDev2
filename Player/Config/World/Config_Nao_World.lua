@@ -10,6 +10,7 @@ world.yLineBoundary = 2.0;
 world.xMax = 3.2;
 world.yMax = 2.2;
 world.goalWidth = 1.40;
+world.goalHeight= 0.80;
 world.ballYellow= {{3.0,0.0}};
 world.ballCyan= {{-3.0,0.0}};
 world.postYellow = {};
@@ -31,6 +32,9 @@ world.rGoalFilter = 0.02;
 world.aGoalFilter = 0.05;
 world.rPostFilter = 0.02;
 world.aPostFilter = 0.20;
+
+--New two-goalpost localization
+world.use_new_goalposts=1;
 
 -- Occupancy Map parameters
 occmap = {};

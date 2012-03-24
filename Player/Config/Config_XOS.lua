@@ -29,6 +29,7 @@ dev.kinematics = 'XOSKinematics';
 dev.comm='NullComm';
 dev.monitor_comm = 'OPMonitorCommWired';
 dev.game_control='OPGameControl';
+dev.team='TeamNull';
 dev.walk='XOSWalk';
 dev.kick = 'NewKick'
 

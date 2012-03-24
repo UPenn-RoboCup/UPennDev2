@@ -26,7 +26,8 @@ dev = {};
 dev.body = 'WebotsOPBody'; 
 dev.camera = 'WebotsOPCam';
 dev.kinematics = 'OPKinematics';
-dev.game_control='WebotsOPGameControl';
+dev.game_control='WebotsGameControl';
+dev.team='TeamNSL';
 dev.walk='NewWalk';
 dev.walk='NewNewWalk'; --New robocup walk that supports walking kicks
 --dev.walk='BoxWalk'; --New walk that supports different foot stance
@@ -39,56 +40,23 @@ game.teamNumber = (os.getenv('TEAM_ID') or 0) + 0;
 --Webots player id begins at 0 but we use 1 as the first id 
 game.playerID = (os.getenv('PLAYER_ID') or 0) + 1;
 game.robotID = game.playerID;
+if game.playerID==1 then game.role = 4; end --Goalie handling 
 game.teamColor = 1;--Red team
 --game.teamColor = 0;--Blue team
 game.nPlayers = 4;
-
-
 
 --FSM and behavior settings
 fsm = {};
 --SJ: loading FSM config  kills the variable fsm, so should be called first
 loadconfig('FSM/Config_WebotsOP_FSM')
 fsm.game = 'RoboCup';
-if (game.playerID == 1) then
-  fsm.head = {'GeneralGoalie'};
-  fsm.body = {'GeneralGoalie'};
+fsm.head = {'GeneralPlayer'};
+fsm.body = {'GeneralPlayer'};
 
-  fsm.head = {'GeneralPlayer'};
-  fsm.body = {'GeneralPlayer'};
-else
-  fsm.head = {'GeneralPlayer'};
-  fsm.body = {'GeneralPlayer'};
-end
-
---Behavior flags, defined in FSM Configs and overrided here
+--Behavior flags, defined in FSM Configs and can be overrided here
 fsm.enable_obstacle_detection = 1;
 fsm.playMode = 3; --1 for demo, 2 for orbit, 3 for direct approach
 fsm.enable_walkkick = 1;
-
---SJ: I separated non-robocup FSMs here
---Dodgeball FSM
---[[
-loadconfig('FSM/Config_WebotsOP_FSM')
-fsm.game = 'Dodgeball';
-fsm.head = {'GeneralPlayer'};
-fsm.body = {'GeneralPlayer'};
-Config.vision.enable_line_detection = 0;
-Config.vision.enable_midfield_landmark_detection = 0;
---]]
-
---Stretcher FSM
---[[
-loadconfig('FSM/Config_WebotsOP_FSM')
-loadconfig( 'Config_Stretcher' );
-game.teamNumber = 18;
-game.playerID = 1;
-fsm.game = 'Stretcher';
-fsm.head = {'GeneralPlayer'};
-fsm.body = {'GeneralPlayer'};
-Config.vision.enable_line_detection = 0;
-Config.vision.enable_midfield_landmark_detection = 0;
---]]
 
 -- Team Parameters
 team = {};
@@ -129,3 +97,28 @@ head.bodyTilt = 0;
 
 --km.kick_right = 'km_NSLOP_taunt1.lua';
 --km.kick_left = 'km_NSLOP_StandupFromFront2.lua';
+
+
+--SJ: I separated non-robocup FSMs here
+--Dodgeball FSM
+--[[
+loadconfig('FSM/Config_WebotsOP_FSM')
+fsm.game = 'Dodgeball';
+fsm.head = {'GeneralPlayer'};
+fsm.body = {'GeneralPlayer'};
+Config.vision.enable_line_detection = 0;
+Config.vision.enable_midfield_landmark_detection = 0;
+--]]
+
+--Stretcher FSM
+--[[
+loadconfig('FSM/Config_WebotsOP_FSM')
+loadconfig( 'Config_Stretcher' );
+game.teamNumber = 18;
+game.playerID = 1;
+fsm.game = 'Stretcher';
+fsm.head = {'GeneralPlayer'};
+fsm.body = {'GeneralPlayer'};
+Config.vision.enable_line_detection = 0;
+Config.vision.enable_midfield_landmark_detection = 0;
+--]]

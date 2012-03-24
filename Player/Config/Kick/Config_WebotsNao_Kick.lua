@@ -27,6 +27,8 @@ kick.armGain= 0.10;
 kick.hardnessArm=.3;
 kick.hardnessLeg=1;
 
+kick.qHipRollCompensation1 =2*math.pi/180;
+
 kick.def={};
 
 kick.def["kickForwardLeft"]={
@@ -80,3 +82,30 @@ kick.def["kickSideRight"]={
         {1, 0.6, {0.03, 0, 0}},--Stabilize
   },
 }
+
+--New sidekick param for webots nao
+
+kick.def["kickSideLeft"]={
+  supportLeg = 1,
+  def = {
+    {1, 0.6, {-0.01,-0.06,0}           }, --COM slide
+    {2, 0.3, {-0.01,-0.06,0} , { 0,     0.06,  0}, 0.06 ,0*math.pi/180}, --Lifting
+    {2, 0.3, {-0.01,-0.06,0} , { 0.09,     0,  0}, 0.06 ,0*math.pi/180}, --Lifting
+    {4, 0.2, {-0.01,-0.06,0} , { 0,  -0.12,  -0},  0.06 , 0*math.pi/180}, --Kicking
+    {2, 0.4, {-0.01,-0.06,0} , {-0.09,  0.06,0}, 0, 0 }, --Landing
+    {6, 0.6, {0.00, 0.00, 0}},--Stabilize
+  },
+}
+
+kick.def["kickSideRight"]={
+  supportLeg = 0,
+  def = {
+    {1, 0.6, {-0.01,0.06,0}         }, --COM slide
+    {3, 0.3, {-0.01,0.06,0} ,  {0, -0.06, -0}, 0.06 ,0*math.pi/180 }, --Lifting
+    {3, 0.3, {-0.01,0.06,0} ,  {0.09, -0, -0}, 0.06 ,0*math.pi/180 }, --Lifting
+    {5, 0.2, {-0.01,0.06,0} , {0,  0.12, 0},  0.06 , 0*math.pi/180}, --Kicking
+    {3, 0.4, {-0.01,0.06,0} , {-0.09, -0.06,0}, 0, 0 }, --Landing
+    {6, 0.6, {0.00, 0.00, 0}},--Stabilize
+ },
+}
+

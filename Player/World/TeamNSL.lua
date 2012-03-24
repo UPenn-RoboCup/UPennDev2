@@ -191,7 +191,7 @@ function set_role(r)
       -- support
       Speak.talk('Support');
     elseif role == 0 then
-      -- goalier
+      -- goalie
       Speak.talk('Goalie');
     else
       -- no role

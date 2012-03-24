@@ -23,30 +23,34 @@ require 'primesense'
 require 'unix';
 require 'primecm'
 
--- Wait at least 1 seconds
---unix.sleep(10);
+init = false; -- Not initialized yet
 t0 = unix.time()
+t_init = 0;
 while(true) do
   -- Head is first joint
   local ret = primesense.update_joints()
-
+  local timestamp = unix.time();
   if( ret ) then
-    for i,v in ipairs(primecm.jointNames) do
-      local rot, confidence = primesense.get_jointtables(i);
-      print( #rot );
-      print( #confidence );
-      
-      --primecm['set_position_'..v]( pos );
-      primecm['set_orientation_'..v]( rot );
-      primecm['set_confidence_'..v]( confidence );
+    if( not init ) then
+      -- Skip first Joint reading
+      print('Initialized for Lua!')
+      init = true;
+      t_init = timestamp
+    else
+      for i,v in ipairs(primecm.jointNames) do
+        local pos, rot, confidence = primesense.get_jointtables(i);
+        primecm['set_position_'..v]( pos );
+        primecm['set_orientation_'..v]( rot );
+        primecm['set_confidence_'..v]( confidence );
+      end
+      -- Update Shm
+      primecm.set_skeleton_found( 1 );
+      primecm.set_skeleton_timestamp( timestamp );      
     end
-    print();
-    -- Update Shm
-    primecm.set_skeleton_found( 1 );
   else
+    init = false;
     primecm.set_skeleton_found( 0 );    
   end
 
-  -- Run at 10Hz
-  unix.usleep(1E5);
 end
+

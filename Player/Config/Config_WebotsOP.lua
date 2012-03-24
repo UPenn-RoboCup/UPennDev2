@@ -53,6 +53,9 @@ fsm.game = 'RoboCup';
 if (game.playerID == 1) then
   fsm.head = {'GeneralGoalie'};
   fsm.body = {'GeneralGoalie'};
+
+  fsm.head = {'GeneralPlayer'};
+  fsm.body = {'GeneralPlayer'};
 else
   fsm.head = {'GeneralPlayer'};
   fsm.body = {'GeneralPlayer'};

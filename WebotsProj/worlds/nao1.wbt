@@ -48,7 +48,7 @@ DEF PLAYER_1_1 NaoV3R {
   translation 0.675 0.35 0
   rotation 0 1 0 -1.5708
   controller "nao_team_0"
-  controllerArgs "0 1"
+  controllerArgs "1 1"
   synchronization FALSE
   cameraWindowPosition 0.375 0
   waistBand TRUE

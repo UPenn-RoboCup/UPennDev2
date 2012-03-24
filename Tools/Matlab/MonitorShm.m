@@ -1,4 +1,7 @@
-function MonitorShmSingle(team,player)
+function MonitorShm(team,player)
+%Usage: MonitorShm(1,2)       : single monitor
+%       MonitorShm(1,[2 3 4]) : team monitor
+%	MonitorShm(1)         : team auto-detect
 
   max_player_id = 5; 
   % Should monitor run continuously?
@@ -27,17 +30,22 @@ function MonitorShmSingle(team,player)
       draw_team=1;
     end
   else
+
     if nargin==2  %2 args... track specified player 
       team2track=team;player2track=player;
     else
       %Default value is the first field player (PLAYER_1_1)
       team2track = 1;player2track = 2;
     end
-    if shm_check(team2track,player2track)==0 
-      disp('Team/Player ID error!');
-      return;
+
+    if length(player2track)>1, draw_team=1; end
+    for i=1:length(player2track)
+      if shm_check(team2track,player2track(i))==0 
+        disp('Team/Player ID error!');
+        return;
+      end
+      robots{player2track(i),1}=shm_robot(team2track,player2track(i));
     end
-    robots{player2track,1}=shm_robot(team2track,player2track);
   end
 
   %% Enter loop

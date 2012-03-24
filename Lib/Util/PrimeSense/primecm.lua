@@ -41,20 +41,20 @@ XN_SKEL_RIGHT_ANKLE
 XN_SKEL_RIGHT_FOOT
 --]]
 
-
-jointNames = { "Head", "Neck", "Torso", "Waist",
-              "CollarL","ShoulderL", "ElbowL", "WristL", "HandL", "FingerL",
-              "CollarR","ShoulderR", "ElbowR", "WristR", "HandR", "FingerR",              
-              "HipL", "KneeL", "AnkleL", "FootL", 
-              "HipR", "KneeR", "AnkleR", "FootR",
+jointNames = { 'Head', 'Neck', 'Torso', 'Waist',
+              'CollarL','ShoulderL', 'ElbowL', 'WristL', 'HandL', 'FingerL',
+              'CollarR','ShoulderR', 'ElbowR', 'WristR', 'HandR', 'FingerR',              
+              'HipL', 'KneeL', 'AnkleL', 'FootL', 
+              'HipR', 'KneeR', 'AnkleR', 'FootR',
              };
+
 shared.skeleton = {};
+shared.skeleton.found = vector.zeros(1);
+shared.skeleton.timestamp = vector.zeros(1);
+
 shared.position = {};
 shared.orientation = {};
 shared.confidence = {};
-
-shared.skeleton.found = vector.zeros(1);
---shared.skeleton.torso = vector.zeros(3);
 for i,v in ipairs(jointNames) do
   shared.position[ v ] = vector.zeros(3);
   shared.orientation[ v ] = vector.zeros(9);

@@ -19,8 +19,10 @@ yTarget = Config.fsm.bodyApproach.yTarget11;
 count=1;
 
 function check_approach_type()
-  wcm.set_kick_dir(math.floor(count+1/2));
-  wcm.set_kick_type(count%2+1);
+
+  --Cycle through all possible kicks
+  wcm.set_kick_dir(math.floor((count+1)/3));
+  wcm.set_kick_type(count%3+1);
 
   kick_dir=wcm.get_kick_dir();
   kick_type=wcm.get_kick_type();

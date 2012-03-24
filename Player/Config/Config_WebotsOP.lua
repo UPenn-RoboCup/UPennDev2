@@ -27,6 +27,7 @@ dev.body = 'WebotsOPBody';
 dev.camera = 'WebotsOPCam';
 dev.kinematics = 'OPKinematics';
 dev.game_control='WebotsOPGameControl';
+dev.team='TeamNSL';
 dev.walk='NewWalk';
 dev.walk='NewNewWalk'; --New robocup walk that supports walking kicks
 --dev.walk='BoxWalk'; --New walk that supports different foot stance
@@ -44,27 +45,32 @@ game.teamColor = 1;--Red team
 game.nPlayers = 4;
 
 
-
 --FSM and behavior settings
 fsm = {};
 --SJ: loading FSM config  kills the variable fsm, so should be called first
 loadconfig('FSM/Config_WebotsOP_FSM')
 fsm.game = 'RoboCup';
-if (game.playerID == 1) then
-  fsm.head = {'GeneralGoalie'};
-  fsm.body = {'GeneralGoalie'};
-
-  fsm.head = {'GeneralPlayer'};
-  fsm.body = {'GeneralPlayer'};
-else
-  fsm.head = {'GeneralPlayer'};
-  fsm.body = {'GeneralPlayer'};
-end
+fsm.head = {'GeneralPlayer'};
+fsm.body = {'GeneralPlayer'};
 
 --Behavior flags, defined in FSM Configs and overrided here
 fsm.enable_obstacle_detection = 1;
 fsm.playMode = 3; --1 for demo, 2 for orbit, 3 for direct approach
 fsm.enable_walkkick = 1;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 --SJ: I separated non-robocup FSMs here
 --Dodgeball FSM

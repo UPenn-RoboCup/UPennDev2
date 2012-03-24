@@ -27,6 +27,7 @@ dev.body = 'NaoBody';
 dev.camera = 'NaoCam';
 dev.kinematics = 'NaoKinematics';
 dev.game_control = 'NaoGameControl';
+dev.team='TeamSPL';
 dev.walk = 'NaoWalk';
 dev.kick = 'NaoKick';
 

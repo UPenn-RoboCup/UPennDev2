@@ -13,13 +13,13 @@ function loadconfig(configName)
   end
 end
 
-loadconfig('Config_Nao_Walk_Demo')
-loadconfig('Config_Nao_World')
-loadconfig('Config_Nao_Kick')
-loadconfig('Config_Nao_Vision')
+loadconfig('Walk/Config_Nao_Walk_Blimp_Room')
+loadconfig('World/Config_Nao_World')
+loadconfig('Kick/Config_Nao_Kick')
+loadconfig('Vision/Config_Nao_Vision')
 
 --Location Specific Camera Parameters--
-loadconfig('Config_Nao_Camera_Grasp')
+loadconfig('Vision/Config_Nao_Camera_Blimp_Room')
 
 -- Devive Interface Libraries
 dev = {};
@@ -27,7 +27,9 @@ dev.body = 'NaoBody';
 dev.camera = 'NaoCam';
 dev.kinematics = 'NaoKinematics';
 dev.game_control = 'NaoGameControl';
-dev.walk = 'NaoWalk';
+dev.ip_wired = '192.168.0.255';
+dev.ip_wireless = '192.168.1.255';
+dev.walk = 'NewWalk';
 dev.kick = 'NaoKick';
 
 -- Game Parameters

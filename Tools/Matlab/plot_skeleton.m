@@ -1,10 +1,11 @@
 %% Plot the skeleton
 %clear all;
 if( exist('sk','var') == 0 )
+    startup;
     sk = shm_primesense();
 end
 
-run_once = 0;
+run_once = 1;
 
 jointNames = { ...
     'Waist', 'Torso', 'Head', 'Neck', ...

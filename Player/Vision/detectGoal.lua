@@ -66,7 +66,7 @@ function detect(color,color2)
 
     --check edge
     if ((postStats.centroid[1] <= 5) or
-        (postStats.centroid[1] >= 155)) then
+        (postStats.centroid[1] >= Vision.labelA.m-5)) then
       --print("Centroid too close to image border")
       valid = false;
     end

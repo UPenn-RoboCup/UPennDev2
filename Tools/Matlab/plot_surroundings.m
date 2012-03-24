@@ -8,8 +8,11 @@ function [ ] = plot_surroundings( handle, mon_struct )
     % Assume that we can only see 3 meters left and right
     % Assume that we do not see objects very far behind us
 
-    xlim([-2 2]);
-    ylim([0 4]);
+    x_lim=[-2 2];
+    y_lim=[0 4];
+    xlim(x_lim);
+    ylim(y_lim);
+
 
     hold on;
     plot_fov(mon_struct.fov);
@@ -28,10 +31,14 @@ function [ ] = plot_surroundings( handle, mon_struct )
 
     function plot_ball(ball)
       if( ball.detect )
-        plot(-1*ball.y, ball.x,'ro');
-        strballpos = strcat('Ball: ',num2str(-1*ball.y,'%1.2f'),',',...
-                            num2str(ball.x,'%1.2f'));
-        b_name=text(-1*ball.y-0.3, ball.x+0.3, strballpos);
+        posx=-1*ball.y;posy=ball.x;
+        posx=min(max(posx,x_lim(1)),x_lim(2));
+        posy=min(max(posy,y_lim(1)),y_lim(2));
+
+        plot(posx, posy,'ro');
+        strballpos = strcat('Ball: ',num2str(ball.x,'%1.2f'),',',...
+                            num2str(ball.y,'%1.2f'));
+        b_name=text(posx-0.3, posy-0.3, strballpos);
         set(b_name,'FontSize',8);
       end
     end
@@ -42,13 +49,21 @@ function [ ] = plot_surroundings( handle, mon_struct )
         else marker = 'b';   end
         marker = strcat(marker,'+');
         if( goal.v1.scale ~= 0 )
-            plot(-1*goal.v1.y, goal.v1.x, marker,'MarkerSize',12);
-	    g_name1=text(-1*goal.v1.y-0.30,goal.v1.x+0.3,sprintf('%.2f,%.2f',goal.v1.x,goal.v1.y));
+            posx=-1*goal.v1.y;posy=goal.v1.x;
+            posx=min(max(posx,x_lim(1)),x_lim(2));
+            posy=min(max(posy,y_lim(1)),y_lim(2));
+
+            plot(posx,posy, marker,'MarkerSize',12);
+	    g_name1=text(posx-0.30,posy-0.3,sprintf('%.2f,%.2f',goal.v1.x,goal.v1.y));
 	    set(g_name1,'FontSize',8);
         end
         if( goal.v2.scale ~= 0 )
-            plot(-1*goal.v2.y, goal.v2.x, marker,'MarkerSize',12);
-	    g_name2=text(-1*goal.v2.y-0.30,goal.v2.x+0.3,sprintf('%.2f,%.2f',goal.v2.x,goal.v2.y));
+            posx=-1*goal.v2.y;posy=goal.v2.x;
+            posx=min(max(posx,x_lim(1)),x_lim(2));
+            posy=min(max(posy,y_lim(1)),y_lim(2));
+
+            plot(posx,posy, marker,'MarkerSize',12);
+	    g_name2=text(posx-0.30,posy-0.3,sprintf('%.2f,%.2f',goal.v2.x,goal.v2.y));
 	    set(g_name2,'FontSize',8);
         end
       end
@@ -59,9 +74,12 @@ function [ ] = plot_surroundings( handle, mon_struct )
 	if (landmark.color==2) marker1='m';marker2='b';% yellow
         else  marker1='b';marker2='m';	end
         marker1 = strcat(marker1,'x');
-        plot(-1*landmark.v(2), landmark.v(1), marker1,'MarkerSize',12);
-        g_name2=text(-1*landmark.v(2)-0.30,landmark.v(1)+0.3,...
-		sprintf('%.2f,%.2f',landmark.v(1),landmark.v(2)));
+        posx=-1*landmark.v(2);posy=landmark.v(1);
+        posx=min(max(posx,x_lim(1)),x_lim(2));
+        posy=min(max(posy,y_lim(1)),y_lim(2));
+
+        plot(posx,posy, marker1,'MarkerSize',12);
+        g_name2=text(posx-0.30,posy-0.3,sprintf('%.2f,%.2f',landmark.v(1),landmark.v(2)));
         set(g_name2,'FontSize',8);
       end
      end

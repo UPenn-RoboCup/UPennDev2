@@ -41,8 +41,10 @@ game.teamNumber = (os.getenv('TEAM_ID') or 0) + 0;
 game.playerID = (os.getenv('PLAYER_ID') or 0) + 1;
 game.robotID = game.playerID;
 if game.playerID==1 then game.role = 4; end --Goalie handling 
-game.teamColor = 1;--Red team
---game.teamColor = 0;--Blue team
+if game.teamNumber==1 then game.teamColor = 1; --Red team
+else game.teamColor = 0; --Blue team
+end
+
 game.nPlayers = 4;
 
 --FSM and behavior settings

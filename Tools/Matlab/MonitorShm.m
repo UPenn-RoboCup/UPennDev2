@@ -3,12 +3,15 @@ function MonitorShm(team,player)
 %       MonitorShm(1,[2 3 4]) : team monitor
 %	MonitorShm(1)         : team auto-detect
 
+  global MONITOR;
+
   max_player_id = 5; 
   % Should monitor run continuously?
   continuous = 1;
   draw_team = 0;
   tDisplay = .1; % Display every x seconds
   dInterval = 5; % Show vision in team view every x frames
+  tDisplay = .2; % Display every x seconds
 
   if nargin==1
     %1 args.. track the whole players in the team
@@ -49,15 +52,6 @@ function MonitorShm(team,player)
   end
 
   %% Enter loop
-  figure(1);
-  clf;
-  if draw_team>0 
-     set(gcf,'position',[1 1 900 900]);
-  else
-     set(gcf,'Position',[1 1 800 600])
-  end
-
-
   tStart = tic;
   nUpdate = 0;
   %scale = 1; % 1: labelA, 4: labelB
@@ -68,19 +62,13 @@ function MonitorShm(team,player)
   t = toc( t0 );
   fprintf('Initialization time: %f\n',t);
 
-  m=show_monitor();
+  MONITOR=show_monitor();
+  MONITOR.init(draw_team);
 
   %% Update our plots
   while continuous
     nUpdate = nUpdate + 1;
-    tStart = tic;
-    if draw_team>0
-      m.update_team( robots, scale, 1, player2track,mod(nUpdate,dInterval));
-    else
-      m.update( robots, scale, 1, player2track );
-    end
-    drawnow;
-    tElapsed=toc(tStart);
+    tElapsed=MONITOR.update( robots, scale, 1, player2track, draw_team, mod(nUpdate,dInterval));
     if(tElapsed<tDisplay)
       pause( tDisplay-tElapsed );
     end

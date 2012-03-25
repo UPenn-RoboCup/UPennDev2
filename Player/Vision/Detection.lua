@@ -103,6 +103,8 @@ function update()
     ballCyan = detectBall.detect(colorCyan);
   else
 --SJ: detect both colored goalposts (due to landmarks)
+    goalYellow.detect=0;
+    goalCyan.detect=0;
     if (Vision.colorCount[colorYellow] > yellowGoalCountThres) then
       goalYellow = detectGoal.detect(colorYellow,colorCyan);
     end

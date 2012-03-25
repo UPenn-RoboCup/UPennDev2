@@ -5,17 +5,45 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale)
   y0 = robot_struct.pose.y;
   ca = cos(robot_struct.pose.a);
   sa = sin(robot_struct.pose.a);
-   
+      
   hold on;
-  plot_robot(robot_struct,scale);
-%  plot_ball(robot_struct.ball);
-  plot_ball_mon(r_mon.ball,scale);
-  plot_fov(r_mon.fov);
-  plot_goal(r_mon.goal,scale);
-  plot_landmark(r_mon.landmark,scale);
+
+  if robot_struct.fall
+    ca=1;sa=0;
+    plot_fallen_robot(robot_struct,scale)
+    plot_info(robot_struct,scale);
+  else
+    plot_robot(robot_struct,scale);
+    plot_info(robot_struct,scale);
+    %plot_ball(robot_struct.ball);
+    plot_ball_mon(r_mon.ball,scale);
+    plot_fov(r_mon.fov);
+    plot_goal(r_mon.goal,scale);
+    plot_landmark(r_mon.landmark,scale);
+  end
+
   hold off;
 
-  %subfunctions
+%subfunctions
+
+  function plot_fallen_robot(robot,scale)
+    xr = x0+[-0.10  0  .10  0]*2/scale;
+    yr = y0+[0    .10   0 -.10]*2/scale;
+
+    teamColors = ['b', 'r'];
+    idColors = ['k', 'r', 'g', 'b'];
+    % Role:  1:Attack / 2:Defend / 3:Support / 4: Goalie
+    roleColors = {'m','k', 'k--','g'};
+
+    teamColors = ['b', 'r'];
+    hr = fill(xr, yr, teamColors(robot.teamColor+1));
+
+    if robot.role>1 
+      h_role=plot([xr xr(1)],[yr yr(1)],roleColors{robot.role});
+      set(h_role,'LineWidth',3);
+    end
+  end
+
 
   function plot_robot(robot,scale)
     xRobot = [0 -.25 -.25]*2/scale;
@@ -43,7 +71,9 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale)
     yab = cos(robot.attackBearing)*sa + sin(robot.attackBearing)*ca;
     ab_scale = 1/scale;
     quiver(x0, y0, xab*ab_scale,yab*ab_scale, 'k' );
+  end
 
+  function plot_info(robot,angle)
     robotnames = {'Bot1','Bot2','Bot3','Bot4'};
     rolenames = {'','Attack','Defend','Support','Goalie','Waiting'};
     colornames={'red','blue'};
@@ -62,7 +92,6 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale)
 
     b_name=text(xt, yt, str);
     set(b_name,'FontSize',8/scale);
-
   end
 
   function plot_ball(ball,scale)

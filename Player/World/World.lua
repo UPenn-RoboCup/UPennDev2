@@ -189,6 +189,9 @@ function update_shm()
   wcm.set_goal_attack_bearing(get_attack_bearing());
   wcm.set_goal_attack_angle(get_attack_angle());
   wcm.set_goal_defend_angle(get_defend_angle());
+
+  wcm.set_robot_is_fall_down(mcm.get_walk_isFallDown());
+
 end
 
 function exit()

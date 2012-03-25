@@ -56,6 +56,8 @@ h.get_labelB = @get_labelB;
         ballvely = h.wcmBall.get_vely();
         r.ball = struct('x', ballx, 'y', bally, 't', ballt, ...
             'vx', ballvelx, 'vy', ballvely );
+
+        r.fall=h.wcmRobot.get_is_fall_down();
         
         % TODO: implement penalty and time
         r.penalty = 0;

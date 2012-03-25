@@ -72,7 +72,6 @@ torsoShiftX=0;
 function entry()
   print("Motion SM:".._NAME.." entry");
   walk.stop();
-  walk.zero_velocity();
   qLArm = vector.new({qLArm0[1],qLArm0[2],qLArm0[3]});
   qRArm = vector.new({qRArm0[1],qRArm0[2],qRArm0[3]});
   torsoShiftX=0;

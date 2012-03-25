@@ -77,11 +77,19 @@ function MonitorShm(team,player)
   %subfunction
   function h = shm_check(team, player)
     %Checks the existence of shm with team and player ID
-
+		
+		% Search For Linux
     shm_dir='/dev/shm'; %For Linux... 
-
     shm_name_wcmRobot = sprintf('%s/wcmRobot%d%d%s', shm_dir, team, player, getenv('USER'));
-    h=exist(shm_name_wcmRobot,'file');
+    h_linux=exist(shm_name_wcmRobot,'file');
+
+		% Search For osx
+    shm_dir='/tmp/boost_interprocess'; %For osx... 
+    shm_name_wcmRobot = sprintf('%s/wcmRobot%d%d%s', shm_dir, team, player, getenv('USER'));
+    h_osx=exist(shm_name_wcmRobot,'file');
+
+		h = h_linux || h_osx;
+	
   end
 
 end

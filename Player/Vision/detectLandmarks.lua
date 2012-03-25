@@ -23,14 +23,22 @@ Config.vision.landmarkfillextent = 0.35;
 
 --Detection code for center landmark poles
 function detect(color1,color2)
-  local DEBUG = 0;
+
+  if color1==colorYellow then vcm.add_debug_message("\nLandmark: Yellow landmark check\n")
+  else vcm.add_debug_message("\nLandmark: Blue landmark check\n"); end
 
   local landmark={}
   landmark.detect=0;
 
   -- Check that we have enough of the upper/lower and of the middle colors
-  if (Vision.colorCount[color1] < 12) then return landmark; end
-  if (Vision.colorCount[color2] < 6) then return landmark; end
+  if (Vision.colorCount[color1] < 12) then 
+    vcm.add_debug_message(string.format("Color1 count fail, %d\n",Vision.colorCount[color1]));
+    return landmark; 
+  end
+  if (Vision.colorCount[color2] < 6) then 
+    vcm.add_debug_message(string.format("Color2 count fail, %d\n",Vision.colorCount[color2]));
+    return landmark; 
+  end
 
   -- Find the blobs of each color
   -- TODO: this eats CPU.  Haven't we already run these connected regions?
@@ -40,7 +48,10 @@ function detect(color1,color2)
   	  Vision.labelB.data,Vision.labelB.m,Vision.labelB.n,color2);
 
   -- If we not seen two of the top/bottom color or one of the middle color, then exit
-  if #landmarkPropsB1<2 or #landmarkPropsB2<1 then return landmark; end
+  if #landmarkPropsB1<2 or #landmarkPropsB2<1 then 
+    vcm.add_debug_message("Blob number check fail\n");
+    return landmark; 
+  end
 
   -- Find the boundingbox stats of each blob
   -- TODO: These only use the largest of the blobs.  Is this optimal?
@@ -56,17 +67,16 @@ function detect(color1,color2)
       local B13 = vector.new(landmarkPropsB1[3].centroid);
       if math.abs(B12[1]-B13[1])<10 then
          landmark.propsA1= Vision.bboxStats(color1, 
-landmarkPropsB1[3].boundingBox);
+	   landmarkPropsB1[3].boundingBox);
       end
    end
    if #landmarkPropsB2>1 then --Yellow goalpost and CYC landmark case
       local B11 = vector.new(landmarkPropsB1[1].centroid);
       local B12 = vector.new(landmarkPropsB1[2].centroid);
       local B22 = vector.new(landmarkPropsB2[2].centroid);
---      print(B11[1],B22[1],B12[1]);
       if math.abs(B11[1]-B22[1])<10 and math.abs(B12[1]-B22[1])<10  then
          landmark.propsA2= Vision.bboxStats(color2, 
-landmarkPropsB2[2].boundingBox);
+	   landmarkPropsB2[2].boundingBox);
       end
    end
 
@@ -77,7 +87,7 @@ landmarkPropsB2[2].boundingBox);
 
   -- Area check
   if dArea1<6 or dArea2<6 or dArea3<6 then
-    if (DEBUG==1) then print('Fails an area check');end
+    vcm.add_debug_message("Area check fail")
     return landmark;
   end
 
@@ -85,34 +95,34 @@ landmarkPropsB2[2].boundingBox);
 --  print(dArea1/dArea2,dArea2/dArea1);
 
   if dArea1/dArea2 > 2 or dArea2/dArea1>2 then
-    if (DEBUG==1) then print('Fails ratio check 1');end
+    vcm.add_debug_message(string.format("Area ratio check 1-2 fail at %d",dArea1/dArea2));
     return landmark;
   end
 
   if dArea2/dArea3 > 2 or dArea3/dArea2>2 then
-    if (DEBUG==1) then print('Fails ratio check 2');end
+    vcm.add_debug_message(string.format("Area ratio check 2-3 fail at %d",dArea1/dArea2));
     return landmark;
   end
   if dArea1/dArea3 > 2 or dArea3/dArea1>2 then
-    if (DEBUG==1) then print('Fails ratio check 3');end
+    vcm.add_debug_message(string.format("Area ratio check 1-3 fail at %d",dArea1/dArea2));
     return landmark;
   end
 
   --Fill rate check
   if dArea1 < Config.vision.landmarkfillextent*Vision.bboxArea(landmark.propsA1.boundingBox)	then 
-    if (DEBUG==1) then print('Fails fill rate check 1');end
+    vcm.add_debug_message("Fill rate 1 check fail")
     return landmark;
   end
 
   --Fill rate check (2)
   if dArea2 < Config.vision.landmarkfillextent*Vision.bboxArea(landmark.propsA2.boundingBox)	then
-    if (DEBUG==1) then print('Fails fill rate check 2');end
+    vcm.add_debug_message("Fill rate 2 check fail")
     return landmark;
   end
 
   --Fill rate check (3)
   if dArea3 < Config.vision.landmarkfillextent*Vision.bboxArea(landmark.propsA3.boundingBox)	then
-    if (DEBUG==1) then print('Fails fill rate check 3');end
+    vcm.add_debug_message("Fill rate 3 check fail")
     return landmark;
   end
 
@@ -126,14 +136,14 @@ landmarkPropsB2[2].boundingBox);
 
   --Distance ratio check
   if d21/d32 > 2.0 or d32/d21>2.0 then
-    if (DEBUG==1) then print('Fails distance ratio check');end
+    vcm.add_debug_message("Distance ratio check fail")
     return landmark;
   end
 
   --Center angle check
   local cosvalue = (a21[1]*a32[1]+a21[2]*a32[2])/d21/d32;
   if cosvalue<math.cos(45*math.pi/180) then
-    if (DEBUG==1) then print('Fails angle check');end
+    vcm.add_debug_message("Center angle check fail")
     return landmark;
   end
 
@@ -170,7 +180,8 @@ debugprint('Landmark axis ratio check\n');
 
   landmark.detect = 1;
   landmark.v = v;
---  print("Landmark detected")
+
+  vcm.add_debug_message("Landmark detected")
 
 -- added for test_vision.m
   if Config.vision.copy_image_to_shm then

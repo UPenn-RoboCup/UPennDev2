@@ -130,8 +130,7 @@ util.init_shm_segment(getfenv(), _NAME, shared, shsize);
 function refresh_debug_message()
   set_debug_message(debug_message);
   debug_message='';
-print("Debug message:",get_debug_message())
-
+--print("Debug message:\n",get_debug_message())
 end
 function add_debug_message(message)
   debug_message=debug_message..message;

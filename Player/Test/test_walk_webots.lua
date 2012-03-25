@@ -136,7 +136,7 @@ function process_keyinput()
 	elseif byte==string.byte("7") then	Motion.event("sit");
 	elseif byte==string.byte("8") then	
 		if walk.active then 
-			walk.stopAlign();
+			walk.stop();
 		end
 		Motion.event("standup");
 	

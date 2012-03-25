@@ -25,12 +25,17 @@ endif
 ifeq ($(OSTYPE),darwin)
   SHLIBEXT= dylib
   LIBOPTS= -bundle -undefined dynamic_lookup
-  CXXFLAGS= -O2 -arch i386
-  LDFLAGS= -arch i386
+  CXXFLAGS= -O2
+ifeq ($(MODE),32)
+  CC=gcc -arch i386
+  CXX=g++ -arch i386
+  LD=g++ -arch i386
 endif
 
-INCLUDE_DIRS = -I/usr/local/include -I/usr/include -I/usr/include/lua -I/usr/include/lua5.1
-LIB_DIR = -L/usr/local/lib -L/usr/lib
+endif
+
+INCLUDE_DIRS = -I/usr/local/include -I/usr/include/lua5.1
+LIB_DIR = /usr/local/lib
 
 LIBNAME= OPKinematics
 
@@ -44,7 +49,7 @@ all:: kinematics
 	$(CC) $(CXXFLAGS) $(INCLUDE_DIRS) -o $@ -c $<
 
 kinematics:: luaOPKinematics.o OPKinematics.o Transform.o
-	$(LD) $(LDFLAGS) -o $(LIBNAME).$(SHLIBEXT) $(LIBOPTS) $^ $(LIB_DIR) -lm
+	$(LD) $(LDFLAGS) -o $(LIBNAME).$(SHLIBEXT) $(LIBOPTS) $^ -L$(LIB_DIR) -lm
 
 clean:
 	rm -f *.$(SHLIBEXT) *.o

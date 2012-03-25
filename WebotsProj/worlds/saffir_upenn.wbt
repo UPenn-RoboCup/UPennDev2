@@ -36,12 +36,6 @@ DEF FLOOR MetricFloor {
 }
 
 
-
-
-
-
-
-
 DEF SAFFiR Supervisor {
   translation 2.77308 -3.58451 0.8
   rotation 0 -1 0 -0
@@ -1521,5 +1515,5 @@ DEF SAFFiR Supervisor {
     ]
   }
   controller "darwin-op_team_0"
-  controllerArgs "0 0"
+  controllerArgs "1 98" #for test_walk only
 }

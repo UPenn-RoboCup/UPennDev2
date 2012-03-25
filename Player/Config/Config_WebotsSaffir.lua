@@ -17,7 +17,7 @@ end
 
 loadconfig('Walk/Config_WebotsSaffir_Walk')
 loadconfig('Kick/Config_WebotsSaffir_Kick')
-loadconfig('World/Config_WebotsOP_World')
+loadconfig('World/Config_Charli_World')
 loadconfig('Vision/Config_WebotsOP_Vision')
 
 --Location Specific Camera Parameters--
@@ -33,13 +33,12 @@ dev.comm = 'WebotsNaoComm';
 dev.monitor_comm = 'NullComm';
 dev.game_control='WebotsGameControl';
 dev.team='TeamNull';
---dev.walk = 'NaoWalk';
---dev.kick = 'NaoKick';
 
 dev.walk = 'NewWalk';
 dev.kick = 'NewKick';
 --dev.walk = 'HTWalk';
 dev.walk = 'Run';
+--dev.walk = 'BasicWalk';
 
 
 -- Game Parameters

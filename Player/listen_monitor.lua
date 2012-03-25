@@ -8,11 +8,12 @@ end
 
 -- Get Computer for Lib suffix
 local computer = os.getenv('COMPUTER') or '';
+computer = 'Darwin'
 if (string.find(computer, 'Darwin')) then
   -- MacOS X uses .dylib:
   package.cpath = cwd .. '/Lib/?.dylib;' .. package.cpath;
 else
-  package.cpath = cwd .. '/Lib/?.so;' .. package.cpath;
+  package.cpath = cwd .. '/Lib/?.*;' .. package.cpath;
 end
 
 package.path = cwd .. '/?.lua;' .. package.path;
@@ -142,6 +143,8 @@ function push_data(obj)
 --	print('receive data');
 --  print("data\t",.1/(unix.time() - data_t_full).."fps");
 --	data_t_full = unix.time();
+
+	if type(obj)=='string' then print(obj); return end
 
 	for shmkey,shmHandler in pairs(obj) do
 		for sharedkey,sharedHandler in pairs(shmHandler) do

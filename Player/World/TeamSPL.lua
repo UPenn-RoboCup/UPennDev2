@@ -36,6 +36,7 @@ state.attackBearing = 0.0;
 state.penalty = 0;
 state.tReceive = Body.get_time();
 state.battery_level = wcm.get_robot_battery_level();
+state.fall=0;
 
 states = {};
 states[playerID] = state;
@@ -64,6 +65,7 @@ function update()
   state.role = role;
   state.attackBearing = wcm.get_attack_bearing();
   state.battery_level = wcm.get_robot_battery_level();
+  state.fall=wcm.get_robot_is_fall_down(); --Added
 
   if gcm.in_penalty() then
     state.penalty = 1;

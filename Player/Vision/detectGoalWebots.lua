@@ -23,7 +23,8 @@ headInverted=Config.vision.headInverted;
 cut_top_post = Config.vision.cut_top_post or 0;
 
 function detect(color,color2)
-
+  if color==colorYellow then vcm.add_debug_message("\nGoal: Yellow post check\n")
+  else vcm.add_debug_message("\nGoal: Blue post check\n"); end
   local goal = {};
   goal.detect = 0;
 
@@ -32,18 +33,16 @@ function detect(color,color2)
   local goalWidth = Config.world.goalWidth or 1.40;
   local nPostB = 3;  -- appropriate for scaleB = 4
   local postB = ImageProc.goal_posts(Vision.labelB.data, Vision.labelB.m, Vision.labelB.n, color, nPostB);
-  if (not postB) then 
-	--print("no enough post color");
+  if (not postB) then 	
+    vcm.add_debug_message("No post detected\n")
     return goal; 
   end
-  --print("Enough post color");
 
---if(true) then
---  return goal; 
---end
   local npost = 0;
   local ivalidB = {};
   local postA = {};
+  vcm.add_debug_message(string.format("Checking %d posts\n",#postB));
+
   for i = 1,#postB do
     local valid = true;
 
@@ -70,28 +69,35 @@ function detect(color,color2)
       postStats=postStats2;
     end
     -- size and orientation
-    --print("Size and orientation check ", postStats.area, 180/math.pi*postStats.orientation)
+    vcm.add_debug_message(string.format("Size and orientation check: \narea %d orientation %d\n", 
+	postStats.area, 180/math.pi*postStats.orientation));
     if (math.abs(postStats.orientation) < 60*math.pi/180) then
+      vcm.add_debug_message("orientation check fail\n");
       valid = false;
     end
       
     --fill extent check
     local extent = postStats.area / (postStats.axisMajor * postStats.axisMinor);
-    --print("Fill extent check ", extent)
+    vcm.add_debug_message(string.format("Fill extent check: %d\n", extent));
 
     --bad color check (to check landmarks out)
     local badColorStats=Vision.bboxStats(color2,postB[i].boundingBox);
     local extent2= badColorStats.area /
           (postStats.axisMajor * postStats.axisMinor);
+    vcm.add_debug_message(string.format("Bad color check: %.2f\n", extent2/extent));
+
     if extent2/extent>0.1 then
+       vcm.add_debug_message("Bad color check fail\n");
        valid = false; 
     end
 
     --aspect ratio check
     local aspect = postStats.axisMajor/postStats.axisMinor;
-    --print("Aspect check ", aspect)
+    vcm.add_debug_message(string.format("Aspect ratio check: %f\n", aspect ));
+
     if ((aspect < 2.5) or (aspect > 15)) then 
---      valid = false; 
+       vcm.add_debug_message("Aspect check fail\n");
+--     valid = false; 
     end
 
     -- ground check
@@ -111,15 +117,11 @@ function detect(color,color2)
         local fieldBBoxStats = ImageProc.color_stats(Vision.labelA.data, Vision.labelA.m, Vision.labelA.n, colorField, fieldBBox);
         local fieldBBoxArea = Vision.bboxArea(fieldBBox);
 
+ --       vcm.add_debug_message(string.format("Ground Check %f\n", aspect ));
         --print('field check: area: '..fieldBBoxArea..' bbox: '..fieldBBoxStats.area);
-
         -- is there green under the ball?
       end
     end
-
-
-    --TODO: we need to check any bad color near post 
-    --to get rid of any false positives (landmarks)
 
     if (valid) then
       ivalidB[#ivalidB + 1] = i;
@@ -128,7 +130,10 @@ function detect(color,color2)
     end
   end
 
+  vcm.add_debug_message(string.format("Total %d valid posts\n", npost ));
+
   if ((npost < 1) or (npost > 2)) then 
+    vcm.add_debug_message("Post number failure\n");
     return goal; 
   end
 
@@ -145,7 +150,8 @@ function detect(color,color2)
 
     goal.v[i] = HeadTransform.coordinatesA(postA[i].centroid, scale);
 
-    --print(string.format("post[%d] = %.2f %.2f %.2f", i, goal.v[i][1], goal.v[i][2], goal.v[i][3]));
+    vcm.add_debug_message(string.format("post[%d] = %.2f %.2f %.2f\n",
+	 i, goal.v[i][1], goal.v[i][2], goal.v[i][3]));
   end
 
   if (npost == 2) then
@@ -183,6 +189,7 @@ function detect(color,color2)
         -- eliminate small posts without cross bars
 
       if (postA[1].area < 50) then
+        vcm.add_debug_message("Post size too small");
         return goal;
       end
     end
@@ -209,6 +216,8 @@ function detect(color,color2)
         vcm.set_goal_postBoundingBox2(vector.zeros(4));
       end
   end
+
+  vcm.add_debug_message(string.format("Goal detected\n"));
 
   goal.detect = 1;
   return goal;

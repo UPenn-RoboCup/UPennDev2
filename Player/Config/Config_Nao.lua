@@ -14,7 +14,7 @@ function loadconfig(configName)
 end
 
 --loadconfig('Config_Nao_Walk_NaoWalk')
-loadconfig('Walk/Config_Nao_New_Walk')
+loadconfig('Walk/Config_Nao_Walk_Blimp_Room')
 
 
 loadconfig('World/Config_Nao_World')
@@ -22,7 +22,7 @@ loadconfig('Kick/Config_Nao_New_Kick')
 loadconfig('Vision/Config_Nao_Vision')
 
 --Location Specific Camera Parameters--
-loadconfig('Vision/Config_Nao_Camera_Grasp')
+loadconfig('Vision/Config_Nao_Camera_Blimp_Room')
 
 -- Devive Interface Libraries
 dev = {};
@@ -57,7 +57,7 @@ if (game.playerID == 1) then
   fsm.body = {'NaoGoalie'};
   fsm.head = {'NaoGoalie'};
 else
-  fsm.body = {'NaoDribble'};
+  fsm.body = {'NaoPlayer'};
   fsm.head = {'NaoPlayer'};
 end
 

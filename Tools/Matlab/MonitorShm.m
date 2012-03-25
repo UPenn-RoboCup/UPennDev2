@@ -1,15 +1,16 @@
 function MonitorShm(team,player)
 %-----------------------------------------------------
 %
-%Usage: MonitorShm(1,2)       : single monitor
-%       MonitorShm(1,[2 3 4]) : team monitor
-%	MonitorShm(1)         : team auto-detect
+%  Usage: MonitorShm(1,2)       : single monitor
+%         MonitorShm(1,[2 3 4]) : team monitor
+%  	  MonitorShm(1)         : team auto-detect
 %
 %-----------------------------------------------------
 
-  global MONITOR;
-  global SHM_DIR;
-  SHM_DIR='/dev/shm'; %For Linux. 
+  global MONITOR SHM_DIR_LINUX SHM_DIR_OSX
+  SHM_DIR_LINUX='/dev/shm';
+  SHM_DIR_OSX='/tmp/boost_interprocess';  
+
   tFPS = 16; % Target FPS
   dInterval = 5; %Vision update interval for team view
 
@@ -74,8 +75,13 @@ function MonitorShm(team,player)
 %% subfunction for checking the existnace of SHM
   function h = shm_check(team, player)
     %Checks the existence of shm with team and player ID
-    shm_name_wcmRobot = sprintf('%s/wcmRobot%d%d%s', SHM_DIR, team, player, getenv('USER'));
-    h=exist(shm_name_wcmRobot,'file');
+    shm_name_wcmRobot = sprintf('%s/wcmRobot%d%d%s', SHM_DIR_LINUX, team, player, getenv('USER'));
+    h_linux=exist(shm_name_wcmRobot,'file');
+
+    shm_name_wcmRobot = sprintf('%s/wcmRobot%d%d%s', SHM_DIR_OSX, team, player, getenv('USER'));
+    h_osx=exist(shm_name_wcmRobot,'file');
+
+    h = h_linux || h_osx;
   end
 
 end

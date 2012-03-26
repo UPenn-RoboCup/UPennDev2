@@ -36,8 +36,17 @@ function [ ] = plot_surroundings( handle, mon_struct )
         posy=min(max(posy,y_lim(1)),y_lim(2));
 
         plot(posx, posy,'ro');
-        strballpos = strcat('Ball: ',num2str(ball.x,'%1.2f'),',',...
-                            num2str(ball.y,'%1.2f'));
+
+        posx2 = -1* (ball.y+ball.vy);
+        posy2 = (ball.x+ball.vx);
+
+        posx2=min(max(posx2,x_lim(1)),x_lim(2));
+        posy2=min(max(posy2,y_lim(1)),y_lim(2));
+
+        plot([posx posx2],[posy posy2],'r--','LineWidth',2);
+
+        strballpos = sprintf('Ball: %.2f %.2f\n Vel: %.2f %.2f',...
+		ball.x,ball.y,ball.vx,ball.vy);
         b_name=text(posx-0.3, posy-0.3, strballpos);
         set(b_name,'FontSize',8);
       end

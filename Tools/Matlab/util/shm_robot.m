@@ -54,16 +54,19 @@ h.get_labelB = @get_labelB;
         ballt = h.wcmBall.get_t();
         ballvelx = h.wcmBall.get_velx();
         ballvely = h.wcmBall.get_vely();
+
         r.ball = struct('x', ballx, 'y', bally, 't', ballt, ...
             'vx', ballvelx, 'vy', ballvely );
 
         r.fall=h.wcmRobot.get_is_fall_down();
+
         
         % TODO: implement penalty and time
         r.penalty = 0;
-        r.attackBearing = h.wcmGoal.get_attack_bearing();
-        r.time = 0;
         r.tReceive = 0;
+
+        r.attackBearing = h.wcmGoal.get_attack_bearing();
+        r.time=h.wcmRobot.get_time();
         r.battery_level = h.wcmRobot.get_battery_level();
 
     catch
@@ -105,6 +108,9 @@ h.get_labelB = @get_labelB;
       ballx = h.wcmBall.get_x();
       bally = h.wcmBall.get_y();
       ballt = h.wcmBall.get_t();
+      ballvelx = h.wcmBall.get_velx();
+      ballvely = h.wcmBall.get_vely();
+
       ball = {};
       ball.detect = h.vcmBall.get_detect();
       ball.centroid = {};
@@ -114,7 +120,7 @@ h.get_labelB = @get_labelB;
       ball.axisMajor = h.vcmBall.get_axisMajor();
       r.ball = struct('x', ballx, 'y', bally, 't', ballt, ...
           'centroid', ball.centroid, 'axisMajor', ball.axisMajor, ...
-          'detect', ball.detect);
+          'detect', ball.detect,'vx',ballvelx,'vy',ballvely);
   %goal info
       r.goal = {};
       r.goal.detect = h.vcmGoal.get_detect();

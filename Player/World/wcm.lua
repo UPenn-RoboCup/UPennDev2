@@ -16,6 +16,7 @@ shared.robot.pose = vector.zeros(3);
 shared.robot.uTorso = vector.zeros(3);
 shared.robot.battery_level = vector.zeros(1);
 shared.robot.is_fall_down = vector.zeros(1);
+shared.robot.time = vector.zeros(1);
 
 shared.ball = {};
 shared.ball.x = vector.zeros(1);

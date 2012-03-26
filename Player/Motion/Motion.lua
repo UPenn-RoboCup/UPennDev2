@@ -18,6 +18,10 @@ require('falling')
 require('standup')
 require('kick')
 
+--For diving
+require('divewait')
+require('dive')
+
 -- Aux
 require 'grip'
 
@@ -31,6 +35,10 @@ sm:add_state(falling);
 sm:add_state(kick);
 sm:add_state(standstill);
 sm:add_state(grip);
+sm:add_state(divewait);
+sm:add_state(dive);
+
+
 
 sm:set_transition(sit, 'done', relax);
 sm:set_transition(sit, 'standup', stance);
@@ -52,9 +60,22 @@ sm:set_transition(walk, 'standstill', standstill);
 sm:set_transition(walk, 'pickup', grip);
 sm:set_transition(walk, 'throw', grip);
 
+--dive transitions
+sm:set_transition(walk, 'diveready', divewait);
+sm:set_transition(walk, 'dive', dive);
+
+sm:set_transition(divewait, 'dive', dive);
+sm:set_transition(divewait, 'walk', stance);
+sm:set_transition(divewait, 'stance', stance);
+sm:set_transition(dive, 'done', stance);
+sm:set_transition(dive, 'divedone', falling);
+
 --standstill makes the robot stand still with 0 bodytilt (for webots)
 sm:set_transition(standstill, 'stance', stance);
 sm:set_transition(standstill, 'walk', stance);
+
+
+
 
 -- Grip
 sm:set_transition(grip, 'timeout', grip);
@@ -62,6 +83,7 @@ sm:set_transition(grip, 'done', stance);
 
 -- falling behaviours
 sm:set_transition(walk, 'fall', falling);
+sm:set_transition(divewait, 'fall', falling);
 sm:set_transition(falling, 'done', standup);
 sm:set_transition(standup, 'done', stance);
 sm:set_transition(standup, 'fail', standup);
@@ -100,19 +122,7 @@ function update()
   -- update us
   UltraSound.update();
 
-  -- check if the robot is falling
-  --TODO: Imu angle should be in RPY
-  --Counter-clockwise rotation in X,Y,Z axis
-  --Current imuAngle is inverted
-
   local imuAngle = Body.get_sensor_imuAngle();
-
-  --[[
-  local imuGyrRPY = Body.get_sensor_imuGyrRPY();
-  print("Imu RPY:",unpack(vector.new(imuAngle)*180/math.pi))
-  print("Imu Gyr RPY:",unpack(vector.new(imuGyrRPY)*180/math.pi))
-  --]]
-
   local maxImuAngle = math.max(math.abs(imuAngle[1]), math.abs(imuAngle[2]-bodyTilt));
   if (maxImuAngle > fallAngle) then
     sm:add_event("fall");

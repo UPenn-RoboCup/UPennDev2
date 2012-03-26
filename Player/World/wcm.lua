@@ -36,6 +36,7 @@ shared.goal.defend_angle = vector.zeros(1);
 --Added for side approach/sidekick handling
 shared.kick = {};
 shared.kick.dir=vector.zeros(1);
+shared.kick.angle=vector.zeros(1);
 shared.kick.type=vector.zeros(1);
 
 if (enable_occmap == 1) then

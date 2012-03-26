@@ -11,7 +11,6 @@ require('bodyStop')
 require('bodyReady')
 require('bodySearch')
 require('bodyApproach')
-require('bodyApproachSimple')
 require('bodyKick')
 require('bodyWalkKick')
 require('bodyOrbit')
@@ -27,7 +26,6 @@ sm:add_state(bodyStop);
 sm:add_state(bodyReady);
 sm:add_state(bodySearch);
 sm:add_state(bodyApproach);
-sm:add_state(bodyApproachSimple);
 sm:add_state(bodyKick);
 sm:add_state(bodyWalkKick);
 sm:add_state(bodyOrbit);
@@ -45,9 +43,9 @@ sm:set_transition(bodyStart, 'done', bodyPositionSimple);
 
 sm:set_transition(bodyPositionSimple, 'timeout', bodyPositionSimple);
 sm:set_transition(bodyPositionSimple, 'ballLost', bodySearch);
-sm:set_transition(bodyPositionSimple, 'ballClose', bodyApproachSimple);
+sm:set_transition(bodyPositionSimple, 'ballClose', bodyApproach);
 sm:set_transition(bodyPositionSimple, 'obstacle', bodyObstacle);
-sm:set_transition(bodyPositionSimple, 'done', bodyApproachSimple);
+sm:set_transition(bodyPositionSimple, 'done', bodyApproach);
 
 sm:set_transition(bodyObstacle, 'clear', bodyPositionSimple);
 sm:set_transition(bodyObstacle, 'timeout', bodyObstacleAvoid);
@@ -62,17 +60,17 @@ sm:set_transition(bodyGotoCenter, 'ballFound', bodyPositionSimple);
 sm:set_transition(bodyGotoCenter, 'done', bodySearch);
 sm:set_transition(bodyGotoCenter, 'timeout', bodySearch);
 
-sm:set_transition(bodyApproachSimple, 'ballFar', bodyPositionSimple);
-sm:set_transition(bodyApproachSimple, 'ballLost', bodySearch);
-sm:set_transition(bodyApproachSimple, 'timeout', bodyPositionSimple);
-sm:set_transition(bodyApproachSimple, 'kick', bodyKick);
-sm:set_transition(bodyApproachSimple, 'walkkick', bodyWalkKick);
+sm:set_transition(bodyApproach, 'ballFar', bodyPositionSimple);
+sm:set_transition(bodyApproach, 'ballLost', bodySearch);
+sm:set_transition(bodyApproach, 'timeout', bodyPositionSimple);
+sm:set_transition(bodyApproach, 'kick', bodyKick);
+sm:set_transition(bodyApproach, 'walkkick', bodyWalkKick);
 
 sm:set_transition(bodyKick, 'done', bodyPositionSimple);
 sm:set_transition(bodyWalkKick, 'done', bodyPositionSimple);
 
 sm:set_transition(bodyPositionSimple, 'fall', bodyPositionSimple);
-sm:set_transition(bodyApproachSimple, 'fall', bodyPositionSimple);
+sm:set_transition(bodyApproach, 'fall', bodyPositionSimple);
 sm:set_transition(bodyKick, 'fall', bodyPositionSimple);
 
 

@@ -44,7 +44,7 @@ function update()
     print("Behavior updated, kick to the left")
     kickType=1;
   else
-    print("Behavior updated, straight kick")
+    print("Behavior updated, kick to the right")
     kickType=1;
   end
 

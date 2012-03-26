@@ -33,7 +33,7 @@ function update()
   local t = Body.get_time();
   ball = wcm.get_ball();
 
-print(ball.vx)
+--print(ball.vx)
 
   if ball.t<0.1 and ball.vx<-0.5 then
     dive.set_dive("diveLeft");

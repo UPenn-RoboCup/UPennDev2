@@ -11,7 +11,6 @@ require('bodyStop')
 require('bodyReady')
 require('bodySearch')
 require('bodyApproach')
-require('bodyApproachSimple')
 require('bodyKick')
 require('bodyWalkKick')
 require('bodyOrbit')
@@ -27,7 +26,6 @@ sm:add_state(bodyStop);
 sm:add_state(bodyReady);
 sm:add_state(bodySearch);
 sm:add_state(bodyApproach);
-sm:add_state(bodyApproachSimple);
 sm:add_state(bodyKick);
 sm:add_state(bodyWalkKick);
 sm:add_state(bodyOrbit);

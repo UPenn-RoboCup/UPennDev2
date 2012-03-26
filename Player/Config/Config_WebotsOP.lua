@@ -58,6 +58,7 @@ fsm.body = {'GeneralPlayer'};
 --Behavior flags, defined in FSM Configs and can be overrided here
 fsm.enable_obstacle_detection = 1;
 fsm.playMode = 3; --1 for demo, 2 for orbit, 3 for direct approach
+--fsm.playMode = 2; 
 fsm.enable_walkkick = 1;
 
 -- Team Parameters

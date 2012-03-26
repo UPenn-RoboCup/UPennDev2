@@ -147,7 +147,7 @@ fsm.headTrack.fixTh={0.20,0.08}; --Fix yaw axis if ball is within this box
 fsm.headReady={}
 fsm.headReady.dist = 3.0; 
 fsm.headReady.height = 0.5; 
-fsm.headReady.tScan= 5.0*speedFactor; 
+fsm.headReady.tScan= 1.0*speedFactor; 
 
 --------------------------------------------------
 --HeadReadyLookGoal : Look Goal during bodyReady

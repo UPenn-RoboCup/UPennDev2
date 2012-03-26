@@ -56,6 +56,9 @@ function entry()
   t0 = Body.get_time();
   ball = wcm.get_ball();
   check_approach_type(); --walkkick if available
+
+print("Kick direction:",kick_dir)
+
   if kick_dir==1 then
     yTarget1= sign(ball.y) * yTarget[2];
   else
@@ -106,14 +109,20 @@ function update()
   walk.set_velocity(vStep[1],vStep[2],vStep[3]);
 
   if (t - ball.t > tLost) then
+    print("ballLost")
     return "ballLost";
   end
   if (t - t0 > timeout) then
+    print("timeout")
     return "timeout";
   end
   if (ballR > rFar) then
+    print("ballfar, ",ballR,rFar)
     return "ballFar";
   end
+
+--  print("Ball xy:",ball.x,ball.y);
+--  print("Threshold xy:",xTarget[3],yTarget[3]);
 
   --TODO: angle threshold check
   if (ball.x < xTarget[3]) and (t-ball.t < 0.3) then
@@ -128,9 +137,6 @@ function update()
       elseif kick_type==2 then return "walkkick";
       end
     end
-  end
-  if (t - t0 > 1.0 and Body.get_sensor_button()[1] > 0) then
-    return "button";
   end
 end
 

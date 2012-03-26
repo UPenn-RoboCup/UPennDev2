@@ -21,6 +21,11 @@ require('bodyPositionSimple')
 require('bodyObstacle')
 require('bodyObstacleAvoid')
 
+require('bodyPositionGoalie')
+require('bodyAnticipate')
+require('bodyChase')
+
+
 sm = fsm.new(bodyIdle);
 sm:add_state(bodyStart);
 sm:add_state(bodyStop);
@@ -37,49 +42,39 @@ sm:add_state(bodyPositionSimple);
 sm:add_state(bodyObstacle);
 sm:add_state(bodyObstacleAvoid);
 
+sm:add_state(bodyPositionGoalie);
+sm:add_state(bodyAnticipate);
+sm:add_state(bodyChase);
 
 ------------------------------------------------------
 -- Simpler FSM (bodyChase and bodyorbit)
 ------------------------------------------------------
 
-sm:set_transition(bodyStart, 'done', bodyPositionSimple);
+sm:set_transition(bodyStart, 'done', bodyPositionGoalie);
 
-sm:set_transition(bodyPositionSimple, 'timeout', bodyPositionSimple);
-sm:set_transition(bodyPositionSimple, 'ballLost', bodySearch);
-sm:set_transition(bodyPositionSimple, 'ballClose', bodyOrbit);
-sm:set_transition(bodyPositionSimple, 'obstacle', bodyObstacle);
-sm:set_transition(bodyPositionSimple, 'done', bodyApproach);
+sm:set_transition(bodyPositionGoalie, 'ready', bodyAnticipate);
+sm:set_transition(bodyPositionGoalie, 'ballClose', bodyChase)
 
-sm:set_transition(bodyObstacle, 'clear', bodyPositionSimple);
-sm:set_transition(bodyObstacle, 'timeout', bodyObstacleAvoid);
+sm:set_transition(bodyAnticipate,'timeout',bodyPositionGoalie);
+sm:set_transition(bodyAnticipate,'done',bodyPositionGoalie);
 
-sm:set_transition(bodyObstacleAvoid, 'clear', bodyPositionSimple);
-sm:set_transition(bodyObstacleAvoid, 'timeout', bodyPositionSimple);
+sm:set_transition(bodyChase, 'ballLost', bodyPositionGoalie);
+sm:set_transition(bodyChase, 'ballFar', bodyPositionGoalie);
+sm:set_transition(bodyChase, 'ballClose', bodyApproach);
 
-sm:set_transition(bodySearch, 'ball', bodyPositionSimple);
-sm:set_transition(bodySearch, 'timeout', bodyGotoCenter);
-
-sm:set_transition(bodyGotoCenter, 'ballFound', bodyPositionSimple);
-sm:set_transition(bodyGotoCenter, 'done', bodySearch);
-sm:set_transition(bodyGotoCenter, 'timeout', bodySearch);
-
-sm:set_transition(bodyOrbit, 'timeout', bodyPositionSimple);
-sm:set_transition(bodyOrbit, 'ballLost', bodySearch);
-sm:set_transition(bodyOrbit, 'ballFar', bodyPositionSimple);
-sm:set_transition(bodyOrbit, 'done', bodyApproach);
-
-sm:set_transition(bodyApproach, 'ballFar', bodyPositionSimple);
-sm:set_transition(bodyApproach, 'ballLost', bodySearch);
-sm:set_transition(bodyApproach, 'timeout', bodyPositionSimple);
+sm:set_transition(bodyApproach, 'ballFar', bodyPositionGoalie);
+sm:set_transition(bodyApproach, 'ballLost', bodyPositionGoalie);
+sm:set_transition(bodyApproach, 'timeout', bodyPositionGoalie);
 sm:set_transition(bodyApproach, 'kick', bodyKick);
 sm:set_transition(bodyApproach, 'walkkick', bodyWalkKick);
 
-sm:set_transition(bodyKick, 'done', bodyPositionSimple);
-sm:set_transition(bodyWalkKick, 'done', bodyPositionSimple);
+sm:set_transition(bodyKick, 'done', bodyPositionGoalie);
+sm:set_transition(bodyWalkKick, 'done', bodyPositionGoalie);
 
-sm:set_transition(bodyPositionSimple, 'fall', bodyPositionSimple);
-sm:set_transition(bodyApproach, 'fall', bodyPositionSimple);
-sm:set_transition(bodyKick, 'fall', bodyPositionSimple);
+sm:set_transition(bodyPositionGoalie, 'fall', bodyPositionGoalie);
+sm:set_transition(bodyApproach, 'fall', bodyPositionGoalie);
+sm:set_transition(bodyChase, 'fall', bodyPositionGoalie);
+sm:set_transition(bodyKick, 'fall', bodyPositionGoalie);
 
 
 -- set state debug handle to shared memory settor

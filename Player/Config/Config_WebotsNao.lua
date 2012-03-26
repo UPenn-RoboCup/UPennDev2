@@ -29,8 +29,6 @@ dev.camera = 'NaoWebotsCam';
 dev.kinematics = 'NaoWebotsKinematics';
 dev.game_control='WebotsGameControl';
 dev.team= 'TeamSPL';
---dev.walk = 'NaoWalk';
---dev.kick = 'NaoKick';
 dev.walk = 'NewWalk';
 dev.kick = 'NewKick';
 

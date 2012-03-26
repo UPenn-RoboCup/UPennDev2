@@ -2,6 +2,11 @@ module(..., package.seeall);
 
 require('vector');
 
+enableVelocity = Config.vision.enable_velocity_detection;
+--SJ: We can use the ball model (x,y,dx,dy) 
+--and update the model using current estimate of velocity
+--TODO!
+
 local mt = {};
 
 function new()

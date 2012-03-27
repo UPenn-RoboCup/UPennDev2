@@ -1,4 +1,5 @@
 # Makefile used to build Webots files
+#include ../../Makefile.inc
 
 TARGETS = all clean
 .PHONY: $(TARGETS)

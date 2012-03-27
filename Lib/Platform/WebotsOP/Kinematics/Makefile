@@ -9,14 +9,14 @@ LIBNAME= OPKinematics
 all:: kinematics
 
 %.o: %.cpp
-	$(CXX) $(CXXFLAGS) $(INCLUDE_DIRS) -o $@ -c $<
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
 %.o: %.cc
-	$(CXX) $(CXXFLAGS) $(INCLUDE_DIRS) -o $@ -c $<
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
 %.o: %.c
-	$(CC) $(CXXFLAGS) $(INCLUDE_DIRS) -o $@ -c $<
+	$(CC) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
 
 kinematics:: luaOPKinematics.o OPKinematics.o Transform.o
-	$(LD) $(LDFLAGS) -o $(LIBNAME).$(SHLIBEXT) $(LIBOPTS) $^ -L$(LIB_DIR) -lm
+	$(LD) $(LDFLAGS) -o $(LIBNAME).$(SHLIBEXT) $(LIBOPTS) $^ $(LIB_DIR) -lm
 
 clean:
 	rm -f *.$(SHLIBEXT) *.o

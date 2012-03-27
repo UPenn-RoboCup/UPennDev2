@@ -402,9 +402,9 @@ return;
         
         % check the image size
         sz = size(yuvMontage);
-        if (~isempty(DATA.montage) && any(sz(1:2) ~= DATA.size))
+        if (any(sz(1:2) ~= DATA.size))
           % image size does not match current data size
-          warndlg('YUYV montage image size changed.\nMake sure these images are from the same camera as the previous montage.');
+          %warndlg('YUYV montage image size changed.\nMake sure these images are from the same camera as the previous montage.');
           % resize the image display
           DATA.size = sz(1:2);
           set(DATA.ImageAxes, 'XLim', .5+[0 DATA.size(2)], ...

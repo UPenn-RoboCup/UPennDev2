@@ -10,6 +10,11 @@ require('vcm');
 require('gcm');
 require 'mcm'
 
+--SJ: Velocity filter is always on
+--We can toggle whether to use velocity to update ball position estimate
+--In Filter2D.lua
+
+require('Velocity');	
 
 ballFilter = Filter2D.new();
 ball = {};
@@ -37,17 +42,9 @@ odomScale = Config.world.odomScale;
 imuYaw = Config.world.imuYaw or 0;
 yaw0 =0;
 
-enableVelocity = Config.vision.enable_velocity_detection;
-if( enableVelocity == 1 ) then
-  require('Velocity');	-- Add Velocity for Ball
-end
-
 function entry()
   count = 0;
-
-  if( enableVelocity == 1 ) then
-    Velocity.entry();
-  end  
+  Velocity.entry();
 end
 
 function update_odometry()
@@ -93,17 +90,16 @@ function update_vision()
     Body.set_indicator_ball({1,0,0});
 
     -- Update the velocity
-    if( enableVelocity==1 ) then
-      Velocity.update();
-      ball.vx, ball.vy, dodge = Velocity.getVelocity();
-      local speed = math.sqrt(ball.vx^2 + ball.vy^2);
-      local stillTime = mcm.get_walk_stillTime();
-      if( stillTime > 1.5 ) then 
-        print('Speed: '..speed..', Vel: ('..ball.vx..', '..ball.vy..') Still Time: '..stillTime);
-      end
+    Velocity.update(v[1],v[2]);
+    ball.vx, ball.vy, dodge  = Velocity.getVelocity();
+    local speed = math.sqrt(ball.vx^2 + ball.vy^2);
+    local stillTime = mcm.get_walk_stillTime();
+    if( stillTime > 1.5 ) then 
+      print('Speed: '..speed..', Vel: ('..ball.vx..', '..ball.vy..') Still Time: '..stillTime);
     end
     
   else
+    Velocity.update_noball();--notify that ball is missing
     Body.set_indicator_ball({0,0,0});
   end
 

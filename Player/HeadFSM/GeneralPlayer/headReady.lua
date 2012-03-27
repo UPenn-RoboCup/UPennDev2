@@ -9,7 +9,6 @@ height = Config.fsm.headReady.height;
 yawMag = Config.head.yawMax;
 tscan = Config.fsm.headReady.tScan;
 
-
 function entry()
   print(_NAME.." entry");
 

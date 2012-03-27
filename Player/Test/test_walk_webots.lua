@@ -21,26 +21,25 @@ package.path = cwd .. '/Config/?.lua;' .. package.path;
 package.path = cwd .. '/Lib/?.lua;' .. package.path;
 package.path = cwd .. '/Dev/?.lua;' .. package.path;
 package.path = cwd .. '/Motion/?.lua;' .. package.path;
+package.path = cwd .. '/Motion/walk/?.lua;' .. package.path;
 package.path = cwd .. '/Motion/keyframes/?.lua;' .. package.path;
 package.path = cwd .. '/Vision/?.lua;' .. package.path;
 package.path = cwd .. '/World/?.lua;' .. package.path;
 
 require('Config');
 smindex = 0;
-
 package.path = cwd..'/BodyFSM/'..Config.fsm.body[smindex+1]..'/?.lua;'..package.path;
 package.path = cwd..'/HeadFSM/'..Config.fsm.head[smindex+1]..'/?.lua;'..package.path;
-package.path = cwd..'/GameFSM/'..Config.fsm.game..'/?.lua;'..package.path;
 
 require('shm')
 require('Body')
 require('vector')
-
-BodyFSM=require('BodyFSM');
-HeadFSM=require('HeadFSM');
 require('getch')
+require('BodyFSM');
+require('HeadFSM');
 require('Motion');
 require('walk');
+require('dive');
 require('Speak')
 require('util')
 darwin = false;
@@ -127,6 +126,23 @@ function process_keyinput()
 		kick.set_kick("kickSideRight");
 		Motion.event("kick");
 
+	elseif byte==string.byte("w") then
+		Motion.event("diveready");
+
+	elseif byte==string.byte("s") then
+	        dive.set_dive("diveCenter");
+		Motion.event("dive");
+
+	elseif byte==string.byte("a") then
+	        dive.set_dive("diveLeft");
+		Motion.event("dive");
+
+	elseif byte==string.byte("d") then
+	        dive.set_dive("diveRight");
+		Motion.event("dive");
+
+	elseif byte==string.byte(";") then	targetvel[2]=targetvel[2]-0.02;
+
         elseif byte==string.byte("5") then
                 walk.doWalkKickLeft();
         elseif byte==string.byte("6") then
@@ -136,7 +152,7 @@ function process_keyinput()
 	elseif byte==string.byte("7") then	Motion.event("sit");
 	elseif byte==string.byte("8") then	
 		if walk.active then 
-			walk.stop();
+  		  walk.stop();
 		end
 		Motion.event("standup");
 	

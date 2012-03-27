@@ -65,9 +65,12 @@ fsm.bodyPosition.rDist2 = 0.20;
 fsm.bodyPosition.rTurn2 = 0.08; 
 fsm.bodyPosition.rOrbit = 0.60; 
 
+fsm.bodyPosition.rClose = 0.35; 
 fsm.bodyPosition.thClose = {0.15,0.15,10*math.pi/180};
+
 fsm.bodyPosition.tLost =  5.0*speedFactor; 
 fsm.bodyPosition.timeout = 30*speedFactor; 
+
 
 --------------------------------------------------
 --BodyApproach :  Align the robot for kick
@@ -144,7 +147,7 @@ fsm.headTrack.fixTh={0.20,0.08}; --Fix yaw axis if ball is within this box
 fsm.headReady={}
 fsm.headReady.dist = 3.0; 
 fsm.headReady.height = 0.5; 
-fsm.headReady.tScan= 5.0*speedFactor; 
+fsm.headReady.tScan= 1.0*speedFactor; 
 
 --------------------------------------------------
 --HeadReadyLookGoal : Look Goal during bodyReady

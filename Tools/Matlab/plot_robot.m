@@ -15,8 +15,9 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale)
   else
     plot_robot(robot_struct,scale);
     plot_info(robot_struct,scale);
-    %plot_ball(robot_struct.ball);
-    plot_ball_mon(r_mon.ball,scale);
+    plot_ball(robot_struct,scale);
+
+
     plot_fov(r_mon.fov);
     plot_goal(r_mon.goal,scale);
     plot_landmark(r_mon.landmark,scale);
@@ -94,33 +95,32 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale)
     set(b_name,'FontSize',8/scale);
   end
 
-  function plot_ball(ball,scale)
-    if (~isempty(ball))
-      ball = [ball.x ball.y];
-      %TODO: ball.t info
+  function plot_ball(robot,scale)
+    if (~isempty(robot.ball))
+      ball = [robot.ball.x robot.ball.y robot.time-robot.ball.t];
+      ballt=ball(3);
       xb = x0 + ball(1)*ca - ball(2)*sa;   
       yb = y0 + ball(1)*sa + ball(2)*ca;
       %hb = plot(xb, yb, [idColors(robot_struct.id) 'o']);
       hb = plot(xb, yb, 'ro');
-      plot([x0 xb],[y0 yb],'r');
-      set(hb, 'MarkerSize', 8/scale);
-      %TODO: add last seen time info
+ 
+      ball_vel=[robot.ball.vx robot.ball.vy];
+      xbv = xb + ball_vel(1)*ca - ball_vel(2)*sa;   
+      ybv = yb + ball_vel(1)*sa + ball_vel(2)*ca;
+
+      ab_scale = 1/scale;
+%      quiver(xb, yb, xab*ab_scale,yab*ab_scale, 'k' );
+      plot([xb xbv],[yb ybv],'r--','LineWidth',2/scale);
+
+      if ballt<0.5 
+        plot([x0 xb],[y0 yb],'r');
+        set(hb, 'MarkerSize', 8/scale);
+      else
+        %TODO: add last seen time info
+      end
     end
   end
 
-  function plot_ball_mon(ball,scale)
-    if ball.detect==1
-      ball = [ball.x ball.y];
-      %TODO: ball.t info
-      xb = x0 + ball(1)*ca - ball(2)*sa;
-      yb = y0 + ball(1)*sa + ball(2)*ca;
-  %   hb = plot(xb, yb, [idColors(robot_struct.id) 'o']);
-      hb = plot(xb, yb, 'ro');
-      plot([x0 xb],[y0 yb],'r');
-      set(hb, 'MarkerSize', 8/scale);
-    end
-  end
-%}
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   %% Monitor struct based plots (optional)
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -39,6 +39,7 @@ function entry()
     walk.doWalkKickLeft();
   else
     walk.doWalkKickRight();
+  end
   started = false;
 end
 

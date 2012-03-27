@@ -2,7 +2,7 @@
 TARGETS = all clean
 .PHONY: $(TARGETS)
 
-MODE=64
+MODE=$(shell getconf LONG_BIT)
 CXX=g++
 CC=gcc
 LD=ld
@@ -33,8 +33,6 @@ ifeq ($(OSTYPE),darwin)
   LIBOPTS= -bundle -undefined dynamic_lookup
   CXXFLAGS= -O2
   LIBRT=
-endif
-
 ifeq ($(MODE),64)
   CC=gcc -arch x86_64
   CXX=g++ -arch x86_64
@@ -44,6 +42,9 @@ else
   CXX=g++ -arch i386
   LD=g++ -arch i386
 endif
+endif
+
+
 
 # For Intel Atom Z530 on the Darwin-OP
 # http://jim-dev.blogspot.com/2010/04/gentoo-linux-on-dell-mini-1012.html
@@ -55,3 +56,10 @@ endif
 # Possible?
 #CXXFLAGS= -O3 -funroll-loops -fpic
 #-mtune=atom
+# ANother guide: http://linuxreviews.org/howtos/compiling/#toc1
+# -march=native could help...?
+#  Look at the warning here: http://en.gentoo-wiki.com/wiki/Safe_Cflags/Intel
+#  http://tombarta.wordpress.com/2008/05/25/gcc-flags/
+#  Should be using arch...? http://www.implbits.com/About/Blog/tabid/78/post/building-with-gcc-4-6-on-osx/Default.aspx
+# http://stackoverflow.com/questions/1754460/apples-gcc-whats-the-difference-between-arch-i386-and-m32
+#  Really, should use native unless on the Nao

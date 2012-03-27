@@ -128,6 +128,16 @@ function process_keyinput()
     elseif byte==string.byte("h") then	targetvel[2]=targetvel[2]+0.02;
     elseif byte==string.byte(";") then	targetvel[2]=targetvel[2]-0.02;
 
+    --Dive stance settings
+   elseif byte==string.byte("t") then
+     Motion.event("diveready");
+   elseif byte==string.byte("g") then
+     dive.set_dive("diveCenter");
+     Motion.event("dive");
+   elseif byte==string.byte("f") then
+     dive.set_dive("diveLeft");
+     Motion.event("dive");
+
   -- HeadFSM setting
     elseif byte==string.byte("`") then
       headsm_running = 1-headsm_running;

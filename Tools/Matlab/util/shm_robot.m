@@ -2,35 +2,38 @@ function h = shm_robot(teamNumber, playerID)
 % function create the same struct as the team message from
 % shared memory. for local debugging use
 
-h.teamNumber = teamNumber;
-h.playerID = playerID;
-h.user = getenv('USER');
+  h.teamNumber = teamNumber;
+  h.playerID = playerID;
+  h.user = getenv('USER');
 
 % create shm wrappers
-h.gcmTeam  = shm(sprintf('gcmTeam%d%d%s',  h.teamNumber, h.playerID, h.user));
-h.gcmFsm  = shm(sprintf('gcmFsm%d%d%s',  h.teamNumber, h.playerID, h.user));
-h.wcmRobot = shm(sprintf('wcmRobot%d%d%s', h.teamNumber, h.playerID, h.user));
-h.wcmBall  = shm(sprintf('wcmBall%d%d%s',  h.teamNumber, h.playerID, h.user));
-h.wcmGoal  = shm(sprintf('wcmGoal%d%d%s',  h.teamNumber, h.playerID, h.user));
-h.vcmImage = shm(sprintf('vcmImage%d%d%s', h.teamNumber, h.playerID, h.user));
-h.vcmBall  = shm(sprintf('vcmBall%d%d%s',  h.teamNumber, h.playerID, h.user));
-h.vcmGoal  = shm(sprintf('vcmGoal%d%d%s',  h.teamNumber, h.playerID, h.user));
-h.vcmLandmark  = shm(sprintf('vcmLandmark%d%d%s',  h.teamNumber, h.playerID, h.user));
-h.vcmDebug  = shm(sprintf('vcmDebug%d%d%s',  h.teamNumber, h.playerID, h.user));
+  h.gcmTeam  = shm(sprintf('gcmTeam%d%d%s',  h.teamNumber, h.playerID, h.user));
+  h.gcmFsm  = shm(sprintf('gcmFsm%d%d%s',  h.teamNumber, h.playerID, h.user));
+  h.wcmRobot = shm(sprintf('wcmRobot%d%d%s', h.teamNumber, h.playerID, h.user));
+  h.wcmBall  = shm(sprintf('wcmBall%d%d%s',  h.teamNumber, h.playerID, h.user));
+  h.wcmGoal  = shm(sprintf('wcmGoal%d%d%s',  h.teamNumber, h.playerID, h.user));
+  h.vcmImage = shm(sprintf('vcmImage%d%d%s', h.teamNumber, h.playerID, h.user));
+  h.vcmBall  = shm(sprintf('vcmBall%d%d%s',  h.teamNumber, h.playerID, h.user));
+  h.vcmGoal  = shm(sprintf('vcmGoal%d%d%s',  h.teamNumber, h.playerID, h.user));
+  h.vcmLandmark  = shm(sprintf('vcmLandmark%d%d%s',  h.teamNumber, h.playerID, h.user));
+  h.vcmDebug  = shm(sprintf('vcmDebug%d%d%s',  h.teamNumber, h.playerID, h.user));
 
 % shm wrappers for freespace, occumap, boundary
-h.wcmOccmap = shm(sprintf('wcmOccmap%d%d%s', h.teamNumber, h.playerID, h.user));
-h.vcmFreespace = shm(sprintf('vcmFreespace%d%d%s', h.teamNumber, h.playerID, h.user));
-h.vcmBoundary = shm(sprintf('vcmBoundary%d%d%s', h.teamNumber, h.playerID, h.user));
+  h.wcmOccmap = shm(sprintf('wcmOccmap%d%d%s', h.teamNumber, h.playerID, h.user));
+  h.vcmFreespace = shm(sprintf('vcmFreespace%d%d%s', h.teamNumber, h.playerID, h.user));
+  h.vcmBoundary = shm(sprintf('vcmBoundary%d%d%s', h.teamNumber, h.playerID, h.user));
 
 % set function pointers
-h.update = @update;
-h.get_team_struct = @get_team_struct;
-h.get_monitor_struct = @get_monitor_struct;
-h.get_yuyv = @get_yuyv;
-h.get_rgb = @get_rgb;
-h.get_labelA = @get_labelA;
-h.get_labelB = @get_labelB;
+  h.update = @update;
+  h.get_team_struct = @get_team_struct;
+  h.get_monitor_struct = @get_monitor_struct;
+  h.get_yuyv = @get_yuyv;
+  h.get_rgb = @get_rgb;
+  h.get_labelA = @get_labelA;
+  h.get_labelB = @get_labelB;
+
+
+
 
   function update()
       % do nothing
@@ -224,9 +227,7 @@ h.get_labelB = @get_labelB;
   end
 
   function yuyv = get_yuyv()
-      % returns the raw YUYV image
-%   width = h.vcmImage.get_width();
-%   height = h.vcmImage.get_height();
+%   returns the raw YUYV image
     width = h.vcmImage.get_width()/2;
     height = h.vcmImage.get_height();
     rawData = h.vcmImage.get_yuyv();
@@ -241,21 +242,23 @@ h.get_labelB = @get_labelB;
 
   function labelA = get_labelA()
     % returns the labeled image
+    rawData = h.vcmImage.get_labelA();
     width = h.vcmImage.get_width()/2;
     height = h.vcmImage.get_height()/2;
-%{
-    %for webots, use full width/height 
-    width = h.vcmImage.get_width();
-    height = h.vcmImage.get_height();
-%}
-    rawData = h.vcmImage.get_labelA();
+
+    %Webots vision check 
+    %for webots with non-subsampling vision code, use full width/height 
+    scale= length(rawData)*2/width/height;
+    if scale==1
+      width = h.vcmImage.get_width();
+      height = h.vcmImage.get_height();
+    end
+
     labelA = raw2label(rawData, width, height)';
   end
 
   function labelB = get_labelB()
     % returns the bit-ored labeled image
-
-    %for webots
     width = h.vcmImage.get_width()/4;
     height = h.vcmImage.get_height()/4;
     rawData = h.vcmImage.get_labelB();

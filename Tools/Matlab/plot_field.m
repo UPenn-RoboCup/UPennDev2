@@ -1,6 +1,8 @@
-function h = plot_field(type)
+function h = plot_field(handle,type)
   % plots the robocup field on the current axis
   type=2; %SPL
+
+  cla( handle );
 
   if type==1 % SPL
     fieldX = [-3.00  3.00 3.00 -3.00 -3.00];

@@ -15,20 +15,16 @@ tLost = Config.fsm.bodyApproach.tLost; --ball lost timeout
 xTarget = Config.fsm.bodyApproach.xTarget11;
 yTarget = Config.fsm.bodyApproach.yTarget11;
 
+--Do all kicks one by one
+count=1;
+
 function check_approach_type()
-  --Testing
-  wcm.set_kick_dir(1);
-  wcm.set_kick_type(2);
 
   kick_dir=wcm.get_kick_dir();
   kick_type=wcm.get_kick_type();
+  kick_angle=wcm.get_kick_angle();
 
-  --Check if front walkkick is available
-  if kick_type==2 then
-    if walk.canWalkKick ~= 1 or Config.fsm.enable_walkkick == 0 then
-      kick_type=1;
-    end
-  end
+  print("Approach: kick dir ",kick_dir)
 
   if kick_type==1 then --Stationary 
     if kick_dir==1 then --Front kick
@@ -59,7 +55,10 @@ function entry()
   print("Body FSM:".._NAME.." entry");
   t0 = Body.get_time();
   ball = wcm.get_ball();
-  check_approach_type(2); --walkkick if available
+  check_approach_type(); --walkkick if available
+
+print("Kick direction:",kick_dir)
+
   if kick_dir==1 then
     yTarget1= sign(ball.y) * yTarget[2];
   else
@@ -69,7 +68,6 @@ function entry()
 end
 
 function update()
-
   local t = Body.get_time();
 
   -- get ball position
@@ -85,20 +83,22 @@ function update()
 
   ballA = math.atan2(ball.y - math.max(math.min(ball.y, 0.05), -0.05),
             ball.x+0.10);
---  vStep[3] = 0.5*ballA;--turn torwads the ball for approachSimple
 
-
---
-  --turn towards the goal, not the ball  
-  attackBearing, daPost = wcm.get_attack_bearing();
-  if attackBearing > 10*math.pi/180 then
-    vStep[3]=0.2;
-  elseif attackBearing < -10*math.pi/180 then
-    vStep[3]=-0.2;
+  if Config.fsm.playMode==1 then 
+    --Demo FSM, just turn towards the ball
+    vStep[3] = 0.5*ballA;
   else
-    vStep[3]=0;
+    --Player FSM, turn towards the goal
+    attackBearing, daPost = wcm.get_attack_bearing();
+    angle = util.mod_angle(attackBearing-kick_angle);
+    if angle > 10*math.pi/180 then
+      vStep[3]=0.2;
+    elseif angle < -10*math.pi/180 then
+      vStep[3]=-0.2;
+    else
+      vStep[3]=0;
+    end
   end
---
 
   --when the ball is on the side, backstep a bit
   local wAngle = math.atan2 (vStep[2], vStep[1]);
@@ -109,15 +109,22 @@ function update()
   walk.set_velocity(vStep[1],vStep[2],vStep[3]);
 
   if (t - ball.t > tLost) then
+    print("ballLost")
     return "ballLost";
   end
   if (t - t0 > timeout) then
+    print("timeout")
     return "timeout";
   end
   if (ballR > rFar) then
+    print("ballfar, ",ballR,rFar)
     return "ballFar";
   end
 
+--  print("Ball xy:",ball.x,ball.y);
+--  print("Threshold xy:",xTarget[3],yTarget[3]);
+
+  --TODO: angle threshold check
   if (ball.x < xTarget[3]) and (t-ball.t < 0.3) then
     if (kick_dir==1 and 
 	(math.abs(ball.y) < yTarget[3]) and 
@@ -130,9 +137,6 @@ function update()
       elseif kick_type==2 then return "walkkick";
       end
     end
-  end
-  if (t - t0 > 1.0 and Body.get_sensor_button()[1] > 0) then
-    return "button";
   end
 end
 

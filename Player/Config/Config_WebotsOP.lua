@@ -41,6 +41,7 @@ game.teamNumber = (os.getenv('TEAM_ID') or 0) + 0;
 game.playerID = (os.getenv('PLAYER_ID') or 0) + 1;
 game.robotID = game.playerID;
 if game.playerID==1 then game.role = 4; end --Goalie handling 
+--To handle non-gamecontroller-based team handling for webots
 if game.teamNumber==1 then game.teamColor = 1; --Red team
 else game.teamColor = 0; --Blue team
 end
@@ -79,6 +80,7 @@ end
 --Behavior flags, defined in FSM Configs and can be overrided here
 fsm.enable_obstacle_detection = 1;
 fsm.playMode = 3; --1 for demo, 2 for orbit, 3 for direct approach
+--fsm.playMode = 2; 
 fsm.enable_walkkick = 1;
 
 -- Team Parameters

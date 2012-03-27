@@ -1,7 +1,7 @@
 module(... or '', package.seeall)
 
 -- Get Platform for package path
-cwd = '.';
+cwd = os.getenv('PWD');
 local platform = os.getenv('PLATFORM') or '';
 if (string.find(platform,'webots')) then cwd = cwd .. '/Player';
 end
@@ -30,11 +30,15 @@ require('unix')
 require('Config')
 require('shm')
 require('vector')
+require('vcm')
+require('gcm')
+require('wcm')
 require('mcm')
 require('Speak')
 require('getch')
 require('Body')
 require('Motion')
+require('Comm')
 
 Motion.entry();
 
@@ -45,18 +49,12 @@ webots = false;
 -- Enable OP specific 
 if(Config.platform.name == 'OP') then
   darwin = true;
-  --SJ: OP specific initialization posing (to prevent twisting)
-  Body.set_body_hardness(0.3);
-  Body.set_actuator_command(Config.sit.initangle);
-  unix.usleep(1E6*1.0);
-  Body.set_body_hardness(0);
 end
 
-getch.enableblock(1);
-unix.usleep(1E6*1.0);
-
---This is robot specific 
-webots = false;
+-- Enable Webots specific
+if (string.find(Config.platform.name,'Webots')) then
+  webots = true;
+end
 
 init = false;
 calibrating = false;
@@ -66,71 +64,62 @@ if( webots or darwin) then
 end
 
 
+
 smindex = 0;
 initToggle = true;
-
-
-
-targetvel=vector.zeros(3);
-
-function process_keyinput()
-
-local str=getch.get();
-  if #str>0 then
-	local byte=string.byte(str,1);
-
-	-- Walk velocity setting
-	if byte==string.byte("i") then	targetvel[1]=targetvel[1]+0.02;
-	elseif byte==string.byte("j") then	targetvel[3]=targetvel[3]+0.1;
-	elseif byte==string.byte("k") then	targetvel[1],targetvel[2],targetvel[3]=0,0,0;
-	elseif byte==string.byte("l") then	targetvel[3]=targetvel[3]-0.1;
-	elseif byte==string.byte(",") then	targetvel[1]=targetvel[1]-0.02;
-	elseif byte==string.byte("h") then	targetvel[2]=targetvel[2]+0.02;
-	elseif byte==string.byte(";") then	targetvel[2]=targetvel[2]-0.02;
-
-	elseif byte==string.byte("1") then	
-		kick.set_kick("kickForwardLeft");
-		Motion.event("kick");
-	elseif byte==string.byte("2") then	
-		kick.set_kick("kickForwardRight");
-		Motion.event("kick");
-	elseif byte==string.byte("3") then	
-		kick.set_kick("kickSideLeft");
-		Motion.event("kick");
-	elseif byte==string.byte("4") then	
-		kick.set_kick("kickSideRight");
-		Motion.event("kick");
-
-        elseif byte==string.byte("5") then
-                walk.doWalkKickLeft();
-        elseif byte==string.byte("6") then
---                walk.doWalkKickRight();
-                walk.doSideKickRight();
-
-	elseif byte==string.byte("7") then	
-		Motion.event("sit");
-	elseif byte==string.byte("8") then	
-		if walk.active then 
-			walk.stopAlign();
-		end
-		Motion.event("standup");
-	elseif byte==string.byte("9") then	
-		Motion.event("walk");
-		walk.start();
-	end
-	walk.set_velocity(unpack(targetvel));
-
-	print("Command velocity:",unpack(walk.velCommand))
-  end
-end
 
 -- main loop
 count = 0;
 lcount = 0;
 tUpdate = unix.time();
 
+--Webots specific key input
+controller.wb_robot_keyboard_enable(100);
+function process_keyinput()
+  local str = controller.wb_robot_keyboard_get_key();
+  if str>0 then
+    byte = str;
+    -- Webots only return captal letter number
+    if byte>=65 and byte<=90 then
+      byte = byte + 32;
+    end
+
+    if byte==string.byte("1") then
+      --gameInitial
+      gcm.set_game_state(0);
+    elseif byte==string.byte("2") then
+      --gameReady
+      gcm.set_game_state(1);
+    elseif byte==string.byte("3") then
+      --gameSet
+      gcm.set_game_state(2);
+    elseif byte==string.byte("4") then
+      --gamePlaying
+      gcm.set_game_state(3);
+    elseif byte==string.byte("5") then
+      --gameFinished
+      gcm.set_game_state(4);
+    elseif byte==string.byte("6") then 
+      --penalize everyone
+      gcm.set_game_penalty({1,1,1,1,1}) 
+    elseif byte==string.byte("7") then
+      --unpenalize everyone
+      gcm.set_game_penalty({0,0,0,0,0}) 
+    elseif byte==string.byte("8") then
+      --we are doing kickoff
+      gcm.set_game_kickoff(1);
+    elseif byte==string.byte("9") then
+      --opponent kickoff
+      gcm.set_game_kickoff(0);
+    end
+
+  end
+end
+
 function update()
   count = count + 1;
+  --Update battery info
+  wcm.set_robot_battery_level(Body.get_battery_level());
 
   if (not init)  then
     if (calibrating) then
@@ -141,12 +130,31 @@ function update()
       end
       
     elseif (ready) then
+      -- initialize state machines
+      package.path = cwd..'/BodyFSM/'..Config.fsm.body[smindex+1]..'/?.lua;'..package.path;
+      package.path = cwd..'/HeadFSM/'..Config.fsm.head[smindex+1]..'/?.lua;'..package.path;
+      package.path = cwd..'/GameFSM/'..Config.fsm.game..'/?.lua;'..package.path;
+      require('BodyFSM')
+      require('HeadFSM')
+      require('GameFSM')
+
+      BodyFSM.entry();
+      HeadFSM.entry();
+      GameFSM.entry();
+      
+      if( webots ) then
+        --BodyFSM.sm:add_event('button');
+        GameFSM.sm:set_state('gamePlaying');
+      end
+
       init = true;
     else
       if (count % 20 == 0) then
         if (Body.get_change_state() == 1) then
           Speak.talk('Calibrating');
           calibrating = true;
+        elseif (Body.get_change_role() == 1) then
+          smindex = (smindex + 1) % #Config.fsm.body;
         end
       end
 
@@ -163,6 +171,9 @@ function update()
 
   else
     -- update state machines 
+    GameFSM.update();
+    BodyFSM.update();
+    HeadFSM.update();
     Motion.update();
     Body.update();
   end
@@ -171,6 +182,7 @@ function update()
   if (count % 50 == 0) then
 --    print('fps: '..(50 / (unix.time() - tUpdate)));
     tUpdate = unix.time();
+
     -- update battery indicator
     Body.set_indicator_batteryLevel(Body.get_battery_level());
   end
@@ -187,18 +199,29 @@ end
 
 -- if using Webots simulator just run update
 if (webots) then
+  require('cognition');
+  cognition.entry();
+
+  -- set game state to Initial
+  gcm.set_game_state(1);
+
   while (true) do
+
+    process_keyinput();
+    -- update cognitive process
+    cognition.update();
     -- update motion process
     update();
+
     io.stdout:flush();
   end
+
 end
 
 if( darwin ) then
   local tDelay = 0.005 * 1E6; -- Loop every 5ms
   while 1 do
     update();
-    process_keyinput();
     unix.usleep(tDelay);
   end
 end

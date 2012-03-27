@@ -29,11 +29,8 @@ dev.camera = 'NaoWebotsCam';
 dev.kinematics = 'NaoWebotsKinematics';
 dev.game_control='WebotsGameControl';
 dev.team= 'TeamSPL';
---dev.walk = 'NaoWalk';
---dev.kick = 'NaoKick';
 dev.walk = 'NewWalk';
 dev.kick = 'NewKick';
-
 dev.walk = 'NewNewWalk';
 
 -- Game Parameters
@@ -43,8 +40,12 @@ game.teamNumber = (os.getenv('TEAM_ID') or 0) + 0;
 -- webots player ids begin at 0 but we use 1 as the first id
 game.playerID = (os.getenv('PLAYER_ID') or 0) + 1;
 game.robotID = game.playerID;
-game.teamColor = 1;
+--To handle non-gamecontroller-based team handling for webots
+if game.teamNumber==1 then game.teamColor = 1; --Red team
+else game.teamColor = 0; --Blue team
+end
 game.nPlayers = 4;
+
 
 
 -- FSM Parameters
@@ -60,13 +61,14 @@ else
   fsm.head = {'NaoPlayer'};
 end
 
---[[
+--------------------------------------------------------------------
 --GeneralPlayer FSM test
 fsm.body = {'GeneralPlayer'};
 fsm.enable_obstacle_detection = 1;
-fsm.playMode = 1; --1 for demo, 2 for orbit, 3 for direct approach
+fsm.playMode = 2; --1 for demo, 2 for orbit, 3 for direct approach
 fsm.enable_walkkick = 1;
---]]
+if game.playerID==1 then game.role = 4; end --Goalie handling 
+-------------------------------------------------------------------
 
 
 

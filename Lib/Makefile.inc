@@ -31,8 +31,9 @@ endif
 ifeq ($(OSTYPE),darwin)
   SHLIBEXT= dylib
   LIBOPTS= -bundle -undefined dynamic_lookup
-  CXXFLAGS= -O2
+  CXXFLAGS= -O2 -fomit-frame-pointer -mtune=native
   LIBRT=
+# The -arch option is only available on Mac systems to create universal binaries
 ifeq ($(MODE),64)
   CC=gcc -arch x86_64
   CXX=g++ -arch x86_64

@@ -1,5 +1,5 @@
 function h=show_monitor()
-  global MONITOR;  
+  global MONITOR LOGGER;  
   h.init=@init;
   h.update=@update;
   h.update_single=@update_single;
@@ -17,6 +17,7 @@ function h=show_monitor()
   h.enable9=1;   %Label mode, 1/0
   h.enable10=1;  %Map mode, 1/2/3
 
+  h.logging=0;
 
   % subfunctions
   function init(draw_team,target_fps)
@@ -30,7 +31,7 @@ function h=show_monitor()
       MONITOR.hButton6=uicontrol('Style','pushbutton','String','FPS -',...
 	'Position',[300 870 70 20],'Callback',@button6);
 
-      MONITOR.hButton6=uicontrol('Style','pushbutton','String','FPS +',...
+      MONITOR.hButton7=uicontrol('Style','pushbutton','String','FPS +',...
 	'Position',[600 870 70 20],'Callback',@button7);
 
       MONITOR.hButton8=uicontrol('Style','pushbutton','String','LABEL',...
@@ -43,6 +44,7 @@ function h=show_monitor()
 	'Position',[20 600 70 40],'Callback',@button10);
 
     else
+      LOGGER=logger();
       set(gcf,'Position',[1 1 1000 600])
       MONITOR.hFpsText=uicontrol('Style','text','Position',[380 570 200 20]);
 
@@ -66,8 +68,13 @@ function h=show_monitor()
       MONITOR.hButton6=uicontrol('Style','pushbutton','String','FPS -',...
 	'Position',[300 570 70 20],'Callback',@button6);
 
-      MONITOR.hButton6=uicontrol('Style','pushbutton','String','FPS +',...
+      MONITOR.hButton7=uicontrol('Style','pushbutton','String','FPS +',...
 	'Position',[600 570 70 20],'Callback',@button7);
+
+
+
+      MONITOR.hButton11=uicontrol('Style','pushbutton','String','LOG',...
+	'Position',[20 200 70 40],'Callback',@button11);
 
     end
   end
@@ -106,11 +113,25 @@ function h=show_monitor()
 
     if MONITOR.enable1
       MONITOR.h1 = subplot(4,5,[1 2 6 7]);
-      rgb = robots{playerNumber,teamNumber}.get_rgb();
-      plot_yuyv( MONITOR.h1, rgb );
+%      rgb = robots{playerNumber,teamNumber}.get_rgb();
+
+      yuyv = robots{playerNumber,teamNumber}.get_yuyv();
+      rgb=yuyv2rgb(yuyv);
+
+      plot_rgb( MONITOR.h1, rgb );
       plot_overlay(r_mon,2);
+
+
+      if MONITOR.logging
+        LOGGER.log_yuyv(yuyv + 0);
+        logstr=sprintf('Logging: %d',LOGGER.log_count);
+        set(MONITOR.hButton11,'String', logstr);
+        if LOGGER.log_count==100 
+          LOGGER.save_log();
+        end
+      end
     end
- 
+
     if MONITOR.enable2==1
       MONITOR.h2 = subplot(4,5,[3 4 8 9]);
       labelA = robots{playerNumber,teamNumber}.get_labelA();
@@ -137,6 +158,7 @@ function h=show_monitor()
     if MONITOR.enable5
       set(MONITOR.hDebugText,'String',r_mon.debug.message);
     end
+
 
   end
 
@@ -177,7 +199,7 @@ function h=show_monitor()
   end
 
 
-  function plot_yuyv( handle, rgb )
+  function plot_rgb( handle, rgb )
     if( ~isempty(rgb) ) 
       cla(handle);
       imagesc( rgb ); 
@@ -301,6 +323,10 @@ function h=show_monitor()
     elseif MONITOR.enable10==2 set(MONITOR.hButton10,'String', 'MAP2');
     elseif MONITOR.enable10==3 set(MONITOR.hButton10,'String', 'MAP3');
     end
+  end
+
+  function button11(varargin)
+    MONITOR.logging=1-MONITOR.logging;
   end
 
 end

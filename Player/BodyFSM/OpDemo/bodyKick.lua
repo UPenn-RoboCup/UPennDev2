@@ -44,7 +44,7 @@ function update()
   if not kickable then 
      print("bodyKick escape");
      --Set velocity to 0 after kick fails ot prevent instability--
-     walk.setVelocity(0, 0, 0);
+     walk.set_velocity(0, 0, 0);
      return "done";
   end
   

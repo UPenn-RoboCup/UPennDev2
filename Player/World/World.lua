@@ -95,7 +95,7 @@ function update_vision()
     local speed = math.sqrt(ball.vx^2 + ball.vy^2);
     local stillTime = mcm.get_walk_stillTime();
     if( stillTime > 1.5 ) then 
-      print('Speed: '..speed..', Vel: ('..ball.vx..', '..ball.vy..') Still Time: '..stillTime);
+--      print('Speed: '..speed..', Vel: ('..ball.vx..', '..ball.vy..') Still Time: '..stillTime);
     end
     
   else

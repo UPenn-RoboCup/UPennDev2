@@ -24,7 +24,7 @@ function check_approach_type()
   kick_type=wcm.get_kick_type();
   kick_angle=wcm.get_kick_angle();
 
-  print("Approach: kick dir ",kick_dir)
+  print("Approach: kick dir /type ",kick_dir,kick_type)
 
   if kick_type==1 then --Stationary 
     if kick_dir==1 then --Front kick

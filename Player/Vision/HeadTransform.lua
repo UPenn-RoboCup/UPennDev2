@@ -60,14 +60,16 @@ print('HeadTransform LabelA size: ('..labelA.m..', '..labelA.n..')');
 neckX    = Config.head.neckX; 
 neckZ    = Config.head.neckZ; 
 footX    = Config.walk.footX; 
-bodyTilt=Config.walk.bodyTilt; 
-bodyHeight=Config.walk.bodyHeight;
 
 function entry()
 end
 
 
 function update(sel,headAngles)
+  --Now bodyHeight and Tilt are read from vcm 
+  bodyHeight=vcm.get_camera_bodyHeight();
+  bodyTilt=vcm.get_camera_bodyTilt();
+
   -- cameras are 0 indexed so add one for use here
   sel = sel + 1;
 
@@ -177,6 +179,8 @@ end
 
 
 function ikineCam(x, y, z, select)
+  bodyHeight=vcm.get_camera_bodyHeight();
+  bodyTilt=vcm.get_camera_bodyTilt();
 
   --Bottom camera by default (cameras are 0 indexed so add 1)
   select = (select or 0) + 1;
@@ -224,16 +228,19 @@ function getCameraOffset()
 end
 
 function getNeckOffset()
-    --SJ: calculate tNeck this
-    --So that we can use this w/o run update
-    --(for test_vision)
-    local tNeck0 = Transform.trans(-footX,0,bodyHeight); 
-    tNeck0 = tNeck0*Transform.rotY(bodyTilt);
-    tNeck0 = tNeck0*Transform.trans(neckX,0,neckZ);
-    local v=vector.new({0,0,0,1});
-    v=tNeck0*v;
-    v=v/v[4];
-    return v;
+  bodyHeight=vcm.get_camera_bodyHeight();
+  bodyTilt=vcm.get_camera_bodyTilt();
+
+  --SJ: calculate tNeck here
+  --So that we can use this w/o run update
+  --(for test_vision)
+  local tNeck0 = Transform.trans(-footX,0,bodyHeight); 
+  tNeck0 = tNeck0*Transform.rotY(bodyTilt);
+  tNeck0 = tNeck0*Transform.trans(neckX,0,neckZ);
+  local v=vector.new({0,0,0,1});
+  v=tNeck0*v;
+  v=v/v[4];
+  return v;
 end
 
 --Project 3d point to level plane with some height
@@ -245,10 +252,10 @@ function projectGround(v,targetheight)
 
   --Project to plane
   if v[3]<targetheight then
-        vout= cameraOffset+
-           (v-cameraOffset)*(
-           (cameraOffset[3]-targetheight) / (cameraOffset[3] - v[3] )
-           );
+    vout= cameraOffset+
+      (v-cameraOffset)*(
+         (cameraOffset[3]-targetheight) / (cameraOffset[3] - v[3] )
+      );
   end
 
   --Discount body offset

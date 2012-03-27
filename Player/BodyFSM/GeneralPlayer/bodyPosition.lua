@@ -33,8 +33,13 @@ function entry()
   ballR = math.sqrt(ball.x^2 + ball.y^2);
   maxStep=maxStep1;
 
+  kickType=2;
+  if walk.canWalkKick ~= 1 or Config.fsm.enable_walkkick == 0 then
+    kickType=1;
+  end
+
   wcm.set_kick_dir(1);--front kick default
-  wcm.set_kick_type(2);--walking kick default
+  wcm.set_kick_type(kickType);--walking kick default
 
 end
 

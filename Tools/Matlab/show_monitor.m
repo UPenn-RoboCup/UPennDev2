@@ -13,8 +13,10 @@ function h=show_monitor()
   h.enable5=1;
 
   %two subscreen for team monitor
-  h.enable8=1;
-  h.enable9=1;
+  h.enable8=1;   %Label mode, 1/2/0
+  h.enable9=1;   %Label mode, 1/0
+  h.enable10=1;  %Map mode, 1/2/3
+
 
   % subfunctions
   function init(draw_team,target_fps)
@@ -36,6 +38,9 @@ function h=show_monitor()
 
       MONITOR.hButton9=uicontrol('Style','pushbutton','String','2D',...
 	'Position',[20 200 70 40],'Callback',@button9);
+
+      MONITOR.hButton10=uicontrol('Style','pushbutton','String','MAP1',...
+	'Position',[20 600 70 40],'Callback',@button10);
 
     else
       set(gcf,'Position',[1 1 1000 600])
@@ -100,33 +105,33 @@ function h=show_monitor()
     end
 
     if MONITOR.enable1
+      MONITOR.h1 = subplot(4,5,[1 2 6 7]);
       rgb = robots{playerNumber,teamNumber}.get_rgb();
-      h1 = subplot(4,5,[1 2 6 7]);
-      plot_yuyv( h1, rgb );
+      plot_yuyv( MONITOR.h1, rgb );
       plot_overlay(r_mon,2);
     end
  
     if MONITOR.enable2==1
+      MONITOR.h2 = subplot(4,5,[3 4 8 9]);
       labelA = robots{playerNumber,teamNumber}.get_labelA();
-      h2 = subplot(4,5,[3 4 8 9]);
-      plot_label( h2, labelA, r_mon, 1);
+      plot_label( MONITOR.h2, labelA, r_mon, 1);
       plot_overlay(r_mon,1);
     elseif MONITOR.enable2==2
+      MONITOR.h2 = subplot(4,5,[3 4 8 9]);
       labelB = robots{playerNumber,teamNumber}.get_labelB();
-      h2 = subplot(4,5,[3 4 8 9]);
-      plot_label( h2, labelB, r_mon, 4);
+      plot_label( MONITOR.h2, labelB, r_mon, 4);
       plot_overlay(r_mon,4);
     end
 
     if MONITOR.enable3
-      h3 = subplot(4,5,[11 12 16 17]);
-      plot_field();
-      plot_robot( r_struct, r_mon,1 );
+      MONITOR.h3 = subplot(4,5,[11 12 16 17]);
+      plot_field(MONITOR.h3);
+      plot_robot( r_struct, r_mon,1,MONITOR.enable3 );
     end
 
     if MONITOR.enable4
-      h4 = subplot(4,5,[13 14 18 19]);
-      plot_surroundings( h4, r_mon );
+      MONITOR.h4 = subplot(4,5,[13 14 18 19]);
+      plot_surroundings( MONITOR.h4, r_mon );
     end
     
     if MONITOR.enable5
@@ -139,8 +144,7 @@ function h=show_monitor()
 
     %Draw common field 
     h_c=subplot(5,5,[1:15]);
-    cla(h_c);
-    plot_field();
+    plot_field(h_c);
 
     for i=1:length(playerNumber)
       r_struct = robots{playerNumber(i),teamNumber}.get_team_struct();
@@ -150,7 +154,7 @@ function h=show_monitor()
       %rgb = robots{playerNumber(i),teamNumber}.get_rgb();
 
       h_c=subplot(5,5,[1:15]);
-      plot_robot( r_struct, r_mon,2 );
+      plot_robot( r_struct, r_mon,2,MONITOR.enable10);
 
       if MONITOR.enable8==1 && ignore_vision==0
         h1=subplot(5,5,15+playerNumber(i));
@@ -224,12 +228,11 @@ function h=show_monitor()
     set(h_xlabel,'Color','k');
   end
 
-
-
   function button1(varargin)
     MONITOR.enable1=1-MONITOR.enable1;
     if MONITOR.enable1 set(MONITOR.hButton1,'String', 'YUYV ON');
     else set(MONITOR.hButton1,'String', 'YUYV OFF');
+      cla(MONITOR.h1);
     end
   end
 
@@ -238,13 +241,17 @@ function h=show_monitor()
     if MONITOR.enable2==1 set(MONITOR.hButton2,'String', 'LABEL A');
     elseif MONITOR.enable2==2 set(MONITOR.hButton2,'String', 'LABEL B');
     else set(MONITOR.hButton2,'String', 'LABEL OFF');
+      cla(MONITOR.h2);
     end
   end
 
   function button3(varargin)
-    MONITOR.enable3=1-MONITOR.enable3;
-    if MONITOR.enable3 set(MONITOR.hButton3,'String', 'MAP ON');
+    MONITOR.enable3=mod(MONITOR.enable3+1,4);
+    if MONITOR.enable3==1 set(MONITOR.hButton3,'String', 'MAP1');
+    elseif MONITOR.enable3==2 set(MONITOR.hButton3,'String', 'MAP2');
+    elseif MONITOR.enable3==3 set(MONITOR.hButton3,'String', 'MAP3');
     else set(MONITOR.hButton3,'String', 'MAP OFF');
+      cla(MONITOR.h3);
     end
   end
 
@@ -252,6 +259,7 @@ function h=show_monitor()
     MONITOR.enable4=1-MONITOR.enable4;
     if MONITOR.enable4 set(MONITOR.hButton4,'String', '2D ON');
     else set(MONITOR.hButton4,'String', '2D OFF');
+      cla(MONITOR.h4);
     end
   end
 
@@ -259,6 +267,7 @@ function h=show_monitor()
     MONITOR.enable5=1-MONITOR.enable5;
     if MONITOR.enable5 set(MONITOR.hButton5,'String', 'DEBUG ON');
     else set(MONITOR.hButton5,'String', 'DEBUG OFF');
+      set(MONITOR.hDebugText,'String','');
     end
   end
 
@@ -283,6 +292,14 @@ function h=show_monitor()
     MONITOR.enable9=1-MONITOR.enable9;
     if MONITOR.enable9 set(MONITOR.hButton9,'String', '2D ON');
     else set(MONITOR.hButton9,'String', '2D OFF');
+    end
+  end
+
+  function button10(varargin)
+    MONITOR.enable10=mod(MONITOR.enable10,3)+1;  %1,2,3
+    if MONITOR.enable10==1 set(MONITOR.hButton10,'String', 'MAP1');
+    elseif MONITOR.enable10==2 set(MONITOR.hButton10,'String', 'MAP2');
+    elseif MONITOR.enable10==3 set(MONITOR.hButton10,'String', 'MAP3');
     end
   end
 

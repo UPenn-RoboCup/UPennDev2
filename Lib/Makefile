@@ -1,7 +1,7 @@
 # Master Makefile to compile all Lua/C++ libraries
 
 CWD= $(shell pwd)
-MODE= $(shell getconf LONG_BIT)
+#MODE= $(shell getconf LONG_BIT)
 
 NAODIR= Platform/Nao
 NAOQIDIR= NaoQi
@@ -81,7 +81,7 @@ hp:
 
 xos:
 	@echo "Compiling XOS Lua/C++ Libraries...\n"
-	@cd $(XOSDIR) && MODE=$(MODE) make && cd $(CWD)
+	@cd $(XOSDIR) && make && cd $(CWD)
 	@echo "Done compiling XOS Specific set!"
 	@echo "\n"
 
@@ -117,13 +117,13 @@ webots_charli:
 
 webots_saffir:
 	@echo "Compiling Webots SAFFIR Lua/C++ Libraries...\n"
-	@cd $(WEBOTSSAFFIRDIR) && MODE=$(MODE) make && cd $(CWD)
+	@cd $(WEBOTSSAFFIRDIR) && make && cd $(CWD)
 	@echo "\n"
 
 
 webot:
 	@echo "Compiling Webots Lua/C++ Libraries...\n"
-	@cd $(WEBOTSDIR) && MODE=$(MODE) make && cd $(CWD)
+	@cd $(WEBOTSDIR) && make && cd $(CWD)
 	@echo "\n"
 
 image:
@@ -132,13 +132,11 @@ image:
 	@echo "\n"
 
 comm::
-	@echo "Mode: $(MODE)"
 	@echo "Compiling Communication Lua/C++ Libraries...\n"
 	@cd $(COMMDIR) && make && cd $(CWD)
 	@echo "\n"
 
 util::
-	@echo "Mode: $(MODE)"
 	@echo "Compiling Utility Lua/C++ Libraries...\n"
 	@cd $(UTILDIR) && make && cd $(CWD)
 	@echo "\n"
@@ -150,7 +148,7 @@ velocity:
 
 primesense:
 	@echo "Compiling PrimeSense Code...\n"
-	@cd $(PRIMEDIR) && MODE=$(MODE) make && cd $(CWD)
+	@cd $(PRIMEDIR) && make && cd $(CWD)
 	@echo "\n"
 	
 setup_nao: nao setup_util setup_image setup_comm

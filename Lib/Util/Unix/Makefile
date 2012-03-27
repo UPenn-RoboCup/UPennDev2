@@ -1,48 +1,8 @@
 # Makefile used to build Webots files
+include ../../Makefile.inc
 
 TARGETS = all clean
 .PHONY: $(TARGETS)
-
-CXX=g++
-CC=gcc
-LD=ld
-STRIP=strip
-CXXFLAGS= -O2 -fpic
-
-SHLIBEXT= so
-LIBOPTS= -shared -fpic
-
-ifndef OSTYPE
-  OSTYPE = $(shell uname -s|awk '{print tolower($$0)}')
-  #export OSTYPE
-endif
-
-ifeq ($(OSTYPE),linux)
-  SHLIBEXT= so
-  LIBOPTS= -shared -fpic
-  LIBRT= -lrt
-ifeq ($(MODE),64)
-  CC=gcc -arch x86_64
-  CXX=g++ -arch x86_64
-  LD=g++ -arch x86_64
-endif
-endif
-ifeq ($(OSTYPE),darwin)
-  SHLIBEXT= dylib
-  LIBOPTS= -bundle -undefined dynamic_lookup
-ifeq ($(MODE),32)
-  CC=gcc -arch i386
-  CXX=g++ -arch i386
-  LD=g++ -arch i386
-endif
-  CXXFLAGS= -O2
-  LIBRT=
-endif
-
-BOOST_HOME = /usr/local/boost
-
-INCLUDES = -I/usr/local/include -I/usr/include/lua -I/usr/include/lua5.1
-LIB_DIR = /usr/local/lib
 
 all: unix stty getch
 

@@ -7,12 +7,13 @@ function MonitorShm(team,player)
 %
 %-----------------------------------------------------
 
-  global MONITOR SHM_DIR_LINUX SHM_DIR_OSX
-	if ismac == 1
-	  SHM_DIR='/tmp/boost_interprocess';  
-	elseif isunix == 1
-	  SHM_DIR='/dev/shm';
-	end
+  global MONITOR LOGGER SHM_DIR_LINUX SHM_DIR_OSX
+
+  if ismac == 1
+    SHM_DIR='/tmp/boost_interprocess';  
+  elseif isunix == 1
+    SHM_DIR='/dev/shm';
+  end
 
   tFPS = 16; % Target FPS
   dInterval = 5; %Vision update interval for team view

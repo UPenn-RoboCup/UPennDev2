@@ -1,5 +1,8 @@
-function h = plot_robot_monitor_struct(robot_struct,r_mon,scale)
-%This function shows the robot over the field map
+function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel)
+% This function shows the robot over the field map
+% Level 1: show position only
+% Level 2: show position and vision info
+% Level 3: show positin, vision info and fov info
 
   x0 = robot_struct.pose.x;
   y0 = robot_struct.pose.y;
@@ -17,10 +20,13 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale)
     plot_info(robot_struct,scale);
     plot_ball(robot_struct,scale);
 
-
-    plot_fov(r_mon.fov);
-    plot_goal(r_mon.goal,scale);
-    plot_landmark(r_mon.landmark,scale);
+    if drawlevel>1
+      plot_goal(r_mon.goal,scale);
+      plot_landmark(r_mon.landmark,scale);
+      if drawlevel>2
+        plot_fov(r_mon.fov);
+      end
+    end
   end
 
   hold off;
@@ -76,7 +82,7 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale)
 
   function plot_info(robot,angle)
     robotnames = {'Bot1','Bot2','Bot3','Bot4'};
-    rolenames = {'','Attack','Defend','Support','Goalie','Waiting'};
+    rolenames = {'Unknown','Attack','Defend','Support','Goalie','Waiting'};
     colornames={'red','blue'};
 
     %robotID robotName robotRole 
@@ -140,17 +146,18 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale)
       if(goal.color==2) marker = 'm';% yellow
       else marker = 'b';end
       marker2 = strcat(marker,'+');
+      marker3 = strcat(marker,'--');
       if( goal.v1.scale ~= 0 )
         x1 = goal.v1.x*ca - goal.v1.y*sa + robot_struct.pose.x;
         y1 = goal.v1.x*sa + goal.v1.y*ca + robot_struct.pose.y;
         plot(x1,y1,marker2,'MarkerSize',12/scale);
-        plot([x0 x1],[y0 y1],marker);
+        plot([x0 x1],[y0 y1],marker3);
       end
       if( goal.v2.scale ~= 0 )
         x2 = goal.v2.x*ca - goal.v2.y*sa + robot_struct.pose.x;
         y2 = goal.v2.x*sa + goal.v2.y*ca + robot_struct.pose.y;
         plot(x2,y2,marker2,'MarkerSize',12/scale);
-        plot([x0 x2],[y0 y2],marker);
+        plot([x0 x2],[y0 y2],marker3);
       end
     end
   end
@@ -160,10 +167,11 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale)
       if (landmark.color==2) marker='m';% yellow
       else marker='b';	end
       marker2 = strcat(marker,'x');
+      marker3 = strcat(marker,'--');
       x1 = landmark.v(1)*ca - landmark.v(2)*sa + robot_struct.pose.x;
       y1 = landmark.v(1)*sa + landmark.v(2)*ca + robot_struct.pose.y;
       plot(x1,y1,marker2,'MarkerSize',12/scale);
-      plot([x0 x1],[y0 y1],marker);
+      plot([x0 x1],[y0 y1],marker3);
     end
   end
 

@@ -8,118 +8,127 @@ require('Body')
 require('walk')
 
 active = true;
-sitdone=false;
-
 t0 = 0;
 
---bodyHeight = Config.sit.bodyHeight;
-bodyHeight = 0.25;
-
-supportX = Config.sit.supportX or  0.0;
+bodyHeight = Config.divewait.bodyHeight or 0.25;
+bodyTilt = 0;
+footX = Config.walk.footX or 0;
 footY = Config.walk.footY;
-bodyTilt = Config.walk.bodyTilt;
-
--- pTorso fixed for stance:
-pTorso = vector.new({supportX, 0, bodyHeight, 0,0,0});
+supportX = Config.walk.supportX;
 
 -- Final stance foot position6D
-pLLegStance = vector.new({0, footY, 0, 0,0,0});
-pRLegStance = vector.new({0, -footY, 0, 0,0,0});
+pTorsoTarget = vector.new({0, 0, bodyHeight, 0,bodyTilt,0});
+pLLeg = vector.new({-supportX + footX, footY, 0, 0,0,0});
+pRLeg = vector.new({-supportX + footX, -footY, 0, 0,0,0});
 
 -- Max change in postion6D to reach stance:
-dpLimit=vector.new({.2,.06,.06,.2,.6,.2});
+dpLimit=Config.sit.dpLimit or vector.new({.1,.01,.03,.1,.3,.1});
 
-qLArm=math.pi/180*vector.new({0,90,-0});
-qRArm=math.pi/180*vector.new({0,-90,-0});
-
-qLArm=math.pi/180*vector.new({80,20,0});
-qRArm=math.pi/180*vector.new({80,-20,0});
-
+tFinish=0;
+tStartWait=0.2;
+tEndWait=0.1;
+tStart=0;
+finished=false;
 
 function entry()
   print("Motion SM:".._NAME.." entry");
 
+  walk.stop();
   started=false;
+  finished=false;
+
   Body.set_head_command({0,0});
   Body.set_head_hardness(.5);
   Body.set_larm_hardness(.1);
   Body.set_rarm_hardness(.1);
-  walk.stop();
-  Body.set_syncread_enable(1);
   t0=Body.get_time();
 
-  sitdone=false;
 end
 
 function update()
-  --Wait until walking is ended
+  local t = Body.get_time();
   if walk.active then
      walk.update();
      t0=Body.get_time();
-     return
+     return;
   end
-  local t = Body.get_time();
+  if finished then 
+    --Needed for OP
+    local qSensor = Body.get_sensor_position();
+    Body.set_actuator_command(qSensor);
+    return; 
+  end
+
   local dt = t - t0;
-  if not started then
-    if dt>0.2 then
---	if true then
-      local qSensor = Body.get_sensor_position();
-      local dpLLeg = Kinematics.lleg_torso(Body.get_lleg_position());
-      local dpRLeg = Kinematics.rleg_torso(Body.get_rleg_position());
-      pLLeg = pTorso + dpLLeg;
-      pRLeg = pTorso + dpRLeg;
---    Body.set_actuator_command(qSensor);
-      Body.set_syncread_enable(0);
-      Body.set_lleg_hardness(.7);
-      Body.set_rleg_hardness(.7);
+  if not started then 
+   --For OP, wait a bit to read joint readings
+    if dt>tStartWait then
       started=true;
+
+      local qLLeg = Body.get_lleg_position();
+      local qRLeg = Body.get_rleg_position();
+      local dpLLeg = Kinematics.torso_lleg(qLLeg);
+      local dpRLeg = Kinematics.torso_rleg(qRLeg);
+
+      pTorsoL=pLLeg+dpLLeg;
+      pTorsoR=pRLeg+dpRLeg;
+      pTorso=(pTorsoL+pTorsoR)*0.5;
+
+      Body.set_lleg_command(qLLeg);
+      Body.set_rleg_command(qRLeg);
+      Body.set_lleg_hardness(1);
+      Body.set_rleg_hardness(1);
+      t0 = Body.get_time();
+      tStart=t;
+      count=1;
+      Body.set_syncread_enable(0); 
     else 
-      Body.set_syncread_enable(1);
-    return;
+      Body.set_syncread_enable(1); 
+      return; 
     end
   end
 
-  if sitdone then return; end
-
-  Body.set_larm_command(qLArm)
-  Body.set_rarm_command(qRArm)
 
   t0 = t;
-
   local tol = true;
-  local tolLimit = 1e-8;
+  local tolLimit = 1e-6;
   dpDeltaMax = dt*dpLimit;
-  dpLeft = pLLegStance - pLLeg;
+
+  dpTorso = pTorsoTarget - pTorso;
   for i = 1,6 do
-    if (math.abs(dpLeft[i]) > tolLimit) then
+    if (math.abs(dpTorso[i]) > tolLimit) then
       tol = false;
-      if (dpLeft[i] > dpDeltaMax[i]) then
-        dpLeft[i] = dpDeltaMax[i];
-      elseif (dpLeft[i] < -dpDeltaMax[i]) then
-        dpLeft[i] = -dpDeltaMax[i];
+      if (dpTorso[i] > dpDeltaMax[i]) then
+        dpTorso[i] = dpDeltaMax[i];
+      elseif (dpTorso[i] < -dpDeltaMax[i]) then
+        dpTorso[i] = -dpDeltaMax[i];
       end
     end
   end
-  pLLeg = pLLeg + dpLeft;
-	 
-  dpRight = pRLegStance - pRLeg;
-  for i = 1,6 do
-    if (math.abs(dpRight[i]) > tolLimit) then
-      tol = false;
-      if (dpRight[i] > dpDeltaMax[i]) then
-        dpRight[i] = dpDeltaMax[i];
-      elseif (dpRight[i] < -dpDeltaMax[i]) then
-        dpRight[i] = -dpDeltaMax[i];
-      end
-    end
-  end
-  pRLeg = pRLeg + dpRight;
+
+  pTorso=pTorso+dpTorso;
+
+  vcm.set_camera_bodyHeight(pTorso[3]);
+  vcm.set_camera_bodyTilt(pTorso[5]);
+  print("BodyHeight/Tilt:",pTorso[3],pTorso[5]*180/math.pi)
 
   q = Kinematics.inverse_legs(pLLeg, pRLeg, pTorso, 0);
   Body.set_lleg_command(q);
 
-  sitdone=tol;
+  if (tol) then
+    if tFinish==0 then
+      tFinish=t;
+    else
+      if t-tFinish>tEndWait then
+	finished=true;
+	print("Sit done, time elapsed",t-tStart)
+        return "done"
+      end
+    end
+  end
+
 end
 
 function exit()
+  Body.set_syncread_enable(1); 
 end

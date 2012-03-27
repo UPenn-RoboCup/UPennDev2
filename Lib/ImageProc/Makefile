@@ -18,7 +18,7 @@ ImageProc: luaImageProc.o \
 	ConnectRegions.o RegionProps.o RadonTransform.o\
 	lua_color_stats.o lua_goal_posts.o \
 	lua_field_lines.o lua_field_spots.o lua_field_occupancy.o
-	$(LD) $(LDFLAGS) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ -L$(LIB_DIR) -lm
+	$(LD) $(LDFLAGS) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ $(LIB_DIR) -lm
 
 clean:
 	rm -f *.$(SHLIBEXT) *.o

@@ -7,11 +7,11 @@ TARGETS = all clean
 all: ImageProc
 
 %.o: %.cpp
-	$(CXX) $(CXXFLAGS) $(INCLUDE_DIRS) -o $@ -c $<
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
 %.o: %.cc
-	$(CXX) $(CXXFLAGS) $(INCLUDE_DIRS) -o $@ -c $<
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
 %.o: %.c
-	$(CC) $(CXXFLAGS) $(INCLUDE_DIRS) -o $@ -c $<
+	$(CC) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
 
 ImageProc: luaImageProc.o \
 	color_count.o block_bitor.o \

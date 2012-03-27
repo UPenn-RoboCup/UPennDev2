@@ -5,7 +5,9 @@ TARGETS = all clean
 MODE=$(shell getconf LONG_BIT)
 CXX=g++
 CC=gcc
-LD=ld
+#LD=ld
+LD=g++
+LDFLAGS=
 STRIP=strip
 CXXFLAGS= -O2 -fpic
 

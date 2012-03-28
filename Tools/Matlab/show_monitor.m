@@ -45,6 +45,7 @@ function h=show_monitor()
 
     else
       LOGGER=logger();
+      LOGGER.init();
       set(gcf,'Position',[1 1 1000 600])
       MONITOR.hFpsText=uicontrol('Style','text','Position',[380 570 200 20]);
 

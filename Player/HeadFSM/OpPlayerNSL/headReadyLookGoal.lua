@@ -35,7 +35,7 @@ function update()
   end
 
   yawbias = 0;
-  yaw1 = math.min(math.max(yaw0+yawbias, yawMin), yawMax);
+  yaw1 = math.min(math.max(yaw0+yawbias, -yawMax), yawMax);
   local yaw, pitch =HeadTransform.ikineCam(
 	dist*math.cos(yaw1),dist*math.sin(yaw1), height);
   

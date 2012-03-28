@@ -263,8 +263,8 @@ function h = shm_robot(teamNumber, playerID)
     if scale==1
       width = h.vcmImage.get_width();
       height = h.vcmImage.get_height();
+      h.is_webots=1;
     end
-
     labelA = raw2label(rawData, width, height)';
   end
 
@@ -280,8 +280,10 @@ function h = shm_robot(teamNumber, playerID)
     if scale==1 % TODO: check with webots
       width = h.vcmImage.get_width()/4;
       height = h.vcmImage.get_height()/4;
+      h.is_webots=1;
     end
     labelB = raw2label(rawData, width, height)';
   end
+
 end
 

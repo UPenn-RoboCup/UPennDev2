@@ -54,6 +54,9 @@ return;
     % index of the current color
     DATA.icolor = 1;
 
+    % Toggle between masking mode and label preview mode
+    DATA.viewmode = 0;
+
     % standard options for all gui elements
     % do not allow callbacks to be interrupted
     Std.Interruptible = 'off';
@@ -96,7 +99,16 @@ return;
                                   'String', 'Save Colors', ...
                                   'Callback','colortable(''SaveColor'')', ...
                                   'Units', 'Normalized', ...
-                                  'Position', [.025 .10 .15 .05]);
+                                  'Position', [.025 .12 .15 .05]);
+
+    % create 'Save lut' button
+    DATA.ClearControl = uicontrol(Std, ...
+                                  'Parent', hfig, ...
+                                  'Style', 'pushbutton', ...
+                                  'String', 'Save LUT', ...
+                                  'Callback','colortable(''SaveLUT'')', ...
+                                  'Units', 'Normalized', ...
+                                  'Position', [.025 .05 .15 .05]);
 
     % create 'Clear Selection' button
     DATA.ClearControl = uicontrol(Std, ...
@@ -106,6 +118,15 @@ return;
                                   'Callback','colortable(''ClearSelection'')', ...
                                   'Units', 'Normalized', ...
                                   'Position', [.025 .35 .15 .05]);
+
+    % create 'Toggle View' button
+    DATA.ClearControl = uicontrol(Std, ...
+                                  'Parent', hfig, ...
+                                  'Style', 'pushbutton', ...
+                                  'String', 'Toggle View', ...
+                                  'Callback','colortable(''ToggleView'')', ...
+                                  'Units', 'Normalized', ...
+                                  'Position', [.025 .50 .15 .05]);
 
     % create the Forward arrow button
     DATA.ForwardControl = uicontrol(Std, ...
@@ -203,7 +224,7 @@ return;
 
   function UpdateImage(index)
   % updates the image displayed in the gui
-    global COLORTABLE
+    global COLORTABLE LUT
 
     % get the gui userdata
     hfig = gcbf;
@@ -285,6 +306,26 @@ return;
     % visualize current pos/neg selection masks
     im_display = rgbmask(im_display, DATA.mask_pos{DATA.icolor}, ...
                            DATA.mask_neg{DATA.icolor}, DATA.icolor);
+
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %Live label view
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    if DATA.viewmode 
+      class=LUT(DATA.cindex);
+      cbk=[0 0 0];cr=[1 0 0];cg=[0 1 0];cb=[0 0 1];cy=[1 1 0];cw=[1 1 1];
+      cmap=[cbk;cr;cy;cy;cb;cb;cb;cb;cg;cg;cg;cg;cg;cg;cg;cg;cw];
+      r_cast=cmap(:,1)*255;
+      g_cast=cmap(:,2)*255;
+      b_cast=cmap(:,3)*255;
+
+      %class starts with 0, index starts with 1 
+      im_display(:,:,1)=r_cast(class+1);
+      im_display(:,:,2)=g_cast(class+1);
+      im_display(:,:,3)=b_cast(class+1);
+    end
+
 
     % set the display image data in the gui
     set(DATA.Image, 'CData', im_display);
@@ -454,4 +495,41 @@ return;
     end
 
     return;
+
+  function SaveLUT()
+    % callback for the 'Save LUT' button
+    global COLORTABLE LUT
+
+    % open file select gui
+    [filename, pathname] = uiputfile('*.raw', 'Select lut file to save');
+
+    if (filename ~= 0)
+      colortable_smear;
+      LUT = colortable_lut();
+%      lut_montage(LUT);
+      write_lut_file( LUT, [pathname filename] );
+      disp(['Saved file ' filename])
+    end
+
+    return;
+
+  function ToggleView()
+  % callback for the 'Toggle View' button
+    global COLORTABLE LUT
+
+    % get the gui userdata
+    hfig = gcbf;
+    DATA = get(hfig, 'UserData');
+
+    DATA.viewmode = 1-DATA.viewmode;
+    %Whenever entering label view, recalculate LUT
+    if DATA.viewmode
+      colortable_smear;
+      LUT = colortable_lut();
+    end
+    set(hfig, 'UserData', DATA);
+
+    UpdateImage();
+    return;
+
 

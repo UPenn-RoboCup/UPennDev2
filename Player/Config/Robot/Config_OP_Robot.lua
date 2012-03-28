@@ -1,13 +1,16 @@
 module(..., package.seeall);
 require('vector')
 
---Sitting parameters
-sit={};
-sit.bodyHeight=0.17+0.05; --Fixed with new kinematics
-sit.supportX=-0.010;
-sit.bodyTilt=5*math.pi/180;
-sit.dpLimit=vector.new({.1,.01,.06,.1,.3,.1});
+--Sit/stand stance parameters
+stance={};
+stance.bodyHeightSit = 0.175;
+stance.supportXSit = -0.010;
+stance.dpLimitSit=vector.new({.1,.01,.06,.1,.3,.1});
+stance.bodyTiltStance=20*math.pi/180; --bodyInitial bodyTilt, 0 for webots
+stance.dpLimitStance=vector.new({.04, .03, .07, .4, .4, .4});
+stance.bodyHeightDive= 0.25;
 
+sit={};
 --Init angle for start-up
 sit.initangle = {
 	0,0,
@@ -16,11 +19,6 @@ sit.initangle = {
 	0, -0.055, -0.77, 2.08, -1.31, 0.055,
 	105*math.pi/180, -30*math.pi/180, -45*math.pi/180,
 }
-
---Standing parameters
-stance={};
-stance.dpLimit=vector.new({.04, .03, .04, .4, .4, .4});
-stance.dpLimit=vector.new({.04, .03, .07, .4, .4, .4});--Faster standup
 
 --Servo parameters
 

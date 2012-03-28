@@ -74,18 +74,14 @@ km = {};
 km.standup_front = 'km_NSLOP_StandupFromFront.lua';
 km.standup_back = 'km_NSLOP_StandupFromBack.lua';
 
---Sitting parameters
-sit={};
-sit.bodyHeight=0.20; --Fixed for webots
-sit.supportX=-0.010;
-sit.bodyTilt=5*math.pi/180;
-sit.dpLimit=vector.new({.1,.01,.03,.1,.3,.1});
-sit.dpLimit=vector.new({.1,.01,.06,.1,.3,.1});--Faster sit
-
---Standing parameters
+--Sit/stand stance parameters
 stance={};
-stance.dpLimit=vector.new({.04, .03, .04, .4, .4, .4});
-stance.dpLimit=vector.new({.04, .03, .07, .4, .4, .4});--Faster standup
+stance.bodyHeightSit = 0.20;
+stance.supportXSit = -0.010;
+stance.bodyHeightDive= 0.25;
+stance.bodyTiltStance=0*math.pi/180; --bodyInitial bodyTilt, 0 for webots
+stance.dpLimitStance=vector.new({.04, .03, .07, .4, .4, .4});
+stance.dpLimitSit=vector.new({.1,.01,.06,.1,.3,.1});
 
 -- Head Parameters
 head = {};

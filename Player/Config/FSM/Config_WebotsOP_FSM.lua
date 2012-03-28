@@ -22,7 +22,7 @@ fsm.enable_walkkick = 1;
 --------------------------------------------------
 fsm.bodyReady={};
 fsm.bodyReady.maxStep = 0.06;
-fsm.bodyReady.thClose = {0.20,10*math.pi/180} --r and theta
+fsm.bodyReady.thClose = {0.50,15*math.pi/180} --r and theta
 
 --------------------------------------------------
 --BodySearch : make robot turn to search the ball

@@ -67,6 +67,7 @@ sm:set_transition(bodyApproach, 'kick', bodyKick);
 sm:set_transition(bodyApproach, 'walkkick', bodyWalkKick);
 
 sm:set_transition(bodyKick, 'done', bodyPositionGoalie);
+sm:set_transition(bodyKick, 'reposition', bodyApproach);
 sm:set_transition(bodyWalkKick, 'done', bodyPositionGoalie);
 
 sm:set_transition(bodyPositionGoalie, 'fall', bodyPositionGoalie);

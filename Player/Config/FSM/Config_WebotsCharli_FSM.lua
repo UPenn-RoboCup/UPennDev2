@@ -22,7 +22,7 @@ fsm.enable_sidekick = 0;
 --BodyReady : make robot move to initial position
 --------------------------------------------------
 fsm.bodyReady={};
-fsm.bodyReady.maxStep = 0.06;
+fsm.bodyReady.maxStep = 0.15;
 fsm.bodyReady.thClose = {0.20,10*math.pi/180} --r and theta
 
 --------------------------------------------------
@@ -111,7 +111,22 @@ fsm.bodyApproach.yTarget23={-0.03, -0.01, 0.01}; --min, target ,max
 --BodyKick : Stationary Kick
 --------------------------------------------------
 fsm.bodyKick={};
-fsm.bodyKick.tFollowDelay = 2.2; --delay for camera following the ball
+
+--initial wait 
+fsm.bodyKick.tStartWait = 0.5;
+fsm.bodyKick.tStartWaitMax = 1.0;
+fsm.bodyKick.thGyroMag = 100; 
+
+--ball position checking params
+fsm.bodyKick.kickTargetFront = {0.30,0.06};
+
+--For kicking to the left
+fsm.bodyKick.kickTargetSide = {0.30,0.01};
+
+fsm.bodyKick.kickTh = {0.06,0.05};
+
+--delay for camera following the ball
+fsm.bodyKick.tFollowDelay = 2.2; 
 
 --------------------------------------------------
 --BodyWalkKick : Dynamic Kick

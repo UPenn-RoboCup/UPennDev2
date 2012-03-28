@@ -120,8 +120,7 @@ function h=show_monitor()
       rgb=yuyv2rgb(yuyv);
 
       plot_rgb( MONITOR.h1, rgb );
-      plot_overlay(r_mon,2);
-
+      plot_overlay(r_mon,1);
 
       if MONITOR.logging
         LOGGER.log_yuyv(yuyv + 0);

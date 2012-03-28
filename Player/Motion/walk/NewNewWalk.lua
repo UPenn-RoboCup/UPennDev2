@@ -524,16 +524,15 @@ function step_left_destination(vel, uLeft, uRight)
   -- Do not pidgeon toe, cross feet:
 
   --TODO: Prevent robot from stepping on heel edge
-  --[[
   local limitY=stanceLimitY[1];
   if uLeftRight[3]>0.30 then
      limitY=limitY+0.015;
   end
-  uLeftRight[2] = math.min(math.max(uRightLeft[2], limitY),stanceLimitY[2]),
-  --]]
+  uLeftRight[2] = math.min(math.max(uLeftRight[2],limitY),
+					stanceLimitY[2]);
 
   uLeftRight[1] = math.min(math.max(uLeftRight[1], stanceLimitX[1]), stanceLimitX[2]);
-  uLeftRight[2] = math.min(math.max(uLeftRight[2], stanceLimitY[1]), stanceLimitY[2]);
+-- uLeftRight[2] = math.min(math.max(uLeftRight[2], stanceLimitY[1]), stanceLimitY[2]);
   uLeftRight[3] = math.min(math.max(uLeftRight[3], stanceLimitA[1]), stanceLimitA[2]);
 
   return util.pose_global(uLeftRight, uRight);
@@ -549,16 +548,14 @@ function step_right_destination(vel, uLeft, uRight)
   -- Do not pidgeon toe, cross feet:
 
   --TODO: Prevent robot from stepping on heel edge
-  --[[
   local limitY=stanceLimitY[1];
   if uRightLeft[3]<-0.30 then
      limitY=limitY+0.015;
   end
   uRightLeft[2] = math.min(math.max(uRightLeft[2], -stanceLimitY[2]), -limitY);
-  --]]
 
   uRightLeft[1] = math.min(math.max(uRightLeft[1], stanceLimitX[1]), stanceLimitX[2]);
-  uRightLeft[2] = math.min(math.max(uRightLeft[2], -stanceLimitY[2]), -stanceLimitY[1]);
+--uRightLeft[2] = math.min(math.max(uRightLeft[2], -stanceLimitY[2]), -stanceLimitY[1]);
   uRightLeft[3] = math.min(math.max(uRightLeft[3], -stanceLimitA[2]), -stanceLimitA[1]);
 
   return util.pose_global(uRightLeft, uLeft);

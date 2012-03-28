@@ -29,7 +29,8 @@ dpLimit = Config.stance.dpLimitStance or vector.new({.04, .03, .07, .4, .4, .4})
 
 tFinish=0;
 tStartWait=0.2;
-tEndWait=Config.stance.delay/100 or 0;
+tEndWait=Config.stance.delay or 0;
+tEndWait=tEndWait/100;
 tStart=0;
 
 function entry()

@@ -342,8 +342,6 @@ end
 function check_side_walkkick()
     if walkKickType<2 then return; end
 
-    walk.tStepSideKick = 0.30; --for OP
-
     if walkKickRequest ==1 then --If support foot is right, skip 1st step
       print("NEWNEWKICK: SIDE WALKKICK START")
       if supportLeg==walkKickType-2 then 

@@ -30,8 +30,8 @@ dev.camera = 'WebotsOPCam';
 dev.kinematics = 'CharliKinematics';
 dev.game_control='WebotsGameControl';
 dev.team='TeamNull';
---dev.walk = 'NewNewWalk';
-dev.walk = 'NewWalk';
+--dev.walk = 'NewWalk';
+dev.walk = 'NewNewWalk';
 dev.kick = 'NewKick';
 
 -- Game Parameters
@@ -45,12 +45,15 @@ game.nPlayers = 4;
 
 -- FSM Parameters
 fsm = {};
-
 loadconfig('FSM/Config_WebotsCharli_FSM')
-
 fsm.game = 'RoboCup';
 fsm.body = {'GeneralPlayer'};
 fsm.head = {'GeneralPlayer'}; 
+
+fsm.enable_obstacle_detection = 1;
+fsm.playMode = 3; --1 for demo, 2 for orbit, 3 for direct approach
+fsm.enable_walkkick = 1;
+fsm.enable_sidekick = 1;
 
 -- Team Parameters
 
@@ -76,18 +79,16 @@ km = {};
 km.standup_front = 'km_Charli_StandupFromFront.lua';
 km.standup_back = 'km_Charli_StandupFromBack.lua';
 
--- sitting parameters
-sit = {};
-sit.bodyHeight=0.40; --For Hubo
-sit.supportX = 0;
-sit.dpLimit = vector.new({.1,.01,.03,.1,.3,.1})*2;
-
--- standing parameters
-
-stance = {};
---stance.dpLimit = vector.new({.04, .03, .04, .05, .4, .1});
-stance.dpLimit = vector.new({.4, .3, .4, .05, .4, .1})*0.6;
-stance.delay = 80; --amount of time to stand still after standing to regain balance.
+--Sit/stand stance parameters
+stance={};
+stance.bodyHeightSit = 0.40;
+stance.supportXSit = -0.00;
+stance.bodyHeightDive= 0.65;
+stance.bodyTiltStance=0*math.pi/180; --bodyInitial bodyTilt, 0 for webots
+stance.dpLimitStance = vector.new({.4, .3, .4, .05, .4, .1})*0.6;
+stance.dpLimitStance=vector.new({.04, .03, .07, .4, .4, .4});
+stance.dpLimitSit=vector.new({.1,.01,.06,.1,.3,.1})*2;
+stance.delay = 80; 
 
 -- enable obstacle detection
 BodyFSM = {}

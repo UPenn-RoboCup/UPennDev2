@@ -59,7 +59,7 @@ fsm.body = {'GeneralPlayer'};
 --Behavior flags, defined in FSM Configs and can be overrided here
 fsm.enable_obstacle_detection = 1;
 fsm.playMode = 3; --1 for demo, 2 for orbit, 3 for direct approach
-fsm.playMode = 2; 
+fsm.playMode = 1; 
 fsm.enable_walkkick = 1;
 fsm.enable_sidekick = 1;
 
@@ -68,6 +68,19 @@ team = {};
 team.msgTimeout = 5.0;
 team.nonAttackerPenalty = 6.0; -- eta sec
 team.nonDefenderPenalty = 0.5; -- dist from goal
+
+
+
+
+
+
+
+
+
+
+-------------------------------------
+-- Robot specific parameters
+-------------------------------------
 
 -- keyframe files
 km = {};

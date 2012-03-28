@@ -29,7 +29,7 @@ dpLimit = Config.stance.dpLimitStance or vector.new({.04, .03, .07, .4, .4, .4})
 
 tFinish=0;
 tStartWait=0.2;
-tEndWait=Config.stance.delay or 0;
+tEndWait=Config.stance.delay/100 or 0;
 tStart=0;
 
 function entry()
@@ -40,12 +40,6 @@ function entry()
 
   Body.set_head_command({0,0});
   Body.set_head_hardness(.5);
-
-  Body.set_larm_command(qLArm);
-  Body.set_rarm_command(qRArm);
-
-  Body.set_larm_hardness(.1);
-  Body.set_rarm_hardness(.1);
 
   Body.set_waist_hardness(1);
   Body.set_waist_command(0);
@@ -117,6 +111,10 @@ function update()
   if (tol) then
     if tFinish==0 then
       tFinish=t;
+      Body.set_larm_command(qLArm);
+      Body.set_rarm_command(qRArm);
+      Body.set_larm_hardness(.1);
+      Body.set_rarm_hardness(.1);
     else
       if t-tFinish>tEndWait then
 	print("Stand done, time elapsed",t-tStart)

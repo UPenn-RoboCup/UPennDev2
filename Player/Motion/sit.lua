@@ -10,11 +10,12 @@ require('walk')
 active = true;
 t0 = 0;
 
-bodyHeight = Config.sit.bodyHeight;
-bodyTilt = 0;
 footX = Config.walk.footX or 0;
 footY = Config.walk.footY;
-supportX = Config.walk.supportX;
+--supportX = Config.walk.supportX;
+supportX = Config.stance.supportXSit;
+bodyHeight = Config.stance.bodyHeightSit;
+bodyTilt = 0;
 
 -- Final stance foot position6D
 pTorsoTarget = vector.new({0, 0, bodyHeight, 0,bodyTilt,0});
@@ -22,7 +23,7 @@ pLLeg = vector.new({-supportX + footX, footY, 0, 0,0,0});
 pRLeg = vector.new({-supportX + footX, -footY, 0, 0,0,0});
 
 -- Max change in postion6D to reach stance:
-dpLimit=Config.sit.dpLimit or vector.new({.1,.01,.03,.1,.3,.1});
+dpLimit=Config.stance.dpLimitSit or vector.new({.1,.01,.03,.1,.3,.1});
 
 tFinish=0;
 tStartWait=0.2;

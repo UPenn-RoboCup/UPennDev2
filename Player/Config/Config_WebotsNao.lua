@@ -105,17 +105,14 @@ km.standup_front = 'km_WebotsNao_StandupFromFront.lua';
 km.standup_back = 'km_WebotsNao_StandupFromBack.lua';
 
 
--- sitting parameters
-
-sit = {};
-sit.bodyHeight = 0.225;
-sit.supportX = 0;
-sit.dpLimit = vector.new({.1,.01,.03,.1,.3,.1});
-
--- standing parameters
-
-stance = {};
-stance.dpLimit = vector.new({.04, .03, .04, .05, .4, .1});
+--Sit/stand stance parameters
+stance={};
+stance.bodyHeightSit = 0.225;
+stance.supportXSit = 0;
+stance.dpLimitSit=vector.new({.1,.01,.03,.1,.3,.1});
+stance.bodyHeightDive= 0.25;
+stance.bodyTiltStance=0*math.pi/180; --bodyInitial bodyTilt, 0 for webots
+stance.dpLimitStance = vector.new({.04, .03, .04, .05, .4, .1});
 stance.delay = 80; --amount of time to stand still after standing to regain balance.
 
 -- enable obstacle detection

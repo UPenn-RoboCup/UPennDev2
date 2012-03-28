@@ -36,6 +36,14 @@ require('getch')
 require('Body')
 require('Motion')
 
+smindex=0;
+package.path = cwd..'/BodyFSM/'..Config.fsm.body[smindex+1]..'/?.lua;'..package.path;
+package.path = cwd..'/HeadFSM/'..Config.fsm.head[smindex+1]..'/?.lua;'..package.path;
+package.path = cwd..'/GameFSM/'..Config.fsm.game..'/?.lua;'..package.path;
+require('BodyFSM')
+require('HeadFSM')
+require('GameFSM')
+
 Motion.entry();
 
 darwin = false;

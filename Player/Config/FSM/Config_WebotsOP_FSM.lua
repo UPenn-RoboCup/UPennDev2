@@ -87,11 +87,7 @@ fsm.bodyApproach.yTarget11={0.03, 0.05, 0.06}; --min, target ,max
 
 --x and y target position for stationary kick to left
 fsm.bodyApproach.xTarget12={0, 0.13,0.14}; --min, target, max
-fsm.bodyApproach.yTarget12={-0.01, 0.015, 0.04}; --min, target ,max
-
---x and y target position for stationary kick to right
-fsm.bodyApproach.xTarget13={0, 0.13,0.14}; --min, target, max
-fsm.bodyApproach.yTarget13={-0.04, -0.015, 0.01}; --min, target ,max
+fsm.bodyApproach.yTarget12={-0.005, 0.01, 0.025}; --min, target ,max
 
 --Target position for straight walkkick 
 fsm.bodyApproach.xTarget21={0, 0.17,0.20}; --min, target, max
@@ -103,18 +99,27 @@ fsm.bodyApproach.yTarget21={0.03, 0.05, 0.06}; --min, target ,max
 
 --Target position for side walkkick to left
 fsm.bodyApproach.xTarget22={0, 0.17,0.20}; --min, target, max
-fsm.bodyApproach.yTarget22={-0.01, 0.01, 0.03}; --min, target ,max
-
---Target position for side walkkick to right
-fsm.bodyApproach.xTarget23={0, 0.17,0.20}; --min, target, max
-fsm.bodyApproach.yTarget23={-0.03, -0.01, 0.01}; --min, target ,max
+fsm.bodyApproach.yTarget22={0.005, 0.02, 0.035}; --min, target ,max
 
 --------------------------------------------------
 --BodyKick : Stationary Kick
 --------------------------------------------------
 fsm.bodyKick={};
-fsm.bodyKick.tFollowDelay = 2.2; --delay for camera following the ball
 
+--initial wait 
+fsm.bodyKick.tStartWait = 0.5;
+fsm.bodyKick.tStartWaitMax = 1.0;
+fsm.bodyKick.thGyroMag = 100; 
+
+--ball position checking params
+fsm.bodyKick.kickTargetFront = {0.15,0.04};
+
+--For kicking to the left
+fsm.bodyKick.kickTargetSide = {0.15,0.01};
+fsm.bodyKick.kickTh = {0.03,0.025};
+
+--delay for camera following the ball
+fsm.bodyKick.tFollowDelay = 2.2; 
 --------------------------------------------------
 --BodyWalkKick : Dynamic Kick
 --------------------------------------------------
@@ -128,9 +133,6 @@ fsm.bodyGotoCenter.maxStep=0.06;
 fsm.bodyGotoCenter.rClose=0.30;
 fsm.bodyGotoCenter.timeout=10.0*speedFactor;
 
-
-
-
 --------------------------------------------------
 --HeadTrack : Track the ball
 --------------------------------------------------
@@ -139,7 +141,6 @@ fsm.headTrack.timeout = 6.0 * speedFactor;
 fsm.headTrack.tLost = 1.5 * speedFactor;
 fsm.headTrack.minDist = 0.30; --If ball is closer than this, don't look up
 fsm.headTrack.fixTh={0.20,0.08}; --Fix yaw axis if ball is within this box
-
 
 --------------------------------------------------
 --HeadReady : Track the horizonal line for localization

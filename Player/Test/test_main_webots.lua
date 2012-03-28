@@ -74,7 +74,10 @@ lcount = 0;
 tUpdate = unix.time();
 
 --Webots specific key input
-controller.wb_robot_keyboard_enable(100);
+controller.wb_robot_keyboard_enable(500);
+
+penalized_state={0,0,0,0,0};
+
 function process_keyinput()
   local str = controller.wb_robot_keyboard_get_key();
   if str>0 then
@@ -84,33 +87,51 @@ function process_keyinput()
       byte = byte + 32;
     end
 
+    penalize_player=0;
+
     if byte==string.byte("1") then
-      --gameInitial
+      Speak.talk('Initial');
       gcm.set_game_state(0);
     elseif byte==string.byte("2") then
-      --gameReady
+      Speak.talk('Ready');
       gcm.set_game_state(1);
     elseif byte==string.byte("3") then
-      --gameSet
+      Speak.talk('Set');
       gcm.set_game_state(2);
     elseif byte==string.byte("4") then
-      --gamePlaying
+      Speak.talk('Playing');
       gcm.set_game_state(3);
     elseif byte==string.byte("5") then
-      --gameFinished
+      Speak.talk('Finished');
       gcm.set_game_state(4);
-    elseif byte==string.byte("6") then 
-      --penalize everyone
-      gcm.set_game_penalty({1,1,1,1,1}) 
-    elseif byte==string.byte("7") then
-      --unpenalize everyone
-      gcm.set_game_penalty({0,0,0,0,0}) 
-    elseif byte==string.byte("8") then
-      --we are doing kickoff
-      gcm.set_game_kickoff(1);
-    elseif byte==string.byte("9") then
-      --opponent kickoff
-      gcm.set_game_kickoff(0);
+    elseif byte==string.byte("k") then   
+      kickoff=gcm.get_game_kickoff();
+      gcm.set_game_kickoff(1-kickoff);
+      if kickoff>0 then
+        Speak.talk('We have kickoff');
+      else
+        Speak.talk('They have kickoff');
+      end
+    elseif byte==string.byte("q") then 
+      penalize_player=1;
+    elseif byte==string.byte("w") then 
+      penalize_player=2;
+    elseif byte==string.byte("e") then 
+      penalize_player=3;
+    elseif byte==string.byte("r") then 
+      penalize_player=4;
+    elseif byte==string.byte("t") then 
+      penalize_player=5;
+    end
+
+    if penalize_player>0 then
+      penalized_state[penalize_player]=1-penalized_state[penalize_player];
+      gcm.set_game_penalty(penalized_state) ;
+      if penalized_state[penalize_player]>0 then
+        Speak.talk(string.format("Player %d penalized",penalize_player));
+      else
+        Speak.talk(string.format("Player %d unpenalized",penalize_player));
+      end
     end
 
   end
@@ -141,11 +162,13 @@ function update()
       BodyFSM.entry();
       HeadFSM.entry();
       GameFSM.entry();
-      
+
+--[[      
       if( webots ) then
         --BodyFSM.sm:add_event('button');
         GameFSM.sm:set_state('gamePlaying');
       end
+--]]
 
       init = true;
     else
@@ -203,7 +226,7 @@ if (webots) then
   cognition.entry();
 
   -- set game state to Initial
-  gcm.set_game_state(1);
+  gcm.set_game_state(0);
 
   while (true) do
 

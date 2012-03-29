@@ -1,4 +1,4 @@
-#include "ballfilter.h"
+#include "luavelocityfilter.h"
 
 const double MIN_ERROR_DISTANCE = 50;
 const double ERROR_DEPTH_FACTOR = 0.08;
@@ -19,7 +19,7 @@ static CvDTree *ddtree_dir;
 
 #endif
 
-static int lua_ballme(lua_State *L) {
+static int lua_get_ball(lua_State *L) {
 
   static BallModel bm; // Keep the model of the ball static
 
@@ -148,8 +148,8 @@ static int lua_predict( lua_State *L ){
 #endif
 
 
-static const struct luaL_reg ballfilter_lib [] = {
-  {"ballme", lua_ballme},
+static const struct luaL_reg velocityfilter_lib [] = {
+  {"get_ball", lua_get_ball},
 #ifdef PREDICT
   {"loadModel", lua_loadmodel},
   {"predictmove", lua_predict},
@@ -158,8 +158,8 @@ static const struct luaL_reg ballfilter_lib [] = {
 };
 
 extern "C"
-int luaopen_ballfilter (lua_State *L) {
-  luaL_register(L, "ballfilter", ballfilter_lib);
+int luaopen_velocityfilter (lua_State *L) {
+  luaL_register(L, "velocityfilter", velocityfilter_lib);
   #ifdef PREDICT
   #if MODEL==1
   boost = new CvBoost;

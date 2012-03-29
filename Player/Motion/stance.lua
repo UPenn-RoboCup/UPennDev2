@@ -20,9 +20,9 @@ qLArm = Config.walk.qLArm;
 qRArm = Config.walk.qRArm;
 
 -- Final stance foot position6D
-pTorsoTarget = vector.new({0, 0, bodyHeight, 0,bodyTilt,0});
-pLLeg = vector.new({-supportX + footX, footY, 0, 0,0,0});
-pRLeg = vector.new({-supportX + footX, -footY, 0, 0,0,0});
+pTorsoTarget = vector.new({-footX, 0, bodyHeight, 0,bodyTilt,0});
+pLLeg = vector.new({-supportX , footY, 0, 0,0,0});
+pRLeg = vector.new({-supportX , -footY, 0, 0,0,0});
 
 -- Max change in position6D to reach stance:
 dpLimit = Config.stance.dpLimitStance or vector.new({.04, .03, .07, .4, .4, .4});

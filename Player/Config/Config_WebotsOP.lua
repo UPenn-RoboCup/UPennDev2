@@ -52,30 +52,9 @@ game.nPlayers = 4;
 fsm = {};
 --SJ: loading FSM config  kills the variable fsm, so should be called first
 loadconfig('FSM/Config_WebotsOP_FSM')
-
-fsm.game = 'Stretcher';
-
--- Set the Body and Head FSMs based on GameFSM
-fsm.body = {fsm.game};
-fsm.head = {fsm.game};
---[[
+fsm.game = 'RoboCup';
 fsm.head = {'GeneralPlayer'};
 fsm.body = {'GeneralPlayer'};
---]]
-
--- Game specific settings
-if( fsm.game == 'Dodgeball' ) then
-  Config.vision.enable_line_detection = 0;
-  Config.vision.enable_midfield_landmark_detection = 0;
-end
-
-
-if( fsm.game == 'Stretcher' ) then
-  loadconfig( 'Config_Stretcher' );
-  game.teamNumber = 18;
-  game.playerID = 1;
-end
-
 
 --Behavior flags, defined in FSM Configs and can be overrided here
 fsm.enable_obstacle_detection = 1;

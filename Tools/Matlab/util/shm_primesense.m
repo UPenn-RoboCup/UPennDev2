@@ -43,6 +43,7 @@ h.set_joint = @set_joint;
             eval( strcat('feval( h.orientation.set_',jointName,',',mat2str(orientation),' )') );
             eval( strcat('feval( h.position.set_',jointName,',',mat2str(jdata.position),' )') );
             eval( strcat('feval( h.skeleton.set_timestamp,',num2str(jdata.t),' )') );
+            eval( strcat('feval( h.skeleton.set_found,1 )') );
             r = jdata;
         catch
             fprintf('Illegal set! %s',jointName);

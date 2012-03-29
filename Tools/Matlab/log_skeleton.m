@@ -8,7 +8,7 @@ end
 %% Timing settings
 prep_time = 10;
 %prep_time = 0;
-nseconds_to_log = 5;
+nseconds_to_log = 10;
 run_once = 0;
 counter = 0;
 fps = 20;
@@ -24,6 +24,7 @@ jointNames = { ...
     'HipL', 'KneeL', 'AnkleL', 'FootL', ... % 17-20
     'HipR', 'KneeR', 'AnkleR', 'FootR'... %21-24
     };
+nJoints = numel(jointNames);
 % Set up indexing
 left_idx   = zeros(nJoints,1);
 right_idx  = zeros(nJoints,1);
@@ -36,7 +37,6 @@ joint2track = 'ShoulderL';
 index2track = find(ismember(jointNames, joint2track)==1);
 
 %% Initialize variables
-nJoints = numel(jointNames);
 positions = zeros(nJoints,3);
 rots = zeros(3,3,nJoints);
 confs = zeros(nJoints,2);

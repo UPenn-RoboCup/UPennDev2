@@ -58,7 +58,7 @@ function update()
       --print('vel:',vx,vy)
       --print()
       -- Body.set_rarm_command(vector.zeros(3));
-      print( 'Desired arm position: ', unpack(get_scaled_prime_arm(0)) );
+      --print( 'Desired arm position: ', unpack(get_scaled_prime_arm(0)) );
       qRArm = Kinematics.inverse_arm(get_scaled_prime_arm(1));
       qLArm = Kinematics.inverse_arm(get_scaled_prime_arm(0));
       if(qRArm) then

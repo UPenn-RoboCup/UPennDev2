@@ -87,7 +87,13 @@ count = 0;
 lastImageCount = 0;
 t0 = unix.time()
 
+--Robot-specific camera pitch angle bias
+headPitch = Config.walk.headPitch or 0;
+
 function entry()
+  --Initialize camera pitch bias from Config value 
+  vcm.set_camera_pitchBias(headPitch); 
+
   -- Start the HeadTransform machine
   HeadTransform.entry();
 	

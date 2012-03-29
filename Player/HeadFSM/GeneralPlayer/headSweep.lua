@@ -11,6 +11,7 @@ dist = Config.fsm.headReady.dist;
 height = Config.fsm.headReady.height;
 
 function entry()
+print("headSweep entry")
   print(_NAME..' entry');
 
   t0 = Body.get_time();

@@ -271,7 +271,13 @@ function set_indicator_goal(color)
 end
 
 function get_battery_level()
-  return 10;
+  --should we use average or minimum value?
+  batt=get_sensor_battery();
+  min_batt=1000;
+  for i=1,#batt do
+    if batt[i]>0 and batt[i]<min_batt then min_batt=batt[i];end
+  end
+  return min_batt/10;
 end
 
 function get_change_state()

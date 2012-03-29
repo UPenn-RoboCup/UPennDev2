@@ -36,36 +36,24 @@ require('getch')
 require('Body')
 require('Motion')
 
-smindex=0;
-package.path = cwd..'/BodyFSM/'..Config.fsm.body[smindex+1]..'/?.lua;'..package.path;
-package.path = cwd..'/HeadFSM/'..Config.fsm.head[smindex+1]..'/?.lua;'..package.path;
-package.path = cwd..'/GameFSM/'..Config.fsm.game..'/?.lua;'..package.path;
-require('BodyFSM')
-require('HeadFSM')
-require('GameFSM')
-
 Motion.entry();
-
 darwin = false;
 webots = false;
-
 
 -- Enable OP specific 
 if(Config.platform.name == 'OP') then
   darwin = true;
   --SJ: OP specific initialization posing (to prevent twisting)
   Body.set_body_hardness(0.3);
-  Body.set_actuator_command(Config.sit.initangle);
-  unix.usleep(1E6*1.0);
-  Body.set_body_hardness(0);
+  Body.set_actuator_command(Config.stance.initangle)
 end
 
 getch.enableblock(1);
 unix.usleep(1E6*1.0);
+Body.set_body_hardness(0);
 
 --This is robot specific 
 webots = false;
-
 init = false;
 calibrating = false;
 ready = false;
@@ -73,62 +61,53 @@ if( webots or darwin) then
   ready = true;
 end
 
-
-smindex = 0;
 initToggle = true;
-
-
-
 targetvel=vector.zeros(3);
-
 function process_keyinput()
-
-local str=getch.get();
+  local str=getch.get();
   if #str>0 then
-	local byte=string.byte(str,1);
+    local byte=string.byte(str,1);
+    -- Walk velocity setting
+    if byte==string.byte("i") then	targetvel[1]=targetvel[1]+0.02;
+    elseif byte==string.byte("j") then	targetvel[3]=targetvel[3]+0.1;
+    elseif byte==string.byte("k") then	targetvel[1],targetvel[2],targetvel[3]=0,0,0;
+    elseif byte==string.byte("l") then	targetvel[3]=targetvel[3]-0.1;
+    elseif byte==string.byte(",") then	targetvel[1]=targetvel[1]-0.02;
+    elseif byte==string.byte("h") then	targetvel[2]=targetvel[2]+0.02;
+    elseif byte==string.byte(";") then	targetvel[2]=targetvel[2]-0.02;
 
-	-- Walk velocity setting
-	if byte==string.byte("i") then	targetvel[1]=targetvel[1]+0.02;
-	elseif byte==string.byte("j") then	targetvel[3]=targetvel[3]+0.1;
-	elseif byte==string.byte("k") then	targetvel[1],targetvel[2],targetvel[3]=0,0,0;
-	elseif byte==string.byte("l") then	targetvel[3]=targetvel[3]-0.1;
-	elseif byte==string.byte(",") then	targetvel[1]=targetvel[1]-0.02;
-	elseif byte==string.byte("h") then	targetvel[2]=targetvel[2]+0.02;
-	elseif byte==string.byte(";") then	targetvel[2]=targetvel[2]-0.02;
+    elseif byte==string.byte("1") then	
+      kick.set_kick("kickForwardLeft");
+      Motion.event("kick");
+    elseif byte==string.byte("2") then	
+      kick.set_kick("kickForwardRight");
+      Motion.event("kick");
+    elseif byte==string.byte("3") then	
+      kick.set_kick("kickSideLeft");
+      Motion.event("kick");
+    elseif byte==string.byte("4") then	
+      kick.set_kick("kickSideRight");
+      Motion.event("kick");
+    elseif byte==string.byte("5") then
+      walk.doWalkKickLeft();
+    elseif byte==string.byte("6") then
+      walk.doWalkKickRight();
+    elseif byte==string.byte("t") then
+      walk.doSideKickLeft();
+    elseif byte==string.byte("y") then
+      walk.doSideKickRight();
 
-	elseif byte==string.byte("1") then	
-		kick.set_kick("kickForwardLeft");
-		Motion.event("kick");
-	elseif byte==string.byte("2") then	
-		kick.set_kick("kickForwardRight");
-		Motion.event("kick");
-	elseif byte==string.byte("3") then	
-		kick.set_kick("kickSideLeft");
-		Motion.event("kick");
-	elseif byte==string.byte("4") then	
-		kick.set_kick("kickSideRight");
-		Motion.event("kick");
-
-        elseif byte==string.byte("5") then
-                walk.doWalkKickLeft();
-        elseif byte==string.byte("6") then
---                walk.doWalkKickRight();
-                walk.doSideKickRight();
-
-	elseif byte==string.byte("7") then	
-		Motion.event("sit");
-	elseif byte==string.byte("8") then	
-		if walk.active then 
-			walk.stopAlign();
-		end
-		Motion.event("standup");
-	elseif byte==string.byte("9") then	
-		Motion.event("walk");
-		walk.start();
-	end
-	walk.set_velocity(unpack(targetvel));
-
-	print("Command velocity:",unpack(walk.velCommand))
+    elseif byte==string.byte("7") then	
+      Motion.event("sit");
+    elseif byte==string.byte("8") then	
+      if walk.active then walk.stop();end
+      Motion.event("standup");
+    elseif byte==string.byte("9") then	
+      Motion.event("walk");
+      walk.start();
+    end
+    walk.set_velocity(unpack(targetvel));
+    print("Command velocity:",unpack(walk.velCommand))
   end
 end
 
@@ -139,7 +118,6 @@ tUpdate = unix.time();
 
 function update()
   count = count + 1;
-
   if (not init)  then
     if (calibrating) then
       if (Body.calibrate(count)) then
@@ -147,7 +125,6 @@ function update()
         calibrating = false;
         ready = true;
       end
-      
     elseif (ready) then
       init = true;
     else
@@ -157,7 +134,6 @@ function update()
           calibrating = true;
         end
       end
-
       -- toggle state indicator
       if (count % 100 == 0) then
         initToggle = not initToggle;
@@ -168,13 +144,11 @@ function update()
         end
       end
     end
-
   else
     -- update state machines 
     Motion.update();
     Body.update();
   end
-
   local dcount = 50;
   if (count % 50 == 0) then
 --    print('fps: '..(50 / (unix.time() - tUpdate)));

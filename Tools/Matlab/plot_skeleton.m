@@ -6,7 +6,16 @@ debug = 0;
 
 joint2track = 'ElbowL';
 index2track = find(ismember(jointNames, joint2track)==1);
+
+%% For quick calculations
+%const double upperArmLength = .060;  //OP, spec
+%const double lowerArmLength = .129;  //OP, spec
+op_arm_len = .189;
 indexWaist = find(ismember(jointNames, 'Waist')==1);
+indexShoulder = find(ismember(jointNames, 'ShoulderL')==1);
+indexElbow = find(ismember(jointNames, 'ElbowL')==1);
+indexWrist = find(ismember(jointNames, 'WristL')==1);
+indexFoot = find(ismember(jointNames, 'FootL')==1);
 
 nLogs = numel(jointLog);
 nJoints = numel(jointNames);
@@ -24,17 +33,17 @@ rc = confs(:,2)>0;
 ci = center_idx & pc;
 li = left_idx & pc;
 ri = right_idx & pc;
-figure(1);
+f = figure(1);
 clf;
-p_left=plot( positions(:,1), positions(:,2), 'o', ...
+p_left=plot3( positions(li,1), positions(li,2), positions(li,3),'o', ...
     'MarkerEdgeColor','k', 'MarkerFaceColor', 'r', 'MarkerSize',10 );
 hold on;
-p_right=plot( positions(:,1), positions(:,2), 'o', ...
+p_right=plot3( positions(ri,1), positions(ri,2), positions(ri,3),'o', ...
     'MarkerEdgeColor','k', 'MarkerFaceColor', 'g', 'MarkerSize',10 );
-p_center=plot( positions(:,1), positions(:,2), 'o', ...
+p_center=plot3( positions(ci,1), positions(ci,2), positions(ci,3),'o', ...
     'MarkerEdgeColor','k', 'MarkerFaceColor', 'b', 'MarkerSize',10 );
 %{
-q = quiver3(positions(pc&rc,1), positions(pc&rc,2), positions(pc&rc,3), ...
+q=quiver3(positions(pc&rc,1), positions(pc&rc,2), positions(pc&rc,3), ...
     axis_angles_loc(pc&rc,1),axis_angles_loc(pc&rc,2),axis_angles_loc(pc&rc,3), ...
     'b-','LineWidth',3 );
     %}
@@ -44,7 +53,7 @@ view(0,90);
 %view(-90,0);
 % Top View
 %view(0,0);
-axis([-1000 1000 -1200 1500 -1000 1000]);
+axis([-1 1 -1.2 1.5 -1 1]);
 xlabel('X');
 ylabel('Y');
 zlabel('Z');
@@ -62,6 +71,7 @@ for i=1:nLogs-1
     end
     %% Get data
     positions = jointLog(i).positions - repmat(jointLog(i).positions(indexWaist,:), nJoints,1);
+    positions = positions / 1000;
     rots = jointLog(i).rots;
     confs = jointLog(i).confs;
     axis_angles_loc = zeros(nJoints,4);
@@ -71,7 +81,15 @@ for i=1:nLogs-1
         rpy_loc(j,:) = dcm2angle( local_rots(:,:,j) ) * 180/pi;
     end
     
+    %% Arm calculations
+    e2w = positions(indexElbow,:) - positions(indexWrist,:);
+    s2e = positions(indexShoulder,:) - positions(indexElbow,:);
+    s2w = positions(indexShoulder,:) - positions(indexWrist,:);
+    arm_len = sqrt(norm(e2w)) + sqrt(norm(s2e));
+    offset = s2w * (op_arm_len / arm_len);
+    
     % Only if we have confidence...
+    axis_angles_mag = axis_angles_loc(:,4);
     axis_angles_loc = axis_angles_loc(:,1:3) .* ...
         repmat(axis_angles_loc(:,4),1,3) .* repmat(confs(:,2)~=0,1,3);
     %% Update Figure
@@ -91,8 +109,8 @@ for i=1:nLogs-1
     set(p_center, 'XData', positions( ci, 1), ...
         'YData', positions( ci, 2), ...
         'ZData', positions( ci, 3));
-    %{
     % Update quiver
+    %{
     set(q, 'XData', positions(pc&rc,1), ...
         'YData', positions(pc&rc,2), ...
         'ZData', positions(pc&rc,3), ...
@@ -101,45 +119,11 @@ for i=1:nLogs-1
         'WData', axis_angles_loc(pc&rc,3) ...
         );
     %}
-    %% Print Debug data for Joint2Track
-    if( debug==1 )
-        fprintf('%s: (Pos: %.3f,Rot: %.3f)\n', ...
-            joint2track, confs(index2track,1), confs(index2track,1) );
-        fprintf('Roll: %.3f, Pitch: %.3f, Yaw: %.3f\n', ...
-            rpy_loc(index2track,3),rpy_loc(index2track,2),rpy_loc(index2track,1));
-        fprintf('Position: %.3f, %.3f, %.3f\n\n',...
-            positions(index2track,1),positions(index2track,2),positions(index2track,3) );
-    end
+    
+    %% Timing
     tf = toc(tstart);
     % Realistic pause
     pause( max(twait-tf,0) );
     % Arbitrary pause:
     %pause(.2);
 end
-
-%{
-    [x,y] = pol2cart(axis_angles(index2track,4),1);
-    axis_tmp = axis_angles(index2track,:);
-    subplot(1,2,1);
-    quiver(0,0,x,y,'r-', 'LineWidth',5);
-    axis([-1 1 -1 1]);
-    subplot(1,2,2);
-    quiver3(0,0,0, axis_tmp(1),axis_tmp(2),axis_tmp(3),'b-','LineWidth',5 );
-    axis([-1 1 -1 1 -1 1]);
-%}
-%{
-    if( confs(index2track,2)~=0 )
-        rotplot( reshape(rots(index2track,:,:),[3 3]), [1;1;1] );
-    else
-        fprintf('Not confident about %s rotation\n',joint2track);
-    end
-%}
-
-%{
-    clf;
-    for j=5:8
-        hold on;
-        rotplot( rots(:,:,j), positions(j,:)', 10 );
-    end
-    drawnow;
-%}

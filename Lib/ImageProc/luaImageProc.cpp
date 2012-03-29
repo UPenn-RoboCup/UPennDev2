@@ -32,6 +32,41 @@ extern "C" {
 #include "lua_field_spots.h"
 #include "lua_field_occupancy.h"
 
+//Downsample camera YUYV image for monitor
+
+static int lua_subsample_yuyv2yuyv(lua_State *L){
+  static std::vector<uint32_t> yuyv_array;
+
+  // 1st Input: Original YUYV-format input image
+  uint32_t *yuyv = (uint32_t *) lua_touserdata(L, 1);
+  if ((yuyv == NULL) || !lua_islightuserdata(L, 1)) {
+    return luaL_error(L, "Input YUYV not light user data");
+  }
+  // 2nd Input: Width (in YUYV macropixels) of the original YUYV image
+  int m = luaL_checkint(L, 2);
+  // 3rd Input: Height (in YUVY macropixels) of the original YUYV image
+  int n = luaL_checkint(L, 3);
+  // 4th Input: How much to subsample 
+  int subsample_rate = luaL_checkint(L, 4);
+
+  yuyv_array.resize( m*n/subsample_rate/subsample_rate );
+  int yuyv_ind = 0;
+
+  for (int j = 0; j < n; j++){
+    for (int i = 0; i < m; i++) {
+      if (((i%subsample_rate==0) && (j%subsample_rate==0)) || subsample_rate==1)	{
+        yuyv_array[yuyv_ind++] = *yuyv;
+      }
+      yuyv++;
+    }
+  }
+  // Pushing light data
+  lua_pushlightuserdata(L, &yuyv_array[0]);
+  return 1;
+}
+
+
+
 static int lua_subsample_yuyv2yuv(lua_State *L){
   // Structure this is an array of 8bit channels
   // Y,U,V,Y,U,V
@@ -189,6 +224,13 @@ static int lua_yuyv_to_label(lua_State *L) {
   lua_pushlightuserdata(L, &label[0]);
   return 1;
 }
+
+
+
+
+
+
+
 
 static int lua_rgb_to_label(lua_State *L) {
   static std::vector<uint8_t> label;
@@ -364,6 +406,7 @@ static const struct luaL_reg imageProc_lib [] = {
   {"field_spots", lua_field_spots},
   {"field_occupancy", lua_field_occupancy},
   {"subsample_yuyv2yuv", lua_subsample_yuyv2yuv},
+  {"subsample_yuyv2yuyv", lua_subsample_yuyv2yuyv},
   {NULL, NULL}
 };
 

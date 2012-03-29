@@ -44,6 +44,11 @@ local tUpdate = t0;
 -- Broadcast the images at a lower rate than other data
 local maxFPS = 10;
 local imgFPS = 5;
+
+local maxFPS = 20;
+local imgFPS = 20;
+
+
 local maxPeriod = 1.0 / maxFPS;
 local imgRate = math.max( math.floor( maxFPS / imgFPS ), 1);
 

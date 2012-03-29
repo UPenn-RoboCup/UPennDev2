@@ -9,10 +9,34 @@ require('wcm')
 function update()
   --
   --Kick dir:1 front, 2 to the left, 3 to the right
-  --Kick type: 1 stationary kick, 2 walkkick
+  --Kick type: 1 stationary kick, 2 walkkick, (3 dribble)
+
+  -------------------------------
+  --Kickoff handling
+  ------------------------------
+  tKickOffWear = 20.0;
+
+  t=Body.get_time();
+  kick_off=wcm.get_kick_kickOff();
+  tKickOff=wcm.get_kick_tKickOff();
+  --If too long time has passed since game starts
+  --Don't care about kickoff kick 
+  if (t-tKickOff)>tKickOffWear then
+    wcm.set_kick_kickOff();
+    kick_off=0;
+  end
+  if kick_off>0 then 
+    print("Behavior updated, kickoff kick")
+    kickAngle = math.pi/60;
+    kickDir=1;
+    kickType=2;
+    wcm.set_kick_dir(kickDir);
+    wcm.set_kick_type(kickType);
+    wcm.set_kick_angle(kickAngle);
+    return;
+  end
 
   attackBearing = wcm.get_attack_bearing();
-
   --Check if front walkkick is available now
   kickType=2;
   if walk.canWalkKick ~= 1 or Config.fsm.enable_walkkick == 0 then

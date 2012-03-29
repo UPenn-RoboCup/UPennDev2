@@ -1,5 +1,6 @@
 module(... or '', package.seeall)
 
+--[[
 -- Get Platform for package path
 cwd = '.';
 local platform = os.getenv('PLATFORM') or '';
@@ -25,6 +26,26 @@ package.path = cwd .. '/Motion/?.lua;' .. package.path;
 package.path = cwd .. '/Motion/keyframes/?.lua;' .. package.path;
 package.path = cwd .. '/Vision/?.lua;' .. package.path;
 package.path = cwd .. '/World/?.lua;' .. package.path;
+--]]
+
+-- Add the required paths
+cwd = '.';
+computer = os.getenv('COMPUTER') or "";
+if (string.find(computer, "Darwin")) then
+   -- MacOS X uses .dylib:                                                      
+   package.cpath = cwd.."/Lib/?.dylib;"..package.cpath;
+else
+   package.cpath = cwd.."/Lib/?.so;"..package.cpath;
+end
+package.path = cwd.."/Util/?.lua;"..package.path;
+package.path = cwd.."/Config/?.lua;"..package.path;
+package.path = cwd.."/Lib/?.lua;"..package.path;
+package.path = cwd.."/Dev/?.lua;"..package.path;
+package.path = cwd.."/World/?.lua;"..package.path;
+package.path = cwd.."/Vision/?.lua;"..package.path;
+package.path = cwd.."/Motion/?.lua;"..package.path; 
+
+
 
 require ('Config')
 require ('cutil')
@@ -163,15 +184,15 @@ while( true ) do
   if( msg ) then
     local obj = serialization.deserialize(msg);
     if( obj.arr ) then
-			if ( string.find(obj.arr.name,'yuyv') ) then 
-				push_yuyv(obj.arr);
-			elseif ( string.find(obj.arr.name,'labelA') ) then 
-				push_labelA(obj.arr);
-			elseif ( string.find(obj.arr.name,'labelB') ) then 
-				push_labelB(obj.arr);
-			end
+	if ( string.find(obj.arr.name,'yuyv') ) then 
+		push_yuyv(obj.arr);
+	elseif ( string.find(obj.arr.name,'labelA') ) then 
+		push_labelA(obj.arr);
+	elseif ( string.find(obj.arr.name,'labelB') ) then 
+		push_labelB(obj.arr);
+	end
     else
-			push_data(obj);
+	push_data(obj);
     end
   end
 

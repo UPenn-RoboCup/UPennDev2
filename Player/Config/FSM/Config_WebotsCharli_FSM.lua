@@ -22,7 +22,7 @@ fsm.enable_sidekick = 0;
 --BodyReady : make robot move to initial position
 --------------------------------------------------
 fsm.bodyReady={};
-fsm.bodyReady.maxStep = 0.06;
+fsm.bodyReady.maxStep = 0.15;
 fsm.bodyReady.thClose = {0.20,10*math.pi/180} --r and theta
 
 --------------------------------------------------
@@ -45,7 +45,7 @@ fsm.bodyChase.tLost = 8.0*speedFactor;
 --BodyOrbit : make the robot orbit around the ball
 --------------------------------------------------
 fsm.bodyOrbit={};
-fsm.bodyOrbit.maxStep = 0.20;
+fsm.bodyOrbit.maxStep = 0.15;
 fsm.bodyOrbit.rOrbit = 0.40;
 fsm.bodyOrbit.rFar = 0.90;
 fsm.bodyOrbit.thAlign = 10*math.pi/180;
@@ -58,6 +58,10 @@ fsm.bodyOrbit.tLost = 3.0*speedFactor;
 fsm.bodyPosition={};
 fsm.bodyPosition.maxStep = 0.20;--Normal velocity
 fsm.bodyPosition.maxStep2 = 0.30;--Front dash velocity
+
+fsm.bodyPosition.maxStep = 0.15;--Normal velocity
+fsm.bodyPosition.maxStep2 = 0.20;--Front dash velocity
+
 
 --Trajectory parameters
 fsm.bodyPosition.rTurn = 0.50; 
@@ -84,34 +88,38 @@ fsm.bodyApproach.tLost = 3.0*speedFactor;--ball detection timeout
 fsm.bodyApproach.xTarget11={0, 0.30,0.34}; --min, target, max
 fsm.bodyApproach.yTarget11={0.03, 0.06, 0.09}; --min, target ,max
 
---[[
 --x and y target position for stationary kick to left
-fsm.bodyApproach.xTarget12={0, 0.13,0.14}; --min, target, max
-fsm.bodyApproach.yTarget12={-0.01, 0.015, 0.04}; --min, target ,max
+fsm.bodyApproach.xTarget12={0, 0.25,0.30}; --min, target, max
+fsm.bodyApproach.yTarget12={-0.01, 0.02, 0.05}; --min, target ,max
 
---x and y target position for stationary kick to right
-fsm.bodyApproach.xTarget13={0, 0.13,0.14}; --min, target, max
-fsm.bodyApproach.yTarget13={-0.04, -0.015, 0.01}; --min, target ,max
-
-
---reduced
-fsm.bodyApproach.xTarget21={0, 0.14,0.17}; --min, target, max
-fsm.bodyApproach.yTarget21={0.03, 0.05, 0.06}; --min, target ,max
+--x and y target position for front walkkick
+fsm.bodyApproach.xTarget21={0, 0.38,0.45}; --min, target, max
+fsm.bodyApproach.yTarget21={0.04, 0.055, 0.09}; --min, target ,max
 
 --Target position for side walkkick to left
-fsm.bodyApproach.xTarget22={0, 0.17,0.20}; --min, target, max
-fsm.bodyApproach.yTarget22={-0.01, 0.01, 0.03}; --min, target ,max
-
---Target position for side walkkick to right
-fsm.bodyApproach.xTarget23={0, 0.17,0.20}; --min, target, max
-fsm.bodyApproach.yTarget23={-0.03, -0.01, 0.01}; --min, target ,max
---]]
+fsm.bodyApproach.xTarget22={0, 0.20,0.25}; --min, target, max
+fsm.bodyApproach.yTarget22={-0.01, 0.02, 0.05}; --min, target ,max
 
 --------------------------------------------------
 --BodyKick : Stationary Kick
 --------------------------------------------------
 fsm.bodyKick={};
-fsm.bodyKick.tFollowDelay = 2.2; --delay for camera following the ball
+
+--initial wait 
+fsm.bodyKick.tStartWait = 0.5;
+fsm.bodyKick.tStartWaitMax = 1.0;
+fsm.bodyKick.thGyroMag = 100; 
+
+--ball position checking params
+fsm.bodyKick.kickTargetFront = {0.30,0.06};
+
+--For kicking to the left
+fsm.bodyKick.kickTargetSide = {0.30,0.01};
+
+fsm.bodyKick.kickTh = {0.06,0.05};
+
+--delay for camera following the ball
+fsm.bodyKick.tFollowDelay = 2.2; 
 
 --------------------------------------------------
 --BodyWalkKick : Dynamic Kick

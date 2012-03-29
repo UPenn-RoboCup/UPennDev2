@@ -178,14 +178,13 @@ function update()
     aLeft=ph*kickDef[kickState][6] + (1-ph)*aLeft1;
     qRHipRollCompensation= -qHipRollCompensation1;
 
-
   elseif kickStepType==3 then --Lifting / Landing Right foot
 --	uZmp2=kickDef[kickState][3];
     uRight=util.se2_interpolate(ph,uRight1,
 	util.pose_global(kickDef[kickState][4],uRight1));
     zRight=ph*kickDef[kickState][5] + (1-ph)*zRight1;
     aRight=ph*kickDef[kickState][6] + (1-ph)*aRight1;
-    qRHipRollCompensation= qHipRollCompensation1;
+    qLHipRollCompensation= qHipRollCompensation1;
 
   elseif kickStepType==4 then --Kicking Left foot
     uLeft=util.pose_global(kickDef[kickState][4],uLeft1);
@@ -197,7 +196,7 @@ function update()
     uRight=util.pose_global(kickDef[kickState][4],uRight1);
     zRight=kickDef[kickState][5]
     aRight=kickDef[kickState][6]
-    qRHipRollCompensation= qHipRollCompensation1;
+    qLHipRollCompensation= qHipRollCompensation1;
 
   end
 

@@ -1,5 +1,5 @@
 function h=show_monitor()
-  global MONITOR LOGGER;  
+  global MONITOR LOGGER LUT;  
   h.init=@init;
   h.update=@update;
   h.update_single=@update_single;
@@ -18,6 +18,7 @@ function h=show_monitor()
   h.enable10=1;  %Map mode, 1/2/3
 
   h.logging=0;
+  h.lutname=0;
 
   % subfunctions
   function init(draw_team,target_fps)
@@ -72,10 +73,11 @@ function h=show_monitor()
       MONITOR.hButton7=uicontrol('Style','pushbutton','String','FPS +',...
 	'Position',[600 570 70 20],'Callback',@button7);
 
-
-
       MONITOR.hButton11=uicontrol('Style','pushbutton','String','LOG',...
 	'Position',[20 200 70 40],'Callback',@button11);
+
+      MONITOR.hButton12=uicontrol('Style','pushbutton','String','Load LUT',...
+	'Position',[700 570 250 20],'Callback',@button12);
 
     end
   end
@@ -108,28 +110,23 @@ function h=show_monitor()
     r_struct = robots{playerNumber,teamNumber}.get_team_struct();
     r_mon = robots{playerNumber,teamNumber}.get_monitor_struct();
 
+is_webots=1;%TODO
+
     if( isempty(r_mon) )
       disp('Empty monitor struct!'); return;
     end
 
     if MONITOR.enable1
       MONITOR.h1 = subplot(4,5,[1 2 6 7]);
-%      rgb = robots{playerNumber,teamNumber}.get_rgb();
-
       yuyv = robots{playerNumber,teamNumber}.get_yuyv();
-      rgb=yuyv2rgb(yuyv);
+      [ycbcr,rgb]=yuyv2rgb(yuyv);
 
       plot_rgb( MONITOR.h1, rgb );
-      plot_overlay(r_mon,2);
-
-
-      if MONITOR.logging
-        LOGGER.log_yuyv(yuyv + 0);
-        logstr=sprintf('Logging: %d',LOGGER.log_count);
-        set(MONITOR.hButton11,'String', logstr);
-        if LOGGER.log_count==100 
-          LOGGER.save_log();
-        end
+      %webots use non-subsampled label (2x size of yuyv)
+      if is_webots
+        plot_overlay(r_mon,2);
+      else
+        plot_overlay(r_mon,1);
       end
     end
 
@@ -143,6 +140,11 @@ function h=show_monitor()
       labelB = robots{playerNumber,teamNumber}.get_labelB();
       plot_label( MONITOR.h2, labelB, r_mon, 4);
       plot_overlay(r_mon,4);
+    elseif (MONITOR.enable2==3) && (~isempty(MONITOR.lutname))
+      yuyv = robots{playerNumber,teamNumber}.get_yuyv();
+      yuv=yuyv2yuv(yuyv);
+      MONITOR.h2 = subplot(4,5,[3 4 8 9]);
+      plot_label_lut(MONITOR.h2,yuv)
     end
 
     if MONITOR.enable3
@@ -160,6 +162,14 @@ function h=show_monitor()
       set(MONITOR.hDebugText,'String',r_mon.debug.message);
     end
 
+    if MONITOR.logging
+      LOGGER.log_yuyv(yuyv + 0);
+      logstr=sprintf('%d/100',LOGGER.log_count);
+      set(MONITOR.hButton11,'String', logstr);
+      if LOGGER.log_count==100 
+        LOGGER.save_log();
+      end
+    end
 
   end
 
@@ -221,6 +231,18 @@ function h=show_monitor()
     end
   end
 
+  function plot_label_lut(handle,yuv)
+
+    siz=size(yuv);
+    index = yuv2index(yuv, [64 64 64]);
+    im_display=[];
+    label=LUT(index)+1;
+    cbk=[0 0 0];cr=[1 0 0];cg=[0 1 0];cb=[0 0 1];cy=[1 1 0];cw=[1 1 1];
+    cmap=[cbk;cr;cy;cy;cb;cb;cb;cb;cg;cg;cg;cg;cg;cg;cg;cg;cw];
+    cla(handle);
+    image(label);
+    colormap(cmap);
+  end
 
   function plot_info(robot,r_mon)
     robotnames = {'Bot1','Bot2','Bot3','Bot4'};
@@ -260,9 +282,10 @@ function h=show_monitor()
   end
 
   function button2(varargin)
-    MONITOR.enable2=mod(MONITOR.enable2+1,3);
+    MONITOR.enable2=mod(MONITOR.enable2+1,4);
     if MONITOR.enable2==1 set(MONITOR.hButton2,'String', 'LABEL A');
     elseif MONITOR.enable2==2 set(MONITOR.hButton2,'String', 'LABEL B');
+    elseif MONITOR.enable2==3 set(MONITOR.hButton2,'String', 'LUT');
     else set(MONITOR.hButton2,'String', 'LABEL OFF');
       cla(MONITOR.h2);
     end
@@ -330,4 +353,14 @@ function h=show_monitor()
     MONITOR.logging=1-MONITOR.logging;
   end
 
+  function button12(varargin) % Load lut file
+    [filename, pathname] = uigetfile('*.raw', 'Select lut file to load');
+    if (filename ~= 0)
+      MONITOR.lutname=filename;
+      fid = fopen([pathname filename], 'r');
+      LUT = fread(fid, 'uint8');
+      fclose(fid);
+      set(MONITOR.hButton12,'String', filename);
+    end
+  end
 end

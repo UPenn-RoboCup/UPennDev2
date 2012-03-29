@@ -131,8 +131,8 @@ loadconfig( 'Config_Stretcher' );
 game.teamNumber = 18;
 game.playerID = 1;
 fsm.game = 'Stretcher';
-fsm.head = {'GeneralPlayer'};
-fsm.body = {'GeneralPlayer'};
+fsm.head = {'Stretcher'};
+fsm.body = {'Stretcher'};
 Config.vision.enable_line_detection = 0;
 Config.vision.enable_midfield_landmark_detection = 0;
 --]]

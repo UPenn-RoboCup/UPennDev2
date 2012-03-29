@@ -83,7 +83,7 @@ while(t_passed<nseconds_to_log)
     %positions = positions - repmat(positions(1,:),nJoints,1); % Center at waist
     
     %% Append Log
-    jointLog(counter).t = t_passed;
+    jointLog(counter).t = joint.t;
     jointLog(counter).positions = positions;
     jointLog(counter).rots = rots;
     jointLog(counter).confs = confs;

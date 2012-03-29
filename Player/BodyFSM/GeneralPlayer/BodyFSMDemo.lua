@@ -67,6 +67,7 @@ sm:set_transition(bodyApproach, 'kick', bodyKick);
 sm:set_transition(bodyApproach, 'walkkick', bodyWalkKick);
 
 sm:set_transition(bodyKick, 'done', bodyPositionSimple);
+sm:set_transition(bodyKick, 'reposition', bodyApproach);
 sm:set_transition(bodyWalkKick, 'done', bodyPositionSimple);
 
 sm:set_transition(bodyPositionSimple, 'fall', bodyPositionSimple);
@@ -80,6 +81,9 @@ sm:set_state_debug_handle(gcm.set_fsm_body_state);
 
 function entry()
   sm:entry()
+  wcm.set_kick_dir(1);
+  wcm.set_kick_type(2);
+  wcm.set_kick_angle(0);
 end
 
 function update()

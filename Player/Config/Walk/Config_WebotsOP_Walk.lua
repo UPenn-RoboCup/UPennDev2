@@ -74,7 +74,7 @@ walk.sideKickVel1 = {0.04,0.04};
 walk.sideKickVel2 = {0.09,0.05};
 walk.sideKickVel3 = {0.09,-0.02};
 walk.sideKickSupportMod = {{0,0},{0,0}};
-walk.tStepSideKick = 0.70;
+walk.tStepSideKick = 0.50;
 
 --------------------------------------------
 -- Robot - specific calibration parameters

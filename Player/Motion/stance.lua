@@ -11,13 +11,13 @@ require('vcm')
 active = true;
 t0 = 0;
 
-bodyHeight = Config.walk.bodyHeight;
 footX = Config.walk.footX or 0;
 footY = Config.walk.footY;
 supportX = Config.walk.supportX;
+bodyHeight = Config.walk.bodyHeight;
+bodyTilt=Config.walk.bodyTilt;
 qLArm = Config.walk.qLArm;
 qRArm = Config.walk.qRArm;
-bodyTilt=Config.walk.bodyTilt;
 
 -- Final stance foot position6D
 pTorsoTarget = vector.new({0, 0, bodyHeight, 0,bodyTilt,0});
@@ -25,11 +25,12 @@ pLLeg = vector.new({-supportX + footX, footY, 0, 0,0,0});
 pRLeg = vector.new({-supportX + footX, -footY, 0, 0,0,0});
 
 -- Max change in position6D to reach stance:
-dpLimit = Config.stance.dpLimit or vector.new({.04, .03, .07, .4, .4, .4});
+dpLimit = Config.stance.dpLimitStance or vector.new({.04, .03, .07, .4, .4, .4});
 
 tFinish=0;
 tStartWait=0.2;
-tEndWait=0.1;
+tEndWait=Config.stance.delay or 0;
+tEndWait=tEndWait/100;
 tStart=0;
 
 function entry()
@@ -40,12 +41,6 @@ function entry()
 
   Body.set_head_command({0,0});
   Body.set_head_hardness(.5);
-
-  Body.set_larm_command(qLArm);
-  Body.set_rarm_command(qRArm);
-
-  Body.set_larm_hardness(.1);
-  Body.set_rarm_hardness(.1);
 
   Body.set_waist_hardness(1);
   Body.set_waist_command(0);
@@ -117,6 +112,10 @@ function update()
   if (tol) then
     if tFinish==0 then
       tFinish=t;
+      Body.set_larm_command(qLArm);
+      Body.set_rarm_command(qRArm);
+      Body.set_larm_hardness(.1);
+      Body.set_rarm_hardness(.1);
     else
       if t-tFinish>tEndWait then
 	print("Stand done, time elapsed",t-tStart)

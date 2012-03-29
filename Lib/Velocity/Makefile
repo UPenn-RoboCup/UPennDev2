@@ -20,5 +20,5 @@ mex:
 	mex -O mexBall.cpp BallModel.cpp $(LIBRT)
 
 clean:
-	rm -f *.o *.$(SHLIBEXT) *.$(MEXEXT)
+	rm -f *.so *.o *.$(SHLIBEXT) *.$(MEXEXT)
 

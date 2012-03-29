@@ -22,8 +22,6 @@ timeout = tScan * 2;
 t0 = 0;
 direction = 1;
 
---Robot specific head pitch bias
-headPitch = Config.walk.headPitch or 0;
 
 function entry()
   print("Head SM:".._NAME.." entry");
@@ -50,6 +48,8 @@ function entry()
 end
 
 function update()
+  pitchBias=vcm.get_camera_pitchBias(); --Robot specific head angle bias
+
   --Is the robot in bodySearch and spinning?
   isSearching = mcm.get_walk_isSearching();
 
@@ -87,7 +87,7 @@ function update()
     yaw = yawMagTurn * isSearching;
   end
 
-  Body.set_head_command({yaw, pitch-headPitch});
+  Body.set_head_command({yaw, pitch-pitchBias});
 
   local ball = wcm.get_ball();
   if (t - ball.t < 0.1) then

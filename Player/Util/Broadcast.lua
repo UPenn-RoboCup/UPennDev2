@@ -43,6 +43,8 @@ function sendB()
     sendlabelB.arr = array[i];
     Comm.send(serialization.serialize(sendlabelB));
   end 
+--  local senddata=serialization.serialize(sendlabelB);
+--  print("LabelB info size:",#senddata*#array)
 end
 
 function sendA()
@@ -64,6 +66,9 @@ function sendA()
     -- Need to sleep in order to stop drinking out of firehose
     unix.usleep(pktDelay);
   end
+
+--  local senddata=serialization.serialize(sendlabelA);
+--  print("LabelA info size:",#senddata*#array)
 end
 
 function sendImg()
@@ -81,29 +86,33 @@ function sendImg()
   
   for i=1,#array do
     sendyuyv.arr = array[i];
-  	Comm.send(serialization.serialize(sendyuyv));
+    Comm.send(serialization.serialize(sendyuyv));
     -- Need to sleep in order to stop drinking out of firehose
     unix.usleep(pktDelay);
   end
 
+--  local senddata=serialization.serialize(sendyuyv);
+--  print("YUYV size:",#senddata*#array)
 end
 
 function update(enable)
-	if enable == 0 then return; end
+  if enable == 0 then return; end
 	
-	send = {};	
-	for shmHandlerkey,shmHandler in pairs(sendShm) do
-		send[shmHandlerkey] = {};
-		for sharedkey,sharedvalue in pairs(shmHandler.shared) do
-			send[shmHandlerkey][sharedkey] = {};
-			for itemkey,itemvalue in pairs(shmHandler.shared[sharedkey]) do
-				if string.find(itemReject, itemkey) == nil then
-					send[shmHandlerkey][sharedkey][itemkey] = shmHandler['get_'..sharedkey..'_'..itemkey]();
-				end
-			end
-		end
-	
-	end
+  send = {};	
+  for shmHandlerkey,shmHandler in pairs(sendShm) do
+    send[shmHandlerkey] = {};
+    for sharedkey,sharedvalue in pairs(shmHandler.shared) do
+      send[shmHandlerkey][sharedkey] = {};
+      for itemkey,itemvalue in pairs(shmHandler.shared[sharedkey]) do
+ 	if string.find(itemReject, itemkey) == nil then
+  	  send[shmHandlerkey][sharedkey][itemkey] = 
+                 shmHandler['get_'..sharedkey..'_'..itemkey]();
+ 	end
+      end
+    end
+  end
+--  senddata=serialization.serialize(send);
+--  print("Info byte:",#senddata)
   Comm.send(serialization.serialize(send));
 
 end
@@ -113,11 +122,11 @@ function update_img( enable, imagecount )
     sendB();
     sendImg(); -- half of sub image
     sendA();
---    sendImgSub(2);
+--  sendImgSub(2);
   elseif(enable==3) then
-	if (Config.platform.name ~= "Nao") then
---	    sendImgSub();
--- 	  sendAsub();
-		end
+    if (Config.platform.name ~= "Nao") then
+--    sendImgSub();
+--    sendAsub();
+    end
   end
 end

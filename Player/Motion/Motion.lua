@@ -74,6 +74,7 @@ sm:set_transition(dive, 'divedone', falling);
 --standstill makes the robot stand still with 0 bodytilt (for webots)
 sm:set_transition(standstill, 'stance', stance);
 sm:set_transition(standstill, 'walk', stance);
+sm:set_transition(standstill, 'sit', sit);
 
 -- Grip
 sm:set_transition(grip, 'timeout', grip);

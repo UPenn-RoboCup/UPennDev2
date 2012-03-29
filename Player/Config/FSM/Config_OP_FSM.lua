@@ -11,9 +11,9 @@ fsm={};
 --Should we consider obstacle?
 fsm.enable_obstacle_detection = 1;
 
-fsm.playMode = 1; --For Demo without orbit
+--fsm.playMode = 1; --For Demo without orbit
 --fsm.playMode = 2; --Simple Behavior with orbit
---fsm.playMode = 3; --Advanced Behavior 
+fsm.playMode = 3; --Advanced Behavior 
 
 fsm.enable_walkkick = 1;
 
@@ -22,7 +22,7 @@ fsm.enable_walkkick = 1;
 --------------------------------------------------
 fsm.bodyReady={};
 fsm.bodyReady.maxStep = 0.06;
-fsm.bodyReady.thClose = {0.20,10*math.pi/180} --r and theta
+fsm.bodyReady.thClose = {0.50,15*math.pi/180} --r and theta
 
 --------------------------------------------------
 --BodySearch : make robot turn to search the ball
@@ -65,9 +65,12 @@ fsm.bodyPosition.rDist2 = 0.20;
 fsm.bodyPosition.rTurn2 = 0.08; 
 fsm.bodyPosition.rOrbit = 0.60; 
 
-fsm.bodyPosition.thClose = {0.08,0.15,10*math.pi/180};
+fsm.bodyPosition.rClose = 0.35; 
+fsm.bodyPosition.thClose = {0.15,0.15,10*math.pi/180};
+
 fsm.bodyPosition.tLost =  5.0*speedFactor; 
 fsm.bodyPosition.timeout = 30*speedFactor; 
+
 
 --------------------------------------------------
 --BodyApproach :  Align the robot for kick
@@ -84,30 +87,39 @@ fsm.bodyApproach.yTarget11={0.03, 0.05, 0.06}; --min, target ,max
 
 --x and y target position for stationary kick to left
 fsm.bodyApproach.xTarget12={0, 0.13,0.14}; --min, target, max
-fsm.bodyApproach.yTarget12={-0.01, 0.015, 0.04}; --min, target ,max
-
---x and y target position for stationary kick to right
-fsm.bodyApproach.xTarget13={0, 0.13,0.14}; --min, target, max
-fsm.bodyApproach.yTarget13={-0.04, -0.015, 0.01}; --min, target ,max
+fsm.bodyApproach.yTarget12={-0.005, 0.01, 0.025}; --min, target ,max
 
 --Target position for straight walkkick 
 fsm.bodyApproach.xTarget21={0, 0.17,0.20}; --min, target, max
 fsm.bodyApproach.yTarget21={0.03, 0.05, 0.06}; --min, target ,max
 
+--reduced
+fsm.bodyApproach.xTarget21={0, 0.14,0.17}; --min, target, max
+fsm.bodyApproach.yTarget21={0.03, 0.05, 0.06}; --min, target ,max
+
 --Target position for side walkkick to left
 fsm.bodyApproach.xTarget22={0, 0.17,0.20}; --min, target, max
-fsm.bodyApproach.yTarget22={-0.01, 0.01, 0.03}; --min, target ,max
-
---Target position for side walkkick to right
-fsm.bodyApproach.xTarget23={0, 0.17,0.20}; --min, target, max
-fsm.bodyApproach.yTarget23={-0.03, -0.01, 0.01}; --min, target ,max
+fsm.bodyApproach.yTarget22={0.005, 0.02, 0.035}; --min, target ,max
 
 --------------------------------------------------
 --BodyKick : Stationary Kick
 --------------------------------------------------
 fsm.bodyKick={};
-fsm.bodyKick.tFollowDelay = 2.2; --delay for camera following the ball
 
+--initial wait 
+fsm.bodyKick.tStartWait = 0.5;
+fsm.bodyKick.tStartWaitMax = 1.0;
+fsm.bodyKick.thGyroMag = 100; 
+
+--ball position checking params
+fsm.bodyKick.kickTargetFront = {0.15,0.04};
+
+--For kicking to the left
+fsm.bodyKick.kickTargetSide = {0.15,0.01};
+fsm.bodyKick.kickTh = {0.03,0.025};
+
+--delay for camera following the ball
+fsm.bodyKick.tFollowDelay = 2.2; 
 --------------------------------------------------
 --BodyWalkKick : Dynamic Kick
 --------------------------------------------------
@@ -121,9 +133,6 @@ fsm.bodyGotoCenter.maxStep=0.06;
 fsm.bodyGotoCenter.rClose=0.30;
 fsm.bodyGotoCenter.timeout=10.0*speedFactor;
 
-
-
-
 --------------------------------------------------
 --HeadTrack : Track the ball
 --------------------------------------------------
@@ -133,14 +142,13 @@ fsm.headTrack.tLost = 1.5 * speedFactor;
 fsm.headTrack.minDist = 0.30; --If ball is closer than this, don't look up
 fsm.headTrack.fixTh={0.20,0.08}; --Fix yaw axis if ball is within this box
 
-
 --------------------------------------------------
 --HeadReady : Track the horizonal line for localization
 --------------------------------------------------
 fsm.headReady={}
 fsm.headReady.dist = 3.0; 
 fsm.headReady.height = 0.5; 
-fsm.headReady.tScan= 5.0*speedFactor; 
+fsm.headReady.tScan= 1.0*speedFactor; 
 
 --------------------------------------------------
 --HeadReadyLookGoal : Look Goal during bodyReady

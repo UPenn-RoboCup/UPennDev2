@@ -59,6 +59,27 @@ else
 end
 
 
+
+
+
+
+--------------------------------------------------------------------
+--GeneralPlayer FSM test
+fsm = {};
+loadconfig('FSM/Config_WebotsNao_FSM')--For generalPlayer FSM
+fsm.game = 'RoboCup';
+fsm.body = {'GeneralPlayer'};
+fsm.enable_obstacle_detection = 1;
+fsm.playMode = 2; --1 for demo, 2 for orbit, 3 for direct approach
+fsm.enable_walkkick = 1;
+if game.playerID==1 then game.role = 4; end --Goalie handling 
+-------------------------------------------------------------------
+
+
+
+
+
+
 -- Team Parameters
 
 team = {};
@@ -92,24 +113,15 @@ km.kick_left = 'km_Nao_KickForwardLeft.lua';
 km.standup_front = 'km_Nao_StandupFromFrontFaster.lua';
 km.standup_back = 'km_Nao_StandupFromBackFasterNew.lua';
 
-
--- sitting parameters
-
-sit = {};
-sit.bodyHeight = 0.18;
-sit.footY = 0.0375;
-sit.supportX = 0.023; 
-
-sit.dpLimit = vector.new({.1,.01,.03,.1,.3,.1});
-
-
--- standing parameters
-
-stance = {};
-stance.dpLimit = vector.new({.04, .03, .04, .05, .4, .1});
+--Sit/stand stance parameters
+stance={};
+stance.bodyHeightSit = 0.18;
+stance.supportXSit = 0.023;
+stance.bodyHeightDive= 0.25;
+stance.dpLimitSit=vector.new({.1,.01,.03,.1,.3,.1});
+stance.bodyTiltStance=0*math.pi/180; --bodyInitial bodyTilt, 0 for webots
+stance.dpLimitStance=vector.new({.04, .03, .04, .05, .4, .1});
 stance.delay = 80; --amount of time to stand still after standing to regain balance.
-
-
 
 -- enable obstacle detection
 BodyFSM = {}

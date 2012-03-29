@@ -59,8 +59,8 @@ fsm.body = {'GeneralPlayer'};
 --Behavior flags, defined in FSM Configs and can be overrided here
 fsm.enable_obstacle_detection = 1;
 fsm.playMode = 3; --1 for demo, 2 for orbit, 3 for direct approach
---fsm.playMode = 2; 
 fsm.enable_walkkick = 1;
+fsm.enable_sidekick = 1;
 
 -- Team Parameters
 team = {};
@@ -68,23 +68,32 @@ team.msgTimeout = 5.0;
 team.nonAttackerPenalty = 6.0; -- eta sec
 team.nonDefenderPenalty = 0.5; -- dist from goal
 
+
+
+
+
+
+
+
+
+
+-------------------------------------
+-- Robot specific parameters
+-------------------------------------
+
 -- keyframe files
 km = {};
 km.standup_front = 'km_NSLOP_StandupFromFront.lua';
 km.standup_back = 'km_NSLOP_StandupFromBack.lua';
 
---Sitting parameters
-sit={};
-sit.bodyHeight=0.20; --Fixed for webots
-sit.supportX=-0.010;
-sit.bodyTilt=5*math.pi/180;
-sit.dpLimit=vector.new({.1,.01,.03,.1,.3,.1});
-sit.dpLimit=vector.new({.1,.01,.06,.1,.3,.1});--Faster sit
-
---Standing parameters
+--Sit/stand stance parameters
 stance={};
-stance.dpLimit=vector.new({.04, .03, .04, .4, .4, .4});
-stance.dpLimit=vector.new({.04, .03, .07, .4, .4, .4});--Faster standup
+stance.bodyHeightSit = 0.20;
+stance.supportXSit = -0.010;
+stance.bodyHeightDive= 0.25;
+stance.bodyTiltStance=0*math.pi/180; --bodyInitial bodyTilt, 0 for webots
+stance.dpLimitStance=vector.new({.04, .03, .07, .4, .4, .4});
+stance.dpLimitSit=vector.new({.1,.01,.06,.1,.3,.1});
 
 -- Head Parameters
 head = {};
@@ -121,8 +130,8 @@ loadconfig( 'Config_Stretcher' );
 game.teamNumber = 18;
 game.playerID = 1;
 fsm.game = 'Stretcher';
-fsm.head = {'GeneralPlayer'};
-fsm.body = {'GeneralPlayer'};
+fsm.head = {'Stretcher'};
+fsm.body = {'Stretcher'};
 Config.vision.enable_line_detection = 0;
 Config.vision.enable_midfield_landmark_detection = 0;
 --]]

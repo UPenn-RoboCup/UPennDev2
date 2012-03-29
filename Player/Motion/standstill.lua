@@ -11,15 +11,13 @@ require('vcm')
 active = true;
 t0 = 0;
 
-bodyHeight = Config.walk.bodyHeight;
 footX = Config.walk.footX or 0;
 footY = Config.walk.footY;
 supportX = Config.walk.supportX;
+bodyHeight = Config.walk.bodyHeight;
+bodyTilt = Config.stance.bodyTiltStance or 0;
 qLArm = Config.walk.qLArm;
 qRArm = Config.walk.qRArm;
-
---This is just a stance with0 bodyTilt for webots bodyInitial
-bodyTilt=0;
 
 -- Final stance foot position6D
 pTorsoTarget = vector.new({0, 0, bodyHeight, 0,bodyTilt,0});
@@ -27,7 +25,7 @@ pLLeg = vector.new({-supportX + footX, footY, 0, 0,0,0});
 pRLeg = vector.new({-supportX + footX, -footY, 0, 0,0,0});
 
 -- Max change in position6D to reach stance:
-dpLimit = Config.stance.dpLimit or vector.new({.04, .03, .07, .4, .4, .4});
+dpLimit = Config.stance.dpLimitStance or vector.new({.04, .03, .07, .4, .4, .4});
 
 tFinish=0;
 tStartWait=0.2;
@@ -116,7 +114,7 @@ function update()
 
   vcm.set_camera_bodyHeight(pTorso[3]);
   vcm.set_camera_bodyTilt(pTorso[5]);
-print("BodyHeight/Tilt:",pTorso[3],pTorso[5]*180/math.pi)
+--print("BodyHeight/Tilt:",pTorso[3],pTorso[5]*180/math.pi)
 
   q = Kinematics.inverse_legs(pLLeg, pRLeg, pTorso, 0);
   Body.set_lleg_command(q);

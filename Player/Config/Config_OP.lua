@@ -13,7 +13,6 @@ function loadconfig(configName)
   end
 end
 
---loadconfig('Walk/Config_OP_Walk_old')
 loadconfig('Walk/Config_OP_Walk')
 loadconfig('World/Config_OP_World')
 loadconfig('Kick/Config_OP_Kick')
@@ -32,7 +31,7 @@ dev.ip_wired = '192.168.123.255';
 dev.ip_wireless = '192.168.1.255';
 dev.game_control='OPGameControl';
 dev.team='TeamNSL';
-dev.walk='NewWalk';
+--dev.walk='NewWalk';
 dev.walk='NewNewWalk';
 --dev.walk='HZDWalk';
 dev.kick = 'NewKick'
@@ -46,7 +45,46 @@ game.robotID = game.playerID;
 game.teamColor = parse_hostname.get_team_color();
 game.nPlayers = 3;
 
--- FSM Parameters
+-- FSM and behavior settings
+fsm = {};
+--SJ: loading FSM config kills the variable fsm, so should be called first
+loadconfig('FSM/Config_OP_FSM')
+fsm.game = 'RoboCup';
+fsm.head = {'GeneralPlayer'};
+fsm.body = {'GeneralPlayer'};
+
+--Behavior flags, defined in FSM Configs and can be overrided here
+fsm.enable_obstacle_detection = 1;
+fsm.playMode = 3; --1 for demo, 2 for orbit, 3 for direct approach
+--fsm.playMode = 1; 
+fsm.enable_walkkick = 1;
+fsm.enable_sidekick = 1;
+
+--TODO: rename these
+BodyFSM = {}
+BodyFSM.enable_obstacle_detection = 1;
+
+
+-- Team Parameters
+team = {};
+team.msgTimeout = 5.0;
+team.nonAttackerPenalty = 6.0; -- eta sec
+team.nonDefenderPenalty = 0.5; -- dist from goal
+
+-- keyframe files
+km = {};
+km.standup_front = 'km_NSLOP_StandupFromFront.lua';
+km.standup_back = 'km_NSLOP_StandupFromBack.lua';
+
+
+-- Low battery level
+-- Need to implement this api better...
+bat_low = 100; -- 10V warning
+
+speedFactor = 1.0; --all SM work in real time
+webots_vision = 0; --use full vision
+
+--[[
 
 fsm = {};
 --fsm.game = 'Dodgeball';
@@ -79,27 +117,5 @@ if( fsm.game == 'Dodgeball' ) then
 end
 
 -- enable obstacle detection
-BodyFSM = {}
-BodyFSM.enable_obstacle_detection = 1;
 
--- Team Parameters
-
-team = {};
-team.msgTimeout = 5.0;
-team.nonAttackerPenalty = 6.0; -- eta sec
-team.nonDefenderPenalty = 0.5; -- dist from goal
-
--- keyframe files
-
-km = {};
-km.standup_front = 'km_NSLOP_StandupFromFront.lua';
-km.standup_back = 'km_NSLOP_StandupFromBack.lua';
-
-
--- Low battery level
--- Need to implement this api better...
-bat_low = 100; -- 10V warning
-
-
-speedFactor = 1.0; --all SM work in real time
-webots_vision = 0; --use full vision
+--]]

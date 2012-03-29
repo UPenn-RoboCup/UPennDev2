@@ -57,32 +57,6 @@ kick.def["kickForwardRight"]={
   },
 }
 
-kick.def["kickSideLeft"]={
-  supportLeg = 1,
-  def = {
-        {1, 1, {0,0,0}          }, --Stabilize
-        {1, 0.6, {0,-0.06,0}          }, --COM slide
-        {2, 0.6, {0,-0.06,0} , {-0.07,-0.03,0}, 0.07 , 20*math.pi/180},--Lifting
-        {4, 0.3, {0,-0.06,0} , {0.20,0,0},  0.04 , -10*math.pi/180},--Kicking
-        {2, 0.6, {0,-0.06,0} , {-0.07,0.030,0}, 0, 0 }, --Landing
-        {1, 0.6, {0.03,0, 0}},--COM slide
-        {6, 0.6, {0.03,0, 0}},--Stabilize
-  },
-}
-
-kick.def["kickSideRight"]={
-  supportLeg = 0,
-  def = {
-        {1, 1, {0,0,0}          }, --Stabilize
-        {1, 0.6, {0,0.060,0}          }, --COM slide
-        {3, 0.6, {0,0.060,0} , {-0.07,0.03,0}, 0.07 , 20*math.pi/180}, --Lifting
-        {5, 0.3, {0,0.060,0} , {0.20,0,0},  0.04 , -10*math.pi/180}, --Kicking
-        {3, 0.6, {0,0.060,0} , {-0.07,-0.030,0}, 0, 0 }, --Landing
-        {1, 0.6, {0.03, 0, 0}},--COM slide
-        {1, 0.6, {0.03, 0, 0}},--Stabilize
-  },
-}
-
 --New sidekick param for webots nao
 
 kick.def["kickSideLeft"]={

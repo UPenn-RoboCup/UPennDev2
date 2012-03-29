@@ -22,6 +22,9 @@ else
 --  dofile("Player/Test/test_joints_webots.lua");
 --  dofile("Player/Test/test_punch_webots_op.lua");
 --  dofile("Player/Test/test_stretcher.lua")
-    dofile("Player/main.lua");
+
+--  dofile("Player/main.lua");
+
+    dofile("Player/Test/test_main_webots.lua");
 end
 

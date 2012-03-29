@@ -24,15 +24,23 @@ ifndef OSTYPE
   OSTYPE = $(shell uname -s|awk '{print tolower($$0)}')
 endif
 
+ifndef USER
+  USER=$(shell whoami)
+endif
+
 ifeq ($(OSTYPE),linux)
   SHLIBEXT= so
   LIBOPTS= -shared -fpic
   LIBRT= -lrt
+ifeq ($(USER),darwin)
+  CXXFLAGS= -O3 -fomit-frame-pointer -mtune=native -march=native -pipe -funroll-loops
+endif
 endif
 
 ifeq ($(OSTYPE),darwin)
   SHLIBEXT= dylib
   LIBOPTS= -bundle -undefined dynamic_lookup
+  # -march=native is not supported, so tune as your system demand
   CXXFLAGS= -O2 -fomit-frame-pointer -mtune=native
   LIBRT=
 # The -arch option is only available on Mac systems to create universal binaries
@@ -40,10 +48,12 @@ ifeq ($(MODE),64)
   CC=gcc -arch x86_64
   CXX=g++ -arch x86_64
   LD=g++ -arch x86_64
+  MEXEXT=mexmaci64
 else
   CC=gcc -arch i386
   CXX=g++ -arch i386
   LD=g++ -arch i386
+  MEXEXT=mexmaci
 endif
 endif
 
@@ -66,3 +76,4 @@ endif
 #  Should be using arch...? http://www.implbits.com/About/Blog/tabid/78/post/building-with-gcc-4-6-on-osx/Default.aspx
 # http://stackoverflow.com/questions/1754460/apples-gcc-whats-the-difference-between-arch-i386-and-m32
 #  Really, should use native unless on the Nao
+# OSX Specific: http://programmers.stackexchange.com/questions/51670/why-do-programmers-use-or-recommend-mac-os-x

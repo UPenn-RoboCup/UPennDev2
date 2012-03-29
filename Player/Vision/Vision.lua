@@ -87,7 +87,13 @@ count = 0;
 lastImageCount = 0;
 t0 = unix.time()
 
+--Robot-specific camera pitch angle bias
+headPitch = Config.walk.headPitch or 0;
+
 function entry()
+  --Initialize camera pitch bias from Config value 
+  vcm.set_camera_pitchBias(headPitch); 
+
   -- Start the HeadTransform machine
   HeadTransform.entry();
 	
@@ -191,9 +197,13 @@ function update_shm(status)
             and vcm.get_debug_store_ball_detections() == 1)
         or ((goalCyan.detect == 1 or goalYellow.detect == 1) 
             and vcm.get_debug_store_goal_detections() == 1)) then
-      vcm.set_image_yuyv(camera.image);
       vcm.set_image_labelA(labelA.data);
       vcm.set_image_labelB(labelB.data);
+      vcm.set_image_yuyv(camera.image);
+
+--Store downsampled yuyv for monitoring
+      vcm.set_image_yuyv2(ImageProc.subsample_yuyv2yuyv(
+  	  camera.image,camera.width/2, camera.height,2));
     end
   end
 

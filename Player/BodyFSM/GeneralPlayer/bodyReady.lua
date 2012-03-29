@@ -15,24 +15,17 @@ rClose = Config.fsm.bodyReady.thClose[1];
 thClose = Config.fsm.bodyReady.thClose[2];
 
 -- don't start moving right away
-tstart = 5.0;
+tstart = 2.0;
 
+phase=0; --0 for wait, 1 for approach, 2 for turn, 3 for end
 
 function entry()
   print(_NAME.." entry");
-
   t0 = Body.get_time();
+  phase=0;
 end
 
-function update()
-  local t = Body.get_time();
-
-  if t - t0 < tstart then
-    return;
-  end
-
-  pose = wcm.get_pose();
-
+function getHomePose()
   id = gcm.get_team_player_id();
   if gcm.get_game_kickoff() == 1 then
     if (id == 1) then
@@ -73,33 +66,38 @@ function update()
       home[2] = -1.0;
     end
   end
+  return home;
+end
 
-  homeRelative = util.pose_relative(home, {pose.x, pose.y, pose.a});
-  rhome = math.sqrt(homeRelative[1]^2 + homeRelative[2]^2);
+function update()
+  local t = Body.get_time();
+  pose = wcm.get_pose();
 
-  vx = maxStep * homeRelative[1]/rhome;
-  vy = maxStep * homeRelative[2]/rhome;
-  va = .2 * math.atan2(homeRelative[2], homeRelative[1]);
-
-  -- close and oriented then stop walking
-  if rhome < rClose then
-    attackGoal = wcm.get_goal_attack();
-    attackGoalRelative = util.pose_relative(attackGoal, {pose.x, pose.y, pose.a});
-    home[3] = math.atan2(attackGoalRelative[2], attackGoalRelative[1]);
-
-    if math.abs(home[3]) < thClose then
-      walk.set_velocity(0, 0, 0);
-      walk.stop();
-    else
-      -- face center
-      va = .2 * home[3];
-      walk.start();
-      walk.set_velocity(vx, vy, va);
+  if phase==0 then 
+    if t - t0 < tstart then 
+      return;
+    else walk.start();
+      phase=1;
     end
-  else
-    walk.start();
+  elseif phase==1 then --Approach phase 
+    home =getHomePose();
+    homeRelative = util.pose_relative(home, {pose.x, pose.y, pose.a});
+
+    rhome = math.sqrt(homeRelative[1]^2 + homeRelative[2]^2);
+    vx = maxStep * homeRelative[1]/rhome;
+    vy = maxStep * homeRelative[2]/rhome;
+    va = .2 * math.atan2(homeRelative[2], homeRelative[1]);
     walk.set_velocity(vx, vy, va);
-  end
+    if rhome < rClose then phase=2; end
+  elseif phase==2 then --Turning phase, face center
+    attackBearing = wcm.get_attack_bearing();
+    va = .2*attackBearing;
+    walk.set_velocity(vx, vy, va);
+    if math.abs(attackBearing)<thClose then 
+      walk.stop(); 
+      phase=3;
+    end
+  end 
 
 end
 

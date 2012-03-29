@@ -26,6 +26,8 @@ function entry()
 end
 
 function update()
+  pitchBias=vcm.get_camera_pitchBias(); --Robot specific head angle bias
+
   local t = Body.get_time();
   local ph = (t-t0)/tFollow;
 
@@ -39,8 +41,7 @@ function update()
       pitch = (1-ph)*pitch0 + ph*pitch1;
       yaw = ph*-yawMagSide;
   end
-  local pitch_actual = pitch - Config.head.cameraAngle[1][2];
-  Body.set_head_command({yaw, pitch_actual});
+  Body.set_head_command({yaw, pitch-pitchBias});
 
   local ball = wcm.get_ball();
   if (t - ball.t < 0.1) then

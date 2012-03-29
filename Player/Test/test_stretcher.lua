@@ -21,6 +21,7 @@ package.path = cwd .. '/Config/?.lua;' .. package.path;
 package.path = cwd .. '/Lib/?.lua;' .. package.path;
 package.path = cwd .. '/Dev/?.lua;' .. package.path;
 package.path = cwd .. '/Motion/?.lua;' .. package.path;
+package.path = cwd .. '/Motion/walk/?.lua;' .. package.path;
 package.path = cwd .. '/Motion/keyframes/?.lua;' .. package.path;
 package.path = cwd .. '/Vision/?.lua;' .. package.path;
 package.path = cwd .. '/World/?.lua;' .. package.path;
@@ -148,12 +149,14 @@ function process_keyinput()
 
     -- Stretcher specific
     elseif byte==string.byte("s") then -- Search for the stretcher
-      sm_running = 1-sm_running;
+--      sm_running = 1-sm_running;
+      sm_running = 1;
       BodyFSM.sm:set_state('bodySearch');
---[[
+
     elseif byte==string.byte("p") then -- Execute pickup motion
-      BodyFSM.sm:set_state('bodyPickup');
---]]
+      sm_running = 0;
+--      BodyFSM.sm:set_state('bodyPickup');
+
     end
 
     walk.set_velocity(unpack(targetvel));

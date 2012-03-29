@@ -2,35 +2,51 @@ function h = shm_robot(teamNumber, playerID)
 % function create the same struct as the team message from
 % shared memory. for local debugging use
 
-h.teamNumber = teamNumber;
-h.playerID = playerID;
-h.user = getenv('USER');
+global MONITOR %for sending the webots check information
 
-% create shm wrappers
-h.gcmTeam  = shm(sprintf('gcmTeam%d%d%s',  h.teamNumber, h.playerID, h.user));
-h.gcmFsm  = shm(sprintf('gcmFsm%d%d%s',  h.teamNumber, h.playerID, h.user));
-h.wcmRobot = shm(sprintf('wcmRobot%d%d%s', h.teamNumber, h.playerID, h.user));
-h.wcmBall  = shm(sprintf('wcmBall%d%d%s',  h.teamNumber, h.playerID, h.user));
-h.wcmGoal  = shm(sprintf('wcmGoal%d%d%s',  h.teamNumber, h.playerID, h.user));
-h.vcmImage = shm(sprintf('vcmImage%d%d%s', h.teamNumber, h.playerID, h.user));
-h.vcmBall  = shm(sprintf('vcmBall%d%d%s',  h.teamNumber, h.playerID, h.user));
-h.vcmGoal  = shm(sprintf('vcmGoal%d%d%s',  h.teamNumber, h.playerID, h.user));
-h.vcmLandmark  = shm(sprintf('vcmLandmark%d%d%s',  h.teamNumber, h.playerID, h.user));
-h.vcmDebug  = shm(sprintf('vcmDebug%d%d%s',  h.teamNumber, h.playerID, h.user));
+  h.teamNumber = teamNumber;
+  h.playerID = playerID;
+  h.user = getenv('USER');
 
-% shm wrappers for freespace, occumap, boundary
-h.wcmOccmap = shm(sprintf('wcmOccmap%d%d%s', h.teamNumber, h.playerID, h.user));
-h.vcmFreespace = shm(sprintf('vcmFreespace%d%d%s', h.teamNumber, h.playerID, h.user));
-h.vcmBoundary = shm(sprintf('vcmBoundary%d%d%s', h.teamNumber, h.playerID, h.user));
+%List of shms
+
+
+
+% create shm wrappers (in alphabetic order)
+  h.gcmFsm  = shm(sprintf('gcmFsm%d%d%s',  h.teamNumber, h.playerID, h.user));
+  %  h.gcmGame 
+  h.gcmTeam  = shm(sprintf('gcmTeam%d%d%s',  h.teamNumber, h.playerID, h.user));
+
+  h.vcmBall  = shm(sprintf('vcmBall%d%d%s',  h.teamNumber, h.playerID, h.user));
+  h.vcmBoundary = shm(sprintf('vcmBoundary%d%d%s', h.teamNumber, h.playerID, h.user));
+  % h.vcmCamera
+  h.vcmDebug  = shm(sprintf('vcmDebug%d%d%s',  h.teamNumber, h.playerID, h.user));
+  h.vcmFreespace = shm(sprintf('vcmFreespace%d%d%s', h.teamNumber, h.playerID, h.user));
+  h.vcmGoal  = shm(sprintf('vcmGoal%d%d%s',  h.teamNumber, h.playerID, h.user));
+  h.vcmImage = shm(sprintf('vcmImage%d%d%s', h.teamNumber, h.playerID, h.user));
+  h.vcmLandmark  = shm(sprintf('vcmLandmark%d%d%s',  h.teamNumber, h.playerID, h.user));
+  % h.vcmLine
+
+  h.wcmBall  = shm(sprintf('wcmBall%d%d%s',  h.teamNumber, h.playerID, h.user));
+  h.wcmGoal  = shm(sprintf('wcmGoal%d%d%s',  h.teamNumber, h.playerID, h.user));
+  %h.wcmKick
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%SJ - reading Occmap SHM from robot kills matlab
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  %h.wcmOccmap = shm(sprintf('wcmOccmap%d%d%s', h.teamNumber, h.playerID, h.user));
+  h.wcmRobot = shm(sprintf('wcmRobot%d%d%s', h.teamNumber, h.playerID, h.user));
 
 % set function pointers
-h.update = @update;
-h.get_team_struct = @get_team_struct;
-h.get_monitor_struct = @get_monitor_struct;
-h.get_yuyv = @get_yuyv;
-h.get_rgb = @get_rgb;
-h.get_labelA = @get_labelA;
-h.get_labelB = @get_labelB;
+  h.update = @update;
+  h.get_team_struct = @get_team_struct;
+  h.get_monitor_struct = @get_monitor_struct;
+  h.get_yuyv = @get_yuyv;
+  h.get_yuyv2 = @get_yuyv2;
+  h.get_rgb = @get_rgb;
+  h.get_labelA = @get_labelA;
+  h.get_labelB = @get_labelB;
+  h.get_particle = @get_particle;
 
   function update()
       % do nothing
@@ -193,7 +209,7 @@ h.get_labelB = @get_labelB;
                     'btmy',bdBtm(1,1:bdCol),...
                     'btmx',-bdBtm(1,bdCol+1:2*bdCol));
       % Add occupancy map
-
+%{
       r.occ = {};
       div = size(h.wcmOccmap.get_r(),2);
       interval = 2*pi/div;
@@ -204,6 +220,8 @@ h.get_labelB = @get_labelB;
                      'rho',zeros(div*4,1),...
                      'x',zeros(div*4,1),...
                      'y',zeros(div*4,1));
+%}
+
       % add horizon line
       r.horizon = {};
       labelAm = h.vcmImage.get_width()/2;
@@ -224,13 +242,19 @@ h.get_labelB = @get_labelB;
   end
 
   function yuyv = get_yuyv()
-      % returns the raw YUYV image
-%   width = h.vcmImage.get_width();
-%   height = h.vcmImage.get_height();
+%   returns the raw YUYV image
     width = h.vcmImage.get_width()/2;
     height = h.vcmImage.get_height();
     rawData = h.vcmImage.get_yuyv();
     yuyv = raw2yuyv(rawData, width, height); %for Nao, double for OP
+  end
+
+  function yuyv2 = get_yuyv2()
+%   returns the half-size raw YUYV image
+    width = h.vcmImage.get_width()/4;
+    height = h.vcmImage.get_height()/2;
+    rawData = h.vcmImage.get_yuyv2();
+    yuyv2 = raw2yuyv(rawData, width, height); %for Nao, double for OP
   end
 
   function rgb = get_rgb()
@@ -241,25 +265,37 @@ h.get_labelB = @get_labelB;
 
   function labelA = get_labelA()
     % returns the labeled image
+    rawData = h.vcmImage.get_labelA();
     width = h.vcmImage.get_width()/2;
     height = h.vcmImage.get_height()/2;
-%{
-    %for webots, use full width/height 
-    width = h.vcmImage.get_width();
-    height = h.vcmImage.get_height();
-%}
-    rawData = h.vcmImage.get_labelA();
+
+    %Webots vision check 
+    %for webots with non-subsampling vision code, use full width/height 
+    scale= length(rawData)*2/width/height;
+    if scale==1
+      width = h.vcmImage.get_width();
+      height = h.vcmImage.get_height();
+      MONITOR.is_webots=1;
+    end
     labelA = raw2label(rawData, width, height)';
   end
 
   function labelB = get_labelB()
     % returns the bit-ored labeled image
-
-    %for webots
-    width = h.vcmImage.get_width()/4;
-    height = h.vcmImage.get_height()/4;
+    width = h.vcmImage.get_width()/8;
+    height = h.vcmImage.get_height()/8;
     rawData = h.vcmImage.get_labelB();
+
+    %Webots vision check 
+    %for webots with non-subsampling vision code, use 2x width/height 
+    scale= length(rawData)*2/width/height;
+    if scale==1 % TODO: check with webots
+      width = h.vcmImage.get_width()/4;
+      height = h.vcmImage.get_height()/4;
+      MONITOR.is_webots=1;
+    end
     labelB = raw2label(rawData, width, height)';
   end
+
 end
 

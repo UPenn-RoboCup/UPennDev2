@@ -58,6 +58,19 @@ DEF SAFFiR Supervisor {
         39.24 1024 0
       ]
     }
+    DEF RECEIVER Receiver {
+      name "receiver"
+      channel 0
+    }
+    DEF EMITTER Emitter {
+      name "emitter"
+      channel 0
+    }
+    DEF SUPER_EMITTER Emitter {
+      name "super_emitter"
+      channel 2
+    }
+
     DEF zero GPS {
       name "zero"
     }

@@ -1,5 +1,6 @@
 module(... or '', package.seeall)
 
+--[[
 -- Get Platform for package path
 cwd = '.';
 local platform = os.getenv('PLATFORM') or '';
@@ -25,6 +26,26 @@ package.path = cwd .. '/Motion/?.lua;' .. package.path;
 package.path = cwd .. '/Motion/keyframes/?.lua;' .. package.path;
 package.path = cwd .. '/Vision/?.lua;' .. package.path;
 package.path = cwd .. '/World/?.lua;' .. package.path;
+--]]
+
+-- Add the required paths
+cwd = '.';
+computer = os.getenv('COMPUTER') or "";
+if (string.find(computer, "Darwin")) then
+   -- MacOS X uses .dylib:                                                      
+   package.cpath = cwd.."/Lib/?.dylib;"..package.cpath;
+else
+   package.cpath = cwd.."/Lib/?.so;"..package.cpath;
+end
+package.path = cwd.."/Util/?.lua;"..package.path;
+package.path = cwd.."/Config/?.lua;"..package.path;
+package.path = cwd.."/Lib/?.lua;"..package.path;
+package.path = cwd.."/Dev/?.lua;"..package.path;
+package.path = cwd.."/World/?.lua;"..package.path;
+package.path = cwd.."/Vision/?.lua;"..package.path;
+package.path = cwd.."/Motion/?.lua;"..package.path; 
+
+
 
 require ('Config')
 require ('cutil')
@@ -40,12 +61,16 @@ require ('vcm')
 require 'unix'
 
 yuyv_all = {}
-labelA_all = {}
 yuyv_flag = {}
+labelA_all = {}
 labelA_flag = {}
+yuyv2_all = {}
+yuyv2_flag = {}
 FIRST_YUYV = true
+FIRST_YUYV2 = true
 FIRST_LABELA = true
 yuyv_t_full = unix.time();
+yuyv2_t_full = unix.time();
 labelA_t_full = unix.time();
 labelB_t_full = unix.time();
 data_t_full = unix.time();
@@ -78,9 +103,9 @@ function push_yuyv(obj)
 	yuyv = cutil.test_array();
 	name = parse_name(obj.name);
 	if (FIRST_YUYV == true) then
-		print("initiate yuyv flag");
-		yuyv_flag = vector.zeros(name.parts);
-		FIRST_YUYV = false;
+  	  print("initiate yuyv flag");
+	  yuyv_flag = vector.zeros(name.parts);
+	  FIRST_YUYV = false;
 	end
 
 	yuyv_flag[name.partnum] = 1;
@@ -91,8 +116,8 @@ function push_yuyv(obj)
 --    yuyv_t_full = unix.time();
                 
 --		print(obj.width,obj.height);
-		yuyv_flag = vector.zeros(name.parts);
-		local yuyv_str = "";
+	  yuyv_flag = vector.zeros(name.parts);
+	  local yuyv_str = "";
 		for i = 1 , name.partnum do
 			yuyv_str = yuyv_str .. yuyv_all[i];
 		end
@@ -100,6 +125,35 @@ function push_yuyv(obj)
 		vcm.set_image_yuyv(yuyv);
 		yuyv_all = {}
 	end
+end
+
+function push_yuyv2(obj)
+--	print('receive yuyv parts');
+  yuyv2 = cutil.test_array();
+  name = parse_name(obj.name);
+  if (FIRST_YUYV2 == true) then
+    print("initiate yuyv2 flag");
+    yuyv2_flag = vector.zeros(name.parts);
+    FIRST_YUYV2 = false;
+  end
+
+  yuyv2_flag[name.partnum] = 1;
+  yuyv2_all[name.partnum] = obj.data
+--	print(check_flag(yuyv_flag));
+  if (check_flag(yuyv2_flag) == name.parts) then
+--print("full yuyv\t"..1/(unix.time() - yuyv_t_full).." fps" );
+-- yuyv_t_full = unix.time();
+                
+--print(obj.width,obj.height);
+   yuyv2_flag = vector.zeros(name.parts);
+   local yuyv2_str = "";
+   for i = 1 , name.partnum do
+     yuyv2_str = yuyv2_str .. yuyv2_all[i];
+   end
+   cutil.string2userdata(yuyv2,yuyv2_str);
+   vcm.set_image_yuyv2(yuyv2);
+   yuyv2_all = {}
+ end
 end
 
 function push_labelA(obj)
@@ -163,15 +217,17 @@ while( true ) do
   if( msg ) then
     local obj = serialization.deserialize(msg);
     if( obj.arr ) then
-			if ( string.find(obj.arr.name,'yuyv') ) then 
-				push_yuyv(obj.arr);
-			elseif ( string.find(obj.arr.name,'labelA') ) then 
-				push_labelA(obj.arr);
-			elseif ( string.find(obj.arr.name,'labelB') ) then 
-				push_labelB(obj.arr);
-			end
+	if ( string.find(obj.arr.name,'yuyv') ) then 
+ 	  push_yuyv(obj.arr);
+	elseif ( string.find(obj.arr.name,'ysub2') ) then 
+ 	  push_yuyv2(obj.arr);
+	elseif ( string.find(obj.arr.name,'labelA') ) then 
+	  push_labelA(obj.arr);
+	elseif ( string.find(obj.arr.name,'labelB') ) then 
+	  push_labelB(obj.arr);
+	end
     else
-			push_data(obj);
+	push_data(obj);
     end
   end
 

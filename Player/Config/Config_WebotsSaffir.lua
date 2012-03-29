@@ -86,19 +86,16 @@ km = {};
 km.standup_front = 'km_Saffir_StandupFromFront.lua';
 km.standup_back = 'km_Saffir_StandupFromBack.lua';
 
-
--- sitting parameters
-
-sit = {};
-sit.bodyHeight=0.40; --For Hubo
-sit.supportX = 0;
-sit.dpLimit = vector.new({.1,.01,.03,.1,.3,.1})*2;
-
--- standing parameters
-
-stance = {};
-stance.dpLimit = vector.new({.04, .03, .08, .05, .4, .1});
-stance.delay = 80; --amount of time to stand still after standing to regain balance.
+--Sit/stand stance parameters
+stance={};
+stance.bodyHeightSit = 0.40;
+stance.supportXSit = -0.00;
+stance.bodyHeightDive= 0.65;
+stance.bodyTiltStance=0*math.pi/180; --bodyInitial bodyTilt, 0 for webots
+stance.dpLimitStance = vector.new({.4, .3, .4, .05, .4, .1})*0.6;
+stance.dpLimitStance=vector.new({.04, .03, .07, .4, .4, .4});
+stance.dpLimitSit=vector.new({.1,.01,.06,.1,.3,.1})*2;
+stance.delay = 80; 
 
 -- enable obstacle detection
 BodyFSM = {}

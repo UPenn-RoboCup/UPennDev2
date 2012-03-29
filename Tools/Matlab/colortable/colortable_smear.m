@@ -33,6 +33,9 @@ kern(iYkern0,iUkern0,iVkern0) = 50;
 kern = kern./kern(iYkern0,iUkern0,iVkern0);
 
 
+
+
+
 % iterate over each color and create the mixture model
 for icolor = 1:COLORTABLE.ncolor
 
@@ -47,6 +50,9 @@ for icolor = 1:COLORTABLE.ncolor
   x_smear = min(x_smear, 1);
   
   % save the smeared score into the colortable
-  COLORTABLE.score(:,icolor) = x_smear(:);
+
+  %For real-time label view, we store smeared score to another matrix
+  %COLORTABLE.score(:,icolor) = x_smear(:);
+  COLORTABLE.score_smeared(:,icolor) = x_smear(:);
 end
 

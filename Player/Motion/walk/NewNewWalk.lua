@@ -18,6 +18,16 @@ velLimitY = Config.walk.velLimitY or {-.06, .06};
 velLimitA = Config.walk.velLimitA or {-.4, .4};
 velDelta = Config.walk.velDelta or {.03,.015,.15};
 
+--Toe/heel overlap checking values
+footSizeX = Config.walk.footSizeX or {-0.05,0.05};
+stanceLimitMarginY = Config.walk.stanceLimitMarginY or 0.015;
+stanceLimitY2= 2* Config.walk.footY-stanceLimitMarginY;
+
+--OP default stance width: 0.0375*2 = 0.075
+--Heel overlap At radian 0.15 at each foot = 0.05*sin(0.15)*2=0.015
+--Heel overlap At radian 0.30 at each foot = 0.05*sin(0.15)*2=0.030
+
+
 --Stance parameters
 bodyHeight = Config.walk.bodyHeight;
 bodyTilt=Config.walk.bodyTilt or 0;
@@ -25,10 +35,12 @@ footX = Config.walk.footX or 0;
 footY = Config.walk.footY;
 supportX = Config.walk.supportX;
 supportY = Config.walk.supportY;
-qLArm=Config.walk.qLArm;
-qRArm=Config.walk.qRArm;
-qLArm0={qLArm[1],qLArm[2],qLArm[3]};
-qRArm0={qRArm[1],qRArm[2],qRArm[3]};
+qLArm0=Config.walk.qLArm;
+qRArm0=Config.walk.qRArm;
+qLArmKick0=Config.walk.qLArmKick;
+qRArmKick0=Config.walk.qRArmKick;
+
+--Hardness parameters
 hardnessSupport = Config.walk.hardnessSupport or 0.7;
 hardnessSwing = Config.walk.hardnessSwing or 0.5;
 hardnessArm = Config.walk.hardnessArm or 0.2;
@@ -126,17 +138,19 @@ function entry()
   uTorso1, uTorso2 = uTorso, uTorso;
   uSupport = uTorso;
 
+  uTorsoActual = util.pose_global(vector.new({-footX,0,0}),uTorso);
+
   pLLeg = vector.new{uLeft[1], uLeft[2], 0, 0, 0, uLeft[3]};
   pRLeg = vector.new{uRight[1], uRight[2], 0, 0, 0, uRight[3]};
-  pTorso = vector.new{uTorso[1], uTorso[2], bodyHeight, 0, bodyTilt, uTorso[3]};
-   
+  pTorso = vector.new{uTorsoActual[1], uTorsoActual[2], bodyHeight, 
+		0, bodyTilt, uTorso[3]};
   qLegs = Kinematics.inverse_legs(pLLeg, pRLeg, pTorso, 0);
   Body.set_lleg_command(qLegs);
 
   --Place arms in appropriate position at sides
-  Body.set_larm_command(qLArm);
+  Body.set_larm_command(qLArm0);
   Body.set_larm_hardness(hardnessArm);
-  Body.set_rarm_command(qRArm);
+  Body.set_rarm_command(qRArm0);
   Body.set_rarm_hardness(hardnessArm);
 
   walkKickRequest = 0;
@@ -281,10 +295,6 @@ function update()
   motion_arms();
 end
 
-
-
-
-
 function check_walkkick()
     --Check walking kick phases
     if walkKickType>1 then return; end
@@ -341,8 +351,6 @@ end
 
 function check_side_walkkick()
     if walkKickType<2 then return; end
-
-    walk.tStepSideKick = 0.30; --for OP
 
     if walkKickRequest ==1 then --If support foot is right, skip 1st step
       print("NEWNEWKICK: SIDE WALKKICK START")
@@ -403,8 +411,6 @@ function check_side_walkkick()
 end
 
 
-
-
 function update_still()
   uTorso = step_torso(uLeft, uRight,0.5);
   uTorsoActual = util.pose_global(vector.new({-footX,0,0}),uTorso);
@@ -426,7 +432,6 @@ function motion_legs(qLegs)
 
   gyro_roll0=imuGyr[1];
   gyro_pitch0=imuGyr[2];
-  --print("Gyro RPY", unpack(imuGyr))
 
   --get effective gyro angle considering body angle offset
   if not active then --double support
@@ -455,7 +460,7 @@ function motion_legs(qLegs)
   armShift[1]=armShift[1]+armImuParamX[1]*(armShiftX-armShift[1]);
   armShift[2]=armShift[2]+armImuParamY[1]*(armShiftY-armShift[2]);
 
---TODO: Toe/heel lifting
+  --TODO: Toe/heel lifting
   toeTipCompensation = 0;
 
   if not active then --Double support, standing still
@@ -497,16 +502,21 @@ function motion_legs(qLegs)
 end
 
 function motion_arms()
-  qLArmActual={};   
-  qRArmActual={};   
+  local qLArmActual={};   
+  local qRArmActual={};   
 
-  qLArmActual[1],qLArmActual[2]=qLArm0[1]+armShift[1],qLArm0[2]+armShift[2];
-  qRArmActual[1],qRArmActual[2]=qRArm0[1]+armShift[1],qRArm0[2]+armShift[2];
+  if walkKickRequest >2 and walkKickType>1 then --Side kick, wide arm stance
+    qLArmActual[1],qLArmActual[2]=qLArmKick0[1]+armShift[1],qLArmKick0[2]+armShift[2];
+    qRArmActual[1],qRArmActual[2]=qRArmKick0[1]+armShift[1],qRArmKick0[2]+armShift[2];
+  else --Normal arm stance
+    qLArmActual[1],qLArmActual[2]=qLArm0[1]+armShift[1],qLArm0[2]+armShift[2];
+    qRArmActual[1],qRArmActual[2]=qRArm0[1]+armShift[1],qRArm0[2]+armShift[2];
+  end
+
   qLArmActual[2]=math.max(8*math.pi/180,qLArmActual[2])
   qRArmActual[2]=math.min(-8*math.pi/180,qRArmActual[2]);
   qLArmActual[3]=qLArm0[3];
   qRArmActual[3]=qRArm0[3];
-
   Body.set_larm_command(qLArmActual);
   Body.set_rarm_command(qRArmActual);
 end
@@ -523,17 +533,16 @@ function step_left_destination(vel, uLeft, uRight)
   local uLeftRight = util.pose_relative(uLeftPredict, uRight);
   -- Do not pidgeon toe, cross feet:
 
-  --TODO: Prevent robot from stepping on heel edge
-  --[[
-  local limitY=stanceLimitY[1];
-  if uLeftRight[3]>0.30 then
-     limitY=limitY+0.015;
-  end
-  uLeftRight[2] = math.min(math.max(uRightLeft[2], limitY),stanceLimitY[2]),
-  --]]
+  --Check toe and heel overlap
+  local toeOverlap= -footSizeX[1]*uLeftRight[3];
+  local heelOverlap= -footSizeX[2]*uLeftRight[3];
+  local limitY = math.max(stanceLimitY[1],
+	stanceLimitY2+math.max(toeOverlap,heelOverlap));
+
+  --print("Toeoverlap Heeloverlap",toeOverlap,heelOverlap,limitY)
 
   uLeftRight[1] = math.min(math.max(uLeftRight[1], stanceLimitX[1]), stanceLimitX[2]);
-  uLeftRight[2] = math.min(math.max(uLeftRight[2], stanceLimitY[1]), stanceLimitY[2]);
+  uLeftRight[2] = math.min(math.max(uLeftRight[2], limitY),stanceLimitY[2]);
   uLeftRight[3] = math.min(math.max(uLeftRight[3], stanceLimitA[1]), stanceLimitA[2]);
 
   return util.pose_global(uLeftRight, uRight);
@@ -548,17 +557,16 @@ function step_right_destination(vel, uLeft, uRight)
   local uRightLeft = util.pose_relative(uRightPredict, uLeft);
   -- Do not pidgeon toe, cross feet:
 
-  --TODO: Prevent robot from stepping on heel edge
-  --[[
-  local limitY=stanceLimitY[1];
-  if uRightLeft[3]<-0.30 then
-     limitY=limitY+0.015;
-  end
-  uRightLeft[2] = math.min(math.max(uRightLeft[2], -stanceLimitY[2]), -limitY);
-  --]]
+  --Check toe and heel overlap
+  local toeOverlap= footSizeX[1]*uRightLeft[3];
+  local heelOverlap= footSizeX[2]*uRightLeft[3];
+  local limitY = math.max(stanceLimitY[1],
+	stanceLimitY2+math.max(toeOverlap,heelOverlap));
+
+  --print("Toeoverlap Heeloverlap",toeOverlap,heelOverlap,limitY)
 
   uRightLeft[1] = math.min(math.max(uRightLeft[1], stanceLimitX[1]), stanceLimitX[2]);
-  uRightLeft[2] = math.min(math.max(uRightLeft[2], -stanceLimitY[2]), -stanceLimitY[1]);
+  uRightLeft[2] = math.min(math.max(uRightLeft[2], -stanceLimitY[2]), -limitY);
   uRightLeft[3] = math.min(math.max(uRightLeft[3], -stanceLimitA[2]), -stanceLimitA[1]);
 
   return util.pose_global(uRightLeft, uLeft);

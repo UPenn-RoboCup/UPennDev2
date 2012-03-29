@@ -32,18 +32,20 @@ h.set_joint = @set_joint;
         end
     end
 
-    function r = set_joint( jointName )
+    function r = set_joint( jointName, jdata )
         % returns the skeleton head
         r = [];
-        try
-            r.t = h.skeleton.get_timestamp();
+        try 
+            orientation = jdata.rot(:);
             % Super bad for performance, I think,
             % but don't know a better way...
-            r.confidence = eval( strcat('feval( h.confidence.set_',jointName,' )') );
-            orientation = eval( strcat('feval( h.orientation.set_',jointName,' )') );
-            r.position = eval( strcat('feval( h.position.set_',jointName,' )') );
+            eval( strcat('feval( h.confidence.set_',jointName,',',mat2str(jdata.confidence),' )') );
+            eval( strcat('feval( h.orientation.set_',jointName,',',mat2str(orientation),' )') );
+            eval( strcat('feval( h.position.set_',jointName,',',mat2str(jdata.position),' )') );
+            eval( strcat('feval( h.skeleton.set_timestamp,',num2str(jdata.t),' )') );
+            r = jdata;
         catch
-            fprintf('Illegal get! %s',jointName);
+            fprintf('Illegal set! %s',jointName);
             r = [];
         end
     end

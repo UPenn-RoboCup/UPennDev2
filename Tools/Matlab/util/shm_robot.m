@@ -40,6 +40,7 @@ function h = shm_robot(teamNumber, playerID)
   h.get_team_struct = @get_team_struct;
   h.get_monitor_struct = @get_monitor_struct;
   h.get_yuyv = @get_yuyv;
+  h.get_yuyv2 = @get_yuyv2;
   h.get_rgb = @get_rgb;
   h.get_labelA = @get_labelA;
   h.get_labelB = @get_labelB;
@@ -243,6 +244,14 @@ function h = shm_robot(teamNumber, playerID)
     height = h.vcmImage.get_height();
     rawData = h.vcmImage.get_yuyv();
     yuyv = raw2yuyv(rawData, width, height); %for Nao, double for OP
+  end
+
+  function yuyv2 = get_yuyv2()
+%   returns the half-size raw YUYV image
+    width = h.vcmImage.get_width()/4;
+    height = h.vcmImage.get_height()/2;
+    rawData = h.vcmImage.get_yuyv2();
+    yuyv2 = raw2yuyv(rawData, width, height); %for Nao, double for OP
   end
 
   function rgb = get_rgb()

@@ -107,8 +107,7 @@ function sendImg()
 end
 
 function sendImgSub2()
-  -- yuyv --
-  print("yuyv2")
+  -- yuyv2 --
   yuyv2 = vcm.get_image_yuyv2();
   width = vcm.get_image_width()/4; -- number of yuyv packages
   height = vcm.get_image_height()/2;
@@ -138,9 +137,11 @@ function sendImgSub2()
     -- Need to sleep in order to stop drinking out of firehose
     unix.usleep(pktDelay);
   end
-
+--[[
+  print("Total packet:",#array)
   print("Total Serialize time:",tSerialize);
   print("Total Send time:",tSend);
+--]]
 end
 
 function update(enable)
@@ -173,11 +174,13 @@ end
 function update_img( enable, imagecount )
   if(enable==2) then
     sendB();
- --   sendImg(); -- half of sub image
+--  sendImg(); 
     sendA();
+-- half of sub image
     sendImgSub2();
   elseif(enable==3) then
     if (Config.platform.name ~= "Nao") then
+      sendImg(); 
 --    sendImgSub();
 --    sendAsub();
     end

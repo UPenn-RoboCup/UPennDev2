@@ -60,6 +60,7 @@ static int lua_subsample_yuyv2yuyv(lua_State *L){
       yuyv++;
     }
   }
+
   // Pushing light data
   lua_pushlightuserdata(L, &yuyv_array[0]);
   return 1;

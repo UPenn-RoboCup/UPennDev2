@@ -1,8 +1,8 @@
 %% Plot the skeleton
 %clear all;
 
-%load('primeLogs_20120328T235032.mat'); % Symmetric
-load('primeLogs_20120329T075603.mat'); % Asymetric
+load('primeLogs_20120328T235032.mat'); % Symmetric
+%load('primeLogs_20120329T075603.mat'); % Asymetric
 debug = 0;
 
 joint2track = 'ElbowL';

@@ -4,7 +4,8 @@
 #include "BallModel.h"
 #include <math.h>
 
-#define PREDICT
+// Prediction requires OpenCV
+//#define PREDICT
 #define MODEL 3
 /*
   Model Type

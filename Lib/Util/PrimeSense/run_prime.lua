@@ -22,6 +22,7 @@ package.path = cwd .. '/../Config/?.lua;' .. package.path;
 require 'primesense'
 require 'unix';
 require 'primecm'
+run_once = false;
 
 init = false; -- Not initialized yet
 t0 = unix.time()
@@ -42,10 +43,18 @@ while(true) do
         primecm['set_position_'..v]( pos );
         primecm['set_orientation_'..v]( rot );
         primecm['set_confidence_'..v]( confidence );
+        if(run_once) then
+          print( v, unpack(pos) );
+        end
       end
       -- Update Shm
       primecm.set_skeleton_found( 1 );
-      primecm.set_skeleton_timestamp( timestamp );      
+      primecm.set_skeleton_timestamp( timestamp );
+
+      if(run_once) then
+        return;
+      end
+
     end
   else
     init = false;

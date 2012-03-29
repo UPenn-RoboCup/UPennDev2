@@ -42,7 +42,7 @@ function update()
   if( ps ) then
     if( primecm.get_skeleton_found()==1 ) then
       print('Updating via PrimeSense')
-      local torso = primecm.get_skeleton_torso();
+      local torso = primecm.get_position_Torso();
       local vx = -1*torso[3] - 240;
       local vy = -1*torso[1] - 200;
       local va = 0;

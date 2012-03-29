@@ -56,7 +56,8 @@ XnChar g_strPose[20] = "";
 
 XnUserID aUsers[MAX_NUM_USERS];
 XnUInt16 nUsers;
-XnSkeletonJointTransformation torsoJoint;
+XnSkeletonJointTransformation tmpJoint;
+XnSkeletonJointPosition tmpPosition;
 XnUInt32 epochTime = 0;
 
 // New
@@ -246,6 +247,38 @@ void close(){
   g_Context.Release();
 }
 
+const char *jointToS(XnSkeletonJoint eJoint)
+{// http://ndruger.lolipop.jp/hatena/20110108/tcp.diff
+	// fool. but can't get the number of XnSkeletonJoint.
+	switch (eJoint) {
+		case XN_SKEL_HEAD: return "HEAD";
+		case XN_SKEL_NECK: return "NECK";
+		case XN_SKEL_TORSO: return "TORSO";
+		case XN_SKEL_WAIST: return "WAIST";
+		case XN_SKEL_LEFT_COLLAR: return "LEFT_COLLAR";
+		case XN_SKEL_LEFT_SHOULDER: return "LEFT_SHOULDER";
+		case XN_SKEL_LEFT_ELBOW: return "LEFT_ELBOW";
+		case XN_SKEL_LEFT_WRIST: return "LEFT_WRIST";
+		case XN_SKEL_LEFT_HAND: return "LEFT_HAND";
+		case XN_SKEL_LEFT_FINGERTIP: return "LEFT_FINGERTIP";
+		case XN_SKEL_RIGHT_COLLAR: return "RIGHT_COLLAR";
+		case XN_SKEL_RIGHT_SHOULDER: return "RIGHT_SHOULDER";
+		case XN_SKEL_RIGHT_ELBOW: return "RIGHT_ELBOW";
+		case XN_SKEL_RIGHT_WRIST: return "RIGHT_WRIST";
+		case XN_SKEL_RIGHT_HAND: return "RIGHT_HAND";
+		case XN_SKEL_RIGHT_FINGERTIP: return "RIGHT_FINGERTIP";
+		case XN_SKEL_LEFT_HIP: return "LEFT_HIP";
+		case XN_SKEL_LEFT_KNEE: return "LEFT_KNEE";
+		case XN_SKEL_LEFT_ANKLE: return "LEFT_ANKLE";
+		case XN_SKEL_LEFT_FOOT: return "LEFT_FOOT";
+		case XN_SKEL_RIGHT_HIP: return "RIGHT_HIP";
+		case XN_SKEL_RIGHT_KNEE: return "RIGHT_KNEE";
+		case XN_SKEL_RIGHT_ANKLE: return "RIGHT_ANKLE";
+		case XN_SKEL_RIGHT_FOOT: return "RIGHT_FOOT";
+	}
+
+	return "";
+}
 
 static int lua_get_jointtables(lua_State *L) {
   int joint = luaL_checkint(L, 1);
@@ -288,6 +321,46 @@ static int lua_get_jointtables(lua_State *L) {
   return 3;
 }
 
+/*
+ XnSkeletonJoint { 
+  XN_SKEL_HEAD = 1, XN_SKEL_NECK = 2, XN_SKEL_TORSO = 3, XN_SKEL_WAIST = 4, 
+  XN_SKEL_LEFT_COLLAR = 5, XN_SKEL_LEFT_SHOULDER = 6, XN_SKEL_LEFT_ELBOW = 7, XN_SKEL_LEFT_WRIST = 8, 
+  XN_SKEL_LEFT_HAND = 9, XN_SKEL_LEFT_FINGERTIP = 10, XN_SKEL_RIGHT_COLLAR = 11, XN_SKEL_RIGHT_SHOULDER = 12, 
+  XN_SKEL_RIGHT_ELBOW = 13, XN_SKEL_RIGHT_WRIST = 14, XN_SKEL_RIGHT_HAND = 15, XN_SKEL_RIGHT_FINGERTIP = 16, 
+  XN_SKEL_LEFT_HIP = 17, XN_SKEL_LEFT_KNEE = 18, XN_SKEL_LEFT_ANKLE = 19, XN_SKEL_LEFT_FOOT = 20, 
+  XN_SKEL_RIGHT_HIP = 21, XN_SKEL_RIGHT_KNEE = 22, XN_SKEL_RIGHT_ANKLE = 23, XN_SKEL_RIGHT_FOOT = 24 
+}
+--OpenNI
+XN_SKEL_HEAD 	
+XN_SKEL_NECK 	
+XN_SKEL_TORSO 	
+XN_SKEL_WAIST
+
+XN_SKEL_LEFT_COLLAR 	
+XN_SKEL_LEFT_SHOULDER 	
+XN_SKEL_LEFT_ELBOW 	
+XN_SKEL_LEFT_WRIST 	
+XN_SKEL_LEFT_HAND
+XN_SKEL_LEFT_FINGERTIP
+
+XN_SKEL_RIGHT_COLLAR 	
+XN_SKEL_RIGHT_SHOULDER 	
+XN_SKEL_RIGHT_ELBOW 	
+XN_SKEL_RIGHT_WRIST 	
+XN_SKEL_RIGHT_HAND 	
+XN_SKEL_RIGHT_FINGERTIP
+
+XN_SKEL_LEFT_HIP 	
+XN_SKEL_LEFT_KNEE 	
+XN_SKEL_LEFT_ANKLE 	
+XN_SKEL_LEFT_FOOT
+
+XN_SKEL_RIGHT_HIP 	
+XN_SKEL_RIGHT_KNEE 	
+XN_SKEL_RIGHT_ANKLE 	
+XN_SKEL_RIGHT_FOOT
+*/
+
 static int lua_update_joints(lua_State *L) {
 
   g_Context.WaitOneUpdateAll(g_UserGenerator);
@@ -310,20 +383,21 @@ static int lua_update_joints(lua_State *L) {
     // TODO: Error check
     //g_UserGenerator.GetSkeletonCap().EnumerateActiveJoints( aJoints, nJoints );
     //printf("Entering loop with %d joints...\n", nJoints);    
-    for( XnUInt16 jj=0; jj<MAX_NUM_JOINTS; jj++ ){
+    for( XnUInt16 jj=1; jj<=MAX_NUM_JOINTS; jj++ ){
       XnSkeletonJoint j = XnSkeletonJoint(jj);
-      // Use torsoJoint as a temporary joint
-      g_UserGenerator.GetSkeletonCap().GetSkeletonJoint(aUsers[i], j, torsoJoint);
-      XnVector3D   tmpPos  = torsoJoint.position.position;
-      XnConfidence posConf = torsoJoint.position.fConfidence;
-      XnMatrix3X3  tmpRot  = torsoJoint.orientation.orientation; // 9 element float array
-      XnConfidence rotConf = torsoJoint.orientation.fConfidence;
-      //printf("Joint %u = (%lf,%lf,%lf)\n",j,tmpPos.X,tmpPos.Y,tmpPos.Z);
+      // Use tmpJoint as a temporary joint
+      g_UserGenerator.GetSkeletonCap().GetSkeletonJoint(aUsers[i], j, tmpJoint);
+      g_UserGenerator.GetSkeletonCap().GetSkeletonJointPosition(aUsers[i], j, tmpPosition);      
+      XnVector3D   tmpPos  = tmpPosition.position;
+      XnConfidence posConf = tmpPosition.fConfidence;
+      XnMatrix3X3  tmpRot  = tmpJoint.orientation.orientation; // 9 element float array
+      XnConfidence rotConf = tmpJoint.orientation.fConfidence;
+      //printf("%s \t(%u,%u)\t = %lf:(%lf,%lf,%lf)\n",jointToS(j),j,jj,posConf, tmpPos.X,tmpPos.Y,tmpPos.Z);
       // Set the right table value posTable
-      posTable[jj] = tmpPos;
-      rotTable[jj] = tmpRot;
-      posConfTable[jj] = posConf;
-      rotConfTable[jj] = rotConf;
+      posTable[jj-1] = tmpPos;
+      rotTable[jj-1] = tmpRot;
+      posConfTable[jj-1] = posConf;
+      rotConfTable[jj-1] = rotConf;
     }
   }
   if(ret==-1){

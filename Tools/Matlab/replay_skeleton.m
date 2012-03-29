@@ -5,8 +5,8 @@ if( exist('sk','var') == 0 )
     sk = shm_primesense();
 end
 
-load('primeLogs_20120328T235032.mat'); % Symmetric
-load('primeLogs_20120329T075603.mat'); % Asymmetric
+load('primeLogs_sym.mat'); % Symmetric
+load('primeLogs_asym.mat'); % Asymmetric
 debug = 0;
 infloop = 1; % Loop the logs infinitely
 

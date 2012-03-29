@@ -59,6 +59,27 @@ else
 end
 
 
+
+
+
+
+--------------------------------------------------------------------
+--GeneralPlayer FSM test
+fsm = {};
+loadconfig('FSM/Config_WebotsNao_FSM')--For generalPlayer FSM
+fsm.game = 'RoboCup';
+fsm.body = {'GeneralPlayer'};
+fsm.enable_obstacle_detection = 1;
+fsm.playMode = 2; --1 for demo, 2 for orbit, 3 for direct approach
+fsm.enable_walkkick = 1;
+if game.playerID==1 then game.role = 4; end --Goalie handling 
+-------------------------------------------------------------------
+
+
+
+
+
+
 -- Team Parameters
 
 team = {};

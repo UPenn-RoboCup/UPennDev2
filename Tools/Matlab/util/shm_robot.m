@@ -2,6 +2,8 @@ function h = shm_robot(teamNumber, playerID)
 % function create the same struct as the team message from
 % shared memory. for local debugging use
 
+global MONITOR %for sending the webots check information
+
   h.teamNumber = teamNumber;
   h.playerID = playerID;
   h.user = getenv('USER');
@@ -44,6 +46,7 @@ function h = shm_robot(teamNumber, playerID)
   h.get_rgb = @get_rgb;
   h.get_labelA = @get_labelA;
   h.get_labelB = @get_labelB;
+  h.get_particle = @get_particle;
 
   function update()
       % do nothing
@@ -272,7 +275,7 @@ function h = shm_robot(teamNumber, playerID)
     if scale==1
       width = h.vcmImage.get_width();
       height = h.vcmImage.get_height();
-      h.is_webots=1;
+      MONITOR.is_webots=1;
     end
     labelA = raw2label(rawData, width, height)';
   end
@@ -289,7 +292,7 @@ function h = shm_robot(teamNumber, playerID)
     if scale==1 % TODO: check with webots
       width = h.vcmImage.get_width()/4;
       height = h.vcmImage.get_height()/4;
-      h.is_webots=1;
+      MONITOR.is_webots=1;
     end
     labelB = raw2label(rawData, width, height)';
   end

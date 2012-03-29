@@ -60,6 +60,7 @@ function update()
   else
     state.penalty = 0;
   end
+  set_role(1); --Always attacker
 
   t = Body.get_time();
   -- update shm

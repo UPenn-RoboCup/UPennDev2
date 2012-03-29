@@ -188,6 +188,11 @@ function update_shm()
   wcm.set_goal_defend_angle(get_defend_angle());
 
   wcm.set_robot_is_fall_down(mcm.get_walk_isFallDown());
+  --Particle information
+  wcm.set_particle_x(PoseFilter.xp);
+  wcm.set_particle_y(PoseFilter.yp);
+  wcm.set_particle_a(PoseFilter.ap);
+  wcm.set_particle_w(PoseFilter.wp);
 
 end
 

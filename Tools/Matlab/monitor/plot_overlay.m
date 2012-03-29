@@ -1,6 +1,7 @@
 function plot_overlay(r_mon,scale)
 %This function plots overlaid vision information 
 %Over the camera yuyv feed or labeled images
+    overlay_level=0;
 
     if( ~isempty(r_mon) )
       if(r_mon.ball.detect==1)
@@ -11,9 +12,9 @@ function plot_overlay(r_mon,scale)
       if( r_mon.goal.detect == 1 )
         hold on;
         if (~isempty(r_mon.goal.postStat1))
-          plot_goalposts(r_mon.goal.postStat1,scale);
+          plot_goalposts(r_mon.goal.postStat1,r_mon.goal.v1,scale);
           if(r_mon.goal.type==3)
-            plot_goalposts(r_mon.goal.postStat2,scale);
+            plot_goalposts(r_mon.goal.postStat2,r_mon.goal.v2,scale);
           end
         end
         hold off;
@@ -36,11 +37,15 @@ function plot_overlay(r_mon,scale)
     plot( centroid(1), centroid(2),'k+')
     if( ~isnan(ballBox) )
       rectangle('Position', ballBox, 'Curvature',[1,1])
+
+      strballpos = sprintf('%.2f %.2f',ballStats.x,ballStats.y);
+      b_name=text(centroid(1),centroid(2)+radius, strballpos);
+      set(b_name,'FontSize',8);
     end
   end
 
 
-  function plot_goalposts( postStats, scale )
+  function plot_goalposts( postStats, v, scale )
 
     x0=postStats.x;
     y0=postStats.y;
@@ -61,6 +66,12 @@ function plot_overlay(r_mon,scale)
     plot([x21(1) x22(1)],[x21(2) x22(2)],goalcolor,'LineWidth',goalwidth);
     plot([x12(1) x22(1)],[x12(2) x22(2)],goalcolor,'LineWidth',goalwidth);
     plot([x11(1) x21(1)],[x11(2) x21(2)],goalcolor,'LineWidth',goalwidth);
+
+    if overlay_level 
+      strgoalpos = sprintf('%.2f %.2f',v.x,v.y);
+      b_name=text(x0,y0, strgoalpos,'BackGroundColor',[.7 .7 .7]);
+      set(b_name,'FontSize',8);
+    end
 
   end
 
@@ -85,6 +96,14 @@ function plot_overlay(r_mon,scale)
     plot([c0(1) m1(1)],[c0(2) m1(2)],marker1,'LineWidth',6);
     plot([m1(1) m2(1)],[m1(2) m2(2)],marker2,'LineWidth',6);
     plot([m2(1) c4(1)],[m2(2) c4(2)],marker1,'LineWidth',6);
+
+    if overlay_level 
+      strlandmarkpos = sprintf('%.2f %.2f',...
+	landmarkStats.v(1),landmarkStats.v(2));
+      b_name=text(c2(1),c2(2), strlandmarkpos,'BackGroundColor',[.7 .7 .7]);
+      set(b_name,'FontSize',8);
+    end
+
   end
   
   function plot_freespace(free, scale)

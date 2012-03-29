@@ -1,60 +1,122 @@
 %% Plot the skeleton
 %clear all;
-if( exist('sk','var') == 0 )
-    startup;
-    sk = shm_primesense();
-end
 
-run_once = 1;
+load('primeLogs_20120328T235032.mat');
+debug = 0;
 
-jointNames = { ...
-    'Waist', 'Torso', 'Head', 'Neck', ...
-    'CollarL','ShoulderL', 'ElbowL', 'WristL', 'HandL', 'FingerL', ...
-    'CollarR','ShoulderR', 'ElbowR', 'WristR', 'HandR', 'FingerR', ...
-    'HipL', 'KneeL', 'AnkleL', 'FootL', ...
-    'HipR', 'KneeR', 'AnkleR', 'FootR'...
-    };
-
-joint2track = 'ShoulderL';
+joint2track = 'ElbowL';
 index2track = find(ismember(jointNames, joint2track)==1);
+indexWaist = find(ismember(jointNames, 'Waist')==1);
 
+nLogs = numel(jointLog);
 nJoints = numel(jointNames);
-positions = zeros(nJoints,3);
-rots = zeros(3,3,nJoints);
-confs = zeros(nJoints,2);
-axis_angles = zeros(nJoints,4);
+positions = jointLog(1).positions;
+rots = jointLog(1).rots;
+confs = jointLog(1).confs;
 axis_angles_loc = zeros(nJoints,4);
-scale = 10;
-
-figure(1);clf;
-while(1)
-    t0=tic;
-    % Loop
-    for j=1:nJoints
-        jName = jointNames{j};
-        joint = sk.get_joint( jName );
-        positions(j,:) = joint.position;
-        rots(:,:,j) = joint.rot;
-        axis_angles(j,:) = vrrotmat2vec(joint.rot);
-        confs(j,:) = joint.confidence;
+rpy_loc = zeros(nJoints,3);
+[ local_rots ] = abs2local_rot( rots );
+for j=1:nJoints
+    axis_angles_loc(j,:) = vrrotmat2vec(local_rots(:,:,j));
+end
+pc = confs(:,1)>0;
+rc = confs(:,2)>0;
+ci = center_idx & pc;
+li = left_idx & pc;
+ri = right_idx & pc;
+figure(1);
+clf;
+p_left=plot( positions(:,1), positions(:,2), 'o', ...
+    'MarkerEdgeColor','k', 'MarkerFaceColor', 'r', 'MarkerSize',10 );
+hold on;
+p_right=plot( positions(:,1), positions(:,2), 'o', ...
+    'MarkerEdgeColor','k', 'MarkerFaceColor', 'g', 'MarkerSize',10 );
+p_center=plot( positions(:,1), positions(:,2), 'o', ...
+    'MarkerEdgeColor','k', 'MarkerFaceColor', 'b', 'MarkerSize',10 );
+%{
+q = quiver3(positions(pc&rc,1), positions(pc&rc,2), positions(pc&rc,3), ...
+    axis_angles_loc(pc&rc,1),axis_angles_loc(pc&rc,2),axis_angles_loc(pc&rc,3), ...
+    'b-','LineWidth',3 );
+    %}
+% Front view
+view(0,90);
+% Side view
+%view(-90,0);
+% Top View
+%view(0,0);
+axis([-1000 1000 -1200 1500 -1000 1000]);
+xlabel('X');
+ylabel('Y');
+zlabel('Z');
+for i=1:nLogs-1
+    tstart=tic;
+    
+    % Check data limits
+    if( isempty(jointLog(i).t) || i>80 )
+        break;
     end
+    if( isempty(jointLog(i+1).t) )
+        twait = 0;
+    else
+        twait = jointLog(i+1).t - jointLog(i).t;
+    end
+    %% Get data
+    positions = jointLog(i).positions - repmat(jointLog(i).positions(indexWaist,:), nJoints,1);
+    rots = jointLog(i).rots;
+    confs = jointLog(i).confs;
+    axis_angles_loc = zeros(nJoints,4);
     [ local_rots ] = abs2local_rot( rots );
     for j=1:nJoints
         axis_angles_loc(j,:) = vrrotmat2vec(local_rots(:,:,j));
+        rpy_loc(j,:) = dcm2angle( local_rots(:,:,j) ) * 180/pi;
     end
-    positions = positions - repmat(positions(1,:),nJoints,1); % Center at waist
-    %axis_angles2 = axis_angles(:,1:3) .* repmat(axis_angles(:,4),1,3);
-    axis_angles2 = axis_angles_loc(:,1:3) .* repmat(axis_angles_loc(:,4),1,3) .* repmat(confs(:,2)~=0,1,3);
-    clf;
-    plot3( positions(:,1), positions(:,2), positions(:,3), 'o', ...
-        'MarkerEdgeColor','k', 'MarkerFaceColor',[.49 1 .63], 'MarkerSize',10 );
-    hold on;
-    quiver3(positions(:,1), positions(:,2), positions(:,3), axis_angles2(:,1),axis_angles2(:,2),axis_angles2(:,3),'b-','LineWidth',3 );
-    view(0,90);
-    axis([-1000 1000 -1300 700 -1000 1000]);
-    %plot( positions(:,1), positions(:,2), 'o', ...
-    %    'MarkerEdgeColor','k', 'MarkerFaceColor',[.49 1 .63], 'MarkerSize',10 );
     
+    % Only if we have confidence...
+    axis_angles_loc = axis_angles_loc(:,1:3) .* ...
+        repmat(axis_angles_loc(:,4),1,3) .* repmat(confs(:,2)~=0,1,3);
+    %% Update Figure
+    % Update plot3
+    pc = confs(:,1)>0;
+    rc = confs(:,2)>0;
+    ci = center_idx & pc;
+    li = left_idx & pc;
+    ri = right_idx & pc;
+    set(p_left, 'XData', positions( li, 1), ...
+        'YData', positions( li, 2), ...
+        'ZData', positions( li, 3) ...
+        );
+    set(p_right, 'XData', positions( ri, 1), ...
+        'YData', positions( ri, 2), ...
+        'ZData', positions( ri, 3));
+    set(p_center, 'XData', positions( ci, 1), ...
+        'YData', positions( ci, 2), ...
+        'ZData', positions( ci, 3));
+    %{
+    % Update quiver
+    set(q, 'XData', positions(pc&rc,1), ...
+        'YData', positions(pc&rc,2), ...
+        'ZData', positions(pc&rc,3), ...
+        'UData', axis_angles_loc(pc&rc,1), ...
+        'VData', axis_angles_loc(pc&rc,2), ...
+        'WData', axis_angles_loc(pc&rc,3) ...
+        );
+    %}
+    %% Print Debug data for Joint2Track
+    if( debug==1 )
+        fprintf('%s: (Pos: %.3f,Rot: %.3f)\n', ...
+            joint2track, confs(index2track,1), confs(index2track,1) );
+        fprintf('Roll: %.3f, Pitch: %.3f, Yaw: %.3f\n', ...
+            rpy_loc(index2track,3),rpy_loc(index2track,2),rpy_loc(index2track,1));
+        fprintf('Position: %.3f, %.3f, %.3f\n\n',...
+            positions(index2track,1),positions(index2track,2),positions(index2track,3) );
+    end
+    tf = toc(tstart);
+    % Realistic pause
+    pause( max(twait-tf,0) );
+    % Arbitrary pause:
+    %pause(.2);
+end
+
 %{
     [x,y] = pol2cart(axis_angles(index2track,4),1);
     axis_tmp = axis_angles(index2track,:);
@@ -64,34 +126,20 @@ while(1)
     subplot(1,2,2);
     quiver3(0,0,0, axis_tmp(1),axis_tmp(2),axis_tmp(3),'b-','LineWidth',5 );
     axis([-1 1 -1 1 -1 1]);
-    %}
-    %{
+%}
+%{
     if( confs(index2track,2)~=0 )
         rotplot( reshape(rots(index2track,:,:),[3 3]), [1;1;1] );
     else
         fprintf('Not confident about %s rotation\n',joint2track);
     end
-    %}
+%}
 
-    %{
+%{
     clf;
     for j=5:8
         hold on;
-        rotplot( rots(:,:,j), positions(j,:)', scale );
+        rotplot( rots(:,:,j), positions(j,:)', 10 );
     end
     drawnow;
-    %}
-    
-    if( run_once==1 )
-        return;
-    end
-    
-    % Run at 30Hz
-    %pause(0.033);
-    % Run at 10Hz
-    %pause(0.1);
-    toc(t0);
-    % Run at 5Hz
-    pause(0.2);
-    
-end
+%}

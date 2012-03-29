@@ -13,18 +13,35 @@ h.skeleton  = shm(sprintf('primecmSkeleton%d%d%s',  h.teamNumber, h.playerID, h.
 
 % set function pointers
 h.get_joint = @get_joint;
+h.set_joint = @set_joint;
 
     function r = get_joint( jointName )
         % returns the skeleton head
         r = [];
         try
             r.t = h.skeleton.get_timestamp();
-            % Super bad for performance, I think, 
+            % Super bad for performance, I think,
             % but don't know a better way...
             r.confidence = eval( strcat('feval( h.confidence.get_',jointName,' )') );
             orientation = eval( strcat('feval( h.orientation.get_',jointName,' )') );
             r.rot = reshape( orientation, [3 3] );
             r.position = eval( strcat('feval( h.position.get_',jointName,' )') );
+        catch
+            fprintf('Illegal get! %s',jointName);
+            r = [];
+        end
+    end
+
+    function r = set_joint( jointName )
+        % returns the skeleton head
+        r = [];
+        try
+            r.t = h.skeleton.get_timestamp();
+            % Super bad for performance, I think,
+            % but don't know a better way...
+            r.confidence = eval( strcat('feval( h.confidence.set_',jointName,' )') );
+            orientation = eval( strcat('feval( h.orientation.set_',jointName,' )') );
+            r.position = eval( strcat('feval( h.position.set_',jointName,' )') );
         catch
             fprintf('Illegal get! %s',jointName);
             r = [];

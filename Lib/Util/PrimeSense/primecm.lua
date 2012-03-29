@@ -41,12 +41,14 @@ XN_SKEL_RIGHT_ANKLE
 XN_SKEL_RIGHT_FOOT
 --]]
 
-jointNames = { 'Head', 'Neck', 'Torso', 'Waist',
-              'CollarL','ShoulderL', 'ElbowL', 'WristL', 'HandL', 'FingerL',
-              'CollarR','ShoulderR', 'ElbowR', 'WristR', 'HandR', 'FingerR',              
-              'HipL', 'KneeL', 'AnkleL', 'FootL', 
-              'HipR', 'KneeR', 'AnkleR', 'FootR',
-             };
+-- Waist is root...
+jointNames = { 
+    'Head', 'Neck', 'Torso', 'Waist', -- 1-4
+    'CollarL','ShoulderL', 'ElbowL', 'WristL', 'HandL', 'FingerL', --5-10
+    'CollarR','ShoulderR', 'ElbowR', 'WristR', 'HandR', 'FingerR', -- 11-16
+    'HipL', 'KneeL', 'AnkleL', 'FootL',  -- 17-20
+    'HipR', 'KneeR', 'AnkleR', 'FootR' -- 21-24
+    };
 
 shared.skeleton = {};
 shared.skeleton.found = vector.zeros(1);

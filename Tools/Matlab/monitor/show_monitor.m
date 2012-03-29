@@ -1,5 +1,6 @@
 function h=show_monitor()
   global MONITOR LOGGER LUT;  
+
   h.init=@init;
   h.update=@update;
   h.update_single=@update_single;
@@ -19,6 +20,7 @@ function h=show_monitor()
 
   h.logging=0;
   h.lutname=0;
+  h.is_webots=0;
 
   % subfunctions
   function init(draw_team,target_fps)
@@ -110,9 +112,6 @@ function h=show_monitor()
     r_struct = robots{playerNumber,teamNumber}.get_team_struct();
     r_mon = robots{playerNumber,teamNumber}.get_monitor_struct();
 
-is_webots=1;%TODO
-is_webots=0;%TODO
-
     if( isempty(r_mon) )
       disp('Empty monitor struct!'); return;
     end
@@ -131,7 +130,7 @@ is_webots=0;%TODO
       end
 
       %webots use non-subsampled label (2x size of yuyv)
-      if is_webots
+      if MONITOR.is_webots
         plot_overlay(r_mon,2*MONITOR.enable1);
       else
         plot_overlay(r_mon,1*MONITOR.enable1);

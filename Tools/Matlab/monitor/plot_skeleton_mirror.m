@@ -70,10 +70,11 @@ zlabel('Z');
 
 % Mirror difference
 mf = figure(2);
+ma = get(mf,'CurrentAxes');
 mirror_diff = zeros(2,3);
 mb = bar( mirror_diff );
 ylim([-1,1]);
-title('Hand/Elbow Mirror Difference','FontSize',16);
+title('Hand/Elbow/Shoulder Mirror Difference','FontSize',16);
 %set(mb,'YDataSource','mirror_diff')
 
 %% Loop through logged data
@@ -90,7 +91,8 @@ for i=1:nLogs-1
         twait = jointLog(i+1).t - jointLog(i).t;
     end
     %% Get data
-    positions = jointLog(i).positions - repmat(jointLog(i).positions(indexWaist,:), nJoints,1);
+    positions = jointLog(i).positions - ...
+        repmat(jointLog(i).positions(indexWaist,:), nJoints,1);
     positions = positions / 1000;
     rots = jointLog(i).rots;
     confs = jointLog(i).confs;
@@ -108,9 +110,13 @@ for i=1:nLogs-1
     e2wR = positions(indexElbowR,:) - positions(indexWristR,:);
     s2eR = positions(indexShoulderR,:) - positions(indexElbowR,:);
     s2wR = positions(indexShoulderR,:) - positions(indexWristR,:);
+    waist2sL = positions(indexWaist,:) - positions(indexShoulderL,:);
+    waist2sR = positions(indexWaist,:) - positions(indexShoulderR,:);
     % Mirror the right to left side
     s2wL(1) = s2wL(1) * -1;
-    mirror_diff = [s2wL - s2wR; s2eL-s2eR];
+    s2eL(1) = s2eL(1) * -1;
+    waist2sL(1) = waist2sL(1) * -1;
+    mirror_diff = [s2wL - s2wR; s2eL-s2eR; waist2sL-waist2sR];
     %mirror_diff = [s2wL - s2wR]; % End effector only
     
     % Only if we have confidence...
@@ -144,11 +150,17 @@ for i=1:nLogs-1
         'WData', axis_angles_loc(:,3) ...
         );
     % Update mirror plot
+    %{
     %set(mb, {'YData'}, num2cell(mirror_diff',2) ); % SLOW!!!
+    set( mb(1), 'YData', mirror_diff(:,1) ); %These three seem slow also
+    set( mb(2), 'YData', mirror_diff(:,2) );
+    set( mb(3), 'YData', mirror_diff(:,3) );
+    %}
+    %bar(ma,mirror_diff);
     figure(2);
     bar(mirror_diff);
     ylim([-1 1]);
-    title('Hand/Elbow Mirror Difference','FontSize',16);
+    title('Hand/Elbow/Shoulder Mirror Difference','FontSize',16);
     
     %% Timing
     tf = toc(tstart);

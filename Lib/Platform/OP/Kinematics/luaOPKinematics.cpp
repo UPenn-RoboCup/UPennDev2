@@ -150,7 +150,6 @@ static int inverse_arm(lua_State *L) {
     lua_pushnil(L);    
   else
     lua_pushvector(L, qArm);
-  end
   return 1;
 }
 

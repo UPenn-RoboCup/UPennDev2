@@ -42,6 +42,14 @@ shared.kick.type=vector.zeros(1);
 shared.kick.kickOff = vector.zeros(1);
 shared.kick.tKickOff = vector.zeros(1);
 
+--Localization monitoring
+shared.particle = {};
+shared.particle.x=vector.zeros(Config.world.n);
+shared.particle.y=vector.zeros(Config.world.n);
+shared.particle.a=vector.zeros(Config.world.n);
+shared.particle.w=vector.zeros(Config.world.n);
+
+
 if (enable_occmap == 1) then
 	shared.occmap = {};
 	shared.occmap.t = vector.zeros(Config.occmap.div);

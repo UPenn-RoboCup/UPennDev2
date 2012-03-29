@@ -16,7 +16,7 @@ all:: kinematics
 	$(CC) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
 
 kinematics:: luaOPKinematics.o OPKinematics.o Transform.o
-	$(LD) $(LDFLAGS) -o $(LIBNAME).$(SHLIBEXT) $(LIBOPTS) $^ -L$(LIB_DIR) -lm
+	$(LD) $(LDFLAGS) -o $(LIBNAME).$(SHLIBEXT) $(LIBOPTS) $^ $(LIB_DIR) -lm
 
 clean:
 	rm -f *.$(SHLIBEXT) *.o

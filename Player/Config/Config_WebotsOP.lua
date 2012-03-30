@@ -42,6 +42,8 @@ game.teamNumber = (os.getenv('TEAM_ID') or 0) + 0;
 --Webots player id begins at 0 but we use 1 as the first id 
 game.playerID = (os.getenv('PLAYER_ID') or 0) + 1;
 game.robotID = game.playerID; --For webots, robot ID is the same 
+game.role=game.playerID-1; --Default role for webots
+
 
 --Default team (for non-gamecontroller based teamplay)
 if game.teamNumber==1 then game.teamColor = 1; --Red team
@@ -62,6 +64,11 @@ fsm.kickoff_wait_enable = 1;
 fsm.playMode = 2; --1 for demo, 2 for orbit, 3 for direct approach
 fsm.enable_walkkick = 1;
 fsm.enable_sidekick = 1;
+
+-------------------------------
+fsm.body = {'GeneralPK'};
+fsm.playMode = 1;
+-------------------------------
 
 -- Team Parameters
 team = {};

@@ -48,6 +48,7 @@ sm:set_transition(relax, 'sit', sit);
 
 sm:set_transition(stance, 'done', walk);
 sm:set_transition(stance, 'sit', sit);
+sm:set_transition(stance, 'diveready', divewait);
 
 -- nullstate goes to walk
 --sm:set_transition(nullstate, 'button', walk); 
@@ -75,6 +76,7 @@ sm:set_transition(dive, 'divedone', falling);
 sm:set_transition(standstill, 'stance', stance);
 sm:set_transition(standstill, 'walk', stance);
 sm:set_transition(standstill, 'sit', sit);
+sm:set_transition(standstill, 'diveready', divewait);
 
 -- Grip
 sm:set_transition(grip, 'timeout', grip);

@@ -85,6 +85,9 @@ fsm.bodyApproach.tLost = 3.0*speedFactor;--ball detection timeout
 --x and y target position for stationary straight kick
 fsm.bodyApproach.xTarget11={0, 0.13,0.14}; --min, target, max
 fsm.bodyApproach.yTarget11={0.03, 0.05, 0.06}; --min, target ,max
+--reduced
+fsm.bodyApproach.xTarget11={0, 0.11,0.12}; --min, target, max
+fsm.bodyApproach.yTarget11={0.03, 0.05, 0.06}; --min, target ,max
 
 --x and y target position for stationary kick to left
 fsm.bodyApproach.xTarget12={0, 0.13,0.14}; --min, target, max
@@ -114,6 +117,7 @@ fsm.bodyKick.thGyroMag = 100;
 
 --ball position checking params
 fsm.bodyKick.kickTargetFront = {0.15,0.04};
+fsm.bodyKick.kickTargetFront = {0.13,0.04};
 
 --For kicking to the left
 fsm.bodyKick.kickTargetSide = {0.15,0.01};

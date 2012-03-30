@@ -41,6 +41,7 @@ game.teamNumber = (os.getenv('TEAM_ID') or 0) + 0;
 game.playerID = (os.getenv('PLAYER_ID') or 0) + 1;
 game.robotID = game.playerID;
 game.nPlayers = 4;
+game.role = game.playerID-1; -- 0 for goalie
 
 --To handle non-gamecontroller-based team handling for webots
 if game.teamNumber==1 then game.teamColor = 1; --Blue team
@@ -68,6 +69,11 @@ fsm.game = 'RoboCup';
 fsm.body = {'GeneralPlayer'};
 fsm.head = {'NaoPlayer'};
 --fsm.head = {'GeneralPlayer'};
+
+fsm.body = {'GeneralPK'};
+fsm.head = {'NaoDemo'};
+
+
 fsm.enable_obstacle_detection = 1;
 fsm.playMode = 2; --1 for demo, 2 for orbit, 3 for direct approach
 fsm.enable_walkkick = 1;

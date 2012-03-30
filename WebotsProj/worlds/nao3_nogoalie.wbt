@@ -45,8 +45,8 @@ DEF BALL Ball {
   translation 0 0.0323921 0
 }
 DEF PLAYER_1_1 NaoV3R {
-  translation 0.675 0.35 0
-  rotation 0 1 0 -1.5708
+  translation 0.75 0.35 2
+  rotation 0 1 0 -3.14
   controller "nao_team_0"
   controllerArgs "1 1"
   synchronization FALSE
@@ -54,9 +54,10 @@ DEF PLAYER_1_1 NaoV3R {
   waistBand TRUE
   waistBandColor 0.9 0.5 0.5
 }
+
 DEF PLAYER_2_1 NaoV3R {
-  translation 1.5 0.35 -0.8
-  rotation 0 1 0 -1.5708
+  translation 1.5 0.35 2
+  rotation 0 1 0 -3.14
   controller "nao_team_0"
   controllerArgs "2 1"
   synchronization FALSE
@@ -65,8 +66,8 @@ DEF PLAYER_2_1 NaoV3R {
   waistBandColor 0.9 0.5 0.5
 }
 DEF PLAYER_3_1 NaoV3R {
-  translation 1.5 0.35 0.8
-  rotation 0 1 0 -1.5708
+  translation 2.25 0.35 2
+  rotation 0 1 0 -3.14
   controller "nao_team_0"
   controllerArgs "3 1"
   synchronization FALSE

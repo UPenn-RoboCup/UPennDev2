@@ -41,11 +41,10 @@ game.teamNumber = (os.getenv('TEAM_ID') or 0) + 0;
 game.playerID = (os.getenv('PLAYER_ID') or 0) + 1;
 game.robotID = game.playerID;
 game.nPlayers = 4;
-game.role = game.playerID-1; -- 0 for goalie
 
 --To handle non-gamecontroller-based team handling for webots
-if game.teamNumber==1 then game.teamColor = 1; --Blue team
-else game.teamColor = 0; --Red team
+if game.teamNumber==0 then game.teamColor = 0; --Blue team
+else game.teamColor = 1; --Red team
 end
 
 
@@ -70,9 +69,11 @@ fsm.body = {'GeneralPlayer'};
 fsm.head = {'NaoPlayer'};
 --fsm.head = {'GeneralPlayer'};
 
+--Penalty Kick FSM
+--[[
 fsm.body = {'GeneralPK'};
 fsm.head = {'NaoDemo'};
-
+--]]
 
 fsm.enable_obstacle_detection = 1;
 fsm.playMode = 2; --1 for demo, 2 for orbit, 3 for direct approach
@@ -91,7 +92,7 @@ team = {};
 team.msgTimeout = 5.0;
 team.nonAttackerPenalty = 6.0; -- eta sec
 team.nonDefenderPenalty = 0.5; -- dist from goal
-
+team.role = game.playerID-1; -- default role
 
 --Head Parameters
 

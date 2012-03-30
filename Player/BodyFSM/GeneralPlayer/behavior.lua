@@ -27,7 +27,7 @@ function update()
   end
   if kick_off>0 then 
     print("Behavior updated, kickoff kick")
-    kickAngle = math.pi/60;
+    kickAngle = math.pi/6; --30 degree off angle
     kickDir=1;
     kickType=2;
     wcm.set_kick_dir(kickDir);

@@ -81,7 +81,7 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel)
   end
 
   function plot_info(robot,angle)
-    robotnames = {'Bot1','Bot2','Bot3','Bot4'};
+    robotnames = {'Bot1','Bot2','Bot3','Bot4','Bot5','Bot6'};
     rolenames = {'Unknown','Attack','Defend','Support','Goalie','Waiting'};
     colornames={'red','blue'};
 

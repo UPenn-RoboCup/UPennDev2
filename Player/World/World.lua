@@ -48,7 +48,19 @@ yaw0 =0;
 
 function entry()
   count = 0;
+  init_particles();
   Velocity.entry();
+end
+
+function init_particles()
+  if use_same_colored_goal>0 then
+    goalDefend=get_goal_defend();
+    PoseFilter.initialize_unified(
+      vector.new({goalDefend[1]/2,-2,math.pi/2}),
+      vector.new({goalDefend[1]/2,2,-math.pi/2}));
+  else
+    PoseFilter.initialize();    
+  end
 end
 
 function update_odometry()
@@ -83,6 +95,29 @@ function update_vision()
   if mcm.get_walk_isFallDown() ==1 then
     PoseFilter.reset_heading();
   end
+
+  -- Penalized?
+  if gcm.in_penalty() then
+    init_particles();
+  end
+
+  -- At gameSet state, all robot should face opponents' goal
+  --TODO
+--[[
+  if gcm.get_game_state()==2 then 
+    pose.x,pose.y,pose.a = PoseFilter.get_pose();
+    goalAngle=get_attack_bearing()+pose.a;
+
+    Erra = math.abs(mod_angle(pose.a-goalAngle));
+    print("Current pose goalDefendAngle",
+	pose.a*180/math.pi,goalAngle*180/math.pi);
+    if Erra>math.pi/2 then
+      print("PoseA error:",Erra*180/math.pi);
+      print("Resetting heading")
+      PoseFilter.initialize_heading(goalAngle);
+    end
+  end
+--]]
 
   -- ball
   if (vcm.get_ball_detect() == 1) then

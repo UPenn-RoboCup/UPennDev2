@@ -28,4 +28,6 @@ camera.focal_length = 160; -- in pixels
 camera.focal_base = 160; -- image width used in focal length calculation
 
 camera.lut_file = 'lutWebots.raw';
+--Colortable with one colored goal
+camera.lut_file = 'lutWebotsUnified.raw';
 

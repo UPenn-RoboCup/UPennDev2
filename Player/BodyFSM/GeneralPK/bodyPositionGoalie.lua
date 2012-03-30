@@ -21,6 +21,7 @@ function entry()
 end
 
 function update()
+print("UPDATING")
   local t = Body.get_time();
   pose = wcm.get_pose();
   homePosition = wcm.get_goal_defend();
@@ -32,6 +33,8 @@ function update()
 
   vx,vy=0,0;
   va = .2*attackBearing;
+  print("attackBearing:",attackBearing*180/math.pi)
+
 
   walk.set_velocity(vx, vy, va);
   if (math.abs(attackBearing)<10*math.pi/180) then

@@ -7,6 +7,7 @@ require('vector')
 require('Config')
 require('wcm')
 require('gcm')
+require('Team')
 
 t0 = 0;
 

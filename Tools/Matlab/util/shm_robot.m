@@ -29,6 +29,7 @@ global MONITOR %for sending the webots check information
 
   h.wcmBall  = shm(sprintf('wcmBall%d%d%s',  h.teamNumber, h.playerID, h.user));
   h.wcmGoal  = shm(sprintf('wcmGoal%d%d%s',  h.teamNumber, h.playerID, h.user));
+  h.wcmParticle  = shm(sprintf('wcmParticle%d%d%s',  h.teamNumber, h.playerID, h.user));
   %h.wcmKick
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -182,6 +183,13 @@ global MONITOR %for sending the webots check information
       r.debug={};
       r.debug.message = char(h.vcmDebug.get_message());
 
+  %Particle info
+      r.particle={};
+      r.particle.x=h.wcmParticle.get_x();
+      r.particle.y=h.wcmParticle.get_y();
+      r.particle.w=h.wcmParticle.get_w();
+      r.particle.a=h.wcmParticle.get_a();
+
   % Add freespace boundary
       r.free = {};
       freeCol = h.vcmFreespace.get_nCol();
@@ -296,6 +304,5 @@ global MONITOR %for sending the webots check information
     end
     labelB = raw2label(rawData, width, height)';
   end
-
 end
 

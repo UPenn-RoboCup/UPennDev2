@@ -2,7 +2,8 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel)
 % This function shows the robot over the field map
 % Level 1: show position only
 % Level 2: show position and vision info
-% Level 3: show positin, vision info and fov info
+% Level 3: show position, vision info and fov info
+% Level 4: show position, vision info and particles
 
   x0 = robot_struct.pose.x;
   y0 = robot_struct.pose.y;
@@ -23,8 +24,10 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel)
     if drawlevel>1
       plot_goal(r_mon.goal,scale);
       plot_landmark(r_mon.landmark,scale);
-      if drawlevel>2
+      if drawlevel==3
         plot_fov(r_mon.fov);
+      elseif drawlevel==4
+	plot_particle(r_mon.particle);
       end
     end
   end
@@ -145,19 +148,27 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel)
     if( goal.detect==1 )
       if(goal.color==2) marker = 'm';% yellow
       else marker = 'b';end
-      marker2 = strcat(marker,'+');
-      marker3 = strcat(marker,'--');
+      marker2 = strcat(marker,'--');
       if( goal.v1.scale ~= 0 )
+
+        if goal.type==0 
+          marker1 = strcat(marker,'+');%Unknown post
+	elseif goal.type==1
+          marker1 = strcat(marker,'<');%Left post
+	else
+          marker1 = strcat(marker,'>');%Right post
+	end
         x1 = goal.v1.x*ca - goal.v1.y*sa + robot_struct.pose.x;
         y1 = goal.v1.x*sa + goal.v1.y*ca + robot_struct.pose.y;
-        plot(x1,y1,marker2,'MarkerSize',12/scale);
-        plot([x0 x1],[y0 y1],marker3);
+        plot(x1,y1,marker1,'MarkerSize',12/scale);
+        plot([x0 x1],[y0 y1],marker2);
       end
       if( goal.v2.scale ~= 0 )
+        marker1 = strcat(marker,'>');%Left post
         x2 = goal.v2.x*ca - goal.v2.y*sa + robot_struct.pose.x;
         y2 = goal.v2.x*sa + goal.v2.y*ca + robot_struct.pose.y;
-        plot(x2,y2,marker2,'MarkerSize',12/scale);
-        plot([x0 x2],[y0 y2],marker3);
+        plot(x2,y2,marker1,'MarkerSize',12/scale);
+        plot([x0 x2],[y0 y2],marker2);
       end
     end
   end
@@ -173,6 +184,10 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel)
       plot(x1,y1,marker2,'MarkerSize',12/scale);
       plot([x0 x1],[y0 y1],marker3);
     end
+  end
+
+  function plot_particle(particle)
+    plot(particle.x,particle.y,'x')
   end
 
 end

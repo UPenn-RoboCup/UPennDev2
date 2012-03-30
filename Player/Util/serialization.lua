@@ -2,6 +2,7 @@ module(..., package.seeall);
 
 require('cutil')
 
+--[[
 function serialize(o)
   local str = "";
   if type(o) == "number" then
@@ -19,6 +20,32 @@ function serialize(o)
   end
   return str;
 end
+--]]
+
+--New serialization code omiting integer indexes for tables
+function serialize(o)
+  local str = "";
+  if type(o) == "number" then
+    str = tostring(o);
+  elseif type(o) == "string" then
+    str = string.format("%q",o);
+  elseif type(o) == "table" then
+    str = "{";
+    local is_num=true;
+    for k,v in pairs(o) do
+      if type(k)=="string" then 
+        str = str..string.format("[%s]=%s,",serialize(k),serialize(v));
+      else
+        str = str..string.format("%s,",serialize(v));
+      end
+    end
+    str = str.."}";
+  else	
+    str = "nil";
+  end
+  return str;
+end
+
 
 function serialize_array(ud, width, height, dtype, arrName, arrID)
   -- function to serialize an userdata array

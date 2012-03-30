@@ -2,6 +2,8 @@ function h = shm_robot(teamNumber, playerID)
 % function create the same struct as the team message from
 % shared memory. for local debugging use
 
+global MONITOR %for sending the webots check information
+
   h.teamNumber = teamNumber;
   h.playerID = playerID;
   h.user = getenv('USER');
@@ -40,9 +42,11 @@ function h = shm_robot(teamNumber, playerID)
   h.get_team_struct = @get_team_struct;
   h.get_monitor_struct = @get_monitor_struct;
   h.get_yuyv = @get_yuyv;
+  h.get_yuyv2 = @get_yuyv2;
   h.get_rgb = @get_rgb;
   h.get_labelA = @get_labelA;
   h.get_labelB = @get_labelB;
+  h.get_particle = @get_particle;
 
   function update()
       % do nothing
@@ -245,6 +249,14 @@ function h = shm_robot(teamNumber, playerID)
     yuyv = raw2yuyv(rawData, width, height); %for Nao, double for OP
   end
 
+  function yuyv2 = get_yuyv2()
+%   returns the half-size raw YUYV image
+    width = h.vcmImage.get_width()/4;
+    height = h.vcmImage.get_height()/2;
+    rawData = h.vcmImage.get_yuyv2();
+    yuyv2 = raw2yuyv(rawData, width, height); %for Nao, double for OP
+  end
+
   function rgb = get_rgb()
     % returns the raw RGB image (not full size)
     yuyv = h.get_yuyv();
@@ -263,7 +275,7 @@ function h = shm_robot(teamNumber, playerID)
     if scale==1
       width = h.vcmImage.get_width();
       height = h.vcmImage.get_height();
-      h.is_webots=1;
+      MONITOR.is_webots=1;
     end
     labelA = raw2label(rawData, width, height)';
   end
@@ -280,7 +292,7 @@ function h = shm_robot(teamNumber, playerID)
     if scale==1 % TODO: check with webots
       width = h.vcmImage.get_width()/4;
       height = h.vcmImage.get_height()/4;
-      h.is_webots=1;
+      MONITOR.is_webots=1;
     end
     labelB = raw2label(rawData, width, height)';
   end

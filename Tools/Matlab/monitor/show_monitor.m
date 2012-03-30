@@ -1,5 +1,6 @@
 function h=show_monitor()
   global MONITOR LOGGER LUT;  
+
   h.init=@init;
   h.update=@update;
   h.update_single=@update_single;
@@ -19,6 +20,7 @@ function h=show_monitor()
 
   h.logging=0;
   h.lutname=0;
+  h.is_webots=0;
 
   % subfunctions
   function init(draw_team,target_fps)
@@ -110,23 +112,28 @@ function h=show_monitor()
     r_struct = robots{playerNumber,teamNumber}.get_team_struct();
     r_mon = robots{playerNumber,teamNumber}.get_monitor_struct();
 
-is_webots=1;%TODO
-
     if( isempty(r_mon) )
       disp('Empty monitor struct!'); return;
     end
 
     if MONITOR.enable1
-      MONITOR.h1 = subplot(4,5,[1 2 6 7]);
-      yuyv = robots{playerNumber,teamNumber}.get_yuyv();
-      [ycbcr,rgb]=yuyv2rgb(yuyv);
+      if MONITOR.enable1==1
+        MONITOR.h1 = subplot(4,5,[1 2 6 7]);
+        yuyv = robots{playerNumber,teamNumber}.get_yuyv();
+        [ycbcr,rgb]=yuyv2rgb(yuyv);
+        plot_rgb( MONITOR.h1, rgb );
+      elseif MONITOR.enable1==2
+        MONITOR.h1 = subplot(4,5,[1 2 6 7]);
+        yuyv2 = robots{playerNumber,teamNumber}.get_yuyv2();
+        [ycbcr,rgb]=yuyv2rgb(yuyv2);
+        plot_rgb( MONITOR.h1, rgb );
+      end
 
-      plot_rgb( MONITOR.h1, rgb );
       %webots use non-subsampled label (2x size of yuyv)
-      if is_webots
-        plot_overlay(r_mon,2);
+      if MONITOR.is_webots
+        plot_overlay(r_mon,2*MONITOR.enable1);
       else
-        plot_overlay(r_mon,1);
+        plot_overlay(r_mon,1*MONITOR.enable1);
       end
     end
 
@@ -245,7 +252,7 @@ is_webots=1;%TODO
   end
 
   function plot_info(robot,r_mon)
-    robotnames = {'Bot1','Bot2','Bot3','Bot4'};
+    robotnames = {'Bot1','Bot2','Bot3','Bot4','Bot5'};
     rolenames = {'','Attacker','Defender','Supporter','Goalie','Waiting'};
     colornames={'red','blue'};
 
@@ -274,8 +281,9 @@ is_webots=1;%TODO
   end
 
   function button1(varargin)
-    MONITOR.enable1=1-MONITOR.enable1;
-    if MONITOR.enable1 set(MONITOR.hButton1,'String', 'YUYV ON');
+    MONITOR.enable1=mod(MONITOR.enable1+1,3);
+    if MONITOR.enable1==1 set(MONITOR.hButton1,'String', 'YUYV1');
+    elseif MONITOR.enable1==2 set(MONITOR.hButton1,'String', 'YUYV2');
     else set(MONITOR.hButton1,'String', 'YUYV OFF');
       cla(MONITOR.h1);
     end
@@ -283,6 +291,9 @@ is_webots=1;%TODO
 
   function button2(varargin)
     MONITOR.enable2=mod(MONITOR.enable2+1,4);
+    if MONITOR.lutname==0 
+      MONITOR.enable2=mod(MONITOR.enable2,3);
+    end 
     if MONITOR.enable2==1 set(MONITOR.hButton2,'String', 'LABEL A');
     elseif MONITOR.enable2==2 set(MONITOR.hButton2,'String', 'LABEL B');
     elseif MONITOR.enable2==3 set(MONITOR.hButton2,'String', 'LUT');

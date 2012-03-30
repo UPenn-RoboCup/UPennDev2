@@ -54,13 +54,13 @@ function h=show_monitor()
 
       MONITOR.hDebugText=uicontrol('Style','text','Position',[770 60 200 500]);
 
-      MONITOR.hButton1=uicontrol('Style','pushbutton','String','YUYV ON',...
+      MONITOR.hButton1=uicontrol('Style','pushbutton','String','YUYV1',...
 	'Position',[20 500 70 40],'Callback',@button1);
 
       MONITOR.hButton2=uicontrol('Style','pushbutton','String','LABEL A',...
 	'Position',[20 440 70 40],'Callback',@button2);
 
-      MONITOR.hButton3=uicontrol('Style','pushbutton','String','MAP A',...
+      MONITOR.hButton3=uicontrol('Style','pushbutton','String','MAP1',...
 	'Position',[20 380 70 40],'Callback',@button3);
 
       MONITOR.hButton4=uicontrol('Style','pushbutton','String','2D ON',...
@@ -303,10 +303,11 @@ function h=show_monitor()
   end
 
   function button3(varargin)
-    MONITOR.enable3=mod(MONITOR.enable3+1,4);
+    MONITOR.enable3=mod(MONITOR.enable3+1,5);
     if MONITOR.enable3==1 set(MONITOR.hButton3,'String', 'MAP1');
     elseif MONITOR.enable3==2 set(MONITOR.hButton3,'String', 'MAP2');
     elseif MONITOR.enable3==3 set(MONITOR.hButton3,'String', 'MAP3');
+    elseif MONITOR.enable3==4 set(MONITOR.hButton3,'String', 'PVIEW');
     else set(MONITOR.hButton3,'String', 'MAP OFF');
       cla(MONITOR.h3);
     end

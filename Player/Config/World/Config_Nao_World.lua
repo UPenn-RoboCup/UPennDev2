@@ -27,6 +27,20 @@ world.landmarkYellow = {0.0, 2.4};
 world.cResample = 10; --Resampling interval
 world.odomScale = {1.06, 1.06, 0.97};
 
+--For same-colored goalposts
+world.use_same_colored_goal=1;
+world.postUnified={};
+world.postUnified[1] = {3.0, 0.70};
+world.postUnified[2] = {3.0, -0.70};
+world.postUnified[3] = {-3.0, -0.70};
+world.postUnified[4] = {-3.0, 0.70};
+world.postLeft={};
+world.postLeft[1] = {3.0, 0.70};
+world.postLeft[2] = {-3.0, -0.70};
+world.postRight={};
+world.postRight[1] = {3.0, -0.70};
+world.postRight[2] = {-3.0, 0.70};
+
 -- filter weights
 world.rGoalFilter = 0.02;
 world.aGoalFilter = 0.05;

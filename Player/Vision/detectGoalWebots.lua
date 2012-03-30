@@ -17,8 +17,8 @@ colorField = 8;
 colorWhite = 16;
 
 use_point_goal=Config.vision.use_point_goal;
-headInverted=Config.vision.headInverted;
-
+--Use center post to determine post type (disabled for OP)
+use_centerpost=Config.vision.use_centerpost or 0;
 --Cut top portion of detected post (for OP)
 cut_top_post = Config.vision.cut_top_post or 0;
 
@@ -155,7 +155,7 @@ function detect(color,color2)
   end
 
   if (npost == 2) then
-    goal.type = 3;
+    goal.type = 3; --Two posts
 
     -- check for valid separation between posts:
     local dgoal = postA[2].centroid[1]-postA[1].centroid[1];
@@ -175,19 +175,22 @@ function detect(color,color2)
     local dxCrossbar = crossbarStats.centroid[1] - postA[1].centroid[1];
     if (math.abs(dxCrossbar) > 0.6*postWidth) then
       if (dxCrossbar > 0) then
-        -- left post
-        goal.type = 1;
---	goal.type = 0;
+	if use_centerpost>0 then
+	  goal.type = 1;  -- left post
+	else
+	  goal.type = 0;  -- unknown post
+	end
       else
-        -- right post
-        goal.type = 2;
---	goal.type = 0;
+	if use_centerpost>0 then
+	  goal.type = 2;  -- right post
+	else
+	  goal.type = 0;  -- unknown post
+	end
       end
     else
       -- unknown post
       goal.type = 0;
         -- eliminate small posts without cross bars
-
       if (postA[1].area < 50) then
         vcm.add_debug_message("Post size too small");
         return goal;
@@ -217,7 +220,15 @@ function detect(color,color2)
       end
   end
 
-  vcm.add_debug_message(string.format("Goal detected\n"));
+  if goal.type==0 then
+    vcm.add_debug_message(string.format("Unknown single post detected\n"));
+  elseif goal.type==1 then
+    vcm.add_debug_message(string.format("Left post detected\n"));
+  elseif goal.type==2 then
+    vcm.add_debug_message(string.format("Right post detected\n"));
+  elseif goal.type==3 then
+    vcm.add_debug_message(string.format("Two posts detected\n"));
+  end
 
   goal.detect = 1;
   return goal;

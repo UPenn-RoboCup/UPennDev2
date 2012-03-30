@@ -40,6 +40,9 @@ vision.check_for_ground = 0;
 -- use this to substitute goal check with blue/yellow ball check
 vision.use_point_goal = 0;
 
+-- use this to use top post to determine the type of post
+vision.use_centerpost = 1;
+
 vision.ballColor = color.orange;
 vision.goal1Color = color.yellow;
 vision.goal2Color = color.cyan;

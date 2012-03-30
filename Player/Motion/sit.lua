@@ -52,14 +52,11 @@ function update()
   local dt = t - t0;
   if not started then 
     started=true;
-
     --Now we assume that the robot always start sitting from stance position
     pTorso = vector.new({-footX,0,vcm.get_camera_bodyHeight(),
 	  	         0,vcm.get_camera_bodyTilt(),0});
     pLeft = vector.new({-supportX,footY,0,0,0,0});
     pRight= vector.new({-supportX,-footY,0,0,0,0});
-    Body.set_lleg_command(qLLeg);
-    Body.set_rleg_command(qRLeg);
     Body.set_lleg_hardness(1);
     Body.set_rleg_hardness(1);
     t0 = Body.get_time();

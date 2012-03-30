@@ -9,8 +9,8 @@ WorldInfo {
   basicTimeStep 40
 }
 Viewpoint {
-  orientation -0.483622 0.854639 0.188947 0.761485
-  position 3.06411 2.00783 4.41698
+  orientation -0.986003 0.141944 0.0874615 0.887717
+  position -1.48878 5.99189 4.88326
 }
 Background {
   skyColor [
@@ -41,7 +41,7 @@ DEF BLUE_GOAL KidGoal {
   rotation 0 1 0 3.14159
   postColor 0.152941 0.505882 0.733333
 }
-DEF YELLOW_LANDMARK  Landmark {
+DEF YELLOW_LANDMARK Landmark {
   translation 0 0 -2.4
   postColor1 0.992157 0.854902 0.219608
   postColor2 0.152941 0.505882 0.733333
@@ -52,26 +52,25 @@ DEF BLUE_LANDMARK Landmark {
   postColor2 0.992157 0.854902 0.219608
 }
 DEF BALL Ball {
-  translation 0 0.0323921 0
+  translation -1.20499 0.0323921 0.0142045
 }
 DEF PLAYER_1_1 DARwInOP {
-  translation 1 0.3 0
-  rotation 0 1 0 -1.56
+  translation 0 0.31 0
+  rotation 0 1 0 -1.57
   controller "darwin-op_team_0"
   controllerArgs "1 1"
+  plasticColor 1 0 0
+  cameraWindowPosition 0.125 0
   waistBand TRUE
   waistBandColor 1 0 0
-  plasticColor 1 0 0
-  cameraWindowPosition 0.125 0 
 }
 DEF PLAYER_0_0 DARwInOP {
-  translation -2.5 0.3 0
-  rotation 0 1 0 1.56
+  translation -3 0.31 0
+  rotation 0 1 0 1.57
   controller "darwin-op_team_0"
   controllerArgs "0 0"
-  waistBand TRUE
-  waistBandColor 0.5 0 0.5
   plasticColor 0.5 0 0.5
   cameraWindowPosition 0.125 1
+  waistBand TRUE
+  waistBandColor 0.5 0 0.5
 }
-

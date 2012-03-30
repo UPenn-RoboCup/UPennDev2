@@ -8,13 +8,13 @@ require('Body');
 -- A very simple velocity filter
 -------------------------------
 
-x,y,vx,vy,isdodge=0,0,0,0,0;
 
 noball_count = 1;
 noball_threshold = 3; 
 gamma = 0.3;
 
 function entry()
+  x,y,vx,vy,isdodge=0,0,0,0,0;
   tLast=Body.get_time();
   noball_count=1;
 end
@@ -22,7 +22,7 @@ end
 function update(newx,newy)
   --We need at least two observation to update velocity
   t=Body.get_time();
-  if noball_count==0 then
+  if noball_count==0 and t>tLast then
     tPassed=t-tLast;
     vxCurrent = (newx-x)/tPassed;
     vyCurrent = (newy-y)/tPassed;

@@ -30,6 +30,23 @@ world.cResample = 10; --Resampling interval
 world.odomScale = {1, 1, 0};  
 world.imuYaw = 1;
 
+--For Adult and Teensize field
+world.initPosition1={
+  {4.5,0},   --Goalie
+  {0,0}, --Attacker
+  {2,0}, --Defender
+  {2,2}, --Supporter
+}
+-- default positions for opponents' kickoff
+-- Penalty mark : {1.2,0}
+world.initPosition2={
+  {4.5,0},   --Goalie
+  {0.8,0}, --Attacker
+  {2,0}, --Defender
+  {2,2}, --Supporter
+}
+
+
 -- filter weights
 world.rGoalFilter = 0.02;
 world.aGoalFilter = 0.05;

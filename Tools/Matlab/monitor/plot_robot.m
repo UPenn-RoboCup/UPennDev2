@@ -65,14 +65,14 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel)
 
     teamColors = ['b', 'r'];
     idColors = ['k', 'r', 'g', 'b'];
-    % Role:  1:Attack / 2:Defend / 3:Support / 4: Goalie
-    roleColors = {'m','k', 'k--','g'};
+    % Role:  0:Goalie 1:Attack / 2:Defend / 3:Support / 4: R.player 5: R.goalie
+    roleColors = {'g','r','k', 'k--','r--','g--'};
 
     teamColors = ['b', 'r'];
     hr = fill(xr, yr, teamColors(robot.teamColor+1));
 
     if robot.role>1 
-      h_role=plot([xr xr(1)],[yr yr(1)],roleColors{robot.role});
+      h_role=plot([xr xr(1)],[yr yr(1)],roleColors{robot.role+1});
       set(h_role,'LineWidth',3);
     end
 
@@ -85,7 +85,7 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel)
 
   function plot_info(robot,angle)
     robotnames = {'Bot1','Bot2','Bot3','Bot4','Bot5','Bot6'};
-    rolenames = {'Unknown','Attack','Defend','Support','Goalie','Waiting'};
+    rolenames = {'Goalie','Attacker','Defender','Supporter','W. player','W. goalie'};
     colornames={'red','blue'};
 
     %robotID robotName robotRole 

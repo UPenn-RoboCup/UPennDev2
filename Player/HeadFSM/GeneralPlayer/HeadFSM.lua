@@ -1,4 +1,4 @@
-if Config.game.role==4 then
+if Config.game.role==0 then
   print("Goalie HeadFSM loaded")
   HeadFSM=require('HeadFSMGoalie');	
 elseif Config.fsm.playMode==1 then 

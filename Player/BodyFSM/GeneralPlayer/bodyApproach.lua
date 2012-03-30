@@ -21,7 +21,7 @@ function check_approach_type()
   kick_type=wcm.get_kick_type();
   kick_angle=wcm.get_kick_angle();
 
-  print("Approach: kick dir /type ",kick_dir,kick_type)
+  print("Approach: kick dir /type /angle",kick_dir,kick_type,kick_angle*180/math.pi)
 
   y_inv=0;
   if kick_type==1 then --Stationary 

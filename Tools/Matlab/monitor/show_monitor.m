@@ -252,7 +252,7 @@ function h=show_monitor()
   end
 
   function plot_info(robot,r_mon)
-    robotnames = {'Bot1','Bot2','Bot3','Bot4'};
+    robotnames = {'Bot1','Bot2','Bot3','Bot4','Bot5'};
     rolenames = {'','Attacker','Defender','Supporter','Goalie','Waiting'};
     colornames={'red','blue'};
 

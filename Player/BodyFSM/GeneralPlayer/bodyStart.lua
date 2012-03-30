@@ -21,7 +21,7 @@ function entry()
   kickoff=0;
 
   --Kickoff handling (only for attacker)
-  if gcm.get_team_role()==2 then 
+  if gcm.get_team_role()==1 then 
     if gcm.get_game_kickoff()==1 then
       --Our kickoff, go ahead and kick the ball
       --Kickoff kick should be different 

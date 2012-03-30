@@ -44,6 +44,7 @@ local tUpdate = t0;
 -- Broadcast the images at a lower rate than other data
 local maxFPS = 10;
 local imgFPS = 5;
+
 local maxPeriod = 1.0 / maxFPS;
 local imgRate = math.max( math.floor( maxFPS / imgFPS ), 1);
 
@@ -78,8 +79,11 @@ while true do
   update();
   -- Get time after sending packets
   tloop = unix.time() - tstart;  -- Sleep in order to get the right FPS
-  if (tloop < 0.1) then
-    unix.usleep((0.1 - tloop)*(1E6));
+
+--print("tloop:",tloop)
+
+  if (tloop < maxPeriod) then
+    unix.usleep((maxPeriod - tloop)*(1E6));
   end
 
   -- Display our FPS and broadcast level

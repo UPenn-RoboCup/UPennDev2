@@ -141,7 +141,7 @@ util::
 	@cd $(UTILDIR) && make && cd $(CWD)
 	@echo "\n"
 
-velocity:
+velocity::
 	@echo "Compiling Velocity Code...\n"
 	@cd $(VELODIR) && make && cd $(CWD)
 	@echo "\n"

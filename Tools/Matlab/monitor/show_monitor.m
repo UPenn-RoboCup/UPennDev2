@@ -253,7 +253,7 @@ function h=show_monitor()
 
   function plot_info(robot,r_mon)
     robotnames = {'Bot1','Bot2','Bot3','Bot4','Bot5'};
-    rolenames = {'','Attacker','Defender','Supporter','Goalie','Waiting'};
+    rolenames = {'Goalie','Attacker','Defender','Supporter','W. player','W. goalie'};
     colornames={'red','blue'};
 
     str=sprintf('#%d %s  %s\n%s %s\n %.1fV',...

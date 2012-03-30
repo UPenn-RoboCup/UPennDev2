@@ -133,6 +133,12 @@ function update()
     print('---------------');
   end
 --]]
+
+  if gcm.get_game_state()<2 then 
+    --Don't switch roles until the gameSet state
+    --Because now bodyReady is based on roles
+    return;
+  end
   -- goalie never changes role
   if playerID ~= 1 then
     eta[1] = math.huge;
@@ -201,12 +207,11 @@ function set_role(r)
     end
   end
 end
--- Webots has id=0 map to goalie.  Real robots has id=1 map to goalie
-if (string.find(Config.platform.name,'Webots')) then
-  set_role(playerID);
-else
-  set_role(playerID-1);
-end
+
+--Sets default role based on playerID (for bodyReady)
+--PlayerID for webots is set as 1 to 4 (the same as real robots)
+set_role(playerID-1);
+update_shm();
 
 function get_player_id()
   return playerID; 

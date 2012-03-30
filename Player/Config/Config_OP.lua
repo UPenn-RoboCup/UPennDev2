@@ -45,25 +45,20 @@ game.robotID = game.playerID;
 game.teamColor = parse_hostname.get_team_color();
 game.nPlayers = 3;
 
--- FSM and behavior settings
+--FSM and behavior settings
 fsm = {};
---SJ: loading FSM config kills the variable fsm, so should be called first
-loadconfig('FSM/Config_OP_FSM')
+--SJ: loading FSM config  kills the variable fsm, so should be called first
+loadconfig('FSM/Config_WebotsOP_FSM')
 fsm.game = 'RoboCup';
 fsm.head = {'GeneralPlayer'};
 fsm.body = {'GeneralPlayer'};
 
---Behavior flags, defined in FSM Configs and can be overrided here
+--Behavior flags, should be defined in FSM Configs but can be overrided here
 fsm.enable_obstacle_detection = 1;
-fsm.playMode = 3; --1 for demo, 2 for orbit, 3 for direct approach
---fsm.playMode = 1; 
+fsm.kickoff_wait_enable = 1;
+fsm.playMode = 2; --1 for demo, 2 for orbit, 3 for direct approach
 fsm.enable_walkkick = 1;
 fsm.enable_sidekick = 1;
-
---TODO: rename these
-BodyFSM = {}
-BodyFSM.enable_obstacle_detection = 1;
-
 
 -- Team Parameters
 team = {};

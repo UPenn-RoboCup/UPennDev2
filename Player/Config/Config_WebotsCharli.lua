@@ -89,7 +89,3 @@ stance.dpLimitStance = vector.new({.4, .3, .4, .05, .4, .1})*0.6;
 stance.dpLimitStance=vector.new({.04, .03, .07, .4, .4, .4});
 stance.dpLimitSit=vector.new({.1,.01,.06,.1,.3,.1})*2;
 stance.delay = 80; 
-
--- enable obstacle detection
-BodyFSM = {}
-BodyFSM.enable_obstacle_detection = 1;

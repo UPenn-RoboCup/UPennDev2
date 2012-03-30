@@ -29,6 +29,10 @@ world.odomScale = {1.06, 1.06, 0.97};
 
 --same-colored goalposts
 world.use_same_colored_goal=1;
+world.use_same_colored_goal=0;
+
+--should we use new triangulation?
+world.use_new_goalposts=1;
 
 -- filter weights
 world.rGoalFilter = 0.02;
@@ -36,8 +40,21 @@ world.aGoalFilter = 0.05;
 world.rPostFilter = 0.02;
 world.aPostFilter = 0.20;
 
---New two-goalpost localization
-world.use_new_goalposts=1;
+-- default positions for our kickoff
+world.initPosition1={
+  {3,0},   --Goalie
+  {0.5,0}, --Attacker
+  {1.5,-0.5}, --Defender
+  {0.5,1.0}, --Supporter
+}
+-- default positions for opponents' kickoff
+-- Penalty mark : {1.2,0}
+world.initPosition2={
+  {3,0},   --Goalie
+  {1.75,0}, --Attacker
+  {1.75,1.0}, --Defender
+  {1.75,-1.0}, --Supporter
+}
 
 -- Occupancy Map parameters
 occmap = {};

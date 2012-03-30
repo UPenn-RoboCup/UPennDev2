@@ -153,10 +153,10 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel)
 
         if goal.type==0 
           marker1 = strcat(marker,'+');%Unknown post
-	elseif goal.type==1
-          marker1 = strcat(marker,'<');%Left post
-	else
+	elseif goal.type==2
           marker1 = strcat(marker,'>');%Right post
+	else
+          marker1 = strcat(marker,'<');%Left or two post
 	end
         x1 = goal.v1.x*ca - goal.v1.y*sa + robot_struct.pose.x;
         y1 = goal.v1.x*sa + goal.v1.y*ca + robot_struct.pose.y;

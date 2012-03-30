@@ -13,8 +13,11 @@ require 'mcm'
 --SJ: Velocity filter is always on
 --We can toggle whether to use velocity to update ball position estimate
 --In Filter2D.lua
-
 --require('Velocity');	
+
+--Are we using same colored goals?
+use_same_colored_goal=Config.world.use_same_colored_goal or 0;
+
 
 ballFilter = Filter2D.new();
 ball = {};
@@ -114,33 +117,43 @@ function update_vision()
     local v2 = vcm.get_goal_v2();
     local v = {v1, v2};
 
-    if color == Config.color.yellow then
+    if use_same_colored_goal>0 then
       if (goalType == 0) then
-        PoseFilter.post_yellow_unknown(v);
+        PoseFilter.post_unified_unknown(v);
       elseif(goalType == 1) then
-        PoseFilter.post_yellow_left(v);
+        PoseFilter.post_unified_left(v);
       elseif(goalType == 2) then
-        PoseFilter.post_yellow_right(v);
+        PoseFilter.post_unified_right(v);
       elseif(goalType == 3) then
-        PoseFilter.goal_yellow(v);
+        PoseFilter.goal_unified(v);
       end
-
-      -- indicator
-      Body.set_indicator_goal({1,1,0});
-
-    elseif color == Config.color.cyan then
-      if (goalType == 0) then
-        PoseFilter.post_cyan_unknown(v);
-      elseif(goalType == 1) then
-        PoseFilter.post_cyan_left(v);
-      elseif(goalType == 2) then
-        PoseFilter.post_cyan_right(v);
-      elseif(goalType == 3) then
-        PoseFilter.goal_cyan(v);
+    else
+      --Goal observation with colors
+      if color == Config.color.yellow then
+        if (goalType == 0) then
+          PoseFilter.post_yellow_unknown(v);
+        elseif(goalType == 1) then
+          PoseFilter.post_yellow_left(v);
+        elseif(goalType == 2) then
+          PoseFilter.post_yellow_right(v);
+        elseif(goalType == 3) then
+          PoseFilter.goal_yellow(v);
+        end
+        -- indicator
+        Body.set_indicator_goal({1,1,0});
+      elseif color == Config.color.cyan then
+        if (goalType == 0) then
+          PoseFilter.post_cyan_unknown(v);
+        elseif(goalType == 1) then
+          PoseFilter.post_cyan_left(v);
+        elseif(goalType == 2) then
+          PoseFilter.post_cyan_right(v);
+        elseif(goalType == 3) then
+          PoseFilter.goal_cyan(v);
+        end
+        -- indicator
+        Body.set_indicator_goal({0,0,1});
       end
-
-      -- indicator
-      Body.set_indicator_goal({0,0,1});
     end
   else
     -- indicator

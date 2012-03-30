@@ -21,6 +21,12 @@ ballCyan = Config.world.ballCyan;
 landmarkYellow = Config.world.landmarkYellow;
 landmarkCyan = Config.world.landmarkCyan;
 
+--For single-colored goalposts
+postUnified = {postYellow[1],postYellow[2],postCyan[1],postCyan[2]};
+postLeft={postYellow[1],postCyan[1]}
+postRight={postYellow[2],postCyan[2]}
+
+
 rGoalFilter = Config.world.rGoalFilter;
 aGoalFilter = Config.world.aGoalFilter;
 rPostFilter = Config.world.rPostFilter;
@@ -133,12 +139,13 @@ function landmark_observation(pos, v, rLandmarkFilter, aLandmarkFilter)
   end
 end
 
-function goal_observation(pos, v)
+---------------------------------------------------------------------------
+-- Now we have two ambiguous goals to check
+-- So we separate the triangulation part and the update part
+---------------------------------------------------------------------------
 
-  if use_new_goalposts==1 then
-    goal_observation_new(pos,v);
-    return;
-  end
+function triangulate(pos,v)
+  --Based on old code
 
   -- Use angle between posts (most accurate)
   -- as well as combination of post distances to triangulate
@@ -171,30 +178,15 @@ function goal_observation(pos, v)
   y = sign(y) * dy;
   local a = math.atan2(pos[iMin][2] - y, pos[iMin][1] - x) - aPost[iMin];
 
-  local rSigma = .25*dGoal + 0.20;
-  local aSigma = 5*math.pi/180;
-
-  local rFilter = rGoalFilter;
-  local aFilter = aGoalFilter;
-
-  for ip = 1,n do
-    local xErr = x - xp[ip];
-    local yErr = y - yp[ip];
-    local rErr = math.sqrt(xErr^2 + yErr^2);
-    local aErr = mod_angle(a - ap[ip]);
-    local err = (rErr/rSigma)^2 + (aErr/aSigma)^2;
-    wp[ip] = wp[ip] - err;
-
-    --Filter towards goal:
-    xp[ip] = xp[ip] + rFilter*xErr;
-    yp[ip] = yp[ip] + rFilter*yErr;
-    ap[ip] = ap[ip] + aFilter*aErr;
-  end
+  pose={};
+  pose.x=x;
+  pose.y=y;
+  pose.a=a;
+  return pose,dGoal;
 end
 
-
---SJ: A new goal observation code 
-function goal_observation_new(pos, v)
+function triangulate2(pos,v)
+  --New code (for OP)
    local aPost = {};
    local d2Post = {};
 
@@ -205,41 +197,41 @@ function goal_observation_new(pos, v)
 
    --Triangulation to fix the thick nearest post problem with OP
    if d2Post[1]<d2Post[2] then
-	-- v1=kcos(a1),ksin(a1)
-	--k^2 - 2k(v[2][1]cos(a1)+v[2][2]sin(a1)) + d2Post[2]-goalWidth^2 = 0
-	local ca=math.cos(aPost[1]);
-	local sa=math.sin(aPost[1]);
-	local b=v[2][1]*ca+ v[2][2]*sa;
-	local c=d2Post[2]-goalWidth^2;
+   -- v1=kcos(a1),ksin(a1)
+   -- k^2-2k(v[2][1]cos(a1)+v[2][2]sin(a1)) + d2Post[2]-goalWidth^2 = 0
+     local ca=math.cos(aPost[1]);
+     local sa=math.sin(aPost[1]);
+     local b=v[2][1]*ca+ v[2][2]*sa;
+     local c=d2Post[2]-goalWidth^2;
 
-        if b*b-c>0 then
-		k1=b-math.sqrt(b*b-c);
-		k2=b+math.sqrt(b*b-c);
---		print("Original v1:",v[1][1],v[1][2]);
---		print("v1_1:",k1*ca,k1*sa);
---		print("v1_2:",k2*ca,k2*sa);
-		if k1>d2Post[1] then
-			v[1][1],v[2][1]=k1*ca,k1*sa;
-		end
-	end
+     if b*b-c>0 then
+       k1=b-math.sqrt(b*b-c);
+       k2=b+math.sqrt(b*b-c);
+--     print("Original v1:",v[1][1],v[1][2]);
+--     print("v1_1:",k1*ca,k1*sa);
+--     print("v1_2:",k2*ca,k2*sa);
+       if k1>d2Post[1] then
+ 	 v[1][1],v[2][1]=k1*ca,k1*sa;
+       end
+     end
    else
-	-- v2=kcos(a2),ksin(a2)
-	--k^2 - 2k(v[2][1]cos(a1)+v[2][2]sin(a1)) + d2Post[2]-goalWidth^2 = 0
-	local ca=math.cos(aPost[2]);
-	local sa=math.sin(aPost[2]);
-	local b=v[1][1]*ca+ v[1][2]*sa;
-	local c=d2Post[1]-goalWidth^2;
+   -- v2=kcos(a2),ksin(a2)
+   -- k^2 - 2k(v[2][1]cos(a1)+v[2][2]sin(a1)) + d2Post[2]-goalWidth^2 = 0
+     local ca=math.cos(aPost[2]);
+     local sa=math.sin(aPost[2]);
+     local b=v[1][1]*ca+ v[1][2]*sa;
+     local c=d2Post[1]-goalWidth^2;
 	
-	if b*b-c>0 then
-		k1=b-math.sqrt(b*b-c);
-		k2=b+math.sqrt(b*b-c);
---		print("Original v1:",v[2][1],v[2][2]);
---		print("v1_1:",k1*ca,k1*sa);
---		print("v1_2:",k2*ca,k2*sa);
-		if k1>d2Post[2] then
-			v[2][1],v[2][2]=k1*ca,k1*sa;
-		end
-	end
+     if b*b-c>0 then
+       k1=b-math.sqrt(b*b-c);
+       k2=b+math.sqrt(b*b-c);
+--     print("Original v1:",v[2][1],v[2][2]);
+--     print("v1_1:",k1*ca,k1*sa);
+--     print("v1_2:",k2*ca,k2*sa);
+       if k1>d2Post[2] then
+   	 v[2][1],v[2][2]=k1*ca,k1*sa;
+       end
+     end
    end
 
    --Use center of the post 
@@ -264,29 +256,94 @@ function goal_observation_new(pos, v)
 
    local x = x0 - sign(x0)*dx;
    local y = -sign(x0)*dy;
-
    local a=aGoal;
    if x0<0 then a=mod_angle(a+math.pi); end
-
    local dGoal = rGoal;
-   local rSigma = .25*dGoal + 0.20;
-   local aSigma = 5*math.pi/180;
-   for ip = 1,n do
-      local xErr = x - xp[ip];
-      local yErr = y - yp[ip];
-      local rErr = math.sqrt(xErr^2 + yErr^2);
-      local aErr = mod_angle(a - ap[ip]);
-      local err = (rErr/rSigma)^2 + (aErr/aSigma)^2;
-      wp[ip] = wp[ip] - err;
 
-      local rFilter = rGoalFilter;
-      local aFilter = aGoalFilter;
-
-      xp[ip] = xp[ip] + rFilter*xErr;
-      yp[ip] = yp[ip] + rFilter*yErr;
-      ap[ip] = ap[ip] + aFilter*aErr;
-   end
+   pose={};
+   pose.x=x;
+   pose.y=y;
+   pose.a=a;
+   return pose,dGoal;
 end
+
+function goal_observation(pos, v)
+  --Get estimate using triangulation
+  if use_new_goalposts==1 then
+    pose,dGoal=triangulate2(pos,v);
+  else
+    pose,dGoal=triangulate(pos,v);
+  end
+
+  local x,y,a=pose.x,pose.y,pose.a;
+
+  local rSigma = .25*dGoal + 0.20;
+  local aSigma = 5*math.pi/180;
+  local rFilter = rGoalFilter;
+  local aFilter = aGoalFilter;
+
+  for ip = 1,n do
+    local xErr = x - xp[ip];
+    local yErr = y - yp[ip];
+    local rErr = math.sqrt(xErr^2 + yErr^2);
+    local aErr = mod_angle(a - ap[ip]);
+    local err = (rErr/rSigma)^2 + (aErr/aSigma)^2;
+    wp[ip] = wp[ip] - err;
+
+    --Filter towards goal:
+    xp[ip] = xp[ip] + rFilter*xErr;
+    yp[ip] = yp[ip] + rFilter*yErr;
+    ap[ip] = ap[ip] + aFilter*aErr;
+  end
+end
+
+function goal_observation_unified(pos1,pos2,v)
+  --Get pose estimate from two goalpost locations
+  if use_new_goalposts==1 then
+    pose1,dGoal1=triangulate2(pos1,v);
+    pose2,dGoal2=triangulate2(pos2,v);
+  else
+    pose1,dGoal1=triangulate(pos1,v);
+    pose2,dGoal2=triangulate(pos2,v);
+  end
+
+  local x1,y1,a1=pose1.x,pose1.y,pose1.a;
+  local x2,y2,a2=pose2.x,pose2.y,pose2.a;
+
+  local rSigma1 = .25*dGoal1 + 0.20;
+  local rSigma2 = .25*dGoal2 + 0.20;
+  local aSigma = 5*math.pi/180;
+  local rFilter = rGoalFilter;
+  local aFilter = aGoalFilter;
+
+  for ip = 1,n do
+    local xErr1 = x1 - xp[ip];
+    local yErr1 = y1 - yp[ip];
+    local rErr1 = math.sqrt(xErr1^2 + yErr1^2);
+    local aErr1 = mod_angle(a1 - ap[ip]);
+    local err1 = (rErr1/rSigma1)^2 + (aErr1/aSigma)^2;
+
+    local xErr2 = x1 - xp[ip];
+    local yErr2 = y1 - yp[ip];
+    local rErr2 = math.sqrt(xErr2^2 + yErr2^2);
+    local aErr2 = mod_angle(a2 - ap[ip]);
+    local err2 = (rErr2/rSigma1)^2 + (aErr2/aSigma)^2;
+
+    --Filter towards best matching goal:
+     if err1>err2 then
+      wp[ip] = wp[ip] - err2;
+      xp[ip] = xp[ip] + rFilter*xErr2;
+      yp[ip] = yp[ip] + rFilter*yErr2;
+      ap[ip] = ap[ip] + aFilter*aErr2;
+    else
+      wp[ip] = wp[ip] - err1;
+      xp[ip] = xp[ip] + rFilter*xErr1;
+      yp[ip] = yp[ip] + rFilter*yErr1;
+      ap[ip] = ap[ip] + aFilter*aErr1;
+    end
+  end
+end
+
 
 
 function ball_yellow(v)
@@ -327,6 +384,22 @@ end
 
 function post_cyan_right(v)
   landmark_observation({postCyan[2]}, v[1], rPostFilter, aPostFilter);
+end
+
+function post_unified_unknown(v)
+  landmark_observation(postUnified, v[1], rPostFilter, aPostFilter);
+end
+
+function post_unified_left(v)
+  landmark_observation(postLeft, v[1], rPostFilter, aPostFilter);
+end
+
+function post_unified_right(v)
+  landmark_observation(postRight, v[1], rPostFilter, aPostFilter);
+end
+
+function goal_unified(v)
+  goal_observation_unified(postCyan,postYellow, v);
 end
 
 function landmark_cyan(v)

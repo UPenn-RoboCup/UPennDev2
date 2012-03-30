@@ -60,10 +60,10 @@ function [ ] = plot_surroundings( handle, mon_struct )
         if( goal.v1.scale ~= 0 )
             if goal.type==0 
               marker1 = strcat(marker,'+');%Unknown post
-	    elseif goal.type==1
-              marker1 = strcat(marker,'<');%Left post
-	    else
+	    elseif goal.type==3
               marker1 = strcat(marker,'>');%Right post
+	    else
+              marker1 = strcat(marker,'<');%Left post
 	    end
             posx=-1*goal.v1.y;posy=goal.v1.x;
             posx=min(max(posx,x_lim(1)),x_lim(2));

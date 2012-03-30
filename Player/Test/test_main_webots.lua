@@ -107,7 +107,7 @@ function process_keyinput()
     elseif byte==string.byte("k") then   
       kickoff=gcm.get_game_kickoff();
       gcm.set_game_kickoff(1-kickoff);
-      if kickoff>0 then
+      if gcm.get_game_kickoff()>0 then
         Speak.talk('We have kickoff');
       else
         Speak.talk('They have kickoff');

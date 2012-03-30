@@ -27,7 +27,8 @@ dev.body = 'WebotsOPBody';
 dev.camera = 'WebotsOPCam';
 dev.kinematics = 'OPKinematics';
 dev.game_control='WebotsGameControl';
-dev.team='TeamNSL';
+--dev.team='TeamNSL';
+dev.team='TeamSPL';
 dev.walk='NewWalk';
 dev.walk='NewNewWalk'; --New robocup walk that supports walking kicks
 --dev.walk='BoxWalk'; --New walk that supports different foot stance
@@ -36,17 +37,19 @@ dev.kick='NewKick';
 
 -- Game Parameters
 game = {};
+game.nPlayers = 5; --5 total robot (including reserve ones)
 game.teamNumber = (os.getenv('TEAM_ID') or 0) + 0;
 --Webots player id begins at 0 but we use 1 as the first id 
 game.playerID = (os.getenv('PLAYER_ID') or 0) + 1;
-game.robotID = game.playerID;
-if game.playerID==1 then game.role = 4; end --Goalie handling 
---To handle non-gamecontroller-based team handling for webots
+game.robotID = game.playerID; --For webots, robot ID is the same 
+--For webots, player 1 is always goalie
+if game.playerID==1 then game.role = 4; 
+else game.role=1; end 
+
+--Default team (for non-gamecontroller based teamplay)
 if game.teamNumber==1 then game.teamColor = 1; --Red team
 else game.teamColor = 0; --Blue team
 end
-
-game.nPlayers = 4;
 
 --FSM and behavior settings
 fsm = {};
@@ -58,7 +61,7 @@ fsm.body = {'GeneralPlayer'};
 
 --Behavior flags, defined in FSM Configs and can be overrided here
 fsm.enable_obstacle_detection = 1;
-fsm.playMode = 3; --1 for demo, 2 for orbit, 3 for direct approach
+fsm.playMode = 2; --1 for demo, 2 for orbit, 3 for direct approach
 fsm.enable_walkkick = 1;
 fsm.enable_sidekick = 1;
 

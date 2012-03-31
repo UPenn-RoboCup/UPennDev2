@@ -173,7 +173,7 @@ function h=show_monitor()
     set(MONITOR.hInfoText,'String',infostr);
 
     if MONITOR.logging
-      LOGGER.log_data(yuyv + 0,labelA,r_mon);
+      LOGGER.log_yuyv(yuyv + 0);
       logstr=sprintf('%d/100',LOGGER.log_count);
       set(MONITOR.hButton11,'String', logstr);
       if LOGGER.log_count==100 
@@ -316,4 +316,7 @@ function h=show_monitor()
       set(MONITOR.hButton12,'String', filename);
     end
   end
+
+
+
 end

@@ -49,6 +49,9 @@ global MONITOR %for sending the webots check information
   h.get_labelB = @get_labelB;
   h.get_particle = @get_particle;
 
+  h.set_yuyv = @set_yuyv;
+  h.set_labelA = @set_labelA;
+
   function update()
       % do nothing
   end
@@ -257,6 +260,11 @@ global MONITOR %for sending the webots check information
     yuyv = raw2yuyv(rawData, width, height); %for Nao, double for OP
   end
 
+  function set_yuyv(yuyv)
+    rawData=yuyv2raw(yuyv);
+    h.vcmImage.set_yuyv(rawData);
+  end
+
   function yuyv2 = get_yuyv2()
 %   returns the half-size raw YUYV image
     width = h.vcmImage.get_width()/4;
@@ -287,6 +295,13 @@ global MONITOR %for sending the webots check information
     end
     labelA = raw2label(rawData, width, height)';
   end
+
+  function set_labelA(label)
+    rawData=label2raw(label');
+    h.vcmImage.set_labelA(rawData);
+  end
+
+
 
   function labelB = get_labelB()
     % returns the bit-ored labeled image

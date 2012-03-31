@@ -29,10 +29,25 @@ world.cResample = 10; --Resampling interval
 --SJ: OP does not use yaw odometry data (only use gyro)
 world.odomScale = {1, 1, 0};  
 world.imuYaw = 1;
-
---Vision only
+--Vision only testing (turn off yaw gyro)
 --world.odomScale = {1, 1, 1};  
 --world.imuYaw = 0;
+
+-- default positions for our kickoff
+world.initPosition1={
+  {3,0},   --Goalie
+  {0.5,0}, --Attacker
+  {1.5,-0.5}, --Defender
+  {0.5,1.0}, --Supporter
+}
+-- default positions for opponents' kickoff
+-- Center circle radius: 0.6
+world.initPosition2={
+  {3,0},   --Goalie
+  {0.8,0}, --Attacker
+  {1.5,0.5}, --Defender
+  {1.75,-1.0}, --Supporter
+}
 
 -- filter weights
 world.rGoalFilter = 0.02;

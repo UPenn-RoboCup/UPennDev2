@@ -136,6 +136,8 @@ function update()
 
   -- TODO: add landmarks to vcm shm (for NSL support)
   -- midfield landmark detection
+  landmarkCyan = 0;
+  landmarkYellow = 0;
   if enableMidfieldLandmark == 1 then
     landmarkCyan = detectLandmarks.detect(colorCyan,colorYellow);
     landmarkYellow = detectLandmarks.detect(colorYellow,colorCyan);
@@ -181,17 +183,15 @@ function update_shm()
   end
 
   -- midfield landmark detection
+  vcm.set_landmark_detect(0);
   if enableMidfieldLandmark == 1 then
     if landmarkYellow.detect==1 then
-       vcm.set_landmark_detect(1);
        vcm.set_landmark_color(colorYellow);
        vcm.set_landmark_v(landmarkYellow.v);
     elseif landmarkCyan.detect==1 then
        vcm.set_landmark_detect(1);
        vcm.set_landmark_color(colorCyan);
        vcm.set_landmark_v(landmarkCyan.v);
-    else
-       vcm.set_landmark_detect(0);
     end
   end
 

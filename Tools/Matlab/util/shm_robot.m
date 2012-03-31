@@ -19,7 +19,7 @@ global MONITOR %for sending the webots check information
 
   h.vcmBall  = shm(sprintf('vcmBall%d%d%s',  h.teamNumber, h.playerID, h.user));
   h.vcmBoundary = shm(sprintf('vcmBoundary%d%d%s', h.teamNumber, h.playerID, h.user));
-  % h.vcmCamera
+  h.vcmCamera = shm(sprintf('vcmCamera%d%d%s', h.teamNumber, h.playerID, h.user));
   h.vcmDebug  = shm(sprintf('vcmDebug%d%d%s',  h.teamNumber, h.playerID, h.user));
   h.vcmFreespace = shm(sprintf('vcmFreespace%d%d%s', h.teamNumber, h.playerID, h.user));
   h.vcmGoal  = shm(sprintf('vcmGoal%d%d%s',  h.teamNumber, h.playerID, h.user));
@@ -29,6 +29,7 @@ global MONITOR %for sending the webots check information
 
   h.wcmBall  = shm(sprintf('wcmBall%d%d%s',  h.teamNumber, h.playerID, h.user));
   h.wcmGoal  = shm(sprintf('wcmGoal%d%d%s',  h.teamNumber, h.playerID, h.user));
+  h.wcmParticle  = shm(sprintf('wcmParticle%d%d%s',  h.teamNumber, h.playerID, h.user));
   %h.wcmKick
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -47,6 +48,9 @@ global MONITOR %for sending the webots check information
   h.get_labelA = @get_labelA;
   h.get_labelB = @get_labelB;
   h.get_particle = @get_particle;
+
+  h.set_yuyv = @set_yuyv;
+  h.set_labelA = @set_labelA;
 
   function update()
       % do nothing
@@ -75,7 +79,6 @@ global MONITOR %for sending the webots check information
             'vx', ballvelx, 'vy', ballvely );
 
         r.fall=h.wcmRobot.get_is_fall_down();
-
         
         % TODO: implement penalty and time
         r.penalty = 0;
@@ -110,6 +113,17 @@ global MONITOR %for sending the webots check information
       pose = h.wcmRobot.get_pose();
       r.robot = {};
       r.robot.pose = struct('x', pose(1), 'y', pose(2), 'a', pose(3));
+
+    %Camera info
+
+      width = h.vcmImage.get_width();
+      height = h.vcmImage.get_height();
+      bodyHeight=h.vcmCamera.get_bodyHeight();
+      bodyTilt=h.vcmCamera.get_bodyTilt();
+      headAngles=h.vcmImage.get_headAngles();
+      r.camera = struct('width',width,'height',height,...
+	'bodyHeight',bodyHeight,'bodyTilt',bodyTilt,...
+	'headAngles',headAngles);
 
     %Image FOV boundary
           
@@ -182,6 +196,13 @@ global MONITOR %for sending the webots check information
       r.debug={};
       r.debug.message = char(h.vcmDebug.get_message());
 
+  %Particle info
+      r.particle={};
+      r.particle.x=h.wcmParticle.get_x();
+      r.particle.y=h.wcmParticle.get_y();
+      r.particle.w=h.wcmParticle.get_w();
+      r.particle.a=h.wcmParticle.get_a();
+
   % Add freespace boundary
       r.free = {};
       freeCol = h.vcmFreespace.get_nCol();
@@ -241,30 +262,34 @@ global MONITOR %for sending the webots check information
     end 
   end
 
-  function yuyv = get_yuyv()
-%   returns the raw YUYV image
+  function yuyv = get_yuyv()  
+% returns the raw YUYV image
     width = h.vcmImage.get_width()/2;
     height = h.vcmImage.get_height();
     rawData = h.vcmImage.get_yuyv();
     yuyv = raw2yuyv(rawData, width, height); %for Nao, double for OP
   end
 
-  function yuyv2 = get_yuyv2()
-%   returns the half-size raw YUYV image
+  function set_yuyv(yuyv) 
+    rawData=yuyv2raw(yuyv);
+    h.vcmImage.set_yuyv(rawData);
+  end
+
+  function yuyv2 = get_yuyv2() 
+% returns the half-size raw YUYV image
     width = h.vcmImage.get_width()/4;
     height = h.vcmImage.get_height()/2;
     rawData = h.vcmImage.get_yuyv2();
     yuyv2 = raw2yuyv(rawData, width, height); %for Nao, double for OP
   end
 
-  function rgb = get_rgb()
-    % returns the raw RGB image (not full size)
+  function rgb = get_rgb() 
+% returns the raw RGB image (not full size)
     yuyv = h.get_yuyv();
     rgb = yuyv2rgb(yuyv);
   end
 
-  function labelA = get_labelA()
-    % returns the labeled image
+  function labelA = get_labelA()  % returns the labeled image
     rawData = h.vcmImage.get_labelA();
     width = h.vcmImage.get_width()/2;
     height = h.vcmImage.get_height()/2;
@@ -279,6 +304,13 @@ global MONITOR %for sending the webots check information
     end
     labelA = raw2label(rawData, width, height)';
   end
+
+  function set_labelA(label)
+    rawData=label2raw(label');
+    h.vcmImage.set_labelA(rawData);
+  end
+
+
 
   function labelB = get_labelB()
     % returns the bit-ored labeled image
@@ -296,6 +328,5 @@ global MONITOR %for sending the webots check information
     end
     labelB = raw2label(rawData, width, height)';
   end
-
 end
 

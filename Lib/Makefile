@@ -11,6 +11,7 @@ WEBOTSGENERICDIR= Platform/WebotsGeneric
 WEBOTSHUBODIR= Platform/WebotsHubo
 WEBOTSCHARLIDIR= Platform/WebotsCharli
 WEBOTSSAFFIRDIR= Platform/WebotsSaffir
+VISIONTESTDIR = Platform/VisionTest
 HPDIR= Platform/HP2
 OPDIR= Platform/OP
 XOSDIR= Platform/XOS
@@ -22,7 +23,7 @@ MATLABDIR= ../Tools/Matlab
 COLORTABLEDIR= $(MATLABDIR)/Colortable
 VELODIR= Velocity
 PRIMEDIR= Util/PrimeSense
-PLATFORMS = setup_nao setup_op setup_webots_nao setup_webots_op setup_webots_generic setup_webots_hubo setup_xos
+PLATFORMS = setup_nao setup_op setup_webots_nao setup_webots_op setup_webots_generic setup_webots_hubo setup_xos setup_visiontest
 INSTDIR= ../Player/Lib
 WEBOTSCONTDIR= ../WebotsController
 PLAYERDIR= ../Player
@@ -120,6 +121,11 @@ webots_saffir:
 	@cd $(WEBOTSSAFFIRDIR) && make && cd $(CWD)
 	@echo "\n"
 
+visiontest:
+	@echo "Compiling Vision Test Lua/C++ Libraries...\n"
+	@cd $(VISIONTESTDIR) && make && cd $(CWD)
+	@echo "\n"
+
 
 webot:
 	@echo "Compiling Webots Lua/C++ Libraries...\n"
@@ -157,6 +163,7 @@ setup_nao: nao setup_util setup_image setup_comm
 	find $(NAODIR) -regex '.*\($(SHLIBEXT)\|$(LUAEXT)\)' -exec cp -v {} $(INSTDIR) \;
 	cd $(PLAYERDIR)/Config && ln -s Config_Nao.lua Config.lua && cd $(CWD)
 	find $(UTILDIR) $(REGEX) -exec cp -v {} $(NAODEPLUA51DIR) \;
+	rm -f $(NAODEPLUA51DIR)/*;
 	@echo "\n"
 
 setup_webots_nao: webots_nao setup_util setup_image setup_webots
@@ -206,6 +213,15 @@ setup_webots_saffir: webots_saffir setup_util setup_image setup_webots
 	find $(WEBOTSSAFFIRDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
 	rm -f $(PLAYERDIR)/Config/Config.lua
 	cd $(PLAYERDIR)/Config && ln -s Config_WebotsSaffir.lua Config.lua && cd $(CWD)
+	@echo "\n"
+
+setup_visiontest: visiontest setup_util setup_image 
+	@echo "Setting up Darwin OP Lua/C++ Libraries...\n"
+	mkdir -p $(INSTDIR)
+	find $(VISIONTESTDIR) -regex '.*\($(SHLIBEXT)\|$(LUAEXT)\)' -exec cp -v {} $(INSTDIR) \;
+	rm -f $(PLAYERDIR)/Config/Config.lua
+	cd $(PLAYERDIR)/Config && ln -s Config_VisionTest.lua Config.lua && cd $(CWD)
+	cp -r $(UTILDIR)/mp3 $(PLAYERDIR)
 	@echo "\n"
 
 

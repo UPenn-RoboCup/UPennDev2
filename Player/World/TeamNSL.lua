@@ -19,8 +19,8 @@ nonAttackerPenalty = Config.team.nonAttackerPenalty;
 nonDefenderPenalty = Config.team.nonDefenderPenalty;
 
 --Player ID: 1 to 5
---Role: 1 attacker / 2 defender / 3 supporter / 4 goalie
---  5 reserve player / 6 reserve goalie
+--Role: 0 goalie / 1 attacker / 2 defender / 3 supporter 
+--4 reserve player / 5 reserve goalie
 
 count = 0;
 
@@ -94,7 +94,6 @@ function update()
       -- no message from player have been received
       eta[id] = math.huge;
       ddefend[id] = math.huge;
-      roles[id] = 5; --reserve 
     else
       -- eta to ball
       -- TODO: consider angle as well
@@ -111,18 +110,22 @@ function update()
       if (states[id].role ~= 1) then       -- Non attacker penalty:
         eta[id] = eta[id] + nonAttackerPenalty;
       end
-      if (states[id].penalty > 0) or (Body.get_time() - states[id].tReceive > msgTimeout) then
-        eta[id] = math.huge;
-      end
 
       if (states[id].role ~= 2) then        -- Non defender penalty:
         ddefend[id] = ddefend[id] + 0.3;
       end
-      if (states[id].penalty > 0) or (t - states[id].tReceive > msgTimeout) then
+
+      --Ignore goalie, reserver, penalized player
+      if (states[id].penalty > 0) or 
+	(t - states[id].tReceive > msgTimeout) or
+	(states[id].role >3) or 
+	(states[id].role ==0) then
+        eta[id] = math.huge;
         ddefend[id] = math.huge;
       end
     end
   end
+
 --[[
   if count % 100 == 0 then
     print('---------------');
@@ -134,10 +137,8 @@ function update()
   end
 --]]
 
-  -- goalie never changes role
-  if role~=4 then 
-    eta[1] = math.huge;
-    ddefend[1] = math.huge;
+  -- goalie and reserve player never changes role
+  if role~=0 and role<4 then 
     minETA, minEtaID = min(eta);
     if minEtaID == playerID then set_role(1);--attack
     else
@@ -187,11 +188,11 @@ function set_role(r)
       Speak.talk('Defend');
     elseif role == 3 then     -- support
       Speak.talk('Support');
-    elseif role == 4 then     -- goalie
+    elseif role == 0 then     -- goalie
       Speak.talk('Goalie');
-    elseif role == 5 then     -- reserve
+    elseif role == 4 then     -- reserve player
       Speak.talk('Reserve Player');
-    elseif role == 6 then      -- goalie
+    elseif role == 5 then     -- reserve goalie
       Speak.talk('Reserve Goalie');
     else
       -- no role
@@ -201,7 +202,7 @@ function set_role(r)
 end
 
 --NSL role can be set arbitarily, so use config value
-set_role(Config.team.role);
+set_role(Config.team.role or 1);
 
 function get_player_id()
   return playerID; 

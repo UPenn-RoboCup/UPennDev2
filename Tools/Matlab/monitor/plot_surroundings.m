@@ -56,22 +56,28 @@ function [ ] = plot_surroundings( handle, mon_struct )
       if( goal.detect==1 )
         if(goal.color==2) marker = 'm'; % yellow
         else marker = 'b';   end
-        marker = strcat(marker,'+');
+	
         if( goal.v1.scale ~= 0 )
+            if goal.type==0 
+              marker1 = strcat(marker,'+');%Unknown post
+	    elseif goal.type==3
+              marker1 = strcat(marker,'>');%Right post
+	    else
+              marker1 = strcat(marker,'<');%Left post
+	    end
             posx=-1*goal.v1.y;posy=goal.v1.x;
             posx=min(max(posx,x_lim(1)),x_lim(2));
             posy=min(max(posy,y_lim(1)),y_lim(2));
-
-            plot(posx,posy, marker,'MarkerSize',12);
+            plot(posx,posy, marker1,'MarkerSize',12);
 	    g_name1=text(posx-0.30,posy-0.3,sprintf('%.2f,%.2f',goal.v1.x,goal.v1.y));
 	    set(g_name1,'FontSize',8);
         end
         if( goal.v2.scale ~= 0 )
+            marker1 = strcat(marker,'>'); %right post 
             posx=-1*goal.v2.y;posy=goal.v2.x;
             posx=min(max(posx,x_lim(1)),x_lim(2));
             posy=min(max(posy,y_lim(1)),y_lim(2));
-
-            plot(posx,posy, marker,'MarkerSize',12);
+            plot(posx,posy, marker1,'MarkerSize',12);
 	    g_name2=text(posx-0.30,posy-0.3,sprintf('%.2f,%.2f',goal.v2.x,goal.v2.y));
 	    set(g_name2,'FontSize',8);
         end

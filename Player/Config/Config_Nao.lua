@@ -16,7 +16,6 @@ end
 --loadconfig('Config_Nao_Walk_NaoWalk')
 loadconfig('Walk/Config_Nao_Walk_Blimp_Room')
 
-
 loadconfig('World/Config_Nao_World')
 loadconfig('Kick/Config_Nao_New_Kick')
 loadconfig('Vision/Config_Nao_Vision')
@@ -43,11 +42,12 @@ game.teamNumber = 26;
 game.playerID = parse_hostname.get_player_id();
 game.robotID = game.playerID;
 game.teamColor = parse_hostname.get_team_color();
+game.role = game.playerID-1; -- 0 for goalie
 game.nPlayers = 4;
 
 
 -- FSM Parameters
-
+--[[
 fsm = {};
 fsm.game = 'RoboCup';
 if (game.playerID == 1) then
@@ -57,11 +57,7 @@ else
   fsm.body = {'NaoPlayer'};
   fsm.head = {'NaoPlayer'};
 end
-
-
-
-
-
+--]]
 
 --------------------------------------------------------------------
 --GeneralPlayer FSM test
@@ -69,16 +65,15 @@ fsm = {};
 loadconfig('FSM/Config_WebotsNao_FSM')--For generalPlayer FSM
 fsm.game = 'RoboCup';
 fsm.body = {'GeneralPlayer'};
+--fsm.head = {'GeneralPlayer'};
+fsm.head = {'NaoPlayer'};
+--Behavior flags, should be defined in FSM Configs but can be overrided here
 fsm.enable_obstacle_detection = 1;
+fsm.kickoff_wait_enable = 1;
 fsm.playMode = 2; --1 for demo, 2 for orbit, 3 for direct approach
 fsm.enable_walkkick = 1;
-if game.playerID==1 then game.role = 4; end --Goalie handling 
+fsm.enable_sidekick = 1;
 -------------------------------------------------------------------
-
-
-
-
-
 
 -- Team Parameters
 
@@ -122,9 +117,3 @@ stance.dpLimitSit=vector.new({.1,.01,.03,.1,.3,.1});
 stance.bodyTiltStance=0*math.pi/180; --bodyInitial bodyTilt, 0 for webots
 stance.dpLimitStance=vector.new({.04, .03, .04, .05, .4, .1});
 stance.delay = 80; --amount of time to stand still after standing to regain balance.
-
--- enable obstacle detection
-BodyFSM = {}
-BodyFSM.enable_obstacle_detection = 1;
-
-

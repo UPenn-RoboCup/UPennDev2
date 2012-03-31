@@ -89,6 +89,3 @@ walk.legLength = 0.093+0.093;
 walk.hipOffsetX = 0.008;
 walk.hipOffsetY = 0.037;
 walk.hipOffsetZ = 0.096;
-
---For vision testing with 0 bodyTilt
-walk.bodyTilt=0*math.pi/180; 

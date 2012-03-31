@@ -22,7 +22,7 @@ function update()
   --If too long time has passed since game starts
   --Don't care about kickoff kick 
   if (t-tKickOff)>tKickOffWear then
-    wcm.set_kick_kickOff();
+    wcm.set_kick_kickOff(0);
     kick_off=0;
   end
   if kick_off>0 then 
@@ -30,6 +30,7 @@ function update()
     kickAngle = math.pi/6; --30 degree off angle
     kickDir=1;
     kickType=2;
+    wcm.set_kick_kickOff(0);
     wcm.set_kick_dir(kickDir);
     wcm.set_kick_type(kickType);
     wcm.set_kick_angle(kickAngle);

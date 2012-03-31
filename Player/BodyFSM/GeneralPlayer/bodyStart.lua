@@ -15,13 +15,14 @@ ballTh = 0.50;
 --If the ball comes any closer than this, start moving
 ballClose = 0.50; 
 
+kickoff_wait_enable=Config.fsm.kickoff_wait_enable or 0;
 
 function entry()
   print(_NAME..' entry');
   kickoff=0;
 
   --Kickoff handling (only for attacker)
-  if gcm.get_team_role()==1 then 
+  if gcm.get_team_role()==1 and kickoff_wait_enable>0 then 
     if gcm.get_game_kickoff()==1 then
       --Our kickoff, go ahead and kick the ball
       --Kickoff kick should be different 
@@ -37,6 +38,8 @@ function entry()
 --      print("Initial ball pos: ",ballR)
       walk.stop();
     end
+  else
+      kickoff=0; --Defenders may move
   end
 end
 

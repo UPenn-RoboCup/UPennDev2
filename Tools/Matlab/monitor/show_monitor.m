@@ -120,13 +120,11 @@ function h=show_monitor()
       if MONITOR.enable1==1
         MONITOR.h1 = subplot(4,5,[1 2 6 7]);
         yuyv = robots{playerNumber,teamNumber}.get_yuyv();
-        [ycbcr,rgb]=yuyv2rgb(yuyv);
-        plot_rgb( MONITOR.h1, rgb );
+	plot_yuyv(yuyv);
       elseif MONITOR.enable1==2
         MONITOR.h1 = subplot(4,5,[1 2 6 7]);
         yuyv2 = robots{playerNumber,teamNumber}.get_yuyv2();
-        [ycbcr,rgb]=yuyv2rgb(yuyv2);
-        plot_rgb( MONITOR.h1, rgb );
+	plot_yuyv(yuyv2);
       end
 
       %webots use non-subsampled label (2x size of yuyv)
@@ -140,18 +138,18 @@ function h=show_monitor()
     if MONITOR.enable2==1
       MONITOR.h2 = subplot(4,5,[3 4 8 9]);
       labelA = robots{playerNumber,teamNumber}.get_labelA();
-      plot_label( MONITOR.h2, labelA, r_mon, 1);
-      plot_overlay(r_mon,1);
+      plot_label(labelA);
+      plot_overlay(r_mon,2);
     elseif MONITOR.enable2==2
       MONITOR.h2 = subplot(4,5,[3 4 8 9]);
       labelB = robots{playerNumber,teamNumber}.get_labelB();
-      plot_label( MONITOR.h2, labelB, r_mon, 4);
+      plot_label(labelB);
       plot_overlay(r_mon,4);
     elseif (MONITOR.enable2==3) && (~isempty(MONITOR.lutname))
-      yuyv = robots{playerNumber,teamNumber}.get_yuyv();
-      yuv=yuyv2yuv(yuyv);
       MONITOR.h2 = subplot(4,5,[3 4 8 9]);
-      plot_label_lut(MONITOR.h2,yuv)
+      yuyv = robots{playerNumber,teamNumber}.get_yuyv();
+      label_lut=yuyv2label(yuyv,LUT);
+      plot_label(label_lut);
     end
 
     if MONITOR.enable3
@@ -214,41 +212,6 @@ function h=show_monitor()
       h2=subplot(5,5,20+playerNumber(i));
       plot_info(r_struct,r_mon);
     end
-  end
-
-
-  function plot_rgb( handle, rgb )
-    if( ~isempty(rgb) ) 
-      cla(handle);
-      imagesc( rgb ); 
-    end
-  end
-
-  function plot_label( handle, label, r_mon, scale)
-    % Colormap
-    cbk=[0 0 0];cr=[1 0 0];cg=[0 1 0];cb=[0 0 1];cy=[1 1 0];cw=[1 1 1];
-    cmap=[cbk;cr;cy;cy;cb;cb;cb;cb;cg;cg;cg;cg;cg;cg;cg;cg;cw];
-
-    if( ~isempty(label) )
-      cla(handle); 
-      image(label);
-      colormap(cmap);
-      xlim([1 size(label,2)]);
-      ylim([1 size(label,1)]);
-    end
-  end
-
-  function plot_label_lut(handle,yuv)
-
-    siz=size(yuv);
-    index = yuv2index(yuv, [64 64 64]);
-    im_display=[];
-    label=LUT(index)+1;
-    cbk=[0 0 0];cr=[1 0 0];cg=[0 1 0];cb=[0 0 1];cy=[1 1 0];cw=[1 1 1];
-    cmap=[cbk;cr;cy;cy;cb;cb;cb;cb;cg;cg;cg;cg;cg;cg;cg;cg;cw];
-    cla(handle);
-    image(label);
-    colormap(cmap);
   end
 
   function plot_info(robot,r_mon)

@@ -4,6 +4,11 @@ include ../../Makefile.inc
 TARGETS = all clean
 .PHONY: $(TARGETS)
 
+# Fix for Nao Boost/gcc? version
+ifneq ($(USER),darwin)
+  CXXFLAGS= -O1 -fpic
+endif
+
 all: shm 
 
 %.o: %.cc

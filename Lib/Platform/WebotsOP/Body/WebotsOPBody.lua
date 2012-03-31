@@ -303,6 +303,12 @@ end
 function set_waist_command( val )
 end
 
+function set_aux_hardness( val )
+end
+
+function set_aux_command( val )
+end
+
 function get_sensor_imuGyr0()
   return vector.zeros(3)
 end

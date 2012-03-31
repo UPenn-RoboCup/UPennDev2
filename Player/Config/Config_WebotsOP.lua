@@ -38,6 +38,8 @@ dev.kick='NewKick';
 -- Game Parameters
 game = {};
 game.nPlayers = 5; --5 total robot (including reserve ones)
+game.nPlayers = 4; --Should be 4 for webots nao gamecontroller
+
 game.teamNumber = (os.getenv('TEAM_ID') or 0) + 0;
 --Webots player id begins at 0 but we use 1 as the first id 
 game.playerID = (os.getenv('PLAYER_ID') or 0) + 1;
@@ -65,25 +67,20 @@ fsm.playMode = 2; --1 for demo, 2 for orbit, 3 for direct approach
 fsm.enable_walkkick = 1;
 fsm.enable_sidekick = 1;
 
--------------------------------
+fsm.body = {'ThrowInChallenge'};
+
+
+--Enable these for penalty-kick
+--[[
 fsm.body = {'GeneralPK'};
 fsm.playMode = 1;
--------------------------------
+--]]
 
 -- Team Parameters
 team = {};
 team.msgTimeout = 5.0;
 team.nonAttackerPenalty = 6.0; -- eta sec
 team.nonDefenderPenalty = 0.5; -- dist from goal
-
-
-
-
-
-
-
-
-
 
 -------------------------------------
 -- Robot specific parameters

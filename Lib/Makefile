@@ -157,6 +157,7 @@ setup_nao: nao setup_util setup_image setup_comm
 	find $(NAODIR) -regex '.*\($(SHLIBEXT)\|$(LUAEXT)\)' -exec cp -v {} $(INSTDIR) \;
 	cd $(PLAYERDIR)/Config && ln -s Config_Nao.lua Config.lua && cd $(CWD)
 	find $(UTILDIR) $(REGEX) -exec cp -v {} $(NAODEPLUA51DIR) \;
+	rm -f $(NAODEPLUA51DIR)/*;
 	@echo "\n"
 
 setup_webots_nao: webots_nao setup_util setup_image setup_webots

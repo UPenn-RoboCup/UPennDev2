@@ -2,7 +2,8 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel)
 % This function shows the robot over the field map
 % Level 1: show position only
 % Level 2: show position and vision info
-% Level 3: show positin, vision info and fov info
+% Level 3: show position, vision info and fov info
+% Level 4: show position, vision info and particles
 
   x0 = robot_struct.pose.x;
   y0 = robot_struct.pose.y;
@@ -16,15 +17,21 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel)
     plot_fallen_robot(robot_struct,scale)
     plot_info(robot_struct,scale);
   else
-    plot_robot(robot_struct,scale);
-    plot_info(robot_struct,scale);
-    plot_ball(robot_struct,scale);
-
-    if drawlevel>1
+    if drawlevel==4
+      plot_particle(r_mon.particle);
       plot_goal(r_mon.goal,scale);
       plot_landmark(r_mon.landmark,scale);
-      if drawlevel>2
-        plot_fov(r_mon.fov);
+    else
+      plot_robot(robot_struct,scale);
+      plot_info(robot_struct,scale);
+      plot_ball(robot_struct,scale);
+    
+      if drawlevel>1
+        plot_goal(r_mon.goal,scale);
+        plot_landmark(r_mon.landmark,scale);
+        if drawlevel==3
+          plot_fov(r_mon.fov);
+        end
       end
     end
   end
@@ -62,14 +69,14 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel)
 
     teamColors = ['b', 'r'];
     idColors = ['k', 'r', 'g', 'b'];
-    % Role:  1:Attack / 2:Defend / 3:Support / 4: Goalie
-    roleColors = {'m','k', 'k--','g'};
+    % Role:  0:Goalie 1:Attack / 2:Defend / 3:Support / 4: R.player 5: R.goalie
+    roleColors = {'g','r','k', 'k--','r--','g--'};
 
     teamColors = ['b', 'r'];
     hr = fill(xr, yr, teamColors(robot.teamColor+1));
 
     if robot.role>1 
-      h_role=plot([xr xr(1)],[yr yr(1)],roleColors{robot.role});
+      h_role=plot([xr xr(1)],[yr yr(1)],roleColors{robot.role+1});
       set(h_role,'LineWidth',3);
     end
 
@@ -81,23 +88,11 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel)
   end
 
   function plot_info(robot,angle)
-    robotnames = {'Bot1','Bot2','Bot3','Bot4','Bot5','Bot6'};
-    rolenames = {'Unknown','Attack','Defend','Support','Goalie','Waiting'};
-    colornames={'red','blue'};
-
-    %robotID robotName robotRole 
-    %BodyFSM HeadFSM
-    %Team info
-    %Voltage info
-
-    str=sprintf('%s\n%s',...
-	 robotnames{robot.id}, rolenames{robot.role+1});
+    infostr=robot_info(robot,0,1);
     xtext=-1/scale;   xtext2=-0.4/scale;
-   
     xt = xtext*ca + x0+xtext2;
     yt = xtext*sa + y0;
-
-    b_name=text(xt, yt, str);
+    b_name=text(xt, yt, infostr);
     set(b_name,'FontSize',8/scale);
   end
 
@@ -145,19 +140,27 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel)
     if( goal.detect==1 )
       if(goal.color==2) marker = 'm';% yellow
       else marker = 'b';end
-      marker2 = strcat(marker,'+');
-      marker3 = strcat(marker,'--');
+      marker2 = strcat(marker,'--');
       if( goal.v1.scale ~= 0 )
+
+        if goal.type==0 
+          marker1 = strcat(marker,'+');%Unknown post
+	elseif goal.type==2
+          marker1 = strcat(marker,'>');%Right post
+	else
+          marker1 = strcat(marker,'<');%Left or two post
+	end
         x1 = goal.v1.x*ca - goal.v1.y*sa + robot_struct.pose.x;
         y1 = goal.v1.x*sa + goal.v1.y*ca + robot_struct.pose.y;
-        plot(x1,y1,marker2,'MarkerSize',12/scale);
-        plot([x0 x1],[y0 y1],marker3);
+        plot(x1,y1,marker1,'MarkerSize',12/scale);
+        plot([x0 x1],[y0 y1],marker2);
       end
       if( goal.v2.scale ~= 0 )
+        marker1 = strcat(marker,'>');%Left post
         x2 = goal.v2.x*ca - goal.v2.y*sa + robot_struct.pose.x;
         y2 = goal.v2.x*sa + goal.v2.y*ca + robot_struct.pose.y;
-        plot(x2,y2,marker2,'MarkerSize',12/scale);
-        plot([x0 x2],[y0 y2],marker3);
+        plot(x2,y2,marker1,'MarkerSize',12/scale);
+        plot([x0 x2],[y0 y2],marker2);
       end
     end
   end
@@ -173,6 +176,25 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel)
       plot(x1,y1,marker2,'MarkerSize',12/scale);
       plot([x0 x1],[y0 y1],marker3);
     end
+  end
+
+  function plot_particle(particle)
+%    plot(particle.x,particle.y,'x')
+
+    index=[1:5:100]';
+
+    px=particle.x(index);
+    py=particle.y(index);
+    pa=particle.a(index);
+
+
+    pl_len=1;
+    dx=cos(pa)*pl_len;
+    dy=sin(pa)*pl_len;
+
+    quiver(px,py,dx,dy,0,'k');
+    plot(px,py,'r.');
+
   end
 
 end

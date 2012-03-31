@@ -105,13 +105,11 @@ function process_keyinput()
       Speak.talk('Finished');
       gcm.set_game_state(4);
     elseif byte==string.byte("k") then   
-      kickoff=gcm.get_game_kickoff();
-      gcm.set_game_kickoff(1-kickoff);
-      if gcm.get_game_kickoff()>0 then
-        Speak.talk('We have kickoff');
-      else
-        Speak.talk('They have kickoff');
-      end
+      gcm.set_game_kickoff(1);
+      Speak.talk('We have kickoff');
+    elseif byte==string.byte("l") then   
+      gcm.set_game_kickoff(0);
+      Speak.talk('They have kickoff');
     elseif byte==string.byte("q") then 
       penalize_player=1;
     elseif byte==string.byte("w") then 

@@ -41,7 +41,9 @@ game.teamNumber = (os.getenv('TEAM_ID') or 0) + 0;
 game.playerID = (os.getenv('PLAYER_ID') or 0) + 1;
 game.robotID = game.playerID;
 game.teamColor = 1;
-game.nPlayers = 4;
+game.nPlayers = 2;--for teensize: 2 players
+game.role = game.playerID-1; -- 0 for goalie
+
 
 -- FSM Parameters
 fsm = {};
@@ -89,7 +91,3 @@ stance.dpLimitStance = vector.new({.4, .3, .4, .05, .4, .1})*0.6;
 stance.dpLimitStance=vector.new({.04, .03, .07, .4, .4, .4});
 stance.dpLimitSit=vector.new({.1,.01,.06,.1,.3,.1})*2;
 stance.delay = 80; 
-
--- enable obstacle detection
-BodyFSM = {}
-BodyFSM.enable_obstacle_detection = 1;

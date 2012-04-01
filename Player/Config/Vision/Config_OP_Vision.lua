@@ -32,11 +32,8 @@ vision.store_goal_detections = 0;
 vision.store_ball_detections = 0;
 -- Subsample image?
 vision.subsampling = 1;
---Use yellow/cyan Ball instead of posts 
+-- use this to substitute goal check with blue/yellow ball check
 vision.use_point_goal = 0;
-
-
-
 
 --Vision parameter values
 
@@ -51,7 +48,6 @@ vision.ball.th_min_green1 = 400;
 vision.ball.th_min_green2 = 150;
 
 vision.ball.check_for_ground = 1;
-
 
 vision.goal={};
 vision.goal.th_min_color_count=100;
@@ -69,8 +65,6 @@ vision.goal.th_goal_separation = {0.35,2.0};
 vision.goal.th_goal_separation = {0.35,3.0}; --FOR OP
 vision.goal.th_min_area_unknown_post = 200;
 
--- use this to substitute goal check with blue/yellow ball check
-vision.goal.cut_top_post = 1;
-vision.goal.use_centerpost = 0;
+vision.goal.use_centerpost = 1;
 vision.goal.check_for_ground = 1;
 

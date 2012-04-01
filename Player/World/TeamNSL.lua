@@ -199,6 +199,7 @@ function set_role(r)
       Speak.talk('ERROR: Unkown Role');
     end
   end
+  update_shm();
 end
 
 --NSL role can be set arbitarily, so use config value

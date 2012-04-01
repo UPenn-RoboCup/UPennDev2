@@ -27,8 +27,8 @@ dev.body = 'WebotsOPBody';
 dev.camera = 'WebotsOPCam';
 dev.kinematics = 'OPKinematics';
 dev.game_control='WebotsGameControl';
---dev.team='TeamNSL';
-dev.team='TeamSPL';
+dev.team='TeamNSL';
+--dev.team='TeamSPL';
 dev.walk='NewWalk';
 dev.walk='NewNewWalk'; --New robocup walk that supports walking kicks
 --dev.walk='BoxWalk'; --New walk that supports different foot stance
@@ -45,7 +45,6 @@ game.teamNumber = (os.getenv('TEAM_ID') or 0) + 0;
 game.playerID = (os.getenv('PLAYER_ID') or 0) + 1;
 game.robotID = game.playerID; --For webots, robot ID is the same 
 game.role=game.playerID-1; --Default role for webots
-
 
 --Default team (for non-gamecontroller based teamplay)
 if game.teamNumber==1 then game.teamColor = 1; --Red team
@@ -67,9 +66,7 @@ fsm.playMode = 2; --1 for demo, 2 for orbit, 3 for direct approach
 fsm.enable_walkkick = 1;
 fsm.enable_sidekick = 1;
 
-fsm.body = {'ThrowInChallenge'};
-
-
+--fsm.body = {'ThrowInChallenge'};
 --Enable these for penalty-kick
 --[[
 fsm.body = {'GeneralPK'};

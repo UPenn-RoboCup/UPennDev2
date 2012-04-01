@@ -201,7 +201,7 @@ function h=show_monitor()
 
       if MONITOR.enable8==1 && ignore_vision==0
         h1=subplot(5,5,15+playerNumber(i));
-        plot_label( h1, labelB, r_mon, 1);
+        plot_label(labelB);
         plot_overlay(r_mon,4);
       elseif MONITOR.enable8==2
         h1=subplot(5,5,15+playerNumber(i));

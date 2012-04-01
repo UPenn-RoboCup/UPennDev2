@@ -39,6 +39,7 @@ require('getch')
 require('Body')
 require('Motion')
 require('Comm')
+require('Team')
 
 Motion.entry();
 

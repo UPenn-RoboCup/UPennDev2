@@ -246,13 +246,21 @@ function exit()
   HeadTransform.exit();
 end
 
-function bboxStats(color, bboxB)
+function bboxStats(color, bboxB, rollAngle)
   bboxA = {};
   bboxA[1] = scaleB*bboxB[1];
   bboxA[2] = scaleB*bboxB[2] + scaleB - 1;
   bboxA[3] = scaleB*bboxB[3];
   bboxA[4] = scaleB*bboxB[4] + scaleB - 1;
-  return ImageProc.color_stats(labelA.data, labelA.m, labelA.n, color, bboxA);
+  if rollAngle then
+    --make boundingbox wider
+    bboxA[1] = math.max(1,bboxA[1]);
+    bboxA[2] = math.min(labelA.m,bboxA[2]);
+    return ImageProc.tilted_color_stats(
+	labelA.data, labelA.m, labelA.n, color, bboxA,rollAngle);
+  else
+    return ImageProc.color_stats(labelA.data, labelA.m, labelA.n, color, bboxA);
+  end
 end
 
 function bboxB2A(bboxB)

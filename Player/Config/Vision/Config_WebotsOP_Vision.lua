@@ -22,7 +22,7 @@ vision.enable_line_detection = 1;
 -- use this to enable spot detection
 vision.enable_spot_detection = 0;
 -- use this to enable midfield landmark detection
-vision.enable_midfield_landmark_detection = 0;
+vision.enable_midfield_landmark_detection = 1;
 -- use this to enable copying images to shm (for colortables, testing)
 vision.copy_image_to_shm = 1;
 -- use this to enable storing all images
@@ -33,7 +33,7 @@ vision.store_goal_detections = 0;
 vision.store_ball_detections = 0;
 -- Subsample image?
 vision.subsampling = 1;
---Use yellow/cyan Ball instead of posts 
+-- use this to substitute goal check with blue/yellow ball check
 vision.use_point_goal = 0;
 
 --Vision parameter values
@@ -55,7 +55,7 @@ vision.ball.check_for_ground = 1;
 --For 320*240 labelA 
 vision.goal={};
 vision.goal.th_min_color_count=25;
-vision.goal.th_nPostB = 3;
+vision.goal.th_nPostB = 6;
 vision.goal.th_min_areaB = 10;
 vision.goal.th_min_orientation = 60*math.pi/180;
 vision.goal.th_min_fill_extent=0.35;
@@ -68,7 +68,5 @@ vision.goal.th_min_bad_color_ratio = 0.1;
 vision.goal.th_goal_separation = {0.35,3.0}; --for OP
 vision.goal.th_min_area_unknown_post = 40;
 
--- use this to substitute goal check with blue/yellow ball check
-vision.goal.cut_top_post = 1;
-vision.goal.use_centerpost = 0;
+vision.goal.use_centerpost = 1;
 vision.goal.check_for_ground = 1;

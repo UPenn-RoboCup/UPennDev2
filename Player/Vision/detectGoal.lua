@@ -50,8 +50,19 @@ function detect(color,color2)
   else vcm.add_debug_message("\nGoal: Blue post check\n"); end
   local goal = {};
   goal.detect = 0;
+
+--[[
   local postB = ImageProc.goal_posts(Vision.labelB.data, 
 	Vision.labelB.m, Vision.labelB.n, color, th_nPostB);
+--]]
+
+  --where shoud we update the roll angle? HeadTransform?
+  tiltAngle = HeadTransform.getCameraRoll();
+  vcm.set_camera_rollAngle(tiltAngle);
+
+  local postB = ImageProc.tilted_goal_posts(Vision.labelB.data, 
+	Vision.labelB.m, Vision.labelB.n, color, th_nPostB,tiltAngle);
+
   if (not postB) then 	
     vcm.add_debug_message("No post detected\n")
     return goal; 
@@ -64,69 +75,60 @@ function detect(color,color2)
 
   for i = 1,#postB do
     local valid = true;
-    postStats = Vision.bboxStats(color, postB[i].boundingBox);
-
-   --cut top region of the post off for OP
-    if cut_top_post ==1 then 
-      local leftX = postB[i].boundingBox[1];
-      local rightX = postB[i].boundingBox[2];
-      local topY = postB[i].boundingBox[3];
-      local bottomY = postB[i].boundingBox[4];
-      local topY2 = topY-(topY-bottomY)*0.4;
-      boundingBoxLower={leftX,rightX,topY2,bottomY};
-      postStats2 = Vision.bboxStats(color, boundingBoxLower);
-
-      --TODO: Compare thickness
-      --[[
-      local thickness1 = postStats.axisMinor;
-      local thickness2 = postStats2.axisMinor;
-      if thickness1 > 1.1* thickness2 then
-	postStats=postStats2;
-      end
-      --]]
-
-      postStats=postStats2;
-    end
+    postStats = Vision.bboxStats(color, postB[i].boundingBox,tiltAngle);
 
     -- size and orientation check
-    vcm.add_debug_message(string.format("Size and orientation check: \narea %d orientation %d\n", 
-	postStats.area, 180/math.pi*postStats.orientation));
-
+    vcm.add_debug_message(string.format("Area check: %d\n", 
+	postStats.area));
     if (postStats.area < th_min_areaB) then
-      vcm.add_debug_message("size check fail\n");
+      vcm.add_debug_message("Area check fail\n");
       valid = false;
     end
 
-    if (math.abs(postStats.orientation) < th_min_orientation) then
-      vcm.add_debug_message("orientation check fail\n");
-      valid = false;
+    if valid then
+      local orientation= postStats.orientation - tiltAngle;
+      vcm.add_debug_message(string.format("Orientation check: %.1f\n", 
+	 180/math.pi*tiltAngle));
+      if (math.abs(orientation) < th_min_orientation) then
+        vcm.add_debug_message("orientation check fail\n");
+        valid = false;
+      end
     end
       
     --fill extent check
-    local extent = postStats.area / (postStats.axisMajor * postStats.axisMinor);
-    vcm.add_debug_message(string.format("Fill extent check: %d\n", extent));
-    if (extent < th_min_fill_extent) then 
-      vcm.add_debug_message("Fill extent check fail\n");
-      valid = false; 
+    if valid then
+      extent = postStats.area / (postStats.axisMajor * postStats.axisMinor);
+      vcm.add_debug_message(string.format("Fill extent check: %.2f\n", extent));
+      if (extent < th_min_fill_extent) then 
+        vcm.add_debug_message("Fill extent check fail\n");
+        valid = false; 
+      end
     end
 
     --aspect ratio check
-    local aspect = postStats.axisMajor/postStats.axisMinor;
-    vcm.add_debug_message(string.format("Aspect check: %d\n",aspect));
-    if (aspect < th_aspect_ratio[1]) or 
+    if valid then
+      local aspect = postStats.axisMajor/postStats.axisMinor;
+      vcm.add_debug_message(string.format("Aspect check: %d\n",aspect));
+      if (aspect < th_aspect_ratio[1]) or 
 	(aspect > th_aspect_ratio[2]) then 
-      vcm.add_debug_message("Aspect check fail\n");
-      valid = false; 
+        vcm.add_debug_message("Aspect check fail\n");
+        valid = false; 
+      end
     end
 
     --check edge margin
-    local margin=math.min(postStats.centroid[1], 
-			  Vision.labelA.m-postStats.centroid[1]);
-    vcm.add_debug_message(string.format("Edge margin check: %d\n",margin));
+    if valid then
+      local leftPoint= postStats.centroid[1] - 
+	postStats.axisMajor/2 * math.abs(math.sin(tiltAngle));
+      local rightPoint= postStats.centroid[1] + 
+	postStats.axisMajor/2 * math.abs(math.sin(tiltAngle));
+      local margin = math.min(leftPoint, Vision.labelA.m-rightPoint);
+      vcm.add_debug_message(string.format("Edge margin check: %d\n",margin));
 
-    if margin<=th_edge_margin then
-      vcm.add_debug_message("Edge margin check fail\n");
-      valid = false;
+      if margin<=th_edge_margin then
+        vcm.add_debug_message("Edge margin check fail\n");
+        valid = false;
+      end
     end
 
     -- ground check at the bottom of the post
@@ -142,13 +144,13 @@ function detect(color,color2)
         fieldBBox[4] = bboxA[4] + th_ground_boundingbox[4];
 
         -- color stats for the bbox
-        local fieldBBoxStats = ImageProc.color_stats(Vision.labelA.data, 
-		Vision.labelA.m,Vision.labelA.n,colorField,fieldBBox);
+        local fieldBBoxStats = ImageProc.tilted_color_stats(Vision.labelA.data, 
+		Vision.labelA.m,Vision.labelA.n,colorField,fieldBBox,tiltAngle);
         local fieldBBoxArea = Vision.bboxArea(fieldBBox);
 
 	green_ratio=fieldBBoxStats.area/fieldBBoxArea;
         vcm.add_debug_message(string.format(
-		"Green ratio check: %d\n",green_ratio));
+		"Green ratio check: %.2f\n",green_ratio));
 
         -- is there green under the ball?
         if (green_ratio<th_min_green_ratio) then
@@ -160,7 +162,7 @@ function detect(color,color2)
 
     if valid then
       --bad color check (to check landmarks out)
-      local badColorStats=Vision.bboxStats(color2,postB[i].boundingBox);
+      local badColorStats=Vision.bboxStats(color2,postB[i].boundingBox,tiltAngle);
       local extent2= badColorStats.area /
           (postStats.axisMajor * postStats.axisMinor);
       vcm.add_debug_message(string.format(
@@ -243,14 +245,25 @@ function detect(color,color2)
 
     -- look for crossbar:
     local postWidth = postA[1].axisMinor;
+--[[
     local leftX = postA[1].boundingBox[1]-5*postWidth;
     local rightX = postA[1].boundingBox[2]+5*postWidth;
-    local topY = postA[1].boundingBox[3]-postWidth;
+    local topY = postA[1].boundingBox[3]-*postWidth;
     local bottomY = postA[1].boundingBox[3]+2*postWidth;
+--]]
+
+    local leftX = postA[1].boundingBox[1]-5*postWidth;
+    local rightX = postA[1].boundingBox[2]+5*postWidth;
+    local topY = postA[1].boundingBox[3]-5*postWidth;
+    local bottomY = postA[1].boundingBox[3]+5*postWidth;
     local bboxA = {leftX, rightX, topY, bottomY};
 
-    local crossbarStats = ImageProc.color_stats(Vision.labelA.data, Vision.labelA.m, Vision.labelA.n, color, bboxA);
+    local crossbarStats = ImageProc.color_stats(Vision.labelA.data, Vision.labelA.m, Vision.labelA.n, color, bboxA,tiltAngle);
     local dxCrossbar = crossbarStats.centroid[1] - postA[1].centroid[1];
+    local crossbar_ratio = dxCrossbar/postWidth; 
+
+    vcm.add_debug_message(string.format(
+	"Crossbar stat: %.2f\n",crossbar_ratio));
     if (math.abs(dxCrossbar) > 0.6*postWidth) then
       if (dxCrossbar > 0) then
 	if use_centerpost>0 then
@@ -279,21 +292,17 @@ function detect(color,color2)
   
 -- added for test_vision.m
   if Config.vision.copy_image_to_shm then
---    vcm.set_goal_postBoundingBox1(postB[ivalidB[1]].boundingBox);
-      --added 
-      vcm.set_goal_postBoundingBox1(vector.zeros(4));
+      vcm.set_goal_postBoundingBox1(postB[ivalidB[1]].boundingBox);
       vcm.set_goal_postCentroid1({postA[1].centroid[1],postA[1].centroid[2]});
       vcm.set_goal_postAxis1({postA[1].axisMajor,postA[1].axisMinor});
       vcm.set_goal_postOrientation1(postA[1].orientation);
-
       if npost == 2 then
---      vcm.set_goal_postBoundingBox2({postB[ivalidB[2]].boundingBox});
-        vcm.set_goal_postBoundingBox2(vector.zeros(4));
+        vcm.set_goal_postBoundingBox2(postB[ivalidB[2]].boundingBox);
         vcm.set_goal_postCentroid2({postA[2].centroid[1],postA[2].centroid[2]});
         vcm.set_goal_postAxis2({postA[2].axisMajor,postA[2].axisMinor});
         vcm.set_goal_postOrientation2(postA[2].orientation);
       else
-        vcm.set_goal_postBoundingBox2(vector.zeros(4));
+        vcm.set_goal_postBoundingBox2({0,0,0,0});
       end
   end
 

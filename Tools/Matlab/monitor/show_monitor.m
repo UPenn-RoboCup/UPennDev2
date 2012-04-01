@@ -22,6 +22,8 @@ function h=show_monitor()
   h.lutname=0;
   h.is_webots=0;
 
+  h.fieldtype=0; %0,1,2 for SPL/Kid/Teen
+
   % subfunctions
   function init(draw_team,target_fps)
     MONITOR.target_fps=target_fps;
@@ -80,6 +82,9 @@ function h=show_monitor()
 
       MONITOR.hButton12=uicontrol('Style','pushbutton','String','Load LUT',...
 	'Position',[700 570 250 20],'Callback',@button12);
+
+      MONITOR.hButton13=uicontrol('Style','pushbutton','String','SPL',...
+	'Position',[20 40 70 40],'Callback',@button13);
 
       MONITOR.hInfoText=uicontrol('Style','text','Position',[20 100 70 80]);
 
@@ -156,7 +161,8 @@ function h=show_monitor()
 
     if MONITOR.enable3
       MONITOR.h3 = subplot(4,5,[11 12 16 17]);
-      plot_field(MONITOR.h3);
+      plot_field(MONITOR.h3,MONITOR.fieldtype);
+
       plot_robot( r_struct, r_mon,1,MONITOR.enable3 );
     end
 
@@ -314,6 +320,14 @@ function h=show_monitor()
       LUT = fread(fid, 'uint8');
       fclose(fid);
       set(MONITOR.hButton12,'String', filename);
+    end
+  end
+
+  function button13(varargin)
+    MONITOR.fieldtype=mod(MONITOR.fieldtype+1,3);
+    if MONITOR.fieldtype==1 set(MONITOR.hButton13,'String', 'KidSize');
+    elseif MONITOR.fieldtype==2 set(MONITOR.hButton13,'String', 'TeenSize');
+    else set(MONITOR.hButton13,'String', 'SPL');
     end
   end
 end

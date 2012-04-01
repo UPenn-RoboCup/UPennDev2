@@ -180,6 +180,14 @@ end
 
 
 function ikineCam(x, y, z, select)
+  yaw,pitch=ikineCam0(x,y,z,select);
+  yaw = math.min(math.max(yaw, yawMin), yawMax);
+  pitch = math.min(math.max(pitch, pitchMin), pitchMax);
+  return yaw,pitch;
+end
+
+--Camera IK without headangle limit
+function ikineCam0(x,y,z,select)
   bodyHeight=vcm.get_camera_bodyHeight();
   bodyTilt=vcm.get_camera_bodyTilt();
   pitch0=vcm.get_camera_pitchBias(); --Robot specific head angle bias
@@ -215,11 +223,20 @@ function ikineCam(x, y, z, select)
   local d = math.sqrt(x^2+z^2);
   local p0 = math.atan2(r,z) - math.acos(c/d);
   pitch=p0;
-
   pitch = pitch - cameraAngle[select][2]- pitch0;
-  yaw = math.min(math.max(yaw, yawMin), yawMax);
-  pitch = math.min(math.max(pitch, pitchMin), pitchMax);
   return yaw, pitch;
+end
+
+function getCameraRoll()
+  --Use camera IK to calculate how much the image is tilted
+  headAngles = Body.get_head_position();
+  r=3.0;z0=0;z1=0.7;
+  x0=r*math.cos(headAngles[1]);
+  y0=r*math.sin(headAngles[1]);
+  yaw1, pitch1=ikineCam0(x0,y0,z0,bottom);
+  yaw2, pitch2=ikineCam0(x0,y0,z1,bottom);
+  tiltAngle = math.atan( (yaw2-yaw1)/(pitch1-pitch2) ); 
+  return tiltAngle;
 end
 
 function getCameraOffset() 

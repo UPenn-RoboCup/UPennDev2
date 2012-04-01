@@ -167,6 +167,7 @@ function update_shm()
   vcm.set_landmark_detect(0);
   if enableMidfieldLandmark == 1 then
     if landmarkYellow.detect==1 then
+       vcm.set_landmark_detect(1);
        vcm.set_landmark_color(colorYellow);
        vcm.set_landmark_v(landmarkYellow.v);
     elseif landmarkCyan.detect==1 then

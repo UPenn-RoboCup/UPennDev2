@@ -121,9 +121,10 @@ global MONITOR %for sending the webots check information
       bodyHeight=h.vcmCamera.get_bodyHeight();
       bodyTilt=h.vcmCamera.get_bodyTilt();
       headAngles=h.vcmImage.get_headAngles();
+      rollAngle=h.vcmCamera.get_rollAngle();
       r.camera = struct('width',width,'height',height,...
 	'bodyHeight',bodyHeight,'bodyTilt',bodyTilt,...
-	'headAngles',headAngles);
+	'headAngles',headAngles,'rollAngle',rollAngle);
 
     %Image FOV boundary
           
@@ -163,14 +164,10 @@ global MONITOR %for sending the webots check information
       goalv2 = h.vcmGoal.get_v2();
       r.goal.v2 = struct('x',goalv2(1), 'y',goalv2(2), 'z',goalv2(3), 'scale',goalv2(4));
           
-      % Add the goal bounding boxes
-      gbb1 = h.vcmGoal.get_postBoundingBox1();
-      r.goal.postBoundingBox1 = struct('x1',gbb1(1), 'x2',gbb1(2), 'y1',gbb1(3), 'y2',gbb1(4));
-      gbb2 = h.vcmGoal.get_postBoundingBox2();
-      r.goal.postBoundingBox2 = struct('x1',gbb2(1), 'x2',gbb2(2), 'y1',gbb2(3), 'y2',gbb2(4));
-
-      r.goal.postStat1 = struct('x',0,'y',0, 'a',0, 'b',0,'o',0);
-      r.goal.postStat2 = struct('x',0,'y',0, 'a',0, 'b',0,'o',0);
+      r.goal.postStat1 = struct('x',0,'y',0, 'a',0, 'b',0,'o',0,...
+	'gbx1',0,'gbx2',0,'gby1',0,'gby2',0);
+      r.goal.postStat2 = struct('x',0,'y',0, 'a',0, 'b',0,'o',0,...
+	'gbx1',0,'gbx2',0,'gby1',0,'gby2',0);
 
       if r.goal.detect==1 
          %add goal post stats
@@ -180,9 +177,17 @@ global MONITOR %for sending the webots check information
         ga2 = h.vcmGoal.get_postAxis2();
         go1 = h.vcmGoal.get_postOrientation1();
         go2 = h.vcmGoal.get_postOrientation2();
-        r.goal.postStat1 = struct('x',gc1(1), 'y',gc1(2), 'a',ga1(1), 'b',ga1(2),'o',go1(1));
-        r.goal.postStat2 = struct('x',gc2(1), 'y',gc2(2), 'a',ga2(1), 'b',ga2(2),'o',go2(1));
+
+        % Add the goal bounding boxes
+        gbb1 = h.vcmGoal.get_postBoundingBox1();
+        gbb2 = h.vcmGoal.get_postBoundingBox2();
+
+        r.goal.postStat1 = struct('x',gc1(1), 'y',gc1(2), 'a',ga1(1), 'b',ga1(2),'o',go1(1), ...
+	   'gbx1',gbb1(1), 'gbx2',gbb1(2), 'gby1',gbb1(3), 'gby2',gbb1(4) );
+        r.goal.postStat2 = struct('x',gc2(1), 'y',gc2(2), 'a',ga2(1), 'b',ga2(2),'o',go2(1),...
+	   'gbx1',gbb2(1), 'gbx2',gbb2(2), 'gby1',gbb2(3), 'gby2',gbb2(4) );
       end
+
   %landmark info
       r.landmark = {};
       r.landmark.detect = h.vcmLandmark.get_detect();

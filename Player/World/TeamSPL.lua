@@ -208,6 +208,7 @@ function set_role(r)
   end
 end
 
+print("SPL Teamplay Loaded");
 set_role(Config.team.role);
 update_shm();
 

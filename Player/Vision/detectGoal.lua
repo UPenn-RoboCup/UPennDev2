@@ -119,8 +119,10 @@ function detect(color,color2)
     --check edge margin
     if valid then
       local leftPoint= postStats.centroid[1] - 
+	postStats.axisMinor/2 * math.cos(tiltAngle) -
 	postStats.axisMajor/2 * math.abs(math.sin(tiltAngle));
       local rightPoint= postStats.centroid[1] + 
+	postStats.axisMinor/2 * math.cos(tiltAngle) +
 	postStats.axisMajor/2 * math.abs(math.sin(tiltAngle));
       local margin = math.min(leftPoint, Vision.labelA.m-rightPoint);
       vcm.add_debug_message(string.format("Edge margin check: %d\n",margin));

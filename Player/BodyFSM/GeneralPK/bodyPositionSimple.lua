@@ -22,10 +22,11 @@ function entry()
   wcm.set_kick_type(1);
   wcm.set_kick_angle(math.pi/12);
   wcm.set_kick_angle(0);
-  if not walk.active then walk.start(); end
 end
 
 function update()
+  if not walk.active then walk.start(); end
+
   local t = Body.get_time();
 
   ball = wcm.get_ball();

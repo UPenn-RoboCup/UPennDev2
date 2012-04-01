@@ -46,9 +46,11 @@ game.playerID = (os.getenv('PLAYER_ID') or 0) + 1;
 game.robotID = game.playerID; --For webots, robot ID is the same 
 game.role=game.playerID-1; --Default role for webots
 
---Default team (for non-gamecontroller based teamplay)
-if game.teamNumber==1 then game.teamColor = 1; --Red team
-else game.teamColor = 0; --Blue team
+--Default team (for wbt files w/o gamecontroller)
+if game.teamNumber==1 then 
+  game.teamColor = 1; --Red team
+else 
+  game.teamColor = 0; --Blue team
 end
 
 --FSM and behavior settings
@@ -66,11 +68,14 @@ fsm.playMode = 2; --1 for demo, 2 for orbit, 3 for direct approach
 fsm.enable_walkkick = 1;
 fsm.enable_sidekick = 1;
 
---fsm.body = {'ThrowInChallenge'};
---Enable these for penalty-kick
 --[[
+--Enable these for penalty-kick
+dev.team='TeamNull'; --Turn off teamplay for challenges
 fsm.body = {'GeneralPK'};
-fsm.playMode = 1;
+fsm.playMode = 2;
+
+--Enable this for throw-in 
+--fsm.body = {'ThrowInChallenge'};
 --]]
 
 -- Team Parameters

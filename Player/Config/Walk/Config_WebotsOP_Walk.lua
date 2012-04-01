@@ -89,3 +89,9 @@ walk.legLength = 0.093+0.093;
 walk.hipOffsetX = 0.008;
 walk.hipOffsetY = 0.037;
 walk.hipOffsetZ = 0.096;
+
+--[[
+--Faster turning test
+walk.stanceLimitA={-20*math.pi/180,45*math.pi/180};
+walk.velLimitA={-.6,.6};
+--]]

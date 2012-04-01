@@ -215,7 +215,8 @@ kick.def["pickupCenter"]={
 
 
 --for testing
+--[[
 kick.def["kickForwardLeft"]=kick.def["pickupLeft"];
 kick.def["kickForwardRight"]=kick.def["throwLeft"];
-
 kick.def["kickForwardLeft"]=kick.def["pickupCenter"];
+--]]

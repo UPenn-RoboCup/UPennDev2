@@ -9,8 +9,8 @@ WorldInfo {
   basicTimeStep 40
 }
 Viewpoint {
-  orientation -0.483622 0.854639 0.188947 0.761485
-  position 3.06411 2.00783 4.41698
+  orientation -0.999407 -0.0318375 0.0131367 0.70843
+  position -1.91863 3.94548 5.11537
 }
 Background {
   skyColor [
@@ -41,7 +41,7 @@ DEF BLUE_GOAL KidGoal {
   rotation 0 1 0 3.14159
   postColor 0.152941 0.505882 0.733333
 }
-DEF YELLOW_LANDMARK  Landmark {
+DEF YELLOW_LANDMARK Landmark {
   translation 0 0 -2.4
   postColor1 0.992157 0.854902 0.219608
   postColor2 0.152941 0.505882 0.733333
@@ -52,67 +52,56 @@ DEF BLUE_LANDMARK Landmark {
   postColor2 0.992157 0.854902 0.219608
 }
 DEF OBSTACLE_1 Obstacle {
-  translation -1.2 0 -1.0
+  translation -1.2 0 -1
   postColor1 0.3 0.3 0.3
-  locked TRUE
 }
 DEF OBSTACLE_2 Obstacle {
-  translation -0.5 0 1.0
+  translation -0.5 0 1
   postColor1 0.3 0.3 0.3
-  locked TRUE
 }
 DEF OBSTACLE_3 Obstacle {
   translation 0.2 0 0
   postColor1 0.3 0.3 0.3
-  locked TRUE
 }
 DEF OBSTACLE_4 Obstacle {
-  translation 1.0 0 -1.0
+  translation 1 0 -1
   postColor1 0.3 0.3 0.3
-  locked TRUE
 }
 DEF OBSTACLE_5 Obstacle {
   translation 1.6 0 -0
   postColor1 0.3 0.3 0.3
-  locked TRUE
 }
 DEF OBSTACLE_6 Obstacle {
-  translation 2.0 0 0.9
+  translation 2 0 0.9
   postColor1 0.3 0.3 0.3
-  locked TRUE
 }
-
-
 DEF BALL1 Ball {
-  translation -2.4 0.03 0
+  translation -3.26814 0.03 1.33894
   color 0.6 0 0
 }
 DEF BALL2 Ball {
-  translation -2.4 0.03 0.5
+  translation -3.30399 0.03 1.13388
   color 0.4 0 0.4
 }
 DEF BALL3 Ball {
-  translation -2.4 0.03 1.0
+  translation -3.11524 0.03 1.14032
   color 0.4 0.8 0
 }
 DEF BALL4 Ball {
-  translation -2.4 0.03 -0.5
+  translation -3.08378 0.03 1.36609
   color 0 0 0.6
 }
 DEF BALL5 Ball {
-  translation -2.4 0.03 -1.0
+  translation -3.46605 0.03 1.27166
   color 0 0.4 0.4
 }
-
-
-#BLUE PLAYER DEFAULT
 DEF PLAYER_1_0 DARwInOP {
   translation -2.8 0.3 0
   rotation 0 1 0 1.56
   controller "darwin-op_team_0"
   controllerArgs "1 0"
+  plasticColor 0.2 0.2 0.2
+  cameraWindowPosition 0.125 0
   waistBand TRUE
   waistBandColor 1 0 0
-  plasticColor 0.2 0.2 0.2
-  cameraWindowPosition 0.125 0 
 }

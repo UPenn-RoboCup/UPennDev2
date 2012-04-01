@@ -193,7 +193,7 @@ function h=show_monitor()
 
     %Draw common field 
     h_c=subplot(5,5,[1:15]);
-    plot_field(h_c);
+    plot_field(h_c,1);
 
     for i=1:length(playerNumber)
       r_struct = robots{playerNumber(i),teamNumber}.get_team_struct();

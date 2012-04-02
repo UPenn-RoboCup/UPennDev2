@@ -182,10 +182,10 @@ function update_img( enable, imagecount )
 -- half of sub image
     sendImgSub2();
   elseif(enable==3) then
-    if (Config.platform.name ~= "Nao") then
+--    if (Config.platform.name ~= "Nao") then
       sendImg(); 
 --    sendImgSub();
 --    sendAsub();
-    end
+--    end
   end
 end

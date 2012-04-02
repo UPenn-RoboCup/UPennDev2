@@ -22,6 +22,8 @@ function h=show_monitor()
   h.lutname=0;
   h.is_webots=0;
 
+  h.fieldtype=0; %0,1,2 for SPL/Kid/Teen
+
   % subfunctions
   function init(draw_team,target_fps)
     MONITOR.target_fps=target_fps;
@@ -81,6 +83,11 @@ function h=show_monitor()
       MONITOR.hButton12=uicontrol('Style','pushbutton','String','Load LUT',...
 	'Position',[700 570 250 20],'Callback',@button12);
 
+      MONITOR.hButton13=uicontrol('Style','pushbutton','String','SPL',...
+	'Position',[20 40 70 40],'Callback',@button13);
+
+      MONITOR.hInfoText=uicontrol('Style','text','Position',[20 100 70 80]);
+
     end
   end
 
@@ -120,13 +127,11 @@ function h=show_monitor()
       if MONITOR.enable1==1
         MONITOR.h1 = subplot(4,5,[1 2 6 7]);
         yuyv = robots{playerNumber,teamNumber}.get_yuyv();
-        [ycbcr,rgb]=yuyv2rgb(yuyv);
-        plot_rgb( MONITOR.h1, rgb );
+	plot_yuyv(yuyv);
       elseif MONITOR.enable1==2
         MONITOR.h1 = subplot(4,5,[1 2 6 7]);
         yuyv2 = robots{playerNumber,teamNumber}.get_yuyv2();
-        [ycbcr,rgb]=yuyv2rgb(yuyv2);
-        plot_rgb( MONITOR.h1, rgb );
+	plot_yuyv(yuyv2);
       end
 
       %webots use non-subsampled label (2x size of yuyv)
@@ -140,23 +145,24 @@ function h=show_monitor()
     if MONITOR.enable2==1
       MONITOR.h2 = subplot(4,5,[3 4 8 9]);
       labelA = robots{playerNumber,teamNumber}.get_labelA();
-      plot_label( MONITOR.h2, labelA, r_mon, 1);
+      plot_label(labelA);
       plot_overlay(r_mon,1);
     elseif MONITOR.enable2==2
       MONITOR.h2 = subplot(4,5,[3 4 8 9]);
       labelB = robots{playerNumber,teamNumber}.get_labelB();
-      plot_label( MONITOR.h2, labelB, r_mon, 4);
+      plot_label(labelB);
       plot_overlay(r_mon,4);
     elseif (MONITOR.enable2==3) && (~isempty(MONITOR.lutname))
-      yuyv = robots{playerNumber,teamNumber}.get_yuyv();
-      yuv=yuyv2yuv(yuyv);
       MONITOR.h2 = subplot(4,5,[3 4 8 9]);
-      plot_label_lut(MONITOR.h2,yuv)
+      yuyv = robots{playerNumber,teamNumber}.get_yuyv();
+      label_lut=yuyv2label(yuyv,LUT);
+      plot_label(label_lut);
     end
 
     if MONITOR.enable3
       MONITOR.h3 = subplot(4,5,[11 12 16 17]);
-      plot_field(MONITOR.h3);
+      plot_field(MONITOR.h3,MONITOR.fieldtype);
+
       plot_robot( r_struct, r_mon,1,MONITOR.enable3 );
     end
 
@@ -169,8 +175,11 @@ function h=show_monitor()
       set(MONITOR.hDebugText,'String',r_mon.debug.message);
     end
 
+    [infostr textcolor]=robot_info(r_struct,r_mon,2);
+    set(MONITOR.hInfoText,'String',infostr);
+
     if MONITOR.logging
-      LOGGER.log_yuyv(yuyv + 0);
+      LOGGER.log_data(yuyv + 0,labelA,r_mon);
       logstr=sprintf('%d/100',LOGGER.log_count);
       set(MONITOR.hButton11,'String', logstr);
       if LOGGER.log_count==100 
@@ -184,7 +193,7 @@ function h=show_monitor()
 
     %Draw common field 
     h_c=subplot(5,5,[1:15]);
-    plot_field(h_c);
+    plot_field(h_c,1);
 
     for i=1:length(playerNumber)
       r_struct = robots{playerNumber(i),teamNumber}.get_team_struct();
@@ -193,12 +202,18 @@ function h=show_monitor()
       labelB = robots{playerNumber(i),teamNumber}.get_labelB();
       %rgb = robots{playerNumber(i),teamNumber}.get_rgb();
 
-      h_c=subplot(5,5,[1:15]);
-      plot_robot( r_struct, r_mon,2,MONITOR.enable10);
+      updated=robots{playerNumber(i),teamNumber}.updated;
+      tLastUpdate=robots{playerNumber(i),teamNumber}.tLastUpdate;
+
+%      if updated 
+        h_c=subplot(5,5,[1:15]);
+        plot_robot( r_struct, r_mon,2,MONITOR.enable10);
+        updated = 0;
+%      end
 
       if MONITOR.enable8==1 && ignore_vision==0
         h1=subplot(5,5,15+playerNumber(i));
-        plot_label( h1, labelB, r_mon, 1);
+        plot_label(labelB);
         plot_overlay(r_mon,4);
       elseif MONITOR.enable8==2
         h1=subplot(5,5,15+playerNumber(i));
@@ -212,72 +227,10 @@ function h=show_monitor()
       end
 
       h2=subplot(5,5,20+playerNumber(i));
-      plot_info(r_struct,r_mon);
+      [infostr textcolor]=robot_info(r_struct,r_mon,2);
+      h_xlabel=xlabel(infostr);
+      set(h_xlabel,'Color',textcolor);
     end
-  end
-
-
-  function plot_rgb( handle, rgb )
-    if( ~isempty(rgb) ) 
-      cla(handle);
-      imagesc( rgb ); 
-    end
-  end
-
-  function plot_label( handle, label, r_mon, scale)
-    % Colormap
-    cbk=[0 0 0];cr=[1 0 0];cg=[0 1 0];cb=[0 0 1];cy=[1 1 0];cw=[1 1 1];
-    cmap=[cbk;cr;cy;cy;cb;cb;cb;cb;cg;cg;cg;cg;cg;cg;cg;cg;cw];
-
-    if( ~isempty(label) )
-      cla(handle); 
-      image(label);
-      colormap(cmap);
-      xlim([1 size(label,2)]);
-      ylim([1 size(label,1)]);
-    end
-  end
-
-  function plot_label_lut(handle,yuv)
-
-    siz=size(yuv);
-    index = yuv2index(yuv, [64 64 64]);
-    im_display=[];
-    label=LUT(index)+1;
-    cbk=[0 0 0];cr=[1 0 0];cg=[0 1 0];cb=[0 0 1];cy=[1 1 0];cw=[1 1 1];
-    cmap=[cbk;cr;cy;cy;cb;cb;cb;cb;cg;cg;cg;cg;cg;cg;cg;cg;cw];
-    cla(handle);
-    image(label);
-    colormap(cmap);
-  end
-
-  function plot_info(robot,r_mon)
-    robotnames = {'Bot1','Bot2','Bot3','Bot4','Bot5'};
-    rolenames = {'Goalie','Attacker','Defender','Supporter','W. player','W. goalie'};
-    colornames={'red','blue'};
-
-    str=sprintf('#%d %s  %s\n%s %s\n %.1fV',...
-	 robot.id, robotnames{robot.id}, rolenames{robot.role+1},...
-         char(r_mon.fsm.head),   char(r_mon.fsm.body), robot.battery_level);
-
-
-	%  char(r_mon.fsm.game)
-	%  char(r_mon.fsm.motion)
-
-	%{
-        r.teamNumber = h.gcmTeam.get_number();
-        r.teamColor = h.gcmTeam.get_color();
-        r.id = h.gcmTeam.get_player_id();
-        r.role = h.gcmTeam.get_role();
-
-    str=sprintf('#%d %s  %s\n %s %s\n Teammate: %s\n %.1fV %dC \nTM$
-                   i,robotName, roleNames{data(i).role}, data(i).HeadFSM, data($
-                    data(i).teammate,data(i).battery/10, data(i).temp,tAgo,data$
-                h_xlabel=xlabel(str);
-	%}
-
-    h_xlabel=xlabel(str);
-    set(h_xlabel,'Color','k');
   end
 
   function button1(varargin)
@@ -373,6 +326,14 @@ function h=show_monitor()
       LUT = fread(fid, 'uint8');
       fclose(fid);
       set(MONITOR.hButton12,'String', filename);
+    end
+  end
+
+  function button13(varargin)
+    MONITOR.fieldtype=mod(MONITOR.fieldtype+1,3);
+    if MONITOR.fieldtype==1 set(MONITOR.hButton13,'String', 'KidSize');
+    elseif MONITOR.fieldtype==2 set(MONITOR.hButton13,'String', 'TeenSize');
+    else set(MONITOR.hButton13,'String', 'SPL');
     end
   end
 end

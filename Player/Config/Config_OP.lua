@@ -43,7 +43,12 @@ game.teamNumber = 18;
 game.playerID = parse_hostname.get_player_id();
 game.robotID = game.playerID;
 game.teamColor = parse_hostname.get_team_color();
-game.nPlayers = 3;
+game.nPlayers = 5;
+
+--------------------
+--TODO: playerID based role setting (for goalie)
+--game.role = 0; --goalie
+game.role = 1; --default attacker
 
 --FSM and behavior settings
 fsm = {};

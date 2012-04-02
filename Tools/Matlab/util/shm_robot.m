@@ -19,7 +19,7 @@ global MONITOR %for sending the webots check information
 
   h.vcmBall  = shm(sprintf('vcmBall%d%d%s',  h.teamNumber, h.playerID, h.user));
   h.vcmBoundary = shm(sprintf('vcmBoundary%d%d%s', h.teamNumber, h.playerID, h.user));
-  % h.vcmCamera
+  h.vcmCamera = shm(sprintf('vcmCamera%d%d%s', h.teamNumber, h.playerID, h.user));
   h.vcmDebug  = shm(sprintf('vcmDebug%d%d%s',  h.teamNumber, h.playerID, h.user));
   h.vcmFreespace = shm(sprintf('vcmFreespace%d%d%s', h.teamNumber, h.playerID, h.user));
   h.vcmGoal  = shm(sprintf('vcmGoal%d%d%s',  h.teamNumber, h.playerID, h.user));
@@ -49,6 +49,12 @@ global MONITOR %for sending the webots check information
   h.get_labelB = @get_labelB;
   h.get_particle = @get_particle;
 
+  h.set_yuyv = @set_yuyv;
+  h.set_labelA = @set_labelA;
+
+  h.updated=0;
+  h.tLastUpdate=0;
+
   function update()
       % do nothing
   end
@@ -76,7 +82,6 @@ global MONITOR %for sending the webots check information
             'vx', ballvelx, 'vy', ballvely );
 
         r.fall=h.wcmRobot.get_is_fall_down();
-
         
         % TODO: implement penalty and time
         r.penalty = 0;
@@ -86,6 +91,12 @@ global MONITOR %for sending the webots check information
         r.time=h.wcmRobot.get_time();
         r.battery_level = h.wcmRobot.get_battery_level();
 
+%TODO: monitor timeout    
+        if r.time>h.tLastUpdate 
+	  h.updated=1;
+	  h.tLastUpdate=r.time;
+	end
+ 
     catch
     end
   end
@@ -111,6 +122,18 @@ global MONITOR %for sending the webots check information
       pose = h.wcmRobot.get_pose();
       r.robot = {};
       r.robot.pose = struct('x', pose(1), 'y', pose(2), 'a', pose(3));
+
+    %Camera info
+
+      width = h.vcmImage.get_width();
+      height = h.vcmImage.get_height();
+      bodyHeight=h.vcmCamera.get_bodyHeight();
+      bodyTilt=h.vcmCamera.get_bodyTilt();
+      headAngles=h.vcmImage.get_headAngles();
+      rollAngle=h.vcmCamera.get_rollAngle();
+      r.camera = struct('width',width,'height',height,...
+	'bodyHeight',bodyHeight,'bodyTilt',bodyTilt,...
+	'headAngles',headAngles,'rollAngle',rollAngle);
 
     %Image FOV boundary
           
@@ -150,14 +173,10 @@ global MONITOR %for sending the webots check information
       goalv2 = h.vcmGoal.get_v2();
       r.goal.v2 = struct('x',goalv2(1), 'y',goalv2(2), 'z',goalv2(3), 'scale',goalv2(4));
           
-      % Add the goal bounding boxes
-      gbb1 = h.vcmGoal.get_postBoundingBox1();
-      r.goal.postBoundingBox1 = struct('x1',gbb1(1), 'x2',gbb1(2), 'y1',gbb1(3), 'y2',gbb1(4));
-      gbb2 = h.vcmGoal.get_postBoundingBox2();
-      r.goal.postBoundingBox2 = struct('x1',gbb2(1), 'x2',gbb2(2), 'y1',gbb2(3), 'y2',gbb2(4));
-
-      r.goal.postStat1 = struct('x',0,'y',0, 'a',0, 'b',0,'o',0);
-      r.goal.postStat2 = struct('x',0,'y',0, 'a',0, 'b',0,'o',0);
+      r.goal.postStat1 = struct('x',0,'y',0, 'a',0, 'b',0,'o',0,...
+	'gbx1',0,'gbx2',0,'gby1',0,'gby2',0);
+      r.goal.postStat2 = struct('x',0,'y',0, 'a',0, 'b',0,'o',0,...
+	'gbx1',0,'gbx2',0,'gby1',0,'gby2',0);
 
       if r.goal.detect==1 
          %add goal post stats
@@ -167,9 +186,17 @@ global MONITOR %for sending the webots check information
         ga2 = h.vcmGoal.get_postAxis2();
         go1 = h.vcmGoal.get_postOrientation1();
         go2 = h.vcmGoal.get_postOrientation2();
-        r.goal.postStat1 = struct('x',gc1(1), 'y',gc1(2), 'a',ga1(1), 'b',ga1(2),'o',go1(1));
-        r.goal.postStat2 = struct('x',gc2(1), 'y',gc2(2), 'a',ga2(1), 'b',ga2(2),'o',go2(1));
+
+        % Add the goal bounding boxes
+        gbb1 = h.vcmGoal.get_postBoundingBox1();
+        gbb2 = h.vcmGoal.get_postBoundingBox2();
+
+        r.goal.postStat1 = struct('x',gc1(1), 'y',gc1(2), 'a',ga1(1), 'b',ga1(2),'o',go1(1), ...
+	   'gbx1',gbb1(1), 'gbx2',gbb1(2), 'gby1',gbb1(3), 'gby2',gbb1(4) );
+        r.goal.postStat2 = struct('x',gc2(1), 'y',gc2(2), 'a',ga2(1), 'b',ga2(2),'o',go2(1),...
+	   'gbx1',gbb2(1), 'gbx2',gbb2(2), 'gby1',gbb2(3), 'gby2',gbb2(4) );
       end
+
   %landmark info
       r.landmark = {};
       r.landmark.detect = h.vcmLandmark.get_detect();
@@ -249,30 +276,34 @@ global MONITOR %for sending the webots check information
     end 
   end
 
-  function yuyv = get_yuyv()
-%   returns the raw YUYV image
+  function yuyv = get_yuyv()  
+% returns the raw YUYV image
     width = h.vcmImage.get_width()/2;
     height = h.vcmImage.get_height();
     rawData = h.vcmImage.get_yuyv();
     yuyv = raw2yuyv(rawData, width, height); %for Nao, double for OP
   end
 
-  function yuyv2 = get_yuyv2()
-%   returns the half-size raw YUYV image
+  function set_yuyv(yuyv) 
+    rawData=yuyv2raw(yuyv);
+    h.vcmImage.set_yuyv(rawData);
+  end
+
+  function yuyv2 = get_yuyv2() 
+% returns the half-size raw YUYV image
     width = h.vcmImage.get_width()/4;
     height = h.vcmImage.get_height()/2;
     rawData = h.vcmImage.get_yuyv2();
     yuyv2 = raw2yuyv(rawData, width, height); %for Nao, double for OP
   end
 
-  function rgb = get_rgb()
-    % returns the raw RGB image (not full size)
+  function rgb = get_rgb() 
+% returns the raw RGB image (not full size)
     yuyv = h.get_yuyv();
     rgb = yuyv2rgb(yuyv);
   end
 
-  function labelA = get_labelA()
-    % returns the labeled image
+  function labelA = get_labelA()  % returns the labeled image
     rawData = h.vcmImage.get_labelA();
     width = h.vcmImage.get_width()/2;
     height = h.vcmImage.get_height()/2;
@@ -287,6 +318,13 @@ global MONITOR %for sending the webots check information
     end
     labelA = raw2label(rawData, width, height)';
   end
+
+  function set_labelA(label)
+    rawData=label2raw(label');
+    h.vcmImage.set_labelA(rawData);
+  end
+
+
 
   function labelB = get_labelB()
     % returns the bit-ored labeled image

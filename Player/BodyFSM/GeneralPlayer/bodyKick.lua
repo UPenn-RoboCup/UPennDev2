@@ -108,6 +108,7 @@ function check_ball_pos()
       xTarget,yTarget=kickTargetSide[1],-kickTargetSide[2];
   end
 
+  print("Kick dir:",kick_dir)
   print("Ball position: ",ball.x,ball.y)
   print("Ball target:",xTarget,yTarget)
 

@@ -19,8 +19,16 @@ shared.walk.supportX = vector.zeros(1);
 shared.walk.supportY = vector.zeros(1);
 shared.walk.uLeft = vector.zeros(3);
 shared.walk.uRight = vector.zeros(3);
+
 -- How long have we been still for?
 shared.walk.stillTime = vector.zeros(1);
+
+-- Is the robot moving?
+shared.walk.isMoving = vector.zeros(1);
+
+--If the robot carries a ball, don't move arms
+shared.walk.isCarrying = vector.zeros(1);
+shared.walk.bodyCarryOffset = vector.zeros(3);
 
 --To notify world to reset heading
 shared.walk.isFallDown = vector.zeros(1);

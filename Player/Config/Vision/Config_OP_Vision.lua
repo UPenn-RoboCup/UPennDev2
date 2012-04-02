@@ -37,7 +37,7 @@ vision.use_point_goal = 0;
 --OP specific
 ----------------------------
 -- Use tilted bounding box?
-vision.use_tilted_bbox = 1;;
+vision.use_tilted_bbox = 1;
 -- Subsample image?
 vision.subsampling = 1;
 

@@ -130,8 +130,8 @@ function h=show_monitor()
 	plot_yuyv(yuyv);
       elseif MONITOR.enable1==2
         MONITOR.h1 = subplot(4,5,[1 2 6 7]);
-        yuyv2 = robots{playerNumber,teamNumber}.get_yuyv2();
-	plot_yuyv(yuyv2);
+        yuyv = robots{playerNumber,teamNumber}.get_yuyv2();
+	plot_yuyv(yuyv);
       end
 
       %webots use non-subsampled label (2x size of yuyv)

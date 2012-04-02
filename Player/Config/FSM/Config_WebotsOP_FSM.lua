@@ -17,6 +17,8 @@ fsm.playMode = 3; --Advanced Behavior
 
 fsm.enable_walkkick = 1;
 
+fsm.wait_kickoff = 1; --initial wait at opponent's kickoff
+
 --------------------------------------------------
 --BodyReady : make robot move to initial position
 --------------------------------------------------

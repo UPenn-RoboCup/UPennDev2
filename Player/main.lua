@@ -130,23 +130,6 @@ function update()
     HeadFSM.update();
     Motion.update();
     Body.update();
-
-    --Manual game state change
-    if (count % 100 == 0) and 
-       (Body.get_change_state() == 1) then
-      local state = gcm.get_game_state();
-      --0 for initial, 1 for ready, 2 for set, 3 for playing 
-      if state<3 then
--- State advance should be handled in gamecontroller
---        gcm.set_game_state(state+1);
-      else
-	--Penalization
-        local penalized_state=gcm.get_game_penalty();
-        local teamID = gcm.get_team_player_id();
-        penalized_state[teamID]=1-penalized_state[teamID];
-	gcm.set_game_penalty(penalized_state);
-      end
-     end
   end
   local dcount = 50;
   if (count % 50 == 0) then

@@ -46,7 +46,7 @@ sm:set_transition(sit, 'done', relax);
 sm:set_transition(sit, 'standup', stance);
 
 sm:set_transition(relax, 'standup', stance);
-sm:set_transition(relax, 'sit', sit);
+--sm:set_transition(relax, 'sit', relax);
 
 sm:set_transition(stance, 'done', walk);
 sm:set_transition(stance, 'sit', sit);

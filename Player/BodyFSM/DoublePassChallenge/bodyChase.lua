@@ -17,8 +17,8 @@ tLost = 3.0;
 
 function entry()
   print("Body FSM:".._NAME.." entry");
-
   t0 = Body.get_time();
+  walk.start();
 end
 
 function update()

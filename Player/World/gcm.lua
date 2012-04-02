@@ -26,6 +26,10 @@ shared.team.player_id = vector.zeros(1);
 shared.team.color = vector.zeros(1);
 shared.team.role = vector.zeros(1);
 
+--for double pass
+shared.team.task_state = vector.zeros(2); 
+shared.team.target = vector.zeros(3);
+
 shared.fsm = {};
 shared.fsm.body_state = '';
 shared.fsm.head_state = '';

@@ -52,6 +52,9 @@ global MONITOR %for sending the webots check information
   h.set_yuyv = @set_yuyv;
   h.set_labelA = @set_labelA;
 
+  h.updated=0;
+  h.tLastUpdate=0;
+
   function update()
       % do nothing
   end
@@ -88,6 +91,12 @@ global MONITOR %for sending the webots check information
         r.time=h.wcmRobot.get_time();
         r.battery_level = h.wcmRobot.get_battery_level();
 
+%TODO: monitor timeout    
+        if r.time>h.tLastUpdate 
+	  h.updated=1;
+	  h.tLastUpdate=r.time;
+	end
+ 
     catch
     end
   end

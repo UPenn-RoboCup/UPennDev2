@@ -740,7 +740,9 @@ function zmp_com(ph)
     com[2] = com[2] + m2Y*tStep*(ph-ph2Zmp)
               -tZmp*m2Y*math.sinh(tStep*(ph-ph2Zmp)/tZmp);
   end
-  com[3] = .5*(uLeft[3] + uRight[3]);
+  --com[3] = .5*(uLeft[3] + uRight[3]);
+  --Linear speed turning
+  com[3] = ph* (uLeft2[3]+uRight2[3])/2 + (1-ph)* (uLeft1[3]+uRight1[3])/2;
   return com;
 end
 

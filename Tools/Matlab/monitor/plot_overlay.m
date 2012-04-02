@@ -10,11 +10,12 @@ function plot_overlay(r_mon,scale)
         hold off;
       end
       if( r_mon.goal.detect == 1 )
+	rollAngle=r_mon.camera.rollAngle;
         hold on;
         if (~isempty(r_mon.goal.postStat1))
-          plot_goalposts(r_mon.goal.postStat1,r_mon.goal.v1,scale);
+          plot_goalposts(r_mon.goal.postStat1,r_mon.goal.v1,rollAngle,scale);
           if(r_mon.goal.type==3)
-            plot_goalposts(r_mon.goal.postStat2,r_mon.goal.v2,scale);
+            plot_goalposts(r_mon.goal.postStat2,r_mon.goal.v2,rollAngle,scale);
           end
         end
         hold off;
@@ -45,7 +46,7 @@ function plot_overlay(r_mon,scale)
   end
 
 
-  function plot_goalposts( postStats, v, scale )
+  function plot_goalposts( postStats, v, rollAngle, scale)
 
     x0=postStats.x;
     y0=postStats.y;
@@ -67,6 +68,37 @@ function plot_overlay(r_mon,scale)
     plot([x12(1) x22(1)],[x12(2) x22(2)],goalcolor,'LineWidth',goalwidth);
     plot([x11(1) x21(1)],[x11(2) x21(2)],goalcolor,'LineWidth',goalwidth);
 
+
+
+    gbx1=(postStats.gbx1+.5)/scale*4;
+    gbx2=(postStats.gbx2+1.5)/scale*4;
+    gby1=(postStats.gby1+.5)/scale*4;
+    gby2=(postStats.gby2+1.5)/scale*4;
+
+    xskew=tan(rollAngle);
+    gbx11=gbx1+gby1*xskew;
+    gbx12=gbx1+gby2*xskew;
+    gbx21=gbx2+gby1*xskew;
+    gbx22=gbx2+gby2*xskew;
+
+    bbcolor='w--';bbwidth=1;
+    plot([gbx11 gbx21],[gby1 gby1],bbcolor,'LineWidth',bbwidth);
+    plot([gbx12 gbx22],[gby2 gby2],bbcolor,'LineWidth',bbwidth);
+    plot([gbx11 gbx12],[gby1 gby2],bbcolor,'LineWidth',bbwidth);
+    plot([gbx21 gbx22],[gby1 gby2],bbcolor,'LineWidth',bbwidth);
+
+
+   %original boundingbox
+%{
+    gbx11=gbx1;
+    gbx12=gbx1;
+    gbx21=gbx2;
+    gbx22=gbx2;
+    plot([gbx11 gbx21],[gby1 gby1],bbcolor,'LineWidth',bbwidth);
+    plot([gbx12 gbx22],[gby2 gby2],bbcolor,'LineWidth',bbwidth);
+    plot([gbx11 gbx12],[gby1 gby2],bbcolor,'LineWidth',bbwidth);
+    plot([gbx21 gbx22],[gby1 gby2],bbcolor,'LineWidth',bbwidth);
+%}
     if overlay_level 
       strgoalpos = sprintf('%.2f %.2f',v.x,v.y);
       b_name=text(x0,y0, strgoalpos,'BackGroundColor',[.7 .7 .7]);

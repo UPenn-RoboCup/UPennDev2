@@ -21,19 +21,21 @@ ballCyan = Config.world.ballCyan;
 landmarkYellow = Config.world.landmarkYellow;
 landmarkCyan = Config.world.landmarkCyan;
 
+--Are we using same colored goals?
+use_same_colored_goal=Config.world.use_same_colored_goal or 0;
+
+--Triangulation method selection
+use_new_goalposts= Config.world.use_new_goalposts or 0;
+
 --For single-colored goalposts
 postUnified = {postYellow[1],postYellow[2],postCyan[1],postCyan[2]};
 postLeft={postYellow[1],postCyan[1]}
 postRight={postYellow[2],postCyan[2]}
 
-
 rGoalFilter = Config.world.rGoalFilter;
 aGoalFilter = Config.world.aGoalFilter;
 rPostFilter = Config.world.rPostFilter;
 aPostFilter = Config.world.aPostFilter;
-
---To fix OP's really bad goalpost detection
-use_new_goalposts= Config.world.use_new_goalposts or 0;
 
 xp = .5*xMax*vector.new(util.randn(n));
 yp = .5*yMax*vector.new(util.randn(n));
@@ -47,6 +49,36 @@ function initialize(p0, dp)
   xp = p0[1]*vector.ones(n) + dp[1]*vector.new(util.randn(n));
   yp = p0[2]*vector.ones(n) + dp[2]*vector.new(util.randn(n));
   ap = p0[3]*vector.ones(n) + dp[3]*vector.new(util.randu(n));
+  wp = vector.zeros(n);
+end
+
+function initialize_unified(p0,p1,dp)
+  --Particle initialization for the same-colored goalpost
+  --Half of the particles at p0
+  --Half of the particles at p1
+  p0 = p0 or {0, 0, 0};
+  --Low spread  
+  dp = dp or {.15*xMax, .15*yMax, math.pi/6};
+
+  for i=1,n/2 do
+    xp[i]=p0[1]+dp[1]*math.random();
+    yp[i]=p0[2]+dp[2]*math.random();
+    ap[i]=p0[3]+dp[3]*math.random();
+
+    xp[i+n/2]=p1[1]+dp[1]*math.random();
+    yp[i+n/2]=p1[2]+dp[2]*math.random();
+    ap[i+n/2]=p1[3]+dp[3]*math.random();
+  end
+  wp = vector.zeros(n);
+end
+
+function initialize_heading(aGoal)
+  --Particle initialization at bodySet 
+  --When bodySet, all players should face opponents' goal
+  --So reduce weight of  particles that faces our goal
+
+  dp = dp or {.15*xMax, .15*yMax, math.pi/6};
+  ap = aGoal*vector.ones(n) + dp[3]*vector.new(util.randu(n));
   wp = vector.zeros(n);
 end
 
@@ -298,6 +330,8 @@ function goal_observation(pos, v)
 end
 
 function goal_observation_unified(pos1,pos2,v)
+  vcm.add_debug_message("World: Ambiguous two posts")
+
   --Get pose estimate from two goalpost locations
   if use_new_goalposts==1 then
     pose1,dGoal1=triangulate2(pos1,v);
@@ -323,8 +357,8 @@ function goal_observation_unified(pos1,pos2,v)
     local aErr1 = mod_angle(a1 - ap[ip]);
     local err1 = (rErr1/rSigma1)^2 + (aErr1/aSigma)^2;
 
-    local xErr2 = x1 - xp[ip];
-    local yErr2 = y1 - yp[ip];
+    local xErr2 = x2 - xp[ip];
+    local yErr2 = y2 - yp[ip];
     local rErr2 = math.sqrt(xErr2^2 + yErr2^2);
     local aErr2 = mod_angle(a2 - ap[ip]);
     local err2 = (rErr2/rSigma1)^2 + (aErr2/aSigma)^2;

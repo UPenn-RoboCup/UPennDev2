@@ -17,17 +17,21 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel)
     plot_fallen_robot(robot_struct,scale)
     plot_info(robot_struct,scale);
   else
-    plot_robot(robot_struct,scale);
-    plot_info(robot_struct,scale);
-    plot_ball(robot_struct,scale);
-
-    if drawlevel>1
+    if drawlevel==4
+      plot_particle(r_mon.particle);
       plot_goal(r_mon.goal,scale);
       plot_landmark(r_mon.landmark,scale);
-      if drawlevel==3
-        plot_fov(r_mon.fov);
-      elseif drawlevel==4
-	plot_particle(r_mon.particle);
+    else
+      plot_robot(robot_struct,scale);
+      plot_info(robot_struct,scale);
+      plot_ball(robot_struct,scale);
+    
+      if drawlevel>1
+        plot_goal(r_mon.goal,scale);
+        plot_landmark(r_mon.landmark,scale);
+        if drawlevel==3
+          plot_fov(r_mon.fov);
+        end
       end
     end
   end
@@ -84,23 +88,11 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel)
   end
 
   function plot_info(robot,angle)
-    robotnames = {'Bot1','Bot2','Bot3','Bot4','Bot5','Bot6'};
-    rolenames = {'Goalie','Attacker','Defender','Supporter','W. player','W. goalie'};
-    colornames={'red','blue'};
-
-    %robotID robotName robotRole 
-    %BodyFSM HeadFSM
-    %Team info
-    %Voltage info
-
-    str=sprintf('%s\n%s',...
-	 robotnames{robot.id}, rolenames{robot.role+1});
+    infostr=robot_info(robot,0,1);
     xtext=-1/scale;   xtext2=-0.4/scale;
-   
     xt = xtext*ca + x0+xtext2;
     yt = xtext*sa + y0;
-
-    b_name=text(xt, yt, str);
+    b_name=text(xt, yt, infostr);
     set(b_name,'FontSize',8/scale);
   end
 
@@ -187,7 +179,22 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel)
   end
 
   function plot_particle(particle)
-    plot(particle.x,particle.y,'x')
+%    plot(particle.x,particle.y,'x')
+
+    index=[1:5:100]';
+
+    px=particle.x(index);
+    py=particle.y(index);
+    pa=particle.a(index);
+
+
+    pl_len=1;
+    dx=cos(pa)*pl_len;
+    dy=sin(pa)*pl_len;
+
+    quiver(px,py,dx,dy,0,'k');
+    plot(px,py,'r.');
+
   end
 
 end

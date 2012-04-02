@@ -41,7 +41,9 @@ game.teamNumber = (os.getenv('TEAM_ID') or 0) + 0;
 game.playerID = (os.getenv('PLAYER_ID') or 0) + 1;
 game.robotID = game.playerID;
 game.teamColor = 1;
-game.nPlayers = 4;
+game.nPlayers = 2;--for teensize: 2 players
+game.role = game.playerID-1; -- 0 for goalie
+
 
 -- FSM Parameters
 fsm = {};

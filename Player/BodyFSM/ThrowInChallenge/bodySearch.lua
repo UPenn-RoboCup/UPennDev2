@@ -6,7 +6,7 @@ require('walk')
 require('vector')
 
 t0 = 0;
-timeout = 5.0;
+timeout = 10.0;
 
 -- turn velocity
 vSpin = 0.3;
@@ -29,13 +29,21 @@ end
 function update()
   local t = Body.get_time();
 
+  ball = wcm.get_ball();
+
   -- search/spin until the ball is found
   walk.set_velocity(0, 0, direction*vSpin);
 
+  if (t - ball.t < 0.1) then
+    print('Saw a ball!');
+    return "ball";
+  end
   if (t - t0 > timeout) then
     return "timeout";
   end
-
+  if (t - t0 > 1.0 and Body.get_sensor_button()[1] > 0) then
+    return "button";
+  end
 end
 
 function exit()

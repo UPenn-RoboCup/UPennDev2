@@ -37,8 +37,7 @@ function entry()
   started=false;
   finished=false;
 
-  Body.set_head_command({0,0});
-  Body.set_head_hardness(.5);
+--  Body.set_head_hardness(.5);
   Body.set_larm_hardness(.1);
   Body.set_rarm_hardness(.1);
   t0=Body.get_time();
@@ -53,9 +52,6 @@ function update()
      return;
   end
   if finished then 
-    --Needed for OP
-    local qSensor = Body.get_sensor_position();
-    Body.set_actuator_command(qSensor);
     return; 
   end
 
@@ -122,7 +118,6 @@ function update()
       if t-tFinish>tEndWait then
 	finished=true;
 	print("Sit done, time elapsed",t-tStart)
-        return "done"
       end
     end
   end

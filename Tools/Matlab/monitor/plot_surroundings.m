@@ -60,7 +60,7 @@ function [ ] = plot_surroundings( handle, mon_struct )
         if( goal.v1.scale ~= 0 )
             if goal.type==0 
               marker1 = strcat(marker,'+');%Unknown post
-	    elseif goal.type==3
+	    elseif goal.type==2
               marker1 = strcat(marker,'>');%Right post
 	    else
               marker1 = strcat(marker,'<');%Left post

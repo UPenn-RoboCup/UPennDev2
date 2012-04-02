@@ -208,9 +208,8 @@ function set_role(r)
   end
 end
 
---Sets default role based on playerID (for bodyReady)
---PlayerID for webots is set as 1 to 4 (the same as real robots)
-set_role(playerID-1);
+print("SPL Teamplay Loaded");
+set_role(Config.team.role);
 update_shm();
 
 function get_player_id()

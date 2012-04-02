@@ -45,6 +45,8 @@ require('util')
 darwin = false;
 webots = false;
 
+require('grip')
+
 -- Enable OP specific 
 if(Config.platform.name == 'OP') then
   darwin = true;
@@ -114,8 +116,13 @@ function process_keyinput()
 	elseif byte==string.byte(";") then	targetvel[2]=targetvel[2]-0.02;
 
 	elseif byte==string.byte("1") then	
-		kick.set_kick("kickForwardLeft");
-		Motion.event("kick");
+--		kick.set_kick("kickForwardLeft");
+--		Motion.event("kick");
+
+
+
+		Motion.event("align");
+
 	elseif byte==string.byte("2") then	
 		kick.set_kick("kickForwardRight");
 		Motion.event("kick");
@@ -140,6 +147,14 @@ function process_keyinput()
 	elseif byte==string.byte("d") then
 	        dive.set_dive("diveRight");
 		Motion.event("dive");
+
+	elseif byte==string.byte("z") then
+		grip.throw=0;
+		Motion.event("pickup");
+
+	elseif byte==string.byte("x") then
+		grip.throw=1;
+		Motion.event("throw");
 
 	elseif byte==string.byte(";") then	targetvel[2]=targetvel[2]-0.02;
 

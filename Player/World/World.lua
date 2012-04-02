@@ -13,7 +13,8 @@ require 'mcm'
 --SJ: Velocity filter is always on
 --We can toggle whether to use velocity to update ball position estimate
 --In Filter2D.lua
---require('Velocity');	
+
+require('Velocity');	
 
 --Are we using same colored goals?
 use_same_colored_goal=Config.world.use_same_colored_goal or 0;
@@ -47,7 +48,19 @@ yaw0 =0;
 
 function entry()
   count = 0;
---  Velocity.entry();
+  init_particles();
+  Velocity.entry();
+end
+
+function init_particles()
+  if use_same_colored_goal>0 then
+    goalDefend=get_goal_defend();
+    PoseFilter.initialize_unified(
+      vector.new({goalDefend[1]/2,-2,math.pi/2}),
+      vector.new({goalDefend[1]/2,2,-math.pi/2}));
+  else
+    PoseFilter.initialize();    
+  end
 end
 
 function update_odometry()
@@ -83,6 +96,29 @@ function update_vision()
     PoseFilter.reset_heading();
   end
 
+  -- Penalized?
+  if gcm.in_penalty() then
+    init_particles();
+  end
+
+  -- At gameSet state, all robot should face opponents' goal
+  --TODO
+--[[
+  if gcm.get_game_state()==2 then 
+    pose.x,pose.y,pose.a = PoseFilter.get_pose();
+    goalAngle=get_attack_bearing()+pose.a;
+
+    Erra = math.abs(mod_angle(pose.a-goalAngle));
+    print("Current pose goalDefendAngle",
+	pose.a*180/math.pi,goalAngle*180/math.pi);
+    if Erra>math.pi/2 then
+      print("PoseA error:",Erra*180/math.pi);
+      print("Resetting heading")
+      PoseFilter.initialize_heading(goalAngle);
+    end
+  end
+--]]
+
   -- ball
   if (vcm.get_ball_detect() == 1) then
     ball.t = Body.get_time();
@@ -93,17 +129,15 @@ function update_vision()
     Body.set_indicator_ball({1,0,0});
 
     -- Update the velocity
-   --[[ Velocity.update(v[1],v[2]);
+    Velocity.update(v[1],v[2]);
     ball.vx, ball.vy, dodge  = Velocity.getVelocity();
     local speed = math.sqrt(ball.vx^2 + ball.vy^2);
     local stillTime = mcm.get_walk_stillTime();
     if( stillTime > 1.5 ) then 
 --      print('Speed: '..speed..', Vel: ('..ball.vx..', '..ball.vy..') Still Time: '..stillTime);
     end
---]]    
   else
-   -- Velocity.update_noball();--notify that ball is missing
-
+    Velocity.update_noball();--notify that ball is missing
     Body.set_indicator_ball({0,0,0});
   end
 

@@ -1,4 +1,7 @@
-if Config.game.role==0 then
+require('gcm')
+
+--if Config.game.role==0 then
+if gcm.get_team_role()==0 then
   print("====Goalie FSM Loaded====")
   BodyFSM = require('BodyFSMGoalie');
 elseif Config.fsm.playMode==1 then

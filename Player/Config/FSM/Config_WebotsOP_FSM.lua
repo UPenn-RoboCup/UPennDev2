@@ -22,7 +22,7 @@ fsm.enable_walkkick = 1;
 --------------------------------------------------
 fsm.bodyReady={};
 fsm.bodyReady.maxStep = 0.06;
-fsm.bodyReady.thClose = {0.50,15*math.pi/180} --r and theta
+fsm.bodyReady.thClose = {0.30,15*math.pi/180} --r and theta
 fsm.bodyReady.tStart = 5.0;  --initial localization time
 
 --------------------------------------------------
@@ -83,7 +83,7 @@ fsm.bodyApproach.rFar = 0.45; --Max ball distance
 fsm.bodyApproach.tLost = 3.0*speedFactor;--ball detection timeout
 
 --x and y target position for stationary straight kick
-fsm.bodyApproach.xTarget11={0, 0.13,0.14}; --min, target, max
+fsm.bodyApproach.xTarget11={0, 0.12,0.13}; --min, target, max
 fsm.bodyApproach.yTarget11={0.03, 0.05, 0.06}; --min, target ,max
 
 --x and y target position for stationary kick to left
@@ -91,16 +91,20 @@ fsm.bodyApproach.xTarget12={0, 0.13,0.14}; --min, target, max
 fsm.bodyApproach.yTarget12={-0.005, 0.01, 0.025}; --min, target ,max
 
 --Target position for straight walkkick 
-fsm.bodyApproach.xTarget21={0, 0.17,0.20}; --min, target, max
-fsm.bodyApproach.yTarget21={0.03, 0.05, 0.06}; --min, target ,max
-
---reduced
 fsm.bodyApproach.xTarget21={0, 0.14,0.17}; --min, target, max
 fsm.bodyApproach.yTarget21={0.03, 0.05, 0.06}; --min, target ,max
 
 --Target position for side walkkick to left
 fsm.bodyApproach.xTarget22={0, 0.17,0.20}; --min, target, max
 fsm.bodyApproach.yTarget22={0.005, 0.02, 0.035}; --min, target ,max
+
+--------------------------------------------------
+--BodyAlign : Align robot before kick
+--------------------------------------------------
+
+
+
+
 
 --------------------------------------------------
 --BodyKick : Stationary Kick
@@ -113,7 +117,7 @@ fsm.bodyKick.tStartWaitMax = 1.0;
 fsm.bodyKick.thGyroMag = 100; 
 
 --ball position checking params
-fsm.bodyKick.kickTargetFront = {0.15,0.04};
+fsm.bodyKick.kickTargetFront = {0.12,0.05};
 
 --For kicking to the left
 fsm.bodyKick.kickTargetSide = {0.15,0.01};

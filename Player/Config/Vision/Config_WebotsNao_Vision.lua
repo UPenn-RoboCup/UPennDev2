@@ -36,7 +36,7 @@ vision.use_point_goal = 0;
 
 --For nao
 -- Use tilted bounding box?
-vision.use_tilted_bbox = 0;;
+vision.use_tilted_bbox = 0;
 -- Subsample image?
 vision.subsampling = 0;
 

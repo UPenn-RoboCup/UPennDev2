@@ -38,9 +38,9 @@ vision.use_point_goal = 0;
 --OP specific
 ----------------------------
 -- Use tilted bounding box?
-vision.use_tilted_bbox = 1;;
--- Subsample image?
-vision.subsampling = 0;
+vision.use_tilted_bbox = 1;
+-- Store and send subsampled image?
+vision.subsampling = 1;
 
 --Vision parameter values
 --For 320*240 labelA

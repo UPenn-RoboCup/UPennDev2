@@ -202,8 +202,14 @@ function h=show_monitor()
       labelB = robots{playerNumber(i),teamNumber}.get_labelB();
       %rgb = robots{playerNumber(i),teamNumber}.get_rgb();
 
-      h_c=subplot(5,5,[1:15]);
-      plot_robot( r_struct, r_mon,2,MONITOR.enable10);
+      updated=robots{playerNumber(i),teamNumber}.updated;
+      tLastUpdate=robots{playerNumber(i),teamNumber}.tLastUpdate;
+
+%      if updated 
+        h_c=subplot(5,5,[1:15]);
+        plot_robot( r_struct, r_mon,2,MONITOR.enable10);
+        updated = 0;
+%      end
 
       if MONITOR.enable8==1 && ignore_vision==0
         h1=subplot(5,5,15+playerNumber(i));

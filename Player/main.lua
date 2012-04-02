@@ -137,8 +137,8 @@ function update()
       local state = gcm.get_game_state();
       --0 for initial, 1 for ready, 2 for set, 3 for playing 
       if state<3 then
-	--State advance
-        gcm.set_game_state(state+1);
+-- State advance should be handled in gamecontroller
+--        gcm.set_game_state(state+1);
       else
 	--Penalization
         local penalized_state=gcm.get_game_penalty();

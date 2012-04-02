@@ -30,10 +30,16 @@ vision.store_all_images = 1;
 vision.store_goal_detections = 0;
 -- use this to enable storing images where the ball was detected
 vision.store_ball_detections = 0;
--- Subsample image?
-vision.subsampling = 1;
 -- use this to substitute goal check with blue/yellow ball check
 vision.use_point_goal = 0;
+
+----------------------------
+--OP specific
+----------------------------
+-- Use tilted bounding box?
+vision.use_tilted_bbox = 1;;
+-- Subsample image?
+vision.subsampling = 1;
 
 --Vision parameter values
 

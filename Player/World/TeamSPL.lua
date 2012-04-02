@@ -203,7 +203,7 @@ function set_role(r)
       Speak.talk('Goalie');
     else
       -- no role
-      Speak.talk('ERROR: Unkown Role');
+      Speak.talk('ERROR: Unknown Role');
     end
   end
 end

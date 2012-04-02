@@ -16,12 +16,13 @@ colorCyan = Config.color.cyan;
 colorField = Config.color.field;
 colorWhite = Config.color.white;
 
+--Use tilted boundingbox? (robots with nonzero bodytilt)
+use_tilted_bbox = Config.vision.use_tilted_bbox or 0;
 --Use center post to determine post type (disabled for OP)
 use_centerpost=Config.vision.goal.use_centerpost or 0;
---Cut top portion of detected post (for OP)
-cut_top_post = Config.vision.goal.cut_top_post or 0;
 --Check the bottom of the post for green
 check_for_ground = Config.vision.goal.check_for_ground or 0;
+
 
 --Post dimension
 postDiameter = 0.10;
@@ -51,17 +52,19 @@ function detect(color,color2)
   local goal = {};
   goal.detect = 0;
 
---[[
-  local postB = ImageProc.goal_posts(Vision.labelB.data, 
-	Vision.labelB.m, Vision.labelB.n, color, th_nPostB);
---]]
-
-  --where shoud we update the roll angle? HeadTransform?
-  tiltAngle = HeadTransform.getCameraRoll();
-  vcm.set_camera_rollAngle(tiltAngle);
-
-  local postB = ImageProc.tilted_goal_posts(Vision.labelB.data, 
+  local postB;
+  if use_tilted_bbox>0 then
+    --where shoud we update the roll angle? HeadTransform?
+    tiltAngle = HeadTransform.getCameraRoll();
+    vcm.set_camera_rollAngle(tiltAngle);
+    postB = ImageProc.tilted_goal_posts(Vision.labelB.data, 
 	Vision.labelB.m, Vision.labelB.n, color, th_nPostB,tiltAngle);
+  else
+    tiltAngle=0;
+    postB = ImageProc.goal_posts(Vision.labelB.data, 
+	Vision.labelB.m, Vision.labelB.n, color, th_nPostB);
+
+  end
 
   if (not postB) then 	
     vcm.add_debug_message("No post detected\n")
@@ -75,7 +78,12 @@ function detect(color,color2)
 
   for i = 1,#postB do
     local valid = true;
-    postStats = Vision.bboxStats(color, postB[i].boundingBox,tiltAngle);
+    
+    if use_tilted_bbox>0 then
+      postStats = Vision.bboxStats(color, postB[i].boundingBox,tiltAngle);
+    else
+      postStats = Vision.bboxStats(color, postB[i].boundingBox);
+    end
 
     -- size and orientation check
     vcm.add_debug_message(string.format("Area check: %d\n", 
@@ -145,9 +153,15 @@ function detect(color,color2)
         fieldBBox[3] = bboxA[4] + th_ground_boundingbox[3];
         fieldBBox[4] = bboxA[4] + th_ground_boundingbox[4];
 
+        local fieldBBoxStats;
+	if use_tilted_bbox>0 then
         -- color stats for the bbox
-        local fieldBBoxStats = ImageProc.tilted_color_stats(Vision.labelA.data, 
+         fieldBBoxStats = ImageProc.tilted_color_stats(Vision.labelA.data, 
 		Vision.labelA.m,Vision.labelA.n,colorField,fieldBBox,tiltAngle);
+	else
+         fieldBBoxStats = ImageProc.color_stats(Vision.labelA.data, 
+		Vision.labelA.m,Vision.labelA.n,colorField,fieldBBox,tiltAngle);
+	end
         local fieldBBoxArea = Vision.bboxArea(fieldBBox);
 
 	green_ratio=fieldBBoxStats.area/fieldBBoxArea;

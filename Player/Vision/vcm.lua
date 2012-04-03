@@ -28,6 +28,7 @@ shared.camera.select = vector.zeros(1);
 shared.camera.command = vector.zeros(1);
 
 --bodyTilt and height can be changed by sit/stand 
+shared.camera.height = vector.zeros(1);
 shared.camera.bodyTilt = vector.zeros(1);
 shared.camera.bodyHeight = vector.zeros(1);
 shared.camera.pitchBias = vector.zeros(1);--for camera angel fine tuning

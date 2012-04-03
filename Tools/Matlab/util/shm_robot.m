@@ -25,7 +25,7 @@ global MONITOR %for sending the webots check information
   h.vcmGoal  = shm(sprintf('vcmGoal%d%d%s',  h.teamNumber, h.playerID, h.user));
   h.vcmImage = shm(sprintf('vcmImage%d%d%s', h.teamNumber, h.playerID, h.user));
   h.vcmLandmark  = shm(sprintf('vcmLandmark%d%d%s',  h.teamNumber, h.playerID, h.user));
-  % h.vcmLine
+  h.vcmLine  = shm(sprintf('vcmLine%d%d%s',  h.teamNumber, h.playerID, h.user));
 
   h.wcmBall  = shm(sprintf('wcmBall%d%d%s',  h.teamNumber, h.playerID, h.user));
   h.wcmGoal  = shm(sprintf('wcmGoal%d%d%s',  h.teamNumber, h.playerID, h.user));
@@ -205,6 +205,28 @@ global MONITOR %for sending the webots check information
       r.landmark.centroid1 = h.vcmLandmark.get_centroid1();
       r.landmark.centroid2 = h.vcmLandmark.get_centroid2();
       r.landmark.centroid3 = h.vcmLandmark.get_centroid3();
+
+  %line info
+      r.line = {};
+      r.line.detect = h.vcmLine.get_detect();
+      r.line.nLines = h.vcmLine.get_nLines();
+
+      r.line.v1 = {};
+      r.line.v2 = {};
+      r.line.v1{1}= h.vcmLine.get_v1_1();
+      r.line.v1{2}= h.vcmLine.get_v1_2();
+      r.line.v1{3}= h.vcmLine.get_v1_3();
+      r.line.v1{4}= h.vcmLine.get_v1_4();
+      r.line.v2{1}= h.vcmLine.get_v2_1();
+      r.line.v2{2}= h.vcmLine.get_v2_2();
+      r.line.v2{3}= h.vcmLine.get_v2_3();
+      r.line.v2{4}= h.vcmLine.get_v2_4();
+
+      r.line.endpoint={};
+      r.line.endpoint{1}=h.vcmLine.get_endpoint1();
+      r.line.endpoint{2}=h.vcmLine.get_endpoint2();
+      r.line.endpoint{3}=h.vcmLine.get_endpoint3();
+      r.line.endpoint{4}=h.vcmLine.get_endpoint4();
 
   %Vision debug message
       r.debug={};

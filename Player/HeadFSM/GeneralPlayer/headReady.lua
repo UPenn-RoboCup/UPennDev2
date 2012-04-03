@@ -27,7 +27,7 @@ function update()
 
    local t = Body.get_time();
    local ph = (t-t0)/tScan;
-   height=vcm.get_camera_height();
+   local height=vcm.get_camera_height();
 
 --IK based horizon following
    local yaw0 = direction*(ph-0.5)*2*yawMag;

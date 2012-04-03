@@ -40,6 +40,8 @@ function entry()
   Body.set_larm_hardness(.1);
   Body.set_rarm_hardness(.1);
   t0=Body.get_time();
+  Body.set_syncread_enable(1); 
+
 end
 
 function update()
@@ -49,11 +51,9 @@ function update()
      t0=Body.get_time();
      return;
   end
-
   --For OP, wait a bit to read joint readings
-  local dt = t - t0;
   if not started then 
-    if dt>tStartWait then
+    if t-t0>tStartWait then
       started=true;
 
       local qLLeg = Body.get_lleg_position();
@@ -71,13 +71,15 @@ function update()
       Body.set_rleg_hardness(1);
       t0 = Body.get_time();
       count=1;
-      tStart=t0;
       Body.set_syncread_enable(0); 
     else 
       Body.set_syncread_enable(1); 
       return; 
     end
   end
+
+  local dt = t - t0;
+  t0 = t;
 
 --[[
   if not started then 
@@ -95,7 +97,6 @@ function update()
   end
 --]]
 
-  t0 = t;
   local tol = true;
   local tolLimit = 1e-6;
   dpDeltaMax = dt*dpLimit;

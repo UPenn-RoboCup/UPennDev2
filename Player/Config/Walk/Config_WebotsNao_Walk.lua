@@ -76,6 +76,9 @@ walk.walkKickVel = {0.06, 0.14} --step / kick / follow
 walk.walkKickSupportMod = {{-0.03,0},{-0.03,0}}
 walk.walkKickHeightFactor = 3.0;
 
+walk.qLArmKick = math.pi/180*vector.new({105, 12, -85, -30});
+walk.qRArmKick = math.pi/180*vector.new({105, -12, 85, 30});
+
 walk.sideKickVel1 = {0.04,0.04};
 walk.sideKickVel2 = {0.09,0.05};
 walk.sideKickVel3 = {0.09,-0.02};

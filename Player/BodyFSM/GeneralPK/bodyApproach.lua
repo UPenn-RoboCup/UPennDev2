@@ -15,6 +15,9 @@ tLost = Config.fsm.bodyApproach.tLost; --ball lost timeout
 xTarget = Config.fsm.bodyApproach.xTarget11;
 yTarget = Config.fsm.bodyApproach.yTarget11;
 
+xTarget = {0, 0.14,0.15}; --min, target, max
+
+
 function check_approach_type()
   ball = wcm.get_ball();
   kick_dir=wcm.get_kick_dir();
@@ -71,6 +74,7 @@ function update()
   else
     vStep[3]=0;
   end
+
 
   --when the ball is on the side, backstep a bit
   local wAngle = math.atan2 (vStep[2], vStep[1]);

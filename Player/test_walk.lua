@@ -129,10 +129,11 @@ function update()
       init = true;
     else
       if (count % 20 == 0) then
-        if (Body.get_change_state() == 1) then
+-- start calibrating w/o waiting
+--        if (Body.get_change_state() == 1) then
           Speak.talk('Calibrating');
           calibrating = true;
-        end
+--        end
       end
       -- toggle state indicator
       if (count % 100 == 0) then
@@ -146,6 +147,7 @@ function update()
     end
   else
     -- update state machines 
+    process_keyinput();
     Motion.update();
     Body.update();
   end
@@ -180,7 +182,6 @@ if( darwin ) then
   local tDelay = 0.005 * 1E6; -- Loop every 5ms
   while 1 do
     update();
-    process_keyinput();
     unix.usleep(tDelay);
   end
 end

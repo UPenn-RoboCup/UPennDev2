@@ -39,9 +39,8 @@ function MonitorShm(team,player)
     if length(player2track)==0
       disp('Team/Player ID error!');
       return;
-    elseif length(player2track)>1
-      draw_team=1;
     end
+    draw_team=1;
   else
     if nargin==2  %2 args... track specified player 
       team2track=team;player2track=player;

@@ -203,13 +203,12 @@ function set_role(r)
       Speak.talk('Goalie');
     else
       -- no role
-      Speak.talk('ERROR: Unkown Role');
+      Speak.talk('ERROR: Unknown Role');
     end
   end
 end
 
-set_role(Config.team.role);
-update_shm();
+set_role(Config.game.role);
 
 function get_player_id()
   return playerID; 

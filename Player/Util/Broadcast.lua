@@ -153,7 +153,10 @@ function update(enable)
     for sharedkey,sharedvalue in pairs(shmHandler.shared) do
       send[shmHandlerkey][sharedkey] = {};
       for itemkey,itemvalue in pairs(shmHandler.shared[sharedkey]) do
- 	if string.find(itemReject, itemkey) == nil then
+	--String can partially match
+	m_1,m_2=string.find(itemReject, itemkey);
+	sendokay=false;
+        if m_1==nil or not (m_1==1 and m_2==itemReject:len()) then
   	  send[shmHandlerkey][sharedkey][itemkey] = 
                  shmHandler['get_'..sharedkey..'_'..itemkey]();
  	end
@@ -179,10 +182,10 @@ function update_img( enable, imagecount )
 -- half of sub image
     sendImgSub2();
   elseif(enable==3) then
-    if (Config.platform.name ~= "Nao") then
+--    if (Config.platform.name ~= "Nao") then
       sendImg(); 
 --    sendImgSub();
 --    sendAsub();
-    end
+--    end
   end
 end

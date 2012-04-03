@@ -423,6 +423,13 @@ end
 function set_gripper_command(val)
 end
 
+function set_aux_hardness(val)
+end
+
+function set_aux_command(val)
+end
+
+
 
 
 

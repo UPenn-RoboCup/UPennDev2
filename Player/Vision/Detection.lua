@@ -13,15 +13,6 @@ require('detectGoal');
 require('detectLine');
 require('detectLandmarks'); -- for NSL
 require('detectSpot');
-
---For webots (160*120)
---Should be removed once we make resolution-spefic checks
-webots_vision = Config.vision.use_webots_vision or 0;
-if webots_vision==1 then
-  detectBall = require('detectBallWebots');
-  detectGoal = require('detectGoalWebots');
-end
-
 require('detectFreespace');
 require('detectBoundary');
 --[[
@@ -38,9 +29,7 @@ colorField = Config.color.field;
 colorWhite = Config.color.white;
 
 use_point_goal=Config.vision.use_point_goal;
-headInverted=Config.vision.headInverted;
 
-yellowGoalCountThres = Config.vision.yellow_goal_count_thres;
 enableLine = Config.vision.enable_line_detection;
 enableSpot = Config.vision.enable_spot_detection;
 enableMidfieldLandmark = Config.vision.enable_midfield_landmark_detection;
@@ -48,42 +37,42 @@ enableFreespace = Config.vision.enable_freespace_detection or 0;
 enableBoundary = Config.vision.enable_visible_boundary or 0;
 
 function entry()
-	-- Initiate Detection
-	ball = {};
-	ball.detect = 0;
+  -- Initiate Detection
+  ball = {};
+  ball.detect = 0;
 
-        ballYellow={};
-	ballYellow.detect=0;
+  ballYellow={};
+  ballYellow.detect=0;
 	
-	ballCyan={};
-	ballCyan.detect=0;
+  ballCyan={};
+  ballCyan.detect=0;
 
-	goalYellow = {};
-	goalYellow.detect = 0;
+  goalYellow = {};
+  goalYellow.detect = 0;
 
-	goalCyan = {};
-	goalCyan.detect = 0;
+  goalCyan = {};
+  goalCyan.detect = 0;
 
-	landmarkYellow = {};
-	landmarkYellow.detect = 0;
+  landmarkYellow = {};
+  landmarkYellow.detect = 0;
 
-	landmarkCyan = {};
-	landmarkCyan.detect = 0;
+  landmarkCyan = {};
+  landmarkCyan.detect = 0;
 
-	line = {};
-	line.detect = 0;
+  line = {};
+  line.detect = 0;
 
-	spot = {};
-	spot.detect = 0;
+  spot = {};
+  spot.detect = 0;
 
-	obstacle={};
-	obstacle.detect=0;
+  obstacle={};
+  obstacle.detect=0;
 
-	freespace={};
-	freespace.detect=0;
+  freespace={};
+  freespace.detect=0;
 
-        boundary={};
-	boundary.detect=0;
+  boundary={};
+  boundary.detect=0;
 
 end
 
@@ -102,16 +91,11 @@ function update()
     ballYellow = detectBall.detect(colorYellow);
     ballCyan = detectBall.detect(colorCyan);
   else
---SJ: detect both colored goalposts (due to landmarks)
+--SJ: we need to detect both colored goalposts (due to landmarks)
     goalYellow.detect=0;
     goalCyan.detect=0;
-    if (Vision.colorCount[colorYellow] > yellowGoalCountThres) then
-      goalYellow = detectGoal.detect(colorYellow,colorCyan);
-    end
-    if (Vision.colorCount[colorCyan] > yellowGoalCountThres) then
-      goalCyan = detectGoal.detect(colorCyan,colorYellow);
-    end
-
+    goalYellow = detectGoal.detect(colorYellow,colorCyan);
+    goalCyan = detectGoal.detect(colorCyan,colorYellow);
 --[[
     --if (colorCount[colorYellow] > colorCount[colorCyan]) then
     if (Vision.colorCount[colorYellow] > yellowGoalCountThres) then
@@ -134,7 +118,6 @@ function update()
 --    spot = detectSpot.detect();
   end
 
-  -- TODO: add landmarks to vcm shm (for NSL support)
   -- midfield landmark detection
   landmarkCyan = 0;
   landmarkYellow = 0;
@@ -165,8 +148,6 @@ function update_shm()
     vcm.set_ball_r(ball.r);
     vcm.set_ball_dr(ball.dr);
     vcm.set_ball_da(ball.da);
-    -- Velocity measurements
-    
   end
 
   vcm.set_goal_detect(math.max(goalCyan.detect, goalYellow.detect));
@@ -186,6 +167,7 @@ function update_shm()
   vcm.set_landmark_detect(0);
   if enableMidfieldLandmark == 1 then
     if landmarkYellow.detect==1 then
+       vcm.set_landmark_detect(1);
        vcm.set_landmark_color(colorYellow);
        vcm.set_landmark_v(landmarkYellow.v);
     elseif landmarkCyan.detect==1 then

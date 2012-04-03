@@ -161,6 +161,7 @@ setup_nao: nao setup_util setup_image setup_comm
 	@echo "Setting up Nao Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
 	find $(NAODIR) -regex '.*\($(SHLIBEXT)\|$(LUAEXT)\)' -exec cp -v {} $(INSTDIR) \;
+	rm -f $(PLAYERDIR)/Config/Config.lua
 	cd $(PLAYERDIR)/Config && ln -s Config_Nao.lua Config.lua && cd $(CWD)
 	find $(UTILDIR) $(REGEX) -exec cp -v {} $(NAODEPLUA51DIR) \;
 	rm -f $(NAODEPLUA51DIR)/*;

@@ -162,7 +162,8 @@ function update()
 
   else
     -- no game packets received use buttons to update states
-    if (Body.get_sensor_button()[1] > 0) then
+    if (Body.get_change_state() == 1) then
+--    if (Body.get_sensor_button()[1] > 0) then
       -- advance state
       if gameState < 3 then
         gameState = gameState + 1;

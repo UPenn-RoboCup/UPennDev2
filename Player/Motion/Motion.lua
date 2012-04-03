@@ -17,6 +17,7 @@ require('standstill') -- This makes torso straight (for webots robostadium)
 require('falling')
 require('standup')
 require('kick')
+require('align') -- slow, non-dynamic stepping for fine alignment before kick
 
 --For diving
 require('divewait')
@@ -37,6 +38,7 @@ sm:add_state(standstill);
 sm:add_state(grip);
 sm:add_state(divewait);
 sm:add_state(dive);
+sm:add_state(align);
 
 
 
@@ -44,7 +46,7 @@ sm:set_transition(sit, 'done', relax);
 sm:set_transition(sit, 'standup', stance);
 
 sm:set_transition(relax, 'standup', stance);
-sm:set_transition(relax, 'sit', sit);
+--sm:set_transition(relax, 'sit', relax);
 
 sm:set_transition(stance, 'done', walk);
 sm:set_transition(stance, 'sit', sit);
@@ -60,6 +62,10 @@ sm:set_transition(walk, 'stance', stance);
 sm:set_transition(walk, 'standstill', standstill);
 sm:set_transition(walk, 'pickup', grip);
 sm:set_transition(walk, 'throw', grip);
+sm:set_transition(walk, 'align', align);
+
+--align transitions
+sm:set_transition(align, 'done', walk);
 
 --dive transitions
 sm:set_transition(walk, 'diveready', divewait);
@@ -84,6 +90,7 @@ sm:set_transition(grip, 'done', stance);
 
 -- falling behaviours
 sm:set_transition(walk, 'fall', falling);
+sm:set_transition(align, 'fall', falling);
 sm:set_transition(divewait, 'fall', falling);
 sm:set_transition(falling, 'done', standup);
 sm:set_transition(standup, 'done', stance);
@@ -143,6 +150,12 @@ function update()
   end
   -- Update our last still measurement
   wasStill = walk.still;
+
+  if walk.active or align.active then
+    mcm.set_walk_isMoving(1);
+  else
+    mcm.set_walk_isMoving(0);
+  end
 
   sm:update();
 

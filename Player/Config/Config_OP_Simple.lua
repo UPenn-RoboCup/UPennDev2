@@ -14,7 +14,7 @@ function loadconfig(configName)
 end
 
 --Simplified setup for distribution
-loadconfig('Walk/Config_OP_Walk_Basic')
+loadconfig('Walk/Config_OP_Walk')
 loadconfig('World/Config_OP_World_Expo')
 loadconfig('Kick/Config_OP_Kick')
 loadconfig('Vision/Config_OP_Vision')
@@ -54,7 +54,7 @@ fsm = {};
 loadconfig('FSM/Config_WebotsOP_FSM')
 fsm.game = 'RoboCup';
 fsm.head = {'GeneralPlayer'};
-fsm.body = {'GeneralPlayer'};
+fsm.body = {'SimplePlayer'};
 
 --Behavior flags, should be defined in FSM Configs but can be overrided here
 fsm.enable_obstacle_detection = 1;

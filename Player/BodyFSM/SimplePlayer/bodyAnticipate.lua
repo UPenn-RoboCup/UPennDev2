@@ -13,7 +13,7 @@ require('dive')
 
 t0 = 0;
 tStart = 0;
-timeout = 20.0;
+timeout = 30.0;
 
 started = false;
 kickable = true;

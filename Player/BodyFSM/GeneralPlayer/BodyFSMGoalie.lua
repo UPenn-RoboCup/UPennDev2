@@ -55,6 +55,7 @@ sm:set_transition(bodyPositionGoalie, 'ballClose', bodyChase)
 
 sm:set_transition(bodyAnticipate,'timeout',bodyPositionGoalie);
 sm:set_transition(bodyAnticipate,'done',bodyPositionGoalie);
+sm:set_transition(bodyAnticipate,'ballClose',bodyChase);
 
 sm:set_transition(bodyChase, 'ballLost', bodyPositionGoalie);
 sm:set_transition(bodyChase, 'ballFar', bodyPositionGoalie);

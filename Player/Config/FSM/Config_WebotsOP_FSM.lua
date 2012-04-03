@@ -35,13 +35,21 @@ fsm.bodySearch.vSpin = 0.3; --Turn velocity
 fsm.bodySearch.timeout = 10.0*speedFactor;
 
 --------------------------------------------------
---BodyChase : move the robot towards the ball
+--BodyChase : move the robot directly towards the ball
 --------------------------------------------------
 fsm.bodyChase={};
 fsm.bodyChase.maxStep = 0.08;
 fsm.bodyChase.rClose = 0.35;
 fsm.bodyChase.timeout = 20.0*speedFactor;
 fsm.bodyChase.tLost = 3.0*speedFactor;
+
+
+--------------------------------------------------
+--BodyAnticipate : Sit down and wait for kick (goalie)
+--------------------------------------------------
+fsm.bodyAnticipate={};
+fsm.bodyAnticipate.rClose = 1.0;
+fsm.bodyChase.rFar = 1.2;
 
 --------------------------------------------------
 --BodyOrbit : make the robot orbit around the ball

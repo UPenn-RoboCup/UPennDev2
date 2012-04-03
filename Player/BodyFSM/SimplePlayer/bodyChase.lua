@@ -11,6 +11,9 @@ maxStep = Config.fsm.bodyChase.maxStep;
 rClose = Config.fsm.bodyChase.rClose;
 tLost = Config.fsm.bodyChase.tLost;
 
+rFar = 1.2; --For goalie
+
+
 function entry()
   print("Body FSM:".._NAME.." entry");
 
@@ -44,6 +47,9 @@ function update()
   end
   if (ballR < rClose) then
     return "ballClose";
+  end
+  if (ballR > rFar) then
+    return "ballFar";
   end
   if (t - t0 > 1.0 and Body.get_sensor_button()[1] > 0) then
     return "button";

@@ -38,18 +38,15 @@ function detect()
 
   --max width 8
   linePropsB = ImageProc.field_lines(Vision.labelB.data, Vision.labelB.m, Vision.labelB.n, 8); 
-  if (not linePropsB) then 
+  if #linePropsB==0 then 
     --print('linePropsB nil')
     return line; 
   end
 
-  --TODO: multi-line support
-
-  line.propsB={}
-  line.propsB[1]=linePropsB;
+  line.propsB=linePropsB;
 
   --Check the number of valid lines
-  for i=1,1 do
+  for i=1,#line.propsB do
     if line.propsB[i].count>15 then
       nLines=i;
     end

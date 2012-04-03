@@ -75,8 +75,10 @@ print('Vision LabelB size: ('..labelB.m..', '..labelB.n..')');
 
 saveCount = 0;
 
+use_point_goal = Config.vision.use_point_goal or 0;
+subsampling = Config.vision.subsampling or 0;
+
 -- debugging settings
-use_point_goal = Config.vision.use_point_goal;
 vcm.set_debug_enable_shm_copy(Config.vision.copy_image_to_shm);
 vcm.set_debug_store_goal_detections(Config.vision.store_goal_detections);
 vcm.set_debug_store_ball_detections(Config.vision.store_ball_detections);
@@ -201,9 +203,12 @@ function update_shm(status)
       vcm.set_image_labelB(labelB.data);
       vcm.set_image_yuyv(camera.image);
 
---Store downsampled yuyv for monitoring
-      vcm.set_image_yuyv2(ImageProc.subsample_yuyv2yuyv(
+
+      if subsampling>0 then
+        --Store downsampled yuyv for monitoring
+        vcm.set_image_yuyv2(ImageProc.subsample_yuyv2yuyv(
   	  camera.image,camera.width/2, camera.height,2));
+      end
     end
   end
 
@@ -246,13 +251,21 @@ function exit()
   HeadTransform.exit();
 end
 
-function bboxStats(color, bboxB)
+function bboxStats(color, bboxB, rollAngle)
   bboxA = {};
   bboxA[1] = scaleB*bboxB[1];
   bboxA[2] = scaleB*bboxB[2] + scaleB - 1;
   bboxA[3] = scaleB*bboxB[3];
   bboxA[4] = scaleB*bboxB[4] + scaleB - 1;
-  return ImageProc.color_stats(labelA.data, labelA.m, labelA.n, color, bboxA);
+  if rollAngle then
+    --make boundingbox wider
+    bboxA[1] = math.max(1,bboxA[1]);
+    bboxA[2] = math.min(labelA.m,bboxA[2]);
+    return ImageProc.tilted_color_stats(
+	labelA.data, labelA.m, labelA.n, color, bboxA,rollAngle);
+  else
+    return ImageProc.color_stats(labelA.data, labelA.m, labelA.n, color, bboxA);
+  end
 end
 
 function bboxB2A(bboxB)

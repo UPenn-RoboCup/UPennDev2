@@ -127,3 +127,7 @@ walk.stepHeight = 0.06;
 
 
 --walk.velLimitA={-.3,.3};
+
+--Faster turning test
+walk.stanceLimitA={-20*math.pi/180,45*math.pi/180};
+walk.velLimitA={-.6,.6};

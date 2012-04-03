@@ -59,12 +59,23 @@ walk.ankleImuParamY={0.2, -2.7*walk.gyroFactor,
 walk.hipImuParamY={0.1, -0.3*walk.gyroFactor,
         .5*math.pi/180, 5*math.pi/180};
 
+walk.armImuParamX={0.1, 0*walk.gyroFactor,
+        1*math.pi/180, 5*math.pi/180};
+walk.armImuParamY={0.1, 0*walk.gyroFactor,
+        .5*math.pi/180, 5*math.pi/180};
+
 --------------------------------------------
 -- WalkKick parameters
 --------------------------------------------
 walk.walkKickVel = {0.06, 0.14} --step / kick / follow 
 walk.walkKickSupportMod = {{-0.03,0},{-0.03,0}}
 walk.walkKickHeightFactor = 3.0;
+
+walk.sideKickVel1 = {0.04,0.04};
+walk.sideKickVel2 = {0.09,0.05};
+walk.sideKickVel3 = {0.09,-0.02};
+walk.sideKickSupportMod = {{0,0},{0,0}};
+walk.tStepSideKick = 0.70;
 
 --------------------------------------------
 -- Robot - specific calibration parameters

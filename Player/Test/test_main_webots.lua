@@ -28,17 +28,18 @@ package.path = cwd .. '/World/?.lua;' .. package.path;
 
 require('unix')
 require('Config')
+require('Speak')
 require('shm')
 require('vector')
 require('vcm')
 require('gcm')
 require('wcm')
 require('mcm')
-require('Speak')
 require('getch')
 require('Body')
 require('Motion')
 require('Comm')
+require('Team')
 
 Motion.entry();
 

@@ -41,6 +41,12 @@ function getHomePose()
   else
     home=vector.new(initPosition2[role+1]);
   end
+
+  --Goalie moves differently
+  if role==0 and phase==1 then 
+    home=home*0.5;
+  end;
+
   home=home*util.sign(goal_defend[1]);
   home[3]=goal_defend[3];
   return home;

@@ -32,7 +32,8 @@ dev.ip_wired = '192.168.0.255';
 dev.ip_wireless = '192.168.1.255';
 dev.game_control = 'NaoGameControl';
 dev.team='TeamSPL';
-dev.walk = 'NewWalk';
+--dev.walk = 'NewWalk';
+dev.walk = 'NewNewWalk';
 dev.kick = 'NewKick';
 
 -- Game Parameters

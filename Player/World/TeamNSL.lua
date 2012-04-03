@@ -94,6 +94,7 @@ function update()
       -- no message from player have been received
       eta[id] = math.huge;
       ddefend[id] = math.huge;
+      roles[id]=4;
     else
       -- eta to ball
       -- TODO: consider angle as well
@@ -196,13 +197,14 @@ function set_role(r)
       Speak.talk('Reserve Goalie');
     else
       -- no role
-      Speak.talk('ERROR: Unkown Role');
+      Speak.talk('ERROR: Unknown Role');
     end
   end
+  update_shm();
 end
 
 --NSL role can be set arbitarily, so use config value
-set_role(Config.team.role or 1);
+set_role(Config.game.role or 1);
 
 function get_player_id()
   return playerID; 

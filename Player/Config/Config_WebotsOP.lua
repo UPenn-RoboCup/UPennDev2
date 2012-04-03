@@ -27,27 +27,29 @@ dev.body = 'WebotsOPBody';
 dev.camera = 'WebotsOPCam';
 dev.kinematics = 'OPKinematics';
 dev.game_control='WebotsGameControl';
---dev.team='TeamNSL';
-dev.team='TeamSPL';
+dev.team='TeamNSL';
+--dev.team='TeamSPL';
 dev.walk='NewWalk';
 dev.walk='NewNewWalk'; --New robocup walk that supports walking kicks
 --dev.walk='BoxWalk'; --New walk that supports different foot stance
-dev.kick='NewKick';
---dev.kick='NSLKickPunch'; --Extended kick that supports upper body motion
+--dev.kick='NewKick';
+dev.kick='NewNewKick'; --Extended kick that supports upper body motion
 
 -- Game Parameters
 game = {};
 game.nPlayers = 5; --5 total robot (including reserve ones)
+--Should be 4 robostadium nao gamecontroller
+game.nPlayers = 4; 
+
 game.teamNumber = (os.getenv('TEAM_ID') or 0) + 0;
 --Webots player id begins at 0 but we use 1 as the first id 
 game.playerID = (os.getenv('PLAYER_ID') or 0) + 1;
 game.robotID = game.playerID; --For webots, robot ID is the same 
 game.role=game.playerID-1; --Default role for webots
 
-
---Default team (for non-gamecontroller based teamplay)
-if game.teamNumber==1 then game.teamColor = 1; --Red team
-else game.teamColor = 0; --Blue team
+--Default team for webots 
+if game.teamNumber==0 then  game.teamColor = 0; --Blue team
+else game.teamColor = 0; --Red team
 end
 
 --FSM and behavior settings
@@ -65,25 +67,30 @@ fsm.playMode = 2; --1 for demo, 2 for orbit, 3 for direct approach
 fsm.enable_walkkick = 1;
 fsm.enable_sidekick = 1;
 
--------------------------------
+--[[
+--Enable these for penalty-kick
+dev.team='TeamNull'; --Turn off teamplay for challenges
 fsm.body = {'GeneralPK'};
-fsm.playMode = 1;
--------------------------------
+fsm.playMode = 2;
+--]]
+
+--[[
+--Enable this for throw-in 
+--fsm.body = {'ThrowInChallenge'};
+--]]
+
+--Enable this for double pass
+--[[
+fsm.body={'DoublePassChallenge'};
+dev.team='TeamDoublePass';
+--]]
+
 
 -- Team Parameters
 team = {};
 team.msgTimeout = 5.0;
 team.nonAttackerPenalty = 6.0; -- eta sec
 team.nonDefenderPenalty = 0.5; -- dist from goal
-
-
-
-
-
-
-
-
-
 
 -------------------------------------
 -- Robot specific parameters

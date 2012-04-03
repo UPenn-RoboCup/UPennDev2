@@ -1,10 +1,8 @@
 function h = plot_field(handle,type)
   % plots the robocup field on the current axis
-  type=2; %SPL
-
   cla( handle );
 
-  if type==1 % SPL
+  if type==0 % SPL
     fieldX = [-3.00  3.00 3.00 -3.00 -3.00];
     fieldY = [-2.00 -2.00 2.00  2.00 -2.00];
     goalX = [3.00 (3.00+0.40) (3.00+0.40) 3.00];
@@ -13,7 +11,7 @@ function h = plot_field(handle,type)
     penaltyY = [-1.50 -1.50 1.50 1.50];
     circleR = .625;
     fieldB=[-3.5 3.5 -2.5 2.5];
-  elseif type==2 %Kidsize
+  elseif type==1 %Kidsize
     fieldX = [-3.00  3.00 3.00 -3.00 -3.00];
     fieldY = [-2.00 -2.00 2.00  2.00 -2.00];
     goalX = [3.00 (3.00+0.50) (3.00+0.50) 3.00];

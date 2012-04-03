@@ -110,6 +110,7 @@ hipShift = vector.new({0,0});
 armShift = vector.new({0, 0});
 
 active = true;
+started = false;
 iStep0 = -1;
 iStep = 0;
 t0 = Body.get_time();
@@ -120,14 +121,13 @@ canWalkKick = 1; --Can we do walkkick with this walk code?
 walkKickRequest = 0; 
 walkKickType = 0;
 
-initdone=false;
 initial_step=2;
 ----------------------------------------------------------
 -- End initialization 
 ----------------------------------------------------------
 
 function entry()
-  print ("walk entry")
+  print ("Motion: Walk entry")
   --SJ: now we always assume that we start walking with feet together
   --Because joint readings are not always available with darwins
   uLeft = util.pose_global(vector.new({-supportX, footY, 0}),uTorso);
@@ -137,15 +137,6 @@ function entry()
   uRight1, uRight2 = uRight, uRight;
   uTorso1, uTorso2 = uTorso, uTorso;
   uSupport = uTorso;
-
-  uTorsoActual = util.pose_global(vector.new({-footX,0,0}),uTorso);
-
-  pLLeg = vector.new{uLeft[1], uLeft[2], 0, 0, 0, uLeft[3]};
-  pRLeg = vector.new{uRight[1], uRight[2], 0, 0, 0, uRight[3]};
-  pTorso = vector.new{uTorsoActual[1], uTorsoActual[2], bodyHeight, 
-		0, bodyTilt, uTorso[3]};
-  qLegs = Kinematics.inverse_legs(pLLeg, pRLeg, pTorso, 0);
-  Body.set_lleg_command(qLegs);
 
   --Place arms in appropriate position at sides
   Body.set_larm_command(qLArm0);
@@ -158,18 +149,28 @@ end
 
 
 function update()
-  if (not active) then 
+  t = Body.get_time();
+
+  --Don't run update if the robot is sitting or standing
+  bodyHeightCurrent = vcm.get_camera_bodyHeight();
+  if  bodyHeightCurrent<bodyHeight-0.01 then
+    return;
+  end
+   if (not active) then 
     update_still();
     return; 
   end
 
-  t = Body.get_time();
+  if not started then
+    started=true;
+    tLastStep = Body.get_time();
+  end
 
   --SJ: Variable tStep support for walkkick
   ph = (t-tLastStep)/tStep;
   if ph>1 then
     iStep=iStep+1;
-    ph=ph-1;
+    ph=ph-math.floor(ph);
     tLastStep=tLastStep+tStep;
   end
 
@@ -624,10 +625,10 @@ function start()
   stopRequest = 0;
   if (not active) then
     active = true;
+    started = false;
     iStep0 = -1;
     t0 = Body.get_time();
     tLastStep = Body.get_time();
-    initdone=false;
     initial_step=2;
   end
 end
@@ -669,9 +670,6 @@ function doSideKickRight()
     walkKickType = 3; 
   end
 end
-
-
-
 --dummy function for NSL kick, depreciated
 function zero_velocity()
 end
@@ -684,11 +682,6 @@ end
 
 function switch_stance(stance)
 end
-
-
-
-
-
 
 function get_odometry(u0)
   if (not u0) then
@@ -740,7 +733,9 @@ function zmp_com(ph)
     com[2] = com[2] + m2Y*tStep*(ph-ph2Zmp)
               -tZmp*m2Y*math.sinh(tStep*(ph-ph2Zmp)/tZmp);
   end
-  com[3] = .5*(uLeft[3] + uRight[3]);
+  --com[3] = .5*(uLeft[3] + uRight[3]);
+  --Linear speed turning
+  com[3] = ph* (uLeft2[3]+uRight2[3])/2 + (1-ph)* (uLeft1[3]+uRight1[3])/2;
   return com;
 end
 

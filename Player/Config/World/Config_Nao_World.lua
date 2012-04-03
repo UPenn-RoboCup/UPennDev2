@@ -42,7 +42,7 @@ world.aPostFilter = 0.20;
 
 -- default positions for our kickoff
 world.initPosition1={
-  {3,0},   --Goalie
+  {2.7,0},   --Goalie
   {0.5, 0}, --Attacker
   {1.2,-1}, --Defender
   {1.2, 1}, --Supporter
@@ -50,7 +50,7 @@ world.initPosition1={
 -- default positions for opponents' kickoff
 -- Penalty mark : {1.2,0}
 world.initPosition2={
-  {3,0},   --Goalie
+  {2.7,0},   --Goalie
   {1.3, 0}, --Attacker
   {1.3, -1}, --Defender
   {1.3,1}, --Supporter

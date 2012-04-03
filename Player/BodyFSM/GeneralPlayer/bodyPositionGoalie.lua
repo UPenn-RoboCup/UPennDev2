@@ -22,8 +22,9 @@ timeout = 20.0;
 maxStep = 0.04;
 maxPosition = 0.55;
 ballNear = 0.85;
-rClose = 0.40;
 tLost = 6.0;
+
+rClose = Config.fsm.bodyAnticipate.rClose or 1.0;
 
 
 function entry()

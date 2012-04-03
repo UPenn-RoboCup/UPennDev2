@@ -208,9 +208,7 @@ function set_role(r)
   end
 end
 
-print("SPL Teamplay Loaded");
-set_role(Config.team.role);
-update_shm();
+set_role(Config.game.role);
 
 function get_player_id()
   return playerID; 

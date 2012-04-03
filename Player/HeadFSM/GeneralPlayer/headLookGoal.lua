@@ -10,7 +10,6 @@ t0 = 0;
 yawSweep = Config.fsm.headLookGoal.yawSweep;
 yawMax = Config.head.yawMax;
 dist = Config.fsm.headReady.dist;
-height = Config.fsm.headReady.height;
 tScan = Config.fsm.headLookGoal.tScan;
 
 function entry()
@@ -32,6 +31,8 @@ function update()
   local tpassed=t-t0;
   local ph= tpassed/tScan;
   local yawbias = (ph-0.5)* yawSweep;
+
+  height=vcm.get_camera_height();
 
   yaw1 = math.min(math.max(yaw0+yawbias, -yawMax), yawMax);
   local yaw, pitch =HeadTransform.ikineCam(

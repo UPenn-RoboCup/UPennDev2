@@ -80,6 +80,7 @@ hipShift = vector.new({0,0});
 armShift = vector.new({0, 0});
 
 active = true;
+started=false;
 iStep0 = -1;
 iStep = 0;
 t0 = Body.get_time();
@@ -88,7 +89,6 @@ tLastStep = Body.get_time();
 stopRequest = 2;
 canWalkKick = 0; 
 
-initdone=false;
 initial_step=2;
 ----------------------------------------------------------
 -- End initialization 
@@ -122,17 +122,27 @@ end
 
 
 function update()
-  if (not active) then 
+  --Don't run update if the robot is sitting or standing
+  bodyHeightCurrent = vcm.get_camera_bodyHeight();
+  if  bodyHeightCurrent<bodyHeight-0.01 then
+    return;
+  end
+   if (not active) then 
     update_still();
     return; 
+  end
+  if not started then
+    started=true;
+    tLastStep = Body.get_time();
   end
 
   t = Body.get_time();
 
+  --SJ: Variable tStep support for walkkick
   ph = (t-tLastStep)/tStep;
   if ph>1 then
     iStep=iStep+1;
-    ph=ph-1;
+    ph=ph-math.floor(ph);
     tLastStep=tLastStep+tStep;
   end
 
@@ -151,8 +161,6 @@ function update()
     uLeft1 = uLeft2;
     uRight1 = uRight2;
     uTorso1 = uTorso2;
-
-    supportMod = {0,0}; --Support Point modulation for walkkick
 
     if (stopRequest==1) then  --Final step
       stopRequest=2;
@@ -395,7 +403,7 @@ function start()
     iStep0 = -1;
     t0 = Body.get_time();
     tLastStep = Body.get_time();
-    initdone=false;
+    started=false;
     initial_step=2;
   end
 end

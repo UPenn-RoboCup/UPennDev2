@@ -65,7 +65,7 @@ function update()
   else
     --Player FSM, turn towards the goal
     attackBearing, daPost = wcm.get_attack_bearing();
-    angle = util.mod_angle(attackBearing-kick_angle);
+    angle = util.mod_angle(attackBearing);
     if angle > 10*math.pi/180 then
       vStep[3]=0.2;
     elseif angle < -10*math.pi/180 then

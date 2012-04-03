@@ -56,6 +56,7 @@ function update()
        (tPassed>tStartWait and gyrMag<thGyroMag) then
          phase=1;
          tStart=t;
+         check_ball_pos();
          Motion.event("kick");
     end
   elseif phase==1 then
@@ -78,6 +79,7 @@ end
 function check_ball_pos()
   -- straight kick, set kick depending on ball position
   ball = wcm.get_ball();
+
   if (ball.y > 0) then
     kick.set_kick("kickForwardLeft");
   else

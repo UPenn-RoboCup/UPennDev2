@@ -20,6 +20,7 @@ kickable = true;
 follow = false;
 
 tFollowDelay = Config.fsm.bodyKick.tFollowDelay;
+rClose = 1.0;
 
 function entry()
   print(_NAME.." entry");
@@ -32,14 +33,21 @@ end
 function update()
   local t = Body.get_time();
   ball = wcm.get_ball();
+  ballR = math.sqrt(ball.x^2+ ball.y^2);
 
---print(ball.vx)
+  if ballR<rClose and t-ball.t<0.1 then
+    Motion.event("walk");
+    return "ballClose";
+  end
 
+--[[
   if ball.t<0.1 and ball.vx<-0.5 then
     dive.set_dive("diveLeft");
     Motion.event("dive");
     return "done";
   end
+--]]
+
 
   if (t - t0 > timeout) then
     Motion.event("walk");

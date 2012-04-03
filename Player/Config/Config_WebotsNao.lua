@@ -40,6 +40,7 @@ game.teamNumber = (os.getenv('TEAM_ID') or 0) + 0;
 -- webots player ids begin at 0 but we use 1 as the first id
 game.playerID = (os.getenv('PLAYER_ID') or 0) + 1;
 game.robotID = game.playerID;
+game.role = game.playerID-1; -- default role, 0 for goalie 
 game.nPlayers = 4;
 
 --To handle non-gamecontroller-based team handling for webots
@@ -75,11 +76,6 @@ fsm.body = {'GeneralPK'};
 fsm.head = {'NaoDemo'};
 --]]
 
-fsm.enable_obstacle_detection = 1;
-fsm.playMode = 2; --1 for demo, 2 for orbit, 3 for direct approach
-fsm.enable_walkkick = 1;
--------------------------------------------------------------------
-
 --Behavior flags, should be defined in FSM Configs but can be overrided here
 fsm.enable_obstacle_detection = 1;
 fsm.kickoff_wait_enable = 1;
@@ -92,7 +88,6 @@ team = {};
 team.msgTimeout = 5.0;
 team.nonAttackerPenalty = 6.0; -- eta sec
 team.nonDefenderPenalty = 0.5; -- dist from goal
-team.role = game.playerID-1; -- default role
 
 --Head Parameters
 

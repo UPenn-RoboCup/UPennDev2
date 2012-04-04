@@ -83,6 +83,12 @@ function update(sel,headAngles)
   tHead = tNeck*Transform.trans(cameraPos[sel][1], cameraPos[sel][2], cameraPos[sel][3]);
   tHead = tHead*Transform.rotY(cameraAngle[sel][2]);
 
+  --update camera position
+  local vHead=vector.new({0,0,0,1});
+  vHead=tHead*vHead;
+  vHead=vHead/vHead[4];
+  vcm.set_camera_height(vHead[3]);
+
   -- update horizon
   pa = headAngles[2] + cameraAngle[sel][2]; --+ bodyTilt;
   horizonA = (labelA.n/2.0) - focalA*math.tan(pa) - 2;
@@ -178,7 +184,6 @@ function coordinatesB(c, scale)
   return v;
 end
 
-
 function ikineCam(x, y, z, select)
   yaw,pitch=ikineCam0(x,y,z,select);
   yaw = math.min(math.max(yaw, yawMin), yawMax);
@@ -213,15 +218,17 @@ function ikineCam0(x,y,z,select)
   local norm = math.sqrt(x^2 + y^2 + z^2);
 --  local pitch = math.asin(-z/(norm + 1E-10));
 
-  --SJ: new IKcam that takes camera offset into account
+  --new IKcam that takes camera offset into account
   -------------------------------------------------------------
   -- sin(pitch)x + cos (pitch) z = c , c=camera z offset
   -- pitch = atan2(x,z) - acos(b/r),  r= sqrt(x^2+z^2)
+  -- r*sin(pitch) = z *cos(pitch) + c, 
   -------------------------------------------------------------
   local c=cameraPos[select][3];
   local r = math.sqrt(x^2+y^2);
-  local d = math.sqrt(x^2+z^2);
-  local p0 = math.atan2(r,z) - math.acos(c/d);
+  local d = math.sqrt(r^2+z^2);
+  local p0 = math.atan2(r,z) - math.acos(c/(d + 1E-10));
+
   pitch=p0;
   pitch = pitch - cameraAngle[select][2]- pitch0;
   return yaw, pitch;

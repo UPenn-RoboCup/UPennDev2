@@ -12,13 +12,8 @@ require('bodyReady')
 require('bodySearch')
 require('bodyApproach')
 require('bodyKick')
-require('bodyWalkKick')
 require('bodyOrbit')
 require('bodyGotoCenter')
-require('bodyPosition')
-require('bodyPositionSimple')
-require('bodyObstacle')
-require('bodyObstacleAvoid')
 
 require('bodyPositionGoalie')
 require('bodyAnticipate')
@@ -32,13 +27,8 @@ sm:add_state(bodyReady);
 sm:add_state(bodySearch);
 sm:add_state(bodyApproach);
 sm:add_state(bodyKick);
-sm:add_state(bodyWalkKick);
 sm:add_state(bodyOrbit);
 sm:add_state(bodyGotoCenter);
-sm:add_state(bodyPosition);
-sm:add_state(bodyPositionSimple);
-sm:add_state(bodyObstacle);
-sm:add_state(bodyObstacleAvoid);
 
 sm:add_state(bodyPositionGoalie);
 sm:add_state(bodyAnticipate);
@@ -55,7 +45,7 @@ sm:set_transition(bodyPositionGoalie, 'ballClose', bodyChase)
 
 sm:set_transition(bodyAnticipate,'timeout',bodyPositionGoalie);
 sm:set_transition(bodyAnticipate,'done',bodyPositionGoalie);
-sm:set_transition(bodyAnticipate,'ballClose',bodyChase);
+sm:set_transition(bodyAnticipate, 'ballClose', bodyChase);
 
 sm:set_transition(bodyChase, 'ballLost', bodyPositionGoalie);
 sm:set_transition(bodyChase, 'ballFar', bodyPositionGoalie);
@@ -65,11 +55,9 @@ sm:set_transition(bodyApproach, 'ballFar', bodyPositionGoalie);
 sm:set_transition(bodyApproach, 'ballLost', bodyPositionGoalie);
 sm:set_transition(bodyApproach, 'timeout', bodyPositionGoalie);
 sm:set_transition(bodyApproach, 'kick', bodyKick);
-sm:set_transition(bodyApproach, 'walkkick', bodyWalkKick);
 
 sm:set_transition(bodyKick, 'done', bodyPositionGoalie);
 sm:set_transition(bodyKick, 'reposition', bodyApproach);
-sm:set_transition(bodyWalkKick, 'done', bodyPositionGoalie);
 
 sm:set_transition(bodyPositionGoalie, 'fall', bodyPositionGoalie);
 sm:set_transition(bodyApproach, 'fall', bodyPositionGoalie);

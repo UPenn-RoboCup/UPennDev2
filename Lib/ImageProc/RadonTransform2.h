@@ -1,6 +1,7 @@
 #ifndef RadonTransform_h_DEFINED
 #define RadonTransform_h_DEFINED
-#define MAXLINES 4
+
+#define MAXLINES 8 // Max # of lines returned
 
 struct LineStats {
   int count;
@@ -17,20 +18,21 @@ class RadonTransform {
     RadonTransform();
     virtual ~RadonTransform() {}
 
-    //Max r for 80*60 label
-    static const int MAXR = 100; // Number of radius
+    //For 80*60 labelB image, maximum R is 100
+    //Angles are from 0 to pi 
+
     static const int NR = 100; // Number of radius
-    static const int NTH = 45; // Number of angles
+    static const int NTH = 90; // Number of angles
     static const int NTRIG = 65536; // Integer trig normalization
     static const int DIAGONAL_THRESHOLD = NTRIG/1.41421356;
+
     
     void clear();
     void addHorizontalPixel(int i, int j);
     void addVerticalPixel(int i, int j);
     void addPixelToRay(int i, int j, int ith);
    
-    struct LineStats &getLineStats();
-    struct LineStats *getMultiLineStats();
+    struct LineStats* getLineStats();
 
     int countMax;  
     int count[NTH][NR];
@@ -45,8 +47,8 @@ class RadonTransform {
     int sinTable[NTH];
     int cosTable[NTH];
 
-    struct LineStats bestLine;
-    struct LineStats bestLines[MAXLINES];
+//    struct LineStats bestLine;
+    struct LineStats bestLine[MAXLINES];
 };
 
 #endif

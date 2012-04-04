@@ -76,9 +76,10 @@ function entry()
   ball = wcm.get_ball();
   check_approach_type(); --walkkick if available
 
-  if ball.t<0.2 then
+  if t0-ball.t<0.2 then
 --    HeadFSM.sm:set_state('headTrack');
     ball_tracking=true;
+    print("Ball Tracking")
     HeadFSM.sm:set_state('headKick');
   else
     ball_tracking=false;
@@ -92,7 +93,7 @@ function update()
   ball.x = ball.x - footX;
   ballR = math.sqrt(ball.x^2 + ball.y^2);
 
-  if ball.t<0.2 and ball_tracking==false then
+  if t-ball.t<0.2 and ball_tracking==false then
 --    HeadFSM.sm:set_state('headTrack');
     ball_tracking=true;
     HeadFSM.sm:set_state('headKick');

@@ -9,6 +9,7 @@ require('headReady')
 require('headReadyLookGoal')
 require('headScan')
 require('headTrack')
+require('headKick')
 require('headKickFollow')
 require('headLookGoal')
 require('headSweep')
@@ -19,6 +20,7 @@ sm:add_state(headReady);
 sm:add_state(headReadyLookGoal);
 sm:add_state(headScan);
 sm:add_state(headTrack);
+sm:add_state(headKick);
 sm:add_state(headKickFollow);
 sm:add_state(headLookGoal);
 sm:add_state(headSweep);
@@ -34,6 +36,10 @@ sm:set_transition(headReady, 'done', headScan);
 
 sm:set_transition(headTrack, 'lost', headScan);
 sm:set_transition(headTrack, 'timeout', headTrack);
+
+sm:set_transition(headKick, 'ballFar', headTrack);
+sm:set_transition(headKick, 'ballLost', headScan);
+sm:set_transition(headKick, 'timeout', headTrack);
 
 sm:set_transition(headKickFollow, 'lost', headScan);
 sm:set_transition(headKickFollow, 'ball', headTrack);

@@ -82,7 +82,8 @@ tStepSideKick = Config.walk.tStepSideKick or 0.70;
 --Support bias parameters to reduce backlash-based instability
 supportFront = Config.walk.supportFront or 0;
 supportBack = Config.walk.supportBack or 0;
-supportSide = Config.walk.supportSide or 0;
+supportSideX = Config.walk.supportSideX or 0;
+supportSideY = Config.walk.supportSideY or 0;
 
 ----------------------------------------------------------
 -- Walk state variables
@@ -221,9 +222,11 @@ function update()
         supportMod[1] = supportBack; 
       end
       if velCurrent[2]>0.015 then
-        supportMod[2] = supportSide; 
+        supportMod[1] = supportSideX; 
+        supportMod[2] = supportSideY; 
       elseif velCurrent[2]<-0.015 then
-        supportMod[2] = -supportSide; 
+        supportMod[1] = supportSideX; 
+        supportMod[2] = -supportSideY; 
       end
     end
 

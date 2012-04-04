@@ -44,7 +44,7 @@ function detect()
   end
 
   line.propsB=linePropsB;
-
+  nLines=0;
   --Check the number of valid lines
   for i=1,#line.propsB do
     if line.propsB[i].count>15 then

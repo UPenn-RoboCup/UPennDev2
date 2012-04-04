@@ -49,7 +49,7 @@ game.role=game.playerID-1; --Default role for webots
 
 --Default team for webots 
 if game.teamNumber==0 then  game.teamColor = 0; --Blue team
-else game.teamColor = 0; --Red team
+else game.teamColor = 1; --Red team
 end
 
 --FSM and behavior settings

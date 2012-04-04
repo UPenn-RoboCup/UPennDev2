@@ -32,7 +32,7 @@ state.time = Body.get_time();
 state.role = -1;
 state.pose = {x=0, y=0, a=0};
 state.ball = {t=0, x=1, y=0};
-state.attackBearing = 0.0;
+state.attackBearing = 0.0;--Why do we need this?
 state.penalty = 0;
 state.tReceive = Body.get_time();
 state.battery_level = wcm.get_robot_battery_level();
@@ -41,9 +41,56 @@ state.fall=0;
 states = {};
 states[playerID] = state;
 
+function pack_msg(state)
+  --Tightly pack the state info into a short string
+
+  ------------------------------
+  --ID        
+  --TeamNo
+  --TeamColor 
+  --role
+  --penalty
+  --fall
+ 
+  --ballx bally ballt
+  --posex posey posea
+  --time
+  --battery
+  msg_str=string.format(
+	"{%d,%d,%d,%d,%d,%d,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.2f,%.1f",
+	state.id, state.teamNumber, state.teamColor,
+	state.role,state.penalty,state.fall,
+	state.ball.x,state.ball.y,state.ball.t,
+	state.pose.x,state.pose.y,state.pose.a,
+	state.time,state.battery_level);
+  return msg_str;
+end
+
+function unpack_msg(msg)
+  local state={};
+  state.id=msg[1] or 0;
+  state.teamNumber=msg[2] or 0;
+  state.teamColor=msg[3] or 0;
+  state.role=msg[4];
+  state.penalty=msg[5];
+  state.fall=msg[6];
+  state.ball={};
+  state.ball.x=msg[7];
+  state.ball.x=msg[8];
+  state.ball.x=msg[9];
+  state.pose={};
+  state.pose.x=msg[10];
+  state.pose.x=msg[11];
+  state.pose.x=msg[12];
+  state.pose.time=msg[13];
+  state.pose.battery_level=msg[14];
+  return state;
+end
+
 function recv_msgs()
   while (Comm.size() > 0) do 
-    t = serialization.deserialize(Comm.receive());
+--    t = serialization.deserialize(Comm.receive());
+    t = unpack_msg(Comm.receive());
     if (t and (t.teamNumber) and (t.teamNumber == state.teamNumber) and (t.id) and (t.id ~= playerID)) then
       t.tReceive = Body.get_time();
       states[t.id] = t;
@@ -74,7 +121,19 @@ function update()
   end
 
   if (math.mod(count, 1) == 0) then
-    Comm.send(serialization.serialize(state));
+
+--    msg=serialization.serialize(state);
+
+-- Unpacked msg size: 367, packed msg size: 48
+-- We can send more vision info wireless as wel....
+--    print("Team message size:",string.len(msg))
+--    msg2=pack_msg(state);
+--    print("Packed team message size:",string.len(msg2))
+--    Comm.send(serialization.serialize(state));
+
+    msg=pack_msg(state);
+    Comm.send(msg);
+
     --Copy of message sent out to other players
     state.tReceive = Body.get_time();
     states[playerID] = state;

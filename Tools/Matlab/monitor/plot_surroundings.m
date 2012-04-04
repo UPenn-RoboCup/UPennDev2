@@ -19,6 +19,7 @@ function [ ] = plot_surroundings( handle, mon_struct )
     plot_ball(mon_struct.ball);
     plot_goal(mon_struct.goal);
     plot_landmark(mon_struct.landmark);
+    plot_line(mon_struct.line);
     hold off;
 
     %subfunctions
@@ -98,6 +99,17 @@ function [ ] = plot_surroundings( handle, mon_struct )
         set(g_name2,'FontSize',8);
       end
      end
+
+    function plot_line(line,scale)
+      if( line.detect==1 )
+        nLines=line.nLines;
+        for i=1:nLines
+          v1=line.v1{i};
+          v2=line.v2{i};
+          plot([v1(1) v2(1)],[v1(2) v2(2)],'k','LineWidth',2);
+        end
+      end
+    end
 
 
 %{

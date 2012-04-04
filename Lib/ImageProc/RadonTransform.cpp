@@ -6,6 +6,7 @@
 
 #include "RadonTransform.h"
 #include <stdlib.h>
+#include <stdio.h>
 #include <limits.h>
 #include <math.h>
 
@@ -96,42 +97,195 @@ struct LineStats &RadonTransform::getLineStats() {
   return bestLine;
 }
 
+int max(int a, int b){
+  if (a>b)
+    return a;
+  else
+    return b;
+}
+int min(int a, int b){
+  if (a<b)
+    return a;
+  else
+    return b;
+}
 
 struct LineStats *RadonTransform::getMultiLineStats(){
 
-  int max_previous_count=9999;
-  int thMax=0, rMax=0, countMax=0;
+  int MAXCANDIDATES = 50;
 
-  for (int i=0;i<MAXLINES;i++){
-    countMax=-1;thMax=0;rMax=0;
+  int thMaxs[MAXCANDIDATES];
+  int rMaxs[MAXCANDIDATES];
+  int countMaxs[MAXCANDIDATES];
+
+  thMaxs[0]=thMax;
+  rMaxs[0]=rMax;
+  countMaxs[0]=countMax;
+
+  if (countMax == 0) {
+    bestLines[0].count=0;
+    return bestLines;
+  }
+
+
+  
+  int i_bestLines=1;
+
+/*
+  //exhausitive search
+  for (int i=1;i<MAXLINES;i++){
+    countMaxs[i]=0;
     for (int ith = 0; ith < NTH; ith++) {
       for (int ir = 0; ir < NR; ir++) {
-        if ((count[ith][ir]>countMax)
-	   &&(count[ith][ir]<max_previous_count)){
-	  countMax=count[ith][ir];
-	  thMax=ith;rMax=ir;
+        if ((count[ith][ir]>countMaxs[i])&&
+            (count[ith][ir]<countMaxs[i-1])){
+	  thMaxs[i]=ith;
+	  rMaxs[i]=ir;
+	  countMaxs[i]=count[ith][ir];
 	}
       }
     }
-    if (countMax>0){
-//R value: 0 to MAXR-1
-//R index: 0 to NR-1
+    if (countMaxs[i]>0)  i_bestLines++;
+  }
+*/
 
-      double iR = ((rMax+1)*MAXR/NR-1+.5)*cosTable[thMax];
-      double jR = ((rMax+1)*MAXR/NR-1+.5)*sinTable[thMax];
-      double lMean = lineSum[thMax][rMax]/countMax;
-      double lMin = lineMin[thMax][rMax];
-      double lMax = lineMax[thMax][rMax];
-      bestLines[i].count = countMax;
-      bestLines[i].iMean = (iR - lMean*sinTable[thMax])/NTRIG;
-      bestLines[i].jMean = (jR + lMean*cosTable[thMax])/NTRIG;
-      bestLines[i].iMin = (iR - lMin*sinTable[thMax])/NTRIG;
-      bestLines[i].iMax = (iR - lMax*sinTable[thMax])/NTRIG;
-      bestLines[i].jMin = (jR + lMin*cosTable[thMax])/NTRIG;
-      bestLines[i].jMax = (jR + lMax*cosTable[thMax])/NTRIG;
-      max_previous_count=countMax;
+  int count_threshold = 5;
+
+
+  for (int ith = 0; ith < NTH; ith++) {
+    for (int ir = 0; ir < NR; ir++) {
+      if (count[ith][ir]>count_threshold){
+	if (i_bestLines<MAXCANDIDATES){
+	  thMaxs[i_bestLines]=ith;
+	  rMaxs[i_bestLines]=ir;
+	  countMaxs[i_bestLines]=count[ith][ir];
+	  i_bestLines=i_bestLines+1;
+	}
+      }
+    }
+  }
+  printf("Line candidates:%d\n",i_bestLines);
+
+  int R_MERGE = 3;
+  int TH_MERGE = 3;
+
+  //Merge similar lines
+
+  int mergecount = 0;
+  for (int i=0;i<i_bestLines-1;i++){
+    for (int j=i+1;j<i_bestLines;j++){
+      if ((abs(thMaxs[i]-thMaxs[j])<=TH_MERGE)&&
+         (abs(rMaxs[i]-rMaxs[j])<=R_MERGE)&&
+         (countMaxs[i]>1) && (countMaxs[j]>1)  ){
+	//weighted sum of two lines 
+//   	  thMaxs[i]=(thMaxs[i]*countMaxs[i]+thMaxs[j]*countMaxs[j])/
+//		  (countMaxs[i]+countMaxs[j]);
+//     	  rMaxs[i]=(rMaxs[i]*countMaxs[i]+rMaxs[j]*countMaxs[j])/
+//		  (countMaxs[i]+countMaxs[j]);
+        mergecount++;
+	//Update stats
+        if (countMaxs[i]>countMaxs[j]){
+/*
+           lineMax[thMaxs[i]][rMaxs[i]] = 
+               min (lineMin[thMaxs[i]][rMaxs[i]] ,
+                  lineMin[thMaxs[j]][rMaxs[j]] );
+           lineMin[thMaxs[i]][rMaxs[i]] = 
+               max (lineMin[thMaxs[i]][rMaxs[i]] ,
+                  lineMin[thMaxs[j]][rMaxs[j]] );
+*/
+           lineSum[thMaxs[i]][rMaxs[i]] = 
+                (lineSum[thMaxs[i]][rMaxs[i]]*countMaxs[i]+
+                lineMin[thMaxs[j]][rMaxs[j]]*countMaxs[j])/
+		(countMaxs[i]+countMaxs[j]);
+ 	   countMaxs[i]=countMaxs[i]+countMaxs[j]-1;
+           countMaxs[j]=1;
+        }else{
+/*
+           lineMax[thMaxs[j]][rMaxs[j]] = 
+               min (lineMin[thMaxs[i]][rMaxs[i]] ,
+                  lineMin[thMaxs[j]][rMaxs[j]] );
+           lineMin[thMaxs[j]][rMaxs[j]] = 
+               max (lineMin[thMaxs[i]][rMaxs[i]] ,
+                  lineMin[thMaxs[j]][rMaxs[j]] );
+*/
+           lineSum[thMaxs[i]][rMaxs[i]] = 
+                (lineSum[thMaxs[i]][rMaxs[i]]*countMaxs[i]+
+                lineMin[thMaxs[j]][rMaxs[j]]*countMaxs[j])/
+		(countMaxs[i]+countMaxs[j]);
+ 	   countMaxs[j]=countMaxs[i]+countMaxs[j]-1;
+           countMaxs[i]=1;
+        }
+      }
     }
   }
 
+  printf("Line %d merged\n",mergecount);
+
+// Check the fill rate of each lines
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  for (int i=0;i<i_bestLines-1;i++){
+    for (int j=i+1;j<i_bestLines;j++){
+      if (countMaxs[i]<countMaxs[j]){
+	   int temp1,temp2,temp3;
+	   temp1=countMaxs[i];
+	   temp2=thMaxs[i];
+	   temp3=rMaxs[i];
+
+	   countMaxs[i]=countMaxs[j];
+	   thMaxs[i]=thMaxs[j];
+	   rMaxs[i]=rMaxs[j];
+
+	   countMaxs[j]=temp1;
+	   thMaxs[j]=temp2;
+	   rMaxs[j]=temp3;
+      }
+    }
+  }
+
+
+  //Get rid of blank lines
+//  while (countMaxs[i_bestLines-1]==0) i_bestLines--;
+  //Return top lines 
+  if (i_bestLines>=MAXLINES) i_bestLines=MAXLINES-1;
+  for (int i=0;i<i_bestLines;i++){
+    double iR = ((rMaxs[i]+1)*MAXR/NR-1+.5)*cosTable[thMaxs[i]];
+    double jR = ((rMaxs[i]+1)*MAXR/NR-1+.5)*sinTable[thMaxs[i]];
+    double lMean = lineSum[thMaxs[i]][rMaxs[i]]/countMaxs[i];
+    double lMin = lineMin[thMaxs[i]][rMaxs[i]];
+    double lMax = lineMax[thMaxs[i]][rMaxs[i]];
+    bestLines[i].count = countMaxs[i];
+    bestLines[i].iMean = (iR - lMean*sinTable[thMaxs[i]])/NTRIG;
+    bestLines[i].jMean = (jR + lMean*cosTable[thMaxs[i]])/NTRIG;
+    bestLines[i].iMin = (iR - lMin*sinTable[thMaxs[i]])/NTRIG;
+    bestLines[i].iMax = (iR - lMax*sinTable[thMaxs[i]])/NTRIG;
+    bestLines[i].jMin = (jR + lMin*cosTable[thMaxs[i]])/NTRIG;
+    bestLines[i].jMax = (jR + lMax*cosTable[thMaxs[i]])/NTRIG;
+  }
+  printf("Count:");
+  for (int i=0;i<i_bestLines;i++){
+   printf("%d ",countMaxs[i]);
+  }
+  printf("\nAngle:");
+  for (int i=0;i<i_bestLines;i++){
+   printf("%d ",thMaxs[i]);
+  }
+  printf("\nRadius:");
+  for (int i=0;i<i_bestLines;i++){
+   printf("%d ",rMaxs[i]);
+  }
+  printf("\n:");
   return bestLines;
 }

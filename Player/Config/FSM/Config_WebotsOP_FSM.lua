@@ -184,6 +184,16 @@ fsm.headScan.yawMagTurn = 45*math.pi/180;
 fsm.headScan.tScan = 3.0*speedFactor;
 
 --------------------------------------------------
+--HeadKick: Fix headangle for approaching
+--------------------------------------------------
+fsm.headKick={};
+fsm.headKick.pitch=58*math.pi/180;
+fsm.headKick.xMax = 0.30;
+fsm.headKick.yMax = 0.07;
+fsm.headKick.tLost = 3.0*speedFactor;
+fsm.headKick.timeout = 3.0*speedFactor;
+
+--------------------------------------------------
 --HeadKickFollow: Follow ball after kick
 --------------------------------------------------
 fsm.headKickFollow={};

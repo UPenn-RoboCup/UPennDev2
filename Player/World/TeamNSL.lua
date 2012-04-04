@@ -38,6 +38,13 @@ state.tReceive = Body.get_time();
 state.battery_level = wcm.get_robot_battery_level();
 state.fall=0;
 
+--Added key vision infos
+state.goal=0;  --0 for non-detect, 1 for unknown, 2/3 for L/R, 4 for both
+state.goalv1={0,0};
+state.goalv2={0,0};
+state.landmark=0; --0 for non-detect, 1 for yellow, 2 for cyan
+state.landmarkv={0,0};
+
 states = {};
 states[playerID] = state;
 
@@ -120,6 +127,26 @@ function update()
     state.penalty = 0;
   end
 
+  --Added Vision Info 
+  state.goal=0;
+  if vcm.get_goal_detect()>0 then
+    state.goal = 1 + vcm.get_goal_type();
+    local v1=vcm.get_goal_v1();
+    local v2=vcm.get_goal_v2();
+    state.goalv1[1],state.goalv1[2]=v1[1],v1[2];
+    state.goalv2[1],state.goalv2[2]=0,0;
+    if vcm.get_goal_type()==3 then --two goalposts 
+      state.goalv2[1],state.goalv2[2]=v2[1],v2[2];
+    end
+  end
+
+  state.landmark=0;
+  if vcm.get_landmark_detect()>0 then
+    local v = vcm.get_landmark_v();
+    state.landmark = 1; 
+    state.landmarkv[1],state.landmarkv[2] = v[1],v[2];
+  end
+    
   if (math.mod(count, 1) == 0) then
 
 --    msg=serialization.serialize(state);

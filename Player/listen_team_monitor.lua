@@ -54,6 +54,15 @@ function push_team_struct(obj)
   states.penalty=wcm.get_teamdata_penalty();
   states.battery_level=wcm.get_teamdata_battery_level();
 
+  states.goal=wcm.get_teamdata_();
+  states.goalv11=wcm.get_teamdata_goalv11();
+  states.goalv11=wcm.get_teamdata_goalv11();
+  states.goalv11=wcm.get_teamdata_goalv11();
+  states.goalv11=wcm.get_teamdata_goalv11();
+  states.landmark=wcm.get_teamdata_landmark();
+  states.landmarkv1=wcm.get_teamdata_landmarkv1();
+  states.landmarkv2=wcm.get_teamdata_landmarkv2();
+
 --print("Team message from",obj.id)
   id=obj.id;
 --states.role[id]=obj.id; --robot id?
@@ -67,13 +76,21 @@ function push_team_struct(obj)
   states.ballx[id]=obj.ball.x;
   states.bally[id]=obj.ball.y;
   states.ballt[id]=obj.ball.t;
-
---print("Ballx:",obj.ball.x);
-
   states.attackBearing[id]=obj.attackBearing;
   states.fall[id]=obj.fall;
   states.penalty[id]=obj.penalty;
   states.battery_level[id]=obj.battery_level;
+
+  states.goal[id]=obj.goal;
+  states.goalv11[id]=obj.goalv1[1];
+  states.goalv12[id]=obj.goalv1[2];
+  states.goalv21[id]=obj.goalv2[1];
+  states.goalv22[id]=obj.goalv2[2];
+  states.landmark[id]=obj.landmark;
+  states.landmarkv1[id]=obj.landmarkv[1];
+  states.landmarkv2[id]=obj.landmarkv[2];
+
+--print("Ballx:",obj.ball.x);
 
   wcm.set_teamdata_teamColor(states.teamColor);
   wcm.set_teamdata_robotId(states.robotId);
@@ -90,6 +107,16 @@ function push_team_struct(obj)
   wcm.set_teamdata_fall(states.fall)
   wcm.set_teamdata_penalty(states.penalty)
   wcm.set_teamdata_battery_level(states.battery_level)
+
+  wcm.set_teamdata_goal(states.goal);
+  wcm.set_teamdata_goalv11(states.goalv11);
+  wcm.set_teamdata_goalv12(states.goalv12);
+  wcm.set_teamdata_goalv21(states.goalv21);
+  wcm.set_teamdata_goalv22(states.goalv22);
+
+  wcm.set_teamdata_landmark(states.landmark);
+  wcm.set_teamdata_landmarkv1(states.landmarkv1);
+  wcm.set_teamdata_landmarkv2(states.landmarkv2);
 end
 
 while( true ) do

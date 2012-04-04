@@ -15,10 +15,6 @@ tLost = Config.fsm.bodyApproach.tLost; --ball lost timeout
 xTarget = Config.fsm.bodyApproach.xTarget11;
 yTarget = Config.fsm.bodyApproach.yTarget11;
 
-footX = Config.walk.footX or 0;
-
-
-
 function check_approach_type()
   ball = wcm.get_ball();
   kick_dir=wcm.get_kick_dir();
@@ -90,7 +86,6 @@ function update()
   local t = Body.get_time();
   -- get ball position 
   ball = wcm.get_ball();
-  ball.x = ball.x - footX;
   ballR = math.sqrt(ball.x^2 + ball.y^2);
 
   if t-ball.t<0.2 and ball_tracking==false then

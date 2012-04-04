@@ -93,19 +93,19 @@ fsm.bodyApproach.rFar = 0.45; --Max ball distance
 fsm.bodyApproach.tLost = 3.0*speedFactor;--ball detection timeout
 
 --x and y target position for stationary straight kick
-fsm.bodyApproach.xTarget11={0, 0.12,0.14}; --min, target, max
+fsm.bodyApproach.xTarget11={0, 0.13,0.15}; --min, target, max
 fsm.bodyApproach.yTarget11={0.01, 0.035, 0.04}; --min, target ,max
 
 --x and y target position for stationary kick to left
-fsm.bodyApproach.xTarget12={0, 0.13,0.14}; --min, target, max
+fsm.bodyApproach.xTarget12={0, 0.13,0.15}; --min, target, max
 fsm.bodyApproach.yTarget12={-0.005, 0.01, 0.025}; --min, target ,max
 
 --Target position for straight walkkick 
-fsm.bodyApproach.xTarget21={0, 0.14,0.17}; --min, target, max
+fsm.bodyApproach.xTarget21={0, 0.15,0.18}; --min, target, max
 fsm.bodyApproach.yTarget21={0.01, 0.035, 0.04}; --min, target ,max
 
 --Target position for side walkkick to left
-fsm.bodyApproach.xTarget22={0, 0.17,0.20}; --min, target, max
+fsm.bodyApproach.xTarget22={0, 0.15,0.27}; --min, target, max
 fsm.bodyApproach.yTarget22={0.005, 0.02, 0.035}; --min, target ,max
 
 --------------------------------------------------
@@ -122,10 +122,10 @@ fsm.bodyKick.tStartWaitMax = 1.0;
 fsm.bodyKick.thGyroMag = 100; 
 
 --ball position checking params
-fsm.bodyKick.kickTargetFront = {0.12,0.05};
+fsm.bodyKick.kickTargetFront = {0.13,0.035};
 
 --For kicking to the left
-fsm.bodyKick.kickTargetSide = {0.15,0.01};
+fsm.bodyKick.kickTargetSide = {0.13,0.01};
 fsm.bodyKick.kickTh = {0.03,0.025};
 
 --delay for camera following the ball
@@ -183,7 +183,7 @@ fsm.headScan.timeout = 7.0*speedFactor; --to headLookGoal
 --HeadKick: Fix headangle for approaching
 --------------------------------------------------
 fsm.headKick={};
-fsm.headKick.pitch0=55*math.pi/180;
+fsm.headKick.pitch0=58*math.pi/180;
 fsm.headKick.xMax = 0.30;
 fsm.headKick.yMax = 0.07;
 fsm.headKick.tLost = 3.0*speedFactor;

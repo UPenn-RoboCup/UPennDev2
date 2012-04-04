@@ -19,7 +19,6 @@ kickTargetFront=Config.fsm.bodyKick.kickTargetFront or {0.15,0.04};
 kickTargetSide=Config.fsm.bodyKick.kickTargetSide or {0.15,0.04};
 kickTh=Config.fsm.bodyKick.kickTh or {0.03,0.025};
 
-footX = Config.walk.footX or 0;
 
 --headFollow delay
 tFollowDelay = Config.fsm.bodyKick.tFollowDelay;
@@ -90,9 +89,6 @@ end
 
 function check_ball_pos()
   ball = wcm.get_ball();
-  footX = Config.walk.footX or 0;
-  --subtract foot offset 
-  ball.x = ball.x -footX;
 
   kick_dir=wcm.get_kick_dir();
   if kick_dir==1 then

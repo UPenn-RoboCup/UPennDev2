@@ -177,7 +177,7 @@ function process_keyinput()
     -- Camera transform testing
       headsm_running = 0;
       local ball = wcm.get_ball();
-      local trackZ = Config.vision.ball_diameter/2; 
+      local trackZ = Config.vision.ball.diameter/2; 
       -- TODO: Nao needs to add the camera select
       headangle = vector.zeros(2);
       headangle[1],headangle[2] = 
@@ -193,6 +193,14 @@ function process_keyinput()
       BodyFSM.sm:set_state('bodySearch');   
       HeadFSM.sm:set_state('headScan');
       walk.start();
+    elseif byte==string.byte("6") then
+      headsm_running=0;
+      headangle[1]=0;
+      headangle[2]= Config.fsm.headKick.pitch0;
+
+      local ball = wcm.get_ball();
+      footX = Config.walk.footX or 0;
+      print("foot center to ball pos: ",ball.x,ball.y);      
 
     elseif byte==string.byte("g") then	--Broadcast selection
       local mymod = 4;
@@ -225,6 +233,8 @@ function process_keyinput()
     if headsm_running == 0 then
       Body.set_head_command({headangle[1],headangle[2]-headPitch});
       print("\nHead Yaw Pitch:", unpack(headangle*180/math.pi))
+
+
     end
   end
 end

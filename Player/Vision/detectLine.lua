@@ -51,6 +51,9 @@ function detect()
       nLines=i;
     end
   end
+
+  nLines=math.min(nLines,4);
+
   if (nLines==0) then
     return line; 
   end

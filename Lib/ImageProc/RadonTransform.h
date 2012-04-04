@@ -1,6 +1,6 @@
 #ifndef RadonTransform_h_DEFINED
 #define RadonTransform_h_DEFINED
-#define MAXLINES 4
+#define MAXLINES 10
 
 struct LineStats {
   int count;

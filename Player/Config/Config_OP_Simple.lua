@@ -14,7 +14,7 @@ function loadconfig(configName)
 end
 
 --Simplified setup for distribution
-loadconfig('Walk/Config_OP_Walk')
+loadconfig('Walk/Config_OP_Walk_Basic')
 loadconfig('World/Config_OP_World_Expo')
 loadconfig('Kick/Config_OP_Kick')
 loadconfig('Vision/Config_OP_Vision')
@@ -51,7 +51,7 @@ game.role = game.playerID-1; --default attacker
 --FSM and behavior settings
 fsm = {};
 --SJ: loading FSM config  kills the variable fsm, so should be called first
-loadconfig('FSM/Config_WebotsOP_FSM')
+loadconfig('FSM/Config_OP_FSM')
 fsm.game = 'RoboCup';
 fsm.head = {'GeneralPlayer'};
 fsm.body = {'SimplePlayer'};

@@ -183,7 +183,7 @@ fsm.headScan.timeout = 7.0*speedFactor; --to headLookGoal
 --HeadKick: Fix headangle for approaching
 --------------------------------------------------
 fsm.headKick={};
-fsm.headKick.pitch=58*math.pi/180;
+fsm.headKick.pitch0=55*math.pi/180;
 fsm.headKick.xMax = 0.30;
 fsm.headKick.yMax = 0.07;
 fsm.headKick.tLost = 3.0*speedFactor;

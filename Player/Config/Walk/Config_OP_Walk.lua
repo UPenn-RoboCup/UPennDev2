@@ -62,8 +62,9 @@ walk.armImuParamY={0.3,10*gyroFactor, 20*math.pi/180, 45*math.pi/180};
 -- Support point modulation values
 --------------------------------------------
 walk.supportFront = 0.01; --Lean front when walking fast forward
-walk.supportBack = -0.01; --Lean back when walking backward
-walk.supportSide = 0.01; --Lean sideways when sidestepping
+walk.supportBack = -0.02; --Lean back when walking backward
+walk.supportSideX = -0.01; --Lean back when sidestepping
+walk.supportSideY = 0.02; --Lean sideways when sidestepping
 
 --------------------------------------------
 -- WalkKick parameters

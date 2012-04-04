@@ -12,6 +12,7 @@ require('headTrack')
 require('headKickFollow')
 require('headLookGoal')
 require('headSweep')
+require('headKick')
 
 sm = fsm.new(headIdle);
 sm:add_state(headStart);
@@ -22,6 +23,9 @@ sm:add_state(headTrack);
 sm:add_state(headKickFollow);
 sm:add_state(headLookGoal);
 sm:add_state(headSweep);
+sm:add_state(headKick);
+
+
 
 ---------------------------------------------
 --Game FSM with looking at the goal
@@ -36,6 +40,10 @@ sm:set_transition(headReadyLookGoal, 'lost', headReady);
 
 sm:set_transition(headTrack, 'lost', headScan);
 sm:set_transition(headTrack, 'timeout', headLookGoal);
+
+sm:set_transition(headKick, 'ballFar', headTrack);
+sm:set_transition(headKick, 'ballLost', headScan);
+sm:set_transition(headKick, 'timeout', headTrack);
 
 sm:set_transition(headKickFollow, 'lost', headScan);
 sm:set_transition(headKickFollow, 'ball', headTrack);

@@ -99,9 +99,10 @@ walk.headPitchComp = 0;
 
 
 --For scarface
-walk.footXComp = -0.005;
-walk.kickXComp = -0.005;
+walk.footXComp = 0.015;
+walk.kickXComp = -0.010;
 walk.headPitchComp = 0;
+walk.tStepComm = 0.0;
 
 
 
@@ -109,4 +110,4 @@ walk.headPitchComp = 0;
 walk.footX = walk.footX + walk.footXComp;
 walk.footY = walk.footY + walk.footYComp;
 walk.headPitch = walk.headPitch + walk.headPitchComp;
-
+walk.tStep = walk.tStep + walk.tStepComm;

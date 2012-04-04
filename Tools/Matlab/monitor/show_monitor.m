@@ -25,11 +25,28 @@ function h=show_monitor()
   h.fieldtype=0; %0,1,2 for SPL/Kid/Teen
 
   % subfunctions
+
   function init(draw_team,target_fps)
     MONITOR.target_fps=target_fps;
     figure(1);
     clf;
-    if draw_team>0 
+    if draw_team==2 % Multiple robot, wireless monitoring (real robots)
+      set(gcf,'position',[1 1 900 900]);
+      MONITOR.hFpsText=uicontrol('Style','text','Position',[380 870 200 20]);
+
+      MONITOR.hButton6=uicontrol('Style','pushbutton','String','FPS -',...
+	'Position',[300 870 70 20],'Callback',@button6);
+
+      MONITOR.hButton7=uicontrol('Style','pushbutton','String','FPS +',...
+	'Position',[600 870 70 20],'Callback',@button7);
+
+      MONITOR.hButton10=uicontrol('Style','pushbutton','String','MAP1',...
+	'Position',[20 600 70 40],'Callback',@button10);
+
+      MONITOR.hButton9=uicontrol('Style','pushbutton','String','2D',...
+	'Position',[20 200 70 40],'Callback',@button9);
+
+    elseif draw_team==1 %Multiple robot full monitoring (webots)
       set(gcf,'position',[1 1 900 900]);
       MONITOR.hFpsText=uicontrol('Style','text','Position',[380 870 200 20]);
 
@@ -48,7 +65,7 @@ function h=show_monitor()
       MONITOR.hButton10=uicontrol('Style','pushbutton','String','MAP1',...
 	'Position',[20 600 70 40],'Callback',@button10);
 
-    else
+    else % Single robot full monitoring mode
       LOGGER=logger();
       LOGGER.init();
       set(gcf,'Position',[1 1 1000 600])
@@ -97,7 +114,10 @@ function h=show_monitor()
        pause(1);
     else 
        tStart = tic;
-       if draw_team>0 
+
+       if draw_team==2
+         update_team_wireless(robots);
+       elseif draw_team==1 
          update_team(robots, teamNumber, playerNumber , ignore_vision)
        else
          update_single( robots, teamNumber, playerNumber )
@@ -230,6 +250,39 @@ function h=show_monitor()
       [infostr textcolor]=robot_info(r_struct,r_mon,2);
       h_xlabel=xlabel(infostr);
       set(h_xlabel,'Color',textcolor);
+    end
+  end
+
+  function update_team_wireless(robot_team)
+
+
+    %Draw common field 
+    h_c=subplot(5,5,[1:15]);
+    plot_field(h_c,1);
+
+    for i=1:5
+      r_struct = robot_team.get_team_struct_wireless(i);
+      if r_struct.id>0
+  %      r_mon = robot_team.get_monitor_struct_wireless(i);
+
+        h_c=subplot(5,5,[1:15]);
+%        plot_robot( r_struct, r_mon,2,MONITOR.enable10);
+        plot_robot( r_struct, [],2,1);
+        updated = 0;
+      end
+
+%{
+      if MONITOR.enable9
+        h2=subplot(5,5,20+playerNumber(i));
+        plot_surroundings( h2, r_mon );
+      end
+
+      h2=subplot(5,5,20+playerNumber(i));
+      [infostr textcolor]=robot_info(r_struct,r_mon,2);
+      h_xlabel=xlabel(infostr);
+      set(h_xlabel,'Color',textcolor);
+%}
+
     end
   end
 

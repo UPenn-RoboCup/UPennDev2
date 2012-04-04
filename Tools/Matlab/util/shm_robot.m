@@ -32,6 +32,10 @@ global MONITOR %for sending the webots check information
   h.wcmParticle  = shm(sprintf('wcmParticle%d%d%s',  h.teamNumber, h.playerID, h.user));
   %h.wcmKick
 
+
+  h.wcmTeamdata  = shm(sprintf('wcmTeamdata%d%d%s',  h.teamNumber, h.playerID, h.user));
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %SJ - reading Occmap SHM from robot kills matlab
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -54,6 +58,10 @@ global MONITOR %for sending the webots check information
 
   h.updated=0;
   h.tLastUpdate=0;
+
+  h.get_team_struct_wireless = @get_team_struct_wireless;
+  h.get_monitor_struct_wireless = @get_monitor_struct_wireless;
+
 
   function update()
       % do nothing
@@ -100,6 +108,53 @@ global MONITOR %for sending the webots check information
     catch
     end
   end
+
+  function r = get_team_struct_wireless(id)
+    r = [];
+    try
+      r.teamNumber = h.gcmTeam.get_number();
+      teamColor = h.wcmTeamdata.get_teamColor();
+      robotId = h.wcmTeamdata.get_robotId();
+      role = h.wcmTeamdata.get_role();
+      time= h.wcmTeamdata.get_time();
+      posex= h.wcmTeamdata.get_posex();
+      posey= h.wcmTeamdata.get_posey();
+      posea= h.wcmTeamdata.get_posea();
+      ballx= h.wcmTeamdata.get_ballx();
+      bally= h.wcmTeamdata.get_bally();
+      ballt= h.wcmTeamdata.get_ballt();
+      attackBearing= h.wcmTeamdata.get_attackBearing();
+      fall=h.wcmTeamdata.get_fall();
+      penalty=h.wcmTeamdata.get_penalty();
+      battery_level=h.wcmTeamdata.get_battery_level();
+
+      r.teamColor=teamColor(id);
+      r.id = robotId(id);
+      r.role = role(id);
+      r.time = time(id);
+        
+      r.pose = {};
+      r.pose.x= posex(id);
+      r.pose.y= posey(id);
+      r.pose.a= posea(id);
+
+      r.ball={};
+      r.ball.x= ballx(id);
+      r.ball.y= bally(id);
+      r.ball.vx= 0;
+      r.ball.vy= 0;
+      r.ball.t= ballt(id);
+
+      r.attackBearing= attackBearing(id);
+
+      r.fall=fall(id);
+      r.penalty=penalty(id);
+      r.battery_level=battery_level(id);
+    catch
+    end
+  end
+
+
 
   function r = get_monitor_struct()
     % returns the monitor struct (in the same form as the monitor messages)

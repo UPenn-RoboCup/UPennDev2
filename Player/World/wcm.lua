@@ -55,14 +55,17 @@ shared.particle.w=vector.zeros(Config.world.n);
 -- Indexed by player ID
 -----------------------------------------------
 shared.teamdata={};
-shared.teamdata.robotid=vector.zeros(5);
+shared.teamdata.teamColor=vector.zeros(5);
+shared.teamdata.robotId=vector.zeros(5);
 shared.teamdata.role=vector.zeros(5);
+shared.teamdata.time=vector.zeros(5);
 shared.teamdata.posex=vector.zeros(5);
 shared.teamdata.posey=vector.zeros(5);
 shared.teamdata.posea=vector.zeros(5);
 shared.teamdata.ballx=vector.zeros(5);
 shared.teamdata.bally=vector.zeros(5);
 shared.teamdata.ballt=vector.zeros(5);
+shared.teamdata.attackBearing=vector.zeros(5);
 shared.teamdata.fall=vector.zeros(5);
 shared.teamdata.penalty=vector.zeros(5);
 shared.teamdata.battery_level=vector.zeros(5);

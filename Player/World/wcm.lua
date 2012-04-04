@@ -70,6 +70,17 @@ shared.teamdata.fall=vector.zeros(5);
 shared.teamdata.penalty=vector.zeros(5);
 shared.teamdata.battery_level=vector.zeros(5);
 
+shared.teamdata.goal=vector.zeros(5);
+shared.teamdata.goalv11=vector.zeros(5);
+shared.teamdata.goalv12=vector.zeros(5);
+shared.teamdata.goalv21=vector.zeros(5);
+shared.teamdata.goalv22=vector.zeros(5);
+shared.teamdata.landmark=vector.zeros(5);
+shared.teamdata.landmarkv1=vector.zeros(5);
+shared.teamdata.landmarkv2=vector.zeros(5);
+
+
+
 if (enable_occmap == 1) then
 	shared.occmap = {};
 	shared.occmap.t = vector.zeros(Config.occmap.div);

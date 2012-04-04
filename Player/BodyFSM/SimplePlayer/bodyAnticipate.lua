@@ -20,7 +20,7 @@ kickable = true;
 follow = false;
 
 tFollowDelay = Config.fsm.bodyKick.tFollowDelay;
-rClose = Config.fsm.bodyAnticipate.rClose or 1.0;
+rClose = 1.0;
 
 function entry()
   print(_NAME.." entry");

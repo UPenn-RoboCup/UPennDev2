@@ -20,8 +20,9 @@ kickAngle = 0;
 
 function entry()
   print(_NAME.." entry");
+
   t0 = Body.get_time();
-  kickAngle=  wcm.get_kick_angle();
+  kickAngle=  0;
   direction,angle=get_orbit_direction();
 end
 

@@ -25,6 +25,11 @@ function plot_overlay(r_mon,scale)
 	plot_landmark(r_mon.landmark,scale)
 	hold off;
       end
+      if (r_mon.line.detect == 1)
+        hold on;
+	plot_line(r_mon.line,scale)
+	hold off;
+      end
     end
 
 
@@ -87,18 +92,6 @@ function plot_overlay(r_mon,scale)
     plot([gbx11 gbx12],[gby1 gby2],bbcolor,'LineWidth',bbwidth);
     plot([gbx21 gbx22],[gby1 gby2],bbcolor,'LineWidth',bbwidth);
 
-
-   %original boundingbox
-%{
-    gbx11=gbx1;
-    gbx12=gbx1;
-    gbx21=gbx2;
-    gbx22=gbx2;
-    plot([gbx11 gbx21],[gby1 gby1],bbcolor,'LineWidth',bbwidth);
-    plot([gbx12 gbx22],[gby2 gby2],bbcolor,'LineWidth',bbwidth);
-    plot([gbx11 gbx12],[gby1 gby2],bbcolor,'LineWidth',bbwidth);
-    plot([gbx21 gbx22],[gby1 gby2],bbcolor,'LineWidth',bbwidth);
-%}
     if overlay_level 
       strgoalpos = sprintf('%.2f %.2f',v.x,v.y);
       b_name=text(x0,y0, strgoalpos,'BackGroundColor',[.7 .7 .7]);
@@ -107,13 +100,11 @@ function plot_overlay(r_mon,scale)
 
   end
 
-
   function plot_landmark(landmarkStats,scale)
     c1=landmarkStats.centroid1/scale;
     c2=landmarkStats.centroid2/scale;
     c3=landmarkStats.centroid3/scale;
     color=landmarkStats.color;
-
 
     m1=(c1+c2)/2; m2=(c2+c3)/2;
     c0 = c1-(m1-c1);c4=c3+(c3-m2);
@@ -137,6 +128,19 @@ function plot_overlay(r_mon,scale)
     end
 
   end
+
+  function plot_line(lineStats,scale)
+    nLines=lineStats.nLines;
+    for i=1:nLines
+      endpoint=lineStats.endpoint{i};
+      x1=endpoint(1)/scale*4;
+      x2=endpoint(2)/scale*4;
+      y1=endpoint(3)/scale*4;
+      y2=endpoint(4)/scale*4;
+      plot([x1 x2],[y1 y2],'k--','LineWidth',6);
+    end
+  end
+
   
   function plot_freespace(free, scale)
     % TODO: Show freespace boundary in labelB

@@ -15,7 +15,6 @@ end
 loadconfig('Walk/Config_WebotsOP_Walk')
 loadconfig('World/Config_OP_World')
 loadconfig('Kick/Config_WebotsOP_Kick')
---loadconfig('Kick/Config_WebotsOP_KickPunch')
 loadconfig('Vision/Config_WebotsOP_Vision')
 
 --Location Specific Camera Parameters--
@@ -28,19 +27,12 @@ dev.camera = 'WebotsOPCam';
 dev.kinematics = 'OPKinematics';
 dev.game_control='WebotsGameControl';
 dev.team='TeamNSL';
---dev.team='TeamSPL';
-dev.walk='NewWalk';
-dev.walk='NewNewWalk'; --New robocup walk that supports walking kicks
---dev.walk='BoxWalk'; --New walk that supports different foot stance
---dev.kick='NewKick';
-dev.kick='NewNewKick'; --Extended kick that supports upper body motion
+dev.walk='BasicWalk';
+dev.kick='NewKick'; --Extended kick that supports upper body motion
 
 -- Game Parameters
 game = {};
-game.nPlayers = 5; --5 total robot (including reserve ones)
---Should be 4 robostadium nao gamecontroller
-game.nPlayers = 4; 
-
+game.nPlayers = 3; --5 total robot (including reserve ones)
 game.teamNumber = (os.getenv('TEAM_ID') or 0) + 0;
 --Webots player id begins at 0 but we use 1 as the first id 
 game.playerID = (os.getenv('PLAYER_ID') or 0) + 1;
@@ -49,7 +41,7 @@ game.role=game.playerID-1; --Default role for webots
 
 --Default team for webots 
 if game.teamNumber==0 then  game.teamColor = 0; --Blue team
-else game.teamColor = 0; --Red team
+else game.teamColor = 1; --Red team
 end
 
 --FSM and behavior settings
@@ -58,33 +50,12 @@ fsm = {};
 loadconfig('FSM/Config_WebotsOP_FSM')
 fsm.game = 'RoboCup';
 fsm.head = {'GeneralPlayer'};
-fsm.body = {'GeneralPlayer'};
+fsm.body = {'SimplePlayer'};
 
 --Behavior flags, should be defined in FSM Configs but can be overrided here
 fsm.enable_obstacle_detection = 1;
 fsm.kickoff_wait_enable = 1;
-fsm.playMode = 3; --1 for demo, 2 for orbit, 3 for direct approach
-fsm.enable_walkkick = 1;
-fsm.enable_sidekick = 1;
-
---[[
---Enable these for penalty-kick
-dev.team='TeamNull'; --Turn off teamplay for challenges
-fsm.body = {'GeneralPK'};
-fsm.playMode = 2;
---]]
-
---[[
---Enable this for throw-in 
---fsm.body = {'ThrowInChallenge'};
---]]
-
---Enable this for double pass
---[[
-fsm.body={'DoublePassChallenge'};
-dev.team='TeamDoublePass';
---]]
-
+fsm.playMode = 2; --1 for demo, 2 for Play
 
 -- Team Parameters
 team = {};
@@ -98,8 +69,8 @@ team.nonDefenderPenalty = 0.5; -- dist from goal
 
 -- keyframe files
 km = {};
-km.standup_front = 'km_NSLOP_StandupFromFront.lua';
-km.standup_back = 'km_NSLOP_StandupFromBack.lua';
+km.standup_front = 'km_OP_StandupFromFront_slow.lua';
+km.standup_back = 'km_OP_StandupFromBack_slow.lua';
 
 --Sit/stand stance parameters
 stance={};
@@ -122,31 +93,3 @@ head.cameraAngle = {{0.0, 0.0, 0.0}}; --Default value for production OP
 head.neckZ=0.0765; --From CoM to neck joint 
 head.neckX=0.013; --From CoM to neck joint
 head.bodyTilt = 0;
-
---km.kick_right = 'km_NSLOP_taunt1.lua';
---km.kick_left = 'km_NSLOP_StandupFromFront2.lua';
-
-
---SJ: I separated non-robocup FSMs here
---Dodgeball FSM
---[[
-loadconfig('FSM/Config_WebotsOP_FSM')
-fsm.game = 'Dodgeball';
-fsm.head = {'GeneralPlayer'};
-fsm.body = {'GeneralPlayer'};
-Config.vision.enable_line_detection = 0;
-Config.vision.enable_midfield_landmark_detection = 0;
---]]
-
---Stretcher FSM
---[[
-loadconfig('FSM/Config_WebotsOP_FSM')
-loadconfig( 'Config_Stretcher' );
-game.teamNumber = 18;
-game.playerID = 1;
-fsm.game = 'Stretcher';
-fsm.head = {'Stretcher'};
-fsm.body = {'Stretcher'};
-Config.vision.enable_line_detection = 0;
-Config.vision.enable_midfield_landmark_detection = 0;
---]]

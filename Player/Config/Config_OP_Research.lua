@@ -74,3 +74,41 @@ km.standup_back = 'km_NSLOP_StandupFromBack.lua';
 -- Low battery level
 -- Need to implement this api better...
 bat_low = 100; -- 10V warning
+
+--[[
+
+fsm = {};
+--fsm.game = 'Dodgeball';
+--fsm.game = 'OpDemo'
+fsm.game = 'RoboCup';
+if( fsm.game == 'RoboCup' ) then
+  if (game.playerID == 1) then
+    fsm.body = {'OpGoalie'};
+    fsm.head = {'OpGoalie'};
+  else
+    fsm.body = {'OpPlayerNSL'};
+    fsm.head = {'OpPlayerNSL'};
+  end
+
+  fsm.body = {'OpPlayerNSL'};
+  fsm.head = {'OpPlayerNSL'};
+
+elseif( fsm.game == 'Dodgeball' ) then
+  fsm.body = {'Dodgeball'};
+  fsm.head = {'Dodgeball'};
+else
+  fsm.body = {'OpDemo'};
+  fsm.head = {'OpDemo'};
+end
+
+-- Game specific settings
+if( fsm.game == 'Dodgeball' ) then
+  Config.vision.enable_line_detection = 0;
+  Config.vision.enable_midfield_landmark_detection = 0;
+end
+
+-- enable obstacle detection
+
+--dev.walk='HZDWalk';
+
+--]]

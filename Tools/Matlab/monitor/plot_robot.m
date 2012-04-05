@@ -21,12 +21,14 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel)
       plot_particle(r_mon.particle);
       plot_goal(r_mon.goal,scale);
       plot_landmark(r_mon.landmark,scale);
+      plot_line(r_mon.line,scale);
     else
       plot_robot(robot_struct,scale);
       plot_info(robot_struct,scale);
       plot_ball(robot_struct,scale);
     
       if drawlevel>1
+        plot_line(r_mon.line,scale);
         plot_goal(r_mon.goal,scale);
         plot_landmark(r_mon.landmark,scale);
         if drawlevel==3
@@ -175,6 +177,24 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel)
       y1 = landmark.v(1)*sa + landmark.v(2)*ca + robot_struct.pose.y;
       plot(x1,y1,marker2,'MarkerSize',12/scale);
       plot([x0 x1],[y0 y1],marker3);
+    end
+  end
+
+  function plot_line(line,scale)
+    if( line.detect==1 )
+      nLines=line.nLines;
+      for i=1:nLines
+        v1=line.v1{i};
+        v2=line.v2{i};
+
+        x1 = v1(1)*ca - v1(2)*sa + robot_struct.pose.x;
+        y1 = v1(1)*sa + v1(2)*ca + robot_struct.pose.y;
+        x2 = v2(1)*ca - v2(2)*sa + robot_struct.pose.x;
+        y2 = v2(1)*sa + v2(2)*ca + robot_struct.pose.y;
+
+        plot([x0 (x1+x2)/2],[y0 (y1+y2)/2],'k');
+        plot([x1 x2],[y1 y2],'k','LineWidth',2);
+      end
     end
   end
 

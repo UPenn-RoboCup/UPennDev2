@@ -96,6 +96,11 @@ function entry()
   --Initialize camera pitch bias from Config value 
   vcm.set_camera_pitchBias(headPitch); 
 
+  --Temporary value.. updated at body FSM at next frame
+  vcm.set_camera_bodyHeight(Config.walk.bodyHeight);
+  vcm.set_camera_bodyTilt(0);
+  vcm.set_camera_height(Config.walk.bodyHeight+Config.head.neckZ);
+
   -- Start the HeadTransform machine
   HeadTransform.entry();
 	

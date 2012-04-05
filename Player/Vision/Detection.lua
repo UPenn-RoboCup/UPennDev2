@@ -92,6 +92,7 @@ function update()
     ballCyan = detectBall.detect(colorCyan);
   else
 --SJ: we need to detect both colored goalposts (due to landmarks)
+--TODO: single-colored goalpost
     goalYellow.detect=0;
     goalCyan.detect=0;
     goalYellow = detectGoal.detect(colorYellow,colorCyan);
@@ -179,10 +180,24 @@ function update_shm()
 
   vcm.set_line_detect(line.detect);
   if (line.detect == 1) then
-    vcm.set_line_v(line.v);
-    vcm.set_line_angle(line.angle);
-    vcm.set_line_vcentroid(line.vcentroid);
-    vcm.set_line_vendpoint(line.vendpoint);
+    vcm.set_line_nLines(line.nLines);
+
+    vcm.set_line_v1_1(line.v[1][1]);
+    vcm.set_line_v2_1(line.v[1][2]);
+    vcm.set_line_endpoint1(line.endpoint[1]);
+
+    vcm.set_line_v1_2(line.v[2][1]);
+    vcm.set_line_v2_2(line.v[2][2]);
+    vcm.set_line_endpoint2(line.endpoint[2]);
+
+    vcm.set_line_v1_3(line.v[3][1]);
+    vcm.set_line_v2_3(line.v[3][2]);
+    vcm.set_line_endpoint3(line.endpoint[3]);
+
+    vcm.set_line_v1_4(line.v[4][1]);
+    vcm.set_line_v2_4(line.v[4][2]);
+    vcm.set_line_endpoint4(line.endpoint[4]);
+
   end
 
   --vcm.set_spot_detect(spot.detect);

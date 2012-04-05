@@ -28,6 +28,7 @@ shared.camera.select = vector.zeros(1);
 shared.camera.command = vector.zeros(1);
 
 --bodyTilt and height can be changed by sit/stand 
+shared.camera.height = vector.zeros(1);
 shared.camera.bodyTilt = vector.zeros(1);
 shared.camera.bodyHeight = vector.zeros(1);
 shared.camera.pitchBias = vector.zeros(1);--for camera angel fine tuning
@@ -99,12 +100,30 @@ shared.landmark.centroid1 = vector.zeros(2);
 shared.landmark.centroid2 = vector.zeros(2);
 shared.landmark.centroid3 = vector.zeros(2);
 
+--Multiple line detection
 shared.line = {};
 shared.line.detect = vector.zeros(1);
-shared.line.v = vector.zeros(4);
-shared.line.angle = vector.zeros(1);
-shared.line.vcentroid = vector.zeros(4);
-shared.line.vendpoint = vector.zeros(4);
+
+--Max 4 lines can be detected
+shared.line.nLines = vector.zeros(1);
+shared.line.endpoint1 = vector.zeros(4);
+shared.line.endpoint2 = vector.zeros(4);
+shared.line.endpoint3 = vector.zeros(4);
+shared.line.endpoint4 = vector.zeros(4);
+shared.line.v1_1 = vector.zeros(4);
+shared.line.v2_1 = vector.zeros(4);
+shared.line.v1_2 = vector.zeros(4);
+shared.line.v2_2 = vector.zeros(4);
+shared.line.v1_3 = vector.zeros(4);
+shared.line.v2_3 = vector.zeros(4);
+shared.line.v1_4 = vector.zeros(4);
+shared.line.v2_4 = vector.zeros(4);
+
+--Corner detection
+shared.corner = {};
+shared.corner.detect = vector.zeros(1);
+shared.corner.v = vector.zeros(4);
+shared.corner.angle = vector.zeros(1);
 
 --[[
 shared.spot = {};

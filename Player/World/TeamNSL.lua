@@ -32,18 +32,72 @@ state.time = Body.get_time();
 state.role = -1;
 state.pose = {x=0, y=0, a=0};
 state.ball = {t=0, x=1, y=0};
-state.attackBearing = 0.0;
+state.attackBearing = 0.0;--Why do we need this?
 state.penalty = 0;
 state.tReceive = Body.get_time();
 state.battery_level = wcm.get_robot_battery_level();
 state.fall=0;
 
+--Added key vision infos
+state.goal=0;  --0 for non-detect, 1 for unknown, 2/3 for L/R, 4 for both
+state.goalv1={0,0};
+state.goalv2={0,0};
+state.landmark=0; --0 for non-detect, 1 for yellow, 2 for cyan
+state.landmarkv={0,0};
+
 states = {};
 states[playerID] = state;
 
+function pack_msg(state)
+  --Tightly pack the state info into a short string
+
+  ------------------------------
+  --ID        
+  --TeamNo
+  --TeamColor 
+  --role
+  --penalty
+  --fall
+ 
+  --ballx bally ballt
+  --posex posey posea
+  --time
+  --battery
+  msg_str=string.format(
+	"{%d,%d,%d,%d,%d,%d,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.2f,%.1f",
+	state.id, state.teamNumber, state.teamColor,
+	state.role,state.penalty,state.fall,
+	state.ball.x,state.ball.y,state.ball.t,
+	state.pose.x,state.pose.y,state.pose.a,
+	state.time,state.battery_level);
+  return msg_str;
+end
+
+function unpack_msg(msg)
+  local state={};
+  state.id=msg[1] or 0;
+  state.teamNumber=msg[2] or 0;
+  state.teamColor=msg[3] or 0;
+  state.role=msg[4];
+  state.penalty=msg[5];
+  state.fall=msg[6];
+  state.ball={};
+  state.ball.x=msg[7];
+  state.ball.x=msg[8];
+  state.ball.x=msg[9];
+  state.pose={};
+  state.pose.x=msg[10];
+  state.pose.x=msg[11];
+  state.pose.x=msg[12];
+  state.pose.time=msg[13];
+  state.pose.battery_level=msg[14];
+  return state;
+end
+
 function recv_msgs()
   while (Comm.size() > 0) do 
-    t = serialization.deserialize(Comm.receive());
+--    t = serialization.deserialize(Comm.receive());
+    t = unpack_msg(Comm.receive());
     if (t and (t.teamNumber) and (t.teamNumber == state.teamNumber) and (t.id) and (t.id ~= playerID)) then
       t.tReceive = Body.get_time();
       states[t.id] = t;
@@ -73,8 +127,40 @@ function update()
     state.penalty = 0;
   end
 
+  --Added Vision Info 
+  state.goal=0;
+  if vcm.get_goal_detect()>0 then
+    state.goal = 1 + vcm.get_goal_type();
+    local v1=vcm.get_goal_v1();
+    local v2=vcm.get_goal_v2();
+    state.goalv1[1],state.goalv1[2]=v1[1],v1[2];
+    state.goalv2[1],state.goalv2[2]=0,0;
+    if vcm.get_goal_type()==3 then --two goalposts 
+      state.goalv2[1],state.goalv2[2]=v2[1],v2[2];
+    end
+  end
+
+  state.landmark=0;
+  if vcm.get_landmark_detect()>0 then
+    local v = vcm.get_landmark_v();
+    state.landmark = 1; 
+    state.landmarkv[1],state.landmarkv[2] = v[1],v[2];
+  end
+    
   if (math.mod(count, 1) == 0) then
-    Comm.send(serialization.serialize(state));
+
+--    msg=serialization.serialize(state);
+
+-- Unpacked msg size: 367, packed msg size: 48
+-- We can send more vision info wireless as wel....
+--    print("Team message size:",string.len(msg))
+--    msg2=pack_msg(state);
+--    print("Packed team message size:",string.len(msg2))
+--    Comm.send(serialization.serialize(state));
+
+    msg=pack_msg(state);
+    Comm.send(msg);
+
     --Copy of message sent out to other players
     state.tReceive = Body.get_time();
     states[playerID] = state;

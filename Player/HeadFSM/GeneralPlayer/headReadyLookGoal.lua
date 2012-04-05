@@ -27,6 +27,8 @@ end
 
 function update()
   local t = Body.get_time();
+  height=vcm.get_camera_height();
+
 
   if attackClosest then
     yaw0 = wcm.get_attack_angle();

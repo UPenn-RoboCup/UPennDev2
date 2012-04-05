@@ -28,6 +28,8 @@ th_ground_boundingbox=Config.vision.ball.th_ground_boundingbox;
 th_min_green1=Config.vision.ball.th_min_green1;
 th_min_green2=Config.vision.ball.th_min_green2;
 
+footX = Config.walk.footX or 0;
+
 function detect(color)
   local ball = {};
   ball.detect = 0;
@@ -121,6 +123,11 @@ function detect(color)
   end
   
   v=HeadTransform.projectGround(v,diameter/2);
+
+  --SJ: we subtract foot offset 
+  --bc we use ball.x for kick alignment
+  --and the distance from foot is important
+  v[1]=v[1]-footX;
 
   ball.v = v;
   ball.detect = 1;

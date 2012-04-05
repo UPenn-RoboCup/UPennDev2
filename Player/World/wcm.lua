@@ -50,6 +50,37 @@ shared.particle.a=vector.zeros(Config.world.n);
 shared.particle.w=vector.zeros(Config.world.n);
 
 
+-----------------------------------------------
+-- This shm is used for wireless team monitoring only
+-- Indexed by player ID
+-----------------------------------------------
+shared.teamdata={};
+shared.teamdata.teamColor=vector.zeros(5);
+shared.teamdata.robotId=vector.zeros(5);
+shared.teamdata.role=vector.zeros(5);
+shared.teamdata.time=vector.zeros(5);
+shared.teamdata.posex=vector.zeros(5);
+shared.teamdata.posey=vector.zeros(5);
+shared.teamdata.posea=vector.zeros(5);
+shared.teamdata.ballx=vector.zeros(5);
+shared.teamdata.bally=vector.zeros(5);
+shared.teamdata.ballt=vector.zeros(5);
+shared.teamdata.attackBearing=vector.zeros(5);
+shared.teamdata.fall=vector.zeros(5);
+shared.teamdata.penalty=vector.zeros(5);
+shared.teamdata.battery_level=vector.zeros(5);
+
+shared.teamdata.goal=vector.zeros(5);
+shared.teamdata.goalv11=vector.zeros(5);
+shared.teamdata.goalv12=vector.zeros(5);
+shared.teamdata.goalv21=vector.zeros(5);
+shared.teamdata.goalv22=vector.zeros(5);
+shared.teamdata.landmark=vector.zeros(5);
+shared.teamdata.landmarkv1=vector.zeros(5);
+shared.teamdata.landmarkv2=vector.zeros(5);
+
+
+
 if (enable_occmap == 1) then
 	shared.occmap = {};
 	shared.occmap.t = vector.zeros(Config.occmap.div);

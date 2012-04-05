@@ -54,11 +54,11 @@ function push_team_struct(obj)
   states.penalty=wcm.get_teamdata_penalty();
   states.battery_level=wcm.get_teamdata_battery_level();
 
-  states.goal=wcm.get_teamdata_();
+  states.goal=wcm.get_teamdata_goal();
   states.goalv11=wcm.get_teamdata_goalv11();
-  states.goalv11=wcm.get_teamdata_goalv11();
-  states.goalv11=wcm.get_teamdata_goalv11();
-  states.goalv11=wcm.get_teamdata_goalv11();
+  states.goalv12=wcm.get_teamdata_goalv12();
+  states.goalv21=wcm.get_teamdata_goalv21();
+  states.goalv22=wcm.get_teamdata_goalv22();
   states.landmark=wcm.get_teamdata_landmark();
   states.landmarkv1=wcm.get_teamdata_landmarkv1();
   states.landmarkv2=wcm.get_teamdata_landmarkv2();
@@ -122,7 +122,7 @@ end
 while( true ) do
   while (Comm.size() > 0) do
     msg=Comm.receive();
-    --print(msg)
+--    print(msg)
     t = serialization.deserialize(msg);
     if (t and (t.teamNumber) and (t.teamNumber == teamNumber) and (t.id)) then
 --      t.tReceive = Body.get_time();

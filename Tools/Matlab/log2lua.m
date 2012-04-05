@@ -19,14 +19,14 @@ for i=1:numel(L.jointLog)
     fprintf(fid,'},');
     fprintf(fid,'z={');
     fprintf(fid,'%f,',entry.positions(:,3));
-    fprintf(fid,'}');
+    fprintf(fid,'},');
     % Confidence
     fprintf(fid,'posconf={');
     fprintf(fid,'%f,',entry.confs(:,1));
-    fprintf(fid,'}');
+    fprintf(fid,'},');
     fprintf(fid,'rotconf={');
     fprintf(fid,'%f,',entry.confs(:,2));
-    fprintf(fid,'}');
+    fprintf(fid,'},');
     % End
     fprintf(fid,'},\n');
 end

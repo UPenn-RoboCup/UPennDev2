@@ -6,15 +6,16 @@ if( exist('sk','var') == 0 )
 end
 
 %% Timing settings
-prep_time = 10;
-%prep_time = 0;
-nseconds_to_log = 10;
+%prep_time = 6;
+prep_time = 0;
+%nseconds_to_log = 10;
+nseconds_to_log = 100;
 run_once = 0;
 counter = 0;
 fps = 20;
 twait = 1/fps;
 logsz = nseconds_to_log * fps;
-do_log = 1;
+do_log = 0;
 
 %% Joint Settings
 jointNames = { ...

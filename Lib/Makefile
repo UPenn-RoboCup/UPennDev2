@@ -222,7 +222,6 @@ setup_visiontest: visiontest setup_util setup_image
 	find $(VISIONTESTDIR) -regex '.*\($(SHLIBEXT)\|$(LUAEXT)\)' -exec cp -v {} $(INSTDIR) \;
 	rm -f $(PLAYERDIR)/Config/Config.lua
 	cd $(PLAYERDIR)/Config && ln -s Config_VisionTest.lua Config.lua && cd $(CWD)
-	cp -r $(UTILDIR)/mp3 $(PLAYERDIR)
 	@echo "\n"
 
 
@@ -243,7 +242,6 @@ setup_op: op setup_util setup_image setup_comm
 #	touch $(PLAYERDIR)/Config/Config.lua
 	rm -f $(PLAYERDIR)/Config/Config.lua
 	cd $(PLAYERDIR)/Config && ln -s Config_OP.lua Config.lua && cd $(CWD)
-	cp -r $(UTILDIR)/mp3 $(PLAYERDIR)
 	@echo "\n"
 
 setup_xos: xos setup_util setup_image setup_comm
@@ -254,7 +252,6 @@ setup_xos: xos setup_util setup_image setup_comm
 #	touch $(PLAYERDIR)/Config/Config.lua
 	rm -f $(PLAYERDIR)/Config/Config.lua
 	cd $(PLAYERDIR)/Config && ln -s Config_XOS.lua Config.lua && cd $(CWD)
-#	cp -r $(UTILDIR)/mp3 $(PLAYERDIR)
 	@echo "\n"
 
 setup_webots_cont: webot
@@ -334,4 +331,3 @@ clean:
 	cd $(OPDIR) && make clean && cd $(CWD)
 	cd $(PLAYERDIR)/Config && rm -f Config.lua && cd $(CWD)
 	cd $(PLAYERDIR) && rm -rf Lib && cd $(CWD)
-	cd $(PLAYERDIR) && rm -rf mp3 && cd $(CWD)

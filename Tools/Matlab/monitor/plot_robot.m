@@ -1,4 +1,4 @@
-function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel)
+ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel)
 % This function shows the robot over the field map
 % Level 1: show position only
 % Level 2: show position and vision info
@@ -28,9 +28,12 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel)
       plot_ball(robot_struct,scale);
     
       if drawlevel>1
-        plot_line(r_mon.line,scale);
-        plot_goal(r_mon.goal,scale);
-        plot_landmark(r_mon.landmark,scale);
+	plot_goal_team(robot_struct,scale);
+%	plot_landmark_team(robot_struct,scale);
+
+%        plot_line(r_mon.line,scale);
+%        plot_goal(r_mon.goal,scale);
+%        plot_landmark(r_mon.landmark,scale);
         if drawlevel==3
           plot_fov(r_mon.fov);
         end
@@ -123,6 +126,57 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel)
       end
     end
   end
+
+%duplicated.. should be fixed soon
+
+  function plot_goal_team(robot,scale)
+    goal=robot.goal;
+    if( goal>0) 
+      marker='m';
+      marker2 = strcat(marker,'--');
+
+%      if(goal.color==2) marker = 'm';% yellow
+%      else marker = 'b';end
+%      marker2 = strcat(marker,'--');
+      if goal ==1 
+        marker1 = strcat(marker,'+');%Unknown post
+      elseif goal==3
+          marker1 = strcat(marker,'>');%Right post
+      else
+          marker1 = strcat(marker,'<');%Left or two post
+      end
+      x1 = robot.goalv1(1)*ca - robot.goalv1(2)*sa + robot_struct.pose.x;
+      y1 = robot.goalv1(1)*sa + robot.goalv1(2)*ca + robot_struct.pose.y;
+      plot(x1,y1,marker1,'MarkerSize',12/scale);
+      plot([x0 x1],[y0 y1],marker2);
+
+      if goal==4 
+        marker1 = strcat(marker,'>');%Left post
+        x2 = robot.goalv2(1)*ca - robot.goalv2(2)*sa + robot_struct.pose.x;
+        y2 = robot.goalv2(1)*sa + robot.goalv2(2)*ca + robot_struct.pose.y;
+        plot(x2,y2,marker1,'MarkerSize',12/scale);
+        plot([x0 x2],[y0 y2],marker2);
+      end
+    end
+  end
+
+  function plot_landmark_team(landmark)
+%TODO
+%{
+    if (landmark.detect==1)
+      if (landmark.color==2) marker='m';% yellow
+      else marker='b';	end
+      marker2 = strcat(marker,'x');
+      marker3 = strcat(marker,'--');
+      x1 = landmark.v(1)*ca - landmark.v(2)*sa + robot_struct.pose.x;
+      y1 = landmark.v(1)*sa + landmark.v(2)*ca + robot_struct.pose.y;
+      plot(x1,y1,marker2,'MarkerSize',12/scale);
+      plot([x0 x1],[y0 y1],marker3);
+    end
+%}
+  end
+
+
 
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   %% Monitor struct based plots (optional)

@@ -41,204 +41,204 @@ USB_bug = 1;
 USB_bug = 0;
 
 for i = 1,#Config.servo.dirReverse do
-   scale[Config.servo.dirReverse[i]] = -scale[Config.servo.dirReverse[i]];
+  scale[Config.servo.dirReverse[i]] = -scale[Config.servo.dirReverse[i]];
 end
 
 -- Setup shared memory
 function shm_init()
-   shm.destroy('dcmSensor');
-   sensorShm = shm.new('dcmSensor');
-   sensorShm.time = vector.zeros(1);
-   sensorShm.count = vector.zeros(1);
-   sensorShm.position = vector.zeros(nJoint);
-   sensorShm.button = vector.zeros(2); --OP has TWO buttons
+  shm.destroy('dcmSensor');
+  sensorShm = shm.new('dcmSensor');
+  sensorShm.time = vector.zeros(1);
+  sensorShm.count = vector.zeros(1);
+  sensorShm.position = vector.zeros(nJoint);
+  sensorShm.button = vector.zeros(2); --OP has TWO buttons
 
-   sensorShm.imuAngle = vector.zeros(3);
-   sensorShm.imuAcc = vector.zeros(3);
-   sensorShm.imuGyr = vector.zeros(3);
-   sensorShm.imuAccRaw = vector.zeros(3);
-   sensorShm.imuGyrRaw = vector.zeros(3);
-   sensorShm.imuGyrBias=vector.zeros(3); --rate gyro bias
-   sensorShm.temperature=vector.zeros(nJoint);
-   sensorShm.battery=vector.zeros(nJoint);
-   sensorShm.updatedCount =vector.zeros(1);   --Increases at every cycle
+  sensorShm.imuAngle = vector.zeros(3);
+  sensorShm.imuAcc = vector.zeros(3);
+  sensorShm.imuGyr = vector.zeros(3);
+  sensorShm.imuAccRaw = vector.zeros(3);
+  sensorShm.imuGyrRaw = vector.zeros(3);
+  sensorShm.imuGyrBias=vector.zeros(3); --rate gyro bias
+  sensorShm.temperature=vector.zeros(nJoint);
+  sensorShm.battery=vector.zeros(nJoint);
+  sensorShm.updatedCount =vector.zeros(1);   --Increases at every cycle
 
-   shm.destroy('dcmActuator');
-   actuatorShm = shm.new('dcmActuator');
-   print(nJoint)
-   actuatorShm.command = vector.zeros(nJoint);
-   actuatorShm.velocity = vector.zeros(nJoint);
-   actuatorShm.hardness = vector.zeros(nJoint);
-   actuatorShm.offset = vector.zeros(nJoint);
-   actuatorShm.led = vector.zeros(1);
+  shm.destroy('dcmActuator');
+  actuatorShm = shm.new('dcmActuator');
+  print(nJoint)
+  actuatorShm.command = vector.zeros(nJoint);
+  actuatorShm.velocity = vector.zeros(nJoint);
+  actuatorShm.hardness = vector.zeros(nJoint);
+  actuatorShm.offset = vector.zeros(nJoint);
+  actuatorShm.led = vector.zeros(1);
 
-   actuatorShm.torqueEnable = vector.zeros(1); --Global torque on.off
-   actuatorShm.slope=vector.ones(nJoint)*32; --default compliance slope is 32
-   actuatorShm.slopeChanged=vector.ones(1);  --set compliance once
-   actuatorShm.velocityChanged=vector.zeros(1);
-   actuatorShm.hardnessChanged=vector.zeros(1);
-   actuatorShm.torqueEnableChanged=vector.zeros(1);
+  actuatorShm.torqueEnable = vector.zeros(1); --Global torque on.off
+  actuatorShm.slope=vector.ones(nJoint)*32; --default compliance slope is 32
+  actuatorShm.slopeChanged=vector.ones(1);  --set compliance once
+  actuatorShm.velocityChanged=vector.zeros(1);
+  actuatorShm.hardnessChanged=vector.zeros(1);
+  actuatorShm.torqueEnableChanged=vector.zeros(1);
 
-   actuatorShm.backled = vector.zeros(3);  --red blue green
-   actuatorShm.eyeled = vector.zeros(3);   --RGB15 eye led
-   actuatorShm.headled = vector.zeros(3);  --RGB15 head led
-   actuatorShm.headledChanged = vector.zeros(1);
+  actuatorShm.backled = vector.zeros(3);  --red blue green
+  actuatorShm.eyeled = vector.zeros(3);   --RGB15 eye led
+  actuatorShm.headled = vector.zeros(3);  --RGB15 head led
+  actuatorShm.headledChanged = vector.zeros(1);
 
-   --Dummy variable (for compatibility with nao)
-   actuatorShm.ledFaceRight=vector.zeros(24);
-   actuatorShm.ledFaceLeft=vector.zeros(24);
-   actuatorShm.ledChest=vector.zeros(24);
+  --Dummy variable (for compatibility with nao)
+  actuatorShm.ledFaceRight=vector.zeros(24);
+  actuatorShm.ledFaceLeft=vector.zeros(24);
+  actuatorShm.ledChest=vector.zeros(24);
 
-   --New PID parameters variables
-   --Default value is (32,0,0)
-   actuatorShm.p_param=vector.ones(nJoint)*32; 
-   actuatorShm.i_param=vector.ones(nJoint)*0; 
-   actuatorShm.d_param=vector.ones(nJoint)*0; 
+  --New PID parameters variables
+  --Default value is (32,0,0)
+  actuatorShm.p_param=vector.ones(nJoint)*32; 
+  actuatorShm.i_param=vector.ones(nJoint)*0; 
+  actuatorShm.d_param=vector.ones(nJoint)*0; 
 
-   --SJ: list of servo IDs to read
-   --0: Head only 1: All servos 2: Head+Leg
-   --readID: 1 for readable, 0 for non-readable
-   actuatorShm.readType=vector.zeros(1);   
-   actuatorShm.readID=vector.zeros(nJoint); 
+  --SJ: list of servo IDs to read
+  --0: Head only 1: All servos 2: Head+Leg
+  --readID: 1 for readable, 0 for non-readable
+  actuatorShm.readType=vector.zeros(1);   
+  actuatorShm.readID=vector.zeros(nJoint); 
 
-   --SJ: battery testing mode (read voltage from all joints)
-   actuatorShm.battTest=vector.zeros(1);   
+  --SJ: battery testing mode (read voltage from all joints)
+  actuatorShm.battTest=vector.zeros(1);   
 end
 
 -- Setup CArray mappings into shared memory
 function carray_init()
-   sensor = {};
-   for k,v in sensorShm.next, sensorShm do
-      sensor[k] = carray.cast(sensorShm:pointer(k));
-   end
+  sensor = {};
+  for k,v in sensorShm.next, sensorShm do
+    sensor[k] = carray.cast(sensorShm:pointer(k));
+  end
 
-   actuator = {};
-   for k,v in actuatorShm.next, actuatorShm do
-      actuator[k] = carray.cast(actuatorShm:pointer(k));
-   end
+  actuator = {};
+  for k,v in actuatorShm.next, actuatorShm do
+    actuator[k] = carray.cast(actuatorShm:pointer(k));
+  end
 end
 
 
 function sync_command()
-   local addr = 30;
-   local ids = {};
-   local data = {};
-   local n = 0;
-   for i = 1,#idMap do
-      if (actuator.hardness[i] > 0) then
-	 n = n+1;
-	 ids[n] = idMap[i];
-         local word=0;
-	 word = posZero[i] + scale[i]*
-	      (actuator.command[i]+actuator.offset[i]);
-	 data[n] = math.min(math.max(word, 0), Config.servo.steps[i]-1);
-      else
-	 actuator.command[i] = sensor.position[i];
-      end
-   end
-   if (n > 0) then
-      Dynamixel.sync_write_word(ids, addr, data);
-   end
+  local addr = 30;
+  local ids = {};
+  local data = {};
+  local n = 0;
+  for i = 1,#idMap do
+    if (actuator.hardness[i] > 0) then
+      n = n+1;
+      ids[n] = idMap[i];
+      local word=0;
+      word = posZero[i] + scale[i]*
+      (actuator.command[i]+actuator.offset[i]);
+      data[n] = math.min(math.max(word, 0), Config.servo.steps[i]-1);
+    else
+      actuator.command[i] = sensor.position[i];
+    end
+  end
+  if (n > 0) then
+    Dynamixel.sync_write_word(ids, addr, data);
+  end
 end
 
 function sync_hardness()
-   local addr=34; --hardness is working with RX28
-   local ids = {};
-   local data = {};
-   local n = 0;
-   for i = 1,#idMap do
-	 n = n+1;
-	 ids[n] = idMap[i];
-	 data[n] = 1023*actuator.hardness[i];
-   end
-   if (n > 0) then
-      Dynamixel.sync_write_word(ids, addr, data);
-   end
+  local addr=34; --hardness is working with RX28
+  local ids = {};
+  local data = {};
+  local n = 0;
+  for i = 1,#idMap do
+    n = n+1;
+    ids[n] = idMap[i];
+    data[n] = 1023*actuator.hardness[i];
+  end
+  if (n > 0) then
+    Dynamixel.sync_write_word(ids, addr, data);
+  end
 end
 
 function torque_enable()
-   local addr = 24;
-   local ids = {};
-   local data = {};
-   local n = 0;
-   for i = 1,#idMap do
-	n = n+1;
-	ids[n] = idMap[i];
-	data[n] = actuator.torqueEnable[1];
-   end
-   if (n > 0) then
-      Dynamixel.sync_write_byte(ids, addr, data);
-   end   
-   print("Torque enable changed")
+  local addr = 24;
+  local ids = {};
+  local data = {};
+  local n = 0;
+  for i = 1,#idMap do
+    n = n+1;
+    ids[n] = idMap[i];
+    data[n] = actuator.torqueEnable[1];
+  end
+  if (n > 0) then
+    Dynamixel.sync_write_byte(ids, addr, data);
+  end   
+  print("Torque enable changed")
 end
 
 --Servo feedback param for servomotors
 --Used to stiffen support foot during kicking
 
 function sync_slope()
-   if Config.servo.pid==0 then --Old firmware.. compliance slope
-     --28,29: Compliance slope positive / negative
-     local addr={28,29};
-     local ids = {};
-     local data = {};
-     local n = 0;
-     for i = 1,#idMap do
-	 n = n+1;
-	 ids[n] = idMap[i];
-	 data[n] = actuator.slope[i];
-     end
-     Dynamixel.sync_write_byte(ids, addr[1], data);
-     Dynamixel.sync_write_byte(ids, addr[2], data);
-   else --New firmware: PID parameters
-     -- P: 26, I: 27, D: 28
-     local addr={26,27,28};
-     local ids = {};
-     local data_p = {};
-     local data_i = {};
-     local data_d = {};
-     local n = 0;
-     for i = 1,#idMap do
-	 n = n+1;
-	 ids[n] = idMap[i];
-	 data_p[n] = actuator.p_param[i];
-	 data_i[n] = actuator.i_param[i];
-	 data_d[n] = actuator.d_param[i];
-     end
+  if Config.servo.pid==0 then --Old firmware.. compliance slope
+    --28,29: Compliance slope positive / negative
+    local addr={28,29};
+    local ids = {};
+    local data = {};
+    local n = 0;
+    for i = 1,#idMap do
+      n = n+1;
+      ids[n] = idMap[i];
+      data[n] = actuator.slope[i];
+    end
+    Dynamixel.sync_write_byte(ids, addr[1], data);
+    Dynamixel.sync_write_byte(ids, addr[2], data);
+  else --New firmware: PID parameters
+    -- P: 26, I: 27, D: 28
+    local addr={26,27,28};
+    local ids = {};
+    local data_p = {};
+    local data_i = {};
+    local data_d = {};
+    local n = 0;
+    for i = 1,#idMap do
+      n = n+1;
+      ids[n] = idMap[i];
+      data_p[n] = actuator.p_param[i];
+      data_i[n] = actuator.i_param[i];
+      data_d[n] = actuator.d_param[i];
+    end
 
---print("P gain:",unpack(data_p))
-     Dynamixel.sync_write_byte(ids, addr[1], data_p);
---SJ: for whatever reason, setting I or D values kills the servo
---     Dynamixel.sync_write_byte(ids, addr[2], data_i);
---     Dynamixel.sync_write_byte(ids, addr[3], data_d);
-   end
+    --print("P gain:",unpack(data_p))
+    Dynamixel.sync_write_byte(ids, addr[1], data_p);
+    --SJ: for whatever reason, setting I or D values kills the servo
+    Dynamixel.sync_write_byte(ids, addr[2], data_i);
+    Dynamixel.sync_write_byte(ids, addr[3], data_d);
+  end
 end
 
 function sync_battery()
-   --battery test mode... read from ALL servos
-   if actuator.battTest[1]==1 then 
-     chk_servo_no=(chk_servo_no%nJoint)+1;
-     sensor.battery[chk_servo_no]=Dynamixel.get_battery(idMap[chk_servo_no]);
-     sensor.temperature[chk_servo_no]=Dynamixel.get_temperature(idMap[chk_servo_no]);
-   else
-     --Normal check mode: only check leg servos one by one
-     chk_servo_no=(chk_servo_no%12)+1;
-     sensor.battery[chk_servo_no+5]=Dynamixel.get_battery(idMap[chk_servo_no+5]);
-     sensor.temperature[chk_servo_no+5]=Dynamixel.get_temperature(idMap[chk_servo_no+5]);
-   end
+  --battery test mode... read from ALL servos
+  if actuator.battTest[1]==1 then 
+    chk_servo_no=(chk_servo_no%nJoint)+1;
+    sensor.battery[chk_servo_no]=Dynamixel.get_battery(idMap[chk_servo_no]);
+    sensor.temperature[chk_servo_no]=Dynamixel.get_temperature(idMap[chk_servo_no]);
+  else
+    --Normal check mode: only check leg servos one by one
+    chk_servo_no=(chk_servo_no%12)+1;
+    sensor.battery[chk_servo_no+5]=Dynamixel.get_battery(idMap[chk_servo_no+5]);
+    sensor.temperature[chk_servo_no+5]=Dynamixel.get_temperature(idMap[chk_servo_no+5]);
+  end
 
-   local bat_min=200;
-   for i=6,17 do
-     if sensor.battery[i]>0 then
-       bat_min=math.min(bat_min,sensor.battery[i]);
-     end
-   end
-   if bat_min<Config.bat_low then battery_warning=1;
-   else battery_warning=0;
-   end
+  local bat_min=200;
+  for i=6,17 do
+    if sensor.battery[i]>0 then
+      bat_min=math.min(bat_min,sensor.battery[i]);
+    end
+  end
+  if bat_min<Config.bat_low then battery_warning=1;
+  else battery_warning=0;
+  end
 end
 
 function sync_led()
---New function to turn on status LEDs
+  --New function to turn on status LEDs
   local packet;
 
   if count%20==0 then --5 fps eye led refresh rate
@@ -252,18 +252,18 @@ function sync_led()
     Dynamixel.sync_write_word({200},26,{packet});
     unix.usleep(100);
     battery_warning=0;
-      
+
   elseif count%20==10 then --5 fps head led refresh rate
     packet=actuator.headled[1]+32*actuator.headled[2]+1024*actuator.headled[3];
     Dynamixel.sync_write_word({200},26,{packet});
     unix.usleep(100);
   end
-	
+
   if count%400==225 then --0.25 fps back led refresh rate
     --Back LED	
-   packet=actuator.backled[1]+2*actuator.backled[2]+4*actuator.backled[3];
-   Dynamixel.sync_write_byte({200},25,{packet});
-   unix.usleep(100);
+    packet=actuator.backled[1]+2*actuator.backled[2]+4*actuator.backled[3];
+    Dynamixel.sync_write_byte({200},25,{packet});
+    unix.usleep(100);
   end
 end
 
@@ -271,41 +271,41 @@ function nonsync_read()
 
   --Position reading
   local idToRead={1,2};   --Head only reading
-    if actuator.readType[1]==1 then --All servo reading
-      for i=1,#idMap do 
+  if actuator.readType[1]==1 then --All servo reading
+    for i=1,#idMap do 
       idToRead[i]=i;
     end
   elseif actuator.readType[1]==3 then -- Read ankles only
     idToRead = {10,16}; --kankle ids
     for i = 1,#idMap do
       sensor.position[i] = actuator.command[i];
-      end;
-    else --if actuator.readType[1]==0 then --Head only reading
-      for i = 3,#idMap do
+    end;
+  else --if actuator.readType[1]==0 then --Head only reading
+    for i = 3,#idMap do
       sensor.position[i] = actuator.command[i];
     end;
 
---[[
-   elseif actuator.readType[1]==2 then --Head+Leg reading
-     for i = 3,6 do
-       sensor.position[i] = actuator.command[i];
-     end;
-     for i = 18,#idMap do
-       sensor.position[i] = actuator.command[i];
-     end;
+    --[[
+    elseif actuator.readType[1]==2 then --Head+Leg reading
+    for i = 3,6 do
+    sensor.position[i] = actuator.command[i];
+    end;
+    for i = 18,#idMap do
+    sensor.position[i] = actuator.command[i];
+    end;
 
-     c_mod=count%4;
-     if c_mod==1 then	idToRead={6,7,8};  
-     elseif c_mod==2 then 	idToRead={9,10,11};  
-     elseif c_mod==3 then	idToRead={12,13,14}
-     else	idToRead={15,16,17};  
-     end
-   elseif actuator.readType[1]==3 then --No reading
-     idToRead={}; 
-     for i = 1,#idMap do
-       sensor.position[i] = actuator.command[i];
-     end;
---]]
+    c_mod=count%4;
+    if c_mod==1 then	idToRead={6,7,8};  
+    elseif c_mod==2 then 	idToRead={9,10,11};  
+    elseif c_mod==3 then	idToRead={12,13,14}
+    else	idToRead={15,16,17};  
+    end
+    elseif actuator.readType[1]==3 then --No reading
+    idToRead={}; 
+    for i = 1,#idMap do
+    sensor.position[i] = actuator.command[i];
+    end;
+    --]]
   end
   -- Update the readings
   for i = 1,#idToRead do
@@ -328,12 +328,12 @@ function nonsync_read()
   if data and #data>11 then
     for i=1,3 do
       sensor.imuGyr[Config.gyro.rpy[i]] =
-        Config.gyro.sensitivity[i]*
-        (DynamixelPacket.byte_to_word(data[offset],data[offset+1])-gyrZero[i]);
+      Config.gyro.sensitivity[i]*
+      (DynamixelPacket.byte_to_word(data[offset],data[offset+1])-gyrZero[i]);
 
       sensor.imuAcc[Config.acc.xyz[i]] = 
-        Config.acc.sensitivity[i]*
-        (DynamixelPacket.byte_to_word(data[offset+6],data[offset+7])-Config.acc.zero[i]);
+      Config.acc.sensitivity[i]*
+      (DynamixelPacket.byte_to_word(data[offset+6],data[offset+7])-Config.acc.zero[i]);
 
       sensor.imuGyrRaw[Config.gyro.rpy[i]]=DynamixelPacket.byte_to_word(data[offset],data[offset+1]);
       sensor.imuAccRaw[Config.acc.xyz[i]]=DynamixelPacket.byte_to_word(data[offset+6],data[offset+7]);
@@ -362,7 +362,14 @@ function entry()
   actuator.readType[1]=1;
   -- Read only kankles
   actuator.readType[1]=3;
- 
+
+  -- Update PID settings
+  for i=1,nJoint do
+    actuator.p_param[i] = Config.servo.p_param[i];
+    actuator.i_param[i] = Config.servo.i_param[i];
+    actuator.d_param[i] = Config.servo.d_param[i];
+  end
+
 end
 
 function update_imu()
@@ -373,7 +380,7 @@ function update_imu()
 
   iAngle=vector.new({sensor.imuAngle[1],sensor.imuAngle[2],sensor.imuAngle[3]});
   gyrDelta = vector.new({sensor.imuGyr[1],sensor.imuGyr[2],sensor.imuGyr[3]})
-                *math.pi/180 * tPassed; --dps to rps conversion
+  *math.pi/180 * tPassed; --dps to rps conversion
 
   --Angle transformation: yaw -> pitch -> roll
   local tTrans=Transform.rotZ(iAngle[3]);
@@ -387,15 +394,15 @@ function update_imu()
   iAngle=Transform.getRPY(tTrans);
 
   local accMag=sensor.imuAcc[1]^2+sensor.imuAcc[2]^2+sensor.imuAcc[3]^2;
---print("AccMag:",accMag)
+  --print("AccMag:",accMag)
   if accMag>Config.angle.gMin and accMag<Config.angle.gMax then
     local angR=math.atan2(-sensor.imuAcc[2], 
-	math.sqrt(sensor.imuAcc[1]^2+sensor.imuAcc[3]^2) );
+    math.sqrt(sensor.imuAcc[1]^2+sensor.imuAcc[3]^2) );
     local angP=math.atan2(sensor.imuAcc[1], 
-	math.sqrt(sensor.imuAcc[2]^2+sensor.imuAcc[3]^2) );
+    math.sqrt(sensor.imuAcc[2]^2+sensor.imuAcc[3]^2) );
     iAngle[1], iAngle[2] =
-      (1-Config.angle.accFactor)*iAngle[1]+Config.angle.accFactor*angR,
-      (1-Config.angle.accFactor)*iAngle[2]+Config.angle.accFactor*angP;
+    (1-Config.angle.accFactor)*iAngle[1]+Config.angle.accFactor*angR,
+    (1-Config.angle.accFactor)*iAngle[2]+Config.angle.accFactor*angP;
   end
 
   sensor.imuAngle[1],sensor.imuAngle[2],sensor.imuAngle[3] = iAngle[1],iAngle[2],iAngle[3];
@@ -417,54 +424,54 @@ function update()
     end
     if( ttyname ~= Dynamixel.dttyname ) then
       if( Dynamixel.dttyname ~= nil ) then
-      print('bug detected! Found '..ttyname..', but connected original is: '.. Dynamixel.dttyname);
-      -- Close, then wait .2 seconds, then try opening again
-      Dynamixel.close();
-      unix.sleep( 200000 ); -- .2 seconds
-      Dynamixel.open();
+        print('bug detected! Found '..ttyname..', but connected original is: '.. Dynamixel.dttyname);
+        -- Close, then wait .2 seconds, then try opening again
+        Dynamixel.close();
+        unix.sleep( 200000 ); -- .2 seconds
+        Dynamixel.open();
       end
     end
   end
 
-   nonsync_read();
-   update_imu();
+  nonsync_read();
+  update_imu();
 
-   count=count+1;
-   sensor.updatedCount[1]=count%100; --This count indicates whether DCM has processed current reading or not
+  count=count+1;
+  sensor.updatedCount[1]=count%100; --This count indicates whether DCM has processed current reading or not
 
-   if actuator.battTest[1]==1 then --in test mode, refresh faster
-	sync_battery();
-   else
-	if count%100==0 then sync_battery();end
-   end
-   if actuator.hardnessChanged[1]==1 then
-	sync_hardness();
-	unix.usleep(100);
-	actuator.hardnessChanged[1]=0;
-   end
-   if actuator.slopeChanged[1]==1 then
-	sync_slope();
-	actuator.slopeChanged[1]=0;
-        unix.usleep(100);
-   end
-   if actuator.velocityChanged[1]==1 then
-        sync_velocity();
-	actuator.velocityChanged[1]=0;
-        unix.usleep(100);
-   end
-   if actuator.torqueEnableChanged[1]==1 then
-        torque_enable();
-	actuator.torqueEnableChanged[1]=0;
-        unix.usleep(100);
-   end
+  if actuator.battTest[1]==1 then --in test mode, refresh faster
+    sync_battery();
+  else
+    if count%100==0 then sync_battery();end
+  end
+  if actuator.hardnessChanged[1]==1 then
+    sync_hardness();
+    unix.usleep(100);
+    actuator.hardnessChanged[1]=0;
+  end
+  if actuator.slopeChanged[1]==1 then
+    sync_slope();
+    actuator.slopeChanged[1]=0;
+    unix.usleep(100);
+  end
+  if actuator.velocityChanged[1]==1 then
+    sync_velocity();
+    actuator.velocityChanged[1]=0;
+    unix.usleep(100);
+  end
+  if actuator.torqueEnableChanged[1]==1 then
+    torque_enable();
+    actuator.torqueEnableChanged[1]=0;
+    unix.usleep(100);
+  end
 
-   sync_command();
-   unix.usleep(100);
+  sync_command();
+  unix.usleep(100);
 
-   sync_led();
+  sync_led();
 end
 
 function exit()
-   Dynamixel.close();
+  Dynamixel.close();
 end
 

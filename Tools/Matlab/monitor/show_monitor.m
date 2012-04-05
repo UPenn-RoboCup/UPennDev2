@@ -263,11 +263,9 @@ function h=show_monitor()
     for i=1:5
       r_struct = robot_team.get_team_struct_wireless(i);
       if r_struct.id>0
-  %      r_mon = robot_team.get_monitor_struct_wireless(i);
 
         h_c=subplot(5,5,[1:15]);
-%        plot_robot( r_struct, r_mon,2,MONITOR.enable10);
-        plot_robot( r_struct, [],2,1);
+        plot_robot( r_struct, [],2,MONITOR.enable10);
         updated = 0;
       end
 

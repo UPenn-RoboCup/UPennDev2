@@ -181,23 +181,34 @@ function update_shm()
   vcm.set_line_detect(line.detect);
   if (line.detect == 1) then
     vcm.set_line_nLines(line.nLines);
+    local v1x=vector.zeros(6);
+    local v1y=vector.zeros(6);
+    local v2x=vector.zeros(6);
+    local v2y=vector.zeros(6);
+    local endpoint11=vector.zeros(6);
+    local endpoint12=vector.zeros(6);
+    local endpoint21=vector.zeros(6);
+    local endpoint22=vector.zeros(6);
 
-    vcm.set_line_v1_1(line.v[1][1]);
-    vcm.set_line_v2_1(line.v[1][2]);
-    vcm.set_line_endpoint1(line.endpoint[1]);
-
-    vcm.set_line_v1_2(line.v[2][1]);
-    vcm.set_line_v2_2(line.v[2][2]);
-    vcm.set_line_endpoint2(line.endpoint[2]);
-
-    vcm.set_line_v1_3(line.v[3][1]);
-    vcm.set_line_v2_3(line.v[3][2]);
-    vcm.set_line_endpoint3(line.endpoint[3]);
-
-    vcm.set_line_v1_4(line.v[4][1]);
-    vcm.set_line_v2_4(line.v[4][2]);
-    vcm.set_line_endpoint4(line.endpoint[4]);
-
+    for i=1,line.nLines do 
+      v1x[i]=line.v[i][1][1];
+      v1y[i]=line.v[i][1][2];
+      v2x[i]=line.v[i][2][1];
+      v2y[i]=line.v[i][2][2];
+      --x0 x1 y0 y1
+      endpoint11[i]=line.endpoint[i][1];
+      endpoint12[i]=line.endpoint[i][3];
+      endpoint21[i]=line.endpoint[i][2];
+      endpoint22[i]=line.endpoint[i][4];
+    end
+    vcm.set_line_v1x(v1x);
+    vcm.set_line_v1y(v1y);
+    vcm.set_line_v2x(v2x);
+    vcm.set_line_v2y(v2y);
+    vcm.set_line_endpoint11(endpoint11);
+    vcm.set_line_endpoint12(endpoint12);
+    vcm.set_line_endpoint21(endpoint21);
+    vcm.set_line_endpoint22(endpoint22);
   end
 
   --vcm.set_spot_detect(spot.detect);

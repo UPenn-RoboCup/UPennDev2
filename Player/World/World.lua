@@ -196,12 +196,15 @@ function update_vision()
 
   -- line update
   if vcm.get_line_detect() == 1 then
+   --TODO: Edge localization
+
+--[[
     --Long line localization
     local v1=vcm.get_line_v1_1();
     local v2=vcm.get_line_v2_1();
     PoseFilter.line(v1,v2);
+--]]
 
-   --TODO: Edge localization
 --[[
     local v = vcm.get_line_v();
     local a = vcm.get_line_angle();

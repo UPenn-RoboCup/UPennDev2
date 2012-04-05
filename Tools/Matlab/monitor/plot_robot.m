@@ -27,16 +27,14 @@
       plot_info(robot_struct,scale);
       plot_ball(robot_struct,scale);
     
-      if drawlevel>1
+      if drawlevel==2
 	plot_goal_team(robot_struct,scale);
 %	plot_landmark_team(robot_struct,scale);
-
-%        plot_line(r_mon.line,scale);
-%        plot_goal(r_mon.goal,scale);
-%        plot_landmark(r_mon.landmark,scale);
-        if drawlevel==3
-          plot_fov(r_mon.fov);
-        end
+      elseif drawlevel==3
+        plot_line(r_mon.line,scale);
+        plot_goal(r_mon.goal,scale);
+        plot_landmark(r_mon.landmark,scale);
+        plot_fov(r_mon.fov);
       end
     end
   end
@@ -235,6 +233,7 @@
   end
 
   function plot_line(line,scale)
+
     if( line.detect==1 )
       nLines=line.nLines;
       for i=1:nLines

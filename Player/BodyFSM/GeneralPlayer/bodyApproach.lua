@@ -64,20 +64,35 @@ function check_approach_type()
 
 end
 
+
+
 function entry()
   print("Body FSM:".._NAME.." entry");
   t0 = Body.get_time();
   ball = wcm.get_ball();
   check_approach_type(); --walkkick if available
-  HeadFSM.sm:set_state('headTrack');
+
+  if t0-ball.t<0.2 then
+--    HeadFSM.sm:set_state('headTrack');
+    ball_tracking=true;
+    print("Ball Tracking")
+    HeadFSM.sm:set_state('headKick');
+  else
+    ball_tracking=false;
+  end
 end
 
 function update()
   local t = Body.get_time();
-
-  -- get ball position
+  -- get ball position 
   ball = wcm.get_ball();
   ballR = math.sqrt(ball.x^2 + ball.y^2);
+
+  if t-ball.t<0.2 and ball_tracking==false then
+--    HeadFSM.sm:set_state('headTrack');
+    ball_tracking=true;
+    HeadFSM.sm:set_state('headKick');
+  end
 
   -- calculate walk velocity based on ball position
   vStep = vector.new({0,0,0});
@@ -113,14 +128,17 @@ function update()
   walk.set_velocity(vStep[1],vStep[2],vStep[3]);
 
   if (t - ball.t > tLost) then
+    HeadFSM.sm:set_state('headScan');
     print("ballLost")
     return "ballLost";
   end
   if (t - t0 > timeout) then
+    HeadFSM.sm:set_state('headTrack');
     print("timeout")
     return "timeout";
   end
   if (ballR > rFar) then
+    HeadFSM.sm:set_state('headTrack');
     print("ballfar, ",ballR,rFar)
     return "ballFar";
   end

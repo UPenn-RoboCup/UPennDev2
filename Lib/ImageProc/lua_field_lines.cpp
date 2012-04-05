@@ -105,37 +105,54 @@ int lua_field_lines(lua_State *L) {
     }
   }
 
-  LineStats bestLine = radonTransform.getLineStats();
-  lua_createtable(L, 0, 3);
+/*
+  LineStats bestLine0 = radonTransform.getLineStats();
+  LineStats bestLine[10];
+  bestLine[0]=bestLine0;
+*/
+
+  LineStats* bestLine = radonTransform.getMultiLineStats();
+
+  int lines_num=0;
+  for (int i=0;i<MAXLINES;i++){
+    if (bestLine[i].count>5) lines_num=i;
+  }
   
-  // count field
-  lua_pushstring(L, "count");
-  lua_pushnumber(L, bestLine.count);
-  lua_settable(L, -3);
+  lua_createtable(L, lines_num, 0);
+  for (int i = 0; i < lines_num; i++) {
+      lua_createtable(L, 0, 3);
 
-  // centroid field
-  lua_pushstring(L, "centroid");
-  double centroidI = bestLine.iMean;
-  double centroidJ = bestLine.jMean;
-  lua_createtable(L, 2, 0);
-  lua_pushnumber(L, centroidI);
-  lua_rawseti(L, -2, 1);
-  lua_pushnumber(L, centroidJ);
-  lua_rawseti(L, -2, 2);
-  lua_settable(L, -3);
+      // count field
+      lua_pushstring(L, "count");
+      lua_pushnumber(L, bestLine[i].count);
+      lua_settable(L, -3);
 
-  // endpoint field
-  lua_pushstring(L, "endpoint");
-  lua_createtable(L, 4, 0);
-  lua_pushnumber(L, bestLine.iMin);
-  lua_rawseti(L, -2, 1);
-  lua_pushnumber(L, bestLine.iMax);
-  lua_rawseti(L, -2, 2);
-  lua_pushnumber(L, bestLine.jMin);
-  lua_rawseti(L, -2, 3);
-  lua_pushnumber(L, bestLine.jMax);
-  lua_rawseti(L, -2, 4);
-  lua_settable(L, -3);
+      // centroid field
+      lua_pushstring(L, "centroid");
+      double centroidI = bestLine[i].iMean;
+      double centroidJ = bestLine[i].jMean;
+      lua_createtable(L, 2, 0);
+      lua_pushnumber(L, centroidI);
+      lua_rawseti(L, -2, 1);
+      lua_pushnumber(L, centroidJ);
+      lua_rawseti(L, -2, 2);
+      lua_settable(L, -3);
+
+      // endpoint field
+      lua_pushstring(L, "endpoint");
+      lua_createtable(L, 4, 0);
+      lua_pushnumber(L, bestLine[i].iMin);
+      lua_rawseti(L, -2, 1);
+      lua_pushnumber(L, bestLine[i].iMax);
+      lua_rawseti(L, -2, 2);
+      lua_pushnumber(L, bestLine[i].jMin);
+      lua_rawseti(L, -2, 3);
+      lua_pushnumber(L, bestLine[i].jMax);
+      lua_rawseti(L, -2, 4);
+      lua_settable(L, -3);
+
+      lua_rawseti(L, -2, i+1);
+  }
 
   return 1;
 }

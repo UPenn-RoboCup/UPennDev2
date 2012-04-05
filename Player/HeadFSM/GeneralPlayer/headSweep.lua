@@ -8,7 +8,6 @@ t0 = 0;
 tScan = Config.fsm.headSweep.tScan; 
 yawMag = Config.head.yawMax;
 dist = Config.fsm.headReady.dist;
-height = Config.fsm.headReady.height;
 
 function entry()
 print("headSweep entry")
@@ -25,8 +24,8 @@ end
 
 function update()
   local t = Body.get_time();
-
   local ph = (t-t0)/tScan;
+  local height=vcm.get_camera_height();
   local yaw0 = direction*(ph-0.5)*2*yawMag;
   local yaw, pitch =HeadTransform.ikineCam(
 	dist*math.cos(yaw0),dist*math.sin(yaw0), height);

@@ -147,6 +147,7 @@ function process_keyinput()
     elseif byte==string.byte("1") then	
       headsm_running = 1-headsm_running;
       if( headsm_running==1 ) then
+--	Speak.talk("Starting head Scan")
         HeadFSM.sm:set_state('headScan');
       end
     elseif byte==string.byte("2") then
@@ -167,13 +168,15 @@ function process_keyinput()
       Motion.event("kick");
 
    elseif byte==string.byte("5") then	--Turn on body SM
+--     Speak.talk("Starting body Search")
      headsm_running=1;
      bodysm_running=1;
      BodyFSM.sm:set_state('bodySearch');   
      HeadFSM.sm:set_state('headScan');
    elseif byte==string.byte("6") then	--Kick head SM
      headsm_running=1;
-     HeadFSM.sm:set_state('headKick');
+--     Speak.talk("Starting head Ready")
+     HeadFSM.sm:set_state('headReady');
    elseif byte==string.byte("7") then	Motion.event("sit");
    elseif byte==string.byte("8") then	
      if walk.active then walk.stop();end

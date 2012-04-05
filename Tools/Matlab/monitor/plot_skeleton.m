@@ -18,10 +18,14 @@ index2track = find(ismember(jointNames, joint2track)==1);
 %const double lowerArmLength = .129;  //OP, spec
 op_arm_len = .189;
 indexWaist = find(ismember(jointNames, 'Waist')==1);
-indexShoulder = find(ismember(jointNames, 'ShoulderL')==1);
-indexElbow = find(ismember(jointNames, 'ElbowL')==1);
-indexWrist = find(ismember(jointNames, 'WristL')==1);
-indexFoot = find(ismember(jointNames, 'FootL')==1);
+indexShoulderL = find(ismember(jointNames, 'ShoulderL')==1);
+indexElbowL = find(ismember(jointNames, 'ElbowL')==1);
+indexWristL = find(ismember(jointNames, 'WristL')==1);
+indexFootL = find(ismember(jointNames, 'FootL')==1);
+indexShoulderR = find(ismember(jointNames, 'ShoulderR')==1);
+indexElbowR = find(ismember(jointNames, 'ElbowR')==1);
+indexWristR = find(ismember(jointNames, 'WristR')==1);
+indexFootR = find(ismember(jointNames, 'FootR')==1);
 
 nLogs = numel(jointLog);
 nJoints = numel(jointNames);

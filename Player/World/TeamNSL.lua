@@ -96,8 +96,8 @@ end
 
 function recv_msgs()
   while (Comm.size() > 0) do 
---    t = serialization.deserialize(Comm.receive());
-    t = unpack_msg(Comm.receive());
+    t = serialization.deserialize(Comm.receive());
+--    t = unpack_msg(Comm.receive());
     if (t and (t.teamNumber) and (t.teamNumber == state.teamNumber) and (t.id) and (t.id ~= playerID)) then
       t.tReceive = Body.get_time();
       states[t.id] = t;
@@ -149,7 +149,7 @@ function update()
     
   if (math.mod(count, 1) == 0) then
 
---    msg=serialization.serialize(state);
+   msg=serialization.serialize(state);
 
 -- Unpacked msg size: 367, packed msg size: 48
 -- We can send more vision info wireless as wel....
@@ -158,7 +158,7 @@ function update()
 --    print("Packed team message size:",string.len(msg2))
 --    Comm.send(serialization.serialize(state));
 
-    msg=pack_msg(state);
+--    msg=pack_msg(state);
     Comm.send(msg);
 
     --Copy of message sent out to other players

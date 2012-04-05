@@ -230,5 +230,5 @@ while( true ) do
 	push_data(obj);
     end
   end
-
+  unix.usleep(1E6*0.01);
 end

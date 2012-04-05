@@ -92,7 +92,7 @@ function push_team_struct(obj)
 
 --print("Ballx:",obj.ball.x);
 
-print("robotID:",unpack(states.robotId))
+--print("robotID:",unpack(states.robotId))
 
   wcm.set_teamdata_teamColor(states.teamColor);
   wcm.set_teamdata_robotId(states.robotId);

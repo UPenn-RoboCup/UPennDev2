@@ -98,6 +98,29 @@ global MONITOR %for sending the webots check information
         r.attackBearing = h.wcmGoal.get_attack_bearing();
         r.time=h.wcmRobot.get_time();
         r.battery_level = h.wcmRobot.get_battery_level();
+%TODO
+        r.goal=0;
+        r.goalv1=[0 0];
+        r.goalv2=[0 0];
+
+        r.landmark=0;
+        r.landmarkv=[0 0];
+
+%{
+        goal = h.vcmGoal.get_detect();
+        if goal==1 
+          r.goal = h.vcmGoal.get_type()+1;
+        end
+        r.goal=0;
+        goal = h.vcmGoal.get_detect();
+        if goal==1 
+          r.goal = h.vcmGoal.get_type()+1;
+	  r.goalv1=[0 0];
+	  r.goalv2=[0 0];
+        end
+%}
+
+
 
 %TODO: monitor timeout    
         if r.time>h.tLastUpdate 
@@ -294,24 +317,25 @@ global MONITOR %for sending the webots check information
       r.line = {};
       r.line.detect = h.vcmLine.get_detect();
       r.line.nLines = h.vcmLine.get_nLines();
-
       r.line.v1 = {};
       r.line.v2 = {};
-      r.line.v1{1}= h.vcmLine.get_v1_1();
-      r.line.v1{2}= h.vcmLine.get_v1_2();
-      r.line.v1{3}= h.vcmLine.get_v1_3();
-      r.line.v1{4}= h.vcmLine.get_v1_4();
-      r.line.v2{1}= h.vcmLine.get_v2_1();
-      r.line.v2{2}= h.vcmLine.get_v2_2();
-      r.line.v2{3}= h.vcmLine.get_v2_3();
-      r.line.v2{4}= h.vcmLine.get_v2_4();
-
       r.line.endpoint={};
-      r.line.endpoint{1}=h.vcmLine.get_endpoint1();
-      r.line.endpoint{2}=h.vcmLine.get_endpoint2();
-      r.line.endpoint{3}=h.vcmLine.get_endpoint3();
-      r.line.endpoint{4}=h.vcmLine.get_endpoint4();
 
+      v1x=h.vcmLine.get_v1x();
+      v1y=h.vcmLine.get_v1y();
+      v2x=h.vcmLine.get_v2x();
+      v2y=h.vcmLine.get_v2y();
+      endpoint11=h.vcmLine.get_endpoint11();
+      endpoint12=h.vcmLine.get_endpoint12();
+      endpoint21=h.vcmLine.get_endpoint21();
+      endpoint22=h.vcmLine.get_endpoint22();
+
+      for i=1:r.line.nLines
+	r.line.v1{i}=[v1x(i) v1y(i)];
+	r.line.v2{i}=[v2x(i) v2y(i)];
+        r.line.endpoint{i}=[endpoint11(i) endpoint21(i) ...
+			    endpoint12(i) endpoint22(i)];
+      end
 
   % Add freespace boundary
       r.free = {};

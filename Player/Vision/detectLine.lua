@@ -46,13 +46,16 @@ function detect()
   line.propsB=linePropsB;
   nLines=0;
   --Check the number of valid lines
+--[[
   for i=1,#line.propsB do
     if line.propsB[i].count>15 then
       nLines=i;
     end
   end
+--]]
 
-  nLines=math.min(nLines,4);
+  nLines=#line.propsB;
+  nLines=math.min(nLines,6);
 
   if (nLines==0) then
     return line; 
@@ -64,7 +67,7 @@ function detect()
   line.endpoint={};
   line.angle={};
 
-  for i = 1,4 do
+  for i = 1,6 do
     line.endpoint[i] = vector.zeros(4);
     line.v[i]={};
     line.v[i][1]=vector.zeros(4);

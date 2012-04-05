@@ -104,20 +104,16 @@ shared.landmark.centroid3 = vector.zeros(2);
 shared.line = {};
 shared.line.detect = vector.zeros(1);
 
---Max 4 lines can be detected
+--Max 6 lines can be detected at once
 shared.line.nLines = vector.zeros(1);
-shared.line.endpoint1 = vector.zeros(4);
-shared.line.endpoint2 = vector.zeros(4);
-shared.line.endpoint3 = vector.zeros(4);
-shared.line.endpoint4 = vector.zeros(4);
-shared.line.v1_1 = vector.zeros(4);
-shared.line.v2_1 = vector.zeros(4);
-shared.line.v1_2 = vector.zeros(4);
-shared.line.v2_2 = vector.zeros(4);
-shared.line.v1_3 = vector.zeros(4);
-shared.line.v2_3 = vector.zeros(4);
-shared.line.v1_4 = vector.zeros(4);
-shared.line.v2_4 = vector.zeros(4);
+shared.line.v1x = vector.zeros(6);
+shared.line.v1y = vector.zeros(6);
+shared.line.v2x = vector.zeros(6);
+shared.line.v2y = vector.zeros(6);
+shared.line.endpoint11 = vector.zeros(6);
+shared.line.endpoint12 = vector.zeros(6);
+shared.line.endpoint21 = vector.zeros(6);
+shared.line.endpoint22 = vector.zeros(6);
 
 --Corner detection
 shared.corner = {};

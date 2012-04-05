@@ -146,7 +146,7 @@ static int inverse_arm(lua_State *L) {
   std::vector<double> qArm;
   std::vector<double> dArm = lua_checkvector(L, 1);
   qArm = darwinop_kinematics_inverse_arm(&dArm[0]);
-  if(qArm[0]==-99)
+  if(qArm[0]==-999)
     lua_pushnil(L);    
   else
     lua_pushvector(L, qArm);

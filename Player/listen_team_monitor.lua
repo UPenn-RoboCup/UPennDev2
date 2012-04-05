@@ -92,6 +92,8 @@ function push_team_struct(obj)
 
 --print("Ballx:",obj.ball.x);
 
+print("robotID:",unpack(states.robotId))
+
   wcm.set_teamdata_teamColor(states.teamColor);
   wcm.set_teamdata_robotId(states.robotId);
   wcm.set_teamdata_role(states.role);
@@ -129,4 +131,5 @@ while( true ) do
       push_team_struct(t);
     end
   end
+  unix.usleep(1E6*0.01);
 end

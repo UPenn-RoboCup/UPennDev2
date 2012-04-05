@@ -128,6 +128,16 @@ global MONITOR %for sending the webots check information
       penalty=h.wcmTeamdata.get_penalty();
       battery_level=h.wcmTeamdata.get_battery_level();
 
+      goal=h.wcmTeamdata.get_goal();
+      goalv11=h.wcmTeamdata.get_goalv11();
+      goalv12=h.wcmTeamdata.get_goalv12();
+      goalv21=h.wcmTeamdata.get_goalv21();
+      goalv22=h.wcmTeamdata.get_goalv22();
+
+      landmark=h.wcmTeamdata.get_landmark();
+      landmarkv1=h.wcmTeamdata.get_landmarkv1();
+      landmarkv2=h.wcmTeamdata.get_landmarkv2();
+
       r.teamColor=teamColor(id);
       r.id = robotId(id);
       r.role = role(id);
@@ -150,6 +160,14 @@ global MONITOR %for sending the webots check information
       r.fall=fall(id);
       r.penalty=penalty(id);
       r.battery_level=battery_level(id);
+
+      r.goal=goal(id);
+      r.goalv1=[goalv11(id) goalv12(id)];
+      r.goalv2=[goalv21(id) goalv22(id)];
+
+      r.landmark=landmark(id);
+      r.landmarkv=[landmarkv1(id) landmarkv2(id)];
+
     catch
     end
   end
@@ -293,7 +311,6 @@ global MONITOR %for sending the webots check information
       r.line.endpoint{2}=h.vcmLine.get_endpoint2();
       r.line.endpoint{3}=h.vcmLine.get_endpoint3();
       r.line.endpoint{4}=h.vcmLine.get_endpoint4();
-
 
 
   % Add freespace boundary

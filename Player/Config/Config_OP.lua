@@ -71,8 +71,8 @@ team.nonDefenderPenalty = 0.5; -- dist from goal
 
 -- keyframe files
 km = {};
-km.standup_front = 'km_OP_StandupFromFront_slow.lua';
-km.standup_back = 'km_OP_StandupFromBack_slow.lua';
+km.standup_front = 'km_NSLOP_StandupFromFront.lua';
+km.standup_back = 'km_NSLOP_StandupFromBack.lua';
 
 -- Low battery level
 -- Need to implement this api better...

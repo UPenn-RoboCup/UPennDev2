@@ -26,6 +26,10 @@ walk.footY = 0.0475;
 walk.supportX = 0.020;
 walk.qLArm = math.pi/180*vector.new({105, 12, -85, -30});
 walk.qRArm = math.pi/180*vector.new({105, -12, 85, 30});
+walk.qLArmKick = math.pi/180*vector.new({105, 18, -85, -30});
+walk.qRArmKick = math.pi/180*vector.new({105, -18, 85, 30});
+
+
 
 walk.hardnessSupport = .7;
 walk.hardnessSwing = .5;

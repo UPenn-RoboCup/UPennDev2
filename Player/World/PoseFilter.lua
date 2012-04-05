@@ -446,8 +446,7 @@ end
 
 
 
-
-
+--[[
 function line(v, a)
   -- line center
   x = v[1];
@@ -476,6 +475,55 @@ function line(v, a)
     wp[ip] = wp[ip] - (wBounds/.20);
   end
 end
+--]]
+
+function line(v1, v2)
+  -- line center
+  x = (v1[1]+v2[1])/2;
+  y = (v1[2]+v2[2])/2;
+  r = math.sqrt(x^2 + y^2);
+
+--print("V:",v1[1],v1[2],v2[1],v2[2]);
+
+  a = math.atan2(v1[2]-v2[2],v1[1]-v2[1]);
+
+--print("LineA:",a*180/math.pi)
+
+  w0 = .25 / (1 + r/2.0);
+
+  -- TODO: wrap in loop for lua
+  for ip = 1,n do
+    -- pre-compute sin/cos of orientations
+    ca = math.cos(ap[ip]);
+    sa = math.sin(ap[ip]);
+
+    -- compute line weight
+    local wLine = w0 * (math.cos(4*(ap[ip] + a)) - 1);
+    wp[ip] = wp[ip] + wLine;
+
+    local xGlobal = x*ca - y*sa + xp[ip];
+    local yGlobal = x*sa + y*ca + yp[ip];
+
+    -- pull particles into field boundary 
+    wBounds = math.max(xGlobal - xLineBoundary, 0) + 
+              math.max(-xGlobal - xLineBoundary, 0) + 
+              math.max(yGlobal - yLineBoundary, 0) +
+              math.max(-yGlobal - yLineBoundary, 0);
+    wp[ip] = wp[ip] - (wBounds/.20);
+
+  end
+end
+
+
+
+
+
+
+
+
+
+
+
 
 function odometry(dx, dy, da)
   for ip = 1,n do

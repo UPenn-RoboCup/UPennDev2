@@ -28,8 +28,6 @@ walk.supportX = 0;
 walk.supportY = 0.010;
 walk.qLArm=math.pi/180*vector.new({90,8,-40});
 walk.qRArm=math.pi/180*vector.new({90,-8,-40});
-walk.qLArmKick=math.pi/180*vector.new({90,15,-40});
-walk.qRArmKick=math.pi/180*vector.new({90,-15,-40});
 
 walk.hardnessSupport = 1;
 walk.hardnessSwing = 1;
@@ -64,8 +62,9 @@ walk.armImuParamY={0.3,10*gyroFactor, 20*math.pi/180, 45*math.pi/180};
 -- Support point modulation values
 --------------------------------------------
 walk.supportFront = 0.01; --Lean front when walking fast forward
-walk.supportBack = -0.01; --Lean back when walking backward
-walk.supportSide = 0.01; --Lean sideways when sidestepping
+walk.supportBack = -0.02; --Lean back when walking backward
+walk.supportSideX = -0.01; --Lean back when sidestepping
+walk.supportSideY = 0.02; --Lean sideways when sidestepping
 
 --------------------------------------------
 -- WalkKick parameters
@@ -75,6 +74,8 @@ walk.walkKickSupportMod = {{0,0},{0,0}}
 walk.walkKickHeightFactor = 2.0;
 walk.tStepWalkKick = 0.30;
 
+walk.qLArmKick=math.pi/180*vector.new({90,15,-40});
+walk.qRArmKick=math.pi/180*vector.new({90,-15,-40});
 walk.sideKickVel1 = {0.04,0.04};
 walk.sideKickVel2 = {0.09,0.05};
 walk.sideKickVel3 = {0.09,-0.02};

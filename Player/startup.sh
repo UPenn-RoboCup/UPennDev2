@@ -26,3 +26,8 @@ cd $PLAYER_DIR
 screen -dm -L -S player /usr/bin/luajit run_main.lua
 
 echo "Rock and Roll!"
+
+# Make sure /home/darwin/current links to the right UPennDev
+# Put these lines in /etc/rc.local
+# #!/bin/bash
+# su -c "sh /home/darwin/current/Player/startup.sh" darwin

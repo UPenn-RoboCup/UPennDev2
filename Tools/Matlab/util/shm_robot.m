@@ -261,6 +261,17 @@ global MONITOR %for sending the webots check information
       r.landmark.centroid2 = h.vcmLandmark.get_centroid2();
       r.landmark.centroid3 = h.vcmLandmark.get_centroid3();
 
+  %Vision debug message
+      r.debug={};
+      r.debug.message = char(h.vcmDebug.get_message());
+
+  %Particle info
+      r.particle={};
+      r.particle.x=h.wcmParticle.get_x();
+      r.particle.y=h.wcmParticle.get_y();
+      r.particle.w=h.wcmParticle.get_w();
+      r.particle.a=h.wcmParticle.get_a();
+
   %line info
       r.line = {};
       r.line.detect = h.vcmLine.get_detect();
@@ -283,16 +294,7 @@ global MONITOR %for sending the webots check information
       r.line.endpoint{3}=h.vcmLine.get_endpoint3();
       r.line.endpoint{4}=h.vcmLine.get_endpoint4();
 
-  %Vision debug message
-      r.debug={};
-      r.debug.message = char(h.vcmDebug.get_message());
 
-  %Particle info
-      r.particle={};
-      r.particle.x=h.wcmParticle.get_x();
-      r.particle.y=h.wcmParticle.get_y();
-      r.particle.w=h.wcmParticle.get_w();
-      r.particle.a=h.wcmParticle.get_a();
 
   % Add freespace boundary
       r.free = {};

@@ -20,6 +20,7 @@ ballYellow = Config.world.ballYellow;
 ballCyan = Config.world.ballCyan;
 landmarkYellow = Config.world.landmarkYellow;
 landmarkCyan = Config.world.landmarkCyan;
+Lcorner = Config.world.Lcorner;
 
 --Are we using same colored goals?
 use_same_colored_goal=Config.world.use_same_colored_goal or 0;
@@ -444,10 +445,14 @@ function landmark_yellow(v)
   landmark_observation({landmarkYellow}, v, rPostFilter, aPostFilter);
 end
 
+function corner(v)
+  landmark_observation(Lcorner,v,rPostFilter,aPostFilter);
+end
 
 
---[[
+
 function line(v, a)
+print("updating")
   -- line center
   x = v[1];
   y = v[2];
@@ -475,8 +480,8 @@ function line(v, a)
     wp[ip] = wp[ip] - (wBounds/.20);
   end
 end
---]]
 
+--[[
 function line(v1, v2)
   -- line center
   x = (v1[1]+v2[1])/2;
@@ -513,15 +518,7 @@ function line(v1, v2)
 
   end
 end
-
-
-
-
-
-
-
-
-
+--]]
 
 
 

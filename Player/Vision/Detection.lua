@@ -11,6 +11,7 @@ require('vcm');
 require('detectBall');
 require('detectGoal');
 require('detectLine');
+require('detectCorner');
 require('detectLandmarks'); -- for NSL
 require('detectSpot');
 require('detectFreespace');
@@ -62,6 +63,9 @@ function entry()
   line = {};
   line.detect = 0;
 
+  corner = {};
+  corner.detect = 0;
+  
   spot = {};
   spot.detect = 0;
 
@@ -112,6 +116,7 @@ function update()
   -- line detection
   if enableLine == 1 then
     line = detectLine.detect();
+    corner=detectCorner.detect(line);
   end
 
   -- spot detection
@@ -209,6 +214,22 @@ function update_shm()
     vcm.set_line_endpoint12(endpoint12);
     vcm.set_line_endpoint21(endpoint21);
     vcm.set_line_endpoint22(endpoint22);
+
+    vcm.set_line_v(
+	{(v1x[1]+v2x[1])/2,(v1y[1]+v2y[1])/2,0,0}
+	);
+    vcm.set_line_angle(line.angle[1]);
+
+  end
+  vcm.set_corner_detect(corner.detect);
+  if (corner.detect == 1) then
+    vcm.set_corner_type(corner.type)
+    vcm.set_corner_vc0(corner.vc0)
+    vcm.set_corner_v10(corner.v10)
+    vcm.set_corner_v20(corner.v20)
+    vcm.set_corner_v(corner.v)
+    vcm.set_corner_v1(corner.v1)
+    vcm.set_corner_v2(corner.v2)
   end
 
   --vcm.set_spot_detect(spot.detect);

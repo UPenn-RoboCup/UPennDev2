@@ -205,11 +205,18 @@ function update_vision()
     PoseFilter.line(v1,v2);
 --]]
 
---[[
     local v = vcm.get_line_v();
     local a = vcm.get_line_angle();
-    PoseFilter.line(v, a);
---]]
+
+print("v",unpack(v))
+print("a",a*180/math.pi)
+
+    PoseFilter.line(v, a);--use longest line in the view
+  end
+
+  if vcm.get_corner_detect() == 1 then
+    local v=vcm.get_corner_v();
+    PoseFilter.corner(v);
   end
 
   if vcm.get_landmark_detect() == 1 then

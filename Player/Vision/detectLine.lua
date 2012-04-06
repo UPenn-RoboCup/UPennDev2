@@ -61,6 +61,22 @@ function detect()
     return line; 
   end
 
+  --Sort lines according to their length
+  for i=1,nLines-1 do
+    for j=1+1,nLines do
+      ep1= line.propsB[i].endpoint;
+      ep2= line.propsB[j].endpoint;
+      len1=(ep1[1]-ep1[2])^2+(ep1[3]-ep1[4])^2;
+      len2=(ep2[1]-ep2[2])^2+(ep2[3]-ep2[4])^2;
+
+      if len1<len2 then
+	propsTemp=line.propsB[i];
+	line.propsB[i]=line.propsB[j];
+	line.propsB[i]=propsTemp;
+      end 
+    end
+  end
+
   line.detect=1;
   line.nLines = nLines;
   line.v={};
@@ -88,6 +104,18 @@ function detect()
     line.v[i]={};
     line.v[i][1]=vendpoint[1];
     line.v[i][2]=vendpoint[2];
+    line.angle[i]=math.abs(math.atan2(vendpoint[1][2]-vendpoint[2][2],
+			    vendpoint[1][1]-vendpoint[2][1]));
+  end
+
+
+  --TODO::::find distribution of v
+  sumx=0;
+  sumxx=0;
+  for i=1,nLines do 
+    --angle: -pi to pi
+    sumx=sumx+line.angle[i];
+    sumxx=sumxx+line.angle[i]*line.angle[i];
   end
 
   line.detect = 1;

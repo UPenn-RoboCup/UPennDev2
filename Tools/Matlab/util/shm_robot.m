@@ -26,6 +26,7 @@ global MONITOR %for sending the webots check information
   h.vcmImage = shm(sprintf('vcmImage%d%d%s', h.teamNumber, h.playerID, h.user));
   h.vcmLandmark  = shm(sprintf('vcmLandmark%d%d%s',  h.teamNumber, h.playerID, h.user));
   h.vcmLine  = shm(sprintf('vcmLine%d%d%s',  h.teamNumber, h.playerID, h.user));
+  h.vcmCorner  = shm(sprintf('vcmCorner%d%d%s',  h.teamNumber, h.playerID, h.user));
 
   h.wcmBall  = shm(sprintf('wcmBall%d%d%s',  h.teamNumber, h.playerID, h.user));
   h.wcmGoal  = shm(sprintf('wcmGoal%d%d%s',  h.teamNumber, h.playerID, h.user));
@@ -336,6 +337,18 @@ global MONITOR %for sending the webots check information
         r.line.endpoint{i}=[endpoint11(i) endpoint21(i) ...
 			    endpoint12(i) endpoint22(i)];
       end
+
+  %corner info
+      r.corner = {};
+      r.corner.detect = h.vcmCorner.get_detect();
+
+      r.corner.vc0 = h.vcmCorner.get_vc0();
+      r.corner.v10 = h.vcmCorner.get_v10();
+      r.corner.v20 = h.vcmCorner.get_v20();
+
+      r.corner.v = h.vcmCorner.get_v();
+      r.corner.v1 = h.vcmCorner.get_v1();
+      r.corner.v2 = h.vcmCorner.get_v2();
 
   % Add freespace boundary
       r.free = {};

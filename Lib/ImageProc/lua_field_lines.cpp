@@ -272,12 +272,14 @@ int lua_field_lines(lua_State *L) {
 
     if (segments[k].count>3){
       valid_segments++;
+/*
       printf("%d:  (%d %d) - (%d %d)\n",
 	k,segments[k].x0,segments[k].y0,
 	segments[k].x1,segments[k].y1);
+*/
     }
   }
-  printf("Total %d valid segments\n",valid_segments);
+//  printf("Total %d valid segments\n",valid_segments);
 
   lua_createtable(L, valid_segments, 0);
 

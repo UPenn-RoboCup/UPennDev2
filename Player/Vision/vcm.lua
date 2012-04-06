@@ -101,25 +101,34 @@ shared.landmark.centroid2 = vector.zeros(2);
 shared.landmark.centroid3 = vector.zeros(2);
 
 --Multiple line detection
+max_line_num = 12;
+
 shared.line = {};
 shared.line.detect = vector.zeros(1);
-
---Max 6 lines can be detected at once
 shared.line.nLines = vector.zeros(1);
-shared.line.v1x = vector.zeros(6);
-shared.line.v1y = vector.zeros(6);
-shared.line.v2x = vector.zeros(6);
-shared.line.v2y = vector.zeros(6);
-shared.line.endpoint11 = vector.zeros(6);
-shared.line.endpoint12 = vector.zeros(6);
-shared.line.endpoint21 = vector.zeros(6);
-shared.line.endpoint22 = vector.zeros(6);
+shared.line.v1x = vector.zeros(max_line_num);
+shared.line.v1y = vector.zeros(max_line_num);
+shared.line.v2x = vector.zeros(max_line_num);
+shared.line.v2y = vector.zeros(max_line_num);
+shared.line.endpoint11 = vector.zeros(max_line_num);
+shared.line.endpoint12 = vector.zeros(max_line_num);
+shared.line.endpoint21 = vector.zeros(max_line_num);
+shared.line.endpoint22 = vector.zeros(max_line_num);
+
+--for best line
+shared.line.v=vector.zeros(4);
+shared.line.angle=vector.zeros(a);
 
 --Corner detection
 shared.corner = {};
 shared.corner.detect = vector.zeros(1);
+shared.corner.type = vector.zeros(1);
+shared.corner.vc0 = vector.zeros(4);
+shared.corner.v10 = vector.zeros(4);
+shared.corner.v20 = vector.zeros(4);
 shared.corner.v = vector.zeros(4);
-shared.corner.angle = vector.zeros(1);
+shared.corner.v1 = vector.zeros(4);
+shared.corner.v2 = vector.zeros(4);
 
 --[[
 shared.spot = {};

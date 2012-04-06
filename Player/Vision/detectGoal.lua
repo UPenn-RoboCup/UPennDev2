@@ -125,12 +125,13 @@ function detect(color,color2)
     end
 
     --check edge margin
+--TODO: parameterize edge margin 
     if valid then
       local leftPoint= postStats.centroid[1] - 
-	postStats.axisMinor/2 * math.cos(tiltAngle) -
+	10 -
 	postStats.axisMajor/2 * math.abs(math.sin(tiltAngle));
       local rightPoint= postStats.centroid[1] + 
-	postStats.axisMinor/2 * math.cos(tiltAngle) +
+        10+
 	postStats.axisMajor/2 * math.abs(math.sin(tiltAngle));
       local margin = math.min(leftPoint, Vision.labelA.m-rightPoint);
       vcm.add_debug_message(string.format("Edge margin check: %d\n",margin));
@@ -190,6 +191,13 @@ function detect(color,color2)
       end
     end
 
+    --Check whether the goalpost touches the top
+    postB[i].touching_top = false;
+    if (postB[i].boundingBox[3]<2) then
+      postB[i].touching_top = true;
+    end
+
+
 --[[
     -- check for posts in the ball
     if (valid and color == colorYellow and Vision.ball.detect == 1) then
@@ -227,19 +235,40 @@ function detect(color,color2)
   goal.propsB = {};
   goal.propsA = {};
   goal.v = {};
+
   for i = 1,npost do
     goal.propsB[i] = postB[ivalidB[i]];
     goal.propsA[i] = postA[i];
 
-    scale = math.max(postA[i].axisMinor / postDiameter,
-                      postA[i].axisMajor / postHeight,
-                      math.sqrt(postA[i].area / (postDiameter*postHeight)));
+
+    scale1 = postA[i].axisMinor / postDiameter;
+    scale2 = postA[i].axisMajor / postHeight;
+    scale3 = math.sqrt(postA[i].area / (postDiameter*postHeight) );
+
+    --This post is touching the top
+
+    if goal.propsB[i].boundingBox[3]<2 then 
+      vcm.add_debug_message("Post touching the top\n");
+      scale = math.max(scale1,scale3);
+    else
+      scale = math.max(scale1,scale2,scale3);
+    end
+
+    if scale==scale1 then
+      vcm.add_debug_message("Post distance measured by width\n");
+    elseif scale==scale2 then
+      vcm.add_debug_message("Post distance measured by height\n");
+    else
+      vcm.add_debug_message("Post distance measured by area\n");
+    end
 
     goal.v[i] = HeadTransform.coordinatesA(postA[i].centroid, scale);
 
     vcm.add_debug_message(string.format("post[%d] = %.2f %.2f %.2f\n",
 	 i, goal.v[i][1], goal.v[i][2], goal.v[i][3]));
   end
+
+
 
   if (npost == 2) then
     goal.type = 3; --Two posts
@@ -280,6 +309,15 @@ function detect(color,color2)
 
     vcm.add_debug_message(string.format(
 	"Crossbar stat: %.2f\n",crossbar_ratio));
+
+    --CHECK.. if the ball touches the top, we don't check centerpost
+    if goal.propsB[1].boundingBox[3]<3 then --touching the top
+      dxCrossbar = 0; --Should be unknown post
+    end
+
+
+
+
     if (math.abs(dxCrossbar) > 0.6*postWidth) then
       if (dxCrossbar > 0) then
 	if use_centerpost>0 then
@@ -298,7 +336,9 @@ function detect(color,color2)
       -- unknown post
       goal.type = 0;
         -- eliminate small posts without cross bars
-
+      vcm.add_debug_message(string.format(
+	"Unknown single post size check:%d\n",postA[1].area));
+      
       if (postA[1].area < th_min_area_unknown_post) then
         vcm.add_debug_message("Post size too small");
         return goal;

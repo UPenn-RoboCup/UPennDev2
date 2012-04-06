@@ -208,9 +208,6 @@ function update_vision()
     local v = vcm.get_line_v();
     local a = vcm.get_line_angle();
 
-print("v",unpack(v))
-print("a",a*180/math.pi)
-
     PoseFilter.line(v, a);--use longest line in the view
   end
 

@@ -158,16 +158,27 @@ shared.debug.store_goal_detections = vector.zeros(1);
 shared.debug.store_ball_detections = vector.zeros(1);
 shared.debug.store_all_images = vector.zeros(1);
 shared.debug.message='';
-debug_message='';
 
 util.init_shm_segment(getfenv(), _NAME, shared, shsize);
 
+debug_message='';
+
 --For vision debugging
 function refresh_debug_message()
-  set_debug_message(debug_message);
+  if string.len(debug_message)==0 then
+    --it is not updated for whatever reason
+    --just keep the latest message
+  else
+    set_debug_message(debug_message);
+  end
   debug_message='';
---print("Debug message:\n",get_debug_message())
 end
 function add_debug_message(message)
+  if string.len(debug_message)>1000 then
+    --something is wrong, just reset it 
+    debug_message='';
+  end
   debug_message=debug_message..message;
+  set_debug_message(debug_message);
+
 end

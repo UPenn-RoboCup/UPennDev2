@@ -156,6 +156,8 @@ fsm.headTrack.timeout = 6.0 * speedFactor;
 fsm.headTrack.tLost = 1.5 * speedFactor;
 fsm.headTrack.minDist = 0.30; --If ball is closer than this, don't look up
 fsm.headTrack.fixTh={0.20,0.08}; --Fix yaw axis if ball is within this box
+fsm.headTrack.timeout = 3.0 * speedFactor;
+
 
 --------------------------------------------------
 --HeadReady : Track the horizonal line for localization

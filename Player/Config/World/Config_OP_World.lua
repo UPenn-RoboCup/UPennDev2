@@ -90,7 +90,10 @@ world.initPosition3={
 world.rGoalFilter = 0.02;
 world.aGoalFilter = 0.05;
 world.rPostFilter = 0.02;
-world.aPostFilter = 0.20;
+world.aPostFilter = 0.10;
+
+world.rLandmarkFilter = 0.05;
+world.aLandmarkFilter = 0.10;
 
 --New two-goalpost localization
 world.use_new_goalposts=1;

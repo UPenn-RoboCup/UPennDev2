@@ -184,18 +184,15 @@ int lua_tilted_color_stats(lua_State *L) {
       return luaL_error(L, "Bounding box input missing");
     }
 
+//Now bounding box edges can be negative
     lua_rawgeti(L, 5, 1);
     i0 = luaL_checknumber(L, -1);
-    if (i0 < 0) i0 = 0;
     lua_rawgeti(L, 5, 2);
     i1 = luaL_checknumber(L, -1);
-    if (i1 > width-1) i1 = width-1;
     lua_rawgeti(L, 5, 3);
     j0 = luaL_checknumber(L, -1);
-    if (j0 < 0) j0 = 0;
     lua_rawgeti(L, 5, 4);
     j1 = luaL_checknumber(L, -1);
-    if (j1 > height-1) j1 = height-1;
     lua_pop(L, 4);
   }
 

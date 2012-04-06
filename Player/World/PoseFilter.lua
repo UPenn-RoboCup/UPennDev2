@@ -2,6 +2,7 @@ module(..., package.seeall);
 
 require('Config');
 require('vector');
+require('vcm')
 require 'util'
 
 n = Config.world.n;
@@ -37,6 +38,12 @@ rGoalFilter = Config.world.rGoalFilter;
 aGoalFilter = Config.world.aGoalFilter;
 rPostFilter = Config.world.rPostFilter;
 aPostFilter = Config.world.aPostFilter;
+
+
+rLandmarkFilter = Config.world.rLandmarkFilter;
+aLandmarkFilter = Config.world.aLandmarkFilter;
+
+
 
 xp = .5*xMax*vector.new(util.randn(n));
 yp = .5*yMax*vector.new(util.randn(n));
@@ -215,10 +222,14 @@ function triangulate(pos,v)
   pose.x=x;
   pose.y=y;
   pose.a=a;
-  return pose,dGoal;
+ 
+  aGoal = util.mod_angle((aPost[1]+aPost[2])/2);
+
+  return pose,dGoal,aGoal;
 end
 
 function triangulate2(pos,v)
+
   --New code (for OP)
    local aPost = {};
    local d2Post = {};
@@ -227,47 +238,67 @@ function triangulate2(pos,v)
    aPost[2] = math.atan2(v[2][2], v[2][1]);
    d2Post[1] = v[1][1]^2 + v[1][2]^2;
    d2Post[2] = v[2][1]^2 + v[2][2]^2;
+   d1 = math.sqrt(d2Post[1]);
+   d2 = math.sqrt(d2Post[2]);
 
-   --Triangulation to fix the thick nearest post problem with OP
-   if d2Post[1]<d2Post[2] then
-   -- v1=kcos(a1),ksin(a1)
-   -- k^2-2k(v[2][1]cos(a1)+v[2][2]sin(a1)) + d2Post[2]-goalWidth^2 = 0
+   vcm.add_debug_message(string.format(
+	"\nWorld: triangulation 2\nGoal dist: %.1f / %.1f\nGoal width: %.1f\n",
+	d1, d2 ,goalWidth ));
+
+   if d1>d2 then 
+     --left post correction based on right post
+     -- v1=kcos(a1),ksin(a1)
+     -- k^2 - 2k(v[2][1]cos(a1)+v[2][2]sin(a1)) + d2Post[2]-goalWidth^2 = 0
      local ca=math.cos(aPost[1]);
      local sa=math.sin(aPost[1]);
      local b=v[2][1]*ca+ v[2][2]*sa;
      local c=d2Post[2]-goalWidth^2;
 
      if b*b-c>0 then
+       vcm.add_debug_message("Correcting left post\n");
+       vcm.add_debug_message(string.format("Left post angle: %d\n",aPost[1]*180/math.pi));
+
        k1=b-math.sqrt(b*b-c);
        k2=b+math.sqrt(b*b-c);
---     print("Original v1:",v[1][1],v[1][2]);
---     print("v1_1:",k1*ca,k1*sa);
---     print("v1_2:",k2*ca,k2*sa);
-       if k1>d2Post[1] then
- 	 v[1][1],v[2][1]=k1*ca,k1*sa;
+       vcm.add_debug_message(string.format("d1: %.1f v1: %.1f %.1f\n",
+  	d1,v[1][1],v[1][2]));
+       vcm.add_debug_message(string.format("k1: %.1f v1_1: %.1f %.1f\n",
+	k1,k1*ca,k1*sa ));
+       vcm.add_debug_message(string.format("k2: %.1f v1_2: %.1f %.1f\n",
+	k2,k2*ca,k2*sa ));
+       if math.abs(d2-k1)<math.abs(d2-k2) then
+          v[1][1],v[1][2]=k1*ca,k1*sa;
+       else
+          v[1][1],v[1][2]=k2*ca,k2*sa;
        end
      end
-   else
-   -- v2=kcos(a2),ksin(a2)
-   -- k^2 - 2k(v[2][1]cos(a1)+v[2][2]sin(a1)) + d2Post[2]-goalWidth^2 = 0
+   else 
+     --right post correction based on left post
+     -- v2=kcos(a2),ksin(a2)
+     -- k^2 - 2k(v[1][1]cos(a2)+v[1][2]sin(a2)) + d2Post[1]-goalWidth^2 = 0
      local ca=math.cos(aPost[2]);
      local sa=math.sin(aPost[2]);
      local b=v[1][1]*ca+ v[1][2]*sa;
      local c=d2Post[1]-goalWidth^2;
-	
+  
      if b*b-c>0 then
        k1=b-math.sqrt(b*b-c);
        k2=b+math.sqrt(b*b-c);
---     print("Original v1:",v[2][1],v[2][2]);
---     print("v1_1:",k1*ca,k1*sa);
---     print("v1_2:",k2*ca,k2*sa);
-       if k1>d2Post[2] then
-   	 v[2][1],v[2][2]=k1*ca,k1*sa;
+       vcm.add_debug_message(string.format("d2: %.1f v2: %.1f %.1f\n",
+  	d2,v[2][1],v[2][2]));
+       vcm.add_debug_message(string.format("k1: %.1f v2_1: %.1f %.1f\n",
+	k1,k1*ca,k1*sa ));
+       vcm.add_debug_message(string.format("k2: %.1f v2_2: %.1f %.1f\n",
+	k2,k2*ca,k2*sa ));
+       if math.abs(d2-k1)<math.abs(d2-k2) then
+          v[2][1],v[2][2]=k1*ca,k1*sa;
+       else
+          v[2][1],v[2][2]=k2*ca,k2*sa;
        end
      end
    end
 
-   --Use center of the post 
+   --Use center of the post to fix angle
    vGoalX=0.5*(v[1][1]+v[2][1]);
    vGoalY=0.5*(v[1][2]+v[2][2]);
    rGoal = math.sqrt(vGoalX^2+vGoalY^2);
@@ -297,16 +328,26 @@ function triangulate2(pos,v)
    pose.x=x;
    pose.y=y;
    pose.a=a;
-   return pose,dGoal;
+
+ --  aGoal = util.mod_angle((aPost[1]+aPost[2])/2);
+
+   return pose,dGoal,aGoal;
 end
+
+
+
+
 
 function goal_observation(pos, v)
   --Get estimate using triangulation
   if use_new_goalposts==1 then
-    pose,dGoal=triangulate2(pos,v);
+    pose,dGoal,aGoal=triangulate2(pos,v);
   else
-    pose,dGoal=triangulate(pos,v);
+    pose,dGoal,aGoal=triangulate(pos,v);
   end
+
+--  vcm.add_debug_message(string.format("aGoal: %d\n",aGoal*180/math.pi))
+--  vcm.add_debug_message(string.format("pos: %.1f %.1f\n",pos[1][1],pos[1][2]))
 
   local x,y,a=pose.x,pose.y,pose.a;
 
@@ -315,20 +356,40 @@ function goal_observation(pos, v)
   local rFilter = rGoalFilter;
   local aFilter = aGoalFilter;
 
-  for ip = 1,n do
-    local xErr = x - xp[ip];
-    local yErr = y - yp[ip];
-    local rErr = math.sqrt(xErr^2 + yErr^2);
-    local aErr = mod_angle(a - ap[ip]);
-    local err = (rErr/rSigma)^2 + (aErr/aSigma)^2;
-    wp[ip] = wp[ip] - err;
 
-    --Filter towards goal:
-    xp[ip] = xp[ip] + rFilter*xErr;
-    yp[ip] = yp[ip] + rFilter*yErr;
-    ap[ip] = ap[ip] + aFilter*aErr;
+triangulation_threshold=4.0;
+
+
+  if dGoal<triangulation_threshold then 
+
+
+    for ip = 1,n do
+      local xErr = x - xp[ip];
+      local yErr = y - yp[ip];
+      local rErr = math.sqrt(xErr^2 + yErr^2);
+      local aErr = mod_angle(a - ap[ip]);
+      local err = (rErr/rSigma)^2 + (aErr/aSigma)^2;
+      wp[ip] = wp[ip] - err;
+
+      --Filter towards goal:
+      xp[ip] = xp[ip] + rFilter*xErr;
+      yp[ip] = yp[ip] + rFilter*yErr;
+      ap[ip] = ap[ip] + aFilter*aErr;
+    end
+  else
+  --Don't use triangulation for far goals
+    goalpos={{(pos[1][1]+pos[2][1])/2, (pos[1][2]+pos[2][2])/2}}
+    goalv={(v[1][1]+v[2][1])/2, (v[1][2]+v[2][2])/2}
+    landmark_observation(goalpos, goalv , rGoalFilter, aGoalFilter);
   end
+
+
 end
+
+
+
+
+
 
 function goal_observation_unified(pos1,pos2,v)
   vcm.add_debug_message("World: Ambiguous two posts")
@@ -438,11 +499,11 @@ function goal_unified(v)
 end
 
 function landmark_cyan(v)
-  landmark_observation({landmarkCyan}, v, rPostFilter, aPostFilter);
+  landmark_observation({landmarkCyan}, v, rLandmarkFilter, aLandmarkFilter);
 end
 
 function landmark_yellow(v)
-  landmark_observation({landmarkYellow}, v, rPostFilter, aPostFilter);
+  landmark_observation({landmarkYellow}, v, rLandmarkFilter, aLandmarkFilter);
 end
 
 function corner(v)
@@ -452,7 +513,6 @@ end
 
 
 function line(v, a)
-print("updating")
   -- line center
   x = v[1];
   y = v[2];

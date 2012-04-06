@@ -197,6 +197,9 @@ function process_keyinput()
  end
 end
 
+imageProcessed = false;
+
+
 function update()
   --Update battery info
   wcm.set_robot_battery_level(Body.get_battery_level());
@@ -216,6 +219,7 @@ function update()
   if imageProcessed then 
     World.update_vision();
     OccupancyMap.update();
+    vcm.refresh_debug_message();
   end
    
   -- Update the relevant engines

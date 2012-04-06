@@ -134,7 +134,6 @@ end
 function update()
   tstart = unix.time();
 
-  vcm.refresh_debug_message();
 --  vcm.add_debug_message(string.format("Testing, count %d\n",count))
 
   -- get image from camera
@@ -263,9 +262,14 @@ function bboxStats(color, bboxB, rollAngle)
   bboxA[3] = scaleB*bboxB[3];
   bboxA[4] = scaleB*bboxB[4] + scaleB - 1;
   if rollAngle then
-    --make boundingbox wider
-    bboxA[1] = math.max(1,bboxA[1]);
-    bboxA[2] = math.min(labelA.m,bboxA[2]);
+    --make boundingbox shifted slightly
+    bboxA[1] = bboxA[1]+1 ;
+    bboxA[2] = bboxA[2]+1 ;
+
+    --Hack: when the robot looks down, widen bounding box
+--    headAngles=Body.get_head_position();
+--    print(headAngles[2]*180/math.pi)
+
     return ImageProc.tilted_color_stats(
 	labelA.data, labelA.m, labelA.n, color, bboxA,rollAngle);
   else

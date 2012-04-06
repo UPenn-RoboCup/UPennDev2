@@ -22,21 +22,21 @@
       plot_goal(r_mon.goal,scale);
       plot_landmark(r_mon.landmark,scale);
       plot_line(r_mon.line,scale);
+      plot_corner(r_mon.corner,scale);
     else
       plot_robot(robot_struct,scale);
       plot_info(robot_struct,scale);
       plot_ball(robot_struct,scale);
     
-      if drawlevel>1
+      if drawlevel==2
 	plot_goal_team(robot_struct,scale);
 %	plot_landmark_team(robot_struct,scale);
-
-%        plot_line(r_mon.line,scale);
-%        plot_goal(r_mon.goal,scale);
-%        plot_landmark(r_mon.landmark,scale);
-        if drawlevel==3
-          plot_fov(r_mon.fov);
-        end
+      elseif drawlevel==3
+        plot_line(r_mon.line,scale);
+        plot_corner(r_mon.corner,scale);
+        plot_goal(r_mon.goal,scale);
+        plot_landmark(r_mon.landmark,scale);
+        plot_fov(r_mon.fov);
       end
     end
   end
@@ -235,6 +235,7 @@
   end
 
   function plot_line(line,scale)
+
     if( line.detect==1 )
       nLines=line.nLines;
       for i=1:nLines
@@ -249,6 +250,30 @@
         plot([x0 (x1+x2)/2],[y0 (y1+y2)/2],'k');
         plot([x1 x2],[y1 y2],'k','LineWidth',2);
       end
+    end
+  end
+
+  function plot_corner(corner,scale)
+    if corner.detect==1
+      v=corner.v;
+      v1=corner.v1;
+      v2=corner.v2;
+
+      x1 = v(1)*ca - v(2)*sa + robot_struct.pose.x;
+      y1 = v(1)*sa + v(2)*ca + robot_struct.pose.y;
+      plot([x0 x1],[y0 y1],'r');
+
+      x1 = v(1)*ca - v(2)*sa + robot_struct.pose.x;
+      y1 = v(1)*sa + v(2)*ca + robot_struct.pose.y;
+      x2 = v1(1)*ca - v1(2)*sa + robot_struct.pose.x;
+      y2 = v1(1)*sa + v1(2)*ca + robot_struct.pose.y;
+      plot([x1 x2],[y1 y2],'r','LineWidth',3);
+
+      x1 = v(1)*ca - v(2)*sa + robot_struct.pose.x;
+      y1 = v(1)*sa + v(2)*ca + robot_struct.pose.y;
+      x2 = v2(1)*ca - v2(2)*sa + robot_struct.pose.x;
+      y2 = v2(1)*sa + v2(2)*ca + robot_struct.pose.y;
+      plot([x1 x2],[y1 y2],'r','LineWidth',3);
     end
   end
 

@@ -30,6 +30,11 @@ function plot_overlay(r_mon,scale)
 	plot_line(r_mon.line,scale)
 	hold off;
       end
+      if (r_mon.corner.detect == 1)
+        hold on;
+	plot_corner(r_mon.corner,scale)
+	hold off;
+      end
     end
 
 
@@ -132,13 +137,21 @@ function plot_overlay(r_mon,scale)
   function plot_line(lineStats,scale)
     nLines=lineStats.nLines;
     for i=1:nLines
-      endpoint=lineStats.endpoint{i};
+      endpoint=lineStats.endpoint{i}+0.5;
       x1=endpoint(1)/scale*4;
       x2=endpoint(2)/scale*4;
       y1=endpoint(3)/scale*4;
       y2=endpoint(4)/scale*4;
       plot([x1 x2],[y1 y2],'k--','LineWidth',6);
     end
+  end
+
+  function plot_corner(cornerStats,scale)
+    vc0=(cornerStats.vc0+0.5)/scale*4;
+    v10=(cornerStats.v10+0.5)/scale*4;
+    v20=(cornerStats.v20+0.5)/scale*4;
+    plot([vc0(1) v10(1)],[vc0(2) v10(2)],'r','LineWidth',6);
+    plot([vc0(1) v20(1)],[vc0(2) v20(2)],'r','LineWidth',6);
   end
 
   

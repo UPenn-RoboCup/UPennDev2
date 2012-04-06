@@ -4,11 +4,13 @@
   <ddlee@seas.upenn.edu>
 */
 
+
 #include "RadonTransform.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <limits.h>
 #include <math.h>
+#include <stdint.h>
 
 #ifndef PI
 #define PI M_PI
@@ -110,10 +112,11 @@ int min(int a, int b){
     return b;
 }
 
-struct LineStats *RadonTransform::getMultiLineStats(){
+struct LineStats *RadonTransform::getMultiLineStats(
+	int ni, int nj, uint8_t *im_ptr){
+  static uint8_t colorLine = 0x10;
 
   int MAXCANDIDATES = 50;
-
   int thMaxs[MAXCANDIDATES];
   int rMaxs[MAXCANDIDATES];
   int countMaxs[MAXCANDIDATES];
@@ -166,8 +169,8 @@ struct LineStats *RadonTransform::getMultiLineStats(){
   }
   printf("Line candidates:%d\n",i_bestLines);
 
-  int R_MERGE = 3;
-  int TH_MERGE = 3;
+  int R_MERGE = 1;
+  int TH_MERGE = 5;
 
   //Merge similar lines
 
@@ -223,18 +226,34 @@ struct LineStats *RadonTransform::getMultiLineStats(){
 
 // Check the fill rate of each lines
 
-
-
-
-
-
-
-
-
-
-
-
-
+  for (int i=0;i<i_bestLines;i++){
+    if (countMaxs[i]>5){
+      double iR = ((rMaxs[i]+1)*MAXR/NR-1+.5)*cosTable[thMaxs[i]];
+      double jR = ((rMaxs[i]+1)*MAXR/NR-1+.5)*sinTable[thMaxs[i]];
+      double lMean = lineSum[thMaxs[i]][rMaxs[i]]/countMaxs[i];
+      double lMin = lineMin[thMaxs[i]][rMaxs[i]];
+      double lMax = lineMax[thMaxs[i]][rMaxs[i]];
+      int iMean = (iR - lMean*sinTable[thMaxs[i]])/NTRIG;
+      int jMean = (jR + lMean*cosTable[thMaxs[i]])/NTRIG;
+      int iMin = (iR - lMin*sinTable[thMaxs[i]])/NTRIG;
+      int iMax = (iR - lMax*sinTable[thMaxs[i]])/NTRIG;
+      int jMin = (jR + lMin*cosTable[thMaxs[i]])/NTRIG;
+      int jMax = (jR + lMax*cosTable[thMaxs[i]])/NTRIG;
+      int dLine2 = (iMax-iMin)*(iMax-iMin) + (jMax-jMin)*(jMax-jMin) ;
+      int dLine = sqrt(dLine2);
+      int fillCount = 0;
+      for (int k=0;k < dLine;k++){
+	int i_in = iMin + k* sinTable[thMaxs[i]]/NTRIG;
+	int j_in = jMin + k* cosTable[thMaxs[i]]/NTRIG;
+        uint8_t *im_col = im_ptr + ni*j_in + i_in;
+	if (*im_col & colorLine) fillCount=fillCount+1;	
+      }
+      printf("Count %d, Ang%d, R %d, Fill %d, Len %d\n",
+	countMaxs[i], thMaxs[i], rMaxs[i],100*fillCount/dLine,dLine);
+      if (fillCount*5<dLine)
+	countMaxs[i]=1; //Kill line if fill rate is below 35%
+    }
+  }
 
   for (int i=0;i<i_bestLines-1;i++){
     for (int j=i+1;j<i_bestLines;j++){

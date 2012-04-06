@@ -106,7 +106,7 @@ function [ ] = plot_surroundings( handle, mon_struct )
         for i=1:nLines
           v1=line.v1{i};
           v2=line.v2{i};
-          plot([v1(1) v2(1)],[v1(2) v2(2)],'k','LineWidth',2);
+          plot(-[v1(2) v2(2)],[v1(1) v2(1)],'k','LineWidth',2);
         end
       end
     end

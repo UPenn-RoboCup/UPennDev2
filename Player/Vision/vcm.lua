@@ -101,29 +101,34 @@ shared.landmark.centroid2 = vector.zeros(2);
 shared.landmark.centroid3 = vector.zeros(2);
 
 --Multiple line detection
+max_line_num = 12;
+
 shared.line = {};
 shared.line.detect = vector.zeros(1);
-
---Max 4 lines can be detected
 shared.line.nLines = vector.zeros(1);
-shared.line.endpoint1 = vector.zeros(4);
-shared.line.endpoint2 = vector.zeros(4);
-shared.line.endpoint3 = vector.zeros(4);
-shared.line.endpoint4 = vector.zeros(4);
-shared.line.v1_1 = vector.zeros(4);
-shared.line.v2_1 = vector.zeros(4);
-shared.line.v1_2 = vector.zeros(4);
-shared.line.v2_2 = vector.zeros(4);
-shared.line.v1_3 = vector.zeros(4);
-shared.line.v2_3 = vector.zeros(4);
-shared.line.v1_4 = vector.zeros(4);
-shared.line.v2_4 = vector.zeros(4);
+shared.line.v1x = vector.zeros(max_line_num);
+shared.line.v1y = vector.zeros(max_line_num);
+shared.line.v2x = vector.zeros(max_line_num);
+shared.line.v2y = vector.zeros(max_line_num);
+shared.line.endpoint11 = vector.zeros(max_line_num);
+shared.line.endpoint12 = vector.zeros(max_line_num);
+shared.line.endpoint21 = vector.zeros(max_line_num);
+shared.line.endpoint22 = vector.zeros(max_line_num);
+
+--for best line
+shared.line.v=vector.zeros(4);
+shared.line.angle=vector.zeros(a);
 
 --Corner detection
 shared.corner = {};
 shared.corner.detect = vector.zeros(1);
+shared.corner.type = vector.zeros(1);
+shared.corner.vc0 = vector.zeros(4);
+shared.corner.v10 = vector.zeros(4);
+shared.corner.v20 = vector.zeros(4);
 shared.corner.v = vector.zeros(4);
-shared.corner.angle = vector.zeros(1);
+shared.corner.v1 = vector.zeros(4);
+shared.corner.v2 = vector.zeros(4);
 
 --[[
 shared.spot = {};
@@ -153,16 +158,27 @@ shared.debug.store_goal_detections = vector.zeros(1);
 shared.debug.store_ball_detections = vector.zeros(1);
 shared.debug.store_all_images = vector.zeros(1);
 shared.debug.message='';
-debug_message='';
 
 util.init_shm_segment(getfenv(), _NAME, shared, shsize);
 
+debug_message='';
+
 --For vision debugging
 function refresh_debug_message()
-  set_debug_message(debug_message);
+  if string.len(debug_message)==0 then
+    --it is not updated for whatever reason
+    --just keep the latest message
+  else
+    set_debug_message(debug_message);
+  end
   debug_message='';
---print("Debug message:\n",get_debug_message())
 end
 function add_debug_message(message)
+  if string.len(debug_message)>1000 then
+    --something is wrong, just reset it 
+    debug_message='';
+  end
   debug_message=debug_message..message;
+  set_debug_message(debug_message);
+
 end

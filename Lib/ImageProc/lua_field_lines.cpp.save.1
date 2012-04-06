@@ -70,7 +70,7 @@ int lineState(uint8_t label)
 
 struct SegmentStats {
   int state; //0 for inactive, 1 for active, 2 for ended
-  int gap; //gap handling
+  int gap; //how many gaps we can gap handling
   int count; //the horizontal length of the line
   int x0,y0; //start point
   int x1,y1; //end point
@@ -272,14 +272,12 @@ int lua_field_lines(lua_State *L) {
 
     if (segments[k].count>3){
       valid_segments++;
-/*
       printf("%d:  (%d %d) - (%d %d)\n",
 	k,segments[k].x0,segments[k].y0,
 	segments[k].x1,segments[k].y1);
-*/
     }
   }
-//  printf("Total %d valid segments\n",valid_segments);
+  printf("Total %d valid segments\n",valid_segments);
 
   lua_createtable(L, valid_segments, 0);
 

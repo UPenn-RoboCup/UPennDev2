@@ -196,17 +196,24 @@ function update_vision()
 
   -- line update
   if vcm.get_line_detect() == 1 then
+   --TODO: Edge localization
+
+--[[
     --Long line localization
     local v1=vcm.get_line_v1_1();
     local v2=vcm.get_line_v2_1();
     PoseFilter.line(v1,v2);
+--]]
 
-   --TODO: Edge localization
---[[
     local v = vcm.get_line_v();
     local a = vcm.get_line_angle();
-    PoseFilter.line(v, a);
---]]
+
+    PoseFilter.line(v, a);--use longest line in the view
+  end
+
+  if vcm.get_corner_detect() == 1 then
+    local v=vcm.get_corner_v();
+    PoseFilter.corner(v);
   end
 
   if vcm.get_landmark_detect() == 1 then

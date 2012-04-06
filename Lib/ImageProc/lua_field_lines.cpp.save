@@ -70,7 +70,7 @@ int lineState(uint8_t label)
 
 struct SegmentStats {
   int state; //0 for inactive, 1 for active, 2 for ended
-  int gap; //gap handling
+  int gap; //how many gaps we can gap handling
   int count; //the horizontal length of the line
   int x0,y0; //start point
   int x1,y1; //end point
@@ -272,14 +272,12 @@ int lua_field_lines(lua_State *L) {
 
     if (segments[k].count>3){
       valid_segments++;
-/*
       printf("%d:  (%d %d) - (%d %d)\n",
 	k,segments[k].x0,segments[k].y0,
 	segments[k].x1,segments[k].y1);
-*/
     }
   }
-//  printf("Total %d valid segments\n",valid_segments);
+  printf("Total %d valid segments\n",valid_segments);
 
   lua_createtable(L, valid_segments, 0);
 
@@ -333,103 +331,3 @@ int lua_field_lines(lua_State *L) {
 
 
 
-
-
-
-
-
-
-
-
-
-int lua_field_lines_old(lua_State *L) {
-  uint8_t *im_ptr = (uint8_t *) lua_touserdata(L, 1);
-  if ((im_ptr == NULL) || !lua_islightuserdata(L, 1)) {
-    return luaL_error(L, "Input image not light user data");
-  }
-  int ni = luaL_checkint(L, 2);
-  int nj = luaL_checkint(L, 3);
-  if (lua_gettop(L) >= 4)
-    widthMax = luaL_checkint(L, 4);
-
-  radonTransform.clear();
-  // Scan for vertical line pixels:
-  for (int j = 0; j < nj; j++) {
-    uint8_t *im_col = im_ptr + ni*j;
-    lineState(0); // Initialize
-    for (int i = 0; i < ni; i++) {
-      uint8_t label = *im_col++;
-      int width = lineState(label);
-      if ((width >= widthMin) && (width <= widthMax)) {
-	int iline = i - (width+1)/2;
-	radonTransform.addVerticalPixel(iline, j);
-      }
-    }
-  }
-
-  // Scan for horizontal field line pixels:
-  for (int i = 0; i < ni; i++) {
-    uint8_t *im_row = im_ptr + i;
-    lineState(0); //Initialize
-    for (int j = 0; j < nj; j++) {
-      uint8_t label = *im_row;
-      im_row += ni;
-      int width = lineState(label);
-      if ((width >= widthMin) && (width <= widthMax)) {
-	int jline = j - (width+1)/2;
-	radonTransform.addHorizontalPixel(i, jline);
-      }
-    }
-  }
-
-/*
-  LineStats bestLine0 = radonTransform.getLineStats();
-  LineStats bestLine[10];
-  bestLine[0]=bestLine0;
-*/
-
-  LineStats* bestLine = radonTransform.getMultiLineStats(ni,nj,im_ptr);
-
-  int lines_num=0;
-  for (int i=0;i<MAXLINES;i++){
-    if (bestLine[i].count>5) lines_num=i;
-  }
-  
-  lua_createtable(L, lines_num, 0);
-  for (int i = 0; i < lines_num; i++) {
-      lua_createtable(L, 0, 3);
-
-      // count field
-      lua_pushstring(L, "count");
-      lua_pushnumber(L, bestLine[i].count);
-      lua_settable(L, -3);
-
-      // centroid field
-      lua_pushstring(L, "centroid");
-      double centroidI = bestLine[i].iMean;
-      double centroidJ = bestLine[i].jMean;
-      lua_createtable(L, 2, 0);
-      lua_pushnumber(L, centroidI);
-      lua_rawseti(L, -2, 1);
-      lua_pushnumber(L, centroidJ);
-      lua_rawseti(L, -2, 2);
-      lua_settable(L, -3);
-
-      // endpoint field
-      lua_pushstring(L, "endpoint");
-      lua_createtable(L, 4, 0);
-      lua_pushnumber(L, bestLine[i].iMin);
-      lua_rawseti(L, -2, 1);
-      lua_pushnumber(L, bestLine[i].iMax);
-      lua_rawseti(L, -2, 2);
-      lua_pushnumber(L, bestLine[i].jMin);
-      lua_rawseti(L, -2, 3);
-      lua_pushnumber(L, bestLine[i].jMax);
-      lua_rawseti(L, -2, 4);
-      lua_settable(L, -3);
-
-      lua_rawseti(L, -2, i+1);
-  }
-
-  return 1;
-}

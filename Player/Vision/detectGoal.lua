@@ -33,7 +33,7 @@ goalWidth = Config.world.goalWidth or 1.40;
 --Vision threshold values (to support different resolutions)
 --------------------------------------------------------------
 th_min_color_count=Config.vision.goal.th_min_color_count;
-th_min_areaB = Config.vision.goal.th_min_areaB;
+th_min_area = Config.vision.goal.th_min_area;
 th_nPostB = Config.vision.goal.th_nPostB;
 th_min_orientation = Config.vision.goal.th_min_orientation;
 th_min_fill_extent = Config.vision.goal.th_min_fill_extent;
@@ -63,7 +63,6 @@ function detect(color,color2)
     tiltAngle=0;
     postB = ImageProc.goal_posts(Vision.labelB.data, 
 	Vision.labelB.m, Vision.labelB.n, color, th_nPostB);
-
   end
 
   if (not postB) then 	
@@ -88,7 +87,7 @@ function detect(color,color2)
     -- size and orientation check
     vcm.add_debug_message(string.format("Area check: %d\n", 
 	postStats.area));
-    if (postStats.area < th_min_areaB) then
+    if (postStats.area < th_min_area) then
       vcm.add_debug_message("Area check fail\n");
       valid = false;
     end
@@ -126,19 +125,24 @@ function detect(color,color2)
 
     --check edge margin
     if valid then
+
       local leftPoint= postStats.centroid[1] - 
-	postStats.axisMinor/2 * math.cos(tiltAngle) -
-	postStats.axisMajor/2 * math.abs(math.sin(tiltAngle));
+	postStats.axisMinor/2 * math.abs(math.cos(tiltAngle));
       local rightPoint= postStats.centroid[1] + 
-	postStats.axisMinor/2 * math.cos(tiltAngle) +
-	postStats.axisMajor/2 * math.abs(math.sin(tiltAngle));
-      local margin = math.min(leftPoint, Vision.labelA.m-rightPoint);
+	postStats.axisMinor/2 * math.abs(math.cos(tiltAngle));
+
+      vcm.add_debug_message(string.format(
+	"Left and right point: %d / %d\n", leftPoint, rightPoint));
+
+      local margin = math.min(leftPoint,Vision.labelA.m-rightPoint);
+
       vcm.add_debug_message(string.format("Edge margin check: %d\n",margin));
 
       if margin<=th_edge_margin then
         vcm.add_debug_message("Edge margin check fail\n");
         valid = false;
       end
+
     end
 
     -- ground check at the bottom of the post
@@ -227,13 +231,30 @@ function detect(color,color2)
   goal.propsB = {};
   goal.propsA = {};
   goal.v = {};
+
   for i = 1,npost do
     goal.propsB[i] = postB[ivalidB[i]];
     goal.propsA[i] = postA[i];
 
-    scale = math.max(postA[i].axisMinor / postDiameter,
-                      postA[i].axisMajor / postHeight,
-                      math.sqrt(postA[i].area / (postDiameter*postHeight)));
+    scale1 = postA[i].axisMinor / postDiameter;
+    scale2 = postA[i].axisMajor / postHeight;
+    scale3 = math.sqrt(postA[i].area / (postDiameter*postHeight) );
+
+    if goal.propsB[i].boundingBox[3]<2 then 
+      --This post is touching the top, so we shouldn't use the height
+      vcm.add_debug_message("Post touching the top\n");
+      scale = math.max(scale1,scale3);
+    else
+      scale = math.max(scale1,scale2,scale3);
+    end
+
+    if scale==scale1 then
+      vcm.add_debug_message("Post distance measured by width\n");
+    elseif scale==scale2 then
+      vcm.add_debug_message("Post distance measured by height\n");
+    else
+      vcm.add_debug_message("Post distance measured by area\n");
+    end
 
     goal.v[i] = HeadTransform.coordinatesA(postA[i].centroid, scale);
 
@@ -244,6 +265,7 @@ function detect(color,color2)
   if (npost == 2) then
     goal.type = 3; --Two posts
 
+--[[
     -- check for valid separation between posts:
     local dGoal = postA[2].centroid[1]-postA[1].centroid[1];
     local dPost = math.max(postA[1].axisMajor, postA[2].axisMajor);
@@ -255,18 +277,13 @@ function detect(color,color2)
       vcm.add_debug_message("Goal separation check fail\n")
       return goal;
     end
+--]]
 
   else
     goal.v[2] = vector.new({0,0,0,0});
 
     -- look for crossbar:
     local postWidth = postA[1].axisMinor;
---[[
-    local leftX = postA[1].boundingBox[1]-5*postWidth;
-    local rightX = postA[1].boundingBox[2]+5*postWidth;
-    local topY = postA[1].boundingBox[3]-*postWidth;
-    local bottomY = postA[1].boundingBox[3]+2*postWidth;
---]]
 
     local leftX = postA[1].boundingBox[1]-5*postWidth;
     local rightX = postA[1].boundingBox[2]+5*postWidth;
@@ -280,6 +297,12 @@ function detect(color,color2)
 
     vcm.add_debug_message(string.format(
 	"Crossbar stat: %.2f\n",crossbar_ratio));
+
+    --If the post touches the top, it should be a unknown post
+    if goal.propsB[1].boundingBox[3]<3 then --touching the top
+      dxCrossbar = 0; --Should be unknown post
+    end
+
     if (math.abs(dxCrossbar) > 0.6*postWidth) then
       if (dxCrossbar > 0) then
 	if use_centerpost>0 then
@@ -298,7 +321,9 @@ function detect(color,color2)
       -- unknown post
       goal.type = 0;
         -- eliminate small posts without cross bars
-
+      vcm.add_debug_message(string.format(
+	"Unknown single post size check:%d\n",postA[1].area));
+      
       if (postA[1].area < th_min_area_unknown_post) then
         vcm.add_debug_message("Post size too small");
         return goal;

@@ -18,7 +18,7 @@ vision.maxFPS = 30;
 vision.scaleB = 4;
 
 -- use this to enable line detection
-vision.enable_line_detection = 0;
+vision.enable_line_detection = 1;
 -- use this to enable spot detection
 vision.enable_spot_detection = 0;
 -- use this to enable midfield landmark detection
@@ -62,11 +62,11 @@ vision.ball.check_for_ground = 1;
 vision.goal={};
 vision.goal.th_min_color_count=25;
 vision.goal.th_nPostB = 6;
-vision.goal.th_min_areaB = 10;
+vision.goal.th_min_area = 50;
 vision.goal.th_min_orientation = 60*math.pi/180;
 vision.goal.th_min_fill_extent=0.35;
 vision.goal.th_aspect_ratio={2.5,15};
-vision.goal.th_edge_margin= 2;
+vision.goal.th_edge_margin= 5;
 vision.goal.th_bottom_boundingbox=0.9;
 vision.goal.th_ground_boundingbox={-7,7,-7,5}; 
 vision.goal.th_min_green_ratio = 0.2;

@@ -39,7 +39,8 @@ function entry()
   end
 
   wcm.set_kick_dir(1);--front kick default
-  wcm.set_kick_type(kickType);--walking kick default
+  wcm.set_kick_angle(0);
+  wcm.set_kick_type(kickType);
 
 end
 

@@ -43,6 +43,10 @@ DEF BLUE_GOAL Goal {
 }
 DEF BALL Ball {
   translation 0 0.0323921 0
+  mass 2.0
+  centerOfMass 0 -0.0001 0
+  linearDamping 0.17
+  angularDamping 0.33
 }
 DEF PLAYER_1_99 NaoV3RGPS {
   translation -1.5 0.35 2

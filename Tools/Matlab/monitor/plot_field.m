@@ -1,6 +1,6 @@
 function h = plot_field(handle,type)
   % plots the robocup field on the current axis
-  cla( handle );
+%  cla( handle );
 
   if type==0 % Kidsize
     fieldX = [-3.00  3.00 3.00 -3.00 -3.00];
@@ -34,9 +34,8 @@ function h = plot_field(handle,type)
     fieldB=[-5 5 -3.5 3.5];
   end
 
+  hold on;
   plot(fieldX, fieldY, 'g-');
-  hold on
-
   fill(goalX, goalY, 'y');
   plot(goalX, goalY, 'g-');
   fill(-goalX, goalY, 'c');

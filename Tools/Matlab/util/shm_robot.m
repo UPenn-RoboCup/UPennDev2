@@ -35,6 +35,7 @@ global MONITOR %for sending the webots check information
 
 
   h.wcmTeamdata  = shm(sprintf('wcmTeamdata%d%d%s',  h.teamNumber, h.playerID, h.user));
+  h.vcmRobot  = shm(sprintf('vcmRobot%d%d%s',  h.teamNumber, h.playerID, h.user)); 
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -353,6 +354,10 @@ global MONITOR %for sending the webots check information
       r.corner.v = h.vcmCorner.get_v();
       r.corner.v1 = h.vcmCorner.get_v1();
       r.corner.v2 = h.vcmCorner.get_v2();
+
+  %robot info
+      r.robot={};
+      r.robot.map=h.vcmRobot.get_map();
 
   % Add freespace boundary
       r.free = {};

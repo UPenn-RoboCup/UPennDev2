@@ -22,6 +22,11 @@ require('detectEyes');
 require('detectStretcher');
 --]]
 
+
+--for quick test
+require('detectRobot');
+
+
 -- Define Color
 colorOrange = Config.color.orange;
 colorYellow = Config.color.yellow;
@@ -36,6 +41,8 @@ enableSpot = Config.vision.enable_spot_detection;
 enableMidfieldLandmark = Config.vision.enable_midfield_landmark_detection;
 enableFreespace = Config.vision.enable_freespace_detection or 0;
 enableBoundary = Config.vision.enable_visible_boundary or 0;
+enableRobot = Config.vision.enable_robot_detection or 0;
+
 
 function entry()
   -- Initiate Detection
@@ -77,6 +84,7 @@ function entry()
 
   boundary={};
   boundary.detect=0;
+
 
 end
 
@@ -140,6 +148,11 @@ function update()
   -- visible boundary detection
   if enableBoundary == 1 then
     boundary = detectBoundary.detect();
+  end
+
+  if enableRobot ==1 then
+    --for quick testing
+    detectRobot.detect();
   end
 
 end

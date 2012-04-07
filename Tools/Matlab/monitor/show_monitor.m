@@ -189,6 +189,9 @@ function h=show_monitor()
 
     if MONITOR.enable3
       MONITOR.h3 = subplot(4,5,[11 12 16 17]);
+      cla(MONITOR.h3);
+%      plot_grid(r_mon.robot.map);  
+
       plot_field(MONITOR.h3,MONITOR.fieldtype);
 
       plot_robot( r_struct, r_mon,1,MONITOR.enable3 );
@@ -291,6 +294,25 @@ function h=show_monitor()
 
     end
   end
+
+
+  function plot_grid(map)
+    cbk=[0 0 0];cr=[1 0 0];cg=[0 1 0];cb=[0 0 1];cy=[1 1 0];cw=[1 1 1];
+    cmap=[cw;cbk;cg];
+    siz=sqrt(length(map)/6/4);    
+    map=floor(reshape(map,[6*siz 4*siz])'+0.5);
+    image([-3:1/siz:3],[-2:1/siz:2],map+1);  
+    colormap(cmap);
+
+
+  end
+
+
+
+
+
+
+
 
   function button1(varargin)
     MONITOR.enable1=mod(MONITOR.enable1+1,3);

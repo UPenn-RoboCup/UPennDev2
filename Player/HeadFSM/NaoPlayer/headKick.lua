@@ -51,6 +51,8 @@ function update()
   end
 --]]
 
+  Body.set_head_command({0,25*math.pi/180});
+
   if (t - ball.t > tLost) then
     return "ballLost";
   end

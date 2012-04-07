@@ -63,7 +63,7 @@ end
 --------------------------------------------------------------------
 --GeneralPlayer FSM test
 fsm = {};
-loadconfig('FSM/Config_WebotsNao_FSM')--For generalPlayer FSM
+loadconfig('FSM/Config_Nao_FSM')--For generalPlayer FSM
 fsm.game = 'RoboCup';
 fsm.body = {'GeneralPlayer'};
 --fsm.head = {'GeneralPlayer'};

@@ -43,6 +43,9 @@ require('Motion');
 require('walk');
 require('Speak')
 require('util')
+-- For team
+Team = require 'TeamPrime'
+
 darwin = false;
 webots = false;
 
@@ -102,13 +105,14 @@ function process_keyinput()
   else
     str = getch.get();
   end
-  if str>0 then
-    byte = str;
+  if #str>0 then
+    byte = string.byte(str,1);
+--[[
     -- Webots only return captal letter number
     if byte>=65 and byte<=90 then
       byte = byte + 32;
     end
-
+--]]
     -- Walk velocity setting
     if byte==string.byte("i") then	targetvel[1]=targetvel[1]+0.02;
     elseif byte==string.byte("j") then	targetvel[3]=targetvel[3]+0.1;

@@ -72,9 +72,9 @@ servo.p_param={
   16,16,16,             --LArm
   16,16,16,16,16,16,    --LLeg
   16,16,16,16,16,16,    --RLeg
---  32,32,32,32,32,32,  --RLeg
+  --  32,32,32,32,32,32,  --RLeg
   16,16,16,             --RArm
---  21,                 --Aux servo
+  --  21,                 --Aux servo
 }
 servo.i_param={
   0,0,          --Head
@@ -82,7 +82,7 @@ servo.i_param={
   0,0,0,0,0,0,  --LLeg
   0,0,0,0,0,0,  --RLeg
   0,0,0,        --RArm
---  21,         --Aux servo
+  --  21,         --Aux servo
 }
 servo.d_param={
   8,8,              --Head
@@ -90,7 +90,7 @@ servo.d_param={
   16,16,16,16,16,16,--LLeg
   16,16,16,16,16,16,--RLeg
   16,16,16,         --RArm
---  21,             --Aux servo
+  --  21,             --Aux servo
 }
 
 
@@ -113,7 +113,7 @@ elseif( robotName=='lucy' ) then
     8,10,12,14,16,18,--LLeg
     7,9,11,13,15,17,--RLeg
     1,3,5,		--RArm
---    21, 		--Aux servo
+    --    21, 		--Aux servo
   }
 elseif( robotName=='scarface' ) then
 end
@@ -140,15 +140,14 @@ else -- For new, PID firmware with 14-bit precision
     1024,2560,3072, --LArm
     2048,2048,2048,2048,2048,2048, --LLeg
     2048,2048,2048,2048,2048,2048, --RLeg
-    3072,1036,1024, --RArm
-    --		512, -- For aux
+    3072,1536,1024, --RArm
+    --          512, -- For aux
   };
   servo.moveRange=vector.ones(nJoint)*360*math.pi/180;
-  servo.armBias = vector.new({0,20,0,0,0,-20}) * math.pi/180 * servo.steps[1]/servo.moveRange[1];  
+  servo.armBias = vector.new({0,15,0,0,-45,0}) * math.pi/180 * servo.steps[1]/servo.moveRange[1];
   --[[ For aux
   servo.moveRange[21] = 300;
   servo.steps[21] = 1024;
   --]]
-
 end
 

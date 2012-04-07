@@ -2,12 +2,18 @@ module(..., package.seeall);
 require('Comm');
 require 'primecm'; -- Sending and receiving Kinect Data
 require('gcm');
+require 'serialization'
 
 -- Initialization
-Comm.init(Config.dev.ip_wireless,54321);
+Comm.init(Config.dev.ip_wired,54321);
 teamID   = gcm.get_team_number();
 playerID = gcm.get_team_player_id();
 msgTimeout = Config.team.msgTimeout;
+states = {};
+
+function entry()
+
+end
 
 function recv_msgs()
   while (Comm.size() > 0) do 
@@ -20,8 +26,12 @@ function recv_msgs()
 end
 
 function update()
+  local state = {};
   -- If we are player 0 then we have a PrimeSense
   if( playerID==0 ) then
+    local position = {};
+    local confidence = {};
+    local orientation = {};
     for i,v in ipairs(primecm.jointNames) do
       position[v] = primecm['get_position_'..v](  );
       --primecm['get_orientation_'..v](  );
@@ -39,14 +49,16 @@ function update()
   else
     recv_msgs();
     local state = states[0];
-    -- Push to our primecm
-    for i,v in ipairs(primecm.jointNames) do
-      primecm['set_position_'..v]( state.pos[v] );
-      --primecm['get_orientation_'..v](  );
-      primecm['get_confidence_'..v]( state.conf[v] );
+    if( state ) then
+      -- Push to our primecm
+      for i,v in ipairs(primecm.jointNames) do
+        primecm['set_position_'..v]( state.pos[v] );
+        --primecm['get_orientation_'..v](  );
+        primecm['get_confidence_'..v]( state.conf[v] );
+      end
+      primecm.set_skeleton_found( state.found );
+      primecm.set_skeleton_timestamp( state.t );
     end
-     primecm.set_skeleton_found( state.found );
-     primecm.set_skeleton_timestamp( state.t );
   end
 
 end

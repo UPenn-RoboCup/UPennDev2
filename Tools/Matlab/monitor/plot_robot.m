@@ -62,7 +62,7 @@
     roleColors = {'m','k', 'k--','g'};
 
     teamColors = ['b', 'r'];
-    hr = fill(xr, yr, teamColors(robot.teamColor+1));
+    hr = fill(xr, yr, teamColors(max(1,robot.teamColor+1)));
 
     if robot.role>1 
       h_role=plot([xr xr(1)],[yr yr(1)],roleColors{robot.role});
@@ -98,7 +98,7 @@
     roleColors = {'g','r','k', 'k--','r--','g--'};
 
     teamColors = ['b', 'r'];
-    hr = fill(xr, yr, teamColors(robot.teamColor+1));
+    hr = fill(xr, yr, teamColors(max(1,robot.teamColor+1)));
 
     if robot.role>1 
       h_role=plot([xr xr(1)],[yr yr(1)],roleColors{robot.role+1});

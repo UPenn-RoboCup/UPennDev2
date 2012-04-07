@@ -34,6 +34,8 @@ vision.store_ball_detections = 0;
 -- use this to substitute goal check with blue/yellow ball check
 vision.use_point_goal = 0;
 
+vision.enable_robot_detection = 1;
+
 ----------------------------
 --OP specific
 ----------------------------

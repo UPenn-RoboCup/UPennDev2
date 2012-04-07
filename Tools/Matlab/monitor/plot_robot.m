@@ -47,6 +47,7 @@
     end
   end
 
+
   hold off;
 
 %subfunctions
@@ -110,7 +111,7 @@
     ab_scale = 1/scale;
     quiver(x0, y0, xab*ab_scale,yab*ab_scale, 'k' );
   end
-
+  
   function plot_info(robot,angle)
     infostr=robot_info(robot,0,1);
     xtext=-1/scale;   xtext2=-0.4/scale;

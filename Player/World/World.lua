@@ -196,15 +196,6 @@ function update_vision()
 
   -- line update
   if vcm.get_line_detect() == 1 then
-   --TODO: Edge localization
-
---[[
-    --Long line localization
-    local v1=vcm.get_line_v1_1();
-    local v2=vcm.get_line_v2_1();
-    PoseFilter.line(v1,v2);
---]]
-
     local v = vcm.get_line_v();
     local a = vcm.get_line_angle();
 
@@ -234,6 +225,15 @@ end
 
 function update_shm()
   -- update shm values
+
+  --update ground truth
+  if Body.gps_enable then
+    gps_pose=Body.get_sensor_gps();
+    wcm.set_robot_gpspose(gps_pose);
+  else
+    wcm.set_robot_gpspose({pose.x,pose.y,pose.a});
+  end
+
   wcm.set_robot_pose({pose.x, pose.y, pose.a});
 
   wcm.set_ball_x(ball.x);

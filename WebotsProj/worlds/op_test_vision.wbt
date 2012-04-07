@@ -56,7 +56,7 @@ DEF BALL Ball {
 }
 #PlayerId 0 for goalie
 #TeamID 99 for test_vision
-DEF PLAYER_1_99 DARwInOP {
+DEF PLAYER_1_99 DARwInOPGPS {
   translation 1.5 0.3 0.8
   rotation 0 1 0 -1.56
   controller "darwin-op_team_0"

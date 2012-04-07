@@ -95,11 +95,11 @@ DEF BALL5 Ball {
   translation -3.46605 0.03 1.27166
   color 0 0.4 0.4
 }
-DEF PLAYER_1_0 DARwInOP {
+DEF PLAYER_1_99 DARwInOPGPS {
   translation -2.8 0.3 0
   rotation 0 1 0 1.56
   controller "darwin-op_team_0"
-  controllerArgs "1 0"
+  controllerArgs "1 99"
   plasticColor 0.2 0.2 0.2
   cameraWindowPosition 0.125 0
   waistBand TRUE

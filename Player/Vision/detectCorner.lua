@@ -2,6 +2,24 @@ module(..., package.seeall);
 
 require('Config');	-- For Ball and Goal Size
 
+T_thr = 0.15;
+
+
+function get_min_dist_line(x1,y1,x2,y2,x,y)
+  -- nearest point: k(x1,y1) + (1-k)(x2,y2)
+  -- dist: k^2 ((x1-x2)^2+(y1-y2)^2) +  
+  --           2k ((x1-x2)(x2-x) + (y1-y2)+(y2-y))  + C
+  k = -((x1-x2)*(x2-x) + (y1-y2)*(y2-y))/((x1-x2)^2+(y1-y2)^2);
+  if k>T_thr and k<1-T_thr then
+    clx = k*x1+(1-k)*x2;
+    cly = k*y1+(1-k)*y2;
+    dist = (clx-x)^2 + (cly-y)^2;
+    return clx,cly,dist;
+  else
+    return 0,0,999;
+  end
+end
+
 
 function get_min_dist(line,i,j)
   xi1=line.endpoint[i][1];
@@ -20,30 +38,71 @@ function get_min_dist(line,i,j)
   dist21 = (xi2-xj1)*(xi2-xj1) + (yi2-yj1)*(yi2-yj1);
   dist22 = (xi2-xj2)*(xi2-xj2) + (yi2-yj2)*(yi2-yj2);
 
-  --TODO: T shape detection
+  --T shape detection
 
-  mindist = math.min (math.min(dist11,dist12),math.min(dist21,dist22));
+  --line i to j1
+  xc_i_j1,yc_i_j1,disti_j1=get_min_dist_line(xi1,yi1,xi2,yi2,xj1,yj1);
+
+  --line i to j2
+  xc_i_j2,yc_i_j2,disti_j2=get_min_dist_line(xi1,yi1,xi2,yi2,xj2,yj2);
+
+  --line j to i1
+  xc_j_i1,yc_j_i1,distj_i1=get_min_dist_line(xj1,yj1,xj2,yj2,xi1,yi1);
+
+  --line j to i2
+  xc_j_i2,yc_j_i2,distj_i2=get_min_dist_line(xj1,yj1,xj2,yj2,xi2,yi2);
+
+  mindist = math.min (dist11,dist12,dist21,dist22,
+	disti_j1, disti_j2, distj_i1, distj_i2);
 
   if mindist==dist11 then
     return mindist, 
 	{(xi1+xj1)/2,(yi1+yj1)/2},	--corner position
 	{xi2,yi2},			--other line endpoint 1
-	{xj2,yj2};			--other line endpoint 2
+	{xj2,yj2},			--other line endpoint 2
+	1;			
   elseif mindist==dist12 then
     return mindist, 
 	{(xi1+xj2)/2,(yi1+yj2)/2},
 	{xi2,yi2},			--other line endpoint 1
-	{xj1,yj1};			--other line endpoint 2
+	{xj1,yj1},
+	1;
   elseif mindist==dist21 then
     return mindist,
 	{(xi2+xj1)/2,(yi2+yj1)/2},
 	{xi1,yi1},			--other line endpoint 1
-	{xj2,yj2};			--other line endpoint 2
-  else
+	{xj2,yj2},
+	1;
+  elseif mindist==dist22 then
     return mindist, 
 	{(xi2+xj2)/2,(yi2+yj2)/2},
 	{xi1,yi1},			--other line endpoint 1
-	{xj1,yj1};			--other line endpoint 2
+	{xj1,yj1},
+	1;	
+  elseif mindist==disti_j1 then
+    return mindist, 
+	{xc_i_j1,yc_i_j1},	--corner point
+	{xi1,yi1},			
+	{xi2,yi2},	
+	2;	
+  elseif mindist==disti_j2 then
+    return mindist, 
+	{xc_i_j2,yc_i_j2},	--corner point
+	{xi1,yi1},			
+	{xi2,yi2},	
+	2;	
+  elseif mindist==distj_i1 then
+    return mindist, 
+	{xc_j_i1,yc_j_i1},	--corner point
+	{xj1,yj1},			
+	{xj2,yj2},	
+	2;	
+  else
+    return mindist, 
+	{xc_j_i2,yc_j_i2},	--corner point
+	{xj1,yj1},			
+	{xj2,yj2},	
+	2;	
   end
 end
 
@@ -56,7 +115,7 @@ function get_line_length(line,i)
   return math.sqrt((xi1-xi2)^2+(yi1-yi2)^2);
 end
 
-min_dist=5;
+min_dist=10;
 min_length=3;
 
 function detect(line)
@@ -75,14 +134,22 @@ function detect(line)
   linepairv20={};
   linepairangle={}
   linepairdist={}
+  linepairtype={}
 
   -- Check perpendicular lines
+  vcm.add_debug_message(string.format("\nCorner: total %d lines\n",line.nLines))
+
   for i=1,line.nLines-1 do
     for j=i+1,line.nLines do
       ang=math.abs(util.mod_angle(line.angle[i]-line.angle[j]));
       if math.abs(ang-math.pi/2)<20*math.pi/180 then
 	--Check endpoint distances in labelB
-	mindist, vc0, v10, v20 = get_min_dist(line,i,j);
+	mindist, vc0, v10, v20, cornertype = get_min_dist(line,i,j);
+
+        vcm.add_debug_message(string.format(
+		"line %d-%d :angle %d mindist %d type %d\n",
+		i,j,ang*180/math.pi, mindist,cornertype));
+
 	if mindist<min_dist and
 	get_line_length(line,i)>min_length and
 	get_line_length(line,j)>min_length then 
@@ -93,6 +160,7 @@ function detect(line)
 	  linepairv20[linepaircount]=v20;
 	  linepairangle[linepaircount]=ang;
 	  linepairdist[linepaircount]=mindist;
+	  linepairtype[linepaircount]=cornertype;
 	end
        end
     end
@@ -100,14 +168,6 @@ function detect(line)
 
   if linepaircount==0 then 
     return corner;
-  end
-
-  vcm.add_debug_message(string.format("\nCorner: total %d lines\n",line.nLines))
-
-  for i=1,linepaircount do
-    vcm.add_debug_message(string.format("line %d-%d angle %d mindist %d\n",
-	linepair[i][1],linepair[i][2],linepairangle[i]*180/math.pi,
-	linepairdist[i] ));
   end
 
   best_corner=1;
@@ -125,6 +185,7 @@ function detect(line)
   end
 
   corner.linepair=linepair[best_corner]
+  corner.type=linepairtype[best_corner];
 
   vc0=linepairvc0[best_corner];
   v10=linepairv10[best_corner];
@@ -158,8 +219,12 @@ function detect(line)
      "Corner: center circle check fail at %.2f\n",center_dist))
     return corner;
   end
- 
-  corner.type = 1;--1 for L, 2 for T
+
+  if corner.type==1 then
+     vcm.add_debug_message("L-corner detected\n");
+  else
+     vcm.add_debug_message("T-corner detected\n");
+  end
 
   corner.detect = 1;
   return corner;

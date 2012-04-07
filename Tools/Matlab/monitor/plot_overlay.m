@@ -142,16 +142,26 @@ function plot_overlay(r_mon,scale)
       x2=endpoint(2)/scale*4;
       y1=endpoint(3)/scale*4;
       y2=endpoint(4)/scale*4;
-      plot([x1 x2],[y1 y2],'k--','LineWidth',6);
+      plot([x1 x2],[y1 y2],'k--','LineWidth',3);
     end
   end
 
   function plot_corner(cornerStats,scale)
+    if cornerStats.type==1
+      strgoalpos = 'L';
+      marker='r';
+    else
+      strgoalpos = 'T';
+      marker='b';
+    end   
+
     vc0=(cornerStats.vc0+0.5)/scale*4;
     v10=(cornerStats.v10+0.5)/scale*4;
     v20=(cornerStats.v20+0.5)/scale*4;
-    plot([vc0(1) v10(1)],[vc0(2) v10(2)],'r','LineWidth',6);
-    plot([vc0(1) v20(1)],[vc0(2) v20(2)],'r','LineWidth',6);
+    plot([vc0(1) v10(1)],[vc0(2) v10(2)],marker,'LineWidth',4);
+    plot([vc0(1) v20(1)],[vc0(2) v20(2)],marker,'LineWidth',4);
+    b_name=text(vc0(1),vc0(2), strgoalpos,'BackGroundColor',[.7 .7 .7]);
+    set(b_name,'FontSize',8);
   end
 
   

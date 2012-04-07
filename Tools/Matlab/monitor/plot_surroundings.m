@@ -20,6 +20,7 @@ function [ ] = plot_surroundings( handle, mon_struct )
     plot_goal(mon_struct.goal);
     plot_landmark(mon_struct.landmark);
     plot_line(mon_struct.line);
+    plot_corner(mon_struct.corner);
     hold off;
 
     %subfunctions
@@ -111,6 +112,21 @@ function [ ] = plot_surroundings( handle, mon_struct )
       end
     end
 
+
+    function plot_corner(corner,scale)
+      if corner.detect==1
+        if corner.type==1
+          marker='r';
+        else
+          marker='b';
+        end     
+        v=corner.v;
+        v1=corner.v1;
+        v2=corner.v2;
+        plot(-[v(2) v2(2)],[v(1) v2(1)],marker,'LineWidth',4);
+        plot(-[v1(2) v(2)],[v1(1) v(1)],marker,'LineWidth',4);
+      end
+    end
 
 %{
     bd = mon_struct.bd;

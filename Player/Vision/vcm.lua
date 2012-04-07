@@ -130,6 +130,10 @@ shared.corner.v = vector.zeros(4);
 shared.corner.v1 = vector.zeros(4);
 shared.corner.v2 = vector.zeros(4);
 
+--Global map
+shared.robot={};
+shared.robot.map=vector.zeros(2400);
+
 --[[
 shared.spot = {};
 shared.spot.detect = vector.zeros(1);

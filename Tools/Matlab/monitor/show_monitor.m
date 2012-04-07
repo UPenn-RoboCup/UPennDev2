@@ -108,7 +108,7 @@ function h=show_monitor()
       MONITOR.hInfoText=uicontrol('Style','text',...
 	'Units','Normalized', 'Position',[.02 .25 .07 .20]);
 
-      MONITOR.hButton13=uicontrol('Style','pushbutton','String','SPL',...
+      MONITOR.hButton13=uicontrol('Style','pushbutton','String','Kidsize',...
 	'Units','Normalized', 'Position',[.02 .18 .07 .07],'Callback',@button13);
 
       MONITOR.hDebugText=uicontrol('Style','text',...
@@ -390,9 +390,9 @@ function h=show_monitor()
 
   function button13(varargin)
     MONITOR.fieldtype=mod(MONITOR.fieldtype+1,3);
-    if MONITOR.fieldtype==1 set(MONITOR.hButton13,'String', 'KidSize');
+    if MONITOR.fieldtype==1 set(MONITOR.hButton13,'String', 'SPL');
     elseif MONITOR.fieldtype==2 set(MONITOR.hButton13,'String', 'TeenSize');
-    else set(MONITOR.hButton13,'String', 'SPL');
+    else set(MONITOR.hButton13,'String', 'Kidsize');
     end
   end
 end

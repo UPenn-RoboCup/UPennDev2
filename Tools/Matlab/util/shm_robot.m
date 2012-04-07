@@ -81,6 +81,9 @@ global MONITOR %for sending the webots check information
         pose = h.wcmRobot.get_pose();
         r.pose = struct('x', pose(1), 'y', pose(2), 'a', pose(3));
         
+ 	gpspose = h.wcmRobot.get_gpspose();
+        r.gpspose = struct('x', gpspose(1), 'y', gpspose(2), 'a', gpspose(3));
+
         ballx = h.wcmBall.get_x();
 	bally = h.wcmBall.get_y();
         ballt = h.wcmBall.get_t();
@@ -342,6 +345,7 @@ global MONITOR %for sending the webots check information
       r.corner = {};
       r.corner.detect = h.vcmCorner.get_detect();
 
+      r.corner.type = h.vcmCorner.get_type();
       r.corner.vc0 = h.vcmCorner.get_vc0();
       r.corner.v10 = h.vcmCorner.get_v10();
       r.corner.v20 = h.vcmCorner.get_v20();

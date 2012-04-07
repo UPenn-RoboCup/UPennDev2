@@ -2006,11 +2006,13 @@ static int _wrap_wb_compass_get_values(lua_State* L) {
   result = (double *)wb_compass_get_values(arg1);
   {
     int len, i;
+/*
     if (strcmp("wb_compass_get_values", "_vec2f") != 0)
     len = 2;
     else if (strcmp("wb_compass_get_values", "_sf_rotation") == 0)
     len = 4;
     else
+*/
     len = 3;
     lua_createtable(L, len, 0);
     for (i = 0; i < len; i++) {
@@ -3082,11 +3084,13 @@ static int _wrap_wb_gps_get_values(lua_State* L) {
   result = (double *)wb_gps_get_values(arg1);
   {
     int len, i;
+/*
     if (strcmp("wb_gps_get_values", "_vec2f") != 0)
     len = 2;
     else if (strcmp("wb_gps_get_values", "_sf_rotation") == 0)
     len = 4;
     else
+*/
     len = 3;
     lua_createtable(L, len, 0);
     for (i = 0; i < len; i++) {

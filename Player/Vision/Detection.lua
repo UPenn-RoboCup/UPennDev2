@@ -195,6 +195,8 @@ function update_shm()
     local endpoint21=vector.zeros(6);
     local endpoint22=vector.zeros(6);
 
+    max_length=0;
+    max_index=1;
     for i=1,line.nLines do 
       v1x[i]=line.v[i][1][1];
       v1y[i]=line.v[i][1][2];
@@ -205,7 +207,12 @@ function update_shm()
       endpoint12[i]=line.endpoint[i][3];
       endpoint21[i]=line.endpoint[i][2];
       endpoint22[i]=line.endpoint[i][4];
+      if max_length<line.length[i] then
+        max_length=line.length[i];
+	max_index=i;
+      end
     end
+
     vcm.set_line_v1x(v1x);
     vcm.set_line_v1y(v1y);
     vcm.set_line_v2x(v2x);
@@ -215,10 +222,9 @@ function update_shm()
     vcm.set_line_endpoint21(endpoint21);
     vcm.set_line_endpoint22(endpoint22);
 
-    vcm.set_line_v(
-	{(v1x[1]+v2x[1])/2,(v1y[1]+v2y[1])/2,0,0}
-	);
-    vcm.set_line_angle(line.angle[1]);
+    vcm.set_line_v({(v1x[max_index]+v2x[max_index])/2,
+	 	   (v1y[max_index]+v2y[max_index])/2,0,0});
+    vcm.set_line_angle(line.angle[max_index]);
 
   end
   vcm.set_corner_detect(corner.detect);

@@ -16,6 +16,7 @@
     ca=1;sa=0;
     plot_fallen_robot(robot_struct,scale)
     plot_info(robot_struct,scale);
+
   else
     if drawlevel==4
       plot_particle(r_mon.particle);
@@ -23,14 +24,19 @@
       plot_landmark(r_mon.landmark,scale);
       plot_line(r_mon.line,scale);
       plot_corner(r_mon.corner,scale);
+      plot_fov(r_mon.fov);
+      plot_gps_robot(robot_struct,scale);
+
     else
       plot_robot(robot_struct,scale);
       plot_info(robot_struct,scale);
       plot_ball(robot_struct,scale);
-    
+   
       if drawlevel==2
 	plot_goal_team(robot_struct,scale);
 %	plot_landmark_team(robot_struct,scale);
+        plot_gps_robot(robot_struct,scale);
+
       elseif drawlevel==3
         plot_line(r_mon.line,scale);
         plot_corner(r_mon.corner,scale);
@@ -61,6 +67,19 @@
       h_role=plot([xr xr(1)],[yr yr(1)],roleColors{robot.role});
       set(h_role,'LineWidth',3);
     end
+  end
+
+  function plot_gps_robot(robot,scale)
+    xgps = robot_struct.gpspose.x;
+    ygps = robot_struct.gpspose.y;
+    cagps = cos(robot_struct.gpspose.a);
+    sagps = sin(robot_struct.gpspose.a);
+
+    pl_len=1;
+    dx=cagps*pl_len;
+    dy=sagps*pl_len;
+    quiver(xgps,ygps,dx,dy,0,'b');
+    plot(xgps,ygps,'bo');
   end
 
 
@@ -255,25 +274,31 @@
 
   function plot_corner(corner,scale)
     if corner.detect==1
+      if corner.type==1
+        marker='r';
+      else
+        marker='b';
+      end     
+
       v=corner.v;
       v1=corner.v1;
       v2=corner.v2;
 
       x1 = v(1)*ca - v(2)*sa + robot_struct.pose.x;
       y1 = v(1)*sa + v(2)*ca + robot_struct.pose.y;
-      plot([x0 x1],[y0 y1],'r');
+      plot([x0 x1],[y0 y1],marker);
 
       x1 = v(1)*ca - v(2)*sa + robot_struct.pose.x;
       y1 = v(1)*sa + v(2)*ca + robot_struct.pose.y;
       x2 = v1(1)*ca - v1(2)*sa + robot_struct.pose.x;
       y2 = v1(1)*sa + v1(2)*ca + robot_struct.pose.y;
-      plot([x1 x2],[y1 y2],'r','LineWidth',3);
+      plot([x1 x2],[y1 y2],marker,'LineWidth',3);
 
       x1 = v(1)*ca - v(2)*sa + robot_struct.pose.x;
       y1 = v(1)*sa + v(2)*ca + robot_struct.pose.y;
       x2 = v2(1)*ca - v2(2)*sa + robot_struct.pose.x;
       y2 = v2(1)*sa + v2(2)*ca + robot_struct.pose.y;
-      plot([x1 x2],[y1 y2],'r','LineWidth',3);
+      plot([x1 x2],[y1 y2],marker,'LineWidth',3);
     end
   end
 

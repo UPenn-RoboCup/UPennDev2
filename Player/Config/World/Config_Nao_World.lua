@@ -50,6 +50,8 @@ world.Lcorner[14]={-3.0,-1.1};
 --Center circle junction
 world.Lcorner[15]={0,0.6};
 world.Lcorner[16]={0,-0.6};
+world.Lcorner[17]={0.6,0};
+world.Lcorner[18]={-0.6,0};
 
 
 

@@ -13,17 +13,11 @@ t0 = 0;
 
 --TODO: implement headkick for nao head SMs
 
--- follow period
---[[
 timeout = Config.fsm.headKick.timeout;
 tLost = Config.fsm.headKick.tLost;
 pitch0 = Config.fsm.headKick.pitch0;
 xMax = Config.fsm.headKick.xMax;
 yMax = Config.fsm.headKick.yMax;
---]]
-
-tLost = 3.0;
-timeout = 10.0;
 
 function entry()
   print("Head SM:".._NAME.." entry");
@@ -35,7 +29,6 @@ function update()
   local t = Body.get_time();
   local ball = wcm.get_ball();
 
---[[
   pitchBias=vcm.get_camera_pitchBias(); --Robot specific head angle bias
 
   if ball.x<xMax and math.abs(ball.y)<yMax then
@@ -49,9 +42,6 @@ function update()
    pitch = currentPitch + p*(pitch - currentPitch);
    Body.set_head_command({yaw, pitch});
   end
---]]
-
-  Body.set_head_command({0,25*math.pi/180});
 
   if (t - ball.t > tLost) then
     return "ballLost";

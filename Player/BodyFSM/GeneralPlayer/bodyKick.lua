@@ -112,8 +112,13 @@ function check_ball_pos()
   print("Ball position: ",ball.x,ball.y)
   print("Ball target:",xTarget,yTarget)
 
-  if math.abs(ball.x-xTarget)<kickTh[1] and
-    math.abs(ball.y-yTarget)<kickTh[2] and
+  ballErr = {ball.x-xTarget,ball.y-yTarget};
+  print("ball error:",unpack(ballErr))
+  print("Ball pos threshold:",unpack(kickTh))
+  print("Ball seen: %.f sec ago",t-ball.t);
+
+  if math.abs(ballErr[1])<kickTh[1] and
+    math.abs(ballErr[2])<kickTh[2] and
     (t - ball.t <0.5) then
     return true;
   else

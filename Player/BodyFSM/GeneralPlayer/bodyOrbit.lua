@@ -5,6 +5,7 @@ require('walk')
 require('vector')
 require('Config')
 require('wcm')
+require('behavior')
 
 t0 = 0;
 timeout = Config.fsm.bodyOrbit.timeout;
@@ -23,6 +24,7 @@ function entry()
   t0 = Body.get_time();
   kickAngle=  wcm.get_kick_angle();
   direction,angle=get_orbit_direction();
+  behavior.update();
 end
 
 function get_orbit_direction()

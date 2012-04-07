@@ -48,8 +48,6 @@ if game.teamNumber==0 then game.teamColor = 0; --Blue team
 else game.teamColor = 1; --Red team
 end
 
-
-
 -- FSM Parameters
 fsm = {};
 loadconfig('FSM/Config_WebotsNao_FSM')--For generalPlayer FSM
@@ -63,6 +61,7 @@ else
   fsm.head = {'NaoPlayer'};
 end
 --]]
+
 --------------------------------------------------------------------
 --GeneralPlayer FSM test
 fsm.game = 'RoboCup';
@@ -80,8 +79,8 @@ fsm.head = {'NaoDemo'};
 fsm.enable_obstacle_detection = 1;
 fsm.kickoff_wait_enable = 1;
 fsm.playMode = 2; --1 for demo, 2 for orbit, 3 for direct approach
-fsm.enable_walkkick = 1;
-fsm.enable_sidekick = 1;
+fsm.enable_walkkick = 0;
+fsm.enable_sidekick = 0;
 
 -- Team Parameters
 team = {};
@@ -123,7 +122,3 @@ stance.bodyHeightDive= 0.25;
 stance.bodyTiltStance=0*math.pi/180; --bodyInitial bodyTilt, 0 for webots
 stance.dpLimitStance = vector.new({.04, .03, .04, .05, .4, .1});
 stance.delay = 80; --amount of time to stand still after standing to regain balance.
-
---Skip all checks in vision for 160*120 image 
-webots_vision = 1; 
-speedFactor = 1.0; 

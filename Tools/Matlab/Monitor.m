@@ -15,7 +15,7 @@ function MonitorShm(team,player)
     SHM_DIR='/dev/shm';
   end
 
-  tFPS = 16; % Target FPS
+  tFPS = 8; % Target FPS
   dInterval = 5; %Vision update interval for team view
 
 %%%%% Init SHM for robots

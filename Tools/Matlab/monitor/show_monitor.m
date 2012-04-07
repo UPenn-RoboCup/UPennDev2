@@ -224,6 +224,7 @@ function h=show_monitor()
 
     %Draw common field 
     h_c=subplot(5,5,[1:15]);
+    cla(h_c);
     plot_field(h_c,1);
 
     for i=1:length(playerNumber)
@@ -269,6 +270,7 @@ function h=show_monitor()
 
     %Draw common field 
     h_c=subplot(5,5,[1:15]);
+    cla(h_c);
     plot_field(h_c,1);
 
     for i=1:5

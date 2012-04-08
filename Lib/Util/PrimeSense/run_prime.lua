@@ -18,48 +18,99 @@ end
 
 package.path = cwd .. '/../Util/?.lua;' .. package.path;
 package.path = cwd .. '/../Config/?.lua;' .. package.path;
+package.path = cwd .. '/../World/?.lua;' .. package.path;
 
-require 'primesense'
 require 'unix';
 require 'primecm'
+require 'gcm'
 run_once = false;
+net = false;
+logs = false;
+if( arg[1] ) then
+  dofile( arg[1] )
+  logs = true;
+else
+  require 'primesense'  
+end
 
-init = false; -- Not initialized yet
+-- Issue debug line telling which mode we are in
+teamID   = gcm.get_team_number();
+playerID = gcm.get_team_player_id();
+print '\n\n=====================';
+print('Run Once?',run_once);
+print('Run Network?',net);
+print('Run Logs?',logs);
+print('Team/Player'..teamID..'/'..playerID);
+print '=====================';
+unix.usleep(1e6*2)
+
 t0 = unix.time()
 t_init = 0;
-while(true) do
-  -- Head is first joint
-  local ret = primesense.update_joints()
-  local timestamp = unix.time();
-  if( ret ) then
-    if( not init ) then
-      -- Skip first Joint reading
-      print('Initialized for Lua!')
-      init = true;
-      t_init = timestamp
-    else
-      for i,v in ipairs(primecm.jointNames) do
-        local pos, rot, confidence = primesense.get_jointtables(i);
-        primecm['set_position_'..v]( pos );
-        primecm['set_orientation_'..v]( rot );
-        primecm['set_confidence_'..v]( confidence );
-        if(run_once) then
-          print( v, unpack(pos) );
-        end
-      end
-      -- Update Shm
-      primecm.set_skeleton_found( 1 );
-      primecm.set_skeleton_timestamp( timestamp );
+if( logs ) then
+  n_logs = table.getn(log);
+end
+if( net ) then
+  Team = require 'TeamPrime'
+  Team.entry()
+end
 
-      if(run_once) then
-        return;
-      end
-
-    end
+count = 0;
+while( not logs or count<=n_logs ) do
+  count = count + 1;
+  if( not logs ) then
+    ret = primesense.update_joints();
+    timestamp = unix.time();
   else
-    init = false;
-    primecm.set_skeleton_found( 0 );    
+    timestamp = log[count].t;
+    t_start = unix.time();    
+  end
+  if( logs or ret ) then
+    for i,v in ipairs(primecm.jointNames) do
+      -- local pos, rot, confidence = primesense.get_jointtables(i);
+      if( logs ) then
+        pos = { log[count].x[i],log[count].y[i],log[count].z[i] };
+        confidence = { log[count].posconf[i],log[count].rotconf[i] };
+      else
+        pos, rot, confidence = primesense.get_jointtables(i);
+      end
+
+      primecm['set_position_'..v]( pos );
+      if( not logs ) then
+        primecm['set_orientation_'..v]( rot );
+      end
+      primecm['set_confidence_'..v]( confidence );
+      if( net ) then
+        Team.update()
+      end
+      -- Debug all the joints
+      if(run_once) then
+        print( v, unpack(pos) );
+      end
+    end
+    primecm.set_skeleton_found( 1 );
+    primecm.set_skeleton_timestamp( timestamp );
+  else -- Not running from logs, and primesense does not detect anyone
+    primecm.set_skeleton_found( 0 );
   end
 
+  -- Done running
+  if(run_once) then
+    return;
+  end
+
+  -- Timing
+  if(logs and count<n_logs) then
+    print('Count:',count,'Time:',timestamp );    
+    local timestamp_next = log[count+1].t;
+    local twait = timestamp_next-timestamp;
+    local t_loop = unix.time() - t_start;
+    unix.usleep( 1e6*math.max(twait-t_loop,0) );
+  end
+
+end
+-- After done playing, reset the skeleton found variable so no more movement
+primecm.set_skeleton_found( 0 );
+if( net ) then
+  Team.update();
 end
 

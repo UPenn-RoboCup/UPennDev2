@@ -355,9 +355,10 @@ global MONITOR %for sending the webots check information
       r.corner.v1 = h.vcmCorner.get_v1();
       r.corner.v2 = h.vcmCorner.get_v2();
 
-  %robot info
+  %robot map info
       r.robot={};
       r.robot.map=h.vcmRobot.get_map();
+      r.robot.lowpoint=h.vcmRobot.get_lowpoint();
 
   % Add freespace boundary
       r.free = {};

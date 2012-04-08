@@ -11,6 +11,7 @@ require('headScan')
 require('headTrack')
 require('headLookGoal')
 require('headSweep')
+require('headKick')
 require('headKickFollow')
 
 sm = fsm.new(headIdle);
@@ -21,6 +22,7 @@ sm:add_state(headScan);
 sm:add_state(headTrack);
 sm:add_state(headLookGoal);
 sm:add_state(headSweep);
+sm:add_state(headKick);
 sm:add_state(headKickFollow);
 
 sm:set_transition(headStart, 'done', headTrack);

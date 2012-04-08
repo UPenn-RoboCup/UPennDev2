@@ -44,7 +44,7 @@ DEF BLUE_GOAL Goal {
 DEF BALL Ball {
   translation 0 0.0323921 0
 }
-DEF PLAYER_1_1 NaoV3R {
+DEF PLAYER_1_1 NaoV3RGPS {
   translation 0.75 0.35 2
   rotation 0 1 0 -3.14
   controller "nao_team_0"
@@ -55,7 +55,7 @@ DEF PLAYER_1_1 NaoV3R {
   waistBandColor 0.9 0.5 0.5
 }
 
-DEF PLAYER_2_1 NaoV3R {
+DEF PLAYER_2_1 NaoV3RGPS {
   translation 1.5 0.35 2
   rotation 0 1 0 -3.14
   controller "nao_team_0"
@@ -65,7 +65,7 @@ DEF PLAYER_2_1 NaoV3R {
   waistBand TRUE
   waistBandColor 0.9 0.5 0.5
 }
-DEF PLAYER_3_1 NaoV3R {
+DEF PLAYER_3_1 NaoV3RGPS {
   translation 2.25 0.35 2
   rotation 0 1 0 -3.14
   controller "nao_team_0"

@@ -25,7 +25,6 @@ static int maxJ[NMAX];
 static int sumJ[NMAX];
 
 
-
 int lua_goal_posts(lua_State *L) {
   uint8_t *im_ptr = (uint8_t *) lua_touserdata(L, 1);
   if ((im_ptr == NULL) || !lua_islightuserdata(L, 1)) {
@@ -140,13 +139,6 @@ int lua_goal_posts(lua_State *L) {
 }
 
 
-
-
-
-
-
-
-
 int lua_tilted_goal_posts(lua_State *L) {
   uint8_t *im_ptr = (uint8_t *) lua_touserdata(L, 1);
   if ((im_ptr == NULL) || !lua_islightuserdata(L, 1)) {
@@ -228,7 +220,6 @@ int lua_tilted_goal_posts(lua_State *L) {
       connect = false;
     }
   }
-
 
   if (connect) {
     postVec.push_back(post);

@@ -682,6 +682,18 @@ function resample()
     end
   end
 
+  --Mirror some particles
+--[[
+  n_mirror = 10;
+  for i=1,n_mirror do
+    if i~=iMax then
+	xp2[i]=-xp[i];
+	yp2[i]=-yp[i];
+	ap2[i]=-ap[i];
+    end
+  end
+--]]
+
   -- always put max particle
   xp2[1] = xp[iMax];
   yp2[1] = yp[iMax];

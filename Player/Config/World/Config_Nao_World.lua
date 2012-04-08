@@ -27,6 +27,37 @@ world.landmarkYellow = {0.0, 2.4};
 world.cResample = 10; --Resampling interval
 world.odomScale = {1.06, 1.06, 0.97};
 
+--They are SPL values
+world.Lcorner={};
+--Field edge
+world.Lcorner[1]={3.0,2.0};
+world.Lcorner[2]={3.0,-2.0};
+world.Lcorner[3]={-3.0,2.0};
+world.Lcorner[4]={-3.0,-2.0};
+--Center T edge
+world.Lcorner[5]={0,2.0};
+world.Lcorner[6]={0,-2.0};
+--Penalty box edge
+world.Lcorner[7]={-2.4,1.1};
+world.Lcorner[8]={-2.4,-1.1};
+world.Lcorner[9]={2.4,1.1};
+world.Lcorner[10]={2.4,-1.1};
+--Penalty box T edge
+world.Lcorner[11]={3.0,1.1};
+world.Lcorner[12]={3.0,-1.1};
+world.Lcorner[13]={-3.0,1.1};
+world.Lcorner[14]={-3.0,-1.1};
+--Center circle junction
+world.Lcorner[15]={0,0.6};
+world.Lcorner[16]={0,-0.6};
+world.Lcorner[17]={0.6,0};
+world.Lcorner[18]={-0.6,0};
+
+
+
+
+
+
 --same-colored goalposts
 world.use_same_colored_goal=1;
 --world.use_same_colored_goal=0;

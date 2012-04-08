@@ -31,6 +31,7 @@ extern "C" {
 #include "lua_field_lines.h"
 #include "lua_field_spots.h"
 #include "lua_field_occupancy.h"
+#include "lua_robots.h"
 
 //Downsample camera YUYV image for monitor
 
@@ -408,6 +409,7 @@ static const struct luaL_reg imageProc_lib [] = {
   {"field_lines", lua_field_lines},
   {"field_spots", lua_field_spots},
   {"field_occupancy", lua_field_occupancy},
+  {"robots", lua_robots},
   {"subsample_yuyv2yuv", lua_subsample_yuyv2yuv},
   {"subsample_yuyv2yuyv", lua_subsample_yuyv2yuyv},
   {NULL, NULL}

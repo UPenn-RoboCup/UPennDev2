@@ -15,6 +15,9 @@ walk.velLimitY={-.03,.03};
 walk.velLimitA={-.3,.3};
 walk.velDelta={0.02,0.02,0.15} 
 
+walk.footSizeX = {-0.05, 0.05};
+walk.stanceLimitMarginY = 0.015;
+
 ----------------------------------------------
 -- Stance parameters
 ---------------------------------------------
@@ -79,6 +82,10 @@ walk.sideKickVel3 = {0.09,0.02,0};
 walk.sideKickSupportMod = {{0,0},{0,0}};
 walk.tStepSideKick = 0.50;
 
+
+--[[
+
+
 --angled sidekick #1
 walk.sideKickVel1 = {0.04,0.04,20*math.pi/180};
 walk.sideKickVel2 = {0.05,-0.06,-40*math.pi/180};
@@ -89,7 +96,7 @@ walk.sideKickVel1 = {0.04,0.02,20*math.pi/180};
 walk.sideKickVel2 = {-0.04,-0.03,20*math.pi/180};
 walk.sideKickVel3 = {0.06,0.02,20*math.pi/180};
 
-
+--]]
 
 --------------------------------------------
 -- Robot - specific calibration parameters

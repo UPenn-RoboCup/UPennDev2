@@ -1,4 +1,4 @@
-function plot_overlay(r_mon,scale)
+function plot_overlay(r_mon,scale,drawlevel)
 %This function plots overlaid vision information 
 %Over the camera yuyv feed or labeled images
     overlay_level=0;
@@ -35,6 +35,12 @@ function plot_overlay(r_mon,scale)
 	plot_corner(r_mon.corner,scale)
 	hold off;
       end
+    
+     if drawlevel ==2 
+       plot_robot_lowpoint(r_mon.robot,scale)
+     end
+
+
     end
 
 
@@ -54,7 +60,6 @@ function plot_overlay(r_mon,scale)
       set(b_name,'FontSize',8);
     end
   end
-
 
   function plot_goalposts( postStats, v, rollAngle, scale)
 
@@ -162,6 +167,15 @@ function plot_overlay(r_mon,scale)
     plot([vc0(1) v20(1)],[vc0(2) v20(2)],marker,'LineWidth',4);
     b_name=text(vc0(1),vc0(2), strgoalpos,'BackGroundColor',[.7 .7 .7]);
     set(b_name,'FontSize',8);
+  end
+
+  function plot_robot_lowpoint(robotState,scale)
+    hold on;
+    siz=length(robotState.lowpoint);
+    x=[1:siz]/scale*4;
+    y=robotState.lowpoint/scale*4;
+    plot(x,y,'r--');
+    hold off;
   end
 
   

@@ -77,4 +77,6 @@ for l=1,n_logs do
 end
 -- After done playing, reset the skeleton found variable so no more movement
 primecm.set_skeleton_found( 0 );
-
+if( net ) then
+  Team.update();
+end

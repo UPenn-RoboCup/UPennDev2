@@ -70,6 +70,7 @@ end
 -- initialize state machines
 Motion.entry();
 --Motion.event("standup");
+Team.entry();
 
 Body.set_head_hardness({0.4,0.4});
 
@@ -173,7 +174,7 @@ function update()
 
   -- Update the relevant engines
   Body.update();
-
+  Team.update();
   Motion.update();
   if( sm_running==1 ) then
     BodyFSM.update();

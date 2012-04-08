@@ -150,8 +150,8 @@ function update()
     boundary = detectBoundary.detect();
   end
 
+  -- Global robot detection
   if enableRobot ==1 then
-    --for quick testing
     detectRobot.detect();
   end
 

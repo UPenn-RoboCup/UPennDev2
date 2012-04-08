@@ -130,31 +130,43 @@ shared.corner.v = vector.zeros(4);
 shared.corner.v1 = vector.zeros(4);
 shared.corner.v2 = vector.zeros(4);
 
---Global map
-shared.robot={};
-shared.robot.map=vector.zeros(2400);
 
---[[
-shared.spot = {};
-shared.spot.detect = vector.zeros(1);
---]]
+enable_robot_detection = Config.vision.enable_robot_detection or 0;
 
-shared.freespace = {};
-shared.freespace.detect = vector.zeros(1);
-shared.freespace.block = vector.zeros(1);
-shared.freespace.nCol = vector.zeros(1);
-shared.freespace.nRow = vector.zeros(1);
---shared.freespace.vboundA = vector.zeros(2*Config.camera.width);
---shared.freespace.pboundA = vector.zeros(2*Config.camera.width);
---shared.freespace.tboundA = vector.zeros(Config.camera.width);
-shared.freespace.vboundB = vector.zeros(2*Config.camera.width/(Config.vision.scaleB));
-shared.freespace.pboundB = vector.zeros(2*Config.camera.width/(Config.vision.scaleB));
-shared.freespace.tboundB = vector.zeros(Config.camera.width/(Config.vision.scaleB));
+if enable_robot_detection>0 then
+  map_div = Config.vision.robot.map_div;
+  --Global map
+  shared.robot={};
+  shared.robot.lowpoint = vector.zeros(Config.camera.width/Config.vision.scaleB);
+  shared.robot.map=vector.zeros(6*4*Config.vision.robot.map_div*Config.vision.robot.map_div); --60 by 40 map
+end
 
-shared.boundary = {};
-shared.boundary.detect = vector.zeros(1);
-shared.boundary.top = vector.zeros(2*Config.camera.width/Config.vision.scaleB);
-shared.boundary.bottom = vector.zeros(2*Config.camera.width/Config.vision.scaleB);
+  --[[
+  shared.spot = {};
+  shared.spot.detect = vector.zeros(1);
+  --]]
+
+  shared.freespace = {};
+  shared.freespace.detect = vector.zeros(1);
+  shared.freespace.block = vector.zeros(1);
+  shared.freespace.nCol = vector.zeros(1);
+  shared.freespace.nRow = vector.zeros(1);
+  --shared.freespace.vboundA = vector.zeros(2*Config.camera.width);
+  --shared.freespace.pboundA = vector.zeros(2*Config.camera.width);
+  --shared.freespace.tboundA = vector.zeros(Config.camera.width);
+  shared.freespace.vboundB = vector.zeros(2*Config.camera.width/(Config.vision.scaleB));
+  shared.freespace.pboundB = vector.zeros(2*Config.camera.width/(Config.vision.scaleB));
+  shared.freespace.tboundB = vector.zeros(Config.camera.width/(Config.vision.scaleB));
+
+  shared.boundary = {};
+  shared.boundary.detect = vector.zeros(1);
+  shared.boundary.top = vector.zeros(2*Config.camera.width/Config.vision.scaleB);
+  shared.boundary.bottom = vector.zeros(2*Config.camera.width/Config.vision.scaleB);
+
+
+
+
+
 
 shared.debug = {};
 shared.debug.enable_shm_copy = vector.zeros(1);

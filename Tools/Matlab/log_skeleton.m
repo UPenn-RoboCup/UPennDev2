@@ -2,20 +2,19 @@
 %clear all;
 if( exist('sk','var') == 0 )
     startup;
-    sk = shm_primesense();
+    sk = shm_primesense(18,0);
 end
 
 %% Timing settings
 %prep_time = 6;
 prep_time = 0;
-%nseconds_to_log = 10;
-nseconds_to_log = 100;
+nseconds_to_log = 10;
 run_once = 0;
 counter = 0;
 fps = 20;
 twait = 1/fps;
 logsz = nseconds_to_log * fps;
-do_log = 0;
+do_log = 0; % if zero, then inf time
 
 %% Joint Settings
 jointNames = { ...
@@ -69,7 +68,7 @@ axis([-1000 1000 -1300 1200]);
 %% Go time
 t0=tic;
 t_passed=toc(t0);
-while(t_passed<nseconds_to_log)
+while(do_log == 0 || t_passed<nseconds_to_log)
     tstart=tic;
     counter = counter + 1;
     %% Loop through each joint

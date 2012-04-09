@@ -21,7 +21,7 @@ package.path = cwd .. '/Config/?.lua;' .. package.path;
 package.path = cwd .. '/Lib/?.lua;' .. package.path;
 package.path = cwd .. '/Dev/?.lua;' .. package.path;
 package.path = cwd .. '/Motion/?.lua;' .. package.path;
-package.path = cwd .. '/Motion/walk/?.lua;' .. package.path;
+package.path = cwd .. '/Motion/Walk/?.lua;' .. package.path;
 package.path = cwd .. '/Motion/keyframes/?.lua;' .. package.path;
 package.path = cwd .. '/Vision/?.lua;' .. package.path;
 package.path = cwd .. '/World/?.lua;' .. package.path;
@@ -199,7 +199,7 @@ while 1 do
     local fps = ncount/(t-tUpdate);
     tUpdate = t;
     count = 1;
-    --    print(fps.." FPS")
+    print(fps.." FPS")
   end
 
   --Wait until dcm has done reading/writing

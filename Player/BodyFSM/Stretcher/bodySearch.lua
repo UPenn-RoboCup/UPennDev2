@@ -16,6 +16,8 @@ end
 t0 = 0;
 timeout = 10.0;
 
+t_last_ps = 0;
+
 -- turn velocity
 vSpin = 0.3;
 direction = 1;
@@ -47,6 +49,16 @@ function update()
   if( ps ) then
     if( primecm.get_skeleton_found()==1 ) then
       --print('Updating via PrimeSense')
+if( t_last_ps==0 ) then
+t0 = Body.get_time();
+end
+       t_ps = primecm.get_skeleton_timestamp();
+       if( t_ps == t_last_ps ) then
+         return;
+       end
+      t_last_ps = t_ps;
+print('Time differences',t-t0,t_ps);
+
       local torso = primecm.get_position_Torso();
       local vx = -1*torso[3] - 240;
       local vy = -1*torso[1] - 200;
@@ -72,7 +84,7 @@ function update()
 
       --walk.set_velocity( vx, vy, va );
     else
-      print('User not found...')
+--      print('User not found...')
       walk.set_velocity( 0,0,0 );      
     end
   else

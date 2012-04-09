@@ -95,7 +95,7 @@ function serialize_array2(ud, width, height, dtype, arrName, arrID)
   -- determine break size account for byte->ascii
   local rowSize = 2*width*dsize;
   local nrows = math.floor(maxSize/rowSize)*2; --skip every other line
-  local npackets = math.ceil(height/nrows/2); --skip every other line
+  local npackets = math.ceil(height/nrows); 
 
   local ret = {};
   local cptr = ud;

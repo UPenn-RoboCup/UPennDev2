@@ -172,7 +172,7 @@ function plot_overlay(r_mon,scale,drawlevel)
   function plot_robot_lowpoint(robotState,scale)
     hold on;
     siz=length(robotState.lowpoint);
-    x=[1:siz]/scale*4;
+    x=([1:siz]-0.5)/scale*4;
     y=robotState.lowpoint/scale*4;
     plot(x,y,'r--');
     hold off;

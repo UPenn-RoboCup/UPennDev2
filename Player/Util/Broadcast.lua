@@ -25,7 +25,7 @@ print('Sending to',Config.dev.ip_wired);
 
 -- Add a little delay between packet sending
 pktDelay = 500; -- time in us
-debug = 1;
+debug = 0;
 
 subsampling=Config.vision.subsampling or 0;
 subsampling2=Config.vision.subsampling2 or 0;

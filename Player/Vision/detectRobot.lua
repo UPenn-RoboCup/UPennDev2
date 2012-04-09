@@ -51,9 +51,10 @@ function update_robot(v)
 
   --add gaussian update
   --TODO: use correct log-odds
-  sigma = (v[1]^2+v[2]^2)/r_sigma;
-  for i=-4,4 do
-    for j=-4,4 do
+  sigma =  (v[1]^2+v[2]^2)/r_sigma;
+
+  for i=-3,3 do
+    for j=-3,3 do
       ix=math.max(1,math.min(6*map_div,i+xindex));
       iy=math.max(1,math.min(4*map_div,j+yindex));
       w=math.exp(-(i*i+j*j)/sigma);
@@ -61,6 +62,7 @@ function update_robot(v)
       weight[index]=math.min(1,weight[index]+w);
     end
   end
+
 end     
 
 function update_weights()
@@ -103,11 +105,15 @@ function update_weights()
       end
       index=(i-1)*(4*map_div) + j;
 --TODO: use log-odds 
-      if within_fov then
-        gamma_field = 0.8;
-        weight[index]=weight[index]*gamma_field;
+      if updated[index] ==0 then
+        if within_fov then
+          gamma_field = 0.8;
+          weight[index]=weight[index]*gamma_field;
+        else
+          weight[index]=weight[index]*gamma;
+        end
       else
-        weight[index]=weight[index]*gamma;
+        updated[index]=0;
       end
     end
   end

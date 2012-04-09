@@ -39,7 +39,7 @@ use_point_goal=Config.vision.use_point_goal;
 enableLine = Config.vision.enable_line_detection;
 enableSpot = Config.vision.enable_spot_detection;
 enableMidfieldLandmark = Config.vision.enable_midfield_landmark_detection;
-enableFreespace = Config.vision.enable_freespace_detection or 0;
+enable_freespace_detection = Config.vision.enable_freespace_detection or 0;
 enableBoundary = Config.vision.enable_visible_boundary or 0;
 enableRobot = Config.vision.enable_robot_detection or 0;
 
@@ -103,22 +103,10 @@ function update()
     ballYellow = detectBall.detect(colorYellow);
     ballCyan = detectBall.detect(colorCyan);
   else
---SJ: we need to detect both colored goalposts (due to landmarks)
---TODO: single-colored goalpost
     goalYellow.detect=0;
     goalCyan.detect=0;
     goalYellow = detectGoal.detect(colorYellow,colorCyan);
     goalCyan = detectGoal.detect(colorCyan,colorYellow);
---[[
-    --if (colorCount[colorYellow] > colorCount[colorCyan]) then
-    if (Vision.colorCount[colorYellow] > yellowGoalCountThres) then
-      goalYellow = detectGoal.detect(colorYellow,colorCyan);
-      goalCyan.detect = 0;
-    else
-      goalCyan = detectGoal.detect(colorCyan,colorYellow);
-      goalYellow.detect = 0;
-    end
---]]
   end
 
   -- line detection
@@ -140,13 +128,8 @@ function update()
     landmarkYellow = detectLandmarks.detect(colorYellow,colorCyan);
   end
 
-  -- freespace detection
-  if enableFreespace == 1 then
+  if enable_freespace_detection ==1 then
     freespace = detectFreespace.detect(colorField);
-  end
-
-  -- visible boundary detection
-  if enableBoundary == 1 then
     boundary = detectBoundary.detect();
   end
 
@@ -270,14 +253,13 @@ function update_shm()
 
   vcm.set_boundary_detect(boundary.detect);
   if (boundary.detect == 1) then
-	if (freespace.detect == 1) then
-		vcm.set_boundary_top(freespace.vboundB);
-	else
-		vcm.set_boundary_top(boundary.top);
-	end
-	vcm.set_boundary_bottom(boundary.bottom);
+    if (freespace.detect == 1) then
+      vcm.set_boundary_top(freespace.vboundB);
+    else
+      vcm.set_boundary_top(boundary.top);
+    end
+      vcm.set_boundary_bottom(boundary.bottom);
   end
-
 end
 
 function exit()

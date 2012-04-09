@@ -73,7 +73,6 @@ fsm.enable_dribble = 1;
 --Enable these for penalty-kick
 dev.team='TeamNull'; --Turn off teamplay for challenges
 fsm.body = {'GeneralPK'};
-fsm.playMode = 2;
 --]]
 
 --[[
@@ -82,10 +81,8 @@ fsm.playMode = 2;
 --]]
 
 --Enable this for double pass
---[[
 fsm.body={'DoublePassChallenge'};
 dev.team='TeamDoublePass';
---]]
 
 
 -- Team Parameters

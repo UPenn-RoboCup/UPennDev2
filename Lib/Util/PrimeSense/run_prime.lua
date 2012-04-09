@@ -24,7 +24,7 @@ require 'unix';
 require 'primecm'
 require 'gcm'
 run_once = false;
-net = false;
+net = true;
 logs = false;
 if( arg[1] ) then
   dofile( arg[1] )
@@ -40,14 +40,16 @@ print '\n\n=====================';
 print('Run Once?',run_once);
 print('Run Network?',net);
 print('Run Logs?',logs);
-print('Team/Player'..teamID..'/'..playerID);
+print('Team/Player',teamID..'/'..playerID);
 print '=====================';
-unix.usleep(1e6*2)
+unix.usleep(1e6*2);
 
-t0 = unix.time()
+t0 = unix.time();
+timestamp0 = t0;
 t_init = 0;
 if( logs ) then
   n_logs = table.getn(log);
+  timestamp0 = log[1].t;
 end
 if( net ) then
   Team = require 'TeamPrime'
@@ -55,18 +57,24 @@ if( net ) then
 end
 
 count = 0;
-while( not logs or count<=n_logs ) do
+init = false;
+desired_fps = 20;
+primecm.set_skeleton_found( 0 );
+while( not logs or count<n_logs ) do
   count = count + 1;
   if( not logs ) then
     ret = primesense.update_joints();
     timestamp = unix.time();
   else
     timestamp = log[count].t;
-    t_start = unix.time();    
   end
+  t_start = unix.time();
   if( logs or ret ) then
+    if( not init and not logs ) then
+      init = true;
+      timestamp0 = timestamp;
+    end
     for i,v in ipairs(primecm.jointNames) do
-      -- local pos, rot, confidence = primesense.get_jointtables(i);
       if( logs ) then
         pos = { log[count].x[i],log[count].y[i],log[count].z[i] };
         confidence = { log[count].posconf[i],log[count].rotconf[i] };
@@ -88,9 +96,7 @@ while( not logs or count<=n_logs ) do
       end
     end
     primecm.set_skeleton_found( 1 );
-    primecm.set_skeleton_timestamp( timestamp );
-  else -- Not running from logs, and primesense does not detect anyone
-    primecm.set_skeleton_found( 0 );
+    primecm.set_skeleton_timestamp( timestamp-timestamp0 );
   end
 
   -- Done running
@@ -99,12 +105,17 @@ while( not logs or count<=n_logs ) do
   end
 
   -- Timing
+  if( init and not logs ) then
+    print('Time',timestamp-timestamp0 );
+    local t_loop = unix.time() - t_start;
+    local twait = 1/desired_fps;
+--    unix.usleep( 1e6*math.max(twait-t_loop,0) );
+  end
   if(logs and count<n_logs) then
     print('Count:',count,'Time:',timestamp );    
     local timestamp_next = log[count+1].t;
     local twait = timestamp_next-timestamp;
     local t_loop = unix.time() - t_start;
-    unix.usleep( 1e6*math.max(twait-t_loop,0) );
   end
 
 end

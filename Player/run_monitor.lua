@@ -36,14 +36,14 @@ getch.enableblock(1);
 unix.usleep(1E6*1.0);
 
 local count = 0;
-local ncount = 100;
+local ncount = 30;
 local imagecount = 0;
 local t0 = unix.time();
 local tUpdate = t0;
 
 -- Broadcast the images at a lower rate than other data
 local maxFPS = 10;
-local imgFPS = 5;
+local imgFPS = 10;
 
 local maxPeriod = 1.0 / maxFPS;
 local imgRate = math.max( math.floor( maxFPS / imgFPS ), 1);
@@ -62,7 +62,9 @@ function update()
     end
   end
   -- Always send non-image data
-  Broadcast.update(broadcast_enable);
+
+--  Broadcast.update(broadcast_enable);
+
   -- Send image data every so often
   if( count % imgRate == 0 ) then
 		imagecount = imagecount + 1;
@@ -80,7 +82,7 @@ while true do
   -- Get time after sending packets
   tloop = unix.time() - tstart;  -- Sleep in order to get the right FPS
 
---print("tloop:",tloop)
+print("tloop:",tloop)
 
   if (tloop < maxPeriod) then
     unix.usleep((maxPeriod - tloop)*(1E6));

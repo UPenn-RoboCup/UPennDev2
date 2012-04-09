@@ -25,7 +25,7 @@ print('Sending to',Config.dev.ip_wired);
 
 -- Add a little delay between packet sending
 pktDelay = 500; -- time in us
-debug = 0;
+debug = 1;
 
 
 function sendB()
@@ -100,7 +100,8 @@ function sendImg()
   height = vcm.get_image_height();
   count = vcm.get_image_count();
   
-  array = serialization.serialize_array(yuyv, width, height, 'int32', 'yuyv', count);
+  array = serialization.serialize_array2(yuyv, width, height, 
+	'int32', 'yuyv', count);
   sendyuyv = {};
   sendyuyv.team = {};
   sendyuyv.team.number = gcm.get_team_number();
@@ -135,8 +136,12 @@ function sendImgSub2()
   height = vcm.get_image_height()/2;
   count = vcm.get_image_count();
   
-  array = serialization.serialize_array(yuyv2, width, height, 
+--  array = serialization.serialize_array(yuyv2, width, height, 
+--		'int32', 'ysub2', count);
+
+  array = serialization.serialize_array2(yuyv2, width, height, 
 		'int32', 'ysub2', count);
+
   sendyuyv2 = {};
   sendyuyv2.team = {};
   sendyuyv2.team.number = gcm.get_team_number();
@@ -177,6 +182,10 @@ function update(enable)
 	m_1,m_2=string.find(itemReject, itemkey);
 	sendokay=false;
         if m_1==nil or not (m_1==1 and m_2==itemReject:len()) then
+
+--print(string.format("shmHandlerKey %s sharedkey %s itemkey %s\n",
+--	shmHandlerkey,sharedkey,itemkey));
+
   	  send[shmHandlerkey][sharedkey][itemkey] = 
                  shmHandler['get_'..sharedkey..'_'..itemkey]();
  	end
@@ -189,9 +198,9 @@ function update(enable)
   Comm.send(senddata);
   t2 = unix.time();
   if debug>0 then
-    print("SHM Serialize time:",t1-t0);
-    print("Info byte:",#senddata)
-    print("Info send time:",t1-t0);
+    print("SHM Info byte:",#senddata)
+    print("Serialize time:",t1-t0);
+    print("Comm time:",t2-t1);
   end
 end
 
@@ -199,8 +208,8 @@ function update_img( enable, imagecount )
   if(enable==2) then
 -- half of sub image
     sendImgSub2();
-    sendB();
-    sendA();
+--    sendB();
+--    sendA();
   elseif(enable==3) then
     sendImg(); 
   end

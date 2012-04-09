@@ -160,7 +160,6 @@ static int lua_array2string2(lua_State *L) {
     return luaL_error(L, "unkown dtype: %s", dtype.c_str());
   }
   int nbytes = idataTypeMap->second;
-
   int size = width*height * nbytes / 2;//half the size
   char cdata[(2*size) + 1];
 

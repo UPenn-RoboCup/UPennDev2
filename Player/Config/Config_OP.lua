@@ -14,7 +14,7 @@ function loadconfig(configName)
 end
 
 --Simplified setup for distribution
-loadconfig('Walk/Config_OP_Walk_Basic')
+loadconfig('Walk/Config_OP_Walk')
 loadconfig('World/Config_OP_World_Expo')
 loadconfig('Kick/Config_OP_Kick')
 loadconfig('Vision/Config_OP_Vision')
@@ -31,7 +31,9 @@ dev.ip_wired = '192.168.123.255';
 dev.ip_wireless = '192.168.1.255';
 dev.game_control='OPGameControl';
 dev.team='TeamNSL';
-dev.walk='BasicWalk';
+--dev.walk='BasicWalk';
+dev.walk='NewNewWalk';
+--dev.walk='NewNewNewWalk';
 dev.kick = 'NewKick'
 
 -- Game Parameters

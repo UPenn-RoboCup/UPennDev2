@@ -77,6 +77,7 @@ saveCount = 0;
 
 use_point_goal = Config.vision.use_point_goal or 0;
 subsampling = Config.vision.subsampling or 0;
+subsampling2 = Config.vision.subsampling2 or 0;
 
 -- debugging settings
 vcm.set_debug_enable_shm_copy(Config.vision.copy_image_to_shm);
@@ -207,12 +208,16 @@ function update_shm(status)
       vcm.set_image_labelB(labelB.data);
       vcm.set_image_yuyv(camera.image);
 
-
+      --Store downsampled yuyv for monitoring
       if subsampling>0 then
-        --Store downsampled yuyv for monitoring
         vcm.set_image_yuyv2(ImageProc.subsample_yuyv2yuyv(
   	  camera.image,camera.width/2, camera.height,2));
       end
+      if subsampling2>0 then --1/4 sized image, for OP
+        vcm.set_image_yuyv3(ImageProc.subsample_yuyv2yuyv(
+  	  camera.image,camera.width/2, camera.height,4));
+      end
+
     end
   end
 

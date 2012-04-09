@@ -41,8 +41,9 @@ vision.enable_robot_detection = 0;
 ----------------------------
 -- Use tilted bounding box?
 vision.use_tilted_bbox = 1;
--- Subsample image?
-vision.subsampling = 1;
+-- Subsample main image for monitor?
+vision.subsampling = 1;  --1/2 sized image
+vision.subsampling2 = 1; --1/4 sized image
 
 --Vision parameter values
 

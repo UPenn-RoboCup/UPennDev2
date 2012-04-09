@@ -33,6 +33,9 @@ vision.store_ball_detections = 0;
 -- use this to substitute goal check with blue/yellow ball check
 vision.use_point_goal = 0;
 
+--vision.enable_robot_detection = 1;
+vision.enable_robot_detection = 0;
+
 ----------------------------
 --OP specific
 ----------------------------
@@ -58,7 +61,7 @@ vision.ball.check_for_ground = 1;
 vision.goal={};
 vision.goal.th_min_color_count=100;
 vision.goal.th_nPostB = 5;
-vision.goal.th_min_areaB = 40;
+vision.goal.th_min_area = 40;
 vision.goal.th_min_orientation = 60*math.pi/180;
 vision.goal.th_min_fill_extent=0.35;
 vision.goal.th_aspect_ratio={2.5,15};

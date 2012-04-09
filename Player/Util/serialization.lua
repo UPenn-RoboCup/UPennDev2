@@ -26,7 +26,11 @@ end
 function serialize(o)
   local str = "";
   if type(o) == "number" then
-    str = tostring(o);
+    if o%1==0 then --quickest check for integer
+      str=tostring(o);
+    else
+      str = string.format("%.2f",o);--2-digit precision should be good enough
+    end
   elseif type(o) == "string" then
     str = string.format("%q",o);
   elseif type(o) == "table" then

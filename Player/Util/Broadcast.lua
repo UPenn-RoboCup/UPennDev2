@@ -25,6 +25,8 @@ print('Sending to',Config.dev.ip_wired);
 
 -- Add a little delay between packet sending
 pktDelay = 500; -- time in us
+debug = 0;
+
 
 function sendB()
   -- labelB --
@@ -38,13 +40,24 @@ function sendB()
   sendlabelB.team = {};
   sendlabelB.team.number = gcm.get_team_number();
   sendlabelB.team.player_id = gcm.get_team_player_id();
-  
+
+  stime1,stime2,infosize=0,0,0;
   for i=1,#array do
     sendlabelB.arr = array[i];
-    Comm.send(serialization.serialize(sendlabelB));
+    t0 = unix.time();
+    local senddata=serialization.serialize(sendlabelB);
+    infosize=infosize+#senddata;
+    t1=unix.time();
+    stime1=stime1+t1-t0;
+    Comm.send(senddata);
+    t2=unix.time();
+    stime2=stime2+t2-t1;
   end 
---  local senddata=serialization.serialize(sendlabelB);
---  print("LabelB info size:",#senddata*#array)
+  if debug>0 then
+    print("LabelB info size:",#array,"Total",infosize);
+    print("Total serialization time:",stime1);
+    print("Total comm time:",stime2);
+  end
 end
 
 function sendA()
@@ -59,16 +72,25 @@ function sendA()
   sendlabelA.team = {};
   sendlabelA.team.number = gcm.get_team_number();
   sendlabelA.team.player_id = gcm.get_team_player_id();
-  
+  stime1,stime2,infosize=0,0,0;  
   for i=1,#array do
     sendlabelA.arr = array[i];
-  	Comm.send(serialization.serialize(sendlabelA));
+    t0 = unix.time();
+    local senddata=serialization.serialize(sendlabelA);
+    infosize=infosize+#senddata;
+    t1=unix.time();
+    stime1=stime1+t1-t0;
+    Comm.send(senddata);
+    t2=unix.time();
+    stime2=stime2+t2-t1;
     -- Need to sleep in order to stop drinking out of firehose
     unix.usleep(pktDelay);
   end
-
---  local senddata=serialization.serialize(sendlabelA);
---  print("LabelA info size:",#senddata*#array)
+  if debug>0 then
+    print("LabelA info size:",#array,"Total",infosize);
+    print("Total serialization time:",stime1);
+    print("Total comm time:",stime2);
+  end
 end
 
 function sendImg()
@@ -92,18 +114,18 @@ function sendImg()
     senddata=serialization.serialize(sendyuyv);
     t1 = unix.time();
     tSerialize= tSerialize + t1-t0;
-
-    t0 = unix.time();
     Comm.send(senddata);
-    t1 = unix.time();
-    tSend=tSend+t1-t0;
+    t2 = unix.time();
+    tSend=tSend+t2-t1;
 
     -- Need to sleep in order to stop drinking out of firehose
     unix.usleep(pktDelay);
   end
-
---  print("Total Serialize time:",tSerialize);
---  print("Total Send time:",tSend);
+  if debug>0 then
+    print("Image info array num:",#array,"Total size",#senddata*#array);
+    print("Total Serialize time:",#array,"Total",tSerialize);
+    print("Total Send time:",tSend);
+  end
 end
 
 function sendImgSub2()
@@ -128,20 +150,18 @@ function sendImgSub2()
     senddata=serialization.serialize(sendyuyv2);
     t1 = unix.time();
     tSerialize= tSerialize + t1-t0;
-
-    t0 = unix.time();
     Comm.send(senddata);
-    t1 = unix.time();
-    tSend=tSend+t1-t0;
+    t2 = unix.time();
+    tSend=tSend+t2-t1;
 
     -- Need to sleep in order to stop drinking out of firehose
     unix.usleep(pktDelay);
   end
---[[
-  print("Total packet:",#array)
-  print("Total Serialize time:",tSerialize);
-  print("Total Send time:",tSend);
---]]
+  if debug>0 then
+    print("Image2 info array num:",#array,"Total size",#senddata*#array);
+    print("Total Serialize time:",#array,"Total",tSerialize);
+    print("Total Send time:",tSend);
+  end
 end
 
 function update(enable)
@@ -166,26 +186,22 @@ function update(enable)
   t0 = unix.time();
   senddata=serialization.serialize(send);
   t1 = unix.time();
---  print("Serialize time:",t1-t0);
---  print("Info byte:",#senddata)
-  t0 = unix.time();
   Comm.send(senddata);
-  t1 = unix.time();
---  print("Info send time:",t1-t0);
+  t2 = unix.time();
+  if debug>0 then
+    print("SHM Serialize time:",t1-t0);
+    print("Info byte:",#senddata)
+    print("Info send time:",t1-t0);
+  end
 end
 
 function update_img( enable, imagecount )
   if(enable==2) then
-    sendB();
---  sendImg(); 
-    sendA();
 -- half of sub image
     sendImgSub2();
+    sendB();
+    sendA();
   elseif(enable==3) then
---    if (Config.platform.name ~= "Nao") then
-      sendImg(); 
---    sendImgSub();
---    sendAsub();
---    end
+    sendImg(); 
   end
 end

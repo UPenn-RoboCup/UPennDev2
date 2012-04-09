@@ -34,7 +34,8 @@ vision.store_ball_detections = 0;
 -- use this to substitute goal check with blue/yellow ball check
 vision.use_point_goal = 0;
 
-vision.enable_robot_detection = 1;
+--vision.enable_robot_detection = 1;
+vision.enable_robot_detection = 0;
 
 ----------------------------
 --OP specific
@@ -84,6 +85,7 @@ vision.goal.check_for_ground = 1;
 vision.robot={};
 vision.robot.width = 40; --labelB width
 vision.robot.map_div = 10; --global map resolution: 1/10 m
+--vision.robot.map_div = 5; --global map resolution: 20cm
 vision.robot.gamma = 0.99;
 vision.robot.gamma_field = 0.95;
 --vision.robot.r_sigma = 8;  --gaussian radius

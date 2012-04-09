@@ -98,7 +98,10 @@ function update_vision()
 
   -- Penalized?
   if gcm.in_penalty() then
+    wcm.set_robot_penalty(1);
     init_particles();
+  else
+    wcm.set_robot_penalty(0);
   end
 
   -- At gameSet state, all robot should face opponents' goal
@@ -235,6 +238,7 @@ function update_shm()
   end
 
   wcm.set_robot_pose({pose.x, pose.y, pose.a});
+  wcm.set_robot_time(Body.get_time());
 
   wcm.set_ball_x(ball.x);
   wcm.set_ball_y(ball.y);

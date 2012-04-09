@@ -228,7 +228,6 @@ static int lua_string2userdata2(lua_State *L) {
   int cind = 0;
   int nbyte = 4; //this function is only used for yuyv
 
-
   for (int i=0;i<height/2;i++){
     for (int j=0;j<width*nbyte;j++){
       uint8_t bh = cdata[cind] >= 'a' ? 

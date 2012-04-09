@@ -109,19 +109,20 @@ function push_yuyv(obj)
   end
 
   yuyv_flag[name.partnum] = 1;
-  yuyv_all[name.partnum] = obj.data
---	print(check_flag(yuyv_flag));
+  yuyv_all[name.partnum] = obj.data;
   if (check_flag(yuyv_flag) == name.parts) then
---  print("full yuyv\t"..1/(unix.time() - yuyv_t_full).." fps" );
---  yuyv_t_full = unix.time();
-                
---  print(obj.width,obj.height);
+
+--    print("full yuyv\t"..1/(unix.time() - yuyv_t_full).." fps" );
+    yuyv_t_full = unix.time();
+
     yuyv_flag = vector.zeros(name.parts);
     local yuyv_str = "";
-      for i = 1 , name.partnum do
+      for i = 1 , name.parts do --fixed
       yuyv_str = yuyv_str .. yuyv_all[i];
     end
-    cutil.string2userdata(yuyv,yuyv_str);
+
+    height= string.len(yuyv_str)/obj.width/4;
+    cutil.string2userdata2(yuyv,yuyv_str,obj.width,height);
     vcm.set_image_yuyv(yuyv);
     yuyv_all = {}
   end
@@ -138,22 +139,23 @@ function push_yuyv2(obj)
   end
 
   yuyv2_flag[name.partnum] = 1;
-  yuyv2_all[name.partnum] = obj.data
---	print(check_flag(yuyv_flag));
+  yuyv2_all[name.partnum] = obj.data;
+
   if (check_flag(yuyv2_flag) == name.parts) then
---print("full yuyv\t"..1/(unix.time() - yuyv_t_full).." fps" );
--- yuyv_t_full = unix.time();
-                
---print(obj.width,obj.height);
-   yuyv2_flag = vector.zeros(name.parts);
-   local yuyv2_str = "";
-   for i = 1 , name.partnum do
-     yuyv2_str = yuyv2_str .. yuyv2_all[i];
+
+--  print("yuyv2\t"..1/(unix.time() - yuyv2_t_full).." fps" );
+    yuyv2_t_full = unix.time();
+
+     yuyv2_flag = vector.zeros(name.parts);
+     local yuyv2_str = "";
+     for i = 1 , name.parts do --fixed
+       yuyv2_str = yuyv2_str .. yuyv2_all[i];
+     end
+     height= string.len(yuyv2_str)/obj.width/4;
+     cutil.string2userdata2(yuyv2,yuyv2_str,obj.width,height);
+     vcm.set_image_yuyv2(yuyv2);
+     yuyv2_all = {}
    end
-   cutil.string2userdata(yuyv2,yuyv2_str);
-   vcm.set_image_yuyv2(yuyv2);
-   yuyv2_all = {}
- end
 end
 
 function push_labelA(obj)

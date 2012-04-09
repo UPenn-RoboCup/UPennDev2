@@ -158,6 +158,15 @@ function push_yuyv2(obj)
    end
 end
 
+function push_yuyv3(obj)
+-- 1/4 size, we don't need to divide it 
+  yuyv3 = cutil.test_array();
+  name = parse_name(obj.name);
+  height= string.len(obj.data)/obj.width/4;
+  cutil.string2userdata2(yuyv3,obj.data,obj.width,height);
+  vcm.set_image_yuyv3(yuyv3);
+end
+
 function push_labelA(obj)
 --	print('receive labelA parts');
   local labelA = cutil.test_array();
@@ -223,6 +232,8 @@ while( true ) do
  	  push_yuyv(obj.arr);
 	elseif ( string.find(obj.arr.name,'ysub2') ) then 
  	  push_yuyv2(obj.arr);
+	elseif ( string.find(obj.arr.name,'ysub4') ) then 
+ 	  push_yuyv3(obj.arr);
 	elseif ( string.find(obj.arr.name,'labelA') ) then 
 	  push_labelA(obj.arr);
 	elseif ( string.find(obj.arr.name,'labelB') ) then 

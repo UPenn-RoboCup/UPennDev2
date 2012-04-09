@@ -26,9 +26,6 @@ scale={};
 for i=1,nJoint do 
   scale[i]=Config.servo.steps[i]/Config.servo.moveRange[i];
 end
-for i=1,12 do 	
-  posZero[i+5]=posZero[i+5]+legBias[i];
-end
 
 tLast=0;
 count=1;
@@ -69,7 +66,8 @@ function shm_init()
   actuatorShm.command = vector.zeros(nJoint);
   actuatorShm.velocity = vector.zeros(nJoint);
   actuatorShm.hardness = vector.zeros(nJoint);
-  actuatorShm.offset = vector.zeros(nJoint);
+  actuatorShm.offset = vector.zeros(nJoint); --in rads
+  actuatorShm.bias = vector.zeros(nJoint); --in clicks
   actuatorShm.led = vector.zeros(1);
 
   actuatorShm.torqueEnable = vector.zeros(1); --Global torque on.off
@@ -105,6 +103,35 @@ function shm_init()
   actuatorShm.battTest=vector.zeros(1);   
 end
 
+function entry()
+  Dynamixel.open();
+  --   Dynamixel.ping_probe();
+  --We have to manually turn on the MC for OP   
+  Dynamixel.set_torque_enable(200,1);
+  unix.usleep(200000);
+  -- Dynamixel.ping_probe();
+  shm_init();
+  carray_init();
+  -- Read head and not legs
+  actuator.readType[1]=1;
+  -- Read only kankles
+  actuator.readType[1]=3;
+
+  -- Read initial leg bias from config
+  for i=1,12 do 	
+    actuator.bias[i+5]=legBias[i];
+  end
+
+  if Config.servo.pid==1 then
+    -- Update PID settings
+    for i=1,nJoint do
+      actuator.p_param[i] = Config.servo.p_param[i];
+      actuator.i_param[i] = Config.servo.i_param[i];
+      actuator.d_param[i] = Config.servo.d_param[i];
+    end
+  end
+end
+
 -- Setup CArray mappings into shared memory
 function carray_init()
   sensor = {};
@@ -129,7 +156,7 @@ function sync_command()
       n = n+1;
       ids[n] = idMap[i];
       local word=0;
-      word = posZero[i] + scale[i]*
+      word = posZero[i] + actuator.bias[i] + scale[i]*
       (actuator.command[i]+actuator.offset[i]);
       data[n] = math.min(math.max(word, 0), Config.servo.steps[i]-1);
     else
@@ -315,7 +342,9 @@ function nonsync_read()
     if id then
       raw=Dynamixel.get_position(id);
       if raw then
-        sensor.position[idToRead[i]] = (raw-posZero[i])/scale[i] - actuator.offset[i];
+        sensor.position[idToRead[i]] = 
+		(raw-posZero[i]-actuator.bias[i])/scale[i] - 
+		 actuator.offset[i];
       end
     end
   end
@@ -347,29 +376,6 @@ function nonsync_read()
     sensor.button[1]=math.floor(data[1]/2);
     sensor.button[2]=data[1]%2;
   end
-end
-
-function entry()
-  Dynamixel.open();
-  --   Dynamixel.ping_probe();
-  --We have to manually turn on the MC for OP   
-  Dynamixel.set_torque_enable(200,1);
-  unix.usleep(200000);
-  -- Dynamixel.ping_probe();
-  shm_init();
-  carray_init();
-  -- Read head and not legs
-  actuator.readType[1]=1;
-  -- Read only kankles
-  actuator.readType[1]=3;
-
-  -- Update PID settings
-  for i=1,nJoint do
-    actuator.p_param[i] = Config.servo.p_param[i];
-    actuator.i_param[i] = Config.servo.i_param[i];
-    actuator.d_param[i] = Config.servo.d_param[i];
-  end
-
 end
 
 function update_imu()

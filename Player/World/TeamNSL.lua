@@ -44,6 +44,8 @@ state.goalv1={0,0};
 state.goalv2={0,0};
 state.landmark=0; --0 for non-detect, 1 for yellow, 2 for cyan
 state.landmarkv={0,0};
+state.corner=0; --0 for non-detect, 1 for L, 2 for T
+state.cornerv={0,0};
 
 states = {};
 states[playerID] = state;
@@ -64,7 +66,7 @@ function pack_msg(state)
   --time
   --battery
   msg_str=string.format(
-	"{%d,%d,%d,%d,%d,%d,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.2f,%.1f",
+	"{%d,%d,%d,%d,%d,%d,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.2f,%.1f}",
 	state.id, state.teamNumber, state.teamColor,
 	state.role,state.penalty,state.fall,
 	state.ball.x,state.ball.y,state.ball.t,
@@ -156,10 +158,6 @@ function update()
     state.cornerv[1],state.cornerv[2]=v[1],v[2];
   end
     
-
-
-
-
   if (math.mod(count, 1) == 0) then
 
    msg=serialization.serialize(state);
@@ -170,8 +168,9 @@ function update()
 --    msg2=pack_msg(state);
 --    print("Packed team message size:",string.len(msg2))
 --    Comm.send(serialization.serialize(state));
-
 --    msg=pack_msg(state);
+
+
     Comm.send(msg);
 
     --Copy of message sent out to other players

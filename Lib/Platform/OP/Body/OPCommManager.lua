@@ -48,6 +48,7 @@ function shm_init()
   sensorShm.time = vector.zeros(1);
   sensorShm.count = vector.zeros(1);
   sensorShm.position = vector.zeros(nJoint);
+  sensorShm.servoposition = vector.zeros(nJoint);
   sensorShm.button = vector.zeros(2); --OP has TWO buttons
 
   sensorShm.imuAngle = vector.zeros(3);
@@ -313,7 +314,9 @@ function nonsync_read()
     end;
 
     --[[
-    elseif actuator.readType[1]==2 then --Head+Leg reading
+     --Head+Leg reading
+
+    elseif actuator.readType[1]==2 then 
     for i = 3,6 do
     sensor.position[i] = actuator.command[i];
     end;
@@ -332,7 +335,9 @@ function nonsync_read()
     for i = 1,#idMap do
     sensor.position[i] = actuator.command[i];
     end;
+
     --]]
+
   end
   -- Update the readings
   for i = 1,#idToRead do
@@ -342,6 +347,7 @@ function nonsync_read()
     if id then
       raw=Dynamixel.get_position(id);
       if raw then
+	sensor.servoposition[idToRead[i]] = raw;
         sensor.position[idToRead[i]] = 
 		(raw-posZero[i]-actuator.bias[i])/scale[i] - 
 		 actuator.offset[i];

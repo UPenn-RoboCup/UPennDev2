@@ -203,10 +203,10 @@ function h=show_monitor()
       if MONITOR.enable3==5 
         plot_grid(r_mon.robot.map);  
         plot_field(MONITOR.h3,MONITOR.fieldtype);
-        plot_robot( r_struct, r_mon,1,MONITOR.enable3-1 );
+        plot_robot( r_struct, r_mon,2,3 );
       else
         plot_field(MONITOR.h3,MONITOR.fieldtype);
-        plot_robot( r_struct, r_mon,1,MONITOR.enable3-1 );
+        plot_robot( r_struct, r_mon,1,MONITOR.enable3 );
       end
     end
 
@@ -259,11 +259,11 @@ function h=show_monitor()
       if MONITOR.enable8==1 && ignore_vision==0
         h1=subplot(5,5,15+playerNumber(i));
         plot_label(labelB);
-        plot_overlay(r_mon,4);
+        plot_overlay(r_mon,4,1);
       elseif MONITOR.enable8==2
         h1=subplot(5,5,15+playerNumber(i));
         cla(h1);
-        plot_overlay(r_mon,4);
+        plot_overlay(r_mon,4,1);
       end
 	
       if MONITOR.enable9

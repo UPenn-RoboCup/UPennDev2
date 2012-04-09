@@ -212,19 +212,7 @@ function set_torque_enable(val)
   set_actuator_torqueEnableChanged(1);
 end
 
---[[
-function 
-for k,v in actuatorShm.next, actuatorShm do
-  actuator[k] = carray.cast(actuatorShm:pointer(k));
-  getfenv()["set_actuator_"..k] =
-    function(val, index)
-      return set_actuator_shm(k, val, index);
-    end
-end
---]]
-
 -- Set API compliance functions
-
 function get_sensor_imuGyr0()
   return vector.zeros(3)
 end

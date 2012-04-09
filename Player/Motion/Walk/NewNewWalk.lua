@@ -396,9 +396,11 @@ function check_side_walkkick()
 	  {sideKickVel3[1],-2*footY+sideKickVel3[2],sideKickVel3[3]}, uLeft1);
       else 
 	uLeft15 = util.pose_global(
-	  {sideKickVel2[1],2*footY-sideKickVel2[2],sideKickVel2[3]}, uRight1);
+	  {sideKickVel2[1],2*footY-sideKickVel2[2],-sideKickVel2[3]}, 
+		uRight1);
 	uLeft2 = util.pose_global(
-	  {sideKickVel3[1],2*footY-sideKickVel3[2],sideKickVel3[3]}, uRight1);
+	  {sideKickVel3[1],2*footY-sideKickVel3[2],-sideKickVel3[3]}, 
+		uRight1);
       end
       supportMod = sideKickSupportMod[2];
       walkKickRequest = walkKickRequest + 1;

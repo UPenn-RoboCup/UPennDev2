@@ -76,8 +76,8 @@ walk.tStepWalkKick = 0.30;
 
 walk.qLArmKick=math.pi/180*vector.new({90,15,-40});
 walk.qRArmKick=math.pi/180*vector.new({90,-15,-40});
-walk.sideKickVel1 = {0.04,0.04,0};
-walk.sideKickVel2 = {0.09,-0.05,0};
+walk.sideKickVel1 = {0.04,0.03,0};
+walk.sideKickVel2 = {0.09,-0.06,-30*math.pi/180};
 walk.sideKickVel3 = {0.09,0.02,0};
 walk.sideKickSupportMod = {{0,0},{0,0}};
 walk.tStepSideKick = 0.30;

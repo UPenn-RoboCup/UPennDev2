@@ -52,7 +52,7 @@ function update()
   if( playerID==0 ) then
 --    print('Sending',serialization.serialize(state) )
     local ret = Comm.send(serialization.serialize(state)); 
-    print(ret)
+    --print(ret)
   else
     recv_msgs();
     local state = states[0];

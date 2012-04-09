@@ -48,6 +48,8 @@ shared.image.horizonDir = vector.zeros(4); -- Angle of horizon line rotation
 shared.image.yuyv = 2*Config.camera.width*Config.camera.height; 
 --Downsampled yuyv
 shared.image.yuyv2 = 2*Config.camera.width*Config.camera.height/2/2; 
+--Downsampled yuyv 2
+shared.image.yuyv3 = 2*Config.camera.width*Config.camera.height/4/4; 
 
 shared.image.width = vector.zeros(1);
 shared.image.height = vector.zeros(1);
@@ -55,8 +57,8 @@ shared.image.height = vector.zeros(1);
 shared.image.labelA = (processed_img_width)*(processed_img_height);
 shared.image.labelB = ((processed_img_width)/Config.vision.scaleB)*((processed_img_height)/Config.vision.scaleB);
 -- calculate image shm size
-shsize.image = (shared.image.yuyv + shared.image.yuyv2+
-		shared.image.labelA + shared.image.labelB) + 2^16;
+shsize.image = (shared.image.yuyv + shared.image.yuyv2+ 
+	shared.image.yuyv3+shared.image.labelA + shared.image.labelB) + 2^16;
 
 --Image field-of-view information
 shared.image.fovTL=vector.zeros(2);

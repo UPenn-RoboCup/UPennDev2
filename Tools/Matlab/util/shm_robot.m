@@ -50,6 +50,7 @@ global MONITOR %for sending the webots check information
   h.get_monitor_struct = @get_monitor_struct;
   h.get_yuyv = @get_yuyv;
   h.get_yuyv2 = @get_yuyv2;
+  h.get_yuyv3 = @get_yuyv3;
   h.get_rgb = @get_rgb;
   h.get_labelA = @get_labelA;
   h.get_labelB = @get_labelB;
@@ -434,6 +435,14 @@ global MONITOR %for sending the webots check information
     height = h.vcmImage.get_height()/2;
     rawData = h.vcmImage.get_yuyv2();
     yuyv2 = raw2yuyv(rawData, width, height); %for Nao, double for OP
+  end
+
+  function yuyv3 = get_yuyv3() 
+% returns the quater-size raw YUYV image
+    width = h.vcmImage.get_width()/8;
+    height = h.vcmImage.get_height()/4;
+    rawData = h.vcmImage.get_yuyv3();
+    yuyv3 = raw2yuyv(rawData, width, height); 
   end
 
   function rgb = get_rgb() 

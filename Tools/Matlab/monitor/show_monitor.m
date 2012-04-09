@@ -155,13 +155,15 @@ function h=show_monitor()
     end
 
     if MONITOR.enable1
+      MONITOR.h1 = subplot(4,5,[1 2 6 7]);
       if MONITOR.enable1==1
-        MONITOR.h1 = subplot(4,5,[1 2 6 7]);
         yuyv = robots{playerNumber,teamNumber}.get_yuyv();
 	plot_yuyv(yuyv);
       elseif MONITOR.enable1==2
-        MONITOR.h1 = subplot(4,5,[1 2 6 7]);
         yuyv = robots{playerNumber,teamNumber}.get_yuyv2();
+	plot_yuyv(yuyv);
+      elseif MONITOR.enable1==3
+        yuyv = robots{playerNumber,teamNumber}.get_yuyv3();
 	plot_yuyv(yuyv);
       end
 
@@ -340,9 +342,10 @@ function h=show_monitor()
   end
 
   function button1(varargin)
-    MONITOR.enable1=mod(MONITOR.enable1+1,3);
+    MONITOR.enable1=mod(MONITOR.enable1+1,4);
     if MONITOR.enable1==1 set(MONITOR.hButton1,'String', 'YUYV1');
     elseif MONITOR.enable1==2 set(MONITOR.hButton1,'String', 'YUYV2');
+    elseif MONITOR.enable1==3 set(MONITOR.hButton1,'String', 'YUYV4');
     else set(MONITOR.hButton1,'String', 'YUYV OFF');
       cla(MONITOR.h1);
     end

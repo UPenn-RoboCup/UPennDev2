@@ -61,11 +61,13 @@ while (loop) do
 			  unpack(vector.new(sensorShm:get('position'))*180/math.pi)
 		    ));
 
-
       print(string.format("Servo pos:\n Head: %d %d\n Larm: %d %d %d\n Lleg: %d %d %d %d %d %d\n Rleg: %d %d %d %d %d %d\n Rarm: %d %d %d\n",
 			  unpack(vector.new(sensorShm:get('servoposition')))
 		    ));
 
+      print(string.format("Servo bias:\n Head: %d %d\n Larm: %d %d %d\n Lleg: %d %d %d %d %d %d\n Rleg: %d %d %d %d %d %d\n Rarm: %d %d %d\n",
+			  unpack(vector.new(actuatorShm:get('bias')))
+		    ));
 
       print(string.format("Battery:\n Head: %.1f %.1f\n Larm: %.1f %.1f %.1f\n Lleg: %.1f %.1f %.1f %.1f %.1f %.1f\n Rleg: %.1f %.1f %.1f %.1f %.1f %.1f\n Rarm: %.1f %.1f %.1f\n",
 			  unpack(vector.new(sensorShm:get('battery'))/10)

@@ -11,15 +11,19 @@ shsize = {};
 
 -- What are our parameters?
 shared.params = {};
-shared.params.bodyOffset = vector.zeros(3);
-shared.params.tStep = vector.zeros(1);
-shared.params.bodyHeight = vector.zeros(1);
+--shared.params.bodyOffset = vector.zeros(3);
+
+-- Start with default config values
+shared.params.tStep = vector.ones(1) * Config.walk.tStep;
+shared.params.bodyHeight = vector.ones(1) * Config.walk.bodyHeight;
+
 shared.params.stepHeight = vector.zeros(1);
 shared.params.footY = vector.zeros(1);
 shared.params.supportX = vector.zeros(1);
 shared.params.supportY = vector.zeros(1);
-shared.params.uLeft = vector.zeros(3);
-shared.params.uRight = vector.zeros(3);
+
+--shared.params.uLeft = vector.zeros(3);
+--shared.params.uRight = vector.zeros(3);
 
 -- What is out trial information?
 shared.trial = {};

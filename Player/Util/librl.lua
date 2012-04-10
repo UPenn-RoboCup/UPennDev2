@@ -4,6 +4,9 @@ require('carray');
 require('vector');
 require('rlcm')
 
+-- For logging
+saveCount = 0;
+
 function set_next_policy()
   -- Get our current policy
   -- Get our current stage of evaluation
@@ -56,6 +59,7 @@ function record_reward(gps0,gps1)
   rewards[stage] = dist_traveled;
   rlcm.set_trial_reward( rewards );  
   set_next_stage();
+  print('\n\tReward:',dist_traveled,'\n');
 end
 
 function record_fall()
@@ -75,6 +79,10 @@ function set_next_stage()
   if( stage<=#rlcm.enum_param ) then
     stage = stage + 1;
   else
+    log_rl();
+    local trialnum = rlcm.get_trial_num();
+    -- Increase Trial Number
+    rlcm.set_trial_num( trialnum+1 );
     stage = 1; -- Sample in this direction next
   end
   rlcm.set_trial_stage( stage );  
@@ -83,3 +91,37 @@ function set_next_stage()
   rewards[stage] = 0;
   rlcm.set_trial_reward( rewards );  
 end
+
+function log_rl( )
+  local logfile_name = string.format("/tmp/rl_data.raw");
+  -- Open the file
+  local f = io.open(logfile_name, "a");
+  assert(f, "Could not open save image file");
+
+  if( saveCount == 0 ) then
+    -- Write the Header
+    f:write( "trialnum,reward" );
+    for p=1,#rlcm.enum_param do
+      local param2tune = rlcm.enum_param[p];
+      f:write( string.format(",%s",param2tune) );
+    end
+    f:write( "\n" );
+  end
+
+  -- Write the data
+  local trialnum = rlcm.get_trial_num();
+  local rewards = rlcm.get_trial_reward();
+  f:write( string.format("%d",trialnum) );
+  f:write( string.format(",%f",rewards[#rlcm.enum_param+1]) );
+  for p=1,#rlcm.enum_param do
+    local param2tune = rlcm.enum_param[p];
+    local paramVal = rlcm['get_params_'..param2tune]();
+    f:write( string.format(",%f",paramVal) );
+  end
+  f:write( "\n" );
+  -- Close the file
+  f:close();
+  saveCount = saveCount + 1;
+
+end
+

@@ -6,8 +6,10 @@ require('vector')
 require 'librl'
 
 t0 = 0;
-timeout = 2.0;
+timeout = 3.0;
 fell = 0;
+
+t1 = nil;
 
 function entry()
   print("Body FSM:".._NAME.." entry");
@@ -27,7 +29,11 @@ function update()
   falling = mcm.get_walk_isFallDown();
   if( fell==1 and falling==0 ) then
     -- Wait for it to get up...
-    return 'timeout';
+    if( not t1 ) then
+      t1 = Body.get_time();
+    elseif(t-t1>timeout)then
+      return 'timeout';
+    end
   end
 
   if ( fell==0 and falling==0 and t - t0 > timeout) then

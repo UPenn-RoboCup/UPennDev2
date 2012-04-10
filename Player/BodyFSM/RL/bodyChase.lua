@@ -4,54 +4,43 @@ require('Body')
 require('wcm')
 require('walk')
 require('vector')
+require 'Config'
+require 'rlcm'
 
 t0 = 0;
 timeout = 20.0;
--- maximum walk velocity
-maxStep = 0.04;
--- ball distance threshold
-rClose = 0.35;
-
--- ball detection timeout
-tLost = 3.0;
 
 function entry()
   print("Body FSM:".._NAME.." entry");
 
   t0 = Body.get_time();
+
+  -- Reset RL parameters for each new run
+  for param,value in pairs(rlcm.shared.params) do
+    if( param~='vx' ) then
+      local config_val = Config.optimal[param];
+      rlcm['set_params_'..param](config_val);
+      print('Optimal setting',param,config_val);
+      walk[param] = config_val;
+    else
+      rlcm.set_params_vx(Config.optimal['vx']);
+      print('Resetting\tvx\t0.1');
+    end
+  end
+  rlcm.set_trial_num(0);
+  rlcm.set_trial_stage(#rlcm.enum_param+1);
+  walk.start();
 end
 
 function update()
   local t = Body.get_time();
 
-  -- get ball position
-  ball = wcm.get_ball();
-  ballR = math.sqrt(ball.x^2 + ball.y^2);
+  walk.set_velocity(rlcm.get_params_vx(),0,0);
 
-  -- calculate walk velocity based on ball position
-  vStep = vector.new({0,0,0});
-  vStep[1] = .6*ball.x;
-  vStep[2] = .75*ball.y;
-  scale = math.min(maxStep/math.sqrt(vStep[1]^2+vStep[2]^2), 1);
-  vStep = scale*vStep;
-
-  ballA = math.atan2(ball.y, ball.x+0.10);
-  vStep[3] = 0.75*ballA;
-  walk.set_velocity(vStep[1],vStep[2],vStep[3]);
-
-
-  if (t - ball.t > tLost) then
-    return "ballLost";
-  end
   if (t - t0 > timeout) then
     return "timeout";
   end
-  if (ballR < rClose) then
-    return "ballClose";
-  end
-  if (t - t0 > 1.0 and Body.get_sensor_button()[1] > 0) then
-    return "button";
-  end
+
 end
 
 function exit()

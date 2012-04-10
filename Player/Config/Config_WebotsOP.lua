@@ -28,11 +28,7 @@ dev.camera = 'WebotsOPCam';
 dev.kinematics = 'OPKinematics';
 dev.game_control='WebotsGameControl';
 dev.team='TeamNSL';
---dev.team='TeamSPL';
-dev.walk='NewWalk';
-dev.walk='NewNewWalk'; --New robocup walk that supports walking kicks
---dev.walk='BoxWalk'; --New walk that supports different foot stance
---dev.kick='NewKick';
+dev.walk='RLWalk';
 dev.kick='NewNewKick'; --Extended kick that supports upper body motion
 
 -- Game Parameters

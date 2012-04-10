@@ -15,20 +15,18 @@ sm:add_state(bodyApproach);
 sm:add_state(bodyPickup);
 --sm:add_state(bodyFaceOff);
 
--- Search for the stretcher
-sm:set_transition(bodySearch, 'stretcher', bodyChase);
-sm:set_transition(bodySearch, 'timeout', bodySearch);
+-- Evaluate Trial
+--sm:set_transition(bodySearch, 'stretcher', bodyChase);
+sm:set_transition(bodySearch, 'timeout', bodyApproach);
+
+-- Stop before next trial
+sm:set_transition(bodyApproach, 'timeout', bodySearch);
 
 -- Chase after the stretcher
 sm:set_transition(bodyChase, 'stretcherLost', bodySearch);
 sm:set_transition(bodyChase, 'stretcherClose', bodyApproach);
 sm:set_transition(bodyChase, 'timeout', bodyChase);
 
--- Approach the stretcher (et into position)
-sm:set_transition(bodyApproach, 'stretcherFar', bodyChase);
-sm:set_transition(bodyApproach, 'stretcherLost', bodySearch);
-sm:set_transition(bodyApproach, 'pickup', bodyPickup);
-sm:set_transition(bodyApproach, 'timeout', bodyChase);
 
 -- Pickup the stretcher
 --sm:set_transition(bodyPickup, 'done', bodyFaceOff);

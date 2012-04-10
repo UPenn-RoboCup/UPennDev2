@@ -94,7 +94,6 @@ buttontime=0;
 --Hack for saffire
 Body.set_lleg_command({0,0,0,0,0,0,0,0,0,0,0,0})
 
-
 function process_keyinput()
   local str;
   if(webots) then
@@ -153,10 +152,9 @@ function process_keyinput()
       sm_running = 1;
       BodyFSM.sm:set_state('bodySearch');
       print('searching!')
-    elseif byte==string.byte("p") then -- Execute pickup motion
-      sm_running = 0;
-      --      BodyFSM.sm:set_state('bodyPickup');
-
+    elseif byte==string.byte("c") then -- Execute pickup motion
+      sm_running = 1;
+      BodyFSM.sm:set_state('bodyChase');
     end
 
     walk.set_velocity(unpack(targetvel));
@@ -195,9 +193,10 @@ rlcm.set_trial_num(0);
 rlcm.set_trial_stage(#rlcm.enum_param+1);
 
 -- Initialize to start running
+--[[
 sm_running = 1;
 BodyFSM.sm:set_state('bodySearch');
-
+--]]
 
 local tDelay=0.002*1E6;
 local ncount = 100;

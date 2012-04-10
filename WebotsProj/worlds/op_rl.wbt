@@ -7,8 +7,8 @@ WorldInfo {
   ]
   title "Robotstadium"
   basicTimeStep 40
-#  runRealTime TRUE
-  runRealTime FALSE
+  runRealTime TRUE
+#  runRealTime FALSE
 }
 Viewpoint {
   orientation -0.483622 0.854639 0.188947 0.761485
@@ -34,10 +34,32 @@ DirectionalLight {
 SoccerField {
 }
 
+DEF FLOOR Solid {
+  translation -120 0 -40
+
+  children [
+    Shape {
+      geometry ElevationGrid {
+        color Color {
+          color [
+            0.803922 0.498039 0.298039
+            1 1 0
+            ]
+        }
+        colorPerVertex FALSE
+        xDimension 120
+        xSpacing 1
+        zDimension 80
+        zSpacing 1
+      }
+    }
+  ]
+}
+
 #PlayerId 0 for goalie
 #TeamID 99 for test_vision
 DEF PLAYER_1_99 DARwInOPGPS {
-  translation 1.5 0.3 0.8
+  translation 1.5 0.35 0.8
   rotation 0 1 0 -1.56
   controller "darwin-op_team_0"
   controllerArgs "1 70"

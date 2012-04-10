@@ -34,15 +34,12 @@ function set_next_policy()
       gradient[p] = rewards[p];
     end
     gradient = gradient / vector.norm(gradient);
-    for p=1,#rlcm.enum_param do
-      local paramDelta = 0.01; -- TODO: Should be different for each parameter!
-      gradient[p] = rewards[p] * paramDelta;
-    end
+
     print('Gradient',gradient)
     for p=1,#rlcm.enum_param do
       local param2tune = rlcm.enum_param[p];
       local paramVal = rlcm['get_params_'..param2tune]();
-      local gradStep = 0.1; -- TODO tune
+      local gradStep = 0.01; -- TODO Should be different for each parameter!
       rlcm['set_params_'..param2tune]( paramVal+gradient[p]*gradStep );
     end
   end
@@ -62,6 +59,9 @@ function record_reward(gps0,gps1)
 end
 
 function record_fall()
+  for i=1,20 do
+    print('recording a fall!');
+  end
   -- Get current rewards
   rewards = rlcm.get_trial_reward();
   stage = rlcm.get_trial_stage();

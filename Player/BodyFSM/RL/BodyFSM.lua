@@ -18,6 +18,7 @@ sm:add_state(bodyPickup);
 -- Evaluate Trial
 --sm:set_transition(bodySearch, 'stretcher', bodyChase);
 sm:set_transition(bodySearch, 'timeout', bodyApproach);
+sm:set_transition(bodySearch, 'fall', bodyApproach);
 
 -- Stop before next trial
 sm:set_transition(bodyApproach, 'timeout', bodySearch);

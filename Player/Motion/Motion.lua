@@ -93,7 +93,10 @@ sm:set_transition(walk, 'fall', falling);
 sm:set_transition(align, 'fall', falling);
 sm:set_transition(divewait, 'fall', falling);
 sm:set_transition(falling, 'done', standup);
-sm:set_transition(standup, 'done', stance);
+
+--sm:set_transition(standup, 'done', stance); -- Starts walking after standing
+sm:set_transition(standup, 'done', standstill);
+
 sm:set_transition(standup, 'fail', standup);
 
 -- kick behaviours

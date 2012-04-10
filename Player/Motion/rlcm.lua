@@ -39,7 +39,6 @@ shared.trial.stage = vector.ones(1);
 -- Reward in each gradient sample, plus the gradient step
 shared.trial.reward = vector.zeros( #enum_param+1 );
 
-
 -- Init the segment
 util.init_shm_segment(getfenv(), _NAME, shared, shsize);
 

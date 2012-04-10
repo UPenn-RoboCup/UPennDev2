@@ -21,6 +21,7 @@ function entry()
   local trialnum = rlcm.get_trial_num();
   print('\n=====')
   print('Trial',trialnum);
+  Motion.event("walk");
 
   -- Record starting GPS
   gps_init = Body.get_sensor_gps();

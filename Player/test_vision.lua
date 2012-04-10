@@ -334,11 +334,13 @@ if (webots) then
   end
 end
 
-if( darwin ) then
+--Now nao are running main process separately too
+
+--if( darwin ) then
   local tDelay = 0.005 * 1E6; -- Loop every 5ms
   while 1 do
     process_keyinput();
     unix.usleep(tDelay);
     update();
   end
-end
+--end

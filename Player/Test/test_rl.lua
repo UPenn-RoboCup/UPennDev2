@@ -193,6 +193,10 @@ for param,value in pairs(rlcm.shared.params) do
   end
 end
 
+-- Initialize to start running
+sm_running = 1;
+BodyFSM.sm:set_state('bodySearch');
+
 
 local tDelay=0.002*1E6;
 local ncount = 100;

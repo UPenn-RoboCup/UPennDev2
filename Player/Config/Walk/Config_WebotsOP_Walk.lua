@@ -117,3 +117,6 @@ walk.hipOffsetZ = 0.096;
 walk.stanceLimitA={-20*math.pi/180,45*math.pi/180};
 walk.velLimitA={-.6,.6};
 --]]
+
+-- Absurd limits...
+walk.velLimitX={-.5,.5};

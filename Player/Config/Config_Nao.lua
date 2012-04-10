@@ -13,11 +13,9 @@ function loadconfig(configName)
   end
 end
 
---loadconfig('Config_Nao_Walk_NaoWalk')
-loadconfig('Walk/Config_Nao_Walk_Blimp_Room')
-
+loadconfig('Walk/Config_Nao_Walk')
 loadconfig('World/Config_Nao_World')
-loadconfig('Kick/Config_Nao_New_Kick')
+loadconfig('Kick/Config_Nao_Kick')
 loadconfig('Vision/Config_Nao_Vision')
 
 --Location Specific Camera Parameters--
@@ -105,8 +103,6 @@ head.bodyTilt = 0;
 km = {};
 km.kick_right = 'km_Nao_KickForwardRight.lua';
 km.kick_left = 'km_Nao_KickForwardLeft.lua';
---km.kick_right = 'km_Nao_KickForwardRight_old.lua';
---km.kick_left = 'km_Nao_KickForwardLeft_old.lua';
 km.standup_front = 'km_Nao_StandupFromFrontFaster.lua';
 km.standup_back = 'km_Nao_StandupFromBackFasterNew.lua';
 

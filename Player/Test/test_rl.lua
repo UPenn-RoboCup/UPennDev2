@@ -147,15 +147,15 @@ function process_keyinput()
       Motion.event("walk");
       walk.start();
 
-    -- Stretcher specific
+      -- Stretcher specific
     elseif byte==string.byte("s") then -- Search for the stretcher
---      sm_running = 1-sm_running;
+      --      sm_running = 1-sm_running;
       sm_running = 1;
       BodyFSM.sm:set_state('bodySearch');
       print('searching!')
     elseif byte==string.byte("p") then -- Execute pickup motion
       sm_running = 0;
---      BodyFSM.sm:set_state('bodyPickup');
+      --      BodyFSM.sm:set_state('bodyPickup');
 
     end
 
@@ -179,6 +179,20 @@ function update()
   -- Get a keypress
   process_keyinput();
 end
+
+-- Reset RL parameters for each new run
+for param,value in pairs(rlcm.shared.params) do
+  if( param~='vx' ) then
+    local config_val = Config.walk[param];
+    rlcm['set_params_'..param](config_val);
+    print('Resetting',param,config_val)
+  else
+    rlcm.set_params_vx(0.01);
+    print('Resetting\tvx\t0.1');
+
+  end
+end
+
 
 local tDelay=0.002*1E6;
 local ncount = 100;

@@ -111,3 +111,8 @@ walk.footX = walk.footX + walk.footXComp;
 walk.footY = walk.footY + walk.footYComp;
 walk.headPitch = walk.headPitch + walk.headPitchComp;
 walk.tStep = walk.tStep + walk.tStepComm;
+
+
+-- SLOW WALK FOR RL
+walk.tStep = 0.4;
+

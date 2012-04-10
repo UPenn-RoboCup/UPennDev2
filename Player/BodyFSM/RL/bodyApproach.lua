@@ -6,7 +6,7 @@ require('vector')
 require 'librl'
 
 t0 = 0;
-timeout = 3.0;
+timeout = 2.0;
 fell = 0;
 
 t1 = nil;
@@ -30,7 +30,9 @@ function update()
   if( fell==1 and falling==0 ) then
     -- Wait for it to get up...
     if( not t1 ) then
+      Motion.event('standstill');
       t1 = Body.get_time();
+      timeout = 6.0;
     elseif(t-t1>timeout)then
       return 'timeout';
     end

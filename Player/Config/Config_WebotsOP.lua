@@ -147,7 +147,7 @@ Config.vision.enable_midfield_landmark_detection = 0;
 --]]
 
 --loadconfig('FSM/Config_WebotsOP_FSM')
---loadconfig( 'Config_RL' );
+loadconfig( 'Config_RL' );
 game.teamNumber = 18;
 game.playerID = 1;
 fsm.game = 'RL';

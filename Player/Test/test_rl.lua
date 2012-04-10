@@ -192,6 +192,7 @@ for param,value in pairs(rlcm.shared.params) do
   end
 end
 rlcm.set_trial_num(0);
+rlcm.set_trial_stage(#rlcm.enum_param+1);
 
 -- Initialize to start running
 sm_running = 1;

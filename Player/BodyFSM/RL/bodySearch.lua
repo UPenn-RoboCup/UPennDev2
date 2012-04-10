@@ -18,6 +18,10 @@ gps_final = {};
 function entry()
   print("Body FSM:".._NAME.." entry");
 
+  local trialnum = rlcm.get_trial_num();
+  print('\n=====')
+  print('Trial',trialnum);
+
   -- Record starting GPS
   gps_init = Body.get_sensor_gps();
 

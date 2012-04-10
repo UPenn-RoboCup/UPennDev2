@@ -189,9 +189,9 @@ for param,value in pairs(rlcm.shared.params) do
   else
     rlcm.set_params_vx(0.01);
     print('Resetting\tvx\t0.1');
-
   end
 end
+rlcm.set_trial_num(0);
 
 -- Initialize to start running
 sm_running = 1;

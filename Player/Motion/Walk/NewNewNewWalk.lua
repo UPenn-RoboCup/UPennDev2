@@ -74,8 +74,7 @@ supportSideY = Config.walk.supportSideY or 0;
 
 --WalkKick parameters
 walkKickDef = Config.walk.walkKickDef;
-walkKickPh2 = Config.walk.walkKickPh2;
-walkKickPh3 = Config.walk.walkKickPh3;
+walkKickPh = Config.walk.walkKickPh;
 
 ----------------------------------------------------------
 -- Walk state variables
@@ -223,8 +222,6 @@ function update()
       end
     end
 
-    shiftFactor = 0.5;
-
     uTorso2 = step_torso(uLeft2, uRight2,shiftFactor);
 
     --Apply velocity-based support point modulation for uSupport
@@ -263,14 +260,8 @@ function update()
   if initial_step>0 then zFoot=0;  end --Don't lift foot at initial step
   pLLeg[3], pRLeg[3] = 0;
   if supportLeg == 0 then    -- Left support
-    if current_step_type==2 then --walkkick
-      if xFoot<walkKickPh2[1] then uRight = uRight1;
-      elseif xFoot<walkKickPh2[2] then uRight = uRight15;
-      else uRight = util.se2_interpolate(
-  	  (xFoot-walkKickPh2[2])/(1-walkKickPh2[2]), uRight15, uRight2);
-      end
-    elseif current_step_type==3 then --side swing
-      if xFoot<walkKickPh3 then uRight = 
+    if current_step_type>1 then --walkkick
+      if xFoot<walkKickPh then uRight = 
 		util.se2_interpolate(xFoot*2, uRight1, uRight15);
       else uRight = util.se2_interpolate(xFoot*2-1, uRight15, uRight2);
       end
@@ -279,14 +270,8 @@ function update()
     end
     pRLeg[3] = stepHeight*zFoot;
   else    -- Right support
-    if current_step_type==2 then --walkkick
-      if xFoot<walkKickPh2[1] then uLeft = uLeft1;
-      elseif xFoot<walkKickPh2[2] then uLeft = uLeft15;
-      else uLeft = util.se2_interpolate(
-  	  (xFoot-walkKickPh2[2])/(1-walkKickPh2[2]), uLeft15, uLeft2);
-      end
-    elseif current_step_type==3 then --side swing
-      if xFoot<walkKickPh3 then uLeft = util.se2_interpolate(xFoot*2, uLeft1, uLeft15);
+    if current_step_type>1 then --walkkick
+      if xFoot<walkKickPh then uLeft = util.se2_interpolate(xFoot*2, uLeft1, uLeft15);
       else uLeft = util.se2_interpolate(xFoot*2-1, uLeft15, uLeft2);      
       end
     else
@@ -344,8 +329,11 @@ function check_walkkick()
   supportLeg = walkKick[walkKickRequest][3];
   stepHeight = walkKick[walkKickRequest][4];
   supportMod = walkKick[walkKickRequest][5];
-  if #walkKick[walkKickRequest] <=6 then
-    footPos1 =  walkKick[walkKickRequest][6];
+
+  shiftFactor = walkKick[walkKickRequest][6];
+
+  if #walkKick[walkKickRequest] <=7 then
+    footPos1 =  walkKick[walkKickRequest][7];
     if supportLeg == 0 then
       uRight2 = util.pose_global(
  	      {footPos1[1],footPos1[2]-2*footY,footPos1[3]},uLeft1);
@@ -354,8 +342,8 @@ function check_walkkick()
  	      {footPos1[1],footPos1[2]+2*footY,footPos1[3]},uRight1);
     end
   else
-    footPos1 =  walkKick[walkKickRequest][6];
-    footPos2 =  walkKick[walkKickRequest][7];
+    footPos1 =  walkKick[walkKickRequest][7];
+    footPos2 =  walkKick[walkKickRequest][8];
     if supportLeg == 0 then
       uRight15 = util.pose_global(
  	      {footPos1[1],footPos1[2]-2*footY,footPos1[3]},uLeft1);

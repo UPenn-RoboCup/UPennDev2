@@ -15,9 +15,6 @@ require('Detection');
 
 require('vcm');
 require('mcm');
-
-
---Testing this 
 require('Body')
 
 
@@ -145,6 +142,7 @@ function update()
   else
     return false; 
   end
+  vcm.refresh_debug_message();
     
   -- Add timer measurements
   count = count + 1;
@@ -172,7 +170,6 @@ function update()
 
   -- bit-or the segmented image
   labelB.data = ImageProc.block_bitor(labelA.data, labelA.m, labelA.n, scaleB, scaleB);
-
 
   Detection.update();
 
@@ -267,13 +264,11 @@ function bboxStats(color, bboxB, rollAngle)
   bboxA[3] = scaleB*bboxB[3];
   bboxA[4] = scaleB*bboxB[4] + scaleB - 1;
   if rollAngle then
-    --make boundingbox shifted slightly
-    bboxA[1] = bboxA[1]+1 ;
-    bboxA[2] = bboxA[2]+1 ;
+ --hack: shift boundingbox 1 pix helps goal detection
+ --not sure why this thing is happening...
 
-    --Hack: when the robot looks down, widen bounding box
---    headAngles=Body.get_head_position();
---    print(headAngles[2]*180/math.pi)
+--    bboxA[1]=bboxA[1]+1;
+      bboxA[2]=bboxA[2]+1;
 
     return ImageProc.tilted_color_stats(
 	labelA.data, labelA.m, labelA.n, color, bboxA,rollAngle);

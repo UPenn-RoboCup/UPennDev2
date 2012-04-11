@@ -85,10 +85,10 @@ function plot_overlay(r_mon,scale,drawlevel)
 
 
 
-    gbx1=(postStats.gbx1+.5)/scale*4;
-    gbx2=(postStats.gbx2+1.5)/scale*4;
-    gby1=(postStats.gby1+.5)/scale*4;
-    gby2=(postStats.gby2+1.5)/scale*4;
+    gbx1=(postStats.gbx1)/scale*4;
+    gbx2=(postStats.gbx2+1)/scale*4;
+    gby1=(postStats.gby1)/scale*4;
+    gby2=(postStats.gby2+1)/scale*4;
 
     xskew=tan(rollAngle);
     gbx11=gbx1+gby1*xskew;

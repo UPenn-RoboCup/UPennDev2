@@ -37,6 +37,11 @@ vision.use_point_goal = 0;
 --vision.enable_robot_detection = 1;
 vision.enable_robot_detection = 0;
 
+
+--Now testing goalpost detection only
+vision.enable_line_detection = 0;
+vision.enable_midfield_landmark_detection = 0;
+
 ----------------------------
 --OP specific
 ----------------------------

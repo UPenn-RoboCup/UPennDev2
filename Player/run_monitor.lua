@@ -64,7 +64,7 @@ function update()
   if vcm.get_image_count()>imagecount then
     imagecount=vcm.get_image_count();
     -- Always send non-image data
-    --  Broadcast.update(broadcast_enable);
+    Broadcast.update(broadcast_enable);
     -- Send image data every so often
     if( imagecount % imgRate == 0 ) then
       Broadcast.update_img(broadcast_enable);    

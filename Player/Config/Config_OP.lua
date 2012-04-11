@@ -15,7 +15,7 @@ end
 
 --Simplified setup for distribution
 loadconfig('Walk/Config_OP_Walk')
-loadconfig('World/Config_OP_World_Expo')
+loadconfig('World/Config_OP_World')
 loadconfig('Kick/Config_OP_Kick')
 loadconfig('Vision/Config_OP_Vision')
 loadconfig('Robot/Config_OP_Robot')
@@ -32,8 +32,8 @@ dev.ip_wireless = '192.168.1.255';
 dev.game_control='OPGameControl';
 dev.team='TeamNSL';
 --dev.walk='BasicWalk';
-dev.walk='NewNewWalk';
---dev.walk='NewNewNewWalk';
+--dev.walk='NewNewWalk';
+dev.walk='NewNewNewWalk';
 dev.kick = 'NewKick'
 
 -- Game Parameters
@@ -47,13 +47,14 @@ game.nPlayers = 5;
 --------------------
 
 --Default role is based on player ID
---1 for goalie, 2 for attacker, 3 for defender
+--0 for goalie, 1 for attacker, 2 for defender
 game.role = game.playerID-1; --default attacker
+game.role = 1;
 
 --FSM and behavior settings
 fsm = {};
 --SJ: loading FSM config  kills the variable fsm, so should be called first
-loadconfig('FSM/Config_WebotsOP_FSM')
+loadconfig('FSM/Config_OP_FSM')
 fsm.game = 'RoboCup';
 fsm.head = {'GeneralPlayer'};
 fsm.body = {'GeneralPlayer'};
@@ -61,9 +62,9 @@ fsm.body = {'GeneralPlayer'};
 --Behavior flags, should be defined in FSM Configs but can be overrided here
 fsm.enable_obstacle_detection = 1;
 fsm.kickoff_wait_enable = 0;
-fsm.playMode = 2; --1 for demo, 2 for orbit, 3 for direct approach
-fsm.enable_walkkick = 0;
-fsm.enable_sidekick = 0;
+fsm.playMode = 3; --1 for demo, 2 for orbit, 3 for direct approach
+fsm.enable_walkkick = 1;
+fsm.enable_sidekick = 1;
 
 -- Team Parameters
 team = {};

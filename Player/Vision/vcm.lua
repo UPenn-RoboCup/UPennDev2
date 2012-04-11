@@ -48,6 +48,8 @@ shared.image.horizonDir = vector.zeros(4); -- Angle of horizon line rotation
 shared.image.yuyv = 2*Config.camera.width*Config.camera.height; 
 --Downsampled yuyv
 shared.image.yuyv2 = 2*Config.camera.width*Config.camera.height/2/2; 
+--Downsampled yuyv 2
+shared.image.yuyv3 = 2*Config.camera.width*Config.camera.height/4/4; 
 
 shared.image.width = vector.zeros(1);
 shared.image.height = vector.zeros(1);
@@ -55,8 +57,8 @@ shared.image.height = vector.zeros(1);
 shared.image.labelA = (processed_img_width)*(processed_img_height);
 shared.image.labelB = ((processed_img_width)/Config.vision.scaleB)*((processed_img_height)/Config.vision.scaleB);
 -- calculate image shm size
-shsize.image = (shared.image.yuyv + shared.image.yuyv2+
-		shared.image.labelA + shared.image.labelB) + 2^16;
+shsize.image = (shared.image.yuyv + shared.image.yuyv2+ 
+	shared.image.yuyv3+shared.image.labelA + shared.image.labelB) + 2^16;
 
 --Image field-of-view information
 shared.image.fovTL=vector.zeros(2);
@@ -130,24 +132,35 @@ shared.corner.v = vector.zeros(4);
 shared.corner.v1 = vector.zeros(4);
 shared.corner.v2 = vector.zeros(4);
 
-
-enable_robot_detection = Config.vision.enable_robot_detection or 0;
-
-if enable_robot_detection>0 then
-  map_div = Config.vision.robot.map_div;
-  --Global map
-  shared.robot={};
-  shared.robot.lowpoint = vector.zeros(Config.camera.width/Config.vision.scaleB);
-  shared.robot.map=vector.zeros(6*4*Config.vision.robot.map_div*Config.vision.robot.map_div); --60 by 40 map
-end
-
   --[[
   shared.spot = {};
   shared.spot.detect = vector.zeros(1);
   --]]
 
-  shared.freespace = {};
-  shared.freespace.detect = vector.zeros(1);
+
+enable_robot_detection = Config.vision.enable_robot_detection or 0;
+
+shared.robot={};
+shared.robot.detect=vector.zeros(1);
+
+if enable_robot_detection>0 then
+  --SJ: Don't define the arrays if they are not used 
+  --As they will occupy monitor bandwidth
+  map_div = Config.vision.robot.map_div;
+  --Global map
+  shared.robot.lowpoint = vector.zeros(Config.camera.width/Config.vision.scaleB);
+  shared.robot.map=vector.zeros(6*4*Config.vision.robot.map_div*Config.vision.robot.map_div); --60 by 40 map
+end
+
+enable_freespace_detection = Config.vision.enable_freespace_detection or 0;
+
+shared.freespace = {};
+shared.freespace.detect = vector.zeros(1);
+
+shared.boundary = {};
+shared.boundary.detect = vector.zeros(1);
+
+if enable_freespace_detection>0 then
   shared.freespace.block = vector.zeros(1);
   shared.freespace.nCol = vector.zeros(1);
   shared.freespace.nRow = vector.zeros(1);
@@ -158,15 +171,9 @@ end
   shared.freespace.pboundB = vector.zeros(2*Config.camera.width/(Config.vision.scaleB));
   shared.freespace.tboundB = vector.zeros(Config.camera.width/(Config.vision.scaleB));
 
-  shared.boundary = {};
-  shared.boundary.detect = vector.zeros(1);
   shared.boundary.top = vector.zeros(2*Config.camera.width/Config.vision.scaleB);
   shared.boundary.bottom = vector.zeros(2*Config.camera.width/Config.vision.scaleB);
-
-
-
-
-
+end
 
 shared.debug = {};
 shared.debug.enable_shm_copy = vector.zeros(1);

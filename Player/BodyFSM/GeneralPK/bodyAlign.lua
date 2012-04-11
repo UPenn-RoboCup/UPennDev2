@@ -21,7 +21,7 @@ kickTargetSide=Config.fsm.bodyKick.kickTargetSide or {0.15,0.04};
 kickTh=Config.fsm.bodyKick.kickTh or {0.03,0.025};
 
 kickTargetFront={0.12,0.05};
-kickTh={0.01,0.01,10*math.pi/180}; --1cm precision
+kickTh={0.01,0.01,7.5*math.pi/180}; --1cm precision
 
 t0 = 0;
 tStart = 0;
@@ -108,9 +108,12 @@ function check_ball_pos()
   local uBall=vector.new({ball.x,ball.y,angle});
   local uTargetBall=util.pose_global(-uTarget,uBall);
 
+print("kickAngle:",kick_angle*180/math.pi)
+
   print("Ball",unpack(uBall));
   print("Target",unpack(uTarget));
   print("Alignment:",unpack(uTargetBall));
+  print("Rotation:",180*math.pi*uTargetBall[3]);
   align.set_velocity(uTargetBall);
   if uTargetBall[2]>0 then
     align.set_supportLeg(1);

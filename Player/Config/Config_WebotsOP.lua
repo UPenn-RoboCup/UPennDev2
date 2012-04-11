@@ -28,11 +28,7 @@ dev.camera = 'WebotsOPCam';
 dev.kinematics = 'OPKinematics';
 dev.game_control='WebotsGameControl';
 dev.team='TeamNSL';
---dev.team='TeamSPL';
-dev.walk='NewWalk';
-dev.walk='NewNewWalk'; --New robocup walk that supports walking kicks
---dev.walk='BoxWalk'; --New walk that supports different foot stance
---dev.kick='NewKick';
+dev.walk='NewNewNewWalk'; --Walk with generalized walkkick definitions
 dev.kick='NewNewKick'; --Extended kick that supports upper body motion
 
 -- Game Parameters
@@ -73,7 +69,6 @@ fsm.enable_dribble = 1;
 --Enable these for penalty-kick
 dev.team='TeamNull'; --Turn off teamplay for challenges
 fsm.body = {'GeneralPK'};
-fsm.playMode = 2;
 --]]
 
 --[[
@@ -93,10 +88,6 @@ team = {};
 team.msgTimeout = 5.0;
 team.nonAttackerPenalty = 6.0; -- eta sec
 team.nonDefenderPenalty = 0.5; -- dist from goal
-
--------------------------------------
--- Robot specific parameters
--------------------------------------
 
 -- keyframe files
 km = {};
@@ -127,28 +118,3 @@ head.bodyTilt = 0;
 
 --km.kick_right = 'km_NSLOP_taunt1.lua';
 --km.kick_left = 'km_NSLOP_StandupFromFront2.lua';
-
-
---SJ: I separated non-robocup FSMs here
---Dodgeball FSM
---[[
-loadconfig('FSM/Config_WebotsOP_FSM')
-fsm.game = 'Dodgeball';
-fsm.head = {'GeneralPlayer'};
-fsm.body = {'GeneralPlayer'};
-Config.vision.enable_line_detection = 0;
-Config.vision.enable_midfield_landmark_detection = 0;
---]]
-
---Stretcher FSM
---[[
-loadconfig('FSM/Config_WebotsOP_FSM')
-loadconfig( 'Config_Stretcher' );
-game.teamNumber = 18;
-game.playerID = 1;
-fsm.game = 'Stretcher';
-fsm.head = {'Stretcher'};
-fsm.body = {'Stretcher'};
-Config.vision.enable_line_detection = 0;
-Config.vision.enable_midfield_landmark_detection = 0;
---]]

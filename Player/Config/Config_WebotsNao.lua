@@ -29,9 +29,8 @@ dev.camera = 'NaoWebotsCam';
 dev.kinematics = 'NaoWebotsKinematics';
 dev.game_control='WebotsGameControl';
 dev.team= 'TeamSPL';
-dev.walk = 'NewWalk';
 dev.kick = 'NewKick';
-dev.walk = 'NewNewWalk';
+dev.walk = 'NewNewNewWalk';
 
 -- Game Parameters
 
@@ -109,6 +108,10 @@ head.neckX=0;
 km = {};
 km.kick_right = 'km_WebotsNao_KickForwardRight.lua';
 km.kick_left = 'km_WebotsNao_KickForwardLeft.lua';
+km.standup_front = 'km_WebotsNao_StandupFromFront.lua';
+km.standup_back = 'km_WebotsNao_StandupFromBack.lua';
+
+
 km.standup_front = 'km_WebotsNao_StandupFromFront.lua';
 km.standup_back = 'km_WebotsNao_StandupFromBack.lua';
 

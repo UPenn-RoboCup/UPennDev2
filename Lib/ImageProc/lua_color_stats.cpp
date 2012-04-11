@@ -207,8 +207,8 @@ int lua_tilted_color_stats(lua_State *L) {
   for (int j = j0; j <= j1; j++) {
     uint8_t *im_col = im_ptr + width*j;
     double shift= (double) j*increment;
-    int i2 = (int)  i0+ shift + 0.5; //round up
-    int i3 = (int)  i1+ shift + 0.5; //round up
+    int i2 = (int)  i0+ (shift + 0.5); //round up
+    int i3 = (int)  i1+ (shift + 0.5); //round up
     if (i2>width-1) i2=width-1;
     if (i3>width-1) i3=width-1;
     if (i2<0) i2=0;

@@ -9,7 +9,9 @@ require('bodyReady')
 require('bodySearch')
 require('bodyGetPosition')
 require('bodyChase')
+require('bodyOrbit')
 require('bodyApproach')
+require('bodyDribble')
 require('bodyPass')
 require('bodyTask')
 
@@ -21,7 +23,9 @@ sm:add_state(bodyReady);
 sm:add_state(bodySearch);
 sm:add_state(bodyGetPosition);
 sm:add_state(bodyChase);
+sm:add_state(bodyOrbit);
 sm:add_state(bodyApproach);
+sm:add_state(bodyDribble);
 sm:add_state(bodyPass);
 sm:add_state(bodyTask);
 
@@ -36,14 +40,24 @@ sm:set_transition(bodyGetPosition, 'done', bodyTask);
 
 -- Chase after the ball
 sm:set_transition(bodyChase, 'ballLost', bodySearch);
-sm:set_transition(bodyChase, 'ballClose', bodyApproach);
+sm:set_transition(bodyChase, 'ballClose', bodyOrbit);
 sm:set_transition(bodyChase, 'timeout', bodyChase);
+
+-- Orbit around the ball
+sm:set_transition(bodyOrbit, 'timeout', bodyChase);
+sm:set_transition(bodyOrbit, 'ballLost', bodySearch);
+sm:set_transition(bodyOrbit, 'ballFar', bodyChase);
+sm:set_transition(bodyOrbit, 'done', bodyApproach);
 
 -- Approach the ball 
 sm:set_transition(bodyApproach, 'ballFar', bodyChase);
 sm:set_transition(bodyApproach, 'ballLost', bodySearch);
 sm:set_transition(bodyApproach, 'kick', bodyPass);
 sm:set_transition(bodyApproach, 'timeout', bodyChase);
+
+--Dribble the ball
+
+
 
 -- Search for the ball
 sm:set_transition(bodySearch, 'ball', bodyChase);

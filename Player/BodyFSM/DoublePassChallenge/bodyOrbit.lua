@@ -5,7 +5,6 @@ require('walk')
 require('vector')
 require('Config')
 require('wcm')
-require('behavior')
 
 t0 = 0;
 timeout = Config.fsm.bodyOrbit.timeout;
@@ -22,14 +21,22 @@ kickAngle = 0;
 function entry()
   print(_NAME.." entry");
   t0 = Body.get_time();
-  behavior.update();
   kickAngle=  wcm.get_kick_angle();
   direction,angle=get_orbit_direction();
 end
 
 function get_orbit_direction()
-  attackBearing = wcm.get_attack_bearing();
-  angle = util.mod_angle(attackBearing-kickAngle);
+  ball = wcm.get_ball();
+  pose = wcm.get_pose();
+
+  target = gcm.get_team_target();
+  ballxy=vector.new( {ball.x,ball.y,0} );
+  posexya=vector.new( {pose.x, pose.y, pose.a} );
+  ballGlobal=util.pose_global(ballxy,posexya);
+  aGoal=math.atan2(target[2]-ballGlobal[2],target[1]-ballGlobal[1]);
+
+  --Player FSM, turn towards the target
+  angle = util.mod_angle(aGoal-pose.a);
 
   if angle>0 then dir = 1;
   else dir = -1;

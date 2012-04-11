@@ -53,17 +53,45 @@ function detect(color,color2)
   goal.detect = 0;
 
   local postB;
+
   if use_tilted_bbox>0 then
     --where shoud we update the roll angle? HeadTransform?
     tiltAngle = HeadTransform.getCameraRoll();
     vcm.set_camera_rollAngle(tiltAngle);
-    postB = ImageProc.tilted_goal_posts(Vision.labelB.data, 
-	Vision.labelB.m, Vision.labelB.n, color, th_nPostB,tiltAngle);
+--    postB = ImageProc.tilted_goal_posts(Vision.labelB.data, 
+--	Vision.labelB.m, Vision.labelB.n, color, th_nPostB,tiltAngle);
+
+
+--Tilted labelB test for OP
+------------------------------------------------------------------------
+    Vision.labelBtilted={}
+    Vision.labelBtilted.moffset = Vision.labelA.m/Vision.scaleB/2;
+    Vision.labelBtilted.m = Vision.labelA.m/Vision.scaleB*2;
+    Vision.labelBtilted.n = Vision.labelA.n/Vision.scaleB;
+    Vision.labelBtilted.npixel = Vision.labelBtilted.m*Vision.labelBtilted.n;
+    Vision.labelBtilted.data = 
+	ImageProc.tilted_block_bitor(Vision.labelA.data, 
+	Vision.labelA.m, Vision.labelA.n, Vision.scaleB, Vision.scaleB, tiltAngle);
+    postB = ImageProc.goal_posts(Vision.labelBtilted.data, 
+	Vision.labelBtilted.m, Vision.labelBtilted.n, color, th_nPostB);
+    --discount tilt offset
+    if postB then
+      for i = 1,#postB do
+        postB[i].boundingBox[1] = 
+    	  postB[i].boundingBox[1]-Vision.labelBtilted.moffset;
+        postB[i].boundingBox[2] = 
+	  postB[i].boundingBox[2]-Vision.labelBtilted.moffset;
+      end
+    end
+------------------------------------------------------------------------
+
   else
     tiltAngle=0;
+    vcm.set_camera_rollAngle(tiltAngle);
     postB = ImageProc.goal_posts(Vision.labelB.data, 
 	Vision.labelB.m, Vision.labelB.n, color, th_nPostB);
   end
+
 
   if (not postB) then 	
     vcm.add_debug_message("No post detected\n")
@@ -196,6 +224,8 @@ function detect(color,color2)
       end
     end
 
+   --SJ: we may need this again...
+
 --[[
     -- check for posts in the ball
     if (valid and color == colorYellow and Vision.ball.detect == 1) then
@@ -250,6 +280,18 @@ function detect(color,color2)
       scale = math.max(scale1,scale2,scale3);
     end
 
+
+--SJ: goal distance can be noisy, so I added bunch of debug message here
+    v1 = HeadTransform.coordinatesA(postA[i].centroid, scale1);
+    v2 = HeadTransform.coordinatesA(postA[i].centroid, scale2);
+    v3 = HeadTransform.coordinatesA(postA[i].centroid, scale3);
+    vcm.add_debug_message(string.format("Distance by width : %.1f\n",
+	math.sqrt(v1[1]^2+v1[2]^2) ));
+    vcm.add_debug_message(string.format("Distance by height : %.1f\n",
+	math.sqrt(v2[1]^2+v2[2]^2) ));
+    vcm.add_debug_message(string.format("Distance by area : %.1f\n",
+	math.sqrt(v3[1]^2+v3[2]^2) ));
+
     if scale==scale1 then
       vcm.add_debug_message("Post distance measured by width\n");
     elseif scale==scale2 then
@@ -267,6 +309,7 @@ function detect(color,color2)
   if (npost == 2) then
     goal.type = 3; --Two posts
 
+--Do we need this? this may hinder detecting goals when robot is facing down...
 --[[
     -- check for valid separation between posts:
     local dGoal = postA[2].centroid[1]-postA[1].centroid[1];

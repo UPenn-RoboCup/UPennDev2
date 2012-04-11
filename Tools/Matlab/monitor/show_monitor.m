@@ -7,6 +7,7 @@ function h=show_monitor()
   h.update_team=@update_team;
 
   %Five screen for single monitor
+  h.enable0=1;
   h.enable1=1;
   h.enable2=1;
   h.enable3=1;
@@ -86,6 +87,8 @@ function h=show_monitor()
 	'Units','Normalized', 'Position',[.70 .93 .20 .04],'Callback',@button12);
 
 
+      MONITOR.hButton0=uicontrol('Style','pushbutton','String','Overlay 1',...
+	'Units','Normalized', 'Position',[.02 .87 .07 .07],'Callback',@button0);
 
       MONITOR.hButton1=uicontrol('Style','pushbutton','String','YUYV1',...
 	'Units','Normalized', 'Position',[.02 .8 .07 .07],'Callback',@button1);
@@ -152,21 +155,25 @@ function h=show_monitor()
     end
 
     if MONITOR.enable1
+      MONITOR.h1 = subplot(4,5,[1 2 6 7]);
       if MONITOR.enable1==1
-        MONITOR.h1 = subplot(4,5,[1 2 6 7]);
         yuyv = robots{playerNumber,teamNumber}.get_yuyv();
 	plot_yuyv(yuyv);
       elseif MONITOR.enable1==2
-        MONITOR.h1 = subplot(4,5,[1 2 6 7]);
         yuyv = robots{playerNumber,teamNumber}.get_yuyv2();
+	plot_yuyv(yuyv);
+      elseif MONITOR.enable1==3
+        yuyv = robots{playerNumber,teamNumber}.get_yuyv3();
 	plot_yuyv(yuyv);
       end
 
       %webots use non-subsampled label (2x size of yuyv)
-      if MONITOR.is_webots
-        plot_overlay(r_mon,2*MONITOR.enable1);
-      else
-        plot_overlay(r_mon,1*MONITOR.enable1);
+      if MONITOR.enable0
+        if MONITOR.is_webots
+          plot_overlay(r_mon,2*MONITOR.enable1,MONITOR.enable0);
+        else
+          plot_overlay(r_mon,1*MONITOR.enable1,MONITOR.enable0);
+        end
       end
     end
 
@@ -174,12 +181,16 @@ function h=show_monitor()
       MONITOR.h2 = subplot(4,5,[3 4 8 9]);
       labelA = robots{playerNumber,teamNumber}.get_labelA();
       plot_label(labelA);
-      plot_overlay(r_mon,1);
+      if MONITOR.enable0
+        plot_overlay(r_mon,1,MONITOR.enable0);
+      end
     elseif MONITOR.enable2==2
       MONITOR.h2 = subplot(4,5,[3 4 8 9]);
       labelB = robots{playerNumber,teamNumber}.get_labelB();
       plot_label(labelB);
-      plot_overlay(r_mon,4);
+      if MONITOR.enable0
+        plot_overlay(r_mon,4,MONITOR.enable0);
+      end
     elseif (MONITOR.enable2==3) && (~isempty(MONITOR.lutname))
       MONITOR.h2 = subplot(4,5,[3 4 8 9]);
       yuyv = robots{playerNumber,teamNumber}.get_yuyv();
@@ -190,11 +201,17 @@ function h=show_monitor()
     if MONITOR.enable3
       MONITOR.h3 = subplot(4,5,[11 12 16 17]);
       cla(MONITOR.h3);
-%      plot_grid(r_mon.robot.map);  
 
-      plot_field(MONITOR.h3,MONITOR.fieldtype);
-
-      plot_robot( r_struct, r_mon,1,MONITOR.enable3 );
+      if MONITOR.enable3==5 
+	if isfield(r_mon.robot, 'map')
+          plot_grid(r_mon.robot.map);  
+	end
+        plot_field(MONITOR.h3,MONITOR.fieldtype);
+        plot_robot( r_struct, r_mon,2,3 );
+      else
+        plot_field(MONITOR.h3,MONITOR.fieldtype);
+        plot_robot( r_struct, r_mon,1,MONITOR.enable3 );
+      end
     end
 
     if MONITOR.enable4
@@ -246,11 +263,11 @@ function h=show_monitor()
       if MONITOR.enable8==1 && ignore_vision==0
         h1=subplot(5,5,15+playerNumber(i));
         plot_label(labelB);
-        plot_overlay(r_mon,4);
+        plot_overlay(r_mon,4,1);
       elseif MONITOR.enable8==2
         h1=subplot(5,5,15+playerNumber(i));
         cla(h1);
-        plot_overlay(r_mon,4);
+        plot_overlay(r_mon,4,1);
       end
 	
       if MONITOR.enable9
@@ -299,27 +316,36 @@ function h=show_monitor()
 
 
   function plot_grid(map)
-    cbk=[0 0 0];cr=[1 0 0];cg=[0 1 0];cb=[0 0 1];cy=[1 1 0];cw=[1 1 1];
-    cmap=[cw;cbk;cg];
+    %map: -1 to 1
     siz=sqrt(length(map)/6/4);    
-    map=floor(reshape(map,[6*siz 4*siz])'+0.5);
-    image([-3:1/siz:3],[-2:1/siz:2],map+1);  
-    colormap(cmap);
+    map=reshape(map,[4*siz 6*siz]);
+    map_black=max(0,map);
+    map_green=max(0,-map);
 
-
+    rgbc=zeros([4*siz 6*siz 3]);
+    rgbc(:,:,1)=1-map_black-map_green;
+    rgbc(:,:,2)=1-map_black;
+    rgbc(:,:,3)=1-map_black-map_green;
+    image('XData',[-3:1/siz:3],'YData',[-2:1/siz:2],...
+	'CData',rgbc);  
   end
 
 
 
 
-
-
-
+  function button0(varargin)
+    MONITOR.enable0=mod(MONITOR.enable0+1,3);
+    if MONITOR.enable0==1 set(MONITOR.hButton0,'String', 'Overlay 1');
+    elseif MONITOR.enable0==2 set(MONITOR.hButton0,'String', 'Overlay 2');
+    else set(MONITOR.hButton0,'String', 'Overlay OFF');
+    end
+  end
 
   function button1(varargin)
-    MONITOR.enable1=mod(MONITOR.enable1+1,3);
+    MONITOR.enable1=mod(MONITOR.enable1+1,4);
     if MONITOR.enable1==1 set(MONITOR.hButton1,'String', 'YUYV1');
     elseif MONITOR.enable1==2 set(MONITOR.hButton1,'String', 'YUYV2');
+    elseif MONITOR.enable1==3 set(MONITOR.hButton1,'String', 'YUYV4');
     else set(MONITOR.hButton1,'String', 'YUYV OFF');
       cla(MONITOR.h1);
     end
@@ -339,11 +365,12 @@ function h=show_monitor()
   end
 
   function button3(varargin)
-    MONITOR.enable3=mod(MONITOR.enable3+1,5);
+    MONITOR.enable3=mod(MONITOR.enable3+1,6);
     if MONITOR.enable3==1 set(MONITOR.hButton3,'String', 'MAP1');
     elseif MONITOR.enable3==2 set(MONITOR.hButton3,'String', 'MAP2');
     elseif MONITOR.enable3==3 set(MONITOR.hButton3,'String', 'MAP3');
     elseif MONITOR.enable3==4 set(MONITOR.hButton3,'String', 'PVIEW');
+    elseif MONITOR.enable3==5 set(MONITOR.hButton3,'String', 'OccVIEW');
     else set(MONITOR.hButton3,'String', 'MAP OFF');
       cla(MONITOR.h3);
     end

@@ -28,6 +28,8 @@ walk.supportX = 0;
 walk.supportY = 0.010;
 walk.qLArm=math.pi/180*vector.new({90,8,-40});
 walk.qRArm=math.pi/180*vector.new({90,-8,-40});
+walk.qLArmKick=math.pi/180*vector.new({90,30,-60});
+walk.qRArmKick=math.pi/180*vector.new({90,-30,-60});
 
 walk.hardnessSupport = 1;
 walk.hardnessSwing = 1;
@@ -69,18 +71,37 @@ walk.supportSideY = 0.02; --Lean sideways when sidestepping
 --------------------------------------------
 -- WalkKick parameters
 --------------------------------------------
-walk.walkKickVel = {0.06, 0.12} --step / kick / follow 
-walk.walkKickSupportMod = {{0,0},{0,0}}
-walk.walkKickHeightFactor = 2.0;
-walk.tStepWalkKick = 0.30;
+walk.walkKickDef={}
 
-walk.qLArmKick=math.pi/180*vector.new({90,15,-40});
-walk.qRArmKick=math.pi/180*vector.new({90,-15,-40});
-walk.sideKickVel1 = {0.04,0.04};
-walk.sideKickVel2 = {0.09,0.05};
-walk.sideKickVel3 = {0.09,-0.02};
-walk.sideKickSupportMod = {{0,0},{0,0}};
-walk.tStepSideKick = 0.30;
+--tStep stepType supportLeg stepHeight 
+-- SupportMod shiftFactor footPos1 footPos2
+
+walk.walkKickDef["FrontLeft"]={
+  {0.30, 1, 0, 0.035 , {0,0}, 0.7, {0.06,0,0} },
+  {0.30, 2, 1, 0.07 , {0.02,-0.02}, 0.5, {0.09,0,0}, {0.06,0,0} },
+  {walk.tStep, 1, 0, 0.035 , {0,0}, 0.5, {0,0,0} },
+}
+walk.walkKickDef["FrontRight"]={
+  {0.30, 1, 1, 0.035 , {0,0}, 0.3, {0.06,0,0} },
+  {0.30, 2, 0, 0.07 , {0.02,0.02}, 0.5,  {0.09,0,0}, {0.06,0,0} },
+  {walk.tStep, 1, 1, 0.035 , {0,0}, 0.5, {0,0,0} },
+}
+walk.walkKickDef["SideLeft"]={
+  {0.30, 1, 1, 0.035 , {0,0}, 0.3, {0.04,0.04,0} },
+  {0.35, 3, 0, 0.07 , {-0.01,0.01}, 0.5, {0.06,-0.05,0},{0.09,0.01,0}},
+ {0.25, 1, 1, 0.035 , {0,0}, 0.5, {0,0,0} },}
+
+walk.walkKickDef["SideRight"]={
+  {0.30, 1, 0, 0.035 , {0,0}, 0.7, {0.04,-0.04,0} },
+  {0.35, 3, 1, 0.07 , {-0.01,-0.01},0.5, {0.06,0.05,0},{0.09,-0.01,0}},
+  {0.25, 1, 0, 0.035 , {0,0},0.5,  {0,0,0} },
+}
+
+walk.walkKickPh=0.5;
+
+
+
+
 
 --Fall detection angle... OP requires large angle
 walk.fallAngle = 50*math.pi/180;
@@ -99,60 +120,25 @@ walk.headPitch = 40* math.pi / 180; --Pitch angle offset of OP
 walk.headPitchComp = 0;
 
 local robotName = unix.gethostname();
-print(robotName.." walk parameters loaded")
 local robotID = 0;
 
-if( robotName=='felix' ) then
-	robotID = 8;
+--Load robot specific calibration value
+require('calibration');
+if calibration.cal and calibration.cal[robotName] then
+  walk.servoBias = calibration.cal[robotName].servoBias;
+  walk.footXComp = calibration.cal[robotName].footXComp;
+  walk.footYComp = calibration.cal[robotName].footYComp;
+  walk.kickXComp = calibration.cal[robotName].kickXComp;
+  walk.headPitchComp = calibration.cal[robotName].headPitchComp;
 
-	walk.servoBias={0,-6,2,9,12,0,0,0,-6,-5,-2,-1}
-	walk.footXComp = -0.009;    
-	walk.footYComp = 0.002;  
-	walk.kickXComp = -0.010;
-	walk.headPitchComp = 4*math.pi/180;
-elseif( robotName=='betty' ) then
-	robotID = 9;
-
-	walk.servoBias={0,0,2,-6,-1,0,0,0,-13,-1,0,0}
-	walk.footXComp = -0.006;    
-	walk.footYComp = 0.002;  
-	walk.kickXComp = 0.005;
-	walk.headPitchComp = 3*math.pi/180;
-
-	--2/6/2012
-	walk.servoBias={0,0,2,-6,-1,0,0,0,-3,-1,-10,0}
-	walk.footXComp = 0.010;    
-
-elseif( robotName=='linus' ) then
-	robotID = 10;
-
-	walk.servoBias={3,1,2,1,1,-3,-8,-3,-13,-4,1,-5}
-	walk.footXComp = 0.00;
-	walk.kickXComp = -0.004;
-	walk.footYComp = 0.0025;  -- 0.04
-	walk.headPitchComp = 3*math.pi/180;
-elseif( robotName=='lucy' ) then
-	robotID = 11;
-	walk.servoBias={1,-28,-207,108,-26,-15,-43,-51,110,35,84,-29}; -- new firmware
---	walk.servoBias={29,7,321,16,16,340,15,5,427,10,7,7}
-	--  walk.servoBias={-3,1,3,-1,-3,4,1,-3,-9,-1,-8,-1} --4/21, measured by chris
-	walk.footXComp = 0.002; 
-	walk.footYComp = 0.0020;
-	walk.kickXComp = -0.005;
-
-elseif( robotName=='scarface' ) then
-	robotID = 5;
-	--02/04/12 - Larry V.
-	walk.servoBias={0,0,0,0,0,0,0,0,0,-9,-4,0} 
-	walk.footXComp = 0.00;
-	walk.kickXComp = -0.005;
-	walk.footXComp = -0.005;
+  walk.footX = walk.footX + walk.footXComp;
+  walk.footY = walk.footY + walk.footYComp;
+  walk.headPitch = walk.headPitch + walk.headPitchComp;
+  print(robotName.." walk parameters loaded")
 end
 
---Apply robot specific compensation to default values
-walk.footX = walk.footX + walk.footXComp;
-walk.footY = walk.footY + walk.footYComp;
-walk.headPitch = walk.headPitch + walk.headPitchComp;
+--]]
+
 
 -- Slow walk
 --[[

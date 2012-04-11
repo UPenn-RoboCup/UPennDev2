@@ -65,8 +65,6 @@ int lineState(uint8_t label)
 }
 
 #define MAX_SEGMENTS 50
-#define CONNECT_TH 1.4
-#define GAP_TH 0 //allow for 1 gaps in line
 
 struct SegmentStats {
   int state; //0 for inactive, 1 for active, 2 for ended
@@ -119,7 +117,7 @@ void segment_terminate(){
   for(int i=0;i<num_segments;i++) segments[i].state=2;
 }
 
-void updateStat(struct SegmentStats *statPtr, int i, int j){
+void updateStat(struct SegmentStats *statPtr, int i, int j, int max_gap){
   struct SegmentStats &stat=*statPtr;
   stat.xMean=(stat.count*stat.xMean + i)/(stat.count+1);
   stat.yMean=(stat.count*stat.yMean + j)/(stat.count+1);
@@ -129,7 +127,7 @@ void updateStat(struct SegmentStats *statPtr, int i, int j){
   stat.xx=stat.xx+i*i;
   stat.yy=stat.yy+j*j;
   stat.gap++;
-  if (stat.gap>GAP_TH+1) stat.gap=GAP_TH+1;
+  if (stat.gap>max_gap+1) stat.gap=max_gap+1;
 }
 
 void initStat(struct SegmentStats *statPtr,int i, int j){
@@ -152,7 +150,7 @@ void initStat(struct SegmentStats *statPtr,int i, int j){
 
 
 //We always add pixel from left to right
-void addHorizontalPixel(int i, int j){
+void addHorizontalPixel(int i, int j, double connect_th, int max_gap){
   //Find best matching active segment
   int seg_updated=0;
   //printf("Checking pixel %d,%d\n",i,j);
@@ -163,8 +161,8 @@ void addHorizontalPixel(int i, int j){
 	//printf("Checking segment %d\n",k);
 	//printf("xmean %.1f, ymean %.1f, grad %.2f, yErr %.2f\n", 
 	//segments[k].xMean, segments[k].yMean, segments[k].grad, yErr);
-      if (yErr<CONNECT_TH){
-	updateStat(&segments[k],i,j);
+      if (yErr<connect_th){
+	updateStat(&segments[k],i,j,max_gap);
 	segments[k].count++;
         segments[k].grad=(double) 
 		(segments[k].xy- segments[k].x*segments[k].y/segments[k].count)
@@ -189,15 +187,15 @@ void addHorizontalPixel(int i, int j){
 
 
 //We always add pixel from top to bottom
-void addVerticalPixel(int i, int j){
+void addVerticalPixel(int i, int j, double connect_th, int max_gap){
   //Find best matching active segment
   int seg_updated=0;
   for (int k=0;k<num_segments;k++){
     if(segments[k].state==1){
       double xProj = segments[k].xMean + segments[k].invgrad*(j-segments[k].yMean);
       double xErr = i-xProj;if (xErr<0) xErr=-xErr;
-      if (xErr<CONNECT_TH){
-	updateStat(&segments[k],i,j);
+      if (xErr<connect_th){
+	updateStat(&segments[k],i,j,max_gap);
 	segments[k].count++;
         segments[k].invgrad=(double) 
 		(segments[k].xy- segments[k].x*segments[k].y/segments[k].count)
@@ -221,6 +219,10 @@ void addVerticalPixel(int i, int j){
   }
 }
 
+
+
+
+
 //New function, find multiple connected line segments
 //Instead of one best long line
 
@@ -234,6 +236,10 @@ int lua_field_lines(lua_State *L) {
   if (lua_gettop(L) >= 4)
     widthMax = luaL_checkint(L, 4);
 
+  double connect_th = luaL_optnumber(L, 5, 1.4);
+  int max_gap = luaL_optinteger(L, 6, 1);
+  int min_length = luaL_optinteger(L, 7, 3);
+
   segment_init();
   // Scan for vertical line pixels:
   for (int j = 0; j < nj; j++) {
@@ -243,7 +249,7 @@ int lua_field_lines(lua_State *L) {
       int width = lineState(label);
       if ((width >= widthMin) && (width <= widthMax)) {
 	int iline = i - (width+1)/2;
-	addVerticalPixel(iline,j);
+	addVerticalPixel(iline,j,connect_th,max_gap);
       }
     }
     segment_refresh();
@@ -258,7 +264,7 @@ int lua_field_lines(lua_State *L) {
       int width = lineState(label);
       if ((width >= widthMin) && (width <= widthMax)) {
 	int jline = j - (width+1)/2;
-	addHorizontalPixel(i,jline);
+	addHorizontalPixel(i,jline,connect_th,max_gap);
       }
     }
     segment_refresh();
@@ -270,16 +276,10 @@ int lua_field_lines(lua_State *L) {
     int dy=segments[k].y1-segments[k].y0;
     segments[k].length = sqrt(dx*dx+dy*dy);
 
-    if (segments[k].count>3){
+    if (segments[k].count>min_length){
       valid_segments++;
-/*
-      printf("%d:  (%d %d) - (%d %d)\n",
-	k,segments[k].x0,segments[k].y0,
-	segments[k].x1,segments[k].y1);
-*/
     }
   }
-//  printf("Total %d valid segments\n",valid_segments);
 
   lua_createtable(L, valid_segments, 0);
 

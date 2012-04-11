@@ -1,4 +1,4 @@
-function plot_overlay(r_mon,scale)
+function plot_overlay(r_mon,scale,drawlevel)
 %This function plots overlaid vision information 
 %Over the camera yuyv feed or labeled images
     overlay_level=0;
@@ -35,6 +35,12 @@ function plot_overlay(r_mon,scale)
 	plot_corner(r_mon.corner,scale)
 	hold off;
       end
+    
+     if drawlevel ==2 
+       plot_robot_lowpoint(r_mon.robot,scale)
+     end
+
+
     end
 
 
@@ -54,7 +60,6 @@ function plot_overlay(r_mon,scale)
       set(b_name,'FontSize',8);
     end
   end
-
 
   function plot_goalposts( postStats, v, rollAngle, scale)
 
@@ -80,10 +85,10 @@ function plot_overlay(r_mon,scale)
 
 
 
-    gbx1=(postStats.gbx1+.5)/scale*4;
-    gbx2=(postStats.gbx2+1.5)/scale*4;
-    gby1=(postStats.gby1+.5)/scale*4;
-    gby2=(postStats.gby2+1.5)/scale*4;
+    gbx1=(postStats.gbx1)/scale*4;
+    gbx2=(postStats.gbx2+1)/scale*4;
+    gby1=(postStats.gby1)/scale*4;
+    gby2=(postStats.gby2+1)/scale*4;
 
     xskew=tan(rollAngle);
     gbx11=gbx1+gby1*xskew;
@@ -162,6 +167,17 @@ function plot_overlay(r_mon,scale)
     plot([vc0(1) v20(1)],[vc0(2) v20(2)],marker,'LineWidth',4);
     b_name=text(vc0(1),vc0(2), strgoalpos,'BackGroundColor',[.7 .7 .7]);
     set(b_name,'FontSize',8);
+  end
+
+  function plot_robot_lowpoint(robotState,scale)
+    hold on;
+    if isfield(robotState,'lowpoint')
+      siz=length(robotState.lowpoint);
+      x=([1:siz]-0.5)/scale*4;
+      y=robotState.lowpoint/scale*4;
+      plot(x,y,'r--');
+    end
+    hold off;
   end
 
   

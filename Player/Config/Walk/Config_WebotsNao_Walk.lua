@@ -32,6 +32,8 @@ walk.supportX = 0.016;
 walk.supportY = 0.025;
 walk.qLArm = math.pi/180*vector.new({105, 12, -85, -30});
 walk.qRArm = math.pi/180*vector.new({105, -12, 85, 30});
+walk.qLArmKick = math.pi/180*vector.new({105, 12, -85, -30});
+walk.qRArmKick = math.pi/180*vector.new({105, -12, 85, 30});
 
 walk.hardnessSupport = .7;
 walk.hardnessSwing = .5;
@@ -76,18 +78,33 @@ walk.armImuParamY={0.3,-10*gyroFactor, 20*math.pi/180, 45*math.pi/180};
 --------------------------------------------
 -- WalkKick parameters
 --------------------------------------------
-walk.walkKickVel = {0.06, 0.09} --step / kick / follow 
-walk.walkKickSupportMod = {{-0.03,0},{-0.03,0}}
-walk.walkKickHeightFactor = 3.0;
+walk.walkKickDef={}
 
-walk.qLArmKick = math.pi/180*vector.new({105, 12, -85, -30});
-walk.qRArmKick = math.pi/180*vector.new({105, -12, 85, 30});
+--tStep stepType supportLeg stepHeight 
+-- SupportMod shiftFactor footPos1 footPos2
 
-walk.sideKickVel1 = {0.04,0.04,0};
-walk.sideKickVel2 = {0.09,-0.05,0};
-walk.sideKickVel3 = {0.09,0.02,0};
-walk.sideKickSupportMod = {{0,0},{0,0}};
-walk.tStepSideKick = 0.70;
+walk.walkKickDef["FrontLeft"]={
+  {0.60, 1, 0, 0.020 , {0,0}, 0.7, {0.06,0,0} },
+  {0.60, 2, 1, 0.040 , {0.02,-0.01}, 0.5, {0.10,0,0}, {0.06,0,0} },
+  {walk.tStep, 1, 0, 0.020 , {0,0}, 0.5, {0,0,0} },
+}
+walk.walkKickDef["FrontRight"]={
+  {0.60, 1, 1, 0.020 , {0,0}, 0.3, {0.06,0,0} },
+  {0.60, 2, 0, 0.040 , {0.02,0.01}, 0.5,  {0.10,0,0}, {0.06,0,0} },
+  {walk.tStep, 1, 1, 0.020 , {0,0}, 0.5, {0,0,0} },
+}
+walk.walkKickDef["SideLeft"]={
+  {0.60, 1, 1, 0.020 , {0,0}, 0.3, {0.04,0.04,0} },
+  {0.60, 3, 0, 0.040 , {-0.01,0.01}, 0.5, {0.06,-0.05,0},{0.09,0.01,0}},
+ {walk.tStep, 1, 1, 0.020 , {0,0}, 0.5, {0,0,0} },}
+
+walk.walkKickDef["SideRight"]={
+  {0.60, 1, 0, 0.020 , {0,0}, 0.7, {0.04,-0.04,0} },
+  {0.60, 3, 1, 0.040 , {-0.01,-0.01},0.5, {0.06,0.05,0},{0.09,-0.01,0}},
+  {walk.tStep, 1, 0, 0.020 , {0,0},0.5,  {0,0,0} },
+}
+
+walk.walkKickPh=0.5;
 
 --------------------------------------------
 -- Robot - specific calibration parameters

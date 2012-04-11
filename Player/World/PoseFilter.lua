@@ -242,37 +242,49 @@ function triangulate2(pos,v)
    d2 = math.sqrt(d2Post[2]);
 
    vcm.add_debug_message(string.format(
-	"\nWorld: triangulation 2\nGoal dist: %.1f / %.1f\nGoal width: %.1f\n",
+	"===\n World: triangulation 2\nGoal dist: %.1f / %.1f\nGoal width: %.1f\n",
 	d1, d2 ,goalWidth ));
 
-   if d1>d2 then 
-     --left post correction based on right post
-     -- v1=kcos(a1),ksin(a1)
-     -- k^2 - 2k(v[2][1]cos(a1)+v[2][2]sin(a1)) + d2Post[2]-goalWidth^2 = 0
-     local ca=math.cos(aPost[1]);
-     local sa=math.sin(aPost[1]);
-     local b=v[2][1]*ca+ v[2][2]*sa;
-     local c=d2Post[2]-goalWidth^2;
 
-     if b*b-c>0 then
-       vcm.add_debug_message("Correcting left post\n");
-       vcm.add_debug_message(string.format("Left post angle: %d\n",aPost[1]*180/math.pi));
+   vcm.add_debug_message(string.format(
+	"Measured goal width: %.1f\n",
+	 math.sqrt((v[1][1]-v[2][1])^2+(v[1][2]-v[2][2])^2)
+	));
 
-       k1=b-math.sqrt(b*b-c);
-       k2=b+math.sqrt(b*b-c);
-       vcm.add_debug_message(string.format("d1: %.1f v1: %.1f %.1f\n",
-  	d1,v[1][1],v[1][2]));
-       vcm.add_debug_message(string.format("k1: %.1f v1_1: %.1f %.1f\n",
-	k1,k1*ca,k1*sa ));
-       vcm.add_debug_message(string.format("k2: %.1f v1_2: %.1f %.1f\n",
-	k2,k2*ca,k2*sa ));
-       if math.abs(d2-k1)<math.abs(d2-k2) then
-          v[1][1],v[1][2]=k1*ca,k1*sa;
-       else
-          v[1][1],v[1][2]=k2*ca,k2*sa;
+--SJ: still testing 
+   postfix=1;
+   postfix=0;
+
+   if postfix>0 then
+
+     if d1>d2 then 
+       --left post correction based on right post
+       -- v1=kcos(a1),ksin(a1)
+       -- k^2 - 2k(v[2][1]cos(a1)+v[2][2]sin(a1)) + d2Post[2]-goalWidth^2 = 0
+       local ca=math.cos(aPost[1]);
+       local sa=math.sin(aPost[1]);
+       local b=v[2][1]*ca+ v[2][2]*sa;
+       local c=d2Post[2]-goalWidth^2;
+
+       if b*b-c>0 then
+         vcm.add_debug_message("Correcting left post\n");
+         vcm.add_debug_message(string.format("Left post angle: %d\n",aPost[1]*180/math.pi));
+
+         k1=b-math.sqrt(b*b-c);
+         k2=b+math.sqrt(b*b-c);
+         vcm.add_debug_message(string.format("d1: %.1f v1: %.1f %.1f\n",
+    		d1,v[1][1],v[1][2]));
+         vcm.add_debug_message(string.format("k1: %.1f v1_1: %.1f %.1f\n",
+		k1,k1*ca,k1*sa ));
+         vcm.add_debug_message(string.format("k2: %.1f v1_2: %.1f %.1f\n",
+		k2,k2*ca,k2*sa ));
+         if math.abs(d2-k1)<math.abs(d2-k2) then
+  	        v[1][1],v[1][2]=k1*ca,k1*sa;
+         else
+	          v[1][1],v[1][2]=k2*ca,k2*sa;
+         end
        end
-     end
-   else 
+     else 
      --right post correction based on left post
      -- v2=kcos(a2),ksin(a2)
      -- k^2 - 2k(v[1][1]cos(a2)+v[1][2]sin(a2)) + d2Post[1]-goalWidth^2 = 0
@@ -296,6 +308,8 @@ function triangulate2(pos,v)
           v[2][1],v[2][2]=k2*ca,k2*sa;
        end
      end
+   end
+
    end
 
    --Use center of the post to fix angle
@@ -356,7 +370,8 @@ function goal_observation(pos, v)
   local rFilter = rGoalFilter;
   local aFilter = aGoalFilter;
 
-triangulation_threshold=3.0;
+--SJ: testing
+triangulation_threshold=4.0;
 
   if dGoal<triangulation_threshold then 
 

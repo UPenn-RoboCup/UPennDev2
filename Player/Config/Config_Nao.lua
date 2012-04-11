@@ -104,7 +104,8 @@ km = {};
 km.kick_right = 'km_Nao_KickForwardRight.lua';
 km.kick_left = 'km_Nao_KickForwardLeft.lua';
 km.standup_front = 'km_Nao_StandupFromFrontFaster.lua';
-km.standup_back = 'km_Nao_StandupFromBackFasterNew.lua';
+--km.standup_back = 'km_Nao_StandupFromBackFasterNew.lua';
+km.standup_back = 'km_Nao_StandupFromBackNew2.lua';
 
 --Sit/stand stance parameters
 stance={};
@@ -114,4 +115,4 @@ stance.bodyHeightDive= 0.25;
 stance.dpLimitSit=vector.new({.1,.01,.03,.1,.3,.1});
 stance.bodyTiltStance=0*math.pi/180; --bodyInitial bodyTilt, 0 for webots
 stance.dpLimitStance=vector.new({.04, .03, .04, .05, .4, .1});
-stance.delay = 0; --amount of time to stand still after standing to regain balance.
+stance.delay = 80; --amount of time to stand still after standing to regain balance.

@@ -119,21 +119,23 @@ function sendImg()
 
   local tSerialize=0;
   local tSend=0;  
+  local totalSize=0;
   for i=1,#array do
     sendyuyv.arr = array[i];
     t0 = unix.time();
-    senddata=serialization.serialize(sendyuyv);
+    senddata=serialization.serialize(sendyuyv);     
     t1 = unix.time();
     tSerialize= tSerialize + t1-t0;
     Comm.send(senddata);
     t2 = unix.time();
     tSend=tSend+t2-t1;
+    totalSize=totalSize+#senddata;
 
     -- Need to sleep in order to stop drinking out of firehose
     unix.usleep(pktDelay);
   end
   if debug>0 then
-    print("Image info array num:",#array,"Total size",#senddata*#array);
+    print("Image info array num:",#array,"Total size",totalSize);
     print("Total Serialize time:",#array,"Total",tSerialize);
     print("Total Send time:",tSend);
   end
@@ -146,7 +148,9 @@ function sendImgSub2()
   height = vcm.get_image_height()/2;
   count = vcm.get_image_count();
   
-  array = serialization.serialize_array(yuyv2, width, height, 
+--  array = serialization.serialize_array(yuyv2, width, height, 
+--		'int32', 'ysub2', count);
+  array = serialization.serialize_array2(yuyv2, width, height, 
 		'int32', 'ysub2', count);
   sendyuyv2 = {};
   sendyuyv2.team = {};
@@ -155,6 +159,7 @@ function sendImgSub2()
 
   local tSerialize=0;
   local tSend=0;  
+  local totalSize=0;
   for i=1,#array do
     sendyuyv2.arr = array[i];
     t0 = unix.time();
@@ -164,13 +169,14 @@ function sendImgSub2()
     Comm.send(senddata);
     t2 = unix.time();
     tSend=tSend+t2-t1;
+    totalSize=totalSize+#senddata;
 
     -- Need to sleep in order to stop drinking out of firehose
     unix.usleep(pktDelay);
   end
 
   if debug>0 then
-    print("Image2 info array num:",#array,"Total size",#senddata*#array);
+    print("Image2 info array num:",#array,"Total size",totalSize);
     print("Total Serialize time:",#array,"Total",tSerialize);
     print("Total Send time:",tSend);
   end
@@ -260,9 +266,11 @@ function update_img( enable, imagecount )
     if subsampling>0 then
       sendImgSub2();
       sendA();
+      sendB();
     else
       sendImg();
       sendA();
+      sendB();
     end
   elseif enable==3 then
       sendImg();

@@ -107,6 +107,7 @@ iStep0 = -1;
 iStep = 0;
 t0 = Body.get_time();
 tLastStep = Body.get_time();
+ph0=0;ph=0;
 
 stopRequest = 2;
 canWalkKick = 1; --Can we do walkkick with this walk code?
@@ -158,7 +159,8 @@ function update()
     started=true;
     tLastStep = Body.get_time();
   end
-
+  ph0=ph;
+  
   --SJ: Variable tStep support for walkkick
   ph = (t-tLastStep)/tStep;
   if ph>1 then
@@ -254,6 +256,12 @@ function update()
                           uTorso1[1], uTorso2[1]);
     aYP, aYN = zmp_solve(uSupport[2], uTorso1[2], uTorso2[2],
                           uTorso1[2], uTorso2[2]);
+
+    --Compute maximum COM speed
+
+    dy0=(aYP-aYN)/tZmp + m1Y* (1-math.cosh(ph1Zmp*tStep/tZmp));
+    print("max DY:",dy0);
+
   end --End new step
   
   xFoot, zFoot = foot_phase(ph);  
@@ -279,8 +287,10 @@ function update()
     end
     pLLeg[3] = stepHeight*zFoot;
   end
+  uTorsoOld=uTorso;
 
   uTorso = zmp_com(ph);
+
   uTorsoActual = util.pose_global(vector.new({-footX,0,0}),uTorso);
 
   pLLeg[1], pLLeg[2], pLLeg[6] = uLeft[1], uLeft[2], uLeft[3];

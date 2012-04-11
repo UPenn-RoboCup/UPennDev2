@@ -71,6 +71,7 @@ FIRST_YUYV2 = true
 FIRST_LABELA = true
 yuyv_t_full = unix.time();
 yuyv2_t_full = unix.time();
+yuyv3_t_full = unix.time();
 labelA_t_full = unix.time();
 labelB_t_full = unix.time();
 data_t_full = unix.time();
@@ -98,6 +99,10 @@ function parse_name(namestr)
   return name
 end
 
+
+
+
+
 function push_yuyv(obj)
 --print('receive yuyv parts');
   yuyv = cutil.test_array();
@@ -110,12 +115,13 @@ function push_yuyv(obj)
 
   yuyv_flag[name.partnum] = 1;
   yuyv_all[name.partnum] = obj.data;
-  if (check_flag(yuyv_flag) == name.parts) then
 
---    print("full yuyv\t"..1/(unix.time() - yuyv_t_full).." fps" );
+  --Just push the image after all segments are filled at the first scan
+  --Because the image will be broken anyway if packet loss occurs
+
+  if (check_flag(yuyv_flag) == name.parts and name.partnum==name.parts ) then
+    print("full yuyv\t"..1/(unix.time() - yuyv_t_full).." fps" );
     yuyv_t_full = unix.time();
-
-    yuyv_flag = vector.zeros(name.parts);
     local yuyv_str = "";
       for i = 1 , name.parts do --fixed
       yuyv_str = yuyv_str .. yuyv_all[i];
@@ -123,10 +129,14 @@ function push_yuyv(obj)
 
     height= string.len(yuyv_str)/obj.width/4;
     cutil.string2userdata2(yuyv,yuyv_str,obj.width,height);
+--  cutil.string2userdata(yuyv,yuyv_str,obj.width,height);
     vcm.set_image_yuyv(yuyv);
-    yuyv_all = {}
   end
 end
+
+
+
+yuyv2_part_last = 0;
 
 function push_yuyv2(obj)
 --	print('receive yuyv parts');
@@ -138,15 +148,25 @@ function push_yuyv2(obj)
     FIRST_YUYV2 = false;
   end
 
+--[[
+  if name.partnum==yuyv2_part_last then
+    print("Duplicated packet");
+  elseif name.partnum~=(yuyv2_part_last%name.parts)+1 then
+    print("Missing packet");
+  end
+--]]
+  yuyv2_part_last = name.partnum;
+
+
   yuyv2_flag[name.partnum] = 1;
   yuyv2_all[name.partnum] = obj.data;
 
-  if (check_flag(yuyv2_flag) == name.parts) then
+  --Just push the image after all segments are filled at the first scan
+  --Because the image will be broken anyway if packet loss occurs
+  if (check_flag(yuyv2_flag) == name.parts and name.partnum==name.parts ) then
+     print("yuyv2\t"..1/(unix.time() - yuyv2_t_full).." fps" );
+     yuyv2_t_full = unix.time();
 
---  print("yuyv2\t"..1/(unix.time() - yuyv2_t_full).." fps" );
-    yuyv2_t_full = unix.time();
-
-     yuyv2_flag = vector.zeros(name.parts);
      local yuyv2_str = "";
      for i = 1 , name.parts do --fixed
        yuyv2_str = yuyv2_str .. yuyv2_all[i];
@@ -154,12 +174,16 @@ function push_yuyv2(obj)
      height= string.len(yuyv2_str)/obj.width/4;
      cutil.string2userdata2(yuyv2,yuyv2_str,obj.width,height);
      vcm.set_image_yuyv2(yuyv2);
-     yuyv2_all = {}
    end
 end
 
 function push_yuyv3(obj)
 -- 1/4 size, we don't need to divide it 
+
+--  print("yuyv3\t"..1/(unix.time() - yuyv3_t_full).." fps" );
+--  yuyv3_t_full = unix.time();
+
+
   yuyv3 = cutil.test_array();
   name = parse_name(obj.name);
   height= string.len(obj.data)/obj.width/4;
@@ -183,7 +207,7 @@ function push_labelA(obj)
 --  labelA_t_full = unix.time();
     labelA_flag = vector.zeros(name.parts);
     local labelA_str = "";
-    for i = 1 , name.partnum do
+    for i = 1 , name.parts do
       labelA_str = labelA_str .. labelA_all[i];
     end
 
@@ -243,5 +267,5 @@ while( true ) do
 	push_data(obj);
     end
   end
-  unix.usleep(1E6*0.01);
+  unix.usleep(1E6*0.005);
 end

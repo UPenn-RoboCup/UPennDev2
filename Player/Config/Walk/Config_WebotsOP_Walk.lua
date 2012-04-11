@@ -67,36 +67,29 @@ walk.armImuParamY={0.3,10*gyroFactor, 20*math.pi/180, 45*math.pi/180};
 --------------------------------------------
 -- WalkKick parameters
 --------------------------------------------
-walk.walkKickVel = {0.06, 0.12} --step / kick / follow 
-walk.walkKickSupportMod = {{0,0},{0,0}}
-walk.walkKickHeightFactor = 1.5;
-	
-walk.walkKickSupportMod = {{0,0},{-0.02,0}}
-walk.walkKickHeightFactor = 2.5;
-walk.tStepWalkKick = 0.50;
+walk.walkKickDef={}
 
---kick to left default
-walk.sideKickVel1 = {0.04,0.04,0};
-walk.sideKickVel2 = {0.09,-0.05,0};
-walk.sideKickVel3 = {0.09,0.02,0};
-walk.sideKickSupportMod = {{0,0},{0,0}};
-walk.tStepSideKick = 0.50;
-
-
---[[
-
-
---angled sidekick #1
-walk.sideKickVel1 = {0.04,0.04,20*math.pi/180};
-walk.sideKickVel2 = {0.05,-0.06,-40*math.pi/180};
-walk.sideKickVel3 = {0.09,0.03,20*math.pi/180};
-
---45 deg angled sidekick #2
-walk.sideKickVel1 = {0.04,0.02,20*math.pi/180};
-walk.sideKickVel2 = {-0.04,-0.03,20*math.pi/180};
-walk.sideKickVel3 = {0.06,0.02,20*math.pi/180};
-
---]]
+--tStep stepType supportLeg stepHeight SupportMod footPos1 footPos2
+walk.walkKickDef["FrontLeft"]={
+  {0.50, 1, 0, 0.03 , {0,0}, {0.06,0,0} },
+  {0.50, 2, 1, 0.03 , {-0.02,0}, {0.09,0,0}, {0.06,0,0} },
+  {0.50, 1, 0, 0.03 , {0,0}, {0,0,0} },
+}
+walk.walkKickDef["FrontRight"]={
+  {0.50, 1, 1, 0.03 , {0,0}, {0.06,0,0} },
+  {0.50, 2, 0, 0.03 , {-0.02,0}, {0.09,0,0}, {0.06,0,0} },
+  {0.50, 1, 1, 0.03 , {0,0}, {0,0,0} },
+}
+walk.walkKickDef["SideLeft"]={
+  {0.50, 1, 1, 0.03 , {0,0}, {0.04,0.04,0} },
+  {0.50, 3, 0, 0.06 , {0,0}, {0.06,-0.05,0}, {0.09,0.02,0} },
+  {0.50, 1, 1, 0.05 , {0,0}, {0,0,0} },
+}
+walk.walkKickDef["SideRight"]={
+  {0.50, 1, 0, 0.03 , {0,0}, {0.04,-0.04,0} },
+  {0.50, 3, 1, 0.06 , {0,0}, {0.06,0.05,0}, {0.09,-0.02,0} },
+  {0.50, 1, 0, 0.05 , {0,0}, {0,0,0} },
+}
 
 --------------------------------------------
 -- Robot - specific calibration parameters

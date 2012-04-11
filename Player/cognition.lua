@@ -68,7 +68,6 @@ function update()
       print('fps: '..(50 / (unix.time() - tUpdate)));
       tUpdate = unix.time();
     end
-    vcm.refresh_debug_message();
   end
 end
 

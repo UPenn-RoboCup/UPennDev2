@@ -22,14 +22,11 @@ package.path = cwd .. '/Lib/?.lua;' .. package.path;
 package.path = cwd .. '/Dev/?.lua;' .. package.path;
 package.path = cwd .. '/Motion/?.lua;' .. package.path;
 package.path = cwd .. '/Motion/keyframes/?.lua;' .. package.path;
-package.path = cwd .. '/Motion/walk/?.lua;' .. package.path;
+package.path = cwd .. '/Motion/Walk/?.lua;' .. package.path;
 package.path = cwd .. '/Vision/?.lua;' .. package.path;
 package.path = cwd .. '/World/?.lua;' .. package.path;
 
 require('Config')
---Shut down wireless team message
-Config.dev.team='TeamNull'; 
-
 require('unix')
 require('getch')
 require('Broadcast')
@@ -56,6 +53,10 @@ if(Config.platform.name == 'OP') then
   Body.set_body_hardness(0.3);
   Body.set_actuator_command(Config.stance.initangle)
 end
+
+--TODO: enable new nao specific
+newnao = false; --Turn this on for new naos (run main code outside naoqi)
+
 
 getch.enableblock(1);
 unix.usleep(1E6*1.0);
@@ -92,6 +93,17 @@ local broadcast_enable=0;
 local tLastBroadcast = Body.get_time();
 local broadcast_count=0;
 local imageCount=0;
+
+-- main loop
+count = 0;
+lcount = 0;
+tUpdate = unix.time();
+Config.fsm.playMode=1; --Always demo mode
+fsm.enable_walkkick = 0;
+fsm.enable_sidekick = 0;
+
+
+
 
 function broadcast()
   local ncount=20;
@@ -193,6 +205,10 @@ function process_keyinput()
       BodyFSM.sm:set_state('bodySearch');   
       HeadFSM.sm:set_state('headScan');
       walk.start();
+
+    elseif byte==string.byte("f") then
+      behavior.cycle_behavior();
+
     elseif byte==string.byte("6") then
       headsm_running=0;
       headangle[1]=0;
@@ -239,10 +255,6 @@ function process_keyinput()
   end
 end
 
--- main loop
-count = 0;
-lcount = 0;
-tUpdate = unix.time();
 
 function update()
   count = count + 1;
@@ -265,6 +277,7 @@ function update()
 
       BodyFSM.entry();
       HeadFSM.entry();
+      require('behavior')
 
       init = true;
     else
@@ -325,7 +338,9 @@ if (webots) then
   end
 end
 
-if( darwin ) then
+--Now nao are running main process separately too
+
+if( darwin or newnao) then
   local tDelay = 0.005 * 1E6; -- Loop every 5ms
   while 1 do
     process_keyinput();

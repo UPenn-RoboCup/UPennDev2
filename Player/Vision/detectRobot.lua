@@ -17,63 +17,109 @@ colorCyan = Config.color.cyan;
 colorField = Config.color.field;
 colorWhite = Config.color.white;
 
+enable_robot_detection = Config.vision.enable_robot_detection or 0;
+use_tilted_bbox = Config.vision.use_tilted_bbox or 0;
 
-map_div=10; --0.1m resolution
+if enable_robot_detection>0 then
+  map_div = Config.vision.robot.map_div;
+  gamma = Config.vision.robot.gamma;
+  gamma_field = Config.vision.robot.gamma_field;
+  r_sigma = Config.vision.robot.r_sigma;
+  min_r = Config.vision.robot.min_r;
+  max_r = Config.vision.robot.max_r;
+  min_j = Config.vision.robot.min_j;
+else
+  map_div = 10;
+  gamma = 0.99;
+  gamma_field = 0.95;
+  r_sigma = 8;
+  min_r = 1.0;
+  max_r = 4.0;
+  min_j = 5;
+end
+
+max_gap = 1;
+
 weight=vector.zeros(6*4*map_div*map_div);
 updated=vector.zeros(6*4*map_div*map_div);
 
-labelB_div=5; --labelB resolution
-labelB_div=2; --labelB resolution
+function update_robot(v)
+  pose=wcm.get_robot_pose();
+  vGlobal = util.pose_global(v,pose);
+  xindex=math.floor((vGlobal[1]+3)*map_div+0.5);
+  yindex=math.floor((vGlobal[2]+2)*map_div+0.5);
 
-gamma=0.998;
-min_fillrate = 0.2;
+  --add gaussian update
+  --TODO: use correct log-odds
+  sigma =  (v[1]^2+v[2]^2)/r_sigma;
 
-function discount_weight()
-  for i=1,6*4*map_div*map_div do     
-    weight[i]=weight[i]*gamma;
-  end
-end
-
-function update_patch(v1,v2,w)
-  xindex1=math.min(6*map_div,math.max(0,
-		math.floor((v1[1]+3)*map_div+0.5) 
-		));
-  xindex2=math.min(6*map_div,math.max(0,
-		math.floor((v2[1]+3)*map_div+0.5) 
-		));
-  yindex1=math.min(4*map_div,math.max(0,
-		math.floor((v1[2]+3)*map_div+0.5) 
-		));
-  yindex2=math.min(4*map_div,math.max(0,
-		math.floor((v2[2]+3)*map_div+0.5) 
-		));
-  for i=math.min(xindex1,xindex2) ,math.max(xindex1,xindex2) do
-    for j=math.min(yindex1,yindex2) ,math.max(yindex1,yindex2) do
-      index=(j-1)*(6*map_div) + i;
-      updated[index]=1;
-      weight[index]=w;
+  for i=-3,3 do
+    for j=-3,3 do
+      ix=math.max(1,math.min(6*map_div,i+xindex));
+      iy=math.max(1,math.min(4*map_div,j+yindex));
+      w=math.exp(-(i*i+j*j)/sigma);
+      index=(ix-1)*(4*map_div) + iy;
+      weight[index]=math.min(1,weight[index]+w);
     end
   end
+
 end     
 
+function update_weights()
 
-function gen_patch(i,j,w)
-  fieldBBox = {}; 
-  fieldBBox[1] = labelB_div*(i-1)+1;
-  fieldBBox[2] = labelB_div*i;
-  fieldBBox[3] = labelB_div*(j-1)+1;
-  fieldBBox[4] = labelB_div*j;
-
-  v1=HeadTransform.coordinatesB({fieldBBox[1],fieldBBox[3],0,0});
+  --Get approximate boundary of current FOV
+  v1=HeadTransform.coordinatesB({1,1,0,0});
   v1=HeadTransform.projectGround(v1,0);
-  v2=HeadTransform.coordinatesB({fieldBBox[2],fieldBBox[4],0,0});
+  r1=v1[1]^2+v1[2]^2;
+  angle1=math.atan2(v1[2],v1[1]);
+  
+  v2=HeadTransform.coordinatesB({Vision.labelB.m,1,0,0});
   v2=HeadTransform.projectGround(v2,0);
-  pose=wcm.get_robot_pose();
-  global_v1 = util.pose_global(v1,pose);
-  global_v2 = util.pose_global(v2,pose);
-  update_patch(global_v1,global_v2,w);
-end
+  r2=v2[1]^2+v2[2]^2;
+  angle2=math.atan2(v2[2],v2[1]);
 
+  --midpoint in the bottom
+  v3=HeadTransform.coordinatesB({Vision.labelB.m/2,Vision.labelB.n,0,0});
+  v3=HeadTransform.projectGround(v3,0);
+  r3=v3[1]^2+v3[2]^2;
+
+  pose=wcm.get_robot_pose();
+
+  for j=1,4*map_div do     
+    for i=1,6*map_div do     
+      posx = i/map_div - 3;
+      posy = j/map_div - 2;
+
+      angle=math.atan2(posy-pose[2],posx-pose[1])-pose[3];
+      r2_pos = (posy-pose[2])^2 + (posx-pose[1])^2;
+
+      within_fov = false;
+      if util.mod_angle(angle1-angle)>0 and 
+	util.mod_angle(angle2-angle)<0 then
+	--get Approx. r and angle
+	r_min = r3;
+	r_max = (r1+r2)/2;
+	if r2_pos<r_max and r2_pos>r_min then
+	  within_fov=true;
+	end
+      end
+      index=(i-1)*(4*map_div) + j;
+--TODO: use log-odds 
+      if updated[index] ==0 then
+        if within_fov then
+          gamma_field = 0.8;
+          weight[index]=weight[index]*gamma_field;
+        else
+          weight[index]=weight[index]*gamma;
+        end
+      else
+        updated[index]=0;
+      end
+    end
+  end
+
+
+end
 
 covered={};
 blocked={};
@@ -83,44 +129,28 @@ function detect(color)
   robot.detect = 0;
   count=0;
 
-  for i=1,Vision.labelB.m/labelB_div do
-    covered[i]=vector.zeros(Vision.labelB.n/labelB_div);
-    blocked[i]=vector.zeros(Vision.labelB.n/labelB_div);
-    for j=1,Vision.labelB.n/labelB_div do 
-       covered[i][j]=1;
-       fieldBBox = {}; 
-       fieldBBox[1] = labelB_div*(i-1)+1;
-       fieldBBox[2] = labelB_div*i;
-       fieldBBox[3] = labelB_div*(j-1)+1;
-       fieldBBox[4] = labelB_div*j;
-       fieldBBoxStats = ImageProc.color_stats(
-  	   Vision.labelB.data, Vision.labelB.m, Vision.labelB.n, 
-	   colorField, fieldBBox);
-       fillrate=fieldBBoxStats.area/labelB_div/labelB_div;
-       if fillrate<min_fillrate then
-        blocked[i][j]=1;
-       end
-     end
-   end
---[[
-  for i=1,Vision.labelB.m/labelB_div do
-    for j=1,Vision.labelB.n/labelB_div do 
-       if covered[i][j]>0 then
-	 gen_patch(i,j,-1); --set green first
-       end
-    end
+  if use_tilted_bbox>0 then
+    tiltAngle = HeadTransform.getCameraRoll();
+  else
+    tiltAngle=0;
   end
---]]
 
-  for i=1,Vision.labelB.m/labelB_div do
-    for j=1,Vision.labelB.n/labelB_div do 
-       if blocked[i][j]>0 then
-	 gen_patch(i,j,1); --set black over green
-       end
+  fieldRobots = ImageProc.robots(
+	Vision.labelB.data,Vision.labelB.m,Vision.labelB.n,
+	colorField+colorWhite+colorOrange,tiltAngle,max_gap);
+
+  for i=1,Vision.labelB.m do
+    j=fieldRobots[i];
+    v=HeadTransform.coordinatesB({i,j,0,0});
+    v=HeadTransform.projectGround(v,0);
+    r=math.sqrt(v[1]^2+v[2]^2);
+    if j>min_j and r>min_r and r<max_r then 
+      update_robot(v);
     end
   end
 
-  discount_weight();
+  vcm.set_robot_lowpoint(fieldRobots);
+  update_weights();
   update_shm();
 end
 

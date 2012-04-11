@@ -105,9 +105,8 @@ velDiff = vector.new({0, 0, 0});
 aXP, aXN, aYP, aYN = 0, 0, 0, 0;
 
 --Gyro stabilization variables
-ankleShift = vector.new({0, 0});
-kneeShift = 0;
-hipShift = vector.new({0,0});
+torsoTilt = vector.new({0,0});
+torsoShift = vector.new({0,0});
 armShift = vector.new({0, 0});
 
 active = true;
@@ -288,14 +287,7 @@ function update()
   end
 
   uTorso = zmp_com(ph);
-  uTorsoActual = util.pose_global(vector.new({-footX,0,0}),uTorso);
-
-  pLLeg[1], pLLeg[2], pLLeg[6] = uLeft[1], uLeft[2], uLeft[3];
-  pRLeg[1], pRLeg[2], pRLeg[6] = uRight[1], uRight[2], uRight[3];
-  pTorso[1], pTorso[2], pTorso[6] = uTorsoActual[1], uTorsoActual[2], uTorsoActual[3];
-
-  qLegs = Kinematics.inverse_legs(pLLeg, pRLeg, pTorso, supportLeg);
-  motion_legs(qLegs);
+  motion_legs();
   motion_arms();
 end
 
@@ -434,73 +426,84 @@ function motion_legs(qLegs)
   --Ankle stabilization using gyro feedback
   imuGyr = Body.get_sensor_imuGyrRPY();
 
-  gyro_roll0=imuGyr[1];
-  gyro_pitch0=imuGyr[2];
+  gyro_roll=imuGyr[1];
+  gyro_pitch=imuGyr[2];
 
-  --get effective gyro angle considering body angle offset
-  if not active then --double support
-    yawAngle = (uLeft[3]+uRight[3])/2-uTorsoActual[3];
-  elseif supportLeg == 0 then  -- Left support
-    yawAngle = uLeft[3]-uTorsoActual[3];
-  elseif supportLeg==1 then
-    yawAngle = uRight[3]-uTorsoActual[3];
-  end
-  gyro_roll = gyro_roll0*math.cos(yawAngle) +
-    -gyro_pitch0* math.sin(yawAngle);
-  gyro_pitch = gyro_pitch0*math.cos(yawAngle)
-    -gyro_roll0* math.sin(yawAngle);
+  gyroFactor = 0.273*math.pi/180 * 300 / 1024; --dps to rad/s conversion
 
-  ankleShiftX=util.procFunc(gyro_pitch*ankleImuParamX[2],ankleImuParamX[3],ankleImuParamX[4]);
-  ankleShiftY=util.procFunc(gyro_roll*ankleImuParamY[2],ankleImuParamY[3],ankleImuParamY[4]);
-  kneeShiftX=util.procFunc(gyro_pitch*kneeImuParamX[2],kneeImuParamX[3],kneeImuParamX[4]);
-  hipShiftY=util.procFunc(gyro_roll*hipImuParamY[2],hipImuParamY[3],hipImuParamY[4]);
+--[[
+walk.ankleImuParamX={0.9,0.3*gyroFactor, 0, 25*math.pi/180};
+walk.kneeImuParamX={0.9,1.2*gyroFactor, 0, 25*math.pi/180};
+walk.ankleImuParamY={0.9,0.7*gyroFactor, 0, 25*math.pi/180};
+walk.hipImuParamY={0.9,0.3*gyroFactor, 0, 25*math.pi/180};
+walk.armImuParamX={0.3,10*gyroFactor, 20*math.pi/180, 45*math.pi/180};
+walk.armImuParamY={0.3,10*gyroFactor, 20*math.pi/180, 45*math.pi/180};
+--]]
+  hipOffsetZ = 0.096; --OP value
+  torsoTiltParamX={0.5,-1.5*gyroFactor,2*math.pi/180, 6*math.pi/180};
+  torsoTiltParamY={0.5,-1.5*gyroFactor,2*math.pi/180, 6*math.pi/180};
+
+  torsoShiftParamX={0.5,-1.5*0.08*gyroFactor,0, 0.03};
+  torsoShiftParamY={0.5,1.5*0.02*gyroFactor,0, 0.03};
+
+
+  torsoTiltX=util.procFunc(
+	gyro_pitch*torsoTiltParamX[2],torsoTiltParamX[3],torsoTiltParamX[4]);
+  torsoShiftX=util.procFunc(
+	gyro_pitch*torsoShiftParamX[2],torsoShiftParamX[3],torsoShiftParamX[4]);
+  torsoTilt[1]=torsoTilt[1]+torsoTiltParamX[1]*(torsoTiltX-torsoTilt[1]);
+  torsoShift[1]=torsoShift[1]+torsoShiftParamX[1]*(torsoShiftX-torsoShift[1]) +
+	 hipOffsetZ * torsoTilt[1];
+
+  torsoTiltY=util.procFunc(
+	gyro_roll*torsoTiltParamY[2],torsoTiltParamY[3],torsoTiltParamY[4]);
+  torsoShiftY=util.procFunc(
+	gyro_roll*torsoShiftParamY[2],torsoShiftParamY[3],torsoShiftParamY[4]);
+  
+
+
+
+  torsoTilt[2]=torsoTilt[2]+torsoTiltParamY[1]*(torsoTiltY-torsoTilt[2]);
+  torsoShift[2]=torsoShift[2]+torsoShiftParamY[1]*(torsoShiftY-torsoShift[2]) -
+	 hipOffsetZ * torsoTilt[2];
+
+
+
+
+  torsoTilt[2]=0;
+
+
   armShiftX=util.procFunc(gyro_pitch*armImuParamY[2],armImuParamY[3],armImuParamY[4]);
   armShiftY=util.procFunc(gyro_roll*armImuParamY[2],armImuParamY[3],armImuParamY[4]);
-
-  ankleShift[1]=ankleShift[1]+ankleImuParamX[1]*(ankleShiftX-ankleShift[1]);
-  ankleShift[2]=ankleShift[2]+ankleImuParamY[1]*(ankleShiftY-ankleShift[2]);
-  kneeShift=kneeShift+kneeImuParamX[1]*(kneeShiftX-kneeShift);
-  hipShift[2]=hipShift[2]+hipImuParamY[1]*(hipShiftY-hipShift[2]);
   armShift[1]=armShift[1]+armImuParamX[1]*(armShiftX-armShift[1]);
   armShift[2]=armShift[2]+armImuParamY[1]*(armShiftY-armShift[2]);
 
   --TODO: Toe/heel lifting
   toeTipCompensation = 0;
 
-  if not active then --Double support, standing still
-    --qLegs[2] = qLegs[2] + hipShift[2];    --Hip roll stabilization
-    qLegs[4] = qLegs[4] + kneeShift;    --Knee pitch stabilization
-    qLegs[5] = qLegs[5]  + ankleShift[1];    --Ankle pitch stabilization
-    --qLegs[6] = qLegs[6] + ankleShift[2];    --Ankle roll stabilization
+  uTorsoActual = util.pose_global(vector.new({-footX+torsoShift[1],torsoShift[2],0}),uTorso);
 
-    --qLegs[8] = qLegs[8]  + hipShift[2];    --Hip roll stabilization
-    qLegs[10] = qLegs[10] + kneeShift;    --Knee pitch stabilization
-    qLegs[11] = qLegs[11]  + ankleShift[1];    --Ankle pitch stabilization
-    --qLegs[12] = qLegs[12] + ankleShift[2];    --Ankle roll stabilization
+  pLLeg[1], pLLeg[2], pLLeg[6] = uLeft[1], uLeft[2], uLeft[3];
+  pRLeg[1], pRLeg[2], pRLeg[6] = uRight[1], uRight[2], uRight[3];
+  pTorso[1], pTorso[2], pTorso[6] = uTorsoActual[1], uTorsoActual[2], uTorsoActual[3];
+
+print("Roll:",torsoTilt[2]*180/math.pi);
+
+--  pTorso[4] = torsoTilt[2];
+  pTorso[5] = bodyTilt + torsoTilt[1];
+
+
+  qLegs = Kinematics.inverse_legs(pLLeg, pRLeg, pTorso, supportLeg);
+
+  if not active then --Double support, standing still
 
   elseif supportLeg == 0 then  -- Left support
-    qLegs[2] = qLegs[2] + hipShift[2];    --Hip roll stabilization
-    qLegs[4] = qLegs[4] + kneeShift;    --Knee pitch stabilization
-    qLegs[5] = qLegs[5]  + ankleShift[1];    --Ankle pitch stabilization
-    qLegs[6] = qLegs[6] + ankleShift[2];    --Ankle roll stabilization
-
     qLegs[11] = qLegs[11]  + toeTipCompensation*phComp;--Lifting toetip
     qLegs[2] = qLegs[2] + hipRollCompensation*phComp; --Hip roll compensation
   else
-    qLegs[8] = qLegs[8]  + hipShift[2];    --Hip roll stabilization
-    qLegs[10] = qLegs[10] + kneeShift;    --Knee pitch stabilization
-    qLegs[11] = qLegs[11]  + ankleShift[1];    --Ankle pitch stabilization
-    qLegs[12] = qLegs[12] + ankleShift[2];    --Ankle roll stabilization
-
     qLegs[5] = qLegs[5]  + toeTipCompensation*phComp;--Lifting toetip
     qLegs[8] = qLegs[8] - hipRollCompensation*phComp;--Hip roll compensation
   end
-
---[[
-  local spread=(uLeft[3]-uRight[3])/2;
-  qLegs[5] = qLegs[5] + Config.walk.anklePitchComp[1]*math.cos(spread);
-  qLegs[11] = qLegs[11] + Config.walk.anklePitchComp[2]*math.cos(spread);
---]]
 
   Body.set_lleg_command(qLegs);
 end

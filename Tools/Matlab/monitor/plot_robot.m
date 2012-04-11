@@ -16,9 +16,39 @@
     ca=1;sa=0;
     plot_fallen_robot(robot_struct,scale)
     plot_info(robot_struct,scale);
-
   else
-    if drawlevel==4
+    if drawlevel==1 
+      %simple position and pose
+      plot_robot(robot_struct,scale);
+      plot_info(robot_struct,scale);
+      plot_ball(robot_struct,scale);
+      plot_gps_robot(robot_struct,scale);
+
+    elseif drawlevel==2 
+      %additional simple vision info for team monitor
+
+      plot_robot(robot_struct,scale);
+      plot_info(robot_struct,scale);
+      plot_ball(robot_struct,scale);
+      plot_goal_team(robot_struct,scale);
+      plot_landmark_team(robot_struct,scale);
+      plot_corner_team(robot_struct,scale);
+      plot_gps_robot(robot_struct,scale);
+
+    elseif drawlevel==3 
+      %Full vision info
+      plot_robot(robot_struct,scale);
+      plot_info(robot_struct,scale);
+      plot_ball(robot_struct,scale);
+
+      plot_line(r_mon.line,scale);
+      plot_corner(r_mon.corner,scale);
+      plot_goal(r_mon.goal,scale);
+      plot_landmark(r_mon.landmark,scale);
+      plot_fov(r_mon.fov);
+
+    elseif drawlevel==4
+      plot_ball(robot_struct,scale);
       plot_particle(r_mon.particle);
       plot_goal(r_mon.goal,scale);
       plot_landmark(r_mon.landmark,scale);
@@ -26,27 +56,8 @@
       plot_corner(r_mon.corner,scale);
       plot_fov(r_mon.fov);
       plot_gps_robot(robot_struct,scale);
-
-    else
-      plot_robot(robot_struct,scale);
-      plot_info(robot_struct,scale);
-      plot_ball(robot_struct,scale);
-   
-      if drawlevel==2
-	plot_goal_team(robot_struct,scale);
-%	plot_landmark_team(robot_struct,scale);
-        plot_gps_robot(robot_struct,scale);
-
-      elseif drawlevel==3
-        plot_line(r_mon.line,scale);
-        plot_corner(r_mon.corner,scale);
-        plot_goal(r_mon.goal,scale);
-        plot_landmark(r_mon.landmark,scale);
-        plot_fov(r_mon.fov);
-      end
     end
   end
-
 
   hold off;
 
@@ -130,17 +141,17 @@
       %hb = plot(xb, yb, [idColors(robot_struct.id) 'o']);
       hb = plot(xb, yb, 'ro');
  
-      ball_vel=[robot.ball.vx robot.ball.vy];
-      xbv = xb + ball_vel(1)*ca - ball_vel(2)*sa;   
-      ybv = yb + ball_vel(1)*sa + ball_vel(2)*ca;
-
-      ab_scale = 1/scale;
-%      quiver(xb, yb, xab*ab_scale,yab*ab_scale, 'k' );
-      plot([xb xbv],[yb ybv],'r--','LineWidth',2/scale);
 
       if ballt<0.5 
         plot([x0 xb],[y0 yb],'r');
         set(hb, 'MarkerSize', 8/scale);
+        ball_vel=[robot.ball.vx robot.ball.vy];
+
+        xbv =  ball_vel(1)*ca - ball_vel(2)*sa;   
+        ybv =  ball_vel(1)*sa + ball_vel(2)*ca;
+        qvscale = 2;
+        quiver(xb, yb, qvscale*xbv/scale, qvscale*ybv/scale,...
+		 0,'r','LineWidth',2/scale );
       else
         %TODO: add last seen time info
       end
@@ -180,20 +191,38 @@
     end
   end
 
-  function plot_landmark_team(landmark)
-%TODO
-%{
-    if (landmark.detect==1)
-      if (landmark.color==2) marker='m';% yellow
-      else marker='b';	end
+  function plot_landmark_team(robot,scale)
+    landmark = robot.landmark;
+    if (landmark>0)
+%      if (landmark.color==2) marker='m';% yellow
+%      else marker='b';	end
+      marker='b';
       marker2 = strcat(marker,'x');
       marker3 = strcat(marker,'--');
-      x1 = landmark.v(1)*ca - landmark.v(2)*sa + robot_struct.pose.x;
-      y1 = landmark.v(1)*sa + landmark.v(2)*ca + robot_struct.pose.y;
+      x1 = robot.landmarkv(1)*ca - robot.landmarkv(2)*sa + robot_struct.pose.x;
+      y1 = robot.landmarkv(1)*sa + robot.landmarkv(2)*ca + robot_struct.pose.y;
       plot(x1,y1,marker2,'MarkerSize',12/scale);
       plot([x0 x1],[y0 y1],marker3);
     end
-%}
+  end
+
+  function plot_corner_team(robot,scale)
+    if isfield(robot,'corner')
+      corner = robot.corner;
+      if (corner>0)
+        marker='k';
+        if corner==1 
+          marker2 = strcat(marker,'s');
+        else
+          marker2 = strcat(marker,'p');
+        end
+        marker3 = strcat(marker,'--');
+        x1 = robot.cornerv(1)*ca - robot.cornerv(2)*sa + robot_struct.pose.x;
+        y1 = robot.cornerv(1)*sa + robot.cornerv(2)*ca + robot_struct.pose.y;
+        plot(x1,y1,marker2,'MarkerSize',12/scale);
+        plot([x0 x1],[y0 y1],marker3);
+      end
+    end
   end
 
 

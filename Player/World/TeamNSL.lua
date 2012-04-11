@@ -44,6 +44,8 @@ state.goalv1={0,0};
 state.goalv2={0,0};
 state.landmark=0; --0 for non-detect, 1 for yellow, 2 for cyan
 state.landmarkv={0,0};
+state.corner=0; --0 for non-detect, 1 for L, 2 for T
+state.cornerv={0,0};
 
 states = {};
 states[playerID] = state;
@@ -64,7 +66,7 @@ function pack_msg(state)
   --time
   --battery
   msg_str=string.format(
-	"{%d,%d,%d,%d,%d,%d,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.2f,%.1f",
+	"{%d,%d,%d,%d,%d,%d,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.2f,%.1f}",
 	state.id, state.teamNumber, state.teamColor,
 	state.role,state.penalty,state.fall,
 	state.ball.x,state.ball.y,state.ball.t,
@@ -121,14 +123,14 @@ function update()
   state.battery_level = wcm.get_robot_battery_level();
   state.fall=wcm.get_robot_is_fall_down();
 
-  if gcm.in_penalty() then
-    state.penalty = 1;
-  else
-    state.penalty = 0;
+  if gcm.in_penalty() then  state.penalty = 1;
+  else  state.penalty = 0;
   end
 
   --Added Vision Info 
   state.goal=0;
+  state.goalv1={0,0};
+  state.goalv2={0,0};
   if vcm.get_goal_detect()>0 then
     state.goal = 1 + vcm.get_goal_type();
     local v1=vcm.get_goal_v1();
@@ -141,10 +143,19 @@ function update()
   end
 
   state.landmark=0;
+  state.landmarkv={0,0};
   if vcm.get_landmark_detect()>0 then
     local v = vcm.get_landmark_v();
     state.landmark = 1; 
     state.landmarkv[1],state.landmarkv[2] = v[1],v[2];
+  end
+
+  state.corner=0;
+  state.cornerv={0,0};
+  if vcm.get_corner_detect()>0 then
+    state.corner = vcm.get_corner_type();
+    local v = vcm.get_corner_v();
+    state.cornerv[1],state.cornerv[2]=v[1],v[2];
   end
     
   if (math.mod(count, 1) == 0) then
@@ -157,8 +168,9 @@ function update()
 --    msg2=pack_msg(state);
 --    print("Packed team message size:",string.len(msg2))
 --    Comm.send(serialization.serialize(state));
-
 --    msg=pack_msg(state);
+
+
     Comm.send(msg);
 
     --Copy of message sent out to other players

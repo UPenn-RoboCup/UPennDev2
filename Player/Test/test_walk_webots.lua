@@ -200,8 +200,10 @@ while 1 do
   count = count + 1;
   
   update();
+  io.stdout:flush();
 
   -- Show FPS
+--[[
   local t = Body.get_time();
   if(count==ncount) then
     local fps = ncount/(t-tUpdate);
@@ -209,7 +211,7 @@ while 1 do
     count = 1;
 --    print(fps.." FPS")
   end
-
+--]]
   --Wait until dcm has done reading/writing
 --  unix.usleep(tDelay);
 

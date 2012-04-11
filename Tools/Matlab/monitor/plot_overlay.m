@@ -85,10 +85,10 @@ function plot_overlay(r_mon,scale,drawlevel)
 
 
 
-    gbx1=(postStats.gbx1+.5)/scale*4;
-    gbx2=(postStats.gbx2+1.5)/scale*4;
-    gby1=(postStats.gby1+.5)/scale*4;
-    gby2=(postStats.gby2+1.5)/scale*4;
+    gbx1=(postStats.gbx1)/scale*4;
+    gbx2=(postStats.gbx2+1)/scale*4;
+    gby1=(postStats.gby1)/scale*4;
+    gby2=(postStats.gby2+1)/scale*4;
 
     xskew=tan(rollAngle);
     gbx11=gbx1+gby1*xskew;
@@ -171,10 +171,12 @@ function plot_overlay(r_mon,scale,drawlevel)
 
   function plot_robot_lowpoint(robotState,scale)
     hold on;
-    siz=length(robotState.lowpoint);
-    x=([1:siz]-0.5)/scale*4;
-    y=robotState.lowpoint/scale*4;
-    plot(x,y,'r--');
+    if isfield(robotState,'lowpoint')
+      siz=length(robotState.lowpoint);
+      x=([1:siz]-0.5)/scale*4;
+      y=robotState.lowpoint/scale*4;
+      plot(x,y,'r--');
+    end
     hold off;
   end
 

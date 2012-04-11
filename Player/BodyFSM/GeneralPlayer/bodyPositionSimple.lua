@@ -8,6 +8,7 @@ require('Config')
 require('wcm')
 require('gcm')
 require('UltraSound')
+require('behavior')
 
 t0 = 0;
 
@@ -19,7 +20,8 @@ rClose = Config.fsm.bodyChase.rClose;
 function entry()
   print(_NAME.." entry");
 
-  t0 = Body.get_time();
+  t0 = Body.get_time();  
+  behavior.update();
 end
 
 function update()

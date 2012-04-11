@@ -178,10 +178,9 @@ if (webots) then
   end
 end
 
-if( darwin ) then
-  local tDelay = 0.005 * 1E6; -- Loop every 5ms
-  while 1 do
-    update();
-    unix.usleep(tDelay);
-  end
+--Now both nao and darwin runs this separately
+local tDelay = 0.005 * 1E6; -- Loop every 5ms
+while 1 do
+  update();
+  unix.usleep(tDelay);
 end

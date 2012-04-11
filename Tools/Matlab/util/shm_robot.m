@@ -50,6 +50,7 @@ global MONITOR %for sending the webots check information
   h.get_monitor_struct = @get_monitor_struct;
   h.get_yuyv = @get_yuyv;
   h.get_yuyv2 = @get_yuyv2;
+  h.get_yuyv3 = @get_yuyv3;
   h.get_rgb = @get_rgb;
   h.get_labelA = @get_labelA;
   h.get_labelB = @get_labelB;
@@ -94,39 +95,35 @@ global MONITOR %for sending the webots check information
         r.ball = struct('x', ballx, 'y', bally, 't', ballt, ...
             'vx', ballvelx, 'vy', ballvely );
 
-        r.fall=h.wcmRobot.get_is_fall_down();
-        
-        % TODO: implement penalty and time
-        r.penalty = 0;
-        r.tReceive = 0;
-
         r.attackBearing = h.wcmGoal.get_attack_bearing();
         r.time=h.wcmRobot.get_time();
         r.battery_level = h.wcmRobot.get_battery_level();
-%TODO
-        r.goal=0;
-        r.goalv1=[0 0];
-        r.goalv2=[0 0];
 
-        r.landmark=0;
-        r.landmarkv=[0 0];
-
-%{
         goal = h.vcmGoal.get_detect();
         if goal==1 
           r.goal = h.vcmGoal.get_type()+1;
+          r.goalv1 = h.vcmGoal.get_v1();
+          r.goalv2 = h.vcmGoal.get_v2();
+        else
+          r.goal=0;
         end
-        r.goal=0;
-        goal = h.vcmGoal.get_detect();
-        if goal==1 
-          r.goal = h.vcmGoal.get_type()+1;
-	  r.goalv1=[0 0];
-	  r.goalv2=[0 0];
+
+        r.landmark=h.vcmLandmark.get_detect();
+        r.landmarkv=h.vcmLandmark.get_v();
+
+        corner=h.vcmCorner.get_detect();
+        if corner>0
+         r.corner=h.vcmCorner.get_type();
+         r.cornerv=h.vcmCorner.get_v();
         end
-%}
+
+        r.fall = h.wcmRobot.get_is_fall_down();
+        r.time = h.wcmRobot.get_time();
+        r.penalty = h.wcmRobot.get_penalty();
 
 
 
+        r.tReceive = 0;
 %TODO: monitor timeout    
         if r.time>h.tLastUpdate 
 	  h.updated=1;
@@ -163,8 +160,7 @@ global MONITOR %for sending the webots check information
       goalv22=h.wcmTeamdata.get_goalv22();
 
       landmark=h.wcmTeamdata.get_landmark();
-      landmarkv1=h.wcmTeamdata.get_landmarkv1();
-      landmarkv2=h.wcmTeamdata.get_landmarkv2();
+      landmarkv=h.wcmTeamdata.get_landmarkv();
 
       r.teamColor=teamColor(id);
       r.id = robotId(id);
@@ -355,11 +351,12 @@ global MONITOR %for sending the webots check information
       r.corner.v1 = h.vcmCorner.get_v1();
       r.corner.v2 = h.vcmCorner.get_v2();
 
+%{
   %robot map info
       r.robot={};
       r.robot.map=h.vcmRobot.get_map();
       r.robot.lowpoint=h.vcmRobot.get_lowpoint();
-
+%}
   % Add freespace boundary
       r.free = {};
       freeCol = h.vcmFreespace.get_nCol();
@@ -438,6 +435,14 @@ global MONITOR %for sending the webots check information
     height = h.vcmImage.get_height()/2;
     rawData = h.vcmImage.get_yuyv2();
     yuyv2 = raw2yuyv(rawData, width, height); %for Nao, double for OP
+  end
+
+  function yuyv3 = get_yuyv3() 
+% returns the quater-size raw YUYV image
+    width = h.vcmImage.get_width()/8;
+    height = h.vcmImage.get_height()/4;
+    rawData = h.vcmImage.get_yuyv3();
+    yuyv3 = raw2yuyv(rawData, width, height); 
   end
 
   function rgb = get_rgb() 

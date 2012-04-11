@@ -169,7 +169,7 @@ int lua_tilted_goal_posts(lua_State *L) {
   for (int i = -index_offset; i < m+index_offset; i++) {
     for (int j = 0; j < n; j++) {
       double shift= (double) j*increment;
-      int index_i=(int) i+shift+0.5; //round up
+      int index_i=(int) i+(shift+0.5); //round up
 
       //check current pixel is within the image
       if ((index_i>=0) && (index_i<m)) {

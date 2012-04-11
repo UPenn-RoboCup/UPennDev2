@@ -67,19 +67,36 @@ walk.supportBack = -0.02; --Lean back when walking backward
 walk.supportSideX = -0.01; --Lean back when sidestepping
 walk.supportSideY = 0.02; --Lean sideways when sidestepping
 
-
 --------------------------------------------
 -- WalkKick parameters
 --------------------------------------------
-walk.walkKickVel = {0.06, 0.09} --step / kick / follow 
-walk.walkKickSupportMod = {{-0.03,0},{-0.03,0}}
-walk.walkKickHeightFactor = 2.0;
+walk.walkKickDef={}
 
-walk.sideKickVel1 = {0.04,0.04,0};
-walk.sideKickVel2 = {0.09,-0.05,-30*math.pi/180};
-walk.sideKickVel3 = {0.09,0.01,0};
-walk.sideKickSupportMod = {{0,0},{0,0}};
-walk.tStepSideKick = 0.45;
+--tStep stepType supportLeg stepHeight
+-- SupportMod shiftFactor footPos1 footPos2
+
+walk.walkKickDef["FrontLeft"]={
+  {0.50, 1, 0, 0.020 , {0,0}, 0.7, {0.06,0,0} },
+  {0.50, 2, 1, 0.040 , {0.02,-0.01}, 0.5, {0.09,0,0}, {0.05,0,0} },
+  {walk.tStep, 1, 0, 0.020 , {0,0}, 0.5, {0,0,0} },
+}
+walk.walkKickDef["FrontRight"]={
+  {0.50, 1, 1, 0.020 , {0,0}, 0.3, {0.06,0,0} },
+  {0.50, 2, 0, 0.040 , {0.02,0.01}, 0.5,  {0.09,0,0}, {0.05,0,0} },
+  {walk.tStep, 1, 1, 0.020 , {0,0}, 0.5, {0,0,0} },
+}
+walk.walkKickDef["SideLeft"]={
+  {0.50, 1, 1, 0.020 , {0,0}, 0.3, {0.04,0.04,0} },
+  {0.50, 3, 0, 0.040 , {-0.01,0.01}, 0.5, {0.06,-0.05,0},{0.09,0.0,0}},
+ {walk.tStep, 1, 1, 0.020 , {0,0}, 0.5, {0,0,0} },}
+
+walk.walkKickDef["SideRight"]={
+  {0.50, 1, 0, 0.020 , {0,0}, 0.7, {0.04,-0.04,0} },
+  {0.50, 3, 1, 0.040 , {-0.01,-0.01},0.5, {0.06,0.05,0},{0.09,-0.0,0}},
+  {walk.tStep, 1, 0, 0.020 , {0,0},0.5,  {0,0,0} },
+}
+
+walk.walkKickPh=0.5;
 
 --------------------------------------------
 -- Robot - specific calibration parameters
@@ -91,13 +108,11 @@ walk.supportCompR = {0,0,0};
 
 
 
-
 --FOR NEW NAO
 
 walk.tStep = 0.35;
 walk.hipRollCompensation = 1.5*math.pi/180;
-
-walk.stanceLimitA={-20*math.pi/180,40*math.pi/180};
+walk.supportY = 0.010;
 
 walk.velLimitX={-.06,.08};
 walk.velLimitY={-.04,.04};

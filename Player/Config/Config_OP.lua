@@ -32,8 +32,8 @@ dev.ip_wireless = '192.168.1.255';
 dev.game_control='OPGameControl';
 dev.team='TeamNSL';
 --dev.walk='BasicWalk';
-dev.walk='NewNewWalk';
---dev.walk='NewNewNewWalk';
+--dev.walk='NewNewWalk';
+dev.walk='NewNewNewWalk';
 dev.kick = 'NewKick'
 
 -- Game Parameters

@@ -115,6 +115,8 @@ function detect(color,color2)
     -- size and orientation check
     vcm.add_debug_message(string.format("Area check: %d\n", 
 	postStats.area));
+    print('poststats area'..postStats.area);
+    print('th_min_area'..th_min_area);
     if (postStats.area < th_min_area) then
       vcm.add_debug_message("Area check fail\n");
       valid = false;

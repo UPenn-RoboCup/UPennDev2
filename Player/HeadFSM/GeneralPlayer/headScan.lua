@@ -48,7 +48,7 @@ function entry()
 end
 
 function update()
-  pitchBias=vcm.get_camera_pitchBias(); --Robot specific head angle bias
+  pitchBias =  mcm.get_headPitchBias();--Robot specific head angle bias
 
   --Is the robot in bodySearch and spinning?
   isSearching = mcm.get_walk_isSearching();

@@ -127,17 +127,15 @@ require('calibration');
 if calibration.cal and calibration.cal[robotName] then
   walk.servoBias = calibration.cal[robotName].servoBias;
   walk.footXComp = calibration.cal[robotName].footXComp;
-  walk.footYComp = calibration.cal[robotName].footYComp;
   walk.kickXComp = calibration.cal[robotName].kickXComp;
   walk.headPitchComp = calibration.cal[robotName].headPitchComp;
-
-  walk.footX = walk.footX + walk.footXComp;
-  walk.footY = walk.footY + walk.footYComp;
   walk.headPitch = walk.headPitch + walk.headPitchComp;
+
   print(robotName.." walk parameters loaded")
 end
 
---]]
+
+
 
 
 -- Slow walk

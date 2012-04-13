@@ -66,10 +66,13 @@ pTorso = vector.new({0, 0, bodyHeight, 0,bodyTilt,0});
 pLLeg=vector.zeros(6);
 pRLeg=vector.zeros(6);
 
-kickXComp = Config.walk.kickXComp or 0;
+kickXComp = mcm.get_kickX();
 torsoShiftX=0;
 
 function entry()
+  kickXComp = mcm.get_kickX();
+  footX = mcm.get_footX();
+
   print("Motion SM:".._NAME.." entry");
   walk.stop();
   qLArm = vector.new({qLArm0[1],qLArm0[2],qLArm0[3]});
@@ -146,10 +149,10 @@ function update()
   local kickStepType=kickDef[kickState][1];
 
   -- Tosro X position offxet (for differetly calibrated robots)
-  if kickStepType==6 then
-     torsoShiftX=kickXComp*(1-ph);
-  elseif torsoShiftX<kickXComp*0.9 then
+  if kickState==2 then --Initial slide
      torsoShiftX=kickXComp*ph;
+  elseif kickState == #kickDef-1 then
+     torsoShiftX=kickXComp*(1-ph);
   end
 
   qLHipRollCompensation,qRHipRollCompensation= 0,0;

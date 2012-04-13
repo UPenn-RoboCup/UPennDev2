@@ -115,8 +115,14 @@ function get_line_length(line,i)
   return math.sqrt((xi1-xi2)^2+(yi1-yi2)^2);
 end
 
+--webots value
 min_dist=10;
 min_length=3;
+
+--OP value
+min_dist=30;
+min_length=6;
+
 
 function detect(line)
   --TODO: test line detection

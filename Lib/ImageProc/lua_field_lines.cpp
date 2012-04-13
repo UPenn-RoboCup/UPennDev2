@@ -64,7 +64,8 @@ int lineState(uint8_t label)
   return 0;
 }
 
-//#define MAX_SEGMENTS 50
+// Maximum number of segments to consider
+// TODO: better segment management (Kill short ended line)
 #define MAX_SEGMENTS 500
 
 struct SegmentStats {

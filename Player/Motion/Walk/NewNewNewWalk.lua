@@ -260,9 +260,10 @@ function update()
                           uTorso1[2], uTorso2[2]);
 
     --Compute maximum COM speed
-
+--[[
     dy0=(aYP-aYN)/tZmp + m1Y* (1-math.cosh(ph1Zmp*tStep/tZmp));
     print("max DY:",dy0);
+--]]
 
   end --End new step
   
@@ -334,7 +335,7 @@ function check_walkkick()
       return;
     end
   end
-  print("NEWNEWNEWKICK: WALKKICK, count",walkKickRequest);
+--  print("NEWNEWNEWKICK: WALKKICK, count",walkKickRequest);
 
   tStep = walkKick[walkKickRequest][1];   
   current_step_type = walkKick[walkKickRequest][2];   

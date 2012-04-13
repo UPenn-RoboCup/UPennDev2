@@ -4,6 +4,7 @@ require('Body')
 require('wcm')
 require('walk')
 require('vector')
+require('walk')
 
 t0 = 0;
 timeout = Config.fsm.bodyApproach.timeout;
@@ -87,6 +88,25 @@ function update()
   -- get ball position 
   ball = wcm.get_ball();
   ballR = math.sqrt(ball.x^2 + ball.y^2);
+
+  --Current cordinate origin: midpoint of uLeft and uRight
+
+  --Check where are we going to step
+
+  uLeft = walk.uLeft;
+  uRight = walk.uRight;
+  uLeft2 = walk.uLeft2;
+  uRight2 = walk.uRight2;
+  uFoot = util.se2_interpolate(uLeft,uRight); --Current origin 
+  uFoot2 = util.se2_interpolate(uLeft2,uRight2); --Projected origin 
+  uMovement = util.pose_relative(uFoot2,uFoot);
+  uBall2 = util.pose_relative({ball.x,ball.y,0},uMovement);
+  
+  print("Future ball position:",uBall2[1],uBall2[2]);
+
+
+
+
 
   if t-ball.t<0.2 and ball_tracking==false then
 --    HeadFSM.sm:set_state('headTrack');

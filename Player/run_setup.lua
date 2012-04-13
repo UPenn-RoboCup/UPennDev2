@@ -90,6 +90,10 @@ function init()
   kickXComp0 = Config.walk.kickXComp;
   footXComp = Config.walk.footXComp;
   kickXComp = Config.walk.kickXComp;
+
+  headPitch = Config.walk.headPitch;
+  headPitchComp = Config.walk.headPitchComp;
+  headPitchComp0 = Config.walk.headPitchComp0;
 end
 
 function info()

@@ -2,12 +2,13 @@ module(..., package.seeall);
 
 require('Body')
 require('vcm')
+require('mcm')
 
 t0 = 0;
 timeout = 1.0;
 
 function entry()
-  pitchBias=vcm.get_camera_pitchBias(); --Robot specific head angle bias
+  pitchBias =  mcm.get_headPitchBias();--robot specific head bias
 
   print(_NAME.." entry");
 

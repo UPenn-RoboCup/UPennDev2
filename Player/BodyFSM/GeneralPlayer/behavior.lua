@@ -6,7 +6,6 @@ require('vector')
 require('Config')
 require('wcm')
 
-demo_behavior = 1;
 function cycle_behavior()
   demo_behavior = demo_behavior%4 + 1;
 
@@ -28,6 +27,11 @@ function cycle_behavior()
     kickType=2;
   end
 end
+
+--Initial kick for demo 
+demo_behavior = 0;
+cycle_behavior();
+
 
 function update()
   -----------------------------------------------------------

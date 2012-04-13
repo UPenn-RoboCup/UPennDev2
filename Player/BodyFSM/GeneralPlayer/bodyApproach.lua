@@ -92,7 +92,7 @@ function update()
   --Current cordinate origin: midpoint of uLeft and uRight
 
   --Check where are we going to step
-
+  --[[
   uLeft = walk.uLeft;
   uRight = walk.uRight;
   uLeft2 = walk.uLeft2;
@@ -103,7 +103,7 @@ function update()
   uBall2 = util.pose_relative({ball.x,ball.y,0},uMovement);
   
   print("Future ball position:",uBall2[1],uBall2[2]);
-
+  --]]
 
 
 

@@ -44,6 +44,7 @@ require('vector')
 require("getch")
 require('Kinematics');
 require('Motion')
+require('mcm')
 
 -- initialize state machines
 
@@ -83,19 +84,26 @@ function init()
   end
 
 --  footXComp0=Config.walk.footXComp;
-
-
-
   hardness_all = 0;
   targetvel=vector.zeros(3);
+  footXComp0 = Config.walk.footXComp;
+  kickXComp0 = Config.walk.kickXComp;
+  footXComp = Config.walk.footXComp;
+  kickXComp = Config.walk.kickXComp;
 end
 
 function info()
-  print(" Key commands \n a/d: Left adjust\n w/x: Right adjust\n");
-  print(" 1/2: change joint");
-  print(" 6: Enable biasing mode");
-  print(" g: Save and Exit")
+  if motion_running==0 then
+    print(" Key commands \n a/d: Left adjust\n w/x: Right adjust\n");
+    print(" 1/2: change joint");
+    print(" 6: Enable biasing mode");
+    print(" g: Save and Exit")
+  end
 end
+
+
+
+
 
 function process_keyinput()
   local str=getch.get();
@@ -167,6 +175,33 @@ function process_keyinput()
         walk.doSideKickLeft();
       elseif byte==string.byte("r") then
         walk.doSideKickRight();
+
+      -- footXComp calibration
+      elseif byte==string.byte("-") then
+	footXComp = footXComp - 0.001; 
+        print(string.format("footXComp Orig: %.3f Now: %.3f\n",
+	  footXComp0, footXComp));
+        mcm.set_walk_footXComp(footXComp);
+	
+      elseif byte==string.byte("=") then
+	footXComp = footXComp + 0.001; 
+        print(string.format("footXComp Orig: %.3f Now: %.3f\n",
+	  footXComp0, footXComp));
+        mcm.set_walk_footXComp(footXComp);
+
+      -- kickXComp calibration
+      elseif byte==string.byte("[") then
+	kickXComp = kickXComp - 0.005; 
+        print(string.format("footXComp Orig: %.3f Now: %.3f\n",
+	  kickXComp0, kickXComp));
+        mcm.set_walk_kickXComp(kickXComp);
+
+      elseif byte==string.byte("]") then
+	kickXComp = kickXComp + 0.005; 
+        print(string.format("footXComp Orig: %.3f Now: %.3f\n",
+	  kickXComp0, kickXComp));
+        mcm.set_walk_kickXComp(kickXComp);
+
       elseif byte==string.byte("7") then	
         Motion.event("sit");
       elseif byte==string.byte("8") then	
@@ -209,6 +244,10 @@ for i=1,12 do
   data=data..string.format("%d,",bias[i+bias_offset]);
 end
 data=data.."};\n";
+data=data..string.format("cal[\"%s\"].footXComp=%.3f;\n",
+	unix.gethostname(), footXComp);
+data=data..string.format("cal[\"%s\"].kickXComp=%.3f;\n",
+	unix.gethostname(),kickXComp);
 outfile:write(data);
 outfile:flush();
 outfile:close();

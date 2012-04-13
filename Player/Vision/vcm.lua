@@ -31,7 +31,6 @@ shared.camera.command = vector.zeros(1);
 shared.camera.height = vector.zeros(1);
 shared.camera.bodyTilt = vector.zeros(1);
 shared.camera.bodyHeight = vector.zeros(1);
-shared.camera.pitchBias = vector.zeros(1);--for camera angel fine tuning
 shared.camera.rollAngle = vector.zeros(1);--how much image is tilted
 
 shared.image = {};

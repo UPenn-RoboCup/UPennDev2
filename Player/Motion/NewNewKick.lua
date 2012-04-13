@@ -6,6 +6,7 @@ require('walk')
 require('vector')
 require('Config')
 require('util')
+require('mcm')
 
 local cwd = unix.getcwd();
 if string.find(cwd, "WebotsController") then
@@ -46,7 +47,6 @@ supportCompR=Config.walk.supportCompR or vector.new({0,0,0});
 hipRollCompensation = Config.kick.hipRollCompensation or 5*math.pi/180;
 qLHipRollCompensation=0;
 qRHipRollCompensation=0;
-kickXComp = Config.walk.kickXComp or 0;
 
 --Hardness parameters
 hardnessArm=Config.kick.hardnessArm;
@@ -54,9 +54,10 @@ hardnessLeg=Config.kick.hardnessLeg;
 
 bodyHeight = Config.walk.bodyHeight;
 bodyTilt = Config.walk.bodyTilt;
-footX = Config.walk.footX;
+footX = mcm.get_footX();
 footY = Config.walk.footY;
 supportX = Config.walk.supportX;
+kickXComp = mcm.get_kickX();
 
 
 qLArm = vector.new({qLArm0[1],qLArm0[2],qLArm0[3]});
@@ -71,6 +72,9 @@ pRLeg=vector.zeros(6);
 torsoShiftX=0;
 
 function entry()
+  footX = mcm.get_footX();
+  kickXComp = mcm.get_kickX();
+
   print("Motion SM:".._NAME.." entry");
   walk.stop();
   walk.zero_velocity();
@@ -151,11 +155,12 @@ function update()
   kickStepType=kickDef[kickState][1];
 
   -- Tosro X position offxet (for differetly calibrated robots)
-  if kickStepType==6 then
-     torsoShiftX=kickXComp*(1-ph);
-  elseif torsoShiftX<kickXComp*0.9 then
+  if kickState==2 then --Initial slide
      torsoShiftX=kickXComp*ph;
+  elseif kickState == #kickDef-1 then
+     torsoShiftX=kickXComp*(1-ph);
   end
+
   qLHipRollCompensation,qRHipRollCompensation= 0,0;
 
     if kickStepType==1 then

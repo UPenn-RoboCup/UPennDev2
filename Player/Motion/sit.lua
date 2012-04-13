@@ -6,11 +6,12 @@ require('vector')
 require('Kinematics')
 require('Body')
 require('walk')
+require('mcm')
 
 active = true;
 t0 = 0;
 
-footX = Config.walk.footX or 0;
+footX = mcm.get_footX();
 footY = Config.walk.footY;
 supportX = Config.walk.supportX;
 

@@ -30,7 +30,7 @@ stanceLimitY2= 2* Config.walk.footY-stanceLimitMarginY;
 --Stance parameters
 bodyHeight = Config.walk.bodyHeight;
 bodyTilt=Config.walk.bodyTilt or 0;
-footX = Config.walk.footX or 0;
+footX = mcm.get_footX();
 footY = Config.walk.footY;
 supportX = Config.walk.supportX;
 supportY = Config.walk.supportY;
@@ -143,6 +143,8 @@ end
 
 
 function update()
+  footX = mcm.get_footX();
+
   t = Body.get_time();
 
   --Don't run update if the robot is sitting or standing

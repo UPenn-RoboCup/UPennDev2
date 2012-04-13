@@ -6,7 +6,7 @@ require('vector')
 kick={};
 
 --Imu feedback parameters, alpha / gain / deadband / max
-gyroFactor=0.273 *300/1024;  --For degree per second unit
+gyroFactor=0.273 *math.pi/300/1024;  --For degree per second unit
 kick.ankleImuParamX={0.6,0.3*gyroFactor, 0, 25*math.pi/180};
 kick.kneeImuParamX={0.6,1.2*gyroFactor, 0, 25*math.pi/180};
 kick.ankleImuParamY={0.9,0.7*gyroFactor, 0, 25*math.pi/180};

@@ -27,10 +27,11 @@ package.path = cwd .. '/Vision/?.lua;' .. package.path;
 package.path = cwd .. '/World/?.lua;' .. package.path;
 
 require('Config')
+--This FIXES monitor issue with test_vision
+Config.dev.team = 'TeamNull'; 
 require('unix')
 require('getch')
 require('Broadcast')
-require('Config')
 require('shm')
 require('vector')
 require('mcm')
@@ -104,6 +105,32 @@ fsm.enable_sidekick = 0;
 
 
 
+broadcast_enable=0;
+function broadcast2()
+  -- Get a keypress
+  local str=getch.get();
+  if #str>0 then
+    local byte=string.byte(str,1);
+    if byte==string.byte("g") then	--Broadcast selection
+      local mymod = 4;
+      broadcast_enable = (broadcast_enable+1)%mymod;
+      print("Broadcast:", broadcast_enable);
+    end
+  end
+  if vcm.get_image_count()>imagecount then
+    imagecount=vcm.get_image_count();
+    -- Always send non-image data
+    Broadcast.update(broadcast_enable);
+    -- Send image data every so often
+    if( imagecount % imgRate == 0 ) then
+      Broadcast.update_img(broadcast_enable);    
+    end
+    return true;
+  end
+  return false;
+end
+
+
 
 function broadcast()
   local ncount=20;
@@ -131,10 +158,19 @@ function broadcast()
   tLastBroadcast=t;
 
 end
+---[[
+function get_headPitchBias()
+  return get_walk_headPitchBiasComp()+headPitchBias;
+end
+
+--]]
 
 function process_keyinput()
   --Robot specific head pitch bias
-  headPitch = vcm.get_camera_pitchBias();
+  headPitchBiasComp = 
+	mcm.get_walk_headPitchBiasComp();
+  headPitchBias = mcm.get_headPitchBias()
+
 
   local str=getch.get();
   if #str>0 then
@@ -170,14 +206,14 @@ function process_keyinput()
     -- Camera angle bias fine tuning 
     elseif byte==string.byte("q") then	
       headsm_running=0;
-      headPitch=vcm.get_camera_pitchBias()+math.pi/180;
-      vcm.set_camera_pitchBias(headPitch);
-      print("\nCamera pitch bias:",headPitch*180/math.pi);
+      headPitchBiasComp = headPitchBiasComp+math.pi/180;
+      mcm.set_walk_headPitchBiasComp(headPitchBiasComp);
+      print("\nCamera pitch bias:",headPitchBiasComp*180/math.pi);
     elseif byte==string.byte("z") then	
       headsm_running=0;
-      headPitch=vcm.get_camera_pitchBias()-math.pi/180;
-      vcm.set_camera_pitchBias(headPitch);
-      print("\nCamera pitch bias:",headPitch*180/math.pi);
+      headPitchBiasComp = headPitchBiasComp-math.pi/180;
+      mcm.set_walk_headPitchBiasComp(headPitchBiasComp);
+      print("\nCamera pitch bias:",headPitchBiasComp*180/math.pi);
     -- Head FSM testing
     elseif byte==string.byte("1") then	
       headsm_running = 1-headsm_running;
@@ -194,7 +230,8 @@ function process_keyinput()
       headangle = vector.zeros(2);
       headangle[1],headangle[2] = 
  	HeadTransform.ikineCam(ball.x,	ball.y, trackZ);
-      headangle[2]=headangle[2]+headPitch; --this is substracted below
+      headangle[2]=headangle[2]+headPitchBias; 
+	--this is substracted below
       print("Head Angles for looking directly at the ball:", 
 	unpack(headangle*180/math.pi));
 
@@ -247,7 +284,7 @@ function process_keyinput()
     end
     walk.set_velocity(unpack(targetvel));
     if headsm_running == 0 then
-      Body.set_head_command({headangle[1],headangle[2]-headPitch});
+      Body.set_head_command({headangle[1],headangle[2]-headPitchBias});
       print("\nHead Yaw Pitch:", unpack(headangle*180/math.pi))
 
 
@@ -309,7 +346,8 @@ function update()
     if bodysm_running>0 then
       BodyFSM.update();
     end
-    broadcast();
+--    broadcast();
+    broadcast2();
   end
   local dcount = 50;
   if (count % 50 == 0) then

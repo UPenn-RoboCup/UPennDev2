@@ -87,13 +87,7 @@ count = 0;
 lastImageCount = 0;
 t0 = unix.time()
 
---Robot-specific camera pitch angle bias
-headPitch = Config.walk.headPitch or 0;
-
 function entry()
-  --Initialize camera pitch bias from Config value 
-  vcm.set_camera_pitchBias(headPitch); 
-
   --Temporary value.. updated at body FSM at next frame
   vcm.set_camera_bodyHeight(Config.walk.bodyHeight);
   vcm.set_camera_bodyTilt(0);

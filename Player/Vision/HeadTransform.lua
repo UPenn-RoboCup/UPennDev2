@@ -8,6 +8,7 @@ end
 require('Transform');
 require('vector');
 require('vcm');
+require('mcm');
 
 tHead = Transform.eye();
 tNeck = Transform.eye();
@@ -69,7 +70,7 @@ function update(sel,headAngles)
   --Now bodyHeight, Tilt, camera pitch angle bias are read from vcm 
   bodyHeight=vcm.get_camera_bodyHeight();
   bodyTilt=vcm.get_camera_bodyTilt();
-  pitch0=vcm.get_camera_pitchBias(); --Robot specific head angle bias
+  pitch0 =  mcm.get_headPitchBias();
 
   -- cameras are 0 indexed so add one for use here
   sel = sel + 1;
@@ -195,7 +196,7 @@ end
 function ikineCam0(x,y,z,select)
   bodyHeight=vcm.get_camera_bodyHeight();
   bodyTilt=vcm.get_camera_bodyTilt();
-  pitch0=vcm.get_camera_pitchBias(); --Robot specific head angle bias
+  pitch0 =  mcm.get_headPitchBias();
 
   --Bottom camera by default (cameras are 0 indexed so add 1)
   select = (select or 0) + 1;

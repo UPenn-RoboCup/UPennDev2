@@ -36,8 +36,21 @@ function detect()
     return line; 
   end
 
+  --Webots values:
   --max width 8
-  linePropsB = ImageProc.field_lines(Vision.labelB.data, Vision.labelB.m, Vision.labelB.n, 8); 
+  --connect_th 1.4
+  --max_gap 1
+  --min_length 3  
+
+--[
+  linePropsB = ImageProc.field_lines(Vision.labelB.data, Vision.labelB.m,
+		 Vision.labelB.n, 8, 1.4, 1, 3  ); 
+--]]
+
+  --OP values
+  linePropsB = ImageProc.field_lines(Vision.labelB.data, Vision.labelB.m,
+		 Vision.labelB.n, 16, 1.4, 0, 10  ); 
+
   if #linePropsB==0 then 
     --print('linePropsB nil')
     return line; 

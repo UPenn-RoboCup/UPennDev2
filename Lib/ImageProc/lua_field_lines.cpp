@@ -64,6 +64,7 @@ int lineState(uint8_t label)
   return 0;
 }
 
+// Maximum number of segments to consider
 #define MAX_SEGMENTS 50
 
 struct SegmentStats {

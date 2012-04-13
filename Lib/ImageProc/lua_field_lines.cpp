@@ -64,7 +64,8 @@ int lineState(uint8_t label)
   return 0;
 }
 
-#define MAX_SEGMENTS 50
+//#define MAX_SEGMENTS 50
+#define MAX_SEGMENTS 500
 
 struct SegmentStats {
   int state; //0 for inactive, 1 for active, 2 for ended
@@ -285,7 +286,7 @@ int lua_field_lines(lua_State *L) {
 
   int seg_count=0;
   for (int k=0;k<num_segments;k++){
-    if (segments[k].count>3){
+    if (segments[k].count>min_length){
       lua_createtable(L, 0, 3);
 
       // count field

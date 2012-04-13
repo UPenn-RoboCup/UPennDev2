@@ -473,7 +473,7 @@ uint8_t* yuyv_rotate(uint8_t* frame, int width, int height) {
     int index_1 = i*4;
     int index_2 = (siz-1-i)*4;
     uint8_t x1,x2,x3,x4;
-    frame2[index_2] = frame[index_2];
+    frame2[index_2] = frame[index_1+2];
     frame2[index_2+1] = frame[index_1+1];
     frame2[index_2+2] = frame[index_1];
     frame2[index_2+3] = frame[index_1+3];

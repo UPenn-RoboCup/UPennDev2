@@ -97,8 +97,8 @@ function update()
     ballR<rClose and
     t-ball.t<tBall then
       print("bodyPosition done")
---      return "done";
-      return "dribble"; --for test
+      return "done";
+--      return "dribble"; --for test
   end
 end
 

@@ -15,12 +15,14 @@ colorCyan = 4;
 colorField = 8;
 colorWhite = 16;
 
---min_white_pixel = Config.vision.line.min_white_pixel or 200;
---min_green_pixel = Config.vision.line.min_green_pixel or 5000;
+min_white_pixel = Config.vision.line.min_white_pixel or 200;
+min_green_pixel = Config.vision.line.min_green_pixel or 5000;
 
-min_white_pixel = 200;
-min_green_pixel =  5000;
-
+--min_width=Config.vision.line.min_width or 4;
+max_width=Config.vision.line.max_width or 8;
+connect_th=Config.vision.line.connect_th or 1.4;
+max_gap=Config.vision.line.max_gap or 1;
+min_length=Config.vision.line.min_length or 3;
 
 function detect()
   --TODO: test line detection
@@ -36,20 +38,8 @@ function detect()
     return line; 
   end
 
-  --Webots values:
-  --max width 8
-  --connect_th 1.4
-  --max_gap 1
-  --min_length 3  
-
---[
   linePropsB = ImageProc.field_lines(Vision.labelB.data, Vision.labelB.m,
-		 Vision.labelB.n, 8, 1.4, 1, 3  ); 
---]]
-
-  --OP values
-  linePropsB = ImageProc.field_lines(Vision.labelB.data, Vision.labelB.m,
-		 Vision.labelB.n, 16, 1.4, 0, 10  ); 
+		 Vision.labelB.n, max_width,connect_th,max_gap,min_length);
 
   if #linePropsB==0 then 
     --print('linePropsB nil')
@@ -58,14 +48,6 @@ function detect()
 
   line.propsB=linePropsB;
   nLines=0;
-  --Check the number of valid lines
---[[
-  for i=1,#line.propsB do
-    if line.propsB[i].count>15 then
-      nLines=i;
-    end
-  end
---]]
 
   nLines=#line.propsB;
   nLines=math.min(nLines,6);
@@ -73,7 +55,6 @@ function detect()
   if (nLines==0) then
     return line; 
   end
-
 
   line.detect=1;
   line.nLines = nLines;

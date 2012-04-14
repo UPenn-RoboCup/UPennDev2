@@ -1,36 +1,12 @@
 module(... or '', package.seeall)
 
---[[
--- Get Platform for package path
-cwd = '.';
-local platform = os.getenv('PLATFORM') or '';
-if (string.find(platform,'webots')) then cwd = cwd .. '/Player';
-end
-
--- Get Computer for Lib suffix
-local computer = os.getenv('COMPUTER') or '';
-computer = 'Darwin'
-if (string.find(computer, 'Darwin')) then
-  -- MacOS X uses .dylib:
-  package.cpath = cwd .. '/Lib/?.dylib;' .. package.cpath;
-else
-  package.cpath = cwd .. '/Lib/?.*;' .. package.cpath;
-end
-
-package.path = cwd .. '/?.lua;' .. package.path;
-package.path = cwd .. '/Util/?.lua;' .. package.path;
-package.path = cwd .. '/Config/?.lua;' .. package.path;
-package.path = cwd .. '/Lib/?.lua;' .. package.path;
-package.path = cwd .. '/Dev/?.lua;' .. package.path;
-package.path = cwd .. '/Motion/?.lua;' .. package.path;
-package.path = cwd .. '/Motion/keyframes/?.lua;' .. package.path;
-package.path = cwd .. '/Vision/?.lua;' .. package.path;
-package.path = cwd .. '/World/?.lua;' .. package.path;
---]]
-
 -- Add the required paths
 cwd = '.';
-computer = os.getenv('COMPUTER') or "";
+
+uname  = io.popen('uname -s')
+system = uname:read();
+
+computer = os.getenv('COMPUTER') or system;
 if (string.find(computer, "Darwin")) then
    -- MacOS X uses .dylib:                                                      
    package.cpath = cwd.."/Lib/?.dylib;"..package.cpath;
@@ -196,7 +172,7 @@ function push_yuyv3(obj)
 end
 
 function push_labelA(obj)
---	print('receive labelA parts');
+--  print('receive labelA parts');
   local labelA = cutil.test_array();
   local name = parse_name(obj.name);
   if (FIRST_LABELA == true) then

@@ -142,8 +142,8 @@ function info()
     print(" 1/2/3/4: Kick front L / front R/ side L/ side R");
     print(" 5/6/t/y: Walkkick front L / front R/ side L/ side R");
     print(" - / = ;Stance X offset adjustment")
-    print(" b: Enable test_bias");
-    print(" v: Enable test_vision");
+    print(" b: Enable test_vision");
+    print(" v: Enable test_bias");
     print(" 0: Save and Exit")
   else
     print(" Key commands \n i/j/l/,: change walk velocity\n");
@@ -175,6 +175,7 @@ function process_keyinput_test_bias(byte)
    elseif byte==string.byte("s") then
      bias[jointindex+bias_offset]=bias0[jointindex+bias_offset];
      bias[jointindex+bias_offset+6]=bias0[jointindex+bias_offset+6];
+
    else info();
    end
    print(string.format("\n %s: L%d, R%d)",
@@ -315,20 +316,36 @@ function process_keyinput()
     q1=vector.slice(Body.get_sensor_position(),6,18);
 
     --Switch mode
-    if byte==string.byte("6") then 
-      test_mode=test_mode%2+1;
+    if byte==string.byte("b") then
+      test_mode=(test_mode+1)%3;
+print("TESTMODE:",test_mode)
       info();
-      if test_mode==0 then --Biasing mode
+      if test_mode==0 then    
+        Body.set_lleg_hardness(1);
+        Body.set_rleg_hardness(1);
+        Body.set_lleg_command(vector.zeros(6));
+        Body.set_rleg_command(vector.zeros(6));
         Body.set_syncread_enable(1);
-        hardness=vector.new({1,1,1,1,1,1});
-        Body.set_lleg_hardness(hardness);
-        Body.set_rleg_hardness(hardness);
-        Body.set_lleg_command(vector.zeros(12));
+      else
+        Body.set_syncread_enable(0);
+     end
+    elseif byte==string.byte("v") then
+      test_mode=(test_mode+2)%3;
+print("TESTMODE:",test_mode)
+
+      info();
+      if test_mode==0 then    
+        Body.set_syncread_enable(1);
+        Body.set_lleg_hardness(1);
+        Body.set_rleg_hardness(1);
+        Body.set_lleg_command(vector.zeros(6));
+        Body.set_rleg_command(vector.zeros(6));
+        Body.set_syncread_enable(1);
       else
         Body.set_syncread_enable(0);
       end
     end
-
+ 
     if test_mode==0 then
       process_keyinput_test_bias(byte)
     else

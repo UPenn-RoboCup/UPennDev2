@@ -123,4 +123,7 @@ walk.velDelta={0.03,0.015,0.15}
 
 
 
-
+--FOR SLOW and STABLE walk
+walk.tStep = 0.48;
+walk.hipRollCompensation = 3*math.pi/180;
+walk.phSingle={0.2,0.8};

@@ -116,8 +116,10 @@ walk.supportCompR = {0,0,0};
 walk.servoBias = {0,0,0,0,0,0,0,0,0,0,0,0};
 walk.footXComp = 0;
 walk.footYComp = 0;
-walk.headPitch = 40* math.pi / 180; --Pitch angle offset of OP 
-walk.headPitchComp = 0;
+
+--Default pitch angle offset of OP 
+walk.headPitchBias = 40* math.pi / 180; 
+walk.headPitchBiasComp = 0;
 
 local robotName = unix.gethostname();
 local robotID = 0;
@@ -127,17 +129,13 @@ require('calibration');
 if calibration.cal and calibration.cal[robotName] then
   walk.servoBias = calibration.cal[robotName].servoBias;
   walk.footXComp = calibration.cal[robotName].footXComp;
-  walk.footYComp = calibration.cal[robotName].footYComp;
   walk.kickXComp = calibration.cal[robotName].kickXComp;
-  walk.headPitchComp = calibration.cal[robotName].headPitchComp;
-
-  walk.footX = walk.footX + walk.footXComp;
-  walk.footY = walk.footY + walk.footYComp;
-  walk.headPitch = walk.headPitch + walk.headPitchComp;
+  walk.headPitchBiasComp = calibration.cal[robotName].headPitchBiasComp;
   print(robotName.." walk parameters loaded")
 end
 
---]]
+
+
 
 
 -- Slow walk

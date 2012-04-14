@@ -5,25 +5,25 @@ require('vector')
 
 world={};
 world.n = 100;
-world.xLineBoundary = 3.0;
-world.yLineBoundary = 2.0;
-world.xMax = 3.2;
-world.yMax = 2.2;
+world.xLineBoundary = 2.70;
+world.yLineBoundary = 1.75;
+world.xMax = 3;
+world.yMax = 2;
 world.goalWidth = 1.60;
 world.goalHeight= 0.85;
-world.ballYellow= {{3.0,0.0}};
-world.ballCyan= {{-3.0,0.0}};
+world.ballYellow= {{2.7,0.0}};
+world.ballCyan= {{-2.7,0.0}};
 world.postYellow = {};
-world.postYellow[1] = {3.0, 0.80};
-world.postYellow[2] = {3.0, -0.80};
+world.postYellow[1] = {2.7, 0.80};
+world.postYellow[2] = {2.7, -0.80};
 world.postCyan = {};
-world.postCyan[1] = {-3.0, -0.80};
-world.postCyan[2] = {-3.0, 0.80};
+world.postCyan[1] = {-2.7, -0.80};
+world.postCyan[2] = {-2.7, 0.80};
 world.spot = {};
 world.spot[1] = {-1.20, 0};
 world.spot[2] = {1.20, 0};
-world.landmarkCyan = {0.0, -2.4};
-world.landmarkYellow = {0.0, 2.4};
+world.landmarkCyan = {0.0, -1.95};
+world.landmarkYellow = {0.0, 1.95};
 world.cResample = 10; --Resampling interval
 
 --SJ: OP does not use yaw odometry data (only use gyro)
@@ -35,27 +35,27 @@ world.imuYaw = 1;
 
 -- default positions for our kickoff
 world.initPosition1={
-  {2.5,0},   --Goalie
+  {2.4,0},   --Goalie
   {0.5,0}, --Attacker
-  {1.5,-1.5}, --Defender
-  {0.5,1.0}, --Supporter
+  {1.4,-1.4}, --Defender
+  {0.5,0.8}, --Supporter
 }
 -- default positions for opponents' kickoff
 -- Center circle radius: 0.6
 world.initPosition2={
-  {2.5,0},   --Goalie
+  {2.4,0},   --Goalie
   {0.8,0}, --Attacker
-  {1.75,-0.5}, --Defender
-  {1.25,1.0}, --Supporter
+  {1.55,-0.5}, --Defender
+  {1.05,1.0}, --Supporter
 }
 
 -- default positions for dropball
 -- Center circle radius: 0.6
 world.initPosition3={
-  {2.7,0},   --Goalie
+  {2.4,0},   --Goalie
   {0.5,0}, --Attacker
-  {1.5,-1.0}, --Defender
-  {0.5,1.0}, --Supporter
+  {1.4,-0.8}, --Defender
+  {0.5,0.8}, --Supporter
 }
 
 -- filter weights

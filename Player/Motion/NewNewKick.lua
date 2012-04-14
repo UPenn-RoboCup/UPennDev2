@@ -143,12 +143,14 @@ function update()
 
     ph=0;
     t0=Body.get_time();
-    if supportLeg ==0 then --left support 
-      Body.set_lleg_slope(16);
-      Body.set_rleg_slope(32);
-    else --right support
-      Body.set_rleg_slope(16);
-      Body.set_lleg_slope(32);
+    if Config.servo.pid==0 then
+      if supportLeg ==0 then --left support 
+        Body.set_lleg_slope(16);
+        Body.set_rleg_slope(32);
+      else --right support
+        Body.set_rleg_slope(16);
+        Body.set_lleg_slope(32);
+      end
     end
   end
 

@@ -70,7 +70,7 @@ servo.dirReverse={
 --Robot-specific firmware version handling
 ----------------------------------------------
 servo.armBias = {0,0,0,0,0,0}; --in degree
-servo.pid =0;
+servo.pid =1;  --Default new firmware
 local robotName = unix.gethostname();
 require('calibration');
 if calibration.cal and calibration.cal[robotName] then
@@ -110,13 +110,12 @@ else -- For new, PID firmware with 14-bit precision
 
   -- PID Parameters
   servo.p_param={
-   32,32,                --Head
-   16,16,16,             --LArm
-   16,16,16,16,16,16,    --LLeg
-   16,16,16,16,16,16,    --RLeg
-   --  32,32,32,32,32,32,  --RLeg
-   16,16,16,             --RArm
-   --  21,                 --Aux servo 
+    32,32,                --Head
+    16,16,16,             --LArm
+    32,32,32,32,32,32,  --LLeg
+    32,32,32,32,32,32,  --RLeg
+    16,16,16,             --RArm
+  --  21,                 --Aux servo
   }
   servo.i_param={
     0,0,          --Head
@@ -124,16 +123,17 @@ else -- For new, PID firmware with 14-bit precision
     0,0,0,0,0,0,  --LLeg
     0,0,0,0,0,0,  --RLeg
     0,0,0,        --RArm
-    --  21,         --Aux servo 
+  --  21,         --Aux servo
   }
   servo.d_param={
     8,8,              --Head
     16,16,16,         --LArm
-    16,16,16,16,16,16,--LLeg
-    16,16,16,16,16,16,--RLeg
+    4,4,4,4,4,4, --LLeg
+    4,4,4,4,4,4, --RLeg
     16,16,16,         --RArm
-    --  21,             --Aux servo
+  --  21,             --Aux servo
   }
+
   servo.moveRange=vector.ones(nJoint)*360*math.pi/180;
   servo.armBias = vector.new({0,15,0,0,-45,0}) * math.pi/180 * servo.steps[1]/servo.moveRange[1];
   --[[ For aux

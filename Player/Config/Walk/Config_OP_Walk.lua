@@ -130,6 +130,7 @@ if calibration.cal and calibration.cal[robotName] then
   walk.servoBias = calibration.cal[robotName].servoBias;
   walk.footXComp = calibration.cal[robotName].footXComp;
   walk.kickXComp = calibration.cal[robotName].kickXComp;
+  walk.kickYComp = calibration.cal[robotName].kickYComp;
   walk.headPitchBiasComp = calibration.cal[robotName].headPitchBiasComp;
   print(robotName.." walk parameters loaded")
 end

@@ -76,6 +76,6 @@ cal["scarface"].headPitchComp = 0.00;
 --Auto-appended calibration settings
 ------------------------------------------------------------
 
-
 -- Updated date: Mon Apr  9 07:28:15 2012
 cal["betty"].servoBias={0,0,2,-6,-1,0,0,0,-3,-1,-3,0,};
+

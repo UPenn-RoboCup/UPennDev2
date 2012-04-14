@@ -157,15 +157,28 @@ function update()
   kickStepType=kickDef[kickState][1];
 
   -- Tosro X position offxet (for differetly calibrated robots)
-  if kickState==2 then --Initial slide
+  if kickState==1 then --Initial slide
      torsoShiftX=kickXComp*ph;
   elseif kickState == #kickDef-1 then
      torsoShiftX=kickXComp*(1-ph);
   end
 
-  qLHipRollCompensation,qRHipRollCompensation= 0,0;
+  if kickState==2 then --Lift step
+    if kickStepType==2 then --
+      qRHipRollCompensation= -hipRollCompensation*ph;
+    elseif kickStepType==3 then
+      qLHipRollCompensation= hipRollCompensation*ph;
+    end
+  elseif kickState == #kickDef-1 then --Shift step
+    if kickStepType==2 then --
+      qRHipRollCompensation= -hipRollCompensation*(1-ph);
+    elseif kickStepType==3 then
+      qLHipRollCompensation= hipRollCompensation*(1-ph);
+    end
+  end
 
-    if kickStepType==1 then
+  if kickStepType==1 then
+    qLHipRollCompensation,qRHipRollCompensation= 0,0;
     uBody=util.se2_interpolate(ph,uBody1,kickDef[kickState][3]);	
     if #kickDef[kickState]>=4 then
       zBody=ph*kickDef[kickState][4] + (1-ph)*zBody1;
@@ -173,35 +186,27 @@ function update()
     if #kickDef[kickState]>=5 then
       bodyRoll=ph*kickDef[kickState][5] + (1-ph)*bodyRoll1;
     end
-
   elseif kickStepType==2 then --Lifting / Landing Left foot
---	uZmp2=kickDef[kickState][3];
     uLeft=util.se2_interpolate(ph,uLeft1,
-	util.pose_global(kickDef[kickState][4],uLeft1));
+      util.pose_global(kickDef[kickState][4],uLeft1));
     zLeft=ph*kickDef[kickState][5] + (1-ph)*zLeft1;
     aLeft=ph*kickDef[kickState][6] + (1-ph)*aLeft1;
 
-    qRHipRollCompensation= -hipRollCompensation;
-
   elseif kickStepType==3 then --Lifting / Landing Right foot
---	uZmp2=kickDef[kickState][3];
     uRight=util.se2_interpolate(ph,uRight1,
-	util.pose_global(kickDef[kickState][4],uRight1));
+      util.pose_global(kickDef[kickState][4],uRight1));
     zRight=ph*kickDef[kickState][5] + (1-ph)*zRight1;
     aRight=ph*kickDef[kickState][6] + (1-ph)*aRight1;
-    qLHipRollCompensation= hipRollCompensation;
 
   elseif kickStepType==4 then --Kicking Left foot
     uLeft=util.pose_global(kickDef[kickState][4],uLeft1);
     zLeft=kickDef[kickState][5]
     aLeft=kickDef[kickState][6]
-    qRHipRollCompensation= -hipRollCompensation;
 
   elseif kickStepType==5 then --Kicking Right foot
     uRight=util.pose_global(kickDef[kickState][4],uRight1);
     zRight=kickDef[kickState][5]
     aRight=kickDef[kickState][6]
-    qLHipRollCompensation= hipRollCompensation;
 
   elseif kickStepType ==6 then --Returning to walk stance
     uBody=util.se2_interpolate(ph,uBody1,kickDef[kickState][3]);	
@@ -209,11 +214,6 @@ function update()
     bodyRoll=(1-ph)*bodyRoll1;
     qLArm = vector.new({qLArm0[1],qLArm0[2],qLArm0[3]});
     qRArm = vector.new({qRArm0[1],qRArm0[2],qRArm0[3]});
-    if qLHipRollCompensation > 0 then
-      qLHipRollCompensation= hipRollCompensation* (1-ph);
-    elseif qRHipRollCompensation > 0 then
-      qRHipRollCompensation= -hipRollCompensation* (1-ph);
-    end
 
   elseif kickStepType ==7 then --Upper body movement
     uBody=util.se2_interpolate(ph,uBody1,kickDef[kickState][3]);	

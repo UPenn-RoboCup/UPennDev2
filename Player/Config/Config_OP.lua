@@ -35,6 +35,7 @@ dev.team='TeamNSL';
 --dev.walk='NewNewWalk';
 dev.walk='NewNewNewWalk';
 dev.kick = 'NewKick'
+--dev.kick = 'NewNewKick'
 
 -- Game Parameters
 

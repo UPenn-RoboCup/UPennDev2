@@ -90,3 +90,9 @@ vision.corner.dist_threshold = 10;
 vision.corner.length_threshold = 3;
 vision.corner.min_center_dist = 1.5;
 
+
+--TURN OFF ALL GREEN CHECK FOR NOW
+vision.ball.check_for_ground = 0;
+vision.goal.check_for_ground = 0;
+
+

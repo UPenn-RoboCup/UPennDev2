@@ -191,9 +191,10 @@ function refresh_debug_message()
     --it is not updated for whatever reason
     --just keep the latest message
   else
+    --Update SHM
     set_debug_message(debug_message);
+    debug_message='';
   end
-  debug_message='';
 end
 function add_debug_message(message)
   if string.len(debug_message)>1000 then
@@ -201,6 +202,4 @@ function add_debug_message(message)
     debug_message='';
   end
   debug_message=debug_message..message;
-  set_debug_message(debug_message);
-
 end

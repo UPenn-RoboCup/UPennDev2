@@ -104,7 +104,8 @@ function update()
       init = true;
     else
       if (count % 20 == 0) then
-        if (Body.get_change_state() == 1) then
+--        if (Body.get_change_state() == 1) then
+	  if true then
           Speak.talk('Calibrating');
           calibrating = true;
         elseif (Body.get_change_role() == 1) then

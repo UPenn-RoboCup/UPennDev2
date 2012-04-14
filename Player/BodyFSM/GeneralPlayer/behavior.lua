@@ -29,9 +29,10 @@ function cycle_behavior()
 end
 
 --Initial kick for demo 
-demo_behavior = 0;
-cycle_behavior();
-
+if Config.fsm.playMode==1 then 
+  demo_behavior = 0;
+  cycle_behavior();
+end
 
 function update()
   -----------------------------------------------------------

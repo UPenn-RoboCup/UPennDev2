@@ -185,6 +185,12 @@ function process_keyinput()
     elseif byte==string.byte("h") then	targetvel[2]=targetvel[2]+0.02;
     elseif byte==string.byte(";") then	targetvel[2]=targetvel[2]-0.02;
 
+    --switch camera 
+    elseif byte==string.byte("-") then
+      vcm.set_camera_command(1);
+    elseif byte==string.byte("=") then
+      vcm.set_camera_command(0);
+
     -- Move the head around
     elseif byte==string.byte("w") then
       headsm_running=0;headangle[2]=headangle[2]-5*math.pi/180;

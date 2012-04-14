@@ -7,6 +7,7 @@ module(..., package.seeall);
 require('Body')
 require('wcm')
 require('mcm')
+require('HeadTransform');
 
 t0 = 0;
 

@@ -7,16 +7,17 @@ kick={};
 
 --Imu feedback parameters, alpha / gain / deadband / max
 gyroFactor=0.273 *math.pi/300/1024;  --For degree per second unit
-kick.ankleImuParamX={0.6,0.3*gyroFactor, 0, 25*math.pi/180};
-kick.kneeImuParamX={0.6,1.2*gyroFactor, 0, 25*math.pi/180};
+
+--less feedback for kick
+gyroFactor = gyroFactor*0.5;
+
+kick.ankleImuParamX={0.9,0.3*gyroFactor, 0, 25*math.pi/180};
+kick.kneeImuParamX={0.9,1.2*gyroFactor, 0, 25*math.pi/180};
 kick.ankleImuParamY={0.9,0.7*gyroFactor, 0, 25*math.pi/180};
 kick.hipImuParamY={0.9,0.3*gyroFactor, 0, 25*math.pi/180};
 kick.armImuParamX={0.3,10*gyroFactor, 20*math.pi/180, 45*math.pi/180};
 kick.armImuParamY={0.3,10*gyroFactor, 20*math.pi/180, 45*math.pi/180};
 
---Less feedback values
-kick.ankleImuParamX={0.6,0.3*gyroFactor, 0, 25*math.pi/180};
-kick.kneeImuParamX={0.6,0.7*gyroFactor, 0, 25*math.pi/180};
 
 --Kick arm pose
 kick.qLArm=math.pi/180*vector.new({95,22,-135});
@@ -29,7 +30,7 @@ kick.hardnessLeg=1;
 kick.armGain= 0.10; 
 
 kick.bodyHeight = 0.295; --This should be the same as walk.bodyHeight
-
+kick.hipRollCompensation = 5*math.pi/180;
 
 kick.def={};
 

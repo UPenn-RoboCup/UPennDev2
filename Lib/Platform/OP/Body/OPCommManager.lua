@@ -219,7 +219,12 @@ function sync_slope()
     Dynamixel.sync_write_byte(ids, addr[2], data);
   else --New firmware: PID parameters
     -- P: 26, I: 27, D: 28
-    local addr={26,27,28};
+    -- local addr={26,27,28};
+    --CORRECTED according to newest firmware
+
+    -- P: 28, I: 27, D: 26
+    local addr={28,27,26};
+
     local ids = {};
     local data_p = {};
     local data_i = {};

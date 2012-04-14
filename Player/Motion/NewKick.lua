@@ -60,13 +60,15 @@ hardnessLeg=Config.kick.hardnessLeg;
 
 kickState=1;
 
-qHipRollCompensation1 = Config.kick.qHipRollCompensation1 or 5*math.pi/180;
+hipRollCompensation = Config.kick.hipRollCompensation or 3*math.pi/180;
 
 pTorso = vector.new({0, 0, bodyHeight, 0,bodyTilt,0});
 pLLeg=vector.zeros(6);
 pRLeg=vector.zeros(6);
 
 kickXComp = mcm.get_kickX();
+kickYComp = Config.walk.kickYComp;
+
 torsoShiftX=0;
 
 function entry()
@@ -157,9 +159,22 @@ function update()
      torsoShiftX=kickXComp*(1-ph);
   end
 
-  qLHipRollCompensation,qRHipRollCompensation= 0,0;
+  if kickState==2 then --Lift step
+    if kickStepType==2 then --
+      qRHipRollCompensation= -hipRollCompensation*ph;
+    elseif kickStepType==3 then
+      qLHipRollCompensation= hipRollCompensation*ph;
+    end
+  elseif kickState == #kickDef-1 then --Land step
+    if kickStepType==2 then --
+      qRHipRollCompensation= -hipRollCompensation*(1-ph);
+    elseif kickStepType==3 then
+      qLHipRollCompensation= hipRollCompensation*(1-ph);
+    end
+  end
 
   if kickStepType==1 then
+    qLHipRollCompensation,qRHipRollCompensation= 0,0;
     uBody=util.se2_interpolate(ph,uBody1,kickDef[kickState][3]);	
     if #kickDef[kickState]>=4 then
       zBody=ph*kickDef[kickState][4] + (1-ph)*zBody1;
@@ -176,32 +191,26 @@ function update()
     qRArm = vector.new({qRArm0[1],qRArm0[2],qRArm0[3]});
 
   elseif kickStepType==2 then --Lifting / Landing Left foot
---	uZmp2=kickDef[kickState][3];
     uLeft=util.se2_interpolate(ph,uLeft1,
 	util.pose_global(kickDef[kickState][4],uLeft1));
     zLeft=ph*kickDef[kickState][5] + (1-ph)*zLeft1;
     aLeft=ph*kickDef[kickState][6] + (1-ph)*aLeft1;
-    qRHipRollCompensation= -qHipRollCompensation1;
 
   elseif kickStepType==3 then --Lifting / Landing Right foot
---	uZmp2=kickDef[kickState][3];
     uRight=util.se2_interpolate(ph,uRight1,
 	util.pose_global(kickDef[kickState][4],uRight1));
     zRight=ph*kickDef[kickState][5] + (1-ph)*zRight1;
     aRight=ph*kickDef[kickState][6] + (1-ph)*aRight1;
-    qLHipRollCompensation= qHipRollCompensation1;
 
   elseif kickStepType==4 then --Kicking Left foot
     uLeft=util.pose_global(kickDef[kickState][4],uLeft1);
     zLeft=kickDef[kickState][5]
     aLeft=kickDef[kickState][6]
-    qRHipRollCompensation= -qHipRollCompensation1;
 
   elseif kickStepType==5 then --Kicking Right foot
     uRight=util.pose_global(kickDef[kickState][4],uRight1);
     zRight=kickDef[kickState][5]
     aRight=kickDef[kickState][6]
-    qLHipRollCompensation= qHipRollCompensation1;
 
   end
 

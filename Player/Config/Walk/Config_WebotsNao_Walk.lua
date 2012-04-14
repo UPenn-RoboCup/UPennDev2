@@ -115,7 +115,3 @@ walk.walkKickPh=0.5;
 walk.kickXComp = 0;
 walk.supportCompL = {0,0,0};
 walk.supportCompR = {0,0,0};
-
-walk.tStep = 0.8;
-
-walk.velLimitY={-.06,.06};

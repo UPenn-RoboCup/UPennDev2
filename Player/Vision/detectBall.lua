@@ -7,6 +7,7 @@ require('Vision');
 require('Body');
 require('shm');
 require('vcm');
+require('mcm');
 require('Detection');
 require('Debug');
 
@@ -132,7 +133,8 @@ function detect(color)
   --SJ: we subtract foot offset 
   --bc we use ball.x for kick alignment
   --and the distance from foot is important
-  v[1]=v[1]-footX;
+  v[1]=v[1]-mcm.get_footX()
+
 
   ball.v = v;
   ball.detect = 1;

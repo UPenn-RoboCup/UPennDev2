@@ -65,7 +65,10 @@ int lineState(uint8_t label)
 }
 
 // Maximum number of segments to consider
-#define MAX_SEGMENTS 50
+//#define MAX_SEGMENTS 50
+
+//TODO: better handling of short noisy lines
+#define MAX_SEGMENTS 200
 
 struct SegmentStats {
   int state; //0 for inactive, 1 for active, 2 for ended

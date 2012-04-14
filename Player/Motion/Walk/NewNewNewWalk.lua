@@ -30,7 +30,7 @@ stanceLimitY2= 2* Config.walk.footY-stanceLimitMarginY;
 --Stance parameters
 bodyHeight = Config.walk.bodyHeight;
 bodyTilt=Config.walk.bodyTilt or 0;
-footX = Config.walk.footX or 0;
+footX = mcm.get_footX();
 footY = Config.walk.footY;
 supportX = Config.walk.supportX;
 supportY = Config.walk.supportY;
@@ -143,6 +143,8 @@ end
 
 
 function update()
+  footX = mcm.get_footX();
+
   t = Body.get_time();
 
   --Don't run update if the robot is sitting or standing
@@ -258,9 +260,10 @@ function update()
                           uTorso1[2], uTorso2[2]);
 
     --Compute maximum COM speed
-
+--[[
     dy0=(aYP-aYN)/tZmp + m1Y* (1-math.cosh(ph1Zmp*tStep/tZmp));
     print("max DY:",dy0);
+--]]
 
   end --End new step
   
@@ -332,7 +335,7 @@ function check_walkkick()
       return;
     end
   end
-  print("NEWNEWNEWKICK: WALKKICK, count",walkKickRequest);
+--  print("NEWNEWNEWKICK: WALKKICK, count",walkKickRequest);
 
   tStep = walkKick[walkKickRequest][1];   
   current_step_type = walkKick[walkKickRequest][2];   

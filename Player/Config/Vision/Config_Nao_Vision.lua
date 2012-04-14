@@ -78,3 +78,21 @@ vision.goal.th_min_area_unknown_post = 40;
 
 vision.goal.use_centerpost = 1;
 vision.goal.check_for_ground = 1;
+
+vision.line={};
+vision.line.max_width = 8;
+vision.line.connect_th = 1.4;
+vision.line.max_gap=1;
+vision.line.min_length=3;
+
+vision.corner={};
+vision.corner.dist_threshold = 10;
+vision.corner.length_threshold = 3;
+vision.corner.min_center_dist = 1.5;
+
+
+--TURN OFF ALL GREEN CHECK FOR NOW
+vision.ball.check_for_ground = 0;
+vision.goal.check_for_ground = 0;
+
+

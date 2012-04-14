@@ -116,9 +116,6 @@ km.standup_front = 'km_WebotsNao_StandupFromFront.lua';
 km.standup_back = 'km_WebotsNao_StandupFromBack.lua';
 
 
-km.standup_back = 'km_Nao_StandupFromBackNew.lua';
-
-
 
 --Sit/stand stance parameters
 stance={};

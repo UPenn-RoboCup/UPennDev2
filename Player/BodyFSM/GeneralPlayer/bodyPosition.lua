@@ -68,7 +68,10 @@ function update()
   angle1=util.mod_angle(aGoal-aBall);
 
   role = gcm.get_team_role();
-  if (role == 2) then
+  --Force attacker for demo code
+  if Config.fsm.playMode==1 then role=1; end
+
+   if (role == 2) then
     homePose = getDefenderHomePose();
   elseif (role==3) then
     homePose = getSupporterHomePose();
@@ -91,14 +94,21 @@ function update()
 
   tBall=0.5;
 
+  if Config.fsm.playMode~=3 then
+    if ballR<rClose then
+      print("bodyPosition ballClose")
+      return "ballClose";
+    end
+  end
+
   if math.abs(homeRelative[1])<thClose[1] and
     math.abs(homeRelative[2])<thClose[2] and
     math.abs(homeRelative[3])<thClose[3] and
     ballR<rClose and
     t-ball.t<tBall then
       print("bodyPosition done")
---      return "done";
-      return "dribble"; --for test
+      return "done";
+--      return "dribble"; --for test
   end
 end
 
@@ -165,6 +175,16 @@ end
 
 function getAttackerHomePose()
 
+  --Direct approach 
+  if Config.fsm.playMode~=3 then
+    local homepose={
+	ballGlobal[1],
+	ballGlobal[2],
+	aBall};
+    return homepose;
+  end
+
+  --Curved approach
   if math.abs(angle1)<math.pi/2 then
     rDist=math.min(rDist1,math.max(rDist2,ballR-rTurn2));
     local homepose={

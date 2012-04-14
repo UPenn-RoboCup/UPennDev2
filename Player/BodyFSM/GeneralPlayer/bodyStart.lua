@@ -15,7 +15,12 @@ ballTh = 0.50;
 --If the ball comes any closer than this, start moving
 ballClose = 0.50; 
 
-wait_kickoff = Config.fsm.wait_kickoff or 0;
+if Config.fsm.playMode ==1 then
+  --Turn off kickoff waiting for demo
+  wait_kickoff = 0; 
+else
+  wait_kickoff = Config.fsm.wait_kickoff or 0;
+end
 
 function entry()
   print(_NAME..' entry');

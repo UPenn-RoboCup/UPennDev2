@@ -13,6 +13,7 @@ cal["betty"]={
   footYComp = 0,
   kickXComp = 0,
   headPitchComp = 0,
+  pid = 0,
 };
 
 cal["linus"]={
@@ -21,6 +22,7 @@ cal["linus"]={
   footYComp = 0,
   kickXComp = 0,
   headPitchComp = 0,
+  pid = 0,
 };
 
 cal["lucy"]={
@@ -29,6 +31,9 @@ cal["lucy"]={
   footYComp = 0,
   kickXComp = 0,
   headPitchComp = 0,
+-- PID firmware setting for lucy
+
+  pid = 1,
 };
 cal["scarface"]={
   servoBias={0,0,0,0,0,0, 0,0,0,0,0,0},
@@ -36,12 +41,12 @@ cal["scarface"]={
   footYComp = 0,
   kickXComp = 0,
   headPitchComp = 0,
+  pid = 0,
 };
 
------------------------------------------------------------
--- PID firmware setting for lucy
-cal["lucy"].pid = 1;
------------------------------------------------------------
+----------------------------------------------------------------
+-------------------------------------------------------------
+--Default values (may not be needed)
 
 cal["betty"].servoBias={0,0,2,-6,-1,0,0,0,-3,-1,10,0};
 cal["betty"].footXComp = 0.010;

@@ -260,7 +260,7 @@ end
 
 function get_battery_level()
   batt=get_sensor_battery();
-  return batt/10;
+  return batt[1]/10;
 end
 
 function get_change_state()

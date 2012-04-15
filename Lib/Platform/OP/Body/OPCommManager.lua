@@ -58,7 +58,7 @@ function shm_init()
   sensorShm.imuGyrRaw = vector.zeros(3);
   sensorShm.imuGyrBias=vector.zeros(3); --rate gyro bias
   sensorShm.temperature=vector.zeros(nJoint);
-  sensorShm.battery=vector.zeros(nJoint);
+  sensorShm.battery=vector.zeros(1); --Now only use cm730 value
   sensorShm.updatedCount =vector.zeros(1);   --Increases at every cycle
 
   shm.destroy('dcmActuator');
@@ -247,28 +247,22 @@ function sync_slope()
 end
 
 function sync_battery()
-  --battery test mode... read from ALL servos
+    --battery test mode... read from ALL servos
   if actuator.battTest[1]==1 then 
     chk_servo_no=(chk_servo_no%nJoint)+1;
-    sensor.battery[chk_servo_no]=Dynamixel.get_battery(idMap[chk_servo_no]);
     sensor.temperature[chk_servo_no]=Dynamixel.get_temperature(idMap[chk_servo_no]);
   else
-    --Normal check mode: only check leg servos one by one
     chk_servo_no=(chk_servo_no%12)+1;
-    sensor.battery[chk_servo_no+5]=Dynamixel.get_battery(idMap[chk_servo_no+5]);
-    sensor.temperature[chk_servo_no+5]=Dynamixel.get_temperature(idMap[chk_servo_no+5]);
+    sensor.temperature[chk_servo_no+5]=0;
   end
 
-  local bat_min=200;
-  for i=6,17 do
-    if sensor.battery[i]>0 then
-      bat_min=math.min(bat_min,sensor.battery[i]);
-    end
-  end
-  if bat_min<Config.bat_low then battery_warning=1;
+  local battery=Dynamixel.read_data(200,50,1);
+  sensor.battery[1]=battery[1];
+  if battery[1]<Config.bat_low then battery_warning=1;
   else battery_warning=0;
   end
 end
+
 
 function sync_led()
   --New function to turn on status LEDs
@@ -300,6 +294,18 @@ function sync_led()
   end
 end
 
+function bulk_read()
+--[[
+  --146: bulk read instruction
+  --36: Position address
+  print("Bulk read test");
+  data=Dynamixel.bulk_read_data(200,{1,2,3},36,2); 
+  print("Received data size:",#data);
+  print("Received data:",unpack(data));
+--]]
+end
+
+
 function nonsync_read()
 
   --Position reading
@@ -317,31 +323,6 @@ function nonsync_read()
     for i = 3,#idMap do
       sensor.position[i] = actuator.command[i];
     end;
-
-    --[[
-     --Head+Leg reading
-
-    elseif actuator.readType[1]==2 then 
-    for i = 3,6 do
-    sensor.position[i] = actuator.command[i];
-    end;
-    for i = 18,#idMap do
-    sensor.position[i] = actuator.command[i];
-    end;
-
-    c_mod=count%4;
-    if c_mod==1 then	idToRead={6,7,8};  
-    elseif c_mod==2 then 	idToRead={9,10,11};  
-    elseif c_mod==3 then	idToRead={12,13,14}
-    else	idToRead={15,16,17};  
-    end
-    elseif actuator.readType[1]==3 then --No reading
-    idToRead={}; 
-    for i = 1,#idMap do
-    sensor.position[i] = actuator.command[i];
-    end;
-
-    --]]
 
   end
   -- Update the readings
@@ -449,6 +430,8 @@ function update()
       end
     end
   end
+
+  bulk_read();
 
   nonsync_read();
   update_imu();

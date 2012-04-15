@@ -378,7 +378,10 @@ Body.set_rleg_hardness(0);
 
 --append at the end of current configuration file
 outfile=assert(io.open("./Config/calibration.lua","a+"));
-data=string.format("\n\-\- Updated date: %s\n" , os.date() );
+
+--TODO: which one should we use?
+--data=string.format("\n\-\- Updated date: %s\n" , os.date() );
+data=string.format("\n-- Updated date: %s\n" , os.date() );
 data=data..string.format("cal[\"%s\"].servoBias={",unix.gethostname());
 for i=1,12 do
   data=data..string.format("%d,",bias[i+bias_offset]);

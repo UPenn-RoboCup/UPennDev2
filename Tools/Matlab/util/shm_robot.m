@@ -160,7 +160,8 @@ global MONITOR %for sending the webots check information
       goalv22=h.wcmTeamdata.get_goalv22();
 
       landmark=h.wcmTeamdata.get_landmark();
-      landmarkv=h.wcmTeamdata.get_landmarkv();
+      landmarkv1=h.wcmTeamdata.get_landmarkv1();
+      landmarkv2=h.wcmTeamdata.get_landmarkv2();
 
       r.teamColor=teamColor(id);
       r.id = robotId(id);
@@ -171,6 +172,8 @@ global MONITOR %for sending the webots check information
       r.pose.x= posex(id);
       r.pose.y= posey(id);
       r.pose.a= posea(id);
+
+      r.gpspose = r.pose;      
 
       r.ball={};
       r.ball.x= ballx(id);

@@ -20,9 +20,9 @@ package.path = cwd.."/Motion/?.lua;"..package.path;
 
 
 require ('Config')
---We always store data from robot to shm (1,1) 
-Config.game.teamNumber = 1; 
 Config.game.playerID = 1; 
+--Push to (team,1) shm
+
 
 require ('cutil')
 require ('vector')
@@ -37,7 +37,6 @@ require 'unix'
 Comm.init(Config.dev.ip_wireless,54321);
 print('Receiving Team Message From',Config.dev.ip_wireless);
 teamNumber = Config.game.teamNumber;
-
 
 function push_team_struct(obj)
 --  wcm.set_teamdata_id(obj.id);
@@ -68,6 +67,7 @@ function push_team_struct(obj)
   states.landmarkv2=wcm.get_teamdata_landmarkv2();
 
 --print("Team message from",obj.id)
+
   id=obj.id;
 --states.role[id]=obj.id; --robot id?
   states.teamColor[id]=obj.teamColor;
@@ -128,10 +128,11 @@ end
 while( true ) do
   while (Comm.size() > 0) do
     msg=Comm.receive();
---    print(msg)
     t = serialization.deserialize(msg);
     if (t and (t.teamNumber) and (t.teamNumber == teamNumber) and (t.id)) then
---      t.tReceive = Body.get_time();
+      t.tReceive = unix.time();
+--    print(msg)
+--      print("Team message from",t.id)
       push_team_struct(t);
     end
   end

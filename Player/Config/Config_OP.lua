@@ -32,10 +32,8 @@ dev.ip_wired = '192.168.123.255';
 dev.ip_wireless = '192.168.1.255';
 dev.game_control='OPGameControl';
 dev.team='TeamNSL';
---dev.walk='BasicWalk';
---dev.walk='NewNewWalk';
-dev.walk='NewNewNewWalk';
---dev.kick = 'NewKick'
+dev.walk='BasicWalk';
+--dev.walk='NewNewNewWalk';
 dev.kick = 'NewNewKick'
 
 -- Game Parameters
@@ -67,6 +65,11 @@ fsm.kickoff_wait_enable = 0;
 fsm.playMode = 3; --1 for demo, 2 for orbit, 3 for direct approach
 fsm.enable_walkkick = 1;
 fsm.enable_sidekick = 1;
+
+fsm.playMode = 2; --1 for demo, 2 for orbit, 3 for direct approach
+fsm.enable_walkkick = 0;
+fsm.enable_sidekick = 0;
+
 
 -- Team Parameters
 team = {};

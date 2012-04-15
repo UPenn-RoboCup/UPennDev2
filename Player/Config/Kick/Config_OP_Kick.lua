@@ -31,7 +31,6 @@ kick.armGain= 0.10;
 
 kick.bodyHeight = 0.295; --This should be the same as walk.bodyHeight
 kick.hipRollCompensation = 5*math.pi/180;
-kick.hipRollCompensation = 25*math.pi/180;
 
 kick.def={};
 

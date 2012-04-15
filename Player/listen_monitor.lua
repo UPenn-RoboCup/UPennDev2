@@ -268,7 +268,7 @@ while( true ) do
     end
   end
 
---  vcm.set_camera_yuyvType(yuyv_type);
+  vcm.set_camera_yuyvType(yuyv_type);
   unix.usleep(1E6*0.005);
 
 end

@@ -154,11 +154,8 @@ function h=show_monitor()
       disp('Empty monitor struct!'); return;
     end
 
-    yuyv_type = r_mon.yuyv_type
-
-
-
-    % NOW AUTO-SWITCH YUYV TYPE
+    % AUTO-SWITCH YUYV TYPE
+    yuyv_type = r_mon.yuyv_type;
     if MONITOR.enable1
       MONITOR.h1 = subplot(4,5,[1 2 6 7]);
       if yuyv_type==0

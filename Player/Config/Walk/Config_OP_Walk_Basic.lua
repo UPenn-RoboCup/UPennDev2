@@ -90,12 +90,12 @@ walk.walkKickDef={}
 walk.walkKickDef["FrontLeft"]={
   {0.30, 1, 0, 0.035 , {0,0}, 0.7, {0.06,0,0} },
   {0.30, 2, 1, 0.07 , {0.02,-0.02}, 0.5, {0.09,0,0}, {0.06,0,0} },
-  {walk.tStep, 1, 0, 0.035 , {0,0}, 0.5, {0,0,0} },
+  {walk.tStep, 1, 0, 0.035 , {0,0}, 0.5, {0.04,0,0} },
 }
 walk.walkKickDef["FrontRight"]={
   {0.30, 1, 1, 0.035 , {0,0}, 0.3, {0.06,0,0} },
   {0.30, 2, 0, 0.07 , {0.02,0.02}, 0.5,  {0.09,0,0}, {0.06,0,0} },
-  {walk.tStep, 1, 1, 0.035 , {0,0}, 0.5, {0,0,0} },
+  {walk.tStep, 1, 1, 0.035 , {0,0}, 0.5, {0.04,0,0} },
 }
 walk.walkKickDef["SideLeft"]={
   {0.30, 1, 1, 0.035 , {0,0}, 0.3, {0.04,0.04,0} },
@@ -141,4 +141,3 @@ if calibration.cal and calibration.cal[robotName] then
   walk.headPitchBiasComp = calibration.cal[robotName].headPitchBiasComp;
   print(robotName.." walk parameters loaded")
 end
-k

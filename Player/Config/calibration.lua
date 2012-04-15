@@ -13,6 +13,7 @@ cal["betty"]={
   footYComp = 0,
   kickXComp = 0,
   headPitchComp = 0,
+  armBias={0,0,0,0,0,0},
   pid = 0,
 };
 
@@ -22,6 +23,7 @@ cal["linus"]={
   footYComp = 0,
   kickXComp = 0,
   headPitchComp = 0,
+  armBias={0,0,0,0,0,0},
   pid = 0,
 };
 
@@ -31,8 +33,9 @@ cal["lucy"]={
   footYComp = 0,
   kickXComp = 0,
   headPitchComp = 0,
--- PID firmware setting for lucy
+  armBias={0,0,0,0,0,0},
 
+-- PID firmware setting for lucy
   pid = 1,
 };
 cal["scarface"]={
@@ -41,6 +44,7 @@ cal["scarface"]={
   footYComp = 0,
   kickXComp = 0,
   headPitchComp = 0,
+  armBias={0,0,0,0,0,0},
   pid = 0,
 };
 
@@ -65,6 +69,7 @@ cal["lucy"].footXComp = 0.002;
 cal["lucy"].footYComp = 0.002;
 cal["lucy"].kickXComp = -0.005;
 cal["lucy"].headPitchComp = 0.00;
+cal["lucy"].armBias = vector.new({0,-15,0,0,-3,0}) * math.pi/180;
 
 cal["scarface"].servoBias={0,0,0,0,0,0,0,0,0,-9,-4,0};
 cal["scarface"].footXComp = -0.005;

@@ -106,6 +106,8 @@ function entry()
 
   -- disable joint encoder reading
   Body.set_syncread_enable(0);
+  qLHipRollCompensation,qRHipRollCompensation= 0,0;
+
 end
 
 function update()
@@ -169,16 +171,15 @@ function update()
     elseif kickStepType==3 then
       qLHipRollCompensation= hipRollCompensation*ph;
     end
-  elseif kickState == #kickDef-1 then --Shift step
-    if kickStepType==2 then --
+  elseif kickState == #kickDef then --Final step
+    if qRHipRollCompensation<0 then
       qRHipRollCompensation= -hipRollCompensation*(1-ph);
-    elseif kickStepType==3 then
+    elseif qLHipRollCompensation>0 then
       qLHipRollCompensation= hipRollCompensation*(1-ph);
     end
   end
 
   if kickStepType==1 then
-    qLHipRollCompensation,qRHipRollCompensation= 0,0;
     uBody=util.se2_interpolate(ph,uBody1,kickDef[kickState][3]);	
     if #kickDef[kickState]>=4 then
       zBody=ph*kickDef[kickState][4] + (1-ph)*zBody1;

@@ -60,7 +60,7 @@ hardnessLeg=Config.kick.hardnessLeg;
 
 kickState=1;
 
-hipRollCompensation = Config.kick.hipRollCompensation or 3*math.pi/180;
+hipRollCompensation = Config.kick.hipRollCompensation or 5*math.pi/180;
 
 pTorso = vector.new({0, 0, bodyHeight, 0,bodyTilt,0});
 pLLeg=vector.zeros(6);

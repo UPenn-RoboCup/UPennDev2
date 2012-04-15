@@ -135,7 +135,6 @@ else -- For new, PID firmware with 14-bit precision
   }
 
   servo.moveRange=vector.ones(nJoint)*360*math.pi/180;
-  servo.armBias = vector.new({0,15,0,0,-45,0}) * math.pi/180 * servo.steps[1]/servo.moveRange[1];
   --[[ For aux
   servo.moveRange[21] = 300;
   servo.steps[21] = 1024;

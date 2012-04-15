@@ -20,6 +20,7 @@ dirReverse = Config.servo.dirReverse;
 posZero=Config.servo.posZero;
 gyrZero=Config.gyro.zero;
 legBias=Config.walk.servoBias;
+armBias=Config.servo.armBias;
 idMap = Config.servo.idMap;
 nJoint = #idMap;
 scale={};
@@ -131,6 +132,15 @@ function entry()
       actuator.d_param[i] = Config.servo.d_param[i];
     end
   end
+
+  --Setting arm bias
+  for i=1,3 do
+    actuator.offset[i+2]=armBias[i];
+  end
+  for i=4,6 do
+    actuator.offset[i+14]=armBias[i];
+  end
+
 end
 
 -- Setup CArray mappings into shared memory

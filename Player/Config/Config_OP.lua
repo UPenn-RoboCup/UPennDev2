@@ -13,12 +13,13 @@ function loadconfig(configName)
   end
 end
 
---Simplified setup for distribution
+--Robot CFG should be loaded first to set PID values
+loadconfig('Robot/Config_OP_Robot') 
+
 loadconfig('Walk/Config_OP_Walk')
 loadconfig('World/Config_OP_World')
 loadconfig('Kick/Config_OP_Kick')
 loadconfig('Vision/Config_OP_Vision')
-loadconfig('Robot/Config_OP_Robot')
 --Location Specific Camera Parameters--
 loadconfig('Vision/Config_OP_Camera_Grasp')
 

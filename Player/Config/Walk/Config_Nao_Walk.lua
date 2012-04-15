@@ -127,3 +127,6 @@ walk.velDelta={0.03,0.015,0.15}
 walk.tStep = 0.48;
 walk.hipRollCompensation = 3*math.pi/180;
 walk.phSingle={0.2,0.8};
+walk.supportY= 0.005;
+walk.velLimitY={-.03,.03};
+

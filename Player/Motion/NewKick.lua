@@ -141,7 +141,7 @@ function update()
 
     ph=0;
     t0=Body.get_time();
-    if Config.servo.pid==0 then
+    if Config.servo and Config.servo.pid and Config.servo.pid==0 then
       if supportLeg ==0 then --left support 
         Body.set_lleg_slope(16);
         Body.set_rleg_slope(32);

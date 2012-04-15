@@ -57,7 +57,7 @@ fsm.head = {'GeneralPlayer'};
 --fsm.body = {'SimplePlayer'};
 fsm.body = {'GeneralPlayer'};
 
---Behavior flags, should be defined in FSM Configs but can be overrided here
+--Behavior flags, should be defined in FSM Configs but can be overridden here
 fsm.playMode = 3; --1 for demo, 2 for orbit, 3 for direct approach
 fsm.enable_obstacle_detection = 1;
 fsm.wait_kickoff = 1;
@@ -70,6 +70,13 @@ fsm.playMode = 1; --1 for demo, 2 for orbit, 3 for direct approach
 fsm.playMode = 2; --1 for demo, 2 for orbit, 3 for direct approach
 --]]
 
+fsm.playMode = 3; --1 for demo, 2 for orbit, 3 for direct approach
+fsm.enable_walkkick = 0;
+fsm.enable_sidekick = 0;
+
+--FAST APPROACH TEST
+fsm.fast_approach = 1;
+fsm.bodyApproach.maxStep = 0.06;
 
 --[[
 --Enable these for penalty-kick
@@ -113,7 +120,7 @@ stance.dpLimitSit=vector.new({.1,.01,.06,.1,.3,.1});
 head = {};
 head.camOffsetZ = 0.37;
 head.pitchMin = -35*math.pi/180;
-head.pitchMax = 68*math.pi/180;
+head.pitchMax = 58*math.pi/180;
 head.yawMin = -90*math.pi/180;
 head.yawMax = 90*math.pi/180;
 head.cameraPos = {{0.05, 0.0, 0.05}} --OP, spec value, may need to be recalibrated

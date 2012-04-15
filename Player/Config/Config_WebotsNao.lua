@@ -77,7 +77,8 @@ fsm.head = {'NaoDemo'};
 --Behavior flags, should be defined in FSM Configs but can be overrided here
 fsm.enable_obstacle_detection = 1;
 fsm.kickoff_wait_enable = 0;
-fsm.playMode = 3; --1 for demo, 2 for orbit, 3 for direct approach
+--fsm.playMode = 3; --1 for demo, 2 for orbit, 3 for direct approach
+fsm.playMode = 2; --1 for demo, 2 for orbit, 3 for direct approach
 fsm.enable_walkkick = 1;
 fsm.enable_sidekick = 1;
 

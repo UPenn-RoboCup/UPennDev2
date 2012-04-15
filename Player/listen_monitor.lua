@@ -55,6 +55,10 @@ yuyv3_t_full = unix.time();
 labelA_t_full = unix.time();
 labelB_t_full = unix.time();
 data_t_full = unix.time();
+fps_count=0;
+fps_interval = 15;
+yuyv_type=0;
+
 
 Comm.init(Config.dev.ip_wired,111111);
 print('Receiving from',Config.dev.ip_wired);
@@ -100,7 +104,10 @@ function push_yuyv(obj)
   --Because the image will be broken anyway if packet loss occurs
 
   if (check_flag(yuyv_flag) == name.parts and name.partnum==name.parts ) then
-    print("full yuyv\t"..1/(unix.time() - yuyv_t_full).." fps" );
+    fps_count=fps_count+1;
+    if fps_count%fps_interval ==0 then
+      print("full yuyv\t"..1/(unix.time() - yuyv_t_full).." fps" );
+    end
     yuyv_t_full = unix.time();
     local yuyv_str = "";
       for i = 1 , name.parts do --fixed
@@ -136,15 +143,17 @@ function push_yuyv2(obj)
   end
 --]]
   yuyv2_part_last = name.partnum;
-
-
   yuyv2_flag[name.partnum] = 1;
   yuyv2_all[name.partnum] = obj.data;
 
   --Just push the image after all segments are filled at the first scan
   --Because the image will be broken anyway if packet loss occurs
   if (check_flag(yuyv2_flag) == name.parts and name.partnum==name.parts ) then
-     print("yuyv2\t"..1/(unix.time() - yuyv2_t_full).." fps" );
+     fps_count=fps_count+1;
+     if fps_count%fps_interval ==0 then
+       print("yuyv2\t"..1/(unix.time() - yuyv2_t_full).." fps" );
+     end
+
      yuyv2_t_full = unix.time();
 
      local yuyv2_str = "";
@@ -160,10 +169,11 @@ end
 function push_yuyv3(obj)
 -- 1/4 size, we don't need to divide it 
 
---  print("yuyv3\t"..1/(unix.time() - yuyv3_t_full).." fps" );
---  yuyv3_t_full = unix.time();
-
-
+  fps_count=fps_count+1;
+  if fps_count%fps_interval ==0 then
+     print("yuyv3\t"..1/(unix.time() - yuyv3_t_full).." fps" );
+  end
+  yuyv3_t_full = unix.time();
   yuyv3 = cutil.test_array();
   name = parse_name(obj.name);
   height= string.len(obj.data)/obj.width/4;
@@ -230,25 +240,35 @@ while( true ) do
 
   msg = Comm.receive();
   if( msg ) then
+
     local obj = serialization.deserialize(msg);
     if( obj.arr ) then
 	if ( string.find(obj.arr.name,'yuyv') ) then 
  	  push_yuyv(obj.arr);
-	  vcm.set_image_yuyvType(0);
+	  yuyv_type=0;
+
 	elseif ( string.find(obj.arr.name,'ysub2') ) then 
  	  push_yuyv2(obj.arr);
-	  vcm.set_image_yuyvType(1);
+	  yuyv_type=1;
+
 	elseif ( string.find(obj.arr.name,'ysub4') ) then 
  	  push_yuyv3(obj.arr);
-	  vcm.set_image_yuyvType(2);
+	  yuyv_type=2;
+
+--[[
 	elseif ( string.find(obj.arr.name,'labelA') ) then 
 	  push_labelA(obj.arr);
 	elseif ( string.find(obj.arr.name,'labelB') ) then 
 	  push_labelB(obj.arr);
+--]]
 	end
+
     else
 	push_data(obj);
     end
   end
+
+--  vcm.set_camera_yuyvType(yuyv_type);
   unix.usleep(1E6*0.005);
+
 end

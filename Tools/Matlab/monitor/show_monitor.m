@@ -154,7 +154,9 @@ function h=show_monitor()
       disp('Empty monitor struct!'); return;
     end
 
-    yuyv_type = r_mon.yuyv_type();
+    yuyv_type = r_mon.yuyv_type
+
+
 
     % NOW AUTO-SWITCH YUYV TYPE
     if MONITOR.enable1
@@ -176,6 +178,15 @@ function h=show_monitor()
           plot_overlay(r_mon,2*MONITOR.enable1,MONITOR.enable0);
         else
           plot_overlay(r_mon,1*MONITOR.enable1,MONITOR.enable0);
+        end
+      end
+
+      if MONITOR.logging
+        LOGGER.log_data(yuyv + 0,r_mon);
+        logstr=sprintf('%d/100',LOGGER.log_count);
+        set(MONITOR.hButton11,'String', logstr);
+        if LOGGER.log_count==100 
+          LOGGER.save_log();
         end
       end
     end
@@ -228,15 +239,6 @@ function h=show_monitor()
 
     [infostr textcolor]=robot_info(r_struct,r_mon,2);
     set(MONITOR.hInfoText,'String',infostr);
-
-    if MONITOR.logging
-      LOGGER.log_data(yuyv + 0,labelA,r_mon);
-      logstr=sprintf('%d/100',LOGGER.log_count);
-      set(MONITOR.hButton11,'String', logstr);
-      if LOGGER.log_count==100 
-        LOGGER.save_log();
-      end
-    end
 
   end
 

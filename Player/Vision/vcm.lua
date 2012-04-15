@@ -50,6 +50,10 @@ shared.image.yuyv2 = 2*Config.camera.width*Config.camera.height/2/2;
 --Downsampled yuyv 2
 shared.image.yuyv3 = 2*Config.camera.width*Config.camera.height/4/4; 
 
+--Used for monitor to auto-switch yuyv mode
+shared.image.yuyvType = vector.zeros(1);
+
+
 shared.image.width = vector.zeros(1);
 shared.image.height = vector.zeros(1);
 

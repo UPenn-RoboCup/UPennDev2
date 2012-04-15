@@ -154,15 +154,18 @@ function h=show_monitor()
       disp('Empty monitor struct!'); return;
     end
 
+    yuyv_type = r_mon.yuyv_type();
+
+    % NOW AUTO-SWITCH YUYV TYPE
     if MONITOR.enable1
       MONITOR.h1 = subplot(4,5,[1 2 6 7]);
-      if MONITOR.enable1==1
+      if yuyv_type==0
         yuyv = robots{playerNumber,teamNumber}.get_yuyv();
 	plot_yuyv(yuyv);
-      elseif MONITOR.enable1==2
+      elseif yuyv_type==1
         yuyv = robots{playerNumber,teamNumber}.get_yuyv2();
 	plot_yuyv(yuyv);
-      elseif MONITOR.enable1==3
+      else
         yuyv = robots{playerNumber,teamNumber}.get_yuyv3();
 	plot_yuyv(yuyv);
       end

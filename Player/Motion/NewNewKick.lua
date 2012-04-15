@@ -53,7 +53,7 @@ hardnessArm=Config.kick.hardnessArm;
 hardnessLeg=Config.kick.hardnessLeg;
 
 bodyHeight = Config.walk.bodyHeight;
-bodyTilt = Config.walk.bodyTilt;
+bodyTilt = Config.walk.bodyTilt or 0;
 footX = mcm.get_footX();
 footY = Config.walk.footY;
 supportX = Config.walk.supportX;

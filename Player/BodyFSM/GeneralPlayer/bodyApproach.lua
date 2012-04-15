@@ -106,8 +106,6 @@ function update()
   --]]
 
 
-
-
   if t-ball.t<0.2 and ball_tracking==false then
 --    HeadFSM.sm:set_state('headTrack');
     ball_tracking=true;
@@ -141,8 +139,11 @@ function update()
 
   --when the ball is on the side, backstep a bit
   local wAngle = math.atan2 (vStep[2], vStep[1]);
-  if math.abs(wAngle) > 70*math.pi/180 then
+  if math.abs(wAngle) > 45*math.pi/180 then
     vStep[1]=vStep[1] - 0.03;
+  else
+    --Otherwise, don't make robot backstep
+    vStep[1]=math.max(0,vStep[1]);
   end
  
   walk.set_velocity(vStep[1],vStep[2],vStep[3]);

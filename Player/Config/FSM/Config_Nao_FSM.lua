@@ -117,13 +117,13 @@ fsm.bodyKick.tStartWaitMax = 1.0;
 fsm.bodyKick.thGyroMag = 100; 
 
 --ball position checking params
-fsm.bodyKick.kickTargetFront = {0.17,0.045};
+fsm.bodyKick.kickTargetFront = {0.21,0.045};
 
 --For kicking to the left
-fsm.bodyKick.kickTargetSide = {0.17,0.01};
+fsm.bodyKick.kickTargetSide = {0.21,0.01};
 
 --Bal position threshold
-fsm.bodyKick.kickTh = {0.04,0.025};
+fsm.bodyKick.kickTh = {0.04,0.04};
 
 --delay for camera following the ball
 fsm.bodyKick.tFollowDelay = 2.2; 

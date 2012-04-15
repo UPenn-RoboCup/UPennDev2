@@ -255,12 +255,10 @@ while( true ) do
  	  push_yuyv3(obj.arr);
 	  yuyv_type=2;
 
---[[
 	elseif ( string.find(obj.arr.name,'labelA') ) then 
 	  push_labelA(obj.arr);
 	elseif ( string.find(obj.arr.name,'labelB') ) then 
 	  push_labelB(obj.arr);
---]]
 	end
 
     else

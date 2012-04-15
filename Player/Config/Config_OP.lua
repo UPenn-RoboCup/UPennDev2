@@ -44,12 +44,14 @@ game.teamNumber = 18;
 game.playerID = parse_hostname.get_player_id();
 game.robotID = game.playerID;
 game.teamColor = parse_hostname.get_team_color();
+game.role = game.playerID-1; 
 game.nPlayers = 5;
 --------------------
 
---Default role is based on player ID
+--Default color 
+game.teamColor = 0; --Blue team
+--game.teamColor = 1; --Red team
 --0 for goalie, 1 for attacker, 2 for defender
-game.role = game.playerID-1; --default attacker
 game.role = 1;
 
 --FSM and behavior settings
@@ -67,7 +69,7 @@ fsm.playMode = 3; --1 for demo, 2 for orbit, 3 for direct approach
 fsm.enable_walkkick = 1;
 fsm.enable_sidekick = 1;
 
-fsm.playMode = 1; --1 for demo, 2 for orbit, 3 for direct approach
+fsm.playMode = 2; --1 for demo, 2 for orbit, 3 for direct approach
 fsm.enable_walkkick = 1;
 fsm.enable_sidekick = 0;
 

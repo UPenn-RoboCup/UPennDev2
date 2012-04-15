@@ -88,10 +88,7 @@ function h=show_monitor()
 
 
       MONITOR.hButton0=uicontrol('Style','pushbutton','String','Overlay 1',...
-	'Units','Normalized', 'Position',[.02 .87 .07 .07],'Callback',@button0);
-
-      MONITOR.hButton1=uicontrol('Style','pushbutton','String','YUYV1',...
-	'Units','Normalized', 'Position',[.02 .8 .07 .07],'Callback',@button1);
+	'Units','Normalized', 'Position',[.02 .80 .07 .07],'Callback',@button0);
 
       MONITOR.hButton2=uicontrol('Style','pushbutton','String','LABEL A',...
 	'Units','Normalized', 'Position',[.02 .73 .07 .07],'Callback',@button2);
@@ -172,9 +169,15 @@ function h=show_monitor()
       %webots use non-subsampled label (2x size of yuyv)
       if MONITOR.enable0
         if MONITOR.is_webots
-          plot_overlay(r_mon,2*MONITOR.enable1,MONITOR.enable0);
+          plot_overlay(r_mon,2*MONITOR.enable1,1);
         else
-          plot_overlay(r_mon,1*MONITOR.enable1,MONITOR.enable0);
+	  if yuyv_type==0
+            plot_overlay(r_mon,1,1);
+	  elseif yuyv_type==1
+            plot_overlay(r_mon,2,1);
+	  else
+            plot_overlay(r_mon,4,1);
+	  end
         end
       end
 

@@ -16,7 +16,8 @@ end
 --Robot CFG should be loaded first to set PID values
 loadconfig('Robot/Config_OP_Robot') 
 
-loadconfig('Walk/Config_OP_Walk')
+--loadconfig('Walk/Config_OP_Walk')
+loadconfig('Walk/Config_OP_Walk_Basic')
 loadconfig('World/Config_OP_World')
 loadconfig('Kick/Config_OP_Kick')
 loadconfig('Vision/Config_OP_Vision')
@@ -32,8 +33,8 @@ dev.ip_wired = '192.168.123.255';
 dev.ip_wireless = '192.168.1.255';
 dev.game_control='OPGameControl';
 dev.team='TeamNSL';
-dev.walk='BasicWalk';
---dev.walk='NewNewNewWalk';
+--dev.walk='BasicWalk';  --should be updated
+dev.walk='NewNewNewWalk';
 dev.kick = 'NewNewKick'
 
 -- Game Parameters
@@ -66,10 +67,9 @@ fsm.playMode = 3; --1 for demo, 2 for orbit, 3 for direct approach
 fsm.enable_walkkick = 1;
 fsm.enable_sidekick = 1;
 
-fsm.playMode = 2; --1 for demo, 2 for orbit, 3 for direct approach
-fsm.enable_walkkick = 0;
+fsm.playMode = 1; --1 for demo, 2 for orbit, 3 for direct approach
+fsm.enable_walkkick = 1;
 fsm.enable_sidekick = 0;
-
 
 -- Team Parameters
 team = {};

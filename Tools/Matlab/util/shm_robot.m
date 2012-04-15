@@ -231,10 +231,10 @@ global MONITOR %for sending the webots check information
       r.camera = struct('width',width,'height',height,...
 	'bodyHeight',bodyHeight,'bodyTilt',bodyTilt,...
 	'headAngles',headAngles,'rollAngle',rollAngle);
- 
-    %yuyv type info
-      yuyv_type = h.vcmImage.get_yuyvType();
 
+    %yuyv type info
+      r.yuyv_type = h.vcmCamera.get_yuyvType();
+ 
     %Image FOV boundary
           
       fovC=h.vcmImage.get_fovC();

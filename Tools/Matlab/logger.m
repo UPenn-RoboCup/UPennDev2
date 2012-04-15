@@ -15,7 +15,7 @@ function h=logger()
     LOGGER.log_count=0;
   end
 
-  function log_data(yuyv,labelA,r_mon)
+  function log_data(yuyv,r_mon)
     LOGGER.log_count=LOGGER.log_count+1;
     labelAMontage(:,:,1,LOGGER.log_count)=labelA;
     yuyvMontage(:,:,1,LOGGER.log_count)=yuyv;

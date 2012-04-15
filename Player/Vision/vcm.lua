@@ -33,6 +33,9 @@ shared.camera.bodyTilt = vector.zeros(1);
 shared.camera.bodyHeight = vector.zeros(1);
 shared.camera.rollAngle = vector.zeros(1);--how much image is tilted
 
+--Used for monitor to auto-switch yuyv mode
+shared.camera.yuyvType = vector.zeros(1);
+
 shared.image = {};
 shared.image.select = vector.zeros(1);
 shared.image.count = vector.zeros(1);
@@ -49,10 +52,6 @@ shared.image.yuyv = 2*Config.camera.width*Config.camera.height;
 shared.image.yuyv2 = 2*Config.camera.width*Config.camera.height/2/2; 
 --Downsampled yuyv 2
 shared.image.yuyv3 = 2*Config.camera.width*Config.camera.height/4/4; 
-
---Used for monitor to auto-switch yuyv mode
-shared.image.yuyvType = vector.zeros(1);
-
 
 shared.image.width = vector.zeros(1);
 shared.image.height = vector.zeros(1);

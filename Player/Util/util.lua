@@ -145,6 +145,12 @@ function init_shm_segment(fenv, name, shared, shsize)
             if (bytes == nil) then
               return '';
             else
+	      for i=1,#bytes do
+	        if not (bytes[i]>0) then --Testing NaN
+		  print("NaN Detected at string!");
+	          return;
+		end
+	      end
               return string.char(unpack(bytes));
             end
           end

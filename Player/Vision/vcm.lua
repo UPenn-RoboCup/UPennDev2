@@ -35,6 +35,8 @@ shared.camera.rollAngle = vector.zeros(1);--how much image is tilted
 
 --Used for monitor to auto-switch yuyv mode
 shared.camera.yuyvType = vector.zeros(1);
+--Now we use shm to enable broadcasting from test_vision
+shared.camera.broadcast = vector.zeros(1);
 
 shared.image = {};
 shared.image.select = vector.zeros(1);

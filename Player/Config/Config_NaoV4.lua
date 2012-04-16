@@ -13,20 +13,13 @@ function loadconfig(configName)
   end
 end
 
-loadconfig('Walk/Config_Nao_Walk')
+loadconfig('Walk/Config_NaoV4_Walk')
 loadconfig('World/Config_Nao_World')
 loadconfig('Kick/Config_Nao_Kick')
-
-
 loadconfig('Vision/Config_NaoV4_Vision')
---loadconfig('Vision/Config_Nao_Vision')
 
 --Location Specific Camera Parameters--
 loadconfig('Vision/Config_NaoV4_Camera')
---loadconfig('Vision/Config_Nao_Camera_blimp')
-
-
-
 
 
 -- Devive Interface Libraries
@@ -53,22 +46,8 @@ game.nPlayers = 4;
 
 
 -- FSM Parameters
---[[
 fsm = {};
-fsm.game = 'RoboCup';
-if (game.playerID == 1) then
-  fsm.body = {'NaoGoalie'};
-  fsm.head = {'NaoGoalie'};
-else
-  fsm.body = {'NaoPlayer'};
-  fsm.head = {'NaoPlayer'};
-end
---]]
-
---------------------------------------------------------------------
---GeneralPlayer FSM test
-fsm = {};
-loadconfig('FSM/Config_Nao_FSM')--For generalPlayer FSM
+loadconfig('FSM/Config_NaoV4_FSM')
 fsm.game = 'RoboCup';
 fsm.body = {'GeneralPlayer'};
 --fsm.head = {'GeneralPlayer'};
@@ -80,7 +59,8 @@ fsm.wait_kickoff = 0;
 fsm.playMode = 2; --1 for demo, 2 for orbit, 3 for direct approach
 fsm.enable_walkkick = 0;
 fsm.enable_sidekick = 0;
--------------------------------------------------------------------
+
+fsm.playMode = 1; --1 for demo, 2 for orbit, 3 for direct approach
 
 -- Team Parameters
 
@@ -97,21 +77,20 @@ head.pitchMin = -35*math.pi/180;
 head.pitchMax = 30*math.pi/180;
 head.yawMin = -120*math.pi/180;
 head.yawMax = 120*math.pi/180;
-head.cameraPos = {{0.05390, 0.0, 0.06790},
-                  {0.04880, 0.0, 0.02381}}; 
-head.cameraAngle = {{0.0, 0.0, 0.0},
-                    {0.0, 40*math.pi/180, 0.0}};
+--Update with naoV4 camera values
+head.cameraPos = {{0.05871, 0.0, 0.06364},
+                  {0.05071, 0.0, 0.01774}}; 
+head.cameraAngle = {{0.0, 1.2*math.pi/180, 0.0},
+                    {0.0, 39.7*math.pi/180, 0.0}};
+
 head.neckZ=0.14; --From CoM to neck joint
 head.neckX=0;  
 head.bodyTilt = 0;
 
 -- keyframe files
-
 km = {};
-km.kick_right = 'km_Nao_KickForwardRight.lua';
-km.kick_left = 'km_Nao_KickForwardLeft.lua';
-km.standup_front = 'km_Nao_StandupFromFrontFaster.lua';
-km.standup_back = 'km_Nao_StandupFromBackFasterNew.lua';
+km.standup_front = 'km_NaoV4_StandupFromFront.lua';
+km.standup_back = 'km_NaoV4_StandupFromBack.lua';
 
 --Sit/stand stance parameters
 stance={};

@@ -56,7 +56,7 @@ if(Config.platform.name == 'OP') then
 end
 
 --TODO: enable new nao specific
-newnao = false; --Turn this on for new naos (run main code outside naoqi)
+newnao = true;
 
 
 getch.enableblock(1);

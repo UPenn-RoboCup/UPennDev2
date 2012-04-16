@@ -121,6 +121,14 @@ fsm.bodyKick.tStartWait = 0.5;
 fsm.bodyKick.tStartWaitMax = 1.0;
 fsm.bodyKick.thGyroMag = 100; 
 
+--Longer wait (until we set gyro values correctly)
+fsm.bodyKick.tStartWait = 1.0;
+fsm.bodyKick.tStartWaitMax = 1.5;
+
+
+
+
+
 --ball position checking params
 fsm.bodyKick.kickTargetFront = {0.12,0.035};
 

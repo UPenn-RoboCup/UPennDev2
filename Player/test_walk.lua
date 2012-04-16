@@ -50,7 +50,7 @@ end
 
 --TODO: enable new nao specific
 newnao = false; --Turn this on for new naos (run main code outside naoqi)
-
+newnao = true;
 
 getch.enableblock(1);
 unix.usleep(1E6*1.0);

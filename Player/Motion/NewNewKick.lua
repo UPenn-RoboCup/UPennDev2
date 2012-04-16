@@ -145,14 +145,12 @@ function update()
 
     ph=0;
     t0=Body.get_time();
-    if Config.servo and Config.servo.pid and Config.servo.pid==0 then
-      if supportLeg ==0 then --left support 
-        Body.set_lleg_slope(16);
-        Body.set_rleg_slope(32);
-      else --right support
-        Body.set_rleg_slope(16);
-        Body.set_lleg_slope(32);
-      end
+    if supportLeg ==0 then --left support 
+        Body.set_lleg_slope(1);
+        Body.set_rleg_slope(0);
+    else --right support
+        Body.set_rleg_slope(1);
+        Body.set_lleg_slope(0);
     end
   end
 
@@ -314,8 +312,8 @@ function exit()
   print("Kick exit");
   active = false;
 
-  Body.set_lleg_slope(32);
-  Body.set_rleg_slope(32);
+  Body.set_lleg_slope(0);
+  Body.set_rleg_slope(0);
 
   walk.start();
 --  step.stepqueue={};

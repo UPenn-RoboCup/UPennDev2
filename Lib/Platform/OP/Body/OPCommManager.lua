@@ -73,8 +73,9 @@ function shm_init()
   actuatorShm.led = vector.zeros(1);
 
   actuatorShm.torqueEnable = vector.zeros(1); --Global torque on.off
-  actuatorShm.slope=vector.ones(nJoint)*32; --default compliance slope is 32
-  actuatorShm.slopeChanged=vector.ones(1);  --set compliance once
+  -- Gain 0: normal gain 1: Kick gain (more stiff)
+  actuatorShm.gain=vector.zeros(nJoint); 
+  actuatorShm.gainChanged=vector.ones(1);  --set compliance once
   actuatorShm.velocityChanged=vector.zeros(1);
   actuatorShm.hardnessChanged=vector.zeros(1);
   actuatorShm.torqueEnableChanged=vector.zeros(1);
@@ -124,14 +125,7 @@ function entry()
     actuator.bias[i+5]=legBias[i];
   end
 
-  if Config.servo.pid==1 then
-    -- Update PID settings
-    for i=1,nJoint do
-      actuator.p_param[i] = Config.servo.p_param[i];
-      actuator.i_param[i] = Config.servo.i_param[i];
-      actuator.d_param[i] = Config.servo.d_param[i];
-    end
-  end
+  sync_gain(); --Initial PID setting
 
   --Setting arm bias
   for i=1,3 do
@@ -213,7 +207,7 @@ end
 --Servo feedback param for servomotors
 --Used to stiffen support foot during kicking
 
-function sync_slope()
+function sync_gain()
   if Config.servo.pid==0 then --Old firmware.. compliance slope
     --28,29: Compliance slope positive / negative
     local addr={28,29};
@@ -223,15 +217,15 @@ function sync_slope()
     for i = 1,#idMap do
       n = n+1;
       ids[n] = idMap[i];
-      data[n] = actuator.slope[i];
+      if actuator.gain[i]>0 then
+        data[n] = Config.servo.slope_param[2];
+      else
+        data[n] = Config.servo.slope_param[1];
+      end
     end
     Dynamixel.sync_write_byte(ids, addr[1], data);
     Dynamixel.sync_write_byte(ids, addr[2], data);
   else --New firmware: PID parameters
-    -- P: 26, I: 27, D: 28
-    -- local addr={26,27,28};
-    --CORRECTED according to newest firmware
-
     -- P: 28, I: 27, D: 26
     local addr={28,27,26};
 
@@ -243,14 +237,17 @@ function sync_slope()
     for i = 1,#idMap do
       n = n+1;
       ids[n] = idMap[i];
-      data_p[n] = actuator.p_param[i];
-      data_i[n] = actuator.i_param[i];
-      data_d[n] = actuator.d_param[i];
+      if actuator.gain[i]>0 then
+        data_p[n] = Config.servo.pid_param[2][1];
+        data_i[n] = Config.servo.pid_param[2][2];
+        data_d[n] = Config.servo.pid_param[2][3];
+      else
+        data_p[n] = Config.servo.pid_param[1][1];
+        data_i[n] = Config.servo.pid_param[1][2];
+        data_d[n] = Config.servo.pid_param[1][3];
+      end
     end
-
-    --print("P gain:",unpack(data_p))
     Dynamixel.sync_write_byte(ids, addr[1], data_p);
-    --SJ: for whatever reason, setting I or D values kills the servo
     Dynamixel.sync_write_byte(ids, addr[2], data_i);
     Dynamixel.sync_write_byte(ids, addr[3], data_d);
   end
@@ -459,9 +456,9 @@ function update()
     unix.usleep(100);
     actuator.hardnessChanged[1]=0;
   end
-  if actuator.slopeChanged[1]==1 then
-    sync_slope();
-    actuator.slopeChanged[1]=0;
+  if actuator.gainChanged[1]==1 then
+    sync_gain();
+    actuator.gainChanged[1]=0;
     unix.usleep(100);
   end
   if actuator.velocityChanged[1]==1 then

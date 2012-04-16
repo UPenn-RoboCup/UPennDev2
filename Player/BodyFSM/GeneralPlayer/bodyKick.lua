@@ -117,7 +117,7 @@ function check_ball_pos()
   print("Ball pos threshold:",unpack(kickTh))
   print("Ball seen: %.f sec ago",t-ball.t);
 
-  if math.abs(ballErr[1])<kickTh[1] and
+  if ballErr[1]<kickTh[1] and --We don't care if ball is too close
     math.abs(ballErr[2])<kickTh[2] and
     (t - ball.t <0.5) then
     return true;

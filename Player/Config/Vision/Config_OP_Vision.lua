@@ -78,3 +78,13 @@ vision.goal.th_min_area_unknown_post = 200;
 vision.goal.use_centerpost = 1;
 vision.goal.check_for_ground = 1;
 
+vision.line={};
+vision.line.max_width = 16;
+vision.line.connect_th = 1.4;
+vision.line.max_gap=0;
+vision.line.min_length=10;
+
+vision.corner={};
+vision.corner.dist_threshold = 30;
+vision.corner.length_threshold = 6;
+vision.corner.min_center_dist = 1.5;

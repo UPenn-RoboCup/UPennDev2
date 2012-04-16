@@ -8,6 +8,7 @@ require('wcm')
 require('Config')
 require('Team')
 require('util')
+require('walk')
 
 t0 = 0;
 maxStep1 = Config.fsm.bodyPosition.maxStep;
@@ -23,6 +24,7 @@ rOrbit= Config.fsm.bodyPosition.rOrbit;
 
 thClose = Config.fsm.bodyPosition.thClose;
 rClose= Config.fsm.bodyPosition.rClose;
+fast_approach=Config.fsm.fast_approach or 0;
 
 function entry()
   print(_NAME.." entry");
@@ -52,6 +54,28 @@ function update()
   ball=wcm.get_ball();
   pose=wcm.get_pose();
 
+  --Current cordinate origin: midpoint of uLeft and uRight
+  --Calculate ball position from future origin
+  --Assuming we stop at next step
+  if fast_approach ==1 then
+    uLeft = walk.uLeft;
+    uRight = walk.uRight;
+    uFoot = util.se2_interpolate(0.5,uLeft,uRight); --Current origin 
+    if walk.supportLeg ==0 then --left support 
+      uRight2 = walk.uRight2;
+      uLeft2 = util.pose_global({0,2*walk.footY,0},uRight2);
+    else --Right support
+      uLeft2 = walk.uLeft2;
+      uRight2 = util.pose_global({0,-2*walk.footY,0},uLeft2);
+    end
+    uFoot2 = util.se2_interpolate(0.5,uLeft2,uRight2); --Projected origin 
+    uMovement = util.pose_relative(uFoot2,uFoot);
+    uBall2 = util.pose_relative({ball.x,ball.y,0},uMovement);
+    ball.x=uBall2[1];
+    ball.y=uBall2[2];
+  else
+  end
+
   ballR = math.sqrt(ball.x^2 + ball.y^2);
 
   ballxy=vector.new( {ball.x,ball.y,0} );
@@ -68,7 +92,10 @@ function update()
   angle1=util.mod_angle(aGoal-aBall);
 
   role = gcm.get_team_role();
-  if (role == 2) then
+  --Force attacker for demo code
+  if Config.fsm.playMode==1 then role=1; end
+
+   if (role == 2) then
     homePose = getDefenderHomePose();
   elseif (role==3) then
     homePose = getSupporterHomePose();
@@ -91,14 +118,30 @@ function update()
 
   tBall=0.5;
 
+  if Config.fsm.playMode~=3 then
+    if ballR<rClose then
+      print("bodyPosition ballClose")
+      return "ballClose";
+    end
+  end
+
+  if walk.ph>0.85 then
+    print(string.format("position error: %.3f %.3f %d\n",
+	homeRelative[1],homeRelative[2],homeRelative[3]*180/math.pi))
+
+    print("ballR:",ballR);
+
+  end
+
+
   if math.abs(homeRelative[1])<thClose[1] and
     math.abs(homeRelative[2])<thClose[2] and
     math.abs(homeRelative[3])<thClose[3] and
     ballR<rClose and
     t-ball.t<tBall then
       print("bodyPosition done")
---      return "done";
-      return "dribble"; --for test
+      return "done";
+--      return "dribble"; --for test
   end
 end
 
@@ -165,6 +208,16 @@ end
 
 function getAttackerHomePose()
 
+  --Direct approach 
+  if Config.fsm.playMode~=3 then
+    local homepose={
+	ballGlobal[1],
+	ballGlobal[2],
+	aBall};
+    return homepose;
+  end
+
+  --Curved approach
   if math.abs(angle1)<math.pi/2 then
     rDist=math.min(rDist1,math.max(rDist2,ballR-rTurn2));
     local homepose={

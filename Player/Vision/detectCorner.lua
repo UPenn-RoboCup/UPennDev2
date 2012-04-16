@@ -3,6 +3,10 @@ module(..., package.seeall);
 require('Config');	-- For Ball and Goal Size
 
 T_thr = 0.15;
+dist_threshold = Config.vision.corner.dist_threshold or 30;
+length_threshold = Config.vision.corner.min_length or 6;
+min_center_dist = Config.vision.corner.min_center_dist or 1.5;
+
 
 
 function get_min_dist_line(x1,y1,x2,y2,x,y)
@@ -115,9 +119,6 @@ function get_line_length(line,i)
   return math.sqrt((xi1-xi2)^2+(yi1-yi2)^2);
 end
 
-min_dist=10;
-min_length=3;
-
 function detect(line)
   --TODO: test line detection
   corner = {};
@@ -150,9 +151,9 @@ function detect(line)
 		"line %d-%d :angle %d mindist %d type %d\n",
 		i,j,ang*180/math.pi, mindist,cornertype));
 
-	if mindist<min_dist and
-	get_line_length(line,i)>min_length and
-	get_line_length(line,j)>min_length then 
+	if mindist<dist_threshold and
+	get_line_length(line,i)>length_threshold and
+	get_line_length(line,j)>length_threshold then 
   	  linepaircount=linepaircount+1;
   	  linepair[linepaircount]={i,j};
 	  linepairvc0[linepaircount]=vc0;
@@ -171,7 +172,8 @@ function detect(line)
   end
 
   best_corner=1;
-  min_corner_dist = 100;
+  min_corner_dist = 999;
+
   --Pick the closest corner
   for i=1,linepaircount do
     vc0=linepairvc0[i];
@@ -214,7 +216,7 @@ function detect(line)
   pose=wcm.get_robot_pose();
   cornerpos = util.pose_global(corner.v,pose);
   center_dist = math.sqrt(cornerpos[1]^2+cornerpos[2]^2);
-  if center_dist < 1.5 then     
+  if center_dist < min_center_dist then     
     vcm.add_debug_message(string.format(
      "Corner: center circle check fail at %.2f\n",center_dist))
     return corner;

@@ -69,9 +69,7 @@ while (loop) do
 			  unpack(vector.new(actuatorShm:get('bias')))
 		    ));
 
-      print(string.format("Battery:\n Head: %.1f %.1f\n Larm: %.1f %.1f %.1f\n Lleg: %.1f %.1f %.1f %.1f %.1f %.1f\n Rleg: %.1f %.1f %.1f %.1f %.1f %.1f\n Rarm: %.1f %.1f %.1f\n",
-			  unpack(vector.new(sensorShm:get('battery'))/10)
-		    ));
+      print(string.format("Battery: %.1f V\n", sensorShm:get('battery')/10));
 
       print(string.format("Temp:\n Head: %.1f %.1f\n Larm: %.1f %.1f %.1f\n Lleg: %.1f %.1f %.1f %.1f %.1f %.1f\n Rleg: %.1f %.1f %.1f %.1f %.1f %.1f\n Rarm: %.1f %.1f %.1f\n",
 			  unpack(vector.new(sensorShm:get('temperature')))

@@ -6,7 +6,6 @@ require('vector')
 require('Config')
 require('wcm')
 
-demo_behavior = 1;
 function cycle_behavior()
   demo_behavior = demo_behavior%4 + 1;
 
@@ -27,6 +26,12 @@ function cycle_behavior()
     kickDir=2;
     kickType=2;
   end
+end
+
+--Initial kick for demo 
+if Config.fsm.playMode==1 then 
+  demo_behavior = 0;
+  cycle_behavior();
 end
 
 function update()

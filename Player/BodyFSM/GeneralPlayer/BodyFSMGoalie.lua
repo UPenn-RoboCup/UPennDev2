@@ -16,7 +16,6 @@ require('bodyWalkKick')
 require('bodyOrbit')
 require('bodyGotoCenter')
 require('bodyPosition')
-require('bodyPositionSimple')
 require('bodyObstacle')
 require('bodyObstacleAvoid')
 
@@ -36,7 +35,6 @@ sm:add_state(bodyWalkKick);
 sm:add_state(bodyOrbit);
 sm:add_state(bodyGotoCenter);
 sm:add_state(bodyPosition);
-sm:add_state(bodyPositionSimple);
 sm:add_state(bodyObstacle);
 sm:add_state(bodyObstacleAvoid);
 
@@ -68,6 +66,7 @@ sm:set_transition(bodyApproach, 'kick', bodyKick);
 sm:set_transition(bodyApproach, 'walkkick', bodyWalkKick);
 
 sm:set_transition(bodyKick, 'done', bodyPositionGoalie);
+sm:set_transition(bodyKick, 'timeout', bodyPositionGoalie);
 sm:set_transition(bodyKick, 'reposition', bodyApproach);
 sm:set_transition(bodyWalkKick, 'done', bodyPositionGoalie);
 

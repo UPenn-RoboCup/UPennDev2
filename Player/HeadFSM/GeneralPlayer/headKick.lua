@@ -7,6 +7,7 @@ module(..., package.seeall);
 require('Body')
 require('wcm')
 require('mcm')
+require('HeadTransform');
 
 t0 = 0;
 
@@ -24,7 +25,8 @@ function entry()
 end
 
 function update()
-  pitchBias=vcm.get_camera_pitchBias(); --Robot specific head angle bias
+  pitchBias =  mcm.get_headPitchBias();--robot specific head bias
+
   local t = Body.get_time();
   local ball = wcm.get_ball();
 

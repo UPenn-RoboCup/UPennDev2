@@ -24,13 +24,16 @@ Comm.init(Config.dev.ip_wired,111111);
 print('Sending to',Config.dev.ip_wired);
 
 -- Add a little delay between packet sending
-pktDelay = 500; -- time in us
+-- pktDelay = 500; -- time in us
+-- Empirical value for keeping all packets intact
+pktDelay = 1E6 * 0.001; --For image and colortable
+pktDelay2 = 1E6 * 0.001; --For info
+imageCount=0;
+
 debug = 0;
 
 subsampling=Config.vision.subsampling or 0;
 subsampling2=Config.vision.subsampling2 or 0;
-
-
 
 function sendB()
   -- labelB --
@@ -106,6 +109,9 @@ function sendImg()
   
   array = serialization.serialize_array2(yuyv, width, height, 
 	'int32', 'yuyv', count);
+--  array = serialization.serialize_array(yuyv, width, height, 
+--	'int32', 'yuyv', count);
+
   sendyuyv = {};
   sendyuyv.team = {};
   sendyuyv.team.number = gcm.get_team_number();
@@ -113,21 +119,23 @@ function sendImg()
 
   local tSerialize=0;
   local tSend=0;  
+  local totalSize=0;
   for i=1,#array do
     sendyuyv.arr = array[i];
     t0 = unix.time();
-    senddata=serialization.serialize(sendyuyv);
+    senddata=serialization.serialize(sendyuyv);     
     t1 = unix.time();
     tSerialize= tSerialize + t1-t0;
     Comm.send(senddata);
     t2 = unix.time();
     tSend=tSend+t2-t1;
+    totalSize=totalSize+#senddata;
 
     -- Need to sleep in order to stop drinking out of firehose
     unix.usleep(pktDelay);
   end
   if debug>0 then
-    print("Image info array num:",#array,"Total size",#senddata*#array);
+    print("Image info array num:",#array,"Total size",totalSize);
     print("Total Serialize time:",#array,"Total",tSerialize);
     print("Total Send time:",tSend);
   end
@@ -140,9 +148,10 @@ function sendImgSub2()
   height = vcm.get_image_height()/2;
   count = vcm.get_image_count();
   
-  array = serialization.serialize_array(yuyv2, width, height, 
+--  array = serialization.serialize_array(yuyv2, width, height, 
+--		'int32', 'ysub2', count);
+  array = serialization.serialize_array2(yuyv2, width, height, 
 		'int32', 'ysub2', count);
-
   sendyuyv2 = {};
   sendyuyv2.team = {};
   sendyuyv2.team.number = gcm.get_team_number();
@@ -150,6 +159,7 @@ function sendImgSub2()
 
   local tSerialize=0;
   local tSend=0;  
+  local totalSize=0;
   for i=1,#array do
     sendyuyv2.arr = array[i];
     t0 = unix.time();
@@ -159,12 +169,14 @@ function sendImgSub2()
     Comm.send(senddata);
     t2 = unix.time();
     tSend=tSend+t2-t1;
+    totalSize=totalSize+#senddata;
 
     -- Need to sleep in order to stop drinking out of firehose
     unix.usleep(pktDelay);
   end
+
   if debug>0 then
-    print("Image2 info array num:",#array,"Total size",#senddata*#array);
+    print("Image2 info array num:",#array,"Total size",totalSize);
     print("Total Serialize time:",#array,"Total",tSerialize);
     print("Total Send time:",tSend);
   end
@@ -208,6 +220,7 @@ end
 
 function update(enable)
   if enable == 0 then return; end
+  if enable == 3 then return; end
 	
   send = {};	
   for shmHandlerkey,shmHandler in pairs(sendShm) do
@@ -234,6 +247,8 @@ function update(enable)
   t1 = unix.time();
   Comm.send(senddata);
   t2 = unix.time();
+  unix.usleep(pktDelay2);
+
   if debug>0 then
     print("SHM Info byte:",#senddata)
     print("Serialize time:",t1-t0);
@@ -242,22 +257,22 @@ function update(enable)
 end
 
 function update_img( enable, imagecount )
-  if(enable==2) then
+  if(enable==1) then
     if subsampling2>0 then
       sendImgSub4();
       sendB();
-    elseif subsampling>0 then
-      sendImgSub2();
-      sendB();
-    else
-      sendA();
     end
-  elseif enable==3 then
+  elseif(enable==2) then
     if subsampling>0 then
       sendImgSub2();
+      sendA();
+      sendB();
     else
       sendImg();
+      sendA();
+      sendB();
     end
+  elseif enable==3 then
+      sendImg();
   end
-
 end

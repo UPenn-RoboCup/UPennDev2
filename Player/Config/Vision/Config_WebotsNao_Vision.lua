@@ -78,3 +78,29 @@ vision.goal.th_min_area_unknown_post = 40;
 
 vision.goal.use_centerpost = 1;
 vision.goal.check_for_ground = 1;
+
+vision.line={};
+vision.line.max_width = 8;
+vision.line.connect_th = 1.4;
+vision.line.max_gap=1;
+vision.line.min_length=3;
+
+vision.corner={};
+vision.corner.dist_threshold = 10;
+vision.corner.length_threshold = 3;
+vision.corner.min_center_dist = 1.5;
+
+--for 40*30 labelB
+vision.robot={};
+vision.robot.width = 40; --labelB width
+vision.robot.map_div = 10; --global map resolution: 1/10 m
+--vision.robot.map_div = 5; --global map resolution: 20cm
+vision.robot.gamma = 0.99;
+vision.robot.gamma_field = 0.95;
+--vision.robot.r_sigma = 8;  --gaussian radius
+vision.robot.r_sigma = 4;  --gaussian radius
+vision.robot.max_r = 4.0;  
+vision.robot.min_r = 0.3;
+vision.robot.min_j = 5; 
+
+

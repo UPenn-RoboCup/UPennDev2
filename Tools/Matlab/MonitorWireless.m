@@ -2,7 +2,7 @@ function MonitorWireless(team,player)
 %-----------------------------------------------------
 %
 %  Monitor for wireless robot team monitoring
-%  Usage:  MonitorWireless(18,2)
+%  Usage:  MonitorWireless
 %
 %-----------------------------------------------------
 
@@ -14,10 +14,9 @@ function MonitorWireless(team,player)
     SHM_DIR='/dev/shm';
   end
 
-  if nargin<2
-    disp('Usage: MonitorWireless(team,player)');
-    return;
-  end
+  team=1;
+  player=1;
+   
 
   tFPS = 4; % Target FPS
   dInterval = 5; %Vision update interval for team view

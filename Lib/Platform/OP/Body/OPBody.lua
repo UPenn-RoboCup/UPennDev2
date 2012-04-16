@@ -195,16 +195,19 @@ function set_lleg_slope(val)
   if (type(val) == "number") then
     val = val*vector.ones(nJointLLeg);
   end
-  set_actuator_slope(val, indexLLeg);
-  set_actuator_slopeChanged(1,1);
+  set_actuator_gain(val, indexLLeg);
+  set_actuator_gainChanged(1,1);
 end
 
 function set_rleg_slope(val)
+  --Now val==0 for regular p gain
+  --    val==1 for stiff p gain (for kicking
+
   if (type(val) == "number") then
     val = val*vector.ones(nJointRLeg);
   end
-  set_actuator_slope(val, indexRLeg);
-  set_actuator_slopeChanged(1,1);
+  set_actuator_gain(val, indexRLeg);
+  set_actuator_gainChanged(1,1);
 end
 
 function set_torque_enable(val)
@@ -259,13 +262,8 @@ function set_indicator_goal(color)
 end
 
 function get_battery_level()
-  --should we use average or minimum value?
   batt=get_sensor_battery();
-  min_batt=1000;
-  for i=1,#batt do
-    if batt[i]>0 and batt[i]<min_batt then min_batt=batt[i];end
-  end
-  return min_batt/10;
+  return batt[1]/10;
 end
 
 function get_change_state()

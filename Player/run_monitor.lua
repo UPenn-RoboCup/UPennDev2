@@ -43,14 +43,14 @@ local tUpdate = t0;
 
 -- Broadcast the images at a lower rate than other data
 local maxFPS = 30;
-local imgFPS = 30;
 
 local maxPeriod = 1.0 / maxFPS;
-local imgRate = math.max( math.floor( maxFPS / imgFPS ), 1);
 
 local broadcast_enable=0;
 
 function update()
+   broadcast_enable = vcm.get_camera_broadcast();
+
   -- Get a keypress
   local str=getch.get();
   if #str>0 then
@@ -58,9 +58,19 @@ function update()
     if byte==string.byte("g") then	--Broadcast selection
       local mymod = 4;
       broadcast_enable = (broadcast_enable+1)%mymod;
+      vcm.set_camera_broadcast(broadcast_enable);
       print("Broadcast:", broadcast_enable);
     end
   end
+
+  if broadcast_enable==1 then 
+    imgRate = 1; --30fps
+  elseif broadcast_enable==2 then 
+    imgRate = 2; --15fps
+  else
+    imgRate = 4; --8fps
+  end
+
   if vcm.get_image_count()>imagecount then
     imagecount=vcm.get_image_count();
     -- Always send non-image data

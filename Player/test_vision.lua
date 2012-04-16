@@ -103,68 +103,6 @@ Config.fsm.playMode=1; --Always demo mode
 fsm.enable_walkkick = 0;
 fsm.enable_sidekick = 0;
 
-
-
-broadcast_enable=0;
-function broadcast2()
-  -- Get a keypress
-  local str=getch.get();
-  if #str>0 then
-    local byte=string.byte(str,1);
-    if byte==string.byte("g") then	--Broadcast selection
-      local mymod = 4;
-      broadcast_enable = (broadcast_enable+1)%mymod;
-      print("Broadcast:", broadcast_enable);
-    end
-  end
-  if vcm.get_image_count()>imagecount then
-    imagecount=vcm.get_image_count();
-    -- Always send non-image data
-    Broadcast.update(broadcast_enable);
-    -- Send image data every so often
-    if( imagecount % imgRate == 0 ) then
-      Broadcast.update_img(broadcast_enable);    
-    end
-    return true;
-  end
-  return false;
-end
-
-
-
-function broadcast()
-  local ncount=20;
-  local t=Body.get_time();
-  if t-tLastBroadcast<maxPeriod then return;end
-  if broadcast_enable==0 then return;end
-  broadcast_count = broadcast_count + 1;
-
-  local tstart = unix.time();
-  -- Always send non-image data
-  Broadcast.update(broadcast_enable);
-  if( broadcast_count % imgRate == 0 ) then
-    Broadcast.update_img(broadcast_enable,imagecount);    
-    imagecount = imagecount + 1;
-  end
-  tPassed = unix.time() - tstart;  -- Sleep in order to get the right FPS
-
---[[
-  print("Broadcast time:",tPassed);
-  -- Display our FPS and broadcast level
-  if (broadcast_count % ncount == 0) then
-    print('fps: '..(ncount / (tstart - tUpdate))..', Level: '..broadcast_enable );
-  end
---]]
-  tLastBroadcast=t;
-
-end
----[[
-function get_headPitchBias()
-  return get_walk_headPitchBiasComp()+headPitchBias;
-end
-
---]]
-
 function process_keyinput()
   --Robot specific head pitch bias
   headPitchBiasComp = 
@@ -262,9 +200,11 @@ function process_keyinput()
       print("foot center to ball pos: ",ball.x,ball.y);      
 
     elseif byte==string.byte("g") then	--Broadcast selection
+      broadcast_enable = vcm.get_camera_broadcast();
       local mymod = 4;
       broadcast_enable = (broadcast_enable+1)%mymod;
       print("\nBroadcast:", broadcast_enable);
+      vcm.set_camera_broadcast(broadcast_enable);
 
     --Left kicks (for camera angle calibration)
     elseif byte==string.byte("3") then	
@@ -352,8 +292,6 @@ function update()
     if bodysm_running>0 then
       BodyFSM.update();
     end
---    broadcast();
-    broadcast2();
   end
   local dcount = 50;
   if (count % 50 == 0) then

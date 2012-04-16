@@ -109,30 +109,18 @@ else -- For new, PID firmware with 14-bit precision
   };
 
   -- PID Parameters
-  servo.p_param={
-    32,32,                --Head
-    16,16,16,             --LArm
-    32,32,32,32,32,32,  --LLeg
-    32,32,32,32,32,32,  --RLeg
-    16,16,16,             --RArm
-  --  21,                 --Aux servo
-  }
-  servo.i_param={
-    0,0,          --Head
-    0,0,0,        --LArm
-    0,0,0,0,0,0,  --LLeg
-    0,0,0,0,0,0,  --RLeg
-    0,0,0,        --RArm
-  --  21,         --Aux servo
-  }
-  servo.d_param={
-    8,8,              --Head
-    16,16,16,         --LArm
-    4,4,4,4,4,4, --LLeg
-    4,4,4,4,4,4, --RLeg
-    16,16,16,         --RArm
-  --  21,             --Aux servo
-  }
+  servo.pid_param={
+	--Regular PID gain
+	{32,0,4},
+	--Kick PID gain
+	{64,0,4},
+  };
+
+  servo.slope_param={
+	32,	--Regular slope
+	16,	--Kick slope
+  };
+  -- SLOPE parameters
 
   servo.moveRange=vector.ones(nJoint)*360*math.pi/180;
   --[[ For aux

@@ -13,12 +13,14 @@ function loadconfig(configName)
   end
 end
 
---Simplified setup for distribution
-loadconfig('Walk/Config_OP_Walk')
+--Robot CFG should be loaded first to set PID values
+loadconfig('Robot/Config_OP_Robot') 
+
+--loadconfig('Walk/Config_OP_Walk')
+loadconfig('Walk/Config_OP_Walk_Basic')
 loadconfig('World/Config_OP_World')
 loadconfig('Kick/Config_OP_Kick')
 loadconfig('Vision/Config_OP_Vision')
-loadconfig('Robot/Config_OP_Robot')
 --Location Specific Camera Parameters--
 loadconfig('Vision/Config_OP_Camera_Grasp')
 
@@ -31,10 +33,9 @@ dev.ip_wired = '192.168.123.255';
 dev.ip_wireless = '192.168.1.255';
 dev.game_control='OPGameControl';
 dev.team='TeamNSL';
---dev.walk='BasicWalk';
---dev.walk='NewNewWalk';
+--dev.walk='BasicWalk';  --should be updated
 dev.walk='NewNewNewWalk';
-dev.kick = 'NewKick'
+dev.kick = 'NewNewKick'
 
 -- Game Parameters
 
@@ -43,12 +44,16 @@ game.teamNumber = 18;
 game.playerID = parse_hostname.get_player_id();
 game.robotID = game.playerID;
 game.teamColor = parse_hostname.get_team_color();
+game.role = game.playerID-1; 
 game.nPlayers = 5;
 --------------------
 
---Default role is based on player ID
+game.playerID = 2;
+
+--Default color 
+game.teamColor = 0; --Blue team
+--game.teamColor = 1; --Red team
 --0 for goalie, 1 for attacker, 2 for defender
-game.role = game.playerID-1; --default attacker
 game.role = 1;
 
 --FSM and behavior settings
@@ -65,6 +70,16 @@ fsm.kickoff_wait_enable = 0;
 fsm.playMode = 3; --1 for demo, 2 for orbit, 3 for direct approach
 fsm.enable_walkkick = 1;
 fsm.enable_sidekick = 1;
+
+fsm.playMode = 1; --1 for demo, 2 for orbit, 3 for direct approach
+fsm.enable_walkkick = 0;
+fsm.enable_sidekick = 0;
+
+
+--FAST APPROACH TEST
+fsm.fast_approach = 1;
+fsm.bodyApproach.maxStep = 0.06;
+
 
 -- Team Parameters
 team = {};

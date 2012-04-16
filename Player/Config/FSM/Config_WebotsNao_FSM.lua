@@ -75,6 +75,16 @@ fsm.bodyPosition.rDist2 = 0.20;
 fsm.bodyPosition.rTurn2 = 0.08; 
 fsm.bodyPosition.rOrbit = 0.60; 
 
+--for nao
+fsm.bodyPosition.rDist1 = 0.45; 
+fsm.bodyPosition.rDist2 = 0.30; 
+fsm.bodyPosition.rTurn2 = 0.16; 
+
+
+
+
+
+
 fsm.bodyPosition.rClose = 0.35; 
 fsm.bodyPosition.thClose = {0.15,0.15,10*math.pi/180};
 fsm.bodyPosition.tLost =  5.0*speedFactor; 

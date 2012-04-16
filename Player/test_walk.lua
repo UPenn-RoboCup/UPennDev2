@@ -48,6 +48,10 @@ if(Config.platform.name == 'OP') then
   Body.set_actuator_command(Config.stance.initangle)
 end
 
+--TODO: enable new nao specific
+newnao = false; --Turn this on for new naos (run main code outside naoqi)
+newnao = true;
+
 getch.enableblock(1);
 unix.usleep(1E6*1.0);
 Body.set_body_hardness(0);
@@ -179,8 +183,10 @@ if (webots) then
 end
 
 --Now both nao and darwin runs this separately
-local tDelay = 0.005 * 1E6; -- Loop every 5ms
-while 1 do
-  update();
-  unix.usleep(tDelay);
+if (darwin) or (newnao) then
+  local tDelay = 0.005 * 1E6; -- Loop every 5ms
+  while 1 do
+    update();
+    unix.usleep(tDelay);
+  end
 end

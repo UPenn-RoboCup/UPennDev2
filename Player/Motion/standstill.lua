@@ -7,22 +7,17 @@ require('walk')
 require('vector')
 require('Transform')
 require('vcm')
+require('mcm')
 
 active = true;
 t0 = 0;
 
-footX = Config.walk.footX or 0;
 footY = Config.walk.footY;
 supportX = Config.walk.supportX;
 bodyHeight = Config.walk.bodyHeight;
 bodyTilt = Config.stance.bodyTiltStance or 0;
 qLArm = Config.walk.qLArm;
 qRArm = Config.walk.qRArm;
-
--- Final stance foot position6D
-pTorsoTarget = vector.new({0, 0, bodyHeight, 0,bodyTilt,0});
-pLLeg = vector.new({-supportX + footX, footY, 0, 0,0,0});
-pRLeg = vector.new({-supportX + footX, -footY, 0, 0,0,0});
 
 -- Max change in position6D to reach stance:
 dpLimit = Config.stance.dpLimitStance or vector.new({.04, .03, .07, .4, .4, .4});
@@ -36,6 +31,11 @@ finished=false;
 
 function entry()
   print("Motion SM:".._NAME.." entry");
+  -- Final stance foot position6D
+  pTorsoTarget = vector.new({0, 0, bodyHeight, 0,bodyTilt,0});
+  pLLeg = vector.new({-supportX + mcm.get_footX(), footY, 0, 0,0,0});
+  pRLeg = vector.new({-supportX + mcm.get_footX(), -footY, 0, 0,0,0});
+
   Body.set_syncread_enable(1); 
   started=false; 
   finished=false;

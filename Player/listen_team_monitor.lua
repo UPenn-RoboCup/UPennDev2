@@ -20,6 +20,24 @@ package.path = cwd.."/Motion/?.lua;"..package.path;
 
 
 require ('Config')
+--Copy data to shm 1-1
+Config.game.teamNumber = 1;
+Config.game.playerID = 1;
+
+io.write("Enter team number to track: ");
+io.flush();
+team1,team2=io.read("*number","*number");
+print(team1)
+print(team2)
+if not team1 then return; end
+if not team2 then --One team tracking
+  teamToTrack={team1};
+else --Two team tracking
+  teamToTrack={team1, team2};
+end
+
+--Push to (team,1) shm
+
 require ('cutil')
 require ('vector')
 require ('serialization')
@@ -32,10 +50,8 @@ require 'unix'
 
 Comm.init(Config.dev.ip_wireless,54321);
 print('Receiving Team Message From',Config.dev.ip_wireless);
-teamNumber = Config.game.teamNumber;
 
-
-function push_team_struct(obj)
+function push_team_struct(obj,teamOffset)
 --  wcm.set_teamdata_id(obj.id);
   states={};
 
@@ -64,7 +80,10 @@ function push_team_struct(obj)
   states.landmarkv2=wcm.get_teamdata_landmarkv2();
 
 --print("Team message from",obj.id)
-  id=obj.id;
+
+  --Now index is 1 to 10 (5 robot, 2 teams)
+  id=obj.id+teamOffset;
+  
 --states.role[id]=obj.id; --robot id?
   states.teamColor[id]=obj.teamColor;
   states.robotId[id]=obj.id;
@@ -126,9 +145,22 @@ while( true ) do
     msg=Comm.receive();
 --    print(msg)
     t = serialization.deserialize(msg);
-    if (t and (t.teamNumber) and (t.teamNumber == teamNumber) and (t.id)) then
---      t.tReceive = Body.get_time();
-      push_team_struct(t);
+    if t and (t.teamNumber) then
+      t.tReceive = unix.time();
+
+      if #teamToTrack==1 then 
+        print("Team message from ",t.teamNumber,t.id)
+        if (t.teamNumber == teamToTrack[1]) and (t.id) then
+          push_team_struct(t,0);
+        end
+      else
+        print("Team message from ",t.teamNumber,t.id)
+        if (t.teamNumber == teamToTrack[1]) and (t.id) then
+          push_team_struct(t,0);
+        elseif (t.teamNumber == teamToTrack[2]) and (t.id) then
+          push_team_struct(t,5);
+        end
+      end
     end
   end
   unix.usleep(1E6*0.01);

@@ -20,6 +20,7 @@ dirReverse = Config.servo.dirReverse;
 posZero=Config.servo.posZero;
 gyrZero=Config.gyro.zero;
 legBias=Config.walk.servoBias;
+armBias=Config.servo.armBias;
 idMap = Config.servo.idMap;
 nJoint = #idMap;
 scale={};
@@ -58,7 +59,7 @@ function shm_init()
   sensorShm.imuGyrRaw = vector.zeros(3);
   sensorShm.imuGyrBias=vector.zeros(3); --rate gyro bias
   sensorShm.temperature=vector.zeros(nJoint);
-  sensorShm.battery=vector.zeros(nJoint);
+  sensorShm.battery=vector.zeros(1); --Now only use cm730 value
   sensorShm.updatedCount =vector.zeros(1);   --Increases at every cycle
 
   shm.destroy('dcmActuator');
@@ -72,8 +73,9 @@ function shm_init()
   actuatorShm.led = vector.zeros(1);
 
   actuatorShm.torqueEnable = vector.zeros(1); --Global torque on.off
-  actuatorShm.slope=vector.ones(nJoint)*32; --default compliance slope is 32
-  actuatorShm.slopeChanged=vector.ones(1);  --set compliance once
+  -- Gain 0: normal gain 1: Kick gain (more stiff)
+  actuatorShm.gain=vector.zeros(nJoint); 
+  actuatorShm.gainChanged=vector.ones(1);  --set compliance once
   actuatorShm.velocityChanged=vector.zeros(1);
   actuatorShm.hardnessChanged=vector.zeros(1);
   actuatorShm.torqueEnableChanged=vector.zeros(1);
@@ -123,14 +125,16 @@ function entry()
     actuator.bias[i+5]=legBias[i];
   end
 
-  if Config.servo.pid==1 then
-    -- Update PID settings
-    for i=1,nJoint do
-      actuator.p_param[i] = Config.servo.p_param[i];
-      actuator.i_param[i] = Config.servo.i_param[i];
-      actuator.d_param[i] = Config.servo.d_param[i];
-    end
+  sync_gain(); --Initial PID setting
+
+  --Setting arm bias
+  for i=1,3 do
+    actuator.offset[i+2]=armBias[i];
   end
+  for i=4,6 do
+    actuator.offset[i+14]=armBias[i];
+  end
+
 end
 
 -- Setup CArray mappings into shared memory
@@ -203,7 +207,7 @@ end
 --Servo feedback param for servomotors
 --Used to stiffen support foot during kicking
 
-function sync_slope()
+function sync_gain()
   if Config.servo.pid==0 then --Old firmware.. compliance slope
     --28,29: Compliance slope positive / negative
     local addr={28,29};
@@ -213,13 +217,18 @@ function sync_slope()
     for i = 1,#idMap do
       n = n+1;
       ids[n] = idMap[i];
-      data[n] = actuator.slope[i];
+      if actuator.gain[i]>0 then
+        data[n] = Config.servo.slope_param[2];
+      else
+        data[n] = Config.servo.slope_param[1];
+      end
     end
     Dynamixel.sync_write_byte(ids, addr[1], data);
     Dynamixel.sync_write_byte(ids, addr[2], data);
   else --New firmware: PID parameters
-    -- P: 26, I: 27, D: 28
-    local addr={26,27,28};
+    -- P: 28, I: 27, D: 26
+    local addr={28,27,26};
+
     local ids = {};
     local data_p = {};
     local data_i = {};
@@ -228,42 +237,39 @@ function sync_slope()
     for i = 1,#idMap do
       n = n+1;
       ids[n] = idMap[i];
-      data_p[n] = actuator.p_param[i];
-      data_i[n] = actuator.i_param[i];
-      data_d[n] = actuator.d_param[i];
+      if actuator.gain[i]>0 then
+        data_p[n] = Config.servo.pid_param[2][1];
+        data_i[n] = Config.servo.pid_param[2][2];
+        data_d[n] = Config.servo.pid_param[2][3];
+      else
+        data_p[n] = Config.servo.pid_param[1][1];
+        data_i[n] = Config.servo.pid_param[1][2];
+        data_d[n] = Config.servo.pid_param[1][3];
+      end
     end
-
-    --print("P gain:",unpack(data_p))
     Dynamixel.sync_write_byte(ids, addr[1], data_p);
-    --SJ: for whatever reason, setting I or D values kills the servo
     Dynamixel.sync_write_byte(ids, addr[2], data_i);
     Dynamixel.sync_write_byte(ids, addr[3], data_d);
   end
 end
 
 function sync_battery()
-  --battery test mode... read from ALL servos
+    --battery test mode... read from ALL servos
   if actuator.battTest[1]==1 then 
     chk_servo_no=(chk_servo_no%nJoint)+1;
-    sensor.battery[chk_servo_no]=Dynamixel.get_battery(idMap[chk_servo_no]);
     sensor.temperature[chk_servo_no]=Dynamixel.get_temperature(idMap[chk_servo_no]);
   else
-    --Normal check mode: only check leg servos one by one
     chk_servo_no=(chk_servo_no%12)+1;
-    sensor.battery[chk_servo_no+5]=Dynamixel.get_battery(idMap[chk_servo_no+5]);
-    sensor.temperature[chk_servo_no+5]=Dynamixel.get_temperature(idMap[chk_servo_no+5]);
+    sensor.temperature[chk_servo_no+5]=0;
   end
 
-  local bat_min=200;
-  for i=6,17 do
-    if sensor.battery[i]>0 then
-      bat_min=math.min(bat_min,sensor.battery[i]);
-    end
-  end
-  if bat_min<Config.bat_low then battery_warning=1;
+  local battery=Dynamixel.read_data(200,50,1);
+  sensor.battery[1]=battery[1];
+  if battery[1]<Config.bat_low then battery_warning=1;
   else battery_warning=0;
   end
 end
+
 
 function sync_led()
   --New function to turn on status LEDs
@@ -295,6 +301,18 @@ function sync_led()
   end
 end
 
+function bulk_read()
+--[[
+  --146: bulk read instruction
+  --36: Position address
+  print("Bulk read test");
+  data=Dynamixel.bulk_read_data(200,{1,2,3},36,2); 
+  print("Received data size:",#data);
+  print("Received data:",unpack(data));
+--]]
+end
+
+
 function nonsync_read()
 
   --Position reading
@@ -312,31 +330,6 @@ function nonsync_read()
     for i = 3,#idMap do
       sensor.position[i] = actuator.command[i];
     end;
-
-    --[[
-     --Head+Leg reading
-
-    elseif actuator.readType[1]==2 then 
-    for i = 3,6 do
-    sensor.position[i] = actuator.command[i];
-    end;
-    for i = 18,#idMap do
-    sensor.position[i] = actuator.command[i];
-    end;
-
-    c_mod=count%4;
-    if c_mod==1 then	idToRead={6,7,8};  
-    elseif c_mod==2 then 	idToRead={9,10,11};  
-    elseif c_mod==3 then	idToRead={12,13,14}
-    else	idToRead={15,16,17};  
-    end
-    elseif actuator.readType[1]==3 then --No reading
-    idToRead={}; 
-    for i = 1,#idMap do
-    sensor.position[i] = actuator.command[i];
-    end;
-
-    --]]
 
   end
   -- Update the readings
@@ -445,6 +438,8 @@ function update()
     end
   end
 
+  bulk_read();
+
   nonsync_read();
   update_imu();
 
@@ -461,9 +456,9 @@ function update()
     unix.usleep(100);
     actuator.hardnessChanged[1]=0;
   end
-  if actuator.slopeChanged[1]==1 then
-    sync_slope();
-    actuator.slopeChanged[1]=0;
+  if actuator.gainChanged[1]==1 then
+    sync_gain();
+    actuator.gainChanged[1]=0;
     unix.usleep(100);
   end
   if actuator.velocityChanged[1]==1 then

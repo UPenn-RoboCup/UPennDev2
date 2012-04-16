@@ -10,8 +10,8 @@ walk = {};
 walk.stanceLimitX={-0.10,0.10};
 walk.stanceLimitY={0.09,0.20};
 walk.stanceLimitA={0*math.pi/180,40*math.pi/180};
-walk.velLimitX={-.06,.08};
-walk.velLimitY={-.06,.06};
+walk.velLimitX={-.06,.07};
+walk.velLimitY={-.035,.035};
 walk.velLimitA={-.4,.4};
 walk.velDelta={0.03,0.015,0.15} 
 
@@ -67,7 +67,9 @@ walk.velLimitY={-.05,.05};
 --Imu feedback parameters, alpha / gain / deadband / max
 --------------------------------------------------------------
 gyroFactor = 0.273*math.pi/180 * 300 / 1024; --dps to rad/s conversion
-gyroFactor = 0;
+
+--Disabled for webots
+--gyroFactor = 0;
 walk.ankleImuParamX={1,-0.75*gyroFactor, 2*math.pi/180, 10*math.pi/180};
 walk.kneeImuParamX={1,-1.5*gyroFactor, 2*math.pi/180, 10*math.pi/180};
 walk.ankleImuParamY={1,-1*gyroFactor, 2*math.pi/180, 10*math.pi/180};
@@ -113,4 +115,3 @@ walk.walkKickPh=0.5;
 walk.kickXComp = 0;
 walk.supportCompL = {0,0,0};
 walk.supportCompR = {0,0,0};
-

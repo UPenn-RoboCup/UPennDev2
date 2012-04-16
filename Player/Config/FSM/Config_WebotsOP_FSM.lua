@@ -181,7 +181,7 @@ fsm.headScan.tScan = 3.0*speedFactor;
 --HeadKick: Fix headangle for approaching
 --------------------------------------------------
 fsm.headKick={};
-fsm.headKick.pitch0=50*math.pi/180;
+fsm.headKick.pitch0=56*math.pi/180;
 fsm.headKick.xMax = 0.30;
 fsm.headKick.yMax = 0.07;
 fsm.headKick.tLost = 3.0*speedFactor;
@@ -191,7 +191,7 @@ fsm.headKick.timeout = 3.0*speedFactor;
 --HeadKickFollow: Follow ball after kick
 --------------------------------------------------
 fsm.headKickFollow={};
-fsm.headKickFollow.pitch={50*math.pi/180, 0*math.pi/180};
+fsm.headKickFollow.pitch={60*math.pi/180, 0*math.pi/180};
 fsm.headKickFollow.pitchSide = 30*math.pi/180;
 fsm.headKickFollow.yawMagSide = 90*math.pi/180;
 fsm.headKickFollow.tFollow = 1.0*speedFactor;

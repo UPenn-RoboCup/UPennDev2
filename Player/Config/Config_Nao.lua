@@ -30,8 +30,7 @@ dev.ip_wired = '192.168.0.255';
 dev.ip_wireless = '192.168.1.255';
 dev.game_control = 'NaoGameControl';
 dev.team='TeamSPL';
---dev.walk = 'NewWalk';
-dev.walk = 'NewNewWalk';
+dev.walk = 'NewNewNewWalk';
 dev.kick = 'NewKick';
 
 -- Game Parameters
@@ -61,15 +60,15 @@ end
 --------------------------------------------------------------------
 --GeneralPlayer FSM test
 fsm = {};
---loadconfig('FSM/Config_Nao_FSM')--For generalPlayer FSM
-loadconfig('FSM/Config_WebotsNao_FSM')--For generalPlayer FSM
+loadconfig('FSM/Config_Nao_FSM')--For generalPlayer FSM
 fsm.game = 'RoboCup';
 fsm.body = {'GeneralPlayer'};
 --fsm.head = {'GeneralPlayer'};
 fsm.head = {'NaoPlayer'};
+
 --Behavior flags, should be defined in FSM Configs but can be overrided here
 fsm.enable_obstacle_detection = 1;
-fsm.kickoff_wait_enable = 1;
+fsm.wait_kickoff = 0;
 fsm.playMode = 2; --1 for demo, 2 for orbit, 3 for direct approach
 fsm.enable_walkkick = 0;
 fsm.enable_sidekick = 0;
@@ -114,4 +113,9 @@ stance.bodyHeightDive= 0.25;
 stance.dpLimitSit=vector.new({.1,.01,.03,.1,.3,.1});
 stance.bodyTiltStance=0*math.pi/180; --bodyInitial bodyTilt, 0 for webots
 stance.dpLimitStance=vector.new({.04, .03, .04, .05, .4, .1});
-stance.delay = 0; --amount of time to stand still after standing to regain balance.
+stance.delay = 80; --amount of time to stand still after standing to regain balance.
+
+--For compatibility with OP
+--Should be more generally handled in Body..
+servo={};
+servo.pid=0;

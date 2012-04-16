@@ -88,10 +88,7 @@ function h=show_monitor()
 
 
       MONITOR.hButton0=uicontrol('Style','pushbutton','String','Overlay 1',...
-	'Units','Normalized', 'Position',[.02 .87 .07 .07],'Callback',@button0);
-
-      MONITOR.hButton1=uicontrol('Style','pushbutton','String','YUYV1',...
-	'Units','Normalized', 'Position',[.02 .8 .07 .07],'Callback',@button1);
+	'Units','Normalized', 'Position',[.02 .80 .07 .07],'Callback',@button0);
 
       MONITOR.hButton2=uicontrol('Style','pushbutton','String','LABEL A',...
 	'Units','Normalized', 'Position',[.02 .73 .07 .07],'Callback',@button2);
@@ -154,15 +151,17 @@ function h=show_monitor()
       disp('Empty monitor struct!'); return;
     end
 
+    % AUTO-SWITCH YUYV TYPE
+    yuyv_type = r_mon.yuyv_type;
     if MONITOR.enable1
       MONITOR.h1 = subplot(4,5,[1 2 6 7]);
-      if MONITOR.enable1==1
+      if yuyv_type==0
         yuyv = robots{playerNumber,teamNumber}.get_yuyv();
 	plot_yuyv(yuyv);
-      elseif MONITOR.enable1==2
+      elseif yuyv_type==1
         yuyv = robots{playerNumber,teamNumber}.get_yuyv2();
 	plot_yuyv(yuyv);
-      elseif MONITOR.enable1==3
+      else
         yuyv = robots{playerNumber,teamNumber}.get_yuyv3();
 	plot_yuyv(yuyv);
       end
@@ -170,9 +169,24 @@ function h=show_monitor()
       %webots use non-subsampled label (2x size of yuyv)
       if MONITOR.enable0
         if MONITOR.is_webots
-          plot_overlay(r_mon,2*MONITOR.enable1,MONITOR.enable0);
+          plot_overlay(r_mon,2*MONITOR.enable1,1);
         else
-          plot_overlay(r_mon,1*MONITOR.enable1,MONITOR.enable0);
+	  if yuyv_type==0
+            plot_overlay(r_mon,1,1);
+	  elseif yuyv_type==1
+            plot_overlay(r_mon,2,1);
+	  else
+            plot_overlay(r_mon,4,1);
+	  end
+        end
+      end
+
+      if MONITOR.logging
+        LOGGER.log_data(yuyv + 0,r_mon);
+        logstr=sprintf('%d/100',LOGGER.log_count);
+        set(MONITOR.hButton11,'String', logstr);
+        if LOGGER.log_count==100 
+          LOGGER.save_log();
         end
       end
     end
@@ -225,15 +239,6 @@ function h=show_monitor()
 
     [infostr textcolor]=robot_info(r_struct,r_mon,2);
     set(MONITOR.hInfoText,'String',infostr);
-
-    if MONITOR.logging
-      LOGGER.log_data(yuyv + 0,labelA,r_mon);
-      logstr=sprintf('%d/100',LOGGER.log_count);
-      set(MONITOR.hButton11,'String', logstr);
-      if LOGGER.log_count==100 
-        LOGGER.save_log();
-      end
-    end
 
   end
 
@@ -290,10 +295,9 @@ function h=show_monitor()
     cla(h_c);
     plot_field(h_c,1);
 
-    for i=1:5
+    for i=1:10
       r_struct = robot_team.get_team_struct_wireless(i);
       if r_struct.id>0
-
         h_c=subplot(5,5,[1:15]);
         plot_robot( r_struct, [],2,MONITOR.enable10);
         updated = 0;

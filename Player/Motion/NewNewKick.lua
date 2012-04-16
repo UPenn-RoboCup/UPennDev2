@@ -6,6 +6,7 @@ require('walk')
 require('vector')
 require('Config')
 require('util')
+require('mcm')
 
 local cwd = unix.getcwd();
 if string.find(cwd, "WebotsController") then
@@ -46,17 +47,17 @@ supportCompR=Config.walk.supportCompR or vector.new({0,0,0});
 hipRollCompensation = Config.kick.hipRollCompensation or 5*math.pi/180;
 qLHipRollCompensation=0;
 qRHipRollCompensation=0;
-kickXComp = Config.walk.kickXComp or 0;
 
 --Hardness parameters
 hardnessArm=Config.kick.hardnessArm;
 hardnessLeg=Config.kick.hardnessLeg;
 
 bodyHeight = Config.walk.bodyHeight;
-bodyTilt = Config.walk.bodyTilt;
-footX = Config.walk.footX;
+bodyTilt = Config.walk.bodyTilt or 0;
+footX = mcm.get_footX();
 footY = Config.walk.footY;
 supportX = Config.walk.supportX;
+kickXComp = mcm.get_kickX();
 
 
 qLArm = vector.new({qLArm0[1],qLArm0[2],qLArm0[3]});
@@ -71,6 +72,9 @@ pRLeg=vector.zeros(6);
 torsoShiftX=0;
 
 function entry()
+  footX = mcm.get_footX();
+  kickXComp = mcm.get_kickX();
+
   print("Motion SM:".._NAME.." entry");
   walk.stop();
   walk.zero_velocity();
@@ -102,6 +106,8 @@ function entry()
 
   -- disable joint encoder reading
   Body.set_syncread_enable(0);
+  qLHipRollCompensation,qRHipRollCompensation= 0,0;
+
 end
 
 function update()
@@ -140,25 +146,38 @@ function update()
     ph=0;
     t0=Body.get_time();
     if supportLeg ==0 then --left support 
-      Body.set_lleg_slope(16);
-      Body.set_rleg_slope(32);
+        Body.set_lleg_slope(1);
+        Body.set_rleg_slope(0);
     else --right support
-      Body.set_rleg_slope(16);
-      Body.set_lleg_slope(32);
+        Body.set_rleg_slope(1);
+        Body.set_lleg_slope(0);
     end
   end
 
   kickStepType=kickDef[kickState][1];
 
   -- Tosro X position offxet (for differetly calibrated robots)
-  if kickStepType==6 then
-     torsoShiftX=kickXComp*(1-ph);
-  elseif torsoShiftX<kickXComp*0.9 then
+  if kickState==1 then --Initial slide
      torsoShiftX=kickXComp*ph;
+  elseif kickState == #kickDef-1 then
+     torsoShiftX=kickXComp*(1-ph);
   end
-  qLHipRollCompensation,qRHipRollCompensation= 0,0;
 
-    if kickStepType==1 then
+  if kickState==2 then --Lift step
+    if kickStepType==2 then --
+      qRHipRollCompensation= -hipRollCompensation*ph;
+    elseif kickStepType==3 then
+      qLHipRollCompensation= hipRollCompensation*ph;
+    end
+  elseif kickState == #kickDef then --Final step
+    if qRHipRollCompensation<0 then
+      qRHipRollCompensation= -hipRollCompensation*(1-ph);
+    elseif qLHipRollCompensation>0 then
+      qLHipRollCompensation= hipRollCompensation*(1-ph);
+    end
+  end
+
+  if kickStepType==1 then
     uBody=util.se2_interpolate(ph,uBody1,kickDef[kickState][3]);	
     if #kickDef[kickState]>=4 then
       zBody=ph*kickDef[kickState][4] + (1-ph)*zBody1;
@@ -166,35 +185,27 @@ function update()
     if #kickDef[kickState]>=5 then
       bodyRoll=ph*kickDef[kickState][5] + (1-ph)*bodyRoll1;
     end
-
   elseif kickStepType==2 then --Lifting / Landing Left foot
---	uZmp2=kickDef[kickState][3];
     uLeft=util.se2_interpolate(ph,uLeft1,
-	util.pose_global(kickDef[kickState][4],uLeft1));
+      util.pose_global(kickDef[kickState][4],uLeft1));
     zLeft=ph*kickDef[kickState][5] + (1-ph)*zLeft1;
     aLeft=ph*kickDef[kickState][6] + (1-ph)*aLeft1;
 
-    qRHipRollCompensation= -hipRollCompensation;
-
   elseif kickStepType==3 then --Lifting / Landing Right foot
---	uZmp2=kickDef[kickState][3];
     uRight=util.se2_interpolate(ph,uRight1,
-	util.pose_global(kickDef[kickState][4],uRight1));
+      util.pose_global(kickDef[kickState][4],uRight1));
     zRight=ph*kickDef[kickState][5] + (1-ph)*zRight1;
     aRight=ph*kickDef[kickState][6] + (1-ph)*aRight1;
-    qLHipRollCompensation= hipRollCompensation;
 
   elseif kickStepType==4 then --Kicking Left foot
     uLeft=util.pose_global(kickDef[kickState][4],uLeft1);
     zLeft=kickDef[kickState][5]
     aLeft=kickDef[kickState][6]
-    qRHipRollCompensation= -hipRollCompensation;
 
   elseif kickStepType==5 then --Kicking Right foot
     uRight=util.pose_global(kickDef[kickState][4],uRight1);
     zRight=kickDef[kickState][5]
     aRight=kickDef[kickState][6]
-    qLHipRollCompensation= hipRollCompensation;
 
   elseif kickStepType ==6 then --Returning to walk stance
     uBody=util.se2_interpolate(ph,uBody1,kickDef[kickState][3]);	
@@ -202,11 +213,6 @@ function update()
     bodyRoll=(1-ph)*bodyRoll1;
     qLArm = vector.new({qLArm0[1],qLArm0[2],qLArm0[3]});
     qRArm = vector.new({qRArm0[1],qRArm0[2],qRArm0[3]});
-    if qLHipRollCompensation > 0 then
-      qLHipRollCompensation= hipRollCompensation* (1-ph);
-    elseif qRHipRollCompensation > 0 then
-      qRHipRollCompensation= -hipRollCompensation* (1-ph);
-    end
 
   elseif kickStepType ==7 then --Upper body movement
     uBody=util.se2_interpolate(ph,uBody1,kickDef[kickState][3]);	
@@ -306,8 +312,8 @@ function exit()
   print("Kick exit");
   active = false;
 
-  Body.set_lleg_slope(32);
-  Body.set_rleg_slope(32);
+  Body.set_lleg_slope(0);
+  Body.set_rleg_slope(0);
 
   walk.start();
 --  step.stepqueue={};

@@ -30,7 +30,7 @@ stanceLimitY2= 2* Config.walk.footY-stanceLimitMarginY;
 --Stance parameters
 bodyHeight = Config.walk.bodyHeight;
 bodyTilt=Config.walk.bodyTilt or 0;
-footX = Config.walk.footX or 0;
+footX = mcm.get_footX();
 footY = Config.walk.footY;
 supportX = Config.walk.supportX;
 supportY = Config.walk.supportY;
@@ -67,7 +67,9 @@ armImuParamX = Config.walk.armImuParamX;
 armImuParamY = Config.walk.armImuParamY;
 
 --Support bias parameters to reduce backlash-based instability
+velFastForward = Config.walk.velFastForward or 0.06;
 supportFront = Config.walk.supportFront or 0;
+supportFront2 = Config.walk.supportFront2 or 0;
 supportBack = Config.walk.supportBack or 0;
 supportSideX = Config.walk.supportSideX or 0;
 supportSideY = Config.walk.supportSideY or 0;
@@ -107,6 +109,7 @@ iStep0 = -1;
 iStep = 0;
 t0 = Body.get_time();
 tLastStep = Body.get_time();
+ph0=0;ph=0;
 
 stopRequest = 2;
 canWalkKick = 1; --Can we do walkkick with this walk code?
@@ -142,6 +145,8 @@ end
 
 
 function update()
+  footX = mcm.get_footX();
+
   t = Body.get_time();
 
   --Don't run update if the robot is sitting or standing
@@ -158,7 +163,8 @@ function update()
     started=true;
     tLastStep = Body.get_time();
   end
-
+  ph0=ph;
+  
   --SJ: Variable tStep support for walkkick
   ph = (t-tLastStep)/tStep;
   if ph>1 then
@@ -207,8 +213,12 @@ function update()
           uLeft2 = step_left_destination(velCurrent, uLeft1, uRight1);
         end
         --Velocity-based support point modulation
-        if velCurrent[1]>0.06 then
-          supportMod[1] = supportFront;
+        toeTipCompensation = 0;
+        if velDiff[1]>0 then --Accelerating to front
+	  supportMod[1] = supportFront2;
+        elseif velCurrent[1]>velFastForward then
+	  supportMod[1] = supportFront;
+          toeTipCompensation = ankleMod[1];
         elseif velCurrent[1]<0 then
           supportMod[1] = supportBack; 
         end
@@ -254,6 +264,13 @@ function update()
                           uTorso1[1], uTorso2[1]);
     aYP, aYN = zmp_solve(uSupport[2], uTorso1[2], uTorso2[2],
                           uTorso1[2], uTorso2[2]);
+
+    --Compute maximum COM speed
+--[[
+    dy0=(aYP-aYN)/tZmp + m1Y* (1-math.cosh(ph1Zmp*tStep/tZmp));
+    print("max DY:",dy0);
+--]]
+
   end --End new step
   
   xFoot, zFoot = foot_phase(ph);  
@@ -279,9 +296,17 @@ function update()
     end
     pLLeg[3] = stepHeight*zFoot;
   end
+  uTorsoOld=uTorso;
 
   uTorso = zmp_com(ph);
-  uTorsoActual = util.pose_global(vector.new({-footX,0,0}),uTorso);
+
+--Leg spread compensation
+  spreadComp = Config.walk.spreadComp or 0;
+  local spread=util.mod_angle((uLeft[3]-uRight[3])/2);
+  local spreadCompX = spreadComp * (1-math.cos(spread));
+  uTorsoActual = util.pose_global(vector.new({-footX+spreadCompX,0,0}),uTorso);
+
+--  uTorsoActual = util.pose_global(vector.new({-footX,0,0}),uTorso);
 
   pLLeg[1], pLLeg[2], pLLeg[6] = uLeft[1], uLeft[2], uLeft[3];
   pRLeg[1], pRLeg[2], pRLeg[6] = uRight[1], uRight[2], uRight[3];
@@ -322,7 +347,7 @@ function check_walkkick()
       return;
     end
   end
-  print("NEWNEWNEWKICK: WALKKICK, count",walkKickRequest);
+--  print("NEWNEWNEWKICK: WALKKICK, count",walkKickRequest);
 
   tStep = walkKick[walkKickRequest][1];   
   current_step_type = walkKick[walkKickRequest][2];   
@@ -411,7 +436,6 @@ function motion_legs(qLegs)
   armShift[2]=armShift[2]+armImuParamY[1]*(armShiftY-armShift[2]);
 
   --TODO: Toe/heel lifting
-  toeTipCompensation = 0;
 
   if not active then --Double support, standing still
     --qLegs[2] = qLegs[2] + hipShift[2];    --Hip roll stabilization
@@ -441,12 +465,6 @@ function motion_legs(qLegs)
     qLegs[5] = qLegs[5]  + toeTipCompensation*phComp;--Lifting toetip
     qLegs[8] = qLegs[8] - hipRollCompensation*phComp;--Hip roll compensation
   end
-
---[[
-  local spread=(uLeft[3]-uRight[3])/2;
-  qLegs[5] = qLegs[5] + Config.walk.anklePitchComp[1]*math.cos(spread);
-  qLegs[11] = qLegs[11] + Config.walk.anklePitchComp[2]*math.cos(spread);
---]]
 
   Body.set_lleg_command(qLegs);
 end

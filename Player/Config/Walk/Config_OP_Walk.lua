@@ -46,19 +46,33 @@ walk.phSingle={0.1,0.9};
 -- Compensation parameters
 --------------------------------------------
 walk.hipRollCompensation = 4*math.pi/180;
-walk.ankleMod = vector.new({-1,0})/0.12 * 10*math.pi/180;
+--walk.ankleMod = vector.new({-1,0}) * 3*math.pi/180;
+walk.ankleMod = vector.new({-1,0}) * 0*math.pi/180;
 
 --------------------------------------------------------------
 --Imu feedback parameters, alpha / gain / deadband / max
 --------------------------------------------------------------
 gyroFactor = 0.273*math.pi/180 * 300 / 1024; --dps to rad/s conversion
 
-walk.ankleImuParamX={0.9,0.3*gyroFactor, 0, 25*math.pi/180};
-walk.kneeImuParamX={0.9,1.2*gyroFactor, 0, 25*math.pi/180};
-walk.ankleImuParamY={0.9,0.7*gyroFactor, 0, 25*math.pi/180};
-walk.hipImuParamY={0.9,0.3*gyroFactor, 0, 25*math.pi/180};
-walk.armImuParamX={0.3,10*gyroFactor, 20*math.pi/180, 45*math.pi/180};
-walk.armImuParamY={0.3,10*gyroFactor, 20*math.pi/180, 45*math.pi/180};
+if Config.servo.pid==1 then
+  walk.ankleImuParamX={0.5,0.3*gyroFactor,
+                        1*math.pi/180, 25*math.pi/180};
+  walk.kneeImuParamX={0.5,1.2*gyroFactor,
+                        1*math.pi/180, 25*math.pi/180};
+  walk.ankleImuParamY={0.5,0.7*gyroFactor,
+                        1*math.pi/180, 25*math.pi/180};
+  walk.hipImuParamY={0.5,0.3*gyroFactor,
+                        1*math.pi/180, 25*math.pi/180};
+  walk.armImuParamX={0.3,10*gyroFactor, 20*math.pi/180, 45*math.pi/180};
+  walk.armImuParamY={0.3,10*gyroFactor, 20*math.pi/180, 45*math.pi/180};
+else
+  walk.ankleImuParamX={0.9,0.3*gyroFactor, 0, 25*math.pi/180};
+  walk.kneeImuParamX={0.9,1.2*gyroFactor, 0, 25*math.pi/180};
+  walk.ankleImuParamY={0.9,0.7*gyroFactor, 0, 25*math.pi/180};
+  walk.hipImuParamY={0.9,0.3*gyroFactor, 0, 25*math.pi/180};
+  walk.armImuParamX={0.3,10*gyroFactor, 20*math.pi/180, 45*math.pi/180};
+  walk.armImuParamY={0.3,10*gyroFactor, 20*math.pi/180, 45*math.pi/180};
+end
 
 --------------------------------------------
 -- Support point modulation values
@@ -79,27 +93,13 @@ walk.walkKickDef={}
 walk.walkKickDef["FrontLeft"]={
   {0.30, 1, 0, 0.035 , {0,0}, 0.7, {0.06,0,0} },
   {0.30, 2, 1, 0.07 , {0.02,-0.02}, 0.5, {0.09,0,0}, {0.06,0,0} },
-  {walk.tStep, 1, 0, 0.035 , {0,0}, 0.5, {0,0,0} },
+  {walk.tStep, 1, 0, 0.035 , {0,0}, 0.5, {0.04,0,0} },
 }
 walk.walkKickDef["FrontRight"]={
   {0.30, 1, 1, 0.035 , {0,0}, 0.3, {0.06,0,0} },
   {0.30, 2, 0, 0.07 , {0.02,0.02}, 0.5,  {0.09,0,0}, {0.06,0,0} },
-  {walk.tStep, 1, 1, 0.035 , {0,0}, 0.5, {0,0,0} },
+  {walk.tStep, 1, 1, 0.035 , {0,0}, 0.5, {0.04,0,0} },
 }
-
-
-walk.walkKickDef["SideLeft"]={
-  {0.30, 1, 1, 0.035 , {0,0}, 0.5, {0.04,0.04,0} },
-  {0.35, 3, 0, 0.07 , {-0.01,0.01}, 0.3, {0.06,-0.05,0},{0.09,0.01,0}},
- {0.25, 1, 1, 0.035 , {0,0}, 0.5, {0,0,0} },}
-
-walk.walkKickDef["SideRight"]={
-  {0.30, 1, 0, 0.035 , {0,0}, 0.5, {0.04,-0.04,0} },
-  {0.35, 3, 1, 0.07 , {-0.01,-0.01},0.7, {0.06,0.05,0},{0.09,-0.01,0}},
-  {0.25, 1, 0, 0.035 , {0,0},0.5,  {0,0,0} },
-}
-
-
 walk.walkKickDef["SideLeft"]={
   {0.30, 1, 1, 0.035 , {0,0}, 0.3, {0.04,0.04,0} },
   {0.35, 3, 0, 0.07 , {-0.01,0.01}, 0.5, {0.06,-0.05,0},{0.09,0.01,0}},
@@ -112,10 +112,6 @@ walk.walkKickDef["SideRight"]={
 }
 
 walk.walkKickPh=0.5;
-
-
-
-
 
 --Fall detection angle... OP requires large angle
 walk.fallAngle = 50*math.pi/180;
@@ -130,8 +126,10 @@ walk.supportCompR = {0,0,0};
 walk.servoBias = {0,0,0,0,0,0,0,0,0,0,0,0};
 walk.footXComp = 0;
 walk.footYComp = 0;
-walk.headPitch = 40* math.pi / 180; --Pitch angle offset of OP 
-walk.headPitchComp = 0;
+
+--Default pitch angle offset of OP 
+walk.headPitchBias = 40* math.pi / 180; 
+walk.headPitchBiasComp = 0;
 
 local robotName = unix.gethostname();
 local robotID = 0;
@@ -141,17 +139,14 @@ require('calibration');
 if calibration.cal and calibration.cal[robotName] then
   walk.servoBias = calibration.cal[robotName].servoBias;
   walk.footXComp = calibration.cal[robotName].footXComp;
-  walk.footYComp = calibration.cal[robotName].footYComp;
   walk.kickXComp = calibration.cal[robotName].kickXComp;
-  walk.headPitchComp = calibration.cal[robotName].headPitchComp;
-
-  walk.footX = walk.footX + walk.footXComp;
-  walk.footY = walk.footY + walk.footYComp;
-  walk.headPitch = walk.headPitch + walk.headPitchComp;
+  walk.kickYComp = calibration.cal[robotName].kickYComp;
+  walk.headPitchBiasComp = calibration.cal[robotName].headPitchBiasComp;
   print(robotName.." walk parameters loaded")
 end
 
---]]
+
+
 
 
 -- Slow walk

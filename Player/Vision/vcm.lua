@@ -31,8 +31,12 @@ shared.camera.command = vector.zeros(1);
 shared.camera.height = vector.zeros(1);
 shared.camera.bodyTilt = vector.zeros(1);
 shared.camera.bodyHeight = vector.zeros(1);
-shared.camera.pitchBias = vector.zeros(1);--for camera angel fine tuning
 shared.camera.rollAngle = vector.zeros(1);--how much image is tilted
+
+--Used for monitor to auto-switch yuyv mode
+shared.camera.yuyvType = vector.zeros(1);
+--Now we use shm to enable broadcasting from test_vision
+shared.camera.broadcast = vector.zeros(1);
 
 shared.image = {};
 shared.image.select = vector.zeros(1);
@@ -192,9 +196,10 @@ function refresh_debug_message()
     --it is not updated for whatever reason
     --just keep the latest message
   else
+    --Update SHM
     set_debug_message(debug_message);
+    debug_message='';
   end
-  debug_message='';
 end
 function add_debug_message(message)
   if string.len(debug_message)>1000 then
@@ -202,6 +207,4 @@ function add_debug_message(message)
     debug_message='';
   end
   debug_message=debug_message..message;
-  set_debug_message(debug_message);
-
 end

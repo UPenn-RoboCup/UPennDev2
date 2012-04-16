@@ -8,6 +8,7 @@ require('wcm')
 require('Config')
 require('Team')
 require('util')
+require('walk')
 
 t0 = 0;
 maxStep1 = Config.fsm.bodyPosition.maxStep;
@@ -23,6 +24,7 @@ rOrbit= Config.fsm.bodyPosition.rOrbit;
 
 thClose = Config.fsm.bodyPosition.thClose;
 rClose= Config.fsm.bodyPosition.rClose;
+fast_approach=Config.fsm.fast_approach or 0;
 
 function entry()
   print(_NAME.." entry");
@@ -51,6 +53,28 @@ function update()
   local t = Body.get_time();
   ball=wcm.get_ball();
   pose=wcm.get_pose();
+
+  --Current cordinate origin: midpoint of uLeft and uRight
+  --Calculate ball position from future origin
+  --Assuming we stop at next step
+  if fast_approach ==1 then
+    uLeft = walk.uLeft;
+    uRight = walk.uRight;
+    uFoot = util.se2_interpolate(0.5,uLeft,uRight); --Current origin 
+    if walk.supportLeg ==0 then --left support 
+      uRight2 = walk.uRight2;
+      uLeft2 = util.pose_global({0,2*walk.footY,0},uRight2);
+    else --Right support
+      uLeft2 = walk.uLeft2;
+      uRight2 = util.pose_global({0,-2*walk.footY,0},uLeft2);
+    end
+    uFoot2 = util.se2_interpolate(0.5,uLeft2,uRight2); --Projected origin 
+    uMovement = util.pose_relative(uFoot2,uFoot);
+    uBall2 = util.pose_relative({ball.x,ball.y,0},uMovement);
+    ball.x=uBall2[1];
+    ball.y=uBall2[2];
+  else
+  end
 
   ballR = math.sqrt(ball.x^2 + ball.y^2);
 
@@ -100,6 +124,15 @@ function update()
       return "ballClose";
     end
   end
+
+  if walk.ph>0.85 then
+    print(string.format("position error: %.3f %.3f %d\n",
+	homeRelative[1],homeRelative[2],homeRelative[3]*180/math.pi))
+
+    print("ballR:",ballR);
+
+  end
+
 
   if math.abs(homeRelative[1])<thClose[1] and
     math.abs(homeRelative[2])<thClose[2] and

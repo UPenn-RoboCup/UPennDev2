@@ -48,6 +48,8 @@ game.role = game.playerID-1;
 game.nPlayers = 5;
 --------------------
 
+game.playerID = 2;
+
 --Default color 
 game.teamColor = 0; --Blue team
 --game.teamColor = 1; --Red team
@@ -69,9 +71,15 @@ fsm.playMode = 3; --1 for demo, 2 for orbit, 3 for direct approach
 fsm.enable_walkkick = 1;
 fsm.enable_sidekick = 1;
 
-fsm.playMode = 2; --1 for demo, 2 for orbit, 3 for direct approach
-fsm.enable_walkkick = 1;
+fsm.playMode = 1; --1 for demo, 2 for orbit, 3 for direct approach
+fsm.enable_walkkick = 0;
 fsm.enable_sidekick = 0;
+
+
+--FAST APPROACH TEST
+fsm.fast_approach = 1;
+fsm.bodyApproach.maxStep = 0.06;
+
 
 -- Team Parameters
 team = {};

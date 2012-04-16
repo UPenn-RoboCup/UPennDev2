@@ -120,6 +120,7 @@ kick.def["kickForwardRight"]={
 }
 
 
+--[[
 kick.def["kickSideLeft"]={
   supportLeg = 1,
   def = {
@@ -141,3 +142,4 @@ kick.def["kickSideRight"]={
     {6, 0.6, {0.00, 0.00, 0}},--Stabilize
  },
 }
+--]]

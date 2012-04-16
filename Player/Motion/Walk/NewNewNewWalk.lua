@@ -67,7 +67,9 @@ armImuParamX = Config.walk.armImuParamX;
 armImuParamY = Config.walk.armImuParamY;
 
 --Support bias parameters to reduce backlash-based instability
+velFastForward = Config.walk.velFastForward or 0.06;
 supportFront = Config.walk.supportFront or 0;
+supportFront2 = Config.walk.supportFront2 or 0;
 supportBack = Config.walk.supportBack or 0;
 supportSideX = Config.walk.supportSideX or 0;
 supportSideY = Config.walk.supportSideY or 0;
@@ -211,8 +213,12 @@ function update()
           uLeft2 = step_left_destination(velCurrent, uLeft1, uRight1);
         end
         --Velocity-based support point modulation
-        if velCurrent[1]>0.06 then
-          supportMod[1] = supportFront;
+        toeTipCompensation = 0;
+        if velDiff[1]>0 then --Accelerating to front
+	  supportMod[1] = supportFront2;
+        elseif velCurrent[1]>velFastForward then
+	  supportMod[1] = supportFront;
+          toeTipCompensation = ankleMod[1];
         elseif velCurrent[1]<0 then
           supportMod[1] = supportBack; 
         end
@@ -294,7 +300,13 @@ function update()
 
   uTorso = zmp_com(ph);
 
-  uTorsoActual = util.pose_global(vector.new({-footX,0,0}),uTorso);
+--Leg spread compensation
+  spreadComp = Config.walk.spreadComp or 0;
+  local spread=util.mod_angle((uLeft[3]-uRight[3])/2);
+  local spreadCompX = spreadComp * (1-math.cos(spread));
+  uTorsoActual = util.pose_global(vector.new({-footX+spreadCompX,0,0}),uTorso);
+
+--  uTorsoActual = util.pose_global(vector.new({-footX,0,0}),uTorso);
 
   pLLeg[1], pLLeg[2], pLLeg[6] = uLeft[1], uLeft[2], uLeft[3];
   pRLeg[1], pRLeg[2], pRLeg[6] = uRight[1], uRight[2], uRight[3];
@@ -424,7 +436,6 @@ function motion_legs(qLegs)
   armShift[2]=armShift[2]+armImuParamY[1]*(armShiftY-armShift[2]);
 
   --TODO: Toe/heel lifting
-  toeTipCompensation = 0;
 
   if not active then --Double support, standing still
     --qLegs[2] = qLegs[2] + hipShift[2];    --Hip roll stabilization
@@ -454,12 +465,6 @@ function motion_legs(qLegs)
     qLegs[5] = qLegs[5]  + toeTipCompensation*phComp;--Lifting toetip
     qLegs[8] = qLegs[8] - hipRollCompensation*phComp;--Hip roll compensation
   end
-
---[[
-  local spread=(uLeft[3]-uRight[3])/2;
-  qLegs[5] = qLegs[5] + Config.walk.anklePitchComp[1]*math.cos(spread);
-  qLegs[11] = qLegs[11] + Config.walk.anklePitchComp[2]*math.cos(spread);
---]]
 
   Body.set_lleg_command(qLegs);
 end

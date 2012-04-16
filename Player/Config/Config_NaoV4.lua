@@ -13,7 +13,8 @@ function loadconfig(configName)
   end
 end
 
-loadconfig('Walk/Config_NaoV4_Walk')
+--loadconfig('Walk/Config_NaoV4_Walk')
+loadconfig('Walk/Config_NaoV4_Walk_Fast')
 loadconfig('World/Config_Nao_World')
 loadconfig('Kick/Config_Nao_Kick')
 loadconfig('Vision/Config_NaoV4_Vision')
@@ -60,7 +61,10 @@ fsm.playMode = 2; --1 for demo, 2 for orbit, 3 for direct approach
 fsm.enable_walkkick = 0;
 fsm.enable_sidekick = 0;
 
+--fsm.playMode = 1; --1 for demo, 2 for orbit, 3 for direct approach
 fsm.playMode = 1; --1 for demo, 2 for orbit, 3 for direct approach
+fsm.enable_walkkick = 1;
+fsm.enable_sidekick = 1;
 
 -- Team Parameters
 
@@ -95,11 +99,11 @@ km.standup_back = 'km_NaoV4_StandupFromBack.lua';
 --Sit/stand stance parameters
 stance={};
 stance.bodyHeightSit = 0.18;
-stance.supportXSit = 0.023;
+stance.supportXSit = 0.020;
 stance.bodyHeightDive= 0.25;
-stance.dpLimitSit=vector.new({.1,.01,.03,.1,.3,.1});
+stance.dpLimitSit=vector.new({.1,.01,.06,.1,.3,.1});
 stance.bodyTiltStance=0*math.pi/180; --bodyInitial bodyTilt, 0 for webots
-stance.dpLimitStance=vector.new({.04, .03, .04, .05, .4, .1});
+stance.dpLimitStance=vector.new({.04, .03, .06, .05, .4, .1});
 stance.delay = 80; --amount of time to stand still after standing to regain balance.
 
 --For compatibility with OP

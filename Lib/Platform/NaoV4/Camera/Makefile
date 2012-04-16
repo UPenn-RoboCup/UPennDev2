@@ -46,7 +46,7 @@ all: camera
 	$(CC) $(CXXFLAGS) $(INCLUDE_DIRS) -o $@ -c $<
 
 camera: naoCam.o naoCamThread.o timeScalar.o 
-	$(LD) $(LDFLAGS) $(BOOST) -o $(LIBNAME).$(SHLIBEXT) $(LIBOPTS) $^ -L$(LIB_DIR) -lm 
+	$(LD) $(LDFLAGS) $(BOOST) -o $(LIBNAME).$(SHLIBEXT) $(LIBOPTS) $^ -L$(LIB_DIR) -lm -lpthread
 
 clean:
 	rm -f *.$(SHLIBEXT) *.o

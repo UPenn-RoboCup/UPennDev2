@@ -24,7 +24,7 @@ cal["linus"]={
   kickXComp = 0,
   headPitchComp = 0,
   armBias={0,0,0,0,0,0},
-  pid = 0,
+  pid = 1, --NEW FIRMWARE
 };
 
 cal["lucy"]={
@@ -34,9 +34,7 @@ cal["lucy"]={
   kickXComp = 0,
   headPitchComp = 0,
   armBias={0,0,0,0,0,0},
-
--- PID firmware setting for lucy
-  pid = 1,
+  pid = 1, --NEW FIRMWARE
 };
 cal["scarface"]={
   servoBias={0,0,0,0,0,0, 0,0,0,0,0,0},
@@ -88,3 +86,8 @@ cal["betty"].servoBias={0,0,2,-6,-1,0,0,0,-3,-1,-3,0,};
 cal["lucy"].servoBias={1,-13,-14,20,24,7,-43,8,-15,0,-7,19,};
 cal["lucy"].footXComp=-0.003;
 cal["lucy"].kickXComp=0.005;
+
+-- Updated date: Sun Apr 15 20:46:52 2012
+cal["linus"].servoBias={3,1,2,1,1,-3,-8,3,-13,-4,1,-5,};
+cal["linus"].footXComp=-0.003;
+cal["linus"].kickXComp=0.000;

@@ -82,12 +82,12 @@ cal["scarface"].headPitchComp = 0.00;
 -- Updated date: Mon Apr  9 07:28:15 2012
 cal["betty"].servoBias={0,0,2,-6,-1,0,0,0,-3,-1,-3,0,};
 
--- Updated date: Sat Apr 14 17:34:31 2012
-cal["lucy"].servoBias={1,-13,-14,20,24,7,-43,8,-15,0,-7,19,};
-cal["lucy"].footXComp=-0.003;
-cal["lucy"].kickXComp=0.005;
-
 -- Updated date: Sun Apr 15 20:46:52 2012
 cal["linus"].servoBias={3,1,2,1,1,-3,-8,3,-13,-4,1,-5,};
 cal["linus"].footXComp=-0.003;
 cal["linus"].kickXComp=0.000;
+
+-- Updated date: Tue Apr 17 01:23:40 2012
+cal["lucy"].servoBias={1,10,-18,20,24,7,-43,-4,10,0,6,0,};
+cal["lucy"].footXComp=-0.003;
+cal["lucy"].kickXComp=0.005;

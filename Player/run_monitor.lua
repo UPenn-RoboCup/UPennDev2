@@ -79,6 +79,9 @@ function update()
     if( imagecount % imgRate == 0 ) then
       Broadcast.update_img(broadcast_enable);    
     end
+    --Reset this flag at every broadcast
+    --To prevent monitor running during actual game
+    vcm.set_camera_broadcast(0);
     return true;
   end
   return false;

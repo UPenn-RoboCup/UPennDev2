@@ -100,20 +100,17 @@ Body.set_lleg_command({0,0,0,0,0,0,0,0,0,0,0,0})
 
 
 function process_keyinput()
-  local str;
+  local byte;
   if(webots) then
-    str = controller.wb_robot_keyboard_get_key();
-  else
-    str = getch.get();
-  end
-  if #str>0 then
-    byte = string.byte(str,1);
---[[
+    byte = controller.wb_robot_keyboard_get_key();
     -- Webots only return captal letter number
     if byte>=65 and byte<=90 then
       byte = byte + 32;
     end
---]]
+  else
+    byte = string.byte(getch.get(),1);
+  end
+  if byte~=48 then --48 is blank... (at least in webots)
     -- Walk velocity setting
     if byte==string.byte("i") then	targetvel[1]=targetvel[1]+0.02;
     elseif byte==string.byte("j") then	targetvel[3]=targetvel[3]+0.1;
@@ -155,6 +152,7 @@ function process_keyinput()
     -- Stretcher specific
     elseif byte==string.byte("s") then -- Search for the stretcher
 --      sm_running = 1-sm_running;
+      print('entering bodySearch!')
       sm_running = 1;
       BodyFSM.sm:set_state('bodySearch');
 
@@ -178,7 +176,7 @@ function update()
   Motion.update();
   if( sm_running==1 ) then
     BodyFSM.update();
-    HeadFSM.update();
+--    HeadFSM.update();
   end
 
   -- Get a keypress

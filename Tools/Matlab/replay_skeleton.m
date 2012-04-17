@@ -6,7 +6,7 @@ if( exist('sk','var') == 0 )
 end
 
 load('primeLogs_calibrate.mat');
-set_shm = 0;
+set_shm = 1;
 debug = 1;
 infloop = 1; % Loop the logs infinitely
 

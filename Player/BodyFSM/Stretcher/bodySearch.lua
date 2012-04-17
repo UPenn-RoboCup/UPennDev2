@@ -7,6 +7,8 @@ require 'Kinematics'
 require 'vector'
 ps = false;
 
+print('PlayerID',Config.game.playerID)
+
 if( Config.stretcher.primesense and Config.game.playerID==1 ) then
   print('Using the PrimeSense for control!')  
   require 'primecm'    

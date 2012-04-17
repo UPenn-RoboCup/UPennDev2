@@ -2,6 +2,8 @@
 #define RadonTransform_h_DEFINED
 #define MAXLINES 10
 
+#include <stdint.h>
+
 struct LineStats {
   int count;
   double iMean;
@@ -30,7 +32,7 @@ class RadonTransform {
     void addPixelToRay(int i, int j, int ith);
    
     struct LineStats &getLineStats();
-    struct LineStats *getMultiLineStats();
+    struct LineStats *getMultiLineStats(int ni, int nj, uint8_t *im_ptr);
 
     int countMax;  
     int count[NTH][NR];

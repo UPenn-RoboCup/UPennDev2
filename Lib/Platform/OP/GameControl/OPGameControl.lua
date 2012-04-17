@@ -17,6 +17,8 @@ gamePacket = nil;
 gameState = 0;
 timeRemaining = 0;
 lastUpdate = 0;
+lastUpdate = unix.time(); --SJ:omitting this makes button not working
+
 
 kickoff = -1;
 half = 1;

@@ -93,19 +93,19 @@ fsm.bodyApproach.rFar = 0.45; --Max ball distance
 fsm.bodyApproach.tLost = 3.0*speedFactor;--ball detection timeout
 
 --x and y target position for stationary straight kick
-fsm.bodyApproach.xTarget11={0, 0.13,0.15}; --min, target, max
+fsm.bodyApproach.xTarget11={0, 0.11,0.13}; --min, target, max
 fsm.bodyApproach.yTarget11={0.01, 0.035, 0.04}; --min, target ,max
 
 --x and y target position for stationary kick to left
-fsm.bodyApproach.xTarget12={0, 0.13,0.15}; --min, target, max
+fsm.bodyApproach.xTarget12={0, 0.11,0.13}; --min, target, max
 fsm.bodyApproach.yTarget12={-0.005, 0.01, 0.025}; --min, target ,max
 
 --Target position for straight walkkick 
-fsm.bodyApproach.xTarget21={0, 0.15,0.18}; --min, target, max
+fsm.bodyApproach.xTarget21={0, 0.14,0.17}; --min, target, max
 fsm.bodyApproach.yTarget21={0.01, 0.035, 0.04}; --min, target ,max
 
 --Target position for side walkkick to left
-fsm.bodyApproach.xTarget22={0, 0.15,0.27}; --min, target, max
+fsm.bodyApproach.xTarget22={0, 0.14,0.17}; --min, target, max
 fsm.bodyApproach.yTarget22={0.005, 0.02, 0.035}; --min, target ,max
 
 --------------------------------------------------
@@ -121,11 +121,19 @@ fsm.bodyKick.tStartWait = 0.5;
 fsm.bodyKick.tStartWaitMax = 1.0;
 fsm.bodyKick.thGyroMag = 100; 
 
+--Longer wait (until we set gyro values correctly)
+fsm.bodyKick.tStartWait = 1.0;
+fsm.bodyKick.tStartWaitMax = 1.5;
+
+
+
+
+
 --ball position checking params
-fsm.bodyKick.kickTargetFront = {0.13,0.035};
+fsm.bodyKick.kickTargetFront = {0.12,0.035};
 
 --For kicking to the left
-fsm.bodyKick.kickTargetSide = {0.13,0.01};
+fsm.bodyKick.kickTargetSide = {0.12,0.01};
 fsm.bodyKick.kickTh = {0.03,0.025};
 
 --delay for camera following the ball

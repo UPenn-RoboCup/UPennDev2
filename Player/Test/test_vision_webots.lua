@@ -21,7 +21,7 @@ package.path = cwd .. '/Config/?.lua;' .. package.path;
 package.path = cwd .. '/Lib/?.lua;' .. package.path;
 package.path = cwd .. '/Dev/?.lua;' .. package.path;
 package.path = cwd .. '/Motion/?.lua;' .. package.path;
-package.path = cwd .. '/Motion/walk/?.lua;' .. package.path;
+package.path = cwd .. '/Motion/Walk/?.lua;' .. package.path;
 package.path = cwd .. '/Motion/keyframes/?.lua;' .. package.path;
 package.path = cwd .. '/Vision/?.lua;' .. package.path;
 package.path = cwd .. '/World/?.lua;' .. package.path;
@@ -87,6 +87,8 @@ headangle=vector.new({0,10*math.pi/180});
 targetvel=vector.zeros(3);
 vision_update_interval = 0.04; --25fps update
 
+camera_select = 1;
+
 function process_keyinput()
   local str = controller.wb_robot_keyboard_get_key();
   if str>0 then
@@ -127,6 +129,13 @@ function process_keyinput()
     elseif byte==string.byte(",") then	targetvel[1]=targetvel[1]-0.02;
     elseif byte==string.byte("h") then	targetvel[2]=targetvel[2]+0.02;
     elseif byte==string.byte(";") then	targetvel[2]=targetvel[2]-0.02;
+
+
+   elseif byte==string.byte("-") then
+      vcm.set_camera_command(1);
+   elseif byte==string.byte("=") then
+      vcm.set_camera_command(0);
+
 
     --Dive stance settings
    elseif byte==string.byte("t") then
@@ -197,6 +206,9 @@ function process_keyinput()
  end
 end
 
+imageProcessed = false;
+
+
 function update()
   --Update battery info
   wcm.set_robot_battery_level(Body.get_battery_level());
@@ -216,6 +228,7 @@ function update()
   if imageProcessed then 
     World.update_vision();
     OccupancyMap.update();
+    vcm.refresh_debug_message();
   end
    
   -- Update the relevant engines
@@ -238,5 +251,6 @@ end
 
 while 1 do
   update();
+  io.stdout:flush();
 end
 

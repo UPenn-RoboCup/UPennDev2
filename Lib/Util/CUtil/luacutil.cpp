@@ -139,6 +139,117 @@ static int lua_string2userdata(lua_State *L) {
   return 1;
 }
 
+
+
+
+//Custom function for YUYV, where we throw out every other line
+
+static int lua_array2string2(lua_State *L) {
+  uint8_t *data = (uint8_t *) lua_touserdata(L, 1);
+  if ((data == NULL) || !lua_islightuserdata(L, 1)) {
+    return luaL_error(L, "Input image not light user data");
+  }
+  
+  int width = luaL_checkint(L, 2);
+  int height = luaL_checkint(L, 3);
+  std::string dtype(luaL_checkstring(L, 4));
+  std::string name(luaL_checkstring(L, 5));
+
+  std::map<std::string, int>::iterator idataTypeMap = dataTypeMap.find(dtype);
+  if (idataTypeMap == dataTypeMap.end()) {
+    return luaL_error(L, "unkown dtype: %s", dtype.c_str());
+  }
+  int nbytes = idataTypeMap->second;
+  int size = width*height * nbytes / 2;//half the size
+  char cdata[(2*size) + 1];
+
+  int ind = 0;
+  int cind = 0;
+
+  for (int i=0;i<height/2;i++){
+    for (int j=0;j<width*nbytes;j++){
+      cdata[cind] = ascii_lut[(data[ind] & 0xf0) >> 4];
+      cdata[cind+1] = ascii_lut[(data[ind] & 0x0f)];
+      ind += 1;
+      cind += 2;
+    }
+    ind += width*nbytes;//skip every other line
+  }
+
+  cdata[(2*size)] = '\0';
+
+  // create lua table
+  lua_createtable(L, 0, 5);
+
+  lua_pushstring(L, "name");
+  lua_pushstring(L, name.c_str());
+  lua_settable(L, -3);
+
+  lua_pushstring(L, "width");
+  lua_pushnumber(L, width);
+  lua_settable(L, -3);
+
+  lua_pushstring(L, "height");
+  lua_pushnumber(L, height);
+  lua_settable(L, -3);
+
+  lua_pushstring(L, "dtype");
+
+  lua_createtable(L, 0, 2);
+  lua_pushstring(L, "name");
+  lua_pushstring(L, dtype.c_str());
+  lua_settable(L, -3);
+
+  lua_pushstring(L, "nbytes");
+  lua_pushnumber(L, nbytes);
+  lua_settable(L, -3);
+
+  lua_settable(L, -3);
+
+  lua_pushstring(L, "data");
+  lua_pushstring(L, cdata);
+  lua_settable(L, -3);
+
+  return 1;
+}
+
+//function for halved yuyv data string
+static int lua_string2userdata2(lua_State *L) {
+  uint8_t *dout = (uint8_t *) lua_touserdata(L, 1);
+  if ((dout == NULL) || !lua_islightuserdata(L, 1)) {
+    return luaL_error(L, "output argument not light user data");
+  }
+
+  const char *cdata = luaL_checkstring(L, 2);
+  int width = luaL_checkint(L, 3);
+  int height = luaL_checkint(L, 4);
+
+  int ind = 0;
+  int cind = 0;
+  int nbyte = 4; //this function is only used for yuyv
+
+  for (int i=0;i<height/2;i++){
+    for (int j=0;j<width*nbyte;j++){
+      uint8_t bh = cdata[cind] >= 'a' ? 
+		cdata[cind] - 'a' + 10 : cdata[cind] - '0';
+      uint8_t bl = cdata[cind+1] >= 'a' ? 
+		cdata[cind+1] - 'a' + 10 : cdata[cind+1] - '0';
+      dout[ind] = (uint8_t)((bh<<4) | bl);
+      ind += 1;
+      cind += 2;
+    }
+    //Copy previous line
+    for (int j=0;j<width*nbyte;j++){
+      dout[ind] = dout[ind-width*nbyte];
+      ind += 1;
+    }
+  }
+  return 1;
+}
+
+
+
+
 static int lua_ptradd(lua_State *L) {
   uint8_t *ptr = (uint8_t *) lua_touserdata(L, 1);
   if ((ptr == NULL) || !lua_islightuserdata(L, 1)) {
@@ -227,6 +338,8 @@ static int lua_bitnot(lua_State *L) {
 static const struct luaL_reg cutil_lib [] = {
   {"array2string", lua_array2string},
   {"string2userdata", lua_string2userdata},
+  {"array2string2", lua_array2string2},
+  {"string2userdata2", lua_string2userdata2},
   {"ptr_add", lua_ptradd},
   {"bit_and", lua_bitand},
   {"bit_or", lua_bitor},

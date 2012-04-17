@@ -23,7 +23,7 @@ tasklist={
   --right player
   {
     {2,{1,1.5,-math.pi/2}}, --move to the pose and wait tere
-    {1,{0,-1.5,math.pi/2}}, --approach and kick
+    {1,{0,-1,math.pi/2}}, --approach and kick
     {2,{-1.2,1.5,-math.pi/2}}, --move and wait
     {1,{-2.5,-1,0}}, --approach and kick
     {0,{-3,0,0}}, --do nothing
@@ -55,18 +55,19 @@ function update()
   current_task=tasklist[role][task_state/2+1];
   gcm.set_team_target(current_task[2]);
 
-  if task_state<2*#tasklist[role] then
+  if task_state/2+1 <=#tasklist[role] then
     --dispatch task
     if current_task[1]==1 then
       print("Passing started")
       team_task_state[role]=team_task_state[role]+1;
-
       return "pass";
     else
       print("Moving started")
       team_task_state[role]=team_task_state[role]+2;
       return "move";
     end
+  else
+    Motion.event("sit");
   end
 end
 

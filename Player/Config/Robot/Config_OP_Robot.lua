@@ -66,58 +66,22 @@ servo.dirReverse={
   18,19,20,--RArm
 }
 
--- PID Parameters
-servo.p_param={
-  32,32,                --Head
-  16,16,16,             --LArm
-  16,16,16,16,16,16,    --LLeg
-  16,16,16,16,16,16,    --RLeg
---  32,32,32,32,32,32,  --RLeg
-  16,16,16,             --RArm
---  21,                 --Aux servo
-}
-servo.i_param={
-  0,0,          --Head
-  0,0,0,        --LArm
-  0,0,0,0,0,0,  --LLeg
-  0,0,0,0,0,0,  --RLeg
-  0,0,0,        --RArm
---  21,         --Aux servo
-}
-servo.d_param={
-  8,8,              --Head
-  16,16,16,         --LArm
-  16,16,16,16,16,16,--LLeg
-  16,16,16,16,16,16,--RLeg
-  16,16,16,         --RArm
---  21,             --Aux servo
-}
-
-
 ----------------------------------------------
 --Robot-specific firmware version handling
 ----------------------------------------------
-
-servo.pid = 0; --old firmware default
 servo.armBias = {0,0,0,0,0,0}; --in degree
-
+servo.pid =1;  --Default new firmware
 local robotName = unix.gethostname();
-if( robotName=='felix' ) then
-elseif( robotName=='betty' ) then
-elseif( robotName=='linus' ) then
-elseif( robotName=='lucy' ) then
-  servo.pid = 1;
-  servo.idMap = {
-    19,20,		--Head
-    2,4,6,		--LArm
-    8,10,12,14,16,18,--LLeg
-    7,9,11,13,15,17,--RLeg
-    1,3,5,		--RArm
---    21, 		--Aux servo
-  }
-elseif( robotName=='scarface' ) then
+require('calibration');
+if calibration.cal and calibration.cal[robotName] then
+  if calibration.cal[robotName].pid then
+    servo.pid = calibration.cal[robotName].pid;
+  end
+  if calibration.cal[robotName].armBias then
+    servo.armBias = calibration.cal[robotName].armBias;
+  end
 end
-
+-----------------------------------------------
 
 nJoint = #servo.idMap;
 if servo.pid ==0 then -- For old firmware with 12-bit precision
@@ -132,6 +96,12 @@ if servo.pid ==0 then -- For old firmware with 12-bit precision
     819,358,205,
     --		512,		--For aux
   }
+  -- SLOPE parameters
+  servo.slope_param={
+	32,	--Regular slope
+	16,	--Kick slope
+  };
+
 else -- For new, PID firmware with 14-bit precision
   print(robotName.." has 14-bit firmware")
   servo.steps=vector.ones(nJoint)*4096;
@@ -140,15 +110,22 @@ else -- For new, PID firmware with 14-bit precision
     1024,2560,3072, --LArm
     2048,2048,2048,2048,2048,2048, --LLeg
     2048,2048,2048,2048,2048,2048, --RLeg
-    3072,1036,1024, --RArm
-    --		512, -- For aux
+    3072,1536,1024, --RArm
+    --          512, -- For aux
   };
+
+  -- PID Parameters
+  servo.pid_param={
+	--Regular PID gain
+	{32,0,4},
+	--Kick PID gain
+	{64,0,4},
+  };
+
   servo.moveRange=vector.ones(nJoint)*360*math.pi/180;
-  servo.armBias = vector.new({0,20,0,0,0,-20}) * math.pi/180 * servo.steps[1]/servo.moveRange[1];  
   --[[ For aux
   servo.moveRange[21] = 300;
   servo.steps[21] = 1024;
   --]]
-
 end
 

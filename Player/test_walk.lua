@@ -22,7 +22,7 @@ package.path = cwd .. '/Lib/?.lua;' .. package.path;
 package.path = cwd .. '/Dev/?.lua;' .. package.path;
 package.path = cwd .. '/Motion/?.lua;' .. package.path;
 package.path = cwd .. '/Motion/keyframes/?.lua;' .. package.path;
-package.path = cwd .. '/Motion/walk/?.lua;' .. package.path;
+package.path = cwd .. '/Motion/Walk/?.lua;' .. package.path;
 package.path = cwd .. '/Vision/?.lua;' .. package.path;
 package.path = cwd .. '/World/?.lua;' .. package.path;
 
@@ -47,6 +47,10 @@ if(Config.platform.name == 'OP') then
   Body.set_body_hardness(0.3);
   Body.set_actuator_command(Config.stance.initangle)
 end
+
+--TODO: enable new nao specific
+newnao = false; --Turn this on for new naos (run main code outside naoqi)
+newnao = true;
 
 getch.enableblock(1);
 unix.usleep(1E6*1.0);
@@ -178,7 +182,8 @@ if (webots) then
   end
 end
 
-if( darwin ) then
+--Now both nao and darwin runs this separately
+if (darwin) or (newnao) then
   local tDelay = 0.005 * 1E6; -- Loop every 5ms
   while 1 do
     update();

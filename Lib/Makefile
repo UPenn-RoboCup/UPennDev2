@@ -4,6 +4,7 @@ CWD= $(shell pwd)
 #MODE= $(shell getconf LONG_BIT)
 
 NAODIR= Platform/Nao
+NAOV4DIR = Platform/NaoV4
 NAOQIDIR= NaoQi
 WEBOTSNAODIR= Platform/WebotsNao
 WEBOTSOPDIR= Platform/WebotsOP
@@ -68,6 +69,11 @@ matlab:
 nao:
 	@echo "Compiling Nao Lua/C++ Libraries...\n"
 	@cd $(NAODIR) && make && cd $(CWD)
+	@echo "\n"
+
+naov4:
+	@echo "Compiling Nao V4 Lua/C++ Libraries...\n"
+	@cd $(NAOV4DIR) && make && cd $(CWD)
 	@echo "\n"
 
 naoqi:
@@ -167,6 +173,16 @@ setup_nao: nao setup_util setup_image setup_comm
 	rm -f $(NAODEPLUA51DIR)/*;
 	@echo "\n"
 
+setup_naov4: naov4 setup_util setup_image setup_comm
+	@echo "Setting up Nao V4 Lua/C++ Libraries...\n"
+	mkdir -p $(INSTDIR)
+	find $(NAOV4DIR) -regex '.*\($(SHLIBEXT)\|$(LUAEXT)\)' -exec cp -v {} $(INSTDIR) \;
+	rm -f $(PLAYERDIR)/Config/Config.lua
+	cd $(PLAYERDIR)/Config && ln -s Config_NaoV4.lua Config.lua && cd $(CWD)
+#	find $(UTILDIR) $(REGEX) -exec cp -v {} $(NAODEPLUA51DIR) \;
+	rm -f $(NAODEPLUA51DIR)/*;
+	@echo "\n"
+
 setup_webots_nao: webots_nao setup_util setup_image setup_webots
 	@echo "Setting up Webots Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
@@ -222,7 +238,6 @@ setup_visiontest: visiontest setup_util setup_image
 	find $(VISIONTESTDIR) -regex '.*\($(SHLIBEXT)\|$(LUAEXT)\)' -exec cp -v {} $(INSTDIR) \;
 	rm -f $(PLAYERDIR)/Config/Config.lua
 	cd $(PLAYERDIR)/Config && ln -s Config_VisionTest.lua Config.lua && cd $(CWD)
-	cp -r $(UTILDIR)/mp3 $(PLAYERDIR)
 	@echo "\n"
 
 
@@ -243,7 +258,6 @@ setup_op: op setup_util setup_image setup_comm
 #	touch $(PLAYERDIR)/Config/Config.lua
 	rm -f $(PLAYERDIR)/Config/Config.lua
 	cd $(PLAYERDIR)/Config && ln -s Config_OP.lua Config.lua && cd $(CWD)
-	cp -r $(UTILDIR)/mp3 $(PLAYERDIR)
 	@echo "\n"
 
 setup_xos: xos setup_util setup_image setup_comm
@@ -254,7 +268,6 @@ setup_xos: xos setup_util setup_image setup_comm
 #	touch $(PLAYERDIR)/Config/Config.lua
 	rm -f $(PLAYERDIR)/Config/Config.lua
 	cd $(PLAYERDIR)/Config && ln -s Config_XOS.lua Config.lua && cd $(CWD)
-#	cp -r $(UTILDIR)/mp3 $(PLAYERDIR)
 	@echo "\n"
 
 setup_webots_cont: webot
@@ -321,6 +334,7 @@ clean:
 	cd $(WEBOTSDIR) && make clean && cd $(CWD)
 #	cd $(VELODIR) && make clean && cd $(CWD)
 	cd $(NAODIR) && make clean && cd $(CWD)
+	cd $(NAOV4DIR) && make clean && cd $(CWD)
 	cd $(NAOQIDIR) && make clean && cd $(CWD)
 	cd $(WEBOTSNAODIR) && make clean && cd $(CWD)
 	cd $(WEBOTSOPDIR) && make clean && cd $(CWD)
@@ -334,4 +348,3 @@ clean:
 	cd $(OPDIR) && make clean && cd $(CWD)
 	cd $(PLAYERDIR)/Config && rm -f Config.lua && cd $(CWD)
 	cd $(PLAYERDIR) && rm -rf Lib && cd $(CWD)
-	cd $(PLAYERDIR) && rm -rf mp3 && cd $(CWD)

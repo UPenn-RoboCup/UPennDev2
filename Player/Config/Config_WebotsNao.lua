@@ -29,9 +29,8 @@ dev.camera = 'NaoWebotsCam';
 dev.kinematics = 'NaoWebotsKinematics';
 dev.game_control='WebotsGameControl';
 dev.team= 'TeamSPL';
-dev.walk = 'NewWalk';
 dev.kick = 'NewKick';
-dev.walk = 'NewNewWalk';
+dev.walk = 'NewNewNewWalk';
 
 -- Game Parameters
 
@@ -48,8 +47,6 @@ if game.teamNumber==0 then game.teamColor = 0; --Blue team
 else game.teamColor = 1; --Red team
 end
 
-
-
 -- FSM Parameters
 fsm = {};
 loadconfig('FSM/Config_WebotsNao_FSM')--For generalPlayer FSM
@@ -63,6 +60,7 @@ else
   fsm.head = {'NaoPlayer'};
 end
 --]]
+
 --------------------------------------------------------------------
 --GeneralPlayer FSM test
 fsm.game = 'RoboCup';
@@ -78,7 +76,8 @@ fsm.head = {'NaoDemo'};
 
 --Behavior flags, should be defined in FSM Configs but can be overrided here
 fsm.enable_obstacle_detection = 1;
-fsm.kickoff_wait_enable = 1;
+fsm.kickoff_wait_enable = 0;
+--fsm.playMode = 3; --1 for demo, 2 for orbit, 3 for direct approach
 fsm.playMode = 2; --1 for demo, 2 for orbit, 3 for direct approach
 fsm.enable_walkkick = 1;
 fsm.enable_sidekick = 1;
@@ -114,6 +113,11 @@ km.standup_front = 'km_WebotsNao_StandupFromFront.lua';
 km.standup_back = 'km_WebotsNao_StandupFromBack.lua';
 
 
+km.standup_front = 'km_WebotsNao_StandupFromFront.lua';
+km.standup_back = 'km_WebotsNao_StandupFromBack.lua';
+
+
+
 --Sit/stand stance parameters
 stance={};
 stance.bodyHeightSit = 0.225;
@@ -123,7 +127,3 @@ stance.bodyHeightDive= 0.25;
 stance.bodyTiltStance=0*math.pi/180; --bodyInitial bodyTilt, 0 for webots
 stance.dpLimitStance = vector.new({.04, .03, .04, .05, .4, .1});
 stance.delay = 80; --amount of time to stand still after standing to regain balance.
-
---Skip all checks in vision for 160*120 image 
-webots_vision = 1; 
-speedFactor = 1.0; 

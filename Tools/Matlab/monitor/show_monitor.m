@@ -7,6 +7,7 @@ function h=show_monitor()
   h.update_team=@update_team;
 
   %Five screen for single monitor
+  h.enable0=1;
   h.enable1=1;
   h.enable2=1;
   h.enable3=1;
@@ -32,13 +33,15 @@ function h=show_monitor()
     clf;
     if draw_team==2 % Multiple robot, wireless monitoring (real robots)
       set(gcf,'position',[1 1 900 900]);
-      MONITOR.hFpsText=uicontrol('Style','text','Position',[380 870 200 20]);
+
+      MONITOR.hFpsText=uicontrol('Style','text',...
+	'Units','Normalized', 'Position',[.40 0.93 0.20 0.04]);
 
       MONITOR.hButton6=uicontrol('Style','pushbutton','String','FPS -',...
-	'Position',[300 870 70 20],'Callback',@button6);
+	'Units','Normalized','Position',[.30 .93 .10 .04],'Callback',@button6);
 
       MONITOR.hButton7=uicontrol('Style','pushbutton','String','FPS +',...
-	'Position',[600 870 70 20],'Callback',@button7);
+	'Units','Normalized', 'Position',[.60 .93 .10 .04],'Callback',@button7);
 
       MONITOR.hButton10=uicontrol('Style','pushbutton','String','MAP1',...
 	'Position',[20 600 70 40],'Callback',@button10);
@@ -48,13 +51,15 @@ function h=show_monitor()
 
     elseif draw_team==1 %Multiple robot full monitoring (webots)
       set(gcf,'position',[1 1 900 900]);
-      MONITOR.hFpsText=uicontrol('Style','text','Position',[380 870 200 20]);
+
+      MONITOR.hFpsText=uicontrol('Style','text',...
+	'Units','Normalized', 'Position',[.40 0.93 0.20 0.04]);
 
       MONITOR.hButton6=uicontrol('Style','pushbutton','String','FPS -',...
-	'Position',[300 870 70 20],'Callback',@button6);
+	'Units','Normalized','Position',[.30 .93 .10 .04],'Callback',@button6);
 
       MONITOR.hButton7=uicontrol('Style','pushbutton','String','FPS +',...
-	'Position',[600 870 70 20],'Callback',@button7);
+	'Units','Normalized', 'Position',[.60 .93 .10 .04],'Callback',@button7);
 
       MONITOR.hButton8=uicontrol('Style','pushbutton','String','LABEL',...
 	'Position',[20 260 70 40],'Callback',@button8);
@@ -69,42 +74,45 @@ function h=show_monitor()
       LOGGER=logger();
       LOGGER.init();
       set(gcf,'Position',[1 1 1000 600])
-      MONITOR.hFpsText=uicontrol('Style','text','Position',[380 570 200 20]);
-
-      MONITOR.hDebugText=uicontrol('Style','text','Position',[770 60 200 500]);
-
-      MONITOR.hButton1=uicontrol('Style','pushbutton','String','YUYV1',...
-	'Position',[20 500 70 40],'Callback',@button1);
-
-      MONITOR.hButton2=uicontrol('Style','pushbutton','String','LABEL A',...
-	'Position',[20 440 70 40],'Callback',@button2);
-
-      MONITOR.hButton3=uicontrol('Style','pushbutton','String','MAP1',...
-	'Position',[20 380 70 40],'Callback',@button3);
-
-      MONITOR.hButton4=uicontrol('Style','pushbutton','String','2D ON',...
-	'Position',[20 320 70 40],'Callback',@button4);
-
-      MONITOR.hButton5=uicontrol('Style','pushbutton','String','DEBUG ON',...
-	'Position',[20 260 70 40],'Callback',@button5);
+      MONITOR.hFpsText=uicontrol('Style','text',...
+	'Units','Normalized', 'Position',[.40 0.93 0.20 0.04]);
 
       MONITOR.hButton6=uicontrol('Style','pushbutton','String','FPS -',...
-	'Position',[300 570 70 20],'Callback',@button6);
+	'Units','Normalized','Position',[.30 .93 .10 .04],'Callback',@button6);
 
       MONITOR.hButton7=uicontrol('Style','pushbutton','String','FPS +',...
-	'Position',[600 570 70 20],'Callback',@button7);
-
-      MONITOR.hButton11=uicontrol('Style','pushbutton','String','LOG',...
-	'Position',[20 200 70 40],'Callback',@button11);
+	'Units','Normalized', 'Position',[.60 .93 .10 .04],'Callback',@button7);
 
       MONITOR.hButton12=uicontrol('Style','pushbutton','String','Load LUT',...
-	'Position',[700 570 250 20],'Callback',@button12);
+	'Units','Normalized', 'Position',[.70 .93 .20 .04],'Callback',@button12);
 
-      MONITOR.hButton13=uicontrol('Style','pushbutton','String','SPL',...
-	'Position',[20 40 70 40],'Callback',@button13);
 
-      MONITOR.hInfoText=uicontrol('Style','text','Position',[20 100 70 80]);
+      MONITOR.hButton0=uicontrol('Style','pushbutton','String','Overlay 1',...
+	'Units','Normalized', 'Position',[.02 .80 .07 .07],'Callback',@button0);
 
+      MONITOR.hButton2=uicontrol('Style','pushbutton','String','LABEL A',...
+	'Units','Normalized', 'Position',[.02 .73 .07 .07],'Callback',@button2);
+
+      MONITOR.hButton3=uicontrol('Style','pushbutton','String','MAP1',...
+	'Units','Normalized', 'Position',[.02 .66 .07 .07],'Callback',@button3);
+
+      MONITOR.hButton4=uicontrol('Style','pushbutton','String','2D ON',...
+	'Units','Normalized', 'Position',[.02 .59 .07 .07],'Callback',@button4);
+
+      MONITOR.hButton5=uicontrol('Style','pushbutton','String','DEBUG ON',...
+	'Units','Normalized', 'Position',[.02 .52 .07 .07],'Callback',@button5);
+
+      MONITOR.hButton11=uicontrol('Style','pushbutton','String','LOG',...
+	'Units','Normalized', 'Position',[.02 .45 .07 .07],'Callback',@button11);
+
+      MONITOR.hInfoText=uicontrol('Style','text',...
+	'Units','Normalized', 'Position',[.02 .25 .07 .20]);
+
+      MONITOR.hButton13=uicontrol('Style','pushbutton','String','Kidsize',...
+	'Units','Normalized', 'Position',[.02 .18 .07 .07],'Callback',@button13);
+
+      MONITOR.hDebugText=uicontrol('Style','text',...
+	'Units','Normalized', 'Position',[.76 .10 .22 .83]);
     end
   end
 
@@ -143,22 +151,43 @@ function h=show_monitor()
       disp('Empty monitor struct!'); return;
     end
 
+    % AUTO-SWITCH YUYV TYPE
+    yuyv_type = r_mon.yuyv_type;
     if MONITOR.enable1
-      if MONITOR.enable1==1
-        MONITOR.h1 = subplot(4,5,[1 2 6 7]);
+      MONITOR.h1 = subplot(4,5,[1 2 6 7]);
+      if yuyv_type==0
         yuyv = robots{playerNumber,teamNumber}.get_yuyv();
 	plot_yuyv(yuyv);
-      elseif MONITOR.enable1==2
-        MONITOR.h1 = subplot(4,5,[1 2 6 7]);
+      elseif yuyv_type==1
         yuyv = robots{playerNumber,teamNumber}.get_yuyv2();
+	plot_yuyv(yuyv);
+      else
+        yuyv = robots{playerNumber,teamNumber}.get_yuyv3();
 	plot_yuyv(yuyv);
       end
 
       %webots use non-subsampled label (2x size of yuyv)
-      if MONITOR.is_webots
-        plot_overlay(r_mon,2*MONITOR.enable1);
-      else
-        plot_overlay(r_mon,1*MONITOR.enable1);
+      if MONITOR.enable0
+        if MONITOR.is_webots
+          plot_overlay(r_mon,2*MONITOR.enable1,1);
+        else
+	  if yuyv_type==0
+            plot_overlay(r_mon,1,1);
+	  elseif yuyv_type==1
+            plot_overlay(r_mon,2,1);
+	  else
+            plot_overlay(r_mon,4,1);
+	  end
+        end
+      end
+
+      if MONITOR.logging
+        LOGGER.log_data(yuyv + 0,r_mon);
+        logstr=sprintf('%d/100',LOGGER.log_count);
+        set(MONITOR.hButton11,'String', logstr);
+        if LOGGER.log_count==100 
+          LOGGER.save_log();
+        end
       end
     end
 
@@ -166,12 +195,16 @@ function h=show_monitor()
       MONITOR.h2 = subplot(4,5,[3 4 8 9]);
       labelA = robots{playerNumber,teamNumber}.get_labelA();
       plot_label(labelA);
-      plot_overlay(r_mon,1);
+      if MONITOR.enable0
+        plot_overlay(r_mon,1,MONITOR.enable0);
+      end
     elseif MONITOR.enable2==2
       MONITOR.h2 = subplot(4,5,[3 4 8 9]);
       labelB = robots{playerNumber,teamNumber}.get_labelB();
       plot_label(labelB);
-      plot_overlay(r_mon,4);
+      if MONITOR.enable0
+        plot_overlay(r_mon,4,MONITOR.enable0);
+      end
     elseif (MONITOR.enable2==3) && (~isempty(MONITOR.lutname))
       MONITOR.h2 = subplot(4,5,[3 4 8 9]);
       yuyv = robots{playerNumber,teamNumber}.get_yuyv();
@@ -181,9 +214,18 @@ function h=show_monitor()
 
     if MONITOR.enable3
       MONITOR.h3 = subplot(4,5,[11 12 16 17]);
-      plot_field(MONITOR.h3,MONITOR.fieldtype);
+      cla(MONITOR.h3);
 
-      plot_robot( r_struct, r_mon,1,MONITOR.enable3 );
+      if MONITOR.enable3==5 
+	if isfield(r_mon.robot, 'map')
+          plot_grid(r_mon.robot.map);  
+	end
+        plot_field(MONITOR.h3,MONITOR.fieldtype);
+        plot_robot( r_struct, r_mon,2,3 );
+      else
+        plot_field(MONITOR.h3,MONITOR.fieldtype);
+        plot_robot( r_struct, r_mon,1,MONITOR.enable3 );
+      end
     end
 
     if MONITOR.enable4
@@ -198,21 +240,13 @@ function h=show_monitor()
     [infostr textcolor]=robot_info(r_struct,r_mon,2);
     set(MONITOR.hInfoText,'String',infostr);
 
-    if MONITOR.logging
-      LOGGER.log_data(yuyv + 0,labelA,r_mon);
-      logstr=sprintf('%d/100',LOGGER.log_count);
-      set(MONITOR.hButton11,'String', logstr);
-      if LOGGER.log_count==100 
-        LOGGER.save_log();
-      end
-    end
-
   end
 
   function update_team(robots, teamNumber, playerNumber , ignore_vision)
 
     %Draw common field 
     h_c=subplot(5,5,[1:15]);
+    cla(h_c);
     plot_field(h_c,1);
 
     for i=1:length(playerNumber)
@@ -234,11 +268,11 @@ function h=show_monitor()
       if MONITOR.enable8==1 && ignore_vision==0
         h1=subplot(5,5,15+playerNumber(i));
         plot_label(labelB);
-        plot_overlay(r_mon,4);
+        plot_overlay(r_mon,4,1);
       elseif MONITOR.enable8==2
         h1=subplot(5,5,15+playerNumber(i));
         cla(h1);
-        plot_overlay(r_mon,4);
+        plot_overlay(r_mon,4,1);
       end
 	
       if MONITOR.enable9
@@ -258,16 +292,14 @@ function h=show_monitor()
 
     %Draw common field 
     h_c=subplot(5,5,[1:15]);
+    cla(h_c);
     plot_field(h_c,1);
 
-    for i=1:5
+    for i=1:10
       r_struct = robot_team.get_team_struct_wireless(i);
       if r_struct.id>0
-  %      r_mon = robot_team.get_monitor_struct_wireless(i);
-
         h_c=subplot(5,5,[1:15]);
-%        plot_robot( r_struct, r_mon,2,MONITOR.enable10);
-        plot_robot( r_struct, [],2,1);
+        plot_robot( r_struct, [],2,MONITOR.enable10);
         updated = 0;
       end
 
@@ -286,10 +318,38 @@ function h=show_monitor()
     end
   end
 
+
+  function plot_grid(map)
+    %map: -1 to 1
+    siz=sqrt(length(map)/6/4);    
+    map=reshape(map,[4*siz 6*siz]);
+    map_black=max(0,map);
+    map_green=max(0,-map);
+
+    rgbc=zeros([4*siz 6*siz 3]);
+    rgbc(:,:,1)=1-map_black-map_green;
+    rgbc(:,:,2)=1-map_black;
+    rgbc(:,:,3)=1-map_black-map_green;
+    image('XData',[-3:1/siz:3],'YData',[-2:1/siz:2],...
+	'CData',rgbc);  
+  end
+
+
+
+
+  function button0(varargin)
+    MONITOR.enable0=mod(MONITOR.enable0+1,3);
+    if MONITOR.enable0==1 set(MONITOR.hButton0,'String', 'Overlay 1');
+    elseif MONITOR.enable0==2 set(MONITOR.hButton0,'String', 'Overlay 2');
+    else set(MONITOR.hButton0,'String', 'Overlay OFF');
+    end
+  end
+
   function button1(varargin)
-    MONITOR.enable1=mod(MONITOR.enable1+1,3);
+    MONITOR.enable1=mod(MONITOR.enable1+1,4);
     if MONITOR.enable1==1 set(MONITOR.hButton1,'String', 'YUYV1');
     elseif MONITOR.enable1==2 set(MONITOR.hButton1,'String', 'YUYV2');
+    elseif MONITOR.enable1==3 set(MONITOR.hButton1,'String', 'YUYV4');
     else set(MONITOR.hButton1,'String', 'YUYV OFF');
       cla(MONITOR.h1);
     end
@@ -309,11 +369,12 @@ function h=show_monitor()
   end
 
   function button3(varargin)
-    MONITOR.enable3=mod(MONITOR.enable3+1,5);
+    MONITOR.enable3=mod(MONITOR.enable3+1,6);
     if MONITOR.enable3==1 set(MONITOR.hButton3,'String', 'MAP1');
     elseif MONITOR.enable3==2 set(MONITOR.hButton3,'String', 'MAP2');
     elseif MONITOR.enable3==3 set(MONITOR.hButton3,'String', 'MAP3');
     elseif MONITOR.enable3==4 set(MONITOR.hButton3,'String', 'PVIEW');
+    elseif MONITOR.enable3==5 set(MONITOR.hButton3,'String', 'OccVIEW');
     else set(MONITOR.hButton3,'String', 'MAP OFF');
       cla(MONITOR.h3);
     end
@@ -384,9 +445,9 @@ function h=show_monitor()
 
   function button13(varargin)
     MONITOR.fieldtype=mod(MONITOR.fieldtype+1,3);
-    if MONITOR.fieldtype==1 set(MONITOR.hButton13,'String', 'KidSize');
+    if MONITOR.fieldtype==1 set(MONITOR.hButton13,'String', 'SPL');
     elseif MONITOR.fieldtype==2 set(MONITOR.hButton13,'String', 'TeenSize');
-    else set(MONITOR.hButton13,'String', 'SPL');
+    else set(MONITOR.hButton13,'String', 'Kidsize');
     end
   end
 end

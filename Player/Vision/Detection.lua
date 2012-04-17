@@ -11,6 +11,7 @@ require('vcm');
 require('detectBall');
 require('detectGoal');
 require('detectLine');
+require('detectCorner');
 require('detectLandmarks'); -- for NSL
 require('detectSpot');
 require('detectFreespace');
@@ -20,6 +21,11 @@ require('detectObstacles');
 require('detectEyes');
 require('detectStretcher');
 --]]
+
+
+--for quick test
+require('detectRobot');
+
 
 -- Define Color
 colorOrange = Config.color.orange;
@@ -33,8 +39,10 @@ use_point_goal=Config.vision.use_point_goal;
 enableLine = Config.vision.enable_line_detection;
 enableSpot = Config.vision.enable_spot_detection;
 enableMidfieldLandmark = Config.vision.enable_midfield_landmark_detection;
-enableFreespace = Config.vision.enable_freespace_detection or 0;
+enable_freespace_detection = Config.vision.enable_freespace_detection or 0;
 enableBoundary = Config.vision.enable_visible_boundary or 0;
+enableRobot = Config.vision.enable_robot_detection or 0;
+
 
 function entry()
   -- Initiate Detection
@@ -62,6 +70,9 @@ function entry()
   line = {};
   line.detect = 0;
 
+  corner = {};
+  corner.detect = 0;
+  
   spot = {};
   spot.detect = 0;
 
@@ -73,6 +84,7 @@ function entry()
 
   boundary={};
   boundary.detect=0;
+
 
 end
 
@@ -91,27 +103,16 @@ function update()
     ballYellow = detectBall.detect(colorYellow);
     ballCyan = detectBall.detect(colorCyan);
   else
---SJ: we need to detect both colored goalposts (due to landmarks)
---TODO: single-colored goalpost
     goalYellow.detect=0;
     goalCyan.detect=0;
     goalYellow = detectGoal.detect(colorYellow,colorCyan);
     goalCyan = detectGoal.detect(colorCyan,colorYellow);
---[[
-    --if (colorCount[colorYellow] > colorCount[colorCyan]) then
-    if (Vision.colorCount[colorYellow] > yellowGoalCountThres) then
-      goalYellow = detectGoal.detect(colorYellow,colorCyan);
-      goalCyan.detect = 0;
-    else
-      goalCyan = detectGoal.detect(colorCyan,colorYellow);
-      goalYellow.detect = 0;
-    end
---]]
   end
 
   -- line detection
   if enableLine == 1 then
     line = detectLine.detect();
+    corner=detectCorner.detect(line);
   end
 
   -- spot detection
@@ -127,14 +128,14 @@ function update()
     landmarkYellow = detectLandmarks.detect(colorYellow,colorCyan);
   end
 
-  -- freespace detection
-  if enableFreespace == 1 then
+  if enable_freespace_detection ==1 then
     freespace = detectFreespace.detect(colorField);
+    boundary = detectBoundary.detect();
   end
 
-  -- visible boundary detection
-  if enableBoundary == 1 then
-    boundary = detectBoundary.detect();
+  -- Global robot detection
+  if enableRobot ==1 then
+    detectRobot.detect();
   end
 
 end
@@ -181,23 +182,56 @@ function update_shm()
   vcm.set_line_detect(line.detect);
   if (line.detect == 1) then
     vcm.set_line_nLines(line.nLines);
+    local v1x=vector.zeros(6);
+    local v1y=vector.zeros(6);
+    local v2x=vector.zeros(6);
+    local v2y=vector.zeros(6);
+    local endpoint11=vector.zeros(6);
+    local endpoint12=vector.zeros(6);
+    local endpoint21=vector.zeros(6);
+    local endpoint22=vector.zeros(6);
 
-    vcm.set_line_v1_1(line.v[1][1]);
-    vcm.set_line_v2_1(line.v[1][2]);
-    vcm.set_line_endpoint1(line.endpoint[1]);
+    max_length=0;
+    max_index=1;
+    for i=1,line.nLines do 
+      v1x[i]=line.v[i][1][1];
+      v1y[i]=line.v[i][1][2];
+      v2x[i]=line.v[i][2][1];
+      v2y[i]=line.v[i][2][2];
+      --x0 x1 y0 y1
+      endpoint11[i]=line.endpoint[i][1];
+      endpoint12[i]=line.endpoint[i][3];
+      endpoint21[i]=line.endpoint[i][2];
+      endpoint22[i]=line.endpoint[i][4];
+      if max_length<line.length[i] then
+        max_length=line.length[i];
+	max_index=i;
+      end
+    end
 
-    vcm.set_line_v1_2(line.v[2][1]);
-    vcm.set_line_v2_2(line.v[2][2]);
-    vcm.set_line_endpoint2(line.endpoint[2]);
+    vcm.set_line_v1x(v1x);
+    vcm.set_line_v1y(v1y);
+    vcm.set_line_v2x(v2x);
+    vcm.set_line_v2y(v2y);
+    vcm.set_line_endpoint11(endpoint11);
+    vcm.set_line_endpoint12(endpoint12);
+    vcm.set_line_endpoint21(endpoint21);
+    vcm.set_line_endpoint22(endpoint22);
 
-    vcm.set_line_v1_3(line.v[3][1]);
-    vcm.set_line_v2_3(line.v[3][2]);
-    vcm.set_line_endpoint3(line.endpoint[3]);
+    vcm.set_line_v({(v1x[max_index]+v2x[max_index])/2,
+	 	   (v1y[max_index]+v2y[max_index])/2,0,0});
+    vcm.set_line_angle(line.angle[max_index]);
 
-    vcm.set_line_v1_4(line.v[4][1]);
-    vcm.set_line_v2_4(line.v[4][2]);
-    vcm.set_line_endpoint4(line.endpoint[4]);
-
+  end
+  vcm.set_corner_detect(corner.detect);
+  if (corner.detect == 1) then
+    vcm.set_corner_type(corner.type)
+    vcm.set_corner_vc0(corner.vc0)
+    vcm.set_corner_v10(corner.v10)
+    vcm.set_corner_v20(corner.v20)
+    vcm.set_corner_v(corner.v)
+    vcm.set_corner_v1(corner.v1)
+    vcm.set_corner_v2(corner.v2)
   end
 
   --vcm.set_spot_detect(spot.detect);
@@ -219,14 +253,13 @@ function update_shm()
 
   vcm.set_boundary_detect(boundary.detect);
   if (boundary.detect == 1) then
-	if (freespace.detect == 1) then
-		vcm.set_boundary_top(freespace.vboundB);
-	else
-		vcm.set_boundary_top(boundary.top);
-	end
-	vcm.set_boundary_bottom(boundary.bottom);
+    if (freespace.detect == 1) then
+      vcm.set_boundary_top(freespace.vboundB);
+    else
+      vcm.set_boundary_top(boundary.top);
+    end
+      vcm.set_boundary_bottom(boundary.bottom);
   end
-
 end
 
 function exit()

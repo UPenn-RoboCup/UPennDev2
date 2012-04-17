@@ -51,15 +51,15 @@ function update()
   if( ps ) then
     if( primecm.get_skeleton_found()==1 ) then
       --print('Updating via PrimeSense')
-if( t_last_ps==0 ) then
-t0 = Body.get_time();
-end
-       t_ps = primecm.get_skeleton_timestamp();
-       if( t_ps == t_last_ps ) then
-         return;
-       end
+      if( t_last_ps==0 ) then
+        t0 = Body.get_time();
+      end
+      t_ps = primecm.get_skeleton_timestamp();
+      if( t_ps == t_last_ps ) then
+        return;
+      end
       t_last_ps = t_ps;
-print('Time differences',t-t0,t_ps);
+      print('Time differences',t-t0,t_ps);
 
       local torso = primecm.get_position_Torso();
       local vx = -1*torso[3] - 240;
@@ -75,18 +75,24 @@ print('Time differences',t-t0,t_ps);
       --print( 'Desired arm position: ', unpack(get_scaled_prime_arm(0)) );
       qRArm = Kinematics.inverse_arm(get_scaled_prime_arm(1));
       qLArm = Kinematics.inverse_arm(get_scaled_prime_arm(0));
+      qLArm2 = kine_map( get_scaled_prime_arm(0) );
+      
       if(qRArm) then
         qRArm[2] = -1 * qRArm[2]; 
         Body.set_rarm_command( qRArm );
       end
       if(qLArm) then
+        print('C++: ',180/math.pi*vector.new(qLArm) )
+        print('Lua: ',qLArm2)
+        print();
+
         qLArm[2] = -1 * qLArm[2];
         Body.set_larm_command( qLArm );
       end
 
       --walk.set_velocity( vx, vy, va );
     else
---      print('User not found...')
+      --      print('User not found...')
       walk.set_velocity( 0,0,0 );      
     end
   else
@@ -121,16 +127,52 @@ function get_scaled_prime_arm( arm ) --left is 0
   --%const double lowerArmLength = .129;  //OP, spec
   --op_arm_len = .189;
   if(arm==0) then
-    e2w = primecm.get_position_ElbowL() - primecm.get_position_WristL();
-    s2e = primecm.get_position_ShoulderL() - primecm.get_position_WristL();
-    s2w = primecm.get_position_ShoulderL() - primecm.get_position_WristL();
+    e2h = primecm.get_position_ElbowL() - primecm.get_position_HandL();
+    s2e = primecm.get_position_ShoulderL() - primecm.get_position_ElbowL();
+    s2h = primecm.get_position_ShoulderL() - primecm.get_position_HandL();
   else
-    e2w = primecm.get_position_ElbowR() - primecm.get_position_WristR();
-    s2e = primecm.get_position_ShoulderR() - primecm.get_position_WristR();
-    s2w = primecm.get_position_ShoulderR() - primecm.get_position_WristR();
+    e2h = primecm.get_position_ElbowR() - primecm.get_position_HandR();
+    s2e = primecm.get_position_ShoulderR() - primecm.get_position_ElbowR();
+    s2h = primecm.get_position_ShoulderR() - primecm.get_position_HandR();
   end
-  arm_len = vector.norm( e2w ) + vector.norm( s2e );
-  offset = s2w * (.18 / arm_len);
+  arm_len = vector.norm( e2h ) + vector.norm( s2e );
+  offset = s2h * (.189 / arm_len);
   -- Change to correct coordinates for OP
-  return {offset[3],offset[1],offset[2]}; -- z is OP x, x is OP y, y is OP z
+  return vector.new({offset[3],offset[1],offset[2]}); -- z is OP x, x is OP y, y is OP z
+end
+
+function kine_map( dArm )
+
+  -- Real numbers
+  upperArmLength = .060;
+  lowerArmLength = .129;
+
+  qArm = -999 * vector.ones(3);
+  -- Law of cosines to find end effector distance from shoulder
+  c_sq = dArm[1]^2+dArm[2]^2+dArm[3]^2;
+  c = math.sqrt( c_sq );
+  print('dArm',dArm,'c',c)  
+  if( c>lowerArmLength+upperArmLength ) then
+    disp('Distance not reachable!');
+    return;
+  end
+  local tmp = ((upperArmLength^2)+(lowerArmLength^2)-c_sq) / (2*upperArmLength*lowerArmLength);
+  if( tmp>1 ) then -- Impossible configuration
+    disp('Impossible confirguration!');
+    return;
+  end
+  qArm[3] = math.acos( tmp );
+  -- Angle of desired point with the y-axis
+  qArm[2] = math.acos( dArm[2] / c );
+  -- How much rotation about the y-axis (in the xz plane
+  qArm[1] = math.atan2( dArm[3], dArm[1] ) - qArm[3];
+
+  -- Condition for OP default joint position
+  qArm[3] = qArm[3] - math.pi;
+  qArm[2] = qArm[2] - math.pi/2;
+  qArm[1] = qArm[1] + math.pi;
+
+  qArm = qArm * 180/math.pi;
+  return qArm;
+
 end

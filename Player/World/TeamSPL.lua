@@ -232,6 +232,7 @@ function set_role(r)
       Speak.talk('ERROR: Unknown Role');
     end
   end
+  update_shm();
 end
 
 set_role(Config.game.role);

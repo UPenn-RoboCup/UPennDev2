@@ -22,18 +22,16 @@ package.path = cwd .. '/Lib/?.lua;' .. package.path;
 package.path = cwd .. '/Dev/?.lua;' .. package.path;
 package.path = cwd .. '/Motion/?.lua;' .. package.path;
 package.path = cwd .. '/Motion/keyframes/?.lua;' .. package.path;
-package.path = cwd .. '/Motion/walk/?.lua;' .. package.path;
+package.path = cwd .. '/Motion/Walk/?.lua;' .. package.path;
 package.path = cwd .. '/Vision/?.lua;' .. package.path;
 package.path = cwd .. '/World/?.lua;' .. package.path;
 
 require('Config')
---Shut down wireless team message
-Config.dev.team='TeamNull'; 
-
+--This FIXES monitor issue with test_vision
+Config.dev.team = 'TeamNull'; 
 require('unix')
 require('getch')
 require('Broadcast')
-require('Config')
 require('shm')
 require('vector')
 require('mcm')
@@ -56,6 +54,10 @@ if(Config.platform.name == 'OP') then
   Body.set_body_hardness(0.3);
   Body.set_actuator_command(Config.stance.initangle)
 end
+
+--TODO: enable new nao specific
+newnao = true;
+
 
 getch.enableblock(1);
 unix.usleep(1E6*1.0);
@@ -93,36 +95,22 @@ local tLastBroadcast = Body.get_time();
 local broadcast_count=0;
 local imageCount=0;
 
-function broadcast()
-  local ncount=20;
-  local t=Body.get_time();
-  if t-tLastBroadcast<maxPeriod then return;end
-  if broadcast_enable==0 then return;end
-  broadcast_count = broadcast_count + 1;
 
-  local tstart = unix.time();
-  -- Always send non-image data
-  Broadcast.update(broadcast_enable);
-  if( broadcast_count % imgRate == 0 ) then
-    Broadcast.update_img(broadcast_enable,imagecount);    
-    imagecount = imagecount + 1;
-  end
-  tPassed = unix.time() - tstart;  -- Sleep in order to get the right FPS
-
---[[
-  print("Broadcast time:",tPassed);
-  -- Display our FPS and broadcast level
-  if (broadcast_count % ncount == 0) then
-    print('fps: '..(ncount / (tstart - tUpdate))..', Level: '..broadcast_enable );
-  end
---]]
-  tLastBroadcast=t;
-
-end
+-- main loop
+count = 0;
+lcount = 0;
+tUpdate = unix.time();
+Config.fsm.playMode=1; --Always demo mode
+fsm.enable_walkkick = 0;
+fsm.enable_sidekick = 0;
+broadcast_enable=0;
 
 function process_keyinput()
   --Robot specific head pitch bias
-  headPitch = vcm.get_camera_pitchBias();
+  headPitchBiasComp = 
+	mcm.get_walk_headPitchBiasComp();
+  headPitchBias = mcm.get_headPitchBias()
+
 
   local str=getch.get();
   if #str>0 then
@@ -136,6 +124,12 @@ function process_keyinput()
     elseif byte==string.byte(",") then	targetvel[1]=targetvel[1]-0.02;
     elseif byte==string.byte("h") then	targetvel[2]=targetvel[2]+0.02;
     elseif byte==string.byte(";") then	targetvel[2]=targetvel[2]-0.02;
+
+    --switch camera 
+    elseif byte==string.byte("-") then
+      vcm.set_camera_command(1);
+    elseif byte==string.byte("=") then
+      vcm.set_camera_command(0);
 
     -- Move the head around
     elseif byte==string.byte("w") then
@@ -158,14 +152,14 @@ function process_keyinput()
     -- Camera angle bias fine tuning 
     elseif byte==string.byte("q") then	
       headsm_running=0;
-      headPitch=vcm.get_camera_pitchBias()+math.pi/180;
-      vcm.set_camera_pitchBias(headPitch);
-      print("\nCamera pitch bias:",headPitch*180/math.pi);
+      headPitchBiasComp = headPitchBiasComp+math.pi/180;
+      mcm.set_walk_headPitchBiasComp(headPitchBiasComp);
+      print("\nCamera pitch bias:",headPitchBiasComp*180/math.pi);
     elseif byte==string.byte("z") then	
       headsm_running=0;
-      headPitch=vcm.get_camera_pitchBias()-math.pi/180;
-      vcm.set_camera_pitchBias(headPitch);
-      print("\nCamera pitch bias:",headPitch*180/math.pi);
+      headPitchBiasComp = headPitchBiasComp-math.pi/180;
+      mcm.set_walk_headPitchBiasComp(headPitchBiasComp);
+      print("\nCamera pitch bias:",headPitchBiasComp*180/math.pi);
     -- Head FSM testing
     elseif byte==string.byte("1") then	
       headsm_running = 1-headsm_running;
@@ -182,7 +176,8 @@ function process_keyinput()
       headangle = vector.zeros(2);
       headangle[1],headangle[2] = 
  	HeadTransform.ikineCam(ball.x,	ball.y, trackZ);
-      headangle[2]=headangle[2]+headPitch; --this is substracted below
+      headangle[2]=headangle[2]+headPitchBias; 
+	--this is substracted below
       print("Head Angles for looking directly at the ball:", 
 	unpack(headangle*180/math.pi));
 
@@ -193,6 +188,10 @@ function process_keyinput()
       BodyFSM.sm:set_state('bodySearch');   
       HeadFSM.sm:set_state('headScan');
       walk.start();
+
+    elseif byte==string.byte("f") then
+      behavior.cycle_behavior();
+
     elseif byte==string.byte("6") then
       headsm_running=0;
       headangle[1]=0;
@@ -202,11 +201,12 @@ function process_keyinput()
       footX = Config.walk.footX or 0;
       print("foot center to ball pos: ",ball.x,ball.y);      
 
-    elseif byte==string.byte("g") then	--Broadcast selection
+    elseif byte==string.byte("g") then	
+      --Broadcast selection
       local mymod = 4;
       broadcast_enable = (broadcast_enable+1)%mymod;
-      print("\nBroadcast:", broadcast_enable);
 
+      print("\nBroadcast:", broadcast_enable);
     --Left kicks (for camera angle calibration)
     elseif byte==string.byte("3") then	
       kick.set_kick("kickForwardLeft");
@@ -231,7 +231,7 @@ function process_keyinput()
     end
     walk.set_velocity(unpack(targetvel));
     if headsm_running == 0 then
-      Body.set_head_command({headangle[1],headangle[2]-headPitch});
+      Body.set_head_command({headangle[1],headangle[2]-headPitchBias});
       print("\nHead Yaw Pitch:", unpack(headangle*180/math.pi))
 
 
@@ -239,10 +239,6 @@ function process_keyinput()
   end
 end
 
--- main loop
-count = 0;
-lcount = 0;
-tUpdate = unix.time();
 
 function update()
   count = count + 1;
@@ -265,6 +261,7 @@ function update()
 
       BodyFSM.entry();
       HeadFSM.entry();
+      require('behavior')
 
       init = true;
     else
@@ -290,13 +287,15 @@ function update()
     process_keyinput();
     Motion.update();
     Body.update();
+    -- Keep setting monitor flag
+    vcm.set_camera_broadcast(broadcast_enable);
+
     if headsm_running>0 then
       HeadFSM.update();
     end
     if bodysm_running>0 then
       BodyFSM.update();
     end
-    broadcast();
   end
   local dcount = 50;
   if (count % 50 == 0) then
@@ -325,7 +324,9 @@ if (webots) then
   end
 end
 
-if( darwin ) then
+--Now nao are running main process separately too
+
+if( darwin or newnao) then
   local tDelay = 0.005 * 1E6; -- Loop every 5ms
   while 1 do
     process_keyinput();

@@ -25,7 +25,6 @@ static int maxJ[NMAX];
 static int sumJ[NMAX];
 
 
-
 int lua_goal_posts(lua_State *L) {
   uint8_t *im_ptr = (uint8_t *) lua_touserdata(L, 1);
   if ((im_ptr == NULL) || !lua_islightuserdata(L, 1)) {
@@ -140,8 +139,6 @@ int lua_goal_posts(lua_State *L) {
 }
 
 
-
-
 int lua_tilted_goal_posts(lua_State *L) {
   uint8_t *im_ptr = (uint8_t *) lua_touserdata(L, 1);
   if ((im_ptr == NULL) || !lua_islightuserdata(L, 1)) {
@@ -154,76 +151,65 @@ int lua_tilted_goal_posts(lua_State *L) {
   double tiltAngle = luaL_optnumber(L, 6, 0.0);
   double increment= tan(tiltAngle);
 
+  //Now scan starts from (-m/2,0) to (3m/2,0) 
+  //so now index for countJ, minJ, sumJ has m/2 offset
+
+  int index_offset = m/2;
+
   // Initialize arrays
-  for (int i = 0; i < m; i++) {
-    countJ[i] = 0;
-    minJ[i] = n-1;
-    maxJ[i] = 0;
-    sumJ[i] = 0;
+  for (int i = -index_offset; i < m+index_offset; i++) {
+    countJ[i+index_offset] = 0;
+    minJ[i+index_offset] = n-1;
+    maxJ[i+index_offset] = 0;
+    sumJ[i+index_offset] = 0;
   }
 
   // Iterate through image getting projection statistics
-//  int i0=(int) (-m*increment) +0.5;
-//  int i1 = m- 
 
-
-  for (int i = 0; i < m; i++) {
+  for (int i = -index_offset; i < m+index_offset; i++) {
     for (int j = 0; j < n; j++) {
       double shift= (double) j*increment;
-      int index_i=(int) i+shift+0.5; //round up
+      int index_i=(int) i+(shift+0.5); //round up
+
+      //check current pixel is within the image
       if ((index_i>=0) && (index_i<m)) {
         int index_ij =j*m + index_i;
         uint8_t pixel = *(im_ptr+index_ij);
         if (pixel & mask) {
-          countJ[i]++;
-          if (j < minJ[i]) minJ[i] = j;
-          if (j > maxJ[i]) maxJ[i] = j;
-          sumJ[i] += j;
+          countJ[i+index_offset]++;
+          if (j < minJ[i+index_offset]) minJ[i+index_offset] = j;
+          if (j > maxJ[i+index_offset]) maxJ[i+index_offset] = j;
+          sumJ[i+index_offset] += j;
         }
       }
     }
   }
-/*
-  // Iterate through image getting projection statistics
-  for (int i = 0; i < m; i++) {
-    uint8_t *im_row = im_ptr + i;
-    for (int j = 0; j < n; j++) {
-      uint8_t pixel = *im_row;
-      im_row += m;
-      if (pixel & mask) {
-        countJ[i]++;
-        if (j < minJ[i]) minJ[i] = j;
-        if (j > maxJ[i]) maxJ[i] = j;
-        sumJ[i] += j;
-      }
-    }
-  }
-*/
 
   std::vector<RegionProps> postVec;
   postVec.clear();
   RegionProps post;
   // Find connected posts
   bool connect = false;
-  for (int i = 0; i < m; i++) {
-    if (countJ[i] > threshold) {
+  for (int i = -index_offset; i < m+index_offset; i++) {
+    if (countJ[i+index_offset] > threshold) {
+      int i_index = i+index_offset;
       if (!connect) {
-        post.area = countJ[i];
-        post.sumI = countJ[i]*i;
-        post.sumJ = sumJ[i];
+        post.area = countJ[i_index];
+        post.sumI = countJ[i_index]*i;
+        post.sumJ = sumJ[i_index];
         post.minI = i;
         post.maxI = i;
-        post.minJ = minJ[i];
-        post.maxJ = maxJ[i];
+        post.minJ = minJ[i_index];
+        post.maxJ = maxJ[i_index];
         connect = true;
       }
       else {
-        post.area += countJ[i];
-        post.sumI += countJ[i]*i;
-        post.sumJ += sumJ[i];
+        post.area += countJ[i_index];
+        post.sumI += countJ[i_index]*i;
+        post.sumJ += sumJ[i_index];
         post.maxI = i;
-        if (minJ[i] < post.minJ) post.minJ = minJ[i];
-        if (maxJ[i] > post.maxJ) post.maxJ = maxJ[i];
+        if (minJ[i_index] < post.minJ) post.minJ = minJ[i_index];
+        if (maxJ[i_index] > post.maxJ) post.maxJ = maxJ[i_index];
       }
       connect = true;
     }
@@ -234,6 +220,7 @@ int lua_tilted_goal_posts(lua_State *L) {
       connect = false;
     }
   }
+
   if (connect) {
     postVec.push_back(post);
   }

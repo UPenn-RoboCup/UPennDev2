@@ -14,5 +14,5 @@ export PLATFORM
 
 #exec xterm -e "lua -l controller"
 #exec luajit -l controller start.lua
-exec lua -l controller start.lua
+exec lua start.lua
 

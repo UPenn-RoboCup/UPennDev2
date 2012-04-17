@@ -1,4 +1,4 @@
-function plot_overlay(r_mon,scale)
+function plot_overlay(r_mon,scale,drawlevel)
 %This function plots overlaid vision information 
 %Over the camera yuyv feed or labeled images
     overlay_level=0;
@@ -30,6 +30,17 @@ function plot_overlay(r_mon,scale)
 	plot_line(r_mon.line,scale)
 	hold off;
       end
+      if (r_mon.corner.detect == 1)
+        hold on;
+	plot_corner(r_mon.corner,scale)
+	hold off;
+      end
+    
+     if drawlevel ==2 
+       plot_robot_lowpoint(r_mon.robot,scale)
+     end
+
+
     end
 
 
@@ -49,7 +60,6 @@ function plot_overlay(r_mon,scale)
       set(b_name,'FontSize',8);
     end
   end
-
 
   function plot_goalposts( postStats, v, rollAngle, scale)
 
@@ -75,10 +85,10 @@ function plot_overlay(r_mon,scale)
 
 
 
-    gbx1=(postStats.gbx1+.5)/scale*4;
-    gbx2=(postStats.gbx2+1.5)/scale*4;
-    gby1=(postStats.gby1+.5)/scale*4;
-    gby2=(postStats.gby2+1.5)/scale*4;
+    gbx1=(postStats.gbx1)/scale*4;
+    gbx2=(postStats.gbx2+1)/scale*4;
+    gby1=(postStats.gby1)/scale*4;
+    gby2=(postStats.gby2+1)/scale*4;
 
     xskew=tan(rollAngle);
     gbx11=gbx1+gby1*xskew;
@@ -132,13 +142,42 @@ function plot_overlay(r_mon,scale)
   function plot_line(lineStats,scale)
     nLines=lineStats.nLines;
     for i=1:nLines
-      endpoint=lineStats.endpoint{i};
+      endpoint=lineStats.endpoint{i}+0.5;
       x1=endpoint(1)/scale*4;
       x2=endpoint(2)/scale*4;
       y1=endpoint(3)/scale*4;
       y2=endpoint(4)/scale*4;
-      plot([x1 x2],[y1 y2],'k--','LineWidth',6);
+      plot([x1 x2],[y1 y2],'k--','LineWidth',3);
     end
+  end
+
+  function plot_corner(cornerStats,scale)
+    if cornerStats.type==1
+      strgoalpos = 'L';
+      marker='r';
+    else
+      strgoalpos = 'T';
+      marker='b';
+    end   
+
+    vc0=(cornerStats.vc0+0.5)/scale*4;
+    v10=(cornerStats.v10+0.5)/scale*4;
+    v20=(cornerStats.v20+0.5)/scale*4;
+    plot([vc0(1) v10(1)],[vc0(2) v10(2)],marker,'LineWidth',4);
+    plot([vc0(1) v20(1)],[vc0(2) v20(2)],marker,'LineWidth',4);
+    b_name=text(vc0(1),vc0(2), strgoalpos,'BackGroundColor',[.7 .7 .7]);
+    set(b_name,'FontSize',8);
+  end
+
+  function plot_robot_lowpoint(robotState,scale)
+    hold on;
+    if isfield(robotState,'lowpoint')
+      siz=length(robotState.lowpoint);
+      x=([1:siz]-0.5)/scale*4;
+      y=robotState.lowpoint/scale*4;
+      plot(x,y,'r--');
+    end
+    hold off;
   end
 
   

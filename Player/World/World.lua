@@ -98,7 +98,10 @@ function update_vision()
 
   -- Penalized?
   if gcm.in_penalty() then
+    wcm.set_robot_penalty(1);
     init_particles();
+  else
+    wcm.set_robot_penalty(0);
   end
 
   -- At gameSet state, all robot should face opponents' goal
@@ -196,17 +199,15 @@ function update_vision()
 
   -- line update
   if vcm.get_line_detect() == 1 then
-    --Long line localization
-    local v1=vcm.get_line_v1_1();
-    local v2=vcm.get_line_v2_1();
-    PoseFilter.line(v1,v2);
-
-   --TODO: Edge localization
---[[
     local v = vcm.get_line_v();
     local a = vcm.get_line_angle();
-    PoseFilter.line(v, a);
---]]
+
+    PoseFilter.line(v, a);--use longest line in the view
+  end
+
+  if vcm.get_corner_detect() == 1 then
+    local v=vcm.get_corner_v();
+    PoseFilter.corner(v);
   end
 
   if vcm.get_landmark_detect() == 1 then
@@ -227,7 +228,17 @@ end
 
 function update_shm()
   -- update shm values
+
+  --update ground truth
+  if Body.gps_enable then
+    gps_pose=Body.get_sensor_gps();
+    wcm.set_robot_gpspose(gps_pose);
+  else
+    wcm.set_robot_gpspose({pose.x,pose.y,pose.a});
+  end
+
   wcm.set_robot_pose({pose.x, pose.y, pose.a});
+  wcm.set_robot_time(Body.get_time());
 
   wcm.set_ball_x(ball.x);
   wcm.set_ball_y(ball.y);

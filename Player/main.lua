@@ -22,7 +22,7 @@ package.path = cwd .. '/Lib/?.lua;' .. package.path;
 package.path = cwd .. '/Dev/?.lua;' .. package.path;
 package.path = cwd .. '/Motion/?.lua;' .. package.path;
 package.path = cwd .. '/Motion/keyframes/?.lua;' .. package.path;
-package.path = cwd .. '/Motion/walk/?.lua;' .. package.path;
+package.path = cwd .. '/Motion/Walk/?.lua;' .. package.path;
 package.path = cwd .. '/Vision/?.lua;' .. package.path;
 package.path = cwd .. '/World/?.lua;' .. package.path;
 
@@ -104,7 +104,8 @@ function update()
       init = true;
     else
       if (count % 20 == 0) then
-        if (Body.get_change_state() == 1) then
+--        if (Body.get_change_state() == 1) then
+	  if true then
           Speak.talk('Calibrating');
           calibrating = true;
         elseif (Body.get_change_role() == 1) then

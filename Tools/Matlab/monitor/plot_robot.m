@@ -1,4 +1,4 @@
-function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel)
+ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel)
 % This function shows the robot over the field map
 % Level 1: show position only
 % Level 2: show position and vision info
@@ -17,24 +17,45 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel)
     plot_fallen_robot(robot_struct,scale)
     plot_info(robot_struct,scale);
   else
-    if drawlevel==4
+    if drawlevel==1 
+      %simple position and pose
+      plot_robot(robot_struct,scale);
+      plot_info(robot_struct,scale);
+      plot_ball(robot_struct,scale);
+      plot_gps_robot(robot_struct,scale);
+
+    elseif drawlevel==2 
+      %additional simple vision info for team monitor
+
+      plot_robot(robot_struct,scale);
+      plot_info(robot_struct,scale);
+      plot_ball(robot_struct,scale);
+      plot_goal_team(robot_struct,scale);
+      plot_landmark_team(robot_struct,scale);
+      plot_corner_team(robot_struct,scale);
+      plot_gps_robot(robot_struct,scale);
+
+    elseif drawlevel==3 
+      %Full vision info
+      plot_robot(robot_struct,scale);
+      plot_info(robot_struct,scale);
+      plot_ball(robot_struct,scale);
+
+      plot_line(r_mon.line,scale);
+      plot_corner(r_mon.corner,scale);
+      plot_goal(r_mon.goal,scale);
+      plot_landmark(r_mon.landmark,scale);
+      plot_fov(r_mon.fov);
+
+    elseif drawlevel==4
+      plot_ball(robot_struct,scale);
       plot_particle(r_mon.particle);
       plot_goal(r_mon.goal,scale);
       plot_landmark(r_mon.landmark,scale);
       plot_line(r_mon.line,scale);
-    else
-      plot_robot(robot_struct,scale);
-      plot_info(robot_struct,scale);
-      plot_ball(robot_struct,scale);
-    
-      if drawlevel>1
-        plot_line(r_mon.line,scale);
-        plot_goal(r_mon.goal,scale);
-        plot_landmark(r_mon.landmark,scale);
-        if drawlevel==3
-          plot_fov(r_mon.fov);
-        end
-      end
+      plot_corner(r_mon.corner,scale);
+      plot_fov(r_mon.fov);
+      plot_gps_robot(robot_struct,scale);
     end
   end
 
@@ -52,12 +73,25 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel)
     roleColors = {'m','k', 'k--','g'};
 
     teamColors = ['b', 'r'];
-    hr = fill(xr, yr, teamColors(robot.teamColor+1));
+    hr = fill(xr, yr, teamColors(max(1,robot.teamColor+1)));
 
     if robot.role>1 
       h_role=plot([xr xr(1)],[yr yr(1)],roleColors{robot.role});
       set(h_role,'LineWidth',3);
     end
+  end
+
+  function plot_gps_robot(robot,scale)
+    xgps = robot_struct.gpspose.x;
+    ygps = robot_struct.gpspose.y;
+    cagps = cos(robot_struct.gpspose.a);
+    sagps = sin(robot_struct.gpspose.a);
+
+    pl_len=1;
+    dx=cagps*pl_len;
+    dy=sagps*pl_len;
+    quiver(xgps,ygps,dx,dy,0,'b');
+    plot(xgps,ygps,'bo');
   end
 
 
@@ -75,7 +109,7 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel)
     roleColors = {'g','r','k', 'k--','r--','g--'};
 
     teamColors = ['b', 'r'];
-    hr = fill(xr, yr, teamColors(robot.teamColor+1));
+    hr = fill(xr, yr, teamColors(max(1,robot.teamColor+1)));
 
     if robot.role>1 
       h_role=plot([xr xr(1)],[yr yr(1)],roleColors{robot.role+1});
@@ -88,7 +122,7 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel)
     ab_scale = 1/scale;
     quiver(x0, y0, xab*ab_scale,yab*ab_scale, 'k' );
   end
-
+  
   function plot_info(robot,angle)
     infostr=robot_info(robot,0,1);
     xtext=-1/scale;   xtext2=-0.4/scale;
@@ -107,22 +141,91 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel)
       %hb = plot(xb, yb, [idColors(robot_struct.id) 'o']);
       hb = plot(xb, yb, 'ro');
  
-      ball_vel=[robot.ball.vx robot.ball.vy];
-      xbv = xb + ball_vel(1)*ca - ball_vel(2)*sa;   
-      ybv = yb + ball_vel(1)*sa + ball_vel(2)*ca;
-
-      ab_scale = 1/scale;
-%      quiver(xb, yb, xab*ab_scale,yab*ab_scale, 'k' );
-      plot([xb xbv],[yb ybv],'r--','LineWidth',2/scale);
 
       if ballt<0.5 
         plot([x0 xb],[y0 yb],'r');
         set(hb, 'MarkerSize', 8/scale);
+        ball_vel=[robot.ball.vx robot.ball.vy];
+
+        xbv =  ball_vel(1)*ca - ball_vel(2)*sa;   
+        ybv =  ball_vel(1)*sa + ball_vel(2)*ca;
+        qvscale = 2;
+        quiver(xb, yb, qvscale*xbv/scale, qvscale*ybv/scale,...
+		 0,'r','LineWidth',2/scale );
       else
         %TODO: add last seen time info
       end
     end
   end
+
+%duplicated.. should be fixed soon
+
+  function plot_goal_team(robot,scale)
+    goal=robot.goal;
+    if( goal>0) 
+      marker='m';
+      marker2 = strcat(marker,'--');
+
+%      if(goal.color==2) marker = 'm';% yellow
+%      else marker = 'b';end
+%      marker2 = strcat(marker,'--');
+      if goal ==1 
+        marker1 = strcat(marker,'+');%Unknown post
+      elseif goal==3
+          marker1 = strcat(marker,'>');%Right post
+      else
+          marker1 = strcat(marker,'<');%Left or two post
+      end
+      x1 = robot.goalv1(1)*ca - robot.goalv1(2)*sa + robot_struct.pose.x;
+      y1 = robot.goalv1(1)*sa + robot.goalv1(2)*ca + robot_struct.pose.y;
+      plot(x1,y1,marker1,'MarkerSize',12/scale);
+      plot([x0 x1],[y0 y1],marker2);
+
+      if goal==4 
+        marker1 = strcat(marker,'>');%Left post
+        x2 = robot.goalv2(1)*ca - robot.goalv2(2)*sa + robot_struct.pose.x;
+        y2 = robot.goalv2(1)*sa + robot.goalv2(2)*ca + robot_struct.pose.y;
+        plot(x2,y2,marker1,'MarkerSize',12/scale);
+        plot([x0 x2],[y0 y2],marker2);
+      end
+    end
+  end
+
+  function plot_landmark_team(robot,scale)
+    landmark = robot.landmark;
+    if (landmark>0)
+%      if (landmark.color==2) marker='m';% yellow
+%      else marker='b';	end
+      marker='b';
+      marker2 = strcat(marker,'x');
+      marker3 = strcat(marker,'--');
+      x1 = robot.landmarkv(1)*ca - robot.landmarkv(2)*sa + robot_struct.pose.x;
+      y1 = robot.landmarkv(1)*sa + robot.landmarkv(2)*ca + robot_struct.pose.y;
+      plot(x1,y1,marker2,'MarkerSize',12/scale);
+      plot([x0 x1],[y0 y1],marker3);
+    end
+  end
+
+  function plot_corner_team(robot,scale)
+    if isfield(robot,'corner')
+      corner = robot.corner;
+      if (corner>0)
+        marker='k';
+        if corner==1 
+          marker2 = strcat(marker,'s');
+        else
+          marker2 = strcat(marker,'p');
+        end
+        marker3 = strcat(marker,'--');
+        x1 = robot.cornerv(1)*ca - robot.cornerv(2)*sa + robot_struct.pose.x;
+        y1 = robot.cornerv(1)*sa + robot.cornerv(2)*ca + robot_struct.pose.y;
+        plot(x1,y1,marker2,'MarkerSize',12/scale);
+        plot([x0 x1],[y0 y1],marker3);
+      end
+    end
+  end
+
+
 
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   %% Monitor struct based plots (optional)
@@ -181,6 +284,7 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel)
   end
 
   function plot_line(line,scale)
+
     if( line.detect==1 )
       nLines=line.nLines;
       for i=1:nLines
@@ -195,6 +299,36 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel)
         plot([x0 (x1+x2)/2],[y0 (y1+y2)/2],'k');
         plot([x1 x2],[y1 y2],'k','LineWidth',2);
       end
+    end
+  end
+
+  function plot_corner(corner,scale)
+    if corner.detect==1
+      if corner.type==1
+        marker='r';
+      else
+        marker='b';
+      end     
+
+      v=corner.v;
+      v1=corner.v1;
+      v2=corner.v2;
+
+      x1 = v(1)*ca - v(2)*sa + robot_struct.pose.x;
+      y1 = v(1)*sa + v(2)*ca + robot_struct.pose.y;
+      plot([x0 x1],[y0 y1],marker);
+
+      x1 = v(1)*ca - v(2)*sa + robot_struct.pose.x;
+      y1 = v(1)*sa + v(2)*ca + robot_struct.pose.y;
+      x2 = v1(1)*ca - v1(2)*sa + robot_struct.pose.x;
+      y2 = v1(1)*sa + v1(2)*ca + robot_struct.pose.y;
+      plot([x1 x2],[y1 y2],marker,'LineWidth',3);
+
+      x1 = v(1)*ca - v(2)*sa + robot_struct.pose.x;
+      y1 = v(1)*sa + v(2)*ca + robot_struct.pose.y;
+      x2 = v2(1)*ca - v2(2)*sa + robot_struct.pose.x;
+      y2 = v2(1)*sa + v2(2)*ca + robot_struct.pose.y;
+      plot([x1 x2],[y1 y2],marker,'LineWidth',3);
     end
   end
 

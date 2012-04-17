@@ -33,13 +33,17 @@ vision.store_ball_detections = 0;
 -- use this to substitute goal check with blue/yellow ball check
 vision.use_point_goal = 0;
 
+--vision.enable_robot_detection = 1;
+vision.enable_robot_detection = 0;
+
 ----------------------------
 --OP specific
 ----------------------------
 -- Use tilted bounding box?
 vision.use_tilted_bbox = 1;
--- Subsample image?
-vision.subsampling = 1;
+-- Subsample main image for monitor?
+vision.subsampling = 1;  --1/2 sized image
+vision.subsampling2 = 1; --1/4 sized image
 
 --Vision parameter values
 
@@ -58,7 +62,7 @@ vision.ball.check_for_ground = 1;
 vision.goal={};
 vision.goal.th_min_color_count=100;
 vision.goal.th_nPostB = 5;
-vision.goal.th_min_areaB = 40;
+vision.goal.th_min_area = 40;
 vision.goal.th_min_orientation = 60*math.pi/180;
 vision.goal.th_min_fill_extent=0.35;
 vision.goal.th_aspect_ratio={2.5,15};
@@ -74,3 +78,13 @@ vision.goal.th_min_area_unknown_post = 200;
 vision.goal.use_centerpost = 1;
 vision.goal.check_for_ground = 1;
 
+vision.line={};
+vision.line.max_width = 16;
+vision.line.connect_th = 1.4;
+vision.line.max_gap=0;
+vision.line.min_length=10;
+
+vision.corner={};
+vision.corner.dist_threshold = 30;
+vision.corner.length_threshold = 6;
+vision.corner.min_center_dist = 1.5;

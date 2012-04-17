@@ -28,11 +28,7 @@ dev.camera = 'WebotsOPCam';
 dev.kinematics = 'OPKinematics';
 dev.game_control='WebotsGameControl';
 dev.team='TeamNSL';
---dev.team='TeamSPL';
-dev.walk='NewWalk';
-dev.walk='NewNewWalk'; --New robocup walk that supports walking kicks
---dev.walk='BoxWalk'; --New walk that supports different foot stance
---dev.kick='NewKick';
+dev.walk='NewNewNewWalk'; --Walk with generalized walkkick definitions
 dev.kick='NewNewKick'; --Extended kick that supports upper body motion
 
 -- Game Parameters
@@ -58,24 +54,34 @@ fsm = {};
 loadconfig('FSM/Config_WebotsOP_FSM')
 fsm.game = 'RoboCup';
 fsm.head = {'GeneralPlayer'};
-fsm.body = {'SimplePlayer'};
---fsm.body = {'GeneralPlayer'};
+--fsm.body = {'SimplePlayer'};
+fsm.body = {'GeneralPlayer'};
 
---Behavior flags, should be defined in FSM Configs but can be overrided here
-fsm.enable_obstacle_detection = 1;
-fsm.kickoff_wait_enable = 1;
+--Behavior flags, should be defined in FSM Configs but can be overridden here
 fsm.playMode = 3; --1 for demo, 2 for orbit, 3 for direct approach
+fsm.enable_obstacle_detection = 1;
+fsm.wait_kickoff = 0;
 fsm.enable_walkkick = 1;
 fsm.enable_sidekick = 1;
+fsm.enable_dribble = 1;
 
-
+--[[
+fsm.playMode = 1; --1 for demo, 2 for orbit, 3 for direct approach
 fsm.playMode = 2; --1 for demo, 2 for orbit, 3 for direct approach
+--]]
+
+fsm.playMode = 3; --1 for demo, 2 for orbit, 3 for direct approach
+fsm.enable_walkkick = 0;
+fsm.enable_sidekick = 0;
+
+--FAST APPROACH TEST
+fsm.fast_approach = 1;
+fsm.bodyApproach.maxStep = 0.06;
 
 --[[
 --Enable these for penalty-kick
 dev.team='TeamNull'; --Turn off teamplay for challenges
 fsm.body = {'GeneralPK'};
-fsm.playMode = 2;
 --]]
 
 --[[
@@ -96,10 +102,6 @@ team.msgTimeout = 5.0;
 team.nonAttackerPenalty = 6.0; -- eta sec
 team.nonDefenderPenalty = 0.5; -- dist from goal
 
--------------------------------------
--- Robot specific parameters
--------------------------------------
-
 -- keyframe files
 km = {};
 km.standup_front = 'km_NSLOP_StandupFromFront.lua';
@@ -118,7 +120,7 @@ stance.dpLimitSit=vector.new({.1,.01,.06,.1,.3,.1});
 head = {};
 head.camOffsetZ = 0.37;
 head.pitchMin = -35*math.pi/180;
-head.pitchMax = 68*math.pi/180;
+head.pitchMax = 58*math.pi/180;
 head.yawMin = -90*math.pi/180;
 head.yawMax = 90*math.pi/180;
 head.cameraPos = {{0.05, 0.0, 0.05}} --OP, spec value, may need to be recalibrated
@@ -129,28 +131,3 @@ head.bodyTilt = 0;
 
 --km.kick_right = 'km_NSLOP_taunt1.lua';
 --km.kick_left = 'km_NSLOP_StandupFromFront2.lua';
-
-
---SJ: I separated non-robocup FSMs here
---Dodgeball FSM
---[[
-loadconfig('FSM/Config_WebotsOP_FSM')
-fsm.game = 'Dodgeball';
-fsm.head = {'GeneralPlayer'};
-fsm.body = {'GeneralPlayer'};
-Config.vision.enable_line_detection = 0;
-Config.vision.enable_midfield_landmark_detection = 0;
---]]
-
---Stretcher FSM
---[[
-loadconfig('FSM/Config_WebotsOP_FSM')
-loadconfig( 'Config_Stretcher' );
-game.teamNumber = 18;
-game.playerID = 1;
-fsm.game = 'Stretcher';
-fsm.head = {'Stretcher'};
-fsm.body = {'Stretcher'};
-Config.vision.enable_line_detection = 0;
-Config.vision.enable_midfield_landmark_detection = 0;
---]]

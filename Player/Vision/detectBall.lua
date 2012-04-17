@@ -7,6 +7,7 @@ require('Vision');
 require('Body');
 require('shm');
 require('vcm');
+require('mcm');
 require('Detection');
 require('Debug');
 
@@ -92,7 +93,12 @@ function detect(color)
   if check_for_ground>0 then
     -- ground check
     -- is ball cut off at the bottom of the image?
-    local vmargin=Vision.labelA.n-ballCentroid[1];
+    local vmargin=Vision.labelA.n-ballCentroid[2];
+    vcm.add_debug_message("Bottom margin check\n");
+    vcm.add_debug_message(string.format(
+	"lableA height: %d, ball centroid Y: %d ball diameter: %.1f\n",
+	Vision.labelA.n, ballCentroid[2], dArea ));
+
     if vmargin > dArea then
     -- bounding box below the ball
       fieldBBox = {};
@@ -127,7 +133,8 @@ function detect(color)
   --SJ: we subtract foot offset 
   --bc we use ball.x for kick alignment
   --and the distance from foot is important
-  v[1]=v[1]-footX;
+  v[1]=v[1]-mcm.get_footX()
+
 
   ball.v = v;
   ball.detect = 1;

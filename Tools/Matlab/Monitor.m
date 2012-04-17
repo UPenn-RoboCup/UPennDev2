@@ -15,7 +15,7 @@ function MonitorShm(team,player)
     SHM_DIR='/dev/shm';
   end
 
-  tFPS = 16; % Target FPS
+  tFPS = 8; % Target FPS
   dInterval = 5; %Vision update interval for team view
 
 %%%%% Init SHM for robots
@@ -45,8 +45,9 @@ function MonitorShm(team,player)
     if nargin==2  %2 args... track specified player 
       team2track=team;player2track=player;
     else
-      %Default value is the first field player (PLAYER_1_1)
-      team2track = 1;player2track = 2;
+      %Default value is 1,1 
+      %listen_monitor and listen_team_monitor saves to this SHM
+      team2track = 1;player2track = 1;
     end
     if length(player2track)>1, draw_team=1; end
     for i=1:length(player2track)

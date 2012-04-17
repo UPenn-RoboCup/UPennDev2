@@ -1,3 +1,12 @@
+-- Get Computer for Lib suffix
+local computer = os.getenv('COMPUTER') or '';
+if (string.find(computer, 'Darwin')) then
+  -- MacOS X uses .dylib:
+  package.cpath = './?.dylib;' .. package.cpath;
+else
+  package.cpath = './?.so;' .. package.cpath;
+end
+
 require('controller');
 
 print("\nStarting Webots Lua controller...");

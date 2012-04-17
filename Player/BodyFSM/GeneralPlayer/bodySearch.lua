@@ -31,13 +31,11 @@ end
 
 function update()
   local t = Body.get_time();
-
   ball = wcm.get_ball();
-
   -- search/spin until the ball is found
   walk.set_velocity(0, 0, direction*vSpin);
 
-  if (t - ball.t < 0.1) then
+  if (t - ball.t < 0.2) then
     return "ball";
   end
   if (t - t0 > timeout) then

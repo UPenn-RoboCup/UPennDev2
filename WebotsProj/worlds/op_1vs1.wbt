@@ -57,7 +57,7 @@ DEF BALL Ball {
 DEF PLAYER_1_1 DARwInOP {
   translation 1 0.3 0
   rotation 0 1 0 -1.56
-  controller "darwin-op_team_0"
+  controller "darwin-op_team_1"
   controllerArgs "1 1"
   plasticColor 1 0 0
   cameraWindowPosition 0.125 0

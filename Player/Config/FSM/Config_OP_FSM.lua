@@ -83,19 +83,19 @@ fsm.bodyPosition.timeout = 30*speedFactor;
 --Velocity generation parameters
 
 --Slow speed
-fsm.bodyPosition.maxStep1 = 0.4;
+fsm.bodyPosition.maxStep1 = 0.04;
 
 --Medium speed
+fsm.bodyPosition.maxStep2 = 0.05;
 fsm.bodyPosition.rVel2 = 0.5;
 fsm.bodyPosition.aVel2 = 45*math.pi/180;
-fsm.bodyPosition.maxStep2 = 0.5;
 fsm.bodyPosition.maxA2 = 0.2;
 fsm.bodyPosition.maxY2 = 0.02;
 
 --Full speed front dash
+fsm.bodyPosition.maxStep3 = 0.06;
 fsm.bodyPosition.rVel3 = 0.8; 
 fsm.bodyPosition.aVel3 = 20*math.pi/180;
-fsm.bodyPosition.maxStep3 = 0.06;
 fsm.bodyPosition.maxA3 = 0.0;
 fsm.bodyPosition.maxY3 = 0.0;
 
@@ -140,10 +140,6 @@ fsm.bodyKick.thGyroMag = 100;
 --Longer wait (until we set gyro values correctly)
 fsm.bodyKick.tStartWait = 1.0;
 fsm.bodyKick.tStartWaitMax = 1.5;
-
-
-
-
 
 --ball position checking params
 fsm.bodyKick.kickTargetFront = {0.12,0.035};

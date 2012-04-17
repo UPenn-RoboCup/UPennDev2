@@ -128,10 +128,6 @@ function update()
   scale = math.min(maxStep/math.sqrt(vStep[1]^2+vStep[2]^2), 1);
   vStep = scale*vStep;
 
-  if walk.ph>0.85 then 
-    print(string.format("Approach velocity:%.2f %.2f\n",vStep[1],vStep[2]));
-  end
-
   if Config.fsm.playMode==1 then 
     --Demo FSM, just turn towards the ball
     ballA = math.atan2(ball.y - math.max(math.min(ball.y, 0.05), -0.05),
@@ -158,6 +154,12 @@ function update()
     --Otherwise, don't make robot backstep
     vStep[1]=math.max(0,vStep[1]);
   end
+
+  if walk.ph>0.95 then 
+    print(string.format("Ball position: %.2f %.2f\n",ball.x,ball.y));
+    print(string.format("Approach velocity:%.2f %.2f\n",vStep[1],vStep[2]));
+  end
+
  
   walk.set_velocity(vStep[1],vStep[2],vStep[3]);
 

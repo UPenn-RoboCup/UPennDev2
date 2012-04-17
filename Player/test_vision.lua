@@ -55,9 +55,9 @@ if(Config.platform.name == 'OP') then
   Body.set_actuator_command(Config.stance.initangle)
 end
 
---TODO: enable new nao specific
+--enable new nao specific
+--TODO: auto-detect using hostname
 newnao = true;
-
 
 getch.enableblock(1);
 unix.usleep(1E6*1.0);
@@ -86,13 +86,7 @@ local t0 = unix.time();
 local tUpdate = t0;
 
 -- Broadcast the images at a lower rate than other data
-local maxFPS = 2;
-local imgFPS = 1;
-local maxPeriod = 1.0 / maxFPS;
-local imgRate = math.max( math.floor( maxFPS / imgFPS ), 1);
 local broadcast_enable=0;
-local tLastBroadcast = Body.get_time();
-local broadcast_count=0;
 local imageCount=0;
 
 
@@ -104,6 +98,7 @@ Config.fsm.playMode=1; --Always demo mode
 fsm.enable_walkkick = 0;
 fsm.enable_sidekick = 0;
 broadcast_enable=0;
+button_pressed = {0,0};
 
 function process_keyinput()
   --Robot specific head pitch bias
@@ -111,6 +106,25 @@ function process_keyinput()
 	mcm.get_walk_headPitchBiasComp();
   headPitchBias = mcm.get_headPitchBias()
 
+  --Toggle body SM when button is pressed and then released
+  if (Body.get_change_state() == 1) then
+    button_pressed[1]=1;
+  else
+    if button_pressed[1]==1 then
+      if bodysm_running==0 then 
+        headsm_running=1;
+        bodysm_running=1;
+        BodyFSM.sm:set_state('bodySearch');   
+        HeadFSM.sm:set_state('headScan');
+        walk.start();
+      else
+        if walk.active then walk.stop();end
+        bodysm_running=0;
+        Motion.event("standup");
+      end
+    end
+    button_pressed[1]=0;
+  end
 
   local str=getch.get();
   if #str>0 then

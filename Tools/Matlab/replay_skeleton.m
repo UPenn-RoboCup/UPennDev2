@@ -6,6 +6,9 @@ if( exist('sk','var') == 0 )
 end
 
 load('primeLogs_calibrate.mat');
+% Key Points
+% 123 (Field goal no good)
+% 200 (Field goal is good)
 set_shm = 1;
 debug = 1;
 infloop = 1; % Loop the logs infinitely

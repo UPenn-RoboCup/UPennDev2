@@ -95,6 +95,7 @@ local tLastBroadcast = Body.get_time();
 local broadcast_count=0;
 local imageCount=0;
 
+
 -- main loop
 count = 0;
 lcount = 0;
@@ -102,6 +103,7 @@ tUpdate = unix.time();
 Config.fsm.playMode=1; --Always demo mode
 fsm.enable_walkkick = 0;
 fsm.enable_sidekick = 0;
+broadcast_enable=0;
 
 function process_keyinput()
   --Robot specific head pitch bias
@@ -199,13 +201,12 @@ function process_keyinput()
       footX = Config.walk.footX or 0;
       print("foot center to ball pos: ",ball.x,ball.y);      
 
-    elseif byte==string.byte("g") then	--Broadcast selection
-      broadcast_enable = vcm.get_camera_broadcast();
+    elseif byte==string.byte("g") then	
+      --Broadcast selection
       local mymod = 4;
       broadcast_enable = (broadcast_enable+1)%mymod;
-      print("\nBroadcast:", broadcast_enable);
-      vcm.set_camera_broadcast(broadcast_enable);
 
+      print("\nBroadcast:", broadcast_enable);
     --Left kicks (for camera angle calibration)
     elseif byte==string.byte("3") then	
       kick.set_kick("kickForwardLeft");
@@ -286,6 +287,9 @@ function update()
     process_keyinput();
     Motion.update();
     Body.update();
+    -- Keep setting monitor flag
+    vcm.set_camera_broadcast(broadcast_enable);
+
     if headsm_running>0 then
       HeadFSM.update();
     end

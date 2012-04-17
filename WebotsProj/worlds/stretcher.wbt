@@ -59,6 +59,6 @@ DEF Lead DARwInOPGPS {
   translation 0 0.342 0.25
   rotation 0 1 0 3.14159
   controller "darwin-op_team_0"
-  controllerArgs "1 0"
+  controllerArgs "0 0"
 }
 

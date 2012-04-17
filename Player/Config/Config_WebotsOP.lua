@@ -131,3 +131,8 @@ head.bodyTilt = 0;
 
 --km.kick_right = 'km_NSLOP_taunt1.lua';
 --km.kick_left = 'km_NSLOP_StandupFromFront2.lua';
+
+-- Stretcher
+loadconfig('Config_Stretcher')
+fsm.body = {'Stretcher'};
+dev.walk='StretcherWalk';

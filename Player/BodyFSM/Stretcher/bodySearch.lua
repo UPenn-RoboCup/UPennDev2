@@ -5,14 +5,15 @@ require('wcm')
 require('walk')
 require 'Kinematics'
 require 'vector'
-ps = false;
 
-print('PlayerID',Config.game.playerID)
+ps = false;
 
 if( Config.stretcher.primesense and Config.game.playerID==1 ) then
   print('Using the PrimeSense for control!')  
   require 'primecm'    
   ps = true;
+else
+  require 'Team';  
 end
 
 t0 = 0;
@@ -30,17 +31,6 @@ function entry()
   print("Body FSM:".._NAME.." entry");
 
   t0 = Body.get_time();
-
-  if( not ps ) then  
-    -- set turn direction to last known ball position
-    stretcher = wcm.get_stretcher();
-    if (stretcher.y > 0) then
-      direction = 1;
-    else
-      direction = -1;
-    end
-  end
-
   walk.stop();
 
 end
@@ -50,65 +40,19 @@ function update()
 
   if( ps ) then
     if( primecm.get_skeleton_found()==1 ) then
-      --print('Updating via PrimeSense')
-      if( t_last_ps==0 ) then
-        t0 = Body.get_time();
-      end
-      t_ps = primecm.get_skeleton_timestamp();
-      if( t_ps == t_last_ps ) then
-        return;
-      end
-      t_last_ps = t_ps;
-      print('Time differences',t-t0,t_ps);
-
-      local torso = primecm.get_position_Torso();
-      local vx = -1*torso[3] - 240;
-      local vy = -1*torso[1] - 200;
-      local va = 0;
-      scale = math.min(maxStep/math.sqrt(vx^2+vy^2), 1);
-      vx = vx * scale;
-      vy = vy * scale;
-      --print('torso',unpack(torso))
-      --print('vel:',vx,vy)
-      --print()
-      -- Body.set_rarm_command(vector.zeros(3));
-      --print( 'Desired arm position: ', unpack(get_scaled_prime_arm(0)) );
-      qRArm = Kinematics.inverse_arm(get_scaled_prime_arm(1));
-      qLArm = Kinematics.inverse_arm(get_scaled_prime_arm(0));
-      qLArm2 = kine_map( get_scaled_prime_arm(0) );
-      
-      if(qRArm) then
-        qRArm[2] = -1 * qRArm[2]; 
-        Body.set_rarm_command( qRArm );
-      end
-      if(qLArm) then
-        print('C++: ',180/math.pi*vector.new(qLArm) )
-        print('Lua: ',qLArm2)
-        print();
-
-        qLArm[2] = -1 * qLArm[2];
-        Body.set_larm_command( qLArm );
-      end
-
+      update_body(); 
       --walk.set_velocity( vx, vy, va );
     else
-      --      print('User not found...')
       walk.set_velocity( 0,0,0 );      
     end
-  else
-    stretcher = wcm.get_stretcher();    
-    -- search/spin until the ball is found
-    walk.set_velocity(0, 0, direction*vSpin);
-
-    if (t - stretcher.t < 0.1) then
-      return "stretcher";
-    end
-    if (t - t0 > timeout) then
-      return "timeout";
-    end
-
+  else -- We do not have a primesense
+    local arm_state = Team.states[0];
+    print('Team arm state:',arm_state.qLArm);
   end
 
+  if (false and t - t0 > timeout) then
+      return "timeout";
+    end
 end
 
 function exit()
@@ -174,5 +118,50 @@ function kine_map( dArm )
 
   qArm = qArm * 180/math.pi;
   return qArm;
+
+end
+
+function update_body()
+  if( t_last_ps==0 ) then
+    t0 = Body.get_time();
+  end
+  t_ps = primecm.get_skeleton_timestamp();
+  if( t_ps == t_last_ps ) then
+    return;
+  end
+  t_last_ps = t_ps;
+--[[
+  local t = Body.get_time();
+  print('Time differences',t-t0,t_ps);
+--]]
+  local torso = primecm.get_position_Torso();
+  local vx = -1*torso[3] - 240;
+  local vy = -1*torso[1] - 200;
+  local va = 0;
+  scale = math.min(maxStep/math.sqrt(vx^2+vy^2), 1);
+  vx = vx * scale;
+  vy = vy * scale;
+  --print('torso',unpack(torso))
+  --print('vel:',vx,vy)
+  --print()
+  -- Body.set_rarm_command(vector.zeros(3));
+  --print( 'Desired arm position: ', unpack(get_scaled_prime_arm(0)) );
+  qRArm = Kinematics.inverse_arm(get_scaled_prime_arm(1));
+  qLArm = Kinematics.inverse_arm(get_scaled_prime_arm(0));
+  --qLArm2 = kine_map( get_scaled_prime_arm(0) );
+
+  if(qRArm) then
+    qRArm[2] = -1 * qRArm[2]; 
+    Body.set_rarm_command( qRArm );
+  end
+  if(qLArm) then
+    --[[
+    print('C++: ',180/math.pi*vector.new(qLArm) )
+    print('Lua: ',qLArm2)
+    print();
+    --]]
+    qLArm[2] = -1 * qLArm[2];
+    Body.set_larm_command( qLArm );
+  end
 
 end

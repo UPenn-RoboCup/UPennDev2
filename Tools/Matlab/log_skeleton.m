@@ -2,19 +2,19 @@
 %clear all;
 if( exist('sk','var') == 0 )
     startup;
-    sk = shm_primesense(18,0);
+    sk = shm_primesense(0,1);
 end
 
 %% Timing settings
-%prep_time = 6;
-prep_time = 0;
-nseconds_to_log = 10;
+prep_time = 6;
+%prep_time = 0;
+nseconds_to_log = 30;
 run_once = 0;
 counter = 0;
 fps = 20;
 twait = 1/fps;
 logsz = nseconds_to_log * fps;
-do_log = 0; % if zero, then inf time
+do_log = 1; % if zero, then inf time
 
 %% Joint Settings
 jointNames = { ...

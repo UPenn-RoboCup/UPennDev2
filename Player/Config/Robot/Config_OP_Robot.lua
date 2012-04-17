@@ -96,6 +96,12 @@ if servo.pid ==0 then -- For old firmware with 12-bit precision
     819,358,205,
     --		512,		--For aux
   }
+  -- SLOPE parameters
+  servo.slope_param={
+	32,	--Regular slope
+	16,	--Kick slope
+  };
+
 else -- For new, PID firmware with 14-bit precision
   print(robotName.." has 14-bit firmware")
   servo.steps=vector.ones(nJoint)*4096;
@@ -115,12 +121,6 @@ else -- For new, PID firmware with 14-bit precision
 	--Kick PID gain
 	{64,0,4},
   };
-
-  servo.slope_param={
-	32,	--Regular slope
-	16,	--Kick slope
-  };
-  -- SLOPE parameters
 
   servo.moveRange=vector.ones(nJoint)*360*math.pi/180;
   --[[ For aux

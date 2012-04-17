@@ -10,10 +10,13 @@ walk = {};
 walk.stanceLimitX={-0.10,0.10};
 walk.stanceLimitY={0.07,0.20};
 walk.stanceLimitA={0*math.pi/180,30*math.pi/180};
-walk.velLimitX={-.03,.06};--reduced speed for stability
+walk.velLimitX={-.03,.05};--reduced speed for stability
+walk.velLimitX={-.03,.10};
 walk.velLimitY={-.03,.03};
 walk.velLimitA={-.4,.4};
 walk.velDelta={0.02,0.02,0.15} 
+
+walk.vaFactor = 0.4;
 
 ----------------------------------------------
 -- Stance parameters
@@ -44,8 +47,11 @@ walk.phSingle={0.1,0.9};
 -- Compensation parameters
 --------------------------------------------
 walk.hipRollCompensation = 4*math.pi/180;
-walk.ankleMod = vector.new({-1,0})*1*math.pi/180;
-walk.spreadComp = 0.015;
+walk.ankleMod = vector.new({-1,0})*3*math.pi/180;
+walk.ankleMod = vector.new({-1,0})*2*math.pi/180;
+walk.spreadComp = 0.02;
+walk.turnComp = 0.01;
+walk.turnCompThreshold = 0.15;
 
 --------------------------------------------------------------
 --Imu feedback parameters, alpha / gain / deadband / max
@@ -76,12 +82,17 @@ end
 -- Support point modulation values
 --------------------------------------------
 
-walk.velFastForward = 0.03;
-walk.supportFront = 0.01; --Lean back when walking fast forward
+walk.velFastForward = 0.06;
+walk.supportFront = 0.01; --Lean front when walking fast forward
 walk.supportFront2 = 0.03; --Lean front when accelerating forward
 walk.supportBack = -0.02; --Lean back when walking backward
 walk.supportSideX = -0.01; --Lean back when sidestepping
 walk.supportSideY = 0.02; --Lean sideways when sidestepping
+walk.supportTurn = 0.01; --Lean front while turning
+
+walk.supportFront2 = 0.04; --Lean front when accelerating forward
+walk.supportFront = 0.02; --Lean front when walking fast forward
+
 
 --------------------------------------------
 -- WalkKick parameters

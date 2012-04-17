@@ -44,7 +44,8 @@ walk.phSingle={0.1,0.9};
 -- Compensation parameters
 --------------------------------------------
 walk.hipRollCompensation = 4*math.pi/180;
-walk.ankleMod = vector.new({-1,0})/0.12 * 10*math.pi/180;
+walk.ankleMod = vector.new({-1,0})*3*math.pi/180;
+walk.spreadComp = 0.015;
 
 --------------------------------------------------------------
 --Imu feedback parameters, alpha / gain / deadband / max
@@ -74,7 +75,10 @@ end
 --------------------------------------------
 -- Support point modulation values
 --------------------------------------------
-walk.supportFront = 0.01; --Lean front when walking fast forward
+
+walk.velFastForward = 0.03;
+walk.supportFront = 0.01; --Lean back when walking fast forward
+walk.supportFront2 = 0.03; --Lean front when accelerating forward
 walk.supportBack = -0.02; --Lean back when walking backward
 walk.supportSideX = -0.01; --Lean back when sidestepping
 walk.supportSideY = 0.02; --Lean sideways when sidestepping

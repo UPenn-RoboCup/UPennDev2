@@ -83,20 +83,20 @@ fsm.bodyPosition.timeout = 30*speedFactor;
 --Velocity generation parameters
 
 --Slow speed
-fsm.bodyPosition.maxStep1 = 0.6;
+fsm.bodyPosition.maxStep1 = 0.06;
 
 --Medium speed
+fsm.bodyPosition.maxStep2 = 0.07;
 fsm.bodyPosition.rVel2 = 0.5;
 fsm.bodyPosition.aVel2 = 45*math.pi/180;
-fsm.bodyPosition.maxStep2 = 0.7;
 fsm.bodyPosition.maxA2 = 0.2;
 --fsm.bodyPosition.maxY2 = 0.02;
 fsm.bodyPosition.maxY2 = 0.01;
 
 --Full speed front dash
+fsm.bodyPosition.maxStep3 = 0.10;
 fsm.bodyPosition.rVel3 = 0.7;
 fsm.bodyPosition.aVel3 = 20*math.pi/180;
-fsm.bodyPosition.maxStep3 = 0.10;
 fsm.bodyPosition.maxA3 = 0.0;
 fsm.bodyPosition.maxY3 = 0.0;
 

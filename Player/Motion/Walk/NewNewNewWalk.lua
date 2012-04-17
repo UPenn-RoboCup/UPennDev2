@@ -17,6 +17,7 @@ velLimitX = Config.walk.velLimitX or {-.06, .08};
 velLimitY = Config.walk.velLimitY or {-.06, .06};
 velLimitA = Config.walk.velLimitA or {-.4, .4};
 velDelta = Config.walk.velDelta or {.03,.015,.15};
+vaFactor = Config.walk.vaFactor or 0.6;
 
 --Toe/heel overlap checking values
 footSizeX = Config.walk.footSizeX or {-0.05,0.05};
@@ -57,6 +58,9 @@ ph1Zmp,ph2Zmp=ph1Single,ph2Single;
 --Compensation parameters
 hipRollCompensation = Config.walk.hipRollCompensation;
 ankleMod = Config.walk.ankleMod or {0,0};
+spreadComp = Config.walk.spreadComp or 0;
+turnCompThreshold = Config.walk.turnCompThreshold or 0;
+turnComp = Config.walk.turnComp or 0;
 
 --Gyro stabilization parameters
 ankleImuParamX = Config.walk.ankleImuParamX;
@@ -301,10 +305,16 @@ function update()
   uTorso = zmp_com(ph);
 
 --Leg spread compensation
-  spreadComp = Config.walk.spreadComp or 0;
   local spread=util.mod_angle((uLeft[3]-uRight[3])/2);
   local spreadCompX = spreadComp * (1-math.cos(spread));
-  uTorsoActual = util.pose_global(vector.new({-footX+spreadCompX,0,0}),uTorso);
+
+  local turnCompX=0;
+  if math.abs(velCurrent[3])>turnCompThreshold then
+    turnCompX = turnComp;
+  end
+
+  uTorsoActual = util.pose_global(
+	vector.new({-footX+spreadCompX+turnCompX,0,0}),uTorso);
 
 --  uTorsoActual = util.pose_global(vector.new({-footX,0,0}),uTorso);
 
@@ -547,18 +557,21 @@ function step_torso(uLeft, uRight,shiftFactor)
   return util.se2_interpolate(shiftFactor, uLeftSupport, uRightSupport);
 end
 
-function set_velocity(vx, vy, vz)
+function set_velocity(vx, vy, va)
   --Filter the commanded speed
---[[
-  vz= math.min(math.max(vz,velLimitA[1]),velLimitA[2]);
-  local stepMag=math.sqrt(vx^2+vy^2);
-  local magFactor=math.min(0.10,stepMag)/(stepMag+0.000001);
---]]
+  vx= math.min(math.max(vx,velLimitX[1]),velLimitX[2]);
+  vy= math.min(math.max(vy,velLimitY[1]),velLimitY[2]);
+  va= math.min(math.max(va,velLimitA[1]),velLimitA[2]);
 
-  magFactor = 1;
+  --Slow down when turning
+  vFactor = 1-math.abs(va)/vaFactor;
+
+  local stepMag=math.sqrt(vx^2+vy^2);
+  local magFactor=math.min(velLimitX[2]*vFactor,stepMag)/(stepMag+0.000001);
+
   velCommand[1]=vx*magFactor;
   velCommand[2]=vy*magFactor;
-  velCommand[3]=vz;
+  velCommand[3]=va;
 
   velCommand[1] = math.min(math.max(velCommand[1],velLimitX[1]),velLimitX[2]);
   velCommand[2] = math.min(math.max(velCommand[2],velLimitY[1]),velLimitY[2]);

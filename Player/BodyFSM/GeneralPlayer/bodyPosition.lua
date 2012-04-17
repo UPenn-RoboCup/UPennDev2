@@ -11,8 +11,21 @@ require('util')
 require('walk')
 
 t0 = 0;
-maxStep1 = Config.fsm.bodyPosition.maxStep;
+maxStep1 = Config.fsm.bodyPosition.maxStep1;
+
 maxStep2 = Config.fsm.bodyPosition.maxStep2;
+rVel2 = Config.fsm.bodyPosition.rVel2 or 0.5;
+aVel2 = Config.fsm.bodyPosition.aVel2 or 45*math.pi/180;
+maxA2 = Config.fsm.bodyPosition.maxA2 or 0.2;
+maxY2 = Config.fsm.bodyPosition.maxY2 or 0.02;
+
+maxStep3 = Config.fsm.bodyPosition.maxStep3;
+rVel3 = Config.fsm.bodyPosition.rVel3 or 0.8;
+aVel3 = Config.fsm.bodyPosition.aVel3 or 30*math.pi/180;
+maxA3 = Config.fsm.bodyPosition.maxA3 or 0.1;
+maxY3 = Config.fsm.bodyPosition.maxY3 or 0;
+
+
 tLost = Config.fsm.bodyPosition.tLost;
 timeout = Config.fsm.bodyPosition.timeout;
 
@@ -125,11 +138,13 @@ function update()
     end
   end
 
-  if walk.ph>0.85 then
-    print(string.format("position error: %.3f %.3f %d\n",
-	homeRelative[1],homeRelative[2],homeRelative[3]*180/math.pi))
+  if walk.ph>0.95 then
+--    print(string.format("position error: %.3f %.3f %d\n",
+--	homeRelative[1],homeRelative[2],homeRelative[3]*180/math.pi))
 
-    print("ballR:",ballR);
+    print(string.format("Velocity:%.2f %.2f %.2f",vx,vy,va));
+    print("VEL: ",veltype)
+--    print("ballR:",ballR);
 
   end
 
@@ -153,46 +168,58 @@ function setAttackerVelocity()
   homeRot=math.abs(homeRelative[3]);
 
   --Distance-specific velocity generation
-  if rHomeRelative>0.6 and homeRot<45*math.pi/180 then
-    maxStep = maxStep2;
-    if max_speed==0 and homeRot<30*math.pi/180 then
-      maxStep=maxStep2; --front dash
+  veltype=0;
+
+  if rHomeRelative>rVel3 and homeRot<aVel3 then
+    --Fast front dash
+    maxStep = maxStep3;
+    maxA = maxA3;
+    maxY = maxY3;
+    if max_speed==0 then
       max_speed=1;
       print("MAXIMUM SPEED")
---    Speak.play('./mp3/max_speed.mp3',50)
+--      Speak.play('./mp3/max_speed.mp3',50)
     end
-  elseif rHomeRelative>0.4 and homeRot<45*math.pi/180 then
-    if max_speed==0 and 
-      homeRot<30*math.pi/180 then
-      maxStep=maxStep2; --front dash
-      max_speed=1;
---      Speak2.play('./mp3/max_speed.mp3',50)
-    end
-  else
+    veltype=1;
+  elseif rHomeRelative>rVel2 and homeRot<aVel2 then
+    --Medium speed 
+    maxStep = maxStep2;
+    maxA = maxA2;
+    maxY = maxY2;
+    veltype=2;
+ 
+  else --Normal speed
     maxStep = maxStep1;
-  end
+    maxA = 999;
+    maxY = 999;
+    veltype=3;
 
-  --Basic chase code
+  end
+  
   vx,vy,va=0,0,0;
   aTurn=math.exp(-0.5*(rHomeRelative/rTurn)^2);
-
   vx = maxStep*homeRelative[1]/rHomeRelative;
-  if rHomeRelative>0.8 then vy=0;
-  elseif rHomeRelative>0.6 then
-    vy = 0.3*maxStep*homeRelative[2]/rHomeRelative;
-  else
-    if math.abs(aHomeRelative)>45*180/math.pi then
-      vy = maxStep*homeRelative[2]/rHomeRelative;
-      aTurn=0;
-    else
-      vy = 0.3*maxStep*homeRelative[2]/rHomeRelative;
-    end	
-  end
 
+  --Sidestep more if ball is close and sideby
+  if rHomeRelative<rVel2 and  
+           math.abs(aHomeRelative)>45*180/math.pi then
+     vy = maxStep*homeRelative[2]/rHomeRelative;
+     aTurn = 1; --Turn toward the goal
+  else
+     vy = 0.3*maxStep*homeRelative[2]/rHomeRelative;
+  end
+  vy = math.max(-maxY,math.min(maxY,vy));
   scale = math.min(maxStep/math.sqrt(vx^2+vy^2), 1);
   vx,vy = scale*vx,scale*vy;
-  va=0.5*(aTurn*homeRelative[3] + (1-aTurn)*aHomeRelative);
-  vx=math.max(0,vx) --Don't allow the robot to backstep
+
+  if math.abs(aHomeRelative)<70*180/math.pi then
+    --Don't allow the robot to backstep if ball is in front
+    vx=math.max(0,vx) 
+  end
+
+  va = 0.5*(aTurn*homeRelative[3] --Turn toward the goal
+     + (1-aTurn)*aHomeRelative); --Turn toward the target
+  va = math.max(-maxA,math.min(maxA,va)); --Limit rotation
   walk.set_velocity(vx,vy,va);
 end
 

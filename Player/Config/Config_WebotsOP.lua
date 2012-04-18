@@ -136,3 +136,5 @@ head.bodyTilt = 0;
 loadconfig('Config_Stretcher')
 fsm.body = {'Stretcher'};
 dev.walk='StretcherWalk';
+dev.team='TeamPrimeQ';
+

@@ -67,15 +67,14 @@ function update()
   end
 
   if broadcast_enable==1 then 
+    --Mode 1, send 1/4 resolution, labeB, all info
     imgRate = 1; --30fps
   elseif broadcast_enable==2 then 
-    imgRate = 2; --15fps half resolution plus all info
+    --Mode 2, send 1/2 resolution, labeA, labelB, all info
+    imgRate = 2; --15fps
   else
-    if subsampling>0 then
-      imgRate = 1; --30fps half resolution
-    else
-      imgRate = 4; --8fps full resolution
-    end
+    --Mode 3, send 1/2 resolution, info for logging
+    imgRate = 1; --30fps
   end
 
   if vcm.get_image_count()>imagecount then

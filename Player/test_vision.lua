@@ -206,6 +206,11 @@ function process_keyinput()
     elseif byte==string.byte("f") then
       behavior.cycle_behavior();
 
+    --Logging mode
+    elseif byte==string.byte("4") then
+      HeadFSM.sm:set_state('headLog');
+      headsm_running=1;
+
     elseif byte==string.byte("6") then
       headsm_running=0;
       headangle[1]=0;
@@ -224,9 +229,6 @@ function process_keyinput()
     --Left kicks (for camera angle calibration)
     elseif byte==string.byte("3") then	
       kick.set_kick("kickForwardLeft");
-      Motion.event("kick");
-    elseif byte==string.byte("4") then	
-      kick.set_kick("kickSideLeft");
       Motion.event("kick");
     elseif byte==string.byte("t") then
       walk.doWalkKickLeft();
@@ -305,6 +307,7 @@ function update()
     vcm.set_camera_broadcast(broadcast_enable);
 
     if headsm_running>0 then
+      Body.set_head_hardness(0.2);
       HeadFSM.update();
     end
     if bodysm_running>0 then

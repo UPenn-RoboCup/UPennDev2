@@ -1,4 +1,4 @@
- function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel)
+function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel)
 % This function shows the robot over the field map
 % Level 1: show position only
 % Level 2: show position and vision info
@@ -47,6 +47,7 @@
       plot_landmark(r_mon.landmark,scale);
       plot_fov(r_mon.fov);
 
+      plot_gps_robot(robot_struct,scale);
     elseif drawlevel==4
       plot_ball(robot_struct,scale);
       plot_particle(r_mon.particle);
@@ -84,20 +85,41 @@
   function plot_gps_robot(robot,scale)
     xgps = robot_struct.gpspose.x;
     ygps = robot_struct.gpspose.y;
-    cagps = cos(robot_struct.gpspose.a);
-    sagps = sin(robot_struct.gpspose.a);
+    rErr = sqrt((x0-xgps)^2+(y0-ygps)^2);
+    if rErr>0
+      cagps = cos(robot_struct.gpspose.a);
+      sagps = sin(robot_struct.gpspose.a);
 
-    pl_len=1;
-    dx=cagps*pl_len;
-    dy=sagps*pl_len;
-    quiver(xgps,ygps,dx,dy,0,'b');
-    plot(xgps,ygps,'bo');
+      pl_len=1/scale;
+      dx=cagps*pl_len;
+      dy=sagps*pl_len;
+      quiver(xgps,ygps,dx,dy,0,'b');
+      plot(xgps,ygps,'bo');
+
+      %Draw error circle
+      errBox = [xgps-rErr ygps-rErr 2*rErr 2*rErr];
+      rectangle('Position', errBox, 'Curvature',[1,1], ...
+	'LineStyle','--');
+
+      aErr=abs(robot.attackBearing-robot.gps_attackbearing);
+      a1 = robot.gps_attackbearing + aErr + robot_struct.gpspose.a;
+      a2 = robot.gps_attackbearing - aErr + robot_struct.gpspose.a;
+      rPie = 1/scale;
+
+      plot([xgps xgps+rPie*cos(a1)],[ygps ygps+rPie*sin(a1)]);
+      plot([xgps xgps+rPie*cos(a2)],[ygps ygps+rPie*sin(a2)]);
+
+    end
+
   end
 
 
   function plot_robot(robot,scale)
-    xRobot = [0 -.25 -.25]*2/scale;
+%    xRobot = [0 -.25 -.25]*2/scale;
+%    yRobot = [0 -.10 +.10]*2/scale;
+    xRobot = [.125 -.125 -.125]*2/scale;
     yRobot = [0 -.10 +.10]*2/scale;
+
     xr = xRobot*ca - yRobot*sa + x0;
     yr = xRobot*sa + yRobot*ca + y0;
     xm = mean(xRobot);

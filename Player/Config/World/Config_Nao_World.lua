@@ -59,8 +59,8 @@ world.Lcorner[18]={-0.6,0};
 
 
 --same-colored goalposts
-world.use_same_colored_goal=1;
---world.use_same_colored_goal=0;
+--world.use_same_colored_goal=1;
+world.use_same_colored_goal=0;
 
 --should we use new triangulation?
 world.use_new_goalposts=1;

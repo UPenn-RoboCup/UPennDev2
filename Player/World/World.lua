@@ -14,7 +14,7 @@ require 'mcm'
 --We can toggle whether to use velocity to update ball position estimate
 --In Filter2D.lua
 
-require('Velocity');	
+--require('Velocity');	
 
 --Are we using same colored goals?
 use_same_colored_goal=Config.world.use_same_colored_goal or 0;
@@ -49,7 +49,7 @@ yaw0 =0;
 function entry()
   count = 0;
   init_particles();
-  Velocity.entry();
+  --Velocity.entry();
 end
 
 function init_particles()
@@ -131,6 +131,7 @@ function update_vision()
     ballFilter:observation_xy(v[1], v[2], dr, da);
     Body.set_indicator_ball({1,0,0});
 
+    --[[
     -- Update the velocity
     Velocity.update(v[1],v[2]);
     ball.vx, ball.vy, dodge  = Velocity.getVelocity();
@@ -139,8 +140,9 @@ function update_vision()
     if( stillTime > 1.5 ) then 
 --      print('Speed: '..speed..', Vel: ('..ball.vx..', '..ball.vy..') Still Time: '..stillTime);
     end
+    --]]
   else
-    Velocity.update_noball();--notify that ball is missing
+    --Velocity.update_noball();--notify that ball is missing
     Body.set_indicator_ball({0,0,0});
   end
 

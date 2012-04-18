@@ -18,6 +18,8 @@ require('Velocity');
 
 --Are we using same colored goals?
 use_same_colored_goal=Config.world.use_same_colored_goal or 0;
+--Use ground truth pose for webots?
+ues_ground_truth = Config.world.use_ground_truth or 0;
 
 
 ballFilter = Filter2D.new();
@@ -223,6 +225,13 @@ function update_vision()
   ball.x, ball.y = ballFilter:get_xy();
   pose.x,pose.y,pose.a = PoseFilter.get_pose();
 
+
+  if Body.gps_enable and use_ground_truth then
+    --Behavior test with ground truth gps data
+    gps_pose=Body.get_sensor_gps();
+    pose.x,pose.y,pose.a=gps_pose[1],gps_pose[2],gps_pose[3];
+  end
+
   update_shm();
 end
 
@@ -233,11 +242,18 @@ function update_shm()
   if Body.gps_enable then
     gps_pose=Body.get_sensor_gps();
     wcm.set_robot_gpspose(gps_pose);
+    gps_pose_xya={}
+    gps_pose_xya.x=gps_pose[1];
+    gps_pose_xya.y=gps_pose[2];
+    gps_pose_xya.a=gps_pose[3];
+    gps_attackBearing = get_attack_bearing_pose(gps_pose_xya);
+    wcm.set_robot_gps_attackbearing(gps_attackBearing);
   else
     wcm.set_robot_gpspose({pose.x,pose.y,pose.a});
   end
 
   wcm.set_robot_pose({pose.x, pose.y, pose.a});
+
   wcm.set_robot_time(Body.get_time());
 
   wcm.set_ball_x(ball.x);
@@ -279,6 +295,11 @@ function zero_pose()
 end
 
 function get_attack_bearing()
+  return get_attack_bearing_pose(pose);
+end
+
+--Get attack bearing from pose0
+function get_attack_bearing_pose(pose0)
   if gcm.get_team_color() == 1 then
     -- red attacks cyan goal
     postAttack = PoseFilter.postCyan;
@@ -287,15 +308,15 @@ function get_attack_bearing()
     postAttack = PoseFilter.postYellow;
   end
   -- make sure not to shoot back towards defensive goal:
-  local xPose = math.min(math.max(pose.x, -0.99*PoseFilter.xLineBoundary),
+  local xPose = math.min(math.max(pose0.x, -0.99*PoseFilter.xLineBoundary),
                           0.99*PoseFilter.xLineBoundary);
-  local yPose = pose.y;
+  local yPose = pose0.y;
   local aPost = {}
   aPost[1] = math.atan2(postAttack[1][2]-yPose, postAttack[1][1]-xPose);
   aPost[2] = math.atan2(postAttack[2][2]-yPose, postAttack[2][1]-xPose);
   local daPost = math.abs(PoseFilter.mod_angle(aPost[1]-aPost[2]));
   attackHeading = aPost[2] + .5*daPost;
-  attackBearing = PoseFilter.mod_angle(attackHeading - pose.a);
+  attackBearing = PoseFilter.mod_angle(attackHeading - pose0.a);
 
   return attackBearing, daPost;
 end

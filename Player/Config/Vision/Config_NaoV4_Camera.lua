@@ -5,7 +5,8 @@ require('vector')
 
 camera = {};
 camera.ncamera = 2;
-camera.switchFreq = 5;
+--camera.switchFreq = 5;
+camera.switchFreq = 2;
 camera.width = 640;
 camera.height = 480;
 camera.x_center = 320;
@@ -43,12 +44,11 @@ camera.param[8] = {key='hue',           val={0, 0}};
 --New nao params
 
 camera.auto_param = {};
-camera.auto_param[1] = {key='Do White Balance',      val={-1, -1}};
-camera.auto_param[2] = {key='White Balance, Automatic', val={0, 0}};
-camera.auto_param[3] = {key='Backlight Compensation',     val={0, 0}};
-camera.auto_param[4] = {key='Horizontal Flip',   val={0, 0}};
+camera.auto_param[1] = {key='White Balance, Automatic', val={0, 0}};
+camera.auto_param[2] = {key='Backlight Compensation',     val={0, 0}};
 --Top camera is flipped
-camera.auto_param[5] = {key='Vertical Flip',   val={1, 0}};
+camera.auto_param[3] = {key='Horizontal Flip',   val={1, 0}};
+camera.auto_param[4] = {key='Vertical Flip',   val={1, 0}};
 
 
 camera.param = {};
@@ -59,7 +59,8 @@ camera.param[4] = {key='Hue',           val={0, 0}};
 camera.param[5] = {key='Exposure',      val={150, 150}};
 camera.param[6] = {key='Gain',          val={113, 113}};
 camera.param[7] = {key='Sharpness',  val={160, 160}};
+camera.param[8] = {key='Do White Balance',      val={-1, -1}};
 
 
-camera.lut_file = 'lut_NaoV4_BallOnly.raw';
+camera.lut_file = 'lut_NaoV4_Grasp.raw';
 

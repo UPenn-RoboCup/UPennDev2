@@ -307,6 +307,7 @@ function update()
     vcm.set_camera_broadcast(broadcast_enable);
 
     if headsm_running>0 then
+      Body.set_head_hardness(0.2);
       HeadFSM.update();
     end
     if bodysm_running>0 then

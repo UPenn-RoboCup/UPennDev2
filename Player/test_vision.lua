@@ -112,6 +112,7 @@ function process_keyinput()
   else
     if button_pressed[1]==1 then
       if bodysm_running==0 then 
+        Body.set_head_hardness(0.5);
         headsm_running=1;
         bodysm_running=1;
         BodyFSM.sm:set_state('bodySearch');   
@@ -178,8 +179,9 @@ function process_keyinput()
     elseif byte==string.byte("1") then	
       headsm_running = 1-headsm_running;
       if (headsm_running == 1) then
+        Body.set_head_hardness(0.5);
         HeadFSM.sm:set_state('headScan');
-    end
+      end
 
     elseif byte==string.byte("2") then	
     -- Camera transform testing
@@ -195,21 +197,23 @@ function process_keyinput()
       print("Head Angles for looking directly at the ball:", 
 	unpack(headangle*180/math.pi));
 
-    elseif byte==string.byte("5") then
-    --Turn on body SM
-      headsm_running=1;
-      bodysm_running=1;
-      BodyFSM.sm:set_state('bodySearch');   
-      HeadFSM.sm:set_state('headScan');
-      walk.start();
-
     elseif byte==string.byte("f") then
       behavior.cycle_behavior();
 
     --Logging mode
     elseif byte==string.byte("4") then
+      Body.set_head_hardness(0.2);
       HeadFSM.sm:set_state('headLog');
       headsm_running=1;
+
+    elseif byte==string.byte("5") then
+    --Turn on body SM
+      headsm_running=1;
+      bodysm_running=1;
+      Body.set_head_hardness(0.5);
+      BodyFSM.sm:set_state('bodySearch');   
+      HeadFSM.sm:set_state('headScan');
+      walk.start();
 
     elseif byte==string.byte("6") then
       headsm_running=0;
@@ -307,7 +311,6 @@ function update()
     vcm.set_camera_broadcast(broadcast_enable);
 
     if headsm_running>0 then
-      Body.set_head_hardness(0.2);
       HeadFSM.update();
     end
     if bodysm_running>0 then

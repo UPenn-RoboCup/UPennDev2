@@ -88,7 +88,7 @@ fsm.enable_walkkick = 0;
 fsm.enable_sidekick = 0;
 
 --FAST APPROACH TEST
---fsm.fast_approach = 1;
+fsm.fast_approach = 1;
 --fsm.bodyApproach.maxStep = 0.06;
 
 -- Team Parameters

@@ -273,6 +273,10 @@ function update_img( enable, imagecount )
       sendB();
     end
   elseif enable==3 then
-      sendImg();
+      if subsampling>0 then
+        sendImgSub2();
+      else
+        sendImg();
+      end
   end
 end

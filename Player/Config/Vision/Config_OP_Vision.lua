@@ -17,7 +17,7 @@ vision.maxFPS = 30;
 vision.scaleB = 4;
 
 -- use this to enable line detection
-vision.enable_line_detection = 0;
+vision.enable_line_detection = 1;
 -- use this to enable spot detection
 vision.enable_spot_detection = 0;
 -- use this to enable midfield landmark detection
@@ -82,9 +82,9 @@ vision.line={};
 vision.line.max_width = 16;
 vision.line.connect_th = 1.4;
 vision.line.max_gap=0;
-vision.line.min_length=10;
+vision.line.min_length=20;
 
 vision.corner={};
-vision.corner.dist_threshold = 30;
-vision.corner.length_threshold = 6;
+vision.corner.dist_threshold = 100; --10 pixel
+vision.corner.length_threshold = 15;
 vision.corner.min_center_dist = 1.5;

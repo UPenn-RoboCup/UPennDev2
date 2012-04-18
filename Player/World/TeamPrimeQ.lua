@@ -40,6 +40,9 @@ function update()
     end
   else
     recv_msgs();
+    -- Push state 0 to the joint space
+    primecm.set_joints_qLArm( states[0].qLArm );
+    primecm.set_joints_qRArm( states[0].qRArm );    
   end
 
 end

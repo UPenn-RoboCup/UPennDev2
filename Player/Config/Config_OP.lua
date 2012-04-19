@@ -38,27 +38,39 @@ dev.walk='NewNewNewWalk';
 dev.kick = 'NewNewKick'
 
 -- Game Parameters
-
 game = {};
 game.teamNumber = 18;
-game.playerID = parse_hostname.get_player_id();
-game.robotID = game.playerID;
-game.teamColor = parse_hostname.get_team_color();
-game.role = game.playerID-1; 
-game.nPlayers = 5;
---------------------
-
-game.playerID = 2;
-
---Default color 
+--Not a very clean implementation but we're using this way for now
+local robotName=unix.gethostname();
+--Default role: 0 for goalie, 1 for attacker, 2 for defender
+--Default team: 0 for blue, 1 for red
+if (robotName=='scarface') then
+  game.playerID = 1; --for scarface
+  game.role = 1; --Default attacker
+elseif (robotName=='linus') then
+  game.playerID = 2; 
+  game.role = 1; --Default attacker
+elseif (robotName=='betty') then
+  game.playerID = 3; 
+  game.role = 1; --Default attacker
+elseif (robotName=='lucy') then
+  game.playerID = 4; 
+  game.role = 1; --Default attacker
+else
+  game.playerID = 5; 
+  game.role = 1; --Default attacker
+end
 game.teamColor = 0; --Blue team
 --game.teamColor = 1; --Red team
---0 for goalie, 1 for attacker, 2 for defender
-game.role = 1;
+game.robotName = robotName;
+game.robotID = game.playerID;
+game.nPlayers = 5;
+--------------------
 
 --FSM and behavior settings
 fsm = {};
 --SJ: loading FSM config  kills the variable fsm, so should be called first
+--loadconfig('FSM/Config_OP_FSM')
 loadconfig('FSM/Config_OP_FSM')
 fsm.game = 'RoboCup';
 fsm.head = {'GeneralPlayer'};
@@ -67,19 +79,17 @@ fsm.body = {'GeneralPlayer'};
 --Behavior flags, should be defined in FSM Configs but can be overrided here
 fsm.enable_obstacle_detection = 1;
 fsm.kickoff_wait_enable = 0;
-fsm.playMode = 3; --1 for demo, 2 for orbit, 3 for direct approach
-fsm.enable_walkkick = 1;
-fsm.enable_sidekick = 1;
+--fsm.playMode = 3; --1 for demo, 2 for orbit, 3 for direct approach
+--fsm.enable_walkkick = 1;
+--fsm.enable_sidekick = 1;
 
 fsm.playMode = 2; --1 for demo, 2 for orbit, 3 for direct approach
 fsm.enable_walkkick = 0;
 fsm.enable_sidekick = 0;
 
-
 --FAST APPROACH TEST
 fsm.fast_approach = 1;
-fsm.bodyApproach.maxStep = 0.06;
-
+--fsm.bodyApproach.maxStep = 0.06;
 
 -- Team Parameters
 team = {};

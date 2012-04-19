@@ -48,6 +48,9 @@ local maxPeriod = 1.0 / maxFPS;
 
 local broadcast_enable=0;
 
+subsampling=Config.vision.subsampling or 0;
+subsampling2=Config.vision.subsampling2 or 0;
+
 function update()
    broadcast_enable = vcm.get_camera_broadcast();
 
@@ -64,11 +67,14 @@ function update()
   end
 
   if broadcast_enable==1 then 
+    --Mode 1, send 1/4 resolution, labeB, all info
     imgRate = 1; --30fps
   elseif broadcast_enable==2 then 
+    --Mode 2, send 1/2 resolution, labeA, labelB, all info
     imgRate = 2; --15fps
   else
-    imgRate = 4; --8fps
+    --Mode 3, send 1/2 resolution, info for logging
+    imgRate = 1; --30fps
   end
 
   if vcm.get_image_count()>imagecount then

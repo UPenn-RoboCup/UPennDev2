@@ -38,14 +38,14 @@ walk.hardnessArm=.3;
 ---------------------------------------------
 walk.tStep = 0.50;
 walk.tZmp = 0.17;
-walk.supportY = 0.003;
+walk.supportY = 0.005;
 walk.stepHeight = 0.022;
 walk.phSingle={0.22,0.78};
 
 --------------------------------------------
 -- Compensation parameters
 --------------------------------------------
-walk.hipRollCompensation = 0*math.pi/180;
+walk.hipRollCompensation = 1.5*math.pi/180;
 walk.ankleMod = vector.new({-1,0})/0.12 * 10*math.pi/180;
 
 --------------------------------------------------------------
@@ -113,18 +113,3 @@ walk.walkKickPh=0.5;
 walk.kickXComp = 0;
 walk.supportCompL = {0,0,0};
 walk.supportCompR = {0,0,0};
-
-
-
---FOR NEW NAO
-
-walk.tStep = 0.35;
-walk.hipRollCompensation = 1.5*math.pi/180;
-walk.supportY = 0.010;
-walk.supportY = 0.005;
-
-walk.velLimitX={-.06,.06};
-walk.velLimitY={-.03,.03};
-walk.velLimitA={-.3,.3};
-walk.velDelta={0.03,0.015,0.15}
-

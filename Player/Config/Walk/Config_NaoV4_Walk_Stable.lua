@@ -36,7 +36,7 @@ walk.hardnessArm=.3;
 ---------------------------------------------
 -- Gait parameters
 ---------------------------------------------
-walk.tStep = 0.50;
+walk.tStep = 0.35;
 walk.tZmp = 0.17;
 walk.supportY = 0.005;
 walk.stepHeight = 0.022;

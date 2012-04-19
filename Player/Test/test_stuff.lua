@@ -351,6 +351,12 @@ function update()
 			Config.walk.hipImuParamY[3] = Config.walk.hipImuParamY[3] - .001;
 		elseif byte==string.byte("N") then
 			Config.walk.hipImuParamY[3] = Config.walk.hipImuParamY[3] + .001;
+    elseif byte==string.byte("u") then
+      Config.walk.hipRollCompensation = 
+            Config.walk.hipRollCompensation - .5*math.pi/180;
+    elseif byte==string.byte("U") then
+      Config.walk.hipRollCompensation =
+            Config.walk.hipRollCompensation + .5*math.pi/180;
 		end
   end
 
@@ -362,8 +368,8 @@ function update()
   	print(string.format("Head angle: %d, %d",
 			headangle[1]*180/math.pi,
 			headangle[2]*180/math.pi));
-		print(string.format("Walk settings:\n tStep: %.2f\t phSingle: {%.2f, %.2f}\t stepHeight: %.3f\n supportX: %.3f\t supportY: %.3f\t", Config.walk.tStep, Config.walk.phSingle[1], Config.walk.phSingle[2], Config.walk.stepHeight, 
-Config.walk.supportX, Config.walk.supportY));
+		print(string.format("Walk settings:\n tStep: %.2f\t phSingle: {%.2f, %.2f}\t stepHeight: %.3f\n supportX: %.3f\t supportY: %.3f\t hipRollComp: %.2f", Config.walk.tStep, Config.walk.phSingle[1], Config.walk.phSingle[2], Config.walk.stepHeight, 
+Config.walk.supportX, Config.walk.supportY, Config.walk.hipRollCompensation));
   else
     print(string.format("\n Walk Velocity: (%.2f, %.2f, %.2f)",unpack(targetvel)));
 		walk.set_velocity(unpack(targetvel));

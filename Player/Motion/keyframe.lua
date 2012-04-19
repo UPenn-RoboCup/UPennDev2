@@ -57,6 +57,10 @@ function entry()
   end
 end
 
+function reset_tFrameStart()
+  tFrameStart = Body.get_time();
+end
+
 function update()
   if (#motQueue == 0) then
     return "done";
@@ -65,7 +69,9 @@ function update()
   local mot = motQueue[1];
   local t = Body.get_time();
   if not started then
-    if t-t0<0.1 then return;end--wait 0.1sec to read joint positions
+    if t-t0<0.1 then 
+        return iFrame;
+    end--wait 0.1sec to read joint positions
     started=true;
   end
   if (iFrame == 0) then
@@ -124,6 +130,7 @@ function update()
       iFrame = 0;
     end
   end
+  return iFrame;
 end
 
 function getJoints()

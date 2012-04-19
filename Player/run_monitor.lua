@@ -48,7 +48,7 @@ local imgFPS = 30;
 local maxPeriod = 1.0 / maxFPS;
 local imgRate = math.max( math.floor( maxFPS / imgFPS ), 1);
 
-local broadcast_enable=0;
+local broadcast_enable=2;
 
 function update()
   -- Get a keypress

@@ -22,7 +22,7 @@ loadconfig('World/Config_OP_World')
 loadconfig('Kick/Config_OP_Kick')
 loadconfig('Vision/Config_OP_Vision')
 --Location Specific Camera Parameters--
-loadconfig('Vision/Config_OP_Camera_Grasp')
+loadconfig('Vision/Config_OP_Camera_USOpen_Bowdoin')
 
 -- Device Interface Libraries
 dev = {};
@@ -36,6 +36,9 @@ dev.team='TeamNSL';
 --dev.walk='BasicWalk';  --should be updated
 dev.walk='NewNewNewWalk';
 dev.kick = 'NewNewKick'
+
+speak = {}
+speak.enable = false 
 
 -- Game Parameters
 game = {};

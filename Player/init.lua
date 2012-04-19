@@ -14,6 +14,7 @@ end
 package.path = cwd.."/Util/?.lua;"..package.path;
 package.path = cwd.."/Config/?.lua;"..package.path;
 package.path = cwd.."/Lib/?.lua;"..package.path;
+package.path = cwd.."/Lib/Util/?.lua;"..package.path;
 package.path = cwd.."/Dev/?.lua;"..package.path;
 package.path = cwd.."/Motion/?.lua;"..package.path;
 package.path = cwd.."/Motion/keyframes/?.lua;"..package.path;

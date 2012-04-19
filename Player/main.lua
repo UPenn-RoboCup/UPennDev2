@@ -38,6 +38,7 @@ require('Speak')
 require('getch')
 require('Body')
 require('Motion')
+require('Team')
 
 Motion.entry();
 
@@ -82,6 +83,7 @@ function update()
         Speak.talk('Calibration done');
         calibrating = false;
         ready = true;
+        Team.update_shm();
       end
     elseif (ready) then
       -- initialize state machines

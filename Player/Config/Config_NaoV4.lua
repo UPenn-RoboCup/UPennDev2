@@ -14,7 +14,7 @@ function loadconfig(configName)
 end
 
 --loadconfig('Walk/Config_NaoV4_Walk')
-loadconfig('Walk/Config_NaoV4_Walk')
+loadconfig('Walk/Config_NaoV4_Walk_Stable')
 loadconfig('World/Config_Nao_World')
 loadconfig('Kick/Config_Nao_Kick')
 loadconfig('Vision/Config_NaoV4_Vision')
@@ -34,6 +34,10 @@ dev.game_control = 'NaoGameControl';
 dev.team='TeamSPL';
 dev.walk = 'NewNewNewWalk';
 dev.kick = 'NewKick';
+
+--Speak enable
+speak = {}
+speak.enable = false
 
 -- Game Parameters
 

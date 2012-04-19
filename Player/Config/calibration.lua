@@ -101,3 +101,13 @@ cal["betty"].kickXComp=0.005;
 cal["scarface"].servoBias={0,0,7,0,0,0,0,0,-7,-9,-4,0,};
 cal["scarface"].footXComp=0.002;
 cal["scarface"].kickXComp=0.000;
+
+-- Updated date: Wed Apr 18 12:26:58 2012
+cal["scarface"].servoBias={0,0,7,0,0,0,0,0,-7,-9,-4,0,};
+cal["scarface"].footXComp=0.002;
+cal["scarface"].kickXComp=0.005;
+
+-- Updated date: Wed Apr 18 23:55:59 2012
+cal["lucy"].servoBias={19,3,4,20,19,10,-15,11,-20,0,6,6,};
+cal["lucy"].footXComp=0.006;
+cal["lucy"].kickXComp=0.005;

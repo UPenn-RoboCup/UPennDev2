@@ -30,7 +30,7 @@ dev.body = 'OPBody';
 dev.camera = 'OPCam';
 dev.kinematics = 'OPKinematics';
 dev.ip_wired = '192.168.123.255';
-dev.ip_wireless = '192.168.1.255';
+dev.ip_wireless = '139.140.218.255';
 dev.game_control='OPGameControl';
 dev.team='TeamNSL';
 --dev.walk='BasicWalk';  --should be updated
@@ -88,7 +88,7 @@ fsm.enable_walkkick = 0;
 fsm.enable_sidekick = 0;
 
 --FAST APPROACH TEST
---fsm.fast_approach = 1;
+fsm.fast_approach = 1;
 --fsm.bodyApproach.maxStep = 0.06;
 
 -- Team Parameters

@@ -61,5 +61,5 @@ camera.param[6] = {key='Gain',          val={41, 41}};
 camera.param[7] = {key='Sharpness',  val={160, 160}};
 
 
-camera.lut_file = 'lut_usopen1.raw';
+camera.lut_file = 'lut_usopen4.raw';
 

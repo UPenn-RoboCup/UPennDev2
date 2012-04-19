@@ -35,6 +35,10 @@ dev.team='TeamSPL';
 dev.walk = 'NewNewNewWalk';
 dev.kick = 'NewKick';
 
+--Speak enable
+speak = {}
+speak.enable = false
+
 -- Game Parameters
 
 game = {};

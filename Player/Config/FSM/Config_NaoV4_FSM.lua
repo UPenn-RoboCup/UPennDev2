@@ -12,10 +12,10 @@ fsm={};
 fsm.enable_obstacle_detection = 1;
 
 --fsm.playMode = 1; --For Demo without orbit
---fsm.playMode = 2; --Simple Behavior with orbit
-fsm.playMode = 3; --Advanced Behavior 
+fsm.playMode = 2; --Simple Behavior with orbit
+--fsm.playMode = 3; --Advanced Behavior 
 
-fsm.enable_walkkick = 1;
+fsm.enable_walkkick = 0;
 
 fsm.wait_kickoff = 0; --initial wait at opponent's kickoff
 

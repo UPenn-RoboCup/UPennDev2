@@ -35,7 +35,7 @@ goalWidth = Config.world.goalWidth or 1.40;
 th_min_color_count=Config.vision.goal.th_min_color_count;
 th_min_area = Config.vision.goal.th_min_area;
 th_nPostB = Config.vision.goal.th_nPostB;
-th_max_orientation = Config.vision.goal.th_max_orientation;
+th_min_orientation = Config.vision.goal.th_min_orientation;
 th_min_fill_extent = Config.vision.goal.th_min_fill_extent;
 th_aspect_ratio = Config.vision.goal.th_aspect_ratio;
 th_edge_margin = Config.vision.goal.th_edge_margin;
@@ -124,8 +124,8 @@ function detect(color,color2)
     if valid then
       local orientation= postStats.orientation - tiltAngle;
       vcm.add_debug_message(string.format("Orientation check: %f\n", 
-	 180*postStats.orientation/math.pi));
-      if (math.abs(orientation) > th_max_orientation) then
+	 180*orientation/math.pi));
+      if (math.abs(orientation) < th_min_orientation) then
         vcm.add_debug_message("orientation check fail\n");
         valid = false;
       end

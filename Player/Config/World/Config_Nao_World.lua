@@ -4,7 +4,7 @@ require('vector')
 --Localization parameters 
 
 world={};
-world.n = 100;
+world.n = 200;
 world.xLineBoundary = 3.0;
 world.yLineBoundary = 2.0;
 world.xMax = 3.2;

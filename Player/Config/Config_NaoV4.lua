@@ -29,7 +29,7 @@ dev.body = 'NaoBody';
 dev.camera = 'NaoCam';
 dev.kinematics = 'NaoKinematics';
 dev.ip_wired = '192.168.0.255';
-dev.ip_wireless = '192.168.1.255';
+dev.ip_wireless = '139.140.218.255';
 dev.game_control = 'NaoGameControl';
 dev.team='TeamSPL';
 dev.walk = 'Walk/NewNewNewWalk';
@@ -37,12 +37,12 @@ dev.kick = 'NewKick';
 
 --Speak enable
 speak = {}
-speak.enable = false
+speak.enable = true
 
 -- Game Parameters
 
 game = {};
-game.teamNumber = 26;
+game.teamNumber = 6;
 game.playerID = parse_hostname.get_player_id();
 game.robotID = game.playerID;
 game.teamColor = parse_hostname.get_team_color();
@@ -54,6 +54,7 @@ game.nPlayers = 4;
 fsm = {};
 loadconfig('FSM/Config_NaoV4_FSM')
 fsm.game = 'RoboCup';
+--fsm.body = {'NaoPlayer'};
 fsm.body = {'GeneralPlayer'};
 --fsm.head = {'GeneralPlayer'};
 fsm.head = {'NaoPlayer'};

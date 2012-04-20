@@ -69,7 +69,7 @@ world.use_new_goalposts=1;
 world.rGoalFilter = 0.02;
 world.aGoalFilter = 0.05;
 world.rPostFilter = 0.02;
-world.aPostFilter = 0.20;
+world.aPostFilter = 0.05;--.2
 
 -- default positions for our kickoff
 world.initPosition1={

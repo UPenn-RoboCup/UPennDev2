@@ -25,7 +25,7 @@ world.spot[2] = {1.20, 0};
 world.landmarkCyan = {0.0, -2.4};
 world.landmarkYellow = {0.0, 2.4};
 world.cResample = 10; --Resampling interval
-world.odomScale = {.95, .95, .80};
+world.odomScale = {.95, .95, .70};
 
 --They are SPL values
 world.Lcorner={};

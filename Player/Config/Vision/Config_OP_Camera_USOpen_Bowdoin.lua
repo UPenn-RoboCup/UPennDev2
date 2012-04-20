@@ -55,16 +55,16 @@ camera.auto_param[5] = {key="exposure, auto priority",val={0}};
 --camera.param[7] = {key='exposure (absolute)',      val={1005}};
 
 camera.param = {};
-camera.param[1] = {key='brightness',    val={221}};
-camera.param[2] = {key='contrast',      val={2}};
-camera.param[3] = {key='saturation',    val={127}};
+camera.param[1] = {key='brightness',    val={255}};
+camera.param[2] = {key='contrast',      val={3}};
+camera.param[3] = {key='saturation',    val={38}};
 camera.param[4] = {key='gain',          val={255}};
-camera.param[5] = {key='white balance temperature', val={5900}};
-camera.param[6] = {key='sharpness',     val={0}};
-camera.param[7] = {key='exposure (absolute)',      val={1188}};
+--camera.param[5] = {key='white balance temperature', val={5900}};
+camera.param[6] = {key='sharpness',     val={191}};
+--camera.param[7] = {key='exposure (absolute)',      val={1188}};
 
 --camera.lut_file = 'lut_low_contrast_pink_n_green.raw';
 --camera.lut_file = 'lut_Grasp_Greenonly.raw';
 --camera.lut_file = 'lut_OP_Grasp_GreenOnly.raw';
-camera.lut_file='usopen_aditya_4_19_time_16_21.raw';
+camera.lut_file='usopen_aditya_4_19_time_20_31.raw';
 

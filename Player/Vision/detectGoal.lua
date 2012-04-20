@@ -35,7 +35,7 @@ goalWidth = Config.world.goalWidth or 1.40;
 th_min_color_count=Config.vision.goal.th_min_color_count;
 th_min_area = Config.vision.goal.th_min_area;
 th_nPostB = Config.vision.goal.th_nPostB;
-th_min_orientation = Config.vision.goal.th_min_orientation;
+th_max_orientation = Config.vision.goal.th_max_orientation;
 th_min_fill_extent = Config.vision.goal.th_min_fill_extent;
 th_aspect_ratio = Config.vision.goal.th_aspect_ratio;
 th_edge_margin = Config.vision.goal.th_edge_margin;
@@ -107,6 +107,7 @@ function detect(color,color2)
     local valid = true;
     
     if use_tilted_bbox>0 then
+      vcm.add_debug_message("Use Tilted postStats\n");
       postStats = Vision.bboxStats(color, postB[i].boundingBox,tiltAngle);
     else
       postStats = Vision.bboxStats(color, postB[i].boundingBox);
@@ -122,9 +123,9 @@ function detect(color,color2)
 
     if valid then
       local orientation= postStats.orientation - tiltAngle;
-      vcm.add_debug_message(string.format("Orientation check: %.1f\n", 
-	 180/math.pi*tiltAngle));
-      if (math.abs(orientation) < th_min_orientation) then
+      vcm.add_debug_message(string.format("Orientation check: %f\n", 
+	 180*postStats.orientation/math.pi));
+      if (math.abs(orientation) > th_max_orientation) then
         vcm.add_debug_message("orientation check fail\n");
         valid = false;
       end
@@ -132,8 +133,10 @@ function detect(color,color2)
       
     --fill extent check
     if valid then
+	--print(unpack(postStats.boundingBox));
       extent = postStats.area / (postStats.axisMajor * postStats.axisMinor);
       vcm.add_debug_message(string.format("Fill extent check: %.2f\n", extent));
+      vcm.add_debug_message(string.format("Fill check: %d %d\n", postStats.axisMajor, postStats.axisMinor));
       if (extent < th_min_fill_extent) then 
         vcm.add_debug_message("Fill extent check fail\n");
         valid = false; 

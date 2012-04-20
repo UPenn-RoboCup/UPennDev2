@@ -9,7 +9,7 @@ speedFactor = 1.0;
 fsm={};
 
 --Should we consider obstacle?
-fsm.enable_obstacle_detection = 1;
+fsm.enable_obstacle_detection = 0;
 
 --fsm.playMode = 1; --For Demo without orbit
 fsm.playMode = 2; --Simple Behavior with orbit
@@ -176,7 +176,7 @@ fsm.headScan.yawMag = 90*math.pi/180;
 fsm.headScan.pitchTurn0 = 20*math.pi/180;
 fsm.headScan.pitchTurnMag = 20*math.pi/180;
 fsm.headScan.yawMagTurn = 45*math.pi/180;
-fsm.headScan.tScan = 3.0*speedFactor;
+fsm.headScan.tScan = 10.0*speedFactor;
 
 --------------------------------------------------
 --HeadKick: Fix headangle for approaching
@@ -202,10 +202,10 @@ fsm.headKickFollow.tFollow = 1.0*speedFactor;
 --------------------------------------------------
 fsm.headLookGoal={};
 fsm.headLookGoal.yawSweep = 50*math.pi/180;
-fsm.headLookGoal.tScan = 1.0*speedFactor;
+fsm.headLookGoal.tScan = 10.0*speedFactor;
 
 --------------------------------------------------
 --HeadSweep: Look around to find the goal
 --------------------------------------------------
 fsm.headSweep={};
-fsm.headSweep.tScan=1.0*speedFactor;
+fsm.headSweep.tScan=10.0*speedFactor;

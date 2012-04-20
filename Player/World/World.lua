@@ -166,6 +166,7 @@ function update_vision()
       elseif(goalType == 3) then
         PoseFilter.goal_unified(v);
       end
+      Body.set_indicator_goal({1,1,0});
     else
       --Goal observation with colors
       if color == Config.color.yellow then

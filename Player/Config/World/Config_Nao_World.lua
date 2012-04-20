@@ -25,7 +25,7 @@ world.spot[2] = {1.20, 0};
 world.landmarkCyan = {0.0, -2.4};
 world.landmarkYellow = {0.0, 2.4};
 world.cResample = 10; --Resampling interval
-world.odomScale = {1.06, 1.06, 0.97};
+world.odomScale = {.95, .95, .70};
 
 --They are SPL values
 world.Lcorner={};
@@ -69,7 +69,7 @@ world.use_new_goalposts=1;
 world.rGoalFilter = 0.02;
 world.aGoalFilter = 0.05;
 world.rPostFilter = 0.02;
-world.aPostFilter = 0.20;
+world.aPostFilter = 0.05;--.2
 
 -- default positions for our kickoff
 world.initPosition1={

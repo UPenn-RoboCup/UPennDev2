@@ -3,7 +3,7 @@ module(..., package.seeall);
 require('Body')
 
 t0 = 0;
-tscan = 2.0;
+tscan = Config.fsm.headSweep.tScan;
 yawMag = Config.head.yawMax;
 pitch = 0.0;
 

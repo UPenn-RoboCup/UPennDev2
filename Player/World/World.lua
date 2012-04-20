@@ -93,7 +93,7 @@ function update_vision()
 
   -- Reset heading if robot is down
   if mcm.get_walk_isFallDown() ==1 then
-    PoseFilter.reset_heading();
+    --PoseFilter.reset_heading();
   end
 
   -- Penalized?

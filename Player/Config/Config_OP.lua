@@ -52,7 +52,7 @@ if (robotName=='scarface') then
   game.role = 1; --Default attacker
 elseif (robotName=='linus') then
   game.playerID = 2; 
-  game.role = 1; --Default attacker
+  game.role = 0; --Default attacker
 elseif (robotName=='betty') then
   game.playerID = 3; 
   game.role = 1; --Default attacker
@@ -63,8 +63,8 @@ else
   game.playerID = 5; 
   game.role = 1; --Default attacker
 end
-game.teamColor = 0; --Blue team
---game.teamColor = 1; --Red team
+--game.teamColor = 0; --Blue team
+game.teamColor = 1; --Red team
 game.robotName = robotName;
 game.robotID = game.playerID;
 game.nPlayers = 5;
@@ -80,7 +80,7 @@ fsm.head = {'GeneralPlayer'};
 fsm.body = {'GeneralPlayer'};
 
 --Behavior flags, should be defined in FSM Configs but can be overrided here
-fsm.enable_obstacle_detection = 1;
+fsm.enable_obstacle_detection = 0;
 fsm.kickoff_wait_enable = 0;
 --fsm.playMode = 3; --1 for demo, 2 for orbit, 3 for direct approach
 --fsm.enable_walkkick = 1;

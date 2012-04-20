@@ -133,7 +133,7 @@ function detect(color,color2)
       
     --fill extent check
     if valid then
-	print(unpack(postStats.boundingBox));
+	--print(unpack(postStats.boundingBox));
       extent = postStats.area / (postStats.axisMajor * postStats.axisMinor);
       vcm.add_debug_message(string.format("Fill extent check: %.2f\n", extent));
       vcm.add_debug_message(string.format("Fill check: %d %d\n", postStats.axisMajor, postStats.axisMinor));

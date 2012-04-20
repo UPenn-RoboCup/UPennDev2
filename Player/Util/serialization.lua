@@ -2,7 +2,7 @@ module(..., package.seeall);
 
 require('cutil')
 
---[[
+
 function serialize(o)
   local str = "";
   if type(o) == "number" then
@@ -20,8 +20,8 @@ function serialize(o)
   end
   return str;
 end
---]]
 
+--[[
 --New serialization code omiting integer indexes for tables
 function serialize(o)
   local str = "";
@@ -49,7 +49,7 @@ function serialize(o)
   end
   return str;
 end
-
+--]]
 
 function serialize_array(ud, width, height, dtype, arrName, arrID)
   -- function to serialize an userdata array

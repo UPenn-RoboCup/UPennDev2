@@ -244,12 +244,12 @@ function process_keyinput_test_walk(byte)
   -- kickXComp calibration
   elseif byte==string.byte("[") then
     kickXComp = kickXComp - 0.005; 
-    print(string.format("footXComp Orig: %.3f Now: %.3f\n",
+    print(string.format("kickXComp Orig: %.3f Now: %.3f\n",
       kickXComp0, kickXComp));
     mcm.set_walk_kickXComp(kickXComp);
   elseif byte==string.byte("]") then
     kickXComp = kickXComp + 0.005; 
-    print(string.format("footXComp Orig: %.3f Now: %.3f\n",
+    print(string.format("kickXComp Orig: %.3f Now: %.3f\n",
       kickXComp0, kickXComp));
     mcm.set_walk_kickXComp(kickXComp);
   end

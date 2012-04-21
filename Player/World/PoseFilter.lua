@@ -436,7 +436,7 @@ function goal_observation_unified(pos1,pos2,v)
     local yErr2 = y2 - yp[ip];
     local rErr2 = math.sqrt(xErr2^2 + yErr2^2);
     local aErr2 = mod_angle(a2 - ap[ip]);
-    local err2 = (rErr2/rSigma1)^2 + (aErr2/aSigma)^2;
+    local err2 = (rErr2/rSigma2)^2 + (aErr2/aSigma)^2;
 
     --Filter towards best matching goal:
      if err1>err2 then

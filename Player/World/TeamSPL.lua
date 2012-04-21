@@ -65,6 +65,10 @@ function update()
 
   state.time = Body.get_time();
   state.teamNumber = gcm.get_team_number();
+  if (state.teamColor ~= gcm.get_team_color()) then
+    print('Team color has changed - re-initing particles')
+    World.init_particles();
+  end
   state.teamColor = gcm.get_team_color();
   state.pose = wcm.get_pose();
   state.ball = wcm.get_ball();

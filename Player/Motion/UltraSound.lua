@@ -38,7 +38,7 @@ obstacles = vector.zeros(2);
 free = vector.zeros(2);
 distance = vector.zeros(2);
 
-obsThresh = .03*numSavedValues/5;--.03;
+obsThresh = .02*numSavedValues/5;--.03;
 freeThresh = .1*numSavedValues/5;--.15;
 disThresh = .6;
 

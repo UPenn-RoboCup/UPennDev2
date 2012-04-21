@@ -71,14 +71,15 @@ void query_ctrls(int fd) {
   // query available controls and set them in the control table
   struct v4l2_queryctrl queryctrl;
   memset(&queryctrl, 0, sizeof(v4l2_queryctrl));
-  for (queryctrl.id = V4L2_CID_BASE; queryctrl.id < V4L2_CID_LASTP1; queryctrl.id++) {
+  //for (queryctrl.id = V4L2_CID_BASE; queryctrl.id < V4L2_CID_LASTP1; queryctrl.id++) {
+  for (queryctrl.id = V4L2_CID_BASE; queryctrl.id < V4L2_CID_LASTP1+1000000; queryctrl.id++) {
     if (0 == ioctl(fd, VIDIOC_QUERYCTRL, &queryctrl)) {
       if (queryctrl.flags & V4L2_CTRL_FLAG_DISABLED) {
         continue;
       }
 
       // set control in menu
-      printf("%s\n", queryctrl.name);
+      printf("%d: %s\n", queryctrl.id - V4L2_CID_BASE, queryctrl.name);
       v4l2ControlMap[(char *)queryctrl.name] = queryctrl.id;
 
     } else {

@@ -31,7 +31,7 @@ dev.camera = 'OPCam';
 dev.kinematics = 'OPKinematics';
 dev.ip_wired = '192.168.123.255';
 dev.ip_wireless = '139.140.218.255';
-dev.game_control='OPGameControl';
+dev.game_control='NaoPGameControl';
 dev.team='TeamNSL';
 --dev.walk='BasicWalk';  --should be updated
 dev.walk='NewNewNewWalk';
@@ -86,7 +86,7 @@ fsm.kickoff_wait_enable = 0;
 --fsm.enable_walkkick = 1;
 --fsm.enable_sidekick = 1;
 
-fsm.playMode = 2; --1 for demo, 2 for orbit, 3 for direct approach
+fsm.playMode = 3; --1 for demo, 2 for orbit, 3 for direct approach
 fsm.enable_walkkick = 0;
 fsm.enable_sidekick = 0;
 

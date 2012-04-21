@@ -10,6 +10,7 @@ add_library(ImageProc SHARED
               block_bitor.cpp
               color_count.cpp
               ConnectRegions.cpp
+              lua_robots.cpp
               lua_color_stats.cpp
               lua_field_lines.cpp
               lua_field_occupancy.cpp

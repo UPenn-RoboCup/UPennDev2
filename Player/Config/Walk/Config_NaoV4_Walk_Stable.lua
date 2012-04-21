@@ -38,7 +38,7 @@ walk.hardnessArm=.3;
 ---------------------------------------------
 walk.tStep = 0.45;
 walk.tZmp = 0.17;
-walk.supportY = 0.002;
+walk.supportY = 0.004;
 walk.stepHeight = 0.022;
 walk.phSingle={0.18,0.82};
 
@@ -57,10 +57,10 @@ walk.ankleImuParamX={0.15, -0.40*walk.gyroFactor,
         1*math.pi/180, 5*math.pi/180};
 walk.kneeImuParamX={0.1, -0.3*walk.gyroFactor,
         .5*math.pi/180, 5*math.pi/180};
-walk.ankleImuParamY={0.20, -.9*walk.gyroFactor,
+walk.ankleImuParamY={0.18, -1.8*walk.gyroFactor,
         .5*math.pi/180, 5*math.pi/180};
-walk.hipImuParamY={0.1, -0.3*walk.gyroFactor,
-        .5*math.pi/180, 5*math.pi/180};
+walk.hipImuParamY={0.13, -0.6*walk.gyroFactor,
+        .3*math.pi/180, 5*math.pi/180};
 
 walk.armImuParamX={0.1, 0*walk.gyroFactor,
         1*math.pi/180, 5*math.pi/180};

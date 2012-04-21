@@ -86,7 +86,7 @@ fsm.kickoff_wait_enable = 0;
 --fsm.enable_walkkick = 1;
 --fsm.enable_sidekick = 1;
 
-fsm.playMode = 2; --1 for demo, 2 for orbit, 3 for direct approach
+fsm.playMode = 3; --1 for demo, 2 for orbit, 3 for direct approach
 fsm.enable_walkkick = 0;
 fsm.enable_sidekick = 0;
 

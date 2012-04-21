@@ -9,11 +9,15 @@ speedFactor = 1.0;
 fsm={};
 
 --Should we consider obstacle?
-fsm.enable_obstacle_detection = 0;
+if Config.game.robotID == 2 then --no obstacle on rufio
+  fsm.enable_obstacle_detection = 1;
+else
+  fsm.enable_obstacle_detection = 0;
+end
 
 --fsm.playMode = 1; --For Demo without orbit
-fsm.playMode = 2; --Simple Behavior with orbit
---fsm.playMode = 3; --Advanced Behavior 
+--fsm.playMode = 2; --Simple Behavior with orbit
+fsm.playMode = 3; --Advanced Behavior 
 
 fsm.enable_walkkick = 0;
 
@@ -88,6 +92,7 @@ fsm.bodyApproach.maxStep = 0.03; --Max walk velocity
 fsm.bodyApproach.timeout = 10.0*speedFactor;
 fsm.bodyApproach.rFar = 0.45; --Max ball distance
 fsm.bodyApproach.tLost = 3.0*speedFactor;--ball detection timeout
+fsm.fast_approach = 0;
 
 --x and y target position for stationary straight kick
 fsm.bodyApproach.xTarget11={0, 0.16,0.18}; --min, target, max

@@ -60,6 +60,17 @@ function initialize(p0, dp)
   wp = vector.zeros(n);
 end
 
+function initialize_manual_placement(p0, dp)
+  p0 = p0 or {0, 0, 0};
+  dp = dp or {.5*xMax, .5*yMax, 2*math.pi};
+
+  print('manual placement');
+  ap = math.atan2(wcm.get_goal_attack()[2],wcm.get_goal_attack()[1])*vector.ones(n);
+  xp = wcm.get_goal_defend()[1]/2*vector.ones(n);
+  yp = p0[2]*vector.ones(n) + dp[2]*vector.new(util.randn(n));
+  wp = vector.zeros(n);
+end
+
 function initialize_unified(p0,p1,dp)
   --Particle initialization for the same-colored goalpost
   --Half of the particles at p0

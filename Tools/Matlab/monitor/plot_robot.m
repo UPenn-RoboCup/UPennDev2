@@ -167,13 +167,14 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel)
       if ballt<0.5 
         plot([x0 xb],[y0 yb],'r');
         set(hb, 'MarkerSize', 8/scale);
+%{
         ball_vel=[robot.ball.vx robot.ball.vy];
-
         xbv =  ball_vel(1)*ca - ball_vel(2)*sa;   
         ybv =  ball_vel(1)*sa + ball_vel(2)*ca;
         qvscale = 2;
         quiver(xb, yb, qvscale*xbv/scale, qvscale*ybv/scale,...
 		 0,'r','LineWidth',2/scale );
+%}
       else
         %TODO: add last seen time info
       end

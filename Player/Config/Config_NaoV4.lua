@@ -54,9 +54,12 @@ game.nPlayers = 4;
 fsm = {};
 loadconfig('FSM/Config_NaoV4_FSM')
 fsm.game = 'RoboCup';
---fsm.body = {'NaoPlayer'};
-fsm.body = {'GeneralPlayer'};
---fsm.head = {'GeneralPlayer'};
+if game.role == 0 then
+  fsm.body = {'NaoGoalie'}
+else
+  fsm.body = {'NaoPlayer'};
+  --fsm.body = {'GeneralPlayer'};
+end
 fsm.head = {'NaoPlayer'};
 
 -- Team Parameters

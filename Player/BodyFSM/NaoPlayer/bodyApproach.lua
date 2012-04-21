@@ -25,7 +25,7 @@ print('xKick')
 print(xKick)
 
 yKickMin = 0.02;
-yKickMax = 0.05;
+yKickMax = 0.06;
 
 -- maximum ball distance threshold
 rFar = 0.45;

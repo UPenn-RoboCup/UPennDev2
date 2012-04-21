@@ -93,7 +93,7 @@ function update_vision()
 
   -- Reset heading if robot is down
   if mcm.get_walk_isFallDown() ==1 then
-    --PoseFilter.reset_heading();
+    PoseFilter.reset_heading();
   end
 
   -- Penalized?
@@ -159,14 +159,17 @@ function update_vision()
     if use_same_colored_goal>0 then
       if (goalType == 0) then
         PoseFilter.post_unified_unknown(v);
+        Body.set_indicator_goal({1,1,0});
       elseif(goalType == 1) then
         PoseFilter.post_unified_left(v);
+        Body.set_indicator_goal({1,1,0});
       elseif(goalType == 2) then
         PoseFilter.post_unified_right(v);
+        Body.set_indicator_goal({1,1,0});
       elseif(goalType == 3) then
         PoseFilter.goal_unified(v);
+        Body.set_indicator_goal({0,0,1});
       end
-      Body.set_indicator_goal({1,1,0});
     else
       --Goal observation with colors
       if color == Config.color.yellow then

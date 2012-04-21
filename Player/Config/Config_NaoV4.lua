@@ -20,7 +20,7 @@ loadconfig('Kick/Config_Nao_Kick')
 loadconfig('Vision/Config_NaoV4_Vision')
 
 --Location Specific Camera Parameters--
-loadconfig('Vision/Config_NaoV4_Camera_USopen_highercontra')
+loadconfig('Vision/Config_NaoV4_Camera_USopen_auto')
 
 
 -- Devive Interface Libraries
@@ -42,7 +42,7 @@ speak.enable = true
 -- Game Parameters
 
 game = {};
-game.teamNumber = 6;
+game.teamNumber = 99;
 game.playerID = parse_hostname.get_player_id();
 game.robotID = game.playerID;
 game.teamColor = parse_hostname.get_team_color();

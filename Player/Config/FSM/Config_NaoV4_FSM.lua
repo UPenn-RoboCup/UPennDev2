@@ -9,7 +9,11 @@ speedFactor = 1.0;
 fsm={};
 
 --Should we consider obstacle?
-fsm.enable_obstacle_detection = 0;
+if Config.game.robotID == 2 then --no obstacle on rufio
+  fsm.enable_obstacle_detection = 1;
+else
+  fsm.enable_obstacle_detection = 0;
+end
 
 --fsm.playMode = 1; --For Demo without orbit
 --fsm.playMode = 2; --Simple Behavior with orbit

@@ -97,11 +97,16 @@ function update_vision()
   end
 
   -- Penalized?
-  if gcm.in_penalty() then
+  if gcm.in_penalty() or (gcm.get_game_state() == 0) then
     wcm.set_robot_penalty(1);
     init_particles();
   else
     wcm.set_robot_penalty(0);
+  end
+
+  --reset particle to face opposite goal when getting manual placement on set
+  if (gcm.get_game_state() == 2) and (Body.get_change_state() == 1) then
+    PoseFilter.initialize_manual_placement();
   end
 
   -- At gameSet state, all robot should face opponents' goal

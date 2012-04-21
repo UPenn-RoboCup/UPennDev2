@@ -42,7 +42,7 @@ speak.enable = true
 -- Game Parameters
 
 game = {};
-game.teamNumber = 6;
+game.teamNumber = 26;
 game.playerID = parse_hostname.get_player_id();
 game.robotID = game.playerID;
 game.teamColor = parse_hostname.get_team_color();

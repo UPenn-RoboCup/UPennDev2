@@ -50,8 +50,8 @@ vision.subsampling = 0;
 --For 320*240 labelA
 vision.ball={};
 vision.ball.diameter = 0.065;
-vision.ball.th_min_color = 2;
-vision.ball.th_min_color2 = 2;
+vision.ball.th_min_color = 4;
+vision.ball.th_min_color2 = 4;
 vision.ball.th_min_fill_rate = 0.35;
 vision.ball.th_height_max  = 0.20;
 vision.ball.th_ground_boundingbox = {-15,15,0,10};

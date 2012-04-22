@@ -117,7 +117,7 @@ function entry()
       for i, param in ipairs(Config.camera.param) do
         is_set = is_set and (Camera.get_param(param.key) == param.val[c]);
       end
-      while (is_set == false) do
+      while (is_set == false and count < 5) do
 
 --[[     for i,auto_param in ipairs(Config.camera.auto_param) do
         print('Camera '..c..': setting '..auto_param.key..': '..auto_param.val[c]);
@@ -131,13 +131,13 @@ function entry()
           unix.usleep(10000);
           print('Camera '..c..': set to '..param.key..': '..Camera.get_param(param.key));
         end
-        print ('this is the '..count.. 'cycle, u still have to wait '..10-count..'cycle(s)');
+        print ('this is the '..count..' cycle');
         unix.usleep(100000);
         is_set = true;
         for i, param in ipairs (Config.camera.param) do
           is_set = is_set and Camera.get_param(param.key) == param.val[c];
         end
-        --count = count + 1;
+        count = count + 1;
       end
     
       Camera.set_param('White Balance, Automatic', 0);

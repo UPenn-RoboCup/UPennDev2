@@ -95,20 +95,8 @@ while (true) do
 			print('Done running through!')
 		elseif byte == string.byte("f") then
 			unix.usleep(10000);
-                        print("\tStepping forward...");
-			keyframe.reset_tFrameStart();
-                        startFrame = keyframe.update();
-                        currentFrame = startFrame;
-                        while (startFrame == currentFrame and currentFrame ~= 'done') do
-                          currentFrame = keyframe.update();
-                          -- sleep 0.01s
-                          unix.usleep(10000);
-                        end 
-                        if (currentFrame == 'done') then
-                                print('done keyframe');
-                        else
-                                print('done frame ', startFrame);
-                        end
+			keyframe.update();
+			print("\tStepping forward...");
 		elseif byte == string.byte("p") then
 			print("Joint angles are: ");
 			print(keyframe.getJoints());

@@ -17,6 +17,7 @@ function MonitorShm(team,player)
 
   tFPS = 8; % Target FPS
   dInterval = 5; %Vision update interval for team view
+  dInterval = 1; 
 
 %%%%% Init SHM for robots
   t0=tic;

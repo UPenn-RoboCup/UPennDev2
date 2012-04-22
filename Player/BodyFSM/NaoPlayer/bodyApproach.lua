@@ -61,7 +61,7 @@ function update()
   walk.set_velocity(vStep[1],vStep[2],vStep[3]);
 
   attackBearing, daPost = wcm.get_attack_bearing();
-  print(vStep[1]..','..vStep[2]..','..vStep[3]);
+  --print(vStep[1]..','..vStep[2]..','..vStep[3]);
 
   if (t - ball.t > tLost) then
     print('ballLost');

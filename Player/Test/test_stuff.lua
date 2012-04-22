@@ -28,6 +28,7 @@ package.path = cwd.."/Config/?.lua;"..package.path;
 package.path = cwd.."/Lib/?.lua;"..package.path;
 package.path = cwd.."/Dev/?.lua;"..package.path;
 package.path = cwd.."/Motion/?.lua;"..package.path;
+package.path = cwd.."/Motion/Walk/?.lua;"..package.path;
 package.path = cwd.."/Vision/?.lua;"..package.path;
 package.path = cwd.."/World/?.lua;"..package.path;
 package.path = cwd.."/BodyFSM/?.lua;"..package.path;
@@ -213,18 +214,13 @@ function update()
 			Config.walk.bodyHeight = Config.walk.bodyHeight - .001;
 		elseif byte== string.byte('Y') then
 			Config.walk.bodyHeight = Config.walk.bodyHeight + .001;
-                elseif byte==string.byte('u') then
-                        Config.walk.footY = Config.walk.footY - .0005;
-                elseif byte==string.byte('U') then
-                        Config.walk.footY = Config.walk.footY + .0005;
     elseif byte==string.byte('\\') then
       walkKick=not walkKick;
-      print("Walk kick = ", walkKick);
     elseif byte==string.byte("1") then
       if walkKick then	
         walk.doWalkKickLeft();
       else 
-        kick.set_kick("kickForwardLeft");	
+        kick.set_kick("KickForwardLeft");	
         Motion.event("kick");
       end
     elseif byte==string.byte("2") then
@@ -289,24 +285,10 @@ function update()
     elseif byte==string.byte("`") then
       print(instructions);
       
-    elseif byte==string.byte('\\') then
-      walkKick=not walkKick;
-      print("Walk kick = ", walkKick)
-
-		elseif byte==string.byte("1") then
-      if walkKick then	
-        walk.doWalkKickLeft();
-      else 
-        kick.set_kick("kickForwardLeft");	
-        Motion.event("kick");
-      end
-    elseif byte==string.byte("2") then
-      if walkKick then
-        walk.doWalkKickRight();
-      else
-        kick.set_kick("kickForwardRight");
-        Motion.event("kick");
-      end
+		elseif byte==string.byte("1") then	
+			walk.doWalkKickLeft();
+		elseif byte==string.byte("2") then	
+			walk.doWalkKickRight();
 
 		elseif byte==string.byte("7") then	Motion.event("sit");
 		elseif byte==string.byte("8") then	
@@ -318,21 +300,21 @@ function update()
 
 		--Alpha for the gyro feedback--
 		elseif byte==string.byte("y") then
-			Config.walk.ankleImuParamX[1] = Config.walk.ankleImuParamX[1] - .01;
+			Config.walk.ankleImuParamX[1] = Config.walk.ankleImuParamX[1] - .05;
 		elseif byte==string.byte("Y") then
-			Config.walk.ankleImuParamX[1] = Config.walk.ankleImuParamX[1] + .01;
+			Config.walk.ankleImuParamX[1] = Config.walk.ankleImuParamX[1] + .05;
 		elseif byte==string.byte("u") then
-			Config.walk.ankleImuParamY[1] = Config.walk.ankleImuParamY[1] - .01;
+			Config.walk.ankleImuParamY[1] = Config.walk.ankleImuParamY[1] - .05;
 		elseif byte==string.byte("U") then
-			Config.walk.ankleImuParamY[1] = Config.walk.ankleImuParamY[1] + .01;
+			Config.walk.ankleImuParamY[1] = Config.walk.ankleImuParamY[1] + .05;
 		elseif byte==string.byte("o") then
-			Config.walk.kneeImuParamX[1] = Config.walk.kneeImuParamX[1] - .01;
+			Config.walk.kneeImuParamX[1] = Config.walk.kneeImuParamX[1] - .05;
 		elseif byte==string.byte("O") then
-			Config.walk.kneeImuParamX[1] = Config.walk.kneeImuParamX[1] + .01;
+			Config.walk.kneeImuParamX[1] = Config.walk.kneeImuParamX[1] + .05;
 		elseif byte==string.byte("p") then
-			Config.walk.hipImuParamY[1] = Config.walk.hipImuParamY[1] - .01;
+			Config.walk.hipImuParamY[1] = Config.walk.hipImuParamY[1] - .05;
 		elseif byte==string.byte("P") then
-			Config.walk.hipImuParamY[1] = Config.walk.hipImuParamY[1] + .01;
+			Config.walk.hipImuParamY[1] = Config.walk.hipImuParamY[1] + .05;
 
 		--Gain for the gyro feedback--
 		elseif byte==string.byte("q") then
@@ -373,15 +355,15 @@ function update()
   end
 
   if parameters then
-		print(string.format("\nTest Parameters:\n Walk Velocity: (%.2f, %.2f, %.2f)",unpack(targetvel)));
+		print(string.format("\n Walk Velocity: (%.2f, %.2f, %.2f)",unpack(targetvel)));
 		walk.set_velocity(unpack(targetvel));
 		print "huh?";
 		Body.set_head_command(headangle);
   	print(string.format("Head angle: %d, %d",
 			headangle[1]*180/math.pi,
 			headangle[2]*180/math.pi));
-		print(string.format("Walk settings:\n tStep: %.2f\t phSingle: {%.2f, %.2f}\t stepHeight: %.3f\n supportX: %.3f\t supportY: %.3f\t bodyHeight: %.3f\n footY: %.4f", Config.walk.tStep, Config.walk.phSingle[1], Config.walk.phSingle[2], Config.walk.stepHeight, 
-Config.walk.supportX, Config.walk.supportY, Config.walk.bodyHeight, Config.walk.footY));
+		print(string.format("Walk settings:\n tStep: %.2f\t phSingle: {%.2f, %.2f}\t stepHeight: %.3f\n supportX: %.3f\t supportY: %.3f\t", Config.walk.tStep, Config.walk.phSingle[1], Config.walk.phSingle[2], Config.walk.stepHeight, 
+Config.walk.supportX, Config.walk.supportY));
   else
     print(string.format("\n Walk Velocity: (%.2f, %.2f, %.2f)",unpack(targetvel)));
 		walk.set_velocity(unpack(targetvel));
@@ -389,7 +371,7 @@ Config.walk.supportX, Config.walk.supportY, Config.walk.bodyHeight, Config.walk.
 		print(string.format("Head angle: %d, %d",
 			headangle[1]*180/math.pi,
 			headangle[2]*180/math.pi));
-		print(string.format("\nTest Gyro:\nGyro Settings ({alpha, gain, deadband, max}):\n ankleImuParamX: {%.2f, %.4f, %.3f, %.3f}\n ankleImuParamY: {%.2f, %.4f, %.3f, %.3f}\n kneeImuParamX: {%.2f, %.4f, %.3f, %.3f}\n hipImuParamY: {%.2f, %.4f, %.3f, %.3f}\n", Config.walk.ankleImuParamX[1], Config.walk.ankleImuParamX[2], Config.walk.ankleImuParamX[3], Config.walk.ankleImuParamX[4], Config.walk.ankleImuParamY[1], Config.walk.ankleImuParamY[2], Config.walk.ankleImuParamY[3], Config.walk.ankleImuParamY[4], Config.walk.kneeImuParamX[1], Config.walk.kneeImuParamX[2], Config.walk.kneeImuParamX[3], Config.walk.kneeImuParamX[4], Config.walk.hipImuParamY[1], Config.walk.hipImuParamY[2], Config.walk.hipImuParamY[3], Config.walk.hipImuParamY[4]));
+		print(string.format("Gyro Settings ({alpha, gain, deadband, max}):\n ankleImuParamX: {%.2f, %.4f, %.3f, %.3f}\n ankleImuParamY: {%.2f, %.4f, %.3f, %.3f}\n kneeImuParamX: {%.2f, %.4f, %.3f, %.3f}\n hipImuParamY: {%.2f, %.4f, %.3f, %.3f}\n", Config.walk.ankleImuParamX[1], Config.walk.ankleImuParamX[2], Config.walk.ankleImuParamX[3], Config.walk.ankleImuParamX[4], Config.walk.ankleImuParamY[1], Config.walk.ankleImuParamY[2], Config.walk.ankleImuParamY[3], Config.walk.ankleImuParamY[4], Config.walk.kneeImuParamX[1], Config.walk.kneeImuParamX[2], Config.walk.kneeImuParamX[3], Config.walk.kneeImuParamX[4], Config.walk.hipImuParamY[1], Config.walk.hipImuParamY[2], Config.walk.hipImuParamY[3], Config.walk.hipImuParamY[4]));
   end
  
 

@@ -55,9 +55,9 @@ if(Config.platform.name == 'OP') then
   Body.set_actuator_command(Config.stance.initangle)
 end
 
---TODO: enable new nao specific
+--enable new nao specific
+--TODO: auto-detect using hostname
 newnao = true;
-
 
 getch.enableblock(1);
 unix.usleep(1E6*1.0);
@@ -86,14 +86,9 @@ local t0 = unix.time();
 local tUpdate = t0;
 
 -- Broadcast the images at a lower rate than other data
-local maxFPS = 2;
-local imgFPS = 1;
-local maxPeriod = 1.0 / maxFPS;
-local imgRate = math.max( math.floor( maxFPS / imgFPS ), 1);
 local broadcast_enable=0;
-local tLastBroadcast = Body.get_time();
-local broadcast_count=0;
 local imageCount=0;
+
 
 -- main loop
 count = 0;
@@ -102,68 +97,8 @@ tUpdate = unix.time();
 Config.fsm.playMode=1; --Always demo mode
 fsm.enable_walkkick = 0;
 fsm.enable_sidekick = 0;
-
-
-
 broadcast_enable=0;
-function broadcast2()
-  -- Get a keypress
-  local str=getch.get();
-  if #str>0 then
-    local byte=string.byte(str,1);
-    if byte==string.byte("g") then	--Broadcast selection
-      local mymod = 4;
-      broadcast_enable = (broadcast_enable+1)%mymod;
-      print("Broadcast:", broadcast_enable);
-    end
-  end
-  if vcm.get_image_count()>imagecount then
-    imagecount=vcm.get_image_count();
-    -- Always send non-image data
-    Broadcast.update(broadcast_enable);
-    -- Send image data every so often
-    if( imagecount % imgRate == 0 ) then
-      Broadcast.update_img(broadcast_enable);    
-    end
-    return true;
-  end
-  return false;
-end
-
-
-
-function broadcast()
-  local ncount=20;
-  local t=Body.get_time();
-  if t-tLastBroadcast<maxPeriod then return;end
-  if broadcast_enable==0 then return;end
-  broadcast_count = broadcast_count + 1;
-
-  local tstart = unix.time();
-  -- Always send non-image data
-  Broadcast.update(broadcast_enable);
-  if( broadcast_count % imgRate == 0 ) then
-    Broadcast.update_img(broadcast_enable,imagecount);    
-    imagecount = imagecount + 1;
-  end
-  tPassed = unix.time() - tstart;  -- Sleep in order to get the right FPS
-
---[[
-  print("Broadcast time:",tPassed);
-  -- Display our FPS and broadcast level
-  if (broadcast_count % ncount == 0) then
-    print('fps: '..(ncount / (tstart - tUpdate))..', Level: '..broadcast_enable );
-  end
---]]
-  tLastBroadcast=t;
-
-end
----[[
-function get_headPitchBias()
-  return get_walk_headPitchBiasComp()+headPitchBias;
-end
-
---]]
+button_pressed = {0,0};
 
 function process_keyinput()
   --Robot specific head pitch bias
@@ -171,6 +106,26 @@ function process_keyinput()
 	mcm.get_walk_headPitchBiasComp();
   headPitchBias = mcm.get_headPitchBias()
 
+  --Toggle body SM when button is pressed and then released
+  if (Body.get_change_state() == 1) then
+    button_pressed[1]=1;
+  else
+    if button_pressed[1]==1 then
+      if bodysm_running==0 then 
+        Body.set_head_hardness(0.5);
+        headsm_running=1;
+        bodysm_running=1;
+        BodyFSM.sm:set_state('bodySearch');   
+        HeadFSM.sm:set_state('headScan');
+        walk.start();
+      else
+        if walk.active then walk.stop();end
+        bodysm_running=0;
+        Motion.event("standup");
+      end
+    end
+    button_pressed[1]=0;
+  end
 
   local str=getch.get();
   if #str>0 then
@@ -224,8 +179,9 @@ function process_keyinput()
     elseif byte==string.byte("1") then	
       headsm_running = 1-headsm_running;
       if (headsm_running == 1) then
+        Body.set_head_hardness(0.5);
         HeadFSM.sm:set_state('headScan');
-    end
+      end
 
     elseif byte==string.byte("2") then	
     -- Camera transform testing
@@ -241,16 +197,23 @@ function process_keyinput()
       print("Head Angles for looking directly at the ball:", 
 	unpack(headangle*180/math.pi));
 
+    elseif byte==string.byte("f") then
+      behavior.cycle_behavior();
+
+    --Logging mode
+    elseif byte==string.byte("4") then
+      Body.set_head_hardness(0.2);
+      HeadFSM.sm:set_state('headLog');
+      headsm_running=1;
+
     elseif byte==string.byte("5") then
     --Turn on body SM
       headsm_running=1;
       bodysm_running=1;
+      Body.set_head_hardness(0.5);
       BodyFSM.sm:set_state('bodySearch');   
       HeadFSM.sm:set_state('headScan');
       walk.start();
-
-    elseif byte==string.byte("f") then
-      behavior.cycle_behavior();
 
     elseif byte==string.byte("6") then
       headsm_running=0;
@@ -261,17 +224,15 @@ function process_keyinput()
       footX = Config.walk.footX or 0;
       print("foot center to ball pos: ",ball.x,ball.y);      
 
-    elseif byte==string.byte("g") then	--Broadcast selection
+    elseif byte==string.byte("g") then	
+      --Broadcast selection
       local mymod = 4;
       broadcast_enable = (broadcast_enable+1)%mymod;
-      print("\nBroadcast:", broadcast_enable);
 
+      print("\nBroadcast:", broadcast_enable);
     --Left kicks (for camera angle calibration)
     elseif byte==string.byte("3") then	
       kick.set_kick("kickForwardLeft");
-      Motion.event("kick");
-    elseif byte==string.byte("4") then	
-      kick.set_kick("kickSideLeft");
       Motion.event("kick");
     elseif byte==string.byte("t") then
       walk.doWalkKickLeft();
@@ -346,14 +307,15 @@ function update()
     process_keyinput();
     Motion.update();
     Body.update();
+    -- Keep setting monitor flag
+    vcm.set_camera_broadcast(broadcast_enable);
+
     if headsm_running>0 then
       HeadFSM.update();
     end
     if bodysm_running>0 then
       BodyFSM.update();
     end
---    broadcast();
-    broadcast2();
   end
   local dcount = 50;
   if (count % 50 == 0) then

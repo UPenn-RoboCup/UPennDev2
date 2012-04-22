@@ -281,7 +281,6 @@ function update()
 
       BodyFSM.entry();
       HeadFSM.entry();
-      require('behavior')
 
       init = true;
     else

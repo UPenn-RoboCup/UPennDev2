@@ -10,7 +10,7 @@ fsm={};
 
 --Should we consider obstacle?
 if Config.game.robotID == 2 then --no obstacle on rufio
-  fsm.enable_obstacle_detection = 1;
+  fsm.enable_obstacle_detection = 0;
 else
   fsm.enable_obstacle_detection = 0;
 end

@@ -50,14 +50,13 @@ function detect()
   nLines=0;
 
   nLines=#line.propsB;
-  nLines=math.min(nLines,6);
+  vcm.add_debug_message(string.format(
+    "Total %d lines detected\n" ,nLines));
 
   if (nLines==0) then
     return line; 
   end
 
-  line.detect=1;
-  line.nLines = nLines;
   line.v={};
   line.endpoint={};
   line.angle={};
@@ -71,37 +70,40 @@ function detect()
     line.angle[i] = 0;
   end
 
-  vcm.add_debug_message(string.format(
-		"Total %d lines detected\n" ,line.nLines));
 
   bestindex=1;
   bestlength=0;
+  linecount=0;
 
   for i=1,nLines do
-    local vendpoint = {};
-    line.endpoint[i]= line.propsB[i].endpoint;
-    line.length[i]=math.sqrt(
-	(line.endpoint[i][1]-line.endpoint[i][2])^2+
-	(line.endpoint[i][3]-line.endpoint[i][4])^2);
+    local length = math.sqrt(
+	(line.propsB[i].endpoint[1]-line.propsB[i].endpoint[2])^2+
+	(line.propsB[i].endpoint[3]-line.propsB[i].endpoint[4])^2);
+    if length>min_length and linecount<6 then
+      linecount=linecount+1;
+      local vendpoint = {};
+      line.length[linecount]=length;
+      line.endpoint[linecount]= line.propsB[i].endpoint;
 
-    vendpoint[1] = HeadTransform.coordinatesB(
+      vendpoint[1] = HeadTransform.coordinatesB(
 		vector.new({line.propsB[i].endpoint[1], line.propsB[i].endpoint[3]}));
-    vendpoint[2] = HeadTransform.coordinatesB(
+      vendpoint[2] = HeadTransform.coordinatesB(
 		vector.new({line.propsB[i].endpoint[2], line.propsB[i].endpoint[4]}));
-    vendpoint[1] = HeadTransform.projectGround(vendpoint[1],0);
-    vendpoint[2] = HeadTransform.projectGround(vendpoint[2],0);
-
-    line.v[i]={};
-    line.v[i][1]=vendpoint[1];
-    line.v[i][2]=vendpoint[2];
-
-    line.angle[i]=math.abs(math.atan2(vendpoint[1][2]-vendpoint[2][2],
+      vendpoint[1] = HeadTransform.projectGround(vendpoint[1],0);
+      vendpoint[2] = HeadTransform.projectGround(vendpoint[2],0);
+      line.v[linecount]={};
+      line.v[linecount][1]=vendpoint[1];
+      line.v[linecount][2]=vendpoint[2];
+      line.angle[linecount]=math.abs(math.atan2(vendpoint[1][2]-vendpoint[2][2],
 			    vendpoint[1][1]-vendpoint[2][1]));
-
-    vcm.add_debug_message(string.format(
+      vcm.add_debug_message(string.format(
 		"Line %d: length %d, angle %d\n",
-		i,line.length[i],line.angle[i]*180/math.pi));
+		linecount,line.length[linecount],
+		line.angle[linecount]*180/math.pi));
+    end
   end
+  nLines = linecount;
+  line.nLines = nLines;
 
   --TODO::::find distribution of v
   sumx=0;
@@ -112,6 +114,8 @@ function detect()
     sumxx=sumxx+line.angle[i]*line.angle[i];
   end
 
-  line.detect = 1;
+  if nLines>0 then
+    line.detect = 1;
+  end
   return line;
 end

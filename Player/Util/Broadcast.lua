@@ -220,6 +220,7 @@ end
 
 function update(enable)
   if enable == 0 then return; end
+  --At level 3, we only send yuyv for logging and nothing else
   if enable == 3 then return; end
 	
   send = {};	
@@ -258,11 +259,15 @@ end
 
 function update_img( enable, imagecount )
   if(enable==1) then
+    --1: Fast debug mode
+    --send 1/4 image and labelB
     if subsampling2>0 then
       sendImgSub4();
       sendB();
     end
   elseif(enable==2) then
+    --2: Vision debug mode
+    --Send everything 
     if subsampling>0 then
       sendImgSub2();
       sendA();
@@ -273,6 +278,12 @@ function update_img( enable, imagecount )
       sendB();
     end
   elseif enable==3 then
+    --3: Logging mode
+    --Only send 160*120 yuyv for logging
+    if subsampling>0 then
+      sendImgSub2();
+    else
       sendImg();
+    end
   end
 end

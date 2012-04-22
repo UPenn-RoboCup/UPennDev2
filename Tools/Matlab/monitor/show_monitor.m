@@ -62,13 +62,24 @@ function h=show_monitor()
 	'Units','Normalized', 'Position',[.60 .93 .10 .04],'Callback',@button7);
 
       MONITOR.hButton8=uicontrol('Style','pushbutton','String','LABEL',...
-	'Position',[20 260 70 40],'Callback',@button8);
+	'Units','Normalized','Position',[.02 .30 .07 .07],'Callback',@button8);
 
       MONITOR.hButton9=uicontrol('Style','pushbutton','String','2D',...
-	'Position',[20 200 70 40],'Callback',@button9);
+	'Units','Normalized','Position',[.02 .23 .07 .07],'Callback',@button9);
 
       MONITOR.hButton10=uicontrol('Style','pushbutton','String','MAP1',...
-	'Position',[20 600 70 40],'Callback',@button10);
+	'Units','Normalized','Position',[.02 .63 .07 .07],'Callback',@button10);
+
+      MONITOR.hButton13=uicontrol('Style','pushbutton','String','Kidsize',...
+	'Units','Normalized', 'Position',[.02 .56 .07 .07],'Callback',@button13);
+
+      MONITOR.infoTexts=[];
+
+      for i=1:5
+        MONITOR.infoTexts(i)=uicontrol('Style','text',...
+	'Units','Normalized', 'Position',[0.16*(i-1)+0.12 0.01 0.145 0.08]);
+      end
+
 
     else % Single robot full monitoring mode
       LOGGER=logger();
@@ -224,7 +235,7 @@ function h=show_monitor()
         plot_robot( r_struct, r_mon,2,3 );
       else
         plot_field(MONITOR.h3,MONITOR.fieldtype);
-        plot_robot( r_struct, r_mon,1,MONITOR.enable3 );
+        plot_robot( r_struct, r_mon,1.5,MONITOR.enable3 );
       end
     end
 
@@ -247,15 +258,12 @@ function h=show_monitor()
     %Draw common field 
     h_c=subplot(5,5,[1:15]);
     cla(h_c);
-    plot_field(h_c,1);
+    plot_field(h_c,MONITOR.fieldtype);
 
     for i=1:length(playerNumber)
       r_struct = robots{playerNumber(i),teamNumber}.get_team_struct();
       r_mon = robots{playerNumber(i),teamNumber}.get_monitor_struct();
-      %labelA = robots{playerNumber(i),teamNumber}.get_labelA();
       labelB = robots{playerNumber(i),teamNumber}.get_labelB();
-      %rgb = robots{playerNumber(i),teamNumber}.get_rgb();
-
       updated=robots{playerNumber(i),teamNumber}.updated;
       tLastUpdate=robots{playerNumber(i),teamNumber}.tLastUpdate;
 
@@ -280,10 +288,10 @@ function h=show_monitor()
         plot_surroundings( h2, r_mon );
       end
 
+
       h2=subplot(5,5,20+playerNumber(i));
       [infostr textcolor]=robot_info(r_struct,r_mon,2);
-      h_xlabel=xlabel(infostr);
-      set(h_xlabel,'Color',textcolor);
+      set(MONITOR.infoTexts(i),'String',infostr);
     end
   end
 
@@ -293,7 +301,7 @@ function h=show_monitor()
     %Draw common field 
     h_c=subplot(5,5,[1:15]);
     cla(h_c);
-    plot_field(h_c,1);
+    plot_field(h_c,MONITOR.fieldtype);
 
     for i=1:10
       r_struct = robot_team.get_team_struct_wireless(i);

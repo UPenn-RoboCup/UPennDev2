@@ -55,7 +55,7 @@ function update()
   vx = 0;
   
   vy = maxStep*math.sin(aStep);
-  va = 0.75*ballA;
+  va = 0.6*ballA;
 
   walk.set_velocity(vx, vy, va);
 

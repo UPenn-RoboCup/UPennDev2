@@ -7,6 +7,7 @@ require('kick');
 require('HeadFSM')
 require('Config')
 require('wcm')
+require('Speak')
 
 require('walk');
 
@@ -58,6 +59,7 @@ function update()
   end
 
   if (t - t0 > timeout) then
+    Speak.talk('I am timing out of kick');
     return "timeout";
   end
 end

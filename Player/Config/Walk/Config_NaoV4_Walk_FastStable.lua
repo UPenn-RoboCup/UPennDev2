@@ -12,9 +12,9 @@ walk.stanceLimitX={-0.10,0.10};
 walk.stanceLimitY={0.09,0.20};
 walk.stanceLimitA={-0*math.pi/180,40*math.pi/180};
 
-walk.velLimitX={-.03,.03};
-walk.velLimitY={-.02,.02};
-walk.velLimitA={-.3,.3};
+walk.velLimitX={-.05,.05};
+walk.velLimitY={-.03,.03};
+walk.velLimitA={-.4,.4};
 walk.velDelta={0.15,0.01,0.15} 
 
 ----------------------------------------------
@@ -36,11 +36,11 @@ walk.hardnessArm=.3;
 ---------------------------------------------
 -- Gait parameters
 ---------------------------------------------
-walk.tStep = 0.23;
+walk.tStep = 0.26;
 walk.tZmp = 0.17;
 walk.supportY = 0.002;
-walk.stepHeight = 0.022;
-walk.phSingle={0.18,0.82};
+walk.stepHeight = 0.014;
+walk.phSingle={0.04,0.96};
 
 --------------------------------------------
 -- Compensation parameters
@@ -57,7 +57,7 @@ walk.ankleImuParamX={0.15, -0.40*walk.gyroFactor,
         1*math.pi/180, 5*math.pi/180};
 walk.kneeImuParamX={0.1, -0.3*walk.gyroFactor,
         .5*math.pi/180, 5*math.pi/180};
-walk.ankleImuParamY={0.18, -1.8*walk.gyroFactor,
+walk.ankleImuParamY={0.15, -.5*walk.gyroFactor,
         .5*math.pi/180, 5*math.pi/180};
 walk.hipImuParamY={0.13, -0.6*walk.gyroFactor,
         .3*math.pi/180, 5*math.pi/180};

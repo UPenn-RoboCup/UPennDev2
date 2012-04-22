@@ -20,7 +20,7 @@ loadconfig('Kick/Config_Nao_Kick')
 loadconfig('Vision/Config_NaoV4_Vision')
 
 --Location Specific Camera Parameters--
-loadconfig('Vision/Config_NaoV4_Camera_USopen_auto')
+loadconfig('Vision/Config_NaoV4_Camera_USopen_FieldB')
 
 
 -- Devive Interface Libraries

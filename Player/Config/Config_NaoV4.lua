@@ -12,9 +12,7 @@ function loadconfig(configName)
     Config[k]=localConfig[k];
   end
 end
-
---loadconfig('Walk/Config_NaoV4_Walk')
-loadconfig('Walk/Config_NaoV4_Walk_Stable')
+  
 loadconfig('World/Config_Nao_World')
 loadconfig('Kick/Config_Nao_Kick')
 loadconfig('Vision/Config_NaoV4_Vision')
@@ -42,12 +40,19 @@ speak.enable = true
 -- Game Parameters
 
 game = {};
-game.teamNumber = 26;
+game.teamNumber = 11;
 game.playerID = parse_hostname.get_player_id();
 game.robotID = game.playerID;
 game.teamColor = parse_hostname.get_team_color();
 game.role = game.playerID-1; -- 0 for goalie
 game.nPlayers = 4;
+
+--loadconfig('Walk/Config_NaoV4_Walk')
+--if game.playerID==2 or game.playerID==4 then
+  loadconfig('Walk/Config_NaoV4_Walk_FastStable')
+--else
+  --loadconfig('Walk/Config_NaoV4_Walk_Stable')
+--end
 
 
 -- FSM Parameters

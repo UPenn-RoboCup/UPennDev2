@@ -77,7 +77,6 @@ vision.goal.th_min_green_ratio = 0.2;
 vision.goal.th_min_bad_color_ratio = 0.1;
 vision.goal.th_goal_separation = {0.35,3.0}; --for Webots OP
 vision.goal.th_min_area_unknown_post = 40;
-
 vision.goal.use_centerpost = 1;
 vision.goal.check_for_ground = 1;
 
@@ -91,10 +90,3 @@ vision.corner={};
 vision.corner.dist_threshold = 10;
 vision.corner.length_threshold = 3;
 vision.corner.min_center_dist = 1.5;
-
-
---TURN OFF ALL GREEN CHECK FOR NOW
-vision.ball.check_for_ground = 0;
-vision.goal.check_for_ground = 0;
-
-

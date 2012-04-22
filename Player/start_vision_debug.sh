@@ -21,13 +21,18 @@ screen -dm -L -S cognition /usr/bin/luajit run_cognition.lua
 # Allow Cognition some time to start
 sleep 1
 
-echo "Starting Player..."
+echo "Starting Monitor Broadcasting..."
 cd $PLAYER_DIR
-screen -dm -L -S player /usr/bin/luajit run_main.lua
+screen -dm -L -S monitor /usr/bin/luajit run_monitor.lua
+sleep 1
+
+echo "Starting Test Vision..."
+cd $PLAYER_DIR
+screen -m -L -S test /usr/bin/luajit test_vision.lua
 
 echo "Rock and Roll!"
 
-# 139.140.218.255Make sure /home/darwin/current links to the right UPennDev
+# Make sure /home/darwin/current links to the right UPennDev
 # Put these lines in /etc/rc.local
 # #!/bin/bash
 # su -c "sh /home/darwin/current/Player/startup.sh" darwin

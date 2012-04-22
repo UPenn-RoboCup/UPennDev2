@@ -83,8 +83,6 @@ global MONITOR %for sending the webots check information
         pose = h.wcmRobot.get_pose();
         r.pose = struct('x', pose(1), 'y', pose(2), 'a', pose(3));
         
- 	gpspose = h.wcmRobot.get_gpspose();
-        r.gpspose = struct('x', gpspose(1), 'y', gpspose(2), 'a', gpspose(3));
 
         ballx = h.wcmBall.get_x();
 	bally = h.wcmBall.get_y();
@@ -120,6 +118,10 @@ global MONITOR %for sending the webots check information
         r.fall = h.wcmRobot.get_is_fall_down();
         r.time = h.wcmRobot.get_time();
         r.penalty = h.wcmRobot.get_penalty();
+
+ 	gpspose = h.wcmRobot.get_gpspose();
+        r.gpspose = struct('x', gpspose(1), 'y', gpspose(2), 'a', gpspose(3));
+ 	r.gps_attackbearing = h.wcmRobot.get_gps_attackbearing();
 
 
 

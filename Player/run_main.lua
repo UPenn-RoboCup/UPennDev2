@@ -1,5 +1,5 @@
 module(... or "", package.seeall)
-
+package.cpath = './Lib/?.so;' .. package.cpath  
 require('unix');
 require('main');
 

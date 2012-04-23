@@ -98,11 +98,20 @@ end
 
 function recv_msgs()
   while (Comm.size() > 0) do 
-    t = serialization.deserialize(Comm.receive());
+
+--Ball GPS Info hadling
+    msg=Comm.receive();
+    if #msg==14 then --Ball
+      ball_gpsx=(tonumber(string.sub(msg,2,6))-5)*2;
+      ball_gpsy=(tonumber(string.sub(msg,8,12))-5)*2;
+      print("GPS Ball message:",ball_gpsx, ball_gpsy);
+    else --Regular team message
+      t = serialization.deserialize(msg);
 --    t = unpack_msg(Comm.receive());
-    if (t and (t.teamNumber) and (t.teamNumber == state.teamNumber) and (t.id) and (t.id ~= playerID)) then
-      t.tReceive = Body.get_time();
-      states[t.id] = t;
+      if (t and (t.teamNumber) and (t.teamNumber == state.teamNumber) and (t.id) and (t.id ~= playerID)) then
+        t.tReceive = Body.get_time();
+        states[t.id] = t;
+      end
     end
   end
 end
@@ -169,8 +178,6 @@ function update()
 --    print("Packed team message size:",string.len(msg2))
 --    Comm.send(serialization.serialize(state));
 --    msg=pack_msg(state);
-
-
     Comm.send(msg);
 
     --Copy of message sent out to other players

@@ -7,25 +7,59 @@ require('Config');
 if (string.find(Config.platform.name,'Webots')) then
   webots = true;
 end
+--Added for webots fast simulation
+use_gps_only = Config.use_gps_only or 0;
 
 require('ImageProc');
 require('HeadTransform');
-require('Camera');
-require('Detection');
 
 require('vcm');
 require('mcm');
 require('Body')
 
+if use_gps_only==0 then
+  require('Camera');
+  require('Detection');
 
-if (Config.camera.width ~= Camera.get_width()
-    or Config.camera.height ~= Camera.get_height()) then
-  print('Camera width/height mismatch');
-  print('Config width/height = ('..Config.camera.width..', '..Config.camera.height..')');
-  print('Camera width/height = ('..Camera.get_width()..', '..Camera.get_height()..')');
-  error('Config file is not set correctly for this camera. Ensure the camera width and height are correct.');
+  if (Config.camera.width ~= Camera.get_width()
+      or Config.camera.height ~= Camera.get_height()) then
+    print('Camera width/height mismatch');
+    print('Config width/height = ('..Config.camera.width..', '..Config.camera.height..')');
+    print('Camera width/height = ('..Camera.get_width()..', '..Camera.get_height()..')');
+    error('Config file is not set correctly for this camera. Ensure the camera width and height are correct.');
+  end
+  vcm.set_image_width(Config.camera.width);
+  vcm.set_image_height(Config.camera.height);
+
+  camera = {};
+
+  camera.width = Camera.get_width();
+  camera.height = Camera.get_height();
+  camera.npixel = camera.width*camera.height;
+  camera.image = Camera.get_image();
+  camera.status = Camera.get_camera_status();
+  camera.switchFreq = Config.camera.switchFreq;
+  camera.ncamera = Config.camera.ncamera;
+  -- Initialize the Labeling
+  labelA = {};
+  -- labeled image is 1/4 the size of the original
+  labelA.m = camera.width/2;
+  labelA.n = camera.height/2;
+  labelA.npixel = labelA.m*labelA.n;
+  if( webots ) then
+    labelA.m = camera.width;
+    labelA.n = camera.height;
+    labelA.npixel = labelA.m*labelA.n;
+  end
+  scaleB = 4;
+  labelB = {};
+  labelB.m = labelA.m/scaleB;
+  labelB.n = labelA.n/scaleB;
+  labelB.npixel = labelB.m*labelB.n;
+  print('Vision LabelA size: ('..labelA.m..', '..labelA.n..')');
+  print('Vision LabelB size: ('..labelB.m..', '..labelB.n..')');
+
 end
-
 
 colorOrange = Config.color.orange;
 colorYellow = Config.color.yellow;
@@ -33,42 +67,7 @@ colorCyan = Config.color.cyan;
 colorField = Config.color.field;
 colorWhite = Config.color.white;
 
-vcm.set_image_width(Config.camera.width);
-vcm.set_image_height(Config.camera.height);
-
 yellowGoalCountThres = Config.vision.yellow_goal_count_thres;
-
-camera = {};
-
-camera.width = Camera.get_width();
-camera.height = Camera.get_height();
-camera.npixel = camera.width*camera.height;
-camera.image = Camera.get_image();
-camera.status = Camera.get_camera_status();
-camera.switchFreq = Config.camera.switchFreq;
-camera.ncamera = Config.camera.ncamera;
-
--- Initialize the Labeling
-labelA = {};
--- labeled image is 1/4 the size of the original
-labelA.m = camera.width/2;
-labelA.n = camera.height/2;
-labelA.npixel = labelA.m*labelA.n;
-if( webots ) then
-  labelA.m = camera.width;
-  labelA.n = camera.height;
-  labelA.npixel = labelA.m*labelA.n;
-end
-
-scaleB = 4;
-labelB = {};
-labelB.m = labelA.m/scaleB;
-labelB.n = labelA.n/scaleB;
-labelB.npixel = labelB.m*labelB.n;
-
-print('Vision LabelA size: ('..labelA.m..', '..labelA.n..')');
-print('Vision LabelB size: ('..labelB.m..', '..labelB.n..')');
-
 
 saveCount = 0;
 
@@ -95,8 +94,13 @@ function entry()
 
   -- Start the HeadTransform machine
   HeadTransform.entry();
-	
-	-- Initiate Detection
+
+  --If we are only using gps info, skip camera init 	
+  if use_gps_only>0 then
+    return;
+  end
+
+  -- Initiate Detection
   Detection.entry();
 
   -- Load the lookup table
@@ -124,12 +128,18 @@ end
 
 
 function update()
-  tstart = unix.time();
+  --If we are only using gps info, skip whole vision update 	
+  if use_gps_only>0 then
+    return true;
+  end
 
---  vcm.add_debug_message(string.format("Testing, count %d\n",count))
+  tstart = unix.time();
+  --  vcm.add_debug_message(string.format("Testing, count %d\n",count))
 
   -- get image from camera
   camera.image = Camera.get_image();
+
+
   local status = Camera.get_camera_status();
   if status.count ~= lastImageCount then
     lastImageCount = status.count;

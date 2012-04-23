@@ -104,7 +104,9 @@ function recv_msgs()
     if #msg==14 then --Ball
       ball_gpsx=(tonumber(string.sub(msg,2,6))-5)*2;
       ball_gpsy=(tonumber(string.sub(msg,8,12))-5)*2;
-      print("GPS Ball message:",ball_gpsx, ball_gpsy);
+--      print("GPS Ball message:",ball_gpsx, ball_gpsy);
+      wcm.set_robot_gps_ball({ball_gpsx,ball_gpsy,0});
+
     else --Regular team message
       t = serialization.deserialize(msg);
 --    t = unpack_msg(Comm.receive());

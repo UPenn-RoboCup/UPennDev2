@@ -44,7 +44,7 @@ function getHomePose()
 
   --Goalie moves differently
   if role==0 and phase==1 then 
-    home=home*0.5;
+    home=home*0.7;
   end;
 
   home=home*util.sign(goal_defend[1]);

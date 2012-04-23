@@ -85,6 +85,7 @@ sm:set_transition(bodyKick, 'timeout', bodyPosition);
 sm:set_transition(bodyKick, 'reposition', bodyApproach);
 sm:set_transition(bodyWalkKick, 'done', bodyPosition);
 
+sm:set_transition(bodyReady, 'fall', bodyReady);
 sm:set_transition(bodyPosition, 'fall', bodyPosition);
 sm:set_transition(bodyDribble, 'fall', bodyPosition);
 sm:set_transition(bodyApproach, 'fall', bodyPosition);

@@ -7,7 +7,7 @@ WorldInfo {
   ]
   title "Robotstadium"
   basicTimeStep 40
-  displayRefresh 8
+  displayRefresh 6
 }
 Viewpoint {
   orientation -1 0 0 0.8
@@ -87,6 +87,16 @@ DEF PLAYER_2_0 DARwInOPGPS {
   waistBand TRUE
   waistBandColor 0.5 0 0.5
 }
+DEF PLAYER_3_0 DARwInOPGPS {
+  translation -0.2 0.3 2
+  rotation 0 1 0 3.14
+  controller "darwin-op_team_0"
+  controllerArgs "3 0"
+  plasticColor 0.5 0 0.5
+  cameraWindowPosition 0.625 1
+  waistBand TRUE
+  waistBandColor 0.5 0 0.5
+}
 
 
 
@@ -116,6 +126,16 @@ DEF PLAYER_2_1 DARwInOPGPS {
   rotation 0 1 0 3.14
   controller "darwin-op_team_1"
   controllerArgs "2 1"
+  plasticColor 1 0 0
+  cameraWindowPosition 0.625 0
+  waistBand TRUE
+  waistBandColor 1 0 0
+}
+DEF PLAYER_3_1 DARwInOPGPS {
+  translation 0.2 0.3 2
+  rotation 0 1 0 3.14
+  controller "darwin-op_team_1"
+  controllerArgs "3 1"
   plasticColor 1 0 0
   cameraWindowPosition 0.625 0
   waistBand TRUE

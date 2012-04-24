@@ -151,7 +151,7 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel)
     xt = xtext*ca + x0+xtext2;
     yt = xtext*sa + y0;
     b_name=text(xt, yt, infostr);
-    set(b_name,'FontSize',8/scale);
+    set(b_name,'FontSize',32/scale);
   end
 
   function plot_ball(robot,scale)

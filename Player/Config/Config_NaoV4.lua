@@ -34,8 +34,7 @@ dev.walk = 'Walk/NewNewWalk';
 dev.kick = 'NewKick';
 
 --Speak enable
-speak = {}
-speak.enable = true
+speakenable = true;
 
 -- Game Parameters
 

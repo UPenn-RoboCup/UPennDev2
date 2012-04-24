@@ -51,7 +51,7 @@ walk.phSingle={0.16,0.84};
 -- Compensation parameters
 --------------------------------------------
 walk.hipRollCompensation = 3*math.pi/180;
-walk.ankleMod = vector.new({-1,0})/0.12 * 10*math.pi/180;
+walk.ankleMod = vector.new({-1,0})*3*math.pi/180;
 
 
 --------------------------------------------

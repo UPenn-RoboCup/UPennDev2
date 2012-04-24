@@ -22,7 +22,7 @@ loadconfig('World/Config_OP_World')
 loadconfig('Kick/Config_OP_Kick')
 loadconfig('Vision/Config_OP_Vision')
 --Location Specific Camera Parameters--
-loadconfig('Vision/Config_OP_Camera_Grasp')
+loadconfig('Vision/Config_OP_Camera_USOpen_Bowdoin')
 
 -- Device Interface Libraries
 dev = {};
@@ -31,11 +31,14 @@ dev.camera = 'OPCam';
 dev.kinematics = 'OPKinematics';
 dev.ip_wired = '192.168.123.255';
 dev.ip_wireless = '139.140.218.255';
-dev.game_control='OPGameControl';
+dev.game_control='NaoGameControl';
 dev.team='TeamNSL';
 --dev.walk='BasicWalk';  --should be updated
 dev.walk='NewNewNewWalk';
 dev.kick = 'NewNewKick'
+
+speak = {}
+speak.enable = false 
 
 -- Game Parameters
 game = {};
@@ -49,7 +52,7 @@ if (robotName=='scarface') then
   game.role = 1; --Default attacker
 elseif (robotName=='linus') then
   game.playerID = 2; 
-  game.role = 1; --Default attacker
+  game.role = 0; --Default attacker
 elseif (robotName=='betty') then
   game.playerID = 3; 
   game.role = 1; --Default attacker
@@ -60,8 +63,8 @@ else
   game.playerID = 5; 
   game.role = 1; --Default attacker
 end
-game.teamColor = 0; --Blue team
---game.teamColor = 1; --Red team
+--game.teamColor = 0; --Blue team
+game.teamColor = 1; --Red team
 game.robotName = robotName;
 game.robotID = game.playerID;
 game.nPlayers = 5;
@@ -83,7 +86,7 @@ fsm.kickoff_wait_enable = 0;
 --fsm.enable_walkkick = 1;
 --fsm.enable_sidekick = 1;
 
-fsm.playMode = 2; --1 for demo, 2 for orbit, 3 for direct approach
+fsm.playMode = 3; --1 for demo, 2 for orbit, 3 for direct approach
 fsm.enable_walkkick = 0;
 fsm.enable_sidekick = 0;
 

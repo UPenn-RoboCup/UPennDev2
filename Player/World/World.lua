@@ -110,31 +110,18 @@ function update_vision()
   end
 
   -- Penalized?
-  if gcm.in_penalty() then
+  if gcm.in_penalty() or (gcm.get_game_state() == 0) then
     wcm.set_robot_penalty(1);
     init_particles();
   else
     wcm.set_robot_penalty(0);
   end
 
-  -- At gameSet state, all robot should face opponents' goal
-  --TODO
---[[
-  if gcm.get_game_state()==2 then 
-    pose.x,pose.y,pose.a = PoseFilter.get_pose();
-    goalAngle=get_attack_bearing()+pose.a;
-
-    Erra = math.abs(mod_angle(pose.a-goalAngle));
-    print("Current pose goalDefendAngle",
-	pose.a*180/math.pi,goalAngle*180/math.pi);
-    if Erra>math.pi/2 then
-      print("PoseA error:",Erra*180/math.pi);
-      print("Resetting heading")
-      PoseFilter.initialize_heading(goalAngle);
-    end
+  --reset particle to face opposite goal when getting manual placement on set
+  if (gcm.get_game_state() == 2) and (Body.get_change_state() == 1) then
+    PoseFilter.initialize_manual_placement();
   end
---]]
-
+    
   -- ball
   if (vcm.get_ball_detect() == 1) then
     ball.t = Body.get_time();
@@ -172,12 +159,16 @@ function update_vision()
     if use_same_colored_goal>0 then
       if (goalType == 0) then
         PoseFilter.post_unified_unknown(v);
+        Body.set_indicator_goal({1,1,0});
       elseif(goalType == 1) then
         PoseFilter.post_unified_left(v);
+        Body.set_indicator_goal({1,1,0});
       elseif(goalType == 2) then
         PoseFilter.post_unified_right(v);
+        Body.set_indicator_goal({1,1,0});
       elseif(goalType == 3) then
         PoseFilter.goal_unified(v);
+        Body.set_indicator_goal({0,0,1});
       end
     else
       --Goal observation with colors
@@ -238,8 +229,6 @@ function update_vision()
   ball.x, ball.y = ballFilter:get_xy();
   pose.x,pose.y,pose.a = PoseFilter.get_pose();
 
-
-
   update_shm();
 end
 
@@ -261,7 +250,6 @@ function update_shm()
   end
 
   wcm.set_robot_pose({pose.x, pose.y, pose.a});
-
   wcm.set_robot_time(Body.get_time());
 
   wcm.set_ball_x(ball.x);

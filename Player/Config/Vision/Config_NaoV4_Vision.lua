@@ -18,7 +18,9 @@ vision.maxFPS = 30;
 vision.scaleB = 4;
 
 -- use this to enable line detection
-vision.enable_line_detection = 1;
+vision.enable_2_yellow_goals = 1;
+-- use this to enable line detection
+vision.enable_line_detection = 0;
 -- use this to enable spot detection
 vision.enable_spot_detection = 0;
 -- use this to enable midfield landmark detection
@@ -36,6 +38,9 @@ vision.use_point_goal = 0;
 
 vision.enable_robot_detection = 0;
 
+----------------------------
+--OP specific
+----------------------------
 -- Use tilted bounding box?
 vision.use_tilted_bbox = 0;
 -- Store and send subsampled image?
@@ -58,6 +63,7 @@ vision.ball.check_for_ground = 1;
 
 
 --Vision check values
+--For VGA resolution
 vision.goal={};
 vision.goal.th_min_color_count=100;
 vision.goal.th_nPostB = 5;
@@ -72,7 +78,6 @@ vision.goal.th_min_green_ratio = 0.2;
 vision.goal.th_min_bad_color_ratio = 0.1;
 vision.goal.th_goal_separation = {0.35,2.0}; 
 vision.goal.th_min_area_unknown_post = 200;
-
 vision.goal.use_centerpost = 1;
 vision.goal.check_for_ground = 1;
 
@@ -86,10 +91,3 @@ vision.corner={};
 vision.corner.dist_threshold = 30;
 vision.corner.length_threshold = 6;
 vision.corner.min_center_dist = 1.5;
-
-
---TURN OFF ALL GREEN CHECK FOR NOW
-vision.ball.check_for_ground = 0;
-vision.goal.check_for_ground = 0;
-
-

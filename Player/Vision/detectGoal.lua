@@ -107,6 +107,7 @@ function detect(color,color2)
     local valid = true;
     
     if use_tilted_bbox>0 then
+      vcm.add_debug_message("Use Tilted postStats\n");
       postStats = Vision.bboxStats(color, postB[i].boundingBox,tiltAngle);
     else
       postStats = Vision.bboxStats(color, postB[i].boundingBox);
@@ -122,8 +123,8 @@ function detect(color,color2)
 
     if valid then
       local orientation= postStats.orientation - tiltAngle;
-      vcm.add_debug_message(string.format("Orientation check: %.1f\n", 
-	 180/math.pi*tiltAngle));
+      vcm.add_debug_message(string.format("Orientation check: %f\n", 
+	 180*orientation/math.pi));
       if (math.abs(orientation) < th_min_orientation) then
         vcm.add_debug_message("orientation check fail\n");
         valid = false;
@@ -132,8 +133,10 @@ function detect(color,color2)
       
     --fill extent check
     if valid then
+	--print(unpack(postStats.boundingBox));
       extent = postStats.area / (postStats.axisMajor * postStats.axisMinor);
       vcm.add_debug_message(string.format("Fill extent check: %.2f\n", extent));
+      vcm.add_debug_message(string.format("Fill check: %d %d\n", postStats.axisMajor, postStats.axisMinor));
       if (extent < th_min_fill_extent) then 
         vcm.add_debug_message("Fill extent check fail\n");
         valid = false; 

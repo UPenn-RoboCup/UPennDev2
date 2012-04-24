@@ -3,8 +3,11 @@ module(..., package.seeall);
 require('io')
 require('os')
 require('unix');
+require('Config')
 
 local volume = 25;
+enable = Config.speak.enable or 0
+print(enable)
 
 -- define speak queue file
 fifo = '/tmp/speakFIFO'..(os.getenv('USER') or '');
@@ -33,9 +36,11 @@ end
 
 
 function talk(text)
-  print('Speak: '..text);
-  fid:write(text..'\n');
-  fid:flush()
+  if enable or enable==nil then
+    print('Speak: '..text);
+    fid:write(text..'\n');
+    fid:flush()
+  end
 end
 
 function play(filename)

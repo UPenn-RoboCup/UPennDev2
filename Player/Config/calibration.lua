@@ -111,3 +111,34 @@ cal["scarface"].kickXComp=0.005;
 cal["lucy"].servoBias={19,3,4,20,19,10,-15,11,-20,0,6,6,};
 cal["lucy"].footXComp=0.006;
 cal["lucy"].kickXComp=0.005;
+
+-- Updated date: Thu Apr 19 21:39:44 2012
+cal["lucy"].servoBias={19,3,4,20,19,10,-15,11,-20,0,6,6,};
+cal["lucy"].footXComp=0.006;
+cal["lucy"].kickXComp=0.005;
+
+-- Updated date: Fri Apr 20 00:00:29 2012
+cal["linus"].servoBias={3,1,2,1,1,-3,-8,3,-13,-4,1,-5,};
+cal["linus"].footXComp=-0.003;
+cal["linus"].kickXComp=0.000;
+
+-- Updated date: Fri Apr 20 21:12:24 2012
+cal["lucy"].servoBias={19,3,10,20,19,22,-15,11,-20,0,6,6,};
+cal["lucy"].footXComp=0.006;
+cal["lucy"].kickXComp=0.005;
+
+-- Updated date: Fri Apr 20 21:14:31 2012
+cal["lucy"].servoBias={19,-22,10,20,19,-1,-15,11,-20,0,6,6,};
+cal["lucy"].footXComp=0.006;
+cal["lucy"].kickXComp=0.005;
+
+-- Updated date: Fri Apr 20 21:16:10 2012
+cal["lucy"].servoBias={19,-22,10,20,19,-1,-15,11,-20,0,6,6,};
+cal["lucy"].footXComp=0.006;
+cal["lucy"].kickXComp=0.005;
+
+--AFTER LEG SWAP WITH LUCY
+-- Updated date: Mon Apr 23 22:03:46 2012
+cal["linus"].servoBias={3,1,43,1,-12,-17,-8,-5,-13,-4,1,-5,};
+cal["linus"].footXComp=0.012;
+cal["linus"].kickXComp=0.005;

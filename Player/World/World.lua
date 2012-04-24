@@ -117,6 +117,11 @@ function update_vision()
     wcm.set_robot_penalty(0);
   end
 
+  if gcm.get_game_state()==0 then
+    init_particles();
+  end
+
+
   -- At gameSet state, all robot should face opponents' goal
   --TODO
 --[[

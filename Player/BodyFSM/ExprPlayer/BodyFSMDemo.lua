@@ -11,7 +11,6 @@ require('bodyStop')
 require('bodyReady')
 require('bodySearch')
 require('bodyApproach')
-require('bodyDribble')
 require('bodyKick')
 require('bodyWalkKick')
 require('bodyOrbit')
@@ -27,7 +26,6 @@ sm:add_state(bodyStop);
 sm:add_state(bodyReady);
 sm:add_state(bodySearch);
 sm:add_state(bodyApproach);
-sm:add_state(bodyDribble);
 sm:add_state(bodyKick);
 sm:add_state(bodyWalkKick);
 sm:add_state(bodyOrbit);
@@ -37,16 +35,15 @@ sm:add_state(bodyObstacle);
 sm:add_state(bodyObstacleAvoid);
 sm:add_state(bodyDribble);
 
-
 ------------------------------------------------------
--- Advanced FSM (bodyPosition)
+-- Demo FSM (No orbit)
 ------------------------------------------------------
 
 sm:set_transition(bodyStart, 'done', bodyPosition);
 
 sm:set_transition(bodyPosition, 'timeout', bodyPosition);
 sm:set_transition(bodyPosition, 'ballLost', bodySearch);
-sm:set_transition(bodyPosition, 'ballClose', bodyOrbit);
+sm:set_transition(bodyPosition, 'ballClose', bodyApproach);
 sm:set_transition(bodyPosition, 'obstacle', bodyObstacle);
 sm:set_transition(bodyPosition, 'done', bodyApproach);
 sm:set_transition(bodyPosition, 'dribble', bodyDribble);
@@ -64,30 +61,18 @@ sm:set_transition(bodyGotoCenter, 'ballFound', bodyPosition);
 sm:set_transition(bodyGotoCenter, 'done', bodySearch);
 sm:set_transition(bodyGotoCenter, 'timeout', bodySearch);
 
-sm:set_transition(bodyOrbit, 'timeout', bodyPosition);
-sm:set_transition(bodyOrbit, 'ballLost', bodySearch);
-sm:set_transition(bodyOrbit, 'ballFar', bodyPosition);
-sm:set_transition(bodyOrbit, 'done', bodyApproach);
-
 sm:set_transition(bodyApproach, 'ballFar', bodyPosition);
 sm:set_transition(bodyApproach, 'ballLost', bodySearch);
 sm:set_transition(bodyApproach, 'timeout', bodyPosition);
 sm:set_transition(bodyApproach, 'kick', bodyKick);
 sm:set_transition(bodyApproach, 'walkkick', bodyWalkKick);
 
-sm:set_transition(bodyDribble, 'ballFar', bodyPosition);
-sm:set_transition(bodyDribble, 'ballLost', bodySearch);
-sm:set_transition(bodyDribble, 'timeout', bodyPosition);
-sm:set_transition(bodyDribble, 'done', bodyPosition);
-
 sm:set_transition(bodyKick, 'done', bodyPosition);
 sm:set_transition(bodyKick, 'timeout', bodyPosition);
 sm:set_transition(bodyKick, 'reposition', bodyApproach);
 sm:set_transition(bodyWalkKick, 'done', bodyPosition);
 
-sm:set_transition(bodyReady, 'fall', bodyReady);
 sm:set_transition(bodyPosition, 'fall', bodyPosition);
-sm:set_transition(bodyDribble, 'fall', bodyPosition);
 sm:set_transition(bodyApproach, 'fall', bodyPosition);
 sm:set_transition(bodyKick, 'fall', bodyPosition);
 
@@ -98,6 +83,9 @@ sm:set_state_debug_handle(gcm.set_fsm_body_state);
 
 function entry()
   sm:entry()
+  wcm.set_kick_dir(1);
+  wcm.set_kick_type(2);
+  wcm.set_kick_angle(0);
 end
 
 function update()

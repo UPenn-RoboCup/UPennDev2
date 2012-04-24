@@ -18,9 +18,8 @@ require 'mcm'
 
 --Are we using same colored goals?
 use_same_colored_goal=Config.world.use_same_colored_goal or 0;
---Use ground truth pose for webots?
-ues_ground_truth = Config.world.use_ground_truth or 0;
-
+--Use ground truth pose and ball information for webots?
+use_gps_only = Config.use_gps_only or 0;
 
 ballFilter = Filter2D.new();
 ball = {};
@@ -86,6 +85,18 @@ function update_odometry()
 end
 
 function update_vision()
+  --Behavior test with ground truth gps data
+  if use_gps_only>0 then
+    gps_pose=Body.get_sensor_gps();
+    pose.x,pose.y,pose.a=gps_pose[1],gps_pose[2],gps_pose[3];
+    ballGlobal=wcm.get_robot_gps_ball();    
+    ballLocal = util.pose_relative(ballGlobal,gps_pose);
+    ball.x, ball.y = ballLocal[1],ballLocal[2];
+    ball.t = Body.get_time();
+    update_shm();
+    return;
+  end
+
 
   -- resample?
   if count % cResample == 0 then
@@ -228,11 +239,6 @@ function update_vision()
   pose.x,pose.y,pose.a = PoseFilter.get_pose();
 
 
-  if Body.gps_enable and use_ground_truth then
-    --Behavior test with ground truth gps data
-    gps_pose=Body.get_sensor_gps();
-    pose.x,pose.y,pose.a=gps_pose[1],gps_pose[2],gps_pose[3];
-  end
 
   update_shm();
 end

@@ -20,6 +20,7 @@ shared.robot.time = vector.zeros(1);
 shared.robot.penalty = vector.zeros(1);
 shared.robot.gpspose = vector.zeros(3);
 shared.robot.gps_attackbearing = vector.zeros(1);
+shared.robot.gps_ball = vector.zeros(3);
 
 
 shared.ball = {};

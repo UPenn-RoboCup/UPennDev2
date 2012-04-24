@@ -3,7 +3,7 @@ module(..., package.seeall);
 require('Body')
 
 t0 = 0;
-tscan = 2.0;
+tscan = Config.fsm.headSweep.tScan;
 yawMag = Config.head.yawMax;
 pitch = 0.0;
 
@@ -19,7 +19,7 @@ function entry()
   end
 
    -- only use top camera
-  vcm.set_camera_command(0);
+  vcm.set_camera_command(-1);
 end
 
 function update()
@@ -29,7 +29,9 @@ function update()
   local yaw = direction*yawMag*math.cos(math.pi*ph);
   Body.set_head_command({yaw, pitch});
 
-  if (t - t0 > tscan) then
+  detectGoal = vcm.get_goal_detect();
+
+  if (t - t0 > tscan) or (detectGoal ==1 ) then
     return 'done';
   end
 end

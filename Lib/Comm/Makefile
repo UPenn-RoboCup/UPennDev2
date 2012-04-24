@@ -1,20 +1,20 @@
-# Makefile used to build libraries
-include ../Makefile.inc
+CWD= $(shell pwd)
+CTC= $(NaoqiCTC)
 
-TARGETS = all clean
-.PHONY: $(TARGETS)
+all: naoqi 
 
-all: comm 
-
-%.o: %.cpp
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
-%.o: %.cc
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
-%.o: %.c
-	$(CC) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
-
-comm: luaComm.o 
-	$(LD) $(LDFLAGS) -o Comm.$(SHLIBEXT) $(LIBOPTS) $^ $(LIB_DIR) -lm
+naoqi:
+ifeq ($(CTC),)
+	@echo Cross compilitation tool not specified. \
+				Please download the ctc tool from \
+				the aldebaran website and follow the \
+				instructions to configure it for your system.
+else
+	rm -rf build
+	mkdir build
+	cd build && cmake -DCMAKE_TOOLCHAIN_FILE="$(CTC)/toolchain-atom.cmake" .. \
+		&& make && cd $(CWD)
+endif
 
 clean:
-	rm -f *.$(SHLIBEXT) *.o
+	rm -rf build

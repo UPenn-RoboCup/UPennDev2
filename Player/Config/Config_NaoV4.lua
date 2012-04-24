@@ -12,15 +12,13 @@ function loadconfig(configName)
     Config[k]=localConfig[k];
   end
 end
-
---loadconfig('Walk/Config_NaoV4_Walk')
-loadconfig('Walk/Config_NaoV4_Walk_Stable')
+  
 loadconfig('World/Config_Nao_World')
 loadconfig('Kick/Config_Nao_Kick')
 loadconfig('Vision/Config_NaoV4_Vision')
 
 --Location Specific Camera Parameters--
-loadconfig('Vision/Config_NaoV4_Camera')
+loadconfig('Vision/Config_NaoV4_Camera_USopen_FieldB')
 
 
 -- Devive Interface Libraries
@@ -29,33 +27,44 @@ dev.body = 'NaoBody';
 dev.camera = 'NaoCam';
 dev.kinematics = 'NaoKinematics';
 dev.ip_wired = '192.168.0.255';
-dev.ip_wireless = '192.168.1.255';
+dev.ip_wireless = '139.140.218.255';
 dev.game_control = 'NaoGameControl';
 dev.team='TeamSPL';
-dev.walk = 'NewNewNewWalk';
+dev.walk = 'Walk/NewNewWalk';
 dev.kick = 'NewKick';
 
 --Speak enable
 speak = {}
-speak.enable = false
+speak.enable = true
 
 -- Game Parameters
 
 game = {};
-game.teamNumber = 26;
+game.teamNumber = 11;
 game.playerID = parse_hostname.get_player_id();
 game.robotID = game.playerID;
 game.teamColor = parse_hostname.get_team_color();
 game.role = game.playerID-1; -- 0 for goalie
 game.nPlayers = 4;
 
+--loadconfig('Walk/Config_NaoV4_Walk')
+--if game.playerID==2 or game.playerID==4 then
+  loadconfig('Walk/Config_NaoV4_Walk_FastStable')
+--else
+  --loadconfig('Walk/Config_NaoV4_Walk_Stable')
+--end
+
 
 -- FSM Parameters
 fsm = {};
 loadconfig('FSM/Config_NaoV4_FSM')
 fsm.game = 'RoboCup';
-fsm.body = {'GeneralPlayer'};
---fsm.head = {'GeneralPlayer'};
+if game.role == 0 then
+  fsm.body = {'NaoGoalie'}
+else
+  fsm.body = {'NaoPlayer'};
+  --fsm.body = {'GeneralPlayer'};
+end
 fsm.head = {'NaoPlayer'};
 
 -- Team Parameters

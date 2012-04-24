@@ -22,7 +22,7 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel)
       plot_robot(robot_struct,scale);
       plot_info(robot_struct,scale);
       plot_ball(robot_struct,scale);
-      plot_gps_robot(robot_struct,scale);
+%      plot_gps_robot(robot_struct,scale);
 
     elseif drawlevel==2 
       %additional simple vision info for team monitor
@@ -33,7 +33,7 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel)
       plot_goal_team(robot_struct,scale);
       plot_landmark_team(robot_struct,scale);
       plot_corner_team(robot_struct,scale);
-      plot_gps_robot(robot_struct,scale);
+%      plot_gps_robot(robot_struct,scale);
 
     elseif drawlevel==3 
       %Full vision info
@@ -47,7 +47,7 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel)
       plot_landmark(r_mon.landmark,scale);
       plot_fov(r_mon.fov);
 
-      plot_gps_robot(robot_struct,scale);
+   %   plot_gps_robot(robot_struct,scale);
     elseif drawlevel==4
       plot_ball(robot_struct,scale);
       plot_particle(r_mon.particle);
@@ -56,7 +56,7 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel)
       plot_line(r_mon.line,scale);
       plot_corner(r_mon.corner,scale);
       plot_fov(r_mon.fov);
-      plot_gps_robot(robot_struct,scale);
+    %  plot_gps_robot(robot_struct,scale);
     end
   end
 

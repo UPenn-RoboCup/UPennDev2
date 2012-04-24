@@ -60,6 +60,17 @@ function initialize(p0, dp)
   wp = vector.zeros(n);
 end
 
+function initialize_manual_placement(p0, dp)
+  p0 = p0 or {0, 0, 0};
+  dp = dp or {.5*xMax, .5*yMax, 2*math.pi};
+
+  print('manual placement');
+  ap = math.atan2(wcm.get_goal_attack()[2],wcm.get_goal_attack()[1])*vector.ones(n);
+  xp = wcm.get_goal_defend()[1]/2*vector.ones(n);
+  yp = p0[2]*vector.ones(n) + dp[2]*vector.new(util.randn(n));
+  wp = vector.zeros(n);
+end
+
 function initialize_unified(p0,p1,dp)
   --Particle initialization for the same-colored goalpost
   --Half of the particles at p0
@@ -436,7 +447,7 @@ function goal_observation_unified(pos1,pos2,v)
     local yErr2 = y2 - yp[ip];
     local rErr2 = math.sqrt(xErr2^2 + yErr2^2);
     local aErr2 = mod_angle(a2 - ap[ip]);
-    local err2 = (rErr2/rSigma1)^2 + (aErr2/aSigma)^2;
+    local err2 = (rErr2/rSigma2)^2 + (aErr2/aSigma)^2;
 
     --Filter towards best matching goal:
      if err1>err2 then

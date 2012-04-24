@@ -81,6 +81,7 @@ supportSideY = Config.walk.supportSideY or 0;
 --WalkKick parameters
 walkKickDef = Config.walk.walkKickDef;
 walkKickPh = Config.walk.walkKickPh;
+toeTipCompensation = 0;
 
 ----------------------------------------------------------
 -- Walk state variables
@@ -249,9 +250,9 @@ function update()
         --Velocity-based support point modulation
         toeTipCompensation = 0;
         if velDiff[1]>0 then --Accelerating to front
-	  supportMod[1] = supportFront2;
+	        supportMod[1] = supportFront2;
         elseif velCurrent[1]>velFastForward then
-	  supportMod[1] = supportFront;
+	        supportMod[1] = supportFront;
           toeTipCompensation = ankleMod[1];
         elseif velCurrent[1]<0 then
           supportMod[1] = supportBack; 

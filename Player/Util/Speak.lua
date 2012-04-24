@@ -6,8 +6,7 @@ require('unix');
 require('Config')
 
 local volume = 25;
-enable = Config.speak.enable
-print(enable)
+enable = Config.speakenable or 0
 
 -- define speak queue file
 fifo = '/tmp/speakFIFO'..(os.getenv('USER') or '');

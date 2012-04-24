@@ -12,9 +12,9 @@ walk.stanceLimitX={-0.10,0.10};
 walk.stanceLimitY={0.09,0.20};
 walk.stanceLimitA={-0*math.pi/180,40*math.pi/180};
 
-walk.velLimitX={-.05,.05};
-walk.velLimitY={-.03,.03};
-walk.velLimitA={-.3,.3};
+walk.velLimitX={-.06,.06};
+walk.velLimitY={-.05,.05};
+walk.velLimitA={-.4,.4};
 walk.velDelta={0.15,0.01,0.15} 
 
 ----------------------------------------------
@@ -23,7 +23,7 @@ walk.velDelta={0.15,0.01,0.15}
 walk.bodyHeight = 0.31; 
 walk.bodyTilt=0*math.pi/180; 
 walk.footX= 0.0; 
-walk.footY = 0.0475;
+walk.footY = 0.0500;
 walk.supportX = 0.020;
 walk.qLArm = math.pi/180*vector.new({105, 12, -85, -30});
 walk.qRArm = math.pi/180*vector.new({105, -12, 85, 30});
@@ -36,16 +36,16 @@ walk.hardnessArm=.3;
 ---------------------------------------------
 -- Gait parameters
 ---------------------------------------------
-walk.tStep = 0.50;
+walk.tStep = 0.45;
 walk.tZmp = 0.17;
-walk.supportY = 0.003;
+walk.supportY = 0.004;
 walk.stepHeight = 0.022;
-walk.phSingle={0.22,0.78};
+walk.phSingle={0.18,0.82};
 
 --------------------------------------------
 -- Compensation parameters
 --------------------------------------------
-walk.hipRollCompensation = 0*math.pi/180;
+walk.hipRollCompensation = 1.5*math.pi/180;
 walk.ankleMod = vector.new({-1,0})/0.12 * 10*math.pi/180;
 
 --------------------------------------------------------------
@@ -57,10 +57,10 @@ walk.ankleImuParamX={0.15, -0.40*walk.gyroFactor,
         1*math.pi/180, 5*math.pi/180};
 walk.kneeImuParamX={0.1, -0.3*walk.gyroFactor,
         .5*math.pi/180, 5*math.pi/180};
-walk.ankleImuParamY={0.2, -1.5*walk.gyroFactor,
+walk.ankleImuParamY={0.18, -1.8*walk.gyroFactor,
         .5*math.pi/180, 5*math.pi/180};
-walk.hipImuParamY={0.1, -0.3*walk.gyroFactor,
-        .5*math.pi/180, 5*math.pi/180};
+walk.hipImuParamY={0.13, -0.6*walk.gyroFactor,
+        .3*math.pi/180, 5*math.pi/180};
 
 walk.armImuParamX={0.1, 0*walk.gyroFactor,
         1*math.pi/180, 5*math.pi/180};
@@ -78,33 +78,15 @@ walk.supportSideY = 0.02; --Lean sideways when sidestepping
 --------------------------------------------
 -- WalkKick parameters
 --------------------------------------------
-walk.walkKickDef={}
+walk.walkKickVel = {0.03, 0.08} --step / kick / follow 
+walk.walkKickSupportMod = {{-0.03,0},{-0.03,0}}
+walk.walkKickHeightFactor = 3.0;
 
---tStep stepType supportLeg stepHeight
--- SupportMod shiftFactor footPos1 footPos2
-
-walk.walkKickDef["FrontLeft"]={
-  {0.50, 1, 0, 0.020 , {0,0}, 0.7, {0.06,0,0} },
-  {0.50, 2, 1, 0.040 , {0.02,-0.01}, 0.5, {0.09,0,0}, {0.05,0,0} },
-  {walk.tStep, 1, 0, 0.020 , {0,0}, 0.5, {0,0,0} },
-}
-walk.walkKickDef["FrontRight"]={
-  {0.50, 1, 1, 0.020 , {0,0}, 0.3, {0.06,0,0} },
-  {0.50, 2, 0, 0.040 , {0.02,0.01}, 0.5,  {0.09,0,0}, {0.05,0,0} },
-  {walk.tStep, 1, 1, 0.020 , {0,0}, 0.5, {0,0,0} },
-}
-walk.walkKickDef["SideLeft"]={
-  {0.50, 1, 1, 0.020 , {0,0}, 0.3, {0.04,0.04,0} },
-  {0.50, 3, 0, 0.040 , {-0.01,0.01}, 0.5, {0.06,-0.05,0},{0.09,0.0,0}},
- {walk.tStep, 1, 1, 0.020 , {0,0}, 0.5, {0,0,0} },}
-
-walk.walkKickDef["SideRight"]={
-  {0.50, 1, 0, 0.020 , {0,0}, 0.7, {0.04,-0.04,0} },
-  {0.50, 3, 1, 0.040 , {-0.01,-0.01},0.5, {0.06,0.05,0},{0.09,-0.0,0}},
-  {walk.tStep, 1, 0, 0.020 , {0,0},0.5,  {0,0,0} },
-}
-
-walk.walkKickPh=0.5;
+walk.sideKickVel1 = {0.04,0.04,0};
+walk.sideKickVel2 = {0.09,0.05,0};
+walk.sideKickVel3 = {0.09,-0.02,0};
+walk.sideKickSupportMod = {{0,0},{0,0}};
+walk.tStepSideKick = 0.70;
 
 --------------------------------------------
 -- Robot - specific calibration parameters
@@ -113,18 +95,3 @@ walk.walkKickPh=0.5;
 walk.kickXComp = 0;
 walk.supportCompL = {0,0,0};
 walk.supportCompR = {0,0,0};
-
-
-
---FOR NEW NAO
-
-walk.tStep = 0.35;
-walk.hipRollCompensation = 1.5*math.pi/180;
-walk.supportY = 0.010;
-walk.supportY = 0.005;
-
-walk.velLimitX={-.06,.06};
-walk.velLimitY={-.03,.03};
-walk.velLimitA={-.3,.3};
-walk.velDelta={0.03,0.015,0.15}
-

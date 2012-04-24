@@ -48,7 +48,8 @@ require ('gcm')
 require ('vcm')
 require 'unix'
 
-Comm.init(Config.dev.ip_wireless,54321);
+--Comm.init(Config.dev.ip_wireless,54321);
+Comm.init('192.168.1.255',54321);
 print('Receiving Team Message From',Config.dev.ip_wireless);
 
 function push_team_struct(obj,teamOffset)

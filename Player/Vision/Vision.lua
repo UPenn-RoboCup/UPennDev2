@@ -107,23 +107,71 @@ function entry()
   print('loading lut: '..Config.camera.lut_file);
   camera.lut = carray.new('c', 262144);
   load_lut(Config.camera.lut_file);
+ 
+--  while (true) do 
+    for c=1,Config.camera.ncamera do
+      -- cameras are indexed starting at 0
+      Camera.select_camera(c-1);
+      Camera.set_param('White Balance, Automatic', 1);
+      Camera.set_param('Backlight Compensation', 1);
+      Camera.set_param('Auto Exposure',0);
+      unix.usleep(1000000);
+      local count  = 0;
+      local is_set = true;
+      for i, param in ipairs(Config.camera.param) do
+        is_set = is_set and (Camera.get_param(param.key) == param.val[c]);
+      end
+      while (is_set == false and count < 5) do
 
-  for c=1,Config.camera.ncamera do
-    -- cameras are indexed starting at 0
-    Camera.select_camera(c-1);
+--[[     for i,auto_param in ipairs(Config.camera.auto_param) do
+        print('Camera '..c..': setting '..auto_param.key..': '..auto_param.val[c]);
+        Camera.set_param(auto_param.key, auto_param.val[c]);
+        unix.usleep(100000);
+        print('Camera '..c..': set to '..auto_param.key..': '..Camera.get_param(auto_param.key));
+     end   --]]
+        for i,param in ipairs(Config.camera.param) do
+          print('Camera '..c..': setting '..param.key..': '..param.val[c]);
+          Camera.set_param(param.key, param.val[c]);
+          unix.usleep(10000);
+          print('Camera '..c..': set to '..param.key..': '..Camera.get_param(param.key));
+        end
+        print ('this is the '..count..' cycle');
+        unix.usleep(100000);
+        is_set = true;
+        for i, param in ipairs (Config.camera.param) do
+          is_set = is_set and Camera.get_param(param.key) == param.val[c];
+        end
+        count = count + 1;
+      end
+    
+      Camera.set_param('White Balance, Automatic', 0);
+      Camera.set_param('Backlight Compensation', 0);
+      Camera.set_param('Auto Exposure',1);
+      print('Camera #'..c..' set');
+  
+    end 
 
-    for i,auto_param in ipairs(Config.camera.auto_param) do
-      print('Camera '..c..': setting '..auto_param.key..': '..auto_param.val[c]);
-      Camera.set_param(auto_param.key, auto_param.val[c]);
+  --end
+
+end
+
+function redo_white_balance(cameraNumber)
+  print('Recalculating White Balance for Camera #', cameraNumber);
+  Camera.select_camera(cameraNumber);
+  --Camera.set_param('Backlight Compensation', 1);
+  --unix.usleep(1000000); 
+
+  Camera.set_param('Do White Balance', 1);
+  unix.usleep(1000000);
+  --Camera.set_param('Backlight Compensation' , 0);
+
+  for i,param in ipairs(Config.camera.param) do
+      print('Camera '..cameraNumber..': setting '..param.key..': '..param.val[cameraNumber+1]);
+      Camera.set_param(param.key, param.val[cameraNumber+1]);
       unix.usleep(100000);
-    end
-    for i,param in ipairs(Config.camera.param) do
-      print('Camera '..c..': setting '..param.key..': '..param.val[c]);
-      Camera.set_param(param.key, param.val[c]);
-      unix.usleep(100000);
-    end
+      print('Camera '..cameraNumber..': set to '..param.key..': '..Camera.get_param(param.key));
   end
-
+  
 end
 
 

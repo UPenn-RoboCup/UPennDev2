@@ -136,3 +136,9 @@ cal["lucy"].kickXComp=0.005;
 cal["lucy"].servoBias={19,-22,10,20,19,-1,-15,11,-20,0,6,6,};
 cal["lucy"].footXComp=0.006;
 cal["lucy"].kickXComp=0.005;
+
+--AFTER LEG SWAP WITH LUCY
+-- Updated date: Mon Apr 23 22:03:46 2012
+cal["linus"].servoBias={3,1,43,1,-12,-17,-8,-5,-13,-4,1,-5,};
+cal["linus"].footXComp=0.012;
+cal["linus"].kickXComp=0.005;

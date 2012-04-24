@@ -71,6 +71,7 @@ end
 
 function entry()
   print("Body FSM:".._NAME.." entry");
+  print('HAHAHAAAA');
   t0 = Body.get_time();
   ball = wcm.get_ball();
   check_approach_type(); --walkkick if available
@@ -99,7 +100,7 @@ function update()
   --Current cordinate origin: midpoint of uLeft and uRight
   --Calculate ball position from future origin
   --Assuming we stop at next step
-  if fast_approach ==1 then
+  if fast_approach == 1 then
     uLeft = walk.uLeft;
     uRight = walk.uRight;
     uFoot = util.se2_interpolate(0.5,uLeft,uRight); --Current origin 
@@ -150,6 +151,7 @@ function update()
   local wAngle = math.atan2 (vStep[2], vStep[1]);
   if math.abs(wAngle) > 45*math.pi/180 then
     vStep[1]=vStep[1] - 0.03;
+    print('backstep');
   else
     --Otherwise, don't make robot backstep
     vStep[1]=math.max(0,vStep[1]);

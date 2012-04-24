@@ -131,3 +131,6 @@ head.bodyTilt = 0;
 
 --km.kick_right = 'km_NSLOP_taunt1.lua';
 --km.kick_left = 'km_NSLOP_StandupFromFront2.lua';
+
+--Shutdown Vision and use ground truth gps info only
+use_gps_only = 1;

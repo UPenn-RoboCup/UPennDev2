@@ -229,11 +229,12 @@ global MONITOR %for sending the webots check information
 
       width = h.vcmImage.get_width();
       height = h.vcmImage.get_height();
+			scaleB = h.vcmImage.get_scaleB();
       bodyHeight=h.vcmCamera.get_bodyHeight();
       bodyTilt=h.vcmCamera.get_bodyTilt();
       headAngles=h.vcmImage.get_headAngles();
       rollAngle=h.vcmCamera.get_rollAngle();
-      r.camera = struct('width',width,'height',height,...
+      r.camera = struct('width',width,'height',height,'scaleB',scaleB,...
 	'bodyHeight',bodyHeight,'bodyTilt',bodyTilt,...
 	'headAngles',headAngles,'rollAngle',rollAngle);
 
@@ -371,7 +372,7 @@ global MONITOR %for sending the webots check information
 %		   freeValueA = h.vcmFreespace.get_pboundA();
       freeValueB = h.vcmFreespace.get_pboundB();
       labelAm = h.vcmImage.get_width()/2;
-      labelBm = labelAm/4;
+      labelBm = labelAm/h.vcmImage.get_scaleB();
 %      r.free = struct('Ax',freeValueA(1:labelAm),
 %                      'Ay',freeValueA(labelAm+1:2*labelAm),
       r.free = struct('Bx',freeValueB(1:labelBm),...
@@ -408,7 +409,7 @@ global MONITOR %for sending the webots check information
       % add horizon line
       r.horizon = {};
       labelAm = h.vcmImage.get_width()/2;
-      labelBm = labelAm/4;
+      labelBm = labelAm/h.vcmImage.get_scaleB();
 	    horizonDir = h.vcmImage.get_horizonDir();
       horizonA = h.vcmImage.get_horizonA();
       horizonB = h.vcmImage.get_horizonB();
@@ -484,16 +485,16 @@ global MONITOR %for sending the webots check information
 
   function labelB = get_labelB()
     % returns the bit-ored labeled image
-    width = h.vcmImage.get_width()/8;
-    height = h.vcmImage.get_height()/8;
+    width = h.vcmImage.get_width()/2/h.vcmImage.get_scaleB();
+    height = h.vcmImage.get_height()/2/h.vcmImage.get_scaleB();
     rawData = h.vcmImage.get_labelB();
 
     %Webots vision check 
     %for webots with non-subsampling vision code, use 2x width/height 
     scale= length(rawData)*2/width/height;
     if scale==1 % TODO: check with webots
-      width = h.vcmImage.get_width()/4;
-      height = h.vcmImage.get_height()/4;
+      width = h.vcmImage.get_width()/h.vcmImage.get_scaleB();
+      height = h.vcmImage.get_height()/h.vcmImage.get_scaleB();
       MONITOR.is_webots=1;
     end
     labelB = raw2label(rawData, width, height)';

@@ -50,6 +50,8 @@ require('Team')
 require('util')
 require('OccupancyMap')
 require('wcm')
+require('gcm')
+
 darwin = false;
 webots = false;
 
@@ -88,6 +90,9 @@ targetvel=vector.zeros(3);
 vision_update_interval = 0.04; --25fps update
 
 camera_select = 1;
+
+-- set game state to ready to stop particle filter initiation
+gcm.set_game_state(1);
 
 function process_keyinput()
   local str = controller.wb_robot_keyboard_get_key();

@@ -57,6 +57,7 @@ shared.image.yuyv3 = 2*Config.camera.width*Config.camera.height/4/4;
 
 shared.image.width = vector.zeros(1);
 shared.image.height = vector.zeros(1);
+shared.image.scaleB = vector.zeros(1);
 
 shared.image.labelA = (processed_img_width)*(processed_img_height);
 shared.image.labelB = ((processed_img_width)/Config.vision.scaleB)*((processed_img_height)/Config.vision.scaleB);

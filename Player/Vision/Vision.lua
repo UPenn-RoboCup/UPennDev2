@@ -51,7 +51,7 @@ if use_gps_only==0 then
     labelA.n = camera.height;
     labelA.npixel = labelA.m*labelA.n;
   end
-  scaleB = 4;
+  scaleB = Config.vision.scaleB;
   labelB = {};
   labelB.m = labelA.m/scaleB;
   labelB.n = labelA.n/scaleB;

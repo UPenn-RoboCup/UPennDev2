@@ -15,7 +15,7 @@ vision.ballColor = color.orange;
 vision.goal1Color = color.yellow;
 vision.goal2Color = color.cyan;
 vision.maxFPS = 30;
-vision.scaleB = 4;
+vision.scaleB = 2;
 
 -- use this to enable line detection
 vision.enable_line_detection = 1;

@@ -134,3 +134,10 @@ head.bodyTilt = 0;
 
 --Shutdown Vision and use ground truth gps info only
 use_gps_only = 1;
+
+
+-- Stretcher
+loadconfig('Config_Stretcher')
+fsm.body = {'Stretcher'};
+dev.walk='StretcherWalk';
+dev.team='TeamPrimeQ';

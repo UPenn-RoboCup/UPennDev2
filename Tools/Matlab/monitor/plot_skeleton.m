@@ -1,7 +1,13 @@
 %% Plot the skeleton
 %clear all;
 
-load('primeLogs_20120328T235032.mat');
+%load('primeLogs_sym.mat'); % Symmetric
+%load('primeLogs_asym.mat'); % Asymmetric
+%load('primeLogs_twist.mat'); % Twist
+% Twistmove: left twist, right twist, forward bend,
+% forward bend w/ left twist, forward bend w/ right twist
+load('primeLogs_twistmove.mat');
+
 debug = 0;
 
 joint2track = 'ElbowL';
@@ -12,10 +18,14 @@ index2track = find(ismember(jointNames, joint2track)==1);
 %const double lowerArmLength = .129;  //OP, spec
 op_arm_len = .189;
 indexWaist = find(ismember(jointNames, 'Waist')==1);
-indexShoulder = find(ismember(jointNames, 'ShoulderL')==1);
-indexElbow = find(ismember(jointNames, 'ElbowL')==1);
-indexWrist = find(ismember(jointNames, 'WristL')==1);
-indexFoot = find(ismember(jointNames, 'FootL')==1);
+indexShoulderL = find(ismember(jointNames, 'ShoulderL')==1);
+indexElbowL = find(ismember(jointNames, 'ElbowL')==1);
+indexWristL = find(ismember(jointNames, 'WristL')==1);
+indexFootL = find(ismember(jointNames, 'FootL')==1);
+indexShoulderR = find(ismember(jointNames, 'ShoulderR')==1);
+indexElbowR = find(ismember(jointNames, 'ElbowR')==1);
+indexWristR = find(ismember(jointNames, 'WristR')==1);
+indexFootR = find(ismember(jointNames, 'FootR')==1);
 
 nLogs = numel(jointLog);
 nJoints = numel(jointNames);
@@ -45,8 +55,8 @@ p_center=plot3( positions(ci,1), positions(ci,2), positions(ci,3),'o', ...
 
 q=quiver3(positions(:,1), positions(:,2), positions(:,3), ...
     axis_angles_loc(:,1),axis_angles_loc(:,2),axis_angles_loc(:,3), ...
-    'b-','LineWidth',3 );
-    
+    'm-','LineWidth',3 );
+
 % Front view
 view(0,90);
 % Side view
@@ -57,11 +67,19 @@ axis([-1 1 -1.2 1.5 -1 1]);
 xlabel('X');
 ylabel('Y');
 zlabel('Z');
+
+% Show direction controls of Kinect Data
+figure(2);
+clf;
+h_quiver = quiver(0,0, 'k-' );
+set( h_quiver, 'LineWidth', 2,'MarkerSize',10 );
+axis([-1 1 -1 1]);
+
 for i=1:nLogs-1
     tstart=tic;
     
     % Check data limits
-    if( isempty(jointLog(i).t) || i>80 )
+    if( isempty(jointLog(i).t) )
         break;
     end
     if( isempty(jointLog(i+1).t) )
@@ -87,6 +105,25 @@ for i=1:nLogs-1
     s2w = positions(indexShoulder,:) - positions(indexWrist,:);
     arm_len = sqrt(norm(e2w)) + sqrt(norm(s2e));
     offset = s2w * (op_arm_len / arm_len);
+    
+    %% Control calculations
+    waist2sL = positions(indexWaist,:) - positions(indexShoulderL,:);
+    waist2sR = positions(indexWaist,:) - positions(indexShoulderR,:);
+    sL2sR = positions(indexShoulderL,:) - positions(indexShoulderR,:);
+    % Care really only about the xz plane
+    %{
+    controls = [waist2sL([1,3]) ; waist2sR([1,3]) ; sL2sR([1,3])];
+    [THETA,RHO] = cart2pol(controls(:,1),controls(:,2));
+    THETA = THETA - pi;
+    set( h_quiver, 'XData', zeros(3,1), 'YData', zeros(3,1), ...
+        'UData', cos(THETA).*[.5 .5 1]', 'VData', sin(THETA).*[.5 .5 1]' );
+    %}
+    vx = 0;
+    vy = 0;
+    [va,rho] = cart2pol(sL2sR(1),sL2sR(3));
+    va = va - pi/2; % to view ok
+    set( h_quiver, 'XData', vx, 'YData', vy, ...
+        'UData', cos(va), 'VData', sin(va) );
     
     % Only if we have confidence...
     axis_angles_mag = axis_angles_loc(:,4);
@@ -123,7 +160,7 @@ for i=1:nLogs-1
     %% Timing
     tf = toc(tstart);
     % Realistic pause
-    pause( max(twait-tf,0) );
+    %pause( max(twait-tf,0) );
     % Arbitrary pause:
-    %pause(.2);
+    pause(.2);
 end

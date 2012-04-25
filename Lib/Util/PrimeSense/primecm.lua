@@ -63,5 +63,10 @@ for i,v in ipairs(jointNames) do
   shared.confidence[ v ] = vector.zeros(2);
 end
 
+-- Add the joints
+shared.joints = {};
+shared.joints.qLArm = vector.zeros(3);
+shared.joints.qRArm = vector.zeros(3);
+
 util.init_shm_segment(getfenv(), _NAME, shared, shsize);
 

@@ -2,19 +2,19 @@
 %clear all;
 if( exist('sk','var') == 0 )
     startup;
-    sk = shm_primesense();
+    sk = shm_primesense(0,1);
 end
 
 %% Timing settings
-prep_time = 10;
+prep_time = 6;
 %prep_time = 0;
-nseconds_to_log = 5;
+nseconds_to_log = 30;
 run_once = 0;
 counter = 0;
 fps = 20;
 twait = 1/fps;
 logsz = nseconds_to_log * fps;
-do_log = 1;
+do_log = 1; % if zero, then inf time
 
 %% Joint Settings
 jointNames = { ...
@@ -24,6 +24,7 @@ jointNames = { ...
     'HipL', 'KneeL', 'AnkleL', 'FootL', ... % 17-20
     'HipR', 'KneeR', 'AnkleR', 'FootR'... %21-24
     };
+nJoints = numel(jointNames);
 % Set up indexing
 left_idx   = zeros(nJoints,1);
 right_idx  = zeros(nJoints,1);
@@ -36,7 +37,6 @@ joint2track = 'ShoulderL';
 index2track = find(ismember(jointNames, joint2track)==1);
 
 %% Initialize variables
-nJoints = numel(jointNames);
 positions = zeros(nJoints,3);
 rots = zeros(3,3,nJoints);
 confs = zeros(nJoints,2);
@@ -68,7 +68,7 @@ axis([-1000 1000 -1300 1200]);
 %% Go time
 t0=tic;
 t_passed=toc(t0);
-while(t_passed<nseconds_to_log)
+while(do_log == 0 || t_passed<nseconds_to_log)
     tstart=tic;
     counter = counter + 1;
     %% Loop through each joint

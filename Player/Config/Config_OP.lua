@@ -108,7 +108,6 @@ km.standup_back = 'km_NSLOP_StandupFromBack.lua';
 -- Low battery level
 -- Need to implement this api better...
 bat_low = 100; -- 10V warning
-
 --[[
 -- Stretcher
 loadconfig( 'Config_Stretcher' );
@@ -117,3 +116,4 @@ fsm.game = 'Stretcher';
 fsm.head = {'Stretcher'};
 fsm.body = {'Stretcher'};
 --]]
+gps_only = 0;

@@ -45,7 +45,7 @@ nyA = labelA.n;
 y0A = 0.5 * (nyA-1);
 focalA = Config.camera.focal_length/(Config.camera.focal_base/nxA);
 
-scaleB = 4;
+scaleB = Config.vision.scaleB;
 labelB = {};
 labelB.m = labelA.m/scaleB;
 labelB.n = labelA.n/scaleB;

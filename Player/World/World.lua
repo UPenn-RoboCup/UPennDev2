@@ -85,18 +85,39 @@ function update_odometry()
 end
 
 function update_vision()
-  --Behavior test with ground truth gps data
+
+  --update ground truth
+  if Body.gps_enable then
+    gps_pose0=Body.get_sensor_gps();
+    --GPS is attached at torso, so we should discount body offset
+    uBodyOffset = mcm.get_walk_bodyOffset();
+    gps_pose = util.pose_global(uBodyOffset,gps_pose0);
+
+    gps_pose_xya={}
+    gps_pose_xya.x=gps_pose[1];
+    gps_pose_xya.y=gps_pose[2];
+    gps_pose_xya.a=gps_pose[3];
+    gps_attackBearing = get_attack_bearing_pose(gps_pose_xya);
+
+    wcm.set_robot_gpspose(gps_pose);
+    wcm.set_robot_gps_attackbearing(gps_attackBearing);
+  end
+
+  --We may use ground truth data only (for behavior testing)
   if use_gps_only>0 then
-    gps_pose=Body.get_sensor_gps();
+    --Use GPS pose instead of using particle filter
     pose.x,pose.y,pose.a=gps_pose[1],gps_pose[2],gps_pose[3];
+    --Use GPS ball pose instead of ball filter
     ballGlobal=wcm.get_robot_gps_ball();    
     ballLocal = util.pose_relative(ballGlobal,gps_pose);
     ball.x, ball.y = ballLocal[1],ballLocal[2];
-    ball.t = Body.get_time();
+
+    if vcm.get_ball_detect()==1 then
+      ball.t = Body.get_time();
+    end
     update_shm();
     return;
   end
-
 
   -- resample?
   if count % cResample == 0 then
@@ -235,19 +256,6 @@ end
 function update_shm()
   -- update shm values
 
-  --update ground truth
-  if Body.gps_enable then
-    gps_pose=Body.get_sensor_gps();
-    wcm.set_robot_gpspose(gps_pose);
-    gps_pose_xya={}
-    gps_pose_xya.x=gps_pose[1];
-    gps_pose_xya.y=gps_pose[2];
-    gps_pose_xya.a=gps_pose[3];
-    gps_attackBearing = get_attack_bearing_pose(gps_pose_xya);
-    wcm.set_robot_gps_attackbearing(gps_attackBearing);
-  else
-    wcm.set_robot_gpspose({pose.x,pose.y,pose.a});
-  end
 
   wcm.set_robot_pose({pose.x, pose.y, pose.a});
   wcm.set_robot_time(Body.get_time());

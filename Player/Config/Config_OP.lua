@@ -108,4 +108,4 @@ km.standup_back = 'km_NSLOP_StandupFromBack.lua';
 -- Low battery level
 -- Need to implement this api better...
 bat_low = 100; -- 10V warning
-
+gps_only = 0;

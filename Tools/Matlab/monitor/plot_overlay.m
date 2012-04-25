@@ -13,9 +13,9 @@ function plot_overlay(r_mon,scale,drawlevel)
 	rollAngle=r_mon.camera.rollAngle;
         hold on;
         if (~isempty(r_mon.goal.postStat1))
-          plot_goalposts(r_mon.goal.postStat1,r_mon.goal.v1,rollAngle,scale);
+          plot_goalposts(r_mon.goal.postStat1,r_mon.goal.v1,rollAngle,scale,r_mon.camera.scaleB);
           if(r_mon.goal.type==3)
-            plot_goalposts(r_mon.goal.postStat2,r_mon.goal.v2,rollAngle,scale);
+            plot_goalposts(r_mon.goal.postStat2,r_mon.goal.v2,rollAngle,scale,r_mon.camera.scaleB);
           end
         end
         hold off;
@@ -61,8 +61,7 @@ function plot_overlay(r_mon,scale,drawlevel)
     end
   end
 
-  function plot_goalposts( postStats, v, rollAngle, scale)
-
+  function plot_goalposts( postStats, v, rollAngle, scale, scaleB)
     x0=postStats.x;
     y0=postStats.y;
     w0=postStats.a/2;
@@ -85,10 +84,10 @@ function plot_overlay(r_mon,scale,drawlevel)
 
 
 
-    gbx1=(postStats.gbx1)/scale*4;
-    gbx2=(postStats.gbx2+1)/scale*4;
-    gby1=(postStats.gby1)/scale*4;
-    gby2=(postStats.gby2+1)/scale*4;
+    gbx1=(postStats.gbx1)/scale*scaleB;
+    gbx2=(postStats.gbx2+1)/scale*scaleB;
+    gby1=(postStats.gby1)/scale*scaleB;
+    gby2=(postStats.gby2+1)/scale*scaleB;
 
     xskew=tan(rollAngle);
     gbx11=gbx1+gby1*xskew;

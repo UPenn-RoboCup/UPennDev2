@@ -56,6 +56,7 @@ if use_gps_only==0 then
   labelB.m = labelA.m/scaleB;
   labelB.n = labelA.n/scaleB;
   labelB.npixel = labelB.m*labelB.n;
+	vcm.set_image_scaleB(Config.vision.scaleB);
   print('Vision LabelA size: ('..labelA.m..', '..labelA.n..')');
   print('Vision LabelB size: ('..labelB.m..', '..labelB.n..')');
 

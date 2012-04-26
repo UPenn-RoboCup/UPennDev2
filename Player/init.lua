@@ -2,8 +2,12 @@ module(... or "", package.seeall)
 
 -- this module is used to facilitate interactive debuging
 
-cwd = os.getenv('PWD');
-computer = os.getenv('COMPUTER') or "";
+cwd = '.';
+
+uname = io.popen('uname -s')
+system = uname:read();
+
+computer = os.getenv('COMPUTER') or system;
 if (string.find(computer, "Darwin")) then
    -- MacOS X uses .dylib:
    package.cpath = cwd.."/Lib/?.dylib;"..package.cpath;

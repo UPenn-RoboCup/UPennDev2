@@ -32,12 +32,12 @@ horizonDir = 0;
 -- Don't want to require Vision if not needed
 labelA = {};
 -- labeled image is 1/4 the size of the original
-labelA.m = Config.camera.width/2;
-labelA.n = Config.camera.height/2;
-if( webots ) then
-  labelA.m = Config.camera.width;
-  labelA.n = Config.camera.height;
-end
+--labelA.m = Config.camera.width/2;
+--labelA.n = Config.camera.height/2;
+--if( webots ) then
+labelA.m = Config.camera.width;
+labelA.n = Config.camera.height;
+--end
 
 nxA = labelA.m;
 x0A = 0.5 * (nxA-1);
@@ -45,7 +45,7 @@ nyA = labelA.n;
 y0A = 0.5 * (nyA-1);
 focalA = Config.camera.focal_length/(Config.camera.focal_base/nxA);
 
-scaleB = 4;
+scaleB = Config.vision.scaleB;
 labelB = {};
 labelB.m = labelA.m/scaleB;
 labelB.n = labelA.n/scaleB;

@@ -341,8 +341,8 @@ global MONITOR %for sending the webots check information
       endpoint22=h.vcmLine.get_endpoint22();
 
       for i=1:r.line.nLines
-	r.line.v1{i}=[v1x(i) v1y(i)];
-	r.line.v2{i}=[v2x(i) v2y(i)];
+				r.line.v1{i}=[v1x(i) v1y(i)];
+				r.line.v2{i}=[v2x(i) v2y(i)];
         r.line.endpoint{i}=[endpoint11(i) endpoint21(i) ...
 			    endpoint12(i) endpoint22(i)];
       end
@@ -369,16 +369,15 @@ global MONITOR %for sending the webots check information
   % Add freespace boundary
       r.free = {};
       freeCol = h.vcmFreespace.get_nCol();
-%		   freeValueA = h.vcmFreespace.get_pboundA();
       freeValueB = h.vcmFreespace.get_pboundB();
-      labelAm = h.vcmImage.get_width()/2;
-      labelBm = labelAm/h.vcmImage.get_scaleB();
-%      r.free = struct('Ax',freeValueA(1:labelAm),
-%                      'Ay',freeValueA(labelAm+1:2*labelAm),
-      r.free = struct('Bx',freeValueB(1:labelBm),...
-                      'By',freeValueB(labelBm+1:2*labelBm),...
-                      'nCol',freeCol,...
-                      'detect',h.vcmFreespace.get_detect());
+			freeDis = h.vcmFreespace.get_vboundB();
+      labelBm = size(freeValueB,2)/2;
+			r.free.y = freeDis(1:labelBm);
+			r.free.x = freeDis(labelBm+1:2*labelBm);
+      r.free.Bx = freeValueB(1:labelBm);
+      r.free.By = freeValueB(labelBm+1:2*labelBm);
+      r.free.nCol = freeCol;
+      r.free.detect = h.vcmFreespace.get_detect();
       % Add visible boundary        
 
       

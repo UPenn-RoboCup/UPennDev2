@@ -73,6 +73,19 @@ function update()
       pTorsoR=pRLeg+dpRLeg;
       pTorso=(pTorsoL+pTorsoR)*0.5;
 
+      if(Config.platform.name == 'OP') then
+        print("Initial bodyHeight:",pTorso[3]);
+        if pTorso[3]<0.21 then
+          Body.set_lleg_hardness(0.5);
+          Body.set_rleg_hardness(0.5);
+          Body.set_actuator_command(Config.stance.initangle)
+          unix.usleep(1E6*0.4);
+	  started=false;
+	  return;
+        end
+      end
+
+
       Body.set_lleg_command(qLLeg);
       Body.set_rleg_command(qRLeg);
       Body.set_lleg_hardness(1);

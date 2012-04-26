@@ -92,6 +92,7 @@ function entry()
   vcm.set_camera_bodyHeight(Config.walk.bodyHeight);
   vcm.set_camera_bodyTilt(0);
   vcm.set_camera_height(Config.walk.bodyHeight+Config.head.neckZ);
+	vcm.set_camera_ncamera(Config.camera.ncamera);
 
   -- Start the HeadTransform machine
   HeadTransform.entry();

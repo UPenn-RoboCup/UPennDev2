@@ -5,15 +5,13 @@ require('wcm')
 require('walk')
 require 'Kinematics'
 require 'vector'
-
+require 'primecm'
 ps = false;
 
 if( Config.stretcher.primesense and Config.game.playerID==1 ) then
   print('Using the PrimeSense for control!')  
-  require 'primecm'    
+--  require 'primecm'    
   ps = true;
-else
-  require 'Team';  
 end
 
 t0 = 0;
@@ -46,8 +44,8 @@ function update()
       walk.set_velocity( 0,0,0 );      
     end
   else -- We do not have a primesense
-    local arm_state = Team.states[0];
-    print('Team arm state:',arm_state.qLArm);
+    local qlarm_state = primecm.get_joints_qLArm()
+    print('Team arm state:',qlarm_state);
   end
 
   if (false and t - t0 > timeout) then

@@ -3,6 +3,8 @@ require('Comm');
 require 'primecm'; -- Sending and receiving Kinect Data
 require('gcm');
 require 'serialization'
+require 'Kinematics'
+require 'unix'
 
 -- Initialization
 print("My address:",Config.dev.ip_wired)
@@ -27,7 +29,7 @@ function recv_msgs()
   while (Comm.size() > 0) do 
     t = serialization.deserialize(Comm.receive());
     if (t and (t.tid) and (t.tid == teamID ) and (t.id) and (t.id ~= playerID)) then
-      t.tReceive = Body.get_time();
+      t.tReceive = unix.time();
       states[t.id] = t;
     end
   end
@@ -40,23 +42,25 @@ function update()
     end
   else
     recv_msgs();
-    -- Push state 0 to the joint space
-    primecm.set_joints_qLArm( states[0].qLArm );
-    primecm.set_joints_qRArm( states[0].qRArm );    
+    if( states[0] ) then
+      -- Push state 0 to the joint space
+      primecm.set_joints_qLArm( states[0].qLArm );
+      primecm.set_joints_qRArm( states[0].qRArm );
+    end
   end
 
 end
 
 function send_body()
   if( t_last_ps==0 ) then
-    t0 = Body.get_time();
+    t0 = unix.time();
   end
   t_ps = primecm.get_skeleton_timestamp();
   if( t_ps == t_last_ps ) then
     return;
   end
   t_last_ps = t_ps;
-  print('Time differences',t-t0,t_ps);
+--  print('Time differences',t-t0,t_ps);
 
   qRArm = Kinematics.inverse_arm(get_scaled_prime_arm(1));
   qLArm = Kinematics.inverse_arm(get_scaled_prime_arm(0));
@@ -74,10 +78,11 @@ function send_body()
   state = {};
   state.t = timestamp;
   state.tid = teamID;
-  state.id = playerID;
+  state.id = 0;--playerID;
   state.qRArm = qRArm;
   state.qLArm = qLArm;
   local ret = Comm.send( serialization.serialize(state) );
+  print('Sent ',ret,'bytes',serialization.serialize(state))
 end
 
 function get_scaled_prime_arm( arm ) --left is 0

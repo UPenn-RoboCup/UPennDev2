@@ -214,7 +214,7 @@ function h=show_monitor()
       labelB = robots{playerNumber,teamNumber}.get_labelB();
       plot_label(labelB);
       if MONITOR.enable0
-        plot_overlay(r_mon,4,MONITOR.enable0);
+        plot_overlay(r_mon,r_mon.camera.scaleB,MONITOR.enable0);
       end
     elseif (MONITOR.enable2==3) && (~isempty(MONITOR.lutname))
       MONITOR.h2 = subplot(4,5,[3 4 8 9]);

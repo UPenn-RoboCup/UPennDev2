@@ -227,6 +227,7 @@ global MONITOR %for sending the webots check information
 
     %Camera info
 
+		  select = h.vcmImage.get_select();
       width = h.vcmImage.get_width();
       height = h.vcmImage.get_height();
 			scaleB = h.vcmImage.get_scaleB();
@@ -234,7 +235,7 @@ global MONITOR %for sending the webots check information
       bodyTilt=h.vcmCamera.get_bodyTilt();
       headAngles=h.vcmImage.get_headAngles();
       rollAngle=h.vcmCamera.get_rollAngle();
-      r.camera = struct('width',width,'height',height,'scaleB',scaleB,...
+      r.camera = struct('select',select,'width',width,'height',height,'scaleB',scaleB,...
 	'bodyHeight',bodyHeight,'bodyTilt',bodyTilt,...
 	'headAngles',headAngles,'rollAngle',rollAngle);
 

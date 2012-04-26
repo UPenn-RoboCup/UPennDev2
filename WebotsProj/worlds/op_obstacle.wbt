@@ -10,8 +10,8 @@ WorldInfo {
   runRealTime TRUE
 }
 Viewpoint {
-  orientation 0.280847 0.952493 0.117824 5.32782
-  position -3.73499 1.93977 3.48327
+  orientation -0.08426 -0.98 -0.175 2.354
+  position -3.044 2.88 -4.04
 }
 Background {
   skyColor [
@@ -47,7 +47,7 @@ DEF BLUE_GOAL Goal {
 DEF BALL Ball {
 }
 DEF PLAYER_1_99 DARwInOPGPS {
-  translation -2.8 0.3 0
+  translation -0.6 0.34 -0.024
   rotation 0 1 0 1.56
   controller "darwin-op_team_0"
   controllerArgs "1 99"

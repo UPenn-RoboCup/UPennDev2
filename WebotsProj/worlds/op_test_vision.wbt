@@ -67,4 +67,6 @@ DEF PLAYER_1_99 DARwInOPGPS {
   waistBandColor 1 0 0
   plasticColor 1 0 0
   cameraWindowPosition 0.125 0 
+  cameraWidth 320
+  cameraHeight 240
 }

@@ -77,7 +77,6 @@ world.Lcorner[15]={0,0.6};
 world.Lcorner[16]={0,-0.6};
 --]]
 
-world.use_same_colored_goal = 1
 
 --SJ: OP does not use yaw odometry data (only use gyro)
 world.odomScale = {1, 1, 0};  
@@ -126,3 +125,5 @@ world.use_new_goalposts=1;
 -- Occupancy Map parameters
 occmap = {};
 occmap.div = 72;
+
+world.use_same_colored_goal = 0;

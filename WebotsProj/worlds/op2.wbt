@@ -60,6 +60,8 @@ DEF PLAYER_1_1 DARwInOP {
   waistBandColor 1 0 0
   plasticColor 1 0 0
   cameraWindowPosition 0.125 0 
+  cameraWidth 320
+  cameraHeight 240
 }
 DEF PLAYER_2_1 DARwInOP {
   translation 1 0.3 0
@@ -70,4 +72,6 @@ DEF PLAYER_2_1 DARwInOP {
   waistBandColor 1 0 0
   plasticColor 1 0 0
   cameraWindowPosition 0.375 0 
+  cameraWidth 320
+  cameraHeight 240
 }

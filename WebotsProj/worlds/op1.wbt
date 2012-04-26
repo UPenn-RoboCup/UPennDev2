@@ -6,7 +6,7 @@ WorldInfo {
     "Webpage: http://www.robotstadium.org"
   ]
   title "Robotstadium"
-  displayRefresh 8
+  displayRefresh 2
   basicTimeStep 40
 }
 Viewpoint {
@@ -65,4 +65,6 @@ DEF PLAYER_1_1 DARwInOP {
   cameraWindowPosition 0.125 0
   waistBand TRUE
   waistBandColor 1 0 0
+  cameraWidth 320
+  cameraHeight 240
 }

@@ -245,26 +245,29 @@ function update()
   end
 --]]
 
-  -- goalie and reserve player never changes role
-  if role~=0 and role<4 then 
-    minETA, minEtaID = min(eta);
-    if minEtaID == playerID then set_role(1);--attack
-    else
-      -- furthest player back is defender
-      minDDefID = 0;
-      minDDef = math.huge;
-      for id = 1,5 do
-        if id ~= minEtaID and 	   
-	ddefend[id] <= minDDef and
-	roles[id]<4 then --goalie and reserve don't count
-          minDDefID = id;
-          minDDef = ddefend[id];
-        end
-      end
-      if minDDefID == playerID then
-        set_role(2);    -- defense 
+  --Only switch role during gamePlaying state
+  if gcm.get_game_state()==3 then
+    -- goalie and reserve player never changes role
+    if role~=0 and role<4 then 
+      minETA, minEtaID = min(eta);
+      if minEtaID == playerID then set_role(1);--attack
       else
-        set_role(3);    -- support
+        -- furthest player back is defender
+        minDDefID = 0;
+        minDDef = math.huge;
+        for id = 1,5 do
+          if id ~= minEtaID and 	   
+  	  ddefend[id] <= minDDef and
+	  roles[id]<4 then --goalie and reserve don't count
+            minDDefID = id;
+            minDDef = ddefend[id];
+          end
+        end
+        if minDDefID == playerID then
+          set_role(2);    -- defense 
+        else
+          set_role(3);    -- support
+        end
       end
     end
   end

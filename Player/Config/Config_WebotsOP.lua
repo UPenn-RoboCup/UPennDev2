@@ -134,3 +134,4 @@ head.bodyTilt = 0;
 
 --Shutdown Vision and use ground truth gps info only
 use_gps_only = 0;
+use_gps_only = 1;

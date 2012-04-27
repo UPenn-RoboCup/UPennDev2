@@ -36,6 +36,8 @@ vision.use_point_goal = 0;
 --vision.enable_robot_detection = 1;
 vision.enable_robot_detection = 0;
 
+vision.enable_freespace_detection = 1;
+
 ----------------------------
 --OP specific
 ----------------------------

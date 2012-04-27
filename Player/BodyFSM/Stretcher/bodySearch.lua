@@ -7,6 +7,10 @@ require 'Kinematics'
 require 'vector'
 require 'primecm'
 ps = false;
+beta = 0.8;
+qlarm_mirror = vector.zeros(3);
+qrarm_mirror = vector.zeros(3);
+
 
 if( Config.stretcher.primesense and Config.game.playerID==1 ) then
   print('Using the PrimeSense for control!')  
@@ -45,8 +49,13 @@ function update()
     end
   else -- We do not have a primesense
     local qlarm_state = primecm.get_joints_qLArm()
+    local qrarm_state = primecm.get_joints_qRArm()
+    qlarm_mirror = (1-beta)*qlarm_mirror + beta*qlarm_state;
+    qrarm_mirror = (1-beta)*qrarm_mirror + beta*qrarm_state;
+
     --print('Team arm state:',qlarm_state);
-    Body.set_larm_command( qlarm_state );
+    Body.set_larm_command( qlarm_mirror );
+    Body.set_rarm_command( qrarm_mirror );
   end
 
   if (false and t - t0 > timeout) then

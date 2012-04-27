@@ -31,21 +31,23 @@ require('Config')
 require('Speak')
 require('shm')
 require('vector')
-require('vcm')
 require('gcm')
 require('wcm')
 require('mcm')
 require('getch')
+
+io.stdout:flush();
+
 require('Body')
 require('Motion')
-require('Comm')
 require('Team')
-
+require('GameControl')
 Motion.entry();
+Team.entry();
+GameControl.entry();
 
 darwin = false;
 webots = false;
-
 
 -- Enable OP specific 
 if(Config.platform.name == 'OP') then
@@ -106,11 +108,20 @@ function process_keyinput()
       Speak.talk('Finished');
       gcm.set_game_state(4);
     elseif byte==string.byte("k") then   
-      gcm.set_game_kickoff(1);
-      Speak.talk('We have kickoff');
+      --Blue team kickoff
+      if gcm.get_team_color()==0 then
+        gcm.set_game_kickoff(1);
+      else
+        gcm.set_game_kickoff(0);
+      end
+      Speak.talk('Blue kickoff');
     elseif byte==string.byte("l") then   
-      gcm.set_game_kickoff(0);
-      Speak.talk('They have kickoff');
+      if gcm.get_team_color()==0 then
+        gcm.set_game_kickoff(0);
+      else
+        gcm.set_game_kickoff(1);
+      end
+      Speak.talk('Red kickoff');
     elseif byte==string.byte("q") then 
       penalize_player=1;
     elseif byte==string.byte("w") then 
@@ -161,7 +172,6 @@ function update()
       BodyFSM.entry();
       HeadFSM.entry();
       GameFSM.entry();
-
 --[[      
       if( webots ) then
         --BodyFSM.sm:add_event('button');
@@ -232,9 +242,10 @@ if (webots) then
     process_keyinput();
     -- update cognitive process
     cognition.update();
+    GameControl.update();
+    Team.update();
     -- update motion process
     update();
-
     io.stdout:flush();
   end
 

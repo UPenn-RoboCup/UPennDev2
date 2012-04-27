@@ -60,7 +60,7 @@ fsm.body = {'GeneralPlayer'};
 --Behavior flags, should be defined in FSM Configs but can be overridden here
 fsm.playMode = 3; --1 for demo, 2 for orbit, 3 for direct approach
 fsm.enable_obstacle_detection = 1;
-fsm.wait_kickoff = 0;
+fsm.wait_kickoff = 1;
 fsm.enable_walkkick = 1;
 fsm.enable_sidekick = 1;
 fsm.enable_dribble = 1;
@@ -134,3 +134,4 @@ head.bodyTilt = 0;
 
 --Shutdown Vision and use ground truth gps info only
 use_gps_only = 0;
+use_gps_only = 1;

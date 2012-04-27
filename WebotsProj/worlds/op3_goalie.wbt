@@ -64,6 +64,8 @@ DEF PLAYER_0_1 DARwInOPGPS {
   cameraWindowPosition 0.125 0
   waistBand TRUE
   waistBandColor 1 0 0
+  cameraWidth 320
+  cameraHeight 240
 }
 DEF PLAYER_1_1 DARwInOPGPS {
   translation 1.5 0.3 2
@@ -74,6 +76,8 @@ DEF PLAYER_1_1 DARwInOPGPS {
   cameraWindowPosition 0.375 0
   waistBand TRUE
   waistBandColor 1 0 0
+  cameraWidth 320
+  cameraHeight 240
 }
 DEF PLAYER_2_1 DARwInOPGPS {
   translation 0.8 0.3 2
@@ -84,4 +88,6 @@ DEF PLAYER_2_1 DARwInOPGPS {
   cameraWindowPosition 0.625 0
   waistBand TRUE
   waistBandColor 1 0 0
+  cameraWidth 320
+  cameraHeight 240
 }

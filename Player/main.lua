@@ -38,17 +38,24 @@ require('Speak')
 require('getch')
 require('Body')
 require('Motion')
+--Now update team and GC in main.lua
+
+require('GameControl')
 require('Team')
 
 Motion.entry();
+GameControl.entry();
+Team.entry();
 
 darwin = false;
 webots = false;
 
-
 -- Enable OP specific 
 if(Config.platform.name == 'OP') then
   darwin = true;
+  --SJ: OP specific initialization posing (to prevent twisting)
+  Body.set_body_hardness(0.3);
+  Body.set_actuator_command(Config.stance.initangle)
 end
 
 -- Enable Webots specific
@@ -62,7 +69,6 @@ ready = false;
 if( webots or darwin) then
   ready = true;
 end
-
 
 smindex = 0;
 initToggle = true;
@@ -97,7 +103,7 @@ function update()
       BodyFSM.entry();
       HeadFSM.entry();
       GameFSM.entry();
-      
+
       if( webots ) then
         --BodyFSM.sm:add_event('button');
         GameFSM.sm:set_state('gamePlaying');
@@ -106,7 +112,7 @@ function update()
       init = true;
     else
       if (count % 20 == 0) then
---        if (Body.get_change_state() == 1) then
+--      if (Body.get_change_state() == 1) then
 	  if true then
           Speak.talk('Calibrating');
           calibrating = true;
@@ -133,7 +139,15 @@ function update()
     HeadFSM.update();
     Motion.update();
     Body.update();
+    --Now update team and GC in main.lua
+    if (count % 100 ==0) then
+      GameControl.update();
+    end 
+    if (count % 10==0) then
+      Team.update();
+    end
   end
+
   local dcount = 50;
   if (count % 50 == 0) then
 --    print('fps: '..(50 / (unix.time() - tUpdate)));

@@ -50,6 +50,11 @@ state.cornerv={0,0};
 states = {};
 states[playerID] = state;
 
+--We maintain pose of all robots 
+--For obstacle avoidance
+poses={};
+t_poses=vector.zeros(10);
+
 function pack_msg(state)
   --Tightly pack the state info into a short string
 
@@ -99,24 +104,65 @@ end
 function recv_msgs()
   while (Comm.size() > 0) do 
 
---Ball GPS Info hadling
     msg=Comm.receive();
-    if #msg==14 then --Ball
+    --Ball GPS Info hadling
+    if #msg==14 then --Ball position message
       ball_gpsx=(tonumber(string.sub(msg,2,6))-5)*2;
       ball_gpsy=(tonumber(string.sub(msg,8,12))-5)*2;
---      print("GPS Ball message:",ball_gpsx, ball_gpsy);
       wcm.set_robot_gps_ball({ball_gpsx,ball_gpsy,0});
 
     else --Regular team message
       t = serialization.deserialize(msg);
 --    t = unpack_msg(Comm.receive());
-      if (t and (t.teamNumber) and (t.teamNumber == state.teamNumber) and (t.id) and (t.id ~= playerID)) then
-        t.tReceive = Body.get_time();
-        states[t.id] = t;
+      if t and (t.teamNumber) and (t.id) then
+	--Messages from upenn code
+	--Keep all pose data for obstacle avoidance 
+        if t.teamNumber ~= state.teamNumber then
+	  poses[t.id+5]=t.pose;
+          t_poses[t.id+5]=Body.get_time();
+        elseif t.id ~=playerID then
+	  poses[t.id]=t.pose;
+          t_poses[t.id]=Body.get_time();
+        end
+
+	--Is the message from our team?
+        if (t.teamNumber == state.teamNumber) and 
+	   (t.id ~= playerID) then
+          t.tReceive = Body.get_time();
+          states[t.id] = t;
+        end
       end
     end
   end
 end
+
+function update_obstacle()
+  local t = Body.get_time();
+  local t_timeout = 2.0;
+
+  local closest_pose={};
+  local closest_dist =100;
+  local closest_index = 0;
+  pose = wcm.get_pose();
+
+  --todo: parameterize
+  for i=1,10 do
+    if t_poses[i]~=0 and t-t_poses[i]<t_timeout then
+      dist = math.sqrt(
+		(pose.x-poses[i].x)^2+
+		(pose.y-poses[i].y)^2);
+      if dist<closest_dist then
+        closest_index = i;
+        closest_dist = dist;
+	closest_pose = poses[i];	
+      end
+    end
+  end
+
+  --print("Closest index dist", closest_index, closest_dist);
+end
+
+
 
 function entry()
 end
@@ -274,6 +320,7 @@ function update()
 
   -- update shm
   update_shm() 
+  update_obstacle();
 end
 
 function update_shm() 

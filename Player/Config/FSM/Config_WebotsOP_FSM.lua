@@ -24,7 +24,8 @@ fsm.wait_kickoff = 1; --initial wait at opponent's kickoff
 --------------------------------------------------
 fsm.bodyReady={};
 fsm.bodyReady.maxStep = 0.06;
-fsm.bodyReady.thClose = {0.30,15*math.pi/180} --r and theta
+--fsm.bodyReady.thClose = {0.30,15*math.pi/180} --r and theta
+fsm.bodyReady.thClose = {0.10,5*math.pi/180} --r and theta
 fsm.bodyReady.tStart = 5.0;  --initial localization time
 
 --------------------------------------------------

@@ -91,7 +91,7 @@ function update_vision()
     gps_pose0=Body.get_sensor_gps();
     --GPS is attached at torso, so we should discount body offset
     uBodyOffset = mcm.get_walk_bodyOffset();
-    gps_pose = util.pose_global(uBodyOffset,gps_pose0);
+    gps_pose = util.pose_global(-uBodyOffset,gps_pose0);
 
     gps_pose_xya={}
     gps_pose_xya.x=gps_pose[1];

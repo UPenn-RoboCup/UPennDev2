@@ -53,6 +53,8 @@ DEF PLAYER_1_99 DARwInOPGPS {
   controllerArgs "1 99"
   plasticColor 0.2 0.2 0.2
   cameraWindowPosition 0.125 0
+	cameraWidth 320
+	cameraHeight 240
   waistBand TRUE
 }
 

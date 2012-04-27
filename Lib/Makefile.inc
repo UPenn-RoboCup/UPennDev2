@@ -16,7 +16,7 @@ SHLIBEXT= so
 LIBOPTS= -shared -fpic
 LIBRT= -lrt
 
-INCLUDES= -I/usr/local/include -I/usr/include/lua -I/usr/include/lua5.1
+INCLUDES= -I/usr/local/include -I/usr/include/lua -I/usr/include/lua5.1 -I/usr/local/include/lua
 LIB_DIR= -L/usr/local/lib -L/usr/lib
 
 

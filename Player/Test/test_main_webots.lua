@@ -40,8 +40,10 @@ require('Body')
 require('Motion')
 require('Comm')
 require('Team')
-
+require('GameControl')
 Motion.entry();
+Team.entry();
+GameControl.entry();
 
 darwin = false;
 webots = false;
@@ -161,7 +163,6 @@ function update()
       BodyFSM.entry();
       HeadFSM.entry();
       GameFSM.entry();
-
 --[[      
       if( webots ) then
         --BodyFSM.sm:add_event('button');
@@ -232,6 +233,8 @@ if (webots) then
     process_keyinput();
     -- update cognitive process
     cognition.update();
+    GameControl.update();
+    Team.update();
     -- update motion process
     update();
 

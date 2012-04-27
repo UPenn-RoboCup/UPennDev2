@@ -26,6 +26,7 @@ end
 shared.camera = {};
 shared.camera.select = vector.zeros(1);
 shared.camera.command = vector.zeros(1);
+shared.camera.ncamera = vector.zeros(1);
 
 --bodyTilt and height can be changed by sit/stand 
 shared.camera.height = vector.zeros(1);

@@ -52,7 +52,7 @@ if (robotName=='scarface') then
   game.role = 1; --Default attacker
 elseif (robotName=='linus') then
   game.playerID = 2; 
-  game.role = 0; --Default attacker
+  game.role = 1; --Default attacker
 elseif (robotName=='betty') then
   game.playerID = 3; 
   game.role = 1; --Default attacker
@@ -109,3 +109,6 @@ km.standup_back = 'km_NSLOP_StandupFromBack.lua';
 -- Need to implement this api better...
 bat_low = 100; -- 10V warning
 gps_only = 0;
+
+--Speak enable
+speakenable = false;

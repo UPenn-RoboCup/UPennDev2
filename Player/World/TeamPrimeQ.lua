@@ -56,7 +56,8 @@ function send_body()
     t0 = unix.time();
   end
   t_ps = primecm.get_skeleton_timestamp();
-  if( t_ps == t_last_ps ) then
+  found_ps = primecm.get_skeleton_found();
+  if( t_ps == t_last_ps or found_ps == 0) then
     return;
   end
   t_last_ps = t_ps;
@@ -79,6 +80,7 @@ function send_body()
   state.t = timestamp;
   state.tid = teamID;
   state.id = 0;--playerID;
+  state.found = found_ps;
   state.qRArm = qRArm;
   state.qLArm = qLArm;
   local ret = Comm.send( serialization.serialize(state) );

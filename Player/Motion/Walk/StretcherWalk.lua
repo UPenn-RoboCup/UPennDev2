@@ -29,7 +29,8 @@ stanceLimitY2= 2* Config.walk.footY-stanceLimitMarginY;
 
 --Stance parameters
 bodyHeight = Config.walk.bodyHeight;
-bodyTilt=Config.walk.bodyTilt or 0;
+--bodyTilt=Config.walk.bodyTilt or 0;
+bodyTilt=0;
 footX = Config.walk.footX or 0;
 footY = Config.walk.footY;
 supportX = Config.walk.supportX;
@@ -42,7 +43,8 @@ qRArmKick0=Config.walk.qRArmKick;
 --Hardness parameters
 hardnessSupport = Config.walk.hardnessSupport or 0.7;
 hardnessSwing = Config.walk.hardnessSwing or 0.5;
-hardnessArm = Config.walk.hardnessArm or 0.2;
+--hardnessArm = Config.walk.hardnessArm or 0.2;
+hardnessArm = 0.6;
 
 --Gait parameters
 tStep0 = Config.walk.tStep;

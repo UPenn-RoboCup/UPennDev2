@@ -159,6 +159,15 @@ function update_obstacle()
     end
   end
 
+  if closest_index>0 then
+    wcm.set_obstacle_dist(closest_dist);
+--Transform to local frame
+    local obstacle_local = util.pose_relative(
+	{closest_pose.x,closest_pose.y,0},{pose.x,pose.y,pose.a}); 
+    wcm.set_obstacle_pose(obstacle_local);
+  else
+    wcm.set_obstacle_dist(100);
+  end
   --print("Closest index dist", closest_index, closest_dist);
 end
 

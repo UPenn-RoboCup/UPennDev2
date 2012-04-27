@@ -74,6 +74,8 @@ fsm.playMode = 3; --1 for demo, 2 for orbit, 3 for direct approach
 fsm.enable_walkkick = 0;
 fsm.enable_sidekick = 0;
 
+
+
 --FAST APPROACH TEST
 fsm.fast_approach = 1;
 fsm.bodyApproach.maxStep = 0.06;

@@ -89,7 +89,7 @@ world.imuYaw = 1;
 world.initPosition1={
   {2.5,0},   --Goalie
   {0.5,0}, --Attacker
-  {1.5,-1.5}, --Defender
+  {1.5,-1.25}, --Defender
   {0.5,1.0}, --Supporter
 }
 -- default positions for opponents' kickoff

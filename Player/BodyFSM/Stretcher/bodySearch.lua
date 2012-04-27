@@ -45,7 +45,8 @@ function update()
     end
   else -- We do not have a primesense
     local qlarm_state = primecm.get_joints_qLArm()
-    print('Team arm state:',qlarm_state);
+    --print('Team arm state:',qlarm_state);
+    Body.set_larm_command( qlarm_state );
   end
 
   if (false and t - t0 > timeout) then

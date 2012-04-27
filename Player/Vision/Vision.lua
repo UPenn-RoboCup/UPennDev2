@@ -51,11 +51,12 @@ if use_gps_only==0 then
     labelA.n = camera.height;
     labelA.npixel = labelA.m*labelA.n;
   end
-  scaleB = 4;
+  scaleB = Config.vision.scaleB;
   labelB = {};
   labelB.m = labelA.m/scaleB;
   labelB.n = labelA.n/scaleB;
   labelB.npixel = labelB.m*labelB.n;
+	vcm.set_image_scaleB(Config.vision.scaleB);
   print('Vision LabelA size: ('..labelA.m..', '..labelA.n..')');
   print('Vision LabelB size: ('..labelB.m..', '..labelB.n..')');
 
@@ -91,6 +92,7 @@ function entry()
   vcm.set_camera_bodyHeight(Config.walk.bodyHeight);
   vcm.set_camera_bodyTilt(0);
   vcm.set_camera_height(Config.walk.bodyHeight+Config.head.neckZ);
+	vcm.set_camera_ncamera(Config.camera.ncamera);
 
   -- Start the HeadTransform machine
   HeadTransform.entry();

@@ -63,4 +63,6 @@ DEF PLAYER_0_1 DARwInOP {
   cameraWindowPosition 0.125 0
   waistBand TRUE
   waistBandColor 1 0 0
+  cameraWidth 320
+  cameraHeight 240
 }

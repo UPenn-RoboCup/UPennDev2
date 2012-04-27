@@ -101,6 +101,9 @@ function update_vision()
 
     wcm.set_robot_gpspose(gps_pose);
     wcm.set_robot_gps_attackbearing(gps_attackBearing);
+  else
+    wcm.set_robot_gpspose({pose.x,pose.y,pose.a});
+    wcm.set_robot_gps_attackbearing(get_attack_bearing());
   end
 
   --We may use ground truth data only (for behavior testing)

@@ -47,6 +47,11 @@ shared.kick.type=vector.zeros(1);
 shared.kick.kickOff = vector.zeros(1);
 shared.kick.tKickOff = vector.zeros(1);
 
+--Added for obstacle avoidance
+shared.obstacle = {};
+shared.obstacle.dist = vector.zeros(1);
+shared.obstacle.pose = vector.zeros(3);
+
 --Localization monitoring
 shared.particle = {};
 shared.particle.x=vector.zeros(Config.world.n);

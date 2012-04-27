@@ -36,6 +36,11 @@ count = 0;
 nProcessedImages = 0;
 tUpdate = unix.time();
 
+if (string.find(Config.platform.name,'Webots')) then
+  webots = true;
+end
+
+
 function entry()
   World.entry();
 --  Team.entry();
@@ -65,8 +70,10 @@ function update()
 --    Team.update();
 
     if (nProcessedImages % 50 == 0) then
-      print('fps: '..(50 / (unix.time() - tUpdate)));
-      tUpdate = unix.time();
+      if not webots then
+        print('fps: '..(50 / (unix.time() - tUpdate)));
+        tUpdate = unix.time();
+      end
     end
   end
 end

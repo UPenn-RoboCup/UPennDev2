@@ -59,6 +59,7 @@ function update()
   homeRelative = util.pose_relative(home, {pose.x, pose.y, pose.a});
   rhome = math.sqrt(homeRelative[1]^2 + homeRelative[2]^2);
   attackBearing = wcm.get_attack_bearing();
+  vx,vy,va=0,0,0;
 
   if phase==0 then 
     if t - t0 < tstart then 
@@ -70,14 +71,23 @@ function update()
     vx = maxStep * homeRelative[1]/rhome;
     vy = maxStep * homeRelative[2]/rhome;
     va = .2 * math.atan2(homeRelative[2], homeRelative[1]);
-    walk.set_velocity(vx, vy, va);
     if rhome < rClose then phase=2; end
   elseif phase==2 then --Turning phase, face center
     vx = maxStep * homeRelative[1]/rhome;
     vy = maxStep * homeRelative[2]/rhome;
     va = .2*attackBearing;
-    walk.set_velocity(vx, vy, va);
   end
+
+  --Check the nearest obstacle
+  obstacle_dist = wcm.get_obstacle_dist();
+  obstacle_pose = wcm.get_obstacle_pose();
+  if obstacle_dist<0.5 then
+    local r_reject = 0.5;
+    local v_reject = 0.1*math.exp(-(obstacle_dist/r_reject)^2);
+    vx = vx - obstacle_pose[1]/obstacle_dist*v_reject;
+    vy = vy - obstacle_pose[2]/obstacle_dist*v_reject;
+  end
+  walk.set_velocity(vx, vy, va);
 
   if phase~=3 and rhome < rClose and 
      math.abs(attackBearing)<thClose then 

@@ -116,11 +116,36 @@ function update()
     homePose=getAttackerHomePose();	
   end
 
+  --Field player cannot enter our penalty box
+  --TODO: generalize
+  if role~=0 then
+    goalDefend = wcm.get_goal_defend();
+    homePose[1]=sign(goalDefend[1])*
+	math.min(2.2,homePose[1]*sign(goalDefend[1]));
+  end
+
   if role==1 then
     setAttackerVelocity();
   else
     setDefenderVelocity();
   end
+
+  --Check the nearest obstacle (for non-attacker)
+  obstacle_dist = wcm.get_obstacle_dist();
+  obstacle_pose = wcm.get_obstacle_pose();
+  if role<2 then
+    r_reject = 0.3;
+  else
+    r_reject = 0.8;
+  end
+  if obstacle_dist<r_reject then
+    local v_reject = 0.1*math.exp(-(obstacle_dist/r_reject)^2);
+    vx = vx - obstacle_pose[1]/obstacle_dist*v_reject;
+    vy = vy - obstacle_pose[2]/obstacle_dist*v_reject;
+  end
+
+  walk.set_velocity(vx,vy,va);
+
 
   if (t - ball.t > tLost) then
     return "ballLost";
@@ -220,7 +245,6 @@ function setAttackerVelocity()
   va = 0.5*(aTurn*homeRelative[3] --Turn toward the goal
      + (1-aTurn)*aHomeRelative); --Turn toward the target
   va = math.max(-maxA,math.min(maxA,va)); --Limit rotation
-  walk.set_velocity(vx,vy,va);
 end
 
 function setDefenderVelocity()
@@ -230,7 +254,6 @@ function setDefenderVelocity()
   vx = maxStep*homeRelative[1]/rHomeRelative;
   vy = maxStep*homeRelative[2]/rHomeRelative;
   va = .5*math.atan2(ball.y, ball.x + 0.05);
-  walk.set_velocity(vx,vy,va);
 end
 
 function getAttackerHomePose()

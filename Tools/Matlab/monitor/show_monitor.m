@@ -15,7 +15,7 @@ function h=show_monitor()
   h.enable5=1;
 
   %two subscreen for team monitor
-  h.enable8=1;   %Label mode, 1/2/0
+  h.enable8=0;   %Label mode, 1/2/0
   h.enable9=1;   %Label mode, 1/0
   h.enable10=1;  %Map mode, 1/2/3
 
@@ -61,7 +61,7 @@ function h=show_monitor()
       MONITOR.hButton7=uicontrol('Style','pushbutton','String','FPS +',...
 	'Units','Normalized', 'Position',[.60 .93 .10 .04],'Callback',@button7);
 
-      MONITOR.hButton8=uicontrol('Style','pushbutton','String','LABEL',...
+      MONITOR.hButton8=uicontrol('Style','pushbutton','String','OFF',...
 	'Units','Normalized','Position',[.02 .30 .07 .07],'Callback',@button8);
 
       MONITOR.hButton9=uicontrol('Style','pushbutton','String','2D',...

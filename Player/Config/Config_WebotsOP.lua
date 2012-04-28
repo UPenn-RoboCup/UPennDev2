@@ -60,7 +60,7 @@ fsm.body = {'GeneralPlayer'};
 --Behavior flags, should be defined in FSM Configs but can be overridden here
 fsm.playMode = 3; --1 for demo, 2 for orbit, 3 for direct approach
 fsm.enable_obstacle_detection = 1;
-fsm.wait_kickoff = 0;
+fsm.wait_kickoff = 1;
 fsm.enable_walkkick = 1;
 fsm.enable_sidekick = 1;
 fsm.enable_dribble = 1;
@@ -73,6 +73,8 @@ fsm.playMode = 2; --1 for demo, 2 for orbit, 3 for direct approach
 fsm.playMode = 3; --1 for demo, 2 for orbit, 3 for direct approach
 fsm.enable_walkkick = 0;
 fsm.enable_sidekick = 0;
+
+
 
 --FAST APPROACH TEST
 fsm.fast_approach = 1;
@@ -141,3 +143,4 @@ fsm.body = {'Stretcher'};
 dev.walk='StretcherWalk';
 dev.team='TeamPrimeQ';
 use_gps_only = 0;
+use_gps_only = 1;

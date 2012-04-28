@@ -25,23 +25,28 @@ require('mcm')
 
 require('Body')
 
-require('GameControl')
+--require('GameControl')
 
 require('Vision')
 
 require('World')
-require('Team')
+--require('Team')
 
 count = 0;
 nProcessedImages = 0;
 tUpdate = unix.time();
 
+if (string.find(Config.platform.name,'Webots')) then
+  webots = true;
+end
+
+
 function entry()
   World.entry();
-  Team.entry();
+--  Team.entry();
 
   Vision.entry();
-  GameControl.entry();
+--  GameControl.entry();
 end
 
 function update()
@@ -50,7 +55,7 @@ function update()
 
   -- update game control
   if (count % 30 == 0) then
-    GameControl.update();
+--    GameControl.update();
   end
 
   -- update vision 
@@ -62,20 +67,22 @@ function update()
   if imageProcessed then
     nProcessedImages = nProcessedImages + 1;
     World.update_vision();
-    Team.update();
+--    Team.update();
 
     if (nProcessedImages % 50 == 0) then
-      print('fps: '..(50 / (unix.time() - tUpdate)));
-      tUpdate = unix.time();
+      if not webots then
+        print('fps: '..(50 / (unix.time() - tUpdate)));
+        tUpdate = unix.time();
+      end
     end
   end
 end
 
 -- exit 
 function exit()
-  GameControl.exit();
+--  GameControl.exit();
   Vision.exit();
-  Team.exit();
+--  Team.exit();
   World.exit();
 end
 

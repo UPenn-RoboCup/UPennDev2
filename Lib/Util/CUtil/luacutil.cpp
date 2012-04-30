@@ -34,6 +34,34 @@ const int8_t byte_lut[] = { 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x
                             0x0, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
                             0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0};
 
+const char label_lut[] = "0123456789abcdefghijklmnopqrstuvwxyz";
+const uint8_t label_byte_lut[] = 
+ 		 	  { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+ 		 	    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+ 		 	    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                            0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 0, 0, 0, 0, 0,
+                            0, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 
+                            23, 24, 25, 26, 27, 28, 29, 30, 31, 0, 0, 0, 0, 0, 
+ 		 	    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+ 		 	    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+//Pack 32 possible label color bits into 6 types (for monitoring)
+//Priority: Orange > Yellow > Cyan > White > Green > Black
+//Black:0, Orange:1, Yellow:2, Cyan:4, Green:8, White: 16
+//Map : 0,      1,       2,      3,       4,        5
+
+const int8_t label_color_lut[]=
+	{ 0, 1, 
+	  2, 1, 
+          3, 1, 2, 1, 
+          4, 1, 2, 1, 3, 1, 2, 1, 
+          5, 1, 2, 1, 3, 1, 2, 1, 5, 1, 2, 1, 3, 1, 2, 1};
+
+const char label_lut1[] = "012345";
+const char label_lut2[] = "abcdef";
+
+
+
 
 std::map<std::string, int> dataTypeMap;
 
@@ -247,6 +275,208 @@ static int lua_string2userdata2(lua_State *L) {
   return 1;
 }
 
+//Label-specific string conversion function
+//Exploit label range (0-31)
+
+static int lua_label2string(lua_State *L) {
+  uint8_t *data = (uint8_t *) lua_touserdata(L, 1);
+  if ((data == NULL) || !lua_islightuserdata(L, 1)) {
+    return luaL_error(L, "Input image not light user data");
+  }
+  
+  int arr_size = luaL_checkint(L, 2);
+  std::string dtype(luaL_checkstring(L, 3));
+  std::string name(luaL_checkstring(L, 4));
+
+  std::map<std::string, int>::iterator idataTypeMap = dataTypeMap.find(dtype);
+  if (idataTypeMap == dataTypeMap.end()) {
+    return luaL_error(L, "unkown dtype: %s", dtype.c_str());
+  }
+  int nbytes = idataTypeMap->second;
+
+  int size = arr_size * nbytes;
+  char cdata[size + 1];
+
+  int ind = 0;
+  int cind = 0;
+  while (ind < size) {
+    cdata[cind] = label_lut[data[ind]];
+    ind += 1;
+    cind += 1;
+  }
+  cdata[size] = '\0';
+
+  // create lua table
+  lua_createtable(L, 0, 5);
+
+  lua_pushstring(L, "name");
+  lua_pushstring(L, name.c_str());
+  lua_settable(L, -3);
+
+  lua_pushstring(L, "size");
+  lua_pushnumber(L, arr_size);
+  lua_settable(L, -3);
+
+  lua_pushstring(L, "dtype");
+
+  lua_createtable(L, 0, 2);
+  lua_pushstring(L, "name");
+  lua_pushstring(L, dtype.c_str());
+  lua_settable(L, -3);
+
+  lua_pushstring(L, "nbytes");
+  lua_pushnumber(L, nbytes);
+  lua_settable(L, -3);
+
+  lua_settable(L, -3);
+
+  lua_pushstring(L, "data");
+  lua_pushstring(L, cdata);
+  lua_settable(L, -3);
+
+  return 1;
+}
+
+static int lua_string2label(lua_State *L) {
+  uint8_t *dout = (uint8_t *) lua_touserdata(L, 1);
+  if ((dout == NULL) || !lua_islightuserdata(L, 1)) {
+    return luaL_error(L, "output argument not light user data");
+  }
+  const char *cdata = luaL_checkstring(L, 2);
+  int ind = 0;
+  int cind = 0;
+  while (cdata[cind] != '\0' && cdata[cind+1] != '\0') {
+    dout[ind] = cdata[cind] >= 'a' ? 
+		cdata[cind] - 'a' + 10 : cdata[cind] - '0';
+    ind += 1;
+    cind += 1;
+  }
+  return 1;
+}
+
+
+//Label-specific string conversion function
+
+
+static int lua_label2string_rle(lua_State *L) {
+  uint8_t *data = (uint8_t *) lua_touserdata(L, 1);
+  if ((data == NULL) || !lua_islightuserdata(L, 1)) {
+    return luaL_error(L, "Input image not light user data");
+  }
+  
+  int arr_size = luaL_checkint(L, 2);
+  std::string dtype(luaL_checkstring(L, 3));
+  std::string name(luaL_checkstring(L, 4));
+
+  std::map<std::string, int>::iterator idataTypeMap = dataTypeMap.find(dtype);
+  if (idataTypeMap == dataTypeMap.end()) {
+    return luaL_error(L, "unkown dtype: %s", dtype.c_str());
+  }
+  int nbytes = idataTypeMap->second;
+
+  int size = arr_size * nbytes;
+  char cdata[size + 1];
+
+  int ind = 0;
+  int cind = 0;
+  
+  int last_data=label_color_lut[data[0]];
+  int current_size=1;
+  int total_byte = 0;
+  ind++;
+
+  while (ind < size) {
+    int current_data = label_color_lut[data[ind]];
+    if (ind==size-1) {
+      cdata[cind++] = label_lut1[last_data];
+      cdata[cind++] = ascii_lut[(current_size & 0xf0) >> 4];
+      cdata[cind++] = ascii_lut[(current_size & 0x0f)];
+      total_byte+=3;
+      ind++;
+    }else{
+      if ((current_data==last_data) && (current_size<255)){
+        current_size++;
+        ind++;
+      }else{
+//	printf("C%dS%d, ",last_data,current_size);
+	if (current_size>2){
+          cdata[cind++] = label_lut1[last_data];
+          cdata[cind++] = ascii_lut[(current_size & 0xf0) >> 4];
+          cdata[cind++] = ascii_lut[(current_size & 0x0f)];
+          total_byte+=3;
+	}else{
+          cdata[cind++] = label_lut2[last_data];
+	  if (current_size>1) cdata[cind++] = label_lut2[last_data];
+          total_byte+=current_size;
+	}
+        last_data = current_data;
+        current_size = 1;
+        ind++;
+      }
+    }
+  }
+  cdata[cind] = '\0';
+
+  // create lua table
+  lua_createtable(L, 0, 5);
+
+  lua_pushstring(L, "name");
+  lua_pushstring(L, name.c_str());
+  lua_settable(L, -3);
+
+  lua_pushstring(L, "size");
+  lua_pushnumber(L, arr_size);
+  lua_settable(L, -3);
+
+  lua_pushstring(L, "bsize");
+  lua_pushnumber(L, total_byte);
+  lua_settable(L, -3);
+
+  lua_pushstring(L, "dtype");
+
+  lua_createtable(L, 0, 2);
+  lua_pushstring(L, "name");
+  lua_pushstring(L, dtype.c_str());
+  lua_settable(L, -3);
+
+  lua_pushstring(L, "nbytes");
+  lua_pushnumber(L, nbytes);
+  lua_settable(L, -3);
+
+  lua_settable(L, -3);
+
+  lua_pushstring(L, "data");
+  lua_pushstring(L, cdata);
+  lua_settable(L, -3);
+
+  return 1;
+}
+
+
+
+
+static int lua_string2label_rle(lua_State *L) {
+//TODO
+  uint8_t *dout = (uint8_t *) lua_touserdata(L, 1);
+  if ((dout == NULL) || !lua_islightuserdata(L, 1)) {
+    return luaL_error(L, "output argument not light user data");
+  }
+  const char *cdata = luaL_checkstring(L, 2);
+  int ind = 0;
+  int cind = 0;
+  while (cdata[cind] != '\0' && cdata[cind+1] != '\0') {
+    dout[ind] = label_byte_lut[cdata[cind]];
+    ind += 1;
+    cind += 1;
+  }
+  return 1;
+}
+
+
+
+
+
+
 
 
 
@@ -340,6 +570,10 @@ static const struct luaL_reg cutil_lib [] = {
   {"string2userdata", lua_string2userdata},
   {"array2string2", lua_array2string2},
   {"string2userdata2", lua_string2userdata2},
+  {"label2string", lua_label2string},
+  {"string2label", lua_string2label},
+  {"label2string_rle", lua_label2string_rle},
+  {"string2label_rle", lua_string2label_rle},
   {"ptr_add", lua_ptradd},
   {"bit_and", lua_bitand},
   {"bit_or", lua_bitor},

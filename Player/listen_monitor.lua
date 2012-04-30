@@ -214,7 +214,10 @@ function push_labelB(obj)
 
   local name = parse_name(obj.name);
   local labelB = cutil.test_array();
-  cutil.string2userdata(labelB,obj.data);	
+--Testing new CUtil function
+--cutil.string2userdata(labelB,obj.data);	
+
+  cutil.string2label(labelB,obj.data);	
   vcm.set_image_labelB(labelB);
 end
 

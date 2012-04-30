@@ -133,13 +133,17 @@ function serialize_array2(ud, width, height, dtype, arrName, arrID)
   return ret;
 end
 
-function serialize_rle()
-
-
+--Label-only serialization code
+--Exploiting label data range (0-31) to pack each label to a single byte
+function serialize_label(ud, width, height, dtype, arrName, arrID)
+  local dsize = cutil.sizeof(dtype);
+  local arrSize = width*height*dsize;
+  local ret = {};
+  local cptr = ud;
+  local name = string.format('%s.%d', arrName, arrID); 
+  ret = cutil.label2string(cptr, width*height, dtype, name);
+  return ret;
 end
-
-
-
 
 function deserialize(s)
   --local x = assert(loadstring("return "..s))();

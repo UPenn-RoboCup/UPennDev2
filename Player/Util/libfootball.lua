@@ -19,7 +19,7 @@ function record_yardage( )
     local opose = wcm.get_opponent_pose();
     local yardage = x_start - opose[1];
     local norm_yardage = yardage / field_sz;
-    Speak.talk('Gained '..yardage..' yards')
+--    Speak.talk('Gained '..yardage..' yards')
     print('Trial '..trial)
     print('Policy ',policies[policy])
     print('Yardage gained:',yardage);

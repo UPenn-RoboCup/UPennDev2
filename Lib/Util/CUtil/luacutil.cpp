@@ -35,7 +35,7 @@ const int8_t byte_lut[] = { 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x
                             0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0};
 
 const char label_lut[] = "0123456789abcdefghijklmnopqrstuvwxyz";
-const int8_t label_byte_lut[] = 
+const uint8_t label_byte_lut[] = 
  		 	  { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
  		 	    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
  		 	    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -346,7 +346,8 @@ static int lua_string2label(lua_State *L) {
   int ind = 0;
   int cind = 0;
   while (cdata[cind] != '\0' && cdata[cind+1] != '\0') {
-    dout[ind] = label_byte_lut[cdata[cind]];
+    dout[ind] = cdata[cind] >= 'a' ? 
+		cdata[cind] - 'a' + 10 : cdata[cind] - '0';
     ind += 1;
     cind += 1;
   }

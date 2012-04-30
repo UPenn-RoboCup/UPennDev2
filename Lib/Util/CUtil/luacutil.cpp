@@ -50,12 +50,15 @@ const uint8_t label_byte_lut[] =
 //Black:0, Orange:1, Yellow:2, Cyan:4, Green:8, White: 16
 //Map : 0,      1,       2,      3,       4,        5
 
-const int8_t label_color_lut[]=
+const int8_t label_color_pack_lut[]=
 	{ 0, 1, 
 	  2, 1, 
           3, 1, 2, 1, 
           4, 1, 2, 1, 3, 1, 2, 1, 
           5, 1, 2, 1, 3, 1, 2, 1, 5, 1, 2, 1, 3, 1, 2, 1};
+
+const int8_t label_color_unpack_lut[]={0,1,2,4,8,16};
+
 
 const char label_lut1[] = "012345";
 const char label_lut2[] = "abcdef";
@@ -382,10 +385,10 @@ static int lua_label2string_double(lua_State *L) {
   int ind = 0;
   int cind = 0;
   char buffer=0; 
-  while (ind < size) {
+  while (ind < size*2) {
     //bin label data (0-31) to 6 class (0-5)
-    char pixel1=label_color_lut[data[ind++]];
-    char pixel2=label_color_lut[data[ind++]];
+    char pixel1=label_color_pack_lut[data[ind++]];
+    char pixel2=label_color_pack_lut[data[ind++]];
     //encode two pixels into a single byte
     cdata[cind++] = label_lut[pixel1 * 6 + pixel2];
   }
@@ -433,8 +436,9 @@ static int lua_string2label_double(lua_State *L) {
   while (cdata[cind] != '\0' && cdata[cind+1] != '\0') {
     char buffer = cdata[cind] >= 'a' ? 
 		cdata[cind] - 'a' + 10 : cdata[cind] - '0';
-    dout[ind] = buffer / 6;
-    dout[ind+1] = buffer % 6;
+
+    dout[ind] = label_color_unpack_lut[buffer / 6];
+    dout[ind+1] = label_color_unpack_lut[buffer % 6];
     ind += 2;
     cind += 1;
   }
@@ -477,13 +481,13 @@ static int lua_label2string_rle(lua_State *L) {
   int ind = 0;
   int cind = 0;
   
-  int last_data=label_color_lut[data[0]];
+  int last_data=label_color_pack_lut[data[0]];
   int current_size=1;
   int total_byte = 0;
   ind++;
 
   while (ind < size) {
-    int current_data = label_color_lut[data[ind]];
+    int current_data = label_color_pack_lut[data[ind]];
     if (ind==size-1) {
       cdata[cind++] = label_lut1[last_data];
       cdata[cind++] = ascii_lut[(current_size & 0xf0) >> 4];

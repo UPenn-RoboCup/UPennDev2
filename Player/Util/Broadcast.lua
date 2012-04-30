@@ -78,8 +78,11 @@ function sendB()
   height = vcm.get_image_height()/8;
   count = vcm.get_image_count();
   
-  array = serialization.serialize_label(labelB, width, height, 'uint8', 'labelB',count);
+--  array = serialization.serialize_label(labelB, width, height, 'uint8', 'labelB',count);
 --  array = serialization.serialize_label_rle(labelB, width, height, 'uint8', 'labelB',count);
+  array = serialization.serialize_label_double(
+	labelB, width, height, 'uint8', 'labelB',count);
+
   sendlabelB = {};
   sendlabelB.team = {};
   sendlabelB.team.number = gcm.get_team_number();

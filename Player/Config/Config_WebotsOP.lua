@@ -135,12 +135,19 @@ head.bodyTilt = 0;
 --km.kick_left = 'km_NSLOP_StandupFromFront2.lua';
 
 --Shutdown Vision and use ground truth gps info only
-use_gps_only = 0;
+--use_gps_only = 0;
 use_gps_only = 1;
-
 
 -- Play Football
 fsm.game = 'Football';
 fsm.head = {'Football'};
 fsm.body = {'Football'};
 dev.team = 'TeamFootball'
+
+--[[
+-- Stretcher
+loadconfig('Config_Stretcher')
+fsm.body = {'Stretcher'};
+dev.walk='StretcherWalk';
+dev.team='TeamPrimeQ';
+--]]

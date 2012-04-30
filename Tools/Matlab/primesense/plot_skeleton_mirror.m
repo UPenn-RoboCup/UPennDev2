@@ -1,7 +1,8 @@
 %% Plot the skeleton
 %clear all;
 
-load('primeLogs_20120328T235032.mat');
+%load('primeLogs_sym.mat'); % Symmetric
+load('primeLogs_asym.mat'); % Asymmetric
 debug = 0;
 
 joint2track = 'ElbowL';
@@ -12,10 +13,16 @@ index2track = find(ismember(jointNames, joint2track)==1);
 %const double lowerArmLength = .129;  //OP, spec
 op_arm_len = .189;
 indexWaist = find(ismember(jointNames, 'Waist')==1);
-indexShoulder = find(ismember(jointNames, 'ShoulderL')==1);
-indexElbow = find(ismember(jointNames, 'ElbowL')==1);
-indexWrist = find(ismember(jointNames, 'WristL')==1);
-indexFoot = find(ismember(jointNames, 'FootL')==1);
+indexShoulderL = find(ismember(jointNames, 'ShoulderL')==1);
+indexElbowL = find(ismember(jointNames, 'ElbowL')==1);
+indexWristL = find(ismember(jointNames, 'WristL')==1);
+indexFootL = find(ismember(jointNames, 'FootL')==1);
+
+indexShoulderR = find(ismember(jointNames, 'ShoulderR')==1);
+indexElbowR = find(ismember(jointNames, 'ElbowR')==1);
+indexWristR = find(ismember(jointNames, 'WristR')==1);
+indexFootR = find(ismember(jointNames, 'FootR')==1);
+
 
 nLogs = numel(jointLog);
 nJoints = numel(jointNames);
@@ -33,7 +40,10 @@ rc = confs(:,2)>0;
 ci = center_idx & pc;
 li = left_idx & pc;
 ri = right_idx & pc;
-f = figure(1);
+
+%% Setup figures
+% Skeleton Figure
+sf = figure(1);
 clf;
 p_left=plot3( positions(li,1), positions(li,2), positions(li,3),'o', ...
     'MarkerEdgeColor','k', 'MarkerFaceColor', 'r', 'MarkerSize',10 );
@@ -57,6 +67,17 @@ axis([-1 1 -1.2 1.5 -1 1]);
 xlabel('X');
 ylabel('Y');
 zlabel('Z');
+
+% Mirror difference
+mf = figure(2);
+ma = get(mf,'CurrentAxes');
+mirror_diff = zeros(2,3);
+mb = bar( mirror_diff );
+ylim([-1,1]);
+title('Hand/Elbow/Shoulder Mirror Difference','FontSize',16);
+%set(mb,'YDataSource','mirror_diff')
+
+%% Loop through logged data
 for i=1:nLogs-1
     tstart=tic;
     
@@ -70,7 +91,8 @@ for i=1:nLogs-1
         twait = jointLog(i+1).t - jointLog(i).t;
     end
     %% Get data
-    positions = jointLog(i).positions - repmat(jointLog(i).positions(indexWaist,:), nJoints,1);
+    positions = jointLog(i).positions - ...
+        repmat(jointLog(i).positions(indexWaist,:), nJoints,1);
     positions = positions / 1000;
     rots = jointLog(i).rots;
     confs = jointLog(i).confs;
@@ -81,12 +103,21 @@ for i=1:nLogs-1
         rpy_loc(j,:) = dcm2angle( local_rots(:,:,j) ) * 180/pi;
     end
     
-    %% Arm calculations
-    e2w = positions(indexElbow,:) - positions(indexWrist,:);
-    s2e = positions(indexShoulder,:) - positions(indexElbow,:);
-    s2w = positions(indexShoulder,:) - positions(indexWrist,:);
-    arm_len = sqrt(norm(e2w)) + sqrt(norm(s2e));
-    offset = s2w * (op_arm_len / arm_len);
+    %% Mirror calculations
+    e2wL = positions(indexElbowL,:) - positions(indexWristL,:);
+    s2eL = positions(indexShoulderL,:) - positions(indexElbowL,:);
+    s2wL = positions(indexShoulderL,:) - positions(indexWristL,:);
+    e2wR = positions(indexElbowR,:) - positions(indexWristR,:);
+    s2eR = positions(indexShoulderR,:) - positions(indexElbowR,:);
+    s2wR = positions(indexShoulderR,:) - positions(indexWristR,:);
+    waist2sL = positions(indexWaist,:) - positions(indexShoulderL,:);
+    waist2sR = positions(indexWaist,:) - positions(indexShoulderR,:);
+    % Mirror the right to left side
+    s2wL(1) = s2wL(1) * -1;
+    s2eL(1) = s2eL(1) * -1;
+    waist2sL(1) = waist2sL(1) * -1;
+    mirror_diff = [s2wL - s2wR; s2eL-s2eR; waist2sL-waist2sR];
+    %mirror_diff = [s2wL - s2wR]; % End effector only
     
     % Only if we have confidence...
     axis_angles_mag = axis_angles_loc(:,4);
@@ -118,7 +149,18 @@ for i=1:nLogs-1
         'VData', axis_angles_loc(:,2), ...
         'WData', axis_angles_loc(:,3) ...
         );
-    
+    % Update mirror plot
+    %{
+    %set(mb, {'YData'}, num2cell(mirror_diff',2) ); % SLOW!!!
+    set( mb(1), 'YData', mirror_diff(:,1) ); %These three seem slow also
+    set( mb(2), 'YData', mirror_diff(:,2) );
+    set( mb(3), 'YData', mirror_diff(:,3) );
+    %}
+    %bar(ma,mirror_diff);
+    figure(2);
+    bar(mirror_diff);
+    ylim([-1 1]);
+    title('Hand/Elbow/Shoulder Mirror Difference','FontSize',16);
     
     %% Timing
     tf = toc(tstart);

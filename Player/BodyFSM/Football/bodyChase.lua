@@ -19,7 +19,7 @@ tLost = 3.0;
 function entry()
   print("Body FSM:".._NAME.." entry");
 
-  Speak.talk('chasing time!')
+--  Speak.talk('chasing time!')
 
   t0 = Body.get_time();
 end
@@ -30,17 +30,19 @@ function update()
   -- get opponent position
   local opose = wcm.get_opponent_pose();
   local gps_pose = wcm.get_robot_gpspose();
-  vel = libfootball.update()
-  rOppRelative = libfootball.get_dist();
+  local vel = libfootball.update()
   walk.set_velocity(vel.vx, vel.vy, vel.va);
+
+  local rOppRelative = libfootball.get_dist();
+  if (rOppRelative < rClose) then
+    libfootball.record_yardage();
+    return "close";
+  end
 
   if (t - t0 > timeout) then
     return "timeout";
   end
 
-  if (rOppRelative < rClose) then
-    return "close";
-  end
 end
 
 function exit()

@@ -13,9 +13,9 @@ thAlign = 10*math.pi/180;
 rClose = 0.2;
 playerID = gcm.get_team_player_id();
 if( playerID==1 ) then
-  starting_gps_pose = vector.new({ -2,0, 0});
+  starting_gps_pose = vector.new({ -2.5,0, 0});
 else
-  starting_gps_pose = vector.new({ 2, 0, math.pi});
+  starting_gps_pose = vector.new({ 2.5, 0, math.pi});
 end
 gps_pose = wcm.get_robot_gpspose();
 

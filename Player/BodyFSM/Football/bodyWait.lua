@@ -27,7 +27,7 @@ function update()
   end
   
   if (t - t0 > timeout) then
-    print('opponent not ready...')
+--    print('opponent not ready...')
     return "timeout";
   end
 end

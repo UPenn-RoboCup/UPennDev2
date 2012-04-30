@@ -145,6 +145,17 @@ function serialize_label(ud, width, height, dtype, arrName, arrID)
   return ret;
 end
 
+--Run-length enclding
+function serialize_label_rle(ud, width, height, dtype, arrName, arrID)
+  local dsize = cutil.sizeof(dtype);
+  local arrSize = width*height*dsize;
+  local ret = {};
+  local cptr = ud;
+  local name = string.format('%s.%d.1.1', arrName, arrID); 
+  ret = cutil.label2string_rle(cptr, width*height, dtype, name);
+  return ret;
+end
+
 function deserialize(s)
   --local x = assert(loadstring("return "..s))();
   if not s then

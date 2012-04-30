@@ -70,6 +70,7 @@ function sendB()
 end
 --]]
 
+--Test code for new RLE encoding for labelB
 function sendB()
   -- labelB --
   labelB = vcm.get_image_labelB();
@@ -78,6 +79,7 @@ function sendB()
   count = vcm.get_image_count();
   
   array = serialization.serialize_label(labelB, width, height, 'uint8', 'labelB',count);
+--  array = serialization.serialize_label_rle(labelB, width, height, 'uint8', 'labelB',count);
   sendlabelB = {};
   sendlabelB.team = {};
   sendlabelB.team.number = gcm.get_team_number();
@@ -100,9 +102,6 @@ function sendB()
     print("Total comm time:",stime2);
   end
 end
-
-
-
 
 
 function sendA()

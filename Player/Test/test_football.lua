@@ -30,7 +30,7 @@ package.path = cwd .. '/Config/?.lua;' .. package.path;
 package.path = cwd .. '/Lib/?.lua;' .. package.path;
 package.path = cwd .. '/Dev/?.lua;' .. package.path;
 package.path = cwd .. '/Motion/?.lua;' .. package.path;
-package.path = cwd .. '/Motion/walk/?.lua;' .. package.path;
+package.path = cwd .. '/Motion/Walk/?.lua;' .. package.path;
 package.path = cwd .. '/Motion/keyframes/?.lua;' .. package.path;
 package.path = cwd .. '/Vision/?.lua;' .. package.path;
 package.path = cwd .. '/World/?.lua;' .. package.path;
@@ -52,6 +52,10 @@ require('Motion');
 require('walk');
 require('Speak')
 require('util')
+require 'World'
+require 'Team'
+
+
 darwin = false;
 webots = false;
 
@@ -74,6 +78,8 @@ else
 end
 
 -- initialize state machines
+World.entry();
+Team.entry();
 Motion.entry();
 --Motion.event("standup");
 
@@ -178,7 +184,8 @@ function update()
 
   -- Update the relevant engines
   Body.update();
-
+  World.update_vision();
+  Team.update();
   Motion.update();
   if( sm_running==1 ) then
     BodyFSM.update();

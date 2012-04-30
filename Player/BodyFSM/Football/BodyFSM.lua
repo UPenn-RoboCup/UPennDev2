@@ -23,14 +23,14 @@ sm:set_transition(bodyChase, 'timeout', bodyChase);
 
 -- Put both players back to the starting point
 sm:set_transition(bodyStartingPos, 'timeout', bodyStartingPos);
-sm:set_transition(bodyStartingPos, 'done', bodyStartingPos);
+sm:set_transition(bodyStartingPos, 'done', bodyWait);
 
 -- Done waiting, then start the next trial
 sm:set_transition(bodyWait, 'done', bodyChase);
 
 -- If you fall, what do you do?
 sm:set_transition(bodyChase, 'fall', bodyChase);
-sm:set_transition(bodyStartingPos, 'fall', bodyStartingPos,);
+sm:set_transition(bodyStartingPos, 'fall', bodyStartingPos);
 
 function entry()
   sm:entry()

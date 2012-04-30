@@ -9,7 +9,7 @@ local volume = 25;
 enable = Config.speakenable or 0
 
 -- define speak queue file
-fifo = '/tmp/speakFIFO'..(os.getenv('USER') or '');
+fifo = '/tmp/speakFIFO'..(os.getenv('USER') or '')..Config.game.playerID;
 
 -- clean up old fifo if it exists
 unix.system('rm -f '..fifo);

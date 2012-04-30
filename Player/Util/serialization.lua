@@ -140,7 +140,7 @@ function serialize_label(ud, width, height, dtype, arrName, arrID)
   local arrSize = width*height*dsize;
   local ret = {};
   local cptr = ud;
-  local name = string.format('%s.%d', arrName, arrID); 
+  local name = string.format('%s.%d.1.1', arrName, arrID); 
   ret = cutil.label2string(cptr, width*height, dtype, name);
   return ret;
 end

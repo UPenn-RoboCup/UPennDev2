@@ -212,7 +212,8 @@ end
 function push_labelA(obj)
   local name = parse_name(obj.name);
   local labelA = cutil.test_array();
-  cutil.string2label_double(labelA,obj.data);	
+--  cutil.string2label_double(labelA,obj.data);	
+  cutil.string2label_rle(labelA,obj.data);	
   vcm.set_image_labelA(labelA);
 end
 
@@ -221,7 +222,8 @@ function push_labelB(obj)
   local labelB = cutil.test_array();
 --cutil.string2userdata(labelB,obj.data);	
 --cutil.string2label(labelB,obj.data);	
-  cutil.string2label_double(labelB,obj.data);	
+--  cutil.string2label_double(labelB,obj.data);	
+  cutil.string2label_rle(labelB,obj.data);	
   vcm.set_image_labelB(labelB);
 end
 

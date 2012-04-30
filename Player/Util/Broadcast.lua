@@ -30,7 +30,7 @@ pktDelay = 1E6 * 0.001; --For image and colortable
 pktDelay2 = 1E6 * 0.001; --For info
 imageCount=0;
 
-debug = 1;
+debug = 0;
 
 subsampling=Config.vision.subsampling or 0;
 subsampling2=Config.vision.subsampling2 or 0;

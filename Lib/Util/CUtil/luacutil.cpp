@@ -276,7 +276,7 @@ static int lua_string2userdata2(lua_State *L) {
 }
 
 //Label-specific string conversion function
-//Exploit label range (0-31)
+//Exploit label range (0-31) to pack a pixel into a single byte
 
 static int lua_label2string(lua_State *L) {
   uint8_t *data = (uint8_t *) lua_touserdata(L, 1);
@@ -355,8 +355,105 @@ static int lua_string2label(lua_State *L) {
 }
 
 
-//Label-specific string conversion function
 
+//Label-specific string conversion function
+//Bin each label into 6 class 
+//And pack two pixel into one byte
+
+static int lua_label2string_double(lua_State *L) {
+  uint8_t *data = (uint8_t *) lua_touserdata(L, 1);
+  if ((data == NULL) || !lua_islightuserdata(L, 1)) {
+    return luaL_error(L, "Input image not light user data");
+  }
+  
+  int arr_size = luaL_checkint(L, 2);
+  std::string dtype(luaL_checkstring(L, 3));
+  std::string name(luaL_checkstring(L, 4));
+
+  std::map<std::string, int>::iterator idataTypeMap = dataTypeMap.find(dtype);
+  if (idataTypeMap == dataTypeMap.end()) {
+    return luaL_error(L, "unkown dtype: %s", dtype.c_str());
+  }
+  int nbytes = idataTypeMap->second;
+
+  int size = arr_size * nbytes/2;
+  char cdata[size + 1];
+
+  int ind = 0;
+  int cind = 0;
+  char buffer=0; 
+  while (ind < size) {
+    //bin label data (0-31) to 6 class (0-5)
+    char pixel1=label_color_lut[data[ind++]];
+    char pixel2=label_color_lut[data[ind++]];
+    //encode two pixels into a single byte
+    cdata[cind++] = label_lut[pixel1 * 6 + pixel2];
+  }
+  cdata[size] = '\0';
+
+  // create lua table
+  lua_createtable(L, 0, 5);
+
+  lua_pushstring(L, "name");
+  lua_pushstring(L, name.c_str());
+  lua_settable(L, -3);
+
+  lua_pushstring(L, "size");
+  lua_pushnumber(L, size);
+  lua_settable(L, -3);
+
+  lua_pushstring(L, "dtype");
+
+  lua_createtable(L, 0, 2);
+  lua_pushstring(L, "name");
+  lua_pushstring(L, dtype.c_str());
+  lua_settable(L, -3);
+
+  lua_pushstring(L, "nbytes");
+  lua_pushnumber(L, nbytes);
+  lua_settable(L, -3);
+
+  lua_settable(L, -3);
+
+  lua_pushstring(L, "data");
+  lua_pushstring(L, cdata);
+  lua_settable(L, -3);
+
+  return 1;
+}
+
+static int lua_string2label_double(lua_State *L) {
+  uint8_t *dout = (uint8_t *) lua_touserdata(L, 1);
+  if ((dout == NULL) || !lua_islightuserdata(L, 1)) {
+    return luaL_error(L, "output argument not light user data");
+  }
+  const char *cdata = luaL_checkstring(L, 2);
+  int ind = 0;
+  int cind = 0;
+  while (cdata[cind] != '\0' && cdata[cind+1] != '\0') {
+    char buffer = cdata[cind] >= 'a' ? 
+		cdata[cind] - 'a' + 10 : cdata[cind] - '0';
+    dout[ind] = buffer / 6;
+    dout[ind+1] = buffer % 6;
+    ind += 2;
+    cind += 1;
+  }
+  return 1;
+}
+
+
+
+
+
+
+
+
+
+
+
+//Label-specific string conversion function
+//Bin each label into 6 class 
+//And run RLE
 
 static int lua_label2string_rle(lua_State *L) {
   uint8_t *data = (uint8_t *) lua_touserdata(L, 1);
@@ -572,6 +669,8 @@ static const struct luaL_reg cutil_lib [] = {
   {"string2userdata2", lua_string2userdata2},
   {"label2string", lua_label2string},
   {"string2label", lua_string2label},
+  {"label2string_double", lua_label2string_double},
+  {"string2label_double", lua_string2label_double},
   {"label2string_rle", lua_label2string_rle},
   {"string2label_rle", lua_string2label_rle},
   {"ptr_add", lua_ptradd},

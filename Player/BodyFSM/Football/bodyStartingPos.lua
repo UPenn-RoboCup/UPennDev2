@@ -4,14 +4,14 @@ require('Body')
 require('walk')
 require('vector')
 require('wcm')
-require('Config')
--- 2 is master
+require 'gcm'
+
 t0 = 0;
 timeout = 15;
 maxStep = 0.06;
 thAlign = 10*math.pi/180;
 rClose = 0.2;
-playerID = Config.game.playerID;
+playerID = gcm.get_team_player_id();
 if( playerID==1 ) then
   starting_gps_pose = vector.new({ -2,0, 0});
 else
@@ -57,5 +57,6 @@ function update()
 end
 
 function exit()
+  walk.set_velocity(0,0,0);
 end
 

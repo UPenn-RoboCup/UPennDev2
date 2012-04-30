@@ -22,7 +22,6 @@ gps_pose = wcm.get_robot_gpspose();
 function entry()
   print(_NAME.." entry");
 
-  print('Starting pose',starting_gps_pose)
   t0 = Body.get_time();
   gps_pose = wcm.get_robot_gpspose();
   wcm.set_agent_ready(0);

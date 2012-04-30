@@ -143,4 +143,4 @@ use_gps_only = 1;
 fsm.game = 'Football';
 fsm.head = {'Football'};
 fsm.body = {'Football'};
-
+dev.team = 'TeamFootball'

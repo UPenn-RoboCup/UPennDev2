@@ -30,7 +30,11 @@ state.id = playerID;
 state.teamColor = gcm.get_team_color();
 state.time = Body.get_time();
 state.role = -1;
+-- Football
 state.pose = {x=0, y=0, a=0};
+state.ready = wcm.get_agent_ready();
+state.caught = wcm.get_agent_caught();
+
 state.ball = {t=0, x=1, y=0};
 state.attackBearing = 0.0;--Why do we need this?
 state.penalty = 0;
@@ -132,7 +136,8 @@ function recv_msgs()
           states[t.id] = t;
           -- Publish the opponent information to wcm
           wcm.set_opponent_pose( t.pose );
---          wcm.set_opponent_ready(  );
+          wcm.set_opponent_ready( t.ready );
+          wcm.set_opponent_caught( t.caught );
         end
       end
     end

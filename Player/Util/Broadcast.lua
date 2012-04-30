@@ -35,6 +35,7 @@ debug = 0;
 subsampling=Config.vision.subsampling or 0;
 subsampling2=Config.vision.subsampling2 or 0;
 
+--[[
 function sendB()
   -- labelB --
   labelB = vcm.get_image_labelB();
@@ -42,12 +43,7 @@ function sendB()
   height = vcm.get_image_height()/8;
   count = vcm.get_image_count();
   
---[[
-  array = serialization.serialize_array(labelB, width, 
-height, 'uint8', 'labelB', count);
---]]
-
-  array = serialization.serialize_label(labelB, width, height, 'uint8', 'labelB',count);
+  array = serialization.serialize_array(labelB, width, height, 'uint8', 'labelB', count);
 
   sendlabelB = {};
   sendlabelB.team = {};
@@ -72,6 +68,42 @@ height, 'uint8', 'labelB', count);
     print("Total comm time:",stime2);
   end
 end
+--]]
+
+function sendB()
+  -- labelB --
+  labelB = vcm.get_image_labelB();
+  width = vcm.get_image_width()/8; 
+  height = vcm.get_image_height()/8;
+  count = vcm.get_image_count();
+  
+  array = serialization.serialize_label(labelB, width, height, 'uint8', 'labelB',count);
+  sendlabelB = {};
+  sendlabelB.team = {};
+  sendlabelB.team.number = gcm.get_team_number();
+  sendlabelB.team.player_id = gcm.get_team_player_id();
+
+  stime1,stime2,infosize=0,0,0;
+  sendlabelB.arr = array;
+  t0 = unix.time();
+  local senddata=serialization.serialize(sendlabelB);
+  infosize=infosize+#senddata;
+  t1=unix.time();
+  stime1=stime1+t1-t0;
+  Comm.send(senddata);
+  t2=unix.time();
+  stime2=stime2+t2-t1;
+
+  if debug>0 then
+    print("LabelB info size:",#array,"Total",infosize);
+    print("Total serialization time:",stime1);
+    print("Total comm time:",stime2);
+  end
+end
+
+
+
+
 
 function sendA()
   -- labelA --

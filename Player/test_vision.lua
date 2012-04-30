@@ -264,6 +264,9 @@ function update()
   count = count + 1;
   --Update battery info
   wcm.set_robot_battery_level(Body.get_battery_level());
+  --Set game state to SET to prevent particle resetting
+  gcm.set_game_state(1);
+
 
   if (not init)  then
     if (calibrating) then

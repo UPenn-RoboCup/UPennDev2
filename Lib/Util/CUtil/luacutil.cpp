@@ -544,12 +544,12 @@ static int lua_string2label_rle(lua_State *L) {
     int data1 = cdata[cind++]-'0';
     if (data1>5) {
       //Single data
-      dout[ind++] = data1-5;
+      dout[ind++] = label_color_unpack_lut[data1-5];
     }else{
       //Multiple data
       int len = cdata[cind++]-'0';
       for (int i=0;i<len;i++){
-	dout[ind++]=data1;
+	dout[ind++]=label_color_unpack_lut[data1];
       }
     }
   }

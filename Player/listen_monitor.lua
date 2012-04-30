@@ -216,8 +216,9 @@ function push_labelB(obj)
   local labelB = cutil.test_array();
 --Testing new CUtil function
 --cutil.string2userdata(labelB,obj.data);	
+--  cutil.string2label(labelB,obj.data);	
 
-  cutil.string2label(labelB,obj.data);	
+  cutil.string2label_double(labelB,obj.data);	
   vcm.set_image_labelB(labelB);
 end
 

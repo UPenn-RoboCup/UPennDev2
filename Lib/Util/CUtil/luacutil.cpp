@@ -390,7 +390,8 @@ static int lua_label2string_double(lua_State *L) {
     char pixel1=label_color_pack_lut[data[ind++]];
     char pixel2=label_color_pack_lut[data[ind++]];
     //encode two pixels into a single byte
-    cdata[cind++] = label_lut[pixel1 * 6 + pixel2];
+    //Now we use ascii #48 ~ #122 (total 75 characters)
+    cdata[cind++] = '0' + pixel1 * 6 + pixel2;
   }
   cdata[size] = '\0';
 
@@ -434,9 +435,8 @@ static int lua_string2label_double(lua_State *L) {
   int ind = 0;
   int cind = 0;
   while (cdata[cind] != '\0' && cdata[cind+1] != '\0') {
-    char buffer = cdata[cind] >= 'a' ? 
-		cdata[cind] - 'a' + 10 : cdata[cind] - '0';
-
+    //We just use ascii values #48 ~ #122 to pack data
+    char buffer = cdata[cind] - '0';
     dout[ind] = label_color_unpack_lut[buffer / 6];
     dout[ind+1] = label_color_unpack_lut[buffer % 6];
     ind += 2;

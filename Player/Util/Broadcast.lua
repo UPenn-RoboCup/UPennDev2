@@ -115,8 +115,12 @@ function sendB()
   height = vcm.get_image_height()/8;
   count = vcm.get_image_count();
   
-  array = serialization.serialize_label_double(
+--  array = serialization.serialize_label_double(
+--	labelB, width, height, 'uint8', 'labelB',count);
+
+  array = serialization.serialize_label_rle(
 	labelB, width, height, 'uint8', 'labelB',count);
+
 
   sendlabelB = {};
   sendlabelB.team = {};
@@ -150,7 +154,9 @@ function sendA()
   height = vcm.get_image_height()/2;
   count = vcm.get_image_count();
 
-  array = serialization.serialize_label_double(
+--  array = serialization.serialize_label_double(
+--	labelA, width, height, 'uint8', 'labelA',count);
+  array = serialization.serialize_label_rle(
 	labelA, width, height, 'uint8', 'labelA',count);
   
   sendlabelA = {};

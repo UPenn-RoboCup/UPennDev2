@@ -22,6 +22,9 @@ shared.robot.gpspose = vector.zeros(3);
 shared.robot.gps_attackbearing = vector.zeros(1);
 shared.robot.gps_ball = vector.zeros(3);
 
+shared.opponent.pose = vector.zeros(3);
+shared.opponent.ready = vector.zeros(3);
+
 
 shared.ball = {};
 shared.ball.x = vector.zeros(1);

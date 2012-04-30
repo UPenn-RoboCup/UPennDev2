@@ -108,6 +108,18 @@ km.standup_back = 'km_NSLOP_StandupFromBack.lua';
 -- Low battery level
 -- Need to implement this api better...
 bat_low = 100; -- 10V warning
+
+--[[
+-- Stretcher
+loadconfig( 'Config_Stretcher' );
+game.playerID = 1;
+fsm.game = 'Stretcher';
+fsm.head = {'Stretcher'};
+fsm.body = {'Stretcher'};
+dev.team = "TeamPrimeQ"
+dev.walk = "StretcherWalk"
+--]]
+
 gps_only = 0;
 
 --Speak enable

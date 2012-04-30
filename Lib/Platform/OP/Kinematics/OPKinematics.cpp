@@ -203,7 +203,12 @@ std::vector<double> darwinop_kinematics_inverse_arm(
   // Angle of desired point with the y-axis
   qArm[1] = acos( dArm[1] / c );
   // How much rotation about the y-axis (in the xz plane
-  qArm[0] = atan2( dArm[2], dArm[0] );
+  qArm[0] = atan2( dArm[2], dArm[0] ) - qArm[2];
+
+  // Condition for OP default joint position
+  qArm[2] = qArm[2] - PI;
+  qArm[1] = qArm[1] - PI/2;
+  qArm[0] = qArm[0] + PI;
 
   return qArm;
 

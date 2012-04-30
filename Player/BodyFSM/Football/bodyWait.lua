@@ -6,7 +6,7 @@ require('walk');
 require('wcm');
 
 t0 = 0;
-timeout = 5.0;
+timeout = 15.0;
 started = false;
 
 function entry()
@@ -21,10 +21,11 @@ function update()
   local t = Body.get_time();
 
   -- Check if the other robot is in position...
-  if( wcm.get_opponent_ready() ) then
+  local opp_ready = wcm.get_opponent_ready();
+  if( opp_ready==1 ) then
     return 'done';
   end
-
+  
   if (t - t0 > timeout) then
     print('opponent not ready...')
     return "timeout";

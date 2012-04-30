@@ -135,7 +135,7 @@ function recv_msgs()
           t.tReceive = Body.get_time();
           states[t.id] = t;
           -- Publish the opponent information to wcm
-          wcm.set_opponent_pose( t.pose );
+          wcm.set_opponent_pose( {t.pose.x,t.pose.y,t.pose.a} );
           wcm.set_opponent_ready( t.ready );
           wcm.set_opponent_caught( t.caught );
         end
@@ -190,7 +190,11 @@ function update()
   state.time = Body.get_time();
   state.teamNumber = gcm.get_team_number();
   state.teamColor = gcm.get_team_color();
+  -- Update for playing football
   state.pose = wcm.get_pose();
+  state.ready = wcm.get_agent_ready();
+  state.caught = wcm.get_agent_caught();
+
   state.ball = wcm.get_ball();
   state.role = role;
   state.attackBearing = wcm.get_attack_bearing();

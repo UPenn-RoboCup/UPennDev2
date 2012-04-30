@@ -8,6 +8,8 @@ playerID = gcm.get_team_player_id();
 policy = 2;
 trial = 1;
 maxStep = 0.06;
+field_sz = 6;
+x_start = 2.5;
 
 -- Set of policies is the set of function calls
 policies = {'direct','predict'}
@@ -15,12 +17,25 @@ policies = {'direct','predict'}
 function record_yardage( )
   if( playerID==1 ) then
     local opose = wcm.get_opponent_pose();
-    local yardage = math.abs( opose[1] - 2 );
+    local yardage = x_start - opose[1];
+    local norm_yardage = yardage / field_sz;
     Speak.talk('Gained '..yardage..' yards')
     print('Trial '..trial)
     print('Policy ',policies[policy])
     print('Yardage gained:',yardage);
-    -- TODO: Call Hyunseung's function and set the next policy
+    -- Call Hyunseung's function and set the next policy
+    local r_script = 'Rscript ./Player/Util/getAction.R '..#policies..' '..trial..' '..norm_yardage;
+    getAction  = io.popen(r_script);
+    nxt_policy = tonumber( getAction:read() );
+    if( not nxt_policy or nxt_policy > #policies ) then
+      print('Script call: ',r_script)
+      print('Next policy out of range! ',nxt_policy)
+    else
+      policy = nxt_policy;
+      print('Next Policy',policies[policy]);
+    end
+    print();
+    io:flush();
     trial = trial + 1;
     reset_vars();
   end

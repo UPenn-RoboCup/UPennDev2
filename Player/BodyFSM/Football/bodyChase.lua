@@ -10,13 +10,15 @@ timeout = 20.0;
 -- maximum walk velocity
 maxStep = 0.04;
 -- opponent distance threshold
-rClose = 0.15;
+rClose = 0.35;
 
 -- opponent detection timeout
 tLost = 3.0;
 
 function entry()
   print("Body FSM:".._NAME.." entry");
+
+  Speak.talk('chasing time!')
 
   t0 = Body.get_time();
 end
@@ -47,10 +49,14 @@ function update()
   walk.set_velocity(vx, vy, va);
 
   if (t - t0 > timeout) then
+    print('opponent distance: ',rOppRelative)
     return "timeout";
   end
+
+--  print('opponent distance: ',rOppRelative)
+
   if (rOppRelative < rClose) then
-    return "opponentClose";
+    return "close";
   end
 end
 

@@ -18,7 +18,7 @@ sm:add_state(bodyStartingPos);
 --sm:set_transition(bodySearch, 'timeout', bodySearch);
 
 -- Chase after each other
-sm:set_transition(bodyChase, 'caught', bodyStartingPos);
+sm:set_transition(bodyChase, 'close', bodyStartingPos);
 sm:set_transition(bodyChase, 'timeout', bodyChase);
 
 -- Put both players back to the starting point

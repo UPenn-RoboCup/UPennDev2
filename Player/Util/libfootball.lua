@@ -8,8 +8,8 @@ playerID = gcm.get_team_player_id();
 policy = 2;
 trial = 1;
 maxStep = 0.06;
-field_sz = 6;
-x_start = 2.5;
+field_sz = 7;
+x_start = 3;
 
 -- Set of policies is the set of function calls
 policies = {'direct','predict'}

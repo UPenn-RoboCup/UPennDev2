@@ -5,7 +5,7 @@ require("vector")
 require("util")
 require("shm")
 
-mapsize = 50;
+mapsize = Config.occ.mapsize;
 
 shared = {}
 shsize = {}

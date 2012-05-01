@@ -185,7 +185,6 @@ function update()
   end
 
   tstart = unix.time();
-  --  vcm.add_debug_message(string.format("Testing, count %d\n",count))
 
   -- get image from camera
   camera.image = Camera.get_image();
@@ -200,7 +199,6 @@ function update()
 --SJ: Camera image keeps changing
 --So copy it here to shm, and use it for all vision process
   vcm.set_image_yuyv(camera.image);
-  vcm.refresh_debug_message();
 
   -- Add timer measurements
   count = count + 1;
@@ -229,6 +227,7 @@ function update()
   -- bit-or the segmented image
   labelB.data = ImageProc.block_bitor(labelA.data, labelA.m, labelA.n, scaleB, scaleB);
 
+  vcm.refresh_debug_message();
   Detection.update();
 
   update_shm(status)

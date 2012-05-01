@@ -47,6 +47,20 @@ static int lua_occmap_init(lua_State *L) {
 		ran_num = std::log(ran_num/(1-ran_num));
 		map.push_back(ran_num);
 	}
+
+	// Draw a square for debugging
+	for (int i = n/3; i < n*2/3; i++) {
+		int j = n / 3;
+		map[j*n+i] = std::log(0.7/0.3);
+		j = j * 2;
+		map[j*n+i] = std::log(0.7/0.3);
+	}
+	for (int j = n/3; j < n*2/3; j++) {
+		int i = n / 3;
+		map[j*n+i] = std::log(0.7/0.3);
+		i = i * 2;
+		map[j*n+i] = std::log(0.7/0.3);
+	}
 	return 1;
 }
 

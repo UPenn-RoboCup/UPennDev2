@@ -19,6 +19,7 @@ XOSDIR= Platform/XOS
 WEBOTSDIR = Webots
 IMAGEDIR= ImageProc
 COMMDIR= Comm
+OCCMAPDIR = OccMap
 UTILDIR= Util
 MATLABDIR= ../Tools/Matlab
 COLORTABLEDIR= $(MATLABDIR)/Colortable
@@ -148,6 +149,11 @@ comm::
 	@cd $(COMMDIR) && make && cd $(CWD)
 	@echo "\n"
 
+occmap::
+	@echo "Compiling OccupancyMap Lua/C++ Libraries...\n"
+	@cd $(OCCMAPDIR) && make && cd $(CWD)
+	@echo "\n"
+
 util::
 	@echo "Compiling Utility Lua/C++ Libraries...\n"
 	@cd $(UTILDIR) && make && cd $(CWD)
@@ -191,8 +197,9 @@ setup_webots_nao: webots_nao setup_util setup_image setup_webots
 	cd $(PLAYERDIR)/Config && ln -s Config_WebotsNao.lua Config.lua && cd $(CWD)
 	@echo "\n"
 
-#setup_webots_op: webots_op setup_util setup_image setup_velocity
-setup_webots_op: webots_op setup_util setup_image setup_webots
+#setup_webots_op: webots_op setup_util setup_image setup_velocity setup_webots
+setup_webots_op: webots_op setup_util setup_image setup_webots setup_occmap
+#setup_webots_op: webots_op setup_util setup_image setup_webots
 	@echo "Setting up Webots Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
 	find $(WEBOTSOPDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
@@ -304,6 +311,12 @@ setup_comm: comm
 	@echo "Setting up Communication Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
 	find $(COMMDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
+	@echo "\n"
+
+setup_occmap: occmap
+	@echo "Setting up Occupancy Map Lua/C++ Libraries...\n"
+	mkdir -p $(INSTDIR)
+	find $(OCCMAPDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
 	@echo "\n"
 
 setup_velocity: velocity

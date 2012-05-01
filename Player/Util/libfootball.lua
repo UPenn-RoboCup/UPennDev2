@@ -5,20 +5,27 @@ require 'gcm'
 require 'util'
 playerID = gcm.get_team_player_id();
 
-policy = 2;
+-- Initialize
+-- Set of policies is the set of function calls
+policies = {'direct','predict'}
 trial = 1;
+local r_script = 'Rscript ./Player/Util/getAction.R '..#policies..' '..trial;
+getAction  = io.popen(r_script);
+policy = tonumber( getAction:read() );
+--policy = 2;
+
+-- Field params
 maxStep = 0.06;
 field_sz = 7;
 x_start = 3;
 
--- Set of policies is the set of function calls
-policies = {'direct','predict'}
 
 function record_yardage( )
   if( playerID==1 ) then
     local opose = wcm.get_opponent_pose();
     local yardage = x_start - opose[1];
     local norm_yardage = yardage / field_sz;
+    trial = trial + 1;
 --    Speak.talk('Gained '..yardage..' yards')
     print('Trial '..trial)
     print('Policy ',policies[policy])
@@ -36,7 +43,6 @@ function record_yardage( )
     end
     print();
     io:flush();
-    trial = trial + 1;
     reset_vars();
   end
 end

@@ -17,4 +17,4 @@ OccMap: luaOccMap.o
 	$(LD) $(LDFLAGS) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ $(LIB_DIR) -lm
 
 clean:
-	rm -f OccMap.$(SHLIBEXT) *.o
+	rm -f *.$(SHLIBEXT) *.o

@@ -22,7 +22,7 @@ loadconfig('World/Config_OP_World')
 loadconfig('Kick/Config_OP_Kick')
 loadconfig('Vision/Config_OP_Vision')
 --Location Specific Camera Parameters--
-loadconfig('Vision/Config_OP_Camera_USOpen_Bowdoin')
+loadconfig('Vision/Config_OP_Camera_Grasp')
 
 -- Device Interface Libraries
 dev = {};
@@ -108,6 +108,18 @@ km.standup_back = 'km_NSLOP_StandupFromBack.lua';
 -- Low battery level
 -- Need to implement this api better...
 bat_low = 100; -- 10V warning
+
+--[[
+-- Stretcher
+loadconfig( 'Config_Stretcher' );
+game.playerID = 1;
+fsm.game = 'Stretcher';
+fsm.head = {'Stretcher'};
+fsm.body = {'Stretcher'};
+dev.team = "TeamPrimeQ"
+dev.walk = "StretcherWalk"
+--]]
+
 gps_only = 0;
 
 --Speak enable

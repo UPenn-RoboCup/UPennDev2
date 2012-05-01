@@ -90,3 +90,6 @@ vision.corner={};
 vision.corner.dist_threshold = 100; --10 pixel
 vision.corner.length_threshold = 15;
 vision.corner.min_center_dist = 1.5;
+
+--for testing
+vision.ball.check_for_ground = 0;

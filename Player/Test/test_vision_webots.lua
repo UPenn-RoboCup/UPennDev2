@@ -46,11 +46,11 @@ require('Speak')
 require('vcm')
 require('Vision')
 require('World')
+require('OccupancyMap')
 require('Team')
 require('util')
 require('wcm')
 require('gcm')
-require('ocm')
 
 darwin = false;
 webots = false;
@@ -70,6 +70,7 @@ HeadFSM.entry();
 Motion.entry();
 World.entry();
 Vision.entry();
+OccupancyMap.entry();
 
 HeadFSM.sm:set_state('headScan');
 Body.set_head_hardness({0.4,0.4});
@@ -233,6 +234,9 @@ function update()
     World.update_vision();
     vcm.refresh_debug_message();
   end
+
+	-- Update Occupancy Map
+	OccupancyMap.update();
    
   -- Update the relevant engines
   Body.update();

@@ -123,7 +123,7 @@ world.aLandmarkFilter = 0.10;
 world.use_new_goalposts=1;
 
 -- Occupancy Map parameters
-occmap = {};
-occmap.div = 72;
+occ = {};
+occ.mapsize = 50;
 
 world.use_same_colored_goal = 0;

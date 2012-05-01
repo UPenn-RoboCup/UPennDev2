@@ -48,9 +48,9 @@ require('Vision')
 require('World')
 require('Team')
 require('util')
-require('OccupancyMap')
 require('wcm')
 require('gcm')
+require('ocm')
 
 darwin = false;
 webots = false;
@@ -70,7 +70,6 @@ HeadFSM.entry();
 Motion.entry();
 World.entry();
 Vision.entry();
-OccupancyMap.entry();
 
 HeadFSM.sm:set_state('headScan');
 Body.set_head_hardness({0.4,0.4});
@@ -232,7 +231,6 @@ function update()
   -- Update localization
   if imageProcessed then 
     World.update_vision();
-    OccupancyMap.update();
     vcm.refresh_debug_message();
   end
    

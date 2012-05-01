@@ -228,9 +228,9 @@ function h=show_monitor()
       cla(MONITOR.h3);
 
       if MONITOR.enable3==5 
-	if isfield(r_mon.robot, 'map')
+        if isfield(r_mon.robot, 'map')
           plot_grid(r_mon.robot.map);  
-	end
+				end
         plot_field(MONITOR.h3,MONITOR.fieldtype);
         plot_robot( r_struct, r_mon,2,3 );
       else

@@ -37,6 +37,8 @@ global MONITOR %for sending the webots check information
   h.wcmTeamdata  = shm(sprintf('wcmTeamdata%d%d%s',  h.teamNumber, h.playerID, h.user));
   h.vcmRobot  = shm(sprintf('vcmRobot%d%d%s',  h.teamNumber, h.playerID, h.user)); 
 
+	h.ocmOcc = shm(sprintf('ocmOcc%d%d%s', h.teamNumber, h.playerID, h.user));
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %SJ - reading Occmap SHM from robot kills matlab
@@ -393,18 +395,16 @@ global MONITOR %for sending the webots check information
                     'btmy',bdBtm(1,1:bdCol),...
                     'btmx',-bdBtm(1,bdCol+1:2*bdCol));
       % Add occupancy map
-%{
       r.occ = {};
-      div = size(h.wcmOccmap.get_r(),2);
-      interval = 2*pi/div;
-      r.occ = struct('div',div,'interval',interval,...
-                     'halfInter',interval/2,...
-                     'r',h.wcmOccmap.get_r(),...
-                     'theta',zeros(div*4,1),...
-                     'rho',zeros(div*4,1),...
-                     'x',zeros(div*4,1),...
-                     'y',zeros(div*4,1));
-%}
+			map = h.ocmOcc.get_map();
+			mapsize = sqrt(size(map,2));
+			map = reshape(map, [mapsize, mapsize]);
+			map(map > 0) = 1;
+			map(map < 0) = 0;
+			r.occ.map = map;
+			r.occ.mapsize = mapsize;
+			r.occ.centroid = h.ocmOcc.get_centroid();
+
 
       % add horizon line
       r.horizon = {};

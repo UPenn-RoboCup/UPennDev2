@@ -36,7 +36,7 @@ Walls {
 }
 
 DEF PLAYER_0_0 DARwInOPGPS {
-  translation -2.5 0.3 0
+  translation -3 0.3 0
   rotation 0 1 0 1.57
   controller "darwin-op_team_0"
   controllerArgs "0 22"
@@ -46,7 +46,7 @@ DEF PLAYER_0_0 DARwInOPGPS {
   waistBandColor 0.5 0 0.5
 }
 DEF PLAYER_1_0 DARwInOPGPS {
-  translation 2.5 0.3 0
+  translation 3 0.3 0
   rotation 0 1 0 -1.57
   controller "darwin-op_team_0"
   controllerArgs "1 22"

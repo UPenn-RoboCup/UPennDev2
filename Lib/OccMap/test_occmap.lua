@@ -17,17 +17,16 @@ end
 package.path = cwd.."/../../Player/Config/?.lua;"..package.path;
 package.path = cwd.."/../../Player/Util/?.lua;"..package.path;
 
+require("util")
 require("ocm")
 occ = require("OccMap")
 
-occ.init(50)
+occ.init(ocm.mapsize, ocm.mapsize/2, ocm.mapsize*3/4)
 
-map = occ.retrieve();
-ocm.set_occ_map(map);
+occmap = occ.retrieve();
+
+ocm.set_occ_map(occmap.map);
 
 cmap = ocm.get_occ_map();
-for k, v in ipairs(cmap) do 
-	print(k, v);
-end
-
+print(cmap[2500]);
 

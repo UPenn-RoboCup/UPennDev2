@@ -301,18 +301,6 @@ function sync_led()
   end
 end
 
-function bulk_read()
---[[
-  --146: bulk read instruction
-  --36: Position address
-  print("Bulk read test");
-  data=Dynamixel.bulk_read_data(200,{1,2,3},36,2); 
-  print("Received data size:",#data);
-  print("Received data:",unpack(data));
---]]
-end
-
-
 function nonsync_read()
 
   --Position reading
@@ -350,6 +338,9 @@ function nonsync_read()
 
   --IMU reading
 
+  --Use external IMU for charli
+--[[
+
   local data=Dynamixel.read_data(200,38,12);
   local offset=1;
 
@@ -368,6 +359,7 @@ function nonsync_read()
       offset = offset + 2;
     end
   end
+--]]
 
   --Button reading
   data=Dynamixel.read_data(200,30,1);
@@ -438,10 +430,8 @@ function update()
     end
   end
 
-  bulk_read();
-
   nonsync_read();
-  update_imu();
+--  update_imu();
 
   count=count+1;
   sensor.updatedCount[1]=count%100; --This count indicates whether DCM has processed current reading or not

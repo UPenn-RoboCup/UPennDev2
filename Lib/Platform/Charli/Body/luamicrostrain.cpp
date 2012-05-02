@@ -52,9 +52,9 @@ static int lua_microstrain_receive_data(lua_State *L)
   double accel[3], gyro[3], orientation[9];
   imu.receiveAccelAngrateOrientation(&time, accel, gyro, orientation);
   lua_createtable(L, 9, 0);
-  lua_pushnumber(L, accel[1]);                              // x accel
+  lua_pushnumber(L, accel[0]);                              // x accel
   lua_rawseti(L, -2, 1);
-  lua_pushnumber(L, accel[0]);                              // y accel
+  lua_pushnumber(L, accel[1]);                              // y accel
   lua_rawseti(L, -2, 2);
   lua_pushnumber(L, -accel[2]);                             // z accel
   lua_rawseti(L, -2, 3);
@@ -62,7 +62,7 @@ static int lua_microstrain_receive_data(lua_State *L)
   lua_rawseti(L, -2, 4);
   lua_pushnumber(L, gyro[1]);                               // roll gyro
   lua_rawseti(L, -2, 5);
-  lua_pushnumber(L, -gyro[2]);                              // yaw gyro
+  lua_pushnumber(L, gyro[2]);                              // yaw gyro
   lua_rawseti(L, -2, 6);
   lua_pushnumber(L, atan(orientation[5]/orientation[8]));   // pitch
   lua_rawseti(L, -2, 7);

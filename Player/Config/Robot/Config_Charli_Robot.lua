@@ -19,15 +19,15 @@ stance.initangle = {
 
 -- Head Parameters
 head = {};
-head.camOffsetZ = 1.36;
+head.camOffsetZ = 1.30;
 head.pitchMin = -55*math.pi/180;
 head.pitchMax = 68*math.pi/180;
-head.yawMin = -90*math.pi/180;
-head.yawMax = 90*math.pi/180;
-head.cameraPos = {{0.034, 0.0, 0.0332}} --OP, spec value, may need to be recalibrated
-head.cameraAngle = {{0.0,0}}; -- We set it zero here
-head.neckZ=0.0765; --From CoM to neck joint 
-head.neckX=0.013; --From CoM to neck joint
+head.yawMin = -135*math.pi/180;
+head.yawMax = 135*math.pi/180;
+head.cameraPos = {{0.08, 0, 0}} 
+head.cameraAngle = {{0.37.5*math.pi/180,0}}; 
+head.neckZ=0.562 --From CoM to neck joint 
+head.neckX=0.0; --From CoM to neck joint
 
 --Servo parameters
 servo={}

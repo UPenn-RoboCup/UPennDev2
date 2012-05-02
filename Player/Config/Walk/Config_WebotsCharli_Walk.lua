@@ -26,6 +26,9 @@ walk.supportX = 0;
 walk.supportY = 0.0;
 walk.qLArm = math.pi/180*vector.new({110, 12, -0, -40});
 walk.qRArm = math.pi/180*vector.new({110, -12, 0, 40});
+walk.qLArmKick = math.pi/180*vector.new({110, 12, -0, -40});
+walk.qRArmKick = math.pi/180*vector.new({110, -12, 0, 40});
+
 walk.hardnessSupport = 1;
 walk.hardnessSwing = 1;
 walk.hardnessArm=.1;
@@ -34,7 +37,7 @@ walk.hardnessArm=.1;
 ---------------------------------------------
 walk.tStep = 1.0;
 walk.tZmp = 0.25;
-walk.stepHeight = 0.13;
+walk.stepHeight = 0.06;
 walk.phSingle={0.1,0.9};
 walk.phZmp={0.1,0.9};
 
@@ -42,7 +45,7 @@ walk.phZmp={0.1,0.9};
 -- Compensation parameters
 --------------------------------------------
 walk.hipRollCompensation = 0*math.pi/180;
-walk.ankleMod = vector.new({-1,0})/0.12 * 10*math.pi/180;
+walk.ankleMod = vector.new({-1,0})/0.12 * 0*math.pi/180;
 
 -------------------------------------------------------------- 
 --Imu feedback parameters, alpha / gain / deadband / max 
@@ -60,18 +63,33 @@ walk.armImuParamY={0.3,10*gyroFactor, 20*math.pi/180, 45*math.pi/180};
 --------------------------------------------
 -- WalkKick parameters
 --------------------------------------------
-walk.walkKickVel = {0.15, 0.25} --step / kick / follow 
-walk.walkKickSupportMod = {{0,0},{0,0}}
-walk.walkKickHeightFactor = 1.5;
-walk.tStepWalkKick = 1.00;
 
-walk.sideKickVel1 = {0.08,0.10};
-walk.sideKickVel2 = {0.18,0.20};
-walk.sideKickVel3 = {0.18,-0.04};
-walk.sideKickSupportMod = {{0,0.01},{0,0.06}};
-walk.tStepSideKick = 1.00;
+walk.walkKickDef={}
 
+--tStep stepType supportLeg stepHeight SupportMod shiftFactor footPos1 footPos2
 
+walk.walkKickDef["FrontLeft"]={
+  {1.00, 1, 0, 0.035 , {0,0}, 0.7, {0.15,0,0} },
+  {1.00, 2, 1, 0.07 , {0.02,-0.02}, 0.5, {0.25,0,0}, {0.15,0,0} },
+  {walk.tStep, 1, 0, 0.035 , {0,0}, 0.5, {0,0,0} },
+}
+walk.walkKickDef["FrontRight"]={
+  {1.00, 1, 1, 0.035 , {0,0}, 0.3, {0.15,0,0} },
+  {1.00, 2, 0, 0.07 , {0.02,0.02}, 0.5,  {0.25,0,0}, {0.15,0,0} },
+  {walk.tStep, 1, 1, 0.035 , {0,0}, 0.5, {0,0,0} },
+}
+walk.walkKickDef["SideLeft"]={
+  {1.00, 1, 1, 0.035 , {0,0}, 0.3, {0.08,0.10,0} },
+  {1.00, 3, 0, 0.07 , {-0.01,0.06}, 0.5, {0.18,-0.20,0},{0.18,0.04,0}},
+ {walk.tStep, 1, 1, 0.035 , {0,0}, 0.5, {0,0,0} },}
+
+walk.walkKickDef["SideRight"]={
+  {1.00, 1, 0, 0.035 , {0,0}, 0.7, {0.08,-0.10,0} },
+  {1.00, 3, 1, 0.07 , {-0.01,-0.06},0.5, {0.18,0.20,0},{0.18,-0.04,0}},
+  {walk.tStep, 1, 0, 0.035 , {0,0},0.5,  {0,0,0} },
+}
+
+walk.walkKickPh=0.5;
 
 --------------------------------------------
 -- Robot - specific calibration parameters

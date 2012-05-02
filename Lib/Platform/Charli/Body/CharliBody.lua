@@ -12,41 +12,62 @@ for k,v in pairs(dcm) do
   getfenv()[k] = v;
 end
 
--- I don't think we use these joint names ever
---[[
-jointNames = {"HeadYaw", "HeadPitch",
-              "LShoulderPitch", "LShoulderRoll",
-              "LElbowYaw", "LElbowRoll",
-              "LHipYawPitch", "LHipRoll", "LHipPitch",
-              "LKneePitch", "LAnklePitch", "LAnkleRoll",
-              "RHipYawPitch", "RHipRoll", "RHipPitch",
-              "RKneePitch", "RAnklePitch", "RAnkleRoll",
-              "RShoulderPitch", "RShoulderRoll",
-              "RElbowYaw", "RElbowRoll"};
-
-----]]
+jointNames = {
+	      "Head","Neck",
+              "L_Shoulder_Pitch", "L_Shoulder_Roll", "L_Shoulder_Yaw","L_Elbow",
+              "L_Hip_Yaw", "L_Hip_Roll", "L_Hip_Pitch", "L_Knee_Pitch", "L_Ankle_Pitch", "L_Ankle_Roll",
+              "R_Hip_Yaw", "R_Hip_Roll", "R_Hip_Pitch", "R_Knee_Pitch", "R_Ankle_Pitch", "R_Ankle_Roll",
+              "R_Shoulder_Pitch", "R_Shoulder_Roll", "R_Shoulder_Yaw","R_Elbow",
+	      "Waist_Roll",
+	      "R_hand","L_hand",
+             };
 
 nJoint = controller.nJoint; --DLC
 
-indexHead = 1;			--Head: 1 2
+indexHead = 1;			
 nJointHead = 2;
-indexLArm = 3;			--LArm: 3 4 5 
-nJointLArm = 3; 		
-indexLLeg = 6;			--LLeg: 6 7 8 9 10 11
+indexLArm = 3;			--LArm: 3 4 5 6
+nJointLArm = 4; 		
+indexLLeg = 7;			--LLeg:7 8 9 10 11 12
 nJointLLeg = 6;
-indexRLeg = 12; 		--RLeg: 12 13 14 15 16 17
+indexRLeg = 13; 		--RLeg: 13 14 15 16 17 18
 nJointRLeg = 6;
-indexRArm = 18; 		--RArm: 18 19 20
-nJointRArm = 3; 
+indexRArm = 19; 		--RArm: 19 20 21 22
+nJointRArm = 4;
+indexWaist = 23;
+nJointWaist = 1;
 
 --Aux servo (for gripper / etc)
-indexAux= 21; 
-nJointAux=nJoint-20; 
+indexAux= 24; 
+nJointAux=nJoint - 23;
 
 --get_time = function() return dcm.get_sensor_time(1); end
 get_time = unix.time; --DLC specific
 
+--Init microstrain IMU
+local imu = require('microstrain')
+imu.open('/dev/ttyACM0')
+imu.set_continuous(0)
+
 function update()
+  read_imu();
+end
+
+function read_imu()
+  -- Update imu
+  imu.request_data()
+  imu_data = imu.receive_data()
+  
+  --XYZ in g unit
+  acc=vector.new({-imu_data[2],-imu_data[1],-imu_data[3]})/9.8;
+  --RPY in rad/s unit
+  gyr=vector.new({imu_data[5],imu_data[4],-imu_data[6]});
+  --RPY in rad unit
+  angle=vector.new({imu_data[8],imu_data[7],imu_data[9]});
+
+  set_sensor_imuAcc(acc);
+  set_sensor_imuGyr(gyr);
+  set_sensor_imuAngle(angle);
 end
 
 -- setup convience functions

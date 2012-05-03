@@ -44,30 +44,7 @@ nJointAux=nJoint - 23;
 --get_time = function() return dcm.get_sensor_time(1); end
 get_time = unix.time; --DLC specific
 
---Init microstrain IMU
-local imu = require('microstrain')
-imu.open('/dev/ttyACM0')
-imu.set_continuous(0)
-
 function update()
-  read_imu();
-end
-
-function read_imu()
-  -- Update imu
-  imu.request_data()
-  imu_data = imu.receive_data()
-  
-  --XYZ in g unit
-  acc=vector.new({-imu_data[2],-imu_data[1],-imu_data[3]})/9.8;
-  --RPY in rad/s unit
-  gyr=vector.new({imu_data[5],imu_data[4],-imu_data[6]});
-  --RPY in rad unit
-  angle=vector.new({imu_data[8],imu_data[7],imu_data[9]});
-
-  set_sensor_imuAcc(acc);
-  set_sensor_imuGyr(gyr);
-  set_sensor_imuAngle(angle);
 end
 
 -- setup convience functions

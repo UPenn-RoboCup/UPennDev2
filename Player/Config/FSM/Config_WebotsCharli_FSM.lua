@@ -56,12 +56,13 @@ fsm.bodyOrbit.tLost = 3.0*speedFactor;
 --BodyPosition : Advanced chase-orbit
 --------------------------------------------------
 fsm.bodyPosition={};
-fsm.bodyPosition.maxStep = 0.20;--Normal velocity
-fsm.bodyPosition.maxStep2 = 0.30;--Front dash velocity
 
-fsm.bodyPosition.maxStep = 0.15;--Normal velocity
-fsm.bodyPosition.maxStep2 = 0.20;--Front dash velocity
 
+
+
+--OP values
+
+fsm.bodyPosition={};
 
 --Trajectory parameters
 fsm.bodyPosition.rTurn = 0.50; 
@@ -74,6 +75,26 @@ fsm.bodyPosition.rClose = 0.80;
 fsm.bodyPosition.thClose = {0.16,0.30,10*math.pi/180};
 fsm.bodyPosition.tLost =  8*speedFactor; 
 fsm.bodyPosition.timeout = 30*speedFactor; 
+
+--Velocity generation parameters
+
+--Slow speed
+fsm.bodyPosition.maxStep1 = 0.15;
+
+--Medium speed
+fsm.bodyPosition.maxStep2 = 0.20;
+fsm.bodyPosition.rVel2 = 0.5;
+fsm.bodyPosition.aVel2 = 45*math.pi/180;
+fsm.bodyPosition.maxA2 = 0.2;
+fsm.bodyPosition.maxY2 = 0.02;
+
+--Full speed front dash
+fsm.bodyPosition.maxStep3 = 0.25;
+fsm.bodyPosition.rVel3 = 0.8; 
+fsm.bodyPosition.aVel3 = 30*math.pi/180;
+fsm.bodyPosition.maxA3 = 0.1;
+fsm.bodyPosition.maxY3 = 0.0;
+
 
 --------------------------------------------------
 --BodyApproach :  Align the robot for kick

@@ -47,14 +47,12 @@ camera.auto_param[5] = {key="exposure, auto priority",val={0}};
 
 camera.param = {};
 camera.param[1] = {key='brightness',    val={216}};
-camera.param[2] = {key='contrast',      val={2}};
+camera.param[2] = {key='contrast',      val={10}};
 camera.param[3] = {key='saturation',    val={48}};
 camera.param[4] = {key='gain',          val={255}};
---camera.param[5] = {key='white balance temperature', val={1000}};
-camera.param[5] = {key='white balance temperature', val={4000}};
+camera.param[5] = {key='white balance temperature', val={5000}};
 camera.param[6] = {key='sharpness',     val={0}};
---camera.param[7] = {key='exposure (absolute)',      val={1005}};
-camera.param[7] = {key='exposure (absolute)',      val={500}};
+camera.param[7] = {key='exposure (absolute)',      val={886}};
 
 --camera.lut_file = 'lut_low_contrast_pink_n_green.raw';
 --camera.lut_file = 'lut_Grasp_Greenonly.raw';

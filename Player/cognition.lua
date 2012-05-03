@@ -30,12 +30,40 @@ require('Vision')
 require('World')
 --require('Team')
 
+require('Broadcast')
+
+
 count = 0;
 nProcessedImages = 0;
 tUpdate = unix.time();
 
 if (string.find(Config.platform.name,'Webots')) then
   webots = true;
+end
+
+function broadcast()
+  broadcast_enable = vcm.get_camera_broadcast();
+  if broadcast_enable>0 then
+    if broadcast_enable==1 then 
+      --Mode 1, send 1/4 resolution, labeB, all info
+      imgRate = 1; --30fps
+    elseif broadcast_enable==2 then 
+      --Mode 2, send 1/2 resolution, labeA, labelB, all info
+      imgRate = 2; --15fps
+    else
+      --Mode 3, send 1/2 resolution, info for logging
+      imgRate = 1; --30fps
+    end
+    -- Always send non-image data
+    Broadcast.update(broadcast_enable);
+    -- Send image data every so often
+    if nProcessedImages % imgRate ==0 then
+      Broadcast.update_img(broadcast_enable);    
+    end
+    --Reset this flag at every broadcast
+    --To prevent monitor running during actual game
+    vcm.set_camera_broadcast(0);
+  end
 end
 
 function entry()
@@ -67,6 +95,12 @@ function update()
       end
     end
   end
+
+  --Broadcast monitor information
+  if imageProcessed then
+    broadcast();
+  end
+
 end
 
 -- exit 

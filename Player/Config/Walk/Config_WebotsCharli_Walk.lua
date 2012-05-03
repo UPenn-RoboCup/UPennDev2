@@ -138,11 +138,8 @@ walk.velDelta={0.10,0.10,0.3}
 walk.tStep = 0.6;
 walk.supportY = -0.01;
 walk.footY = 0.09;
+walk.velLimitX={-.20,.20};
 walk.velLimitA={-.2,.2};
-walk.stepHeight = 0.06;
-
-
-
 walk.stepHeight = 0.04;
 
 

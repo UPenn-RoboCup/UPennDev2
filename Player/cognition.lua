@@ -23,15 +23,13 @@ require('gcm')
 require('wcm')
 require('mcm')
 require('Body')
-
---require('GameControl')
-
 require('Vision')
 require('World')
---require('Team')
 
-require('Broadcast')
-
+comm_inited = false;
+vcm.set_camera_teambroadcast(0);
+--Now vcm.get_camera_teambroadcast() determines 
+--Whether we use wired monitoring comm or wireless team comm
 
 count = 0;
 nProcessedImages = 0;
@@ -69,9 +67,6 @@ end
 function entry()
   World.entry();
   Vision.entry();
---Team and Gamecontrol are moved to main process
---  Team.entry();
---  GameControl.entry();
 end
 
 function update()
@@ -95,19 +90,40 @@ function update()
       end
     end
   end
-
-  --Broadcast monitor information
-  if imageProcessed then
-    broadcast();
+ 
+  if not comm_inited and 
+    (vcm.get_camera_broadcast()>0 or
+     vcm.get_camera_teambroadcast()>0) then
+    if vcm.get_camera_teambroadcast()>0 then 
+      require('Team');
+      require('GameControl');
+      Team.entry();
+      GameControl.entry();
+      print("Starting to send wireless team message..");
+    else
+      require('Broadcast');
+      print("Starting to send wired monitor message..");
+    end
+    comm_inited = true;
   end
 
+  if comm_inited and imageProcessed then
+    if vcm.get_camera_teambroadcast()>0 then 
+      GameControl.update();
+      Team.update();
+    else
+      broadcast();
+    end
+  end
 end
 
 -- exit 
 function exit()
---  GameControl.exit();
+  if vcm.get_camera_teambroadcast()>0 then 
+    Team.exit();
+    GameControl.exit();
+  end
   Vision.exit();
---  Team.exit();
   World.exit();
 end
 

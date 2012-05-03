@@ -45,7 +45,7 @@ walk.phZmp={0.1,0.9};
 -- Compensation parameters
 --------------------------------------------
 walk.hipRollCompensation = 0*math.pi/180;
-walk.ankleMod = vector.new({-1,0})/0.12 * 0*math.pi/180;
+walk.ankleMod = vector.new({-1,0})/ 3*math.pi/180;
 
 -------------------------------------------------------------- 
 --Imu feedback parameters, alpha / gain / deadband / max 
@@ -139,10 +139,16 @@ walk.tStep = 0.6;
 walk.supportY = -0.01;
 walk.footY = 0.09;
 walk.velLimitA={-.2,.2};
-
 walk.stepHeight = 0.06;
 
 
+
+walk.stepHeight = 0.04;
+
+
+--Calculated Com height: 0.65 with straight legs
+--COM with bent leg: ~0.59
+--walk.tZmp = 0.24;
 
 --walk.velLimitA={-.3,.3};
 

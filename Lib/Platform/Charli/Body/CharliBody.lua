@@ -71,7 +71,8 @@ end
 
 
 function set_waist_hardness(val)
-
+  set_actuator_hardness(val, indexWaist);
+  set_actuator_hardnessChanged(1);
 end
 
 function set_lleg_pid(val)
@@ -156,7 +157,7 @@ function set_aux_hardness(val)
 end
 
 function set_waist_command(val)
-  --Do nothing
+  set_actuator_command(val, indexWaist);
 end
 
 function set_head_command(val)

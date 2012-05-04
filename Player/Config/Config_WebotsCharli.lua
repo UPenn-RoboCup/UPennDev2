@@ -83,15 +83,20 @@ km.standup_front = 'km_Charli_StandupFromFront.lua';
 km.standup_back = 'km_Charli_StandupFromBack.lua';
 
 --Sit/stand stance parameters
---Charli never sits down
---Instead, it stands up
+--Charli never sits down or relax
+
+sit_disable = 1;
 
 stance={};
+stance.hardnessLeg = 1;
+
 stance.bodyHeightSit = 0.75;
 stance.supportXSit = -0.00;
 stance.bodyHeightDive= 0.65;
+
 stance.bodyTiltStance=0*math.pi/180; --bodyInitial bodyTilt, 0 for webots
 stance.dpLimitStance = vector.new({.4, .3, .4, .05, .4, .1})*0.6;
 stance.dpLimitStance=vector.new({.04, .03, .07, .4, .4, .4});
 stance.dpLimitSit=vector.new({.1,.01,.06,.1,.3,.1})*2;
 stance.delay = 80; 
+

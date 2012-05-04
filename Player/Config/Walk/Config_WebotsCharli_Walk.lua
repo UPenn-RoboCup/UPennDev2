@@ -10,10 +10,10 @@ walk = {};
 walk.stanceLimitX={-0.60,0.60};
 walk.stanceLimitY={0.16,0.60};
 walk.stanceLimitA={-10*math.pi/180,30*math.pi/180};
-walk.velLimitX={-.20,.40};
-walk.velLimitY={-.15,.15};
-walk.velLimitA={-.3,.3};
-walk.velDelta={0.10,0.10,0.15} 
+walk.velLimitX={-.20,.20};
+walk.velLimitY={-.10,.10};
+walk.velLimitA={-.2,.2};
+walk.velDelta={0.10,0.10,0.3} 
 
 ----------------------------------------------
 -- Stance parameters
@@ -52,6 +52,8 @@ walk.ankleMod = vector.new({-1,0})/ 3*math.pi/180;
 -------------------------------------------------------------- 
 gyroFactor = 0.273*math.pi/180 * 300 / 1024; --dps to rad/s conversion
 
+--Disable feedback for now
+gyroFactor = 0;
 
 walk.ankleImuParamX={1,0.75*gyroFactor, 2*math.pi/180, 10*math.pi/180};
 walk.kneeImuParamX={1,1.5*gyroFactor, 2*math.pi/180, 10*math.pi/180};
@@ -99,6 +101,16 @@ walk.kickXComp = 0;
 walk.supportCompL = {0,0,0};
 walk.supportCompR = {0,0,0};
 
+walk.kickXComp = 0;
+walk.supportCompL = {0,0,0};
+walk.supportCompR = {0,0,0};
+walk.servoBias = {0,0,0,0,0,0,0,0,0,0,0,0};
+walk.footXComp = 0;
+walk.footYComp = 0;
+
+--Default pitch angle offset of Charli 
+walk.headPitchBias = 0* math.pi / 180; 
+
 --[[
 walk.tStep = 0.8;
 walk.tZmp = 0.25;
@@ -109,19 +121,10 @@ walk.hardnessSupport = .7;
 walk.hardnessSwing = 0.2;
 --]]
 
-
-
-
-walk.velLimitA={-.6,.6};
-walk.stanceLimitA={-10*math.pi/180,45*math.pi/180};
 walk.hipRollCompensation = 1*math.pi/180;
 
---walk.phZmp={0.05,0.95};
-
 --Fast walking test
-gyroFactor = gyroFactor * 0.5;
 walk.tStep = 0.7;
-walk.velLimitY={-.10,.10};
 walk.supportY = -0.01;
 walk.tZmp = 0.20;
 walk.supportX = -0.01;
@@ -129,26 +132,14 @@ walk.stepHeight = 0.08;
 walk.phSingle={0.15,0.85};
 walk.phZmp={0.15,0.85};
 
-
-walk.velLimitX={-.20,.30};
-walk.velDelta={0.10,0.10,0.3} 
-
-
---fast test
+--Faster walking test
 walk.tStep = 0.6;
 walk.supportY = -0.01;
 walk.footY = 0.09;
-walk.velLimitX={-.20,.20};
-walk.velLimitA={-.2,.2};
 walk.stepHeight = 0.04;
 
-
---Calculated Com height: 0.65 with straight legs
---COM with bent leg: ~0.59
---walk.tZmp = 0.24;
-
---walk.velLimitA={-.3,.3};
-
 --Faster turning test
+--[[
 walk.stanceLimitA={-20*math.pi/180,45*math.pi/180};
 walk.velLimitA={-.6,.6};
+--]]

@@ -18,7 +18,6 @@ print("Robot ID:",Config.game.robotID);
 
 dirReverse = Config.servo.dirReverse;
 posZero=Config.servo.posZero;
-gyrZero=Config.gyro.zero;
 legBias=Config.walk.servoBias;
 armBias=Config.servo.armBias;
 idMap = Config.servo.idMap;
@@ -108,30 +107,27 @@ end
 
 function entry()
   Dynamixel.open();
-  --   Dynamixel.ping_probe();
   --We have to manually turn on the MC for OP   
   Dynamixel.set_torque_enable(200,1);
   unix.usleep(200000);
-  -- Dynamixel.ping_probe();
+  Dynamixel.ping_probe();
   shm_init();
   carray_init();
   -- Read head and not legs
   actuator.readType[1]=1;
-  -- Read only kankles
-  actuator.readType[1]=3;
 
   -- Read initial leg bias from config
   for i=1,12 do 	
-    actuator.bias[i+5]=legBias[i];
+    actuator.bias[i+6]=legBias[i];
   end
 
   sync_gain(); --Initial PID setting
 
   --Setting arm bias
-  for i=1,3 do
+  for i=1,4 do
     actuator.offset[i+2]=armBias[i];
   end
-  for i=4,6 do
+  for i=5,8 do
     actuator.offset[i+14]=armBias[i];
   end
 
@@ -339,27 +335,6 @@ function nonsync_read()
   --IMU reading
 
   --Use external IMU for charli
---[[
-
-  local data=Dynamixel.read_data(200,38,12);
-  local offset=1;
-
-  if data and #data>11 then
-    for i=1,3 do
-      sensor.imuGyr[Config.gyro.rpy[i]] =
-      Config.gyro.sensitivity[i]*
-      (DynamixelPacket.byte_to_word(data[offset],data[offset+1])-gyrZero[i]);
-
-      sensor.imuAcc[Config.acc.xyz[i]] = 
-      Config.acc.sensitivity[i]*
-      (DynamixelPacket.byte_to_word(data[offset+6],data[offset+7])-Config.acc.zero[i]);
-
-      sensor.imuGyrRaw[Config.gyro.rpy[i]]=DynamixelPacket.byte_to_word(data[offset],data[offset+1]);
-      sensor.imuAccRaw[Config.acc.xyz[i]]=DynamixelPacket.byte_to_word(data[offset+6],data[offset+7]);
-      offset = offset + 2;
-    end
-  end
---]]
 
   --Button reading
   data=Dynamixel.read_data(200,30,1);

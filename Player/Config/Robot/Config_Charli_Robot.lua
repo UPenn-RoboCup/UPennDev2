@@ -11,10 +11,10 @@ stance.bodyTiltStance=20*math.pi/180; --bodyInitial bodyTilt, 0 for webots
 stance.dpLimitStance=vector.new({.04, .03, .07, .4, .4, .4});
 stance.initangle = {
   0,0,
-  105*math.pi/180, 30*math.pi/180, -45*math.pi/180,
+  105*math.pi/180, 30*math.pi/180, 0, -45*math.pi/180,
   0,  0.055, -0.77, 2.08, -1.31, -0.055, 
   0, -0.055, -0.77, 2.08, -1.31, 0.055,
-  105*math.pi/180, -30*math.pi/180, -45*math.pi/180,
+  105*math.pi/180, -30*math.pi/180, 0, -45*math.pi/180,
 }
 
 -- Head Parameters
@@ -25,7 +25,7 @@ head.pitchMax = 68*math.pi/180;
 head.yawMin = -135*math.pi/180;
 head.yawMax = 135*math.pi/180;
 head.cameraPos = {{0.08, 0, 0}} 
-head.cameraAngle = {{0.37.5*math.pi/180,0}}; 
+head.cameraAngle = {{0,37.5*math.pi/180,0}}; 
 head.neckZ=0.562 --From CoM to neck joint 
 head.neckX=0.0; --From CoM to neck joint
 
@@ -38,7 +38,8 @@ servo.idMap={
   10,12,14,16,18,20,--LLeg
   9,11,13,15,17,19,--RLeg
   1,3,5,7,		--RArm
-  24,25, --Aux (hand)
+  24, --Waist
+--  25,26, --Aux (hand)
 }
 --Haven't tested yet
 servo.dirReverse={
@@ -48,7 +49,7 @@ servo.dirReverse={
 ----------------------------------------------
 --Robot-specific firmware version handling
 ----------------------------------------------
-servo.armBias = {0,0,0,0,0,0}; --in degree
+servo.armBias = {0,0,0,0,0,0,0,0}; --in degree
 servo.pid =1;  --Default new firmware
 local robotName = unix.gethostname();
 require('calibration');

@@ -71,9 +71,9 @@ while (loop) do
       print(string.format("Button: %d %d",  unpack(sensorShm:get('button'))));      
 
       pos = vector.new(sensorShm:get('position'))*180/math.pi;
-      servopos = vector.new(sensorShm:get('servoposition'))*180/math.pi;
-      bias = vector.new(sensorShm:get('bias'))*180/math.pi;
-      temp = vector.new(sensorShm:get('temperature'))*180/math.pi;
+      servopos = vector.new(sensorShm:get('servoposition'));
+      bias = vector.new(sensorShm:get('bias'));
+      temp = vector.new(sensorShm:get('temperature'));
 
       print(
 	string.format("Position:\n")..

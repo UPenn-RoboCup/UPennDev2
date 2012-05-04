@@ -1,21 +1,15 @@
 module(..., package.seeall);
 require('vector')
 
---Sit/stand stance parameters
+sit_disable = 1;
+
 stance={};
-stance.bodyHeightSit = 0.175;
-stance.footXSit = -0.03;
-stance.dpLimitSit=vector.new({.03,.01,.06,.1,.3,.1});
-stance.bodyHeightDive= 0.25;
-stance.bodyTiltStance=20*math.pi/180; --bodyInitial bodyTilt, 0 for webots
+stance.hardnessLeg = 0.5;
+stance.bodyTiltStance=0*math.pi/180; --bodyInitial bodyTilt, 0 for webots
+stance.dpLimitStance = vector.new({.4, .3, .4, .05, .4, .1})*0.6;
 stance.dpLimitStance=vector.new({.04, .03, .07, .4, .4, .4});
-stance.initangle = {
-  0,0,
-  105*math.pi/180, 30*math.pi/180, 0, -45*math.pi/180,
-  0,  0.055, -0.77, 2.08, -1.31, -0.055, 
-  0, -0.055, -0.77, 2.08, -1.31, 0.055,
-  105*math.pi/180, -30*math.pi/180, 0, -45*math.pi/180,
-}
+stance.dpLimitSit=vector.new({.1,.01,.06,.1,.3,.1})*2;
+stance.delay = 80; 
 
 -- Head Parameters
 head = {};

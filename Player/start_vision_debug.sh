@@ -21,11 +21,6 @@ screen -dm -L -S cognition /usr/bin/luajit run_cognition.lua
 # Allow Cognition some time to start
 sleep 1
 
-echo "Starting Monitor Broadcasting..."
-cd $PLAYER_DIR
-screen -dm -L -S monitor /usr/bin/luajit run_monitor.lua
-sleep 1
-
 echo "Starting Test Vision..."
 cd $PLAYER_DIR
 screen -m -L -S test /usr/bin/luajit test_vision.lua

@@ -71,8 +71,6 @@ walk.sideKickVel3 = {0.18,-0.04};
 walk.sideKickSupportMod = {{0,0.01},{0,0.06}};
 walk.tStepSideKick = 1.00;
 
-
-
 --------------------------------------------
 -- Robot - specific calibration parameters
 --------------------------------------------
@@ -80,6 +78,8 @@ walk.tStepSideKick = 1.00;
 walk.kickXComp = 0;
 walk.supportCompL = {0,0,0};
 walk.supportCompR = {0,0,0};
+
+walk.servoBias = vector.zeros(12);
 
 --[[
 walk.tStep = 0.8;

@@ -5,7 +5,7 @@ local cwd = unix.getcwd();
 package.path = cwd.."/../Util/?.lua;"..package.path; --For Transform
 package.path = cwd.."/../Vision/?.lua;"..package.path; --For vcm
 
-dcm = require('OPCommManager');
+dcm = require('CharliCommManager');
 print('Starting device comm manager...');
 dcm.entry()
 
@@ -78,15 +78,15 @@ while (loop) do
 
       pos = vector.new(sensorShm:get('position'))*180/math.pi;
       print(
-	string.format("Servo position:\n")..
+	string.format("Position:\n")..
 	string.format(
 		"head:%.1f %.1f\n"..
 		"LArm:%.1f %.1f %.1f %.1f\n"..
-		"LLeg:%.1f %.1f %.1f %.1f %.1f %.1f %.1f\n"..
-		"RLeg:%.1f %.1f %.1f %.1f %.1f %.1f %.1f\n"..
+		"LLeg:%.1f %.1f %.1f %.1f %.1f %.1f\n"..
+		"RLeg:%.1f %.1f %.1f %.1f %.1f %.1f\n"..
 		"RArm:%.1f %.1f %.1f %.1f\n"..
-		"Waist:%.1f\n"..
-		"Hands:%.1f %.1f\n",
+--		"Waist:%.1f\nHands:%.1f %.1f\n",
+		"Waist:%.1f\n",
 		unpack(pos)
 		)
 	);

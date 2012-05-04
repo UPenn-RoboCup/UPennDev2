@@ -5,7 +5,7 @@ local cwd = unix.getcwd();
 package.path = cwd.."/../Util/?.lua;"..package.path; --For Transform
 package.path = cwd.."/../Vision/?.lua;"..package.path; --For vcm
 
-dcm = require('OPCommManager');
+dcm = require('CharliCommManager');
 print('Starting device comm manager...');
 dcm.entry()
 
@@ -74,16 +74,17 @@ while (loop) do
       servopos = vector.new(sensorShm:get('servoposition'))*180/math.pi;
       bias = vector.new(sensorShm:get('bias'))*180/math.pi;
       temp = vector.new(sensorShm:get('temperature'))*180/math.pi;
+
       print(
 	string.format("Position:\n")..
 	string.format(
 		"head:%.1f %.1f\n"..
 		"LArm:%.1f %.1f %.1f %.1f\n"..
-		"LLeg:%.1f %.1f %.1f %.1f %.1f %.1f %.1f\n"..
-		"RLeg:%.1f %.1f %.1f %.1f %.1f %.1f %.1f\n"..
+		"LLeg:%.1f %.1f %.1f %.1f %.1f %.1f\n"..
+		"RLeg:%.1f %.1f %.1f %.1f %.1f %.1f\n"..
 		"RArm:%.1f %.1f %.1f %.1f\n"..
-		"Waist:%.1f\n"..
-		"Hands:%.1f %.1f\n",
+--		"Waist:%.1f\nHands:%.1f %.1f\n",
+		"Waist:%.1f\n",
 		unpack(pos)
 		)
 	);
@@ -92,11 +93,12 @@ while (loop) do
 	string.format(
 		"head:%d %d\n"..
 		"LArm:%d %d %d %d\n"..
-		"LLeg:%d %d %d %d %d %d %d\n"..
-		"RLeg:%d %d %d %d %d %d %d\n"..
+		"LLeg:%d %d %d %d %d %d\n"..
+		"RLeg:%d %d %d %d %d %d\n"..
 		"RArm:%d %d %d %d\n"..
-		"Waist:%d\n"..
-		"Hands:%d %d\n",
+--		"Waist:%d\n"..
+--		"Hands:%d %d\n",
+		"Waist:%d\n",
 		unpack(servopos)
 		)
 	);
@@ -108,11 +110,12 @@ while (loop) do
 	string.format(
 		"head:%.1f %.1f\n"..
 		"LArm:%.1f %.1f %.1f %.1f\n"..
-		"LLeg:%.1f %.1f %.1f %.1f %.1f %.1f %.1f\n"..
-		"RLeg:%.1f %.1f %.1f %.1f %.1f %.1f %.1f\n"..
+		"LLeg:%.1f %.1f %.1f %.1f %.1f %.1f\n"..
+		"RLeg:%.1f %.1f %.1f %.1f %.1f %.1f\n"..
 		"RArm:%.1f %.1f %.1f %.1f\n"..
-		"Waist:%.1f\n"..
-		"Hands:%.1f %.1f\n",
+--		"Waist:%.1f\n"..
+--		"Hands:%.1f %.1f\n",
+		"Waist:%.1f\n",
 		unpack(temp)
 		)
 	);

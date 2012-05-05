@@ -4,7 +4,7 @@ require('vector')
 require('parse_hostname')
 
 platform = {};
-platform.name = 'Nao'
+platform.name = 'NaoV4'
 
 function loadconfig(configName)
   local localConfig=require(configName);

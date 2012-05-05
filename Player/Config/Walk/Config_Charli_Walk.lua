@@ -60,13 +60,13 @@ walk.supportSideY = 0.02; --Lean sideways when sidestepping
 --Imu feedback parameters, alpha / gain / deadband / max 
 -------------------------------------------------------------- 
 gyroFactor = 0.273*math.pi/180 * 300 / 1024; --dps to rad/s conversion
-
-gyroFactor = gyroFactor * 0.5;
+gyroFactor = gyroFactor * 0.5;  --Working fine
+gyroFactor = 0;  --Working fine
 
 walk.ankleImuParamX={1,0.75*gyroFactor, 2*math.pi/180, 5*math.pi/180};
 walk.kneeImuParamX={1,1.5*gyroFactor, 2*math.pi/180, 5*math.pi/180};
-walk.ankleImuParamY={1,1*gyroFactor, 2*math.pi/180, 5*math.pi/180};
-walk.hipImuParamY={1,1*gyroFactor, 2*math.pi/180, 5*math.pi/180};
+walk.ankleImuParamY={1,0.75*gyroFactor, 2*math.pi/180, 5*math.pi/180};
+walk.hipImuParamY={1,0.25*gyroFactor, 2*math.pi/180, 5*math.pi/180};
 
 walk.armImuParamX={0,10*gyroFactor, 20*math.pi/180, 45*math.pi/180};
 walk.armImuParamY={0,10*gyroFactor, 20*math.pi/180, 45*math.pi/180};
@@ -80,23 +80,23 @@ walk.walkKickDef={}
 --tStep stepType supportLeg stepHeight SupportMod shiftFactor footPos1 footPos2
 
 walk.walkKickDef["FrontLeft"]={
-  {1.00, 1, 0, 0.035 , {0,0}, 0.7, {0.15,0,0} },
-  {1.00, 2, 1, 0.07 , {0.02,-0.02}, 0.5, {0.25,0,0}, {0.15,0,0} },
+  {0.75, 1, 0, 0.052 , {0,0}, 0.7, {0.15,0,0} },
+  {1.5, 2, 1, 0.060 , {0.02,-0.02}, 0.7, {0.15,0,0}, {0.10,0,0} },
   {walk.tStep, 1, 0, 0.035 , {0,0}, 0.5, {0,0,0} },
 }
 walk.walkKickDef["FrontRight"]={
-  {1.00, 1, 1, 0.035 , {0,0}, 0.3, {0.15,0,0} },
-  {1.00, 2, 0, 0.07 , {0.02,0.02}, 0.5,  {0.25,0,0}, {0.15,0,0} },
+  {0.75, 1, 1, 0.052 , {0,0}, 0.3, {0.15,0,0} },
+  {1.5, 2, 0, 0.060, {0.02,0.02}, 0.5,  {0.15,0,0}, {0.10,0,0} },
   {walk.tStep, 1, 1, 0.035 , {0,0}, 0.5, {0,0,0} },
 }
 walk.walkKickDef["SideLeft"]={
-  {1.00, 1, 1, 0.035 , {0,0}, 0.3, {0.08,0.10,0} },
-  {1.00, 3, 0, 0.07 , {-0.01,0.06}, 0.5, {0.18,-0.20,0},{0.18,0.04,0}},
+  {0.75, 1, 1, 0.035 , {0,0}, 0.3, {0.08,0.10,0} },
+  {0.75, 3, 0, 0.07 , {-0.01,0.06}, 0.5, {0.18,-0.20,0},{0.18,0.0,0}},
  {walk.tStep, 1, 1, 0.035 , {0,0}, 0.5, {0,0,0} },}
 
 walk.walkKickDef["SideRight"]={
-  {1.00, 1, 0, 0.035 , {0,0}, 0.7, {0.08,-0.10,0} },
-  {1.00, 3, 1, 0.07 , {-0.01,-0.06},0.5, {0.18,0.20,0},{0.18,-0.04,0}},
+  {0.75, 1, 0, 0.035 , {0,0}, 0.7, {0.08,-0.10,0} },
+  {0.75, 3, 1, 0.07 , {-0.01,-0.06},0.5, {0.18,0.20,0},{0.18,-0.0,0}},
   {walk.tStep, 1, 0, 0.035 , {0,0},0.5,  {0,0,0} },
 }
 
@@ -123,6 +123,7 @@ walk.headPitchBias = 0* math.pi / 180;
 --Slow and stable walk (like 2011)
 
 walk.bodyTilt=4*math.pi/180; 
+
 walk.stepHeight = 0.052;
 walk.footX = -0.03;
 walk.footY = 0.10;
@@ -133,9 +134,20 @@ walk.tStep = 0.75;
 walk.tZmp = 0.26; --Com height 0.65
 walk.tZmp = 0.265; 
 
-walk.hipRollCompensation = 3*math.pi/180;
+walk.hipRollCompensation = 5*math.pi/180;
 walk.phSingle = {0.15,0.85};
 walk.phZmp = {0.15,0.85};
-
-
 walk.supportModYInitial=-0.04; --Reduce initial body swing
+
+--[[
+walk.tStep = 0.65;
+walk.phSingle = {0.2,0.8};
+--]]
+
+--[[
+--Faster walking
+walk.tStep = 0.5;
+walk.stepHeight = 0.05;
+walk.footX = -0.025;
+--]]
+

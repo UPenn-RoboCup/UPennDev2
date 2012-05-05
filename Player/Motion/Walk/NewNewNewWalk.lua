@@ -788,25 +788,24 @@ function foot_phase(ph)
 
     if phSingle < ph1FootPhase then
       phZTemp = phSingle / ph2FootPhase;
-      xf = 0;
-      zf = 1 - (1-phZTemp)^exp1FootPhase;
+--      xf = 0;
+--      zf = 1 - (1-phZTemp)^exp1FootPhase;
     elseif phSingle < ph2FootPhase then
       phXTemp = (phSingle-ph1FootPhase)/(ph3FootPhase-ph1FootPhase);
       phZTemp = phSingle / ph2FootPhase;
-      xf =  .5*(1-math.cos(math.pi*phXTemp));
-      zf = 1 - (1-phZTemp)^exp1FootPhase;
+--      xf =  .5*(1-math.cos(math.pi*phXTemp));
+--      zf = 1 - (1-phZTemp)^exp1FootPhase;
     elseif phSingle < ph3FootPhase then
       phXTemp = (phSingle-ph1FootPhase)/(ph3FootPhase-ph1FootPhase);
       phZTemp = (phSingle-ph2FootPhase)/(ph3FootPhase-ph2FootPhase);
-      xf =  .5*(1-math.cos(math.pi*phXTemp));
-      zf = 1 - phZTemp^exp2FootPhase*(1-zFootLand);
+--      xf =  .5*(1-math.cos(math.pi*phXTemp));
+--      zf = 1 - phZTemp^exp2FootPhase*(1-zFootLand);
     else
       phZTemp = (1-phSingle) / (1-ph3FootPhase);
-      xf = 1;
-      zf = phZTemp^exp3FootPhase*zFootLand;
+--      xf = 1;
+--      zf = phZTemp^exp3FootPhase*zFootLand;
     end
   end
-
   return xf, zf;
 end
 

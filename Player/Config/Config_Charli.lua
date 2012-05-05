@@ -99,3 +99,4 @@ speakenable = false;
 
 --Use soft-landing foot trajectory
 walk.use_alternative_trajectory = 1;
+walk.use_alternative_trajectory = 0;

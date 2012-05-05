@@ -4,6 +4,7 @@ project(LuaComm)
 
 # include for lua headers
 include_directories(/usr/local/include)
+include_directories(/usr/include/lua5.1)
 
 # unix main library definition
 add_library(Comm SHARED luaComm.cpp)

@@ -46,20 +46,27 @@ walk.phZmp={0.1,0.9};
 -- Compensation parameters
 --------------------------------------------
 walk.hipRollCompensation = 0*math.pi/180;
-walk.ankleMod = vector.new({-1,0})/ 3*math.pi/180;
+walk.ankleMod = vector.new({0,0})/ 3*math.pi/180;
+
+--------------------------------------------
+-- Support point modulation values
+--------------------------------------------
+walk.supportFront = 0.01; --Lean front when walking fast forward
+walk.supportBack = -0.02; --Lean back when walking backward
+walk.supportSideX = -0.01; --Lean back when sidestepping
+walk.supportSideY = 0.02; --Lean sideways when sidestepping
 
 -------------------------------------------------------------- 
 --Imu feedback parameters, alpha / gain / deadband / max 
 -------------------------------------------------------------- 
 gyroFactor = 0.273*math.pi/180 * 300 / 1024; --dps to rad/s conversion
 
---Disable feedback for now
-gyroFactor = 0;
+gyroFactor = gyroFactor * 0.5;
 
-walk.ankleImuParamX={1,0.75*gyroFactor, 2*math.pi/180, 10*math.pi/180};
-walk.kneeImuParamX={1,1.5*gyroFactor, 2*math.pi/180, 10*math.pi/180};
-walk.ankleImuParamY={1,1*gyroFactor, 2*math.pi/180, 10*math.pi/180};
-walk.hipImuParamY={1,1*gyroFactor, 2*math.pi/180, 10*math.pi/180};
+walk.ankleImuParamX={1,0.75*gyroFactor, 2*math.pi/180, 5*math.pi/180};
+walk.kneeImuParamX={1,1.5*gyroFactor, 2*math.pi/180, 5*math.pi/180};
+walk.ankleImuParamY={1,1*gyroFactor, 2*math.pi/180, 5*math.pi/180};
+walk.hipImuParamY={1,1*gyroFactor, 2*math.pi/180, 5*math.pi/180};
 
 walk.armImuParamX={0,10*gyroFactor, 20*math.pi/180, 45*math.pi/180};
 walk.armImuParamY={0,10*gyroFactor, 20*math.pi/180, 45*math.pi/180};
@@ -113,32 +120,19 @@ walk.footYComp = 0;
 --Default pitch angle offset of Charli 
 walk.headPitchBias = 0* math.pi / 180; 
 
---[[
-walk.tStep = 0.8;
-walk.tZmp = 0.25;
-walk.supportY = -0.03;
-walk.footY = 0.09;
-walk.stepHeight = 0.13;
-walk.hardnessSupport = .7;
-walk.hardnessSwing = 0.2;
---]]
-
-
 --Slow and stable walk (like 2011)
 
+walk.bodyTilt=4*math.pi/180; 
+walk.stepHeight = 0.052;
+walk.footX = -0.03;
+walk.footY = 0.10;
+walk.supportX = 0.0;
+walk.supportY = 0.02;
+
+walk.tStep = 0.75;
+walk.tZmp = 0.26; --Com height 0.65
+walk.tZmp = 0.265; 
 
 walk.hipRollCompensation = 3*math.pi/180;
-
-walk.tStep = 1.5;
-walk.tZmp = 0.26; --Com height 0.65
---walk.tZmp = 0.20; --Com height 0.65
-walk.supportX = 0.03;
-walk.supportY = 0.02;
-walk.bodyTilt = 0*math.pi/180;
 walk.phSingle = {0.15,0.85};
 walk.phZmp = {0.15,0.85};
-walk.stepHeight = 0.052;
-
---Ridiculously fast walking 
---walk.tStep = 0.35;
---walk.supportY = 0.06;

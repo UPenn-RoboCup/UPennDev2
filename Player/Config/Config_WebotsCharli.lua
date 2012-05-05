@@ -100,3 +100,5 @@ stance.dpLimitStance=vector.new({.04, .03, .07, .4, .4, .4});
 stance.dpLimitSit=vector.new({.1,.01,.06,.1,.3,.1})*2;
 stance.delay = 80; 
 
+
+walk.use_alternative_trajectory = 1;

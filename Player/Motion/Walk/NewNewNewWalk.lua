@@ -78,10 +78,16 @@ supportBack = Config.walk.supportBack or 0;
 supportSideX = Config.walk.supportSideX or 0;
 supportSideY = Config.walk.supportSideY or 0;
 
+--Initial body swing 
+supportModYInitial = Config.walk.supportModYInitial or 0;
+
 --WalkKick parameters
 walkKickDef = Config.walk.walkKickDef;
 walkKickPh = Config.walk.walkKickPh;
 toeTipCompensation = 0;
+
+use_alternative_trajectory = Config.walk.use_alternative_trajectory or 0;
+
 
 ----------------------------------------------------------
 -- Walk state variables
@@ -178,8 +184,6 @@ function update()
     velDelta = Config.walk.velDelta or {.03,.015,.15};
   end
 
-
-
   footX = mcm.get_footX();
 
   t = Body.get_time();
@@ -268,6 +272,15 @@ function update()
     end
 
     uTorso2 = step_torso(uLeft2, uRight2,shiftFactor);
+
+    --Adjustable initial step body swing
+    if initial_step>0 then 
+      if supportLeg == 0 then --LS
+        supportMod[2]=supportModYInitial;
+      else --RS
+	supportMod[2]=-supportModYInitial;
+      end
+    end
 
     --Apply velocity-based support point modulation for uSupport
     if supportLeg == 0 then --LS
@@ -761,15 +774,38 @@ function foot_phase(ph)
   local xf = .5*(1-math.cos(math.pi*phSingleSkew));
   local zf = .5*(1-math.cos(2*math.pi*phSingleSkew));
 
-  --hack: vertical takeoff and landing
---  factor1 = 0.2;
-  factor1 = 0;
-  factor2 = 0;
-  phSingleSkew2 = math.max(
-	math.min(1,
-	(phSingleSkew-factor1)/(1-factor1-factor2)
-	 ), 0);
-  local xf = .5*(1-math.cos(math.pi*phSingleSkew2));
+
+  if use_alternative_trajectory>0 then
+    ph1FootPhase = 0.1;
+    ph2FootPhase = 0.5;
+    ph3FootPhase = 0.8;
+ 
+    exp1FootPhase = 2;
+    exp2FootPhase = 2;
+    exp3FootPhase = 2;
+
+    zFootLand = 0.3;    
+
+    if phSingle < ph1FootPhase then
+      phZTemp = phSingle / ph2FootPhase;
+      xf = 0;
+      zf = 1 - (1-phZTemp)^exp1FootPhase;
+    elseif phSingle < ph2FootPhase then
+      phXTemp = (phSingle-ph1FootPhase)/(ph3FootPhase-ph1FootPhase);
+      phZTemp = phSingle / ph2FootPhase;
+      xf =  .5*(1-math.cos(math.pi*phXTemp));
+      zf = 1 - (1-phZTemp)^exp1FootPhase;
+    elseif phSingle < ph3FootPhase then
+      phXTemp = (phSingle-ph1FootPhase)/(ph3FootPhase-ph1FootPhase);
+      phZTemp = (phSingle-ph2FootPhase)/(ph3FootPhase-ph2FootPhase);
+      xf =  .5*(1-math.cos(math.pi*phXTemp));
+      zf = 1 - phZTemp^exp2FootPhase*(1-zFootLand);
+    else
+      phZTemp = (1-phSingle) / (1-ph3FootPhase);
+      xf = 1;
+      zf = phZTemp^exp3FootPhase*zFootLand;
+    end
+  end
 
   return xf, zf;
 end

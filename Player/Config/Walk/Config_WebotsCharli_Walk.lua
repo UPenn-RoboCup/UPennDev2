@@ -129,7 +129,7 @@ walk.hardnessSwing = 0.2;
 
 walk.hipRollCompensation = 3*math.pi/180;
 
-walk.tStep = 1.5;
+walk.tStep = 0.75;
 walk.tZmp = 0.26; --Com height 0.65
 --walk.tZmp = 0.20; --Com height 0.65
 walk.supportX = 0.03;
@@ -139,37 +139,10 @@ walk.phSingle = {0.15,0.85};
 walk.phZmp = {0.15,0.85};
 walk.stepHeight = 0.052;
 
-
-
-
+--[[
 --Ridiculously fast walking (for webots)
 walk.tStep = 0.35;
 walk.supportY = 0.06;
-
-
-
-
---[[
---Fast walking test
-walk.tStep = 0.7;
-walk.supportY = -0.01;
-walk.tZmp = 0.20;
-walk.supportX = -0.01;
-walk.stepHeight = 0.08;
-walk.phSingle={0.15,0.85};
-walk.phZmp={0.15,0.85};
 --]]
 
---[[
---Faster walking test
-walk.tStep = 0.6;
-walk.supportY = -0.01;
-walk.footY = 0.09;
-walk.stepHeight = 0.04;
---]]
-
---Faster turning test
---[[
-walk.stanceLimitA={-20*math.pi/180,45*math.pi/180};
-walk.velLimitA={-.6,.6};
---]]
+walk.supportModYInitial=-0.04; --Reduce initial body swing

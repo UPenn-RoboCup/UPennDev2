@@ -124,3 +124,6 @@ gps_only = 0;
 
 --Speak enable
 speakenable = false;
+
+--VT goalposts are thicker
+world.postDiameter = 0.12;

@@ -25,7 +25,7 @@ check_for_ground = Config.vision.goal.check_for_ground or 0;
 
 
 --Post dimension
-postDiameter = 0.10;
+postDiameter = Config.world.postDiameter or 0.10;
 postHeight = Config.world.goalHeight or 0.80;
 goalWidth = Config.world.goalWidth or 1.40;
 

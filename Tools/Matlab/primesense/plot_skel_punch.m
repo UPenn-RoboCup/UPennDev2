@@ -85,6 +85,7 @@ h_xhand  = plot(log_xhand,'r*');
 
 for i=1:nLogs-1
     tstart=tic;
+    %jointLog(i).t = jointLog(i).t - jointLog(1).t;
     
     % Check data limits
     if( isempty(jointLog(i).t) )
@@ -148,10 +149,10 @@ for i=1:nLogs-1
         %}
         % Signs are mixed in the y direction...
         if( vy_hand<-1 && yhand<0 ) %% Above should and rising
-            fprintf('\n^^left uppercut!^^ %f\n',jointLog(i).t);
+            fprintf('\n^^left uppercut!^^ %f\n',jointLog(i).t - jointLog(1).t);
         end
         if( vx_hand>.4 && xhand>.25 )
-            fprintf('\n**left punch! %f**\n',jointLog(i).t);
+            fprintf('\n**left punch! %f**\n',jointLog(i).t - jointLog(1).t);
         end
         log_xhand = [log_xhand xhand];
         log_yhand = [log_yhand yhand];

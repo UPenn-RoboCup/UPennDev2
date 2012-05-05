@@ -20,7 +20,6 @@ void update_model(
   objGaussian.setMean(x, y);
   objGaussian.setCovarianceAxis(errorAzimuthal, errorDepth, angle);
 
-  printf("x,y,u: %lf, %lf, %d\n",x,y,uncertainty);
   if( bm==1 )
     right_hand.BallObservation(objGaussian, uncertainty);
   else

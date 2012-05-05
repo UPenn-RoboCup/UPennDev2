@@ -96,3 +96,6 @@ gps_only = 0;
 
 --Speak enable
 speakenable = false;
+
+--Use soft-landing foot trajectory
+walk.use_alternative_trajectory = 1;

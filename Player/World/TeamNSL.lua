@@ -25,6 +25,7 @@ nonDefenderPenalty = Config.team.nonDefenderPenalty;
 count = 0;
 
 state = {};
+state.robotName = Config.game.robotName;
 state.teamNumber = gcm.get_team_number();
 state.id = playerID;
 state.teamColor = gcm.get_team_color();
@@ -42,6 +43,8 @@ state.fall=0;
 state.goal=0;  --0 for non-detect, 1 for unknown, 2/3 for L/R, 4 for both
 state.goalv1={0,0};
 state.goalv2={0,0};
+state.goalB1={0,0,0,0,0};--Centroid X Centroid Y Orientation Axis1 Axis2
+state.goalB2={0,0,0,0,0};
 state.landmark=0; --0 for non-detect, 1 for yellow, 2 for cyan
 state.landmarkv={0,0};
 state.corner=0; --0 for non-detect, 1 for L, 2 for T
@@ -213,8 +216,21 @@ function update()
     local v2=vcm.get_goal_v2();
     state.goalv1[1],state.goalv1[2]=v1[1],v1[2];
     state.goalv2[1],state.goalv2[2]=0,0;
+
+    centroid1 = vcm.get_goal_postCentroid1();
+    orientation1 = vcm.get_goal_postOrientation1();
+    axis1 = vcm.get_goal_postAxis1();
+    state.goalB1 = {centroid1[1],centroid1[2],
+      orientation1,axis1[1],axis1[2]};
+
     if vcm.get_goal_type()==3 then --two goalposts 
       state.goalv2[1],state.goalv2[2]=v2[1],v2[2];
+      centroid2 = vcm.get_goal_postCentroid2();
+      orientation2 = vcm.get_goal_postOrientation2();
+      axis2 = vcm.get_goal_postAxis2();
+      state.goalB2 = {centroid2[1],centroid2[2],
+	orientation2,axis2[1],axis2[2]};
+
     end
   end
 

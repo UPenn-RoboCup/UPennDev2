@@ -52,15 +52,16 @@ camera.param[8] = {key='hue',           val={0, 0}};
 
 
 camera.param = {};
---camera.param[1] = {key='Brightness',    val={228, 228}};
-camera.param[1] = {key='Contrast',      val={56, 56}};
-camera.param[2] = {key='Saturation',    val={245, 245}};
-camera.param[3] = {key='Hue',           val={0, 0}};
-camera.param[4] = {key='Exposure',      val={69, 69}};
-camera.param[5] = {key='Gain',          val={49, 49}};
---camera.param[7] = {key='Sharpness',  val={160, 160}};
-camera.param[6] = {key='Horizontal Flip',   val={1, 0}};
-camera.param[7] = {key='Vertical Flip',   val={1, 0}};
+camera.param[1] = {key='Brightness',    val={200, 200}};
+camera.param[2] = {key='Contrast',      val={63, 63}};
+camera.param[3] = {key='Saturation',    val={125, 125}};
+camera.param[4] = {key='Hue',           val={0, 0}};
+camera.param[5] = {key='Exposure',      val={89, 89}};
+camera.param[6] = {key='Gain',          val={49, 49}};
+camera.param[7] = {key='Sharpness',  val={160, 160}};
+camera.param[7] = {key='Horizontal Flip',   val={1, 0}};
+camera.param[8] = {key='Vertical Flip',   val={1, 0}};
+camera.param[9] = {key='White balance', val={-86, -86}}
 
-camera.lut_file = 'lut_usopen_fieldB1.raw';
+camera.lut_file = 'lut_NaoV4_0506.raw';
 

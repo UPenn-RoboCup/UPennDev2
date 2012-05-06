@@ -32,7 +32,7 @@ dev.ip_wireless = '192.168.1.255';
 dev.game_control='OPGameControl';
 dev.team='TeamNSL';
 --dev.walk='BasicWalk';  --should be updated
-dev.walk='NewNewNewWalk';
+dev.walk='NewNewNewNewWalk';
 dev.kick = 'NewNewKick'
 
 speak = {}

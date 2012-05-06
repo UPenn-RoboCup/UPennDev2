@@ -32,7 +32,7 @@ dev.game_control='WebotsGameControl';
 dev.team='TeamNull';
 --dev.walk = 'NewWalk';
 dev.walk = 'NewNewWalk';
-dev.walk = 'NewNewNewWalk';
+dev.walk = 'NewNewNewNewWalk';
 dev.kick = 'NewKick';
 
 -- Game Parameters

@@ -32,7 +32,6 @@ walk.qRArmKick = math.pi/180*vector.new({110, -12, 0, 40});
 walk.hardnessSupport = 1;
 walk.hardnessSwing = 1;
 walk.hardnessArm=.1;
-walk.hardnessArm=0;
 ---------------------------------------------
 -- Gait parameters
 ---------------------------------------------
@@ -53,16 +52,16 @@ walk.ankleMod = vector.new({-1,0})/ 3*math.pi/180;
 -------------------------------------------------------------- 
 gyroFactor = 0.273*math.pi/180 * 300 / 1024; --dps to rad/s conversion
 
---Disable feedback for now
-gyroFactor = 0;
+--gyroFactor = gyroFactor*0.3;
 
-walk.ankleImuParamX={1,0.75*gyroFactor, 2*math.pi/180, 10*math.pi/180};
-walk.kneeImuParamX={1,1.5*gyroFactor, 2*math.pi/180, 10*math.pi/180};
-walk.ankleImuParamY={1,1*gyroFactor, 2*math.pi/180, 10*math.pi/180};
-walk.hipImuParamY={1,1*gyroFactor, 2*math.pi/180, 10*math.pi/180};
 
-walk.armImuParamX={0,10*gyroFactor, 20*math.pi/180, 45*math.pi/180};
-walk.armImuParamY={0,10*gyroFactor, 20*math.pi/180, 45*math.pi/180};
+walk.ankleImuParamX={0.3,0.75*gyroFactor, 0*math.pi/180, 5*math.pi/180};
+walk.kneeImuParamX={0.3,1.5*gyroFactor, 0*math.pi/180, 5*math.pi/180};
+walk.ankleImuParamY={0.3,0.25*gyroFactor, 0*math.pi/180, 2*math.pi/180};
+walk.hipImuParamY={0.3,0.25*gyroFactor, 0*math.pi/180, 2*math.pi/180};
+
+walk.armImuParamX={1,10*gyroFactor, 20*math.pi/180, 45*math.pi/180};
+walk.armImuParamY={1,10*gyroFactor, 20*math.pi/180, 45*math.pi/180};
 
 --------------------------------------------
 -- WalkKick parameters

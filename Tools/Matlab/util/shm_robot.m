@@ -35,6 +35,7 @@ global MONITOR %for sending the webots check information
 
 
   h.wcmTeamdata  = shm(sprintf('wcmTeamdata%d%d%s',  h.teamNumber, h.playerID, h.user));
+  h.wcmLabelB  = shm(sprintf('wcmLabelB%d%d%s',  h.teamNumber, h.playerID, h.user));
   h.vcmRobot  = shm(sprintf('vcmRobot%d%d%s',  h.teamNumber, h.playerID, h.user)); 
 
 	h.ocmOcc = shm(sprintf('ocmOcc%d%d%s', h.teamNumber, h.playerID, h.user));
@@ -67,6 +68,7 @@ global MONITOR %for sending the webots check information
   h.get_team_struct_wireless = @get_team_struct_wireless;
   h.get_monitor_struct_wireless = @get_monitor_struct_wireless;
 
+  h.get_labelB_wireless = @get_labelB_wireless;
 
   function update()
       % do nothing
@@ -203,7 +205,32 @@ global MONITOR %for sending the webots check information
     end
   end
 
-
+  function labelB = get_labelB_wireless(robotID)
+    width = 80;
+    height = 60;
+    if robotID==1 
+      rawData = h.wcmLabelB().get_p1();
+    elseif robotID==2 
+      rawData = h.wcmLabelB().get_p2();
+    elseif robotID==3 
+      rawData = h.wcmLabelB().get_p3();
+    elseif robotID==4 
+      rawData = h.wcmLabelB().get_p4();
+    elseif robotID==5 
+      rawData = h.wcmLabelB().get_p5();
+    elseif robotID==6 
+      rawData = h.wcmLabelB().get_p6();
+    elseif robotID==7 
+      rawData = h.wcmLabelB().get_p7();
+    elseif robotID==8 
+      rawData = h.wcmLabelB().get_p8();
+    elseif robotID==9 
+      rawData = h.wcmLabelB().get_p9();
+    else
+      rawData = h.wcmLabelB().get_p10();
+    end
+    labelB = raw2label(rawData, width, height)';
+  end
 
   function r = get_monitor_struct()
     % returns the monitor struct (in the same form as the monitor messages)

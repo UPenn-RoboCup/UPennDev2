@@ -189,3 +189,8 @@ cal["hokie"].kickXComp=0.000;
 cal["hokie"].servoBias={0,-13,-64,25,0,-26,0,-11,78,0,0,2,};
 cal["hokie"].footXComp=0.006;
 cal["hokie"].kickXComp=0.000;
+
+-- Updated date: Sun May  6 16:55:53 2012
+cal["hokie"].servoBias={0,-13,-48,26,0,-26,0,-3,66,-33,0,2,};
+cal["hokie"].footXComp=0.006;
+cal["hokie"].kickXComp=0.000;

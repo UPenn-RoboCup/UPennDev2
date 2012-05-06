@@ -66,8 +66,6 @@ shared.particle.w=vector.zeros(Config.world.n);
 -----------------------------------------------
 listen_monitor = Config.listen_monitor or 0;
 
-listen_monitor = 1;
-
 if listen_monitor>0 then
   shared.teamdata={};
   shared.teamdata.teamColor=vector.zeros(10);
@@ -94,14 +92,34 @@ if listen_monitor>0 then
   shared.teamdata.landmarkv1=vector.zeros(10);
   shared.teamdata.landmarkv2=vector.zeros(10);
 
---[[  shared.teamLabelB = {};
---TODOTODOTODO
-  shared.teamLabelB1 = 
-    ((processed_img_width/Config.vision.scaleB)*
+--Team LabelB monitoring
+
+  processed_img_width = Config.camera.width;
+  processed_img_height = Config.camera.height;
+  processed_img_width = processed_img_width / 2;
+  processed_img_height = processed_img_height / 2;
+ 
+  labelB_size =  ((processed_img_width/Config.vision.scaleB)*
      (processed_img_height/Config.vision.scaleB));
--- calculate image shm size
-  shsize.teamLabelB1 = shared.image.labelB+2^16;
+
+  shared.labelB = {};
+  shared.labelB.p1 = labelB_size;
+  shared.labelB.p2 = labelB_size;
+  shared.labelB.p3 = labelB_size;
+  shared.labelB.p4 = labelB_size;
+  shared.labelB.p5 = labelB_size;
+  shsize.labelB = 5*labelB_size + 2^16;
+
+--[[
+  shared.labelB.p6 = labelB_size;
+  shared.labelB.p7 = labelB_size;
+  shared.labelB.p8 = labelB_size;
+  shared.labelB.p9 = labelB_size;
+  shared.labelB.p10 = labelB_size;
+  shsize.labelB = 10*labelB_size + 2^16;
+
 --]]
+
 end
 
 if (enable_occmap == 1) then

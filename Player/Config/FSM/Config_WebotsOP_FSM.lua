@@ -136,7 +136,7 @@ fsm.bodyKick.tStartWaitMax = 1.0;
 fsm.bodyKick.thGyroMag = 100; 
 
 --ball position checking params
-fsm.bodyKick.kickTargetFront = {0.12,0.05};
+fsm.bodyKick.kickTargetFront = {0.12,0.04};
 
 --For kicking to the left
 fsm.bodyKick.kickTargetSide = {0.13,0.01};

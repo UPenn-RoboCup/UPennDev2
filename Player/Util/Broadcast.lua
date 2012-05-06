@@ -6,7 +6,7 @@
 module(..., package.seeall);
 
 
-require('Comm')
+CommWired=require('Comm');
 -- Only send items from shared memory
 require('vcm')
 require('gcm')
@@ -20,7 +20,7 @@ sendShm = { wcmshm=wcm, gcmshm=gcm, vcmshm=vcm }
 itemReject = 'yuyv,labelA,labelB,yuyv2,yuyv3'
 
 -- Initiate Sending Address
-Comm.init(Config.dev.ip_wired,111111);
+CommWired.init(Config.dev.ip_wired,111111);
 print('Sending to',Config.dev.ip_wired);
 
 -- Add a little delay between packet sending
@@ -58,7 +58,7 @@ function sendB()
     infosize=infosize+#senddata;
     t1=unix.time();
     stime1=stime1+t1-t0;
-    Comm.send(senddata);
+    CommWired.send(senddata);
     t2=unix.time();
     stime2=stime2+t2-t1;
   end 
@@ -91,7 +91,7 @@ function sendA()
     infosize=infosize+#senddata;
     t1=unix.time();
     stime1=stime1+t1-t0;
-    Comm.send(senddata);
+    CommWired.send(senddata);
     t2=unix.time();
     stime2=stime2+t2-t1;
     -- Need to sleep in order to stop drinking out of firehose
@@ -121,7 +121,6 @@ function sendB()
   array = serialization.serialize_label_rle(
 	labelB, width, height, 'uint8', 'labelB',count);
 
-
   sendlabelB = {};
   sendlabelB.team = {};
   sendlabelB.team.number = gcm.get_team_number();
@@ -134,7 +133,7 @@ function sendB()
   infosize=infosize+#senddata;
   t1=unix.time();
   stime1=stime1+t1-t0;
-  Comm.send(senddata);
+  CommWired.send(senddata);
   t2=unix.time();
   stime2=stime2+t2-t1;
 
@@ -171,7 +170,7 @@ function sendA()
   infosize=infosize+#senddata;
   t1=unix.time();
   stime1=stime1+t1-t0;
-  Comm.send(senddata);
+  CommWired.send(senddata);
   t2=unix.time();
   stime2=stime2+t2-t1;
 
@@ -210,7 +209,7 @@ function sendImg()
     senddata=serialization.serialize(sendyuyv);     
     t1 = unix.time();
     tSerialize= tSerialize + t1-t0;
-    Comm.send(senddata);
+    CommWired.send(senddata);
     t2 = unix.time();
     tSend=tSend+t2-t1;
     totalSize=totalSize+#senddata;
@@ -250,7 +249,7 @@ function sendImgSub2()
     senddata=serialization.serialize(sendyuyv2);
     t1 = unix.time();
     tSerialize= tSerialize + t1-t0;
-    Comm.send(senddata);
+    CommWired.send(senddata);
     t2 = unix.time();
     tSend=tSend+t2-t1;
     totalSize=totalSize+#senddata;
@@ -288,7 +287,7 @@ function sendImgSub4()
     senddata=serialization.serialize(sendyuyv3);
     t1 = unix.time();
     tSerialize= tSerialize + t1-t0;
-    Comm.send(senddata);
+    CommWired.send(senddata);
     t2 = unix.time();
     tSend=tSend+t2-t1;
 
@@ -330,7 +329,7 @@ function update(enable)
   t0 = unix.time();
   senddata=serialization.serialize(send);
   t1 = unix.time();
-  Comm.send(senddata);
+  CommWired.send(senddata);
   t2 = unix.time();
   unix.usleep(pktDelay2);
 

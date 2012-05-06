@@ -25,16 +25,21 @@ endif
 ifeq ($(OSTYPE),darwin)
   SHLIBEXT= dylib
   LIBOPTS= -bundle -undefined dynamic_lookup
-  CXXFLAGS= -O2 -arch i386
-  LDFLAGS= -arch i386
+  CXXFLAGS= -O2
+ifeq ($(MODE),32)
+  CC=gcc -arch i386
+  CXX=g++ -arch i386
+  LD=g++ -arch i386
+endif
+
 endif
 
 INCLUDE_DIRS = -I/usr/local/include -I/usr/include/lua5.1
 LIB_DIR = /usr/local/lib
 
-LIBNAME= NaoKinematics
+LIBNAME= CharliKinematics
 
-all: kinematics
+all:: kinematics
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) $(INCLUDE_DIRS) -o $@ -c $<
@@ -43,7 +48,7 @@ all: kinematics
 %.o: %.c
 	$(CC) $(CXXFLAGS) $(INCLUDE_DIRS) -o $@ -c $<
 
-kinematics: luaNaoKinematics.o naoKinematics.o Transform.o
+kinematics:: luaCharliKinematics.o CharliKinematics.o Transform.o
 	$(LD) $(LDFLAGS) -o $(LIBNAME).$(SHLIBEXT) $(LIBOPTS) $^ -L$(LIB_DIR) -lm
 
 clean:

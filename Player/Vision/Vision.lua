@@ -109,7 +109,33 @@ function entry()
   print('loading lut: '..Config.camera.lut_file);
   camera.lut = carray.new('c', 262144);
   load_lut(Config.camera.lut_file);
- 
+
+  if Config.platform.name=="NaoV4" then
+    camera_init_naov4();
+  else
+    camera_init();
+  end 
+end
+
+function camera_init()
+  for c=1,Config.camera.ncamera do 
+    Camera.select_camera(c-1);
+    for i,auto_param in ipairs(Config.camera.auto_param) do
+      print('Camera '..c..': setting '..auto_param.key..': '..auto_param.val[c]);
+      Camera.set_param(auto_param.key, auto_param.val[c]);
+      unix.usleep(100000);
+      print('Camera '..c..': set to '..auto_param.key..': '..Camera.get_param(auto_param.key));
+    end   
+    for i,param in ipairs(Config.camera.param) do
+      print('Camera '..c..': setting '..param.key..': '..param.val[c]);
+      Camera.set_param(param.key, param.val[c]);
+      unix.usleep(10000);
+      print('Camera '..c..': set to '..param.key..': '..Camera.get_param(param.key));
+    end
+  end
+end
+
+function camera_init_naov4()
 --  while (true) do 
     for c=1,Config.camera.ncamera do
       -- cameras are indexed starting at 0
@@ -150,11 +176,8 @@ function entry()
       Camera.set_param('Backlight Compensation', 0);
       Camera.set_param('Auto Exposure',1);
       print('Camera #'..c..' set');
-  
     end 
-
   --end
-
 end
 
 function redo_white_balance(cameraNumber)

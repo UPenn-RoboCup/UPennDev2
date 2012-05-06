@@ -71,14 +71,16 @@ fsm.playMode = 2; --1 for demo, 2 for orbit, 3 for direct approach
 --]]
 
 fsm.playMode = 3; --1 for demo, 2 for orbit, 3 for direct approach
-fsm.enable_walkkick = 0;
+fsm.enable_walkkick = 1;
 fsm.enable_sidekick = 0;
-
-
 
 --FAST APPROACH TEST
 fsm.fast_approach = 1;
 fsm.bodyApproach.maxStep = 0.06;
+
+fsm.fast_approach = 0;
+fsm.bodyApproach.maxStep = 0.03;
+
 
 --[[
 --Enable these for penalty-kick

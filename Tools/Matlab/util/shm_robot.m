@@ -371,6 +371,7 @@ global MONITOR %for sending the webots check information
 %}
   % Add freespace boundary
       r.free = {};
+			r.free.detect = 0;
       freeCol = h.vcmFreespace.get_nCol();
       freeValueB = h.vcmFreespace.get_pboundB();
 			freeDis = h.vcmFreespace.get_vboundB();

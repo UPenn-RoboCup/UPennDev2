@@ -56,8 +56,6 @@ hardness=vector.new({0,0,0,0,0,0});
 if(Config.platform.name == 'OP') then
   darwin = true;
   --SJ: OP specific initialization posing (to prevent twisting)
-  Body.set_body_hardness(0.3);
-  Body.set_actuator_command(Config.stance.initangle)
 end
 unix.usleep(1E6*1.0);
 Body.set_body_hardness(0);

@@ -52,40 +52,20 @@ cal["felix"]={
   footXComp = 0,
   footYComp = 0,
   kickXComp = 0,
-  headPitchComp = 0,
+  headPitchComp = 4*math.pi/180;
   armBias={0,0,0,0,0,0},
-  pid = 1,
+  pid = 1, --NEW FIRMWARE
 };
 
-----------------------------------------------------------------
--------------------------------------------------------------
---Default values (may not be needed)
-
-cal["betty"].servoBias={0,0,2,-6,-1,0,0,0,-3,-1,10,0};
-cal["betty"].footXComp = 0.010;
-cal["betty"].footYComp = 0.002;
-cal["betty"].kickXComp = 0.005;
-cal["betty"].headPitchComp = 0.005;
-
-cal["linus"].servoBias={3,1,2,1,1,-3,-8,3,-13,-4,1,-5};
-cal["linus"].footXComp = 0.00;
-cal["linus"].footYComp = 0.002;
-cal["linus"].kickXComp = -0.005;
-cal["linus"].headPitchComp = 0.005;
-
-cal["lucy"].servoBias={1,-28,-207,108,-26,-15,-43,-51,110,35,84,-29};
-cal["lucy"].footXComp = 0.002;
-cal["lucy"].footYComp = 0.002;
-cal["lucy"].kickXComp = -0.005;
-cal["lucy"].headPitchComp = 0.00;
-cal["lucy"].armBias = vector.new({0,-15,0,0,-3,0}) * math.pi/180;
-
-cal["scarface"].servoBias={0,0,0,0,0,0,0,0,0,-9,-4,0};
-cal["scarface"].footXComp = -0.005;
-cal["scarface"].footYComp = 0.00;
-cal["scarface"].kickXComp = -0.005;
-cal["scarface"].headPitchComp = 0.00;
-
+cal["hokie"]={
+  servoBias={0,0,0,0,0,0, 0,0,0,0,0,0},
+  footXComp = 0,
+  footYComp = 0,
+  kickXComp = 0,
+  headPitchComp = 0;
+  armBias={0,12*math.pi/180,0,0,-6*math.pi/180,0},
+  pid = 1, --NEW FIRMWARE
+};
 ------------------------------------------------------------
 --Auto-appended calibration settings
 ------------------------------------------------------------
@@ -183,3 +163,29 @@ cal["felix"].kickXComp=0.005;
 cal["felix"].servoBias={11,1,0,0,0,0,-9,10,0,0,-6,15,};
 cal["felix"].footXComp=0.001;
 cal["felix"].kickXComp=0.005;
+
+
+-- Updated date: Sun May  6 12:03:01 2012
+cal["hokie"].servoBias={0,0,0,0,0,0,0,0,0,0,0,0,};
+cal["hokie"].footXComp=0.000;
+cal["hokie"].kickXComp=0.000;
+
+-- Updated date: Sun May  6 14:20:12 2012
+cal["hokie"].servoBias={0,0,0,25,0,-26,0,0,0,0,0,2,};
+cal["hokie"].footXComp=0.000;
+cal["hokie"].kickXComp=0.000;
+
+-- Updated date: Sun May  6 14:23:18 2012
+cal["hokie"].servoBias={0,-14,0,25,0,-26,0,8,0,0,0,2,};
+cal["hokie"].footXComp=0.010;
+cal["hokie"].kickXComp=0.000;
+
+-- Updated date: Sun May  6 14:26:23 2012
+cal["hokie"].servoBias={0,-14,0,25,0,-26,0,10,0,0,0,2,};
+cal["hokie"].footXComp=0.010;
+cal["hokie"].kickXComp=0.000;
+
+-- Updated date: Sun May  6 14:53:11 2012
+cal["hokie"].servoBias={0,-13,-64,25,0,-26,0,-11,78,0,0,2,};
+cal["hokie"].footXComp=0.006;
+cal["hokie"].kickXComp=0.000;

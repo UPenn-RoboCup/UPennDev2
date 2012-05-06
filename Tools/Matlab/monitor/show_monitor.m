@@ -49,6 +49,7 @@ function h=show_monitor()
       MONITOR.hButton9=uicontrol('Style','pushbutton','String','2D',...
 	'Position',[20 200 70 40],'Callback',@button9);
 
+
     elseif draw_team==1 %Multiple robot full monitoring (webots)
       set(gcf,'position',[1 1 900 900]);
 
@@ -301,33 +302,29 @@ function h=show_monitor()
 
   function update_team_wireless(robot_team)
 
-
     %Draw common field 
-    h_c=subplot(5,5,[1:15]);
+    h_c=subplot(5,5,[6:20]);
     cla(h_c);
     plot_field(h_c,MONITOR.fieldtype);
-
+    hold on;
     for i=1:10
       r_struct = robot_team.get_team_struct_wireless(i);
       if r_struct.id>0
-        h_c=subplot(5,5,[1:15]);
+        h_c=subplot(5,5,[6:20]);
         plot_robot( r_struct, [],2,MONITOR.enable10);
         updated = 0;
+	if i<6 
+          h1=subplot(5,5,i);
+	  labelB = robot_team.get_labelB_wireless(i);
+          plot_label(labelB);
+	else
+          h1=subplot(5,5,i+15);
+	  labelB = robot_team.get_labelB_wireless(i);
+          plot_label(labelB);
+	end
       end
-
-%{
-      if MONITOR.enable9
-        h2=subplot(5,5,20+playerNumber(i));
-        plot_surroundings( h2, r_mon );
-      end
-
-      h2=subplot(5,5,20+playerNumber(i));
-      [infostr textcolor]=robot_info(r_struct,r_mon,2);
-      h_xlabel=xlabel(infostr);
-      set(h_xlabel,'Color',textcolor);
-%}
-
     end
+    hold off;
   end
 
 
@@ -345,8 +342,6 @@ function h=show_monitor()
     image('XData',[-3:1/siz:3],'YData',[-2:1/siz:2],...
 	'CData',rgbc);  
   end
-
-
 
 
   function button0(varargin)

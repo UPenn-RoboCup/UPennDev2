@@ -4,6 +4,8 @@ project(LuaShm)
 
 # include for lua headers
 include_directories(/usr/local/include)
+include_directories(/usr/include/lua5.1)
+
 # TODO: compiling should set an environment variable for the platform
 include_directories(/$(NaoqiCTC)/sysroot/usr/include/boost-1_45)
 

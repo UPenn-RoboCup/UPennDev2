@@ -178,3 +178,8 @@ cal["felix"].kickXComp=0.000;
 cal["felix"].servoBias={11,-11,0,0,0,0,-9,4,0,0,-6,12,};
 cal["felix"].footXComp=0.001;
 cal["felix"].kickXComp=0.005;
+
+-- Updated date: Sat May  5 22:50:50 2012
+cal["felix"].servoBias={11,1,0,0,0,0,-9,10,0,0,-6,15,};
+cal["felix"].footXComp=0.001;
+cal["felix"].kickXComp=0.005;

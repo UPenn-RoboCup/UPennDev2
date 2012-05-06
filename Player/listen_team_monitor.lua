@@ -23,17 +23,21 @@ require ('Config')
 --Copy data to shm 1-1
 Config.game.teamNumber = 1;
 Config.game.playerID = 1;
+Config.listen_monitor = 1;
 
-io.write("Enter team number to track: ");
+io.write("Enter number of teams to track: ");
 io.flush();
-team1,team2=io.read("*number","*number");
-print(team1)
-print(team2)
-if not team1 then return; end
-if not team2 then --One team tracking
-  teamToTrack={team1};
-else --Two team tracking
+team_num=io.read("*number");
+if team_num==2 then
+  io.write("Enter two team numbers to track: ");
+  io.flush();
+  team1,team2=io.read("*number","*number");
   teamToTrack={team1, team2};
+else
+  io.write("Enter the team number to track: ");
+  io.flush();
+  team1=io.read("*number");
+  teamToTrack={team1};
 end
 
 --Push to (team,1) shm
@@ -141,26 +145,31 @@ function push_team_struct(obj,teamOffset)
   wcm.set_teamdata_landmarkv2(states.landmarkv2);
 end
 
+count=0;
+tStart=unix.time();
+
 while( true ) do
   while (Comm.size() > 0) do
     msg=Comm.receive();
---    print(msg)
     t = serialization.deserialize(msg);
     if t and (t.teamNumber) then
       t.tReceive = unix.time();
-
+      count=count+1;
       if #teamToTrack==1 then 
-        print("Team message from ",t.teamNumber,t.id)
         if (t.teamNumber == teamToTrack[1]) and (t.id) then
           push_team_struct(t,0);
         end
       else
-        print("Team message from ",t.teamNumber,t.id)
         if (t.teamNumber == teamToTrack[1]) and (t.id) then
           push_team_struct(t,0);
         elseif (t.teamNumber == teamToTrack[2]) and (t.id) then
           push_team_struct(t,5);
         end
+      end
+      if count%30==0 then
+        print("Team message: %d fps",count/(t.tReceive-tStart) );
+	tStart=t.tReceive;
+        count=0;
       end
     end
   end

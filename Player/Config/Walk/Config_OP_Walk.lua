@@ -10,12 +10,11 @@ walk = {};
 walk.stanceLimitX={-0.10,0.10};
 walk.stanceLimitY={0.07,0.20};
 walk.stanceLimitA={0*math.pi/180,30*math.pi/180};
-walk.velLimitX={-.04,.08};
-walk.velLimitY={-.04,.04};
+--walk.velLimitX={-.03,.09};
+walk.velLimitX={-.03,.06};--reduced speed for stability
+walk.velLimitY={-.03,.03};
 walk.velLimitA={-.4,.4};
 walk.velDelta={0.02,0.02,0.15} 
-
-walk.velLimitX={-.04,.09};
 
 ----------------------------------------------
 -- Stance parameters
@@ -46,8 +45,8 @@ walk.phSingle={0.1,0.9};
 -- Compensation parameters
 --------------------------------------------
 walk.hipRollCompensation = 4*math.pi/180;
---walk.ankleMod = vector.new({-1,0}) * 3*math.pi/180;
-walk.ankleMod = vector.new({-1,0}) * 0*math.pi/180;
+walk.ankleMod = vector.new({-1,0})*1*math.pi/180;
+walk.spreadComp = 0.015;
 
 --------------------------------------------------------------
 --Imu feedback parameters, alpha / gain / deadband / max
@@ -77,7 +76,10 @@ end
 --------------------------------------------
 -- Support point modulation values
 --------------------------------------------
-walk.supportFront = 0.01; --Lean front when walking fast forward
+
+walk.velFastForward = 0.03;
+walk.supportFront = 0.01; --Lean back when walking fast forward
+walk.supportFront2 = 0.03; --Lean front when accelerating forward
 walk.supportBack = -0.02; --Lean back when walking backward
 walk.supportSideX = -0.01; --Lean back when sidestepping
 walk.supportSideY = 0.02; --Lean sideways when sidestepping
@@ -144,38 +146,3 @@ if calibration.cal and calibration.cal[robotName] then
   walk.headPitchBiasComp = calibration.cal[robotName].headPitchBiasComp;
   print(robotName.." walk parameters loaded")
 end
-
-
-
-
-
--- Slow walk
---[[
-walk.tZmp = 0.165;
-walk.tStep = 0.5;
-walk.phSingle={0.1,0.9};
-walk.supportY = 0.010;
-walk.supportX = -0.005;
-walk.stepHeight = 0.06;
-walk.qLArm=math.pi/180*vector.new({90,0,-80});
-walk.qRArm=math.pi/180*vector.new({90,0,-80});
---]]
-
-
--- Grip walk
---[[
---walk.bodyHeight = 0.285;
---walk.bodyTilt=0*math.pi/180;
-walk.tZmp = 0.165;
-walk.tStep = 0.5;
-walk.phSingle={0.25,0.75};
-walk.footX = -0.010;
-walk.footY = 0.050;
-walk.supportY = 0.000;
-walk.supportX = 0.000;
-walk.stepHeight = 0.04;
-walk.qLArm=math.pi/180*vector.new({26.2, 90, 33.4});
-walk.qRArm=math.pi/180*vector.new({0,50,120});
---]]
-
-

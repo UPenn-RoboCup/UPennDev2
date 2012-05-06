@@ -97,6 +97,18 @@ function push_team_struct(obj,teamOffset)
   states.goalv12=wcm.get_teamdata_goalv12();
   states.goalv21=wcm.get_teamdata_goalv21();
   states.goalv22=wcm.get_teamdata_goalv22();
+
+  states.goalB11=wcm.get_teamdata_goalB11();
+  states.goalB12=wcm.get_teamdata_goalB12();
+  states.goalB13=wcm.get_teamdata_goalB13();
+  states.goalB14=wcm.get_teamdata_goalB14();
+  states.goalB15=wcm.get_teamdata_goalB15();
+  states.goalB21=wcm.get_teamdata_goalB21();
+  states.goalB22=wcm.get_teamdata_goalB22();
+  states.goalB23=wcm.get_teamdata_goalB23();
+  states.goalB24=wcm.get_teamdata_goalB24();
+  states.goalB25=wcm.get_teamdata_goalB25();
+
   states.landmark=wcm.get_teamdata_landmark();
   states.landmarkv1=wcm.get_teamdata_landmarkv1();
   states.landmarkv2=wcm.get_teamdata_landmarkv2();
@@ -127,6 +139,21 @@ function push_team_struct(obj,teamOffset)
   states.goalv12[id]=obj.goalv1[2];
   states.goalv21[id]=obj.goalv2[1];
   states.goalv22[id]=obj.goalv2[2];
+
+  if obj.goalB1 then
+    states.goalB11[id]=obj.goalB1[1];
+    states.goalB12[id]=obj.goalB1[2];
+    states.goalB13[id]=obj.goalB1[3];
+    states.goalB14[id]=obj.goalB1[4];
+    states.goalB15[id]=obj.goalB1[5];
+
+    states.goalB21[id]=obj.goalB2[1];
+    states.goalB22[id]=obj.goalB2[2];
+    states.goalB23[id]=obj.goalB2[3];
+    states.goalB24[id]=obj.goalB2[4];
+    states.goalB25[id]=obj.goalB2[5];
+  end
+
   states.landmark[id]=obj.landmark;
   states.landmarkv1[id]=obj.landmarkv[1];
   states.landmarkv2[id]=obj.landmarkv[2];
@@ -156,6 +183,18 @@ function push_team_struct(obj,teamOffset)
   wcm.set_teamdata_goalv12(states.goalv12);
   wcm.set_teamdata_goalv21(states.goalv21);
   wcm.set_teamdata_goalv22(states.goalv22);
+
+  wcm.set_teamdata_goalB11(states.goalB11);
+  wcm.set_teamdata_goalB12(states.goalB12);
+  wcm.set_teamdata_goalB13(states.goalB13);
+  wcm.set_teamdata_goalB14(states.goalB14);
+  wcm.set_teamdata_goalB15(states.goalB15);
+
+  wcm.set_teamdata_goalB21(states.goalB21);
+  wcm.set_teamdata_goalB22(states.goalB22);
+  wcm.set_teamdata_goalB23(states.goalB23);
+  wcm.set_teamdata_goalB24(states.goalB24);
+  wcm.set_teamdata_goalB25(states.goalB25);
 
   wcm.set_teamdata_landmark(states.landmark);
   wcm.set_teamdata_landmarkv1(states.landmarkv1);

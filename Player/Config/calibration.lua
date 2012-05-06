@@ -142,3 +142,8 @@ cal["lucy"].kickXComp=0.005;
 cal["linus"].servoBias={3,1,43,1,-12,-17,-8,-5,-13,-4,1,-5,};
 cal["linus"].footXComp=0.012;
 cal["linus"].kickXComp=0.005;
+
+-- Updated date: Sat May  5 09:56:25 2012
+cal["linus"].servoBias={3,1,43,1,-14,-31,-8,-5,-13,-4,1,0,};
+cal["linus"].footXComp=0.006;
+cal["linus"].kickXComp=0.005;

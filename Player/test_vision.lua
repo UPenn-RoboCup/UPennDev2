@@ -49,9 +49,6 @@ webots = false;
 -- Enable OP specific 
 if(Config.platform.name == 'OP') then
   darwin = true;
-  --SJ: OP specific initialization posing (to prevent twisting)
-  Body.set_body_hardness(0.3);
-  Body.set_actuator_command(Config.stance.initangle)
 end
 
 --enable new nao specific

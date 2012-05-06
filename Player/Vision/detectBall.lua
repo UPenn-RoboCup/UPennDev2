@@ -97,7 +97,9 @@ function detect(color)
         vcm.add_debug_message(string.format(
     	  "lableA height: %d, centroid Y: %d diameter: %.1f\n",
   	  Vision.labelA.n, ballCentroid[2], dArea ));
-        if vmargin > dArea then
+        --When robot looks down they may fail to pass the green check
+        --So increase the bottom margin threshold
+        if vmargin > dArea * 2.0 then
           -- bounding box below the ball
           fieldBBox = {};
           fieldBBox[1] = ballCentroid[1] + th_ground_boundingbox[1];

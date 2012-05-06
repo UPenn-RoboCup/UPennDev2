@@ -204,7 +204,7 @@ function process_keyinput()
 
     --Logging mode
     elseif byte==string.byte("4") then
-      Body.set_head_hardness(0.2);
+      Body.set_head_hardness(0.4);
       HeadFSM.sm:set_state('headLog');
       headsm_running=1;
 

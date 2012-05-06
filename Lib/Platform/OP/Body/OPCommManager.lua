@@ -264,9 +264,11 @@ function sync_battery()
   end
 
   local battery=Dynamixel.read_data(200,50,1);
-  sensor.battery[1]=battery[1];
-  if battery[1]<Config.bat_low then battery_warning=1;
-  else battery_warning=0;
+  if battery then
+    sensor.battery[1]=battery[1];
+    if battery[1]<Config.bat_low then battery_warning=1;
+    else battery_warning=0;
+    end
   end
 end
 

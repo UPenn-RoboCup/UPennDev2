@@ -1,5 +1,6 @@
 module(..., package.seeall);
 require('vector')
+require('unix')
 
 --Sit/stand stance parameters
 stance={};

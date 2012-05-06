@@ -5,8 +5,6 @@ require('util');
 require('vector');
 require('Config');
 
-enable_occmap = Config.vision.enable_freespace_detection or 0;
-
 -- shared properties
 shared = {};
 shsize = {};
@@ -102,12 +100,6 @@ if listen_monitor>0 then
 -- calculate image shm size
   shsize.teamLabelB1 = shared.image.labelB+2^16;
 --]]
-end
-
-if (enable_occmap == 1) then
-	shared.occmap = {};
-	shared.occmap.t = vector.zeros(Config.occmap.div);
-	shared.occmap.r = vector.zeros(Config.occmap.div);
 end
 
 util.init_shm_segment(getfenv(), _NAME, shared, shsize);

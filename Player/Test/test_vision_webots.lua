@@ -46,9 +46,9 @@ require('Speak')
 require('vcm')
 require('Vision')
 require('World')
+require('OccupancyMap')
 require('Team')
 require('util')
-require('OccupancyMap')
 require('wcm')
 require('gcm')
 
@@ -232,9 +232,11 @@ function update()
   -- Update localization
   if imageProcessed then 
     World.update_vision();
-    OccupancyMap.update();
     vcm.refresh_debug_message();
   end
+
+	-- Update Occupancy Map
+	OccupancyMap.update();
    
   -- Update the relevant engines
   Body.update();

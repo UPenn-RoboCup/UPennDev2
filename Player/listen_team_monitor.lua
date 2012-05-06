@@ -56,8 +56,25 @@ require 'unix'
 Comm.init('192.168.1.255',54321);
 print('Receiving Team Message From',Config.dev.ip_wireless);
 
+function push_labelB(obj,teamOffset)
+  if not obj.labelB then return; end
+  id=obj.id+teamOffset;
+  local labelB = cutil.test_array();
+  cutil.string2label_rle(labelB,obj.labelB.data);
+  if id==1 then
+    wcm.set_labelB_p1(labelB);
+  elseif id==2 then
+    wcm.set_labelB_p2(labelB);
+  elseif id==3 then
+    wcm.set_labelB_p3(labelB);
+  elseif id==4 then
+    wcm.set_labelB_p4(labelB);
+  elseif id==5 then
+    wcm.set_labelB_p5(labelB);
+  end
+end
+
 function push_team_struct(obj,teamOffset)
---  wcm.set_teamdata_id(obj.id);
   states={};
 
   states.teamColor=wcm.get_teamdata_teamColor();
@@ -158,6 +175,7 @@ while( true ) do
       if #teamToTrack==1 then 
         if (t.teamNumber == teamToTrack[1]) and (t.id) then
           push_team_struct(t,0);
+	  push_labelB(t,0);
         end
       else
         if (t.teamNumber == teamToTrack[1]) and (t.id) then
@@ -167,7 +185,7 @@ while( true ) do
         end
       end
       if count%30==0 then
-        print("Team message: %d fps",count/(t.tReceive-tStart) );
+        print(string.format("Team message: %d fps",count/(t.tReceive-tStart)));
 	tStart=t.tReceive;
         count=0;
       end

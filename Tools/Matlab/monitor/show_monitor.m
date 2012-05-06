@@ -322,6 +322,7 @@ function h=show_monitor()
 	  labelB = robot_team.get_labelB_wireless(i);
           plot_label(labelB);
 	end
+	plot_overlay_wireless(r_struct);
       end
     end
     hold off;

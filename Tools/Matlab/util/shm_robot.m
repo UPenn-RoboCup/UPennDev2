@@ -165,6 +165,18 @@ global MONITOR %for sending the webots check information
       goalv21=h.wcmTeamdata.get_goalv21();
       goalv22=h.wcmTeamdata.get_goalv22();
 
+      goalB11=h.wcmTeamdata.get_goalB11();
+      goalB12=h.wcmTeamdata.get_goalB12();
+      goalB13=h.wcmTeamdata.get_goalB13();
+      goalB14=h.wcmTeamdata.get_goalB14();
+      goalB15=h.wcmTeamdata.get_goalB15();
+
+      goalB21=h.wcmTeamdata.get_goalB21();
+      goalB22=h.wcmTeamdata.get_goalB22();
+      goalB23=h.wcmTeamdata.get_goalB23();
+      goalB24=h.wcmTeamdata.get_goalB24();
+      goalB25=h.wcmTeamdata.get_goalB25();
+
       landmark=h.wcmTeamdata.get_landmark();
       landmarkv1=h.wcmTeamdata.get_landmarkv1();
       landmarkv2=h.wcmTeamdata.get_landmarkv2();
@@ -197,6 +209,19 @@ global MONITOR %for sending the webots check information
       r.goal=goal(id);
       r.goalv1=[goalv11(id) goalv12(id)];
       r.goalv2=[goalv21(id) goalv22(id)];
+
+
+      gc1 = [goalB11(id) goalB12(id)];
+      gc2 = [goalB21(id) goalB22(id)];
+
+      go1 = goalB13(id);
+      go2 = goalB23(id);
+
+      ga1 = [goalB14(id) goalB15(id)];
+      ga2 = [goalB24(id) goalB25(id)];
+
+      r.goalpostStat1 = struct('x',gc1(1), 'y',gc1(2), 'a',ga1(1), 'b',ga1(2),'o',go1);
+      r.goalpostStat2 = struct('x',gc2(1), 'y',gc2(2), 'a',ga2(1), 'b',ga2(2),'o',go2);
 
       r.landmark=landmark(id);
       r.landmarkv=[landmarkv1(id) landmarkv2(id)];

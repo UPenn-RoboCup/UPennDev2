@@ -27,8 +27,6 @@ package.path = cwd .. '/Vision/?.lua;' .. package.path;
 package.path = cwd .. '/World/?.lua;' .. package.path;
 
 require('Config')
---This FIXES monitor issue with test_vision
-Config.dev.team = 'TeamNull'; 
 require('unix')
 require('getch')
 require('Broadcast')

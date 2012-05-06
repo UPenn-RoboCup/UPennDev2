@@ -36,6 +36,7 @@ cal["lucy"]={
   armBias={0,0,0,0,0,0},
   pid = 1, --NEW FIRMWARE
 };
+
 cal["scarface"]={
   servoBias={0,0,0,0,0,0, 0,0,0,0,0,0},
   footXComp = 0,
@@ -44,6 +45,16 @@ cal["scarface"]={
   headPitchComp = 0,
   armBias={0,0,0,0,0,0},
   pid = 0,
+};
+
+cal["felix"]={
+  servoBias={0,0,0,0,0,0, 0,0,0,0,0,0},
+  footXComp = 0,
+  footYComp = 0,
+  kickXComp = 0,
+  headPitchComp = 0,
+  armBias={0,0,0,0,0,0},
+  pid = 1,
 };
 
 ----------------------------------------------------------------
@@ -162,3 +173,8 @@ cal["scarface"].kickXComp=0.010;
 cal["felix"].servoBias={11,-11,0,0,0,0,-9,4,0,0,-6,12,};
 cal["felix"].footXComp=-0.002;
 cal["felix"].kickXComp=0.000;
+
+-- Updated date: Sat May  5 22:35:53 2012
+cal["felix"].servoBias={11,-11,0,0,0,0,-9,4,0,0,-6,12,};
+cal["felix"].footXComp=0.001;
+cal["felix"].kickXComp=0.005;

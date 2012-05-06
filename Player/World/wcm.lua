@@ -86,6 +86,19 @@ if listen_monitor>0 then
   shared.teamdata.goalv12=vector.zeros(10);
   shared.teamdata.goalv21=vector.zeros(10);
   shared.teamdata.goalv22=vector.zeros(10);
+
+  shared.teamdata.goalB11=vector.zeros(10);
+  shared.teamdata.goalB12=vector.zeros(10);
+  shared.teamdata.goalB13=vector.zeros(10);
+  shared.teamdata.goalB14=vector.zeros(10);
+  shared.teamdata.goalB15=vector.zeros(10);
+
+  shared.teamdata.goalB21=vector.zeros(10);
+  shared.teamdata.goalB22=vector.zeros(10);
+  shared.teamdata.goalB23=vector.zeros(10);
+  shared.teamdata.goalB24=vector.zeros(10);
+  shared.teamdata.goalB25=vector.zeros(10);
+
   shared.teamdata.landmark=vector.zeros(10);
   shared.teamdata.landmarkv1=vector.zeros(10);
   shared.teamdata.landmarkv2=vector.zeros(10);

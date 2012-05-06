@@ -63,5 +63,5 @@ camera.param[7] = {key='Horizontal Flip',   val={1, 0}};
 camera.param[8] = {key='Vertical Flip',   val={1, 0}};
 camera.param[9] = {key='White balance', val={-86, -86}}
 
-camera.lut_file = 'lut_NaoV4_0506.raw';
+camera.lut_file = 'lut_NaoV4_0506_1.raw';
 

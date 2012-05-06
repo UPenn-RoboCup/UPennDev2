@@ -16,6 +16,7 @@ VISIONTESTDIR = Platform/VisionTest
 HPDIR= Platform/HP2
 OPDIR= Platform/OP
 XOSDIR= Platform/XOS
+CHARLIDIR = Platform/Charli
 WEBOTSDIR = Webots
 IMAGEDIR= ImageProc
 COMMDIR= Comm
@@ -96,6 +97,11 @@ xos:
 op:
 	@echo "Compiling Darwin OP Lua/C++ Libraries...\n"
 	@cd $(OPDIR) && make && cd $(CWD)
+	@echo "\n"
+
+charli:
+	@echo "Compiling Charli Lua/C++ Libraries...\n"
+	@cd $(CHARLIDIR) && make && cd $(CWD)
 	@echo "\n"
 
 webots_nao:
@@ -262,7 +268,6 @@ setup_op: op setup_util setup_image setup_comm
 	@echo "Setting up Darwin OP Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
 	find $(OPDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
-#	touch $(PLAYERDIR)/Config/Config.lua
 	rm -f $(PLAYERDIR)/Config/Config.lua
 	cd $(PLAYERDIR)/Config && ln -s Config_OP.lua Config.lua && cd $(CWD)
 	@echo "\n"
@@ -275,6 +280,14 @@ setup_xos: xos setup_util setup_image setup_comm
 #	touch $(PLAYERDIR)/Config/Config.lua
 	rm -f $(PLAYERDIR)/Config/Config.lua
 	cd $(PLAYERDIR)/Config && ln -s Config_XOS.lua Config.lua && cd $(CWD)
+	@echo "\n"
+
+setup_charli: charli setup_util setup_image setup_comm
+	@echo "Setting up Charli Lua/C++ Libraries...\n"
+	mkdir -p $(INSTDIR)
+	find $(CHARLIDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
+	rm -f $(PLAYERDIR)/Config/Config.lua
+	cd $(PLAYERDIR)/Config && ln -s Config_Charli.lua Config.lua && cd $(CWD)
 	@echo "\n"
 
 setup_webots_cont: webot

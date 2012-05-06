@@ -36,6 +36,7 @@ cal["lucy"]={
   armBias={0,0,0,0,0,0},
   pid = 1, --NEW FIRMWARE
 };
+
 cal["scarface"]={
   servoBias={0,0,0,0,0,0, 0,0,0,0,0,0},
   footXComp = 0,
@@ -44,6 +45,16 @@ cal["scarface"]={
   headPitchComp = 0,
   armBias={0,0,0,0,0,0},
   pid = 0,
+};
+
+cal["felix"]={
+  servoBias={0,0,0,0,0,0, 0,0,0,0,0,0},
+  footXComp = 0,
+  footYComp = 0,
+  kickXComp = 0,
+  headPitchComp = 0,
+  armBias={0,0,0,0,0,0},
+  pid = 1,
 };
 
 ----------------------------------------------------------------
@@ -142,3 +153,33 @@ cal["lucy"].kickXComp=0.005;
 cal["linus"].servoBias={3,1,43,1,-12,-17,-8,-5,-13,-4,1,-5,};
 cal["linus"].footXComp=0.012;
 cal["linus"].kickXComp=0.005;
+
+-- Updated date: Sat May  5 09:56:25 2012
+cal["linus"].servoBias={3,1,43,1,-14,-31,-8,-5,-13,-4,1,0,};
+cal["linus"].footXComp=0.006;
+cal["linus"].kickXComp=0.005;
+
+-- Updated date: Sat May  5 21:53:24 2012
+cal["scarface"].servoBias={0,0,7,0,0,0,0,0,-7,-9,-4,0,};
+cal["scarface"].footXComp=-0.003;
+cal["scarface"].kickXComp=0.010;
+
+-- Updated date: Sat May  5 22:07:10 2012
+cal["scarface"].servoBias={0,0,7,0,0,0,0,0,-7,-9,-4,2,};
+cal["scarface"].footXComp=-0.003;
+cal["scarface"].kickXComp=0.010;
+
+-- Updated date: Sat May  5 22:28:03 2012
+cal["felix"].servoBias={11,-11,0,0,0,0,-9,4,0,0,-6,12,};
+cal["felix"].footXComp=-0.002;
+cal["felix"].kickXComp=0.000;
+
+-- Updated date: Sat May  5 22:35:53 2012
+cal["felix"].servoBias={11,-11,0,0,0,0,-9,4,0,0,-6,12,};
+cal["felix"].footXComp=0.001;
+cal["felix"].kickXComp=0.005;
+
+-- Updated date: Sat May  5 22:50:50 2012
+cal["felix"].servoBias={11,1,0,0,0,0,-9,10,0,0,-6,15,};
+cal["felix"].footXComp=0.001;
+cal["felix"].kickXComp=0.005;

@@ -35,8 +35,6 @@ require('shm')
 require('Body')
 require('vector')
 require('getch')
-require('BodyFSM');
-require('HeadFSM');
 require('Motion');
 require('walk');
 require('dive');

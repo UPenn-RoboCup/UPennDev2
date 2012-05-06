@@ -38,14 +38,8 @@ require('Speak')
 require('getch')
 require('Body')
 require('Motion')
---Now update team and GC in main.lua
-
-require('GameControl')
-require('Team')
 
 Motion.entry();
-GameControl.entry();
-Team.entry();
 
 darwin = false;
 webots = false;
@@ -82,6 +76,7 @@ function update()
   count = count + 1;
   --Update battery info
   wcm.set_robot_battery_level(Body.get_battery_level());
+  vcm.set_camera_teambroadcast(1); --Turn on wireless team broadcast
 
   if (not init)  then
     if (calibrating) then
@@ -89,7 +84,6 @@ function update()
         Speak.talk('Calibration done');
         calibrating = false;
         ready = true;
-        Team.update_shm();
       end
     elseif (ready) then
       -- initialize state machines
@@ -139,13 +133,6 @@ function update()
     HeadFSM.update();
     Motion.update();
     Body.update();
-    --Now update team and GC in main.lua
-    if (count % 100 ==0) then
-      GameControl.update();
-    end 
-    if (count % 10==0) then
-      Team.update();
-    end
   end
 
   local dcount = 50;

@@ -129,6 +129,7 @@ function recv_msgs()
         if (t.teamNumber == state.teamNumber) and 
 	   (t.id ~= playerID) then
           t.tReceive = Body.get_time();
+	  t.labelB = {}; --Kill labelB information
           states[t.id] = t;
         end
       end
@@ -171,10 +172,19 @@ function update_obstacle()
   --print("Closest index dist", closest_index, closest_dist);
 end
 
-
-
 function entry()
 end
+
+function pack_labelB()
+  labelB = vcm.get_image_labelB();
+  width = vcm.get_image_width()/8; 
+  height = vcm.get_image_height()/8;
+  count = vcm.get_image_count();
+  array = serialization.serialize_label_rle(
+	labelB, width, height, 'uint8', 'labelB',count);
+  state.labelB = array;
+end
+
 
 function update()
   count = count + 1;
@@ -223,6 +233,9 @@ function update()
     local v = vcm.get_corner_v();
     state.cornerv[1],state.cornerv[2]=v[1],v[2];
   end
+
+  --Send lableB wirelessly!
+  pack_labelB();
     
   if (math.mod(count, 1) == 0) then
 

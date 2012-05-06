@@ -17,11 +17,11 @@ vision.maxFPS = 30;
 vision.scaleB = 4;
 
 -- use this to enable line detection
-vision.enable_line_detection = 1;
+vision.enable_line_detection = 0;
 -- use this to enable spot detection
 vision.enable_spot_detection = 0;
 -- use this to enable midfield landmark detection
-vision.enable_midfield_landmark_detection = 0;
+vision.enable_midfield_landmark_detection = 1;
 -- use this to enable copying images to shm (for colortables, testing)
 vision.copy_image_to_shm = 1;
 -- use this to enable storing all images
@@ -72,7 +72,7 @@ vision.goal.th_edge_margin= 5;
 vision.goal.th_bottom_boundingbox=0.9;
 vision.goal.th_ground_boundingbox={-15,15,-15,10}; 
 vision.goal.th_min_green_ratio = 0.2;
-vision.goal.th_min_bad_color_ratio = 0.5;
+vision.goal.th_min_bad_color_ratio = 0.1;
 vision.goal.th_goal_separation = {0.35,2.0};
 vision.goal.th_goal_separation = {0.35,3.0}; --FOR OP
 vision.goal.th_min_area_unknown_post = 200;
@@ -91,5 +91,3 @@ vision.corner.dist_threshold = 100; --10 pixel
 vision.corner.length_threshold = 15;
 vision.corner.min_center_dist = 1.5;
 
---for testing
-vision.ball.check_for_ground = 0;

@@ -13,9 +13,14 @@ LOGGER.init();
 % create shm interface
 robot = shm_robot(teamNumber, playerID);
 
+% camera number
+ncamera = robot.vcmCamera.get_ncamera();
 
 % init window
 figure(1);
+if ncamera == 2
+	set(gcf, 'position', [1, 1, 1200, 400]);
+end
 clf;
 
 
@@ -40,6 +45,7 @@ MONITOR.hButton11 = uicontrol('Style','pushbutton','String','LOG',...
 while (1)
   tic;
   r_mon=robot.get_monitor_struct();
+	subplot(1,2,1);
   yuyv_type = r_mon.yuyv_type;
   if yuyv_type==0
       yuyv = robot.get_yuyv();

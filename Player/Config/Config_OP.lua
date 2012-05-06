@@ -59,6 +59,9 @@ elseif (robotName=='betty') then
 elseif (robotName=='lucy') then
   game.playerID = 4; 
   game.role = 1; --Default attacker
+elseif (robotName=='felix') then
+  game.playerID = 5; 
+  game.role = 1; --Default attacker
 else
   game.playerID = 5; 
   game.role = 1; --Default attacker
@@ -86,7 +89,7 @@ fsm.kickoff_wait_enable = 0;
 --fsm.enable_walkkick = 1;
 --fsm.enable_sidekick = 1;
 
-fsm.playMode = 3; --1 for demo, 2 for orbit, 3 for direct approach
+fsm.playMode = 2; --1 for demo, 2 for orbit, 3 for direct approach
 fsm.enable_walkkick = 0;
 fsm.enable_sidekick = 0;
 

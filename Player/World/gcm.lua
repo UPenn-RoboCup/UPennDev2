@@ -48,6 +48,7 @@ Speak.talk('Team Number '..Config.game.teamNumber);
 
 -- initialize state to 'initial'
 set_game_state(0);
+set_team_role(Config.game.role);
 
 -- helper functions
 function in_penalty()

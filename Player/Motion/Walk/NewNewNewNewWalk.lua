@@ -140,7 +140,13 @@ function entry()
   print ("Motion: Walk entry")
   --SJ: now we always assume that we start walking with feet together
   --Because joint readings are not always available with darwins
-  stance_reset();
+  uLeft = util.pose_global(vector.new({-supportX, footY, 0}),uTorso);
+  uRight = util.pose_global(vector.new({-supportX, -footY, 0}),uTorso);
+
+  uLeft1, uLeft2 = uLeft, uLeft;
+  uRight1, uRight2 = uRight, uRight;
+  uTorso1, uTorso2 = uTorso, uTorso;
+  uSupport = uTorso;
 
   --Place arms in appropriate position at sides
   Body.set_larm_command(qLArm0);
@@ -699,12 +705,6 @@ function doPunch(punchtype)
 end
 
 function stance_reset() --standup/sitdown/falldown handling
-  uLeft = util.pose_global(vector.new({-supportX, footY, 0}),uTorso);
-  uRight = util.pose_global(vector.new({-supportX, -footY, 0}),uTorso);
-  uLeft1, uLeft2 = uLeft, uLeft;
-  uRight1, uRight2 = uRight, uRight;
-  uTorso1, uTorso2 = uTorso, uTorso;
-  uSupport = uTorso;
 end
 
 function switch_stance(stance)

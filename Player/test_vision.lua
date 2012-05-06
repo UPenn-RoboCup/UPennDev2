@@ -38,6 +38,7 @@ require('wcm')
 require('Speak')
 require('Body')
 require('Motion')
+require('gcm')
 
 smindex = 0;
 
@@ -83,6 +84,9 @@ local tUpdate = t0;
 -- Broadcast the images at a lower rate than other data
 local broadcast_enable=0;
 local imageCount=0;
+
+-- set game state to ready to stop init particle filter during debugging
+gcm.set_game_state(1);
 
 
 -- main loop

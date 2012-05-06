@@ -28,6 +28,7 @@ require('World')
 
 comm_inited = false;
 vcm.set_camera_teambroadcast(0);
+vcm.set_camera_broadcast(0);
 --Now vcm.get_camera_teambroadcast() determines 
 --Whether we use wired monitoring comm or wireless team comm
 
@@ -110,7 +111,10 @@ function update()
   if comm_inited and imageProcessed then
     if vcm.get_camera_teambroadcast()>0 then 
       GameControl.update();
-      Team.update();
+      if nProcessedImages % 3 ==0 then
+	--10 fps team update
+        Team.update();
+      end
     else
       broadcast();
     end

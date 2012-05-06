@@ -13,8 +13,8 @@ if Config.fsm.headLog then
   pitchMag = Config.fsm.headScan.pitchMag or 30*math.pi/180;
   yawMag = Config.fsm.headScan.yawMag or 90*math.pi/180;
 else
-  pitch0 = 20*math.pi/180;
-  pitchMag = 30*math.pi/180;
+  pitch0 = 22.5*math.pi/180;
+  pitchMag = 32.5*math.pi/180;
   yawMag = 90*math.pi/180;
 end
 

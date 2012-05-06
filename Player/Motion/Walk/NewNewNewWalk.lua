@@ -372,11 +372,14 @@ function check_walkkick()
 
   if walkKickRequest>0 and
     walkKickRequest>#walkKick then
+    
     print("NEWNEWNEWKICK: WALKKICK DONE");
     walkKickRequest = 0;
     tStep = tStep0;
     stepHeight = stepHeight0;
     current_step_type=0;
+    velCurrent=vector.new({0,0,0});
+    velCommand=vector.new({0,0,0});
     return;
   end
 

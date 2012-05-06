@@ -43,6 +43,8 @@ vision.enable_robot_detection = 0;
 vision.enable_line_detection = 0;
 vision.enable_midfield_landmark_detection = 0;
 --]]
+-- use this to enable freespace detection and occupancy map
+vision.enable_freespace_detection = 1;
 
 ----------------------------
 --OP specific

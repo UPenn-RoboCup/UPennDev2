@@ -167,15 +167,17 @@ function h=show_monitor()
     yuyv_type = r_mon.yuyv_type;
     if MONITOR.enable1
       MONITOR.h1 = subplot(4,5,[1 2 6 7]);
-      if yuyv_type==0
+      if yuyv_type==1
         yuyv = robots{playerNumber,teamNumber}.get_yuyv();
-	plot_yuyv(yuyv);
-      elseif yuyv_type==1
+				plot_yuyv(yuyv);
+      elseif yuyv_type==2
         yuyv = robots{playerNumber,teamNumber}.get_yuyv2();
-	plot_yuyv(yuyv);
-      else
+				plot_yuyv(yuyv);
+      elseif yuyv_type==3
         yuyv = robots{playerNumber,teamNumber}.get_yuyv3();
-	plot_yuyv(yuyv);
+				plot_yuyv(yuyv);
+			else
+				return;
       end
 
       %webots use non-subsampled label (2x size of yuyv)
@@ -183,13 +185,15 @@ function h=show_monitor()
         if MONITOR.is_webots
           plot_overlay(r_mon,2*MONITOR.enable1,1);
         else
-	  if yuyv_type==0
+				  if yuyv_type==1
             plot_overlay(r_mon,1,1);
-	  elseif yuyv_type==1
+				  elseif yuyv_type==2
             plot_overlay(r_mon,2,1);
-	  else
+				  elseif yuyv_type==3
             plot_overlay(r_mon,4,1);
-	  end
+					else
+						return;
+				  end
         end
       end
 
@@ -229,9 +233,9 @@ function h=show_monitor()
       cla(MONITOR.h3);
 
       if MONITOR.enable3==5 
-	if isfield(r_mon.robot, 'map')
+        if isfield(r_mon.robot, 'map')
           plot_grid(r_mon.robot.map);  
-	end
+				end
         plot_field(MONITOR.h3,MONITOR.fieldtype);
         plot_robot( r_struct, r_mon,2,3 );
       else

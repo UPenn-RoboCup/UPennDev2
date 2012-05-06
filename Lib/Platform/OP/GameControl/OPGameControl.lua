@@ -24,7 +24,7 @@ buttonPressed = 0;
 kickoff = -1;
 half = 1;
 
-teamPenalty = {0,0,0,0};
+teamPenalty = vector.zeros(Config.game.nPlayers);
 
 penalty = {};
 for t = 1,2 do

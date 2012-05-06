@@ -163,7 +163,8 @@ function update()
   -- Tosro X position offxet (for differetly calibrated robots)
   if kickState==1 then --Initial slide
      torsoShiftX=kickXComp*ph;
-  elseif kickState == #kickDef-1 then
+--  elseif kickState == #kickDef-1 then
+  elseif kickState == #kickDef then
      torsoShiftX=kickXComp*(1-ph);
   end
 

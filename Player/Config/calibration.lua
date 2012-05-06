@@ -57,6 +57,15 @@ cal["felix"]={
   pid = 1, --NEW FIRMWARE
 };
 
+cal["hokie"]={
+  servoBias={0,0,0,0,0,0, 0,0,0,0,0,0},
+  footXComp = 0,
+  footYComp = 0,
+  kickXComp = 0,
+  headPitchComp = 0;
+  armBias={0,12*math.pi/180,0,0,-6*math.pi/180,0},
+  pid = 1, --NEW FIRMWARE
+};
 ------------------------------------------------------------
 --Auto-appended calibration settings
 ------------------------------------------------------------
@@ -155,3 +164,23 @@ cal["felix"].servoBias={11,1,0,0,0,0,-9,10,0,0,-6,15,};
 cal["felix"].footXComp=0.001;
 cal["felix"].kickXComp=0.005;
 
+
+-- Updated date: Sun May  6 12:03:01 2012
+cal["hokie"].servoBias={0,0,0,0,0,0,0,0,0,0,0,0,};
+cal["hokie"].footXComp=0.000;
+cal["hokie"].kickXComp=0.000;
+
+-- Updated date: Sun May  6 14:20:12 2012
+cal["hokie"].servoBias={0,0,0,25,0,-26,0,0,0,0,0,2,};
+cal["hokie"].footXComp=0.000;
+cal["hokie"].kickXComp=0.000;
+
+-- Updated date: Sun May  6 14:23:18 2012
+cal["hokie"].servoBias={0,-14,0,25,0,-26,0,8,0,0,0,2,};
+cal["hokie"].footXComp=0.010;
+cal["hokie"].kickXComp=0.000;
+
+-- Updated date: Sun May  6 14:26:23 2012
+cal["hokie"].servoBias={0,-14,0,25,0,-26,0,10,0,0,0,2,};
+cal["hokie"].footXComp=0.010;
+cal["hokie"].kickXComp=0.000;

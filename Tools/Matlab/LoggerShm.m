@@ -14,7 +14,7 @@ LOGGER.init();
 robot = shm_robot(teamNumber, playerID);
 
 % camera number
-ncamera = robot.vcmCamera.get_ncamera();
+ncamera = 1; %robot.vcmCamera.get_ncamera();
 
 % init window
 figure(1);
@@ -45,19 +45,24 @@ MONITOR.hButton11 = uicontrol('Style','pushbutton','String','LOG',...
 while (1)
   tic;
   r_mon=robot.get_monitor_struct();
-	subplot(1,2,1);
+%	subplot(1,2,r_mon.camera.select+1);
   yuyv_type = r_mon.yuyv_type;
-  if yuyv_type==0
-      yuyv = robot.get_yuyv();
-      plot_yuyv(yuyv);
-  elseif yuyv_type==1
-        yuyv = robot.get_yuyv2();
-	plot_yuyv(yuyv);
-  else
-        yuyv = robot.get_yuyv3();
-	plot_yuyv(yuyv);
-  end
-  drawnow;	
+ 	if yuyv_type==1
+   	  yuyv = robot.get_yuyv();
+%			disp('Got yuyv');
+     	plot_yuyv(yuyv);
+  elseif yuyv_type==2
+ 	    yuyv = robot.get_yuyv2();
+%			disp('Got yuyv2');
+			plot_yuyv(yuyv);
+ 	elseif yuyv_type==3
+   	  yuyv = robot.get_yuyv3();
+%			disp('Got yuyv3');
+			plot_yuyv(yuyv);
+	else 
+		continue;
+ 	end
+	drawnow;	
 
 
   if MONITOR.logging

@@ -62,5 +62,5 @@ camera.param[5] = {key='Gain',          val={49, 49}};
 camera.param[6] = {key='Horizontal Flip',   val={1, 0}};
 camera.param[7] = {key='Vertical Flip',   val={1, 0}};
 
-camera.lut_file = 'lut_NaoV4_0506.raw';
+camera.lut_file = 'lut_NaoV4_0506_1.raw';
 

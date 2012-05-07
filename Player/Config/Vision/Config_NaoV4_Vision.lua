@@ -18,7 +18,7 @@ vision.maxFPS = 30;
 vision.scaleB = 4;
 
 -- use this to enable line detection
-vision.enable_2_yellow_goals = 1;
+vision.enable_2_yellow_goals = 0;
 -- use this to enable line detection
 vision.enable_line_detection = 0;
 -- use this to enable spot detection
@@ -42,7 +42,7 @@ vision.enable_robot_detection = 0;
 --OP specific
 ----------------------------
 -- Use tilted bounding box?
-vision.use_tilted_bbox = 0;
+vision.use_tilted_bbox = 1;
 -- Store and send subsampled image?
 vision.subsampling = 1; --1/2 sized image
 vision.subsampling2 = 1; --1/4 sized image
@@ -69,7 +69,7 @@ vision.goal.th_min_color_count=100;
 vision.goal.th_nPostB = 5;
 vision.goal.th_min_area = 40;
 vision.goal.th_min_orientation = 60*math.pi/180;
-vision.goal.th_min_fill_extent=0.35;
+vision.goal.th_min_fill_extent=0.75;
 vision.goal.th_aspect_ratio={2.5,15};
 vision.goal.th_edge_margin= 5;
 vision.goal.th_bottom_boundingbox=0.9;

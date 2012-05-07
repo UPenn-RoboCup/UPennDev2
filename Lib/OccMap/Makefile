@@ -6,12 +6,12 @@ TARGETS = all clean
 
 all: OccMap
 
-#%.o: %.cpp
-#	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
-#%.o: %.cc
-#	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
-#%.o: %.c
-#	$(CC) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
+%.o: %.cc
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
+%.o: %.c
+	$(CC) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
 
 OccMap: luaOccMap.o
 	$(LD) $(LDFLAGS) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ $(LIB_DIR) -lm

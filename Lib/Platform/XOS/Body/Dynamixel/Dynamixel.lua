@@ -106,6 +106,12 @@ function set_id(idOld, idNew)
    return unix.write(fd, inst);
 end
 
+function set_baud_1m(id)
+  local addr = 4; --Baud
+  local inst = DynamixelPacket.write_byte(id, addr, 1);
+  return unix.write(fd, inst);
+end
+
 function set_led(id, value)
    local addr = 25;  -- Led
    local inst = DynamixelPacket.write_byte(id, addr, value);

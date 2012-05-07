@@ -494,6 +494,11 @@ function motion_legs(qLegs)
 
   --TODO: Toe/heel lifting
 
+hipPitchCompensationL = Config.walk.hipPitchCompensationL or 
+-2*math.pi/180;
+hipPitchCompensationR = Config.walk.hipPitchCompensationR or 
+-0.5*math.pi/180;
+
   if not active then --Double support, standing still
     --qLegs[2] = qLegs[2] + hipShift[2];    --Hip roll stabilization
     qLegs[4] = qLegs[4] + kneeShift;    --Knee pitch stabilization
@@ -513,8 +518,6 @@ function motion_legs(qLegs)
 
     qLegs[11] = qLegs[11]  + toeTipCompensation*phComp;--Lifting toetip
 
-hipPitchCompensationL = -2*math.pi/180;
-
     qLegs[2] = qLegs[2] + hipRollCompensation*phComp; --Hip roll 
     qLegs[3] = qLegs[3] + hipPitchCompensationL*phComp; 
 
@@ -526,7 +529,6 @@ hipPitchCompensationL = -2*math.pi/180;
 
     qLegs[5] = qLegs[5]  + toeTipCompensation*phComp;--Lifting toetip
 
-hipPitchCompensationR = -0.5*math.pi/180;
 
 
     qLegs[8] = qLegs[8] - hipRollCompensation*phComp;--Hip roll 
@@ -708,8 +710,6 @@ function doSideKickRight()
     walkKick = walkKickDef["SideRight"];
   end
 end
-
-
 
 --dummy function for NSL kick, depreciated
 function zero_velocity()

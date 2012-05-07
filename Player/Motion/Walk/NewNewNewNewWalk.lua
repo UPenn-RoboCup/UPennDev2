@@ -1,3 +1,5 @@
+--CHARLI WALK CODE
+
 module(..., package.seeall);
 
 require('Body')
@@ -57,6 +59,7 @@ ph1Zmp,ph2Zmp=ph1Single,ph2Single;
 
 --Compensation parameters
 hipRollCompensation = Config.walk.hipRollCompensation;
+hipPitchCompensation = Config.walk.hipPitchCompensation or 0;
 ankleMod = Config.walk.ankleMod or {0,0};
 spreadComp = Config.walk.spreadComp or 0;
 turnCompThreshold = Config.walk.turnCompThreshold or 0;
@@ -509,7 +512,12 @@ function motion_legs(qLegs)
     qLegs[6] = qLegs[6] + ankleShift[2];    --Ankle roll stabilization
 
     qLegs[11] = qLegs[11]  + toeTipCompensation*phComp;--Lifting toetip
-    qLegs[2] = qLegs[2] + hipRollCompensation*phComp; --Hip roll compensation
+
+hipPitchCompensationL = -2*math.pi/180;
+
+    qLegs[2] = qLegs[2] + hipRollCompensation*phComp; --Hip roll 
+    qLegs[3] = qLegs[3] + hipPitchCompensationL*phComp; 
+
   else
     qLegs[8] = qLegs[8]  + hipShift[2];    --Hip roll stabilization
     qLegs[10] = qLegs[10] + kneeShift;    --Knee pitch stabilization
@@ -517,7 +525,13 @@ function motion_legs(qLegs)
     qLegs[12] = qLegs[12] + ankleShift[2];    --Ankle roll stabilization
 
     qLegs[5] = qLegs[5]  + toeTipCompensation*phComp;--Lifting toetip
-    qLegs[8] = qLegs[8] - hipRollCompensation*phComp;--Hip roll compensation
+
+hipPitchCompensationR = -0.5*math.pi/180;
+
+
+    qLegs[8] = qLegs[8] - hipRollCompensation*phComp;--Hip roll 
+    qLegs[9] = qLegs[9] + hipPitchCompensationR*phComp; 
+
   end
 
   Body.set_lleg_command(qLegs);
@@ -775,6 +789,7 @@ function foot_phase(ph)
   local zf = .5*(1-math.cos(2*math.pi*phSingleSkew));
 
 
+  use_alternative_trajectory = 1;
   if use_alternative_trajectory>0 then
     ph1FootPhase = 0.1;
     ph2FootPhase = 0.5;
@@ -788,25 +803,25 @@ function foot_phase(ph)
 
     if phSingle < ph1FootPhase then
       phZTemp = phSingle / ph2FootPhase;
---      xf = 0;
---      zf = 1 - (1-phZTemp)^exp1FootPhase;
+      fxf = 0;
+      fzf = 1 - (1-phZTemp)^exp1FootPhase;
     elseif phSingle < ph2FootPhase then
       phXTemp = (phSingle-ph1FootPhase)/(ph3FootPhase-ph1FootPhase);
       phZTemp = phSingle / ph2FootPhase;
---      xf =  .5*(1-math.cos(math.pi*phXTemp));
---      zf = 1 - (1-phZTemp)^exp1FootPhase;
+      fxf =  .5*(1-math.cos(math.pi*phXTemp));
+      fzf = 1 - (1-phZTemp)^exp1FootPhase;
     elseif phSingle < ph3FootPhase then
       phXTemp = (phSingle-ph1FootPhase)/(ph3FootPhase-ph1FootPhase);
       phZTemp = (phSingle-ph2FootPhase)/(ph3FootPhase-ph2FootPhase);
---      xf =  .5*(1-math.cos(math.pi*phXTemp));
---      zf = 1 - phZTemp^exp2FootPhase*(1-zFootLand);
+      fxf =  .5*(1-math.cos(math.pi*phXTemp));
+      fzf = 1 - phZTemp^exp2FootPhase*(1-zFootLand);
     else
       phZTemp = (1-phSingle) / (1-ph3FootPhase);
---      xf = 1;
---      zf = phZTemp^exp3FootPhase*zFootLand;
+      fxf = 1;
+      fzf = phZTemp^exp3FootPhase*zFootLand;
     end
   end
-  return xf, zf;
+  return fxf, fzf;
 end
 
 entry();

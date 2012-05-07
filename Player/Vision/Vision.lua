@@ -344,6 +344,7 @@ function update_shm(status)
             and vcm.get_debug_store_goal_detections() == 1)) then
 
 	if webots then
+          vcm.set_camera_yuyvType(1);
           vcm.set_image_labelA(labelA.data);
           vcm.set_image_labelB(labelB.data);
 	end

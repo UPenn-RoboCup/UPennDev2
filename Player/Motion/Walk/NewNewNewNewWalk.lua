@@ -792,14 +792,14 @@ function foot_phase(ph)
   use_alternative_trajectory = 1;
   if use_alternative_trajectory>0 then
     ph1FootPhase = 0.1;
-    ph2FootPhase = 0.5;
-    ph3FootPhase = 0.8;
+    ph2FootPhase = 0.4;
+    ph3FootPhase = 0.7;
  
     exp1FootPhase = 2;
     exp2FootPhase = 2;
     exp3FootPhase = 2;
 
-    zFootLand = 0.3;    
+    zFootLand = 0.2;    
 
     if phSingle < ph1FootPhase then
       phZTemp = phSingle / ph2FootPhase;

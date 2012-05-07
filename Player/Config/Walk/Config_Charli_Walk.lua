@@ -147,25 +147,6 @@ walk.supportModYInitial=-0.06; --Reduce initial body swing
 walk.supportSideY = 0.01; 
 
 walk.supportY = 0.028;
-
-
-
 walk.tZmp = 0.27; 
 
-
-
-
-
-
---[[
-walk.tStep = 0.65;
-walk.phSingle = {0.2,0.8};
---]]
-
---[[
---Faster walking
-walk.tStep = 0.5;
-walk.stepHeight = 0.05;
-walk.footX = -0.025;
---]]
 

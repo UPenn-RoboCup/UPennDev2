@@ -253,6 +253,8 @@ return;
 		elseif evt.Key == 'w' | evt.Key == 'W'
 			disp('SaveLut');
 			SaveLUT();
+		elseif evt.Key >= '1' & evt.Key <= '7'
+			Color(str2num(evt.Key));
 		end
 				 
 

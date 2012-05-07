@@ -343,6 +343,10 @@ function update_shm(status)
         or ((goalCyan.detect == 1 or goalYellow.detect == 1) 
             and vcm.get_debug_store_goal_detections() == 1)) then
 
+	if webots then
+          vcm.set_image_labelA(labelA.data);
+          vcm.set_image_labelB(labelB.data);
+	end
         if vcm.get_camera_broadcast() > 0 then --Wired monitor broadcasting
 	  if vcm.get_camera_broadcast() == 1 then
 	    --Level 1: 1/4 yuyv, labelB
@@ -353,8 +357,8 @@ function update_shm(status)
 	  elseif vcm.get_camera_broadcast() == 2 then
 	    --Level 2: 1/2 yuyv, labelA, labelB
             vcm.set_image_yuyv2(ImageProc.subsample_yuyv2yuyv(
-  	    vcm.get_image_yuyv(),
-  	    camera.width/2, camera.height,2));
+  	      vcm.get_image_yuyv(),
+  	      camera.width/2, camera.height,2));
             vcm.set_image_labelA(labelA.data);
             vcm.set_image_labelB(labelB.data);
 	  else

@@ -30,7 +30,8 @@ dev.ip_wired = '192.168.0.255';
 dev.ip_wireless = '139.140.218.255';
 dev.game_control = 'NaoGameControl';
 dev.team='TeamSPL';
-dev.walk = 'Walk/NewNewWalk';
+--dev.walk = 'Walk/NewNewWalk';
+dev.walk = 'Walk/NewNewNewWalk';
 dev.kick = 'NewKick';
 
 --Speak enable
@@ -65,6 +66,7 @@ else
   --fsm.body = {'GeneralPlayer'};
 end
 fsm.head = {'NaoPlayer'};
+--fsm.head = {'GeneralPlayer'};
 
 -- Team Parameters
 
@@ -110,3 +112,7 @@ stance.delay = 80; --amount of time to stand still after standing to regain bala
 --Should be more generally handled in Body..
 servo={};
 servo.pid=0;
+
+
+-- VT goalpost 
+world.postDiameter = 0.12

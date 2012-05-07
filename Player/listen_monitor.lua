@@ -148,9 +148,9 @@ function push_yuyv2(obj)
   --Because the image will be broken anyway if packet loss occurs
   if (check_flag(yuyv2_flag) == name.parts and name.partnum==name.parts ) then
      fps_count=fps_count+1;
-  --   if fps_count%fps_interval ==0 then
+     if fps_count%fps_interval ==0 then
        print("yuyv2\t"..1/(unix.time() - yuyv2_t_full).." fps" );
-  --   end
+     end
 
      yuyv2_t_full = unix.time();
      local yuyv2_str = "";
@@ -167,9 +167,9 @@ function push_yuyv3(obj)
 -- 1/4 size, we don't need to divide it 
 
   fps_count=fps_count+1;
---  if fps_count%fps_interval ==0 then
+  if fps_count%fps_interval ==0 then
      print("yuyv3\t"..1/(unix.time() - yuyv3_t_full).." fps" );
---  end
+  end
   yuyv3_t_full = unix.time();
   yuyv3 = cutil.test_array();
   name = parse_name(obj.name);

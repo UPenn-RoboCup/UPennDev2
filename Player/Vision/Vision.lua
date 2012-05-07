@@ -344,6 +344,7 @@ function update_shm(status)
             and vcm.get_debug_store_goal_detections() == 1)) then
 
 	if webots then
+          vcm.set_camera_yuyvType(1);
           vcm.set_image_labelA(labelA.data);
           vcm.set_image_labelB(labelB.data);
 	end
@@ -414,12 +415,13 @@ function exit()
   HeadTransform.exit();
 end
 
-function bboxStats(color, bboxB, rollAngle)
+function bboxStats(color, bboxB, rollAngle, scale)
+  scale = scale or scaleB;
   bboxA = {};
-  bboxA[1] = scaleB*bboxB[1];
-  bboxA[2] = scaleB*bboxB[2] + scaleB - 1;
-  bboxA[3] = scaleB*bboxB[3];
-  bboxA[4] = scaleB*bboxB[4] + scaleB - 1;
+  bboxA[1] = scale*bboxB[1];
+  bboxA[2] = scale*bboxB[2] + scale - 1;
+  bboxA[3] = scale*bboxB[3];
+  bboxA[4] = scale*bboxB[4] + scale - 1;
   if rollAngle then
  --hack: shift boundingbox 1 pix helps goal detection
  --not sure why this thing is happening...

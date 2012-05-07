@@ -22,12 +22,16 @@ use_tilted_bbox = Config.vision.use_tilted_bbox or 0;
 use_centerpost=Config.vision.goal.use_centerpost or 0;
 --Check the bottom of the post for green
 check_for_ground = Config.vision.goal.check_for_ground or 0;
+--Min height of goalpost (to reject false positives at the ground)
+goal_height_min = Config.vision.goal.height_min or -0.5;
 
-
+	
 --Post dimension
 postDiameter = Config.world.postDiameter or 0.10;
 postHeight = Config.world.goalHeight or 0.80;
 goalWidth = Config.world.goalWidth or 1.40;
+
+
 
 --------------------------------------------------------------
 --Vision threshold values (to support different resolutions)
@@ -225,6 +229,7 @@ function detect(color,color2)
       end
     end
 
+
    --SJ: we may need this again...
 
 --[[
@@ -246,6 +251,16 @@ function detect(color,color2)
       end
     en
 --]]
+
+    if valid then
+    --Height Check
+      scale = math.sqrt(postStats.area / (postDiameter*postHeight) );
+      v = HeadTransform.coordinatesA(postStats.centroid, scale);
+      if v[3] < goal_height_min then
+      vcm.add_debug_message(string.format("Height check fail:%.2f\n",v[3]));
+        valid = false; 
+      end
+    end
 
     if (valid) then
       ivalidB[#ivalidB + 1] = i;
@@ -374,6 +389,7 @@ function detect(color,color2)
         vcm.add_debug_message("Post size too small");
         return goal;
       end
+
     end
   end
   

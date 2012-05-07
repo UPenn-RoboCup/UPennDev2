@@ -20,13 +20,13 @@ run_nao(){
         #
         echo "Starting Cognition..."
         cd $PLAYER_DIR
-        screen -dm -L -S cognition /usr/local/bin/lua run_cognition.lua
+        screen -dm -L -S cognition /usr/local/bin/luajit run_cognition.lua
         ## Allow Cognition some time to start
         sleep 3
         #
         echo "Starting Test Vision..."
         cd $PLAYER_DIR
-        screen -m -L -S test /usr/local/bin/lua test_vision.lua
+        screen -m -L -S test /usr/local/bin/luajit test_vision.lua
         #
         echo "Rock and Roll!"
 }

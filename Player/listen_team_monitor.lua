@@ -3,6 +3,10 @@ module(... or '', package.seeall)
 
 -- Add the required paths
 cwd = '.';
+
+uname = io.popen('uname -s')
+system = uname:read()
+
 computer = os.getenv('COMPUTER') or "";
 if (string.find(computer, "Darwin")) then
    -- MacOS X uses .dylib:                                                      
@@ -74,6 +78,9 @@ function push_labelB(obj,teamOffset)
   end
 end
 
+
+team_t_receive=vector.zeros(10);
+
 function push_team_struct(obj,teamOffset)
   states={};
 
@@ -117,6 +124,9 @@ function push_team_struct(obj,teamOffset)
 
   --Now index is 1 to 10 (5 robot, 2 teams)
   id=obj.id+teamOffset;
+
+
+  team_t_receive[id]=obj.tReceive;
   
 --states.role[id]=obj.id; --robot id?
   states.teamColor[id]=obj.teamColor;
@@ -230,5 +240,14 @@ while( true ) do
       end
     end
   end
+--TODO: timeout
+--[[
+  for i=1,10 do
+    t_current = unix.time();
+    if t.tReceive-team_t_receive[i]>5.0 then
+
+    end
+  end
+--]]
   unix.usleep(1E6*0.01);
 end

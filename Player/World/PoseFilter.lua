@@ -381,11 +381,11 @@ function goal_observation(pos, v)
   local rFilter = rGoalFilter;
   local aFilter = aGoalFilter;
 
---SJ: testing
-triangulation_threshold=4.0;
+  --SJ: testing
+  far_goal_threshold = 
+	Config.vision.goal.far_goal_threshold or 3.0;
 
-  if dGoal<triangulation_threshold then 
-
+  if dGoal<far_goal_threshold then 
 
     for ip = 1,n do
       local xErr = x - xp[ip];

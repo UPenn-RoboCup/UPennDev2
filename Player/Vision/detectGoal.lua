@@ -25,6 +25,7 @@ check_for_ground = Config.vision.goal.check_for_ground or 0;
 --Min height of goalpost (to reject false positives at the ground)
 goal_height_min = Config.vision.goal.height_min or -0.5;
 
+distanceFactor = Config.vision.goal.distanceFactor or 1.0;
 	
 --Post dimension
 postDiameter = Config.world.postDiameter or 0.10;
@@ -62,20 +63,22 @@ function detect(color,color2)
     --where shoud we update the roll angle? HeadTransform?
     tiltAngle = HeadTransform.getCameraRoll();
     vcm.set_camera_rollAngle(tiltAngle);
---    postB = ImageProc.tilted_goal_posts(Vision.labelB.data, 
---	Vision.labelB.m, Vision.labelB.n, color, th_nPostB,tiltAngle);
-
 
 --Tilted labelB test for OP
 ------------------------------------------------------------------------
+
+    scaleBGoal = 4;
+
     Vision.labelBtilted={}
-    Vision.labelBtilted.moffset = Vision.labelA.m/Vision.scaleB/2;
-    Vision.labelBtilted.m = Vision.labelA.m/Vision.scaleB*2;
-    Vision.labelBtilted.n = Vision.labelA.n/Vision.scaleB;
+    Vision.labelBtilted.moffset = Vision.labelA.m/scaleBGoal/2;
+    Vision.labelBtilted.m = Vision.labelA.m/scaleBGoal*2;
+    Vision.labelBtilted.n = Vision.labelA.n/scaleBGoal;
     Vision.labelBtilted.npixel = Vision.labelBtilted.m*Vision.labelBtilted.n;
+
     Vision.labelBtilted.data = 
 	ImageProc.tilted_block_bitor(Vision.labelA.data, 
-	Vision.labelA.m, Vision.labelA.n, Vision.scaleB, Vision.scaleB, tiltAngle);
+	Vision.labelA.m, Vision.labelA.n, scaleBGoal, 
+	scaleBGoal, tiltAngle);
     postB = ImageProc.goal_posts(Vision.labelBtilted.data, 
 	Vision.labelBtilted.m, Vision.labelBtilted.n, color, th_nPostB);
     --discount tilt offset
@@ -96,7 +99,6 @@ function detect(color,color2)
 	Vision.labelB.m, Vision.labelB.n, color, th_nPostB);
   end
 
-
   if (not postB) then 	
     vcm.add_debug_message("No post detected\n")
     return goal; 
@@ -107,14 +109,47 @@ function detect(color,color2)
   local postA = {};
   vcm.add_debug_message(string.format("Checking %d posts\n",#postB));
 
+  lower_factor = 0.3;
+
   for i = 1,#postB do
     local valid = true;
+
+    --Check lower part of the goalpost for thickness
     
     if use_tilted_bbox>0 then
       vcm.add_debug_message("Use Tilted postStats\n");
-      postStats = Vision.bboxStats(color, postB[i].boundingBox,tiltAngle);
+      postStats = Vision.bboxStats(color,postB[i].boundingBox,tiltAngle,scaleBGoal);
+      boundingBoxLower={};
+      boundingBoxLower[1],boundingBoxLower[2],
+      boundingBoxLower[3],boundingBoxLower[4]=
+        postB[i].boundingBox[1], postB[i].boundingBox[2],
+        postB[i].boundingBox[3], postB[i].boundingBox[4];
+
+      boundingBoxLower[3] = (1-lower_factor)* boundingBoxLower[3] + 
+	lower_factor*boundingBoxLower[4];
+      postStatsLow = Vision.bboxStats(color, 
+	postB[i].boundingBox,tiltAngle,scaleBGoal);
     else
-      postStats = Vision.bboxStats(color, postB[i].boundingBox);
+      postStats = Vision.bboxStats(color, postB[i].boundingBox,scaleBGoal);
+      boundingBoxLower={};
+      boundingBoxLower[1],boundingBoxLower[2],
+      boundingBoxLower[3],boundingBoxLower[4]=
+        postB[i].boundingBox[1], postB[i].boundingBox[2],
+        postB[i].boundingBox[3], postB[i].boundingBox[4];
+      boundingBoxLower[3] = (1-lower_factor)* boundingBoxLower[3] + 
+	lower_factor*boundingBoxLower[4];
+      postStatsLow = Vision.bboxStats(color, 
+	  postB[i].boundingBox,tiltAngle,scaleBGoal);
+    end
+
+    --REDUCE POST WIDTH 
+    vcm.add_debug_message(string.format(
+	"Thickness: full %.1f lower:%.1f\n",
+	postStats.axisMinor,postStatsLow.axisMinor));
+    widthRatio = postStats.axisMinor / postStatsLow.axisMinor;
+    if widthRatio < 2.0 then
+      postStats.axisMinor = math.min(
+	postStats.axisMinor, postStatsLow.axisMinor)
     end
 
     -- size and orientation check
@@ -317,6 +352,10 @@ function detect(color,color2)
     end
 
     goal.v[i] = HeadTransform.coordinatesA(postA[i].centroid, scale);
+
+    goal.v[i][1]=goal.v[i][1]*distanceFactor;
+    goal.v[i][2]=goal.v[i][2]*distanceFactor;
+
 
     vcm.add_debug_message(string.format("post[%d] = %.2f %.2f %.2f\n",
 	 i, goal.v[i][1], goal.v[i][2], goal.v[i][3]));

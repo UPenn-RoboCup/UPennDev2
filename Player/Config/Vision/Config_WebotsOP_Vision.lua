@@ -89,6 +89,11 @@ vision.goal.th_min_area_unknown_post = 40;
 vision.goal.use_centerpost = 1;
 vision.goal.check_for_ground = 1;
 
+vision.goal.far_goal_threshold= 4.5; --The range we triangulate
+vision.goal.distanceFactor = 1.0; 
+
+
+
 vision.line={};
 vision.line.max_width = 8;
 vision.line.connect_th = 1.4;

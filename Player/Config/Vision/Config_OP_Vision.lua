@@ -63,10 +63,10 @@ vision.ball.check_for_ground = 1;
 
 vision.goal={};
 vision.goal.th_min_color_count=100;
-vision.goal.th_nPostB = 5;
+vision.goal.th_nPostB = 10;
 vision.goal.th_min_area = 40;
 vision.goal.th_min_orientation = 60*math.pi/180;
-vision.goal.th_min_fill_extent=0.75;
+vision.goal.th_min_fill_extent=0.65;
 vision.goal.th_aspect_ratio={2.5,15};
 vision.goal.th_edge_margin= 5;
 vision.goal.th_bottom_boundingbox=0.9;
@@ -76,6 +76,10 @@ vision.goal.th_min_bad_color_ratio = 0.1;
 vision.goal.th_goal_separation = {0.35,2.0};
 vision.goal.th_goal_separation = {0.35,3.0}; --FOR OP
 vision.goal.th_min_area_unknown_post = 200;
+
+--vision.goal.far_goal_threshold= 3.0; --The range we triangulate
+vision.goal.far_goal_threshold= 4.0; --The range we triangulate
+vision.goal.distanceFactor = 1.12; 
 
 vision.goal.use_centerpost = 1;
 vision.goal.check_for_ground = 1;

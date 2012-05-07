@@ -215,7 +215,7 @@ return;
     DATA.ThresholdLabel = uicontrol(Std, ...
                                     'Parent', hfig, ...
                                     'Style', 'text', ...
-                                    'String','Threshold', ...
+                                    'String','(E) Threshold (R)', ...
                                     'Units', 'Normalized', ...
                                     'Position', [.025 .30 .15 .035]);
 
@@ -253,6 +253,18 @@ return;
 		elseif evt.Key == 'w' | evt.Key == 'W'
 			disp('SaveLut');
 			SaveLUT();
+		elseif evt.Key == 'e' | evt.Key == 'E'
+			disp('Lower Threshold');
+			data = get(h_obj, 'UserData');
+			value = get(data.ThresholdControl, 'Value');
+			value = value - 1;
+			UpdateThreshold(value);
+		elseif evt.Key == 'r' | evt.Key == 'R'
+			disp('Higher Threshold');
+			data = get(h_obj, 'UserData');
+			value = get(data.ThresholdControl, 'Value');
+			value = value + 1;
+			UpdateThreshold(value);
 		elseif evt.Key >= '1' & evt.Key <= '7'
 			Color(str2num(evt.Key));
 		end

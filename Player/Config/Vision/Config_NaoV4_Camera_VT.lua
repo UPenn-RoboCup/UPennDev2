@@ -52,11 +52,11 @@ camera.param[8] = {key='hue',           val={0, 0}};
 
 
 camera.param = {};
-camera.param[1] = {key='Brightness',    val={200, 200}};
+camera.param[1] = {key='Brightness',    val={100, 100}};
 camera.param[2] = {key='Contrast',      val={63, 63}};
 camera.param[3] = {key='Saturation',    val={125, 125}};
 camera.param[4] = {key='Hue',           val={0, 0}};
-camera.param[5] = {key='Exposure',      val={89, 89}};
+camera.param[5] = {key='Exposure',      val={69, 69}};
 camera.param[6] = {key='Gain',          val={49, 49}};
 camera.param[7] = {key='Sharpness',  val={160, 160}};
 camera.param[7] = {key='Horizontal Flip',   val={1, 0}};

@@ -59,9 +59,7 @@ walk.supportSideY = 0.02; --Lean sideways when sidestepping
 -------------------------------------------------------------- 
 --Imu feedback parameters, alpha / gain / deadband / max 
 -------------------------------------------------------------- 
-gyroFactor = 0.273*math.pi/180 * 300 / 1024; --dps to rad/s conversion
-gyroFactor = gyroFactor * 0.5;  --Working fine
-gyroFactor = 0;  --Working fine
+gyroFactor = 0.273* 300 / 1024; --dps to rad/s conversion
 
 walk.ankleImuParamX={1,0.75*gyroFactor, 2*math.pi/180, 5*math.pi/180};
 walk.kneeImuParamX={1,1.5*gyroFactor, 2*math.pi/180, 5*math.pi/180};
@@ -138,6 +136,26 @@ walk.hipRollCompensation = 5*math.pi/180;
 walk.phSingle = {0.15,0.85};
 walk.phZmp = {0.15,0.85};
 walk.supportModYInitial=-0.04; --Reduce initial body swing
+
+
+
+walk.supportX = -0.02;
+walk.supportY = 0.03;
+walk.supportModYInitial=-0.06; --Reduce initial body swing
+
+--Lean sideways when sidestepping
+walk.supportSideY = 0.01; 
+
+walk.supportY = 0.028;
+
+
+
+walk.tZmp = 0.27; 
+
+
+
+
+
 
 --[[
 walk.tStep = 0.65;

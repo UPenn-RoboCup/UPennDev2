@@ -43,7 +43,7 @@ game.teamNumber = 11;
 game.playerID = parse_hostname.get_player_id();
 game.robotID = game.playerID;
 game.teamColor = parse_hostname.get_team_color();
-game.role = game.playerID-1; -- 0 for goalie
+game.role = 1; --game.playerID-1; -- 0 for goalie
 game.nPlayers = 4;
 
 --loadconfig('Walk/Config_NaoV4_Walk')

@@ -43,7 +43,6 @@ fsm.bodyChase.rClose = 0.35;
 fsm.bodyChase.timeout = 20.0*speedFactor;
 fsm.bodyChase.tLost = 3.0*speedFactor;
 
-
 --------------------------------------------------
 --BodyAnticipate : Sit down and wait for kick (goalie)
 --------------------------------------------------
@@ -117,11 +116,11 @@ fsm.bodyApproach.xTarget12={0, 0.13,0.15}; --min, target, max
 fsm.bodyApproach.yTarget12={-0.005, 0.01, 0.025}; --min, target ,max
 
 --Target position for straight walkkick 
-fsm.bodyApproach.xTarget21={0, 0.15,0.17}; --min, target, max
+fsm.bodyApproach.xTarget21={0, 0.17,0.19}; --min, target, max
 fsm.bodyApproach.yTarget21={0.01, 0.035, 0.04}; --min, target ,max
 
 --Target position for side walkkick to left
-fsm.bodyApproach.xTarget22={0, 0.14,0.17}; --min, target, max
+fsm.bodyApproach.xTarget22={0, 0.15,0.17}; --min, target, max
 fsm.bodyApproach.yTarget22={0.005, 0.02, 0.035}; --min, target ,max
 
 --------------------------------------------------
@@ -167,7 +166,7 @@ fsm.bodyGotoCenter.timeout=10.0*speedFactor;
 --HeadTrack : Track the ball
 --------------------------------------------------
 fsm.headTrack = {};
-fsm.headTrack.timeout = 6.0 * speedFactor;
+fsm.headTrack.timeout = 3.0 * speedFactor;
 fsm.headTrack.tLost = 1.5 * speedFactor;
 fsm.headTrack.minDist = 0.30; --If ball is closer than this, don't look up
 fsm.headTrack.fixTh={0.20,0.08}; --Fix yaw axis if ball is within this box
@@ -222,7 +221,8 @@ fsm.headKickFollow.tFollow = 1.0*speedFactor;
 --HeadLookGoal: Look up to see the goal
 --------------------------------------------------
 fsm.headLookGoal={};
-fsm.headLookGoal.yawSweep = 50*math.pi/180;
+--fsm.headLookGoal.yawSweep = 50*math.pi/180;
+fsm.headLookGoal.yawSweep = 70*math.pi/180;
 fsm.headLookGoal.tScan = 1.0*speedFactor;
 
 --------------------------------------------------

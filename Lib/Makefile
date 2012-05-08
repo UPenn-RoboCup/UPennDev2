@@ -26,7 +26,7 @@ MATLABDIR= ../Tools/Matlab
 COLORTABLEDIR= $(MATLABDIR)/Colortable
 VELODIR= Velocity
 PRIMEDIR= Util/PrimeSense
-PLATFORMS = setup_nao setup_op setup_webots_nao setup_webots_op setup_webots_generic setup_webots_hubo setup_xos setup_visiontest
+PLATFORMS = nao naov4 op xos webots_nao webots_op webots_generic webots_hubo visiontest
 INSTDIR= ../Player/Lib
 WEBOTSCONTDIR= ../WebotsController
 PLAYERDIR= ../Player
@@ -54,9 +54,9 @@ endif
 
 all none:
 	@echo "Please do:"
-	@echo "   make PLATFORM"
+	@echo "\tmake setup_PLATFORM"
 	@echo "where PLATFORM is one of following:"
-	@echo "   $(PLATFORMS)"
+	@echo "\t$(PLATFORMS)"
 
 colortable:
 	@echo "Compiling Colortable Mex Files...\n"

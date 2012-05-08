@@ -229,7 +229,7 @@ setup_webots_generic: webots_generic setup_util setup_image  setup_webots
 	cd $(PLAYERDIR)/Config && ln -s Config_WebotsGeneric.lua Config.lua && cd $(CWD)
 	@echo "\n"
 
-setup_webots_charli: webots_charli setup_util setup_image setup_webots
+setup_webots_charli: webots_charli setup_util setup_image setup_webots setup_occmap
 	@echo "Setting up Webots Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
 	find $(WEBOTSCHARLIDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;

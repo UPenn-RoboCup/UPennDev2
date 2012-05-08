@@ -168,17 +168,28 @@ function update_shm()
     vcm.set_goal_v2(goalYellow.v[2]);
   end
 
+  distanceFactorCyan = 
+	Config.vision.landmark.distanceFactorCyan or 1;
+  distanceFactorYellow = 
+	Config.vision.landmark.distanceFactorYellow or 1;
+
   -- midfield landmark detection
   vcm.set_landmark_detect(0);
   if enableMidfieldLandmark == 1 then
     if landmarkYellow.detect==1 then
        vcm.set_landmark_detect(1);
        vcm.set_landmark_color(colorYellow);
-       vcm.set_landmark_v(landmarkYellow.v);
+       v={0,0,0,0};
+       v[1]=landmarkYellow.v[1]*distanceFactorYellow;
+       v[2]=landmarkYellow.v[2]*distanceFactorYellow;
+       vcm.set_landmark_v(v);
     elseif landmarkCyan.detect==1 then
        vcm.set_landmark_detect(1);
        vcm.set_landmark_color(colorCyan);
-       vcm.set_landmark_v(landmarkCyan.v);
+       v={0,0,0,0};
+       v[1]=landmarkCyan.v[1]*distanceFactorCyan;
+       v[2]=landmarkCyan.v[2]*distanceFactorCyan;
+       vcm.set_landmark_v(v);
     end
   end
 
@@ -211,6 +222,8 @@ function update_shm()
 	max_index=i;
       end
     end
+
+    --TODO: check line length 
 
     vcm.set_line_v1x(v1x);
     vcm.set_line_v1y(v1y);

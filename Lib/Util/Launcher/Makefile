@@ -1,11 +1,22 @@
+include ../../Makefile.inc
+
+all: launcher
+
 CWD= $(shell pwd)
 CTC= $(NaoqiCTC)
 
-all: local
+CXXFLAGS=-O1 -fpic
 
+%.o: %.cc
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
+%.o: %.c
+	$(CC) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
 
-local:
-	gcc test.c -o test -lusb
+launcher: lualauncher.o
+	$(CXX) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ $(LIBRT)
+
 
 cross:
 ifeq ($(CTC),)
@@ -21,4 +32,5 @@ else
 endif
 
 clean:
-	rm -rf build *.o test
+	rm -rf build 
+	rm -f *.o *.$(SHLIBEXT) *.$(MEXEXT)

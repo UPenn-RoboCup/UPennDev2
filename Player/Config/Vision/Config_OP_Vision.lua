@@ -30,6 +30,7 @@ vision.store_all_images = 1;
 vision.store_goal_detections = 0;
 -- use this to enable storing images where the ball was detected
 vision.store_ball_detections = 0;
+
 -- use this to substitute goal check with blue/yellow ball check
 vision.use_point_goal = 0;
 
@@ -79,13 +80,27 @@ vision.goal.th_min_area_unknown_post = 200;
 
 --vision.goal.far_goal_threshold= 3.0; --The range we triangulate
 vision.goal.far_goal_threshold= 4.0; --The range we triangulate
-vision.goal.distanceFactor = 1.12; 
+vision.goal.distanceFactorCyan = 1.12; 
+vision.goal.distanceFactorYellow = 1; 
 
 vision.goal.use_centerpost = 1;
 vision.goal.check_for_ground = 1;
 
+--SJ: I added landmark threshold values here
+vision.landmark = {};
+vision.landmark.min_areaA = 6;
+vision.landmark.min_fill_extent = 0.35;
+vision.landmark.th_centroid = 20;
+vision.landmark.th_arearatio = 4;
+vision.landmark.th_distratio = 2;
+vision.landmark.th_angle = 45*math.pi/180;
+
+vision.landmark.distanceFactorCyan = 1.1; 
+vision.landmark.distanceFactorYellow = 1; 
+
+
 vision.line={};
-vision.line.max_width = 16;
+vision.line.max_width = 10;
 vision.line.connect_th = 1.4;
 vision.line.max_gap=0;
 vision.line.min_length=20;

@@ -29,6 +29,9 @@ use_same_colored_goal=Config.world.use_same_colored_goal or 0;
 --Triangulation method selection
 use_new_goalposts= Config.world.use_new_goalposts or 0;
 
+--Should we fix angle using line informations?
+use_line_angles = Config.world.use_line_angles or 0;
+
 --For single-colored goalposts
 postUnified = {postYellow[1],postYellow[2],postCyan[1],postCyan[2]};
 postLeft={postYellow[1],postCyan[1]}
@@ -39,11 +42,13 @@ aGoalFilter = Config.world.aGoalFilter;
 rPostFilter = Config.world.rPostFilter;
 aPostFilter = Config.world.aPostFilter;
 
-
 rLandmarkFilter = Config.world.rLandmarkFilter;
 aLandmarkFilter = Config.world.aLandmarkFilter;
 
+rCornerFilter = Config.world.rCornerFilter or 0;
+aCornerFilter = Config.world.aCornerFilter or 0;
 
+aLineFilter = Config.world.aLineFilter or 0;
 
 xp = .5*xMax*vector.new(util.randn(n));
 yp = .5*yMax*vector.new(util.randn(n));
@@ -189,6 +194,57 @@ function landmark_observation(pos, v, rLandmarkFilter, aLandmarkFilter)
     yp[ip] = math.min(yMax, math.max(-yMax, yp[ip]));
   end
 end
+
+function corner_observation(pos, v, rLandmarkFilter, aLandmarkFilter)
+  local r = math.sqrt(v[1]^2 + v[2]^2);
+  local a = math.atan2(v[2], v[1]);
+
+--  local rSigma = .15*r + 0.10;
+  local rSigma = .30*r + 0.10;
+  local aSigma = 5*math.pi/180;
+  local rFilter = rLandmarkFilter or 0.02;
+  local aFilter = aLandmarkFilter or 0.04;
+
+  --Calculate best matching landmark pos to each particle
+  local dxp = {};
+  local dyp = {};
+  local dap = {};
+  for ip = 1,n do
+    local dx = {};
+    local dy = {};
+    local dr = {};
+    local da = {};
+    local err = {};
+    for ipos = 1,#pos do
+      dx[ipos] = pos[ipos][1] - xp[ip];
+      dy[ipos] = pos[ipos][2] - yp[ip];
+      dr[ipos] = math.sqrt(dx[ipos]^2 + dy[ipos]^2) - r;
+      da[ipos] = mod_angle(math.atan2(dy[ipos],dx[ipos]) - (ap[ip] + a));
+      err[ipos] = (dr[ipos]/rSigma)^2 + (da[ipos]/aSigma)^2;
+    end
+    local errMin, imin = min(err);
+
+    --Update particle weights:
+    wp[ip] = wp[ip] - errMin;
+
+    dxp[ip] = dx[imin];
+    dyp[ip] = dy[imin];
+    dap[ip] = da[imin];
+  end
+
+  --Filter toward best matching landmark position:
+  for ip = 1,n do
+    xp[ip] = xp[ip] + rFilter * (dxp[ip] - r * math.cos(ap[ip] + a));
+    yp[ip] = yp[ip] + rFilter * (dyp[ip] - r * math.sin(ap[ip] + a));
+    ap[ip] = ap[ip] + aFilter * dap[ip];
+
+    -- check boundary
+    xp[ip] = math.min(xMax, math.max(-xMax, xp[ip]));
+    yp[ip] = math.min(yMax, math.max(-yMax, yp[ip]));
+  end
+end
+
+
 
 ---------------------------------------------------------------------------
 -- Now we have two ambiguous goals to check
@@ -531,12 +587,14 @@ function landmark_yellow(v)
 end
 
 function corner(v,a)
-  landmark_observation(Lcorner,v,rPostFilter,aPostFilter);
---  line(v,a);--Fix heading
+  corner_observation(Lcorner,v,rCornerFilter,aCornerFilter);
 end
 
 
 function line(v, a)
+
+  vcm.add_debug_message(string.format("Line angle:%d",a*180/math.pi));
+
   -- line center
   x = v[1];
   y = v[2];
@@ -562,6 +620,13 @@ function line(v, a)
               math.max(yGlobal - yLineBoundary, 0) +
               math.max(-yGlobal - yLineBoundary, 0);
     wp[ip] = wp[ip] - (wBounds/.20);
+
+    if use_line_angles>0 then
+      --Get angle error and update ap
+      aErr = (ap[ip]+a +2*math.pi ) % ( math.pi/2) -
+	(math.pi/4);
+      ap[ip] = ap[ip] + aLineFilter*aErr;
+    end
   end
 end
 

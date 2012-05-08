@@ -1,8 +1,9 @@
 function ret = LoggerShm(teamNumber, playerID)
   
-
-playerID = 1;
-teamNumber = 1;
+if nargin < 2
+  playerID  = 1;
+  teamNumber = 1;
+end
 
 global LOGGER MONITOR
 

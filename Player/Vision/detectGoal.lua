@@ -25,7 +25,8 @@ check_for_ground = Config.vision.goal.check_for_ground or 0;
 --Min height of goalpost (to reject false positives at the ground)
 goal_height_min = Config.vision.goal.height_min or -0.5;
 
-distanceFactor = Config.vision.goal.distanceFactor or 1.0;
+distanceFactorYellow = Config.vision.goal.distanceFactorYellow or 1.0;
+distanceFactorCyan = Config.vision.goal.distanceFactorCyan or 1.0;
 	
 --Post dimension
 postDiameter = Config.world.postDiameter or 0.10;
@@ -353,8 +354,13 @@ function detect(color,color2)
 
     goal.v[i] = HeadTransform.coordinatesA(postA[i].centroid, scale);
 
-    goal.v[i][1]=goal.v[i][1]*distanceFactor;
-    goal.v[i][2]=goal.v[i][2]*distanceFactor;
+    if color == colorYellow then
+      goal.v[i][1]=goal.v[i][1]*distanceFactorYellow;
+      goal.v[i][2]=goal.v[i][2]*distanceFactorYellow;
+    else
+      goal.v[i][1]=goal.v[i][1]*distanceFactorCyan;
+      goal.v[i][2]=goal.v[i][2]*distanceFactorCyan;
+    end
 
 
     vcm.add_debug_message(string.format("post[%d] = %.2f %.2f %.2f\n",

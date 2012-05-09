@@ -23,6 +23,9 @@ function h=logger()
   function save_log()
     %We still use the file name yuyv_xxxx
     %But now we store every log there as well
+    if ~ exist('./logs','dir')
+      mkdir('./logs');
+    end
     savefile1 = ['./logs/yuyv_' datestr(now,30) '.mat'];
     fprintf('\nSaving yuyv file: %s...', savefile1)
     save(savefile1, 'yuyvMontage', 'LOG');

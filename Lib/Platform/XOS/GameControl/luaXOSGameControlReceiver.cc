@@ -208,7 +208,7 @@ static int lua_gamecontrolpacket_receive(lua_State *L) {
   return 1;
 }
 
-static const struct luaL_reg OPGameControlReceiver_lib [] = {
+static const struct luaL_reg XOSGameControlReceiver_lib [] = {
   {"receive", lua_gamecontrolpacket_receive},
   //{"parse", lua_gamecontrolpacket_parse},
   {NULL, NULL}
@@ -217,8 +217,8 @@ static const struct luaL_reg OPGameControlReceiver_lib [] = {
 #ifdef __cplusplus
 extern "C"
 #endif
-int luaopen_OPGameControlReceiver (lua_State *L) {
-  luaL_register(L, "OPGameControlReceiver", OPGameControlReceiver_lib);
+int luaopen_XOSGameControlReceiver (lua_State *L) {
+  luaL_register(L, "XOSGameControlReceiver", XOSGameControlReceiver_lib);
 
   return 1;
 }

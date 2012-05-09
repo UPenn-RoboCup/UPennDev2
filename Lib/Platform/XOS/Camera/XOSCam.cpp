@@ -8,7 +8,7 @@
 #include "timeScalar.h"
 #include <string.h>
 #include "v4l2.h"
-#include "OPCam.h"
+#include "XOSCam.h"
 
 typedef struct {
   int count;
@@ -202,7 +202,7 @@ static const struct luaL_reg camera_lib [] = {
 };
 
 extern "C"
-int luaopen_OPCam (lua_State *L) {
+int luaopen_XOSCam (lua_State *L) {
   luaL_register(L, "camera", camera_lib);
 
   // Resolution = 1 means VGA (640x480)

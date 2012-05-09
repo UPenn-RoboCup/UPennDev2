@@ -1,4 +1,4 @@
-Camera = require "OPCam"
+Camera = require "XOSCam"
 
 Camera.get_image();
 Camera.stream_off();

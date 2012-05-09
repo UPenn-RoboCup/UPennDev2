@@ -12,7 +12,9 @@ require('detectBall');
 require('detectGoal');
 require('detectLine');
 require('detectCorner');
+if not string.find(Config.platform.name,'Nao') then
 require('detectLandmarks'); -- for NSL
+end
 require('detectSpot');
 require('detectFreespace');
 require('detectBoundary');
@@ -124,11 +126,13 @@ function update()
   end
 
   -- midfield landmark detection
-  landmarkCyan = 0;
-  landmarkYellow = 0;
-  if enableMidfieldLandmark == 1 then
-    landmarkCyan = detectLandmarks.detect(colorCyan,colorYellow);
-    landmarkYellow = detectLandmarks.detect(colorYellow,colorCyan);
+  if not string.find(Config.platform.name,'Nao') then
+   landmarkCyan = 0;
+   landmarkYellow = 0;
+   if enableMidfieldLandmark == 1 then
+     landmarkCyan = detectLandmarks.detect(colorCyan,colorYellow);
+     landmarkYellow = detectLandmarks.detect(colorYellow,colorCyan);
+   end
   end
 
   if enable_freespace_detection ==1 then
@@ -168,30 +172,32 @@ function update_shm()
     vcm.set_goal_v2(goalYellow.v[2]);
   end
 
-  distanceFactorCyan = 
-	Config.vision.landmark.distanceFactorCyan or 1;
-  distanceFactorYellow = 
-	Config.vision.landmark.distanceFactorYellow or 1;
-
   -- midfield landmark detection
   vcm.set_landmark_detect(0);
-  if enableMidfieldLandmark == 1 then
-    if landmarkYellow.detect==1 then
-       vcm.set_landmark_detect(1);
-       vcm.set_landmark_color(colorYellow);
-       v={0,0,0,0};
-       v[1]=landmarkYellow.v[1]*distanceFactorYellow;
-       v[2]=landmarkYellow.v[2]*distanceFactorYellow;
-       vcm.set_landmark_v(v);
-    elseif landmarkCyan.detect==1 then
-       vcm.set_landmark_detect(1);
-       vcm.set_landmark_color(colorCyan);
-       v={0,0,0,0};
-       v[1]=landmarkCyan.v[1]*distanceFactorCyan;
-       v[2]=landmarkCyan.v[2]*distanceFactorCyan;
-       vcm.set_landmark_v(v);
+  if not string.find(Config.platform.name,'Nao') then
+    if enableMidfieldLandmark == 1 then
+      if landmarkYellow.detect==1 then
+         vcm.set_landmark_detect(1);
+         vcm.set_landmark_color(colorYellow);
+         v={0,0,0,0};
+         v[1]=landmarkYellow.v[1]*distanceFactorYellow;
+         v[2]=landmarkYellow.v[2]*distanceFactorYellow;
+         vcm.set_landmark_v(v);
+      elseif landmarkCyan.detect==1 then
+         vcm.set_landmark_detect(1);
+         vcm.set_landmark_color(colorCyan);
+         v={0,0,0,0};
+         v[1]=landmarkCyan.v[1]*distanceFactorCyan;
+         v[2]=landmarkCyan.v[2]*distanceFactorCyan;
+         vcm.set_landmark_v(v);
+      end
     end
+    distanceFactorCyan = 
+  	Config.vision.landmark.distanceFactorCyan or 1;
+    distanceFactorYellow = 
+  	Config.vision.landmark.distanceFactorYellow or 1;
   end
+
 
   vcm.set_line_detect(line.detect);
   if (line.detect == 1) then

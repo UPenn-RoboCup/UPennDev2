@@ -21,6 +21,7 @@ follow = false;
 
 tFollowDelay = Config.fsm.bodyKick.tFollowDelay;
 rClose = Config.fsm.bodyAnticipate.rClose or 1.0;
+thFar = Config.fsm.bodyAnticipate.thFar or 0.25;
 
 function entry()
   print(_NAME.." entry");
@@ -35,22 +36,29 @@ function update()
   ball = wcm.get_ball();
   ballR = math.sqrt(ball.x^2+ ball.y^2);
 
+  -- See where our home position is...
+  homePosition=getGoalieHomePosition();
+  homeRelative = util.pose_relative(homePosition, {pose.x, pose.y, pose.a});
+  rHomeRelative = math.sqrt(homeRelative[1]^2 + homeRelative[2]^2);
+
   if ballR<rClose and t-ball.t<0.1 then
     Motion.event("walk");
     return "ballClose";
   end
 
---[[
   if ball.t<0.1 and ball.vx<-0.5 then
     dive.set_dive("diveLeft");
     Motion.event("dive");
-    return "done";
+    return "dive";
   end
---]]
 
+  -- Check if out of position
+  if( rHomeRelative>thFar ) then
+    Motion.event("walk");
+    return 'position';
+  end
 
   if (t - t0 > timeout) then
-    Motion.event("walk");
     return "timeout";
   end
 end

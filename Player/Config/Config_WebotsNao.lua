@@ -50,7 +50,7 @@ end
 -- FSM Parameters
 fsm = {};
 loadconfig('FSM/Config_WebotsNao_FSM')--For generalPlayer FSM
---[[
+
 fsm.game = 'RoboCup';
 if (game.playerID == 1) then
   fsm.body = {'NaoGoalie'};
@@ -59,13 +59,15 @@ else
   fsm.body = {'NaoPlayer'};
   fsm.head = {'NaoPlayer'};
 end
---]]
+
 
 --------------------------------------------------------------------
 --GeneralPlayer FSM test
+--[[
 fsm.game = 'RoboCup';
 fsm.body = {'GeneralPlayer'};
 fsm.head = {'NaoPlayer'};
+--]]
 --fsm.head = {'GeneralPlayer'};
 
 --Penalty Kick FSM

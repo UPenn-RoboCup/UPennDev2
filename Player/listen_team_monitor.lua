@@ -7,7 +7,7 @@ cwd = '.';
 uname = io.popen('uname -s')
 system = uname:read()
 
-computer = os.getenv('COMPUTER') or "";
+computer = os.getenv('COMPUTER') or system;
 if (string.find(computer, "Darwin")) then
    -- MacOS X uses .dylib:                                                      
    package.cpath = cwd.."/Lib/?.dylib;"..package.cpath;

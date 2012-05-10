@@ -33,14 +33,42 @@ char cameraDevice[] = "/dev/video0";
 int cameraFd = 0;
 
 
-int set_camera_param(const char *key, int value) {
+int set_camera_param(int id, int value) {
   // attempt to set camera parameter in a loop
   int maxTries = 1000;
   int usleepInt = 10000;
   struct v4l2_control control;
+
+  for (int i = 0; i < maxTries; i++) {
+    control.id = id;
+    control.value = value;
+    if (ioctl(cameraFd, VIDIOC_S_CTRL, &control) < 0) {
+      printf("failed to set parameter: %d:%d\n", id, value);
+      return -1;
+    }
+    memset(&control, 0, sizeof(v4l2_control));
+    control.id = id;
+    if (ioctl(cameraFd, VIDIOC_G_CTRL, &control) < 0) {
+      printf("failed to get parameter: %d\n", id);
+      return -1;
+    }
+    if (control.value == value) {
+      printf("set %d to %d\n", id, value);
+      return 0;
+    }
+
+    if (i % 10 == 0) {
+      printf("Trying to set parameter %d to %d for the %dth time\n", id, value, i);
+    }
+
+    usleep(10000);
+  }
+
+  return -1;
+
 }
 
-void queryCameraParams() {
+void query_camera_params() {
   struct v4l2_queryctrl ctrl;
   for (int i = V4L2_CID_BASE; i <= V4L2_CID_LASTP1+1000000; i++) {
     ctrl.id = i;
@@ -169,9 +197,19 @@ int main() {
   }
   printf("done\n");
 
-
   printf("querying camera params:\n");
-  queryCameraParams();
+  query_camera_params();
+
+  printf("setting camera params:\n");
+  if (set_camera_param(10094849, 0) < 0) {
+    printf("failed to set camera param\n");
+    return -1;
+  }
+  if (set_camera_param(9963793, 150) < 0) {
+    printf("failed to set camera param\n");
+    return -1;
+  }
+
 
   printf("starting camera stream..."); fflush(stdout);
   i = V4L2_BUF_TYPE_VIDEO_CAPTURE;
@@ -180,6 +218,9 @@ int main() {
     return -1;
   }
   printf("done\n");
+
+  
+
 
 }
 

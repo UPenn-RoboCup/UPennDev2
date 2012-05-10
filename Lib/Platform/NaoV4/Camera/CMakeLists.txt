@@ -6,15 +6,17 @@ project(NaoCam)
 include_directories(/usr/local/include)
 
 # main library definition
-add_library(NaoCam SHARED naoCam.cc naoCamThread.cc timeScalar.cc)
+#add_library(NaoCam SHARED naoCam.cc naoCamThread.cc timeScalar.cc)
+add_executable(test test.cc)
 
 # set optimization level
 #   TODO: can we now use level 2? it would not work for NaoV3
 set(CMAKE_CXX_FLAGS "-O1")
 
 # set library prefix to "" otherwise it will create libNaoCam.so
-set_target_properties(NaoCam PROPERTIES PREFIX "")
+#set_target_properties(NaoCam PROPERTIES PREFIX "")
 
 # link to pthread library
-target_link_libraries(NaoCam m pthread)
+#target_link_libraries(NaoCam m pthread)
+target_link_libraries(test m pthread)
 

@@ -85,6 +85,7 @@ if sit_disable==0 then --For smaller robots
   sm:set_transition(grip, 'done', stance);
 
   -- falling behaviours
+
   sm:set_transition(walk, 'fall', falling);
   sm:set_transition(align, 'fall', falling);
   sm:set_transition(divewait, 'fall', falling);
@@ -138,6 +139,7 @@ UltraSound.entry();
 function entry()
   sm:entry()
   mcm.set_walk_isFallDown(0);
+  mcm.set_motion_fall_check(1); --check fall by default
 end
 
 function update()
@@ -146,7 +148,8 @@ function update()
 
   local imuAngle = Body.get_sensor_imuAngle();
   local maxImuAngle = math.max(math.abs(imuAngle[1]), math.abs(imuAngle[2]-bodyTilt));
-  if (maxImuAngle > fallAngle) then
+  fall = mcm.get_motion_fall_check() --Should we check for fall? 1 = yes
+  if (maxImuAngle > fallAngle and fall==1) then
     sm:add_event("fall");
     mcm.set_walk_isFallDown(1); --Notify world to reset heading 
   else

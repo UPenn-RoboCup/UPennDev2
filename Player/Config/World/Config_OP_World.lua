@@ -28,8 +28,10 @@ world.cResample = 10; --Resampling interval
 
 
 --They are SPL values
-world.Lcorner={};
+--[[
 --Field edge
+
+world.Lcorner={};
 world.Lcorner[1]={3.0,2.0};
 world.Lcorner[2]={3.0,-2.0};
 world.Lcorner[3]={-3.0,2.0};
@@ -50,9 +52,9 @@ world.Lcorner[14]={-3.0,-1.1};
 --Center circle junction
 world.Lcorner[15]={0,0.6};
 world.Lcorner[16]={0,-0.6};
+--]]
 
 --Kidsize values
---[[
 world.Lcorner={};
 --Field edge
 world.Lcorner[1]={3.0,2.0};
@@ -75,7 +77,15 @@ world.Lcorner[14]={-3.0,-1.1};
 --Center circle junction
 world.Lcorner[15]={0,0.6};
 world.Lcorner[16]={0,-0.6};
---]]
+
+--SJ: NSL penalty box is very wide 
+--And sometimes they can be falsely detected as T edges
+--Penalty box T edge #2 
+world.Lcorner[17]={2.4,2};
+world.Lcorner[18]={2.4,-2};
+world.Lcorner[19]={-2.4,2};
+world.Lcorner[20]={-2.4,-2};
+
 
 
 --SJ: OP does not use yaw odometry data (only use gyro)
@@ -89,7 +99,7 @@ world.imuYaw = 1;
 world.initPosition1={
   {2.5,0},   --Goalie
   {0.5,0}, --Attacker
-  {1.5,-1.5}, --Defender
+  {1.5,-1.25}, --Defender
   {0.5,1.0}, --Supporter
 }
 -- default positions for opponents' kickoff
@@ -119,9 +129,21 @@ world.aPostFilter = 0.10;
 world.rLandmarkFilter = 0.05;
 world.aLandmarkFilter = 0.10;
 
+world.rCornerFilter = 0.01;
+world.aCornerFilter = 0.04;
+
+world.aLineFilter = 0.02;
+
 --New two-goalpost localization
 world.use_new_goalposts=1;
 
 -- Occupancy Map parameters
-occmap = {};
-occmap.div = 72;
+occ = {};
+occ.mapsize = 50;
+occ.centroid = {occ.mapsize / 2, occ.mapsize * 4 / 5};
+
+
+world.use_same_colored_goal = 0;
+
+--Use line information to fix angle
+world.use_line_angles = 1;

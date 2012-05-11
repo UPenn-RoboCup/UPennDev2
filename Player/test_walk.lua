@@ -44,8 +44,8 @@ webots = false;
 if(Config.platform.name == 'OP') then
   darwin = true;
   --SJ: OP specific initialization posing (to prevent twisting)
-  Body.set_body_hardness(0.3);
-  Body.set_actuator_command(Config.stance.initangle)
+--  Body.set_body_hardness(0.3);
+--  Body.set_actuator_command(Config.stance.initangle)
 end
 
 --TODO: enable new nao specific
@@ -67,6 +67,9 @@ end
 
 initToggle = true;
 targetvel=vector.zeros(3);
+button_pressed = {0,0};
+
+
 function process_keyinput()
   local str=getch.get();
   if #str>0 then
@@ -170,6 +173,16 @@ function update()
     print('lcount: '..lcount)
     Speak.talk('missed cycle');
     lcount = count;
+  end
+
+  --Stop walking if button is pressed and the released
+  if (Body.get_change_state() == 1) then
+    button_pressed[1]=1;
+  else
+    if button_pressed[1]==1 then
+      Motion.event("sit");
+    end
+    button_pressed[1]=0;
   end
 end
 

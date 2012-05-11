@@ -6,7 +6,7 @@
 module(..., package.seeall);
 
 
-require('Comm')
+CommWired=require('Comm');
 -- Only send items from shared memory
 require('vcm')
 require('gcm')
@@ -20,7 +20,7 @@ sendShm = { wcmshm=wcm, gcmshm=gcm, vcmshm=vcm }
 itemReject = 'yuyv,labelA,labelB,yuyv2,yuyv3'
 
 -- Initiate Sending Address
-Comm.init(Config.dev.ip_wired,111111);
+CommWired.init(Config.dev.ip_wired,111111);
 print('Sending to',Config.dev.ip_wired);
 
 -- Add a little delay between packet sending
@@ -35,6 +35,7 @@ debug = 0;
 subsampling=Config.vision.subsampling or 0;
 subsampling2=Config.vision.subsampling2 or 0;
 
+--[[
 function sendB()
   -- labelB --
   labelB = vcm.get_image_labelB();
@@ -43,6 +44,7 @@ function sendB()
   count = vcm.get_image_count();
   
   array = serialization.serialize_array(labelB, width, height, 'uint8', 'labelB', count);
+
   sendlabelB = {};
   sendlabelB.team = {};
   sendlabelB.team.number = gcm.get_team_number();
@@ -56,17 +58,19 @@ function sendB()
     infosize=infosize+#senddata;
     t1=unix.time();
     stime1=stime1+t1-t0;
-    Comm.send(senddata);
+    CommWired.send(senddata);
     t2=unix.time();
     stime2=stime2+t2-t1;
   end 
   if debug>0 then
-    print("LabelB info size:",#array,"Total",infosize);
+    print("LabelB info num:",#array,"Total",infosize);
     print("Total serialization time:",stime1);
     print("Total comm time:",stime2);
   end
 end
+--]]
 
+--[[
 function sendA()
   -- labelA --
   labelA = vcm.get_image_labelA();
@@ -87,18 +91,96 @@ function sendA()
     infosize=infosize+#senddata;
     t1=unix.time();
     stime1=stime1+t1-t0;
-    Comm.send(senddata);
+    CommWired.send(senddata);
     t2=unix.time();
     stime2=stime2+t2-t1;
     -- Need to sleep in order to stop drinking out of firehose
     unix.usleep(pktDelay);
   end
   if debug>0 then
-    print("LabelA info size:",#array,"Total",infosize);
+    print("LabelA info num:",#array,"Total",infosize);
     print("Total serialization time:",stime1);
     print("Total comm time:",stime2);
   end
 end
+--]]
+
+
+--NEW MORE COMPACT ENCODING (1/4 previous size)
+--We don't need to divide packet any more 
+function sendB()
+  -- labelB --
+  labelB = vcm.get_image_labelB();
+  width = vcm.get_image_width()/2/Config.vision.scaleB; 
+  height = vcm.get_image_height()/2/Config.vision.scaleB;
+  count = vcm.get_image_count();
+  
+--  array = serialization.serialize_label_double(
+--	labelB, width, height, 'uint8', 'labelB',count);
+  array = serialization.serialize_label_rle(
+	labelB, width, height, 'uint8', 'labelB',count);
+
+  sendlabelB = {};
+  sendlabelB.team = {};
+  sendlabelB.team.number = gcm.get_team_number();
+  sendlabelB.team.player_id = gcm.get_team_player_id();
+
+  stime1,stime2,infosize=0,0,0;
+  sendlabelB.arr = array;
+  t0 = unix.time();
+  local senddata=serialization.serialize(sendlabelB);
+  infosize=infosize+#senddata;
+  t1=unix.time();
+  stime1=stime1+t1-t0;
+  CommWired.send(senddata);
+  t2=unix.time();
+  stime2=stime2+t2-t1;
+
+  if debug>0 then
+    print("LabelB info size:",infosize);
+    print("Total serialization time:",stime1);
+    print("Total comm time:",stime2);
+  end
+end
+
+--NEW MORE COMPACT ENCODING (1/4 previous size)
+--We don't need to divide packet any more 
+function sendA()
+  -- labelA --
+  labelA = vcm.get_image_labelA();
+  width = vcm.get_image_width()/2; 
+  height = vcm.get_image_height()/2;
+  count = vcm.get_image_count();
+
+--  array = serialization.serialize_label_double(
+--	labelA, width, height, 'uint8', 'labelA',count);
+  array = serialization.serialize_label_rle(
+	labelA, width, height, 'uint8', 'labelA',count);
+  
+  sendlabelA = {};
+  sendlabelA.team = {};
+  sendlabelA.team.number = gcm.get_team_number();
+  sendlabelA.team.player_id = gcm.get_team_player_id();
+
+  stime1,stime2,infosize=0,0,0;
+  sendlabelA.arr = array;
+  t0 = unix.time();
+  local senddata=serialization.serialize(sendlabelA);
+  infosize=infosize+#senddata;
+  t1=unix.time();
+  stime1=stime1+t1-t0;
+  CommWired.send(senddata);
+  t2=unix.time();
+  stime2=stime2+t2-t1;
+
+  if debug>0 then
+    print("LabelA info size:",infosize);
+    print("Total serialization time:",stime1);
+    print("Total comm time:",stime2);
+  end
+end
+
+
 
 function sendImg()
   -- yuyv --
@@ -126,7 +208,7 @@ function sendImg()
     senddata=serialization.serialize(sendyuyv);     
     t1 = unix.time();
     tSerialize= tSerialize + t1-t0;
-    Comm.send(senddata);
+    CommWired.send(senddata);
     t2 = unix.time();
     tSend=tSend+t2-t1;
     totalSize=totalSize+#senddata;
@@ -166,7 +248,7 @@ function sendImgSub2()
     senddata=serialization.serialize(sendyuyv2);
     t1 = unix.time();
     tSerialize= tSerialize + t1-t0;
-    Comm.send(senddata);
+    CommWired.send(senddata);
     t2 = unix.time();
     tSend=tSend+t2-t1;
     totalSize=totalSize+#senddata;
@@ -204,7 +286,7 @@ function sendImgSub4()
     senddata=serialization.serialize(sendyuyv3);
     t1 = unix.time();
     tSerialize= tSerialize + t1-t0;
-    Comm.send(senddata);
+    CommWired.send(senddata);
     t2 = unix.time();
     tSend=tSend+t2-t1;
 
@@ -246,7 +328,7 @@ function update(enable)
   t0 = unix.time();
   senddata=serialization.serialize(send);
   t1 = unix.time();
-  Comm.send(senddata);
+  CommWired.send(senddata);
   t2 = unix.time();
   unix.usleep(pktDelay2);
 

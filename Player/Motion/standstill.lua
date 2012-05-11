@@ -29,6 +29,8 @@ tStart=0;
 
 finished=false;
 
+hardnessLeg = Config.stance.hardnessLeg or 1;
+
 function entry()
   print("Motion SM:".._NAME.." entry");
   -- Final stance foot position6D
@@ -51,8 +53,8 @@ function entry()
   Body.set_larm_hardness(.1);
   Body.set_rarm_hardness(.1);
 
-  Body.set_waist_hardness(1);
   Body.set_waist_command(0);
+  Body.set_waist_hardness(1);
 
   t0 = Body.get_time();
 
@@ -64,7 +66,7 @@ function update()
   local dt = t - t0;
   if finished then return; end
 
-  --For OP, wait a bit to read joint readings
+  --Wait a bit to read joint readings
   if not started then 
     if dt>tStartWait then
       started=true;
@@ -80,8 +82,8 @@ function update()
 
       Body.set_lleg_command(qLLeg);
       Body.set_rleg_command(qRLeg);
-      Body.set_lleg_hardness(1);
-      Body.set_rleg_hardness(1);
+      Body.set_lleg_hardness(hardnessLeg);
+      Body.set_rleg_hardness(hardnessLeg);
       t0 = Body.get_time();
       count=1;
       tStart=t0;

@@ -14,6 +14,7 @@ timeout = 5.0;
 function entry()
   print(_NAME..' entry');
 
+  mcm.set_motion_fall_check(0) --disable fall
   t0 = Body.get_time();
 
   -- stop walking and wait for game to start
@@ -41,7 +42,13 @@ function update()
   elseif (state == 4) then
     return 'finished';
   end
+  
+  -- check for penalty
+  if gcm.in_penalty() then
+    return 'penalized';
+  end
 end
 
 function exit()
+  mcm.set_motion_fall_check(1) --re-enable fall
 end

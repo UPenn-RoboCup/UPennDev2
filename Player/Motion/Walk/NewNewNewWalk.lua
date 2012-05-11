@@ -17,6 +17,7 @@ velLimitX = Config.walk.velLimitX or {-.06, .08};
 velLimitY = Config.walk.velLimitY or {-.06, .06};
 velLimitA = Config.walk.velLimitA or {-.4, .4};
 velDelta = Config.walk.velDelta or {.03,.015,.15};
+vaFactor = Config.walk.vaFactor or 0.6;
 
 --Toe/heel overlap checking values
 footSizeX = Config.walk.footSizeX or {-0.05,0.05};
@@ -57,6 +58,9 @@ ph1Zmp,ph2Zmp=ph1Single,ph2Single;
 --Compensation parameters
 hipRollCompensation = Config.walk.hipRollCompensation;
 ankleMod = Config.walk.ankleMod or {0,0};
+spreadComp = Config.walk.spreadComp or 0;
+turnCompThreshold = Config.walk.turnCompThreshold or 0;
+turnComp = Config.walk.turnComp or 0;
 
 --Gyro stabilization parameters
 ankleImuParamX = Config.walk.ankleImuParamX;
@@ -74,10 +78,16 @@ supportBack = Config.walk.supportBack or 0;
 supportSideX = Config.walk.supportSideX or 0;
 supportSideY = Config.walk.supportSideY or 0;
 
+--Initial body swing 
+supportModYInitial = Config.walk.supportModYInitial or 0;
+
 --WalkKick parameters
 walkKickDef = Config.walk.walkKickDef;
 walkKickPh = Config.walk.walkKickPh;
 toeTipCompensation = 0;
+
+use_alternative_trajectory = Config.walk.use_alternative_trajectory or 0;
+
 
 ----------------------------------------------------------
 -- Walk state variables
@@ -130,13 +140,7 @@ function entry()
   print ("Motion: Walk entry")
   --SJ: now we always assume that we start walking with feet together
   --Because joint readings are not always available with darwins
-  uLeft = util.pose_global(vector.new({-supportX, footY, 0}),uTorso);
-  uRight = util.pose_global(vector.new({-supportX, -footY, 0}),uTorso);
-
-  uLeft1, uLeft2 = uLeft, uLeft;
-  uRight1, uRight2 = uRight, uRight;
-  uTorso1, uTorso2 = uTorso, uTorso;
-  uSupport = uTorso;
+  stance_reset();
 
   --Place arms in appropriate position at sides
   Body.set_larm_command(qLArm0);
@@ -173,8 +177,6 @@ function update()
     velLimitA = Config.walk.velLimitA or {-.4, .4};
     velDelta = Config.walk.velDelta or {.03,.015,.15};
   end
-
-
 
   footX = mcm.get_footX();
 
@@ -265,6 +267,15 @@ function update()
 
     uTorso2 = step_torso(uLeft2, uRight2,shiftFactor);
 
+    --Adjustable initial step body swing
+    if initial_step>0 then 
+      if supportLeg == 0 then --LS
+        supportMod[2]=supportModYInitial;
+      else --RS
+	supportMod[2]=-supportModYInitial;
+      end
+    end
+
     --Apply velocity-based support point modulation for uSupport
     if supportLeg == 0 then --LS
 	local uLeftTorso = util.pose_relative(uLeft1,uTorso1);
@@ -332,10 +343,16 @@ function update()
   uTorso = zmp_com(ph);
 
 --Leg spread compensation
-  spreadComp = Config.walk.spreadComp or 0;
   local spread=util.mod_angle((uLeft[3]-uRight[3])/2);
   local spreadCompX = spreadComp * (1-math.cos(spread));
-  uTorsoActual = util.pose_global(vector.new({-footX+spreadCompX,0,0}),uTorso);
+
+  local turnCompX=0;
+  if math.abs(velCurrent[3])>turnCompThreshold then
+    turnCompX = turnComp;
+  end
+
+  uTorsoActual = util.pose_global(
+	vector.new({-footX+spreadCompX+turnCompX,0,0}),uTorso);
 
 --  uTorsoActual = util.pose_global(vector.new({-footX,0,0}),uTorso);
 
@@ -355,11 +372,14 @@ function check_walkkick()
 
   if walkKickRequest>0 and
     walkKickRequest>#walkKick then
+    
     print("NEWNEWNEWKICK: WALKKICK DONE");
     walkKickRequest = 0;
     tStep = tStep0;
     stepHeight = stepHeight0;
     current_step_type=0;
+    velCurrent=vector.new({0,0,0});
+    velCommand=vector.new({0,0,0});
     return;
   end
 
@@ -578,18 +598,21 @@ function step_torso(uLeft, uRight,shiftFactor)
   return util.se2_interpolate(shiftFactor, uLeftSupport, uRightSupport);
 end
 
-function set_velocity(vx, vy, vz)
+function set_velocity(vx, vy, va)
   --Filter the commanded speed
---[[
-  vz= math.min(math.max(vz,velLimitA[1]),velLimitA[2]);
-  local stepMag=math.sqrt(vx^2+vy^2);
-  local magFactor=math.min(0.10,stepMag)/(stepMag+0.000001);
---]]
+  vx= math.min(math.max(vx,velLimitX[1]),velLimitX[2]);
+  vy= math.min(math.max(vy,velLimitY[1]),velLimitY[2]);
+  va= math.min(math.max(va,velLimitA[1]),velLimitA[2]);
 
-  magFactor = 1;
+  --Slow down when turning
+  vFactor = 1-math.abs(va)/vaFactor;
+
+  local stepMag=math.sqrt(vx^2+vy^2);
+  local magFactor=math.min(velLimitX[2]*vFactor,stepMag)/(stepMag+0.000001);
+
   velCommand[1]=vx*magFactor;
   velCommand[2]=vy*magFactor;
-  velCommand[3]=vz;
+  velCommand[3]=va;
 
   velCommand[1] = math.min(math.max(velCommand[1],velLimitX[1]),velLimitX[2]);
   velCommand[2] = math.min(math.max(velCommand[2],velLimitY[1]),velLimitY[2]);
@@ -679,6 +702,12 @@ function doPunch(punchtype)
 end
 
 function stance_reset() --standup/sitdown/falldown handling
+  uLeft = util.pose_global(vector.new({-supportX, footY, 0}),uTorso);
+  uRight = util.pose_global(vector.new({-supportX, -footY, 0}),uTorso);
+  uLeft1, uLeft2 = uLeft, uLeft;
+  uRight1, uRight2 = uRight, uRight;
+  uTorso1, uTorso2 = uTorso, uTorso;
+  uSupport = uTorso;
 end
 
 function switch_stance(stance)
@@ -748,16 +777,38 @@ function foot_phase(ph)
   local xf = .5*(1-math.cos(math.pi*phSingleSkew));
   local zf = .5*(1-math.cos(2*math.pi*phSingleSkew));
 
-  --hack: vertical takeoff and landing
---  factor1 = 0.2;
-  factor1 = 0;
-  factor2 = 0;
-  phSingleSkew2 = math.max(
-	math.min(1,
-	(phSingleSkew-factor1)/(1-factor1-factor2)
-	 ), 0);
-  local xf = .5*(1-math.cos(math.pi*phSingleSkew2));
 
+  if use_alternative_trajectory>0 then
+    ph1FootPhase = 0.1;
+    ph2FootPhase = 0.5;
+    ph3FootPhase = 0.8;
+ 
+    exp1FootPhase = 2;
+    exp2FootPhase = 2;
+    exp3FootPhase = 2;
+
+    zFootLand = 0.3;    
+
+    if phSingle < ph1FootPhase then
+      phZTemp = phSingle / ph2FootPhase;
+--      xf = 0;
+--      zf = 1 - (1-phZTemp)^exp1FootPhase;
+    elseif phSingle < ph2FootPhase then
+      phXTemp = (phSingle-ph1FootPhase)/(ph3FootPhase-ph1FootPhase);
+      phZTemp = phSingle / ph2FootPhase;
+--      xf =  .5*(1-math.cos(math.pi*phXTemp));
+--      zf = 1 - (1-phZTemp)^exp1FootPhase;
+    elseif phSingle < ph3FootPhase then
+      phXTemp = (phSingle-ph1FootPhase)/(ph3FootPhase-ph1FootPhase);
+      phZTemp = (phSingle-ph2FootPhase)/(ph3FootPhase-ph2FootPhase);
+--      xf =  .5*(1-math.cos(math.pi*phXTemp));
+--      zf = 1 - phZTemp^exp2FootPhase*(1-zFootLand);
+    else
+      phZTemp = (1-phSingle) / (1-ph3FootPhase);
+--      xf = 1;
+--      zf = phZTemp^exp3FootPhase*zFootLand;
+    end
+  end
   return xf, zf;
 end
 

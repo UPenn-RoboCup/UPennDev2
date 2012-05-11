@@ -7,6 +7,7 @@ WorldInfo {
   ]
   title "Robotstadium"
   basicTimeStep 40
+  displayRefresh 4
 }
 Viewpoint {
   orientation -0.483622 0.854639 0.188947 0.761485
@@ -56,32 +57,38 @@ DEF BALL Ball {
   translation 0 0.0323921 0
 }
 DEF PLAYER_1_1 DARwInOP {
-  translation 1.5 0.3 0.8
-  rotation 0 1 0 -1.56
+  translation 1.5 0.3 2
+  rotation 0 1 0 3.14
   controller "darwin-op_team_0"
   controllerArgs "1 1"
   plasticColor 1 0 0
   cameraWindowPosition 0.125 0
   waistBand TRUE
   waistBandColor 1 0 0
+  cameraWidth 320
+  cameraHeight 240
 }
 DEF PLAYER_2_1 DARwInOP {
-  translation 1 0.3 0
-  rotation 0 1 0 -1.56
+  translation 1 0.3 2
+  rotation 0 1 0 3.14
   controller "darwin-op_team_0"
   controllerArgs "2 1"
   plasticColor 1 0 0
   cameraWindowPosition 0.375 0
   waistBand TRUE
   waistBandColor 1 0 0
+  cameraWidth 320
+  cameraHeight 240
 }
 DEF PLAYER_3_1 DARwInOP {
-  translation 1.8 0.3 -0.8
-  rotation 0 1 0 -1.56
+  translation 1.8 0.3 2
+  rotation 0 1 0 3.14
   controller "darwin-op_team_0"
   controllerArgs "3 1"
   plasticColor 1 0 0
   cameraWindowPosition 0.625 0
   waistBand TRUE
   waistBandColor 1 0 0
+  cameraWidth 320
+  cameraHeight 240
 }

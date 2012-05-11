@@ -42,14 +42,18 @@ fsm.bodyChase.maxStep = 0.08;
 fsm.bodyChase.rClose = 0.35;
 fsm.bodyChase.timeout = 20.0*speedFactor;
 fsm.bodyChase.tLost = 3.0*speedFactor;
-
+fsm.bodyChase.rFar = 1.2;
 
 --------------------------------------------------
 --BodyAnticipate : Sit down and wait for kick (goalie)
 --------------------------------------------------
 fsm.bodyAnticipate={};
 fsm.bodyAnticipate.rClose = 1.0;
-fsm.bodyChase.rFar = 1.2;
+-- How far out of position are we allowed to be?
+fsm.bodyAnticipate.thFar = {0.2,0.2,15*math.pi/180};
+
+fsm.bodyGoaliePosition = {};
+fsm.bodyGoaliePosition.thClose = {.2, .2,10*math.pi/180}
 
 --------------------------------------------------
 --BodyOrbit : make the robot orbit around the ball
@@ -66,8 +70,6 @@ fsm.bodyOrbit.tLost = 3.0*speedFactor;
 --BodyPosition : Advanced chase-orbit
 --------------------------------------------------
 fsm.bodyPosition={};
-fsm.bodyPosition.maxStep = 0.06;--Normal velocity
-fsm.bodyPosition.maxStep2 = 0.08;--Front dash velocity
 
 --Trajectory parameters
 fsm.bodyPosition.rTurn = 0.25; 
@@ -82,6 +84,24 @@ fsm.bodyPosition.thClose = {0.15,0.15,10*math.pi/180};
 fsm.bodyPosition.tLost =  5.0*speedFactor; 
 fsm.bodyPosition.timeout = 30*speedFactor; 
 
+--Velocity generation parameters
+
+--Slow speed
+fsm.bodyPosition.maxStep1 = 0.05;
+
+--Medium speed
+fsm.bodyPosition.maxStep2 = 0.06;
+fsm.bodyPosition.rVel2 = 0.5;
+fsm.bodyPosition.aVel2 = 45*math.pi/180;
+fsm.bodyPosition.maxA2 = 0.2;
+fsm.bodyPosition.maxY2 = 0.02;
+
+--Full speed front dash
+fsm.bodyPosition.maxStep3 = 0.08;
+fsm.bodyPosition.rVel3 = 0.8; 
+fsm.bodyPosition.aVel3 = 20*math.pi/180;
+fsm.bodyPosition.maxA3 = 0.0;
+fsm.bodyPosition.maxY3 = 0.0;
 
 --------------------------------------------------
 --BodyApproach :  Align the robot for kick
@@ -93,19 +113,19 @@ fsm.bodyApproach.rFar = 0.45; --Max ball distance
 fsm.bodyApproach.tLost = 3.0*speedFactor;--ball detection timeout
 
 --x and y target position for stationary straight kick
-fsm.bodyApproach.xTarget11={0, 0.11,0.13}; --min, target, max
-fsm.bodyApproach.yTarget11={0.01, 0.035, 0.04}; --min, target ,max
+fsm.bodyApproach.xTarget11={0, 0.13,0.15}; --min, target, max
+fsm.bodyApproach.yTarget11={0.015, 0.04, 0.045}; --min, target ,max
 
 --x and y target position for stationary kick to left
-fsm.bodyApproach.xTarget12={0, 0.11,0.13}; --min, target, max
+fsm.bodyApproach.xTarget12={0, 0.13,0.15}; --min, target, max
 fsm.bodyApproach.yTarget12={-0.005, 0.01, 0.025}; --min, target ,max
 
 --Target position for straight walkkick 
-fsm.bodyApproach.xTarget21={0, 0.14,0.17}; --min, target, max
+fsm.bodyApproach.xTarget21={0, 0.17,0.19}; --min, target, max
 fsm.bodyApproach.yTarget21={0.01, 0.035, 0.04}; --min, target ,max
 
 --Target position for side walkkick to left
-fsm.bodyApproach.xTarget22={0, 0.14,0.17}; --min, target, max
+fsm.bodyApproach.xTarget22={0, 0.15,0.17}; --min, target, max
 fsm.bodyApproach.yTarget22={0.005, 0.02, 0.035}; --min, target ,max
 
 --------------------------------------------------
@@ -125,16 +145,12 @@ fsm.bodyKick.thGyroMag = 100;
 fsm.bodyKick.tStartWait = 1.0;
 fsm.bodyKick.tStartWaitMax = 1.5;
 
-
-
-
-
 --ball position checking params
-fsm.bodyKick.kickTargetFront = {0.12,0.035};
+fsm.bodyKick.kickTargetFront = {0.11,0.05};
 
 --For kicking to the left
-fsm.bodyKick.kickTargetSide = {0.12,0.01};
-fsm.bodyKick.kickTh = {0.03,0.025};
+fsm.bodyKick.kickTargetSide = {0.11,0.01};
+fsm.bodyKick.kickTh = {0.03,0.03};
 
 --delay for camera following the ball
 fsm.bodyKick.tFollowDelay = 2.2; 
@@ -155,7 +171,7 @@ fsm.bodyGotoCenter.timeout=10.0*speedFactor;
 --HeadTrack : Track the ball
 --------------------------------------------------
 fsm.headTrack = {};
-fsm.headTrack.timeout = 6.0 * speedFactor;
+fsm.headTrack.timeout = 3.0 * speedFactor;
 fsm.headTrack.tLost = 1.5 * speedFactor;
 fsm.headTrack.minDist = 0.30; --If ball is closer than this, don't look up
 fsm.headTrack.fixTh={0.20,0.08}; --Fix yaw axis if ball is within this box
@@ -210,7 +226,8 @@ fsm.headKickFollow.tFollow = 1.0*speedFactor;
 --HeadLookGoal: Look up to see the goal
 --------------------------------------------------
 fsm.headLookGoal={};
-fsm.headLookGoal.yawSweep = 50*math.pi/180;
+--fsm.headLookGoal.yawSweep = 50*math.pi/180;
+fsm.headLookGoal.yawSweep = 70*math.pi/180;
 fsm.headLookGoal.tScan = 1.0*speedFactor;
 
 --------------------------------------------------

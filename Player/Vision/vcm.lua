@@ -26,6 +26,7 @@ end
 shared.camera = {};
 shared.camera.select = vector.zeros(1);
 shared.camera.command = vector.zeros(1);
+shared.camera.ncamera = vector.zeros(1);
 
 --bodyTilt and height can be changed by sit/stand 
 shared.camera.height = vector.zeros(1);
@@ -37,6 +38,7 @@ shared.camera.rollAngle = vector.zeros(1);--how much image is tilted
 shared.camera.yuyvType = vector.zeros(1);
 --Now we use shm to enable broadcasting from test_vision
 shared.camera.broadcast = vector.zeros(1);
+shared.camera.teambroadcast = vector.zeros(1);
 
 shared.image = {};
 shared.image.select = vector.zeros(1);
@@ -57,6 +59,7 @@ shared.image.yuyv3 = 2*Config.camera.width*Config.camera.height/4/4;
 
 shared.image.width = vector.zeros(1);
 shared.image.height = vector.zeros(1);
+shared.image.scaleB = vector.zeros(1);
 
 shared.image.labelA = (processed_img_width)*(processed_img_height);
 shared.image.labelB = ((processed_img_width)/Config.vision.scaleB)*((processed_img_height)/Config.vision.scaleB);

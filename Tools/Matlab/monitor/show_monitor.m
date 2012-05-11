@@ -15,7 +15,7 @@ function h=show_monitor()
   h.enable5=1;
 
   %two subscreen for team monitor
-  h.enable8=1;   %Label mode, 1/2/0
+  h.enable8=0;   %Label mode, 1/2/0
   h.enable9=1;   %Label mode, 1/0
   h.enable10=1;  %Map mode, 1/2/3
 
@@ -49,6 +49,7 @@ function h=show_monitor()
       MONITOR.hButton9=uicontrol('Style','pushbutton','String','2D',...
 	'Position',[20 200 70 40],'Callback',@button9);
 
+
     elseif draw_team==1 %Multiple robot full monitoring (webots)
       set(gcf,'position',[1 1 900 900]);
 
@@ -61,7 +62,7 @@ function h=show_monitor()
       MONITOR.hButton7=uicontrol('Style','pushbutton','String','FPS +',...
 	'Units','Normalized', 'Position',[.60 .93 .10 .04],'Callback',@button7);
 
-      MONITOR.hButton8=uicontrol('Style','pushbutton','String','LABEL',...
+      MONITOR.hButton8=uicontrol('Style','pushbutton','String','OFF',...
 	'Units','Normalized','Position',[.02 .30 .07 .07],'Callback',@button8);
 
       MONITOR.hButton9=uicontrol('Style','pushbutton','String','2D',...
@@ -166,15 +167,17 @@ function h=show_monitor()
     yuyv_type = r_mon.yuyv_type;
     if MONITOR.enable1
       MONITOR.h1 = subplot(4,5,[1 2 6 7]);
-      if yuyv_type==0
+      if yuyv_type==1
         yuyv = robots{playerNumber,teamNumber}.get_yuyv();
-	plot_yuyv(yuyv);
-      elseif yuyv_type==1
+				plot_yuyv(yuyv);
+      elseif yuyv_type==2
         yuyv = robots{playerNumber,teamNumber}.get_yuyv2();
-	plot_yuyv(yuyv);
-      else
+				plot_yuyv(yuyv);
+      elseif yuyv_type==3
         yuyv = robots{playerNumber,teamNumber}.get_yuyv3();
-	plot_yuyv(yuyv);
+				plot_yuyv(yuyv);
+			else
+				return;
       end
 
       %webots use non-subsampled label (2x size of yuyv)
@@ -182,13 +185,15 @@ function h=show_monitor()
         if MONITOR.is_webots
           plot_overlay(r_mon,2*MONITOR.enable1,1);
         else
-	  if yuyv_type==0
+				  if yuyv_type==1
             plot_overlay(r_mon,1,1);
-	  elseif yuyv_type==1
+				  elseif yuyv_type==2
             plot_overlay(r_mon,2,1);
-	  else
+				  elseif yuyv_type==3
             plot_overlay(r_mon,4,1);
-	  end
+					else
+						return;
+				  end
         end
       end
 
@@ -214,7 +219,7 @@ function h=show_monitor()
       labelB = robots{playerNumber,teamNumber}.get_labelB();
       plot_label(labelB);
       if MONITOR.enable0
-        plot_overlay(r_mon,4,MONITOR.enable0);
+        plot_overlay(r_mon,r_mon.camera.scaleB,MONITOR.enable0);
       end
     elseif (MONITOR.enable2==3) && (~isempty(MONITOR.lutname))
       MONITOR.h2 = subplot(4,5,[3 4 8 9]);
@@ -228,9 +233,9 @@ function h=show_monitor()
       cla(MONITOR.h3);
 
       if MONITOR.enable3==5 
-	if isfield(r_mon.robot, 'map')
+        if isfield(r_mon.robot, 'map')
           plot_grid(r_mon.robot.map);  
-	end
+				end
         plot_field(MONITOR.h3,MONITOR.fieldtype);
         plot_robot( r_struct, r_mon,2,3 );
       else
@@ -297,33 +302,30 @@ function h=show_monitor()
 
   function update_team_wireless(robot_team)
 
-
     %Draw common field 
-    h_c=subplot(5,5,[1:15]);
+    h_c=subplot(5,5,[6:20]);
     cla(h_c);
     plot_field(h_c,MONITOR.fieldtype);
-
+    hold on;
     for i=1:10
       r_struct = robot_team.get_team_struct_wireless(i);
       if r_struct.id>0
-        h_c=subplot(5,5,[1:15]);
+        h_c=subplot(5,5,[6:20]);
         plot_robot( r_struct, [],2,MONITOR.enable10);
         updated = 0;
+	if i<6 
+          h1=subplot(5,5,i);
+	  labelB = robot_team.get_labelB_wireless(i);
+          plot_label(labelB);
+	else
+          h1=subplot(5,5,i+15);
+	  labelB = robot_team.get_labelB_wireless(i);
+          plot_label(labelB);
+	end
+	plot_overlay_wireless(r_struct);
       end
-
-%{
-      if MONITOR.enable9
-        h2=subplot(5,5,20+playerNumber(i));
-        plot_surroundings( h2, r_mon );
-      end
-
-      h2=subplot(5,5,20+playerNumber(i));
-      [infostr textcolor]=robot_info(r_struct,r_mon,2);
-      h_xlabel=xlabel(infostr);
-      set(h_xlabel,'Color',textcolor);
-%}
-
     end
+    hold off;
   end
 
 
@@ -341,8 +343,6 @@ function h=show_monitor()
     image('XData',[-3:1/siz:3],'YData',[-2:1/siz:2],...
 	'CData',rgbc);  
   end
-
-
 
 
   function button0(varargin)

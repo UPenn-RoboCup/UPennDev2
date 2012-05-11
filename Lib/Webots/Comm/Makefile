@@ -36,7 +36,7 @@ ifeq ($(MODE),32)
 endif
 endif
 
-INCLUDE_DIRS = -I/usr/local/include -I/usr/include/lua5.1
+INCLUDE_DIRS = -I/usr/local/include -I/usr/include/lua5.1 -I/usr/local/include/lua
 LIB_DIR = /usr/local/lib
 
 all: GameControlPacket

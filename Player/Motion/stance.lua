@@ -20,8 +20,6 @@ bodyTilt=Config.walk.bodyTilt;
 qLArm = Config.walk.qLArm;
 qRArm = Config.walk.qRArm;
 
-
-
 -- Max change in position6D to reach stance:
 dpLimit = Config.stance.dpLimitStance or vector.new({.04, .03, .07, .4, .4, .4});
 
@@ -31,6 +29,8 @@ tStartWait=0.2;
 tEndWait=Config.stance.delay or 0;
 tEndWait=tEndWait/100;
 tStart=0;
+
+hardnessLeg = Config.stance.hardnessLeg or 1;
 
 function entry()
   print("Motion SM:".._NAME.." entry");
@@ -73,10 +73,23 @@ function update()
       pTorsoR=pRLeg+dpRLeg;
       pTorso=(pTorsoL+pTorsoR)*0.5;
 
+      --For OP, lift hip a bit before starting to standup
+      if(Config.platform.name == 'OP') then
+        print("Initial bodyHeight:",pTorso[3]);
+        if pTorso[3]<0.21 then
+          Body.set_lleg_hardness(0.5);
+          Body.set_rleg_hardness(0.5);
+          Body.set_actuator_command(Config.stance.initangle)
+          unix.usleep(1E6*0.4);
+	  started=false;
+	  return;
+        end
+      end
+
       Body.set_lleg_command(qLLeg);
       Body.set_rleg_command(qRLeg);
-      Body.set_lleg_hardness(1);
-      Body.set_rleg_hardness(1);
+      Body.set_lleg_hardness(hardnessLeg);
+      Body.set_rleg_hardness(hardnessLeg);
       t0 = Body.get_time();
       count=1;
 

@@ -35,7 +35,10 @@ global MONITOR %for sending the webots check information
 
 
   h.wcmTeamdata  = shm(sprintf('wcmTeamdata%d%d%s',  h.teamNumber, h.playerID, h.user));
+  h.wcmLabelB  = shm(sprintf('wcmLabelB%d%d%s',  h.teamNumber, h.playerID, h.user));
   h.vcmRobot  = shm(sprintf('vcmRobot%d%d%s',  h.teamNumber, h.playerID, h.user)); 
+
+	h.ocmOcc = shm(sprintf('ocmOcc%d%d%s', h.teamNumber, h.playerID, h.user));
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -65,6 +68,7 @@ global MONITOR %for sending the webots check information
   h.get_team_struct_wireless = @get_team_struct_wireless;
   h.get_monitor_struct_wireless = @get_monitor_struct_wireless;
 
+  h.get_labelB_wireless = @get_labelB_wireless;
 
   function update()
       % do nothing
@@ -161,6 +165,18 @@ global MONITOR %for sending the webots check information
       goalv21=h.wcmTeamdata.get_goalv21();
       goalv22=h.wcmTeamdata.get_goalv22();
 
+      goalB11=h.wcmTeamdata.get_goalB11();
+      goalB12=h.wcmTeamdata.get_goalB12();
+      goalB13=h.wcmTeamdata.get_goalB13();
+      goalB14=h.wcmTeamdata.get_goalB14();
+      goalB15=h.wcmTeamdata.get_goalB15();
+
+      goalB21=h.wcmTeamdata.get_goalB21();
+      goalB22=h.wcmTeamdata.get_goalB22();
+      goalB23=h.wcmTeamdata.get_goalB23();
+      goalB24=h.wcmTeamdata.get_goalB24();
+      goalB25=h.wcmTeamdata.get_goalB25();
+
       landmark=h.wcmTeamdata.get_landmark();
       landmarkv1=h.wcmTeamdata.get_landmarkv1();
       landmarkv2=h.wcmTeamdata.get_landmarkv2();
@@ -194,6 +210,19 @@ global MONITOR %for sending the webots check information
       r.goalv1=[goalv11(id) goalv12(id)];
       r.goalv2=[goalv21(id) goalv22(id)];
 
+
+      gc1 = [goalB11(id) goalB12(id)];
+      gc2 = [goalB21(id) goalB22(id)];
+
+      go1 = goalB13(id);
+      go2 = goalB23(id);
+
+      ga1 = [goalB14(id) goalB15(id)];
+      ga2 = [goalB24(id) goalB25(id)];
+
+      r.goalpostStat1 = struct('x',gc1(1), 'y',gc1(2), 'a',ga1(1), 'b',ga1(2),'o',go1);
+      r.goalpostStat2 = struct('x',gc2(1), 'y',gc2(2), 'a',ga2(1), 'b',ga2(2),'o',go2);
+
       r.landmark=landmark(id);
       r.landmarkv=[landmarkv1(id) landmarkv2(id)];
 
@@ -201,7 +230,32 @@ global MONITOR %for sending the webots check information
     end
   end
 
-
+  function labelB = get_labelB_wireless(robotID)
+    width = 80;
+    height = 60;
+    if robotID==1 
+      rawData = h.wcmLabelB().get_p1();
+    elseif robotID==2 
+      rawData = h.wcmLabelB().get_p2();
+    elseif robotID==3 
+      rawData = h.wcmLabelB().get_p3();
+    elseif robotID==4 
+      rawData = h.wcmLabelB().get_p4();
+    elseif robotID==5 
+      rawData = h.wcmLabelB().get_p5();
+    elseif robotID==6 
+      rawData = h.wcmLabelB().get_p6();
+    elseif robotID==7 
+      rawData = h.wcmLabelB().get_p7();
+    elseif robotID==8 
+      rawData = h.wcmLabelB().get_p8();
+    elseif robotID==9 
+      rawData = h.wcmLabelB().get_p9();
+    else
+      rawData = h.wcmLabelB().get_p10();
+    end
+    labelB = raw2label(rawData, width, height)';
+  end
 
   function r = get_monitor_struct()
     % returns the monitor struct (in the same form as the monitor messages)
@@ -227,13 +281,15 @@ global MONITOR %for sending the webots check information
 
     %Camera info
 
+		  select = h.vcmImage.get_select();
       width = h.vcmImage.get_width();
       height = h.vcmImage.get_height();
+			scaleB = h.vcmImage.get_scaleB();
       bodyHeight=h.vcmCamera.get_bodyHeight();
       bodyTilt=h.vcmCamera.get_bodyTilt();
       headAngles=h.vcmImage.get_headAngles();
       rollAngle=h.vcmCamera.get_rollAngle();
-      r.camera = struct('width',width,'height',height,...
+      r.camera = struct('select',select,'width',width,'height',height,'scaleB',scaleB,...
 	'bodyHeight',bodyHeight,'bodyTilt',bodyTilt,...
 	'headAngles',headAngles,'rollAngle',rollAngle);
 
@@ -340,8 +396,8 @@ global MONITOR %for sending the webots check information
       endpoint22=h.vcmLine.get_endpoint22();
 
       for i=1:r.line.nLines
-	r.line.v1{i}=[v1x(i) v1y(i)];
-	r.line.v2{i}=[v2x(i) v2y(i)];
+				r.line.v1{i}=[v1x(i) v1y(i)];
+				r.line.v2{i}=[v2x(i) v2y(i)];
         r.line.endpoint{i}=[endpoint11(i) endpoint21(i) ...
 			    endpoint12(i) endpoint22(i)];
       end
@@ -367,17 +423,17 @@ global MONITOR %for sending the webots check information
 %}
   % Add freespace boundary
       r.free = {};
+			r.free.detect = 0;
       freeCol = h.vcmFreespace.get_nCol();
-%		   freeValueA = h.vcmFreespace.get_pboundA();
       freeValueB = h.vcmFreespace.get_pboundB();
-      labelAm = h.vcmImage.get_width()/2;
-      labelBm = labelAm/4;
-%      r.free = struct('Ax',freeValueA(1:labelAm),
-%                      'Ay',freeValueA(labelAm+1:2*labelAm),
-      r.free = struct('Bx',freeValueB(1:labelBm),...
-                      'By',freeValueB(labelBm+1:2*labelBm),...
-                      'nCol',freeCol,...
-                      'detect',h.vcmFreespace.get_detect());
+			freeDis = h.vcmFreespace.get_vboundB();
+      labelBm = size(freeValueB,2)/2;
+			r.free.y = freeDis(1:labelBm);
+			r.free.x = freeDis(labelBm+1:2*labelBm);
+      r.free.Bx = freeValueB(1:labelBm);
+      r.free.By = freeValueB(labelBm+1:2*labelBm);
+      r.free.nCol = freeCol;
+      r.free.detect = h.vcmFreespace.get_detect();
       % Add visible boundary        
 
       
@@ -392,23 +448,21 @@ global MONITOR %for sending the webots check information
                     'btmy',bdBtm(1,1:bdCol),...
                     'btmx',-bdBtm(1,bdCol+1:2*bdCol));
       % Add occupancy map
-%{
       r.occ = {};
-      div = size(h.wcmOccmap.get_r(),2);
-      interval = 2*pi/div;
-      r.occ = struct('div',div,'interval',interval,...
-                     'halfInter',interval/2,...
-                     'r',h.wcmOccmap.get_r(),...
-                     'theta',zeros(div*4,1),...
-                     'rho',zeros(div*4,1),...
-                     'x',zeros(div*4,1),...
-                     'y',zeros(div*4,1));
-%}
+			map = h.ocmOcc.get_map();
+			mapsize = sqrt(size(map,2));
+			map = reshape(map, [mapsize, mapsize]);
+			map(map > 0) = 1;
+			map(map < 0) = 0;
+			r.occ.map = map;
+			r.occ.mapsize = mapsize;
+			r.occ.centroid = h.ocmOcc.get_centroid();
+
 
       % add horizon line
       r.horizon = {};
       labelAm = h.vcmImage.get_width()/2;
-      labelBm = labelAm/4;
+      labelBm = labelAm/h.vcmImage.get_scaleB();
 	    horizonDir = h.vcmImage.get_horizonDir();
       horizonA = h.vcmImage.get_horizonA();
       horizonB = h.vcmImage.get_horizonB();
@@ -484,16 +538,16 @@ global MONITOR %for sending the webots check information
 
   function labelB = get_labelB()
     % returns the bit-ored labeled image
-    width = h.vcmImage.get_width()/8;
-    height = h.vcmImage.get_height()/8;
+    width = h.vcmImage.get_width()/2/h.vcmImage.get_scaleB();
+    height = h.vcmImage.get_height()/2/h.vcmImage.get_scaleB();
     rawData = h.vcmImage.get_labelB();
 
     %Webots vision check 
     %for webots with non-subsampling vision code, use 2x width/height 
     scale= length(rawData)*2/width/height;
     if scale==1 % TODO: check with webots
-      width = h.vcmImage.get_width()/4;
-      height = h.vcmImage.get_height()/4;
+      width = h.vcmImage.get_width()/h.vcmImage.get_scaleB();
+      height = h.vcmImage.get_height()/h.vcmImage.get_scaleB();
       MONITOR.is_webots=1;
     end
     labelB = raw2label(rawData, width, height)';

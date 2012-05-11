@@ -14,7 +14,7 @@ msgTimeout = Config.team.msgTimeout;
 nonAttackerPenalty = Config.team.nonAttackerPenalty;
 nonDefenderPenalty = Config.team.nonDefenderPenalty;
 
-role = -1;
+role = 1;
 
 count = 0;
 
@@ -83,6 +83,7 @@ function set_role(r)
   if role ~= r then 
     role = r;
     Body.set_indicator_role(role);
+
     if role == 1 then
       -- attack
       Speak.talk('Attack');
@@ -97,7 +98,7 @@ function set_role(r)
       Speak.talk('Goalie');
     else
       -- no role
-      Speak.talk('ERROR: Unkown Role');
+      Speak.talk('ERROR: Unknown Role');
     end
   end
 end

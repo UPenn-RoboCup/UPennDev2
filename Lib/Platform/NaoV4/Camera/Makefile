@@ -14,7 +14,7 @@ else
 	rm -rf build
 	mkdir build
 	cd build && cmake -DCMAKE_TOOLCHAIN_FILE="$(CTC)/toolchain-atom.cmake" .. \
-		&& make && cd $(CWD)
+		&& make && cd $(CWD) && scp build/test nao@192.168.0.107:
 endif
 
 clean:

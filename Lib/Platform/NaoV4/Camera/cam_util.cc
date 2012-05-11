@@ -67,7 +67,7 @@ int init_camera(const char *dev, int width, int height) {
 
 // initialize memory map for image buffer
 //  return number of buffers on success and -1 on error
-int init_mmap(int fd, struct v4l2_buffer **v4l2buffers, uint32 **imbuffers, int nbufDesired) {
+int init_mmap(int fd, struct v4l2_buffer **v4l2buffers, uint32 ***imbuffers, int nbufDesired) {
   struct v4l2_requestbuffers reqbuf;
   struct v4l2_buffer buffer;
 
@@ -97,8 +97,8 @@ int init_mmap(int fd, struct v4l2_buffer **v4l2buffers, uint32 **imbuffers, int 
     return -1;
   }
 
-  imbuffers = (uint32 **)malloc(nbuf * sizeof(uint32 *));
-  if (imbuffers == NULL) {
+  *imbuffers = (uint32 **)malloc(nbuf * sizeof(uint32 *));
+  if (*imbuffers == NULL) {
     printf("unable to allocate image buffer pointer array\n");
     return -1;
   }
@@ -113,17 +113,17 @@ int init_mmap(int fd, struct v4l2_buffer **v4l2buffers, uint32 **imbuffers, int 
       return -1;
     }
     (*v4l2buffers)[i].length = buffer.length;
-    imbuffers[i] = (uint32 *)mmap(NULL, buffer.length,   
+    (*imbuffers)[i] = (uint32 *)mmap(NULL, buffer.length,   
                                         PROT_READ | PROT_WRITE, 
                                         MAP_SHARED, 
                                         fd, 
                                         buffer.m.offset);
 
-    if (imbuffers[i] == MAP_FAILED) {
+    if ((*imbuffers)[i] == MAP_FAILED) {
       printf("mmap error mapping buffer\n");
       // free currently mapped buffers
       for (int j = 0; j < i; j++) {
-        munmap(imbuffers[j], (*v4l2buffers)[j].length);
+        munmap((*imbuffers)[j], (*v4l2buffers)[j].length);
       }
       // free image buffer pointer array
       free(imbuffers);
@@ -168,11 +168,10 @@ int set_camera_param(int fd, int id, int value) {
       return -1;
     }
     if (control.value == value) {
-      printf("set %d to %d\n", id, value);
       return 0;
     }
 
-    if (i % 10 == 0) {
+    if (i % 20 == 1) {
       printf("Attempting to set parameter %d to %d for the %dth time\n", id, value, i);
     }
 
@@ -180,6 +179,23 @@ int set_camera_param(int fd, int id, int value) {
   }
 
   return -1;
+}
+
+
+// attempt to get camera parameter 
+//  return 0 on success and -1 on failure
+int get_camera_param(int fd, int id, int &value) { 
+  struct v4l2_control control;
+
+  memset(&control, 0, sizeof(v4l2_control));
+  control.id = id;
+  if (ioctl(fd, VIDIOC_G_CTRL, &control) < 0) {
+    printf("failed to get parameter: %d\n", id);
+    return -1;
+  }
+  value = control.value;
+
+  return 0;
 }
 
 

@@ -34,7 +34,7 @@ int init_camera(const char *dev, int width, int height);
 
 // initialize memory map for image buffer
 //  return number of buffers on success and -1 on error
-int init_mmap(int fd, struct v4l2_buffer **v4l2buffers, uint32 **imbuffers, int nbufDesired);
+int init_mmap(int fd, struct v4l2_buffer **v4l2buffers, uint32 ***imbuffers, int nbufDesired);
 
 
 // iterate over all possible camera parameters and print any 
@@ -46,6 +46,9 @@ void query_camera_params(int fd);
 //  return 0 on success and -1 on failure
 int set_camera_param(int fd, int id, int value);
 
+// attempt to get camera parameter 
+//  return 0 on success and -1 on failure
+int get_camera_param(int fd, int id, int &value);
 
 // starts the actual camera stream
 //  return 0 on success and -1 on failure

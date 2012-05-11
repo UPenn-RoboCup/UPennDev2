@@ -236,4 +236,3 @@ int grab_frame(int fd, struct v4l2_buffer *v4l2buffers, struct v4l2_buffer *curr
   return 0;
 }
 
-

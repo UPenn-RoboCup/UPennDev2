@@ -30,19 +30,70 @@
 
 #define NCAMERA_DEVICES 2
 
-// camera 
+// camera device paths
 const char *cameraDevices[] = {"/dev/video0", "/dev/video1"};
+// camera file descriptors
 static int cameraFd[NCAMERA_DEVICES];
+// number of v4l2 buffers for each camera
 static int nbuf[NCAMERA_DEVICES];
+// array of v4l2 buffers for each camera
 struct v4l2_buffer *v4l2buffers[NCAMERA_DEVICES];
+// array of image buffers for each camera
 uint32 *imbuffers[NCAMERA_DEVICES];
+// flags indicating if a v4l2 buffer is enqueued for that camera
 int enqueued[NCAMERA_DEVICES];
+// number of frames received per camera
+int nframe[NCAMERA_DEVICES];
+// current buffer index for each camera
+int currBufIndex[NCAMERA_DEVICES];
+// current v4l2 buffer per camera
+struct v4l2_buffer *currV4l2Buf[NCAMERA_DEVICES];
+// next v4l2 buffer per camera
+struct v4l2_buffer *nextV4l2Buf[NCAMERA_DEVICES];
+
+// thread variables
+pthread_t camthreads[NCAMERA_DEVICES];
 
 
+// main thread function to continuously grab camera frames
+void *run_camera(void *cameraIndex) {
+  // get camera index
+  int cid = (int)cameraIndex;
+
+  // initialize current buffer index
+  currBufIndex[cid] = 0;
+
+  // initialize current and next v4l2 buffers
+  currV4l2Buf[cid] = &v4l2buffers[cid][0];
+  nextV4l2Buf[cid] = &v4l2buffers[cid][1];
+
+  printf("starting camera loop for %s.\n", cameraDevices[cid]);
+  double t0 = time_scalar();
+  while (1) {
+    int ret = grab_frame(cameraFd[cid],
+                          v4l2buffers[cid],
+                          currV4l2Buf[cid],
+                          nextV4l2Buf[cid],
+                          nbuf[cid],
+                          enqueued[cid],
+                          currBufIndex[cid],
+                          nframe[cid]);
+    if (ret < 0) {
+      printf("failed to grab frame\n");
+    }
+    if (nframe[cid] % 100 == 0) {
+      printf("%s fps: %f\n", cameraDevices[cid], (100 / (time_scalar() - t0)));
+      t0 = time_scalar();
+    }
+    usleep(1000);
+  }
+  pthread_exit(NULL);
+}
 
 
 
 int main() {
+
   // initialize each camera
   for (int i = 0; i < NCAMERA_DEVICES; i++) {
     cameraFd[i] = init_camera(cameraDevices[i], WIDTH, HEIGHT);
@@ -63,45 +114,23 @@ int main() {
     } 
   }
 
-  int nframe = 0;
-  struct v4l2_buffer *currV4l2Buf;
-  struct v4l2_buffer *nextV4l2Buf;
 
-  currV4l2Buf = (struct v4l2_buffer *)malloc(sizeof(struct v4l2_buffer));
-  if (currV4l2Buf == NULL) {
-    printf("unable to allocate current buffer memory.\n");
-    return -1;
-  }
-  nextV4l2Buf = (struct v4l2_buffer *)malloc(sizeof(struct v4l2_buffer));
-  if (nextV4l2Buf == NULL) {
-    printf("unable to allocate next buffer memory.\n");
-    return -1;
+  
+
+
+
+  // start each camera thread
+  for (int i = 0; i < NCAMERA_DEVICES; i++) {
+    printf("starting camera %d thread\n", i);
+    int ret = pthread_create(&camthreads[i], NULL, run_camera, (void *)i);
+    if (ret != 0) {
+      printf("error creating pthread: %d\n", ret);
+      return -1;
+    }
   }
 
-  int ind = 0;
-  int ibuf = 0;
-  printf("starting camera loop...\n");
-  double t0 = time_scalar();
-  while (1) {
-    int ret = grab_frame(cameraFd[ind],
-                          v4l2buffers[ind],
-                          currV4l2Buf,
-                          nextV4l2Buf,
-                          nbuf[ind],
-                          enqueued[ind],
-                          ibuf,
-                          nframe);
-    
-    if (ret < 0) {
-      printf("failed to grab frame\n");
-    }
-    if (nframe % 100 == 0) {
-      printf("fps: %f\n", (100 / (time_scalar() - t0)));
-      t0 = time_scalar();
-    }
-    usleep(1000);
-  }
-    
+  /* Last thing that main() should do */
+  pthread_exit(NULL);
 }
 
 

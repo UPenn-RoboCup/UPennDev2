@@ -41,6 +41,11 @@ function update()
   elseif (state == 4) then
     return 'finished';
   end
+  
+  -- check for penalty
+  if gcm.in_penalty() then
+    return 'penalized';
+  end
 end
 
 function exit()

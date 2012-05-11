@@ -25,6 +25,7 @@ nonDefenderPenalty = Config.team.nonDefenderPenalty;
 count = 0;
 
 state = {};
+state.robotName = Config.game.robotName;
 state.teamNumber = gcm.get_team_number();
 state.id = playerID;
 state.teamColor = gcm.get_team_color();
@@ -42,6 +43,8 @@ state.fall=0;
 state.goal=0;  --0 for non-detect, 1 for unknown, 2/3 for L/R, 4 for both
 state.goalv1={0,0};
 state.goalv2={0,0};
+state.goalB1={0,0,0,0,0};--Centroid X Centroid Y Orientation Axis1 Axis2
+state.goalB2={0,0,0,0,0};
 state.landmark=0; --0 for non-detect, 1 for yellow, 2 for cyan
 state.landmarkv={0,0};
 state.corner=0; --0 for non-detect, 1 for L, 2 for T
@@ -49,6 +52,11 @@ state.cornerv={0,0};
 
 states = {};
 states[playerID] = state;
+
+--We maintain pose of all robots 
+--For obstacle avoidance
+poses={};
+t_poses=vector.zeros(10);
 
 function pack_msg(state)
   --Tightly pack the state info into a short string
@@ -98,17 +106,88 @@ end
 
 function recv_msgs()
   while (Comm.size() > 0) do 
-    t = serialization.deserialize(Comm.receive());
+
+    msg=Comm.receive();
+    --Ball GPS Info hadling
+    if #msg==14 then --Ball position message
+      ball_gpsx=(tonumber(string.sub(msg,2,6))-5)*2;
+      ball_gpsy=(tonumber(string.sub(msg,8,12))-5)*2;
+      wcm.set_robot_gps_ball({ball_gpsx,ball_gpsy,0});
+
+    else --Regular team message
+      t = serialization.deserialize(msg);
 --    t = unpack_msg(Comm.receive());
-    if (t and (t.teamNumber) and (t.teamNumber == state.teamNumber) and (t.id) and (t.id ~= playerID)) then
-      t.tReceive = Body.get_time();
-      states[t.id] = t;
+      if t and (t.teamNumber) and (t.id) then
+	--Messages from upenn code
+	--Keep all pose data for obstacle avoidance 
+        if t.teamNumber ~= state.teamNumber then
+	  poses[t.id+5]=t.pose;
+          t_poses[t.id+5]=Body.get_time();
+        elseif t.id ~=playerID then
+	  poses[t.id]=t.pose;
+          t_poses[t.id]=Body.get_time();
+        end
+
+	--Is the message from our team?
+        if (t.teamNumber == state.teamNumber) and 
+	   (t.id ~= playerID) then
+          t.tReceive = Body.get_time();
+	  t.labelB = {}; --Kill labelB information
+          states[t.id] = t;
+        end
+      end
     end
   end
 end
 
+function update_obstacle()
+  local t = Body.get_time();
+  local t_timeout = 2.0;
+
+  local closest_pose={};
+  local closest_dist =100;
+  local closest_index = 0;
+  pose = wcm.get_pose();
+
+  --todo: parameterize
+  for i=1,10 do
+    if t_poses[i]~=0 and t-t_poses[i]<t_timeout then
+      dist = math.sqrt(
+		(pose.x-poses[i].x)^2+
+		(pose.y-poses[i].y)^2);
+      if dist<closest_dist then
+        closest_index = i;
+        closest_dist = dist;
+	closest_pose = poses[i];	
+      end
+    end
+  end
+
+  if closest_index>0 then
+    wcm.set_obstacle_dist(closest_dist);
+--Transform to local frame
+    local obstacle_local = util.pose_relative(
+	{closest_pose.x,closest_pose.y,0},{pose.x,pose.y,pose.a}); 
+    wcm.set_obstacle_pose(obstacle_local);
+  else
+    wcm.set_obstacle_dist(100);
+  end
+  --print("Closest index dist", closest_index, closest_dist);
+end
+
 function entry()
 end
+
+function pack_labelB()
+  labelB = vcm.get_image_labelB();
+  width = vcm.get_image_width()/8; 
+  height = vcm.get_image_height()/8;
+  count = vcm.get_image_count();
+  array = serialization.serialize_label_rle(
+	labelB, width, height, 'uint8', 'labelB',count);
+  state.labelB = array;
+end
+
 
 function update()
   count = count + 1;
@@ -137,8 +216,21 @@ function update()
     local v2=vcm.get_goal_v2();
     state.goalv1[1],state.goalv1[2]=v1[1],v1[2];
     state.goalv2[1],state.goalv2[2]=0,0;
+
+    centroid1 = vcm.get_goal_postCentroid1();
+    orientation1 = vcm.get_goal_postOrientation1();
+    axis1 = vcm.get_goal_postAxis1();
+    state.goalB1 = {centroid1[1],centroid1[2],
+      orientation1,axis1[1],axis1[2]};
+
     if vcm.get_goal_type()==3 then --two goalposts 
       state.goalv2[1],state.goalv2[2]=v2[1],v2[2];
+      centroid2 = vcm.get_goal_postCentroid2();
+      orientation2 = vcm.get_goal_postOrientation2();
+      axis2 = vcm.get_goal_postAxis2();
+      state.goalB2 = {centroid2[1],centroid2[2],
+	orientation2,axis2[1],axis2[2]};
+
     end
   end
 
@@ -157,6 +249,9 @@ function update()
     local v = vcm.get_corner_v();
     state.cornerv[1],state.cornerv[2]=v[1],v[2];
   end
+
+  --Send lableB wirelessly!
+  pack_labelB();
     
   if (math.mod(count, 1) == 0) then
 
@@ -169,8 +264,6 @@ function update()
 --    print("Packed team message size:",string.len(msg2))
 --    Comm.send(serialization.serialize(state));
 --    msg=pack_msg(state);
-
-
     Comm.send(msg);
 
     --Copy of message sent out to other players
@@ -236,32 +329,36 @@ function update()
   end
 --]]
 
-  -- goalie and reserve player never changes role
-  if role~=0 and role<4 then 
-    minETA, minEtaID = min(eta);
-    if minEtaID == playerID then set_role(1);--attack
-    else
-      -- furthest player back is defender
-      minDDefID = 0;
-      minDDef = math.huge;
-      for id = 1,5 do
-        if id ~= minEtaID and 	   
-	ddefend[id] <= minDDef and
-	roles[id]<4 then --goalie and reserve don't count
-          minDDefID = id;
-          minDDef = ddefend[id];
-        end
-      end
-      if minDDefID == playerID then
-        set_role(2);    -- defense 
+  --Only switch role during gamePlaying state
+  if gcm.get_game_state()==3 then
+    -- goalie and reserve player never changes role
+    if role~=0 and role<4 then 
+      minETA, minEtaID = min(eta);
+      if minEtaID == playerID then set_role(1);--attack
       else
-        set_role(3);    -- support
+        -- furthest player back is defender
+        minDDefID = 0;
+        minDDef = math.huge;
+        for id = 1,5 do
+          if id ~= minEtaID and 	   
+  	  ddefend[id] <= minDDef and
+	  roles[id]<4 then --goalie and reserve don't count
+            minDDefID = id;
+            minDDef = ddefend[id];
+          end
+        end
+        if minDDefID == playerID then
+          set_role(2);    -- defense 
+        else
+          set_role(3);    -- support
+        end
       end
     end
   end
 
   -- update shm
   update_shm() 
+  update_obstacle();
 end
 
 function update_shm() 

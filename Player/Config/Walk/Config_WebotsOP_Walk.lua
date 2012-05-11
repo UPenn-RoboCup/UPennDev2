@@ -15,6 +15,9 @@ walk.velLimitY={-.03,.03};
 walk.velLimitA={-.3,.3};
 walk.velDelta={0.02,0.02,0.15} 
 
+walk.vaFactor = 0.6;
+
+
 walk.footSizeX = {-0.05, 0.05};
 walk.stanceLimitMarginY = 0.015;
 
@@ -47,7 +50,11 @@ walk.phSingle={0.2,0.8};
 -- Compensation parameters
 --------------------------------------------
 walk.hipRollCompensation = 3*math.pi/180;
-walk.ankleMod = vector.new({-1,0})/0.12 * 10*math.pi/180;
+walk.ankleMod = vector.new({-1,0})*2*math.pi/180;
+walk.spreadComp = 0.02;
+walk.turnComp = 0.01;
+walk.turnCompThreshold = 0.15;
+
 
 --------------------------------------------------------------
 --Imu feedback parameters, alpha / gain / deadband / max

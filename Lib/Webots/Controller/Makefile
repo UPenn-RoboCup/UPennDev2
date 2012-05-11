@@ -36,7 +36,7 @@ endif
 endif
 
 INCLUDE_DIR = $(WEBOTS_HOME)/include
-LUAINCLUDE = -I/usr/local/include -I/usr/include/lua5.1
+LUAINCLUDE = -I/usr/local/include -I/usr/include/lua5.1 -I/usr/local/include/lua
 LIB_DIR = $(WEBOTS_HOME)/lib
 
 all: controller

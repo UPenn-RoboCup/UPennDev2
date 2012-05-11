@@ -1,11 +1,16 @@
 module(..., package.seeall);
 require('vector')
+require('unix')
 
 --Sit/stand stance parameters
 stance={};
-stance.bodyHeightSit = 0.175;
-stance.footXSit = -0.03;
-stance.dpLimitSit=vector.new({.03,.01,.06,.1,.3,.1});
+
+stance.footXSit = -0.05;
+stance.bodyTiltSit = -5*math.pi/180;
+stance.bodyHeightSit = 0.18;
+stance.qLArmSit = math.pi/180*vector.new({140,8,-40});
+stance.qRArmSit = math.pi/180*vector.new({140,-8,-40});
+stance.dpLimitSit=vector.new({.03,.01,.06,.1,.3,.3});
 stance.bodyHeightDive= 0.25;
 stance.bodyTiltStance=20*math.pi/180; --bodyInitial bodyTilt, 0 for webots
 stance.dpLimitStance=vector.new({.04, .03, .07, .4, .4, .4});
@@ -96,6 +101,12 @@ if servo.pid ==0 then -- For old firmware with 12-bit precision
     819,358,205,
     --		512,		--For aux
   }
+  -- SLOPE parameters
+  servo.slope_param={
+    32,	--Regular slope
+    16,	--Kick slope
+  };
+
 else -- For new, PID firmware with 14-bit precision
   print(robotName.." has 14-bit firmware")
   servo.steps=vector.ones(nJoint)*4096;
@@ -110,17 +121,11 @@ else -- For new, PID firmware with 14-bit precision
 
   -- PID Parameters
   servo.pid_param={
-	--Regular PID gain
-	{32,0,4},
-	--Kick PID gain
-	{64,0,4},
+    --Regular PID gain
+    {32,0,4},
+    --Kick PID gain
+    {64,0,4},
   };
-
-  servo.slope_param={
-	32,	--Regular slope
-	16,	--Kick slope
-  };
-  -- SLOPE parameters
 
   servo.moveRange=vector.ones(nJoint)*360*math.pi/180;
   --[[ For aux

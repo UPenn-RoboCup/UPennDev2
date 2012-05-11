@@ -4,6 +4,7 @@ project(NaoGameControlReceiver)
 
 # include for lua headers
 include_directories(/usr/local/include)
+include_directories(/usr/include/lua5.1)
 
 # main library definition
 add_library(NaoGameControlReceiver SHARED luaNaoGameControlReceiver.cc timeScalar.cc)

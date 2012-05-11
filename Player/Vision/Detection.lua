@@ -12,7 +12,9 @@ require('detectBall');
 require('detectGoal');
 require('detectLine');
 require('detectCorner');
+if not string.find(Config.platform.name,'Nao') then
 require('detectLandmarks'); -- for NSL
+end
 require('detectSpot');
 require('detectFreespace');
 require('detectBoundary');
@@ -124,11 +126,13 @@ function update()
   end
 
   -- midfield landmark detection
-  landmarkCyan = 0;
-  landmarkYellow = 0;
-  if enableMidfieldLandmark == 1 then
-    landmarkCyan = detectLandmarks.detect(colorCyan,colorYellow);
-    landmarkYellow = detectLandmarks.detect(colorYellow,colorCyan);
+  if not string.find(Config.platform.name,'Nao') then
+   landmarkCyan = 0;
+   landmarkYellow = 0;
+   if enableMidfieldLandmark == 1 then
+     landmarkCyan = detectLandmarks.detect(colorCyan,colorYellow);
+     landmarkYellow = detectLandmarks.detect(colorYellow,colorCyan);
+   end
   end
 
   if enable_freespace_detection ==1 then
@@ -170,17 +174,30 @@ function update_shm()
 
   -- midfield landmark detection
   vcm.set_landmark_detect(0);
-  if enableMidfieldLandmark == 1 then
-    if landmarkYellow.detect==1 then
-       vcm.set_landmark_detect(1);
-       vcm.set_landmark_color(colorYellow);
-       vcm.set_landmark_v(landmarkYellow.v);
-    elseif landmarkCyan.detect==1 then
-       vcm.set_landmark_detect(1);
-       vcm.set_landmark_color(colorCyan);
-       vcm.set_landmark_v(landmarkCyan.v);
+  if not string.find(Config.platform.name,'Nao') then
+    if enableMidfieldLandmark == 1 then
+      if landmarkYellow.detect==1 then
+         vcm.set_landmark_detect(1);
+         vcm.set_landmark_color(colorYellow);
+         v={0,0,0,0};
+         v[1]=landmarkYellow.v[1]*distanceFactorYellow;
+         v[2]=landmarkYellow.v[2]*distanceFactorYellow;
+         vcm.set_landmark_v(v);
+      elseif landmarkCyan.detect==1 then
+         vcm.set_landmark_detect(1);
+         vcm.set_landmark_color(colorCyan);
+         v={0,0,0,0};
+         v[1]=landmarkCyan.v[1]*distanceFactorCyan;
+         v[2]=landmarkCyan.v[2]*distanceFactorCyan;
+         vcm.set_landmark_v(v);
+      end
     end
+    distanceFactorCyan = 
+  	Config.vision.landmark.distanceFactorCyan or 1;
+    distanceFactorYellow = 
+  	Config.vision.landmark.distanceFactorYellow or 1;
   end
+
 
   vcm.set_line_detect(line.detect);
   if (line.detect == 1) then
@@ -211,6 +228,8 @@ function update_shm()
 	max_index=i;
       end
     end
+
+    --TODO: check line length 
 
     vcm.set_line_v1x(v1x);
     vcm.set_line_v1y(v1y);
@@ -246,9 +265,6 @@ function update_shm()
 	vcm.set_freespace_block(freespace.block);
     vcm.set_freespace_nCol(freespace.nCol);
     vcm.set_freespace_nRow(freespace.nRow);
---    vcm.set_freespace_vboundA(freespace.vboundA);
---    vcm.set_freespace_pboundA(freespace.pboundA);
---    vcm.set_freespace_tboundA(freespace.tboundA);
     vcm.set_freespace_vboundB(freespace.vboundB);
     vcm.set_freespace_pboundB(freespace.pboundB);
     vcm.set_freespace_tboundB(freespace.tboundB);

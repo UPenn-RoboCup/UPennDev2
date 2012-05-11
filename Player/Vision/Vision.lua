@@ -7,25 +7,60 @@ require('Config');
 if (string.find(Config.platform.name,'Webots')) then
   webots = true;
 end
+--Added for webots fast simulation
+use_gps_only = Config.use_gps_only or 0;
 
 require('ImageProc');
 require('HeadTransform');
-require('Camera');
-require('Detection');
 
 require('vcm');
 require('mcm');
 require('Body')
 
+if use_gps_only==0 then
+  require('Camera');
+  require('Detection');
 
-if (Config.camera.width ~= Camera.get_width()
-    or Config.camera.height ~= Camera.get_height()) then
-  print('Camera width/height mismatch');
-  print('Config width/height = ('..Config.camera.width..', '..Config.camera.height..')');
-  print('Camera width/height = ('..Camera.get_width()..', '..Camera.get_height()..')');
-  error('Config file is not set correctly for this camera. Ensure the camera width and height are correct.');
+  if (Config.camera.width ~= Camera.get_width()
+      or Config.camera.height ~= Camera.get_height()) then
+    print('Camera width/height mismatch');
+    print('Config width/height = ('..Config.camera.width..', '..Config.camera.height..')');
+    print('Camera width/height = ('..Camera.get_width()..', '..Camera.get_height()..')');
+    error('Config file is not set correctly for this camera. Ensure the camera width and height are correct.');
+  end
+  vcm.set_image_width(Config.camera.width);
+  vcm.set_image_height(Config.camera.height);
+
+  camera = {};
+
+  camera.width = Camera.get_width();
+  camera.height = Camera.get_height();
+  camera.npixel = camera.width*camera.height;
+  camera.image = Camera.get_image();
+  camera.status = Camera.get_camera_status();
+  camera.switchFreq = Config.camera.switchFreq;
+  camera.ncamera = Config.camera.ncamera;
+  -- Initialize the Labeling
+  labelA = {};
+  -- labeled image is 1/4 the size of the original
+  labelA.m = camera.width/2;
+  labelA.n = camera.height/2;
+  labelA.npixel = labelA.m*labelA.n;
+  if( webots ) then
+    labelA.m = camera.width;
+    labelA.n = camera.height;
+    labelA.npixel = labelA.m*labelA.n;
+  end
+  scaleB = Config.vision.scaleB;
+  labelB = {};
+  labelB.m = labelA.m/scaleB;
+  labelB.n = labelA.n/scaleB;
+  labelB.npixel = labelB.m*labelB.n;
+	vcm.set_image_scaleB(Config.vision.scaleB);
+  print('Vision LabelA size: ('..labelA.m..', '..labelA.n..')');
+  print('Vision LabelB size: ('..labelB.m..', '..labelB.n..')');
+
 end
-
 
 colorOrange = Config.color.orange;
 colorYellow = Config.color.yellow;
@@ -33,42 +68,7 @@ colorCyan = Config.color.cyan;
 colorField = Config.color.field;
 colorWhite = Config.color.white;
 
-vcm.set_image_width(Config.camera.width);
-vcm.set_image_height(Config.camera.height);
-
 yellowGoalCountThres = Config.vision.yellow_goal_count_thres;
-
-camera = {};
-
-camera.width = Camera.get_width();
-camera.height = Camera.get_height();
-camera.npixel = camera.width*camera.height;
-camera.image = Camera.get_image();
-camera.status = Camera.get_camera_status();
-camera.switchFreq = Config.camera.switchFreq;
-camera.ncamera = Config.camera.ncamera;
-
--- Initialize the Labeling
-labelA = {};
--- labeled image is 1/4 the size of the original
-labelA.m = camera.width/2;
-labelA.n = camera.height/2;
-labelA.npixel = labelA.m*labelA.n;
-if( webots ) then
-  labelA.m = camera.width;
-  labelA.n = camera.height;
-  labelA.npixel = labelA.m*labelA.n;
-end
-
-scaleB = 4;
-labelB = {};
-labelB.m = labelA.m/scaleB;
-labelB.n = labelA.n/scaleB;
-labelB.npixel = labelB.m*labelB.n;
-
-print('Vision LabelA size: ('..labelA.m..', '..labelA.n..')');
-print('Vision LabelB size: ('..labelB.m..', '..labelB.n..')');
-
 
 saveCount = 0;
 
@@ -92,18 +92,50 @@ function entry()
   vcm.set_camera_bodyHeight(Config.walk.bodyHeight);
   vcm.set_camera_bodyTilt(0);
   vcm.set_camera_height(Config.walk.bodyHeight+Config.head.neckZ);
+	vcm.set_camera_ncamera(Config.camera.ncamera);
 
   -- Start the HeadTransform machine
   HeadTransform.entry();
-	
-	-- Initiate Detection
+
+  --If we are only using gps info, skip camera init 	
+  if use_gps_only>0 then
+    return;
+  end
+
+  -- Initiate Detection
   Detection.entry();
 
   -- Load the lookup table
   print('loading lut: '..Config.camera.lut_file);
   camera.lut = carray.new('c', 262144);
   load_lut(Config.camera.lut_file);
- 
+
+  if Config.platform.name=="NaoV4" then
+    camera_init_naov4();
+  else
+    camera_init();
+  end 
+end
+
+function camera_init()
+  for c=1,Config.camera.ncamera do 
+    Camera.select_camera(c-1);
+    for i,auto_param in ipairs(Config.camera.auto_param) do
+      print('Camera '..c..': setting '..auto_param.key..': '..auto_param.val[c]);
+      Camera.set_param(auto_param.key, auto_param.val[c]);
+      unix.usleep(100000);
+      print('Camera '..c..': set to '..auto_param.key..': '..Camera.get_param(auto_param.key));
+    end   
+    for i,param in ipairs(Config.camera.param) do
+      print('Camera '..c..': setting '..param.key..': '..param.val[c]);
+      Camera.set_param(param.key, param.val[c]);
+      unix.usleep(10000);
+      print('Camera '..c..': set to '..param.key..': '..Camera.get_param(param.key));
+    end
+  end
+end
+
+function camera_init_naov4()
 --  while (true) do 
     for c=1,Config.camera.ncamera do
       -- cameras are indexed starting at 0
@@ -144,11 +176,8 @@ function entry()
       Camera.set_param('Backlight Compensation', 0);
       Camera.set_param('Auto Exposure',1);
       print('Camera #'..c..' set');
-  
     end 
-
   --end
-
 end
 
 function redo_white_balance(cameraNumber)
@@ -172,12 +201,17 @@ end
 
 
 function update()
-  tstart = unix.time();
+  --If we are only using gps info, skip whole vision update 	
+  if use_gps_only>0 then
+    update_gps_only();
+    return true;
+  end
 
---  vcm.add_debug_message(string.format("Testing, count %d\n",count))
+  tstart = unix.time();
 
   -- get image from camera
   camera.image = Camera.get_image();
+
   local status = Camera.get_camera_status();
   if status.count ~= lastImageCount then
     lastImageCount = status.count;
@@ -188,7 +222,6 @@ function update()
 --SJ: Camera image keeps changing
 --So copy it here to shm, and use it for all vision process
   vcm.set_image_yuyv(camera.image);
-  vcm.refresh_debug_message();
 
   -- Add timer measurements
   count = count + 1;
@@ -217,6 +250,7 @@ function update()
   -- bit-or the segmented image
   labelB.data = ImageProc.block_bitor(labelA.data, labelA.m, labelA.n, scaleB, scaleB);
 
+  vcm.refresh_debug_message();
   Detection.update();
 
   update_shm(status)
@@ -237,6 +271,67 @@ function update()
   return true;
 end
 
+function check_side(v,v1,v2)
+  --find the angle from the vector v-v1 to vector v-v2
+  local vel1 = {v1[1]-v[1],v1[2]-v[2]};
+  local vel2 = {v2[1]-v[1],v2[2]-v[2]};
+  angle1 = math.atan2(vel1[2],vel1[1]);
+  angle2 = math.atan2(vel2[2],vel2[1]);
+  return util.mod_angle(angle1-angle2);
+end
+
+function update_gps_only()
+  --We are now using ground truth robot and ball pose data
+  headAngles = Body.get_head_position();
+  --TODO: camera select
+--  HeadTransform.update(status.select, headAngles);
+  HeadTransform.update(0, headAngles);
+  
+  --update FOV
+  update_shm_fov()
+
+  --Get GPS coordinate of robot and ball
+  gps_pose = wcm.get_robot_gpspose();
+  ballGlobal=wcm.get_robot_gps_ball();  
+  
+  --Check whether ball is inside FOV
+  ballLocal = util.pose_relative(ballGlobal,gps_pose);
+ 
+  --Get the coordinates of FOV boundary
+  local v_TL = vcm.get_image_fovTL();
+  local v_TR = vcm.get_image_fovTR();
+  local v_BL = vcm.get_image_fovBL();
+  local v_BR = vcm.get_image_fovBR();
+
+--[[
+print("BallLocal:",unpack(ballLocal))
+print("V_TL:",unpack(v_TL))
+print("V_TR:",unpack(v_TR))
+print("V_BL:",unpack(v_BL))
+print("V_BR:",unpack(v_BR))
+print("Check 1:",
+   check_side(v_TL, ballLocal, v_TR));
+print("Check 2:",
+     check_side(v_TL, v_BL, ballLocal) );
+print("Check 3:",
+     check_side(v_BR, v_TR, ballLocal) );
+print("Check 4:",
+     check_side(v_BL, v_BR, ballLocal) );
+--]]
+
+  --Check whether ball is within FOV boundary 
+  if check_side(v_TR, v_TL, ballLocal) < 0 and
+     check_side(v_TL, v_BL, ballLocal) < 0 and
+     check_side(v_BR, v_TR, ballLocal) < 0 and
+     check_side(v_BL, v_BR, ballLocal) < 0 then
+    vcm.set_ball_detect(1);
+  else
+    vcm.set_ball_detect(0);
+  end
+
+
+end
+
 function update_shm(status)
   -- Update the shared memory
   -- Shared memory size argument is in number of bytes
@@ -248,24 +343,36 @@ function update_shm(status)
         or ((goalCyan.detect == 1 or goalYellow.detect == 1) 
             and vcm.get_debug_store_goal_detections() == 1)) then
 
-        vcm.set_image_labelA(labelA.data);
-        vcm.set_image_labelB(labelB.data);
---        vcm.set_image_yuyv(camera.image);
-        --Store downsampled yuyv for monitoring
+	if webots then
+          vcm.set_camera_yuyvType(1);
+          vcm.set_image_labelA(labelA.data);
+          vcm.set_image_labelB(labelB.data);
+	end
+        if vcm.get_camera_broadcast() > 0 then --Wired monitor broadcasting
+	  if vcm.get_camera_broadcast() == 1 then
+	    --Level 1: 1/4 yuyv, labelB
+            vcm.set_image_yuyv3(ImageProc.subsample_yuyv2yuyv(
+  	    vcm.get_image_yuyv(),
+	    camera.width/2, camera.height,4));
+            vcm.set_image_labelB(labelB.data);
+	  elseif vcm.get_camera_broadcast() == 2 then
+	    --Level 2: 1/2 yuyv, labelA, labelB
+            vcm.set_image_yuyv2(ImageProc.subsample_yuyv2yuyv(
+  	      vcm.get_image_yuyv(),
+  	      camera.width/2, camera.height,2));
+            vcm.set_image_labelA(labelA.data);
+            vcm.set_image_labelB(labelB.data);
+	  else
+	    --Level 3: 1/2 yuyv
+            vcm.set_image_yuyv2(ImageProc.subsample_yuyv2yuyv(
+  	    vcm.get_image_yuyv(),
+  	    camera.width/2, camera.height,2));
+	  end
 
-        if subsampling>0 then
-          vcm.set_image_yuyv2(ImageProc.subsample_yuyv2yuyv(
-	  vcm.get_image_yuyv(),
---  	  camera.image,
-	  camera.width/2, camera.height,2));
+	elseif vcm.get_camera_teambroadcast() > 0 then --Wireless Team broadcasting
+          --Only copy labelB
+          vcm.set_image_labelB(labelB.data);
         end
-        if subsampling2>0 then --1/4 sized image, for OP
-          vcm.set_image_yuyv3(ImageProc.subsample_yuyv2yuyv(
---  	  camera.image,
-	  vcm.get_image_yuyv(),
-	  camera.width/2, camera.height,4));
-        end
-
     end
   end
 
@@ -285,11 +392,11 @@ end
 function update_shm_fov()
   --This function projects the boundary of current labeled image
 
-  local fovC={camera.width/2,camera.height/2};
-  local fovBL={0,camera.height};
-  local fovBR={camera.width,camera.height};
+  local fovC={Config.camera.width/2,Config.camera.height/2};
+  local fovBL={0,Config.camera.height};
+  local fovBR={Config.camera.width,Config.camera.height};
   local fovTL={0,0};
-  local fovTR={camera.width,0};
+  local fovTR={Config.camera.width,0};
 
   vcm.set_image_fovC(vector.slice(HeadTransform.projectGround(
  	  HeadTransform.coordinatesA(fovC,0.1)),1,2));
@@ -308,12 +415,13 @@ function exit()
   HeadTransform.exit();
 end
 
-function bboxStats(color, bboxB, rollAngle)
+function bboxStats(color, bboxB, rollAngle, scale)
+  scale = scale or scaleB;
   bboxA = {};
-  bboxA[1] = scaleB*bboxB[1];
-  bboxA[2] = scaleB*bboxB[2] + scaleB - 1;
-  bboxA[3] = scaleB*bboxB[3];
-  bboxA[4] = scaleB*bboxB[4] + scaleB - 1;
+  bboxA[1] = scale*bboxB[1];
+  bboxA[2] = scale*bboxB[2] + scale - 1;
+  bboxA[3] = scale*bboxB[3];
+  bboxA[4] = scale*bboxB[4] + scale - 1;
   if rollAngle then
  --hack: shift boundingbox 1 pix helps goal detection
  --not sure why this thing is happening...

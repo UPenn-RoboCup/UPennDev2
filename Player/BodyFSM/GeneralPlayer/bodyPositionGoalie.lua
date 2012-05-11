@@ -25,7 +25,7 @@ ballNear = 0.85;
 tLost = 6.0;
 
 rClose = Config.fsm.bodyAnticipate.rClose or 1.0;
-
+thClose = Config.fsm.bodyGoaliePosition.thClose;
 
 function entry()
   print(_NAME.." entry");
@@ -62,8 +62,8 @@ function update()
     return "ballClose";
   end
 
-  if rHomeRelative<0.40 and
-     math.abs(va)<0.01 then
+  local tThreshClose = math.sqrt(thClose[1]^2+thClose[2]^2);
+  if rHomeRelative<tThreshClose and math.abs(va)<thClose[3] then
     return "ready";
   end
 

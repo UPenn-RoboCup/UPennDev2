@@ -4,7 +4,7 @@ require('vector')
 require('parse_hostname')
 
 platform = {};
-platform.name = 'Nao'
+platform.name = 'NaoV4'
 
 function loadconfig(configName)
   local localConfig=require(configName);
@@ -18,7 +18,7 @@ loadconfig('Kick/Config_Nao_Kick')
 loadconfig('Vision/Config_NaoV4_Vision')
 
 --Location Specific Camera Parameters--
-loadconfig('Vision/Config_NaoV4_Camera_USopen_FieldB')
+loadconfig('Vision/Config_NaoV4_Camera_VT')
 
 
 -- Devive Interface Libraries
@@ -30,12 +30,12 @@ dev.ip_wired = '192.168.0.255';
 dev.ip_wireless = '139.140.218.255';
 dev.game_control = 'NaoGameControl';
 dev.team='TeamSPL';
-dev.walk = 'Walk/NewNewWalk';
+--dev.walk = 'Walk/NewNewWalk';
+dev.walk = 'Walk/NewNewNewWalk';
 dev.kick = 'NewKick';
 
 --Speak enable
-speak = {}
-speak.enable = true
+speakenable = true;
 
 -- Game Parameters
 
@@ -44,7 +44,7 @@ game.teamNumber = 11;
 game.playerID = parse_hostname.get_player_id();
 game.robotID = game.playerID;
 game.teamColor = parse_hostname.get_team_color();
-game.role = game.playerID-1; -- 0 for goalie
+game.role = 1; --game.playerID-1; -- 0 for goalie
 game.nPlayers = 4;
 
 --loadconfig('Walk/Config_NaoV4_Walk')
@@ -66,6 +66,7 @@ else
   --fsm.body = {'GeneralPlayer'};
 end
 fsm.head = {'NaoPlayer'};
+--fsm.head = {'GeneralPlayer'};
 
 -- Team Parameters
 
@@ -111,3 +112,7 @@ stance.delay = 80; --amount of time to stand still after standing to regain bala
 --Should be more generally handled in Body..
 servo={};
 servo.pid=0;
+
+
+-- VT goalpost 
+world.postDiameter = 0.12

@@ -98,3 +98,10 @@ world.aPostFilter = 0.20;
 -- Occupancy Map parameters
 occmap = {};
 occmap.div = 72;
+
+-- Occupancy Map parameters
+occ = {};
+occ.mapsize = 50;
+occ.centroid = {occ.mapsize / 2, occ.mapsize * 4 / 5};
+
+

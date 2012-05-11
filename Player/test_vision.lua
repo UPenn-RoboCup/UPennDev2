@@ -27,8 +27,6 @@ package.path = cwd .. '/Vision/?.lua;' .. package.path;
 package.path = cwd .. '/World/?.lua;' .. package.path;
 
 require('Config')
---This FIXES monitor issue with test_vision
-Config.dev.team = 'TeamNull'; 
 require('unix')
 require('getch')
 require('Broadcast')
@@ -40,6 +38,7 @@ require('wcm')
 require('Speak')
 require('Body')
 require('Motion')
+require('gcm')
 
 smindex = 0;
 
@@ -50,9 +49,6 @@ webots = false;
 -- Enable OP specific 
 if(Config.platform.name == 'OP') then
   darwin = true;
-  --SJ: OP specific initialization posing (to prevent twisting)
-  Body.set_body_hardness(0.3);
-  Body.set_actuator_command(Config.stance.initangle)
 end
 
 --enable new nao specific
@@ -88,6 +84,9 @@ local tUpdate = t0;
 -- Broadcast the images at a lower rate than other data
 local broadcast_enable=0;
 local imageCount=0;
+
+-- set game state to ready to stop init particle filter during debugging
+gcm.set_game_state(1);
 
 
 -- main loop
@@ -202,7 +201,7 @@ function process_keyinput()
 
     --Logging mode
     elseif byte==string.byte("4") then
-      Body.set_head_hardness(0.2);
+      Body.set_head_hardness(0.4);
       HeadFSM.sm:set_state('headLog');
       headsm_running=1;
 
@@ -264,6 +263,9 @@ function update()
   count = count + 1;
   --Update battery info
   wcm.set_robot_battery_level(Body.get_battery_level());
+  --Set game state to SET to prevent particle resetting
+  gcm.set_game_state(1);
+
 
   if (not init)  then
     if (calibrating) then

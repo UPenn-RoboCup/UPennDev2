@@ -45,6 +45,10 @@ armGain = Config.kick.armGain;
 supportCompL=Config.walk.supportCompL or vector.new({0,0,0});
 supportCompR=Config.walk.supportCompR or vector.new({0,0,0});
 hipRollCompensation = Config.kick.hipRollCompensation or 5*math.pi/180;
+
+hipRollCompensation = 5*math.pi/180;
+
+
 qLHipRollCompensation=0;
 qRHipRollCompensation=0;
 
@@ -159,15 +163,19 @@ function update()
   -- Tosro X position offxet (for differetly calibrated robots)
   if kickState==1 then --Initial slide
      torsoShiftX=kickXComp*ph;
-  elseif kickState == #kickDef-1 then
+--  elseif kickState == #kickDef-1 then
+  elseif kickState == #kickDef then
      torsoShiftX=kickXComp*(1-ph);
   end
 
   if kickState==2 then --Lift step
-    if kickStepType==2 then --
-      qRHipRollCompensation= -hipRollCompensation*ph;
+    if kickStepType==2 then 
+--Instant roll compensation
+--      qRHipRollCompensation= -hipRollCompensation*ph;
+      qRHipRollCompensation= -hipRollCompensation;
     elseif kickStepType==3 then
-      qLHipRollCompensation= hipRollCompensation*ph;
+--      qLHipRollCompensation= hipRollCompensation*ph;
+      qLHipRollCompensation= hipRollCompensation;
     end
   elseif kickState == #kickDef then --Final step
     if qRHipRollCompensation<0 then
@@ -267,6 +275,8 @@ function motion_legs()
   armShift[2]=armShift[2]+armImuParamY[1]*(armShiftY-armShift[2]);
 
   qLegs = Kinematics.inverse_legs(pLLeg, pRLeg, pTorso,0);
+
+--print("RollCompensation:",qLHipRollCompensation*180/math.pi,qRHipRollCompensation*180/math.pi)
 
   if kicktype==4 then	--Left kick
     qLegs[10] = qLegs[10] + kneeShift;

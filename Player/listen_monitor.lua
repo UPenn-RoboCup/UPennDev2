@@ -84,9 +84,6 @@ function parse_name(namestr)
 end
 
 
-
-
-
 function push_yuyv(obj)
 --print('receive yuyv parts');
   yuyv = cutil.test_array();
@@ -142,6 +139,7 @@ function push_yuyv2(obj)
     print("Missing packet");
   end
 --]]
+
   yuyv2_part_last = name.partnum;
   yuyv2_flag[name.partnum] = 1;
   yuyv2_all[name.partnum] = obj.data;
@@ -155,7 +153,6 @@ function push_yuyv2(obj)
      end
 
      yuyv2_t_full = unix.time();
-
      local yuyv2_str = "";
      for i = 1 , name.parts do --fixed
        yuyv2_str = yuyv2_str .. yuyv2_all[i];
@@ -181,6 +178,9 @@ function push_yuyv3(obj)
   vcm.set_image_yuyv3(yuyv3);
 end
 
+
+--Function to OLD labelA packet
+--[[
 function push_labelA(obj)
 --  print('receive labelA parts');
   local labelA = cutil.test_array();
@@ -206,15 +206,24 @@ function push_labelA(obj)
     labelA_all = {};
   end
 end
+--]]
+
+--Function for new compactly encoded labelA
+function push_labelA(obj)
+  local name = parse_name(obj.name);
+  local labelA = cutil.test_array();
+--  cutil.string2label_double(labelA,obj.data);	
+  cutil.string2label_rle(labelA,obj.data);	
+  vcm.set_image_labelA(labelA);
+end
 
 function push_labelB(obj)
---	print('receive labelB parts');
---  print("full labelB\t",.1/(unix.time() - labelB_t_full).."fps");
---	labelB_t_full = unix.time();
-
   local name = parse_name(obj.name);
   local labelB = cutil.test_array();
-  cutil.string2userdata(labelB,obj.data);	
+--cutil.string2userdata(labelB,obj.data);	
+--cutil.string2label(labelB,obj.data);	
+--  cutil.string2label_double(labelB,obj.data);	
+  cutil.string2label_rle(labelB,obj.data);	
   vcm.set_image_labelB(labelB);
 end
 
@@ -245,15 +254,16 @@ while( true ) do
     if( obj.arr ) then
 	if ( string.find(obj.arr.name,'yuyv') ) then 
  	  push_yuyv(obj.arr);
-	  yuyv_type=0;
+		print("yuyv_type00000000")
+	  yuyv_type=1;
 
 	elseif ( string.find(obj.arr.name,'ysub2') ) then 
  	  push_yuyv2(obj.arr);
-	  yuyv_type=1;
+	  yuyv_type=2;
 
 	elseif ( string.find(obj.arr.name,'ysub4') ) then 
  	  push_yuyv3(obj.arr);
-	  yuyv_type=2;
+	  yuyv_type=3;
 
 	elseif ( string.find(obj.arr.name,'labelA') ) then 
 	  push_labelA(obj.arr);
@@ -265,7 +275,6 @@ while( true ) do
 	push_data(obj);
     end
   end
-
   vcm.set_camera_yuyvType(yuyv_type);
   unix.usleep(1E6*0.005);
 

@@ -16,15 +16,17 @@ VISIONTESTDIR = Platform/VisionTest
 HPDIR= Platform/HP2
 OPDIR= Platform/OP
 XOSDIR= Platform/XOS
+CHARLIDIR = Platform/Charli
 WEBOTSDIR = Webots
 IMAGEDIR= ImageProc
 COMMDIR= Comm
+OCCMAPDIR = OccMap
 UTILDIR= Util
 MATLABDIR= ../Tools/Matlab
 COLORTABLEDIR= $(MATLABDIR)/Colortable
 VELODIR= Velocity
 PRIMEDIR= Util/PrimeSense
-PLATFORMS = setup_nao setup_op setup_webots_nao setup_webots_op setup_webots_generic setup_webots_hubo setup_xos setup_visiontest
+PLATFORMS = nao naov4 op xos webots_nao webots_op webots_generic webots_hubo visiontest
 INSTDIR= ../Player/Lib
 WEBOTSCONTDIR= ../WebotsController
 PLAYERDIR= ../Player
@@ -52,9 +54,9 @@ endif
 
 all none:
 	@echo "Please do:"
-	@echo "   make PLATFORM"
+	@echo "\tmake setup_PLATFORM"
 	@echo "where PLATFORM is one of following:"
-	@echo "   $(PLATFORMS)"
+	@echo "\t$(PLATFORMS)"
 
 colortable:
 	@echo "Compiling Colortable Mex Files...\n"
@@ -95,6 +97,11 @@ xos:
 op:
 	@echo "Compiling Darwin OP Lua/C++ Libraries...\n"
 	@cd $(OPDIR) && make && cd $(CWD)
+	@echo "\n"
+
+charli:
+	@echo "Compiling Charli Lua/C++ Libraries...\n"
+	@cd $(CHARLIDIR) && make && cd $(CWD)
 	@echo "\n"
 
 webots_nao:
@@ -148,6 +155,11 @@ comm::
 	@cd $(COMMDIR) && make && cd $(CWD)
 	@echo "\n"
 
+occmap::
+	@echo "Compiling OccupancyMap Lua/C++ Libraries...\n"
+	@cd $(OCCMAPDIR) && make && cd $(CWD)
+	@echo "\n"
+
 util::
 	@echo "Compiling Utility Lua/C++ Libraries...\n"
 	@cd $(UTILDIR) && make && cd $(CWD)
@@ -191,8 +203,9 @@ setup_webots_nao: webots_nao setup_util setup_image setup_webots
 	cd $(PLAYERDIR)/Config && ln -s Config_WebotsNao.lua Config.lua && cd $(CWD)
 	@echo "\n"
 
-#setup_webots_op: webots_op setup_util setup_image setup_velocity
-setup_webots_op: webots_op setup_util setup_image setup_webots
+#setup_webots_op: webots_op setup_util setup_image setup_velocity setup_webots
+setup_webots_op: webots_op setup_util setup_image setup_webots setup_occmap
+#setup_webots_op: webots_op setup_util setup_image setup_webots
 	@echo "Setting up Webots Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
 	find $(WEBOTSOPDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
@@ -216,7 +229,7 @@ setup_webots_generic: webots_generic setup_util setup_image  setup_webots
 	cd $(PLAYERDIR)/Config && ln -s Config_WebotsGeneric.lua Config.lua && cd $(CWD)
 	@echo "\n"
 
-setup_webots_charli: webots_charli setup_util setup_image setup_webots
+setup_webots_charli: webots_charli setup_util setup_image setup_webots setup_occmap
 	@echo "Setting up Webots Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
 	find $(WEBOTSCHARLIDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
@@ -254,8 +267,7 @@ setup_hp: hp setup_util setup_image setup_comm
 setup_op: op setup_util setup_image setup_comm
 	@echo "Setting up Darwin OP Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
-	find $(OPDIR) -regex '.*\($(SHLIBEXT)\|$(LUAEXT)\)' -exec cp -v {} $(INSTDIR) \;
-#	touch $(PLAYERDIR)/Config/Config.lua
+	find $(OPDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
 	rm -f $(PLAYERDIR)/Config/Config.lua
 	cd $(PLAYERDIR)/Config && ln -s Config_OP.lua Config.lua && cd $(CWD)
 	@echo "\n"
@@ -268,6 +280,14 @@ setup_xos: xos setup_util setup_image setup_comm
 #	touch $(PLAYERDIR)/Config/Config.lua
 	rm -f $(PLAYERDIR)/Config/Config.lua
 	cd $(PLAYERDIR)/Config && ln -s Config_XOS.lua Config.lua && cd $(CWD)
+	@echo "\n"
+
+setup_charli: charli setup_util setup_image setup_comm
+	@echo "Setting up Charli Lua/C++ Libraries...\n"
+	mkdir -p $(INSTDIR)
+	find $(CHARLIDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
+	rm -f $(PLAYERDIR)/Config/Config.lua
+	cd $(PLAYERDIR)/Config && ln -s Config_Charli.lua Config.lua && cd $(CWD)
 	@echo "\n"
 
 setup_webots_cont: webot
@@ -304,6 +324,12 @@ setup_comm: comm
 	@echo "Setting up Communication Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
 	find $(COMMDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
+	@echo "\n"
+
+setup_occmap: occmap
+	@echo "Setting up Occupancy Map Lua/C++ Libraries...\n"
+	mkdir -p $(INSTDIR)
+	find $(OCCMAPDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
 	@echo "\n"
 
 setup_velocity: velocity

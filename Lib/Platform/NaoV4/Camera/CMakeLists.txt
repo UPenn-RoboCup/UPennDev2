@@ -4,6 +4,7 @@ project(NaoCam)
 
 # include for lua headers
 include_directories(/usr/local/include)
+include_directories(/usr/include/lua5.1)
 
 # main library definition
 add_library(NaoCam SHARED nao_cam.cc nao_cam_mmap_thread.cc cam_util.cc timeScalar.cc)

@@ -18,7 +18,8 @@ require 'mcm'
 
 --Are we using same colored goals?
 use_same_colored_goal=Config.world.use_same_colored_goal or 0;
-
+--Use ground truth pose and ball information for webots?
+use_gps_only = Config.use_gps_only or 0;
 
 ballFilter = Filter2D.new();
 ball = {};
@@ -45,6 +46,10 @@ odomScale = Config.world.odomScale;
 --SJ: they are for IMU based navigation
 imuYaw = Config.world.imuYaw or 0;
 yaw0 =0;
+
+--Track gcm state
+gameState = 0;
+
 
 function entry()
   count = 0;
@@ -85,6 +90,42 @@ end
 
 function update_vision()
 
+  --update ground truth
+  if Body.gps_enable then
+    gps_pose0=Body.get_sensor_gps();
+    --GPS is attached at torso, so we should discount body offset
+    uBodyOffset = mcm.get_walk_bodyOffset();
+    gps_pose = util.pose_global(-uBodyOffset,gps_pose0);
+
+    gps_pose_xya={}
+    gps_pose_xya.x=gps_pose[1];
+    gps_pose_xya.y=gps_pose[2];
+    gps_pose_xya.a=gps_pose[3];
+    gps_attackBearing = get_attack_bearing_pose(gps_pose_xya);
+
+    wcm.set_robot_gpspose(gps_pose);
+    wcm.set_robot_gps_attackbearing(gps_attackBearing);
+  else
+    wcm.set_robot_gpspose({pose.x,pose.y,pose.a});
+    wcm.set_robot_gps_attackbearing(get_attack_bearing());
+  end
+
+  --We may use ground truth data only (for behavior testing)
+  if use_gps_only>0 then
+    --Use GPS pose instead of using particle filter
+    pose.x,pose.y,pose.a=gps_pose[1],gps_pose[2],gps_pose[3];
+    --Use GPS ball pose instead of ball filter
+    ballGlobal=wcm.get_robot_gps_ball();    
+    ballLocal = util.pose_relative(ballGlobal,gps_pose);
+    ball.x, ball.y = ballLocal[1],ballLocal[2];
+
+    if vcm.get_ball_detect()==1 then
+      ball.t = Body.get_time();
+    end
+    update_shm();
+    return;
+  end
+
   -- resample?
   if count % cResample == 0 then
     PoseFilter.resample();
@@ -96,37 +137,25 @@ function update_vision()
     PoseFilter.reset_heading();
   end
 
+  --Init particle just once when game state moves to READY
+  if gcm.get_game_state()~=gameState then
+    gameState = gcm.get_game_state();
+    if gameState==1 then
+      init_particles();
+    end
+  end
+
   -- Penalized?
-  if gcm.in_penalty() or (gcm.get_game_state() == 0) then
+  if gcm.in_penalty() then
     wcm.set_robot_penalty(1);
-    init_particles();
   else
     wcm.set_robot_penalty(0);
   end
-
   --reset particle to face opposite goal when getting manual placement on set
   if (gcm.get_game_state() == 2) and (Body.get_change_state() == 1) then
     PoseFilter.initialize_manual_placement();
   end
-
-  -- At gameSet state, all robot should face opponents' goal
-  --TODO
---[[
-  if gcm.get_game_state()==2 then 
-    pose.x,pose.y,pose.a = PoseFilter.get_pose();
-    goalAngle=get_attack_bearing()+pose.a;
-
-    Erra = math.abs(mod_angle(pose.a-goalAngle));
-    print("Current pose goalDefendAngle",
-	pose.a*180/math.pi,goalAngle*180/math.pi);
-    if Erra>math.pi/2 then
-      print("PoseA error:",Erra*180/math.pi);
-      print("Resetting heading")
-      PoseFilter.initialize_heading(goalAngle);
-    end
-  end
---]]
-
+    
   -- ball
   if (vcm.get_ball_detect() == 1) then
     ball.t = Body.get_time();
@@ -240,13 +269,6 @@ end
 function update_shm()
   -- update shm values
 
-  --update ground truth
-  if Body.gps_enable then
-    gps_pose=Body.get_sensor_gps();
-    wcm.set_robot_gpspose(gps_pose);
-  else
-    wcm.set_robot_gpspose({pose.x,pose.y,pose.a});
-  end
 
   wcm.set_robot_pose({pose.x, pose.y, pose.a});
   wcm.set_robot_time(Body.get_time());
@@ -290,6 +312,11 @@ function zero_pose()
 end
 
 function get_attack_bearing()
+  return get_attack_bearing_pose(pose);
+end
+
+--Get attack bearing from pose0
+function get_attack_bearing_pose(pose0)
   if gcm.get_team_color() == 1 then
     -- red attacks cyan goal
     postAttack = PoseFilter.postCyan;
@@ -298,15 +325,15 @@ function get_attack_bearing()
     postAttack = PoseFilter.postYellow;
   end
   -- make sure not to shoot back towards defensive goal:
-  local xPose = math.min(math.max(pose.x, -0.99*PoseFilter.xLineBoundary),
+  local xPose = math.min(math.max(pose0.x, -0.99*PoseFilter.xLineBoundary),
                           0.99*PoseFilter.xLineBoundary);
-  local yPose = pose.y;
+  local yPose = pose0.y;
   local aPost = {}
   aPost[1] = math.atan2(postAttack[1][2]-yPose, postAttack[1][1]-xPose);
   aPost[2] = math.atan2(postAttack[2][2]-yPose, postAttack[2][1]-xPose);
   local daPost = math.abs(PoseFilter.mod_angle(aPost[1]-aPost[2]));
   attackHeading = aPost[2] + .5*daPost;
-  attackBearing = PoseFilter.mod_angle(attackHeading - pose.a);
+  attackBearing = PoseFilter.mod_angle(attackHeading - pose0.a);
 
   return attackBearing, daPost;
 end

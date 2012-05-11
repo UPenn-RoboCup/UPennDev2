@@ -15,6 +15,7 @@
 #include <sys/ioctl.h>
 #include <sys/types.h>
 #include <sys/mman.h> 
+#include <sys/time.h>
 
 #include <linux/i2c.h>
 #include <linux/i2c-dev.h>
@@ -92,6 +93,57 @@ void query_camera_params() {
 //         V4L2_CID_SHARPNESS,
 //         V4L2_CID_BACKLIGHT_COMPENSATION);
 }
+
+bool NaoCamera::grabTopFrame() {
+  struct v4l2_buffer *temp;
+  struct v4l2_buffer v1;
+  struct v4l2_buffer v2;
+  struct v4l2_buffer *currentV4l2BufferTop = &v1;
+  struct v4l2_buffer *nextV4l2BufferTop = &v2;
+
+  // Dequeue top
+  if (enqueuedTop) {
+    LOG_DEBUG("Dequeue top");
+    if (ioctl(topCameraFd, VIDIOC_DQBUF, nextV4l2BufferTop) < 0) {
+      LOG_ERROR("Failed to dequeue buffer for top camera.");
+      enqueuedTop = false;
+      return true;
+    }
+    LOG_DEBUG("Dequeued top");
+
+    temp = currentV4l2BufferTop;
+    currentV4l2BufferTop = nextV4l2BufferTop;
+    nextV4l2BufferTop    = temp;
+    freshImageTop = true;
+  }
+
+  // Enqueue top
+  memset(nextV4l2BufferTop, 0, sizeof(struct v4l2_buffer));
+  nextV4l2BufferTop->type   = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+  nextV4l2BufferTop->memory = V4L2_MEMORY_MMAP;
+  nextV4l2BufferTop->index  = currentBufferTop;
+  nextV4l2BufferTop->length = buffersTop[currentBufferTop].length;
+  currentBufferTop++;
+  if (currentBufferTop >= numBuffersTop) {
+    currentBufferTop = 0;
+  }
+  LOG_DEBUG("Enqueue top");
+  if (ioctl(topCameraFd, VIDIOC_QBUF, nextV4l2BufferTop) < 0) {
+    LOG_ERROR("Failed to enqueue buffer for top camera.");
+    enqueuedTop = false;
+    return true;
+  }
+  LOG_DEBUG("Enqueued top");
+  enqueuedTop = true;
+
+  pthread_mutex_lock(&freshImageMutex);
+  pthread_cond_signal(&freshImage);
+  pthread_mutex_unlock(&freshImageMutex);
+
+  return false;
+}
+
+
 
 
 int main() {
@@ -218,10 +270,20 @@ int main() {
     return -1;
   }
   printf("done\n");
-
   
 
+  time_t current,plusone;
+  current = time(NULL);
+  int counter = 0;
+
+  while(plusone < current+1) {
+    if(grabTopFrame())
+      counter++;
+    plusone = time(NULL);
+  }  
+
+  printf("FPS: %d\n", counter);
+  counter = 0;
 
 }
-
 

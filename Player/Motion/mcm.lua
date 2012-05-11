@@ -42,7 +42,6 @@ shared.walk.isFallDown = vector.zeros(1);
 --Is the robot spinning in bodySearch?
 shared.walk.isSearching = vector.zeros(1);
 
-
 shared.us = {};
 shared.us.left = vector.zeros(10);
 shared.us.right = vector.zeros(10);
@@ -50,6 +49,11 @@ shared.us.obstacles = vector.zeros(2);
 shared.us.free = vector.zeros(2);
 shared.us.dSum = vector.zeros(2);
 shared.us.distance = vector.zeros(2);
+
+
+shared.motion = {};
+--Should we perform fall check
+shared.motion.fall_check = vector.zeros(1);
 
 
 util.init_shm_segment(getfenv(), _NAME, shared, shsize);

@@ -67,7 +67,7 @@ int init_camera(const char *dev, int width, int height) {
 
 // initialize memory map for image buffer
 //  return number of buffers on success and -1 on error
-int init_mmap(int fd, struct v4l2_buffer **v4l2buffers, uint32 **imbuffers) {
+int init_mmap(int fd, struct v4l2_buffer **v4l2buffers, uint32 **imbuffers, int nbufDesired) {
   struct v4l2_requestbuffers reqbuf;
   struct v4l2_buffer buffer;
 
@@ -76,13 +76,18 @@ int init_mmap(int fd, struct v4l2_buffer **v4l2buffers, uint32 **imbuffers) {
   memset(&reqbuf, 0, sizeof(reqbuf));
   reqbuf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
   reqbuf.memory = V4L2_MEMORY_MMAP;
-  reqbuf.count = NUM_FRAME_BUFFERS;
+  reqbuf.count = nbufDesired;
   if (ioctl(fd, VIDIOC_REQBUFS, &reqbuf) < 0) {
     printf("failed to set buffer request mode\n");
     return -1;
   }
   int nbuf = reqbuf.count;
-  printf("%d buffers set...done\n", nbuf);
+  if (nbufDesired != nbuf) {
+    printf("warning number of buffers set %d is the the requested number %d...", nbuf, nbufDesired); fflush(stdout);
+  } else {
+    printf("set %d buffers...", nbuf); fflush(stdout);
+  }
+  printf("done\n");
 
   // memory map buffers
   printf("mapping buffers..."); fflush(stdout);
@@ -182,10 +187,53 @@ int set_camera_param(int fd, int id, int value) {
 //  return 0 on success and -1 on failure
 int start_stream(int fd) {
   printf("starting camera stream..."); fflush(stdout);
-  i = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+  int i = V4L2_BUF_TYPE_VIDEO_CAPTURE;
   if (ioctl(fd, VIDIOC_STREAMON, &i) < 0) {
     printf("failed to begin streaming\n");
     return -1;
   }
+  printf("done\n");
 }
+
+// gets the next frame from the camera if one is available
+//  return 0 on success and -1 on failure
+int grab_frame(int fd, struct v4l2_buffer *v4l2buffers, struct v4l2_buffer *currV4l2Buf, v4l2_buffer *nextV4l2Buf, int nbuf, int &enqueued, int &ibuf, int &nframe) {
+  struct v4l2_buffer *temp;
+
+  // Dequeue top
+  if (enqueued == 1) {
+    if (ioctl(fd, VIDIOC_DQBUF, nextV4l2Buf) < 0) {
+      printf("failed to dequeue buffer for top camera\n");
+      enqueued = 0;
+      return -1;
+    }
+
+    temp = currV4l2Buf;
+    currV4l2Buf = nextV4l2Buf;
+    nextV4l2Buf = temp;
+    nframe += 1;
+  }
+
+  // enqueue top
+  memset(nextV4l2Buf, 0, sizeof(struct v4l2_buffer));
+  nextV4l2Buf->type   = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+  nextV4l2Buf->memory = V4L2_MEMORY_MMAP;
+
+  nextV4l2Buf->index  = ibuf;
+  nextV4l2Buf->length = v4l2buffers[ibuf].length;
+  ibuf += 1;
+  if (ibuf >= nbuf) {
+    ibuf = 0;
+  }
+
+  if (ioctl(fd, VIDIOC_QBUF, nextV4l2Buf) < 0) {
+    printf("failed to enqueue buffer for top camera\n");
+    enqueued = 0;
+    return 0;
+  }
+
+  enqueued = 1;
+  return 0;
+}
+
 

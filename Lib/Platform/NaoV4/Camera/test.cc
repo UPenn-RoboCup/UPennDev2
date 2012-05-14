@@ -20,208 +20,117 @@
 #include <linux/i2c-dev.h>
 #include <linux/videodev2.h>
 
+#include "cam_util.h"
+#include "timeScalar.h"
+
+#define WIDTH 640
+#define HEIGHT 480
 
 #define NUM_FRAME_BUFFERS 4
 
-typedef unsigned char uint8;
-typedef unsigned int uint32;
+#define NCAMERA_DEVICES 2
 
-struct v4l2_buffer *buffers;
-uint32 *imBuffer[NUM_FRAME_BUFFERS];
+// camera device paths
+const char *cameraDevices[] = {"/dev/video0", "/dev/video1"};
+// camera file descriptors
+static int cameraFd[NCAMERA_DEVICES];
+// number of v4l2 buffers for each camera
+static int nbuf[NCAMERA_DEVICES];
+// array of v4l2 buffers for each camera
+struct v4l2_buffer *v4l2buffers[NCAMERA_DEVICES];
+// array of image buffers for each camera
+uint32 *imbuffers[NCAMERA_DEVICES];
+// flags indicating if a v4l2 buffer is enqueued for that camera
+int enqueued[NCAMERA_DEVICES];
+// number of frames received per camera
+int nframe[NCAMERA_DEVICES];
+// current buffer index for each camera
+int currBufIndex[NCAMERA_DEVICES];
+// current v4l2 buffer per camera
+struct v4l2_buffer *currV4l2Buf[NCAMERA_DEVICES];
+// next v4l2 buffer per camera
+struct v4l2_buffer *nextV4l2Buf[NCAMERA_DEVICES];
 
-char cameraDevice[] = "/dev/video0";
-int cameraFd = 0;
+// thread variables
+pthread_t camthreads[NCAMERA_DEVICES];
 
 
-int set_camera_param(int id, int value) {
-  // attempt to set camera parameter in a loop
-  int maxTries = 1000;
-  int usleepInt = 10000;
-  struct v4l2_control control;
+// main thread function to continuously grab camera frames
+void *run_camera(void *cameraIndex) {
+  // get camera index
+  int cid = (int)cameraIndex;
 
-  for (int i = 0; i < maxTries; i++) {
-    control.id = id;
-    control.value = value;
-    if (ioctl(cameraFd, VIDIOC_S_CTRL, &control) < 0) {
-      printf("failed to set parameter: %d:%d\n", id, value);
-      return -1;
+  // initialize current buffer index
+  currBufIndex[cid] = 0;
+
+  // initialize current and next v4l2 buffers
+  currV4l2Buf[cid] = &v4l2buffers[cid][0];
+  nextV4l2Buf[cid] = &v4l2buffers[cid][1];
+
+  printf("starting camera loop for %s.\n", cameraDevices[cid]);
+  double t0 = time_scalar();
+  while (1) {
+    int ret = grab_frame(cameraFd[cid],
+                          v4l2buffers[cid],
+                          currV4l2Buf[cid],
+                          nextV4l2Buf[cid],
+                          nbuf[cid],
+                          enqueued[cid],
+                          currBufIndex[cid],
+                          nframe[cid]);
+    if (ret < 0) {
+      printf("failed to grab frame\n");
     }
-    memset(&control, 0, sizeof(v4l2_control));
-    control.id = id;
-    if (ioctl(cameraFd, VIDIOC_G_CTRL, &control) < 0) {
-      printf("failed to get parameter: %d\n", id);
-      return -1;
+    if (nframe[cid] % 100 == 0) {
+      printf("%s fps: %f\n", cameraDevices[cid], (100 / (time_scalar() - t0)));
+      t0 = time_scalar();
     }
-    if (control.value == value) {
-      printf("set %d to %d\n", id, value);
-      return 0;
-    }
-
-    if (i % 10 == 0) {
-      printf("Trying to set parameter %d to %d for the %dth time\n", id, value, i);
-    }
-
-    usleep(10000);
+    usleep(1000);
   }
-
-  return -1;
-
+  pthread_exit(NULL);
 }
 
-void query_camera_params() {
-  struct v4l2_queryctrl ctrl;
-  for (int i = V4L2_CID_BASE; i <= V4L2_CID_LASTP1+1000000; i++) {
-    ctrl.id = i;
-    if (ioctl(cameraFd, VIDIOC_QUERYCTRL, &ctrl) == -1) {
-      continue;
-    }
-    printf("  %d %s %d %d %d\n", i, ctrl.name, ctrl.minimum, ctrl.maximum, ctrl.default_value);
-  }
-
-//  LOG_INFO("Brightness: %d\nContrast: %d\nSaturation: %d\nHue: %d\nAuto White: %d\nWhite balance: %d\nExposure: %d\nGain: %d\nHFlip: %d\nVFlip: %d\nSharpness: %d\nBacklight: %d",
-//         V4L2_CID_BRIGHTNESS,
-//         V4L2_CID_CONTRAST,
-//         V4L2_CID_SATURATION,
-//         V4L2_CID_HUE,
-//         V4L2_CID_AUTO_WHITE_BALANCE,
-//         V4L2_CID_DO_WHITE_BALANCE,
-//         V4L2_CID_EXPOSURE,
-//         V4L2_CID_GAIN,
-//         V4L2_CID_HFLIP,
-//         V4L2_CID_VFLIP,
-//         V4L2_CID_SHARPNESS,
-//         V4L2_CID_BACKLIGHT_COMPENSATION);
-}
 
 
 int main() {
-  struct v4l2_format format;
-  struct v4l2_streamparm streamparm;
-  struct v4l2_requestbuffers reqbuf;
-  struct v4l2_buffer buffer;
-  int i;
 
-  printf("opening video device..."); fflush(stdout);
-  cameraFd = open(cameraDevice, O_RDWR);
-  if (cameraFd == 0) {
-    printf("failed to open video device\n");
-    return -1;
-  }
-  printf("done\n");
-
-
-  printf("setting image resolution..."); fflush(stdout);
-  memset(&format, 0, sizeof(struct v4l2_format));
-  format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-  if (ioctl(cameraFd, VIDIOC_G_FMT, &format) < 0) {
-    printf("failed to get format: %s\n", strerror(errno));
-    return -1;
-  }
-
-  format.fmt.pix.width = 640;
-  format.fmt.pix.height = 480;
-  format.fmt.pix.pixelformat = V4L2_PIX_FMT_YUYV;
-  format.fmt.pix.field = V4L2_FIELD_NONE;
-  if (ioctl(cameraFd, VIDIOC_S_FMT, &format) < 0) {
-    printf("failed to set format\n");
-    return -1;
-  }
-
-  if (format.fmt.pix.width != 640 || format.fmt.pix.height != 480) {
-    printf("set image size does not match\n");
-    return -1;
-  }
-  printf("done\n");
-
-  printf("setting frame rate..."); fflush(stdout); 
-  memset(&streamparm, 0, sizeof(struct v4l2_streamparm));
-  streamparm.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-  if (ioctl(cameraFd, VIDIOC_G_PARM, &streamparm) != 0) {
-    printf("failed to get stream parameters\n");
-    return -1;
-  }
-
-  // bug in camera driver, in order to get 30fps set to default 
-  //    frame rate (1/0) not 1/30
-  streamparm.parm.capture.timeperframe.numerator = 1;
-  streamparm.parm.capture.timeperframe.denominator = 0;
-  if (ioctl(cameraFd, VIDIOC_S_PARM, &streamparm) != 0) {
-    printf("failed to set frame rate\n");
-    return -1;
-  }
-  printf("done\n");
-
-  printf("setting up buffers..."); fflush(stdout);
-  memset(&reqbuf, 0, sizeof(reqbuf));
-  reqbuf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-  reqbuf.memory = V4L2_MEMORY_MMAP;
-  reqbuf.count = NUM_FRAME_BUFFERS;
-  if (ioctl(cameraFd, VIDIOC_REQBUFS, &reqbuf) < 0) {
-    printf("failed to set buffer request mode");
-    return -1;
-  }
-  int numBuffers = reqbuf.count;
-  printf("%d buffers...done\n", numBuffers);
-
-  printf("mapping buffers..."); fflush(stdout);
-  buffers = (struct v4l2_buffer *)calloc(numBuffers, sizeof(struct v4l2_buffer));
-  if (buffers == NULL) {
-    printf("failed to allocate memory for buffers\n");
-    return -1;
-  }
-
-  for (int i = 0; i < numBuffers; i++) {
-    memset(&buffer, 0, sizeof(buffer));
-    buffer.type = reqbuf.type;
-    buffer.memory = V4L2_MEMORY_MMAP;
-    buffer.index = i;
-    if (ioctl(cameraFd, VIDIOC_QUERYBUF, &buffer) < 0) {
-      printf("error querying buffer\n");
+  // initialize each camera
+  for (int i = 0; i < NCAMERA_DEVICES; i++) {
+    cameraFd[i] = init_camera(cameraDevices[i], WIDTH, HEIGHT);
+    if (cameraFd[i] < 0) {
+      printf("unable to init camera: %s\n", cameraDevices[i]);
       return -1;
     }
-    buffers[i].length = buffer.length;
-    imBuffer[i] = (uint32 *)mmap(NULL, buffer.length,   
-                                  PROT_READ | PROT_WRITE, 
-                                  MAP_SHARED, 
-                                  cameraFd, 
-                                  buffer.m.offset);
-
-    if (MAP_FAILED == imBuffer[i]) {
-      printf("mmap error mapping buffer\n");
-      // free currently mapped buffers
-      for (int j = 0; j < i; j++) {
-        munmap(imBuffer[j], buffers[j].length);
-      }
+    
+    nbuf[i] = init_mmap(cameraFd[i], &v4l2buffers[i], &imbuffers[i], NUM_FRAME_BUFFERS);
+    if (nbuf[i] < 0) {
+      printf("unable to init memory map: %s\n", cameraDevices[i]);
       return -1;
     }
-  }
-  printf("done\n");
 
-  printf("querying camera params:\n");
-  query_camera_params();
-
-  printf("setting camera params:\n");
-  if (set_camera_param(10094849, 0) < 0) {
-    printf("failed to set camera param\n");
-    return -1;
-  }
-  if (set_camera_param(9963793, 150) < 0) {
-    printf("failed to set camera param\n");
-    return -1;
+    if (start_stream(cameraFd[i]) < 0) {
+      printf("unable to start camera stream: %s\n", cameraDevices[i]);
+      return -1;
+    } 
   }
 
-
-  printf("starting camera stream..."); fflush(stdout);
-  i = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-  if (ioctl(cameraFd, VIDIOC_STREAMON, &i) < 0) {
-    printf("failed to begin streaming\n");
-    return -1;
-  }
-  printf("done\n");
 
   
 
 
+
+  // start each camera thread
+  for (int i = 0; i < NCAMERA_DEVICES; i++) {
+    printf("starting camera %d thread\n", i);
+    int ret = pthread_create(&camthreads[i], NULL, run_camera, (void *)i);
+    if (ret != 0) {
+      printf("error creating pthread: %d\n", ret);
+      return -1;
+    }
+  }
+
+  /* Last thing that main() should do */
+  pthread_exit(NULL);
 }
 
 

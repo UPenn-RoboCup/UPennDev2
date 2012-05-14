@@ -143,9 +143,9 @@ function detect(color,color2)
 	  postB[i].boundingBox,tiltAngle,scaleBGoal);
     end
 
+--[[    
     --REDUCE POST WIDTH 
     --TODO: This seems to make crashing sometimes
-    
     vcm.add_debug_message(string.format(
 	"Thickness: full %.1f lower:%.1f\n",
 	postStats.axisMinor,postStatsLow.axisMinor));
@@ -154,7 +154,7 @@ function detect(color,color2)
       postStats.axisMinor = math.min(
 	postStats.axisMinor, postStatsLow.axisMinor)
     end
-
+--]]
     -- size and orientation check
     vcm.add_debug_message(string.format("Area check: %d\n", 
 	postStats.area));
@@ -266,29 +266,6 @@ function detect(color,color2)
          valid = false; 
       end
     end
-
-
-   --SJ: we may need this again...
-
---[[
-    -- check for posts in the ball
-    if (valid and color == colorYellow and Vision.ball.detect == 1) then
-      -- is the centroid of the post in the bounding box of the ball?
-      local pcent = postStats.centroid;
-      --print('pcent '..pcent[1]..', '..pcent[2]);
-      --print('ball bbox: '..ball.bboxA[1]..', '..ball.bboxA[2]..
-      --','..ball.bboxA[3]..', '..ball.bboxA[4]$
-
-      if ((pcent[1] > ball.bboxA[1] - 10 
-	   and pcent[1] < ball.bboxA[2] + 10)
-        and 
-	  (pcent[1] > ball.bboxA[1] - 10 
-	   and pcent[1] <  ball.bboxA[2] + 10)) then
-        print('failed outside ball check');
-        valid = false;
-      end
-    en
---]]
 
     if valid then
     --Height Check

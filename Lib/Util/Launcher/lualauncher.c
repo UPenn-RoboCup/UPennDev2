@@ -1,5 +1,7 @@
 /**
  * Lua module to control usb missile launcher
+ * 
+ * compatible with Dream Cheeky - Thunder model
  */
 
 #ifdef __cplusplus

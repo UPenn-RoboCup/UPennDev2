@@ -22,6 +22,7 @@ require('bodyObstacleAvoid')
 require('bodyPositionGoalie')
 require('bodyAnticipate')
 require('bodyChase')
+require('bodyDive')
 
 
 sm = fsm.new(bodyIdle);
@@ -40,6 +41,7 @@ sm:add_state(bodyObstacleAvoid);
 
 sm:add_state(bodyPositionGoalie);
 sm:add_state(bodyAnticipate);
+sm:add_state(bodyDive);
 sm:add_state(bodyChase);
 
 ------------------------------------------------------
@@ -51,9 +53,16 @@ sm:set_transition(bodyStart, 'done', bodyPositionGoalie);
 sm:set_transition(bodyPositionGoalie, 'ready', bodyAnticipate);
 sm:set_transition(bodyPositionGoalie, 'ballClose', bodyChase)
 
-sm:set_transition(bodyAnticipate,'timeout',bodyPositionGoalie);
-sm:set_transition(bodyAnticipate,'done',bodyPositionGoalie);
+-- Timeout should stay in position, not start moving again
+sm:set_transition(bodyAnticipate,'timeout',bodyAnticipate);
+-- Change the ball if it is close enough, since a shot will go in anyway...
 sm:set_transition(bodyAnticipate,'ballClose',bodyChase);
+-- Add a dive when a shot is detected
+sm:set_transition( bodyAnticipate,'dive',bodyDive );
+-- If out of position, then position self again
+sm:set_transition(bodyAnticipate,'position',bodyPositionGoalie);
+-- There is no 'done' event for anticipation
+--sm:set_transition(bodyAnticipate,'done',bodyPositionGoalie);
 
 sm:set_transition(bodyChase, 'ballLost', bodyPositionGoalie);
 sm:set_transition(bodyChase, 'ballFar', bodyPositionGoalie);
@@ -70,10 +79,19 @@ sm:set_transition(bodyKick, 'timeout', bodyPositionGoalie);
 sm:set_transition(bodyKick, 'reposition', bodyApproach);
 sm:set_transition(bodyWalkKick, 'done', bodyPositionGoalie);
 
+-- Add the bodyDive parameters
+-- Chase after the ball if you make a save
+--sm:set_transition(bodyDive, 'done', bodyChase);
+-- Should timeout in case the fall is not detected...
+sm:set_transition(bodyDive, 'timeout', bodyPositionGoalie);
+--The transition after a dive should just come from a fall (or timeout in case)
+
 sm:set_transition(bodyPositionGoalie, 'fall', bodyPositionGoalie);
 sm:set_transition(bodyApproach, 'fall', bodyPositionGoalie);
 sm:set_transition(bodyChase, 'fall', bodyPositionGoalie);
 sm:set_transition(bodyKick, 'fall', bodyPositionGoalie);
+-- Chase the ball after a fall, since this could have been caused by a dive
+sm:set_transition(bodyDive, 'fall', bodyChase);
 
 
 -- set state debug handle to shared memory settor

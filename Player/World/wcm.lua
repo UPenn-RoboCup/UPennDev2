@@ -128,7 +128,6 @@ if listen_monitor>0 then
 
   shared.robotNames = {};
 
-
 end
 
 util.init_shm_segment(getfenv(), _NAME, shared, shsize);

@@ -18,6 +18,7 @@
 *.bin
 *.elf
 *.d
+*.signature
 WebotsProj/controllers/ballGPS/ballGPS
 
 # generic log files
@@ -41,7 +42,6 @@ WebotsController/controller_wrap.c
 WebotsProj/controllers/darwin-op_team_0
 WebotsProj/controllers/darwin-op_team_1
 WebotsProj/controllers/nao_soccer_supervisor/
-WebotsProj/controllers/op_soccer_supervisor/
 WebotsProj/controllers/nao_team_0
 WebotsProj/controllers/nao_team_1
 WebotsProj/controllers/nsl_soccer_supervisor/

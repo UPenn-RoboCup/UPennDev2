@@ -22,6 +22,9 @@ th_centroid = Config.vision.landmark.th_centroid or 20;
 th_distratio = Config.vision.landmark.th_dist or 2;
 th_angle  = Config.vision.landmark.th_angle or 45*math.pi/180;
 
+distanceFactorCyan = Config.vision.landmark.distanceFactorCyan or 1;
+distanceFactorYellow = Config.vision.landmark.distanceFactorYellow or 1;
+
 --Detection code for center landmark poles
 function detect(color1,color2)
 
@@ -168,6 +171,14 @@ function detect(color1,color2)
   v = HeadTransform.coordinatesA(landmarkCentroid2, scale);
 
   landmark.detect = 1;
+
+  if color1==colorYellow then 
+    v[1]=landmarkYellow.v[1]*distanceFactorYellow;
+    v[2]=landmarkYellow.v[2]*distanceFactorYellow;
+  else
+    v[1]=landmarkCyan.v[1]*distanceFactorCyan;
+    v[2]=landmarkCyan.v[2]*distanceFactorCyan;
+  end
   landmark.v = v;
 
   vcm.add_debug_message("Landmark detected")

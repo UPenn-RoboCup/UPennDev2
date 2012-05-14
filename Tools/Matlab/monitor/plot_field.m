@@ -33,7 +33,7 @@ function h = plot_field(handle,type)
     circleR = .75;
     fieldB=[-5 5 -3.5 3.5];
   end
-  set(handle,'YDir','reverse');
+%  set(handle,'YDir','reverse');
   hold on;
   plot(fieldX, fieldY, 'g-');
   fill(goalX, goalY, 'y');

@@ -89,8 +89,11 @@ vision.goal.th_min_area_unknown_post = 40;
 vision.goal.use_centerpost = 1;
 vision.goal.check_for_ground = 1;
 
-vision.goal.far_goal_threshold= 4.5; --The range we triangulate
-vision.goal.distanceFactor = 1.0; 
+vision.goal.far_goal_threshold= 4.0; --The range we triangulate
+vision.goal.distanceFactorCyan = 1; 
+vision.goal.distanceFactorYellow = 1; 
+
+	
 
 vision.landmark = {};
 vision.landmark.min_areaA = 6;
@@ -100,7 +103,7 @@ vision.landmark.th_arearatio = 4;
 vision.landmark.th_distratio = 2;
 vision.landmark.th_angle = 45*math.pi/180;
 
-vision.landmark.distanceFactorCyan = 1.1; 
+vision.landmark.distanceFactorCyan = 1; 
 vision.landmark.distanceFactorYellow = 1; 
 
 

@@ -171,13 +171,12 @@ function detect(color1,color2)
   v = HeadTransform.coordinatesA(landmarkCentroid2, scale);
 
   landmark.detect = 1;
-
   if color1==colorYellow then 
-    v[1]=landmarkYellow.v[1]*distanceFactorYellow;
-    v[2]=landmarkYellow.v[2]*distanceFactorYellow;
+    v[1]=v[1]*distanceFactorYellow;
+    v[2]=v[2]*distanceFactorYellow;
   else
-    v[1]=landmarkCyan.v[1]*distanceFactorCyan;
-    v[2]=landmarkCyan.v[2]*distanceFactorCyan;
+    v[1]=v[1]*distanceFactorCyan;
+    v[2]=v[2]*distanceFactorCyan;
   end
   landmark.v = v;
 

@@ -144,6 +144,8 @@ function detect(color,color2)
     end
 
     --REDUCE POST WIDTH 
+    --TODO: This seems to make crashing sometimes
+    
     vcm.add_debug_message(string.format(
 	"Thickness: full %.1f lower:%.1f\n",
 	postStats.axisMinor,postStatsLow.axisMinor));

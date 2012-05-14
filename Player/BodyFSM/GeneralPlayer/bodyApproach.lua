@@ -148,8 +148,8 @@ function update()
     end
   end
 
-  --when the ball is on the side, backstep a bit
-  local wAngle = math.atan2 (vStep[2], vStep[1]);
+  --when the ball is on the side of the ROBOT, backstep a bit
+  local wAngle = math.atan2 (ball.y,ball.x);
   if math.abs(wAngle) > 45*math.pi/180 then
     vStep[1]=vStep[1] - 0.03;
     print('backstep');

@@ -52,7 +52,7 @@ cal["felix"]={
   footXComp = 0,
   footYComp = 0,
   kickXComp = 0,
-  headPitchComp = 4*math.pi/180;
+  headPitchBiasComp = 4*math.pi/180;
   armBias={0,0,0,0,0,0},
   pid = 1, --NEW FIRMWARE
 };
@@ -62,10 +62,119 @@ cal["hokie"]={
   footXComp = 0,
   footYComp = 0,
   kickXComp = 0,
-  headPitchComp = 0;
+  headPitchBiasComp = 0*math.pi/180;
   armBias={0,12*math.pi/180,0,0,-6*math.pi/180,0},
   pid = 1, --NEW FIRMWARE
 };
+
+cal["darwin1"]={
+  servoBias={0,0,0,0,0,0, 0,0,0,0,0,0},
+  footXComp = 0,
+  footYComp = 0,
+  kickXComp = 0,
+  headPitchBiasComp = 0*math.pi/180;
+  armBias={0,0,0,0,0,0},
+  pid = 1, --NEW FIRMWARE
+};
+
+cal["darwin2"]={
+  servoBias={0,0,0,0,0,0, 0,0,0,0,0,0},
+  footXComp = 0,
+  footYComp = 0,
+  kickXComp = 0,
+  headPitchBiasComp = 0*math.pi/180;
+  armBias={0,0,0,0,0,0},
+  pid = 1, --NEW FIRMWARE
+};
+
+cal["darwin3"]={
+  servoBias={0,0,0,0,0,0, 0,0,0,0,0,0},
+  footXComp = 0,
+  footYComp = 0,
+  kickXComp = 0,
+  headPitchBiasComp = 0*math.pi/180;
+  armBias={0,0,0,0,0,0},
+  pid = 1, --NEW FIRMWARE
+};
+
+cal["darwin4"]={
+  servoBias={0,0,0,0,0,0, 0,0,0,0,0,0},
+  footXComp = 0,
+  footYComp = 0,
+  kickXComp = 0,
+  headPitchBiasComp = 0*math.pi/180;
+  armBias={0,0,0,0,0,0},
+  pid = 1, --NEW FIRMWARE
+};
+
+cal["darwin5"]={
+  servoBias={0,0,0,0,0,0, 0,0,0,0,0,0},
+  footXComp = 0,
+  footYComp = 0,
+  kickXComp = 0,
+  headPitchBiasComp = 0*math.pi/180;
+  armBias={0,0,0,0,0,0},
+  pid = 1, --NEW FIRMWARE
+};
+
+cal["darwin6"]={
+  servoBias={0,0,0,0,0,0, 0,0,0,0,0,0},
+  footXComp = 0,
+  footYComp = 0,
+  kickXComp = 0,
+  headPitchBiasComp = 0*math.pi/180;
+  armBias={0,0,0,0,0,0},
+  pid = 1, --NEW FIRMWARE
+};
+
+cal["darwin7"]={
+  servoBias={0,0,0,0,0,0, 0,0,0,0,0,0},
+  footXComp = 0,
+  footYComp = 0,
+  kickXComp = 0,
+  headPitchBiasComp = 4*math.pi/180;
+  armBias={0,0,0,0,0,0},
+  pid = 1, --NEW FIRMWARE
+};
+
+cal["darwin8"]={
+  servoBias={0,0,0,0,0,0, 0,0,0,0,0,0},
+  footXComp = 0,
+  footYComp = 0,
+  kickXComp = 0,
+  headPitchBiasComp = 0*math.pi/180;
+  armBias={0,0,0,0,0,0},
+  pid = 1, --NEW FIRMWARE
+};
+
+cal["darwin9"]={
+  servoBias={0,0,0,0,0,0, 0,0,0,0,0,0},
+  footXComp = 0,
+  footYComp = 0,
+  kickXComp = 0,
+  headPitchBiasComp = 0*math.pi/180;
+  armBias={0,0,0,0,0,0},
+  pid = 1, --NEW FIRMWARE
+};
+
+cal["darwin10"]={
+  servoBias={0,0,0,0,0,0, 0,0,0,0,0,0},
+  footXComp = 0,
+  footYComp = 0,
+  kickXComp = 0,
+  headPitchBiasComp = 0*math.pi/180;
+  armBias={0,0,0,0,0,0},
+  pid = 1, --NEW FIRMWARE
+};
+
+
+
+
+
+
+
+
+
 ------------------------------------------------------------
 --Auto-appended calibration settings
 ------------------------------------------------------------
@@ -204,3 +313,38 @@ cal["hokie"].kickXComp=0.000;
 cal["hokie"].servoBias={0,-13,-48,26,23,-21,0,-3,66,-59,-47,-3,};
 cal["hokie"].footXComp=0.004;
 cal["hokie"].kickXComp=0.000;
+
+-- Updated date: Thu May 10 01:10:47 2012
+cal["darwin7"].servoBias={0,0,0,0,0,0,0,0,0,0,0,0,};
+cal["darwin7"].footXComp=-0.010;
+cal["darwin7"].kickXComp=0.010;
+
+-- Updated date: Thu May 10 01:44:57 2012
+cal["darwin7"].servoBias={0,0,0,0,0,0,0,0,0,0,21,0,};
+cal["darwin7"].footXComp=-0.006;
+cal["darwin7"].kickXComp=0.010;
+
+-- Updated date: Thu May 10 01:47:24 2012
+cal["darwin7"].servoBias={0,0,0,0,0,0,0,0,0,0,21,0,};
+cal["darwin7"].footXComp=0.000;
+cal["darwin7"].kickXComp=0.010;
+
+-- Updated date: Thu May 10 02:27:33 2012
+cal["darwin7"].servoBias={23,0,0,0,-1,0,0,0,0,-17,-15,0,};
+cal["darwin7"].footXComp=-0.005;
+cal["darwin7"].kickXComp=0.010;
+
+-- Updated date: Thu May 10 03:34:25 2012
+cal["darwin2"].servoBias={0,0,0,0,0,0,0,0,0,0,0,0,};
+cal["darwin2"].footXComp=-0.004;
+cal["darwin2"].kickXComp=0.000;
+
+-- Updated date: Thu May 10 05:00:49 2012
+cal["darwin7"].servoBias={23,0,0,0,-1,0,0,0,0,-17,-15,0,};
+cal["darwin7"].footXComp=-0.011;
+cal["darwin7"].kickXComp=0.010;
+
+-- Updated date: Thu May 10 05:05:50 2012
+cal["darwin7"].servoBias={23,0,0,0,-1,0,0,0,0,-17,-15,0,};
+cal["darwin7"].footXComp=-0.004;
+cal["darwin7"].kickXComp=0.010;

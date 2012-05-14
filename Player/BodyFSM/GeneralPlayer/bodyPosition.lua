@@ -9,6 +9,7 @@ require('Config')
 require('Team')
 require('util')
 require('walk')
+require('behavior')
 
 t0 = 0;
 maxStep1 = Config.fsm.bodyPosition.maxStep1;
@@ -48,15 +49,17 @@ function entry()
   ballR = math.sqrt(ball.x^2 + ball.y^2);
   maxStep=maxStep1;
 
+  behavior.update();
+
+--[[
   kickType=2;
   if walk.canWalkKick ~= 1 or Config.fsm.enable_walkkick == 0 then
     kickType=1;
   end
-
   wcm.set_kick_dir(1);--front kick default
   wcm.set_kick_angle(0);
   wcm.set_kick_type(kickType);
-
+--]]
 end
 
 
@@ -100,6 +103,10 @@ function update()
 
   aBall=math.atan2(ballGlobal[2]-pose.y, ballGlobal[1]-pose.x);
   aGoal=math.atan2(goalGlobal[2]-ballGlobal[2],goalGlobal[1]-ballGlobal[1]);
+
+  --Apply angle
+  kickAngle=  wcm.get_kick_angle();
+  aGoal = util.mod_angle(aGoal - kickAngle);
 
   --In what angle should we approach the ball?
   angle1=util.mod_angle(aGoal-aBall);
@@ -167,8 +174,8 @@ function update()
 --    print(string.format("position error: %.3f %.3f %d\n",
 --	homeRelative[1],homeRelative[2],homeRelative[3]*180/math.pi))
 
-    print(string.format("Velocity:%.2f %.2f %.2f",vx,vy,va));
-    print("VEL: ",veltype)
+--    print(string.format("Velocity:%.2f %.2f %.2f",vx,vy,va));
+--    print("VEL: ",veltype)
 --    print("ballR:",ballR);
 
   end

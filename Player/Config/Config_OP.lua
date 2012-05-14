@@ -62,6 +62,7 @@ else
   game.playerID = 5; 
   game.role = 1; --Default attacker
 end
+
 game.teamColor = 0; --Blue team
 --game.teamColor = 1; --Red team
 game.robotName = robotName;
@@ -101,7 +102,7 @@ km.standup_back = 'km_NSLOP_StandupFromBack.lua';
 
 -- Low battery level
 -- Need to implement this api better...
-bat_low = 110; -- 11V warning
+bat_low = 1118; -- 11.8V warning
 
 --[[
 -- Stretcher

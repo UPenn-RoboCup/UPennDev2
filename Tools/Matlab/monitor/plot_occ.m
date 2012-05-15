@@ -1,7 +1,9 @@
-function plot_occ(map)
-	mapsize = size(map,2);
-	mapsize = sqrt(mapsize);
-	map = reshape(map, [mapsize, mapsize]);
-	map(map > 0) = 1;
-	map(map < 0) = 0;
-	spy(map);
+function plot_occ(occ)
+  robotsizex = 5;
+  robotsizey = 3;
+  hold on;
+	imagesc(occ.map);
+  rectangle('Position',[occ.centroid(1)-robotsizex,occ.centroid(2)-robotsizey,...
+                        robotsizex*2, robotsizey*2]);
+  axis([0 50 0 50]);
+  hold off;

@@ -115,9 +115,6 @@ int main() {
   }
 
 
-  
-
-
 
   // start each camera thread
   for (int i = 0; i < NCAMERA_DEVICES; i++) {

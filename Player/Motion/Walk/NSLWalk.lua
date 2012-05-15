@@ -8,7 +8,10 @@ require('Body')
 require('Kinematics')
 require('Config');
 require('vector')
+require('util')
 step=require('NSLStep')
+
+mod_angle = util.mod_angle
 
 --Can we do walkkick with this walk code?
 canWalkKick = 1; 
@@ -605,14 +608,6 @@ function get_body_offset()
   return pose_relative(uTorso, uFoot);
 end
 
-function mod_angle(a)
-  -- Reduce angle to [-pi, pi)
-  a = a % (2*math.pi);
-  if (a >= math.pi) then
-    a = a - 2*math.pi;
-  end
-  return a;
-end
 
 function pose_global(pRelative, pose)
   local ca = math.cos(pose[3]);

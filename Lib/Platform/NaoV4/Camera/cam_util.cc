@@ -13,6 +13,7 @@ int init_camera(const char *dev, int width, int height) {
     printf("failed to open video device\n");
     return -1;
   }
+  printf("opened with fd %d...", fd);
   printf("done\n");
   
   // set image resolution
@@ -139,6 +140,7 @@ int init_mmap(int fd, struct v4l2_buffer **v4l2buffers, uint32 ***imbuffers, int
 // iterate over all possible camera parameters and print any 
 //  parameters that are supported
 void query_camera_params(int fd) {
+  printf("start querying");
   struct v4l2_queryctrl ctrl;
   for (int i = V4L2_CID_BASE; i <= V4L2_CID_LASTP1+1000000; i++) {
     ctrl.id = i;
@@ -152,27 +154,30 @@ void query_camera_params(int fd) {
 // attempt to set camera parameter in a loop
 //  return 0 on success and -1 on failure
 int set_camera_param(int fd, int id, int value) {
+  printf ("start setting parameter %d to %d\n", id,value );
   struct v4l2_control control;
 
-  for (int i = 0; i < 10000; i++) {
+  for (int i = 0; i < 100; i++) {
     control.id = id;
     control.value = value;
+
     if (ioctl(fd, VIDIOC_S_CTRL, &control) < 0) {
       printf("failed to set parameter: %d:%d\n", id, value);
       return -1;
     }
     memset(&control, 0, sizeof(v4l2_control));
+
     control.id = id;
     if (ioctl(fd, VIDIOC_G_CTRL, &control) < 0) {
       printf("failed to get parameter: %d\n", id);
       return -1;
     }
     if (control.value == value) {
+      printf("set control to %d\n", value);
       return 0;
     }
-
-    if (i % 20 == 1) {
-      printf("Attempting to set parameter %d to %d for the %dth time\n", id, value, i);
+    if (i % 20 == 10) {
+      printf("Attempt to set parameter %d to %d for the %dth time\n", id, value, i);
     }
 
     usleep(10000);

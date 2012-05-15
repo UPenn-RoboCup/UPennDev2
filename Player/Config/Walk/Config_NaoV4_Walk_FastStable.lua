@@ -106,6 +106,19 @@ walk.walkKickDef["SideRight"]={
 
 walk.walkKickPh=0.5;
 
+
+walk.walkKickVel = {0.03, 0.08} --step / kick / follow 
+walk.walkKickSupportMod = {{-0.03,0},{-0.03,0}}
+walk.walkKickHeightFactor = 3.0;
+walk.tStepWalkKick = 0.35;
+
+walk.sideKickVel1 = {0.04,0.04,0};
+walk.sideKickVel2 = {0.09,0.05,0};
+walk.sideKickVel3 = {0.09,-0.02,0};
+walk.sideKickSupportMod = {{0,0},{0,0}};
+walk.tStepSideKick = 0.70;
+
+
 --------------------------------------------
 -- Robot - specific calibration parameters
 --------------------------------------------

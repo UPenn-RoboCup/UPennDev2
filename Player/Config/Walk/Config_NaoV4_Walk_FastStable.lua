@@ -107,10 +107,10 @@ walk.walkKickDef["SideRight"]={
 walk.walkKickPh=0.5;
 
 
-walk.walkKickVel = {0.03, 0.08} --step / kick / follow 
+walk.walkKickVel = {0.03, 0.04} --step / kick / follow 
 walk.walkKickSupportMod = {{-0.03,0},{-0.03,0}}
-walk.walkKickHeightFactor = 3.0;
-walk.tStepWalkKick = 0.35;
+walk.walkKickHeightFactor = 1.5;
+--walk.tStepWalkKick = 0.35;  --Leave as default for now
 
 walk.sideKickVel1 = {0.04,0.04,0};
 walk.sideKickVel2 = {0.09,0.05,0};
@@ -129,4 +129,3 @@ walk.supportCompR = {0,0,0};
 
 --Shift torso a bit to front when kicking
 walk.kickXComp = -0.01;
-walk.testing = false; --This should be turned off for walkkick

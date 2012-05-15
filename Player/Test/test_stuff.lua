@@ -214,14 +214,14 @@ function update()
 			Config.walk.bodyHeight = Config.walk.bodyHeight - .001;
 		elseif byte== string.byte('Y') then
 			Config.walk.bodyHeight = Config.walk.bodyHeight + .001;
-		elseif byte== string.byte('c') then
+		elseif byte== string.byte('z') then
 			Config.walk.tStepWalkKick = Config.walk.tStepWalkKick - .01;
-		elseif byte== string.byte('C') then
+		elseif byte== string.byte('Z') then
 			Config.walk.tStepWalkKick = Config.walk.tStepWalkKick + .01;
-		elseif byte== string.byte('v') then
+		elseif byte== string.byte('m') then
 			Config.walk.walkKickHeightFactor = 
         Config.walk.walkKickHeightFactor - .01;
-		elseif byte== string.byte('V') then
+		elseif byte== string.byte('M') then
 			Config.walk.walkKickHeightFactor = 
        Config.walk.walkKickHeightFactor + .01;
 		elseif byte== string.byte('b') then

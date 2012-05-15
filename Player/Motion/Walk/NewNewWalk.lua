@@ -128,6 +128,30 @@ initial_step=2;
 ----------------------------------------------------------
 
 function entry()
+  
+  print ("Motion: Walk entry")
+  --SJ: now we always assume that we start walking with feet together
+  --Because joint readings are not always available with darwins
+  uLeft = util.pose_global(vector.new({-supportX, footY, 0}),uTorso);
+  uRight = util.pose_global(vector.new({-supportX, -footY, 0}),uTorso);
+
+  uLeft1, uLeft2 = uLeft, uLeft;
+  uRight1, uRight2 = uRight, uRight;
+  uTorso1, uTorso2 = uTorso, uTorso;
+  uSupport = uTorso;
+
+  --Place arms in appropriate position at sides
+  Body.set_larm_command(qLArm0);
+  Body.set_larm_hardness(hardnessArm);
+  Body.set_rarm_command(qRArm0);
+  Body.set_rarm_hardness(hardnessArm);
+
+  walkKickRequest = 0;
+end
+
+
+function update()
+  t = Body.get_time();
   if testing then
       --Stance parameters
       bodyHeight = Config.walk.bodyHeight;
@@ -157,30 +181,6 @@ function entry()
       walkKickHeightFactor = Config.walk.walkKickHeightFactor;
       tStepWalkKick = Config.walk.tStepWalkKick or tStep;
     end
-  print ("Motion: Walk entry")
-  --SJ: now we always assume that we start walking with feet together
-  --Because joint readings are not always available with darwins
-  uLeft = util.pose_global(vector.new({-supportX, footY, 0}),uTorso);
-  uRight = util.pose_global(vector.new({-supportX, -footY, 0}),uTorso);
-
-  uLeft1, uLeft2 = uLeft, uLeft;
-  uRight1, uRight2 = uRight, uRight;
-  uTorso1, uTorso2 = uTorso, uTorso;
-  uSupport = uTorso;
-
-  --Place arms in appropriate position at sides
-  Body.set_larm_command(qLArm0);
-  Body.set_larm_hardness(hardnessArm);
-  Body.set_rarm_command(qRArm0);
-  Body.set_rarm_hardness(hardnessArm);
-
-  walkKickRequest = 0;
-end
-
-
-function update()
-  t = Body.get_time();
-
   --Don't run update if the robot is sitting or standing
   bodyHeightCurrent = vcm.get_camera_bodyHeight();
   if  bodyHeightCurrent<bodyHeight-0.01 then

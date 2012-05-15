@@ -31,7 +31,7 @@ dev.ip_wireless = '139.140.218.255';
 dev.game_control = 'NaoGameControl';
 dev.team='TeamSPL';
 --dev.walk = 'Walk/NewNewWalk';
-dev.walk = 'Walk/NewNewNewWalk';
+dev.walk = 'Walk/NewNewWalk';
 dev.kick = 'NewKick';
 
 --Speak enable

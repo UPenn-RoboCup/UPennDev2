@@ -8,7 +8,9 @@ require('Body')
 require('Kinematics')
 require('Config');
 require('vector')
+require('util')
 
+mod_angle = util.mod_angle;
 -- Walk Parameters
 bodyHeight = Config.walk.bodyHeight;
 bodyTilt=Config.walk.bodyTilt;
@@ -566,15 +568,6 @@ function se2_interpolate(t, u1, u2)
   return vector.new{u1[1]+t*(u2[1]-u1[1]),
                     u1[2]+t*(u2[2]-u1[2]),
                     u1[3]+t*mod_angle(u2[3]-u1[3])};
-end
-
-function mod_angle(a)
-  -- Reduce angle to [-pi, pi)
-  a = a % (2*math.pi);
-  if (a >= math.pi) then
-    a = a - 2*math.pi;
-  end
-  return a;
 end
 
 function getPhase( t )

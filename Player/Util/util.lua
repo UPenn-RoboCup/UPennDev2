@@ -11,6 +11,7 @@ function ptable(t)
 end
 
 function mod_angle(a)
+  if a==nil then return nil end
   -- Reduce angle to [-pi, pi)
   a = a % (2*math.pi);
   if (a >= math.pi) then

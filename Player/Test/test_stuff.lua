@@ -214,23 +214,23 @@ function update()
 			Config.walk.bodyHeight = Config.walk.bodyHeight - .001;
 		elseif byte== string.byte('Y') then
 			Config.walk.bodyHeight = Config.walk.bodyHeight + .001;
-		elseif byte== string.byte('u') then
-			Config.walk.tStepWalkKick = Config.tStepWalkKick - .01;
-		elseif byte== string.byte('U') then
+		elseif byte== string.byte('c') then
+			Config.walk.tStepWalkKick = Config.walk.tStepWalkKick - .01;
+		elseif byte== string.byte('C') then
 			Config.walk.tStepWalkKick = Config.walk.tStepWalkKick + .01;
-		elseif byte== string.byte('i') then
+		elseif byte== string.byte('v') then
 			Config.walk.walkKickHeightFactor = 
         Config.walk.walkKickHeightFactor - .01;
-		elseif byte== string.byte('I') then
+		elseif byte== string.byte('V') then
 			Config.walk.walkKickHeightFactor = 
        Config.walk.walkKickHeightFactor + .01;
-		elseif byte== string.byte('o') then
+		elseif byte== string.byte('b') then
 			Config.walk.walkKickVel[1] = Config.walk.walkKickVel[1] - .01;
-    elseif byte==string.byte('O') then
+    elseif byte==string.byte('B') then
       Config.walk.walkKickVel[1] = Config.walk.walkKickVel[1] +.01;
-		elseif byte== string.byte('p') then
+		elseif byte== string.byte('n') then
 			Config.walk.walkKickVel[2] = Config.walk.walkKickVel[2] - .01;
-		elseif byte== string.byte('P') then
+		elseif byte== string.byte('N') then
 			Config.walk.walkKickVel[2] = Config.walk.walkKickVel[2] + .01;
     elseif byte==string.byte('\\') then
       walkKick=not walkKick;

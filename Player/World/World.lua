@@ -14,6 +14,8 @@ require 'mcm'
 --We can toggle whether to use velocity to update ball position estimate
 --In Filter2D.lua
 
+mod_angle = util.mod_angle;
+
 --require('Velocity');	
 
 --Are we using same colored goals?
@@ -395,12 +397,4 @@ function pose_relative(pGlobal, pose)
   return vector.new{ca*px + sa*py, -sa*px + ca*py, mod_angle(pa)};
 end
 
-function mod_angle(a)
-  -- Reduce angle to [-pi, pi)
-  a = a % (2*math.pi);
-  if (a >= math.pi) then
-    a = a - 2*math.pi;
-  end
-  return a;
-end
 

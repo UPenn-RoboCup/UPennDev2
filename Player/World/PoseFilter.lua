@@ -5,6 +5,7 @@ require('vector');
 require('vcm')
 require 'util'
 
+mod_angle = util.mod_angle
 n = Config.world.n;
 xLineBoundary = Config.world.xLineBoundary;
 yLineBoundary = Config.world.yLineBoundary;
@@ -678,14 +679,6 @@ function sign(x)
   else
     return 0;
   end
-end
-
-function mod_angle(a)
-  a = a % (2*math.pi);
-  if (a >= math.pi) then
-    a = a - 2*math.pi;
-  end
-  return a;
 end
 
 function addNoise()

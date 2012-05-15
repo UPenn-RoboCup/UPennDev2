@@ -214,6 +214,24 @@ function update()
 			Config.walk.bodyHeight = Config.walk.bodyHeight - .001;
 		elseif byte== string.byte('Y') then
 			Config.walk.bodyHeight = Config.walk.bodyHeight + .001;
+		elseif byte== string.byte('u') then
+			Config.walk.tStepWalkKick = Config.tStepWalkKick - .01;
+		elseif byte== string.byte('U') then
+			Config.walk.tStepWalkKick = Config.walk.tStepWalkKick + .01;
+		elseif byte== string.byte('i') then
+			Config.walk.walkKickHeightFactor = 
+        Config.walk.walkKickHeightFactor - .01;
+		elseif byte== string.byte('I') then
+			Config.walk.walkKickHeightFactor = 
+       Config.walk.walkKickHeightFactor + .01;
+		elseif byte== string.byte('o') then
+			Config.walk.walkKickVel[1] = Config.walk.walkKickVel[1] - .01;
+    elseif byte==string.byte('O') then
+      Config.walk.walkKickVel[1] = Config.walk.walkKickVel[1] +.01;
+		elseif byte== string.byte('p') then
+			Config.walk.walkKickVel[2] = Config.walk.walkKickVel[2] - .01;
+		elseif byte== string.byte('P') then
+			Config.walk.walkKickVel[2] = Config.walk.walkKickVel[2] + .01;
     elseif byte==string.byte('\\') then
       walkKick=not walkKick;
     elseif byte==string.byte("1") then
@@ -362,8 +380,9 @@ function update()
   	print(string.format("Head angle: %d, %d",
 			headangle[1]*180/math.pi,
 			headangle[2]*180/math.pi));
-		print(string.format("Walk settings:\n tStep: %.2f\t phSingle: {%.2f, %.2f}\t stepHeight: %.3f\n supportX: %.3f\t supportY: %.3f\t", Config.walk.tStep, Config.walk.phSingle[1], Config.walk.phSingle[2], Config.walk.stepHeight, 
+		print(string.format("Walk settings:\n tStep: %.2f\t phSingle: {%.2f, %.2f}\t stepHeight: %.3f\n supportX: %.3f\t supportY: %.3f\t\n", Config.walk.tStep, Config.walk.phSingle[1], Config.walk.phSingle[2], Config.walk.stepHeight, 
 Config.walk.supportX, Config.walk.supportY));
+    print(string.format("Walk kick settings:\n tStepWalkKick: %.2f\t walkKickHeightFactor: %.2f\t walkKickVel: {%.2f, %.2f}\n", Config.walk.tStepWalkKick, Config.walk.walkKickHeightFactor, Config.walk.walkKickVel[1], Config.walk.walkKickVel[2]))
   else
     print(string.format("\n Walk Velocity: (%.2f, %.2f, %.2f)",unpack(targetvel)));
 		walk.set_velocity(unpack(targetvel));

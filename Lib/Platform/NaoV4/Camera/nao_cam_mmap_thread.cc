@@ -128,7 +128,7 @@ int nao_cam_thread_init() {
       return -1;
     }
 
-    // initialize mutexes
+   // initialize mutexes
     //camMutexes[i] = PTHREAD_MUTEX_INITIALIZER;
   }
 
@@ -204,7 +204,7 @@ int construct_parameter_map(int fd, std::map<std::string, int> &paramMap) {
       }
 
       // set control in menu
-      printf("  %d: %s\n", queryctrl.id, queryctrl.name);
+      printf("  %d: %s %d %d %d\n", queryctrl.id, queryctrl.name, queryctrl.minimum, queryctrl.maximum, queryctrl.default_value);
       paramMap[(char *)queryctrl.name] = queryctrl.id;
     } else {
       if (errno == EINVAL) {
@@ -238,6 +238,7 @@ int construct_parameter_map(int fd, std::map<std::string, int> &paramMap) {
 }
 
 int nao_cam_thread_set_control(const char *name, int val) {
+  printf("trying to set prameter %s to %d\n", name, val);
   static struct v4l2_control ctrl;
 
   // TODO: lock mutex here

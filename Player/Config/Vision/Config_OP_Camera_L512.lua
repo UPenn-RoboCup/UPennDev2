@@ -32,5 +32,5 @@ camera.param[5] = {key='white balance temperature', val={4290}};
 camera.param[6] = {key='sharpness',     val={70}};
 camera.param[7] = {key='exposure (absolute)',      val={1028}};
 
-camera.lut_file = 'lut_yida_vt_op_0507.raw';
+camera.lut_file = 'lut_L512_aditya_05_15_time_22_37.raw';
 

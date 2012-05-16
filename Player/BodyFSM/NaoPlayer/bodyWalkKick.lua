@@ -1,3 +1,7 @@
+-- Test SM for walk kick
+-- Not for distribute
+
+
 module(..., package.seeall);
 
 require('Body')
@@ -11,61 +15,43 @@ require('wcm')
 require('walk');
 
 t0 = 0;
-timeout = 20.0;
-
-started = false;
-
-kickable = true;
-
-kickLeft = true;
+timeout = Config.fsm.bodyWalkKick.timeout;
 
 function entry()
   print(_NAME.." entry");
 
   t0 = Body.get_time();
+  follow=false;
+  kick_dir=wcm.get_kick_dir();
+
+  print("KICK DIR:",kick_dir);
 
   -- set kick depending on ball position
   ball = wcm.get_ball();
   if (ball.y > 0) then
-    kickLeft = true;
-  else
-    kickLeft = false;
-  end
-
-  --SJ - only initiate kick while walking
-  kickable = walk.active;  
-
-  if(kickLeft) then
     walk.doWalkKickLeft();
   else
     walk.doWalkKickRight();
   end
-  started = false;
+  HeadFSM.sm:set_state('headTrack');
+--  HeadFSM.sm:set_state('headIdle');
 end
 
 function update()
   local t = Body.get_time();
-  if not kickable then 
-     print("bodyKick escape");
-     --Set velocity to 0 after kick fails ot prevent instability--
-     walk.setVelocity(0, 0, 0);
-     return "done";
-  end
-  
-  if (not started and kick.active) then
-    started = true;
-  elseif (started and not kick.active) then
-  	--Set velocity to 0 after kick to prevent instability--
-  	walk.still=true;
-  	walk.set_velocity(0, 0, 0);
+
+  if (t - t0 > timeout) then
     return "done";
   end
 
-  if (t - t0 > timeout) then
-    return "timeout";
+  --SJ: should be done in better way?
+  if walk.walkKickRequest==0 and follow ==false then
+    follow=true;
+    HeadFSM.sm:set_state('headKickFollow');
   end
+
 end
 
 function exit()
-  HeadFSM.sm:set_state('headTrack');
+ -- HeadFSM.sm:set_state('headTrack');
 end

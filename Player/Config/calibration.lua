@@ -348,3 +348,23 @@ cal["darwin7"].kickXComp=0.010;
 cal["darwin7"].servoBias={23,0,0,0,-1,0,0,0,0,-17,-15,0,};
 cal["darwin7"].footXComp=-0.004;
 cal["darwin7"].kickXComp=0.010;
+
+-- Updated date: Tue May 15 13:33:24 2012
+cal["scarface"].servoBias={0,0,7,373,0,0,0,0,-7,-9,-4,2,};
+cal["scarface"].footXComp=-0.003;
+cal["scarface"].kickXComp=0.010;
+
+-- Updated date: Tue May 15 18:47:35 2012
+cal["scarface"].servoBias={0,0,6,50,55,0,0,0,-11,-32,-4,2,};
+cal["scarface"].footXComp=-0.003;
+cal["scarface"].kickXComp=0.010;
+
+-- Updated date: Tue May 15 18:48:48 2012
+cal["scarface"].servoBias={0,0,6,50,55,0,0,0,-11,-32,-4,2,};
+cal["scarface"].footXComp=-0.001;
+cal["scarface"].kickXComp=0.010;
+
+-- Updated date: Tue May 15 18:49:17 2012
+cal["scarface"].servoBias={0,0,6,50,55,0,0,0,-11,-32,-4,2,};
+cal["scarface"].footXComp=-0.001;
+cal["scarface"].kickXComp=0.010;

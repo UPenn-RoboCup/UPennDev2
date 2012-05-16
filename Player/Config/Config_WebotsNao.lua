@@ -48,6 +48,7 @@ else game.teamColor = 1; --Red team
 end
 
 fsm={}
+loadconfig('FSM/Config_NaoV4_FSM')
 fsm.game = 'RoboCup';
 if (game.playerID == 1) then
   fsm.body = {'NaoGoalie'};

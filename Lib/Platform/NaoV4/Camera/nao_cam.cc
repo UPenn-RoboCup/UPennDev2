@@ -7,7 +7,7 @@ typedef unsigned char uint8;
 typedef unsigned int uint32;
 
 // Defined in naoCamThread.cc:
-extern CAMERA_STATUS *cameraStatus;
+extern CAMERA_STATUS *cameraStatus[NCAMERA_DEVICES];
 
 int init = 0;
 
@@ -33,16 +33,17 @@ static int lua_get_image(lua_State *L) {
 static int lua_camera_status(lua_State *L) {
   lua_createtable(L, 0, 4);
 
-  lua_pushinteger(L, cameraStatus->count);
+  int bottom = nao_cam_thread_get_selected_camera();
+  lua_pushinteger(L, cameraStatus[bottom]->count);
   lua_setfield(L, -2, "count");
-  lua_pushinteger(L, cameraStatus->select);
+  lua_pushinteger(L, cameraStatus[bottom]->select);
   lua_setfield(L, -2, "select");
-  lua_pushnumber(L, cameraStatus->time);
+  lua_pushnumber(L, cameraStatus[bottom]->time);
   lua_setfield(L, -2, "time");
 
   lua_createtable(L, 22, 0);
   for (int i = 0; i < 22; i++) {
-    lua_pushnumber(L, cameraStatus->joint[i]);
+    lua_pushnumber(L, cameraStatus[bottom]->joint[i]);
     lua_rawseti(L, -2, i+1);
   }
   lua_setfield(L, -2, "joint");

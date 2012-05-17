@@ -24,6 +24,14 @@
 typedef unsigned char uint8;
 typedef unsigned int uint32;
 
+#define WIDTH 640
+#define HEIGHT 480
+
+#define NUM_FRAME_BUFFERS 4
+
+#define NCAMERA_DEVICES 2
+
+
 typedef struct {
   int count; 
   int select;

@@ -4,14 +4,20 @@
 #include <cassert>
 #include <ctime>
 #include <iostream>
+#include <cmath>
 
 OccMap::OccMap()
 :map_size(50)
-,map_size_metric(1)
-,resolution(map_size / map_size_metric)
+,map_size_metric(1.0)
+,resolution(map_size_metric / map_size)
 ,grid_num(map_size * map_size)
 ,rx(map_size / 2)
 ,ry(map_size * 4 / 5)
+,max_dis(sqrt(rx * rx + ry * ry))
+// initiate accumulated robot odom change
+,odom_x(0.0)
+,odom_y(0.0)
+,odom_a(0.0)
 {
   grid.resize(grid_num);
   randomize_map();
@@ -35,10 +41,45 @@ vector<double>& OccMap::get_map(void) {
   return grid;
 }
 
-size_t& OccMap::get_robot_pos_x(void) {
+int& OccMap::get_robot_pos_x(void) {
   return rx;
 }
 
-size_t& OccMap::get_robot_pos_y(void) {
+int& OccMap::get_robot_pos_y(void) {
   return ry;
+}
+
+int OccMap::odometry_update(const double odomX, const double odomY, const double odomA) {
+//  cout << "Odom Change: " << endl;
+  odom_x += odomX / resolution;
+  odom_y += odomY / resolution;
+  odom_a += odomA;
+//  cout << odom_x << ' ' << odom_y << ' ' << odom_a << endl;
+  if ((odom_x > 1) || (odom_y > 1) || (odom_a * max_dis > 1)) {
+    double nx = 0; // new point in occmap coordinate x
+    double ny = 0; // new point in occmap coordinate y
+    int ni = 0; // new point on map x;
+    int nj = 0; // new point on map y;
+    double ca = cos(odom_a);
+    double sa = sin(odom_a);
+    vector<double> grid_temp = grid;
+    randomize_map();
+    for (int i = 0; i < map_size; i++)
+      for (int j = 0; j < map_size; j++) {
+       // cout << rx - i - odom_x << ' ' << ry - j - odom_y << endl;
+        nx = ca * (i - rx - odom_x) - sa * (ry - j - odom_y);
+        ny = sa * (i - rx - odom_x) + ca * (ry - j - odom_y);
+        ni = round(nx + rx);
+        nj = round(ry - ny);
+        if ((ni >= 0) and (ni < map_size) and (nj >= 0) and (nj < map_size))
+          grid[nj * map_size + ni] = grid_temp[j * map_size + i];
+      //  cout << i << ' ' << j << ' ' << ni << ' ' << ' ' << nj << endl;
+      }
+
+//    cout << "Update Odometry: " << odom_x << ' ' << odom_y << ' ' << odom_a*max_dis << endl;
+    odom_x = 0;
+    odom_y = 0;
+    odom_a = 0;
+  }
+  return 1;
 }

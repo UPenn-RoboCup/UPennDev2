@@ -18,14 +18,16 @@ public:
   ~OccMap();
   int randomize_map(void);
   vector<double>& get_map(void);
-  size_t& get_robot_pos_x(void);
-  size_t& get_robot_pos_y(void);
+  int& get_robot_pos_x(void);
+  int& get_robot_pos_y(void);
+  
+  int odometry_update(const double odomX, const double odomY, const double odomA);
 
 private:
   // Map size in grids
   size_t map_size;
   // Map actual size
-  size_t map_size_metric;
+  double map_size_metric;
   // Grid num
   size_t grid_num;
   // Map Max resolution
@@ -34,8 +36,14 @@ private:
   vector<double> grid;
 
   // Robot Position in Grid
-  size_t rx;
-  size_t ry;
+  int rx;
+  int ry;
+  // distance from Robot position to origin
+  double max_dis;
+  // Accumulated Robot Odometry Change
+  double odom_x;
+  double odom_y;
+  double odom_a;
 
 };
 

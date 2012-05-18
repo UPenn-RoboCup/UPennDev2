@@ -25,12 +25,12 @@ camera.auto_param[5] = {key="exposure, auto priority",val={0}};
 
 camera.param = {};
 camera.param[1] = {key='brightness',    val={128}};
-camera.param[2] = {key='contrast',      val={27}};
-camera.param[3] = {key='saturation',    val={28}};
+camera.param[2] = {key='contrast',      val={35}};
+camera.param[3] = {key='saturation',    val={48}};
 camera.param[4] = {key='gain',          val={255}};
-camera.param[5] = {key='white balance temperature', val={4290}};
-camera.param[6] = {key='sharpness',     val={70}};
-camera.param[7] = {key='exposure (absolute)',      val={1028}};
+camera.param[5] = {key='white balance temperature', val={80}};
+camera.param[6] = {key='sharpness',     val={107}};
+camera.param[7] = {key='exposure (absolute)',      val={941}};
 
 camera.lut_file = 'lut_L512_aditya_05_17_time_22_17.raw';
 

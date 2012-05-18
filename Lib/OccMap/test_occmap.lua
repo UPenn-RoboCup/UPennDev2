@@ -24,10 +24,15 @@ occ = require("OccMap")
 
 occmap = occ.retrieve();
 
-util.ptable(occmap.robot_pos)
+--util.ptable(occmap.robot_pos)
 --print(occmap.map[450]);
 
-
+for i = 1 , 1 do
+  x = math.random()/40;
+  y = math.random()/40;
+  a = math.random()/40;
+  occ.odometry_update(x, y, a);
+end
 --ocm.set_occ_map(occmap.map);
 
 --cmap = ocm.get_occ_map();

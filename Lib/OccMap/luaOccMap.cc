@@ -1,9 +1,3 @@
-#include <iostream>
-#include <vector>
-#include <ctime>
-#include <cmath>
-#include <cstdlib>
-
 #ifdef __cplusplus
 extern "C"
 {
@@ -17,14 +11,18 @@ extern "C"
 
 #include <OccMap.h>
 
-OccMap *map;
+OccMap map;
 
 static int lua_occmap_reset(lua_State *L) {
-  map->randomize_map();
+  map.randomize_map();
 	return 1;
 }
 
 static int lua_occmap_odometry_update(lua_State *L) {
+  double odomX = luaL_checknumber(L, 1);
+  double odomY = luaL_checknumber(L, 2);
+  double odomA = luaL_checknumber(L, 3);
+  map.odometry_update(odomX, odomY, odomA);
 	return 1;
 }
 
@@ -35,7 +33,7 @@ static int lua_occmap_vision_update(lua_State *L) {
 static int lua_occmap_retrieve(lua_State *L) {
 	lua_createtable(L, 0, 2);
 
-  vector<double> cur_map = map->get_map();
+  vector<double> cur_map = map.get_map();
 	lua_pushstring(L, "map");
 	lua_createtable(L, cur_map.size(), 0);
 	for (int i = 0; i < cur_map.size(); i++) {
@@ -46,9 +44,9 @@ static int lua_occmap_retrieve(lua_State *L) {
 
 	lua_pushstring(L, "robot_pos");
 	lua_createtable(L, 2, 0);
-	lua_pushinteger(L, map->get_robot_pos_x());
+	lua_pushinteger(L, map.get_robot_pos_x());
 	lua_rawseti(L, -2, 1);
-	lua_pushinteger(L, map->get_robot_pos_y());
+	lua_pushinteger(L, map.get_robot_pos_y());
 	lua_rawseti(L, -2, 2);
 	lua_settable(L, -3);
 
@@ -68,6 +66,5 @@ extern "C"
 #endif
 int luaopen_OccMap (lua_State *L) {
   luaL_register(L, "OccMap", OccMap_lib);
-  map = new OccMap;
   return 1;
 }

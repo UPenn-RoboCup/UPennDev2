@@ -4,6 +4,7 @@ require('vector')
 require('kinematics')
 require('Body')
 require('shm');
+require('util')
 
 -- walk parameters
 active = false;
@@ -284,14 +285,6 @@ end
 function exit()
 end
 
-function mod_angle(a)
-  -- Reduce angle to [-pi, pi)
-  a = a % (2*math.pi);
-  if (a >= math.pi) then
-    a = a - 2*math.pi;
-  end
-  return a;
-end
 
 function pose_global(pRelative, pose)
   local ca = math.cos(pose[3]);

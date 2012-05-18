@@ -30,7 +30,7 @@ dev.kinematics = 'NaoWebotsKinematics';
 dev.game_control='WebotsGameControl';
 dev.team= 'TeamSPL';
 dev.kick = 'NewKick';
-dev.walk = 'NewNewNewWalk';
+dev.walk = 'NewNewWalk';
 
 -- Game Parameters
 
@@ -47,10 +47,8 @@ if game.teamNumber==0 then game.teamColor = 0; --Blue team
 else game.teamColor = 1; --Red team
 end
 
--- FSM Parameters
-fsm = {};
-loadconfig('FSM/Config_WebotsNao_FSM')--For generalPlayer FSM
-
+fsm={}
+loadconfig('FSM/Config_NaoV4_FSM')
 fsm.game = 'RoboCup';
 if (game.playerID == 1) then
   fsm.body = {'NaoGoalie'};
@@ -59,30 +57,6 @@ else
   fsm.body = {'NaoPlayer'};
   fsm.head = {'NaoPlayer'};
 end
-
-
---------------------------------------------------------------------
---GeneralPlayer FSM test
---[[
-fsm.game = 'RoboCup';
-fsm.body = {'GeneralPlayer'};
-fsm.head = {'NaoPlayer'};
---]]
---fsm.head = {'GeneralPlayer'};
-
---Penalty Kick FSM
---[[
-fsm.body = {'GeneralPK'};
-fsm.head = {'NaoDemo'};
---]]
-
---Behavior flags, should be defined in FSM Configs but can be overrided here
-fsm.enable_obstacle_detection = 1;
-fsm.kickoff_wait_enable = 0;
---fsm.playMode = 3; --1 for demo, 2 for orbit, 3 for direct approach
-fsm.playMode = 2; --1 for demo, 2 for orbit, 3 for direct approach
-fsm.enable_walkkick = 1;
-fsm.enable_sidekick = 1;
 
 -- Team Parameters
 team = {};

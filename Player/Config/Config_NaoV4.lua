@@ -18,7 +18,7 @@ loadconfig('Kick/Config_Nao_Kick')
 loadconfig('Vision/Config_NaoV4_Vision')
 
 --Location Specific Camera Parameters--
-loadconfig('Vision/Config_NaoV4_Camera_VT')
+loadconfig('Vision/Config_NaoV4_Camera_Levine512')
 
 
 -- Devive Interface Libraries
@@ -31,7 +31,7 @@ dev.ip_wireless = '139.140.218.255';
 dev.game_control = 'NaoGameControl';
 dev.team='TeamSPL';
 --dev.walk = 'Walk/NewNewWalk';
-dev.walk = 'Walk/NewNewNewWalk';
+dev.walk = 'Walk/NewNewWalk';
 dev.kick = 'NewKick';
 
 --Speak enable

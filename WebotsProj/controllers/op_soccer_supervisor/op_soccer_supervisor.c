@@ -655,7 +655,7 @@ static void run_initial_state() {
 static void run_ready_state() {
   control_data.state = STATE_READY;
   display();
-  run_seconds(45);
+  run_seconds(60);
 }
 
 static void run_set_state() {

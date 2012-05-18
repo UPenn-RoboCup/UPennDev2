@@ -56,10 +56,7 @@ require ('gcm')
 require ('vcm')
 require 'unix'
 
-Config.dev.ip_wireless = '192.168.2.255';
-
 Comm.init(Config.dev.ip_wireless,54321);
-
 print('Receiving Team Message From',Config.dev.ip_wireless);
 
 function push_labelB(obj,teamOffset)
@@ -70,7 +67,6 @@ function push_labelB(obj,teamOffset)
   if id==1 then
     wcm.set_labelB_p1(labelB);
   elseif id==2 then
---[[
     wcm.set_labelB_p2(labelB);
   elseif id==3 then
     wcm.set_labelB_p3(labelB);
@@ -88,7 +84,6 @@ function push_labelB(obj,teamOffset)
     wcm.set_labelB_p9(labelB);
   elseif id==10 then
     wcm.set_labelB_p10(labelB);
---]]
   end
 end
 
@@ -243,8 +238,12 @@ while( true ) do
       else
         if (t.teamNumber == teamToTrack[1]) and (t.id) then
           push_team_struct(t,0);
+	  push_labelB(t,0);
+
         elseif (t.teamNumber == teamToTrack[2]) and (t.id) then
           push_team_struct(t,5);
+	  push_labelB(t,5);
+
         end
       end
       if count%30==0 then

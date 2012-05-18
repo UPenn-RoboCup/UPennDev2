@@ -46,7 +46,6 @@ enableBoundary = Config.vision.enable_visible_boundary or 0;
 enableRobot = Config.vision.enable_robot_detection or 0;
 yellowGoals = Config.vision.enable_2_yellow_goals or 0;
 
-
 function entry()
   -- Initiate Detection
   ball = {};
@@ -179,23 +178,13 @@ function update_shm()
       if landmarkYellow.detect==1 then
          vcm.set_landmark_detect(1);
          vcm.set_landmark_color(colorYellow);
-         v={0,0,0,0};
-         v[1]=landmarkYellow.v[1]*distanceFactorYellow;
-         v[2]=landmarkYellow.v[2]*distanceFactorYellow;
-         vcm.set_landmark_v(v);
+         vcm.set_landmark_v(landmarkYellow.v);
       elseif landmarkCyan.detect==1 then
          vcm.set_landmark_detect(1);
          vcm.set_landmark_color(colorCyan);
-         v={0,0,0,0};
-         v[1]=landmarkCyan.v[1]*distanceFactorCyan;
-         v[2]=landmarkCyan.v[2]*distanceFactorCyan;
-         vcm.set_landmark_v(v);
+         vcm.set_landmark_v(landmarkCyan.v);
       end
     end
-    distanceFactorCyan = 
-  	Config.vision.landmark.distanceFactorCyan or 1;
-    distanceFactorYellow = 
-  	Config.vision.landmark.distanceFactorYellow or 1;
   end
 
 

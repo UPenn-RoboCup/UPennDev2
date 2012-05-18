@@ -119,15 +119,14 @@ if listen_monitor>0 then
   shared.labelB.p3 = labelB_size;
   shared.labelB.p4 = labelB_size;
   shared.labelB.p5 = labelB_size;
---[[
   shared.labelB.p6 = labelB_size;
   shared.labelB.p7 = labelB_size;
   shared.labelB.p8 = labelB_size;
   shared.labelB.p9 = labelB_size;
   shared.labelB.p10 = labelB_size;
-  shsize.labelB = 10*labelB_size + 2^16*10;
---]]
-  shsize.labelB = 5*labelB_size + 2^16;
+  shsize.labelB = 10*labelB_size + 2^16;
+
+  shared.robotNames = {};
 
 end
 

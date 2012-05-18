@@ -13,7 +13,7 @@ all: OccMap
 %.o: %.c
 	$(CC) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
 
-OccMap: luaOccMap.o
+OccMap: luaOccMap.o OccMap.o
 	$(LD) $(LDFLAGS) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ $(LIB_DIR) -lm
 
 clean:

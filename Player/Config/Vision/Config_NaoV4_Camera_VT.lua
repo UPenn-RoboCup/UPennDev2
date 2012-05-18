@@ -11,57 +11,35 @@ camera.height = 480;
 camera.x_center = 320;
 camera.y_center = 240;
 
---Old nao values
---camera.focal_length = 383; -- in pixels
---camera.focal_base = 320; -- image width used in focal length calculation
-
---NaoV4 values
---60.97 degree horizontal FOV for 640 pixels
---FOV = 2 arcctan(x/2f), x=640
---f=640/2/tan(60.97*pi/180 / 2)
 camera.focal_length = 545.6; -- in pixels
 camera.focal_base = 640; -- image width used in focal length calculation
 
-
---[[
-camera.auto_param = {};
-camera.auto_param[1] = {key='auto_exposure',      val={0, 0}};
-camera.auto_param[2] = {key='auto_white_balance', val={0, 0}};
-camera.auto_param[3] = {key='autogain',           val={0, 0}};
-
-camera.param = {};
-camera.param[1] = {key='exposure',      val={150, 150}};
-camera.param[2] = {key='gain',          val={113, 113}};
-camera.param[3] = {key='brightness',    val={89, 89}};
-camera.param[4] = {key='contrast',      val={64, 64}};
-camera.param[5] = {key='saturation',    val={215, 215}};
-camera.param[6] = {key='red_balance',   val={67, 67}};
-camera.param[7] = {key='blue_balance',  val={160, 160}};
-camera.param[8] = {key='hue',           val={0, 0}};
---]]
-
 --New nao params
 
---camera.auto_param = {};
---camera.auto_param[1] = {key='Do White Balance',      val={-1, -1}};
---camera.auto_param[2] = {key='White Balance, Automatic', val={0, 0}};
---camera.auto_param[3] = {key='Backlight Compensation',     val={0, 0}};
---camera.auto_param[1] = {key='Horizontal Flip',   val={1, 0}};
---Top camera is flipped
---camera.auto_param[2] = {key='Vertical Flip',   val={1, 0}};
-
-
 camera.param = {};
-camera.param[1] = {key='Brightness',    val={100, 100}};
-camera.param[2] = {key='Contrast',      val={63, 63}};
-camera.param[3] = {key='Saturation',    val={125, 125}};
-camera.param[4] = {key='Hue',           val={0, 0}};
-camera.param[5] = {key='Exposure',      val={69, 69}};
-camera.param[6] = {key='Gain',          val={49, 49}};
-camera.param[7] = {key='Sharpness',  val={160, 160}};
-camera.param[7] = {key='Horizontal Flip',   val={1, 0}};
-camera.param[8] = {key='Vertical Flip',   val={1, 0}};
-camera.param[9] = {key='White balance', val={-86, -86}}
+-- Contrast should be set between 17 and 64
+camera.param[1] = {key='Contrast'       , val={63 , 63}};
+
+camera.param[2] = {key='Saturation'     , val={125, 125}};
+-- Hue will automatically change to 0 if set to a number between -5 and 5, but cannot be set by other numbers
+camera.param[3] = {key='Hue'            , val={0  , 0}};
+
+camera.param[4] = {key='Exposure'       , val={107, 22}};
+-- Gain should be set between 32 and 255
+camera.param[5] = {key='Gain'           , val={34 , 249}};
+-- Sharpness should be set between 0 and 7
+camera.param[6] = {key='Sharpness'      , val={2  , 3}};
+
+camera.param[7] = {key='Horizontal Flip', val={1  , 0}};
+
+camera.param[8] = {key='Vertical Flip'  , val={1  , 0}};
+
+
+--camera.param[9] = {key='White balance'  , val={-86, -86}}
+--camera.param[10] = {key='Brightness',    val={100, 100}};
+
+-- brightness has to be set seperately from other parameters, and it can only be set to multiple of 4
+camera.brightness = 208;
 
 camera.lut_file = 'lut_NaoV4_0506_1.raw';
 

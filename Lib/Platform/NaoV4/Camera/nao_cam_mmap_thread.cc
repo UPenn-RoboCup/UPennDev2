@@ -7,13 +7,6 @@
 #define V4L2_CID_AUTO_EXPOSURE 10094849
 
 
-#define WIDTH 640
-#define HEIGHT 480
-
-#define NUM_FRAME_BUFFERS 4
-
-#define NCAMERA_DEVICES 2
-
 // camera device paths
 const char *cameraDevices[] = {"/dev/video0", "/dev/video1"};
 // camera file descriptors

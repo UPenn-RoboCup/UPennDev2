@@ -44,12 +44,19 @@ ifndef ARCH
   ARCH= $(shell uname -m)
 endif
 
+ifeq ($(NaoqiCTC),)
 ifeq ($(OSTYPE),linux)
   SHLIBEXT= so
 endif
 ifeq ($(OSTYPE),darwin)
   SHLIBEXT= dylib
   REGEX=\( -regex '.*.$(LUAEXT)' -or -regex '.*.$(SHLIBEXT)' -or -regex '.*.sh' \)
+endif
+else
+  SHLIBEXT= so
+ifeq ($(OSTYPE),darwin)
+  REGEX=\( -regex '.*.$(LUAEXT)' -or -regex '.*.$(SHLIBEXT)' -or -regex '.*.sh' \)
+endif
 endif
 
 all none:
@@ -178,7 +185,7 @@ primesense:
 setup_nao: nao setup_util setup_image setup_comm
 	@echo "Setting up Nao Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
-	find $(NAODIR) -regex '.*\($(SHLIBEXT)\|$(LUAEXT)\)' -exec cp -v {} $(INSTDIR) \;
+	find $(NAODIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
 	rm -f $(PLAYERDIR)/Config/Config.lua
 	cd $(PLAYERDIR)/Config && ln -s Config_Nao.lua Config.lua && cd $(CWD)
 	find $(UTILDIR) $(REGEX) -exec cp -v {} $(NAODEPLUA51DIR) \;
@@ -188,7 +195,7 @@ setup_nao: nao setup_util setup_image setup_comm
 setup_naov4: naov4 setup_util setup_image setup_comm
 	@echo "Setting up Nao V4 Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
-	find $(NAOV4DIR) -regex '.*\($(SHLIBEXT)\|$(LUAEXT)\)' -exec cp -v {} $(INSTDIR) \;
+	find $(NAOV4DIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
 	rm -f $(PLAYERDIR)/Config/Config.lua
 	cd $(PLAYERDIR)/Config && ln -s Config_NaoV4.lua Config.lua && cd $(CWD)
 #	find $(UTILDIR) $(REGEX) -exec cp -v {} $(NAODEPLUA51DIR) \;
@@ -248,7 +255,7 @@ setup_webots_saffir: webots_saffir setup_util setup_image setup_webots
 setup_visiontest: visiontest setup_util setup_image 
 	@echo "Setting up Darwin OP Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
-	find $(VISIONTESTDIR) -regex '.*\($(SHLIBEXT)\|$(LUAEXT)\)' -exec cp -v {} $(INSTDIR) \;
+	find $(VISIONTESTDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
 	rm -f $(PLAYERDIR)/Config/Config.lua
 	cd $(PLAYERDIR)/Config && ln -s Config_VisionTest.lua Config.lua && cd $(CWD)
 	@echo "\n"
@@ -257,7 +264,7 @@ setup_visiontest: visiontest setup_util setup_image
 setup_hp: hp setup_util setup_image setup_comm
 	@echo "Setting up HP Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
-	find $(HPDIR) -regex '.*\($(SHLIBEXT)\|$(LUAEXT)\)' -exec cp -v {} $(INSTDIR) \;
+	find $(HPDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
 	touch $(PLAYERDIR)/Config/Config.lua
 	cd $(PLAYERDIR)/Config && ln -s Config_HP.lua Config.lua && cd $(CWD)
 	cp $(INSTDIR)/unix.$(SHLIBEXT) $(PLAYERDIR)/
@@ -275,7 +282,6 @@ setup_op: op setup_util setup_image setup_comm
 setup_xos: xos setup_util setup_image setup_comm
 	@echo "Setting up Darwin XOS Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
-#	find $(XOSDIR) -regex '.*\($(SHLIBEXT)\|$(LUAEXT)\)' -exec cp -v {} $(INSTDIR) \;
 	find $(XOSDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
 #	touch $(PLAYERDIR)/Config/Config.lua
 	rm -f $(PLAYERDIR)/Config/Config.lua

@@ -53,8 +53,7 @@ function update()
   --print('ballR '..ballR);
 
   -- get attack goalpost positions and goal angle
-  posts = wcm.get_attack_posts();
-  pAngle = wcm.get_attack_angle();
+  posts = wcm.get_goal_attack_posts();
 
   -- calculate the relative distance to each post, find closest
   pose = wcm.get_pose();

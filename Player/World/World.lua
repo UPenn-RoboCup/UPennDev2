@@ -288,6 +288,8 @@ function update_shm()
   wcm.set_goal_attack_angle(get_attack_angle());
   wcm.set_goal_defend_angle(get_defend_angle());
 
+  wcm.set_goal_attack_posts(get_attack_posts());
+
   wcm.set_robot_is_fall_down(mcm.get_walk_isFallDown());
   --Particle information
   wcm.set_particle_x(PoseFilter.xp);
@@ -357,6 +359,14 @@ function get_goal_defend()
   else
     -- blue defends cyan goal
     return {PoseFilter.postCyan[1][1], 0, 0};
+  end
+end
+
+function get_attack_posts()
+  if gcm.get_team_color() == 1 then
+    return Config.world.postCyan;
+  else
+    return Config.world.postYellow;
   end
 end
 

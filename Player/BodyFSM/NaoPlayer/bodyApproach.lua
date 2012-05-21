@@ -37,7 +37,6 @@ thAlign = 15.0*math.pi/180.0;
 pNear = Config.fsm.bodyApproach.pNear or 0.3;
 pFar = Config.fsm.bodyApproach.pFar or 1.0;
 
-
 function entry()
   print(_NAME.." entry");
 
@@ -98,7 +97,6 @@ function update()
   end
   if ((ball.x < xKick) and (math.abs(ball.y) < yKickMax) and
       (math.abs(ball.y) > yKickMin)) then
-    print(string.format("\npNear: %.2f, pFar: %.2f\n", pNear, pFar))
     if ((pClosest > pNear) and (pClosest < pFar)) then
       print('kick');   
       return "kick";

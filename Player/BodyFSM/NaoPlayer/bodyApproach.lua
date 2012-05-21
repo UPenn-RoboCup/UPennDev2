@@ -34,8 +34,8 @@ rFar = 0.45;
 thAlign = 15.0*math.pi/180.0;
 
 -- goalpost distance threshold
-pNear = 0.3;
-pFar = 1.0;
+pNear = Config.bodyApproach.pNear or 0.3;
+pFar = Config.bodyApproach.pFar or 1.0;
 
 function entry()
   print(_NAME.." entry");
@@ -53,7 +53,7 @@ function update()
   --print('ballR '..ballR);
 
   -- get attack goalpost positions and goal angle
-  posts = wcm.get_goal_attack_posts();
+  posts = {wcm.get_goal_attack_post1(), wcm.get_goal_attack_post2()}
 
   -- calculate the relative distance to each post, find closest
   pose = wcm.get_pose();
@@ -96,11 +96,11 @@ function update()
   end
   if ((ball.x < xKick) and (math.abs(ball.y) < yKickMax) and
       (math.abs(ball.y) > yKickMin)) then
-    if ((pClosest > pNear) and (pClosest < pFar) and (pClosest > pFartheset/2)) then
+    if ((pClosest > pNear) and (pClosest < pFar)) then
       print('kick');   
       return "kick";
     else
-      print('walkKick');
+      print("My distance is ",pClosest,"\n");
       return "walkKick";
     end
   end

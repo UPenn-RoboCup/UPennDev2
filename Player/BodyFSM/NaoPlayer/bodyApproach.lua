@@ -34,8 +34,8 @@ rFar = 0.45;
 thAlign = 15.0*math.pi/180.0;
 
 -- goalpost distance threshold
-pNear = Config.bodyApproach.pNear or 0.3;
-pFar = Config.bodyApproach.pFar or 1.0;
+pNear = Config.fsm.bodyApproach.pNear or 0.3;
+pFar = Config.fsm.bodyApproach.pFar or 1.0;
 
 function entry()
   print(_NAME.." entry");

@@ -11,7 +11,7 @@ shared = {}
 shsize = {}
 
 shared.occ = {};
-shared.occ.map = mapsize * mapsize;
+shared.occ.map = 8 * mapsize * mapsize;
 
 -- Robot Centroid x y on Map 
 shared.occ.robot_pos = vector.zeros(2);

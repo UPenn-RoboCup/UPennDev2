@@ -288,7 +288,8 @@ function update_shm()
   wcm.set_goal_attack_angle(get_attack_angle());
   wcm.set_goal_defend_angle(get_defend_angle());
 
-  wcm.set_goal_attack_posts(get_attack_posts());
+  wcm.set_goal_attack_post1(get_attack_posts()[1]);
+  wcm.set_goal_attack_post2(get_attack_posts()[2]);
 
   wcm.set_robot_is_fall_down(mcm.get_walk_isFallDown());
   --Particle information

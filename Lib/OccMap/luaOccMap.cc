@@ -50,8 +50,6 @@ static int lua_occmap_vision_update(lua_State *L) {
 static int lua_occmap_retrieve_map(lua_State *L) {
   vector<double> cur_map;
   map.get_map(cur_map);
-//  std::cout << cur_map.size() << std::endl;
-  std::cout << cur_map[2500-1] << std::endl;
 	lua_pushlightuserdata(L, &cur_map[0]);
   return 1;
 }

@@ -36,10 +36,7 @@ static int lua_occmap_retrieve(lua_State *L) {
   vector<double> cur_map = map.get_map();
 	lua_pushstring(L, "map");
 	lua_createtable(L, cur_map.size(), 0);
-	for (int i = 0; i < cur_map.size(); i++) {
-		lua_pushnumber(L, cur_map[i]);
-		lua_rawseti(L, -2, i+1);
-	}
+	lua_pushlightuserdata(L, &cur_map[0]);
 	lua_settable(L, -3);
 
 	lua_pushstring(L, "robot_pos");

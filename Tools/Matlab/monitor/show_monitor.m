@@ -232,6 +232,8 @@ function h=show_monitor()
       MONITOR.h3 = subplot(4,5,[11 12 16 17]);
       cla(MONITOR.h3);
 
+      plot_occ(r_mon.occ);
+      %{
       if MONITOR.enable3==5 
         if isfield(r_mon.robot, 'map')
           plot_grid(r_mon.robot.map);  
@@ -242,6 +244,7 @@ function h=show_monitor()
         plot_field(MONITOR.h3,MONITOR.fieldtype);
         plot_robot( r_struct, r_mon,1.5,MONITOR.enable3 );
       end
+      %}
     end
 
     if MONITOR.enable4

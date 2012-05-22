@@ -11,10 +11,12 @@ shared = {}
 shsize = {}
 
 shared.occ = {};
-shared.occ.map = vector.zeros(mapsize * mapsize);
+shared.occ.map = mapsize * mapsize;
 
 -- Robot Centroid x y on Map 
-shared.occ.centroid = vector.zeros(2);
+shared.occ.robot_pos = vector.zeros(2);
+
+shsize.occ = shared.occ.map + 2^16;
 
 util.init_shm_segment(getfenv(), _NAME, shared, shsize);
 

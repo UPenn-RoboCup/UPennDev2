@@ -436,6 +436,14 @@ global MONITOR %for sending the webots check information
       r.free.detect = h.vcmFreespace.get_detect();
       % Add visible boundary        
 
+      % Add occupancy map
+      r.occ = {};
+			map = h.ocmOcc.get_map();
+			mapsize = sqrt(size(map,2));
+			map = reshape(map, [mapsize, mapsize]);
+			r.occ.map = map;
+			r.occ.mapsize = mapsize;
+			r.occ.robot_pos = h.ocmOcc.get_robot_pos();
       
       r.bd = {};
       bdTop = h.vcmBoundary.get_top();
@@ -447,16 +455,7 @@ global MONITOR %for sending the webots check information
                     'topx',-bdTop(1,bdCol+1:2*bdCol),...
                     'btmy',bdBtm(1,1:bdCol),...
                     'btmx',-bdBtm(1,bdCol+1:2*bdCol));
-      % Add occupancy map
-      r.occ = {};
-			map = h.ocmOcc.get_map();
-			mapsize = sqrt(size(map,2));
-			map = reshape(map, [mapsize, mapsize]);
-			map(map > 0) = 1;
-			map(map < 0) = 0;
-			r.occ.map = map;
-			r.occ.mapsize = mapsize;
-			r.occ.centroid = h.ocmOcc.get_centroid();
+
 
 
       % add horizon line

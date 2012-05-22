@@ -16,8 +16,8 @@ uOdometry0 = vector.new({0, 0, 0});
 odomScale = Config.world.odomScale;
 
 function entry()
-	OccMap.init(Config.occ.mapsize, Config.occ.centroid[1], Config.occ.centroid[2]);
-	ocm.set_occ_centroid(Config.occ.centroid);
+  occ = OccMap.retrieve();
+	ocm.set_occ_robot_pos(occ.robot_pos);
 end
 
 function update()
@@ -37,6 +37,7 @@ function update()
     yaw0 = yaw;
 --    print("Body yaw:",yaw*180/math.pi, " Pose yaw ",pose.a*180/math.pi)
   end
+  print("Odometry change: ",uOdometry[1],uOdometry[2],uOdometry[3]);
 	OccMap.odometry_update(uOdometry[1], uOdometry[2], uOdometry[3]);
 	
 	-- shm Update

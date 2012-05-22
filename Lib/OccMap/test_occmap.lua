@@ -17,12 +17,23 @@ end
 
 package.path = cwd.."/../../Player/Config/?.lua;"..package.path;
 package.path = cwd.."/../../Player/Util/?.lua;"..package.path;
+package.path = cwd.."/../../Player/World/?.lua;"..package.path;
 
 require("util")
---require("ocm")
+require("ocm")
 require("OccMap")
 
-occmap = OccMap.map();
+OccMap.init(50, 25, 40);
+
+
+-- Map Retrieve Test Case with matlab
+occmap = OccMap.retrieve_map();
+ocm.set_occ_map(occmap);
+--[[
+-- Map related data retrieve test case
+occdata = OccMap.retrieve_data();
+util.ptable(occdata.robot_pos);
+--]]
 
 --occ.odometry_update(3,2,1);
 --util.ptable(occmap.map)
@@ -35,7 +46,6 @@ for i = 1 , 1 do
   occ.odometry_update(x, y, a);
 end
 --]]
---ocm.set_occ_map(occmap.map);
 
 --cmap = ocm.get_occ_map();
 

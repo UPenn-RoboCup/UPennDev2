@@ -11,34 +11,46 @@ OccMap::OccMap()
 ,map_size_metric(1.0)
 ,resolution(map_size_metric / map_size)
 ,grid_num(map_size * map_size)
-,rx(map_size / 2)
-,ry(map_size * 4 / 5)
+,rx(25)
+,ry(40)
 ,max_dis(sqrt(rx * rx + ry * ry))
 // initiate accumulated robot odom change
 ,odom_x(0.0)
 ,odom_y(0.0)
 ,odom_a(0.0)
 {
-  grid.resize(grid_num);
-  randomize_map();
 }
 
 OccMap::~OccMap() {
 
 }
 
+int OccMap::reset_size(int size, int robot_x, int robot_y) {
+  map_size = size;
+  resolution = map_size_metric / map_size;
+  grid_num = map_size * map_size;
+  rx = robot_x;
+  ry = robot_y;
+  max_dis = sqrt(rx * rx + ry * ry);
+  grid.resize(grid_num);
+  randomize_map();
+  return 1;
+}
+
 int OccMap::randomize_map(void) {
   assert(grid.size() == grid_num);
-  size_t grid_size = grid_num;
+  int grid_size = grid_num;
   srand(time(NULL));
-  for (size_t i = 0; i < grid_num; i++) {
+  for (int i = 0; i < grid_num; i++) {
     grid[i] = rand() * 1.0 / RAND_MAX;
   }
   return 1;
 }
 
-vector<double>& OccMap::get_map(void) {
-  return grid;
+int OccMap::get_map(vector<double> & map) {
+  for (int i = 0; i < grid.size(); i++)
+    map.push_back(grid[i]);
+  return 1;
 }
 
 int& OccMap::get_robot_pos_x(void) {

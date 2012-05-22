@@ -17,7 +17,8 @@ public:
   OccMap();
   ~OccMap();
   int randomize_map(void);
-  vector<double>& get_map(void);
+  int reset_size(int map_size, int robot_x, int robot_y);
+  int get_map(vector<double>& map);
   int& get_robot_pos_x(void);
   int& get_robot_pos_y(void);
   
@@ -26,11 +27,11 @@ public:
 
 private:
   // Map size in grids
-  size_t map_size;
+  int map_size;
   // Map actual size
   double map_size_metric;
   // Grid num
-  size_t grid_num;
+  int grid_num;
   // Map Max resolution
   double resolution;
   // Map Structure

@@ -1,6 +1,6 @@
 // Class for Robot Local Occupancy Map
 
-#include <OccMap.h>
+#include "OccMap.h"
 #include <cassert>
 #include <ctime>
 #include <iostream>

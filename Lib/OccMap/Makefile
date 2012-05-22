@@ -15,6 +15,7 @@ all: OccMap
 
 OccMap: luaOccMap.o OccMap.o
 	$(LD) $(LDFLAGS) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ $(LIB_DIR) -lm
+	cp $@.$(SHLIBEXT) ../../Player/Lib/.
 
 clean:
 	rm -f *.$(SHLIBEXT) *.o

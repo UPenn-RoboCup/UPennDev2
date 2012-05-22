@@ -174,9 +174,10 @@ if enable_freespace_detection>0 then
   --shared.freespace.vboundA = vector.zeros(2*Config.camera.width);
   --shared.freespace.pboundA = vector.zeros(2*Config.camera.width);
   --shared.freespace.tboundA = vector.zeros(Config.camera.width);
-  shared.freespace.vboundB = vector.zeros(2*Config.camera.width/(Config.vision.scaleB));
-  shared.freespace.pboundB = vector.zeros(2*Config.camera.width/(Config.vision.scaleB));
-  shared.freespace.tboundB = vector.zeros(Config.camera.width/(Config.vision.scaleB));
+  shared.freespace.vboundB = 2*Config.camera.width/(Config.vision.scaleB);
+  shared.freespace.pboundB = 2*Config.camera.width/(Config.vision.scaleB);
+  shared.freespace.tboundB = Config.camera.width/(Config.vision.scaleB);
+  shsize.freespace = shared.freespace.vboundB + shared.freespace.pboundB + shared.freespace.tboundB + 2^16;
 
   shared.boundary.top = vector.zeros(2*Config.camera.width/Config.vision.scaleB);
   shared.boundary.bottom = vector.zeros(2*Config.camera.width/Config.vision.scaleB);

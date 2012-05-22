@@ -109,18 +109,12 @@ int lua_field_occupancy(lua_State *L) {
   
   lua_pushstring(L,"range");
   lua_createtable(L,nRegions,0);
-  for (int i = 0; i < nRegions; i++){
-    lua_pushinteger(L, count[i]);
-    lua_rawseti(L, -2, i+1);
-  }
+  lua_pushlightuserdata(L, &count[0]);
   lua_settable(L, -3);
   
   lua_pushstring(L,"flag");
   lua_createtable(L,nRegions,0);
-  for (int i = 0; i < nRegions; i++){
-    lua_pushinteger(L, flag[i]);
-    lua_rawseti(L, -2, i+1);
-  }
+  lua_pushlightuserdata(L, &flag[0]);
   lua_settable(L, -3);
   
   return 1;

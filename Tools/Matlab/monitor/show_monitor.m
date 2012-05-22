@@ -313,6 +313,7 @@ function h=show_monitor()
         h_c=subplot(5,5,[6:20]);
         plot_robot( r_struct, [],2,MONITOR.enable10);
         updated = 0;
+%{
 	if i<6 
           h1=subplot(5,5,i);
 	  labelB = robot_team.get_labelB_wireless(i);
@@ -323,6 +324,7 @@ function h=show_monitor()
           plot_label(labelB);
 	end
 	plot_overlay_wireless(r_struct);
+%}
       end
     end
     hold off;

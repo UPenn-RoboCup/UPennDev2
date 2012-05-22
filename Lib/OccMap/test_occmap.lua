@@ -20,11 +20,12 @@ package.path = cwd.."/../../Player/Util/?.lua;"..package.path;
 
 require("util")
 --require("ocm")
-occ = require("OccMap")
+require("OccMap")
 
-occmap = occ.retrieve();
+occmap = OccMap.get();
 
-util.ptable(occmap.map)
+occ.odometry_update(3,2,1);
+--util.ptable(occmap.map)
 --print(occmap.map[450]);
 --[[
 for i = 1 , 1 do

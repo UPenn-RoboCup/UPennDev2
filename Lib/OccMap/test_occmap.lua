@@ -22,9 +22,9 @@ require("util")
 --require("ocm")
 require("OccMap")
 
-occmap = OccMap.get();
+occmap = OccMap.map();
 
-occ.odometry_update(3,2,1);
+--occ.odometry_update(3,2,1);
 --util.ptable(occmap.map)
 --print(occmap.map[450]);
 --[[

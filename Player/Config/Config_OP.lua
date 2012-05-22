@@ -121,8 +121,5 @@ gps_only = 0;
 --Speak enable
 speakenable = false;
 
---VT goalposts are thicker
-world.postDiameter = 0.12;
-
 --Slow down max speed
 fsm.bodyPosition.maxStep3 = 0.06;

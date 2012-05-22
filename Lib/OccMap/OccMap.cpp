@@ -49,6 +49,12 @@ int& OccMap::get_robot_pos_y(void) {
   return ry;
 }
 
+int OccMap::vision_update(double *free_bound, int width) {
+  //cout << free_bound[width-1] << ' ' << free_bound[2*width-1] << endl;
+  return 1;
+}
+
+
 int OccMap::odometry_update(const double odomX, const double odomY, const double odomA) {
 //  cout << "Odom Change: " << endl;
   odom_x += odomX / resolution;

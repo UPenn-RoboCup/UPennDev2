@@ -24,9 +24,9 @@ camera.param[2] = {key='Saturation'     , val={250, 224}};
 -- Hue will automatically change to 0 if set to a number between -5 and 5, but cannot be set by other numbers
 camera.param[3] = {key='Hue'            , val={0  , 0}};
 
-camera.param[4] = {key='Exposure'       , val={60 , 60}};
+camera.param[4] = {key='Exposure'       , val={70 , 70}};
 -- Gain should be set between 32 and 255
-camera.param[5] = {key='Gain'           , val={37 , 37}};
+camera.param[5] = {key='Gain'           , val={115 , 115}};
 -- Sharpness should be set between 0 and 7
 camera.param[6] = {key='Sharpness'      , val={2  , 2}};
 

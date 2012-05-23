@@ -16,13 +16,14 @@ uOdometry0 = vector.new({0, 0, 0});
 odomScale = Config.world.odomScale;
 
 function entry()
-  occ = OccMap.retrieve();
-	ocm.set_occ_robot_pos(occ.robot_pos);
-end
+  OccMap.init(Config.occ.mapsize, Config.occ.robot_pos[1], Config.occ.robot_pos[2]);
+  occmap = OccMap.retrieve_map();
+  ocm.set_occ_map(occmap); 
+  occdata = OccMap.retrieve_data();
+	ocm.set_occ_robot_pos(occdata.robot_pos);
+end 
 
-function update()
-	-- Vision Update
-
+function odom_update()
 	-- Odometry Update
   uOdometry, uOdometry0 = mcm.get_odometry(uOdometry0);
 
@@ -37,10 +38,26 @@ function update()
     yaw0 = yaw;
 --    print("Body yaw:",yaw*180/math.pi, " Pose yaw ",pose.a*180/math.pi)
   end
-  print("Odometry change: ",uOdometry[1],uOdometry[2],uOdometry[3]);
+--  print("Odometry change: ",uOdometry[1],uOdometry[2],uOdometry[3]);
 	OccMap.odometry_update(uOdometry[1], uOdometry[2], uOdometry[3]);
+end
+
+function vision_update()
+  vbound = vcm.get_freespace_vboundB();
+  tbound = vcm.get_freespace_tboundB();
+  nCol = vcm.get_freespace_nCol();
+--  OccMap.vision_update(vbound, tbound, nCol);
+--  print("scanned freespace width "..vbound);
+end
+
+function update()
+	-- Vision Update
+  vision_update();
+
+	-- Odometry Update
+  odom_update();
 	
 	-- shm Update
-	occ = OccMap.retrieve();
-	ocm.set_occ_map(occ.map);		
+	occmap = OccMap.retrieve_map();
+	ocm.set_occ_map(occmap);		
 end

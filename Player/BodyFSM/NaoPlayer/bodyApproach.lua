@@ -33,7 +33,6 @@ rFar = 0.45;
 -- alignment
 thAlign = 15.0*math.pi/180.0;
 
-
 function entry()
   print(_NAME.." entry");
 
@@ -58,7 +57,6 @@ function update()
 
   ballA = math.atan2(ball.y - math.max(math.min(ball.y, 0.05), -0.05), math.max(ball.x+0.10, 0.10));
   vStep[3] = 0.5*ballA;
-
   walk.set_velocity(vStep[1],vStep[2],vStep[3]);
 
   attackBearing, daPost = wcm.get_attack_bearing();

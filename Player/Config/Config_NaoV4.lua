@@ -27,7 +27,7 @@ dev.body = 'NaoBody';
 dev.camera = 'NaoCam';
 dev.kinematics = 'NaoKinematics';
 dev.ip_wired = '192.168.0.255';
-dev.ip_wireless = '139.140.218.255';
+dev.ip_wireless = '192.168.1.255';
 dev.game_control = 'NaoGameControl';
 dev.team='TeamSPL';
 --dev.walk = 'Walk/NewNewWalk';
@@ -49,7 +49,7 @@ game.nPlayers = 4;
 
 --loadconfig('Walk/Config_NaoV4_Walk')
 --if game.playerID==2 or game.playerID==4 then
-  loadconfig('Walk/Config_NaoV4_Walk_FastStable')
+  loadconfig('Walk/Config_NaoV4_Walk_L512')
 --else
   --loadconfig('Walk/Config_NaoV4_Walk_Stable')
 --end
@@ -112,7 +112,3 @@ stance.delay = 80; --amount of time to stand still after standing to regain bala
 --Should be more generally handled in Body..
 servo={};
 servo.pid=0;
-
-
--- VT goalpost 
-world.postDiameter = 0.12

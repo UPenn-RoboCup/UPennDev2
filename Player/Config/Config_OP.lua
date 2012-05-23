@@ -20,7 +20,7 @@ loadconfig('Kick/Config_OP_Kick')
 loadconfig('Vision/Config_OP_Vision')
 --Location Specific Camera Parameters--
 --loadconfig('Vision/Config_OP_Camera_VT')
-loadconfig('Vision/Config_OP_Camera_L512')
+loadconfig('Vision/Config_OP_Camera_L512_16_00')
 
 -- Device Interface Libraries
 dev = {};
@@ -120,9 +120,6 @@ gps_only = 0;
 
 --Speak enable
 speakenable = false;
-
---VT goalposts are thicker
-world.postDiameter = 0.12;
 
 --Slow down max speed
 fsm.bodyPosition.maxStep3 = 0.06;

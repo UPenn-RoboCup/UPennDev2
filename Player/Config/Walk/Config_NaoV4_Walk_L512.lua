@@ -36,19 +36,11 @@ walk.hardnessArm=.3;
 ---------------------------------------------
 -- Gait parameters
 ---------------------------------------------
-<<<<<<< HEAD
-walk.tStep = 0.28;
-walk.tZmp = 0.17;
-walk.supportY = 0.002;
-walk.stepHeight = 0.016;
-walk.phSingle={0.09,0.91};
-=======
-walk.tStep = 0.30;
+alk.tStep = 0.30;
 walk.tZmp = 0.17;
 walk.supportY = 0.002;
 walk.stepHeight = 0.016;
 walk.phSingle={0.02,0.98};
->>>>>>> origin/NaoCompetition
 
 --------------------------------------------
 -- Compensation parameters

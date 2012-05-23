@@ -23,7 +23,7 @@ public:
   int& get_robot_pos_y(void);
   
   int odometry_update(const double odomX, const double odomY, const double odomA);
-  int vision_update(double *free_bound, int width);
+  int vision_update(double *free_bound, char *free_bound_type, int width);
 
 private:
   // Map size in grids

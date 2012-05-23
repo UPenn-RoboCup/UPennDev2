@@ -45,8 +45,9 @@ end
 function vision_update()
   vbound = vcm.get_freespace_vboundB();
   tbound = vcm.get_freespace_tboundB();
+
   nCol = vcm.get_freespace_nCol();
---  OccMap.vision_update(vbound, tbound, nCol);
+  OccMap.vision_update(vbound, tbound, nCol);
 --  print("scanned freespace width "..vbound);
 end
 

@@ -42,9 +42,9 @@ static int lua_occmap_vision_update(lua_State *L) {
   if ((free_bound == NULL) || !lua_islightuserdata(L, 1)) {
     return luaL_error(L, "Input freespace bound not light user data");
   }
-  char *free_bound_type = (char *) lua_touserdata(L, 2);
+  double *free_bound_type = (double *) lua_touserdata(L, 2);
   int width = luaL_checkint(L, 3);
-//  map.vision_update(free_bound, free_bound_type, width);
+  map.vision_update(free_bound, free_bound_type, width);
   return 1;
 }
 

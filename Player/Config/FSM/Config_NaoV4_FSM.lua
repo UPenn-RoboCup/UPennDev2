@@ -127,6 +127,9 @@ fsm.bodyApproach.yTarget21={0.03, 0.045, 0.06}; --min, target ,max
 fsm.bodyApproach.xTarget22={0, 0.16,0.18}; --min, target, max
 fsm.bodyApproach.yTarget22={-0.00, 0.02, 0.04}; --min, target ,max
 
+fsm.bodyApproach.pFar = 2
+fsm.bodyApproach.pNear = .3
+
 --------------------------------------------------
 --BodyKick : Stationary Kick
 --------------------------------------------------

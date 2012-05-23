@@ -18,6 +18,11 @@ rClose = 0.35;
 
 tLost = 3.0;
 
+rTurn= Config.fsm.bodyPosition.rTurn;
+rTurn2= Config.fsm.bodyPosition.rTurn2;
+rDist1= Config.fsm.bodyPosition.rDist1;
+rDist2= Config.fsm.bodyPosition.rDist2;
+rOrbit= Config.fsm.bodyPosition.rOrbit;
 
 function entry()
   print(_NAME.." entry");
@@ -30,10 +35,31 @@ function update()
 
   ball = wcm.get_ball();
   pose = wcm.get_pose();
+  ballR = math.sqrt(ball.x^2 + ball.y^2);
   ballGlobal = util.pose_global({ball.x, ball.y, 0}, {pose.x, pose.y, pose.a});
   tBall = Body.get_time() - ball.t;
 
   role = gcm.get_team_role();
+  ballxy=vector.new( {ball.x,ball.y,0} );
+  posexya=vector.new( {pose.x, pose.y, pose.a} );
+
+  ballGlobal=util.pose_global(ballxy,posexya);
+  goalGlobal=wcm.get_goal_attack();
+  aBallLocal=math.atan2(ball.y,ball.x); 
+
+  aBall=math.atan2(ballGlobal[2]-pose.y, ballGlobal[1]-pose.x);
+  aGoal=math.atan2(goalGlobal[2]-ballGlobal[2],goalGlobal[1]-ballGlobal[1]);
+
+  --Apply angle
+  kickAngle=  wcm.get_kick_angle();
+  aGoal = util.mod_angle(aGoal - kickAngle);
+
+  --In what angle should we approach the ball?
+  angle1=util.mod_angle(aGoal-aBall);
+
+  --Set role to attacker
+  role = 1
+  
   if (role == 2) then
     -- defend
     homePosition = .6 * ballGlobal;
@@ -62,9 +88,25 @@ function update()
     homePosition[3] = ballGlobal[3];
   else
     -- attack
-    homePosition = ballGlobal;
+    if math.abs(angle1)<math.pi/2 then
+    rDist=math.min(rDist1,math.max(rDist2,ballR-rTurn2));
+    homePosition={
+    ballGlobal[1]-math.cos(aGoal)*rDist,
+    ballGlobal[2]-math.sin(aGoal)*rDist,
+    aGoal};
+    elseif angle1>0 then
+      homePosition={
+    ballGlobal[1]+math.cos(-aBall+math.pi/2)*rOrbit,
+    ballGlobal[2]-math.sin(-aBall+math.pi/2)*rOrbit,
+    aBall};
+
+    else
+      homePosition={
+    ballGlobal[1]+math.cos(-aBall-math.pi/2)*rOrbit,
+    ballGlobal[2]-math.sin(-aBall-math.pi/2)*rOrbit,
+    aBall};
+    end  
   end
-  print(homePosition[1]..','..homePosition[2]..','..homePosition[3]);
 
   -- do not go into own penalty box
   if (gcm.get_team_color() == 1) then

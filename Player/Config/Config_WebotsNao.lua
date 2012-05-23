@@ -54,7 +54,7 @@ if (game.playerID == 1) then
   fsm.body = {'NaoGoalie'};
   fsm.head = {'NaoGoalie'};
 else
-  fsm.body = {'NaoPlayer'};
+  fsm.body = {'NaoKickLogic'};
   fsm.head = {'NaoPlayer'};
 end
 

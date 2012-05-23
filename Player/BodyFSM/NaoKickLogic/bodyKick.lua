@@ -7,6 +7,7 @@ require('kick');
 require('HeadFSM')
 require('Config')
 require('wcm')
+require('Speak')
 
 require('walk');
 
@@ -17,7 +18,6 @@ started = false;
 
 kickable = true;
 
-kickLeft = true;
 
 function entry()
   print(_NAME.." entry");
@@ -27,19 +27,16 @@ function entry()
   -- set kick depending on ball position
   ball = wcm.get_ball();
   if (ball.y > 0) then
-    kickLeft = true;
+    kick.set_kick("kickForwardLeft");
   else
-    kickLeft = false;
+    kick.set_kick("kickForwardRight");
   end
 
   --SJ - only initiate kick while walking
   kickable = walk.active;  
 
-  if(kickLeft) then
-    walk.doWalkKickLeft();
-  else
-    walk.doWalkKickRight();
-  end
+  HeadFSM.sm:set_state('headIdle');
+  Motion.event("kick");
   started = false;
 end
 
@@ -62,6 +59,7 @@ function update()
   end
 
   if (t - t0 > timeout) then
+    Speak.talk('I am timing out of kick');
     return "timeout";
   end
 end

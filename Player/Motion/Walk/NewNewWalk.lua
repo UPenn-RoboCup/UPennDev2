@@ -123,6 +123,9 @@ walkKickRequest = 0;
 walkKickType = 0;
 
 initial_step=2;
+
+testing = Config.walk.testing or false;
+
 ----------------------------------------------------------
 -- End initialization 
 ----------------------------------------------------------

@@ -154,7 +154,7 @@ void query_camera_params(int fd) {
 // attempt to set camera parameter in a loop
 //  return 0 on success and -1 on failure
 int set_camera_param(int fd, int id, int value) {
-  printf ("start setting parameter %d to %d\n", id,value );
+//  printf ("start setting parameter %d to %d\n", id,value );
   struct v4l2_control control;
 
   for (int i = 0; i < 100; i++) {
@@ -173,7 +173,7 @@ int set_camera_param(int fd, int id, int value) {
       return -1;
     }
     if (control.value == value) {
-      printf("set control to %d\n", value);
+//      printf("set control to %d\n", value);
       return 0;
     }
     if (i % 20 == 10) {

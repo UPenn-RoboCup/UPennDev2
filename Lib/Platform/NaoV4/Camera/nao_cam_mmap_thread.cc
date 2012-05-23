@@ -231,7 +231,7 @@ int construct_parameter_map(int fd, std::map<std::string, int> &paramMap) {
 }
 
 int nao_cam_thread_set_control(const char *name, int val) {
-  printf("trying to set prameter %s to %d\n", name, val);
+ // printf("trying to set prameter %s to %d\n", name, val);
   static struct v4l2_control ctrl;
 
   // TODO: lock mutex here

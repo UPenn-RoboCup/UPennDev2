@@ -16,6 +16,8 @@ vision.goal2Color = color.cyan;
 vision.maxFPS = 30;
 vision.scaleB = 4;
 
+-- use this to enable yellow goal in vision
+vision.enable_2_yellow_goals = 1;
 -- use this to enable line detection
 vision.enable_line_detection = 1;
 -- use this to enable spot detection

@@ -42,7 +42,7 @@ int OccMap::randomize_map(void) {
   int grid_size = grid_num;
   srand(time(NULL));
   for (int i = 0; i < grid_num; i++) {
-    grid[i] = rand() * 1.0 / RAND_MAX;
+    grid[i] = log(rand() * 1.0 / RAND_MAX);
   }
   return 1;
 }
@@ -62,8 +62,8 @@ int& OccMap::get_robot_pos_y(void) {
 }
 
 int OccMap::vision_update(double *free_bound, double *free_bound_type, int width) {
-  cout << free_bound[width-1] << ' ' << free_bound[2*width-1] << endl;
-  cout << free_bound_type[width-1] << endl;
+//  cout << free_bound[width-1] << ' ' << free_bound[2*width-1] << endl;
+//  cout << free_bound_type[width-1] << endl;
   return 1;
 }
 

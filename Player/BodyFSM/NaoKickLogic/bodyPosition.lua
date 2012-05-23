@@ -57,9 +57,6 @@ function update()
   --In what angle should we approach the ball?
   angle1=util.mod_angle(aGoal-aBall);
 
-  --Set role to attacker
-  role = 1
-  
   if (role == 2) then
     -- defend
     homePosition = .6 * ballGlobal;

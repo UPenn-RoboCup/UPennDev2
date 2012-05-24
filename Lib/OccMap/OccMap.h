@@ -17,13 +17,16 @@ public:
   OccMap();
   ~OccMap();
   int randomize_map(void);
-  int reset_size(int map_size, int robot_x, int robot_y);
+  int reset_size(int map_size, int robot_x, int robot_y, double time);
   int get_map(vector<double>& map);
+  int get_map_updated_time(vector<double>& updated_time);
   int& get_robot_pos_x(void);
   int& get_robot_pos_y(void);
   
   int odometry_update(const double odomX, const double odomY, const double odomA);
-  int vision_update(double *free_bound, double *free_bound_type, int width);
+  int vision_update(double *free_bound, double *free_bound_type, int width, double time);
+  int time_decay(double time);
+  inline double range_check(double num);
 
 private:
   // Map size in grids
@@ -36,6 +39,8 @@ private:
   double resolution;
   // Map Structure
   vector<double> grid;
+  // Map update time
+  vector<double> grid_updated_time;
 
   // Robot Position in Grid
   int rx;

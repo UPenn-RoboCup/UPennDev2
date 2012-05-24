@@ -22,13 +22,29 @@ package.path = cwd.."/../../Player/World/?.lua;"..package.path;
 require("util")
 require("ocm")
 require("OccMap")
+require("unix")
 
-OccMap.init(50, 25, 40);
+local time = unix.time();
+print(time)
+OccMap.init(50, 25, 40, time);
 
+width = 80;
+free_bound = vector.zeros(width);
+free_bound_type = vector.zeros(width);
+for i = 1, 50 do
+  cur_time = unix.time();
+  OccMap.time_decay(cur_time);
+  OccMap.vision_update(OccMap.empty_userdata(width), 
+                      OccMap.empty_userdata(width), width, cur_time);
+end
 
 -- Map Retrieve Test Case with matlab
 occmap = OccMap.retrieve_map();
 ocm.set_occ_map(occmap);
+
+-- get map updated time
+map_updated_time = OccMap.retrieve_map_updated_time();
+
 --[[
 -- Map related data retrieve test case
 occdata = OccMap.retrieve_data();

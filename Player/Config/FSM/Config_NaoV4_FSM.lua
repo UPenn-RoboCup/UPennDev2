@@ -159,7 +159,7 @@ fsm.bodyKick.tFollowDelay = 2.2;
 --BodyWalkKick : Dynamic Kick
 --------------------------------------------------
 fsm.bodyWalkKick={};
-fsm.bodyWalkKick.timeout = 2.0*speedFactor; 
+fsm.bodyWalkKick.timeout = 0*speedFactor; 
 --------------------------------------------------
 --BodyGotoCenter : Going to center when ball is lost
 --------------------------------------------------

@@ -6,6 +6,7 @@
 #include <iostream>
 #include <cmath>
 
+
 OccMap::OccMap()
 :map_size(50)
 ,map_size_metric(1.0)
@@ -18,6 +19,9 @@ OccMap::OccMap()
 ,odom_x(0.0)
 ,odom_y(0.0)
 ,odom_a(0.0)
+
+,var_x(0.0)
+,var_y(0.0)
 {
 }
 
@@ -64,6 +68,38 @@ int& OccMap::get_robot_pos_y(void) {
 int OccMap::vision_update(double *free_bound, double *free_bound_type, int width) {
 //  cout << free_bound[width-1] << ' ' << free_bound[2*width-1] << endl;
 //  cout << free_bound_type[width-1] << endl;
+  if (gau_a.size() < width) {
+      gau_a.resize(width);  
+      cout << "resize container for Gaussians Coef a" << endl;
+  } 
+  if (gau_b.size() < width) {
+      gau_b.resize(width);  
+      cout << "resize container for Gaussians Coef b" << endl;
+  }
+  if (gau_c.size() < width) {
+      gau_c.resize(width);  
+      cout << "resize container for Gaussians Coef c" << endl;
+  }
+  if (gau_theta.size() < width) {
+      gau_theta.resize(width);  
+      cout << "resize container for Gaussians Rotation Angles" << endl;
+  }
+  // Suppose var constant first here
+  var_x = 0.04;
+  var_y = 0.04;
+  double ob_x = 0, ob_y = 0;
+  // Calculate coef for every gaussian
+  for (int i = 0; i < width; i++) {
+    ob_x = free_bound[i];
+    ob_y = free_bound[i + width];
+    gau_theta[i] = atan2(-ob_y, ob_x); 
+    gau_a[i] = 0.5 * pow(cos(gau_theta[i]) / var_x, 2) + 
+                0.5 * pow(sin(gau_theta[i]) / var_y, 2);
+    gau_b[i] = -0.25 * sin(2 * gau_theta[i]) / pow(var_x, 2) +
+                0.25 * sin(2 * gau_theta[i]) / pow(var_y, 2);
+    gau_c[i] = 0.5 * pow(sin(gau_theta[i]) / var_x, 2) +
+                0.5 * pow(cos(gau_theta[i]) / var_y, 2);
+  }
   return 1;
 }
 

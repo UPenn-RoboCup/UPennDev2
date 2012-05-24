@@ -47,6 +47,14 @@ private:
   double odom_y;
   double odom_a;
 
+  // Gaussian rotation angle
+  vector<double> gau_theta;
+  vector<double> gau_a;
+  vector<double> gau_b;
+  vector<double> gau_c;
+  double var_x;
+  double var_y;
+
 };
 
 #endif

@@ -34,6 +34,11 @@ function entry()
   else
     direction = -1;
   end
+
+  --If walk parameters are defined for bodyOrbit, then load them
+  if Config.fsm.bodyOrbit.walkParam then
+    Config.loadconfig(Config.fsm.bodyOrbit.walkParam)
+  end
 end
 
 function update()
@@ -83,5 +88,7 @@ function update()
 end
 
 function exit()
+  --Load default walk parameters
+  Config.loadconfig(param.walk)
 end
 

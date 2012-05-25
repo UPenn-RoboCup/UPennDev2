@@ -13,7 +13,7 @@ require('vector');
 
 uOdometry0 = vector.new({0, 0, 0});
 
-odomScale = Config.world.odomScale;
+odomScale = Config.walk.odomScale;
 
 function entry()
 	OccMap.init(Config.occ.mapsize, Config.occ.centroid[1], Config.occ.centroid[2]);

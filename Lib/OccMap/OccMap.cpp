@@ -32,8 +32,10 @@ OccMap::~OccMap() {
 }
 
 inline double OccMap::range_check(double num) {
-  if (num > 10) return 10; // log likelihood 0.9999
-  if (num < -10) return -10; // log likelihood 0.0001
+  const double EXT_LOG = 15;
+  if (num > EXT_LOG) return EXT_LOG; // log likelihood 0.9999
+  if (num < -EXT_LOG) return -EXT_LOG; // log likelihood 0.0001
+  return num;
 }
 
 int OccMap::reset_size(int size, int robot_x, int robot_y, double time) {
@@ -86,20 +88,19 @@ int& OccMap::get_robot_pos_y(void) {
 }
 
 int OccMap::time_decay(double time) {
-  double decay_coef = 0.5;
-  for (int i = 0; i < grid_num; i++) {
-    grid[i] = range_check(exp(-decay_coef * 
-                            (time - grid_updated_time[i])) *grid[i]);
+  double decay_coef = 0.005;
+  double P = 0, P1 = 0;
+  int i = 0;
+  for (i = 0; i < grid_num; i++) {
+    P = 1 - 1 / (1 + exp(grid[i]));
+    P1 = P * exp(-decay_coef * (time - grid_updated_time[i]));
+    grid[i] = range_check(log(P1 / (1 - P1)));
   }
   return 1;
 }
 
 int OccMap::vision_update(double *free_bound, double *free_bound_type,
     int width, double time) {
-  cout << setprecision(15) << "last_updated_time " << grid_updated_time[0] << 
-          " last time " << time - grid_updated_time[0] << endl;
-  grid_updated_time[0] = time;
-/*
   if (gau_a.size() < width) {
       gau_a.resize(width);  
       cout << "resize container for Gaussians Coef a" << endl;
@@ -117,14 +118,14 @@ int OccMap::vision_update(double *free_bound, double *free_bound_type,
       cout << "resize container for Gaussians Rotation Angles" << endl;
   }
   // Suppose var constant first here
-  var_x = 0.04;
-  var_y = 0.04;
+  var_x = 0.01;
+  var_y = 0.01;
   double ob_x = 0, ob_y = 0;
   // Calculate coef for every gaussian
   for (int i = 0; i < width; i++) {
     ob_x = free_bound[i];
     ob_y = free_bound[i + width];
-    gau_theta[i] = atan2(-ob_y, ob_x); 
+    gau_theta[i] = atan2(ob_x, ob_y); 
     gau_a[i] = 0.5 * pow(cos(gau_theta[i]) / var_x, 2) + 
                 0.5 * pow(sin(gau_theta[i]) / var_y, 2);
     gau_b[i] = -0.25 * sin(2 * gau_theta[i]) / pow(var_x, 2) +
@@ -134,25 +135,32 @@ int OccMap::vision_update(double *free_bound, double *free_bound_type,
   }
   // Update grid
   double grid_p = 0, grid_p_max = 0; // likelihood of one point on grid
-  double i_metric = 0, j_metric = 0; // grid point with metric position
+  double x_robot = 0, y_robot = 0; // grid point with metric position
   for (int i = 0; i < map_size; i++)
     for (int j = 0; j < map_size; j++) {
-      // (1, 2) on grid -> (0.02, 0.04) on real OccMap
-      i_metric = i * resolution;
-      j_metric = j * resolution; 
+      // (1, 2) -> (0.02, 0.04) -> (0.74, 0.48) on robot coordinate
+      x_robot = ry * resolution - j * resolution;
+      y_robot = rx * resolution - i * resolution;
+      grid_p_max = 0;
       // Go through all observation to decide the max likelihood
       for (int k = 0; k < width; k++) {
-        ob_x = free_bound[i];
-        ob_y = free_bound[i + width];
-        grid_p = 1 / exp(gau_a[k] * pow(i_metric - ob_x, 2) + 
-                        2 * gau_b[k] * (i_metric - ob_x) * (j_metric - ob_y) + 
-                        gau_c[k] * pow(j_metric - ob_y, 2));
+        ob_x = free_bound[k];
+        ob_y = free_bound[k + width];
+        grid_p = exp(- (gau_a[k] * (x_robot - ob_x) * (x_robot - ob_x) + 
+                    2 * gau_b[k] * (x_robot - ob_x) * (y_robot - ob_y) + 
+                        gau_c[k] * (y_robot - ob_y) * (y_robot - ob_y)));
         grid_p_max = max(grid_p_max, grid_p);
       }
-      // update log likelihood
-      grid[j * map_size + i] += log(grid_p / (1 - grid_p));
+      // update log likelihood -- set 0.0001 as 0
+      if (grid_p_max > 0.0001) {
+        double obser_p = log(grid_p_max / (1 - grid_p_max));
+        grid[j * map_size + i] += obser_p;
+
+        grid[j * map_size + i] = range_check(grid[j * map_size + i]);
+        grid_updated_time[j * map_size + i] = time;
+      }
     }
-*/
+//  cout << "likelihood update" << endl;
   return 1;
 }
 

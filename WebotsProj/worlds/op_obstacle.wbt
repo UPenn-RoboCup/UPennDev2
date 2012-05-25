@@ -11,7 +11,7 @@ WorldInfo {
 }
 Viewpoint {
   orientation -0.08426 -0.98 -0.175 2.354
-  position -3.044 2.88 -4.04
+  position -5.45578 4.15015 -6.39161
 }
 Background {
   skyColor [
@@ -59,7 +59,7 @@ DEF PLAYER_1_99 DARwInOPGPS {
 }
 
 DEF OBSTACLE1 cylinder {
-  translation 0.807813 0.25 0.417305
+  translation 0.173091 0.25 0.0261753
   obstColor 0 0 0
   height 0.5
   radius 0.1
@@ -84,7 +84,7 @@ DEF OBSTACLE4 cylinder {
   radius 0.1
 }
 DEF OBSTACLE5 cylinder {
-  translation 1.06702 0.25 -0.943702
+  translation 0.0622829 0.25 -0.35807
   obstColor 0 0 0
   height 0.5
   radius 0.1

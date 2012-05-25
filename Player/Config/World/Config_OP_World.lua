@@ -143,7 +143,7 @@ occ.mapsize = 50;
 occ.robot_pos = {occ.mapsize / 2, occ.mapsize * 4 / 5};
 
 
-world.use_same_colored_goal = 0;
+world.use_same_colored_goal = 1;
 
 --Use line information to fix angle
 world.use_line_angles = 1;

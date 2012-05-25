@@ -59,7 +59,7 @@ DEF PLAYER_1_99 DARwInOPGPS {
 }
 
 DEF OBSTACLE1 cylinder {
-  translation 0.173091 0.25 0.0261753
+  translation 0.135565 0.25 0.4843843
   obstColor 0 0 0
   height 0.5
   radius 0.1

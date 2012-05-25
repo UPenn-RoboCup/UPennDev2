@@ -442,7 +442,7 @@ global MONITOR %for sending the webots check information
 			map = h.ocmOcc.get_map();
 			mapsize = sqrt(size(map,2));
 			map = reshape(map, [mapsize, mapsize]);
-			map_p = exp(rot90(map, 3));
+			map_p = exp(flipdim(rot90(map,-1),2));
 			r.occ.map = map_p ./ (map_p + 1);
 			r.occ.mapsize = mapsize;
 			r.occ.robot_pos = h.ocmOcc.get_robot_pos();

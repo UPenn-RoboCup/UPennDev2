@@ -3,9 +3,11 @@ module(..., package.seeall);
 require('parse_hostname')
 require('vector')
 require('os')
+require('loadconfig')
 
 platform = {};
 platform.name = 'WebotsNao'
+
 
 function loadconfig(configName)
   local localConfig=require(configName);
@@ -20,7 +22,7 @@ param.walk = 'Walk/Config_WebotsNao_Walk'
 param.kick = 'Kick/Config_WebotsNao_Kick'
 param.vision = 'Vision/Config_WebotsNao_Vision'
 param.camera = 'Vision/Config_WebotsNao_Camera'
-param.fsm = 'FSM/Config_NaoV4_FSM'
+param.fsm = 'FSM/Config_WebotsNao_FSM'
 
 loadconfig(param.world)
 loadconfig(param.walk)
@@ -38,7 +40,7 @@ dev.kinematics = 'NaoWebotsKinematics';
 dev.game_control='WebotsGameControl';
 dev.team= 'TeamSPL';
 dev.kick = 'NewKick';
-dev.walk = 'NewNewWalk';
+dev.walk = 'Walk/NaoV4Walk';
 
 -- Game Parameters
 

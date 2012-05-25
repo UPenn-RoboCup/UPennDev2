@@ -62,7 +62,7 @@ int OccMap::randomize_map(void) {
   int grid_size = grid_num;
   srand(time(NULL));
   for (int i = 0; i < grid_num; i++) {
-    grid[i] = log(rand() * 1.0 / RAND_MAX);
+    grid[i] = log(rand() * 0.5 / RAND_MAX);
   }
   return 1;
 }
@@ -88,7 +88,7 @@ int& OccMap::get_robot_pos_y(void) {
 }
 
 int OccMap::time_decay(double time) {
-  double decay_coef = 0.005;
+  double decay_coef = 0.001;
   double P = 0, P1 = 0;
   int i = 0;
   for (i = 0; i < grid_num; i++) {
@@ -119,7 +119,7 @@ int OccMap::vision_update(double *free_bound, double *free_bound_type,
   }
   // Suppose var constant first here
   var_x = 0.01;
-  var_y = 0.01;
+  var_y = 0.02;
   double ob_x = 0, ob_y = 0;
   // Calculate coef for every gaussian
   for (int i = 0; i < width; i++) {
@@ -146,7 +146,10 @@ int OccMap::vision_update(double *free_bound, double *free_bound_type,
       for (int k = 0; k < width; k++) {
         ob_x = free_bound[k];
         ob_y = free_bound[k + width];
-        grid_p = exp(- (gau_a[k] * (x_robot - ob_x) * (x_robot - ob_x) + 
+        if ((int)free_bound_type[k] == 2) {
+          grid_p = 0;
+        } else
+          grid_p = exp(- (gau_a[k] * (x_robot - ob_x) * (x_robot - ob_x) + 
                     2 * gau_b[k] * (x_robot - ob_x) * (y_robot - ob_y) + 
                         gau_c[k] * (y_robot - ob_y) * (y_robot - ob_y)));
         grid_p_max = max(grid_p_max, grid_p);
@@ -155,7 +158,7 @@ int OccMap::vision_update(double *free_bound, double *free_bound_type,
       if (grid_p_max > 0.0001) {
         double obser_p = log(grid_p_max / (1 - grid_p_max));
         grid[j * map_size + i] += obser_p;
-
+        grid[j * map_size + i] -= log(0.25 / 0.75);
         grid[j * map_size + i] = range_check(grid[j * map_size + i]);
         grid_updated_time[j * map_size + i] = time;
       }
@@ -167,10 +170,11 @@ int OccMap::vision_update(double *free_bound, double *free_bound_type,
 
 int OccMap::odometry_update(const double odomX, const double odomY,
     const double odomA) {
-  odom_x += odomX / resolution;
-  odom_y += odomY / resolution;
+  odom_x += odomX;
+  odom_y += odomY;
   odom_a += odomA;
-  if ((odom_x > 1) || (odom_y > 1) || (odom_a * max_dis > 1)) {
+  if ((odom_x > resolution) || (odom_y > resolution) || 
+      (odom_a * max_dis > resolution)) {
     double nx = 0; // new point in occmap coordinate x
     double ny = 0; // new point in occmap coordinate y
     int ni = 0; // new point on map x;
@@ -181,10 +185,12 @@ int OccMap::odometry_update(const double odomX, const double odomY,
     randomize_map();
     for (int i = 0; i < map_size; i++)
       for (int j = 0; j < map_size; j++) {
-        nx = ca * (i - rx - odom_x) - sa * (ry - j - odom_y);
-        ny = sa * (i - rx - odom_x) + ca * (ry - j - odom_y);
-        ni = round(nx + rx);
-        nj = round(ry - ny);
+        nx = ca * (ry - j * resolution - odom_x) - 
+              sa * (rx - i * resolution - odom_y);
+        ny = sa * (ry - j * resolution - odom_x) + 
+              ca * (rx - i * resolution - odom_y);
+        ni = round((rx - ny) / resolution);
+        nj = round((ry - nx) / resolution);
         if ((ni >= 0) and (ni < map_size) and (nj >= 0) and (nj < map_size))
           grid[nj * map_size + ni] = grid_temp[j * map_size + i];
       }

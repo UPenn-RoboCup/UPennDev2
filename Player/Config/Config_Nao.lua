@@ -13,13 +13,21 @@ function loadconfig(configName)
   end
 end
 
-loadconfig('Walk/Config_Nao_Walk')
-loadconfig('World/Config_Nao_World')
-loadconfig('Kick/Config_Nao_Kick')
-loadconfig('Vision/Config_Nao_Vision')
+param = {}
+param.world = 'World/Config_Nao_World'
+param.walk = 'Walk/Config_Nao_Walk' 
+param.kick = 'Kick/Config_Nao_Kick'
+param.vision = 'Vision/Config_Nao_Vision'
+param.camera = 'Vision/Config_Nao_Camera_Blimp_Room'
+param.fsm = 'FSM/Config_Nao_FSM'
+
+loadconfig(param.walk)
+loadconfig(param.world)
+loadconfig(param.kick)
+loadconfig(param.vision)
 
 --Location Specific Camera Parameters--
-loadconfig('Vision/Config_Nao_Camera_Blimp_Room')
+loadconfig(param.camera)
 
 -- Devive Interface Libraries
 dev = {};
@@ -45,34 +53,16 @@ game.nPlayers = 4;
 
 
 -- FSM Parameters
---[[
 fsm = {};
+loadconfig(param.fsm)
 fsm.game = 'RoboCup';
 if (game.playerID == 1) then
   fsm.body = {'NaoGoalie'};
   fsm.head = {'NaoGoalie'};
 else
-  fsm.body = {'NaoPlayer'};
+  fsm.body = {'NaoKickLogic'};
   fsm.head = {'NaoPlayer'};
 end
---]]
-
---------------------------------------------------------------------
---GeneralPlayer FSM test
-fsm = {};
-loadconfig('FSM/Config_Nao_FSM')--For generalPlayer FSM
-fsm.game = 'RoboCup';
-fsm.body = {'GeneralPlayer'};
---fsm.head = {'GeneralPlayer'};
-fsm.head = {'NaoPlayer'};
-
---Behavior flags, should be defined in FSM Configs but can be overrided here
-fsm.enable_obstacle_detection = 1;
-fsm.wait_kickoff = 0;
-fsm.playMode = 2; --1 for demo, 2 for orbit, 3 for direct approach
-fsm.enable_walkkick = 0;
-fsm.enable_sidekick = 0;
--------------------------------------------------------------------
 
 -- Team Parameters
 

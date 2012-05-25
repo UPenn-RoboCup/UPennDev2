@@ -14,13 +14,21 @@ function loadconfig(configName)
   end
 end
 
-loadconfig('World/Config_Nao_World')
-loadconfig('Walk/Config_WebotsNao_Walk')
-loadconfig('Kick/Config_WebotsNao_Kick')
-loadconfig('Vision/Config_WebotsNao_Vision')
+param = {}
+param.world = 'World/Config_Nao_World'
+param.walk = 'Walk/Config_WebotsNao_Walk' 
+param.kick = 'Kick/Config_WebotsNao_Kick'
+param.vision = 'Vision/Config_WebotsNao_Vision'
+param.camera = 'Vision/Config_WebotsNao_Camera'
+param.fsm = 'FSM/Config_NaoV4_FSM'
+
+loadconfig(param.world)
+loadconfig(param.walk)
+loadconfig(param.kick)
+loadconfig(param.vision)
 
 --Location Specific Camera Parameters--
-loadconfig('Vision/Config_WebotsNao_Camera')
+loadconfig(param.camera)
 
 -- Device Interface Libraries
 dev = {};
@@ -48,7 +56,7 @@ else game.teamColor = 1; --Red team
 end
 
 fsm={}
-loadconfig('FSM/Config_NaoV4_FSM')
+loadconfig(param.fsm)
 fsm.game = 'RoboCup';
 if (game.playerID == 1) then
   fsm.body = {'NaoGoalie'};

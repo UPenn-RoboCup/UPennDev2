@@ -58,6 +58,7 @@ global MONITOR %for sending the webots check information
   h.get_labelA = @get_labelA;
   h.get_labelB = @get_labelB;
   h.get_particle = @get_particle;
+  h.get_occ_likeihood = @get_occ_likelihood;
 
   h.set_yuyv = @set_yuyv;
   h.set_labelA = @set_labelA;
@@ -441,7 +442,8 @@ global MONITOR %for sending the webots check information
 			map = h.ocmOcc.get_map();
 			mapsize = sqrt(size(map,2));
 			map = reshape(map, [mapsize, mapsize]);
-			r.occ.map = map;
+			map_p = exp(rot90(map, 3));
+			r.occ.map = map_p ./ (map_p + 1);
 			r.occ.mapsize = mapsize;
 			r.occ.robot_pos = h.ocmOcc.get_robot_pos();
       
@@ -551,5 +553,13 @@ global MONITOR %for sending the webots check information
     end
     labelB = raw2label(rawData, width, height)';
   end
-end
 
+
+  function occ_p = get_occ_likelihood()
+			map = h.ocmOcc.get_map();
+			mapsize = sqrt(size(map,2));
+			map = reshape(map, [mapsize, mapsize]);
+			map_exp = exp(map);
+			occ_p = map_exp./(map_exp + 1);
+  end
+end

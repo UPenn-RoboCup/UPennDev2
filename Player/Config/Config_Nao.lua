@@ -6,12 +6,6 @@ require('parse_hostname')
 platform = {};
 platform.name = 'Nao'
 
-function loadconfig(configName)
-  local localConfig=require(configName);
-  for k,v in pairs(localConfig) do
-    Config[k]=localConfig[k];
-  end
-end
 
 param = {}
 param.world = 'World/Config_Nao_World'
@@ -38,7 +32,7 @@ dev.ip_wired = '192.168.0.255';
 dev.ip_wireless = '192.168.1.255';
 dev.game_control = 'NaoGameControl';
 dev.team='TeamSPL';
-dev.walk = 'NewNewNewWalk';
+dev.walk = 'Walk/NaoV4Walk';
 dev.kick = 'NewKick';
 
 -- Game Parameters

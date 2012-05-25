@@ -61,7 +61,7 @@ function update()
   vision_update();
 
 	-- Odometry Update
---  odom_update();
+  odom_update();
 	
 	-- shm Update
 	occmap = OccMap.retrieve_map();

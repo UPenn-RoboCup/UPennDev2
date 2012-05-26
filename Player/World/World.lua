@@ -23,6 +23,9 @@ use_same_colored_goal=Config.world.use_same_colored_goal or 0;
 --Use ground truth pose and ball information for webots?
 use_gps_only = Config.use_gps_only or 0;
 
+--For NSL, eye LED is not allowed during match
+led_on = Config.led_on or 1; --Default is ON
+
 ballFilter = Filter2D.new();
 ball = {};
 ball.t = 0;  --Detection time
@@ -165,7 +168,9 @@ function update_vision()
     local dr = vcm.get_ball_dr();
     local da = vcm.get_ball_da();
     ballFilter:observation_xy(v[1], v[2], dr, da);
-    Body.set_indicator_ball({1,0,0});
+    --Green insted of red for indicating
+    --As OP tend to detect red eye as balls
+    ball_led={0,1,0}; 
 
     --[[
     -- Update the velocity
@@ -179,7 +184,7 @@ function update_vision()
     --]]
   else
     --Velocity.update_noball();--notify that ball is missing
-    Body.set_indicator_ball({0,0,0});
+    ball_led={0,0,0};
   end
 
   -- TODO: handle goal detections more generically
@@ -195,16 +200,16 @@ function update_vision()
     if use_same_colored_goal>0 then
       if (goalType == 0) then
         PoseFilter.post_unified_unknown(v);
-        Body.set_indicator_goal({1,1,0});
+	goal_led={1,1,0};
       elseif(goalType == 1) then
         PoseFilter.post_unified_left(v);
-        Body.set_indicator_goal({1,1,0});
+	goal_led={1,1,0};
       elseif(goalType == 2) then
         PoseFilter.post_unified_right(v);
-        Body.set_indicator_goal({1,1,0});
+	goal_led={1,1,0};
       elseif(goalType == 3) then
         PoseFilter.goal_unified(v);
-        Body.set_indicator_goal({0,0,1});
+	goal_led={0,0,1};
       end
     else
       --Goal observation with colors
@@ -219,7 +224,7 @@ function update_vision()
           PoseFilter.goal_yellow(v);
         end
         -- indicator
-        Body.set_indicator_goal({1,1,0});
+	goal_led={1,1,0};
       elseif color == Config.color.cyan then
         if (goalType == 0) then
           PoseFilter.post_cyan_unknown(v);
@@ -231,12 +236,12 @@ function update_vision()
           PoseFilter.goal_cyan(v);
         end
         -- indicator
-        Body.set_indicator_goal({0,0,1});
+	goal_led={0,0,1};
       end
     end
   else
     -- indicator
-    Body.set_indicator_goal({0,0,0});
+    goal_led={0,0,0};
   end
 
   -- line update
@@ -264,8 +269,18 @@ function update_vision()
 
   ball.x, ball.y = ballFilter:get_xy();
   pose.x,pose.y,pose.a = PoseFilter.get_pose();
-
+  update_led();
   update_shm();
+end
+
+function update_led()
+  if led_on>0 then
+    Body.set_indicator_goal(goal_led);
+    Body.set_indicator_ball(ball_led);
+  else
+    Body.set_indicator_goal({0,0,0});
+    Body.set_indicator_ball({0,0,0});
+  end
 end
 
 function update_shm()

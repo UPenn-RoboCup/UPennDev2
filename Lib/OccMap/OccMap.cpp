@@ -10,31 +10,25 @@
 
 
 OccMap::OccMap()
-:map_size(50)
-,map_size_metric(1.0)
-,resolution(map_size_metric / map_size)
+:map_size(50), map_size_metric(1.0) ,resolution(map_size_metric / map_size)
 ,grid_num(map_size * map_size)
-,rx(25)
-,ry(40)
+,rx(25), ry(40)
 ,max_dis(sqrt(rx * rx + ry * ry))
 // initiate accumulated robot odom change
-,odom_x(0.0)
-,odom_y(0.0)
-,odom_a(0.0)
-
-,var_x(0.0)
-,var_y(0.0)
+,odom_x(0.0), odom_y(0.0), odom_a(0.0)
+// vars for vision update
+,var_x(0.0), var_y(0.0)
+,gau_max_range(0.0)
+,gau_min_p(0.0001)
+,default_p(0.25)
+,default_log_p(log(default_p / (1 - default_p)))
 {
 }
 
-OccMap::~OccMap() {
-}
-
-inline double OccMap::range_check(double num) {
+inline void OccMap::range_check(double &num) {
   const double EXT_LOG = 15;
-  if (num > EXT_LOG) return EXT_LOG; // log likelihood 0.9999
-  if (num < -EXT_LOG) return -EXT_LOG; // log likelihood 0.0001
-  return num;
+  if (num > EXT_LOG) num =  EXT_LOG; // log likelihood 0.9999
+  if (num < -EXT_LOG) num = -EXT_LOG; // log likelihood 0.0001
 }
 
 int OccMap::reset_size(int size, int robot_x, int robot_y, double time) {
@@ -61,7 +55,7 @@ int OccMap::randomize_map(void) {
   int grid_size = grid_num;
   srand(time(NULL));
   for (int i = 0; i < grid_num; i++) {
-    grid[i] = log(rand() * 0.5 / RAND_MAX);
+    grid[i] = log(rand() * default_p / RAND_MAX);
   }
   return 1;
 }
@@ -89,38 +83,50 @@ int OccMap::time_decay(double time) {
   for (i = 0; i < grid_num; i++) {
     P = 1 - 1 / (1 + exp(grid[i]));
     P1 = P * exp(-decay_coef * (time - grid_updated_time[i]));
-    grid[i] = range_check(log(P1 / (1 - P1)));
+    grid[i] = log(P1 / (1 - P1));
+    range_check(grid[i]);
   }
+  return 1;
+}
+
+int OccMap::vision_proc_init(int obs_width) {
+  cout << "Occupancy Map Vision Proc Initiation" << endl;
+  if (gau_a.size() < obs_width) {
+      gau_a.resize(obs_width);  
+      cout << "resize container for Gaussians Coef a" << endl;
+  } 
+  if (gau_b.size() < obs_width) {
+      gau_b.resize(obs_width);  
+      cout << "resize container for Gaussians Coef b" << endl;
+  }
+  if (gau_c.size() < obs_width) {
+      gau_c.resize(obs_width);  
+      cout << "resize container for Gaussians Coef c" << endl;
+  }
+  if (gau_theta.size() < obs_width) {
+      gau_theta.resize(obs_width);  
+      cout << "resize container for Gaussians Rotation Angles" << endl;
+  }
+  
+  var_x = 0.01;
+  cout << "initiate x variance " << var_x << endl;
+  var_y = 0.02;
+  cout << "initiate y variance " << var_y << endl;
+  
+  gau_max_range = sqrt(-log(gau_min_p) * 2 * pow(min(var_x, var_y), 2));
+  cout << "initiate gaussian max effective range " << gau_max_range << endl;
+
+  cout << "initiate default likelihood for unknown area " << default_p << endl;
+  cout << "initiate default log likelihood for unknown area " << default_log_p << endl;
   return 1;
 }
 
 int OccMap::vision_update(double *free_bound, double *free_bound_type,
     int width, double time) {
-  if (gau_a.size() < width) {
-      gau_a.resize(width);  
-      cout << "resize container for Gaussians Coef a" << endl;
-  } 
-  if (gau_b.size() < width) {
-      gau_b.resize(width);  
-      cout << "resize container for Gaussians Coef b" << endl;
-  }
-  if (gau_c.size() < width) {
-      gau_c.resize(width);  
-      cout << "resize container for Gaussians Coef c" << endl;
-  }
-  if (gau_theta.size() < width) {
-      gau_theta.resize(width);  
-      cout << "resize container for Gaussians Rotation Angles" << endl;
-  }
-  // Suppose var constant first here
-  var_x = 0.01;
-  var_y = 0.02;
   double ob_x = 0, ob_y = 0;
   // Calculate coef for every gaussian
   for (int i = 0; i < width; i++) {
-    ob_x = free_bound[i];
-    ob_y = free_bound[i + width];
-    gau_theta[i] = atan2(ob_x, ob_y); 
+    gau_theta[i] = atan2(free_bound[i], free_bound[i + width]); 
     gau_a[i] = 0.5 * pow(cos(gau_theta[i]) / var_x, 2) + 
                 0.5 * pow(sin(gau_theta[i]) / var_y, 2);
     gau_b[i] = -0.25 * sin(2 * gau_theta[i]) / pow(var_x, 2) +
@@ -150,15 +156,13 @@ int OccMap::vision_update(double *free_bound, double *free_bound_type,
         grid_p_max = max(grid_p_max, grid_p);
       }
       // update log likelihood -- set 0.0001 as 0
-      if (grid_p_max > 0.0001) {
-        double obser_p = log(grid_p_max / (1 - grid_p_max));
-        grid[j * map_size + i] += obser_p;
-        grid[j * map_size + i] -= log(0.25 / 0.75);
-        grid[j * map_size + i] = range_check(grid[j * map_size + i]);
+      if (grid_p_max > gau_min_p) {
+        grid[j * map_size + i] += log(grid_p_max / (1 - grid_p_max));
+        grid[j * map_size + i] -= default_log_p;
+        range_check(grid[j * map_size + i]);
         grid_updated_time[j * map_size + i] = time;
       }
     }
-//  cout << "likelihood update" << endl;
   return 1;
 }
 

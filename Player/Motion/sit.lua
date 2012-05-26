@@ -39,7 +39,8 @@ function entry()
 
   walk.stop();
   started=false;
-  Body.set_head_command({0,0});
+  --This makes the robot look up and see goalposts while sitting down
+  Body.set_head_command({0,-20*math.pi/180});
   Body.set_head_hardness(.5);
   Body.set_larm_hardness(.1);
   Body.set_rarm_hardness(.1);

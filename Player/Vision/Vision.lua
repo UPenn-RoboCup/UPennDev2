@@ -104,7 +104,8 @@ function entry()
 
   -- Initiate Detection
   Detection.entry();
-
+  
+  --set to switch cameras. 
   -- Load the lookup table
   print('loading lut: '..Config.camera.lut_file);
   camera.lut = carray.new('c', 262144);
@@ -216,17 +217,17 @@ function update()
 
   -- switch camera
   local cmd = vcm.get_camera_command();
-  if (cmd == -1) then
+  --if (cmd == -1) then
     if (count % camera.switchFreq == 0) then
       Camera.select_camera(1-Camera.get_select()); 
     end
-  else
-    if (cmd >= 0 and cmd < camera.ncamera) then
-      Camera.select_camera(cmd);
-    else
+ -- else
+   -- if (cmd >= 0 and cmd < camera.ncamera) then
+     -- Camera.select_camera(cmd);
+   -- else
       --print('WARNING: attempting to switch to unkown camera select = '..cmd);
-    end
-  end
+   -- end
+ -- end
   return true;
 end
 

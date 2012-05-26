@@ -42,10 +42,15 @@ walk.hardnessArm=.3;
 ---------------------------------------------
 -- Gait parameters
 ---------------------------------------------
-walk.tStep = 0.44;
+walk.tStep = 0.30;
 walk.tZmp = 0.17;
-walk.stepHeight = 0.020;
-walk.phSingle={0.16,0.84};
+walk.stepHeight = 0.016;
+walk.phSingle={0.4,0.96};
+
+---------------------------------------------
+-- Odometry values
+--------------------------------------------
+walk.odomScale = {.95, 1.0, .75}; --1.06, 1.20, .95  
 
 --------------------------------------------
 -- Compensation parameters
@@ -56,10 +61,10 @@ walk.ankleMod = vector.new({-1,0})*3*math.pi/180;
 
 --------------------------------------------
 --Webots FIX
-walk.tStep = 0.48;
+--walk.tStep = 0.48;
 walk.supportX = 0.010;
 walk.supportY = 0.035;
-walk.phSingle={0.2,0.8};
+--walk.phSingle={0.2,0.8};
 walk.velLimitY={-.05,.05};
 -------------------------------------------
 

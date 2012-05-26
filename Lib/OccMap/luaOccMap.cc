@@ -52,16 +52,12 @@ static int lua_occmap_vision_update(lua_State *L) {
 }
 
 static int lua_occmap_retrieve_map(lua_State *L) {
-  vector<double> cur_map;
-  map.get_map(cur_map);
-	lua_pushlightuserdata(L, &cur_map[0]);
+	lua_pushlightuserdata(L, &map.get_map()[0]);
   return 1;
 }
 
 static int lua_occmap_retrieve_map_updated_time(lua_State *L) {
-  vector<double> updated_time;
-  map.get_map_updated_time(updated_time);
-	lua_pushlightuserdata(L, &updated_time[0]);
+	lua_pushlightuserdata(L, &map.get_map_updated_time()[0]);
   return 1;
 }
 

@@ -18,8 +18,8 @@ public:
   ~OccMap();
   int randomize_map(void);
   int reset_size(int map_size, int robot_x, int robot_y, double time);
-  int get_map(vector<double>& map);
-  int get_map_updated_time(vector<double>& updated_time);
+  vector<double>& get_map(void);
+  vector<double>& get_map_updated_time(void);
   int& get_robot_pos_x(void);
   int& get_robot_pos_y(void);
   

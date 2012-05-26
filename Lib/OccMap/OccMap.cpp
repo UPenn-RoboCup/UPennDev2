@@ -66,16 +66,12 @@ int OccMap::randomize_map(void) {
   return 1;
 }
 
-int OccMap::get_map(vector<double> & map) {
-  for (int i = 0; i < grid.size(); i++)
-    map.push_back(grid[i]);
-  return 1;
+vector<double>& OccMap::get_map(void) {
+  return grid;
 }
 
-int OccMap::get_map_updated_time(vector<double> & updated_time) {
-  for (int i = 0; i < grid_updated_time.size(); i++)
-    updated_time.push_back(grid_updated_time[i]);
-  return 1;
+vector<double>& OccMap::get_map_updated_time(void) {
+  return grid_updated_time;
 }
 
 int& OccMap::get_robot_pos_x(void) {

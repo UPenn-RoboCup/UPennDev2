@@ -31,12 +31,14 @@ OccMap.init(50, 25, 40, time);
 width = 80;
 free_bound = vector.zeros(width);
 free_bound_type = vector.zeros(width);
+--[[
 for i = 1, 50 do
   cur_time = unix.time();
   OccMap.time_decay(cur_time);
   OccMap.vision_update(OccMap.empty_userdata(width), 
                       OccMap.empty_userdata(width), width, cur_time);
 end
+--]]
 
 -- Map Retrieve Test Case with matlab
 occmap = OccMap.retrieve_map();

@@ -3,7 +3,7 @@ module(..., package.seeall);
 require('shm');
 require('carray');
 require('vector');
-
+require('unix')
 
 function ptable(t)
   -- print a table key, value pairs

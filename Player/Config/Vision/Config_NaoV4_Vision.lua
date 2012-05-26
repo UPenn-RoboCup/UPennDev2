@@ -13,12 +13,12 @@ color.white = 16;
 vision = {};
 vision.ballColor = color.orange;
 vision.goal1Color = color.yellow;
-vision.goal2Color = color.cyan;
+vision.goal2Color = color.yellow;
 vision.maxFPS = 30;
 vision.scaleB = 4;
 
 -- use this to enable line detection
-vision.enable_2_yellow_goals = 0;
+vision.enable_2_yellow_goals = 1;
 -- use this to enable line detection
 vision.enable_line_detection = 0;
 -- use this to enable spot detection
@@ -42,7 +42,7 @@ vision.enable_robot_detection = 0;
 --OP specific
 ----------------------------
 -- Use tilted bounding box?
-vision.use_tilted_bbox = 1;
+vision.use_tilted_bbox = 0;
 -- Store and send subsampled image?
 vision.subsampling = 1; --1/2 sized image
 vision.subsampling2 = 1; --1/4 sized image

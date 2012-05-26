@@ -16,8 +16,8 @@ else
 end
 
 --fsm.playMode = 1; --For Demo without orbit
---fsm.playMode = 2; --Simple Behavior with orbit
-fsm.playMode = 3; --Advanced Behavior 
+fsm.playMode = 2; --Simple Behavior with orbit
+--fsm.playMode = 3; --Advanced Behavior 
 
 fsm.enable_walkkick = 0;
 
@@ -64,6 +64,7 @@ fsm.bodyOrbit.rFar = 0.45;
 fsm.bodyOrbit.thAlign = 10*math.pi/180;
 fsm.bodyOrbit.timeout = 30.0 * speedFactor;
 fsm.bodyOrbit.tLost = 3.0*speedFactor;
+--fsm.bodyOrbit.walkParam = 'Walk/Config_NaoV4_Orbit'
 
 --------------------------------------------------
 --BodyPosition : Advanced chase-orbit
@@ -159,7 +160,7 @@ fsm.bodyKick.tFollowDelay = 2.2;
 --BodyWalkKick : Dynamic Kick
 --------------------------------------------------
 fsm.bodyWalkKick={};
-fsm.bodyWalkKick.timeout = 2.0*speedFactor; 
+fsm.bodyWalkKick.timeout = 0*speedFactor; 
 --------------------------------------------------
 --BodyGotoCenter : Going to center when ball is lost
 --------------------------------------------------

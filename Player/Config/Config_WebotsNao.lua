@@ -3,7 +3,6 @@ module(..., package.seeall);
 require('parse_hostname')
 require('vector')
 require('os')
-require('loadconfig')
 
 platform = {};
 platform.name = 'WebotsNao'

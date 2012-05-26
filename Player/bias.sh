@@ -1,7 +1,7 @@
 #!/bin/sh
 
 echo "Starting Player on DARwIn platform..."
-PLAYER_DIR=/home/darwin/darwin/Player
+PLAYER_DIR=/home/darwin/UPennDev/Player
 
 # Kill all processes to reset player
 killall lua
@@ -11,13 +11,13 @@ killall screen
 
 echo "Starting DCM..."
 cd $PLAYER_DIR/Lib
-screen -dm -L -S dcm /usr/local/bin/lua run_dcm.lua
+screen -dm -L -S dcm /usr/bin/luajit run_dcm.lua
 # Allow DCM some time to start
 sleep 1
 
 echo "Starting Setup..."
 cd $PLAYER_DIR
-/usr/local/bin/lua run_setup.lua
+/usr/bin/luajit run_setup.lua
 
 
 # 139.140.218.255Make sure /home/darwin/current links to the right UPennDev

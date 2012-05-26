@@ -13,12 +13,21 @@ function loadconfig(configName)
   end
 end
   
-loadconfig('World/Config_Nao_World')
-loadconfig('Kick/Config_Nao_Kick')
-loadconfig('Vision/Config_NaoV4_Vision')
+param = {}
+param.world = 'World/Config_Nao_World'
+param.walk = 'Walk/Config_NaoV4_Walk_L512' 
+param.kick = 'Kick/Config_Nao_Kick'
+param.vision = 'Vision/Config_NaoV4_Vision'
+param.camera = 'Vision/Config_NaoV4_Camera_Levine512'
+param.fsm = 'FSM/Config_NaoV4_FSM'
+
+loadconfig(param.world)
+loadconfig(param.kick)
+loadconfig(param.vision)
+loadconfig(param.walk)
 
 --Location Specific Camera Parameters--
-loadconfig('Vision/Config_NaoV4_Camera_Levine512')
+loadconfig(param.camera)
 
 
 -- Devive Interface Libraries
@@ -30,8 +39,7 @@ dev.ip_wired = '192.168.0.255';
 dev.ip_wireless = '192.168.1.255';
 dev.game_control = 'NaoGameControl';
 dev.team='TeamSPL';
---dev.walk = 'Walk/NewNewWalk';
-dev.walk = 'Walk/NewNewWalk';
+dev.walk = 'Walk/NaoV4Walk';
 dev.kick = 'NewKick';
 
 --Speak enable
@@ -40,29 +48,23 @@ speakenable = true;
 -- Game Parameters
 
 game = {};
-game.teamNumber = 11;
+game.teamNumber = 26;
 game.playerID = parse_hostname.get_player_id();
 game.robotID = game.playerID;
 game.teamColor = parse_hostname.get_team_color();
-game.role = 1; --game.playerID-1; -- 0 for goalie
+game.role = game.playerID-1; -- 0 for goalie
 game.nPlayers = 4;
 
---loadconfig('Walk/Config_NaoV4_Walk')
---if game.playerID==2 or game.playerID==4 then
-  loadconfig('Walk/Config_NaoV4_Walk_L512')
---else
-  --loadconfig('Walk/Config_NaoV4_Walk_Stable')
---end
 
 
 -- FSM Parameters
 fsm = {};
-loadconfig('FSM/Config_NaoV4_FSM')
+loadconfig(param.fsm)
 fsm.game = 'RoboCup';
 if game.role == 0 then
   fsm.body = {'NaoGoalie'}
 else
-  fsm.body = {'NaoPlayer'};
+  fsm.body = {'NaoKickLogic'};
   --fsm.body = {'GeneralPlayer'};
 end
 fsm.head = {'NaoPlayer'};

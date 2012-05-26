@@ -99,6 +99,7 @@ head.bodyTilt = 0;
 km = {};
 km.standup_front = 'km_NaoV4_StandupFromFront.lua';
 km.standup_back = 'km_NaoV4_StandupFromBack.lua';
+km.time_to_stand = 30; -- average time it takes to stand up in seconds
 
 --Sit/stand stance parameters
 stance={};

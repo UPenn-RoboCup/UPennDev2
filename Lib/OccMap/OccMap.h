@@ -15,7 +15,7 @@ using namespace std;
 class OccMap {
 public:
   OccMap();
-  ~OccMap();
+  ~OccMap() {}
   int randomize_map(void);
   int reset_size(int map_size, int robot_x, int robot_y, double time);
   vector<double>& get_map(void);
@@ -24,9 +24,10 @@ public:
   int& get_robot_pos_y(void);
   
   int odometry_update(const double odomX, const double odomY, const double odomA);
+  int vision_proc_init(int obs_width);
   int vision_update(double *free_bound, double *free_bound_type, int width, double time);
   int time_decay(double time);
-  inline double range_check(double num);
+  inline void range_check(double &num);
 
 private:
   // Map size in grids
@@ -59,6 +60,10 @@ private:
   vector<double> gau_c;
   double var_x;
   double var_y;
+  double gau_max_range;
+  double gau_min_p;
+  double default_p;
+  double default_log_p;
 
 };
 

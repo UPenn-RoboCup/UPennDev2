@@ -568,6 +568,7 @@ global MONITOR %for sending the webots check information
       occ.map = occ_p;
       occ.robot_pos = robot_pos;
       occ.mapsize = mapsize;
+%      save('mapdata.mat');
       plot_occ(occ);
   end
 end

@@ -28,7 +28,6 @@ OccMap::OccMap()
 }
 
 OccMap::~OccMap() {
-
 }
 
 inline double OccMap::range_check(double num) {

@@ -47,7 +47,6 @@ static int lua_occmap_vision_update(lua_State *L) {
   double *free_bound_type = (double *) lua_touserdata(L, 2);
   int width = luaL_checkint(L, 3);
   double time = luaL_checknumber(L, 4);
-//  cout << setprecision(15) << time << endl;
   map.vision_update(free_bound, free_bound_type, width, time);
   return 1;
 }

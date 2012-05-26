@@ -43,7 +43,7 @@ cResample = Config.world.cResample;
 
 playerID = Config.game.playerID;
 
-odomScale = Config.world.odomScale;
+odomScale = Config.walk.odomScale;
 
 --SJ: they are for IMU based navigation
 imuYaw = Config.world.imuYaw or 0;

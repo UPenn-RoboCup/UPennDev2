@@ -23,6 +23,7 @@ public:
   int& get_robot_pos_x(void);
   int& get_robot_pos_y(void);
   
+  int odometry_init(void);
   int odometry_update(const double odomX, const double odomY, const double odomA);
   int vision_proc_init(int obs_width);
   int vision_update(double *free_bound, double *free_bound_type, int width, double time);
@@ -52,6 +53,13 @@ private:
   double odom_x;
   double odom_y;
   double odom_a;
+  struct odom_pt {
+    int x;
+    int y;
+    double value;
+  };
+  vector<odom_pt> odom_change;
+  int odom_change_num;
 
   // Gaussian rotation angle
   vector<double> gau_theta;

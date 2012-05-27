@@ -28,6 +28,8 @@ static int lua_occmap_init_map(lua_State *L) {
   int robot_y = luaL_checkint(L, 3);
   double time = luaL_checknumber(L, 4);
   map.reset_size(map_size, robot_x, robot_y, time);
+  // Init Odometry 
+  map.odometry_init();
   return 1;
 }
 

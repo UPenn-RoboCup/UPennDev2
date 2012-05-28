@@ -125,11 +125,21 @@ function update()
       -- update goal color
       set_team_color(gamePacket.teams[teamIndex].goalColour); 
 
+
       -- update kickoff team
-      if (gamePacket.teams[gamePacket.kickOffTeam+1].teamNumber == teamNumber) then
+      -- Dropball Handling
+      if gamePacket.kickOffTeam ==2 then
+        --Dropball, robots should be OUTSIDE center circle, can score directly
+        --Set it to 1 for now
         set_kickoff(1);
       else
-        set_kickoff(0);
+        if (gamePacket.teams[gamePacket.kickOffTeam+1].teamNumber == teamNumber) then
+          --Kickoff, robot inside center circle, cannot score directly
+          set_kickoff(1);
+        else
+          --Waiting, robot outside center circle, cannot move for 10sec
+          set_kickoff(0);
+        end
       end
 
       -- update which half it is

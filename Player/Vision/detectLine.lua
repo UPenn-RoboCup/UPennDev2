@@ -79,16 +79,21 @@ function detect()
     local length = math.sqrt(
 	(line.propsB[i].endpoint[1]-line.propsB[i].endpoint[2])^2+
 	(line.propsB[i].endpoint[3]-line.propsB[i].endpoint[4])^2);
-    if length>min_length and linecount<6 then
+
+      vendpoint[1] = HeadTransform.coordinatesB(vector.new(
+		{line.propsB[i].endpoint[1],line.propsB[i].endpoint[3]}),1);
+      vendpoint[2] = HeadTransform.coordinatesB(vector.new(
+		{line.propsB[i].endpoint[2],line.propsB[i].endpoint[4]}),1);
+
+      vHeight = 0.5*(vendpoint[1][3]+vendpoint[2][3]);
+
+      vHeightMax = 0.50;
+
+    if length>min_length and linecount<6 and vHeight<vHeightMax then
       linecount=linecount+1;
       local vendpoint = {};
       line.length[linecount]=length;
       line.endpoint[linecount]= line.propsB[i].endpoint;
-
-      vendpoint[1] = HeadTransform.coordinatesB(
-		vector.new({line.propsB[i].endpoint[1], line.propsB[i].endpoint[3]}));
-      vendpoint[2] = HeadTransform.coordinatesB(
-		vector.new({line.propsB[i].endpoint[2], line.propsB[i].endpoint[4]}));
       vendpoint[1] = HeadTransform.projectGround(vendpoint[1],0);
       vendpoint[2] = HeadTransform.projectGround(vendpoint[2],0);
       line.v[linecount]={};

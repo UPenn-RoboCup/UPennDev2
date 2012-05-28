@@ -155,6 +155,7 @@ function update()
     end
   end
 
+--[[
   if count % 20 == 0 then
     print('---------------');
     print('eta:');
@@ -171,6 +172,7 @@ function update()
     util.ptable(ddefend)
     print('---------------');
   end
+--]]
 
 
   if gcm.get_game_state()<2 then 

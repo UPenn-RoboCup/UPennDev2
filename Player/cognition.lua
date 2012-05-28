@@ -25,6 +25,7 @@ require('mcm')
 require('Body')
 require('Vision')
 require('World')
+require('OccupancyMap')
 
 comm_inited = false;
 vcm.set_camera_teambroadcast(0);
@@ -68,6 +69,7 @@ end
 function entry()
   World.entry();
   Vision.entry();
+  OccupancyMap.entry();
 end
 
 function update()
@@ -78,6 +80,8 @@ function update()
   imageProcessed = Vision.update();
 
   World.update_odometry();
+
+  OccupancyMap.update();
 
   -- update localization
   if imageProcessed then

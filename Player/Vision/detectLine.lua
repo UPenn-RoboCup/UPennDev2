@@ -80,6 +80,7 @@ function detect()
 	(line.propsB[i].endpoint[1]-line.propsB[i].endpoint[2])^2+
 	(line.propsB[i].endpoint[3]-line.propsB[i].endpoint[4])^2);
 
+      local vendpoint = {};
       vendpoint[1] = HeadTransform.coordinatesB(vector.new(
 		{line.propsB[i].endpoint[1],line.propsB[i].endpoint[3]}),1);
       vendpoint[2] = HeadTransform.coordinatesB(vector.new(
@@ -91,7 +92,6 @@ function detect()
 
     if length>min_length and linecount<6 and vHeight<vHeightMax then
       linecount=linecount+1;
-      local vendpoint = {};
       line.length[linecount]=length;
       line.endpoint[linecount]= line.propsB[i].endpoint;
       vendpoint[1] = HeadTransform.projectGround(vendpoint[1],0);

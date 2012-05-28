@@ -271,7 +271,8 @@ setup_hp: hp setup_util setup_image setup_comm
 	@echo "\n"
 
 #setup_op: op setup_util setup_image setup_velocity
-setup_op: op setup_util setup_image setup_comm
+setup_op: op setup_util setup_image setup_comm setup_occmap
+#setup_op: op setup_util setup_image setup_comm
 	@echo "Setting up Darwin OP Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
 	find $(OPDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;

@@ -20,6 +20,8 @@ shared.game.opponent_penalty = vector.zeros(Config.game.nPlayers);
 shared.game.time_remaining = vector.zeros(1);
 shared.game.last_update = vector.zeros(1);
 
+shared.game.paused = vector.zeros(1);
+
 shared.team = {};
 shared.team.number = vector.zeros(1);
 shared.team.player_id = vector.zeros(1);

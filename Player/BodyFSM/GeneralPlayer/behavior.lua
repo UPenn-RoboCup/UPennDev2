@@ -44,6 +44,7 @@ function update()
   ------------------------------
   tKickOffWear = 20.0;
 
+
   t=Body.get_time();
   kick_off=wcm.get_kick_kickOff();
   tKickOff=wcm.get_kick_tKickOff();

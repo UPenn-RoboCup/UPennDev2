@@ -38,6 +38,9 @@ Config.lua
 WebotsController/
 WebotsController/controller_wrap.c
 
+# auto-generated log
+Player/screenlog.*
+
 #controller links
 WebotsProj/controllers/nao_soccer_supervisor/
 WebotsProj/controllers/nsl_soccer_supervisor/

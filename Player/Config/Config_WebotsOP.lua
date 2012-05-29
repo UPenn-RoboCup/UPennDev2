@@ -71,8 +71,8 @@ fsm.playMode = 2; --1 for demo, 2 for orbit, 3 for direct approach
 --]]
 
 fsm.playMode = 3; --1 for demo, 2 for orbit, 3 for direct approach
-fsm.enable_walkkick = 1;
-fsm.enable_sidekick = 1;
+fsm.enable_walkkick = 0;
+fsm.enable_sidekick = 0;
 
 --FAST APPROACH TEST
 fsm.fast_approach = 1;
@@ -137,8 +137,11 @@ head.bodyTilt = 0;
 --km.kick_left = 'km_NSLOP_StandupFromFront2.lua';
 
 --Shutdown Vision and use ground truth gps info only
-use_gps_only = 0;
---use_gps_only = 1;
+--use_gps_only = 0;
+use_gps_only = 1;
+
+goalie_dive = 1;
+
 
 --[[
 -- Stretcher

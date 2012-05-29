@@ -115,10 +115,6 @@ function update()
   --Force attacker for demo code
   if Config.fsm.playMode==1 then role=1; end
 
-  if role==0 then
-    return "goalie";
-  end
-
    if (role == 2) then
     homePose = getDefenderHomePose();
   elseif (role==3) then
@@ -303,11 +299,29 @@ function getAttackerHomePose()
 end
 
 function getDefenderHomePose()
-    -- defend
-  homePosition = .6 * ballGlobal;
-  homePosition[1] = homePosition[1] - 0.50*util.sign(homePosition[1]);
-  homePosition[2] = homePosition[2] - 0.80*util.sign(homePosition[2]);
+
+  -- Updated to account for defending goal post
+ 
+  --goal_post_width_half=1.6/2;
+
+  goalDefend=wcm.get_goal_defend();
+  homePosition = 0.5*ballGlobal+0.5*goalDefend;
+
+  -- New Positioning based on angle of ball to goal
+  
+  angle_shift=0.02;
+
+  if ballGlobal[1]>0 then
+    angle_ball_goaldefend_center=math.atan((ballGlobal[2]-goalDefend[2])/(goalDefend[1]-ballGlobal[1]));
+  else
+    angle_ball_goaldefend_center=math.atan((ballGlobal[2]-goalDefend[2])/(goalDefend[1]+math.abs(ballGlobal[1])))
+  end
+  
+  homePosition[2]=homePosition[1]*math.tan((1+angle_shift)*angle_ball_goaldefend_center)/math.deg(angle_ball_goaldefend_center);
+ 
   return homePosition;
+
+  
 end
 
 function getSupporterHomePose()

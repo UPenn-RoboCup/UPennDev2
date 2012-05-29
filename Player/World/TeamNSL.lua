@@ -329,7 +329,13 @@ function update()
   end
 --]]
 
+  --Check if the role is changed elsewhere
+  if role ~= gcm.get_team_role() then
+    set_role(gcm.get_team_role());
+  end
+
   --Only switch role during gamePlaying state
+
   if gcm.get_game_state()==3 then
     -- goalie and reserve player never changes role
     if role~=0 and role<4 then 
@@ -387,9 +393,9 @@ function set_role(r)
     elseif role == 0 then     -- goalie
       Speak.talk('Goalie');
     elseif role == 4 then     -- reserve player
-      Speak.talk('Reserve Player');
+      Speak.talk('Player waiting');
     elseif role == 5 then     -- reserve goalie
-      Speak.talk('Reserve Goalie');
+      Speak.talk('Goalie waiting');
     else
       -- no role
       Speak.talk('ERROR: Unknown Role');

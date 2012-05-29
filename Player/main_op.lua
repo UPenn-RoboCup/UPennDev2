@@ -110,7 +110,6 @@ function update()
     if (t-tButtonRole>2.0) then --Button pressed for 2 sec
       waiting = 1-waiting;
       if waiting==0 then
-        gcm.set_game_paused(0);
         Speak.talk('Playing');
         Motion.event("standup");
 	--Change role to active 
@@ -120,7 +119,6 @@ function update()
 	  gcm.set_team_role(1); --Active player
 	end
       else
-        gcm.set_game_paused(1);
         Speak.talk('Waiting');
         Motion.event("sit");
       end
@@ -132,29 +130,26 @@ function update()
   end
 
   if waiting>0 then --Waiting mode, check role change
+    gcm.set_game_paused(1);
+    if role==0 then
+      gcm.set_team_role(5); --Reserve goalie
+      Body.set_indicator_ball({0,0,1});
+    else
+      gcm.set_team_role(4); --Reserve player
+      Body.set_indicator_ball({1,1,1});
+    end
     if (Body.get_change_state() == 1) then
       button_state=1;
     else
       if button_state==1 then --Button released
         role = 1 - role;
-        if role==0 then
-          Speak.talk('Goalie');
-	  gcm.set_team_role(5); --Reserve goalie
-        else
-          Speak.talk('Attacker');
-	  gcm.set_team_role(4); --Reserve player
-        end
       end
       button_state=0;
     end
-    if role==0 then
-      Body.set_indicator_ball({0,0,1});
-    else
-      Body.set_indicator_ball({1,1,1});
-    end
     Motion.update();
     Body.update();
-  else --Playing mode, update state machines 
+  else --Playing mode, update state machines  
+    gcm.set_game_paused(0);
     GameFSM.update();
     BodyFSM.update();
     HeadFSM.update();

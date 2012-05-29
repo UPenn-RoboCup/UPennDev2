@@ -90,8 +90,8 @@ vision.goal.use_centerpost = 1;
 vision.goal.check_for_ground = 1;
 
 vision.goal.far_goal_threshold= 4.0; --The range we triangulate
-vision.goal.distanceFactorCyan = 1; 
-vision.goal.distanceFactorYellow = 1; 
+vision.goal.distanceFactorCyan = 1.1; 
+vision.goal.distanceFactorYellow = 1.1; 
 
 	
 

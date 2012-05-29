@@ -17,6 +17,8 @@ diveType = "diveLeft";
 active = false;
 
 
+goalie_dive = Config.goalie_dive or 0;
+
 qLArm=math.pi/180*vector.new({-90,0,0});
 qRArm=math.pi/180*vector.new({-90,0,0});
 
@@ -76,7 +78,7 @@ aLeft=0; aRight=0;
 
 
 function update() 
-  if true then 
+  if goalie_dive==2 then --Diving
     divedone=dodive();
     if divedone then 
       if diveType == "diveCenter" then
@@ -86,7 +88,7 @@ function update()
         return "divedone"
       end
     end
-  else
+  else --Arm motion
     divedone=dodive2();
     if divedone then 
       walk.start();

@@ -118,6 +118,8 @@ dev.walk = "StretcherWalk"
 
 gps_only = 0;
 
+goalie_dive = 1; --1 for arm only, 2 for actual diving
+
 --Speak enable
 speakenable = false;
 

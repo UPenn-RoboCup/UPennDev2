@@ -110,6 +110,7 @@ function update()
     if (t-tButtonRole>2.0) then --Button pressed for 2 sec
       waiting = 1-waiting;
       if waiting==0 then
+        gcm.set_game_paused(0);
         Speak.talk('Playing');
         Motion.event("standup");
 	--Change role to active 
@@ -119,6 +120,7 @@ function update()
 	  gcm.set_team_role(1); --Active player
 	end
       else
+        gcm.set_game_paused(1);
         Speak.talk('Waiting');
         Motion.event("sit");
       end

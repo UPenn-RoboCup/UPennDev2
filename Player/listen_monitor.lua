@@ -37,6 +37,7 @@ require ('util')
 require ('wcm')
 require ('gcm')
 require ('vcm')
+require ('ocm')
 
 require 'unix'
 
@@ -249,7 +250,6 @@ while( true ) do
 
   msg = Comm.receive();
   if( msg ) then
-
     local obj = serialization.deserialize(msg);
     if( obj.arr ) then
 	if ( string.find(obj.arr.name,'yuyv') ) then 

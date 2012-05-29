@@ -181,7 +181,7 @@ function update()
 
 --SJ: Camera image keeps changing
 --So copy it here to shm, and use it for all vision process
-  vcm.set_image_yuyv(camera.image);
+--  vcm.set_image_yuyv(camera.image);
 
   -- Add timer measurements
   count = count + 1;
@@ -198,7 +198,7 @@ function update()
   if(webots) then
     labelA.data = Camera.get_labelA( carray.pointer(camera.lut) );
   else
-    labelA.data  = ImageProc.yuyv_to_label(vcm.get_image_yuyv(),
+    labelA.data  = ImageProc.yuyv_to_label(camera.image, --vcm.get_image_yuyv(),
                                           carray.pointer(camera.lut),
                                           camera.width/2,
                                           camera.height);
@@ -303,12 +303,12 @@ function update_shm(status)
         or ((goalCyan.detect == 1 or goalYellow.detect == 1) 
             and vcm.get_debug_store_goal_detections() == 1)) then
 
-	if webots then
-          vcm.set_camera_yuyvType(1);
-          vcm.set_image_labelA(labelA.data);
-          vcm.set_image_labelB(labelB.data);
-	end
-        if vcm.get_camera_broadcast() > 0 then --Wired monitor broadcasting
+  	if webots then
+            vcm.set_camera_yuyvType(1);
+            vcm.set_image_labelA(labelA.data);
+            vcm.set_image_labelB(labelB.data);
+  	end
+    if vcm.get_camera_broadcast() > 0 then --Wired monitor broadcasting
 	  if vcm.get_camera_broadcast() == 1 then
 	    --Level 1: 1/4 yuyv, labelB
             vcm.set_image_yuyv3(ImageProc.subsample_yuyv2yuyv(

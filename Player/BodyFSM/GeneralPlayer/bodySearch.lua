@@ -32,6 +32,15 @@ end
 function update()
   local t = Body.get_time();
   ball = wcm.get_ball();
+
+  role = gcm.get_team_role();
+  --Force attacker for demo code
+  if Config.fsm.playMode==1 then role=1; end
+
+  if role==0 then
+    return "goalie";
+  end
+
   -- search/spin until the ball is found
   walk.set_velocity(0, 0, direction*vSpin);
 

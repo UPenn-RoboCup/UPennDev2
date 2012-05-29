@@ -115,6 +115,10 @@ function update()
   --Force attacker for demo code
   if Config.fsm.playMode==1 then role=1; end
 
+  if role==0 then
+    return "goalie";
+  end
+
    if (role == 2) then
     homePose = getDefenderHomePose();
   elseif (role==3) then

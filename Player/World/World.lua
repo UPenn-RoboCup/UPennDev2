@@ -16,7 +16,7 @@ require 'mcm'
 
 mod_angle = util.mod_angle;
 
---require('Velocity');	
+require('Velocity');	
 
 --Are we using same colored goals?
 use_same_colored_goal=Config.world.use_same_colored_goal or 0;
@@ -59,7 +59,7 @@ gameState = 0;
 function entry()
   count = 0;
   init_particles();
-  --Velocity.entry();
+  Velocity.entry();
 end
 
 function init_particles()
@@ -126,8 +126,15 @@ function update_vision()
 
     if vcm.get_ball_detect()==1 then
       ball.t = Body.get_time();
+      -- Update the velocity
+      Velocity.update(ball.x,ball.y);
+      ball.vx, ball.vy, dodge  = Velocity.getVelocity();
+    else
+      Velocity.update_noball();--notify that ball is missing
     end
+
     update_shm();
+
     return;
   end
 
@@ -172,18 +179,18 @@ function update_vision()
     --As OP tend to detect red eye as balls
     ball_led={0,1,0}; 
 
-    --[[
     -- Update the velocity
     Velocity.update(v[1],v[2]);
     ball.vx, ball.vy, dodge  = Velocity.getVelocity();
+--[[
     local speed = math.sqrt(ball.vx^2 + ball.vy^2);
     local stillTime = mcm.get_walk_stillTime();
     if( stillTime > 1.5 ) then 
 --      print('Speed: '..speed..', Vel: ('..ball.vx..', '..ball.vy..') Still Time: '..stillTime);
     end
-    --]]
+--]]
   else
-    --Velocity.update_noball();--notify that ball is missing
+    Velocity.update_noball();--notify that ball is missing
     ball_led={0,0,0};
   end
 

@@ -146,7 +146,7 @@ fsm.bodyKick.tStartWait = 1.0;
 fsm.bodyKick.tStartWaitMax = 1.5;
 
 --ball position checking params
-fsm.bodyKick.kickTargetFront = {0.11,0.05};
+fsm.bodyKick.kickTargetFront = {0.11,0.03};
 
 --For kicking to the left
 fsm.bodyKick.kickTargetSide = {0.11,0.01};

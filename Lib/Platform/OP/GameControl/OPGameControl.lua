@@ -173,21 +173,24 @@ function update()
     -- update kickoff
     set_kickoff(gcm.get_game_kickoff());
 
-    -- use buttons to advance states
-    if (Body.get_change_state() == 0) then
-      if buttonPressed == 1 then
-        -- advance state when button is released
-        if (gameState < 3) then
-          gameState = gameState + 1;
-        elseif (gameState == 3) then
-          -- playing - toggle penalty state
-          teamPenalty[playerID] = 1 - teamPenalty[playerID]; 
+    -- use buttons to advance states IF not paused
+    if gcm.get_game_paused()==0 then
+      if (Body.get_change_state() == 0) then
+        if buttonPressed == 1 then
+          -- advance state when button is released
+          if (gameState < 3) then
+            gameState = gameState + 1;
+          elseif (gameState == 3) then
+            -- playing - toggle penalty state
+            teamPenalty[playerID] = 1 - teamPenalty[playerID]; 
+          end
         end
+        buttonPressed = 0;
+      else
+        buttonPressed = 1;
       end
-      buttonPressed = 0;
-    else
-      buttonPressed = 1;
     end
+
   end
 
   -- update shm

@@ -103,7 +103,7 @@ km.standup_back = 'km_NSLOP_StandupFromBack.lua';
 
 -- Low battery level
 -- Need to implement this api better...
-bat_low = 1118; -- 11.8V warning
+bat_low = 118; -- 11.8V warning
 
 --[[
 -- Stretcher

@@ -32,6 +32,11 @@ OccMap.vision_init(80);
 width = 80;
 free_bound = vector.zeros(width);
 free_bound_type = vector.zeros(width);
+for i = 1, width do
+  free_bound[i] = i * 0.5434;
+  free_bound_type[i] = i;
+end
+OccMap.vision_update(free_bound, free_bound_type, width, unix.time());
 --[[
 for i = 1, 50 do
   cur_time = unix.time();

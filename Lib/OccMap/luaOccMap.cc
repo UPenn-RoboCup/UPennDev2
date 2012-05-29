@@ -13,6 +13,8 @@ extern "C" {
 #include "OccMap.h"
 #include <iostream>
 #include <iomanip>
+#include <vector>
+#include <cassert>
 
 OccMap map;
 
@@ -48,12 +50,25 @@ static int lua_occmap_odometry_update(lua_State *L) {
 }
 
 static int lua_occmap_vision_update(lua_State *L) {
-  double *free_bound = (double *) lua_touserdata(L, 1);
-  if ((free_bound == NULL) || !lua_islightuserdata(L, 1)) {
-    return luaL_error(L, "Input freespace bound not light user data");
+  if (!lua_istable(L, 1))
+    return luaL_error(L, "Input freespace bound not table data");
+  vector<double> free_bound;
+  lua_pushnil(L);
+  while (lua_next(L, 1) != 0) {
+    free_bound.push_back(lua_tonumber(L, -1));
+    lua_pop(L, 1);
   }
-  double *free_bound_type = (double *) lua_touserdata(L, 2);
+  if (!lua_istable(L, 2))
+    return luaL_error(L, "Input freespace bound type not table data");
+  vector<int> free_bound_type;
+  lua_pushnil(L);
+  while (lua_next(L, 2) !=0) {
+    free_bound_type.push_back(lua_tointeger(L, -1));
+    lua_pop(L, 1);
+  }
   int width = luaL_checkint(L, 3);
+  assert(free_bound.size() == width);
+  assert(free_bound_type.size() == width);
   double time = luaL_checknumber(L, 4);
   map.vision_update(free_bound, free_bound_type, width, time);
   return 1;

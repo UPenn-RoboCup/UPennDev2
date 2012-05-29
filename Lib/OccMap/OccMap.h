@@ -26,7 +26,7 @@ public:
   int odometry_init(void);
   int odometry_update(const double odomX, const double odomY, const double odomA);
   int vision_proc_init(int obs_width);
-  int vision_update(double *free_bound, double *free_bound_type, int width, double time);
+  int vision_update(vector<double>& free_bound, vector<int>& free_bound_type, int width, double time);
   int time_decay(double time);
   inline void range_check(double &num);
 

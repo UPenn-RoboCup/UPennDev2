@@ -122,7 +122,7 @@ int OccMap::vision_proc_init(int obs_width) {
   return 1;
 }
 
-int OccMap::vision_update(double *free_bound, double *free_bound_type,
+int OccMap::vision_update(vector<double>& free_bound, vector<int>& free_bound_type,
     int width, double time) {
   double ob_x = 0, ob_y = 0;
   // Calculate coef for every gaussian
@@ -148,7 +148,7 @@ int OccMap::vision_update(double *free_bound, double *free_bound_type,
       for (int k = 0; k < width; k++) {
         ob_x = free_bound[k];
         ob_y = free_bound[k + width];
-        if ((int)free_bound_type[k] == 2) {
+        if (free_bound_type[k] == 2) {
           grid_p = 0;
         } else
           grid_p = exp(- (gau_a[k] * (x_robot - ob_x) * (x_robot - ob_x) + 

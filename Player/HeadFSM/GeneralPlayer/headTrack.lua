@@ -47,7 +47,13 @@ function update()
      ballR > minDist   then
   end
 --]]
-  if (t - t0 > timeout) then
+
+  --Goalie does not timeout
+  role = gcm.get_team_role();
+  --Force attacker for demo code
+  if Config.fsm.playMode==1 then role=1; end
+
+  if role~=0 and  (t - t0 > timeout) then
     print('Head Track timeout')
     return "timeout";
   end

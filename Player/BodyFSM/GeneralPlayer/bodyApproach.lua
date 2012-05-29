@@ -152,7 +152,7 @@ function update()
   local wAngle = math.atan2 (ball.y,ball.x);
   if math.abs(wAngle) > 45*math.pi/180 then
     vStep[1]=vStep[1] - 0.03;
-    print('backstep');
+--    print('backstep');
   else
     --Otherwise, don't make robot backstep
     vStep[1]=math.max(0,vStep[1]);

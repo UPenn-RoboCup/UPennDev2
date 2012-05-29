@@ -128,6 +128,11 @@ function rayIntersectA(c)
   p1 = tHead * p1;
   local p0 = tNeck * p0;
   local v = p1 - p0;
+  -- if t < 0, the x value will be projected behind robot, simply reverse it
+  -- since it is always very far away
+  if (t < 0) then
+    t = -t;
+  end
   local t = -p0[3]/v[3];
    -- if t < 0, the x value will be projected behind robot, simply reverse it
   -- since it is always very far away
@@ -152,7 +157,7 @@ function rayIntersectB(c)
   local t = -p0[3]/v[3];
   -- if t < 0, the x value will be projected behind robot, simply reverse it
   -- since it is always very far away
-  if (t < 0) then 
+  if (t < 0) then
     t = -t;
   end
   local p = p0 + t * v;

@@ -50,7 +50,7 @@ fsm.bodyChase.rFar = 1.2;
 fsm.bodyAnticipate={};
 fsm.bodyAnticipate.rClose = 1.0;
 -- How far out of position are we allowed to be?
-fsm.bodyAnticipate.thFar = {0.2,0.2,15*math.pi/180};
+fsm.bodyAnticipate.thFar = {0.4,0.4,15*math.pi/180};
 
 fsm.bodyGoaliePosition = {};
 fsm.bodyGoaliePosition.thClose = {.2, .2,10*math.pi/180}
@@ -146,10 +146,10 @@ fsm.bodyKick.tStartWait = 1.0;
 fsm.bodyKick.tStartWaitMax = 1.5;
 
 --ball position checking params
-fsm.bodyKick.kickTargetFront = {0.11,0.03};
+fsm.bodyKick.kickTargetFront = {0.12,0.03};
 
 --For kicking to the left
-fsm.bodyKick.kickTargetSide = {0.11,0.01};
+fsm.bodyKick.kickTargetSide = {0.12,0.01};
 fsm.bodyKick.kickTh = {0.03,0.03};
 
 --delay for camera following the ball

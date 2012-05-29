@@ -51,6 +51,7 @@ shared.kick.tKickOff = vector.zeros(1);
 shared.obstacle = {};
 shared.obstacle.dist = vector.zeros(1);
 shared.obstacle.pose = vector.zeros(3);
+shared.obstacle.role = vector.zeros(1);
 
 --Localization monitoring
 shared.particle = {};

@@ -152,7 +152,7 @@ function update_vision()
   --Init particle just once when game state moves to READY
   if gcm.get_game_state()~=gameState then
     gameState = gcm.get_game_state();
-    if gameState==1 then
+    if gameState==1 and use_same_colored_goal>0 then
       init_particles();
     end
   end

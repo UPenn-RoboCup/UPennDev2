@@ -250,6 +250,7 @@ while( true ) do
 
   msg = Comm.receive();
   if( msg ) then
+    print(msg)
     local obj = serialization.deserialize(msg);
     if( obj.arr ) then
 	if ( string.find(obj.arr.name,'yuyv') ) then 

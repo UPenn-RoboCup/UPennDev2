@@ -3,7 +3,6 @@ function h = plot_field(handle,type)
 %  cla( handle );
 
   if type==0 % Kidsize
-%{  
     fieldX = [-3.00  3.00 3.00 -3.00 -3.00];
     fieldY = [-2.00 -2.00 2.00  2.00 -2.00];
     goalX = [3.00 (3.00+0.40) (3.00+0.40) 3.00];
@@ -13,7 +12,8 @@ function h = plot_field(handle,type)
     spotX=1.2;
     circleR = .625;
     fieldB=[-3.5 3.5 -2.5 2.5];
-%}  
+
+%{  
 
 %TEMPORARY VALUES FOR EXPO
     fieldX = [-2.7  2.7 2.7 -2.7 -2.7];
@@ -25,6 +25,8 @@ function h = plot_field(handle,type)
     spotX=1.35;
     circleR = .1;
     fieldB=[-3.1 3.1 -2.4 2.4];
+%}  
+
 
   elseif type==1 %SPL
     fieldX = [-3.00  3.00 3.00 -3.00 -3.00];

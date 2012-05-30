@@ -141,13 +141,13 @@ function camera_init_naov4()
     Camera.select_camera(c-1);   
     Camera.set_param('Brightness', Config.camera.brightness);     
     Camera.set_param('White Balance, Automatic', 1); 
-    --Camera.set_param('Auto Exposure',1);
+    Camera.set_param('Auto Exposure',0);
     for i,param in ipairs(Config.camera.param) do
       Camera.set_param(param.key, param.val[c]);
       unix.usleep (100);
     end
     Camera.set_param('White Balance, Automatic', 0);
-    --Camera.set_param('Auto Exposure',0);
+    Camera.set_param('Auto Exposure',0);
     local expo = Camera.get_param('Exposure');
     local gain = Camera.get_param('Gain');
     Camera.set_param('Auto Exposure',1);   
@@ -217,17 +217,18 @@ function update()
 
   -- switch camera
   local cmd = vcm.get_camera_command();
-  --if (cmd == -1) then
+  if (cmd == -1) then
     if (count % camera.switchFreq == 0) then
       Camera.select_camera(1-Camera.get_select()); 
     end
- -- else
-   -- if (cmd >= 0 and cmd < camera.ncamera) then
-     -- Camera.select_camera(cmd);
-   -- else
-      --print('WARNING: attempting to switch to unkown camera select = '..cmd);
-   -- end
- -- end
+  else
+    if (cmd >= 0 and cmd < camera.ncamera) then
+      Camera.select_camera(cmd);
+    else
+      print('WARNING: attempting to switch to unkown camera select = '..cmd);
+    end
+  end
+    --Camera.set_param ('Exposure', 255);
   return true;
 end
 

@@ -181,7 +181,38 @@ function sendA()
   end
 end
 
+function sendoccmap()
+  -- occmap --
+  occmap = ocm.get_occ_map();
+  width = Config.occ.mapsize; 
+  height = Config.occ.mapsize;
+  count = vcm.get_image_count();
 
+  array = serialization.serialize_label_double(
+	occmap, width, height, 'double', 'occmap',count);
+  
+  sendoccmap = {};
+  sendoccmap.team = {};
+  sendoccmap.team.number = gcm.get_team_number();
+  sendoccmap.team.player_id = gcm.get_team_player_id();
+
+  stime1,stime2,infosize=0,0,0;
+  sendoccmap.arr = array;
+  t0 = unix.time();
+  local senddata=serialization.serialize(sendoccmap);
+  infosize=infosize+#senddata;
+  t1=unix.time();
+  stime1=stime1+t1-t0;
+  CommWired.send(senddata);
+  t2=unix.time();
+  stime2=stime2+t2-t1;
+
+--  if debug>0 then
+    print("occmap info size:",infosize);
+    print("Total serialization time:",stime1);
+    print("Total comm time:",stime2);
+--  end
+end
 
 function sendImg()
   -- yuyv --
@@ -355,10 +386,12 @@ function update_img( enable, imagecount )
       sendImgSub2();
       sendA();
       sendB();
+      sendoccmap();
     else
       sendImg();
       sendA();
       sendB();
+      sendoccmap();
     end
   elseif enable==3 then
     --3: Logging mode

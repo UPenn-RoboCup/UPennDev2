@@ -11,12 +11,13 @@ CommWired=require('Comm');
 require('vcm')
 require('gcm')
 require('wcm')
+require('ocm')
 require('serialization');
 require('ImageProc')
 require('Config');
 
 --sendShm = {'wcm','vcm','gcm'}
-sendShm = { wcmshm=wcm, gcmshm=gcm, vcmshm=vcm }
+sendShm = { wcmshm=wcm, gcmshm=gcm, vcmshm=vcm, ocmshm=ocm }
 itemReject = 'yuyv,labelA,labelB,yuyv2,yuyv3'
 
 -- Initiate Sending Address

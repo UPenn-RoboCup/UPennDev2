@@ -67,8 +67,8 @@ static int lua_occmap_vision_update(lua_State *L) {
     lua_pop(L, 1);
   }
   int width = luaL_checkint(L, 3);
-  assert(free_bound.size() == 2 * width);
-  assert(free_bound_type.size() == width);
+  if (free_bound.size() != 2 * width) return 0;
+  if (free_bound_type.size() != 2 * width) return 0;
   double time = luaL_checknumber(L, 4);
   map.vision_update(free_bound, free_bound_type, width, time);
   return 1;

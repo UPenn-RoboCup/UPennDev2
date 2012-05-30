@@ -18,7 +18,7 @@ require('Config');
 
 --sendShm = {'wcm','vcm','gcm'}
 sendShm = { wcmshm=wcm, gcmshm=gcm, vcmshm=vcm, ocmshm=ocm }
-itemReject = 'yuyv,labelA,labelB,yuyv2,yuyv3'
+itemReject = 'yuyv, labelA, labelB, yuyv2, yuyv3, map'
 
 -- Initiate Sending Address
 CommWired.init(Config.dev.ip_wired,111111);

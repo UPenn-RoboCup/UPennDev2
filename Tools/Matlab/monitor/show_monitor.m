@@ -34,6 +34,8 @@ function h=show_monitor()
     if draw_team==2 % Multiple robot, wireless monitoring (real robots)
       set(gcf,'position',[1 1 900 900]);
 
+      MONITOR.enable10=2;  %Default 2
+
       MONITOR.hFpsText=uicontrol('Style','text',...
 	'Units','Normalized', 'Position',[.40 0.93 0.20 0.04]);
 
@@ -43,11 +45,18 @@ function h=show_monitor()
       MONITOR.hButton7=uicontrol('Style','pushbutton','String','FPS +',...
 	'Units','Normalized', 'Position',[.60 .93 .10 .04],'Callback',@button7);
 
-      MONITOR.hButton10=uicontrol('Style','pushbutton','String','MAP1',...
-	'Position',[20 600 70 40],'Callback',@button10);
+      MONITOR.hButton13=uicontrol('Style','pushbutton','String','Kidsize',...
+	'Units','Normalized', 'Position',[.02 .56 .07 .07],'Callback',@button13);
 
-      MONITOR.hButton9=uicontrol('Style','pushbutton','String','2D',...
-	'Position',[20 200 70 40],'Callback',@button9);
+      for i=1:5
+        MONITOR.infoTexts(i)=uicontrol('Style','text',...
+	'Units','Normalized', 'Position',[0.16*(i-1)+0.12 0.71 0.145 0.08]);
+      end
+
+      for i=6:10
+        MONITOR.infoTexts(i)=uicontrol('Style','text',...
+	'Units','Normalized', 'Position',[0.16*(i-6)+0.12 0.01 0.145 0.08]);
+      end
 
 
     elseif draw_team==1 %Multiple robot full monitoring (webots)
@@ -313,7 +322,6 @@ function h=show_monitor()
         h_c=subplot(5,5,[6:20]);
         plot_robot( r_struct, [],2,MONITOR.enable10);
         updated = 0;
-%{
 	if i<6 
           h1=subplot(5,5,i);
 	  labelB = robot_team.get_labelB_wireless(i);
@@ -324,7 +332,10 @@ function h=show_monitor()
           plot_label(labelB);
 	end
 	plot_overlay_wireless(r_struct);
-%}
+
+        [infostr textcolor]=robot_info(r_struct,[],1);
+        set(MONITOR.infoTexts(i),'String',infostr);
+
       end
     end
     hold off;

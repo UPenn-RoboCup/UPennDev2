@@ -100,6 +100,7 @@ km.standup_back = 'km_WebotsNao_StandupFromBack.lua';
 
 km.standup_front = 'km_WebotsNao_StandupFromFront.lua';
 km.standup_back = 'km_WebotsNao_StandupFromBack.lua';
+km.time_to_stand = 30; -- average time it takes to stand up in seconds
 
 
 

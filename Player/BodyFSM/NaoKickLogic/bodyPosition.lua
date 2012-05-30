@@ -8,6 +8,7 @@ require('Config')
 require('wcm')
 require('gcm')
 require('UltraSound')
+require('postDist')
 
 t0 = 0;
 timeout = 20.0;
@@ -124,7 +125,11 @@ function update()
   walk.set_velocity(vx, vy, va);
   ballR = math.sqrt(ball.x^2 + ball.y^2);
   if ((tBall < 1.0) and (ballR < rClose)) then
-    return "ballClose";
+    if postDist.kick() then
+      return "ballAlign";
+    else
+      return "approach";
+    end
   end
 
   -- TODO: add obstacle detection

@@ -38,6 +38,9 @@ vision.use_point_goal = 0;
 
 vision.enable_robot_detection = 0;
 
+vision.enable_freespace_detection = 0;
+--use this to print time cosumed by vision functions
+vision.print_time = 0; 
 ----------------------------
 --OP specific
 ----------------------------

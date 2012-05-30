@@ -4,7 +4,7 @@ module(..., package.seeall);
 pNear = Config.fsm.bodyApproach.pNear or 0.3;
 pFar = Config.fsm.bodyApproach.pFar or 1.0;
 
-function action()
+function kick()
   -- get attack goalpost positions and goal angle
   posts = {wcm.get_goal_attack_post1(), wcm.get_goal_attack_post2()}
 
@@ -18,11 +18,9 @@ function action()
   pFarthest = math.max(p1Dist, p2Dist);
 
   if ((pClosest > pNear) and (pClosest < pFar)) then
-    print('kick');   
-    return "kick";
+    return true;
   else
-    print("My distance is ",pClosest,"\n");
-    return "walkKick";
+    return false;
   end
 end
 

@@ -129,8 +129,9 @@ world.aPostFilter = 0.10;
 world.rLandmarkFilter = 0.05;
 world.aLandmarkFilter = 0.10;
 
+--SJ: Corner shouldn't turn angle too much (may cause flipping)
 world.rCornerFilter = 0.01;
-world.aCornerFilter = 0.04;
+world.aCornerFilter = 0.03;
 
 world.aLineFilter = 0.02;
 
@@ -143,7 +144,7 @@ occ.mapsize = 50;
 occ.robot_pos = {occ.mapsize / 2, occ.mapsize * 4 / 5};
 
 
-world.use_same_colored_goal = 1;
+world.use_same_colored_goal = 0;
 
 --Use line information to fix angle
 world.use_line_angles = 1;

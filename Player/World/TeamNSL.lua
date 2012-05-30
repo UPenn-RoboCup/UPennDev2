@@ -56,6 +56,7 @@ states[playerID] = state;
 --We maintain pose of all robots 
 --For obstacle avoidance
 poses={};
+player_roles=vector.zeros(10);
 t_poses=vector.zeros(10);
 
 function pack_msg(state)
@@ -109,7 +110,7 @@ function recv_msgs()
 
     msg=Comm.receive();
     --Ball GPS Info hadling
-    if #msg==14 then --Ball position message
+    if msg and #msg==14 then --Ball position message
       ball_gpsx=(tonumber(string.sub(msg,2,6))-5)*2;
       ball_gpsy=(tonumber(string.sub(msg,8,12))-5)*2;
       wcm.set_robot_gps_ball({ball_gpsx,ball_gpsy,0});
@@ -119,12 +120,14 @@ function recv_msgs()
 --    t = unpack_msg(Comm.receive());
       if t and (t.teamNumber) and (t.id) then
 	--Messages from upenn code
-	--Keep all pose data for obstacle avoidance 
+	--Keep all pose data for collison avoidance 
         if t.teamNumber ~= state.teamNumber then
 	  poses[t.id+5]=t.pose;
+	  player_roles[t.id+5]=t.role;
           t_poses[t.id+5]=Body.get_time();
         elseif t.id ~=playerID then
 	  poses[t.id]=t.pose;
+	  player_roles[t.id]=t.role;
           t_poses[t.id]=Body.get_time();
         end
 
@@ -147,11 +150,15 @@ function update_obstacle()
   local closest_pose={};
   local closest_dist =100;
   local closest_index = 0;
+  local closest_role = 0;
   pose = wcm.get_pose();
 
   --todo: parameterize
-  for i=1,10 do
-    if t_poses[i]~=0 and t-t_poses[i]<t_timeout then
+--  for i=1,10 do      --Check other teams too
+  for i=1,5 do  --Only check our team
+    if t_poses[i]~=0 and 
+	t-t_poses[i]<t_timeout and
+	player_roles[i]<4 then
       dist = math.sqrt(
 		(pose.x-poses[i].x)^2+
 		(pose.y-poses[i].y)^2);
@@ -159,6 +166,7 @@ function update_obstacle()
         closest_index = i;
         closest_dist = dist;
 	closest_pose = poses[i];	
+	closest_role = player_roles[i];
       end
     end
   end
@@ -169,6 +177,7 @@ function update_obstacle()
     local obstacle_local = util.pose_relative(
 	{closest_pose.x,closest_pose.y,0},{pose.x,pose.y,pose.a}); 
     wcm.set_obstacle_pose(obstacle_local);
+    wcm.set_obstacle_role(closest_role);
   else
     wcm.set_obstacle_dist(100);
   end

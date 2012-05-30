@@ -440,11 +440,10 @@ global MONITOR %for sending the webots check information
       % Add occupancy map
       r.occ = {};
 			map = h.ocmOcc.get_map();
+      map = typecast(map, 'uint32');
 			mapsize = sqrt(size(map,2));
 			map = reshape(map, [mapsize, mapsize]);
-      map_p = exp(map);
-%			map_p = exp(flipdim(rot90(map,-1),2));
-			r.occ.map = map_p ./ (map_p + 1);
+			r.occ.map = double(map)/10000;
 			r.occ.mapsize = mapsize;
 			r.occ.robot_pos = h.ocmOcc.get_robot_pos();
       
@@ -558,12 +557,12 @@ global MONITOR %for sending the webots check information
 
   function occ_p = get_occ_likelihood()
 			map = h.ocmOcc.get_map();
+      map = typecast(map, 'uint32');
       robot_pos = h.ocmOcc.get_robot_pos();
 			mapsize = sqrt(size(map,2));
       map_resolution = 1 / mapsize;
 			map = reshape(map, [mapsize, mapsize]);
-			map_exp = exp(map);
-			occ_p = map_exp./(map_exp + 1);
+			occ_p = double(map) / 10000;
       occ = {};
       occ.map = occ_p;
       occ.robot_pos = robot_pos;

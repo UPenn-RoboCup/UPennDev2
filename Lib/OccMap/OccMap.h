@@ -3,6 +3,7 @@
 #define __OCCMAP_H__
 
 #include <vector>
+#include <stdint.h>
 
 using namespace std;
 
@@ -18,7 +19,7 @@ public:
   ~OccMap() {}
   int randomize_map(void);
   int reset_size(int map_size, int robot_x, int robot_y, double time);
-  vector<double>& get_map(void);
+  vector<uint32_t>& get_map(void);
   vector<double>& get_map_updated_time(void);
   int& get_robot_pos_x(void);
   int& get_robot_pos_y(void);
@@ -41,6 +42,8 @@ private:
   double resolution;
   // Map Structure
   vector<double> grid;
+  // Map for output
+  vector<uint32_t> grid_out;
   // Map update time
   vector<double> grid_updated_time;
 

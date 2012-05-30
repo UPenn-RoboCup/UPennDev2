@@ -1,4 +1,4 @@
-module(..., package.seeall);
+module(... or "", package.seeall);
 
 require('Config');	
 require('Body')
@@ -69,4 +69,7 @@ function update()
 	-- shm Update
 	occmap = OccMap.retrieve_map();
 	ocm.set_occ_map(occmap);		
+end
+
+function exit()
 end

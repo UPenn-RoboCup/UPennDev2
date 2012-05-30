@@ -228,6 +228,13 @@ function push_labelB(obj)
   vcm.set_image_labelB(labelB);
 end
 
+function push_occmap(obj)
+  local name = parse_name(obj.name);
+  local occmap = cutil.test_array();
+  cutil.string2label_double(occmap,obj.data);	
+  ocm.set_occ_map(occmap);
+end
+
 function push_data(obj)
 --	print('receive data');
 --  print("data\t",.1/(unix.time() - data_t_full).."fps");
@@ -250,7 +257,6 @@ while( true ) do
 
   msg = Comm.receive();
   if( msg ) then
-    print(msg)
     local obj = serialization.deserialize(msg);
     if( obj.arr ) then
 	if ( string.find(obj.arr.name,'yuyv') ) then 
@@ -270,6 +276,9 @@ while( true ) do
 	  push_labelA(obj.arr);
 	elseif ( string.find(obj.arr.name,'labelB') ) then 
 	  push_labelB(obj.arr);
+  elseif ( string.find(obj.arr.name,'occmap') ) then
+    util.ptable(obj.arr);
+    push_occmap(obj.arr);
 	end
 
     else

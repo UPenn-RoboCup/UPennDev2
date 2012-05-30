@@ -39,8 +39,10 @@ int OccMap::reset_size(int size, int robot_x, int robot_y, double time) {
   rx = robot_x;
   ry = robot_y;
   max_dis = sqrt(rx * rx + ry * ry);
-  if (grid.size() < grid_num) 
+  if (grid.size() < grid_num) {
+    grid_out.resize(grid_num);
     grid.resize(grid_num);
+  }
   randomize_map();
 
   // reset map init time
@@ -61,8 +63,10 @@ int OccMap::randomize_map(void) {
   return 1;
 }
 
-vector<double>& OccMap::get_map(void) {
-  return grid;
+vector<uint32_t>& OccMap::get_map(void) {
+  for (int i = 0; i < grid.size(); i++)
+    grid_out[i] = (1 - 1/(1+exp(grid[i]))) * 10000;
+  return grid_out;
 }
 
 vector<double>& OccMap::get_map_updated_time(void) {

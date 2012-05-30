@@ -13,7 +13,7 @@ require('dive')
 
 t0 = 0;
 tStart = 0;
-timeout = 30.0;
+timeout = 20.0;
 
 started = false;
 kickable = true;
@@ -87,15 +87,9 @@ function update()
     return "ballClose";
   end
   -- Check if out of position
-  if( rHomeRelative>math.sqrt(thFar[1]^2+thFar[2]^2) ) then
+  if (t - t0 > timeout) and ( rHomeRelative>math.sqrt(thFar[1]^2+thFar[2]^2) ) then
     Motion.event("walk");
     return 'position';
-  end
-
-
-
-  if (t - t0 > timeout) then
-    return "timeout";
   end
 end
 function getGoalieHomePosition()

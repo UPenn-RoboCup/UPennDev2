@@ -141,16 +141,26 @@ function update()
     setDefenderVelocity();
   end
 
-  --Check the nearest obstacle (for non-attacker)
+  --Check the nearest player
   obstacle_dist = wcm.get_obstacle_dist();
   obstacle_pose = wcm.get_obstacle_pose();
-  if role<2 then
-    r_reject = 0.3;
+  obstacle_role = wcm.get_obstacle_role();
+  
+  --Priority: Goalie > Attacker > Defender
+  if role==0 then
+    r_reject = 0.2;
+  elseif role==1 then
+    if obstacle_role==0 then
+      r_reject = 1.0;
+    else
+      r_reject = 0.3;
+    end
   else
-    r_reject = 0.8;
+    r_reject = 1.5;
   end
+
   if obstacle_dist<r_reject then
-    local v_reject = 0.1*math.exp(-(obstacle_dist/r_reject)^2);
+    local v_reject = 0.2*math.exp(-(obstacle_dist/r_reject)^2);
     vx = vx - obstacle_pose[1]/obstacle_dist*v_reject;
     vy = vy - obstacle_pose[2]/obstacle_dist*v_reject;
   end

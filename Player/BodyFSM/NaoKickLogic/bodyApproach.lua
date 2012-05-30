@@ -75,13 +75,17 @@ function update()
     print('ballFar');
     return "ballFar";
   end
-  if (math.abs(attackBearing) > thAlign) then
+  if ((math.abs(attackBearing) > thAlign) and postDist.kick()) then
     print('ballAlign');
     return 'ballAlign';
   end
   if ((ball.x < xKick) and (math.abs(ball.y) < yKickMax) and
       (math.abs(ball.y) > yKickMin)) then
-    return postDist.action();
+    if(postDist.kick()) then
+      return "kick"
+    else
+      return "walkKick"
+    end  
   end
 end
 

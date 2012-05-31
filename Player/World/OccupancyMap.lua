@@ -19,7 +19,7 @@ function entry()
   OccMap.init(Config.occ.mapsize, Config.occ.robot_pos[1], 
               Config.occ.robot_pos[2], unix.time());
   nCol = vcm.get_freespace_nCol();
-  OccMap.vision_init(nCol);
+--  OccMap.vision_init(nCol);
 
   occmap = OccMap.retrieve_map();
   ocm.set_occ_map(occmap); 

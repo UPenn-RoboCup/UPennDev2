@@ -95,6 +95,7 @@ int OccMap::time_decay(double time) {
   return 1;
 }
 
+/*
 int OccMap::vision_proc_init(int obs_width) {
   cout << "Occupancy Map Vision Proc Initiation" << endl;
   if (gau_a.size() < obs_width) {
@@ -130,14 +131,6 @@ int OccMap::vision_proc_init(int obs_width) {
 int OccMap::vision_update(vector<double>& free_bound, vector<int>& free_bound_type,
     int width, double time) {
   clock_t start = clock();
-  /*
-  for (int i = 0; i < free_bound.size(); i++)
-    cout << free_bound[i] << ' ';
-  cout << endl;
-  for (int i = 0; i < free_bound_type.size(); i++)
-    cout << free_bound_type[i] << ' ';
-  cout << endl; 
-  */
   double ob_x = 0, ob_y = 0;
   // Calculate coef for every gaussian
   for (int i = 0; i < width; i++) {
@@ -182,6 +175,24 @@ int OccMap::vision_update(vector<double>& free_bound, vector<int>& free_bound_ty
   cout << "Vision Update Finished in " << (double)(stop - start)/CLOCKS_PER_SEC << " seconds." << endl;
   return 1;
 }
+*/
+
+bool OccMap::grid_compare(struct grid_point P1, struct grid_point P2) {
+  return P1.key < P2.key;
+}
+
+int OccMap::vision_update(vector<double>& free_bound, vector<int>& free_bound_type,
+    int width, double time) {
+  vector<grid_point> pt_update; // vector to save the point need to be update
+  // Go through all observation
+  for (int cnt = 0; cnt < free_bound_type.size(); cnt++) {
+    if (free_bound_type[cnt] != 2){
+      // find pts need to be update
+    }
+  }
+  return 1;
+}
+ 
 
 int OccMap::odometry_init(void) {
   odom_change.resize(grid_num);

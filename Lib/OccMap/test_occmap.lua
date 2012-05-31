@@ -27,7 +27,7 @@ require("unix")
 local time = unix.time();
 print(time)
 OccMap.init(50, 25, 40, time);
-OccMap.vision_init(80);
+--OccMap.vision_init(80);
 
 width = 80;
 free_bound = vector.zeros(width);

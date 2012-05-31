@@ -26,8 +26,10 @@ package.path = cwd.."/World/?.lua;"..package.path;
 
 require('OccupancyMap')
 
-maxFPS = 15;
+maxFPS = 5;
 tperiod = 1.0/maxFPS;
+maxDisFPS = 25;
+DisCount = 0;
 
 OccupancyMap.entry();
 
@@ -38,6 +40,10 @@ while (true) do
 
   tloop = unix.time() - tstart;
 
+  DisCount = DisCount + 1
+  if (DisCount % maxDisFPS == 0) then
+    print('OccMap Update Time: '..tloop);
+  end
   if (tloop < tperiod) then
     unix.usleep((tperiod - tloop)*(1E6));
   end

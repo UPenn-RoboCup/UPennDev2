@@ -66,11 +66,19 @@ static int lua_occmap_vision_update(lua_State *L) {
     free_bound_type.push_back(lua_tointeger(L, -1));
     lua_pop(L, 1);
   }
-  int width = luaL_checkint(L, 3);
-  if (free_bound.size() != 2 * width) return 0;
-  if (free_bound_type.size() != 2 * width) return 0;
+    int width = luaL_checkint(L, 3);
+  if (free_bound.size() != 2 * width) {
+    cout << "WARN: freespace bound data size must be double width" << endl;
+    return 0;
+  }
+  if (free_bound_type.size() != width) {
+    cout << "WARN: freespace type data size must be width" << endl;
+    return 0;
+  }
   double time = luaL_checknumber(L, 4);
+// cout << "Vision Udpate before" << endl;
   map.vision_update(free_bound, free_bound_type, width, time);
+//  cout << "vision update" << endl;
   return 1;
 }
 

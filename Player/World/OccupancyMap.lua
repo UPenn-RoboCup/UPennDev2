@@ -55,10 +55,6 @@ function vision_update()
 --  print("scanned freespace width ");
 end
 
-count = 0;
-maxcount = 100;
-tUpdate = unix.time()
-
 function update()
 
   -- Time decay

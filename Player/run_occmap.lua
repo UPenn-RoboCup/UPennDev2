@@ -26,7 +26,7 @@ package.path = cwd.."/World/?.lua;"..package.path;
 
 require('OccupancyMap')
 
-maxFPS = 5;
+maxFPS = 15;
 tperiod = 1.0/maxFPS;
 maxDisFPS = 25;
 DisCount = 0;

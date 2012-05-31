@@ -19,9 +19,6 @@ OccMap::OccMap()
 ,odom_x(0.0), odom_y(0.0), odom_a(0.0)
 ,odom_change_num(0)
 // vars for vision update
-,var_x(0.0), var_y(0.0)
-,gau_max_range(0.0)
-,gau_min_p(0.0001)
 ,default_p(0.25)
 ,default_log_p(log(default_p / (1 - default_p)))
 {
@@ -95,104 +92,55 @@ int OccMap::time_decay(double time) {
   return 1;
 }
 
-/*
-int OccMap::vision_proc_init(int obs_width) {
-  cout << "Occupancy Map Vision Proc Initiation" << endl;
-  if (gau_a.size() < obs_width) {
-      gau_a.resize(obs_width);  
-      cout << "resize container for Gaussians Coef a" << endl;
-  } 
-  if (gau_b.size() < obs_width) {
-      gau_b.resize(obs_width);  
-      cout << "resize container for Gaussians Coef b" << endl;
-  }
-  if (gau_c.size() < obs_width) {
-      gau_c.resize(obs_width);  
-      cout << "resize container for Gaussians Coef c" << endl;
-  }
-  if (gau_theta.size() < obs_width) {
-      gau_theta.resize(obs_width);  
-      cout << "resize container for Gaussians Rotation Angles" << endl;
-  }
-  
-  var_x = 0.01;
-  cout << "initiate x variance " << var_x << endl;
-  var_y = 0.02;
-  cout << "initiate y variance " << var_y << endl;
-  
-  gau_max_range = sqrt(-log(gau_min_p) * 2 * pow(min(var_x, var_y), 2));
-  cout << "initiate gaussian max effective range " << gau_max_range << endl;
 
-  cout << "initiate default likelihood for unknown area " << default_p << endl;
-  cout << "initiate default log likelihood for unknown area " << default_log_p << endl;
-  return 1;
-}
-
-int OccMap::vision_update(vector<double>& free_bound, vector<int>& free_bound_type,
-    int width, double time) {
-  clock_t start = clock();
-  double ob_x = 0, ob_y = 0;
-  // Calculate coef for every gaussian
-  for (int i = 0; i < width; i++) {
-    gau_theta[i] = atan2(free_bound[i], free_bound[i + width]); 
-    gau_a[i] = 0.5 * pow(cos(gau_theta[i]) / var_x, 2) + 
-                0.5 * pow(sin(gau_theta[i]) / var_y, 2);
-    gau_b[i] = -0.25 * sin(2 * gau_theta[i]) / pow(var_x, 2) +
-                0.25 * sin(2 * gau_theta[i]) / pow(var_y, 2);
-    gau_c[i] = 0.5 * pow(sin(gau_theta[i]) / var_x, 2) +
-                0.5 * pow(cos(gau_theta[i]) / var_y, 2);
-  }
-  // Update grid
-  double grid_p = 0, grid_p_max = 0; // likelihood of one point on grid
-  double x_robot = 0, y_robot = 0; // grid point with metric position
-  for (int i = 0; i < map_size; i++)
-    for (int j = 0; j < map_size; j++) {
-      // (1, 2) -> (0.02, 0.04) -> (0.74, 0.48) on robot coordinate
-      x_robot = ry * resolution - j * resolution;
-      y_robot = rx * resolution - i * resolution;
-      grid_p_max = 0;
-      // Go through all observation to decide the max likelihood
-      for (int k = 0; k < width; k++) {
-        ob_x = free_bound[k];
-        ob_y = free_bound[k + width];
-        if (free_bound_type[k] == 2) {
-          grid_p = 0;
-        } else
-          grid_p = exp(- (gau_a[k] * (x_robot - ob_x) * (x_robot - ob_x) + 
-                    2 * gau_b[k] * (x_robot - ob_x) * (y_robot - ob_y) + 
-                        gau_c[k] * (y_robot - ob_y) * (y_robot - ob_y)));
-        grid_p_max = max(grid_p_max, grid_p);
-      }
-      // update log likelihood -- set 0.0001 as 0
-      if (grid_p_max > gau_min_p) {
-        grid[j * map_size + i] += log(grid_p_max / (1 - grid_p_max));
-        grid[j * map_size + i] -= default_log_p;
-        range_check(grid[j * map_size + i]);
-        grid_updated_time[j * map_size + i] = time;
-      }
-    }
-  clock_t stop = clock();
-  cout << "Vision Update Finished in " << (double)(stop - start)/CLOCKS_PER_SEC << " seconds." << endl;
-  return 1;
-}
-*/
-
-bool OccMap::grid_compare(struct grid_point P1, struct grid_point P2) {
+bool grid_compare(struct grid_point P1, struct grid_point P2) {
   return P1.key < P2.key;
 }
 
 int OccMap::vision_update(vector<double>& free_bound, vector<int>& free_bound_type,
     int width, double time) {
   vector<grid_point> pt_update; // vector to save the point need to be update
+  vector<grid_point>::iterator low; // pointer to the found in binary search
   // Go through all observation
+  double ob_x = 0, ob_y = 0;
+  int ni = 0, nj = 0, index = 0; 
   for (int cnt = 0; cnt < free_bound_type.size(); cnt++) {
     if (free_bound_type[cnt] != 2){
       // find pts need to be update
-    }
+      ob_x = free_bound[cnt];
+      ob_y = free_bound[cnt + width];
+      for (int inc = -gau_ker_size; inc <= gau_ker_size; inc++) {
+        for (int jnc = -gau_ker_size; jnc <= gau_ker_size; jnc++) {
+          ni = (rx * resolution - ob_y + inc * resolution) / resolution;
+          nj = (ry * resolution - ob_x + jnc * resolution) / resolution;
+          // check range
+          if ((ni < 0) || (ni >= map_size) || (nj < 0) || (nj >= map_size)) continue;
+          // calculate index based on row and col
+          index = nj * map_size + ni;
+          struct grid_point new_pt = {index, gau[inc + gau_ker_size][jnc + gau_ker_size]};
+          // search and insert
+          low = lower_bound(pt_update.begin(), pt_update.end(), new_pt, grid_compare);
+          if (low == pt_update.end() || low->key != new_pt.key) {
+            pt_update.push_back(new_pt);
+            sort(pt_update.begin(), pt_update.end(), grid_compare);
+          } else {
+            low->value = max(low->value, new_pt.value);
+          } // if (low == ...
+        } // for jnc
+      } // for inc
+    } // if free_bound_type
+  } // for cnt
+ 
+  // Update Map
+  vector<grid_point>::iterator it;
+  for (it = pt_update.begin(); it != pt_update.end(); ++it) {
+    grid[it->key] += log(it->value / (1 - it->value));
+    grid[it->key] -= default_log_p;
+    range_check(grid[it->key]);
+    grid_updated_time[it->key] = time;
   }
   return 1;
 }
- 
 
 int OccMap::odometry_init(void) {
   odom_change.resize(grid_num);

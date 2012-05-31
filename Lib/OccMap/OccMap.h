@@ -41,12 +41,9 @@ public:
   
   int odometry_init(void);
   int odometry_update(const double odomX, const double odomY, const double odomA);
-//  int vision_proc_init(int obs_width);
   int vision_update(vector<double>& free_bound, vector<int>& free_bound_type, int width, double time);
   int time_decay(double time);
   inline void range_check(double &num);
-
-  bool grid_compare(struct grid_point P1, struct grid_point P2);
 
 private:
   // Map size in grids
@@ -81,15 +78,6 @@ private:
   vector<odom_pt> odom_change;
   int odom_change_num;
 
-  // Gaussian rotation angle
-  vector<double> gau_theta;
-  vector<double> gau_a;
-  vector<double> gau_b;
-  vector<double> gau_c;
-  double var_x;
-  double var_y;
-  double gau_max_range;
-  double gau_min_p;
   double default_p;
   double default_log_p;
 

@@ -35,14 +35,6 @@ static int lua_occmap_init_map(lua_State *L) {
   return 1;
 }
 
-/*
-static int lua_occmap_init_vision_proc(lua_State *L) {
-  int observation_width = luaL_checkint(L, 1);
-  map.vision_proc_init(observation_width);
-  return 1;
-}
-*/
-
 static int lua_occmap_odometry_update(lua_State *L) {
   double odomX = luaL_checknumber(L, 1);
   double odomY = luaL_checknumber(L, 2);
@@ -124,7 +116,6 @@ static int lua_occmap_time_decay(lua_State *L) {
 
 static const struct luaL_reg OccMap_lib [] = {
   {"init", lua_occmap_init_map},
-//  {"vision_init", lua_occmap_init_vision_proc},
   {"reset", lua_occmap_reset},
   {"time_decay", lua_occmap_time_decay},
   {"retrieve_map", lua_occmap_retrieve_map},

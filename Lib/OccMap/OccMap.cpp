@@ -2,7 +2,8 @@
 
 #include "OccMap.h"
 #include <cassert>
-#include <ctime>
+#include <time.h>
+#include <stdio.h>
 #include <iostream>
 #include <iomanip>
 #include <cmath>
@@ -128,6 +129,15 @@ int OccMap::vision_proc_init(int obs_width) {
 
 int OccMap::vision_update(vector<double>& free_bound, vector<int>& free_bound_type,
     int width, double time) {
+  clock_t start = clock();
+  /*
+  for (int i = 0; i < free_bound.size(); i++)
+    cout << free_bound[i] << ' ';
+  cout << endl;
+  for (int i = 0; i < free_bound_type.size(); i++)
+    cout << free_bound_type[i] << ' ';
+  cout << endl; 
+  */
   double ob_x = 0, ob_y = 0;
   // Calculate coef for every gaussian
   for (int i = 0; i < width; i++) {
@@ -168,6 +178,8 @@ int OccMap::vision_update(vector<double>& free_bound, vector<int>& free_bound_ty
         grid_updated_time[j * map_size + i] = time;
       }
     }
+  clock_t stop = clock();
+  cout << "Vision Update Finished in " << (double)(stop - start)/CLOCKS_PER_SEC << " seconds." << endl;
   return 1;
 }
 

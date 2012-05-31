@@ -52,10 +52,15 @@ function vision_update()
 
   nCol = vcm.get_freespace_nCol();
   OccMap.vision_update(vbound, tbound, nCol, unix.time());
---  print("scanned freespace width "..vbound);
+--  print("scanned freespace width ");
 end
 
+count = 0;
+maxcount = 100;
+tUpdate = unix.time()
+
 function update()
+
   -- Time decay
   local time = unix.time();
   OccMap.time_decay(time);
@@ -69,6 +74,7 @@ function update()
 	-- shm Update
 	occmap = OccMap.retrieve_map();
 	ocm.set_occ_map(occmap);		
+
 end
 
 function exit()

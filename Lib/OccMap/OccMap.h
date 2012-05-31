@@ -13,8 +13,8 @@ using namespace std;
 // |
 // y
 
-const int gau_ker_size = 7;
-const double gau[gau_ker_size][gau_ker_size] =
+const int gau_ker_size = 3;
+const double gau[2 * gau_ker_size + 1][2 * gau_ker_size + 1] =
 {{   0.0529305,   0.0833038,   0.0457804,  0.00878514, 0.000588672, 1.37738e-05, 1.12535e-07,},
   {   0.0833038,    0.270868,    0.307544,     0.12193,   0.0168799, 0.000815988, 1.37738e-05,},
   {   0.0457804,    0.307544,    0.721422,    0.590919,    0.169013,   0.0168799, 0.000588672,},
@@ -22,6 +22,11 @@ const double gau[gau_ker_size][gau_ker_size] =
   { 0.000588672,   0.0168799,    0.169013,    0.590919,    0.721422,    0.307544,   0.0457804,},
   { 1.37738e-05, 0.000815988,   0.0168799,     0.12193,    0.307544,    0.270868,   0.0833038,},
   { 1.12535e-07, 1.37738e-05, 0.000588672,  0.00878514,   0.0457804,   0.0833038,   0.0529305,}};
+
+struct grid_point {
+  int key;
+  double value;
+};
 
 class OccMap {
 public:
@@ -36,10 +41,12 @@ public:
   
   int odometry_init(void);
   int odometry_update(const double odomX, const double odomY, const double odomA);
-  int vision_proc_init(int obs_width);
+//  int vision_proc_init(int obs_width);
   int vision_update(vector<double>& free_bound, vector<int>& free_bound_type, int width, double time);
   int time_decay(double time);
   inline void range_check(double &num);
+
+  bool grid_compare(struct grid_point P1, struct grid_point P2);
 
 private:
   // Map size in grids

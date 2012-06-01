@@ -266,6 +266,8 @@ function update()
   --Set game state to SET to prevent particle resetting
   gcm.set_game_state(1);
 
+  local ball = wcm.get_ball();
+  print("Ball vel:",ball.vx,ball.vy);
 
   if (not init)  then
     if (calibrating) then

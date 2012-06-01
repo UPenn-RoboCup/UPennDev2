@@ -147,9 +147,9 @@ void print_device_params(snd_pcm_t *handle, snd_pcm_hw_params_t *params, int ful
     // significant bits
     val = snd_pcm_hw_params_get_sbits(params);
     printf("significant bits = %d\n", val);
-    // tick time
-    snd_pcm_hw_params_get_tick_time(params, &val, &dir);
-    printf("tick time = %d us\n", val);
+    // tick time (depricated)
+    //snd_pcm_hw_params_get_tick_time(params, &val, &dir);
+    //printf("tick time = %d us\n", val);
     // is batch
     val = snd_pcm_hw_params_is_batch(params);
     printf("is batch = %d\n", val);

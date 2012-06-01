@@ -56,6 +56,10 @@ function update()
     va = math.atan2(ball.y, ball.x);
   end
 
+
+  return "ready";
+--[[
+
   walk.set_velocity(vx, vy, va);
   ballR = math.sqrt(ball.x^2 + ball.y^2);
   if ((tBall < 1.0) and (ballR < rClose)) then
@@ -73,7 +77,7 @@ function update()
   if (t - t0 > timeout) then
     return "timeout";
   end
-
+--]]
 end
 
 

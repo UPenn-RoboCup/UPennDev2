@@ -60,11 +60,11 @@ util.ptable(occdata.robot_pos);
 --occ.odometry_update(3,2,1);
 --util.ptable(occmap.map)
 --print(occmap.map[450]);
---[[
+
 for i = 1 , 1 do
-  x = math.random()/40;
-  y = math.random()/40;
+  x = 0.05; --math.random()/40;
+  y = 0.54; --math.random()/40;
   a = math.random()/40;
-  occ.odometry_update(x, y, a);
+  OccMap.odometry_update(x, y, a);
 end
---]]
+

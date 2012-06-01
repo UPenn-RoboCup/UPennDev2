@@ -24,8 +24,9 @@ OccMap::OccMap()
 {
 }
 
+const double EXT_LOG = 15;
+
 inline void OccMap::range_check(double &num) {
-  const double EXT_LOG = 15;
   if (num > EXT_LOG) num =  EXT_LOG; // log likelihood 0.9999
   if (num < -EXT_LOG) num = -EXT_LOG; // log likelihood 0.0001
 }
@@ -143,7 +144,9 @@ int OccMap::vision_update(vector<double>& free_bound, vector<int>& free_bound_ty
 }
 
 int OccMap::odometry_init(void) {
-  odom_change.resize(grid_num);
+  struct odom_pt init_pt = {0,0,0.0};
+  for (int cnt = 0; cnt < grid_num; cnt++)
+    odom_change.push_back(init_pt);
   odom_change_num = 0;
   return 1;
 }
@@ -156,7 +159,7 @@ int OccMap::odometry_update(const double odomX, const double odomY,
 //  cout << odom_x << ' ' << odom_y << ' ' << odom_a << endl;
   if ((odom_x > resolution) || (odom_y > resolution) || 
       (odom_a * max_dis > resolution)) {
-//    cout << "odom update" << endl;
+    cout << "odom update" << endl;
     double nx = 0; // new point in occmap coordinate x
     double ny = 0; // new point in occmap coordinate y
     int ni = 0; // new point on map x;
@@ -166,26 +169,25 @@ int OccMap::odometry_update(const double odomX, const double odomY,
     odom_change_num = 0;
     for (int i = 0; i < map_size; i++)
       for (int j = 0; j < map_size; j++) {
+        if (grid[j * resolution + i] == -EXT_LOG) continue;
         nx = ca * (ry - j * resolution - odom_x) - sa * (rx - i * resolution - odom_y);
         ny = sa * (ry - j * resolution - odom_x) + ca * (rx - i * resolution - odom_y);
         ni = round((rx - ny) / resolution);
         nj = round((ry - nx) / resolution);
-        if ((ni >= 0) && (ni < map_size) && (nj >= 0) && (nj < map_size)) 
-          continue;
-        if ((i == ni) || (j == nj)) 
-          continue;
+        if ((ni >= 0) && (ni < map_size) && (nj >= 0) && (nj < map_size)) continue;
+        if ((i == ni) || (j == nj)) continue;
         odom_change[odom_change_num].x = ni;
         odom_change[odom_change_num].y = nj;
         odom_change[odom_change_num].value = grid[j * map_size + i];
         odom_change_num++;
       }
-//    cout << odom_change_num << " blocks updated" << endl; 
+    cout << odom_change_num << " blocks updated" << endl; 
     for (int cnt = 0; cnt < odom_change_num; cnt ++) {
       ni = odom_change[cnt].x;
       nj = odom_change[cnt].y;
       grid[nj * resolution + ni] = odom_change[cnt].value;
     }
-
+    
     odom_x = 0;
     odom_y = 0;
     odom_a = 0;

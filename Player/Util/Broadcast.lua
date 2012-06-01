@@ -12,12 +12,13 @@ require('vcm')
 require('gcm')
 require('wcm')
 require('ocm')
+require('mcm')
 require('serialization');
 require('ImageProc')
 require('Config');
 
 --sendShm = {'wcm','vcm','gcm'}
-sendShm = { wcmshm=wcm, gcmshm=gcm, vcmshm=vcm, ocmshm=ocm }
+sendShm = { wcmshm=wcm, gcmshm=gcm, vcmshm=vcm, ocmshm=ocm, mcmshm=mcm }
 itemReject = 'yuyv, labelA, labelB, yuyv2, yuyv3, map'
 
 -- Initiate Sending Address

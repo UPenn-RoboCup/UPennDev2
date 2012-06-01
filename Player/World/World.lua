@@ -90,6 +90,15 @@ function update_odometry()
   PoseFilter.odometry(uOdometry[1], uOdometry[2], uOdometry[3]);
 end
 
+--update localization without vision (for odometry testing)
+function update_pos()
+
+  pose.x,pose.y,pose.a = PoseFilter.get_pose();
+
+  update_shm();
+
+end
+
 function update_vision()
 
   --update ground truth

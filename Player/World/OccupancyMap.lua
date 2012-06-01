@@ -14,6 +14,9 @@ require('vector');
 uOdometry0 = vector.new({0, 0, 0});
 
 odomScale = Config.world.odomScale or Config.walk.odomScale;
+imuYaw = Config.world.imuYaw or 0;
+yaw0 = 0;
+yawScale = 1.38
 
 function entry()
   OccMap.init(Config.occ.mapsize, Config.occ.robot_pos[1], 
@@ -37,12 +40,12 @@ function odom_update()
 
   --Gyro integration based IMU
   if imuYaw==1 then
-    yaw = Body.get_sensor_imuAngle(3);
+    yaw = yawScale * Body.get_sensor_imuAngle(3);
     uOdometry[3] = yaw-yaw0;
     yaw0 = yaw;
---    print("Body yaw:",yaw*180/math.pi, " Pose yaw ",pose.a*180/math.pi)
+--    print("Body yaw:",yaw*180/math.pi) --, " Pose yaw ",pose.a*180/math.pi)
   end
---  print("Odometry change: ",uOdometry[1],uOdometry[2],uOdometry[3]);
+  print("Odometry change: ",uOdometry[1],uOdometry[2],uOdometry[3]);
 	OccMap.odometry_update(uOdometry[1], uOdometry[2], uOdometry[3]);
 end
 

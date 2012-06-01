@@ -16,14 +16,14 @@ const char TONE_SYMBOL[4][4] = {{'1','2','3','A'},
 // TODO: what does the NFFT_MULTIPLIER represent?
 const int NFFT_MULTIPLIER = 2;
 // number of elements in the result from the normalized fft 
-const int NFFT = NFFT_MULTIPLIER * NUM_SAMPLE;
+const int NFFT = NFFT_MULTIPLIER * PFRAME;
 
 // TODO: what do these thresholds mean
 const double THRESHOLD_RATIO1 = 2;
 const double THRESHOLD_RATIO2 = 2;
 const int THRESHOLD_COUNT = 3;
 const int NUM_CHIRP_COUNT = 4;
-const int NCORRELATION = NUM_CHIRP_COUNT * NUM_SAMPLE;
+const int NCORRELATION = NUM_CHIRP_COUNT * PFRAME;
 
 // TODO: frame number should not be here, temporary for matlab testing
 long frameNumber = 0;
@@ -78,12 +78,12 @@ void filter_fft(int *x, int *y, int n) {
   static bool init = false;
 
   if (!init) {
-    for (int i = 0; i < NUM_SAMPLE; i++) {
+    for (int i = 0; i < PFRAME; i++) {
       // time reverse to filter for correlation
-      xFilter[i] = pnSequence[NUM_SAMPLE-1-i]; 
+      xFilter[i] = pnSequence[PFRAME-1-i]; 
       yFilter[i] = 0;
     }
-    for (int i = NUM_SAMPLE; i < NFFT; i++) {
+    for (int i = PFRAME; i < NFFT; i++) {
       xFilter[i] = 0; 
       yFilter[i] = 0;
     }
@@ -159,13 +159,13 @@ void check_tone(short *x)  {
   double rowRatio, colRatio;
 
   // extract left/right channels
-  for (int i = 0; i < NUM_SAMPLE; i++) {
+  for (int i = 0; i < PFRAME; i++) {
     xL[i] = x[2*i]; 
     yL[i] = 0;
     xR[i] = x[2*i+1]; 
     yR[i] = 0;
   }
-  for (int i = NUM_SAMPLE; i < NFFT; i++) {
+  for (int i = PFRAME; i < NFFT; i++) {
     xL[i] = 0; 
     yL[i] = 0;
     xR[i] = 0; 
@@ -248,8 +248,9 @@ void check_tone(short *x)  {
 
   // get tone symbol
   char symbol = TONE_SYMBOL[kLRow][kLCol];
-
   printf("symbol: %c\n", symbol);
+
+  //printf("toneCount: %d\n", toneCount);
 
   // is this the first tone?
   //  or has the tone changed before expected
@@ -274,14 +275,14 @@ void check_tone(short *x)  {
 
     int nCorr = toneCount - (THRESHOLD_COUNT+1);
     if (nCorr > 0) {
-      for (int i = 0; i < NUM_SAMPLE-1; i++) {
-        leftCorr[(nCorr-1)*NUM_SAMPLE+i+1] += xL[i];
-        rightCorr[(nCorr-1)*NUM_SAMPLE+i+1] += xR[i];
+      for (int i = 0; i < PFRAME-1; i++) {
+        leftCorr[(nCorr-1)*PFRAME+i+1] += xL[i];
+        rightCorr[(nCorr-1)*PFRAME+i+1] += xR[i];
       }
     }
-    for (int i = 0; i < NUM_SAMPLE; i++) {
-      leftCorr[nCorr*NUM_SAMPLE+i] = xL[NUM_SAMPLE-1+i];
-      rightCorr[nCorr*NUM_SAMPLE+i] = xR[NUM_SAMPLE-1+i];
+    for (int i = 0; i < PFRAME; i++) {
+      leftCorr[nCorr*PFRAME+i] = xL[PFRAME-1+i];
+      rightCorr[nCorr*PFRAME+i] = xR[PFRAME-1+i];
     }
 
     /*
@@ -291,7 +292,6 @@ void check_tone(short *x)  {
       pcmArray[nPcm+i][1] = x[2*i+1];
     }
     */
-
   }
 
   // have we reached the end of the expected audio signal?
@@ -312,8 +312,8 @@ void check_tone(short *x)  {
 
     // find first max zero crossing
     const double stdThreshold = 3;
-    int xLIndex = find_first_max(leftCorr, NCORRELATION, stdThreshold*xLStd, NUM_SAMPLE);
-    int xRIndex = find_first_max(rightCorr, NCORRELATION, stdThreshold*xRStd, NUM_SAMPLE);
+    int xLIndex = find_first_max(leftCorr, NCORRELATION, stdThreshold*xLStd, PFRAME);
+    int xRIndex = find_first_max(rightCorr, NCORRELATION, stdThreshold*xRStd, PFRAME);
 
     // finished cross correlating the stereo signal
     //  get data out to localization modules
@@ -329,10 +329,12 @@ void check_tone(short *x)  {
     subject[sbjInterpreter]->SetData(strBuf, strlen(strBuf));
     subject[sbjInterpreter]->NotifyObservers();
 
-    toneCount = 0;
     subject[sbjDecoder]->SetData(pcmArray);
     subject[sbjDecoder]->NotifyObservers();
     */
+
+    // reset tone count
+    toneCount = 0;
   }
 }
 

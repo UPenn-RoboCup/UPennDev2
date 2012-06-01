@@ -14,16 +14,13 @@ static const int SAMPLES_PER_FRAME = 2;
 // NOTE: the nao driver will not allow any other period size that 341 (per channel)
 static const int FRAMES_PER_PERIOD = 341;
 // number of total frames
-static const int NFRAMES = FRAMES_PER_PERIOD;
+static const int NFRAME = FRAMES_PER_PERIOD;
 // number of samples per period (number of elements in each audio sequence)
 static const int ASAMPLE = (FRAMES_PER_PERIOD*SAMPLES_PER_FRAME);
-// the nao cross compiler does not like the other one
-//static const int NSAMPLE = 341*2;
-
 
 // number of frames in audio segment we want to process
-static const int PFRAMES = 512;
+static const int PFRAME = 512;
 // size of audio segment we want to process
-static const int PSAMPLE = (PFRAMES*SAMPLES_PER_FRAME);
+static const int PSAMPLE = (PFRAME*SAMPLES_PER_FRAME);
 
 #endif

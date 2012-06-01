@@ -1,10 +1,11 @@
 #ifndef __DTMF_H__
 #define __DTMF_H__
 
+#include "sound_params.h"
 #include "pnSequence.h"
 
 // number of audio samples per frame
-static const int NUM_SAMPLE = 512;
+//static const int NUM_SAMPLE = 512;
 //#define NUM_SAMPLE 512
 
 

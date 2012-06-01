@@ -81,5 +81,8 @@ world.initPosition2={
 }
 
 -- Occupancy Map parameters
-occmap = {};
-occmap.div = 72;
+occ = {};
+occ.mapsize = 50;
+occ.robot_pos = {occ.mapsize / 2, occ.mapsize * 4 / 5};
+
+

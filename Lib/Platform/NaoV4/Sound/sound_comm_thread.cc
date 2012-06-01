@@ -1,17 +1,4 @@
-// use the newer alsa api
-#define ALSA_PCM_NEW_HW_PARAMS_API
-#include <alsa/asoundlib.h>
-
-#include <math.h>
-#include <stdio.h>
-#include <signal.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <pthread.h>
-
-#include "sound_params.h"
-#include "alsa_util.h"
-#include "dtmf.h"
+#include "sound_comm_thread.h"
 
 // thread variables
 static pthread_t rxthread;
@@ -202,7 +189,7 @@ void sound_comm_rx_thread_cleanup() {
 }
 
 
-
+/*
 int main() {
   int ret;
 
@@ -255,5 +242,6 @@ int main() {
 
   return 0;
 }
+*/
 
 

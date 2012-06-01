@@ -32,6 +32,7 @@ global MONITOR %for sending the webots check information
   h.wcmGoal  = shm(sprintf('wcmGoal%d%d%s',  h.teamNumber, h.playerID, h.user));
   h.wcmParticle  = shm(sprintf('wcmParticle%d%d%s',  h.teamNumber, h.playerID, h.user));
   %h.wcmKick
+  h.mcmUs = shm(sprintf('mcmUs%d%d%s', h.teamNumber, h.playerID, h.user));
 
 
   h.wcmTeamdata  = shm(sprintf('wcmTeamdata%d%d%s',  h.teamNumber, h.playerID, h.user));

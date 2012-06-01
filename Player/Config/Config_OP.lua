@@ -20,7 +20,7 @@ loadconfig('Kick/Config_OP_Kick')
 loadconfig('Vision/Config_OP_Vision')
 --Location Specific Camera Parameters--
 --loadconfig('Vision/Config_OP_Camera_VT')
-loadconfig('Vision/Config_OP_Camera_L512_16_00')
+loadconfig('Vision/Config_OP_Camera_L512')
 
 -- Device Interface Libraries
 dev = {};
@@ -82,7 +82,7 @@ fsm.body = {'GeneralPlayer'};
 --Behavior flags, should be defined in FSM Configs but can be overrided here
 fsm.enable_obstacle_detection = 1;
 fsm.kickoff_wait_enable = 0;
-fsm.playMode = 2; --1 for demo, 2 for orbit, 3 for direct approach
+fsm.playMode = 3; --1 for demo, 2 for orbit, 3 for direct approach
 fsm.enable_walkkick = 0;
 fsm.enable_sidekick = 0;
 
@@ -124,4 +124,4 @@ goalie_dive = 1; --1 for arm only, 2 for actual diving
 speakenable = false;
 
 --Slow down max speed
-fsm.bodyPosition.maxStep3 = 0.06;
+--fsm.bodyPosition.maxStep3 = 0.06;

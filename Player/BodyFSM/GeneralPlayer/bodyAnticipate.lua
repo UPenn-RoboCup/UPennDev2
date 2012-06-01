@@ -56,7 +56,7 @@ function update()
 --Penalty mark dist is 1.8m from goal line
     rCloseDive = 2.0; 
     rMinDive = 0.7;
-    ball_velocity_th = -0.5;
+    ball_velocity_th = -1.0;
 
     if t-t0>tStartDelay and t-ball.t<0.1 then
       --Tracking the ball in ready position. Stop off head movement
@@ -87,10 +87,12 @@ function update()
     return "ballClose";
   end
   -- Check if out of position
+--[[
   if (t - t0 > timeout) and ( rHomeRelative>math.sqrt(thFar[1]^2+thFar[2]^2) ) then
     Motion.event("walk");
     return 'position';
   end
+--]]
 end
 function getGoalieHomePosition()
 

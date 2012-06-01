@@ -45,7 +45,7 @@ function odom_update()
     yaw0 = yaw;
 --    print("Body yaw:",yaw*180/math.pi) --, " Pose yaw ",pose.a*180/math.pi)
   end
-  print("Odometry change: ",uOdometry[1],uOdometry[2],uOdometry[3]);
+--  print("Odometry change: ",uOdometry[1],uOdometry[2],uOdometry[3]);
 	OccMap.odometry_update(uOdometry[1], uOdometry[2], uOdometry[3]);
 end
 
@@ -62,7 +62,7 @@ function update()
 
   -- Time decay
   local time = unix.time();
-  OccMap.time_decay(time);
+--  OccMap.time_decay(time);
 
 	-- Vision Update
   vision_update();

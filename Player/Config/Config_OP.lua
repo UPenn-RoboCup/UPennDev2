@@ -16,7 +16,8 @@ end
 loadconfig('Robot/Config_OP_Robot') 
 loadconfig('Walk/Config_OP_Walk')
 loadconfig('World/Config_OP_World')
-loadconfig('Kick/Config_OP_Kick')
+--loadconfig('Kick/Config_OP_Kick')
+loadconfig('Kick/Config_OP_Kick2')
 loadconfig('Vision/Config_OP_Vision')
 --Location Specific Camera Parameters--
 --loadconfig('Vision/Config_OP_Camera_VT')
@@ -123,6 +124,3 @@ goalie_dive = 1; --1 for arm only, 2 for actual diving
 
 --Speak enable
 speakenable = false;
-
---Slow down max speed
---fsm.bodyPosition.maxStep3 = 0.06;

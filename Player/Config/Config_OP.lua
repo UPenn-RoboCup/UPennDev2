@@ -20,7 +20,8 @@ loadconfig('Kick/Config_OP_Kick')
 loadconfig('Vision/Config_OP_Vision')
 --Location Specific Camera Parameters--
 --loadconfig('Vision/Config_OP_Camera_VT')
-loadconfig('Vision/Config_OP_Camera_L512')
+--loadconfig('Vision/Config_OP_Camera_L512')
+loadconfig('Vision/Config_OP_Camera_L512_Day')
 
 -- Device Interface Libraries
 dev = {};

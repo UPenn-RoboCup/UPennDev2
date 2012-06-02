@@ -29,8 +29,8 @@ package.path = cwd .. '/World/?.lua;' .. package.path;
 require('unix')
 require('Config')
 Config.fsm.playMode = 1; --Force demo
-Config.fsm.enable_walkkick = 0;
-Config.fsm.enable_sidekick = 0;
+Config.fsm.enable_walkkick = 1;
+Config.fsm.enable_sidekick = 1;
 
 
 require('shm')

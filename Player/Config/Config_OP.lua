@@ -16,8 +16,8 @@ end
 loadconfig('Robot/Config_OP_Robot') 
 loadconfig('Walk/Config_OP_Walk')
 loadconfig('World/Config_OP_World')
-loadconfig('Kick/Config_OP_Kick')
---loadconfig('Kick/Config_OP_Kick2')
+--loadconfig('Kick/Config_OP_Kick')
+loadconfig('Kick/Config_OP_Kick2')
 loadconfig('Vision/Config_OP_Vision')
 --Location Specific Camera Parameters--
 

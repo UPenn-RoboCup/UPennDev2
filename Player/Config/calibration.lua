@@ -443,3 +443,8 @@ cal["linus"].kickXComp=0.010;
 cal["linus"].servoBias={21,-3,43,-1,1,-18,-21,-5,-13,-12,-15,6,};
 cal["linus"].footXComp=0.002;
 cal["linus"].kickXComp=0.010;
+
+-- Updated date: Sun Jun  3 16:48:40 2012
+cal["linus"].servoBias={21,-3,43,-1,1,-1,-21,-5,-13,-12,-15,6,};
+cal["linus"].footXComp=0.002;
+cal["linus"].kickXComp=0.010;

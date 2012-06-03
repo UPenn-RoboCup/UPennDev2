@@ -23,7 +23,7 @@ sleep 1
 
 echo "Starting Player..."
 cd $PLAYER_DIR
-screen -dm -L -S player /usr/bin/luajit run_main_op.lua
+screen -dm -L -S player /usr/bin/luajit run_main.lua
 
 echo "Rock and Roll!"
 

@@ -1,35 +1,27 @@
 cmake_minimum_required(VERSION 2.6.4 FATAL_ERROR)
 
-project(SoundComm)
+project(sound)
 
 # include for lua headers
-#include_directories(/usr/local/include)
-#include_directories(/usr/include/lua5.1)
+include_directories(/usr/local/include)
+include_directories(/usr/include/lua5.1)
 
-#include_directories(/home/brindza/upenn/robocup/aldebaran/ctc/nao-atom-cross-toolchain-1.12.3/sysroot/usr/include)
-#link_directories(/home/brindza/upenn/robocup/aldebaran/ctc/nao-atom-cross-toolchain-1.12.3/cross/i686-pc-linux-gnu/usr/lib)
-#link_directories(/home/brindza/upenn/robocup/aldebaran/ctc/nao-atom-cross-toolchain-1.12.3/sysroot/lib)
-#link_directories(/home/brindza/upenn/robocup/aldebaran/ctc/nao-atom-cross-toolchain-1.12.3/sysroot/usr/lib)
-
-#include_directories(/$(NaoqiCTC)/sysroot/usr/include)
-#link_directories(/$(NaoqiCTC)/sysroot/usr)
-#link_directories(/$(NaoqiCTC)/sysroot/usr/lib)
+# play and record binaries
+add_executable(play play.cc alsa_util.cc)
+add_executable(record record.cc alsa_util.cc)
 
 # unix main library definition
-#add_library(unix SHARED luaunix.c)
-
-add_executable(sound_comm sound_comm.cc alsa_util.cc dtmf.cc)
-#add_executable(sound_comm sound_comm.c alsa_util.c)
-add_executable(fttf tfft.cc)
-
+add_library(SoundComm SHARED SoundComm.cc sound_comm_thread.cc alsa_util.cc dtmf.cc)
 
 # set optimization level
 #   TODO: can we now use level 2? it would not work for NaoV3
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2")
 
 # set library prefix to "" otherwise it will create libNaoCam.so
-#set_target_properties(unix PROPERTIES PREFIX "")
+set_target_properties(SoundComm PROPERTIES PREFIX "")
 
 # link to alsa library
-target_link_libraries(sound_comm asound)
+target_link_libraries(SoundComm asound)
+target_link_libraries(play asound)
+target_link_libraries(record asound)
 

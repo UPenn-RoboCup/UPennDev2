@@ -110,7 +110,7 @@ function update()
   vcm.set_camera_teambroadcast(1); --Turn on wireless team broadcast
 
   --Check pause button Releases
-  if (Body.get_change_role() == 1) then
+  if (Body.get_change_state() == 1) then
     button_role=1;
     if (t-tButtonRole>1.0) then --Button pressed for 1 sec
       waiting = 1-waiting;
@@ -133,7 +133,8 @@ function update()
   end
 
   --Check center button press
-  if (Body.get_change_state() == 1) then
+
+  if (Body.get_change_role() == 1) then
     button_state=1;
   else
     if button_state==1 then --Button released

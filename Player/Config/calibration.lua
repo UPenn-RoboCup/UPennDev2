@@ -433,3 +433,8 @@ cal["scarface"].kickXComp=0.005;
 cal["scarface"].servoBias={0,0,6,50,59,15,0,0,-20,-32,-21,1,};
 cal["scarface"].footXComp=-0.008;
 cal["scarface"].kickXComp=0.005;
+
+-- Updated date: Sat Jun  2 21:40:18 2012
+cal["linus"].servoBias={21,-3,43,-1,1,-11,-21,-5,-13,-12,-15,-3,};
+cal["linus"].footXComp=0.002;
+cal["linus"].kickXComp=0.010;

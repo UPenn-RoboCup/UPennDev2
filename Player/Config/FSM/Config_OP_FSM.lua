@@ -121,12 +121,12 @@ fsm.bodyApproach.xTarget12={0, 0.13,0.15}; --min, target, max
 fsm.bodyApproach.yTarget12={-0.005, 0.01, 0.025}; --min, target ,max
 
 --Target position for straight walkkick 
-fsm.bodyApproach.xTarget21={0, 0.17,0.19}; --min, target, max
-fsm.bodyApproach.yTarget21={0.01, 0.035, 0.04}; --min, target ,max
+fsm.bodyApproach.xTarget21={0, 0.21,0.23}; --min, target, max
+fsm.bodyApproach.yTarget21={0.020, 0.035, 0.050}; --min, target ,max
 
 --Target position for side walkkick to left
-fsm.bodyApproach.xTarget22={0, 0.15,0.17}; --min, target, max
-fsm.bodyApproach.yTarget22={0.005, 0.02, 0.035}; --min, target ,max
+fsm.bodyApproach.xTarget22={0, 0.16,0.19}; --min, target, max
+fsm.bodyApproach.yTarget22={0.000, 0.015, 0.030}; --min, target ,max
 
 --------------------------------------------------
 --BodyAlign : Align robot before kick

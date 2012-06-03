@@ -338,14 +338,28 @@ function update()
   end
 --]]
 
+  --Behavior testing is handled here
+  force_player_role = Config.fsm.forcePlayer or 0;
+  if force_player_role>0 then
+    if force_player_role==1 then
+      role = 1;
+    elseif force_player_role==2 then
+      role = 2;
+    elseif force_player_role==3 then
+      role = 0;
+    end
+  end
+
   --Check if the role is changed elsewhere
   if role ~= gcm.get_team_role() then
     set_role(gcm.get_team_role());
   end
 
   --Only switch role during gamePlaying state
+  --If role is forced for testing, don't change roles
 
-  if gcm.get_game_state()==3 then
+  if gcm.get_game_state()==3 and
+     force_player_role ==0 then
     -- goalie and reserve player never changes role
     if role~=0 and role<4 then 
       minETA, minEtaID = min(eta);

@@ -1,8 +1,8 @@
 /*
- * Mex file to test the dtmf tone detection
+ * Mex file to test the cross correlation
  * 
  * To compile:
- * mex -O mydtmf.cc
+ * mex -O mycrosscorr.cc
  *  
  * Jordan Brindza; <brindza@seas.upenn.edu>
  */
@@ -25,26 +25,19 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
   int xRIndex = 0;
   int ret;
 
-  int *leftCorrOut = NULL;
-  if (nlhs >= 5) {
-    mwSize ndim = 2;
-    mwSize dims[2] = {1, NCORRELATION};
-    plhs[4] = mxCreateNumericArray(ndim, dims, mxINT32_CLASS, mxREAL);
-    leftCorrOut = (int *)mxGetData(plhs[4]);
-  }
-  int *rightCorrOut = NULL;
-  if (nlhs >= 6) {
-    mwSize ndim = 2;
-    mwSize dims[2] = {1, NCORRELATION};
-    plhs[5] = mxCreateNumericArray(ndim, dims, mxINT32_CLASS, mxREAL);
-    rightCorrOut = (int *)mxGetData(plhs[5]);
-  }
+  // create return arrays
+  mwSize ndim = 2;
+  mwSize dims[2] = {1, PFRAME};
+  plhs[0] = mxCreateNumericArray(ndim, dims, mxINT32_CLASS, mxREAL);
+  int *leftCorr = (int *)mxGetData(plhs[0]);
+  plhs[1] = mxCreateNumericArray(ndim, dims, mxINT32_CLASS, mxREAL);
+  int *rightCorr = (int *)mxGetData(plhs[1]);
 
   if (nrhs < 2) {
     // assumed to be actual interleaved audio signal
     x = (short *)mxGetData(prhs[0]);
 
-    ret = check_tone(x, symbol, frame, xLIndex, xRIndex, leftCorrOut, rightCorrOut);
+    ret = cross_correlation(x, leftCorr, rightCorr);
   } else if (nrhs == 2) {
     // interleave left and right audio signals
     double *l = mxGetPr(prhs[0]);
@@ -72,20 +65,9 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
       x[2*i+1]  = (short)r[i];
     }
 
-    ret = check_tone(x, symbol, frame, xLIndex, xRIndex, leftCorrOut, rightCorrOut);
+    ret = cross_correlation(x, leftCorr, rightCorr);
 
     free(x);
   }
-
-  // set return variables
-  mwSize ndim = 2;
-  mwSize dims[2] = {1, 1};
-  plhs[0] = mxCreateCharArray(ndim, dims);
-  char *symbolRet = (char *)mxGetData(plhs[0]);
-  symbolRet[0] = symbol;
-
-  plhs[1] = mxCreateDoubleScalar((double)frame);
-  plhs[2] = mxCreateDoubleScalar((double)xLIndex);
-  plhs[3] = mxCreateDoubleScalar((double)xRIndex);
 }
 

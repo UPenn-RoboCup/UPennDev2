@@ -26,4 +26,7 @@ void *sound_comm_rx_thread_func(void*);
 
 void sound_comm_rx_thread_cleanup();
 
+int sound_comm_thread_init();
+
+
 #endif

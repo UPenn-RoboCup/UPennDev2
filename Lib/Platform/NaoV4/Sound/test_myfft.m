@@ -22,17 +22,20 @@ symbol = '5';
 h1 = fRow(r);
 h2 = fCol(c);
 % sum of a h1 Hz sinusoid and a h2 Hz sinusoid
-x = 100 * sin(2*pi*h1*t) + 100 * sin(2*pi*h2*t);
+x_tone = 100 * sin(2*pi*h1*t) + 100 * sin(2*pi*h2*t);
 
-%plot(gca, Fs*t(1:50),x(1:50));
+% process 4 tones
+[rsymbol frame xLIndex xRIndex] = mydtmf(x_tone, x_tone);
+[rsymbol frame xLIndex xRIndex] = mydtmf(x_tone, x_tone);
+[rsymbol frame xLIndex xRIndex] = mydtmf(x_tone, x_tone);
+%[rsymbol frame xLIndex xRIndex] = mydtmf(x_tone, x_tone);
 
-% Next power of 2 from length of y
-NFFT = 2^nextpow2(L); 
-Y = fft(x, NFFT)/L;
-f = Fs/2*linspace(0,1,NFFT/2+1);
-
-
-[xr xi] = myfft(x);
-plot(gca, xr);
-mydtmf(x, x);
+% process pnSequence
+seq = load('pnSequence.mat');
+chirp = circshift(seq.y, 10);
+rchirp = circshift(seq.y, 0);
+[rsymbol frame xLIndex xRIndex] = mydtmf(chirp, rchirp);
+[rsymbol frame xLIndex xRIndex] = mydtmf(-chirp, -rchirp);
+[rsymbol frame xLIndex xRIndex] = mydtmf(chirp, rchirp);
+[rsymbol frame xLIndex xRIndex leftCorr rightCorr] = mydtmf(-chirp, -rchirp);
 

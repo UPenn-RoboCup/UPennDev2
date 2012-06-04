@@ -53,7 +53,7 @@ fsm.bodyAnticipate.rClose = 1.0;
 fsm.bodyAnticipate.thFar = {0.4,0.4,15*math.pi/180};
 
 fsm.bodyGoaliePosition = {};
-fsm.bodyGoaliePosition.thClose = {.2, .2,10*math.pi/180}
+fsm.bodyGoaliePosition.thClose = {.2, .1, 10*math.pi/180}
 
 --------------------------------------------------
 --BodyOrbit : make the robot orbit around the ball
@@ -121,7 +121,7 @@ fsm.bodyApproach.xTarget12={0, 0.13,0.15}; --min, target, max
 fsm.bodyApproach.yTarget12={-0.005, 0.01, 0.025}; --min, target ,max
 
 --Target position for straight walkkick 
-fsm.bodyApproach.xTarget21={0, 0.17,0.19}; --min, target, max
+fsm.bodyApproach.xTarget21={0, 0.19,0.21}; --min, target, max
 fsm.bodyApproach.yTarget21={0.01, 0.035, 0.04}; --min, target ,max
 
 --Target position for side walkkick to left

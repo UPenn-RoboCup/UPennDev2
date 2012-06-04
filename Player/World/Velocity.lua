@@ -10,6 +10,7 @@ require('Body');
 
 
 noball_count = 1;
+ball_count = 0;
 --If ball is not seen for this # of frames, remove ball memory 
 noball_threshold = 3; 
 --Update velocity only after seeing ball for this # of frames
@@ -36,8 +37,8 @@ function update(newx,newy)
   end
 
   if ball_count<15 then
-    print(string.format("%d Ball xy:%.2f %.2f v:%.2f %.2f",
-	ball_count,newx,newy,vx,vy));
+--    print(string.format("%d Ball xy:%.2f %.2f v:%.2f %.2f",
+--	ball_count,newx,newy,vx,vy));
   end
 
   tLast=t;

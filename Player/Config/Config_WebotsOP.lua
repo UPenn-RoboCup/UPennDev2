@@ -138,9 +138,9 @@ head.bodyTilt = 0;
 
 --Shutdown Vision and use ground truth gps info only
 --use_gps_only = 0;
-use_gps_only = 0;
+use_gps_only = 1;
 
-goalie_dive = 1; --1 for arm only, 2 for actual diving
+goalie_dive = 2; --1 for arm only, 2 for actual diving
 
 
 --[[

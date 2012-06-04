@@ -27,6 +27,9 @@ tLost = 6.0;
 rClose = Config.fsm.bodyAnticipate.rClose or 1.0;
 thClose = Config.fsm.bodyGoaliePosition.thClose;
 
+
+thClose[3] = 5*math.pi/180;
+
 function entry()
   print(_NAME.." entry");
   t0 = Body.get_time();
@@ -48,6 +51,9 @@ function update()
   vx = maxStep*homeRelative[1]/rHomeRelative;
   vy = maxStep*homeRelative[2]/rHomeRelative;
 
+    va = .35*wcm.get_attack_bearing();
+
+--[[
   if (tBall > 8) then
     --When ball is lost, face opponents' goal
     va = .35*wcm.get_attack_bearing();
@@ -55,10 +61,8 @@ function update()
     --Face the ball
     va = math.atan2(ball.y, ball.x);
   end
+--]]
 
-
-  return "ready";
---[[
 
   walk.set_velocity(vx, vy, va);
   ballR = math.sqrt(ball.x^2 + ball.y^2);
@@ -67,7 +71,9 @@ function update()
   end
 
   local tThreshClose = math.sqrt(thClose[1]^2+thClose[2]^2);
-  if rHomeRelative<tThreshClose and math.abs(va)<thClose[3] then
+  if math.abs(homeRelative[1])<thClose[1] and
+     math.abs(homeRelative[2])<thClose[2] and
+     math.abs(va)<thClose[3] then
     return "ready";
   end
 
@@ -77,7 +83,6 @@ function update()
   if (t - t0 > timeout) then
     return "timeout";
   end
---]]
 end
 
 
@@ -86,6 +91,7 @@ function getGoalieHomePosition()
   --homePosition = 1.0*vector.new(wcm.get_goal_defend());
   homePosition = 0.98*vector.new(wcm.get_goal_defend());
 
+--[[
   vBallHome = math.exp(-math.max(tBall-3.0, 0)/4.0)*(ballGlobal - homePosition);
   rBallHome = math.sqrt(vBallHome[1]^2 + vBallHome[2]^2);
 
@@ -94,6 +100,13 @@ function getGoalieHomePosition()
     vBallHome = scale*vBallHome;
   end
   homePosition = homePosition + vBallHome;
+--]]
+
+  --Fixed goalie position
+  homePosition = 0.94*vector.new(wcm.get_goal_defend());
+
+
+
   return homePosition;
 end
 

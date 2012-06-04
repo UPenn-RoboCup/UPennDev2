@@ -14,7 +14,7 @@ t0 = 0;
 footY = Config.walk.footY;
 supportX = Config.walk.supportX;
 bodyHeight = Config.stance.bodyHeightDive or 0.25;
-bodyTilt = 0;
+bodyTilt = Config.stance.bodyTiltDive or 0;
 
 
 -- Max change in postion6D to reach stance:

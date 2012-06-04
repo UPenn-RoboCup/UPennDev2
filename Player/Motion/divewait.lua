@@ -18,7 +18,8 @@ bodyTilt = Config.stance.bodyTiltDive or 0;
 
 
 -- Max change in postion6D to reach stance:
-dpLimit=Config.sit.dpLimitStance or vector.new({.1,.01,.03,.1,.3,.1});
+dpLimit=Config.stance.dpLimitDive or 
+vector.new({.1,.01,.03,.1,.3,.1});
 
 tFinish=0;
 tStartWait=0.2;

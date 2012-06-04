@@ -20,7 +20,6 @@ shared.robot.gpspose = vector.zeros(3);
 shared.robot.gps_attackbearing = vector.zeros(1);
 shared.robot.gps_ball = vector.zeros(3);
 
-
 shared.ball = {};
 shared.ball.x = vector.zeros(1);
 shared.ball.y = vector.zeros(1);
@@ -28,6 +27,7 @@ shared.ball.t = vector.zeros(1);
 shared.ball.velx = vector.zeros(1);
 shared.ball.vely = vector.zeros(1);
 shared.ball.dodge = vector.zeros(1);
+shared.ball.locked_on = vector.zeros(1);
 
 shared.goal = {};
 shared.goal.t = vector.zeros(1);

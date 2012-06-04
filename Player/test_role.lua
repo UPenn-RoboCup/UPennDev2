@@ -28,9 +28,6 @@ package.path = cwd .. '/World/?.lua;' .. package.path;
 
 require('unix')
 require('Config')
-
-Config.fsm.forcePlayer = 1; 
-
 require('shm')
 require('vector')
 require('vcm')
@@ -97,7 +94,11 @@ role = 1; --Attacker
 waiting = 1;
 
 button_role,button_state = 0,0;
-tButtonRole = 0;
+tButtonState = 0;
+forced_role = 1;
+gcm.set_team_forced_role(forced_role);
+
+
 
 function update()
   count = count + 1;
@@ -106,10 +107,11 @@ function update()
   wcm.set_robot_battery_level(Body.get_battery_level());
   vcm.set_camera_teambroadcast(1); --Turn on wireless team broadcast
 
-  --Check center button Releases
+  --Check center button press for playing/waiting change
+
   if (Body.get_change_state() == 1) then
     button_state=1;
-    if (t-tButtonRole>1.0) then --Button pressed for 1 sec
+    if (t-tButtonState>1.0) then --Button pressed for 1 sec
       waiting = 1-waiting;
       if waiting==0 then
         Speak.talk('Playing');
@@ -122,11 +124,11 @@ function update()
 	Speak.talk(batlevel)
         Motion.event("sit");
       end
-      tButtonRole = t;
+      tButtonState = t;
     end
   else
     button_state= 0;
-    tButtonRole = t;
+    tButtonState = t;
   end
 
   --Check role button press
@@ -134,28 +136,24 @@ function update()
     button_role=1;
   else
     if button_role==1 then --Button released
+      forced_role = gcm.get_team_forced_role();
       --Cycle roles
-      Config.fsm.forcePlayer = Config.fsm.forcePlayer+1;
-      if Config.fsm.forcePlayer>4 then
-        Config.fsm.forcePlayer = 1;
-      end 
+      forced_role = forced_role + 1;
+      if forced_role>4 then forced_role = 1;end 
+      gcm.set_team_forced_role(forced_role);
       button_role=0;
     end
   end
 
-  if waiting>0 then --Waiting mode, check role change
---[[
-
+  if waiting>0 then --Waiting mode, indicate role
     gcm.set_game_paused(1);
-    if role==0 then
-      gcm.set_team_role(5); --Reserve goalie
-      Body.set_indicator_ball({0,0,1});
-    else
-      gcm.set_team_role(4); --Reserve player
-      Body.set_indicator_ball({1,1,1});
+    if forced_role==1 then
+      Body.set_indicator_ball({1,0,0});--Attacker
+    elseif forced_role==2 then --Defender
+      Body.set_indicator_ball({1,1,0});
+    else --Goalie
+      Body.set_indicator_ball({0,0,1});--Goalie
     end
---]]
-
     Motion.update();
     Body.update();
   else --Playing mode, update state machines  

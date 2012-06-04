@@ -338,16 +338,14 @@ function update()
   end
 --]]
 
-  --Behavior testing is handled here
-  force_player_role = Config.fsm.forcePlayer or 0;
-  if force_player_role>0 then
-    if force_player_role==1 then
-      role = 1;
-    elseif force_player_role==2 then
-      role = 2;
-    elseif force_player_role==3 then
-      role = 0;
-    end
+  --Behavior testing using forced role is handled here
+  force_player_role = gcm.get_team_forced_role();
+  if force_player_role==1 then
+    gcm.set_team_role(1);
+  elseif force_player_role==2 then
+    gcm.set_team_role(2);
+  elseif force_player_role==3 then
+    gcm.set_team_role(0);
   end
 
   --Check if the role is changed elsewhere

@@ -28,6 +28,8 @@ shared.team.player_id = vector.zeros(1);
 shared.team.color = vector.zeros(1);
 shared.team.role = vector.zeros(1);
 
+shared.team.forced_role = vector.zeros(1); --for role testing
+
 --for double pass
 shared.team.task_state = vector.zeros(2); 
 shared.team.target = vector.zeros(3);

@@ -12,55 +12,59 @@ fixTh = Config.fsm.headTrack.fixTh;
 trackZ = Config.vision.ball_diameter; 
 timeout = Config.fsm.headTrack.timeout;
 tLost = Config.fsm.headTrack.tLost;
+locked_on = false;
+
+
+th_lock = 5*math.pi/180;
+th_unlock = 15*math.pi/180;
 
 
 function entry()
   print("Head SM:".._NAME.." entry");
-
   t0 = Body.get_time();
+  locked_on=false;
+  wcm.set_ball_locked_on(0);
 end
 
 function update()
-
-  role = gcm.get_team_role();
-  --Force attacker for demo code
-  if Config.fsm.playMode==1 then role=1; end
-  if role==0 then
-    return "goalie";
-  end
-
   local t = Body.get_time();
 
   -- update head position based on ball location
   ball = wcm.get_ball();
   ballR = math.sqrt (ball.x^2 + ball.y^2);
-
-  local yaw, pitch =
+  local yawTarget, pitchTarget =
 	HeadTransform.ikineCam(ball.x, ball.y, trackZ, bottom);
+  local headAngles = Body.get_head_position();
 
-  -- Fix head yaw while approaching (to reduce position error)
-  if ball.x<fixTh[1] and math.abs(ball.y) < fixTh[2] then
-     yaw=0.0; 
+  yaw_error = yawTarget - headAngles[1];
+  pitch_error = pitchTarget - headAngles[2];
+  angle_error = math.sqrt(yaw_error^2+pitch_error^2);
+
+  if locked_on then
+    if angle_error>th_unlock then
+      locked_on=false;
+      wcm.set_ball_locked_on(0);
+    end
+  else
+    if angle_error<th_lock then
+      locked_on=true;
+      Speak.talk("Target Locked On");
+      wcm.set_ball_locked_on(1);
+    end
   end
 
-  Body.set_head_command({yaw, pitch});
+  if not locked_on then
+    Body.set_head_command({yawTarget, pitchTarget});
+  end
 
   if (t - ball.t > tLost) then
     print('Ball lost!');
     return "lost";
   end
---TODO: generalize this using eta information
---[[
-  if (t - t0 > timeout) and
-     ballR > minDist   then
-  end
---]]
 
-  if (t - t0 > timeout) then
-    print('Head Track timeout')
-    return "timeout";
-  end
 end
 
 function exit()
+
+
 end

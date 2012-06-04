@@ -14,6 +14,9 @@ tLost = Config.fsm.bodyChase.tLost;
 
 rFar = Config.fsm.bodyChase.rFar;
 
+
+rFar = 2.5;
+
 function entry()
   print("Body FSM:".._NAME.." entry");
 

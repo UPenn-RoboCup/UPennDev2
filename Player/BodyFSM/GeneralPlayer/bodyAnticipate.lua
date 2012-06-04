@@ -27,6 +27,10 @@ thFar = Config.fsm.bodyAnticipate.thFar or 0.25;
 
 goalie_dive = Config.goalie_dive or 0;
 
+
+
+rClose = 1.7;
+
 function entry()
   print(_NAME.." entry");
   t0 = Body.get_time();
@@ -48,56 +52,67 @@ function update()
   homeRelative = util.pose_relative(homePosition, {pose.x, pose.y, pose.a});
   rHomeRelative = math.sqrt(homeRelative[1]^2 + homeRelative[2]^2);
 
+
+
+  goal_defend=wcm.get_goal_defend();
+  ballxy=vector.new( {ball.x,ball.y,0} );
+  posexya=vector.new( {pose.x, pose.y, pose.a} );
+  ballGlobal=util.pose_global(ballxy,posexya);
+  ballR_defend = math.sqrt(
+	(ballGlobal[1]-goal_defend[1])^2+
+	(ballGlobal[2]-goal_defend[2])^2);
+
 --TODO: Diving handling 
+
+  ball_v = math.sqrt(ball.vx^2+ball.vy^2);
 
   if goalie_dive > 0 then
 
     tStartDelay = 1.0;
 --Penalty mark dist is 1.8m from goal line
     rCloseDive = 3.0; 
-    rMinDive = 0.7;
-    ball_velocity_th = -1.5;
+    rMinDive = 0.3;
+    ball_velocity_thx = -0.2;
+    ball_vel_th = 0.5;
 
     if t-t0>tStartDelay and t-ball.t<0.1 then
       --Tracking the ball in ready position. Stop off head movement
       --Body.set_head_hardness(0);
       ballR=math.sqrt(ball.x^2+ball.y^2);
-      if ball.vx<ball_velocity_th and 
-	ballR<rCloseDive and
-	ballR>rMinDive then
+      if ball.vx<ball_velocity_thx and 
+	ballR_defend<rCloseDive and
+	ballR_defend>rMinDive and
+        ball_v>ball_vel_th then
+
         t0=t;
         py = ball.y - (ball.vy/ball.vx) * ball.x;
         print("Ball velocity:",ball.vx,ball.vy);
         print("Projected y pos:",py);
         if py>0.07 then 
-Speak.talk('Left');
---          dive.set_dive("diveLeft");
+--Speak.talk('Left');
+          dive.set_dive("diveLeft");
         elseif py<-0.07 then
-Speak.talk('Right');
-
---          dive.set_dive("diveRight");
+--Speak.talk('Right');
+          dive.set_dive("diveRight");
         else
-Speak.talk('Center');
-
---          dive.set_dive("diveCenter");
+--Speak.talk('Center');
+          dive.set_dive("diveCenter");
         end
---        Motion.event("dive");
---        return "dive";
+        Motion.event("dive");
+        return "dive";
       end
     end
   end
 
-  if ballR<rClose and t-ball.t<0.1 then
+  if ballR_defend<rClose and t-ball.t<0.1 and ball_v < 0.50 then
     Motion.event("walk");
     return "ballClose";
   end
   -- Check if out of position
---[[
   if (t - t0 > timeout) and ( rHomeRelative>math.sqrt(thFar[1]^2+thFar[2]^2) ) then
     Motion.event("walk");
     return 'position';
   end
---]]
 end
 function getGoalieHomePosition()
 

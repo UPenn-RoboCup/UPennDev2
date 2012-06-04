@@ -11,7 +11,13 @@ stance.bodyHeightSit = 0.18;
 stance.qLArmSit = math.pi/180*vector.new({140,8,-40});
 stance.qRArmSit = math.pi/180*vector.new({140,-8,-40});
 stance.dpLimitSit=vector.new({.03,.01,.06,.1,.3,.3});
-stance.bodyHeightDive= 0.25;
+--stance.bodyHeightDive= 0.25;
+--stance.bodyTiltDive= 0;
+
+stance.bodyHeightDive= 0.295;
+stance.bodyTiltDive= 20*math.pi/180;
+
+
 stance.bodyTiltStance=20*math.pi/180; --bodyInitial bodyTilt, 0 for webots
 stance.dpLimitStance=vector.new({.04, .03, .07, .4, .4, .4});
 

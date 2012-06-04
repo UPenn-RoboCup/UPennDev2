@@ -22,3 +22,7 @@ for i = nSkip:nSkip:nSequence,
 end
 
 fclose(fid);
+
+% save sequence as mat file also
+save('pnSequence.mat', 'y');
+

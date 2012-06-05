@@ -3,10 +3,31 @@
 
 #include "sound_params.h"
 #include "pnSequence.h"
+#include <stdlib.h>
 
-// number of audio samples per frame
-//static const int NUM_SAMPLE = 512;
-//#define NUM_SAMPLE 512
+// number of tone frequencies (rows and columns)
+const short NUM_FREQUENCY = 4;
+// frequency corresponding to each row (low fq) of tone symbols
+const short K_ROW[]  = {22, 25, 27, 30};
+// frequency corresponding to each column (high fq) of tone symbols
+const short K_COL[]  = {39, 43, 47, 52};
+// characters representing each tone
+const char TONE_SYMBOL[4][4] = {{'1','2','3','A'},
+                                {'4','5','6','B'},
+                                {'7','8','9','C'},
+                                {'*','0','#','D'}};
+
+// TODO: what does the NFFT_MULTIPLIER represent?
+const int NFFT_MULTIPLIER = 2;
+// number of elements in the result from the normalized fft 
+const int NFFT = NFFT_MULTIPLIER * PFRAME;
+
+// TODO: what do these thresholds mean
+const double THRESHOLD_RATIO1 = 2;
+const double THRESHOLD_RATIO2 = 2;
+const int THRESHOLD_COUNT = 3;
+const int NUM_CHIRP_COUNT = 4;
+const int NCORRELATION = NUM_CHIRP_COUNT * PFRAME;
 
 
 /**
@@ -52,8 +73,22 @@ int find_first_max(int *x, int n, double threshold, int offset);
  * main update function for incoming audio frames
  *
  * *x - interleaved (lrlrlr) stereo audio signal of size NUM_SAMPLES
+ *
+ * return:
+ *  1 - correlation complete
+ *  0 - nothing to report
+ *
  */
-void check_tone(short *x);
+int check_tone(short *x, char &toneSymbol, long &frame, int &xLIndex, int &xRIndex, int *leftCorrOut = NULL, int *rightCorrOut = NULL);
+
+/**
+ * stand alone cross correlation function for testing
+ *
+ * *x - interleaved (lrlrlr) stereo audio signal of size NUM_SAMPLES
+ * *leftCorr - pre-allocated array to store the left correlation data
+ * *rightCorr - pre-allocated array to store the right correlation data
+ */
+int cross_correlation(short *x, int *leftCorr, int *rightCorr);
 
 #endif
 

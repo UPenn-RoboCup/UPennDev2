@@ -1,30 +1,6 @@
 #include "dtmf.h"
 #include "fft.h"
 
-// number of tone frequencies (rows and columns)
-const short NUM_FREQUENCY = 4;
-// frequency corresponding to each row (low fq) of tone symbols
-const short K_ROW[]  = {22, 25, 27, 30};
-// frequency corresponding to each column (high fq) of tone symbols
-const short K_COL[]  = {39, 43, 47, 52};
-// characters representing each tone
-const char TONE_SYMBOL[4][4] = {{'1','2','3','A'},
-                                {'4','5','6','B'},
-                                {'7','8','9','C'},
-                                {'*','0','#','D'}};
-
-// TODO: what does the NFFT_MULTIPLIER represent?
-const int NFFT_MULTIPLIER = 2;
-// number of elements in the result from the normalized fft 
-const int NFFT = NFFT_MULTIPLIER * PFRAME;
-
-// TODO: what do these thresholds mean
-const double THRESHOLD_RATIO1 = 2;
-const double THRESHOLD_RATIO2 = 2;
-const int THRESHOLD_COUNT = 3;
-const int NUM_CHIRP_COUNT = 4;
-const int NCORRELATION = NUM_CHIRP_COUNT * PFRAME;
-
 // TODO: frame number should not be here, temporary for matlab testing
 long frameNumber = 0;
 
@@ -129,7 +105,12 @@ double standard_deviation(int *x, int n) {
 int find_first_max(int *x, int n, double threshold, int offset) {
   int i = 0;
 
+  printf("n = %d\n", n);
+  printf("offset = %d\n", offset);
+  printf("threshold = %f\n", threshold);
+
   while (i < (n-offset)) {
+    printf("x[%d]=%d :: x[%d]=%d\n", i, x[i], i+offset, x[i+offset]);
     if ((x[i] > threshold) && (x[i+offset] < -threshold)) {
       while ((x[i+1] >= x[i]) && (i < n)) {
         i += 1;
@@ -145,7 +126,7 @@ int find_first_max(int *x, int n, double threshold, int offset) {
 }
 
 
-void check_tone(short *x)  {
+int check_tone(short *x, char &toneSymbol, long &frame, int &xLIndex, int &xRIndex, int *leftCorrOut, int *rightCorrOut) {
   static int toneCount = 0;
   static char prevSymbol = '\0';
   static long startFrame = 0;
@@ -206,7 +187,7 @@ void check_tone(short *x)  {
         || (qCol[kLCol] < THRESHOLD_RATIO2*qCol2[kLCol])) {
 
       toneCount = 0;
-      return;
+      return 0;
     }
   }
 
@@ -242,7 +223,7 @@ void check_tone(short *x)  {
         || (qCol[kRCol] < THRESHOLD_RATIO2*qCol2[kRCol])) {
 
       toneCount = 0;
-      return;
+      return 0;
     }
   }
 
@@ -250,18 +231,17 @@ void check_tone(short *x)  {
   char symbol = TONE_SYMBOL[kLRow][kLCol];
   printf("symbol: %c\n", symbol);
 
-  //printf("toneCount: %d\n", toneCount);
-
   // is this the first tone?
   //  or has the tone changed before expected
   if ((toneCount == 0) 
       || ((toneCount < THRESHOLD_COUNT) && (symbol != prevSymbol))) {
+    // reset the tone count
     prevSymbol = symbol;
     toneCount = 1;
-    return;
+    return 0;
+  } else {
+    toneCount++;
   }
-
-  toneCount++;
 
   if (toneCount == THRESHOLD_COUNT) {
     // we have heard the tone for the expected amount of time
@@ -292,49 +272,92 @@ void check_tone(short *x)  {
       pcmArray[nPcm+i][1] = x[2*i+1];
     }
     */
-  }
 
-  // have we reached the end of the expected audio signal?
-  if (toneCount == THRESHOLD_COUNT+NUM_CHIRP_COUNT) {
-    printf("DTMF: frameNumber = %ld, tone = '%c'\n", startFrame, prevSymbol);
+    // have we reached the end of the expected audio signal?
+    if (toneCount == THRESHOLD_COUNT + NUM_CHIRP_COUNT) {
+      printf("DTMF: frameNumber = %ld, tone = '%c'\n", startFrame, prevSymbol);
 
-    /*
-    // store correlation in shared memory
-    for (int i = 0; i < NCORRELATION; i++) {
-      pcmArray(i, 0) = leftCorr[i];
-      pcmArray(i, 1) = rightCorr[i];
+      // if the output correlation arrays are given, copy the data to them
+      if (leftCorrOut != NULL && rightCorrOut != NULL) {
+        for (int i = 0; i < NCORRELATION; i++) {
+          leftCorrOut[i] = leftCorr[i];
+          rightCorrOut[i] = rightCorr[i];
+        }
+      }
+
+      // compute standard deviation of the left/right correlation
+      double xLStd = standard_deviation(leftCorr, NCORRELATION);
+      double xRStd = standard_deviation(rightCorr, NCORRELATION);
+
+      // find first max zero crossing
+      const double stdThreshold = 3;
+      xLIndex = find_first_max(leftCorr, NCORRELATION, stdThreshold*xLStd, PFRAME);
+      xRIndex = find_first_max(rightCorr, NCORRELATION, stdThreshold*xRStd, PFRAME);
+      toneSymbol = prevSymbol;
+      frame = startFrame;
+
+      // finished cross correlating the stereo signal
+      //  get data out to localization modules
+      printf("Tone(%c, %ld, %d, %d)\n", prevSymbol, startFrame, xLIndex, xRIndex);
+
+      // reset tone count
+      toneCount = 0;
+
+      return 1;
     }
-    */
-
-    // compute standard deviation of the left/right correlation
-    double xLStd = standard_deviation(leftCorr, NCORRELATION);
-    double xRStd = standard_deviation(rightCorr, NCORRELATION);
-
-    // find first max zero crossing
-    const double stdThreshold = 3;
-    int xLIndex = find_first_max(leftCorr, NCORRELATION, stdThreshold*xLStd, PFRAME);
-    int xRIndex = find_first_max(rightCorr, NCORRELATION, stdThreshold*xRStd, PFRAME);
-
-    // finished cross correlating the stereo signal
-    //  get data out to localization modules
-    const int strBufLength = 1024;
-    char strBuf[strBufLength];
-    snprintf(strBuf, strBufLength, "Tone(%c, %ld, %d, %d)\n", prevSymbol, startFrame, xLIndex, xRIndex);
-    printf("%s",strBuf);
-
-    // not sure what this is doing
-    //  looks like some event driven thing where a method subscribes to the 
-    //  correslation data
-    /*
-    subject[sbjInterpreter]->SetData(strBuf, strlen(strBuf));
-    subject[sbjInterpreter]->NotifyObservers();
-
-    subject[sbjDecoder]->SetData(pcmArray);
-    subject[sbjDecoder]->NotifyObservers();
-    */
-
-    // reset tone count
-    toneCount = 0;
   }
+
+  return 0;
+}
+
+int cross_correlation(short *x, int *leftCorr, int *rightCorr) {
+  static int toneCount = 0;
+
+  static int xL[NFFT], yL[NFFT], xR[NFFT], yR[NFFT];
+  //static int leftCorr[NCORRELATION], rightCorr[NCORRELATION];
+
+  // extract left/right channels
+  for (int i = 0; i < PFRAME; i++) {
+    xL[i] = x[2*i]; 
+    yL[i] = 0;
+    xR[i] = x[2*i+1]; 
+    yR[i] = 0;
+  }
+  for (int i = PFRAME; i < NFFT; i++) {
+    xL[i] = 0; 
+    yL[i] = 0;
+    xR[i] = 0; 
+    yR[i] = 0;
+  }
+
+  // compute fft of left channel
+  fft(xL, yL, NFFT);
+
+  // compute fft of right channel
+  fft(xR, yR, NFFT);
+
+  // compute cross correlation of the left and right channels
+  filter_fft(xL, yL, NFFT);
+  filter_fft(xR, yR, NFFT);
+
+  for (int i = 0; i < PFRAME; i++) {
+    leftCorr[i] = xL[PFRAME-1+i];
+    rightCorr[i] = xR[PFRAME-1+i];
+  }
+
+  /*
+  // compute standard deviation of the left/right correlation
+  double xLStd = standard_deviation(leftCorr, NCORRELATION);
+  double xRStd = standard_deviation(rightCorr, NCORRELATION);
+
+  // find first max zero crossing
+  const double stdThreshold = 3;
+  xLIndex = find_first_max(leftCorr, NCORRELATION, stdThreshold*xLStd, PFRAME);
+  xRIndex = find_first_max(rightCorr, NCORRELATION, stdThreshold*xRStd, PFRAME);
+  toneSymbol = prevSymbol;
+  frame = startFrame;
+  */
+
+  return 0;
 }
 

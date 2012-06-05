@@ -47,11 +47,13 @@ shared.kick.type=vector.zeros(1);
 shared.kick.kickOff = vector.zeros(1);
 shared.kick.tKickOff = vector.zeros(1);
 
---Added for obstacle avoidance
+--Added for obstacle avoidance for webots
 shared.obstacle = {};
-shared.obstacle.dist = vector.zeros(1);
-shared.obstacle.pose = vector.zeros(3);
-shared.obstacle.role = vector.zeros(1);
+shared.obstacle.num = vector.zeros(1);
+shared.obstacle.x = vector.zeros(10);
+shared.obstacle.y = vector.zeros(10);
+shared.obstacle.dist = vector.zeros(10);
+shared.obstacle.role = vector.zeros(10);
 
 --Localization monitoring
 shared.particle = {};

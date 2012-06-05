@@ -107,8 +107,8 @@ world.initPosition1={
 world.initPosition2={
   {2.8,0},   --Goalie
   {0.8,0}, --Attacker
-  {1.5,0.5}, --Defender
-  {1.75,-1.0}, --Supporter
+  {1.5,-0.5}, --Defender
+  {1.75,1.0}, --Supporter
 }
 
 -- default positions for dropball

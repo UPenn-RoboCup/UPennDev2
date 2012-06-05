@@ -4,13 +4,7 @@ KERNEL=`uname -r`
 
 
 # Kill all processes to reset player
-killall naoqi-bin
-killall naoqi
-killall espeak
-killall lua
-killall luajit
-killall luajit2
-killall screen
+killall -q naoqi-bin naoqi espeak lua luajit luajit2 screen
 #
 
 SCREEN_FLAGS="-dm -L -S"
@@ -81,41 +75,36 @@ run_roletest(){
 
 case "$KERNEL" in
         *aldebaran*) 
-                echo "Starting Player on Nao platform" 
                 PLAYER_DIR=/home/nao/Player 
                 LUA_COM=/usr/local/bin/lua;;
-        *) echo "op"
-                echo "Starting Player on DARwIn platform..."
+        *)
                 PLAYER_DIR=/home/darwin/current/Player        
                 LUA_COM=/usr/bin/luajit;;
 esac
 
-
-if [ "$1" == "" ]
-  then
+case "$1" in
+  '')
     echo "Start Player Mode"
-    run_player
-  elif [ "$1" == "demo" ]
-  then
+    run_player;;
+  'demo')
     echo "Start Demo Mode"
-    run_demo
-  elif [ "$1" == "visiontest" ]
-  then
+    run_demo;;
+  'visiontest')
     echo "Start Vision Test Mode"
-    run_visiontest
-  elif [ "$1" == "bias" ]
-  then
+    run_visiontest;;
+  'bias')
     echo "Start Bias Setup Mode"
-    run_bias
-  elif [ "$1" == "roletest" ]
-  then
+    run_bias;;
+  'roletest')
     echo "Start Role Testing Mode"
-    run_roletest
-  else
-    echo "Unknown Mode. Available Mode:"
+    run_roletest;;
+  'help')
     echo "[No Argu]    -- Player Mode"
     echo "[Demo]       -- Demo Mode"
     echo "[visiontest] -- Vision Debug Mode"
     echo "[bias]       -- Bias Setup Mode"
-    echo "[roletest]   -- Role Testing Mode"
-fi
+    echo "[roletest]   -- Role Testing Mode";;
+  *)
+    echo "Unknown Mode. use 'help ' to see Available Mode"
+
+esac

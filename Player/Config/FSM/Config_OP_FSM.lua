@@ -55,7 +55,7 @@ fsm.bodyAnticipate.ball_velocity_th2 = 0.3; --max velocity for start approach
 
 -- How far out of position are we allowed to be?
 fsm.bodyAnticipate.timeout = 20.0*speedFactor;
-fsm.bodyAnticipate.thFar = {0.4,0.4,15*math.pi/180};
+fsm.bodyAnticipate.thFar = {0.4,0.1,15*math.pi/180};
 
 fsm.bodyGoaliePosition = {};
 fsm.bodyGoaliePosition.thClose = {.2, .1, 10*math.pi/180}

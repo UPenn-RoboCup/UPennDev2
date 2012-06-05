@@ -97,7 +97,7 @@ world.imuYaw = 1;
 
 -- default positions for our kickoff
 world.initPosition1={
-  {2.5,0},   --Goalie
+  {2.8,0},   --Goalie
   {0.5,0}, --Attacker
   {1.5,-1.25}, --Defender
   {0.5,1.0}, --Supporter
@@ -105,7 +105,7 @@ world.initPosition1={
 -- default positions for opponents' kickoff
 -- Center circle radius: 0.6
 world.initPosition2={
-  {2.5,0},   --Goalie
+  {2.8,0},   --Goalie
   {0.8,0}, --Attacker
   {1.5,0.5}, --Defender
   {1.75,-1.0}, --Supporter
@@ -114,7 +114,7 @@ world.initPosition2={
 -- default positions for dropball
 -- Center circle radius: 0.6
 world.initPosition3={
-  {2.7,0},   --Goalie
+  {2.8,0},   --Goalie
   {0.5,0}, --Attacker
   {1.5,-1.5}, --Defender
   {0.5,1.0}, --Supporter

@@ -19,6 +19,11 @@ fsm.enable_walkkick = 1;
 
 fsm.wait_kickoff = 1; --initial wait at opponent's kickoff
 
+fsm.goalie_reposition = 0; --1 for turn, 2 for relocate
+
+
+
+
 --------------------------------------------------
 --BodyReady : make robot move to initial position
 --------------------------------------------------
@@ -55,7 +60,7 @@ fsm.bodyAnticipate.ball_velocity_th2 = 0.3; --max velocity for start approach
 
 -- How far out of position are we allowed to be?
 fsm.bodyAnticipate.timeout = 20.0*speedFactor;
-fsm.bodyAnticipate.thFar = {0.4,0.4,15*math.pi/180};
+fsm.bodyAnticipate.thFar = {0.4,0.4,30*math.pi/180};
 
 fsm.bodyGoaliePosition = {};
 fsm.bodyGoaliePosition.thClose = {.2, .1, 10*math.pi/180}

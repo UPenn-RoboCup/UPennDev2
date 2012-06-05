@@ -118,7 +118,6 @@ function update()
       Motion.event("walk");
       return 'position';
     end
-
   elseif Config.fsm.goalie_reposition==2 then --check yaw and position error
     if (t - t0 > timeout) and 
 	( rHomeRelative>math.sqrt(thFar[1]^2+thFar[2]^2) or

@@ -109,13 +109,13 @@ fsm.bodyPosition.timeout = 30*speedFactor;
 --Velocity generation parameters
 
 --Slow speed
-fsm.bodyPosition.maxStep1 = 0.05;
+fsm.bodyPosition.maxStep1 = 0.06;
 
 --Medium speed
-fsm.bodyPosition.maxStep2 = 0.06;
+fsm.bodyPosition.maxStep2 = 0.08;
 fsm.bodyPosition.rVel2 = 0.5;
 fsm.bodyPosition.aVel2 = 45*math.pi/180;
-fsm.bodyPosition.maxA2 = 0.2;
+fsm.bodyPosition.maxA2 = 0.1;
 fsm.bodyPosition.maxY2 = 0.02;
 
 --Full speed front dash
@@ -139,10 +139,10 @@ fsm.bodyApproach.aThresholdTurnGoalie = 15*math.pi/180;
 
 --x and y target position for stationary straight kick
 fsm.bodyApproach.xTarget11={0, 0.13,0.15}; --min, target, max
-fsm.bodyApproach.yTarget11={0.015, 0.04, 0.045}; --min, target ,max
+fsm.bodyApproach.yTarget11={0.03, 0.05, 0.06}; --min, target ,max
 
 --x and y target position for stationary kick to left
-fsm.bodyApproach.xTarget12={0, 0.13,0.15}; --min, target, max
+fsm.bodyApproach.xTarget12={0, 0.12,0.14}; --min, target, max
 fsm.bodyApproach.yTarget12={-0.005, 0.01, 0.025}; --min, target ,max
 
 --Target position for straight walkkick 
@@ -171,7 +171,7 @@ fsm.bodyKick.tStartWait = 1.0;
 fsm.bodyKick.tStartWaitMax = 1.5;
 
 --ball position checking params
-fsm.bodyKick.kickTargetFront = {0.12,0.03};
+fsm.bodyKick.kickTargetFront = {0.12,0.045};
 
 --For kicking to the left
 fsm.bodyKick.kickTargetSide = {0.12,0.01};

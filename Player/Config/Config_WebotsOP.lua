@@ -61,9 +61,12 @@ fsm.body = {'GeneralPlayer'};
 fsm.playMode = 3; --1 for demo, 2 for orbit, 3 for direct approach
 fsm.enable_obstacle_detection = 1;
 fsm.wait_kickoff = 1;
-fsm.enable_walkkick = 1;
+fsm.enable_walkkick = 0;
 fsm.enable_sidekick = 0;
 fsm.enable_dribble = 1;
+
+
+
 
 --[[
 fsm.playMode = 1; --1 for demo, 2 for orbit, 3 for direct approach
@@ -136,8 +139,8 @@ head.bodyTilt = 0;
 --km.kick_left = 'km_NSLOP_StandupFromFront2.lua';
 
 --Shutdown Vision and use ground truth gps info only
-use_gps_only = 0;
---use_gps_only = 1;
+--use_gps_only = 0;
+use_gps_only = 1;
 
 goalie_dive = 2; --1 for arm only, 2 for actual diving
 

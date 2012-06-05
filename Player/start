@@ -7,6 +7,9 @@ KERNEL=`uname -r`
 killall -q naoqi-bin naoqi espeak lua luajit luajit2 screen
 #
 
+# kill all screen log
+rm -f screenlog*
+
 SCREEN_FLAGS="-dm -L -S"
 
 run_dcm_vcm(){
@@ -105,6 +108,5 @@ case "$1" in
     echo "[bias]       -- Bias Setup Mode"
     echo "[roletest]   -- Role Testing Mode";;
   *)
-    echo "Unknown Mode. use 'help ' to see Available Mode"
-
+    echo "Unknown Mode. use 'help ' to see Available Mode";;
 esac

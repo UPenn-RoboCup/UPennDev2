@@ -130,6 +130,12 @@ void print_device_params(snd_pcm_t *handle, snd_pcm_hw_params_t *params, int ful
   // period size
   snd_pcm_hw_params_get_period_size(params, &frames, &dir);
   printf("period size = %d frames\n", (int)frames);
+  // can pause
+  val = snd_pcm_hw_params_can_pause(params);
+  printf("can pause = %d\n", val);
+  // can resume
+  val = snd_pcm_hw_params_can_resume(params);
+  printf("can resume = %d\n", val);
 
   if (full) {
     // buffer time
@@ -171,92 +177,25 @@ void print_device_params(snd_pcm_t *handle, snd_pcm_hw_params_t *params, int ful
     // can mmap sample resolution
     val = snd_pcm_hw_params_can_mmap_sample_resolution(params);
     printf("can mmap sample resolution = %d\n", val);
-    // can pause
-    val = snd_pcm_hw_params_can_pause(params);
-    printf("can pause = %d\n", val);
-    // can resume
-    val = snd_pcm_hw_params_can_resume(params);
-    printf("can resume = %d\n", val);
     // can sync start
     val = snd_pcm_hw_params_can_sync_start(params);
     printf("can sync start = %d\n", val);
   }
 }
 
-
-/*
-int main() {
-  printf("ALSA library version: %s\n", SND_LIB_VERSION_STR);
-
-  long loops;
-  int rc;
-  int size;
-  unsigned int val;
-  int dir;
-  snd_pcm_uframes_t frames;
-  char *buffer;
-
-  snd_pcm_t *handle;
-  snd_pcm_hw_params_t *params;
-
-  // open PCM device for playback
-  printf("opening audio device for playback..."); fflush(stdout);
-  rc = snd_pcm_open(&handle, "default", SND_PCM_STREAM_CAPTURE, 0);
+int pause_device(snd_pcm_t *handle) {
+  int rc = snd_pcm_pause(handle, 1);
   if (rc < 0) {
-    fprintf(stderr, "unable to open pcm device: %s\n", snd_strerror(rc));
-    exit(1);
+    fprintf(stderr, "unable to pause device: %s\n", snd_strerror(rc));
   }
-  printf("done\n");
-
-  // allocate parameters struct
-  snd_pcm_hw_params_alloca(&params);
-
-  // set default parameters
-  set_device_params(handle, params);
-
-  // print out audio parameters
-  print_device_params(handle, params);
-
-  // allocate buffer for 1 period
-  snd_pcm_hw_params_get_period_size(params, &frames, &dir);
-  // 4 bytes per frame: 2 bytes per sample, 2 channels
-  size = frames * 4; 
-  buffer = (char *)malloc(size);
-
-  //loop for 5 seconds
-  snd_pcm_hw_params_get_period_time(params, &val, &dir);
-  // number of loops = 5 sec (in us) divided by period time
-  loops = 5000000 / val;
-
-  while (loops > 0) {
-    loops -= 1;
-
-
-    rc = snd_pcm_readi(handle, buffer, frames);
-    if (rc == -EPIPE) {
-      // EPIPE mean overrun
-      fprintf(stderr, "overrun occurred\n");
-      snd_pcm_prepare(handle);
-    } else if (rc < 0) {
-      fprintf(stderr, "error from read: %s\n", snd_strerror(rc));
-    } else if (rc != (int)frames) {
-      fprintf(stderr, "short read: read %d frames\n", rc);
-    }
-
-    rc = write(1, buffer, size);
-    if (rc != size) {
-      fprintf(stderr, "short write: wrote %d bytes\n", rc);
-    }
-  }
-
-  snd_pcm_drain(handle);
-
-  printf("closing device..."); fflush(stdout);
-  snd_pcm_close(handle);
-  printf("done\n");
-
-  free(buffer);
-
-  return 0;
+  return rc;
 }
-*/
+
+int enable_device(snd_pcm_t *handle) {
+  int rc = snd_pcm_pause(handle, 0);
+  if (rc < 0) {
+    fprintf(stderr, "unable to enable device: %s\n", snd_strerror(rc));
+  }
+  return rc;
+}
+

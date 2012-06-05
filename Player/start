@@ -1,0 +1,112 @@
+#!/bin/bash
+
+KERNEL=`uname -r`
+
+
+# Kill all processes to reset player
+killall -q naoqi-bin naoqi espeak lua luajit luajit2 screen
+#
+
+# kill all screen log
+rm -f screenlog*
+
+SCREEN_FLAGS="-dm -L -S"
+
+run_dcm_vcm(){
+  echo "Starting DCM..."
+  cd $PLAYER_DIR/Lib
+  screen $SCREEN_FLAGS dcm /usr/bin/luajit run_dcm.lua
+  # Allow DCM some time to start
+  sleep 1
+  
+  echo "Starting Cognition..."
+  cd $PLAYER_DIR
+  screen $SCREEN_FLAGS cognition /usr/bin/luajit run_cognition.lua
+  # Allow Cognition some time to start
+  sleep 1
+}
+
+run_player(){
+  run_dcm_vcm
+ 
+  echo "Starting Player..."
+  cd $PLAYER_DIR
+  screen $SCREEN_FLAGS player /usr/bin/luajit run_main_op.lua
+  
+  echo "Rock and Roll!"
+}
+
+run_demo(){
+  run_dcm_vcm
+ 
+  echo "Starting Player..."
+  cd $PLAYER_DIR
+  screen $SCREEN_FLAGS player /usr/bin/luajit run_demo.lua
+  
+  echo "Rock and Roll!"
+}
+
+run_visiontest(){
+  run_dcm_vcm
+  echo "Starting Test Vision..."
+  cd $PLAYER_DIR
+  screen -m -L -S test $LUA_COM test_vision.lua
+  #
+  echo "Rock and Roll!"
+}
+
+run_bias(){
+  echo "Starting DCM..."
+  cd $PLAYER_DIR/Lib
+  screen -dm -L -S dcm $LUA_COM run_dcm.lua
+  # Allow DCM some time to start
+  sleep 1
+  
+  echo "Starting Setup..."
+  cd $PLAYER_DIR
+  screen -m -L -S bias $LUA_COM run_setup.lua
+}
+
+run_roletest(){
+  run_dcm_vcm
+  echo "Starting Role Testing..."
+  cd $PLAYER_DIR
+  screen -m -L -S test $LUA_COM test_role.lua
+  #
+  echo "Rock and Roll!"
+}
+
+case "$KERNEL" in
+        *aldebaran*) 
+                PLAYER_DIR=/home/nao/Player 
+                LUA_COM=/usr/local/bin/lua;;
+        *)
+                PLAYER_DIR=/home/darwin/current/Player        
+                LUA_COM=/usr/bin/luajit;;
+esac
+
+case "$1" in
+  '')
+    echo "Start Player Mode"
+    run_player;;
+  'demo')
+    echo "Start Demo Mode"
+    run_demo;;
+  'visiontest')
+    echo "Start Vision Test Mode"
+    run_visiontest;;
+  'bias')
+    echo "Start Bias Setup Mode"
+    run_bias;;
+  'roletest')
+    echo "Start Role Testing Mode"
+    run_roletest;;
+  'help')
+    echo "[No Argu]    -- Player Mode"
+    echo "[Demo]       -- Demo Mode"
+    echo "[visiontest] -- Vision Debug Mode"
+    echo "[bias]       -- Bias Setup Mode"
+    echo "[roletest]   -- Role Testing Mode";;
+  *)
+    echo "Unknown Mode. use 'help ' to see Available Mode";;
+esac

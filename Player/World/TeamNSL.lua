@@ -154,35 +154,41 @@ function update_obstacle()
   pose = wcm.get_pose();
 
   avoid_other_team = Config.avoid_other_team or 0;
-  num_teammates=5;
   if avoid_other_team>0 then num_teammates = 10;end
-  --todo: parameterize
-  for i=1,num_teammates do 
+  obstacle_count = 0;
+  obstacle_x=vector.zeros(10);
+  obstacle_y=vector.zeros(10);
+  obstacle_dist=vector.zeros(10);
+  obstacle_role=vector.zeros(10);
+ 
+  for i=1,10 do
     if t_poses[i]~=0 and 
 	t-t_poses[i]<t_timeout and
 	player_roles[i]<4 then
-      dist = math.sqrt(
-		(pose.x-poses[i].x)^2+
-		(pose.y-poses[i].y)^2);
-      if dist<closest_dist then
-        closest_index = i;
-        closest_dist = dist;
-	closest_pose = poses[i];	
-	closest_role = player_roles[i];
+      obstacle_count = obstacle_count+1;
+
+      local obstacle_local = util.pose_relative(
+	{poses[i].x,poses[i].y,0},{pose.x,pose.y,pose.a}); 
+      dist = math.sqrt(obstacle_local[1]^2+obstacle_local[2]^2);
+      obstacle_x[obstacle_count]=obstacle_local[1];
+      obstacle_y[obstacle_count]=obstacle_local[2];
+      obstacle_dist[obstacle_count]=dist;
+      if i<6 then --Same team
+	--0,1,2,3 for goalie/attacker/defender/supporter
+	obstacle_role[obstacle_count] = player_roles[i];
+      else --Opponent team
+	--4,5,6,7 for goalie/attacker/defender/supporter
+	obstacle_role[obstacle_count] = player_roles[i]+4;
       end
     end
   end
 
-  if closest_index>0 then
-    wcm.set_obstacle_dist(closest_dist);
---Transform to local frame
-    local obstacle_local = util.pose_relative(
-	{closest_pose.x,closest_pose.y,0},{pose.x,pose.y,pose.a}); 
-    wcm.set_obstacle_pose(obstacle_local);
-    wcm.set_obstacle_role(closest_role);
-  else
-    wcm.set_obstacle_dist(100);
-  end
+  wcm.set_obstacle_num(obstacle_count);
+  wcm.set_obstacle_x(obstacle_x);
+  wcm.set_obstacle_y(obstacle_y);
+  wcm.set_obstacle_dist(obstacle_dist);
+  wcm.set_obstacle_role(obstacle_role);
+
   --print("Closest index dist", closest_index, closest_dist);
 end
 

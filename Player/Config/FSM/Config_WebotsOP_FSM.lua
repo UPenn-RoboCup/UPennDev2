@@ -21,7 +21,7 @@ fsm.wait_kickoff = 1; --initial wait at opponent's kickoff
 
 fsm.goalie_reposition = 0; --1 for turn, 2 for relocate
 
-
+fsm.th_front_kick = 10*math.pi/180;
 
 
 --------------------------------------------------
@@ -138,7 +138,7 @@ fsm.bodyApproach.aThresholdTurn = 10*math.pi/180;
 fsm.bodyApproach.aThresholdTurnGoalie = 15*math.pi/180;
 
 --x and y target position for stationary straight kick
-fsm.bodyApproach.xTarget11={0, 0.13,0.15}; --min, target, max
+fsm.bodyApproach.xTarget11={0, 0.12,0.13}; --min, target, max
 fsm.bodyApproach.yTarget11={0.03, 0.05, 0.06}; --min, target ,max
 
 --x and y target position for stationary kick to left
@@ -151,7 +151,7 @@ fsm.bodyApproach.yTarget21={0.01, 0.035, 0.04}; --min, target ,max
 
 --Target position for side walkkick to left
 fsm.bodyApproach.xTarget22={0, 0.15,0.17}; --min, target, max
-fsm.bodyApproach.yTarget22={0.005, 0.02, 0.035}; --min, target ,max
+fsm.bodyApproach.yTarget22={0.01, 0.035, 0.04}; --min, target ,max
 
 --------------------------------------------------
 --BodyAlign : Align robot before kick

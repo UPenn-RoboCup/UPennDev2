@@ -105,12 +105,7 @@ double standard_deviation(int *x, int n) {
 int find_first_max(int *x, int n, double threshold, int offset) {
   int i = 0;
 
-  printf("n = %d\n", n);
-  printf("offset = %d\n", offset);
-  printf("threshold = %f\n", threshold);
-
   while (i < (n-offset)) {
-    printf("x[%d]=%d :: x[%d]=%d\n", i, x[i], i+offset, x[i+offset]);
     if ((x[i] > threshold) && (x[i+offset] < -threshold)) {
       while ((x[i+1] >= x[i]) && (i < n)) {
         i += 1;
@@ -229,7 +224,7 @@ int check_tone(short *x, char &toneSymbol, long &frame, int &xLIndex, int &xRInd
 
   // get tone symbol
   char symbol = TONE_SYMBOL[kLRow][kLCol];
-  printf("symbol: %c\n", symbol);
+  //printf("symbol: %c\n", symbol);
 
   // is this the first tone?
   //  or has the tone changed before expected

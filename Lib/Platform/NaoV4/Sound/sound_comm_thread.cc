@@ -2,6 +2,11 @@
 
 // thread variables
 static pthread_t rxthread;
+static pthread_t txthread;
+// detection variables mutex
+static pthread_mutex_t detectionMutex;
+// playlist mutex (this one is probably not needed)
+static pthread_mutex_t playlistMutex;
 
 // transmitter and reciever handles
 snd_pcm_t *tx;
@@ -16,14 +21,21 @@ snd_pcm_hw_params_t *rxParams;
 // receive buffer
 //short rxBuffer[PSAMPLE];
 short rxBuffer[2*PSAMPLE];
-// number of frames in buffer
-int nrxFrames = 0;
-// current buffer index
-int irxBuffer = 0;
+
+// pause variables for transmitter/receiver
+bool txPauseCmd = false;
+bool rxPauseCmd = false;
+bool txPaused = false;
+bool rxPaused = false;
 
 
 // TODO: detection struct/list or whatever to keep track of audio detections
 
+// detection values
+static DetStruct detection;
+
+// audio play list
+std::queue< std::vector<short> * > playlist;
 
 int open_transmitter() {
   // open transmitter (speakers)
@@ -111,95 +123,144 @@ void *sound_comm_rx_thread_func(void*) {
 
   snd_pcm_uframes_t frames = NFRAME;
 
-  nrxFrames = 0;
-  irxBuffer = 0;
+  // number of frames in buffer
+  int nrxFrames = 0;
+  // current buffer index
+  int irxBuffer = 0;
   while (1) {
 
-    if (nrxFrames + frames < PFRAME) {
-      // all frames fit within buffer, read all available frames
-      int rframes = snd_pcm_readi(rx, rxBuffer+irxBuffer, frames);
-      if (rframes == -EPIPE) {
-        // EPIPE mean overrun
-        fprintf(stderr, "overrun occurred\n");
-        snd_pcm_prepare(rx);
-        // reset rx buffer
-        irxBuffer = 0;
-        continue;
-      } else if (rframes < 0) {
-        fprintf(stderr, "error from read: %s\n", snd_strerror(rframes));
-        // reset rx buffer
-        irxBuffer = 0;
-        continue;
-      } else if (rframes != (int)frames) {
-        fprintf(stderr, "short read: read %d frames\n", rframes);
-        // reset rx buffer
-        irxBuffer = 0;
-        continue;
-      } 
-      
-      // update rx buffer
-      nrxFrames += rframes;
-      irxBuffer += rframes * SAMPLES_PER_FRAME;
+    if (rxPauseCmd) {
+      // pause requested
 
-    } else {
-      // read enough frames to fill buffer
-      int nframes = PFRAME - nrxFrames;
-      int rframes = snd_pcm_readi(rx, rxBuffer+irxBuffer, nframes);
-      if (rframes == -EPIPE) {
-        // EPIPE mean overrun
-        fprintf(stderr, "overrun occurred\n");
-        snd_pcm_prepare(rx);
-        // reset rx buffer
-        irxBuffer = 0;
-        continue;
-      } else if (rframes < 0) {
-        fprintf(stderr, "error from read: %s\n", snd_strerror(rframes));
-        // reset rx buffer
-        irxBuffer = 0;
-        continue;
-      } else if (rframes != (int)nframes) {
-        fprintf(stderr, "short read: read %d frames\n", rframes);
-        // reset rx buffer
-        irxBuffer = 0;
-        continue;
-      } 
-      // process audio sample
-      char symbol;
-      long frame;
-      int xLIndex;
-      int xRIndex;
-      if (check_tone(rxBuffer, symbol, frame, xLIndex, xRIndex) > 0) {
-        printf("Tone(%c, %ld, %d, %d)\n", symbol, frame, xLIndex, xRIndex);
+      // the nao drivers do not acutally support pausing the audio device
+      //  so I am just continuously resetting the device buffer to avoid
+      //  overruns
+
+      // reset the device buffer
+      int ret = snd_pcm_reset(rx);
+      if (ret < 0) {
+        fprintf(stderr, "error reseting receiver: %s\n", snd_strerror(ret));
       }
 
-      // read remaining audio from buffer
-      nframes = NFRAME - rframes;
-      rframes = snd_pcm_readi(rx, rxBuffer, nframes);
-      if (rframes == -EPIPE) {
-        // EPIPE mean overrun
-        fprintf(stderr, "overrun occurred\n");
-        snd_pcm_prepare(rx);
-        // reset rx buffer
-        irxBuffer = 0;
-        continue;
+      // reset the local buffer variables
+      nrxFrames = 0;
+      irxBuffer = 0;
+
+      rxPaused = true;
+
+      usleep(100000);
+    } else {
+
+      if (rxPaused) {
+        // reset the device buffer 
+        int ret = snd_pcm_reset(rx);
+        if (ret < 0) {
+          fprintf(stderr, "error reseting receiver: %s\n", snd_strerror(ret));
+        }
+
+        rxPaused = false;
+      }
+
+      if (nrxFrames + frames < PFRAME) {
+        // all frames fit within buffer, read all available frames
+        int rframes = snd_pcm_readi(rx, rxBuffer+irxBuffer, frames);
+        if (rframes == -EPIPE) {
+          // EPIPE mean overrun
+          fprintf(stderr, "overrun occurred\n");
+          snd_pcm_prepare(rx);
+          // reset rx buffer
+          irxBuffer = 0;
+          continue;
+        } else if (rframes < 0) {
+          fprintf(stderr, "error from read: %s\n", snd_strerror(rframes));
+          // reset rx buffer
+          irxBuffer = 0;
+          continue;
+        } else if (rframes != (int)frames) {
+          fprintf(stderr, "short read: read %d frames\n", rframes);
+          // reset rx buffer
+          irxBuffer = 0;
+          continue;
+        } 
         
-      } else if (rframes < 0) {
-        fprintf(stderr, "error from read: %s\n", snd_strerror(rframes));
-        // reset rx buffer
-        irxBuffer = 0;
-        continue;
+        // update rx buffer
+        nrxFrames += rframes;
+        irxBuffer += rframes * SAMPLES_PER_FRAME;
 
-      } else if (rframes != (int)nframes) {
-        fprintf(stderr, "short read: read %d frames\n", rframes);
-        // reset rx buffer
-        irxBuffer = 0;
-        continue;
+      } else {
+        // read enough frames to fill buffer
+        int nframes = PFRAME - nrxFrames;
+        int rframes = snd_pcm_readi(rx, rxBuffer+irxBuffer, nframes);
+        if (rframes == -EPIPE) {
+          // EPIPE mean overrun
+          fprintf(stderr, "overrun occurred\n");
+          snd_pcm_prepare(rx);
+          // reset rx buffer
+          irxBuffer = 0;
+          continue;
+        } else if (rframes < 0) {
+          fprintf(stderr, "error from read: %s\n", snd_strerror(rframes));
+          // reset rx buffer
+          irxBuffer = 0;
+          continue;
+        } else if (rframes != (int)nframes) {
+          fprintf(stderr, "short read: read %d frames\n", rframes);
+          // reset rx buffer
+          irxBuffer = 0;
+          continue;
+        } 
 
-      } 
+        // process audio sample
+        char symbol;
+        long frame;
+        int xLIndex;
+        int xRIndex;
+        if (check_tone(rxBuffer, symbol, frame, xLIndex, xRIndex) > 0) {
+          printf("Tone(%c, %ld, %d, %d)\n", symbol, frame, xLIndex, xRIndex);
 
-      // update rx buffer
-      nrxFrames = rframes;
-      irxBuffer = rframes * SAMPLES_PER_FRAME;
+          pthread_mutex_lock(&detectionMutex);
+          // TODO: set detection variables
+
+          // detection time
+          struct timeval t;
+          gettimeofday(&t, NULL);
+          detection.time = t.tv_sec + 1E-6*t.tv_usec;
+          detection.symbol = symbol;
+          detection.lIndex = xLIndex;
+          detection.rIndex = xRIndex;
+          detection.count += 1;
+          pthread_mutex_unlock(&detectionMutex);
+        }
+
+        // read remaining audio from buffer
+        nframes = NFRAME - rframes;
+        rframes = snd_pcm_readi(rx, rxBuffer, nframes);
+        if (rframes == -EPIPE) {
+          // EPIPE mean overrun
+          fprintf(stderr, "overrun occurred\n");
+          snd_pcm_prepare(rx);
+          // reset rx buffer
+          irxBuffer = 0;
+          continue;
+          
+        } else if (rframes < 0) {
+          fprintf(stderr, "error from read: %s\n", snd_strerror(rframes));
+          // reset rx buffer
+          irxBuffer = 0;
+          continue;
+
+        } else if (rframes != (int)nframes) {
+          fprintf(stderr, "short read: read %d frames\n", rframes);
+          // reset rx buffer
+          irxBuffer = 0;
+          continue;
+
+        } 
+
+        // update rx buffer
+        nrxFrames = rframes;
+        irxBuffer = rframes * SAMPLES_PER_FRAME;
+      }
     }
 
     pthread_testcancel();
@@ -208,20 +269,182 @@ void *sound_comm_rx_thread_func(void*) {
 
 
 void sound_comm_rx_thread_cleanup() {
-
   // stop the thread if needed
   if (rxthread) {
     pthread_cancel(rxthread);
     usleep(500000L);
   }
 
+  // TODO: free mutexes
+
   // clear any pending buffers
   snd_pcm_drain(rx);
 
   // close device
   printf("closing receiver device..."); fflush(stdout);
+  snd_pcm_close(rx);
+  printf("done\n");
+}
+
+
+void *sound_comm_tx_thread_func(void*) {
+  printf("starting SoundComm transmitter thread\n");
+
+  static short zeros[ASAMPLE];
+  memset(zeros, 0, sizeof(short)*ASAMPLE);
+
+  sigset_t sigs;
+  sigfillset(&sigs);
+  pthread_sigmask(SIG_BLOCK, &sigs, NULL);
+
+  snd_pcm_uframes_t frames = NFRAME;
+
+  // currently playing signal
+  std::vector<short> *txBuffer = NULL;
+
+  // current playing index
+  int itxBuffer = 0;
+  while (1) {
+    // is paused?
+    if (txPauseCmd) {
+      // pause requested, pause the transmitter if needed
+
+      // the nao audio drivers do not actually support pausing the device
+      //  so I am just continuously sending zeros to avoid an underrun
+      int ret = snd_pcm_writei(tx, zeros, frames);
+      if (ret == -EPIPE) {
+        // EPIPE mean underrun
+        fprintf(stderr, "underrun occurred\n");
+        snd_pcm_prepare(tx);
+      } else if (ret < 0) {
+        fprintf(stderr, "error from writei: %s\n", snd_strerror(ret));
+      } else if (ret != (int)frames) {
+        fprintf(stderr, "short write, write %d frames\n", ret);
+      }
+
+      txPaused = true;
+
+    } else {
+      // is the device paused?
+      if (txPaused) {
+        // enable the device
+        int ret = snd_pcm_pause(tx, 0);
+        if (ret < 0) {
+          fprintf(stderr, "error resuming transmitter: %s\n", snd_strerror(ret));
+        }
+
+
+        txPaused = false;
+      }
+
+      // are we currently playing a signal?
+      if (txBuffer == NULL) {
+        // check if there are any queued signals
+        pthread_mutex_lock(&playlistMutex);
+        if (playlist.size() > 0) {
+          // get the next signal to play
+          txBuffer = playlist.front();
+          playlist.pop();
+
+          // init buffer index to 0
+          itxBuffer = 0;
+        }
+        // unlock detection mutex
+        pthread_mutex_unlock(&playlistMutex);
+      }
+
+      // if there is a signal to play use that
+      if (txBuffer) {
+        bool doneCurrent = false;
+        // number of frames to write
+        int nframe = NFRAME;
+
+        // are we at the end of the signal?
+        if (txBuffer->size() - itxBuffer <= NFRAME) {
+          // write remaining frames in buffer
+          nframe = txBuffer->size() - itxBuffer;
+
+          doneCurrent = true;
+        }
+
+        /*
+        if (itxBuffer == 0) {
+          for (int i = 0; i < nframe; i++) {
+            printf("x[i] = %d :: %d\n", (*txBuffer)[2*i], (*txBuffer)[2*i+1]);
+          }
+        }
+        */
+
+        int ret = snd_pcm_writei(tx, &(*txBuffer)[itxBuffer], nframe);
+        if (ret == -EPIPE) {
+          // EPIPE mean underrun
+          fprintf(stderr, "underrun occurred\n");
+          snd_pcm_prepare(tx);
+        } else if (ret < 0) {
+          fprintf(stderr, "error from writei: %s\n", snd_strerror(ret));
+        } else if (ret != (int)nframe) {
+          fprintf(stderr, "short write, write %d frames\n", ret);
+        }
+
+        if (doneCurrent) {
+          // free vector
+          delete txBuffer;
+          txBuffer = NULL;
+        } else {
+          itxBuffer += nframe;
+        }
+
+      } else {
+        // nothing to play
+
+        // the nao audio drivers do not actually support pausing the device
+        //  so I am just continuously sending zeros to avoid an underrun
+        int ret = snd_pcm_writei(tx, zeros, frames);
+        if (ret == -EPIPE) {
+          // EPIPE mean underrun
+          fprintf(stderr, "underrun occurred\n");
+          snd_pcm_prepare(tx);
+        } else if (ret < 0) {
+          fprintf(stderr, "error from writei: %s\n", snd_strerror(ret));
+        } else if (ret != (int)frames) {
+          fprintf(stderr, "short write, write %d frames\n", ret);
+        }
+      }
+
+
+    }
+
+    pthread_testcancel();
+  }
+}
+
+
+void sound_comm_tx_thread_cleanup() {
+  // stop the thread if needed
+  if (txthread) {
+    pthread_cancel(txthread);
+    usleep(500000L);
+  }
+
+  // TODO: free mutexes
+
+
+  // clear any pending buffers
+  snd_pcm_drain(tx);
+
+  // close device
+  printf("closing transmitter device..."); fflush(stdout);
   snd_pcm_close(tx);
   printf("done\n");
+}
+
+
+void sound_comm_thread_queue_pcm(std::vector<short> *pcm) {
+  // queue the pcm signal in the playlist
+  pthread_mutex_lock(&playlistMutex);
+  playlist.push(pcm);
+  // unlock detection mutex
+  pthread_mutex_unlock(&playlistMutex);
 }
 
 
@@ -235,70 +458,46 @@ int sound_comm_thread_init() {
     return ret;
   }
 
+  // initialize detection variables
+  detection.count = 0;
+  detection.time = 0;
+  detection.lIndex = -1;
+  detection.rIndex = -1;
+  detection.symbol = '\0';
+
+  // create mutexes
+  if ((ret = pthread_mutex_init(&detectionMutex, NULL)) != 0) {
+    fprintf(stderr, "error initializing detection mutex: %d\n", ret);
+    return ret;
+  }
+  if ((ret = pthread_mutex_init(&playlistMutex, NULL)) != 0) {
+    fprintf(stderr, "error initializing playlist mutex: %d\n", ret);
+    return ret;
+  }
+
   // start receiver thread
-  printf("starting sound receiver thread\n");
+  printf("creating sound receiver thread\n");
   ret = pthread_create(&rxthread, NULL, sound_comm_rx_thread_func, NULL);
   if (ret != 0) {
     printf("error creating receiver pthread: %d\n", ret);
+    return -1;
+  }
+  printf("creating sound transmitter thread\n");
+  ret = pthread_create(&txthread, NULL, sound_comm_tx_thread_func, NULL);
+  if (ret != 0) {
+    printf("error creating transmitter pthread: %d\n", ret);
     return -1;
   }
 
   return 0;
 }
 
-/*
-int main() {
-  int ret;
-
-  // initialize audio devices (transmitter and receiver)
-  init_devices();
-
-  // start each camera thread
-  printf("starting sound receiver thread\n");
-  ret = pthread_create(&rxthread, NULL, sound_comm_rx_thread_func, NULL);
-  if (ret != 0) {
-    printf("error creating receiver pthread: %d\n", ret);
-    return -1;
-  }
-
-  snd_pcm_uframes_t frames = NFRAME;
-
-  short pcm[2*NFRAME*SAMPLES_PER_FRAME];
-  double t = 0;
-  double f1 = 697;
-  double f2 = 1209;
-  while (1) {
-    t = 0.0;
-    for (int i = 0; i < NFRAME; i++) {
-      t += 1.0/16000.0;
-      pcm[2*i] = (short) (500.0 * sin(2*M_PI*f1*t) + 500.0 * sin(2*M_PI*f2*t));
-      //pcm[2*i+1] = 0;
-      pcm[2*i+1] = (short) (500.0 * sin(2*M_PI*f1*t) + 500.0 * sin(2*M_PI*f2*t));
-    }
-
-    int rc = snd_pcm_writei(tx, pcm, frames);
-    if (rc == -EPIPE) {
-      // EPIPE mean underrun
-      fprintf(stderr, "underrun occurred\n");
-      snd_pcm_prepare(tx);
-    } else if (rc < 0) {
-      fprintf(stderr, "error from writei: %s\n", snd_strerror(rc));
-    } else if (rc != (int)frames) {
-      fprintf(stderr, "short write, write %d frames\n", rc);
-    }
-  }
-
-
-  pthread_join(rxthread, NULL);
-
-  snd_pcm_drain(tx);
-
-  printf("closing transmitter device..."); fflush(stdout);
-  snd_pcm_close(rx);
-  printf("done\n");
-
-  return 0;
+DetStruct sound_comm_thread_get_detection() {
+  // get detection lock
+  pthread_mutex_lock(&detectionMutex);
+  DetStruct det = detection;
+  // unlock detection mutex
+  pthread_mutex_unlock(&detectionMutex);
+  return det;
 }
-*/
-
 

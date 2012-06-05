@@ -36,5 +36,21 @@ int set_device_params(snd_pcm_t *handle, snd_pcm_hw_params_t *params);
 void print_device_params(snd_pcm_t *handle, snd_pcm_hw_params_t *params, int full);
 
 
+/**
+ * pauses a pcm audio device
+ *
+ * *handle - alsa handle for the device
+ * return - <0 on error
+ */
+int pause_device(snd_pcm_t *handle);
+
+/**
+ * enables/resumes a paused pcm audio device
+ *
+ * *handle - alsa handle for the device
+ * return - <0 on error
+ */
+int enable_device(snd_pcm_t *handle);
+
 
 #endif

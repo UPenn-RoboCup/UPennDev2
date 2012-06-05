@@ -65,6 +65,8 @@ DEF PLAYER_0_0 DARwInOPGPS {
   cameraWindowPosition 0.125 1
   waistBand TRUE
   waistBandColor 0.5 0 0.5
+  cameraWidth 320
+  cameraHeight 240
 }
 
 
@@ -77,6 +79,8 @@ DEF PLAYER_1_1 DARwInOPGPS {
   cameraWindowPosition 0.125 0
   waistBand TRUE
   waistBandColor 1 0 0
+  cameraWidth 320
+  cameraHeight 240
 }
 
 

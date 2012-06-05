@@ -21,12 +21,16 @@ int nrxFrames = 0;
 // current buffer index
 int irxBuffer = 0;
 
+
+// TODO: detection struct/list or whatever to keep track of audio detections
+
+
 int open_transmitter() {
   // open transmitter (speakers)
   int ret = snd_pcm_open(&tx, "default", SND_PCM_STREAM_PLAYBACK, 0);
   if (ret < 0) {
     fprintf(stderr, "unable to open transmitter pcm device: %s\n", snd_strerror(ret));
-    exit(1);
+    return ret;
   }
 
   return 0;
@@ -37,37 +41,63 @@ int open_receiver() {
   int ret = snd_pcm_open(&rx, "default", SND_PCM_STREAM_CAPTURE, 0);
   if (ret < 0) {
     fprintf(stderr, "unable to open receiver pcm device: %s\n", snd_strerror(ret));
-    exit(1);
+    return ret;
   }
 
   return 0;
 }
 
 int init_devices() {
+  int ret;
   print_alsa_lib_version();
 
   // open devices
-  open_transmitter();
-  open_receiver();
-
-  // allocate parameter objects
   printf("opening transmitter audio device..."); fflush(stdout);
-  snd_pcm_hw_params_alloca(&txParams);
+  ret = open_transmitter();
+  if (ret < 0) {
+    fprintf(stderr, "error opening transmitter.\n");
+    return ret;
+  }
   printf("done\n");
   printf("opening reciever audio device..."); fflush(stdout);
-  snd_pcm_hw_params_alloca(&rxParams);
+  ret = open_receiver();
+  if (ret < 0) {
+    fprintf(stderr, "error opening reciever.\n");
+    return ret;
+  }
   printf("done\n");
+
 
   // set parameters
   printf("setting transmitter parameters..."); fflush(stdout);
-  set_device_params(tx, txParams);
+  snd_pcm_hw_params_alloca(&txParams);
+  if (txParams == NULL) {
+    fprintf(stderr, "unable to allocate transmitter parameter object.\n");
+    return -1;
+  }
+  ret = set_device_params(tx, txParams);
+  if (ret < 0) {
+    fprintf(stderr, "error setting transmitter parameters.\n");
+    return ret;
+  }
   printf("done\n");
-  print_device_params(tx, txParams, 0); 
+  print_device_params(tx, txParams, 0);
 
   printf("setting receiver parameters..."); fflush(stdout);
-  set_device_params(rx, rxParams);
+  snd_pcm_hw_params_alloca(&rxParams);
+  if (rxParams == NULL) {
+    fprintf(stderr, "unable to allocate receiver parameter object.\n");
+    return -1;
+  }
+  ret = set_device_params(rx, rxParams);
+  if (ret < 0) {
+    fprintf(stderr, "error setting receiver parameters.\n");
+    return ret;
+  }
   printf("done\n");
   print_device_params(rx, rxParams, 0); 
+
+  return 0;
 }
 
 
@@ -134,7 +164,13 @@ void *sound_comm_rx_thread_func(void*) {
         continue;
       } 
       // process audio sample
-      check_tone(rxBuffer);
+      char symbol;
+      long frame;
+      int xLIndex;
+      int xRIndex;
+      if (check_tone(rxBuffer, symbol, frame, xLIndex, xRIndex) > 0) {
+        printf("Tone(%c, %ld, %d, %d)\n", symbol, frame, xLIndex, xRIndex);
+      }
 
       // read remaining audio from buffer
       nframes = NFRAME - rframes;
@@ -188,6 +224,27 @@ void sound_comm_rx_thread_cleanup() {
   printf("done\n");
 }
 
+
+int sound_comm_thread_init() {
+  int ret;
+
+  // initialize audio devices (transmitter and receiver)
+  ret = init_devices();
+  if (ret < 0) {
+    fprintf(stderr, "error initializing devices\n");
+    return ret;
+  }
+
+  // start receiver thread
+  printf("starting sound receiver thread\n");
+  ret = pthread_create(&rxthread, NULL, sound_comm_rx_thread_func, NULL);
+  if (ret != 0) {
+    printf("error creating receiver pthread: %d\n", ret);
+    return -1;
+  }
+
+  return 0;
+}
 
 /*
 int main() {

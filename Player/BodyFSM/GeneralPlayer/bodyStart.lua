@@ -51,6 +51,12 @@ function entry()
 end
 
 function update()
+
+  role = gcm.get_team_role();
+  if role==0 then 
+    return 'goalie'
+  end
+
   t=Body.get_time();
   if kickoff>0 then
     walk.stop();

@@ -153,9 +153,11 @@ function update_obstacle()
   local closest_role = 0;
   pose = wcm.get_pose();
 
+  avoid_other_team = Config.avoid_other_team or 0;
+  num_teammates=5;
+  if avoid_other_team>0 then num_teammates = 10;end
   --todo: parameterize
---  for i=1,10 do      --Check other teams too
-  for i=1,5 do  --Only check our team
+  for i=1,num_teammates do 
     if t_poses[i]~=0 and 
 	t-t_poses[i]<t_timeout and
 	player_roles[i]<4 then
@@ -338,16 +340,14 @@ function update()
   end
 --]]
 
-  --Behavior testing is handled here
-  force_player_role = Config.fsm.forcePlayer or 0;
-  if force_player_role>0 then
-    if force_player_role==1 then
-      role = 1;
-    elseif force_player_role==2 then
-      role = 2;
-    elseif force_player_role==3 then
-      role = 0;
-    end
+  --Behavior testing using forced role is handled here
+  force_player_role = gcm.get_team_forced_role();
+  if force_player_role==1 then
+    gcm.set_team_role(1);
+  elseif force_player_role==2 then
+    gcm.set_team_role(2);
+  elseif force_player_role==3 then
+    gcm.set_team_role(0);
   end
 
   --Check if the role is changed elsewhere

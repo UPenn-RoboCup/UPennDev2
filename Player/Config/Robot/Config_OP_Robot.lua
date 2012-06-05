@@ -11,7 +11,13 @@ stance.bodyHeightSit = 0.18;
 stance.qLArmSit = math.pi/180*vector.new({140,8,-40});
 stance.qRArmSit = math.pi/180*vector.new({140,-8,-40});
 stance.dpLimitSit=vector.new({.03,.01,.06,.1,.3,.3});
-stance.bodyHeightDive= 0.25;
+
+--stance.bodyHeightDive= 0.25;
+--stance.bodyTiltDive= 0;
+stance.bodyHeightDive= 0.295;
+stance.bodyTiltDive= 20*math.pi/180;
+stance.dpLimitDive=vector.new({.06,.06,.06,.9,.9,.9});
+
 stance.bodyTiltStance=20*math.pi/180; --bodyInitial bodyTilt, 0 for webots
 stance.dpLimitStance=vector.new({.04, .03, .07, .4, .4, .4});
 
@@ -25,17 +31,6 @@ stance.initangle = {
 }
 
 --Sit final value
---[[
-stance.initangle = vector.new({
-  0,0,
-  105, 30, -45,
-  0,  -2, -11, 130, -114, 2, 
-  0, 2, -11, 130, -114, -2,
-  105, -30, -45,
-})*math.pi/180;
---]]
-
---New values
 stance.initangle = vector.new({
   0,0,
   105, 30, -45,
@@ -43,7 +38,6 @@ stance.initangle = vector.new({
   0, 2, -16, 110, -119, -2,
   105, -30, -45,
 })*math.pi/180;
-
 
 
 -- Head Parameters

@@ -11,8 +11,8 @@ timeout = Config.fsm.bodyChase.timeout;
 maxStep = Config.fsm.bodyChase.maxStep;
 rClose = Config.fsm.bodyChase.rClose;
 tLost = Config.fsm.bodyChase.tLost;
-
 rFar = Config.fsm.bodyChase.rFar;
+rFarX = Config.fsm.bodyChase.rFarX;
 
 function entry()
   print("Body FSM:".._NAME.." entry");
@@ -36,6 +36,7 @@ function update()
   ballR_defend = math.sqrt(
 	(ballGlobal[1]-goal_defend[1])^2+
 	(ballGlobal[2]-goal_defend[2])^2);
+  ballX_defend = math.abs(ballGlobal[1]-goal_defend[1]);
 
   -- calculate walk velocity based on ball position
   vStep = vector.new({0,0,0});
@@ -48,7 +49,10 @@ function update()
   vStep[3] = 0.75*ballA;
   walk.set_velocity(vStep[1],vStep[2],vStep[3]);
   
-  if ballR_defend>rFar and gcm.get_team_role()==0 then
+  if ballR_defend>rFar and ballX_defend>rFarX and gcm.get_team_role()==0 then
+
+print("Chase:ballRX", ballR_defend, ballX_defend);
+
     --ballFar check - Only for goalie
     return "ballFar";
   end

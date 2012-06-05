@@ -211,7 +211,7 @@ function setAttackerVelocity()
   homeRelative = util.pose_relative(homePose, uPose);  
   rHomeRelative = math.sqrt(homeRelative[1]^2 + homeRelative[2]^2);
   aHomeRelative = math.atan2(homeRelative[2],homeRelative[1]);
-  homeRot=math.abs(homeRelative[3]);
+  homeRot=math.abs(aHomeRelative);
 
   --Distance-specific velocity generation
   veltype=0;
@@ -239,9 +239,9 @@ function setAttackerVelocity()
     maxA = 999;
     maxY = 999;
     veltype=3;
-
   end
-  
+
+
   vx,vy,va=0,0,0;
   aTurn=math.exp(-0.5*(rHomeRelative/rTurn)^2);
   vx = maxStep*homeRelative[1]/rHomeRelative;

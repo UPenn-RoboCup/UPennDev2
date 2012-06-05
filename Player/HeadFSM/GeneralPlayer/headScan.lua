@@ -11,10 +11,10 @@ require('mcm')
 pitch0=Config.fsm.headScan.pitch0;
 pitchMag=Config.fsm.headScan.pitchMag;
 yawMag=Config.fsm.headScan.yawMag;
+yawMagTurn = Config.fsm.headScan.yawMagTurn;
 
 pitchTurn0 = Config.fsm.headScan.pitchTurn0;
 pitchTurnMag = Config.fsm.headScan.pitchTurnMag;
-yawMagTurn = Config.fsm.headScan.yawMagTurn;
 
 tScan = Config.fsm.headScan.tScan;
 timeout = tScan * 2;
@@ -25,6 +25,14 @@ direction = 1;
 
 function entry()
   print("Head SM:".._NAME.." entry");
+
+  --Goalie need wider scan
+  role = gcm.get_team_role();
+  if role==0 then
+    yawMag=Config.fsm.headScan.yawMagGoalie;
+  else
+    yawMag=Config.fsm.headScan.yawMag;
+  end
 
   -- start scan in ball's last known direction
   t0 = Body.get_time();

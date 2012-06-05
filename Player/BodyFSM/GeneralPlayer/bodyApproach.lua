@@ -83,6 +83,13 @@ function entry()
   else
     ball_tracking=false;
   end
+
+  role = gcm.get_team_role();
+  if role==0 then
+    aThresholdTurn = Config.fsm.bodyApproach.aThresholdTurnGoalie;
+  else
+    aThresholdTurn = Config.fsm.bodyApproach.aThresholdTurn;
+  end
 end
 
 function update()
@@ -139,9 +146,9 @@ function update()
     --Player FSM, turn towards the goal
     attackBearing, daPost = wcm.get_attack_bearing();
     targetangle = util.mod_angle(attackBearing-kick_angle);
-    if targetangle > 10*math.pi/180 then
+    if targetangle > aThresholdTurn then
       vStep[3]=0.2;
-    elseif targetangle < -10*math.pi/180 then
+    elseif targetangle < -aThresholdTurn then
       vStep[3]=-0.2;
     else
       vStep[3]=0;
@@ -188,7 +195,7 @@ function update()
   --TODO: angle threshold check
   if (ball.x < xTarget[3]) and (t-ball.t < 0.5) and
      (ball.y > yTarget[1]) and (ball.y < yTarget[3]) and
-     math.abs(targetangle) < 10*math.pi/180 then
+     math.abs(targetangle) < aThresholdTurn then
     print(string.format("Approach done, ball position: %.2f %.2f\n",ball.x,ball.y))
     print(string.format("Ball target: %.2f %.2f\n",xTarget[2],yTarget[2]))
     if kick_type==1 then return "kick";

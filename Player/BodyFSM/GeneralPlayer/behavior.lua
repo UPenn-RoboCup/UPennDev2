@@ -72,7 +72,7 @@ function update()
     kickType=2;
 
     --Check kick direction 
-    thFrontKick = 45*math.pi/180;  
+    thFrontKick = 10*math.pi/180;  
 
     if math.abs(attackBearing)<thFrontKick then
       kickDir=1;

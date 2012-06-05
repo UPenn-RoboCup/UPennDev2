@@ -35,6 +35,7 @@ require('Speak')
 require('getch')
 require('Body')
 require('Motion')
+require('dive')
 
 Motion.entry();
 darwin = false;
@@ -103,6 +104,21 @@ function process_keyinput()
       walk.doSideKickLeft();
     elseif byte==string.byte("y") then
       walk.doSideKickRight();
+
+
+    elseif byte==string.byte("w") then
+      Motion.event("diveready");
+    elseif byte==string.byte("a") then
+      dive.set_dive("diveLeft");
+      Motion.event("dive");
+    elseif byte==string.byte("s") then
+      dive.set_dive("diveCenter");
+      Motion.event("dive");
+    elseif byte==string.byte("a") then
+      dive.set_dive("diveRight");
+      Motion.event("dive");
+
+
 
     elseif byte==string.byte("7") then	
       Motion.event("sit");

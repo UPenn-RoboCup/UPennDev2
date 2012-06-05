@@ -84,9 +84,9 @@ function update()
     nProcessedImages = nProcessedImages + 1;
     World.update_vision();
 
-    if (nProcessedImages % 50 == 0) then
+    if (nProcessedImages % 500 == 0) then
       if not webots then
-        print('fps: '..(50 / (unix.time() - tUpdate)));
+        print('fps: '..(500 / (unix.time() - tUpdate)));
         tUpdate = unix.time();
       end
     end

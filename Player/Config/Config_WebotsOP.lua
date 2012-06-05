@@ -14,7 +14,8 @@ end
 
 loadconfig('Walk/Config_WebotsOP_Walk')
 loadconfig('World/Config_OP_World')
-loadconfig('Kick/Config_WebotsOP_Kick')
+--loadconfig('Kick/Config_WebotsOP_Kick')
+loadconfig('Kick/Config_OP_Kick2')
 --loadconfig('Kick/Config_WebotsOP_KickPunch')
 loadconfig('Vision/Config_WebotsOP_Vision')
 
@@ -54,16 +55,18 @@ fsm = {};
 loadconfig('FSM/Config_WebotsOP_FSM')
 fsm.game = 'RoboCup';
 fsm.head = {'GeneralPlayer'};
---fsm.body = {'SimplePlayer'};
 fsm.body = {'GeneralPlayer'};
 
 --Behavior flags, should be defined in FSM Configs but can be overridden here
 fsm.playMode = 3; --1 for demo, 2 for orbit, 3 for direct approach
 fsm.enable_obstacle_detection = 1;
 fsm.wait_kickoff = 1;
-fsm.enable_walkkick = 1;
-fsm.enable_sidekick = 1;
+fsm.enable_walkkick = 0;
+fsm.enable_sidekick = 0;
 fsm.enable_dribble = 1;
+
+
+
 
 --[[
 fsm.playMode = 1; --1 for demo, 2 for orbit, 3 for direct approach
@@ -71,16 +74,13 @@ fsm.playMode = 2; --1 for demo, 2 for orbit, 3 for direct approach
 --]]
 
 fsm.playMode = 3; --1 for demo, 2 for orbit, 3 for direct approach
-fsm.enable_walkkick = 0;
-fsm.enable_sidekick = 0;
 
 --FAST APPROACH TEST
 fsm.fast_approach = 1;
 fsm.bodyApproach.maxStep = 0.06;
 
 fsm.fast_approach = 0;
-fsm.bodyApproach.maxStep = 0.03;
-
+fsm.bodyApproach.maxStep = 0.04;
 
 --[[
 --Enable these for penalty-kick
@@ -116,6 +116,8 @@ stance={};
 stance.bodyHeightSit = 0.20;
 stance.supportXSit = -0.010;
 stance.bodyHeightDive= 0.25;
+stance.bodyTiltDive = 0;
+
 stance.bodyTiltStance=0*math.pi/180; --bodyInitial bodyTilt, 0 for webots
 stance.dpLimitStance=vector.new({.04, .03, .07, .4, .4, .4});
 stance.dpLimitSit=vector.new({.1,.01,.06,.1,.3,.1});
@@ -141,6 +143,11 @@ head.bodyTilt = 0;
 use_gps_only = 1;
 
 goalie_dive = 2; --1 for arm only, 2 for actual diving
+
+
+avoid_other_team = 0;
+
+
 
 
 --[[

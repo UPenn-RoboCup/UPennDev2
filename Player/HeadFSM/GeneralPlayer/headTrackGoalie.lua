@@ -48,7 +48,7 @@ function update()
   else
     if angle_error<th_lock then
       locked_on=true;
-      Speak.talk("Target Locked On");
+--    Speak.talk("Target Locked On");
       wcm.set_ball_locked_on(1);
     end
   end

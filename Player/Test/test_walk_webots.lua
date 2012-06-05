@@ -173,8 +173,9 @@ function process_keyinput()
 		Motion.event("walk");
 		walk.start();
 	end
-        print("Target vel:",unpack(targetvel))
 	walk.set_velocity(unpack(targetvel));
+        print("Command velocity:",unpack(walk.velCommand))
+
   end
 
 end

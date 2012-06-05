@@ -141,28 +141,42 @@ function update()
     setDefenderVelocity();
   end
 
-  --Check the nearest player
-  obstacle_dist = wcm.get_obstacle_dist();
-  obstacle_pose = wcm.get_obstacle_pose();
-  obstacle_role = wcm.get_obstacle_role();
-  
-  --Priority: Goalie > Attacker > Defender
-  if role==0 then
-    r_reject = 0.2;
-  elseif role==1 then
-    if obstacle_role==0 then
-      r_reject = 1.0;
-    else
-      r_reject = 0.3;
-    end
-  else
-    r_reject = 1.5;
-  end
 
-  if obstacle_dist<r_reject then
-    local v_reject = 0.2*math.exp(-(obstacle_dist/r_reject)^2);
-    vx = vx - obstacle_pose[1]/obstacle_dist*v_reject;
-    vy = vy - obstacle_pose[2]/obstacle_dist*v_reject;
+
+  --Get rejected if other robots are around
+  obstacle_num = wcm.get_obstacle_num();
+  obstacle_x = wcm.get_obstacle_x();
+  obstacle_y = wcm.get_obstacle_y();
+  obstacle_dist = wcm.get_obstacle_dist();
+  obstacle_role = wcm.get_obstacle_role();
+
+  for i=1,obstacle_num do
+
+    --Role specific rejection radius
+    if role==0 then --Goalie has the highest priority 
+      r_reject = 0.2;
+    elseif role==1 then --Attacker
+
+      if obstacle_role[i]==0 then --Our goalie
+        r_reject = 1.0;
+      elseif obstacle_role[i]<4 then --Our team
+        r_reject = 0.3;
+      else
+        r_reject = 0.2;
+      end
+    else --Defender and supporter
+      if obstacle_role[i]<4 then --Our team
+        r_reject = 1.5;
+      else --Opponent team
+        r_reject = 0.6;
+      end
+    end
+
+    if obstacle_dist[i]<r_reject then
+      local v_reject = 0.2*math.exp(-(obstacle_dist[i]/r_reject)^2);
+      vx = vx - obstacle_x[i]/obstacle_dist[i]*v_reject;
+      vy = vy - obstacle_y[i]/obstacle_dist[i]*v_reject;
+    end
   end
 
   walk.set_velocity(vx,vy,va);
@@ -211,7 +225,7 @@ function setAttackerVelocity()
   homeRelative = util.pose_relative(homePose, uPose);  
   rHomeRelative = math.sqrt(homeRelative[1]^2 + homeRelative[2]^2);
   aHomeRelative = math.atan2(homeRelative[2],homeRelative[1]);
-  homeRot=math.abs(homeRelative[3]);
+  homeRot=math.abs(aHomeRelative);
 
   --Distance-specific velocity generation
   veltype=0;
@@ -239,9 +253,9 @@ function setAttackerVelocity()
     maxA = 999;
     maxY = 999;
     veltype=3;
-
   end
-  
+
+
   vx,vy,va=0,0,0;
   aTurn=math.exp(-0.5*(rHomeRelative/rTurn)^2);
   vx = maxStep*homeRelative[1]/rHomeRelative;

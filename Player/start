@@ -1,0 +1,121 @@
+#!/bin/bash
+
+KERNEL=`uname -r`
+
+
+# Kill all processes to reset player
+killall naoqi-bin
+killall naoqi
+killall espeak
+killall lua
+killall luajit
+killall luajit2
+killall screen
+#
+
+SCREEN_FLAGS="-dm -L -S"
+
+run_dcm_vcm(){
+  echo "Starting DCM..."
+  cd $PLAYER_DIR/Lib
+  screen $SCREEN_FLAGS dcm /usr/bin/luajit run_dcm.lua
+  # Allow DCM some time to start
+  sleep 1
+  
+  echo "Starting Cognition..."
+  cd $PLAYER_DIR
+  screen $SCREEN_FLAGS cognition /usr/bin/luajit run_cognition.lua
+  # Allow Cognition some time to start
+  sleep 1
+}
+
+run_player(){
+  run_dcm_vcm
+ 
+  echo "Starting Player..."
+  cd $PLAYER_DIR
+  screen $SCREEN_FLAGS player /usr/bin/luajit run_main_op.lua
+  
+  echo "Rock and Roll!"
+}
+
+run_demo(){
+  run_dcm_vcm
+ 
+  echo "Starting Player..."
+  cd $PLAYER_DIR
+  screen $SCREEN_FLAGS player /usr/bin/luajit run_demo.lua
+  
+  echo "Rock and Roll!"
+}
+
+run_visiontest(){
+  run_dcm_vcm
+  echo "Starting Test Vision..."
+  cd $PLAYER_DIR
+  screen -m -L -S test $LUA_COM test_vision.lua
+  #
+  echo "Rock and Roll!"
+}
+
+run_bias(){
+  echo "Starting DCM..."
+  cd $PLAYER_DIR/Lib
+  screen -dm -L -S dcm $LUA_COM run_dcm.lua
+  # Allow DCM some time to start
+  sleep 1
+  
+  echo "Starting Setup..."
+  cd $PLAYER_DIR
+  screen -m -L -S bias $LUA_COM run_setup.lua
+}
+
+run_roletest(){
+  run_dcm_vcm
+  echo "Starting Role Testing..."
+  cd $PLAYER_DIR
+  screen -m -L -S test $LUA_COM test_role.lua
+  #
+  echo "Rock and Roll!"
+}
+
+case "$KERNEL" in
+        *aldebaran*) 
+                echo "Starting Player on Nao platform" 
+                PLAYER_DIR=/home/nao/Player 
+                LUA_COM=/usr/local/bin/lua;;
+        *) echo "op"
+                echo "Starting Player on DARwIn platform..."
+                PLAYER_DIR=/home/darwin/current/Player        
+                LUA_COM=/usr/bin/luajit;;
+esac
+
+
+if [ "$1" == "" ]
+  then
+    echo "Start Player Mode"
+    run_player
+  elif [ "$1" == "demo" ]
+  then
+    echo "Start Demo Mode"
+    run_demo
+  elif [ "$1" == "visiontest" ]
+  then
+    echo "Start Vision Test Mode"
+    run_visiontest
+  elif [ "$1" == "bias" ]
+  then
+    echo "Start Bias Setup Mode"
+    run_bias
+  elif [ "$1" == "roletest" ]
+  then
+    echo "Start Role Testing Mode"
+    run_roletest
+  else
+    echo "Unknown Mode. Available Mode:"
+    echo "[No Argu]    -- Player Mode"
+    echo "[Demo]       -- Demo Mode"
+    echo "[visiontest] -- Vision Debug Mode"
+    echo "[bias]       -- Bias Setup Mode"
+    echo "[roletest]   -- Role Testing Mode"
+fi

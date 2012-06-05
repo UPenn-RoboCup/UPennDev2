@@ -39,3 +39,15 @@ rchirp = circshift(seq.y, 0);
 [rsymbol frame xLIndex xRIndex] = mydtmf(chirp, rchirp);
 [rsymbol frame xLIndex xRIndex leftCorr rightCorr] = mydtmf(-chirp, -rchirp);
 
+x_tone_interleaved = zeros([2*L, 1]);
+x_tone_interleaved(1:2:end) = x_tone;
+x_tone_interleaved(2:2:end) = x_tone;
+
+chirp_interleaved = zeros([2*length(chirp), 1]);
+chirp_interleaved(1:2:end) = chirp;
+chirp_interleaved(2:2:end) = chirp;
+
+fh = fopen('sym5.pcm', 'w');
+fwrite(fh, [x_tone_interleaved; x_tone_interleaved; x_tone_interleaved; ...
+            chirp_interleaved; -chirp_interleaved; chirp_interleaved; -chirp_interleaved], 'int16');
+fclose(fh);

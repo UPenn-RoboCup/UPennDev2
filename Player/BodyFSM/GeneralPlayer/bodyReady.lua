@@ -29,6 +29,7 @@ function entry()
   print(_NAME.." entry");
   t0 = Body.get_time();
   phase=0;
+  Motion.event('standup')
 end
 
 function getHomePose()
@@ -78,14 +79,21 @@ function update()
     va = .2*attackBearing;
   end
 
-  --Check the nearest obstacle
+  --Check the nearby obstacle
+  obstacle_num = wcm.get_obstacle_num();
+  obstacle_x = wcm.get_obstacle_x();
+  obstacle_y = wcm.get_obstacle_y();
   obstacle_dist = wcm.get_obstacle_dist();
-  obstacle_pose = wcm.get_obstacle_pose();
-  if obstacle_dist<0.5 then
-    local r_reject = 0.5;
-    local v_reject = 0.1*math.exp(-(obstacle_dist/r_reject)^2);
-    vx = vx - obstacle_pose[1]/obstacle_dist*v_reject;
-    vy = vy - obstacle_pose[2]/obstacle_dist*v_reject;
+
+  for i=1,obstacle_num do
+--print(string.format("%d XYD:%.2f %.2f %.2f",
+--i,obstacle_x[i],obstacle_y[i],obstacle_dist[i]))
+    if obstacle_dist[i]<0.5 then
+      local r_reject = 0.5;
+      local v_reject = 0.1*math.exp(-(obstacle_dist[i]/r_reject)^2);
+      vx = vx - obstacle_x[i]/obstacle_dist[i]*v_reject;
+      vy = vy - obstacle_y[i]/obstacle_dist[i]*v_reject;
+    end
   end
   walk.set_velocity(vx, vy, va);
 

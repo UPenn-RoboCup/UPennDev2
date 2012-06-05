@@ -54,7 +54,6 @@ fsm = {};
 loadconfig('FSM/Config_WebotsOP_FSM')
 fsm.game = 'RoboCup';
 fsm.head = {'GeneralPlayer'};
---fsm.body = {'SimplePlayer'};
 fsm.body = {'GeneralPlayer'};
 
 --Behavior flags, should be defined in FSM Configs but can be overridden here
@@ -79,8 +78,7 @@ fsm.fast_approach = 1;
 fsm.bodyApproach.maxStep = 0.06;
 
 fsm.fast_approach = 0;
-fsm.bodyApproach.maxStep = 0.03;
-
+fsm.bodyApproach.maxStep = 0.04;
 
 --[[
 --Enable these for penalty-kick
@@ -116,6 +114,8 @@ stance={};
 stance.bodyHeightSit = 0.20;
 stance.supportXSit = -0.010;
 stance.bodyHeightDive= 0.25;
+stance.bodyTiltDive = 0;
+
 stance.bodyTiltStance=0*math.pi/180; --bodyInitial bodyTilt, 0 for webots
 stance.dpLimitStance=vector.new({.04, .03, .07, .4, .4, .4});
 stance.dpLimitSit=vector.new({.1,.01,.06,.1,.3,.1});
@@ -141,6 +141,11 @@ head.bodyTilt = 0;
 use_gps_only = 1;
 
 goalie_dive = 2; --1 for arm only, 2 for actual diving
+
+
+avoid_other_team = 0;
+
+
 
 
 --[[

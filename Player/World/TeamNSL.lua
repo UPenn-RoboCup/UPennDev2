@@ -153,9 +153,11 @@ function update_obstacle()
   local closest_role = 0;
   pose = wcm.get_pose();
 
+  avoid_other_team = Config.avoid_other_team or 0;
+  num_teammates=5;
+  if avoid_other_team>0 then num_teammates = 10;end
   --todo: parameterize
---  for i=1,10 do      --Check other teams too
-  for i=1,5 do  --Only check our team
+  for i=1,num_teammates do 
     if t_poses[i]~=0 and 
 	t-t_poses[i]<t_timeout and
 	player_roles[i]<4 then

@@ -21,14 +21,11 @@ rClose = Config.fsm.bodyChase.rClose;
 timeout = 20.0;
 maxStep = 0.04;
 maxPosition = 0.55;
-ballNear = 0.85;
 tLost = 6.0;
 
-rClose = Config.fsm.bodyAnticipate.rClose or 1.0;
+rClose = Config.fsm.bodyAnticipate.rClose;
+rCloseX = Config.fsm.bodyAnticipate.rCloseX;
 thClose = Config.fsm.bodyGoaliePosition.thClose;
-
-
-thClose[3] = 5*math.pi/180;
 
 function entry()
   print(_NAME.." entry");
@@ -51,7 +48,8 @@ function update()
   vx = maxStep*homeRelative[1]/rHomeRelative;
   vy = maxStep*homeRelative[2]/rHomeRelative;
 
-    va = .35*wcm.get_attack_bearing();
+  --TODO: Goalie may need to turn to target direction 
+  va = .35*wcm.get_attack_bearing();
 
 --[[
   if (tBall > 8) then
@@ -64,9 +62,16 @@ function update()
 --]]
 
 
-  walk.set_velocity(vx, vy, va);
-  ballR = math.sqrt(ball.x^2 + ball.y^2);
-  if ((tBall < 1.0) and (ballR < rClose)) then
+  goal_defend=wcm.get_goal_defend();
+  ballxy=vector.new( {ball.x,ball.y,0} );
+  posexya=vector.new( {pose.x, pose.y, pose.a} );
+  ballGlobal=util.pose_global(ballxy,posexya);
+  ballR_defend = math.sqrt(
+	(ballGlobal[1]-goal_defend[1])^2+
+	(ballGlobal[2]-goal_defend[2])^2);
+  ballX_defend = math.abs(ballGlobal[1]-goal_defend[1]);
+
+  if (ballR_defend<rClose or ballX_defend<rCloseX) and tBall<1.0 then
     return "ballClose";
   end
 
@@ -77,12 +82,8 @@ function update()
     return "ready";
   end
 
-  if ((t - t0 > 5.0) and (t - ball.t > tLost)) then
-    return "ballLost";
-  end
-  if (t - t0 > timeout) then
-    return "timeout";
-  end
+  walk.set_velocity(vx, vy, va);
+
 end
 
 

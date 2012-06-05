@@ -110,10 +110,22 @@ function update()
     Motion.event("walk");
     return "ballClose";
   end
-  -- Check if out of position
-  if (t - t0 > timeout) and ( rHomeRelative>math.sqrt(thFar[1]^2+thFar[2]^2) ) then
-    Motion.event("walk");
-    return 'position';
+
+  attackBearing = wcm.get_attack_bearing();
+  if Config.fsm.goalie_reposition==1 then --check yaw error only
+    if (t - t0 > timeout) and 
+	math.abs(attackBearing) > thFar[3] then
+      Motion.event("walk");
+      return 'position';
+    end
+
+  elseif Config.fsm.goalie_reposition==2 then --check yaw and position error
+    if (t - t0 > timeout) and 
+	( rHomeRelative>math.sqrt(thFar[1]^2+thFar[2]^2) or
+	math.abs(attackBearing) > thFar[3]) then
+      Motion.event("walk");
+      return 'position';
+    end
   end
 end
 function getGoalieHomePosition()
@@ -132,6 +144,10 @@ function getGoalieHomePosition()
   end
   homePosition = homePosition + vBallHome;
 --]]
+
+
+  homePosition = 0.94*vector.new(wcm.get_goal_defend());
+
 
   return homePosition;
 end

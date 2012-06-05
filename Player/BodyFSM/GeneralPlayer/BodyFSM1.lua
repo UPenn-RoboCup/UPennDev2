@@ -95,6 +95,7 @@ sm:set_transition(bodyKick, 'fall', bodyPosition);
 
 
 --Escape transitions for goalie
+sm:set_transition(bodyStart, 'goalie', bodyAnticipate);
 sm:set_transition(bodyPosition, 'goalie', bodyPositionGoalie);
 sm:set_transition(bodySearch, 'goalie', bodyPositionGoalie);
 

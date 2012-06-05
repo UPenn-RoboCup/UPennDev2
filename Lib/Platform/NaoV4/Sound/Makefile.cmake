@@ -14,7 +14,7 @@ else
 	rm -rf build
 	mkdir build
 	cd build && cmake -DCMAKE_TOOLCHAIN_FILE="$(CTC)/toolchain-atom.cmake" .. \
-		&& make && cd $(CWD) && scp build/SoundComm.so build/play build/record nao@192.168.0.107:
+		&& make && cd $(CWD) && scp build/SoundComm.so build/play build/record nao@192.168.0.107:Player/
 
 endif
 

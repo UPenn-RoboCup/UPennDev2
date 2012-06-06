@@ -15,12 +15,8 @@ snd_pcm_t *rx;
 snd_pcm_hw_params_t *txParams;
 snd_pcm_hw_params_t *rxParams;
 
-// current audio frame number
-//static long frameNumber = 0;
-
 // receive buffer
-//short rxBuffer[PSAMPLE];
-short rxBuffer[2*PSAMPLE];
+short rxBuffer[PSAMPLE];
 
 // pause variables for transmitter/receiver
 bool txPauseCmd = false;
@@ -29,13 +25,13 @@ bool txPaused = false;
 bool rxPaused = false;
 
 
-// TODO: detection struct/list or whatever to keep track of audio detections
-
 // detection values
 static DetStruct detection;
 
 // audio play list
 std::queue< std::vector<short> * > playlist;
+
+
 
 int open_transmitter() {
   // open transmitter (speakers)
@@ -48,6 +44,7 @@ int open_transmitter() {
   return 0;
 }
 
+
 int open_receiver() {
   // open receiver (microphones)
   int ret = snd_pcm_open(&rx, "default", SND_PCM_STREAM_CAPTURE, 0);
@@ -58,6 +55,7 @@ int open_receiver() {
 
   return 0;
 }
+
 
 int init_devices() {
   int ret;
@@ -362,14 +360,7 @@ void *sound_comm_tx_thread_func(void*) {
           doneCurrent = true;
         }
 
-        /*
-        if (itxBuffer == 0) {
-          for (int i = 0; i < nframe; i++) {
-            printf("x[i] = %d :: %d\n", (*txBuffer)[2*i], (*txBuffer)[2*i+1]);
-          }
-        }
-        */
-
+        // send the pcm signal to the audio device
         int ret = snd_pcm_writei(tx, &(*txBuffer)[itxBuffer], nframe);
         if (ret == -EPIPE) {
           // EPIPE mean underrun
@@ -382,11 +373,12 @@ void *sound_comm_tx_thread_func(void*) {
         }
 
         if (doneCurrent) {
-          // free vector
+          // we are done playing the audio clip so free the vector
           delete txBuffer;
           txBuffer = NULL;
         } else {
-          itxBuffer += nframe * SAMPLES_PER_FRAME;
+          // increment the buffer pointer
+          itxBuffer += (nframe * SAMPLES_PER_FRAME);
         }
 
       } else {
@@ -405,8 +397,6 @@ void *sound_comm_tx_thread_func(void*) {
           fprintf(stderr, "short write, write %d frames\n", ret);
         }
       }
-
-
     }
 
     pthread_testcancel();
@@ -440,6 +430,16 @@ void sound_comm_thread_queue_pcm(std::vector<short> *pcm) {
   playlist.push(pcm);
   // unlock detection mutex
   pthread_mutex_unlock(&playlistMutex);
+}
+
+
+DetStruct sound_comm_thread_get_detection() {
+  // get detection lock
+  pthread_mutex_lock(&detectionMutex);
+  DetStruct det = detection;
+  // unlock detection mutex
+  pthread_mutex_unlock(&detectionMutex);
+  return det;
 }
 
 
@@ -485,14 +485,5 @@ int sound_comm_thread_init() {
   }
 
   return 0;
-}
-
-DetStruct sound_comm_thread_get_detection() {
-  // get detection lock
-  pthread_mutex_lock(&detectionMutex);
-  DetStruct det = detection;
-  // unlock detection mutex
-  pthread_mutex_unlock(&detectionMutex);
-  return det;
 }
 

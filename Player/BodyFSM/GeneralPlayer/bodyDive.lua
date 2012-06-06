@@ -17,10 +17,14 @@ function entry()
 end
 
 function update()
+  goalie_dive = Config.goalie_dive or 0;
+  if goalie_dive==1 then --arm motion only
+    return "timeout"; --Quick timeout 
+  end
+
   t = Body.get_time();
 
   if (t - t0 > timeout) then
-    print("bodyDive timeout")
     return "timeout";
   end
 

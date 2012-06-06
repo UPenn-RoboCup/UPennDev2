@@ -166,7 +166,7 @@ function update()
       end
     else --Defender and supporter
       if obstacle_role[i]<4 then --Our team
-        r_reject = 1.5;
+        r_reject = 1.0;
       else --Opponent team
         r_reject = 0.6;
       end

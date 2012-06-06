@@ -40,6 +40,10 @@ void sound_comm_thread_queue_pcm(std::vector<short> *pcm);
 
 DetStruct sound_comm_thread_get_detection();
 
+int sound_comm_thread_set_transmitter_volume(int volume);
+
+int sound_comm_thread_set_receiver_volume(int volume);
+
 int sound_comm_thread_init();
 
 #endif

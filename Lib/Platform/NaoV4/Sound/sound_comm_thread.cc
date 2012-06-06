@@ -450,6 +450,33 @@ DetStruct sound_comm_thread_get_detection() {
 }
 
 
+int sound_comm_thread_set_transmitter_volume(int volume) {
+  if (set_playback_volume(volume, "default", "PCM") < 0) {
+    fprintf(stderr, "error setting 'PCM' playback volume.\n");
+    return -1;
+  }
+  return 0;
+}
+
+
+int sound_comm_thread_set_receiver_volume(int volume) {
+  if (set_capture_volume(volume, "default", "Front/Rear mics") < 0) {
+    fprintf(stderr, "error setting 'Front/Read mics' capture volume.\n");
+    return -1;
+  }
+  if (set_capture_volume(volume, "default", "Digital") < 0) {
+    fprintf(stderr, "error setting 'Digital' capture volume.\n");
+    return -1;
+  }
+  if (set_capture_volume(volume, "default", "Left/Right mics") < 0) {
+    fprintf(stderr, "error setting 'Left/Right mics' capture volume.\n");
+    return -1;
+  }
+
+  return 0;
+}
+
+
 int sound_comm_thread_init() {
   int ret;
 
@@ -461,22 +488,15 @@ int sound_comm_thread_init() {
   }
 
   // set volumes
-  if (set_playback_volume(100, "default", "PCM") < 0) {
-    fprintf(stderr, "error setting 'PCM' playback volume.\n");
+  if (sound_comm_thread_set_transmitter_volume(100) < 0) {
+    fprintf(stderr, "unable to initialize transmitter volume.\n");
     return -1;
   }
-  if (set_capture_volume(100, "default", "Front/Rear mics") < 0) {
-    fprintf(stderr, "error setting 'Front/Read mics' capture volume.\n");
+  if (sound_comm_thread_set_receiver_volume(100) < 0) {
+    fprintf(stderr, "unable to initialize reciever volume.\n");
     return -1;
   }
-  if (set_capture_volume(100, "default", "Digital") < 0) {
-    fprintf(stderr, "error setting 'Digital' capture volume.\n");
-    return -1;
-  }
-  if (set_capture_volume(100, "default", "Left/Right mics") < 0) {
-    fprintf(stderr, "error setting 'Left/Right mics' capture volume.\n");
-    return -1;
-  }
+  
 
   // initialize detection variables
   detection.count = 0;

@@ -61,10 +61,14 @@ util.ptable(occdata.robot_pos);
 --util.ptable(occmap.map)
 --print(occmap.map[450]);
 
+--[[
 for i = 1 , 1 do
   x = 0.05; --math.random()/40;
   y = 0.54; --math.random()/40;
   a = math.random()/40;
   OccMap.odometry_update(x, y, a);
 end
+--]]
 
+odom = OccMap.retrieve_odometry();
+util.ptable(odom);

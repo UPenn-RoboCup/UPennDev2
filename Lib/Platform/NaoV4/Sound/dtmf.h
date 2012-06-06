@@ -6,11 +6,13 @@
 #include <stdlib.h>
 
 // number of tone frequencies (rows and columns)
-const short NUM_FREQUENCY = 4;
+const short NFREQUENCY = 4;
 // frequency corresponding to each row (low fq) of tone symbols
 const short K_ROW[]  = {22, 25, 27, 30};
+const short F_ROW[]  = {697,  770,  852,  941};  
 // frequency corresponding to each column (high fq) of tone symbols
 const short K_COL[]  = {39, 43, 47, 52};
+const short F_COL[]  = {1209, 1336, 1477, 1633};
 // characters representing each tone
 const char TONE_SYMBOL[4][4] = {{'1','2','3','A'},
                                 {'4','5','6','B'},

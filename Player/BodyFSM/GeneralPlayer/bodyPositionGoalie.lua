@@ -33,6 +33,20 @@ function entry()
 end
 
 function update()
+
+  --Escape 
+  if goalie_dive==1 or Config.fsm.goalie_reposition==0 then
+    return 'ready';
+  end
+
+
+
+
+
+
+
+
+
   local t = Body.get_time();
 
   ball = wcm.get_ball();

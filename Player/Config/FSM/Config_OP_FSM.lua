@@ -19,6 +19,12 @@ fsm.enable_walkkick = 1;
 
 fsm.wait_kickoff = 1; --initial wait at opponent's kickoff
 
+fsm.goalie_reposition = 0; 
+--0 for don't reposition at all,
+--1 for repositon for angle error, 2 for reposition for position error
+
+fsm.th_front_kick = 10*math.pi/180;
+
 --------------------------------------------------
 --BodyReady : make robot move to initial position
 --------------------------------------------------
@@ -128,6 +134,9 @@ fsm.bodyApproach.timeout = 10.0*speedFactor;
 fsm.bodyApproach.rFar = 0.45; --Max ball distance
 fsm.bodyApproach.tLost = 3.0*speedFactor;--ball detection timeout
 
+fsm.bodyApproach.aThresholdTurn = 10*math.pi/180;
+fsm.bodyApproach.aThresholdTurnGoalie = 15*math.pi/180;
+
 --x and y target position for stationary straight kick
 fsm.bodyApproach.xTarget11={0, 0.14,0.16}; --min, target, max
 fsm.bodyApproach.yTarget11={0.015, 0.03, 0.045}; --min, target ,max
@@ -213,6 +222,8 @@ fsm.headScan={};
 fsm.headScan.pitch0 = 25*math.pi/180;
 fsm.headScan.pitchMag = 25*math.pi/180;
 fsm.headScan.yawMag = 60*math.pi/180;
+fsm.headScan.yawMagGoalie = 90*math.pi/180;
+
 fsm.headScan.pitchTurn0 = 20*math.pi/180;
 fsm.headScan.pitchTurnMag = 20*math.pi/180;
 fsm.headScan.yawMagTurn = 45*math.pi/180;

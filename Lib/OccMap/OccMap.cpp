@@ -162,8 +162,9 @@ int OccMap::odometry_reset(void) {
 
 int OccMap::odometry_update(const double odomX, const double odomY,
     const double odomA) {
-  odom_x += odomX;
-  odom_y += odomY;
+  odom_x = odom_x + odomX * cos(odom_a) - odomY * sin(odom_a);
+  odom_y = odom_y + odomX * sin(odom_a) + odomY * cos(odom_a);
   odom_a += odomA;
+  cout << odom_x << ' ' << odom_y << ' ' << odom_a << endl;
   return 1;
 }

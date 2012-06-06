@@ -16,6 +16,26 @@ void print_alsa_lib_version();
 void print_alsa_formats();
 
 /**
+ * initializes an audio transmitter device
+ *
+ * **handle - pointer to a alsa handle pointer
+ * name - optional device name
+ * return - 0 on success
+ */
+int open_transmitter(snd_pcm_t **handle, const char *name = "default");
+
+
+/**
+ * initializes an audio reciever device
+ *
+ * **handle - pointer to a alsa handle pointer
+ * name - optional device name
+ * return - 0 on success
+ */
+int open_receiver(snd_pcm_t **handle, const char *name = "default");
+
+
+/**
  * sets the audio parameters from the given defines
  *
  * handle - alsa device handle

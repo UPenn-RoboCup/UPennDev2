@@ -7,23 +7,23 @@ long frameNumber = 0;
 
 void print_tone_resp(double *qRow, double *qRow2, double *qCol, double *qCol2) {
   printf("qRow:\t");
-  for (int i = 0; i < NUM_FREQUENCY; i++) {
+  for (int i = 0; i < NFREQUENCY; i++) {
     printf("% 4.3f  ", qRow[i]);
   }
   printf("\n");
   printf("qRow2:\t");
-  for (int i = 0; i < NUM_FREQUENCY; i++) {
+  for (int i = 0; i < NFREQUENCY; i++) {
     printf("% 4.3f  ", qRow2[i]);
   }
   printf("\n");
 
   printf("qCol:\t");
-  for (int i = 0; i < NUM_FREQUENCY; i++) {
+  for (int i = 0; i < NFREQUENCY; i++) {
     printf("% 4.3f  ", qCol[i]);
   }
   printf("\n");
   printf("qCol2:\t");
-  for (int i = 0; i < NUM_FREQUENCY; i++) {
+  for (int i = 0; i < NFREQUENCY; i++) {
     printf("% 4.3f  ", qCol2[i]);
   }
   printf("\n");
@@ -129,8 +129,8 @@ int check_tone(short *x, char &toneSymbol, long &frame, int &xLIndex, int &xRInd
   static int xL[NFFT], yL[NFFT], xR[NFFT], yR[NFFT];
   static int leftCorr[NCORRELATION], rightCorr[NCORRELATION];
 
-  double qRow[NUM_FREQUENCY], qRow2[NUM_FREQUENCY];
-  double qCol[NUM_FREQUENCY], qCol2[NUM_FREQUENCY];
+  double qRow[NFREQUENCY], qRow2[NFREQUENCY];
+  double qCol[NFREQUENCY], qCol2[NFREQUENCY];
   int kLRow, kLCol, kRRow, kRCol;
   double rowRatio, colRatio;
 
@@ -152,7 +152,7 @@ int check_tone(short *x, char &toneSymbol, long &frame, int &xLIndex, int &xRInd
   fft(xL, yL, NFFT);
 
   // compute the magnitude of the frequency response for each tone
-  for (int i = 0; i < NUM_FREQUENCY; i++) {
+  for (int i = 0; i < NFREQUENCY; i++) {
     // iRow is the array index corresponding to the row (low) frequency
     int iRow = NFFT_MULTIPLIER * K_ROW[i];
     qRow[i] = xL[iRow]*xL[iRow] + yL[iRow]*yL[iRow];
@@ -190,7 +190,7 @@ int check_tone(short *x, char &toneSymbol, long &frame, int &xLIndex, int &xRInd
   fft(xR, yR, NFFT);
 
   // compute the magnitude of the frequency response for each tone
-  for (int i = 0; i < NUM_FREQUENCY; i++) {
+  for (int i = 0; i < NFREQUENCY; i++) {
     // iRow is the array index corresponding to the row (low) frequency
     int iRow = NFFT_MULTIPLIER * K_ROW[i];
     qRow[i] = xR[iRow]*xR[iRow] + yR[iRow]*yR[iRow];
@@ -293,6 +293,7 @@ int check_tone(short *x, char &toneSymbol, long &frame, int &xLIndex, int &xRInd
 
       // finished cross correlating the stereo signal
       //  get data out to localization modules
+      //printf("Tone(%c, %ld, %d, %d)\n", prevSymbol, startFrame, xLIndex, xRIndex);
       printf("Tone(%c, %ld, %d, %d)\n", prevSymbol, startFrame, xLIndex, xRIndex);
 
       // reset tone count

@@ -1,5 +1,7 @@
 #include "SoundComm.h"
 #include "sound_comm_thread.h"
+#include "dtmf.h"
+
 #include <vector>
 
 // defined in nao_comm_thread.cc
@@ -109,7 +111,7 @@ static int lua_queue_signal(lua_State *L) {
 
     // create interleaved pcm signal
     int n = lua_objlen(L, 1);
-    std::vector<short> *pcm = new std::vector<short>(n);
+    std::vector<short> *pcm = new std::vector<short>(2*n);
     for (int i = 0; i < n; i++) {
       lua_rawgeti(L, 1, i+1);
       (*pcm)[2*i] = (short)lua_tonumber(L, -1);
@@ -131,7 +133,7 @@ static int lua_queue_signal(lua_State *L) {
 
     // create interleaved pcm signal
     int n = lua_objlen(L, 1);
-    std::vector<short> *pcm = new std::vector<short>(n);
+    std::vector<short> *pcm = new std::vector<short>(2*n);
     for (int i = 0; i < n; i++) {
       lua_rawgeti(L, 1, i+1);
       short t = (short)lua_tonumber(L, -1);
@@ -177,6 +179,123 @@ static int lua_queue_pcm(lua_State *L) {
   return 1;
 }
 
+/**
+ * function that will generate and play a tone
+ *
+ * arguments: tone symbol and the duration
+ */
+static int lua_play_tone(lua_State *L) {
+  const char *symbol = lua_tostring(L, 1);
+  if (symbol == NULL) {
+    fprintf(stderr, "play_tone: first argument must be a the tone symbol.\n");
+    return -1;
+  }
+
+  double duration = luaL_optnumber(L, 2, 5.0);
+
+  // find tone frequencies
+  short f1 = 0;
+  short f2 = 0;
+  for (int r = 0; r < NFREQUENCY; r++) {
+    for (int c = 0; c < NFREQUENCY; c++) {
+      if (TONE_SYMBOL[r][c] == symbol[0]) {
+        f1 = F_ROW[r];
+        f2 = F_COL[c];
+      }
+    }
+  }
+  if (f1 == 0 || f2 == 0) {
+    fprintf(stderr, "play_tone: unkown symbol '%c'\n", symbol[0]);
+    return -1;
+  }
+
+  // generate pcm
+  int nframe = duration * SAMPLING_RATE;
+  std::vector<short> *pcm = new std::vector<short>(2*nframe);
+  short tmax = 0;
+  for (int i = 0; i < nframe; i++) {
+    short t = sin(2.0*M_PI*f1*((double)i/SAMPLING_RATE))
+              + sin(2.0*M_PI*f2*((double)i/SAMPLING_RATE));
+    (*pcm)[2*i] = t;
+    (*pcm)[2*i+1] = t;
+    
+    if (abs(t) > tmax) {
+      tmax = abs(t);
+    }
+  }
+  for (int i = 0; i < 2*nframe; i++) {
+    (*pcm)[i] *= (SHRT_MAX/tmax);
+  }
+
+  // queue the pcm signal
+  sound_comm_thread_queue_pcm(pcm);
+
+  return 1;
+}
+
+/**
+ * function that will generate and play a the psuedo random sequence
+ */
+static int lua_play_pnsequence(lua_State *L) {
+  const char *symbol = lua_tostring(L, 1);
+  if (symbol == NULL) {
+    fprintf(stderr, "play_pnsequence: first argument must be a the tone symbol.\n");
+    return -1;
+  }
+
+  // find tone frequencies
+  short f1 = 0;
+  short f2 = 0;
+  for (int r = 0; r < NFREQUENCY; r++) {
+    for (int c = 0; c < NFREQUENCY; c++) {
+      if (TONE_SYMBOL[r][c] == symbol[0]) {
+        f1 = F_ROW[r];
+        f2 = F_COL[c];
+      }
+    }
+  }
+  if (f1 == 0 || f2 == 0) {
+    fprintf(stderr, "play_pnsequence: unkown symbol '%c'\n", symbol[0]);
+    return -1;
+  }
+
+  // generate pcm
+  int nframe = PFRAME * (THRESHOLD_COUNT + NUM_CHIRP_COUNT); 
+  int tframe = PFRAME * THRESHOLD_COUNT;
+  std::vector<short> *pcm = new std::vector<short>(2*nframe);
+  // add tone pcm
+  short tmax = 0;
+  for (int i = 0; i < tframe; i++) {
+    short t = (short) (16000 * (sin(2.0*M_PI*f1*((double)i/SAMPLING_RATE))
+                                + sin(2.0*M_PI*f2*((double)i/SAMPLING_RATE))));
+    (*pcm)[2*i] = t;
+    (*pcm)[2*i+1] = t;
+    if (abs(t) > tmax) {
+      tmax = abs(t);
+    }
+  }
+  for (int i = 0; i < 2*tframe; i++) {
+    (*pcm)[i] *= (SHRT_MAX/tmax);
+  }
+  // store pnSequence
+  int startInd = 2*tframe;
+  int sign = +1;
+  for (int ichirp = 0; ichirp < NUM_CHIRP_COUNT; ichirp++) {
+    int startInd = 2*tframe + ichirp*2*PFRAME;
+    for (int i = 0; i < PFRAME; i++) {
+      (*pcm)[startInd + 2*i]    = sign * pnSequence[i];
+      (*pcm)[startInd + 2*i+1]  = sign * pnSequence[i];
+    }
+    // switch sign
+    sign *= -1;
+  }
+
+  // queue the pcm signal
+  sound_comm_thread_queue_pcm(pcm);
+
+  return 1;
+}
+
 
 static const struct luaL_reg sound_comm_lib [] = {
   {"get_sample_size", lua_get_sample_size},
@@ -185,6 +304,8 @@ static const struct luaL_reg sound_comm_lib [] = {
   {"pause_receiver", lua_pause_receiver},
   {"enable_receiver", lua_enable_receiver},
   {"queue_signal", lua_queue_signal},
+  {"play_tone", lua_play_tone},
+  {"play_pnsequence", lua_play_pnsequence},
   {"is_receiver_enabled", lua_is_receiver_enabled},
   {"is_transmitter_enabled", lua_is_transmitter_enabled},
 

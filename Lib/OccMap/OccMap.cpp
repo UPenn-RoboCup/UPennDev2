@@ -111,8 +111,8 @@ int OccMap::vision_update(vector<double>& free_bound, vector<int>& free_bound_ty
   for (int cnt = 0; cnt < free_bound_type.size(); cnt++) {
     if (free_bound_type[cnt] != 2){
       // find pts need to be update
-      ob_x = free_bound[cnt];
-      ob_y = free_bound[cnt + width];
+      ob_x = odom_x + cos(odom_a) * free_bound[cnt] - sin(odom_a) * free_bound[cnt + width];
+      ob_y = odom_y + sin(odom_a) * free_bound[cnt] + cos(odom_a) * free_bound[cnt + width];
       for (int inc = -gau_ker_size; inc <= gau_ker_size; inc++) {
         for (int jnc = -gau_ker_size; jnc <= gau_ker_size; jnc++) {
           ni = (rx * resolution - ob_y + inc * resolution) / resolution;
@@ -165,6 +165,6 @@ int OccMap::odometry_update(const double odomX, const double odomY,
   odom_x = odom_x + odomX * cos(odom_a) - odomY * sin(odom_a);
   odom_y = odom_y + odomX * sin(odom_a) + odomY * cos(odom_a);
   odom_a += odomA;
-  cout << odom_x << ' ' << odom_y << ' ' << odom_a << endl;
+//  cout << odom_x << ' ' << odom_y << ' ' << odom_a << endl;
   return 1;
 }

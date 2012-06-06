@@ -39,7 +39,8 @@ public:
   int& get_robot_pos_x(void);
   int& get_robot_pos_y(void);
   
-  int odometry_init(void);
+  int odometry_reset(void);
+  int get_odometry(double& pose_x, double& pose_y, double& pose_a);
   int odometry_update(const double odomX, const double odomY, const double odomA);
   int vision_update(vector<double>& free_bound, vector<int>& free_bound_type, int width, double time);
   int time_decay(double time);

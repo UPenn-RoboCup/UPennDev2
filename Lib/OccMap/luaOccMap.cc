@@ -30,8 +30,6 @@ static int lua_occmap_init_map(lua_State *L) {
   int robot_y = luaL_checkint(L, 3);
   double time = luaL_checknumber(L, 4);
   map.reset_size(map_size, robot_x, robot_y, time);
-  // Init Odometry 
-  map.odometry_init();
   return 1;
 }
 
@@ -40,6 +38,11 @@ static int lua_occmap_odometry_update(lua_State *L) {
   double odomY = luaL_checknumber(L, 2);
   double odomA = luaL_checknumber(L, 3);
   map.odometry_update(odomX, odomY, odomA);
+  return 1;
+}
+
+static int lua_occmap_odometry_reset(lua_State *L) {
+  map.odometry_reset();
   return 1;
 }
 
@@ -62,11 +65,13 @@ static int lua_occmap_vision_update(lua_State *L) {
   }
     int width = luaL_checkint(L, 3);
   if (free_bound.size() != 2 * width) {
-    cout << "WARN: freespace bound data size must be double width" << endl;
+    cout << "WARN: freespace bound data size must be double width" 
+          << free_bound.size() << endl;
     return 0;
   }
   if (free_bound_type.size() != width) {
-    cout << "WARN: freespace type data size must be width" << endl;
+    cout << "WARN: freespace type data size must be width" 
+          << free_bound_type.size() << endl;
     return 0;
   }
   double time = luaL_checknumber(L, 4);
@@ -100,6 +105,28 @@ static int lua_occmap_retrieve_data(lua_State *L) {
   return 1;
 }
 
+static int lua_occmap_retrieve_odometry(lua_State *L) {
+  double pose_x = 0.0, pose_y = 0.0, pose_a = 0.0;
+  map.get_odometry(pose_x, pose_y, pose_a);
+  
+  lua_createtable(L, 0, 1);
+  
+  lua_pushstring(L, "x");
+  lua_pushnumber(L, pose_x);
+  lua_settable(L, -3);
+
+  lua_pushstring(L, "y");
+  lua_pushnumber(L, pose_y);
+  lua_settable(L, -3);
+
+  lua_pushstring(L, "a");
+  lua_pushnumber(L, pose_a);
+  lua_settable(L, -3);
+
+
+  return 1;
+}
+
 static int lua_occmap_empty_userdata(lua_State *L) {
   int size = luaL_checkint(L, 1);
   vector<double> empty;
@@ -123,6 +150,8 @@ static const struct luaL_reg OccMap_lib [] = {
   {"retrieve_data", lua_occmap_retrieve_data},
   {"vision_update", lua_occmap_vision_update},
   {"odometry_update", lua_occmap_odometry_update},
+  {"odometry_reset", lua_occmap_odometry_reset},
+  {"retrieve_odometry", lua_occmap_retrieve_odometry},
   {"empty_userdata", lua_occmap_empty_userdata},
   {NULL, NULL}
 };

@@ -31,6 +31,11 @@ function entry()
 end 
 
 function odom_update()
+  if mcm.get_walk_isFallDown() == 1 then
+    print('FallDown and Reset Occupancy Map')
+    OccMap.odometry_reset();
+  end
+
 	-- Odometry Update
   uOdometry, uOdometry0 = mcm.get_odometry(uOdometry0);
 
@@ -55,7 +60,7 @@ function vision_update()
 
   nCol = vcm.get_freespace_nCol();
   OccMap.vision_update(vbound, tbound, nCol, unix.time());
---  print("scanned freespace width ");
+--  print("scanned freespace width "..nCol);
 end
 
 function update()
@@ -71,6 +76,9 @@ function update()
   odom_update();
 	
 	-- shm Update
+  odom = OccMap.retrieve_odometry();
+  ocm.set_occ_odom(vector.new({odom.x, odom.y, odom.a}));
+--  print(odom.x..' '..odom.y..' '..odom.a);
 	occmap = OccMap.retrieve_map();
 	ocm.set_occ_map(occmap);		
 

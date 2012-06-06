@@ -216,11 +216,7 @@ void *sound_comm_rx_thread_func(void*) {
         int xLIndex;
         int xRIndex;
         if (check_tone(rxBuffer, symbol, frame, xLIndex, xRIndex) > 0) {
-          printf("Tone(%c, %ld, %d, %d)\n", symbol, frame, xLIndex, xRIndex);
-
           pthread_mutex_lock(&detectionMutex);
-          // TODO: set detection variables
-
           // detection time
           struct timeval t;
           gettimeofday(&t, NULL);
@@ -292,12 +288,11 @@ void *sound_comm_tx_thread_func(void*) {
 
   static short zeros[ASAMPLE];
   memset(zeros, 0, sizeof(short)*ASAMPLE);
+  snd_pcm_uframes_t zframes = NFRAME;
 
   sigset_t sigs;
   sigfillset(&sigs);
   pthread_sigmask(SIG_BLOCK, &sigs, NULL);
-
-  snd_pcm_uframes_t frames = NFRAME;
 
   // currently playing signal
   std::vector<short> *txBuffer = NULL;
@@ -311,14 +306,14 @@ void *sound_comm_tx_thread_func(void*) {
 
       // the nao audio drivers do not actually support pausing the device
       //  so I am just continuously sending zeros to avoid an underrun
-      int ret = snd_pcm_writei(tx, zeros, frames);
+      int ret = snd_pcm_writei(tx, zeros, zframes);
       if (ret == -EPIPE) {
         // EPIPE mean underrun
         fprintf(stderr, "underrun occurred\n");
         snd_pcm_prepare(tx);
       } else if (ret < 0) {
         fprintf(stderr, "error from writei: %s\n", snd_strerror(ret));
-      } else if (ret != (int)frames) {
+      } else if (ret != (int)zframes) {
         fprintf(stderr, "short write, write %d frames\n", ret);
       }
 
@@ -360,9 +355,9 @@ void *sound_comm_tx_thread_func(void*) {
         int nframe = NFRAME;
 
         // are we at the end of the signal?
-        if (txBuffer->size() - itxBuffer <= NFRAME) {
+        if (txBuffer->size() - itxBuffer <= SAMPLES_PER_FRAME*NFRAME) {
           // write remaining frames in buffer
-          nframe = txBuffer->size() - itxBuffer;
+          nframe = (txBuffer->size() - itxBuffer)/SAMPLES_PER_FRAME;
 
           doneCurrent = true;
         }
@@ -391,7 +386,7 @@ void *sound_comm_tx_thread_func(void*) {
           delete txBuffer;
           txBuffer = NULL;
         } else {
-          itxBuffer += nframe;
+          itxBuffer += nframe * SAMPLES_PER_FRAME;
         }
 
       } else {
@@ -399,14 +394,14 @@ void *sound_comm_tx_thread_func(void*) {
 
         // the nao audio drivers do not actually support pausing the device
         //  so I am just continuously sending zeros to avoid an underrun
-        int ret = snd_pcm_writei(tx, zeros, frames);
+        int ret = snd_pcm_writei(tx, zeros, zframes);
         if (ret == -EPIPE) {
           // EPIPE mean underrun
           fprintf(stderr, "underrun occurred\n");
           snd_pcm_prepare(tx);
         } else if (ret < 0) {
           fprintf(stderr, "error from writei: %s\n", snd_strerror(ret));
-        } else if (ret != (int)frames) {
+        } else if (ret != (int)zframes) {
           fprintf(stderr, "short write, write %d frames\n", ret);
         }
       }

@@ -41,6 +41,30 @@ void print_alsa_formats() {
 }
 
 
+int open_transmitter(snd_pcm_t **handle, const char *name) {
+  // open transmitter (speakers)
+  int ret = snd_pcm_open(handle, name, SND_PCM_STREAM_PLAYBACK, 0);
+  if (ret < 0) {
+    fprintf(stderr, "unable to open transmitter pcm device: %s\n", snd_strerror(ret));
+    return ret;
+  }
+
+  return 0;
+}
+
+
+int open_receiver(snd_pcm_t **handle, const char *name) {
+  // open receiver (microphones)
+  int ret = snd_pcm_open(handle, name, SND_PCM_STREAM_CAPTURE, 0);
+  if (ret < 0) {
+    fprintf(stderr, "unable to open receiver pcm device: %s\n", snd_strerror(ret));
+    return ret;
+  }
+
+  return 0;
+}
+
+
 int set_device_params(snd_pcm_t *handle, snd_pcm_hw_params_t *params) {
   int ret;
   int dir = 1;

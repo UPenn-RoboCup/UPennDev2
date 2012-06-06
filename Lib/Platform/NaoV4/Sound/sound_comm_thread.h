@@ -30,10 +30,6 @@ struct DetStruct {
   char symbol;
 };
 
-int open_transmitter();
-
-int open_receiver();
-
 int init_devices();
 
 void *sound_comm_rx_thread_func(void*);
@@ -42,8 +38,8 @@ void sound_comm_rx_thread_cleanup();
 
 void sound_comm_thread_queue_pcm(std::vector<short> *pcm);
 
-int sound_comm_thread_init();
-
 DetStruct sound_comm_thread_get_detection();
+
+int sound_comm_thread_init();
 
 #endif

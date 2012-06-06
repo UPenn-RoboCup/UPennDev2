@@ -41,10 +41,13 @@ function entry()
   t0 = Body.get_time();
   started = false;
   follow = false;
+  walk.stop();
   Motion.event("diveready");
 end
 
 function update()
+  walk.stop();
+
   local t = Body.get_time();
   ball = wcm.get_ball();
   pose = wcm.get_pose();

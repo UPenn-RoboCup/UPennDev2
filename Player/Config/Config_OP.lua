@@ -16,15 +16,15 @@ end
 loadconfig('Robot/Config_OP_Robot') 
 loadconfig('Walk/Config_OP_Walk')
 loadconfig('World/Config_OP_World')
---loadconfig('Kick/Config_OP_Kick')
-loadconfig('Kick/Config_OP_Kick2')
+loadconfig('Kick/Config_OP_Kick')
+--loadconfig('Kick/Config_OP_Kick2')
 loadconfig('Vision/Config_OP_Vision')
 --Location Specific Camera Parameters--
 
 --loadconfig('Vision/Config_OP_Camera_VT')
---loadconfig('Vision/Config_OP_Camera_L512')
+loadconfig('Vision/Config_OP_Camera_L512')
 --loadconfig('Vision/Config_OP_Camera_L512_Day')
-loadconfig('Vision/Config_OP_Camera_Grasp')
+--loadconfig('Vision/Config_OP_Camera_Grasp')
 
 -- Device Interface Libraries
 dev = {};
@@ -88,7 +88,7 @@ fsm.enable_obstacle_detection = 1;
 fsm.kickoff_wait_enable = 0;
 fsm.playMode = 3; --1 for demo, 2 for orbit, 3 for direct approach
 fsm.forcePlayer = 0; --1 for attacker, 2 for defender, 3 for goalie 
-fsm.enable_walkkick = 0;
+fsm.enable_walkkick = 1;
 fsm.enable_sidekick = 0;
 
 --FAST APPROACH TEST

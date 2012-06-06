@@ -41,10 +41,13 @@ function entry()
   t0 = Body.get_time();
   started = false;
   follow = false;
+  walk.stop();
   Motion.event("diveready");
 end
 
 function update()
+  walk.stop();
+
   local t = Body.get_time();
   ball = wcm.get_ball();
   pose = wcm.get_pose();
@@ -103,27 +106,28 @@ function update()
     end
   end
 
-  --TODO: check if other player is close to the ball
-  if (ballR_defend<rClose or ballX_defend<rCloseX)
-     and t-ball.t<0.1 and ball_v < ball_velocity_th2 then
-
-    Motion.event("walk");
-    return "ballClose";
-  end
-
-  attackBearing = wcm.get_attack_bearing();
-  if Config.fsm.goalie_reposition==1 then --check yaw error only
-    if (t - t0 > timeout) and 
-	math.abs(attackBearing) > thFar[3] then
+  if goalie_dive~=1 then 
+    --TODO: check if other player is close to the ball
+    if (ballR_defend<rClose or ballX_defend<rCloseX)
+       and t-ball.t<0.1 and ball_v < ball_velocity_th2 then
       Motion.event("walk");
-      return 'position';
+      return "ballClose";
     end
-  elseif Config.fsm.goalie_reposition==2 then --check yaw and position error
-    if (t - t0 > timeout) and 
+    attackBearing = wcm.get_attack_bearing();
+    if Config.fsm.goalie_reposition==1 then --check yaw error only
+      if (t - t0 > timeout) and 
+  	math.abs(attackBearing) > thFar[3] then
+        Motion.event("walk");
+        return 'position';
+      end
+    --check yaw and position error
+    elseif Config.fsm.goalie_reposition==2 then 
+      if (t - t0 > timeout) and 
 	( rHomeRelative>math.sqrt(thFar[1]^2+thFar[2]^2) or
 	math.abs(attackBearing) > thFar[3]) then
-      Motion.event("walk");
-      return 'position';
+        Motion.event("walk");
+        return 'position';
+      end
     end
   end
 end

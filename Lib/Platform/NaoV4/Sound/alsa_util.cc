@@ -207,6 +207,7 @@ void print_device_params(snd_pcm_t *handle, snd_pcm_hw_params_t *params, int ful
   }
 }
 
+
 int pause_device(snd_pcm_t *handle) {
   int rc = snd_pcm_pause(handle, 1);
   if (rc < 0) {
@@ -215,11 +216,155 @@ int pause_device(snd_pcm_t *handle) {
   return rc;
 }
 
+
 int enable_device(snd_pcm_t *handle) {
   int rc = snd_pcm_pause(handle, 0);
   if (rc < 0) {
     fprintf(stderr, "unable to enable device: %s\n", snd_strerror(rc));
   }
   return rc;
+}
+
+int set_capture_volume(int volume, const char *card, const char *selemName) {
+  int ret;
+  long vmin;
+  long vmax;
+  snd_mixer_t *mixer;
+  snd_mixer_selem_id_t *selemid;
+
+  // open mixer (mode is not used by alsa)
+  int mode = 0;
+  ret = snd_mixer_open(&mixer, mode);
+  if (ret < 0) {
+    fprintf(stderr, "unable to open mixer: %s\n", snd_strerror(ret));
+    return ret;
+  }
+  // attach mixer to the sound card
+  ret = snd_mixer_attach(mixer, card);
+  if (ret < 0) {
+    fprintf(stderr, "unable to attach card to mixer: %s\n", snd_strerror(ret));
+    return ret;
+  }
+  // register the mixer 
+  ret = snd_mixer_selem_register(mixer, NULL, NULL);
+  if (ret < 0) {
+    fprintf(stderr, "unable to register mixer: %s\n", snd_strerror(ret));
+    return ret;
+  }
+  // load the mixer
+  ret = snd_mixer_load(mixer);
+  if (ret < 0) {
+    fprintf(stderr, "unable to load mixer: %s\n", snd_strerror(ret));
+    return ret;
+  }
+
+  // create new sound element object
+  snd_mixer_selem_id_alloca(&selemid);
+  if (selemid == NULL) {
+    fprintf(stderr, "unable to allocate selemid.\n");
+    return ret;
+  }
+  snd_mixer_selem_id_set_index(selemid, 0);
+  snd_mixer_selem_id_set_name(selemid, selemName);
+  snd_mixer_elem_t* elem = snd_mixer_find_selem(mixer, selemid);
+  if (elem == NULL) {
+    fprintf(stderr, "unable to find selem.\n"); 
+    return ret;
+  }
+
+  // get playback volume range
+  ret = snd_mixer_selem_get_capture_volume_range(elem, &vmin, &vmax);
+  if (ret < 0) {
+    fprintf(stderr, "unable to get capture volume range: %s\n", snd_strerror(ret));
+    return ret;
+  }
+  ret = snd_mixer_selem_set_capture_volume_all(elem, vmax*((float)volume/100));
+  if (ret < 0) {
+    fprintf(stderr, "unable to set capture volume: %s\n", snd_strerror(ret));
+    return ret;
+  }
+
+  // free the sound element object
+  snd_mixer_selem_id_free(selemid);
+  // close the mixer
+  ret = snd_mixer_close(mixer);
+  if (ret < 0) {
+    fprintf(stderr, "unable to close mixer: %s\n", snd_strerror(ret));
+    return ret;
+  }
+
+  return 0;
+}
+
+
+int set_playback_volume(int volume, const char *card, const char *selemName) {
+  int ret;
+  long vmin;
+  long vmax;
+  snd_mixer_t *mixer;
+  snd_mixer_selem_id_t *selemid;
+
+  // open mixer (mode is not used by alsa)
+  int mode = 0;
+  ret = snd_mixer_open(&mixer, mode);
+  if (ret < 0) {
+    fprintf(stderr, "unable to open mixer: %s\n", snd_strerror(ret));
+    return ret;
+  }
+  // attach mixer to the sound card
+  ret = snd_mixer_attach(mixer, card);
+  if (ret < 0) {
+    fprintf(stderr, "unable to attach card to mixer: %s\n", snd_strerror(ret));
+    return ret;
+  }
+  // register the mixer 
+  ret = snd_mixer_selem_register(mixer, NULL, NULL);
+  if (ret < 0) {
+    fprintf(stderr, "unable to register mixer: %s\n", snd_strerror(ret));
+    return ret;
+  }
+  // load the mixer
+  ret = snd_mixer_load(mixer);
+  if (ret < 0) {
+    fprintf(stderr, "unable to load mixer: %s\n", snd_strerror(ret));
+    return ret;
+  }
+
+  // create new sound element object
+  snd_mixer_selem_id_alloca(&selemid);
+  if (selemid == NULL) {
+    fprintf(stderr, "unable to allocate selemid.\n");
+    return ret;
+  }
+  snd_mixer_selem_id_set_index(selemid, 0);
+  snd_mixer_selem_id_set_name(selemid, selemName);
+  snd_mixer_elem_t* elem = snd_mixer_find_selem(mixer, selemid);
+  if (elem == NULL) {
+    fprintf(stderr, "unable to find selem.\n"); 
+    return ret;
+  }
+
+  // get playback volume range
+  ret = snd_mixer_selem_get_playback_volume_range(elem, &vmin, &vmax);
+  if (ret < 0) {
+    fprintf(stderr, "unable to get playback volume range: %s\n", snd_strerror(ret));
+    return ret;
+  }
+  ret = snd_mixer_selem_set_playback_volume_all(elem, vmax*((float)volume/100));
+  if (ret < 0) {
+    fprintf(stderr, "unable to set playback volume: %s\n", snd_strerror(ret));
+    return ret;
+  }
+
+  // free the sound element object
+  snd_mixer_selem_id_free(selemid);
+  // close the mixer
+  ret = snd_mixer_close(mixer);
+  if (ret < 0) {
+    fprintf(stderr, "unable to close mixer: %s\n", snd_strerror(ret));
+    return ret;
+  }
+
+  return 0;
 }
 

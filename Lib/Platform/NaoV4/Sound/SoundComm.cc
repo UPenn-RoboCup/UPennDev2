@@ -1,6 +1,8 @@
 #include "SoundComm.h"
-#include "sound_comm_thread.h"
+
 #include "dtmf.h"
+#include "alsa_util.h"
+#include "sound_comm_thread.h"
 
 // defined in nao_comm_thread.cc
 extern bool txPauseCmd;
@@ -49,6 +51,16 @@ static int lua_is_receiver_enabled(lua_State *L) {
 static int lua_is_transmitter_enabled(lua_State *L) {
   lua_pushboolean(L, !txPaused);
   return 1;
+}
+
+static int lua_set_receiver_volume(lua_State *L) {
+  int volume = lua_tointeger(L, 1);
+  return sound_comm_thread_set_receiver_volume(volume);
+}
+
+static int lua_set_transmitter_volume(lua_State *L) {
+  int volume = lua_tointeger(L, 1);
+  return sound_comm_thread_set_transmitter_volume(volume);
 }
 
 static int lua_get_detection(lua_State *L) {
@@ -262,6 +274,8 @@ static const struct luaL_reg sound_comm_lib [] = {
   {"play_pnsequence", lua_play_pnsequence},
   {"is_receiver_enabled", lua_is_receiver_enabled},
   {"is_transmitter_enabled", lua_is_transmitter_enabled},
+  {"set_transmitter_volume", lua_set_transmitter_volume},
+  {"set_receiver_volume", lua_set_receiver_volume},
 
   {NULL, NULL}
 };

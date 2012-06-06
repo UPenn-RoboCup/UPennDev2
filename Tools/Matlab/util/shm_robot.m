@@ -447,6 +447,7 @@ global MONITOR %for sending the webots check information
 			r.occ.map = double(map)/10000;
 			r.occ.mapsize = mapsize;
 			r.occ.robot_pos = h.ocmOcc.get_robot_pos();
+      r.occ.odom = h.ocmOcc.get_odom();
       
       r.bd = {};
       bdTop = h.vcmBoundary.get_top();

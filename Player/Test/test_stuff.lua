@@ -401,6 +401,7 @@ function update()
 		print(string.format("Walk settings:\n tStep: %.2f\t phSingle: {%.2f, %.2f}\t stepHeight: %.3f\n supportX: %.3f\t supportY: %.3f\t\n", Config.walk.tStep, Config.walk.phSingle[1], Config.walk.phSingle[2], Config.walk.stepHeight, 
 Config.walk.supportX, Config.walk.supportY));
     print(string.format("Walk kick settings:\n tStepWalkKick: %.2f\t walkKickHeightFactor: %.2f\t walkKickVel: {%.2f, %.2f}\n", Config.walk.tStepWalkKick or Config.walk.tStep, Config.walk.walkKickHeightFactor, Config.walk.walkKickVel[1], Config.walk.walkKickVel[2]))
+    print(string.format("Odometry settings:\n odomScale: {%.2f, %.2f, %.2f}\n", Config.walk.odomScale[1], Config.walk.odomScale[2], Config.walk.odomScale[3]));
   else
     print(string.format("\n Walk Velocity: (%.2f, %.2f, %.2f)",unpack(targetvel)));
 		walk.set_velocity(unpack(targetvel));

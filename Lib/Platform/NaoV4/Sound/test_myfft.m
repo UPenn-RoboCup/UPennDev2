@@ -22,13 +22,13 @@ symbol = '5';
 h1 = fRow(r);
 h2 = fCol(c);
 % sum of a h1 Hz sinusoid and a h2 Hz sinusoid
-x_tone = 100 * sin(2*pi*h1*t) + 100 * sin(2*pi*h2*t);
+%x_tone = 100 * sin(2*pi*h1*t) + 100 * sin(2*pi*h2*t);
+x_tone = sin(2*pi*h1*t) + sin(2*pi*h2*t);
 
 % process 4 tones
 [rsymbol frame xLIndex xRIndex] = mydtmf(x_tone, x_tone);
 [rsymbol frame xLIndex xRIndex] = mydtmf(x_tone, x_tone);
 [rsymbol frame xLIndex xRIndex] = mydtmf(x_tone, x_tone);
-%[rsymbol frame xLIndex xRIndex] = mydtmf(x_tone, x_tone);
 
 % process pnSequence
 seq = load('pnSequence.mat');
@@ -47,7 +47,9 @@ chirp_interleaved = zeros([2*length(chirp), 1]);
 chirp_interleaved(1:2:end) = chirp;
 chirp_interleaved(2:2:end) = chirp;
 
-fh = fopen('sym5.pcm', 'w');
+fh = fopen(sprintf('sym%c.pcm', symbol), 'w');
 fwrite(fh, [x_tone_interleaved; x_tone_interleaved; x_tone_interleaved; ...
             chirp_interleaved; -chirp_interleaved; chirp_interleaved; -chirp_interleaved], 'int16');
 fclose(fh);
+
+plot(x_tone);

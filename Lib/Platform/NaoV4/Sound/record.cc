@@ -17,18 +17,6 @@
 snd_pcm_t *rx;
 snd_pcm_hw_params_t *rxParams;
 
-int open_receiver() {
-  // open receiver (microphones)
-  int ret = snd_pcm_open(&rx, "default", SND_PCM_STREAM_CAPTURE, 0);
-  if (ret < 0) {
-    fprintf(stderr, "unable to open receiver pcm device: %s\n", snd_strerror(ret));
-    return ret;
-  }
-
-  return 0;
-}
-
-
 int main() {
   fprintf(stderr, "ALSA library version: %s\n", SND_LIB_VERSION_STR);
 
@@ -43,7 +31,7 @@ int main() {
 
   // open PCM device for capture
   fprintf(stderr, "opening receiver device..."); fflush(stderr);
-  open_receiver();
+  open_receiver(&rx);
   fprintf(stderr, "done\n");
 
   // allocate parameters struct

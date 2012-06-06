@@ -2,8 +2,6 @@
 #include "sound_comm_thread.h"
 #include "dtmf.h"
 
-#include <vector>
-
 // defined in nao_comm_thread.cc
 extern bool txPauseCmd;
 extern bool rxPauseCmd;
@@ -193,38 +191,14 @@ static int lua_play_tone(lua_State *L) {
 
   double duration = luaL_optnumber(L, 2, 5.0);
 
-  // find tone frequencies
-  short f1 = 0;
-  short f2 = 0;
-  for (int r = 0; r < NFREQUENCY; r++) {
-    for (int c = 0; c < NFREQUENCY; c++) {
-      if (TONE_SYMBOL[r][c] == symbol[0]) {
-        f1 = F_ROW[r];
-        f2 = F_COL[c];
-      }
-    }
-  }
-  if (f1 == 0 || f2 == 0) {
-    fprintf(stderr, "play_tone: unkown symbol '%c'\n", symbol[0]);
-    return -1;
-  }
-
   // generate pcm
   int nframe = duration * SAMPLING_RATE;
   std::vector<short> *pcm = new std::vector<short>(2*nframe);
-  short tmax = 0;
-  for (int i = 0; i < nframe; i++) {
-    short t = sin(2.0*M_PI*f1*((double)i/SAMPLING_RATE))
-              + sin(2.0*M_PI*f2*((double)i/SAMPLING_RATE));
-    (*pcm)[2*i] = t;
-    (*pcm)[2*i+1] = t;
-    
-    if (abs(t) > tmax) {
-      tmax = abs(t);
-    }
-  }
-  for (int i = 0; i < 2*nframe; i++) {
-    (*pcm)[i] *= (SHRT_MAX/tmax);
+
+  if (gen_tone_pcm(symbol[0], &(*pcm)[0], nframe) < 0) {
+    fprintf(stderr, "play_tone: unable to create tone PCM.\n");
+    delete pcm;
+    return -1;
   }
 
   // queue the pcm signal
@@ -243,40 +217,18 @@ static int lua_play_pnsequence(lua_State *L) {
     return -1;
   }
 
-  // find tone frequencies
-  short f1 = 0;
-  short f2 = 0;
-  for (int r = 0; r < NFREQUENCY; r++) {
-    for (int c = 0; c < NFREQUENCY; c++) {
-      if (TONE_SYMBOL[r][c] == symbol[0]) {
-        f1 = F_ROW[r];
-        f2 = F_COL[c];
-      }
-    }
-  }
-  if (f1 == 0 || f2 == 0) {
-    fprintf(stderr, "play_pnsequence: unkown symbol '%c'\n", symbol[0]);
-    return -1;
-  }
-
   // generate pcm
   int nframe = PFRAME * (THRESHOLD_COUNT + NUM_CHIRP_COUNT); 
   int tframe = PFRAME * THRESHOLD_COUNT;
   std::vector<short> *pcm = new std::vector<short>(2*nframe);
-  // add tone pcm
-  short tmax = 0;
-  for (int i = 0; i < tframe; i++) {
-    short t = (short) (16000 * (sin(2.0*M_PI*f1*((double)i/SAMPLING_RATE))
-                                + sin(2.0*M_PI*f2*((double)i/SAMPLING_RATE))));
-    (*pcm)[2*i] = t;
-    (*pcm)[2*i+1] = t;
-    if (abs(t) > tmax) {
-      tmax = abs(t);
-    }
+
+  // generate tone signal
+  if (gen_tone_pcm(symbol[0], &(*pcm)[0], tframe) < 0) {
+    fprintf(stderr, "play_tone: unable to create tone PCM.\n");
+    delete pcm;
+    return -1;
   }
-  for (int i = 0; i < 2*tframe; i++) {
-    (*pcm)[i] *= (SHRT_MAX/tmax);
-  }
+
   // store pnSequence
   int startInd = 2*tframe;
   int sign = +1;
@@ -303,6 +255,8 @@ static const struct luaL_reg sound_comm_lib [] = {
   {"get_detection", lua_get_detection},
   {"pause_receiver", lua_pause_receiver},
   {"enable_receiver", lua_enable_receiver},
+  {"pause_transmitter", lua_pause_transmitter},
+  {"enable_transmitter", lua_enable_transmitter},
   {"queue_signal", lua_queue_signal},
   {"play_tone", lua_play_tone},
   {"play_pnsequence", lua_play_pnsequence},

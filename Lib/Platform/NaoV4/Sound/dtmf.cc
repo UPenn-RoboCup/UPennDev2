@@ -31,6 +31,37 @@ void print_tone_resp(double *qRow, double *qRow2, double *qCol, double *qCol2) {
 }
 
 
+int gen_tone_pcm(char symbol, short *pcm, int nframe) {
+  // find tone frequencies
+  short f1 = 0;
+  short f2 = 0;
+  for (int r = 0; r < NFREQUENCY; r++) {
+    for (int c = 0; c < NFREQUENCY; c++) {
+      if (TONE_SYMBOL[r][c] == symbol) {
+        f1 = F_ROW[r];
+        f2 = F_COL[c];
+      }
+    }
+  }
+  if (f1 == 0 || f2 == 0) {
+    fprintf(stderr, "gen_tone_pcm: unkown symbol '%c'\n", symbol);
+    return -1;
+  }
+
+  // generate pcm
+  for (int i = 0; i < nframe; i++) {
+    float t = sin(2.0*M_PI*f1*((double)i/SAMPLING_RATE))
+              + sin(2.0*M_PI*f2*((double)i/SAMPLING_RATE));
+    t *= (SHRT_MAX/2);
+
+    pcm[2*i] = (short)t;
+    pcm[2*i+1] = (short)t;
+  }
+
+  return 0;
+}
+
+
 double sort_ratio(double *x, int n, int &index) {
   double xMax = 1, xNext = 1;
   index = 0;
@@ -220,7 +251,6 @@ int check_tone(short *x, char &toneSymbol, long &frame, int &xLIndex, int &xRInd
 
   // get tone symbol
   char symbol = TONE_SYMBOL[kLRow][kLCol];
-  //printf("symbol: %c\n", symbol);
 
   // is this the first tone?
   //  or has the tone changed before expected
@@ -288,7 +318,7 @@ int check_tone(short *x, char &toneSymbol, long &frame, int &xLIndex, int &xRInd
       toneSymbol = prevSymbol;
       frame = startFrame;
 
-      printf("DTMF: '%c' :: (%d, %d)\n", prevSymbol, xLindex, xRIndex);
+      printf("DTMF: '%c' :: (%d, %d)\n", prevSymbol, xLIndex, xRIndex);
 
       // reset tone count
       toneCount = 0;

@@ -3,7 +3,13 @@
 
 #include "sound_params.h"
 #include "pnSequence.h"
+
+#include <math.h>
+#include <fcntl.h>
+#include <limits.h>
+#include <unistd.h>
 #include <stdlib.h>
+#include <sys/types.h>
 
 // number of tone frequencies (rows and columns)
 const short NFREQUENCY = 4;
@@ -36,6 +42,17 @@ const int NCORRELATION = NUM_CHIRP_COUNT * PFRAME;
  * print out the the magnitude frequency responses for the touch tones
  */
 void print_tone_resp(double *qRow, double *qRow2, double *qCol, double *qCol2);
+
+
+/**
+ * generates the pcm array for the given tone
+ *
+ * symbol - tone symbol
+ * *pcm - pointer to pre-allocated pcm array
+ * nfarme - number of pcm frames to generate
+ */
+int gen_tone_pcm(char symbol, short *pcm, int nframe);
+
 
 /**
  * find max two elements of an array

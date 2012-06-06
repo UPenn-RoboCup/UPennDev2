@@ -49,13 +49,29 @@ plot(occ_row, occ_col, '*');
 %plot(occ_row(find(occ_v >= 0.9)), occ_col(find(occ_v >= 0.9)), '*');
 %plot(occ_row(find(occ_v > 0.8 & occ_v < 0.9)), occ_col(find(occ_v > 0.8 & occ_v < 0.9)), 'o');
 quiver(pvector(1,:), pvector(2,:), pvector(5,:), pvector(6,:), 2);
+
+% -----
+odom_x = 0.1;
+odom_y = 0.05;
+odom_a = pi/8;
+angle1 = pi/2 + odom_a;
+angle2 = pi + pi/4 + odom_a;
+angle3 = -pi/4 + odom_a;
+len1 = 1;
+len2 = 0.8;
+len3 = len2;
+tri.v(:,1) = [len1, len2, len3] .* cos([angle1, angle2, angle3]);
+tri.v(:,2) = [len1, len2, len3] .* sin([angle1, angle2, angle3]);
+tri.v = tri.v * 0.04;
+tri.v(:,1) = tri.v(:,1) + odom_y;
+tri.v(:,2) = tri.v(:,2) + odom_x;
+patch(tri.v(:,1), tri.v(:,2),'b');
+
+% -----
 % draw robot body
-rectangle('Position', [-0.06, -0.04, 0.12, 0.07], ...
-          'Curvature',[0.8, 0.4],...
-          'LineStyle', '--');
+% rectangle('Position', [-0.06, -0.04, 0.12, 0.07],'Curvature',[0.8, 0.4], 'LineStyle', '--');
 % draw robot head
-rectangle('Position', [-0.03, -0.03, 0.06, 0.08],...
-          'Curvature', 0.7);
+% rectangle('Position', [-0.03, -0.03, 0.06, 0.08],'Curvature', 0.7);
 
 hold off;
 axis([-0.5 0.5 -0.2 0.8]);

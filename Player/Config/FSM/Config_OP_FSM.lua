@@ -19,6 +19,12 @@ fsm.enable_walkkick = 1;
 
 fsm.wait_kickoff = 1; --initial wait at opponent's kickoff
 
+fsm.goalie_reposition = 0; 
+--0 for don't reposition at all,
+--1 for repositon for angle error, 2 for reposition for position error
+
+fsm.th_front_kick = 10*math.pi/180;
+
 --------------------------------------------------
 --BodyReady : make robot move to initial position
 --------------------------------------------------
@@ -216,6 +222,8 @@ fsm.headScan={};
 fsm.headScan.pitch0 = 25*math.pi/180;
 fsm.headScan.pitchMag = 25*math.pi/180;
 fsm.headScan.yawMag = 60*math.pi/180;
+fsm.headScan.yawMagGoalie = 90*math.pi/180;
+
 fsm.headScan.pitchTurn0 = 20*math.pi/180;
 fsm.headScan.pitchTurnMag = 20*math.pi/180;
 fsm.headScan.yawMagTurn = 45*math.pi/180;

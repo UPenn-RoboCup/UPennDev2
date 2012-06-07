@@ -67,6 +67,18 @@ run_bias(){
   screen -m -L -S bias $LUA_COM run_setup.lua
 }
 
+run_pushtest(){
+  echo "Starting DCM..."
+  cd $PLAYER_DIR/Lib
+  screen -dm -L -S dcm $LUA_COM run_dcm.lua
+  # Allow DCM some time to start
+  sleep 1
+  
+  echo "Starting Push Test.."
+  cd $PLAYER_DIR
+  screen -m -L -S bias $LUA_COM test_push.lua
+}
+
 run_roletest(){
   run_dcm_vcm
   echo "Starting Role Testing..."
@@ -95,6 +107,9 @@ case "$1" in
   'visiontest')
     echo "Start Vision Test Mode"
     run_visiontest;;
+  'pushtest')
+    echo "Start Push Test Mode"
+    run_pushtest;;
   'bias')
     echo "Start Bias Setup Mode"
     run_bias;;

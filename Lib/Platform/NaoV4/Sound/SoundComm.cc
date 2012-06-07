@@ -10,6 +10,9 @@ extern bool rxPauseCmd;
 extern bool txPaused;
 extern bool rxPaused;
 
+extern short pcmDebug[];
+extern pthread_mutex_t pcmDebugMutex;
+
 int init = 0;
 
 
@@ -91,6 +94,18 @@ static int lua_get_detection(lua_State *L) {
   s[1] = '\0';
   lua_pushstring(L, s);
   lua_settable(L, -3);
+
+  return 1;
+}
+
+static int lua_get_debug_pcm(lua_State *L) {
+  pthread_mutex_lock(&pcmDebugMutex);
+  lua_createtable(L, pcmDebugLen, 0);
+  for (int i = 0; i < pcmDebugLen; i++) {
+    lua_pushinteger(L, pcmDebug[i]);
+    lua_rawseti(L, -2, i+1);
+  }
+  pthread_mutex_unlock(&pcmDebugMutex);
 
   return 1;
 }
@@ -276,6 +291,7 @@ static const struct luaL_reg sound_comm_lib [] = {
   {"is_transmitter_enabled", lua_is_transmitter_enabled},
   {"set_transmitter_volume", lua_set_transmitter_volume},
   {"set_receiver_volume", lua_set_receiver_volume},
+  {"get_debug_pcm", lua_get_debug_pcm},
 
   {NULL, NULL}
 };

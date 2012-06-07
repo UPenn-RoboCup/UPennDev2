@@ -7,6 +7,8 @@ static pthread_t txthread;
 static pthread_mutex_t detectionMutex;
 // playlist mutex (this one is probably not needed)
 static pthread_mutex_t playlistMutex;
+// debug pcm mutex
+pthread_mutex_t pcmDebugMutex;
 
 // transmitter and reciever handles
 snd_pcm_t *tx;
@@ -30,6 +32,10 @@ static DetStruct detection;
 
 // audio play list
 std::queue< std::vector<short> * > playlist;
+
+// debugging arrays
+short pcmDebugBuffer[pcmDebugLen];
+short pcmDebug[pcmDebugLen];
 
 
 int init_devices() {
@@ -196,7 +202,8 @@ void *sound_comm_rx_thread_func(void*) {
         long frame;
         int xLIndex;
         int xRIndex;
-        if (check_tone(rxBuffer, symbol, frame, xLIndex, xRIndex) > 0) {
+        int toneCount = check_tone(rxBuffer, symbol, frame, xLIndex, xRIndex);
+        if (toneCount == -1) {
           pthread_mutex_lock(&detectionMutex);
           // detection time
           struct timeval t;
@@ -207,6 +214,17 @@ void *sound_comm_rx_thread_func(void*) {
           detection.rIndex = xRIndex;
           detection.count += 1;
           pthread_mutex_unlock(&detectionMutex);
+
+          // copy the pcm array for debugging
+          int n = PSAMPLE * (THRESHOLD_COUNT + NUM_CHIRP_COUNT - 1);
+          memcpy(pcmDebug, pcmDebugBuffer, sizeof(short) * n);
+          memcpy(pcmDebug + n, rxBuffer, PSAMPLE);
+        } else if (toneCount > 0) {
+          // store the pcm array for debugging
+          pthread_mutex_lock(&pcmDebugMutex);
+          int n = PSAMPLE * (toneCount-1);
+          memcpy(pcmDebug + n, rxBuffer, PSAMPLE);
+          pthread_mutex_unlock(&pcmDebugMutex);
         }
 
         // read remaining audio from buffer
@@ -512,6 +530,10 @@ int sound_comm_thread_init() {
   }
   if ((ret = pthread_mutex_init(&playlistMutex, NULL)) != 0) {
     fprintf(stderr, "error initializing playlist mutex: %d\n", ret);
+    return ret;
+  }
+  if ((ret = pthread_mutex_init(&pcmDebugMutex, NULL)) != 0) {
+    fprintf(stderr, "error initializing debug pcm mutex: %d\n", ret);
     return ret;
   }
 

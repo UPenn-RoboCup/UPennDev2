@@ -9,6 +9,7 @@ killall -q naoqi-bin naoqi espeak lua luajit luajit2 screen
 
 # kill all screen log
 rm -f screenlog*
+rm -f /dev/shm/*
 
 SCREEN_FLAGS="-dm -L -S"
 

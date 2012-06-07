@@ -58,10 +58,20 @@ function update()
 
   ballA = math.atan2(ball.y - math.max(math.min(ball.y, 0.05), -0.05), math.max(ball.x+0.10, 0.10));
   vStep[3] = 0.5*ballA;
-  walk.set_velocity(vStep[1],vStep[2],vStep[3]);
-
-  attackBearing, daPost = wcm.get_attack_bearing();
+  --Player FSM, turn towards the goal
+    attackBearing, daPost = wcm.get_attack_bearing();
+    kick_angle=wcm.get_kick_angle();
+    targetangle = util.mod_angle(attackBearing-kick_angle);
+    if targetangle > 10*math.pi/180 then
+      vStep[3]=0.2;
+    elseif targetangle < -10*math.pi/180 then
+      vStep[3]=-0.2;
+    else
+      vStep[3]=0;
+    end
   --print(vStep[1]..','..vStep[2]..','..vStep[3]);
+
+  walk.set_velocity(vStep[1],vStep[2],vStep[3]);
 
   if (t - ball.t > tLost) then
     print('ballLost');

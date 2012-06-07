@@ -22,6 +22,8 @@
 #include "alsa_util.h"
 #include "dtmf.h"
 
+const int pcmDebugLen = PSAMPLE * (THRESHOLD_COUNT+NUM_CHIRP_COUNT);
+
 struct DetStruct {
   int count;
   double time;

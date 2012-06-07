@@ -2,7 +2,7 @@
 #include "fft.h"
 
 // TODO: frame number should not be here, temporary for matlab testing
-long frameNumber = 0;
+//long frameNumber = 0;
 
 
 void print_tone_resp(double *qRow, double *qRow2, double *qCol, double *qCol2) {
@@ -268,7 +268,8 @@ int check_tone(short *x, char &toneSymbol, long &frame, int &xLIndex, int &xRInd
     // we have heard the tone for the expected amount of time
     //  TODO: what is the significance of the start frame
     //  TODO: is this 4 supposed to be NUM_CHIRP_COUNT
-    startFrame = frameNumber + 4;
+    //startFrame = frameNumber + 4;
+
   } else if (toneCount > THRESHOLD_COUNT) {
     // compute cross correlation of the left and right channels
     filter_fft(xL, yL, NFFT);
@@ -285,14 +286,6 @@ int check_tone(short *x, char &toneSymbol, long &frame, int &xLIndex, int &xRInd
       leftCorr[nCorr*PFRAME+i] = xL[PFRAME-1+i];
       rightCorr[nCorr*PFRAME+i] = xR[PFRAME-1+i];
     }
-
-    /*
-    int nPcm = NUM_SAMPLE*(toneCount-4);
-    for (int i = 0; i < NUM_SAMPLE; i++) {
-      pcmArray[nPcm+i][0] = x[2*i];
-      pcmArray[nPcm+i][1] = x[2*i+1];
-    }
-    */
 
     // have we reached the end of the expected audio signal?
     if (toneCount == THRESHOLD_COUNT + NUM_CHIRP_COUNT) {

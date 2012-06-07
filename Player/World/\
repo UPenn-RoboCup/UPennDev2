@@ -222,7 +222,6 @@ end
 function update_shm() 
   -- update the shm values
   gcm.set_team_role(role);
-  gcm.set_team_strat(strat.strat)
 end
 
 function exit()

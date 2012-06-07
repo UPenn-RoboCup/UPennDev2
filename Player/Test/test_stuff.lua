@@ -387,6 +387,7 @@ function update()
       Config.walk.odomScale[3] = Config.walk.odomScale[3] - .01;
     elseif byte==string.byte("#") then
       wcm.set_robot_pose({0,0,0})
+      PoseFilter.zero_pose()
     end
   end
 

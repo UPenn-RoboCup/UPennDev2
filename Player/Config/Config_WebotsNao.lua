@@ -59,13 +59,8 @@ end
 fsm={}
 loadconfig(param.fsm)
 fsm.game = 'RoboCup';
-if (game.playerID == 1) then
-  fsm.body = {'NaoGoalie'};
-  fsm.head = {'NaoGoalie'};
-else
-  fsm.body = {'NaoKickLogic'};
-  fsm.head = {'NaoPlayer'};
-end
+fsm.body = {'NaoTactics'};
+fsm.head = {'NaoPlayer'};
 
 -- Team Parameters
 team = {};

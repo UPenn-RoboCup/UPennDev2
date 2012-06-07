@@ -83,7 +83,7 @@ function update_odometry()
     yaw = Body.get_sensor_imuAngle(3);
     uOdometry[3] = yaw-yaw0;
     yaw0 = yaw;
---    print("Body yaw:",yaw*180/math.pi, " Pose yaw ",pose.a*180/math.pi)
+    --print("Body yaw:",yaw*180/math.pi, " Pose yaw ",pose.a*180/math.pi)
   end
 
   ballFilter:odometry(uOdometry[1], uOdometry[2], uOdometry[3]);

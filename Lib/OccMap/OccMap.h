@@ -39,6 +39,7 @@ public:
   int& get_robot_pos_x(void);
   int& get_robot_pos_y(void);
   
+  int map_shift(int shift_x, int shift_y);
   int odometry_reset(void);
   int get_odometry(double& pose_x, double& pose_y, double& pose_a);
   int odometry_update(const double odomX, const double odomY, const double odomA);

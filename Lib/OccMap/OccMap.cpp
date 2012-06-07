@@ -160,11 +160,58 @@ int OccMap::odometry_reset(void) {
   return 1;
 }
 
+int OccMap::map_shift(int shift_x, int shift_y) {
+  vector<grid_point> odom_change;
+  int i = 0, j = 0;
+  for (int cnt = 0; cnt < grid_num; cnt ++) 
+    if (grid[cnt] > default_log_p) { // only shift grids that likelihood
+                                    // Larger then default value
+      i = cnt % map_size;
+      j = (cnt - i) / map_size;
+      i += shift_y;
+      j += shift_x;
+      if ((i >= 0) && (i < map_size) && (j >= 0) && (j < map_size)) {
+        grid_point new_pt = {j * map_size +i, grid[cnt]};
+        odom_change.push_back(new_pt);
+      }
+      grid[cnt] = default_log_p;
+    }
+  for (int k = 0; k < odom_change.size(); k++)
+    grid[odom_change[k].key] = odom_change[k].value;
+  return 1;
+}
+
 int OccMap::odometry_update(const double odomX, const double odomY,
     const double odomA) {
   odom_x = odom_x + odomX * cos(odom_a) - odomY * sin(odom_a);
   odom_y = odom_y + odomX * sin(odom_a) + odomY * cos(odom_a);
   odom_a += odomA;
 //  cout << odom_x << ' ' << odom_y << ' ' << odom_a << endl;
+//  Map shift
+  int shift_scale = 5;
+  double odom_i = odom_x / (shift_scale * resolution);
+  double odom_j = odom_y / (shift_scale * resolution);
+  if (odom_i >= 1) {
+    cout << "down shift" << endl;
+    map_shift(shift_scale, 0);
+    odom_x -= shift_scale * resolution;
+    odom_i--;
+  } else if (odom_i <= -1) {
+    cout << "up shift" << endl;
+    map_shift(-shift_scale, 0);
+    odom_x += shift_scale * resolution;
+    odom_i++;
+  }
+  if (odom_j >= 1) {
+    cout << "left shift" << endl;
+    map_shift(0, shift_scale);
+    odom_y -= shift_scale * resolution;
+    odom_j--;
+  } else if (odom_j <= -1) {
+    cout << "right shift" << endl;
+    map_shift(0, -shift_scale);
+    odom_y += shift_scale * resolution;
+    odom_j++;
+  }
   return 1;
 }

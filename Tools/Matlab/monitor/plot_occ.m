@@ -45,7 +45,7 @@ function plot_occ(occ)
   rotate(hH, zdir, 0.25 * pi);
 
   hold off;
-  axis([-0.5 0.5 -0.2 0.8]);
+  axis([odom_y-0.5 odom_y+0.5 odom_x-0.2 odom_x+0.8]);
   set(gca, 'xtick', -0.5:0.1:0.5);
   set(gca, 'ytick', -0.2:0.1:0.8);
   grid on;

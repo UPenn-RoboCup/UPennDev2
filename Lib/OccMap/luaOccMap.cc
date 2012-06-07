@@ -21,6 +21,7 @@ OccMap map;
 
 static int lua_occmap_reset(lua_State *L) {
   map.randomize_map();
+  map.odometry_reset();
   return 1;
 }
 
@@ -41,10 +42,10 @@ static int lua_occmap_odometry_update(lua_State *L) {
   return 1;
 }
 
-static int lua_occmap_odometry_reset(lua_State *L) {
-  map.odometry_reset();
-  return 1;
-}
+//static int lua_occmap_odometry_reset(lua_State *L) {
+//  map.odometry_reset();
+//  return 1;
+//}
 
 static int lua_occmap_vision_update(lua_State *L) {
   if (!lua_istable(L, 1))
@@ -150,7 +151,7 @@ static const struct luaL_reg OccMap_lib [] = {
   {"retrieve_data", lua_occmap_retrieve_data},
   {"vision_update", lua_occmap_vision_update},
   {"odometry_update", lua_occmap_odometry_update},
-  {"odometry_reset", lua_occmap_odometry_reset},
+//  {"odometry_reset", lua_occmap_odometry_reset},
   {"retrieve_odometry", lua_occmap_retrieve_odometry},
   {"empty_userdata", lua_occmap_empty_userdata},
   {NULL, NULL}

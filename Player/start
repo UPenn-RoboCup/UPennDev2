@@ -102,11 +102,11 @@ case "$1" in
     echo "Start Role Testing Mode"
     run_roletest;;
   'help')
-    echo "[No Argu]    -- Player Mode"
-    echo "[Demo]       -- Demo Mode"
-    echo "[visiontest] -- Vision Debug Mode"
-    echo "[bias]       -- Bias Setup Mode"
-    echo "[roletest]   -- Role Testing Mode";;
+    echo "[No Argu](s)     -- Player Mode"
+    echo "[Demo](sd)       -- Demo Mode"
+    echo "[visiontest](sv) -- Vision Debug Mode"
+    echo "[bias](sb)       -- Bias Setup Mode"
+    echo "[roletest](sr)   -- Role Testing Mode";;
   *)
     echo "Unknown Mode. use 'help ' to see Available Mode";;
 esac

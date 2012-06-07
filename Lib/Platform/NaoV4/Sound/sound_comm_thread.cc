@@ -32,45 +32,20 @@ static DetStruct detection;
 std::queue< std::vector<short> * > playlist;
 
 
-
-int open_transmitter() {
-  // open transmitter (speakers)
-  int ret = snd_pcm_open(&tx, "default", SND_PCM_STREAM_PLAYBACK, 0);
-  if (ret < 0) {
-    fprintf(stderr, "unable to open transmitter pcm device: %s\n", snd_strerror(ret));
-    return ret;
-  }
-
-  return 0;
-}
-
-
-int open_receiver() {
-  // open receiver (microphones)
-  int ret = snd_pcm_open(&rx, "default", SND_PCM_STREAM_CAPTURE, 0);
-  if (ret < 0) {
-    fprintf(stderr, "unable to open receiver pcm device: %s\n", snd_strerror(ret));
-    return ret;
-  }
-
-  return 0;
-}
-
-
 int init_devices() {
   int ret;
   print_alsa_lib_version();
 
   // open devices
   printf("opening transmitter audio device..."); fflush(stdout);
-  ret = open_transmitter();
+  ret = open_transmitter(&tx);
   if (ret < 0) {
     fprintf(stderr, "error opening transmitter.\n");
     return ret;
   }
   printf("done\n");
   printf("opening reciever audio device..."); fflush(stdout);
-  ret = open_receiver();
+  ret = open_receiver(&rx);
   if (ret < 0) {
     fprintf(stderr, "error opening reciever.\n");
     return ret;
@@ -109,6 +84,14 @@ int init_devices() {
 
   return 0;
 }
+
+
+
+/***********************************************************************************
+ * *********************************************************************************
+ *                  RECEVIER THREAD FUNCTIONS
+ * *********************************************************************************
+ * *********************************************************************************/
 
 
 void *sound_comm_rx_thread_func(void*) {
@@ -281,12 +264,17 @@ void sound_comm_rx_thread_cleanup() {
 }
 
 
+
+/***********************************************************************************
+ * *********************************************************************************
+ *                  RECEVIER THREAD FUNCTIONS
+ * *********************************************************************************
+ * *********************************************************************************/
+
+
+
 void *sound_comm_tx_thread_func(void*) {
   printf("starting SoundComm transmitter thread\n");
-
-  static short zeros[ASAMPLE];
-  memset(zeros, 0, sizeof(short)*ASAMPLE);
-  snd_pcm_uframes_t zframes = NFRAME;
 
   sigset_t sigs;
   sigfillset(&sigs);
@@ -304,6 +292,9 @@ void *sound_comm_tx_thread_func(void*) {
 
       // the nao audio drivers do not actually support pausing the device
       //  so I am just continuously sending zeros to avoid an underrun
+      short zeros[ASAMPLE];
+      memset(zeros, 0, sizeof(short)*ASAMPLE);
+      snd_pcm_uframes_t zframes = NFRAME;
       int ret = snd_pcm_writei(tx, zeros, zframes);
       if (ret == -EPIPE) {
         // EPIPE mean underrun
@@ -325,7 +316,6 @@ void *sound_comm_tx_thread_func(void*) {
         if (ret < 0) {
           fprintf(stderr, "error resuming transmitter: %s\n", snd_strerror(ret));
         }
-
 
         txPaused = false;
       }
@@ -353,15 +343,27 @@ void *sound_comm_tx_thread_func(void*) {
         int nframe = NFRAME;
 
         // are we at the end of the signal?
-        if (txBuffer->size() - itxBuffer <= SAMPLES_PER_FRAME*NFRAME) {
-          // write remaining frames in buffer
-          nframe = (txBuffer->size() - itxBuffer)/SAMPLES_PER_FRAME;
+        //  the audio drivers will cause a continuous large cpu usage spike
+        //  if the number of frames written to the device is not the same as the
+        //  number of frames per period.
+        //  pad the array with zeros if needed
+        int ret;
+        if (txBuffer->size() - itxBuffer <= ASAMPLE) {
+          short tmpPCM[ASAMPLE];
+          int tsample = txBuffer->size() - itxBuffer;
+
+          memcpy(tmpPCM, &(*txBuffer)[itxBuffer], sizeof(short) * (tsample));
+          memset(tmpPCM+tsample, 0, sizeof(short) * ASAMPLE);
+
+          // send the pcm signal to the audio device
+          ret = snd_pcm_writei(tx, tmpPCM, nframe);
 
           doneCurrent = true;
+        } else {
+          // send the pcm signal to the audio device
+          ret = snd_pcm_writei(tx, &(*txBuffer)[itxBuffer], nframe);
         }
 
-        // send the pcm signal to the audio device
-        int ret = snd_pcm_writei(tx, &(*txBuffer)[itxBuffer], nframe);
         if (ret == -EPIPE) {
           // EPIPE mean underrun
           fprintf(stderr, "underrun occurred\n");
@@ -386,6 +388,9 @@ void *sound_comm_tx_thread_func(void*) {
 
         // the nao audio drivers do not actually support pausing the device
         //  so I am just continuously sending zeros to avoid an underrun
+        short zeros[ASAMPLE];
+        memset(zeros, 0, sizeof(short)*ASAMPLE);
+        snd_pcm_uframes_t zframes = NFRAME;
         int ret = snd_pcm_writei(tx, zeros, zframes);
         if (ret == -EPIPE) {
           // EPIPE mean underrun
@@ -397,6 +402,8 @@ void *sound_comm_tx_thread_func(void*) {
           fprintf(stderr, "short write, write %d frames\n", ret);
         }
       }
+
+      usleep(1000);
     }
 
     pthread_testcancel();
@@ -443,6 +450,33 @@ DetStruct sound_comm_thread_get_detection() {
 }
 
 
+int sound_comm_thread_set_transmitter_volume(int volume) {
+  if (set_playback_volume(volume, "default", "PCM") < 0) {
+    fprintf(stderr, "error setting 'PCM' playback volume.\n");
+    return -1;
+  }
+  return 0;
+}
+
+
+int sound_comm_thread_set_receiver_volume(int volume) {
+  if (set_capture_volume(volume, "default", "Front/Rear mics") < 0) {
+    fprintf(stderr, "error setting 'Front/Read mics' capture volume.\n");
+    return -1;
+  }
+  if (set_capture_volume(volume, "default", "Digital") < 0) {
+    fprintf(stderr, "error setting 'Digital' capture volume.\n");
+    return -1;
+  }
+  if (set_capture_volume(volume, "default", "Left/Right mics") < 0) {
+    fprintf(stderr, "error setting 'Left/Right mics' capture volume.\n");
+    return -1;
+  }
+
+  return 0;
+}
+
+
 int sound_comm_thread_init() {
   int ret;
 
@@ -452,6 +486,17 @@ int sound_comm_thread_init() {
     fprintf(stderr, "error initializing devices\n");
     return ret;
   }
+
+  // set volumes
+  if (sound_comm_thread_set_transmitter_volume(100) < 0) {
+    fprintf(stderr, "unable to initialize transmitter volume.\n");
+    return -1;
+  }
+  if (sound_comm_thread_set_receiver_volume(100) < 0) {
+    fprintf(stderr, "unable to initialize reciever volume.\n");
+    return -1;
+  }
+  
 
   // initialize detection variables
   detection.count = 0;

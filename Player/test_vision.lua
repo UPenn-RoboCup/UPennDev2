@@ -39,6 +39,7 @@ require('Speak')
 require('Body')
 require('Motion')
 require('gcm')
+require('ocm')
 
 smindex = 0;
 
@@ -138,6 +139,11 @@ function process_keyinput()
     elseif byte==string.byte(",") then	targetvel[1]=targetvel[1]-0.02;
     elseif byte==string.byte("h") then	targetvel[2]=targetvel[2]+0.02;
     elseif byte==string.byte(";") then	targetvel[2]=targetvel[2]-0.02;
+
+    -- reset OccMap
+    elseif byte==string.byte("/") then 
+      print("reset occomap");
+      ocm.set_occ_reset(1);
 
     --switch camera 
     elseif byte==string.byte("-") then

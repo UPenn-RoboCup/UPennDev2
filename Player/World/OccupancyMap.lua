@@ -18,6 +18,7 @@ imuYaw = Config.world.imuYaw or 0;
 yaw0 = 0;
 yawScale = 1.38
 
+
 function entry()
   OccMap.init(Config.occ.mapsize, Config.occ.robot_pos[1], 
               Config.occ.robot_pos[2], unix.time());
@@ -81,6 +82,13 @@ function update()
 --  print(odom.x..' '..odom.y..' '..odom.a);
 	occmap = OccMap.retrieve_map();
 	ocm.set_occ_map(occmap);		
+
+  local reset = ocm.get_occ_reset();
+  if reset == 1 then
+    OccMap.reset();
+    print('reset occmap in OccupancyMap');
+    ocm.set_occ_reset(0);
+  end
 
 end
 

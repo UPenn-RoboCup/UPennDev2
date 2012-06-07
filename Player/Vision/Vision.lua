@@ -210,10 +210,11 @@ function update()
   -- bit-or the segmented image
   labelB.data = ImageProc.block_bitor(labelA.data, labelA.m, labelA.n, scaleB, scaleB);
 
-  vcm.refresh_debug_message();
+  
   Detection.update();
+  vcm.refresh_debug_message();
 
-  update_shm(status)
+  update_shm(status, headAngles)
 
   -- switch camera
   local cmd = vcm.get_camera_command();
@@ -293,7 +294,7 @@ print("Check 4:",
 
 end
 
-function update_shm(status)
+function update_shm(status, headAngles)
   -- Update the shared memory
   -- Shared memory size argument is in number of bytes
 
@@ -340,7 +341,7 @@ function update_shm(status)
   vcm.set_image_select(status.select);
   vcm.set_image_count(status.count);
   vcm.set_image_time(status.time);
-  vcm.set_image_headAngles({status.joint[1], status.joint[2]});
+  vcm.set_image_headAngles(headAngles);
   vcm.set_image_horizonA(HeadTransform.get_horizonA());
   vcm.set_image_horizonB(HeadTransform.get_horizonB());
   vcm.set_image_horizonDir(HeadTransform.get_horizonDir())

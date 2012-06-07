@@ -19,7 +19,7 @@ fsm.enable_walkkick = 1;
 
 fsm.wait_kickoff = 1; --initial wait at opponent's kickoff
 
-fsm.goalie_reposition = 0; --1 for turn, 2 for relocate
+fsm.goalie_reposition = 2; --1 for turn, 2 for relocate
 
 fsm.th_front_kick = 10*math.pi/180;
 
@@ -54,7 +54,7 @@ fsm.bodyAnticipate.dive_threshold_y = 1.0;
 fsm.bodyAnticipate.ball_velocity_th = 0.5; --min velocity for diving
 fsm.bodyAnticipate.ball_velocity_thx = -0.2; --min x velocity for diving
 
-fsm.bodyAnticipate.rClose = 1.7;
+fsm.bodyAnticipate.rClose = 1.2; --default value 1.7
 fsm.bodyAnticipate.rCloseX = 1.0;
 fsm.bodyAnticipate.ball_velocity_th2 = 0.3; --max velocity for start approach
 
@@ -70,7 +70,7 @@ fsm.bodyGoaliePosition.thClose = {.2, .1, 10*math.pi/180}
 --------------------------------------------------
 fsm.bodyChase={};
 fsm.bodyChase.maxStep = 0.08;
-fsm.bodyChase.rClose = 0.35;
+fsm.bodyChase.rClose = 0.25;  --default value 0.35
 fsm.bodyChase.timeout = 20.0*speedFactor;
 fsm.bodyChase.tLost = 3.0*speedFactor;
 fsm.bodyChase.rFar = 2.1;
@@ -188,7 +188,7 @@ fsm.bodyWalkKick.timeout = 2.0*speedFactor;
 --BodyGotoCenter : Going to center when ball is lost
 --------------------------------------------------
 fsm.bodyGotoCenter={};
-fsm.bodyGotoCenter.maxStep=0.06;
+fsm.boptop battery fixdyGotoCenter.maxStep=0.06;
 fsm.bodyGotoCenter.rClose=0.30;
 fsm.bodyGotoCenter.timeout=10.0*speedFactor;
 
@@ -198,7 +198,7 @@ fsm.bodyGotoCenter.timeout=10.0*speedFactor;
 fsm.headTrack = {};
 fsm.headTrack.timeout = 3.0 * speedFactor;
 fsm.headTrack.tLost = 1.5 * speedFactor;
-fsm.headTrack.minDist = 0.30; --If ball is closer than this, don't look up
+fsm.headTrack.minDist = 0.25; --Default value 0.30,If ball is closer than this, don't look up
 fsm.headTrack.fixTh={0.20,0.08}; --Fix yaw axis if ball is within this box
 
 --------------------------------------------------

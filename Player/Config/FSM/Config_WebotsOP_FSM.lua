@@ -188,7 +188,7 @@ fsm.bodyWalkKick.timeout = 2.0*speedFactor;
 --BodyGotoCenter : Going to center when ball is lost
 --------------------------------------------------
 fsm.bodyGotoCenter={};
-fsm.boptop battery fixdyGotoCenter.maxStep=0.06;
+fsm.bodyGotoCenter.maxStep=0.06;
 fsm.bodyGotoCenter.rClose=0.30;
 fsm.bodyGotoCenter.timeout=10.0*speedFactor;
 

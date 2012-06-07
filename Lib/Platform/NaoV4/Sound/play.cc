@@ -17,16 +17,6 @@
 snd_pcm_t *tx;
 snd_pcm_hw_params_t *txParams;
 
-int open_transmitter() {
-  // open transmitter (speakers)
-  int ret = snd_pcm_open(&tx, "default", SND_PCM_STREAM_PLAYBACK, 0);
-  if (ret < 0) {
-    fprintf(stderr, "unable to open transmitter pcm device: %s\n", snd_strerror(ret));
-    return ret;
-  }
-
-  return 0;
-}
 
 int main() {
   fprintf(stderr, "ALSA library version: %s\n", SND_LIB_VERSION_STR);
@@ -42,7 +32,7 @@ int main() {
 
   // open PCM device for playback
   fprintf(stderr, "opening transmitter device..."); fflush(stderr);
-  open_transmitter();
+  open_transmitter(&tx);
   fprintf(stderr, "done\n");
 
   // allocate parameters struct

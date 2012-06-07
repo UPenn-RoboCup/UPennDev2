@@ -6,6 +6,7 @@
 
 #include <math.h>
 #include <fcntl.h>
+#include <string.h>
 #include <limits.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -94,11 +95,11 @@ int find_first_max(int *x, int n, double threshold, int offset);
  * *x - interleaved (lrlrlr) stereo audio signal of size NUM_SAMPLES
  *
  * return:
- *  1 - correlation complete
- *  0 - nothing to report
+ *  tone count or -1 when the correlation is complete
  *
  */
 int check_tone(short *x, char &toneSymbol, long &frame, int &xLIndex, int &xRIndex, int *leftCorrOut = NULL, int *rightCorrOut = NULL);
+
 
 /**
  * stand alone cross correlation function for testing

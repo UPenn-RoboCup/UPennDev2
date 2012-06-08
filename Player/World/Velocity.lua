@@ -36,9 +36,9 @@ function update(newx,newy)
     vy=(1-gamma)*vy + gamma*vyCurrent;
   end
 
-  if ball_count<15 then
---    print(string.format("%d Ball xy:%.2f %.2f v:%.2f %.2f",
---	ball_count,newx,newy,vx,vy));
+  if ball_count<15 and vx<-0.5 then
+    print(string.format("%d Ball xy:%.2f %.2f v:%.2f %.2f",
+	ball_count,newx,newy,vx,vy));
   end
 
   tLast=t;

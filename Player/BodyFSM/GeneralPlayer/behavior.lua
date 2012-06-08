@@ -42,7 +42,7 @@ function update()
   -------------------------------
   --Kickoff handling
   ------------------------------
-  tKickOffWear = 30.0;
+  tKickOffWear = Config.team.tKickOffWear or 30.0;
 
 
   t=Body.get_time();
@@ -50,7 +50,8 @@ function update()
   tKickOff=wcm.get_kick_tKickOff();
   --If too long time has passed since game starts
   --Don't care about kickoff kick 
-  if (t-tKickOff)>tKickOffWear then
+  if (t-tKickOff)>tKickOffWear and kick_off==1 then
+    print("kickoff weared off")
     wcm.set_kick_kickOff(0);
     kick_off=0;
   end
@@ -58,10 +59,9 @@ function update()
   if Config.fsm.playMode>1 then --skip kick selection in demo mode
     if kick_off>0 then 
       print("Behavior updated, kickoff kick")
-      kickAngle = math.pi/45; --30 degree off angle
+      kickAngle = math.pi/6; --30 degree off angle
       kickDir=1;
       kickType=2;
-      wcm.set_kick_kickOff(0);
       wcm.set_kick_dir(kickDir);
       wcm.set_kick_type(kickType);
       wcm.set_kick_angle(kickAngle);
@@ -95,7 +95,7 @@ function update()
     kickType=1;
   end
 
-  if Config.fsm.enable_sidekick==0 then
+  if Config.fsm.enable_sidekick==0 and kickDir~=1 then
     kickDir=1;
     kickAngle=0;
   end

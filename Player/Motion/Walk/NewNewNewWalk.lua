@@ -702,12 +702,18 @@ function doPunch(punchtype)
 end
 
 function stance_reset() --standup/sitdown/falldown handling
+print("Stance Resetted")
   uLeft = util.pose_global(vector.new({-supportX, footY, 0}),uTorso);
   uRight = util.pose_global(vector.new({-supportX, -footY, 0}),uTorso);
   uLeft1, uLeft2 = uLeft, uLeft;
   uRight1, uRight2 = uRight, uRight;
   uTorso1, uTorso2 = uTorso, uTorso;
   uSupport = uTorso;
+  tLastStep=Body.get_time();
+  walkKickRequest = 0; 
+  iStep0 = -1;
+  iStep = 0;
+  current_step_type=0;
 end
 
 function switch_stance(stance)

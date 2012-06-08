@@ -69,8 +69,8 @@ fsm.bodyGoaliePosition.thClose = {.2, .1, 10*math.pi/180}
 --BodyChase : move the robot directly towards the ball (for goalie)
 --------------------------------------------------
 fsm.bodyChase={};
-fsm.bodyChase.maxStep = 0.08;
-fsm.bodyChase.rClose = 0.25;  --default value 0.35
+fsm.bodyChase.maxStep = 0.085; --default value 0.08,0.09 quite unstable
+fsm.bodyChase.rClose = 0.30;  --default value 0.35
 fsm.bodyChase.timeout = 20.0*speedFactor;
 fsm.bodyChase.tLost = 3.0*speedFactor;
 fsm.bodyChase.rFar = 2.1;
@@ -97,7 +97,8 @@ fsm.bodyPosition.rTurn = 0.25;
 fsm.bodyPosition.rDist1 = 0.40; 
 fsm.bodyPosition.rDist2 = 0.20; 
 fsm.bodyPosition.rTurn2 = 0.08; 
-fsm.bodyPosition.rOrbit = 0.60; 
+fsm.bodyPosition.rOrbit = 0.40; --Default value 0.60, 0.40 enables ...
+-- the bot to get around the ball real fast avoiding wastage of time.
 
 fsm.bodyPosition.rClose = 0.35; 
 --fsm.bodyPosition.thClose = {0.15,0.15,10*math.pi/180};

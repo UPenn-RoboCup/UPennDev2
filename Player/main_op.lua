@@ -91,8 +91,11 @@ tUpdate = unix.time();
 
 --Start with PAUSED state
 gcm.set_game_paused(1);
-role = 1; --Attacker
+cur_role = 1; --Attacker
 waiting = 1;
+--Don't force the role
+gcm.set_team_forced_role(0);
+
 
 button_role,button_state = 0,0;
 tButtonRole = 0;
@@ -113,7 +116,7 @@ function update()
         Speak.talk('Playing');
         Motion.event("standup");
 	--Change role to active 
-        if role==0 then
+        if cur_role==0 then
 	  gcm.set_team_role(0); --Active goalie
 	else
 	  gcm.set_team_role(1); --Active player
@@ -131,7 +134,7 @@ function update()
 
   if waiting>0 then --Waiting mode, check role change
     gcm.set_game_paused(1);
-    if role==0 then
+    if cur_role==0 then
       gcm.set_team_role(5); --Reserve goalie
       Body.set_indicator_ball({0,0,1});
     else
@@ -142,7 +145,7 @@ function update()
       button_state=1;
     else
       if button_state==1 then --Button released
-        role = 1 - role;
+        cur_role = 1 - cur_role;
       end
       button_state=0;
     end

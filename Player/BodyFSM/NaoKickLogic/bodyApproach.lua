@@ -5,7 +5,7 @@ require('walk')
 require('vector')
 require('util')
 require('Config')
-
+require('postDist')
 require('wcm')
 
 t0 = 0;
@@ -33,9 +33,6 @@ rFar = 0.45;
 -- alignment
 thAlign = 15.0*math.pi/180.0;
 
--- goalpost distance threshold
-pNear = Config.fsm.bodyApproach.pNear or 0.3;
-pFar = Config.fsm.bodyApproach.pFar or 1.0;
 
 function entry()
   print(_NAME.." entry");
@@ -52,18 +49,6 @@ function update()
   --print('ball: '..ball.x..', '..ball.y);
   --print('ballR '..ballR);
 
-  -- get attack goalpost positions and goal angle
-  posts = {wcm.get_goal_attack_post1(), wcm.get_goal_attack_post2()}
-
-  -- calculate the relative distance to each post, find closest
-  pose = wcm.get_pose();
-  p1Relative = util.pose_relative({posts[1][1], posts[1][2], 0}, {pose.x, pose.y, pose.a});
-  p2Relative = util.pose_relative({posts[2][1], posts[2][2], 0}, {pose.x, pose.y, pose.a});
-  p1Dist = math.sqrt(p1Relative[1]^2 + p1Relative[2]^2);
-  p2Dist = math.sqrt(p2Relative[1]^2 + p2Relative[2]^2);
-  pClosest = math.min(p1Dist, p2Dist);
-  pFarthest = math.max(p1Dist, p2Dist);
-
   -- calculate walk velocity based on ball position
   vStep = vector.new({0,0,0});
   vStep[1] = .5*(ball.x - xTarget);
@@ -73,10 +58,30 @@ function update()
 
   ballA = math.atan2(ball.y - math.max(math.min(ball.y, 0.05), -0.05), math.max(ball.x+0.10, 0.10));
   vStep[3] = 0.5*ballA;
-  walk.set_velocity(vStep[1],vStep[2],vStep[3]);
-
-  attackBearing, daPost = wcm.get_attack_bearing();
+  --Player FSM, turn towards the goal
+    attackBearing, daPost = wcm.get_attack_bearing();
+    kick_angle=wcm.get_kick_angle();
+    targetangle = util.mod_angle(attackBearing-kick_angle);
+    if targetangle > 10*math.pi/180 then
+      vStep[3]=0.2;
+    elseif targetangle < -10*math.pi/180 then
+      vStep[3]=-0.2;
+    else
+      vStep[3]=0;
+    end
   --print(vStep[1]..','..vStep[2]..','..vStep[3]);
+
+  --when the ball is on the side of the ROBOT, backstep a bit
+  local wAngle = math.atan2 (ball.y,ball.x);
+  if math.abs(wAngle) > 45*math.pi/180 then
+    vStep[1]=vStep[1] - 0.03;
+    print('backstep');
+  else
+    --Otherwise, don't make robot backstep
+    vStep[1]=math.max(0,vStep[1]);
+  end
+
+  walk.set_velocity(vStep[1],vStep[2],vStep[3]);
 
   if (t - ball.t > tLost) then
     print('ballLost');
@@ -90,19 +95,17 @@ function update()
     print('ballFar');
     return "ballFar";
   end
-  if (math.abs(attackBearing) > thAlign) then
+  if ((math.abs(attackBearing) > thAlign) and postDist.kick()) then
     print('ballAlign');
     return 'ballAlign';
   end
   if ((ball.x < xKick) and (math.abs(ball.y) < yKickMax) and
       (math.abs(ball.y) > yKickMin)) then
-    if ((pClosest > pNear) and (pClosest < pFar)) then
-      print('kick');   
-      return "kick";
+    if(postDist.kick()) then
+      return "kick"
     else
-      print("My distance is ",pClosest,"\n");
-      return "walkKick";
-    end
+      return "walkKick"
+    end  
   end
 end
 

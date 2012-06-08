@@ -42,7 +42,8 @@ function update()
   -------------------------------
   --Kickoff handling
   ------------------------------
-  tKickOffWear = 20.0;
+  tKickOffWear = 30.0;
+
 
   t=Body.get_time();
   kick_off=wcm.get_kick_kickOff();
@@ -57,7 +58,7 @@ function update()
   if Config.fsm.playMode>1 then --skip kick selection in demo mode
     if kick_off>0 then 
       print("Behavior updated, kickoff kick")
-      kickAngle = math.pi/6; --30 degree off angle
+      kickAngle = math.pi/45; --30 degree off angle
       kickDir=1;
       kickType=2;
       wcm.set_kick_kickOff(0);
@@ -71,7 +72,7 @@ function update()
     kickType=2;
 
     --Check kick direction 
-    thFrontKick = 45*math.pi/180;  
+    thFrontKick = 10*math.pi/180;  
 
     if math.abs(attackBearing)<thFrontKick then
       kickDir=1;

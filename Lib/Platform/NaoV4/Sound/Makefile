@@ -16,9 +16,16 @@ else
 		&& make && cd $(CWD)
 endif
 
+mex:
+	mex -O myfft.cc
+	mex -O mydtmf.cc dtmf.cc
+	mex -O mycrosscorr.cc dtmf.cc
+	mex -O find_first_max.cc dtmf.cc
+
 clean:
 ifeq ($(CTC),)
 	make -f Makefile.local clean	
 else
 	rm -rf build
 endif
+	rm -f *mexglx *mexa64

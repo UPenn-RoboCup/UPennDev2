@@ -278,7 +278,7 @@ function update_IMU()
   tTrans= tTrans * Transform.rotY(imuAngle[2]);
   tTrans= tTrans * Transform.rotX(imuAngle[1]);
 
-  gyrFactor = 0.7;--heuristic value
+  gyrFactor = 0.6;--heuristic value
   gyrDelta = vector.new(gyr)*math.pi/180*tDelta*gyrFactor;
 
   local tTransDelta = Transform.rotZ(gyrDelta[3]);

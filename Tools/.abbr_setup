@@ -1,6 +1,6 @@
 alias sv='start visiontest'
 alias sd='start demo'
 alias sb='start bias'
-alias sr='start sr'
+alias sr='start roletest'
 alias s='start'
 alias so='start obstacle'

@@ -150,7 +150,7 @@ function update()
     if parameters then
       instructions = " Key commands \n 7:sit down 8:stand up 9:walk\n i/j/l/,/h/; :control walk velocity\n k : walk in place\n [, ', / :Reverse x, y, / directions\n 1/2/3/4 :kick\n w/a/s/d/x :control head\n t/T :alter walk speed\t f/F :alter step phase\t r/R :alter step height\t c/C :alter supportX\t v/V :alter supportY\n b/B :alter foot sensor threshold \t n/N :alter delay time.\n 3/4/5 :turn imu feedback/joint encoder feedback/foot sensor feedback on or off."; 
     else
-      instructions = " Key commands \n 7:sit down 8:stand up 9:walk\n i/j/l/,/h/; :control walk velocity\n k : walk in place\n [, ', / :Reverse x, y, / directions\n 1/2/3/4 :kick\n w/a/s/d/x :control head\n y/u/o/p :alter alpha\t q/e/r/t :alter gain\t c/v/b/n :alter deadband\t Letter to decrease, Shift+letter to increase\n g/G :adjust odom X\t h/H :adjust odom Y\t m/M :adjust odom angle\t #:Reset pose to center";
+      instructions = " Key commands \n 7:sit down 8:stand up 9:walk\n i/j/l/,/h/; :control walk velocity\n k : walk in place\n [, ', / :Reverse x, y, / directions\n 1/2/3/4 :kick\n w/a/s/d/x :control head\n y/u/o/p :alter alpha\t q/e/r/t :alter gain\t c/v/b/n :alter deadband\t Letter to decrease, Shift+letter to increase\n z/Z :adjust odom X\t g/G :adjust odom Y\t m/M :adjust odom angle\t #:Reset pose to center";
     end
 
   end
@@ -373,13 +373,13 @@ function update()
 			Config.walk.hipImuParamY[3] = Config.walk.hipImuParamY[3] + .001;
 		
     --Adjust odometry values--  
-    elseif byte==string.byte("g") then
+    elseif byte==string.byte("z") then
       Config.walk.odomScale[1] = Config.walk.odomScale[1] + .01;
-    elseif byte==string.byte("G") then
+    elseif byte==string.byte("Z") then
       Config.walk.odomScale[1] = Config.walk.odomScale[1] - .01;
-    elseif byte==string.byte("h") then
+    elseif byte==string.byte("g") then
       Config.walk.odomScale[2] = Config.walk.odomScale[2] + .01;
-    elseif byte==string.byte("H") then
+    elseif byte==string.byte("G") then
       Config.walk.odomScale[2] = Config.walk.odomScale[2] - .01;
     elseif byte==string.byte("m") then
       Config.walk.odomScale[3] = Config.walk.odomScale[3] + .01;

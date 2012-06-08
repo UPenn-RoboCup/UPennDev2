@@ -13,7 +13,8 @@ function loadconfig(configName)
 end
 
 loadconfig('Walk/Config_WebotsOP_Walk')
-loadconfig('World/Config_OP_World')
+--loadconfig('World/Config_OP_World')
+loadconfig('World/Config_WebotsOP_World')
 --loadconfig('Kick/Config_WebotsOP_Kick')
 loadconfig('Kick/Config_OP_Kick2')
 --loadconfig('Kick/Config_WebotsOP_KickPunch')
@@ -61,7 +62,7 @@ fsm.body = {'GeneralPlayer'};
 fsm.playMode = 3; --1 for demo, 2 for orbit, 3 for direct approach
 fsm.enable_obstacle_detection = 1;
 fsm.wait_kickoff = 1;
-fsm.enable_walkkick = 0;
+fsm.enable_walkkick = 1;
 fsm.enable_sidekick = 0;
 fsm.enable_dribble = 1;
 
@@ -105,6 +106,8 @@ team = {};
 team.msgTimeout = 5.0;
 team.nonAttackerPenalty = 6.0; -- eta sec
 team.nonDefenderPenalty = 0.5; -- dist from goal
+team.tKickOffWear =20.0;
+
 
 -- keyframe files
 km = {};

@@ -19,7 +19,7 @@ rClose = Config.fsm.bodyChase.rClose;
 --]]
 
 timeout = 20.0;
-maxStep = 0.04;
+maxStep = 0.06;
 maxPosition = 0.55;
 tLost = 6.0;
 
@@ -30,22 +30,10 @@ thClose = Config.fsm.bodyGoaliePosition.thClose;
 function entry()
   print(_NAME.." entry");
   t0 = Body.get_time();
+  HeadFSM.sm:set_state('headLog');
 end
 
 function update()
-
-  --Escape 
-  if goalie_dive==1 or Config.fsm.goalie_reposition==0 then
-    return 'ready';
-  end
-
-
-
-
-
-
-
-
 
   local t = Body.get_time();
 
@@ -62,8 +50,14 @@ function update()
   vx = maxStep*homeRelative[1]/rHomeRelative;
   vy = maxStep*homeRelative[2]/rHomeRelative;
 
+  va = .2 * math.atan2(homeRelative[2], homeRelative[1]);
+
+  if math.abs(wcm.get_attack_bearing())>math.pi/2 or
+     rHomeRelative < 0.6 then 
+    va = .35*wcm.get_attack_bearing();
+  end
+
   --TODO: Goalie may need to turn to target direction 
-  va = .35*wcm.get_attack_bearing();
 
 --[[
   if (tBall > 8) then
@@ -126,5 +120,6 @@ function getGoalieHomePosition()
 end
 
 function exit()
+  HeadFSM.sm:set_state('headTrack');
 end
 

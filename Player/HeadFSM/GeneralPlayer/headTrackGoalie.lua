@@ -65,6 +65,5 @@ function update()
 end
 
 function exit()
-
-
+  wcm.set_ball_locked_on(0);
 end

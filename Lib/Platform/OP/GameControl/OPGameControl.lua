@@ -125,11 +125,21 @@ function update()
       -- update goal color
       set_team_color(gamePacket.teams[teamIndex].goalColour); 
 
+
       -- update kickoff team
-      if (gamePacket.teams[gamePacket.kickOffTeam+1].teamNumber == teamNumber) then
+      -- Dropball Handling
+      if gamePacket.kickOffTeam ==2 then
+        --Dropball, robots should be OUTSIDE center circle, can score directly
+        --Set it to 1 for now
         set_kickoff(1);
       else
-        set_kickoff(0);
+        if (gamePacket.teams[gamePacket.kickOffTeam+1].teamNumber == teamNumber) then
+          --Kickoff, robot inside center circle, cannot score directly
+          set_kickoff(1);
+        else
+          --Waiting, robot outside center circle, cannot move for 10sec
+          set_kickoff(0);
+        end
       end
 
       -- update which half it is
@@ -163,21 +173,24 @@ function update()
     -- update kickoff
     set_kickoff(gcm.get_game_kickoff());
 
-    -- use buttons to advance states
-    if (Body.get_change_state() == 0) then
-      if buttonPressed == 1 then
-        -- advance state when button is released
-        if (gameState < 3) then
-          gameState = gameState + 1;
-        elseif (gameState == 3) then
-          -- playing - toggle penalty state
-          teamPenalty[playerID] = 1 - teamPenalty[playerID]; 
+    -- use buttons to advance states IF not paused
+    if gcm.get_game_paused()==0 then
+      if (Body.get_change_state() == 0) then
+        if buttonPressed == 1 then
+          -- advance state when button is released
+          if (gameState < 3) then
+            gameState = gameState + 1;
+          elseif (gameState == 3) then
+            -- playing - toggle penalty state
+            teamPenalty[playerID] = 1 - teamPenalty[playerID]; 
+          end
         end
+        buttonPressed = 0;
+      else
+        buttonPressed = 1;
       end
-      buttonPressed = 0;
-    else
-      buttonPressed = 1;
     end
+
   end
 
   -- update shm

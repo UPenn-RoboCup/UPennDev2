@@ -7,7 +7,7 @@ include_directories(/usr/local/include)
 include_directories(/usr/include/lua5.1)
 
 # TODO: compiling should set an environment variable for the platform
-include_directories(/$(NaoqiCTC)/sysroot/usr/include/boost)
+include_directories(/$(NaoqiCTC)/sysroot/usr/include/boost-1_45)
 
 # unix main library definition
 add_library(shm SHARED luashm.cpp)

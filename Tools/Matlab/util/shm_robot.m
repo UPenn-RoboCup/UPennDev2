@@ -38,7 +38,7 @@ global MONITOR %for sending the webots check information
   h.wcmLabelB  = shm(sprintf('wcmLabelB%d%d%s',  h.teamNumber, h.playerID, h.user));
   h.vcmRobot  = shm(sprintf('vcmRobot%d%d%s',  h.teamNumber, h.playerID, h.user)); 
 
-	h.ocmOcc = shm(sprintf('ocmOcc%d%d%s', h.teamNumber, h.playerID, h.user));
+	%h.ocmOcc = shm(sprintf('ocmOcc%d%d%s', h.teamNumber, h.playerID, h.user));
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

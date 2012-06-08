@@ -71,6 +71,8 @@ function init_particles()
 end
 
 function update_odometry()
+
+  odomScale = Config.walk.odomScale;
   count = count + 1;
   uOdometry, uOdometry0 = mcm.get_odometry(uOdometry0);
 

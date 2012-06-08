@@ -44,7 +44,7 @@ fsm.bodySearch.timeout = 10.0*speedFactor;
 --------------------------------------------------
 fsm.bodyAnticipate={};
 
-fsm.bodyAnticipate.tStartDelay = 1.0; 
+fsm.bodyAnticipate.tStartDelay = 2.0*speedFactor; 
 
 fsm.bodyAnticipate.rMinDive = 0.3;
 fsm.bodyAnticipate.rCloseDive = 3.0;
@@ -54,7 +54,7 @@ fsm.bodyAnticipate.dive_threshold_y = 1.0;
 fsm.bodyAnticipate.ball_velocity_th = 0.5; --min velocity for diving
 fsm.bodyAnticipate.ball_velocity_thx = -0.2; --min x velocity for diving
 
-fsm.bodyAnticipate.rClose = 1.2; --default value 1.7
+fsm.bodyAnticipate.rClose = 1.5; 
 fsm.bodyAnticipate.rCloseX = 1.0;
 fsm.bodyAnticipate.ball_velocity_th2 = 0.3; --max velocity for start approach
 
@@ -146,7 +146,7 @@ fsm.bodyApproach.xTarget12={0, 0.12,0.14}; --min, target, max
 fsm.bodyApproach.yTarget12={-0.005, 0.01, 0.025}; --min, target ,max
 
 --Target position for straight walkkick 
-fsm.bodyApproach.xTarget21={0, 0.19,0.21}; --min, target, max
+fsm.bodyApproach.xTarget21={0, 0.17,0.19}; --min, target, max
 fsm.bodyApproach.yTarget21={0.01, 0.035, 0.04}; --min, target ,max
 
 --Target position for side walkkick to left
@@ -171,7 +171,7 @@ fsm.bodyKick.tStartWait = 1.0;
 fsm.bodyKick.tStartWaitMax = 1.5;
 
 --ball position checking params
-fsm.bodyKick.kickTargetFront = {0.12,0.045};
+fsm.bodyKick.kickTargetFront = {0.12,0.03};
 
 --For kicking to the left
 fsm.bodyKick.kickTargetSide = {0.12,0.01};

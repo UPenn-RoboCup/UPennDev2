@@ -308,7 +308,12 @@ function update()
       -- TODO: consider angle as well
       rBall = math.sqrt(states[id].ball.x^2 + states[id].ball.y^2);
       tBall = states[id].time - states[id].ball.t;
-      eta[id] = rBall/0.10 + 4*math.max(tBall-1.0,0);
+--      eta[id] = rBall/0.10 + 4*math.max(tBall-1.0,0);
+
+      eta[id] = rBall/0.10 + 
+	4*math.max(tBall-1.0,0)+
+	math.abs(states[id].attackBearing)/3.0; --1 sec to turn 180 deg
+
       roles[id]=states[id].role;
       
       -- distance to goal
@@ -324,6 +329,8 @@ function update()
         ddefend[id] = ddefend[id] + 0.3;
       end
 
+--This may make some trouble
+--
       --Ignore goalie, reserver, penalized player
       if (states[id].penalty > 0) or 
 	(t - states[id].tReceive > msgTimeout) or
@@ -332,6 +339,7 @@ function update()
         eta[id] = math.huge;
         ddefend[id] = math.huge;
       end
+--
     end
   end
 
@@ -366,6 +374,7 @@ function update()
 
   if gcm.get_game_state()==3 and
      force_player_role ==0 then
+
     -- goalie and reserve player never changes role
     if role~=0 and role<4 then 
       minETA, minEtaID = min(eta);

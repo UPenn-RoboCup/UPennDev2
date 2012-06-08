@@ -77,7 +77,9 @@ function update()
 
   if goalie_dive > 0 then
 
-    if t-t0>tStartDelay and t-ball.t<0.1 then
+    if t-t0>tStartDelay and t-ball.t<0.1 and 
+      wcm.get_ball_locked_on()>0 then
+
       ballR=math.sqrt(ball.x^2+ball.y^2);
       if ball.vx<ball_velocity_thx and 
 	ballR_defend<rCloseDive and
@@ -134,23 +136,22 @@ end
 function getGoalieHomePosition()
 
   -- define home goalie position (in front of goal and facing the ball)
-  --homePosition = 1.0*vector.new(wcm.get_goal_defend());
-  homePosition = 0.98*vector.new(wcm.get_goal_defend());
-
---[[
-  vBallHome = math.exp(-math.max(tBall-3.0, 0)/4.0)*(ballGlobal - homePosition);
-  rBallHome = math.sqrt(vBallHome[1]^2 + vBallHome[2]^2);
-
-  if (rBallHome > maxPosition) then
-    scale = maxPosition/rBallHome;
-    vBallHome = scale*vBallHome;
-  end
-  homePosition = homePosition + vBallHome;
---]]
-
-
   homePosition = 0.94*vector.new(wcm.get_goal_defend());
 
+  --TODO: Repositioning goalie
+  --[[
+
+  if Config.fsm.goalie_reposition==0 then 
+    homePosition = 0.94*vector.new(wcm.get_goal_defend());
+  elseif Config.fsm.goalie_reposition==1 then 
+    homePosition = 0.94*vector.new(wcm.get_goal_defend());
+  else
+    homePosition = vector.new(wcm.get_goal_defend());
+    vBallHome = 0.20*(ballGlobal - homePosition);
+    homePosition = homePosition + vBallHome;
+
+  end
+  --]]
 
   return homePosition;
 end

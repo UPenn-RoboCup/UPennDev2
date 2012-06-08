@@ -158,15 +158,15 @@ function update()
     elseif role==1 then --Attacker
 
       if obstacle_role[i]==0 then --Our goalie
-        r_reject = 1.0;
+        r_reject = 0.6;
       elseif obstacle_role[i]<4 then --Our team
         r_reject = 0.3;
       else
-        r_reject = 0.2;
+        r_reject = 0.001;
       end
     else --Defender and supporter
       if obstacle_role[i]<4 then --Our team
-        r_reject = 1.0;
+        r_reject = 0.6;
       else --Opponent team
         r_reject = 0.6;
       end
@@ -198,16 +198,17 @@ function update()
     end
   end
 
+--[[
   if walk.ph>0.95 then
 --    print(string.format("position error: %.3f %.3f %d\n",
 --	homeRelative[1],homeRelative[2],homeRelative[3]*180/math.pi))
 
---    print(string.format("Velocity:%.2f %.2f %.2f",vx,vy,va));
+    print("ballR:",ballR);
+    print(string.format("Velocity:%.2f %.2f %.2f",vx,vy,va));
 --    print("VEL: ",veltype)
---    print("ballR:",ballR);
 
   end
-
+--]]
 
   if math.abs(homeRelative[1])<thClose[1] and
     math.abs(homeRelative[2])<thClose[2] and
@@ -256,8 +257,16 @@ function setAttackerVelocity()
   end
 
 
+
+
   vx,vy,va=0,0,0;
   aTurn=math.exp(-0.5*(rHomeRelative/rTurn)^2);
+
+  if rHomeRelative < 0.3 then --Don't turn to ball if close
+    aTurn = 1;
+  end
+
+
   vx = maxStep*homeRelative[1]/rHomeRelative;
 
   --Sidestep more if ball is close and sideby

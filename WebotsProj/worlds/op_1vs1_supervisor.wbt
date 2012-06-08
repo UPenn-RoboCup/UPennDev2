@@ -6,8 +6,8 @@ WorldInfo {
     "Webpage: http://www.robotstadium.org"
   ]
   title "Robotstadium"
-  displayRefresh 2
   basicTimeStep 40
+  displayRefresh 8
 }
 Viewpoint {
   orientation -1 0 0 0.8
@@ -56,13 +56,40 @@ DEF BLUE_LANDMARK Landmark {
 DEF BALL BallGPS {
   translation 0 0.0323921 0
 }
-DEF PLAYER_1_1 DARwInOP {
-  translation 1.5 0.3 0.8
-  rotation 0 1 0 -1.56
+Supervisor {
+  children [
+    Emitter {
+      channel -1
+    }
+    Receiver {
+      channel 2
+    }
+  ]
+  name "soccer referee"
+  controller "op_soccer_supervisor"
+}
+
+DEF PLAYER_1_0 DARwInOPGPS {
+  translation -0.8 0.3 2
+  rotation 0 1 0 3.14
   controller "darwin-op_team_0"
+  controllerArgs "1 0"
+  cameraWindowPosition 0.375 1
+  waistBand TRUE
+  waistBandColor 0.5 0 0.5
+  cameraWidth 320
+  cameraHeight 240
+}
+
+
+
+
+DEF PLAYER_1_1 DARwInOPGPS {
+  translation 1.5 0.3 2
+  rotation 0 1 0 3.14
+  controller "darwin-op_team_1"
   controllerArgs "1 1"
-  plasticColor 1 0 0
-  cameraWindowPosition 0.125 0
+  cameraWindowPosition 0.375 0
   waistBand TRUE
   waistBandColor 1 0 0
   cameraWidth 320

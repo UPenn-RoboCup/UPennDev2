@@ -6,7 +6,7 @@ require('os')
 
 platform = {};
 platform.name = 'WebotsNao'
-listen_monitor = 1;
+
 
 function loadconfig(configName)
   local localConfig=require(configName);

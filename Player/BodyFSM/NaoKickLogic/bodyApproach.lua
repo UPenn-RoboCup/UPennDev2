@@ -5,11 +5,7 @@ require('walk')
 require('vector')
 require('util')
 require('Config')
-<<<<<<< HEAD
-
-=======
 require('postDist')
->>>>>>> NaoDev
 require('wcm')
 
 t0 = 0;
@@ -52,21 +48,6 @@ function update()
   --print('ball: '..ball.x..', '..ball.y);
   --print('ballR '..ballR);
 
-<<<<<<< HEAD
-  -- get attack goalpost positions and goal angle
-  posts = {wcm.get_goal_attack_post1(), wcm.get_goal_attack_post2()}
-
-  -- calculate the relative distance to each post, find closest
-  pose = wcm.get_pose();
-  p1Relative = util.pose_relative({posts[1][1], posts[1][2], 0}, {pose.x, pose.y, pose.a});
-  p2Relative = util.pose_relative({posts[2][1], posts[2][2], 0}, {pose.x, pose.y, pose.a});
-  p1Dist = math.sqrt(p1Relative[1]^2 + p1Relative[2]^2);
-  p2Dist = math.sqrt(p2Relative[1]^2 + p2Relative[2]^2);
-  pClosest = math.min(p1Dist, p2Dist);
-  pFarthest = math.max(p1Dist, p2Dist);
-
-=======
->>>>>>> NaoDev
   -- calculate walk velocity based on ball position
   vStep = vector.new({0,0,0});
   vStep[1] = .5*(ball.x - xTarget);
@@ -76,13 +57,6 @@ function update()
 
   ballA = math.atan2(ball.y - math.max(math.min(ball.y, 0.05), -0.05), math.max(ball.x+0.10, 0.10));
   vStep[3] = 0.5*ballA;
-<<<<<<< HEAD
-  walk.set_velocity(vStep[1],vStep[2],vStep[3]);
-
-  attackBearing, daPost = wcm.get_attack_bearing();
-  --print(vStep[1]..','..vStep[2]..','..vStep[3]);
-
-=======
   --Player FSM, turn towards the goal
     attackBearing, daPost = wcm.get_attack_bearing();
     kick_angle=wcm.get_kick_angle();
@@ -108,7 +82,6 @@ function update()
 
   walk.set_velocity(vStep[1],vStep[2],vStep[3]);
 
->>>>>>> NaoDev
   if (t - ball.t > tLost) then
     print('ballLost');
     return "ballLost";
@@ -121,31 +94,17 @@ function update()
     print('ballFar');
     return "ballFar";
   end
-<<<<<<< HEAD
-  if (math.abs(attackBearing) > thAlign) then
-=======
   if ((math.abs(attackBearing) > thAlign) and postDist.kick()) then
->>>>>>> NaoDev
     print('ballAlign');
     return 'ballAlign';
   end
   if ((ball.x < xKick) and (math.abs(ball.y) < yKickMax) and
       (math.abs(ball.y) > yKickMin)) then
-<<<<<<< HEAD
-    if ((pClosest > pNear) and (pClosest < pFar)) then
-      print('kick');   
-      return "kick";
-    else
-      print("My distance is ",pClosest,"\n");
-      return "walkKick";
-    end
-=======
     if(postDist.kick()) then
       return "kick"
     else
       return "walkKick"
     end  
->>>>>>> NaoDev
   end
 end
 

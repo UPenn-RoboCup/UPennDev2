@@ -79,5 +79,5 @@ camera.param[7] = {key='exposure (absolute)',      val={1231}};
 --camera.lut_file = 'lut_OP_Grasp_GreenOnly.raw';
 --camera.lut_file = 'lut_VT_aditya_05_06_time_23_30.raw';
 --camera.lut_file = 'lut_VT_aditya_05_06_time_23_30.raw';
-camera.lut_file = 'lut_yida_vt_op_0507.raw';
-
+--camera.lut_file = 'lut_yida_vt_op_0507.raw';
+camera.lut_file = 'lut_VT_060912.raw'

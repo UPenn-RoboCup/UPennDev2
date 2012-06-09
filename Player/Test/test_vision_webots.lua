@@ -46,7 +46,6 @@ require('Speak')
 require('vcm')
 require('Vision')
 require('World')
-require('OccupancyMap')
 require('Team')
 require('util')
 require('wcm')
@@ -65,12 +64,16 @@ if (string.find(Config.platform.name,'Webots')) then
   webots = true;
 end
 
+if Config.vision.enable_freespace_detection == 1 then 
+  require('OccupancyMap')
+  OccupancyMap.entry();
+end
+
 -- initialize state machines
 HeadFSM.entry();
 Motion.entry();
 World.entry();
 Vision.entry();
-OccupancyMap.entry();
 
 HeadFSM.sm:set_state('headScan');
 Body.set_head_hardness({0.4,0.4});
@@ -236,7 +239,9 @@ function update()
   end
 
 	-- Update Occupancy Map
-	OccupancyMap.update();
+  if Config.vision.enable_freespace_detection == 1 then
+    OccupancyMap.update();
+  end
    
   -- Update the relevant engines
   Body.update();

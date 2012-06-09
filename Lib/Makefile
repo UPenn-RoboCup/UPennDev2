@@ -203,6 +203,7 @@ setup_naov4: naov4 setup_util setup_image setup_comm setup_occmap
 	@echo "\n"
 
 setup_webots_nao: webots_nao setup_util setup_image setup_webots
+setup_webots_nao: webots_nao setup_util setup_image setup_webots setup_occmap
 	@echo "Setting up Webots Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
 	find $(WEBOTSNAODIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;

@@ -262,8 +262,9 @@ function setAttackerVelocity()
   vx,vy,va=0,0,0;
   aTurn=math.exp(-0.5*(rHomeRelative/rTurn)^2);
 
-  if rHomeRelative < 0.3 then --Don't turn to ball if close
-    aTurn = 1;
+  --Don't turn to ball if close
+  if rHomeRelative < 0.3 then 
+    aTurn = math.max(0.5,aTurn);
   end
 
 

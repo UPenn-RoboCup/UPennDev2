@@ -52,8 +52,8 @@ if(Config.platform.name == 'OP') then
   Body.set_actuator_command(Config.stance.initangle)
   unix.usleep(1E6*0.5);
   Body.set_body_hardness(0);
-  Body.set_lleg_hardness({0.2,0.6,0,0,0,0});
-  Body.set_rleg_hardness({0.2,0.6,0,0,0,0});
+  Body.set_lleg_hardness({0.6,0.6,0,0.6,0,0});
+  Body.set_rleg_hardness({0.6,0.6,0,0.6,0,0});
 end 
 
 

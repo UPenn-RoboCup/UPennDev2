@@ -1,4 +1,4 @@
-module(..., package.seeall);
+module (..., package.seeall);
 require('vector')
 
 --FSM parameters
@@ -184,7 +184,7 @@ fsm.headTrack.fixTh={0.20,0.08}; --Fix yaw axis if ball is within this box
 fsm.headReady={}
 fsm.headReady.dist = 3.0; 
 fsm.headReady.height = 0.5; 
-fsm.headReady.tScan= 5.0*speedFactor; 
+fsm.headReady.tScan= 2.5*speedFactor; 
 
 --------------------------------------------------
 --HeadReadyLookGoal : Look Goal during bodyReady
@@ -202,7 +202,7 @@ fsm.headScan.yawMag = 90*math.pi/180;
 fsm.headScan.pitchTurn0 = 20*math.pi/180;
 fsm.headScan.pitchTurnMag = 20*math.pi/180;
 fsm.headScan.yawMagTurn = 45*math.pi/180;
-fsm.headScan.tScan = 10.0*speedFactor;
+fsm.headScan.tScan = 4.0*speedFactor;
 
 --------------------------------------------------
 --HeadKick: Fix headangle for approaching
@@ -221,17 +221,17 @@ fsm.headKickFollow={};
 fsm.headKickFollow.pitch={50*math.pi/180, 0*math.pi/180};
 fsm.headKickFollow.pitchSide = 30*math.pi/180;
 fsm.headKickFollow.yawMagSide = 90*math.pi/180;
-fsm.headKickFollow.tFollow = 1.0*speedFactor;
+fsm.headKickFollow.tFollow = 10.0*speedFactor;
 
 --------------------------------------------------
 --HeadLookGoal: Look up to see the goal
 --------------------------------------------------
 fsm.headLookGoal={};
 fsm.headLookGoal.yawSweep = 50*math.pi/180;
-fsm.headLookGoal.tScan = 10.0*speedFactor;
+fsm.headLookGoal.tScan = 1.0*speedFactor;
 
 --------------------------------------------------
 --HeadSweep: Look around to find the goal
 --------------------------------------------------
 fsm.headSweep={};
-fsm.headSweep.tScan=10.0*speedFactor;
+fsm.headSweep.tScan=2.0*speedFactor;

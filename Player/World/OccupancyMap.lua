@@ -10,6 +10,7 @@ require('mcm');
 require('ocm');
 require('OccMap');
 require('vector');
+require('walk');
 
 uOdometry0 = vector.new({0, 0, 0});
 
@@ -65,6 +66,11 @@ function vision_update()
 end
 
 function update()
+  
+  vel = walk.get_velocity();
+  print(vel[1],vel[2],vel[3]);
+  ocm.set_occ_vel(vel);
+
 
   -- Time decay
   local time = unix.time();

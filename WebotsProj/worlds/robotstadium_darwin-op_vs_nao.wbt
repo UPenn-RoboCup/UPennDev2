@@ -56,35 +56,39 @@ Supervisor {
   name "soccer referee"
   controller "nao_soccer_supervisor"
 }
-DEF GOAL_KEEPER_0 Nao_H21_V40 {
+DEF GOAL_KEEPER_0 DARwInOP {
   translation -3 0.35 0
-  color 0.8 0.8 0.8
-  controller "nao_team_0"
+  rotation 0 1 0 1.5708
+  controller "darwin-op_team_0"
   controllerArgs "0 0"
+  synchronization FALSE
   cameraWindowPosition 0.125 1
   waistBand TRUE
 }
-DEF PLAYER_1_0 Nao_H21_V40 {
+DEF PLAYER_1_0 DARwInOP {
   translation -2.325 0.35 -0.35
-  color 0.8 0.8 0.8
-  controller "nao_team_0"
+  rotation 0 1 0 1.5708
+  controller "darwin-op_team_0"
   controllerArgs "1 0"
+  synchronization FALSE
   cameraWindowPosition 0.375 1
   waistBand TRUE
 }
-DEF PLAYER_2_0 Nao_H21_V40 {
+DEF PLAYER_2_0 DARwInOP {
   translation -2.325 0.35 -1.575
-  color 0.8 0.8 0.8
-  controller "nao_team_0"
+  rotation 0 1 0 1.5708
+  controller "darwin-op_team_0"
   controllerArgs "2 0"
+  synchronization FALSE
   cameraWindowPosition 0.625 1
   waistBand TRUE
 }
-DEF PLAYER_3_0 Nao_H21_V40 {
+DEF PLAYER_3_0 DARwInOP {
   translation -2.325 0.35 1.575
-  color 0.8 0.8 0.8
-  controller "nao_team_0"
+  rotation 0 1 0 1.5708
+  controller "darwin-op_team_0"
   controllerArgs "3 0"
+  synchronization FALSE
   cameraWindowPosition 0.875 1
   waistBand TRUE
 }
@@ -101,7 +105,7 @@ DEF GOAL_KEEPER_1 Nao_H21_V40 {
 }
 DEF PLAYER_1_1 Nao_H21_V40 {
   translation 0.675 0.35 0
-  rotation 0 0.707107 0.707107 3.1415
+  rotation 0 0.707107 0.707107 3.1416
   color 0.8 0.8 0.8
   controller "nao_team_1"
   controllerArgs "1 1"
@@ -112,7 +116,7 @@ DEF PLAYER_1_1 Nao_H21_V40 {
 }
 DEF PLAYER_2_1 Nao_H21_V40 {
   translation 1.2 0.35 1.125
-  rotation 0 0.707107 0.707107 3.1415
+  rotation 0 0.707107 0.707107 3.1416
   color 0.8 0.8 0.8
   controller "nao_team_1"
   controllerArgs "2 1"
@@ -123,7 +127,7 @@ DEF PLAYER_2_1 Nao_H21_V40 {
 }
 DEF PLAYER_3_1 Nao_H21_V40 {
   translation 2.325 0.35 -1.125
-  rotation 0 0.707107 0.707107 3.1415
+  rotation 0 0.707107 0.707107 3.1416
   color 0.8 0.8 0.8
   controller "nao_team_1"
   controllerArgs "3 1"

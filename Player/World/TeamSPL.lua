@@ -19,6 +19,7 @@ playerID = gcm.get_team_player_id();
 msgTimeout = Config.team.msgTimeout;
 nonAttackerPenalty = Config.team.nonAttackerPenalty;
 nonDefenderPenalty = Config.team.nonDefenderPenalty;
+time_to_stand = Config.km.time_to_stand;
 
 role = -1;
 
@@ -128,7 +129,8 @@ function update()
       -- eta to ball
       rBall = math.sqrt(states[id].ball.x^2 + states[id].ball.y^2);
       tBall = states[id].time - states[id].ball.t;
-      eta[id] = rBall/0.10 + 4*math.max(tBall-1.0,0);
+      fallPen = states[id].fall * time_to_stand; -- fall penalty
+      eta[id] = rBall/0.10 + 4*math.max(tBall-1.0,0) + fallPen;
       
       -- distance to goal
       dgoalPosition = vector.new(wcm.get_goal_defend());
@@ -150,19 +152,28 @@ function update()
       if (states[id].penalty > 0) or (t - states[id].tReceive > msgTimeout) then
         ddefend[id] = math.huge;
       end
-
     end
   end
+
 --[[
-  if count % 100 == 0 then
+  if count % 20 == 0 then
     print('---------------');
     print('eta:');
     util.ptable(eta)
+    print('fall penalty:');
+    for id = 1,4 do
+      if states[id] then
+        print(id..'\t'..states[id].fall);
+      else
+        print(id..'\tna');
+      end
+    end
     print('ddefend:');
     util.ptable(ddefend)
     print('---------------');
   end
 --]]
+
 
   if gcm.get_game_state()<2 then 
     --Don't switch roles until the gameSet state

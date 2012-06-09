@@ -38,9 +38,6 @@ Config.lua
 WebotsController/
 WebotsController/controller_wrap.c
 
-# auto-generated log
-Player/screenlog.*
-
 #controller links
 WebotsProj/controllers/nao_soccer_supervisor/
 WebotsProj/controllers/nsl_soccer_supervisor/
@@ -58,3 +55,14 @@ build
 
 # svn 
 .svn
+
+# for files in nao bu default
+.bash_history
+.bash_profile
+.gitconfig
+.config/
+.ssh/
+.vim/
+.viminfo
+naoqi/
+remotes/

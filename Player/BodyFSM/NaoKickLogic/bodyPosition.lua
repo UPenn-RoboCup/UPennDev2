@@ -125,15 +125,11 @@ function update()
   walk.set_velocity(vx, vy, va);
   ballR = math.sqrt(ball.x^2 + ball.y^2);
   if ((tBall < 1.0) and (ballR < rClose)) then
-<<<<<<< HEAD
-    return "ballClose";
-=======
     if postDist.kick() then
       return "ballAlign";
     else
       return "approach";
     end
->>>>>>> NaoDev
   end
 
   -- TODO: add obstacle detection

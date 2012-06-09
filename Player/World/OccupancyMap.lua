@@ -69,7 +69,7 @@ end
 function update()
   
   vel = walk.get_velocity();
-  print(vel[1],vel[2],vel[3]);
+--  print('velocity: '..vel[1],vel[2],vel[3]);
   ocm.set_occ_vel(vel);
 
 

@@ -8,9 +8,6 @@ global MONITOR %for sending the webots check information
   h.playerID = playerID;
   h.user = getenv('USER');
 
-%List of shms
-
-
 
 % create shm wrappers (in alphabetic order)
   h.gcmFsm  = shm(sprintf('gcmFsm%d%d%s',  h.teamNumber, h.playerID, h.user));
@@ -39,7 +36,7 @@ global MONITOR %for sending the webots check information
   h.wcmLabelB  = shm(sprintf('wcmLabelB%d%d%s',  h.teamNumber, h.playerID, h.user));
   h.vcmRobot  = shm(sprintf('vcmRobot%d%d%s',  h.teamNumber, h.playerID, h.user)); 
 
-	%h.ocmOcc = shm(sprintf('ocmOcc%d%d%s', h.teamNumber, h.playerID, h.user));
+	h.ocmOcc = shm(sprintf('ocmOcc%d%d%s', h.teamNumber, h.playerID, h.user));
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -439,15 +436,17 @@ global MONITOR %for sending the webots check information
       % Add visible boundary        
 
       % Add occupancy map
-      r.occ = {};
-			map = h.ocmOcc.get_map();
-      map = typecast(map, 'uint32');
-			mapsize = sqrt(size(map,2));
-			map = reshape(map, [mapsize, mapsize]);
-			r.occ.map = double(map)/10000;
-			r.occ.mapsize = mapsize;
-			r.occ.robot_pos = h.ocmOcc.get_robot_pos();
-      r.occ.odom = h.ocmOcc.get_odom();
+      if r.free.detect == 1
+        r.occ = {};
+  			map = h.ocmOcc.get_map();
+        map = typecast(map, 'uint32');
+  			mapsize = sqrt(size(map,2));
+  			map = reshape(map, [mapsize, mapsize]);
+  			r.occ.map = double(map)/10000;
+  			r.occ.mapsize = mapsize;
+  			r.occ.robot_pos = h.ocmOcc.get_robot_pos();
+        r.occ.odom = h.ocmOcc.get_odom();
+      end
       
       r.bd = {};
       bdTop = h.vcmBoundary.get_top();

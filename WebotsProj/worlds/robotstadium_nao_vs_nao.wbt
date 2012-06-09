@@ -56,81 +56,77 @@ Supervisor {
   name "soccer referee"
   controller "nao_soccer_supervisor"
 }
-DEF GOAL_KEEPER_0 NaoV3R {
+DEF GOAL_KEEPER_0 Nao_H21_V40 {
   translation -3 0.35 0
-  rotation 0 1 0 1.5708
+  color 0.8 0.8 0.8
   controller "nao_team_0"
   controllerArgs "0 0"
-  synchronization FALSE
   cameraWindowPosition 0.125 1
   waistBand TRUE
 }
-DEF PLAYER_1_0 NaoV3R {
+DEF PLAYER_1_0 Nao_H21_V40 {
   translation -2.325 0.35 -0.35
-  rotation 0 1 0 1.5708
+  color 0.8 0.8 0.8
   controller "nao_team_0"
   controllerArgs "1 0"
-  synchronization FALSE
   cameraWindowPosition 0.375 1
   waistBand TRUE
 }
-DEF PLAYER_2_0 NaoV3R {
+DEF PLAYER_2_0 Nao_H21_V40 {
   translation -2.325 0.35 -1.575
-  rotation 0 1 0 1.5708
+  color 0.8 0.8 0.8
   controller "nao_team_0"
   controllerArgs "2 0"
-  synchronization FALSE
   cameraWindowPosition 0.625 1
   waistBand TRUE
 }
-DEF PLAYER_3_0 NaoV3R {
+DEF PLAYER_3_0 Nao_H21_V40 {
   translation -2.325 0.35 1.575
-  rotation 0 1 0 1.5708
+  color 0.8 0.8 0.8
   controller "nao_team_0"
   controllerArgs "3 0"
-  synchronization FALSE
   cameraWindowPosition 0.875 1
   waistBand TRUE
 }
-DEF GOAL_KEEPER_1 NaoV3R {
+DEF GOAL_KEEPER_1 Nao_H21_V40 {
   translation 3 0.35 0
-  rotation 0 1 0 -1.5708
+  rotation 0 0.707107 0.707107 3.1416
+  color 0.8 0.8 0.8
   controller "nao_team_1"
   controllerArgs "0 1"
-  synchronization FALSE
   cameraWindowPosition 0.125 0
   waistBand TRUE
   waistBandColor 0.9 0.5 0.5
   channel 1
 }
-DEF PLAYER_1_1 NaoV3R {
+DEF PLAYER_1_1 Nao_H21_V40 {
   translation 0.675 0.35 0
-  rotation 0 1 0 -1.5708
+  rotation 0 0.707107 0.707107 3.1415
+  color 0.8 0.8 0.8
   controller "nao_team_1"
   controllerArgs "1 1"
-  synchronization FALSE
   cameraWindowPosition 0.375 0
   waistBand TRUE
   waistBandColor 0.9 0.5 0.5
   channel 1
 }
-DEF PLAYER_2_1 NaoV3R {
+DEF PLAYER_2_1 Nao_H21_V40 {
   translation 1.2 0.35 1.125
-  rotation 0 1 0 -1.5708
+  rotation 0 0.707107 0.707107 3.1415
+  color 0.8 0.8 0.8
   controller "nao_team_1"
   controllerArgs "2 1"
-  synchronization FALSE
   cameraWindowPosition 0.625 0
   waistBand TRUE
   waistBandColor 0.9 0.5 0.5
   channel 1
 }
-DEF PLAYER_3_1 NaoV3R {
+DEF PLAYER_3_1 Nao_H21_V40 {
   translation 2.325 0.35 -1.125
-  rotation 0 1 0 -1.5708
+  rotation 0 0.707107 0.707107 3.1415
+  color 0.8 0.8 0.8
   controller "nao_team_1"
   controllerArgs "3 1"
-  synchronization FALSE
   cameraWindowPosition 0.875 0
   waistBand TRUE
   waistBandColor 0.9 0.5 0.5

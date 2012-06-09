@@ -62,10 +62,10 @@ walk.ankleImuParamX={0.15, -0.40*walk.gyroFactor,
         1*math.pi/180, 5*math.pi/180};
 walk.kneeImuParamX={0.1, -0.3*walk.gyroFactor,
         .5*math.pi/180, 5*math.pi/180};
-walk.ankleImuParamY={0.15, -.5*walk.gyroFactor,
+walk.ankleImuParamY={0.2, -1.5*walk.gyroFactor,
         .5*math.pi/180, 5*math.pi/180};
-walk.hipImuParamY={0.13, -0.6*walk.gyroFactor,
-        .3*math.pi/180, 5*math.pi/180};
+walk.hipImuParamY={0.1, -0.3*walk.gyroFactor,
+        .5*math.pi/180, 5*math.pi/180};
 
 walk.armImuParamX={0.1, 0*walk.gyroFactor,
         1*math.pi/180, 5*math.pi/180};

@@ -39,14 +39,17 @@ vision.use_point_goal = 0;
 vision.enable_robot_detection = 0;
 vision.enable_freespace_detection = 1;
 
+vision.enable_freespace_detection = 0;
+--use this to print time cosumed by vision functions
+vision.print_time = 0; 
 ----------------------------
 --OP specific
 ----------------------------
 -- Use tilted bounding box?
 vision.use_tilted_bbox = 0;
 -- Store and send subsampled image?
-vision.subsampling = 1; --1/2 sized image
-vision.subsampling2 = 1; --1/4 sized image
+vision.subsampling = 0; --1/2 sized image
+vision.subsampling2 = 0; --1/4 sized image
 
 --Vision parameter values
 --For VGA resolution

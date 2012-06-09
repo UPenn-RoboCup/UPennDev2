@@ -18,7 +18,7 @@ param.world = 'World/Config_Nao_World'
 param.walk = 'Walk/Config_NaoV4_Walk_L512' 
 param.kick = 'Kick/Config_Nao_Kick'
 param.vision = 'Vision/Config_NaoV4_Vision'
-param.camera = 'Vision/Config_NaoV4_Camera_Levine512'
+param.camera = 'Vision/Config_NaoV4_Camera_Levine512night'
 param.fsm = 'FSM/Config_NaoV4_FSM'
 
 loadconfig(param.world)
@@ -99,6 +99,7 @@ head.bodyTilt = 0;
 km = {};
 km.standup_front = 'km_NaoV4_StandupFromFront.lua';
 km.standup_back = 'km_NaoV4_StandupFromBack.lua';
+km.time_to_stand = 30; -- average time it takes to stand up in seconds
 
 --Sit/stand stance parameters
 stance={};

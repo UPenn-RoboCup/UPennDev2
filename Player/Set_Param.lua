@@ -49,18 +49,17 @@ function Cam_init()
     Camera.select_camera(c-1);   
     Camera.set_param('Brightness', Config.camera.brightness);     
     Camera.set_param('White Balance, Automatic', 1); 
-    --Camera.set_param('Auto Exposure',1);
+    --Camera.set_param('Auto Exposure', 1);
+    Camera.set_param('Auto Exposure',0);
     for i,param in ipairs(Config.camera.param) do
       Camera.set_param(param.key, param.val[c]);
       unix.usleep (100);
     end
     Camera.set_param('White Balance, Automatic', 0);
-    --Camera.set_param('Auto Exposure',0);
     local expo = Camera.get_param('Exposure');
     local gain = Camera.get_param('Gain');
     Camera.set_param('Auto Exposure',1);   
     Camera.set_param('Auto Exposure',0);
-    --Camera.set_param ('Exposure', 255);
     Camera.set_param ('Exposure', expo);
     Camera.set_param ('Gain', gain);
     print('Camera #'..c..' set');
@@ -103,13 +102,19 @@ end
 function Set_Brightness()
   print ('Current brightness is: '..Camera.get_param('Brightness')..' type in a integer which is multiple of 4 between 0 and 255');
   local param = Read_Num();
+  local expo = Camera.get_param('Exposure');
+  local gain = Camera.get_param('Gain');
   while (param == -1 or param > 255 or (param % 4) ~= 0) do
-    Camera.set_param ('White Balance, Automatic', 1);
-    print ('Type in a integer which is multiple of 4 between 0 and 255');
-    Camera.set_param ('White Balance, Automatic', 0);
+    unix.usleep (10000);
     param = Read_Num(); 
   end
+  Camera.set_param ('Auto Exposure', 1);
+  Camera.set_param ('White Balance, Automatic', 1);
   Camera.set_param ('Brightness', param);
+  Camera.set_param ('Auto Exposure', 0);
+  Camera.set_param ('White Balance, Automatic', 0);
+  Camera.set_param ('Exposure', expo);
+  Camera.set_param ('Gain', gain);
   print('Brightness: ' , Camera.get_param('Brightness'))
 end
 
@@ -145,8 +150,8 @@ function Set_Exposure()
     print ('Type in a integer between 0 and 255');
     param = Read_Num(); 
   end    
-  local backup = Camera.get_param ('Gain');
-  Camera.set_param ('White Balance, Automatic', 0);
+  --local backup = Camera.get_param ('Gain');
+  --Camera.set_param ('White Balance, Automatic', 0);
   --Camera.set_param ('Auto Exposure', 1)
   Camera.set_param ('Exposure', param);
   --Camera.set_param ('Gain', backup);
@@ -163,7 +168,7 @@ function Set_Gain()
     print ('Type in a integer between 0 and 255');
     param = Read_Num(); 
   end
-  local backup = Camera.get_param ('Exposure');
+  --local backup = Camera.get_param ('Exposure');
   --Camera.set_param ('White Balance, Automatic', 1);
   --Camera.set_param ('Auto Exposure', 0);
   Camera.set_param ('Gain', param);

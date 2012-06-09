@@ -74,6 +74,8 @@ function init_particles()
 end
 
 function update_odometry()
+
+  odomScale = Config.walk.odomScale;
   count = count + 1;
   uOdometry, uOdometry0 = mcm.get_odometry(uOdometry0);
 
@@ -91,6 +93,15 @@ function update_odometry()
 
   ballFilter:odometry(uOdometry[1], uOdometry[2], uOdometry[3]);
   PoseFilter.odometry(uOdometry[1], uOdometry[2], uOdometry[3]);
+end
+
+--update localization without vision (for odometry testing)
+function update_pos()
+
+  pose.x,pose.y,pose.a = PoseFilter.get_pose();
+
+  update_shm();
+
 end
 
 function update_vision()

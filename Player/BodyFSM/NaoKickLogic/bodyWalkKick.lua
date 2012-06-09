@@ -47,11 +47,10 @@ function update()
   --SJ: should be done in better way?
   if walk.walkKickRequest==0 and follow ==false then
     follow=true;
-    HeadFSM.sm:set_state('headKickFollow');
   end
 
 end
 
 function exit()
- -- HeadFSM.sm:set_state('headTrack');
+  HeadFSM.sm:set_state('headKickFollow');
 end

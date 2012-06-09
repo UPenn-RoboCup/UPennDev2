@@ -39,6 +39,7 @@ function odom_update()
   end
 
 	-- Odometry Update
+  odomScale = Config.walk.odomScale;
   uOdometry, uOdometry0 = mcm.get_odometry(uOdometry0);
 
   uOdometry[1] = odomScale[1]*uOdometry[1];

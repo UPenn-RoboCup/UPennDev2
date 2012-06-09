@@ -30,13 +30,18 @@ endif
   INCLUDES=-I/usr/include
 endif
 
-all: time mexshm
+all: time mexshm getch
 
 time: time.cc timeScalar.cc
 	mex -O $^ $(BOOST_INCLUDE_DIRS) $(LIBRT)
 
 mexshm: mexshm.cpp
 	mex -O $^ $(BOOST_INCLUDE_DIRS) $(LIBRT)
+
+getch: getch.c
+	mex -O $^ $(BOOST_INCLUDE_DIRS) $(LIBRT)
+
+
 
 clean:
 	rm -f *.o *.$(SHLIBEXT) *.$(MEXEXT)

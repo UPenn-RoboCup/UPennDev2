@@ -67,6 +67,36 @@ cal["hokie"]={
   pid = 1, --NEW FIRMWARE
 };
 
+cal["jiminy"]={
+  servoBias={0,0,0,0,0,0, 0,0,0,0,0,0},
+  footXComp = 0,
+  footYComp = 0,
+  kickXComp = 0,
+  headPitchComp = 0;
+  armBias={0,12*math.pi/180,0,0,-6*math.pi/180,0},
+  pid = 1, --NEW FIRMWARE
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 cal["darwin1"]={
   servoBias={0,0,0,0,0,0, 0,0,0,0,0,0},
   footXComp = 0,
@@ -448,3 +478,10 @@ cal["linus"].kickXComp=0.010;
 cal["linus"].servoBias={21,-3,43,-1,1,-1,-21,-5,-13,-12,-15,6,};
 cal["linus"].footXComp=0.002;
 cal["linus"].kickXComp=0.010;
+
+cal["jiminy"].footXComp=-0.004;
+
+-- Updated date: Sat Jun  9 19:13:26 2012
+cal["jiminy"].servoBias={0,0,0,0,0,0,0,0,0,0,0,0,};
+cal["jiminy"].footXComp=-0.012;
+cal["jiminy"].kickXComp=0.005;

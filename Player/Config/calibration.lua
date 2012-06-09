@@ -485,3 +485,18 @@ cal["jiminy"].footXComp=-0.004;
 cal["jiminy"].servoBias={0,0,0,0,0,0,0,0,0,0,0,0,};
 cal["jiminy"].footXComp=-0.012;
 cal["jiminy"].kickXComp=0.005;
+
+-- Updated date: Sat Jun  9 15:58:08 2012
+cal["betty"].servoBias={8,0,2,-6,-1,0,-5,6,1,-1,-4,7,};
+cal["betty"].footXComp=0.006;
+cal["betty"].kickXComp=0.005;
+
+-- Updated date: Sat Jun  9 15:59:07 2012
+cal["betty"].servoBias={8,0,2,-6,-1,0,-5,6,1,-1,-4,7,};
+cal["betty"].footXComp=0.001;
+cal["betty"].kickXComp=0.005;
+
+-- Updated date: Sat Jun  9 15:59:59 2012
+cal["betty"].servoBias={8,0,2,-6,-1,0,-5,6,1,-1,-4,7,};
+cal["betty"].footXComp=0.001;
+cal["betty"].kickXComp=0.005;

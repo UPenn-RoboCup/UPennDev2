@@ -100,6 +100,13 @@ fsm.bodyPosition.rDist2 = 0.20;
 fsm.bodyPosition.rTurn2 = 0.08; 
 fsm.bodyPosition.rOrbit = 0.60; 
 
+
+--New params to reduce sidestepping
+fsm.bodyPosition.rOrbit = 0.60; 
+fsm.bodyPosition.rDist1 = 0.60; 
+fsm.bodyPosition.rDist2 = 0.25; 
+
+
 fsm.bodyPosition.rClose = 0.35; 
 fsm.bodyPosition.thClose = {0.15,0.15,10*math.pi/180};
 

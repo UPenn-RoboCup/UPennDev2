@@ -72,11 +72,13 @@ armImuParamY = Config.walk.armImuParamY;
 
 --Support bias parameters to reduce backlash-based instability
 velFastForward = Config.walk.velFastForward or 0.06;
+velFastTurn = Config.walk.velFastTurn or 0.2;
 supportFront = Config.walk.supportFront or 0;
 supportFront2 = Config.walk.supportFront2 or 0;
 supportBack = Config.walk.supportBack or 0;
 supportSideX = Config.walk.supportSideX or 0;
 supportSideY = Config.walk.supportSideY or 0;
+supportTurn = Config.walk.supportTurn or 0;
 
 --Initial body swing 
 supportModYInitial = Config.walk.supportModYInitial or 0;
@@ -253,14 +255,17 @@ function update()
 	        supportMod[1] = supportFront;
           toeTipCompensation = ankleMod[1];
         elseif velCurrent[1]<0 then
-          supportMod[1] = supportBack; 
-        end
-        if velCurrent[2]>0.015 then
-          supportMod[1] = supportSideX; 
-          supportMod[2] = supportSideY; 
-        elseif velCurrent[2]<-0.015 then
-          supportMod[1] = supportSideX; 
-          supportMod[2] = -supportSideY; 
+          supportMod[1] = supportBack;
+	elseif math.abs(velCurrent[3])>velFastTurn then
+          supportMod[1] = supportTurn; 
+        else
+          if velCurrent[2]>0.015 then
+            supportMod[1] = supportSideX; 
+            supportMod[2] = supportSideY; 
+          elseif velCurrent[2]<-0.015 then
+            supportMod[1] = supportSideX; 
+            supportMod[2] = -supportSideY; 
+          end
         end
       end
     end

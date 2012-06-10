@@ -31,7 +31,7 @@ fsm.th_front_kick = 10*math.pi/180;
 fsm.bodyReady={};
 fsm.bodyReady.maxStep = 0.06;
 fsm.bodyReady.thClose = {0.30,15*math.pi/180} --r and theta
-fsm.bodyReady.tStart = 5.0;  --initial localization time
+fsm.bodyReady.tStart = 3.0;  --initial localization time
 
 --------------------------------------------------
 --BodySearch : make robot turn to search the ball

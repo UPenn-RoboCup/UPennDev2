@@ -66,29 +66,42 @@ function detect(color1,color2)
   --SJ: Robot can see both goal and landmark at once
   --Need to find out landmarks using position check
 
-   if #landmarkPropsB1>2 then -- Yellow goalpost and YCY landmark case
-      local B12 = vector.new(landmarkPropsB1[2].centroid);
-      local B13 = vector.new(landmarkPropsB1[3].centroid);
-      if math.abs(B12[1]-B13[1])<th_centroid then
-         landmark.propsA1= Vision.bboxStats(color1, 
+   --SJ:First check whether the largest blobs line up fine
+   B11 = vector.new(landmarkPropsB1[1].centroid);
+   B12 = vector.new(landmarkPropsB1[2].centroid);
+   B21 = vector.new(landmarkPropsB2[1].centroid);
+   if math.abs(B11[1]-B12[1])>th_centroid or
+      math.abs(B11[1]-B21[1])>th_centroid or
+      math.abs(B12[1]-B21[1])>th_centroid then
+     local checked=false;
+     if #landmarkPropsB1>2 then -- Yellow goalpost and YCY landmark case
+       local B12 = vector.new(landmarkPropsB1[2].centroid);
+       local B13 = vector.new(landmarkPropsB1[3].centroid);
+       if math.abs(B12[1]-B13[1])<th_centroid then
+          landmark.propsA1= Vision.bboxStats(color1, 
 	   landmarkPropsB1[3].boundingBox);
-      end
-   end
-   if #landmarkPropsB2>1 then --Yellow goalpost and CYC landmark case
-      local B11 = vector.new(landmarkPropsB1[1].centroid);
-      local B12 = vector.new(landmarkPropsB1[2].centroid);
-      local B22 = vector.new(landmarkPropsB2[2].centroid);
-      if math.abs(B11[1]-B22[1])<th_centroid and 
+	  checked=true;
+       end
+     end
+     --Yellow goalpost and CYC landmark case
+     if #landmarkPropsB2>1 and not checked then 
+       local B22 = vector.new(landmarkPropsB2[2].centroid);
+       if math.abs(B11[1]-B22[1])<th_centroid and 
 	math.abs(B12[1]-B22[1])<th_centroid  then
-         landmark.propsA2= Vision.bboxStats(color2, 
+          landmark.propsA2= Vision.bboxStats(color2, 
 	   landmarkPropsB2[2].boundingBox);
-      end
+       end
+     end
    end
 
   -- Find the area of each blob considered for the landmark
   local dArea1 = landmark.propsA1.area;
   local dArea2 = landmark.propsA2.area;
   local dArea3 = landmark.propsA3.area;        
+
+
+
+
 
   vcm.add_debug_message(string.format("Area: %d, %d, %d\n",
 	dArea1,dArea2,dArea3));

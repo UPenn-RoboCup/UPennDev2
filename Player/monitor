@@ -2,7 +2,7 @@
 
 
 # Kill all processes to reset player
-killall -q naoqi-bin naoqi espeak lua luajit luajit2 screen
+killall -q naoqi-bin naoqi espeak lua luajit luajit2 screen MATLAB
 #
 
 # kill all screen log

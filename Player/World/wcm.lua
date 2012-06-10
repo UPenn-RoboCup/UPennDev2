@@ -60,6 +60,17 @@ shared.particle.y=vector.zeros(Config.world.n);
 shared.particle.a=vector.zeros(Config.world.n);
 shared.particle.w=vector.zeros(Config.world.n);
 
+-- Sound localization
+shared.sound = {};
+shared.sound.odomPose = vector.zeros(3);
+-- TODO: sound histogram filter size should be set in the config
+--shared.sound.histogram = vector.zeros(Config.sound.??);
+radPerBin = 30*math.pi/180;
+shared.sound.detFilter = vector.zeros(math.floor(2*math.pi/radPerBin));
+shared.sound.detCount = vector.zeros(1);
+shared.sound.detTime = vector.zeros(1);
+shared.sound.detLIndex = vector.zeros(1);
+shared.sound.detRIndex = vector.zeros(1);
 
 -----------------------------------------------
 -- This shm is used for wireless team monitoring only

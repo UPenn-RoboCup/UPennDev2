@@ -150,7 +150,10 @@ function update()
   obstacle_dist = wcm.get_obstacle_dist();
   obstacle_role = wcm.get_obstacle_role();
 
-  for i=1,obstacle_num do
+  avoid_own_team = Config.avoid_own_team or 0;
+
+  if avoid_own_team then
+   for i=1,obstacle_num do
 
     --Role specific rejection radius
     if role==0 then --Goalie has the highest priority 
@@ -177,6 +180,7 @@ function update()
       vx = vx - obstacle_x[i]/obstacle_dist[i]*v_reject;
       vy = vy - obstacle_y[i]/obstacle_dist[i]*v_reject;
     end
+   end
   end
 
   walk.set_velocity(vx,vy,va);
@@ -198,17 +202,13 @@ function update()
     end
   end
 
---[[
-  if walk.ph>0.95 then
+--  if walk.ph>0.95 then
 --    print(string.format("position error: %.3f %.3f %d\n",
 --	homeRelative[1],homeRelative[2],homeRelative[3]*180/math.pi))
-
-    print("ballR:",ballR);
-    print(string.format("Velocity:%.2f %.2f %.2f",vx,vy,va));
+--    print("ballR:",ballR);
+--    print(string.format("Velocity:%.2f %.2f %.2f",vx,vy,va));
 --    print("VEL: ",veltype)
-
-  end
---]]
+--  end
 
   if math.abs(homeRelative[1])<thClose[1] and
     math.abs(homeRelative[2])<thClose[2] and
@@ -256,8 +256,11 @@ function setAttackerVelocity()
     veltype=3;
   end
 
-
-
+  --Slow down if battery is low
+  batt_level=Body.get_battery_level();
+  if batt_level<Config.bat_med then
+    maxStep = maxStep1;
+  end
 
   vx,vy,va=0,0,0;
   aTurn=math.exp(-0.5*(rHomeRelative/rTurn)^2);
@@ -266,7 +269,6 @@ function setAttackerVelocity()
   if rHomeRelative < 0.3 then 
     aTurn = math.max(0.5,aTurn);
   end
-
 
   vx = maxStep*homeRelative[1]/rHomeRelative;
 
@@ -314,7 +316,14 @@ function getAttackerHomePose()
 
   --Curved approach
   if math.abs(angle1)<math.pi/2 then
-    rDist=math.min(rDist1,math.max(rDist2,ballR-rTurn2));
+--    rDist=math.min(rDist1,math.max(rDist2,ballR-rTurn2));
+
+    --New approach
+    rDist = math.min(
+	rDist2 + (rDist1-rDist2) * math.abs(angle1) / (math.pi/2),
+	ballR
+	);    
+
     local homepose={
 	ballGlobal[1]-math.cos(aGoal)*rDist,
 	ballGlobal[2]-math.sin(aGoal)*rDist,

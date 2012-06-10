@@ -92,6 +92,10 @@ walk.supportSideY = 0.02; --Lean sideways when sidestepping
 walk.supportTurn = 0.02; --Lean front when turning
 
 
+walk.turnCompThreshold = 0.1;
+walk.turnComp = 0.005;
+
+
 --------------------------------------------
 -- WalkKick parameters
 --------------------------------------------

@@ -11,6 +11,7 @@ yawSweep = Config.fsm.headLookGoal.yawSweep;
 yawMax = Config.head.yawMax;
 dist = Config.fsm.headReady.dist;
 tScan = Config.fsm.headLookGoal.tScan;
+minDist = Config.fsm.headLookGoal.minDist;
 
 function entry()
   print(_NAME.." entry");
@@ -39,9 +40,12 @@ function update()
 	dist*math.cos(yaw1),dist*math.sin(yaw1), height);
   Body.set_head_command({yaw, pitch});
 
+  ball = wcm.get_ball();
+  ballR = math.sqrt (ball.x^2 + ball.y^2);
+
   if (t - t0 > tScan) then
     tGoal = wcm.get_goal_t();
-    if (tGoal - t0 > 0) then
+    if (tGoal - t0 > 0) or ballR<minDist then
       return 'timeout';
     else
       return 'lost';

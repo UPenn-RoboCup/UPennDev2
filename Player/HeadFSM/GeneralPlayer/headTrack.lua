@@ -50,15 +50,9 @@ function update()
     return "lost";
   end
 --TODO: generalize this using eta information
---[[
   if (t - t0 > timeout) and
      ballR > minDist   then
-  end
---]]
-
-  if (t - t0 > timeout) then
-    print('Head Track timeout')
-    return "timeout";
+     return "timeout";
   end
 end
 

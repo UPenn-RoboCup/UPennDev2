@@ -258,7 +258,7 @@ function setAttackerVelocity()
 
   --Slow down if battery is low
   batt_level=Body.get_battery_level();
-  if batt_level<Config.bat_med then
+  if batt_level*10<Config.bat_med then
     maxStep = maxStep1;
   end
 
@@ -286,7 +286,7 @@ function setAttackerVelocity()
 
   if math.abs(aHomeRelative)<70*180/math.pi then
     --Don't allow the robot to backstep if ball is in front
-    vx=math.max(0,vx) 
+--    vx=math.max(0,vx) 
   end
 
   va = 0.5*(aTurn*homeRelative[3] --Turn toward the goal

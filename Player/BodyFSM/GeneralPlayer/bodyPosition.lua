@@ -258,7 +258,7 @@ function setAttackerVelocity()
 
   --Slow down if battery is low
   batt_level=Body.get_battery_level();
-  if batt_level<Config.bat_med then
+  if batt_level*10<Config.bat_med then
     maxStep = maxStep1;
   end
 

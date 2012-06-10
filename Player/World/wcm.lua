@@ -132,6 +132,16 @@ if listen_monitor>0 then
   shsize.labelB = 10*labelB_size + 2^16;
 
   shared.robotNames = {};
+  shared.robotNames.n1 = '';
+  shared.robotNames.n2 = '';
+  shared.robotNames.n3 = '';
+  shared.robotNames.n4 = '';
+  shared.robotNames.n5 = '';
+  shared.robotNames.n6 = '';
+  shared.robotNames.n7 = '';
+  shared.robotNames.n8 = '';
+  shared.robotNames.n9 = '';
+  shared.robotNames.n10 = '';
 
 end
 

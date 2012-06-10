@@ -520,3 +520,23 @@ cal["linus"].kickXComp=0.010;
 cal["linus"].servoBias={21,-3,43,-1,1,-1,-21,-5,-13,-12,-15,6,};
 cal["linus"].footXComp=0.002;
 cal["linus"].kickXComp=0.010;
+
+-- Updated date: Sun Jun 10 15:17:16 2012
+cal["hokie"].servoBias={0,-13,-48,26,-4,-21,0,-3,66,-59,-47,-3,};
+cal["hokie"].footXComp=0.006;
+cal["hokie"].kickXComp=0.000;
+
+-- Updated date: Sun Jun 10 15:20:44 2012
+cal["hokie"].servoBias={0,-13,-17,26,-4,-21,0,-3,51,-59,-12,-3,};
+cal["hokie"].footXComp=0.014;
+cal["hokie"].kickXComp=0.000;
+
+-- Updated date: Sun Jun 10 15:22:34 2012
+cal["hokie"].servoBias={0,-13,-17,26,30,-21,0,-3,51,-59,-59,-3,};
+cal["hokie"].footXComp=0.008;
+cal["hokie"].kickXComp=0.000;
+
+-- Updated date: Sun Jun 10 15:25:07 2012
+cal["hokie"].servoBias={0,-13,-17,26,30,-21,0,-3,51,-59,-59,-3,};
+cal["hokie"].footXComp=0.004;
+cal["hokie"].kickXComp=0.000;

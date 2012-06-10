@@ -5,7 +5,7 @@ require('Filter2D');
 require('Body');
 require('vector');
 require('util');
-
+require('wcm')
 require('vcm');
 require('gcm');
 require 'mcm'
@@ -44,6 +44,7 @@ cResample = Config.world.cResample;
 playerID = Config.game.playerID;
 
 odomScale = Config.walk.odomScale;
+wcm.set_robot_odomScale(odomScale);
 
 --SJ: they are for IMU based navigation
 imuYaw = Config.world.imuYaw or 0;
@@ -72,7 +73,8 @@ end
 
 function update_odometry()
 
-  odomScale = Config.walk.odomScale;
+  --odomScale = Config.walk.odomScale;
+  odomScale = wcm.get_robot_odomScale();
   count = count + 1;
   uOdometry, uOdometry0 = mcm.get_odometry(uOdometry0);
 
@@ -94,11 +96,12 @@ end
 
 --update localization without vision (for odometry testing)
 function update_pos()
+  if count % cResample == 0 then
+    PoseFilter.resample();
+  end
 
   pose.x,pose.y,pose.a = PoseFilter.get_pose();
-
   update_shm();
-
 end
 
 function update_vision()
@@ -282,7 +285,7 @@ end
 function update_shm()
   -- update shm values
 
-
+  --print(string.format( 
   wcm.set_robot_pose({pose.x, pose.y, pose.a});
   wcm.set_robot_time(Body.get_time());
 

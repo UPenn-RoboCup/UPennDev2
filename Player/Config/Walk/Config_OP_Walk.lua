@@ -77,12 +77,20 @@ end
 -- Support point modulation values
 --------------------------------------------
 
-walk.velFastForward = 0.03;
-walk.supportFront = 0.01; --Lean back when walking fast forward
+walk.velFastForward = 0.05;
+walk.velFastTurn = 0.15;
+
+--walk.supportFront = 0.01; --Lean back when walking fast forward
+walk.supportFront = 0.03; --Lean back when walking fast forward
+
 walk.supportFront2 = 0.03; --Lean front when accelerating forward
 walk.supportBack = -0.02; --Lean back when walking backward
 walk.supportSideX = -0.01; --Lean back when sidestepping
 walk.supportSideY = 0.02; --Lean sideways when sidestepping
+
+
+walk.supportTurn = 0.02; --Lean front when turning
+
 
 --------------------------------------------
 -- WalkKick parameters

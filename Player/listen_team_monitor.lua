@@ -177,6 +177,30 @@ function push_team_struct(obj,teamOffset)
   states.landmarkv1[id]=obj.landmarkv[1];
   states.landmarkv2[id]=obj.landmarkv[2];
 
+  if id==1 then  
+    wcm.set_teamdata_robotNames_n1(obj.robotName);
+  elseif id==2 then  
+    wcm.set_teamdata_robotNames_n2(obj.robotName);
+  elseif id==3 then  
+    wcm.set_teamdata_robotNames_n3(obj.robotName);
+  elseif id==4 then  
+    wcm.set_teamdata_robotNames_n4(obj.robotName);
+  elseif id==5 then  
+    wcm.set_teamdata_robotNames_n5(obj.robotName);
+  elseif id==6 then  
+    wcm.set_teamdata_robotNames_n6(obj.robotName);
+  elseif id==7 then  
+    wcm.set_teamdata_robotNames_n7(obj.robotName);
+  elseif id==8 then  
+    wcm.set_teamdata_robotNames_n8(obj.robotName);
+  elseif id==9 then  
+    wcm.set_teamdata_robotNames_n9(obj.robotName);
+  elseif id==10 then  
+    wcm.set_teamdata_robotNames_n10(obj.robotName);
+  end
+
+
+
 --print("Ballx:",obj.ball.x);
 
 --print("robotID:",unpack(states.robotId))
@@ -226,8 +250,12 @@ tStart=unix.time();
 while( true ) do
   while (Comm.size() > 0) do
     msg=Comm.receive();
+
     t = serialization.deserialize(msg);
     if t and (t.teamNumber) then
+
+print(t.robotName)
+
       t.tReceive = unix.time();
       count=count+1;
       if #teamToTrack==1 then 

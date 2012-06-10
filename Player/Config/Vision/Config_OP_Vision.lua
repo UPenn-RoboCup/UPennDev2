@@ -19,7 +19,7 @@ vision.scaleB = 4;
 -- use this to enable yellow goal in vision
 vision.enable_2_yellow_goals =0;
 -- use this to enable line detection
-vision.enable_line_detection = 0;
+vision.enable_line_detection = 1;
 -- use this to enable spot detection
 vision.enable_spot_detection = 0;
 -- use this to enable midfield landmark detection

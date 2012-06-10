@@ -64,6 +64,7 @@ function update()
 
   if phase==0 then 
     if t - t0 < tstart then 
+      walk.set_velocity(0,0,0);
       return;
     else walk.start();
       phase=1;

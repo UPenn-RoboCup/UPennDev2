@@ -30,7 +30,7 @@ endif
   INCLUDES=-I/usr/include
 endif
 
-all: time mexshm getch
+all: time mexshm getch udpcomm
 
 time: time.cc timeScalar.cc
 	mex -O $^ $(BOOST_INCLUDE_DIRS) $(LIBRT)
@@ -41,6 +41,8 @@ mexshm: mexshm.cpp
 getch: getch.c
 	mex -O $^ $(BOOST_INCLUDE_DIRS) $(LIBRT)
 
+udpcomm: UDPComm.cc
+	mex -O $^ $(BOOST_INCLUDE_DIRS) $(LIBRT)
 
 
 clean:

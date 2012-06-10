@@ -120,9 +120,8 @@ km.standup_back = 'km_NSLOP_StandupFromBack.lua';
 
 -- Low battery level
 -- Need to implement this api better...
-bat_low = 118; -- 11.8V warning
-
-bat_med = 100; -- Slow down if voltage drops below 12.2V 
+bat_low = 117; -- 11.7V warning
+bat_med = 117; -- Slow down if voltage drops below 12.2V 
 
 
 

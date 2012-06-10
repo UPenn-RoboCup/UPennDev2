@@ -103,7 +103,7 @@ fsm.bodyPosition.rOrbit = 0.60;
 
 --New params to reduce sidestepping
 fsm.bodyPosition.rOrbit = 0.60; 
-fsm.bodyPosition.rDist1 = 0.60; 
+fsm.bodyPosition.rDist1 = 0.40; 
 fsm.bodyPosition.rDist2 = 0.25; 
 
 
@@ -120,14 +120,16 @@ fsm.bodyPosition.maxStep1 = 0.06;
 
 --Medium speed
 fsm.bodyPosition.maxStep2 = 0.07;
-fsm.bodyPosition.rVel2 = 0.5;
+--fsm.bodyPosition.rVel2 = 0.5;
+fsm.bodyPosition.rVel2 = 0.4;
 fsm.bodyPosition.aVel2 = 45*math.pi/180;
 fsm.bodyPosition.maxA2 = 0.1;
 fsm.bodyPosition.maxY2 = 0.02;
 
 --Full speed front dash
 fsm.bodyPosition.maxStep3 = 0.08;
-fsm.bodyPosition.rVel3 = 0.8; 
+--fsm.bodyPosition.rVel3 = 0.8; 
+fsm.bodyPosition.rVel3 = 0.5; 
 fsm.bodyPosition.aVel3 = 20*math.pi/180;
 fsm.bodyPosition.maxA3 = 0.0;
 fsm.bodyPosition.maxY3 = 0.0;
@@ -153,7 +155,7 @@ fsm.bodyApproach.xTarget12={0, 0.13,0.15}; --min, target, max
 fsm.bodyApproach.yTarget12={-0.005, 0.01, 0.025}; --min, target ,max
 
 --Target position for straight walkkick 
-fsm.bodyApproach.xTarget21={0, 0.21,0.23}; --min, target, max
+fsm.bodyApproach.xTarget21={0, 0.19,0.21}; --min, target, max
 fsm.bodyApproach.yTarget21={0.020, 0.035, 0.050}; --min, target ,max
 
 --Target position for side walkkick to left

@@ -80,6 +80,9 @@ supportSideX = Config.walk.supportSideX or 0;
 supportSideY = Config.walk.supportSideY or 0;
 supportTurn = Config.walk.supportTurn or 0;
 
+frontComp = Config.walk.frontComp or 0.003;
+AccelComp = Config.walk.AccelComp or 0.003;
+
 --Initial body swing 
 supportModYInitial = Config.walk.supportModYInitial or 0;
 
@@ -357,8 +360,12 @@ function update()
   --Walking front
   local frontCompX = 0;
   if velCurrent[1]>0.04 then 
-    frontCompX = 0.005;
+    frontCompX = frontComp;
   end
+  if velDiff[1]>0.02 then
+    frontCompX = frontCompX + AccelComp;
+  end
+
 
   uTorsoActual = util.pose_global(
 	vector.new({-footX+frontCompX+turnCompX,0,0}),uTorso);

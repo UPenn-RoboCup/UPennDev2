@@ -65,6 +65,10 @@ elseif (robotName=='lucy') then
   dev.gender = 0;
   game.playerID = 4; 
   game.role = 1; --Default attacker
+elseif (robotName=='hokie') then
+  dev.gender = 1;
+  game.playerID = 4; 
+  game.role = 1; --Default attacker
 elseif (robotName=='felix') then
   dev.gender = 1;
   game.playerID = 5; 

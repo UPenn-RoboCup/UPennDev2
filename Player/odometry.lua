@@ -78,12 +78,12 @@ function update()
   imageProcessed = Vision.update();
 
   World.update_odometry();
-  World.update_pos();
 
   -- update localization
   if imageProcessed then
     nProcessedImages = nProcessedImages + 1;
     --World.update_vision();
+    World.update_pos();
 
     if (nProcessedImages % 200 == 0) then
       if not webots then

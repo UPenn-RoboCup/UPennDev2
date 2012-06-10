@@ -50,12 +50,15 @@ function update()
   vx = maxStep*homeRelative[1]/rHomeRelative;
   vy = maxStep*homeRelative[2]/rHomeRelative;
 
-  va = .2 * math.atan2(homeRelative[2], homeRelative[1]);
 
-  if math.abs(wcm.get_attack_bearing())>math.pi/2 or
-     rHomeRelative < 0.6 then 
-    va = .35*wcm.get_attack_bearing();
-  end
+  rTurn = 0.3;
+  aTurn=math.exp(-0.5*(rHomeRelative/rTurn)^2);
+
+
+  vaTurn = .2 * math.atan2(homeRelative[2], homeRelative[1]);
+  vaGoal = .35*wcm.get_attack_bearing();
+
+  va = aTurn * vaGoal + (1-aTurn)*vaTurn;
 
   --TODO: Goalie may need to turn to target direction 
 

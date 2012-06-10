@@ -30,6 +30,7 @@ print("KICK DIR:",kick_dir)
   if kick_dir==1 then --straight walkkick
     -- set kick depending on ball position
     ball = wcm.get_ball();
+print("WalkKick: Ball pos:",ball.x,ball.y);
     if (ball.y > 0) then
       walk.doWalkKickLeft();
     else

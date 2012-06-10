@@ -147,16 +147,10 @@ use_gps_only = 1;
 
 goalie_dive = 2; --1 for arm only, 2 for actual diving
 
-
+avoid_own_team = 0;
 avoid_other_team = 0;
 
-
-
-
---[[
--- Stretcher
-loadconfig('Config_Stretcher')
-fsm.body = {'Stretcher'};
-dev.walk='StretcherWalk';
-dev.team='TeamPrimeQ';
---]]
+-- Low battery level
+-- Need to implement this api better...
+bat_med = 122; -- Slow down if voltage drops below 12.2V 
+bat_low = 118; -- 11.8V warning

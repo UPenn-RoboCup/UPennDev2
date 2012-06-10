@@ -100,6 +100,12 @@ fsm.bodyPosition.rTurn2 = 0.08;
 fsm.bodyPosition.rOrbit = 0.40; --Default value 0.60, 0.40 enables ...
 -- the bot to get around the ball real fast avoiding wastage of time.
 
+--New params to reduce sidestepping
+fsm.bodyPosition.rOrbit = 0.60; 
+fsm.bodyPosition.rDist1 = 0.60; 
+fsm.bodyPosition.rDist2 = 0.25; 
+
+
 fsm.bodyPosition.rClose = 0.35; 
 --fsm.bodyPosition.thClose = {0.15,0.15,10*math.pi/180};
 fsm.bodyPosition.thClose = {0.3,0.15,20*math.pi/180};
@@ -148,7 +154,7 @@ fsm.bodyApproach.yTarget12={-0.005, 0.01, 0.025}; --min, target ,max
 
 --Target position for straight walkkick 
 fsm.bodyApproach.xTarget21={0, 0.17,0.19}; --min, target, max
-fsm.bodyApproach.yTarget21={0.01, 0.035, 0.04}; --min, target ,max
+fsm.bodyApproach.yTarget21={0.015, 0.04, 0.045}; --min, target ,max
 
 --Target position for side walkkick to left
 fsm.bodyApproach.xTarget22={0, 0.15,0.17}; --min, target, max

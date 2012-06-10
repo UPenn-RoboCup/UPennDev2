@@ -80,6 +80,9 @@ supportSideX = Config.walk.supportSideX or 0;
 supportSideY = Config.walk.supportSideY or 0;
 supportTurn = Config.walk.supportTurn or 0;
 
+frontComp = Config.walk.frontComp or 0.003;
+AccelComp = Config.walk.AccelComp or 0.003;
+
 --Initial body swing 
 supportModYInitial = Config.walk.supportModYInitial or 0;
 
@@ -347,17 +350,25 @@ function update()
 
   uTorso = zmp_com(ph);
 
---Leg spread compensation
-  local spread=util.mod_angle((uLeft[3]-uRight[3])/2);
-  local spreadCompX = spreadComp * (1-math.cos(spread));
-
+  --Turning
   local turnCompX=0;
-  if math.abs(velCurrent[3])>turnCompThreshold then
+  if math.abs(velCurrent[3])>turnCompThreshold and
+    velCurrent[1]>-0.01 then
     turnCompX = turnComp;
   end
 
+  --Walking front
+  local frontCompX = 0;
+  if velCurrent[1]>0.04 then 
+    frontCompX = frontComp;
+  end
+  if velDiff[1]>0.02 then
+    frontCompX = frontCompX + AccelComp;
+  end
+
+
   uTorsoActual = util.pose_global(
-	vector.new({-footX+spreadCompX+turnCompX,0,0}),uTorso);
+	vector.new({-footX+frontCompX+turnCompX,0,0}),uTorso);
 
 --  uTorsoActual = util.pose_global(vector.new({-footX,0,0}),uTorso);
 

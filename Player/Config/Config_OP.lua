@@ -65,8 +65,16 @@ elseif (robotName=='lucy') then
   dev.gender = 0;
   game.playerID = 4; 
   game.role = 1; --Default attacker
+elseif (robotName=='hokie') then
+  dev.gender = 1;
+  game.playerID = 4; 
+  game.role = 1; --Default attacker
 elseif (robotName=='felix') then
   dev.gender = 1;
+  game.playerID = 5; 
+  game.role = 1; --Default attacker
+elseif (robotName=='sally') then
+  dev.gender = 0;
   game.playerID = 5; 
   game.role = 1; --Default attacker
 else
@@ -116,9 +124,8 @@ km.standup_back = 'km_NSLOP_StandupFromBack.lua';
 
 -- Low battery level
 -- Need to implement this api better...
-bat_med = 122; -- Slow down if voltage drops below 12.2V 
-bat_low = 118; -- 11.8V warning
-
+bat_low = 117; -- 11.7V warning
+bat_med = 117; -- Slow down if voltage drops below 12.2V 
 
 
 

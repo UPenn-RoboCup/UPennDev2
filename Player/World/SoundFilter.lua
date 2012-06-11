@@ -77,7 +77,15 @@ function update()
 
         -- update histogram
         local ifront = math.max(1, math.min(math.floor(zeroInd + afront / radPerBin) + 1, ndiv));
-        local iback = math.max(1, math.min(math.floor(zeroInd + aback / radPerBin) + 1, ndiv));
+        --local iback = math.max(1, math.min(math.floor(zeroInd + aback / radPerBin) + 1, ndiv));
+        local iback = 1;
+        if (ifront <= zeroInd) then
+           iback = zeroInd - ifront + 1;
+        else
+           iback = ndiv - ifront + zeroInd + 1;
+        end
+
+        print(string.format('afront: %f, aback: %f, ifront: %d, iback: %d', afront, aback, ifront, iback));
 
         detFilter[ifront] = detFilter[ifront] + updateRate;
         detFilter[iback] = detFilter[iback] + updateRate;
@@ -89,6 +97,7 @@ function update()
       end
    end
 
+   --[[
    -- TODO: decay histogram
    if (count % 10 == 0) then
       for i = 1,#detFilter do
@@ -96,6 +105,7 @@ function update()
          detFilter[i] = math.max(0, detFilter[i]);
       end
    end 
+   --]]
 
    update_shm();
 end

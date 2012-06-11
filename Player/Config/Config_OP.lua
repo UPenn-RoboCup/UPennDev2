@@ -22,7 +22,7 @@ else
 end
 
 if has_claw>0 then
-  loadconfig('Robot/Config_OPGripper_Robot') 
+--  loadconfig('Robot/Config_OPGripper_Robot') 
   loadconfig('Robot/Config_OPSally_Robot') 
   loadconfig('Walk/Config_OP_Walk')
 --  walk.qLArm=math.pi/180*vector.new({90,20,-40});

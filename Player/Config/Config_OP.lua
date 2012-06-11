@@ -39,7 +39,6 @@ loadconfig('Vision/Config_OP_Vision')
 
 loadconfig('Vision/Config_OP_Camera_VT')
 --loadconfig('Vision/Config_OP_Camera_L512')
->>>>>>> dev-master
 --loadconfig('Vision/Config_OP_Camera_L512_Day')
 --loadconfig('Vision/Config_OP_Camera_Grasp')
 

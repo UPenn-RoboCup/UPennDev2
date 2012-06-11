@@ -44,11 +44,9 @@ util.init_shm_segment(getfenv(), _NAME, shared, shsize);
 
 -- initialize player id
 set_team_player_id( Config.game.playerID );
-Speak.talk('Player ID '..Config.game.playerID);
 
 -- initialize team id
 set_team_number(Config.game.teamNumber);
-Speak.talk('Team Number '..Config.game.teamNumber);
 
 -- initialize state to 'initial'
 set_game_state(0);
@@ -59,3 +57,7 @@ function in_penalty()
   return get_game_penalty()[get_team_player_id()] > 0;
 end
 
+function say_id()
+  Speak.talk('Player ID '..Config.game.playerID);
+  Speak.talk('Team Number '..Config.game.teamNumber);
+end

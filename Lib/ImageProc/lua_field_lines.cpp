@@ -83,6 +83,7 @@ struct SegmentStats {
   int x,y,xy,xx,yy; //for gradient stats
   int updated;
   int length;
+  int max_width; 
 };
 
 static struct SegmentStats segments[MAX_SEGMENTS];
@@ -99,6 +100,7 @@ void segment_init(){
     segments[i].y=0;
     segments[i].updated=0;
     segments[i].grad=0;
+    segments[i].max_width=0;
   }
   num_segments=0;
 }
@@ -154,7 +156,7 @@ void initStat(struct SegmentStats *statPtr,int i, int j){
 
 
 //We always add pixel from left to right
-void addHorizontalPixel(int i, int j, double connect_th, int max_gap){
+void addHorizontalPixel(int i, int j, double connect_th, int max_gap, int width){
   //Find best matching active segment
   int seg_updated=0;
   //printf("Checking pixel %d,%d\n",i,j);
@@ -178,6 +180,9 @@ void addHorizontalPixel(int i, int j, double connect_th, int max_gap){
 	segments[k].updated=1;
         segments[k].x1=i;
         segments[k].y1=j;
+        if (width > segments[k].max_width) {
+          segments[k].max_width = width;
+        }
         seg_updated=seg_updated+1;
       }
     }
@@ -191,7 +196,7 @@ void addHorizontalPixel(int i, int j, double connect_th, int max_gap){
 
 
 //We always add pixel from top to bottom
-void addVerticalPixel(int i, int j, double connect_th, int max_gap){
+void addVerticalPixel(int i, int j, double connect_th, int max_gap, int width){
   //Find best matching active segment
   int seg_updated=0;
   for (int k=0;k<num_segments;k++){
@@ -213,6 +218,9 @@ void addVerticalPixel(int i, int j, double connect_th, int max_gap){
         segments[k].x1=i;
         segments[k].y1=j;
         seg_updated=seg_updated+1;
+        if (width > segments[k].max_width){
+          segments[k].max_width = width;
+        }
       }
     }
   }
@@ -253,7 +261,7 @@ int lua_field_lines(lua_State *L) {
       int width = lineState(label);
       if ((width >= widthMin) && (width <= widthMax)) {
 	int iline = i - (width+1)/2;
-	addVerticalPixel(iline,j,connect_th,max_gap);
+	addVerticalPixel(iline,j,connect_th,max_gap,width);
       }
     }
     segment_refresh();
@@ -268,7 +276,7 @@ int lua_field_lines(lua_State *L) {
       int width = lineState(label);
       if ((width >= widthMin) && (width <= widthMax)) {
 	int jline = j - (width+1)/2;
-	addHorizontalPixel(i,jline,connect_th,max_gap);
+	addHorizontalPixel(i,jline,connect_th,max_gap, width);
       }
     }
     segment_refresh();
@@ -297,6 +305,11 @@ int lua_field_lines(lua_State *L) {
       lua_pushnumber(L, segments[k].length);
       lua_settable(L, -3);
 
+      // max_width field
+      lua_pushstring(L, "max_width");
+      lua_pushnumber(L, segments[k].max_width);
+      lua_settable(L, -3);
+      
       // endpoint field
       lua_pushstring(L, "endpoint");
       lua_createtable(L, 4, 0);

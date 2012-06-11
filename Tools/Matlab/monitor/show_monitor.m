@@ -358,10 +358,10 @@ function h=show_monitor()
         else
   	  if i<6 
             h1=subplot(5,5,i);
-	    cla;
+	    cla(h1);
 	  else
             h1=subplot(5,5,i+15);
-	    cla;
+	    cla(h1);
 	  end
           set(MONITOR.infoTexts(i),'String','');
 	end

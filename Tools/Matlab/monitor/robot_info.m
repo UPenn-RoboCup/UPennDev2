@@ -1,4 +1,4 @@
-function [str textcolor]=robot_info(robot,r_mon,level)
+function [str textcolor]=robot_info(robot,r_mon,level,name)
     robotnames = {'Bot1','Bot2','Bot3','Bot4','Bot5'};
     rolenames = {'Goalie','Attacker','Defender','Supporter','W. player','W. goalie','Unknown'};
     colornames={'red','blue'};
@@ -14,6 +14,9 @@ function [str textcolor]=robot_info(robot,r_mon,level)
       str=sprintf('#%d %s\n%s\n%s %s\n%.1fV\n',...
         robot.id, robotnames{robot.id}, rolenames{role+1},...
         char(r_mon.fsm.head), char(r_mon.fsm.body), robot.battery_level);
+    elseif level==3
+      str=sprintf('#%d %s\n%s\n%.1fV\n',...
+        robot.id, name, rolenames{role+1},robot.battery_level);
     end
 
     %Teammate data

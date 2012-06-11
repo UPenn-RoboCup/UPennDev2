@@ -19,6 +19,10 @@ th_lock = 5*math.pi/180;
 th_unlock = 15*math.pi/180;
 
 
+goalie_dive = Config.goalie_dive or 0;
+goalie_type = Config.fsm.goalie_type;
+
+
 function entry()
   print("Head SM:".._NAME.." entry");
   t0 = Body.get_time();
@@ -27,6 +31,11 @@ function entry()
 end
 
 function update()
+
+  if goalie_type<3 then --Non-diving goalie, escape to headTrack
+    return "player"
+  end
+
   local t = Body.get_time();
 
   -- update head position based on ball location

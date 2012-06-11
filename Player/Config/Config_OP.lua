@@ -1,6 +1,7 @@
 module(..., package.seeall);
 
 require('vector')
+require('unix')
 
 platform = {}; 
 platform.name = 'OP'

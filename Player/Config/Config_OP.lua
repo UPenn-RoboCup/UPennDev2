@@ -13,8 +13,23 @@ function loadconfig(configName)
 end
 
 --Robot CFG should be loaded first to set PID values
-loadconfig('Robot/Config_OP_Robot') 
-loadconfig('Walk/Config_OP_Walk')
+local robotName=unix.gethostname();
+if (robotName=='sally') then
+  has_claw = 1;
+else
+  has_claw = 0;
+end
+
+if has_claw>0 then
+  loadconfig('Robot/Config_OPGripper_Robot') 
+  loadconfig('Walk/Config_OP_Walk')
+  walk.qLArm=math.pi/180*vector.new({90,16,-40});
+  walk.qRArm=math.pi/180*vector.new({90,-16,-40});
+else
+  loadconfig('Robot/Config_OP_Robot') 
+  loadconfig('Walk/Config_OP_Walk')
+end
+
 loadconfig('World/Config_OP_World')
 loadconfig('Kick/Config_OP_Kick')
 --loadconfig('Kick/Config_OP_Kick2')
@@ -46,7 +61,6 @@ speak.enable = false;
 game = {};
 game.teamNumber = 18;
 --Not a very clean implementation but we're using this way for now
-local robotName=unix.gethostname();
 --Default role: 0 for goalie, 1 for attacker, 2 for defender
 --Default team: 0 for blue, 1 for red
 if (robotName=='scarface') then
@@ -122,6 +136,9 @@ km = {};
 km.standup_front = 'km_NSLOP_StandupFromFront.lua';
 km.standup_back = 'km_NSLOP_StandupFromBack.lua';
 
+if (robotName=='hokie') then
+  km.standup_back = 'km_NSLOP_StandupFromBackHokie.lua';
+end
 -- Low battery level
 -- Need to implement this api better...
 bat_low = 117; -- 11.7V warning

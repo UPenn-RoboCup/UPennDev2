@@ -28,7 +28,6 @@ require ('Config')
 Config.game.teamNumber = 1;
 Config.game.playerID = 1;
 Config.listen_monitor = 1;
-
 --[[
 io.write("Enter number of teams to track: ");
 io.flush();
@@ -45,8 +44,7 @@ else
   teamToTrack={team1};
 end
 --]]
-
-team_num=18;
+team_num=2;
 teamToTrack={18,26};
 
 --Push to (team,1) shm
@@ -182,6 +180,30 @@ function push_team_struct(obj,teamOffset)
   states.landmarkv1[id]=obj.landmarkv[1];
   states.landmarkv2[id]=obj.landmarkv[2];
 
+  if id==1 then  
+    wcm.set_robotNames_n1(obj.robotName);
+  elseif id==2 then  
+    wcm.set_robotNames_n2(obj.robotName);
+  elseif id==3 then  
+    wcm.set_robotNames_n3(obj.robotName);
+  elseif id==4 then  
+    wcm.set_robotNames_n4(obj.robotName);
+  elseif id==5 then  
+    wcm.set_robotNames_n5(obj.robotName);
+  elseif id==6 then  
+    wcm.set_robotNames_n6(obj.robotName);
+  elseif id==7 then  
+    wcm.set_robotNames_n7(obj.robotName);
+  elseif id==8 then  
+    wcm.set_robotNames_n8(obj.robotName);
+  elseif id==9 then  
+    wcm.set_robotNames_n9(obj.robotName);
+  elseif id==10 then  
+    wcm.set_robotNames_n10(obj.robotName);
+  end
+
+
+
 --print("Ballx:",obj.ball.x);
 
 --print("robotID:",unpack(states.robotId))
@@ -231,6 +253,7 @@ tStart=unix.time();
 while( true ) do
   while (Comm.size() > 0) do
     msg=Comm.receive();
+
     t = serialization.deserialize(msg);
     if t and (t.teamNumber) then
       t.tReceive = unix.time();

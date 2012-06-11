@@ -14,13 +14,22 @@ end
 
 --Robot CFG should be loaded first to set PID values
 local robotName=unix.gethostname();
-
 if (robotName=='sally') then
+  has_claw = 1;
+else
+  has_claw = 0;
+end
+
+if has_claw>0 then
   loadconfig('Robot/Config_OPGripper_Robot') 
+  loadconfig('Walk/Config_OP_Walk')
+  walk.qLArm=math.pi/180*vector.new({90,16,-40});
+  walk.qRArm=math.pi/180*vector.new({90,-16,-40});
 else
   loadconfig('Robot/Config_OP_Robot') 
+  loadconfig('Walk/Config_OP_Walk')
 end
-loadconfig('Walk/Config_OP_Walk')
+
 loadconfig('World/Config_OP_World')
 loadconfig('Kick/Config_OP_Kick')
 --loadconfig('Kick/Config_OP_Kick2')

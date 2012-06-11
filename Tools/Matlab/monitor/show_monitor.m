@@ -355,13 +355,14 @@ function h=show_monitor()
 	  plot_overlay_wireless(r_struct);
           [infostr textcolor]=robot_info(r_struct,[],3,r_struct.robotName);
           set(MONITOR.infoTexts(i),'String',infostr);
-        else
+        elseif MONITOR.deadcount(i)==20 %Clear vision at 20
+          labelB = robot_team.get_labelB_wireless(i);
   	  if i<6 
             h1=subplot(5,5,i);
-	    cla(h1);
+            plot_label(labelB*0);
 	  else
             h1=subplot(5,5,i+15);
-	    cla(h1);
+            plot_label(labelB*0);
 	  end
           set(MONITOR.infoTexts(i),'String','');
 	end

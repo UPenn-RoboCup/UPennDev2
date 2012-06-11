@@ -4,7 +4,7 @@ require('Config');	-- For Ball and Goal Size
 require('ImageProc');
 require('HeadTransform');	-- For Projection
 require('Vision');
-
+require ('vcm')
 -- Dependency
 require('Detection');
 
@@ -24,8 +24,11 @@ connect_th=Config.vision.line.connect_th or 1.4;
 max_gap=Config.vision.line.max_gap or 1;
 min_length=Config.vision.line.min_length or 3;
 
+headZ = Config.head.camOffsetZ;
+
+
 function detect()
-  --TODO: test line detection
+   --TODO: test line detection
   line = {};
   line.detect = 0;
 
@@ -50,8 +53,11 @@ function detect()
   nLines=0;
 
   nLines=#line.propsB;
+  horizonA = vcm.get_image_horizonA();
+  horizonB = vcm.get_image_horizonB(); 
+  
   vcm.add_debug_message(string.format(
-    "Total %d lines detected\n" ,nLines));
+    "Total %d lines detected\n HorizonA: %d, HorizonB: %d\n" ,nLines, horizonA, horizonB));
 
   if (nLines==0) then
     return line; 
@@ -79,27 +85,42 @@ function detect()
     local length = math.sqrt(
 	(line.propsB[i].endpoint[1]-line.propsB[i].endpoint[2])^2+
 	(line.propsB[i].endpoint[3]-line.propsB[i].endpoint[4])^2);
-    if length>min_length and linecount<6 then
+
+    local vendpoint = {};
+    vendpoint[1] = HeadTransform.coordinatesB(
+  vector.new({line.propsB[i].endpoint[1], line.propsB[i].endpoint[3]}));
+    vendpoint[2] = HeadTransform.coordinatesB(
+	vector.new({line.propsB[i].endpoint[2], line.propsB[i].endpoint[4]}));
+
+    vHeight =  0.5 * (vendpoint[1][3] + vendpoint[2][3]); 
+--[[    
+    if (vendpoint[1][3] < -headZ) then
+      vendpoint[1] = (-headZ/vendpoint[1][3])*vendpoint[1];
+    end
+    if (vendpoint[2][3] < -headZ) then
+      vendpoint[2] = (-headZ/vendpoint[2][3])*vendpoint[2]; 
+    end
+--]]    
+    local LWratio = length/line.propsB[i].max_width;
+    if length > min_length and linecount < 6 and vHeight < 0.5 and LWratio > 2.5
+  and line.propsB[i].endpoint[2] > horizonB and line.propsB[i].endpoint[4] > horizonB  then
+      print (LWratio)
       linecount=linecount+1;
-      local vendpoint = {};
       line.length[linecount]=length;
       line.endpoint[linecount]= line.propsB[i].endpoint;
-
-      vendpoint[1] = HeadTransform.coordinatesB(
-		vector.new({line.propsB[i].endpoint[1], line.propsB[i].endpoint[3]}));
-      vendpoint[2] = HeadTransform.coordinatesB(
-		vector.new({line.propsB[i].endpoint[2], line.propsB[i].endpoint[4]}));
       vendpoint[1] = HeadTransform.projectGround(vendpoint[1],0);
       vendpoint[2] = HeadTransform.projectGround(vendpoint[2],0);
       line.v[linecount]={};
       line.v[linecount][1]=vendpoint[1];
       line.v[linecount][2]=vendpoint[2];
-      line.angle[linecount]=math.abs(math.atan2(vendpoint[1][2]-vendpoint[2][2],
-			    vendpoint[1][1]-vendpoint[2][1]));
+      line.angle[linecount]=math.abs(math.atan2(vendpoint[1][2]-vendpoint[2][2], vendpoint[1][1]-vendpoint[2][1]));
+      print (util.ptable(line.v[linecount]))
+     
       vcm.add_debug_message(string.format(
-		"Line %d: length %d, angle %d\n",
+		"Line %d: length %d, angle %d, max_width %d\n",
 		linecount,line.length[linecount],
-		line.angle[linecount]*180/math.pi));
+		line.angle[linecount]*180/math.pi, line.propsB[i].max_width));
+  
     end
   end
   nLines = linecount;

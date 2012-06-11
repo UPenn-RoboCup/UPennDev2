@@ -235,6 +235,8 @@ fsm.headScan.pitchTurnMag = 20*math.pi/180;
 fsm.headScan.yawMagTurn = 45*math.pi/180;
 fsm.headScan.tScan = 3.0*speedFactor;
 fsm.headScan.timeout = 7.0*speedFactor; --to headLookGoal
+fsm.headScan.minDist = 0.30;
+
 
 --------------------------------------------------
 --HeadKick: Fix headangle for approaching
@@ -262,6 +264,7 @@ fsm.headLookGoal={};
 --fsm.headLookGoal.yawSweep = 50*math.pi/180;
 fsm.headLookGoal.yawSweep = 70*math.pi/180;
 fsm.headLookGoal.tScan = 1.0*speedFactor;
+fsm.headLookGoal.minDist = 0.40;
 
 --------------------------------------------------
 --HeadSweep: Look around to find the goal

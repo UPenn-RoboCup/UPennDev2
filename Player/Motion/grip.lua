@@ -22,28 +22,26 @@ bodyTilt1 = Config.walk.bodyTilt;
 
 bodyHeight = Config.walk.bodyHeight;
 bodyHeight0 = bodyHeight;
---bodyHeight1 = 0.21;
 bodyHeight1 = 0.195;
 bodyHeight2 = 0.22;
 
---bodyShift1 = 0.035;
 bodyShift = 0;
 bodyShift0 = 0;
---bodyShift0 = 0.035;
---bodyShift1 = 0.015; --with long hand
---bodyShift1 = 0.035; --with long hand
 bodyShift1 = -0.015; --with long hand
 bodyShift2 = -0.010;
---bodyShift2 = 0.035;
---bodyShift3 = -0.010;
 bodyShift3 = 0.015;
+
+
+
+bodyYaw=0;
+bodyYaw1=-30*math.pi/180;
+
 
 bodyShift_windup = -0.015;
 bodyShift_throw = 0;
 
 -- Times
 t_throw = {1.0,2.0,3.0};
---t_grab  = {1.0,1.5,2.0,3.0,4.0};
 t_grab  = {1.2,2.5,3.0,4.0,5.0};
 
 qRArm= vector.zeros(3);
@@ -55,14 +53,14 @@ qRArm0 = Config.walk.qRArm;
 --qLArm1 = math.pi/180*vector.new({0, 50,90});
 --qLArm1 = qLArm0;
 --qLArm1[1],qLArm1[2] = 0,50;
-qLArm1 = math.pi/180*vector.new({90, 50,90});
-qRArm1 = math.pi/180*vector.new({0,-5,0});
+qLArm1 = math.pi/180*vector.new({60, 30,30});
+qRArm1 = math.pi/180*vector.new({90,-8,-40});
 
-qLArm_position = math.pi/180*vector.new({0, 40,90});
+qLArm_position = math.pi/180*vector.new({0, 0,90});
 
 --Grasp
-qLArm2 = math.pi/180*vector.new({0, 50,90});	
-qRArm2 = math.pi/180*vector.new({0, 5,0});	
+qLArm2 = math.pi/180*vector.new({0, 30,-40});	
+qRArm2 = math.pi/180*vector.new({90, -8,40});	
 
 --Windup
 qLArm3 = math.pi/180*vector.new({50, 75,-120});	
@@ -148,11 +146,11 @@ function update()
     started=true;
     Body.set_head_hardness(.5);
     if throw==0 then
-      Body.set_larm_hardness({0.5,.3,0.5});
-      Body.set_rarm_hardness({0.5,.3,0.5});
+--      Body.set_larm_hardness({0.5,.3,0.5});
+--      Body.set_rarm_hardness({0.5,.3,0.5});
     else
-      Body.set_larm_hardness({1,0.3,1});
-      Body.set_rarm_hardness({1,0.3,1});
+--      Body.set_larm_hardness({1,0.3,1});
+--      Body.set_rarm_hardness({1,0.3,1});
     end
     Body.set_lleg_hardness(1);
     Body.set_rleg_hardness(1);
@@ -174,6 +172,8 @@ function update()
       qGrip = ph*qGrip1 + (1-ph)*qGrip0;
       bodyHeight = ph*bodyHeight1 + (1-ph)*bodyHeight0;
       bodyShift=bodyShift0*(1-ph)+ bodyShift1*ph;
+      bodyYaw=ph*bodyYaw1;
+
     elseif t<t_pickup[2] then
    --bend front
       ph=(t-t_pickup[1])/(t_pickup[2]-t_pickup[1]);
@@ -192,6 +192,8 @@ function update()
      bodyTilt = ph* Config.walk.bodyTilt+(1-ph)*bodyTilt1;
      bodyHeight = ph*bodyHeight2 + (1-ph)*bodyHeight1;
      bodyShift=bodyShift2*ph+ bodyShift1*(1-ph);
+     bodyYaw=(1-ph)*bodyYaw1;
+
    elseif t<t_pickup[5] then
      --Stand up
      ph=(t-t_pickup[4])/(t_pickup[5]-t_pickup[4]);
@@ -236,11 +238,12 @@ function update()
 		end
 	end
 
-  pTorso[3],pTorso[5] = bodyHeight,bodyTilt;
+  pTorso[3],pTorso[5],pTorso[6] = bodyHeight,bodyTilt,bodyYaw;
   pLLeg[1],pLLeg[2],pLLeg[3],pLLeg[5],pLLeg[6]=uLeft[1],uLeft[2],zLeft,aLeft,uLeft[3];
   pRLeg[1],pRLeg[2],pRLeg[3],pRLeg[5],pRLeg[6]=uRight[1],uRight[2],zRight,aRight,uRight[3];
   uTorso=util.pose_global(vector.new({-footX,0,0}),uBody);
-  pTorso[1],pTorso[2],pTorso[6]=uTorso[1]+bodyShift,uTorso[2],uTorso[3];
+  
+pTorso[1],pTorso[2],pTorso[6]=uTorso[1]+bodyShift,uTorso[2],uTorso[3]+bodyYaw;
   motion_legs();
   Body.set_larm_command(qLArm);
   Body.set_rarm_command(qRArm);
@@ -286,8 +289,8 @@ function exit()
   print("Pickup exit");
   active = false;
   walk.active = true;
-  Body.set_lleg_slope(32);
-  Body.set_rleg_slope(32);
+  Body.set_lleg_slope(0);
+  Body.set_rleg_slope(0);
 end
 
 function set_distance(xdist)

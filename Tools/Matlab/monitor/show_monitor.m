@@ -328,6 +328,7 @@ function h=show_monitor()
       %Alive check
 
       if r_struct.id>0
+
         timepassed = r_struct.time-MONITOR.timestamp(i);
         MONITOR.timestamp(i)=r_struct.time;
 
@@ -338,6 +339,7 @@ function h=show_monitor()
         end
 
         if MONITOR.deadcount(i) < 20 % ~2 sec interval until turning off
+
           h_c=subplot(5,5,[6:20]);
           plot_robot( r_struct, [],2,5,r_struct.robotName);
           updated = 0;
@@ -354,7 +356,14 @@ function h=show_monitor()
           [infostr textcolor]=robot_info(r_struct,[],3,r_struct.robotName);
           set(MONITOR.infoTexts(i),'String',infostr);
         else
-
+  	  if i<6 
+            h1=subplot(5,5,i);
+	    cla;
+	  else
+            h1=subplot(5,5,i+15);
+	    cla;
+	  end
+          set(MONITOR.infoTexts(i),'',infostr);
 	end
       end
     end

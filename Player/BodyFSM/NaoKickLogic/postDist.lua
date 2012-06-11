@@ -2,7 +2,8 @@ module(..., package.seeall);
 
 -- goalpost distance threshold
 pNear = Config.fsm.bodyApproach.pNear or 0.3;
-pFar = Config.fsm.bodyApproach.pFar or 1.0;
+pRight = Config.fsm.bodyApproach.pRight or 1.2;
+pFar = Config.fsm.bodyApproach.pFar or 3.0;
 
 function kick()
   -- get attack goalpost positions and goal angle
@@ -17,7 +18,11 @@ function kick()
   pClosest = math.min(p1Dist, p2Dist);
   pFarthest = math.max(p1Dist, p2Dist);
 
-  if ((pClosest > pNear) and (pClosest < pFar)) then
+  print("My current distance is... ",pClosest)
+
+  if ((pClosest > pNear) and (pClosest < pRight)) then
+    return true;
+  elseif pClosest > pFar then
     return true;
   else
     return false;

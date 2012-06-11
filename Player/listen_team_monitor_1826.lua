@@ -22,7 +22,7 @@ package.path = cwd.."/World/?.lua;"..package.path;
 package.path = cwd.."/Vision/?.lua;"..package.path;
 package.path = cwd.."/Motion/?.lua;"..package.path; 
 
-
+require 'unix'
 require ('Config')
 --Copy data to shm 1-1
 Config.game.teamNumber = 1;
@@ -57,7 +57,6 @@ require ('util')
 require ('wcm')
 require ('gcm')
 require ('vcm')
-require 'unix'
 
 Comm.init(Config.dev.ip_wireless,54321);
 print('Receiving Team Message From',Config.dev.ip_wireless);

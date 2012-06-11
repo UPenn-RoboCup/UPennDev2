@@ -363,7 +363,7 @@ function h=show_monitor()
             h1=subplot(5,5,i+15);
 	    cla;
 	  end
-          set(MONITOR.infoTexts(i),'',infostr);
+          set(MONITOR.infoTexts(i),'String','');
 	end
       end
     end

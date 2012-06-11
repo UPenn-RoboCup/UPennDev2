@@ -13,7 +13,13 @@ function loadconfig(configName)
 end
 
 --Robot CFG should be loaded first to set PID values
-loadconfig('Robot/Config_OP_Robot') 
+local robotName=unix.gethostname();
+
+if (robotName=='sally') then
+  loadconfig('Robot/Config_OPGripper_Robot') 
+else
+  loadconfig('Robot/Config_OP_Robot') 
+end
 loadconfig('Walk/Config_OP_Walk')
 loadconfig('World/Config_OP_World')
 loadconfig('Kick/Config_OP_Kick')
@@ -46,7 +52,6 @@ speak.enable = false;
 game = {};
 game.teamNumber = 18;
 --Not a very clean implementation but we're using this way for now
-local robotName=unix.gethostname();
 --Default role: 0 for goalie, 1 for attacker, 2 for defender
 --Default team: 0 for blue, 1 for red
 if (robotName=='scarface') then

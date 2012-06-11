@@ -151,10 +151,14 @@ function update()
     t0=Body.get_time();
     if supportLeg ==0 then --left support 
         Body.set_lleg_slope(1);
-        Body.set_rleg_slope(0);
+--        Body.set_rleg_slope(0);
+        Body.set_rleg_slope(1);
+
     else --right support
         Body.set_rleg_slope(1);
-        Body.set_lleg_slope(0);
+ --       Body.set_lleg_slope(0);
+        Body.set_lleg_slope(1);
+
     end
   end
 
@@ -193,6 +197,10 @@ function update()
     if #kickDef[kickState]>=5 then
       bodyRoll=ph*kickDef[kickState][5] + (1-ph)*bodyRoll1;
     end
+    if #kickDef[kickState]>=6 then
+      bodyPitch=ph*kickDef[kickState][6] + (1-ph)*bodyPitch1;
+    end
+
   elseif kickStepType==2 then --Lifting / Landing Left foot
     uLeft=util.se2_interpolate(ph,uLeft1,
       util.pose_global(kickDef[kickState][4],uLeft1));

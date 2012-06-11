@@ -73,7 +73,17 @@ cal["jiminy"]={
   footYComp = 0,
   kickXComp = 0,
   headPitchComp = 0;
-  armBias={0,12*math.pi/180,0,0,-6*math.pi/180,0},
+  armBias={0,0,0,0,0,0},
+  pid = 1, --NEW FIRMWARE
+};
+
+cal["sally"]={
+  servoBias={0,0,0,0,0,0, 0,0,0,0,0,0},
+  footXComp = 0,
+  footYComp = 0,
+  kickXComp = 0,
+  headPitchComp = 0;
+  armBias={0,0,0,0,0,0},
   pid = 1, --NEW FIRMWARE
 };
 
@@ -565,3 +575,8 @@ cal["jiminy"].kickXComp=0.005;
 cal["felix"].servoBias={11,1,25,0,40,0,-9,10,-30,0,-29,15,};
 cal["felix"].footXComp=-0.008;
 cal["felix"].kickXComp=0.010;
+
+-- Updated date: Sun Jun 10 21:58:49 2012
+cal["sally"].servoBias={-33,-22,0,0,53,0,0,0,0,0,0,0,};
+cal["sally"].footXComp=0.008;
+cal["sally"].kickXComp=0.000;

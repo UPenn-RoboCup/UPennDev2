@@ -127,6 +127,7 @@ sm:set_transition(bodyAnticipate,'ballClose',bodyChase);
 sm:set_transition( bodyAnticipate,'dive',bodyDive );
 -- If out of position, then position self again
 sm:set_transition(bodyAnticipate,'position',bodyPositionGoalie);
+
 -- There is no 'done' event for anticipation
 --sm:set_transition(bodyAnticipate,'done',bodyPositionGoalie);
 
@@ -138,6 +139,8 @@ sm:set_transition(bodyChase, 'ballClose', bodyApproach);
 --sm:set_transition(bodyDive, 'done', bodyChase);
 -- Should timeout in case the fall is not detected...
 sm:set_transition(bodyDive, 'timeout', bodyPositionGoalie);
+sm:set_transition(bodyDive, 'reanticipate', bodyAnticipate);
+
 --The transition after a dive should just come from a fall (or timeout in case)
 
 sm:set_transition(bodyPositionGoalie, 'fall', bodyPositionGoalie);

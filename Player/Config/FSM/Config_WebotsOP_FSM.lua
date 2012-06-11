@@ -19,7 +19,11 @@ fsm.enable_walkkick = 1;
 
 fsm.wait_kickoff = 1; --initial wait at opponent's kickoff
 
-fsm.goalie_reposition = 2; --1 for turn, 2 for relocate
+fsm.goalie_type = 1;
+--1: Constantly moving goalie
+--2: Goalie stops when in position
+--3: Diving goalie (stops in position and never move)
+--4: Diving and repositioning goalie (turns to ball position)
 
 fsm.th_front_kick = 10*math.pi/180;
 

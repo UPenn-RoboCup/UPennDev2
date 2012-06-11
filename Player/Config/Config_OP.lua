@@ -136,6 +136,9 @@ km = {};
 km.standup_front = 'km_NSLOP_StandupFromFront.lua';
 km.standup_back = 'km_NSLOP_StandupFromBack.lua';
 
+if (robotName=='hokie') then
+  km.standup_back = 'km_NSLOP_StandupFromBackHokie.lua';
+end
 -- Low battery level
 -- Need to implement this api better...
 bat_low = 117; -- 11.7V warning

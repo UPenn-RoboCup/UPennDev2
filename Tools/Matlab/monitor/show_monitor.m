@@ -25,6 +25,11 @@ function h=show_monitor()
 
   h.fieldtype=0; %0,1,2 for SPL/Kid/Teen
 
+  h.count = 0; %To kill non-responding players from view
+ 
+  h.timestamp=zeros(1,10);
+  h.deadcount=zeros(1,10);
+
   % subfunctions
 
   function init(draw_team,target_fps)
@@ -311,6 +316,8 @@ function h=show_monitor()
 
   function update_team_wireless(robot_team)
 
+    MONITOR.count = MONITOR.count + 1;
+
     %Draw common field 
     h_c=subplot(5,5,[6:20]);
     cla(h_c);
@@ -318,24 +325,37 @@ function h=show_monitor()
     hold on;
     for i=1:10
       r_struct = robot_team.get_team_struct_wireless(i);
+      %Alive check
+
       if r_struct.id>0
-        h_c=subplot(5,5,[6:20]);
-        plot_robot( r_struct, [],2,5,r_struct.robotName);
-        updated = 0;
-	if i<6 
-          h1=subplot(5,5,i);
-	  labelB = robot_team.get_labelB_wireless(i);
-          plot_label(labelB);
-	else
-          h1=subplot(5,5,i+15);
-	  labelB = robot_team.get_labelB_wireless(i);
-          plot_label(labelB);
+        timepassed = r_struct.time-MONITOR.timestamp(i);
+        MONITOR.timestamp(i)=r_struct.time;
+
+        if timepassed==0
+          MONITOR.deadcount(i) = MONITOR.deadcount(i)+1;
+        else
+          MONITOR.deadcount(i) = 0;
+        end
+
+        if MONITOR.deadcount(i) < 20 % ~2 sec interval until turning off
+          h_c=subplot(5,5,[6:20]);
+          plot_robot( r_struct, [],2,5,r_struct.robotName);
+          updated = 0;
+  	  if i<6 
+            h1=subplot(5,5,i);
+	    labelB = robot_team.get_labelB_wireless(i);
+            plot_label(labelB);
+	  else
+            h1=subplot(5,5,i+15);
+	    labelB = robot_team.get_labelB_wireless(i);
+            plot_label(labelB);
+	  end
+	  plot_overlay_wireless(r_struct);
+          [infostr textcolor]=robot_info(r_struct,[],3,r_struct.robotName);
+          set(MONITOR.infoTexts(i),'String',infostr);
+        else
+
 	end
-	plot_overlay_wireless(r_struct);
-        [infostr textcolor]=robot_info(r_struct,[],3,r_struct.robotName);
-
-        set(MONITOR.infoTexts(i),'String',infostr);
-
       end
     end
     hold off;

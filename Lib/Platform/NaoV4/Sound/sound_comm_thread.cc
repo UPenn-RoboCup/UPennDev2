@@ -482,9 +482,10 @@ int sound_comm_thread_set_receiver_volume(int volume) {
     fprintf(stderr, "error setting 'Front/Read mics' capture volume.\n");
     return -1;
   }
+  // TODO: why does Digital only show up sometimes?
   if (set_capture_volume(volume, "default", "Digital") < 0) {
     fprintf(stderr, "error setting 'Digital' capture volume.\n");
-    return -1;
+    //return -1;
   }
   if (set_capture_volume(volume, "default", "Left/Right mics") < 0) {
     fprintf(stderr, "error setting 'Left/Right mics' capture volume.\n");

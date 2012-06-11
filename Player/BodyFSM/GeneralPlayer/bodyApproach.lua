@@ -24,6 +24,19 @@ function check_approach_type()
   kick_type=wcm.get_kick_type();
   kick_angle=wcm.get_kick_angle();
 
+  --Check Obstacle here
+  
+
+
+
+
+
+
+
+
+
+
+
   print("Approach: kick dir /type /angle",kick_dir,kick_type,kick_angle*180/math.pi)
 
   y_inv=0;
@@ -71,7 +84,6 @@ end
 
 function entry()
   print("Body FSM:".._NAME.." entry");
-  print('HAHAHAAAA');
   t0 = Body.get_time();
   ball = wcm.get_ball();
   check_approach_type(); --walkkick if available
@@ -192,14 +204,31 @@ function update()
 --  print("Ball xy:",ball.x,ball.y);
 --  print("Threshold xy:",xTarget[3],yTarget[3]);
 
-  --TODO: angle threshold check
-  if (ball.x < xTarget[3]) and (t-ball.t < 0.5) and
-     (ball.y > yTarget[1]) and (ball.y < yTarget[3]) and
-     math.abs(targetangle) < aThresholdTurn then
-    print(string.format("Approach done, ball position: %.2f %.2f\n",ball.x,ball.y))
-    print(string.format("Ball target: %.2f %.2f\n",xTarget[2],yTarget[2]))
-    if kick_type==1 then return "kick";
-    else return "walkkick";
+  --For front kick, check for other side too
+  if kick_dir==1 then --Front kick
+    yTargetMin = math.min(math.abs(yTarget[1]),math.abs(yTarget[3]));
+    yTargetMax = math.max(math.abs(yTarget[1]),math.abs(yTarget[3]));
+
+    if (ball.x < xTarget[3]) and (t-ball.t < 0.5) and
+       (math.abs(ball.y) > yTargetMin) and 
+	(math.abs(ball.y) < yTargetMax) and
+       math.abs(targetangle) < aThresholdTurn then
+      print(string.format("Approach done, ball position: %.2f %.2f\n",ball.x,ball.y))
+      print(string.format("Ball target: %.2f %.2f\n",xTarget[2],yTarget[2]))
+      if kick_type==1 then return "kick";
+      else return "walkkick";
+      end
+    end
+  else
+    --Side kick, only check one side
+    if (ball.x < xTarget[3]) and (t-ball.t < 0.5) and
+       (ball.y > yTarget[1]) and (ball.y < yTarget[3]) and
+       math.abs(targetangle) < aThresholdTurn then
+      print(string.format("Approach done, ball position: %.2f %.2f\n",ball.x,ball.y))
+      print(string.format("Ball target: %.2f %.2f\n",xTarget[2],yTarget[2]))
+      if kick_type==1 then return "kick";
+      else return "walkkick";
+      end
     end
   end
 end

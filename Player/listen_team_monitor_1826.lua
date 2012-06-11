@@ -28,7 +28,7 @@ require ('Config')
 Config.game.teamNumber = 1;
 Config.game.playerID = 1;
 Config.listen_monitor = 1;
-
+--[[
 io.write("Enter number of teams to track: ");
 io.flush();
 team_num=io.read("*number");
@@ -43,6 +43,9 @@ else
   team1=io.read("*number");
   teamToTrack={team1};
 end
+--]]
+team_num=2;
+teamToTrack={18,26};
 
 --Push to (team,1) shm
 

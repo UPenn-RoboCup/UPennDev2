@@ -90,6 +90,7 @@ sm:set_transition(bodyWalkKick, 'done', bodyPosition);
 sm:set_transition(bodyPosition, 'fall', bodyPosition);
 sm:set_transition(bodyApproach, 'fall', bodyPosition);
 sm:set_transition(bodyKick, 'fall', bodyPosition);
+sm:set_transition(bodyReady, 'fall', bodyReady);
 
 
 

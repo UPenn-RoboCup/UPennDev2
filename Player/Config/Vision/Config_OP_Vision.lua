@@ -17,9 +17,9 @@ vision.maxFPS = 30;
 vision.scaleB = 4;
 
 -- use this to enable yellow goal in vision
-vision.enable_2_yellow_goals =1;
+vision.enable_2_yellow_goals =0;
 -- use this to enable line detection
-vision.enable_line_detection = 0;
+vision.enable_line_detection = 1;
 -- use this to enable spot detection
 vision.enable_spot_detection = 0;
 -- use this to enable midfield landmark detection
@@ -82,8 +82,12 @@ vision.goal.th_min_area_unknown_post = 200;
 
 --vision.goal.far_goal_threshold= 3.0; --The range we triangulate
 vision.goal.far_goal_threshold= 4.0; --The range we triangulate
-vision.goal.distanceFactorCyan = 1.12; 
-vision.goal.distanceFactorYellow = 1; 
+--vision.goal.distanceFactorCyan = 1; 
+--vision.goal.distanceFactorYellow = 1; 
+
+--VT field goals 
+vision.goal.distanceFactorCyan = 1.4; 
+vision.goal.distanceFactorYellow = 1.1; 
 
 vision.goal.use_centerpost = 1;
 vision.goal.check_for_ground = 1;
@@ -98,7 +102,7 @@ vision.landmark.th_distratio = 2;
 vision.landmark.th_angle = 45*math.pi/180;
 
 vision.landmark.distanceFactorCyan = 1.1; 
-vision.landmark.distanceFactorYellow = 1; 
+vision.landmark.distanceFactorYellow = 1.1; 
 
 
 vision.line={};
@@ -111,4 +115,5 @@ vision.corner={};
 vision.corner.dist_threshold = 100; --10 pixel
 vision.corner.length_threshold = 15;
 vision.corner.min_center_dist = 1.5;
+
 

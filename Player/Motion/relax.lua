@@ -11,6 +11,12 @@ supportX = Config.walk.supportX;
 pLLeg = vector.new({-supportX , footY, 0, 0,0,0});
 pRLeg = vector.new({-supportX , -footY, 0, 0,0,0});
 
+hip_pitch_target = -20*math.pi/180;
+
+ankle_pitch_target = -95*math.pi/180;
+ankle_pitch_target = -105*math.pi/180;
+knee_pitch_target = 120*math.pi/180;
+
 function entry()
   print(_NAME.." entry");
 
@@ -20,8 +26,14 @@ function entry()
     Body.set_head_hardness(0);
     Body.set_larm_hardness(0);
     Body.set_rarm_hardness(0);
-    Body.set_lleg_hardness({0.2,0.6,0,0,0,0});
-    Body.set_rleg_hardness({0.2,0.6,0,0,0,0});
+--    Body.set_lleg_command({0,0,0,0,knee_pitch_target,0,0});
+--    Body.set_rleg_command({0,0,0,0,knee_pitch_target,0,0});
+    
+    Body.set_lleg_command({0,0,hip_pitch_target,0,0,0});
+    Body.set_rleg_command({0,0,hip_pitch_target,0,0,0});
+
+    Body.set_lleg_hardness({0.6,0.6,0.6,0,0,0});
+    Body.set_rleg_hardness({0.6,0.6,0.6,0,0,0});
   else
     Body.set_body_hardness(0);
   end
@@ -33,8 +45,11 @@ function update()
 
   if(Config.platform.name == 'OP') then
     local qSensor = Body.get_sensor_position();
-    qSensor[7],qSensor[8]=0,0;
-    qSensor[13],qSensor[14]=0,0;
+    qSensor[6],qSensor[7]=0,0;
+    qSensor[12],qSensor[13]=0,0;
+    qSensor[8],qSensor[14]=hip_pitch_target,hip_pitch_target;
+
+
     Body.set_actuator_command(qSensor);
   else
     local qSensor = Body.get_sensor_position();

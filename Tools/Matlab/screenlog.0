@@ -1,0 +1,770 @@
+/usr/local/bin/matlab: 1: /usr/local/matlab/bin/util/oscheck.sh: /lib64/libc.so.6: not found
+[?1h=
+                            < M A T L A B (R) >
+                  Copyright 1984-2010 The MathWorks, Inc.
+                Version 7.10.0.499 (R2010a) 64-bit (glnxa64)
+                              February 5, 2010
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+>> 
+>> ls
+[?1h=colortable   logger.m       MonitorWireless.m   util
+colortable.m      LoggerShm.m    primesense          velocity
+example           monitor        screenlog.0         vision_test.m
+ImageProc         Monitor.m      show_log_monitor.m
+listenMonitor.sh  MonitorTeam.m  startup.m
+
+>> exit
+[?1l>/usr/local/bin/matlab: 1: /usr/local/matlab/bin/util/oscheck.sh: /lib64/libc.so.6: not found
+[?1h=
+                            < M A T L A B (R) >
+                  Copyright 1984-2010 The MathWorks, Inc.
+                Version 7.10.0.499 (R2010a) 64-bit (glnxa64)
+                              February 5, 2010
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+>> Starting mexshm...{Warning: This functionality is no longer supported under the -nojvm startup
+option. For more information, see "Changes to -nojvm Startup Option" in the
+MATLAB Release Notes. To view the release note in your system browser, run
+web('http://www.mathworks.com/access/helpdesk/help/techdoc/rn/bropbi9-1.html#brubkzc-1',
+'-browser')} 
+> In show_monitor>init at 32
+  In MonitorWireless at 39
+Initialization time: 4.285130
+/usr/local/bin/matlab: 1: /usr/local/matlab/bin/util/oscheck.sh: /lib64/libc.so.6: not found
+[?1h=
+                            < M A T L A B (R) >
+                  Copyright 1984-2010 The MathWorks, Inc.
+                Version 7.10.0.499 (R2010a) 64-bit (glnxa64)
+                              February 5, 2010
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+>> Starting mexshm...{Warning: This functionality is no longer supported under the -nojvm startup
+option. For more information, see "Changes to -nojvm Startup Option" in the
+MATLAB Release Notes. To view the release note in your system browser, run
+web('http://www.mathworks.com/access/helpdesk/help/techdoc/rn/bropbi9-1.html#brubkzc-1',
+'-browser')} 
+> In show_monitor>init at 32
+  In MonitorWireless at 39
+Initialization time: 4.309381
+{??? Operation terminated by user during ==> show_monitor>update at 161
+
+In ==> MonitorWireless at 47
+    MONITOR.update(team_robots,0,0,draw_team,0);
+} 
+>> 
+>> ls
+[?1h=colortable   logger.m       MonitorWireless.m   util
+colortable.m      LoggerShm.m    primesense          velocity
+example           monitor        screenlog.0         vision_test.m
+ImageProc         Monitor.m      show_log_monitor.m
+listenMonitor.sh  MonitorTeam.m  startup.m
+
+>> lua listte          ls  exit
+Exiting mexshm.
+/usr/local/bin/matlab: 1: /usr/local/matlab/bin/util/oscheck.sh: /lib64/libc.so.6: not found
+[?1h=
+                            < M A T L A B (R) >
+                  Copyright 1984-2010 The MathWorks, Inc.
+                Version 7.10.0.499 (R2010a) 64-bit (glnxa64)
+                              February 5, 2010
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+>> Starting mexshm...{Warning: This functionality is no longer supported under the -nojvm startup
+option. For more information, see "Changes to -nojvm Startup Option" in the
+MATLAB Release Notes. To view the release note in your system browser, run
+web('http://www.mathworks.com/access/helpdesk/help/techdoc/rn/bropbi9-1.html#brubkzc-1',
+'-browser')} 
+> In show_monitor>init at 32
+  In MonitorWireless at 39
+Initialization time: 4.333531
+/usr/local/bin/matlab: 1: /usr/local/matlab/bin/util/oscheck.sh: /lib64/libc.so.6: not found
+[?1h=
+                            < M A T L A B (R) >
+                  Copyright 1984-2010 The MathWorks, Inc.
+                Version 7.10.0.499 (R2010a) 64-bit (glnxa64)
+                              February 5, 2010
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+>> Starting mexshm...{Warning: This functionality is no longer supported under the -nojvm startup
+option. For more information, see "Changes to -nojvm Startup Option" in the
+MATLAB Release Notes. To view the release note in your system browser, run
+web('http://www.mathworks.com/access/helpdesk/help/techdoc/rn/bropbi9-1.html#brubkzc-1',
+'-browser')} 
+> In show_monitor>init at 32
+  In MonitorWireless at 39
+Initialization time: 4.321156
+/usr/local/bin/matlab: 1: /usr/local/matlab/bin/util/oscheck.sh: /lib64/libc.so.6: not found
+[?1h=
+                            < M A T L A B (R) >
+                  Copyright 1984-2010 The MathWorks, Inc.
+                Version 7.10.0.499 (R2010a) 64-bit (glnxa64)
+                              February 5, 2010
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+>> Starting mexshm...{Warning: This functionality is no longer supported under the -nojvm startup
+option. For more information, see "Changes to -nojvm Startup Option" in the
+MATLAB Release Notes. To view the release note in your system browser, run
+web('http://www.mathworks.com/access/helpdesk/help/techdoc/rn/bropbi9-1.html#brubkzc-1',
+'-browser')} 
+> In show_monitor>init at 32
+  In MonitorWireless at 39
+Initialization time: 4.298759
+/usr/local/bin/matlab: 1: /usr/local/matlab/bin/util/oscheck.sh: /lib64/libc.so.6: not found
+[?1h=
+                            < M A T L A B (R) >
+                  Copyright 1984-2010 The MathWorks, Inc.
+                Version 7.10.0.499 (R2010a) 64-bit (glnxa64)
+                              February 5, 2010
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+>> Starting mexshm...{Warning: This functionality is no longer supported under the -nojvm startup
+option. For more information, see "Changes to -nojvm Startup Option" in the
+MATLAB Release Notes. To view the release note in your system browser, run
+web('http://www.mathworks.com/access/helpdesk/help/techdoc/rn/bropbi9-1.html#brubkzc-1',
+'-browser')} 
+> In show_monitor>init at 32
+  In MonitorWireless at 39
+Initialization time: 4.363985
+/usr/local/bin/matlab: 1: /usr/local/matlab/bin/util/oscheck.sh: /lib64/libc.so.6: not found
+[?1h=
+                            < M A T L A B (R) >
+                  Copyright 1984-2010 The MathWorks, Inc.
+                Version 7.10.0.499 (R2010a) 64-bit (glnxa64)
+                              February 5, 2010
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+>> Starting mexshm...{Warning: This functionality is no longer supported under the -nojvm startup
+option. For more information, see "Changes to -nojvm Startup Option" in the
+MATLAB Release Notes. To view the release note in your system browser, run
+web('http://www.mathworks.com/access/helpdesk/help/techdoc/rn/bropbi9-1.html#brubkzc-1',
+'-browser')} 
+> In show_monitor>init at 32
+  In MonitorWireless at 39
+Initialization time: 4.367785
+/usr/local/bin/matlab: 1: /usr/local/matlab/bin/util/oscheck.sh: /lib64/libc.so.6: not found
+[?1h=
+                            < M A T L A B (R) >
+                  Copyright 1984-2010 The MathWorks, Inc.
+                Version 7.10.0.499 (R2010a) 64-bit (glnxa64)
+                              February 5, 2010
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+>> Starting mexshm...{Warning: This functionality is no longer supported under the -nojvm startup
+option. For more information, see "Changes to -nojvm Startup Option" in the
+MATLAB Release Notes. To view the release note in your system browser, run
+web('http://www.mathworks.com/access/helpdesk/help/techdoc/rn/bropbi9-1.html#brubkzc-1',
+'-browser')} 
+> In show_monitor>init at 32
+  In MonitorWireless at 39
+Initialization time: 4.201520
+{??? Operation terminated by user during ==> plot_robot>plot_ball at 169
+
+In ==> plot_robot at 32
+      plot_ball(robot_struct,scale);
+
+In ==> show_monitor>update_team_wireless at 323
+        plot_robot( r_struct, [],2,MONITOR.enable10);
+
+In ==> show_monitor>update at 148
+         update_team_wireless(robots);
+
+In ==> MonitorWireless at 47
+    MONITOR.update(team_robots,0,0,draw_team,0);
+} 
+>> 
+>> a=shm_robot(1,1)
+
+a = 
+
+                     teamNumber: 1
+                       playerID: 1
+                           user: 'sj'
+                         gcmFsm: [1x1 struct]
+                        gcmTeam: [1x1 struct]
+                        vcmBall: [1x1 struct]
+                    vcmBoundary: [1x1 struct]
+                      vcmCamera: [1x1 struct]
+                       vcmDebug: [1x1 struct]
+                   vcmFreespace: [1x1 struct]
+                        vcmGoal: [1x1 struct]
+                       vcmImage: [1x1 struct]
+                    vcmLandmark: [1x1 struct]
+                        vcmLine: [1x1 struct]
+                      vcmCorner: [1x1 struct]
+                        wcmBall: [1x1 struct]
+                        wcmGoal: [1x1 struct]
+                    wcmParticle: [1x1 struct]
+                    wcmTeamdata: [1x1 struct]
+                      wcmLabelB: [1x1 struct]
+                       vcmRobot: [1x1 struct]
+                         ocmOcc: [1x1 struct]
+                       wcmRobot: [1x1 struct]
+                         update: @shm_robot/update
+                get_team_struct: @shm_robot/get_team_struct
+             get_monitor_struct: @shm_robot/get_monitor_struct
+                       get_yuyv: @shm_robot/get_yuyv
+                      get_yuyv2: @shm_robot/get_yuyv2
+                      get_yuyv3: @shm_robot/get_yuyv3
+                        get_rgb: @shm_robot/get_rgb
+                     get_labelA: @shm_robot/get_labelA
+                     get_labelB: @shm_robot/get_labelB
+                   get_particle: @get_particle
+                       set_yuyv: @shm_robot/set_yuyv
+                     set_labelA: @shm_robot/set_labelA
+                        updated: 0
+                    tLastUpdate: 0
+       get_team_struct_wireless: @shm_robot/get_team_struct_wireless
+    get_monitor_struct_wireless: @get_monitor_struct_wireless
+            get_labelB_wireless: @shm_robot/get_labelB_wireless
+
+>> a.wcmTeamdata
+
+ans = 
+
+            shmHandle: 35
+             get_fall: @()mexshm('get',h.shmHandle,k)
+             set_fall: @(val)mexshm('set',h.shmHandle,k,double(val))
+             get_goal: @()mexshm('get',h.shmHandle,k)
+             set_goal: @(val)mexshm('set',h.shmHandle,k,double(val))
+             get_role: @()mexshm('get',h.shmHandle,k)
+             set_role: @(val)mexshm('set',h.shmHandle,k,double(val))
+             get_time: @()mexshm('get',h.shmHandle,k)
+             set_time: @(val)mexshm('set',h.shmHandle,k,double(val))
+            get_ballt: @()mexshm('get',h.shmHandle,k)
+            set_ballt: @(val)mexshm('set',h.shmHandle,k,double(val))
+            get_ballx: @()mexshm('get',h.shmHandle,k)
+            set_ballx: @(val)mexshm('set',h.shmHandle,k,double(val))
+            get_bally: @()mexshm('get',h.shmHandle,k)
+            set_bally: @(val)mexshm('set',h.shmHandle,k,double(val))
+            get_posea: @()mexshm('get',h.shmHandle,k)
+            set_posea: @(val)mexshm('set',h.shmHandle,k,double(val))
+            get_posex: @()mexshm('get',h.shmHandle,k)
+            set_posex: @(val)mexshm('set',h.shmHandle,k,double(val))
+            get_posey: @()mexshm('get',h.shmHandle,k)
+            set_posey: @(val)mexshm('set',h.shmHandle,k,double(val))
+          get_goalB11: @()mexshm('get',h.shmHandle,k)
+          set_goalB11: @(val)mexshm('set',h.shmHandle,k,double(val))
+          get_goalB12: @()mexshm('get',h.shmHandle,k)
+          set_goalB12: @(val)mexshm('set',h.shmHandle,k,double(val))
+          get_goalB13: @()mexshm('get',h.shmHandle,k)
+          set_goalB13: @(val)mexshm('set',h.shmHandle,k,double(val))
+          get_goalB14: @()mexshm('get',h.shmHandle,k)
+          set_goalB14: @(val)mexshm('set',h.shmHandle,k,double(val))
+          get_goalB15: @()mexshm('get',h.shmHandle,k)
+          set_goalB15: @(val)mexshm('set',h.shmHandle,k,double(val))
+          get_goalB21: @()mexshm('get',h.shmHandle,k)
+          set_goalB21: @(val)mexshm('set',h.shmHandle,k,double(val))
+          get_goalB22: @()mexshm('get',h.shmHandle,k)
+          set_goalB22: @(val)mexshm('set',h.shmHandle,k,double(val))
+          get_goalB23: @()mexshm('get',h.shmHandle,k)
+          set_goalB23: @(val)mexshm('set',h.shmHandle,k,double(val))
+          get_goalB24: @()mexshm('get',h.shmHandle,k)
+          set_goalB24: @(val)mexshm('set',h.shmHandle,k,double(val))
+          get_goalB25: @()mexshm('get',h.shmHandle,k)
+          set_goalB25: @(val)mexshm('set',h.shmHandle,k,double(val))
+          get_goalv11: @()mexshm('get',h.shmHandle,k)
+          set_goalv11: @(val)mexshm('set',h.shmHandle,k,double(val))
+          get_goalv12: @()mexshm('get',h.shmHandle,k)
+          set_goalv12: @(val)mexshm('set',h.shmHandle,k,double(val))
+          get_goalv21: @()mexshm('get',h.shmHandle,k)
+          set_goalv21: @(val)mexshm('set',h.shmHandle,k,double(val))
+          get_goalv22: @()mexshm('get',h.shmHandle,k)
+          set_goalv22: @(val)mexshm('set',h.shmHandle,k,double(val))
+          get_penalty: @()mexshm('get',h.shmHandle,k)
+          set_penalty: @(val)mexshm('set',h.shmHandle,k,double(val))
+          get_robotId: @()mexshm('get',h.shmHandle,k)
+          set_robotId: @(val)mexshm('set',h.shmHandle,k,double(val))
+         get_landmark: @()mexshm('get',h.shmHandle,k)
+         set_landmark: @(val)mexshm('set',h.shmHandle,k,double(val))
+        get_teamColor: @()mexshm('get',h.shmHandle,k)
+        set_teamColor: @(val)mexshm('set',h.shmHandle,k,double(val))
+       get_landmarkv1: @()mexshm('get',h.shmHandle,k)
+       set_landmarkv1: @(val)mexshm('set',h.shmHandle,k,double(val))
+       get_landmarkv2: @()mexshm('get',h.shmHandle,k)
+       set_landmarkv2: @(val)mexshm('set',h.shmHandle,k,double(val))
+    get_attackBearing: @()mexshm('get',h.shmHandle,k)
+    set_attackBearing: @(val)mexshm('set',h.shmHandle,k,double(val))
+    get_battery_level: @()mexshm('get',h.shmHandle,k)
+    set_battery_level: @(val)mexshm('set',h.shmHandle,k,double(val))
+
+>> a.wcmTeamdata.get_a.wcmTeamdata     a=shm_robot(1,1)%-- 6/10/12 10:51 PM --%exit                    Monitor(0,1)Monitor(0)  Monitor(1)%-- 6/05/12  5:37 AM --%exit                    Monitor(1)%-- 4/24/12  2:40 PM --%exit                    ls  %-- 4/24/12  2:30 PM --%plot(x,y)               y=[1:100]x=[1:100]figure(1)%-- 4/24/12  2:29 PM --%%-- 4/24/12  2:29 PM --%%-- 4/24/12  2:29 PM --%%-- 4/24/12  2:29 PM --%%-- 4/24/12  2:29 PM --%%-- 4/24/12  2:29 PM --%%-- 4/24/12  2:29 PM --%%-- 4/24/12  2:29 PM --%%-- 4/24/12  2:29 PM --%%-- 4/24/12  2:29 PM --%%-- 4/24/12  2:29 PM --%%-- 4/24/12  2:29 PM --%%-- 4/24/12  2:29 PM --%%-- 4/24/12  2:29 PM --%%-- 4/24/12  2:29 PM --%%-- 4/24/12  2:29 PM --%%-- 4/24/12  2:29 PM --%%-- 4/24/12  2:29 PM --%%-- 4/24/12  2:29 PM --%%-- 4/24/12  2:29 PM --%%-- 4/24/12  2:29 PM --%%-- 4/24/12  2:29 PM --%%-- 4/24/12  2:29 PM --%%-- 4/24/12  2:29 PM --%%-- 4/24/12  2:29 PM --%%-- 4/24/12  2:29 PM --%%-- 4/24/12  2:29 PM --%%-- 4/24/12  2:29 PM --%%-- 4/24/12  2:29 PM --%%-- 4/24/12  2:29 PM --%%-- 4/24/12  2:29 PM --%%-- 4/24/12  2:29 PM --%%-- 4/24/12  2:29 PM --%%-- 4/24/12  2:29 PM --%%-- 4/24/12  2:29 PM --%%-- 4/24/12  2:29 PM --%figure(1)               x=[1:100]y=[1:100]plot(x,y)%-- 4/24/12  2:30 PM --%ls                      exit%-- 4/24/12  2:40 PM --%Monitor(1)              exit      %-- 6/05/12  5:37 AM --%Monitor(1)              Monitor(0)Monitor(0,1)exit        %-- 6/10/12 10:51 PM --%a=shm_robot(1,1)        a.wcmTeamdata   a.wcmTeamdataa.wcmTeamdataa.wcmTeamdataa.wcmTeamdataa.wcmTeamdataa.wcmTeamdataa.wcmTeamdataa.wcmTeamdataa.wcmTeamdataa.wcmTeamdataa.wcmTeamdataa.wcmTeamdata
+>> a.wcmTeamdata
+
+ans = 
+
+            shmHandle: 35
+             get_fall: @()mexshm('get',h.shmHandle,k)
+             set_fall: @(val)mexshm('set',h.shmHandle,k,double(val))
+             get_goal: @()mexshm('get',h.shmHandle,k)
+             set_goal: @(val)mexshm('set',h.shmHandle,k,double(val))
+             get_role: @()mexshm('get',h.shmHandle,k)
+             set_role: @(val)mexshm('set',h.shmHandle,k,double(val))
+             get_time: @()mexshm('get',h.shmHandle,k)
+             set_time: @(val)mexshm('set',h.shmHandle,k,double(val))
+            get_ballt: @()mexshm('get',h.shmHandle,k)
+            set_ballt: @(val)mexshm('set',h.shmHandle,k,double(val))
+            get_ballx: @()mexshm('get',h.shmHandle,k)
+            set_ballx: @(val)mexshm('set',h.shmHandle,k,double(val))
+            get_bally: @()mexshm('get',h.shmHandle,k)
+            set_bally: @(val)mexshm('set',h.shmHandle,k,double(val))
+            get_posea: @()mexshm('get',h.shmHandle,k)
+            set_posea: @(val)mexshm('set',h.shmHandle,k,double(val))
+            get_posex: @()mexshm('get',h.shmHandle,k)
+            set_posex: @(val)mexshm('set',h.shmHandle,k,double(val))
+            get_posey: @()mexshm('get',h.shmHandle,k)
+            set_posey: @(val)mexshm('set',h.shmHandle,k,double(val))
+          get_goalB11: @()mexshm('get',h.shmHandle,k)
+          set_goalB11: @(val)mexshm('set',h.shmHandle,k,double(val))
+          get_goalB12: @()mexshm('get',h.shmHandle,k)
+          set_goalB12: @(val)mexshm('set',h.shmHandle,k,double(val))
+          get_goalB13: @()mexshm('get',h.shmHandle,k)
+          set_goalB13: @(val)mexshm('set',h.shmHandle,k,double(val))
+          get_goalB14: @()mexshm('get',h.shmHandle,k)
+          set_goalB14: @(val)mexshm('set',h.shmHandle,k,double(val))
+          get_goalB15: @()mexshm('get',h.shmHandle,k)
+          set_goalB15: @(val)mexshm('set',h.shmHandle,k,double(val))
+          get_goalB21: @()mexshm('get',h.shmHandle,k)
+          set_goalB21: @(val)mexshm('set',h.shmHandle,k,double(val))
+          get_goalB22: @()mexshm('get',h.shmHandle,k)
+          set_goalB22: @(val)mexshm('set',h.shmHandle,k,double(val))
+          get_goalB23: @()mexshm('get',h.shmHandle,k)
+          set_goalB23: @(val)mexshm('set',h.shmHandle,k,double(val))
+          get_goalB24: @()mexshm('get',h.shmHandle,k)
+          set_goalB24: @(val)mexshm('set',h.shmHandle,k,double(val))
+          get_goalB25: @()mexshm('get',h.shmHandle,k)
+          set_goalB25: @(val)mexshm('set',h.shmHandle,k,double(val))
+          get_goalv11: @()mexshm('get',h.shmHandle,k)
+          set_goalv11: @(val)mexshm('set',h.shmHandle,k,double(val))
+          get_goalv12: @()mexshm('get',h.shmHandle,k)
+          set_goalv12: @(val)mexshm('set',h.shmHandle,k,double(val))
+          get_goalv21: @()mexshm('get',h.shmHandle,k)
+          set_goalv21: @(val)mexshm('set',h.shmHandle,k,double(val))
+          get_goalv22: @()mexshm('get',h.shmHandle,k)
+          set_goalv22: @(val)mexshm('set',h.shmHandle,k,double(val))
+          get_penalty: @()mexshm('get',h.shmHandle,k)
+          set_penalty: @(val)mexshm('set',h.shmHandle,k,double(val))
+          get_robotId: @()mexshm('get',h.shmHandle,k)
+          set_robotId: @(val)mexshm('set',h.shmHandle,k,double(val))
+         get_landmark: @()mexshm('get',h.shmHandle,k)
+         set_landmark: @(val)mexshm('set',h.shmHandle,k,double(val))
+        get_teamColor: @()mexshm('get',h.shmHandle,k)
+        set_teamColor: @(val)mexshm('set',h.shmHandle,k,double(val))
+       get_landmarkv1: @()mexshm('get',h.shmHandle,k)
+       set_landmarkv1: @(val)mexshm('set',h.shmHandle,k,double(val))
+       get_landmarkv2: @()mexshm('get',h.shmHandle,k)
+       set_landmarkv2: @(val)mexshm('set',h.shmHandle,k,double(val))
+    get_attackBearing: @()mexshm('get',h.shmHandle,k)
+    set_attackBearing: @(val)mexshm('set',h.shmHandle,k,double(val))
+    get_battery_level: @()mexshm('get',h.shmHandle,k)
+    set_battery_level: @(val)mexshm('set',h.shmHandle,k,double(val))
+
+>> a.wcmTeamdataa.wcmTeamdata             a.wcmTeamdata%-- 4/24/12  2:29 PM --%                 %-- 4/24/12  2:40 PM --%                        a.wcmTeamdata.get_
+get_attackBearing  get_goalB13        get_goalv12        get_posey          
+get_ballt          get_goalB14        get_goalv21        get_robotId        
+get_ballx          get_goalB15        get_goalv22        get_role           
+get_bally          get_goalB21        get_landmark       get_teamColor      
+get_battery_level  get_goalB22        get_landmarkv1     get_time           
+get_fall           get_goalB23        get_landmarkv2     
+get_goal           get_goalB24        get_penalty        
+get_goalB11        get_goalB25        get_posea          
+get_goalB12        get_goalv11        get_posex          
+>> a.wcmTeamdata.get_
+get_attackBearing  get_goalB13        get_goalv12        get_posey          
+get_ballt          get_goalB14        get_goalv21        get_robotId        
+get_ballx          get_goalB15        get_goalv22        get_role           
+get_bally          get_goalB21        get_landmark       get_teamColor      
+get_battery_level  get_goalB22        get_landmarkv1     get_time           
+get_fall           get_goalB23        get_landmarkv2     
+get_goal           get_goalB24        get_penalty        
+get_goalB11        get_goalB25        get_posea          
+get_goalB12        get_goalv11        get_posex          
+>> a.wcmTeamdata.get_
+>> aa.wcmTeamdataa=shm_robot(1,1)a.wcmTeamdata   a=shm_robot(1,1)
+
+a = 
+
+                     teamNumber: 1
+                       playerID: 1
+                           user: 'sj'
+                         gcmFsm: [1x1 struct]
+                        gcmTeam: [1x1 struct]
+                        vcmBall: [1x1 struct]
+                    vcmBoundary: [1x1 struct]
+                      vcmCamera: [1x1 struct]
+                       vcmDebug: [1x1 struct]
+                   vcmFreespace: [1x1 struct]
+                        vcmGoal: [1x1 struct]
+                       vcmImage: [1x1 struct]
+                    vcmLandmark: [1x1 struct]
+                        vcmLine: [1x1 struct]
+                      vcmCorner: [1x1 struct]
+                        wcmBall: [1x1 struct]
+                        wcmGoal: [1x1 struct]
+                    wcmParticle: [1x1 struct]
+                    wcmTeamdata: [1x1 struct]
+                      wcmLabelB: [1x1 struct]
+                       vcmRobot: [1x1 struct]
+                         ocmOcc: [1x1 struct]
+                       wcmRobot: [1x1 struct]
+                         update: @shm_robot/update
+                get_team_struct: @shm_robot/get_team_struct
+             get_monitor_struct: @shm_robot/get_monitor_struct
+                       get_yuyv: @shm_robot/get_yuyv
+                      get_yuyv2: @shm_robot/get_yuyv2
+                      get_yuyv3: @shm_robot/get_yuyv3
+                        get_rgb: @shm_robot/get_rgb
+                     get_labelA: @shm_robot/get_labelA
+                     get_labelB: @shm_robot/get_labelB
+                   get_particle: @get_particle
+                       set_yuyv: @shm_robot/set_yuyv
+                     set_labelA: @shm_robot/set_labelA
+                        updated: 0
+                    tLastUpdate: 0
+       get_team_struct_wireless: @shm_robot/get_team_struct_wireless
+    get_monitor_struct_wireless: @get_monitor_struct_wireless
+            get_labelB_wireless: @shm_robot/get_labelB_wireless
+
+>> a.wcmRobot
+wcmRobot  
+>> a.wcmRobot    
+>> !nano util/shmRo   _ m_robot.m
+(B)0[?1049h[1;56r[m[4l[34h[?25h[?1h=[?1h=[?1h=[39;49m[39;49m[m[H[J[0;7m  GNU nano 2.2.6           File: util/shm_robot.m                              [3;1H[mfunction h = shm_robot(teamNumber, playerID)[1B% function create the same struct as the team message from[1B% shared memory. for local debugging use[2Bglobal MONITOR %for sending the webots check information[9;3Hh.teamNumber = teamNumber;[10;3Hh.playerID = playerID;[11;3Hh.user = getenv('USER');[2B%List of shms[4B% create shm wrappers (in alphabetic order)[18;3Hh.gcmFsm  = shm(sprintf('gcmFsm%d%d%s',  h.teamNumber, h.playerID, h.user));[19;3H%  h.gcmGame[20;3Hh.gcmTeam  = shm(sprintf('gcmTeam%d%d%s',  h.teamNumber, h.playerID, h.user)$[22;3Hh.vcmBall  = shm(sprintf('vcmBall%d%d%s',  h.teamNumber, h.playerID, h.user)$[23;3Hh.vcmBoundary = shm(sprintf('vcmBoundary%d%d%s', h.teamNumber, h.playerID, h$[24;3Hh.vcmCamera = shm(sprintf('vcmCamera%d%d%s', h.teamNumber, h.playerID, h.use$[25;3Hh.vcmDebug  = shm(sprintf('vcmDebug%d%d%s',  h.teamNumber, h.playerID, h.use$[26;3Hh.vcmFreespace = shm(sprintf('vcmFreespace%d%d%s', h.teamNumber, h.playerID,$[27;3Hh.vcmGoal  = shm(sprintf('vcmGoal%d%d%s',  h.teamNumber, h.playerID, h.user)$[28;3Hh.vcmImage = shm(sprintf('vcmImage%d%d%s', h.teamNumber, h.playerID, h.user)$[29;3Hh.vcmLandmark  = shm(sprintf('vcmLandmark%d%d%s',  h.teamNumber, h.playerID,$[30;3Hh.vcmLine  = shm(sprintf('vcmLine%d%d%s',  h.teamNumber, h.playerID, h.user)$[31;3Hh.vcmCorner  = shm(sprintf('vcmCorner%d%d%s',  h.teamNumber, h.playerID, h.u$[33;3Hh.wcmBall  = shm(sprintf('wcmBall%d%d%s',  h.teamNumber, h.playerID, h.user)$[34;3Hh.wcmGoal  = shm(sprintf('wcmGoal%d%d%s',  h.teamNumber, h.playerID, h.user)$[35;3Hh.wcmParticle  = shm(sprintf('wcmParticle%d%d%s',  h.teamNumber, h.playerID,$[36;3H%h.wcmKick[39;3Hh.wcmTeamdata  = shm(sprintf('wcmTeamdata%d%d%s',  h.teamNumber, h.playerID,$[40;3Hh.wcmLabelB  = shm(sprintf('wcmLabelB%d%d%s',  h.teamNumber, h.playerID, h.u$[41;3Hh.vcmRobot  = shm(sprintf('vcmRobot%d%d%s',  h.teamNumber, h.playerID, h.use$[43;9Hh.ocmOcc = shm(sprintf('ocmOcc%d%d%s', h.teamNumber, h.playerID, h.use$[46;1H%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%[1B%SJ - reading Occmap SHM from robot kills matlab[1B%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%[49;3H%h.wcmOccmap = shm(sprintf('wcmOccmap%d%d%s', h.teamNumber, h.playerID, h.us$[50;3Hh.wcmRobot = shm(sprintf('wcmRobot%d%d%s', h.teamNumber, h.playerID, h.user)$[52;1H% set function pointers[53;3Hh.update = @update;[54;31H[0;7m[ Read 561 lines ][1B^G[m Get Help  [0;7m^O[m WriteOut  [0;7m^R[m Read File [0;7m^Y[m Prev Page [0;7m^K[m Cut Text  [0;7m^C[m Cur Pos[1B[0;7m^X[m Exit[6C[0;7m^J[m Justify   [0;7m^W[m Where Is  [0;7m^V[m Next Page [0;7m^U[m UnCut Text[0;7m^T[m To Spell[53A[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[26B[K[25A[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[39;54r[54;1H
+[1;56r[1;70H[0;7mModified[53;3H[mh.get_team_struct = @get_team_struct;[14A[37;53r[37;1HM[1;56r[39;3Hh.wcmTeamdata  = shm(sprintf('wcmTeamdata%d%d%s',  h.teamNumber, h.playerID,$[40;1H[37;53r[37;1HM[1;56r[39;3Hh.wcmTeamdata  = shm(sprintf('wcmTeamdata%d%d%s',  h.teamNumber, h.playerID,$[41;1HM  h.wcmRTeamdata  = shm(sprintf('wcmTeamdata%d%d%s',  h.teamNumber, h.playerID[40;9HoTeamdata  = shm(sprintf('wcmTeamdata%d%d%s',  h.teamNumber, h.playerI[40;10HbTeamdata  = shm(sprintf('wcmTeamdata%d%d%s',  h.teamNumber, h.player[40;11HoTeamdata  = shm(sprintf('wcmTeamdata%d%d%s',  h.teamNumber, h.playe[40;12HtTeamdata  = shm(sprintf('wcmTeamdata%d%d%s',  h.teamNumber, h.play[40;13HNTeamdata  = shm(sprintf('wcmTeamdata%d%d%s',  h.teamNumber, h.pla[40;14HaTeamdata  = shm(sprintf('wcmTeamdata%d%d%s',  h.teamNumber, h.pl[40;15HmTeamdata  = shm(sprintf('wcmTeamdata%d%d%s',  h.teamNumber, h.p[40;16HeTeamdata  = shm(sprintf('wcmTeamdata%d%d%s',  h.teamNumber, h.[40;17HsTeamdata  = shm(sprintf('wcmTeamdata%d%d%s',  h.teamNumber, h[40;18Heamdata  = shm(sprintf('wcmTeamdata%d%d%s',  h.teamNumber, h.[40;18Hamdata  = shm(sprintf('wcmTeamdata%d%d%s',  h.teamNumber, h.p[40;18Hmdata  = shm(sprintf('wcmTeamdata%d%d%s',  h.teamNumber, h.pl[40;18Hdata  = shm(sprintf('wcmTeamdata%d%d%s',  h.teamNumber, h.pla[40;18Hata  = shm(sprintf('wcmTeamdata%d%d%s',  h.teamNumber, h.play[40;18Hta  = shm(sprintf('wcmTeamdata%d%d%s',  h.teamNumber, h.playe[40;18Ha  = shm(sprintf('wcmTeamdata%d%d%s',  h.teamNumber, h.player[40;18H  = shm(sprintf('wcmTeamdata%d%d%s',  h.teamNumber, h.playerI[40;18H  = shm(sprintf('wcmRTeamdata%d%d%s',  h.teamNumber, h.player[40;39HoTeamdata%d%d%s',  h.teamNumber, h.playe[40;40HbTeamdata%d%d%s',  h.teamNumber, h.play[40;41HoTeamdata%d%d%s',  h.teamNumber, h.pla[40;42HtTeamdata%d%d%s',  h.teamNumber, h.pl[40;43HNTeamdata%d%d%s',  h.teamNumber, h.p[40;44HaTeamdata%d%d%s',  h.teamNumber, h.[40;45HmTeamdata%d%d%s',  h.teamNumber, h[40;46HeTeamdata%d%d%s',  h.teamNumber, [40;47HsTeamdata%d%d%s',  h.teamNumber,[40;48Heamdata%d%d%s',  h.teamNumber, [40;48Hamdata%d%d%s',  h.teamNumber, h[40;48Hmdata%d%d%s',  h.teamNumber, h.[40;48Hdata%d%d%s',  h.teamNumber, h.p[40;48Hata%d%d%s',  h.teamNumber, h.pl[40;48Hta%d%d%s',  h.teamNumber, h.pla[40;48Ha%d%d%s',  h.teamNumber, h.play[40;48H%d%d%s',  h.teamNumber, h.playe[40;48H$.playerID, h.user));[K  h.wcmRobotNames  = shm(sprintf('wcmRobotNames%d%d%s',  h.teamNumber, h.playe$[40;1H[14B[0;7mFile Name to Write: util/shm_robot.m                                           [55;14H[m      [0;7mM-D[m DOS Format     [0;7mM-A[m Append         [0;7mM-B[m Backup File   [56;2H[0;7mC[m Cancel          [0;7mM-M[m Mac Format     [0;7mM-P[m Prepend[K[54;37H[1;70H[39;49m[0;7m        [54;30H[m[1K [0;7m[ Wrote 562 lines ][m[K[55;14H[0;7m^O[m WriteOut  [0;7m^R[m Read File [0;7m^Y[m Prev Page [0;7m^K[m Cut Text  [0;7m^C[m Cur Pos[56;2H[0;7mX[m Exit      [0;7m^J[m Justify   [0;7m^W[m Where Is  [0;7m^V[m Next Page [0;7m^U[m UnCut Text[0;7m^T[m To Spell[16A[14B[0;7mSearch:                                                                        [55;15HY[m First Line[0;7m^T[m Go To Line[0;7m^W[m Beg of Par[0;7mM-J[m FullJstif[0;7mM-B[m Backwards[56;2H[0;7mC[m Cancel    [0;7m^V[m Last Line [0;7m^R[m Replace   [0;7m^O[m End of Par[0;7mM-C[m Case Sens[0;7mM-R[m Regexp [54;9H[0;7mw[m[0;7mc[m[0;7mm[m[0;7mR[m[0;7mo[m[0;7mb[m[0;7mo[m[0;7mt[m[0;7mN[m[0;7ma[m[0;7mm[m[0;7me[m[0;7ms[m[K[55;15H[0;7mO[m WriteOut  [0;7m^R[m Read File [0;7m^Y[m Prev Page [0;7m^K[m Cut Text  [0;7m^C[m Cur Pos[K[56;2H[0;7mX[m Exit      [0;7m^J[m Justify   [0;7m^W[m Where Is  [0;7m^V[m Next Page [0;7m^U[m UnCut Text[0;7m^T[m To Spell[40;5H[37A[K[1B% set function pointers[K[1B  h.update = @update;[K[6;3Hh.get_team_struct = @get_team_struct;[1B  h.get_monitor_struct = @get_monitor_struct;[K[8;3Hh.get_yuyv = @get_yuyv;[9;5Hget_yuyv2 = @get_yuyv2;[K[10;5Hget_yuyv3 = @get_yuyv3;[11;5Hget_rgb = @get_rgb;[K[12;3Hh.get_labelA = @get_labelA;[1B  h.get_labelB = @get_labelB;[14;3Hh.get_particle = @get_particle;[16;3Hh.set_yuyv = @set_yuyv;[1B  h.set_labelA = @set_labelA;[K[1B[K[1B  h.updated=0;[20;5HtLastUpdate=0;[K[22;5Hget_team_struct_wireless = @get_team_struct_wireless;[K[23;5Hget_monitor_struct_wireless = @get_monitor_struct_wireless;[K[1B[K[25;5Hget_labelB_wireless = @get_labelB_wireless;[K[1B[K[1B  function update()[K[28;3H    % do nothing[K[29;3Hend[K[1B[K[1B  function r = get_team_struct()[K[32;5H% returns the robot struct (in the same form as the team messages)[33;3H  r = [];[K[1B%    disp('get team struct');[K[35;3H  try[K[1B[1K r.teamNumber = h.gcmTeam.get_number();[37;9Hr.teamColor = h.gcmTeam.get_color();[38;9Hr.id = h.gcmTeam.get_player_id();[39;8H[1K r.role = h.gcmTeam.get_role();[K[1B[K[41;8H[1K pose = h.wcmRobot.get_pose();[K[42;8H[1K r.pose = struct('x', pose(1), 'y', pose(2), 'a', pose(3));[K[2B[K[45;9Hballx = h.wcmBall.get_x();[46;9Hbally = h.wcmBall.get_y();[47;8H[1K ballt = h.wcmBall.get_t();[K[48;8H[1K ballvelx = h.wcmBall.get_velx();[K[49;8H[1K ballvely = h.wcmBall.get_vely();[K[1B[K[51;8H[1K r.ball = struct('x', ballx, 'y', bally, 't', ballt, ...[K[52;13H'vx', ballvelx, 'vy', ballvely );[1B[K[50A[3;13H'vx', ballvelx, 'vy', ballvely );[1B[K[5;8H[1K r.attackBearing = h.wcmGoal.get_attack_bearing();[6;8H[1K r.time=h.wcmRobot.get_time();[K[7;8H[1K r.battery_level = h.wcmRobot.get_battery_level();[1B[K[9;8H[1K goal = h.vcmGoal.get_detect();[10;8H[1K if goal==1[K[11;10H[1K r.goal = h.vcmGoal.get_type()+1;[12;10H[1K r.goalv1 = h.vcmGoal.get_v1();[13;10H[1K r.goalv2 = h.vcmGoal.get_v2();[14;8H[1K else[K[1Br.goal=0;[16;8H[1K end[K[1B[K[18;9Hr.landmark=h.vcmLandmark.get_detect();[19;8H[1K r.landmarkv=h.vcmLandmark.get_v();[1B[K[21;9Hcorner=h.vcmCorner.get_detect();[22;8H[1K if corner>0[K[23;9H[1K r.corner=h.vcmCorner.get_type();[K[24;10Hr.cornerv=h.vcmCorner.get_v();[25;8H[1K end[K[27;8H[1K r.fall = h.wcmRobot.get_is_fall_down();[28;7H  r.time = h.wcmRobot.get_time();[29;8H[1K r.penalty = h.wcmRobot.get_penalty();[31;8H[1K gpspose = h.wcmRobot.get_gpspose();[32;5H    r.gpspose = struct('x', gpspose(1), 'y', gpspose(2), 'a', gpspose(3));[33;5H    r.gps_attackbearing = h.wcmRobot.get_gps_attackbearing();[1B[K[1B[K[1B[K[37;12HReceive = 0;[K[1B%TODO: monitor timeout[K[39;9Hif r.time>h.tLastUpdate[K[40;11Hh.updated=1;[41;9H  h.tLastUpdate=r.time;[K[42;9Hend[K[44;5Hcatch[45;5Hend[K[46;3Hend[K[1B[K[1B  function r = get_team_struct_wireless(id)[49;5Hr = [];[K[50;5Htry[1Br.teamNumber = h.gcmTeam.get_number();[K[52;7HteamColor = h.wcmTeamdata.get_teamColor();[53;7HrobotId = h.wcmTeamdata.get_robotId();[50A[6CteamColor = h.wcmTeamdata.get_teamColor();[4;7HrobotId = h.wcmTeamdata.get_robotId();[5;7Hrole = h.wcmTeamdata.get_role[19P[6;7Htime= h.wcmTeamdata[7;7Hposex= h.wcmTeamdata.get_posex[18P[8;7Hposey= h.wcmTeamdata.get_posey();[9;7Hposea= h.wcmTeamdata.get_posea();[10;7Hballx= h.wcmTeamdata.get_ballx();[11;7Hbally= h.wcmTeamdata.get_bally();[K[12;7Hballt= h.wcmTeamdata.get_ballt[1P[13;7HattackBearing= h.wcmTeamdata.get_attackBearing();[14;7Hfall=h.wcmTeamdata.get_fall();[15;7Hpenalty=h.wcmTeamdata.get_penalty();[16;7Hbattery_level=h.wcmTeamdata.get_battery_level();[18;7Hgoal=h.wcmTeamdata.get_goal[10P[19;7Hgoalv11=h.wcmTeamdata.get_goalv11[20;7Hgoalv12=h.wcmTeamdata.get_goalv12();[21;7Hgoalv21=h.wcmTeamdata.get_goalv21();[22;7Hgoalv22=h.wcmTeamdata.get_goalv22();[1B[K[24;7HgoalB11=h.wcmTeamdata.get_goalB11();[25;7HgoalB12=h.wcmTeamdata.get_goalB12();[26;7HgoalB13=h.wcmTeamdata.get_goalB13();[27;7HgoalB14=h.wcmTeamdata.get_goalB14[5P[28;7HgoalB15=h.wcmTeamdata.get_goalB15();[1B[K[30;7HgoalB21=h.wcmTeamdata.get_goalB21();[31;7HgoalB22=h.wcmTeamdata.get_goalB22[1P[32;7HgoalB23=h.wcmTeamdata.get_goalB23();[K[33;7HgoalB24=h.wcmTeamdata.get_goalB24[23P[34;7HgoalB25=h.wcmTeamdata.get_goalB25();[36;7Hlandmark=h.wcmTeamdata.get_landmark();[37;7Hlandmarkv1=h.wcmTeamdata.get_landmarkv1();[38;6H[1K landmarkv2=h.wcmTeamdata.get_landmarkv2();[1B[K[40;7Hr.teamColor=teamColor(id);[41;7Hr.id = robotId(id);[K[42;7Hr.role = role(id);[43;7Hr.time = time(id);[1B[K[45;5H  r.pose = {};[46;3H    r.pose.x= posex(id);[47;7Hr.pose.y= posey(id);[48;3H    r.pose.a= posea(id);[K[1B[K[50;5H  r.gpspose = r.pose;[1B[K[52;7Hr.ball={};[K[53;8H.ball.x= ballx(id);[K[50A[6Cr.ball={};[K[4;8H.ball.x= ballx(id);[K[5;8H.ball.y= bally(id);[K[6;7Hr.ball.vx= 0;[K[7;7Hr.ball.vy= 0;[K[8;7Hr.ball.t= ballt(id);[K[1B[K[10;7Hr.attackBearing= attackBearing(id);[1B[K[12;7Hr.fall=fall(id);[K[13;7Hr.penalty=penalty(id);[K[14;7Hr.battery_level=battery_level(id);[1B[K[16;7Hr.goal=goal(id);[K[17;7Hr.goalv1=[goalv11(id) goalv12(id)];[18;7Hr.goalv2=[goalv21(id) goalv22(id)];[1B[K[1B[K[21;8Hc1 = [goalB11(id) goalB12(id)];[K[22;8Hc2 = [goalB21(id) goalB22(id)];[K[24;9H1 = goalB13(id);[K[25;9H2 = goalB23(id);[K[1B[K[27;8Ha1 = [goalB14(id) goalB15(id)];[K[28;8Ha2 = [goalB24(id) goalB25(id)];[K[30;7Hr.goalpostStat1 = struct('x',gc1(1), 'y',gc1(2), 'a',ga1(1), 'b',ga1(2),$[31;7Hr.goalpostStat2 = struct('x',gc2(1), 'y',gc2(2), 'a',ga2(1), 'b',ga2(2),$[32;1H[K[33;7Hr.landmark=landmark(id);[K[34;7Hr.landmarkv=[landmarkv1(id) landmarkv2(id)];[2B[K[1B%      r.debug.message = char(h.vcmDebug.get_message());[1B[K[2B[K[41;5Hcatch[K[42;5Hend[K[43;3Hend[K[45;3Hfunction labelB = get_labelB_wireless(robotID)[46;5Hwidth = 80;[K[47;5Hheight = 60;[K[48;5Hif robotID==1[K[49;7HrawData = h.wcmLabelB().get_p1();[50;5Helseif robotID==2[K[51;7HrawData = h.wcmLabelB().get_p2();[52;5Helseif robotID==3[53;8HawData = h.wcmLabelB().get_p3();[50A[1BM    elseif robotID==3[4;8HawData = h.wcmLabelB().get_p3();[5;5Helseif robotID==4[K[6;8HawData = h.wcmLabelB().get_p4();[7;5Helseif robotID==5[8;8HawData = h.wcmLabelB().get_p5();[9;5Helseif robotID==6[10;8HawData = h.wcmLabelB().get_p6();[K[11;5Helseif robotID==7[12;8HawData = h.wcmLabelB().get_p7();[13;5Helseif robotID==8[K[14;8HawData = h.wcmLabelB().get_p8();[K[15;5Helseif robotID==9[16;8HawData = h.wcmLabelB().get_p9();[17;5Helse[K[1BawData = h.wcmLabelB().get_p10();[K[19;5Hend[20;5HlabelB = raw2label(rawData, width, height)';[21;3Hend[K[1B[K[1B  function r = get_monitor_struct()[24;5H% returns the monitor struct (in the same form as the monitor messages)[25;5Hr = [];[K[26;5Htry[1Br.team = struct(...[K[28;7H    'number', h.gcmTeam.get_number(),...[29;11H'color', h.gcmTeam.get_color(),...[30;7H    'player_id', h.gcmTeam.get_player_id(),...[K[31;7H    'role', h.gcmTeam.get_role()...[K[32;11H);[1B[K[34;9Hfsm = struct(...[K[35;10H'body', h.gcmFsm.get_body_state(),...[36;10H'head', h.gcmFsm.get_head_state(),...[37;9H[1K 'motion', h.gcmFsm.get_motion_state(),...[K[38;10H'game', h.gcmFsm.get_game_state()...[39;9H);[41;5H  pose = h.wcmRobot.get_pose();[42;5H  r.robot = {};[43;3H    r.robot.pose = struct('x', pose(1), 'y', pose(2), 'a', pose(3));[45;3H  %Camera info[K[1B[K[47;18H[1K select = h.vcmImage.get_select();[48;5H  width = h.vcmImage.get_width();[49;7Hheight = h.vcmImage.get_height[50;24H[1K scaleB = h.vcmImage.get_scaleB();[51;7HbodyHeight=h.vcmCamera.get_bodyHeight();[52;5H  bodyTilt=h.vcmCamera.get_bodyTilt();[53;7HheadAngles=h.vcmImage.get_headAngles();[50A[1BM      bodyTilt=h.vcmCamera.get_bodyTilt();[4;7HheadAngles=h.vcmImage.get_headAngles();[5;5H  rollAngle=h.vcmCamera.get_rollAngle();[6;8H.camera = struct('select',select,'width',width,'height',height,'scaleB'$[7;5H    'bodyHeight',bodyHeight,'bodyTilt',bodyTilt,...[8;7H  'headAngles',headAngles,'rollAngle',rollAngle);[1B[K[10;5H%yuyv type info[K[11;5H  r.yuyv_type = h.vcmCamera.get_yuyvType();[1B[K[13;5H%Image FOV boundary[1B[K[15;5H  fovC=h.vcmImage.get_fovC();[16;7HfovTL=h.vcmImage.get_fovTL[4P[17;5H  fovTR=h.vcmImage.get_fovTR();[18;7HfovBL=h.vcmImage.get_fovBL[5P[19;5H  fovBR=h.vcmImage.get_fovBR();[20;5H  r.fov= struct('C',fovC, 'TL',fovTL, 'TR',fovTR, 'BL',fovBL, 'BR', fovBR);[21;1H[K[22;4H%ball info[23;3H    ballx = h.wcmBall.get_x();   [24;5H  bally = h.wcmBall.get_y();[K[25;5H  ballt = h.wcmBall.get_t();[26;5H  ballvelx = h.wcmBall.get_velx();[27;7Hballvely = h.wcmBall.get_vely();[1B[K[29;7Hball = {};[K[30;7Hball.detect = h.vcmBall.get_detect();[K[31;7Hball.centroid = {};[K[32;7Hcentroid = h.vcmBall.get_centroid();[33;7Hball.centroid.x = centroid(1);[34;7Hball.centroid.y = centroid(2);[35;7Hball.axisMajor = h.vcmBall.get_axisMajor();[36;7Hr.ball = struct('x', ballx, 'y', bally, 't', ballt, ...[37;10H 'centroid', ball.centroid, 'axisMajor', ball.axisMajor, ...[38;10H 'detect', ball.detect,'vx',ballvelx,'vy',ballvely);[39;3H%goal info[40;7Hr.goal = {};[41;7Hr.goal.detect = h.vcmGoal.get_detect();[42;9Hgoal.type = h.vcmGoal.get_type();[43;9Hgoal.color = h.vcmGoal.get_color();[K[45;5H  % Add the goal positions[46;7Hgoalv1 = h.vcmGoal.get_v1();[47;7Hr.goal.v1 = struct('x',goalv1(1), 'y',goalv1(2), 'z',goalv1(3), 'scale',$[48;7Hgoalv2 = h.vcmGoal.get_v2[3P[49;7Hr.goal.v2 = struct('x',goalv2(1), 'y',goalv2(2), 'z',goalv2(3), 'scale',$[50;1H[K[51;7Hr.goal.postStat1 = struct('x',0,'y',0, 'a',0, 'b',0,'o',0,...[52;7H  'gbx1',0,'gbx2',0,'gby1',0,'gby2',0);[53;7Hr.goal.postStat2 = struct('x',0,'y',0, 'a',0, 'b',0,'o',0,...[50A[1BM[6C  'gbx1',0,'gbx2',0,'gby1',0,'gby2',0);[4;7Hr.goal.postStat2 = struct('x',0,'y',0, 'a',0, 'b',0,'o',0,...[5;7H  'gbx1',0,'gbx2',0,'gby1',0,'gby2',0);[1B[K[7;7Hif r.goal.detect==1[K[8;9H %add goal post stats[K[9;9Hgc1 = h.vcmGoal.get_postCentroid1();[10;5H    gc2 = h.vcmGoal.get_postCentroid2();[11;7H  ga1 = h.vcmGoal.get_postAxis1[7P[12;9Hga2 = h.vcmGoal.get_postAxis2();[13;5H    go1 = h.vcmGoal.get_postOrientation1();[14;9Hgo2 = h.vcmGoal.get_postOrientation2();[1B[K[16;7H  % Add the goal bounding boxes[17;7H  gbb1 = h.vcmGoal.get_postBoundingBox1();[18;7H  gbb2 = h.vcmGoal.get_postBoundingBox2();[1B[K[20;7H  r.goal.postStat1 = struct('x',gc1(1), 'y',gc1(2), 'a',ga1(1), 'b',ga1($[21;12H'gbx1',gbb1(1), 'gbx2',gbb1(2), 'gby1',gbb1(3), 'gby2',gbb1(4) );[22;8H[1K r.goal.postStat2 = struct('x',gc2(1), 'y',gc2(2), 'a',ga2(1), 'b',ga2($[23;11H[1K 'gbx1',gbb2(1), 'gbx2',gbb2(2), 'gby1',gbb2(3), 'gby2',gbb2(4) );[24;7Hend[K[1B[K[1B  %landmark info[K[27;7Hr.landmark = {};[K[28;7Hr.landmark.detect = h.vcmLandmark.get_detect();[29;7Hr.landmark.color = h.vcmLandmark.get_color();[30;7Hr.landmark.v = h.vcmLandmark.get_v[31;7Hr.landmark.centroid1 = h.vcmLandmark.get_centroid1();[32;7Hr.landmark.centroid2 = h.vcmLandmark.get_centroid2();[33;7Hr.landmark.centroid3 = h.vcmLandmark.get_centroid3();[1B[K[1B  %Vision debug message[K[36;9Hdebug={};[K[37;7Hr.debug.message = char(h.vcmDebug.get_message());[K[1B[K[39;4HParticle info[40;9Hparticle={};[41;9Hparticle.x=h.wcmParticle.get_x[4P[42;9Hparticle.y=h.wcmParticle.get_y[43;9Hparticle.w=h.wcmParticle.get_w[2P[44;7Hr.particle.a=h.wcmParticle.get_a();[1B[K[1B  %line info[K[47;9Hline = {};[K[48;7Hr.line.detect = h.vcmLine.get_detect();[49;9Hline.nLines = h.vcmLine.get_nLines();[K[50;7Hr.line.v1 = {};[51;9Hline.v2 = {};[K[52;7Hr.line.endpoint={};[K[1B[K[50A[14;26r[14;1H[5M[1;56r[3;7Hr.line.endpoint={};[K[1B[K[5;7Hv1x=h.vcmLine.get_v1x();[K[6;7Hv1y=h.vcmLine.get_v1y();[7;7Hv2x=h.vcmLine.get_v2x();[8;7Hv2y=h.vcmLine.get_v2y();[9;7Hendpoint11=h.vcmLine.get_endpoint1[10;7Hendpoint12=h.vcmLine.get_endpoint1[11;7Hendpoint21=h.vcmLine.get_endpoint21();[12;7Hendpoint22=h.vcmLine.get_endpoint22();[1B[K[14;7Hfor i=1:r.line.nLines[15;32H[1K r.line.v1{i}=[v1x(i) v1y(i)];[K[16;32H[1K r.line.v2{i}=[v2x(i) v2y(i)];[K[17;11Hline.endpoint{i}=[endpoint11(i) endpoint21(i) ...[K[18;28H[1K endpoint12(i) endpoint22(i)];[K[21;4Hcorner[2P[22;7Hr.corner = {};[23;7Hr.corner.detect = h.vcmCorner.get_detect();[25;7Hr.corner.type = h.vcmCorner.get_type();[26;7Hr.corner.vc0 = h.vcmCorner.get_vc0();[27;9Hcorner.v10 = h.vcmCorner.get_v10();[28;9Hcorner.v20 = h.vcmCorner.get_v20[10P[1B[K[30;9Hcorner.v = h.vcmCorner[4P[31;9Hcorner.v1 = h.vcmCorner.get_v[18P[32;9Hcorner.v2 = h.vcmCorner.get_v[18P[1B[K[1B%{[1B%robot map info[K[36;9Hrobot[37;9Hrobot.map=h.vcmRobot.get_map();[K[38;7Hr.robot.lowpoint=h.vcmRobot.get_lowpoint();[1B%}[K[1B% Add freespace boundary[41;9Hfree = {};[K[42;24H[1K r.free.detect = 0;[43;7HfreeCol = h.vcmFreespace.get_nCol();[44;7HfreeValueB = h.vcmFreespace.get_pboundB();[45;25HfreeDis = h.vcmFreespace.get_vboundB();[46;3H    labelBm = size(freeValueB,2)/2;[47;24H[1K r.free.y = freeDis(1:labelBm);[48;24H[1K r.free.x = freeDis(labelBm+1:2*labelBm);[49;9Hfree.Bx = freeValueB(1:labelBm);[K[50;9Hfree.By = freeValueB(labelBm+1:2*labelBm);[51;9Hfree.nCol = freeCol;[52;9Hfree.detect = h.vcmFreespace.get_detect();[53;7H% Add visible boundary[50A[3;9Hfree.detect = h.vcmFreespace.get_detect();[4;7H% Add visible boundary[1B[K[1B[K[7;7Hr.bd = {};[K[8;7HbdTop = h.vcmBoundary.get_top();[9;12H[1K bdBtm = h.vcmBoundary.get_bottom();[10;7HbdCol = size(bdTop,2)/2;[K[11;7Hr.bd = struct('detect',h.vcmBoundary.get_detect(),...[12;20H[1K 'nCol',bdCol,...[K[13;21H'topy',bdTop(1,1:bdCol),...[14;20H[1K 'topx',-bdTop(1,bdCol+1:2*bdCol),...[15;21H'btmy',bdBtm(1,1:bdCol),...[K[16;21H'btmx',-bdBtm(1,bdCol+1:2*bdCol));[K[17;7H% Add occupancy map[K[18;7Hr.occ = {};[K[19;24H[1K map = h.ocmOcc.get_map();[20;25Hmapsize = sqrt(size(map,2));[21;24H[1K map = reshape(map, [mapsize, mapsize]);[22;24H[1K map(map > 0) = 1;[23;24H[1K map(map < 0) = 0;[K[24;25Hr.occ.map = map;[25;24H[1K r.occ.mapsize = mapsize;[26;24H[1K r.occ.centroid = h.ocmOcc.get_centroid();[1B[K[1B[K[29;7H% add horizon line[30;9Hhorizon = {};[K[31;7HlabelAm = h.vcmImage.get_width()/2[32;7HlabelBm = labelAm/h.vcmImage.get_scaleB();[33;13HhorizonDir = h.vcmImage.get_horizonDir();[34;6H[1K horizonA = h.vcmImage.get_horizonA();[35;3H    horizonB = h.vcmImage.get_horizonB();[36;7HhorizonAx = 1 : labelAm;[37;7HhorizonBx = 1 : labelBm;[K[38;7HhorizonAy = (horizonAx - horizonAx(end)/2) .* tan(horizonDir) + horizonA;[39;6H[1K horizonBy = (horizonBx - horizonBx(end)/2) .* tan(horizonDir) + horizonB;[40;3H    r.horizon = struct('hYA',horizonAy,...[41;25H[1K 'hYB',horizonBy,...[42;25H 'hXA',horizonAx,...[43;25H[1K 'hXB',horizonBx[44;5Hcatch[K[45;5Hend[K[46;3Hend[K[1B[K[1B  function yuyv = get_yuyv()[K[1B% returns the raw YUYV image[K[50;5Hwidth = h.vcmImage.get_width()/2;[K[51;5Hheight = h.vcmImage.get_height();[52;5HrawData = h.vcmImage.get_yuyv[14P[53;5Hyuyv = raw2yuyv(rawData, width, height); %for Nao, double for OP[50A    rawData = h.vcmImage.get_yuyv[14P[4;5Hyuyv = raw2yuyv(rawData, width, height); %for Nao, double for OP[5;3Hend[7;3Hfunction set_yuyv(yuyv)[8;5HrawData=yuyv2raw(yuyv);[K[9;5Hh.vcmImage.set_yuyv(rawData);[K[10;3Hend[K[1B[K[1B  function yuyv2 = get_yuyv2()[K[1B% returns the half-size raw YUYV image[K[14;5Hwidth = h.vcmImage.get_width()/4;[K[15;5Hheight = h.vcmImage.get_height()/2;[K[16;5HrawData = h.vcmImage.get_yuyv2();[K[17;5Hyuyv2 = raw2yuyv(rawData, width, height); %for Nao, double for OP[18;3Hend[K[1B[K[1B  function yuyv3 = get_yuyv3()[K[1B% returns the quater-size raw YUYV image[K[22;5Hwidth = h.vcmImage.get_width()/8;[K[23;5Hheight = h.vcmImage.get_height()/4;[K[24;5HrawData = h.vcmImage.get_yuyv3();[K[25;5Hyuyv3 = raw2yuyv(rawData, width, height);[K[26;3Hend[K[28;3Hfunction rgb = get_rgb()[1B% returns the raw RGB image (not full size)[30;5Hyuyv = h.get_yuyv();[31;5Hrgb = yuyv2rgb(yuyv);[K[32;3Hend[K[1B[K[1B  function labelA = get_labelA()  % returns the labeled image[35;5HrawData = h.vcmImage.get_labelA[5P[36;5Hwidth = h.vcmImage.get_width()/2;[37;5Hheight = h.vcmImage.get_height()/2;[1B[K[39;5H%Webots vision check[K[40;5H%for webots with non-subsampling vision code, use full width/height[41;5Hscale= length(rawData)*2/width/height;  [42;5Hif scale==1[K[43;7Hwidth = h.vcmImage.get_width();[K[44;5H  height = h.vcmImage.get_height();[45;5H  MONITOR.is_webots=1;[1B    end[47;5HlabelA = raw2label(rawData, width, height)';[48;3Hend[K[1B[K[1B  function set_labelA(label)[K[51;5HrawData=label2raw(label');[K[52;5Hh.vcmImage.set_labelA(rawData);[K[53;3Hend[K[50A[51B[0;7mSearch [wcmRobotNames]:                                                        [55;15HY[m First Line[0;7m^T[m Go To Line[0;7m^W[m Beg of Par[0;7mM-J[m FullJstif[0;7mM-B[m Backwards[56;2H[0;7mC[m Cancel    [0;7m^V[m Last Line [0;7m^R[m Replace   [0;7m^O[m End of Par[0;7mM-C[m Case Sens[0;7mM-R[m Regexp [54;25H[0;7md[m[0;7me[m[0;7mb[m[0;7mu[m[0;7mg[m[51Afunction h = shm_robot(teamNumber, playerID)[1B% function create the same struct as the team message from[K[1B% shared memory. for local debugging use[2Bglobal MONITOR %for sending the webots check information[1B[K[1B  h.teamNumber = teamNumber;[K[10;3Hh.playerID = playerID;[11;3Hh.user = getenv('USER');[1B[K[1B%List of shms[K[1B[K[1B[K[1B[K[1B% create shm wrappers (in alphabetic order)[K[18;3Hh.gcmFsm  = shm(sprintf('gcmFsm%d%d%s',  h.teamNumber, h.playerID, h.user));[19;3H%  h.gcmGame[20;3Hh.gcmTeam  = shm(sprintf('gcmTeam%d%d%s',  h.teamNumber, h.playerID, h.user)$[21;1H[K[1B  h.vcmBall  = shm(sprintf('vcmBall%d%d%s',  h.teamNumber, h.playerID, h.user)$[23;3Hh.vcmBoundary = shm(sprintf('vcmBoundary%d%d%s', h.teamNumber, h.playerID, h$[24;3Hh.vcmCamera = shm(sprintf('vcmCamera%d%d%s', h.teamNumber, h.playerID, h.use$[25;3Hh.vcmDebug  = shm(sprintf('vcmDebug%d%d%s',  h.teamNumber, h.playerID, h.use$[26;3Hh.vcmFreespace = shm(sprintf('vcmFreespace%d%d%s', h.teamNumber, h.playerID,$[27;3Hh.vcmGoal  = shm(sprintf('vcmGoal%d%d%s',  h.teamNumber, h.playerID, h.user)$[28;3Hh.vcmImage = shm(sprintf('vcmImage%d%d%s', h.teamNumber, h.playerID, h.user)$[29;1H  h.vcmLandmark  = shm(sprintf('vcmLandmark%d%d%s',  h.teamNumber, h.playerID,$[30;3Hh.vcmLine  = shm(sprintf('vcmLine%d%d%s',  h.teamNumber, h.playerID, h.user)$[31;3Hh.vcmCorner  = shm(sprintf('vcmCorner%d%d%s',  h.teamNumber, h.playerID, h.u$[32;1H[K[1B  h.wcmBall  = shm(sprintf('wcmBall%d%d%s',  h.teamNumber, h.playerID, h.user)$[34;3Hh.wcmGoal  = shm(sprintf('wcmGoal%d%d%s',  h.teamNumber, h.playerID, h.user)$[35;3Hh.wcmParticle  = shm(sprintf('wcmParticle%d%d%s',  h.teamNumber, h.playerID,$[36;3H%h.wcmKick[K[1B[K[2B  h.wcmTeamdata  = shm(sprintf('wcmTeamdata%d%d%s',  h.teamNumber, h.playerID,$[40;3Hh.wcmRobotNames  = shm(sprintf('wcmRobotNames%d%d%s',  h.teamNumber, h.playe$[41;3Hh.wcmLabelB  = shm(sprintf('wcmLabelB%d%d%s',  h.teamNumber, h.playerID, h.u$[42;3Hh.vcmRobot  = shm(sprintf('vcmRobot%d%d%s',  h.teamNumber, h.playerID, h.use$[43;1H[K[44;7H  h.ocmOcc = shm(sprintf('ocmOcc%d%d%s', h.teamNumber, h.playerID, h.use$[45;1H[K[1B[K[1B%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%[1B%SJ - reading Occmap SHM from robot kills matlab[1B%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%[50;3H%h.wcmOccmap = shm(sprintf('wcmOccmap%d%d%s', h.teamNumber, h.playerID, h.us$[51;3Hh.wcmRobot = shm(sprintf('wcmRobot%d%d%s', h.teamNumber, h.playerID, h.user)$[52;1H[K[1B% set function pointers[54;30H[1K [0;7m[ Search Wrapped ][m[K[55;15H[0;7mO[m WriteOut  [0;7m^R[m Read File [0;7m^Y[m Prev Page [0;7m^K[m Cut Text  [0;7m^C[m Cur Pos[K[56;2H[0;7mX[m Exit      [0;7m^J[m Justify   [0;7m^W[m Where Is  [0;7m^V[m Next Page [0;7m^U[m UnCut Text[0;7m^T[m To Spell[5;28H[49B[0;7mSearch [debug]:                                                                [55;15HY[m First Line[0;7m^T[m Go To Line[0;7m^W[m Beg of Par[0;7mM-J[m FullJstif[0;7mM-B[m Backwards[56;2H[0;7mC[m Cancel    [0;7m^V[m Last Line [0;7m^R[m Replace   [0;7m^O[m End of Par[0;7mM-C[m Case Sens[0;7mM-R[m Regexp [54;17H[K[55;15H[0;7mO[m WriteOut  [0;7m^R[m Read File [0;7m^Y[m Prev Page [0;7m^K[m Cut Text  [0;7m^C[m Cur Pos[K[56;2H[0;7mX[m Exit      [0;7m^J[m Justify   [0;7m^W[m Where Is  [0;7m^V[m Next Page [0;7m^U[m UnCut Text[0;7m^T[m To Spell[25;8H[1;70H[0;7mModified[25;8H[mvDebug  = shm(sprintf('vcmDebug%d%d%s',  h.teamNumber, h.playerID, h.us[25;9HDebug  = shm(sprintf('vcmDebug%d%d%s',  h.teamNumber, h.playerID, h.use[71D[1B[23A[K[1B% set function pointers[K[1B  h.update = @update;[K[6;3Hh.get_team_struct = @get_team_struct;[1B  h.get_monitor_struct = @get_monitor_struct;[K[8;3Hh.get_yuyv = @get_yuyv;[9;5Hget_yuyv2 = @get_yuyv2;[K[10;5Hget_yuyv3 = @get_yuyv3;[11;5Hget_rgb = @get_rgb;[K[12;3Hh.get_labelA = @get_labelA;[1B  h.get_labelB = @get_labelB;[14;3Hh.get_particle = @get_particle;[16;3Hh.set_yuyv = @set_yuyv;[1B  h.set_labelA = @set_labelA;[K[1B[K[1B  h.updated=0;[20;5HtLastUpdate=0;[K[22;5Hget_team_struct_wireless = @get_team_struct_wireless;[K[23;5Hget_monitor_struct_wireless = @get_monitor_struct_wireless;[K[1B[K[25;5Hget_labelB_wireless = @get_labelB_wireless;[K[1B[K[1B  function update()[K[28;3H    % do nothing[K[29;3Hend[K[1B[K[1B  function r = get_team_struct()[K[32;5H% returns the robot struct (in the same form as the team messages)[33;3H  r = [];[K[1B%    disp('get team struct');[K[35;3H  try[K[1B[1K r.teamNumber = h.gcmTeam.get_number();[37;9Hr.teamColor = h.gcmTeam.get_color();[38;9Hr.id = h.gcmTeam.get_player_id();[39;8H[1K r.role = h.gcmTeam.get_role();[K[1B[K[41;8H[1K pose = h.wcmRobot.get_pose();[K[42;8H[1K r.pose = struct('x', pose(1), 'y', pose(2), 'a', pose(3));[K[2B[K[45;9Hballx = h.wcmBall.get_x();[46;9Hbally = h.wcmBall.get_y();[47;8H[1K ballt = h.wcmBall.get_t();[K[48;8H[1K ballvelx = h.wcmBall.get_velx();[K[49;8H[1K ballvely = h.wcmBall.get_vely();[K[1B[K[51;8H[1K r.ball = struct('x', ballx, 'y', bally, 't', ballt, ...[K[52;13H'vx', ballvelx, 'vy', ballvely );[1B[K[50A[3;13H'vx', ballvelx, 'vy', ballvely );[1B[K[5;8H[1K r.attackBearing = h.wcmGoal.get_attack_bearing();[6;8H[1K r.time=h.wcmRobot.get_time();[K[7;8H[1K r.battery_level = h.wcmRobot.get_battery_level();[1B[K[9;8H[1K goal = h.vcmGoal.get_detect();[10;8H[1K if goal==1[K[11;10H[1K r.goal = h.vcmGoal.get_type()+1;[12;10H[1K r.goalv1 = h.vcmGoal.get_v1();[13;10H[1K r.goalv2 = h.vcmGoal.get_v2();[14;8H[1K else[K[1Br.goal=0;[16;8H[1K end[K[1B[K[18;9Hr.landmark=h.vcmLandmark.get_detect();[19;8H[1K r.landmarkv=h.vcmLandmark.get_v();[1B[K[21;9Hcorner=h.vcmCorner.get_detect();[22;8H[1K if corner>0[K[23;9H[1K r.corner=h.vcmCorner.get_type();[K[24;10Hr.cornerv=h.vcmCorner.get_v();[25;8H[1K end[K[27;8H[1K r.fall = h.wcmRobot.get_is_fall_down();[28;7H  r.time = h.wcmRobot.get_time();[29;8H[1K r.penalty = h.wcmRobot.get_penalty();[31;8H[1K gpspose = h.wcmRobot.get_gpspose();[32;5H    r.gpspose = struct('x', gpspose(1), 'y', gpspose(2), 'a', gpspose(3));[33;5H    r.gps_attackbearing = h.wcmRobot.get_gps_attackbearing();[1B[K[1B[K[1B[K[37;12HReceive = 0;[K[1B%TODO: monitor timeout[K[39;9Hif r.time>h.tLastUpdate[K[40;11Hh.updated=1;[41;9H  h.tLastUpdate=r.time;[K[42;9Hend[K[44;5Hcatch[45;5Hend[K[46;3Hend[K[1B[K[1B  function r = get_team_struct_wireless(id)[49;5Hr = [];[K[50;5Htry[1Br.teamNumber = h.gcmTeam.get_number();[K[52;7HteamColor = h.wcmTeamdata.get_teamColor();[53;7HrobotId = h.wcmTeamdata.get_robotId();[50A[51B[0;7mSearch [debug]:                                                                [55;15HY[m First Line[0;7m^T[m Go To Line[0;7m^W[m Beg of Par[0;7mM-J[m FullJstif[0;7mM-B[m Backwards[56;2H[0;7mC[m Cancel    [0;7m^V[m Last Line [0;7m^R[m Replace   [0;7m^O[m End of Par[0;7mM-C[m Case Sens[0;7mM-R[m Regexp [54;17H[3;7Hr.fall=fall(id);[K[4;7Hr.penalty=penalty(id);[5;7Hr.battery_level=battery_level(id);[K[1B[K[7;7Hr.goal=goal(id);[K[8;7Hr.goalv1=[goalv11(id) goalv12(id)];[9;7Hr.goalv2=[goalv21(id) goalv22(id)];[1B[K[1B[K[12;7Hgc1 = [goalB11(id) goalB12(id)];[K[13;7Hgc2 = [goalB21(id) goalB22(id)];[K[1B[K[15;7Hgo1 = goalB13(id);[16;7Hgo2 = goalB23(id);[18;7Hga1 = [goalB14(id) goalB15(id)];[K[19;7Hga2 = [goalB24(id) goalB25(id)];[K[21;7Hr.goalpostStat1 = struct('x',gc1(1), 'y',gc1(2), 'a',ga1(1), 'b',ga1(2),$[22;7Hr.goalpostStat2 = struct('x',gc2(1), 'y',gc2(2), 'a',ga2(1), 'b',ga2(2),$[23;1H[K[24;7Hr.landmark=landmark(id);[K[25;7Hr.landmarkv=[landmarkv1(id) landmarkv2(id)];[2B[K[1B%[6Cr.debug.message = char(h.vcmDebug.get_message());[1B[K[2B[K[32;5Hcatch[K[33;5Hend[K[34;3Hend[36;3Hfunction labelB = get_labelB_wireless(robotID)[37;5Hwidth = 80;[K[1B    height = 60;[K[39;5Hif robotID==1[K[40;7HrawData = h.wcmLabelB().get_p1();[41;5Helseif robotID==2[K[42;7HrawData = h.wcmLabelB().get_p2();[43;5Helseif robotID==3[44;5H  rawData = h.wcmLabelB().get_p3();[45;6Hlseif robotID==4[46;3H    rawData = h.wcmLabelB().get_p4();[47;5Helseif robotID==5[48;3H    rawData = h.wcmLabelB().get_p5();[K[49;5Helseif robotID==6[50;5H  rawData = h.wcmLabelB().get_p6();[51;5Helseif robotID==7[K[52;7HrawData = h.wcmLabelB().get_p7[9P[53;5Helseif robotID==8[K[1B[K[55;15H[0;7mO[m WriteOut  [0;7m^R[m Read File [0;7m^Y[m Prev Page [0;7m^K[m Cut Text  [0;7m^C[m Cur Pos[K[56;2H[0;7mX[m Exit      [0;7m^J[m Justify   [0;7m^W[m Where Is  [0;7m^V[m Next Page [0;7m^U[m UnCut Text[0;7m^T[m To Spell[28;10H[1B7[29;53r8M[1;56r[29;3Hh.wcmTeamdata  = shm(sprintf('wcmTeamdata%d%d%s',  h.teamNumber, h.playerID,$[30;1HM h h.wcmTeamdata  = shm(sprintf('wcmTeamdata%d%d%s',  h.teamNumber, h.playerID h. h.wcmTeamdata  = shm(sprintf('wcmTeamdata%d%d%s',  h.teamNumber, h.playerI h.w h.wcmTeamdata  = shm(sprintf('wcmTeamdata%d%d%s',  h.teamNumber, h.player[74Dc h.wcmTeamdata  = shm(sprintf('wcmTeamdata%d%d%s',  h.teamNumber, h.playe[73Dm h.wcmTeamdata  = shm(sprintf('wcmTeamdata%d%d%s',  h.teamNumber, h.play[72DR h.wcmTeamdata  = shm(sprintf('wcmTeamdata%d%d%s',  h.teamNumber, h.pla[71Do h.wcmTeamdata  = shm(sprintf('wcmTeamdata%d%d%s',  h.teamNumber, h.pl[29;9Hb h.wcmTeamdata  = shm(sprintf('wcmTeamdata%d%d%s',  h.teamNumber, h.p[29;10Ho h.wcmTeamdata  = shm(sprintf('wcmTeamdata%d%d%s',  h.teamNumber, h.[29;11Ht h.wcmTeamdata  = shm(sprintf('wcmTeamdata%d%d%s',  h.teamNumber, h[29;12HN h.wcmTeamdata  = shm(sprintf('wcmTeamdata%d%d%s',  h.teamNumber, [29;13Ha h.wcmTeamdata  = shm(sprintf('wcmTeamdata%d%d%s',  h.teamNumber,[29;14Hm h.wcmTeamdata  = shm(sprintf('wcmTeamdata%d%d%s',  h.teamNumber[29;15He h.wcmTeamdata  = shm(sprintf('wcmTeamdata%d%d%s',  h.teamNumbe[29;16Hs h.wcmTeamdata  = shm(sprintf('wcmTeamdata%d%d%s',  h.teamNumb[29;17H. h.wcmTeamdata  = shm(sprintf('wcmTeamdata%d%d%s',  h.teamNum[29;18H7[29;53r8M[1;56r[29;2Hh.wcmRobotNames.[30;7HTeamdata  = shm(sprintf('wcmTeamdata%d%d%s',  h.teamNumber, h.playerID, [30;54r[54;1H
+[1;56r[53;7HrawData = h.wcmLabelB().get_p7();[23AM% h.wcmRobotNames.%MMMM MMM MMM MMM MMM MMMM MMMM MM[2;53r[2;1H[26L[1;56r[4;7Hlandmark=h.wcmTeamdata.get_landmark();[5;7Hlandmarkv1=h.wcmTeamdata.get_landmarkv1();[6;7Hlandmarkv2=h.wcmTeamdata.get_landmarkv2();[8;7Hr.teamColor=teamColor(id);[9;7Hr.id = robotId(id);[10;7Hr.role = role(id);[11;7Hr.time = time(id);[13;7Hr.pose = {};[14;7Hr.pose.x= posex(id);[15;7Hr.pose.y= posey(id);[16;7Hr.pose.a= posea(id);[18;7Hr.gpspose = r.pose;[20;7Hr.ball={};[21;7Hr.ball.x= ballx(id);[22;7Hr.ball.y= bally(id);[23;7Hr.ball.vx= 0;[24;7Hr.ball.vy= 0;[25;7Hr.ball.t= ballt(id);[27;7Hr.attackBearing= attackBearing(id);[1BM MM M[1B[1B[1B [1B[1B [1B[1B[1B[1B [29A[K[5;7H  r.tReceive = 0;[K[1B%TODO: monitor timeout[K[7;9Hif r.time>h.tLastUpdate[8;7H    h.updated=1;[K[9;7H    h.tLastUpdate=r.time;[10;7H  end[K[1B[K[12;5Hcatch[13;5Hend[K[14;3Hend[K[1B[K[1B  function r = get_team_struct_wireless(id)[17;5Hr = [];[18;5Htry[K[1Br.teamNumber = h.gcmTeam.get_number();[20;7HteamColor = h.wcmTeamdata.get_teamColor();[21;8HobotId = h.wcmTeamdata.get_robotId();[22;8Hole = h.wcmTeamdata.get_role();[23;7Htime= h.wcmTeamdata.get_time();[24;7Hposex= h.wcmTeamdata.get_posex();[25;7Hposey= h.wcmTeamdata.get_posey();[26;7Hposea= h.wcmTeamdata.get_posea();[27;7Hballx= h.wcmTeamdata.get_ballx();[K[28;7Hbally= h.wcmTeamdata.get_bally();[29;7Hballt= h.wcmTeamdata.get_ballt();[30;7HattackBearing= h.wcmTeamdata.get_attackBearing();[31;7Hfall=h.wcmTeamdata.get_fall();[K[32;7Hpenalty=h.wcmTeamdata.get_penalty();[33;7Hbattery_level=h.wcmTeamdata.get_battery_level();[1B[K[35;7Hgoal=h.wcmTeamdata.get_goal();[K[36;7Hgoalv11=h.wcmTeamdata.get_goalv11();[37;7Hgoalv12=h.wcmTeamdata.get_goalv12();[38;8Hoalv21=h.wcmTeamdata.get_goalv21();[39;8Hoalv22=h.wcmTeamdata.get_goalv22();[41;9HalB11=h.wcmTeamdata.get_goalB11();[42;9HalB12=h.wcmTeamdata.get_goalB12();[43;7HgoalB13=h.wcmTeamdata.get_goalB13();[44;8HoalB14=h.wcmTeamdata.get_goalB14();[45;8HoalB15=h.wcmTeamdata.get_goalB15();[47;7HgoalB21=h.wcmTeamdata.get_goalB21();[K[48;7HgoalB22=h.wcmTeamdata.get_goalB22();[K[49;7HgoalB23=h.wcmTeamdata.get_goalB23();[50;7HgoalB24=h.wcmTeamdata.get_goalB24();[51;7HgoalB25=h.wcmTeamdata.get_goalB25();[K[53;7Hlandmark=h.wcmTeamdata.get_landmark();[50A[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[4;7Hlandmark=h.wcmTeamdata.get_landmark();[5;7Hlandmarkv1=h.wcmTeamdata.get_landmarkv1();[6;6H[1K landmarkv2=h.wcmTeamdata.get_landmarkv2();[1B[K[8;7Hr.teamColor=teamColor(id);[9;7Hr.id = robotId(id);[K[10;7Hr.role = role(id);[11;7Hr.time = time(id);[1B[K[13;5H  r.pose = {};[14;3H    r.pose.x= posex(id);[15;7Hr.pose.y= posey(id);[16;3H    r.pose.a= posea(id);[K[1B[K[18;5H  r.gpspose = r.pose;[1B[K[20;7Hr.ball={};[K[21;8H.ball.x= ballx(id);[K[22;8H.ball.y= bally(id);[K[23;7Hr.ball.vx= 0;[K[24;7Hr.ball.vy= 0;[K[25;7Hr.ball.t= ballt(id);[K[1B[K[27;7Hr.attackBearing= attackBearing(id);[1B[K[29;7Hr.fall=fall(id);[K[30;7Hr.penalty=penalty(id);[K[31;7Hr.battery_level=battery_level(id);[1B[K[33;7Hr.goal=goal(id);[K[34;7Hr.goalv1=[goalv11(id) goalv12(id)];[35;7Hr.goalv2=[goalv21(id) goalv22(id)];[1B[K[1B[K[38;8Hc1 = [goalB11(id) goalB12(id)];[K[39;8Hc2 = [goalB21(id) goalB22(id)];[K[41;9H1 = goalB13(id);[K[42;9H2 = goalB23(id);[K[1B[K[44;8Ha1 = [goalB14(id) goalB15(id)];[K[45;8Ha2 = [goalB24(id) goalB25(id)];[K[47;7Hr.goalpostStat1 = struct('x',gc1(1), 'y',gc1(2), 'a',ga1(1), 'b',ga1(2),$[48;7Hr.goalpostStat2 = struct('x',gc2(1), 'y',gc2(2), 'a',ga2(1), 'b',ga2(2),$[49;1H[K[50;7Hr.landmark=landmark(id);[K[51;7Hr.landmarkv=[landmarkv1(id) landmarkv2(id)];[2B[K[50A[1B[K[1B%      r.debug.message = char(h.vcmDebug.get_message());[1B% h.wcmRobotNames.[K[2B[K[1B[K[10;5Hcatch[K[11;5Hend[K[12;3Hend[1B[K[1B  function labelB = get_labelB_wireless(robotID)[15;5Hwidth = 80;[K[16;5Hheight = 60;[K[17;5Hif robotID==1[18;8HawData = h.wcmLabelB().get_p1();[19;5Helseif robotID==2[20;8HawData = h.wcmLabelB().get_p2();[21;5Helseif robotID==3[K[22;8HawData = h.wcmLabelB().get_p3();[23;5Helseif robotID==4[24;8HawData = h.wcmLabelB().get_p4();[25;5Helseif robotID==5[K[26;7HrawData = h.wcmLabelB().get_p5();[27;5Helseif robotID==6[K[28;7HrawData = h.wcmLabelB().get_p6();[29;5Helseif robotID==7 [30;8HawData = h.wcmLabelB().get_p7();[31;5Helseif robotID==8[K[32;7HrawData = h.wcmLabelB().get_p8();[33;5Helseif robotID==9 [34;8HawData = h.wcmLabelB().get_p9();[K[35;5Helse[K[1BrawData = h.wcmLabelB().get_p10();[37;5Hend[38;5HlabelB = raw2label(rawData, width, height)';[39;3Hend[K[41;3Hfunction r = get_monitor_struct()[42;5H% returns the monitor struct (in the same form as the monitor messages)[43;5Hr = [];[44;5Htry[K[1Br.team = struct(...[K[46;11H'number', h.gcmTeam.get_number(),...[47;7H    'color', h.gcmTeam.get_color(),...[K[48;7H    'player_id', h.gcmTeam.get_player_id(),...[K[49;11H'role', h.gcmTeam.get_role()...[50;7H    );[K[1B[K[52;7Hr.fsm = struct(...[53;10H'body', h.gcmFsm.get_body_state(),...[50A[1B[1BM[1B[1B[1B[6;19Hget_n1(); )   h.wcmRobotNames.get_n1())%  ch.wcmRobotNames.get_n1())[25Dhh.wcmRobotNames.get_n1())[25Dah.wcmRobotNames.get_n1())[25Drh.wcmRobotNames.get_n1())[25D(h.wcmRobotNames.get_n1())[6;9H[1B[6;34H;   char(h.wcmRobotNames.get_n1());[31D%    char(h.wcmRobotNames.get_n1());[31D%     char(h.wcmRobotNames.get_n1());[31D%      char(h.wcmRobotNames.get_n1());[31D[48B[0;7mFile Name to Write: util/shm_robot.m                                           [55;14H[m      [0;7mM-D[m DOS Format     [0;7mM-A[m Append         [0;7mM-B[m Backup File   [56;2H[0;7mC[m Cancel          [0;7mM-M[m Mac Format     [0;7mM-P[m Prepend[K[54;37H[1;70H[39;49m[0;7m        [54;30H[m[1K [0;7m[ Wrote 563 lines ][m[K[55;14H[0;7m^O[m WriteOut  [0;7m^R[m Read File [0;7m^Y[m Prev Page [0;7m^K[m Cut Text  [0;7m^C[m Cur Pos[56;2H[0;7mX[m Exit      [0;7m^J[m Justify   [0;7m^W[m Where Is  [0;7m^V[m Next Page [0;7m^U[m UnCut Text[0;7m^T[m To Spell[6;8H[49B[J[56;79H[56;1H[?1049l[?1l>[?1h=>> !nano util/shm_robot.ma=shm_robot(1,1)      
+
+a = 
+
+                     teamNumber: 1
+                       playerID: 1
+                           user: 'sj'
+                         gcmFsm: [1x1 struct]
+                        gcmTeam: [1x1 struct]
+                        vcmBall: [1x1 struct]
+                    vcmBoundary: [1x1 struct]
+                      vcmCamera: [1x1 struct]
+                       vcmDebug: [1x1 struct]
+                   vcmFreespace: [1x1 struct]
+                        vcmGoal: [1x1 struct]
+                       vcmImage: [1x1 struct]
+                    vcmLandmark: [1x1 struct]
+                        vcmLine: [1x1 struct]
+                      vcmCorner: [1x1 struct]
+                        wcmBall: [1x1 struct]
+                        wcmGoal: [1x1 struct]
+                    wcmParticle: [1x1 struct]
+                    wcmTeamdata: [1x1 struct]
+                  wcmRobotNames: [1x1 struct]
+                      wcmLabelB: [1x1 struct]
+                       vcmRobot: [1x1 struct]
+                         ocmOcc: [1x1 struct]
+                       wcmRobot: [1x1 struct]
+                         update: @shm_robot/update
+                get_team_struct: @shm_robot/get_team_struct
+             get_monitor_struct: @shm_robot/get_monitor_struct
+                       get_yuyv: @shm_robot/get_yuyv
+                      get_yuyv2: @shm_robot/get_yuyv2
+                      get_yuyv3: @shm_robot/get_yuyv3
+                        get_rgb: @shm_robot/get_rgb
+                     get_labelA: @shm_robot/get_labelA
+                     get_labelB: @shm_robot/get_labelB
+                   get_particle: @get_particle
+                       set_yuyv: @shm_robot/set_yuyv
+                     set_labelA: @shm_robot/set_labelA
+                        updated: 0
+                    tLastUpdate: 0
+       get_team_struct_wireless: @shm_robot/get_team_struct_wireless
+    get_monitor_struct_wireless: @get_monitor_struct_wireless
+            get_labelB_wireless: @shm_robot/get_labelB_wireless
+
+>> a.wcmRobotNames
+
+ans = 
+
+    shmHandle: 76
+       get_n1: @()mexshm('get',h.shmHandle,k)
+       set_n1: @(val)mexshm('set',h.shmHandle,k,double(val))
+       get_n2: @()mexshm('get',h.shmHandle,k)
+       set_n2: @(val)mexshm('set',h.shmHandle,k,double(val))
+       get_n3: @()mexshm('get',h.shmHandle,k)
+       set_n3: @(val)mexshm('set',h.shmHandle,k,double(val))
+       get_n4: @()mexshm('get',h.shmHandle,k)
+       set_n4: @(val)mexshm('set',h.shmHandle,k,double(val))
+       get_n5: @()mexshm('get',h.shmHandle,k)
+       set_n5: @(val)mexshm('set',h.shmHandle,k,double(val))
+       get_n6: @()mexshm('get',h.shmHandle,k)
+       set_n6: @(val)mexshm('set',h.shmHandle,k,double(val))
+       get_n7: @()mexshm('get',h.shmHandle,k)
+       set_n7: @(val)mexshm('set',h.shmHandle,k,double(val))
+       get_n8: @()mexshm('get',h.shmHandle,k)
+       set_n8: @(val)mexshm('set',h.shmHandle,k,double(val))
+       get_n9: @()mexshm('get',h.shmHandle,k)
+       set_n9: @(val)mexshm('set',h.shmHandle,k,double(val))
+      get_n10: @()mexshm('get',h.shmHandle,k)
+      set_n10: @(val)mexshm('set',h.shmHandle,k,double(val))
+
+>> a.wcmRobotNames.get_n5()
+
+ans =
+
+   Empty matrix: 1-by-0
+
+>> a.wcmRobotNames.get_n5()   4 1()
+
+ans =
+
+   Empty matrix: 1-by-0
+
+>> a.wcmRobotNames.get_n1()  5()
+{??? Reference to non-existent field 'get_n15'.
+} 
+>> a.wcmRobotNames.get_n15()a.wcmRobotNames.get_n1() a.wcmRobotNames.get_n5()a.wcmRobotNames         a=shm_robot(1,1)
+
+a = 
+
+                     teamNumber: 1
+                       playerID: 1
+                           user: 'sj'
+                         gcmFsm: [1x1 struct]
+                        gcmTeam: [1x1 struct]
+                        vcmBall: [1x1 struct]
+                    vcmBoundary: [1x1 struct]
+                      vcmCamera: [1x1 struct]
+                       vcmDebug: [1x1 struct]
+                   vcmFreespace: [1x1 struct]
+                        vcmGoal: [1x1 struct]
+                       vcmImage: [1x1 struct]
+                    vcmLandmark: [1x1 struct]
+                        vcmLine: [1x1 struct]
+                      vcmCorner: [1x1 struct]
+                        wcmBall: [1x1 struct]
+                        wcmGoal: [1x1 struct]
+                    wcmParticle: [1x1 struct]
+                    wcmTeamdata: [1x1 struct]
+                  wcmRobotNames: [1x1 struct]
+                      wcmLabelB: [1x1 struct]
+                       vcmRobot: [1x1 struct]
+                         ocmOcc: [1x1 struct]
+                       wcmRobot: [1x1 struct]
+                         update: @shm_robot/update
+                get_team_struct: @shm_robot/get_team_struct
+             get_monitor_struct: @shm_robot/get_monitor_struct
+                       get_yuyv: @shm_robot/get_yuyv
+                      get_yuyv2: @shm_robot/get_yuyv2
+                      get_yuyv3: @shm_robot/get_yuyv3
+                        get_rgb: @shm_robot/get_rgb
+                     get_labelA: @shm_robot/get_labelA
+                     get_labelB: @shm_robot/get_labelB
+                   get_particle: @get_particle
+                       set_yuyv: @shm_robot/set_yuyv
+                     set_labelA: @shm_robot/set_labelA
+                        updated: 0
+                    tLastUpdate: 0
+       get_team_struct_wireless: @shm_robot/get_team_struct_wireless
+    get_monitor_struct_wireless: @get_monitor_struct_wireless
+            get_labelB_wireless: @shm_robot/get_labelB_wireless
+
+>> a.wcmRobotNames_ .get_n1 5()
+
+ans =
+
+   106   105   109   105   110   121
+
+>> a.wcmRobotNames.get_n5()ca.wcmRobotNames.get_n5()ha.wcmRobotNames.get_n5()aa.wcmRobotNames.get_n5()ra.wcmRobotNames.get_n5()(a.wcmRobotNames.get_n5()a.wcmRobotNames.get_n5())
+
+ans =
+
+jiminy
+
+>> a='123'
+
+a =
+
+123
+
+>> b='345'
+
+b =
+
+345
+
+>> c={}
+
+c = 
+
+     {}
+
+>> c{1}=a
+
+c = 
+
+    '123'
+
+>> c{2}=b
+
+c = 
+
+    '123'    '345'
+
+>> c
+
+c = 
+
+    '123'    '345'
+
+>> !nano monitor/show_monitor.m
+
+(B)0[?1049h[1;56r[m[4l[34h[?25h[?1h=[?1h=[?1h=[39;49m[39;49m[m[H[J[0;7m  GNU nano 2.2.6         File: monitor/show_monitor.m                          [3;1H[mfunction h=show_monitor()[4;3Hglobal MONITOR LOGGER LUT;[6;3Hh.init=@init;[7;3Hh.update=@update;[8;3Hh.update_single=@update_single;[9;3Hh.update_team=@update_team;[11;3H%Five screen for single monitor[12;3Hh.enable0=1;[13;3Hh.enable1=1;[14;3Hh.enable2=1;[15;3Hh.enable3=1;[16;3Hh.enable4=1;[17;3Hh.enable5=1;[19;3H%two subscreen for team monitor[20;3Hh.enable8=0;   %Label mode, 1/2/0[21;3Hh.enable9=1;   %Label mode, 1/0[22;3Hh.enable10=1;  %Map mode, 1/2/3[24;3Hh.logging=0;[25;3Hh.lutname=0;[26;3Hh.is_webots=0;[28;3Hh.fieldtype=0; %0,1,2 for SPL/Kid/Teen[30;3H% subfunctions[32;3Hfunction init(draw_team,target_fps)[33;5HMONITOR.target_fps=target_fps;[34;5Hfigure(1);[35;5Hclf;[36;5Hif draw_team==2 % Multiple robot, wireless monitoring (real robots)[37;7Hset(gcf,'position',[1 1 900 900]);[39;7HMONITOR.enable10=2;  %Default 2[41;7HMONITOR.hFpsText=uicontrol('Style','text',...[42;9H'Units','Normalized', 'Position',[.40 0.93 0.20 0.04]);[44;7HMONITOR.hButton6=uicontrol('Style','pushbutton','String','FPS -',...[45;9H'Units','Normalized','Position',[.30 .93 .10 .04],'Callback',@button6);[47;7HMONITOR.hButton7=uicontrol('Style','pushbutton','String','FPS +',...[48;9H'Units','Normalized', 'Position',[.60 .93 .10 .04],'Callback',@button7$[50;7HMONITOR.hButton13=uicontrol('Style','pushbutton','String','Kidsize',...[51;9H'Units','Normalized', 'Position',[.02 .56 .07 .07],'Callback',@button1$[53;7Hfor i=1:5[54;31H[0;7m[ Read 474 lines ][1B^G[m Get Help  [0;7m^O[m WriteOut  [0;7m^R[m Read File [0;7m^Y[m Prev Page [0;7m^K[m Cut Text  [0;7m^C[m Cur Pos[1B[0;7m^X[m Exit[6C[0;7m^J[m Justify   [0;7m^W[m Where Is  [0;7m^V[m Next Page [0;7m^U[m UnCut Text[0;7m^T[m To Spell[53A[24;53r[24;1H[14M[1;56r[3;1H[K[1B      for i=1:5[K[5;9HMONITOR.infoTexts(i)=uicontrol('Style','text',...[6;8H[1K 'Units','Normalized', 'Position',[0.16*(i-1)+0.12 0.71 0.145 0.08]);[7;3H    end[K[1B[K[1B      for i=6:10[K[10;9HMONITOR.infoTexts(i)=uicontrol('Style','text',...[11;8H[1K 'Units','Normalized', 'Position',[0.16*(i-6)+0.12 0.01 0.145 0.08]);[12;3H    end[K[1B[K[1B[K[1B    elseif draw_team==1 %Multiple robot full monitoring (webots)[16;3H    set(gcf,'position',[1 1 900 900]);[1B[K[18;7HMONITOR.hFpsText=uicontrol('Style','text',...[19;8H[1K 'Units','Normalized', 'Position',[.40 0.93 0.20 0.04]);[1B[K[1B      MONITOR.hButton6=uicontrol('Style','pushbutton','String','FPS -',...[22;8H[1K 'Units','Normalized','Position',[.30 .93 .10 .04],'Callback',@button6);[24;7HMONITOR.hButton7=uicontrol('Style','pushbutton','String','FPS +',...[25;7H  'Units','Normalized', 'Position',[.60 .93 .10 .04],'Callback',@button7$[27;16HButton8[27;43Hpushbutton','String','OFF',...[28;30H'Position',[.02 .30 .07 .07],'Callback',@button8);[30;22H9[30;65H2D[3P[31;43H02 .23 .07 .07[20C9[33;22H10=uicontrol('Style','pushbutton','String','MAP1[34;30H'Position',[.02 .63 .07 .07],'Callback',@button10[39;7HMONITOR.infoTexts=[];[41;7Hfor i=1:5[42;9HMONITOR.infoTexts(i)=uicontrol('Style','text',...[43;9H'Units','Normalized', 'Position',[0.16*(i-1)+0.12 0.01 0.145 0.08]);[44;7Hend[47;5Helse % Single robot full monitoring mode[48;7HLOGGER=logger();[49;7HLOGGER.init();[50;7Hset(gcf,'Position',[1 1 1000 600])[51;7HMONITOR.hFpsText=uicontrol('Style','text',...[52;9H'Units','Normalized', 'Position',[.40 0.93 0.20 0.04]);[49A[3;9H'Units','Normalized', 'Position',[.40 0.93 0.20 0.04]);[1B[K[5;7HMONITOR.hButton6=uicontrol('Style','pushbutton','String','FPS -',...[6;30H'Position',[.30 .93 .10 .04],'Callback',@button6);[7;1H[K[8;7HMONITOR.hButton7=uicontrol('Style','pushbutton','String','FPS +',...[9;7H  'Units','Normalized', 'Position',[.60 .93 .10 .04],'Callback',@button7$[10;1H[K[11;7HMONITOR.hButton12=uicontrol('Style','pushbutton','String','Load LUT',...[12;7H  'Units','Normalized', 'Position',[.70 .93 .20 .04],'Callback',@button1$[15;5H  MONITOR.hButton0=uicontrol('Style','pushbutton','String','Overlay 1',...[16;7H  'Units','Normalized', 'Position',[.02 .80 .07 .07],'Callback',@button0$[18;16HButton2[18;43Hpushbutton','String','LABEL A',...[19;44H02 .73 .07 .07],'Callback',@button2$[21;22H3[21;65HMAP1[1P[22;30H 'Position',[.02 .66 .07 .07],'Callback',@button3$[24;22H4[24;65H2D ON[25;44H02 .59 .07 .07[20C4[27;22H5[27;65HDEBUG ON',...[28;30H 'Position',[.02 .52 .07 .07],'Callback',@button5$[30;22H11=uicontrol('Style','pushbutton','String','LOG',...[31;30H 'Position',[.02 .45 .07 .07],'Callback',@button1$[33;16HInfoText[33;44Htext[22P[34;30H 'Position',[.02 .25 .07 .20]);[K[37;48H18[39;15HhDebugText=uicontrol('Style','text',...[40;9H'Units','Normalized', 'Position',[.76 .10 .22 .83]);[41;5Hend[K[42;3Hend[K[1B[K[1B  function update(robots,  teamNumber, playerNumber , draw_team, ignore_vision)[45;5Hif MONITOR.target_fps==0.5 %Paused state[46;8Hset(MONITOR.hFpsText,'String','Paused');[47;5H   pause(1);[K[48;5Helse[K[1B tStart = tic[1B[K[51;7H if draw_team==2[K[52;9H update_team_wireless(robots);[K[53;8Helseif draw_team==1[50A[3;9H update_team_wireless(robots);[K[4;8Helseif draw_team==1[5;7H   update_team(robots, teamNumber, playerNumber , ignore_vision)[K[6;8Helse[K[1Bupdate_single( robots, teamNumber, playerNumber )[8;7H end[K[9;8Hdrawnow;[K[10;8HtElapsed=toc(tStart);[1B[K[12;8Hset(MONITOR.hFpsText,'String',...[K[13;10Hsprintf('Plot: %d ms FPS: %.1f / %.1f',[13;57Hfloor(tElapsed*1000),.$[14;10Hmin(1/tElapsed,MONITOR.target_fps), MONITOR.target_fps ));[15;7H if(tElapsed<1/MONITOR.target_fps)[K[16;9H pause( 1/MONITOR.target_fps-tElapsed );[K[17;8Hend[18;5Hend[K[19;3Hend[K[21;3Hfunction update_single( robots, teamNumber, playerNumber )[K[22;5H% Robot to display[K[23;5Hr_struct = robots{playerNumber,teamNumber}.get_team_struct();[24;5Hr_mon = robots{playerNumber,teamNumber}.get_monitor_struct();[K[1B[K[26;5Hif( isempty(r_mon) )[27;7Hdisp('Empty monitor struct!'); return;[K[28;5Hend[K[30;5H% AUTO-SWITCH YUYV TYPE[K[31;5Hyuyv_type = r_mon.yuyv_type;[K[32;5Hif MONITOR.enable1[33;16H1 = subplot(4,5,[1 2 6 7]);[K[34;7Hif yuyv_type==1[K[35;9Hyuyv = robots{playerNumber,teamNumber}.get_yuyv();[36;32H[1K plot_yuyv(yuyv);[K[37;7Helseif yuyv_type==2[K[38;9Hyuyv = robots{playerNumber,teamNumber}.get_yuyv2();[39;32H[1K plot_yuyv(yuyv);[K[40;7Helseif yuyv_type==3[K[41;5H    yuyv = robots{playerNumber,teamNumber}.get_yuyv3();[42;32H[1K plot_yuyv(yuyv);[43;25Helse[44;32H[1K return;[K[45;5H  end[K[1B[K[47;7H%webots use non-subsampled label (2x size of yuyv)[48;5H  if MONITOR.enable0[49;8H if MONITOR.is_webots[50;11Hplot_overlay(r_mon,2*MONITOR.enable1,1);[51;8H else[K[52;34H[1K if yuyv_type==1[53;12H[1K plot_overlay(r_mon,1,1);[50A[3;34H[1K if yuyv_type==1[4;12H[1K plot_overlay(r_mon,1,1);[5;34H[1K elseif yuyv_type==2[K[6;12H[1K plot_overlay(r_mon,2,1);[7;34H[1K elseif yuyv_type==3[K[8;12H[1K plot_overlay(r_mon,4,1);[9;40H[1K else[10;48H[1K return;[11;35Hend[12;8H end[K[13;7Hend[K[1B[K[15;7Hif MONITOR.logging[K[16;9HLOGGER.log_data(yuyv + 0,r_mon);[K[17;8H logstr=sprintf('%d/100',LOGGER.log_count);[18;5H    set(MONITOR.hButton11,'String', logstr);[19;8H[1K if LOGGER.log_count==100[20;11HLOGGER.save_log();[21;8H[1K end[K[22;5H  end[K[23;5Hend[K[1B[K[25;5Hif MONITOR.enable2==1[26;5H  MONITOR.h2 = subplot(4,5,[3 4 8 9]);[27;7HlabelA = robots{playerNumber,teamNumber}.get_labelA();[28;5H  plot_label(labelA);[29;7Hif MONITOR.enable0[30;5H    plot_overlay(r_mon,1,MONITOR.enable0);[31;5H  end[K[32;5Helseif MONITOR.enable2==2[33;16H2[33;33H3 4 8 9[34;7HlabelB = robots{playerNumber,teamNumber}.get_labelB();[35;7Hplot_label(labelB);[K[36;7Hif MONITOR.enable0[K[37;7H  plot_overlay(r_mon,r_mon.camera.scaleB,MONITOR.enable0);[38;7Hend[K[39;5Helseif (MONITOR.enable2==3) && (~isempty(MONITOR.lutname))[40;7HMONITOR.h2 = subplot(4,5,[3 4 8 9]);[41;7Hyuyv = robots{playerNumber,teamNumber}.get_yuyv[3P[42;7Hlabel_lut=yuyv2label(yuyv,LUT);[K[43;7Hplot_label(label_lut);[44;5Hend[K[1B[K[46;5Hif MONITOR.enable3[47;7HMONITOR.h3 = subplot(4,5,[11 12 16 17]);[K[48;7Hcla(MONITOR.h3);  [1B[K[50;7Hif MONITOR.enable3==5[K[51;9Hif isfield(r_mon.robot, 'map')[52;11Hplot_grid(r_mon.robot.map);[K[53;32H[1K end [50A[3;11Hplot_grid(r_mon.robot.map);[K[4;32H[1K end [5;9Hplot_field(MONITOR.h3,MONITOR.fieldtype);[K[6;9Hplot_robot( r_struct, r_mon,2,3 );[7;7Helse[K[1Bplot_field(MONITOR.h3,MONITOR.fieldtype);[9;9Hplot_robot( r_struct, r_mon,1.5,MONITOR.enable3 );[10;7Hend[K[1B[30P[1B[K[13;5Hif MONITOR.enable4[14;7HMONITOR.h4 = subplot(4,5,[13 14 18 19]);[15;7Hplot_surroundings( MONITOR.h4, r_mon );[16;5Hend[K[1B[K[18;5Hif MONITOR.enable5[K[19;7Hset(MONITOR.hDebugText,'String',r_mon.debug.message);[20;5Hend[K[1B[K[22;5H[infostr textcolor]=robot_info(r_struct,r_mon,2);[23;5Hset(MONITOR.hInfoText,'String',infostr);[25;3Hend[K[1B[K[1B  function update_team(robots, teamNumber, playerNumber , ignore_vision)[1B[K[29;5H%Draw common field  [30;5Hh_c=subplot(5,5,[1:15]);[K[31;5Hcla(h_c);[32;5Hplot_field(h_c,MONITOR.fieldtype);[1B[K[34;5Hfor i=1:length(playerNumber)[K[35;7Hr_struct = robots{playerNumber(i),teamNumber}.get_team_struct();[36;7Hr_mon = robots{playerNumber(i),teamNumber}.get_monitor_struct();[37;7HlabelB = robots{playerNumber(i),teamNumber}.get_labelB();[K[38;7Hupdated=robots{playerNumber(i),teamNumber}.updated;[39;5H  tLastUpdate=robots{playerNumber(i),teamNumber}.tLastUpdate;[1B[K[1B%      if updated[K[42;7H  h_c=subplot(5,5,[1:15]);[K[43;7H  plot_robot( r_struct, r_mon,2,MONITOR.enable10);[44;5H    updated = 0;[1B%[6Cend[1B[K[47;7Hif MONITOR.enable8==1 && ignore_vision==0[48;7H  h1=subplot(5,5,15+playerNumber(i));[49;9Hplot_label(labelB);[50;7H  plot_overlay(r_mon,4,1);[51;7Helseif MONITOR.enable8==2[K[52;9Hh1=subplot(5,5,15+playerNumber(i));[53;9Hcla(h1);[K[50A[16;32r[16;1H[7M[1;56r[27;52r[27;1H[12M[1;56r[3;9Hh1=subplot(5,5,15+playerNumber(i));[4;9Hcla(h1);[K[5;14Hoverlay(r_mon,4,1);[K[6;7Hend[K[1B[K[8;7Hif MONITOR.enable9[K[9;9Hh2=subplot(5,5,20+playerNumber(i));[K[10;7H  plot_surroundings( h2, r_mon );[1B      end[2B[K[14;7Hh2=subplot(5,5,20+playerNumber(i));[K[15;7H[infostr textcolor]=robot_info(r_struct,r_mon,2);[16;5H  set(MONITOR.infoTexts(i),'String',infostr);[17;5Hend[20;23H_wireless(robot_team)[K[23;22H6:20[26;5Hhold on;[27;5Hfor i=1:10[K[28;7Hr_struct = robot_team.get_team_struct_wireless(i);[29;6H[1K if r_struct.id>0[30;26H6:20[1B [][3P[33;8H[1K if i<6[34;11Hh1=subplot(5,5,i);[35;7H    labelB = robot_team.get_labelB_wireless(i);[36;9H  plot_label(labelB);[K[37;9Helse[K[38;9H  h1=subplot(5,5,i+15);[K[39;7H    labelB = robot_team.get_labelB_wireless(i);[40;9H  plot_label(labelB);[K[41;9Hend[42;9Hplot_overlay_wireless(r_struct);[44;9H[infostr textcolor]=robot_info(r_struct,[],1);[45;9Hset(MONITOR.infoTexts(i),'String',infostr);[47;7Hend[48;5Hend[49;5Hhold off;[50;3Hend[53;3Hfunction plot_grid(map)[50A[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[32B[K[31A[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1BMM[1;70H[0;7mModified[43;2H[m        r_stric   u ruct.robotName[43;54r[54;1H
+[1;56r[53;5H%map: -1 to 1[10A[1B[43;55H[44;52HM1);7[44;53r8[1BM[1;56r[44;1H7[44;53r8M[1;56r[45;1HM7[44;54r8M[1;56r[44;9Hr_struct.robotName[1BM[43;55H7[44;54r8[1BM[1;56r[44;1H         [1BM[43;55H[44;9H[3;5Hhold off;[K[4;3Hend[K[1B[K[1B[K[1B  function plot_grid(map)[8;5H%map: -1 to 1[K[9;5Hsiz=sqrt(length(map)/6/4);[K[10;5Hmap=reshape(map,[4*siz 6*siz]);[K[11;5Hmap_black=max(0,map);[12;5Hmap_green=max(0,-map);[14;5Hrgbc=zeros([4*siz 6*siz 3]);[K[15;5Hrgbc(:,:,1)=1-map_black-map_green;[K[16;5Hrgbc(:,:,2)=1-map_black;[K[17;5Hrgbc(:,:,3)=1-map_black-map_green;[18;3H  image('XData',[-3:1/siz:3],'YData',[-2:1/siz:2],...[19;9H'CData',rgbc);[20;3Hend[K[2B[K[1B  function button0(varargin)[24;5HMONITOR.enable0=mod(MONITOR.enable0+1,3);[25;5Hif MONITOR.enable0==1 set(MONITOR.hButton0,'String', 'Overlay 1');[26;5Helseif MONITOR.enable0==2 set(MONITOR.hButton0,'String', 'Overlay 2');[27;5Helse set(MONITOR.hButton0,'String', 'Overlay OFF');[28;5Hend[K[29;3Hend[K[1B[K[1B  function button1(varargin)[K[32;5HMONITOR.enable1=mod(MONITOR.enable1+1,4);[33;5Hif MONITOR.enable1==1 set(MONITOR.hButton1,'String', 'YUYV1');[34;5Helseif MONITOR.enable1==2 set(MONITOR.hButton1,'String', 'YUYV2');[35;5Helseif MONITOR.enable1==3 set(MONITOR.hButton1,'String', 'YUYV4');[36;5Helse set(MONITOR.hButton1,'String', 'YUYV OFF');[37;7Hcla(MONITOR.h1);[38;5Hend[K[39;3Hend[K[1B[K[1B  function button2(varargin)[42;5HMONITOR.enable2=mod(MONITOR.enable2+1,4);[43;5Hif MONITOR.lutname==0[K[44;7HMONITOR.enable2=mod(MONITOR.enable2,3);[45;5Hend[K[46;5Hif MONITOR.enable2==1 set(MONITOR.hButton2,'String', 'LABEL A');[47;5Helseif MONITOR.enable2==2 set(MONITOR.hButton2,'String', 'LABEL B');[48;5Helseif MONITOR.enable2==3 set(MONITOR.hButton2,'String', 'LUT');[49;5Helse set(MONITOR.hButton2,'String', 'LABEL OFF');[50;7Hcla(MONITOR.h2);[52;3Hend[K[1B[K[50A  end[K[1B[K[1B  function button3(varargin)[6;5HMONITOR.enable3=mod(MONITOR.enable3+1,6);[7;3H  if MONITOR.enable3==1 set(MONITOR.hButton3,'String', 'MAP1');[8;5Helseif MONITOR.enable3==2 set(MONITOR.hButton3,'String', 'MAP2');[9;5Helseif MONITOR.enable3==3 set(MONITOR.hButton3,'String', 'MAP3');[10;5Helseif MONITOR.enable3==4 set(MONITOR.hButton3,'String', 'PVIEW');[11;5Helseif MONITOR.enable3==5 set(MONITOR.hButton3,'String', 'OccVIEW');[12;5Helse set(MONITOR.hButton3,'String', 'MAP OFF');[13;7Hcla(MONITOR.h3);[14;5Hend[K[15;3Hend[K[1B[K[1B  function button4(varargin)[K[18;5HMONITOR.enable4=1-MONITOR.enable4;[K[19;5Hif MONITOR.enable4 set(MONITOR.hButton4,'String', '2D ON');[20;3H  else set(MONITOR.hButton4,'String', '2D OFF');[21;7Hcla(MONITOR.h4);[22;5Hend[23;3Hend[K[1B[K[1B  function button5(varargin)[K[26;5HMONITOR.enable5=1-MONITOR.enable5;[K[27;5Hif MONITOR.enable5 set(MONITOR.hButton5,'String', 'DEBUG ON');[28;6Hlse set(MONITOR.hButton5,'String', 'DEBUG OFF');[29;3H    set(MONITOR.hDebugText,'String','');[30;5Hend[31;3Hend[K[1B[K[1B  function button6(varargin)[K[34;5H%0.5fps means paused state[K[35;5HMONITOR.target_fps=max(0.5,MONITOR.target_fps/2);[K[36;3Hend[K[1B[K[1B  function button7(varargin)[39;3H  MONITOR.target_fps=min(32,MONITOR.target_fps*2);[40;3Hend[1B[K[1B  function button8(varargin)[K[43;5HMONITOR.enable8=mod(MONITOR.enable8+1,3);[44;5Hif MONITOR.enable8==1 set(MONITOR.hButton8,'String', 'LABEL');[45;6Hlseif MONITOR.enable8==2 set(MONITOR.hButton8,'String', 'Overlay');[46;5Helse set(MONITOR.hButton8,'String', 'OFF[21P[47;6Hnd[K[48;3Hend[K[1B[K[1B  function button9(varargin)[51;5HMONITOR.enable9=1-MONITOR.enable9;[52;3H  if MONITOR.enable9 set(MONITOR.hButton9,'String', '2D ON');[53;5Helse set(MONITOR.hButton9,'String', '2D OFF');[50A    hold off;[4;3Hend[1B[K[1B[K[1B  function plot_grid(map)[K[8;5H%map: -1 to 1[K[9;5Hsiz=sqrt(length(map)/6/4);[K[10;5Hmap=reshape(map,[4*siz 6*siz]);[K[11;5Hmap_black=max(0,map);[K[12;5Hmap_green=max(0,-map);[K[1B[K[14;5Hrgbc=zeros([4*siz 6*siz 3]);[15;3H  rgbc(:,:,1)=1-map_black-map_green;[16;5Hrgbc(:,:,2)=1-map_black;[17;3H  rgbc(:,:,3)=1-map_black-map_green;[18;5Himage('XData',[-3:1/siz:3],'YData',[-2:1/siz:2],...[19;5H    'CData',rgbc);[K[20;3Hend[K[1B[K[1B[K[1B  function button0(varargin)[24;5HMONITOR.enable0=mod(MONITOR.enable0+1,3);[25;3H  if MONITOR.enable0==1 set(MONITOR.hButton0,'String', 'Overlay 1');[26;5Helseif MONITOR.enable0==2 set(MONITOR.hButton0,'String', 'Overlay 2');[27;5Helse set(MONITOR.hButton0,'String', 'Overlay OFF[11P[28;6Hnd[K[29;3Hend[K[1B[K[1B  function button1(varargin)[32;5HMONITOR.enable1=mod(MONITOR.enable1+1,4);[33;3H  if MONITOR.enable1==1 set(MONITOR.hButton1,'String', 'YUYV1');[34;5Helseif MONITOR.enable1==2 set(MONITOR.hButton1,'String', 'YUYV2');[35;5Helseif MONITOR.enable1==3 set(MONITOR.hButton1,'String', 'YUYV4');[36;3H  else set(MONITOR.hButton1,'String', 'YUYV OFF');[37;7Hcla(MONITOR.h1);[38;3H  end[K[39;3Hend[K[1B[K[1B  function button2(varargin)[42;3H  MONITOR.enable2=mod(MONITOR.enable2+1,4);[43;5Hif MONITOR.lutname==0[K[44;5H  MONITOR.enable2=mod(MONITOR.enable2,3);[K[45;6Hnd[K[46;5Hif MONITOR.enable2==1 set(MONITOR.hButton2,'String', 'LABEL A');[47;6Hlseif MONITOR.enable2==2 set(MONITOR.hButton2,'String', 'LABEL B');[48;3H  elseif MONITOR.enable2==3 set(MONITOR.hButton2,'String', 'LUT');[49;5Helse set(MONITOR.hButton2,'String', 'LABEL OFF');[50;3H    cla(MONITOR.h2);[K[51;5Hend[K[52;3Hend[K[1B[K[50A        h1=subplot(5,5,15+playerNumber(i));[4;8H[1K cla(h1);[5;9Hplot_overlay(r_mon,4,1);[6;7Hend[1B[K[8;5H  if MONITOR.enable9[9;5H    h2=subplot(5,5,20+playerNumber(i));[10;5H    plot_surroundings( h2, r_mon );[11;5H  end[K[1B[K[14;5H  h2=subplot(5,5,20+playerNumber(i));[15;5H  [infostr textcolor]=robot_info(r_struct,r_mon,2);[16;5H  set(MONITOR.infoTexts(i),'String',infostr);[17;5Hend[K[18;3Hend[K[1B[K[1B  function update_team_wireless(robot_team)[22;5H%Draw common field[23;3H  h_c=subplot(5,5,[6:20]);[24;5Hcla(h_c);[K[25;5Hplot_field(h_c,MONITOR.fieldtype);[K[26;5Hhold on;[K[27;5Hfor i=1:10[K[28;5H  r_struct = robot_team.get_team_struct_wireless(i);[29;3H    if r_struct.id>0[30;9Hh_c=subplot(5,5,[6:20]);[31;8H[1K plot_robot( r_struct, [],2,MONITOR.enable10);[32;5H    updated = 0;[K[33;5H    if i<6[K[34;10H[1K h1=subplot(5,5,i);[K[35;10H[1K labelB = robot_team.get_labelB_wireless(i);[K[36;10H[1K plot_label(labelB);[K[37;7H  else[K[38;10H[1K h1=subplot(5,5,i+15);[39;10H[1K labelB = robot_team.get_labelB_wireless(i);[40;11Hplot_label(labelB);[41;8H[1K end[K[42;5H    plot_overlay_wireless(r_struct);[K[43;5H    [infostr textcolor]=robot_info(r_struct,[],1);[1B[K[45;5H    r_struct.robotName[1B[K[1B[K[48;5H    set(MONITOR.infoTexts(i),'String',infostr);[K[1B[K[50;7Hend[K[52;3H  hold off;[53;3Hend[50A[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[43;55Hr1);_1);[1P[1P1,);r);_);s);t);r);u);c);t);.);r);o);b);o);t);N);a);m);e);[44;9H[44;54r[54;1H
+[1;56r[44;1H[44;54r[54;1H
+[1;56r[44;1H[44;54r[54;1H
+[1;56r[53;3Hfunction plot_grid(map)[9A[10B[0;7mFile Name to Write: monitor/show_monitor.m                                     [55;14H[m      [0;7mM-D[m DOS Format     [0;7mM-A[m Append         [0;7mM-B[m Backup File   [56;2H[0;7mC[m Cancel          [0;7mM-M[m Mac Format     [0;7mM-P[m Prepend[K[54;43H[1;70H[39;49m[0;7m        [54;30H[m[1K [0;7m[ Wrote 474 lines ][m[K[55;14H[0;7m^O[m WriteOut  [0;7m^R[m Read File [0;7m^Y[m Prev Page [0;7m^K[m Cut Text  [0;7m^C[m Cur Pos[56;2H[0;7mX[m Exit      [0;7m^J[m Justify   [0;7m^W[m Where Is  [0;7m^V[m Next Page [0;7m^U[m UnCut Text[0;7m^T[m To Spell[12A[10B[0;7mFile Name to Write: monitor/show_monitor.m                                     [55;14H[m      [0;7mM-D[m DOS Format     [0;7mM-A[m Append         [0;7mM-B[m Backup File   [56;2H[0;7mC[m Cancel          [0;7mM-M[m Mac Format     [0;7mM-P[m Prepend[K[54;43H[54;30H[39;49m[m[1K [0;7m[ Wrote 474 lines ][m[K[55;14H[0;7m^O[m WriteOut  [0;7m^R[m Read File [0;7m^Y[m Prev Page [0;7m^K[m Cut Text  [0;7m^C[m Cur Pos[56;2H[0;7mX[m Exit      [0;7m^J[m Justify   [0;7m^W[m Where Is  [0;7m^V[m Next Page [0;7m^U[m UnCut Text[0;7m^T[m To Spell[12A[11B[J[56;79H[56;1H[?1049l[?1l>[?1h=>> MonitorWireless
+{Warning: This functionality is no longer supported under the -nojvm startup
+option. For more information, see "Changes to -nojvm Startup Option" in the
+MATLAB Release Notes. To view the release note in your system browser, run
+web('http://www.mathworks.com/access/helpdesk/help/techdoc/rn/bropbi9-1.html#brubkzc-1',
+'-browser')} 
+> In show_monitor>init at 32
+  In MonitorWireless at 39
+Initialization time: 4.434071
+{??? Operation terminated by user during ==> show_monitor>update at 161
+
+In ==> MonitorWireless at 47
+    MONITOR.update(team_robots,0,0,draw_team,0);
+} 
+>> MonitorWireless!nano monitor/show_monitor.m
+
+(B)0[?1049h[1;56r[m[4l[34h[?25h[?1h=[?1h=[?1h=[39;49m[39;49m[m[H[J[0;7m  GNU nano 2.2.6         File: monitor/show_monitor.m                          [3;1H[mfunction h=show_monitor()[4;3Hglobal MONITOR LOGGER LUT;[6;3Hh.init=@init;[7;3Hh.update=@update;[8;3Hh.update_single=@update_single;[9;3Hh.update_team=@update_team;[11;3H%Five screen for single monitor[12;3Hh.enable0=1;[13;3Hh.enable1=1;[14;3Hh.enable2=1;[15;3Hh.enable3=1;[16;3Hh.enable4=1;[17;3Hh.enable5=1;[19;3H%two subscreen for team monitor[20;3Hh.enable8=0;   %Label mode, 1/2/0[21;3Hh.enable9=1;   %Label mode, 1/0[22;3Hh.enable10=1;  %Map mode, 1/2/3[24;3Hh.logging=0;[25;3Hh.lutname=0;[26;3Hh.is_webots=0;[28;3Hh.fieldtype=0; %0,1,2 for SPL/Kid/Teen[30;3H% subfunctions[32;3Hfunction init(draw_team,target_fps)[33;5HMONITOR.target_fps=target_fps;[34;5Hfigure(1);[35;5Hclf;[36;5Hif draw_team==2 % Multiple robot, wireless monitoring (real robots)[37;7Hset(gcf,'position',[1 1 900 900]);[39;7HMONITOR.enable10=2;  %Default 2[41;7HMONITOR.hFpsText=uicontrol('Style','text',...[42;9H'Units','Normalized', 'Position',[.40 0.93 0.20 0.04]);[44;7HMONITOR.hButton6=uicontrol('Style','pushbutton','String','FPS -',...[45;9H'Units','Normalized','Position',[.30 .93 .10 .04],'Callback',@button6);[47;7HMONITOR.hButton7=uicontrol('Style','pushbutton','String','FPS +',...[48;9H'Units','Normalized', 'Position',[.60 .93 .10 .04],'Callback',@button7$[50;7HMONITOR.hButton13=uicontrol('Style','pushbutton','String','Kidsize',...[51;9H'Units','Normalized', 'Position',[.02 .56 .07 .07],'Callback',@button1$[53;7Hfor i=1:5[54;31H[0;7m[ Read 474 lines ][1B^G[m Get Help  [0;7m^O[m WriteOut  [0;7m^R[m Read File [0;7m^Y[m Prev Page [0;7m^K[m Cut Text  [0;7m^C[m Cur Pos[1B[0;7m^X[m Exit[6C[0;7m^J[m Justify   [0;7m^W[m Where Is  [0;7m^V[m Next Page [0;7m^U[m UnCut Text[0;7m^T[m To Spell[53A[24;53r[24;1H[14M[1;56r[3;1H[K[1B      for i=1:5[K[5;9HMONITOR.infoTexts(i)=uicontrol('Style','text',...[6;8H[1K 'Units','Normalized', 'Position',[0.16*(i-1)+0.12 0.71 0.145 0.08]);[7;3H    end[K[1B[K[1B      for i=6:10[K[10;9HMONITOR.infoTexts(i)=uicontrol('Style','text',...[11;8H[1K 'Units','Normalized', 'Position',[0.16*(i-6)+0.12 0.01 0.145 0.08]);[12;3H    end[K[1B[K[1B[K[1B    elseif draw_team==1 %Multiple robot full monitoring (webots)[16;3H    set(gcf,'position',[1 1 900 900]);[1B[K[18;7HMONITOR.hFpsText=uicontrol('Style','text',...[19;8H[1K 'Units','Normalized', 'Position',[.40 0.93 0.20 0.04]);[1B[K[1B      MONITOR.hButton6=uicontrol('Style','pushbutton','String','FPS -',...[22;8H[1K 'Units','Normalized','Position',[.30 .93 .10 .04],'Callback',@button6);[24;7HMONITOR.hButton7=uicontrol('Style','pushbutton','String','FPS +',...[25;7H  'Units','Normalized', 'Position',[.60 .93 .10 .04],'Callback',@button7$[27;16HButton8[27;43Hpushbutton','String','OFF',...[28;30H'Position',[.02 .30 .07 .07],'Callback',@button8);[30;22H9[30;65H2D[3P[31;43H02 .23 .07 .07[20C9[33;22H10=uicontrol('Style','pushbutton','String','MAP1[34;30H'Position',[.02 .63 .07 .07],'Callback',@button10[39;7HMONITOR.infoTexts=[];[41;7Hfor i=1:5[42;9HMONITOR.infoTexts(i)=uicontrol('Style','text',...[43;9H'Units','Normalized', 'Position',[0.16*(i-1)+0.12 0.01 0.145 0.08]);[44;7Hend[47;5Helse % Single robot full monitoring mode[48;7HLOGGER=logger();[49;7HLOGGER.init();[50;7Hset(gcf,'Position',[1 1 1000 600])[51;7HMONITOR.hFpsText=uicontrol('Style','text',...[52;9H'Units','Normalized', 'Position',[.40 0.93 0.20 0.04]);[49A[3;9H'Units','Normalized', 'Position',[.40 0.93 0.20 0.04]);[1B[K[5;7HMONITOR.hButton6=uicontrol('Style','pushbutton','String','FPS -',...[6;30H'Position',[.30 .93 .10 .04],'Callback',@button6);[7;1H[K[8;7HMONITOR.hButton7=uicontrol('Style','pushbutton','String','FPS +',...[9;7H  'Units','Normalized', 'Position',[.60 .93 .10 .04],'Callback',@button7$[10;1H[K[11;7HMONITOR.hButton12=uicontrol('Style','pushbutton','String','Load LUT',...[12;7H  'Units','Normalized', 'Position',[.70 .93 .20 .04],'Callback',@button1$[15;5H  MONITOR.hButton0=uicontrol('Style','pushbutton','String','Overlay 1',...[16;7H  'Units','Normalized', 'Position',[.02 .80 .07 .07],'Callback',@button0$[18;16HButton2[18;43Hpushbutton','String','LABEL A',...[19;44H02 .73 .07 .07],'Callback',@button2$[21;22H3[21;65HMAP1[1P[22;30H 'Position',[.02 .66 .07 .07],'Callback',@button3$[24;22H4[24;65H2D ON[25;44H02 .59 .07 .07[20C4[27;22H5[27;65HDEBUG ON',...[28;30H 'Position',[.02 .52 .07 .07],'Callback',@button5$[30;22H11=uicontrol('Style','pushbutton','String','LOG',...[31;30H 'Position',[.02 .45 .07 .07],'Callback',@button1$[33;16HInfoText[33;44Htext[22P[34;30H 'Position',[.02 .25 .07 .20]);[K[37;48H18[39;15HhDebugText=uicontrol('Style','text',...[40;9H'Units','Normalized', 'Position',[.76 .10 .22 .83]);[41;5Hend[K[42;3Hend[K[1B[K[1B  function update(robots,  teamNumber, playerNumber , draw_team, ignore_vision)[45;5Hif MONITOR.target_fps==0.5 %Paused state[46;8Hset(MONITOR.hFpsText,'String','Paused');[47;5H   pause(1);[K[48;5Helse[K[1B tStart = tic[1B[K[51;7H if draw_team==2[K[52;9H update_team_wireless(robots);[K[53;8Helseif draw_team==1[50A[3;9H update_team_wireless(robots);[K[4;8Helseif draw_team==1[5;7H   update_team(robots, teamNumber, playerNumber , ignore_vision)[K[6;8Helse[K[1Bupdate_single( robots, teamNumber, playerNumber )[8;7H end[K[9;8Hdrawnow;[K[10;8HtElapsed=toc(tStart);[1B[K[12;8Hset(MONITOR.hFpsText,'String',...[K[13;10Hsprintf('Plot: %d ms FPS: %.1f / %.1f',[13;57Hfloor(tElapsed*1000),.$[14;10Hmin(1/tElapsed,MONITOR.target_fps), MONITOR.target_fps ));[15;7H if(tElapsed<1/MONITOR.target_fps)[K[16;9H pause( 1/MONITOR.target_fps-tElapsed );[K[17;8Hend[18;5Hend[K[19;3Hend[K[21;3Hfunction update_single( robots, teamNumber, playerNumber )[K[22;5H% Robot to display[K[23;5Hr_struct = robots{playerNumber,teamNumber}.get_team_struct();[24;5Hr_mon = robots{playerNumber,teamNumber}.get_monitor_struct();[K[1B[K[26;5Hif( isempty(r_mon) )[27;7Hdisp('Empty monitor struct!'); return;[K[28;5Hend[K[30;5H% AUTO-SWITCH YUYV TYPE[K[31;5Hyuyv_type = r_mon.yuyv_type;[K[32;5Hif MONITOR.enable1[33;16H1 = subplot(4,5,[1 2 6 7]);[K[34;7Hif yuyv_type==1[K[35;9Hyuyv = robots{playerNumber,teamNumber}.get_yuyv();[36;32H[1K plot_yuyv(yuyv);[K[37;7Helseif yuyv_type==2[K[38;9Hyuyv = robots{playerNumber,teamNumber}.get_yuyv2();[39;32H[1K plot_yuyv(yuyv);[K[40;7Helseif yuyv_type==3[K[41;5H    yuyv = robots{playerNumber,teamNumber}.get_yuyv3();[42;32H[1K plot_yuyv(yuyv);[43;25Helse[44;32H[1K return;[K[45;5H  end[K[1B[K[47;7H%webots use non-subsampled label (2x size of yuyv)[48;5H  if MONITOR.enable0[49;8H if MONITOR.is_webots[50;11Hplot_overlay(r_mon,2*MONITOR.enable1,1);[51;8H else[K[52;34H[1K if yuyv_type==1[53;12H[1K plot_overlay(r_mon,1,1);[50A[3;34H[1K if yuyv_type==1[4;12H[1K plot_overlay(r_mon,1,1);[5;34H[1K elseif yuyv_type==2[K[6;12H[1K plot_overlay(r_mon,2,1);[7;34H[1K elseif yuyv_type==3[K[8;12H[1K plot_overlay(r_mon,4,1);[9;40H[1K else[10;48H[1K return;[11;35Hend[12;8H end[K[13;7Hend[K[1B[K[15;7Hif MONITOR.logging[K[16;9HLOGGER.log_data(yuyv + 0,r_mon);[K[17;8H logstr=sprintf('%d/100',LOGGER.log_count);[18;5H    set(MONITOR.hButton11,'String', logstr);[19;8H[1K if LOGGER.log_count==100[20;11HLOGGER.save_log();[21;8H[1K end[K[22;5H  end[K[23;5Hend[K[1B[K[25;5Hif MONITOR.enable2==1[26;5H  MONITOR.h2 = subplot(4,5,[3 4 8 9]);[27;7HlabelA = robots{playerNumber,teamNumber}.get_labelA();[28;5H  plot_label(labelA);[29;7Hif MONITOR.enable0[30;5H    plot_overlay(r_mon,1,MONITOR.enable0);[31;5H  end[K[32;5Helseif MONITOR.enable2==2[33;16H2[33;33H3 4 8 9[34;7HlabelB = robots{playerNumber,teamNumber}.get_labelB();[35;7Hplot_label(labelB);[K[36;7Hif MONITOR.enable0[K[37;7H  plot_overlay(r_mon,r_mon.camera.scaleB,MONITOR.enable0);[38;7Hend[K[39;5Helseif (MONITOR.enable2==3) && (~isempty(MONITOR.lutname))[40;7HMONITOR.h2 = subplot(4,5,[3 4 8 9]);[41;7Hyuyv = robots{playerNumber,teamNumber}.get_yuyv[3P[42;7Hlabel_lut=yuyv2label(yuyv,LUT);[K[43;7Hplot_label(label_lut);[44;5Hend[K[1B[K[46;5Hif MONITOR.enable3[47;7HMONITOR.h3 = subplot(4,5,[11 12 16 17]);[K[48;7Hcla(MONITOR.h3);  [1B[K[50;7Hif MONITOR.enable3==5[K[51;9Hif isfield(r_mon.robot, 'map')[52;11Hplot_grid(r_mon.robot.map);[K[53;32H[1K end [50A[3;11Hplot_grid(r_mon.robot.map);[K[4;32H[1K end [5;9Hplot_field(MONITOR.h3,MONITOR.fieldtype);[K[6;9Hplot_robot( r_struct, r_mon,2,3 );[7;7Helse[K[1Bplot_field(MONITOR.h3,MONITOR.fieldtype);[9;9Hplot_robot( r_struct, r_mon,1.5,MONITOR.enable3 );[10;7Hend[K[1B[30P[1B[K[13;5Hif MONITOR.enable4[14;7HMONITOR.h4 = subplot(4,5,[13 14 18 19]);[15;7Hplot_surroundings( MONITOR.h4, r_mon );[16;5Hend[K[1B[K[18;5Hif MONITOR.enable5[K[19;7Hset(MONITOR.hDebugText,'String',r_mon.debug.message);[20;5Hend[K[1B[K[22;5H[infostr textcolor]=robot_info(r_struct,r_mon,2);[23;5Hset(MONITOR.hInfoText,'String',infostr);[25;3Hend[K[1B[K[1B  function update_team(robots, teamNumber, playerNumber , ignore_vision)[1B[K[29;5H%Draw common field  [30;5Hh_c=subplot(5,5,[1:15]);[K[31;5Hcla(h_c);[32;5Hplot_field(h_c,MONITOR.fieldtype);[1B[K[34;5Hfor i=1:length(playerNumber)[K[35;7Hr_struct = robots{playerNumber(i),teamNumber}.get_team_struct();[36;7Hr_mon = robots{playerNumber(i),teamNumber}.get_monitor_struct();[37;7HlabelB = robots{playerNumber(i),teamNumber}.get_labelB();[K[38;7Hupdated=robots{playerNumber(i),teamNumber}.updated;[39;5H  tLastUpdate=robots{playerNumber(i),teamNumber}.tLastUpdate;[1B[K[1B%      if updated[K[42;7H  h_c=subplot(5,5,[1:15]);[K[43;7H  plot_robot( r_struct, r_mon,2,MONITOR.enable10);[44;5H    updated = 0;[1B%[6Cend[1B[K[47;7Hif MONITOR.enable8==1 && ignore_vision==0[48;7H  h1=subplot(5,5,15+playerNumber(i));[49;9Hplot_label(labelB);[50;7H  plot_overlay(r_mon,4,1);[51;7Helseif MONITOR.enable8==2[K[52;9Hh1=subplot(5,5,15+playerNumber(i));[53;9Hcla(h1);[K[50A[16;32r[16;1H[7M[1;56r[27;52r[27;1H[12M[1;56r[3;9Hh1=subplot(5,5,15+playerNumber(i));[4;9Hcla(h1);[K[5;14Hoverlay(r_mon,4,1);[K[6;7Hend[K[1B[K[8;7Hif MONITOR.enable9[K[9;9Hh2=subplot(5,5,20+playerNumber(i));[K[10;7H  plot_surroundings( h2, r_mon );[1B      end[2B[K[14;7Hh2=subplot(5,5,20+playerNumber(i));[K[15;7H[infostr textcolor]=robot_info(r_struct,r_mon,2);[16;5H  set(MONITOR.infoTexts(i),'String',infostr);[17;5Hend[20;23H_wireless(robot_team)[K[23;22H6:20[26;5Hhold on;[27;5Hfor i=1:10[K[28;7Hr_struct = robot_team.get_team_struct_wireless(i);[29;6H[1K if r_struct.id>0[30;26H6:20[1B [][3P[33;8H[1K if i<6[34;11Hh1=subplot(5,5,i);[35;7H    labelB = robot_team.get_labelB_wireless(i);[36;9H  plot_label(labelB);[K[37;9Helse[K[38;9H  h1=subplot(5,5,i+15);[K[39;7H    labelB = robot_team.get_labelB_wireless(i);[40;9H  plot_label(labelB);[K[41;9Hend[42;9Hplot_overlay_wireless(r_struct);[43;9H[infostr textcolor]=robot_info(r_struct,[],1,r_struct.robotName);[45;9Hset(MONITOR.infoTexts(i),'String',infostr);[47;7Hend[48;5Hend[49;5Hhold off;[50;3Hend[53;3Hfunction plot_grid(map)[50A[K[1B  function plot_grid(map)[5;5H%map: -1 to 1[K[6;5Hsiz=sqrt(length(map)/6/4);[7;5Hmap=reshape(map,[4*siz 6*siz]);[8;5Hmap_black=max(0,map);[9;5Hmap_green=max(0,-map);[K[1B[K[11;5Hrgbc=zeros([4*siz 6*siz 3]);[12;5Hrgbc(:,:,1)=1-map_black-map_green;[13;5Hrgbc(:,:,2)=1-map_black;[14;5Hrgbc(:,:,3)=1-map_black-map_green;[K[15;5Himage('XData',[-3:1/siz:3],'YData',[-2:1/siz:2],...[16;7H  'CData',rgbc);[K[1B[2P[1B[K[20;12Hbutton0(varargin)[K[21;5HMONITOR.enable0=mod(MONITOR.enable0+1,3);[22;5Hif MONITOR.enable0==1 set(MONITOR.hButton0,'String', 'Overlay 1');[23;5Helseif MONITOR.enable0==2 set(MONITOR.hButton0,'String', 'Overlay 2');[24;5Helse set(MONITOR.hButton0,'String', 'Overlay OFF');[25;5Hend[K[26;3Hend[K[1B[K[1B  function button1(varargin)[K[29;5HMONITOR.enable1=mod(MONITOR.enable1+1,4);[30;5Hif MONITOR.enable1==1 set(MONITOR.hButton1,'String', 'YUYV1');[31;5Helseif MONITOR.enable1==2 set(MONITOR.hButton1,'String', 'YUYV2');[32;5Helseif MONITOR.enable1==3 set(MONITOR.hButton1,'String', 'YUYV4');[33;5Helse set(MONITOR.hButton1,'String', 'YUYV OFF');[34;7Hcla(MONITOR.h1);[K[35;5Hend[K[36;3Hend[K[1B[K[1B  function button2(varargin)   [39;5HMONITOR.enable2=mod(MONITOR.enable2+1,4);[K[40;5Hif MONITOR.lutname==0[K[41;7HMONITOR.enable2=mod(MONITOR.enable2,3);[42;5Hend[K[43;5Hif MONITOR.enable2==1 set(MONITOR.hButton2,'String', 'LABEL A');[K[44;5Helseif MONITOR.enable2==2 set(MONITOR.hButton2,'String', 'LABEL B');[45;5Helseif MONITOR.enable2==3 set(MONITOR.hButton2,'String', 'LUT');[46;5Helse set(MONITOR.hButton2,'String', 'LABEL OFF');[47;7Hcla(MONITOR.h2);[49;3Hend[K[1B[K[1B  function button3(varargin)[52;5HMONITOR.enable3=mod(MONITOR.enable3+1,6);[53;3H  if MONITOR.enable3==1 set(MONITOR.hButton3,'String', 'MAP1');[50A    MONITOR.enable3=mod(MONITOR.enable3+1,6);[4;3H  if MONITOR.enable3==1 set(MONITOR.hButton3,'String', 'MAP1');[5;5Helseif MONITOR.enable3==2 set(MONITOR.hButton3,'String', 'MAP2');[6;5Helseif MONITOR.enable3==3 set(MONITOR.hButton3,'String', 'MAP3');[7;5Helseif MONITOR.enable3==4 set(MONITOR.hButton3,'String', 'PVIEW');[8;5Helseif MONITOR.enable3==5 set(MONITOR.hButton3,'String', 'OccVIEW');[9;5Helse set(MONITOR.hButton3,'String', 'MAP OFF');[10;7Hcla(MONITOR.h3);[11;5Hend[K[12;3Hend[K[1B[K[1B  function button4(varargin)[K[15;5HMONITOR.enable4=1-MONITOR.enable4;[K[16;5Hif MONITOR.enable4 set(MONITOR.hButton4,'String', '2D ON');[17;3H  else set(MONITOR.hButton4,'String', '2D OFF');[18;7Hcla(MONITOR.h4);[19;5Hend[20;3Hend[K[1B[K[1B  function button5(varargin)[K[23;5HMONITOR.enable5=1-MONITOR.enable5;[K[24;5Hif MONITOR.enable5 set(MONITOR.hButton5,'String', 'DEBUG ON');[25;6Hlse set(MONITOR.hButton5,'String', 'DEBUG OFF');[26;3H    set(MONITOR.hDebugText,'String','');[27;5Hend[28;3Hend[K[1B[K[1B  function button6(varargin)[K[31;5H%0.5fps means paused state[K[32;5HMONITOR.target_fps=max(0.5,MONITOR.target_fps/2);[K[33;3Hend[K[1B[K[1B  function button7(varargin)[36;3H  MONITOR.target_fps=min(32,MONITOR.target_fps*2);[37;3Hend[1B[K[1B  function button8(varargin)[K[40;5HMONITOR.enable8=mod(MONITOR.enable8+1,3);[41;5Hif MONITOR.enable8==1 set(MONITOR.hButton8,'String', 'LABEL');[42;6Hlseif MONITOR.enable8==2 set(MONITOR.hButton8,'String', 'Overlay');[43;5Helse set(MONITOR.hButton8,'String', 'OFF[21P[44;6Hnd[K[45;3Hend[K[1B[K[1B  function button9(varargin)[48;5HMONITOR.enable9=1-MONITOR.enable9;[49;3H  if MONITOR.enable9 set(MONITOR.hButton9,'String', '2D ON');[50;5Helse set(MONITOR.hButton9,'String', '2D OFF');[51;3H  end[K[52;3Hend[K[1B[K[50A  end[K[1B[K[1B  function button10(varargin)[K[6;5HMONITOR.enable10=mod(MONITOR.enable10,3)+1;  %1,2,3[K[7;5Hif MONITOR.enable10==1 set(MONITOR.hButton10,'String', 'MAP1[3P[8;26H10==2 set(MONITOR.hButton10,'String', 'MAP2[1P[9;9Hif MONITOR.enable10==3 set(MONITOR.hButton10,'String', 'MAP3');[10;5Hend[K[1B[2P[1B[K[1B  function button11(varargin)[14;3H  MONITOR.logging=1-MONITOR.logging;[15;3Hend[K[1B[K[1B  function button12(varargin) % Load lut file[K[18;5H[filename, pathname] = uigetfile('*.raw', 'Select lut file to load');[19;5Hif (filename ~= 0)[20;3H    MONITOR.lutname=filename;[21;7Hfid = fopen([pathname filename], 'r');[22;3H    LUT = fread(fid, 'uint8');[23;5H  fclose(fid);[K[24;5H  set(MONITOR.hButton12,'String', filename);[K[25;6Hnd[K[26;3Hend[K[1B[K[1B  function button13(varargin)[29;5HMONITOR.fieldtype=mod(MONITOR.fieldtype+1,3);[30;3H  if MONITOR.fieldtype==1 set(MONITOR.hButton13,'String', 'SPL');[31;5Helseif MONITOR.fieldtype==2 set(MONITOR.hButton13,'String', 'TeenSize');[32;5Helse set(MONITOR.hButton13,'String', 'Kidsize');[K[1B    end[34;3Hend[1Bend[K[1B[K[1B[K[2B[K[1B[K[1B[K[1B[K[1B[K[1B[K[1B[K[2B[K[1B[K[1B[K[1B[K[1B[K[1B[K[49A[33B[33A    MONITOR.enable3=mod(MONITOR.enable3+1,6);[4;5Hif MONITOR.enable3==1 set(MONITOR.hButton3,'String', 'MAP1');[5;3H  elseif MONITOR.enable3==2 set(MONITOR.hButton3,'String', 'MAP2');[6;5Helseif MONITOR.enable3==3 set(MONITOR.hButton3,'String', 'MAP3');[7;5Helseif MONITOR.enable3==4 set(MONITOR.hButton3,'String', 'PVIEW');[8;26H3==5 set(MONITOR.hButton3,'String', 'OccVIEW');[9;9H set(MONITOR.hButton3,'String', 'MAP OFF[20P[10;5H  cla(MONITOR.h3);[1B    end[12;3Hend[1B[K[1B  function button4(varargin)[K[15;3H  MONITOR.enable4=1-MONITOR.enable4;[16;5Hif MONITOR.enable4 set(MONITOR.hButton4,'String', '2D ON');[17;3H  else set(MONITOR.hButton4,'String', '2D OFF');[18;5H  cla(MONITOR.h4);[K[19;5Hend[K[20;3Hend[K[1B[K[1B  function button5(varargin)[K[23;5HMONITOR.enable5=1-MONITOR.enable5;[24;5Hif MONITOR.enable5 set(MONITOR.hButton5,'String', 'DEBUG ON');[25;6Hlse set(MONITOR.hButton5,'String', 'DEBUG OFF');[26;3H    set(MONITOR.hDebugText,'String','');[27;5Hend[28;3Hend[K[1B[K[1B  function button6(varargin)[K[31;5H%0.5fps means paused state[K[32;5HMONITOR.target_fps=max(0.5,MONITOR.target_fps/2);[1B[2P[1B[K[1B  function button7(varargin)[36;5HMONITOR.target_fps=min(32,MONITOR.target_fps*2);[37;3Hend[39;3Hfunction button8(varargin)[40;5HMONITOR.enable8=mod(MONITOR.enable8+1,3);[41;5Hif MONITOR.enable8==1 set(MONITOR.hButton8,'String', 'LABEL');[42;5Helseif MONITOR.enable8==2 set(MONITOR.hButton8,'String', 'Overlay');[43;5Helse set(MONITOR.hButton8,'String', 'OFF');[44;5Hend[45;3Hend[47;3Hfunction button9(varargin)[48;5HMONITOR.enable9=1-MONITOR.enable9;[49;5Hif MONITOR.enable9 set(MONITOR.hButton9,'String', '2D ON');[50;5Helse set(MONITOR.hButton9,'String', '2D OFF');[51;5Hend[52;3Hend[49A[K[1B  function plot_grid(map)[K[5;5H%map: -1 to 1[K[6;5Hsiz=sqrt(length(map)/6/4);[K[7;5Hmap=reshape(map,[4*siz 6*siz]);[K[8;5Hmap_black=max(0,map);[K[9;5Hmap_green=max(0,-map);[K[1B[K[11;5Hrgbc=zeros([4*siz 6*siz 3]);[12;3H  rgbc(:,:,1)=1-map_black-map_green;[13;5Hrgbc(:,:,2)=1-map_black;[14;3H  rgbc(:,:,3)=1-map_black-map_green;[15;5Himage('XData',[-3:1/siz:3],'YData',[-2:1/siz:2],...[16;5H    'CData',rgbc);[K[17;3Hend[K[1B[K[1B[K[1B  function button0(varargin)[21;5HMONITOR.enable0=mod(MONITOR.enable0+1,3);[22;3H  if MONITOR.enable0==1 set(MONITOR.hButton0,'String', 'Overlay 1');[23;5Helseif MONITOR.enable0==2 set(MONITOR.hButton0,'String', 'Overlay 2');[24;5Helse set(MONITOR.hButton0,'String', 'Overlay OFF[11P[25;6Hnd[K[26;3Hend[K[1B[K[1B  function button1(varargin)[29;5HMONITOR.enable1=mod(MONITOR.enable1+1,4);[30;3H  if MONITOR.enable1==1 set(MONITOR.hButton1,'String', 'YUYV1');[31;5Helseif MONITOR.enable1==2 set(MONITOR.hButton1,'String', 'YUYV2');[32;5Helseif MONITOR.enable1==3 set(MONITOR.hButton1,'String', 'YUYV4');[33;3H  else set(MONITOR.hButton1,'String', 'YUYV OFF');[34;7Hcla(MONITOR.h1);[35;3H  end[K[36;3Hend[K[1B[K[1B  function button2(varargin)[39;3H  MONITOR.enable2=mod(MONITOR.enable2+1,4);[40;5Hif MONITOR.lutname==0[K[41;5H  MONITOR.enable2=mod(MONITOR.enable2,3);[K[42;6Hnd[K[43;5Hif MONITOR.enable2==1 set(MONITOR.hButton2,'String', 'LABEL A');[44;6Hlseif MONITOR.enable2==2 set(MONITOR.hButton2,'String', 'LABEL B');[45;3H  elseif MONITOR.enable2==3 set(MONITOR.hButton2,'String', 'LUT');[46;5Helse set(MONITOR.hButton2,'String', 'LABEL OFF');[47;3H    cla(MONITOR.h2);[K[48;5Hend[K[49;3Hend[K[1B[K[1B  function button3(varargin)[52;3H  MONITOR.enable3=mod(MONITOR.enable3+1,6);[53;5Hif MONITOR.enable3==1 set(MONITOR.hButton3,'String', 'MAP1');[50A[3;9Hh1=subplot(5,5,15+playerNumber(i));[4;8H[1K cla(h1);[K[5;5H    plot_overlay(r_mon,4,1);[6;5H  end[K[1B[K[8;5H  if MONITOR.enable9 [9;5H    h2=subplot(5,5,20+playerNumber(i));[10;9Hplot_surroundings( h2, r_mon );[11;5H  end[K[1B[K[1B[K[14;5H  h2=subplot(5,5,20+playerNumber(i));[15;5H  [infostr textcolor]=robot_info(r_struct,r_mon,2);[16;7Hset(MONITOR.infoTexts(i),'String',infostr);[1B    end[18;3Hend[20;12Hupdate_team_wireless(robot_team)[1B[K[22;5H%Draw common field[K[23;5Hh_c=subplot(5,5,[6:20]);[K[24;5Hcla(h_c);[K[25;5Hplot_field(h_c,MONITOR.fieldtype);[26;3H  hold on;[27;5Hfor i=1:10[28;3H    r_struct = robot_team.get_team_struct_wireless(i);[29;5H  if r_struct.id>0[K[30;5H    h_c=subplot(5,5,[6:20]);[K[31;5H    plot_robot( r_struct, [],2,MONITOR.enable10);[K[32;5H    updated = 0;[K[33;5H    if i<6[K[34;7H    h1=subplot(5,5,i);[35;10H[1K labelB = robot_team.get_labelB_wireless(i);[36;10H[1K plot_label(labelB);[37;9Helse[38;10H[1K h1=subplot(5,5,i+15);[39;10H[1K labelB = robot_team.get_labelB_wireless(i);[40;10H[1K plot_label(labelB);[41;7H  end[K[42;5H    plot_overlay_wireless(r_struct);[43;5H    [infostr textcolor]=robot_info(r_struct,[],1,r_struct.robotName);[1B[K[45;5H    set(MONITOR.infoTexts(i),'String',infostr);[K[1B[K[47;7Hend[K[49;3H  hold off;[50;3Hend[1B[K[1B[K[1B  function plot_grid(map)[K[50A[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[40B[K[39A[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1BM[73C[1;70H[0;7mModified[43;52H[m[1P3,r_struct.robotName);[43;53H[11B[0;7mFile Name to Write: monitor/show_monitor.m                                     [55;14H[m      [0;7mM-D[m DOS Format     [0;7mM-A[m Append         [0;7mM-B[m Backup File   [56;2H[0;7mC[m Cancel          [0;7mM-M[m Mac Format     [0;7mM-P[m Prepend[K[54;43H[1;70H[39;49m[0;7m        [54;30H[m[1K [0;7m[ Wrote 474 lines ][m[K[55;14H[0;7m^O[m WriteOut  [0;7m^R[m Read File [0;7m^Y[m Prev Page [0;7m^K[m Cut Text  [0;7m^C[m Cur Pos[56;2H[0;7mX[m Exit      [0;7m^J[m Justify   [0;7m^W[m Where Is  [0;7m^V[m Next Page [0;7m^U[m UnCut Text[0;7m^T[m To Spell[43;53H[12B[J[56;79H[56;1H[?1049l[?1l>[?1h=>> !nano monitor/show_monitor.mMonitorWireless             
+{Warning: This functionality is no longer supported under the -nojvm startup
+option. For more information, see "Changes to -nojvm Startup Option" in the
+MATLAB Release Notes. To view the release note in your system browser, run
+web('http://www.mathworks.com/access/helpdesk/help/techdoc/rn/bropbi9-1.html#brubkzc-1',
+'-browser')} 
+> In show_monitor>init at 32
+  In MonitorWireless at 39
+Initialization time: 4.373118
+{??? Operation terminated by user during ==>
+plot_overlay_wireless>plot_goalposts at 47
+
+In ==> plot_overlay_wireless at 5
+      plot_goalposts(r_wireless.goalpostStat1,4)
+
+In ==> show_monitor>update_team_wireless at 334
+        plot_overlay_wireless(r_struct);
+
+In ==> show_monitor>update at 148
+         update_team_wireless(robots);
+
+In ==> MonitorWireless at 47
+    MONITOR.update(team_robots,0,0,draw_team,0);
+} 
+>> MonitorWireless!nano monitor/show_monitor.m
+
+(B)0[?1049h[1;56r[m[4l[34h[?25h[?1h=[?1h=[?1h=[39;49m[39;49m[m[H[J[0;7m  GNU nano 2.2.6         File: monitor/show_monitor.m                          [3;1H[mfunction h=show_monitor()[4;3Hglobal MONITOR LOGGER LUT;[6;3Hh.init=@init;[7;3Hh.update=@update;[8;3Hh.update_single=@update_single;[9;3Hh.update_team=@update_team;[11;3H%Five screen for single monitor[12;3Hh.enable0=1;[13;3Hh.enable1=1;[14;3Hh.enable2=1;[15;3Hh.enable3=1;[16;3Hh.enable4=1;[17;3Hh.enable5=1;[19;3H%two subscreen for team monitor[20;3Hh.enable8=0;   %Label mode, 1/2/0[21;3Hh.enable9=1;   %Label mode, 1/0[22;3Hh.enable10=1;  %Map mode, 1/2/3[24;3Hh.logging=0;[25;3Hh.lutname=0;[26;3Hh.is_webots=0;[28;3Hh.fieldtype=0; %0,1,2 for SPL/Kid/Teen[30;3H% subfunctions[32;3Hfunction init(draw_team,target_fps)[33;5HMONITOR.target_fps=target_fps;[34;5Hfigure(1);[35;5Hclf;[36;5Hif draw_team==2 % Multiple robot, wireless monitoring (real robots)[37;7Hset(gcf,'position',[1 1 900 900]);[39;7HMONITOR.enable10=2;  %Default 2[41;7HMONITOR.hFpsText=uicontrol('Style','text',...[42;9H'Units','Normalized', 'Position',[.40 0.93 0.20 0.04]);[44;7HMONITOR.hButton6=uicontrol('Style','pushbutton','String','FPS -',...[45;9H'Units','Normalized','Position',[.30 .93 .10 .04],'Callback',@button6);[47;7HMONITOR.hButton7=uicontrol('Style','pushbutton','String','FPS +',...[48;9H'Units','Normalized', 'Position',[.60 .93 .10 .04],'Callback',@button7$[50;7HMONITOR.hButton13=uicontrol('Style','pushbutton','String','Kidsize',...[51;9H'Units','Normalized', 'Position',[.02 .56 .07 .07],'Callback',@button1$[53;7Hfor i=1:5[54;31H[0;7m[ Read 474 lines ][1B^G[m Get Help  [0;7m^O[m WriteOut  [0;7m^R[m Read File [0;7m^Y[m Prev Page [0;7m^K[m Cut Text  [0;7m^C[m Cur Pos[1B[0;7m^X[m Exit[6C[0;7m^J[m Justify   [0;7m^W[m Where Is  [0;7m^V[m Next Page [0;7m^U[m UnCut Text[0;7m^T[m To Spell[53A[24;53r[24;1H[14M[1;56r[3;1H[K[1B      for i=1:5[K[5;9HMONITOR.infoTexts(i)=uicontrol('Style','text',...[6;8H[1K 'Units','Normalized', 'Position',[0.16*(i-1)+0.12 0.71 0.145 0.08]);[7;3H    end[K[1B[K[1B      for i=6:10[K[10;9HMONITOR.infoTexts(i)=uicontrol('Style','text',...[11;8H[1K 'Units','Normalized', 'Position',[0.16*(i-6)+0.12 0.01 0.145 0.08]);[12;3H    end[K[1B[K[1B[K[1B    elseif draw_team==1 %Multiple robot full monitoring (webots)[16;3H    set(gcf,'position',[1 1 900 900]);[1B[K[18;7HMONITOR.hFpsText=uicontrol('Style','text',...[19;8H[1K 'Units','Normalized', 'Position',[.40 0.93 0.20 0.04]);[1B[K[1B      MONITOR.hButton6=uicontrol('Style','pushbutton','String','FPS -',...[22;8H[1K 'Units','Normalized','Position',[.30 .93 .10 .04],'Callback',@button6);[24;7HMONITOR.hButton7=uicontrol('Style','pushbutton','String','FPS +',...[25;7H  'Units','Normalized', 'Position',[.60 .93 .10 .04],'Callback',@button7$[27;16HButton8[27;43Hpushbutton','String','OFF',...[28;30H'Position',[.02 .30 .07 .07],'Callback',@button8);[30;22H9[30;65H2D[3P[31;43H02 .23 .07 .07[20C9[33;22H10=uicontrol('Style','pushbutton','String','MAP1[34;30H'Position',[.02 .63 .07 .07],'Callback',@button10[39;7HMONITOR.infoTexts=[];[41;7Hfor i=1:5[42;9HMONITOR.infoTexts(i)=uicontrol('Style','text',...[43;9H'Units','Normalized', 'Position',[0.16*(i-1)+0.12 0.01 0.145 0.08]);[44;7Hend[47;5Helse % Single robot full monitoring mode[48;7HLOGGER=logger();[49;7HLOGGER.init();[50;7Hset(gcf,'Position',[1 1 1000 600])[51;7HMONITOR.hFpsText=uicontrol('Style','text',...[52;9H'Units','Normalized', 'Position',[.40 0.93 0.20 0.04]);[49A[3;9H'Units','Normalized', 'Position',[.40 0.93 0.20 0.04]);[1B[K[5;7HMONITOR.hButton6=uicontrol('Style','pushbutton','String','FPS -',...[6;30H'Position',[.30 .93 .10 .04],'Callback',@button6);[7;1H[K[8;7HMONITOR.hButton7=uicontrol('Style','pushbutton','String','FPS +',...[9;7H  'Units','Normalized', 'Position',[.60 .93 .10 .04],'Callback',@button7$[10;1H[K[11;7HMONITOR.hButton12=uicontrol('Style','pushbutton','String','Load LUT',...[12;7H  'Units','Normalized', 'Position',[.70 .93 .20 .04],'Callback',@button1$[15;5H  MONITOR.hButton0=uicontrol('Style','pushbutton','String','Overlay 1',...[16;7H  'Units','Normalized', 'Position',[.02 .80 .07 .07],'Callback',@button0$[18;16HButton2[18;43Hpushbutton','String','LABEL A',...[19;44H02 .73 .07 .07],'Callback',@button2$[21;22H3[21;65HMAP1[1P[22;30H 'Position',[.02 .66 .07 .07],'Callback',@button3$[24;22H4[24;65H2D ON[25;44H02 .59 .07 .07[20C4[27;22H5[27;65HDEBUG ON',...[28;30H 'Position',[.02 .52 .07 .07],'Callback',@button5$[30;22H11=uicontrol('Style','pushbutton','String','LOG',...[31;30H 'Position',[.02 .45 .07 .07],'Callback',@button1$[33;16HInfoText[33;44Htext[22P[34;30H 'Position',[.02 .25 .07 .20]);[K[37;48H18[39;15HhDebugText=uicontrol('Style','text',...[40;9H'Units','Normalized', 'Position',[.76 .10 .22 .83]);[41;5Hend[K[42;3Hend[K[1B[K[1B  function update(robots,  teamNumber, playerNumber , draw_team, ignore_vision)[45;5Hif MONITOR.target_fps==0.5 %Paused state[46;8Hset(MONITOR.hFpsText,'String','Paused');[47;5H   pause(1);[K[48;5Helse[K[1B tStart = tic[1B[K[51;7H if draw_team==2[K[52;9H update_team_wireless(robots);[K[53;8Helseif draw_team==1[50A[3;9H update_team_wireless(robots);[K[4;8Helseif draw_team==1[5;7H   update_team(robots, teamNumber, playerNumber , ignore_vision)[K[6;8Helse[K[1Bupdate_single( robots, teamNumber, playerNumber )[8;7H end[K[9;8Hdrawnow;[K[10;8HtElapsed=toc(tStart);[1B[K[12;8Hset(MONITOR.hFpsText,'String',...[K[13;10Hsprintf('Plot: %d ms FPS: %.1f / %.1f',[13;57Hfloor(tElapsed*1000),.$[14;10Hmin(1/tElapsed,MONITOR.target_fps), MONITOR.target_fps ));[15;7H if(tElapsed<1/MONITOR.target_fps)[K[16;9H pause( 1/MONITOR.target_fps-tElapsed );[K[17;8Hend[18;5Hend[K[19;3Hend[K[21;3Hfunction update_single( robots, teamNumber, playerNumber )[K[22;5H% Robot to display[K[23;5Hr_struct = robots{playerNumber,teamNumber}.get_team_struct();[24;5Hr_mon = robots{playerNumber,teamNumber}.get_monitor_struct();[K[1B[K[26;5Hif( isempty(r_mon) )[27;7Hdisp('Empty monitor struct!'); return;[K[28;5Hend[K[30;5H% AUTO-SWITCH YUYV TYPE[K[31;5Hyuyv_type = r_mon.yuyv_type;[K[32;5Hif MONITOR.enable1[33;16H1 = subplot(4,5,[1 2 6 7]);[K[34;7Hif yuyv_type==1[K[35;9Hyuyv = robots{playerNumber,teamNumber}.get_yuyv();[36;32H[1K plot_yuyv(yuyv);[K[37;7Helseif yuyv_type==2[K[38;9Hyuyv = robots{playerNumber,teamNumber}.get_yuyv2();[39;32H[1K plot_yuyv(yuyv);[K[40;7Helseif yuyv_type==3[K[41;5H    yuyv = robots{playerNumber,teamNumber}.get_yuyv3();[42;32H[1K plot_yuyv(yuyv);[43;25Helse[44;32H[1K return;[K[45;5H  end[K[1B[K[47;7H%webots use non-subsampled label (2x size of yuyv)[48;5H  if MONITOR.enable0[49;8H if MONITOR.is_webots[50;11Hplot_overlay(r_mon,2*MONITOR.enable1,1);[51;8H else[K[52;34H[1K if yuyv_type==1[53;12H[1K plot_overlay(r_mon,1,1);[50A[3;34H[1K if yuyv_type==1[4;12H[1K plot_overlay(r_mon,1,1);[5;34H[1K elseif yuyv_type==2[K[6;12H[1K plot_overlay(r_mon,2,1);[7;34H[1K elseif yuyv_type==3[K[8;12H[1K plot_overlay(r_mon,4,1);[9;40H[1K else[10;48H[1K return;[11;35Hend[12;8H end[K[13;7Hend[K[1B[K[15;7Hif MONITOR.logging[K[16;9HLOGGER.log_data(yuyv + 0,r_mon);[K[17;8H logstr=sprintf('%d/100',LOGGER.log_count);[18;5H    set(MONITOR.hButton11,'String', logstr);[19;8H[1K if LOGGER.log_count==100[20;11HLOGGER.save_log();[21;8H[1K end[K[22;5H  end[K[23;5Hend[K[1B[K[25;5Hif MONITOR.enable2==1[26;5H  MONITOR.h2 = subplot(4,5,[3 4 8 9]);[27;7HlabelA = robots{playerNumber,teamNumber}.get_labelA();[28;5H  plot_label(labelA);[29;7Hif MONITOR.enable0[30;5H    plot_overlay(r_mon,1,MONITOR.enable0);[31;5H  end[K[32;5Helseif MONITOR.enable2==2[33;16H2[33;33H3 4 8 9[34;7HlabelB = robots{playerNumber,teamNumber}.get_labelB();[35;7Hplot_label(labelB);[K[36;7Hif MONITOR.enable0[K[37;7H  plot_overlay(r_mon,r_mon.camera.scaleB,MONITOR.enable0);[38;7Hend[K[39;5Helseif (MONITOR.enable2==3) && (~isempty(MONITOR.lutname))[40;7HMONITOR.h2 = subplot(4,5,[3 4 8 9]);[41;7Hyuyv = robots{playerNumber,teamNumber}.get_yuyv[3P[42;7Hlabel_lut=yuyv2label(yuyv,LUT);[K[43;7Hplot_label(label_lut);[44;5Hend[K[1B[K[46;5Hif MONITOR.enable3[47;7HMONITOR.h3 = subplot(4,5,[11 12 16 17]);[K[48;7Hcla(MONITOR.h3);  [1B[K[50;7Hif MONITOR.enable3==5[K[51;9Hif isfield(r_mon.robot, 'map')[52;11Hplot_grid(r_mon.robot.map);[K[53;32H[1K end [50A[3;11Hplot_grid(r_mon.robot.map);[K[4;32H[1K end [5;9Hplot_field(MONITOR.h3,MONITOR.fieldtype);[K[6;9Hplot_robot( r_struct, r_mon,2,3 );[7;7Helse[K[1Bplot_field(MONITOR.h3,MONITOR.fieldtype);[9;9Hplot_robot( r_struct, r_mon,1.5,MONITOR.enable3 );[10;7Hend[K[1B[30P[1B[K[13;5Hif MONITOR.enable4[14;7HMONITOR.h4 = subplot(4,5,[13 14 18 19]);[15;7Hplot_surroundings( MONITOR.h4, r_mon );[16;5Hend[K[1B[K[18;5Hif MONITOR.enable5[K[19;7Hset(MONITOR.hDebugText,'String',r_mon.debug.message);[20;5Hend[K[1B[K[22;5H[infostr textcolor]=robot_info(r_struct,r_mon,2);[23;5Hset(MONITOR.hInfoText,'String',infostr);[25;3Hend[K[1B[K[1B  function update_team(robots, teamNumber, playerNumber , ignore_vision)[1B[K[29;5H%Draw common field  [30;5Hh_c=subplot(5,5,[1:15]);[K[31;5Hcla(h_c);[32;5Hplot_field(h_c,MONITOR.fieldtype);[1B[K[34;5Hfor i=1:length(playerNumber)[K[35;7Hr_struct = robots{playerNumber(i),teamNumber}.get_team_struct();[36;7Hr_mon = robots{playerNumber(i),teamNumber}.get_monitor_struct();[37;7HlabelB = robots{playerNumber(i),teamNumber}.get_labelB();[K[38;7Hupdated=robots{playerNumber(i),teamNumber}.updated;[39;5H  tLastUpdate=robots{playerNumber(i),teamNumber}.tLastUpdate;[1B[K[1B%      if updated[K[42;7H  h_c=subplot(5,5,[1:15]);[K[43;7H  plot_robot( r_struct, r_mon,2,MONITOR.enable10);[44;5H    updated = 0;[1B%[6Cend[1B[K[47;7Hif MONITOR.enable8==1 && ignore_vision==0[48;7H  h1=subplot(5,5,15+playerNumber(i));[49;9Hplot_label(labelB);[50;7H  plot_overlay(r_mon,4,1);[51;7Helseif MONITOR.enable8==2[K[52;9Hh1=subplot(5,5,15+playerNumber(i));[53;9Hcla(h1);[K[50A[16;32r[16;1H[7M[1;56r[27;52r[27;1H[12M[1;56r[3;9Hh1=subplot(5,5,15+playerNumber(i));[4;9Hcla(h1);[K[5;14Hoverlay(r_mon,4,1);[K[6;7Hend[K[1B[K[8;7Hif MONITOR.enable9[K[9;9Hh2=subplot(5,5,20+playerNumber(i));[K[10;7H  plot_surroundings( h2, r_mon );[1B      end[2B[K[14;7Hh2=subplot(5,5,20+playerNumber(i));[K[15;7H[infostr textcolor]=robot_info(r_struct,r_mon,2);[16;5H  set(MONITOR.infoTexts(i),'String',infostr);[17;5Hend[20;23H_wireless(robot_team)[K[23;22H6:20[26;5Hhold on;[27;5Hfor i=1:10[K[28;7Hr_struct = robot_team.get_team_struct_wireless(i);[29;6H[1K if r_struct.id>0[30;26H6:20[1B [][3P[33;8H[1K if i<6[34;11Hh1=subplot(5,5,i);[35;7H    labelB = robot_team.get_labelB_wireless(i);[36;9H  plot_label(labelB);[K[37;9Helse[K[38;9H  h1=subplot(5,5,i+15);[K[39;7H    labelB = robot_team.get_labelB_wireless(i);[40;9H  plot_label(labelB);[K[41;9Hend[42;9Hplot_overlay_wireless(r_struct);[43;9H[infostr textcolor]=robot_info(r_struct,[],3,r_struct.robotName);[45;9Hset(MONITOR.infoTexts(i),'String',infostr);[47;7Hend[48;5Hend[49;5Hhold off;[50;3Hend[53;3Hfunction plot_grid(map)[50A[K[1B  function plot_grid(map)[5;5H%map: -1 to 1[K[6;5Hsiz=sqrt(length(map)/6/4);[7;5Hmap=reshape(map,[4*siz 6*siz]);[8;5Hmap_black=max(0,map);[9;5Hmap_green=max(0,-map);[K[1B[K[11;5Hrgbc=zeros([4*siz 6*siz 3]);[12;5Hrgbc(:,:,1)=1-map_black-map_green;[13;5Hrgbc(:,:,2)=1-map_black;[14;5Hrgbc(:,:,3)=1-map_black-map_green;[K[15;5Himage('XData',[-3:1/siz:3],'YData',[-2:1/siz:2],...[16;7H  'CData',rgbc);[K[1B[2P[1B[K[20;12Hbutton0(varargin)[K[21;5HMONITOR.enable0=mod(MONITOR.enable0+1,3);[22;5Hif MONITOR.enable0==1 set(MONITOR.hButton0,'String', 'Overlay 1');[23;5Helseif MONITOR.enable0==2 set(MONITOR.hButton0,'String', 'Overlay 2');[24;5Helse set(MONITOR.hButton0,'String', 'Overlay OFF');[25;5Hend[K[26;3Hend[K[1B[K[1B  function button1(varargin)[K[29;5HMONITOR.enable1=mod(MONITOR.enable1+1,4);[30;5Hif MONITOR.enable1==1 set(MONITOR.hButton1,'String', 'YUYV1');[31;5Helseif MONITOR.enable1==2 set(MONITOR.hButton1,'String', 'YUYV2');[32;5Helseif MONITOR.enable1==3 set(MONITOR.hButton1,'String', 'YUYV4');[33;5Helse set(MONITOR.hButton1,'String', 'YUYV OFF');[34;7Hcla(MONITOR.h1);[K[35;5Hend[K[36;3Hend[K[1B[K[1B  function button2(varargin)   [39;5HMONITOR.enable2=mod(MONITOR.enable2+1,4);[K[40;5Hif MONITOR.lutname==0[K[41;7HMONITOR.enable2=mod(MONITOR.enable2,3);[42;5Hend[K[43;5Hif MONITOR.enable2==1 set(MONITOR.hButton2,'String', 'LABEL A');[K[44;5Helseif MONITOR.enable2==2 set(MONITOR.hButton2,'String', 'LABEL B');[45;5Helseif MONITOR.enable2==3 set(MONITOR.hButton2,'String', 'LUT');[46;5Helse set(MONITOR.hButton2,'String', 'LABEL OFF');[47;7Hcla(MONITOR.h2);[49;3Hend[K[1B[K[1B  function button3(varargin)[52;5HMONITOR.enable3=mod(MONITOR.enable3+1,6);[53;3H  if MONITOR.enable3==1 set(MONITOR.hButton3,'String', 'MAP1');[50A    MONITOR.enable3=mod(MONITOR.enable3+1,6);[4;3H  if MONITOR.enable3==1 set(MONITOR.hButton3,'String', 'MAP1');[5;5Helseif MONITOR.enable3==2 set(MONITOR.hButton3,'String', 'MAP2');[6;5Helseif MONITOR.enable3==3 set(MONITOR.hButton3,'String', 'MAP3');[7;5Helseif MONITOR.enable3==4 set(MONITOR.hButton3,'String', 'PVIEW');[8;5Helseif MONITOR.enable3==5 set(MONITOR.hButton3,'String', 'OccVIEW');[9;5Helse set(MONITOR.hButton3,'String', 'MAP OFF');[10;7Hcla(MONITOR.h3);[11;5Hend[K[12;3Hend[K[1B[K[1B  function button4(varargin)[K[15;5HMONITOR.enable4=1-MONITOR.enable4;[K[16;5Hif MONITOR.enable4 set(MONITOR.hButton4,'String', '2D ON');[17;3H  else set(MONITOR.hButton4,'String', '2D OFF');[18;7Hcla(MONITOR.h4);[19;5Hend[20;3Hend[K[1B[K[1B  function button5(varargin)[K[23;5HMONITOR.enable5=1-MONITOR.enable5;[K[24;5Hif MONITOR.enable5 set(MONITOR.hButton5,'String', 'DEBUG ON');[25;6Hlse set(MONITOR.hButton5,'String', 'DEBUG OFF');[26;3H    set(MONITOR.hDebugText,'String','');[27;5Hend[28;3Hend[K[1B[K[1B  function button6(varargin)[K[31;5H%0.5fps means paused state[K[32;5HMONITOR.target_fps=max(0.5,MONITOR.target_fps/2);[K[33;3Hend[K[1B[K[1B  function button7(varargin)[36;3H  MONITOR.target_fps=min(32,MONITOR.target_fps*2);[37;3Hend[1B[K[1B  function button8(varargin)[K[40;5HMONITOR.enable8=mod(MONITOR.enable8+1,3);[41;5Hif MONITOR.enable8==1 set(MONITOR.hButton8,'String', 'LABEL');[42;6Hlseif MONITOR.enable8==2 set(MONITOR.hButton8,'String', 'Overlay');[43;5Helse set(MONITOR.hButton8,'String', 'OFF[21P[44;6Hnd[K[45;3Hend[K[1B[K[1B  function button9(varargin)[48;5HMONITOR.enable9=1-MONITOR.enable9;[49;3H  if MONITOR.enable9 set(MONITOR.hButton9,'String', '2D ON');[50;5Helse set(MONITOR.hButton9,'String', '2D OFF');[51;3H  end[K[52;3Hend[K[1B[K[50A  end[K[1B[K[1B  function button10(varargin)[K[6;5HMONITOR.enable10=mod(MONITOR.enable10,3)+1;  %1,2,3[K[7;5Hif MONITOR.enable10==1 set(MONITOR.hButton10,'String', 'MAP1[3P[8;26H10==2 set(MONITOR.hButton10,'String', 'MAP2[1P[9;9Hif MONITOR.enable10==3 set(MONITOR.hButton10,'String', 'MAP3');[10;5Hend[K[1B[2P[1B[K[1B  function button11(varargin)[14;3H  MONITOR.logging=1-MONITOR.logging;[15;3Hend[K[1B[K[1B  function button12(varargin) % Load lut file[K[18;5H[filename, pathname] = uigetfile('*.raw', 'Select lut file to load');[19;5Hif (filename ~= 0)[20;3H    MONITOR.lutname=filename;[21;7Hfid = fopen([pathname filename], 'r');[22;3H    LUT = fread(fid, 'uint8');[23;5H  fclose(fid);[K[24;5H  set(MONITOR.hButton12,'String', filename);[K[25;6Hnd[K[26;3Hend[K[1B[K[1B  function button13(varargin)[29;5HMONITOR.fieldtype=mod(MONITOR.fieldtype+1,3);[30;3H  if MONITOR.fieldtype==1 set(MONITOR.hButton13,'String', 'SPL');[31;5Helseif MONITOR.fieldtype==2 set(MONITOR.hButton13,'String', 'TeenSize');[32;5Helse set(MONITOR.hButton13,'String', 'Kidsize');[K[1B    end[34;3Hend[1Bend[K[1B[K[1B[K[2B[K[1B[K[1B[K[1B[K[1B[K[1B[K[1B[K[2B[K[1B[K[1B[K[1B[K[1B[K[1B[K[49A[33B[33A    MONITOR.enable3=mod(MONITOR.enable3+1,6);[4;5Hif MONITOR.enable3==1 set(MONITOR.hButton3,'String', 'MAP1');[5;3H  elseif MONITOR.enable3==2 set(MONITOR.hButton3,'String', 'MAP2');[6;5Helseif MONITOR.enable3==3 set(MONITOR.hButton3,'String', 'MAP3');[7;5Helseif MONITOR.enable3==4 set(MONITOR.hButton3,'String', 'PVIEW');[8;26H3==5 set(MONITOR.hButton3,'String', 'OccVIEW');[9;9H set(MONITOR.hButton3,'String', 'MAP OFF[20P[10;5H  cla(MONITOR.h3);[1B    end[12;3Hend[1B[K[1B  function button4(varargin)[K[15;3H  MONITOR.enable4=1-MONITOR.enable4;[16;5Hif MONITOR.enable4 set(MONITOR.hButton4,'String', '2D ON');[17;3H  else set(MONITOR.hButton4,'String', '2D OFF');[18;5H  cla(MONITOR.h4);[K[19;5Hend[K[20;3Hend[K[1B[K[1B  function button5(varargin)[K[23;5HMONITOR.enable5=1-MONITOR.enable5;[24;5Hif MONITOR.enable5 set(MONITOR.hButton5,'String', 'DEBUG ON');[25;6Hlse set(MONITOR.hButton5,'String', 'DEBUG OFF');[26;3H    set(MONITOR.hDebugText,'String','');[27;5Hend[28;3Hend[K[1B[K[1B  function button6(varargin)[K[31;5H%0.5fps means paused state[K[32;5HMONITOR.target_fps=max(0.5,MONITOR.target_fps/2);[1B[2P[1B[K[1B  function button7(varargin)[36;5HMONITOR.target_fps=min(32,MONITOR.target_fps*2);[37;3Hend[39;3Hfunction button8(varargin)[40;5HMONITOR.enable8=mod(MONITOR.enable8+1,3);[41;5Hif MONITOR.enable8==1 set(MONITOR.hButton8,'String', 'LABEL');[42;5Helseif MONITOR.enable8==2 set(MONITOR.hButton8,'String', 'Overlay');[43;5Helse set(MONITOR.hButton8,'String', 'OFF');[44;5Hend[45;3Hend[47;3Hfunction button9(varargin)[48;5HMONITOR.enable9=1-MONITOR.enable9;[49;5Hif MONITOR.enable9 set(MONITOR.hButton9,'String', '2D ON');[50;5Helse set(MONITOR.hButton9,'String', '2D OFF');[51;5Hend[52;3Hend[49A[K[1B  function plot_grid(map)[K[5;5H%map: -1 to 1[K[6;5Hsiz=sqrt(length(map)/6/4);[K[7;5Hmap=reshape(map,[4*siz 6*siz]);[K[8;5Hmap_black=max(0,map);[K[9;5Hmap_green=max(0,-map);[K[1B[K[11;5Hrgbc=zeros([4*siz 6*siz 3]);[12;3H  rgbc(:,:,1)=1-map_black-map_green;[13;5Hrgbc(:,:,2)=1-map_black;[14;3H  rgbc(:,:,3)=1-map_black-map_green;[15;5Himage('XData',[-3:1/siz:3],'YData',[-2:1/siz:2],...[16;5H    'CData',rgbc);[K[17;3Hend[K[1B[K[1B[K[1B  function button0(varargin)[21;5HMONITOR.enable0=mod(MONITOR.enable0+1,3);[22;3H  if MONITOR.enable0==1 set(MONITOR.hButton0,'String', 'Overlay 1');[23;5Helseif MONITOR.enable0==2 set(MONITOR.hButton0,'String', 'Overlay 2');[24;5Helse set(MONITOR.hButton0,'String', 'Overlay OFF[11P[25;6Hnd[K[26;3Hend[K[1B[K[1B  function button1(varargin)[29;5HMONITOR.enable1=mod(MONITOR.enable1+1,4);[30;3H  if MONITOR.enable1==1 set(MONITOR.hButton1,'String', 'YUYV1');[31;5Helseif MONITOR.enable1==2 set(MONITOR.hButton1,'String', 'YUYV2');[32;5Helseif MONITOR.enable1==3 set(MONITOR.hButton1,'String', 'YUYV4');[33;3H  else set(MONITOR.hButton1,'String', 'YUYV OFF');[34;7Hcla(MONITOR.h1);[35;3H  end[K[36;3Hend[K[1B[K[1B  function button2(varargin)[39;3H  MONITOR.enable2=mod(MONITOR.enable2+1,4);[40;5Hif MONITOR.lutname==0[K[41;5H  MONITOR.enable2=mod(MONITOR.enable2,3);[K[42;6Hnd[K[43;5Hif MONITOR.enable2==1 set(MONITOR.hButton2,'String', 'LABEL A');[44;6Hlseif MONITOR.enable2==2 set(MONITOR.hButton2,'String', 'LABEL B');[45;3H  elseif MONITOR.enable2==3 set(MONITOR.hButton2,'String', 'LUT');[46;5Helse set(MONITOR.hButton2,'String', 'LABEL OFF');[47;3H    cla(MONITOR.h2);[K[48;5Hend[K[49;3Hend[K[1B[K[1B  function button3(varargin)[52;3H  MONITOR.enable3=mod(MONITOR.enable3+1,6);[53;5Hif MONITOR.enable3==1 set(MONITOR.hButton3,'String', 'MAP1');[50A[3;9Hh1=subplot(5,5,15+playerNumber(i));[4;8H[1K cla(h1);[K[5;5H    plot_overlay(r_mon,4,1);[6;5H  end[K[1B[K[8;5H  if MONITOR.enable9 [9;5H    h2=subplot(5,5,20+playerNumber(i));[10;9Hplot_surroundings( h2, r_mon );[11;5H  end[K[1B[K[1B[K[14;5H  h2=subplot(5,5,20+playerNumber(i));[15;5H  [infostr textcolor]=robot_info(r_struct,r_mon,2);[16;7Hset(MONITOR.infoTexts(i),'String',infostr);[1B    end[18;3Hend[20;12Hupdate_team_wireless(robot_team)[1B[K[22;5H%Draw common field[K[23;5Hh_c=subplot(5,5,[6:20]);[K[24;5Hcla(h_c);[K[25;5Hplot_field(h_c,MONITOR.fieldtype);[26;3H  hold on;[27;5Hfor i=1:10[28;3H    r_struct = robot_team.get_team_struct_wireless(i);[29;5H  if r_struct.id>0[K[30;5H    h_c=subplot(5,5,[6:20]);[K[31;5H    plot_robot( r_struct, [],2,MONITOR.enable10);[K[32;5H    updated = 0;[K[33;5H    if i<6[K[34;7H    h1=subplot(5,5,i);[35;10H[1K labelB = robot_team.get_labelB_wireless(i);[36;10H[1K plot_label(labelB);[37;9Helse[38;10H[1K h1=subplot(5,5,i+15);[39;10H[1K labelB = robot_team.get_labelB_wireless(i);[40;10H[1K plot_label(labelB);[41;7H  end[K[42;5H    plot_overlay_wireless(r_struct);[43;5H    [infostr textcolor]=robot_info(r_struct,[],3,r_struct.robotName);[1B[K[45;5H    set(MONITOR.infoTexts(i),'String',infostr);[K[1B[K[47;7Hend[K[49;3H  hold off;[50;3Hend[1B[K[1B[K[1B  function plot_grid(map)[K[50A[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[40B[K[39A[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1BMMMMMMMMMMMMMMM[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1BMMMMMM[1B[1B[1B[1B[1B[13B[J[56;79H[56;1H[?1049l[?1l>[?1h=>> !nano monitor/show_monitor.mMonitorWireless             
+{Warning: This functionality is no longer supported under the -nojvm startup
+option. For more information, see "Changes to -nojvm Startup Option" in the
+MATLAB Release Notes. To view the release note in your system browser, run
+web('http://www.mathworks.com/access/helpdesk/help/techdoc/rn/bropbi9-1.html#brubkzc-1',
+'-browser')} 
+> In show_monitor>init at 32
+  In MonitorWireless at 39
+Initialization time: 4.377874
+{??? Input argument "type" is undefined.
+
+Error in ==> plot_robot>plot_info at 161
+    if type==1
+
+Error in ==> plot_robot at 20
+    plot_info(robot_struct,scale);
+
+Error in ==> show_monitor>update_team_wireless at 323
+        plot_robot( r_struct, [],2,MONITOR.enable10);
+
+Error in ==> show_monitor>update at 148
+         update_team_wireless(robots);
+
+Error in ==> MonitorWireless at 47
+    MONITOR.update(team_robots,0,0,draw_team,0);
+} 
+>> MonitorWireless!nano monitor/show_monitor.mMonitorWireless             !nano monitor/show_monitor.m
+>> MonitorWireless!nano monitor/show_monitor.mMonitorWireless             
+{Warning: This functionality is no longer supported under the -nojvm startup
+option. For more information, see "Changes to -nojvm Startup Option" in the
+MATLAB Release Notes. To view the release note in your system browser, run
+web('http://www.mathworks.com/access/helpdesk/help/techdoc/rn/bropbi9-1.html#brubkzc-1',
+'-browser')} 
+> In show_monitor>init at 32
+  In MonitorWireless at 39
+Initialization time: 4.418179
+{??? Input argument "name" is undefined.
+
+Error in ==> plot_robot at 20
+    plot_info(robot_struct,scale,2,name);
+
+Error in ==> show_monitor>update_team_wireless at 323
+        plot_robot( r_struct, [],2,MONITOR.enable10);
+
+Error in ==> show_monitor>update at 148
+         update_team_wireless(robots);
+
+Error in ==> MonitorWireless at 47
+    MONITOR.update(team_robots,0,0,draw_team,0);
+} 
+>> MonitorWireless
+>> MonitorWireless!nano monitor/show_monitor.m
+
+(B)0[?1049h[1;56r[m[4l[34h[?25h[?1h=[?1h=[?1h=[39;49m[39;49m[m[H[J[0;7m  GNU nano 2.2.6         File: monitor/show_monitor.m                          [3;1H[mfunction h=show_monitor()[4;3Hglobal MONITOR LOGGER LUT;[6;3Hh.init=@init;[7;3Hh.update=@update;[8;3Hh.update_single=@update_single;[9;3Hh.update_team=@update_team;[11;3H%Five screen for single monitor[12;3Hh.enable0=1;[13;3Hh.enable1=1;[14;3Hh.enable2=1;[15;3Hh.enable3=1;[16;3Hh.enable4=1;[17;3Hh.enable5=1;[19;3H%two subscreen for team monitor[20;3Hh.enable8=0;   %Label mode, 1/2/0[21;3Hh.enable9=1;   %Label mode, 1/0[22;3Hh.enable10=1;  %Map mode, 1/2/3[24;3Hh.logging=0;[25;3Hh.lutname=0;[26;3Hh.is_webots=0;[28;3Hh.fieldtype=0; %0,1,2 for SPL/Kid/Teen[30;3H% subfunctions[32;3Hfunction init(draw_team,target_fps)[33;5HMONITOR.target_fps=target_fps;[34;5Hfigure(1);[35;5Hclf;[36;5Hif draw_team==2 % Multiple robot, wireless monitoring (real robots)[37;7Hset(gcf,'position',[1 1 900 900]);[39;7HMONITOR.enable10=2;  %Default 2[41;7HMONITOR.hFpsText=uicontrol('Style','text',...[42;9H'Units','Normalized', 'Position',[.40 0.93 0.20 0.04]);[44;7HMONITOR.hButton6=uicontrol('Style','pushbutton','String','FPS -',...[45;9H'Units','Normalized','Position',[.30 .93 .10 .04],'Callback',@button6);[47;7HMONITOR.hButton7=uicontrol('Style','pushbutton','String','FPS +',...[48;9H'Units','Normalized', 'Position',[.60 .93 .10 .04],'Callback',@button7$[50;7HMONITOR.hButton13=uicontrol('Style','pushbutton','String','Kidsize',...[51;9H'Units','Normalized', 'Position',[.02 .56 .07 .07],'Callback',@button1$[53;7Hfor i=1:5[54;31H[0;7m[ Read 474 lines ][1B^G[m Get Help  [0;7m^O[m WriteOut  [0;7m^R[m Read File [0;7m^Y[m Prev Page [0;7m^K[m Cut Text  [0;7m^C[m Cur Pos[1B[0;7m^X[m Exit[6C[0;7m^J[m Justify   [0;7m^W[m Where Is  [0;7m^V[m Next Page [0;7m^U[m UnCut Text[0;7m^T[m To Spell[53A[51B[0;7mSearch:                                                                        [55;15HY[m First Line[0;7m^T[m Go To Line[0;7m^W[m Beg of Par[0;7mM-J[m FullJstif[0;7mM-B[m Backwards[56;2H[0;7mC[m Cancel    [0;7m^V[m Last Line [0;7m^R[m Replace   [0;7m^O[m End of Par[0;7mM-C[m Case Sens[0;7mM-R[m Regexp [54;9H[0;7mp[m[0;7ml[m[0;7mo[m[0;7mt[m[0;7m_[m[0;7mr[m[0;7mo[m[0;7mb[m[0;7mo[m[0;7mt[m[3;8H[1K plot_overlay(r_mon,1,MONITOR.enable0);[4;3H    end[K[5;5Helseif MONITOR.enable2==2[6;3H    MONITOR.h2 = subplot(4,5,[3 4 8 9]);[7;3H    labelB = robots{playerNumber,teamNumber}.get_labelB();[8;3H    plot_label(labelB);[K[9;3H    if MONITOR.enable0[K[10;9Hplot_overlay(r_mon,r_mon.camera.scaleB,MONITOR.enable0);[11;3H    end[K[12;3H  elseif (MONITOR.enable2==3) && (~isempty(MONITOR.lutname))[13;3H    MONITOR.h2 = subplot(4,5,[3 4 8 9]);[14;3H    yuyv = robots{playerNumber,teamNumber}.get_yuyv();[15;3H    label_lut=yuyv2label(yuyv,LUT);[16;3H    plot_label(label_lut);[17;3H  end[K[19;3H  if MONITOR.enable3[K[20;3H    MONITOR.h3 = subplot(4,5,[11 12 16 17]);[21;3H    cla(MONITOR.h3);[K[1B[K[23;7Hif MONITOR.enable3==5[24;8H[1K if isfield(r_mon.robot, 'map')[25;10H[1K plot_grid(r_mon.robot.map);[26;32H[1K end[27;9Hplot_field(MONITOR.h3,MONITOR.fieldtype);[28;8H[1K plot_robot( r_struct, r_mon,2,3 );[29;7Helse[30;8H[1K plot_field(MONITOR.h3,MONITOR.fieldtype);[31;9Hplot_robot( r_struct, r_mon,1.5,MONITOR.enable3 );[32;3H    end[K[33;5Hend[K[1B[K[35;5Hif MONITOR.enable4[36;5H  MONITOR.h4 = subplot(4,5,[13 14 18 19]);[K[37;7Hplot_surroundings( MONITOR.h4, r_mon );[38;5Hend[1B[K[40;5Hif MONITOR.enable5[41;7Hset(MONITOR.hDebugText,'String',r_mon.debug.message);[42;5Hend[K[44;5H[infostr textcolor]=robot_info(r_struct,r_mon,2);[K[45;5Hset(MONITOR.hInfoText,'String',infostr);[K[47;3Hend[K[1B[K[1B  function update_team(robots, teamNumber, playerNumber , ignore_vision)[1B[K[51;5H%Draw common field[K[52;5Hh_c=subplot(5,5,[1:15]);[53;5Hcla(h_c);  [1B[K[55;15H[0;7mO[m WriteOut  [0;7m^R[m Read File [0;7m^Y[m Prev Page [0;7m^K[m Cut Text  [0;7m^C[m Cur Pos[K[56;2H[0;7mX[m Exit      [0;7m^J[m Justify   [0;7m^W[m Where Is  [0;7m^V[m Next Page [0;7m^U[m UnCut Text[0;7m^T[m To Spell[28;9H[26B[0;7mSearch [plot_robot]:                                                           [55;15HY[m First Line[0;7m^T[m Go To Line[0;7m^W[m Beg of Par[0;7mM-J[m FullJstif[0;7mM-B[m Backwards[56;2H[0;7mC[m Cancel    [0;7m^V[m Last Line [0;7m^R[m Replace   [0;7m^O[m End of Par[0;7mM-C[m Case Sens[0;7mM-R[m Regexp [54;22H[K[55;15H[0;7mO[m WriteOut  [0;7m^R[m Read File [0;7m^Y[m Prev Page [0;7m^K[m Cut Text  [0;7m^C[m Cur Pos[K[56;2H[0;7mX[m Exit      [0;7m^J[m Justify   [0;7m^W[m Where Is  [0;7m^V[m Next Page [0;7m^U[m UnCut Text[0;7m^T[m To Spell[31;9H[1B[1B[21B[0;7mSearch [plot_robot]:                                                           [55;15HY[m First Line[0;7m^T[m Go To Line[0;7m^W[m Beg of Par[0;7mM-J[m FullJstif[0;7mM-B[m Backwards[56;2H[0;7mC[m Cancel    [0;7m^V[m Last Line [0;7m^R[m Replace   [0;7m^O[m End of Par[0;7mM-C[m Case Sens[0;7mM-R[m Regexp [54;22H[3;5Hif MONITOR.enable5[K[4;7Hset(MONITOR.hDebugText,'String',r_mon.debug.message);[5;6Hnd[K[1B[K[7;5H[infostr textcolor]=robot_info(r_struct,r_mon,2);[K[8;5Hset(MONITOR.hInfoText,'String',infostr);[1B[K[1B  end[K[1B[K[1B  function update_team(robots, teamNumber, playerNumber , ignore_vision)[1B[K[14;5H%Draw common field[K[15;5Hh_c=subplot(5,5,[1:15]);[K[16;5Hcla(h_c);[K[17;5Hplot_field(h_c,MONITOR.fieldtype);[19;5Hfor i=1:length(playerNumber)[20;7Hr_struct = robots{playerNumber(i),teamNumber}.get_team_struct();[21;7Hr_mon = robots{playerNumber(i),teamNumber}.get_monitor_struct();[22;7HlabelB = robots{playerNumber(i),teamNumber}.get_labelB();[23;7Hupdated=robots{playerNumber(i),teamNumber}.updated;[24;7HtLastUpdate=robots{playerNumber(i),teamNumber}.tLastUpdate;[1B[K[1B%[6Cif updated[K[27;9Hh_c=subplot(5,5,[1:15]);[K[28;39HMONITOR.enable10);[29;7H  updated = 0;[1B%[6Cend[K[1B[K[32;7Hif MONITOR.enable8==1 && ignore_vision==0[33;5H    h1=subplot(5,5,15+playerNumber(i));[34;9Hplot_label(labelB);[35;5H    plot_overlay(r_mon,4,1);[36;7Helseif MONITOR.enable8==2[K[37;7H  h1=subplot(5,5,15+playerNumber(i));[K[38;5H    cla(h1);[39;9Hplot_overlay(r_mon,4,1);[40;5H  end[K[1B[K[42;5H  if MONITOR.enable9[43;9Hh2=subplot(5,5,20+playerNumber(i));[44;5H    plot_surroundings( h2, r_mon );[K[45;5H  end[K[2B[K[48;7Hh2=subplot(5,5,20+playerNumber(i));[49;3H    [infostr textcolor]=robot_info(r_struct,r_mon,2);[K[50;7Hset(MONITOR.infoTexts(i),'String',infostr);[51;5Hend[K[52;3Hend[K[1B[K[1B[K[55;15H[0;7mO[m WriteOut  [0;7m^R[m Read File [0;7m^Y[m Prev Page [0;7m^K[m Cut Text  [0;7m^C[m Cur Pos[K[56;2H[0;7mX[m Exit      [0;7m^J[m Justify   [0;7m^W[m Where Is  [0;7m^V[m Next Page [0;7m^U[m UnCut Text[0;7m^T[m To Spell[28;9H[2;17r[2;1H[7M[1;56r[12;37r[12;1H[12M[1;56r[5;23H_wireless(robot_team)[K[8;22H6:20[11;5Hhold on;[12;5Hfor i=1:10[K[13;7Hr_struct = robot_team.get_team_struct_wireless(i);[14;6H[1K if r_struct.id>0[15;26H6:20[1B [][3P[18;8H[1K if i<6[19;11Hh1=subplot(5,5,i);[20;7H    labelB = robot_team.get_labelB_wireless(i);[21;9H  plot_label(labelB);[K[22;9Helse[K[23;9H  h1=subplot(5,5,i+15);[K[24;7H    labelB = robot_team.get_labelB_wireless(i);[25;9H  plot_label(labelB);[K[26;9Hend[27;9Hplot_overlay_wireless(r_struct);[28;9H[infostr textcolor]=robot_info(r_struct,[],3,r_struct.robotName);[30;9Hset(MONITOR.infoTexts(i),'String',infostr);[32;7Hend[33;5Hend[34;5Hhold off;[35;3Hend[38;3Hfunction plot_grid(map)[39;5H%map: -1 to 1[K[40;5Hsiz=sqrt(length(map)/6/4);[41;5Hmap=reshape(map,[4*siz 6*siz]);[42;5Hmap_black=max(0,map);[43;5Hmap_green=max(0,-map);[K[1B[K[45;5Hrgbc=zeros([4*siz 6*siz 3]);[46;5Hrgbc(:,:,1)=1-map_black-map_green;[47;5Hrgbc(:,:,2)=1-map_black;[48;5Hrgbc(:,:,3)=1-map_black-map_green;[K[49;5Himage('XData',[-3:1/siz:3],'YData',[-2:1/siz:2],...[50;7H  'CData',rgbc);[K[1B[2P[1B[K[49A[51B[0;7mSearch [plot_robot]:                                                           [55;15HY[m First Line[0;7m^T[m Go To Line[0;7m^W[m Beg of Par[0;7mM-J[m FullJstif[0;7mM-B[m Backwards[56;2H[0;7mC[m Cancel    [0;7m^V[m Last Line [0;7m^R[m Replace   [0;7m^O[m End of Par[0;7mM-C[m Case Sens[0;7mM-R[m Regexp [54;22H[K[55;15H[0;7mO[m WriteOut  [0;7m^R[m Read File [0;7m^Y[m Prev Page [0;7m^K[m Cut Text  [0;7m^C[m Cur Pos[K[56;2H[0;7mX[m Exit      [0;7m^J[m Justify   [0;7m^W[m Where Is  [0;7m^V[m Next Page [0;7m^U[m UnCut Text[0;7m^T[m To Spell[16;9Hplot_robot( r_struct, [],2,MONITOR.enable10[1;70H[0;7mModified[16;51H[m);[K);[K);[K);[K);[K);[K);[K);[K);[K);[K);[K);[K);[K);[K);[K);[K5);,);r);_);s);t);r);u);c);t);.);r);o);b);o);t);N);a);m);e);[38B[0;7mFile Name to Write: monitor/show_monitor.m                                     [55;14H[m      [0;7mM-D[m DOS Format     [0;7mM-A[m Append         [0;7mM-B[m Backup File   [56;2H[0;7mC[m Cancel          [0;7mM-M[m Mac Format     [0;7mM-P[m Prepend[K[54;43H[1;70H[39;49m[0;7m        [54;30H[m[1K [0;7m[ Wrote 474 lines ][m[K[55;14H[0;7m^O[m WriteOut  [0;7m^R[m Read File [0;7m^Y[m Prev Page [0;7m^K[m Cut Text  [0;7m^C[m Cur Pos[56;2H[0;7mX[m Exit      [0;7m^J[m Justify   [0;7m^W[m Where Is  [0;7m^V[m Next Page [0;7m^U[m UnCut Text[0;7m^T[m To Spell[16;56H[39B[J[56;79H[56;1H[?1049l[?1l>[?1h=>> !nano monitor/show_monitor.mMonitorWireless             
+{Warning: This functionality is no longer supported under the -nojvm startup
+option. For more information, see "Changes to -nojvm Startup Option" in the
+MATLAB Release Notes. To view the release note in your system browser, run
+web('http://www.mathworks.com/access/helpdesk/help/techdoc/rn/bropbi9-1.html#brubkzc-1',
+'-browser')} 
+> In show_monitor>init at 32
+  In MonitorWireless at 39
+Initialization time: 4.375754
+/usr/local/bin/matlab: 1: /usr/local/matlab/bin/util/oscheck.sh: /lib64/libc.so.6: not found
+[?1h=
+                            < M A T L A B (R) >
+                  Copyright 1984-2010 The MathWorks, Inc.
+                Version 7.10.0.499 (R2010a) 64-bit (glnxa64)
+                              February 5, 2010
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+>> Starting mexshm...{Warning: This functionality is no longer supported under the -nojvm startup
+option. For more information, see "Changes to -nojvm Startup Option" in the
+MATLAB Release Notes. To view the release note in your system browser, run
+web('http://www.mathworks.com/access/helpdesk/help/techdoc/rn/bropbi9-1.html#brubkzc-1',
+'-browser')} 
+> In show_monitor>init at 32
+  In MonitorWireless at 39
+Initialization time: 4.529148

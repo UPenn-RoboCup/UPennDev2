@@ -21,7 +21,7 @@ walk.velDelta={0.02,0.02,0.15}
 ---------------------------------------------
 walk.bodyHeight = 0.295; 
 walk.bodyTilt=20*math.pi/180; 
-walk.footX= -0.020; 
+walk.footX= -0.025
 walk.footY = 0.035;
 walk.supportX = 0;
 walk.supportY = 0.010;
@@ -77,24 +77,12 @@ end
 -- Support point modulation values
 --------------------------------------------
 
-walk.velFastForward = 0.05;
-walk.velFastTurn = 0.15;
-
---walk.supportFront = 0.01; --Lean back when walking fast forward
-walk.supportFront = 0.03; --Lean back when walking fast forward
-
+walk.velFastForward = 0.03;
+walk.supportFront = 0.01; --Lean back when walking fast forward
 walk.supportFront2 = 0.03; --Lean front when accelerating forward
 walk.supportBack = -0.02; --Lean back when walking backward
 walk.supportSideX = -0.01; --Lean back when sidestepping
 walk.supportSideY = 0.02; --Lean sideways when sidestepping
-
-
-walk.supportTurn = 0.02; --Lean front when turning
-
-
-walk.turnCompThreshold = 0.1;
-walk.turnComp = 0.005;
-
 
 --------------------------------------------
 -- WalkKick parameters
@@ -104,15 +92,14 @@ walk.walkKickDef={}
 --tStep stepType supportLeg stepHeight 
 -- SupportMod shiftFactor footPos1 footPos2
 
-
 walk.walkKickDef["FrontLeft"]={
-  {0.30, 1, 0, 0.035 , {0,0}, 0.6, {0.06,0,0} },
-  {0.35, 2, 1, 0.07 , {0.02,-0.02}, 0.5, {0.12,0,0}, {0.06,0,0} },
+  {0.30, 1, 0, 0.035 , {0,0}, 0.7, {0.06,0,0} },
+  {0.30, 2, 1, 0.07 , {0.02,-0.02}, 0.5, {0.09,0,0}, {0.06,0,0} },
   {walk.tStep, 1, 0, 0.035 , {0,0}, 0.5, {0.04,0,0} },
 }
 walk.walkKickDef["FrontRight"]={
-  {0.30, 1, 1, 0.035 , {0,0}, 0.4, {0.06,0,0} },
-  {0.35, 2, 0, 0.07 , {0.02,0.02}, 0.5,  {0.12,0,0}, {0.06,0,0} },
+  {0.30, 1, 1, 0.035 , {0,0}, 0.3, {0.06,0,0} },
+  {0.30, 2, 0, 0.07 , {0.02,0.02}, 0.5,  {0.09,0,0}, {0.06,0,0} },
   {walk.tStep, 1, 1, 0.035 , {0,0}, 0.5, {0.04,0,0} },
 }
 
@@ -127,31 +114,17 @@ walk.walkKickDef["SideRight"]={
   {0.25, 1, 0, 0.035 , {0,0},0.5,  {0,0,0} },
 }
 
---Slightly more reach
-
+--Bit more powerful walkkick
 walk.walkKickDef["FrontLeft"]={
-  {0.30, 1, 0, 0.035 , {0,0}, 0.6, {0.06,0,0} },
-  {0.40, 2, 1, 0.05 , {0.02,-0.02}, 0.5, {0.12,0,0}, {0.09,0,0} },
+  {0.30, 1, 0, 0.035 , {0,0}, 0.7, {0.06,0,0} },
+  {0.35, 2, 1, 0.07 , {0.02,-0.02}, 0.5, {0.12,0,0}, {0.06,0,0} },
   {walk.tStep, 1, 0, 0.035 , {0,0}, 0.5, {0.04,0,0} },
 }
 walk.walkKickDef["FrontRight"]={
-  {0.30, 1, 1, 0.035 , {0,0}, 0.4, {0.06,0,0} },
-  {0.40, 2, 0, 0.05 , {0.02,0.02}, 0.5,  {0.12,0,0}, {0.09,0,0} },
+  {0.30, 1, 1, 0.035 , {0,0}, 0.3, {0.06,0,0} },
+  {0.35, 2, 0, 0.07 , {0.02,0.02}, 0.5,  {0.12,0,0}, {0.06,0,0} },
   {walk.tStep, 1, 1, 0.035 , {0,0}, 0.5, {0.04,0,0} },
 }
-
-walk.walkKickDef["SideLeft"]={
-  {0.30, 1, 1, 0.035 , {0,0}, 0.4, {0.04,0.04,0} },
-  {0.35, 3, 0, 0.07 , {-0.01,0.01}, 0.5, {0.06,-0.05,0},{0.09,0.005,0}},
-  {0.25, 1, 1, 0.035 , {0,0}, 0.5, {0,0,0} },}
-
-walk.walkKickDef["SideRight"]={
-  {0.30, 1, 0, 0.035 , {0,0}, 0.6, {0.04,-0.04,0} },
-  {0.35, 3, 1, 0.07 , {-0.01,-0.01},0.5, {0.06,0.05,0},{0.09,-0.005,0}},
-  {0.25, 1, 0, 0.035 , {0,0},0.5,  {0,0,0} },
-}
-
-
 
 walk.walkKickPh=0.5;
 

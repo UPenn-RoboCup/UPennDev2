@@ -28,7 +28,6 @@ world.cResample = 10; --Resampling interval
 
 
 --They are SPL values
---[[
 --Field edge
 
 world.Lcorner={};
@@ -52,8 +51,8 @@ world.Lcorner[14]={-3.0,-1.1};
 --Center circle junction
 world.Lcorner[15]={0,0.6};
 world.Lcorner[16]={0,-0.6};
---]]
 
+--[[
 --Kidsize values
 world.Lcorner={};
 --Field edge
@@ -85,7 +84,7 @@ world.Lcorner[17]={2.4,2};
 world.Lcorner[18]={2.4,-2};
 world.Lcorner[19]={-2.4,2};
 world.Lcorner[20]={-2.4,-2};
-
+--]]
 
 
 --SJ: OP does not use yaw odometry data (only use gyro)
@@ -136,16 +135,15 @@ world.aCornerFilter = 0.03;
 world.aLineFilter = 0.02;
 
 --New two-goalpost localization
-world.use_new_goalposts=1;
---For NAO
-world.use_same_colored_goal = 0;
+world.use_new_goalposts=0;
 
 -- Occupancy Map parameters
 occ = {};
 occ.mapsize = 50;
-occ.robot_pos = {occ.mapsize / 2, occ.mapsize * 4 / 5};
+occ.centroid = {occ.mapsize / 2, occ.mapsize * 4 / 5};
 
 
+world.use_same_colored_goal = 0;
 
 --Use line information to fix angle
 world.use_line_angles = 1;

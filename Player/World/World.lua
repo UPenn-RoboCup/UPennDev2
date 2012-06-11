@@ -258,8 +258,6 @@ function update_vision()
       end
     end
   else
-    -- indicator
-    goal_led={0,0,0};
   end
 
   -- line update
@@ -280,8 +278,14 @@ function update_vision()
     local v = vcm.get_landmark_v();
     if color == Config.color.yellow then
         PoseFilter.landmark_yellow(v);
+	goal_led={1,1,0.5};
     else
         PoseFilter.landmark_cyan(v);
+	goal_led={0,1,1};
+    end
+  else
+    if vcm.get_goal_detect() == 0 then
+      goal_led={0,0,0};
     end
   end
 

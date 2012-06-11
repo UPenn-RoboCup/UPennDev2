@@ -308,7 +308,12 @@ function update()
       -- TODO: consider angle as well
       rBall = math.sqrt(states[id].ball.x^2 + states[id].ball.y^2);
       tBall = states[id].time - states[id].ball.t;
-      eta[id] = rBall/0.10 + 4*math.max(tBall-1.0,0);
+--      eta[id] = rBall/0.10 + 4*math.max(tBall-1.0,0);
+
+      eta[id] = rBall/0.10 + 
+	4*math.max(tBall-1.0,0)+
+	math.abs(states[id].attackBearing)/3.0; --1 sec to turn 180 deg
+
       roles[id]=states[id].role;
       
       -- distance to goal

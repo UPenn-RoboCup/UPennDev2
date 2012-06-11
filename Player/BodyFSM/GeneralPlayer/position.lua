@@ -123,7 +123,7 @@ function getDefenderHomePose0()
   relBallY = ballGlobal[2]-homePosition[2];
 
   -- face ball 
-  homePosition[3] = math.atan2(relBallY, relBallX);
+  homePosition[3] = util.mod_angle(math.atan2(relBallY, relBallX));
   return homePosition;
 end
 
@@ -187,14 +187,16 @@ function getGoalieHomePose()
   end
   homePosition = homePosition + vBallHome;
 
-  if tBall>8 then
+  if tBall>8 or rBallHome > 4.0 then  --Face center
     goal_defend=wcm.get_goal_defend();
-    homePosition[3] = goal_defend[3];
+    relBallX = -goal_defend[1];
+    relBallY = -goal_defend[2];
+    homePosition[3] = util.mod_angle(math.atan2(relBallY, relBallX));
   else
     goal_defend=wcm.get_goal_defend();
     relBallX = ballGlobal[1]-goal_defend[1];
     relBallY = ballGlobal[2]-goal_defend[2];
-    homePosition[3] = math.atan2(relBallY, relBallX);
+    homePosition[3] = util.mod_angle(math.atan2(relBallY, relBallX));
   end
   return homePosition;
 end
@@ -204,8 +206,12 @@ function getGoalieHomePose2()
 
   --Fixed goalie position for diving goalie
   homePosition = 0.94*vector.new(wcm.get_goal_defend());
+
+  --face center of the field
   goal_defend=wcm.get_goal_defend();
-  homePosition[3] = goal_defend[3];
+  relBallX = -goal_defend[1];
+  relBallY = -goal_defend[2];
+  homePosition[3] = util.mod_angle(math.atan2(relBallY, relBallX));
 
   return homePosition;
 end
@@ -297,7 +303,7 @@ end
 
 
 function setGoalieVelocity0()
-  maxStep = 0.05;
+  maxStep = 0.06;
   homeRelative = util.pose_relative(homePosition, {pose.x, pose.y, pose.a});
   rHomeRelative = math.sqrt(homeRelative[1]^2 + homeRelative[2]^2);
   aHomeRelative = math.atan2(homeRelative[2], homeRelative[1]);

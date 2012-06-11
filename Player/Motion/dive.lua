@@ -91,6 +91,10 @@ function update()
   else --Arm motion
     divedone=dodive2();
     if divedone then 
+
+      Body.set_larm_command(qLArm0);
+      Body.set_rarm_command(qRArm0);
+
       walk.start();
       return "done"
     end

@@ -64,7 +64,7 @@ fsm.bodyOrbit.rFar = 0.45;
 fsm.bodyOrbit.thAlign = 10*math.pi/180;
 fsm.bodyOrbit.timeout = 30.0 * speedFactor;
 fsm.bodyOrbit.tLost = 3.0*speedFactor;
---fsm.bodyOrbit.walkParam = 'Walk/Config_NaoV4_Walk_SideStep'
+fsm.bodyOrbit.walkParam = 'Walk/Config_Nao_Walk_Blimp_Room'
 
 --------------------------------------------------
 --BodyPosition : Advanced chase-orbit

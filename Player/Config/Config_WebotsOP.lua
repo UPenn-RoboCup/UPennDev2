@@ -145,7 +145,7 @@ head.bodyTilt = 0;
 use_gps_only = 0;
 --use_gps_only = 1;
 
-goalie_dive = 2; --1 for arm only, 2 for actual diving
+goalie_dive = 1; --1 for arm only, 2 for actual diving
 fsm.goalie_type = 1;--moving/move+stop/stop+dive/stop+dive+move
 fsm.goalie_type = 2;--moving/move+stop/stop+dive/stop+dive+move
 fsm.goalie_type = 3;--moving/move+stop/stop+dive/stop+dive+move
@@ -154,7 +154,7 @@ fsm.goalie_type = 3;--moving/move+stop/stop+dive/stop+dive+move
 
 
 fsm.goalie_reposition=0; --No reposition
-fsm.goalie_reposition=1; --Yaw reposition
+--fsm.goalie_reposition=1; --Yaw reposition
 --fsm.goalie_reposition=2; --Position reposition
 
 

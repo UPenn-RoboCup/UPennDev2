@@ -34,7 +34,10 @@ rCloseX = Config.fsm.bodyAnticipate.rCloseX;
 
 timeout = Config.fsm.bodyAnticipate.timeout;
 thFar = Config.fsm.bodyAnticipate.thFar or {0.4,0.4,15*math.pi/180};
-maxPosition = 0.55;
+
+
+
+goalie_type = Config.fsm.goalie_type;
 
 function entry()
   print(_NAME.." entry");
@@ -42,7 +45,9 @@ function entry()
   started = false;
   follow = false;
   walk.stop();
-  Motion.event("diveready");
+  if goalie_type>2 then
+    Motion.event("diveready");
+  end
 end
 
 function update()
@@ -51,7 +56,11 @@ function update()
     return "player";
   end
 
-  walk.stop();
+  if goalie_type>1 then 
+    walk.stop();
+  else
+    return 'position';
+  end
 
   local t = Body.get_time();
   ball = wcm.get_ball();
@@ -61,8 +70,16 @@ function update()
   ballR = math.sqrt(ball.x^2+ ball.y^2);
 
   -- See where our home position is...
-  homePosition=getGoalieHomePosition();
-  homeRelative = util.pose_relative(homePosition, {pose.x, pose.y, pose.a});
+
+  if goalie_type<3 then 
+    --moving goalie
+    homePose=position.getGoalieHomePose();
+  else
+    --diving goalie
+    homePose=position.getGoalieHomePose2();
+  end
+
+  homeRelative = util.pose_relative(homePose, {pose.x, pose.y, pose.a});
   rHomeRelative = math.sqrt(homeRelative[1]^2 + homeRelative[2]^2);
 
   goal_defend=wcm.get_goal_defend();
@@ -74,13 +91,11 @@ function update()
 	(ballGlobal[2]-goal_defend[2])^2);
   ballX_defend = math.abs(ballGlobal[1]-goal_defend[1]);
 
-
-
---TODO: Diving handling 
+  --TODO: Diving handling 
 
   ball_v = math.sqrt(ball.vx^2+ball.vy^2);
 
-  if goalie_dive > 0 then
+  if goalie_dive > 0 and goalie_type>2 then
 
     if t-t0>tStartDelay and t-ball.t<0.1 and 
       wcm.get_ball_locked_on()>0 then
@@ -113,7 +128,7 @@ function update()
     end
   end
 
-  if goalie_dive~=1 then 
+  if goalie_dive~=1 or goalie_type<3 then 
     --TODO: check if other player is close to the ball
     if (ballR_defend<rClose or ballX_defend<rCloseX)
        and t-ball.t<0.1 and ball_v < ball_velocity_th2 then
@@ -123,7 +138,7 @@ function update()
     attackBearing = wcm.get_attack_bearing();
     if Config.fsm.goalie_reposition==1 then --check yaw error only
       if (t - t0 > timeout) and 
-  	math.abs(attackBearing) > thFar[3] then
+  	math.abs(homeRelative[3]) > thFar[3] then
         Motion.event("walk");
         return 'position';
       end
@@ -131,34 +146,12 @@ function update()
     elseif Config.fsm.goalie_reposition==2 then 
       if (t - t0 > timeout) and 
 	( rHomeRelative>math.sqrt(thFar[1]^2+thFar[2]^2) or
-	math.abs(attackBearing) > thFar[3]) then
+  	math.abs(homeRelative[3]) > thFar[3]) then
         Motion.event("walk");
         return 'position';
       end
     end
   end
-end
-function getGoalieHomePosition()
-
-  -- define home goalie position (in front of goal and facing the ball)
-  homePosition = 0.94*vector.new(wcm.get_goal_defend());
-
-  --TODO: Repositioning goalie
-  --[[
-
-  if Config.fsm.goalie_reposition==0 then 
-    homePosition = 0.94*vector.new(wcm.get_goal_defend());
-  elseif Config.fsm.goalie_reposition==1 then 
-    homePosition = 0.94*vector.new(wcm.get_goal_defend());
-  else
-    homePosition = vector.new(wcm.get_goal_defend());
-    vBallHome = 0.20*(ballGlobal - homePosition);
-    homePosition = homePosition + vBallHome;
-
-  end
-  --]]
-
-  return homePosition;
 end
 
 

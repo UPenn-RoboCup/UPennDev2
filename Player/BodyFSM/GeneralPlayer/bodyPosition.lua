@@ -159,17 +159,20 @@ function update()
     if role==0 then --Goalie has the highest priority 
       r_reject = 0.2;
     elseif role==1 then --Attacker
-
       if obstacle_role[i]==0 then --Our goalie
         r_reject = 0.6;
       elseif obstacle_role[i]<4 then --Our team
-        r_reject = 0.3;
+        r_reject = 0.001;
       else
         r_reject = 0.001;
       end
     else --Defender and supporter
       if obstacle_role[i]<4 then --Our team
-        r_reject = 0.6;
+        if obstacle_role[i]==0 then --Our goalie
+          r_reject = 0.8;
+        else
+          r_reject = 0.6;
+        end
       else --Opponent team
         r_reject = 0.6;
       end
@@ -297,10 +300,51 @@ end
 function setDefenderVelocity()
   homeRelative = util.pose_relative(homePose, {pose.x, pose.y, pose.a});
   rHomeRelative = math.sqrt(homeRelative[1]^2 + homeRelative[2]^2);
+  aHomeRelative = math.atan2(homeRelative[2],homeRelative[1]);
+  homeRot=math.abs(aHomeRelative);
+
+  if rHomeRelative>rVel3 and homeRot<aVel3 then
+    --Fast front dash
+    maxStep = maxStep3;
+    maxA = maxA3;
+    maxY = maxY3;
+    if max_speed==0 then
+      max_speed=1;
+      print("MAXIMUM SPEED")
+--      Speak.play('./mp3/max_speed.mp3',50)
+    end
+    veltype=1;
+  elseif rHomeRelative>rVel2 and homeRot<aVel2 then
+    --Medium speed 
+    maxStep = maxStep2;
+    maxA = maxA2;
+    maxY = maxY2;
+    veltype=2;
+  elseif rHomeRelative>0.40 then --Normal speed
+    maxStep = maxStep1;
+    maxA = 999;
+    maxY = 999;
+    veltype=3;
+  else --Reached target area, don't move too much
+    maxStep = 0.02;
+    maxA = 999;
+    maxY = 999;
+  end
+
+  vx,vy,va=0,0,0;
+  aTurn=math.exp(-0.5*(rHomeRelative/rTurn)^2);
+  if rHomeRelative<0.40 then 
+    aTurn = 1; 
+  end
 
   vx = maxStep*homeRelative[1]/rHomeRelative;
-  vy = maxStep*homeRelative[2]/rHomeRelative;
-  va = .5*math.atan2(ball.y, ball.x + 0.05);
+  vy = math.max(-maxY,math.min(maxY,vy));
+  scale = math.min(maxStep/math.sqrt(vx^2+vy^2), 1);
+  vx,vy = scale*vx,scale*vy;
+
+  va = 0.5*(aTurn*homeRelative[3] --Turn toward the target direction
+     + (1-aTurn)*aHomeRelative); --Turn toward the target
+  va = math.max(-maxA,math.min(maxA,va)); --Limit rotation
 end
 
 function getAttackerHomePose()
@@ -345,13 +389,69 @@ function getAttackerHomePose()
   end
 end
 
-function getDefenderHomePose()
-    -- defend
+
+--Simple defender
+function getDefenderHomePose0()
   homePosition = .6 * ballGlobal;
   homePosition[1] = homePosition[1] - 0.50*util.sign(homePosition[1]);
   homePosition[2] = homePosition[2] - 0.80*util.sign(homePosition[2]);
+  relBallX = ballGlobal[1]-homePosition[1];
+  relBallY = ballGlobal[2]-homePosition[2];
+
+  -- face ball 
+  homePosition[3] = math.atan2(relBallY, relBallX);
+
   return homePosition;
 end
+
+--Blocking defender 
+function getDefenderHomePose()
+  goal_defend=wcm.get_goal_defend();
+  relBallX = ballGlobal[1]-goal_defend[1];
+  relBallY = ballGlobal[2]-goal_defend[2];
+  RrelBall = math.sqrt(relBallX^2+relBallY^2)+0.001;
+
+  distGoal = 1.8;
+  homePosition = {};
+  homePosition[1]= goal_defend[1]+distGoal * relBallX / RrelBall;
+  homePosition[2]= goal_defend[2]+distGoal * relBallY / RrelBall;
+  homePosition[3] = math.atan2(relBallY, relBallX);
+  return homePosition;
+end
+
+
+function getDefenderHomePose2()
+--Front supporter
+  goal_defend=wcm.get_goal_defend();
+  attackGoalPosition = vector.new(wcm.get_goal_attack());
+
+  relBallX = ballGlobal[1]-goal_defend[1];
+  relBallY = ballGlobal[2]-goal_defend[2];
+  RrelBall = math.sqrt(relBallX^2+relBallY^2)+0.001;
+
+-- move near attacking goal
+--TODO: prevent oscillation
+
+  homePosition = attackGoalPosition;
+  homePosition[1] = homePosition[1] - util.sign(homePosition[1]) * 1.5;
+
+  homePosition[2] = -1*util.sign(ballGlobal[2]) * 1.25;
+
+  relBallX = ballGlobal[1]-homePosition[1];
+  relBallY = ballGlobal[2]-homePosition[2];
+
+  -- face ball 
+  homePosition[3] = math.atan2(relBallY, relBallX);
+  return homePosition;
+end
+
+
+
+
+
+
+
+
 
 function getSupporterHomePose()
 

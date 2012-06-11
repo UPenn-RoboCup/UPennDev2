@@ -47,6 +47,11 @@ walk.phSingle={0.18,0.82};
 walk.hipRollCompensation = 0*math.pi/180;
 walk.ankleMod = vector.new({-1,0})/0.12 * 10*math.pi/180;
 
+---------------------------------------------
+-- Odometry values
+--------------------------------------------
+walk.odomScale = {.95, .87, .75};  
+
 --------------------------------------------------------------
 --Imu feedback parameters, alpha / gain / deadband / max
 --------------------------------------------------------------

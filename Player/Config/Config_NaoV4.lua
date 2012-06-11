@@ -6,6 +6,8 @@ require('parse_hostname')
 platform = {};
 platform.name = 'NaoV4'
 
+listen_monitor=1
+
 function loadconfig(configName)
   local localConfig=require(configName);
   for k,v in pairs(localConfig) do

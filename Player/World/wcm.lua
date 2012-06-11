@@ -173,3 +173,10 @@ end
 function get_defend_angle()
   return get_goal_defend_angle();
 end
+
+function get_sound_detection()
+   return {count = get_sound_detCount(),
+           time = get_sound_detTime(),
+           lIndex = get_sound_detLIndex(),
+           rIndex = get_sound_detRIndex()};
+end

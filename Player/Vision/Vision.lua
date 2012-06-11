@@ -84,7 +84,7 @@ vcm.set_debug_store_all_images(Config.vision.store_all_images);
 
 -- Timing
 count = 0;
-lastImageCount = 0;
+lastImageCount = {0,0};
 t0 = unix.time()
 
 function entry()
@@ -173,8 +173,8 @@ function update()
   camera.image = Camera.get_image();
 
   local status = Camera.get_camera_status();
-  if status.count ~= lastImageCount then
-    lastImageCount = status.count;
+  if status.count ~= lastImageCount[status.select+1] then
+    lastImageCount[status.select+1] = status.count;
   else
     return false; 
   end
@@ -210,17 +210,15 @@ function update()
   -- bit-or the segmented image
   labelB.data = ImageProc.block_bitor(labelA.data, labelA.m, labelA.n, scaleB, scaleB);
 
-  
+  update_shm(status, headAngles)
   Detection.update();
   vcm.refresh_debug_message();
-
-  update_shm(status, headAngles)
 
   -- switch camera
   local cmd = vcm.get_camera_command();
   if (cmd == -1) then
     if (count % camera.switchFreq == 0) then
-      Camera.select_camera(1-Camera.get_select()); 
+       Camera.select_camera(1-Camera.get_select()); 
     end
   else
     if (cmd >= 0 and cmd < camera.ncamera) then
@@ -345,8 +343,6 @@ function update_shm(status, headAngles)
   vcm.set_image_horizonA(HeadTransform.get_horizonA());
   vcm.set_image_horizonB(HeadTransform.get_horizonB());
   vcm.set_image_horizonDir(HeadTransform.get_horizonDir())
-
-  Detection.update_shm();
 
   update_shm_fov();
 end

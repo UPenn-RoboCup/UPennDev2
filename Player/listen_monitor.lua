@@ -254,7 +254,7 @@ while( true ) do
     if( obj.arr ) then
 	if ( string.find(obj.arr.name,'yuyv') ) then 
  	  push_yuyv(obj.arr);
-		print("yuyv_type00000000")
+		--print("yuyv_type00000000")
 	  yuyv_type=1;
 
 	elseif ( string.find(obj.arr.name,'ysub2') ) then 

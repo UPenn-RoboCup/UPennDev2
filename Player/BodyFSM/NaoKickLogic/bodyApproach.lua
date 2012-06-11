@@ -58,30 +58,10 @@ function update()
 
   ballA = math.atan2(ball.y - math.max(math.min(ball.y, 0.05), -0.05), math.max(ball.x+0.10, 0.10));
   vStep[3] = 0.5*ballA;
-  --Player FSM, turn towards the goal
-    attackBearing, daPost = wcm.get_attack_bearing();
-    kick_angle=wcm.get_kick_angle();
-    targetangle = util.mod_angle(attackBearing-kick_angle);
-    if targetangle > 10*math.pi/180 then
-      vStep[3]=0.2;
-    elseif targetangle < -10*math.pi/180 then
-      vStep[3]=-0.2;
-    else
-      vStep[3]=0;
-    end
-  --print(vStep[1]..','..vStep[2]..','..vStep[3]);
-
-  --when the ball is on the side of the ROBOT, backstep a bit
-  local wAngle = math.atan2 (ball.y,ball.x);
-  if math.abs(wAngle) > 45*math.pi/180 then
-    vStep[1]=vStep[1] - 0.03;
-    print('backstep');
-  else
-    --Otherwise, don't make robot backstep
-    vStep[1]=math.max(0,vStep[1]);
-  end
-
   walk.set_velocity(vStep[1],vStep[2],vStep[3]);
+
+  attackBearing, daPost = wcm.get_attack_bearing();
+  --print(vStep[1]..','..vStep[2]..','..vStep[3]);
 
   if (t - ball.t > tLost) then
     print('ballLost');
@@ -95,7 +75,7 @@ function update()
     print('ballFar');
     return "ballFar";
   end
-  if ((math.abs(attackBearing) > thAlign) and postDist.kick()) then
+  if (math.abs(attackBearing) > thAlign and postDist.kick()) then
     print('ballAlign');
     return 'ballAlign';
   end

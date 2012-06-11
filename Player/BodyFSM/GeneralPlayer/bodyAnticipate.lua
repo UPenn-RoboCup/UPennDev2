@@ -46,6 +46,11 @@ function entry()
 end
 
 function update()
+  role = gcm.get_team_role();
+  if role~=0 then
+    return "player";
+  end
+
   walk.stop();
 
   local t = Body.get_time();

@@ -108,6 +108,12 @@ sm:set_transition(bodyStart, 'goalie', bodyAnticipate);
 sm:set_transition(bodyPosition, 'goalie', bodyPositionGoalie);
 sm:set_transition(bodySearch, 'goalie', bodyPositionGoalie);
 
+sm:set_transition(bodyPositionGoalie, 'player', bodyPosition);
+sm:set_transition(bodyAnticipate,'player',bodyPosition);
+
+
+
+
 --Goalie States
 
 sm:set_transition(bodyPositionGoalie, 'ready', bodyAnticipate);

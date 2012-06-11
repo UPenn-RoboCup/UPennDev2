@@ -19,6 +19,9 @@ kickable = true;
 follow = false;
 
 goalie_dive = Config.goalie_dive or 0;
+goalie_type = Config.fsm.goalie_type;
+
+
 
 tStartDelay = Config.fsm.bodyAnticipate.tStartDelay;
 rCloseDive = Config.fsm.bodyAnticipate.rCloseDive;
@@ -37,7 +40,6 @@ thFar = Config.fsm.bodyAnticipate.thFar or {0.4,0.4,15*math.pi/180};
 
 
 
-goalie_type = Config.fsm.goalie_type;
 
 function entry()
   print(_NAME.." entry");

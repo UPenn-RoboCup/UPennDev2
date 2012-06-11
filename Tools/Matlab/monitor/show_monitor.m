@@ -320,7 +320,7 @@ function h=show_monitor()
       r_struct = robot_team.get_team_struct_wireless(i);
       if r_struct.id>0
         h_c=subplot(5,5,[6:20]);
-        plot_robot( r_struct, [],2,MONITOR.enable10);
+        plot_robot( r_struct, [],2,5,r_struct.robotName);
         updated = 0;
 	if i<6 
           h1=subplot(5,5,i);
@@ -332,8 +332,8 @@ function h=show_monitor()
           plot_label(labelB);
 	end
 	plot_overlay_wireless(r_struct);
+        [infostr textcolor]=robot_info(r_struct,[],3,r_struct.robotName);
 
-        [infostr textcolor]=robot_info(r_struct,[],1);
         set(MONITOR.infoTexts(i),'String',infostr);
 
       end

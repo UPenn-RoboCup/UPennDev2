@@ -48,6 +48,7 @@ if sit_disable==0 then --For smaller robots
   sm:set_transition(sit, 'done', relax);
   sm:set_transition(sit, 'standup', stance);
   sm:set_transition(relax, 'standup', stance);
+  sm:set_transition(relax, 'diveready', divewait);
 
   sm:set_transition(stance, 'done', walk);
   sm:set_transition(stance, 'sit', sit);

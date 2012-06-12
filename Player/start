@@ -39,7 +39,7 @@ run_player(){
  
   echo "Starting Player..."
   cd $PLAYER_DIR
-  screen $SCREEN_FLAGS player /usr/bin/luajit run_main_op.lua
+  screen -m -L -S player /usr/bin/luajit run_main_op.lua
   
   echo "Rock and Roll!"
 }
@@ -132,7 +132,8 @@ case "$1" in
     echo "[Demo](sd)       -- Demo Mode"
     echo "[visiontest](sv) -- Vision Debug Mode"
     echo "[bias](sb)       -- Bias Setup Mode"
-    echo "[roletest](sr)   -- Role Testing Mode";;
+    echo "[roletest](sr)   -- Role Testing Mode"
+    echo "[wbreset](sw)   -- Reset WB Mode";;
   *)
     echo "Unknown Mode. use 'help ' to see Available Mode";;
 esac

@@ -45,8 +45,6 @@ require('getch')
 require('Body')
 require('Motion')
 
-gcm.say_id();
-
 Motion.entry();
 
 darwin = false;

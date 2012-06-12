@@ -144,7 +144,7 @@ fsm.bodyApproach.rFar = 0.45; --Max ball distance
 fsm.bodyApproach.tLost = 3.0*speedFactor;--ball detection timeout
 
 fsm.bodyApproach.aThresholdTurn = 10*math.pi/180;
-fsm.bodyApproach.aThresholdTurnGoalie = 15*math.pi/180;
+fsm.bodyApproach.aThresholdTurnGoalie = 30*math.pi/180;
 
 --x and y target position for stationary straight kick
 fsm.bodyApproach.xTarget11={0, 0.14,0.16}; --min, target, max

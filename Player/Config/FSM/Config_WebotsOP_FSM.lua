@@ -55,6 +55,9 @@ fsm.bodyAnticipate.rCloseDive = 3.0;
 fsm.bodyAnticipate.center_dive_threshold_y = 0.07; 
 fsm.bodyAnticipate.dive_threshold_y = 1.0;
 
+fsm.bodyAnticipate.center_dive_threshold_y = 0.12; 
+
+
 fsm.bodyAnticipate.ball_velocity_th = 0.5; --min velocity for diving
 fsm.bodyAnticipate.ball_velocity_thx = -0.2; --min x velocity for diving
 
@@ -147,6 +150,9 @@ fsm.bodyApproach.tLost = 3.0*speedFactor;--ball detection timeout
 
 fsm.bodyApproach.aThresholdTurn = 10*math.pi/180;
 fsm.bodyApproach.aThresholdTurnGoalie = 15*math.pi/180;
+fsm.bodyApproach.aThresholdTurnGoalie = 35*math.pi/180;
+
+
 
 --x and y target position for stationary straight kick
 fsm.bodyApproach.xTarget11={0, 0.12,0.13}; --min, target, max
@@ -157,7 +163,7 @@ fsm.bodyApproach.xTarget12={0, 0.12,0.14}; --min, target, max
 fsm.bodyApproach.yTarget12={-0.005, 0.01, 0.025}; --min, target ,max
 
 --Target position for straight walkkick 
-fsm.bodyApproach.xTarget21={0, 0.17,0.19}; --min, target, max
+fsm.bodyApproach.xTarget21={0, 0.15,0.17}; --min, target, max
 fsm.bodyApproach.yTarget21={0.015, 0.04, 0.045}; --min, target ,max
 
 --Target position for side walkkick to left

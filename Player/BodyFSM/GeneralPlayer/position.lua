@@ -144,8 +144,58 @@ function getDefenderHomePose()
   return homePosition;
 end
 
---Front supporter
 
+
+--Aditya's defender homepose
+function getDefenderHomePose2()
+  posCalc();
+
+  -- Updated to account for defending goal post
+  --goal_post_width_half=1.6/2;
+
+  goalDefend=wcm.get_goal_defend();
+  homePosition={};
+  homePosition[1] = 0.5*goalDefend[1]+0.5*ballGlobal[1];
+
+  -- New Positioning based on angle of ball to goal
+
+  angle_shift=0.02;
+
+ if ballGlobal[1]>0 then
+    angle_ball_goaldefend_center = 
+     math.atan((ballGlobal[2]-goalDefend[2])
+		/(goalDefend[1]-ballGlobal[1]));
+  else
+    angle_ball_goaldefend_center = 
+    math.atan((ballGlobal[2]-goalDefend[2])
+	      /(goalDefend[1]+math.abs(ballGlobal[1])))
+  end
+ 
+  -- Change y co-ordinate according to theta, shift it by a factor of angle_shift and divide the angle by the present theta in degrees
+  -- The division is for scaling down when the bot is in the defending half.
+  homePosition[2]=homePosition[1] * 
+	math.tan((1+angle_shift)*angle_ball_goaldefend_center)
+	/ math.deg(angle_ball_goaldefend_center);
+
+  -- face ball 
+  relBallX = ballGlobal[1]-homePosition[1];
+  relBallY = ballGlobal[2]-homePosition[2];
+  homePosition[3] = util.mod_angle(math.atan2(relBallY, relBallX));
+
+  return homePosition;
+end
+
+
+
+
+
+
+
+
+
+
+
+--Front supporter
 function getSupporterHomePose()
   posCalc();
   goal_defend=wcm.get_goal_defend();
@@ -175,6 +225,8 @@ function getGoalieHomePose()
   posCalc();
 
   homePosition = 0.98*vector.new(wcm.get_goal_defend());
+
+--[[
   vBallHome = math.exp(-math.max(tBall-3.0, 0)/4.0)*
         (ballGlobal - homePosition);
   rBallHome = math.sqrt(vBallHome[1]^2 + vBallHome[2]^2);
@@ -186,18 +238,27 @@ function getGoalieHomePose()
     vBallHome = scale*vBallHome;
   end
   homePosition = homePosition + vBallHome;
+--]]
 
-  if tBall>8 or rBallHome > 4.0 then  --Face center
-    goal_defend=wcm.get_goal_defend();
+  goal_defend=wcm.get_goal_defend();
+  relBallX = ballGlobal[1]-goal_defend[1];
+  relBallY = ballGlobal[2]-goal_defend[2];
+  RrelBall = math.sqrt(relBallX^2 + relBallY^2);
+
+  if tBall>8 or RrelBall > 4.0 then  
+    --Go back and face center
+    dist = 0.40;
     relBallX = -goal_defend[1];
     relBallY = -goal_defend[2];
     homePosition[3] = util.mod_angle(math.atan2(relBallY, relBallX));
-  else
-    goal_defend=wcm.get_goal_defend();
-    relBallX = ballGlobal[1]-goal_defend[1];
-    relBallY = ballGlobal[2]-goal_defend[2];
+  else --Move out 
+    dist = 0.60; 
     homePosition[3] = util.mod_angle(math.atan2(relBallY, relBallX));
   end
+
+  homePosition[1] = homePosition[1] + dist*relBallX /RrelBall;
+  homePosition[2] = homePosition[2] + dist*relBallY /RrelBall;
+
   return homePosition;
 end
 

@@ -115,7 +115,7 @@ function process_keyinput()
     elseif byte==string.byte("s") then
       dive.set_dive("diveCenter");
       Motion.event("dive");
-    elseif byte==string.byte("a") then
+    elseif byte==string.byte("d") then
       dive.set_dive("diveRight");
       Motion.event("dive");
 

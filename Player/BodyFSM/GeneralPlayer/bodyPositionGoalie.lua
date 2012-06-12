@@ -33,9 +33,9 @@ function entry()
   print(_NAME.." entry");
   t0 = Body.get_time();
   if goalie_type>2 then
-    HeadFSM.sm:set_state('headLog');
+    HeadFSM.sm:set_state('headSweep');
   else
-    HeadFSM.sm:set_state('headTrack');
+--    HeadFSM.sm:set_state('headTrack');
   end
 end
 
@@ -96,6 +96,8 @@ function update()
 end
 
 function exit()
-  HeadFSM.sm:set_state('headTrack');
+  if goalie_type>2 then
+    HeadFSM.sm:set_state('headTrack');
+  end
 end
 

@@ -41,8 +41,6 @@ require('Motion')
 require('gcm')
 require('ocm')
 
-gcm.say_id()
-
 smindex = 0;
 
 Motion.entry();

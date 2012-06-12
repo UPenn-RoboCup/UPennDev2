@@ -104,7 +104,7 @@ function detect()
     local LWratio = length/line.propsB[i].max_width;
     if length > min_length and linecount < 6 and vHeight < 0.5 and LWratio > 2.5
   and line.propsB[i].endpoint[2] > horizonB and line.propsB[i].endpoint[4] > horizonB  then
-      print (LWratio)
+      --print (LWratio)
       linecount=linecount+1;
       line.length[linecount]=length;
       line.endpoint[linecount]= line.propsB[i].endpoint;
@@ -114,7 +114,7 @@ function detect()
       line.v[linecount][1]=vendpoint[1];
       line.v[linecount][2]=vendpoint[2];
       line.angle[linecount]=math.abs(math.atan2(vendpoint[1][2]-vendpoint[2][2], vendpoint[1][1]-vendpoint[2][1]));
-      print (util.ptable(line.v[linecount]))
+      --print (util.ptable(line.v[linecount]))
      
       vcm.add_debug_message(string.format(
 		"Line %d: length %d, angle %d, max_width %d\n",

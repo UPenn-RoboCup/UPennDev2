@@ -52,8 +52,8 @@ fsm.bodyAnticipate.rCloseDive = 3.0;
 fsm.bodyAnticipate.center_dive_threshold_y = 0.07; 
 fsm.bodyAnticipate.dive_threshold_y = 1.0;
 
-fsm.bodyAnticipate.ball_velocity_th = 0.5; --min velocity for diving
-fsm.bodyAnticipate.ball_velocity_thx = -0.2; --min x velocity for diving
+fsm.bodyAnticipate.ball_velocity_th = 1.0; --min velocity for diving
+fsm.bodyAnticipate.ball_velocity_thx = -1.0; --min x velocity for diving
 
 fsm.bodyAnticipate.rClose = 1.7;
 fsm.bodyAnticipate.rCloseX = 1.0;

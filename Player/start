@@ -133,6 +133,7 @@ case "$1" in
     echo "[visiontest](sv) -- Vision Debug Mode"
     echo "[bias](sb)       -- Bias Setup Mode"
     echo "[roletest](sr)   -- Role Testing Mode";;
+    echo "[wbreset](sw)   -- Reset WB Mode";;
   *)
     echo "Unknown Mode. use 'help ' to see Available Mode";;
 esac

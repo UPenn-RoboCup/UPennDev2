@@ -20,10 +20,11 @@ package.path = cwd.."/Lib/Util/?.lua;"..package.path;
 package.path = cwd.."/Dev/?.lua;"..package.path;
 package.path = cwd.."/Motion/?.lua;"..package.path;
 package.path = cwd.."/Motion/keyframes/?.lua;"..package.path;
+package.path = cwd.."/Motion/Walk/?.lua;"..package.path;
 package.path = cwd.."/Vision/?.lua;"..package.path;
 package.path = cwd.."/World/?.lua;"..package.path;
 
-
+require('Config')
 require('OccupancyMap')
 
 maxFPS = 15;

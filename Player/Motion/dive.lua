@@ -163,6 +163,11 @@ function dodive()
     else
        tDelay1=0.1;
        tDelay2=5; 
+
+
+       tDelay2=2; 
+
+
        tDelay3=0.5;
        tDelay4=0.2;
    end

@@ -1,10 +1,16 @@
 % wait for packet
+ready = false;
 msg = char(UDPComm('receive'));
-while (isempty(msg))
+while (~ready)
   msg = char(UDPComm('receive'));
+  if (~isempty(msg))
+    st = lua2mat(msg);
+    if (~isfield(st, 'id'))
+      ready = true;
+    end
+  end
   pause(0.1);
 end
-st = lua2mat(msg);
 
 % create empty polar plot
 p = polar(0);
@@ -36,10 +42,12 @@ while (1)
   msg = char(UDPComm('receive'));
   if (~isempty(msg))
     st = lua2mat(msg);
-    x = st.soundFilter 
-    x = fix(st.soundFilter * ngray/ndiv);
+    if (~isfield(st, 'id'))
+      x = st.soundFilter 
+      x = fix(st.soundFilter * ngray/ndiv);
 
-    set(s, 'CData', x);
+      set(s, 'CData', x);
+    end
   end
 
   pause(0.1);

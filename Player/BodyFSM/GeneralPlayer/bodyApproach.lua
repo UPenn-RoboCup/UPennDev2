@@ -37,9 +37,15 @@ function check_approach_type()
       if sign(ball.y)>0 then --ball left
         kick_type = 2;
         kick_dir = 2; --kick to the right
+	wcm.set_kick_dir(kick_dir);
+	wcm.set_kick_type(kick_type);
+
       else
         kick_type = 2;
         kick_dir = 3; --kick to the left
+	wcm.set_kick_dir(kick_dir);
+	wcm.set_kick_type(kick_type);
+
       end
       check_angle = 0; --Don't check angle during approaching
     end

@@ -66,6 +66,10 @@ fsm.enable_walkkick = 1;
 fsm.enable_sidekick = 0;
 fsm.enable_dribble = 1;
 
+--1 for randomly doing evade kick
+--2 for using obstacle information
+
+fsm.enable_evade = 1;
 
 
 

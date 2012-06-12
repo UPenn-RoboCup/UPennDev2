@@ -84,11 +84,6 @@ function detect(color)
       vcm.add_debug_message(string.format(
 	"Ball v0: %.2f %.2f %.2f\n",v[1],v[2],v[3]));
 
---hack
-      print(string.format(
-	"Ball v0: %.2f %.2f %.2f\n",v[1],v[2],v[3]));
-
-
       if v[3] > th_height_max then
         --Ball height check
         vcm.add_debug_message("Height check fail\n");

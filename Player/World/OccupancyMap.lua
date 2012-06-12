@@ -17,7 +17,8 @@ uOdometry0 = vector.new({0, 0, 0});
 odomScale = Config.world.odomScale or Config.walk.odomScale;
 imuYaw = Config.world.imuYaw or 0;
 yaw0 = 0;
-yawScale = 1.38
+--yawScale = 1.38
+yawScale = 1
 lastTime = 0;
 
 
@@ -34,11 +35,11 @@ function entry()
 	ocm.set_occ_robot_pos(occdata.robot_pos);
 end 
 
-function get_odometry()
+function cur_odometry()
   if mcm.get_walk_isFallDown() == 1 then
     print('FallDown and Reset Occupancy Map')
     OccMap.reset();
-  en
+  end
 
 	-- Odometry Update
   uOdometry, uOdometry0 = mcm.get_odometry(uOdometry0);
@@ -53,13 +54,15 @@ function get_odometry()
     uOdometry[3] = yaw-yaw0;
     yaw0 = yaw;
 --    print("Body yaw:",yaw*180/math.pi) --, " Pose yaw ",pose.a*180/math.pi)
+  --  print('Body yaw change', uOdometry[3]);
   end
+--print("Odometry change: ",uOdometry[1],uOdometry[2],uOdometry[3]);
   return uOdometry;
 end
 
 function odom_update()
-  uOdometry = get_odometry();
- -- print("Odometry change: ",uOdometry[1],uOdometry[2],uOdometry[3]);
+  uOdometry = cur_odometry();
+  --print("Odometry change: ",uOdometry[1],uOdometry[2],uOdometry[3]);
 	OccMap.odometry_update(uOdometry[1], uOdometry[2], uOdometry[3]);
 end
 
@@ -75,7 +78,7 @@ end
 lastPos = vector.zeros(3); 
 function velocity_update()
   curTime = unix.time();
-  uOdonmetry = get_odometry();
+  uOdonmetry = cur_odometry();
 --  print(curTime - lastTime);
   vel = (uOdometry - lastPos); -- / (curTime - lastTime);
   ocm.set_occ_vel(vel);
@@ -87,7 +90,7 @@ end
 
 function update()
   
-  velocity_update();
+--  velocity_update();
 
 
   -- Time decay
@@ -95,7 +98,7 @@ function update()
 --  OccMap.time_decay(time);
 
 	-- Vision Update
-  vision_update();
+--  vision_update();
 
 	-- Odometry Update
   odom_update();
@@ -103,9 +106,9 @@ function update()
 	-- shm Update
   odom = OccMap.retrieve_odometry();
   ocm.set_occ_odom(vector.new({odom.x, odom.y, odom.a}));
---  print(odom.x..' '..odom.y..' '..odom.a);
-	occmap = OccMap.retrieve_map();
-	ocm.set_occ_map(occmap);		
+  --print('odom from map',odom.x..' '..odom.y..' '..odom.a);
+--	occmap = OccMap.retrieve_map();
+--	ocm.set_occ_map(occmap);		
 
   local reset = ocm.get_occ_reset();
   if reset == 1 then

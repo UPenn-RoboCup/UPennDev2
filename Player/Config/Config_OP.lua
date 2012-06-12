@@ -160,11 +160,19 @@ goalie_dive_waittime = 3.0; --How long does goalie lie down?
 --fsm.goalie_type = 1;--moving/move+stop/stop+dive/stop+dive+move
 --fsm.goalie_type = 2;--moving/move+stop/stop+dive/stop+dive+move
 fsm.goalie_type = 3;--moving/move+stop/stop+dive/stop+dive+move
-fsm.goalie_reposition=0; --No reposition
---fsm.goalie_reposition=1; --Yaw reposition
+--fsm.goalie_reposition=0; --No reposition
+fsm.goalie_reposition=1; --Yaw reposition
 --fsm.goalie_reposition=2; --Position reposition
 
-Config.fsm.bodyAnticipate.timeout = 3.0;
+fsm.bodyAnticipate.timeout = 3.0;
+
+
+fsm.bodyAnticipate.center_dive_threshold_y = 0.05; 
+fsm.bodyAnticipate.dive_threshold_y = 1.0;
+
+fsm.bodyAnticipate.ball_velocity_th = 0.7; --min velocity for diving
+fsm.bodyAnticipate.ball_velocity_thx = -0.7; --min x velocity for diving
+
 
 --Speak enable
 speakenable = false;

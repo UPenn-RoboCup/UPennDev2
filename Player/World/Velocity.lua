@@ -16,7 +16,7 @@ noball_threshold = 3;
 --How many succeding ball observations is needed before updating?
 --We need at least two observation to update velocity
 
-ball_threshold = 5;
+ball_threshold = 3;
 
 gamma = 0.3;
 discount = 0.95;
@@ -44,7 +44,7 @@ function update(newx,newy)
   ballR = math.sqrt(newx^2+newy^2);
   ballA = math.atan2(newy,newx);
 
-  gamma = 0.3;
+  gamma = 0.9;
 
   --Lower gamma if head not locked on at the ball
 

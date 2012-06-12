@@ -47,8 +47,8 @@ fsm.bodyAnticipate={};
 
 fsm.bodyAnticipate.tStartDelay = 1.0*speedFactor; 
 
-fsm.bodyAnticipate.rMinDive = 0.3;
-fsm.bodyAnticipate.rCloseDive = 3.0;
+fsm.bodyAnticipate.rMinDive = 1.0;
+fsm.bodyAnticipate.rCloseDive = 2.0;
 fsm.bodyAnticipate.center_dive_threshold_y = 0.07; 
 fsm.bodyAnticipate.dive_threshold_y = 1.0;
 

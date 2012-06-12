@@ -4,8 +4,7 @@ require 'unix'
 
 walk = {};
 
-walk.testing = false; --Testing value; if true do extra variable sets in update
-
+walk.testing = true;
 ----------------------------------------------
 -- Stance and velocity limit values
 ----------------------------------------------
@@ -13,21 +12,23 @@ walk.stanceLimitX={-0.10,0.10};
 walk.stanceLimitY={0.09,0.20};
 walk.stanceLimitA={-0*math.pi/180,40*math.pi/180};
 
-walk.velLimitX={-.06,.06};
-walk.velLimitY={-.045,.045};
-walk.velLimitA={-.3,.3};
-walk.velDelta={0.03,0.015,0.15} 
+walk.velLimitX={-.05,.05};
+walk.velLimitY={-.03,.03};
+walk.velLimitA={-.4,.4};
+walk.velDelta={0.15,0.01,0.15} 
 
 ----------------------------------------------
 -- Stance parameters
 ---------------------------------------------
-walk.bodyHeight = 0.31; 
+walk.bodyHeight = 0.322; 
 walk.bodyTilt=0*math.pi/180; 
 walk.footX= 0.0; 
-walk.footY = 0.0475;
-walk.supportX = 0.020;
+walk.footY = 0.0500;
+walk.supportX = 0.018;
 walk.qLArm = math.pi/180*vector.new({105, 12, -85, -30});
 walk.qRArm = math.pi/180*vector.new({105, -12, 85, 30});
+walk.qLArmKick = math.pi/180*vector.new({105, 18, -85, -30});
+walk.qRArmKick = math.pi/180*vector.new({105, -18, 85, 30});
 
 walk.hardnessSupport = .7;
 walk.hardnessSwing = .5;
@@ -35,22 +36,22 @@ walk.hardnessArm=.3;
 ---------------------------------------------
 -- Gait parameters
 ---------------------------------------------
-walk.tStep = 0.50;
+walk.tStep = 0.40;
 walk.tZmp = 0.17;
-walk.supportY = 0.003;
-walk.stepHeight = 0.030;
+walk.supportY = 0.002;
+walk.stepHeight = 0.025;
 walk.phSingle={0.18,0.82};
-
---------------------------------------------
--- Compensation parameters
---------------------------------------------
-walk.hipRollCompensation = 0*math.pi/180;
-walk.ankleMod = vector.new({-1,0})/0.12 * 10*math.pi/180;
 
 ---------------------------------------------
 -- Odometry values
 --------------------------------------------
-walk.odomScale = {.95, .87, .75};  
+walk.odomScale = {1.03, .90, .79};  
+
+--------------------------------------------
+-- Compensation parameters
+--------------------------------------------
+walk.hipRollCompensation = 1.5*math.pi/180;
+walk.ankleMod = vector.new({-1,0})/0.12 * 10*math.pi/180;
 
 --------------------------------------------------------------
 --Imu feedback parameters, alpha / gain / deadband / max
@@ -61,7 +62,7 @@ walk.ankleImuParamX={0.15, -0.40*walk.gyroFactor,
         1*math.pi/180, 5*math.pi/180};
 walk.kneeImuParamX={0.1, -0.3*walk.gyroFactor,
         .5*math.pi/180, 5*math.pi/180};
-walk.ankleImuParamY={0.2, -1.5*walk.gyroFactor,
+walk.ankleImuParamY={0.20, -1.5*walk.gyroFactor,
         .5*math.pi/180, 5*math.pi/180};
 walk.hipImuParamY={0.1, -0.3*walk.gyroFactor,
         .5*math.pi/180, 5*math.pi/180};
@@ -70,6 +71,14 @@ walk.armImuParamX={0.1, 0*walk.gyroFactor,
         1*math.pi/180, 5*math.pi/180};
 walk.armImuParamY={0.1, 0*walk.gyroFactor,
         .5*math.pi/180, 5*math.pi/180};
+
+--------------------------------------------
+-- Support point modulation values
+--------------------------------------------
+walk.supportFront = 0.01; --Lean front when walking fast forward
+walk.supportBack = -0.02; --Lean back when walking backward
+walk.supportSideX = -0.01; --Lean back when sidestepping
+walk.supportSideY = 0.02; --Lean sideways when sidestepping
 
 --------------------------------------------
 -- WalkKick parameters
@@ -114,6 +123,7 @@ walk.sideKickVel3 = {0.09,-0.02,0};
 walk.sideKickSupportMod = {{0,0},{0,0}};
 walk.tStepSideKick = 0.70;
 
+
 --------------------------------------------
 -- Robot - specific calibration parameters
 --------------------------------------------
@@ -122,3 +132,5 @@ walk.kickXComp = 0;
 walk.supportCompL = {0,0,0};
 walk.supportCompR = {0,0,0};
 
+--Shift torso a bit to front when kicking
+walk.kickXComp = -0.01;

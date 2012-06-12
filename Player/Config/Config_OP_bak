@@ -22,11 +22,10 @@ else
 end
 
 if has_claw>0 then
---  loadconfig('Robot/Config_OPGripper_Robot') 
-  loadconfig('Robot/Config_OPSally_Robot') 
+  loadconfig('Robot/Config_OPGripper_Robot') 
   loadconfig('Walk/Config_OP_Walk')
---  walk.qLArm=math.pi/180*vector.new({90,20,-40});
---  walk.qRArm=math.pi/180*vector.new({90,-20,-40});
+  walk.qLArm=math.pi/180*vector.new({90,16,-40});
+  walk.qRArm=math.pi/180*vector.new({90,-16,-40});
 else
   loadconfig('Robot/Config_OP_Robot') 
   loadconfig('Walk/Config_OP_Walk')
@@ -129,6 +128,8 @@ fsm.fast_approach = 0;
 --1 for randomly doing evade kick
 --2 for using obstacle information
 fsm.enable_evade = 1;
+
+
 
 
 -- Team Parameters

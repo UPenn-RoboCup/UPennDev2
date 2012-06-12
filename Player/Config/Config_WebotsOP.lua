@@ -69,14 +69,8 @@ fsm.enable_dribble = 1;
 --1 for randomly doing evade kick
 --2 for using obstacle information
 
+fsm.enable_evade = 0;
 fsm.enable_evade = 1;
-
-
-
---[[
-fsm.playMode = 1; --1 for demo, 2 for orbit, 3 for direct approach
-fsm.playMode = 2; --1 for demo, 2 for orbit, 3 for direct approach
---]]
 
 fsm.playMode = 3; --1 for demo, 2 for orbit, 3 for direct approach
 
@@ -150,17 +144,17 @@ head.bodyTilt = 0;
 use_gps_only = 1;
 
 goalie_dive = 2; --1 for arm only, 2 for actual diving
-fsm.goalie_type = 1;--moving/move+stop/stop+dive/stop+dive+move
-fsm.goalie_type = 2;--moving/move+stop/stop+dive/stop+dive+move
-fsm.goalie_type = 3;--moving/move+stop/stop+dive/stop+dive+move
---fsm.goalie_type = 4;--moving/move+stop/stop+dive/stop+dive+move
+--fsm.goalie_type = 1;--moving/move+stop/stop+dive/stop+dive+move
+--fsm.goalie_type = 2;--moving/move+stop/stop+dive/stop+dive+move
+--fsm.goalie_type = 3;--moving/move+stop/stop+dive/stop+dive+move
+fsm.goalie_type = 4;--moving/move+stop/stop+dive/stop+dive+move
 
 
 
-fsm.goalie_reposition=0; --No reposition
---fsm.goalie_reposition=1; --Yaw reposition
+--fsm.goalie_reposition=0; --No reposition
+fsm.goalie_reposition=1; --Yaw reposition
 --fsm.goalie_reposition=2; --Position reposition
-
+fsm.bodyAnticipate.thFar = {0.4,0.4,30*math.pi/180};
 
 Config.fsm.bodyAnticipate.timeout = 2;
 

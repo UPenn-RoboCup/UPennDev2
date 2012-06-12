@@ -66,6 +66,10 @@ fsm.enable_walkkick = 1;
 fsm.enable_sidekick = 0;
 fsm.enable_dribble = 1;
 
+--1 for randomly doing evade kick
+--2 for using obstacle information
+
+fsm.enable_evade = 1;
 
 
 
@@ -142,10 +146,10 @@ head.bodyTilt = 0;
 --km.kick_left = 'km_NSLOP_StandupFromFront2.lua';
 
 --Shutdown Vision and use ground truth gps info only
-use_gps_only = 0;
---use_gps_only = 1;
+--use_gps_only = 0;
+use_gps_only = 1;
 
-goalie_dive = 1; --1 for arm only, 2 for actual diving
+goalie_dive = 2; --1 for arm only, 2 for actual diving
 fsm.goalie_type = 1;--moving/move+stop/stop+dive/stop+dive+move
 fsm.goalie_type = 2;--moving/move+stop/stop+dive/stop+dive+move
 fsm.goalie_type = 3;--moving/move+stop/stop+dive/stop+dive+move

@@ -83,6 +83,9 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel)
   end
 
   function plot_gps_robot(robot,scale)
+    if (~isfield(robot, 'gpspose'))
+      return
+    end
     xgps = robot_struct.gpspose.x;
     ygps = robot_struct.gpspose.y;
     rErr = sqrt((x0-xgps)^2+(y0-ygps)^2);

@@ -24,14 +24,14 @@ disparityThres = 10;
 radPerDisparity = 10 * math.pi/180;
 
 -- TODO: sound histogram filter size should be set in the config
-radPerBin = 30 * math.pi/180;
+radPerDiv = 30 * math.pi/180;
 -- histogram filter
-ndiv = math.floor(2*math.pi/radPerBin);
+ndiv = math.floor(2*math.pi/radPerDiv);
 detFilter = vector.zeros(ndiv);
 zeroInd = math.floor(ndiv/2);
 
 
-maxDetCount = 10;
+maxDetCount = 100;
 updateRate = 1;
 decayRate = 0.1;
 
@@ -59,6 +59,8 @@ function update()
         -- get the current head angles
         local headAngles = Body.get_head_position();
 
+        print(string.format('pan: %f, lindex: %d, rindex: %d, dindex: %d', headAngles[1], det.lIndex, det.rIndex, det.lIndex - det.rIndex));
+
         -- full orientation of the robot, body + head
         --    only head pan affects the audio detection
         local a = odomPose.a + headAngles[1];
@@ -76,14 +78,8 @@ function update()
         local aback = util.mod_angle(a + (math.pi - a_wrtHead));
 
         -- update histogram
-        local ifront = math.max(1, math.min(math.floor(zeroInd + afront / radPerBin) + 1, ndiv));
-        --local iback = math.max(1, math.min(math.floor(zeroInd + aback / radPerBin) + 1, ndiv));
-        local iback = 1;
-        if (ifront <= zeroInd) then
-           iback = zeroInd - ifront + 1;
-        else
-           iback = ndiv - ifront + zeroInd + 1;
-        end
+        local ifront = math.max(1, math.min(math.floor(zeroInd + afront / radPerDiv) + 1, ndiv));
+        local iback = math.max(1, math.min(math.floor(zeroInd + aback / radPerDiv) + 1, ndiv));
 
         print(string.format('afront: %f, aback: %f, ifront: %d, iback: %d', afront, aback, ifront, iback));
 
@@ -97,7 +93,6 @@ function update()
       end
    end
 
-   --[[
    -- TODO: decay histogram
    if (count % 10 == 0) then
       for i = 1,#detFilter do
@@ -105,7 +100,6 @@ function update()
          detFilter[i] = math.max(0, detFilter[i]);
       end
    end 
-   --]]
 
    update_shm();
 end
@@ -131,19 +125,43 @@ function resolve_goal_detection(gtype, vgoal)
    -- return:  0 - unknown
    --         +1 - attacking
    --         -1 - defending 
-
-   -- TODO: if we are not sure where the goalie is then return unkown
+   
+   -- find the direction of the goalie
+   -- TODO: if we are not confident in the goalie location return unkown
+   local mv, mind = util.max(detFilter);
+   if (mv < 10) then
+      print('max detection < 10');
+      return 0;
+   end
+   -- transform the goalie direction to the robot body frame
+   local agoalie_wrtWorld = (mind - zeroInd) * radPerDiv;
+   local agoalie_wrtRobot = util.mod_angle(agoalie_wrtWorld - odomPose.a);
 
    -- angle of goal from the robot
-   post1 = vgoal[1];
-   post2 = vgoal[2];
-   local ga = post1[3];
+   local post1 = vgoal[1];
+   local post2 = vgoal[2];
+   local agoal = math.atan2(post1[2], post1[1]);
    if (gtype == 3) then
-      -- TODO: if both posts were detected then use the angle between the two
+      -- if both posts were detected then use the angle between the two
+      agoal = util.mod_angle(post1[3] + 0.5 * util.mod_angle(math.atan2(post2[2], post2[1]) - post2[3]));
+   end
+   agoal = util.mod_angle(agoal);
+
+   print(string.format('agoal: %f, agoaliew: %f, agoalier: %f', agoal * 180/math.pi, agoalie_wrtWorld * 180/math.pi, agoalie_wrtRobot * 180/math.pi));
+
+   -- compare the location of the detected goal with the location of the goalie
+   if (math.abs(agoalie_wrtRobot - agoal) < 45*math.pi/180) then
+      -- the goal is ours (defending)
+      return -1;
+   elseif (math.abs(agoalie_wrtRobot + math.pi - agoal) < 45*math.pi/180) then
+      -- the goal is theirs (attacking)
+      return 1;
+   else
+      -- the detected goal posts and goalie do not correlate well
+      return 0;
    end
 
-
-   
+   -- if we make it this far then we do not know which goal it is
    return 0;
 end
 

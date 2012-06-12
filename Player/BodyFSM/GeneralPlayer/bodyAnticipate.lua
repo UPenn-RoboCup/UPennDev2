@@ -81,11 +81,13 @@ function update()
     homePose=position.getGoalieHomePose2();
   end
 
+
   homeRelative = util.pose_relative(homePose, {pose.x, pose.y, pose.a});
   rHomeRelative = math.sqrt(homeRelative[1]^2 + homeRelative[2]^2);
 
   goal_defend=wcm.get_goal_defend();
   ballxy=vector.new( {ball.x,ball.y,0} );
+  aBall = math.atan2 (ball.y,ball.x);
   posexya=vector.new( {pose.x, pose.y, pose.a} );
   ballGlobal=util.pose_global(ballxy,posexya);
   ballR_defend = math.sqrt(
@@ -130,6 +132,9 @@ function update()
     end
   end
 
+  aBall = math.atan2 (ball.y,ball.x);
+
+
   if goalie_dive~=1 or goalie_type<3 then 
     --TODO: check if other player is close to the ball
     if (ballR_defend<rClose or ballX_defend<rCloseX)
@@ -140,7 +145,8 @@ function update()
     attackBearing = wcm.get_attack_bearing();
     if Config.fsm.goalie_reposition==1 then --check yaw error only
       if (t - t0 > timeout) and 
-  	math.abs(homeRelative[3]) > thFar[3] then
+  	math.abs(aBall) > thFar[3] then
+
         Motion.event("walk");
         return 'position';
       end
@@ -148,7 +154,8 @@ function update()
     elseif Config.fsm.goalie_reposition==2 then 
       if (t - t0 > timeout) and 
 	( rHomeRelative>math.sqrt(thFar[1]^2+thFar[2]^2) or
-  	math.abs(homeRelative[3]) > thFar[3]) then
+  	math.abs(aBall) > thFar[3]) then
+
         Motion.event("walk");
         return 'position';
       end

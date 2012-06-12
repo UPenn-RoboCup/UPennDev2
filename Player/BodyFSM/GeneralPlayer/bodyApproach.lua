@@ -17,21 +17,68 @@ xTarget = Config.fsm.bodyApproach.xTarget11;
 yTarget = Config.fsm.bodyApproach.yTarget11;
 
 fast_approach = Config.fsm.fast_approach or 0;
+enable_evade = Config.fsm.enable_evade or 0;
+evade_count=0;
 
 function check_approach_type()
+  is_evading = 0;
+  check_angle=1;
   ball = wcm.get_ball();
   kick_dir=wcm.get_kick_dir();
   kick_type=wcm.get_kick_type();
   kick_angle=wcm.get_kick_angle();
 
-  --Check Obstacle here
-  
+  role = gcm.get_team_role();
+
+  --Evading kick check
+  do_evade_kick=false;
+  if enable_evade==1 and role>0 then
+    evade_count = evade_count+1;
+    if evade_count % 2 ==0 then
+      do_evade_kick=true;
+    end
+  elseif enable_evade==2 then
+
+-- Hack : use localization info to detect obstacle
+-- We should use vision
+    obstacle_num = wcm.get_obstacle_num();
+    obstacle_x = wcm.get_obstacle_x();
+    obstacle_y = wcm.get_obstacle_y();
+    obstacle_dist = wcm.get_obstacle_dist();
+
+    for i=1,obstacle_num do
+      if obstacle_dist[i]<0.60 then
+        obsAngle = math.atan2(obstacle_y[i],obstacle_x[i]);
+        if math.abs(obsAngle) < 40*math.pi/180 then
+  	  do_evade_kick = true;
+        end
+      end
+    end
+  end
 
 
 
+  if do_evade_kick then
+print("EVADE KICK!!!")
+    pose=wcm.get_pose();
+    goalDefend = wcm.get_goal_defend();
+    --Always sidekick to center side
+    if (pose.y>0 and goalDefend[1]>0) or
+       (pose.y<0 and goalDefend[1]<0) then
 
+      kick_type = 2;
+      kick_dir = 2; --kick to the right
+      wcm.set_kick_dir(kick_dir);
+      wcm.set_kick_type(kick_type);
+    else
+      kick_type = 2;
+      kick_dir = 3; --kick to the left
+      wcm.set_kick_dir(kick_dir);
+      wcm.set_kick_type(kick_type);
 
-
+    end
+    check_angle = 0; --Don't check angle if we're doing evade kick
+  end
 
 
 
@@ -158,12 +205,15 @@ function update()
     --Player FSM, turn towards the goal
     attackBearing, daPost = wcm.get_attack_bearing();
     targetangle = util.mod_angle(attackBearing-kick_angle);
-    if targetangle > aThresholdTurn then
-      vStep[3]=0.2;
-    elseif targetangle < -aThresholdTurn then
-      vStep[3]=-0.2;
-    else
-      vStep[3]=0;
+
+    if check_angle>0 then
+      if targetangle > aThresholdTurn then
+        vStep[3]=0.2;
+      elseif targetangle < -aThresholdTurn then
+        vStep[3]=-0.2;
+      else
+        vStep[3]=0;
+      end
     end
   end
 
@@ -203,6 +253,13 @@ function update()
 
 --  print("Ball xy:",ball.x,ball.y);
 --  print("Threshold xy:",xTarget[3],yTarget[3]);
+  angle_check_done = true;
+  if check_angle>0 and
+    math.abs(targetangle) > aThresholdTurn then
+    angle_check_done=false;
+  elseif  math.abs(targetangle) > 60*math.pi/180 then
+    angle_check_done=false;
+  end
 
   --For front kick, check for other side too
   if kick_dir==1 then --Front kick
@@ -212,7 +269,7 @@ function update()
     if (ball.x < xTarget[3]) and (t-ball.t < 0.5) and
        (math.abs(ball.y) > yTargetMin) and 
 	(math.abs(ball.y) < yTargetMax) and
-       math.abs(targetangle) < aThresholdTurn then
+	angle_check_done then
       print(string.format("Approach done, ball position: %.2f %.2f\n",ball.x,ball.y))
       print(string.format("Ball target: %.2f %.2f\n",xTarget[2],yTarget[2]))
       if kick_type==1 then return "kick";
@@ -223,7 +280,8 @@ function update()
     --Side kick, only check one side
     if (ball.x < xTarget[3]) and (t-ball.t < 0.5) and
        (ball.y > yTarget[1]) and (ball.y < yTarget[3]) and
-       math.abs(targetangle) < aThresholdTurn then
+       angle_check_done then
+
       print(string.format("Approach done, ball position: %.2f %.2f\n",ball.x,ball.y))
       print(string.format("Ball target: %.2f %.2f\n",xTarget[2],yTarget[2]))
       if kick_type==1 then return "kick";

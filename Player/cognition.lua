@@ -19,10 +19,10 @@ package.path = cwd.."/Motion/?.lua;"..package.path;
 
 require('unix')
 require('vcm')
-require('wcm')
 require('gcm')
+require('wcm')
 require('mcm')
---require('Body')
+require('Body')
 require('Vision')
 require('World')
 require('Detection') 

@@ -151,8 +151,13 @@ case "$1" in
     echo "[Demo](sd)       -- Demo Mode"
     echo "[visiontest](sv) -- Vision Debug Mode"
     echo "[bias](sb)       -- Bias Setup Mode"
+<<<<<<< HEAD
     echo "[roletest](sr)   -- Role Testing Mode"
     echo "[obstacle](so)   -- Role obstacle Mode";;
+=======
+    echo "[roletest](sr)   -- Role Testing Mode";;
+    echo "[wbreset](sw)   -- Reset WB Mode";;
+>>>>>>> dev-master
   *)
     echo "Unknown Mode. use 'help ' to see Available Mode";;
 esac

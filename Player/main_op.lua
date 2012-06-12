@@ -39,8 +39,6 @@ require('getch')
 require('Body')
 require('Motion')
 
-gcm.say_id();
-
 Motion.entry();
 
 darwin = false;
@@ -97,6 +95,7 @@ cur_role = 1; --Attacker
 waiting = 1;
 --Don't force the role
 gcm.set_team_forced_role(0);
+
 
 button_role,button_state = 0,0;
 tButtonRole = 0;

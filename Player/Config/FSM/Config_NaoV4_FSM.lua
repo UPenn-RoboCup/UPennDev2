@@ -64,7 +64,7 @@ fsm.bodyOrbit.rFar = 0.45;
 fsm.bodyOrbit.thAlign = 10*math.pi/180;
 fsm.bodyOrbit.timeout = 30.0 * speedFactor;
 fsm.bodyOrbit.tLost = 3.0*speedFactor;
---fsm.bodyOrbit.walkParam = 'Walk/Config_Nao_Walk_Blimp_Room'
+fsm.bodyOrbit.walkParam = 'Walk/Config_NaoV4_Walk_L512_Sidestep'
 
 --------------------------------------------------
 --BodyPosition : Advanced chase-orbit
@@ -229,10 +229,11 @@ fsm.headKickFollow.tFollow = 10.0*speedFactor;
 --------------------------------------------------
 fsm.headLookGoal={};
 fsm.headLookGoal.yawSweep = 50*math.pi/180;
-fsm.headLookGoal.tScan = 1.0*speedFactor;
+fsm.headLookGoal.tScan = 0.75*speedFactor;
 
 --------------------------------------------------
 --HeadSweep: Look around to find the goal
 --------------------------------------------------
 fsm.headSweep={};
-fsm.headSweep.tScan=2.0*speedFactor;
+fsm.headSweep.tScan=0.75*speedFactor;
+fsm.headSweep.tWait=0.25*speedFactor;

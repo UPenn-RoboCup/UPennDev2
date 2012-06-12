@@ -4,6 +4,7 @@ require('Body')
 
 t0 = 0;
 tscan = Config.fsm.headSweep.tScan;
+twait = Config.fsm.headSweep.tWait;
 yawMag = Config.head.yawMax;
 pitch = 0.0;
 
@@ -30,8 +31,16 @@ function update()
   Body.set_head_command({yaw, pitch});
 
   detectGoal = vcm.get_goal_detect();
-
-  if (t - t0 > tscan) or (detectGoal ==1 ) then
+  if (detectGoal == 1)then
+    local td = Body.get_time();
+    while (td - t < twait) do
+      td = Body.get_time();
+    end
+    return 'done';
+  end
+  
+  
+  if (t - t0 > tscan) then
     return 'done';
   end
 end

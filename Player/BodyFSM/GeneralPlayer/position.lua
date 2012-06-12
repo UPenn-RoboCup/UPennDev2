@@ -144,8 +144,58 @@ function getDefenderHomePose()
   return homePosition;
 end
 
---Front supporter
 
+
+--Aditya's defender homepose
+function getDefenderHomePose2()
+  posCalc();
+
+  -- Updated to account for defending goal post
+  --goal_post_width_half=1.6/2;
+
+  goalDefend=wcm.get_goal_defend();
+  homePosition={};
+  homePosition[1] = 0.5*goalDefend[1]+0.5*ballGlobal[1];
+
+  -- New Positioning based on angle of ball to goal
+
+  angle_shift=0.02;
+
+ if ballGlobal[1]>0 then
+    angle_ball_goaldefend_center = 
+     math.atan((ballGlobal[2]-goalDefend[2])
+		/(goalDefend[1]-ballGlobal[1]));
+  else
+    angle_ball_goaldefend_center = 
+    math.atan((ballGlobal[2]-goalDefend[2])
+	      /(goalDefend[1]+math.abs(ballGlobal[1])))
+  end
+ 
+  -- Change y co-ordinate according to theta, shift it by a factor of angle_shift and divide the angle by the present theta in degrees
+  -- The division is for scaling down when the bot is in the defending half.
+  homePosition[2]=homePosition[1] * 
+	math.tan((1+angle_shift)*angle_ball_goaldefend_center)
+	/ math.deg(angle_ball_goaldefend_center);
+
+  -- face ball 
+  relBallX = ballGlobal[1]-homePosition[1];
+  relBallY = ballGlobal[2]-homePosition[2];
+  homePosition[3] = util.mod_angle(math.atan2(relBallY, relBallX));
+
+  return homePosition;
+end
+
+
+
+
+
+
+
+
+
+
+
+--Front supporter
 function getSupporterHomePose()
   posCalc();
   goal_defend=wcm.get_goal_defend();

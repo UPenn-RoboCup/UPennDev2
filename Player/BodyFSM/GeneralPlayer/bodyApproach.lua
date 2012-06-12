@@ -30,26 +30,59 @@ function check_approach_type()
 
   role = gcm.get_team_role();
 
-  --Check Obstacle here
+  --Evading kick check
+  do_evade_kick=false;
   if enable_evade==1 and role>0 then
     evade_count = evade_count+1;
     if evade_count % 2 ==0 then
-      if sign(ball.y)>0 then --ball left
-        kick_type = 2;
-        kick_dir = 2; --kick to the right
-	wcm.set_kick_dir(kick_dir);
-	wcm.set_kick_type(kick_type);
+      do_evade_kick=true;
+    end
+  elseif enable_evade==2 then
 
-      else
-        kick_type = 2;
-        kick_dir = 3; --kick to the left
-	wcm.set_kick_dir(kick_dir);
-	wcm.set_kick_type(kick_type);
+-- Hack : use localization info to detect obstacle
+-- We should use vision
+    obstacle_num = wcm.get_obstacle_num();
+    obstacle_x = wcm.get_obstacle_x();
+    obstacle_y = wcm.get_obstacle_y();
+    obstacle_dist = wcm.get_obstacle_dist();
 
+    for i=1,obstacle_num do
+      if obstacle_dist[i]<0.60 then
+        obsAngle = math.atan2(obstacle_y[i],obstacle_x[i]);
+        if math.abs(obsAngle) < 40*math.pi/180 then
+  	  do_evade_kick = true;
+        end
       end
-      check_angle = 0; --Don't check angle during approaching
     end
   end
+
+
+
+  if do_evade_kick then
+print("EVADE KICK!!!")
+    pose=wcm.get_pose();
+    goalDefend = wcm.get_goal_defend();
+    --Always sidekick to center side
+    if (pose.y>0 and goalDefend[1]>0) or
+       (pose.y<0 and goalDefend[1]<0) then
+
+      kick_type = 2;
+      kick_dir = 2; --kick to the right
+      wcm.set_kick_dir(kick_dir);
+      wcm.set_kick_type(kick_type);
+    else
+      kick_type = 2;
+      kick_dir = 3; --kick to the left
+      wcm.set_kick_dir(kick_dir);
+      wcm.set_kick_type(kick_type);
+
+    end
+    check_angle = 0; --Don't check angle if we're doing evade kick
+  end
+
+
+
+
 
   print("Approach: kick dir /type /angle",kick_dir,kick_type,kick_angle*180/math.pi)
 

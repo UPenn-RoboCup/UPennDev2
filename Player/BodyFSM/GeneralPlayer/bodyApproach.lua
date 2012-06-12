@@ -224,6 +224,8 @@ function update()
   if check_angle>0 and
     math.abs(targetangle) > aThresholdTurn then
     angle_check_done=false;
+  elseif  math.abs(targetangle) > 60*math.pi/180 then
+    angle_check_done=false;
   end
 
   --For front kick, check for other side too

@@ -175,6 +175,8 @@ function getGoalieHomePose()
   posCalc();
 
   homePosition = 0.98*vector.new(wcm.get_goal_defend());
+
+--[[
   vBallHome = math.exp(-math.max(tBall-3.0, 0)/4.0)*
         (ballGlobal - homePosition);
   rBallHome = math.sqrt(vBallHome[1]^2 + vBallHome[2]^2);
@@ -186,18 +188,27 @@ function getGoalieHomePose()
     vBallHome = scale*vBallHome;
   end
   homePosition = homePosition + vBallHome;
+--]]
 
-  if tBall>8 or rBallHome > 4.0 then  --Face center
-    goal_defend=wcm.get_goal_defend();
+  goal_defend=wcm.get_goal_defend();
+  relBallX = ballGlobal[1]-goal_defend[1];
+  relBallY = ballGlobal[2]-goal_defend[2];
+  RrelBall = math.sqrt(relBallX^2 + relBallY^2);
+
+  if tBall>8 or RrelBall > 4.0 then  
+    --Go back and face center
+    dist = 0.40;
     relBallX = -goal_defend[1];
     relBallY = -goal_defend[2];
     homePosition[3] = util.mod_angle(math.atan2(relBallY, relBallX));
-  else
-    goal_defend=wcm.get_goal_defend();
-    relBallX = ballGlobal[1]-goal_defend[1];
-    relBallY = ballGlobal[2]-goal_defend[2];
+  else --Move out 
+    dist = 0.60; 
     homePosition[3] = util.mod_angle(math.atan2(relBallY, relBallX));
   end
+
+  homePosition[1] = homePosition[1] + dist*relBallX /RrelBall;
+  homePosition[2] = homePosition[2] + dist*relBallY /RrelBall;
+
   return homePosition;
 end
 

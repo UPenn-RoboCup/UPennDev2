@@ -50,6 +50,10 @@ torsoShiftX=0;
 t0=0;
 t1=0;
 
+--How long does goalie lie down?
+goalie_dive_waittime = Config.goalie_dive_waittime or 3.0; 
+
+
 function entry()
   print("Motion SM:".._NAME.." entry");
   walk.active=false; --Instaneous walk stop
@@ -104,7 +108,7 @@ end
 function dosquat()
 
   tDelay1=0.5;
-  tDelay2=3.0;
+  tDelay2=goalie_dive_waittime;
   tDelay3=0.5;
 
   t = Body.get_time();
@@ -175,12 +179,7 @@ function dodive()
         return dosquat();
     else
        tDelay1=0.1;
-       tDelay2=5; 
-
-
-       tDelay2=2; 
-
-
+       tDelay2=goalie_dive_waittime;
        tDelay3=0.5;
        tDelay4=0.2;
    end

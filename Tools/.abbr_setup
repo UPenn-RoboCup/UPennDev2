@@ -1,3 +1,4 @@
+alias sw='start wbreset'
 alias sv='start visiontest'
 alias sd='start demo'
 alias sb='start bias'

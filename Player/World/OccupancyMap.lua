@@ -95,10 +95,10 @@ function update()
 
   -- Time decay
   local time = unix.time();
---  OccMap.time_decay(time);
+  OccMap.time_decay(time);
 
 	-- Vision Update
---  vision_update();
+  vision_update();
 
 	-- Odometry Update
   odom_update();
@@ -107,8 +107,8 @@ function update()
   odom = OccMap.retrieve_odometry();
   ocm.set_occ_odom(vector.new({odom.x, odom.y, odom.a}));
   --print('odom from map',odom.x..' '..odom.y..' '..odom.a);
---	occmap = OccMap.retrieve_map();
---	ocm.set_occ_map(occmap);		
+	occmap = OccMap.retrieve_map();
+	ocm.set_occ_map(occmap);		
 
   local reset = ocm.get_occ_reset();
   if reset == 1 then

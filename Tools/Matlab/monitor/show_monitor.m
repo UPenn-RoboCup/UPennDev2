@@ -251,10 +251,10 @@ function h=show_monitor()
           plot_grid(r_mon.robot.map);  
 				end
         plot_field(MONITOR.h3,MONITOR.fieldtype);
-        plot_robot( r_struct, r_mon,2,3 );
+        plot_robot( r_struct, r_mon,2,3 ,'');
       else
         plot_field(MONITOR.h3,MONITOR.fieldtype);
-        plot_robot( r_struct, r_mon,1.5,MONITOR.enable3 );
+        plot_robot( r_struct, r_mon,1.5,MONITOR.enable3,'' );
       end
     end
 

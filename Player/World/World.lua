@@ -154,11 +154,9 @@ function update_vision()
   end
 
   --Init particle just once when game state moves to READY
-  if gcm.get_game_state()~=gameState then
-    gameState = gcm.get_game_state();
-    if gameState==1 then
-      init_particles();
-    end
+  gameState = gcm.get_game_state();
+  if gameState==0 then
+    init_particles();
   end
 
   -- Penalized?

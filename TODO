@@ -9,7 +9,7 @@
 [] Make use of weak gains on the arms and joint encoder readings to tell
    if the robot is near another robot; work this into the approach/position
       -> Will this be useful considering new approach style?
-[] Letter to technical committee
+[?] Letter to technical committee
 [] Stop resetting of position after goal is scored
       -> Make sure the button reset does not override button presses
          for manual placement

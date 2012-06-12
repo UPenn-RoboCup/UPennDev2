@@ -39,7 +39,7 @@ run_player(){
  
   echo "Starting Player..."
   cd $PLAYER_DIR
-  screen $SCREEN_FLAGS player /usr/bin/luajit run_main_op.lua
+  screen -m -L -S player /usr/bin/luajit run_main_op.lua
   
   echo "Rock and Roll!"
 }

@@ -17,7 +17,7 @@ noball_threshold = 3;
 ball_threshold = 2;
 
 gamma = 0.3;
-discount = 0.9;
+discount = 0.95;
 oldx,oldy=0,0;
 olda,oldR = 0,0;
 
@@ -37,12 +37,12 @@ function update(newx,newy)
   ballA = math.atan2(newy,newx);
 
   --Lower gamma for distant ball
-  gamma = 0.1 * math.min(1,math.max(0,(1-(ballR-2.0)/1.3)));
+  gamma = 0.3 * math.min(1,math.max(0,(1-(ballR-2.0)/1.3)));
 
   --Lower gamma if head not locked on at the ball
   locked_on = wcm.get_ball_locked_on();
   if locked_on==0 then
---    vx,vy=0,0;
+    vx,vy=0,0;
   end
 
   --Ball seen for some continuous frames
@@ -56,6 +56,9 @@ function update(newx,newy)
         newR = ballR;
       end
       newA = ballA;
+
+      nfvx = (newx-oldx)/tPassed; 
+      nfvy = (newy-oldy)/tPassed; 
     
       filteredx = newR * math.cos(newA);
       filteredy = newR * math.sin(newA);
@@ -75,6 +78,13 @@ function update(newx,newy)
       oldA=newA;
       oldR=newR; 
 
+      if math.sqrt(nfvx^2+nfvy^2)>0.3 and nfvx<-0.3 then
+         print(string.format(
+"%d Ball xy:%.2f %.2f vc: %.2f %.2f vcf:%.2f %.2f v:%.2f %.2f",
+	ball_count,newx,newy,nfvx,nfvy,vxCurrent,vyCurrent,vx,vy));
+      end
+
+
   else 
       --Ball first seen, don't update velocity
       vx=0;vy=0;
@@ -86,10 +96,10 @@ function update(newx,newy)
       oldR=ballR; 
   end
 
-  if ball_count<15 and vx<-0.5 then
-    print(string.format("%d Ball xy:%.2f %.2f v:%.2f %.2f",
-	ball_count,newx,newy,vx,vy));
-  end
+--  if ball_count<15 and vx<-0.5 then
+
+
+--  end
 
   tLast=t;
   noball_count=0;
@@ -99,7 +109,8 @@ function update_noball()
   ball_count = 0;
   noball_count=noball_count+1;
   --Reset velocity if ball was not seen 
-  if noball_count>noball_threshold then
+  if noball_count==noball_threshold then
+    print("Velocity resetted")
     vx=0;vy=0;
   else
    vx=discount*gamma*vx;

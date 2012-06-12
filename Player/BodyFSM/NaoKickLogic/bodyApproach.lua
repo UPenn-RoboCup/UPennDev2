@@ -75,7 +75,7 @@ function update()
     print('ballFar');
     return "ballFar";
   end
-  if (math.abs(attackBearing) > thAlign) then
+  if (math.abs(attackBearing) > thAlign and postDist.kick()) then
     print('ballAlign');
     return 'ballAlign';
   end

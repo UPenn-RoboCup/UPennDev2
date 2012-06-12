@@ -12,11 +12,11 @@ require('Body');
 noball_count = 1;
 ball_count = 0;
 --If ball is not seen for this # of frames, remove ball memory 
-noball_threshold = 3; 
+noball_threshold = 5; 
 --How many succeding ball observations is needed before updating?
 --We need at least two observation to update velocity
 
-ball_threshold = 3;
+ball_threshold = 2;
 
 gamma = 0.3;
 discount = 0.95;

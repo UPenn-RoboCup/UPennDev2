@@ -18,11 +18,13 @@ odomScale = Config.world.odomScale or Config.walk.odomScale;
 imuYaw = Config.world.imuYaw or 0;
 yaw0 = 0;
 yawScale = 1.38
+lastTime = 0;
 
 
 function entry()
+  lastTime = unix.time();
   OccMap.init(Config.occ.mapsize, Config.occ.robot_pos[1], 
-              Config.occ.robot_pos[2], unix.time());
+              Config.occ.robot_pos[2], lastTime);
   nCol = vcm.get_freespace_nCol();
 --  OccMap.vision_init(nCol);
 
@@ -32,11 +34,11 @@ function entry()
 	ocm.set_occ_robot_pos(occdata.robot_pos);
 end 
 
-function odom_update()
+function get_odometry()
   if mcm.get_walk_isFallDown() == 1 then
     print('FallDown and Reset Occupancy Map')
-    OccMap.odometry_reset();
-  end
+    OccMap.reset();
+  en
 
 	-- Odometry Update
   uOdometry, uOdometry0 = mcm.get_odometry(uOdometry0);
@@ -52,7 +54,12 @@ function odom_update()
     yaw0 = yaw;
 --    print("Body yaw:",yaw*180/math.pi) --, " Pose yaw ",pose.a*180/math.pi)
   end
---  print("Odometry change: ",uOdometry[1],uOdometry[2],uOdometry[3]);
+  return uOdometry;
+end
+
+function odom_update()
+  uOdometry = get_odometry();
+ -- print("Odometry change: ",uOdometry[1],uOdometry[2],uOdometry[3]);
 	OccMap.odometry_update(uOdometry[1], uOdometry[2], uOdometry[3]);
 end
 
@@ -65,11 +72,22 @@ function vision_update()
 --  print("scanned freespace width "..nCol);
 end
 
+lastPos = vector.zeros(3); 
+function velocity_update()
+  curTime = unix.time();
+  uOdonmetry = get_odometry();
+--  print(curTime - lastTime);
+  vel = (uOdometry - lastPos); -- / (curTime - lastTime);
+  ocm.set_occ_vel(vel);
+
+--  print(vel[1], vel[2], vel[3]);
+  lastPos = uOdometry; 
+  lastTime = curTime;
+end
+
 function update()
   
-  vel = walk.get_velocity();
---  print('velocity: '..vel[1],vel[2],vel[3]);
-  ocm.set_occ_vel(vel);
+  velocity_update();
 
 
   -- Time decay

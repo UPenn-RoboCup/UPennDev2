@@ -159,7 +159,10 @@ fsm.bodyApproach.xTarget21={0, 0.19,0.21}; --min, target, max
 fsm.bodyApproach.yTarget21={0.020, 0.035, 0.050}; --min, target ,max
 
 --Target position for side walkkick to left
-fsm.bodyApproach.xTarget22={0, 0.16,0.19}; --min, target, max
+--fsm.bodyApproach.xTarget22={0, 0.16,0.19}; --min, target, max
+
+--shorter walking sidekick
+fsm.bodyApproach.xTarget22={0, 0.12,0.14}; --min, target, max 
 fsm.bodyApproach.yTarget22={0.000, 0.015, 0.030}; --min, target ,max
 
 --------------------------------------------------

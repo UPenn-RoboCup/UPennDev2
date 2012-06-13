@@ -156,8 +156,8 @@ bat_med = 117; -- Slow down if voltage drops below 12.2V
 
 gps_only = 0;
 
---goalie_dive = 1; --1 for arm only, 2 for actual diving
-goalie_dive = 2; --1 for arm only, 2 for actual diving
+goalie_dive = 1; --1 for arm only, 2 for actual diving
+--goalie_dive = 2; --1 for arm only, 2 for actual diving
 goalie_dive_waittime = 3.0; --How long does goalie lie down?
 
 --fsm.goalie_type = 1;--moving/move+stop/stop+dive/stop+dive+move

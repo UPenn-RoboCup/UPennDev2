@@ -61,7 +61,8 @@ speak.enable = false;
 
 -- Game Parameters
 game = {};
-game.teamNumber = 18;
+--game.teamNumber = 18;
+game.teamNumber = 26;
 --Not a very clean implementation but we're using this way for now
 --Default role: 0 for goalie, 1 for attacker, 2 for defender
 --Default team: 0 for blue, 1 for red
@@ -130,7 +131,7 @@ fsm.fast_approach = 0;
 
 --1 for randomly doing evade kick
 --2 for using obstacle information
-fsm.enable_evade = 1;
+fsm.enable_evade = 0;
 
 
 -- Team Parameters
@@ -170,11 +171,10 @@ fsm.bodyAnticipate.timeout = 3.0;
 
 
 fsm.bodyAnticipate.center_dive_threshold_y = 0.05; 
-fsm.bodyAnticipate.dive_threshold_y = 0.8; --Default value = 1.0 , Testing
+fsm.bodyAnticipate.dive_threshold_y = 1.0;
 
 fsm.bodyAnticipate.ball_velocity_th = 0.7; --min velocity for diving
-fsm.bodyAnticipate.ball_velocity_thx = -0.6; --min x velocity for diving,default = -0.7
-
+fsm.bodyAnticipate.ball_velocity_thx = -0.7; --min x velocity for diving
 
 --Speak enable
 speakenable = false;

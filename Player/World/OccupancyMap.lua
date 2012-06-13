@@ -117,6 +117,11 @@ function update()
     ocm.set_occ_reset(0);
   end
 
+  start = unix.time();
+  OccMap.get_obstacle();
+  endd = unix.time();
+  print(endd - start);
+
 end
 
 function exit()

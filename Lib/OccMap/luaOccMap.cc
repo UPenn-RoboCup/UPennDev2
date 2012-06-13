@@ -142,6 +142,11 @@ static int lua_occmap_time_decay(lua_State *L) {
   return 1;
 }
 
+static int lua_occmap_obstacle(lua_State *L) {
+  map.kmean_clustering();
+  return 1;
+}
+
 static const struct luaL_reg OccMap_lib [] = {
   {"init", lua_occmap_init_map},
   {"reset", lua_occmap_reset},
@@ -154,6 +159,7 @@ static const struct luaL_reg OccMap_lib [] = {
 //  {"odometry_reset", lua_occmap_odometry_reset},
   {"retrieve_odometry", lua_occmap_retrieve_odometry},
   {"empty_userdata", lua_occmap_empty_userdata},
+  {"get_obstacle", lua_occmap_obstacle},
   {NULL, NULL}
 };
 

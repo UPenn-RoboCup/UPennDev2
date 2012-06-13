@@ -51,7 +51,7 @@ DEF BLUE_LANDMARK Landmark {
   postColor1 0.152941 0.505882 0.733333
   postColor2 0.992157 0.854902 0.219608
 }
-DEF BALL Ball {
+DEF BALL BallGPS {
   translation 0 0.0323921 0
 }
 DEF PLAYER_0_1 DARwInOP {
@@ -65,4 +65,32 @@ DEF PLAYER_0_1 DARwInOP {
   waistBandColor 1 0 0
   cameraWidth 320
   cameraHeight 240
+}
+
+DEF SLOPE Solid {
+  translation -1.54 -0.10 0.0798539
+  rotation 0 0 -1 0.2
+  children [
+    DEF slope Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0.201961 0.201961 0.201961
+          emissiveColor 0.201961 0.201961 0.201961
+        }
+      }
+      geometry DEF BOX Box {
+        size 1 0.35 1
+      }
+    }
+  ]
+  boundingObject DEF slope Shape {
+    appearance Appearance {
+      material Material {
+        diffuseColor 0.501961 0.501961 0.501961
+        emissiveColor 0.501961 0.501961 0.501961
+      }
+    }
+    geometry USE BOX
+  }
+  locked TRUE
 }

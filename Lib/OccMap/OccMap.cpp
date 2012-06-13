@@ -252,7 +252,7 @@ int OccMap::kmean_clustering(void) {
       good_pt.push_back(new_pt);
     }
   }
-  int K = 3;
+  int K = 2;
   vector<grid_ij> means, means_new;
   vector<grid_ij> cluster[K];
   int r = 0;
@@ -267,7 +267,7 @@ int OccMap::kmean_clustering(void) {
     // iteration to cluser points
   vector<grid_ij>::iterator it; 
   bool changed = false;
-//  do {
+  do {
     changed = false;
     for (it = good_pt.begin(); it != good_pt.end(); ++it) {
       double mindist = 100000000;
@@ -304,12 +304,32 @@ int OccMap::kmean_clustering(void) {
 //      cout << changed << endl;
       means = means_new;
     }
-//  }
-//  while (changed);
-  cout << changed <<endl;
-  for (int cnt = 0; cnt < K; cnt++) {
-    cout << means[cnt].i << ' ' << means[cnt].j << endl;
   }
-  cout << endl;
+  while (changed);
+
+//  cout << changed <<endl;
+//  for (int cnt = 0; cnt < K; cnt++) {
+//    cout << means[cnt].i << ' ' << means[cnt].j << endl;
+//  }
+//  cout << endl;
+  nOb = K;
+  for (int cnt = 0; cnt < nOb; cnt++) {
+    obstacle new_ob;
+    //TODO
+    new_ob.centroid_x = means[cnt].i;
+    new_ob.centroid_y = means[cnt].j;
+    new_ob.left_angle_range = ;
+    new_ob.right_angle_range = ;
+    new_ob.nearest_x = ;
+    new_ob.nearest_y = ;
+    obs.push_back(new_ob);
+  }
+  return 1;
+}
+
+int OccMap::init_obstacle(void) {
+  const int maxObstacleClusters = 5;
+  nOb = 0;
+  obs.clear();
   return 1;
 }

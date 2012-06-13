@@ -138,6 +138,14 @@ function process_keyinput()
     elseif byte==string.byte("h") then	targetvel[2]=targetvel[2]+0.02;
     elseif byte==string.byte(";") then	targetvel[2]=targetvel[2]-0.02;
 
+    -- reset OccMap
+  elseif byte == string.byte("/") then
+    print("reset occmap");
+    ocm.set_occ_reset(1);
+  elseif byte == string.byte(".") then
+    print("get obstacle");
+    ocm.set_occ_get_obstacle(1);
+
 
    elseif byte==string.byte("-") then
       vcm.set_camera_command(1);

@@ -8,7 +8,13 @@ require('util');
 require('wcm')
 require('vcm');
 require('gcm');
-require 'mcm'
+require('mcm');
+
+-- intialize sound localization if needed
+useSoundLocalization = Config.world.enable_sound_localization or 0;
+if (useSoundLocalization > 0) then
+  require('SoundFilter');
+end
 
 --SJ: Velocity filter is always on
 --We can toggle whether to use velocity to update ball position estimate
@@ -19,7 +25,7 @@ mod_angle = util.mod_angle;
 --require('Velocity');	
 
 --Are we using same colored goals?
-use_same_colored_goal=Config.world.use_same_colored_goal or 0;
+use_same_colored_goal = Config.world.use_same_colored_goal or 0;
 --Use ground truth pose and ball information for webots?
 use_gps_only = Config.use_gps_only or 0;
 
@@ -87,15 +93,20 @@ function update_odometry()
     yaw = Body.get_sensor_imuAngle(3);
     uOdometry[3] = yaw-yaw0;
     yaw0 = yaw;
---    print("Body yaw:",yaw*180/math.pi, " Pose yaw ",pose.a*180/math.pi)
+    --print("Body yaw:",yaw*180/math.pi, " Pose yaw ",pose.a*180/math.pi)
   end
 
   ballFilter:odometry(uOdometry[1], uOdometry[2], uOdometry[3]);
   PoseFilter.odometry(uOdometry[1], uOdometry[2], uOdometry[3]);
+  if (useSoundLocalization > 0) then
+    SoundFilter.odometry(uOdometry[1], uOdometry[2], uOdometry[3]);
+    SoundFilter.update();
+  end
 end
 
---update localization without vision (for odometry testing)
+
 function update_pos()
+  -- update localization without vision (for odometry testing)
   if count % cResample == 0 then
     PoseFilter.resample();
   end
@@ -103,6 +114,7 @@ function update_pos()
   pose.x,pose.y,pose.a = PoseFilter.get_pose();
   update_shm();
 end
+
 
 function update_vision()
 
@@ -149,14 +161,22 @@ function update_vision()
   end
 
   -- Reset heading if robot is down
-  if mcm.get_walk_isFallDown() ==1 then
+  if (mcm.get_walk_isFallDown() == 1) then
     PoseFilter.reset_heading();
+
+    if (useSoundLocalization > 0) then
+      SoundFilter.reset();
+    end
   end
 
   --Init particle just once when game state moves to READY
   gameState = gcm.get_game_state();
-  if gameState==0 then
+  if (gameState == 0) then
     init_particles();
+
+    if (useSoundLocalization > 0) then
+      SoundFilter.reset();
+    end
   end
 
   -- Penalized?
@@ -204,20 +224,91 @@ function update_vision()
     local v2 = vcm.get_goal_v2();
     local v = {v1, v2};
 
-    if use_same_colored_goal>0 then
-      if (goalType == 0) then
-        PoseFilter.post_unified_unknown(v);
-        Body.set_indicator_goal({1,1,0});
-      elseif(goalType == 1) then
-        PoseFilter.post_unified_left(v);
-        Body.set_indicator_goal({1,1,0});
-      elseif(goalType == 2) then
-        PoseFilter.post_unified_right(v);
-        Body.set_indicator_goal({1,1,0});
-      elseif(goalType == 3) then
-        PoseFilter.goal_unified(v);
-        Body.set_indicator_goal({0,0,1});
+    if (use_same_colored_goal > 0) then
+      -- resolve attacking/defending goal using the goalie sound localization
+      --  0 - unknown
+      -- -1 - defending
+      -- +1 - attacking
+      local attackingOrDefending = 0;
+      if (useSoundLocalization > 0) then
+        attackingOrDefending = SoundFilter.resolve_goal_detection(goalType, v); 
       end
+      
+      if (attackingOrDefending == 1) then
+        -- attacking goal
+        if (gcm.get_team_color() == 1) then
+          -- we are the red team, shooting on cyan goal
+          if (goalType == 0) then
+            PoseFilter.post_cyan_unknown(v);
+          elseif(goalType == 1) then
+            PoseFilter.post_cyan_left(v);
+          elseif(goalType == 2) then
+            PoseFilter.post_cyan_right(v);
+          elseif(goalType == 3) then
+            PoseFilter.goal_cyan(v);
+          end
+          -- indicator
+          Body.set_indicator_goal({0,0,1});
+        else
+          if (goalType == 0) then
+            PoseFilter.post_yellow_unknown(v);
+          elseif(goalType == 1) then
+            PoseFilter.post_yellow_left(v);
+          elseif(goalType == 2) then
+            PoseFilter.post_yellow_right(v);
+          elseif(goalType == 3) then
+            PoseFilter.goal_yellow(v);
+          end
+          -- indicator
+          Body.set_indicator_goal({1,1,0});
+        end
+      
+      elseif (attackingOrDefending == -1) then
+        -- defending goal
+        if (gcm.get_team_color() == 1) then
+          -- we are the red team, defending the yellow goal
+          if (goalType == 0) then
+            PoseFilter.post_yellow_unknown(v);
+          elseif(goalType == 1) then
+            PoseFilter.post_yellow_left(v);
+          elseif(goalType == 2) then
+            PoseFilter.post_yellow_right(v);
+          elseif(goalType == 3) then
+            PoseFilter.goal_yellow(v);
+          end
+          -- indicator
+          Body.set_indicator_goal({1,1,0});
+        else
+          if (goalType == 0) then
+            PoseFilter.post_cyan_unknown(v);
+          elseif(goalType == 1) then
+            PoseFilter.post_cyan_left(v);
+          elseif(goalType == 2) then
+            PoseFilter.post_cyan_right(v);
+          elseif(goalType == 3) then
+            PoseFilter.goal_cyan(v);
+          end
+          -- indicator
+          Body.set_indicator_goal({0,0,1});
+        end
+
+      else
+        -- we dont know which goal it is
+        if (goalType == 0) then
+          PoseFilter.post_unified_unknown(v);
+          Body.set_indicator_goal({1,1,0});
+        elseif(goalType == 1) then
+          PoseFilter.post_unified_left(v);
+          Body.set_indicator_goal({1,1,0});
+        elseif(goalType == 2) then
+          PoseFilter.post_unified_right(v);
+          Body.set_indicator_goal({1,1,0});
+        elseif(goalType == 3) then
+          PoseFilter.goal_unified(v);
+          Body.set_indicator_goal({0,0,1});
+        end
+      end
+
     else
       --Goal observation with colors
       if color == Config.color.yellow then

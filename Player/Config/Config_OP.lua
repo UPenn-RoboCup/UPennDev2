@@ -122,15 +122,22 @@ fsm.enable_evade = 0;
 -- Team Parameters
 team = {};
 team.msgTimeout = 5.0;
+team.tKickOffWear =7.0;
 
 team.walkSpeed = 0.25; --Average walking speed 
 team.turnSpeed = 2.0; --Average turning time for 360 deg
 team.ballLostPenalty = 4.0; --ETA penalty per ball loss time
+team.fallDownPenalty = 4.0; --ETA penalty per ball loss time
 
 team.nonAttackerPenalty = 0.8; -- dist from ball
 team.nonDefenderPenalty = 0.5; -- dist from goal
 
-team.tKickOffWear =7.0;
+team.force_defender = 0;
+
+team.use_team_ball = 1;
+team.team_ball_timeout = 3.0;  --use team ball info after this delay
+team.team_ball_threshold = 0.5;
+
 
 -- keyframe files
 km = {};

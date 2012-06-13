@@ -17,6 +17,13 @@ shared.occ.map = 4 * mapsize * mapsize;
 shared.occ.odom = vector.zeros(3);
 shared.occ.vel = vector.zeros(3);
 
+-- max 5 ob clusters 
+shared.ob.num = vector.zeros(1);
+shared.ob.centroid = vector.zeros(5 * 2);
+shared.ob.angle_range = vector.zeros(5 * 2);
+shared.ob.nearest = vector.zeros(5 * 3);
+
+
 -- Robot Centroid x y on Map 
 shared.occ.robot_pos = vector.zeros(2);
 

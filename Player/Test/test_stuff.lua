@@ -241,7 +241,7 @@ function update()
       if walkKick then	
         walk.doWalkKickLeft();
       else 
-        kick.set_kick("KickForwardLeft");	
+        kick.set_kick("kickForwardLeft");	
         Motion.event("kick");
       end
     elseif byte==string.byte("2") then

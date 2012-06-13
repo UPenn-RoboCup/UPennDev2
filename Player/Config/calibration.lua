@@ -631,12 +631,29 @@ cal["sally"].servoBias={-33,-22,0,0,53,-15,0,0,0,0,0,0,};
 cal["sally"].footXComp=0.002;
 cal["sally"].kickXComp=0.000;
 
+--<<<<<<< HEAD
+-- Updated date: Tue Jun 12 21:10:03 2012
+cal["hokie"].servoBias={0,-5,-17,-13,-1,-39,0,2,34,-17,-20,-3,};
+cal["hokie"].footXComp=0.002;
+cal["hokie"].kickXComp=0.000;
+--=======
 -- Updated date: Tue Jun 12 20:58:40 2012
 cal["sally"].servoBias={-33,-22,-6,0,53,-15,0,0,-4,0,0,0,};
 cal["sally"].footXComp=0.002;
 cal["sally"].kickXComp=0.000;
 
 -- Updated date: Tue Jun 12 21:54:24 2012
+cal["sally"].servoBias={-33,-22,-6,0,53,-15,0,0,-4,0,0,0,};
+cal["sally"].footXComp=-0.001;
+cal["sally"].kickXComp=0.000;
+-->>>>>>> e92ef6a7fafd2ec3f99da56ad897842f8b663976
+
+-- Updated date: Wed Jun 13 14:07:20 2012
+cal["hokie"].servoBias={0,-5,-17,-13,-1,-20,0,2,34,-17,-20,-3,};
+cal["hokie"].footXComp=0.002;
+cal["hokie"].kickXComp=0.000;
+
+-- Updated date: Wed Jun 13 14:44:35 2012
 cal["sally"].servoBias={-33,-22,-6,0,53,-15,0,0,-4,0,0,0,};
 cal["sally"].footXComp=-0.001;
 cal["sally"].kickXComp=0.000;

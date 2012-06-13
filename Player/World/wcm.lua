@@ -29,6 +29,20 @@ shared.ball.vely = vector.zeros(1);
 shared.ball.dodge = vector.zeros(1);
 shared.ball.locked_on = vector.zeros(1);
 
+shared.team = {};
+
+shared.team.attacker_eta = vector.zeros(1);
+shared.team.defender_eta = vector.zeros(1);
+shared.team.supporter_eta = vector.zeros(1);
+shared.team.goalie_alive = vector.zeros(1);
+
+shared.team.attacker_pose = vector.zeros(3);
+shared.team.defender_pose = vector.zeros(3);
+shared.team.supporter_pose = vector.zeros(3);
+shared.team.goalie_pose = vector.zeros(3);
+
+
+
 shared.goal = {};
 shared.goal.t = vector.zeros(1);
 shared.goal.attack = vector.zeros(3);
@@ -75,12 +89,17 @@ if listen_monitor>0 then
   shared.teamdata.robotId=vector.zeros(10);
   shared.teamdata.role=vector.zeros(10);
   shared.teamdata.time=vector.zeros(10);
+
   shared.teamdata.posex=vector.zeros(10);
   shared.teamdata.posey=vector.zeros(10);
   shared.teamdata.posea=vector.zeros(10);
+
   shared.teamdata.ballx=vector.zeros(10);
   shared.teamdata.bally=vector.zeros(10);
   shared.teamdata.ballt=vector.zeros(10);
+  shared.teamdata.ballvx=vector.zeros(10);
+  shared.teamdata.ballvy=vector.zeros(10);
+
   shared.teamdata.attackBearing=vector.zeros(10);
   shared.teamdata.fall=vector.zeros(10);
   shared.teamdata.penalty=vector.zeros(10);

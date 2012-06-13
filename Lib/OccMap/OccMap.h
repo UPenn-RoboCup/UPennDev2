@@ -28,6 +28,12 @@ struct grid_point {
   double value;
 };
 
+struct grid_ij {
+  int i;
+  int j;
+  double value;
+};
+
 class OccMap {
 public:
   OccMap();
@@ -46,6 +52,8 @@ public:
   int vision_update(vector<double>& free_bound, vector<int>& free_bound_type, int width, double time);
   int time_decay(double time);
   inline void range_check(double &num);
+
+  int kmean_clustering(void);
 
 private:
   // Map size in grids

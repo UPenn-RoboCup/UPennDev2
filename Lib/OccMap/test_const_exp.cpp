@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cmath>
 #include <iomanip>
+#include <vector>
 
 using namespace std;
 
@@ -34,5 +35,9 @@ int main() {
     if (i == 3) cout << "}}" << endl;
     else cout << "}," << endl;
   }
+  vector<double> a;
+  a.push_back(34.5342);
+  vector<double>::iterator i = a.begin();
+  std::cout << (int)i << std::endl;
   return 1;
 }

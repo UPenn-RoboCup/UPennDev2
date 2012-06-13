@@ -216,3 +216,100 @@ int OccMap::odometry_update(const double odomX, const double odomY,
   }
   return 1;
 }
+
+inline float sqrtA(float x) {
+  unsigned int i = *(unsigned int*) &x;
+  i += 127 << 23;
+  i >>= 1;
+  return *(float*) &i;
+}
+
+inline double norm(int x1, int y1, int x2, int y2) {
+  double squaredist = (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2);
+  return (double)sqrt(squaredist);
+}
+
+inline grid_ij get_mean(vector<grid_ij>& cluster) {
+  double sum_i = 0, sum_j = 0;
+  int size = cluster.size();
+  for (int cnt = 0; cnt < cluster.size(); cnt++) {
+    sum_i += cluster[cnt].i / size;
+    sum_j += cluster[cnt].j / size;
+  }
+  grid_ij new_mean = {sum_i, sum_j, 0.0};
+  return new_mean;
+}
+
+
+int OccMap::kmean_clustering(void) {
+  vector<grid_ij> good_pt;
+  int i = 0, j = 0;
+  for (int cnt = 0; cnt < grid_num; cnt++) {
+    if (grid[cnt] > default_log_p) {
+      i = cnt % map_size;
+      j = (cnt - i) / map_size;
+      grid_ij new_pt = {i, j, grid[cnt]};
+      good_pt.push_back(new_pt);
+    }
+  }
+  int K = 3;
+  vector<grid_ij> means, means_new;
+  vector<grid_ij> cluster[K];
+  int r = 0;
+  // Random init mean from points
+  srand(time(0));
+  for (int cnt = 0; cnt < K; cnt++) {
+    r = (rand() % good_pt.size()) + 1;
+    means.push_back(good_pt[r]);
+    means_new.push_back(good_pt[r]);
+  }
+
+    // iteration to cluser points
+  vector<grid_ij>::iterator it; 
+  bool changed = false;
+//  do {
+    changed = false;
+    for (it = good_pt.begin(); it != good_pt.end(); ++it) {
+      double mindist = 100000000;
+      int minindex = -1;
+      for (int mit = 0; mit <= means.size(); mit++) {
+        double dist = norm(it->i, it->j, means[mit].i, means[mit].j);
+        if (dist < mindist) {
+          mindist = dist;
+          minindex = mit;
+        }
+      }
+      cluster[minindex].push_back(*it);
+    }
+    // get new mean
+    for (int cnt = 0; cnt < K; cnt ++) {
+  //    cout << cluster[cnt].size() << endl;
+      if (cluster[cnt].size() != 0) {
+//        cout << "old " << means[cnt].i << ' ' << means[cnt].j << endl;
+        double sum_i = 0, sum_j = 0;
+        for (int iter = 0; iter < cluster[cnt].size(); iter++) {
+          sum_i += cluster[cnt][iter].i;
+          sum_j += cluster[cnt][iter].j;
+        }
+        means_new[cnt].i = round(sum_i / cluster[cnt].size());
+        means_new[cnt].j = round(sum_j / cluster[cnt].size());
+//        cout << "new " << means_new[cnt].i << ' ' << means_new[cnt].j << endl;
+      } else {
+        r = (rand() % good_pt.size()) + 1;
+        means_new[cnt] = good_pt[r];
+//        cout << "new " << means_new[cnt].i << ' ' << means_new[cnt].j << endl;    
+      }
+      if ((means[cnt].i != means_new[cnt].i) || (means[cnt].j != means_new[cnt].j)) 
+        changed = true; 
+//      cout << changed << endl;
+      means = means_new;
+    }
+//  }
+//  while (changed);
+  cout << changed <<endl;
+  for (int cnt = 0; cnt < K; cnt++) {
+    cout << means[cnt].i << ' ' << means[cnt].j << endl;
+  }
+  cout << endl;
+  return 1;
+}

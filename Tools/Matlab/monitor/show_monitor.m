@@ -255,7 +255,7 @@ function h=show_monitor()
 %        plot_robot( r_struct, r_mon,2,3 );
       else
         plot_field(MONITOR.h3,MONITOR.fieldtype);
-        plot_robot( r_struct, r_mon,1.5,MONITOR.enable3 );
+        plot_robot( r_struct, r_mon,1.5,MONITOR.enable3,'' );
       end
 
     end

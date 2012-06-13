@@ -37,10 +37,8 @@ qRArm0=math.pi/180*vector.new({90,-16,-40});
 bodyHeight = Config.walk.bodyHeight;
 footX = Config.walk.footX;
 footY = Config.walk.footY;
-bodyTilt = Config.walk.bodyTilt;
-bodyTilt = 0;
+bodyTilt=Config.stance.bodyTiltDive;
 
---bodyTilt=0;
 supportX = Config.walk.supportX;
 pTorso = vector.new({0, 0, bodyHeight, 0,bodyTilt,0});
 pLLeg=vector.zeros(6);
@@ -281,7 +279,7 @@ end
 function dodive2()
 
  tDelay1=0.0;
- tDelay2=1.0;
+ tDelay2=2.0;
 
   t = Body.get_time();
   divedone=false;

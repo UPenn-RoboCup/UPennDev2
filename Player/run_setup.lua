@@ -226,6 +226,12 @@ function process_keyinput_test_walk(byte)
     walk.doWalkKickLeft();
   elseif byte==string.byte("6") then
     walk.doWalkKickRight();
+
+  elseif byte==string.byte("e") then
+    walk.doWalkKickLeft2();
+  elseif byte==string.byte("r") then
+    walk.doWalkKickRight2();
+
   elseif byte==string.byte("t") then
     walk.doSideKickLeft();
   elseif byte==string.byte("y") then

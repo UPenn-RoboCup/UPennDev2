@@ -235,7 +235,7 @@ function update()
  
   walk.set_velocity(vStep[1],vStep[2],vStep[3]);
 
-  if (t - ball.t > tLost) then
+  if (t - ball.t > tLost) and role>0 then
     HeadFSM.sm:set_state('headScan');
     print("ballLost")
     return "ballLost";

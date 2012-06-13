@@ -136,7 +136,16 @@ function detect(color)
     return ball;
   end
   
-  v=HeadTransform.projectGround(v,diameter/2);
+  --SJ: Projecting ball to flat ground makes large distance error
+  --We are using declined plane for projection
+
+  vMag =math.max(0,math.sqrt(v[1]^2+v[2]^2)-0.50);
+  bodyTilt = vcm.get_camera_bodyTilt();
+--  print("BodyTilt:",bodyTilt*180/math.pi)
+  projHeight = vMag * math.tan(10*math.pi/180);
+
+
+  v=HeadTransform.projectGround(v,diameter/2-projHeight);
   --SJ: we subtract foot offset 
   --bc we use ball.x for kick alignment
   --and the distance from foot is important
@@ -152,5 +161,9 @@ function detect(color)
 
   vcm.add_debug_message(string.format(
 	"Ball detected\nv: %.2f %.2f %.2f\n",v[1],v[2],v[3]));
+--[[
+  print(string.format(
+	"Ball detected\nv: %.2f %.2f %.2f\n",v[1],v[2],v[3]));
+--]]
   return ball;
 end

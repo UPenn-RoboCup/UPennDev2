@@ -255,6 +255,8 @@ function process_keyinput()
     elseif byte==string.byte("9") then	
       Motion.event("walk");
       walk.start();
+    elseif byte==string.byte("0") then	
+      Motion.event("diveready");
     end
     walk.set_velocity(unpack(targetvel));
     if headsm_running == 0 then

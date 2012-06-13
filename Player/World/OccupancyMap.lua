@@ -94,7 +94,16 @@ end
 function obs_in_occ()
   print('try find obstacle in occmap'); 
  -- start = unix.time();
-  OccMap.get_obstacle();
+  obstacle = OccMap.get_obstacle();
+  for i = 1 , #obstacle do
+    print('centroid')
+    util.ptable(obstacle[i].centroid);
+    print('angle_range')
+    print(obstacle[i].angle_range[1] * 180 / math.pi, 
+          obstacle[i].angle_range[2] * 180 / math.pi);
+    print('nearest')
+    util.ptable(obstacle[i].nearest);
+  end
 --  endd = unix.time();
 --  print(endd - start);
 end

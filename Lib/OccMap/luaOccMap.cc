@@ -147,13 +147,45 @@ static int lua_occmap_obstacle(lua_State *L) {
   map.kmean_clustering();
   int nobstacle = map.get_nobstacle();
   //  cout << "obstacle number:" << nobstacle << endl; 
+  lua_createtable(L, nobstacle, 0);
   for (int cnt = 0; cnt < nobstacle; cnt++) {
     obstacle obstacle = map.get_obstacle(cnt);
-     //    std::cout << "centroid:" << obstacle.centroid_x << ' ' << obstacle.centroid_y << endl; 
-     //    std::cout << "range:" << obstacle.left_angle_range * 180 / M_PI 
-     //              << ' ' << obstacle.right_angle_range * 180 / M_PI << endl; 
-     //    std::cout << "nearest:" << obstacle.nearest_x << ' ' << obstacle.nearest_y
-     //              << ' ' << obstacle.nearest_dist << endl; 
+    lua_createtable(L, 0, 3);
+    // centroid field
+    //    std::cout << "centroid:" << obstacle.centroid_x << ' ' << obstacle.centroid_y << endl; 
+    lua_pushstring(L, "centroid");
+    lua_createtable(L, 2, 0);
+    lua_pushnumber(L, obstacle.centroid_x);
+    lua_rawseti(L, -2, 1);
+    lua_pushnumber(L, obstacle.centroid_y);
+    lua_rawseti(L, -2, 2);
+    lua_settable(L, -3);
+
+    // angle range field
+    //    std::cout << "range:" << obstacle.left_angle_range * 180 / M_PI 
+    //              << ' ' << obstacle.right_angle_range * 180 / M_PI << endl;    lua_pushstring(L, "angle_range");
+    lua_pushstring(L, "angle_range");
+    lua_createtable(L, 2, 0);
+    lua_pushnumber(L, obstacle.left_angle_range);
+    lua_rawseti(L, -2, 1);
+    lua_pushnumber(L, obstacle.right_angle_range);
+    lua_rawseti(L, -2, 2);
+    lua_settable(L, -3);
+
+    // nearest point field
+    //    std::cout << "nearest:" << obstacle.nearest_x << ' ' << obstacle.nearest_y
+    //              << ' ' << obstacle.nearest_dist << endl; 
+    lua_pushstring(L, "nearest");
+    lua_createtable(L, 3, 0);
+    lua_pushnumber(L, obstacle.nearest_x);
+    lua_rawseti(L, -2, 1);
+    lua_pushnumber(L, obstacle.nearest_y);
+    lua_rawseti(L, -2, 2);
+    lua_pushnumber(L, obstacle.nearest_dist);
+    lua_rawseti(L, -2, 3);
+    lua_settable(L, -3);
+
+    lua_rawseti(L, -2, cnt+1);
   }
   return 1;
 }

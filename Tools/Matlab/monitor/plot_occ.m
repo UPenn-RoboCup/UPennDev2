@@ -29,7 +29,7 @@ function plot_occ(occ)
   tri.v(:,1) = tri.v(:,1) - odom_y;
   tri.v(:,2) = tri.v(:,2) + odom_x;
 
-
+%{
 % calculate P field
 pvector = zeros(6, 2500);
 for  i_c = 1 : 50 
@@ -69,7 +69,10 @@ pvector(6, :) = pvector(6, :) * reject_gain;
   plot(occ_row(find(occ_v > 0.8 & occ_v < 0.95)), ...
         occ_col(find(occ_v > 0.8 & occ_v < 0.95)), 'o');
  % quiver(pvector(1,:), pvector(2,:), pvector(5,:), pvector(6,:), 2);
+  % show velocity
+  quiver(odom_y, odom_x, occ.vel(2) * cos(occ.vel(3)), occ.vel(1) * sin(occ.vel(3)), 100);
 
+%{
   % draw robot body
   hB = rectangle('Position', [-0.06, -0.04, 0.12, 0.07], ...
             'Curvature',[0.8, 0.4],...
@@ -80,6 +83,7 @@ pvector(6, :) = pvector(6, :) * reject_gain;
   zdir = [0 0 1];
   rotate(hB, zdir, 0.25 * pi);
   rotate(hH, zdir, 0.25 * pi);
+%}
 
   hold off;
   axis([odom_y-0.5 odom_y+0.5 odom_x-0.2 odom_x+0.8]);

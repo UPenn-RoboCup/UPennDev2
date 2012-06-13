@@ -71,6 +71,9 @@ sm:set_transition(bodyObstacleAvoid, 'timeout', bodyPosition);
 sm:set_transition(bodySearch, 'ball', bodyPosition);
 sm:set_transition(bodySearch, 'timeout', bodyGotoCenter);
 
+sm:set_transition(bodySearch, 'ballgoalie', bodyChase);
+sm:set_transition(bodySearch, 'timeoutgoalie', bodyPositionGoalie);
+
 sm:set_transition(bodyGotoCenter, 'ballFound', bodyPosition);
 sm:set_transition(bodyGotoCenter, 'done', bodySearch);
 sm:set_transition(bodyGotoCenter, 'timeout', bodySearch);
@@ -111,9 +114,6 @@ sm:set_transition(bodySearch, 'goalie', bodyPositionGoalie);
 sm:set_transition(bodyPositionGoalie, 'player', bodyPosition);
 sm:set_transition(bodyAnticipate,'player',bodyPosition);
 
-
-
-
 --Goalie States
 
 sm:set_transition(bodyPositionGoalie, 'ready', bodyAnticipate);
@@ -138,7 +138,9 @@ sm:set_transition(bodyChase, 'ballClose', bodyApproach);
 -- Chase after the ball if you make a save
 --sm:set_transition(bodyDive, 'done', bodyChase);
 -- Should timeout in case the fall is not detected...
-sm:set_transition(bodyDive, 'timeout', bodyPositionGoalie);
+
+--sm:set_transition(bodyDive, 'timeout', bodyPositionGoalie);
+sm:set_transition(bodyDive, 'timeout', bodySearch);
 sm:set_transition(bodyDive, 'reanticipate', bodyAnticipate);
 
 --The transition after a dive should just come from a fall (or timeout in case)

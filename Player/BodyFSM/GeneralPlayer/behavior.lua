@@ -5,6 +5,7 @@ require('walk')
 require('vector')
 require('Config')
 require('wcm')
+require('gcm')
 
 function cycle_behavior()
   demo_behavior = demo_behavior%4 + 1;
@@ -112,3 +113,30 @@ function update()
   wcm.set_kick_type(kickType);
   wcm.set_kick_angle(kickAngle);
 end
+
+function get_attack_bearing_pose(pose0)
+  postYellow = Config.world.postYellow;
+  postCyan = Config.world.postCyan;
+
+  if gcm.get_team_color() == 1 then
+    -- red attacks cyan goal
+    postAttack = postCyan;
+  else
+    -- blue attack yellow goal
+    postAttack = postYellow;
+  end
+  -- make sure not to shoot back towards defensive goal:
+  local xPose = math.min(math.max(pose0.x, -0.99*PoseFilter.xLineBoundary),
+                          0.99*PoseFilter.xLineBoundary);
+  local yPose = pose0.y;
+  local aPost = {}
+  aPost[1] = math.atan2(postAttack[1][2]-yPose, postAttack[1][1]-xPose);
+  aPost[2] = math.atan2(postAttack[2][2]-yPose, postAttack[2][1]-xPose);
+  local daPost = math.abs(util.mod_angle(aPost[1]-aPost[2]));
+
+  attackHeading = aPost[2] + .5*daPost;
+  attackBearing = PoseFilter.mod_angle(attackHeading - pose0.a);
+
+  return attackBearing, daPost;
+end
+

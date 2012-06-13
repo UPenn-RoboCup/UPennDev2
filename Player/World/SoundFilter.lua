@@ -161,6 +161,8 @@ function odometry(dx, dy, da)
    odomPose.a = odomPose.a + da;
 end
 
+function get_sound_direction()
+end
 
 function resolve_goal_detection(gtype, vgoal)
    -- given a goal detection
@@ -172,6 +174,9 @@ function resolve_goal_detection(gtype, vgoal)
    -- return:  0 - unknown
    --         +1 - attacking
    --         -1 - defending 
+   if (gcm.get_team_player_id() == 1) then
+      return 0;
+   end
    
    -- find the direction of the goalie
    -- TODO: if we are not confident in the goalie location return unkown

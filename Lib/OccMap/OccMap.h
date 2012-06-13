@@ -41,6 +41,7 @@ struct obstacle {
   double right_angle_range;
   double nearest_x;
   double nearest_y;
+  double nearest_dist;
 };
 
 class OccMap {
@@ -64,6 +65,8 @@ public:
 
   int init_obstacle(void);
   int kmean_clustering(void);
+  obstacle& get_obstacle(int index);
+  int get_nobstacle(void);
 
 private:
   // Map size in grids

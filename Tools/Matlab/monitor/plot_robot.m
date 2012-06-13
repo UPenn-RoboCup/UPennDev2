@@ -17,7 +17,11 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel,name)
   if robot_struct.fall
     ca=1;sa=0;
     plot_fallen_robot(robot_struct,scale)
-    plot_info(robot_struct,scale,2,name);
+    if drawlevel==5
+      plot_info(robot_struct,scale,2,name);
+    else
+      plot_info(robot_struct,scale,2,'');
+    end
   else
     if drawlevel==1 
       %simple position and pose

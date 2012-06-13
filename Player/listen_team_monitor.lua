@@ -99,9 +99,13 @@ function push_team_struct(obj,teamOffset)
   states.posex=wcm.get_teamdata_posex();
   states.posey=wcm.get_teamdata_posey();
   states.posea=wcm.get_teamdata_posea();
+
   states.ballx=wcm.get_teamdata_ballx();
   states.bally=wcm.get_teamdata_bally();
+  states.ballvx=wcm.get_teamdata_ballx();
+  states.ballvy=wcm.get_teamdata_bally();
   states.ballt=wcm.get_teamdata_ballt();
+
   states.attackBearing=wcm.get_teamdata_attackBearing();
   states.fall=wcm.get_teamdata_fall();
   states.penalty=wcm.get_teamdata_penalty();
@@ -147,6 +151,9 @@ function push_team_struct(obj,teamOffset)
   states.ballx[id]=obj.ball.x;
   states.bally[id]=obj.ball.y;
   states.ballt[id]=obj.ball.t;
+  states.ballvx[id]=obj.ball.velx;
+  states.ballvy[id]=obj.ball.vely;
+
   states.attackBearing[id]=obj.attackBearing;
   states.fall[id]=obj.fall;
   states.penalty[id]=obj.penalty;
@@ -212,9 +219,13 @@ function push_team_struct(obj,teamOffset)
   wcm.set_teamdata_posex(states.posex)
   wcm.set_teamdata_posey(states.posey)
   wcm.set_teamdata_posea(states.posea)
+
   wcm.set_teamdata_ballx(states.ballx)
   wcm.set_teamdata_bally(states.bally)
   wcm.set_teamdata_ballt(states.ballt)
+  wcm.set_teamdata_ballx(states.ballvx)
+  wcm.set_teamdata_bally(states.ballvy)
+
   wcm.set_teamdata_attackBearing(states.attackBearing)
   wcm.set_teamdata_fall(states.fall)
   wcm.set_teamdata_penalty(states.penalty)

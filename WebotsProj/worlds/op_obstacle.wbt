@@ -47,7 +47,7 @@ DEF BLUE_GOAL Goal {
 DEF BALL Ball {
 }
 DEF PLAYER_1_99 DARwInOPGPS {
-  translation -0.6 0.34 -0.024
+  translation -0.6 0.31 -0.4834
   rotation 0 1 0 1.56
   controller "darwin-op_team_0"
   controllerArgs "1 99"

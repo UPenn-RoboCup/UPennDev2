@@ -34,6 +34,15 @@ struct grid_ij {
   double value;
 };
 
+struct obstacle {
+  double centroid_x;
+  double centroid_y;
+  double left_angle_range;
+  double right_angle_range;
+  double nearest_x;
+  double nearest_y;
+};
+
 class OccMap {
 public:
   OccMap();
@@ -53,6 +62,7 @@ public:
   int time_decay(double time);
   inline void range_check(double &num);
 
+  int init_obstacle(void);
   int kmean_clustering(void);
 
 private:
@@ -90,6 +100,11 @@ private:
 
   double default_p;
   double default_log_p;
+
+  int nOb;
+  vector<obstacle> obs;
+
+
 
 };
 

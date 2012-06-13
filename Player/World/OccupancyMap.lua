@@ -17,8 +17,11 @@ uOdometry0 = vector.new({0, 0, 0});
 odomScale = Config.world.odomScale or Config.walk.odomScale;
 imuYaw = Config.world.imuYaw or 0;
 yaw0 = 0;
---yawScale = 1.38
-yawScale = 1
+if (string.find(Config.platform.name, 'Webots'))  then
+  yawScale = 1.38;
+else
+  yawScale = 1;
+end
 lastTime = 0;
 
 
@@ -88,6 +91,14 @@ function velocity_update()
   lastTime = curTime;
 end
 
+function obs_in_occ()
+  print('try find obstacle in occmap'); 
+ -- start = unix.time();
+  OccMap.get_obstacle();
+--  endd = unix.time();
+--  print(endd - start);
+end
+
 function update()
   
 --  velocity_update();
@@ -117,10 +128,12 @@ function update()
     ocm.set_occ_reset(0);
   end
 
-  start = unix.time();
-  OccMap.get_obstacle();
-  endd = unix.time();
-  print(endd - start);
+  local get_obstacle = ocm.get_occ_get_obstacle();
+  if get_obstacle == 1 then
+    obs_in_occ();
+    print("get obstacles from occmap");
+    ocm.set_occ_get_obstacle();
+  end
 
 end
 

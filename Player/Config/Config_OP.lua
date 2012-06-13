@@ -170,10 +170,10 @@ fsm.bodyAnticipate.timeout = 3.0;
 
 
 fsm.bodyAnticipate.center_dive_threshold_y = 0.05; 
-fsm.bodyAnticipate.dive_threshold_y = 1.0;
+fsm.bodyAnticipate.dive_threshold_y = 0.8; --Default value = 1.0 , Testing
 
 fsm.bodyAnticipate.ball_velocity_th = 0.7; --min velocity for diving
-fsm.bodyAnticipate.ball_velocity_thx = -0.7; --min x velocity for diving
+fsm.bodyAnticipate.ball_velocity_thx = -0.6; --min x velocity for diving,default = -0.7
 
 
 --Speak enable

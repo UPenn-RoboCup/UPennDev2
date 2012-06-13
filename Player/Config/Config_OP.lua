@@ -80,7 +80,7 @@ elseif (robotName=='lucy') then
 elseif (robotName=='hokie') then
   game.playerID = 4; 
 elseif (robotName=='felix') then
-  game.playerID = 2; --testing , defender
+  game.playerID = 2; 
 elseif (robotName=='sally') then
   game.playerID = 1; 
 elseif (robotName=='jiminy') then
@@ -122,8 +122,14 @@ fsm.enable_evade = 0;
 -- Team Parameters
 team = {};
 team.msgTimeout = 5.0;
-team.nonAttackerPenalty = 6.0; -- eta sec
+
+team.walkSpeed = 0.25; --Average walking speed 
+team.turnSpeed = 2.0; --Average turning time for 360 deg
+team.ballLostPenalty = 4.0; --ETA penalty per ball loss time
+
+team.nonAttackerPenalty = 0.8; -- dist from ball
 team.nonDefenderPenalty = 0.5; -- dist from goal
+
 team.tKickOffWear =7.0;
 
 -- keyframe files

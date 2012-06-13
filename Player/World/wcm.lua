@@ -29,6 +29,20 @@ shared.ball.vely = vector.zeros(1);
 shared.ball.dodge = vector.zeros(1);
 shared.ball.locked_on = vector.zeros(1);
 
+shared.team = {};
+
+shared.team.attacker_eta = vector.zeros(1);
+shared.team.defender_eta = vector.zeros(1);
+shared.team.supporter_eta = vector.zeros(1);
+shared.team.goalie_alive = vector.zeros(1);
+
+shared.team.attacker_pose = vector.zeros(3);
+shared.team.defender_pose = vector.zeros(3);
+shared.team.supporter_pose = vector.zeros(3);
+shared.team.goalie_pose = vector.zeros(3);
+
+
+
 shared.goal = {};
 shared.goal.t = vector.zeros(1);
 shared.goal.attack = vector.zeros(3);

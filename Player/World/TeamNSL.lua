@@ -398,6 +398,19 @@ function update()
         end
       end
     end
+  elseif gcm.get_game_state()<2 then --INITIAL, READY STATE
+    if role==1 then
+      role_switch = false;
+      --Check whether there are any other player with smaller playerID
+      for id=1,5 do
+        if roles[id]==1 and id<playerID then
+	  role_switch = true;
+	end
+      end
+      if role_switch then
+        set_role(2); --Switch to defender
+      end
+    end
   end
 
   -- update shm

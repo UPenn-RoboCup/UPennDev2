@@ -162,6 +162,8 @@ function update_vision()
   -- Penalized?
   if gcm.in_penalty() then
     wcm.set_robot_penalty(1);
+    --Reset particles while robot is penalized...
+    init_particles();
   else
     wcm.set_robot_penalty(0);
   end

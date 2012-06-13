@@ -231,3 +231,4 @@ fsm.headLookGoal.tScan = 1.0*speedFactor;
 --------------------------------------------------
 fsm.headSweep={};
 fsm.headSweep.tScan=1.0*speedFactor;
+fsm.headSweep.tWait=0.25*speedFactor;

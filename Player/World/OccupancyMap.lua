@@ -132,7 +132,7 @@ function update()
   if get_obstacle == 1 then
     obs_in_occ();
     print("get obstacles from occmap");
-    ocm.set_occ_get_obstacle();
+    ocm.set_occ_get_obstacle(0);
   end
 
 end

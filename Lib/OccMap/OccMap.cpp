@@ -229,6 +229,11 @@ inline double norm(int x1, int y1, int x2, int y2) {
   return (double)sqrt(squaredist);
 }
 
+inline double norm(double x1, double y1, double x2, double y2) {
+  double squaredist = (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2);
+  return (double)sqrt(squaredist);
+}
+
 inline grid_ij get_mean(vector<grid_ij>& cluster) {
   double sum_i = 0, sum_j = 0;
   int size = cluster.size();
@@ -252,7 +257,7 @@ int OccMap::kmean_clustering(void) {
       good_pt.push_back(new_pt);
     }
   }
-  int K = 2;
+  int K = 1;
   vector<grid_ij> means, means_new;
   vector<grid_ij> cluster[K];
   int r = 0;
@@ -315,14 +320,35 @@ int OccMap::kmean_clustering(void) {
   nOb = K;
   for (int cnt = 0; cnt < nOb; cnt++) {
     obstacle new_ob;
-    //TODO
-    new_ob.centroid_x = means[cnt].i;
-    new_ob.centroid_y = means[cnt].j;
-    new_ob.left_angle_range = ;
-    new_ob.right_angle_range = ;
-    new_ob.nearest_x = ;
-    new_ob.nearest_y = ;
-    obs.push_back(new_ob);
+    // Get Centroid
+    new_ob.centroid_y = rx * resolution - means[cnt].i * resolution;
+    new_ob.centroid_x = ry * resolution - means[cnt].j * resolution;
+//    cout << "centroid:" << means[cnt].i << ' ' << means[cnt].j << ' ' 
+//          << new_ob.centroid_x << ' ' << new_ob.centroid_y << endl;
+    // Get nearest obstacle corner and Angle Range
+    double dist = 0, minDist = 10000000, minAngle, maxAngle;
+    int nearestIdx = 0;
+    double x = 0, y = 0;
+    for (int iter = 0; iter < cluster[cnt].size(); iter++) {
+      x = ry * resolution - cluster[cnt][iter].j * resolution;
+      y = rx * resolution - cluster[cnt][iter].i * resolution;
+      dist = norm(x, y, odom_x, odom_y);
+    //      cout << dist << endl;
+      if (dist < minDist) {
+        minDist = dist;
+        nearestIdx = iter;
+      }
+    }
+    //    cout << "nearest idx: " << nearestIdx << ' ' << minDist << ' ' 
+    //          << cluster[cnt][nearestIdx].i << ' ' << cluster[cnt][nearestIdx].j << endl;
+    //    new_ob.left_angle_range = ;
+    //    new_ob.right_angle_range = ;
+    new_ob.nearest_y = rx * resolution - cluster[cnt][nearestIdx].i * resolution;
+    new_ob.nearest_x = ry * resolution - cluster[cnt][nearestIdx].j * resolution;
+    cout << "nearest point: " << new_ob.nearest_x << ' ' << new_ob.nearest_y << endl;
+    //    cout << "nearest point: " << cluster[cnt][nearestIdx].i << ' ' 
+    //                              << cluster[cnt][nearestIdx].j << endl;
+//    obs.push_back(new_ob);
   }
   return 1;
 }

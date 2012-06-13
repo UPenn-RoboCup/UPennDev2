@@ -32,6 +32,7 @@ while (1)
 	end
 
 	% plot current robot positions
+  cla;
 	plot_field(gca,1);
 	hold on;
 

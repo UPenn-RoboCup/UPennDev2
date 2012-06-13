@@ -40,7 +40,7 @@ state.teamColor = gcm.get_team_color();
 state.time = Body.get_time();
 state.role = -1;
 state.pose = {x=0, y=0, a=0};
-state.ball = {t=0, x=1, y=0};
+state.ball = {t=0, x=1, y=0, vx=0, vy=0, p = 0};
 state.attackBearing = 0.0;--Why do we need this?
 state.penalty = 0;
 state.tReceive = Body.get_time();
@@ -316,8 +316,8 @@ function update()
       -- TODO: consider angle as well
       rBall = math.sqrt(states[id].ball.x^2 + states[id].ball.y^2);
       tBall = states[id].time - states[id].ball.t;
---      eta[id] = rBall/0.10 + 4*math.max(tBall-1.0,0);
 
+--      eta[id] = rBall/0.10 + 4*math.max(tBall-1.0,0);
 --[[
       eta[id] = rBall/0.10 + 
 	4*math.max(tBall-1.0,0)+
@@ -453,11 +453,6 @@ function update()
   update_obstacle();
 end
 
-function update_shm() 
-  -- update the shm values
-  gcm.set_team_role(role);
-end
-
 function update_teamdata()
   attacker_eta = math.huge;
   defender_eta = math.huge;
@@ -469,10 +464,30 @@ function update_teamdata()
   supporter_pose = {0,0,0};
   goalie_pose = {0,0,0};
 
+  best_scoreBall = 0;
+  best_ball = {0,0,0};
   for id = 1,5 do
     --Update teammates pose information
     if states[id] and states[id].tReceive and
 	(t - states[id].tReceive < msgTimeout) then
+      
+      if id~=playerID and states[id].role<4 then
+        rBall = math.sqrt(states[id].ball.x^2 + states[id].ball.y^2);
+        tBall = states[id].time - states[id].ball.t;
+        pBall = states[id].ball.p;
+	scoreBall = pBall * 
+		    math.exp(-rBall^2 / 12.0)*
+		    math.max(0,1.0-tBall);
+--print(string.format("r%.1f t%.1f p%.1f s%.1f",rBall,tBall,pBall,scoreBall))
+        if scoreBall > best_scoreBall then
+	  best_scoreBall = scoreBall;
+          posexya=vector.new( 
+	    {states[id].pose.x, states[id].pose.y, states[id].pose.a} );
+          best_ball=util.pose_global(
+	    {states[id].ball.x,states[id].ball.y,0}, posexya);
+        end
+      end
+
       if states[id].role==0 then
 	goalie_alive =1;
 	goalie_pose = {
@@ -493,6 +508,9 @@ function update_teamdata()
     end
   end
 
+  wcm.set_robot_team_ball(best_ball);
+  wcm.set_robot_team_ball_score(best_scoreBall);
+
   wcm.set_team_attacker_eta(attacker_eta);
   wcm.set_team_defender_eta(defender_eta);
   wcm.set_team_supporter_eta(supporter_eta);
@@ -509,6 +527,11 @@ end
 
 function get_role()
   return role;
+end
+
+function update_shm() 
+  -- update the shm values
+  gcm.set_team_role(role);
 end
 
 function set_role(r)

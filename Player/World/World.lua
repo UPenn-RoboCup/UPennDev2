@@ -23,6 +23,13 @@ use_same_colored_goal=Config.world.use_same_colored_goal or 0;
 --Use ground truth pose and ball information for webots?
 use_gps_only = Config.use_gps_only or 0;
 
+--Use team vision information when we cannot find the ball ourselves
+tVisionBall = 0;
+use_team_ball = Config.team.use_team_ball or 0;
+team_ball_timeout = Config.team.team_ball_timeout or 0;
+team_ball_threshold = Config.team.team_ball_threshold or 0;
+
+
 --For NSL, eye LED is not allowed during match
 led_on = Config.led_on or 1; --Default is ON
 
@@ -33,6 +40,7 @@ ball.x = 1.0;
 ball.y = 0;
 ball.vx = 0;
 ball.vy = 0;
+ball.p = 0; 
 
 pose = {};
 pose.x = 0;
@@ -124,15 +132,17 @@ function update_vision()
     ballLocal = util.pose_relative(ballGlobal,gps_pose);
     ball.x, ball.y = ballLocal[1],ballLocal[2];
 
+    ball_gamma = 0.3;
     if vcm.get_ball_detect()==1 then
+      ball.p = (1-ball_gamma)*ball.p+ball_gamma;
       ball.t = Body.get_time();
       -- Update the velocity
       Velocity.update(ball.x,ball.y);
       ball.vx, ball.vy, dodge  = Velocity.getVelocity();
     else
+      ball.p = (1-ball_gamma)*ball.p;
       Velocity.update_noball();--notify that ball is missing
     end
-
     update_shm();
 
     return;
@@ -169,8 +179,11 @@ function update_vision()
   end
     
   -- ball
+  ball_gamma = 0.3;
   if (vcm.get_ball_detect() == 1) then
+    tVisionBall = Body.get_time();
     ball.t = Body.get_time();
+    ball.p = (1-ball_gamma)*ball.p+ball_gamma;
     local v = vcm.get_ball_v();
     local dr = vcm.get_ball_dr();
     local da = vcm.get_ball_da();
@@ -190,10 +203,10 @@ function update_vision()
     end
 --]]
   else
+    ball.p = (1-ball_gamma)*ball.p;
     Velocity.update_noball();--notify that ball is missing
     ball_led={0,0,0};
   end
-
   -- TODO: handle goal detections more generically
   
   if vcm.get_goal_detect() == 1 then
@@ -280,6 +293,26 @@ function update_vision()
 
   ball.x, ball.y = ballFilter:get_xy();
   pose.x,pose.y,pose.a = PoseFilter.get_pose();
+
+--Use team vision information when we cannot find the ball ourselves
+
+  team_ball = wcm.get_robot_team_ball();
+  team_ball_score = wcm.get_robot_team_ball_score();
+
+  t=Body.get_time();
+  if use_team_ball>0 and
+    (t-tVisionBall)>team_ball_timeout and
+    team_ball_score > team_ball_threshold then
+
+    ballLocal = util.pose_relative(
+	{team_ball[1],team_ball[2],0},{pose.x,pose.y,pose.a}); 
+    ball.x = ballLocal[1];
+    ball.y = ballLocal[2];
+    ball.t = t;
+    ball_led={0,1,1}; 
+
+  end
+  
   update_led();
   update_shm();
 end
@@ -306,6 +339,7 @@ function update_shm()
   wcm.set_ball_t(ball.t);
   wcm.set_ball_velx(ball.vx);
   wcm.set_ball_vely(ball.vy);
+  wcm.set_ball_p(ball.p);
 
   wcm.set_goal_t(pose.tGoal);
   wcm.set_goal_attack(get_goal_attack());

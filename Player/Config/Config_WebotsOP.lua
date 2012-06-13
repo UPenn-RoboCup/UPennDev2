@@ -114,8 +114,9 @@ team.nonDefenderPenalty = 0.5; -- dist from goal
 team.force_defender = 1;
 team.force_defender = 0;
 
-
-
+team.use_team_ball = 1;
+team.team_ball_timeout = 3.0;  --use team ball info after this delay
+team.team_ball_threshold = 0.5;
 
 -- keyframe files
 km = {};
@@ -150,8 +151,8 @@ head.bodyTilt = 0;
 --km.kick_left = 'km_NSLOP_StandupFromFront2.lua';
 
 --Shutdown Vision and use ground truth gps info only
---use_gps_only = 0;
-use_gps_only = 1;
+use_gps_only = 0;
+--use_gps_only = 1;
 
 goalie_dive = 2; --1 for arm only, 2 for actual diving
 goalie_dive_waittime = 6.0; --How long does goalie lie down?

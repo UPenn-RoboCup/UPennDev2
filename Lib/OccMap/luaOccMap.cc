@@ -145,6 +145,16 @@ static int lua_occmap_time_decay(lua_State *L) {
 static int lua_occmap_obstacle(lua_State *L) {
   map.init_obstacle();
   map.kmean_clustering();
+  int nobstacle = map.get_nobstacle();
+  //  cout << "obstacle number:" << nobstacle << endl; 
+  for (int cnt = 0; cnt < nobstacle; cnt++) {
+    obstacle obstacle = map.get_obstacle(cnt);
+     //    std::cout << "centroid:" << obstacle.centroid_x << ' ' << obstacle.centroid_y << endl; 
+     //    std::cout << "range:" << obstacle.left_angle_range * 180 / M_PI 
+     //              << ' ' << obstacle.right_angle_range * 180 / M_PI << endl; 
+     //    std::cout << "nearest:" << obstacle.nearest_x << ' ' << obstacle.nearest_y
+     //              << ' ' << obstacle.nearest_dist << endl; 
+  }
   return 1;
 }
 

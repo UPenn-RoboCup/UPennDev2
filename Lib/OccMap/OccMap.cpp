@@ -257,7 +257,7 @@ int OccMap::kmean_clustering(void) {
       good_pt.push_back(new_pt);
     }
   }
-  int K = 1;
+  int K = 2;
   vector<grid_ij> means, means_new;
   vector<grid_ij> cluster[K];
   int r = 0;
@@ -272,7 +272,11 @@ int OccMap::kmean_clustering(void) {
     // iteration to cluser points
   vector<grid_ij>::iterator it; 
   bool changed = false;
+  int iteration = 0;
   do {
+    iteration ++;
+    for (int cnt = 0; cnt < K; cnt++)
+      cluster[cnt].clear();
     changed = false;
     for (it = good_pt.begin(); it != good_pt.end(); ++it) {
       double mindist = 100000000;
@@ -298,6 +302,18 @@ int OccMap::kmean_clustering(void) {
         }
         means_new[cnt].i = round(sum_i / cluster[cnt].size());
         means_new[cnt].j = round(sum_j / cluster[cnt].size());
+        double dist = 0, maxDist = 100000;
+        int maxIdx = 0;
+        for (int iter = 0; iter < cluster[cnt].size(); iter++) {
+          dist = abs(cluster[cnt][iter].i - means_new[cnt].i) +
+                  abs(cluster[cnt][iter].j - means_new[cnt].j);
+          if (dist < maxDist) {
+            maxDist = dist;
+            maxIdx = iter;
+          }
+        }
+        means_new[cnt].i = cluster[cnt][maxIdx].i;
+        means_new[cnt].j = cluster[cnt][maxIdx].j;
 //        cout << "new " << means_new[cnt].i << ' ' << means_new[cnt].j << endl;
       } else {
         r = (rand() % good_pt.size()) + 1;
@@ -311,6 +327,7 @@ int OccMap::kmean_clustering(void) {
     }
   }
   while (changed);
+  //  cout << "iterations: " << iteration << endl;
 
 //  cout << changed <<endl;
 //  for (int cnt = 0; cnt < K; cnt++) {
@@ -323,10 +340,10 @@ int OccMap::kmean_clustering(void) {
     // Get Centroid
     new_ob.centroid_y = rx * resolution - means[cnt].i * resolution;
     new_ob.centroid_x = ry * resolution - means[cnt].j * resolution;
-//    cout << "centroid:" << means[cnt].i << ' ' << means[cnt].j << ' ' 
-//          << new_ob.centroid_x << ' ' << new_ob.centroid_y << endl;
+    //    cout << "centroid:" << means[cnt].i << ' ' << means[cnt].j << ' ' 
+    //          << new_ob.centroid_x << ' ' << new_ob.centroid_y << endl;
     // Get nearest obstacle corner and Angle Range
-    double dist = 0, minDist = 10000000, minAngle, maxAngle;
+    double dist = 0, minDist = 10000000, angle = 0, minAngle = M_PI, maxAngle = 0;
     int nearestIdx = 0;
     double x = 0, y = 0;
     for (int iter = 0; iter < cluster[cnt].size(); iter++) {
@@ -338,17 +355,27 @@ int OccMap::kmean_clustering(void) {
         minDist = dist;
         nearestIdx = iter;
       }
+      angle = atan2(x, y);
+      minAngle = min(minAngle, angle);
+      maxAngle = max(maxAngle, angle);
     }
+    minAngle += odom_a;
+    maxAngle += odom_a;
+    new_ob.left_angle_range = minAngle;
+    new_ob.right_angle_range = maxAngle;
+    //    cout << "angle range: " << new_ob.left_angle_range * 180 / M_PI  << ' ' 
+    //                            << new_ob.right_angle_range * 180 / M_PI << endl;
     //    cout << "nearest idx: " << nearestIdx << ' ' << minDist << ' ' 
     //          << cluster[cnt][nearestIdx].i << ' ' << cluster[cnt][nearestIdx].j << endl;
     //    new_ob.left_angle_range = ;
     //    new_ob.right_angle_range = ;
     new_ob.nearest_y = rx * resolution - cluster[cnt][nearestIdx].i * resolution;
     new_ob.nearest_x = ry * resolution - cluster[cnt][nearestIdx].j * resolution;
-    cout << "nearest point: " << new_ob.nearest_x << ' ' << new_ob.nearest_y << endl;
+    new_ob.nearest_dist = minDist;
+    //  cout << "nearest point: " << new_ob.nearest_x << ' ' << new_ob.nearest_y << endl;
     //    cout << "nearest point: " << cluster[cnt][nearestIdx].i << ' ' 
     //                              << cluster[cnt][nearestIdx].j << endl;
-//    obs.push_back(new_ob);
+    obs.push_back(new_ob);
   }
   return 1;
 }
@@ -358,4 +385,12 @@ int OccMap::init_obstacle(void) {
   nOb = 0;
   obs.clear();
   return 1;
+}
+
+int OccMap::get_nobstacle() {
+  return nOb;
+}
+
+obstacle& OccMap::get_obstacle(int index) {
+  if (index < nOb) return obs[index];
 }

@@ -5,9 +5,24 @@ require('vector');
 require('unix');
 require('util');
 require('wcm');
+require('gcm');
 
 require('SoundComm');
 require('Body');
+
+if (gcm.get_team_player_id() == 1) then
+  -- if we are the goalie, disable listening
+  SoundComm.pause_receiver();
+else
+  -- if we are a player, disable transmitting
+  SoundComm.pause_transmitter();
+end
+
+-- touch tone symbols
+symbols = {{'1', '2', '3', 'A'},
+           {'4', '5', '6', 'B'},
+           {'7', '8', '9', 'C'},
+           {'*', '0', '#', 'D'}};
 
 -- robot pose
 odomPose = {x=0, y=0, a=0};
@@ -32,10 +47,13 @@ zeroInd = math.floor(ndiv/2);
 
 
 maxDetCount = 100;
-updateRate = 1;
-decayRate = 0.1;
+updateRate = 10;
+decayRate = 1.0;
 
 count = 0;
+lastDecay = unix.time();
+lastTx = unix.time();
+txPeriod = 2.0;
 
 
 function entry()
@@ -46,59 +64,88 @@ function update()
    -- increment iteration counter
    count = count + 1;
 
-   -- check for new detection
-   local det = SoundComm.get_detection();
-   if (det.count ~= lastDet.count) then
-      -- save a copy of the detection
-      lastDet = det;
+   -- if we are the goalie, periodically send out the audio signal
+   if (gcm.get_team_player_id() == 1) then
+      -- only in ready and playing state
+      local gameState = gcm.get_game_state();
+      if (gameState == 1 or gameState == 3) then
+         -- only transmit the sequence when we are in our own goal
+         local pose = wcm.get_robot_pose();
+         local goalPos = wcm.get_goal_defend();
+         local distToGoal = math.sqrt(math.pow((pose[1] - goalPos[1]), 2)
+                                    + math.pow((pose[2] - goalPos[2]), 2))
+         if (distToGoal < 1.5) then
+            -- play sound every X seconds
+            if (unix.time() - lastTx > txPeriod) then
+              -- play pseudo random signal with random touch tone
+              srow = symbols[math.random(#symbols)];
+              symbol = srow[math.random(#srow)];
+              SoundComm.play_pnsequence(symbol);
 
-      -- new detection, update histogram accordingly
-      --    only accept detections with a reasonable disparity
-      if (math.abs(det.lIndex - det.rIndex) <= disparityThres) then
+              lastTx = unix.time();
+            end
+         end
+      end
 
-        -- get the current head angles
-        local headAngles = Body.get_head_position();
+   else
 
-        print(string.format('pan: %f, lindex: %d, rindex: %d, dindex: %d', headAngles[1], det.lIndex, det.rIndex, det.lIndex - det.rIndex));
+      -- check for new detection
+      local det = SoundComm.get_detection();
+      if (det.count ~= lastDet.count) then
+         -- save a copy of the detection
+         lastDet = det;
+   
+         -- new detection, update histogram accordingly
+         --    only accept detections with a reasonable disparity
+         if (det.lIndex ~= -1 and det.rIndex ~= -1 
+               and math.abs(det.lIndex - det.rIndex) <= disparityThres) then
 
-        -- full orientation of the robot, body + head
-        --    only head pan affects the audio detection
-        local a = odomPose.a + headAngles[1];
+            -- get the current head angles
+            local headAngles = Body.get_head_position();
 
-        -- estimate signal direction based on left/right the disparity
-        local dir = -1 * util.sign(det.lIndex - det.rIndex);
-        local a_wrtHead = dir * radPerDisparity * math.abs(det.lIndex - det.rIndex);
+            print(string.format('pan: %f, lindex: %d, rindex: %d, dindex: %d', 
+                                 headAngles[1], det.lIndex, det.rIndex, det.lIndex - det.rIndex));
 
-        -- world location of sound
-        local afront = util.mod_angle(a + a_wrtHead);
+            -- full orientation of the robot, body + head
+            --    only head pan affects the audio detection
+            local a = odomPose.a + headAngles[1];
 
-        -- account for cone of confusion
-        --    each correlation can correspond to one of two directions
-        --    (from the front or from behind)
-        local aback = util.mod_angle(a + (math.pi - a_wrtHead));
+            -- estimate signal direction based on left/right the disparity
+            local dir = -1 * util.sign(det.lIndex - det.rIndex);
+            local a_wrtHead = dir * radPerDisparity * math.abs(det.lIndex - det.rIndex);
 
-        -- update histogram
-        local ifront = math.max(1, math.min(math.floor(zeroInd + afront / radPerDiv) + 1, ndiv));
-        local iback = math.max(1, math.min(math.floor(zeroInd + aback / radPerDiv) + 1, ndiv));
+            -- world location of sound
+            local afront = util.mod_angle(a + a_wrtHead);
 
-        print(string.format('afront: %f, aback: %f, ifront: %d, iback: %d', afront, aback, ifront, iback));
+            -- account for cone of confusion
+            --    each correlation can correspond to one of two directions
+            --    (from the front or from behind)
+            local aback = util.mod_angle(a + (math.pi - a_wrtHead));
 
-        detFilter[ifront] = detFilter[ifront] + updateRate;
-        detFilter[iback] = detFilter[iback] + updateRate;
+            -- update histogram
+            local ifront = math.max(1, math.min(math.floor(zeroInd + afront / radPerDiv) + 1, ndiv));
+            local iback = math.max(1, math.min(math.floor(zeroInd + aback / radPerDiv) + 1, ndiv));
 
-        -- cap count
-        detFilter[ifront] = math.min(detFilter[ifront], maxDetCount);
-        detFilter[iback] = math.min(detFilter[iback], maxDetCount);
+            print(string.format('afront: %f, aback: %f, ifront: %d, iback: %d', afront, aback, ifront, iback));
 
+            detFilter[ifront] = detFilter[ifront] + updateRate;
+            detFilter[iback] = detFilter[iback] + updateRate;
+
+            -- cap count
+            detFilter[ifront] = math.min(detFilter[ifront], maxDetCount);
+            detFilter[iback] = math.min(detFilter[iback], maxDetCount);
+         end
       end
    end
 
-   -- TODO: decay histogram
-   if (count % 10 == 0) then
+   -- decay histogram (this is based off time since the update rate
+   --   from World is most likely going to be erratic)
+   if (unix.time() - lastDecay > 1.0) then
       for i = 1,#detFilter do
          detFilter[i] = detFilter[i] - decayRate;
          detFilter[i] = math.max(0, detFilter[i]);
       end
+      lastDecay = unix.time();
    end 
 
    update_shm();
@@ -129,8 +176,8 @@ function resolve_goal_detection(gtype, vgoal)
    -- find the direction of the goalie
    -- TODO: if we are not confident in the goalie location return unkown
    local mv, mind = util.max(detFilter);
-   if (mv < 10) then
-      print('max detection < 10');
+   local confidenceThres = 0.75 * maxDetCount;
+   if (mv < confidenceThres) then
       return 0;
    end
    -- transform the goalie direction to the robot body frame
@@ -152,12 +199,15 @@ function resolve_goal_detection(gtype, vgoal)
    -- compare the location of the detected goal with the location of the goalie
    if (math.abs(agoalie_wrtRobot - agoal) < 45*math.pi/180) then
       -- the goal is ours (defending)
+      print('****************** detected goal is the defending goal ******************');
       return -1;
    elseif (math.abs(agoalie_wrtRobot + math.pi - agoal) < 45*math.pi/180) then
       -- the goal is theirs (attacking)
+      print('****************** detected goal is the attacking goal ******************');
       return 1;
    else
       -- the detected goal posts and goalie do not correlate well
+      print('****************** detected goal is unknown ******************');
       return 0;
    end
 

@@ -17,6 +17,14 @@ playerID = gcm.get_team_player_id();
 msgTimeout = Config.team.msgTimeout;
 nonAttackerPenalty = Config.team.nonAttackerPenalty;
 nonDefenderPenalty = Config.team.nonDefenderPenalty;
+fallDownPenalty = Config.team.fallDownPenalty;
+ballLostPenalty = Config.team.ballLostPenalty;
+
+walkSpeed = Config.team.walkSpeed;
+turnSpeed = Config.team.turnSpeed;
+
+
+
 
 --Player ID: 1 to 5
 --Role: 0 goalie / 1 attacker / 2 defender / 3 supporter 
@@ -310,9 +318,16 @@ function update()
       tBall = states[id].time - states[id].ball.t;
 --      eta[id] = rBall/0.10 + 4*math.max(tBall-1.0,0);
 
+--[[
       eta[id] = rBall/0.10 + 
 	4*math.max(tBall-1.0,0)+
 	math.abs(states[id].attackBearing)/3.0; --1 sec to turn 180 deg
+--]]
+
+      eta[id] = rBall/walkSpeed + --Walking time
+	math.abs(states[id].attackBearing)/   --Turning time
+	(2*math.pi)/turnSpeed+
+	ballLostPenalty * math.max(tBall-1.0,0);  --Ball uncertainty
 
       roles[id]=states[id].role;
       
@@ -322,11 +337,15 @@ function update()
       ddefend[id] = math.sqrt((pose.x - dgoalPosition[1])^2 + (pose.y - dgoalPosition[2])^2);
 
       if (states[id].role ~= 1) then       -- Non attacker penalty:
-        eta[id] = eta[id] + nonAttackerPenalty;
+        eta[id] = eta[id] + nonAttackerPenalty/walkSpeed;
       end
 
       if (states[id].role ~= 2) then        -- Non defender penalty:
         ddefend[id] = ddefend[id] + 0.3;
+      end
+
+      if (states[id].fall==1) then  --Fallen robot penalty
+        eta[id] = eta[id] + fallDownPenalty;
       end
 
       --Ignore goalie, reserver, penalized player
@@ -337,7 +356,6 @@ function update()
         eta[id] = math.huge;
         ddefend[id] = math.huge;
       end
---
     end
   end
 
@@ -354,6 +372,9 @@ function update()
 
   --Behavior testing using forced role is handled here
   force_player_role = gcm.get_team_forced_role();
+  if Config.team.force_defender == 1 then
+    force_player_role = 2;
+  end
   if force_player_role==1 then
     gcm.set_team_role(1);
   elseif force_player_role==2 then
@@ -376,11 +397,15 @@ function update()
     -- goalie and reserve player never changes role
     if role~=0 and role<4 then 
       minETA, minEtaID = min(eta);
-      if minEtaID == playerID then set_role(1);--attack
+      if minEtaID == playerID then --Lowest ETA : attacker
+	set_role(1);
       else
         -- furthest player back is defender
         minDDefID = 0;
         minDDef = math.huge;
+
+        --Find the player closest to the defending goal
+
         for id = 1,5 do
           if id ~= minEtaID and 	   
   	  ddefend[id] <= minDDef and
@@ -389,6 +414,7 @@ function update()
             minDDef = ddefend[id];
           end
         end
+
         if minDDefID == playerID then
           set_role(2);    -- defense 
         else
@@ -419,15 +445,63 @@ function update()
       if role_switch then set_role(3);end --Switch to supporter
     end
   end
+  
 
   -- update shm
   update_shm() 
+  update_teamdata();
   update_obstacle();
 end
 
 function update_shm() 
   -- update the shm values
   gcm.set_team_role(role);
+end
+
+function update_teamdata()
+  attacker_eta = math.huge;
+  defender_eta = math.huge;
+  supporter_eta = math.huge;
+  goalie_alive = 0; 
+
+  attacker_pose = {0,0,0};
+  defender_pose = {0,0,0};
+  supporter_pose = {0,0,0};
+  goalie_pose = {0,0,0};
+
+  for id = 1,5 do
+    --Update teammates pose information
+    if states[id] and states[id].tReceive and
+	(t - states[id].tReceive < msgTimeout) then
+      if states[id].role==0 then
+	goalie_alive =1;
+	goalie_pose = {
+  	  states[id].pose.x,states[id].pose.y,states[id].pose.a};
+      elseif states[id].role==1 then
+	attacker_pose = 
+	  {states[id].pose.x,states[id].pose.y,states[id].pose.a};
+	attacker_eta = eta[id];
+      elseif states[id].role==2 then
+	defender_pose = 
+	  {states[id].pose.x,states[id].pose.y,states[id].pose.a};
+	defender_eta = eta[id];
+      elseif states[id].role==3 then
+	supporter_eta = eta[id];
+	supporter_pose = 
+	  {states[id].pose.x,states[id].pose.y,states[id].pose.a};
+      end
+    end
+  end
+
+  wcm.set_team_attacker_eta(attacker_eta);
+  wcm.set_team_defender_eta(defender_eta);
+  wcm.set_team_supporter_eta(supporter_eta);
+  wcm.set_team_goalie_alive(goalie_alive);
+
+  wcm.set_team_attacker_pose(attacker_pose);
+  wcm.set_team_defender_pose(defender_pose);
+  wcm.set_team_goalie_pose(goalie_pose);
+  wcm.set_team_supporter_pose(supporter_pose);
 end
 
 function exit()

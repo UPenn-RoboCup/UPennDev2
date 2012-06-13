@@ -103,9 +103,18 @@ dev.team='TeamDoublePass';
 -- Team Parameters
 team = {};
 team.msgTimeout = 5.0;
-team.nonAttackerPenalty = 6.0; -- eta sec
+
+team.walkSpeed = 0.25; --Average walking speed 
+team.turnSpeed = 2.0; --Average turning time for 360 deg
+team.ballLostPenalty = 4.0; --ETA penalty per ball loss time
+team.fallDownPenalty = 4.0; --ETA penalty per ball loss time
+team.nonAttackerPenalty = 0.8; -- dist from ball
 team.nonDefenderPenalty = 0.5; -- dist from goal
-team.tKickOffWear =20.0;
+
+team.force_defender = 1;
+team.force_defender = 0;
+
+
 
 
 -- keyframe files

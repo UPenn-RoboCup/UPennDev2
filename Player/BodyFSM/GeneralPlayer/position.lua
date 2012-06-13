@@ -124,14 +124,92 @@ function getDefenderHomePose()
   relBallY = ballGlobal[2]-goal_defend[2];
   RrelBall = math.sqrt(relBallX^2+relBallY^2)+0.001;
 
+  --Check attacker position
+  attacker_pose = wcm.get_team_attacker_pose();
+  
+  goalie_alive = wcm.get_team_goalie_alive();
+  
+  attacker_goal_dist = math.sqrt(
+	(attacker_pose[1] - goal_defend[1])^2+
+	(attacker_pose[2] - goal_defend[2])^2
+	);
 
---TODO: Decrease distance if we have no goalie
-  distGoal = 1.8;
+  defender_goal_dist = math.sqrt(
+	(pose.x - goal_defend[1])^2+
+	(pose.y - goal_defend[2])^2
+	);
 
   homePosition = {};
-  homePosition[1]= goal_defend[1]+distGoal * relBallX / RrelBall;
-  homePosition[2]= goal_defend[2]+distGoal * relBallY / RrelBall;
-  homePosition[3] = math.atan2(relBallY, relBallX);
+
+  defending_type = 1; 
+
+  --How close is the ball to our goal?
+  if RrelBall < 3.0 then --Ball in our field
+    --Are our attacker closer to the ball than me?
+    if attacker_goal_dist < defender_goal_dist - 0.6 then
+      --Attacker is closer to the defending goal than defender
+      defending_type = 2; --Side defender
+    else
+      defending_type = 1; --Center defender
+    end
+  else --Ball in their field
+    if attacker_goal_dist < defender_goal_dist - 0.6 then
+       --Attacker closer to the our goal
+      defending_type = 3; --Supporter
+    else
+      --Stay in defending position
+      defending_type = 1;      
+    end
+  end
+
+  if defending_type == 1 then
+    --Center defender
+    if goalie_alive>0 then 
+      distGoal,sideGoal = 1.3, 0.3;
+    else
+      distGoal,sideGoal = 1.0, 0; --We don't have goalie!
+    end
+    homePosition[1]= goal_defend[1]+distGoal * relBallX / RrelBall;
+    homePosition[2]= goal_defend[2]+distGoal * relBallY / RrelBall
+			+ util.sign(goal_defend[1]) * sideGoal;
+    homePosition[3] = math.atan2(relBallY, relBallX);
+  elseif defending_type==2 then
+
+print("222")
+
+    --Side defender, avoiding attacker
+    if math.abs(attacker_pose[2])<0.5 then
+      homePosition[1] = goal_defend[1]/2;
+      homePosition[2] = util.sign(pose.y) * 1.0;
+    else
+      homePosition[1] = goal_defend[1]/2;
+      homePosition[2] = -util.sign(attacker_pose[2]) * 1.0;
+    end
+    homePosition[3] = math.atan2(relBallY, relBallX);
+  elseif defending_type==3 then  
+    --Front supporter
+    attackGoalPosition = vector.new(wcm.get_goal_attack());
+    relBallX = ballGlobal[1]-goal_defend[1];
+    relBallY = ballGlobal[2]-goal_defend[2];
+    RrelBall = math.sqrt(relBallX^2+relBallY^2)+0.001;
+
+    -- move near attacking goal
+    homePosition = attackGoalPosition;
+    homePosition[1] = homePosition[1] - util.sign(homePosition[1]) * 1.5;
+
+    if math.abs(ballGlobal[2])< 1.0 then
+      homePosition[2] = util.sign(pose.y)*1.25;
+    else
+      homePosition[2] = -1*util.sign(ballGlobal[2]) * 1.25;
+    end
+
+    relBallX = ballGlobal[1]-homePosition[1];
+    relBallY = ballGlobal[2]-homePosition[2];
+
+    -- face ball 
+    homePosition[3] = math.atan2(relBallY, relBallX);
+  end
+
   return homePosition;
 end
 
@@ -175,14 +253,6 @@ function getDefenderHomePose2()
 
   return homePosition;
 end
-
-
-
-
-
-
-
-
 
 
 

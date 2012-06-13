@@ -17,6 +17,9 @@ require('walk');
 t0 = 0;
 timeout = Config.fsm.bodyWalkKick.timeout;
 
+walkkick_th = 0.14; --Threshold for step-back walkkick for OP
+
+
 function entry()
   print(_NAME.." entry");
 
@@ -32,13 +35,13 @@ print("KICK DIR:",kick_dir)
     ball = wcm.get_ball();
 print("WalkKick: Ball pos:",ball.x,ball.y);
     if (ball.y > 0) then
-      if (ball.x>0.16) then
+      if (ball.x>walkkick_th) or Config.fsm.enable_walkkick<2 then
         walk.doWalkKickLeft();
       else
         walk.doWalkKickLeft2();
       end
     else
-      if (ball.x>0.16) then
+      if (ball.x>walkkick_th) or Config.fsm.enable_walkkick<2 then
         walk.doWalkKickRight();
       else
         walk.doWalkKickRight2();

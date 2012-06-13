@@ -62,45 +62,32 @@ speak.enable = false;
 -- Game Parameters
 game = {};
 game.teamNumber = 18;
+--game.teamNumber = 26;
 --Not a very clean implementation but we're using this way for now
 --Default role: 0 for goalie, 1 for attacker, 2 for defender
---Default team: 0 for blue, 1 for red
+--Default team: 0 for blue, 1 for red  
+dev.gender = 1;
+game.role = 1; --Default attacker
+
 if (robotName=='scarface') then
-  dev.gender = 1;
   game.playerID = 1; --for scarface
-  game.role = 1; --Default attacker
 elseif (robotName=='linus') then
-  dev.gender = 1;
   game.playerID = 2; 
-  game.role = 1; --Default attacker
 elseif (robotName=='betty') then
-  dev.gender = 0;
   game.playerID = 3; 
-  game.role = 1; --Default attacker
 elseif (robotName=='lucy') then
-  dev.gender = 0;
   game.playerID = 4; 
-  game.role = 1; --Default attacker
 elseif (robotName=='hokie') then
-  dev.gender = 1;
   game.playerID = 4; 
-  game.role = 1; --Default attacker
 elseif (robotName=='felix') then
-  dev.gender = 1;
-  --game.playerID = 5;
-  game.playerID = 2; --testing , defender
-  --game.role = 1; --Default attacker
-  game.role = 2;
+  game.playerID = 2; 
 elseif (robotName=='sally') then
-  dev.gender = 0;
-  game.playerID = 1; --default value =5 ; Testing 
-  game.role = 1; --Default attacker
-else
-  dev.gender = 1;
+  game.playerID = 1; 
+elseif (robotName=='jiminy') then
   game.playerID = 5; 
-  game.role = 1; --Default attacker
 end
 
+--Default color for non-gamecontroller play
 game.teamColor = 0; --Blue team
 --game.teamColor = 1; --Red team
 game.robotName = robotName;
@@ -130,14 +117,19 @@ fsm.fast_approach = 0;
 
 --1 for randomly doing evade kick
 --2 for using obstacle information
-fsm.enable_evade = 1;
-
+fsm.enable_evade = 0;
 
 -- Team Parameters
 team = {};
 team.msgTimeout = 5.0;
-team.nonAttackerPenalty = 6.0; -- eta sec
+
+team.walkSpeed = 0.25; --Average walking speed 
+team.turnSpeed = 2.0; --Average turning time for 360 deg
+team.ballLostPenalty = 4.0; --ETA penalty per ball loss time
+
+team.nonAttackerPenalty = 0.8; -- dist from ball
 team.nonDefenderPenalty = 0.5; -- dist from goal
+
 team.tKickOffWear =7.0;
 
 -- keyframe files
@@ -148,6 +140,7 @@ km.standup_back = 'km_NSLOP_StandupFromBack.lua';
 if (robotName=='hokie') then
 --  km.standup_back = 'km_NSLOP_StandupFromBackHokie.lua';
 end
+
 -- Low battery level
 -- Need to implement this api better...
 bat_low = 117; -- 11.7V warning
@@ -155,8 +148,8 @@ bat_med = 117; -- Slow down if voltage drops below 12.2V
 
 gps_only = 0;
 
---goalie_dive = 1; --1 for arm only, 2 for actual diving
-goalie_dive = 2; --1 for arm only, 2 for actual diving
+goalie_dive = 1; --1 for arm only, 2 for actual diving
+--goalie_dive = 2; --1 for arm only, 2 for actual diving
 goalie_dive_waittime = 3.0; --How long does goalie lie down?
 
 --fsm.goalie_type = 1;--moving/move+stop/stop+dive/stop+dive+move
@@ -167,14 +160,10 @@ fsm.goalie_reposition=1; --Yaw reposition
 --fsm.goalie_reposition=2; --Position reposition
 
 fsm.bodyAnticipate.timeout = 3.0;
-
-
 fsm.bodyAnticipate.center_dive_threshold_y = 0.05; 
-fsm.bodyAnticipate.dive_threshold_y = 0.8; --Default value = 1.0 , Testing
-
+fsm.bodyAnticipate.dive_threshold_y = 1.0;
 fsm.bodyAnticipate.ball_velocity_th = 0.7; --min velocity for diving
-fsm.bodyAnticipate.ball_velocity_thx = -0.6; --min x velocity for diving,default = -0.7
-
+fsm.bodyAnticipate.ball_velocity_thx = -0.7; --min x velocity for diving
 
 --Speak enable
 speakenable = false;

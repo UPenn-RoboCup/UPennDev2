@@ -103,9 +103,18 @@ dev.team='TeamDoublePass';
 -- Team Parameters
 team = {};
 team.msgTimeout = 5.0;
-team.nonAttackerPenalty = 6.0; -- eta sec
+
+team.walkSpeed = 0.25; --Average walking speed 
+team.turnSpeed = 2.0; --Average turning time for 360 deg
+team.ballLostPenalty = 4.0; --ETA penalty per ball loss time
+team.fallDownPenalty = 4.0; --ETA penalty per ball loss time
+team.nonAttackerPenalty = 0.8; -- dist from ball
 team.nonDefenderPenalty = 0.5; -- dist from goal
-team.tKickOffWear =20.0;
+
+team.force_defender = 1;
+team.force_defender = 0;
+
+
 
 
 -- keyframe files
@@ -141,8 +150,8 @@ head.bodyTilt = 0;
 --km.kick_left = 'km_NSLOP_StandupFromFront2.lua';
 
 --Shutdown Vision and use ground truth gps info only
-use_gps_only = 0;
---use_gps_only = 1;
+--use_gps_only = 0;
+use_gps_only = 1;
 
 goalie_dive = 2; --1 for arm only, 2 for actual diving
 goalie_dive_waittime = 6.0; --How long does goalie lie down?

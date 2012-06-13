@@ -61,8 +61,8 @@ speak.enable = false;
 
 -- Game Parameters
 game = {};
---game.teamNumber = 18;
-game.teamNumber = 26;
+game.teamNumber = 18;
+--game.teamNumber = 26;
 --Not a very clean implementation but we're using this way for now
 --Default role: 0 for goalie, 1 for attacker, 2 for defender
 --Default team: 0 for blue, 1 for red

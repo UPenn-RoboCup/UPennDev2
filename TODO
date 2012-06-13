@@ -9,7 +9,6 @@
 [] Make use of weak gains on the arms and joint encoder readings to tell
    if the robot is near another robot; work this into the approach/position
       -> Will this be useful considering new approach style?
-[?] Letter to technical committee
 [] Stop resetting of position after goal is scored
       -> Make sure the button reset does not override button presses
          for manual placement
@@ -42,6 +41,6 @@
       -> Require in bodyPosition as well, do not orbit for walk kick
 [x] Stabilize parameter switching to the point where it becomes usable
 [x] Check ultrasound as the robots move
-
+[x] Letter to technical committee (We CANNOT use the chest button to reset localization)
 
 

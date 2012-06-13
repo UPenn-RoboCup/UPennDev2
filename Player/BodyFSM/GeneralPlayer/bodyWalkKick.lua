@@ -32,9 +32,17 @@ print("KICK DIR:",kick_dir)
     ball = wcm.get_ball();
 print("WalkKick: Ball pos:",ball.x,ball.y);
     if (ball.y > 0) then
-      walk.doWalkKickLeft();
+      if (ball.x>0.16) then
+        walk.doWalkKickLeft();
+      else
+        walk.doWalkKickLeft2();
+      end
     else
-      walk.doWalkKickRight();
+      if (ball.x>0.16) then
+        walk.doWalkKickRight();
+      else
+        walk.doWalkKickRight2();
+      end
     end
   elseif kick_dir==2 then --sidekick to left
     walk.doSideKickLeft();

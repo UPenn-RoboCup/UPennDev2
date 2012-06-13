@@ -694,6 +694,20 @@ function doWalkKickRight()
   end
 end
 
+function doWalkKickLeft2()
+  if walkKickRequest==0 then
+    walkKickRequest = 1; 
+    walkKick = walkKickDef["FrontLeft2"];
+  end
+end
+
+function doWalkKickRight2()
+ if walkKickRequest==0 then
+    walkKickRequest = 1; 
+    walkKick = walkKickDef["FrontRight2"];
+  end
+end
+
 function doSideKickLeft()
  if walkKickRequest==0 then
     walkKickRequest = 1; 

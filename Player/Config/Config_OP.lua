@@ -87,11 +87,13 @@ elseif (robotName=='hokie') then
   game.role = 1; --Default attacker
 elseif (robotName=='felix') then
   dev.gender = 1;
-  game.playerID = 5; 
-  game.role = 1; --Default attacker
+  --game.playerID = 5;
+  game.playerID = 2; --testing , defender
+  --game.role = 1; --Default attacker
+  game.role = 2;
 elseif (robotName=='sally') then
   dev.gender = 0;
-  game.playerID = 5; 
+  game.playerID = 1; --default value =5 ; Testing 
   game.role = 1; --Default attacker
 else
   dev.gender = 1;
@@ -160,11 +162,19 @@ goalie_dive_waittime = 3.0; --How long does goalie lie down?
 --fsm.goalie_type = 1;--moving/move+stop/stop+dive/stop+dive+move
 --fsm.goalie_type = 2;--moving/move+stop/stop+dive/stop+dive+move
 fsm.goalie_type = 3;--moving/move+stop/stop+dive/stop+dive+move
-fsm.goalie_reposition=0; --No reposition
---fsm.goalie_reposition=1; --Yaw reposition
+--fsm.goalie_reposition=0; --No reposition
+fsm.goalie_reposition=1; --Yaw reposition
 --fsm.goalie_reposition=2; --Position reposition
 
-Config.fsm.bodyAnticipate.timeout = 3.0;
+fsm.bodyAnticipate.timeout = 3.0;
+
+
+fsm.bodyAnticipate.center_dive_threshold_y = 0.05; 
+fsm.bodyAnticipate.dive_threshold_y = 0.8; --Default value = 1.0 , Testing
+
+fsm.bodyAnticipate.ball_velocity_th = 0.7; --min velocity for diving
+fsm.bodyAnticipate.ball_velocity_thx = -0.6; --min x velocity for diving,default = -0.7
+
 
 --Speak enable
 speakenable = false;

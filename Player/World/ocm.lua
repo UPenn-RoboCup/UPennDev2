@@ -17,7 +17,8 @@ shared.occ.map = 4 * mapsize * mapsize;
 shared.occ.odom = vector.zeros(3);
 shared.occ.vel = vector.zeros(3);
 
--- max 5 ob clusters 
+-- max 5 ob clusters
+shared.ob = {};
 shared.ob.num = vector.zeros(1);
 shared.ob.centroid = vector.zeros(5 * 2);
 shared.ob.angle_range = vector.zeros(5 * 2);

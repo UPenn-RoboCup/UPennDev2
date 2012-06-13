@@ -146,6 +146,9 @@ function process_keyinput()
     elseif byte==string.byte("/") then 
       print("reset occomap");
       ocm.set_occ_reset(1);
+    elseif byte==string.byte(".") then
+      print("get obstacles");
+      ocm.set_occ_get_obstacle(1);
 
     --switch camera 
     elseif byte==string.byte("-") then

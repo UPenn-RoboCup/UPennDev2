@@ -123,7 +123,11 @@ function getDefenderHomePose()
   relBallX = ballGlobal[1]-goal_defend[1];
   relBallY = ballGlobal[2]-goal_defend[2];
   RrelBall = math.sqrt(relBallX^2+relBallY^2)+0.001;
+
+
+--TODO: Decrease distance if we have no goalie
   distGoal = 1.8;
+
   homePosition = {};
   homePosition[1]= goal_defend[1]+distGoal * relBallX / RrelBall;
   homePosition[2]= goal_defend[2]+distGoal * relBallY / RrelBall;

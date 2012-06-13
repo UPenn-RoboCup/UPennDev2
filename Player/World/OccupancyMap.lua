@@ -95,6 +95,7 @@ function obs_in_occ()
   print('try find obstacle in occmap'); 
  -- start = unix.time();
   obstacle = OccMap.get_obstacle();
+  print('Find ',#obstacle);
   for i = 1 , #obstacle do
     print('centroid')
     util.ptable(obstacle[i].centroid);

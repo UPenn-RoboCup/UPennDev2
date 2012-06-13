@@ -257,6 +257,11 @@ int OccMap::kmean_clustering(void) {
       good_pt.push_back(new_pt);
     }
   }
+  // return 0 obstacles
+  if (good_pt.size() == 0) {
+    nOb = 0;
+    return 1;
+  }
   int K = 2;
   vector<grid_ij> means, means_new;
   vector<grid_ij> cluster[K];
@@ -376,6 +381,14 @@ int OccMap::kmean_clustering(void) {
     //    cout << "nearest point: " << cluster[cnt][nearestIdx].i << ' ' 
     //                              << cluster[cnt][nearestIdx].j << endl;
     obs.push_back(new_ob);
+  }
+  // check if obstacle overlays
+  if ((abs(obs[0].left_angle_range - obs[1].left_angle_range) < 0.1) ||
+    (abs(obs[0].right_angle_range - obs[1].right_angle_range) < 0.1)) {
+    // merge to one obstacle
+    nOb = 1;
+    if (obs[1].nearest_dist < obs[0].nearest_dist)
+      obs[0] = obs[1];
   }
   return 1;
 }

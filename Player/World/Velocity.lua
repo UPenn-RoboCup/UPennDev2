@@ -15,11 +15,15 @@ ball_count = 0;
 noball_threshold = 5; 
 --How many succeding ball observations is needed before updating?
 --We need at least two observation to update velocity
-
 ball_threshold = 2;
 
-gamma = 0.3;
+gamma = 0.9;
 discount = 0.95;
+
+max_distance = 2.0; --Only check velocity within this radius
+max_velocity = 4.0; --Ignore if velocity exceeds this
+
+
 oldx,oldy=0,0;
 olda,oldR = 0,0;
 newA,newR = 0,0;
@@ -44,10 +48,7 @@ function update(newx,newy)
   ballR = math.sqrt(newx^2+newy^2);
   ballA = math.atan2(newy,newx);
 
-  gamma = 0.9;
-
   --Lower gamma if head not locked on at the ball
-
   locked_on = wcm.get_ball_locked_on();
   if locked_on==0 then
 --    vx,vy=0,0;
@@ -75,19 +76,8 @@ function update(newx,newy)
   if t>tLast and ball_count>=ball_threshold then
       tPassed=t-tLast;
 
---[[
-      --Filter ball distance
-      thR = math.max(0,(ballR-1.0)*0.1);
-      newR = oldR;
-      if math.abs(oldR - ballR)>thR then
-      end
---]]
-
       newR = ballR;
       newA = ballA;
-
-      nfvx = (newx-oldx)/tPassed; 
-      nfvy = (newy-oldy)/tPassed; 
     
       filteredx = newR * math.cos(ballA);
       filteredy = newR * math.sin(ballA);
@@ -97,13 +87,10 @@ function update(newx,newy)
 
       vMagCurrent = math.sqrt(vxCurrent^2+vyCurrent^2);
 
-      if vMagCurrent < 4.0 and newR < 2.0 then --Kill outlier
+      if vMagCurrent < max_velocity and newR < max_distance then 
         --Update velocity 
         vx=(1-gamma)*discount*vx + gamma*vxCurrent;
         vy=(1-gamma)*discount*vy + gamma*vyCurrent;
-
-
---print(string.format("B%.1f %1f V %.2f %.2f",newx,newy,vx,vy));
 
         --Update last ball position
         oldx=filteredx;

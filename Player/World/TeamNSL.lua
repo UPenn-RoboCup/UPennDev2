@@ -329,8 +329,6 @@ function update()
         ddefend[id] = ddefend[id] + 0.3;
       end
 
---This may make some trouble
---
       --Ignore goalie, reserver, penalized player
       if (states[id].penalty > 0) or 
 	(t - states[id].tReceive > msgTimeout) or
@@ -397,6 +395,28 @@ function update()
           set_role(3);    -- support
         end
       end
+    end
+  --We assign role based on player ID during initial and ready state
+  elseif gcm.get_game_state()<2 then 
+    if role==1 then
+      --Check whether there are any other attacker with smaller playerID
+      role_switch = false;
+      for id=1,5 do
+        if roles[id]==1 and id<playerID then
+	  role_switch = true;
+	end
+      end
+      if role_switch then set_role(2);end --Switch to defender
+    end
+    if role==2 then
+      --Check whether there are any other depender with smaller playerID
+      role_switch = false;
+      for id=1,5 do
+        if roles[id]==2 and id<playerID then
+	  role_switch = true;
+	end
+      end
+      if role_switch then set_role(3);end --Switch to supporter
     end
   end
 

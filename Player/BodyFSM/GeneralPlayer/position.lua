@@ -12,9 +12,6 @@ rDist1= Config.fsm.bodyPosition.rDist1;
 rDist2= Config.fsm.bodyPosition.rDist2;
 rOrbit= Config.fsm.bodyPosition.rOrbit;
 
-
-
-
 maxStep1 = Config.fsm.bodyPosition.maxStep1;
 
 maxStep2 = Config.fsm.bodyPosition.maxStep2;
@@ -28,16 +25,6 @@ rVel3 = Config.fsm.bodyPosition.rVel3 or 0.8;
 aVel3 = Config.fsm.bodyPosition.aVel3 or 30*math.pi/180;
 maxA3 = Config.fsm.bodyPosition.maxA3 or 0.1;
 maxY3 = Config.fsm.bodyPosition.maxY3 or 0;
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -136,7 +123,11 @@ function getDefenderHomePose()
   relBallX = ballGlobal[1]-goal_defend[1];
   relBallY = ballGlobal[2]-goal_defend[2];
   RrelBall = math.sqrt(relBallX^2+relBallY^2)+0.001;
+
+
+--TODO: Decrease distance if we have no goalie
   distGoal = 1.8;
+
   homePosition = {};
   homePosition[1]= goal_defend[1]+distGoal * relBallX / RrelBall;
   homePosition[2]= goal_defend[2]+distGoal * relBallY / RrelBall;
@@ -243,7 +234,7 @@ function getGoalieHomePose()
   goal_defend=wcm.get_goal_defend();
   relBallX = ballGlobal[1]-goal_defend[1];
   relBallY = ballGlobal[2]-goal_defend[2];
-  RrelBall = math.sqrt(relBallX^2 + relBallY^2);
+  RrelBall = math.sqrt(relBallX^2 + relBallY^2)+0.001;
 
   if tBall>8 or RrelBall > 4.0 then  
     --Go back and face center
@@ -258,6 +249,23 @@ function getGoalieHomePose()
 
   homePosition[1] = homePosition[1] + dist*relBallX /RrelBall;
   homePosition[2] = homePosition[2] + dist*relBallY /RrelBall;
+
+--Don't let goalie go back until it comes to blocking position first
+  uPose=vector.new({pose.x,pose.y,pose.a})
+  homeRelative = util.pose_relative(homePosition, uPose);  
+  if math.abs(homeRelative[3])>20*math.pi/180 then
+
+    posGoalX = pose.x-goal_defend[1];
+    posGoalY = pose.y-goal_defend[2];
+    posGoalR = math.sqrt(posGoalX^2+posGoalY^2)*0.8;
+
+    --Recalculate home position
+    homePosition = 0.98*vector.new(wcm.get_goal_defend());
+    homePosition[1] = homePosition[1] + posGoalR*relBallX /RrelBall;
+    homePosition[2] = homePosition[2] + posGoalR*relBallY /RrelBall;
+    homePosition[3] = util.mod_angle(math.atan2(relBallY, relBallX));
+
+  end
 
   return homePosition;
 end
@@ -410,11 +418,22 @@ function setDefenderVelocity(homePose)
     maxA = 999;
     maxY = 999;
     veltype=3;
-  else --Reached target area, don't move too much
+  elseif rHomeRelative>0.20 then --Reached target area, don't move too much
     maxStep = 0.02;
     maxA = 999;
     maxY = 999;
+  else
+    maxStep = 0.0; --Just turn
+    maxA = 999;
+    maxY = 999;
   end
+
+  --Don't turn back if final angle is reached
+  --just walk back without turning
+  if math.abs(homeRelative[3])<20*math.pi/180 then
+    maxA = 0;
+  end
+
 
   --Slow down if battery is low
   batt_level=Body.get_battery_level();

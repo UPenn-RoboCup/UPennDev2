@@ -41,6 +41,8 @@ state.fall=0;
 
 state.soundFilter = wcm.get_sound_detFilter();
 state.soundDetection = wcm.get_sound_detection();
+soundOdomPose = wcm.get_sound_odomPose();
+state.soundOdomPose = {x=soundOdomPose[1], y=soundOdomPose[2], a=soundOdomPose[3]};
 
 --Added key vision infos
 state.goal=0;  --0 for non-detect, 1 for unknown, 2/3 for L/R, 4 for both
@@ -89,6 +91,8 @@ function update()
 
   state.soundFilter = wcm.get_sound_detFilter();
   state.soundDetection = wcm.get_sound_detection();
+  soundOdomPose = wcm.get_sound_odomPose();
+  state.soundOdomPose = {x=soundOdomPose[1], y=soundOdomPose[2], a=soundOdomPose[3]};
 
   --Added Vision Info 
   state.goal=0;

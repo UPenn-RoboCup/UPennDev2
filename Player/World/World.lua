@@ -70,6 +70,24 @@ function init_particles()
   end
 end
 
+function allLessThanTenth(table)
+  for k,v in pairs(table) do
+    if v >= .1 then
+      return false
+    end
+  end
+  return true
+end
+
+function allZeros(table)
+  for k,v in pairs(table) do
+    if v~=0 then
+      return false
+    end
+  end
+  return true
+end
+
 function entry()
   count = 0;
   init_particles();
@@ -192,9 +210,16 @@ function update_vision()
     wcm.set_robot_penalty(0);
   end
 
+  fsrRight = Body.get_sensor_fsrRight()
+  fsrLeft = Body.get_sensor_fsrLeft()
+
   --reset particle to face opposite goal when getting manual placement on set
-  if (gcm.get_game_state() == 2) and (Body.get_change_state() == 1) then
-    PoseFilter.initialize_manual_placement();
+  if gcm.get_game_state() ==2 then
+    if (not allZeros(fsrRight)) and (not allZeros(fsrLeft)) then --Do not do this if sensor is broken
+      if allLessThanTenth(fsrRight) and allLessThanTenth(fsrLeft) then
+        PoseFilter.initialize_manual_placement();
+      end
+    end
   end
     
   -- ball

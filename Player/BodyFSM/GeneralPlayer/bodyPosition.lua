@@ -42,6 +42,10 @@ function update()
   pose=wcm.get_pose();
   ballR = math.sqrt(ball.x^2 + ball.y^2);
 
+  --recalculate approach path when ball is far away
+  if ballR>0.60 then
+    behavior.update();
+  end
   --Current cordinate origin: midpoint of uLeft and uRight
   --Calculate ball position from future origin
   --Assuming we stop at next step
@@ -65,18 +69,23 @@ function update()
   end
 
   role = gcm.get_team_role();
+  kickDir = wcm.get_kick_dir();
+
   --Force attacker for demo code
   if Config.fsm.playMode==1 then role=1; end
-  if role==0 then
-    return "goalie";
-  end
+  if role==0 then return "goalie";  end
 
-   if (role == 2) then
+  if (role == 2) then
     homePose = position.getDefenderHomePose();
   elseif (role==3) then
     homePose = position.getSupporterHomePose();
   else
-    homePose = position.getAttackerHomePose();	
+    if Config.fsm.playMode~=3 or kickDir~=1 then --We don't care to turn when we do sidekick
+      homePose = position.getDirectAttackerHomePose();
+      --TODO: check the yaw angle so that we don't kick to our side
+    else
+      homePose = position.getAttackerHomePose();
+    end	
   end
 
   --Field player cannot enter our penalty box

@@ -108,8 +108,8 @@ fsm.enable_obstacle_detection = 1;
 fsm.kickoff_wait_enable = 0;
 fsm.playMode = 3; --1 for demo, 2 for orbit, 3 for direct approach
 fsm.forcePlayer = 0; --1 for attacker, 2 for defender, 3 for goalie 
-fsm.enable_walkkick = 0; --Testing
-fsm.enable_sidekick = 0;
+fsm.enable_walkkick = 1; --Testing
+fsm.enable_sidekick = 1;
 
 --FAST APPROACH TEST
 fsm.fast_approach = 0;

@@ -109,6 +109,10 @@ function check_approach_type()
     check_angle = 0; --Don't check angle during approaching
   end
 
+  if kick_dir~=1 then --sidekicks don't check angles
+    check_angle = 0;
+  end
+
   print("Approach: kick dir /type /angle",kick_dir,kick_type,kick_angle*180/math.pi)
 
   y_inv=0;

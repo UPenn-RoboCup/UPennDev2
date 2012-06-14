@@ -203,7 +203,7 @@ fsm.headScan.yawMag = 90*math.pi/180;
 fsm.headScan.pitchTurn0 = 20*math.pi/180;
 fsm.headScan.pitchTurnMag = 20*math.pi/180;
 fsm.headScan.yawMagTurn = 45*math.pi/180;
-fsm.headScan.tScan = 4.0*speedFactor;
+fsm.headScan.tScan = 6.0*speedFactor;
 
 --------------------------------------------------
 --HeadKick: Fix headangle for approaching
@@ -222,7 +222,7 @@ fsm.headKickFollow={};
 fsm.headKickFollow.pitch={50*math.pi/180, 0*math.pi/180};
 fsm.headKickFollow.pitchSide = 30*math.pi/180;
 fsm.headKickFollow.yawMagSide = 90*math.pi/180;
-fsm.headKickFollow.tFollow = 10.0*speedFactor;
+fsm.headKickFollow.tFollow = 5.0*speedFactor;
 
 --------------------------------------------------
 --HeadLookGoal: Look up to see the goal
@@ -235,5 +235,5 @@ fsm.headLookGoal.tScan = 0.75*speedFactor;
 --HeadSweep: Look around to find the goal
 --------------------------------------------------
 fsm.headSweep={};
-fsm.headSweep.tScan=0.75*speedFactor;
-fsm.headSweep.tWait=0.25*speedFactor;
+fsm.headSweep.tScan=4.0*speedFactor;
+fsm.headSweep.tWait=0.4*speedFactor;

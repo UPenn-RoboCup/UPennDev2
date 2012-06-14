@@ -54,6 +54,10 @@ function update()
   pitch_error = pitchTarget - headAngles[2];
   angle_error = math.sqrt(yaw_error^2+pitch_error^2);
 
+  if not locked_on then
+    Body.set_head_command({yawTarget, pitchTarget});
+  end
+
   if locked_on then
     if angle_error>th_unlock then
       locked_on=false;
@@ -67,9 +71,6 @@ function update()
     end
   end
 
-  if not locked_on then
-    Body.set_head_command({yawTarget, pitchTarget});
-  end
 
   if (t - ball.t > tLost) then
     print('Ball lost!');

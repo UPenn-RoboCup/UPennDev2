@@ -130,7 +130,7 @@ km.standup_back = 'km_NSLOP_StandupFromBack3.lua';
 stance={};
 stance.bodyHeightSit = 0.20;
 stance.supportXSit = -0.010;
-stance.bodyHeightDive= 0.25;
+stance.bodyHeightDive= 0.295;
 stance.bodyTiltDive = 0;
 
 stance.bodyTiltStance=0*math.pi/180; --bodyInitial bodyTilt, 0 for webots
@@ -154,8 +154,8 @@ head.bodyTilt = 0;
 --km.kick_left = 'km_NSLOP_StandupFromFront2.lua';
 
 --Shutdown Vision and use ground truth gps info only
---use_gps_only = 0;
-use_gps_only = 1;
+use_gps_only = 0;
+--use_gps_only = 1;
 
 goalie_dive = 2; --1 for arm only, 2 for actual diving
 goalie_dive_waittime = 6.0; --How long does goalie lie down?

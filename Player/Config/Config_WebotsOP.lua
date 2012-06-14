@@ -62,16 +62,17 @@ fsm.body = {'GeneralPlayer'};
 fsm.playMode = 3; --1 for demo, 2 for orbit, 3 for direct approach
 fsm.enable_obstacle_detection = 1;
 fsm.wait_kickoff = 1;
-fsm.enable_walkkick = 1;
-fsm.enable_sidekick = 0;
+fsm.enable_walkkick = 0;
+fsm.enable_sidekick = 1;
 fsm.enable_dribble = 1;
+
 
 --1 for randomly doing evade kick
 --2 for using obstacle information
 
 fsm.enable_evade = 0;
-fsm.enable_evade = 1;--Randomly do evade kick
-fsm.enable_evade = 2;--Do evade kick when obstructed
+--fsm.enable_evade = 1;--Randomly do evade kick
+--fsm.enable_evade = 2;--Do evade kick when obstructed
 
 fsm.playMode = 3; --1 for demo, 2 for orbit, 3 for direct approach
 

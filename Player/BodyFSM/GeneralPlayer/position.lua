@@ -64,16 +64,15 @@ function posCalc()
   angle1=util.mod_angle(aGoal-aBall);
 end
 
-
+function getDirectAttackerHomePose()
+  posCalc();
+  local homepose={ballGlobal[1],ballGlobal[2], aBall};
+  return homepose;
+end
 
 
 function getAttackerHomePose()
   posCalc();
-  --Direct approach 
-  if Config.fsm.playMode~=3 then
-    local homepose={ballGlobal[1],ballGlobal[2], aBall};
-    return homepose;
-  end
 
   --Curved approach
   if math.abs(angle1)<math.pi/2 then

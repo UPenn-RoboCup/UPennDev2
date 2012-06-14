@@ -10,8 +10,7 @@ include_directories(/usr/include/lua5.1)
 add_library(Comm SHARED luaComm.cpp)
 
 # set optimization level
-#   TODO: can we now use level 2? it would not work for NaoV3
-set(CMAKE_CXX_FLAGS "-O2")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2")
 
 # set library prefix to "" otherwise it will create libNaoCam.so
 set_target_properties(Comm PROPERTIES PREFIX "")

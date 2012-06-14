@@ -40,7 +40,8 @@ sm:set_transition(headTrack, 'timeout', headLookGoal);
 sm:set_transition(headLookGoal, 'timeout', headTrack);
 sm:set_transition(headLookGoal, 'lost', headSweep);
 
-sm:set_transition(headSweep, 'done', headTrack);
+sm:set_transition(headSweep, 'lost', headTrack);
+sm:set_transition(headSweep, 'done', headLookGoal);
 
 sm:set_transition(headScan, 'ball', headTrack);
 sm:set_transition(headScan, 'timeout', headScan);

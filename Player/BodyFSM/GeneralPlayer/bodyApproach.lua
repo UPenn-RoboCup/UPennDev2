@@ -5,6 +5,7 @@ require('wcm')
 require('walk')
 require('vector')
 require('walk')
+require('position')
 
 t0 = 0;
 timeout = Config.fsm.bodyApproach.timeout;
@@ -203,8 +204,12 @@ function update()
     targetangle = 0;
   else
     --Player FSM, turn towards the goal
-    attackBearing, daPost = wcm.get_attack_bearing();
-    targetangle = util.mod_angle(attackBearing-kick_angle);
+--    attackBearing, daPost = wcm.get_attack_bearing();
+    position.posCalc();
+    attackAngle = wcm.get_goal_attack_angle2();
+    pose=wcm.get_pose();
+    targetangle = util.mod_angle(attackAngle - pose.a);
+
 
     if check_angle>0 then
       if targetangle > aThresholdTurn then

@@ -9,19 +9,16 @@
 [] Make use of weak gains on the arms and joint encoder readings to tell
    if the robot is near another robot; work this into the approach/position
       -> Will this be useful considering new approach style?
-[?] Letter to technical committee
 [] Stop resetting of position after goal is scored
       -> Make sure the button reset does not override button presses
          for manual placement
 [] Fix the tendency of goalie to fall over 
-[] Tendecy of kick to fall over
+[?] Tendecy of kick to fall over
 [] Head sweep needs to wait a second after first seeing goal
       -> Also needs to be as fast as possible
-[] Fix role-indicator LEDs
 [] Always align for any kick (make sure we do not kick out of bounds)
       -> Especially when approaching the opposing goal
 [] Load new OS on one robot, show dickens as we do
-[] Dickens: Test lines/corners
 
 
 
@@ -42,6 +39,6 @@
       -> Require in bodyPosition as well, do not orbit for walk kick
 [x] Stabilize parameter switching to the point where it becomes usable
 [x] Check ultrasound as the robots move
-
-
-
+[x] Letter to technical committee (We CANNOT use the chest button to reset localization)
+[x] Fix role-indicator LEDs
+[x] Dickens: Test lines/corners

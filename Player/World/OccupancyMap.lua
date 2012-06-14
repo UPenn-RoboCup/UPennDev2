@@ -92,8 +92,6 @@ function velocity_update()
 end
 
 function obs_in_occ()
-  OccMap.get_obstacle();
---[[
 --  print('try find obstacle in occmap'); 
   local maxOb = 2;
   start = unix.time();
@@ -125,7 +123,6 @@ function obs_in_occ()
   ocm.set_ob_nearest(nearest);
 --  endd = unix.time();
 --  print(endd - start);
---  ]]
 end
 
 function update()

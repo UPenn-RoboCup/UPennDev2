@@ -64,6 +64,10 @@ vision.ball.th_min_green2 = 150;
 
 vision.ball.check_for_ground = 1;
 
+vision.ball.check_for_field = 1;
+vision.ball.field_margin = 2.0;
+
+
 vision.goal={};
 vision.goal.th_min_color_count=100;
 vision.goal.th_nPostB = 10;

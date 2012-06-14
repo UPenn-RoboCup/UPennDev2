@@ -130,20 +130,21 @@ function detect(color)
         end --end bottom margin check
       end --End ball height, ground check
     end --End all check
-    
-    ballv = {v[1],v[2],0};
-    
-    pose=wcm.get_pose();
-    posexya=vector.new( {pose.x, pose.y, pose.a} );
-    ballGlobal = util.pose_global(ballv,posexya); 
-    if check_for_field>0 then
-      if math.abs(ballGlobal[1]) > 
-	Config.world.xLineBoundary + field_margin or
-        math.abs(ballGlobal[2]) > 
-	Config.world.yLineBoundary + field_margin then
 
-        vcm.add_debug_message("Field check fail\n");
-        check_passed = false;
+    if check_passed then    
+      ballv = {v[1],v[2],0};
+      pose=wcm.get_pose();
+      posexya=vector.new( {pose.x, pose.y, pose.a} );
+      ballGlobal = util.pose_global(ballv,posexya); 
+      if check_for_field>0 then
+        if math.abs(ballGlobal[1]) > 
+   	  Config.world.xLineBoundary + field_margin or
+          math.abs(ballGlobal[2]) > 
+	  Config.world.yLineBoundary + field_margin then
+
+          vcm.add_debug_message("Field check fail\n");
+          check_passed = false;
+        end
       end
     end
     if check_passed then

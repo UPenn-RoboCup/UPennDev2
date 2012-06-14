@@ -32,4 +32,39 @@ shsize.occ = shared.occ.map + 2^16;
 
 util.init_shm_segment(getfenv(), _NAME, shared, shsize);
 
+function get_ob_x()
+  obst = get_ob_nearest();
+  nob = get_ob_num();
+  x = {};
+  idx = 1
+  for i = 1 , nob * 3, 3 do
+    x[idx] = obst[i];
+    idx = idx + 1;
+  end
+  return x;
+end
+
+function get_ob_y()
+  obst = get_ob_nearest();
+  nob = get_ob_num();
+  y = {};
+  idx = 1
+  for i = 2 , nob * 3, 3 do
+    y[idx] = obst[i];
+    idx = idx + 1;
+  end
+  return y;
+end
+
+function get_ob_dist()
+  obst = get_ob_nearest();
+  nob = get_ob_num();
+  dist = {};
+  idx = 1
+  for i = 3 , nob * 3, 3 do
+    dist[idx] = obst[i];
+    idx = idx + 1;
+  end
+  return dist;
+end
 

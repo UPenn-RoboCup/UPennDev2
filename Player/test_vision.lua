@@ -148,7 +148,19 @@ function process_keyinput()
       ocm.set_occ_reset(1);
     elseif byte==string.byte(".") then
       print("get obstacles");
-      ocm.set_occ_get_obstacle(1);
+      nob = ocm.get_ob_num();
+      print(nob,' obstacle found');
+      if (nob > 0) then 
+        obx = ocm.get_ob_x();
+        print('obstacle x')
+        util.ptable(obx);
+        oby = ocm.get_ob_y();
+        print('obstacle y')
+        util.ptable(oby);
+        obdist = ocm.get_ob_dist();
+        print('obstacle dist')
+        util.ptable(obdist);
+      end
 
     --switch camera 
     elseif byte==string.byte("-") then

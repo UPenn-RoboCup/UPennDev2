@@ -8,6 +8,7 @@ require('Config')
 require('wcm')
 require('gcm')
 require('Team')
+require('ocm')
 
 t0 = 0;
 
@@ -82,10 +83,10 @@ function update()
   end
 
   --Check the nearby obstacle
-  obstacle_num = wcm.get_obstacle_num();
-  obstacle_x = wcm.get_obstacle_x();
-  obstacle_y = wcm.get_obstacle_y();
-  obstacle_dist = wcm.get_obstacle_dist();
+  obstacle_num = ocm.get_ob_num();
+  obstacle_x = ocm.get_ob_x();
+  obstacle_y = ocm.get_ob_y();
+  obstacle_dist = ocm.get_ob_dist();
 
   for i=1,obstacle_num do
 --print(string.format("%d XYD:%.2f %.2f %.2f",

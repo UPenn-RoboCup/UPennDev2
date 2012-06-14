@@ -53,7 +53,7 @@ decayRate = 1.0;
 count = 0;
 lastDecay = unix.time();
 lastTx = unix.time();
-txPeriod = 2.0;
+txPeriod = 1.0;
 
 
 function entry()

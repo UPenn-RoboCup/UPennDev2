@@ -7,6 +7,7 @@ require('util')
 require('Config')
 require('postDist')
 require('wcm')
+require('UltraSound')
 
 t0 = 0;
 timeout = 10.0;
@@ -65,7 +66,10 @@ function update()
   --print(vStep[1]..','..vStep[2]..','..vStep[3]);
 
   --Kick or not? True = yes, false = no, walk kick
-  toKick = postDist.kick()
+  toKick = postDist.kick();
+
+  --Check for obstacles
+  us = UltraSound.check_obstacle();
 
   if (t - ball.t > tLost) then
     print('ballLost');
@@ -93,7 +97,11 @@ function update()
   if ((ball.x < xKick) and (math.abs(ball.y) < yKickMax) and
       (math.abs(ball.y) > yKickMin)) then
     if(postDist.kick()) then
-      return "kick"
+      if ((us[1] > 8 or us[2] > 8)) then
+        return "walkKick";
+      else
+        return "kick"
+      end
     else
       return "walkKick"
     end  

@@ -59,25 +59,34 @@ function update(newx,newy)
       tPassed=t-tLast;
 
       moveR = ((oldx - newx)^2 + (oldy - newy)^2);
+      
       th = ballR * 0.05;
-
-      if moveR>th then
-        vxCurrent= (newx-oldx)/tPassed;
-        vyCurrent= (newy-oldy)/tPassed;
-        vx = (1-gamma)*vx + gamma*vxCurrent;
-        vy = (1-gamma)*vy + gamma*vyCurrent;
+      if ballR > 2.0 then
+        th = th*2;
+      end
+      if ballR > 3.0 then
+	vx,vy=0,0;
         oldx = newx;
         oldy = newy;        
         tLast=t;
---  print(string.format("BXU %.2f V %.2f",	newx,vx));
+      elseif moveR>th then
+        vxCurrent= (newx-oldx)/tPassed;
+        vyCurrent= (newy-oldy)/tPassed;
+	vmagCurrent = math.sqrt(vxCurrent^2+vyCurrent^2);
 
+	if vmagCurrent<4.0 then --don't update if outlier
+          vx = (1-gamma)*vx + gamma*vxCurrent;
+          vy = (1-gamma)*vy + gamma*vyCurrent;
+          oldx = newx;
+          oldy = newy;        
+          tLast=t;
+        end
       else
 	vx=vx*discount;
 	vy=vy*discount;
---  print(string.format("BX  %.2f V %.2f",	newx,vx));
         tLast=t;
-
       end
+
 
   else 
      --Ball first seen, don't update velocity
@@ -88,8 +97,13 @@ function update(newx,newy)
      tLast=t;
      noball_count=0;
   end
-
-
+--[[
+  if vx<-1.0 then
+    print(string.format("BX  %.2f V %.2f====", newx,vx));
+  else
+    print(string.format("BX  %.2f V %.2f", newx,vx));
+  end
+--]]
 end
 
 function update_noball()

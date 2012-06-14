@@ -66,6 +66,12 @@ function update()
 
   local t = Body.get_time();
   ball = wcm.get_ball();
+ 
+  ball_v_inf = wcm.get_ball_v_inf();
+  ball.x=ball_v_inf[1];
+  ball.y=ball_v_inf[2];
+
+
   pose = wcm.get_pose();
   tBall = Body.get_time() - ball.t;
   ballGlobal = util.pose_global({ball.x, ball.y, 0}, {pose.x, pose.y, pose.a});

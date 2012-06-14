@@ -58,15 +58,13 @@ function check_approach_type()
   end
 
 
-
   if do_evade_kick then
-print("EVADE KICK!!!")
+    print("EVADE KICK!!!")
     pose=wcm.get_pose();
     goalDefend = wcm.get_goal_defend();
     --Always sidekick to center side
     if (pose.y>0 and goalDefend[1]>0) or
        (pose.y<0 and goalDefend[1]<0) then
-
       kick_type = 2;
       kick_dir = 2; --kick to the right
       wcm.set_kick_dir(kick_dir);
@@ -76,14 +74,40 @@ print("EVADE KICK!!!")
       kick_dir = 3; --kick to the left
       wcm.set_kick_dir(kick_dir);
       wcm.set_kick_type(kick_type);
-
     end
     check_angle = 0; --Don't check angle if we're doing evade kick
   end
 
+  if role==0 then
+    --Goalie always approach the ball directly without turning
+    position.posCalc();
+    pose=wcm.get_pose();
+    aGoal = wcm.get_goal_attack_angle2(); --Global angle to goal
+    aRot = util.mod_angle(aGoal - pose.a);    
+    th_sidekick = math.pi*60/180;
 
-
-
+    if aRot > th_sidekick then 
+      --stationary kick to the right
+      kick_type = 1;
+      kick_dir = 2;
+    elseif aRot<-th_sidekick then
+      --stationary kick to the left
+      kick_type = 1;
+      kick_dir = 3;
+    else
+      if Config.fsm.goalie_use_walkkick>0 then
+        --walkkick to front
+        kick_type = 2;
+      else
+        --stationary kick to front
+        kick_type = 1;
+      end
+      kick_dir = 1;
+    end
+    wcm.set_kick_dir(kick_dir);
+    wcm.set_kick_type(kick_type);
+    check_angle = 0; --Don't check angle during approaching
+  end
 
   print("Approach: kick dir /type /angle",kick_dir,kick_type,kick_angle*180/math.pi)
 
@@ -123,7 +147,6 @@ print("EVADE KICK!!!")
      yTarget[1],yTarget[2],yTarget[3]=
        yTarget0[1],yTarget0[2],yTarget0[3];
   end
-
   print("Approach, target: ",xTarget[2],yTarget[2]);
 
 end
@@ -162,7 +185,6 @@ function update()
     ball_tracking=true;
     HeadFSM.sm:set_state('headKick');
   end
-
 
   --Current cordinate origin: midpoint of uLeft and uRight
   --Calculate ball position from future origin
@@ -210,7 +232,6 @@ function update()
     pose=wcm.get_pose();
     targetangle = util.mod_angle(attackAngle - pose.a);
 
-
     if check_angle>0 then
       if targetangle > aThresholdTurn then
         vStep[3]=0.2;
@@ -256,13 +277,9 @@ function update()
     return "ballFar";
   end
 
---  print("Ball xy:",ball.x,ball.y);
---  print("Threshold xy:",xTarget[3],yTarget[3]);
   angle_check_done = true;
   if check_angle>0 and
     math.abs(targetangle) > aThresholdTurn then
-    angle_check_done=false;
-  elseif  math.abs(targetangle) > 60*math.pi/180 then
     angle_check_done=false;
   end
 

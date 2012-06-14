@@ -171,6 +171,10 @@ fsm.goalie_reposition=1; --Yaw reposition
 --fsm.goalie_reposition=2; --Position reposition
 fsm.bodyAnticipate.thFar = {0.4,0.4,30*math.pi/180};
 
+fsm.goalie_use_walkkick = 1;--should goalie use walkkick or long kick?
+
+
+
 Config.fsm.bodyAnticipate.timeout = 2;
 
 

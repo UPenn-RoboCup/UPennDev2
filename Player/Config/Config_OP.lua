@@ -166,6 +166,8 @@ fsm.goalie_type = 2;--moving/move+stop/stop+dive/stop+dive+move
 fsm.goalie_reposition=1; --Yaw reposition
 --fsm.goalie_reposition=2; --Position reposition
 
+fsm.goalie_use_walkkick = 1; --should goalie use front walkkick?
+
 fsm.bodyAnticipate.timeout = 3.0;
 fsm.bodyAnticipate.center_dive_threshold_y = 0.05; 
 fsm.bodyAnticipate.dive_threshold_y = 1.0;

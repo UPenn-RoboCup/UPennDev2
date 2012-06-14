@@ -35,7 +35,7 @@ angles=vector.new({
 226,-25,-37
 })*math.pi/180,
 --duration = 0.6;
-duration = 1;
+duration = 0.6;
 },
 
 {

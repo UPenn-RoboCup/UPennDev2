@@ -280,8 +280,7 @@ int OccMap::kmean_clustering(void) {
   int iteration = 0;
   do {
     iteration ++;
-    for (int cnt = 0; cnt < K; cnt++)
-      cluster[cnt].clear();
+
     changed = false;
     for (it = good_pt.begin(); it != good_pt.end(); ++it) {
       double mindist = 100000000;
@@ -330,10 +329,13 @@ int OccMap::kmean_clustering(void) {
 //      cout << changed << endl;
       means = means_new;
     }
+    for (int cnt = 0; cnt < K; cnt++)
+      for (int iter = 0; iter < cluster[cnt].size(); iter++)
+        cluster[cnt].pop_back();
   }
   while (changed);
-  //  cout << "iterations: " << iteration << endl;
-
+  cout << "iterations: " << iteration << endl;
+/*
 //  cout << changed <<endl;
 //  for (int cnt = 0; cnt < K; cnt++) {
 //    cout << means[cnt].i << ' ' << means[cnt].j << endl;
@@ -390,6 +392,7 @@ int OccMap::kmean_clustering(void) {
     if (obs[1].nearest_dist < obs[0].nearest_dist)
       obs[0] = obs[1];
   }
+  */
   return 1;
 }
 

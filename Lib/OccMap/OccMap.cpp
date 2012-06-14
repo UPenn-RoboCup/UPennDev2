@@ -334,8 +334,7 @@ int OccMap::kmean_clustering(void) {
         cluster[cnt].pop_back();
   }
   while (changed);
-  cout << "iterations: " << iteration << endl;
-/*
+//  cout << "iterations: " << iteration << endl;
 //  cout << changed <<endl;
 //  for (int cnt = 0; cnt < K; cnt++) {
 //    cout << means[cnt].i << ' ' << means[cnt].j << endl;
@@ -392,7 +391,6 @@ int OccMap::kmean_clustering(void) {
     if (obs[1].nearest_dist < obs[0].nearest_dist)
       obs[0] = obs[1];
   }
-  */
   return 1;
 }
 

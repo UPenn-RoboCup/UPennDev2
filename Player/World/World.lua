@@ -59,13 +59,6 @@ yaw0 =0;
 --Track gcm state
 gameState = 0;
 
-
-function entry()
-  count = 0;
-  init_particles();
-  --Velocity.entry();
-end
-
 function init_particles()
   if use_same_colored_goal>0 then
     goalDefend=get_goal_defend();
@@ -75,6 +68,12 @@ function init_particles()
   else
     PoseFilter.initialize();    
   end
+end
+
+function entry()
+  count = 0;
+  init_particles();
+  --Velocity.entry();
 end
 
 function update_odometry()
@@ -169,7 +168,6 @@ function update_vision()
     end
   end
 
-  --Init particle just once when game state moves to READY
   gameState = gcm.get_game_state();
   if (gameState == 0) then
     init_particles();
@@ -179,14 +177,21 @@ function update_vision()
     end
   end
 
+  --If robot was in penalty and game switches to set, initialize particles
+  --for manual placement
+  if wcm.get_robot_penalty() == 1 and gcm.get_game_state() == 2 then
+    PoseFilter.initialize_manual_placement()
+  elseif gcm.in_penalty() then
+    init_particles()
+  end
+
   -- Penalized?
   if gcm.in_penalty() then
     wcm.set_robot_penalty(1);
-    --Reset particles while robot is penalized...
-    init_particles();
   else
     wcm.set_robot_penalty(0);
   end
+
   --reset particle to face opposite goal when getting manual placement on set
   if (gcm.get_game_state() == 2) and (Body.get_change_state() == 1) then
     PoseFilter.initialize_manual_placement();

@@ -9,21 +9,21 @@
 [] Make use of weak gains on the arms and joint encoder readings to tell
    if the robot is near another robot; work this into the approach/position
       -> Will this be useful considering new approach style?
-[] Stop resetting of position after goal is scored
+[] Use touchdown sensors to decide whether or not manual placement has occured to reset particles.
+[?] When you move from penalty to set, reset particles for manual placement
+
+
+
+[x] Stop resetting of position after goal is scored
       -> Make sure the button reset does not override button presses
          for manual placement
-[] Fix the tendency of goalie to fall over 
-[?] Tendecy of kick to fall over
-[] Head sweep needs to wait a second after first seeing goal
+[x] Fix the tendency of goalie to fall over 
+[x] Head sweep needs to wait a second after first seeing goal
       -> Also needs to be as fast as possible
-[] Always align for any kick (make sure we do not kick out of bounds)
+[x] Tendecy of kick to fall over
+[X] Always align for any kick (make sure we do not kick out of bounds)
       -> Especially when approaching the opposing goal
-[] Load new OS on one robot, show dickens as we do
-[] Use touchdown sensors to decide whether or not manual placement has occured to reset particles.
-[] When you move from penalty to set, reset particles for manual placement
-
-
-
+[X] Load new OS on one robot, show dickens as we do
 [x] Variable parameters for orbit
 [x] Make head sweep up after walk kick
 [x] Make walk kick continue walking forward after kick

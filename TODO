@@ -19,6 +19,8 @@
 [] Always align for any kick (make sure we do not kick out of bounds)
       -> Especially when approaching the opposing goal
 [] Load new OS on one robot, show dickens as we do
+[] Use touchdown sensors to decide whether or not manual placement has occured to reset particles.
+[] When you move from penalty to set, reset particles for manual placement
 
 
 

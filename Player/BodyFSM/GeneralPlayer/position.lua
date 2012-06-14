@@ -115,7 +115,6 @@ function getDefenderHomePose0()
 end
 
 
---Blocking defender 
 function getDefenderHomePose()
   posCalc();
 
@@ -174,8 +173,6 @@ function getDefenderHomePose()
 			+ util.sign(goal_defend[1]) * sideGoal;
     homePosition[3] = math.atan2(relBallY, relBallX);
   elseif defending_type==2 then
-
-print("222")
 
     --Side defender, avoiding attacker
     if math.abs(attacker_pose[2])<0.5 then

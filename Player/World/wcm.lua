@@ -19,6 +19,8 @@ shared.robot.penalty = vector.zeros(1);
 shared.robot.gpspose = vector.zeros(3);
 shared.robot.gps_attackbearing = vector.zeros(1);
 shared.robot.gps_ball = vector.zeros(3);
+shared.robot.team_ball = vector.zeros(3);
+shared.robot.team_ball_score = vector.zeros(1);
 
 shared.ball = {};
 shared.ball.x = vector.zeros(1);
@@ -28,6 +30,7 @@ shared.ball.velx = vector.zeros(1);
 shared.ball.vely = vector.zeros(1);
 shared.ball.dodge = vector.zeros(1);
 shared.ball.locked_on = vector.zeros(1);
+shared.ball.p = vector.zeros(1);
 
 shared.team = {};
 
@@ -170,7 +173,9 @@ util.init_shm_segment(getfenv(), _NAME, shared, shsize);
 -- helper functions for access the data in the same manner as World
 
 function get_ball()
-  return {x=get_ball_x(), y=get_ball_y(), vx=get_ball_velx(), vy=get_ball_vely(), t=get_ball_t()};
+  return {x=get_ball_x(), y=get_ball_y(), 
+	vx=get_ball_velx(), vy=get_ball_vely(), 
+	t=get_ball_t(),	p=get_ball_p()};
 end
 
 function get_pose()

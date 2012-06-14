@@ -28,6 +28,9 @@ th_min_green1=Config.vision.ball.th_min_green1;
 th_min_green2=Config.vision.ball.th_min_green2;
 
 check_for_ground = Config.vision.ball.check_for_ground;
+check_for_field = Config.vision.ball.check_for_field or 0;
+field_margin = Config.vision.ball.field_margin or 0;
+
 
 function detect(color)
   local ball = {};
@@ -127,6 +130,23 @@ function detect(color)
         end --end bottom margin check
       end --End ball height, ground check
     end --End all check
+
+    if check_passed then    
+      ballv = {v[1],v[2],0};
+      pose=wcm.get_pose();
+      posexya=vector.new( {pose.x, pose.y, pose.a} );
+      ballGlobal = util.pose_global(ballv,posexya); 
+      if check_for_field>0 then
+        if math.abs(ballGlobal[1]) > 
+   	  Config.world.xLineBoundary + field_margin or
+          math.abs(ballGlobal[2]) > 
+	  Config.world.yLineBoundary + field_margin then
+
+          vcm.add_debug_message("Field check fail\n");
+          check_passed = false;
+        end
+      end
+    end
     if check_passed then
       break;
     end

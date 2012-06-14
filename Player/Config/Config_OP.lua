@@ -108,7 +108,7 @@ fsm.enable_obstacle_detection = 1;
 fsm.kickoff_wait_enable = 0;
 fsm.playMode = 3; --1 for demo, 2 for orbit, 3 for direct approach
 fsm.forcePlayer = 0; --1 for attacker, 2 for defender, 3 for goalie 
-fsm.enable_walkkick = 1;
+fsm.enable_walkkick = 0; --Testing
 fsm.enable_sidekick = 0;
 
 --FAST APPROACH TEST
@@ -122,15 +122,22 @@ fsm.enable_evade = 0;
 -- Team Parameters
 team = {};
 team.msgTimeout = 5.0;
+team.tKickOffWear =7.0;
 
 team.walkSpeed = 0.25; --Average walking speed 
 team.turnSpeed = 2.0; --Average turning time for 360 deg
 team.ballLostPenalty = 4.0; --ETA penalty per ball loss time
+team.fallDownPenalty = 4.0; --ETA penalty per ball loss time
 
 team.nonAttackerPenalty = 0.8; -- dist from ball
 team.nonDefenderPenalty = 0.5; -- dist from goal
 
-team.tKickOffWear =7.0;
+team.force_defender = 0;
+
+team.use_team_ball = 1;
+team.team_ball_timeout = 3.0;  --use team ball info after this delay
+team.team_ball_threshold = 0.5;
+
 
 -- keyframe files
 km = {};
@@ -153,8 +160,8 @@ goalie_dive = 1; --1 for arm only, 2 for actual diving
 goalie_dive_waittime = 3.0; --How long does goalie lie down?
 
 --fsm.goalie_type = 1;--moving/move+stop/stop+dive/stop+dive+move
---fsm.goalie_type = 2;--moving/move+stop/stop+dive/stop+dive+move
-fsm.goalie_type = 3;--moving/move+stop/stop+dive/stop+dive+move
+fsm.goalie_type = 2;--moving/move+stop/stop+dive/stop+dive+move
+--fsm.goalie_type = 3;--moving/move+stop/stop+dive/stop+dive+move
 --fsm.goalie_reposition=0; --No reposition
 fsm.goalie_reposition=1; --Yaw reposition
 --fsm.goalie_reposition=2; --Position reposition

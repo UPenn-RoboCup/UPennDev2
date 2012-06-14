@@ -17,10 +17,10 @@ noball_threshold = 5;
 --We need at least two observation to update velocity
 ball_threshold = 2;
 
-gamma = 0.9;
-discount = 0.95;
+gamma = 0.3;
+discount = 0.8;
 
-max_distance = 2.0; --Only check velocity within this radius
+max_distance = 4.0; --Only check velocity within this radius
 max_velocity = 4.0; --Ignore if velocity exceeds this
 
 
@@ -54,67 +54,41 @@ function update(newx,newy)
 --    vx,vy=0,0;
   end
 
-  --Ball 
-
-  --Keep the history of old ball distances and pick smallest one
-  min_ballR = 999;
-  for i=1,ballR_cue_length do
-    if ballR_cue[i]<min_ballR then
-      min_ballR = ballR_cue[i];
-    end
-  end
-
-  if ballR < min_ballR then --Ball approaching
-    newR = ballR;
-    oldR = min_ballR;
-  else --Ball not approaching
-    newR = min_ballR;
-    oldR = min_ballR;
-  end
-
   --Ball seen for some continuous frames
   if t>tLast and ball_count>=ball_threshold then
       tPassed=t-tLast;
 
-      newR = ballR;
-      newA = ballA;
-    
-      filteredx = newR * math.cos(ballA);
-      filteredy = newR * math.sin(ballA);
+      moveR = ((oldx - newx)^2 + (oldy - newy)^2);
+      th = ballR * 0.05;
 
-      vxCurrent = (filteredx-oldx)/tPassed;
-      vyCurrent = (filteredy-oldy)/tPassed;
-
-      vMagCurrent = math.sqrt(vxCurrent^2+vyCurrent^2);
-
-      if vMagCurrent < max_velocity and newR < max_distance then 
-        --Update velocity 
-        vx=(1-gamma)*discount*vx + gamma*vxCurrent;
-        vy=(1-gamma)*discount*vy + gamma*vyCurrent;
-
-        --Update last ball position
-        oldx=filteredx;
-        oldy=filteredy;
-        oldA=newA;
-        oldR=newR; 
+      if moveR>th then
+        vxCurrent= (newx-oldx)/tPassed;
+        vyCurrent= (newy-oldy)/tPassed;
+        vx = (1-gamma)*vx + gamma*vxCurrent;
+        vy = (1-gamma)*vy + gamma*vyCurrent;
+        oldx = newx;
+        oldy = newy;        
         tLast=t;
+--  print(string.format("BXU %.2f V %.2f",	newx,vx));
+
       else
-	--This should be a outlier
-	ball_count=0;
 	vx=vx*discount;
 	vy=vy*discount;
+--  print(string.format("BX  %.2f V %.2f",	newx,vx));
+        tLast=t;
+
       end
+
   else 
      --Ball first seen, don't update velocity
      vx=0;vy=0;
      --Update position
      oldx=newx;
      oldy=newy;
-     oldA=ballA;
-     oldR=ballR; 
      tLast=t;
      noball_count=0;
   end
+
 
 end
 

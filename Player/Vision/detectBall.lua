@@ -84,6 +84,8 @@ function detect(color)
       -- Coordinates of ball
       scale = math.max(dArea/diameter, ball.propsA.axisMajor/diameter);
       v = HeadTransform.coordinatesA(ballCentroid, scale);
+      v_inf = HeadTransform.coordinatesA(ballCentroid,0.1);
+      
       vcm.add_debug_message(string.format(
 	"Ball v0: %.2f %.2f %.2f\n",v[1],v[2],v[3]));
 
@@ -166,10 +168,16 @@ function detect(color)
 
 
   v=HeadTransform.projectGround(v,diameter/2-projHeight);
+
   --SJ: we subtract foot offset 
   --bc we use ball.x for kick alignment
   --and the distance from foot is important
   v[1]=v[1]-mcm.get_footX()
+
+  --Ball position ignoring ball size (for distant ball observation)
+  v_inf=HeadTransform.projectGround(v_inf,diameter/2);
+  v_inf[1]=v_inf[1]-mcm.get_footX()
+  wcm.set_ball_v_inf({v_inf[1],v_inf[2]});  
 
   ball.v = v;
   ball.detect = 1;

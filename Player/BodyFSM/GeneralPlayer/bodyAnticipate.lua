@@ -106,14 +106,19 @@ function update()
   ball_v = math.sqrt(ball.vx^2+ball.vy^2);
 
   if goalie_dive > 0 and goalie_type>2 then
-
-    if t-t0>tStartDelay and t-ball.t<0.1 and 
-      wcm.get_ball_locked_on()>0 then
+    if t-t0>tStartDelay and t-ball.t<0.1 then
 
       ballR=math.sqrt(ball.x^2+ball.y^2);
+
+      if ball_v>ball_velocity_th and
+	ball.vx<ball_velocity_thx then
+        print(string.format("B: %.1f %.1f V %.2f %.2f", 
+	ball.x,ball.y,ball.vx,ball.vy));
+      end
+
       if ball.vx<ball_velocity_thx and 
-	ballR_defend<rCloseDive and
-	ballR_defend>rMinDive and
+	ballR<rCloseDive and
+	ballR>rMinDive and
         ball_v>ball_velocity_th then
 
         t0=t;

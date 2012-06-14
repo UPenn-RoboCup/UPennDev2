@@ -36,14 +36,29 @@ function posCalc()
   tBall = Body.get_time() - ball.t;
   posexya=vector.new( {pose.x, pose.y, pose.a} );
   ballGlobal=util.pose_global(ballxy,posexya);
+
+
   goalGlobal=wcm.get_goal_attack();
   aBallLocal=math.atan2(ball.y,ball.x); 
   aBall=math.atan2(ballGlobal[2]-pose.y, ballGlobal[1]-pose.x);
   aGoal=math.atan2(goalGlobal[2]-ballGlobal[2],goalGlobal[1]-ballGlobal[1]);
 
+
+  --Near-goal handling
+  thNearGoal = 70*math.pi/180;
+  shiftNearGoal = 0.8;
+  if math.abs(aGoal)>thNearGoal then
+    goalGlobal[1] = goalGlobal[1] - util.sign(goalGlobal[1])*shiftNearGoal;
+    aBall=math.atan2(ballGlobal[2]-pose.y, ballGlobal[1]-pose.x);
+    aGoal=math.atan2(goalGlobal[2]-ballGlobal[2],goalGlobal[1]-ballGlobal[1]);
+  end
+
   --Apply angle
   kickAngle=  wcm.get_kick_angle();
   aGoal = util.mod_angle(aGoal - kickAngle);
+
+  --Kick target angle
+  wcm.set_goal_attack_angle2(aGoal); 
 
   --In what angle should we approach the ball?
   angle1=util.mod_angle(aGoal-aBall);

@@ -22,7 +22,7 @@ add_library(ImageProc SHARED
               RegionProps.cpp)
 
 # set optimization level
-set(CMAKE_CXX_FLAGS "-O2")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2")
 
 # set library prefix to "" otherwise it will create libNaoCam.so
 set_target_properties(ImageProc PROPERTIES PREFIX "")

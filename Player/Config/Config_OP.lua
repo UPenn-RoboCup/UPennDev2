@@ -174,3 +174,7 @@ fsm.bodyAnticipate.ball_velocity_thx = -0.7; --min x velocity for diving
 
 --Speak enable
 speakenable = false;
+
+fsm.bodyPosition.maxStep1 = 0.05;
+fsm.bodyPosition.maxStep2 = 0.06;
+fsm.bodyPosition.maxStep3 = 0.06;

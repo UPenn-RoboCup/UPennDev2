@@ -121,7 +121,9 @@ team.team_ball_threshold = 0.5;
 -- keyframe files
 km = {};
 km.standup_front = 'km_NSLOP_StandupFromFront.lua';
+--km.standup_front = 'km_NSLOP_StandupFromFront2.lua';
 km.standup_back = 'km_NSLOP_StandupFromBack.lua';
+km.standup_back = 'km_NSLOP_StandupFromBack3.lua';
 
 --Sit/stand stance parameters
 stance={};
@@ -151,8 +153,8 @@ head.bodyTilt = 0;
 --km.kick_left = 'km_NSLOP_StandupFromFront2.lua';
 
 --Shutdown Vision and use ground truth gps info only
-use_gps_only = 0;
---use_gps_only = 1;
+--use_gps_only = 0;
+use_gps_only = 1;
 
 goalie_dive = 2; --1 for arm only, 2 for actual diving
 goalie_dive_waittime = 6.0; --How long does goalie lie down?
@@ -180,3 +182,12 @@ avoid_other_team = 0;
 -- Need to implement this api better...
 bat_med = 122; -- Slow down if voltage drops below 12.2V 
 bat_low = 118; -- 11.8V warning
+
+
+--Slow down top speed
+--[[
+fsm.bodyPosition.maxStep1 = 0.06;
+fsm.bodyPosition.maxStep2 = 0.07;
+fsm.bodyPosition.maxStep3 = 0.08;
+--]]
+

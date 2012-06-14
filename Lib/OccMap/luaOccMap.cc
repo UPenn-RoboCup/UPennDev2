@@ -145,56 +145,56 @@ static int lua_occmap_time_decay(lua_State *L) {
 static int lua_occmap_obstacle(lua_State *L) {
   map.init_obstacle();
   map.kmean_clustering();
-//  int maxOb = 2;
-//  obstacle zeros_ob = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-//  obstacle ob = zeros_ob;
-//  int nobstacle = map.get_nobstacle();
-//  cout << "obstacle number:" << nobstacle << endl; 
-//  lua_createtable(L, nobstacle + 1, 0);
-//  lua_pushnumber(L, nobstacle);
-//  lua_rawseti(L, -2, 1);
-//  for (int cnt = 0; cnt < maxOb; cnt++) {
-//    if (cnt < nobstacle) 
-//      ob = map.get_obstacle(cnt);
-//    else 
-//      ob = zeros_ob;
-//    lua_createtable(L, 0, 3);
-//    // centroid field
-//    //    std::cout << "centroid:" << obstacle.centroid_x << ' ' << obstacle.centroid_y << endl; 
-//    lua_pushstring(L, "centroid");
-//    lua_createtable(L, 2, 0);
-//    lua_pushnumber(L, ob.centroid_x);
-//    lua_rawseti(L, -2, 1);
-//    lua_pushnumber(L, ob.centroid_y);
-//    lua_rawseti(L, -2, 2);
-//    lua_settable(L, -3);
-//
-//    // angle range field
-//    //    std::cout << "range:" << obstacle.left_angle_range * 180 / M_PI 
-//    //              << ' ' << obstacle.right_angle_range * 180 / M_PI << endl;    lua_pushstring(L, "angle_range");
-//    lua_pushstring(L, "angle_range");
-//    lua_createtable(L, 2, 0);
-//    lua_pushnumber(L, ob.left_angle_range);
-//    lua_rawseti(L, -2, 1);
-//    lua_pushnumber(L, ob.right_angle_range);
-//    lua_rawseti(L, -2, 2);
-//    lua_settable(L, -3);
-//
-//    // nearest point field
-//    //    std::cout << "nearest:" << obstacle.nearest_x << ' ' << obstacle.nearest_y
-//    //              << ' ' << obstacle.nearest_dist << endl; 
-//    lua_pushstring(L, "nearest");
-//    lua_createtable(L, 3, 0);
-//    lua_pushnumber(L, ob.nearest_x);
-//    lua_rawseti(L, -2, 1);
-//    lua_pushnumber(L, ob.nearest_y);
-//    lua_rawseti(L, -2, 2);
-//    lua_pushnumber(L, ob.nearest_dist);
-//    lua_rawseti(L, -2, 3);
-//    lua_settable(L, -3);
-//
-//    lua_rawseti(L, -2, cnt+1+1);
-//  }
+  int maxOb = 2;
+  obstacle zeros_ob = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+  obstacle ob = zeros_ob;
+  int nobstacle = map.get_nobstacle();
+  cout << "obstacle number:" << nobstacle << endl; 
+  lua_createtable(L, nobstacle + 1, 0);
+  lua_pushnumber(L, nobstacle);
+  lua_rawseti(L, -2, 1);
+  for (int cnt = 0; cnt < maxOb; cnt++) {
+    if (cnt < nobstacle) 
+      ob = map.get_obstacle(cnt);
+    else 
+      ob = zeros_ob;
+    lua_createtable(L, 0, 3);
+    // centroid field
+    //    std::cout << "centroid:" << obstacle.centroid_x << ' ' << obstacle.centroid_y << endl; 
+    lua_pushstring(L, "centroid");
+    lua_createtable(L, 2, 0);
+    lua_pushnumber(L, ob.centroid_x);
+    lua_rawseti(L, -2, 1);
+    lua_pushnumber(L, ob.centroid_y);
+    lua_rawseti(L, -2, 2);
+    lua_settable(L, -3);
+
+    // angle range field
+    //    std::cout << "range:" << obstacle.left_angle_range * 180 / M_PI 
+    //              << ' ' << obstacle.right_angle_range * 180 / M_PI << endl;    lua_pushstring(L, "angle_range");
+    lua_pushstring(L, "angle_range");
+    lua_createtable(L, 2, 0);
+    lua_pushnumber(L, ob.left_angle_range);
+    lua_rawseti(L, -2, 1);
+    lua_pushnumber(L, ob.right_angle_range);
+    lua_rawseti(L, -2, 2);
+    lua_settable(L, -3);
+
+    // nearest point field
+    //    std::cout << "nearest:" << obstacle.nearest_x << ' ' << obstacle.nearest_y
+    //              << ' ' << obstacle.nearest_dist << endl; 
+    lua_pushstring(L, "nearest");
+    lua_createtable(L, 3, 0);
+    lua_pushnumber(L, ob.nearest_x);
+    lua_rawseti(L, -2, 1);
+    lua_pushnumber(L, ob.nearest_y);
+    lua_rawseti(L, -2, 2);
+    lua_pushnumber(L, ob.nearest_dist);
+    lua_rawseti(L, -2, 3);
+    lua_settable(L, -3);
+
+    lua_rawseti(L, -2, cnt+1+1);
+  }
   return 1;
 }
 

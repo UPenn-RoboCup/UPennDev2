@@ -97,8 +97,12 @@ function update(newx,newy)
      tLast=t;
      noball_count=0;
   end
+
+  vMag = math.sqrt(vx^2+vy^2);
+
+  vR = 0.8;
 --[[
-  if vx<-1.0 then
+  if vx<-vR and vMag > vR then
     print(string.format("BX  %.2f V %.2f====", newx,vx));
   else
     print(string.format("BX  %.2f V %.2f", newx,vx));

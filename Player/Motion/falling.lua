@@ -4,7 +4,7 @@ require('Body')
 require('walk')
 
 t0 = 0;
-timeout = 0.3;
+timeout = Config.falling_timeout or 0.3;
 
 function entry()
   print(_NAME.." entry");

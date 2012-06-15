@@ -46,6 +46,7 @@ function update()
   if ballR>0.60 then
     behavior.update();
   end
+
   --Current cordinate origin: midpoint of uLeft and uRight
   --Calculate ball position from future origin
   --Assuming we stop at next step
@@ -101,14 +102,14 @@ function update()
     vx,vy,va=position.setDefenderVelocity(homePose);
   end
 
-  --Get rejected if other robots are around
+  --Get pushed away if other robots are around
   obstacle_num = wcm.get_obstacle_num();
   obstacle_x = wcm.get_obstacle_x();
   obstacle_y = wcm.get_obstacle_y();
   obstacle_dist = wcm.get_obstacle_dist();
   obstacle_role = wcm.get_obstacle_role();
 
-  avoid_own_team = Config.avoid_own_team or 0;
+  avoid_own_team = Config.team.avoid_own_team or 0;
 
   if avoid_own_team then
    for i=1,obstacle_num do

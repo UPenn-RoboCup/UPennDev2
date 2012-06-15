@@ -5,7 +5,7 @@ project(LuaComm)
 # include for lua headers
 include_directories(../Lua/src)
 
-# unix main library definition
+# Comm main library definition
 add_library(Comm SHARED luaComm.cpp)
 
 # set optimization level

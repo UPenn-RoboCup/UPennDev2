@@ -5,7 +5,7 @@ project(CArray)
 # include for lua headers
 include_directories(../../Lua/src)
 
-# unix main library definition
+# carray main library definition
 add_library(carray SHARED luacarray.cpp)
 
 # set optimization level

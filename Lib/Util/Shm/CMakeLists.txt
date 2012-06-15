@@ -5,7 +5,7 @@ project(LuaShm)
 # include for lua headers
 include_directories(../../Lua/src)
 
-# unix main library definition
+# shm main library definition
 add_library(shm SHARED luashm.cpp)
 
 # set optimization level (shm cannot be higher than 1)

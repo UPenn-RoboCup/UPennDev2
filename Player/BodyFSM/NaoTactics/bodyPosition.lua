@@ -44,6 +44,11 @@ function update()
   ballxy=vector.new( {ball.x,ball.y,0} );
   posexya=vector.new( {pose.x, pose.y, pose.a} );
 
+  strat = gcm.get_team_strat();
+  strategy = strat[Config.game.playerID]
+  if strategy ~= 0 then
+    role = strategy
+  end
   ballGlobal=util.pose_global(ballxy,posexya);
   goalGlobal=wcm.get_goal_attack();
   aBallLocal=math.atan2(ball.y,ball.x); 
@@ -132,12 +137,14 @@ function update()
     end
   end
 
+  --[[
   -- TODO: add obstacle detection
   --us = UltraSound.checkObstacle();
   us = UltraSound.check_obstacle();
   if ((t - t0 > 3.0) and (us[1] > 8 or us[2] > 8)) then
     return 'obstacle'; 
   end
+  ]]--
 
   if ((t - t0 > 5.0) and (t - ball.t > tLost)) then
     return "ballLost";

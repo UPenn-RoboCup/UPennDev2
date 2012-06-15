@@ -7,6 +7,7 @@ require('util')
 require('Config')
 require('postDist')
 require('wcm')
+require('UltraSound')
 
 t0 = 0;
 timeout = 10.0;
@@ -31,7 +32,8 @@ yKickMax = 0.06;
 rFar = 0.45;
 
 -- alignment
-thAlign = 15.0*math.pi/180.0;
+thAlign = Config.fsm.bodyApproach.thAlign or 15.0*math.pi/180.0;
+thAlignWalkKick = Config.fsm.bodyApproach.thAlignWalkKick or 30*math.pi/180.0;
 
 
 function entry()
@@ -63,6 +65,12 @@ function update()
   attackBearing, daPost = wcm.get_attack_bearing();
   --print(vStep[1]..','..vStep[2]..','..vStep[3]);
 
+  --Kick or not? True = yes, false = no, walk kick
+  toKick = postDist.kick();
+
+  --Check for obstacles
+  us = UltraSound.check_obstacle();
+
   if (t - ball.t > tLost) then
     print('ballLost');
     return "ballLost";
@@ -75,14 +83,25 @@ function update()
     print('ballFar');
     return "ballFar";
   end
-  if ((math.abs(attackBearing) > thAlign) and postDist.kick()) then
-    print('ballAlign');
-    return 'ballAlign';
+  if toKick then
+    if (math.abs(attackBearing) > thAlign) then
+      print('ballAlign');
+      return 'ballAlign';
+    end
+  else
+    if (math.abs(attackBearing) > thAlignWalkKick) then
+      print('ballAlignWalkKick');
+      return 'ballAlign';
+    end
   end
   if ((ball.x < xKick) and (math.abs(ball.y) < yKickMax) and
       (math.abs(ball.y) > yKickMin)) then
     if(postDist.kick()) then
-      return "kick"
+      if ((us[1] > 8 or us[2] > 8)) then
+        return "walkKick";
+      else
+        return "kick"
+      end
     else
       return "walkKick"
     end  

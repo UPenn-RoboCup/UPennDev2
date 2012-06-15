@@ -25,7 +25,7 @@ shared.team.number = vector.zeros(1);
 shared.team.player_id = vector.zeros(1);
 shared.team.color = vector.zeros(1);
 shared.team.role = vector.zeros(1);
-shared.team.strat = vector.zeros(1)
+shared.team.strat = vector.zeros(2)
 
 --for double pass
 shared.team.task_state = vector.zeros(2); 

@@ -225,13 +225,12 @@ inline float sqrtA(float x) {
 }
 
 inline double norm(int x1, int y1, int x2, int y2) {
-  double squaredist = (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2);
-  return (double)sqrt(squaredist);
+  return sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
 }
 
+
 inline double norm(double x1, double y1, double x2, double y2) {
-  double squaredist = (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2);
-  return (double)sqrt(squaredist);
+  return (double)sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
 }
 
 inline grid_ij get_mean(vector<grid_ij>& cluster) {
@@ -247,6 +246,7 @@ inline grid_ij get_mean(vector<grid_ij>& cluster) {
 
 
 int OccMap::kmean_clustering(void) {
+  cout << "clustering" << endl;
   vector<grid_ij> good_pt;
   int i = 0, j = 0;
   for (int cnt = 0; cnt < grid_num; cnt++) {
@@ -264,7 +264,7 @@ int OccMap::kmean_clustering(void) {
   }
   int K = 2;
   vector<grid_ij> means, means_new;
-  vector<grid_ij> cluster[K];
+  vector<grid_ij> cluster[2];
   int r = 0;
   // Random init mean from points
   srand(time(0));
@@ -274,30 +274,37 @@ int OccMap::kmean_clustering(void) {
     means_new.push_back(good_pt[r]);
   }
 
+
+  cout << "iteration" << endl;
     // iteration to cluser points
-  vector<grid_ij>::iterator it; 
   bool changed = false;
   int iteration = 0;
-  do {
+//  do {
     iteration ++;
 
     changed = false;
-    for (it = good_pt.begin(); it != good_pt.end(); ++it) {
+    for (int it = 0; it < good_pt.size(); it++) {
+//      cout << it << ' ' << good_pt.size() << endl;
       double mindist = 100000000;
       int minindex = -1;
       for (int mit = 0; mit <= means.size(); mit++) {
-        double dist = norm(it->i, it->j, means[mit].i, means[mit].j);
+        double dist = norm(good_pt[it].i, good_pt[it].j, means[mit].i, means[mit].j);
         if (dist < mindist) {
           mindist = dist;
           minindex = mit;
         }
       }
-      cluster[minindex].push_back(*it);
+//      cout << minindex << ' ' << cluster[minindex].size() <<  endl;
+      cluster[minindex].push_back(good_pt[it]);
     }
+
+/*
+    cout << "get new mean" << endl;
     // get new mean
     for (int cnt = 0; cnt < K; cnt ++) {
   //    cout << cluster[cnt].size() << endl;
       if (cluster[cnt].size() != 0) {
+        cout << "calculate new mean" << endl;
 //        cout << "old " << means[cnt].i << ' ' << means[cnt].j << endl;
         double sum_i = 0, sum_j = 0;
         for (int iter = 0; iter < cluster[cnt].size(); iter++) {
@@ -306,6 +313,7 @@ int OccMap::kmean_clustering(void) {
         }
         means_new[cnt].i = round(sum_i / cluster[cnt].size());
         means_new[cnt].j = round(sum_j / cluster[cnt].size());
+
         double dist = 0, maxDist = 100000;
         int maxIdx = 0;
         for (int iter = 0; iter < cluster[cnt].size(); iter++) {
@@ -318,12 +326,16 @@ int OccMap::kmean_clustering(void) {
         }
         means_new[cnt].i = cluster[cnt][maxIdx].i;
         means_new[cnt].j = cluster[cnt][maxIdx].j;
+
 //        cout << "new " << means_new[cnt].i << ' ' << means_new[cnt].j << endl;
-      } else {
+      } 
+      else {
+        cout << "regenerate means" << endl;
         r = (rand() % good_pt.size()) + 1;
         means_new[cnt] = good_pt[r];
 //        cout << "new " << means_new[cnt].i << ' ' << means_new[cnt].j << endl;    
       }
+      cout << " check mean " << endl;
       if ((means[cnt].i != means_new[cnt].i) || (means[cnt].j != means_new[cnt].j)) 
         changed = true; 
 //      cout << changed << endl;
@@ -334,12 +346,15 @@ int OccMap::kmean_clustering(void) {
         cluster[cnt].pop_back();
   }
   while (changed);
+*/
 //  cout << "iterations: " << iteration << endl;
 //  cout << changed <<endl;
 //  for (int cnt = 0; cnt < K; cnt++) {
 //    cout << means[cnt].i << ' ' << means[cnt].j << endl;
 //  }
 //  cout << endl;
+/*
+  cout << "process obstacle" << endl;
   nOb = K;
   for (int cnt = 0; cnt < nOb; cnt++) {
     obstacle new_ob;
@@ -391,6 +406,11 @@ int OccMap::kmean_clustering(void) {
     if (obs[1].nearest_dist < obs[0].nearest_dist)
       obs[0] = obs[1];
   }
+
+  cout << good_pt.size() << ' ' << means.size() << ' ' << means_new.size() << endl;
+  cout << cluster[0].size() << ' ' << cluster[1].size() << endl;
+  cout << obs.size() << endl;
+*/
   return 1;
 }
 

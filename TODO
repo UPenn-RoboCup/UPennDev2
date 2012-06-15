@@ -1,16 +1,12 @@
-[] Make use of ultrasound data to decide between ball approach styles
-      -> Use ultrasound to get a feel for what the field ahead looks like
 [] Variable parameters for different positions on the field/behaviors
       -> Faster tStep
       -> Actually possible now!
-[] Strategies for robots through coaching interface?
+[?] Strategies for robots through coaching interface?
       -Simple: Have two attackers, two defenders.
       -Just override role switching code
 [] Make use of weak gains on the arms and joint encoder readings to tell
    if the robot is near another robot; work this into the approach/position
       -> Will this be useful considering new approach style?
-[] Use touchdown sensors to decide whether or not manual placement has occured to reset particles.
-[?] When you move from penalty to set, reset particles for manual placement
 
 
 
@@ -44,3 +40,7 @@
 [x] Letter to technical committee (We CANNOT use the chest button to reset localization)
 [x] Fix role-indicator LEDs
 [x] Dickens: Test lines/corners
+[x] Make use of ultrasound data to decide between ball approach styles
+      -> Use ultrasound to get a feel for what the field ahead looks like
+[x] When you move from penalty to set, reset particles for manual placement
+[x] Use touchdown sensors to decide whether or not manual placement has occured to reset particles.

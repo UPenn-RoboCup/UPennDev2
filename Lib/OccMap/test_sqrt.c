@@ -9,8 +9,9 @@ float sqrtA(float x) {
   return *(float*) &i;
 }
 
-void main() {
-  float x = 4.435;
-  float r = sqrtA(x);
+int main() {
+  int x = 445;
+  double r = sqrt(x);
   printf("%f", r);
+  return 1;
 }

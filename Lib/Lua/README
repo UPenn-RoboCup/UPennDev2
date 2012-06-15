@@ -27,6 +27,11 @@ See HISTORY for a summary of changes since the last released version.
   platforms that have an ANSI C compiler. In most Unix-like platforms, simply
   do "make" with a suitable target. See INSTALL for detailed instructions.
 
+  ** For the Nao robot run "make -f Makefile.cmake" from the ./src directory
+      and then copy the following onto the Nao robot:
+      ./src/build/lua -> /usr/local/bin/lua
+      ./src/build/liblua.so -> /usr/local/lib/liblua.so
+
 * Origin
   ------
   Lua is developed at Lua.org, a laboratory of the Department of Computer

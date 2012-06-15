@@ -167,16 +167,16 @@ end
 function set_indicator_role(role)
   if role == 1 then
     -- attack
-    set_actuator_ledEarsLeft({0, 0, 0, 0, 0, 0, 0, 1, 1, 1});
+    set_actuator_ledEarsLeft({1, 1, 1, 0, 0, 0, 0, 0, 0, 0});
   elseif role == 2 then
     -- defend
-    set_actuator_ledEarsLeft({0, 0, 1, 1, 1, 0, 0, 0, 0, 0});
+    set_actuator_ledEarsLeft({0, 0, 0, 0, 1, 1, 0, 0, 0, 0});
   elseif role == 3 then
     -- support
-    set_actuator_ledEarsLeft({1, 1, 0, 0, 0, 0, 0, 0, 0, 1});
+    set_actuator_ledEarsLeft({1, 0, 0, 0, 0, 0, 0, 0, 1, 1});
   elseif role == 0 then
     -- goalier
-    set_actuator_ledEarsLeft({0, 0, 0, 0, 1, 1, 1, 0, 0, 0});
+    set_actuator_ledEarsLeft({0, 0, 0, 0, 0, 0, 1, 1, 1, 0});
   else
     -- unkown role
     set_actuator_ledEarsLeft({0, 0, 0, 0, 0, 0, 0, 0, 0, 0});

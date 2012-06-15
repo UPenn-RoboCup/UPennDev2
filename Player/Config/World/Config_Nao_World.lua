@@ -80,6 +80,9 @@ world.initPosition2={
   {1.3,1}, --Supporter
 }
 
+-- use sound localization
+world.enable_sound_localization = 1;
+
 -- Occupancy Map parameters
 occ = {};
 occ.mapsize = 50;

@@ -39,6 +39,11 @@ state.tReceive = Body.get_time();
 state.battery_level = wcm.get_robot_battery_level();
 state.fall=0;
 
+state.soundFilter = wcm.get_sound_detFilter();
+state.soundDetection = wcm.get_sound_detection();
+soundOdomPose = wcm.get_sound_odomPose();
+state.soundOdomPose = {x=soundOdomPose[1], y=soundOdomPose[2], a=soundOdomPose[3]};
+
 --Added key vision infos
 state.goal=0;  --0 for non-detect, 1 for unknown, 2/3 for L/R, 4 for both
 state.goalv1={0,0};
@@ -84,6 +89,11 @@ function update()
     state.penalty = 0;
   end
 
+  state.soundFilter = wcm.get_sound_detFilter();
+  state.soundDetection = wcm.get_sound_detection();
+  soundOdomPose = wcm.get_sound_odomPose();
+  state.soundOdomPose = {x=soundOdomPose[1], y=soundOdomPose[2], a=soundOdomPose[3]};
+
   --Added Vision Info 
   state.goal=0;
   if vcm.get_goal_detect()>0 then
@@ -105,7 +115,9 @@ function update()
   end
 
   if (math.mod(count, 1) == 0) then
-    Comm.send(serialization.serialize(state));
+    -- use old serialization for team monitor so the 
+    --  old matlab team monitor can be used
+    Comm.send(serialization.serialize_orig(state));
     --Copy of message sent out to other players
     state.tReceive = Body.get_time();
     states[playerID] = state;

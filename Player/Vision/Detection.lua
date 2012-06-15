@@ -40,6 +40,7 @@ colorWhite = Config.color.white;
 use_point_goal=Config.vision.use_point_goal;
 
 enableLine = Config.vision.enable_line_detection;
+enableCorner = Config.vision.enable_corner_detection;
 enableSpot = Config.vision.enable_spot_detection;
 enableMidfieldLandmark = Config.vision.enable_midfield_landmark_detection;
 enable_freespace_detection = Config.vision.enable_freespace_detection or 0;
@@ -145,8 +146,10 @@ function update()
     tstart = unix.time();
     line = detectLine.detect();
     Tline = unix.time() - tstart;
-    corner = detectCorner.detect(line);
-    Tcorner = unix.time() - Tline - tstart; 
+    if enableCorner == 1 then
+      corner = detectCorner.detect(line);
+      Tcorner = unix.time() - Tline - tstart; 
+    end
   end
 
   -- spot detection
@@ -181,7 +184,7 @@ function update()
     detectRobot.detect();
     Trobot = unix.time() - tstart;
   end
-
+  update_shm();
 end
 
 function update_shm()

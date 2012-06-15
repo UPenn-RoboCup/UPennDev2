@@ -316,7 +316,7 @@ int check_tone(short *x, char &toneSymbol, long &frame, int &xLIndex, int &xRInd
       // reset tone count
       toneCount = 0;
 
-      return 1;
+      return -1;
     }
   }
 

@@ -62,16 +62,17 @@ fsm.body = {'GeneralPlayer'};
 fsm.playMode = 3; --1 for demo, 2 for orbit, 3 for direct approach
 fsm.enable_obstacle_detection = 1;
 fsm.wait_kickoff = 1;
-fsm.enable_walkkick = 1;
-fsm.enable_sidekick = 0;
+fsm.enable_walkkick = 0;
+fsm.enable_sidekick = 1;
 fsm.enable_dribble = 1;
+
 
 --1 for randomly doing evade kick
 --2 for using obstacle information
 
 fsm.enable_evade = 0;
-fsm.enable_evade = 1;--Randomly do evade kick
-fsm.enable_evade = 2;--Do evade kick when obstructed
+--fsm.enable_evade = 1;--Randomly do evade kick
+--fsm.enable_evade = 2;--Do evade kick when obstructed
 
 fsm.playMode = 3; --1 for demo, 2 for orbit, 3 for direct approach
 
@@ -121,13 +122,15 @@ team.team_ball_threshold = 0.5;
 -- keyframe files
 km = {};
 km.standup_front = 'km_NSLOP_StandupFromFront.lua';
+--km.standup_front = 'km_NSLOP_StandupFromFront2.lua';
 km.standup_back = 'km_NSLOP_StandupFromBack.lua';
+km.standup_back = 'km_NSLOP_StandupFromBack3.lua';
 
 --Sit/stand stance parameters
 stance={};
 stance.bodyHeightSit = 0.20;
 stance.supportXSit = -0.010;
-stance.bodyHeightDive= 0.25;
+stance.bodyHeightDive= 0.295;
 stance.bodyTiltDive = 0;
 
 stance.bodyTiltStance=0*math.pi/180; --bodyInitial bodyTilt, 0 for webots
@@ -169,6 +172,10 @@ fsm.goalie_reposition=1; --Yaw reposition
 --fsm.goalie_reposition=2; --Position reposition
 fsm.bodyAnticipate.thFar = {0.4,0.4,30*math.pi/180};
 
+fsm.goalie_use_walkkick = 1;--should goalie use walkkick or long kick?
+
+
+
 Config.fsm.bodyAnticipate.timeout = 2;
 
 
@@ -180,3 +187,12 @@ avoid_other_team = 0;
 -- Need to implement this api better...
 bat_med = 122; -- Slow down if voltage drops below 12.2V 
 bat_low = 118; -- 11.8V warning
+
+
+--Slow down top speed
+--[[
+fsm.bodyPosition.maxStep1 = 0.06;
+fsm.bodyPosition.maxStep2 = 0.07;
+fsm.bodyPosition.maxStep3 = 0.08;
+--]]
+

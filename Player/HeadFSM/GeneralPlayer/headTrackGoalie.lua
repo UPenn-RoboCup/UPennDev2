@@ -41,13 +41,22 @@ function update()
   -- update head position based on ball location
   ball = wcm.get_ball();
   ballR = math.sqrt (ball.x^2 + ball.y^2);
+
   local yawTarget, pitchTarget =
-	HeadTransform.ikineCam(ball.x, ball.y, trackZ, bottom);
+	HeadTransform.ikineCam(ball.x,ball.y, trackZ, bottom);
   local headAngles = Body.get_head_position();
+
+  pitchOffset = 10*math.pi/180;
+  pitchTarget = pitchTarget + pitchOffset;
+
 
   yaw_error = yawTarget - headAngles[1];
   pitch_error = pitchTarget - headAngles[2];
   angle_error = math.sqrt(yaw_error^2+pitch_error^2);
+
+  if not locked_on then
+    Body.set_head_command({yawTarget, pitchTarget});
+  end
 
   if locked_on then
     if angle_error>th_unlock then
@@ -62,9 +71,6 @@ function update()
     end
   end
 
-  if not locked_on then
-    Body.set_head_command({yawTarget, pitchTarget});
-  end
 
   if (t - ball.t > tLost) then
     print('Ball lost!');

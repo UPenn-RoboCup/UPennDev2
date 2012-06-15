@@ -6,6 +6,7 @@ require('vector')
 require('Config')
 require('wcm')
 require('gcm')
+require('position')
 
 function cycle_behavior()
   demo_behavior = demo_behavior%4 + 1;
@@ -59,7 +60,7 @@ function update()
 
   if Config.fsm.playMode>1 then --skip kick selection in demo mode
     if kick_off>0 then 
-      print("Behavior updated, kickoff kick")
+--      print("Behavior updated, kickoff kick")
       kickAngle = math.pi/6; --30 degree off angle
       kickDir=1;
       kickType=2;
@@ -68,17 +69,26 @@ function update()
       wcm.set_kick_angle(kickAngle);
       return;
     end
-    attackBearing = wcm.get_attack_bearing();
+
+    position.posCalc();
+    aGoal = wcm.get_goal_attack_angle2();
+    pose = wcm.get_pose();
+
+    angleRot = util.mod_angle(aGoal - pose.a);
+
+--print("angleRot:",angleRot*180/math.pi)
     --Check if front walkkick is available now
     kickType=2;
 
     --Check kick direction 
-    thFrontKick = 10*math.pi/180;  
+    thFrontKick = 45*math.pi/180;  
+    thFrontKick2 = 135*math.pi/180;  
 
-    if math.abs(attackBearing)<thFrontKick then
+    if math.abs(angleRot)<thFrontKick or 
+       math.abs(angleRot)>thFrontKick2 	then
       kickDir=1;
       kickAngle = 0;
-    elseif attackBearing>0 then --should kick to the left
+    elseif angleRot>0 then --should kick to the left
       kickDir=2;
       kickAngle = math.pi/2;
     else
@@ -101,13 +111,15 @@ function update()
     kickAngle=0;
   end
 
+--[[
   if kickDir==1 then
-    print("Behavior updated, straight kick")
+    print("Straight kick")
   elseif kickDir==2 then
-    print("Behavior updated, kick to the left")
+    print("kick to the left")
   else
-    print("Behavior updated, kick to the right")
+    print("kick to the right")
   end
+--]]
 
   wcm.set_kick_dir(kickDir);
   wcm.set_kick_type(kickType);

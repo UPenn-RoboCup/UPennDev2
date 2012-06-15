@@ -147,7 +147,8 @@ function update_vision()
       ball.p = (1-ball_gamma)*ball.p+ball_gamma;
       ball.t = Body.get_time();
       -- Update the velocity
-      Velocity.update(ball.x,ball.y);
+      ball_v_inf = wcm.get_ball_v_inf();
+      Velocity.update(ball_v_inf[1],ball_v_inf[2]);
       ball.vx, ball.vy, dodge  = Velocity.getVelocity();
     else
       ball.p = (1-ball_gamma)*ball.p;

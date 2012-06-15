@@ -86,7 +86,7 @@ fsm.playMode = 3; --1 for demo, 2 for orbit, 3 for direct approach
 fsm.enable_obstacle_detection = 1;
 fsm.wait_kickoff = 1;
 fsm.enable_walkkick = 0;
-fsm.enable_sidekick = 1;
+fsm.enable_sidekick = 0;
 fsm.enable_dribble = 1;
 
 --FAST APPROACH TEST
@@ -151,16 +151,12 @@ km.standup_back = 'km_NSLOP_StandupFromBack3.lua';
 --km.kick_right = 'km_NSLOP_taunt1.lua';
 --km.kick_left = 'km_NSLOP_StandupFromFront2.lua';
 
---Shutdown Vision and use ground truth gps info only
-use_gps_only = 0;
---use_gps_only = 1;
-
 goalie_dive = 2; --1 for arm only, 2 for actual diving
 goalie_dive_waittime = 6.0; --How long does goalie lie down?
 --fsm.goalie_type = 1;--moving/move+stop/stop+dive/stop+dive+move
 --fsm.goalie_type = 2;--moving/move+stop/stop+dive/stop+dive+move
---fsm.goalie_type = 3;--moving/move+stop/stop+dive/stop+dive+move
-fsm.goalie_type = 4;--moving/move+stop/stop+dive/stop+dive+move
+fsm.goalie_type = 3;--moving/move+stop/stop+dive/stop+dive+move
+--fsm.goalie_type = 4;--moving/move+stop/stop+dive/stop+dive+move
 --fsm.goalie_reposition=0; --No reposition
 fsm.goalie_reposition=1; --Yaw reposition
 --fsm.goalie_reposition=2; --Position reposition
@@ -181,7 +177,7 @@ bat_med = 122; -- Slow down if voltage drops below 12.2V
 bat_low = 118; -- 11.8V warning
 
 --Fall check
-fallAngle = 50*math.pi/180;
+fallAngle = 30*math.pi/180;
 falling_timeout = 0.3;
 
 --Slow down top speed
@@ -190,4 +186,8 @@ fsm.bodyPosition.maxStep1 = 0.06;
 fsm.bodyPosition.maxStep2 = 0.07;
 fsm.bodyPosition.maxStep3 = 0.08;
 --]]
+
+--Shutdown Vision and use ground truth gps info only
+use_gps_only = 0;
+use_gps_only = 1;
 

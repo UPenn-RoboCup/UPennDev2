@@ -7,6 +7,7 @@ require('util')
 require('Config')
 require('postDist')
 require('wcm')
+require('UltraSound')
 
 t0 = 0;
 timeout = 10.0;
@@ -31,7 +32,8 @@ yKickMax = 0.06;
 rFar = 0.45;
 
 -- alignment
-thAlign = 15.0*math.pi/180.0;
+thAlign = Config.fsm.bodyApproach.thAlign or 15.0*math.pi/180.0;
+thAlignWalkKick = Config.fsm.bodyApproach.thAlignWalkKick or 30*math.pi/180.0;
 
 function entry()
   print(_NAME.." entry");
@@ -57,30 +59,16 @@ function update()
 
   ballA = math.atan2(ball.y - math.max(math.min(ball.y, 0.05), -0.05), math.max(ball.x+0.10, 0.10));
   vStep[3] = 0.5*ballA;
-  --Player FSM, turn towards the goal
-    attackBearing, daPost = wcm.get_attack_bearing();
-    kick_angle=wcm.get_kick_angle();
-    targetangle = util.mod_angle(attackBearing-kick_angle);
-    if targetangle > 10*math.pi/180 then
-      vStep[3]=0.2;
-    elseif targetangle < -10*math.pi/180 then
-      vStep[3]=-0.2;
-    else
-      vStep[3]=0;
-    end
+  walk.set_velocity(vStep[1],vStep[2],vStep[3]);
+
+  attackBearing, daPost = wcm.get_attack_bearing();
   --print(vStep[1]..','..vStep[2]..','..vStep[3]);
 
-  --when the ball is on the side of the ROBOT, backstep a bit
-  local wAngle = math.atan2 (ball.y,ball.x);
-  if math.abs(wAngle) > 45*math.pi/180 then
-    vStep[1]=vStep[1] - 0.03;
-    print('backstep');
-  else
-    --Otherwise, don't make robot backstep
-    vStep[1]=math.max(0,vStep[1]);
-  end
+  --Kick or not? True = yes, false = no, walk kick
+  toKick = postDist.kick();
 
-  walk.set_velocity(vStep[1],vStep[2],vStep[3]);
+  --Check for obstacles
+  us = UltraSound.check_obstacle();
 
   if (t - ball.t > tLost) then
     print('ballLost');
@@ -94,14 +82,25 @@ function update()
     print('ballFar');
     return "ballFar";
   end
-  if ((math.abs(attackBearing) > thAlign) and postDist.kick()) then
-    print('ballAlign');
-    return 'ballAlign';
+  if toKick then
+    if (math.abs(attackBearing) > thAlign) then
+      print('ballAlign');
+      return 'ballAlign';
+    end
+  else
+    if (math.abs(attackBearing) > thAlignWalkKick) then
+      print('ballAlignWalkKick');
+      return 'ballAlign';
+    end
   end
   if ((ball.x < xKick) and (math.abs(ball.y) < yKickMax) and
       (math.abs(ball.y) > yKickMin)) then
     if(postDist.kick()) then
-      return "kick"
+      if ((us[1] > 8 or us[2] > 8)) then
+        return "walkKick";
+      else
+        return "kick"
+      end
     else
       return "walkKick"
     end  

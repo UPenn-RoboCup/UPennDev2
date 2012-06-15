@@ -6,7 +6,7 @@ require('os')
 
 platform = {};
 platform.name = 'WebotsNao'
-listen_monitor = 1;
+
 
 
 function loadconfig(configName)
@@ -16,6 +16,7 @@ function loadconfig(configName)
   end
 end
 
+listen_monitor = 1
 param = {}
 param.world = 'World/Config_Nao_World'
 param.walk = 'Walk/Config_WebotsNao_Walk' 

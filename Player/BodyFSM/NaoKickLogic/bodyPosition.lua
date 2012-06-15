@@ -132,12 +132,14 @@ function update()
     end
   end
 
+  --[[
   -- TODO: add obstacle detection
   --us = UltraSound.checkObstacle();
   us = UltraSound.check_obstacle();
   if ((t - t0 > 3.0) and (us[1] > 8 or us[2] > 8)) then
     return 'obstacle'; 
   end
+  ]]--
 
   if ((t - t0 > 5.0) and (t - ball.t > tLost)) then
     return "ballLost";

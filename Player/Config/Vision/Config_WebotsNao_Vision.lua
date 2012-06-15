@@ -45,7 +45,6 @@ vision.enable_freespace_detection = 1;
 vision.use_tilted_bbox = 0;
 -- Store and send subsampled image?
 vision.subsampling = 1;
-vision.subsampling2 = 1; --1/4 sized image
 
 --Vision parameter values
 --For 320*240 labelA

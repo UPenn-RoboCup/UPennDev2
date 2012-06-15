@@ -43,7 +43,8 @@ require('Body')
 require("getch")
 require('kick')
 require('Speak')
---require('World')
+require('PoseFilter')
+require('World')
 --require('Team')
 --require('battery')
 Vision = require 'vcm' -- Steve
@@ -240,7 +241,7 @@ function update()
       if walkKick then	
         walk.doWalkKickLeft();
       else 
-        kick.set_kick("KickForwardLeft");	
+        kick.set_kick("kickForwardLeft");	
         Motion.event("kick");
       end
     elseif byte==string.byte("2") then
@@ -385,10 +386,11 @@ function update()
       Config.walk.odomScale[3] = Config.walk.odomScale[3] + .01;
     elseif byte==string.byte("M") then
       Config.walk.odomScale[3] = Config.walk.odomScale[3] - .01;
-    elseif byte==string.byte("#") then
-      wcm.set_robot_pose({0,0,0})
+    elseif byte==string.byte("@") then
+      wcm.set_robot_pose(vector.zeros(3));
     end
   end
+
 
   if parameters then
 		print(string.format("\n Walk Velocity: (%.2f, %.2f, %.2f)",unpack(targetvel)));
@@ -411,7 +413,9 @@ Config.walk.supportX, Config.walk.supportY));
 		print(string.format("Gyro Settings ({alpha, gain, deadband, max}):\n ankleImuParamX: {%.2f, %.4f, %.3f, %.3f}\n ankleImuParamY: {%.2f, %.4f, %.3f, %.3f}\n kneeImuParamX: {%.2f, %.4f, %.3f, %.3f}\n hipImuParamY: {%.2f, %.4f, %.3f, %.3f}\n", Config.walk.ankleImuParamX[1], Config.walk.ankleImuParamX[2], Config.walk.ankleImuParamX[3], Config.walk.ankleImuParamX[4], Config.walk.ankleImuParamY[1], Config.walk.ankleImuParamY[2], Config.walk.ankleImuParamY[3], Config.walk.ankleImuParamY[4], Config.walk.kneeImuParamX[1], Config.walk.kneeImuParamX[2], Config.walk.kneeImuParamX[3], Config.walk.kneeImuParamX[4], Config.walk.hipImuParamY[1], Config.walk.hipImuParamY[2], Config.walk.hipImuParamY[3], Config.walk.hipImuParamY[4]));
     print(string.format("Odometry settings:\n odomScale: {%.2f, %.2f, %.2f}\n", Config.walk.odomScale[1], Config.walk.odomScale[2], Config.walk.odomScale[3]));
   end
+
  
+  wcm.set_robot_odomScale(Config.walk.odomScale)
 
   end
 end

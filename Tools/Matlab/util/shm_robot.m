@@ -489,8 +489,6 @@ global MONITOR %for sending the webots check information
                     'btmy',bdBtm(1,1:bdCol),...
                     'btmx',-bdBtm(1,bdCol+1:2*bdCol));
 
-
-
       % add horizon line
       r.horizon = {};
       labelAm = h.vcmImage.get_width()/2;

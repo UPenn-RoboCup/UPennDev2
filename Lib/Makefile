@@ -362,8 +362,9 @@ setup_naoqi: naoqi setup_util
 	rsync -avr --exclude=".*" $(NAOQIDIR)/build/sdk/lib/naoqi/* ../Install/naoqi/lib/naoqi/
 	@echo "\n"
 
-clean: 
+clean:
 	cd $(IMAGEDIR) && make clean && cd $(CWD)
+	cd $(COMMDIR) && make clean && cd $(CWD)
 	cd $(UTILDIR) && make clean && cd $(CWD)
 	cd $(WEBOTSDIR) && make clean && cd $(CWD)
 #	cd $(VELODIR) && make clean && cd $(CWD)

@@ -149,14 +149,14 @@ static int lua_occmap_obstacle(lua_State *L) {
   obstacle zeros_ob = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
   obstacle ob = zeros_ob;
   int nobstacle = map.get_nobstacle();
-  cout << "obstacle number:" << nobstacle << endl; 
+//  cout << "obstacle number:" << nobstacle << endl; 
   lua_createtable(L, nobstacle + 1, 0);
   lua_pushnumber(L, nobstacle);
   lua_rawseti(L, -2, 1);
   for (int cnt = 0; cnt < maxOb; cnt++) {
-    if (cnt < nobstacle) 
-      ob = map.get_obstacle(cnt);
-    else 
+ //   if (cnt < nobstacle) 
+ //     ob = map.get_obstacle(cnt);
+ //   else 
       ob = zeros_ob;
     lua_createtable(L, 0, 3);
     // centroid field

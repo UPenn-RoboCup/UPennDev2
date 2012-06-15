@@ -101,7 +101,7 @@ function obs_in_occ()
   centroid = vector.zeros(maxOb * 2);
   angle_range = vector.zeros(maxOb * 2);
   nearest = vector.zeros(maxOb * 3);
-  print('Find ',nOb);
+--  print('Find ',nOb);
   for i = 2 , maxOb + 1 do
 --    print('centroid')
 --    util.ptable(obstacle[i].centroid);
@@ -125,8 +125,9 @@ function obs_in_occ()
 --  print(endd - start);
 end
 
+counter = 0;
 function update()
-  
+  counter = counter + 1;
 --  velocity_update();
 
 
@@ -156,7 +157,10 @@ function update()
 
   local get_obstacle = ocm.get_occ_get_obstacle();
 --  if get_obstacle == 1 then
+  if counter == 25 then
     obs_in_occ();
+    counter = 0;
+  end
 --    print("get obstacles from occmap");
 --    ocm.set_occ_get_obstacle(0);
 --  end

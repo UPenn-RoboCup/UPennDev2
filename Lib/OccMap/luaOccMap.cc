@@ -144,22 +144,27 @@ static int lua_occmap_time_decay(lua_State *L) {
 
 static int lua_occmap_obstacle(lua_State *L) {
   map.kmean_clustering();
-  int maxOb = 2;
+  int maxOb = maxObstacleClusters;
   obstacle zeros_ob = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
   obstacle ob = zeros_ob;
   int nobstacle = map.get_nobstacle();
-  cout << "obstacle number:" << nobstacle << endl; 
+//  cout << "obstacle number:" << nobstacle << endl; 
   lua_createtable(L, nobstacle + 1, 0);
   lua_pushnumber(L, nobstacle);
   lua_rawseti(L, -2, 1);
+  int Debug = 0;
   for (int cnt = 0; cnt < maxOb; cnt++) {
-    if (cnt < nobstacle) 
+    if (cnt < nobstacle) {
       ob = map.get_obstacle(cnt);
-    else 
+      Debug = 1;
+    } else {
+      Debug = 0;
       ob = zeros_ob;
+    }
     lua_createtable(L, 0, 3);
     // centroid field
-    //    std::cout << "centroid:" << obstacle.centroid_x << ' ' << obstacle.centroid_y << endl; 
+//    if (Debug)
+//      std::cout << "centroid:" << ob.centroid_x << ' ' << ob.centroid_y << endl; 
     lua_pushstring(L, "centroid");
     lua_createtable(L, 2, 0);
     lua_pushnumber(L, ob.centroid_x);
@@ -169,8 +174,9 @@ static int lua_occmap_obstacle(lua_State *L) {
     lua_settable(L, -3);
 
     // angle range field
-    //    std::cout << "range:" << obstacle.left_angle_range * 180 / M_PI 
-    //              << ' ' << obstacle.right_angle_range * 180 / M_PI << endl;    lua_pushstring(L, "angle_range");
+//    if (Debug)
+//      std::cout << "range:" << ob.left_angle_range * 180 / M_PI 
+//              << ' ' << ob.right_angle_range * 180 / M_PI << endl;
     lua_pushstring(L, "angle_range");
     lua_createtable(L, 2, 0);
     lua_pushnumber(L, ob.left_angle_range);
@@ -180,8 +186,9 @@ static int lua_occmap_obstacle(lua_State *L) {
     lua_settable(L, -3);
 
     // nearest point field
-    //    std::cout << "nearest:" << obstacle.nearest_x << ' ' << obstacle.nearest_y
-    //              << ' ' << obstacle.nearest_dist << endl; 
+//    if (Debug) 
+//      std::cout << "nearest:" << ob.nearest_x << ' ' << ob.nearest_y
+//                << ' ' << ob.nearest_dist << endl; 
     lua_pushstring(L, "nearest");
     lua_createtable(L, 3, 0);
     lua_pushnumber(L, ob.nearest_x);

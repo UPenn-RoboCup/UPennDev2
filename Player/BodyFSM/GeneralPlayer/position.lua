@@ -26,7 +26,8 @@ aVel3 = Config.fsm.bodyPosition.aVel3 or 30*math.pi/180;
 maxA3 = Config.fsm.bodyPosition.maxA3 or 0.1;
 maxY3 = Config.fsm.bodyPosition.maxY3 or 0;
 
-
+dapost_check = Config.fsm.daPost_check or 0;
+variable_dapost = Config.fsm.variable_dapost or 0;
 
 function posCalc()
   ball=wcm.get_ball();
@@ -37,38 +38,58 @@ function posCalc()
   posexya=vector.new( {pose.x, pose.y, pose.a} );
   ballGlobal=util.pose_global(ballxy,posexya);
 
+  if gcm.get_team_color() == 1 then
+    -- red attacks cyan goal
+    postAttack = PoseFilter.postCyan;
+  else
+    -- blue attack yellow goal
+    postAttack = PoseFilter.postYellow;
+  end
 
-  goalGlobal=wcm.get_goal_attack();
   aBallLocal=math.atan2(ball.y,ball.x); 
   aBall=math.atan2(ballGlobal[2]-pose.y, ballGlobal[1]-pose.x);
-  aGoal=math.atan2(goalGlobal[2]-ballGlobal[2],goalGlobal[1]-ballGlobal[1]);
+
+  goalGlobal=wcm.get_goal_attack();
+  LPost = postAttack[1];
+  RPost = postAttack[2];
+  aGoal1 = math.atan2(LPost[2]-ballGlobal[2],LPost[1]-ballGlobal[1]);
+  aGoal2 = math.atan2(RPost[2]-ballGlobal[2],RPost[1]-ballGlobal[1]);
+  daPost = math.abs(util.mod_angle(aGoal1-aGoal2));
+  
+  aGoal = aGoal2 + 0.5 * daPost;
 
   rGoalBall = math.sqrt( (goalGlobal[2]-ballGlobal[2])^2+
 			(goalGlobal[1]-ballGlobal[1])^2);
 
   --Near-goal handling
   thNearGoal = 80*math.pi/180;
+  daNearGoal = 20*math.pi/180;
   shiftNearGoal = 0.8;
-  rMinGoal = 0.6;
+  rMinGoal = 0.7;
 
   if math.abs(aGoal)>thNearGoal and
-     math.abs(util.mod_angle(aGoal-math.pi) )>thNearGoal and
+     math.abs(util.mod_angle(aGoal-math.pi))>thNearGoal and
+     daPost<daNearGoal and
      rGoalBall> rMinGoal then
---print("SHIFT", aGoal * 180/math.pi)
     goalGlobal[1] = goalGlobal[1] - util.sign(goalGlobal[1])*shiftNearGoal;
-    aBall=math.atan2(ballGlobal[2]-pose.y, ballGlobal[1]-pose.x);
     aGoal=math.atan2(goalGlobal[2]-ballGlobal[2],goalGlobal[1]-ballGlobal[1]);
+    aGoal1 = aGoal + 10* math.pi/180;
+    aGoal2 = aGoal - 10* math.pi/180;
+    daPost = 20*math.pi/180;
   end
 
-  --Apply angle
-  kickAngle=  wcm.get_kick_angle();
-  aGoal = util.mod_angle(aGoal - kickAngle);
+  --Far-goal handling : widen the goalpost 
+  rMinGoal2 = 5.0;
+  if rGoalBall > rMinGoal2 and variable_dapost>0 then
+    aGoal1 = math.atan2(LPost[2]*1.5-ballGlobal[2],LPost[1]-ballGlobal[1]);
+    aGoal2 = math.atan2(RPost[2]*1.5-ballGlobal[2],RPost[1]-ballGlobal[1]);
+    daPost = math.abs(util.mod_angle(aGoal1-aGoal2));
+    aGoal = aGoal2 + 0.5 * daPost;
+  end
 
   --Kick target angle
   wcm.set_goal_attack_angle2(aGoal); 
-
-  --In what angle should we approach the ball?
-  angle1=util.mod_angle(aGoal-aBall);
+  wcm.set_goal_daPost2(daPost);
 end
 
 function getDirectAttackerHomePose()
@@ -80,29 +101,60 @@ end
 
 function getAttackerHomePose()
   posCalc();
+  --In what angle should we approach the ball?
+  daPostMargin = Config.fsm.daPostMargin or 15* math.pi/180;
+  daPost1 = math.max(0, daPost - daPostMargin);
+
+
+  kickAngle = wcm.get_kick_angle();
+  aGoal = aGoal - kickAngle;
+
+  aGoalL = aGoal + daPost1 * 0.5;
+  aGoalR = aGoal - daPost1 * 0.5;
+
+  --How much we need to turn?
+  angle1 = util.mod_angle(aGoalL - aBall);
+  angle2 = util.mod_angle(aGoalR - aBall);
+  if angle1 < 0 then
+--print("AIMING LEFT")
+    angle2Turn = angle1;
+    aGoalSelected = aGoalL;
+  elseif angle2 > 0 then
+--print("AIMING RIGHT")
+    angle2Turn = angle2;
+    aGoalSelected = aGoalR;
+  else --go straight
+    angle2Turn = 0;
+    aGoalSelected = pose.a;
+  end
+
+  --Disable left-right check
+  if dapost_check==0 then
+    aGoalSelected = aGoal;
+    angle2Turn = util.mod_angle(aGoal-aBall);
+  end
 
   --Curved approach
-  if math.abs(angle1)<math.pi/2 then
+  if math.abs(angle2Turn)<math.pi/2 then
 --    rDist=math.min(rDist1,math.max(rDist2,ballR-rTurn2));
-
     --New approach
     rDist = math.min(
-        rDist2 + (rDist1-rDist2) * math.abs(angle1) / (math.pi/2),
+        rDist2 + (rDist1-rDist2) * math.abs(angle2Turn)/(math.pi/2),
         ballR
         );    
-
     local homepose={
-        ballGlobal[1]-math.cos(aGoal)*rDist,
-        ballGlobal[2]-math.sin(aGoal)*rDist,
-        aGoal};
+        ballGlobal[1]-math.cos(aGoalSelected)*rDist,
+        ballGlobal[2]-math.sin(aGoalSelected)*rDist,
+        aGoalSelected};
     return homepose;
+
+  --Circle around the ball
   elseif angle1>0 then
     local homepose={
         ballGlobal[1]+math.cos(-aBall+math.pi/2)*rOrbit,
         ballGlobal[2]-math.sin(-aBall+math.pi/2)*rOrbit,
         aBall};
     return homepose;
-
   else
     local homepose={
         ballGlobal[1]+math.cos(-aBall-math.pi/2)*rOrbit,

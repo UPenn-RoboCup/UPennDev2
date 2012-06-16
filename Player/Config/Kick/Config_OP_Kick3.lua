@@ -185,21 +185,19 @@ bodyHeightTarget = 0.31;
 bodyHeightTarget = 0.303;
 
 bodyPitchTarget =10*math.pi/180;
-
+bodyRollTarget = 10*math.pi/180;
 
 kick.def["kickForwardLeft"]={
    supportLeg = 1, --Right support
    def = {
      {1, 0.6, {-0.01,-0.050,0} , 
-bodyHeightTarget,0,bodyPitchTarget},
-     {2, 0.3, {-0.01,-0.055,0} , {-0.06,-0.02,0}, 0.05 , 
+bodyHeightTarget,bodyRollTarget,bodyPitchTarget},
+     {2, 0.2, {-0.01,-0.055,0} , {-0.06,-0.02,0}, 0.05 , 
 20*math.pi/180}, --Lifting
-     {2, 0.1, {-0.00, -0.055,0} , {-0.08,0,0}, 0.13 , 
-40*math.pi/180},--Lifting
-     {4, 0.2, {-0.03,-0.055,0} , {0.30,0,0},  0.09 , -5*math.pi/180}, 
---Kicking
-
-     {2, 0.2, {-0.03,-0.055,0} , {0,0,0},  0.09 , -5*math.pi/180}, 
+     {2, 0.2, {-0.00, -0.055,0} , {-0.10,0,0}, 0.13 , 
+30*math.pi/180},--Lifting
+     {4, 0.1, {-0.03,-0.055,0} , {0.32,0,0},  0.09 , -10*math.pi/180}, 
+     {2, 0.3, {-0.03,-0.055,0} , {0,0,0},  0.07 , 0*math.pi/180}, 
      {2, 0.4, {-0.01,-0.055,0} , {-0.16,0.010,0}, 0, 0 }, --Landing
      {1, 0.6, {-0.01,-0.02, 0},bodyHeightTarget,0,20*math.pi/180},--COM slide
      {6, 0.6, {0.000, -0.01, 0}},--Stabilize

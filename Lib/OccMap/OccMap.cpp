@@ -279,7 +279,7 @@ int OccMap::kmean_clustering(void) {
     // iteration to cluser points
   bool changed = false;
   int iteration = 0;
-//  do {
+  do {
     iteration ++;
 
     changed = false;
@@ -298,7 +298,7 @@ int OccMap::kmean_clustering(void) {
       cluster[minindex].push_back(good_pt[it]);
     }
 
-/*
+
     cout << "get new mean" << endl;
     // get new mean
     for (int cnt = 0; cnt < K; cnt ++) {
@@ -346,7 +346,7 @@ int OccMap::kmean_clustering(void) {
         cluster[cnt].pop_back();
   }
   while (changed);
-*/
+
 //  cout << "iterations: " << iteration << endl;
 //  cout << changed <<endl;
 //  for (int cnt = 0; cnt < K; cnt++) {

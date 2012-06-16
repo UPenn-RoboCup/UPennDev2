@@ -158,9 +158,6 @@ walk.walkKickDef["SideRight"]={
 
 walk.walkKickPh=0.5;
 
---Fall detection angle... OP requires large angle
-walk.fallAngle = 50*math.pi/180;
-
 --------------------------------------------
 -- Robot - specific calibration parameters
 --------------------------------------------

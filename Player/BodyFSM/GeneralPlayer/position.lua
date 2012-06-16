@@ -43,11 +43,18 @@ function posCalc()
   aBall=math.atan2(ballGlobal[2]-pose.y, ballGlobal[1]-pose.x);
   aGoal=math.atan2(goalGlobal[2]-ballGlobal[2],goalGlobal[1]-ballGlobal[1]);
 
+  rGoalBall = math.sqrt( (goalGlobal[2]-ballGlobal[2])^2+
+			(goalGlobal[1]-ballGlobal[1])^2);
 
   --Near-goal handling
-  thNearGoal = 70*math.pi/180;
+  thNearGoal = 80*math.pi/180;
   shiftNearGoal = 0.8;
-  if math.abs(aGoal)>thNearGoal then
+  rMinGoal = 0.6;
+
+  if math.abs(aGoal)>thNearGoal and
+     math.abs(util.mod_angle(aGoal-math.pi) )>thNearGoal and
+     rGoalBall> rMinGoal then
+--print("SHIFT", aGoal * 180/math.pi)
     goalGlobal[1] = goalGlobal[1] - util.sign(goalGlobal[1])*shiftNearGoal;
     aBall=math.atan2(ballGlobal[2]-pose.y, ballGlobal[1]-pose.x);
     aGoal=math.atan2(goalGlobal[2]-ballGlobal[2],goalGlobal[1]-ballGlobal[1]);

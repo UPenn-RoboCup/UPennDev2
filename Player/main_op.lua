@@ -92,11 +92,15 @@ lcount = 0;
 tUpdate = unix.time();
 
 --Start with PAUSED state
+gcm.set_team_forced_role(0); --Don't force role
 gcm.set_game_paused(1);
-cur_role = 1; --Attacker
 waiting = 1;
---Don't force the role
-gcm.set_team_forced_role(0);
+if Config.game.role==1 then
+  cur_role = 1; --Attacker
+else
+  cur_role = 0; --Default goalie
+end
+
 
 
 button_role,button_state = 0,0;

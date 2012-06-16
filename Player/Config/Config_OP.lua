@@ -147,6 +147,7 @@ team.avoid_other_team = 0;
 km = {};
 km.standup_front = 'km_NSLOP_StandupFromFront.lua';
 km.standup_back = 'km_NSLOP_StandupFromBack.lua';
+km.standup_back = 'km_NSLOP_StandupFromBack3.lua';
 
 if (robotName=='hokie') then
 --  km.standup_back = 'km_NSLOP_StandupFromBackHokie.lua';
@@ -156,6 +157,10 @@ end
 -- Need to implement this api better...
 bat_low = 117; -- 11.7V warning
 bat_med = 119; -- Slow down walking if voltage drops below this 
+
+bat_led = {120,121,122,123,124,125}; --for back LED indicator
+
+
 
 gps_only = 0;
 
@@ -185,8 +190,9 @@ speakenable = false;
 fallAngle = 50*math.pi/180;
 falling_timeout = 0.3;
 
+--[[
 --Slow down maximum speed (for testing)
 fsm.bodyPosition.maxStep1 = 0.05;
 fsm.bodyPosition.maxStep2 = 0.06;
 fsm.bodyPosition.maxStep3 = 0.06;
-
+--]]

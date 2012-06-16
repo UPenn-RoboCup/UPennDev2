@@ -85,7 +85,7 @@ fsm.body = {'GeneralPlayer'};
 fsm.playMode = 3; --1 for demo, 2 for orbit, 3 for direct approach
 fsm.enable_obstacle_detection = 1;
 fsm.wait_kickoff = 1;
-fsm.enable_walkkick = 0;
+fsm.enable_walkkick = 1;
 fsm.enable_sidekick = 0;
 fsm.enable_dribble = 1;
 

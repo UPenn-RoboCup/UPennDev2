@@ -31,7 +31,7 @@ end
 
 loadconfig('World/Config_OP_World')
 loadconfig('Kick/Config_OP_Kick')
---loadconfig('Kick/Config_OP_Kick2')
+--loadconfig('Kick/Config_OP_Kick3')
 loadconfig('Vision/Config_OP_Vision')
 
 --Location Specific Camera Parameters--
@@ -113,6 +113,10 @@ fsm.playMode = 3; --1 for demo, 2 for orbit, 3 for direct approach
 fsm.forcePlayer = 0; --1 for attacker, 2 for defender, 3 for goalie 
 fsm.enable_walkkick = 1; --Testing
 fsm.enable_sidekick = 1;
+fsm.daPost_check = 1; --aim to the side when close to the ball
+fsm.daPostmargin = 15*math.pi/180;
+fsm.variable_dapost = 1;
+
 
 --FAST APPROACH TEST
 fsm.fast_approach = 0;
@@ -128,7 +132,7 @@ team.msgTimeout = 5.0;
 team.tKickOffWear =7.0;
 
 team.walkSpeed = 0.25; --Average walking speed 
-team.turnSpeed = 2.0; --Average turning time for 360 deg
+team.turnSpeed = 1.0; --Average turning time for 360 deg
 team.ballLostPenalty = 4.0; --ETA penalty per ball loss time
 team.fallDownPenalty = 4.0; --ETA penalty per ball loss time
 team.nonAttackerPenalty = 0.8; -- distance penalty from ball

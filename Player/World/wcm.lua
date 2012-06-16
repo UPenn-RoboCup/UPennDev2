@@ -61,8 +61,7 @@ shared.goal.attack_post2 = vector.zeros(2);
 
 
 shared.goal.attack_angle2 = vector.zeros(1);
-shared.goal.attack_angleL = vector.zeros(1);
-shared.goal.attack_angleR = vector.zeros(1);
+shared.goal.daPost2 = vector.zeros(1);
 
 
 --Added for side approach/sidekick/kickoff handling

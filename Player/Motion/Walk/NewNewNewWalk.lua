@@ -19,6 +19,11 @@ velLimitA = Config.walk.velLimitA or {-.4, .4};
 velDelta = Config.walk.velDelta or {.03,.015,.15};
 vaFactor = Config.walk.vaFactor or 0.6;
 
+
+velXHigh = Config.walk.velXHigh or 0.06;
+velDeltaXHigh = Config.walk.velDeltaXHigh or 0.01;
+
+
 --Toe/heel overlap checking values
 footSizeX = Config.walk.footSizeX or {-0.05,0.05};
 stanceLimitMarginY = Config.walk.stanceLimitMarginY or 0.015;
@@ -637,8 +642,14 @@ function set_velocity(vx, vy, va)
 end
 
 function update_velocity()
-  velDiff[1]= math.min(math.max(velCommand[1]-velCurrent[1],
+  if velCurrent[1]>velXHigh then
+    --Slower accelleration at high speed 
+    velDiff[1]= math.min(math.max(velCommand[1]-velCurrent[1],
+	-velDelta[1]),velDeltaXHigh); 
+  else
+    velDiff[1]= math.min(math.max(velCommand[1]-velCurrent[1],
 	-velDelta[1]),velDelta[1]);
+  end
   velDiff[2]= math.min(math.max(velCommand[2]-velCurrent[2],
 	-velDelta[2]),velDelta[2]);
   velDiff[3]= math.min(math.max(velCommand[3]-velCurrent[3],
@@ -652,6 +663,9 @@ function update_velocity()
      velCurrent=vector.new({0,0,0})
      initial_step=initial_step-1;
   end
+
+--  print(string.format("VEL:%.2f,%.2f,%.2f",unpack(velCurrent)));
+
 end
 
 function get_velocity()

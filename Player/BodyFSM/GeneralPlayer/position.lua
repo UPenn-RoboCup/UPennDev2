@@ -215,22 +215,28 @@ function getDefenderHomePose()
 
   defending_type = 1; 
 
+  support_dist = Config.team.support_dist or 3.0;
+  supportPenalty = Config.team.supportPenalty or 0.3;
+
+
   --How close is the ball to our goal?
-  if RrelBall < 3.0 then --Ball in our field
+  if RrelBall < support_dist then --Ball close to our goal
     --Are our attacker closer to the ball than me?
-    if attacker_goal_dist < defender_goal_dist - 0.6 then
-      --Attacker is closer to the defending goal than defender
-      defending_type = 2; --Side defender
-    else
+    if attacker_goal_dist < defender_goal_dist - supportPenalty then
+      --Attacker is closer to our goal
+      defending_type = 2; --Go back to side of our field
+    else --Defender closer to our goal
       defending_type = 1; --Center defender
     end
   else --Ball in their field
-    if attacker_goal_dist < defender_goal_dist - 0.6 then
+    if attacker_goal_dist < defender_goal_dist - supportPenalty then
        --Attacker closer to the our goal
       defending_type = 3; --Supporter
     else
       --Stay in defending position
+      --TODO: we can still go support
       defending_type = 1;      
+--      defending_type = 3;      
     end
   end
 
@@ -330,18 +336,22 @@ end
 function getSupporterHomePose()
   posCalc();
   goal_defend=wcm.get_goal_defend();
-  attackGoalPosition = vector.new(wcm.get_goal_attack());
 
+
+  attackGoalPosition = vector.new(wcm.get_goal_attack());
   relBallX = ballGlobal[1]-goal_defend[1];
   relBallY = ballGlobal[2]-goal_defend[2];
   RrelBall = math.sqrt(relBallX^2+relBallY^2)+0.001;
 
--- move near attacking goal
---TODO: prevent oscillation
-
+  -- move near attacking goal
   homePosition = attackGoalPosition;
   homePosition[1] = homePosition[1] - util.sign(homePosition[1]) * 1.5;
-  homePosition[2] = -1*util.sign(ballGlobal[2]) * 1.25;
+
+  if math.abs(ballGlobal[2])< 1.0 then
+    homePosition[2] = util.sign(pose.y)*1.25;
+  else
+    homePosition[2] = -1*util.sign(ballGlobal[2]) * 1.25;
+  end
 
   relBallX = ballGlobal[1]-homePosition[1];
   relBallY = ballGlobal[2]-homePosition[2];
@@ -506,6 +516,16 @@ function setAttackerVelocity(homePose)
   va = 0.5*(aTurn*homeRelative[3] --Turn toward the goal
      + (1-aTurn)*aHomeRelative); --Turn toward the target
   va = math.max(-maxA,math.min(maxA,va)); --Limit rotation
+
+  --NaN Check
+  if (not (vx<0) and not (vx>=0)) or
+    (not (vy<0) and not (vy>=0)) or
+    (not (va<0) and not (va>=0)) then
+    vx,vy,va=0,0,0;
+--    print("VELOCITY NAN!")
+
+  end
+
   return vx,vy,va;
 end
 
@@ -525,6 +545,16 @@ function setGoalieVelocity0()
   vaTurn = .2 * aHomeRelative;
   vaGoal = .35*homeRelative[3];
   va = aTurn * vaGoal + (1-aTurn)*vaTurn;
+
+  --NaN Check
+  if (not (vx<0) and not (vx>=0)) or
+    (not (vy<0) and not (vy>=0)) or
+    (not (va<0) and not (va>=0)) then
+    vx,vy,va=0,0,0;
+  --  print("VELOCITY NAN!")
+
+  end
+
   return vx,vy,va;
 end
 
@@ -586,7 +616,8 @@ function setDefenderVelocity(homePose)
   if rHomeRelative<0.40 then 
     aTurn = 1; 
   end
- vx = maxStep*homeRelative[1]/rHomeRelative;
+
+  vx = maxStep*homeRelative[1]/(rHomeRelative+0.001);--to get rid of NaN
   vy = math.max(-maxY,math.min(maxY,vy));
   scale = math.min(maxStep/math.sqrt(vx^2+vy^2), 1);
   vx,vy = scale*vx,scale*vy;
@@ -594,6 +625,15 @@ function setDefenderVelocity(homePose)
   va = 0.5*(aTurn*homeRelative[3] --Turn toward the target direction
      + (1-aTurn)*aHomeRelative); --Turn toward the target
   va = math.max(-maxA,math.min(maxA,va)); --Limit rotation
+
+  --NaN Check
+  if (not (vx<0) and not (vx>=0)) or
+    (not (vy<0) and not (vy>=0)) or
+    (not (va<0) and not (va>=0)) then
+ --   print("VELOCITY NAN!")
+    vx,vy,va=0,0,0;
+  end
+
   return vx,vy,va;
 end
 

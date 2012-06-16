@@ -214,7 +214,6 @@ function update_vision()
     local v1 = vcm.get_goal_v1();
     local v2 = vcm.get_goal_v2();
     local v = {v1, v2};
-
     if use_same_colored_goal>0 then
       if (goalType == 0) then
         PoseFilter.post_unified_unknown(v);
@@ -308,7 +307,7 @@ function update_vision()
     ball.y = ballLocal[2];
     ball.t = t;
     ball_led={0,1,1}; 
-
+--print("TEAMBALL")
   end
   
   update_led();

@@ -33,7 +33,7 @@ cal["lucy"]={
   footYComp = 0,
   kickXComp = 0,
   headPitchComp = 0,
-  armBias={0,0,0,0,0,0},
+  armBias=vector.new({0,-10,10,0,0,26})*math.pi/180, 
   pid = 1, --NEW FIRMWARE
 };
 

@@ -147,7 +147,7 @@ team.avoid_other_team = 0;
 km = {};
 km.standup_front = 'km_NSLOP_StandupFromFront.lua';
 km.standup_back = 'km_NSLOP_StandupFromBack.lua';
-km.standup_back = 'km_NSLOP_StandupFromBack3.lua';
+--km.standup_back = 'km_NSLOP_StandupFromBack3.lua';
 
 if (robotName=='hokie') then
 --  km.standup_back = 'km_NSLOP_StandupFromBackHokie.lua';

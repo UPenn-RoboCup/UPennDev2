@@ -102,7 +102,7 @@ fsm.bodyApproach.maxStep = 0.04;
 
 fsm.enable_evade = 0;
 --fsm.enable_evade = 1;--Randomly do evade kick
---fsm.enable_evade = 2;--Do evade kick when obstructed
+fsm.enable_evade = 2;--Do evade kick when obstructed
 
 
 --[[
@@ -134,12 +134,6 @@ team.ballLostPenalty = 4.0; --ETA penalty per ball loss time
 team.fallDownPenalty = 4.0; --ETA penalty per ball loss time
 team.nonAttackerPenalty = 0.8; -- dist from ball
 team.nonDefenderPenalty = 0.5; -- dist from goal
-
-
-team.turnSpeed = 0; --Average turning time for 360 deg
-team.nonAttackerPenalty = 1.0; -- dist from ball
-
-
 
 
 

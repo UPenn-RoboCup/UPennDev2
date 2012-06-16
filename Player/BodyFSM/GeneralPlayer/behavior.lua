@@ -86,14 +86,17 @@ function update()
 
     if math.abs(angleRot)<thFrontKick or 
        math.abs(angleRot)>thFrontKick2 	then
+--print("STRAIGHT",angleRot*180/math.pi)
       kickDir=1;
       kickAngle = 0;
     elseif angleRot>0 then --should kick to the left
+--print("LEFT",angleRot*180/math.pi)
       kickDir=2;
-      kickAngle = math.pi/2;
+      kickAngle = 70*math.pi/180;
     else
+--print("RIGHT",angleRot*180/math.pi)
       kickDir=3;
-      kickAngle = -math.pi/2;
+      kickAngle = -70*math.pi/180;
     end
   else --Demo mode
     if kickDir>1 then 

@@ -13,7 +13,7 @@ all: OccMap
 %.o: %.c
 	$(CC) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
 
-OccMap: luaOccMap.o OccMap.o
+OccMap: luaOccMap.o OccMap.o KmeanCluster.o
 	$(LD) $(LDFLAGS) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ $(LIB_DIR) -lm
 	cp $@.$(SHLIBEXT) ../../Player/Lib/.
 

@@ -84,6 +84,8 @@ function update()
     thFrontKick = 45*math.pi/180;  
     thFrontKick2 = 135*math.pi/180;  
 
+
+
     if math.abs(angleRot)<thFrontKick or 
        math.abs(angleRot)>thFrontKick2 	then
 --print("STRAIGHT",angleRot*180/math.pi)

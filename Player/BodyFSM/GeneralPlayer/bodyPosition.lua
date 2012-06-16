@@ -176,10 +176,12 @@ function update()
   attackAngle = wcm.get_goal_attack_angle2();
   daPost = wcm.get_goal_daPost2();
   daPostMargin = 15 * math.pi/180;
-  daPost1 = math.max(thClose[3],daPost - daPostMargin);
+  daPost1 = math.max(thClose[3],daPost/2 - daPostMargin);
 
   uPose=vector.new({pose.x,pose.y,pose.a})
   homeRelative = util.pose_relative(homePose, uPose);  
+  angleToTurn = math.max(0, homeRelative[3] - daPost1);
+
   if math.abs(homeRelative[1])<thClose[1] and
     math.abs(homeRelative[2])<thClose[2] and
     math.abs(homeRelative[3])<daPost1 and

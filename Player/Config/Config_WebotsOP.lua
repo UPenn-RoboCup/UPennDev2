@@ -94,7 +94,6 @@ fsm.daPostmargin = 15*math.pi/180;
 fsm.variable_dapost = 1;
 
 
-
 --FAST APPROACH TEST
 --fsm.fast_approach = 1;
 --fsm.bodyApproach.maxStep = 0.06;
@@ -130,11 +129,23 @@ team.msgTimeout = 5.0;
 team.tKickOffWear = 15.0;
 
 team.walkSpeed = 0.25; --Average walking speed 
-team.turnSpeed = 1.0; --Average turning time for 360 deg
+team.turnSpeed = 2.0; --Average turning time for 360 deg
 team.ballLostPenalty = 4.0; --ETA penalty per ball loss time
 team.fallDownPenalty = 4.0; --ETA penalty per ball loss time
 team.nonAttackerPenalty = 0.8; -- dist from ball
 team.nonDefenderPenalty = 0.5; -- dist from goal
+
+
+team.turnSpeed = 0; --Average turning time for 360 deg
+team.nonAttackerPenalty = 1.0; -- dist from ball
+
+
+
+
+
+--if ball is away than this from our goal, go support
+team.support_dist = 3.0; 
+team.supportPenalty = 0.5; --dist from goal
 
 team.force_defender = 0; --Enable this to force defender
 
@@ -142,7 +153,7 @@ team.use_team_ball = 1;
 team.team_ball_timeout = 3.0;  --use team ball info after this delay
 team.team_ball_threshold = 0.5;
 
-team.avoid_own_team = 0;
+team.avoid_own_team = 1;
 team.avoid_other_team = 0;
 
 
@@ -184,7 +195,7 @@ bat_med = 122; -- Slow down if voltage drops below 12.2V
 bat_low = 118; -- 11.8V warning
 
 --Fall check
-fallAngle = 30*math.pi/180;
+fallAngle = 40*math.pi/180;
 falling_timeout = 0.3;
 
 --Slow down top speed

@@ -15,6 +15,9 @@ walk.velLimitY={-.03,.03};
 walk.velLimitA={-.3,.3};
 walk.velDelta={0.02,0.02,0.15} 
 
+walk.velXHigh = 0.10;
+walk.velDeltaXHigh = 0.005;
+
 walk.vaFactor = 0.6;
 
 

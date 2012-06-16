@@ -43,15 +43,17 @@ function update()
   strat = gcm.get_team_strat();
   strategy = strat[Config.game.playerID - 1]
 
-  if strategy ~= 1 then 
-    role = gcm.get_team_role();
-  end
+  role = gcm.get_team_role();
 
   ballxy=vector.new( {ball.x,ball.y,0} );
   posexya=vector.new( {pose.x, pose.y, pose.a} );
   
-  if strategy ~= 0 or strategy ~= 1 then
-    role = strategy
+  if strategy == 2 then
+    role = 1
+  elseif strategy == 3 then
+    role = 2
+  elseif strategy == 4 then
+    role = 4
   end
 
   ballGlobal=util.pose_global(ballxy,posexya);
@@ -94,6 +96,8 @@ function update()
 
     -- face ball 
     homePosition[3] = ballGlobal[3];
+  elseif role==4 then
+    --Do nothing
   else
     -- attack
     if math.abs(angle1)<math.pi/2 then

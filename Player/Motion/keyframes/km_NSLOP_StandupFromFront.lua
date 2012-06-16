@@ -4,6 +4,7 @@ mot.servos={
 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,};
 mot.keyframes={  
 
+--Arm back
 {
 angles=vector.new({
 0,0,
@@ -12,8 +13,9 @@ angles=vector.new({
 -1,3,-15,24,-60,0,
 179,-3,-152
 })*math.pi/180,
-duration = 0.4;
+duration = 0.3;
 },
+--Arm push
 {
 angles=vector.new({
 0,0,
@@ -22,8 +24,9 @@ angles=vector.new({
 -1,0,-94,59,-78,2,
 44,-9,-155
 })*math.pi/180,
-duration = 0.4;
+duration = 0.3;
 },
+
 {
 angles=vector.new({
 0,0,
@@ -32,17 +35,24 @@ angles=vector.new({
 1,-1,-97,130,-66,1,
 58,2,-14
 })*math.pi/180,
-duration = 0.5;
+duration = 0.4;
 },
 
 --This is the final pose of bodySit
 {
 angles=vector.new({
 0,0,
-105,29,-45,
-0,3,-44,119,-75,-3,
-0,-3,-44,119,-75,3,
-105,-29,-45
+58,-2,-14,
+--0,3,-44,119,-75,-3,
+--0,-3,-44,119,-75,3,
+
+--0,3,-44,114,-75,-3,
+--0,-3,-44,114,-75,3,
+
+0,3,-60,110,-60,-3,
+0,-3,-60,110,-60,3,
+
+58,2,-14,
 })*math.pi/180,
 duration = 0.5;
 },

@@ -31,7 +31,7 @@ end
 
 loadconfig('World/Config_OP_World')
 loadconfig('Kick/Config_OP_Kick')
---loadconfig('Kick/Config_OP_Kick2')
+--loadconfig('Kick/Config_OP_Kick3')
 loadconfig('Vision/Config_OP_Vision')
 
 --Location Specific Camera Parameters--

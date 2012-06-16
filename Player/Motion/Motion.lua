@@ -29,7 +29,7 @@ require 'grip'
 sit_disable = Config.sit_disable or 0;
 
 if sit_disable==0 then --For smaller robots
-  fallAngle = Config.walk.fallAngle or 30*math.pi/180;
+  fallAngle = Config.fallAngle or 30*math.pi/180;
 
   sm = fsm.new(relax);
   sm:add_state(stance);

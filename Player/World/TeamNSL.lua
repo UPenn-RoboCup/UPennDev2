@@ -370,29 +370,20 @@ function update()
   end
 --]]
 
-  --Behavior testing using forced role is handled here
-  force_player_role = gcm.get_team_forced_role();
-  if Config.team.force_defender == 1 then
-    force_player_role = 2;
-  end
-  if force_player_role==1 then
-    gcm.set_team_role(1);
-  elseif force_player_role==2 then
+  --For defender behavior testing
+  force_defender = Config.team.force_defender or 0;
+  if force_defender == 1 then
     gcm.set_team_role(2);
-  elseif force_player_role==3 then
-    gcm.set_team_role(0);
-  end
-
-  --Check if the role is changed elsewhere
-  if role ~= gcm.get_team_role() then
-    set_role(gcm.get_team_role());
+    if role ~= gcm.get_team_role() then
+      set_role(gcm.get_team_role());
+    end
   end
 
   --Only switch role during gamePlaying state
   --If role is forced for testing, don't change roles
 
   if gcm.get_game_state()==3 and
-     force_player_role ==0 then
+     force_defender ==0 then
 
     -- goalie and reserve player never changes role
     if role~=0 and role<4 then 

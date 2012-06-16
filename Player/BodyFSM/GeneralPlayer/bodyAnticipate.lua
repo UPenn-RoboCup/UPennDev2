@@ -71,7 +71,6 @@ function update()
   ball.x=ball_v_inf[1];
   ball.y=ball_v_inf[2];
 
-
   pose = wcm.get_pose();
   tBall = Body.get_time() - ball.t;
   ballGlobal = util.pose_global({ball.x, ball.y, 0}, {pose.x, pose.y, pose.a});
@@ -148,11 +147,14 @@ function update()
 
   if goalie_dive~=1 or goalie_type<3 then 
     --TODO: check if other player is close to the ball
+
+
     if (ballR_defend<rClose or ballX_defend<rCloseX)
        and t-ball.t<0.1 and ball_v < ball_velocity_th2 then
       Motion.event("walk");
       return "ballClose";
     end
+
     attackBearing = wcm.get_attack_bearing();
     if Config.fsm.goalie_reposition==1 then --check yaw error only
       if (t - t0 > timeout) and 

@@ -173,14 +173,14 @@ function update_vision()
     ballGlobal=wcm.get_robot_gps_ball();    
     ballLocal = util.pose_relative(ballGlobal,gps_pose);
     ball.x, ball.y = ballLocal[1],ballLocal[2];
+    wcm.set_ball_v_inf({ball.x,ball.y}); --for bodyAnticipate
 
     ball_gamma = 0.3;
     if vcm.get_ball_detect()==1 then
       ball.p = (1-ball_gamma)*ball.p+ball_gamma;
       ball.t = Body.get_time();
       -- Update the velocity
-      ball_v_inf = wcm.get_ball_v_inf();
-      Velocity.update(ball_v_inf[1],ball_v_inf[2]);
+      Velocity.update(ball.x,ball.y);
       ball.vx, ball.vy, dodge  = Velocity.getVelocity();
     else
       ball.p = (1-ball_gamma)*ball.p;
@@ -257,15 +257,12 @@ function update_vision()
     ball_led={0,1,0}; 
 
     -- Update the velocity
-    Velocity.update(v[1],v[2]);
+--    Velocity.update(v[1],v[2]);
+    -- use centroid info only
+    ball_v_inf = wcm.get_ball_v_inf();
+    Velocity.update(ball_v_inf[1],ball_v_inf[2]);
+
     ball.vx, ball.vy, dodge  = Velocity.getVelocity();
---[[
-    local speed = math.sqrt(ball.vx^2 + ball.vy^2);
-    local stillTime = mcm.get_walk_stillTime();
-    if( stillTime > 1.5 ) then 
---      print('Speed: '..speed..', Vel: ('..ball.vx..', '..ball.vy..') Still Time: '..stillTime);
-    end
---]]
   else
     ball.p = (1-ball_gamma)*ball.p;
     Velocity.update_noball();--notify that ball is missing

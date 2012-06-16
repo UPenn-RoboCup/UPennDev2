@@ -215,6 +215,8 @@ end
 
 
 function update()
+--print("====PLAYERID:",playerID);
+
   count = count + 1;
 
   state.time = Body.get_time();
@@ -224,6 +226,7 @@ function update()
   state.ball = wcm.get_ball();
   state.role = role;
   state.attackBearing = wcm.get_attack_bearing();
+
   state.battery_level = wcm.get_robot_battery_level();
   state.fall=wcm.get_robot_is_fall_down();
 
@@ -304,6 +307,7 @@ function update()
   ddefend = {};
   roles = {};
   t = Body.get_time();
+--print("====PLAYERID:",playerID);
   for id = 1,5 do 
 
     if not states[id] then
@@ -324,9 +328,12 @@ function update()
 	math.abs(states[id].attackBearing)/3.0; --1 sec to turn 180 deg
 --]]
 
+
+--TODO: Consider sidekick
+
       eta[id] = rBall/walkSpeed + --Walking time
 	math.abs(states[id].attackBearing)/   --Turning time
-	(2*math.pi)/turnSpeed+
+	(2*math.pi)*turnSpeed+
 	ballLostPenalty * math.max(tBall-1.0,0);  --Ball uncertainty
 
       roles[id]=states[id].role;
@@ -356,8 +363,11 @@ function update()
         eta[id] = math.huge;
         ddefend[id] = math.huge;
       end
+
     end
   end
+
+--print("=========")
 
 --[[
   if count % 100 == 0 then
@@ -369,7 +379,6 @@ function update()
     print('---------------');
   end
 --]]
-
   --For defender behavior testing
   force_defender = Config.team.force_defender or 0;
   if force_defender == 1 then

@@ -177,9 +177,9 @@ function landmark_observation(pos, v, rLandmarkFilter, aLandmarkFilter)
     dyp[ip] = dy[imin];
     dap[ip] = da[imin];
   end
-
   --Filter toward best matching landmark position:
   for ip = 1,n do
+--print(string.format("%d %.1f %.1f %.1f",ip,xp[ip],yp[ip],ap[ip]));
     xp[ip] = xp[ip] + rFilter * (dxp[ip] - r * math.cos(ap[ip] + a));
     yp[ip] = yp[ip] + rFilter * (dyp[ip] - r * math.sin(ap[ip] + a));
     ap[ip] = ap[ip] + aFilter * dap[ip];

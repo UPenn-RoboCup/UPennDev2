@@ -254,6 +254,18 @@ function update()
     angleErrL = util.mod_angle(pose.a - (attackAngle + daPost1 * 0.5));
     angleErrR = util.mod_angle((attackAngle - daPost1 * 0.5)-pose.a);
 
+    --If we have room for turn, turn to the ball
+    angleTurnMargin = -10*math.pi/180;
+    ballA = math.atan2(ball.y - math.max(math.min(ball.y, 0.05), -0.05),
+            ball.x+0.10);
+    if angleErrL < angleTurnMargin and ballA > 0 then
+      vStep[3] = 0.5*ballA;
+    elseif angleErrR < angleTurnMargin and ballA < 0 then
+      vStep[3] = 0.5*ballA;
+    end    
+
+
+
     if check_angle>0 then
       if angleErrR > 0 then
 --print("TURNLEFT")

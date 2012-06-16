@@ -287,6 +287,19 @@ function update_vision()
       if (useSoundLocalization > 0) then
         attackingOrDefending = SoundFilter.resolve_goal_detection(goalType, v); 
       end
+      if (goalType == 0) then
+        PoseFilter.post_unified_unknown(v);
+	goal_led={1,1,0};
+      elseif(goalType == 1) then
+        PoseFilter.post_unified_left(v);
+	goal_led={1,1,0};
+      elseif(goalType == 2) then
+        PoseFilter.post_unified_right(v);
+	goal_led={1,1,0};
+      elseif(goalType == 3) then
+        PoseFilter.goal_unified(v);
+	goal_led={0,0,1};
+      end
       
       if (attackingOrDefending == 1) then
         -- attacking goal
@@ -442,7 +455,7 @@ function update_vision()
     ball.y = ballLocal[2];
     ball.t = t;
     ball_led={0,1,1}; 
-
+--print("TEAMBALL")
   end
   
   update_led();

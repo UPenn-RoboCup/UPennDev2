@@ -140,6 +140,11 @@ team.nonDefenderPenalty = 0.5; -- distance penalty from goal
 
 team.force_defender = 0;--Enable this to force defender mode
 
+--if ball is away than this from our goal, go support
+team.support_dist = 3.0; 
+team.supportPenalty = 0.5; --dist from goal
+
+
 --Team ball parameters
 team.use_team_ball = 1;
 team.team_ball_timeout = 3.0;  --use team ball info after this delay

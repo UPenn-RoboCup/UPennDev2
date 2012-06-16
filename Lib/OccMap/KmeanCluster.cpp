@@ -13,7 +13,7 @@ inline double OccMap::norm(double x1, double y1, double x2, double y2) {
 }
 
 int OccMap::kmean_clustering(void) {
-  cout << "clustering" << endl;
+//  cout << "clustering" << endl;
   vector<grid_ij> good_pt;
   vector<int> cluster;
   int i = 0, j = 0;
@@ -46,7 +46,7 @@ int OccMap::kmean_clustering(void) {
   //  cout << "iteration" << endl;
     // iteration to cluser points
   bool changed = false;
-  int iteration = 0, minindex = -1, clusterIdx = 0;
+  int iteration = 0, minindex = -1, clusterIdx = 0, maxIteration = 15;
   do {
     iteration ++;
 
@@ -92,12 +92,17 @@ int OccMap::kmean_clustering(void) {
         means_new[cnt].j /= means_new_counter[cnt];
       }
 //      cout << means[cnt].i << ' ' << means_new[cnt].i << ' ' << means[cnt].j << ' ' << means_new[cnt].j << ' ';
-      if ((means[cnt].i != means_new[cnt].i) || (means[cnt].j != means_new[cnt].j)) 
+      if ((means[cnt].i != means_new[cnt].i) || (means[cnt].j != means_new[cnt].j)) {
+//        cout << "changed" << endl;
         changed = true; 
+      }
+      else {
+//        cout << "unchanged" << endl;
+      }
+      means[cnt] = means_new[cnt];
     }    
-
   }
-  while (changed && iteration < 15 );
+  while (changed && iteration < maxIteration);
 
 //  cout << "iterations: " << iteration << endl;
 //  cout << changed <<endl;
@@ -105,8 +110,8 @@ int OccMap::kmean_clustering(void) {
 //    cout << means[cnt].i << ' ' << means[cnt].j << endl;
 //  }
 //  cout << endl;
-/*
-  cout << "process obstacle" << endl;
+
+//  cout << "process obstacle" << endl;
   nOb = maxObstacleClusters;
   for (int cnt = 0; cnt < nOb; cnt++) {
     obstacle new_ob;
@@ -119,18 +124,20 @@ int OccMap::kmean_clustering(void) {
     double dist = 0, minDist = 10000000, angle = 0, minAngle = M_PI, maxAngle = 0;
     int nearestIdx = 0;
     double x = 0, y = 0;
-    for (int iter = 0; iter < cluster[cnt].size(); iter++) {
-      x = ry * resolution - cluster[cnt][iter].j * resolution;
-      y = rx * resolution - cluster[cnt][iter].i * resolution;
-      dist = norm(x, y, odom_x, odom_y);
+    for (int iter = 0; iter < cluster.size(); iter++) {
+      if (cluster[iter] == cnt) {
+        x = ry * resolution - good_pt[iter].j * resolution;
+        y = rx * resolution - good_pt[iter].i * resolution;
+        dist = norm(x, y, odom_x, odom_y);
     //      cout << dist << endl;
-      if (dist < minDist) {
-        minDist = dist;
-        nearestIdx = iter;
+        if (dist < minDist) {
+          minDist = dist;
+          nearestIdx = iter;
+        }
+        angle = atan2(x, y);
+        minAngle = min(minAngle, angle);
+        maxAngle = max(maxAngle, angle);
       }
-      angle = atan2(x, y);
-      minAngle = min(minAngle, angle);
-      maxAngle = max(maxAngle, angle);
     }
     minAngle += odom_a;
     maxAngle += odom_a;
@@ -142,8 +149,8 @@ int OccMap::kmean_clustering(void) {
     //          << cluster[cnt][nearestIdx].i << ' ' << cluster[cnt][nearestIdx].j << endl;
     //    new_ob.left_angle_range = ;
     //    new_ob.right_angle_range = ;
-    new_ob.nearest_y = rx * resolution - cluster[cnt][nearestIdx].i * resolution;
-    new_ob.nearest_x = ry * resolution - cluster[cnt][nearestIdx].j * resolution;
+    new_ob.nearest_y = rx * resolution - good_pt[nearestIdx].i * resolution;
+    new_ob.nearest_x = ry * resolution - good_pt[nearestIdx].j * resolution;
     new_ob.nearest_dist = minDist;
     //  cout << "nearest point: " << new_ob.nearest_x << ' ' << new_ob.nearest_y << endl;
     //    cout << "nearest point: " << cluster[cnt][nearestIdx].i << ' ' 
@@ -151,17 +158,15 @@ int OccMap::kmean_clustering(void) {
     obs[cnt] = new_ob;
   }
   // check if obstacle overlays
-  if ((abs(obs[0].left_angle_range - obs[1].left_angle_range) < 0.1) ||
-    (abs(obs[0].right_angle_range - obs[1].right_angle_range) < 0.1)) {
-    // merge to one obstacle
-    nOb = 1;
-    if (obs[1].nearest_dist < obs[0].nearest_dist)
-      obs[0] = obs[1];
-  }
+//  if ((abs(obs[0].left_angle_range - obs[1].left_angle_range) < 0.1) ||
+//    (abs(obs[0].right_angle_range - obs[1].right_angle_range) < 0.1)) {
+//    // merge to one obstacle
+//    nOb = 1;
+//    if (obs[1].nearest_dist < obs[0].nearest_dist)
+//      obs[0] = obs[1];
+//  }
 
-  cout << good_pt.size() << ' ' << means.size() << ' ' << means_new.size() << endl;
-  cout << cluster[0].size() << ' ' << cluster[1].size() << endl;
-  cout << obs.size() << endl;
-*/
+//  cout << good_pt.size() << ' ' << means.size() << ' ' << means_new.size() << endl;
+//  cout << obs.size() << endl;
   return 1;
 }

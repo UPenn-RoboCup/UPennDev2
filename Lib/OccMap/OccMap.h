@@ -4,6 +4,10 @@
 
 #include <vector>
 #include <stdint.h>
+#include <iostream>
+#include <iomanip>
+#include <cmath>
+#include <algorithm>
 
 using namespace std;
 
@@ -44,6 +48,8 @@ struct obstacle {
   double nearest_dist;
 };
 
+const int maxObstacleClusters = 2;
+
 class OccMap {
 public:
   OccMap();
@@ -63,10 +69,12 @@ public:
   int time_decay(double time);
   inline void range_check(double &num);
 
-  int init_obstacle(void);
   int kmean_clustering(void);
   obstacle& get_obstacle(int index);
   int get_nobstacle(void);
+  
+  inline double norm(int x1, int y1, int x2, int y2);
+  inline double norm(double x1, double y1, double x2, double y2);
 
 private:
   // Map size in grids
@@ -106,8 +114,8 @@ private:
 
   int nOb;
   vector<obstacle> obs;
-
-
+  vector<grid_ij> means, means_new;
+  vector<int> means_new_counter;
 
 };
 

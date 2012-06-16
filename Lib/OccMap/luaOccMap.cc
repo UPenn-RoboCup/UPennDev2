@@ -143,7 +143,6 @@ static int lua_occmap_time_decay(lua_State *L) {
 }
 
 static int lua_occmap_obstacle(lua_State *L) {
-  map.init_obstacle();
   map.kmean_clustering();
   int maxOb = 2;
   obstacle zeros_ob = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};

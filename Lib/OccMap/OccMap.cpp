@@ -4,10 +4,6 @@
 #include <cassert>
 #include <time.h>
 #include <stdio.h>
-#include <iostream>
-#include <iomanip>
-#include <cmath>
-#include <algorithm>
 
 
 OccMap::OccMap()
@@ -21,7 +17,12 @@ OccMap::OccMap()
 // vars for vision update
 ,default_p(0.25)
 ,default_log_p(log(default_p / (1 - default_p)))
+,nOb(0)
 {
+  obs.resize(maxObstacleClusters);
+  means.resize(maxObstacleClusters);
+  means_new.resize(maxObstacleClusters);
+  means_new_counter.resize(maxObstacleClusters);
 }
 
 const double EXT_LOG = 15;
@@ -214,210 +215,6 @@ int OccMap::odometry_update(const double odomX, const double odomY,
     odom_y += shift_scale * resolution;
     odom_j++;
   }
-  return 1;
-}
-
-inline float sqrtA(float x) {
-  unsigned int i = *(unsigned int*) &x;
-  i += 127 << 23;
-  i >>= 1;
-  return *(float*) &i;
-}
-
-inline double norm(int x1, int y1, int x2, int y2) {
-  return sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
-}
-
-
-inline double norm(double x1, double y1, double x2, double y2) {
-  return (double)sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
-}
-
-inline grid_ij get_mean(vector<grid_ij>& cluster) {
-  double sum_i = 0, sum_j = 0;
-  int size = cluster.size();
-  for (int cnt = 0; cnt < cluster.size(); cnt++) {
-    sum_i += cluster[cnt].i / size;
-    sum_j += cluster[cnt].j / size;
-  }
-  grid_ij new_mean = {sum_i, sum_j, 0.0};
-  return new_mean;
-}
-
-
-int OccMap::kmean_clustering(void) {
-  cout << "clustering" << endl;
-  vector<grid_ij> good_pt;
-  int i = 0, j = 0;
-  for (int cnt = 0; cnt < grid_num; cnt++) {
-    if (grid[cnt] > default_log_p) {
-      i = cnt % map_size;
-      j = (cnt - i) / map_size;
-      grid_ij new_pt = {i, j, grid[cnt]};
-      good_pt.push_back(new_pt);
-    }
-  }
-  // return 0 obstacles
-  if (good_pt.size() == 0) {
-    nOb = 0;
-    return 1;
-  }
-  int K = 2;
-  vector<grid_ij> means, means_new;
-  vector<grid_ij> cluster[2];
-  int r = 0;
-  // Random init mean from points
-  srand(time(0));
-  for (int cnt = 0; cnt < K; cnt++) {
-    r = (rand() % good_pt.size()) + 1;
-    means.push_back(good_pt[r]);
-    means_new.push_back(good_pt[r]);
-  }
-
-
-  cout << "iteration" << endl;
-    // iteration to cluser points
-  bool changed = false;
-  int iteration = 0;
-  do {
-    iteration ++;
-
-    changed = false;
-    for (int it = 0; it < good_pt.size(); it++) {
-//      cout << it << ' ' << good_pt.size() << endl;
-      double mindist = 100000000;
-      int minindex = -1;
-      for (int mit = 0; mit <= means.size(); mit++) {
-        double dist = norm(good_pt[it].i, good_pt[it].j, means[mit].i, means[mit].j);
-        if (dist < mindist) {
-          mindist = dist;
-          minindex = mit;
-        }
-      }
-//      cout << minindex << ' ' << cluster[minindex].size() <<  endl;
-      cluster[minindex].push_back(good_pt[it]);
-    }
-
-
-    cout << "get new mean" << endl;
-    // get new mean
-    for (int cnt = 0; cnt < K; cnt ++) {
-  //    cout << cluster[cnt].size() << endl;
-      if (cluster[cnt].size() != 0) {
-        cout << "calculate new mean" << endl;
-//        cout << "old " << means[cnt].i << ' ' << means[cnt].j << endl;
-        double sum_i = 0, sum_j = 0;
-        for (int iter = 0; iter < cluster[cnt].size(); iter++) {
-          sum_i += cluster[cnt][iter].i;
-          sum_j += cluster[cnt][iter].j;
-        }
-        means_new[cnt].i = round(sum_i / cluster[cnt].size());
-        means_new[cnt].j = round(sum_j / cluster[cnt].size());
-
-        double dist = 0, maxDist = 100000;
-        int maxIdx = 0;
-        for (int iter = 0; iter < cluster[cnt].size(); iter++) {
-          dist = abs(cluster[cnt][iter].i - means_new[cnt].i) +
-                  abs(cluster[cnt][iter].j - means_new[cnt].j);
-          if (dist < maxDist) {
-            maxDist = dist;
-            maxIdx = iter;
-          }
-        }
-        means_new[cnt].i = cluster[cnt][maxIdx].i;
-        means_new[cnt].j = cluster[cnt][maxIdx].j;
-
-//        cout << "new " << means_new[cnt].i << ' ' << means_new[cnt].j << endl;
-      } 
-      else {
-        cout << "regenerate means" << endl;
-        r = (rand() % good_pt.size()) + 1;
-        means_new[cnt] = good_pt[r];
-//        cout << "new " << means_new[cnt].i << ' ' << means_new[cnt].j << endl;    
-      }
-      cout << " check mean " << endl;
-      if ((means[cnt].i != means_new[cnt].i) || (means[cnt].j != means_new[cnt].j)) 
-        changed = true; 
-//      cout << changed << endl;
-      means = means_new;
-    }
-    for (int cnt = 0; cnt < K; cnt++)
-      for (int iter = 0; iter < cluster[cnt].size(); iter++)
-        cluster[cnt].pop_back();
-  }
-  while (changed);
-
-//  cout << "iterations: " << iteration << endl;
-//  cout << changed <<endl;
-//  for (int cnt = 0; cnt < K; cnt++) {
-//    cout << means[cnt].i << ' ' << means[cnt].j << endl;
-//  }
-//  cout << endl;
-/*
-  cout << "process obstacle" << endl;
-  nOb = K;
-  for (int cnt = 0; cnt < nOb; cnt++) {
-    obstacle new_ob;
-    // Get Centroid
-    new_ob.centroid_y = rx * resolution - means[cnt].i * resolution;
-    new_ob.centroid_x = ry * resolution - means[cnt].j * resolution;
-    //    cout << "centroid:" << means[cnt].i << ' ' << means[cnt].j << ' ' 
-    //          << new_ob.centroid_x << ' ' << new_ob.centroid_y << endl;
-    // Get nearest obstacle corner and Angle Range
-    double dist = 0, minDist = 10000000, angle = 0, minAngle = M_PI, maxAngle = 0;
-    int nearestIdx = 0;
-    double x = 0, y = 0;
-    for (int iter = 0; iter < cluster[cnt].size(); iter++) {
-      x = ry * resolution - cluster[cnt][iter].j * resolution;
-      y = rx * resolution - cluster[cnt][iter].i * resolution;
-      dist = norm(x, y, odom_x, odom_y);
-    //      cout << dist << endl;
-      if (dist < minDist) {
-        minDist = dist;
-        nearestIdx = iter;
-      }
-      angle = atan2(x, y);
-      minAngle = min(minAngle, angle);
-      maxAngle = max(maxAngle, angle);
-    }
-    minAngle += odom_a;
-    maxAngle += odom_a;
-    new_ob.left_angle_range = minAngle;
-    new_ob.right_angle_range = maxAngle;
-    //    cout << "angle range: " << new_ob.left_angle_range * 180 / M_PI  << ' ' 
-    //                            << new_ob.right_angle_range * 180 / M_PI << endl;
-    //    cout << "nearest idx: " << nearestIdx << ' ' << minDist << ' ' 
-    //          << cluster[cnt][nearestIdx].i << ' ' << cluster[cnt][nearestIdx].j << endl;
-    //    new_ob.left_angle_range = ;
-    //    new_ob.right_angle_range = ;
-    new_ob.nearest_y = rx * resolution - cluster[cnt][nearestIdx].i * resolution;
-    new_ob.nearest_x = ry * resolution - cluster[cnt][nearestIdx].j * resolution;
-    new_ob.nearest_dist = minDist;
-    //  cout << "nearest point: " << new_ob.nearest_x << ' ' << new_ob.nearest_y << endl;
-    //    cout << "nearest point: " << cluster[cnt][nearestIdx].i << ' ' 
-    //                              << cluster[cnt][nearestIdx].j << endl;
-    obs.push_back(new_ob);
-  }
-  // check if obstacle overlays
-  if ((abs(obs[0].left_angle_range - obs[1].left_angle_range) < 0.1) ||
-    (abs(obs[0].right_angle_range - obs[1].right_angle_range) < 0.1)) {
-    // merge to one obstacle
-    nOb = 1;
-    if (obs[1].nearest_dist < obs[0].nearest_dist)
-      obs[0] = obs[1];
-  }
-
-  cout << good_pt.size() << ' ' << means.size() << ' ' << means_new.size() << endl;
-  cout << cluster[0].size() << ' ' << cluster[1].size() << endl;
-  cout << obs.size() << endl;
-*/
-  return 1;
-}
-
-int OccMap::init_obstacle(void) {
-  const int maxObstacleClusters = 5;
-  nOb = 0;
-  obs.clear();
   return 1;
 }
 

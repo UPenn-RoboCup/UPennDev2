@@ -7,7 +7,7 @@ include_directories(/usr/local/include)
 include_directories(/usr/include/lua5.1)
 
 # unix main library definition
-add_library(OccMap MODULE luaOccMap.cc OccMap.cpp)
+add_library(OccMap MODULE luaOccMap.cc OccMap.cpp KmeanCluster.cpp)
 
 # set optimization level
 #   TODO: can we now use level 2? it would not work for NaoV3

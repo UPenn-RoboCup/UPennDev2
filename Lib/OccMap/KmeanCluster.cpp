@@ -158,13 +158,21 @@ int OccMap::kmean_clustering(void) {
     obs[cnt] = new_ob;
   }
   // check if obstacle overlays
-//  if ((abs(obs[0].left_angle_range - obs[1].left_angle_range) < 0.1) ||
-//    (abs(obs[0].right_angle_range - obs[1].right_angle_range) < 0.1)) {
-//    // merge to one obstacle
-//    nOb = 1;
-//    if (obs[1].nearest_dist < obs[0].nearest_dist)
-//      obs[0] = obs[1];
-//  }
+  int obCheck[maxObstacleClusters] = {0};
+  for (int i = 0; i < maxObstacleClusters; i++)
+    for (int j = i+1; j < maxObstacleClusters; j++) {
+      if (obCheck[i] == 1 or obCheck[j] == 1)
+        continue;
+      if ((abs(obs[i].left_angle_range - obs[j].left_angle_range) < 0.1) ||
+        (abs(obs[i].right_angle_range - obs[j].right_angle_range) < 0.1)) {
+        // merge to one obstacle
+          nOb -= 1;
+          if (obs[j].nearest_dist < obs[i].nearest_dist)
+            obCheck[i] = 1;
+          else
+            obCheck[j] = 1;
+      }
+    }
 
 //  cout << good_pt.size() << ' ' << means.size() << ' ' << means_new.size() << endl;
 //  cout << obs.size() << endl;

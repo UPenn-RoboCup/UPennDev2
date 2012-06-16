@@ -48,7 +48,7 @@ struct obstacle {
   double nearest_dist;
 };
 
-const int maxObstacleClusters = 2;
+const int maxObstacleClusters = 5;
 
 class OccMap {
 public:

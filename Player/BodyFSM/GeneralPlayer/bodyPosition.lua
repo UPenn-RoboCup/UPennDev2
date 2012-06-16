@@ -82,8 +82,10 @@ function update()
     homePose = position.getSupporterHomePose();
   else
     if Config.fsm.playMode~=3 or kickDir~=1 then --We don't care to turn when we do sidekick
-      homePose = position.getDirectAttackerHomePose();
-      --TODO: check the yaw angle so that we don't kick to our side
+
+      homePose = position.getAttackerHomePose();
+
+--      homePose = position.getDirectAttackerHomePose();
     else
       homePose = position.getAttackerHomePose();
     end	
@@ -171,11 +173,16 @@ function update()
 --    print("VEL: ",veltype)
 --  end
 
+  attackAngle = wcm.get_goal_attack_angle2();
+  daPost = wcm.get_goal_daPost2();
+  daPostMargin = 15 * math.pi/180;
+  daPost1 = math.max(thClose[3],daPost - daPostMargin);
+
   uPose=vector.new({pose.x,pose.y,pose.a})
   homeRelative = util.pose_relative(homePose, uPose);  
   if math.abs(homeRelative[1])<thClose[1] and
     math.abs(homeRelative[2])<thClose[2] and
-    math.abs(homeRelative[3])<thClose[3] and
+    math.abs(homeRelative[3])<daPost1 and
     ballR<rClose and
     t-ball.t<tBall then
       print("bodyPosition done")

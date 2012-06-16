@@ -86,8 +86,14 @@ fsm.playMode = 3; --1 for demo, 2 for orbit, 3 for direct approach
 fsm.enable_obstacle_detection = 1;
 fsm.wait_kickoff = 1;
 fsm.enable_walkkick = 1;
-fsm.enable_sidekick = 0;
+fsm.enable_sidekick = 1;
 fsm.enable_dribble = 1;
+
+fsm.daPost_check = 1;
+fsm.daPostmargin = 15*math.pi/180;
+fsm.variable_dapost = 1;
+
+
 
 --FAST APPROACH TEST
 --fsm.fast_approach = 1;
@@ -124,7 +130,7 @@ team.msgTimeout = 5.0;
 team.tKickOffWear = 15.0;
 
 team.walkSpeed = 0.25; --Average walking speed 
-team.turnSpeed = 2.0; --Average turning time for 360 deg
+team.turnSpeed = 1.0; --Average turning time for 360 deg
 team.ballLostPenalty = 4.0; --ETA penalty per ball loss time
 team.fallDownPenalty = 4.0; --ETA penalty per ball loss time
 team.nonAttackerPenalty = 0.8; -- dist from ball
@@ -146,8 +152,9 @@ team.avoid_other_team = 0;
 km = {};
 km.standup_front = 'km_NSLOP_StandupFromFront.lua';
 --km.standup_front = 'km_NSLOP_StandupFromFront2.lua';
+--km.standup_front = 'km_NSLOP_StandupFromFront3.lua';
 km.standup_back = 'km_NSLOP_StandupFromBack.lua';
-km.standup_back = 'km_NSLOP_StandupFromBack3.lua';
+--km.standup_back = 'km_NSLOP_StandupFromBack3.lua';
 --km.kick_right = 'km_NSLOP_taunt1.lua';
 --km.kick_left = 'km_NSLOP_StandupFromFront2.lua';
 

@@ -17,6 +17,9 @@ tLost = Config.fsm.bodyApproach.tLost; --ball lost timeout
 xTarget = Config.fsm.bodyApproach.xTarget11;
 yTarget = Config.fsm.bodyApproach.yTarget11;
 
+dapost_check = Config.fsm.daPost_check or 0;
+daPostMargin = Config.fsm.daPostMargin or 15*math.pi/180;
+
 fast_approach = Config.fsm.fast_approach or 0;
 enable_evade = Config.fsm.enable_evade or 0;
 evade_count=0;
@@ -94,10 +97,12 @@ function check_approach_type()
       --stationary kick to the left
       kick_type = 1;
       kick_dir = 3;
+      kickAngle = -90*math.pi/180;
     else
       if Config.fsm.goalie_use_walkkick>0 then
         --walkkick to front
         kick_type = 2;
+        kickAngle = 90*math.pi/180;
       else
         --stationary kick to front
         kick_type = 1;
@@ -107,10 +112,6 @@ function check_approach_type()
     wcm.set_kick_dir(kick_dir);
     wcm.set_kick_type(kick_type);
     check_angle = 0; --Don't check angle during approaching
-  end
-
-  if kick_dir~=1 then --sidekicks don't check angles
-    check_angle = 0;
   end
 
   print("Approach: kick dir /type /angle",kick_dir,kick_type,kick_angle*180/math.pi)
@@ -232,14 +233,33 @@ function update()
     --Player FSM, turn towards the goal
 --    attackBearing, daPost = wcm.get_attack_bearing();
     position.posCalc();
-    attackAngle = wcm.get_goal_attack_angle2();
+
+    kickAngle = wcm.get_kick_angle();
+    attackAngle = wcm.get_goal_attack_angle2()-kickAngle;
+    daPost = wcm.get_goal_daPost2();
+
+    if dapost_check == 0 then
+      daPost1 = 2*aThresholdTurn;
+    else
+      daPost1 = math.max(2*aThresholdTurn,daPost - daPostMargin);
+    end
+
+    --Wider margin for sidekicks and goalies
+    if kick_dir~=1 or role==0 then 
+      daPost1 = math.max(25*math.pi/180,daPost1);
+    end
+
     pose=wcm.get_pose();
-    targetangle = util.mod_angle(attackAngle - pose.a);
+
+    angleErrL = util.mod_angle(pose.a - (attackAngle + daPost1 * 0.5));
+    angleErrR = util.mod_angle((attackAngle - daPost1 * 0.5)-pose.a);
 
     if check_angle>0 then
-      if targetangle > aThresholdTurn then
+      if angleErrR > 0 then
+--print("TURNLEFT")
         vStep[3]=0.2;
-      elseif targetangle < -aThresholdTurn then
+      elseif angleErrL > 0 then
+--print("TURNRIGHT")
         vStep[3]=-0.2;
       else
         vStep[3]=0;
@@ -283,8 +303,10 @@ function update()
 
   angle_check_done = true;
   if check_angle>0 and
-    math.abs(targetangle) > aThresholdTurn then
+     (angleErrL > 0 or
+     angleErrR > 0 )then
     angle_check_done=false;
+  else
   end
 
   --For front kick, check for other side too

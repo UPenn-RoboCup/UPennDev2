@@ -23,6 +23,7 @@ OccMap::OccMap()
   means.resize(maxObstacleClusters);
   means_new.resize(maxObstacleClusters);
   means_new_counter.resize(maxObstacleClusters);
+  obCheck.resize(maxObstacleClusters);
 }
 
 const double EXT_LOG = 15;
@@ -223,5 +224,11 @@ int OccMap::get_nobstacle() {
 }
 
 obstacle& OccMap::get_obstacle(int index) {
-  if (index < nOb) return obs[index];
+  int idx = -1, obIdx = -1;
+  while (idx < index) {
+    obIdx ++;
+    if (obCheck[obIdx] == 0)
+      idx ++;
+  }
+  return obs[obIdx];
 }

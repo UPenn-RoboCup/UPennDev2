@@ -158,7 +158,9 @@ int OccMap::kmean_clustering(void) {
     obs[cnt] = new_ob;
   }
   // check if obstacle overlays
-  int obCheck[maxObstacleClusters] = {0};
+
+  for (int cnt = 0; cnt < maxObstacleClusters; cnt++)
+    obCheck[cnt] = 0;
   for (int i = 0; i < maxObstacleClusters; i++)
     for (int j = i+1; j < maxObstacleClusters; j++) {
       if (obCheck[i] == 1 or obCheck[j] == 1)

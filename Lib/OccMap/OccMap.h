@@ -114,6 +114,7 @@ private:
 
   int nOb;
   vector<obstacle> obs;
+  vector<int> obCheck;
   vector<grid_ij> means, means_new;
   vector<int> means_new_counter;
 

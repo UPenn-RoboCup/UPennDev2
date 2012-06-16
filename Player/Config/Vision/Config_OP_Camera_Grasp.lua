@@ -57,6 +57,6 @@ camera.param[7] = {key='exposure (absolute)',      val={1005}};
 --camera.lut_file = 'lut_low_contrast_pink_n_green.raw';
 --camera.lut_file = 'lut_Grasp_Greenonly.raw';
 --camera.lut_file = 'lut_OP_Grasp_GreenOnly.raw';
-camera.lut_file = '0427_grasp.raw';
---camera.lut_file = 'lut_Grasp_GreenOnly_SJ.raw';
+--camera.lut_file = '0427_grasp.raw';
+camera.lut_file = 'lut_Grasp_GreenOnly_SJ.raw';
 

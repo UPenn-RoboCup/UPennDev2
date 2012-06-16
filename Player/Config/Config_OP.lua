@@ -87,6 +87,9 @@ elseif (robotName=='sally') then
   game.role = 0; --Default goalie
 end
 
+
+game.role = 1;--hack
+
 --Default team: 0 for blue, 1 for red  
 game.teamColor = 0; --Blue team
 --game.teamColor = 1; --Red team
@@ -158,7 +161,7 @@ end
 bat_low = 117; -- 11.7V warning
 bat_med = 119; -- Slow down walking if voltage drops below this 
 
-bat_led = {120,121,122,123,124,125}; --for back LED indicator
+bat_led = {118,119,122,123,124,125}; --for back LED indicator
 
 
 

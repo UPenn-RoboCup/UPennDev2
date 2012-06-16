@@ -148,7 +148,7 @@ static int lua_occmap_obstacle(lua_State *L) {
   obstacle zeros_ob = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
   obstacle ob = zeros_ob;
   int nobstacle = map.get_nobstacle();
-//  cout << "obstacle number:" << nobstacle << endl; 
+  cout << "obstacle number:" << nobstacle << endl; 
   lua_createtable(L, nobstacle + 1, 0);
   lua_pushnumber(L, nobstacle);
   lua_rawseti(L, -2, 1);

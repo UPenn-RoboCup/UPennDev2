@@ -248,7 +248,7 @@ function update()
 
 	-- Update Occupancy Map
   if Config.vision.enable_freespace_detection == 1 then
-    OccupancyMap.update();
+--    OccupancyMap.update();
   end
    
   -- Update the relevant engines

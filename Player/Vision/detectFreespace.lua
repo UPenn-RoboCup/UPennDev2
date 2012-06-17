@@ -34,6 +34,7 @@ function detect(color)
   
   FreeB = ImageProc.field_occupancy(labelB.data,labelB.m,labelB.n);
   
+--[[
   for i = 1,labelB.m do
     local pbound = vector.new({i,labelB.n-FreeB.range[i]});
 		freespace.pboundB[i],freespace.pboundB[i+labelB.m] = pbound[1],pbound[2];
@@ -41,7 +42,7 @@ function detect(color)
     freespace.vboundB[i],freespace.vboundB[i+labelB.m] = vbound[1],vbound[2];   
     freespace.tboundB[i] = FreeB.flag[i];
   end
-
+--]]
 
   local horizon = HeadTransform.get_horizonA();
 --  print(horizon);

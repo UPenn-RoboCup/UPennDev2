@@ -81,6 +81,8 @@ controller.wb_robot_keyboard_enable(500);
 
 penalized_state={0,0,0,0,0};
 
+strategy1 = 0
+strategy2 = 0
 function process_keyinput()
   local str = controller.wb_robot_keyboard_get_key();
   if str>0 then
@@ -107,6 +109,16 @@ function process_keyinput()
     elseif byte==string.byte("5") then
       Speak.talk('Finished');
       gcm.set_game_state(4);
+    elseif byte==string.byte("6") then
+      strategy1 = strategy1 + 1
+      if strategy1 > 4 then
+        strategy1 = 0
+      end
+    elseif byte==string.byte("7") then
+      strategy2 = strategy2 + 1
+      if strategy2 > 4 then
+        strategy2 = 0
+      end
     elseif byte==string.byte("k") then   
       --Blue team kickoff
       if gcm.get_team_color()==0 then
@@ -240,6 +252,8 @@ if (webots) then
   while (true) do
 
     process_keyinput();
+
+    gcm.set_team_strat({strategy1, strategy2})
     -- update cognitive process
     cognition.update();
     GameControl.update();

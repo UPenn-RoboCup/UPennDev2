@@ -64,7 +64,7 @@ function initialize_manual_placement(p0, dp)
   p0 = p0 or {0, 0, 0};
   dp = dp or {.5*xMax, .5*yMax, 2*math.pi};
 
-  print('manual placement');
+  print('re-init partcles for manual placement');
   ap = math.atan2(wcm.get_goal_attack()[2],wcm.get_goal_attack()[1])*vector.ones(n);
   xp = wcm.get_goal_defend()[1]/2*vector.ones(n);
   yp = p0[2]*vector.ones(n) + dp[2]*vector.new(util.randn(n));
@@ -76,8 +76,12 @@ function initialize_unified(p0,p1,dp)
   --Half of the particles at p0
   --Half of the particles at p1
   p0 = p0 or {0, 0, 0};
+  p0 = p1 or {0, 0, 0};
   --Low spread  
   dp = dp or {.15*xMax, .15*yMax, math.pi/6};
+  print('init_unified particles at ');
+  util.ptable(p0);
+  util.ptable(p1);
 
   for i=1,n/2 do
     xp[i]=p0[1]+dp[1]*math.random();
@@ -95,7 +99,7 @@ function initialize_heading(aGoal)
   --Particle initialization at bodySet 
   --When bodySet, all players should face opponents' goal
   --So reduce weight of  particles that faces our goal
-
+  print('init_heading particles');
   dp = dp or {.15*xMax, .15*yMax, math.pi/6};
   ap = aGoal*vector.ones(n) + dp[3]*vector.new(util.randu(n));
   wp = vector.zeros(n);

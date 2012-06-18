@@ -11,6 +11,9 @@
       -> Will this be useful considering new approach style?
 [] Use touchdown sensors to decide whether or not manual placement has occured to reset particles.
 [?] When you move from penalty to set, reset particles for manual placement
+[] Figure out which of the THREE config parameters for same-colored goals is actually useful, and 
+    consolidate into ONE parameter
+    
 
 
 

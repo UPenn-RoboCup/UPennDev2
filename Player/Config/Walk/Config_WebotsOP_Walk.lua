@@ -279,3 +279,41 @@ walk.motionDef["hurray"]={
 	{0*math.pi/180,20*math.pi/180,0*math.pi/180}}
 } 
 
+
+
+
+
+
+--One-Two Punching
+walk.motionDef["hurray"]={
+ {0.2,{90*math.pi/180, 40*math.pi/180, -160*math.pi/180},
+	{90*math.pi/180,-40*math.pi/180,-160*math.pi/180},
+	{0*math.pi/180,20*math.pi/180,0*math.pi/180}},
+
+ {0.2,{90*math.pi/180, 30*math.pi/180, -160*math.pi/180},
+	{90*math.pi/180,-30*math.pi/180,-160*math.pi/180},
+	{0*math.pi/180,20*math.pi/180,20*math.pi/180}},
+ {0.2,{90*math.pi/180, 30*math.pi/180, -160*math.pi/180},
+	{90*math.pi/180,-30*math.pi/180,-160*math.pi/180},
+	{0*math.pi/180,20*math.pi/180,20*math.pi/180}},
+
+ --right jab
+ {0.2,{90*math.pi/180, 30*math.pi/180, -160*math.pi/180},
+	{-20*math.pi/180,-30*math.pi/180,0*math.pi/180},
+	{0*math.pi/180,20*math.pi/180,20*math.pi/180}},
+
+--left straignt
+ {0.3,{-20*math.pi/180, 20*math.pi/180, 0*math.pi/180},
+	{90*math.pi/180,-40*math.pi/180,-160*math.pi/180},
+	{0*math.pi/180,20*math.pi/180,-30*math.pi/180}},
+
+--retract
+ {0.2,{90*math.pi/180, 40*math.pi/180, -160*math.pi/180},
+	{90*math.pi/180,-40*math.pi/180,-160*math.pi/180},
+	{0*math.pi/180,20*math.pi/180,-30*math.pi/180}},
+ {0.3,{90*math.pi/180, 8*math.pi/180,-40*math.pi/180},
+	{90*math.pi/180, -8*math.pi/180,-40*math.pi/180},
+	{0*math.pi/180,20*math.pi/180,0*math.pi/180}}
+} 
+
+

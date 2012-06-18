@@ -223,7 +223,7 @@ end
 -- tDuration qLArm qRArm bodyRot
 walk.motionDef={};
 
-walk.motionDef["hurray"]={
+walk.motionDef["hurray1"]={
  {1.0,{40*math.pi/180, 20*math.pi/180, -140*math.pi/180},
         {40*math.pi/180,-20*math.pi/180,-140*math.pi/180}},
  {0.4,{-30*math.pi/180, 30*math.pi/180, -90*math.pi/180},
@@ -241,14 +241,14 @@ walk.motionDef["hurray"]={
 } 
 
 --pointing up
-walk.motionDef["hurray"]={
+walk.motionDef["point"]={
  {1.0,{-40*math.pi/180, 50*math.pi/180, 0*math.pi/180},
         {160*math.pi/180,-60*math.pi/180,-90*math.pi/180},
-        {20*math.pi/180,20*math.pi/180,-20*math.pi/180}},
+        {20*math.pi/180,0*math.pi/180,-20*math.pi/180}},
 
  {3.0,{-40*math.pi/180, 50*math.pi/180, 0*math.pi/180},
         {160*math.pi/180,-60*math.pi/180,-90*math.pi/180},
-        {20*math.pi/180,20*math.pi/180,-20*math.pi/180}},
+        {20*math.pi/180,0*math.pi/180,-20*math.pi/180}},
 
  {1.0,{90*math.pi/180, 8*math.pi/180,-40*math.pi/180},
         {90*math.pi/180, -8*math.pi/180,-40*math.pi/180},
@@ -257,7 +257,7 @@ walk.motionDef["hurray"]={
 
 
 --Two arm punching up
-walk.motionDef["hurray"]={
+walk.motionDef["hurray2"]={
  {0.5,{40*math.pi/180, 20*math.pi/180, -140*math.pi/180},
         {40*math.pi/180,-20*math.pi/180,-140*math.pi/180}},
 
@@ -285,7 +285,7 @@ walk.motionDef["hurray"]={
 
 
 --Two arm side swing
-walk.motionDef["hurray"]={
+walk.motionDef["swing"]={
  {0.5,{90*math.pi/180, 90*math.pi/180, -40*math.pi/180},
         {90*math.pi/180,-90*math.pi/180,-40*math.pi/180},
         {0*math.pi/180,20*math.pi/180,-20*math.pi/180}},
@@ -307,7 +307,7 @@ walk.motionDef["hurray"]={
 
 
 --One-Two Punching
-walk.motionDef["hurray"]={
+walk.motionDef["2punch"]={
  {0.2,{90*math.pi/180, 40*math.pi/180, -160*math.pi/180},
         {90*math.pi/180,-40*math.pi/180,-160*math.pi/180},
         {0*math.pi/180,20*math.pi/180,0*math.pi/180}},

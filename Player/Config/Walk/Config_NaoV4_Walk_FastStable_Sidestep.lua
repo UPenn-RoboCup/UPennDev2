@@ -20,7 +20,7 @@ walk.velDelta={0.15,0.01,0.15}
 ---------------------------------------------
 -- Odometry values
 --------------------------------------------
-walk.odomScale = {.98, .92, .74}; --1.06, 1.20, .95  
+walk.odomScale = {.95, 1.0, .75}; --1.06, 1.20, .95  
 
 ----------------------------------------------
 -- Stance parameters
@@ -41,11 +41,11 @@ walk.hardnessArm=.3;
 ---------------------------------------------
 -- Gait parameters
 ---------------------------------------------
-walk.tStep = 0.26;
+walk.tStep = 0.40;
 walk.tZmp = 0.17;
 walk.supportY = 0.002;
-walk.stepHeight = 0.014;
-walk.phSingle={0.04,0.96};
+walk.stepHeight = 0.018;
+walk.phSingle={0.18,0.82};
 
 --------------------------------------------
 -- Compensation parameters

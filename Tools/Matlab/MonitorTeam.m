@@ -7,7 +7,7 @@ end
 nRobots = 4;
 robots = cell(nRobots,1);
 
-teamNumber = 26;
+teamNumber = 25;
 nUpdate = 0;
 
 

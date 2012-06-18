@@ -79,9 +79,9 @@ function initialize_unified(p0,p1,dp)
   p0 = p1 or {0, 0, 0};
   --Low spread  
   dp = dp or {.15*xMax, .15*yMax, math.pi/6};
-  print('init_unified particles at ');
-  util.ptable(p0);
-  util.ptable(p1);
+  --print('init_unified particles at ');
+  --util.ptable(p0);
+  --util.ptable(p1);
 
   for i=1,n/2 do
     xp[i]=p0[1]+dp[1]*math.random();

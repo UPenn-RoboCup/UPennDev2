@@ -19,7 +19,7 @@ vision.scaleB = 4;
 
 vision.enable_2_yellow_goals = 1;
 -- use this to enable line detection
-vision.enable_line_detection = 0;
+vision.enable_line_detection = 1;
 -- use this to enable corner detection
 vision.enable_corner_detection = 0;
 -- use this to enable spot detection
@@ -49,7 +49,7 @@ vision.print_time = 0;
 vision.use_tilted_bbox = 0;
 -- Store and send subsampled image?
 vision.subsampling = 0; --1/2 sized image
-vision.subsampling2 = 1; --1/4 sized image
+vision.subsampling2 = 0; --1/4 sized image
 
 --Vision parameter values
 --For VGA resolution

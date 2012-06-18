@@ -17,7 +17,6 @@ vision.goal2Color = color.yellow;
 vision.maxFPS = 30;
 vision.scaleB = 4;
 
--- use this to enable line detection
 vision.enable_2_yellow_goals = 1;
 -- use this to enable line detection
 vision.enable_line_detection = 1;

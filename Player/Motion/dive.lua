@@ -37,10 +37,8 @@ qRArm0=math.pi/180*vector.new({90,-16,-40});
 bodyHeight = Config.walk.bodyHeight;
 footX = Config.walk.footX;
 footY = Config.walk.footY;
-bodyTilt = Config.walk.bodyTilt;
-bodyTilt = 0;
+bodyTilt=Config.stance.bodyTiltDive;
 
---bodyTilt=0;
 supportX = Config.walk.supportX;
 pTorso = vector.new({0, 0, bodyHeight, 0,bodyTilt,0});
 pLLeg=vector.zeros(6);
@@ -49,6 +47,10 @@ pRLeg=vector.zeros(6);
 torsoShiftX=0;
 t0=0;
 t1=0;
+
+--How long does goalie lie down?
+goalie_dive_waittime = Config.goalie_dive_waittime or 3.0; 
+
 
 function entry()
   print("Motion SM:".._NAME.." entry");
@@ -91,6 +93,10 @@ function update()
   else --Arm motion
     divedone=dodive2();
     if divedone then 
+
+      Body.set_larm_command(qLArm0);
+      Body.set_rarm_command(qRArm0);
+
       walk.start();
       return "done"
     end
@@ -100,48 +106,55 @@ end
 function dosquat()
 
   tDelay1=0.5;
-  tDelay2=1.5;
-  tDelay3=1.0;
+  tDelay2=goalie_dive_waittime;
+  tDelay3=0.5;
 
   t = Body.get_time();
   local divedone=false;
   if phase==1 then
 
-    qLArm4=math.pi/180*vector.new({80,20,0});
-    qRArm4=math.pi/180*vector.new({80,-20,0});
+    qLArm4=math.pi/180*vector.new({80,90,0});
+    qRArm4=math.pi/180*vector.new({80,-90,0});
     Body.set_larm_command(qLArm4);
     Body.set_rarm_command(qRArm4);
-
 
     ph=(t-t0)/tDelay1;
     uTorsoX=0;
     uTorso=vector.new({-footX+uTorsoX,0,0});
-    uLeft={-supportX,0.04 ,0.2};
-    uRight={-supportX ,-0.04 ,-0.2};
-    zLeft=0.09*ph; zRight=0.09*ph;
+    uLeft={-supportX+0.06,0.04 ,0};
+    uRight={-supportX+0.06 ,-0.04 ,-0};
+    zLeft = 0.05;
+    zRight = 0.05;
 
     if t-t0>tDelay1 then
       print("PH1")
       phase=2;t0=t;
     end
   elseif phase==2 then
+    ph=(t-t0)/tDelay2;
+
+    uLeft={-supportX+0.04,0.08 ,0};
+    uRight={-supportX+0.04 ,-0.08 ,-0};
+    zLeft = -0.08;
+    zRight = -0.08;
+
     if t-t0>tDelay2 then
       print("PH1")
       phase=3;t0=t;
     end
   elseif phase==3 then
       ph=(t-t0)/tDelay3;
-      zLeft=0.09*(1-ph); zRight=0.09*(1-ph);
-	  uLeft={-supportX ,0.05 ,0.2*(1-ph)};
-	  uRight={-supportX ,-0.05 ,-0.2*(1-ph)};
+      zLeft=0; zRight=0;
+      uLeft={-supportX+0.04 ,0.04 ,0};
+      uRight={-supportX+0.04 ,-0.04 ,-0};
 
-	if t-t0>tDelay3 then
-  	   print("PH1")
-	   phase=4;t0=t;
-	end
+      if t-t0>tDelay3 then
+        print("PH1")
+        phase=4;t0=t;
+      end
   elseif phase==4 then
-        Body.set_larm_command(qLArm0);
-        Body.set_rarm_command(qRArm0);
+     Body.set_larm_command(qLArm0);
+     Body.set_rarm_command(qRArm0);
      divedone=true;
   end     
 
@@ -149,6 +162,12 @@ function dosquat()
   pLLeg[1],pLLeg[2],pLLeg[3],pLLeg[5],pLLeg[6]=uLeft[1],uLeft[2],zLeft,aLeft,uLeft[3];
   pRLeg[1],pRLeg[2],pRLeg[3],pRLeg[5],pRLeg[6]=uRight[1],uRight[2],zRight,aRight,uRight[3];
   qLegs = Kinematics.inverse_legs(pLLeg, pRLeg, pTorso,0);
+
+  if phase==2 then --Spread legs more
+    qLegs[2]=70*math.pi/180;
+    qLegs[8]=-70*math.pi/180;
+  end
+
   Body.set_lleg_command(qLegs);
   return divedone;
 end
@@ -158,7 +177,7 @@ function dodive()
         return dosquat();
     else
        tDelay1=0.1;
-       tDelay2=5; 
+       tDelay2=goalie_dive_waittime;
        tDelay3=0.5;
        tDelay4=0.2;
    end
@@ -260,7 +279,7 @@ end
 function dodive2()
 
  tDelay1=0.0;
- tDelay2=1.0;
+ tDelay2=2.0;
 
   t = Body.get_time();
   divedone=false;

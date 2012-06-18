@@ -35,6 +35,7 @@ global MONITOR %for sending the webots check information
 
 
   h.wcmTeamdata  = shm(sprintf('wcmTeamdata%d%d%s',  h.teamNumber, h.playerID, h.user));
+  h.wcmRobotNames  = shm(sprintf('wcmRobotNames%d%d%s',  h.teamNumber, h.playerID, h.user));
   h.wcmLabelB  = shm(sprintf('wcmLabelB%d%d%s',  h.teamNumber, h.playerID, h.user));
   h.vcmRobot  = shm(sprintf('vcmRobot%d%d%s',  h.teamNumber, h.playerID, h.user)); 
 
@@ -151,9 +152,13 @@ global MONITOR %for sending the webots check information
       posex= h.wcmTeamdata.get_posex();
       posey= h.wcmTeamdata.get_posey();
       posea= h.wcmTeamdata.get_posea();
+
       ballx= h.wcmTeamdata.get_ballx();
       bally= h.wcmTeamdata.get_bally();
       ballt= h.wcmTeamdata.get_ballt();
+      ballvx= h.wcmTeamdata.get_ballvx();
+      ballvy= h.wcmTeamdata.get_ballvy();
+
       attackBearing= h.wcmTeamdata.get_attackBearing();
       fall=h.wcmTeamdata.get_fall();
       penalty=h.wcmTeamdata.get_penalty();
@@ -196,8 +201,8 @@ global MONITOR %for sending the webots check information
       r.ball={};
       r.ball.x= ballx(id);
       r.ball.y= bally(id);
-      r.ball.vx= 0;
-      r.ball.vy= 0;
+      r.ball.vx= ballvx(id);
+      r.ball.vy= ballvy(id);
       r.ball.t= ballt(id);
 
       r.attackBearing= attackBearing(id);
@@ -225,6 +230,29 @@ global MONITOR %for sending the webots check information
 
       r.landmark=landmark(id);
       r.landmarkv=[landmarkv1(id) landmarkv2(id)];
+
+      r.robotName='';
+      if id==1
+        r.robotName = char(h.wcmRobotNames.get_n1());
+      elseif id==2
+        r.robotName = char(h.wcmRobotNames.get_n2());
+      elseif id==3
+        r.robotName = char(h.wcmRobotNames.get_n3());
+      elseif id==4
+        r.robotName = char(h.wcmRobotNames.get_n4());
+      elseif id==5
+        r.robotName = char(h.wcmRobotNames.get_n5());
+      elseif id==6
+        r.robotName = char(h.wcmRobotNames.get_n6());
+      elseif id==7
+        r.robotName = char(h.wcmRobotNames.get_n7());
+      elseif id==8
+        r.robotName = char(h.wcmRobotNames.get_n8());
+      elseif id==9
+        r.robotName = char(h.wcmRobotNames.get_n9());
+      elseif id==10
+        r.robotName = char(h.wcmRobotNames.get_n10());
+      end
 
     catch
     end

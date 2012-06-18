@@ -14,6 +14,7 @@ require('headKickFollow')
 require('headLookGoal')
 require('headSweep')
 require('headKick')
+require('headLog')
 
 sm = fsm.new(headIdle);
 sm:add_state(headStart);
@@ -26,6 +27,7 @@ sm:add_state(headKickFollow);
 sm:add_state(headLookGoal);
 sm:add_state(headSweep);
 sm:add_state(headKick);
+sm:add_state(headLog);
 
 
 
@@ -42,7 +44,7 @@ sm:set_transition(headReadyLookGoal, 'lost', headReady);
 
 sm:set_transition(headTrack, 'lost', headScan);
 sm:set_transition(headTrack, 'timeout', headLookGoal);
-sm:set_transition(headTrack, 'goalie', headTrackGoalie);
+sm:set_transition(headTrack, 'sweep', headSweep);
 
 sm:set_transition(headTrackGoalie, 'lost', headScan);
 
@@ -60,6 +62,12 @@ sm:set_transition(headSweep, 'done', headTrack);
 
 sm:set_transition(headScan, 'ball', headTrack);
 sm:set_transition(headScan, 'timeout', headScan);
+
+--Transition between player, moving goalie, diving goalie states
+
+sm:set_transition(headTrack, 'goalie', headTrackGoalie);
+sm:set_transition(headTrackGoalie, 'player', headTrack);
+
 
 
 -- set state debug handle to shared memory settor

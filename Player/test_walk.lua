@@ -37,6 +37,7 @@ require('Body')
 require('Motion')
 require('dive')
 
+require('grip')
 Motion.entry();
 darwin = false;
 webots = false;
@@ -114,10 +115,17 @@ function process_keyinput()
     elseif byte==string.byte("s") then
       dive.set_dive("diveCenter");
       Motion.event("dive");
-    elseif byte==string.byte("a") then
+    elseif byte==string.byte("d") then
       dive.set_dive("diveRight");
       Motion.event("dive");
 
+
+	elseif byte==string.byte("z") then
+		grip.throw=0;
+		Motion.event("pickup");
+	elseif byte==string.byte("x") then
+		grip.throw=1;
+		Motion.event("throw");
 
 
     elseif byte==string.byte("7") then	

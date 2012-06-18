@@ -19,6 +19,8 @@ shared.robot.penalty = vector.zeros(1);
 shared.robot.gpspose = vector.zeros(3);
 shared.robot.gps_attackbearing = vector.zeros(1);
 shared.robot.gps_ball = vector.zeros(3);
+shared.robot.team_ball = vector.zeros(3);
+shared.robot.team_ball_score = vector.zeros(1);
 
 shared.ball = {};
 shared.ball.x = vector.zeros(1);
@@ -28,6 +30,25 @@ shared.ball.velx = vector.zeros(1);
 shared.ball.vely = vector.zeros(1);
 shared.ball.dodge = vector.zeros(1);
 shared.ball.locked_on = vector.zeros(1);
+shared.ball.p = vector.zeros(1);
+
+
+shared.ball.v_inf = vector.zeros(2);
+
+
+shared.team = {};
+
+shared.team.attacker_eta = vector.zeros(1);
+shared.team.defender_eta = vector.zeros(1);
+shared.team.supporter_eta = vector.zeros(1);
+shared.team.goalie_alive = vector.zeros(1);
+
+shared.team.attacker_pose = vector.zeros(3);
+shared.team.defender_pose = vector.zeros(3);
+shared.team.supporter_pose = vector.zeros(3);
+shared.team.goalie_pose = vector.zeros(3);
+
+
 
 shared.goal = {};
 shared.goal.t = vector.zeros(1);
@@ -38,6 +59,11 @@ shared.goal.attack_angle = vector.zeros(1);
 shared.goal.defend_angle = vector.zeros(1);
 shared.goal.attack_post1 = vector.zeros(2);
 shared.goal.attack_post2 = vector.zeros(2);
+
+
+shared.goal.attack_angle2 = vector.zeros(1);
+shared.goal.daPost2 = vector.zeros(1);
+
 
 --Added for side approach/sidekick/kickoff handling
 shared.kick = {};
@@ -75,12 +101,17 @@ if listen_monitor>0 then
   shared.teamdata.robotId=vector.zeros(10);
   shared.teamdata.role=vector.zeros(10);
   shared.teamdata.time=vector.zeros(10);
+
   shared.teamdata.posex=vector.zeros(10);
   shared.teamdata.posey=vector.zeros(10);
   shared.teamdata.posea=vector.zeros(10);
+
   shared.teamdata.ballx=vector.zeros(10);
   shared.teamdata.bally=vector.zeros(10);
   shared.teamdata.ballt=vector.zeros(10);
+  shared.teamdata.ballvx=vector.zeros(10);
+  shared.teamdata.ballvy=vector.zeros(10);
+
   shared.teamdata.attackBearing=vector.zeros(10);
   shared.teamdata.fall=vector.zeros(10);
   shared.teamdata.penalty=vector.zeros(10);
@@ -132,6 +163,16 @@ if listen_monitor>0 then
   shsize.labelB = 10*labelB_size + 2^16;
 
   shared.robotNames = {};
+  shared.robotNames.n1 = '';
+  shared.robotNames.n2 = '';
+  shared.robotNames.n3 = '';
+  shared.robotNames.n4 = '';
+  shared.robotNames.n5 = '';
+  shared.robotNames.n6 = '';
+  shared.robotNames.n7 = '';
+  shared.robotNames.n8 = '';
+  shared.robotNames.n9 = '';
+  shared.robotNames.n10 = '';
 
 end
 
@@ -141,7 +182,9 @@ util.init_shm_segment(getfenv(), _NAME, shared, shsize);
 -- helper functions for access the data in the same manner as World
 
 function get_ball()
-  return {x=get_ball_x(), y=get_ball_y(), vx=get_ball_velx(), vy=get_ball_vely(), t=get_ball_t()};
+  return {x=get_ball_x(), y=get_ball_y(), 
+	vx=get_ball_velx(), vy=get_ball_vely(), 
+	t=get_ball_t(),	p=get_ball_p()};
 end
 
 function get_pose()

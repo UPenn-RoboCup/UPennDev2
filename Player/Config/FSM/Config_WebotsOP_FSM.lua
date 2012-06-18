@@ -19,7 +19,11 @@ fsm.enable_walkkick = 1;
 
 fsm.wait_kickoff = 1; --initial wait at opponent's kickoff
 
-fsm.goalie_reposition = 2; --1 for turn, 2 for relocate
+fsm.goalie_type = 1;
+--1: Constantly moving goalie
+--2: Goalie stops when in position
+--3: Diving goalie (stops in position and never move)
+--4: Diving and repositioning goalie (turns to ball position)
 
 fsm.th_front_kick = 10*math.pi/180;
 
@@ -44,17 +48,19 @@ fsm.bodySearch.timeout = 10.0*speedFactor;
 --------------------------------------------------
 fsm.bodyAnticipate={};
 
-fsm.bodyAnticipate.tStartDelay = 1.0; 
+fsm.bodyAnticipate.tStartDelay = 2.0*speedFactor; 
 
 fsm.bodyAnticipate.rMinDive = 0.3;
 fsm.bodyAnticipate.rCloseDive = 3.0;
 fsm.bodyAnticipate.center_dive_threshold_y = 0.07; 
 fsm.bodyAnticipate.dive_threshold_y = 1.0;
 
-fsm.bodyAnticipate.ball_velocity_th = 0.5; --min velocity for diving
-fsm.bodyAnticipate.ball_velocity_thx = -0.2; --min x velocity for diving
+fsm.bodyAnticipate.center_dive_threshold_y = 0.12; 
 
-fsm.bodyAnticipate.rClose = 1.2; --default value 1.7
+fsm.bodyAnticipate.ball_velocity_th = 1.0; --min velocity for diving
+fsm.bodyAnticipate.ball_velocity_thx = -0.8; --min x velocity for diving
+
+fsm.bodyAnticipate.rClose = 1.5; 
 fsm.bodyAnticipate.rCloseX = 1.0;
 fsm.bodyAnticipate.ball_velocity_th2 = 0.3; --max velocity for start approach
 
@@ -69,8 +75,8 @@ fsm.bodyGoaliePosition.thClose = {.2, .1, 10*math.pi/180}
 --BodyChase : move the robot directly towards the ball (for goalie)
 --------------------------------------------------
 fsm.bodyChase={};
-fsm.bodyChase.maxStep = 0.08;
-fsm.bodyChase.rClose = 0.25;  --default value 0.35
+fsm.bodyChase.maxStep = 0.085; --default value 0.08,0.09 quite unstable
+fsm.bodyChase.rClose = 0.30;  --default value 0.35
 fsm.bodyChase.timeout = 20.0*speedFactor;
 fsm.bodyChase.tLost = 3.0*speedFactor;
 fsm.bodyChase.rFar = 2.1;
@@ -97,7 +103,14 @@ fsm.bodyPosition.rTurn = 0.25;
 fsm.bodyPosition.rDist1 = 0.40; 
 fsm.bodyPosition.rDist2 = 0.20; 
 fsm.bodyPosition.rTurn2 = 0.08; 
+fsm.bodyPosition.rOrbit = 0.40; --Default value 0.60, 0.40 enables ...
+-- the bot to get around the ball real fast avoiding wastage of time.
+
+--New params to reduce sidestepping
 fsm.bodyPosition.rOrbit = 0.60; 
+fsm.bodyPosition.rDist1 = 0.60; 
+fsm.bodyPosition.rDist2 = 0.25; 
+
 
 fsm.bodyPosition.rClose = 0.35; 
 --fsm.bodyPosition.thClose = {0.15,0.15,10*math.pi/180};
@@ -136,6 +149,9 @@ fsm.bodyApproach.tLost = 3.0*speedFactor;--ball detection timeout
 
 fsm.bodyApproach.aThresholdTurn = 10*math.pi/180;
 fsm.bodyApproach.aThresholdTurnGoalie = 15*math.pi/180;
+fsm.bodyApproach.aThresholdTurnGoalie = 35*math.pi/180;
+
+
 
 --x and y target position for stationary straight kick
 fsm.bodyApproach.xTarget11={0, 0.12,0.13}; --min, target, max
@@ -146,12 +162,12 @@ fsm.bodyApproach.xTarget12={0, 0.12,0.14}; --min, target, max
 fsm.bodyApproach.yTarget12={-0.005, 0.01, 0.025}; --min, target ,max
 
 --Target position for straight walkkick 
-fsm.bodyApproach.xTarget21={0, 0.19,0.21}; --min, target, max
-fsm.bodyApproach.yTarget21={0.01, 0.035, 0.04}; --min, target ,max
+fsm.bodyApproach.xTarget21={0, 0.12,0.14}; --min, target, max
+fsm.bodyApproach.yTarget21={0.015, 0.04, 0.045}; --min, target ,max
 
 --Target position for side walkkick to left
-fsm.bodyApproach.xTarget22={0, 0.15,0.17}; --min, target, max
-fsm.bodyApproach.yTarget22={0.01, 0.035, 0.04}; --min, target ,max
+fsm.bodyApproach.xTarget22={0, 0.12,0.14}; --min, target, max
+fsm.bodyApproach.yTarget22={0.0, 0.015, 0.03}; --min, target ,max
 
 --------------------------------------------------
 --BodyAlign : Align robot before kick
@@ -171,7 +187,7 @@ fsm.bodyKick.tStartWait = 1.0;
 fsm.bodyKick.tStartWaitMax = 1.5;
 
 --ball position checking params
-fsm.bodyKick.kickTargetFront = {0.12,0.045};
+fsm.bodyKick.kickTargetFront = {0.12,0.03};
 
 --For kicking to the left
 fsm.bodyKick.kickTargetSide = {0.12,0.01};
@@ -228,6 +244,8 @@ fsm.headScan.pitchTurnMag = 20*math.pi/180;
 fsm.headScan.yawMagTurn = 45*math.pi/180;
 fsm.headScan.tScan = 3.0*speedFactor;
 fsm.headScan.timeout = 7.0*speedFactor; --to headLookGoal
+fsm.headScan.minDist = 0.30;
+
 
 --------------------------------------------------
 --HeadKick: Fix headangle for approaching
@@ -255,6 +273,7 @@ fsm.headLookGoal={};
 --fsm.headLookGoal.yawSweep = 50*math.pi/180;
 fsm.headLookGoal.yawSweep = 70*math.pi/180;
 fsm.headLookGoal.tScan = 1.0*speedFactor;
+fsm.headLookGoal.minDist = 0.40;
 
 --------------------------------------------------
 --HeadSweep: Look around to find the goal

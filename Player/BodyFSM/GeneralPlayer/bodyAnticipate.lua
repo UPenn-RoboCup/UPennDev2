@@ -19,6 +19,9 @@ kickable = true;
 follow = false;
 
 goalie_dive = Config.goalie_dive or 0;
+goalie_type = Config.fsm.goalie_type;
+
+
 
 tStartDelay = Config.fsm.bodyAnticipate.tStartDelay;
 rCloseDive = Config.fsm.bodyAnticipate.rCloseDive;
@@ -34,7 +37,9 @@ rCloseX = Config.fsm.bodyAnticipate.rCloseX;
 
 timeout = Config.fsm.bodyAnticipate.timeout;
 thFar = Config.fsm.bodyAnticipate.thFar or {0.4,0.4,15*math.pi/180};
-maxPosition = 0.55;
+
+
+
 
 function entry()
   print(_NAME.." entry");
@@ -42,26 +47,52 @@ function entry()
   started = false;
   follow = false;
   walk.stop();
-  Motion.event("diveready");
+  if goalie_type>2 then
+    Motion.event("diveready");
+  end
 end
 
 function update()
-  walk.stop();
+  role = gcm.get_team_role();
+  if role~=0 then
+    return "player";
+  end
+
+  if goalie_type>1 then 
+    walk.stop();
+  else
+    return 'position';
+  end
 
   local t = Body.get_time();
   ball = wcm.get_ball();
+ 
+  ball_v_inf = wcm.get_ball_v_inf();
+  ball.x=ball_v_inf[1];
+  ball.y=ball_v_inf[2];
+
   pose = wcm.get_pose();
   tBall = Body.get_time() - ball.t;
   ballGlobal = util.pose_global({ball.x, ball.y, 0}, {pose.x, pose.y, pose.a});
   ballR = math.sqrt(ball.x^2+ ball.y^2);
 
   -- See where our home position is...
-  homePosition=getGoalieHomePosition();
-  homeRelative = util.pose_relative(homePosition, {pose.x, pose.y, pose.a});
+
+  if goalie_type<3 then 
+    --moving goalie
+    homePose=position.getGoalieHomePose();
+  else
+    --diving goalie
+    homePose=position.getGoalieHomePose2();
+  end
+
+
+  homeRelative = util.pose_relative(homePose, {pose.x, pose.y, pose.a});
   rHomeRelative = math.sqrt(homeRelative[1]^2 + homeRelative[2]^2);
 
   goal_defend=wcm.get_goal_defend();
   ballxy=vector.new( {ball.x,ball.y,0} );
+  aBall = math.atan2 (ball.y,ball.x);
   posexya=vector.new( {pose.x, pose.y, pose.a} );
   ballGlobal=util.pose_global(ballxy,posexya);
   ballR_defend = math.sqrt(
@@ -69,19 +100,24 @@ function update()
 	(ballGlobal[2]-goal_defend[2])^2);
   ballX_defend = math.abs(ballGlobal[1]-goal_defend[1]);
 
-
-
---TODO: Diving handling 
+  --TODO: Diving handling 
 
   ball_v = math.sqrt(ball.vx^2+ball.vy^2);
 
-  if goalie_dive > 0 then
-
+  if goalie_dive > 0 and goalie_type>2 then
     if t-t0>tStartDelay and t-ball.t<0.1 then
+
       ballR=math.sqrt(ball.x^2+ball.y^2);
+
+      if ball_v>ball_velocity_th and
+	ball.vx<ball_velocity_thx then
+        print(string.format("B: %.1f %.1f V %.2f %.2f", 
+	ball.x,ball.y,ball.vx,ball.vy));
+      end
+
       if ball.vx<ball_velocity_thx and 
-	ballR_defend<rCloseDive and
-	ballR_defend>rMinDive and
+	ballR<rCloseDive and
+	ballR>rMinDive and
         ball_v>ball_velocity_th then
 
         t0=t;
@@ -106,17 +142,24 @@ function update()
     end
   end
 
-  if goalie_dive~=1 then 
+  aBall = math.atan2 (ball.y,ball.x);
+
+
+  if goalie_dive~=1 or goalie_type<3 then 
     --TODO: check if other player is close to the ball
+
+
     if (ballR_defend<rClose or ballX_defend<rCloseX)
        and t-ball.t<0.1 and ball_v < ball_velocity_th2 then
       Motion.event("walk");
       return "ballClose";
     end
+
     attackBearing = wcm.get_attack_bearing();
     if Config.fsm.goalie_reposition==1 then --check yaw error only
       if (t - t0 > timeout) and 
-  	math.abs(attackBearing) > thFar[3] then
+  	math.abs(aBall) > thFar[3] then
+
         Motion.event("walk");
         return 'position';
       end
@@ -124,35 +167,13 @@ function update()
     elseif Config.fsm.goalie_reposition==2 then 
       if (t - t0 > timeout) and 
 	( rHomeRelative>math.sqrt(thFar[1]^2+thFar[2]^2) or
-	math.abs(attackBearing) > thFar[3]) then
+  	math.abs(aBall) > thFar[3]) then
+
         Motion.event("walk");
         return 'position';
       end
     end
   end
-end
-function getGoalieHomePosition()
-
-  -- define home goalie position (in front of goal and facing the ball)
-  --homePosition = 1.0*vector.new(wcm.get_goal_defend());
-  homePosition = 0.98*vector.new(wcm.get_goal_defend());
-
---[[
-  vBallHome = math.exp(-math.max(tBall-3.0, 0)/4.0)*(ballGlobal - homePosition);
-  rBallHome = math.sqrt(vBallHome[1]^2 + vBallHome[2]^2);
-
-  if (rBallHome > maxPosition) then
-    scale = maxPosition/rBallHome;
-    vBallHome = scale*vBallHome;
-  end
-  homePosition = homePosition + vBallHome;
---]]
-
-
-  homePosition = 0.94*vector.new(wcm.get_goal_defend());
-
-
-  return homePosition;
 end
 
 

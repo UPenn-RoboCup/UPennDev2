@@ -5,6 +5,8 @@ require('walk')
 require('vector')
 require('Config')
 require('wcm')
+require('gcm')
+require('position')
 
 function cycle_behavior()
   demo_behavior = demo_behavior%4 + 1;
@@ -42,7 +44,7 @@ function update()
   -------------------------------
   --Kickoff handling
   ------------------------------
-  tKickOffWear = 30.0;
+  tKickOffWear = Config.team.tKickOffWear or 30.0;
 
 
   t=Body.get_time();
@@ -50,39 +52,53 @@ function update()
   tKickOff=wcm.get_kick_tKickOff();
   --If too long time has passed since game starts
   --Don't care about kickoff kick 
-  if (t-tKickOff)>tKickOffWear then
+  if (t-tKickOff)>tKickOffWear and kick_off==1 then
+    print("kickoff weared off")
     wcm.set_kick_kickOff(0);
     kick_off=0;
   end
 
   if Config.fsm.playMode>1 then --skip kick selection in demo mode
     if kick_off>0 then 
-      print("Behavior updated, kickoff kick")
-      kickAngle = math.pi/45; --30 degree off angle
+--      print("Behavior updated, kickoff kick")
+      kickAngle = math.pi/6; --30 degree off angle
       kickDir=1;
       kickType=2;
-      wcm.set_kick_kickOff(0);
       wcm.set_kick_dir(kickDir);
       wcm.set_kick_type(kickType);
       wcm.set_kick_angle(kickAngle);
       return;
     end
-    attackBearing = wcm.get_attack_bearing();
+
+    position.posCalc();
+    aGoal = wcm.get_goal_attack_angle2();
+    pose = wcm.get_pose();
+
+    angleRot = util.mod_angle(aGoal - pose.a);
+
+--print("angleRot:",angleRot*180/math.pi)
     --Check if front walkkick is available now
     kickType=2;
 
     --Check kick direction 
-    thFrontKick = 10*math.pi/180;  
+    thFrontKick = 45*math.pi/180;  
+    thFrontKick2 = 135*math.pi/180;  
 
-    if math.abs(attackBearing)<thFrontKick then
+
+
+    if math.abs(angleRot)<thFrontKick or 
+       math.abs(angleRot)>thFrontKick2 	then
+--print("STRAIGHT",angleRot*180/math.pi)
       kickDir=1;
       kickAngle = 0;
-    elseif attackBearing>0 then --should kick to the left
+    elseif angleRot>0 then --should kick to the left
+--print("LEFT",angleRot*180/math.pi)
       kickDir=2;
-      kickAngle = math.pi/2;
+      kickAngle = 70*math.pi/180;
     else
+--print("RIGHT",angleRot*180/math.pi)
       kickDir=3;
-      kickAngle = -math.pi/2;
+      kickAngle = -70*math.pi/180;
     end
   else --Demo mode
     if kickDir>1 then 
@@ -95,20 +111,49 @@ function update()
     kickType=1;
   end
 
-  if Config.fsm.enable_sidekick==0 then
+  if Config.fsm.enable_sidekick==0 and kickDir~=1 then
     kickDir=1;
     kickAngle=0;
   end
 
+--[[
   if kickDir==1 then
-    print("Behavior updated, straight kick")
+    print("Straight kick")
   elseif kickDir==2 then
-    print("Behavior updated, kick to the left")
+    print("kick to the left")
   else
-    print("Behavior updated, kick to the right")
+    print("kick to the right")
   end
+--]]
 
   wcm.set_kick_dir(kickDir);
   wcm.set_kick_type(kickType);
   wcm.set_kick_angle(kickAngle);
 end
+
+function get_attack_bearing_pose(pose0)
+  postYellow = Config.world.postYellow;
+  postCyan = Config.world.postCyan;
+
+  if gcm.get_team_color() == 1 then
+    -- red attacks cyan goal
+    postAttack = postCyan;
+  else
+    -- blue attack yellow goal
+    postAttack = postYellow;
+  end
+  -- make sure not to shoot back towards defensive goal:
+  local xPose = math.min(math.max(pose0.x, -0.99*PoseFilter.xLineBoundary),
+                          0.99*PoseFilter.xLineBoundary);
+  local yPose = pose0.y;
+  local aPost = {}
+  aPost[1] = math.atan2(postAttack[1][2]-yPose, postAttack[1][1]-xPose);
+  aPost[2] = math.atan2(postAttack[2][2]-yPose, postAttack[2][1]-xPose);
+  local daPost = math.abs(util.mod_angle(aPost[1]-aPost[2]));
+
+  attackHeading = aPost[2] + .5*daPost;
+  attackBearing = PoseFilter.mod_angle(attackHeading - pose0.a);
+
+  return attackBearing, daPost;
+end
+

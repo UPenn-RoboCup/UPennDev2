@@ -5,6 +5,7 @@ require('walk')
 require('Speak')
 require('vector')
 require('gcm')
+require('wcm')
 require('BodyFSM')
 require('HeadFSM')
 
@@ -28,6 +29,15 @@ function entry()
 end
 
 function update()
+
+  t = Body.get_time();
+  --Update kickoff timer
+  if gcm.get_game_kickoff()>0 then
+    wcm.set_kick_tKickOff(t);
+    wcm.set_kick_kickOff(1);
+  end
+
+
   local state = gcm.get_game_state();
 
   -- stop walk (in case getup routine is invoked)

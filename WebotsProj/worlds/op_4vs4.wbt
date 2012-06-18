@@ -56,6 +56,18 @@ DEF BLUE_LANDMARK Landmark {
 DEF BALL BallGPS {
   translation 0 0.0323921 0
 }
+Supervisor {
+  children [
+    Emitter {
+      channel -1
+    }
+    Receiver {
+      channel 2
+    }
+  ]
+  name "soccer referee"
+  controller "op_soccer_supervisor"
+}
 
 DEF PLAYER_0_0 DARwInOPGPS {
   translation -2.2 0.3 2

@@ -12,30 +12,31 @@ stance.qLArmSit = math.pi/180*vector.new({140,8,-40});
 stance.qRArmSit = math.pi/180*vector.new({140,-8,-40});
 stance.dpLimitSit=vector.new({.03,.01,.06,.1,.3,.3});
 
---stance.bodyHeightDive= 0.25;
---stance.bodyTiltDive= 0;
+--This makes correct sideways dive
+stance.bodyHeightDive= 0.25;
+stance.bodyTiltDive= 0;
+
+--stance.bodyHeightDive= 0.28;
+stance.dpLimitDive=vector.new({.06,.06,.09,.9,.9,.9});
+
+--Same stance as walking, with zero tilt
 stance.bodyHeightDive= 0.295;
-stance.bodyTiltDive= 20*math.pi/180;
-stance.dpLimitDive=vector.new({.06,.06,.06,.9,.9,.9});
+stance.bodyTiltDive= 0*math.pi/180;
+stance.dpLimitDive=vector.new({.06,.06,.06,.7,.7,.7});
 
 stance.bodyTiltStance=20*math.pi/180; --bodyInitial bodyTilt, 0 for webots
 stance.dpLimitStance=vector.new({.04, .03, .07, .4, .4, .4});
-
---Old values
-stance.initangle = {
-  0,0,
-  105*math.pi/180, 30*math.pi/180, -45*math.pi/180,
-  0,  0.055, -0.77, 2.08, -1.31, -0.055, 
-  0, -0.055, -0.77, 2.08, -1.31, 0.055,
-  105*math.pi/180, -30*math.pi/180, -45*math.pi/180,
-}
 
 --Sit final value
 stance.initangle = vector.new({
   0,0,
   105, 30, -45,
-  0,  -2, -16, 110, -119, 2, 
-  0, 2, -16, 110, -119, -2,
+--  0,  -2, -16, 110, -119, 2, 
+--  0, 2, -16, 110, -119, -2,
+
+  0,  -2, -26, 110, -119, 2, 
+  0, 2, -26, 110, -119, -2,
+
   105, -30, -45,
 })*math.pi/180;
 

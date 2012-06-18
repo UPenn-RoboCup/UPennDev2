@@ -39,6 +39,8 @@ require('getch')
 require('Body')
 require('Motion')
 
+gcm.say_id();
+
 Motion.entry();
 
 darwin = false;
@@ -52,8 +54,8 @@ if(Config.platform.name == 'OP') then
   Body.set_actuator_command(Config.stance.initangle)
   unix.usleep(1E6*0.5);
   Body.set_body_hardness(0);
-  Body.set_lleg_hardness({0.2,0.6,0,0,0,0});
-  Body.set_rleg_hardness({0.2,0.6,0,0,0,0});
+  Body.set_lleg_hardness({0.6,0.6,0.6,0,0,0});
+  Body.set_rleg_hardness({0.6,0.6,0.6,0,0,0});
 end 
 
 
@@ -90,11 +92,15 @@ lcount = 0;
 tUpdate = unix.time();
 
 --Start with PAUSED state
+gcm.set_team_forced_role(0); --Don't force role
 gcm.set_game_paused(1);
-cur_role = 1; --Attacker
 waiting = 1;
---Don't force the role
-gcm.set_team_forced_role(0);
+if Config.game.role==1 then
+  cur_role = 1; --Attacker
+else
+  cur_role = 0; --Default goalie
+end
+
 
 
 button_role,button_state = 0,0;

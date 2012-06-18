@@ -90,6 +90,7 @@ sm:set_transition(bodyWalkKick, 'done', bodyPosition);
 sm:set_transition(bodyPosition, 'fall', bodyPosition);
 sm:set_transition(bodyApproach, 'fall', bodyPosition);
 sm:set_transition(bodyKick, 'fall', bodyPosition);
+sm:set_transition(bodyReady, 'fall', bodyReady);
 
 
 
@@ -123,6 +124,7 @@ sm:set_transition(bodyChase, 'ballClose', bodyApproach);
 --sm:set_transition(bodyDive, 'done', bodyChase);
 -- Should timeout in case the fall is not detected...
 sm:set_transition(bodyDive, 'timeout', bodyPositionGoalie);
+sm:set_transition(bodyDive, 'reanticipate', bodyAnticipate);
 --The transition after a dive should just come from a fall (or timeout in case)
 
 sm:set_transition(bodyPositionGoalie, 'fall', bodyPositionGoalie);

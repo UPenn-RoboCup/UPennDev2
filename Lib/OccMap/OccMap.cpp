@@ -112,7 +112,7 @@ int OccMap::vision_update(vector<double>& free_bound, vector<int>& free_bound_ty
   double ob_x = 0, ob_y = 0;
   int ni = 0, nj = 0, index = 0; 
   for (int cnt = 0; cnt < free_bound_type.size(); cnt++) {
-    if (free_bound_type[cnt] != 2){
+    if (free_bound_type[cnt] == 2){
       // find pts need to be update
       ob_x = odom_x + cos(odom_a) * free_bound[cnt] - sin(odom_a) * free_bound[cnt + width];
       ob_y = odom_y + sin(odom_a) * free_bound[cnt] + cos(odom_a) * free_bound[cnt + width];

@@ -14,7 +14,7 @@ cal["betty"]={
   kickXComp = 0,
   headPitchComp = 0,
   armBias={0,0,0,0,0,0},
-  pid = 0,
+  pid = 1,
 };
 
 cal["linus"]={

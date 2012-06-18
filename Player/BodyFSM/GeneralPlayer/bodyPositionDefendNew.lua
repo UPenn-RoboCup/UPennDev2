@@ -316,8 +316,10 @@ function getDefenderHomePose()
   else
     angle_ball_goaldefend_center=math.atan((ballGlobal[2]-goalDefend[2])/(goalDefend[1]+math.abs(ballGlobal[1])))
   end
-  
-  homePosition[2]=homePosition[1]*math.tan((1+angle_shift)*angle_ball_goaldefend_center)/math.deg(angle_ball_goaldefend_center);
+ 
+  -- Change y co-ordinate according to theta, shift it by a factor of angle_shift and divide the angle by the present theta in degrees
+  -- The division is for scaling down when the bot is in the defending half.
+  homePosition[2]=homePosition[1]*math.tan((1+angle_shift)*angle_ball_goaldefend_center)/(math.deg(angle_ball_goaldefend_center)+util.sign(angle_ball_goaldefend_center)*0.00000000001)
  
   return homePosition;
 

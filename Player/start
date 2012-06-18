@@ -12,6 +12,14 @@ rm -f screenlog*
 
 SCREEN_FLAGS="-dm -L -S"
 
+reset_wb(){
+  uvcdynctrl -d video0 -s 'White Balance Temperature, Auto' -- 1
+  echo "Reset WB. Make Sure Robot Facing Field"
+  sleep 2;
+  uvcdynctrl -d video0 -s 'White Balance Temperature, Auto' -- 0
+  sleep 1;
+}
+
 run_dcm_vcm(){
   echo "Starting DCM..."
   cd $PLAYER_DIR/Lib
@@ -23,7 +31,7 @@ run_dcm_vcm(){
   cd $PLAYER_DIR
   screen $SCREEN_FLAGS cognition /usr/bin/luajit run_cognition.lua
   # Allow Cognition some time to start
-  sleep 1
+  sleep 3
 }
 
 run_player(){
@@ -31,7 +39,7 @@ run_player(){
  
   echo "Starting Player..."
   cd $PLAYER_DIR
-  screen $SCREEN_FLAGS player /usr/bin/luajit run_main_op.lua
+  screen -m -L -S player /usr/bin/luajit run_main_op.lua
   
   echo "Rock and Roll!"
 }
@@ -116,12 +124,16 @@ case "$1" in
   'roletest')
     echo "Start Role Testing Mode"
     run_roletest;;
+  'wbreset')
+    echo "Reset White Balance"
+    reset_wb;;
   'help')
     echo "[No Argu](s)     -- Player Mode"
     echo "[Demo](sd)       -- Demo Mode"
     echo "[visiontest](sv) -- Vision Debug Mode"
     echo "[bias](sb)       -- Bias Setup Mode"
-    echo "[roletest](sr)   -- Role Testing Mode";;
+    echo "[roletest](sr)   -- Role Testing Mode"
+    echo "[wbreset](sw)   -- Reset WB Mode";;
   *)
     echo "Unknown Mode. use 'help ' to see Available Mode";;
 esac

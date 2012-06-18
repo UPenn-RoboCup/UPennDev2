@@ -27,8 +27,9 @@ phase=0; --0 for wait, 1 for approach, 2 for turn, 3 for end
 
 function entry()
   print(_NAME.." entry");
-  t0 = Body.get_time();
   phase=0;
+
+  t0 = Body.get_time();
   Motion.event('standup')
 end
 
@@ -64,6 +65,7 @@ function update()
 
   if phase==0 then 
     if t - t0 < tstart then 
+      walk.set_velocity(0,0,0);
       return;
     else walk.start();
       phase=1;
@@ -101,6 +103,10 @@ function update()
      math.abs(attackBearing)<thClose then 
       walk.stop(); 
       phase=3;
+  end
+  --To prevent robot keep walking after falling down
+  if phase==3 then
+      walk.stop(); 
   end
 end
 

@@ -391,7 +391,7 @@ function set_indicator_goal(color)
 end
 
 function get_battery_level()
-  return 10;
+  return 120;
 end
 
 function get_change_state()

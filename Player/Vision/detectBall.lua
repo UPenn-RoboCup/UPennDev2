@@ -28,6 +28,9 @@ th_min_green1=Config.vision.ball.th_min_green1;
 th_min_green2=Config.vision.ball.th_min_green2;
 
 check_for_ground = Config.vision.ball.check_for_ground;
+check_for_field = Config.vision.ball.check_for_field or 0;
+field_margin = Config.vision.ball.field_margin or 0;
+
 
 function detect(color)
   local ball = {};
@@ -81,6 +84,8 @@ function detect(color)
       -- Coordinates of ball
       scale = math.max(dArea/diameter, ball.propsA.axisMajor/diameter);
       v = HeadTransform.coordinatesA(ballCentroid, scale);
+      v_inf = HeadTransform.coordinatesA(ballCentroid,0.1);
+      
       vcm.add_debug_message(string.format(
 	"Ball v0: %.2f %.2f %.2f\n",v[1],v[2],v[3]));
 
@@ -127,6 +132,23 @@ function detect(color)
         end --end bottom margin check
       end --End ball height, ground check
     end --End all check
+
+    if check_passed then    
+      ballv = {v[1],v[2],0};
+      pose=wcm.get_pose();
+      posexya=vector.new( {pose.x, pose.y, pose.a} );
+      ballGlobal = util.pose_global(ballv,posexya); 
+      if check_for_field>0 then
+        if math.abs(ballGlobal[1]) > 
+   	  Config.world.xLineBoundary + field_margin or
+          math.abs(ballGlobal[2]) > 
+	  Config.world.yLineBoundary + field_margin then
+
+          vcm.add_debug_message("Field check fail\n");
+          check_passed = false;
+        end
+      end
+    end
     if check_passed then
       break;
     end
@@ -136,11 +158,26 @@ function detect(color)
     return ball;
   end
   
-  v=HeadTransform.projectGround(v,diameter/2);
+  --SJ: Projecting ball to flat ground makes large distance error
+  --We are using declined plane for projection
+
+  vMag =math.max(0,math.sqrt(v[1]^2+v[2]^2)-0.50);
+  bodyTilt = vcm.get_camera_bodyTilt();
+--  print("BodyTilt:",bodyTilt*180/math.pi)
+  projHeight = vMag * math.tan(10*math.pi/180);
+
+
+  v=HeadTransform.projectGround(v,diameter/2-projHeight);
+
   --SJ: we subtract foot offset 
   --bc we use ball.x for kick alignment
   --and the distance from foot is important
   v[1]=v[1]-mcm.get_footX()
+
+  --Ball position ignoring ball size (for distant ball observation)
+  v_inf=HeadTransform.projectGround(v_inf,diameter/2);
+  v_inf[1]=v_inf[1]-mcm.get_footX()
+  wcm.set_ball_v_inf({v_inf[1],v_inf[2]});  
 
   ball.v = v;
   ball.detect = 1;
@@ -152,5 +189,9 @@ function detect(color)
 
   vcm.add_debug_message(string.format(
 	"Ball detected\nv: %.2f %.2f %.2f\n",v[1],v[2],v[3]));
+--[[
+  print(string.format(
+	"Ball detected\nv: %.2f %.2f %.2f\n",v[1],v[2],v[3]));
+--]]
   return ball;
 end

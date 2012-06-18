@@ -58,6 +58,9 @@ return;
     % Toggle between masking mode and label preview mode
     DATA.viewmode = 0;
 
+    DATA.LogFilePath = './logs';
+    DATA.LogList = {};
+
     % standard options for all gui elements
     % do not allow callbacks to be interrupted
     Std.Interruptible = 'off';
@@ -69,6 +72,20 @@ return;
 		DATA.LogFileName = uicontrol('Style','text',...
 		 										   'Units','Normalized',...
 													 'Position',[.35 0.955 0.40 0.04]);
+    DATA.PrevLogFile = uicontrol(Std, ...
+                                'Parent', hfig,...
+                                'Style', 'pushbutton',...
+                                'String', 'Prev Log (Z)',...
+                                'Callback', 'colortable(''LoadMontage'',''Backward'')',...
+                                'Units', 'Normalized',...
+                                'Position', [.21 0.955 0.12 0.04]);
+    DATA.NextLogFile = uicontrol(Std, ...
+                                'Parent', hfig,...
+                                'Style', 'pushbutton',...
+                                'String', 'Next Log (X)',...
+                                'Callback', 'colortable(''LoadMontage'',''Forward'')',...
+                                'Units', 'Normalized',...
+                                'Position', [.77 0.955 0.12 0.04]);
     DATA.ImageAxes = axes(Std, ...
                            'Parent', hfig, ...
                            'YDir', 'reverse', ...
@@ -226,7 +243,13 @@ return;
     return;
 	
 	function KeyResponse(h_obj, evt)
-		if evt.Key == 'a' | evt.Key == 'A'
+    if evt.Key == 'z' | evt.Key == 'Z'
+      disp('Select Previous Log File');
+      LoadMontage('Backward');
+    elseif evt.Key == 'x' | evt.Key == 'X'
+      disp('Select Next Log File');
+      LoadMontage('Forward'); 
+    elseif evt.Key == 'a' | evt.Key == 'A'
 			disp('Fast Backwards');
 			UpdateImage('fastbackward');
 		elseif evt.Key == 's' | evt.Key == 'S'
@@ -469,21 +492,41 @@ return;
     return;
 
 
-  function LoadMontage()
+  function LoadMontage(index)
   % callback for the 'Load Montage' button
     global COLORTABLE
 
     % get the gui userdata
     hfig = gcbf;
     DATA = get(hfig, 'UserData');
-
-    % open file select gui
-    [filename, pathname] = uigetfile('*.mat', 'Select montage file');
+    
+    if (nargin) 
+      index
+      pathname = DATA.LogFilePath;
+      filename = get(DATA.LogFileName, 'String');
+      fileorder = strmatch(filename, strvcat(DATA.LogList.name));
+      if strcmp(index,'Forward')
+        if (fileorder < size(DATA.LogList,1))
+          fileorder = fileorder + 1;
+        end
+      elseif strcmp(index,'Backward')
+        if (fileorder > 1)
+          fileorder = fileorder - 1;
+        end
+      else
+      end
+      filename = DATA.LogList(fileorder).name;
+    else
+      % open file select gui
+      [filename, pathname] = uigetfile('*.mat', 'Select montage file');
+    end
 
     if (filename ~= 0)
       % if a file was selected
       s = load([pathname filename]);
 			set(DATA.LogFileName,'String', filename);
+      DATA.LogFilePath = pathname;
+      DATA.LogList = dir(strcat(pathname,'/*.mat'));
 
       % make sure it has a yuyvMontage
       if (isfield(s, 'yuyvMontage'))

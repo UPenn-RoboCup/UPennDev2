@@ -68,6 +68,8 @@ vision.ball.th_min_green2 = 40;
 
 vision.ball.check_for_ground = 1;
 
+vision.ball.check_for_field = 1;
+vision.ball.field_margin = 2.0;
 
 --Vision check values
 --For 320*240 labelA 

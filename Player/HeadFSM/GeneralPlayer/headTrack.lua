@@ -13,6 +13,9 @@ trackZ = Config.vision.ball_diameter;
 timeout = Config.fsm.headTrack.timeout;
 tLost = Config.fsm.headTrack.tLost;
 
+goalie_dive = Config.goalie_dive or 0;
+goalie_type = Config.fsm.goalie_type;
+
 
 function entry()
   print("Head SM:".._NAME.." entry");
@@ -25,7 +28,7 @@ function update()
   role = gcm.get_team_role();
   --Force attacker for demo code
   if Config.fsm.playMode==1 then role=1; end
-  if role==0 then
+  if role==0 and goalie_type>2 then --Escape if diving goalie
     return "goalie";
   end
 
@@ -50,15 +53,13 @@ function update()
     return "lost";
   end
 --TODO: generalize this using eta information
---[[
   if (t - t0 > timeout) and
      ballR > minDist   then
-  end
---]]
-
-  if (t - t0 > timeout) then
-    print('Head Track timeout')
-    return "timeout";
+     if role==0 then
+       return "sweep"; --Goalie, sweep to localize
+     else
+       return "timeout";  --Player, look up to see goalpost
+     end
   end
 end
 

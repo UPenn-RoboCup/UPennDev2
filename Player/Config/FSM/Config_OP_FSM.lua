@@ -31,7 +31,7 @@ fsm.th_front_kick = 10*math.pi/180;
 fsm.bodyReady={};
 fsm.bodyReady.maxStep = 0.06;
 fsm.bodyReady.thClose = {0.30,15*math.pi/180} --r and theta
-fsm.bodyReady.tStart = 5.0;  --initial localization time
+fsm.bodyReady.tStart = 3.0;  --initial localization time
 
 --------------------------------------------------
 --BodySearch : make robot turn to search the ball
@@ -47,13 +47,13 @@ fsm.bodyAnticipate={};
 
 fsm.bodyAnticipate.tStartDelay = 1.0*speedFactor; 
 
-fsm.bodyAnticipate.rMinDive = 0.3;
-fsm.bodyAnticipate.rCloseDive = 3.0;
+fsm.bodyAnticipate.rMinDive = 1.0;
+fsm.bodyAnticipate.rCloseDive = 2.0;
 fsm.bodyAnticipate.center_dive_threshold_y = 0.07; 
 fsm.bodyAnticipate.dive_threshold_y = 1.0;
 
-fsm.bodyAnticipate.ball_velocity_th = 0.5; --min velocity for diving
-fsm.bodyAnticipate.ball_velocity_thx = -0.2; --min x velocity for diving
+fsm.bodyAnticipate.ball_velocity_th = 1.0; --min velocity for diving
+fsm.bodyAnticipate.ball_velocity_thx = -1.0; --min x velocity for diving
 
 fsm.bodyAnticipate.rClose = 1.7;
 fsm.bodyAnticipate.rCloseX = 1.0;
@@ -100,6 +100,13 @@ fsm.bodyPosition.rDist2 = 0.20;
 fsm.bodyPosition.rTurn2 = 0.08; 
 fsm.bodyPosition.rOrbit = 0.60; 
 
+
+--New params to reduce sidestepping
+fsm.bodyPosition.rOrbit = 0.60; 
+fsm.bodyPosition.rDist1 = 0.40; 
+fsm.bodyPosition.rDist2 = 0.25; 
+
+
 fsm.bodyPosition.rClose = 0.35; 
 fsm.bodyPosition.thClose = {0.15,0.15,10*math.pi/180};
 
@@ -113,14 +120,16 @@ fsm.bodyPosition.maxStep1 = 0.06;
 
 --Medium speed
 fsm.bodyPosition.maxStep2 = 0.07;
-fsm.bodyPosition.rVel2 = 0.5;
+--fsm.bodyPosition.rVel2 = 0.5;
+fsm.bodyPosition.rVel2 = 0.4;
 fsm.bodyPosition.aVel2 = 45*math.pi/180;
 fsm.bodyPosition.maxA2 = 0.1;
 fsm.bodyPosition.maxY2 = 0.02;
 
 --Full speed front dash
 fsm.bodyPosition.maxStep3 = 0.08;
-fsm.bodyPosition.rVel3 = 0.8; 
+--fsm.bodyPosition.rVel3 = 0.8; 
+fsm.bodyPosition.rVel3 = 0.5; 
 fsm.bodyPosition.aVel3 = 20*math.pi/180;
 fsm.bodyPosition.maxA3 = 0.0;
 fsm.bodyPosition.maxY3 = 0.0;
@@ -135,10 +144,10 @@ fsm.bodyApproach.rFar = 0.45; --Max ball distance
 fsm.bodyApproach.tLost = 3.0*speedFactor;--ball detection timeout
 
 fsm.bodyApproach.aThresholdTurn = 10*math.pi/180;
-fsm.bodyApproach.aThresholdTurnGoalie = 15*math.pi/180;
+fsm.bodyApproach.aThresholdTurnGoalie = 30*math.pi/180;
 
 --x and y target position for stationary straight kick
-fsm.bodyApproach.xTarget11={0, 0.14,0.16}; --min, target, max
+fsm.bodyApproach.xTarget11={0, 0.11,0.13}; --min, target, max
 fsm.bodyApproach.yTarget11={0.015, 0.03, 0.045}; --min, target ,max
 
 --x and y target position for stationary kick to left
@@ -146,11 +155,14 @@ fsm.bodyApproach.xTarget12={0, 0.13,0.15}; --min, target, max
 fsm.bodyApproach.yTarget12={-0.005, 0.01, 0.025}; --min, target ,max
 
 --Target position for straight walkkick 
-fsm.bodyApproach.xTarget21={0, 0.21,0.23}; --min, target, max
+fsm.bodyApproach.xTarget21={0, 0.19,0.21}; --min, target, max
 fsm.bodyApproach.yTarget21={0.020, 0.035, 0.050}; --min, target ,max
 
 --Target position for side walkkick to left
-fsm.bodyApproach.xTarget22={0, 0.16,0.19}; --min, target, max
+--fsm.bodyApproach.xTarget22={0, 0.16,0.19}; --min, target, max
+
+--shorter walking sidekick
+fsm.bodyApproach.xTarget22={0, 0.12,0.14}; --min, target, max 
 fsm.bodyApproach.yTarget22={0.000, 0.015, 0.030}; --min, target ,max
 
 --------------------------------------------------
@@ -171,7 +183,7 @@ fsm.bodyKick.tStartWait = 1.0;
 fsm.bodyKick.tStartWaitMax = 1.5;
 
 --ball position checking params
-fsm.bodyKick.kickTargetFront = {0.14,0.04};
+fsm.bodyKick.kickTargetFront = {0.12,0.04};
 
 --For kicking to the left
 fsm.bodyKick.kickTargetSide = {0.15,0.01};
@@ -198,7 +210,7 @@ fsm.bodyGotoCenter.timeout=10.0*speedFactor;
 fsm.headTrack = {};
 fsm.headTrack.timeout = 3.0 * speedFactor;
 fsm.headTrack.tLost = 1.5 * speedFactor;
-fsm.headTrack.minDist = 0.30; --If ball is closer than this, don't look up
+fsm.headTrack.minDist = 0.25;--If ball is closer than this, don't look up
 fsm.headTrack.fixTh={0.20,0.08}; --Fix yaw axis if ball is within this box
 
 --------------------------------------------------
@@ -256,6 +268,8 @@ fsm.headLookGoal={};
 --fsm.headLookGoal.yawSweep = 50*math.pi/180;
 fsm.headLookGoal.yawSweep = 70*math.pi/180;
 fsm.headLookGoal.tScan = 1.0*speedFactor;
+fsm.headLookGoal.minDist = 0.35;--If ball is closer than this,don'tsweep
+
 
 --------------------------------------------------
 --HeadSweep: Look around to find the goal

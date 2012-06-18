@@ -136,7 +136,9 @@ world.aCornerFilter = 0.03;
 world.aLineFilter = 0.02;
 
 --New two-goalpost localization
-world.use_new_goalposts=0;
+world.use_new_goalposts=1;
+--For NAO
+world.use_same_colored_goal = 0;
 
 -- Occupancy Map parameters
 occ = {};
@@ -144,7 +146,6 @@ occ.mapsize = 50;
 occ.centroid = {occ.mapsize / 2, occ.mapsize * 4 / 5};
 
 
-world.use_same_colored_goal = 1;
 
 --Use line information to fix angle
 world.use_line_angles = 1;

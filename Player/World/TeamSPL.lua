@@ -43,6 +43,9 @@ state.soundFilter = wcm.get_sound_detFilter();
 state.soundDetection = wcm.get_sound_detection();
 soundOdomPose = wcm.get_sound_odomPose();
 state.soundOdomPose = {x=soundOdomPose[1], y=soundOdomPose[2], a=soundOdomPose[3]};
+state.xp = wcm.get_particle_x();
+state.yp = wcm.get_particle_y();
+state.ap = wcm.get_particle_a();
 
 --Added key vision infos
 state.goal=0;  --0 for non-detect, 1 for unknown, 2/3 for L/R, 4 for both
@@ -52,6 +55,7 @@ state.landmark=0; --0 for non-detect, 1 for yellow, 2 for cyan
 state.landmarkv={0,0};
 states = {};
 states[playerID] = state;
+
 
 function recv_msgs()
   while (Comm.size() > 0) do 
@@ -93,6 +97,9 @@ function update()
   state.soundDetection = wcm.get_sound_detection();
   soundOdomPose = wcm.get_sound_odomPose();
   state.soundOdomPose = {x=soundOdomPose[1], y=soundOdomPose[2], a=soundOdomPose[3]};
+  state.xp = wcm.get_particle_x();
+  state.yp = wcm.get_particle_y();
+  state.ap = wcm.get_particle_a();
 
   --Added Vision Info 
   state.goal=0;

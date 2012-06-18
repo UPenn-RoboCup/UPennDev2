@@ -52,5 +52,5 @@ function update()
 end
 
 function exit()
-  HeadFSM.sm:set_state('headKickFollow');
+  HeadFSM.sm:set_state('headTrack');
 end

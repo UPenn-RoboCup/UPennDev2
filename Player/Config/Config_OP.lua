@@ -40,6 +40,8 @@ loadconfig('Vision/Config_OP_Vision')
 --loadconfig('Vision/Config_OP_Camera_L512_Day')
 loadconfig('Vision/Config_OP_Camera_Grasp')
 
+loadconfig('Vision/Config_OP_Camera_Ob_F1')
+
 -- Device Interface Libraries
 dev = {};
 dev.body = 'OPBody'; 

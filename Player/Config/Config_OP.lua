@@ -51,7 +51,8 @@ dev.ip_wired = '192.168.123.255';
 dev.ip_wireless = '192.168.1.255';
 dev.game_control='OPGameControl';
 dev.team='TeamNSL';
-dev.walk='NewNewNewWalk';
+--dev.walk='NewNewNewWalk';
+dev.walk='NewNewNewNewNewWalk';
 dev.kick = 'NewNewKick'
 dev.gender = 1; -- 1 for body and 0 for girl 
 

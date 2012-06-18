@@ -119,13 +119,31 @@ function process_keyinput()
       dive.set_dive("diveRight");
       Motion.event("dive");
 
-
+--[[
 	elseif byte==string.byte("z") then
 		grip.throw=0;
 		Motion.event("pickup");
 	elseif byte==string.byte("x") then
 		grip.throw=1;
 		Motion.event("throw");
+--]]
+
+	elseif byte==string.byte("z") then
+	    walk.startMotion("hurray1");
+
+	elseif byte==string.byte("x") then
+	    walk.startMotion("hurray2");
+
+	elseif byte==string.byte("c") then
+	    walk.startMotion("swing");
+
+	elseif byte==string.byte("v") then
+	    walk.startMotion("2punch");
+
+	elseif byte==string.byte("b") then
+	    walk.startMotion("point");
+
+
 
 
     elseif byte==string.byte("7") then	

@@ -229,6 +229,9 @@ function update()
             ball.x+0.10);
     vStep[3] = 0.5*ballA;
     targetangle = 0;
+    angleErrL = 0;
+    angleErrR = 0;
+
   else
     --Player FSM, turn towards the goal
 --    attackBearing, daPost = wcm.get_attack_bearing();
@@ -265,8 +268,8 @@ function update()
     end    
 
 
-
     if check_angle>0 then
+
       if angleErrR > 0 then
 --print("TURNLEFT")
         vStep[3]=0.2;

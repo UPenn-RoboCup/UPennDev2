@@ -184,8 +184,8 @@ function entry()
 
   --Place arms in appropriate position at sides
   Body.set_larm_command(qLArm0);
-  Body.set_larm_hardness(hardnessArm);
   Body.set_rarm_command(qRArm0);
+  Body.set_larm_hardness(hardnessArm);
   Body.set_rarm_hardness(hardnessArm);
 
   walkKickRequest = 0;
@@ -838,6 +838,9 @@ function startMotion(motionname)
       bodyRot1 = bodyRot0;
     end
 
+    Body.set_larm_hardness({0.7,0.7,0.7});
+    Body.set_rarm_hardness({0.7,0.7,0.7});
+
   end
 end
 
@@ -851,6 +854,9 @@ function advanceMotion()
   if ph>1 then --Advance frame
     if #current_motion == motion_index then
       motion_playing = 0;
+      Body.set_larm_hardness(hardnessArm);
+      Body.set_rarm_hardness(hardnessArm);
+
     else
       motion_index = motion_index + 1;
       motion_start_time = t;

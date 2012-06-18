@@ -667,3 +667,8 @@ cal["jiminy"].kickXComp=0.005;
 cal["sally"].servoBias={-33,-22,-6,0,29,-8,0,0,-4,0,0,0,};
 cal["sally"].footXComp=-0.001;
 cal["sally"].kickXComp=0.000;
+
+-- Updated date: Mon Jun 18 12:28:45 2012
+cal["scarface"].servoBias={0,0,6,50,30,15,0,0,-20,-32,-21,1,};
+cal["scarface"].footXComp=0.000;
+cal["scarface"].kickXComp=0.005;

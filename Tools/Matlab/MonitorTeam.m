@@ -7,7 +7,7 @@ end
 nRobots = 4;
 robots = cell(nRobots,1);
 
-teamNumber = 26;
+teamNumber = 25;
 nUpdate = 0;
 
 
@@ -36,10 +36,9 @@ while (1)
 	plot_field(gca,1);
 	hold on;
 
-  
 	for i = 1:nRobots
 		if (~isempty(robots{i}))
-      plot_robot(robots{i}, [], 1, 1);
+      plot_robot(robots{i}, [], 1, 4);
 		end
 	end
 

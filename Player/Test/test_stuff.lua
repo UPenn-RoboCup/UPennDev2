@@ -321,21 +321,21 @@ function update()
 
 		--Alpha for the gyro feedback--
 		elseif byte==string.byte("y") then
-			Config.walk.ankleImuParamX[1] = Config.walk.ankleImuParamX[1] - .05;
+			Config.walk.ankleImuParamX[1] = Config.walk.ankleImuParamX[1] - .01;
 		elseif byte==string.byte("Y") then
-			Config.walk.ankleImuParamX[1] = Config.walk.ankleImuParamX[1] + .05;
+			Config.walk.ankleImuParamX[1] = Config.walk.ankleImuParamX[1] + .01;
 		elseif byte==string.byte("u") then
-			Config.walk.ankleImuParamY[1] = Config.walk.ankleImuParamY[1] - .05;
+			Config.walk.ankleImuParamY[1] = Config.walk.ankleImuParamY[1] - .01;
 		elseif byte==string.byte("U") then
-			Config.walk.ankleImuParamY[1] = Config.walk.ankleImuParamY[1] + .05;
+			Config.walk.ankleImuParamY[1] = Config.walk.ankleImuParamY[1] + .01;
 		elseif byte==string.byte("o") then
-			Config.walk.kneeImuParamX[1] = Config.walk.kneeImuParamX[1] - .05;
+			Config.walk.kneeImuParamX[1] = Config.walk.kneeImuParamX[1] - .01;
 		elseif byte==string.byte("O") then
-			Config.walk.kneeImuParamX[1] = Config.walk.kneeImuParamX[1] + .05;
+			Config.walk.kneeImuParamX[1] = Config.walk.kneeImuParamX[1] + .01;
 		elseif byte==string.byte("p") then
-			Config.walk.hipImuParamY[1] = Config.walk.hipImuParamY[1] - .05;
+			Config.walk.hipImuParamY[1] = Config.walk.hipImuParamY[1] - .01;
 		elseif byte==string.byte("P") then
-			Config.walk.hipImuParamY[1] = Config.walk.hipImuParamY[1] + .05;
+			Config.walk.hipImuParamY[1] = Config.walk.hipImuParamY[1] + .01;
 
 		--Gain for the gyro feedback--
 		elseif byte==string.byte("q") then
@@ -410,7 +410,7 @@ Config.walk.supportX, Config.walk.supportY));
 		print(string.format("Head angle: %d, %d",
 			headangle[1]*180/math.pi,
 			headangle[2]*180/math.pi));
-		print(string.format("Gyro Settings ({alpha, gain, deadband, max}):\n ankleImuParamX: {%.2f, %.4f, %.3f, %.3f}\n ankleImuParamY: {%.2f, %.4f, %.3f, %.3f}\n kneeImuParamX: {%.2f, %.4f, %.3f, %.3f}\n hipImuParamY: {%.2f, %.4f, %.3f, %.3f}\n", Config.walk.ankleImuParamX[1], Config.walk.ankleImuParamX[2], Config.walk.ankleImuParamX[3], Config.walk.ankleImuParamX[4], Config.walk.ankleImuParamY[1], Config.walk.ankleImuParamY[2], Config.walk.ankleImuParamY[3], Config.walk.ankleImuParamY[4], Config.walk.kneeImuParamX[1], Config.walk.kneeImuParamX[2], Config.walk.kneeImuParamX[3], Config.walk.kneeImuParamX[4], Config.walk.hipImuParamY[1], Config.walk.hipImuParamY[2], Config.walk.hipImuParamY[3], Config.walk.hipImuParamY[4]));
+		print(string.format("Gyro Settings ({alpha, gain, deadband, max}):\n ankleImuParamX: {%.2f, %.5f, %.3f, %.3f}\n ankleImuParamY: {%.2f, %.5f, %.3f, %.3f}\n kneeImuParamX: {%.2f, %.5f, %.3f, %.3f}\n hipImuParamY: {%.2f, %.5f, %.3f, %.3f}\n", Config.walk.ankleImuParamX[1], Config.walk.ankleImuParamX[2], Config.walk.ankleImuParamX[3], Config.walk.ankleImuParamX[4], Config.walk.ankleImuParamY[1], Config.walk.ankleImuParamY[2], Config.walk.ankleImuParamY[3], Config.walk.ankleImuParamY[4], Config.walk.kneeImuParamX[1], Config.walk.kneeImuParamX[2], Config.walk.kneeImuParamX[3], Config.walk.kneeImuParamX[4], Config.walk.hipImuParamY[1], Config.walk.hipImuParamY[2], Config.walk.hipImuParamY[3], Config.walk.hipImuParamY[4]));
     print(string.format("Odometry settings:\n odomScale: {%.2f, %.2f, %.2f}\n", Config.walk.odomScale[1], Config.walk.odomScale[2], Config.walk.odomScale[3]));
   end
 

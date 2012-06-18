@@ -382,6 +382,9 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel)
 
   function plot_sound(robot, scale)
     if (isfield(robot, 'soundFilter') && isfield(robot, 'soundOdomPose'))
+      if (any(robot.soundFilter))
+        disp(robot.soundFilter);
+      end
       sound = robot.soundFilter/100;
       ndiv = length(robot.soundFilter);
       thdiv = 2*pi/ndiv;

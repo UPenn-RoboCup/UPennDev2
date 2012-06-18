@@ -29,6 +29,9 @@ use_same_colored_goal = Config.world.use_same_colored_goal or 0;
 --Use ground truth pose and ball information for webots?
 use_gps_only = Config.use_gps_only or 0;
 
+xMax = Config.world.xMax;
+yMax = Config.world.yMax;
+
 ballFilter = Filter2D.new();
 ball = {};
 ball.t = 0;  --Detection time
@@ -63,8 +66,9 @@ function init_particles()
   if use_same_colored_goal>0 then
     goalDefend=get_goal_defend();
     PoseFilter.initialize_unified(
-      vector.new({goalDefend[1]/2,-2,math.pi/2}),
-      vector.new({goalDefend[1]/2,2,-math.pi/2}));
+      vector.new({goalDefend[1]/2, -2,  math.pi/2}),
+      vector.new({goalDefend[1]/2,  2, -math.pi/2}),
+      {.15*xMax, .15*yMax, math.pi/6});
   else
     PoseFilter.initialize();    
   end

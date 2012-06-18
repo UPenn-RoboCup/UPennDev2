@@ -64,6 +64,7 @@ camera.param[6] = {key='sharpness',     val={70}};
 camera.param[7] = {key='exposure (absolute)',      val={1216}};
 --]]
 --06/09/2012
+--[[
 camera.param = {};
 camera.param[1] = {key='brightness',    val={180}};
 camera.param[2] = {key='contrast',      val={30}};
@@ -72,6 +73,16 @@ camera.param[4] = {key='gain',          val={255}};
 camera.param[5] = {key='white balance temperature', val={4060}};
 camera.param[6] = {key='sharpness',     val={50}};
 camera.param[7] = {key='exposure (absolute)',      val={1016}};
+--]]
+
+camera.param = {};
+camera.param[1] = {key='brightness',    val={119}};
+camera.param[2] = {key='contrast',      val={30}};
+camera.param[3] = {key='saturation',    val={41}};
+camera.param[4] = {key='gain',          val={255}};
+camera.param[5] = {key='white balance temperature', val={4020}};
+camera.param[6] = {key='sharpness',     val={50}};
+camera.param[7] = {key='exposure (absolute)',      val={640}};
 
 
 --camera.lut_file = 'lut_low_contrast_pink_n_green.raw';
@@ -80,4 +91,5 @@ camera.param[7] = {key='exposure (absolute)',      val={1016}};
 --camera.lut_file = 'lut_VT_aditya_05_06_time_23_30.raw';
 --camera.lut_file = 'lut_VT_aditya_05_06_time_23_30.raw';
 --camera.lut_file = 'lut_yida_vt_op_0507.raw';
-camera.lut_file = 'lut_VT_060912.raw'
+--camera.lut_file = 'lut_VT_060912.raw'
+camera.lut_file = 'lut_ob_mex1.raw'

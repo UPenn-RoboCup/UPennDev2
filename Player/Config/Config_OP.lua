@@ -39,8 +39,8 @@ loadconfig('Vision/Config_OP_Vision')
 --loadconfig('Vision/Config_OP_Camera_VT')
 --loadconfig('Vision/Config_OP_Camera_L512')
 --loadconfig('Vision/Config_OP_Camera_L512_Day')
-loadconfig('Vision/Config_OP_Camera_RC12')
---loadconfig('Vision/Config_OP_Camera_Ob_F1')
+--loadconfig('Vision/Config_OP_Camera_RC12')
+loadconfig('Vision/Config_OP_Camera_Ob_F1')
 
 --loadconfig('Vision/Config_OP_Camera_Grasp')
 

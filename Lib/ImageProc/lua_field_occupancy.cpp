@@ -76,7 +76,7 @@ int lua_field_occupancy(lua_State *L) {
     }
 //    std::cout << nBlocks << ' ' << nBlockClusters << std::endl;
     // no black pixels found, return type 1
-    if (!nBlocks) {
+    if (nBlocks < 0.05 * nj) {
       flag[i] = 1;
       count[i] = 1;
       continue;
@@ -90,13 +90,13 @@ int lua_field_occupancy(lua_State *L) {
     // found black switch to green (up to down), return type 2;
     if (blockpos[nBlocks-1] != (nj - 1)) {
       flag[i] = 2;
-      count[i] = blockpos[nBlocks-1];
+      count[i] = nj - blockpos[nBlocks-1] - 1;
       continue;
     }
     // found green switch to black (up to down), return type 4;
     if (blockcluster[nBlockClusters-1] != 0) {
       flag[i] = 4;
-      count[i] = blockcluster[nBlockClusters-1];
+      count[i] = nj - blockcluster[nBlockClusters-1] - 1;
       continue;
     }
   }

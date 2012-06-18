@@ -16,6 +16,8 @@ if (gcm.get_team_player_id() == 1) then
 else
   -- if we are a player, disable transmitting
   SoundComm.pause_transmitter();
+  -- set receiver volume
+  SoundComm.set_receiver_volume(75);
 end
 
 -- touch tone symbols
@@ -44,21 +46,39 @@ radPerDiv = 30 * math.pi/180;
 ndiv = math.floor(2*math.pi/radPerDiv);
 detFilter = vector.zeros(ndiv);
 zeroInd = math.floor(ndiv/2);
+-- array to store the time of the last correlation per bin
+lastCorr = vector.zeros(ndiv);
 
 
-maxDetCount = 100;
-updateRate = 10;
-decayRate = 1.0;
-
-count = 0;
-lastDecay = unix.time();
-lastTx = unix.time();
+-- transmition period
 txPeriod = 1.0;
+-- max detection count (likelihood)
+maxDetCount = 100;
+-- per detection 
+updateRate = 10;
+-- decay period (seconds)
+decayPeriod = 1.0;
+-- decay rate (per period)
+decayRate = 1.0;
+-- flag indicating if we should decrease non adjacent cells
+--    after a good correlation
+decreaseNonAdjacent = 1;
+decreaseNonAdjacentRate = 3.0;
+
+-- last decay time
+lastDecay = unix.time();
+-- last tx time
+lastTx = unix.time();
+
+-- goal distinction threshold (within this angle of the detection direction)
+goalAngleThres = 60*math.pi/180;
+
+-- update cound
+count = 0;
 
 
 function entry()
 end
-
 
 function update()
    -- increment iteration counter
@@ -74,6 +94,7 @@ function update()
          local goalPos = wcm.get_goal_defend();
          local distToGoal = math.sqrt(math.pow((pose[1] - goalPos[1]), 2)
                                     + math.pow((pose[2] - goalPos[2]), 2))
+         -- TODO: different check for when to transmit sound?
          if (distToGoal < 1.5) then
             -- play sound every X seconds
             if (unix.time() - lastTx > txPeriod) then
@@ -130,6 +151,40 @@ function update()
 
             detFilter[ifront] = detFilter[ifront] + updateRate;
             detFilter[iback] = detFilter[iback] + updateRate;
+            lastCorr[ifront] = unix.time();
+            lastCorr[iback] = unix.time();
+
+
+            -- decrease count for non adjacent cells 
+            if (decreaseNonAdjacent) then
+               local skipInd = {};
+               skipInd[1] = (ifront - 1) % #detFilter;
+               skipInd[2] =  ifront;
+               skipInd[3] = (ifront + 1) % #detFilter;
+               skipInd[4] = (iback - 1) % #detFilter;
+               skipInd[5] =  iback;
+               skipInd[6] = (iback + 1) % #detFilter;
+               if (skipInd[1] == 0) then
+                  skipInd[1] = #detFilter;
+               end
+               if (skipInd[4] == 0) then
+                  skipInd[4] = #detFilter;
+               end
+
+               for idec = 1,#detFilter do
+                  local dec = true;
+                  for i,iskip in ipairs(skipInd) do
+                     if (idec == iskip) then
+                        dec = false;
+                     end
+                  end
+                  if (dec) then
+                     detFilter[idec] = detFilter[idec] - decreaseNonAdjacentRate;
+                     -- cap count
+                     detFilter[idec] = math.max(detFilter[idec], 0);
+                  end
+               end
+            end
 
             -- cap count
             detFilter[ifront] = math.min(detFilter[ifront], maxDetCount);
@@ -140,7 +195,7 @@ function update()
 
    -- decay histogram (this is based off time since the update rate
    --   from World is most likely going to be erratic)
-   if (unix.time() - lastDecay > 1.0) then
+   if (unix.time() - lastDecay > decayPeriod) then
       for i = 1,#detFilter do
          detFilter[i] = detFilter[i] - decayRate;
          detFilter[i] = math.max(0, detFilter[i]);
@@ -179,7 +234,7 @@ function resolve_goal_detection(gtype, vgoal)
    end
    
    -- find the direction of the goalie
-   -- TODO: if we are not confident in the goalie location return unkown
+   -- TODO: better determination of the sound direction
    local mv, mind = util.max(detFilter);
    local confidenceThres = 0.75 * maxDetCount;
    if (mv < confidenceThres) then
@@ -202,17 +257,17 @@ function resolve_goal_detection(gtype, vgoal)
    print(string.format('agoal: %f, agoaliew: %f, agoalier: %f', agoal * 180/math.pi, agoalie_wrtWorld * 180/math.pi, agoalie_wrtRobot * 180/math.pi));
 
    -- compare the location of the detected goal with the location of the goalie
-   if (math.abs(agoalie_wrtRobot - agoal) < 45*math.pi/180) then
+   if (math.abs(agoalie_wrtRobot - agoal) < goalAngleThres) then
       -- the goal is ours (defending)
-      print('****************** detected goal is the defending goal ******************');
+      print('------------------ detected goal is the defending goal ------------------');
       return -1;
-   elseif (math.abs(agoalie_wrtRobot + math.pi - agoal) < 45*math.pi/180) then
+   elseif (math.abs(agoalie_wrtRobot + math.pi - agoal) < goalAngleThres) then
       -- the goal is theirs (attacking)
-      print('****************** detected goal is the attacking goal ******************');
+      print('++++++++++++++++++ detected goal is the attacking goal ++++++++++++++++++');
       return 1;
    else
       -- the detected goal posts and goalie do not correlate well
-      print('****************** detected goal is unknown ******************');
+      print('==================       detected goal is unknown      ==================');
       return 0;
    end
 

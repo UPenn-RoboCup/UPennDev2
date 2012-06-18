@@ -682,3 +682,13 @@ cal["linus"].kickXComp=0.010;
 cal["linus"].servoBias={21,-3,37,-13,-19,-11,-21,-5,-34,10,12,-15,};
 cal["linus"].footXComp=0.005;
 cal["linus"].kickXComp=0.010;
+
+-- Updated date: Mon Jun 18 17:33:48 2012
+cal["linus"].servoBias={21,-3,37,-13,-19,0,-21,-5,-34,10,12,9,};
+cal["linus"].footXComp=0.005;
+cal["linus"].kickXComp=0.010;
+
+-- Updated date: Mon Jun 18 17:37:19 2012
+cal["linus"].servoBias={21,-3,37,-13,-19,-14,-21,-5,-34,10,12,9,};
+cal["linus"].footXComp=0.005;
+cal["linus"].kickXComp=0.010;

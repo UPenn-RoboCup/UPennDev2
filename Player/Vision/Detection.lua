@@ -46,7 +46,7 @@ enableMidfieldLandmark = Config.vision.enable_midfield_landmark_detection;
 enable_freespace_detection = Config.vision.enable_freespace_detection or 0;
 enableBoundary = Config.vision.enable_visible_boundary or 0;
 enableRobot = Config.vision.enable_robot_detection or 0;
-yellowGoals = Config.vision.enable_2_yellow_goals or 0;
+yellowGoals = Config.world.use_same_colored_goal or 0; --Config.vision.enable_2_yellow_goals or 0;
 
 enable_timeprinting = Config.vision.print_time;
 

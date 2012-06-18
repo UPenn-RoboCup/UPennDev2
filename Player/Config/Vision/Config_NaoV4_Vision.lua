@@ -17,7 +17,6 @@ vision.goal2Color = color.yellow;
 vision.maxFPS = 30;
 vision.scaleB = 4;
 
--- use this to enable line detection
 vision.enable_2_yellow_goals = 1;
 -- use this to enable line detection
 vision.enable_line_detection = 0;
@@ -64,7 +63,7 @@ vision.ball.th_ground_boundingbox = {-30,30,0,20};
 vision.ball.th_min_green1 = 400;
 vision.ball.th_min_green2 = 150;
 
-vision.ball.check_for_ground = 0;
+vision.ball.check_for_ground = 1;
 
 
 --Vision check values

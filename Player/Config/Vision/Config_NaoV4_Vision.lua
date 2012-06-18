@@ -17,7 +17,7 @@ vision.goal2Color = color.yellow;
 vision.maxFPS = 30;
 vision.scaleB = 4;
 
-vision.enable_2_yellow_goals = 1;
+--vision.enable_2_yellow_goals = 1;
 -- use this to enable line detection
 vision.enable_line_detection = 1;
 -- use this to enable corner detection
@@ -83,7 +83,7 @@ vision.goal.th_min_bad_color_ratio = 0.1;
 vision.goal.th_goal_separation = {0.35,2.0}; 
 vision.goal.th_min_area_unknown_post = 200;
 vision.goal.use_centerpost = 1;
-vision.goal.check_for_ground = 1;
+vision.goal.check_for_ground = 0;
 
 vision.line={};
 vision.line.max_width = 16;

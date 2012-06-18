@@ -58,11 +58,11 @@ walk.ankleMod = vector.new({-1,0})/0.12 * 10*math.pi/180;
 --------------------------------------------------------------
 walk.gyroFactor = 0.001;
 
-walk.ankleImuParamX={0.15, -0.40*walk.gyroFactor,
+walk.ankleImuParamX={0.20, -0.80*walk.gyroFactor,
         1*math.pi/180, 5*math.pi/180};
 walk.kneeImuParamX={0.1, -0.3*walk.gyroFactor,
         .5*math.pi/180, 5*math.pi/180};
-walk.ankleImuParamY={0.2, -1.5*walk.gyroFactor,
+walk.ankleImuParamY={0.25, -1.5*walk.gyroFactor,
         .5*math.pi/180, 5*math.pi/180};
 walk.hipImuParamY={0.1, -0.3*walk.gyroFactor,
         .5*math.pi/180, 5*math.pi/180};

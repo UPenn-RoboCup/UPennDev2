@@ -245,7 +245,7 @@ int check_tone(short *x, char &toneSymbol, long &frame, int &xLIndex, int &xRInd
         || (qCol[kRCol] < THRESHOLD_RATIO2*qCol2[kRCol])) {
 
       toneCount = 0;
-      return 0;
+      return toneCount;
     }
   }
 
@@ -259,7 +259,7 @@ int check_tone(short *x, char &toneSymbol, long &frame, int &xLIndex, int &xRInd
     // reset the tone count
     prevSymbol = symbol;
     toneCount = 1;
-    return 0;
+    return toneCount;
   } else {
     toneCount++;
   }
@@ -320,7 +320,7 @@ int check_tone(short *x, char &toneSymbol, long &frame, int &xLIndex, int &xRInd
     }
   }
 
-  return 0;
+  return toneCount;
 }
 
 int cross_correlation(short *x, int *leftCorr, int *rightCorr) {

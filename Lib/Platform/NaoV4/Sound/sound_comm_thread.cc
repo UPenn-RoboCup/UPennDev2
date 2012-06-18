@@ -217,13 +217,19 @@ void *sound_comm_rx_thread_func(void*) {
 
           // copy the pcm array for debugging
           int n = PSAMPLE * (THRESHOLD_COUNT + NUM_CHIRP_COUNT - 1);
-          memcpy(pcmDebug, pcmDebugBuffer, sizeof(short) * n);
-          memcpy(pcmDebug + n, rxBuffer, PSAMPLE);
+          for (int i = 0; i < n; i++) {
+            pcmDebug[i] = pcmDebugBuffer[i];
+          }
+          for (int i = 0; i < PSAMPLE; i++) {
+            pcmDebug[n+i] = rxBuffer[i];
+          }
         } else if (toneCount > 0) {
           // store the pcm array for debugging
           pthread_mutex_lock(&pcmDebugMutex);
           int n = PSAMPLE * (toneCount-1);
-          memcpy(pcmDebug + n, rxBuffer, PSAMPLE);
+          for (int i = 0; i < PSAMPLE; i++) {
+            pcmDebugBuffer[n+i] = rxBuffer[i];
+          }
           pthread_mutex_unlock(&pcmDebugMutex);
         }
 
@@ -511,7 +517,7 @@ int sound_comm_thread_init() {
     fprintf(stderr, "unable to initialize transmitter volume.\n");
     return -1;
   }
-  if (sound_comm_thread_set_receiver_volume(100) < 0) {
+  if (sound_comm_thread_set_receiver_volume(75) < 0) {
     fprintf(stderr, "unable to initialize reciever volume.\n");
     return -1;
   }

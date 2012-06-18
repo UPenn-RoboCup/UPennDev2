@@ -86,6 +86,10 @@ walk.supportFront = 0.03; --Lean back when walking fast forward
 walk.supportFront2 = 0.03; --Lean front when accelerating forward
 walk.supportBack = -0.02; --Lean back when walking backward
 walk.supportSideX = -0.01; --Lean back when sidestepping
+
+
+walk.supportSideX = -0.005; --Lean back when sidestepping
+
 walk.supportSideY = 0.02; --Lean sideways when sidestepping
 
 
@@ -93,7 +97,9 @@ walk.supportTurn = 0.02; --Lean front when turning
 
 
 walk.turnCompThreshold = 0.1;
-walk.turnComp = 0.005;
+walk.turnComp = 0.005; --Lean front when turning
+
+walk.turnComp = 0.003; --Lean front when turning
 
 
 --------------------------------------------

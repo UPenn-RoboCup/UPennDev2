@@ -44,45 +44,27 @@ camera.auto_param[4] = {key='exposure, auto',val={1}}; --1 for manual
 camera.auto_param[5] = {key="exposure, auto priority",val={0}};
 --camera.auto_param[6] = {key='autogain',               val={0}};
 
---[[
+--[[--06/09/2012
 camera.param = {};
-camera.param[1] = {key='brightness',    val={0}};
-camera.param[2] = {key='contrast',      val={18}};
-camera.param[3] = {key='saturation',    val={32}};
-camera.param[4] = {key='gain',          val={150}};
-camera.param[5] = {key='white balance temperature', val={1600}};
-camera.param[6] = {key='sharpness',     val={0}};
-camera.param[7] = {key='exposure (absolute)',      val={400}};
---]]
---[[camera.param = {};
 camera.param[1] = {key='brightness',    val={128}};
-camera.param[2] = {key='contrast',      val={27}};
-camera.param[3] = {key='saturation',    val={28}};
+camera.param[2] = {key='contrast',      val={22}};
+camera.param[3] = {key='saturation',    val={26}};
 camera.param[4] = {key='gain',          val={255}};
-camera.param[5] = {key='white balance temperature', val={2100}};
-camera.param[6] = {key='sharpness',     val={70}};
-camera.param[7] = {key='exposure (absolute)',      val={1216}};
---]]
---06/09/2012
---[[
-camera.param = {};
-camera.param[1] = {key='brightness',    val={180}};
-camera.param[2] = {key='contrast',      val={30}};
-camera.param[3] = {key='saturation',    val={41}};
-camera.param[4] = {key='gain',          val={255}};
-camera.param[5] = {key='white balance temperature', val={4060}};
+camera.param[5] = {key='white balance temperature', val={2230}};
 camera.param[6] = {key='sharpness',     val={50}};
-camera.param[7] = {key='exposure (absolute)',      val={1016}};
+camera.param[7] = {key='exposure (absolute)',      val={1231}};
 --]]
 
+--06/18/2012 - Robocup- LV
 camera.param = {};
-camera.param[1] = {key='brightness',    val={119}};
-camera.param[2] = {key='contrast',      val={30}};
-camera.param[3] = {key='saturation',    val={41}};
-camera.param[4] = {key='gain',          val={255}};
-camera.param[5] = {key='white balance temperature', val={4020}};
+camera.param[1] = {key='brightness',    val={118}};
+camera.param[2] = {key='contrast',      val={22}};
+camera.param[3] = {key='saturation',    val={46}};
+camera.param[4] = {key='gain',          val={235}};
+camera.param[5] = {key='white balance temperature', val={2380}};
 camera.param[6] = {key='sharpness',     val={50}};
-camera.param[7] = {key='exposure (absolute)',      val={640}};
+camera.param[7] = {key='exposure (absolute)',      val={1121}};
+
 
 
 --camera.lut_file = 'lut_low_contrast_pink_n_green.raw';
@@ -92,4 +74,8 @@ camera.param[7] = {key='exposure (absolute)',      val={640}};
 --camera.lut_file = 'lut_VT_aditya_05_06_time_23_30.raw';
 --camera.lut_file = 'lut_yida_vt_op_0507.raw';
 --camera.lut_file = 'lut_VT_060912.raw'
-camera.lut_file = 'lut_ob_mex1.raw'
+
+--ROBOCUP 2012_LV
+--camera.lut_file = 'lut_RC12_LV_PF2.raw'
+camera.lut_file = 'lut_RC12_LV_GameFields.raw'
+

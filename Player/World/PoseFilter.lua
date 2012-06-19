@@ -38,7 +38,14 @@ rGoalFilter = Config.world.rGoalFilter;
 aGoalFilter = Config.world.aGoalFilter;
 rPostFilter = Config.world.rPostFilter;
 aPostFilter = Config.world.aPostFilter;
-
+rKnownGoalFilter = Config.world.rKnownGoalFilter;
+aKnownGoalFilter = Config.world.aKnownGoalFilter;
+rKnownPostFilter = Config.world.rKnownPostFilter;
+aKnownPostFilter = Config.world.aKnownPostFilter;
+rUnknownGoalFilter = Config.world.rUnknownGoalFilter;
+aUnknownGoalFilter = Config.world.aUnknownGoalFilter;
+rUnknownPostFilter = Config.world.rUnknownPostFilter;
+aUnknownPostFilter = Config.world.aUnknownPostFilter;
 
 rLandmarkFilter = Config.world.rLandmarkFilter;
 aLandmarkFilter = Config.world.aLandmarkFilter;
@@ -379,8 +386,8 @@ function goal_observation(pos, v)
 
   local rSigma = .25*dGoal + 0.20;
   local aSigma = 5*math.pi/180;
-  local rFilter = rGoalFilter;
-  local aFilter = aGoalFilter;
+  local rFilter = rKnownGoalFilter;
+  local aFilter = aKnownGoalFilter;
 
 --SJ: testing
 triangulation_threshold=4.0;
@@ -434,8 +441,8 @@ function goal_observation_unified(pos1,pos2,v)
   local rSigma1 = .25*dGoal1 + 0.20;
   local rSigma2 = .25*dGoal2 + 0.20;
   local aSigma = 5*math.pi/180;
-  local rFilter = rGoalFilter;
-  local aFilter = aGoalFilter;
+  local rFilter = rUnknownGoalFilter;
+  local aFilter = aUnknownGoalFilter;
 
   for ip = 1,n do
     local xErr1 = x1 - xp[ip];
@@ -484,39 +491,39 @@ function goal_cyan(v)
 end
 
 function post_yellow_unknown(v)
-  landmark_observation(postYellow, v[1], rPostFilter, aPostFilter);
+  landmark_observation(postYellow, v[1], rKnownPostFilter, aKnownPostFilter);
 end
 
 function post_yellow_left(v)
-  landmark_observation({postYellow[1]}, v[1], rPostFilter, aPostFilter);
+  landmark_observation({postYellow[1]}, v[1], rKnownPostFilter, aKnownPostFilter);
 end
 
 function post_yellow_right(v)
-  landmark_observation({postYellow[2]}, v[1], rPostFilter, aPostFilter);
+  landmark_observation({postYellow[2]}, v[1], rKnownPostFilter, aKnownPostFilter);
 end
 
 function post_cyan_unknown(v)
-  landmark_observation(postCyan, v[1], rPostFilter, aPostFilter);
+  landmark_observation(postCyan, v[1], rKnownPostFilter, aKnownPostFilter);
 end
 
 function post_cyan_left(v)
-  landmark_observation({postCyan[1]}, v[1], rPostFilter, aPostFilter);
+  landmark_observation({postCyan[1]}, v[1], rKnownPostFilter, aKnownPostFilter);
 end
 
 function post_cyan_right(v)
-  landmark_observation({postCyan[2]}, v[1], rPostFilter, aPostFilter);
+  landmark_observation({postCyan[2]}, v[1], rKnownPostFilter, aKnownPostFilter);
 end
 
 function post_unified_unknown(v)
-  landmark_observation(postUnified, v[1], rPostFilter, aPostFilter);
+  landmark_observation(postUnified, v[1], rUnknownPostFilter, aUnknownPostFilter);
 end
 
 function post_unified_left(v)
-  landmark_observation(postLeft, v[1], rPostFilter, aPostFilter);
+  landmark_observation(postLeft, v[1], rUnknownPostFilter, aUnknownPostFilter);
 end
 
 function post_unified_right(v)
-  landmark_observation(postRight, v[1], rPostFilter, aPostFilter);
+  landmark_observation(postRight, v[1], rUnknownPostFilter, aUnknownPostFilter);
 end
 
 function goal_unified(v)

@@ -289,6 +289,7 @@ function update_vision()
           -- indicator
           Body.set_indicator_goal({0,0,1});
         else
+          -- we are the blue team, shooting on yellow goal
           if (goalType == 0) then
             PoseFilter.post_yellow_unknown(v);
           elseif(goalType == 1) then

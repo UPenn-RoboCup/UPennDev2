@@ -64,7 +64,7 @@ function update()
     homePosition = goalDefend - 0.6*(goalDefend - ballGlobal);
   
     --homePosition = .6 * ballGlobal;
-    homePosition[1] = homePosition[1] - 0.50*util.sign(homePosition[1]);
+    --homePosition[1] = homePosition[1] - 0.50*util.sign(homePosition[1]);
     homePosition[2] = homePosition[2] - 0.80*util.sign(homePosition[2]);
 
   elseif (role == 3) then

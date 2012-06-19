@@ -60,7 +60,10 @@ function update()
 
   if (role == 2) then
     -- defend
-    homePosition = .6 * ballGlobal;
+    goalDefend = wcm.get_goal_defend();
+    homePosition = goalDefend - 0.6*(goalDefend - ballGlobal);
+  
+    --homePosition = .6 * ballGlobal;
     homePosition[1] = homePosition[1] - 0.50*util.sign(homePosition[1]);
     homePosition[2] = homePosition[2] - 0.80*util.sign(homePosition[2]);
 
@@ -87,22 +90,22 @@ function update()
   else
     -- attack
     if math.abs(angle1)<math.pi/2 then
-    rDist=math.min(rDist1,math.max(rDist2,ballR-rTurn2));
-    homePosition={
-    ballGlobal[1]-math.cos(aGoal)*rDist,
-    ballGlobal[2]-math.sin(aGoal)*rDist,
-    aGoal};
+      rDist=math.min(rDist1,math.max(rDist2,ballR-rTurn2));
+      homePosition={
+        ballGlobal[1]-math.cos(aGoal)*rDist,
+        ballGlobal[2]-math.sin(aGoal)*rDist,
+        aGoal};
     elseif angle1>0 then
       homePosition={
-    ballGlobal[1]+math.cos(-aBall+math.pi/2)*rOrbit,
-    ballGlobal[2]-math.sin(-aBall+math.pi/2)*rOrbit,
-    aBall};
+        ballGlobal[1]+math.cos(-aBall+math.pi/2)*rOrbit,
+        ballGlobal[2]-math.sin(-aBall+math.pi/2)*rOrbit,
+        aBall};
 
     else
       homePosition={
-    ballGlobal[1]+math.cos(-aBall-math.pi/2)*rOrbit,
-    ballGlobal[2]-math.sin(-aBall-math.pi/2)*rOrbit,
-    aBall};
+        ballGlobal[1]+math.cos(-aBall-math.pi/2)*rOrbit,
+        ballGlobal[2]-math.sin(-aBall-math.pi/2)*rOrbit,
+        aBall};
     end  
   end
 

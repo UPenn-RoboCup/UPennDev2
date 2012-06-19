@@ -702,3 +702,14 @@ cal["lucy"].kickXComp=0.000;
 cal["sally"].servoBias={-33,-22,-6,0,29,-8,0,0,-4,0,0,0,};
 cal["sally"].footXComp=0.005;
 cal["sally"].kickXComp=0.005;
+
+-- Updated date: Tue Jun 19 10:47:25 2012
+cal["felix"].servoBias={12,-2,37,-31,7,0,-6,30,-33,7,3,18,};
+cal["felix"].footXComp=0.005;
+cal["felix"].kickXComp=0.005;
+
+
+-- Updated date: Tue Jun 19 11:17:04 2012
+cal["felix"].servoBias={12,-2,37,-31,7,0,-6,30,-33,7,3,18,};
+cal["felix"].footXComp=0.003;
+cal["felix"].kickXComp=0.005;

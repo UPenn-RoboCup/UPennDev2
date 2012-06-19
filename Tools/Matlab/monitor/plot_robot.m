@@ -54,7 +54,7 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel)
       plot_info(robot_struct,scale);
       plot_ball(robot_struct,scale);
       plot_sound(robot_struct,scale);
-      plot_particle(robot_struct,scale);
+      %plot_particle(robot_struct,scale);
       plot_ball(robot_struct,scale);
       %plot_particle(r_mon.particle);
       %plot_goal(r_mon.goal,scale);

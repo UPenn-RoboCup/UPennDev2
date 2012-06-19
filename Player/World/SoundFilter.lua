@@ -55,7 +55,7 @@ txPeriod = 1.0;
 -- max detection count (likelihood)
 maxDetCount = 100;
 -- per detection 
-updateRate = 10;
+updateRate = 20;
 -- decay period (seconds)
 decayPeriod = 1.0;
 -- decay rate (per period)

@@ -44,8 +44,8 @@ walk.hardnessArm=.3;
 walk.tStep = 0.26;
 walk.tZmp = 0.17;
 walk.supportY = 0.002;
-walk.stepHeight = 0.014;
-walk.phSingle={0.04,0.96};
+walk.stepHeight = 0.015;
+walk.phSingle={0.02,0.98};
 
 --------------------------------------------
 -- Compensation parameters
@@ -58,11 +58,11 @@ walk.ankleMod = vector.new({-1,0})/0.12 * 10*math.pi/180;
 --------------------------------------------------------------
 walk.gyroFactor = 0.001;
 
-walk.ankleImuParamX={0.20, -0.80*walk.gyroFactor,
+walk.ankleImuParamX={0.20, -0.70*walk.gyroFactor,
         1*math.pi/180, 5*math.pi/180};
 walk.kneeImuParamX={0.1, -0.3*walk.gyroFactor,
         .5*math.pi/180, 5*math.pi/180};
-walk.ankleImuParamY={0.25, -1.5*walk.gyroFactor,
+walk.ankleImuParamY={0.22, -1.9*walk.gyroFactor,
         .5*math.pi/180, 5*math.pi/180};
 walk.hipImuParamY={0.1, -0.3*walk.gyroFactor,
         .5*math.pi/180, 5*math.pi/180};

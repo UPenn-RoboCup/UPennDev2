@@ -48,7 +48,7 @@ function entry()
   print("UltraSound entry");
 end
 
-obsThres = 0.40;
+obsThres = 0.60;
 clearThres = 0.80;
 
 leftObsCount = 0;

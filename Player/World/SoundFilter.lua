@@ -57,7 +57,7 @@ txLeftEarOnly = 1;
 -- max detection count (likelihood)
 maxDetCount = 100;
 -- per detection 
-updateRate = 10;
+updateRate = 20;
 -- decay period (seconds)
 decayPeriod = 1.0;
 -- decay rate (per period)
@@ -66,6 +66,7 @@ decayRate = 1.0;
 --    after a good correlation
 decreaseNonAdjacent = 1;
 decreaseNonAdjacentRate = 3.0;
+confidenceThres = 0.6 * maxDetCount;
 
 -- last decay time
 lastDecay = unix.time();
@@ -238,7 +239,6 @@ function resolve_goal_detection(gtype, vgoal)
    -- find the direction of the goalie
    -- TODO: better determination of the sound direction
    local mv, mind = util.max(detFilter);
-   local confidenceThres = 0.75 * maxDetCount;
    if (mv < confidenceThres) then
       return 0;
    end

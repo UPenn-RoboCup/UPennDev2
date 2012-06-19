@@ -212,9 +212,13 @@ speakenable = false;
 fallAngle = 50*math.pi/180;
 falling_timeout = 0.3;
 
+led_on = 0; --turn off eye led
+led_on = 1; --turn on eye led
 
 ------------------------------------------------------------------------
 -- Demo setting 1
+
+led_on = 1; --turn on eye led
 
 --Slow down maximum speed (for testing)
 fsm.bodyPosition.maxStep1 = 0.05;
@@ -262,3 +266,4 @@ walk.walkKickDef["FrontRight2"]={
   {walk.tStep, 1, 1, 0.035 , {0,0}, 0.5, {0.04,0,0} },
 }
 -------------------------------------------------------------------------
+

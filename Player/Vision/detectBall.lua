@@ -174,6 +174,11 @@ function detect(color)
   --and the distance from foot is important
   v[1]=v[1]-mcm.get_footX()
 
+  ball_shift = Config.ball_shift or {0,0};
+  --Compensate for camera tilt
+  v[1]=v[1] + ball_shift[1];
+  v[2]=v[2] + ball_shift[2];
+
   --Ball position ignoring ball size (for distant ball observation)
   v_inf=HeadTransform.projectGround(v_inf,diameter/2);
   v_inf[1]=v_inf[1]-mcm.get_footX()
@@ -195,3 +200,4 @@ function detect(color)
 --]]
   return ball;
 end
+

@@ -72,7 +72,7 @@ cal["jiminy"]={
   footXComp = 0,
   footYComp = 0,
   kickXComp = 0,
-  headPitchComp = 0;
+  headPitchComp = 4*math.pi/180;
   armBias={0,12*math.pi/180,0,0,-6*math.pi/180,0},
   pid = 1, --NEW FIRMWARE
 };
@@ -697,3 +697,23 @@ cal["lucy"].kickXComp=0.005;
 cal["lucy"].servoBias={19,4,10,0,21,-13,-15,7,-20,2,-21,-4,};
 cal["lucy"].footXComp=-0.003;
 cal["lucy"].kickXComp=0.000;
+
+-- Updated date: Tue Jun 19 09:42:59 2012
+cal["sally"].servoBias={-33,-22,-6,0,29,-8,0,0,-4,0,0,0,};
+cal["sally"].footXComp=0.005;
+cal["sally"].kickXComp=0.005;
+
+-- Updated date: Tue Jun 19 11:15:22 2012
+cal["linus"].servoBias={21,-3,37,-13,-19,-11,-21,-5,-30,10,12,16,};
+cal["linus"].footXComp=0.005;
+cal["linus"].kickXComp=0.010;
+
+-- Updated date: Tue Jun 19 11:34:21 2012
+cal["linus"].servoBias={21,-16,37,-13,-11,7,-31,-4,-30,10,0,16,};
+cal["linus"].footXComp=0.001;
+cal["linus"].kickXComp=0.005;
+
+-- Updated date: Tue Jun 19 11:39:30 2012
+cal["linus"].servoBias={21,-16,37,-13,-14,-3,-31,-4,-30,10,0,16,};
+cal["linus"].footXComp=0.003;
+cal["linus"].kickXComp=0.005;

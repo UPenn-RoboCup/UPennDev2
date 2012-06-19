@@ -62,7 +62,7 @@ decayPeriod = 1.0;
 decayRate = 1.0;
 -- flag indicating if we should decrease non adjacent cells
 --    after a good correlation
-decreaseNonAdjacent = 1;
+decreaseNonAdjacent = 0;
 decreaseNonAdjacentRate = 3.0;
 
 -- last decay time

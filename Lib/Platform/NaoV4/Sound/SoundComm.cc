@@ -264,7 +264,6 @@ static int lua_play_pnsequence(lua_State *L) {
   int startInd = 2*tframe;
   int sign = +1;
   if (leftOnly) {
-    printf("pn left only\n");
     for (int ichirp = 0; ichirp < NUM_CHIRP_COUNT; ichirp++) {
       int startInd = 2*tframe + ichirp*2*PFRAME;
       for (int i = 0; i < PFRAME; i++) {

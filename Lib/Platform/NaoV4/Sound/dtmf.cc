@@ -50,7 +50,6 @@ int gen_tone_pcm(char symbol, short *pcm, int nframe, int leftOnly) {
 
   // generate pcm
   if (leftOnly) {
-    printf("tone left only\n");
     for (int i = 0; i < nframe; i++) {
       float t = sin(2.0*M_PI*f1*((double)i/SAMPLING_RATE))
                 + sin(2.0*M_PI*f2*((double)i/SAMPLING_RATE));

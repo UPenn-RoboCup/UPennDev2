@@ -50,6 +50,9 @@ aUnknownPostFilter = Config.world.aUnknownPostFilter;
 rLandmarkFilter = Config.world.rLandmarkFilter;
 aLandmarkFilter = Config.world.aLandmarkFilter;
 
+rCornerFilter = Config.world.rCornerFilter;
+aCornerFilter = Config.world.aCornerFilter;
+
 
 
 xp = .5*xMax*vector.new(util.randn(n));
@@ -412,7 +415,7 @@ triangulation_threshold=4.0;
   --Don't use triangulation for far goals
     goalpos={{(pos[1][1]+pos[2][1])/2, (pos[1][2]+pos[2][2])/2}}
     goalv={(v[1][1]+v[2][1])/2, (v[1][2]+v[2][2])/2}
-    landmark_observation(goalpos, goalv , rGoalFilter, aGoalFilter);
+    landmark_observation(goalpos, goalv , rKnownGoalFilter, aKnownGoalFilter);
   end
 
 
@@ -539,7 +542,7 @@ function landmark_yellow(v)
 end
 
 function corner(v,a)
-  landmark_observation(Lcorner,v,rPostFilter,aPostFilter);
+  landmark_observation(Lcorner,v,rCornerFilter,aCornerFilter);
 --  line(v,a);--Fix heading
 end
 

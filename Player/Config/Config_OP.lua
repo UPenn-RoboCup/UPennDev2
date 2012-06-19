@@ -30,7 +30,8 @@ else
 end
 
 loadconfig('World/Config_OP_World')
-loadconfig('Kick/Config_OP_Kick')
+--loadconfig('Kick/Config_OP_Kick')
+loadconfig('Kick/Config_OP_Kick_Slow')
 --loadconfig('Kick/Config_OP_Kick3')
 loadconfig('Vision/Config_OP_Vision')
 
@@ -38,7 +39,10 @@ loadconfig('Vision/Config_OP_Vision')
 --loadconfig('Vision/Config_OP_Camera_VT')
 --loadconfig('Vision/Config_OP_Camera_L512')
 --loadconfig('Vision/Config_OP_Camera_L512_Day')
-loadconfig('Vision/Config_OP_Camera_Grasp')
+loadconfig('Vision/Config_OP_Camera_RC12')
+--loadconfig('Vision/Config_OP_Camera_Ob_F1')
+
+--loadconfig('Vision/Config_OP_Camera_Grasp')
 
 -- Device Interface Libraries
 dev = {};
@@ -46,10 +50,12 @@ dev.body = 'OPBody';
 dev.camera = 'OPCam';
 dev.kinematics = 'OPKinematics';
 dev.ip_wired = '192.168.123.255';
-dev.ip_wireless = '192.168.1.255';
+dev.ip_wireless = '192.168.117.255';
+dev.ip_wireless_port = 54321;
 dev.game_control='OPGameControl';
 dev.team='TeamNSL';
-dev.walk='NewNewNewWalk';
+--dev.walk='NewNewNewWalk';
+dev.walk='NewNewNewNewNewWalk';
 dev.kick = 'NewNewKick'
 dev.gender = 1; -- 1 for body and 0 for girl 
 
@@ -111,8 +117,8 @@ fsm.enable_obstacle_detection = 1;
 fsm.kickoff_wait_enable = 0;
 fsm.playMode = 3; --1 for demo, 2 for orbit, 3 for direct approach
 fsm.forcePlayer = 0; --1 for attacker, 2 for defender, 3 for goalie 
-fsm.enable_walkkick = 1; --Testing
-fsm.enable_sidekick = 1;
+fsm.enable_walkkick = 0; --Testing
+fsm.enable_sidekick = 0;
 fsm.daPost_check = 1; --aim to the side when close to the ball
 fsm.daPostmargin = 15*math.pi/180;
 fsm.variable_dapost = 1;
@@ -202,9 +208,58 @@ speakenable = false;
 fallAngle = 50*math.pi/180;
 falling_timeout = 0.3;
 
---[[
+led_on = 0; --turn off eye led
+led_on = 1; --turn on eye led
+
+------------------------------------------------------------------------
+-- Demo setting 1
+
+led_on = 1; --turn on eye led
+
 --Slow down maximum speed (for testing)
 fsm.bodyPosition.maxStep1 = 0.05;
 fsm.bodyPosition.maxStep2 = 0.06;
 fsm.bodyPosition.maxStep3 = 0.06;
---]]
+
+--Disable walkkicks and sidekicks
+fsm.enable_walkkick = 0; --Testing
+fsm.enable_sidekick = 0;
+
+--Disable diving
+fsm.goalie_type = 3;--moving/move+stop/stop+dive/stop+dive+move
+goalie_dive = 1; --1 for arm only, 2 for actual diving
+
+--Let goalie log all the ball positions
+goalie_disable_arm = 1; 
+goalie_log_balls = 1;
+
+--Slow down kick waiting time
+fsm.bodyKick.tStartWait = 1.5;
+fsm.bodyKick.tStartWaitMax = 1.7;
+
+--Power down walkkick
+walk.walkKickDef["FrontLeft"]={
+  {0.30, 1, 0, 0.035 , {0,0}, 0.6, {0.06,0,0} },
+  {0.40, 2, 1, 0.05 , {0.02,-0.02}, 0.5, {0.06,0,0}, {0.07,0,0} },
+  {walk.tStep, 1, 0, 0.035 , {0,0}, 0.5, {0.04,0,0} },
+}
+walk.walkKickDef["FrontRight"]={
+  {0.30, 1, 1, 0.035 , {0,0}, 0.4, {0.06,0,0} },
+  {0.40, 2, 0, 0.05 , {0.02,0.02}, 0.5,  {0.06,0,0}, {0.07,0,0} },
+  {walk.tStep, 1, 1, 0.035 , {0,0}, 0.5, {0.04,0,0} },
+}
+--Close-range walkkick (step back and then walkkick)
+walk.walkKickDef["FrontLeft2"]={
+  {0.30, 1, 1, 0.035 , {0,0}, 0.4, {-0.06,0,0} },
+  {0.30, 1, 0, 0.035 , {0.02,0}, 0.6, {0.06,0,0} },
+  {0.40, 2, 1, 0.05 , {0.0,-0.02}, 0.5, {0.06,0,0}, {0.07,0,0} },
+  {walk.tStep, 1, 0, 0.035 , {0,0}, 0.5, {0.04,0,0} },
+}
+walk.walkKickDef["FrontRight2"]={
+  {0.30, 1, 0, 0.035 , {0,0}, 0.6, {-0.06,0,0} },
+  {0.30, 1, 1, 0.035 , {0.02,0}, 0.4, {0.06,0,0} },
+  {0.40, 2, 0, 0.05 , {0.0,0.02}, 0.5,  {0.06,0,0}, {0.07,0,0} },
+  {walk.tStep, 1, 1, 0.035 , {0,0}, 0.5, {0.04,0,0} },
+}
+-------------------------------------------------------------------------
+

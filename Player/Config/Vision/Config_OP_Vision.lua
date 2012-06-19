@@ -105,8 +105,6 @@ vision.landmark.th_arearatio = 4;
 vision.landmark.th_distratio = 2;
 vision.landmark.th_angle = 45*math.pi/180;
 
-vision.landmark.distanceFactorCyan = 1.1; 
-vision.landmark.distanceFactorYellow = 1.1; 
 
 
 vision.line={};
@@ -121,3 +119,13 @@ vision.corner.length_threshold = 15;
 vision.corner.min_center_dist = 1.5;
 
 
+
+
+
+--------------------
+--Mexico values
+
+vision.goal.distanceFactorCyan = 1.15; 
+vision.goal.distanceFactorYellow = 1.1; 
+vision.landmark.distanceFactorCyan = 1.05; 
+vision.landmark.distanceFactorYellow = 1.05; 

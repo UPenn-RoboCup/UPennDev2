@@ -14,7 +14,7 @@ cal["betty"]={
   kickXComp = 0,
   headPitchComp = 0,
   armBias={0,0,0,0,0,0},
-  pid = 0,
+  pid = 1,
 };
 
 cal["linus"]={
@@ -667,3 +667,53 @@ cal["jiminy"].kickXComp=0.005;
 cal["sally"].servoBias={-33,-22,-6,0,29,-8,0,0,-4,0,0,0,};
 cal["sally"].footXComp=-0.001;
 cal["sally"].kickXComp=0.000;
+
+-- Updated date: Mon Jun 18 12:28:45 2012
+cal["scarface"].servoBias={0,0,6,50,30,15,0,0,-20,-32,-21,1,};
+cal["scarface"].footXComp=0.000;
+cal["scarface"].kickXComp=0.005;
+
+-- Updated date: Mon Jun 18 15:05:26 2012
+cal["linus"].servoBias={21,-3,37,-10,-20,-6,-21,-5,-34,-13,-9,-6,};
+cal["linus"].footXComp=0.005;
+cal["linus"].kickXComp=0.010;
+
+-- Updated date: Mon Jun 18 15:17:18 2012
+cal["linus"].servoBias={21,-3,37,-13,-19,-11,-21,-5,-34,10,12,-15,};
+cal["linus"].footXComp=0.005;
+cal["linus"].kickXComp=0.010;
+
+-- Updated date: Mon Jun 18 20:50:27 2012
+cal["lucy"].servoBias={19,-7,10,20,19,-9,-15,-4,-20,0,6,-13,};
+cal["lucy"].footXComp=0.006;
+cal["lucy"].kickXComp=0.005;
+
+-- Updated date: Mon Jun 18 20:51:17 2012
+cal["lucy"].servoBias={19,-7,10,20,19,-9,-15,-4,-20,0,6,-13,};
+cal["lucy"].footXComp=0.006;
+cal["lucy"].kickXComp=0.005;
+
+-- Updated date: Mon Jun 18 21:12:59 2012
+cal["lucy"].servoBias={19,4,10,0,21,-13,-15,7,-20,2,-21,-4,};
+cal["lucy"].footXComp=-0.003;
+cal["lucy"].kickXComp=0.000;
+
+-- Updated date: Tue Jun 19 09:42:59 2012
+cal["sally"].servoBias={-33,-22,-6,0,29,-8,0,0,-4,0,0,0,};
+cal["sally"].footXComp=0.005;
+cal["sally"].kickXComp=0.005;
+
+-- Updated date: Tue Jun 19 11:15:22 2012
+cal["linus"].servoBias={21,-3,37,-13,-19,-11,-21,-5,-30,10,12,16,};
+cal["linus"].footXComp=0.005;
+cal["linus"].kickXComp=0.010;
+
+-- Updated date: Tue Jun 19 11:34:21 2012
+cal["linus"].servoBias={21,-16,37,-13,-11,7,-31,-4,-30,10,0,16,};
+cal["linus"].footXComp=0.001;
+cal["linus"].kickXComp=0.005;
+
+-- Updated date: Tue Jun 19 11:39:30 2012
+cal["linus"].servoBias={21,-16,37,-13,-14,-3,-31,-4,-30,10,0,16,};
+cal["linus"].footXComp=0.003;
+cal["linus"].kickXComp=0.005;

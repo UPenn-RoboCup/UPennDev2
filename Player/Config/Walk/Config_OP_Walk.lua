@@ -86,6 +86,10 @@ walk.supportFront = 0.03; --Lean back when walking fast forward
 walk.supportFront2 = 0.03; --Lean front when accelerating forward
 walk.supportBack = -0.02; --Lean back when walking backward
 walk.supportSideX = -0.01; --Lean back when sidestepping
+
+
+walk.supportSideX = -0.005; --Lean back when sidestepping
+
 walk.supportSideY = 0.02; --Lean sideways when sidestepping
 
 
@@ -93,7 +97,9 @@ walk.supportTurn = 0.02; --Lean front when turning
 
 
 walk.turnCompThreshold = 0.1;
-walk.turnComp = 0.005;
+walk.turnComp = 0.005; --Lean front when turning
+
+walk.turnComp = 0.003; --Lean front when turning
 
 
 --------------------------------------------
@@ -203,3 +209,138 @@ if calibration.cal and calibration.cal[robotName] then
   walk.headPitchBiasComp = calibration.cal[robotName].headPitchBiasComp;
   print(robotName.." walk parameters loaded")
 end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+------------------------------------------------
+-- Upper body motion keyframes
+-----------------------------------------------
+-- tDuration qLArm qRArm bodyRot
+walk.motionDef={};
+
+walk.motionDef["hurray1"]={
+ {1.0,{40*math.pi/180, 20*math.pi/180, -140*math.pi/180},
+        {40*math.pi/180,-20*math.pi/180,-140*math.pi/180}},
+ {0.4,{-30*math.pi/180, 30*math.pi/180, -90*math.pi/180},
+        {-30*math.pi/180,-30*math.pi/180,-90*math.pi/180}},
+ {0.4,{40*math.pi/180, 20*math.pi/180, -140*math.pi/180},
+        {40*math.pi/180,-20*math.pi/180,-140*math.pi/180}},
+ {0.4,{-30*math.pi/180, 30*math.pi/180, -90*math.pi/180},
+        {-30*math.pi/180,-30*math.pi/180,-90*math.pi/180}},
+ {0.4,{40*math.pi/180, 20*math.pi/180, -140*math.pi/180},
+        {40*math.pi/180,-20*math.pi/180,-140*math.pi/180}},
+ {0.4,{-30*math.pi/180, 30*math.pi/180, -90*math.pi/180},
+        {-30*math.pi/180,-30*math.pi/180,-90*math.pi/180}},
+ {1.0,{90*math.pi/180, 8*math.pi/180,-40*math.pi/180},
+        {90*math.pi/180, -8*math.pi/180,-40*math.pi/180}}
+} 
+
+--pointing up
+walk.motionDef["point"]={
+ {1.0,{-40*math.pi/180, 50*math.pi/180, 0*math.pi/180},
+        {160*math.pi/180,-60*math.pi/180,-90*math.pi/180},
+        {20*math.pi/180,0*math.pi/180,-20*math.pi/180}},
+
+ {3.0,{-40*math.pi/180, 50*math.pi/180, 0*math.pi/180},
+        {160*math.pi/180,-60*math.pi/180,-90*math.pi/180},
+        {20*math.pi/180,0*math.pi/180,-20*math.pi/180}},
+
+ {1.0,{90*math.pi/180, 8*math.pi/180,-40*math.pi/180},
+        {90*math.pi/180, -8*math.pi/180,-40*math.pi/180},
+        {0,20*math.pi/180,0}}
+} 
+
+
+--Two arm punching up
+walk.motionDef["hurray2"]={
+ {0.5,{40*math.pi/180, 20*math.pi/180, -140*math.pi/180},
+        {40*math.pi/180,-20*math.pi/180,-140*math.pi/180}},
+
+ {0.2, {40*math.pi/180, 20*math.pi/180, -140*math.pi/180},
+        {-30*math.pi/180,-30*math.pi/180,-90*math.pi/180}},
+ {0.2,{40*math.pi/180, 20*math.pi/180, -140*math.pi/180},
+        {40*math.pi/180,-20*math.pi/180,-140*math.pi/180}},
+ {0.2,{-30*math.pi/180, 30*math.pi/180, -90*math.pi/180},
+        {40*math.pi/180,-20*math.pi/180,-140*math.pi/180}},
+ {0.2,{40*math.pi/180, 20*math.pi/180, -140*math.pi/180},
+        {40*math.pi/180,-20*math.pi/180,-140*math.pi/180}},
+
+ {0.2, {40*math.pi/180, 20*math.pi/180, -140*math.pi/180},
+        {-30*math.pi/180,-30*math.pi/180,-90*math.pi/180}},
+ {0.2,{40*math.pi/180, 20*math.pi/180, -140*math.pi/180},
+        {40*math.pi/180,-20*math.pi/180,-140*math.pi/180}},
+ {0.2,{-30*math.pi/180, 30*math.pi/180, -90*math.pi/180},
+        {40*math.pi/180,-20*math.pi/180,-140*math.pi/180}},
+ {0.2,{40*math.pi/180, 20*math.pi/180, -140*math.pi/180},
+        {40*math.pi/180,-20*math.pi/180,-140*math.pi/180}},
+
+ {0.5,{90*math.pi/180, 8*math.pi/180,-40*math.pi/180},
+        {90*math.pi/180, -8*math.pi/180,-40*math.pi/180}}
+} 
+
+
+--Two arm side swing
+walk.motionDef["swing"]={
+ {0.5,{90*math.pi/180, 90*math.pi/180, -40*math.pi/180},
+        {90*math.pi/180,-90*math.pi/180,-40*math.pi/180},
+        {0*math.pi/180,20*math.pi/180,-20*math.pi/180}},
+
+ {0.5,{90*math.pi/180, 90*math.pi/180, -40*math.pi/180},
+        {90*math.pi/180,-90*math.pi/180,-40*math.pi/180},
+        {0*math.pi/180,20*math.pi/180,20*math.pi/180}},
+
+ {0.5,{90*math.pi/180, 90*math.pi/180, -40*math.pi/180},
+        {90*math.pi/180,-90*math.pi/180,-40*math.pi/180},
+        {0*math.pi/180,20*math.pi/180,-20*math.pi/180}},
+
+ {0.5,{90*math.pi/180, 8*math.pi/180,-40*math.pi/180},
+        {90*math.pi/180, -8*math.pi/180,-40*math.pi/180},
+        {0*math.pi/180,20*math.pi/180,0*math.pi/180}}
+} 
+
+
+
+
+--One-Two Punching
+walk.motionDef["2punch"]={
+ {0.2,{90*math.pi/180, 40*math.pi/180, -160*math.pi/180},
+        {90*math.pi/180,-40*math.pi/180,-160*math.pi/180},
+        {0*math.pi/180,20*math.pi/180,0*math.pi/180}},
+
+ {0.2,{90*math.pi/180, 30*math.pi/180, -160*math.pi/180},
+        {90*math.pi/180,-30*math.pi/180,-160*math.pi/180},
+        {0*math.pi/180,20*math.pi/180,20*math.pi/180}},
+ {0.2,{90*math.pi/180, 30*math.pi/180, -160*math.pi/180},
+        {90*math.pi/180,-30*math.pi/180,-160*math.pi/180},
+        {0*math.pi/180,20*math.pi/180,20*math.pi/180}},
+
+ --right jab
+ {0.2,{90*math.pi/180, 30*math.pi/180, -160*math.pi/180},
+        {-20*math.pi/180,-30*math.pi/180,0*math.pi/180},
+        {0*math.pi/180,20*math.pi/180,20*math.pi/180}},
+
+--left straignt
+ {0.3,{-20*math.pi/180, 20*math.pi/180, 0*math.pi/180},
+        {90*math.pi/180,-40*math.pi/180,-160*math.pi/180},
+        {0*math.pi/180,20*math.pi/180,-30*math.pi/180}},
+
+--retract
+ {0.2,{90*math.pi/180, 40*math.pi/180, -160*math.pi/180},
+        {90*math.pi/180,-40*math.pi/180,-160*math.pi/180},
+        {0*math.pi/180,20*math.pi/180,-30*math.pi/180}},
+ {0.3,{90*math.pi/180, 8*math.pi/180,-40*math.pi/180},
+        {90*math.pi/180, -8*math.pi/180,-40*math.pi/180},
+        {0*math.pi/180,20*math.pi/180,0*math.pi/180}}
+} 
+

@@ -27,9 +27,7 @@ world.landmarkYellow = {0.0, 2.4};
 world.cResample = 10; --Resampling interval
 
 
---They are SPL values
---[[
---Field edge
+--SJ: Now kidsize is using SPL field 
 
 world.Lcorner={};
 world.Lcorner[1]={3.0,2.0};
@@ -52,8 +50,8 @@ world.Lcorner[14]={-3.0,-1.1};
 --Center circle junction
 world.Lcorner[15]={0,0.6};
 world.Lcorner[16]={0,-0.6};
---]]
 
+--[[
 --Kidsize values
 world.Lcorner={};
 --Field edge
@@ -77,7 +75,9 @@ world.Lcorner[14]={-3.0,-1.1};
 --Center circle junction
 world.Lcorner[15]={0,0.6};
 world.Lcorner[16]={0,-0.6};
+--]]
 
+--[[
 --SJ: NSL penalty box is very wide 
 --And sometimes they can be falsely detected as T edges
 --Penalty box T edge #2 
@@ -85,7 +85,7 @@ world.Lcorner[17]={2.4,2};
 world.Lcorner[18]={2.4,-2};
 world.Lcorner[19]={-2.4,2};
 world.Lcorner[20]={-2.4,-2};
-
+--]]
 
 
 --SJ: OP does not use yaw odometry data (only use gyro)

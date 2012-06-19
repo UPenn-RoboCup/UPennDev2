@@ -147,7 +147,7 @@ fsm.bodyApproach.aThresholdTurn = 10*math.pi/180;
 fsm.bodyApproach.aThresholdTurnGoalie = 30*math.pi/180;
 
 --x and y target position for stationary straight kick
-fsm.bodyApproach.xTarget11={0, 0.11,0.13}; --min, target, max
+fsm.bodyApproach.xTarget11={0, 0.12,0.14}; --min, target, max
 fsm.bodyApproach.yTarget11={0.015, 0.03, 0.045}; --min, target ,max
 
 --x and y target position for stationary kick to left
@@ -182,8 +182,16 @@ fsm.bodyKick.thGyroMag = 100;
 fsm.bodyKick.tStartWait = 1.0;
 fsm.bodyKick.tStartWaitMax = 1.5;
 
+
+
+fsm.bodyKick.thGyroMag = 10; 
+fsm.bodyKick.tStartWait = 0.2;
+fsm.bodyKick.tStartWaitMax = 1.0;
+
+
+
 --ball position checking params
-fsm.bodyKick.kickTargetFront = {0.12,0.04};
+fsm.bodyKick.kickTargetFront = {0.12,0.03};
 
 --For kicking to the left
 fsm.bodyKick.kickTargetSide = {0.15,0.01};

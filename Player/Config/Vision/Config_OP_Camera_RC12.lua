@@ -77,5 +77,5 @@ camera.param[7] = {key='exposure (absolute)',      val={1121}};
 
 --ROBOCUP 2012_LV
 --camera.lut_file = 'lut_RC12_LV_PF2.raw'
-camera.lut_file = 'lut_RC12_LV_GameFields.raw'
-
+--camera.lut_file = 'lut_RC12_LV_GameFields.raw'
+camera.lut_file = 'lut_RC12_LV_GameFields_New.raw'

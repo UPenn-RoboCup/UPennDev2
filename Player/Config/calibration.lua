@@ -14,7 +14,7 @@ cal["betty"]={
   kickXComp = 0,
   headPitchComp = 0,
   armBias={0,0,0,0,0,0},
-  pid = 0,
+  pid = 1,
 };
 
 cal["linus"]={
@@ -697,3 +697,8 @@ cal["lucy"].kickXComp=0.005;
 cal["lucy"].servoBias={19,4,10,0,21,-13,-15,7,-20,2,-21,-4,};
 cal["lucy"].footXComp=-0.003;
 cal["lucy"].kickXComp=0.000;
+
+-- Updated date: Tue Jun 19 09:42:59 2012
+cal["sally"].servoBias={-33,-22,-6,0,29,-8,0,0,-4,0,0,0,};
+cal["sally"].footXComp=0.005;
+cal["sally"].kickXComp=0.005;

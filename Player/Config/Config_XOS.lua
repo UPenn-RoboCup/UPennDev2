@@ -28,6 +28,7 @@ dev.camera = 'XOSCam';
 dev.kinematics = 'XOSKinematics';
 dev.ip_wired = '192.168.123.255';
 dev.ip_wireless = '192.168.1.255';
+dev.ip_wireless_port = 3838;
 dev.game_control='XOSGameControl';
 dev.team='TeamXOS';
 dev.walk='NewNewNewNewWalk';

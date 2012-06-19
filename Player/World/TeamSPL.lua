@@ -11,7 +11,7 @@ require('wcm');
 require('gcm');
 
 --Makes error with webots
-Comm.init(Config.dev.ip_wireless,54321);
+Comm.init(Config.dev.ip_wireless,Config.dev.ip_wireless_port);
 print('Receiving Team Message From',Config.dev.ip_wireless);
 
 playerID = gcm.get_team_player_id();

@@ -52,6 +52,8 @@ lastCorr = vector.zeros(ndiv);
 
 -- transmition period
 txPeriod = 1.0;
+-- only use the left speaker to transmit?
+txLeftEarOnly = 1;
 -- max detection count (likelihood)
 maxDetCount = 100;
 -- per detection 
@@ -101,7 +103,7 @@ function update()
               -- play pseudo random signal with random touch tone
               srow = symbols[math.random(#symbols)];
               symbol = srow[math.random(#srow)];
-              SoundComm.play_pnsequence(symbol);
+              SoundComm.play_pnsequence(symbol, txLeftEarOnly);
 
               lastTx = unix.time();
             end

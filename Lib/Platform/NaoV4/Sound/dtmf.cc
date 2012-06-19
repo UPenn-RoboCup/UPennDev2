@@ -31,7 +31,7 @@ void print_tone_resp(double *qRow, double *qRow2, double *qCol, double *qCol2) {
 }
 
 
-int gen_tone_pcm(char symbol, short *pcm, int nframe) {
+int gen_tone_pcm(char symbol, short *pcm, int nframe, int leftOnly) {
   // find tone frequencies
   short f1 = 0;
   short f2 = 0;
@@ -49,13 +49,24 @@ int gen_tone_pcm(char symbol, short *pcm, int nframe) {
   }
 
   // generate pcm
-  for (int i = 0; i < nframe; i++) {
-    float t = sin(2.0*M_PI*f1*((double)i/SAMPLING_RATE))
-              + sin(2.0*M_PI*f2*((double)i/SAMPLING_RATE));
-    t *= (SHRT_MAX/2);
+  if (leftOnly) {
+    for (int i = 0; i < nframe; i++) {
+      float t = sin(2.0*M_PI*f1*((double)i/SAMPLING_RATE))
+                + sin(2.0*M_PI*f2*((double)i/SAMPLING_RATE));
+      t *= (SHRT_MAX/2);
 
-    pcm[2*i] = (short)t;
-    pcm[2*i+1] = (short)t;
+      pcm[2*i] = (short)t;
+      pcm[2*i+1] = 0;
+    }
+  } else {
+    for (int i = 0; i < nframe; i++) {
+      float t = sin(2.0*M_PI*f1*((double)i/SAMPLING_RATE))
+                + sin(2.0*M_PI*f2*((double)i/SAMPLING_RATE));
+      t *= (SHRT_MAX/2);
+
+      pcm[2*i] = (short)t;
+      pcm[2*i+1] = (short)t;
+    }
   }
 
   return 0;
@@ -305,7 +316,8 @@ int check_tone(short *x, char &toneSymbol, long &frame, int &xLIndex, int &xRInd
       //  set output parameters
 
       // find first max zero crossing
-      const double stdThreshold = 3;
+      //  TODO: set stdThreshold for correlation matching
+      const double stdThreshold = 2.0;
       xLIndex = find_first_max(leftCorr, NCORRELATION, stdThreshold*xLStd, PFRAME);
       xRIndex = find_first_max(rightCorr, NCORRELATION, stdThreshold*xRStd, PFRAME);
       toneSymbol = prevSymbol;

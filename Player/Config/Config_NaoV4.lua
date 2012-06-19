@@ -17,7 +17,7 @@ end
   
 param = {}
 param.world = 'World/Config_Nao_World'
-param.walk = 'Walk/Config_NaoV4_Walk_FastStable' 
+param.walk = 'Walk/Config_NaoV4_Stable' 
 param.kick = 'Kick/Config_Nao_Kick'
 param.vision = 'Vision/Config_NaoV4_Vision'
 param.camera = 'Vision/Config_NaoV4_Camera_Mexico6191'

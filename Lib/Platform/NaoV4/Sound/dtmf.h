@@ -52,7 +52,7 @@ void print_tone_resp(double *qRow, double *qRow2, double *qCol, double *qCol2);
  * *pcm - pointer to pre-allocated pcm array
  * nfarme - number of pcm frames to generate
  */
-int gen_tone_pcm(char symbol, short *pcm, int nframe);
+int gen_tone_pcm(char symbol, short *pcm, int nframe, int leftOnly = 0);
 
 
 /**

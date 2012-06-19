@@ -29,9 +29,6 @@ use_same_colored_goal = Config.world.use_same_colored_goal or 0;
 --Use ground truth pose and ball information for webots?
 use_gps_only = Config.use_gps_only or 0;
 
-xMax = Config.world.xMax;
-yMax = Config.world.yMax;
-
 ballFilter = Filter2D.new();
 ball = {};
 ball.t = 0;  --Detection time
@@ -67,10 +64,31 @@ function init_particles()
     goalDefend=get_goal_defend();
     PoseFilter.initialize_unified(
       vector.new({goalDefend[1]/2, -2,  math.pi/2}),
-      vector.new({goalDefend[1]/2,  2, -math.pi/2}),
-      {.15*xMax, .15*yMax, math.pi/6});
+      vector.new({goalDefend[1]/2,  2, -math.pi/2}));
+    if (useSoundLocalization > 0) then
+      SoundFilter.reset();
+    end
   else
-    PoseFilter.initialize();    
+    PoseFilter.initialize();  
+  end
+end
+
+function init_particles_manual_placement()
+  if gcm.get_team_role() == 0 then
+  -- goalie initialized to different place
+    goalDefend=get_goal_defend();
+    util.ptable(goalDefend);
+    dp = vector.new({0.04,0.04,math.pi/8});
+    if goalDefend[1] > 0 then
+      PoseFilter.initialize(vector.new({goalDefend[1],0,math.pi}), dp);
+    else
+      PoseFilter.initialize(vector.new({goalDefend[1],0,0}), dp);
+    end
+  else
+    PoseFilter.initialize_manual_placement();
+    if (useSoundLocalization > 0) then
+      SoundFilter.reset();
+    end
   end
 end
 
@@ -194,15 +212,12 @@ function update_vision()
   if (gameState == 0) then
     init_particles();
 
-    if (useSoundLocalization > 0) then
-      SoundFilter.reset();
-    end
   end
 
   --If robot was in penalty and game switches to set, initialize particles
   --for manual placement
   if wcm.get_robot_penalty() == 1 and gcm.get_game_state() == 2 then
-    PoseFilter.initialize_manual_placement()
+    init_particles_manual_placement()
   elseif gcm.in_penalty() then
     init_particles()
   end
@@ -221,7 +236,7 @@ function update_vision()
   if gcm.get_game_state() ==2 then
     if (not allZeros(fsrRight)) and (not allZeros(fsrLeft)) then --Do not do this if sensor is broken
       if allLessThanTenth(fsrRight) and allLessThanTenth(fsrLeft) then
-        PoseFilter.initialize_manual_placement();
+        init_particles_manual_placement()
       end
     end
   end
@@ -286,6 +301,7 @@ function update_vision()
           -- indicator
           Body.set_indicator_goal({0,0,1});
         else
+          -- we are the blue team, shooting on yellow goal
           if (goalType == 0) then
             PoseFilter.post_yellow_unknown(v);
           elseif(goalType == 1) then

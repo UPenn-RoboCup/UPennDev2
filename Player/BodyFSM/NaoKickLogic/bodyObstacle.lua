@@ -8,7 +8,7 @@ require('wcm')
 require('gcm')
 
 t0 = 0;
-timeout = 3.0;
+timeout = 2.0;
 
 function entry()
   print(_NAME.." entry");

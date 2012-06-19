@@ -80,18 +80,14 @@ elseif (robotName=='linus') then
   game.playerID = 2; 
 elseif (robotName=='betty') then
   game.playerID = 3; 
+  ball_shift={-0.010,0.010};
 elseif (robotName=='lucy') then
   game.playerID = 1; 
 elseif (robotName=='felix') then
   game.playerID = 2; 
 elseif (robotName=='jiminy') then
   game.playerID = 3; 
-  ball_shift={0,0.015};
   ball_shift={-0.020,0.015};
-
-
-
-
 elseif (robotName=='hokie') then
   game.playerID = 4; 
   game.role = 0; --Default goalie
@@ -224,7 +220,7 @@ led_on = 1; --turn on eye led
 led_on = 1; --turn on eye led
 
 --Slow down maximum speed (for testing)
-fsm.bodyPosition.maxStep1 = 0.05;
+fsm.bodyPosition.maxStep1 = 0.06;
 fsm.bodyPosition.maxStep2 = 0.06;
 fsm.bodyPosition.maxStep3 = 0.06;
 
@@ -241,8 +237,8 @@ goalie_disable_arm = 1;
 goalie_log_balls = 1;
 
 --Slow down kick waiting time
-fsm.bodyKick.tStartWait = 1.5;
-fsm.bodyKick.tStartWaitMax = 1.7;
+fsm.bodyKick.tStartWait = 1.0;
+fsm.bodyKick.tStartWaitMax = 1.2;
 
 --Power down walkkick
 walk.walkKickDef["FrontLeft"]={

@@ -62,7 +62,18 @@ world.use_new_goalposts=0;
 world.rGoalFilter = 0.02;
 world.aGoalFilter = 0.05;
 world.rPostFilter = 0.02;
-world.aPostFilter = 0.05;--.2
+world.aPostFilter = 0.05;
+world.rKnownGoalFilter = 0.02;
+world.aKnownGoalFilter = 0.05;
+world.rKnownPostFilter = 0.02;
+world.aKnownPostFilter = 0.05;
+world.rUnknownGoalFilter = 0.02;
+world.aUnknownGoalFilter = 0.05;
+world.rUnknownPostFilter = 0.02;
+world.aUnKnownPostFilter = 0.05;
+
+world.rCornerFilter = 0.02;
+world.aCornerFilter = 0.05;
 
 -- default positions for our kickoff
 world.initPosition1={
@@ -81,7 +92,7 @@ world.initPosition2={
 }
 
 -- use sound localization
-world.enable_sound_localization = 0;
+world.enable_sound_localization = 1;
 
 -- Occupancy Map parameters
 occmap = {};

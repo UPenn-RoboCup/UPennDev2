@@ -29,10 +29,10 @@
 //#define IP "192.168.255.255" 
 
 
-#define IP "192.168.0.255"
+#define IP "192.168.255.255"
 //#define IP "192.168.1.255"
 //#define IP "139.140.218.255"
-#define PORT 54321
+#define PORT 12500
 #define MDELAY 2
 #define TTL 16
 //#define MAX_LENGTH 16000

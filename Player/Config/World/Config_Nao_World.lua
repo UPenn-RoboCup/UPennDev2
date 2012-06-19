@@ -11,6 +11,7 @@ world.xMax = 3.2;
 world.yMax = 2.2;
 world.goalWidth = 1.40;
 world.goalHeight= 0.80;
+world.goalDiameter=0.10;
 world.ballYellow= {{3.0,0.0}};
 world.ballCyan= {{-3.0,0.0}};
 world.postYellow = {};

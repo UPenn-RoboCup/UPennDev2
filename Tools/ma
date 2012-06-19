@@ -1,0 +1,9 @@
+CONNECTION='wireless'
+DESCRIPTION='A simple opened wireless connection'
+INTERFACE='wlan0'
+SECURITY='none'
+ESSID='HL_KID_A'
+IP='static'
+ADDR='192.168.117.107'
+# Uncomment this if your ssid is hidden
+HIDDEN=no

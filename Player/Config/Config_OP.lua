@@ -81,16 +81,19 @@ elseif (robotName=='linus') then
 elseif (robotName=='betty') then
   game.playerID = 3; 
 elseif (robotName=='lucy') then
-  game.playerID = 4; 
+  game.playerID = 1; 
 elseif (robotName=='felix') then
-  game.playerID = 3; 
+  game.playerID = 2; 
 elseif (robotName=='jiminy') then
-  game.playerID = 4; 
+  game.playerID = 3; 
   ball_shift={0,0.015};
   ball_shift={-0.020,0.015};
 
+
+
+
 elseif (robotName=='hokie') then
-  game.playerID = 5; 
+  game.playerID = 4; 
   game.role = 0; --Default goalie
 elseif (robotName=='sally') then
   game.playerID = 5; 

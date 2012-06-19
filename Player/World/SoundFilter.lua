@@ -62,8 +62,9 @@ decayPeriod = 1.0;
 decayRate = 1.0;
 -- flag indicating if we should decrease non adjacent cells
 --    after a good correlation
-decreaseNonAdjacent = 0;
+decreaseNonAdjacent = 1;
 decreaseNonAdjacentRate = 3.0;
+confidenceThres = 0.6 * maxDetCount;
 
 -- last decay time
 lastDecay = unix.time();
@@ -236,7 +237,6 @@ function resolve_goal_detection(gtype, vgoal)
    -- find the direction of the goalie
    -- TODO: better determination of the sound direction
    local mv, mind = util.max(detFilter);
-   local confidenceThres = 0.75 * maxDetCount;
    if (mv < confidenceThres) then
       return 0;
    end

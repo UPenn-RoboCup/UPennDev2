@@ -50,8 +50,8 @@ dev.body = 'OPBody';
 dev.camera = 'OPCam';
 dev.kinematics = 'OPKinematics';
 dev.ip_wired = '192.168.123.255';
-dev.ip_wireless = '255.255.255.255';
-dev.ip_wireless_port = 3838;
+dev.ip_wireless = '192.168.117.255';
+dev.ip_wireless_port = 54321;
 dev.game_control='OPGameControl';
 dev.team='TeamNSL';
 --dev.walk='NewNewNewWalk';
@@ -64,13 +64,15 @@ speak.enable = false;
 
 -- Game Parameters
 game = {};
-game.teamNumber = 18;
+game.teamNumber = 17;
 --game.teamNumber = 26;
 
 --Default role: 0 for goalie, 1 for attacker, 2 for defender
 
 dev.gender = 1;
 game.role = 1; --Default attacker
+
+ball_shift={0,0};
 
 if (robotName=='scarface') then
   game.playerID = 1; 
@@ -84,6 +86,8 @@ elseif (robotName=='felix') then
   game.playerID = 3; 
 elseif (robotName=='jiminy') then
   game.playerID = 4; 
+  ball_shift={0,0.015};
+  ball_shift={-0.020,0.015};
 
 elseif (robotName=='hokie') then
   game.playerID = 5; 

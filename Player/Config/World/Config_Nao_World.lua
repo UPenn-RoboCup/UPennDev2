@@ -72,6 +72,9 @@ world.aUnknownGoalFilter = 0.05;
 world.rUnknownPostFilter = 0.02;
 world.aUnKnownPostFilter = 0.05;
 
+world.rCornerFilter = 0.02;
+world.aCornerFilter = 0.05;
+
 -- default positions for our kickoff
 world.initPosition1={
   {2.7,0},   --Goalie

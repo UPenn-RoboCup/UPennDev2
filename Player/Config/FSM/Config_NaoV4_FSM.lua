@@ -10,9 +10,9 @@ fsm={};
 
 --Should we consider obstacle?
 if Config.game.robotID == 2 then --no obstacle on rufio
-  fsm.enable_obstacle_detection = 0;
+  fsm.enable_obstacle_detection = 1;
 else
-  fsm.enable_obstacle_detection = 0;
+  fsm.enable_obstacle_detection = 1;
 end
 
 --fsm.playMode = 1; --For Demo without orbit
@@ -204,6 +204,12 @@ fsm.headScan.pitchTurn0 = 20*math.pi/180;
 fsm.headScan.pitchTurnMag = 20*math.pi/180;
 fsm.headScan.yawMagTurn = 45*math.pi/180;
 fsm.headScan.tScan = 6.0*speedFactor;
+if Config.game.robotID == 1 then
+  fsm.headScan.tScan = 10.0*speedFactor;
+else
+  fsm.headScan.tScan = 6.0*speedFactor;
+end
+
 
 --------------------------------------------------
 --HeadKick: Fix headangle for approaching
@@ -235,5 +241,9 @@ fsm.headLookGoal.tScan = 0.75*speedFactor;
 --HeadSweep: Look around to find the goal
 --------------------------------------------------
 fsm.headSweep={};
-fsm.headSweep.tScan=4.0*speedFactor;
-fsm.headSweep.tWait=0.4*speedFactor;
+if Config.game.robotID == 1 then
+  fsm.headSweep.tScan=6.0*speedFactor;
+else
+  fsm.headSweep.tScan=4.0*speedFactor;
+end
+fsm.headSweep.tWait=0.2*speedFactor;

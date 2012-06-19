@@ -71,7 +71,7 @@ Body.set_head_hardness({0.4,0.4});
 
 Motion.fall_check=0; --auto getup disabled
 
-instructions = " Key commands \n 7:sit down 8:stand up 9:walk\n i/j/l/,/h/; :control walk velocity\n k : walk in place\n [, ', / :Reverse x, y, / directions\n 1/2/3/4 :kick\n w/a/s/d/x :control head\n t/T :alter walk speed\t f/F :alter step phase\t r/R :alter step height\t c/C :alter supportX\t v/V :alter supportY\n b/B :alter foot sensor threshold \t n/N :alter delay time.\n 3/4/5 :turn imu feedback/joint encoder feedback/foot sensor feedback on or off."; 
+instructions = " Key commands \n 7:sit down 8:stand up 9:walk\n i/j/l/,/h/; :control walk velocity\n k : walk in place\n [, ', / :Reverse x, y, / directions\n 1/2/3/4 :kick\n w/a/s/d/x :control head\n t/T :alter walk speed\t f/F :alter step phase\t r/R :alter step height\t c/C :alter supportX\t v/V :alter supportY \t q/Q: alter footY\t y/Y: alter bodyHeight\t u/U: alter bodyTilt\n "; 
 -- main loop
 print(instructions);
 local tUpdate = unix.time();
@@ -191,6 +191,10 @@ function update()
 			headangle[2]=headangle[2]+5*math.pi/180;
 
 		--Change configuration params in real time--
+    elseif byte==string.byte("u") then
+      Config.walk.bodyTilt = Config.walk.bodyTilt - math.pi/180
+    elseif byte==string.byte("U") then
+      Config.walk.bodyTilt = Config.walk.bodyTilt + math.pi/180
 		elseif byte==string.byte("t") then
 			Config.walk.tStep = Config.walk.tStep - .01;
 		elseif byte==string.byte("T") then
@@ -217,6 +221,10 @@ function update()
 			Config.walk.bodyHeight = Config.walk.bodyHeight - .001;
 		elseif byte== string.byte('Y') then
 			Config.walk.bodyHeight = Config.walk.bodyHeight + .001;
+    elseif byte==string.byte('q') then
+      Config.walk.footY = Config.walk.footY - .001
+    elseif byte==string.byte('Q') then
+      Config.walk.footY = Config.walk.footY + .001
 		elseif byte== string.byte('z') then
 			Config.walk.tStepWalkKick = Config.walk.tStepWalkKick - .01;
 		elseif byte== string.byte('Z') then
@@ -400,8 +408,11 @@ function update()
   	print(string.format("Head angle: %d, %d",
 			headangle[1]*180/math.pi,
 			headangle[2]*180/math.pi));
-		print(string.format("Walk settings:\n tStep: %.2f\t phSingle: {%.2f, %.2f}\t stepHeight: %.3f\n supportX: %.3f\t supportY: %.3f\t\n", Config.walk.tStep, Config.walk.phSingle[1], Config.walk.phSingle[2], Config.walk.stepHeight, 
-Config.walk.supportX, Config.walk.supportY));
+		print(string.format("Walk settings:\n tStep: %.2f\t phSingle: {%.2f, %.2f}\t stepHeight: %.3f\n supportX: %.3f\t supportY: %.3f\t footY: %.3f\t "..
+      "bodyHeight: %.3f\t bodyTilt: %.3f", 
+          Config.walk.tStep, Config.walk.phSingle[1], Config.walk.phSingle[2], Config.walk.stepHeight, 
+          Config.walk.supportX, Config.walk.supportY, Config.walk.footY,
+          Config.walk.bodyHeight,Config.walk.bodyTilt));
     print(string.format("Walk kick settings:\n tStepWalkKick: %.2f\t walkKickHeightFactor: %.2f\t walkKickVel: {%.2f, %.2f}\n", Config.walk.tStepWalkKick or Config.walk.tStep, Config.walk.walkKickHeightFactor, Config.walk.walkKickVel[1], Config.walk.walkKickVel[2]))
   else
     print(string.format("\n Walk Velocity: (%.2f, %.2f, %.2f)",unpack(targetvel)));

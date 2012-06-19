@@ -74,10 +74,22 @@ function init_particles()
 end
 
 function init_particles_manual_placement()
-  PoseFilter.initialize_manual_placement();
+  if gcm.get_team_role() == 0 then
+  -- goalie initialized to different place
+    goalDefend=get_goal_defend();
+    util.ptable(goalDefend);
+    dp = vector.new({0.04,0.04,math.pi/8});
+    if goalDefend[1] > 0 then
+      PoseFilter.initialize(vector.new({goalDefend[1],0,math.pi}), dp);
+    else
+      PoseFilter.initialize(vector.new({goalDefend[1],0,0}), dp);
+    end
+  else
+    PoseFilter.initialize_manual_placement();
     if (useSoundLocalization > 0) then
       SoundFilter.reset();
     end
+  end
 end
 
 function allLessThanTenth(table)

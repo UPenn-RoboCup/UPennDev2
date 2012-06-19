@@ -137,7 +137,11 @@ function update()
 
   -- TODO: add obstacle detection
   --us = UltraSound.checkObstacle();
-  us = UltraSound.check_obstacle();
+  if Config.fsm.enable_obstacle_detection > 0 then
+    us = UltraSound.check_obstacle();
+  else
+    us = vector.zeros(2)
+  end
   if ((t - t0 > 3.0) and (us[1] > 8 or us[2] > 8)) then
     return 'obstacle'; 
   end

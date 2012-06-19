@@ -76,21 +76,18 @@ function initialize_unified(p0,p1,dp)
   --Half of the particles at p0
   --Half of the particles at p1
   p0 = p0 or {0, 0, 0};
-  p0 = p1 or {0, 0, 0};
+  p1 = p1 or {0, 0, 0};
   --Low spread  
   dp = dp or {.15*xMax, .15*yMax, math.pi/6};
-  --print('init_unified particles at ');
-  --util.ptable(p0);
-  --util.ptable(p1);
 
   for i=1,n/2 do
-    xp[i]=p0[1]+dp[1]*math.random();
-    yp[i]=p0[2]+dp[2]*math.random();
-    ap[i]=p0[3]+dp[3]*math.random();
+    xp[i]=p0[1]+dp[1]*(math.random()-.5); 
+    yp[i]=p0[2]+dp[2]*(math.random()-.5);
+    ap[i]=p0[3]+dp[3]*(math.random()-.5);
 
-    xp[i+n/2]=p1[1]+dp[1]*math.random();
-    yp[i+n/2]=p1[2]+dp[2]*math.random();
-    ap[i+n/2]=p1[3]+dp[3]*math.random();
+    xp[i+n/2]=p1[1]+dp[1]*(math.random()-.5);
+    yp[i+n/2]=p1[2]+dp[2]*(math.random()-.5);
+    ap[i+n/2]=p1[3]+dp[3]*(math.random()-.5);
   end
   wp = vector.zeros(n);
 end

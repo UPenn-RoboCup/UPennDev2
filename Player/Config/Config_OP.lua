@@ -248,8 +248,10 @@ goalie_disable_arm = 1;
 goalie_log_balls = 1;
 
 --Slow down kick waiting time
+--[[
 fsm.bodyKick.tStartWait = 1.0;
 fsm.bodyKick.tStartWaitMax = 1.2;
+--]]
 
 fsm.bodyKick.tStartWait = 0.6;
 fsm.bodyKick.tStartWaitMax = 0.8;

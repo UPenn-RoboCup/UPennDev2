@@ -156,7 +156,7 @@ function detect()
       local angle_diff = util.mod_angle(line.angle[i] - line.angle[j]);
       angle_diff = math.abs (angle_diff) * 180 / math.pi;
       angle_diff = math.min (angle_diff, 180 - angle_diff)
-      if (angle_diff > 20 and angle_diff < 70 and line.length[i] < line.length[j] and line_valid[i] ==1 ) then
+      if (angle_diff > 15 and angle_diff < 70 and line.length[i] < line.length[j] and line_valid[i] ==1 ) then
         print ('angle check failed. angle_diff: '..angle_diff)
         line_valid[i] = 0;
       end

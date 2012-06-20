@@ -33,6 +33,10 @@ dev.team='TeamNSL';
 dev.walk='NewNewNewWalk'; --Walk with generalized walkkick definitions
 dev.kick='NewNewKick'; --Extended kick that supports upper body motion
 
+dev.walk='NewNewNewNewNewWalk'; 
+	--Walk with upper body motion playback
+
+
 --Sit/stand stance parameters
 stance={};
 stance.bodyHeightSit = 0.20;
@@ -200,6 +204,11 @@ fsm.bodyPosition.maxStep3 = 0.08;
 --]]
 
 --Shutdown Vision and use ground truth gps info only
-use_gps_only = 0;
+--use_gps_only = 0;
 use_gps_only = 1;
 
+fsm.enable_walkkick = 0;
+--fsm.enable_sidekick = 0;
+
+--New multi-blob landmark detection code
+vision.use_multi_landmark = 1;

@@ -144,15 +144,23 @@ function update()
 
   aBall = math.atan2 (ball.y,ball.x);
 
+  --Penalty mark: 1.2m
+  --Penalty box: 0.6m
+  rCloseX2 = 0.8; --absolute min X pos
+  eta_kickaway = 3.0;
+  attacker_eta = wcm.get_team_attacker_eta();
 
-  if goalie_dive~=1 or goalie_type<3 then 
-    --TODO: check if other player is close to the ball
-
-
-    if (ballR_defend<rClose or ballX_defend<rCloseX)
-       and t-ball.t<0.1 and ball_v < ball_velocity_th2 then
-      Motion.event("walk");
-      return "ballClose";
+  kick_away = false;
+--  if goalie_dive~=1 or goalie_type<3 then 
+  if true then --Always reposition
+    if t-ball.t<0.1 and ball_v < ball_velocity_th2 then
+      --ball is not moving, check whether we go out for kicking      
+      if ballX_defend<rCloseX2 or
+       ((ballX_defend<rCloseX or ballR_defend<rClose)
+	     and attacker_eta > eta_kickaway) then
+        Motion.event("walk");
+        return "ballClose";
+      end
     end
 
     attackBearing = wcm.get_attack_bearing();

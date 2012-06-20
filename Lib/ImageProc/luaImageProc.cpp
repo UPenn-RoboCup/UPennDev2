@@ -376,6 +376,21 @@ static int lua_block_bitor(lua_State *L) {
   return 1;
 }
 
+static int lua_block_bitor_obs(lua_State *L) {
+  uint8_t *label = (uint8_t *) lua_touserdata(L, 1);
+  if ((label == NULL) || !lua_islightuserdata(L, 1)) {
+    return luaL_error(L, "Input LABEL not light user data");
+  }
+  int mx = luaL_checkint(L, 2);
+  int nx = luaL_checkint(L, 3);
+  int msub = luaL_checkint(L, 4);
+  int nsub = luaL_checkint(L, 5);
+
+  uint8_t *block = block_bitor_obs(label, mx, nx, msub, nsub);
+  lua_pushlightuserdata(L, block);
+  return 1;
+}
+
 //For OP
 //bitwise OR using tilted bounding box
 
@@ -474,6 +489,7 @@ static const struct luaL_reg imageProc_lib [] = {
   {"color_stats", lua_color_stats},
   {"tilted_color_stats", lua_tilted_color_stats},
   {"block_bitor", lua_block_bitor},
+  {"block_bitor_obs", lua_block_bitor_obs},
   {"tilted_block_bitor", lua_tilted_block_bitor},
   {"connected_regions", lua_connected_regions},
   {"goal_posts", lua_goal_posts},

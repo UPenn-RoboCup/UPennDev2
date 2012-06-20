@@ -179,7 +179,7 @@ function update()
 
 
             -- decrease count for non adjacent cells 
-            if (decreaseNonAdjacent) then
+            if (decreaseNonAdjacent > 0) then
                local skipInd = {};
                skipInd[1] = (ifront - 1) % #detFilter;
                skipInd[2] =  ifront;
@@ -227,7 +227,7 @@ function update()
    end 
    
    -- distance decay
-   if (distanceDecay) then
+   if (distanceDecay > 0) then
      local dx = lastDistanceDecayPose.x - odomPose.x;
      local dy = lastDistanceDecayPose.y - odomPose.y;
      local distMag = math.sqrt(dx*dx + dy*dy);

@@ -156,13 +156,13 @@ function detect()
       --print (util.ptable(line.v[linecount]))
      
      -- print(string.format(
---		"Line %d: endpoint1: (%f, %f), endpoint2: (%f, %f), \n endpoint1 in labelB: (%f, %f), endpoint2 in labelB: (%f, %f), horizonB: %f,\n length %d, angle %d, max_width %d\n",
+--[[		"Line %d: endpoint1: (%f, %f), endpoint2: (%f, %f), \n endpoint1 in labelB: (%f, %f), endpoint2 in labelB: (%f, %f), horizonB: %f,\n length %d, angle %d, max_width %d\n",
 		linecount,line.v[linecount][1][1], line.v[linecount][1][2],
     line.v[linecount][2][1], line.v[linecount][2][2],
     line.propsB[i].endpoint[1], line.propsB[i].endpoint[3], line.propsB[i].endpoint[2], line.propsB[i].endpoint[4], horizonB,
     line.length[linecount],
 		line.angle[linecount]*180/math.pi, line.propsB[i].max_width));
-  
+  --]]
     end
   end
 

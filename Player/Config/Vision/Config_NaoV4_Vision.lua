@@ -18,10 +18,14 @@ vision.maxFPS = 30;
 vision.scaleB = 4;
 
 --vision.enable_2_yellow_goals = 1;
--- use this to enable line detection
-vision.enable_line_detection = 0;
--- use this to enable corner detection
-vision.enable_corner_detection = 0;
+if Config.game.role == 0 then
+  -- line and corner detection for goalie only
+  vision.enable_line_detection = 1;
+  vision.enable_corner_detection = 1;
+else
+  vision.enable_line_detection = 0;
+  vision.enable_corner_detection = 0;
+end
 -- use this to enable spot detection
 vision.enable_spot_detection = 0;
 -- use this to enable midfield landmark detection

@@ -15,6 +15,17 @@ function loadconfig(configName)
   end
 end
   
+-- Game Parameters
+
+game = {};
+game.teamNumber = 25;
+game.playerID = parse_hostname.get_player_id();
+game.robotID = game.playerID;
+game.teamColor = parse_hostname.get_team_color();
+game.role = game.playerID-1; -- 0 for goalie
+game.nPlayers = 4;
+
+
 param = {}
 param.world = 'World/Config_Nao_World'
 param.walk = 'Walk/Config_NaoV4_Walk_FastStable' 
@@ -47,17 +58,6 @@ dev.kick = 'NewKick';
 
 --Speak enable
 speakenable = true;
-
--- Game Parameters
-
-game = {};
-game.teamNumber = 25;
-game.playerID = parse_hostname.get_player_id();
-game.robotID = game.playerID;
-game.teamColor = parse_hostname.get_team_color();
-game.role = game.playerID-1; -- 0 for goalie
-game.nPlayers = 4;
-
 
 
 -- FSM Parameters

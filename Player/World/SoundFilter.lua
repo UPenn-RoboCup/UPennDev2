@@ -324,10 +324,33 @@ function resolve_goal_detection(gtype, vgoal)
    if (math.abs(agoalie_wrtRobot - agoal) < goalAngleThres) then
       -- the goal is ours (defending)
       print('------------------ detected goal is the defending goal ------------------');
+      -- do we already have the correct orientation
+      local goalBeliefFromPose = which_goal_based_on_current_pose();
+      -- if we think it is the attacking goal return defending (to update pose faster)
+      if (goalBeliefFromPose == 1) then
+         return -1;
+      else
+         -- otherwise use normal pose filter updates
+         print('------------------ already have correct direction ------------------');
+         return 0
+      end
+
+
       return -1;
    elseif (math.abs(agoalie_wrtRobot + math.pi - agoal) < goalAngleThres) then
       -- the goal is theirs (attacking)
       print('++++++++++++++++++ detected goal is the attacking goal ++++++++++++++++++');
+      -- do we already have the correct orientation
+      local goalBeliefFromPose = which_goal_based_on_current_pose();
+      -- if we think it is the attacking goal return defending (to update pose faster)
+      if (goalBeliefFromPose == -1) then
+         return 1;
+      else
+         -- otherwise use normal pose filter updates
+         print('++++++++++++++++++ already have correct direction ++++++++++++++++++');
+         return 0;
+      end
+
       return 1;
    else
       -- the detected goal posts and goalie do not correlate well
@@ -339,6 +362,27 @@ function resolve_goal_detection(gtype, vgoal)
    return 0;
 end
 
+function which_goal_based_on_current_pose(agoal);
+   -- get attack and defend angle
+   aattack = wcm.get_attack_angle();
+   adefend = wcm.get_defend_angle();
+
+   -- which goal do we think the detected one is based on the
+   --    particle filter
+   dattack = math.abs(util.mod_angle(aattack - agoal));
+   ddefend = math.abs(util.mod_angle(adefend - agoal));
+
+   -- first check if neither goal is a good match
+   if (dattack > 60 and ddefend > 60) then
+      return 0;
+   elseif (dattack < ddefend) then
+      -- we think it is the attacking goal
+      return 1;
+   else
+      -- we think it is the defending goal
+      return -1;
+   end
+end
 
 function reset()
    -- zero out histogram

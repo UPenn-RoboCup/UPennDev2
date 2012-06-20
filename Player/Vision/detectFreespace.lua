@@ -32,7 +32,7 @@ function detect(color)
   -- Get label handle
   labelB = Vision.labelB;
   
-  FreeB = ImageProc.field_occupancy(labelB.data_obs,labelB.m,labelB.n);
+  FreeB = ImageProc.field_occupancy(labelB.data,labelB.m,labelB.n);
   
   for i = 1,labelB.m do
     local pbound = vector.new({i,labelB.n-FreeB.range[i]});

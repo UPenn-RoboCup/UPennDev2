@@ -228,7 +228,53 @@ static int lua_yuyv_to_label(lua_State *L) {
 }
 
 
+// Only labels every other pixel for obstacle lut
+static int lua_yuyv_to_label_obs(lua_State *L) {
+  static std::vector<uint8_t> label;
 
+  // 1st Input: Original YUYV-format input image
+  uint32_t *yuyv = (uint32_t *) lua_touserdata(L, 1);
+  if ((yuyv == NULL) || !lua_islightuserdata(L, 1)) {
+    return luaL_error(L, "Input YUYV not light user data");
+  }
+
+  // 2nd Input: YUYV->Label Lookup Table
+  uint8_t *cdt = (uint8_t *) lua_touserdata(L, 2);
+  if (cdt == NULL) {
+    return luaL_error(L, "Input CDT not light user data");
+  }
+
+  // 3rd Input: Width (in YUYV macropixels) of the original YUYV image
+  int m = luaL_checkint(L, 3);
+
+  // 4th Input: Height (in YUVY macropixels) of the original YUYV image
+  int n = luaL_checkint(L, 4);
+
+  // Label will be half the height and half the width of the original image
+  label.resize(m*n/2);
+  int label_ind = 0;
+
+  for (int j = 0; j < n/2; j++){
+    for (int i = 0; i < m; i++) {
+
+      // Construct Y6U6V6 index
+      uint32_t index = ((*yuyv & 0xFC000000) >> 26)  
+        | ((*yuyv & 0x0000FC00) >> 4)
+        | ((*yuyv & 0x000000FC) << 10);
+
+      // Put labeled pixel into label vector
+      label[label_ind] = cdt[index];
+
+      yuyv++;
+      label_ind++;
+    }
+    // Skip every other line (to maintain image ratio)
+    yuyv += m;
+  }
+  // Pushing light data
+  lua_pushlightuserdata(L, &label[0]);
+  return 1;
+}
 
 
 
@@ -422,6 +468,7 @@ static const struct luaL_reg imageProc_lib [] = {
   {"rgb_to_yuyv", lua_rgb_to_yuyv},
   {"rgb_to_label", lua_rgb_to_label},
   {"yuyv_to_label", lua_yuyv_to_label},
+  {"yuyv_to_label_obs", lua_yuyv_to_label_obs},
   {"index_to_label", lua_index_to_label},
   {"color_count", lua_color_count},
   {"color_stats", lua_color_stats},

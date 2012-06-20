@@ -114,6 +114,11 @@ function entry()
   camera.lut = carray.new('c', 262144);
   load_lut(Config.camera.lut_file);
 
+  --ADDED to prevent crashing with old camera config
+  if Config.camera.lut_file_obs == null then
+    Config.camera.lut_file_obs = Config.camera.lut_file;
+  end
+
   -- Load the obstacle LUT as well
   print('loading obs lut: '..Config.camera.lut_file_obs);
   camera_obs.lut = carray.new('c', 262144);

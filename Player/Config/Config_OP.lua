@@ -214,6 +214,9 @@ falling_timeout = 0.3;
 led_on = 0; --turn off eye led
 led_on = 1; --turn on eye led
 
+--New multi-blob landmark detection code
+vision.use_multi_landmark = 1;
+
 ------------------------------------------------------------------------
 -- Demo setting 1
 

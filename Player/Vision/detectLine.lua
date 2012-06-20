@@ -31,7 +31,8 @@ function detect()
    --TODO: test line detection
   line = {};
   line.detect = 0;
-
+  line_second = {};
+  line_second.detect  = 0;
   if (Vision.colorCount[colorWhite] < min_white_pixel) then 
     --print('under 200 white pixels');
     return line;
@@ -77,56 +78,121 @@ function detect()
   end
 
 
-  bestindex=1;
-  bestlength=0;
-  linecount=0;
+  bestindex = 1;
+  bestlength = 0;
+  linecount = 0;
+  second_linecount = 0;
+  
+  
+
+-- first round check, check on sigle line
 
   for i=1,nLines do
     local length = math.sqrt(
 	(line.propsB[i].endpoint[1]-line.propsB[i].endpoint[2])^2+
 	(line.propsB[i].endpoint[3]-line.propsB[i].endpoint[4])^2);
 
-    local vendpoint = {};
-    vendpoint[1] = HeadTransform.coordinatesB(
+    local vendpoint_old = {};
+    vendpoint_old[1] = HeadTransform.coordinatesB(
   vector.new({line.propsB[i].endpoint[1], line.propsB[i].endpoint[3]}));
-    vendpoint[2] = HeadTransform.coordinatesB(
+    vendpoint_old[2] = HeadTransform.coordinatesB(
 	vector.new({line.propsB[i].endpoint[2], line.propsB[i].endpoint[4]}));
 
-    vHeight =  0.5 * (vendpoint[1][3] + vendpoint[2][3]); 
---[[    
-    if (vendpoint[1][3] < -headZ) then
-      vendpoint[1] = (-headZ/vendpoint[1][3])*vendpoint[1];
+    local vendpoint = {};
+    vendpoint[1] = HeadTransform.projectGround(vendpoint_old[1],0);
+    vendpoint[2] = HeadTransform.projectGround(vendpoint_old[2],0);
+ 
+    local goal1 = vcm.get_goal_v1();
+    local goal2 = vcm.get_goal_v2();
+    local goal_posX = 0;
+    local lineX = 0.5*(vendpoint[1][1]+vendpoint[2][1])
+    if (goal1[1] > 0 or goal2[1] > 0) then
+      goal_posX = math.max (goal1[1], goal2[1]);
+    else
+      goal_posX = math.min (goal1[1], goal2[1]);
     end
-    if (vendpoint[2][3] < -headZ) then
-      vendpoint[2] = (-headZ/vendpoint[2][3])*vendpoint[2]; 
-    end
---]]    
+    print ('goal_posX: '..goal_posX)
     local LWratio = length/line.propsB[i].max_width;
-    if length > min_length and linecount < 6 and vHeight < 0.5 and LWratio > 2.5
-  and line.propsB[i].endpoint[2] > horizonB and line.propsB[i].endpoint[4] > horizonB  then
-      --print (LWratio)
+    
+    if length > min_length and linecount < 6 
+  -- lines should be on the ground
+  and vendpoint_old[1][3] < 0.3 and vendpoint_old[2][3] < 0.3 
+  -- lines should not be too wide
+  and LWratio > 2.5 
+  -- lines should be below horizon
+  and line.propsB[i].endpoint[3] > horizonB and line.propsB[i].endpoint[4] > horizonB  
+  -- lines should be in the court, nothing behind the goal posts can be considered as line.
+  and (goal_posX >= 0 or (goal_posX < 0 and lineX > goal_posX)) 
+--vendpoint[1][1] > goal_posX and vendpoint[2][1] > goal_posX
+  then
       linecount=linecount+1;
       line.length[linecount]=length;
       line.endpoint[linecount]= line.propsB[i].endpoint;
-      vendpoint[1] = HeadTransform.projectGround(vendpoint[1],0);
-      vendpoint[2] = HeadTransform.projectGround(vendpoint[2],0);
-      line.v[linecount]={};
+            line.v[linecount]={};
       line.v[linecount][1]=vendpoint[1];
       line.v[linecount][2]=vendpoint[2];
       line.angle[linecount]=math.abs(math.atan2(vendpoint[1][2]-vendpoint[2][2], vendpoint[1][1]-vendpoint[2][1]));
       --print (util.ptable(line.v[linecount]))
      
-      vcm.add_debug_message(string.format(
-		"Line %d: length %d, angle %d, max_width %d\n",
-		linecount,line.length[linecount],
+      print(string.format(
+		"Line %d: endpoint1: (%f, %f), endpoint2: (%f, %f), \n endpoint1 in labelB: (%f, %f), endpoint2 in labelB: (%f, %f), horizonB: %f,\n length %d, angle %d, max_width %d\n",
+		linecount,line.v[linecount][1][1], line.v[linecount][1][2],
+    line.v[linecount][2][1], line.v[linecount][2][2],
+    line.propsB[i].endpoint[1], line.propsB[i].endpoint[3], line.propsB[i].endpoint[2], line.propsB[i].endpoint[4], horizonB,
+    line.length[linecount],
 		line.angle[linecount]*180/math.pi, line.propsB[i].max_width));
   
     end
   end
-  nLines = linecount;
-  line.nLines = nLines;
+
+  local line_valid = {};
+  for i = 1, linecount do
+    line_valid[i] = 1;
+  end
+-- second round check, check pairs of lines
+  
+  for i = 1, linecount do
+    for j = 1, linecount do
+      local angle_diff = util.mod_angle(line.angle[i] - line.angle[j]);
+      angle_diff = math.abs (angle_diff) * 180 / math.pi;
+      angle_diff = math.min (angle_diff, 180 - angle_diff)
+      if (angle_diff > 15 and angle_diff < 70 and line.length[i] < line.length[j] and line_valid[i] ==1 ) then
+        print ('angle check failed. angle_diff: '..angle_diff)
+        line_valid[i] = 0;
+      end
+    end 
+  end
+
+  line_second.v={};
+  line_second.endpoint={};
+  line_second.angle={};
+  line_second.length={}
+
+  for i = 1,6 do
+    line_second.endpoint[i] = vector.zeros(4);
+    line_second.v[i]={};
+    line_second.v[i][1]=vector.zeros(4);
+    line_second.v[i][2]=vector.zeros(4);
+    line_second.angle[i] = 0;
+  end
+
+
+  for i = 1, linecount do
+    print ('valid: '..line_valid[i])
+    if (line_valid[i] == 1) then
+      second_linecount = second_linecount + 1;
+      line_second.angle[second_linecount] = line.angle[i];
+      line_second.v[second_linecount] = line.v[i];
+      line_second.endpoint[second_linecount] = line.endpoint[i];
+      line_second.length[second_linecount] = line.length[i];
+    end
+  end
+
+  nLines = second_linecount;
+  line_second.nLines = nLines;
 
   --TODO::::find distribution of v
+  --[[
   sumx=0;
   sumxx=0;
   for i=1,nLines do 
@@ -134,9 +200,9 @@ function detect()
     sumx=sumx+line.angle[i];
     sumxx=sumxx+line.angle[i]*line.angle[i];
   end
-
+  --]]
   if nLines>0 then
-    line.detect = 1;
+    line_second.detect = 1;
   end
-  return line;
+  return line_second;
 end

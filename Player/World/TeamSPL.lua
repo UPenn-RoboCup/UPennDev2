@@ -56,12 +56,15 @@ state.landmarkv={0,0};
 states = {};
 states[playerID] = state;
 
+tLastReceived = 0
+
 
 function recv_msgs()
   while (Comm.size() > 0) do 
     t = serialization.deserialize(Comm.receive());
     if (t and (t.teamNumber) and (t.teamNumber == state.teamNumber) and (t.id) and (t.id ~= playerID)) then
       t.tReceive = Body.get_time();
+      tLastReceived = Body.get_time();
       states[t.id] = t;
     end
   end
@@ -248,7 +251,11 @@ end
 function set_role(r)
   if role ~= r then 
     role = r;
-    Body.set_indicator_role(role);
+    wireless = (Body.get_time()-tLastReceived) < 1;
+    if wireless then
+      Speak.talk('Received packet')
+    end
+    Body.set_indicator_role(role, wireless);
     if role == 1 then
       -- attack
       Speak.talk('Attack');

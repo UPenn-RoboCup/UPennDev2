@@ -294,7 +294,7 @@ fsm.bodyKick.tStartWaitMax = 0.9;
 --Let goalie log balls
 goalie_log_balls = 1;
 
-fsm.goalie_type = 3;--moving/move+stop/stop+dive/stop+dive+move
+fsm.goalie_type = 4;--moving/move+stop/stop+dive/stop+dive+move
 goalie_dive = 1; --1 for arm only, 2 for actual diving
 
 fsm.enable_walkkick = 1; --Enable front walkkick only

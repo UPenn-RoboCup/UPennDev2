@@ -26,6 +26,27 @@ min_length=Config.vision.line.min_length or 3;
 
 headZ = Config.head.camOffsetZ;
 
+min_angle_diff = Config.vision.line.min_angle_diff or 15;
+max_angle_diff = Config.vision.line.max_angle_diff or 70;
+
+
+
+--copied from corner detection. Will make it more organized after Robocup.
+--get the cross point of two line segements. 
+--(x1, y1) (x2, y2) are endpoints for the first line, (x3, y3) (x4, y4) are endpoints for the other line
+function get_crosspoint(x1,y1,x2,y2,x3,y3,x4,y4)
+  k1 = (y2 - y1)/(x2 - x1);
+  k2 = (y4 - y3)/(x4 - x3);
+  if (k1 == k2) then
+    return {0,0}
+  end
+  local x = (y3 - y1 + k1*x1 -k2*x3)/(k1 - k2);
+  local y = k1*(x - x2) + y2;
+  return {x,y};
+end
+
+
+
 
 function detect()
    --TODO: test line detection
@@ -111,7 +132,7 @@ function detect()
     else
       goal_posX = math.min (goal1[1], goal2[1]);
     end
-    print ('goal_posX: '..goal_posX)
+    --print ('goal_posX: '..goal_posX)
     local LWratio = length/line.propsB[i].max_width;
     
     if length > min_length and linecount < 6 
@@ -122,7 +143,7 @@ function detect()
   -- lines should be below horizon
   and line.propsB[i].endpoint[3] > horizonB and line.propsB[i].endpoint[4] > horizonB  
   -- lines should be in the court, nothing behind the goal posts can be considered as line.
-  and (goal_posX >= 0 or (goal_posX < 0 and lineX > goal_posX)) 
+  and (goal_posX >= 0.15 or (goal_posX < 0.15 and lineX > goal_posX)) 
 --vendpoint[1][1] > goal_posX and vendpoint[2][1] > goal_posX
   then
       linecount=linecount+1;
@@ -134,8 +155,8 @@ function detect()
       line.angle[linecount]=math.abs(math.atan2(vendpoint[1][2]-vendpoint[2][2], vendpoint[1][1]-vendpoint[2][1]));
       --print (util.ptable(line.v[linecount]))
      
-      print(string.format(
-		"Line %d: endpoint1: (%f, %f), endpoint2: (%f, %f), \n endpoint1 in labelB: (%f, %f), endpoint2 in labelB: (%f, %f), horizonB: %f,\n length %d, angle %d, max_width %d\n",
+     -- print(string.format(
+--		"Line %d: endpoint1: (%f, %f), endpoint2: (%f, %f), \n endpoint1 in labelB: (%f, %f), endpoint2 in labelB: (%f, %f), horizonB: %f,\n length %d, angle %d, max_width %d\n",
 		linecount,line.v[linecount][1][1], line.v[linecount][1][2],
     line.v[linecount][2][1], line.v[linecount][2][2],
     line.propsB[i].endpoint[1], line.propsB[i].endpoint[3], line.propsB[i].endpoint[2], line.propsB[i].endpoint[4], horizonB,
@@ -155,14 +176,27 @@ function detect()
     for j = 1, linecount do
       local angle_diff = util.mod_angle(line.angle[i] - line.angle[j]);
       angle_diff = math.abs (angle_diff) * 180 / math.pi;
-      angle_diff = math.min (angle_diff, 180 - angle_diff)
-      if (angle_diff > 20 and angle_diff < 70 and line.length[i] < line.length[j] and line_valid[i] ==1 ) then
-        print ('angle check failed. angle_diff: '..angle_diff)
-        line_valid[i] = 0;
+      angle_diff = math.min (angle_diff, 180 - angle_diff);
+      local Cross = get_crosspoint (line.v[i][1][1], line.v[i][1][2], line.v[i][2][1], line.v[i][2][2],line.v[j][1][1], line.v[j][1][2], line.v[j][2][1], line.v[j][2][2])
+-- in all checks on line pairs, always kill the shorter one. 
+      if ( line.length[i] < line.length[j] and line_valid[i]*line_valid[j] ==1 ) then
+-- angle check
+        if (angle_diff > min_angle_diff and angle_diff < max_angle_diff) then
+--          print ('angle check failed. angle_diff: '..angle_diff..', line'..i..' and line '..j)
+          line_valid[i] = 0;
+        end
+-- cross check
+        if ((Cross[1] - line.v[i][1][1])*(Cross[1] - line.v[i][2][1]) < 0 and (Cross[1] -  line.v[j][1][1])*(Cross[1] - line.v[j][2][1]) < 0 ) then
+--          print ('cross check failed. line '..i..' and line '..j..' are crossed')
+          line_valid[i] = 0;
+        end
       end
     end 
   end
 
+
+
+-- copy the remaining lines in a new array that will be returned.
   line_second.v={};
   line_second.endpoint={};
   line_second.angle={};
@@ -178,7 +212,7 @@ function detect()
 
 
   for i = 1, linecount do
-    print ('valid: '..line_valid[i])
+    --print ('valid: '..line_valid[i])
     if (line_valid[i] == 1) then
       second_linecount = second_linecount + 1;
       line_second.angle[second_linecount] = line.angle[i];
@@ -199,7 +233,7 @@ function detect()
     --angle: -pi to pi
     sumx=sumx+line.angle[i];
     sumxx=sumxx+line.angle[i]*line.angle[i];
-  end
+
   --]]
   if nLines>0 then
     line_second.detect = 1;

@@ -19,7 +19,7 @@ vision.scaleB = 4;
 
 --vision.enable_2_yellow_goals = 1;
 -- use this to enable line detection
-vision.enable_line_detection = 0;
+vision.enable_line_detection = 1;
 -- use this to enable corner detection
 vision.enable_corner_detection = 1;
 -- use this to enable spot detection
@@ -90,8 +90,12 @@ vision.line.max_width = 16;
 vision.line.connect_th = 1.4;
 vision.line.max_gap=0;
 vision.line.min_length=10;
+vision.line.min_angle_diff = 15;
+vision.line.max_angle_diff = 70;
+
 
 vision.corner={};
 vision.corner.dist_threshold = 0.6;
 vision.corner.length_threshold = 6;
 vision.corner.min_center_dist = 1.5;
+vision.centercircle_check = 1;

@@ -7,9 +7,16 @@ dist_threshold = Config.vision.corner.dist_threshold or 30;
 length_threshold = Config.vision.corner.min_length or 6;
 min_center_dist = Config.vision.corner.min_center_dist or 1.5;
 
+centercircle_check = Config.vision.corner.centercircle_check or 0;
+
+--get the cross point of two line segements. 
+--(x1, y1) (x2, y2) are endpoints for the first line, (x3, y3) (x4, y4) are endpoints for the other line
 function get_crosspoint(x1,y1,x2,y2,x3,y3,x4,y4)
   k1 = (y2 - y1)/(x2 - x1);
   k2 = (y4 - y3)/(x4 - x3);
+  if (k1 == k2) then
+    return {0,0}
+  end
   local x = (y3 - y1 + k1*x1 -k2*x3)/(k1 - k2);
   local y = k1*(x - x2) + y2;
   return {x,y};
@@ -273,21 +280,21 @@ function detect(line)
   corner.v2 = v2;
 
   --Center circle rejection
-  
-  pose=wcm.get_robot_pose();
-  Relative = {corner.v[1], corner.v[2], 0};
-  cornerpos = util.pose_global(Relative,pose);
-  center_dist = math.sqrt(cornerpos[1]^2+cornerpos[2]^2);
-  if center_dist < min_center_dist then     
-    vcm.add_debug_message(string.format(
-     "Corner: center circle check fail at %.2f\n",center_dist))
-    return corner;
+  if (centercircle_check == 1) then  
+    pose=wcm.get_robot_pose();
+    Relative = {corner.v[1], corner.v[2], 0};
+    cornerpos = util.pose_global(Relative,pose);
+    center_dist = math.sqrt(cornerpos[1]^2+cornerpos[2]^2);
+    if center_dist < min_center_dist then     
+      vcm.add_debug_message(string.format(
+       "Corner: center circle check fail at %.2f\n",center_dist))
+      return corner;
+    end
   end
-
   if corner.type==1 then
      vcm.add_debug_message("L-corner detected\n");
-     print (string.format('Lcorner: position: (%f, %f),  \n', vc[1], vc[2]))
-     print (string.format('endpoint1: (%f, %f), endpoint2: (%f, %f).\n', v1[1], v1[2], v2[1], v2[2]))
+     --print (string.format('Lcorner: position: (%f, %f),  \n', vc[1], vc[2]))
+     --print (string.format('endpoint1: (%f, %f), endpoint2: (%f, %f).\n', v1[1], v1[2], v2[1], v2[2]))
      --print (string.format('endpoint1 in label: (%f, %f), endpoint2 in label: (%f, %f).\n', v10[1], v10[2], v20[1], v20[2]))
      else
      vcm.add_debug_message("T-corner detected\n");

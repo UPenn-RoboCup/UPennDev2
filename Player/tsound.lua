@@ -22,8 +22,10 @@ function listen_and_save()
          -- construct filename
          local datestr = os.date('%Y_%m_%d_%H_%M_%S');
          local filename = string.format('pcm_%s.csv', datestr);
+         print(string.format('writing %s\n', filename));
          local x = SoundComm.get_debug_pcm();
          write_out_pcm(x, filename);
+         lastDet = det;
       end
 
       unix.usleep(10000);

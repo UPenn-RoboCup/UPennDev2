@@ -278,6 +278,24 @@ function get_sound_direction()
    end
    local ov = detFilter[oind];
    if (ov > 0.75 * mv) then
+      print('SoundFilter: ambiguous direction');
+      return -1;
+   end
+
+   -- also check +/- 1 of the opposite index
+   local oind_minus1 = oind - 1;
+   if (oind_minus1 == 0) then
+      oind_minus1 = ndiv;
+   end
+   local oind_plus1 = oind + 1;
+   if (oind_plus1 > ndiv) then
+      oind_plus1 = oind_plus1 - ndiv;
+   end
+
+   local ov_minus1 = detFilter[oind_minus1];
+   local ov_plus1 = detFilter[oind_plus1];
+   if (ov_minus1 > 0.75 * mv or ov_plus1 > 0.75 * mv) then
+      print('SoundFilter: ambiguous direction +/- 1');
       return -1;
    end
 
@@ -373,7 +391,7 @@ function which_goal_based_on_current_pose(agoal);
    ddefend = math.abs(util.mod_angle(adefend - agoal));
 
    -- first check if neither goal is a good match
-   if (dattack > 60 and ddefend > 60) then
+   if (dattack > 50 and ddefend > 50) then
       return 0;
    elseif (dattack < ddefend) then
       -- we think it is the attacking goal

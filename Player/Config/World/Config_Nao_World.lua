@@ -93,7 +93,7 @@ world.initPosition2={
 }
 
 -- use sound localization
-world.enable_sound_localization = 1;
+world.enable_sound_localization = 0;
 
 -- Occupancy Map parameters
 occmap = {};

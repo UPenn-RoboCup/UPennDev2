@@ -9,7 +9,12 @@ require('wcm')
 t0 = 0;
 timeout = 30.0;
 
-tDelay = Config.fsm.bodyOrbit.tDelay or .6
+if Config.fsm.bodyOrbit.walkParam then
+  tDelay = Config.fsm.bodyOrbit.tDelay or .6
+else
+  tDelay = 0;
+end
+
 
 maxStep = 0.06;
 

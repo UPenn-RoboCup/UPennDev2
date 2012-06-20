@@ -1,7 +1,7 @@
 #include "dtmf.h"
 #include "fft.h"
 
-#define DEBUG_DTMF
+//#define DEBUG_DTMF
 
 // TODO: frame number should not be here, temporary for matlab testing
 //long frameNumber = 0;

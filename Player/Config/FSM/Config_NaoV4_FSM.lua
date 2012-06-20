@@ -64,7 +64,7 @@ fsm.bodyOrbit.rFar = 0.45;
 fsm.bodyOrbit.thAlign = 10*math.pi/180;
 fsm.bodyOrbit.timeout = 30.0 * speedFactor;
 fsm.bodyOrbit.tLost = 3.0*speedFactor;
---fsm.bodyOrbit.walkParam = 'Walk/Config_NaoV4_Walk_FastStable_Sidestep'
+fsm.bodyOrbit.walkParam = 'Walk/Config_NaoV4_Walk_FastStable_Sidestep'
 
 --------------------------------------------------
 --BodyPosition : Advanced chase-orbit
@@ -161,7 +161,7 @@ fsm.bodyKick.tFollowDelay = 2.2;
 --BodyWalkKick : Dynamic Kick
 --------------------------------------------------
 fsm.bodyWalkKick={};
-fsm.bodyWalkKick.timeout = 0*speedFactor; 
+fsm.bodyWalkKick.timeout = .1*speedFactor; 
 --------------------------------------------------
 --BodyGotoCenter : Going to center when ball is lost
 --------------------------------------------------

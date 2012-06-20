@@ -72,7 +72,7 @@ cal["jiminy"]={
   footXComp = 0,
   footYComp = 0,
   kickXComp = 0,
-  headPitchComp = 0;
+  headPitchComp = 4*math.pi/180;
   armBias={0,12*math.pi/180,0,0,-6*math.pi/180,0},
   pid = 1, --NEW FIRMWARE
 };
@@ -631,12 +631,10 @@ cal["sally"].servoBias={-33,-22,0,0,53,-15,0,0,0,0,0,0,};
 cal["sally"].footXComp=0.002;
 cal["sally"].kickXComp=0.000;
 
---<<<<<<< HEAD
 -- Updated date: Tue Jun 12 21:10:03 2012
 cal["hokie"].servoBias={0,-5,-17,-13,-1,-39,0,2,34,-17,-20,-3,};
 cal["hokie"].footXComp=0.002;
 cal["hokie"].kickXComp=0.000;
---=======
 -- Updated date: Tue Jun 12 20:58:40 2012
 cal["sally"].servoBias={-33,-22,-6,0,53,-15,0,0,-4,0,0,0,};
 cal["sally"].footXComp=0.002;
@@ -646,7 +644,6 @@ cal["sally"].kickXComp=0.000;
 cal["sally"].servoBias={-33,-22,-6,0,53,-15,0,0,-4,0,0,0,};
 cal["sally"].footXComp=-0.001;
 cal["sally"].kickXComp=0.000;
--->>>>>>> e92ef6a7fafd2ec3f99da56ad897842f8b663976
 
 -- Updated date: Wed Jun 13 14:07:20 2012
 cal["hokie"].servoBias={0,-5,-17,-13,-1,-20,0,2,34,-17,-20,-3,};
@@ -703,6 +700,15 @@ cal["sally"].servoBias={-33,-22,-6,0,29,-8,0,0,-4,0,0,0,};
 cal["sally"].footXComp=0.005;
 cal["sally"].kickXComp=0.005;
 
+-- Updated date: Tue Jun 19 10:47:25 2012
+cal["felix"].servoBias={12,-2,37,-31,7,0,-6,30,-33,7,3,18,};
+cal["felix"].footXComp=0.005;
+cal["felix"].kickXComp=0.005;
+
+-- Updated date: Tue Jun 19 11:17:04 2012
+cal["felix"].servoBias={12,-2,37,-31,7,0,-6,30,-33,7,3,18,};
+cal["felix"].footXComp=0.003;
+cal["felix"].kickXComp=0.005;
 -- Updated date: Tue Jun 19 11:15:22 2012
 cal["linus"].servoBias={21,-3,37,-13,-19,-11,-21,-5,-30,10,12,16,};
 cal["linus"].footXComp=0.005;
@@ -717,3 +723,18 @@ cal["linus"].kickXComp=0.005;
 cal["linus"].servoBias={21,-16,37,-13,-14,-3,-31,-4,-30,10,0,16,};
 cal["linus"].footXComp=0.003;
 cal["linus"].kickXComp=0.005;
+
+-- Updated date: Tue Jun 19 10:59:08 2012
+cal["betty"].servoBias={8,-10,11,-6,27,-15,-5,6,-26,-1,-20,7,};
+cal["betty"].footXComp=0.001;
+cal["betty"].kickXComp=0.005;
+
+-- Updated date: Tue Jun 19 11:01:00 2012
+cal["betty"].servoBias={8,-10,11,-6,27,-15,-5,6,-26,-1,-20,7,};
+cal["betty"].footXComp=0.003;
+cal["betty"].kickXComp=0.005;
+
+-- Updated date: Tue Jun 19 11:31:15 2012
+cal["betty"].servoBias={8,-10,11,-6,20,-15,-5,6,-26,-1,-10,7,};
+cal["betty"].footXComp=0.004;
+cal["betty"].kickXComp=0.005;

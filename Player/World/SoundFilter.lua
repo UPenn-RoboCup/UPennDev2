@@ -79,7 +79,7 @@ confidenceThres = 0.6 * maxDetCount;
 --  if the robot has moved this far (translation, meters)
 --    decay everything
 distanceDecay = 1;
-distanceDecayThres = 1.0;
+distanceDecayThres = 1.5;
 distanceDecayRate = 40;
 lastDistanceDecayPose = {x=0, y=0, a=0};
 
@@ -343,7 +343,7 @@ function resolve_goal_detection(gtype, vgoal)
       -- the goal is ours (defending)
       print('------------------ detected goal is the defending goal ------------------');
       -- do we already have the correct orientation
-      local goalBeliefFromPose = which_goal_based_on_current_pose();
+      local goalBeliefFromPose = which_goal_based_on_current_pose(agoal);
       -- if we think it is the attacking goal return defending (to update pose faster)
       if (goalBeliefFromPose == 1) then
          return -1;
@@ -359,7 +359,7 @@ function resolve_goal_detection(gtype, vgoal)
       -- the goal is theirs (attacking)
       print('++++++++++++++++++ detected goal is the attacking goal ++++++++++++++++++');
       -- do we already have the correct orientation
-      local goalBeliefFromPose = which_goal_based_on_current_pose();
+      local goalBeliefFromPose = which_goal_based_on_current_pose(agoal);
       -- if we think it is the attacking goal return defending (to update pose faster)
       if (goalBeliefFromPose == -1) then
          return 1;
@@ -380,7 +380,7 @@ function resolve_goal_detection(gtype, vgoal)
    return 0;
 end
 
-function which_goal_based_on_current_pose(agoal);
+function which_goal_based_on_current_pose(agoal)
    -- get attack and defend angle
    aattack = wcm.get_attack_angle();
    adefend = wcm.get_defend_angle();

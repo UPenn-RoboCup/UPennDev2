@@ -68,11 +68,11 @@ updateRate = 20;
 -- decay period (seconds)
 decayPeriod = 1.0;
 -- decay rate (per period)
-decayRate = 1.0;
+decayRate = 2.0;
 -- flag indicating if we should decrease non adjacent cells
 --    after a good correlation
 decreaseNonAdjacent = 1;
-decreaseNonAdjacentRate = 3.0;
+decreaseNonAdjacentRate = 4.0;
 confidenceThres = 0.6 * maxDetCount;
 
 -- distance decay
@@ -80,7 +80,7 @@ confidenceThres = 0.6 * maxDetCount;
 --    decay everything
 distanceDecay = 1;
 distanceDecayThres = 1.0;
-distanceDecayRate = 30;
+distanceDecayRate = 40;
 lastDistanceDecayPose = {x=0, y=0, a=0};
 
 -- last decay time

@@ -143,7 +143,7 @@ world.use_same_colored_goal = 0;
 -- Occupancy Map parameters
 occ = {};
 occ.mapsize = 50;
-occ.centroid = {occ.mapsize / 2, occ.mapsize * 4 / 5};
+occ.robot_pos = {occ.mapsize / 2, occ.mapsize * 4 / 5};
 
 
 

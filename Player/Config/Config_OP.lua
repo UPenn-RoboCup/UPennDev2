@@ -197,9 +197,10 @@ goalie_dive_waittime = 3.0; --How long does goalie lie down?
 --fsm.goalie_type = 1;--moving/move+stop/stop+dive/stop+dive+move
 --fsm.goalie_type = 2;--moving/move+stop/stop+dive/stop+dive+move
 fsm.goalie_type = 3;--moving/move+stop/stop+dive/stop+dive+move
---fsm.goalie_reposition=0; --No reposition
-fsm.goalie_reposition=1; --Yaw reposition
+fsm.goalie_reposition=0; --No reposition
+--fsm.goalie_reposition=1; --Yaw reposition
 --fsm.goalie_reposition=2; --Position reposition
+
 fsm.goalie_use_walkkick = 1; --should goalie use front walkkick?
 
 --Goalie diving detection parameters
@@ -226,7 +227,7 @@ vision.use_multi_landmark = 1;
 ------------------------------------------------------------------------
 -- Demo setting 1
 
-led_on = 0; --turn on eye led
+--led_on = 0; --turn on eye led
 
 --Slow down maximum speed (for testing)
 --[[
@@ -246,6 +247,8 @@ goalie_dive = 1; --1 for arm only, 2 for actual diving
 --Let goalie log all the ball positions
 goalie_disable_arm = 1; 
 goalie_log_balls = 1;
+goalie_log_balls = 0;
+
 
 --Slow down kick waiting time
 --[[

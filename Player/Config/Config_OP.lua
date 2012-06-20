@@ -217,7 +217,7 @@ led_on = 1; --turn on eye led
 ------------------------------------------------------------------------
 -- Demo setting 1
 
-led_on = 1; --turn on eye led
+led_on = 0; --turn on eye led
 
 --Slow down maximum speed (for testing)
 fsm.bodyPosition.maxStep1 = 0.06;

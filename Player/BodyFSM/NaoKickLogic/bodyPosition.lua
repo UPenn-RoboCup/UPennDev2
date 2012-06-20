@@ -61,7 +61,7 @@ function update()
   if (role == 2) then
     -- defend
     goalDefend = wcm.get_goal_defend();
-    homePosition = goalDefend - 0.6*(goalDefend - ballGlobal);
+    homePosition = goalDefend - 0.5*(goalDefend - ballGlobal);
   
     --homePosition = .6 * ballGlobal;
     --homePosition[1] = homePosition[1] - 0.50*util.sign(homePosition[1]);

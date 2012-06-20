@@ -67,7 +67,9 @@ function update()
     return 'ballFar';
   end
   if (math.abs(attackBearing) < thAlign) then
-    return 'done';
+    if (ball.x > 0) then
+      return 'done';
+    end
   end
 end
 

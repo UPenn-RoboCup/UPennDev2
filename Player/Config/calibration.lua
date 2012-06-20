@@ -73,7 +73,8 @@ cal["jiminy"]={
   footYComp = 0,
   kickXComp = 0,
   headPitchComp = 4*math.pi/180;
-  armBias={0,12*math.pi/180,0,0,-6*math.pi/180,0},
+  armBias={0,6*math.pi/180,0,
+           0,-4*math.pi/180,0},
   pid = 1, --NEW FIRMWARE
 };
 

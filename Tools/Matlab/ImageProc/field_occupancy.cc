@@ -16,6 +16,8 @@
 #include "stdlib.h"
 #include "stdio.h"
 
+#include <iostream>
+
 typedef unsigned char uint8;
 
 uint8 colorBall = 0x01;
@@ -38,6 +40,9 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   int nj = mxGetN(prhs[0]);
   const int nRegions = ni;
 
+  int blockpos[nj];
+  int blockcluster[nj];
+  int blockclusterE[nj];
   int countup[nRegions];
   int countdown[nRegions];
   int count[nRegions];
@@ -46,65 +51,61 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   for (int i = 0; i < nRegions; i++) {
     count[i] = 0;
     flag[i] = 0;
-    countup[i] = 0;
     countdown[i] = 0;
   }
 
+
   // Scan vertical lines: Uphalf
+  int nBlocks = 0, nBlockClusters = 0;
+  int lastOb = 0;
+  bool inOb = false;
   for (int i = 0; i < ni; i++) {
     int iRegion = nRegions*i/ni;
     uint8 *im_row = im_ptr + i;
-    for (int j = 0; j < nj/2; j++) {
-      uint8 label = *im_row;
-      if (isFree(label)) {
-        countup[iRegion]++;
-      }
-      im_row += ni;
+    nBlocks = 0;
+    nBlockClusters = 0;
+    for (int j = 0; j < nj; j++) {
+      blockpos[j] = 0;
+      blockcluster[j] = 0;
+      blockclusterE[j] = 0;
     }
-  }
-  uint8 *im_ptrdown = im_ptr + (int)(ni * round(nj/2));
-  // Scan vertical lines: downhalf
-  for (int i = 0; i < ni; i++) {
-    int iRegion = nRegions*i/ni;
-    uint8 *im_row = im_ptrdown + i;
-    for (int j = nj/2; j < nj; j++) {
+    for (int j = 0; j < nj; j++) {
       uint8 label = *im_row;
-      if (isFree(label)) {
-        countdown[iRegion]++;
+      if (!isFree(label)) {
+        blockpos[nBlocks] = j;
+        if (nBlocks == 0) {
+          inOb = true;
+//          std::cout << i << ' ' << "new ob" << std::endl;
+          blockcluster[nBlockClusters] = j;
+          nBlockClusters++;
+        }
+        else if ((blockpos[nBlocks] - blockpos[nBlocks - 1]) > 5) {
+//          std::cout  << i << ' ' <<"more ob" << std::endl;
+          inOb = true;
+          blockcluster[nBlockClusters] = j;
+          nBlockClusters++;
+        }
+        nBlocks++;
       }
-      im_row += ni;
+      im_row += ni; 
+      if (i == 50) {
+        std::cout << nBlockClusters << ' ' << blockcluster[nBlockClusters-1] << std::endl;
+      }
     }
-  }
-  
-  // Evaluate bound
-  for (int i = 0; i < nRegions; i++){
-    count[i] = countup[i] + countdown[i];
-    // whole free, flag <- 2;
-    if (countup[i] == nj/2){
-      count[i] = nj;
-      flag[i] = 2;
+
+
+    // no black pixels found, return type 1
+    if (nBlocks < 0.05 * nj) {
+//      std::cout << "t1" << std::endl;
+      flag[i] = 1;
+      count[i] = nj - 1;
       continue;
     }
-    // whole block, flag <- 3
-    if (count[i] == 0){
+    if (nBlocks > 0.95 * nj) {
+//      std::cout << "t2" << std::endl;
       flag[i] = 3;
+      count[i] = 0;
       continue;
-    }
-    int pxIdx = (nj - count[i] + 1) * ni + i;
-    uint8 label = *(im_ptr + pxIdx);
-    if (isFree(label)) 
-      flag[i] = 1;
-    else {
-      //printf("Seeking\n");
-      int j = nj - count[i] + 1;
-      for (; j < nj; j++){
-        int searchIdx = j * ni + i;
-        uint8 searchLabel = *(im_ptr + searchIdx);
-        if (isFree(searchLabel)) 
-            break;
-      }
-      count[i] = nj - j + 1;
-      flag[i] = 1;
     }
   }
 

@@ -46,8 +46,8 @@ DEF BALL Ball {
   translation 0 0.0323921 0
 }
 DEF PLAYER_1_99 DARwInOPGPS {
-  translation -2.33778 0.317276 -0.198962
-  rotation 0 1 0 1.66383
+  translation -2.32821 0.317212 -0.198662
+  rotation 0 1 0 1.69701
   controller "darwin-op_team_0"
   controllerArgs "1 99"
   plasticColor 0.2 0.2 0.2
@@ -72,6 +72,6 @@ DEF OBSTACLE4 cylinder {
   height 0.5
 }
 DEF OBSTACLE5 cylinder {
-  translation -1.42559 0.25 -0.604108
+  translation -2.13258 0.25 -0.304705
   height 0.5
 }

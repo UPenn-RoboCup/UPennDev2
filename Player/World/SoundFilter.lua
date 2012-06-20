@@ -278,7 +278,7 @@ function get_sound_direction()
    end
    local ov = detFilter[oind];
    if (ov > 0.75 * mv) then
-      print('SoundFilter: ambiguous direction');
+      --print('SoundFilter: ambiguous direction');
       return -1;
    end
 
@@ -295,7 +295,7 @@ function get_sound_direction()
    local ov_minus1 = detFilter[oind_minus1];
    local ov_plus1 = detFilter[oind_plus1];
    if (ov_minus1 > 0.75 * mv or ov_plus1 > 0.75 * mv) then
-      print('SoundFilter: ambiguous direction +/- 1');
+      --print('SoundFilter: ambiguous direction +/- 1');
       return -1;
    end
 

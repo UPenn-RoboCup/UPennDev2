@@ -47,10 +47,6 @@ int lua_field_occupancy(lua_State *L) {
     countdown[i] = 0;
   }
 
-  for (int j = 0; j < nj; j++) {
-    blockpos[j] = 0;
-    blockcluster[j] = 0;
-  }
 
   // Scan vertical lines: Uphalf
   int nBlocks = 0, nBlockClusters = 0;
@@ -60,6 +56,10 @@ int lua_field_occupancy(lua_State *L) {
     nBlocks = 0;
     nBlockClusters = 0;
     for (int j = 0; j < nj; j++) {
+      blockpos[j] = 0;
+      blockcluster[j] = 0;
+    }
+    for (int j = 0; j < nj; j++) {
       uint8 label = *im_row;
       if (!isFree(label)) {
         blockpos[nBlocks++] = j;
@@ -67,7 +67,7 @@ int lua_field_occupancy(lua_State *L) {
           blockcluster[nBlockClusters] = j;
           nBlockClusters++;
         }
-        else if ((blockpos[nBlocks] - blockpos[nBlocks - 1]) > 2) {
+        else if ((blockpos[nBlocks] - blockpos[nBlocks - 1]) > 5) {
           blockcluster[nBlockClusters] = j;
           nBlockClusters++;
         }
@@ -75,16 +75,17 @@ int lua_field_occupancy(lua_State *L) {
       im_row += ni;
     }
 //    std::cout << nBlocks << ' ' << nBlockClusters << std::endl;
+    std::cout << nBlockClusters << ' ';
     // no black pixels found, return type 1
     if (nBlocks < 0.05 * nj) {
       flag[i] = 1;
-      count[i] = 1;
+      count[i] = nj - 1;
       continue;
     }
     // all black pixels, return type 3
     if ((blockpos[nBlocks-1] == (nj - 1)) && (blockcluster[nBlockClusters - 1] == 0)) {
       flag[i] = 3;
-      count[i] = nj;
+      count[i] = 0;
       continue;
     }
     // found black switch to green (up to down), return type 2;
@@ -100,7 +101,7 @@ int lua_field_occupancy(lua_State *L) {
       continue;
     }
   }
-  
+  std::cout << std::endl; 
   // return state
   lua_createtable(L,0,2);
   

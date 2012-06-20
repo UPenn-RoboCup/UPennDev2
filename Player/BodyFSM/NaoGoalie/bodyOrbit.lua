@@ -15,7 +15,7 @@ rOrbit = 0.27;
 
 rFar = 1.0;
 
-thAlign = 30.0*math.pi/180.0;
+thAlign = 45.0*math.pi/180.0;--30.0*math.pi/180.0;
 
 tLost = 3.0;
 

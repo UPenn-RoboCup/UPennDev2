@@ -9,6 +9,13 @@ require('wcm')
 t0 = 0;
 timeout = 30.0;
 
+if Config.fsm.bodyOrbit.walkParam then
+  tDelay = Config.fsm.bodyOrbit.tDelay or .6
+else
+  tDelay = 0;
+end
+
+
 maxStep = 0.06;
 
 rOrbit = 0.25;--.27
@@ -44,6 +51,11 @@ end
 
 function update()
   local t = Body.get_time();
+
+  --Walk in place for tDelay time
+  if t - t0 < tDelay then
+    return
+  end
 
   attackBearing, daPost = wcm.get_attack_bearing();
   --print('attackBearing: '..attackBearing);

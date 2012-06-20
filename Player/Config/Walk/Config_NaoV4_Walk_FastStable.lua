@@ -12,7 +12,7 @@ walk.stanceLimitX={-0.10,0.10};
 walk.stanceLimitY={0.09,0.20};
 walk.stanceLimitA={-0*math.pi/180,40*math.pi/180};
 
-walk.velLimitX={-.05,.05};
+walk.velLimitX={-.05,.06};
 walk.velLimitY={-.02,.02};
 walk.velLimitA={-.4,.4};
 walk.velDelta={0.15,0.01,0.15} 
@@ -20,7 +20,7 @@ walk.velDelta={0.15,0.01,0.15}
 ---------------------------------------------
 -- Odometry values
 --------------------------------------------
-walk.odomScale = {.98, .92, .74}; --1.06, 1.20, .95  
+walk.odomScale = {1.09, .92, .82}; --1.06, 1.20, .95  
 
 ----------------------------------------------
 -- Stance parameters
@@ -58,7 +58,7 @@ walk.ankleMod = vector.new({-1,0})/0.12 * 10*math.pi/180;
 --------------------------------------------------------------
 walk.gyroFactor = 0.001;
 
-walk.ankleImuParamX={0.20, -0.70*walk.gyroFactor,
+walk.ankleImuParamX={0.11, -0.50*walk.gyroFactor,
         1*math.pi/180, 5*math.pi/180};
 walk.kneeImuParamX={0.1, -0.3*walk.gyroFactor,
         .5*math.pi/180, 5*math.pi/180};

@@ -10,7 +10,7 @@ require('serialization');
 require('wcm');
 require('gcm');
 
-Comm.init(Config.dev.ip_wireless,54321);
+Comm.init(Config.dev.ip_wireless,Config.dev.ip_wireless_port);
 print('Receiving Team Message From',Config.dev.ip_wireless);
 playerID = gcm.get_team_player_id();
 
@@ -383,9 +383,9 @@ function update()
   force_defender = Config.team.force_defender or 0;
   if force_defender == 1 then
     gcm.set_team_role(2);
-    if role ~= gcm.get_team_role() then
-      set_role(gcm.get_team_role());
-    end
+  end
+  if role ~= gcm.get_team_role() then
+    set_role(gcm.get_team_role());
   end
 
   --Only switch role during gamePlaying state
@@ -424,6 +424,7 @@ function update()
     end
   --We assign role based on player ID during initial and ready state
   elseif gcm.get_game_state()<2 then 
+
     if role==1 then
       --Check whether there are any other attacker with smaller playerID
       role_switch = false;

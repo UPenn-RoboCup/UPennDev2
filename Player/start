@@ -9,6 +9,7 @@ killall -q naoqi-bin naoqi espeak lua luajit luajit2 screen
 
 # kill all screen log
 rm -f screenlog*
+rm -f /dev/shm/*
 
 SCREEN_FLAGS="-dm -L -S"
 
@@ -23,13 +24,13 @@ reset_wb(){
 run_dcm_vcm(){
   echo "Starting DCM..."
   cd $PLAYER_DIR/Lib
-  screen $SCREEN_FLAGS dcm /usr/bin/luajit run_dcm.lua
+  screen $SCREEN_FLAGS dcm $LUA_COM run_dcm.lua
   # Allow DCM some time to start
   sleep 1
   
   echo "Starting Cognition..."
   cd $PLAYER_DIR
-  screen $SCREEN_FLAGS cognition /usr/bin/luajit run_cognition.lua
+  screen $SCREEN_FLAGS cognition $LUA_COM run_cognition.lua
   # Allow Cognition some time to start
   sleep 3
 }
@@ -39,7 +40,7 @@ run_player(){
  
   echo "Starting Player..."
   cd $PLAYER_DIR
-  screen -m -L -S player /usr/bin/luajit run_main_op.lua
+  screen $SCREEN_FLAGS player $LUA_COM run_main_op.lua
   
   echo "Rock and Roll!"
 }
@@ -49,13 +50,28 @@ run_demo(){
  
   echo "Starting Player..."
   cd $PLAYER_DIR
-  screen $SCREEN_FLAGS player /usr/bin/luajit run_demo.lua
+  screen $SCREEN_FLAGS player $LUA_COM run_demo.lua
   
   echo "Rock and Roll!"
 }
 
 run_visiontest(){
   run_dcm_vcm
+  echo "Starting Test Vision..."
+  cd $PLAYER_DIR
+  screen -m -L -S test $LUA_COM test_vision.lua
+  #
+  echo "Rock and Roll!"
+}
+
+run_obstacle(){
+  run_dcm_vcm
+  echo "Starting OccMap Proc..."
+  cd $PLAYER_DIR
+  screen $SCREEN_FLAGS occ $LUA_COM run_occmap.lua
+  ## Allow Cognition some time to start
+  sleep 1
+  #
   echo "Starting Test Vision..."
   cd $PLAYER_DIR
   screen -m -L -S test $LUA_COM test_vision.lua
@@ -124,6 +140,9 @@ case "$1" in
   'roletest')
     echo "Start Role Testing Mode"
     run_roletest;;
+  'obstacle')
+    echo "Start Obstacle Testing Mode"
+    run_obstacle;;
   'wbreset')
     echo "Reset White Balance"
     reset_wb;;
@@ -133,6 +152,7 @@ case "$1" in
     echo "[visiontest](sv) -- Vision Debug Mode"
     echo "[bias](sb)       -- Bias Setup Mode"
     echo "[roletest](sr)   -- Role Testing Mode"
+    echo "[obstacle](so)   -- Role obstacle Mode"
     echo "[wbreset](sw)   -- Reset WB Mode";;
   *)
     echo "Unknown Mode. use 'help ' to see Available Mode";;

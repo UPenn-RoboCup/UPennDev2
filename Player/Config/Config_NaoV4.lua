@@ -37,6 +37,7 @@ dev.camera = 'NaoCam';
 dev.kinematics = 'NaoKinematics';
 dev.ip_wired = '192.168.0.255';
 dev.ip_wireless = '192.168.1.255';
+dev.ip_wireless_port = 54321
 dev.game_control = 'NaoGameControl';
 dev.team='TeamSPL';
 dev.walk = 'Walk/NaoV4Walk';

@@ -49,7 +49,8 @@ dev.body = 'OPBody';
 dev.camera = 'OPCam';
 dev.kinematics = 'OPKinematics';
 dev.ip_wired = '192.168.123.255';
-dev.ip_wireless = '192.168.1.255';
+dev.ip_wireless = '192.168.117.255';
+dev.ip_wireless_port = 54321;
 dev.game_control='OPGameControl';
 dev.team='TeamNSL';
 --dev.walk='NewNewNewWalk';
@@ -62,7 +63,7 @@ speak.enable = false;
 
 -- Game Parameters
 game = {};
-game.teamNumber = 18;
+game.teamNumber = 17;
 --game.teamNumber = 26;
 
 --Default role: 0 for goalie, 1 for attacker, 2 for defender
@@ -70,21 +71,24 @@ game.teamNumber = 18;
 dev.gender = 1;
 game.role = 1; --Default attacker
 
+ball_shift={0,0};
+
 if (robotName=='scarface') then
   game.playerID = 1; 
 elseif (robotName=='linus') then
-  game.playerID = 2; 
+  game.playerID = 4; 
 elseif (robotName=='betty') then
   game.playerID = 3; 
+  ball_shift={-0.010,0.010};
 elseif (robotName=='lucy') then
-  game.playerID = 4; 
+  game.playerID = 1; 
 elseif (robotName=='felix') then
-  game.playerID = 3; 
+  game.playerID = 2; 
 elseif (robotName=='jiminy') then
-  game.playerID = 4; 
-
+  game.playerID = 3; 
+  ball_shift={-0.020,0.015};
 elseif (robotName=='hokie') then
-  game.playerID = 5; 
+  game.playerID = 4; 
   game.role = 0; --Default goalie
 elseif (robotName=='sally') then
   game.playerID = 5; 
@@ -212,12 +216,19 @@ speakenable = false;
 fallAngle = 50*math.pi/180;
 falling_timeout = 0.3;
 
+led_on = 0; --turn off eye led
+led_on = 1; --turn on eye led
+
+--New multi-blob landmark detection code
+vision.use_multi_landmark = 1;
 
 ------------------------------------------------------------------------
 -- Demo setting 1
 
+led_on = 0; --turn on eye led
+
 --Slow down maximum speed (for testing)
-fsm.bodyPosition.maxStep1 = 0.05;
+fsm.bodyPosition.maxStep1 = 0.06;
 fsm.bodyPosition.maxStep2 = 0.06;
 fsm.bodyPosition.maxStep3 = 0.06;
 
@@ -234,8 +245,8 @@ goalie_disable_arm = 1;
 goalie_log_balls = 1;
 
 --Slow down kick waiting time
-fsm.bodyKick.tStartWait = 1.5;
-fsm.bodyKick.tStartWaitMax = 1.7;
+fsm.bodyKick.tStartWait = 1.0;
+fsm.bodyKick.tStartWaitMax = 1.2;
 
 --Power down walkkick
 walk.walkKickDef["FrontLeft"]={
@@ -262,3 +273,4 @@ walk.walkKickDef["FrontRight2"]={
   {walk.tStep, 1, 1, 0.035 , {0,0}, 0.5, {0.04,0,0} },
 }
 -------------------------------------------------------------------------
+

@@ -25,12 +25,22 @@ tstart = Config.fsm.bodyReady.tStart or 5.0;
 
 phase=0; --0 for wait, 1 for approach, 2 for turn, 3 for end
 
+side_y = 0;
+
 function entry()
   print(_NAME.." entry");
   phase=0;
 
   t0 = Body.get_time();
   Motion.event('standup')
+
+  pose = wcm.get_pose();
+  if pose.y > 0 then
+    side_y = 1;
+  else
+    side_y = -1;
+  end
+
 end
 
 function getHomePose()
@@ -38,11 +48,29 @@ function getHomePose()
   --Now role-based positioning
   goal_defend=wcm.get_goal_defend();
   --role starts with 0
+
   if gcm.get_game_kickoff() == 1 then
-    home=vector.new(initPosition1[role+1]);
+    home=vector.new({
+	initPosition1[role+1][1],
+	initPosition1[role+1][2],
+	initPosition1[role+1][3]});
   else
-    home=vector.new(initPosition2[role+1]);
+    home=vector.new({
+	initPosition2[role+1][1],
+	initPosition2[role+1][2],
+	initPosition2[role+1][3]});
   end
+
+  --If we are on the other half and we are attacker,
+  -- go around to avoid other players
+  pose = wcm.get_pose();
+  if pose.y > 0.5 then side_y = 1;
+  elseif pose.y<-0.5 then side_y = -1;
+  end
+  if math.abs(pose.x - goal_defend[1]) > 3.5 
+    and math.abs(home[2]) < 0.5 then
+    home[2] = home[2] + side_y * 0.8;    
+  end  
 
   --Goalie moves differently
   if role==0 and phase==1 then 

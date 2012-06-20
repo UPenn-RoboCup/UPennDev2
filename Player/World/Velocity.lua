@@ -39,9 +39,15 @@ ballR_index = 1;
 min_ballR_old = 0;
 
 goalie_log_balls = Config.goalie_log_balls or 0;
-
+print("GOALIE",goalie_log_balls);
 
 function add_log(x,y,vx,vy)
+
+  role = gcm.get_team_role();
+
+  if role~=0 or goalie_log_balls == 0 then
+    return;
+  end
 
   local log={};
   if ball_log_count == 0 then
@@ -55,8 +61,11 @@ function add_log(x,y,vx,vy)
 end
 
 function flush_log()
+  if role~=0 or goalie_log_balls == 0 then
+    return;
+  end
+
   filename=string.format("./Data/balllog%d.txt",ball_log_index);
-  --append at the end of current configuration file
   outfile=assert(io.open(filename,"w"));
 
   data="";
@@ -132,8 +141,6 @@ function update(newx,newy)
 	vy=vy*discount;
         tLast=t;
       end
-
-
   else 
      --Ball first seen, don't update velocity
      vx=0;vy=0;
@@ -147,12 +154,8 @@ function update(newx,newy)
   vMag = math.sqrt(vx^2+vy^2);
 
   vR = 0.8;
+  add_log(newx,newy,vx,vy);
 
-  goalie_log_balls = 1;
-
-  if goalie_log_balls>0 then
-    add_log(newx,newy,vx,vy);
-  end
 --[[
   if vx<-vR and vMag > vR then
     print(string.format("BX  %.2f V %.2f====", newx,vx));
@@ -172,9 +175,7 @@ function update_noball()
     ballR_cue=vector.zeros(ballR_cue_length);
     min_ballR_old = 0;
     oldx,oldy=0,0;
-    if goalie_log_balls>0 then
-      flush_log();
-    end
+    flush_log();
 
   else
    vx=gamma*vx;

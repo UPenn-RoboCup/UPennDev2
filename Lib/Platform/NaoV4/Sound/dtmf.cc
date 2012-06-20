@@ -1,6 +1,8 @@
 #include "dtmf.h"
 #include "fft.h"
 
+#define DEBUG_DTMF
+
 // TODO: frame number should not be here, temporary for matlab testing
 //long frameNumber = 0;
 
@@ -180,8 +182,6 @@ int check_tone(short *x, char &toneSymbol, long &frame, int &xLIndex, int &xRInd
   double rowLRatio, colLRatio;
   double rowRRatio, colRRatio;
 
-  printf("signalTone = %c\n", signalTone);
-
   // extract left/right channels
   for (int i = 0; i < PFRAME; i++) {
     xL[i] = x[2*i]; 
@@ -282,8 +282,11 @@ int check_tone(short *x, char &toneSymbol, long &frame, int &xLIndex, int &xRInd
 
   // get tone symbol
   char symbol = TONE_SYMBOL[kLRow][kLCol];
+
+#ifdef DEBUG_DTMF
   printf("symbol: '%c' :: t1 = (%1.3f, %1.3f)  (%1.3f, %1.3f) :: t2 = (%1.3f < %1.3f, %1.3f < %1.3f)  (%1.3f < %1.3f, %1.3f < %1.3f)\n", symbol, rowLRatio, colLRatio, rowRRatio, colRRatio,
           qLRow[kLRow], THRESHOLD_RATIO2*qLRow2[kLRow], qLCol[kLCol], THRESHOLD_RATIO2*qLCol2[kLCol], qRRow[kRRow], THRESHOLD_RATIO2*qRRow2[kRRow], qRCol[kRCol], THRESHOLD_RATIO2*qRCol2[kRCol]);
+#endif
 
 
   // is this the first tone?

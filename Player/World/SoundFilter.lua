@@ -52,6 +52,8 @@ lastCorr = vector.zeros(ndiv);
 
 -- transmition period
 txPeriod = 1.0;
+-- only use the left speaker to transmit?
+txLeftEarOnly = 1;
 -- max detection count (likelihood)
 maxDetCount = 100;
 -- per detection 
@@ -64,6 +66,7 @@ decayRate = 1.0;
 --    after a good correlation
 decreaseNonAdjacent = 1;
 decreaseNonAdjacentRate = 3.0;
+confidenceThres = 0.6 * maxDetCount;
 
 -- last decay time
 lastDecay = unix.time();
@@ -101,7 +104,7 @@ function update()
               -- play pseudo random signal with random touch tone
               srow = symbols[math.random(#symbols)];
               symbol = srow[math.random(#srow)];
-              SoundComm.play_pnsequence(symbol);
+              SoundComm.play_pnsequence(symbol, txLeftEarOnly);
 
               lastTx = unix.time();
             end
@@ -236,7 +239,6 @@ function resolve_goal_detection(gtype, vgoal)
    -- find the direction of the goalie
    -- TODO: better determination of the sound direction
    local mv, mind = util.max(detFilter);
-   local confidenceThres = 0.75 * maxDetCount;
    if (mv < confidenceThres) then
       return 0;
    end

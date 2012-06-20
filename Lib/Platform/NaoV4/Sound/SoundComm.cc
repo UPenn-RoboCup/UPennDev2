@@ -236,6 +236,9 @@ static int lua_play_tone(lua_State *L) {
 
 /**
  * function that will generate and play a the psuedo random sequence
+ *
+ * symbol - character symbol
+ * leftOnly - int flag indicating to play only on the left (1) ear or both (0)
  */
 static int lua_play_pnsequence(lua_State *L) {
   const char *symbol = lua_tostring(L, 1);
@@ -243,6 +246,7 @@ static int lua_play_pnsequence(lua_State *L) {
     fprintf(stderr, "play_pnsequence: first argument must be a the tone symbol.\n");
     return -1;
   }
+  int leftOnly = luaL_optint(L, 2, 0);
 
   // generate pcm
   int nframe = PFRAME * (THRESHOLD_COUNT + NUM_CHIRP_COUNT); 
@@ -250,7 +254,7 @@ static int lua_play_pnsequence(lua_State *L) {
   std::vector<short> *pcm = new std::vector<short>(2*nframe);
 
   // generate tone signal
-  if (gen_tone_pcm(symbol[0], &(*pcm)[0], tframe) < 0) {
+  if (gen_tone_pcm(symbol[0], &(*pcm)[0], tframe, leftOnly) < 0) {
     fprintf(stderr, "play_tone: unable to create tone PCM.\n");
     delete pcm;
     return -1;
@@ -259,14 +263,26 @@ static int lua_play_pnsequence(lua_State *L) {
   // store pnSequence
   int startInd = 2*tframe;
   int sign = +1;
-  for (int ichirp = 0; ichirp < NUM_CHIRP_COUNT; ichirp++) {
-    int startInd = 2*tframe + ichirp*2*PFRAME;
-    for (int i = 0; i < PFRAME; i++) {
-      (*pcm)[startInd + 2*i]    = sign * pnSequence[i];
-      (*pcm)[startInd + 2*i+1]  = sign * pnSequence[i];
+  if (leftOnly) {
+    for (int ichirp = 0; ichirp < NUM_CHIRP_COUNT; ichirp++) {
+      int startInd = 2*tframe + ichirp*2*PFRAME;
+      for (int i = 0; i < PFRAME; i++) {
+        (*pcm)[startInd + 2*i]    = sign * pnSequence[i];
+        (*pcm)[startInd + 2*i+1]  = 0;
+      }
+      // switch sign
+      sign *= -1;
     }
-    // switch sign
-    sign *= -1;
+  } else {
+    for (int ichirp = 0; ichirp < NUM_CHIRP_COUNT; ichirp++) {
+      int startInd = 2*tframe + ichirp*2*PFRAME;
+      for (int i = 0; i < PFRAME; i++) {
+        (*pcm)[startInd + 2*i]    = sign * pnSequence[i];
+        (*pcm)[startInd + 2*i+1]  = sign * pnSequence[i];
+      }
+      // switch sign
+      sign *= -1;
+    }
   }
 
   // queue the pcm signal

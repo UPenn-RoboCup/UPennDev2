@@ -58,22 +58,38 @@ function update()
   scale = math.min(maxStep/math.sqrt(vStep[1]^2+vStep[2]^2), 1);
   vStep = scale*vStep;
 
+  --Advanced approach behavior
+  attackBearing, daPost = wcm.get_attack_bearing();
+  targetangle = util.mod_angle(attackBearing-kick_angle);
+  if targetangle > 10*math.pi/180 then
+    vStep[3]=0.2;
+  elseif targetangle < -10*math.pi/180 then
+    vStep[3]=-0.2;
+  else
+    vStep[3]=0;
+  end
+
+  --when the ball is on the side of the ROBOT, backstep a bit
+  local wAngle = math.atan2 (ball.y,ball.x);
+  if math.abs(wAngle) > 45*math.pi/180 then
+    vStep[1]=vStep[1] - 0.03;
+    print('backstep');
+  else
+    --Otherwise, don't make robot backstep
+    vStep[1]=math.max(0,vStep[1]);
+  end
+
+  --[[
   ballA = math.atan2(ball.y - math.max(math.min(ball.y, 0.05), -0.05), math.max(ball.x+0.10, 0.10));
   vStep[3] = 0.5*ballA;
   walk.set_velocity(vStep[1],vStep[2],vStep[3]);
-
-  attackBearing, daPost = wcm.get_attack_bearing();
-  --print(vStep[1]..','..vStep[2]..','..vStep[3]);
+  --]]
 
   --Kick or not? True = yes, false = no, walk kick
   toKick = postDist.kick();
 
   --Check for obstacles
-  if Config.fsm.enable_obstacle_detection > 0 then
-    us = UltraSound.check_obstacle();
-  else
-    us = vector.zeros(2) 
-  end
+  us = UltraSound.check_obstacle();
 
   if (t - ball.t > tLost) then
     print('ballLost');

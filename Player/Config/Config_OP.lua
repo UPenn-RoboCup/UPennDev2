@@ -229,9 +229,11 @@ vision.use_multi_landmark = 1;
 led_on = 0; --turn on eye led
 
 --Slow down maximum speed (for testing)
+--[[
 fsm.bodyPosition.maxStep1 = 0.06;
 fsm.bodyPosition.maxStep2 = 0.06;
 fsm.bodyPosition.maxStep3 = 0.06;
+--]]
 
 --Disable walkkicks and sidekicks
 fsm.enable_walkkick = 0; --Testing
@@ -248,6 +250,9 @@ goalie_log_balls = 1;
 --Slow down kick waiting time
 fsm.bodyKick.tStartWait = 1.0;
 fsm.bodyKick.tStartWaitMax = 1.2;
+
+fsm.bodyKick.tStartWait = 0.6;
+fsm.bodyKick.tStartWaitMax = 0.8;
 
 --Power down walkkick
 walk.walkKickDef["FrontLeft"]={

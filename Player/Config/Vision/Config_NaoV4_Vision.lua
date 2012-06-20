@@ -21,7 +21,7 @@ vision.scaleB = 4;
 -- use this to enable line detection
 vision.enable_line_detection = 1;
 -- use this to enable corner detection
-vision.enable_corner_detection = 0;
+vision.enable_corner_detection = 1;
 -- use this to enable spot detection
 vision.enable_spot_detection = 0;
 -- use this to enable midfield landmark detection
@@ -74,7 +74,7 @@ vision.goal.th_nPostB = 5;
 vision.goal.th_min_area = 40;
 vision.goal.th_min_orientation = 60*math.pi/180;
 vision.goal.th_min_fill_extent=0.75;
-vision.goal.th_aspect_ratio={2.5,15};
+vision.goal.th_aspect_ratio={2.5, 15};
 vision.goal.th_edge_margin= 5;
 vision.goal.th_bottom_boundingbox=0.9;
 vision.goal.th_ground_boundingbox={-15,15,-15,10}; 
@@ -92,6 +92,6 @@ vision.line.max_gap=0;
 vision.line.min_length=10;
 
 vision.corner={};
-vision.corner.dist_threshold = 30;
+vision.corner.dist_threshold = 0.6;
 vision.corner.length_threshold = 6;
 vision.corner.min_center_dist = 1.5;

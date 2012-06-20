@@ -15,10 +15,7 @@ end
 
 --Robot CFG should be loaded first to set PID values
 local robotName=unix.gethostname();
-has_claw = 0;
-if (robotName=='sally') then has_claw = 1;end
-
-if has_claw>0 then
+if (robotName=='sally') then 
 --  loadconfig('Robot/Config_OPGripper_Robot') 
   loadconfig('Robot/Config_OPSally_Robot') 
   loadconfig('Walk/Config_OP_Walk')
@@ -28,6 +25,8 @@ else
   loadconfig('Robot/Config_OP_Robot') 
   loadconfig('Walk/Config_OP_Walk')
 end
+
+
 
 loadconfig('World/Config_OP_World')
 --loadconfig('Kick/Config_OP_Kick')
@@ -96,8 +95,8 @@ end
 game.role = 1;--hack
 
 --Default team: 0 for blue, 1 for red  
-game.teamColor = 0; --Blue team
---game.teamColor = 1; --Red team
+--game.teamColor = 0; --Blue team
+game.teamColor = 1; --Red team
 game.robotName = robotName;
 game.robotID = game.playerID;
 game.nPlayers = 5;
@@ -165,6 +164,12 @@ km = {};
 km.standup_front = 'km_NSLOP_StandupFromFront.lua';
 km.standup_back = 'km_NSLOP_StandupFromBack.lua';
 --km.standup_back = 'km_NSLOP_StandupFromBack3.lua';
+
+
+if (robotName=='sally') then 
+  km.standup_front = 'km_NSLOP_StandupFromFrontSally.lua'; 
+  km.standup_back = 'km_NSLOP_StandupFromBackSally.lua';
+end
 
 if (robotName=='hokie') then
 --  km.standup_back = 'km_NSLOP_StandupFromBackHokie.lua';

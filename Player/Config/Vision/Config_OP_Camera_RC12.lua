@@ -55,6 +55,7 @@ camera.param[6] = {key='sharpness',     val={50}};
 camera.param[7] = {key='exposure (absolute)',      val={1231}};
 --]]
 
+--[[
 --06/18/2012 - Robocup- LV
 camera.param = {};
 camera.param[1] = {key='brightness',    val={118}};
@@ -64,6 +65,17 @@ camera.param[4] = {key='gain',          val={235}};
 camera.param[5] = {key='white balance temperature', val={2380}};
 camera.param[6] = {key='sharpness',     val={50}};
 camera.param[7] = {key='exposure (absolute)',      val={1121}};
+--]]
+
+--06/19/2012 - Robocup- LV
+camera.param = {};
+camera.param[1] = {key='brightness',    val={105}};
+camera.param[2] = {key='contrast',      val={26}};
+camera.param[3] = {key='saturation',    val={55}};
+camera.param[4] = {key='gain',          val={255}};
+camera.param[5] = {key='white balance temperature', val={3750}};
+camera.param[6] = {key='sharpness',     val={50}};
+camera.param[7] = {key='exposure (absolute)',      val={1135}};
 
 
 
@@ -78,4 +90,5 @@ camera.param[7] = {key='exposure (absolute)',      val={1121}};
 --ROBOCUP 2012_LV
 --camera.lut_file = 'lut_RC12_LV_PF2.raw'
 --camera.lut_file = 'lut_RC12_LV_GameFields.raw'
-camera.lut_file = 'lut_RC12_LV_GameFields_New.raw'
+--camera.lut_file = 'lut_RC12_LV_GameFields_New.raw'
+camera.lut_file = 'lut_RC12_LV_HighWB.raw'

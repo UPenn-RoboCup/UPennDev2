@@ -9,6 +9,7 @@ extern bool txPauseCmd;
 extern bool rxPauseCmd;
 extern bool txPaused;
 extern bool rxPaused;
+extern char signalTone;
 
 extern short pcmDebug[];
 extern pthread_mutex_t pcmDebugMutex;
@@ -64,6 +65,17 @@ static int lua_set_receiver_volume(lua_State *L) {
 static int lua_set_transmitter_volume(lua_State *L) {
   int volume = lua_tointeger(L, 1);
   return sound_comm_thread_set_transmitter_volume(volume);
+}
+
+static int lua_set_signal_tone(lua_State *L) {
+  const char *symbol = lua_tostring(L, 1);
+  if (symbol == NULL) {
+    fprintf(stderr, "set_signal_tone: first argument must be a the tone symbol.\n");
+    return -1;
+  }
+  signalTone = symbol[0];
+
+  return 1;
 }
 
 static int lua_get_detection(lua_State *L) {
@@ -307,6 +319,7 @@ static const struct luaL_reg sound_comm_lib [] = {
   {"is_transmitter_enabled", lua_is_transmitter_enabled},
   {"set_transmitter_volume", lua_set_transmitter_volume},
   {"set_receiver_volume", lua_set_receiver_volume},
+  {"set_signal_tone", lua_set_signal_tone},
   {"get_debug_pcm", lua_get_debug_pcm},
 
   {NULL, NULL}

@@ -32,9 +32,13 @@ const int NFFT_MULTIPLIER = 2;
 const int NFFT = NFFT_MULTIPLIER * PFRAME;
 
 // TODO: what do these thresholds mean
-const double THRESHOLD_RATIO1 = 2;
-const double THRESHOLD_RATIO2 = 2;
-const int THRESHOLD_COUNT = 3;
+//const double THRESHOLD_RATIO1 = 2; // original
+//const double THRESHOLD_RATIO2 = 2;// original
+const double THRESHOLD_RATIO1 = 1.5;
+const double THRESHOLD_RATIO2 = 1.5;
+// tone threshold
+//const int THRESHOLD_COUNT = 3;
+const int THRESHOLD_COUNT = 2;
 const int NUM_CHIRP_COUNT = 4;
 const int NCORRELATION = NUM_CHIRP_COUNT * PFRAME;
 

@@ -54,7 +54,8 @@ while (1) do
         symbol = symbols[ind];
 
         -- play sequence
-        SoundComm.play_pnsequence(symbol);
+        --SoundComm.play_pnsequence(symbol);
+        SoundComm.play_pnsequence('1');
 
         lastPress = unix.time();
      elseif (((Body.get_sensor_bumperLeft()[1] == 1 and Body.get_sensor_bumperRight()[1] == 1)

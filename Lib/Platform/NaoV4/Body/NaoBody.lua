@@ -164,16 +164,29 @@ function set_indicator_batteryLevel(level)
   set_actuator_ledEarsRight(led);
 end
 
-function set_indicator_role(role)
+function set_indicator_role(role, wireless)
+  wireless = wireless or false
   if role == 1 then
-    -- attack
-    set_actuator_ledEarsLeft({1, 1, 1, 0, 0, 0, 0, 0, 0, 0});
+    if wireless then
+      set_actuator_ledEarsLeft({1, 1, 1, 0, 0, 0, 1, 1, 1, 0});
+    else
+      -- attack
+      set_actuator_ledEarsLeft({1, 1, 1, 0, 0, 0, 0, 0, 0, 0});
+    end
   elseif role == 2 then
-    -- defend
-    set_actuator_ledEarsLeft({0, 0, 0, 0, 1, 1, 0, 0, 0, 0});
+    if wireless then
+      set_actuator_ledEarsLeft({0, 0, 0, 0, 1, 1, 1, 1, 1, 0});
+    else
+      -- defend
+      set_actuator_ledEarsLeft({0, 0, 0, 0, 1, 1, 0, 0, 0, 0});
+    end
   elseif role == 3 then
-    -- support
-    set_actuator_ledEarsLeft({1, 0, 0, 0, 0, 0, 0, 0, 1, 1});
+    if wireless then
+      set_actuator_ledEarsLeft({1, 0, 0, 0, 0, 0, 0, 1, 1, 1});
+    else
+      -- support
+      set_actuator_ledEarsLeft({1, 0, 0, 0, 0, 0, 0, 0, 1, 1});
+    end
   elseif role == 0 then
     -- goalier
     set_actuator_ledEarsLeft({0, 0, 0, 0, 0, 0, 1, 1, 1, 0});
@@ -182,6 +195,7 @@ function set_indicator_role(role)
     set_actuator_ledEarsLeft({0, 0, 0, 0, 0, 0, 0, 0, 0, 0});
   end
 end
+
 
 function set_indicator_ball(color)
   -- color is a 3 element vector

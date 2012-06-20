@@ -21,7 +21,6 @@ tLost = 3.0;
 xKick = 0.22;
 xTarget = 0.16;
 
-
 yKickMin = 0.02;
 yKickMax = 0.05;
 
@@ -29,7 +28,7 @@ yKickMax = 0.05;
 rFar = 1.0;
 
 -- alignment
-thAlign = 30.0*math.pi/180.0;
+thAlign = 60.0*math.pi/180.0;--30.0*math.pi/180.0;
 
 
 function entry()

@@ -69,7 +69,7 @@ function update()
   toKick = postDist.kick();
 
   --Check for obstacles
-  if Config.fsm.enable_obstacle_detection == 0 then
+  if Config.fsm.enable_obstacle_detection > 0 then
     us = UltraSound.check_obstacle();
   else
     us = vector.zeros(2) 

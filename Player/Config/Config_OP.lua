@@ -230,14 +230,12 @@ vision.use_multi_landmark = 1;
 --led_on = 0; --turn on eye led
 
 --Slow down maximum speed (for testing)
---[[
 fsm.bodyPosition.maxStep1 = 0.06;
 fsm.bodyPosition.maxStep2 = 0.06;
 fsm.bodyPosition.maxStep3 = 0.06;
---]]
 
---Disable walkkicks and sidekicks
-fsm.enable_walkkick = 0; --Testing
+--Disable walkkicks and sidekicks 
+fsm.enable_walkkick = 0; --Testing 
 fsm.enable_sidekick = 0;
 
 --Disable diving
@@ -285,3 +283,24 @@ walk.walkKickDef["FrontRight2"]={
 }
 -------------------------------------------------------------------------
 
+
+-----------------------------------------------------------------------
+-- DEMO setting 2
+
+--Fast kick starting time
+fsm.bodyKick.tStartWait = 0.7;
+fsm.bodyKick.tStartWaitMax = 0.9;
+
+--Let goalie log balls
+goalie_log_balls = 1;
+
+fsm.goalie_type = 4;--moving/move+stop/stop+dive/stop+dive+move
+goalie_dive = 1; --1 for arm only, 2 for actual diving
+
+fsm.enable_walkkick = 1; --Enable front walkkick only
+fsm.enable_sidekick = 0;
+
+--Slow down maximum speed (for testing)
+fsm.bodyPosition.maxStep1 = 0.06;
+fsm.bodyPosition.maxStep2 = 0.06;
+fsm.bodyPosition.maxStep3 = 0.06;

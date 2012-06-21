@@ -6,6 +6,7 @@ require('walk')
 require('vector')
 require('walk')
 require('position')
+require('ocm')
 
 t0 = 0;
 timeout = Config.fsm.bodyApproach.timeout;
@@ -45,14 +46,16 @@ function check_approach_type()
 
 -- Hack : use localization info to detect obstacle
 -- We should use vision
-    obstacle_num = wcm.get_obstacle_num();
-    obstacle_x = wcm.get_obstacle_x();
-    obstacle_y = wcm.get_obstacle_y();
-    obstacle_dist = wcm.get_obstacle_dist();
+    obstacle_num = ocm.get_obstacle_num();
+    obstacle_x = ocm.get_obstacle_x();
+    obstacle_y = ocm.get_obstacle_y();
+    obstacle_dist = ocm.get_obstacle_dist();
+    print('obstacle num: '..obstacle_num);
 
     for i=1,obstacle_num do
       if obstacle_dist[i]<0.60 then
         obsAngle = math.atan2(obstacle_y[i],obstacle_x[i]);
+        print("obsAngle: "..obsAngle);
         if math.abs(obsAngle) < 40*math.pi/180 then
   	  do_evade_kick = true;
         end

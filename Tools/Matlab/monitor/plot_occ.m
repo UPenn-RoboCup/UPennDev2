@@ -86,7 +86,10 @@ pvector(6, :) = pvector(6, :) * reject_gain;
 %}
 
   hold off;
-  axis([odom_y-1.0 odom_y+1.0 odom_x-1.0 odom_x+1.0]);
-  set(gca, 'xtick', -1.0:0.1:1.0);
-  set(gca, 'ytick', -1.0:0.1:1.0);
+%  axis([odom_y-1.0 odom_y+1.0 odom_x-1.0 odom_x+1.0]);
+  axis([odom_y-0.5 odom_y+0.5 odom_x-0.2 odom_x+0.8]);
+%  set(gca, 'xtick', -1.0:0.1:1.0);
+%  set(gca, 'ytick', -1.0:0.1:1.0);
+  set(gca, 'xtick', -0.5:0.1:0.5);
+  set(gca, 'ytick', -0.2:0.1:0.8);
   grid on;

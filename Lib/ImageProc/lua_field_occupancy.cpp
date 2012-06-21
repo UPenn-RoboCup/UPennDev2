@@ -75,7 +75,7 @@ int lua_field_occupancy(lua_State *L) {
       im_row += ni;
     }
 //    std::cout << nBlocks << ' ' << nBlockClusters << std::endl;
-    std::cout << nBlockClusters << ' ';
+//    std::cout << nBlockClusters << ' ';
     // no black pixels found, return type 1
     if (nBlocks < 0.05 * nj) {
       flag[i] = 1;
@@ -101,7 +101,7 @@ int lua_field_occupancy(lua_State *L) {
       continue;
     }
   }
-  std::cout << std::endl; 
+//  std::cout << std::endl; 
   // return state
   lua_createtable(L,0,2);
   

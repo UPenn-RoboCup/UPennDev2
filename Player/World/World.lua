@@ -315,6 +315,21 @@ function update_vision()
 end
 
 function update_led()
+  --Turn on the eye light according to team color
+  --If gamecontroller is down
+  if gcm.get_game_state()~=3 and
+     gcm.get_game_gc_latency() > 10.0 then
+
+    if gcm.get_team_color() == 0 then --Blue team
+      Body.set_indicator_goal({0,0,0});
+      Body.set_indicator_ball({0,0,1});
+    else --Red team
+      Body.set_indicator_goal({0,0,0});
+      Body.set_indicator_ball({0,0,1});
+    end
+    return;
+  end
+
   --Only disable eye LED during playing
   if led_on>0 and gcm.get_game_state()~=3 then
     Body.set_indicator_goal(goal_led);

@@ -40,12 +40,13 @@ colorWhite = Config.color.white;
 use_point_goal=Config.vision.use_point_goal;
 
 enableLine = Config.vision.enable_line_detection;
+enableCorner = Config.vision.enable_corner_detection;
 enableSpot = Config.vision.enable_spot_detection;
 enableMidfieldLandmark = Config.vision.enable_midfield_landmark_detection;
 enable_freespace_detection = Config.vision.enable_freespace_detection or 0;
 enableBoundary = Config.vision.enable_visible_boundary or 0;
 enableRobot = Config.vision.enable_robot_detection or 0;
-yellowGoals = Config.vision.enable_2_yellow_goals or 0;
+yellowGoals = Config.world.use_same_colored_goal or 0; --Config.vision.enable_2_yellow_goals or 0;
 
 enable_timeprinting = Config.vision.print_time;
 
@@ -145,8 +146,10 @@ function update()
     tstart = unix.time();
     line = detectLine.detect();
     Tline = unix.time() - tstart;
-    corner = detectCorner.detect(line);
-    Tcorner = unix.time() - Tline - tstart; 
+    if enableCorner == 1 then
+      corner = detectCorner.detect(line);
+      Tcorner = unix.time() - Tline - tstart; 
+    end
   end
 
   -- spot detection
@@ -181,7 +184,7 @@ function update()
     detectRobot.detect();
     Trobot = unix.time() - tstart;
   end
-
+  update_shm();
 end
 
 function update_shm()

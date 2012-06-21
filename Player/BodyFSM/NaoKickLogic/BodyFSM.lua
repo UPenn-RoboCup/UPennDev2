@@ -41,10 +41,10 @@ sm:set_transition(bodyPosition, 'approach', bodyApproach);
 --sm:set_transition(bodyPosition, 'obstacle', bodyObstacle);
 
 sm:set_transition(bodyObstacle, 'clear', bodyPosition);
-sm:set_transition(bodyObstacle, 'timeout', bodyObstacleAvoid);
+sm:set_transition(bodyObstacle, 'timeout', bodyPosition);
 
-sm:set_transition(bodyObstacleAvoid, 'clear', bodyPosition);
-sm:set_transition(bodyObstacleAvoid, 'timeout', bodyPosition);
+--sm:set_transition(bodyObstacleAvoid, 'clear', bodyPosition);
+--sm:set_transition(bodyObstacleAvoid, 'timeout', bodyPosition);
 
 sm:set_transition(bodySearch, 'ball', bodyPosition);
 sm:set_transition(bodySearch, 'timeout', bodyGotoCenter);

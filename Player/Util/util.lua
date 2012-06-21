@@ -42,6 +42,20 @@ function min(t)
   return tmin, imin;
 end
 
+function max(t)
+  -- find the maximum element in the array table
+  -- returns the min value and its index
+  local imax = 0;
+  local tmax = -math.huge;
+  for i = 1,#t do
+    if (t[i] > tmax) then
+      tmax = t[i];
+      imax = i;
+    end
+  end
+  return tmax, imax;
+end
+
 function se2_interpolate(t, u1, u2)
   -- helps smooth out the motions using a weighted average
   return vector.new{u1[1]+t*(u2[1]-u1[1]),

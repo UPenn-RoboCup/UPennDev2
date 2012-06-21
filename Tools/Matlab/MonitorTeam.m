@@ -7,7 +7,7 @@ end
 nRobots = 4;
 robots = cell(nRobots,1);
 
-teamNumber = 26;
+teamNumber = 25;
 nUpdate = 0;
 
 
@@ -15,8 +15,8 @@ while (1)
 	nUpdate = nUpdate + 1;
 
 	% receive udp packets
-	while(naoComm('getQueueSize') > 0)
-		msg = naoComm('receive');
+	while(UDPComm('getQueueSize') > 0)
+		msg = UDPComm('receive');
 		if ~isempty(msg)
       try
         msg = lua2mat(char(msg));
@@ -32,13 +32,13 @@ while (1)
 	end
 
 	% plot current robot positions
-	plot_field();
+  cla;
+	plot_field(gca,1);
 	hold on;
 
-  
 	for i = 1:nRobots
 		if (~isempty(robots{i}))
-      plot_robot_struct(robots{i});
+      plot_robot(robots{i}, [], 1, 4);
 		end
 	end
 

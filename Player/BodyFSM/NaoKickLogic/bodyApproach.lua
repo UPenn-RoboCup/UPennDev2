@@ -69,7 +69,11 @@ function update()
   toKick = postDist.kick();
 
   --Check for obstacles
-  us = UltraSound.check_obstacle();
+  if Config.fsm.enable_obstacle_detection > 0 then
+    us = UltraSound.check_obstacle();
+  else
+    us = vector.zeros(2) 
+  end
 
   if (t - ball.t > tLost) then
     print('ballLost');

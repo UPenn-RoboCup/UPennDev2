@@ -10,9 +10,9 @@ fsm={};
 
 --Should we consider obstacle?
 if Config.game.robotID == 2 then --no obstacle on rufio
-  fsm.enable_obstacle_detection = 0;
+  fsm.enable_obstacle_detection = 1;
 else
-  fsm.enable_obstacle_detection = 0;
+  fsm.enable_obstacle_detection = 1;
 end
 
 --fsm.playMode = 1; --For Demo without orbit
@@ -64,7 +64,7 @@ fsm.bodyOrbit.rFar = 0.45;
 fsm.bodyOrbit.thAlign = 10*math.pi/180;
 fsm.bodyOrbit.timeout = 30.0 * speedFactor;
 fsm.bodyOrbit.tLost = 3.0*speedFactor;
---fsm.bodyOrbit.walkParam = 'Walk/Config_NaoV4_Walk_SideStep'
+fsm.bodyOrbit.walkParam = 'Walk/Config_NaoV4_Walk_FastStable_Sidestep'
 
 --------------------------------------------------
 --BodyPosition : Advanced chase-orbit
@@ -128,8 +128,9 @@ fsm.bodyApproach.yTarget21={0.03, 0.045, 0.06}; --min, target ,max
 fsm.bodyApproach.xTarget22={0, 0.16,0.18}; --min, target, max
 fsm.bodyApproach.yTarget22={-0.00, 0.02, 0.04}; --min, target ,max
 
-fsm.bodyApproach.pFar = 2
+fsm.bodyApproach.pFar = 4.0
 fsm.bodyApproach.pNear = .3
+fsm.bodyApproach.pRight = 1.8 
 
 --------------------------------------------------
 --BodyKick : Stationary Kick
@@ -160,7 +161,7 @@ fsm.bodyKick.tFollowDelay = 2.2;
 --BodyWalkKick : Dynamic Kick
 --------------------------------------------------
 fsm.bodyWalkKick={};
-fsm.bodyWalkKick.timeout = 0*speedFactor; 
+fsm.bodyWalkKick.timeout = .5*speedFactor; 
 --------------------------------------------------
 --BodyGotoCenter : Going to center when ball is lost
 --------------------------------------------------
@@ -202,7 +203,13 @@ fsm.headScan.yawMag = 90*math.pi/180;
 fsm.headScan.pitchTurn0 = 20*math.pi/180;
 fsm.headScan.pitchTurnMag = 20*math.pi/180;
 fsm.headScan.yawMagTurn = 45*math.pi/180;
-fsm.headScan.tScan = 4.0*speedFactor;
+fsm.headScan.tScan = 6.0*speedFactor;
+if Config.game.robotID == 1 then
+  fsm.headScan.tScan = 10.0*speedFactor;
+else
+  fsm.headScan.tScan = 6.0*speedFactor;
+end
+
 
 --------------------------------------------------
 --HeadKick: Fix headangle for approaching
@@ -221,17 +228,22 @@ fsm.headKickFollow={};
 fsm.headKickFollow.pitch={50*math.pi/180, 0*math.pi/180};
 fsm.headKickFollow.pitchSide = 30*math.pi/180;
 fsm.headKickFollow.yawMagSide = 90*math.pi/180;
-fsm.headKickFollow.tFollow = 10.0*speedFactor;
+fsm.headKickFollow.tFollow = 5.0*speedFactor;
 
 --------------------------------------------------
 --HeadLookGoal: Look up to see the goal
 --------------------------------------------------
 fsm.headLookGoal={};
 fsm.headLookGoal.yawSweep = 50*math.pi/180;
-fsm.headLookGoal.tScan = 1.0*speedFactor;
+fsm.headLookGoal.tScan = 0.75*speedFactor;
 
 --------------------------------------------------
 --HeadSweep: Look around to find the goal
 --------------------------------------------------
 fsm.headSweep={};
-fsm.headSweep.tScan=2.0*speedFactor;
+if Config.game.robotID == 1 then
+  fsm.headSweep.tScan=6.0*speedFactor;
+else
+  fsm.headSweep.tScan=4.0*speedFactor;
+end
+fsm.headSweep.tWait=0.2*speedFactor;

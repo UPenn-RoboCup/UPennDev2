@@ -22,7 +22,8 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel)
       plot_robot(robot_struct,scale);
       plot_info(robot_struct,scale);
       plot_ball(robot_struct,scale);
-      plot_gps_robot(robot_struct,scale);
+      plot_sound(robot_struct,scale);
+      %plot_gps_robot(robot_struct,scale);
 
     elseif drawlevel==2 
       %additional simple vision info for team monitor
@@ -49,14 +50,19 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel)
 
       plot_gps_robot(robot_struct,scale);
     elseif drawlevel==4
+      plot_robot(robot_struct,scale);
+      plot_info(robot_struct,scale);
       plot_ball(robot_struct,scale);
-      plot_particle(r_mon.particle);
-      plot_goal(r_mon.goal,scale);
-      plot_landmark(r_mon.landmark,scale);
-      plot_line(r_mon.line,scale);
-      plot_corner(r_mon.corner,scale);
-      plot_fov(r_mon.fov);
-      plot_gps_robot(robot_struct,scale);
+      plot_sound(robot_struct,scale);
+      %plot_particle(robot_struct,scale);
+      plot_ball(robot_struct,scale);
+      %plot_particle(r_mon.particle);
+      %plot_goal(r_mon.goal,scale);
+      %plot_landmark(r_mon.landmark,scale);
+      %plot_line(r_mon.line,scale);
+      %plot_corner(r_mon.corner,scale);
+      %plot_fov(r_mon.fov);
+      %plot_gps_robot(robot_struct,scale);
     end
   end
 
@@ -83,6 +89,9 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel)
   end
 
   function plot_gps_robot(robot,scale)
+    if (~isfield(robot, 'gpspose'))
+      return
+    end
     xgps = robot_struct.gpspose.x;
     ygps = robot_struct.gpspose.y;
     rErr = sqrt((x0-xgps)^2+(y0-ygps)^2);
@@ -139,10 +148,12 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel)
     end
 
     % disp attack bearing
+    %{
     xab = cos(robot.attackBearing)*ca - sin(robot.attackBearing)*sa;
     yab = cos(robot.attackBearing)*sa + sin(robot.attackBearing)*ca;
     ab_scale = 1/scale;
     quiver(x0, y0, xab*ab_scale,yab*ab_scale, 'k' );
+    %}
   end
   
   function plot_info(robot,angle)
@@ -355,14 +366,14 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel)
     end
   end
 
-  function plot_particle(particle)
+  function plot_particle(robot,scale)
 %    plot(particle.x,particle.y,'x')
 
-    index=[1:5:100]';
+    index=[1:10:200]';
 
-    px=particle.x(index);
-    py=particle.y(index);
-    pa=particle.a(index);
+    px=robot.xp(index);
+    py=robot.yp(index);
+    pa=robot.ap(index);
 
 
     pl_len=1;
@@ -372,6 +383,33 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel)
     quiver(px,py,dx,dy,0,'k');
     plot(px,py,'r.');
 
+  end
+
+  function plot_sound(robot, scale)
+    if (isfield(robot, 'soundFilter') && isfield(robot, 'soundOdomPose'))
+      if (any(robot.soundFilter))
+        disp(robot.soundFilter);
+      end
+      sound = robot.soundFilter/100;
+      ndiv = length(robot.soundFilter);
+      thdiv = 2*pi/ndiv;
+
+      cr = cos(robot.pose.a);
+      sr = sin(robot.pose.a);
+      cs = cos(robot.soundOdomPose.a);
+      ss = sin(robot.soundOdomPose.a);
+      wRr = [cr -sr; sr cr];
+      rRs = [cs -ss; ss cs]';
+      wRs = wRr * rRs;
+
+      u = sound .* cos(-pi+thdiv/2:thdiv:pi-thdiv/2);
+      v = sound .* sin(-pi+thdiv/2:thdiv:pi-thdiv/2);
+      U = wRs * [u;v];
+      x = robot.pose.x .* ones([1, ndiv]);
+      y = robot.pose.y .* ones([1, ndiv]);
+
+      quiver(x, y, U(1,:), U(2,:));
+    end
   end
 
 end

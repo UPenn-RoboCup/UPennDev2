@@ -19,6 +19,7 @@ shared.robot.penalty = vector.zeros(1);
 shared.robot.gpspose = vector.zeros(3);
 shared.robot.gps_attackbearing = vector.zeros(1);
 shared.robot.gps_ball = vector.zeros(3);
+shared.robot.odomScale = vector.zeros(3);
 
 
 shared.ball = {};
@@ -59,6 +60,17 @@ shared.particle.y=vector.zeros(Config.world.n);
 shared.particle.a=vector.zeros(Config.world.n);
 shared.particle.w=vector.zeros(Config.world.n);
 
+-- Sound localization
+shared.sound = {};
+shared.sound.odomPose = vector.zeros(3);
+-- TODO: sound histogram filter size should be set in the config
+--shared.sound.histogram = vector.zeros(Config.sound.??);
+radPerBin = 30*math.pi/180;
+shared.sound.detFilter = vector.zeros(math.floor(2*math.pi/radPerBin));
+shared.sound.detCount = vector.zeros(1);
+shared.sound.detTime = vector.zeros(1);
+shared.sound.detLIndex = vector.zeros(1);
+shared.sound.detRIndex = vector.zeros(1);
 
 -----------------------------------------------
 -- This shm is used for wireless team monitoring only
@@ -160,4 +172,11 @@ end
 
 function get_defend_angle()
   return get_goal_defend_angle();
+end
+
+function get_sound_detection()
+   return {count = get_sound_detCount(),
+           time = get_sound_detTime(),
+           lIndex = get_sound_detLIndex(),
+           rIndex = get_sound_detRIndex()};
 end

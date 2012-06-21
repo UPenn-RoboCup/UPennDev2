@@ -15,7 +15,7 @@ timeout = 20.0;
 
 maxStep = 0.05;
 
-rClose = 0.35;
+rClose = 0.28;
 
 tLost = 3.0;
 

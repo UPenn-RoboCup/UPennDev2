@@ -284,10 +284,10 @@ function update()
 
   -- Add Obstacle Info from OccMap
   if vcm.get_freespace_detect()>0 then
-    state.ob_num = ocm.get_ob_num();
-    state.ob_centroid = ocm.get_ob_centroid();
-    state.ob_angle_range = ocm.get_ob_angle_range();
-    state.ob_nearest = ocm.get_ob_nearest();
+    state.obstacle_num = ocm.get_obstacle_num();
+    state.obstacle_centroid = ocm.get_obstacle_centroid();
+    state.obstacle_angle_range = ocm.get_obstacle_angle_range();
+    state.obstacle_nearest = ocm.get_obstacle_nearest();
   end
     
   if (math.mod(count, 1) == 0) then

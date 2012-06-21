@@ -197,23 +197,23 @@ int OccMap::odometry_update(const double odomX, const double odomY,
   double odom_i = odom_x / (shift_scale * resolution);
   double odom_j = odom_y / (shift_scale * resolution);
   if (odom_i >= 1) {
-    cout << "down shift" << endl;
+//    cout << "down shift" << endl;
     map_shift(shift_scale, 0);
     odom_x -= shift_scale * resolution;
     odom_i--;
   } else if (odom_i <= -1) {
-    cout << "up shift" << endl;
+//    cout << "up shift" << endl;
     map_shift(-shift_scale, 0);
     odom_x += shift_scale * resolution;
     odom_i++;
   }
   if (odom_j >= 1) {
-    cout << "left shift" << endl;
+//    cout << "left shift" << endl;
     map_shift(0, shift_scale);
     odom_y -= shift_scale * resolution;
     odom_j--;
   } else if (odom_j <= -1) {
-    cout << "right shift" << endl;
+//    cout << "right shift" << endl;
     map_shift(0, -shift_scale);
     odom_y += shift_scale * resolution;
     odom_j++;

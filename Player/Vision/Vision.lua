@@ -207,7 +207,7 @@ function update()
   -- perform the initial labeling
   if(webots) then
     labelA.data = Camera.get_labelA( carray.pointer(camera.lut) );
-    labelA.data_obs = Camera.get_labelA( carray.pointer(camera_obs.lut) );
+    labelA.data_obs = Camera.get_labelA( carray.pointer(camera.lut_obs) );
   else
 
     labelA.data  = ImageProc.yuyv_to_label(vcm.get_image_yuyv(),

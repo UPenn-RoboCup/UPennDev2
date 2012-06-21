@@ -5,6 +5,7 @@
 #include <time.h>
 #include <stdio.h>
 
+const double obs_threshold = 0.85;
 
 OccMap::OccMap()
 :map_size(50), map_size_metric(1.0) ,resolution(map_size_metric / map_size)
@@ -17,6 +18,7 @@ OccMap::OccMap()
 // vars for vision update
 ,default_p(0.25)
 ,default_log_p(log(default_p / (1 - default_p)))
+,obs_log_p(log(obs_threshold / (1 - obs_threshold)))
 ,nOb(0)
 {
   obs.resize(maxObstacleClusters);
@@ -87,7 +89,7 @@ int& OccMap::get_robot_pos_y(void) {
 }
 
 int OccMap::time_decay(double time) {
-  double decay_coef = 0.001;
+  double decay_coef = 0.005;
   double P = 0, P1 = 0;
   int i = 0;
   for (i = 0; i < grid_num; i++) {

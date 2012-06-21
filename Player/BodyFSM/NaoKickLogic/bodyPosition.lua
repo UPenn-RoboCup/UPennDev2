@@ -41,6 +41,8 @@ function update()
   tBall = Body.get_time() - ball.t;
 
   role = gcm.get_team_role();
+  
+
   ballxy=vector.new( {ball.x,ball.y,0} );
   posexya=vector.new( {pose.x, pose.y, pose.a} );
 
@@ -85,8 +87,46 @@ function update()
     -- go to far post (.75 m from center)
     homePosition[2] = -1*util.sign(ballGlobal[2]) * .75;
 
+    -- ++++++++++++++++++++++++++++++++++++++++++++++++++
+    -- Potential Field
+
+    --[[
+
+    local ballRepulsionSup = 8; --1.5 defender, 2 supporter
+    local homeAttractionSup = 2;
+
+    -- S = R (ball.x,ball.y) + A(goalAttack.x - util.sign(goalAttack.x), -1 * util.sign(goalAttack.y) * 1.5 )
+    --   = R (ball.x,ball.y) + A(homePosition[1] , homePosition[2] )
+
+    -- A[1] = math.max ( -s, math.min(d,s)*cos(theta))
+    -- A[2] = math.max ( -s, math.min(d,s)*sin(theta))
+    -- R[1] = -1 * math.max ( s-d, 0 ) * cos (theta)
+    -- R[2] = -1 * math.max ( s-d, 0 ) * sin (theta)
+        
+    -- sink at homePosition
+    homePostitionR = math.sqrt((pose.x - ball.x)^2 + (pose.y - ball.y)^2);
+    aHomePosition = math.atan2 ( homePosition[1] - pose.x, homePosition[2] - pose.y ) ;
+
+    A = vector.zeros(2);
+    A[1] = math.max ( -homeAttractionSup, math.min(homePostitionR,homeAttractionSup)*math.cos(aHomePosition));
+    A[2] = math.max ( -homeAttractionSup, math.min(homePostitionR,homeAttractionSup)*math.sin(aHomePosition));
+
+    -- source at ball
+    R = vector.zeros(2);
+    R[1] = -1 * math.max ( ballRepulsionSup-ballR, 0 ) * math.cos (aBall);
+    R[2] = -1 * math.max ( ballRepulsionSup-ballR, 0 ) * math.sin (aBall);
+
+    print('');
+    util.ptable(A[1]);
+    util.ptable(R);
+
+    --]]
+    -- ++++++++++++++++++++++++++++++++++++++++++++++++++
+
     -- face ball 
     homePosition[3] = ballGlobal[3];
+
+
   else
     -- attack
     if math.abs(angle1)<math.pi/2 then

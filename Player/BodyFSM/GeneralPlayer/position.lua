@@ -243,7 +243,7 @@ function getDefenderHomePose()
   if defending_type == 1 then
     --Center defender
     if goalie_alive>0 then 
-      distGoal,sideGoal = 1.3, 0.3;
+      distGoal,sideGoal = 1.5, 0.3;
     else
       distGoal,sideGoal = 1.0, 0; --We don't have goalie!
     end
@@ -522,7 +522,7 @@ function setAttackerVelocity(homePose)
     (not (vy<0) and not (vy>=0)) or
     (not (va<0) and not (va>=0)) then
     vx,vy,va=0,0,0;
---    print("VELOCITY NAN!")
+    print("ATTACKER: VELOCITY NAN!")
 
   end
 
@@ -593,7 +593,7 @@ function setDefenderVelocity(homePose)
     maxA = 999;
     maxY = 999;
   else
-    maxStep = 0.0; --Just turn
+    maxStep = 0.001; --Just turn
     maxA = 999;
     maxY = 999;
   end
@@ -618,6 +618,16 @@ function setDefenderVelocity(homePose)
   end
 
   vx = maxStep*homeRelative[1]/(rHomeRelative+0.001);--to get rid of NaN
+
+
+  if rHomeRelative<rVel2 and  
+           math.abs(aHomeRelative)>45*180/math.pi then
+     vy = maxStep*homeRelative[2]/rHomeRelative;
+     aTurn = 1; --Turn toward the goal
+  else
+     vy = 0.3*maxStep*homeRelative[2]/rHomeRelative;
+  end
+
   vy = math.max(-maxY,math.min(maxY,vy));
   scale = math.min(maxStep/math.sqrt(vx^2+vy^2), 1);
   vx,vy = scale*vx,scale*vy;
@@ -630,7 +640,15 @@ function setDefenderVelocity(homePose)
   if (not (vx<0) and not (vx>=0)) or
     (not (vy<0) and not (vy>=0)) or
     (not (va<0) and not (va>=0)) then
- --   print("VELOCITY NAN!")
+
+    print("DEFENDER: VELOCITY NAN!")
+
+    print("maxStep:",maxStep)
+
+    print("v:",vx,vy,va)    
+    print("HomePose:",unpack(homePose));
+    print("HomeRelative:",unpack(homeRelative));
+    print("aHomeRelative:",aHomeRelative*180/math.pi);
     vx,vy,va=0,0,0;
   end
 

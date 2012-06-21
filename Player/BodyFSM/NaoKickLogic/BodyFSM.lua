@@ -40,6 +40,7 @@ sm:set_transition(bodyPosition, 'ballAlign', bodyOrbit);
 sm:set_transition(bodyPosition, 'approach', bodyApproach);
 sm:set_transition(bodyPosition, 'obstacle', bodyObstacle);
 
+sm:set_transition(bodyObstacle, 'continue', bodyGotoCenter);
 sm:set_transition(bodyObstacle, 'clear', bodyPosition);
 sm:set_transition(bodyObstacle, 'timeout', bodyPosition);
 
@@ -49,6 +50,7 @@ sm:set_transition(bodyObstacle, 'timeout', bodyPosition);
 sm:set_transition(bodySearch, 'ball', bodyPosition);
 sm:set_transition(bodySearch, 'timeout', bodyGotoCenter);
 
+sm:set_transition(bodyGotoCenter, 'obstacle', bodyObstacle);
 sm:set_transition(bodyGotoCenter, 'ballFound', bodyPosition);
 sm:set_transition(bodyGotoCenter, 'done', bodySearch);
 sm:set_transition(bodyGotoCenter, 'timeout', bodySearch);

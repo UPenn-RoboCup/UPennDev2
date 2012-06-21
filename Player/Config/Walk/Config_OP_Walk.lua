@@ -25,8 +25,12 @@ walk.footX= -0.020;
 walk.footY = 0.035;
 walk.supportX = 0;
 walk.supportY = 0.010;
-walk.qLArm=math.pi/180*vector.new({90,8,-40});
-walk.qRArm=math.pi/180*vector.new({90,-8,-40});
+--walk.qLArm=math.pi/180*vector.new({90,8,-40});
+--walk.qRArm=math.pi/180*vector.new({90,-8,-40});
+
+walk.qLArm=math.pi/180*vector.new({90,2,-40});
+walk.qRArm=math.pi/180*vector.new({90,-2,-40});
+
 walk.qLArmKick=math.pi/180*vector.new({90,30,-60});
 walk.qRArmKick=math.pi/180*vector.new({90,-30,-60});
 
@@ -63,7 +67,12 @@ if Config.servo.pid==1 then
   walk.hipImuParamY={0.5,0.3*gyroFactor,
                         1*math.pi/180, 25*math.pi/180};
   walk.armImuParamX={0.3,10*gyroFactor, 20*math.pi/180, 45*math.pi/180};
-  walk.armImuParamY={0.3,10*gyroFactor, 20*math.pi/180, 45*math.pi/180};
+
+--  walk.armImuParamY={0.3,10*gyroFactor, 20*math.pi/180, 45*math.pi/180};
+
+  --DISABLE Y BALANCING
+  walk.armImuParamY={0,0*gyroFactor, 20*math.pi/180, 45*math.pi/180};
+
 else
   walk.ankleImuParamX={0.9,0.3*gyroFactor, 0, 25*math.pi/180};
   walk.kneeImuParamX={0.9,1.2*gyroFactor, 0, 25*math.pi/180};
@@ -86,6 +95,10 @@ walk.supportFront = 0.03; --Lean back when walking fast forward
 walk.supportFront2 = 0.03; --Lean front when accelerating forward
 walk.supportBack = -0.02; --Lean back when walking backward
 walk.supportSideX = -0.01; --Lean back when sidestepping
+
+
+walk.supportSideX = -0.005; --Lean back when sidestepping
+
 walk.supportSideY = 0.02; --Lean sideways when sidestepping
 
 
@@ -93,7 +106,9 @@ walk.supportTurn = 0.02; --Lean front when turning
 
 
 walk.turnCompThreshold = 0.1;
-walk.turnComp = 0.005;
+walk.turnComp = 0.005; --Lean front when turning
+
+walk.turnComp = 0.003; --Lean front when turning
 
 
 --------------------------------------------
@@ -223,7 +238,7 @@ end
 -- tDuration qLArm qRArm bodyRot
 walk.motionDef={};
 
-walk.motionDef["hurray"]={
+walk.motionDef["hurray1"]={
  {1.0,{40*math.pi/180, 20*math.pi/180, -140*math.pi/180},
         {40*math.pi/180,-20*math.pi/180,-140*math.pi/180}},
  {0.4,{-30*math.pi/180, 30*math.pi/180, -90*math.pi/180},
@@ -241,14 +256,14 @@ walk.motionDef["hurray"]={
 } 
 
 --pointing up
-walk.motionDef["hurray"]={
+walk.motionDef["point"]={
  {1.0,{-40*math.pi/180, 50*math.pi/180, 0*math.pi/180},
         {160*math.pi/180,-60*math.pi/180,-90*math.pi/180},
-        {20*math.pi/180,20*math.pi/180,-20*math.pi/180}},
+        {20*math.pi/180,0*math.pi/180,-20*math.pi/180}},
 
  {3.0,{-40*math.pi/180, 50*math.pi/180, 0*math.pi/180},
         {160*math.pi/180,-60*math.pi/180,-90*math.pi/180},
-        {20*math.pi/180,20*math.pi/180,-20*math.pi/180}},
+        {20*math.pi/180,0*math.pi/180,-20*math.pi/180}},
 
  {1.0,{90*math.pi/180, 8*math.pi/180,-40*math.pi/180},
         {90*math.pi/180, -8*math.pi/180,-40*math.pi/180},
@@ -257,7 +272,7 @@ walk.motionDef["hurray"]={
 
 
 --Two arm punching up
-walk.motionDef["hurray"]={
+walk.motionDef["hurray2"]={
  {0.5,{40*math.pi/180, 20*math.pi/180, -140*math.pi/180},
         {40*math.pi/180,-20*math.pi/180,-140*math.pi/180}},
 
@@ -285,7 +300,7 @@ walk.motionDef["hurray"]={
 
 
 --Two arm side swing
-walk.motionDef["hurray"]={
+walk.motionDef["swing"]={
  {0.5,{90*math.pi/180, 90*math.pi/180, -40*math.pi/180},
         {90*math.pi/180,-90*math.pi/180,-40*math.pi/180},
         {0*math.pi/180,20*math.pi/180,-20*math.pi/180}},
@@ -307,7 +322,7 @@ walk.motionDef["hurray"]={
 
 
 --One-Two Punching
-walk.motionDef["hurray"]={
+walk.motionDef["2punch"]={
  {0.2,{90*math.pi/180, 40*math.pi/180, -160*math.pi/180},
         {90*math.pi/180,-40*math.pi/180,-160*math.pi/180},
         {0*math.pi/180,20*math.pi/180,0*math.pi/180}},

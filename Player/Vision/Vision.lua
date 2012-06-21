@@ -111,6 +111,16 @@ function entry()
   camera.lut = carray.new('c', 262144);
   load_lut(Config.camera.lut_file);
 
+  --ADDED to prevent crashing with old camera config
+  if Config.camera.lut_file_obs == null then
+    Config.camera.lut_file_obs = Config.camera.lut_file;
+  end
+
+  -- Load the obstacle LUT as well
+  print('loading obs lut: '..Config.camera.lut_file_obs);
+  camera.lut_obs = carray.new('c', 262144);
+  load_lut_obs(Config.camera.lut_file_obs);
+
   if Config.platform.name=="NaoV4" then
     camera_init_naov4();
   else
@@ -197,11 +207,19 @@ function update()
   -- perform the initial labeling
   if(webots) then
     labelA.data = Camera.get_labelA( carray.pointer(camera.lut) );
+    labelA.data_obs = Camera.get_labelA( carray.pointer(camera_obs.lut) );
   else
+
     labelA.data  = ImageProc.yuyv_to_label(vcm.get_image_yuyv(),
                                           carray.pointer(camera.lut),
                                           camera.width/2,
                                           camera.height);
+
+    labelA.data_obs  = ImageProc.yuyv_to_label_obs(vcm.get_image_yuyv(),
+                                          carray.pointer(camera.lut_obs),
+                                          camera.width/2,
+                                          camera.height);
+
   end
 
   -- determine total number of pixels of each color/label
@@ -209,6 +227,9 @@ function update()
 
   -- bit-or the segmented image
   labelB.data = ImageProc.block_bitor(labelA.data, labelA.m, labelA.n, scaleB, scaleB);
+
+  -- Obstacle labels
+  labelB.data_obs = ImageProc.block_bitor_obs(labelA.data_obs, labelA.m, labelA.n, scaleB, scaleB);
 
   vcm.refresh_debug_message();
   Detection.update();
@@ -423,6 +444,19 @@ function load_lut(fname)
   end
 end
 
+function load_lut_obs(fname)
+  local cwd = unix.getcwd();
+  if string.find(cwd, "WebotsController") then
+    cwd = cwd.."/Player";
+  end
+  cwd = cwd.."/Data/";
+  local f = io.open(cwd..fname, "r");
+  assert(f, "Could not open lut file");
+  local s = f:read("*a");
+  for i = 1,string.len(s) do
+    camera.lut_obs[i] = string.byte(s,i,i);
+  end
+end
 
 function save_rgb(rgb)
   saveCount = saveCount + 1;

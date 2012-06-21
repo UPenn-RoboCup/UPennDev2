@@ -39,6 +39,7 @@ require('Speak')
 require('Body')
 require('Motion')
 require('gcm')
+require('ocm')
 
 gcm.say_id()
 
@@ -140,6 +141,26 @@ function process_keyinput()
     elseif byte==string.byte(",") then	targetvel[1]=targetvel[1]-0.02;
     elseif byte==string.byte("h") then	targetvel[2]=targetvel[2]+0.02;
     elseif byte==string.byte(";") then	targetvel[2]=targetvel[2]-0.02;
+
+    -- reset OccMap
+    elseif byte==string.byte("/") then 
+      print("reset occomap");
+      ocm.set_occ_reset(1);
+    elseif byte==string.byte(".") then
+      print("get obstacles");
+      nob = ocm.get_ob_num();
+      print(nob,' obstacle found');
+      if (nob > 0) then 
+        obx = ocm.get_ob_x();
+        print('obstacle x')
+        util.ptable(obx);
+        oby = ocm.get_ob_y();
+        print('obstacle y')
+        util.ptable(oby);
+        obdist = ocm.get_ob_dist();
+        print('obstacle dist')
+        util.ptable(obdist);
+      end
 
     --switch camera 
     elseif byte==string.byte("-") then

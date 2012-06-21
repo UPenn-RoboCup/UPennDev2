@@ -25,26 +25,14 @@ function detect(color)
   local freespace = {};
   freespace.detect = 1;
   freespace.block = 0; -- whether there are cols being wholely blocked
---  freespace.vboundA = {}; -- freespace boundary in mm from labelA
---  freespace.pboundA = {}; -- freespace boundary in labelA
---  freespace.tboundA = {}; -- freespace boundary type in labelA
   freespace.vboundB = {}; -- freespace boundary in mm from labelB
   freespace.pboundB = {}; -- freespace boundary in labelB
   freespace.tboundB = {}; -- freespace boundary type in labelB
 
   -- Get label handle
---  labelA = Vision.labelA;
   labelB = Vision.labelB;
   
---  local FreeA = ImageProc.field_occupancy(labelA.data,labelA.m,labelA.n);
-  local FreeB = ImageProc.field_occupancy(labelB.data,labelB.m,labelB.n);
---  for i = 1,labelA.m do
---    local pbound = vector.new({i,labelA.n-FreeA.range[i]});
---	freespace.pboundA[i],freespace.pboundA[i+labelA.m] = pbound[1],pbound[2];
---    local vbound = HeadTransform.rayIntersectA(pbound);
---    freespace.vboundA[i],freespace.vboundA[i+labelA.m] = vbound[1],vbound[2];   
---    freespace.tboundA[i] = FreeA.flag[i];
---  end
+  FreeB = ImageProc.field_occupancy(labelB.data_obs,labelB.m,labelB.n);
   
   for i = 1,labelB.m do
     local pbound = vector.new({i,labelB.n-FreeB.range[i]});
@@ -54,10 +42,9 @@ function detect(color)
     freespace.tboundB[i] = FreeB.flag[i];
   end
 
-
   local horizon = HeadTransform.get_horizonA();
 --  print(horizon);
-  freespace.nCol = nCol;
-  freespace.nRow = nRow;
+  freespace.nCol = labelB.m;
+  freespace.nRow = labelB.n;
   return freespace;
 end

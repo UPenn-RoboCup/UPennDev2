@@ -55,7 +55,7 @@ require ('wcm')
 require ('gcm')
 require ('vcm')
 
-Comm.init(Config.dev.ip_wireless,54321);
+Comm.init(Config.dev.ip_wireless,Config.dev.ip_wireless_port);
 print('Receiving Team Message From',Config.dev.ip_wireless);
 
 function push_labelB(obj,teamOffset)

@@ -246,16 +246,18 @@ function h=show_monitor()
       MONITOR.h3 = subplot(4,5,[11 12 16 17]);
       cla(MONITOR.h3);
 
+
       if MONITOR.enable3==5 
-        if isfield(r_mon.robot, 'map')
-          plot_grid(r_mon.robot.map);  
+        if isfield(r_mon, 'occ')
+          plot_occ(r_mon.occ);            
 				end
-        plot_field(MONITOR.h3,MONITOR.fieldtype);
-        plot_robot( r_struct, r_mon,2,3 ,'');
+%        plot_field(MONITOR.h3,MONITOR.fieldtype);
+%        plot_robot( r_struct, r_mon,2,3 );
       else
         plot_field(MONITOR.h3,MONITOR.fieldtype);
         plot_robot( r_struct, r_mon,1.5,MONITOR.enable3,'' );
       end
+
     end
 
     if MONITOR.enable4
@@ -338,7 +340,8 @@ function h=show_monitor()
           MONITOR.deadcount(i) = 0;
         end
 
-        if MONITOR.deadcount(i) < 20 % ~2 sec interval until turning off
+%        if MONITOR.deadcount(i) < 20 % ~2 sec interval until turning off
+        if MONITOR.deadcount(i) < 50 % ~5 sec interval until turning off
 
           h_c=subplot(5,5,[6:20]);
           plot_robot( r_struct, [],2,5,r_struct.robotName);
@@ -354,7 +357,12 @@ function h=show_monitor()
 	  end
 	  plot_overlay_wireless(r_struct);
           [infostr textcolor]=robot_info(r_struct,[],3,r_struct.robotName);
+
           set(MONITOR.infoTexts(i),'String',infostr);
+
+%          infostr2 = sprintf('%s\nDC:%d',MONITOR.deadcount(i));
+%          set(MONITOR.infoTexts(i),'String',infostr2);
+
         elseif MONITOR.deadcount(i)==20 %Clear vision at 20
           labelB = robot_team.get_labelB_wireless(i);
   	  if i<6 

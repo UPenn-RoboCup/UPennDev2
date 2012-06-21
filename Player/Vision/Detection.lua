@@ -13,7 +13,8 @@ require('detectGoal');
 require('detectLine');
 require('detectCorner');
 if not string.find(Config.platform.name,'Nao') then
-require('detectLandmarks'); -- for NSL
+  require('detectLandmarks'); -- for NSL
+  require('detectLandmarks2'); -- for NSL
 end
 require('detectSpot');
 require('detectFreespace');
@@ -37,6 +38,8 @@ colorField = Config.color.field;
 colorWhite = Config.color.white;
 
 use_point_goal=Config.vision.use_point_goal;
+use_multi_landmark = Config.vision.use_multi_landmark or 0;
+
 
 enableLine = Config.vision.enable_line_detection;
 enableSpot = Config.vision.enable_spot_detection;
@@ -129,8 +132,13 @@ function update()
    landmarkCyan = 0;
    landmarkYellow = 0;
    if enableMidfieldLandmark == 1 then
-     landmarkCyan = detectLandmarks.detect(colorCyan,colorYellow);
-     landmarkYellow = detectLandmarks.detect(colorYellow,colorCyan);
+     if use_multi_landmark == 1 then
+       landmarkCyan = detectLandmarks2.detect(colorCyan,colorYellow);
+       landmarkYellow = detectLandmarks2.detect(colorYellow,colorCyan);
+     else
+       landmarkCyan = detectLandmarks.detect(colorCyan,colorYellow);
+       landmarkYellow = detectLandmarks.detect(colorYellow,colorCyan);
+     end
    end
   end
 

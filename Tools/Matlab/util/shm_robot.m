@@ -8,9 +8,6 @@ global MONITOR %for sending the webots check information
   h.playerID = playerID;
   h.user = getenv('USER');
 
-%List of shms
-
-
 
 % create shm wrappers (in alphabetic order)
   h.gcmFsm  = shm(sprintf('gcmFsm%d%d%s',  h.teamNumber, h.playerID, h.user));
@@ -32,6 +29,7 @@ global MONITOR %for sending the webots check information
   h.wcmGoal  = shm(sprintf('wcmGoal%d%d%s',  h.teamNumber, h.playerID, h.user));
   h.wcmParticle  = shm(sprintf('wcmParticle%d%d%s',  h.teamNumber, h.playerID, h.user));
   %h.wcmKick
+  h.mcmUs = shm(sprintf('mcmUs%d%d%s', h.teamNumber, h.playerID, h.user));
 
 
   h.wcmTeamdata  = shm(sprintf('wcmTeamdata%d%d%s',  h.teamNumber, h.playerID, h.user));
@@ -40,6 +38,7 @@ global MONITOR %for sending the webots check information
   h.vcmRobot  = shm(sprintf('vcmRobot%d%d%s',  h.teamNumber, h.playerID, h.user)); 
 
 	h.ocmOcc = shm(sprintf('ocmOcc%d%d%s', h.teamNumber, h.playerID, h.user));
+	h.ocmObstacle = shm(sprintf('ocmObstacle%d%d%s', h.teamNumber, h.playerID, h.user));
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -59,6 +58,7 @@ global MONITOR %for sending the webots check information
   h.get_labelA = @get_labelA;
   h.get_labelB = @get_labelB;
   h.get_particle = @get_particle;
+  h.get_occ_likeihood = @get_occ_likelihood;
 
   h.set_yuyv = @set_yuyv;
   h.set_labelA = @set_labelA;
@@ -464,6 +464,19 @@ global MONITOR %for sending the webots check information
       r.free.detect = h.vcmFreespace.get_detect();
       % Add visible boundary        
 
+      % Add occupancy map
+      if r.free.detect == 1
+        r.occ = {};
+  			map = h.ocmOcc.get_map();
+        map = typecast(map, 'uint32');
+  			mapsize = sqrt(size(map,2));
+  			map = reshape(map, [mapsize, mapsize]);
+  			r.occ.map = double(map)/10000;
+  			r.occ.mapsize = mapsize;
+  			r.occ.robot_pos = h.ocmOcc.get_robot_pos();
+        r.occ.odom = h.ocmOcc.get_odom();
+        r.occ.vel = h.ocmOcc.get_vel();
+      end
       
       r.bd = {};
       bdTop = h.vcmBoundary.get_top();
@@ -475,17 +488,6 @@ global MONITOR %for sending the webots check information
                     'topx',-bdTop(1,bdCol+1:2*bdCol),...
                     'btmy',bdBtm(1,1:bdCol),...
                     'btmx',-bdBtm(1,bdCol+1:2*bdCol));
-      % Add occupancy map
-      r.occ = {};
-			map = h.ocmOcc.get_map();
-			mapsize = sqrt(size(map,2));
-			map = reshape(map, [mapsize, mapsize]);
-			map(map > 0) = 1;
-			map(map < 0) = 0;
-			r.occ.map = map;
-			r.occ.mapsize = mapsize;
-			r.occ.centroid = h.ocmOcc.get_centroid();
-
 
       % add horizon line
       r.horizon = {};
@@ -580,5 +582,21 @@ global MONITOR %for sending the webots check information
     end
     labelB = raw2label(rawData, width, height)';
   end
-end
 
+
+  function occ_p = get_occ_likelihood()
+			map = h.ocmOcc.get_map();
+      map = typecast(map, 'uint32');
+      robot_pos = h.ocmOcc.get_robot_pos();
+			mapsize = sqrt(size(map,2));
+      map_resolution = 1 / mapsize;
+			map = reshape(map, [mapsize, mapsize]);
+			occ_p = double(map) / 10000;
+      occ = {};
+      occ.map = occ_p;
+      occ.robot_pos = robot_pos;
+      occ.mapsize = mapsize;
+%      save('mapdata.mat');
+      plot_occ(occ);
+  end
+end

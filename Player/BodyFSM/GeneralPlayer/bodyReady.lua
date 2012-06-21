@@ -115,11 +115,14 @@ function update()
   obstacle_y = wcm.get_obstacle_y();
   obstacle_dist = wcm.get_obstacle_dist();
 
+
+  --Now larger rejection radius 
+  local r_reject = 1.0;
+
   for i=1,obstacle_num do
 --print(string.format("%d XYD:%.2f %.2f %.2f",
 --i,obstacle_x[i],obstacle_y[i],obstacle_dist[i]))
-    if obstacle_dist[i]<0.5 then
-      local r_reject = 0.5;
+    if obstacle_dist[i]<r_reject then
       local v_reject = 0.1*math.exp(-(obstacle_dist[i]/r_reject)^2);
       vx = vx - obstacle_x[i]/obstacle_dist[i]*v_reject;
       vy = vy - obstacle_y[i]/obstacle_dist[i]*v_reject;

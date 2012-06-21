@@ -283,7 +283,7 @@ function update()
   pack_labelB();
 
   -- Add Obstacle Info from OccMap
-  if (vcm.get_freespace_detect()>0 then
+  if vcm.get_freespace_detect()>0 then
     state.ob_num = ocm.get_ob_num();
     state.ob_centroid = ocm.get_ob_centroid();
     state.ob_angle_range = ocm.get_ob_angle_range();

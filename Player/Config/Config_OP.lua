@@ -112,8 +112,8 @@ fsm = {};
 --SJ: loading FSM config  kills the variable fsm, so should be called first
 loadconfig('FSM/Config_OP_FSM')
 fsm.game = 'RoboCup';
-fsm.head = {'GeneralPlayer'};
-fsm.body = {'GeneralPlayer'};
+fsm.head = {'GeneralPlayerObs'};
+fsm.body = {'GeneralPlayerObs'};
 
 --Behavior flags, should be defined in FSM Configs but can be overrided here
 fsm.enable_obstacle_detection = 1;
@@ -197,9 +197,10 @@ goalie_dive_waittime = 3.0; --How long does goalie lie down?
 --fsm.goalie_type = 1;--moving/move+stop/stop+dive/stop+dive+move
 --fsm.goalie_type = 2;--moving/move+stop/stop+dive/stop+dive+move
 fsm.goalie_type = 3;--moving/move+stop/stop+dive/stop+dive+move
---fsm.goalie_reposition=0; --No reposition
-fsm.goalie_reposition=1; --Yaw reposition
+fsm.goalie_reposition=0; --No reposition
+--fsm.goalie_reposition=1; --Yaw reposition
 --fsm.goalie_reposition=2; --Position reposition
+
 fsm.goalie_use_walkkick = 1; --should goalie use front walkkick?
 
 --Goalie diving detection parameters
@@ -226,17 +227,15 @@ vision.use_multi_landmark = 1;
 ------------------------------------------------------------------------
 -- Demo setting 1
 
-led_on = 0; --turn on eye led
+--led_on = 0; --turn on eye led
 
 --Slow down maximum speed (for testing)
---[[
 fsm.bodyPosition.maxStep1 = 0.06;
 fsm.bodyPosition.maxStep2 = 0.06;
 fsm.bodyPosition.maxStep3 = 0.06;
---]]
 
---Disable walkkicks and sidekicks
-fsm.enable_walkkick = 0; --Testing
+--Disable walkkicks and sidekicks 
+fsm.enable_walkkick = 0; --Testing 
 fsm.enable_sidekick = 0;
 
 --Disable diving
@@ -246,6 +245,8 @@ goalie_dive = 1; --1 for arm only, 2 for actual diving
 --Let goalie log all the ball positions
 goalie_disable_arm = 1; 
 goalie_log_balls = 1;
+goalie_log_balls = 0;
+
 
 --Slow down kick waiting time
 --[[
@@ -282,3 +283,24 @@ walk.walkKickDef["FrontRight2"]={
 }
 -------------------------------------------------------------------------
 
+
+-----------------------------------------------------------------------
+-- DEMO setting 2
+
+--Fast kick starting time
+fsm.bodyKick.tStartWait = 0.7;
+fsm.bodyKick.tStartWaitMax = 0.9;
+
+--Let goalie log balls
+goalie_log_balls = 1;
+
+fsm.goalie_type = 4;--moving/move+stop/stop+dive/stop+dive+move
+goalie_dive = 1; --1 for arm only, 2 for actual diving
+
+fsm.enable_walkkick = 1; --Enable front walkkick only
+fsm.enable_sidekick = 0;
+
+--Slow down maximum speed (for testing)
+fsm.bodyPosition.maxStep1 = 0.06;
+fsm.bodyPosition.maxStep2 = 0.06;
+fsm.bodyPosition.maxStep3 = 0.06;

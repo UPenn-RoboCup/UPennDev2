@@ -73,7 +73,8 @@ cal["jiminy"]={
   footYComp = 0,
   kickXComp = 0,
   headPitchComp = 4*math.pi/180;
-  armBias={0,12*math.pi/180,0,0,-6*math.pi/180,0},
+  armBias={0,6*math.pi/180,0,
+           0,-4*math.pi/180,0},
   pid = 1, --NEW FIRMWARE
 };
 
@@ -743,3 +744,13 @@ cal["betty"].kickXComp=0.005;
 cal["hokie"].servoBias={0,-5,-17,-13,-1,-26,0,2,34,-17,-20,5,};
 cal["hokie"].footXComp=0.002;
 cal["hokie"].kickXComp=0.000;
+
+-- Updated date: Wed Jun 20 17:54:19 2012
+cal["felix"].servoBias={12,-2,37,-31,7,-7,-6,30,-33,7,3,20,};
+cal["felix"].footXComp=0.003;
+cal["felix"].kickXComp=0.005;
+
+-- Updated date: Wed Jun 20 18:11:31 2012
+cal["felix"].servoBias={12,-2,37,-31,7,-7,-6,30,-33,7,3,20,};
+cal["felix"].footXComp=0.003;
+cal["felix"].kickXComp=0.005;

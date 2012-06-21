@@ -81,13 +81,16 @@ function update()
     kickType=2;
 
     --Check kick direction 
-    thFrontKick = 45*math.pi/180;  
-    thFrontKick2 = 135*math.pi/180;  
+    thSideKick1 = Config.fsm.thSideKick1 or 45*math.pi/180;  
+    thSideKick2 = Config.fsm.thSideKick2 or 135*math.pi/180;  
+    thDistSideKick = Config.fsm.thDistSideKick or 3.0;
 
+    ball = wcm.get_ball();
+    rBall = math.sqrt(ball.x^2+ball.y^2);
 
-
-    if math.abs(angleRot)<thFrontKick or 
-       math.abs(angleRot)>thFrontKick2 	then
+    if rBall > thDistSideKick or
+       math.abs(angleRot)<thSideKick1 or 
+       math.abs(angleRot)>thSideKick2 	then
 --print("STRAIGHT",angleRot*180/math.pi)
       kickDir=1;
       kickAngle = 0;

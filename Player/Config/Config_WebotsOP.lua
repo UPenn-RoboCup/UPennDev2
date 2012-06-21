@@ -47,6 +47,10 @@ stance.bodyTiltStance=0*math.pi/180; --bodyInitial bodyTilt, 0 for webots
 stance.dpLimitStance=vector.new({.04, .03, .07, .4, .4, .4});
 stance.dpLimitSit=vector.new({.1,.01,.06,.1,.3,.1});
 
+stance.dpLimitStance=vector.new({.04, .03, .07, .4, .9, .4});
+stance.dpLimitDive = vector.new({.04, .03, .07, .4, .9, .4});
+
+
 -- Head Parameters
 head = {};
 head.camOffsetZ = 0.37;
@@ -152,7 +156,7 @@ team.team_ball_timeout = 3.0;  --use team ball info after this delay
 team.team_ball_threshold = 0.5;
 
 team.avoid_own_team = 1;
-team.avoid_other_team = 0;
+team.avoid_other_team = 1;
 
 
 

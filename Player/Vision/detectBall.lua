@@ -31,8 +31,12 @@ check_for_ground = Config.vision.ball.check_for_ground;
 check_for_field = Config.vision.ball.check_for_field or 0;
 field_margin = Config.vision.ball.field_margin or 0;
 
+th_headAngle = Config.vision.ball.th_headAngle or -10*math.pi/180;
 
 function detect(color)
+
+  headAngle = Body.get_head_position();
+print("headPitch:",headAngle[2]*180/math.pi);
   local ball = {};
   ball.detect = 0;
   vcm.add_debug_message(string.format("\nBall: pixel count: %d\n",
@@ -94,7 +98,8 @@ function detect(color)
         vcm.add_debug_message("Height check fail\n");
         check_passed = false;
 
-      elseif check_for_ground>0 then
+      elseif check_for_ground>0 and
+        headAngle[2] < th_headAngle then
         -- ground check
         -- is ball cut off at the bottom of the image?
         local vmargin=Vision.labelA.n-ballCentroid[2];
@@ -135,6 +140,7 @@ function detect(color)
 
     if check_passed then    
       ballv = {v[1],v[2],0};
+--      ballv = {v_inf[1],v_inf[2],0};
       pose=wcm.get_pose();
       posexya=vector.new( {pose.x, pose.y, pose.a} );
       ballGlobal = util.pose_global(ballv,posexya); 

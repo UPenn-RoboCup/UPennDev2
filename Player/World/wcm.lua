@@ -102,6 +102,11 @@ if listen_monitor>0 then
   shared.teamdata.role=vector.zeros(10);
   shared.teamdata.time=vector.zeros(10);
 
+  --Latency information
+  shared.teamdata.gclatency=vector.zeros(10);
+  shared.teamdata.tmlatency=vector.zeros(10);
+
+
   shared.teamdata.posex=vector.zeros(10);
   shared.teamdata.posey=vector.zeros(10);
   shared.teamdata.posea=vector.zeros(10);

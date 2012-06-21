@@ -738,3 +738,8 @@ cal["betty"].kickXComp=0.005;
 cal["betty"].servoBias={8,-10,11,-6,20,-15,-5,6,-26,-1,-10,7,};
 cal["betty"].footXComp=0.004;
 cal["betty"].kickXComp=0.005;
+
+-- Updated date: Wed Jun 20 17:21:03 2012
+cal["hokie"].servoBias={0,-5,-17,-13,-1,-26,0,2,34,-17,-20,5,};
+cal["hokie"].footXComp=0.002;
+cal["hokie"].kickXComp=0.000;

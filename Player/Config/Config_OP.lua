@@ -87,7 +87,7 @@ elseif (robotName=='lucy') then
 elseif (robotName=='felix') then
   game.playerID = 2; 
 elseif (robotName=='jiminy') then
-  game.playerID = 3; 
+  game.playerID = 5; 
   ball_shift={-0.020,0.015};
 elseif (robotName=='hokie') then
   game.playerID = 4; 

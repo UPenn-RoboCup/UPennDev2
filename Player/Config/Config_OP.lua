@@ -259,6 +259,7 @@ fsm.bodyKick.tStartWaitMax = 1.2;
 fsm.bodyKick.tStartWait = 0.6;
 fsm.bodyKick.tStartWaitMax = 0.8;
 
+--[[
 --Power down walkkick
 walk.walkKickDef["FrontLeft"]={
   {0.30, 1, 0, 0.035 , {0,0}, 0.6, {0.06,0,0} },
@@ -283,6 +284,8 @@ walk.walkKickDef["FrontRight2"]={
   {0.40, 2, 0, 0.05 , {0.0,0.02}, 0.5,  {0.06,0,0}, {0.07,0,0} },
   {walk.tStep, 1, 1, 0.035 , {0,0}, 0.5, {0.04,0,0} },
 }
+--]]
+
 -------------------------------------------------------------------------
 
 
@@ -300,9 +303,15 @@ fsm.goalie_type = 4;--moving/move+stop/stop+dive/stop+dive+move
 goalie_dive = 1; --1 for arm only, 2 for actual diving
 
 fsm.enable_walkkick = 1; --Enable front walkkick only
-fsm.enable_sidekick = 1;
 
+--[[
 --Slow down maximum speed (for testing)
 fsm.bodyPosition.maxStep1 = 0.06;
 fsm.bodyPosition.maxStep2 = 0.06;
 fsm.bodyPosition.maxStep3 = 0.06;
+--]]
+
+-----------------------------------------------------------------------
+--Setting for match #4
+led_on = 0; --turn off eye led
+fsm.enable_sidekick = 0;

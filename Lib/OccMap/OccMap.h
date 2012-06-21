@@ -111,6 +111,7 @@ private:
 
   double default_p;
   double default_log_p;
+  double obs_log_p;
 
   int nOb;
   vector<obstacle> obs;

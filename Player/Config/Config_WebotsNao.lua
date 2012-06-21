@@ -15,6 +15,7 @@ function loadconfig(configName)
   end
 end
 
+webots = 1
 listen_monitor = 1
 param = {}
 param.world = 'World/Config_Nao_World'

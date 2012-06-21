@@ -40,9 +40,20 @@ function update()
   ballGlobal = util.pose_global({ball.x, ball.y, 0}, {pose.x, pose.y, pose.a});
   tBall = Body.get_time() - ball.t;
 
+  strat = gcm.get_team_strat();
+  strategy = strat[Config.game.playerID - 1]
+
   role = gcm.get_team_role();
   ballxy=vector.new( {ball.x,ball.y,0} );
   posexya=vector.new( {pose.x, pose.y, pose.a} );
+
+  if strategy == 2 then
+    role = 1
+  elseif strategy == 3 then
+    role = 2
+  elseif strategy == 4 then
+    role = 4
+  end
 
   ballGlobal=util.pose_global(ballxy,posexya);
   goalGlobal=wcm.get_goal_attack();

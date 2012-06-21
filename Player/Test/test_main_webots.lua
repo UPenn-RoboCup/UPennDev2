@@ -114,11 +114,13 @@ function process_keyinput()
       if strategy1 > 4 then
         strategy1 = 0
       end
+      print("Strategy One: ", strategy1, "\n")
     elseif byte==string.byte("7") then
       strategy2 = strategy2 + 1
       if strategy2 > 4 then
         strategy2 = 0
       end
+      print("Strategy Two: ", strategy2, "\n")
     elseif byte==string.byte("k") then   
       --Blue team kickoff
       if gcm.get_team_color()==0 then

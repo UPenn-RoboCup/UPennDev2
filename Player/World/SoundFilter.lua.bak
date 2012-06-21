@@ -263,28 +263,9 @@ end
 function get_sound_direction()
    -- return the filter index corresponding to the goalie
    --    -1 for unkown
-   local mv, mind = util.max(detFilter);
-   if (mv < confidenceThres) then 
-      return -1;
-   end
+   -- TODO: interpolate between bins?
 
-   -- check non-adjacent directions
-   local secondMax = 0;
-   for inc = 2,ndiv-1 do
-      local ind = mind + inc;
-      if (ind > ndiv) then
-         ind = ind - ndiv;
-      end
-      secondMax = math.max(detFilter[ind], secondMax);
-   end
-   -- check the magnitude of the second max and ensure it is not large
-   if (secondMax > .75 * mv) then
-      return -1;
-   else
-      return mind;
-   end
-
-   --[[
+   -- TODO: better determination of the sound direction
    local mv, mind = util.max(detFilter);
    if (mv < confidenceThres) then
       return -1;
@@ -319,7 +300,6 @@ function get_sound_direction()
    end
 
    return mind;
-   --]]
 end
 
 function resolve_goal_detection(gtype, vgoal)
@@ -382,9 +362,7 @@ function resolve_goal_detection(gtype, vgoal)
       local goalBeliefFromPose = which_goal_based_on_current_pose(agoal);
       -- if we think it is the attacking goal return defending (to update pose faster)
       if (goalBeliefFromPose == -1) then
-        --return 1;
-        -- don't try to predict attacing goal
-        return 0;
+         return 1;
       else
          -- otherwise use normal pose filter updates
          print('++++++++++++++++++ already have correct direction ++++++++++++++++++');

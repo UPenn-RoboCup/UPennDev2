@@ -142,7 +142,7 @@ function update()
   else
     us = vector.zeros(2)
   end
-  if ((t - t0 > 3.0) and (us[1] > 8 or us[2] > 8) and role~=1) then
+  if ((t - t0 > 2.5) and (us[1] > 5 or us[2] > 5) and role~=1) then
     return 'obstacle'; 
   end
 

@@ -25,8 +25,6 @@ walkSpeed = Config.team.walkSpeed;
 turnSpeed = Config.team.turnSpeed;
 
 
-
-
 --Player ID: 1 to 5
 --Role: 0 goalie / 1 attacker / 2 defender / 3 supporter 
 --4 reserve player / 5 reserve goalie
@@ -59,6 +57,10 @@ state.landmarkv={0,0};
 state.corner=0; --0 for non-detect, 1 for L, 2 for T
 state.cornerv={0,0};
 
+--Game state info
+state.gc_latency=0;
+state.tm_latency=0;
+
 states = {};
 states[playerID] = state;
 
@@ -67,6 +69,10 @@ states[playerID] = state;
 poses={};
 player_roles=vector.zeros(10);
 t_poses=vector.zeros(10);
+
+
+tLastMessage = 0;
+
 
 function pack_msg(state)
   --Tightly pack the state info into a short string
@@ -128,6 +134,8 @@ function recv_msgs()
       t = serialization.deserialize(msg);
 --    t = unpack_msg(Comm.receive());
       if t and (t.teamNumber) and (t.id) then
+        tLastMessage = Body.get_time();
+
 	--Messages from upenn code
 	--Keep all pose data for collison avoidance 
         if t.teamNumber ~= state.teamNumber then
@@ -234,6 +242,10 @@ function update()
   if gcm.in_penalty() then  state.penalty = 1;
   else  state.penalty = 0;
   end
+
+  --Set gamecontroller latency info
+  state.gc_latency=gcm.get_game_gc_latency();;
+  state.tm_latency=Body.get_time()-tLastMessage;
 
   --Added Vision Info 
   state.goal=0;

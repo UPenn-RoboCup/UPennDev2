@@ -41,6 +41,7 @@ function update()
   tBall = Body.get_time() - ball.t;
 
   role = gcm.get_team_role();
+  
 
   ballxy=vector.new( {ball.x,ball.y,0} );
   posexya=vector.new( {pose.x, pose.y, pose.a} );
@@ -62,100 +63,92 @@ function update()
   if (role == 2) then
     -- defend
     goalDefend = wcm.get_goal_defend();
-    targetPosition = goalDefend - 0.5*(goalDefend - ballGlobal);
+    homePosition = goalDefend - 0.5*(goalDefend - ballGlobal);
   
     --homePosition = .6 * ballGlobal;
     --homePosition[1] = homePosition[1] - 0.50*util.sign(homePosition[1]);
-    targetPosition[2] = targetPosition[2] - 0.80*util.sign(targetPosition[2]);
-
-    ballRepulsion = 2; 
-    targetAttraction = 1;
-    ballExtent = 1.5;
+    homePosition[2] = homePosition[2] - 0.80*util.sign(homePosition[2]);
 
   elseif (role == 3) then
     -- support
     attackGoalPosition = vector.new(wcm.get_goal_attack());
 
+    --[[
+    homePosition = ballGlobal;
+    homePosition[1] = homePosition[1] + 0.75*util.sign(homePosition[1]);
+    homePosition[1] = util.sign(homePosition[1])*math.min(2.0, math.abs(homePosition[1]));
+    homePosition[2] = 
+    --]]
+
     -- move near attacking goal
-    targetPosition = attackGoalPosition;
+    homePosition = attackGoalPosition;
     -- stay in the field (.75 m from end line)
-    targetPosition[1] = targetPosition[1] - util.sign(targetPosition[1]) * 1.0;
+    homePosition[1] = homePosition[1] - util.sign(homePosition[1]) * 1.0;
     -- go to far post (.75 m from center)
-    if math.abs(ballGlobal[2]) < 1.0 then
-      targetPosition[2] = util.sign(pose.y) * .75;
-    else  
-      targetPosition[2] = -1*util.sign(ballGlobal[2]) * .75;
-    end
+    homePosition[2] = -1*util.sign(ballGlobal[2]) * .75;
+
+    -- ++++++++++++++++++++++++++++++++++++++++++++++++++
+    -- Potential Field
+
+    --[[
+
+    local ballRepulsionSup = 8; --1.5 defender, 2 supporter
+    local homeAttractionSup = 2;
+
+    -- S = R (ball.x,ball.y) + A(goalAttack.x - util.sign(goalAttack.x), -1 * util.sign(goalAttack.y) * 1.5 )
+    --   = R (ball.x,ball.y) + A(homePosition[1] , homePosition[2] )
+
+    -- A[1] = math.max ( -s, math.min(d,s)*cos(theta))
+    -- A[2] = math.max ( -s, math.min(d,s)*sin(theta))
+    -- R[1] = -1 * math.max ( s-d, 0 ) * cos (theta)
+    -- R[2] = -1 * math.max ( s-d, 0 ) * sin (theta)
+        
+    -- sink at homePosition
+    homePostitionR = math.sqrt((pose.x - ball.x)^2 + (pose.y - ball.y)^2);
+    aHomePosition = math.atan2 ( homePosition[1] - pose.x, homePosition[2] - pose.y ) ;
+
+    A = vector.zeros(2);
+    A[1] = math.max ( -homeAttractionSup, math.min(homePostitionR,homeAttractionSup)*math.cos(aHomePosition));
+    A[2] = math.max ( -homeAttractionSup, math.min(homePostitionR,homeAttractionSup)*math.sin(aHomePosition));
+
+    -- source at ball
+    R = vector.zeros(2);
+    R[1] = -1 * math.max ( ballRepulsionSup-ballR, 0 ) * math.cos (aBall);
+    R[2] = -1 * math.max ( ballRepulsionSup-ballR, 0 ) * math.sin (aBall);
+
+    print('');
+    util.ptable(A[1]);
+    util.ptable(R);
+
+    --]]
+    -- ++++++++++++++++++++++++++++++++++++++++++++++++++
 
     -- face ball 
-    targetPosition[3] = ballGlobal[3];
-
-    ballRepulsion = 8; 
-    targetAttraction = 1;
-    ballExtent = 1.5;
+    homePosition[3] = ballGlobal[3];
 
 
   else
     -- attack
     if math.abs(angle1)<math.pi/2 then
       rDist=math.min(rDist1,math.max(rDist2,ballR-rTurn2));
-      targetPosition={
+      homePosition={
         ballGlobal[1]-math.cos(aGoal)*rDist,
         ballGlobal[2]-math.sin(aGoal)*rDist,
         aGoal};
     elseif angle1>0 then
-      targetPosition={
+      homePosition={
         ballGlobal[1]+math.cos(-aBall+math.pi/2)*rOrbit,
         ballGlobal[2]-math.sin(-aBall+math.pi/2)*rOrbit,
         aBall};
 
     else
-      targetPosition={
+      homePosition={
         ballGlobal[1]+math.cos(-aBall-math.pi/2)*rOrbit,
         ballGlobal[2]-math.sin(-aBall-math.pi/2)*rOrbit,
         aBall};
     end  
-
-    ballRepulsion = 0; -- \leq 0 
-    targetAttraction = 1;
-    ballExtent = 8;
-
   end
 
-
-  -- ++++++++++++++++++++++++++++++++++++++++++++++++++
-    -- Potential Field
-    print(targetPosition);
-
-    -- sink at targetPosition
-    targetPositionR = math.sqrt((pose.x - targetPosition[1])^2 + (pose.y - targetPosition[2])^2);
-    aTargetPosition = math.atan2 ( targetPosition[2] - pose.y, targetPosition[1] - pose.x ) ;
-
-    targetPositionRelative = util.pose_relative(targetPosition, {pose.x, pose.y, pose.a});
-    targetPosition = targetPositionRelative;
-
-    A = vector.zeros(2);
-    A[1] = targetAttraction * targetPositionR * math.cos(aTargetPosition);
-    A[2] = targetAttraction * targetPositionR * math.sin(aTargetPosition);
-
-    -- source or sink at ball
-    R = vector.zeros(2);
-    R[1] = ballRepulsion * (-1) * math.max ( ballExtent-ballR, 0 ) * math.cos (aBall);
-    R[2] = ballRepulsion * (-1) * math.max ( ballExtent-ballR, 0 ) * math.sin (aBall);
-
-    S = vector.zeros(2);
-    S = A + R; -- relative velocity
-
- --[[
-    homePosition = vector.zeros(3);  
-    homePosition[1] = S[1];
-    homePosition[2] = S[2];
-    homePosition[3] = targetPosition[3];
-
-    
-    -- ++++++++++++++++++++++++++++++++++++++++++++++++++
-
- 
   -- do not go into own penalty box
   if (gcm.get_team_color() == 1) then
     -- red
@@ -164,20 +157,13 @@ function update()
     -- blue
     homePosition[1] = math.max(homePosition[1], -2.2);
   end
---]]
-  --homeRelative = util.pose_relative(homePosition, {pose.x, pose.y, pose.a});
-  --rHomeRelative = math.sqrt(homeRelative[1]^2 + homeRelative[2]^2);
-  rS = math.sqrt(S[1]^2 + S[2]^2);
 
-  --vx = maxStep*homeRelative[1]/(rHomeRelative + 0.1);
-  --vy = maxStep*homeRelative[2]/(rHomeRelative + 0.1);
-  vx = maxStep*S[1]/(rS + 0.1);
-  vy = maxStep*S[2]/(rS + 0.1);
+  homeRelative = util.pose_relative(homePosition, {pose.x, pose.y, pose.a});
+  rHomeRelative = math.sqrt(homeRelative[1]^2 + homeRelative[2]^2);
+
+  vx = maxStep*homeRelative[1]/(rHomeRelative + 0.1);
+  vy = maxStep*homeRelative[2]/(rHomeRelative + 0.1);
   va = .5*math.atan2(ball.y, math.max(ball.x + 0.05,0.05));
-  
-  print(vx..' , '..vy);
-
-  -- 
 
   walk.set_velocity(vx, vy, va);
   ballR = math.sqrt(ball.x^2 + ball.y^2);

@@ -191,7 +191,7 @@ function plot_overlay(r_mon,scale,drawlevel)
     if (scale == 4)
       X = free.Bx;
       Y = free.By;
-      plot(X,Y,'m--','LineWidth',2);
+      plot(X,Y,'mo','LineWidth',2);
    else
       %X = free.Ax;
       %Y = free.Ay;

@@ -15,10 +15,7 @@ end
 
 --Robot CFG should be loaded first to set PID values
 local robotName=unix.gethostname();
-has_claw = 0;
-if (robotName=='sally') then has_claw = 1;end
-
-if has_claw>0 then
+if (robotName=='sally') then 
 --  loadconfig('Robot/Config_OPGripper_Robot') 
   loadconfig('Robot/Config_OPSally_Robot') 
   loadconfig('Walk/Config_OP_Walk')
@@ -29,8 +26,11 @@ else
   loadconfig('Walk/Config_OP_Walk')
 end
 
+
+
 loadconfig('World/Config_OP_World')
-loadconfig('Kick/Config_OP_Kick')
+--loadconfig('Kick/Config_OP_Kick')
+loadconfig('Kick/Config_OP_Kick_Slow')
 --loadconfig('Kick/Config_OP_Kick3')
 loadconfig('Vision/Config_OP_Vision')
 
@@ -38,7 +38,12 @@ loadconfig('Vision/Config_OP_Vision')
 --loadconfig('Vision/Config_OP_Camera_VT')
 --loadconfig('Vision/Config_OP_Camera_L512')
 --loadconfig('Vision/Config_OP_Camera_L512_Day')
-loadconfig('Vision/Config_OP_Camera_Grasp')
+--loadconfig('Vision/Config_OP_Camera_RC12_day0')
+--loadconfig('Vision/Config_OP_Camera_RC12_day1_8AM')
+loadconfig('Vision/Config_OP_Camera_RC12_FieldD')
+--loadconfig('Vision/Config_OP_Camera_Ob_F1')
+
+--loadconfig('Vision/Config_OP_Camera_Grasp')
 
 -- Device Interface Libraries
 dev = {};
@@ -46,10 +51,12 @@ dev.body = 'OPBody';
 dev.camera = 'OPCam';
 dev.kinematics = 'OPKinematics';
 dev.ip_wired = '192.168.123.255';
-dev.ip_wireless = '192.168.1.255';
+dev.ip_wireless = '192.168.117.255';
+dev.ip_wireless_port = 54321;
 dev.game_control='OPGameControl';
 dev.team='TeamNSL';
-dev.walk='NewNewNewWalk';
+--dev.walk='NewNewNewWalk';
+dev.walk='NewNewNewNewNewWalk';
 dev.kick = 'NewNewKick'
 dev.gender = 1; -- 1 for body and 0 for girl 
 
@@ -58,7 +65,7 @@ speak.enable = false;
 
 -- Game Parameters
 game = {};
-game.teamNumber = 18;
+game.teamNumber = 17;
 --game.teamNumber = 26;
 
 --Default role: 0 for goalie, 1 for attacker, 2 for defender
@@ -66,21 +73,24 @@ game.teamNumber = 18;
 dev.gender = 1;
 game.role = 1; --Default attacker
 
+ball_shift={0,0};
+
 if (robotName=='scarface') then
   game.playerID = 1; 
 elseif (robotName=='linus') then
   game.playerID = 2; 
 elseif (robotName=='betty') then
   game.playerID = 3; 
+  ball_shift={-0.010,0.010};
 elseif (robotName=='lucy') then
-  game.playerID = 4; 
+  game.playerID = 1; 
 elseif (robotName=='felix') then
-  game.playerID = 3; 
+  game.playerID = 2; 
 elseif (robotName=='jiminy') then
-  game.playerID = 4; 
-
+  game.playerID = 3; 
+  ball_shift={-0.020,0.015};
 elseif (robotName=='hokie') then
-  game.playerID = 5; 
+  game.playerID = 4; 
   game.role = 0; --Default goalie
 elseif (robotName=='sally') then
   game.playerID = 5; 
@@ -91,8 +101,8 @@ end
 game.role = 1;--hack
 
 --Default team: 0 for blue, 1 for red  
-game.teamColor = 0; --Blue team
---game.teamColor = 1; --Red team
+--game.teamColor = 0; --Blue team
+game.teamColor = 1; --Red team
 game.robotName = robotName;
 game.robotID = game.playerID;
 game.nPlayers = 5;
@@ -103,16 +113,16 @@ fsm = {};
 --SJ: loading FSM config  kills the variable fsm, so should be called first
 loadconfig('FSM/Config_OP_FSM')
 fsm.game = 'RoboCup';
-fsm.head = {'GeneralPlayer'};
-fsm.body = {'GeneralPlayer'};
+fsm.head = {'GeneralPlayerObs'};
+fsm.body = {'GeneralPlayerObs'};
 
 --Behavior flags, should be defined in FSM Configs but can be overrided here
 fsm.enable_obstacle_detection = 1;
 fsm.kickoff_wait_enable = 0;
 fsm.playMode = 3; --1 for demo, 2 for orbit, 3 for direct approach
 fsm.forcePlayer = 0; --1 for attacker, 2 for defender, 3 for goalie 
-fsm.enable_walkkick = 1; --Testing
-fsm.enable_sidekick = 1;
+fsm.enable_walkkick = 0; --Testing
+fsm.enable_sidekick = 0;
 fsm.daPost_check = 1; --aim to the side when close to the ball
 fsm.daPostmargin = 15*math.pi/180;
 fsm.variable_dapost = 1;
@@ -124,7 +134,8 @@ fsm.fast_approach = 0;
 
 --1 for randomly doing evade kick
 --2 for using obstacle information
-fsm.enable_evade = 0;
+--fsm.enable_evade = 0;
+fsm.enable_evade = 2;
 
 -- Team Parameters
 team = {};
@@ -161,6 +172,12 @@ km.standup_front = 'km_NSLOP_StandupFromFront.lua';
 km.standup_back = 'km_NSLOP_StandupFromBack.lua';
 --km.standup_back = 'km_NSLOP_StandupFromBack3.lua';
 
+
+if (robotName=='sally') then 
+  km.standup_front = 'km_NSLOP_StandupFromFrontSally.lua'; 
+  km.standup_back = 'km_NSLOP_StandupFromBackSally.lua';
+end
+
 if (robotName=='hokie') then
 --  km.standup_back = 'km_NSLOP_StandupFromBackHokie.lua';
 end
@@ -182,9 +199,10 @@ goalie_dive_waittime = 3.0; --How long does goalie lie down?
 --fsm.goalie_type = 1;--moving/move+stop/stop+dive/stop+dive+move
 --fsm.goalie_type = 2;--moving/move+stop/stop+dive/stop+dive+move
 fsm.goalie_type = 3;--moving/move+stop/stop+dive/stop+dive+move
---fsm.goalie_reposition=0; --No reposition
-fsm.goalie_reposition=1; --Yaw reposition
+fsm.goalie_reposition=0; --No reposition
+--fsm.goalie_reposition=1; --Yaw reposition
 --fsm.goalie_reposition=2; --Position reposition
+
 fsm.goalie_use_walkkick = 1; --should goalie use front walkkick?
 
 --Goalie diving detection parameters
@@ -202,9 +220,89 @@ speakenable = false;
 fallAngle = 50*math.pi/180;
 falling_timeout = 0.3;
 
---[[
+led_on = 0; --turn off eye led
+led_on = 1; --turn on eye led
+
+--New multi-blob landmark detection code
+vision.use_multi_landmark = 1;
+
+------------------------------------------------------------------------
+-- Demo setting 1
+
+--led_on = 0; --turn on eye led
+
 --Slow down maximum speed (for testing)
-fsm.bodyPosition.maxStep1 = 0.05;
+fsm.bodyPosition.maxStep1 = 0.06;
 fsm.bodyPosition.maxStep2 = 0.06;
 fsm.bodyPosition.maxStep3 = 0.06;
+
+--Disable walkkicks and sidekicks 
+fsm.enable_walkkick = 0; --Testing 
+fsm.enable_sidekick = 0;
+
+--Disable diving
+fsm.goalie_type = 3;--moving/move+stop/stop+dive/stop+dive+move
+goalie_dive = 1; --1 for arm only, 2 for actual diving
+
+--Let goalie log all the ball positions
+goalie_disable_arm = 1; 
+goalie_log_balls = 1;
+goalie_log_balls = 0;
+
+
+--Slow down kick waiting time
+--[[
+fsm.bodyKick.tStartWait = 1.0;
+fsm.bodyKick.tStartWaitMax = 1.2;
 --]]
+
+fsm.bodyKick.tStartWait = 0.6;
+fsm.bodyKick.tStartWaitMax = 0.8;
+
+--Power down walkkick
+walk.walkKickDef["FrontLeft"]={
+  {0.30, 1, 0, 0.035 , {0,0}, 0.6, {0.06,0,0} },
+  {0.40, 2, 1, 0.05 , {0.02,-0.02}, 0.5, {0.06,0,0}, {0.07,0,0} },
+  {walk.tStep, 1, 0, 0.035 , {0,0}, 0.5, {0.04,0,0} },
+}
+walk.walkKickDef["FrontRight"]={
+  {0.30, 1, 1, 0.035 , {0,0}, 0.4, {0.06,0,0} },
+  {0.40, 2, 0, 0.05 , {0.02,0.02}, 0.5,  {0.06,0,0}, {0.07,0,0} },
+  {walk.tStep, 1, 1, 0.035 , {0,0}, 0.5, {0.04,0,0} },
+}
+--Close-range walkkick (step back and then walkkick)
+walk.walkKickDef["FrontLeft2"]={
+  {0.30, 1, 1, 0.035 , {0,0}, 0.4, {-0.06,0,0} },
+  {0.30, 1, 0, 0.035 , {0.02,0}, 0.6, {0.06,0,0} },
+  {0.40, 2, 1, 0.05 , {0.0,-0.02}, 0.5, {0.06,0,0}, {0.07,0,0} },
+  {walk.tStep, 1, 0, 0.035 , {0,0}, 0.5, {0.04,0,0} },
+}
+walk.walkKickDef["FrontRight2"]={
+  {0.30, 1, 0, 0.035 , {0,0}, 0.6, {-0.06,0,0} },
+  {0.30, 1, 1, 0.035 , {0.02,0}, 0.4, {0.06,0,0} },
+  {0.40, 2, 0, 0.05 , {0.0,0.02}, 0.5,  {0.06,0,0}, {0.07,0,0} },
+  {walk.tStep, 1, 1, 0.035 , {0,0}, 0.5, {0.04,0,0} },
+}
+-------------------------------------------------------------------------
+
+
+-----------------------------------------------------------------------
+-- DEMO setting 2
+
+--Fast kick starting time
+fsm.bodyKick.tStartWait = 0.7;
+fsm.bodyKick.tStartWaitMax = 0.9;
+
+--Let goalie log balls
+goalie_log_balls = 1;
+
+fsm.goalie_type = 4;--moving/move+stop/stop+dive/stop+dive+move
+goalie_dive = 1; --1 for arm only, 2 for actual diving
+
+fsm.enable_walkkick = 1; --Enable front walkkick only
+fsm.enable_sidekick = 1;
+
+--Slow down maximum speed (for testing)
+fsm.bodyPosition.maxStep1 = 0.06;
+fsm.bodyPosition.maxStep2 = 0.06;
+fsm.bodyPosition.maxStep3 = 0.06;

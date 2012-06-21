@@ -184,8 +184,8 @@ function entry()
 
   --Place arms in appropriate position at sides
   Body.set_larm_command(qLArm0);
-  Body.set_larm_hardness(hardnessArm);
   Body.set_rarm_command(qRArm0);
+  Body.set_larm_hardness(hardnessArm);
   Body.set_rarm_hardness(hardnessArm);
 
   walkKickRequest = 0;
@@ -615,7 +615,9 @@ function motion_arms()
   local qLArmActual={};   
   local qRArmActual={};   
 
-  if current_step_type== 3 then --Side kick, wide arm stance
+--  if current_step_type== 3 then --Side kick, wide arm stance
+  if false then --Side kick, wide arm stance
+
     qLArmActual[1],qLArmActual[2]=qLArmKick0[1]+armShift[1],qLArmKick0[2]+armShift[2];
     qRArmActual[1],qRArmActual[2]=qRArmKick0[1]+armShift[1],qRArmKick0[2]+armShift[2];
   else --Normal arm stance
@@ -623,10 +625,33 @@ function motion_arms()
     qRArmActual[1],qRArmActual[2]=qRArm0[1]+armShift[1],qRArm0[2]+armShift[2];
   end
 
+  --Make arm narrower
+--[[
   qLArmActual[2]=math.max(8*math.pi/180,qLArmActual[2])
   qRArmActual[2]=math.min(-8*math.pi/180,qRArmActual[2]);
   qLArmActual[3]=qLArm0[3];
   qRArmActual[3]=qRArm0[3];
+--]]
+
+  --Check leg hitting
+  RotLeftA =  util.mod_angle(uLeft[3] - uTorso[3]);
+  RotRightA =  util.mod_angle(uTorso[3] - uRight[3]);
+
+  LLegTorso = util.pose_relative(uLeft,uTorso);
+  RLegTorso = util.pose_relative(uRight,uTorso);
+
+  qLArmActual[2]=math.max(
+	2*math.pi/180 + math.max(0, RotLeftA)/2
+	+ math.max(0,LLegTorso[2] - 0.04) /0.02 * 6*math.pi/180
+	,qLArmActual[2])
+  qRArmActual[2]=math.min(
+	-2*math.pi/180 - math.max(0, RotRightA)/2
+	- math.max(0,-RLegTorso[2] - 0.04)/0.02 * 6*math.pi/180
+	,qRArmActual[2]);
+  qLArmActual[3]=qLArm0[3];
+  qRArmActual[3]=qRArm0[3];
+
+
 
   if upper_body_overridden>0 or motion_playing>0 then
     Body.set_larm_command(qLArmOR);
@@ -838,6 +863,9 @@ function startMotion(motionname)
       bodyRot1 = bodyRot0;
     end
 
+    Body.set_larm_hardness({0.7,0.7,0.7});
+    Body.set_rarm_hardness({0.7,0.7,0.7});
+
   end
 end
 
@@ -851,6 +879,9 @@ function advanceMotion()
   if ph>1 then --Advance frame
     if #current_motion == motion_index then
       motion_playing = 0;
+      Body.set_larm_hardness(hardnessArm);
+      Body.set_rarm_hardness(hardnessArm);
+
     else
       motion_index = motion_index + 1;
       motion_start_time = t;

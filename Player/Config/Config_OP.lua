@@ -134,7 +134,8 @@ fsm.fast_approach = 0;
 
 --1 for randomly doing evade kick
 --2 for using obstacle information
-fsm.enable_evade = 0;
+--fsm.enable_evade = 0;
+fsm.enable_evade = 2;
 
 -- Team Parameters
 team = {};
@@ -299,7 +300,7 @@ fsm.goalie_type = 4;--moving/move+stop/stop+dive/stop+dive+move
 goalie_dive = 1; --1 for arm only, 2 for actual diving
 
 fsm.enable_walkkick = 1; --Enable front walkkick only
-fsm.enable_sidekick = 0;
+fsm.enable_sidekick = 1;
 
 --Slow down maximum speed (for testing)
 fsm.bodyPosition.maxStep1 = 0.06;

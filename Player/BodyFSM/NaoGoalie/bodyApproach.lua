@@ -71,7 +71,7 @@ function update()
   if (math.abs(attackBearing) > thAlign) then
     return 'ballAlign';
   end
-  if ((ball.x < xKick) and (math.abs(ball.y) < yKickMax) and
+  if ((ball.x < xKick) and (ball.x > 0) and (math.abs(ball.y) < yKickMax) and
       (math.abs(ball.y) > yKickMin)) then
     return "kick";
   end

@@ -61,7 +61,7 @@ function update()
   if (role == 2) then
     -- defend
     goalDefend = wcm.get_goal_defend();
-    homePosition = goalDefend - 0.6*(goalDefend - ballGlobal);
+    homePosition = goalDefend - 0.5*(goalDefend - ballGlobal);
   
     --homePosition = .6 * ballGlobal;
     --homePosition[1] = homePosition[1] - 0.50*util.sign(homePosition[1]);
@@ -142,7 +142,7 @@ function update()
   else
     us = vector.zeros(2)
   end
-  if ((t - t0 > 3.0) and (us[1] > 8 or us[2] > 8)) then
+  if ((t - t0 > 3.0) and (us[1] > 8 or us[2] > 8) and role~=1) then
     return 'obstacle'; 
   end
 

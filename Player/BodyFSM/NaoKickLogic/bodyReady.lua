@@ -47,8 +47,8 @@ function update()
     elseif (id == 3) then
       -- defender
       home = wcm.get_goal_defend();
-      home[1] = util.sign(home[1]) * 1.5;
-      home[2] = -0.5;
+      home[1] = util.sign(home[1]) * 2;
+      home[2] = -0.75;
     else
       -- support
       home = wcm.get_goal_defend();
@@ -67,12 +67,12 @@ function update()
       -- defender
       home = wcm.get_goal_defend();
       home[1] = util.sign(home[1]) * 1.75;
-      home[2] = 1.0;
+      home[2] = 1.25;
     else
       -- support
       home = wcm.get_goal_defend();
       home[1] = util.sign(home[1]) * 1.75;
-      home[2] = -1.0;
+      home[2] = -1.25;
     end
   end
 

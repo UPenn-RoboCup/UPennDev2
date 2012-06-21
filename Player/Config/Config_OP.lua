@@ -113,8 +113,8 @@ fsm = {};
 --SJ: loading FSM config  kills the variable fsm, so should be called first
 loadconfig('FSM/Config_OP_FSM')
 fsm.game = 'RoboCup';
-fsm.head = {'GeneralPlayerObs'};
-fsm.body = {'GeneralPlayerObs'};
+fsm.head = {'GeneralPlayer'};
+fsm.body = {'GeneralPlayer'};
 
 --Behavior flags, should be defined in FSM Configs but can be overrided here
 fsm.enable_obstacle_detection = 1;

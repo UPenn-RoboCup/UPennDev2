@@ -9,6 +9,7 @@ require('serialization');
 
 require('wcm');
 require('gcm');
+require('ocm');
 
 Comm.init(Config.dev.ip_wireless,Config.dev.ip_wireless_port);
 print('Receiving Team Message From',Config.dev.ip_wireless);
@@ -280,6 +281,14 @@ function update()
 
   --Send lableB wirelessly!
   pack_labelB();
+
+  -- Add Obstacle Info from OccMap
+  if (vcm.get_freespace_detect()>0 then
+    state.ob_num = ocm.get_ob_num();
+    state.ob_centroid = ocm.get_ob_centroid();
+    state.ob_angle_range = ocm.get_ob_angle_range();
+    state.ob_nearest = ocm.get_ob_nearest();
+  end
     
   if (math.mod(count, 1) == 0) then
 

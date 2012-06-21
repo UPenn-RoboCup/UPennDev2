@@ -58,7 +58,7 @@ function h=show_monitor()
 	'Units','Normalized', 'Position',[.02 .56 .07 .07],'Callback',@button13);
 
       for i=1:5
-        MONITOR.infoTexts(i)=uicontrol('Style','text',...
+        MONITOR.infoTexts(i)=uicontrol('Style','text','FontSize',16,...
 	'Units','Normalized', 'Position',[0.92 0.94-0.17*i 0.08 0.15]);
       end
 
@@ -368,8 +368,11 @@ function h=show_monitor()
           MONITOR.deadcount(i) = 0;
         end
 
+deadcount_threshold = 50;
+
+
 %        if MONITOR.deadcount(i) < 20 % ~2 sec interval until turning off
-        if MONITOR.deadcount(i) < 50 % ~5 sec interval until turning off
+        if MONITOR.deadcount(i) < deadcount_threshold % ~5 sec interval until turning off
 
           h_c=subplot(5,5,[6:20]);
           plot_robot( r_struct, [],2,5,r_struct.robotName);
@@ -391,7 +394,7 @@ function h=show_monitor()
 %          infostr2 = sprintf('%s\nDC:%d',MONITOR.deadcount(i));
 %          set(MONITOR.infoTexts(i),'String',infostr2);
 
-        elseif MONITOR.deadcount(i)==20 %Clear vision at 20
+        elseif MONITOR.deadcount(i)==deadcount_threshold
           labelB = robot_team.get_labelB_wireless(i);
   	  if i<6 
             h1=subplot(5,5,i);
@@ -440,6 +443,16 @@ function h=show_monitor()
             h1=subplot(5,5,i*5);
 	    labelB = robot_team.get_labelB_wireless(i);
             plot_label(labelB);
+
+	    %SHOW whether the robot is inactive
+            role=r_struct.role;
+	    if role==5
+	      b_name=text(10,30, 'W_GOALIE');
+	      set(b_name,'FontSize',28,'Color','r');
+	    elseif role==4
+	      b_name=text(10,30, 'W_PLAYER');
+	      set(b_name,'FontSize',28,'Color','r');
+            end
 	  else
             h1=subplot(5,5,i+15);
 	    labelB = robot_team.get_labelB_wireless(i);
@@ -449,14 +462,12 @@ function h=show_monitor()
           [infostr textcolor]=robot_info(r_struct,[],3,r_struct.robotName);
 
 
-
-
 %          set(MONITOR.infoTexts(i),'String',infostr);
 
           infostr2 = sprintf('%s\n DC:%d\n',infostr,MONITOR.deadcount(i));
           set(MONITOR.infoTexts(i),'String',infostr2);
 
-        elseif MONITOR.deadcount(i)==20 %Clear vision at 20
+        elseif MONITOR.deadcount(i)==50 %Clear vision at 20
           labelB = robot_team.get_labelB_wireless(i);
           h1=subplot(5,5,i*5);
           plot_label(labelB*0);

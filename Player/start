@@ -43,6 +43,7 @@ run_player(){
   screen $SCREEN_FLAGS player $LUA_COM run_main_op.lua
   
   echo "Rock and Roll!"
+  screen -ls
 }
 
 run_obplay(){
@@ -58,6 +59,7 @@ run_obplay(){
   screen $SCREEN_FLAGS player $LUA_COM run_main_op.lua
   
   echo "Rock and Roll!"
+  screen -ls
 }
 
 run_demo(){
@@ -77,6 +79,7 @@ run_visiontest(){
   screen -m -L -S test $LUA_COM test_vision.lua
   #
   echo "Rock and Roll!"
+  screen -ls
 }
 
 run_obstacle(){
@@ -92,6 +95,7 @@ run_obstacle(){
   screen -m -L -S test $LUA_COM test_vision.lua
   #
   echo "Rock and Roll!"
+  screen -ls
 }
 
 run_bias(){

@@ -793,3 +793,18 @@ cal["scarface"].kickXComp=0.005;
 cal["scarface"].servoBias={0,0,6,50,30,15,0,0,-20,-32,-21,1,};
 cal["scarface"].footXComp=-0.005;
 cal["scarface"].kickXComp=0.005;
+
+-- Updated date: Thu Jun 21 13:53:36 2012
+cal["betty"].servoBias={8,-10,21,-23,36,-11,-5,6,-31,2,-40,14,};
+cal["betty"].footXComp=0.000;
+cal["betty"].kickXComp=0.005;
+
+-- Updated date: Thu Jun 21 15:18:28 2012
+cal["betty"].servoBias={8,-10,21,-23,36,-11,-5,6,-31,-83,-28,6,};
+cal["betty"].footXComp=0.016;
+cal["betty"].kickXComp=0.005;
+
+-- Updated date: Thu Jun 21 15:33:21 2012
+cal["betty"].servoBias={8,-10,21,-77,29,-11,-5,6,-31,-16,-34,6,};
+cal["betty"].footXComp=0.002;
+cal["betty"].kickXComp=0.000;

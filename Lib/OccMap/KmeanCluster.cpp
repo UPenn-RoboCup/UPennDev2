@@ -18,7 +18,7 @@ int OccMap::kmean_clustering(void) {
   vector<int> cluster;
   int i = 0, j = 0;
   for (int cnt = 0; cnt < grid_num; cnt++) {
-    if (grid[cnt] > default_log_p) {
+    if (grid[cnt] > obs_log_p) {
       i = cnt % map_size;
       j = (cnt - i) / map_size;
       grid_ij new_pt = {i, j, grid[cnt]};

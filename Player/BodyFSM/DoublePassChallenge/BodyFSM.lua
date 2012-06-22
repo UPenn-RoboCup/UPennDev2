@@ -13,6 +13,7 @@ require('bodyOrbit')
 require('bodyApproach')
 require('bodyDribble')
 require('bodyPass')
+require('bodyPassCheck')
 require('bodyTask')
 
 sm = fsm.new(bodyIdle);
@@ -27,6 +28,8 @@ sm:add_state(bodyOrbit);
 sm:add_state(bodyApproach);
 sm:add_state(bodyDribble);
 sm:add_state(bodyPass);
+sm:add_state(bodyPassCheck);
+
 sm:add_state(bodyTask);
 
 sm:set_transition(bodyStart, 'done', bodyTask);
@@ -40,8 +43,17 @@ sm:set_transition(bodyGetPosition, 'done', bodyTask);
 
 -- Chase after the ball
 sm:set_transition(bodyChase, 'ballLost', bodySearch);
-sm:set_transition(bodyChase, 'ballClose', bodyOrbit);
+--sm:set_transition(bodyChase, 'ballClose', bodyOrbit);
+sm:set_transition(bodyChase, 'ballClose', bodyDribble);
 sm:set_transition(bodyChase, 'timeout', bodyChase);
+
+
+-- Dribble the ball to target position
+sm:set_transition(bodyDribble, 'done', bodyOrbit);
+sm:set_transition(bodyDribble, 'ballFar', bodyChase);
+sm:set_transition(bodyDribble, 'ballLost', bodySearch);
+
+
 
 -- Orbit around the ball
 sm:set_transition(bodyOrbit, 'timeout', bodyChase);
@@ -64,8 +76,14 @@ sm:set_transition(bodySearch, 'ball', bodyChase);
 sm:set_transition(bodySearch, 'timeout', bodySearch);
 
 -- Pass the ball
-sm:set_transition(bodyPass, 'timeout', bodyTask);
-sm:set_transition(bodyPass, 'done', bodyTask);
+sm:set_transition(bodyPass, 'timeout', bodyPassCheck);
+sm:set_transition(bodyPass, 'done', bodyPassCheck);
+
+--Make sure we did kick the ball
+sm:set_transition(bodyPassCheck, 'again', bodyApproach);
+sm:set_transition(bodyPassCheck, 'done', bodyTask);
+
+
 
 -- If you fall, what do you do?
 sm:set_transition(bodyGetPosition, 'fall', bodyGetPosition);

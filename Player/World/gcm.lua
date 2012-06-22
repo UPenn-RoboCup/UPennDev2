@@ -37,6 +37,7 @@ shared.team.forced_role = vector.zeros(1); --for role testing
 --for double pass
 shared.team.task_state = vector.zeros(2); 
 shared.team.target = vector.zeros(3);
+shared.team.balltarget = vector.zeros(3);
 
 shared.fsm = {};
 shared.fsm.body_state = '';

@@ -74,6 +74,8 @@ shared.image.fovBL=vector.zeros(2);
 shared.image.fovBR=vector.zeros(2);
 shared.image.fovC=vector.zeros(2);
 
+shared.image.learn_lut = vector.zeros(1);
+
 shared.ball = {};
 shared.ball.detect = vector.zeros(1);
 shared.ball.centroid = vector.zeros(2); --in pixels, (x,y), of camera image

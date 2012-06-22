@@ -126,6 +126,9 @@ function entry()
   else
     camera_init();
   end 
+
+  -- in default, use prelearned colortable
+  vcm.set_image_learn_lut(0);
 end
 
 function camera_init()
@@ -204,6 +207,8 @@ function update()
     exit()
   end
 
+
+
   -- perform the initial labeling
   if(webots) then
     labelA.data = Camera.get_labelA( carray.pointer(camera.lut) );
@@ -230,6 +235,15 @@ function update()
 
   -- Obstacle labels
   labelB.data_obs = ImageProc.block_bitor_obs(labelA.data_obs, labelA.m, labelA.n, scaleB, scaleB);
+
+  -- Learn ball color from mask and rebuild colortable
+  if vcm.get_image_learn_lut() == 1 then
+    print("learn new colortable for random ball from mask");
+    vcm.set_image_learn_lut(0);
+    mask = ImageProc.label_to_mask(labelA.data_obs, labelA.m, labelA.n);
+    lut_update = ImageProc.mask_to_lut(vcm.get_image_yuyv(), mask, labelA.m, labelA.n);
+    print(type(mask),type(labelB.data))
+  end
 
   vcm.refresh_debug_message();
   Detection.update();

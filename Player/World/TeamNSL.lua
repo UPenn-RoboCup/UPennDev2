@@ -244,7 +244,7 @@ function update()
   end
 
   --Set gamecontroller latency info
-  state.gc_latency=gcm.get_game_gc_latency();;
+  state.gc_latency=gcm.get_game_gc_latency();
   state.tm_latency=Body.get_time()-tLastMessage;
 
   --Added Vision Info 

@@ -214,6 +214,8 @@ function process_keyinput()
    elseif byte==string.byte('o') then
      ocm.set_occ_reset(1);
      headangle[2]=50*math.pi/180;
+   elseif byte==string.byte('p') then
+     vcm.set_image_learn_lut(1);
    end
 
 
@@ -279,7 +281,7 @@ function update()
 
 
   velangle = math.atan2(targetvel[2], targetvel[1]);
-  print(obstacle_num,velangle*180/math.pi);
+--  print(obstacle_num,velangle*180/math.pi);
   for i = 1, obstacle_num do
 
   end

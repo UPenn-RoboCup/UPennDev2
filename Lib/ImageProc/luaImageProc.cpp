@@ -518,7 +518,32 @@ static int lua_connected_regions(lua_State *L) {
   return 1;
 }
 
+static int lua_label_to_mask(lua_State *L) {
+  static std::vector<uint32_t> mask;
+
+  uint8_t *label = (uint8_t *) lua_touserdata(L, 1);
+  if ((label == NULL) || !lua_islightuserdata(L, 1)) {
+    return luaL_error(L, "Input LABEL not light user data");
+  }
+  int mx = luaL_checkint(L, 2);
+  int nx = luaL_checkint(L, 3);
+  if (mask.size() > 0) 
+    mask.resize(0);
+  int idx = 0;
+  for (int n = 0; n < nx; n++) 
+    for (int m = 0; m < mx; m++) {
+      idx = n * mx + m;
+      if (label[idx] == 0)
+        mask.push_back(idx); 
+      }
+
+  lua_pushlightuserdata(L, &mask[0]);
+
+  return 1;
+}
+
 static const struct luaL_reg imageProc_lib [] = {
+  {"label_to_mask", lua_label_to_mask},
   {"rgb_to_index", lua_rgb_to_index},
   {"rgb_to_yuyv", lua_rgb_to_yuyv},
   {"rgb_to_label", lua_rgb_to_label},

@@ -229,6 +229,7 @@ function update()
 
   -- determine total number of pixels of each color/label
   colorCount = ImageProc.color_count(labelA.data, labelA.npixel);
+  colorCount_obs = ImageProc.color_count_obs(labelA.data_obs, labelA.npixel);
 
   -- bit-or the segmented image
   labelB.data = ImageProc.block_bitor(labelA.data, labelA.m, labelA.n, scaleB, scaleB);
@@ -237,12 +238,23 @@ function update()
   labelB.data_obs = ImageProc.block_bitor_obs(labelA.data_obs, labelA.m, labelA.n, scaleB, scaleB);
 
   -- Learn ball color from mask and rebuild colortable
-  if vcm.get_image_learn_lut() == 1 then
-    print("learn new colortable for random ball from mask");
-    vcm.set_image_learn_lut(0);
-    mask = ImageProc.label_to_mask(labelA.data_obs, labelA.m, labelA.n);
-    lut_update = ImageProc.mask_to_lut(vcm.get_image_yuyv(), mask, labelA.m, labelA.n);
-    print(type(mask),type(labelB.data))
+  obs_challenge_enable = Config.obs_challenge or 0;
+  if obs_challenge_enable == 1 then
+    if vcm.get_image_learn_lut() == 1 then
+      print("learn new colortable for random ball from mask");
+      vcm.set_image_learn_lut(0);
+      mask = ImageProc.label_to_mask(labelA.data_obs, labelA.m, labelA.n);
+      if (webots) then
+        print("learn in webots")
+        lut_update = Camera.get_lut_update(mask, carray.pointer(camera.lut_obs));
+--        lut_update = Camera.get_lut_update(mask, carray.pointer(camera.lut));
+      else
+        print("learn in op")
+        lut_update = ImageProc.yuyv_mask_to_lut(vcm.get_image_yuyv(), mask, camera.lut, 
+                                                labelA.m, labelA.n);
+      end
+      print(type(mask),type(labelB.data))
+    end
   end
 
   vcm.refresh_debug_message();

@@ -35,15 +35,22 @@ th_headAngle = Config.vision.ball.th_headAngle or -10*math.pi/180;
 
 function detect(color)
 
+  enable_obs_challenge = Config.obs_challenge;
+  if enable_obs_challenge == 1 then
+    colorCount = Vision.colorCount_obs;
+  else
+    colorCount = Vision.colorCount;
+  end
+
   headAngle = Body.get_head_position();
   --print("headPitch:",headAngle[2]*180/math.pi);
   local ball = {};
   ball.detect = 0;
   vcm.add_debug_message(string.format("\nBall: pixel count: %d\n",
-	Vision.colorCount[color]));
+	colorCount[color]));
 
   -- threshold check on the total number of ball pixels in the image
-  if (Vision.colorCount[color] < th_min_color) then  	
+  if (colorCount[color] < th_min_color) then  	
     vcm.add_debug_message("pixel count fail");
     return ball;  	
   end

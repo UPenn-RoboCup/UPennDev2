@@ -89,7 +89,7 @@ int& OccMap::get_robot_pos_y(void) {
 }
 
 int OccMap::time_decay(double time) {
-  double decay_coef = 0.005;
+  double decay_coef = 0.01;
   double P = 0, P1 = 0;
   int i = 0;
   for (i = 0; i < grid_num; i++) {

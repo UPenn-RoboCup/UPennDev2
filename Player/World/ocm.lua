@@ -22,7 +22,7 @@ shared.obstacle = {};
 shared.obstacle.num = vector.zeros(1);
 shared.obstacle.centroid = vector.zeros(5 * 2);
 shared.obstacle.angle_range = vector.zeros(5 * 2);
-shared.obstacle.nearest = vector.zeros(5 * 3);
+shared.obstacle.nearest = vector.zeros(5 * 2);
 
 
 -- Robot Centroid x y on Map 

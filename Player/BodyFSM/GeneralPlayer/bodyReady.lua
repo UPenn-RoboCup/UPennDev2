@@ -24,7 +24,7 @@ function entry()
   phase=0;
   Motion.event('standup')
 
-  if gcm.get_game_our_score() > last_score or
+  if gcm.get_game_our_score() > last_score and
      gcm.get_game_our_score() >= gcm.get_game_opponent_score() +
 	ceremony_score then
     --Only celebrate when we score and we are leading

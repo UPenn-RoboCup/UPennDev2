@@ -40,15 +40,12 @@ loadconfig('Vision/Config_OP_Vision')
 --loadconfig('Vision/Config_OP_Camera_L512_Day')
 --loadconfig('Vision/Config_OP_Camera_RC12_day0')
 
+--RC12 -MEXICO
 --loadconfig('Vision/Config_OP_Camera_RC12_day1_8AM')
---loadconfig('Vision/Config_OP_Camera_RC12_FieldD')
-
+--loadconfig('Vision/Config_OP_Camera_RC12_FieldA')
 --loadconfig('Vision/Config_OP_Camera_RC12_FieldB')
 loadconfig('Vision/Config_OP_Camera_RC12_FieldB_New')
-
 --loadconfig('Vision/Config_OP_Camera_RC12_FieldD')
---loadconfig('Vision/Config_OP_Camera_RC12_FieldB')
-loadconfig('Vision/Config_OP_Camera_RC12_FieldA')
 
 --loadconfig('Vision/Config_OP_Camera_RC12_day1_8AM')
 
@@ -387,3 +384,6 @@ vision.landmark.distanceFactorYellow = 1.1;
 enable_ceremony = 1;
 ceremony_score = 2;
 -----------------------------------------------------------------
+
+
+enable_ceremony = 0;

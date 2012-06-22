@@ -1,0 +1,224 @@
+module(..., package.seeall);
+
+require('Body')
+require('walk')
+require('vector')
+require('util')
+require('Config')
+require('wcm')
+require('gcm')
+require('UltraSound')
+require('postDist')
+
+t0 = 0;
+timeout = 20.0;
+
+maxStep = 0.05;
+
+rClose = 0.28;
+
+tLost = 3.0;
+
+rTurn= Config.fsm.bodyPosition.rTurn;
+rTurn2= Config.fsm.bodyPosition.rTurn2;
+rDist1= Config.fsm.bodyPosition.rDist1;
+rDist2= Config.fsm.bodyPosition.rDist2;
+rOrbit= Config.fsm.bodyPosition.rOrbit;
+
+function entry()
+  print(_NAME.." entry");
+
+  t0 = Body.get_time();
+end
+
+function update()
+  local t = Body.get_time();
+
+  ball = wcm.get_ball();
+  pose = wcm.get_pose();
+  ballR = math.sqrt(ball.x^2 + ball.y^2);
+  ballGlobal = util.pose_global({ball.x, ball.y, 0}, {pose.x, pose.y, pose.a});
+  tBall = Body.get_time() - ball.t;
+
+  role = gcm.get_team_role();
+
+  ballxy=vector.new( {ball.x,ball.y,0} );
+  posexya=vector.new( {pose.x, pose.y, pose.a} );
+
+  ballGlobal=util.pose_global(ballxy,posexya);
+  goalGlobal=wcm.get_goal_attack();
+  aBallLocal=math.atan2(ball.y,ball.x); 
+
+  aBall=math.atan2(ballGlobal[2]-pose.y, ballGlobal[1]-pose.x);
+  aGoal=math.atan2(goalGlobal[2]-ballGlobal[2],goalGlobal[1]-ballGlobal[1]);
+
+  --Apply angle
+  kickAngle=  wcm.get_kick_angle();
+  aGoal = util.mod_angle(aGoal - kickAngle);
+
+  --In what angle should we approach the ball?
+  angle1=util.mod_angle(aGoal-aBall);
+
+  if (role == 2) then
+    -- defend
+    goalDefend = wcm.get_goal_defend();
+    targetPosition = goalDefend - 0.5*(goalDefend - ballGlobal);
+  
+    --homePosition = .6 * ballGlobal;
+    --homePosition[1] = homePosition[1] - 0.50*util.sign(homePosition[1]);
+    targetPosition[2] = targetPosition[2] - 0.80*util.sign(targetPosition[2]);
+
+    ballRepulsion = 2; 
+    targetAttraction = 1;
+    ballExtent = 1.5;
+
+  elseif (role == 3) then
+    -- support
+    attackGoalPosition = vector.new(wcm.get_goal_attack());
+
+    -- move near attacking goal
+    targetPosition = attackGoalPosition;
+    -- stay in the field (.75 m from end line)
+    targetPosition[1] = targetPosition[1] - util.sign(targetPosition[1]) * 1.0;
+    -- go to far post (.75 m from center)
+    if math.abs(ballGlobal[2]) < 0.5 then
+      targetPosition[2] = util.sign(pose.y) * .75;
+    else  
+      targetPosition[2] = -1*util.sign(ballGlobal[2]) * .75;
+    end
+
+    -- face ball 
+    targetPosition[3] = ballGlobal[3];
+
+    ballRepulsion = -8; 
+    targetAttraction = 0;
+    ballExtent = 8;--1.5;
+
+
+  else
+    -- attack
+    if math.abs(angle1)<math.pi/2 then
+      rDist=math.min(rDist1,math.max(rDist2,ballR-rTurn2));
+      targetPosition={
+        ballGlobal[1]-math.cos(aGoal)*rDist,
+        ballGlobal[2]-math.sin(aGoal)*rDist,
+        aGoal};
+    elseif angle1>0 then
+      targetPosition={
+        ballGlobal[1]+math.cos(-aBall+math.pi/2)*rOrbit,
+        ballGlobal[2]-math.sin(-aBall+math.pi/2)*rOrbit,
+        aBall};
+
+    else
+      targetPosition={
+        ballGlobal[1]+math.cos(-aBall-math.pi/2)*rOrbit,
+        ballGlobal[2]-math.sin(-aBall-math.pi/2)*rOrbit,
+        aBall};
+    end  
+
+    ballRepulsion = 0; -- \leq 0 
+    targetAttraction = 1;
+    ballExtent = 8;
+
+  end
+
+
+  -- ++++++++++++++++++++++++++++++++++++++++++++++++++
+    -- Potential Field
+    --print(targetPosition);
+
+    -- sink at targetPosition
+    targetPositionR = math.sqrt((pose.x - targetPosition[1])^2 + (pose.y - targetPosition[2])^2);
+    aTargetPosition = math.atan2 ( targetPosition[2] - pose.y, targetPosition[1] - pose.x ) ;
+
+    targetPositionRelative = util.pose_relative(targetPosition, {pose.x, pose.y, pose.a});
+    targetPosition = targetPositionRelative;
+
+    targetPositionR = math.sqrt(targetPosition[1]^2 + targetPosition[2]^2);
+    aTargetPosition = math.atan2 (targetPosition[2],targetPosition[1]);
+
+    --print(targetPosition);
+  
+    A = vector.zeros(2);
+    A[1] = targetAttraction * targetPositionR * math.cos(aTargetPosition);
+    A[2] = targetAttraction * targetPositionR * math.sin(aTargetPosition);
+
+    --util.ptable(A);
+
+    -- source or sink at ball
+    R = vector.zeros(2);
+    R[1] = ballRepulsion * (-1) * math.max ( ballExtent-ballR, 0 ) * math.cos (aBall);
+    R[2] = ballRepulsion * (-1) * math.max ( ballExtent-ballR, 0 ) * math.sin (aBall);
+
+    util.ptable(R);
+
+    S = vector.zeros(2);
+    S = A + R; -- relative velocity
+
+    --util.ptable(S);
+
+ --[[
+    homePosition = vector.zeros(3);  
+    homePosition[1] = S[1];
+    homePosition[2] = S[2];
+    homePosition[3] = targetPosition[3];
+
+    
+    -- ++++++++++++++++++++++++++++++++++++++++++++++++++
+
+ 
+  -- do not go into own penalty box
+  if (gcm.get_team_color() == 1) then
+    -- red
+    homePosition[1] = math.min(homePosition[1], 2.2);
+  else
+    -- blue
+    homePosition[1] = math.max(homePosition[1], -2.2);
+  end
+--]]
+  --homeRelative = util.pose_relative(homePosition, {pose.x, pose.y, pose.a});
+  --rHomeRelative = math.sqrt(homeRelative[1]^2 + homeRelative[2]^2);
+  rS = math.sqrt(S[1]^2 + S[2]^2);
+
+  --vx = maxStep*homeRelative[1]/(rHomeRelative + 0.1);
+  --vy = maxStep*homeRelative[2]/(rHomeRelative + 0.1);
+  vx = maxStep*S[1]/(rS + 0.1);
+  vy = maxStep*S[2]/(rS + 0.1);
+  va = .5*math.atan2(ball.y, math.max(ball.x + 0.05,0.05));
+  
+  --print(vx..' , '..vy);
+
+  -- 
+
+  walk.set_velocity(vx, vy, va);
+  ballR = math.sqrt(ball.x^2 + ball.y^2);
+  if ((tBall < 1.0) and (ballR < rClose)) then
+    if postDist.kick() then
+      return "ballAlign";
+    else
+      return "approach";
+    end
+  end
+
+  -- TODO: add obstacle detection
+  --us = UltraSound.checkObstacle();
+  if Config.fsm.enable_obstacle_detection > 0 then
+    us = UltraSound.check_obstacle();
+  else
+    us = vector.zeros(2)
+  end
+  if ((t - t0 > 2.5) and (us[1] > 5 or us[2] > 5) and role~=1) then
+    return 'obstacle'; 
+  end
+
+  if ((t - t0 > 5.0) and (t - ball.t > tLost)) then
+    return "ballLost";
+  end
+  if (t - t0 > timeout) then
+    return "timeout";
+  end
+end
+
+function exit()
+end
+

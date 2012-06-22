@@ -36,7 +36,7 @@ th_headAngle = Config.vision.ball.th_headAngle or -10*math.pi/180;
 function detect(color)
 
   headAngle = Body.get_head_position();
-print("headPitch:",headAngle[2]*180/math.pi);
+  --print("headPitch:",headAngle[2]*180/math.pi);
   local ball = {};
   ball.detect = 0;
   vcm.add_debug_message(string.format("\nBall: pixel count: %d\n",

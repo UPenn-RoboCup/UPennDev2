@@ -42,9 +42,10 @@ loadconfig('Vision/Config_OP_Vision')
 
 --loadconfig('Vision/Config_OP_Camera_RC12_day1_8AM')
 loadconfig('Vision/Config_OP_Camera_RC12_FieldD')
---loadconfig('Vision/Config_OP_Camera_RC12_FieldB')
+--loadconfig('Vision/Config_OP_Camera_RC12_FieldD')
+loadconfig('Vision/Config_OP_Camera_RC12_FieldB')
 
-loadconfig('Vision/Config_OP_Camera_RC12_day1_8AM')
+--loadconfig('Vision/Config_OP_Camera_RC12_day1_8AM')
 --loadconfig('Vision/Config_OP_Camera_RC12_FieldD')
 
 --loadconfig('Vision/Config_OP_Camera_Ob_F1')
@@ -319,13 +320,13 @@ fsm.bodyPosition.maxStep3 = 0.06;
 
 -----------------------------------------------------------------------
 --Setting for match #4
-led_on = 1; --turn off eye led
+led_on = 0; --turn off eye led
 fsm.enable_sidekick = 0;
 
 -----------------------------------------------------------------------
 
 --Sidekick testing
-fsm.enable_sidekick = 1;
+fsm.enable_sidekick = 0;
 fsm.thSideKick1 = 30*math.pi/180;
 fsm.thSideKick2 = 135*math.pi/180;
 fsm.thDistSideKick = 1.0;
@@ -336,3 +337,9 @@ obs_challenge = 0;
 --Roll backup setup
 use_rollback_getup = 1;
 batt_max = 120; --only do rollback getup when battery is enough
+
+
+
+--Enable this for double pass
+fsm.body={'DoublePassChallenge'};
+dev.team='TeamDoublePass';

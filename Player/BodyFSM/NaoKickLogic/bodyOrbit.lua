@@ -21,7 +21,7 @@ maxStep = 0.06;
 
 rOrbit = 0.15;--.27
 
-rFar = 0.30;
+rFar = 0.45;
 
 thAlign = 10*math.pi/180;
 thAlignWalkKick = 20*math.pi/180

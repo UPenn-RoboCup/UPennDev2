@@ -56,6 +56,10 @@ function get_labelA_obs( lut )
   return ImageProc.rgb_to_label_obs(carray.pointer(image), lut, width, height);
 end
 
+function get_lut_update(mask, lut)
+  return ImageProc.rgb_mask_to_lut(carray.pointer(image), mask, lut, width, height);
+end
+
 function get_camera_status()
   status = {};
   status.select = 0;

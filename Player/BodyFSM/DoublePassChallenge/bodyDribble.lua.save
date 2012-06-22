@@ -95,9 +95,9 @@ function update()
      vStep[2] = -0.03;
     elseif ball.y<0 and ball.y>-0.20 then
       vStep[2]=0.03;
-    else
-      vStep[2] = 0;
-    end    
+    end
+
+    
   end
  
   walk.set_velocity(vStep[1],vStep[2],vStep[3]);

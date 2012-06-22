@@ -93,16 +93,18 @@ function check_approach_type()
       --stationary kick to the right
       kick_type = 1;
       kick_dir = 2;
+      kickAngle = 90*math.pi/180;
+
     elseif aRot<-th_sidekick then
       --stationary kick to the left
       kick_type = 1;
       kick_dir = 3;
       kickAngle = -90*math.pi/180;
     else
+      kickAngle = 0*math.pi/180;
       if Config.fsm.goalie_use_walkkick>0 then
         --walkkick to front
         kick_type = 2;
-        kickAngle = 90*math.pi/180;
       else
         --stationary kick to front
         kick_type = 1;
@@ -111,7 +113,10 @@ function check_approach_type()
     end
     wcm.set_kick_dir(kick_dir);
     wcm.set_kick_type(kick_type);
-    check_angle = 0; --Don't check angle during approaching
+    wcm.set_kick_angle(kickAngle);
+
+--    check_angle = 0; --Don't check angle during approaching
+    check_angle = 1; --CHECK angle during approaching
   end
 
   print("Approach: kick dir /type /angle",kick_dir,kick_type,kick_angle*180/math.pi)
@@ -286,11 +291,22 @@ function update()
   local wAngle = math.atan2 (ball.y,ball.x);
   if math.abs(wAngle) > 45*math.pi/180 then
     vStep[1]=vStep[1] - 0.03;
---    print('backstep');
+
+    if ball.y<0.20 and ball.y>0 then
+     vStep[2] = -0.03;
+    elseif ball.y<0 and ball.y>-0.20 then
+      vStep[2]=0.03;
+    else
+      vStep[2] = 0;
+    end    
+
   else
     --Otherwise, don't make robot backstep
     vStep[1]=math.max(0,vStep[1]);
   end
+
+
+
 
   if walk.ph>0.95 then 
     print(string.format("Ball position: %.2f %.2f\n",ball.x,ball.y));

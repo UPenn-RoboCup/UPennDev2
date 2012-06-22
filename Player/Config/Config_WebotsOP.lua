@@ -217,6 +217,8 @@ fsm.enable_walkkick = 0;
 --New multi-blob landmark detection code
 vision.use_multi_landmark = 1;
 
+-- obstacle avoidance challenge
+obs_challenge = 1;
 fsm.enable_sidekick = 1;
 fsm.thSideKick1 = 30*math.pi/180;
 fsm.thSideKick2 = 135*math.pi/180;

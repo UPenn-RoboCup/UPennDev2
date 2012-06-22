@@ -813,3 +813,18 @@ cal["betty"].kickXComp=0.000;
 cal["betty"].servoBias={8,-10,21,-77,29,-11,-5,6,-31,-16,-34,6,};
 cal["betty"].footXComp=0.000;
 cal["betty"].kickXComp=0.000;
+
+-- Updated date: Fri Jun 22 12:20:42 2012
+cal["scarface"].servoBias={0,0,12,11,30,15,0,0,0,-46,-21,1,};
+cal["scarface"].footXComp=-0.005;
+cal["scarface"].kickXComp=0.005;
+
+-- Updated date: Fri Jun 22 12:27:44 2012
+cal["scarface"].servoBias={0,0,-1,20,-1,3,-14,0,0,-8,20,-24,};
+cal["scarface"].footXComp=-0.005;
+cal["scarface"].kickXComp=0.005;
+
+-- Updated date: Fri Jun 22 12:33:40 2012
+cal["scarface"].servoBias={0,0,-1,20,-1,3,-14,0,0,-8,20,-24,};
+cal["scarface"].footXComp=0.003;
+cal["scarface"].kickXComp=0.005;

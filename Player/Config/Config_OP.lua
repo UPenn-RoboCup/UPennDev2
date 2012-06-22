@@ -41,6 +41,7 @@ loadconfig('Vision/Config_OP_Vision')
 --loadconfig('Vision/Config_OP_Camera_RC12_day0')
 --loadconfig('Vision/Config_OP_Camera_RC12_day1_8AM')
 loadconfig('Vision/Config_OP_Camera_RC12_FieldD')
+--loadconfig('Vision/Config_OP_Camera_RC12_FieldB')
 --loadconfig('Vision/Config_OP_Camera_Ob_F1')
 
 --loadconfig('Vision/Config_OP_Camera_Grasp')

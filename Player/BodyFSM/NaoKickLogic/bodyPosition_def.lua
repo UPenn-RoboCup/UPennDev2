@@ -67,7 +67,8 @@ function update()
   
     --homePosition = .6 * ballGlobal;
     --homePosition[1] = homePosition[1] - 0.50*util.sign(homePosition[1]);
-    homePosition[2] = homePosition[2] - 0.80*util.sign(goalDefend[2]); -- defender is on the right
+ 
+    homePosition[2] = homePosition[2] - 0.80*util.sign(ballGlobal[2]); -- defender is on opposite side from ball
 
   elseif (role == 3) then
     -- support
@@ -78,7 +79,7 @@ function update()
   
     --homePosition = .6 * ballGlobal;
     --homePosition[1] = homePosition[1] - 0.50*util.sign(homePosition[1]);
-    homePosition[2] = homePosition[2] - 0.80*(-1)*util.sign(goalDefend[2]); -- supporter is on the left
+    homePosition[2] = homePosition[2] - 0.80*(-1)*util.sign(ballGlobal[2]); -- supporter is same side as ball
 
 
   else

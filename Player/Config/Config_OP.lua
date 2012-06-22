@@ -43,7 +43,7 @@ loadconfig('Vision/Config_OP_Vision')
 --loadconfig('Vision/Config_OP_Camera_RC12_day1_8AM')
 loadconfig('Vision/Config_OP_Camera_RC12_FieldD')
 --loadconfig('Vision/Config_OP_Camera_RC12_FieldD')
-loadconfig('Vision/Config_OP_Camera_RC12_FieldB')
+--loadconfig('Vision/Config_OP_Camera_RC12_FieldB')
 
 --loadconfig('Vision/Config_OP_Camera_RC12_day1_8AM')
 --loadconfig('Vision/Config_OP_Camera_RC12_FieldD')
@@ -339,3 +339,9 @@ use_rollback_getup = 1;
 batt_max = 120; --only do rollback getup when battery is enough
 
 
+
+--VISION CALIBRATION VALUES
+vision.goal.distanceFactorCyan = 1.1; 
+vision.goal.distanceFactorYellow = 1.3; 
+vision.landmark.distanceFactorCyan = 1.05; 
+vision.landmark.distanceFactorYellow = 1.05; 

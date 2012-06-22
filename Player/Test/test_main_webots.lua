@@ -256,6 +256,7 @@ if (webots) then
     process_keyinput();
 
     gcm.set_team_strat({strategy1, strategy2})
+    print(gcm.get_team_strat())
     -- update cognitive process
     cognition.update();
     GameControl.update();

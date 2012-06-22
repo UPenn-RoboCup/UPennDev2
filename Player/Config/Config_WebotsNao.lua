@@ -61,7 +61,7 @@ end
 fsm={}
 loadconfig(param.fsm)
 fsm.game = 'RoboCup';
-fsm.body = {'NaoTactics'};
+fsm.body = {'NaoKickLogic'};
 fsm.head = {'NaoPlayer'};
 
 -- Team Parameters

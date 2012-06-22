@@ -140,7 +140,7 @@ function update()
   ballR = math.sqrt(ball.x^2 + ball.y^2);
   if ((tBall < 1.0) and (ballR < rClose)) then
     if postDist.kick() then
-      return "ballAlign";
+      return "approach";
     else
       return "approach";
     end

@@ -84,6 +84,9 @@ calibrating = false;
 ready = false;
 calibrated=false;
 
+strategy1 = 0
+strategy2 = 0
+
 function update()
 
   count = count + 1;
@@ -299,6 +302,19 @@ function update()
 		elseif byte==string.byte("/") then
 			targetvel[3]=-targetvel[3];
 
+    elseif byte==string.byte("%") then
+      strategy1 = strategy1 + 1
+      if strategy1 > 4 then
+        strategy1 = 0
+      end
+      print("Strategy One: ", strategy1, "\n")
+    elseif byte==string.byte("^") then
+      strategy2 = strategy2 + 1
+      if strategy2 > 4 then
+        strategy2 = 0
+      end
+      print("Strategy Two: ", strategy2, "\n")
+
 		--Move the head around--
 		elseif byte==string.byte("w") then
 			headangle[2]=headangle[2]-5*math.pi/180;
@@ -427,6 +443,7 @@ function update()
 
  
   wcm.set_robot_odomScale(Config.walk.odomScale)
+  gcm.set_team_strat({strategy1, strategy2})
 
   end
 end

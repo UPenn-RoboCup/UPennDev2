@@ -32,9 +32,8 @@ yKickMax = 0.06;
 rFar = 0.45;
 
 -- alignment
-thAlign = Config.fsm.bodyApproach.thAlign or 15.0*math.pi/180.0;
-thAlignWalkKick = Config.fsm.bodyApproach.thAlignWalkKick or 30*math.pi/180.0;
-
+thAlign = 10.0*math.pi/180.0;
+thAlignWalkKick = 30*math.pi/180.0;
 
 function entry()
   print(_NAME.." entry");

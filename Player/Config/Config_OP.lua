@@ -323,3 +323,8 @@ fsm.enable_sidekick = 1;
 fsm.thSideKick1 = 30*math.pi/180;
 fsm.thSideKick2 = 135*math.pi/180;
 fsm.thDistSideKick = 1.0;
+
+
+----------------------------------
+-- obstacle avoidance challenge
+obs_challenge = 1;

@@ -216,3 +216,6 @@ fsm.enable_walkkick = 0;
 
 --New multi-blob landmark detection code
 vision.use_multi_landmark = 1;
+
+-- obstacle avoidance challenge
+obs_challenge = 0;

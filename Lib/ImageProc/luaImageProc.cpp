@@ -401,6 +401,22 @@ static int lua_color_count(lua_State *L) {
   return 1;
 }
 
+static int lua_color_count_obs(lua_State *L) {
+  uint8_t *label = (uint8_t *) lua_touserdata(L, 1);
+  if ((label == NULL) || !lua_islightuserdata(L, 1)) {
+    return luaL_error(L, "Input LABEL not light user data");
+  }
+  int n = luaL_checkint(L, 2);
+
+  int *count = color_count_obs(label, n);
+  lua_createtable(L, nColor, 0);
+  for (int i = 0; i < nColor; i++) {
+    lua_pushinteger(L, count[i]);
+    lua_rawseti(L, -2, i);
+  }
+  return 1;
+}
+
 static int lua_block_bitor(lua_State *L) {
   uint8_t *label = (uint8_t *) lua_touserdata(L, 1);
   if ((label == NULL) || !lua_islightuserdata(L, 1)) {
@@ -625,6 +641,7 @@ static const struct luaL_reg imageProc_lib [] = {
   {"yuyv_to_label_obs", lua_yuyv_to_label_obs},
   {"index_to_label", lua_index_to_label},
   {"color_count", lua_color_count},
+  {"color_count_obs", lua_color_count_obs},
   {"color_stats", lua_color_stats},
   {"tilted_color_stats", lua_tilted_color_stats},
   {"block_bitor", lua_block_bitor},

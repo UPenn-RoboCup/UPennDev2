@@ -337,3 +337,9 @@ obs_challenge = 0;
 --Roll backup setup
 use_rollback_getup = 1;
 batt_max = 120; --only do rollback getup when battery is enough
+
+
+
+--Enable this for double pass
+fsm.body={'DoublePassChallenge'};
+dev.team='TeamDoublePass';

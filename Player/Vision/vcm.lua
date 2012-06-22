@@ -63,9 +63,14 @@ shared.image.scaleB = vector.zeros(1);
 
 shared.image.labelA = (processed_img_width)*(processed_img_height);
 shared.image.labelB = ((processed_img_width)/Config.vision.scaleB)*((processed_img_height)/Config.vision.scaleB);
+--shared.image.labelA_obs = (processed_img_width)*(processed_img_height);
+--shared.image.labelB_obs = ((processed_img_width)/Config.vision.scaleB)*((processed_img_height)/Config.vision.scaleB);
+
 -- calculate image shm size
 shsize.image = (shared.image.yuyv + shared.image.yuyv2+ 
-	shared.image.yuyv3+shared.image.labelA + shared.image.labelB) + 2^16;
+	shared.image.yuyv3+shared.image.labelA + shared.image.labelB 
+--  +shared.image.labelA_obs + shared.image.labelB_obs
+  ) + 2^16;
 
 --Image field-of-view information
 shared.image.fovTL=vector.zeros(2);

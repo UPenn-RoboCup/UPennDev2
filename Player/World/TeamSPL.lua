@@ -20,6 +20,7 @@ msgTimeout = Config.team.msgTimeout;
 nonAttackerPenalty = Config.team.nonAttackerPenalty;
 nonDefenderPenalty = Config.team.nonDefenderPenalty;
 time_to_stand = Config.km.time_to_stand;
+twoDefenders = Config.team.twoDefenders;
 
 role = -1;
 
@@ -157,7 +158,12 @@ function update()
       -- distance to goal
       dgoalPosition = vector.new(wcm.get_goal_defend());
       pose = wcm.get_pose();
-      ddefend[id] = math.sqrt((pose.x - dgoalPosition[1])^2 + (pose.y - dgoalPosition[2])^2);
+    
+      if twoDefenders == 1 then
+        ddefend[id] = (-1) * util.sign ( dgoalPosition[1] ) * pose.y; -- use defender who is on the right
+      else
+        ddefend[id] = math.sqrt((pose.x - dgoalPosition[1])^2 + (pose.y - dgoalPosition[2])^2);
+      end
 
       if (states[id].role ~= 1) then
         -- Non attacker penalty:
@@ -169,7 +175,11 @@ function update()
 
       if (states[id].role ~= 2) then
         -- Non defender penalty:
-        ddefend[id] = ddefend[id] + 0.3;
+        if twoDefenders == 1 then
+          ddefend[id] = ddefend[id] + 0.2;
+        else
+          ddefend[id] = ddefend[id] + 0.3;
+        end
       end
       if (states[id].penalty > 0) or (t - states[id].tReceive > msgTimeout) then
         ddefend[id] = math.huge;
@@ -212,7 +222,7 @@ function update()
       -- attack
       set_role(1);
     else
-      -- furthest player back is defender
+      -- furthest player back (or to the right, if using two defenders) is defender
       minDDefID = 0;
       minDDef = math.huge;
       for id = 2,4 do
@@ -231,7 +241,6 @@ function update()
       end
     end
   end
-
   -- update shm
   update_shm() 
 end

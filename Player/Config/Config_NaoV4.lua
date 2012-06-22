@@ -79,6 +79,7 @@ team = {};
 team.msgTimeout = 5.0;
 team.nonAttackerPenalty = 6.0; -- eta sec
 team.nonDefenderPenalty = 0.5; -- dist from goal
+team.twoDefenders = 0;
 
 --Head Parameters
 

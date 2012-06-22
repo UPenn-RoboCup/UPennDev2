@@ -527,23 +527,96 @@ static int lua_label_to_mask(lua_State *L) {
   }
   int mx = luaL_checkint(L, 2);
   int nx = luaL_checkint(L, 3);
-  if (mask.size() > 0) 
-    mask.resize(0);
-  int idx = 0;
+  for (int cnt = 0; cnt < mx * nx; cnt++)
+    mask.push_back(0);
+  int idx = 0, counter = 0;
   for (int n = 0; n < nx; n++) 
     for (int m = 0; m < mx; m++) {
       idx = n * mx + m;
       if (label[idx] == 0)
-        mask.push_back(idx); 
-      }
+        mask[counter++] = idx; 
+    } 
 
   lua_pushlightuserdata(L, &mask[0]);
 
   return 1;
 }
 
+static int lua_yuyv_mask_to_lut(lua_State *L) {
+  // 1st Input: Original RGB-format input image
+  uint8_t *rgb = (uint8_t *) lua_touserdata(L, 1);
+  if ((rgb == NULL) || !lua_islightuserdata(L, 1)) {
+    return luaL_error(L, "Input RGB not light user data");
+  }
+
+  // 2nd Input: Mask
+  uint32_t *mask = (uint32_t *) lua_touserdata(L, 2);
+  if (mask == NULL) {
+    return luaL_error(L, "Input Mask not light user data");
+  }
+
+  // 3rd Input: Lookup Table
+  uint8_t *lut = (uint8_t *) lua_touserdata(L, 3);
+  if (lut == NULL) {
+    return luaL_error(L, "Input Lut not light user data");
+  }
+
+  // 4rd Input: Width (in pixels) of the original RGB image  
+  int m = luaL_checkint(L, 4);
+  // 5th Input: Width (in pixels) of the original RGB image
+  int n = luaL_checkint(L, 5);
+
+  lua_pushlightuserdata(L, &lut[0]);
+  return 1;
+}
+
+static int lua_rgb_mask_to_lut(lua_State *L) {
+  // 1st Input: Original RGB-format input image
+  uint8_t *rgb = (uint8_t *) lua_touserdata(L, 1);
+  if ((rgb == NULL) || !lua_islightuserdata(L, 1)) {
+    return luaL_error(L, "Input RGB not light user data");
+  }
+
+  // 2nd Input: Mask
+  uint32_t *mask = (uint32_t *) lua_touserdata(L, 2);
+  if (mask == NULL) {
+    return luaL_error(L, "Input Mask not light user data");
+  }
+
+  // 3rd Input: Lookup Table
+  uint8_t *lut = (uint8_t *) lua_touserdata(L, 3);
+  if (lut == NULL) {
+    return luaL_error(L, "Input Lut not light user data");
+  }
+
+
+  // 4rd Input: Width (in pixels) of the original RGB image  
+  int m = luaL_checkint(L, 4);
+  // 5th Input: Width (in pixels) of the original RGB image
+  int n = luaL_checkint(L, 5);
+
+  for (int cnt = 0; cnt < m * n; cnt++)
+    if (mask[cnt] != 0) {
+      uint8_t r = rgb[3 * mask[cnt]];
+      uint8_t g = rgb[3 * mask[cnt] + 1];
+      uint8_t b = rgb[3 * mask[cnt] + 2];
+
+      uint8_t y = g;
+      uint8_t u = 128 + (b-g)/2;
+      uint8_t v = 128 + (r-g)/2;
+
+      uint32_t index = ((v & 0xFC) >> 2) | ((u & 0xFC) << 4) | ((y & 0xFC) << 10);
+      lut[index] = 1; 
+    }
+  lua_pushlightuserdata(L, &lut[0]);
+  
+  return 1;
+}
+
 static const struct luaL_reg imageProc_lib [] = {
   {"label_to_mask", lua_label_to_mask},
+  {"yuyv_mask_to_lut", lua_yuyv_mask_to_lut},
+  {"rgb_mask_to_lut", lua_rgb_mask_to_lut},
   {"rgb_to_index", lua_rgb_to_index},
   {"rgb_to_yuyv", lua_rgb_to_yuyv},
   {"rgb_to_label", lua_rgb_to_label},

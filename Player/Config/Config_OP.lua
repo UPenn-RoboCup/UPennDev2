@@ -371,4 +371,7 @@ fsm.bodyApproach.ballYMin = 0.16; --Tighter orbit radius
 --green check turned off at this angle
 vision.ball.th_headAngle = 10* math.pi/180;
 
+
+enable_ceremony = 1;
+ceremony_score = 2;
 -----------------------------------------------------------------

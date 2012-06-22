@@ -272,7 +272,16 @@ function process_keyinput()
       walk.start();
     elseif byte==string.byte("0") then	
       Motion.event("diveready");
+    elseif byte==string.byte('o') then
+      print("reset occ map")
+      ocm.set_occ_reset(1);
+      headangle[2]=50*math.pi/180;
+    elseif byte==string.byte('p') then
+      print(Config.obs_challenge);
+      vcm.set_image_learn_lut(1);
     end
+
+
     walk.set_velocity(unpack(targetvel));
     if headsm_running == 0 then
       Body.set_head_command({headangle[1],headangle[2]-headPitchBias});

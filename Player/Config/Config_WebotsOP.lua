@@ -218,4 +218,4 @@ fsm.enable_walkkick = 0;
 vision.use_multi_landmark = 1;
 
 -- obstacle avoidance challenge
-obs_challenge = 0;
+obs_challenge = 1;

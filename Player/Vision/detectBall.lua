@@ -35,12 +35,12 @@ th_headAngle = Config.vision.ball.th_headAngle or -10*math.pi/180;
 
 function detect(color)
 
-  enable_obs_challenge = Config.obs_challenge;
-  if enable_obs_challenge == 1 then
-    colorCount = Vision.colorCount_obs;
-  else
+--  enable_obs_challenge = Config.obs_challenge or 0;
+--  if enable_obs_challenge == 1 then
+--    colorCount = Vision.colorCount_obs;
+--  else
     colorCount = Vision.colorCount;
-  end
+--  end
 
   headAngle = Body.get_head_position();
   --print("headPitch:",headAngle[2]*180/math.pi);
@@ -48,6 +48,10 @@ function detect(color)
   ball.detect = 0;
   vcm.add_debug_message(string.format("\nBall: pixel count: %d\n",
 	colorCount[color]));
+  
+  print(string.format("\nBall: pixel count: %d\n",
+	      colorCount[color]));
+
 
   -- threshold check on the total number of ball pixels in the image
   if (colorCount[color] < th_min_color) then  	
@@ -56,7 +60,14 @@ function detect(color)
   end
 
   -- find connected components of ball pixels
-  ballPropsB = ImageProc.connected_regions(Vision.labelB.data, Vision.labelB.m, Vision.labelB.n, color);
+--  if enable_obs_challenge == 1 then
+--    ballPropsB = ImageProc.connected_regions_obs(Vision.labelB.data_obs, Vision.labelB.m, 
+--                                              Vision.labelB.n, color);
+--  else
+    ballPropsB = ImageProc.connected_regions(Vision.labelB.data, Vision.labelB.m, 
+                                              Vision.labelB.n, color);
+--  end
+--  util.ptable(ballPropsB);
 --TODO: horizon cutout
 -- ballPropsB = ImageProc.connected_regions(labelB.data, labelB.m, 
 --	labelB.n, HeadTransform.get_horizonB(),color);

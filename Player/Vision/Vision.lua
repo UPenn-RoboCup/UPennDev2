@@ -354,6 +354,8 @@ function update_shm(status)
           vcm.set_camera_yuyvType(1);
           vcm.set_image_labelA(labelA.data);
           vcm.set_image_labelB(labelB.data);
+--          vcm.set_image_labelA_obs(labelA.data_obs);
+--          vcm.set_image_labelB_obs(labelB.data_obs);
 	end
         if vcm.get_camera_broadcast() > 0 then --Wired monitor broadcasting
 	  if vcm.get_camera_broadcast() == 1 then

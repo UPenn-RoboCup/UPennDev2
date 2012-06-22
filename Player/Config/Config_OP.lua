@@ -327,4 +327,4 @@ fsm.thDistSideKick = 1.0;
 
 ----------------------------------
 -- obstacle avoidance challenge
-obs_challenge = 1;
+obs_challenge = 0;

@@ -133,7 +133,7 @@ function update()
 
   -- Time decay
   local time = unix.time();
-  OccMap.time_decay(time);
+--  OccMap.time_decay(time);
 
 	-- Vision Update
   vision_update();

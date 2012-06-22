@@ -106,8 +106,15 @@ world.initPosition1={
 -- Center circle radius: 0.6
 world.initPosition2={
   {2.8,0},   --Goalie
-  {0.8,0}, --Attacker
-  {1.5,-0.5}, --Defender
+--Old position
+--  {0.8,0}, --Attacker
+--  {1.5,-0.5}, --Defender
+
+--Now bit back
+
+  {1.0,0}, --Attacker
+  {1.8,-0.5}, --Defender
+
   {1.75,1.0}, --Supporter
 }
 

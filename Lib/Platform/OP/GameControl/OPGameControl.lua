@@ -159,6 +159,9 @@ function update()
     end
   end
 
+  --GameController Latency
+  gcm.set_game_gc_latency(math.min(999, unix.time() - lastUpdate));
+
   if (unix.time() - lastUpdate > 10.0) then
     -- we have not received a game control packet in over 10 seconds
     if (updateCount < count - 1 ) then

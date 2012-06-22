@@ -21,6 +21,7 @@ extern "C" {
 #include <math.h>
 #include <vector>
 #include <string>
+#include <algorithm>
 
 #include "color_count.h"
 #include "block_bitor.h"
@@ -621,8 +622,8 @@ static int lua_label_to_mask(lua_State *L) {
 
 static int lua_yuyv_mask_to_lut(lua_State *L) {
   // 1st Input: Original RGB-format input image
-  uint8_t *rgb = (uint8_t *) lua_touserdata(L, 1);
-  if ((rgb == NULL) || !lua_islightuserdata(L, 1)) {
+  uint32_t *yuyv = (uint32_t *) lua_touserdata(L, 1);
+  if ((yuyv == NULL) || !lua_islightuserdata(L, 1)) {
     return luaL_error(L, "Input RGB not light user data");
   }
 
@@ -642,6 +643,18 @@ static int lua_yuyv_mask_to_lut(lua_State *L) {
   int m = luaL_checkint(L, 4);
   // 5th Input: Width (in pixels) of the original RGB image
   int n = luaL_checkint(L, 5);
+
+  int labeln = 0, labelm = 0, yuyvidx = 0;
+  for (int cnt = 0; cnt < m * n; cnt++)
+    if (mask[cnt] != 0) {
+      labelm = mask[cnt] % m;
+      labeln = (mask[cnt] - labelm) / m;
+      yuyvidx = labelm + labeln * labelm; 
+      uint32_t index = ((yuyv[yuyvidx] & 0xFC000000) >> 26)  
+        | ((yuyv[yuyvidx] & 0x0000FC00) >> 4)
+        | ((yuyv[yuyvidx] & 0x000000FC) << 10);
+        lut[index] = (lut[index] < 1)? lut[index] : 1;
+    }
 
   lua_pushlightuserdata(L, &lut[0]);
   return 1;
@@ -683,7 +696,7 @@ static int lua_rgb_mask_to_lut(lua_State *L) {
       uint8_t v = 128 + (r-g)/2;
 
       uint32_t index = ((v & 0xFC) >> 2) | ((u & 0xFC) << 4) | ((y & 0xFC) << 10);
-      lut[index] = 1; 
+      lut[index] = (lut[index] < 1)? lut[index]:1; 
     }
   lua_pushlightuserdata(L, &lut[0]);
   

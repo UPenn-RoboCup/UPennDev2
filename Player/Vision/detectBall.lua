@@ -49,8 +49,8 @@ function detect(color)
   vcm.add_debug_message(string.format("\nBall: pixel count: %d\n",
 	colorCount[color]));
   
-  print(string.format("\nBall: pixel count: %d\n",
-	      colorCount[color]));
+--  print(string.format("\nBall: pixel count: %d\n",
+--	      colorCount[color]));
 
 
   -- threshold check on the total number of ball pixels in the image

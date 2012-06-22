@@ -240,6 +240,7 @@ function update()
   -- Learn ball color from mask and rebuild colortable
   obs_challenge_enable = Config.obs_challenge or 0;
   if obs_challenge_enable == 1 then
+    print('enable obs challenge')
     if vcm.get_image_learn_lut() == 1 then
       print("learn new colortable for random ball from mask");
       vcm.set_image_learn_lut(0);

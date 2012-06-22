@@ -10,6 +10,13 @@ require('postDist')
 t0 = 0;
 timeout = 30.0;
 
+if Config.fsm.bodyOrbit.walkParam then
+  tDelay = Config.fsm.bodyOrbit.tDelay or .6
+else
+  tDelay = 0;
+end
+
+
 maxStep = 0.06;
 
 rOrbit = 0.15;--.27
@@ -37,6 +44,10 @@ function entry()
     direction = -1;
   end
 
+  --If walk parameters are defined for bodyOrbit, then load them
+  if Config.fsm.bodyOrbit.walkParam then
+    Config.loadconfig(Config.fsm.bodyOrbit.walkParam)
+  end
   walk.set_velocity(0,0,0)
 
   toKick = postDist.kick()
@@ -44,6 +55,11 @@ end
 
 function update()
   local t = Body.get_time();
+
+  --Walk in place for tDelay time
+  if t - t0 < tDelay then
+    return
+  end
 
   attackBearing, daPost = wcm.get_attack_bearing();
   --print('attackBearing: '..attackBearing);
@@ -96,5 +112,7 @@ function update()
 end
 
 function exit()
+  --Load default walk parameters
+  Config.loadconfig(Config.param.walk)
 end
 

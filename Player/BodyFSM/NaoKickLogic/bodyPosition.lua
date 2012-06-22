@@ -129,7 +129,7 @@ function update()
   ballR = math.sqrt(ball.x^2 + ball.y^2);
   if ((tBall < 1.0) and (ballR < rClose)) then
     if postDist.kick() then
-      return "ballAlign";
+      return "approach"; --Does not having approach in position make faster?
     else
       return "approach";
     end

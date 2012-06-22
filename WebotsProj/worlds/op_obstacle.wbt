@@ -10,8 +10,8 @@ WorldInfo {
   runRealTime TRUE
 }
 Viewpoint {
-  orientation -0.21432 -0.953794 -0.210582 1.67813
-  position -9.80144 5.60677 -1.78101
+  orientation 0.122774 0.951881 0.2808 3.87077
+  position -7.02967 6.52552 -7.41828
 }
 Background {
   skyColor [
@@ -43,11 +43,11 @@ DEF BLUE_GOAL Goal {
   postColor 0.152941 0.505882 0.733333
 }
 DEF BALL Ball {
-  translation -0.00545182 0.0323921 1.94357
+  translation -1.22262 0.0323921 0.0064199
 }
 DEF PLAYER_1_99 DARwInOPGPS {
-  translation -0.0293734 0.318179 -0.0474751
-  rotation 0.177849 0.968985 -0.171577 1.56383
+  translation -2.99117 0.340999 0.00320832
+  rotation -0.000314725 1 -4.1681e-05 1.43891
   controller "darwin-op_team_0"
   controllerArgs "1 99"
   plasticColor 0.2 0.2 0.2
@@ -56,42 +56,26 @@ DEF PLAYER_1_99 DARwInOPGPS {
   channel 13
 }
 DEF OBSTACLE1 cylinder {
-  translation 1.05549 0.25 0.372953
+  translation 0.649575 0.25 0.635062
   height 0.5
 }
 DEF OBSTACLE2 cylinder {
-  translation 0.916582 0.25 -0.0911346
+  translation 1.67639 0.25 -0.450064
   height 0.5
 }
 DEF OBSTACLE3 cylinder {
-  translation 1.70785 0.25 0.441833
+  translation 0.799205 0.25 -0.223527
   height 0.5
 }
 DEF OBSTACLE4 cylinder {
-  translation 1.66723 0.25 -0.568385
+  translation 1.40224 0.25 0.193839
   height 0.5
 }
 DEF OBSTACLE5 cylinder {
-  translation 1.67917 0.25 -0.0554558
+  translation 1.82993 0.25 0.790134
   height 0.5
 }
 DEF OBSTACLE6 cylinder {
-  translation 1.46563 0.25 -1.09417
-  height 0.5
-}
-DEF OBSTACLE7 cylinder {
-  translation 2.23449 0.25 0.478697
-  height 0.5
-}
-DEF OBSTACLE8 cylinder {
-  translation 2.21145 0.25 -0.351452
-  height 0.5
-}
-DEF OBSTACLE9 cylinder {
-  translation 1.68609 0.25 0.975814
-  height 0.5
-}
-DEF OBSTACLE10 cylinder {
-  translation 1.03457 0.25 -0.637304
+  translation -0.856017 0.25 0.0170142
   height 0.5
 }

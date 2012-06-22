@@ -92,6 +92,6 @@ camera.param[7] = {key='exposure (absolute)',      val={1135}};
 --camera.lut_file = 'lut_RC12_LV_GameFields.raw'
 --camera.lut_file = 'lut_RC12_LV_GameFields_New.raw'
 --camera.lut_file = 'lut_RC12_LV_HighWB.raw'
---camera.lut_file_obs = 'lut_ob_mex7.raw'
-camera.lut_file = 'lut_ob_mex7.raw'
-
+camera.lut_file_obs = 'lut_ob_mex7.raw'
+--camera.lut_file = 'lut_ob_mex5.raw'
+camera.lut_file = 'lut_RC12_LV_FieldB.raw'

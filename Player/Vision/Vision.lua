@@ -126,6 +126,9 @@ function entry()
   else
     camera_init();
   end 
+
+  -- in default, use prelearned colortable
+  vcm.set_image_learn_lut(0);
 end
 
 function camera_init()
@@ -204,10 +207,12 @@ function update()
     exit()
   end
 
+
+
   -- perform the initial labeling
   if(webots) then
     labelA.data = Camera.get_labelA( carray.pointer(camera.lut) );
-    labelA.data_obs = Camera.get_labelA( carray.pointer(camera.lut_obs) );
+    labelA.data_obs = Camera.get_labelA_obs( carray.pointer(camera.lut_obs) );
   else
 
     labelA.data  = ImageProc.yuyv_to_label(vcm.get_image_yuyv(),
@@ -224,12 +229,34 @@ function update()
 
   -- determine total number of pixels of each color/label
   colorCount = ImageProc.color_count(labelA.data, labelA.npixel);
+  colorCount_obs = ImageProc.color_count_obs(labelA.data_obs, labelA.npixel);
 
   -- bit-or the segmented image
   labelB.data = ImageProc.block_bitor(labelA.data, labelA.m, labelA.n, scaleB, scaleB);
 
   -- Obstacle labels
   labelB.data_obs = ImageProc.block_bitor_obs(labelA.data_obs, labelA.m, labelA.n, scaleB, scaleB);
+
+  -- Learn ball color from mask and rebuild colortable
+  obs_challenge_enable = Config.obs_challenge or 0;
+  if obs_challenge_enable == 1 then
+    print('enable obs challenge')
+    if vcm.get_image_learn_lut() == 1 then
+      print("learn new colortable for random ball from mask");
+      vcm.set_image_learn_lut(0);
+      mask = ImageProc.label_to_mask(labelA.data_obs, labelA.m, labelA.n);
+      if (webots) then
+        print("learn in webots")
+        lut_update = Camera.get_lut_update(mask, carray.pointer(camera.lut_obs));
+--        lut_update = Camera.get_lut_update(mask, carray.pointer(camera.lut));
+      else
+        print("learn in op")
+        lut_update = ImageProc.yuyv_mask_to_lut(vcm.get_image_yuyv(), mask, camera.lut, 
+                                                labelA.m, labelA.n);
+      end
+      print(type(mask),type(labelB.data))
+    end
+  end
 
   vcm.refresh_debug_message();
   Detection.update();
@@ -328,6 +355,8 @@ function update_shm(status)
           vcm.set_camera_yuyvType(1);
           vcm.set_image_labelA(labelA.data);
           vcm.set_image_labelB(labelB.data);
+--          vcm.set_image_labelA_obs(labelA.data_obs);
+--          vcm.set_image_labelB_obs(labelB.data_obs);
 	end
         if vcm.get_camera_broadcast() > 0 then --Wired monitor broadcasting
 	  if vcm.get_camera_broadcast() == 1 then

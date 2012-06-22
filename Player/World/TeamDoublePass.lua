@@ -45,8 +45,16 @@ team_task_state={0,0};
 
 function recv_msgs()
   while (Comm.size() > 0) do 
-    t = serialization.deserialize(Comm.receive());
-    if (t and (t.teamNumber) and (t.teamNumber == state.teamNumber) and (t.id) and (t.id ~= playerID)) then
+    msg = Comm.receive();
+    t = serialization.deserialize(msg);
+
+    --Ball GPS Info hadling
+    if msg and #msg==14 then --Ball position message
+      ball_gpsx=(tonumber(string.sub(msg,2,6))-5)*2;
+      ball_gpsy=(tonumber(string.sub(msg,8,12))-5)*2;
+      wcm.set_robot_gps_ball({ball_gpsx,ball_gpsy,0});
+
+    elseif (t and (t.teamNumber) and (t.teamNumber == state.teamNumber) and (t.id) and (t.id ~= playerID)) then
       t.tReceive = Body.get_time();
       states[t.id] = t;
     end

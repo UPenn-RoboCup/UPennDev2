@@ -156,7 +156,8 @@ function update()
     if t-ball.t<0.1 and ball_v < ball_velocity_th2 then
       --ball is not moving, check whether we go out for kicking      
       if ballX_defend<rCloseX2 or
-       ((ballX_defend<rCloseX or ballR_defend<rClose)
+--       ((ballX_defend<rCloseX or ballR_defend<rClose)
+       (ballR_defend<rClose
 	     and attacker_eta > eta_kickaway) then
         Motion.event("walk");
         return "ballClose";

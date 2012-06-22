@@ -468,7 +468,68 @@ static int lua_tilted_block_bitor(lua_State *L) {
 
 
 
+static int lua_connected_regions_obs(lua_State *L) {
+  static std::vector<RegionProps> props;
 
+  uint8_t *x = (uint8_t *) lua_touserdata(L, 1);
+  if ((x == NULL) || !lua_islightuserdata(L, 1)) {
+    return luaL_error(L, "Input image not light user data");
+  }
+  int mx = luaL_checkint(L, 2);
+  int nx = luaL_checkint(L, 3);
+  int8_t mask = luaL_optinteger(L, 4, 1);
+
+  // horizon attempt
+  //int no = luaL_checkint(L, 4);
+  //uint8_t mask = luaL_optinteger(L, 5, 1);
+  //int rowOffset = no * mx * sizeof(uint8);
+  //int nlabel = ConnectRegions(props, x+rowOffset, mx, nx-no, mask);
+
+  int nlabel = ConnectRegions_obs(props, x, mx, nx, mask);
+  if (nlabel <= 0) {
+    return 0;
+  }
+
+  lua_createtable(L, nlabel, 0);
+  for (int i = 0; i < nlabel; i++) {
+    lua_createtable(L, 0, 3);
+
+    // area field
+    lua_pushstring(L, "area");
+    lua_pushnumber(L, props[i].area);
+    lua_settable(L, -3);
+
+    // centroid field
+    lua_pushstring(L, "centroid");
+    double centroidI = (double)props[i].sumI/props[i].area;
+    double centroidJ = (double)props[i].sumJ/props[i].area;
+    //double centroidJ = (double)props[i].sumJ/props[i].area + rowOffset;
+    lua_createtable(L, 2, 0);
+    lua_pushnumber(L, centroidI);
+    lua_rawseti(L, -2, 1);
+    lua_pushnumber(L, centroidJ);
+    lua_rawseti(L, -2, 2);
+    lua_settable(L, -3);
+
+    // boundingBox field
+    lua_pushstring(L, "boundingBox");
+    lua_createtable(L, 2, 0);
+    lua_pushnumber(L, props[i].minI);
+    lua_rawseti(L, -2, 1);
+    lua_pushnumber(L, props[i].maxI);
+    lua_rawseti(L, -2, 2);
+    lua_pushnumber(L, props[i].minJ);
+    //lua_pushnumber(L, props[i].minJ + rowOffset);
+    lua_rawseti(L, -2, 3);
+    lua_pushnumber(L, props[i].maxJ);
+    //lua_pushnumber(L, props[i].maxJ + rowOffset);
+    lua_rawseti(L, -2, 4);
+    lua_settable(L, -3);
+
+    lua_rawseti(L, -2, i+1);
+  }
+  return 1;
+}
 
 
 static int lua_connected_regions(lua_State *L) {
@@ -648,6 +709,7 @@ static const struct luaL_reg imageProc_lib [] = {
   {"block_bitor_obs", lua_block_bitor_obs},
   {"tilted_block_bitor", lua_tilted_block_bitor},
   {"connected_regions", lua_connected_regions},
+  {"connected_regions_obs", lua_connected_regions_obs},
   {"goal_posts", lua_goal_posts},
   {"tilted_goal_posts", lua_tilted_goal_posts},
   {"field_lines", lua_field_lines},

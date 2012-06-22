@@ -27,4 +27,7 @@ private:
 int ConnectRegions(std::vector <RegionProps> &props,
 		   uint8* image, int n, int m, uint8 mask = 0x01);
 
+int ConnectRegions_obs(std::vector <RegionProps> &props,
+		   uint8* image, int n, int m, uint8 mask = 0x01);
+
 #endif

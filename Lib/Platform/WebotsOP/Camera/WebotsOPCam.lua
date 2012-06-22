@@ -51,6 +51,11 @@ function get_labelA( lut )
   return ImageProc.rgb_to_label(carray.pointer(image), lut, width, height);
 end
 
+function get_labelA_obs( lut )
+  --rgb2label
+  return ImageProc.rgb_to_label_obs(carray.pointer(image), lut, width, height);
+end
+
 function get_camera_status()
   status = {};
   status.select = 0;

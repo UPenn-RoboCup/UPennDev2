@@ -6,6 +6,7 @@ require('unix');
 require('util');
 require('wcm');
 require('gcm');
+require('Speak');
 
 require('SoundComm');
 require('Body');
@@ -105,9 +106,9 @@ function update()
 
    -- if we are the goalie, periodically send out the audio signal
    if (gcm.get_team_player_id() == 1) then
-      -- only in ready and playing state
+      -- only playing state
       local gameState = gcm.get_game_state();
-      if (gameState == 1 or gameState == 3) then
+      if (gameState == 3) then
          -- only transmit the sequence when we are in our own goal
          local pose = wcm.get_robot_pose();
          local goalPos = wcm.get_goal_defend();
@@ -366,7 +367,8 @@ function resolve_goal_detection(gtype, vgoal)
       local goalBeliefFromPose = which_goal_based_on_current_pose(agoal);
       -- if we think it is the attacking goal return defending (to update pose faster)
       if (goalBeliefFromPose == 1) then
-         return -1;
+        Speak.talk('Flipping'); 
+        return -1;
       else
          -- otherwise use normal pose filter updates
          print('------------------ already have correct direction ------------------');

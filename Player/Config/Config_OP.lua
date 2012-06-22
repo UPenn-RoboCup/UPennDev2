@@ -315,3 +315,11 @@ fsm.bodyPosition.maxStep3 = 0.06;
 --Setting for match #4
 led_on = 1; --turn off eye led
 fsm.enable_sidekick = 0;
+
+-----------------------------------------------------------------------
+
+--Sidekick testing
+fsm.enable_sidekick = 1;
+fsm.thSideKick1 = 30*math.pi/180;
+fsm.thSideKick2 = 135*math.pi/180;
+fsm.thDistSideKick = 1.0;

@@ -91,12 +91,12 @@ function update()
     return 'ballFar';
   end
   if toKick then
-    if (math.abs(attackBearing) < thAlign) then
+    if (math.abs(attackBearing) < thAlign) and (ball.x > 0) then
       print(math.abs(attackBearing));
       return 'done';
     end
   else
-    if (math.abs(attackBearing) < thAlignWalkKick) then
+    if (math.abs(attackBearing) < thAlignWalkKick) and (ball.x > 0)  then
       print(math.abs(attackBearing));
       return 'done';
     end

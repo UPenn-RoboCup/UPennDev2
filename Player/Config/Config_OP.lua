@@ -161,7 +161,7 @@ team.use_team_ball = 1;
 team.team_ball_timeout = 3.0;  --use team ball info after this delay
 team.team_ball_threshold = 0.5; --Min score to use team ball
 
-team.avoid_own_team = 0;
+team.avoid_own_team = 1;
 team.avoid_other_team = 0;
 
 
@@ -170,7 +170,7 @@ team.avoid_other_team = 0;
 km = {};
 km.standup_front = 'km_NSLOP_StandupFromFront.lua';
 km.standup_back = 'km_NSLOP_StandupFromBack.lua';
---km.standup_back = 'km_NSLOP_StandupFromBack3.lua';
+km.standup_back2 = 'km_NSLOP_StandupFromBack3.lua';
 
 
 if (robotName=='sally') then 
@@ -323,3 +323,7 @@ fsm.enable_sidekick = 1;
 fsm.thSideKick1 = 30*math.pi/180;
 fsm.thSideKick2 = 135*math.pi/180;
 fsm.thDistSideKick = 1.0;
+
+--Roll backup setup
+use_rollback_getup = 1;
+batt_max = 120; --only do rollback getup when battery is enough

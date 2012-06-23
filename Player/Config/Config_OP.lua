@@ -375,3 +375,6 @@ vision.ball.th_headAngle = 10* math.pi/180;
 enable_ceremony = 1;
 ceremony_score = 2;
 -----------------------------------------------------------------
+
+
+enable_ceremony = 0;

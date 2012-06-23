@@ -367,4 +367,7 @@ bat_med = 119; -- Slow down walking if voltage drops below this
 fsm.daPostmargin = 20*math.pi/180; --More margin for kick to the side
 fsm.bodyApproach.ballYMin = 0.16; --Tighter orbit radius
 
+--green check turned off at this angle
+vision.ball.th_headAngle = 10* math.pi/180;
+
 -----------------------------------------------------------------

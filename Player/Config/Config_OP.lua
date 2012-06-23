@@ -387,3 +387,8 @@ ceremony_score = 2;
 
 
 enable_ceremony = 0;
+
+
+
+--FINAL MATCH
+vision.goal.distanceFactorYellow = 1.15; 

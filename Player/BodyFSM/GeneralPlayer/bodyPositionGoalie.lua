@@ -85,7 +85,8 @@ function update()
 
   if tBall<1.0 then
     if ballX_defend < rCloseX2 or
-       ((ballR_defend<rClose or ballX_defend<rCloseX) 
+--       ((ballR_defend<rClose or ballX_defend<rCloseX) 
+       (ballR_defend<rClose  
          and attacker_eta > eta_kickaway) then
       return "ballClose";
     end

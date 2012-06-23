@@ -172,8 +172,8 @@ function update()
     end
   end
 
-print("SCORE: our team ",our_score,"their team",opponent_score);
-
+  gcm.set_game_our_score(our_score);
+  gcm.set_game_opponent_score(opponent_score);
 
   --GameController Latency
   gcm.set_game_gc_latency(math.min(999, unix.time() - lastUpdate));

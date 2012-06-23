@@ -40,14 +40,14 @@ loadconfig('Vision/Config_OP_Vision')
 --loadconfig('Vision/Config_OP_Camera_L512_Day')
 --loadconfig('Vision/Config_OP_Camera_RC12_day0')
 
+--RC12 -MEXICO
 --loadconfig('Vision/Config_OP_Camera_RC12_day1_8AM')
---loadconfig('Vision/Config_OP_Camera_RC12_FieldD')
---loadconfig('Vision/Config_OP_Camera_RC12_FieldD')
+--loadconfig('Vision/Config_OP_Camera_RC12_FieldA')
 --loadconfig('Vision/Config_OP_Camera_RC12_FieldB')
-loadconfig('Vision/Config_OP_Camera_RC12_FieldA')
+loadconfig('Vision/Config_OP_Camera_RC12_FieldB_New')
+--loadconfig('Vision/Config_OP_Camera_RC12_FieldD')
 
 --loadconfig('Vision/Config_OP_Camera_RC12_day1_8AM')
---loadconfig('Vision/Config_OP_Camera_RC12_FieldD')
 
 --loadconfig('Vision/Config_OP_Camera_Ob_F1')
 
@@ -371,4 +371,10 @@ fsm.bodyApproach.ballYMin = 0.16; --Tighter orbit radius
 --green check turned off at this angle
 vision.ball.th_headAngle = 10* math.pi/180;
 
+
+enable_ceremony = 1;
+ceremony_score = 2;
 -----------------------------------------------------------------
+
+
+enable_ceremony = 0;

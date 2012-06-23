@@ -26,6 +26,12 @@ require('bodyAnticipate')
 require('bodyChase')
 require('bodyDive')
 
+
+
+require('bodyReadyMove')
+
+
+
 sm = fsm.new(bodyIdle);
 sm:add_state(bodyStart);
 sm:add_state(bodyStop);
@@ -46,6 +52,8 @@ sm:add_state(bodyPositionGoalie);
 sm:add_state(bodyAnticipate);
 sm:add_state(bodyDive);
 sm:add_state(bodyChase);
+
+sm:add_state(bodyReadyMove);
 
 
 
@@ -99,7 +107,9 @@ sm:set_transition(bodyKick, 'timeout', bodyPosition);
 sm:set_transition(bodyKick, 'reposition', bodyApproach);
 sm:set_transition(bodyWalkKick, 'done', bodyPosition);
 
-sm:set_transition(bodyReady, 'fall', bodyReady);
+sm:set_transition(bodyReady, 'done', bodyReadyMove);
+sm:set_transition(bodyReadyMove, 'fall', bodyReadyMove);
+
 sm:set_transition(bodyPosition, 'fall', bodyPosition);
 sm:set_transition(bodyDribble, 'fall', bodyPosition);
 sm:set_transition(bodyApproach, 'fall', bodyPosition);

@@ -81,7 +81,8 @@ function check_approach_type()
     check_angle = 0; --Don't check angle if we're doing evade kick
   end
 
-  if role==0 then
+--  if role==0 then
+  if false then
     --Goalie always approach the ball directly without turning
     position.posCalc();
     pose=wcm.get_pose();

@@ -98,7 +98,7 @@ elseif (robotName=='jiminy') then
   game.playerID = 5; 
   ball_shift={-0.020,0.015};
 elseif (robotName=='hokie') then
-  game.playerID = 4; 
+  game.playerID = 3; 
   game.role = 0; --Default goalie
 elseif (robotName=='sally') then
   game.playerID = 5; 

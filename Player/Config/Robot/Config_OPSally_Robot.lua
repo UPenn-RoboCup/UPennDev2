@@ -130,11 +130,11 @@ else -- For new, PID firmware with 14-bit precision
   servo.posZero={
     2048,2048, --Head
 --    1024,2560,3072, --LArm
-    1500,2498,3100,  --LArm, for sally
+    1500,2498,2365,  --LArm, for sally
     2048,2048,2048,2048,2048,2048, --LLeg
     2048,2048,2048,2048,2048,2048, --RLeg
 --    3072,1536,1024, --RArm
-    3072,1605,1024, --RArm, for sally
+    3072,1605,1150, --RArm, for sally
     --          512, -- For aux
   };
 

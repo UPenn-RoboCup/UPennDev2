@@ -100,7 +100,7 @@ function obs_in_occ()
   ocm.set_obstacle_num(nOb);
   centroid = vector.zeros(maxOb * 2);
   angle_range = vector.zeros(maxOb * 2);
-  nearest = vector.zeros(maxOb * 3);
+  nearest = vector.zeros(maxOb * 2);
 --  print('Find ',nOb);
   for i = 1 , nOb do
 --    print('centroid')
@@ -115,8 +115,7 @@ function obs_in_occ()
 --    print('nearest')
 --    util.ptable(obstacle[i].nearest);
     nearest[(i-1)*3+1] = obstacle[i + 1].nearest[1];
-    nearest[(i-1)*3+2] = obstacle[i + 1].nearest[2];
-    nearest[(i-1)*3+3] = obstacle[i + 1].nearest[3];
+    nearest[(i-1)*3+2] = obstacle[i + 1].nearest[3];
   end
   ocm.set_obstacle_centroid(centroid);
   ocm.set_obstacle_angle_range(angle_range);
@@ -133,7 +132,7 @@ function update()
 
   -- Time decay
   local time = unix.time();
---  OccMap.time_decay(time);
+  OccMap.time_decay(time);
 
 	-- Vision Update
   vision_update();

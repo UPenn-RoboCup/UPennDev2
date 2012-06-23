@@ -42,8 +42,13 @@ loadconfig('Vision/Config_OP_Vision')
 
 --loadconfig('Vision/Config_OP_Camera_RC12_day1_8AM')
 --loadconfig('Vision/Config_OP_Camera_RC12_FieldD')
+
 --loadconfig('Vision/Config_OP_Camera_RC12_FieldB')
 loadconfig('Vision/Config_OP_Camera_RC12_FieldB_New')
+
+--loadconfig('Vision/Config_OP_Camera_RC12_FieldD')
+--loadconfig('Vision/Config_OP_Camera_RC12_FieldB')
+loadconfig('Vision/Config_OP_Camera_RC12_FieldA')
 
 --loadconfig('Vision/Config_OP_Camera_RC12_day1_8AM')
 
@@ -82,7 +87,7 @@ game.role = 1; --Default attacker
 ball_shift={0,0};
 
 if (robotName=='scarface') then
-  game.playerID = 1; 
+  game.playerID = 4; 
 elseif (robotName=='linus') then
   game.playerID = 2; 
 elseif (robotName=='betty') then
@@ -363,6 +368,10 @@ fsm.bodyPosition.maxStep3 = 0.08;
 
 bat_med = 119; -- Slow down walking if voltage drops below this 
 
-fsm.daPostmargin = 25*math.pi/180; --More margin for kick to the side
+fsm.daPostmargin = 20*math.pi/180; --More margin for kick to the side
+fsm.bodyApproach.ballYMin = 0.16; --Tighter orbit radius
+
+--green check turned off at this angle
+vision.ball.th_headAngle = 10* math.pi/180;
 
 -----------------------------------------------------------------

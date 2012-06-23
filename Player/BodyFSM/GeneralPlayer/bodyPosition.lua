@@ -131,9 +131,14 @@ function update()
     if role==0 then --Goalie has the highest priority 
       r_reject = 0.4;
 
+
+
     elseif role==1 then --Attacker
       if obstacle_role[i]==0 then --Our goalie
-        r_reject = 1.0;
+--        r_reject = 1.0;
+        r_reject = 0.5;
+
+
       elseif obstacle_role[i]<4 then --Our team
         r_reject = 0.001;
       else
@@ -142,7 +147,8 @@ function update()
     else --Defender and supporter
       if obstacle_role[i]<4 then --Our team
         if obstacle_role[i]==0 then --Our goalie
-          r_reject = 1.0;
+--          r_reject = 1.0;
+          r_reject = 0.7;
         else
           r_reject = 0.6;
         end

@@ -40,13 +40,16 @@ loadconfig('Vision/Config_OP_Vision')
 --loadconfig('Vision/Config_OP_Camera_L512_Day')
 --loadconfig('Vision/Config_OP_Camera_RC12_day0')
 
+--RC12 -MEXICO
 --loadconfig('Vision/Config_OP_Camera_RC12_day1_8AM')
-loadconfig('Vision/Config_OP_Camera_RC12_FieldD')
+--loadconfig('Vision/Config_OP_Camera_RC12_FieldA')
+--loadconfig('Vision/Config_OP_Camera_RC12_FieldB')
+loadconfig('Vision/Config_OP_Camera_RC12_FieldB_New')
 --loadconfig('Vision/Config_OP_Camera_RC12_FieldD')
+
 --loadconfig('Vision/Config_OP_Camera_RC12_FieldB')
 
 --loadconfig('Vision/Config_OP_Camera_RC12_day1_8AM')
---loadconfig('Vision/Config_OP_Camera_RC12_FieldD')
 
 --loadconfig('Vision/Config_OP_Camera_Ob_F1')
 
@@ -83,7 +86,7 @@ game.role = 1; --Default attacker
 ball_shift={0,0};
 
 if (robotName=='scarface') then
-  game.playerID = 1; 
+  game.playerID = 4; 
 elseif (robotName=='linus') then
   game.playerID = 2; 
 elseif (robotName=='betty') then
@@ -142,7 +145,7 @@ fsm.fast_approach = 0;
 --1 for randomly doing evade kick
 --2 for using obstacle information
 --fsm.enable_evade = 0;
-fsm.enable_evade = 2;
+fsm.enable_evade = 0;
 
 -- Team Parameters
 team = {};
@@ -239,9 +242,11 @@ vision.use_multi_landmark = 1;
 --led_on = 0; --turn on eye led
 
 --Slow down maximum speed (for testing)
+--[[
 fsm.bodyPosition.maxStep1 = 0.06;
 fsm.bodyPosition.maxStep2 = 0.06;
 fsm.bodyPosition.maxStep3 = 0.06;
+--]]
 
 --Disable walkkicks and sidekicks 
 fsm.enable_walkkick = 0; --Testing 
@@ -340,6 +345,47 @@ batt_max = 120; --only do rollback getup when battery is enough
 
 
 
---Enable this for double pass
-fsm.body={'DoublePassChallenge'};
-dev.team='TeamDoublePass';
+--VISION CALIBRATION VALUES
+vision.goal.distanceFactorCyan = 1.1; 
+vision.goal.distanceFactorYellow = 1.3; 
+vision.landmark.distanceFactorCyan = 1.05; 
+vision.landmark.distanceFactorYellow = 1.05; 
+
+
+
+
+---------------------------------------------------------------
+-- FOR SEMIFINAL
+batt_max = 117; --only do rollback getup when battery is enough
+fsm.goalie_type = 2;--moving and stop goalie
+fsm.goalie_reposition=1; --Yaw reposition
+
+--maximum speed
+fsm.bodyPosition.maxStep1 = 0.06;
+fsm.bodyPosition.maxStep2 = 0.07;
+fsm.bodyPosition.maxStep3 = 0.08;
+
+bat_med = 119; -- Slow down walking if voltage drops below this 
+
+fsm.daPostmargin = 20*math.pi/180; --More margin for kick to the side
+fsm.bodyApproach.ballYMin = 0.16; --Tighter orbit radius
+
+--green check turned off at this angle
+vision.ball.th_headAngle = 10* math.pi/180;
+
+world.postDiameter = 0.12;  --Thicker 
+world.goalHeight = 0.80;
+world.goalWidth = 1.40;
+
+vision.goal.distanceFactorCyan = 1.15; 
+vision.goal.distanceFactorYellow = 1.25; 
+vision.landmark.distanceFactorCyan = 1.1; 
+vision.landmark.distanceFactorYellow = 1.1; 
+
+
+enable_ceremony = 1;
+ceremony_score = 2;
+-----------------------------------------------------------------
+
+
+enable_ceremony = 0;

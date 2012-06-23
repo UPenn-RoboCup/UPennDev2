@@ -231,8 +231,8 @@ function process_keyinput()
 
     elseif byte==string.byte("4") then
       Body.set_head_hardness(0.4);
---      HeadFSM.sm:set_state('headLog');
-      HeadFSM.sm:set_state('headObs');
+      HeadFSM.sm:set_state('headLog');
+--      HeadFSM.sm:set_state('headObs');
       headsm_running=1;
 
     elseif byte==string.byte("5") then

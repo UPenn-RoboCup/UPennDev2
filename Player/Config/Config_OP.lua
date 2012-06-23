@@ -364,6 +364,7 @@ fsm.bodyPosition.maxStep3 = 0.08;
 
 bat_med = 119; -- Slow down walking if voltage drops below this 
 
-fsm.daPostmargin = 25*math.pi/180; --More margin for kick to the side
+fsm.daPostmargin = 20*math.pi/180; --More margin for kick to the side
+fsm.bodyApproach.ballYMin = 0.16; --Tighter orbit radius
 
 -----------------------------------------------------------------

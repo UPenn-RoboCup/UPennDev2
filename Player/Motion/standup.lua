@@ -37,8 +37,7 @@ function entry()
     pose = wcm.get_pose();
     batt_level=Body.get_battery_level();
 
-    if math.abs(pose.x) < 1.5 and
-       math.abs(pose.y) < 1.5 and
+    if math.abs(pose.x) < 2.0 and
        use_rollback_getup > 0 and
        batt_level*10>batt_max then
 

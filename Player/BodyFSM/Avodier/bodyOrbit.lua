@@ -5,7 +5,6 @@ require('walk')
 require('vector')
 require('Config')
 require('wcm')
-require('behavior')
 
 t0 = 0;
 timeout = Config.fsm.bodyOrbit.timeout;
@@ -21,16 +20,15 @@ kickAngle = 0;
 
 function entry()
   print(_NAME.." entry");
+
   t0 = Body.get_time();
-  behavior.update();
-  kickAngle=  wcm.get_kick_angle();
+  kickAngle=  0;
   direction,angle=get_orbit_direction();
 end
 
 function get_orbit_direction()
   attackBearing = wcm.get_attack_bearing();
   angle = util.mod_angle(attackBearing-kickAngle);
-
   if angle>0 then dir = 1;
   else dir = -1;
   end
@@ -52,7 +50,6 @@ function update()
   vx = maxStep*math.cos(aStep);
   
   --Does setting vx to 0 improve performance of orbit?--
-  
   vx = 0;
   
   vy = maxStep*math.sin(aStep);

@@ -89,7 +89,7 @@ int& OccMap::get_robot_pos_y(void) {
 }
 
 int OccMap::time_decay(double time) {
-  double decay_coef = 0.005;
+  double decay_coef = 0.01;
   double P = 0, P1 = 0;
   int i = 0;
   for (i = 0; i < grid_num; i++) {
@@ -197,23 +197,23 @@ int OccMap::odometry_update(const double odomX, const double odomY,
   double odom_i = odom_x / (shift_scale * resolution);
   double odom_j = odom_y / (shift_scale * resolution);
   if (odom_i >= 1) {
-    cout << "down shift" << endl;
+//    cout << "down shift" << endl;
     map_shift(shift_scale, 0);
     odom_x -= shift_scale * resolution;
     odom_i--;
   } else if (odom_i <= -1) {
-    cout << "up shift" << endl;
+//    cout << "up shift" << endl;
     map_shift(-shift_scale, 0);
     odom_x += shift_scale * resolution;
     odom_i++;
   }
   if (odom_j >= 1) {
-    cout << "left shift" << endl;
+//    cout << "left shift" << endl;
     map_shift(0, shift_scale);
     odom_y -= shift_scale * resolution;
     odom_j--;
   } else if (odom_j <= -1) {
-    cout << "right shift" << endl;
+//    cout << "right shift" << endl;
     map_shift(0, -shift_scale);
     odom_y += shift_scale * resolution;
     odom_j++;

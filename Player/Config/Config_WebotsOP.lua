@@ -15,8 +15,7 @@ end
 loadconfig('Walk/Config_WebotsOP_Walk')
 --loadconfig('World/Config_OP_World')
 loadconfig('World/Config_WebotsOP_World')
---loadconfig('Kick/Config_WebotsOP_Kick')
-loadconfig('Kick/Config_OP_Kick2')
+loadconfig('Kick/Config_WebotsOP_Kick')
 --loadconfig('Kick/Config_WebotsOP_KickPunch')
 loadconfig('Vision/Config_WebotsOP_Vision')
 
@@ -121,7 +120,8 @@ fsm.body = {'GeneralPK'};
 
 --[[
 --Enable this for throw-in 
---fsm.body = {'ThrowInChallenge'};
+dev.team='TeamNull'; --Turn off teamplay for challenges
+fsm.body = {'ThrowInChallenge'};
 --]]
 
 --Enable this for double pass
@@ -129,7 +129,6 @@ fsm.body = {'GeneralPK'};
 fsm.body={'DoublePassChallenge'};
 dev.team='TeamDoublePass';
 --]]
-
 
 -- Team Parameters
 team = {};
@@ -164,9 +163,10 @@ team.avoid_other_team = 1;
 -- keyframe files
 km = {};
 km.standup_front = 'km_NSLOP_StandupFromFront.lua';
---km.standup_front = 'km_NSLOP_StandupFromFront2.lua';
---km.standup_front = 'km_NSLOP_StandupFromFront3.lua';
 km.standup_back = 'km_NSLOP_StandupFromBack.lua';
+km.standup_back2 = 'km_NSLOP_StandupFromBack3.lua';
+
+
 --km.standup_back = 'km_NSLOP_StandupFromBack3.lua';
 --km.kick_right = 'km_NSLOP_taunt1.lua';
 --km.kick_left = 'km_NSLOP_StandupFromFront2.lua';
@@ -209,10 +209,28 @@ fsm.bodyPosition.maxStep3 = 0.08;
 
 --Shutdown Vision and use ground truth gps info only
 use_gps_only = 0;
---use_gps_only = 1;
+use_gps_only = 1;
 
 fsm.enable_walkkick = 0;
 --fsm.enable_sidekick = 0;
 
 --New multi-blob landmark detection code
 vision.use_multi_landmark = 1;
+
+-- obstacle avoidance challenge
+obs_challenge = 1;
+fsm.enable_sidekick = 1;
+fsm.thSideKick1 = 30*math.pi/180;
+fsm.thSideKick2 = 135*math.pi/180;
+fsm.thDistSideKick = 1.0;
+
+use_rollback_getup = 1;
+batt_max = 120; --only do rollback getup when battery is enough
+
+
+--For doublepass
+fsm.headTrack.timeout = 2.0 * speedFactor;
+fsm.headTrack.tLost = 1.5 * speedFactor;
+fsm.headTrack.minDist = 0.15; --Default value 0.30,If ball is closer than this, don't look up
+
+--Roll backup setup

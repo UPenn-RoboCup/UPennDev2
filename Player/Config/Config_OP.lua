@@ -87,6 +87,8 @@ if (robotName=='scarface') then
   game.playerID = 4; 
 elseif (robotName=='linus') then
   game.playerID = 2; 
+  ball_shift={0.00,0.010};
+
 elseif (robotName=='betty') then
   game.playerID = 3; 
   ball_shift={-0.010,0.010};

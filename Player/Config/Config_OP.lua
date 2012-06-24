@@ -47,6 +47,8 @@ loadconfig('Vision/Config_OP_Vision')
 loadconfig('Vision/Config_OP_Camera_RC12_FieldB_New')
 --loadconfig('Vision/Config_OP_Camera_RC12_FieldD')
 
+--loadconfig('Vision/Config_OP_Camera_RC12_FieldB')
+
 --loadconfig('Vision/Config_OP_Camera_RC12_day1_8AM')
 
 --loadconfig('Vision/Config_OP_Camera_Ob_F1')
@@ -87,6 +89,8 @@ if (robotName=='scarface') then
   game.playerID = 4; 
 elseif (robotName=='linus') then
   game.playerID = 2; 
+  ball_shift={0.00,0.010};
+
 elseif (robotName=='betty') then
   game.playerID = 3; 
   ball_shift={-0.010,0.010};
@@ -387,3 +391,20 @@ ceremony_score = 2;
 
 
 enable_ceremony = 0;
+
+-----------------------------------------------------------------
+-- FINAL MATCH CONFIG
+
+enable_ceremony = 1;
+ceremony_score = 3; --3 goal difference
+batt_max = 120; --12.0V rollback getup thershold
+--If ball is closer than this don't look up
+fsm.headTrack.minDist = 0.30;
+
+--Vision calibration values
+vision.goal.distanceFactorCyan = 1.15; 
+vision.goal.distanceFactorYellow = 1.15; 
+vision.landmark.distanceFactorCyan = 1.1; 
+vision.landmark.distanceFactorYellow = 1.1; 
+
+------------------------------------------------------------------

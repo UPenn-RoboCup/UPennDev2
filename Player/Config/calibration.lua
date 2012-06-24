@@ -364,6 +364,12 @@ cal["betty"].servoBias={8,-10,21,-77,29,-11,-5,6,-31,-16,-34,6,};
 cal["betty"].footXComp=0.002;
 cal["betty"].kickXComp=0.000;
 
+<<<<<<< HEAD
+-- Updated date: Fri Jun 22 11:51:21 2012
+cal["sally"].servoBias={-33,-22,-6,0,29,-8,0,0,-4,0,0,0,};
+cal["sally"].footXComp=0.005;
+cal["sally"].kickXComp=0.000;
+=======
 -- Updated date: Thu Jun 21 16:57:53 2012
 cal["betty"].servoBias={8,-10,21,-77,29,-11,-5,6,-31,-16,-34,6,};
 cal["betty"].footXComp=0.000;
@@ -388,3 +394,14 @@ cal["scarface"].kickXComp=0.005;
 cal["jiminy"].servoBias={15,0,41,12,-22,4,-20,0,-23,-8,18,-8,};
 cal["jiminy"].footXComp=0.009;
 cal["jiminy"].kickXComp=0.000;
+
+-- Updated date: Sat Jun 23 08:52:33 2012
+cal["linus"].servoBias={21,-16,37,-13,-8,-3,-31,-4,-30,10,0,16,};
+cal["linus"].footXComp=0.003;
+cal["linus"].kickXComp=0.005;
+
+-- Updated date: Sat Jun 23 08:07:03 2012
+cal["betty"].servoBias={8,-10,21,-67,29,-11,-5,6,-31,-24,-34,6,};
+cal["betty"].footXComp=0.006;
+cal["betty"].kickXComp=0.000;
+>>>>>>> 848a26b96326d71cdfb9a492331701a5ccb22516

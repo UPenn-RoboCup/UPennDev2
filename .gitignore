@@ -55,3 +55,17 @@ build
 
 # svn 
 .svn
+
+# for files in nao bu default
+.bash_history
+.bash_profile
+.gitconfig
+.config/
+.ssh/
+.vim/
+.viminfo
+naoqi/
+remotes/
+
+# ball logs
+Player/Data/*.txt

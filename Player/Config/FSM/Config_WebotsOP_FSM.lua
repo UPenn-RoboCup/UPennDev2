@@ -19,6 +19,15 @@ fsm.enable_walkkick = 1;
 
 fsm.wait_kickoff = 1; --initial wait at opponent's kickoff
 
+fsm.goalie_type = 1;
+--1: Constantly moving goalie
+--2: Goalie stops when in position
+--3: Diving goalie (stops in position and never move)
+--4: Diving and repositioning goalie (turns to ball position)
+
+fsm.th_front_kick = 10*math.pi/180;
+
+
 --------------------------------------------------
 --BodyReady : make robot move to initial position
 --------------------------------------------------
@@ -35,25 +44,43 @@ fsm.bodySearch.vSpin = 0.3; --Turn velocity
 fsm.bodySearch.timeout = 10.0*speedFactor;
 
 --------------------------------------------------
---BodyChase : move the robot directly towards the ball
---------------------------------------------------
-fsm.bodyChase={};
-fsm.bodyChase.maxStep = 0.08;
-fsm.bodyChase.rClose = 0.35;
-fsm.bodyChase.timeout = 20.0*speedFactor;
-fsm.bodyChase.tLost = 3.0*speedFactor;
-fsm.bodyChase.rFar = 1.2;
-
---------------------------------------------------
 --BodyAnticipate : Sit down and wait for kick (goalie)
 --------------------------------------------------
 fsm.bodyAnticipate={};
-fsm.bodyAnticipate.rClose = 1.0;
+
+fsm.bodyAnticipate.tStartDelay = 2.0*speedFactor; 
+
+fsm.bodyAnticipate.rMinDive = 0.3;
+fsm.bodyAnticipate.rCloseDive = 3.0;
+fsm.bodyAnticipate.center_dive_threshold_y = 0.07; 
+fsm.bodyAnticipate.dive_threshold_y = 1.0;
+
+fsm.bodyAnticipate.center_dive_threshold_y = 0.12; 
+
+fsm.bodyAnticipate.ball_velocity_th = 1.0; --min velocity for diving
+fsm.bodyAnticipate.ball_velocity_thx = -0.8; --min x velocity for diving
+
+fsm.bodyAnticipate.rClose = 1.5; 
+fsm.bodyAnticipate.rCloseX = 1.0;
+fsm.bodyAnticipate.ball_velocity_th2 = 0.3; --max velocity for start approach
+
 -- How far out of position are we allowed to be?
-fsm.bodyAnticipate.thFar = {0.2,0.2,15*math.pi/180};
+fsm.bodyAnticipate.timeout = 20.0*speedFactor;
+fsm.bodyAnticipate.thFar = {0.4,0.4,30*math.pi/180};
 
 fsm.bodyGoaliePosition = {};
-fsm.bodyGoaliePosition.thClose = {.2, .2,10*math.pi/180}
+fsm.bodyGoaliePosition.thClose = {.2, .1, 10*math.pi/180}
+
+--------------------------------------------------
+--BodyChase : move the robot directly towards the ball (for goalie)
+--------------------------------------------------
+fsm.bodyChase={};
+fsm.bodyChase.maxStep = 0.085; --default value 0.08,0.09 quite unstable
+fsm.bodyChase.rClose = 0.30;  --default value 0.35
+fsm.bodyChase.timeout = 20.0*speedFactor;
+fsm.bodyChase.tLost = 3.0*speedFactor;
+fsm.bodyChase.rFar = 2.1;
+fsm.bodyChase.rFarX = 1.5;
 
 --------------------------------------------------
 --BodyOrbit : make the robot orbit around the ball
@@ -76,10 +103,18 @@ fsm.bodyPosition.rTurn = 0.25;
 fsm.bodyPosition.rDist1 = 0.40; 
 fsm.bodyPosition.rDist2 = 0.20; 
 fsm.bodyPosition.rTurn2 = 0.08; 
+fsm.bodyPosition.rOrbit = 0.40; --Default value 0.60, 0.40 enables ...
+-- the bot to get around the ball real fast avoiding wastage of time.
+
+--New params to reduce sidestepping
 fsm.bodyPosition.rOrbit = 0.60; 
+fsm.bodyPosition.rDist1 = 0.60; 
+fsm.bodyPosition.rDist2 = 0.25; 
+
 
 fsm.bodyPosition.rClose = 0.35; 
-fsm.bodyPosition.thClose = {0.15,0.15,10*math.pi/180};
+--fsm.bodyPosition.thClose = {0.15,0.15,10*math.pi/180};
+fsm.bodyPosition.thClose = {0.3,0.15,20*math.pi/180};
 
 fsm.bodyPosition.tLost =  5.0*speedFactor; 
 fsm.bodyPosition.timeout = 30*speedFactor; 
@@ -87,13 +122,13 @@ fsm.bodyPosition.timeout = 30*speedFactor;
 --Velocity generation parameters
 
 --Slow speed
-fsm.bodyPosition.maxStep1 = 0.05;
+fsm.bodyPosition.maxStep1 = 0.06;
 
 --Medium speed
-fsm.bodyPosition.maxStep2 = 0.06;
+fsm.bodyPosition.maxStep2 = 0.08;
 fsm.bodyPosition.rVel2 = 0.5;
 fsm.bodyPosition.aVel2 = 45*math.pi/180;
-fsm.bodyPosition.maxA2 = 0.2;
+fsm.bodyPosition.maxA2 = 0.1;
 fsm.bodyPosition.maxY2 = 0.02;
 
 --Full speed front dash
@@ -112,21 +147,27 @@ fsm.bodyApproach.timeout = 10.0*speedFactor;
 fsm.bodyApproach.rFar = 0.45; --Max ball distance
 fsm.bodyApproach.tLost = 3.0*speedFactor;--ball detection timeout
 
+fsm.bodyApproach.aThresholdTurn = 10*math.pi/180;
+fsm.bodyApproach.aThresholdTurnGoalie = 15*math.pi/180;
+fsm.bodyApproach.aThresholdTurnGoalie = 35*math.pi/180;
+
+
+
 --x and y target position for stationary straight kick
-fsm.bodyApproach.xTarget11={0, 0.13,0.15}; --min, target, max
-fsm.bodyApproach.yTarget11={0.015, 0.04, 0.045}; --min, target ,max
+fsm.bodyApproach.xTarget11={0, 0.12,0.13}; --min, target, max
+fsm.bodyApproach.yTarget11={0.03, 0.05, 0.06}; --min, target ,max
 
 --x and y target position for stationary kick to left
-fsm.bodyApproach.xTarget12={0, 0.13,0.15}; --min, target, max
+fsm.bodyApproach.xTarget12={0, 0.12,0.14}; --min, target, max
 fsm.bodyApproach.yTarget12={-0.005, 0.01, 0.025}; --min, target ,max
 
 --Target position for straight walkkick 
-fsm.bodyApproach.xTarget21={0, 0.17,0.19}; --min, target, max
-fsm.bodyApproach.yTarget21={0.01, 0.035, 0.04}; --min, target ,max
+fsm.bodyApproach.xTarget21={0, 0.12,0.14}; --min, target, max
+fsm.bodyApproach.yTarget21={0.015, 0.04, 0.045}; --min, target ,max
 
 --Target position for side walkkick to left
-fsm.bodyApproach.xTarget22={0, 0.15,0.17}; --min, target, max
-fsm.bodyApproach.yTarget22={0.005, 0.02, 0.035}; --min, target ,max
+fsm.bodyApproach.xTarget22={0, 0.12,0.14}; --min, target, max
+fsm.bodyApproach.yTarget22={0.0, 0.015, 0.03}; --min, target ,max
 
 --------------------------------------------------
 --BodyAlign : Align robot before kick
@@ -146,10 +187,10 @@ fsm.bodyKick.tStartWait = 1.0;
 fsm.bodyKick.tStartWaitMax = 1.5;
 
 --ball position checking params
-fsm.bodyKick.kickTargetFront = {0.11,0.05};
+fsm.bodyKick.kickTargetFront = {0.12,0.03};
 
 --For kicking to the left
-fsm.bodyKick.kickTargetSide = {0.11,0.01};
+fsm.bodyKick.kickTargetSide = {0.12,0.01};
 fsm.bodyKick.kickTh = {0.03,0.03};
 
 --delay for camera following the ball
@@ -173,7 +214,7 @@ fsm.bodyGotoCenter.timeout=10.0*speedFactor;
 fsm.headTrack = {};
 fsm.headTrack.timeout = 3.0 * speedFactor;
 fsm.headTrack.tLost = 1.5 * speedFactor;
-fsm.headTrack.minDist = 0.30; --If ball is closer than this, don't look up
+fsm.headTrack.minDist = 0.25; --Default value 0.30,If ball is closer than this, don't look up
 fsm.headTrack.fixTh={0.20,0.08}; --Fix yaw axis if ball is within this box
 
 --------------------------------------------------
@@ -197,11 +238,14 @@ fsm.headScan={};
 fsm.headScan.pitch0 = 25*math.pi/180;
 fsm.headScan.pitchMag = 25*math.pi/180;
 fsm.headScan.yawMag = 60*math.pi/180;
+fsm.headScan.yawMagGoalie = 90*math.pi/180;
 fsm.headScan.pitchTurn0 = 20*math.pi/180;
 fsm.headScan.pitchTurnMag = 20*math.pi/180;
 fsm.headScan.yawMagTurn = 45*math.pi/180;
 fsm.headScan.tScan = 3.0*speedFactor;
 fsm.headScan.timeout = 7.0*speedFactor; --to headLookGoal
+fsm.headScan.minDist = 0.30;
+
 
 --------------------------------------------------
 --HeadKick: Fix headangle for approaching
@@ -229,6 +273,7 @@ fsm.headLookGoal={};
 --fsm.headLookGoal.yawSweep = 50*math.pi/180;
 fsm.headLookGoal.yawSweep = 70*math.pi/180;
 fsm.headLookGoal.tScan = 1.0*speedFactor;
+fsm.headLookGoal.minDist = 0.40;
 
 --------------------------------------------------
 --HeadSweep: Look around to find the goal

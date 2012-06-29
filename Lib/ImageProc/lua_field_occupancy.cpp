@@ -12,6 +12,7 @@ extern "C" {
 
 #include <stdint.h>
 #include <math.h>
+#include <iostream>
 
 typedef unsigned char uint8;
 
@@ -34,7 +35,8 @@ int lua_field_occupancy(lua_State *L) {
   int nj = luaL_checkint(L, 3);
   const int nRegions = ni;
 
-  int countup[nRegions];
+  int blockpos[nj];
+  int blockcluster[nj];
   int countdown[nRegions];
   int count[nRegions];
   int flag[nRegions] ;
@@ -42,85 +44,87 @@ int lua_field_occupancy(lua_State *L) {
   for (int i = 0; i < nRegions; i++) {
     count[i] = 0;
     flag[i] = 0;
-    countup[i] = 0;
     countdown[i] = 0;
   }
 
+
   // Scan vertical lines: Uphalf
+  int nBlocks = 0, nBlockClusters = 0;
   for (int i = 0; i < ni; i++) {
     int iRegion = nRegions*i/ni;
     uint8 *im_row = im_ptr + i;
-    for (int j = 0; j < nj/2; j++) {
+    nBlocks = 0;
+    nBlockClusters = 0;
+    for (int j = 0; j < nj; j++) {
+      blockpos[j] = 0;
+      blockcluster[j] = 0;
+    }
+    for (int j = 0; j < nj; j++) {
       uint8 label = *im_row;
-      if (isFree(label)) {
-        countup[iRegion]++;
+      if (!isFree(label)) {
+        blockpos[nBlocks++] = j;
+        if (nBlocks == 1) {
+          blockcluster[nBlockClusters] = j;
+          nBlockClusters++;
+        }
+        else if ((blockpos[nBlocks] - blockpos[nBlocks - 1]) > 5) {
+          blockcluster[nBlockClusters] = j;
+          nBlockClusters++;
+        }
       }
       im_row += ni;
     }
-  }
-  uint8 *im_ptrdown = im_ptr + (int)(ni * round(nj/2));
-  // Scan vertical lines: downhalf
-  for (int i = 0; i < ni; i++) {
-    int iRegion = nRegions*i/ni;
-    uint8 *im_row = im_ptrdown + i;
-    for (int j = nj/2; j < nj; j++) {
-      uint8 label = *im_row;
-      if (isFree(label)) {
-        countdown[iRegion]++;
-      }
-      im_row += ni;
-    }
-  }
-  
-  // Evaluate bound
-  for (int i = 0; i < nRegions; i++){
-    count[i] = countup[i] + countdown[i];
-    // whole free, flag <- 2;
-    if (countup[i] == nj/2){
-      count[i] = nj;
-      flag[i] = 2;
+//    std::cout << nBlocks << ' ' << nBlockClusters << std::endl;
+//    std::cout << nBlockClusters << ' ';
+    // no black pixels found, return type 1
+    if (nBlocks < 0.05 * nj) {
+      flag[i] = 1;
+      count[i] = nj - 1;
       continue;
     }
-    // whole block, flag <- 3
-    if (count[i] == 0){
+    // all black pixels, return type 3
+    if ((blockpos[nBlocks-1] == (nj - 1)) && (blockcluster[nBlockClusters - 1] == 0)) {
       flag[i] = 3;
+      count[i] = 0;
       continue;
     }
-    int pxIdx = (nj - count[i] + 1) * ni + i;
-    uint8 label = *(im_ptr + pxIdx);
-    if (isFree(label)) 
-      flag[i] = 1;
-    else {
-      //printf("Seeking\n");
-      int j = nj - count[i] + 1;
-      for (; j < nj; j++){
-        int searchIdx = j * ni + i;
-        uint8 searchLabel = *(im_ptr + searchIdx);
-        if (isFree(searchLabel)) 
-            break;
-      }
-      count[i] = nj - j + 1;
-      flag[i] = 1;
+    // found black switch to green (up to down), return type 2;
+    if (blockpos[nBlocks-1] != (nj - 1)) {
+      flag[i] = 2;
+      count[i] = nj - blockpos[nBlocks-1] - 1;
+      continue;
+    }
+    // found green switch to black (up to down), return type 4;
+    if (blockcluster[nBlockClusters-1] != 0) {
+      flag[i] = 4;
+      count[i] = nj - blockcluster[nBlockClusters-1] - 1;
+      continue;
     }
   }
-  
+//  std::cout << std::endl; 
   // return state
   lua_createtable(L,0,2);
   
   lua_pushstring(L,"range");
   lua_createtable(L,nRegions,0);
+//  std::cout << "counts: ";
   for (int i = 0; i < nRegions; i++){
+//    std::cout << count[i] << ' '; 
     lua_pushinteger(L, count[i]);
     lua_rawseti(L, -2, i+1);
   }
+//  std::cout << std::endl;
   lua_settable(L, -3);
   
   lua_pushstring(L,"flag");
   lua_createtable(L,nRegions,0);
+//  std::cout << "flags: ";
   for (int i = 0; i < nRegions; i++){
+//    std::cout << flag[i] << ' ';
     lua_pushinteger(L, flag[i]);
     lua_rawseti(L, -2, i+1);
   }
+//  std::cout << std::endl;
   lua_settable(L, -3);
   
   return 1;

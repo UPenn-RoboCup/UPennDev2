@@ -22,6 +22,8 @@ function entry()
   print(_NAME.." entry");
   t0 = Body.get_time();
   phase=0;
+  HeadFSM.sm:set_state('headReady');
+
 end
 
 function update()
@@ -62,5 +64,6 @@ end
 
 function exit()
   print("In position")
+  HeadFSM.sm:set_state('headTrack');
 end
 

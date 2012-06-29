@@ -73,6 +73,7 @@ function update()
       pTorsoR=pRLeg+dpRLeg;
       pTorso=(pTorsoL+pTorsoR)*0.5;
 
+--[[
       --For OP, lift hip a bit before starting to standup
       if(Config.platform.name == 'OP') then
         print("Initial bodyHeight:",pTorso[3]);
@@ -85,6 +86,7 @@ function update()
 	  return;
         end
       end
+--]]
 
       Body.set_lleg_command(qLLeg);
       Body.set_rleg_command(qRLeg);

@@ -39,6 +39,8 @@ require('getch')
 require('Body')
 require('Motion')
 
+gcm.say_id();
+
 Motion.entry();
 
 darwin = false;
@@ -50,6 +52,10 @@ if(Config.platform.name == 'OP') then
   --SJ: OP specific initialization posing (to prevent twisting)
   Body.set_body_hardness(0.3);
   Body.set_actuator_command(Config.stance.initangle)
+  unix.usleep(1E6*0.5);
+  Body.set_body_hardness(0);
+  Body.set_lleg_hardness({0.2,0.6,0,0,0,0});
+  Body.set_rleg_hardness({0.2,0.6,0,0,0,0});
 end
 
 -- Enable Webots specific

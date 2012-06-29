@@ -312,3 +312,8 @@ function bezier( alpha, s )
   return value;
   end
 
+function get_wireless_ip()
+  ifconfig = io.popen('/sbin/ifconfig wlan0 | grep "inet " | cut -d" " -f10-11');
+  ip = ifconfig:read();
+  return ip;
+end

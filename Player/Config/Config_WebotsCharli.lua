@@ -50,7 +50,7 @@ game.role = game.playerID-1; -- 0 for goalie
 fsm = {};
 loadconfig('FSM/Config_WebotsCharli_FSM')
 fsm.game = 'RoboCup';
-fsm.body = {'GeneralPlayer'};
+fsm.body = {'CharliPlayer'};
 fsm.head = {'GeneralPlayer'}; 
 
 fsm.enable_obstacle_detection = 1;

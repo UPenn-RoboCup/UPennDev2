@@ -31,6 +31,10 @@ end
 tLast=0;
 count=1;
 battery_warning=0;
+battery_led1 = 0;
+battery_led2 = 0;
+battery_blink = 0;
+
 chk_servo_no=0;
 nButton = 0;
 
@@ -269,6 +273,30 @@ function sync_battery()
     if battery[1]<Config.bat_low then battery_warning=1;
     else battery_warning=0;
     end
+
+    if battery[1]<Config.bat_led[1] then
+      battery_led1 = 0;
+      battery_led2 = 0;
+    elseif battery[1]<Config.bat_led[2] then
+      battery_led1 = 1;
+      battery_led2 = 0;
+    elseif battery[1]<Config.bat_led[3] then
+      battery_led1 = 1;
+      battery_led2 = 1;
+    elseif battery[1]<Config.bat_led[4] then
+      battery_led1 = 1+2;
+      battery_led2 = 1;
+    elseif battery[1]<Config.bat_led[5] then
+      battery_led1 = 1+2;
+      battery_led2 = 1+2;
+    elseif battery[1]<Config.bat_led[6] then
+      battery_led1 = 1+2+4;
+      battery_led2 = 1+2;
+    else
+      battery_led1 = 1+2+4;
+      battery_led2 = 1+2+4;
+    end
+
   end
 end
 
@@ -295,9 +323,17 @@ function sync_led()
     unix.usleep(100);
   end
 
-  if count%400==225 then --0.25 fps back led refresh rate
-    --Back LED	
-    packet=actuator.backled[1]+2*actuator.backled[2]+4*actuator.backled[3];
+  if count%100==25 then --1 fps back led refresh rate
+--    packet =  
+-- actuator.backled[1]+2*actuator.backled[2]+4*actuator.backled[3];
+
+    battery_blink = 1-battery_blink;
+    if battery_blink == 1 then
+      packet=battery_led1;
+    else
+      packet=battery_led2;
+    end
+
     Dynamixel.sync_write_byte({200},25,{packet});
     unix.usleep(100);
   end

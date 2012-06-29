@@ -25,10 +25,22 @@ tstart = Config.fsm.bodyReady.tStart or 5.0;
 
 phase=0; --0 for wait, 1 for approach, 2 for turn, 3 for end
 
+side_y = 0;
+
 function entry()
   print(_NAME.." entry");
-  t0 = Body.get_time();
   phase=0;
+
+  t0 = Body.get_time();
+  Motion.event('standup')
+
+  pose = wcm.get_pose();
+  if pose.y > 0 then
+    side_y = 1;
+  else
+    side_y = -1;
+  end
+
 end
 
 function getHomePose()
@@ -36,11 +48,29 @@ function getHomePose()
   --Now role-based positioning
   goal_defend=wcm.get_goal_defend();
   --role starts with 0
+
   if gcm.get_game_kickoff() == 1 then
-    home=vector.new(initPosition1[role+1]);
+    home=vector.new({
+	initPosition1[role+1][1],
+	initPosition1[role+1][2],
+	initPosition1[role+1][3]});
   else
-    home=vector.new(initPosition2[role+1]);
+    home=vector.new({
+	initPosition2[role+1][1],
+	initPosition2[role+1][2],
+	initPosition2[role+1][3]});
   end
+
+  --If we are on the other half and we are attacker,
+  -- go around to avoid other players
+  pose = wcm.get_pose();
+  if pose.y > 0.5 then side_y = 1;
+  elseif pose.y<-0.5 then side_y = -1;
+  end
+  if math.abs(pose.x - goal_defend[1]) > 3.5 
+    and math.abs(home[2]) < 0.5 then
+    home[2] = home[2] + side_y * 0.8;    
+  end  
 
   --Goalie moves differently
   if role==0 and phase==1 then 
@@ -63,6 +93,7 @@ function update()
 
   if phase==0 then 
     if t - t0 < tstart then 
+      walk.set_velocity(0,0,0);
       return;
     else walk.start();
       phase=1;
@@ -78,14 +109,24 @@ function update()
     va = .2*attackBearing;
   end
 
-  --Check the nearest obstacle
+  --Check the nearby obstacle
+  obstacle_num = wcm.get_obstacle_num();
+  obstacle_x = wcm.get_obstacle_x();
+  obstacle_y = wcm.get_obstacle_y();
   obstacle_dist = wcm.get_obstacle_dist();
-  obstacle_pose = wcm.get_obstacle_pose();
-  if obstacle_dist<0.5 then
-    local r_reject = 0.5;
-    local v_reject = 0.1*math.exp(-(obstacle_dist/r_reject)^2);
-    vx = vx - obstacle_pose[1]/obstacle_dist*v_reject;
-    vy = vy - obstacle_pose[2]/obstacle_dist*v_reject;
+
+
+  --Now larger rejection radius 
+  local r_reject = 1.0;
+
+  for i=1,obstacle_num do
+--print(string.format("%d XYD:%.2f %.2f %.2f",
+--i,obstacle_x[i],obstacle_y[i],obstacle_dist[i]))
+    if obstacle_dist[i]<r_reject then
+      local v_reject = 0.1*math.exp(-(obstacle_dist[i]/r_reject)^2);
+      vx = vx - obstacle_x[i]/obstacle_dist[i]*v_reject;
+      vy = vy - obstacle_y[i]/obstacle_dist[i]*v_reject;
+    end
   end
   walk.set_velocity(vx, vy, va);
 
@@ -93,6 +134,10 @@ function update()
      math.abs(attackBearing)<thClose then 
       walk.stop(); 
       phase=3;
+  end
+  --To prevent robot keep walking after falling down
+  if phase==3 then
+      walk.stop(); 
   end
 end
 

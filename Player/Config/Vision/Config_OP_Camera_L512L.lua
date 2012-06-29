@@ -54,8 +54,9 @@ camera.param[5] = {key='white balance temperature', val={1600}};
 camera.param[6] = {key='sharpness',     val={0}};
 camera.param[7] = {key='exposure (absolute)',      val={400}};
 --]]
+
 --[[ Levine 512 - 05/15/2012 - 10PM --]]
-camera.param = {};
+--[[camera.param = {};
 camera.param[1] = {key='brightness',    val={128}};
 camera.param[2] = {key='contrast',      val={27}};
 camera.param[3] = {key='saturation',    val={28}};
@@ -63,6 +64,7 @@ camera.param[4] = {key='gain',          val={255}};
 camera.param[5] = {key='white balance temperature', val={3220}};
 camera.param[6] = {key='sharpness',     val={70}};
 camera.param[7] = {key='exposure (absolute)',      val={1312}};
+--]]
 
 --[[ Levine 512 - 05/17/2012 - 8PM --]]
 --camera.param = {};
@@ -74,6 +76,16 @@ camera.param[7] = {key='exposure (absolute)',      val={1312}};
 --camera.param[6] = {key='sharpness',     val={70}};
 --camera.param[7] = {key='exposure (absolute)',      val={1367}};
 
+--[[ Levine 512 - 05/22/2012 - 1730 --]]
+
+camera.param = {};
+camera.param[1] = {key='brightness',    val={141}};
+camera.param[2] = {key='contrast',      val={36}};
+camera.param[3] = {key='saturation',    val={28}};
+camera.param[4] = {key='gain',          val={255}};
+camera.param[5] = {key='white balance temperature', val={7000}};
+camera.param[6] = {key='sharpness',     val={77}};
+camera.param[7] = {key='exposure (absolute)',      val={711}};
 
 --camera.lut_file = 'lut_low_contrast_pink_n_green.raw';
 --camera.lut_file = 'lut_Grasp_Greenonly.raw';

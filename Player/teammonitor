@@ -1,0 +1,29 @@
+#!/bin/bash
+
+
+# Kill all processes to reset player
+killall -q naoqi-bin naoqi espeak lua luajit luajit2 screen MATLAB
+#
+
+# kill all screen log
+rm -f screenlog*
+
+SCREEN_FLAGS="-dm -L -S"
+
+run_team_monitor(){
+  echo "Starting listen_team_monitor"
+  screen $SCREEN_FLAGS teammonitor lua listen_team_monitor_1826.lua
+  sleep 1
+
+  echo "Starting MonitorWireless"
+  cd ~/Desktop/UPennDev/Tools/Matlab
+  screen $SCREEN_FLAGS monitor matlab -nojvm -nosplash -r MonitorWireless
+  # Allow Cognition some time to start
+  sleep 1
+}
+
+case "$1" in
+  '')
+    echo "Start Team Monitor"
+    run_team_monitor;
+esac

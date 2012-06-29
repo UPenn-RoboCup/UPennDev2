@@ -192,7 +192,7 @@ setup_nao: nao setup_util setup_image setup_comm
 	rm -f $(NAODEPLUA51DIR)/*;
 	@echo "\n"
 
-setup_naov4: naov4 setup_util setup_image setup_comm
+setup_naov4: naov4 setup_util setup_image setup_comm setup_occmap
 	@echo "Setting up Nao V4 Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
 	find $(NAOV4DIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
@@ -203,6 +203,7 @@ setup_naov4: naov4 setup_util setup_image setup_comm
 	@echo "\n"
 
 setup_webots_nao: webots_nao setup_util setup_image setup_webots
+setup_webots_nao: webots_nao setup_util setup_image setup_webots setup_occmap
 	@echo "Setting up Webots Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
 	find $(WEBOTSNAODIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
@@ -271,7 +272,8 @@ setup_hp: hp setup_util setup_image setup_comm
 	@echo "\n"
 
 #setup_op: op setup_util setup_image setup_velocity
-setup_op: op setup_util setup_image setup_comm
+setup_op: op setup_util setup_image setup_comm setup_occmap
+#setup_op: op setup_util setup_image setup_comm
 	@echo "Setting up Darwin OP Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
 	find $(OPDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;

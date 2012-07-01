@@ -81,7 +81,8 @@ function check_approach_type()
     check_angle = 0; --Don't check angle if we're doing evade kick
   end
 
-  if role==0 then
+--  if role==0 then
+  if false then
     --Goalie always approach the ball directly without turning
     position.posCalc();
     pose=wcm.get_pose();
@@ -289,12 +290,16 @@ function update()
 
   --when the ball is on the side of the ROBOT, backstep a bit
   local wAngle = math.atan2 (ball.y,ball.x);
+
+  ballYMin = Config.fsm.bodyApproach.ballYMin or 0.20;
+
+
   if math.abs(wAngle) > 45*math.pi/180 then
     vStep[1]=vStep[1] - 0.03;
 
-    if ball.y<0.20 and ball.y>0 then
+    if ball.y<ballYMin and ball.y>0 then
      vStep[2] = -0.03;
-    elseif ball.y<0 and ball.y>-0.20 then
+    elseif ball.y<0 and ball.y>-ballYMin then
       vStep[2]=0.03;
     else
       vStep[2] = 0;

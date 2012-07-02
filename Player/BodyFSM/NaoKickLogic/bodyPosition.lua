@@ -142,8 +142,10 @@ function update()
   else
     us = vector.zeros(2)
   end
-  if ((t - t0 > 2.5) and (us[1] > 5 or us[2] > 5) and role~=1) then
-    return 'obstacle'; 
+  if ((t - t0 > 2.5) and (us[1] > 5 or us[2] > 5)) then
+    if role~=1 then 
+      return 'obstacle'; 
+    end
   end
 
   if ((t - t0 > 5.0) and (t - ball.t > tLost)) then

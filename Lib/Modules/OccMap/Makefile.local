@@ -1,5 +1,5 @@
 # Makefile used to build libraries
-include ../Makefile.inc
+include ../../Makefile.inc
 
 TARGETS = all clean
 .PHONY: $(TARGETS)
@@ -15,7 +15,6 @@ all: OccMap
 
 OccMap: luaOccMap.o OccMap.o KmeanCluster.o
 	$(LD) $(LDFLAGS) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ $(LIB_DIR) -lm
-	cp $@.$(SHLIBEXT) ../../Player/Lib/.
 
 clean:
 	rm -f *.$(SHLIBEXT) *.o

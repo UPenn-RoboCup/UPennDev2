@@ -3,7 +3,7 @@
 TARGETS = all clean
 .PHONY: $(TARGETS)
 
-include ../../Makefile.inc
+include ../../../Makefile.inc
 
 WEBOTS_HOME = /Applications/Webots/
 WEBOTS_INCLUDE_DIR = $(WEBOTS_HOME)/include

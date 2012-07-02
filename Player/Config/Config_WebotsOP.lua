@@ -209,7 +209,7 @@ fsm.bodyPosition.maxStep3 = 0.08;
 
 --Shutdown Vision and use ground truth gps info only
 use_gps_only = 0;
-use_gps_only = 1;
+--use_gps_only = 1;
 
 fsm.enable_walkkick = 0;
 --fsm.enable_sidekick = 0;
@@ -219,6 +219,7 @@ vision.use_multi_landmark = 1;
 
 -- obstacle avoidance challenge
 obs_challenge = 1;
+obs_challenge = 0;
 fsm.enable_sidekick = 1;
 fsm.thSideKick1 = 30*math.pi/180;
 fsm.thSideKick2 = 135*math.pi/180;

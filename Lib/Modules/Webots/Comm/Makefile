@@ -3,7 +3,7 @@
 TARGETS = all clean
 .PHONY: $(TARGETS)
 
-include ../../Makefile.inc
+include ../../../Makefile.inc
 
 all: GameControlPacket
 

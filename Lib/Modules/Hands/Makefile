@@ -1,21 +1,21 @@
 # Makefile used to build Webots files
 include ../../Makefile.inc
-
 TARGETS = all clean
 .PHONY: $(TARGETS)
 
-all: carray
+all: handfilter
 
-%.o: %.cc
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
 %.o: %.c
 	$(CC) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
 
-carray: luacarray.o
-	$(CXX) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ $(LIBRT)
+handfilter: luahandfilter.o BallModel.o
+	$(CXX) -o $@.$(SHLIBEXT) $(LIBOPTS) $(LIBS) $^
+
+mex:
+	mex -O mexBall.cpp BallModel.cpp $(LIBRT)
 
 clean:
-	rm -f *.o *.$(SHLIBEXT) *.$(MEXEXT)
+	rm -f *.so *.o *.$(SHLIBEXT) *.$(MEXEXT)
 

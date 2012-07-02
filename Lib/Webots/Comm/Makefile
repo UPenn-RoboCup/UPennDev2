@@ -3,41 +3,7 @@
 TARGETS = all clean
 .PHONY: $(TARGETS)
 
-CXX=g++
-CC=gcc
-LD=ld
-STRIP=strip
-CXXFLAGS= -O2 -fpic
-
-SHLIBEXT= so
-LIBOPTS= -shared -fpic
-MEXEXT=mexglx
-
-ifndef OSTYPE
-  OSTYPE = $(shell uname -s|awk '{print tolower($$0)}')
-  #export OSTYPE
-endif
-
-ifeq ($(OSTYPE),linux)
-  SHLIBEXT= so
-  LIBOPTS= -shared -fpic
-  MEXEXT=mexglx
-  LIBRT= -lrt
-endif
-ifeq ($(OSTYPE),darwin)
-  SHLIBEXT= dylib
-  LIBOPTS= -bundle -undefined dynamic_lookup
-  MEXEXT=mexmaci
-  CXXFLAGS= -O2
-ifeq ($(MODE),32)
-  CC=gcc -arch i386
-  CXX=g++ -arch i386
-  LD=g++ -arch i386
-endif
-endif
-
-INCLUDE_DIRS = -I/usr/local/include -I/usr/include/lua5.1 -I/usr/local/include/lua
-LIB_DIR = /usr/local/lib
+include ../../Makefile.inc
 
 all: GameControlPacket
 

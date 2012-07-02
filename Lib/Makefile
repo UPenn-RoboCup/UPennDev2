@@ -1,34 +1,30 @@
 # Master Makefile to compile all Lua/C++ libraries
 
 CWD= $(shell pwd)
-#MODE= $(shell getconf LONG_BIT)
 include $(CWD)/Makefile.inc
 
 
 LUAEXT= lua
+ifeq ($(OSTYPE),darwin)
+REGEX=\( -regex '.*.$(LUAEXT)' -or -regex '.*.$(SHLIBEXT)' -or -regex '.*.sh' \)
+else
 REGEX=-regex '.*\($(SHLIBEXT)\|$(LUAEXT)\|sh\)'
-
-ifndef OSTYPE
-  OSTYPE = $(shell uname -s|awk '{print tolower($$0)}')
-endif
-
-ifndef ARCH
-  ARCH= $(shell uname -m)
 endif
 
 ifeq ($(NaoqiCTC),)
 ifeq ($(OSTYPE),linux)
   SHLIBEXT= so
 endif
-ifeq ($(OSTYPE),darwin)
-  SHLIBEXT= dylib
-  REGEX=\( -regex '.*.$(LUAEXT)' -or -regex '.*.$(SHLIBEXT)' -or -regex '.*.sh' \)
-endif
+
+#ifeq ($(OSTYPE),darwin)
+#  SHLIBEXT= dylib
+#  REGEX=\( -regex '.*.$(LUAEXT)' -or -regex '.*.$(SHLIBEXT)' -or -regex '.*.sh' \)
+#endif
 else
   SHLIBEXT= so
-ifeq ($(OSTYPE),darwin)
-  REGEX=\( -regex '.*.$(LUAEXT)' -or -regex '.*.$(SHLIBEXT)' -or -regex '.*.sh' \)
-endif
+#ifeq ($(OSTYPE),darwin)
+#  REGEX=\( -regex '.*.$(LUAEXT)' -or -regex '.*.$(SHLIBEXT)' -or -regex '.*.sh' \)
+#endif
 endif
 
 all none:

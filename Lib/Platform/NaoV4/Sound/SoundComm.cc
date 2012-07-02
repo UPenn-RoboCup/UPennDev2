@@ -9,6 +9,7 @@ extern bool txPauseCmd;
 extern bool rxPauseCmd;
 extern bool txPaused;
 extern bool rxPaused;
+extern char signalTone;
 
 extern short pcmDebug[];
 extern pthread_mutex_t pcmDebugMutex;
@@ -64,6 +65,17 @@ static int lua_set_receiver_volume(lua_State *L) {
 static int lua_set_transmitter_volume(lua_State *L) {
   int volume = lua_tointeger(L, 1);
   return sound_comm_thread_set_transmitter_volume(volume);
+}
+
+static int lua_set_signal_tone(lua_State *L) {
+  const char *symbol = lua_tostring(L, 1);
+  if (symbol == NULL) {
+    fprintf(stderr, "set_signal_tone: first argument must be a the tone symbol.\n");
+    return -1;
+  }
+  signalTone = symbol[0];
+
+  return 1;
 }
 
 static int lua_get_detection(lua_State *L) {
@@ -236,6 +248,9 @@ static int lua_play_tone(lua_State *L) {
 
 /**
  * function that will generate and play a the psuedo random sequence
+ *
+ * symbol - character symbol
+ * leftOnly - int flag indicating to play only on the left (1) ear or both (0)
  */
 static int lua_play_pnsequence(lua_State *L) {
   const char *symbol = lua_tostring(L, 1);
@@ -243,6 +258,7 @@ static int lua_play_pnsequence(lua_State *L) {
     fprintf(stderr, "play_pnsequence: first argument must be a the tone symbol.\n");
     return -1;
   }
+  int leftOnly = luaL_optint(L, 2, 0);
 
   // generate pcm
   int nframe = PFRAME * (THRESHOLD_COUNT + NUM_CHIRP_COUNT); 
@@ -250,7 +266,7 @@ static int lua_play_pnsequence(lua_State *L) {
   std::vector<short> *pcm = new std::vector<short>(2*nframe);
 
   // generate tone signal
-  if (gen_tone_pcm(symbol[0], &(*pcm)[0], tframe) < 0) {
+  if (gen_tone_pcm(symbol[0], &(*pcm)[0], tframe, leftOnly) < 0) {
     fprintf(stderr, "play_tone: unable to create tone PCM.\n");
     delete pcm;
     return -1;
@@ -259,14 +275,26 @@ static int lua_play_pnsequence(lua_State *L) {
   // store pnSequence
   int startInd = 2*tframe;
   int sign = +1;
-  for (int ichirp = 0; ichirp < NUM_CHIRP_COUNT; ichirp++) {
-    int startInd = 2*tframe + ichirp*2*PFRAME;
-    for (int i = 0; i < PFRAME; i++) {
-      (*pcm)[startInd + 2*i]    = sign * pnSequence[i];
-      (*pcm)[startInd + 2*i+1]  = sign * pnSequence[i];
+  if (leftOnly) {
+    for (int ichirp = 0; ichirp < NUM_CHIRP_COUNT; ichirp++) {
+      int startInd = 2*tframe + ichirp*2*PFRAME;
+      for (int i = 0; i < PFRAME; i++) {
+        (*pcm)[startInd + 2*i]    = sign * pnSequence[i];
+        (*pcm)[startInd + 2*i+1]  = 0;
+      }
+      // switch sign
+      sign *= -1;
     }
-    // switch sign
-    sign *= -1;
+  } else {
+    for (int ichirp = 0; ichirp < NUM_CHIRP_COUNT; ichirp++) {
+      int startInd = 2*tframe + ichirp*2*PFRAME;
+      for (int i = 0; i < PFRAME; i++) {
+        (*pcm)[startInd + 2*i]    = sign * pnSequence[i];
+        (*pcm)[startInd + 2*i+1]  = sign * pnSequence[i];
+      }
+      // switch sign
+      sign *= -1;
+    }
   }
 
   // queue the pcm signal
@@ -291,6 +319,7 @@ static const struct luaL_reg sound_comm_lib [] = {
   {"is_transmitter_enabled", lua_is_transmitter_enabled},
   {"set_transmitter_volume", lua_set_transmitter_volume},
   {"set_receiver_volume", lua_set_receiver_volume},
+  {"set_signal_tone", lua_set_signal_tone},
   {"get_debug_pcm", lua_get_debug_pcm},
 
   {NULL, NULL}

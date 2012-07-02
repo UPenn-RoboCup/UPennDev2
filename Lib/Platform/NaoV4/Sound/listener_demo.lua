@@ -40,7 +40,7 @@ while (1) do
          print('dir: ', dir, ' mag: ', mag, ' rad: ', (mag*0.1))
          headAngles = Body.get_head_position();
          headAngles[1] = headAngles[1] - dir * (mag * 0.1);
-         Body.set_head_command(headAngles);
+         --Body.set_head_command(headAngles);
       end
    end
 

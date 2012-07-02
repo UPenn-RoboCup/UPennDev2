@@ -87,7 +87,7 @@ end
 function entry()
   count = 0;
   init_particles();
-  --Velocity.entry();
+  Velocity.entry();
 end
 
 function init_particles_manual_placement()

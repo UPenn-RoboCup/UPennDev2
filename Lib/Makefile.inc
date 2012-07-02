@@ -2,6 +2,41 @@
 TARGETS = all clean
 .PHONY: $(TARGETS)
 
+## Path Definition
+
+NAODIR= Platform/Nao
+NAOV4DIR = Platform/NaoV4
+WEBOTSNAODIR= Platform/WebotsNao
+WEBOTSOPDIR= Platform/WebotsOP
+WEBOTSGENERICDIR= Platform/WebotsGeneric
+WEBOTSHUBODIR= Platform/WebotsHubo
+WEBOTSCHARLIDIR= Platform/WebotsCharli
+WEBOTSSAFFIRDIR= Platform/WebotsSaffir
+VISIONTESTDIR = Platform/VisionTest
+HPDIR= Platform/HP2
+OPDIR= Platform/OP
+XOSDIR= Platform/XOS
+CHARLIDIR = Platform/Charli
+MODULEDIR = Modules
+NAOQIDIR= $(MODULEDIR)/NaoQi
+WEBOTSDIR = $(MODULEDIR)/Webots
+IMAGEDIR= $(MODULEDIR)/ImageProc
+COMMDIR= $(MODULEDIR)/Comm
+OCCMAPDIR = $(MODULEDIR)/OccMap
+UTILDIR= $(MODULEDIR)/Util
+MATLABDIR= ../Tools/Matlab
+COLORTABLEDIR= $(MATLABDIR)/Colortable
+VELODIR= $(MODULEDIR)/Velocity
+PRIMEDIR= $(MODULEDIR)/Util/PrimeSense
+PLATFORMS = nao naov4 op xos webots_nao webots_op webots_generic webots_hubo visiontest
+INSTDIR= ../Player/Lib
+WEBOTSCONTDIR= ../WebotsController
+PLAYERDIR= ../Player
+NAODEPDIR= ../Install/dependencies
+NAODEPLUA51DIR= $(NAODEPDIR)/usr/local/lib/lua/5.1
+
+
+## Compiler Definition
 MODE=$(shell getconf LONG_BIT)
 CXX=g++
 CC=gcc
@@ -26,6 +61,10 @@ ifndef OSTYPE
   OSTYPE = $(shell uname -s|awk '{print tolower($$0)}')
 endif
 
+ifndef ARCH
+  ARCH= $(shell uname -m)
+endif
+
 ifndef USER
   USER=$(shell whoami)
 endif
@@ -40,7 +79,8 @@ endif
 endif
 
 ifeq ($(OSTYPE),darwin)
-  SHLIBEXT= dylib
+#  SHLIBEXT= dylib
+  SHLIBEXT= so
   LIBOPTS= -bundle -undefined dynamic_lookup
   # -march=native is not supported, so tune as your system demand
   CXXFLAGS= -O2 -fomit-frame-pointer -mtune=native

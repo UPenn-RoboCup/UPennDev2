@@ -2,36 +2,8 @@
 
 CWD= $(shell pwd)
 #MODE= $(shell getconf LONG_BIT)
+include $(CWD)/Makefile.inc
 
-NAODIR= Platform/Nao
-NAOV4DIR = Platform/NaoV4
-NAOQIDIR= NaoQi
-WEBOTSNAODIR= Platform/WebotsNao
-WEBOTSOPDIR= Platform/WebotsOP
-WEBOTSGENERICDIR= Platform/WebotsGeneric
-WEBOTSHUBODIR= Platform/WebotsHubo
-WEBOTSCHARLIDIR= Platform/WebotsCharli
-WEBOTSSAFFIRDIR= Platform/WebotsSaffir
-VISIONTESTDIR = Platform/VisionTest
-HPDIR= Platform/HP2
-OPDIR= Platform/OP
-XOSDIR= Platform/XOS
-CHARLIDIR = Platform/Charli
-WEBOTSDIR = Webots
-IMAGEDIR= ImageProc
-COMMDIR= Comm
-OCCMAPDIR = OccMap
-UTILDIR= Util
-MATLABDIR= ../Tools/Matlab
-COLORTABLEDIR= $(MATLABDIR)/Colortable
-VELODIR= Velocity
-PRIMEDIR= Util/PrimeSense
-PLATFORMS = nao naov4 op xos webots_nao webots_op webots_generic webots_hubo visiontest
-INSTDIR= ../Player/Lib
-WEBOTSCONTDIR= ../WebotsController
-PLAYERDIR= ../Player
-NAODEPDIR= ../Install/dependencies
-NAODEPLUA51DIR= $(NAODEPDIR)/usr/local/lib/lua/5.1
 
 LUAEXT= lua
 REGEX=-regex '.*\($(SHLIBEXT)\|$(LUAEXT)\|sh\)'

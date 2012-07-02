@@ -1,5 +1,4 @@
 module(..., package.seeall); require('vector')
-require 'unix'
 -- Walk Parameters
 
 walk = {};

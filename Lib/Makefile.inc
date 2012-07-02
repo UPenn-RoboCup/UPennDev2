@@ -60,6 +60,10 @@ ifndef OSTYPE
   OSTYPE = $(shell uname -s|awk '{print tolower($$0)}')
 endif
 
+ifndef ARCH
+  ARCH= $(shell uname -m)
+endif
+
 ifndef USER
   USER=$(shell whoami)
 endif
@@ -74,7 +78,8 @@ endif
 endif
 
 ifeq ($(OSTYPE),darwin)
-  SHLIBEXT= dylib
+#  SHLIBEXT= dylib
+  SHLIBEXT= so
   LIBOPTS= -bundle -undefined dynamic_lookup
   # -march=native is not supported, so tune as your system demand
   CXXFLAGS= -O2 -fomit-frame-pointer -mtune=native

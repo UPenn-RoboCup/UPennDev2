@@ -194,7 +194,7 @@ function update()
 
 --SJ: Camera image keeps changing
 --So copy it here to shm, and use it for all vision process
---  vcm.set_image_yuyv(camera.image);
+  vcm.set_image_yuyv(camera.image);
 
   -- Add timer measurements
   count = count + 1;
@@ -277,6 +277,7 @@ function update()
       print('WARNING: attempting to switch to unkown camera select = '..cmd);
     end
   end
+
   return true;
 end
 
@@ -373,27 +374,12 @@ function update_shm(status, headAngles)
   	      camera.width/2, camera.height,2));
             vcm.set_image_labelA(labelA.data);
             vcm.set_image_labelB(labelB.data);
-     	end
-      if vcm.get_camera_broadcast() > 0 then --Wired monitor broadcasting
-     	  if vcm.get_camera_broadcast() == 1 then
-	        --Level 1: 1/4 yuyv, labelB
-          vcm.set_image_yuyv3(ImageProc.subsample_yuyv2yuyv(camera.image,
---  	                        vcm.get_image_yuyv(),
-                        	    camera.width/2, camera.height,4));
-          vcm.set_image_labelB(labelB.data);
-    	  elseif vcm.get_camera_broadcast() == 2 then
-	        --Level 2: 1/2 yuyv, labelA, labelB
-          vcm.set_image_yuyv2(ImageProc.subsample_yuyv2yuyv(camera.image,
---  	                        vcm.get_image_yuyv(),
-                      	      camera.width/2, camera.height,2));
-          vcm.set_image_labelA(labelA.data);
-          vcm.set_image_labelB(labelB.data);
-    	  else
-	        --Level 3: 1/2 yuyv
-          vcm.set_image_yuyv2(ImageProc.subsample_yuyv2yuyv(camera.image,
---  	                        vcm.get_image_yuyv(),
-  	                          camera.width/2, camera.height,2));
-	      end
+	  else
+	    --Level 3: 1/2 yuyv
+            vcm.set_image_yuyv2(ImageProc.subsample_yuyv2yuyv(
+  	    vcm.get_image_yuyv(),
+  	    camera.width/2, camera.height,2));
+	  end
 
 	elseif vcm.get_camera_teambroadcast() > 0 then --Wireless Team broadcasting
           --Only copy labelB

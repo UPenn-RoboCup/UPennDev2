@@ -11,21 +11,39 @@ else
 REGEX=-regex '.*\($(SHLIBEXT)\|$(LUAEXT)\|sh\)'
 endif
 
-ifeq ($(NaoqiCTC),)
-ifeq ($(OSTYPE),linux)
-  SHLIBEXT= so
+CROSS= false
+
+ifndef OSTYPE
+  OSTYPE = $(shell uname -s|awk '{print tolower($$0)}')
 endif
 
-#ifeq ($(OSTYPE),darwin)
-#  SHLIBEXT= dylib
-#  REGEX=\( -regex '.*.$(LUAEXT)' -or -regex '.*.$(SHLIBEXT)' -or -regex '.*.sh' \)
-#endif
-else
-  SHLIBEXT= so
-#ifeq ($(OSTYPE),darwin)
-#  REGEX=\( -regex '.*.$(LUAEXT)' -or -regex '.*.$(SHLIBEXT)' -or -regex '.*.sh' \)
-#endif
+ifndef ARCH
+  ARCH= $(shell uname -m)
 endif
+
+ifeq ($(CROSS),true)
+  CTCDIR = $(NaoqiCTC)
+else
+  CTCDIR = 
+endif
+
+ifeq ($(CTCDIR),)
+  ifeq ($(OSTYPE),linux)
+    SHLIBEXT= so
+  endif
+
+  #ifeq ($(OSTYPE),darwin)
+  #  SHLIBEXT= dylib
+  #  REGEX=\( -regex '.*.$(LUAEXT)' -or -regex '.*.$(SHLIBEXT)' -or -regex '.*.sh' \)
+  #endif
+  else
+    SHLIBEXT= so
+  #ifeq ($(OSTYPE),darwin)
+  #  REGEX=\( -regex '.*.$(LUAEXT)' -or -regex '.*.$(SHLIBEXT)' -or -regex '.*.sh' \)
+  #endif
+endif
+
+export CTCDIR
 
 all none:
 	@echo "Please do:"
@@ -49,6 +67,7 @@ nao:
 	@echo "\n"
 
 naov4:
+	@echo $(CTCDIR)
 	@echo "Compiling Nao V4 Lua/C++ Libraries...\n"
 	@cd $(NAOV4DIR) && make && cd $(CWD)
 	@echo "\n"

@@ -13,7 +13,7 @@ if gender == 1 then
 else
   girl = '+f1';
 end
-enable = Config.speakenable or 0
+enable = Config.speakenable or 1
 
 -- define speak queue file
 fifo = '/tmp/speakFIFO'..(os.getenv('USER') or '');
@@ -42,7 +42,7 @@ end
 
 
 function talk(text)
-  if enable or enable==nil then
+  if enable==1 then
     print('Speak: '..text);
     fid:write(text..'\n');
     fid:flush()

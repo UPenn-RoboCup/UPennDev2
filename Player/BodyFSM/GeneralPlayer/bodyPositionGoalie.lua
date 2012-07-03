@@ -79,8 +79,17 @@ function update()
 	(ballGlobal[2]-goal_defend[2])^2);
   ballX_defend = math.abs(ballGlobal[1]-goal_defend[1]);
 
-  if (ballR_defend<rClose or ballX_defend<rCloseX) and tBall<1.0 then
-    return "ballClose";
+  rCloseX2 = 0.8;
+  eta_kickaway = 3.0;
+  attacker_eta = wcm.get_team_attacker_eta();
+
+  if tBall<1.0 then
+    if ballX_defend < rCloseX2 or
+--       ((ballR_defend<rClose or ballX_defend<rCloseX) 
+       (ballR_defend<rClose  
+         and attacker_eta > eta_kickaway) then
+      return "ballClose";
+    end
   end
 
   uPose=vector.new({pose.x,pose.y,pose.a})

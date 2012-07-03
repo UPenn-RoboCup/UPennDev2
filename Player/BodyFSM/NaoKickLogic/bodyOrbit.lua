@@ -5,17 +5,19 @@ require('walk')
 require('vector')
 require('Config')
 require('wcm')
+require('postDist')
 
 t0 = 0;
 timeout = 30.0;
 
 maxStep = 0.06;
 
-rOrbit = 0.25;--.27
+rOrbit = 0.15;--.27
 
-rFar = 0.45;
+rFar = 0.30;
 
 thAlign = 10*math.pi/180;
+thAlignWalkKick = 20*math.pi/180
 
 tLost = 3.0;
 
@@ -35,11 +37,9 @@ function entry()
     direction = -1;
   end
 
-  --If walk parameters are defined for bodyOrbit, then load them
-  if Config.fsm.bodyOrbit.walkParam then
-    Config.loadconfig(Config.fsm.bodyOrbit.walkParam)
-  end
   walk.set_velocity(0,0,0)
+
+  toKick = postDist.kick()
 end
 
 function update()
@@ -74,9 +74,16 @@ function update()
   if (ballR > rFar) then
     return 'ballFar';
   end
-  if (math.abs(attackBearing) < thAlign) then
-    print(math.abs(attackBearing));
-    return 'done';
+  if toKick then
+    if (math.abs(attackBearing) < thAlign) then
+      print(math.abs(attackBearing));
+      return 'done';
+    end
+  else
+    if (math.abs(attackBearing) < thAlignWalkKick) then
+      print(math.abs(attackBearing));
+      return 'done';
+    end
   end
   
   -- check overshoot
@@ -89,7 +96,5 @@ function update()
 end
 
 function exit()
-  --Load default walk parameters
-  Config.loadconfig(Config.param.walk)
 end
 

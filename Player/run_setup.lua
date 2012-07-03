@@ -5,10 +5,9 @@ And automatically appends it to calibration file
 --]]
 module(... or "", package.seeall)
 
-require('unix')
 webots = false;
 darwin = true;
-local cwd = unix.getcwd();
+local cwd = '.';
 -- the webots sim is run from the WebotsController dir (not Player)
 if string.find(cwd, "WebotsController") then
   webots = true;
@@ -46,6 +45,7 @@ require('Kinematics');
 require('Motion')
 require('mcm')
 require('Broadcast')
+require('unix')
 
 -- initialize state machines
 

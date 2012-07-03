@@ -709,7 +709,6 @@ function doSideKickRight()
     walkKickType = 3; 
   end
 end
---
 --dummy function for NSL kick, depreciated
 function zero_velocity()
 end

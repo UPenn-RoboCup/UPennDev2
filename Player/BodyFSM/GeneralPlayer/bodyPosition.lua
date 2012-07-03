@@ -92,11 +92,22 @@ function update()
   end
 
   --Field player cannot enter our penalty box
+
+--SJ:  We replace this with potential field around goalie
+
+--[[
   if role~=0 then
     goalDefend = wcm.get_goal_defend();
     homePose[1]=util.sign(goalDefend[1])*
 	math.min(2.2,homePose[1]*util.sign(goalDefend[1]));
   end
+--]]
+
+
+
+
+
+
 
   if role==1 then
     vx,vy,va=position.setAttackerVelocity(homePose);
@@ -118,10 +129,16 @@ function update()
 
     --Role specific rejection radius
     if role==0 then --Goalie has the highest priority 
-      r_reject = 0.2;
+      r_reject = 0.4;
+
+
+
     elseif role==1 then --Attacker
       if obstacle_role[i]==0 then --Our goalie
-        r_reject = 0.6;
+--        r_reject = 1.0;
+        r_reject = 0.5;
+
+
       elseif obstacle_role[i]<4 then --Our team
         r_reject = 0.001;
       else
@@ -130,7 +147,8 @@ function update()
     else --Defender and supporter
       if obstacle_role[i]<4 then --Our team
         if obstacle_role[i]==0 then --Our goalie
-          r_reject = 0.8;
+--          r_reject = 1.0;
+          r_reject = 0.7;
         else
           r_reject = 0.6;
         end

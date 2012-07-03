@@ -1,9 +1,12 @@
 #include "dtmf.h"
 #include "fft.h"
 
+//#define DEBUG_DTMF
+
 // TODO: frame number should not be here, temporary for matlab testing
 //long frameNumber = 0;
 
+char signalTone = '\0';
 
 void print_tone_resp(double *qRow, double *qRow2, double *qCol, double *qCol2) {
   printf("qRow:\t");
@@ -31,7 +34,7 @@ void print_tone_resp(double *qRow, double *qRow2, double *qCol, double *qCol2) {
 }
 
 
-int gen_tone_pcm(char symbol, short *pcm, int nframe) {
+int gen_tone_pcm(char symbol, short *pcm, int nframe, int leftOnly) {
   // find tone frequencies
   short f1 = 0;
   short f2 = 0;
@@ -49,13 +52,24 @@ int gen_tone_pcm(char symbol, short *pcm, int nframe) {
   }
 
   // generate pcm
-  for (int i = 0; i < nframe; i++) {
-    float t = sin(2.0*M_PI*f1*((double)i/SAMPLING_RATE))
-              + sin(2.0*M_PI*f2*((double)i/SAMPLING_RATE));
-    t *= (SHRT_MAX/2);
+  if (leftOnly) {
+    for (int i = 0; i < nframe; i++) {
+      float t = sin(2.0*M_PI*f1*((double)i/SAMPLING_RATE))
+                + sin(2.0*M_PI*f2*((double)i/SAMPLING_RATE));
+      t *= (SHRT_MAX/2);
 
-    pcm[2*i] = (short)t;
-    pcm[2*i+1] = (short)t;
+      pcm[2*i] = (short)t;
+      pcm[2*i+1] = 0;
+    }
+  } else {
+    for (int i = 0; i < nframe; i++) {
+      float t = sin(2.0*M_PI*f1*((double)i/SAMPLING_RATE))
+                + sin(2.0*M_PI*f2*((double)i/SAMPLING_RATE));
+      t *= (SHRT_MAX/2);
+
+      pcm[2*i] = (short)t;
+      pcm[2*i+1] = (short)t;
+    }
   }
 
   return 0;
@@ -160,10 +174,13 @@ int check_tone(short *x, char &toneSymbol, long &frame, int &xLIndex, int &xRInd
   static int xL[NFFT], yL[NFFT], xR[NFFT], yR[NFFT];
   static int leftCorr[NCORRELATION], rightCorr[NCORRELATION];
 
-  double qRow[NFREQUENCY], qRow2[NFREQUENCY];
-  double qCol[NFREQUENCY], qCol2[NFREQUENCY];
+  double qLRow[NFREQUENCY], qLRow2[NFREQUENCY];
+  double qLCol[NFREQUENCY], qLCol2[NFREQUENCY];
+  double qRRow[NFREQUENCY], qRRow2[NFREQUENCY];
+  double qRCol[NFREQUENCY], qRCol2[NFREQUENCY];
   int kLRow, kLCol, kRRow, kRCol;
-  double rowRatio, colRatio;
+  double rowLRatio, colLRatio;
+  double rowRRatio, colRRatio;
 
   // extract left/right channels
   for (int i = 0; i < PFRAME; i++) {
@@ -186,32 +203,45 @@ int check_tone(short *x, char &toneSymbol, long &frame, int &xLIndex, int &xRInd
   for (int i = 0; i < NFREQUENCY; i++) {
     // iRow is the array index corresponding to the row (low) frequency
     int iRow = NFFT_MULTIPLIER * K_ROW[i];
-    qRow[i] = xL[iRow]*xL[iRow] + yL[iRow]*yL[iRow];
-    qRow2[i] = xL[2*iRow]*xL[2*iRow] + yL[2*iRow]*yL[2*iRow];
+    qLRow[i] = xL[iRow]*xL[iRow] + yL[iRow]*yL[iRow];
+    qLRow2[i] = xL[2*iRow]*xL[2*iRow] + yL[2*iRow]*yL[2*iRow];
 
     // iCow is the array index corresponding to the column (high) frequency
     int iCol = NFFT_MULTIPLIER * K_COL[i];
-    qCol[i] = xL[iCol]*xL[iCol] + yL[iCol]*yL[iCol];
-    qCol2[i] = xL[2*iCol]*xL[2*iCol] + yL[2*iCol]*yL[2*iCol];
+    qLCol[i] = xL[iCol]*xL[iCol] + yL[iCol]*yL[iCol];
+    qLCol2[i] = xL[2*iCol]*xL[2*iCol] + yL[2*iCol]*yL[2*iCol];
   }
 
   // find ratio of max 2 elements
   //  kLRow and kLCol are indicies of max elements
-  rowRatio = sort_ratio(qRow, 4, kLRow);
-  colRatio = sort_ratio(qCol, 4, kLCol);
+  rowLRatio = sort_ratio(qLRow, 4, kLRow);
+  colLRatio = sort_ratio(qLCol, 4, kLCol);
 
   // are we are still waiting for the tone signal?
   if (toneCount < THRESHOLD_COUNT) {
     // check the expected tone frequency response is within the threshold
     //  max frequency response is less than 2 times greater than the second highest?
     //  TODO: what is qRow2
-    if ((rowRatio < THRESHOLD_RATIO1)
-        || (qRow[kLRow] < THRESHOLD_RATIO2*qRow2[kLRow])
-        || (colRatio < THRESHOLD_RATIO1)
-        || (qCol[kLCol] < THRESHOLD_RATIO2*qCol2[kLCol])) {
+    if ((rowLRatio < THRESHOLD_RATIO1)
+        || (qLRow[kLRow] < THRESHOLD_RATIO2*qLRow2[kLRow])
+        || (colLRatio < THRESHOLD_RATIO1)
+        || (qLCol[kLCol] < THRESHOLD_RATIO2*qLCol2[kLCol])) {
 
       toneCount = 0;
       return 0;
+    }
+
+    // check that the tone detected is the signal tone
+    //   if the signalTone is set to '\0' accecpt and tones
+    // NOTE: this only needs to be checked for one ear since 
+    //    both ear tones must be the same
+    if (signalTone != '\0') {
+      // if the detected tone is not the signal tone
+      //  reset the counter
+      if (TONE_SYMBOL[kLRow][kLCol] != signalTone) {
+        toneCount = 0;
+        return 0;
+      }
     }
   }
 
@@ -222,35 +252,42 @@ int check_tone(short *x, char &toneSymbol, long &frame, int &xLIndex, int &xRInd
   for (int i = 0; i < NFREQUENCY; i++) {
     // iRow is the array index corresponding to the row (low) frequency
     int iRow = NFFT_MULTIPLIER * K_ROW[i];
-    qRow[i] = xR[iRow]*xR[iRow] + yR[iRow]*yR[iRow];
-    qRow2[i] = xR[2*iRow]*xR[2*iRow] + yR[2*iRow]*yR[2*iRow];
+    qRRow[i] = xR[iRow]*xR[iRow] + yR[iRow]*yR[iRow];
+    qRRow2[i] = xR[2*iRow]*xR[2*iRow] + yR[2*iRow]*yR[2*iRow];
 
     // iCow is the array index corresponding to the column (high) frequency
     int iCol = NFFT_MULTIPLIER * K_COL[i];
-    qCol[i] = xR[iCol]*xR[iCol] + yR[iCol]*yR[iCol];
-    qCol2[i] = xR[2*iCol]*xR[2*iCol] + yR[2*iCol]*yR[2*iCol];
+    qRCol[i] = xR[iCol]*xR[iCol] + yR[iCol]*yR[iCol];
+    qRCol2[i] = xR[2*iCol]*xR[2*iCol] + yR[2*iCol]*yR[2*iCol];
   }
 
   // find ratio of max 2 elements
   //  kRRow and kRCol are indicies of max elements
-  rowRatio = sort_ratio(qRow, 4, kRRow);
-  colRatio = sort_ratio(qCol, 4, kRCol);
+  rowRRatio = sort_ratio(qRRow, 4, kRRow);
+  colRRatio = sort_ratio(qRCol, 4, kRCol);
 
   if (toneCount < THRESHOLD_COUNT) {
-    if ((rowRatio < THRESHOLD_RATIO1)
+    if ((rowRRatio < THRESHOLD_RATIO1)
         || (kRRow != kLRow)
-        || (qRow[kRRow] < THRESHOLD_RATIO2*qRow2[kRRow])
-        || (colRatio < THRESHOLD_RATIO1)
+        || (qRRow[kRRow] < THRESHOLD_RATIO2*qRRow2[kRRow])
+        || (colRRatio < THRESHOLD_RATIO1)
         || (kRCol != kLCol)
-        || (qCol[kRCol] < THRESHOLD_RATIO2*qCol2[kRCol])) {
+        || (qRCol[kRCol] < THRESHOLD_RATIO2*qRCol2[kRCol])) {
 
       toneCount = 0;
-      return 0;
+      return toneCount;
     }
   }
 
+
   // get tone symbol
   char symbol = TONE_SYMBOL[kLRow][kLCol];
+
+#ifdef DEBUG_DTMF
+  printf("symbol: '%c' :: t1 = (%1.3f, %1.3f)  (%1.3f, %1.3f) :: t2 = (%1.3f < %1.3f, %1.3f < %1.3f)  (%1.3f < %1.3f, %1.3f < %1.3f)\n", symbol, rowLRatio, colLRatio, rowRRatio, colRRatio,
+          qLRow[kLRow], THRESHOLD_RATIO2*qLRow2[kLRow], qLCol[kLCol], THRESHOLD_RATIO2*qLCol2[kLCol], qRRow[kRRow], THRESHOLD_RATIO2*qRRow2[kRRow], qRCol[kRCol], THRESHOLD_RATIO2*qRCol2[kRCol]);
+#endif
+
 
   // is this the first tone?
   //  or has the tone changed before expected
@@ -259,7 +296,7 @@ int check_tone(short *x, char &toneSymbol, long &frame, int &xLIndex, int &xRInd
     // reset the tone count
     prevSymbol = symbol;
     toneCount = 1;
-    return 0;
+    return toneCount;
   } else {
     toneCount++;
   }
@@ -305,7 +342,9 @@ int check_tone(short *x, char &toneSymbol, long &frame, int &xLIndex, int &xRInd
       //  set output parameters
 
       // find first max zero crossing
-      const double stdThreshold = 3;
+      //  TODO: set stdThreshold for correlation matching
+      //const double stdThreshold = 2.0;
+      const double stdThreshold = 3.0;
       xLIndex = find_first_max(leftCorr, NCORRELATION, stdThreshold*xLStd, PFRAME);
       xRIndex = find_first_max(rightCorr, NCORRELATION, stdThreshold*xRStd, PFRAME);
       toneSymbol = prevSymbol;
@@ -320,7 +359,7 @@ int check_tone(short *x, char &toneSymbol, long &frame, int &xLIndex, int &xRInd
     }
   }
 
-  return 0;
+  return toneCount;
 }
 
 int cross_correlation(short *x, int *leftCorr, int *rightCorr) {

@@ -306,7 +306,8 @@ function get_battery_level()
 end
 
 function get_change_state()
-  return 0;
+  local b = get_sensor_button();
+  return b[1];
 end
 
 function get_change_enable()

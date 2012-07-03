@@ -159,7 +159,7 @@ function update()
      torsoShiftX=kickXComp*(1-ph);
   end
 
-  if kickState==2 then --Lift step
+  if kickState==3 then --Lift step
     if kickStepType==2 then --
       qRHipRollCompensation= -hipRollCompensation*ph;
     elseif kickStepType==3 then

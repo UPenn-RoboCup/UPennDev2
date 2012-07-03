@@ -14,7 +14,7 @@ maxStep = 0.04;
 
 maxPosition = 0.55;
 
-ballNear = 0.85;
+ballNear = 0.5;
 
 rClose = 0.40;
 

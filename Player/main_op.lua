@@ -143,9 +143,22 @@ function update()
     if cur_role==0 then
       gcm.set_team_role(5); --Reserve goalie
       Body.set_indicator_ball({0,0,1});
+
+      --Both arm up for goalie
+      Body.set_rarm_command({0,0,-math.pi/2});
+      Body.set_rarm_hardness({0,0,0.5});
+      Body.set_larm_command({0,0,-math.pi/2});
+      Body.set_larm_hardness({0,0,0.5});
+
     else
       gcm.set_team_role(4); --Reserve player
       Body.set_indicator_ball({1,1,1});
+
+      --One arm up for goalie
+      Body.set_rarm_command({0,0,0});
+      Body.set_rarm_hardness({0,0,0.5});
+      Body.set_larm_command({0,0,-math.pi/2});
+      Body.set_larm_hardness({0,0,0.5});
     end
     if (Body.get_change_state() == 1) then
       button_state=1;

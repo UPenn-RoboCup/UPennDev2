@@ -66,3 +66,6 @@ build
 .viminfo
 naoqi/
 remotes/
+
+# ball logs
+Player/Data/*.txt

@@ -43,14 +43,19 @@ end
 function update()
   local t = Body.get_time();
 
+  --Only reset leg positons, not arm positions (for waiting players)
+
   if(Config.platform.name == 'OP') then
     local qSensor = Body.get_sensor_position();
     qSensor[6],qSensor[7]=0,0;
     qSensor[12],qSensor[13]=0,0;
     qSensor[8],qSensor[14]=hip_pitch_target,hip_pitch_target;
 
+    qLLeg = {0,0,hip_pitch_target, qSensor[9],qSensor[10],qSensor[11]};
+    qRReg = {0,0,hip_pitch_target, qSensor[15],qSensor[16],qSensor[17]};
 
-    Body.set_actuator_command(qSensor);
+    Body.set_lleg_command(qLLeg);
+    Body.set_rleg_command(qRLeg);
   else
     local qSensor = Body.get_sensor_position();
     Body.set_actuator_command(qSensor);

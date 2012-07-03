@@ -27,6 +27,10 @@ half = 1;
 teamPenalty = vector.zeros(Config.game.nPlayers);
 
 penalty = {};
+
+our_score = 0;
+opponent_score = 0;
+
 for t = 1,2 do
   penalty[t] = {};
   for p = 1,nPlayers do
@@ -102,12 +106,21 @@ function update()
   if (gamePacket and unix.time() - gamePacket.time < 10) then
     -- if the game control state has not been set check for the teamIndex 
     teamIndex = 0;
+    OtherTeamIndex = 0;
+
+
     for i = 1,2 do
       if gamePacket.teams[i].teamNumber == teamNumber then
         teamIndex = i;
+      else
+        OtherTeamIndex = i;
       end
     end
 
+    if OtherTeamIndex ~=0 then
+      opponent_score = gamePacket.teams[OtherTeamIndex].score;
+    end
+  
     if teamIndex ~= 0 then
       updateCount = count; 
 
@@ -124,7 +137,7 @@ function update()
 
       -- update goal color
       set_team_color(gamePacket.teams[teamIndex].goalColour); 
-
+      our_score = gamePacket.teams[teamIndex].score;
 
       -- update kickoff team
       -- Dropball Handling
@@ -158,6 +171,12 @@ function update()
       end
     end
   end
+
+  gcm.set_game_our_score(our_score);
+  gcm.set_game_opponent_score(opponent_score);
+
+  --GameController Latency
+  gcm.set_game_gc_latency(math.min(999, unix.time() - lastUpdate));
 
   if (unix.time() - lastUpdate > 10.0) then
     -- we have not received a game control packet in over 10 seconds

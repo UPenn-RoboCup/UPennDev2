@@ -9,6 +9,7 @@ require('serialization');
 
 require('wcm');
 require('gcm');
+require('ocm');
 
 Comm.init(Config.dev.ip_wireless,Config.dev.ip_wireless_port);
 print('Receiving Team Message From',Config.dev.ip_wireless);
@@ -22,8 +23,6 @@ ballLostPenalty = Config.team.ballLostPenalty;
 
 walkSpeed = Config.team.walkSpeed;
 turnSpeed = Config.team.turnSpeed;
-
-
 
 
 --Player ID: 1 to 5
@@ -58,6 +57,10 @@ state.landmarkv={0,0};
 state.corner=0; --0 for non-detect, 1 for L, 2 for T
 state.cornerv={0,0};
 
+--Game state info
+state.gc_latency=0;
+state.tm_latency=0;
+
 states = {};
 states[playerID] = state;
 
@@ -66,6 +69,10 @@ states[playerID] = state;
 poses={};
 player_roles=vector.zeros(10);
 t_poses=vector.zeros(10);
+
+
+tLastMessage = 0;
+
 
 function pack_msg(state)
   --Tightly pack the state info into a short string
@@ -127,6 +134,8 @@ function recv_msgs()
       t = serialization.deserialize(msg);
 --    t = unpack_msg(Comm.receive());
       if t and (t.teamNumber) and (t.id) then
+        tLastMessage = Body.get_time();
+
 	--Messages from upenn code
 	--Keep all pose data for collison avoidance 
         if t.teamNumber ~= state.teamNumber then
@@ -234,6 +243,10 @@ function update()
   else  state.penalty = 0;
   end
 
+  --Set gamecontroller latency info
+  state.gc_latency=gcm.get_game_gc_latency();
+  state.tm_latency=Body.get_time()-tLastMessage;
+
   --Added Vision Info 
   state.goal=0;
   state.goalv1={0,0};
@@ -280,6 +293,14 @@ function update()
 
   --Send lableB wirelessly!
   pack_labelB();
+
+  -- Add Obstacle Info from OccMap
+  if vcm.get_freespace_detect()>0 then
+    state.obstacle_num = ocm.get_obstacle_num();
+    state.obstacle_centroid = ocm.get_obstacle_centroid();
+    state.obstacle_angle_range = ocm.get_obstacle_angle_range();
+    state.obstacle_nearest = ocm.get_obstacle_nearest();
+  end
     
   if (math.mod(count, 1) == 0) then
 

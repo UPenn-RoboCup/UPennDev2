@@ -32,8 +32,10 @@ yKickMax = 0.06;
 rFar = 0.45;
 
 -- alignment
-thAlign = Config.fsm.bodyApproach.thAlign or 15.0*math.pi/180.0;
-thAlignWalkKick = Config.fsm.bodyApproach.thAlignWalkKick or 30*math.pi/180.0;
+thAlign = 10.0*math.pi/180.0;
+thAlignWalkKick = 30*math.pi/180.0;
+largeBearing =  60*math.pi/180.0;
+
 
 function entry()
   print(_NAME.." entry");
@@ -68,7 +70,11 @@ function update()
   toKick = postDist.kick();
 
   --Check for obstacles
-  us = UltraSound.check_obstacle();
+  if Config.fsm.enable_obstacle_detection > 0 then
+    us = UltraSound.check_obstacle();
+  else
+    us = vector.zeros(2) 
+  end
 
   if (t - ball.t > tLost) then
     print('ballLost');
@@ -82,15 +88,29 @@ function update()
     print('ballFar');
     return "ballFar";
   end
+<<<<<<< HEAD
+=======
+  bearing = math.abs(attackBearing)
+>>>>>>> OpenSource2012
   if toKick then
-    if (math.abs(attackBearing) > thAlign) then
-      print('ballAlign');
-      return 'ballAlign';
+    if (bearing > thAlign) then
+      if bearing > largeBearing then
+        print('ballLargeAlign');
+        return 'ballLargeAlign';
+      else
+        print('ballAlign')
+        return 'ballAlign'
+      end
     end
   else
-    if (math.abs(attackBearing) > thAlignWalkKick) then
-      print('ballAlignWalkKick');
-      return 'ballAlign';
+    if (bearing > thAlign) then
+      if bearing > largeBearing then
+        print('ballLargeAlign');
+        return 'ballLargeAlign';
+      else
+        print('ballAlign')
+        return 'ballAlign'
+      end
     end
   end
   if ((ball.x < xKick) and (math.abs(ball.y) < yKickMax) and

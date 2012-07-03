@@ -25,8 +25,12 @@ walk.footX= -0.020;
 walk.footY = 0.035;
 walk.supportX = 0;
 walk.supportY = 0.010;
-walk.qLArm=math.pi/180*vector.new({90,8,-40});
-walk.qRArm=math.pi/180*vector.new({90,-8,-40});
+--walk.qLArm=math.pi/180*vector.new({90,8,-40});
+--walk.qRArm=math.pi/180*vector.new({90,-8,-40});
+
+walk.qLArm=math.pi/180*vector.new({90,2,-40});
+walk.qRArm=math.pi/180*vector.new({90,-2,-40});
+
 walk.qLArmKick=math.pi/180*vector.new({90,30,-60});
 walk.qRArmKick=math.pi/180*vector.new({90,-30,-60});
 
@@ -63,7 +67,12 @@ if Config.servo.pid==1 then
   walk.hipImuParamY={0.5,0.3*gyroFactor,
                         1*math.pi/180, 25*math.pi/180};
   walk.armImuParamX={0.3,10*gyroFactor, 20*math.pi/180, 45*math.pi/180};
-  walk.armImuParamY={0.3,10*gyroFactor, 20*math.pi/180, 45*math.pi/180};
+
+--  walk.armImuParamY={0.3,10*gyroFactor, 20*math.pi/180, 45*math.pi/180};
+
+  --DISABLE Y BALANCING
+  walk.armImuParamY={0,0*gyroFactor, 20*math.pi/180, 45*math.pi/180};
+
 else
   walk.ankleImuParamX={0.9,0.3*gyroFactor, 0, 25*math.pi/180};
   walk.kneeImuParamX={0.9,1.2*gyroFactor, 0, 25*math.pi/180};

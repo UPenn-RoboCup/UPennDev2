@@ -15,12 +15,27 @@ function loadconfig(configName)
   end
 end
   
+-- Game Parameters
+
+game = {};
+game.teamNumber = 25;
+game.playerID = parse_hostname.get_player_id();
+game.robotID = game.playerID;
+game.teamColor = parse_hostname.get_team_color();
+game.role = game.playerID-1; -- 0 for goalie
+game.nPlayers = 4;
+
+
 param = {}
 param.world = 'World/Config_Nao_World'
-param.walk = 'Walk/Config_NaoV4_Walk_L512' 
+param.walk = 'Walk/Config_NaoV4_Walk_FastStable' 
 param.kick = 'Kick/Config_Nao_Kick'
 param.vision = 'Vision/Config_NaoV4_Vision'
+<<<<<<< HEAD
 param.camera = 'Vision/Config_NaoV4_Camera_Levine512night'
+=======
+param.camera = 'Vision/Config_NaoV4_Camera_Mexico621_fieldC'
+>>>>>>> OpenSource2012
 param.fsm = 'FSM/Config_NaoV4_FSM'
 
 loadconfig(param.world)
@@ -37,9 +52,9 @@ dev = {};
 dev.body = 'NaoBody'; 
 dev.camera = 'NaoCam';
 dev.kinematics = 'NaoKinematics';
-dev.ip_wired = '192.168.0.255';
-dev.ip_wireless = '192.168.1.255';
-dev.ip_wireless_port = 54321
+dev.ip_wired = '192.168.69.255';
+--dev.ip_wireless = '192.168.69.255';
+dev.ip_wireless = '192.168.255.255';
 dev.game_control = 'NaoGameControl';
 dev.team='TeamSPL';
 dev.walk = 'Walk/NaoV4Walk';
@@ -47,17 +62,6 @@ dev.kick = 'NewKick';
 
 --Speak enable
 speakenable = true;
-
--- Game Parameters
-
-game = {};
-game.teamNumber = 26;
-game.playerID = parse_hostname.get_player_id();
-game.robotID = game.playerID;
-game.teamColor = parse_hostname.get_team_color();
-game.role = game.playerID-1; -- 0 for goalie
-game.nPlayers = 4;
-
 
 
 -- FSM Parameters

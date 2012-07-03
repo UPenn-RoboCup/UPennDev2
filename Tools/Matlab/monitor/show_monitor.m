@@ -36,7 +36,33 @@ function h=show_monitor()
     MONITOR.target_fps=target_fps;
     figure(1);
     clf;
-    if draw_team==2 % Multiple robot, wireless monitoring (real robots)
+
+
+    % Single team wireless monitor
+    if draw_team==3 
+
+      set(gcf,'position',[1 1 900 700]);
+
+      MONITOR.enable10=2;  %Default 2
+
+      MONITOR.hFpsText=uicontrol('Style','text',...
+	'Units','Normalized', 'Position',[.40 0.93 0.20 0.04]);
+
+      MONITOR.hButton6=uicontrol('Style','pushbutton','String','FPS -',...
+	'Units','Normalized','Position',[.30 .93 .10 .04],'Callback',@button6);
+
+      MONITOR.hButton7=uicontrol('Style','pushbutton','String','FPS +',...
+	'Units','Normalized', 'Position',[.60 .93 .10 .04],'Callback',@button7);
+
+      MONITOR.hButton13=uicontrol('Style','pushbutton','String','Kidsize',...
+	'Units','Normalized', 'Position',[.02 .56 .07 .07],'Callback',@button13);
+
+      for i=1:5
+        MONITOR.infoTexts(i)=uicontrol('Style','text','FontSize',16,...
+	'Units','Normalized', 'Position',[0.92 0.94-0.17*i 0.08 0.15]);
+      end
+
+    elseif draw_team==2 % Multiple robot, wireless monitoring (real robots)
       set(gcf,'position',[1 1 900 900]);
 
       MONITOR.enable10=2;  %Default 2
@@ -149,7 +175,9 @@ function h=show_monitor()
     else 
        tStart = tic;
 
-       if draw_team==2
+       if draw_team==3
+         update_team_wireless2(robots);
+       elseif draw_team==2
          update_team_wireless(robots);
        elseif draw_team==1 
          update_team(robots, teamNumber, playerNumber , ignore_vision)
@@ -340,7 +368,11 @@ function h=show_monitor()
           MONITOR.deadcount(i) = 0;
         end
 
-        if MONITOR.deadcount(i) < 20 % ~2 sec interval until turning off
+deadcount_threshold = 50;
+
+
+%        if MONITOR.deadcount(i) < 20 % ~2 sec interval until turning off
+        if MONITOR.deadcount(i) < deadcount_threshold % ~5 sec interval until turning off
 
           h_c=subplot(5,5,[6:20]);
           plot_robot( r_struct, [],2,5,r_struct.robotName);
@@ -356,8 +388,13 @@ function h=show_monitor()
 	  end
 	  plot_overlay_wireless(r_struct);
           [infostr textcolor]=robot_info(r_struct,[],3,r_struct.robotName);
+
           set(MONITOR.infoTexts(i),'String',infostr);
-        elseif MONITOR.deadcount(i)==20 %Clear vision at 20
+
+%          infostr2 = sprintf('%s\nDC:%d',MONITOR.deadcount(i));
+%          set(MONITOR.infoTexts(i),'String',infostr2);
+
+        elseif MONITOR.deadcount(i)==deadcount_threshold
           labelB = robot_team.get_labelB_wireless(i);
   	  if i<6 
             h1=subplot(5,5,i);
@@ -372,6 +409,75 @@ function h=show_monitor()
     end
     hold off;
   end
+
+  function update_team_wireless2(robot_team)
+
+    MONITOR.count = MONITOR.count + 1;
+
+    %Draw common field 
+    h_c=subplot(5,5,[1 2 3 4 6 7 8 9 11 12 13 14 16 17 18 19 21 22 23 24]);
+    cla(h_c);
+    plot_field(h_c,MONITOR.fieldtype);
+    hold on;
+    for i=1:5
+      r_struct = robot_team.get_team_struct_wireless(i);
+      %Alive check
+
+      if r_struct.id>0
+
+        timepassed = r_struct.time-MONITOR.timestamp(i);
+        MONITOR.timestamp(i)=r_struct.time;
+
+        if timepassed==0
+          MONITOR.deadcount(i) = MONITOR.deadcount(i)+1;
+        else
+          MONITOR.deadcount(i) = 0;
+        end
+
+%        if MONITOR.deadcount(i) < 20 % ~2 sec interval until turning off
+        if MONITOR.deadcount(i) < 50 % ~5 sec interval until turning off
+    h_c=subplot(5,5,[1 2 3 4 6 7 8 9 11 12 13 14 16 17 18 19 21 22 23 24]);
+          plot_robot( r_struct, [],2,5,r_struct.robotName);
+          updated = 0;
+  	  if i<6 
+            h1=subplot(5,5,i*5);
+	    labelB = robot_team.get_labelB_wireless(i);
+            plot_label(labelB);
+
+	    %SHOW whether the robot is inactive
+            role=r_struct.role;
+	    if role==5
+	      b_name=text(10,30, 'W_GOALIE');
+	      set(b_name,'FontSize',28,'Color','r');
+	    elseif role==4
+	      b_name=text(10,30, 'W_PLAYER');
+	      set(b_name,'FontSize',28,'Color','r');
+            end
+	  else
+            h1=subplot(5,5,i+15);
+	    labelB = robot_team.get_labelB_wireless(i);
+            plot_label(labelB);
+	  end
+	  plot_overlay_wireless(r_struct);
+          [infostr textcolor]=robot_info(r_struct,[],3,r_struct.robotName);
+
+
+%          set(MONITOR.infoTexts(i),'String',infostr);
+
+          infostr2 = sprintf('%s\n DC:%d\n',infostr,MONITOR.deadcount(i));
+          set(MONITOR.infoTexts(i),'String',infostr2);
+
+        elseif MONITOR.deadcount(i)==50 %Clear vision at 20
+          labelB = robot_team.get_labelB_wireless(i);
+          h1=subplot(5,5,i*5);
+          plot_label(labelB*0);
+          set(MONITOR.infoTexts(i),'String','');
+	end
+      end
+    end
+    hold off;
+  end
+
 
 
   function plot_grid(map)

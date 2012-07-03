@@ -60,7 +60,7 @@ cResample = Config.world.cResample;
 
 playerID = Config.game.playerID;
 
-odomScale = Config.world.odomScale or Config.walk.odomScale;
+odomScale = Config.walk.odomScale or Config.world.odomScale;
 wcm.set_robot_odomScale(odomScale);
 
 --SJ: they are for IMU based navigation
@@ -74,10 +74,38 @@ function init_particles()
   if use_same_colored_goal>0 then
     goalDefend=get_goal_defend();
     PoseFilter.initialize_unified(
-      vector.new({goalDefend[1]/2,-2,math.pi/2}),
-      vector.new({goalDefend[1]/2,2,-math.pi/2}));
+      vector.new({goalDefend[1]/2, -2,  math.pi/2}),
+      vector.new({goalDefend[1]/2,  2, -math.pi/2}));
+    if (useSoundLocalization > 0) then
+      SoundFilter.reset();
+    end
   else
-    PoseFilter.initialize();    
+    PoseFilter.initialize();  
+  end
+end
+
+function entry()
+  count = 0;
+  init_particles();
+  Velocity.entry();
+end
+
+function init_particles_manual_placement()
+  if gcm.get_team_role() == 0 then
+  -- goalie initialized to different place
+    goalDefend=get_goal_defend();
+    util.ptable(goalDefend);
+    dp = vector.new({0.04,0.04,math.pi/8});
+    if goalDefend[1] > 0 then
+      PoseFilter.initialize(vector.new({goalDefend[1],0,math.pi}), dp);
+    else
+      PoseFilter.initialize(vector.new({goalDefend[1],0,0}), dp);
+    end
+  else
+    PoseFilter.initialize_manual_placement();
+    if (useSoundLocalization > 0) then
+      SoundFilter.reset();
+    end
   end
 end
 
@@ -99,11 +127,6 @@ function allZeros(table)
   return true
 end
 
-function entry()
-  count = 0;
-  init_particles();
-  Velocity.entry();
-end
 
 function update_odometry()
 
@@ -210,15 +233,12 @@ function update_vision()
   if (gameState == 0) then
     init_particles();
 
-    if (useSoundLocalization > 0) then
-      SoundFilter.reset();
-    end
   end
 
   --If robot was in penalty and game switches to set, initialize particles
   --for manual placement
   if wcm.get_robot_penalty() == 1 and gcm.get_game_state() == 2 then
-    PoseFilter.initialize_manual_placement()
+    init_particles_manual_placement()
   elseif gcm.in_penalty() then
     init_particles()
   end
@@ -230,14 +250,16 @@ function update_vision()
     wcm.set_robot_penalty(0);
   end
 
-  fsrRight = Body.get_sensor_fsrRight()
-  fsrLeft = Body.get_sensor_fsrLeft()
+  if not Config.webots then
+    fsrRight = Body.get_sensor_fsrRight()
+    fsrLeft = Body.get_sensor_fsrLeft()
 
-  --reset particle to face opposite goal when getting manual placement on set
-  if gcm.get_game_state() ==2 then
-    if (not allZeros(fsrRight)) and (not allZeros(fsrLeft)) then --Do not do this if sensor is broken
-      if allLessThanTenth(fsrRight) and allLessThanTenth(fsrLeft) then
-        PoseFilter.initialize_manual_placement();
+    --reset particle to face opposite goal when getting manual placement on set
+    if gcm.get_game_state() ==2 then
+      if (not allZeros(fsrRight)) and (not allZeros(fsrLeft)) then --Do not do this if sensor is broken
+        if allLessThanTenth(fsrRight) and allLessThanTenth(fsrLeft) then
+          init_particles_manual_placement()
+        end
       end
     end
   end
@@ -287,19 +309,6 @@ function update_vision()
       if (useSoundLocalization > 0) then
         attackingOrDefending = SoundFilter.resolve_goal_detection(goalType, v); 
       end
-      if (goalType == 0) then
-        PoseFilter.post_unified_unknown(v);
-	goal_led={1,1,0};
-      elseif(goalType == 1) then
-        PoseFilter.post_unified_left(v);
-	goal_led={1,1,0};
-      elseif(goalType == 2) then
-        PoseFilter.post_unified_right(v);
-	goal_led={1,1,0};
-      elseif(goalType == 3) then
-        PoseFilter.goal_unified(v);
-	goal_led={0,0,1};
-      end
       
       if (attackingOrDefending == 1) then
         -- attacking goal
@@ -317,6 +326,7 @@ function update_vision()
           -- indicator
           Body.set_indicator_goal({0,0,1});
         else
+          -- we are the blue team, shooting on yellow goal
           if (goalType == 0) then
             PoseFilter.post_yellow_unknown(v);
           elseif(goalType == 1) then
@@ -463,7 +473,23 @@ function update_vision()
 end
 
 function update_led()
-  if led_on>0 then
+  --Turn on the eye light according to team color
+  --If gamecontroller is down
+  if gcm.get_game_state()~=3 and
+     gcm.get_game_gc_latency() > 10.0 then
+
+    if gcm.get_team_color() == 0 then --Blue team
+      Body.set_indicator_goal({0,0,0});
+      Body.set_indicator_ball({0,0,1});
+    else --Red team
+      Body.set_indicator_goal({0,0,0});
+      Body.set_indicator_ball({0,0,1});
+    end
+    return;
+  end
+
+  --Only disable eye LED during playing
+  if led_on>0 and gcm.get_game_state()~=3 then
     Body.set_indicator_goal(goal_led);
     Body.set_indicator_ball(ball_led);
   else

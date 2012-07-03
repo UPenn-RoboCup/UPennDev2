@@ -14,7 +14,8 @@ require('detectGoal');
 require('detectLine');
 require('detectCorner');
 if not string.find(Config.platform.name,'Nao') then
-require('detectLandmarks'); -- for NSL
+  require('detectLandmarks'); -- for NSL
+  require('detectLandmarks2'); -- for NSL
 end
 require('detectSpot');
 require('detectFreespace');
@@ -38,6 +39,8 @@ colorField = Config.color.field;
 colorWhite = Config.color.white;
 
 use_point_goal=Config.vision.use_point_goal;
+use_multi_landmark = Config.vision.use_multi_landmark or 0;
+
 
 enableLine = Config.vision.enable_line_detection;
 enableCorner = Config.vision.enable_corner_detection;
@@ -46,7 +49,7 @@ enableMidfieldLandmark = Config.vision.enable_midfield_landmark_detection;
 enable_freespace_detection = Config.vision.enable_freespace_detection or 0;
 enableBoundary = Config.vision.enable_visible_boundary or 0;
 enableRobot = Config.vision.enable_robot_detection or 0;
-yellowGoals = Config.vision.enable_2_yellow_goals or 0;
+yellowGoals = Config.world.use_same_colored_goal or 0; --Config.vision.enable_2_yellow_goals or 0;
 
 enable_timeprinting = Config.vision.print_time;
 
@@ -162,11 +165,13 @@ function update()
    landmarkCyan = 0;
    landmarkYellow = 0;
    if enableMidfieldLandmark == 1 then
-     tstart = unix.time ();
-     landmarkCyan = detectLandmarks.detect(colorCyan,colorYellow);
-     TlandmarkCyan = unix.time() - tstart;
-     landmarkYellow = detectLandmarks.detect(colorYellow,colorCyan);
-     TlandmarkYellow = unix.time() - TlandmarkCyan - tstart;
+     if use_multi_landmark == 1 then
+       landmarkCyan = detectLandmarks2.detect(colorCyan,colorYellow);
+       landmarkYellow = detectLandmarks2.detect(colorYellow,colorCyan);
+     else
+       landmarkCyan = detectLandmarks.detect(colorCyan,colorYellow);
+       landmarkYellow = detectLandmarks.detect(colorYellow,colorCyan);
+     end
    end
   end
 

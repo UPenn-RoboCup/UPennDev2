@@ -43,6 +43,23 @@ run_player(){
   screen $SCREEN_FLAGS player $LUA_COM run_main_op.lua
   
   echo "Rock and Roll!"
+  screen -ls
+}
+
+run_obplay(){
+  run_dcm_vcm
+ 
+  echo "Starting Ob Map"
+  cd $PLAYER_DIR
+  screen $SCREEN_FLAGS occ $LUA_COM run_occmap.lua
+  sleep 1
+
+  echo "Starting Player..."
+  cd $PLAYER_DIR
+  screen $SCREEN_FLAGS player $LUA_COM run_main_op.lua
+  
+  echo "Rock and Roll!"
+  screen -ls
 }
 
 run_demo(){
@@ -62,6 +79,23 @@ run_visiontest(){
   screen -m -L -S test $LUA_COM test_vision.lua
   #
   echo "Rock and Roll!"
+  screen -ls
+}
+
+run_obstacle(){
+  run_dcm_vcm
+  echo "Starting OccMap Proc..."
+  cd $PLAYER_DIR
+  screen $SCREEN_FLAGS occ $LUA_COM run_occmap.lua
+  ## Allow Cognition some time to start
+  sleep 1
+  #
+  echo "Starting Test Vision..."
+  cd $PLAYER_DIR
+  screen -m -L -S test $LUA_COM test_vision.lua
+  #
+  echo "Rock and Roll!"
+  screen -ls
 }
 
 run_obstacle(){
@@ -143,11 +177,15 @@ case "$1" in
   'obstacle')
     echo "Start Obstacle Testing Mode"
     run_obstacle;;
+  'obstacleplay')
+    echo "Start Player with Obstacle"
+    run_obplay;;
   'wbreset')
     echo "Reset White Balance"
     reset_wb;;
   'help')
     echo "[No Argu](s)     -- Player Mode"
+    echo "[obstacleplay](sob) -- Player Mode with Obstacle"
     echo "[Demo](sd)       -- Demo Mode"
     echo "[visiontest](sv) -- Vision Debug Mode"
     echo "[bias](sb)       -- Bias Setup Mode"

@@ -11,7 +11,7 @@ require('wcm');
 require('gcm');
 
 --Makes error with webots
-Comm.init(Config.dev.ip_wireless,Config.dev.ip_wireless_port);
+Comm.init(Config.dev.ip_wireless,12500);
 print('Receiving Team Message From',Config.dev.ip_wireless);
 
 playerID = gcm.get_team_player_id();
@@ -43,6 +43,9 @@ state.soundFilter = wcm.get_sound_detFilter();
 state.soundDetection = wcm.get_sound_detection();
 soundOdomPose = wcm.get_sound_odomPose();
 state.soundOdomPose = {x=soundOdomPose[1], y=soundOdomPose[2], a=soundOdomPose[3]};
+--state.xp = wcm.get_particle_x();
+--state.yp = wcm.get_particle_y();
+--state.ap = wcm.get_particle_a();
 
 --Added key vision infos
 state.goal=0;  --0 for non-detect, 1 for unknown, 2/3 for L/R, 4 for both
@@ -53,11 +56,15 @@ state.landmarkv={0,0};
 states = {};
 states[playerID] = state;
 
+tLastReceived = 0
+
+
 function recv_msgs()
   while (Comm.size() > 0) do 
     t = serialization.deserialize(Comm.receive());
     if (t and (t.teamNumber) and (t.teamNumber == state.teamNumber) and (t.id) and (t.id ~= playerID)) then
       t.tReceive = Body.get_time();
+      tLastReceived = Body.get_time();
       states[t.id] = t;
     end
   end
@@ -93,6 +100,9 @@ function update()
   state.soundDetection = wcm.get_sound_detection();
   soundOdomPose = wcm.get_sound_odomPose();
   state.soundOdomPose = {x=soundOdomPose[1], y=soundOdomPose[2], a=soundOdomPose[3]};
+  --state.xp = wcm.get_particle_x();
+  --state.yp = wcm.get_particle_y();
+  --state.ap = wcm.get_particle_a();
 
   --Added Vision Info 
   state.goal=0;
@@ -241,7 +251,11 @@ end
 function set_role(r)
   if role ~= r then 
     role = r;
-    Body.set_indicator_role(role);
+    wireless = (Body.get_time()-tLastReceived) < 1;
+    if wireless then
+      Speak.talk('Received packet')
+    end
+    Body.set_indicator_role(role, wireless);
     if role == 1 then
       -- attack
       Speak.talk('Attack');

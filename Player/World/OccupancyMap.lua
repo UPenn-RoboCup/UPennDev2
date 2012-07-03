@@ -14,7 +14,7 @@ require('walk');
 
 uOdometry0 = vector.new({0, 0, 0});
 
-odomScale = Config.world.odomScale or Config.walk.odomScale;
+odomScale = Config.walk.odomScale or Config.world.odomScale;
 imuYaw = Config.world.imuYaw or 0;
 yaw0 = 0;
 if (string.find(Config.platform.name, 'Webots'))  then
@@ -23,7 +23,6 @@ else
   yawScale = 1;
 end
 lastTime = 0;
-
 
 function entry()
   lastTime = unix.time();
@@ -97,10 +96,10 @@ function obs_in_occ()
   start = unix.time();
   obstacle = OccMap.get_obstacle();
   local nOb = obstacle[1];
-  ocm.set_ob_num(nOb);
+  ocm.set_obstacle_num(nOb);
   centroid = vector.zeros(maxOb * 2);
   angle_range = vector.zeros(maxOb * 2);
-  nearest = vector.zeros(maxOb * 3);
+  nearest = vector.zeros(maxOb * 2);
 --  print('Find ',nOb);
   for i = 1 , nOb do
 --    print('centroid')
@@ -115,12 +114,11 @@ function obs_in_occ()
 --    print('nearest')
 --    util.ptable(obstacle[i].nearest);
     nearest[(i-1)*3+1] = obstacle[i + 1].nearest[1];
-    nearest[(i-1)*3+2] = obstacle[i + 1].nearest[2];
-    nearest[(i-1)*3+3] = obstacle[i + 1].nearest[3];
+    nearest[(i-1)*3+2] = obstacle[i + 1].nearest[3];
   end
-  ocm.set_ob_centroid(centroid);
-  ocm.set_ob_angle_range(angle_range);
-  ocm.set_ob_nearest(nearest);
+  ocm.set_obstacle_centroid(centroid);
+  ocm.set_obstacle_angle_range(angle_range);
+  ocm.set_obstacle_nearest(nearest);
 --  endd = unix.time();
 --  print(endd - start);
 end
@@ -144,7 +142,7 @@ function update()
 	-- shm Update
   odom = OccMap.retrieve_odometry();
   ocm.set_occ_odom(vector.new({odom.x, odom.y, odom.a}));
-  --print('odom from map',odom.x..' '..odom.y..' '..odom.a);
+--  print('odom from map',odom.x..' '..odom.y..' '..odom.a);
 	occmap = OccMap.retrieve_map();
 	ocm.set_occ_map(occmap);		
 

@@ -21,6 +21,11 @@ shared.game.time_remaining = vector.zeros(1);
 shared.game.last_update = vector.zeros(1);
 
 shared.game.paused = vector.zeros(1);
+shared.game.gc_latency = vector.zeros(1);--GC message latency
+shared.game.tm_latency = vector.zeros(1);--Team message latency
+
+shared.game.our_score = vector.zeros(1);
+shared.game.opponent_score = vector.zeros(1);
 
 shared.team = {};
 shared.team.number = vector.zeros(1);
@@ -33,6 +38,7 @@ shared.team.forced_role = vector.zeros(1); --for role testing
 --for double pass
 shared.team.task_state = vector.zeros(2); 
 shared.team.target = vector.zeros(3);
+shared.team.balltarget = vector.zeros(3);
 
 shared.fsm = {};
 shared.fsm.body_state = '';

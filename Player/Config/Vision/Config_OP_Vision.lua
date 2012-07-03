@@ -23,7 +23,7 @@ vision.enable_line_detection = 1;
 -- use this to enable spot detection
 vision.enable_spot_detection = 0;
 -- use this to enable midfield landmark detection
-vision.enable_midfield_landmark_detection = 0;
+vision.enable_midfield_landmark_detection = 1;
 -- use this to enable copying images to shm (for colortables, testing)
 vision.copy_image_to_shm = 1;
 -- use this to enable storing all images
@@ -129,3 +129,5 @@ vision.goal.distanceFactorCyan = 1.15;
 vision.goal.distanceFactorYellow = 1.1; 
 vision.landmark.distanceFactorCyan = 1.05; 
 vision.landmark.distanceFactorYellow = 1.05; 
+
+vision.ball.th_headAngle = -15*math.pi/180;

@@ -15,7 +15,7 @@ timeout = 20.0;
 
 maxStep = 0.05;
 
-rClose = 0.35;
+rClose = 0.28;
 
 tLost = 3.0;
 
@@ -60,8 +60,11 @@ function update()
 
   if (role == 2) then
     -- defend
-    homePosition = .6 * ballGlobal;
-    homePosition[1] = homePosition[1] - 0.50*util.sign(homePosition[1]);
+    goalDefend = wcm.get_goal_defend();
+    homePosition = goalDefend - 0.5*(goalDefend - ballGlobal);
+  
+    --homePosition = .6 * ballGlobal;
+    --homePosition[1] = homePosition[1] - 0.50*util.sign(homePosition[1]);
     homePosition[2] = homePosition[2] - 0.80*util.sign(homePosition[2]);
 
   elseif (role == 3) then
@@ -87,22 +90,22 @@ function update()
   else
     -- attack
     if math.abs(angle1)<math.pi/2 then
-    rDist=math.min(rDist1,math.max(rDist2,ballR-rTurn2));
-    homePosition={
-    ballGlobal[1]-math.cos(aGoal)*rDist,
-    ballGlobal[2]-math.sin(aGoal)*rDist,
-    aGoal};
+      rDist=math.min(rDist1,math.max(rDist2,ballR-rTurn2));
+      homePosition={
+        ballGlobal[1]-math.cos(aGoal)*rDist,
+        ballGlobal[2]-math.sin(aGoal)*rDist,
+        aGoal};
     elseif angle1>0 then
       homePosition={
-    ballGlobal[1]+math.cos(-aBall+math.pi/2)*rOrbit,
-    ballGlobal[2]-math.sin(-aBall+math.pi/2)*rOrbit,
-    aBall};
+        ballGlobal[1]+math.cos(-aBall+math.pi/2)*rOrbit,
+        ballGlobal[2]-math.sin(-aBall+math.pi/2)*rOrbit,
+        aBall};
 
     else
       homePosition={
-    ballGlobal[1]+math.cos(-aBall-math.pi/2)*rOrbit,
-    ballGlobal[2]-math.sin(-aBall-math.pi/2)*rOrbit,
-    aBall};
+        ballGlobal[1]+math.cos(-aBall-math.pi/2)*rOrbit,
+        ballGlobal[2]-math.sin(-aBall-math.pi/2)*rOrbit,
+        aBall};
     end  
   end
 
@@ -126,20 +129,22 @@ function update()
   ballR = math.sqrt(ball.x^2 + ball.y^2);
   if ((tBall < 1.0) and (ballR < rClose)) then
     if postDist.kick() then
-      return "ballAlign";
+      return "approach"; --Does not having approach in position make faster?
     else
       return "approach";
     end
   end
 
-  --[[
   -- TODO: add obstacle detection
   --us = UltraSound.checkObstacle();
-  us = UltraSound.check_obstacle();
-  if ((t - t0 > 3.0) and (us[1] > 8 or us[2] > 8)) then
+  if Config.fsm.enable_obstacle_detection > 0 then
+    us = UltraSound.check_obstacle();
+  else
+    us = vector.zeros(2)
+  end
+  if ((t - t0 > 2.5) and (us[1] > 5 or us[2] > 5) and role~=1) then
     return 'obstacle'; 
   end
-  ]]--
 
   if ((t - t0 > 5.0) and (t - ball.t > tLost)) then
     return "ballLost";

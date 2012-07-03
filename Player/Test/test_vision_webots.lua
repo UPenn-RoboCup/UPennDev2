@@ -8,12 +8,7 @@ end
 
 -- Get Computer for Lib suffix
 local computer = os.getenv('COMPUTER') or '';
-if (string.find(computer, 'Darwin')) then
-  -- MacOS X uses .dylib:
-  package.cpath = cwd .. '/Lib/?.dylib;' .. package.cpath;
-else
-  package.cpath = cwd .. '/Lib/?.so;' .. package.cpath;
-end
+package.cpath = cwd .. '/Lib/?.so;' .. package.cpath;
 
 package.path = cwd .. '/?.lua;' .. package.path;
 package.path = cwd .. '/Util/?.lua;' .. package.path;
@@ -50,6 +45,7 @@ require('Team')
 require('util')
 require('wcm')
 require('gcm')
+require('ocm')
 
 darwin = false;
 webots = false;
@@ -210,9 +206,13 @@ function process_keyinput()
    elseif byte==string.byte("9") then	
      Motion.event("walk");
      walk.start();
+   elseif byte==string.byte('o') then
+     ocm.set_occ_reset(1);
+     headangle[2]=50*math.pi/180;
+   elseif byte==string.byte('p') then
+     vcm.set_image_learn_lut(1);
    end
 
-   walk.set_velocity(unpack(targetvel));
 
    -- Apply manul control head angle
    if headsm_running == 0 then
@@ -267,6 +267,21 @@ function update()
   
   -- Get a keypress
   process_keyinput();
+
+
+  obstacle_num = ocm.get_obstacle_num();
+  obstacle_centroid = ocm.get_obstacle_centroid();
+  obstacle_angle_range = ocm.get_obstacle_angle_range();
+  obstacle_nearest = ocm.get_obstacle_nearest();
+
+
+  velangle = math.atan2(targetvel[2], targetvel[1]);
+--  print(obstacle_num,velangle*180/math.pi);
+  for i = 1, obstacle_num do
+
+  end
+  walk.set_velocity(unpack(targetvel));
+
 end
 
 while 1 do

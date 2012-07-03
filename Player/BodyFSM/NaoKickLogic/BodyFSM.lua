@@ -12,6 +12,7 @@ require('bodySearch')
 require('bodyApproach')
 require('bodyKick')
 require('bodyOrbit')
+require('bodyLargeOrbit')
 require('bodyGotoCenter')
 require('bodyPosition')
 require('bodyObstacle')
@@ -26,6 +27,7 @@ sm:add_state(bodySearch);
 sm:add_state(bodyApproach);
 sm:add_state(bodyKick);
 sm:add_state(bodyOrbit);
+sm:add_state(bodyLargeOrbit);
 sm:add_state(bodyGotoCenter);
 sm:add_state(bodyPosition);
 sm:add_state(bodyObstacle);
@@ -38,17 +40,19 @@ sm:set_transition(bodyPosition, 'timeout', bodyPosition);
 sm:set_transition(bodyPosition, 'ballLost', bodySearch);
 sm:set_transition(bodyPosition, 'ballAlign', bodyOrbit);
 sm:set_transition(bodyPosition, 'approach', bodyApproach);
---sm:set_transition(bodyPosition, 'obstacle', bodyObstacle);
+sm:set_transition(bodyPosition, 'obstacle', bodyObstacle);
 
+sm:set_transition(bodyObstacle, 'continue', bodyGotoCenter);
 sm:set_transition(bodyObstacle, 'clear', bodyPosition);
-sm:set_transition(bodyObstacle, 'timeout', bodyObstacleAvoid);
+sm:set_transition(bodyObstacle, 'timeout', bodyPosition);
 
-sm:set_transition(bodyObstacleAvoid, 'clear', bodyPosition);
-sm:set_transition(bodyObstacleAvoid, 'timeout', bodyPosition);
+--sm:set_transition(bodyObstacleAvoid, 'clear', bodyPosition);
+--sm:set_transition(bodyObstacleAvoid, 'timeout', bodyPosition);
 
 sm:set_transition(bodySearch, 'ball', bodyPosition);
 sm:set_transition(bodySearch, 'timeout', bodyGotoCenter);
 
+sm:set_transition(bodyGotoCenter, 'obstacle', bodyObstacle);
 sm:set_transition(bodyGotoCenter, 'ballFound', bodyPosition);
 sm:set_transition(bodyGotoCenter, 'done', bodySearch);
 sm:set_transition(bodyGotoCenter, 'timeout', bodySearch);
@@ -58,8 +62,14 @@ sm:set_transition(bodyOrbit, 'ballLost', bodySearch);
 sm:set_transition(bodyOrbit, 'ballFar', bodyPosition);
 sm:set_transition(bodyOrbit, 'done', bodyApproach);
 
+sm:set_transition(bodyLargeOrbit, 'timeout', bodyPosition);
+sm:set_transition(bodyLargeOrbit, 'ballLost', bodySearch);
+sm:set_transition(bodyLargeOrbit, 'ballFar', bodyPosition);
+sm:set_transition(bodyLargeOrbit, 'done', bodyApproach);
+
 sm:set_transition(bodyApproach, 'ballFar', bodyPosition);
 sm:set_transition(bodyApproach, 'ballAlign', bodyOrbit);
+sm:set_transition(bodyApproach, 'ballLargeAlign', bodyLargeOrbit);
 sm:set_transition(bodyApproach, 'ballLost', bodySearch);
 sm:set_transition(bodyApproach, 'timeout', bodyPosition);
 sm:set_transition(bodyApproach, 'kick', bodyKick);

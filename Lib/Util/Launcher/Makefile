@@ -3,7 +3,7 @@ include ../../Makefile.inc
 all: launcher
 
 CWD= $(shell pwd)
-CTC= $(NaoqiCTC)
+CHAIN= $(CTCDIR)
 
 CXXFLAGS=-O1 -fpic
 
@@ -19,7 +19,7 @@ launcher: lualauncher.o
 
 
 cross:
-ifeq ($(CTC),)
+ifeq ($(CHAIN),)
 	@echo Cross compilitation tool not specified. \
 				Please download the ctc tool from \
 				the aldebaran website and follow the \
@@ -27,7 +27,7 @@ ifeq ($(CTC),)
 else
 	rm -rf build
 	mkdir build
-	cd build && cmake -DCMAKE_TOOLCHAIN_FILE="$(CTC)/toolchain-atom.cmake" .. \
+	cd build && cmake -DCMAKE_TOOLCHAIN_FILE="$(CHAIN)/toolchain-atom.cmake" .. \
 		&& make && cd $(CWD)
 endif
 

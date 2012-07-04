@@ -471,6 +471,9 @@ function bboxArea(bbox)
 end
 
 function load_lut(fname)
+  if not string.find(fname,'.raw') then
+    fname = fname..'.raw';
+  end
   local cwd = unix.getcwd();
   if string.find(cwd, "WebotsController") then
     cwd = cwd.."/Player";
@@ -485,6 +488,9 @@ function load_lut(fname)
 end
 
 function load_lut_obs(fname)
+  if not string.find(fname,'.raw') then
+    fname = fname..'.raw';
+  end
   local cwd = unix.getcwd();
   if string.find(cwd, "WebotsController") then
     cwd = cwd.."/Player";

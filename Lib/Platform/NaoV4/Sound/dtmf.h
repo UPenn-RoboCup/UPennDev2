@@ -32,9 +32,13 @@ const int NFFT_MULTIPLIER = 2;
 const int NFFT = NFFT_MULTIPLIER * PFRAME;
 
 // TODO: what do these thresholds mean
-const double THRESHOLD_RATIO1 = 2;
-const double THRESHOLD_RATIO2 = 2;
-const int THRESHOLD_COUNT = 3;
+//const double THRESHOLD_RATIO1 = 2; // original
+//const double THRESHOLD_RATIO2 = 2;// original
+const double THRESHOLD_RATIO1 = 1.5;
+const double THRESHOLD_RATIO2 = 1.5;
+// tone threshold
+//const int THRESHOLD_COUNT = 3;
+const int THRESHOLD_COUNT = 2;
 const int NUM_CHIRP_COUNT = 4;
 const int NCORRELATION = NUM_CHIRP_COUNT * PFRAME;
 
@@ -52,7 +56,7 @@ void print_tone_resp(double *qRow, double *qRow2, double *qCol, double *qCol2);
  * *pcm - pointer to pre-allocated pcm array
  * nfarme - number of pcm frames to generate
  */
-int gen_tone_pcm(char symbol, short *pcm, int nframe);
+int gen_tone_pcm(char symbol, short *pcm, int nframe, int leftOnly = 0);
 
 
 /**

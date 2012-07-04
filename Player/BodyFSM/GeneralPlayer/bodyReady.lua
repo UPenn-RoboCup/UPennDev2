@@ -8,7 +8,6 @@ require('Config')
 require('wcm')
 require('gcm')
 require('Team')
-require('ocm')
 
 t0 = 0;
 last_score = 0;

@@ -140,11 +140,17 @@ function process_keyinput()
 	elseif byte==string.byte("v") then
 	    walk.startMotion("2punch");
 
+--	elseif byte==string.byte("b") then
+--	    walk.startMotion("point");
+
+
+
 	elseif byte==string.byte("b") then
-	    walk.startMotion("point");
-
-
-
+	    grip.throw=0;
+	    Motion.event("pickup");
+	elseif byte==string.byte("n") then
+	    grip.throw=1;
+	    Motion.event("pickup");
 
     elseif byte==string.byte("7") then	
       Motion.event("sit");

@@ -1,14 +1,10 @@
 module(... or "", package.seeall)
 
-require('unix')
 require('os')
 
 webots = false;
 
--- mv up to Player directory
-unix.chdir('..');
-
-local cwd = unix.getcwd();
+local cwd = '../.' 
 -- the webots sim is run from the WebotsController dir (not Player)
 if string.find(cwd, "WebotsController") then
   webots = true;
@@ -35,6 +31,7 @@ package.path = cwd.."/World/?.lua;"..package.path;
 package.path = cwd.."/BodyFSM/?.lua;"..package.path;
 package.path = cwd.."/HeadFSM/?.lua;"..package.path;
 
+require('unix')
 require('Config');
 require('Body')
 require('vector')

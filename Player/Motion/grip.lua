@@ -18,30 +18,40 @@ supportX = Config.walk.supportX;
 bodyTilt = Config.walk.bodyTilt;
 --bodyTilt1=40*math.pi/180;
 --bodyTilt1=20*math.pi/180; --With long hand
-bodyTilt1 = Config.walk.bodyTilt;
+bodyTilt0 = Config.walk.bodyTilt;
+bodyTilt1 = 20*math.pi/180;
+
+
+
+
+
 
 bodyHeight = Config.walk.bodyHeight;
 bodyHeight0 = bodyHeight;
-bodyHeight1 = 0.195;
+
+bodyHeight1 = 0.20;
 bodyHeight2 = 0.22;
 
 bodyShift = 0;
 bodyShift0 = 0;
-bodyShift1 = -0.015; --with long hand
-bodyShift2 = -0.010;
-bodyShift3 = 0.015;
-
-
+bodyShift1 = 0.0; --with long hand
+bodyShift2 = -0.01;
+bodyShift3 = 0;
 
 bodyYaw=0;
 bodyYaw1=-30*math.pi/180;
 
 
+
+bodyHeight3 = 0.24;
 bodyShift_windup = -0.015;
 bodyShift_throw = 0;
 
 -- Times
 t_throw = {1.0,2.0,3.0};
+t_throw = {2.0,3.0,4.0};
+
+
 t_grab  = {1.2,2.5,3.0,4.0,5.0};
 
 qRArm= vector.zeros(3);
@@ -50,25 +60,89 @@ qLArm0 = Config.walk.qLArm;
 qRArm0 = Config.walk.qRArm;
 
 --Pickup
---qLArm1 = math.pi/180*vector.new({0, 50,90});
---qLArm1 = qLArm0;
---qLArm1[1],qLArm1[2] = 0,50;
-qLArm1 = math.pi/180*vector.new({60, 30,30});
+--30 degree: maximum open
+qLArm1 = math.pi/180*vector.new({55, 5,30});
 qRArm1 = math.pi/180*vector.new({90,-8,-40});
 
-qLArm_position = math.pi/180*vector.new({0, 0,90});
-
 --Grasp
-qLArm2 = math.pi/180*vector.new({0, 30,-40});	
+qLArm2 = math.pi/180*vector.new({55, 5,-40});	
 qRArm2 = math.pi/180*vector.new({90, -8,40});	
 
+
+
+
+bodyHeight1 = 0.20;
+bodyShift1 = 0.0; --with long hand
+bodyShift2 = -0.01;
+bodyTilt1 = 20*math.pi/180;
+--pickup
+qLArm1 = math.pi/180*vector.new({55, 5,30});
+--grasp
+qLArm2 = math.pi/180*vector.new({55, 5,-40});	
+
+
+
+--try 2
+bodyHeight1 = 0.20;
+
+bodyRoll1 = -20*math.pi/180;
+bodyTilt1 = 10*math.pi/180;
+
+bodyShift1 = 0.01;
+bodyHeight1 = 0.19;
+
+qLArm1 = math.pi/180*vector.new({45, 15, 40});
+qLArm2 = math.pi/180*vector.new({45, 15,-40});	
+
+qRArm1 = math.pi/180*vector.new({170, -15,0});
+qRArm2 = math.pi/180*vector.new({170, -15,0});	
+
+
+bodyHeight2 = 0.21;
+bodyShift2 = -0.01;
+
+
+--try 3
+
+bodyHeight1 = 0.20;
+
+bodyRoll1 = -20*math.pi/180;
+bodyTilt1 = 0*math.pi/180;
+bodyYaw1=0*math.pi/180;
+
+
+bodyShift1 = 0.0;
+
+qLArm1 = math.pi/180*vector.new({90, 30, 35});
+qLArm2 = math.pi/180*vector.new({90, 30,-40});	
+qRArm1 = math.pi/180*vector.new({170, -15,0});
+qRArm2 = math.pi/180*vector.new({170, -15,0});	
+bodyHeight1 = 0.20;
+bodyHeight2 = 0.21;
+bodyShift2 = -0.01;
+
+
+t_grab  = {1.2,2.0,2.5,3.0,3.5};
+
+t_throw = {1.0,2.0,3.0};
+
+
+
+
+
+
+
+
 --Windup
-qLArm3 = math.pi/180*vector.new({50, 75,-120});	
-qRArm3 = math.pi/180*vector.new({-90,5,-120});	
+qLArm3 = math.pi/180*vector.new({-80,5,-40});	
+qRArm3 = qRArm0;
 
 --Throw
-qLArm4 = math.pi/180*vector.new({-20,50,-0});	
-qRArm4 = math.pi/180*vector.new({40,5,-0});	
+qLArm4 = math.pi/180*vector.new({0,5,35});	
+qRArm4 = qRArm0;
+
+
+
 
 --[[
 qLArm4 = math.pi/180*vector.new({20,20,-0});
@@ -146,15 +220,14 @@ function update()
     started=true;
     Body.set_head_hardness(.5);
     if throw==0 then
---      Body.set_larm_hardness({0.5,.3,0.5});
---      Body.set_rarm_hardness({0.5,.3,0.5});
+      Body.set_larm_hardness({0.5,.5,1});
+      Body.set_rarm_hardness({0.5,.5,1});
     else
---      Body.set_larm_hardness({1,0.3,1});
---      Body.set_rarm_hardness({1,0.3,1});
+      Body.set_larm_hardness({1,1,1});
+      Body.set_rarm_hardness({1,1,1});
     end
     Body.set_lleg_hardness(1);
     Body.set_rleg_hardness(1);
-    Body.set_aux_hardness(.5);
     t0 = Body.get_time();
   end
 
@@ -166,33 +239,38 @@ function update()
     if t<t_pickup[1] then 
       --Open grip and extend hand, lower body
       ph = t/t_pickup[1];
-      qLArm = ph*qLArm1 + (1-ph)*qLArm0;
-      qRArm = ph*qRArm1 + (1-ph)*qRArm0;
-      qRArm = qRArm1;
-      qGrip = ph*qGrip1 + (1-ph)*qGrip0;
+      qLArm = qLArm1*1.0;
+      qRArm = qRArm1*1.0;
       bodyHeight = ph*bodyHeight1 + (1-ph)*bodyHeight0;
       bodyShift=bodyShift0*(1-ph)+ bodyShift1*ph;
       bodyYaw=ph*bodyYaw1;
+      bodyTilt = ph* bodyTilt1 + (1-ph)*bodyTilt0;
+      bodyRoll = ph* bodyRoll1;
+
 
     elseif t<t_pickup[2] then
    --bend front
       ph=(t-t_pickup[1])/(t_pickup[2]-t_pickup[1]);
-      bodyTilt = ph* bodyTilt1 + (1-ph)*Config.walk.bodyTilt;
-      qLArm = ph*qLArm_position + (1-ph)*qLArm1;
+
     elseif t<t_pickup[3] then
     --Grasp
       ph=(t-t_pickup[2])/(t_pickup[3]-t_pickup[2]);
       qLArm= ph * qLArm2 + (1-ph)*qLArm1;
-      qLArm= ph * qLArm2 + (1-ph)*qLArm_position;
       qRArm= ph * qRArm2 + (1-ph)*qRArm1;
-      qGrip=ph*qGrip0 + (1-ph)*qGrip1;
+
     elseif t<t_pickup[4] then
       --repose
      ph=(t-t_pickup[3])/(t_pickup[4]-t_pickup[3]);
-     bodyTilt = ph* Config.walk.bodyTilt+(1-ph)*bodyTilt1;
+
+     bodyTilt = ph* bodyTilt0 + (1-ph)*bodyTilt1;
      bodyHeight = ph*bodyHeight2 + (1-ph)*bodyHeight1;
      bodyShift=bodyShift2*ph+ bodyShift1*(1-ph);
      bodyYaw=(1-ph)*bodyYaw1;
+
+     qLArm= ph * qLArm0 + (1-ph)*qLArm2;
+     qRArm= ph * qRArm0 + (1-ph)*qRArm2;
+
+      bodyRoll = (1-ph)* bodyRoll1;
 
    elseif t<t_pickup[5] then
      --Stand up
@@ -202,43 +280,50 @@ function update()
      bodyShift=bodyShift3*ph+ bodyShift2*(1-ph);
    else
      walk.has_ball=1;
-   return "done";
+     return "done";
    end
-	else	--Throw==1
-		local t_pickup = t_throw;
-		if t<t_pickup[1] then
-			--Windup
-			ph=(t)/(t_pickup[1]);
-			qLArm= ph * qLArm3 + (1-ph)*qLArm2;
-			qRArm= ph * qRArm3 + (1-ph)*qRArm2;
-			bodyShift = bodyShift_windup*ph + bodyShift3*(1-ph);
-		elseif t<t_pickup[2] then
-			--Throw
-			ph=(t-t_pickup[1])/(t_pickup[2]-t_pickup[1]);
-			qLArm= ph * qLArm4 + (1-ph)*qLArm3;
-			qRArm= ph * qRArm4 + (1-ph)*qRArm3;
-			qGrip = ph*qGrip2 + (1-ph)*qGrip0;
---			bodyShift = bodyShift_throw*ph + bodyShift_windup*(1-ph);			-- For speed, just command the final position
-			Body.set_aux_hardness(1);
-			qGrip = qGrip2;
-			qLArm = qLArm4;
-			qRArm = qRArm4;
---			bodyShift = bodyShift3;
-		elseif t<t_pickup[3] then
-			--Reposition
-			ph = (t-t_pickup[2])/(t_pickup[3]-t_pickup[2]);
-			qLArm = ph * qLArm0 + (1-ph)*qLArm4;
-			qRArm = ph * qRArm0 + (1-ph)*qRArm4;
-			qGrip = ph*qGrip1 + (1-ph)*qGrip2;
-			Body.set_aux_hardness(.5); 
-			--bodyShift = bodyShift0*ph+ bodyShift2*(1-ph);
-		else
-			walk.has_ball=0;
-			return "done";	
-		end
-	end
+ else	--Throw==1
+   local t_pickup = t_throw;
+   if t<t_pickup[1] then
+     --Windup
+     ph=(t)/(t_pickup[1]);
+     qLArm= ph * qLArm3 + (1-ph)*qLArm2;
+     qRArm= ph * qRArm3 + (1-ph)*qRArm2;
+     bodyShift = bodyShift_windup*ph + bodyShift3*(1-ph);
+
+     bodyHeight = ph*bodyHeight3 + (1-ph)*bodyHeight0;
+
+
+   elseif t<t_pickup[2] then
+     --Throw
+     ph=(t-t_pickup[1])/(t_pickup[2]-t_pickup[1]);
+-- For speed, just command the final position
+--[[
+     if ph < 0.1 then
+       qLArm[3] = qLArm2[3];
+     end
+    --]] 
+
+--bodyShift = bodyShift3;
+   elseif t<t_pickup[3] then
+	--Reposition
+     ph = (t-t_pickup[2])/(t_pickup[3]-t_pickup[2]);
+     qLArm = ph * qLArm0 + (1-ph)*qLArm4;
+     qRArm = ph * qRArm0 + (1-ph)*qRArm4;
+     qGrip = ph*qGrip1 + (1-ph)*qGrip2;
+
+     bodyHeight = ph*bodyHeight0 + (1-ph)*bodyHeight3;
+
+	--bodyShift = bodyShift0*ph+ bodyShift2*(1-ph);
+   else
+     walk.has_ball=0;
+     return "done";	
+   end
+  end
 
   pTorso[3],pTorso[5],pTorso[6] = bodyHeight,bodyTilt,bodyYaw;
+  pTorso[4]=bodyRoll;
+
   pLLeg[1],pLLeg[2],pLLeg[3],pLLeg[5],pLLeg[6]=uLeft[1],uLeft[2],zLeft,aLeft,uLeft[3];
   pRLeg[1],pRLeg[2],pRLeg[3],pRLeg[5],pRLeg[6]=uRight[1],uRight[2],zRight,aRight,uRight[3];
   uTorso=util.pose_global(vector.new({-footX,0,0}),uBody);

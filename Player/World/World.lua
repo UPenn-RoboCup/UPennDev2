@@ -250,16 +250,14 @@ function update_vision()
     wcm.set_robot_penalty(0);
   end
 
-  if not Config.webots then
-    fsrRight = Body.get_sensor_fsrRight()
-    fsrLeft = Body.get_sensor_fsrLeft()
+  fsrRight = Body.get_sensor_fsrRight()
+  fsrLeft = Body.get_sensor_fsrLeft()
 
-    --reset particle to face opposite goal when getting manual placement on set
-    if gcm.get_game_state() ==2 then
-      if (not allZeros(fsrRight)) and (not allZeros(fsrLeft)) then --Do not do this if sensor is broken
-        if allLessThanTenth(fsrRight) and allLessThanTenth(fsrLeft) then
-          init_particles_manual_placement()
-        end
+  --reset particle to face opposite goal when getting manual placement on set
+  if gcm.get_game_state() ==2 then
+    if (not allZeros(fsrRight)) and (not allZeros(fsrLeft)) then --Do not do this if sensor is broken
+      if allLessThanTenth(fsrRight) and allLessThanTenth(fsrLeft) then
+        init_particles_manual_placement()
       end
     end
   end

@@ -303,3 +303,10 @@ end
 function calibrate( count )
   return true
 end
+
+function get_sensor_fsrRight()
+end
+
+function get_sensor_fsrLeft()
+end
+

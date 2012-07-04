@@ -1,9 +1,8 @@
-#!/bin/bash
+#!/bin/sh
 
 cd ../../Player
 export COMPUTER=`uname -s`
-echo $1
-if [ "$1" == "team" ]
+if [ $1 == "team" ]
 	then 
 		exec lua listen_team_monitor.lua
 	else

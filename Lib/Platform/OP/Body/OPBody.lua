@@ -300,14 +300,6 @@ function get_sensor_usRight()
   return vector.zeros(10);
 end
 
-function get_sensor_fsrLeft()
-  return 0;
-end
-
-function get_sensor_fsrRight()
-  return 0;
-end
-
 function calibrate( count )
   return true
 end

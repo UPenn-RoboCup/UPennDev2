@@ -39,30 +39,31 @@ function serialize(o)
     for k,v in pairs(o) do
       if type(k)=="string" then 
         if type(v) == "number" then
-          if v%1==0 then --quickest check for integer
+	  if v%1==0 then --quickest check for integer
             str = str..string.format("[%q]=%d,",k,v);
-    	    else
-	          str = str..string.format("[%q]=%.2f,",k,v);
-	        end
-	      elseif type(v)=="string" then
+    	  else
+	    str = str..string.format("[%q]=%.2f,",k,v);
+	  end
+	elseif type(v)=="string" then
           str = str..string.format("[%q]=%q,",k,v);
-	      elseif type(v)=="table" then
+	elseif type(v)=="table" then
           str = str..string.format("[%q]=%s,",k,serialize(v));
-        end
+	end
       else
         if type(v) == "number" then
-      	  if v%1==0 then --quickest check for integer
+	  if v%1==0 then --quickest check for integer
             str = str..string.format("%d,",v);
-    	    else
-	          str = str..string.format("%.2f,",v);
-	        end
-	      elseif type(v)=="string" then
+    	  else
+	    str = str..string.format("%.2f,",v);
+	  end
+	elseif type(v)=="string" then
           str = str..string.format("%q,",v);
-      	elseif type(v)=="table" then
+	elseif type(v)=="table" then
           str = str..string.format("%s,",serialize(v));
-	      end
-      end -- end if type(k) == string
-    end -- end for
+	end
+      end
+
+    end
     str = str.."}";
   else	
     str = "nil";

@@ -464,10 +464,3 @@ function get_sensor_gps( )
 --  print("Current gps pose:",gps[1],gps[2],gps[3]*180/math.pi)
   return gps;
 end
-
--- dummy function for nao compatibilty
-function get_sensor_fsrRight()
-end
-
-function get_sensor_fsrLeft()
-end

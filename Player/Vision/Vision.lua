@@ -5,7 +5,7 @@ require('vector');
 require('Config');
 -- Enable Webots specific
 if (string.find(Config.platform.name,'Webots')) then
-  webots = true;
+  webots = 1;
 end
 --Added for webots fast simulation
 use_gps_only = Config.use_gps_only or 0;
@@ -16,6 +16,10 @@ require('HeadTransform');
 require('vcm');
 require('mcm');
 require('Body')
+
+obs_challenge_enable = Config.obs_challenge or 0;
+enable_lut_for_obstacle = Config.vision.enable_lut_for_obstacle or 0;
+
 
 if use_gps_only==0 then
   require('Camera');
@@ -46,7 +50,7 @@ if use_gps_only==0 then
   labelA.m = camera.width/2;
   labelA.n = camera.height/2;
   labelA.npixel = labelA.m*labelA.n;
-  if( webots ) then
+  if  webots == 1 then
     labelA.m = camera.width;
     labelA.n = camera.height;
     labelA.npixel = labelA.m*labelA.n;
@@ -117,9 +121,11 @@ function entry()
   end
 
   -- Load the obstacle LUT as well
-  print('loading obs lut: '..Config.camera.lut_file_obs);
-  camera.lut_obs = carray.new('c', 262144);
-  load_lut_obs(Config.camera.lut_file_obs);
+  if enable_lut_for_obstacle == 1 then
+    print('loading obs lut: '..Config.camera.lut_file_obs);
+    camera.lut_obs = carray.new('c', 262144);
+    load_lut_obs(Config.camera.lut_file_obs);
+  end
 
   if Config.platform.name=="NaoV4" then
     camera_init_naov4();
@@ -210,43 +216,48 @@ function update()
 
 
   -- perform the initial labeling
-  if(webots) then
+  if webots == 1 then
     labelA.data = Camera.get_labelA( carray.pointer(camera.lut) );
-    labelA.data_obs = Camera.get_labelA_obs( carray.pointer(camera.lut_obs) );
   else
 
     labelA.data  = ImageProc.yuyv_to_label(vcm.get_image_yuyv(),
                                           carray.pointer(camera.lut),
                                           camera.width/2,
                                           camera.height);
-
-    labelA.data_obs  = ImageProc.yuyv_to_label_obs(vcm.get_image_yuyv(),
-                                          carray.pointer(camera.lut_obs),
-                                          camera.width/2,
-                                          camera.height);
-
   end
 
   -- determine total number of pixels of each color/label
   colorCount = ImageProc.color_count(labelA.data, labelA.npixel);
-  colorCount_obs = ImageProc.color_count_obs(labelA.data_obs, labelA.npixel);
+
 
   -- bit-or the segmented image
   labelB.data = ImageProc.block_bitor(labelA.data, labelA.m, labelA.n, scaleB, scaleB);
 
+  -- perform label process for obstacle specific lut
+  if enable_lut_for_obstacle == 1 then
+    -- label A
+    if webots == 1 then
+      labelA.data_obs = Camera.get_labelA_obs( carray.pointer(camera.lut_obs) );
+    else
+      labelA.data_obs  = ImageProc.yuyv_to_label_obs(vcm.get_image_yuyv(),
+                                    carray.pointer(camera.lut_obs), camera.width/2, camera.height);
+    end
+    -- count color pixels
+    colorCount_obs = ImageProc.color_count_obs(labelA.data_obs, labelA.npixel);
+    -- label B
+    labelB.data_obs = ImageProc.block_bitor_obs(labelA.data_obs, labelA.m, labelA.n, scaleB, scaleB);
+  end
+
   update_shm(status, headAngles)
-  -- Obstacle labels
-  labelB.data_obs = ImageProc.block_bitor_obs(labelA.data_obs, labelA.m, labelA.n, scaleB, scaleB);
 
   -- Learn ball color from mask and rebuild colortable
-  obs_challenge_enable = Config.obs_challenge or 0;
   if obs_challenge_enable == 1 then
 --    print('enable obs challenge')
     if vcm.get_image_learn_lut() == 1 then
       print("learn new colortable for random ball from mask");
       vcm.set_image_learn_lut(0);
       mask = ImageProc.label_to_mask(labelA.data_obs, labelA.m, labelA.n);
-      if (webots) then
+      if webots == 1 then
         print("learn in webots")
         lut_update = Camera.get_lut_update(mask, carray.pointer(camera.lut_obs));
 --        lut_update = Camera.get_lut_update(mask, carray.pointer(camera.lut));
@@ -353,7 +364,7 @@ function update_shm(status, headAngles)
         or ((goalCyan.detect == 1 or goalYellow.detect == 1) 
             and vcm.get_debug_store_goal_detections() == 1)) then
 
-	if webots then
+	if webots == 1  then
           vcm.set_camera_yuyvType(1);
           vcm.set_image_labelA(labelA.data);
           vcm.set_image_labelB(labelB.data);
@@ -501,5 +512,3 @@ function save_rgb(rgb)
   end
   f:close();
 end
-
-

@@ -240,9 +240,7 @@ function update()
       labelA.data_obs = Camera.get_labelA_obs( carray.pointer(camera.lut_obs) );
     else
       labelA.data_obs  = ImageProc.yuyv_to_label_obs(vcm.get_image_yuyv(),
-                                                      carray.pointer(camera.lut_obs),
-                                                      camera.width/2,
-                                                      camera.height);
+                                    carray.pointer(camera.lut_obs), camera.width/2, camera.height);
     end
     -- count color pixels
     colorCount_obs = ImageProc.color_count_obs(labelA.data_obs, labelA.npixel);
@@ -514,5 +512,3 @@ function save_rgb(rgb)
   end
   f:close();
 end
-
-

@@ -12,7 +12,6 @@ require('bodySearch')
 require('bodyApproach')
 require('bodyKick')
 require('bodyOrbit')
-require('bodyLargeOrbit')
 require('bodyGotoCenter')
 require('bodyPosition')
 require('bodyObstacle')
@@ -27,7 +26,6 @@ sm:add_state(bodySearch);
 sm:add_state(bodyApproach);
 sm:add_state(bodyKick);
 sm:add_state(bodyOrbit);
-sm:add_state(bodyLargeOrbit);
 sm:add_state(bodyGotoCenter);
 sm:add_state(bodyPosition);
 sm:add_state(bodyObstacle);
@@ -62,14 +60,8 @@ sm:set_transition(bodyOrbit, 'ballLost', bodySearch);
 sm:set_transition(bodyOrbit, 'ballFar', bodyPosition);
 sm:set_transition(bodyOrbit, 'done', bodyApproach);
 
-sm:set_transition(bodyLargeOrbit, 'timeout', bodyPosition);
-sm:set_transition(bodyLargeOrbit, 'ballLost', bodySearch);
-sm:set_transition(bodyLargeOrbit, 'ballFar', bodyPosition);
-sm:set_transition(bodyLargeOrbit, 'done', bodyApproach);
-
 sm:set_transition(bodyApproach, 'ballFar', bodyPosition);
 sm:set_transition(bodyApproach, 'ballAlign', bodyOrbit);
-sm:set_transition(bodyApproach, 'ballLargeAlign', bodyLargeOrbit);
 sm:set_transition(bodyApproach, 'ballLost', bodySearch);
 sm:set_transition(bodyApproach, 'timeout', bodyPosition);
 sm:set_transition(bodyApproach, 'kick', bodyKick);

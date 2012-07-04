@@ -7,8 +7,6 @@ require('Config');
 if (string.find(Config.platform.name,'Webots')) then
   webots = 1;
 end
---Added for webots fast simulation
-use_gps_only = Config.use_gps_only or 0;
 
 require('ImageProc');
 require('HeadTransform');
@@ -17,12 +15,56 @@ require('vcm');
 require('mcm');
 require('Body')
 
+--Added for webots fast simulation
+use_gps_only = Config.use_gps_only or 0;
+
 obs_challenge_enable = Config.obs_challenge or 0;
 enable_lut_for_obstacle = Config.vision.enable_lut_for_obstacle or 0;
 
-
 if use_gps_only==0 then
-  require('GPSVision')
+  require('Camera');
+  require('Detection');
+  
+  if (Config.camera.width ~= Camera.get_width()
+      or Config.camera.height ~= Camera.get_height()) then
+    print('Camera width/height mismatch');
+    print('Config width/height = ('..Config.camera.width..', '..Config.camera.height..')');
+    print('Camera width/height = ('..Camera.get_width()..', '..Camera.get_height()..')');
+    error('Config file is not set correctly for this camera. Ensure the camera width and height are correct.');
+  end
+  vcm.set_image_width(Config.camera.width);
+  vcm.set_image_height(Config.camera.height);
+  
+  camera = {};
+  
+  camera.width = Camera.get_width();
+  camera.height = Camera.get_height();
+  camera.npixel = camera.width*camera.height;
+  camera.image = Camera.get_image();
+  camera.status = Camera.get_camera_status();
+  camera.switchFreq = Config.camera.switchFreq;
+  camera.ncamera = Config.camera.ncamera;
+  -- Initialize the Labeling
+  labelA = {};
+  -- labeled image is 1/4 the size of the original
+  labelA.m = camera.width/2;
+  labelA.n = camera.height/2;
+  labelA.npixel = labelA.m*labelA.n;
+  if  webots == 1 then
+    labelA.m = camera.width;
+    labelA.n = camera.height;
+    labelA.npixel = labelA.m*labelA.n;
+  end
+  scaleB = Config.vision.scaleB;
+  labelB = {};
+  labelB.m = labelA.m/scaleB;
+  labelB.n = labelA.n/scaleB;
+  labelB.npixel = labelB.m*labelB.n;
+  vcm.set_image_scaleB(Config.vision.scaleB);
+  print('Vision LabelA size: ('..labelA.m..', '..labelA.n..')');
+  print('Vision LabelB size: ('..labelB.m..', '..labelB.n..')');
+else
+  require('GPSVision');
 end
 
 colorOrange = Config.color.orange;
@@ -251,16 +293,6 @@ function update()
   return true;
 end
 
-function check_side(v,v1,v2)
-  --find the angle from the vector v-v1 to vector v-v2
-  local vel1 = {v1[1]-v[1],v1[2]-v[2]};
-  local vel2 = {v2[1]-v[1],v2[2]-v[2]};
-  angle1 = math.atan2(vel1[2],vel1[1]);
-  angle2 = math.atan2(vel2[2],vel2[1]);
-  return util.mod_angle(angle1-angle2);
-end
-
-
 function update_shm(status, headAngles)
   -- Update the shared memory
   -- Shared memory size argument is in number of bytes
@@ -317,28 +349,6 @@ function update_shm(status, headAngles)
 
   update_shm_fov();
 end
-
-function update_shm_fov()
-  --This function projects the boundary of current labeled image
-
-  local fovC={Config.camera.width/2,Config.camera.height/2};
-  local fovBL={0,Config.camera.height};
-  local fovBR={Config.camera.width,Config.camera.height};
-  local fovTL={0,0};
-  local fovTR={Config.camera.width,0};
-
-  vcm.set_image_fovC(vector.slice(HeadTransform.projectGround(
- 	  HeadTransform.coordinatesA(fovC,0.1)),1,2));
-  vcm.set_image_fovTL(vector.slice(HeadTransform.projectGround(
- 	  HeadTransform.coordinatesA(fovTL,0.1)),1,2));
-  vcm.set_image_fovTR(vector.slice(HeadTransform.projectGround(
- 	  HeadTransform.coordinatesA(fovTR,0.1)),1,2));
-  vcm.set_image_fovBL(vector.slice(HeadTransform.projectGround(
- 	  HeadTransform.coordinatesA(fovBL,0.1)),1,2));
-  vcm.set_image_fovBR(vector.slice(HeadTransform.projectGround(
- 	  HeadTransform.coordinatesA(fovBR,0.1)),1,2));
-end
-
 
 function exit()
   HeadTransform.exit();

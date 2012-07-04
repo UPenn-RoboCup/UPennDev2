@@ -8,6 +8,9 @@ require('vector')
 t0 = 0;
 timeout = 5.0;
 
+tDelay = 3.0;
+
+
 -- turn velocity
 vSpin = 0.3;
 direction = 1;
@@ -31,7 +34,8 @@ function update()
   if (t - t0 > timeout) then
     return "timeout";
   end
-  if (math.abs(attackBearing)<10*math.pi/180) then
+  if (math.abs(attackBearing)<10*math.pi/180) and
+	t-t0> tDelay then
     return "done";
   end
 

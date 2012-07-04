@@ -39,7 +39,12 @@ vision.use_point_goal = 0;
 --vision.enable_robot_detection = 1;
 vision.enable_robot_detection = 0;
 
+-- use this to enable freespace detection and occupancy map
 vision.enable_freespace_detection = 1;
+
+-- use this to enable obstacle specific colortable
+vision.enable_lut_for_obstacle = 1;
+
 
 ----------------------------
 --OP specific

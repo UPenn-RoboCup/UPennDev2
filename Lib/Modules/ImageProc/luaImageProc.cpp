@@ -649,7 +649,7 @@ static int lua_yuyv_mask_to_lut(lua_State *L) {
     if (mask[cnt] != 0) {
       labelm = mask[cnt] % m;
       labeln = (mask[cnt] - labelm) / m;
-      yuyvidx = labelm + labeln * labelm; 
+      yuyvidx = labelm + (labeln - 1) * 3 * m; 
       uint32_t index = ((yuyv[yuyvidx] & 0xFC000000) >> 26)  
         | ((yuyv[yuyvidx] & 0x0000FC00) >> 4)
         | ((yuyv[yuyvidx] & 0x000000FC) << 10);

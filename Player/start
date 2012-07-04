@@ -98,21 +98,6 @@ run_obstacle(){
   screen -ls
 }
 
-run_obstacle(){
-  run_dcm_vcm
-  echo "Starting OccMap Proc..."
-  cd $PLAYER_DIR
-  screen $SCREEN_FLAGS occ $LUA_COM run_occmap.lua
-  ## Allow Cognition some time to start
-  sleep 1
-  #
-  echo "Starting Test Vision..."
-  cd $PLAYER_DIR
-  screen -m -L -S test $LUA_COM test_vision.lua
-  #
-  echo "Rock and Roll!"
-}
-
 run_bias(){
   echo "Starting DCM..."
   cd $PLAYER_DIR/Lib

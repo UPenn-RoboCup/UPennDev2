@@ -8,7 +8,6 @@ platform = {};
 platform.name = 'WebotsNao'
 
 
-
 function loadconfig(configName)
   local localConfig=require(configName);
   for k,v in pairs(localConfig) do

@@ -31,11 +31,7 @@ param.world = 'World/Config_Nao_World'
 param.walk = 'Walk/Config_NaoV4_Walk_FastStable' 
 param.kick = 'Kick/Config_Nao_Kick'
 param.vision = 'Vision/Config_NaoV4_Vision'
-<<<<<<< HEAD
-param.camera = 'Vision/Config_NaoV4_Camera_Levine512night'
-=======
 param.camera = 'Vision/Config_NaoV4_Camera_Mexico621_fieldC'
->>>>>>> OpenSource2012
 param.fsm = 'FSM/Config_NaoV4_FSM'
 
 loadconfig(param.world)

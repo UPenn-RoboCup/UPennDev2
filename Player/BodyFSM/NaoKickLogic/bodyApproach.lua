@@ -88,10 +88,7 @@ function update()
     print('ballFar');
     return "ballFar";
   end
-<<<<<<< HEAD
-=======
   bearing = math.abs(attackBearing)
->>>>>>> OpenSource2012
   if toKick then
     if (bearing > thAlign) then
       if bearing > largeBearing then

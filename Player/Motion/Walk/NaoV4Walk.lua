@@ -189,6 +189,7 @@ function update()
 
   -- New step
   if (iStep > iStep0) then
+
     --Update important parameters at each new step to dynamically
     --load configuration parameters
     bodyHeight = Config.walk.bodyHeight;
@@ -709,6 +710,7 @@ function doSideKickRight()
     walkKickType = 3; 
   end
 end
+
 --dummy function for NSL kick, depreciated
 function zero_velocity()
 end

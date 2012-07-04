@@ -33,7 +33,10 @@ shared.ball.vely = vector.zeros(1);
 shared.ball.dodge = vector.zeros(1);
 shared.ball.locked_on = vector.zeros(1);
 shared.ball.p = vector.zeros(1);
+
+
 shared.ball.v_inf = vector.zeros(2);
+
 
 shared.team = {};
 

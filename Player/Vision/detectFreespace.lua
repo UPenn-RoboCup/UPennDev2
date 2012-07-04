@@ -21,6 +21,8 @@ use_point_goal=Config.vision.use_point_goal;
 
 headZ = Config.head.camOffsetZ;
 
+enable_lut_for_obstacle = Config.vision.enable_lut_for_obstacle or 0;
+
 function detect(color)
   local freespace = {};
   freespace.detect = 1;
@@ -31,8 +33,12 @@ function detect(color)
 
   -- Get label handle
   labelB = Vision.labelB;
-  
-  FreeB = ImageProc.field_occupancy(labelB.data_obs,labelB.m,labelB.n);
+ 
+  if enable_lut_for_obstacle == 1 then
+    FreeB = ImageProc.field_occupancy(labelB.data_obs,labelB.m,labelB.n);
+  else
+    FreeB = ImageProc.field_occupancy(labelB.data,labelB.m,labelB.n);
+  end
   
   for i = 1,labelB.m do
     local pbound = vector.new({i,labelB.n-FreeB.range[i]});

@@ -9,6 +9,10 @@ if (string.find(Config.platform.name,'Webots')) then
   webots = true;
 end
 
+enable_lut_for_obstacle = Config.vision.enable_lut_for_obstacle or 0;
+enable_robot_detection = Config.vision.enable_robot_detection or 0;
+enable_freespace_detection = Config.vision.enable_freespace_detection or 0;
+
 -- shared properties
 shared = {};
 shsize = {};
@@ -63,13 +67,18 @@ shared.image.scaleB = vector.zeros(1);
 
 shared.image.labelA = (processed_img_width)*(processed_img_height);
 shared.image.labelB = ((processed_img_width)/Config.vision.scaleB)*((processed_img_height)/Config.vision.scaleB);
---shared.image.labelA_obs = (processed_img_width)*(processed_img_height);
---shared.image.labelB_obs = ((processed_img_width)/Config.vision.scaleB)*((processed_img_height)/Config.vision.scaleB);
+if enable_lut_for_obstacle == 1 then
+  shared.image.labelA_obs = (processed_img_width)*(processed_img_height);
+  shared.image.labelB_obs = ((processed_img_width)/Config.vision.scaleB)*((processed_img_height)/Config.vision.scaleB);
+else
+  shared.image.labelA_obs = 0;
+  shared.image.labelB_obs = 0;
+end
 
 -- calculate image shm size
 shsize.image = (shared.image.yuyv + shared.image.yuyv2+ 
 	shared.image.yuyv3+shared.image.labelA + shared.image.labelB 
---  +shared.image.labelA_obs + shared.image.labelB_obs
+  + shared.image.labelA_obs + shared.image.labelB_obs
   ) + 2^16;
 
 --Image field-of-view information
@@ -150,8 +159,6 @@ shared.corner.v2 = vector.zeros(4);
   --]]
 
 
-enable_robot_detection = Config.vision.enable_robot_detection or 0;
-
 shared.robot={};
 shared.robot.detect=vector.zeros(1);
 
@@ -163,8 +170,6 @@ if enable_robot_detection>0 then
   shared.robot.lowpoint = vector.zeros(Config.camera.width/Config.vision.scaleB);
   shared.robot.map=vector.zeros(6*4*Config.vision.robot.map_div*Config.vision.robot.map_div); --60 by 40 map
 end
-
-enable_freespace_detection = Config.vision.enable_freespace_detection or 0;
 
 shared.freespace = {};
 shared.freespace.detect = vector.zeros(1);

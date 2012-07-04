@@ -298,43 +298,46 @@ function update_shm(status, headAngles)
 
   if vcm.get_debug_enable_shm_copy() == 1 then
     if ((vcm.get_debug_store_all_images() == 1)
-        or (ball.detect == 1
-            and vcm.get_debug_store_ball_detections() == 1)
+        or (ball.detect == 1 and vcm.get_debug_store_ball_detections() == 1)
         or ((goalCyan.detect == 1 or goalYellow.detect == 1) 
             and vcm.get_debug_store_goal_detections() == 1)) then
-
-	if webots == 1  then
-          vcm.set_camera_yuyvType(1);
-          vcm.set_image_labelA(labelA.data);
+      if webots == 1  then
+        vcm.set_camera_yuyvType(1);
+        vcm.set_image_labelA(labelA.data);
+        vcm.set_image_labelB(labelB.data);
+        if enable_lut_for_obstacle == 1 then
+          vcm.set_image_labelA_obs(labelA.data_obs);
+          vcm.set_image_labelB_obs(labelB.data_obs);
+        end
+	    end
+      if vcm.get_camera_broadcast() > 0 then --Wired monitor broadcasting
+	      if vcm.get_camera_broadcast() == 1 then
+	        --Level 1: 1/4 yuyv, labelB
+          vcm.set_image_yuyv3(ImageProc.subsample_yuyv2yuyv(
+  	      vcm.get_image_yuyv(),
+	        camera.width/2, camera.height,4));
           vcm.set_image_labelB(labelB.data);
---          vcm.set_image_labelA_obs(labelA.data_obs);
---          vcm.set_image_labelB_obs(labelB.data_obs);
-	end
-        if vcm.get_camera_broadcast() > 0 then --Wired monitor broadcasting
-	  if vcm.get_camera_broadcast() == 1 then
-	    --Level 1: 1/4 yuyv, labelB
-            vcm.set_image_yuyv3(ImageProc.subsample_yuyv2yuyv(
-  	    vcm.get_image_yuyv(),
-	    camera.width/2, camera.height,4));
-            vcm.set_image_labelB(labelB.data);
-	  elseif vcm.get_camera_broadcast() == 2 then
-	    --Level 2: 1/2 yuyv, labelA, labelB
-            vcm.set_image_yuyv2(ImageProc.subsample_yuyv2yuyv(
+	      elseif vcm.get_camera_broadcast() == 2 then
+	        --Level 2: 1/2 yuyv, labelA, labelB
+          vcm.set_image_yuyv2(ImageProc.subsample_yuyv2yuyv(
   	      vcm.get_image_yuyv(),
   	      camera.width/2, camera.height,2));
-            vcm.set_image_labelA(labelA.data);
-            vcm.set_image_labelB(labelB.data);
-	  else
-	    --Level 3: 1/2 yuyv
-            vcm.set_image_yuyv2(ImageProc.subsample_yuyv2yuyv(
-  	    vcm.get_image_yuyv(),
-  	    camera.width/2, camera.height,2));
-	  end
-
-	elseif vcm.get_camera_teambroadcast() > 0 then --Wireless Team broadcasting
-          --Only copy labelB
+          vcm.set_image_labelA(labelA.data);
           vcm.set_image_labelB(labelB.data);
-        end
+          if enable_lut_for_obstacle == 1 then
+            vcm.set_image_labelA_obs(labelA.data_obs);
+            vcm.set_image_labelB_obs(labelB.data_obs);
+          end
+	      else
+	        --Level 3: 1/2 yuyv
+          vcm.set_image_yuyv2(ImageProc.subsample_yuyv2yuyv(
+  	      vcm.get_image_yuyv(),
+  	      camera.width/2, camera.height,2));
+	      end
+	    elseif vcm.get_camera_teambroadcast() > 0 then --Wireless Team broadcasting
+        --Only copy labelB
+        vcm.set_image_labelB(labelB.data);
+      end
     end
   end
 
@@ -417,23 +420,4 @@ function save_rgb(rgb)
     f:write(string.char(c));
   end
   f:close();
-end
-
-function learn_lut_from_mask()
-  -- Learn ball color from mask and rebuild colortable
-  if enable_lut_for_obstacle == 1 then
-    print("learn new colortable for random ball from mask");
-    mask = ImageProc.label_to_mask(labelA.data_obs, labelA.m, labelA.n);
-    if webots == 1 then
-      print("learn in webots")
-      lut_update = Camera.get_lut_update(mask, carray.pointer(camera.lut_obs));
-    else
-      print("learn in op")
-      lut_update = ImageProc.yuyv_mask_to_lut(vcm.get_image_yuyv(), mask, camera.lut, 
-                                              labelA.m, labelA.n);
-    end
-    print(type(mask),type(labelB.data))
-  else
-    print('Enable lut for obstacle in Vision to enable lut from mask');
-  end
 end

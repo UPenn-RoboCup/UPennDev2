@@ -289,7 +289,6 @@ ocm.set_occ_reset(1);
       headangle[2]=50*math.pi/180;
     elseif byte==string.byte('p') then
       print(Config.obs_challenge);
-      vcm.set_image_learn_lut(1);
     end
 
 

@@ -8,7 +8,8 @@ ifeq ($(CTC),)
 	@echo Cross compilitation tool not specified. \
 				Please download the ctc tool from \
 				the aldebaran website and follow the \
-				instructions to configure it for your system
+				instructions to configure it for your system \
+        && make -f Makefile.local
 else
 	rm -rf build
 	mkdir build

@@ -8,27 +8,6 @@ function check_side(v,v1,v2)
 end
 
 
-function update_shm_fov()
-  --This function projects the boundary of current labeled image
-
-  local fovC={Config.camera.width/2,Config.camera.height/2};
-  local fovBL={0,Config.camera.height};
-  local fovBR={Config.camera.width,Config.camera.height};
-  local fovTL={0,0};
-  local fovTR={Config.camera.width,0};
-
-  vcm.set_image_fovC(vector.slice(HeadTransform.projectGround(
- 	  HeadTransform.coordinatesA(fovC,0.1)),1,2));
-  vcm.set_image_fovTL(vector.slice(HeadTransform.projectGround(
- 	  HeadTransform.coordinatesA(fovTL,0.1)),1,2));
-  vcm.set_image_fovTR(vector.slice(HeadTransform.projectGround(
- 	  HeadTransform.coordinatesA(fovTR,0.1)),1,2));
-  vcm.set_image_fovBL(vector.slice(HeadTransform.projectGround(
- 	  HeadTransform.coordinatesA(fovBL,0.1)),1,2));
-  vcm.set_image_fovBR(vector.slice(HeadTransform.projectGround(
- 	  HeadTransform.coordinatesA(fovBR,0.1)),1,2));
-end
-
 function update_gps_only()
   --We are now using ground truth robot and ball pose data
   headAngles = Body.get_head_position();

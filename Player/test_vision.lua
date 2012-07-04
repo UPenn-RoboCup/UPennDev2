@@ -350,6 +350,7 @@ function update()
     -- update state machines 
     process_keyinput();
     
+--[[
     if wcm.get_attack_bearing() ~= nil then
     ob_num = ocm.get_obstacle_num();
     ob_angle = ocm.get_obstacle_angle_range();
@@ -382,9 +383,10 @@ function update()
     vy = 0;
     va = 0.2*attackBearing;
   end
+--]]
 
-
-    walk.set_velocity(vx,vy,va);
+--    walk.set_velocity(vx,vy,va);
+    walk.set_velocity(unpack(targetvel));
 
 
     Motion.update();

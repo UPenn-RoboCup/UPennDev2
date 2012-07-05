@@ -2,11 +2,18 @@ function log2lua(skel_logfile)
 
 L = load( skel_logfile );
 
-fid = fopen( strcat(skel_logfile,'.lua'),'w');
+% Replace the file extension if given with .mat
+skel_logfile_lua = strrep(skel_logfile, '.mat', '.lua');
+
+% Add extension if none given
+if(strcmp(skel_logfile_lua,skel_logfile))
+    skel_logfile_lua = strcat(skel_logfile_lua,'.lua');
+end
+fid = fopen( skel_logfile_lua,'w');
 
 fprintf(fid,'log={\n');
-for i=1:numel(L.jointLog)
-    entry = L.jointLog(i);
+for i=1:numel(L.LOG)
+    entry = L.LOG{i};
     if( isempty(entry.positions) )
         break;
     end

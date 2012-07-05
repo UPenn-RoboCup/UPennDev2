@@ -8,6 +8,7 @@ if (string.find(Config.platform.name,'Webots')) then
   webots = 1;
 end
 
+require('ColorLUT');
 require('ImageProc');
 require('HeadTransform');
 
@@ -109,23 +110,8 @@ function entry()
   -- Initiate Detection
   Detection.entry();
   
-  --set to switch cameras. 
   -- Load the lookup table
-  print('loading lut: '..Config.camera.lut_file);
-  camera.lut = carray.new('c', 262144);
-  load_lut(Config.camera.lut_file, camera.lut);
-
-  --ADDED to prevent crashing with old camera config
-  if Config.camera.lut_file_obs == null then
-    Config.camera.lut_file_obs = Config.camera.lut_file;
-  end
-
-  -- Load the obstacle LUT as well
-  if enable_lut_for_obstacle == 1 then
-    print('loading obs lut: '..Config.camera.lut_file_obs);
-    camera.lut_obs = carray.new('c', 262144);
-    load_lut(Config.camera.lut_file_obs, camera.lut_obs);
-  end
+  LUT = ColorLUT.load_LUT();
 
   if Config.platform.name=="NaoV4" then
     camera_init_naov4();
@@ -215,11 +201,11 @@ function update()
 
   -- perform the initial labeling
   if webots == 1 then
-    labelA.data = Camera.get_labelA( carray.pointer(camera.lut) );
+    labelA.data = Camera.get_labelA( carray.pointer(LUT.Detection) );
   else
 
     labelA.data  = ImageProc.yuyv_to_label(vcm.get_image_yuyv(),
-                                          carray.pointer(camera.lut),
+                                          carray.pointer(LUT.Detection),
                                           camera.width/2,
                                           camera.height);
   end
@@ -235,10 +221,10 @@ function update()
   if enable_lut_for_obstacle == 1 then
     -- label A
     if webots == 1 then
-      labelA.data_obs = Camera.get_labelA_obs( carray.pointer(camera.lut_obs) );
+      labelA.data_obs = Camera.get_labelA_obs( carray.pointer(LUT.Obstacle) );
     else
       labelA.data_obs  = ImageProc.yuyv_to_label_obs(vcm.get_image_yuyv(),
-                                    carray.pointer(camera.lut_obs), camera.width/2, camera.height);
+                                    carray.pointer(LUT.Obstacle), camera.width/2, camera.height);
     end
     -- count color pixels
     colorCount_obs = ImageProc.color_count_obs(labelA.data_obs, labelA.npixel);
@@ -388,36 +374,4 @@ end
 
 function bboxArea(bbox)
   return (bbox[2] - bbox[1] + 1) * (bbox[4] - bbox[3] + 1);
-end
-
-function load_lut(fname, lut)
-  if not string.find(fname,'.raw') then
-    fname = fname..'.raw';
-  end
-  local cwd = unix.getcwd();
-  if string.find(cwd, "WebotsController") then
-    cwd = cwd.."/Player";
-  end
-  cwd = cwd.."/Data/";
-  local f = io.open(cwd..fname, "r");
-  assert(f, "Could not open lut file");
-  local s = f:read("*a");
-  for i = 1,string.len(s) do
-    lut[i] = string.byte(s,i,i);
-  end
-end
-
-function save_rgb(rgb)
-  saveCount = saveCount + 1;
-  local filename = string.format("/tmp/rgb_%03d.raw", saveCount);
-  local f = io.open(filename, "w+");
-  assert(f, "Could not open save image file");
-  for i = 1,3*camera.width*camera.height do
-    local c = rgb[i];
-    if (c < 0) then
-      c = 256+c;
-    end
-    f:write(string.char(c));
-  end
-  f:close();
 end

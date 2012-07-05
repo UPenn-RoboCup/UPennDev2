@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 2.6.4 FATAL_ERROR)
 project(LuaComm)
 
 # include for lua headers
-include_directories(../Lua/src)
+include_directories(../../Lua/src)
 
 # Comm main library definition
 add_library(Comm SHARED luaComm.cpp)

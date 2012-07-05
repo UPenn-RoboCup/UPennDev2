@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 2.6.4 FATAL_ERROR)
 project(LuaUnix)
 
 # include for lua headers
-include_directories(../../Lua/src)
+include_directories(../../../Lua/src)
 
 # unix main library definition
 add_library(unix SHARED luaunix.c)

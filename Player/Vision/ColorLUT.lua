@@ -13,12 +13,11 @@ end
 
 enable_lut_for_obstacle = Config.vision.enable_lut_for_obstacle or 0;
 
-function load_LUT()
-  ColorLUT = {};
+function load_LUT(camera)
 
   print('loading lut: '..Config.camera.lut_file);
-  ColorLUT.Detection = carray.new('c', 262144);
-  load_lutfile(Config.camera.lut_file, ColorLUT.Detection);
+  camera.lut = carray.new('c', 262144);
+  load_lutfile(Config.camera.lut_file, camera.lut);
 
   --ADDED to prevent crashing with old camera config
   if Config.camera.lut_file_obs == null then
@@ -28,11 +27,11 @@ function load_LUT()
   -- Load the obstacle LUT as well
   if enable_lut_for_obstacle == 1 then
     print('loading obs lut: '..Config.camera.lut_file_obs);
-    ColorLUT.Obstacle = carray.new('c', 262144);
-    load_lutfile(Config.camera.lut_file_obs, ColorLUT.Obstacle);
+    camera.lut_obs = carray.new('c', 262144);
+    load_lutfile(Config.camera.lut_file_obs, camera.lut_obs);
   end
 
-  return ColorLUT;
+  return camera;
 end
 
 function load_lutfile(fname, lut)
@@ -85,20 +84,21 @@ function save_rgb(rgb)
 end
 
 function learn_lut_from_mask()
+  camera = {};
   -- Learn ball color from mask and rebuild colortable
   if enable_lut_for_obstacle == 1 then
     -- load colortable
-    LUT = load_LUT();
+    camera = load_LUT(camera);
     -- get yuyv image from shm
     yuyv = vcm.get_image_yuyv();
     image_width = vcm.get_image_width();
     image_height = vcm.get_image_height();
     -- get labelA
     if webots == 1 then
-      labelA_mask = Camera.get_labelA_obs( carray.pointer(LUT.Obstacle) );
+      labelA_mask = Camera.get_labelA_obs( carray.pointer(camera.lut_obs) );
     else
       labelA_mask  = ImageProc.yuyv_to_label_obs(vcm.get_image_yuyv(),
-                                    carray.pointer(LUT.Obstacle), image_width/2, image_height);
+                                    carray.pointer(camera.lut_obs), image_width/2, image_height);
     end
     print("learn new colortable for random ball from mask");
     mask = ImageProc.label_to_mask(labelA.data_obs, labelA.m, labelA.n);

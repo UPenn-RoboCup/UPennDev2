@@ -111,7 +111,7 @@ function entry()
   Detection.entry();
   
   -- Load the lookup table
-  LUT = ColorLUT.load_LUT();
+  camera = ColorLUT.load_LUT(camera);
 
   if Config.platform.name=="NaoV4" then
     camera_init_naov4();
@@ -197,15 +197,13 @@ function update()
     exit()
   end
 
-
-
   -- perform the initial labeling
   if webots == 1 then
-    labelA.data = Camera.get_labelA( carray.pointer(LUT.Detection) );
+    labelA.data = Camera.get_labelA( carray.pointer(camera.lut) );
   else
 
     labelA.data  = ImageProc.yuyv_to_label(vcm.get_image_yuyv(),
-                                          carray.pointer(LUT.Detection),
+                                          carray.pointer(camera.lut),
                                           camera.width/2,
                                           camera.height);
   end
@@ -221,10 +219,10 @@ function update()
   if enable_lut_for_obstacle == 1 then
     -- label A
     if webots == 1 then
-      labelA.data_obs = Camera.get_labelA_obs( carray.pointer(LUT.Obstacle) );
+      labelA.data_obs = Camera.get_labelA_obs( carray.pointer(camera.lut_obs) );
     else
       labelA.data_obs  = ImageProc.yuyv_to_label_obs(vcm.get_image_yuyv(),
-                                    carray.pointer(LUT.Obstacle), camera.width/2, camera.height);
+                                    carray.pointer(camera.lut_obs), camera.width/2, camera.height);
     end
     -- count color pixels
     colorCount_obs = ImageProc.color_count_obs(labelA.data_obs, labelA.npixel);

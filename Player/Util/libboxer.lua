@@ -413,10 +413,14 @@ function get_torso_orientation()
   r = math.atan2(R[3][2],R[3][3])
   y = math.atan2(R[2][1],R[1][1])
   p = math.atan2(-1*R[3][1],math.cos(y)*R[1][1]+math.sin(y)*R[2][1])
+  
+  -- Clamp them
+  r = util.procFunc(r,0,5*math.pi/180)
+  p = util.procFunc(p,0,20*math.pi/180)
+  y = util.procFunc(y,0,40*math.pi/180)
+
   rpy = vector.new({r,p,y})
-
-  --print("RPY: ",unpack(180/math.pi* rpy) )
-
+  print("RPY: ",unpack(180/math.pi* rpy) )
   return rpy;
 end
 

@@ -63,12 +63,13 @@ XnUInt32 epochTime = 0;
 // New
 XnSkeletonJoint aJoints[MAX_NUM_JOINTS];
 XnUInt16 nJoints;
+XnUInt8 active_users[MAX_NUM_USERS];
 
 // Tables
-XnVector3D   posTable[MAX_NUM_JOINTS];
-XnConfidence posConfTable[MAX_NUM_JOINTS];
-XnMatrix3X3  rotTable[MAX_NUM_JOINTS]; // 9 element float array
-XnConfidence rotConfTable[MAX_NUM_JOINTS];
+XnVector3D   posTable[MAX_NUM_USERS][MAX_NUM_JOINTS];
+XnConfidence posConfTable[MAX_NUM_USERS][MAX_NUM_JOINTS];
+XnMatrix3X3  rotTable[MAX_NUM_USERS][MAX_NUM_JOINTS]; // 9 element float array
+XnConfidence rotConfTable[MAX_NUM_USERS][MAX_NUM_JOINTS];
 
 //---------------------------------------------------------------------------
 // Code
@@ -281,7 +282,8 @@ const char *jointToS(XnSkeletonJoint eJoint)
 }
 
 static int lua_get_jointtables(lua_State *L) {
-  int joint = luaL_checkint(L, 1);
+  int i = luaL_checkint(L, 1)-1;// lua starts with 1
+  int joint = luaL_checkint(L, 2);
   if( joint>MAX_NUM_JOINTS || joint<=0 ) {
     lua_pushnil(L);
     return 1;
@@ -290,11 +292,11 @@ static int lua_get_jointtables(lua_State *L) {
 
   // Push the position  
   lua_createtable(L, 3, 0);
-  lua_pushnumber(L, posTable[joint].X);
+  lua_pushnumber(L, posTable[i][joint].X);
   lua_rawseti(L, -2, 1);
-  lua_pushnumber(L, posTable[joint].Y);
+  lua_pushnumber(L, posTable[i][joint].Y);
   lua_rawseti(L, -2, 2);
-  lua_pushnumber(L, posTable[joint].Z);
+  lua_pushnumber(L, posTable[i][joint].Z);
   lua_rawseti(L, -2, 3);
   //printf("Joint %u\t(%lf,%lf,%lf)\n",joint+1,posTable[joint].X,posTable[joint].Y,posTable[joint].Z);
 
@@ -303,7 +305,7 @@ static int lua_get_jointtables(lua_State *L) {
   lua_createtable(L, 9, 0);
   //printf("Joint %u\t( ",joint+1);  
   for (int i = 0; i < 9; i++) {
-    XnFloat* tmp = rotTable[joint].elements;
+    XnFloat* tmp = rotTable[i][joint].elements;
     lua_pushnumber(L, tmp[i]);   /* Push the table index */
     lua_rawseti(L, -2, i+1);
     //printf( "%lf ", tmp[i] );
@@ -312,13 +314,15 @@ static int lua_get_jointtables(lua_State *L) {
 
   // Push the confidences
   lua_createtable(L, 2, 0);  
-  lua_pushnumber(L, posConfTable[joint] );
+  lua_pushnumber(L, posConfTable[i][joint] );
   lua_rawseti(L, -2, 1);
-  lua_pushnumber(L, rotConfTable[joint] );
+  lua_pushnumber(L, rotConfTable[i][joint] );
   lua_rawseti(L, -2, 2);
   //printf("Joint %u\t(%lf,%lf)\n",joint+1,posConfTable[joint],rotConfTable[joint]);
-
-  return 3;
+  
+  // Push whether the user is active
+  lua_pushnumber(L,active_users[i]);
+  return 4;
 }
 
 /*
@@ -375,9 +379,12 @@ static int lua_update_joints(lua_State *L) {
   for(XnUInt16 i=0; i<nUsers; i++)
   { 
     if( g_UserGenerator.GetSkeletonCap().IsTracking(aUsers[i])==FALSE){
+      active_users[i] = 0;
       continue;
     } else {
-      ret = i;
+      // Update which users are active...
+      active_users[i] = 1;
+      ret = 1;
     }
 
     // TODO: Error check
@@ -392,12 +399,12 @@ static int lua_update_joints(lua_State *L) {
       XnConfidence posConf = tmpPosition.fConfidence;
       XnMatrix3X3  tmpRot  = tmpJoint.orientation.orientation; // 9 element float array
       XnConfidence rotConf = tmpJoint.orientation.fConfidence;
-      //printf("%s \t(%u,%u)\t = %lf:(%lf,%lf,%lf)\n",jointToS(j),j,jj,posConf, tmpPos.X,tmpPos.Y,tmpPos.Z);
+      //printf("%u (%u): %s \t(%u,%u)\t = %lf:(%lf,%lf,%lf)\n",i, active_users[i],jointToS(j),j,jj,posConf, tmpPos.X,tmpPos.Y,tmpPos.Z);
       // Set the right table value posTable
-      posTable[jj-1] = tmpPos;
-      rotTable[jj-1] = tmpRot;
-      posConfTable[jj-1] = posConf;
-      rotConfTable[jj-1] = rotConf;
+      posTable[i][jj-1] = tmpPos;
+      rotTable[i][jj-1] = tmpRot;
+      posConfTable[i][jj-1] = posConf;
+      rotConfTable[i][jj-1] = rotConf;
     }
   }
   if(ret==-1){

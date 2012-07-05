@@ -1,12 +1,6 @@
 %% Plot the skeleton
-%clear all;
-
-%load('primeLogs_sym.mat'); % Symmetric
-%load('primeLogs_asym.mat'); % Asymmetric
-%load('primeLogs_twist.mat'); % Twist
-% Twistmove: left twist, right twist, forward bend,
-% forward bend w/ left twist, forward bend w/ right twist
-load('primeLogs_20120505T105418.mat');
+clear all;
+load('primeLogs_control.mat');
 fps = 30;
 tperiod = 1/fps;
 debug = 0;
@@ -39,16 +33,12 @@ rpy_loc = zeros(nJoints,3);
 [ local_rots ] = abs2local_rot( rots );
 
 % Velocity vars
-log_xhand = [0];
-log_yhand = [0];
-log_vxhand = [0];
-log_vyhand = [0];
-
-%{
-for j=1:nJoints
-    axis_angles_loc(j,:) = vrrotmat2vec(local_rots(:,:,j));
-end
-%}
+last_va = 0;
+last_vx = 0;
+last_vy = 0;
+log_va = [0];
+log_vx = [0];
+log_vy = [0];
 
 pc = confs(:,1)>0;
 rc = confs(:,2)>0;
@@ -76,16 +66,21 @@ xlabel('X');
 ylabel('Y');
 zlabel('Z');
 
-% Show hand velocities
+% Show direction controls of Kinect Data
 figure(2);
 clf;
-h_vxhand = plot(log_vxhand,'ko');
+h_va = plot( log_va, 'r+' );
+
+figure(3);
+clf;
+h_vx = plot( log_vx, 'bx' );
 hold on;
-h_xhand  = plot(log_xhand,'r*');
+h_vy = plot( log_vy, 'y*' );
+maxStep = 0.08;
+ylim([-0.1 0.1]);
 
 for i=1:nLogs-1
     tstart=tic;
-    %jointLog(i).t = jointLog(i).t - jointLog(1).t;
     
     % Check data limits
     if( isempty(jointLog(i).t) )
@@ -97,13 +92,13 @@ for i=1:nLogs-1
         twait = jointLog(i+1).t - jointLog(i).t;
     end
     %% Get data
-    positions = jointLog(i).positions - ...
-        repmat(jointLog(i).positions(indexTorso,:), nJoints,1);
-    positions = positions / 1000;
+    positions = jointLog(i).positions - repmat(jointLog(i).positions(indexTorso,:), nJoints,1);
+    %positions = positions / 1000;
     rots = jointLog(i).rots;
     confs = jointLog(i).confs;
     [ local_rots ] = abs2local_rot( rots );
     for j=1:nJoints
+        %        axis_angles_loc(j,:) = vrrotmat2vec(local_rots(:,:,j));
         rpy_loc(j,:) = dcm2angle( local_rots(:,:,j) ) * 180/pi;
     end
     
@@ -132,34 +127,96 @@ for i=1:nLogs-1
     end
     %disp(dt)
     dframes = round( dt/tperiod );
+    doing_punch = 0;
     %disp(dframes)
     if( dt>0 )
         left_hand = left_hand / arm_lenL;
-        filtered_ball = mexBall([left_hand(1),left_hand(3)],dframes);
+        filtered_left = track_left_hand([left_hand(1),left_hand(3)],dframes);
+        right_hand = right_hand / arm_lenL;
+        filtered_right = track_right_hand([right_hand(1),right_hand(3)],dframes);
         %filtered_ball [x y vx vy ep evp]
-        xhand = filtered_ball(1);
-        yhand = filtered_ball(2);
-        vx_hand = filtered_ball(3) * 30; % Per frame to per second
-        vy_hand = filtered_ball(4) * 30;
-        %{
-            fprintf('\nReading\n======\n')
-            fprintf('Raw: (%.3f, %.3f)\n', left_hand(1), left_hand(3) );
-            fprintf('hand @ (%.3f, %.3f) m going at (%.3f %.3f) m/s\n',...
-                xhand,yhand,vx_hand,vy_hand);
-        %}
+        xhandL = filtered_left(1);
+        zhandL = filtered_left(2);
+        vx_handL = filtered_left(3) * 30; % Per frame to per second
+        vz_handL = filtered_left(4) * 30;
+        xhandR = filtered_right(1);
+        zhandR = filtered_right(2);
+        vx_handR = filtered_right(3) * 30; % Per frame to per second
+        vz_handR = filtered_right(4) * 30;
+        
+        vels = sqrt( [ vx_handL^2+vz_handL^2 vx_handR^2+vz_handR^2] );
+        
         % Signs are mixed in the y direction...
-        if( vy_hand<-1 && yhand<0 ) %% Above should and rising
-            fprintf('\n^^left uppercut!^^ %f\n',jointLog(i).t - jointLog(1).t);
+        if( dframes==1 )
+            if( sum(abs(vels)>.4)>0 )
+                doing_punch = 1;
+            end
         end
-        if( vx_hand>.4 && xhand>.25 )
-            fprintf('\n**left punch! %f**\n',jointLog(i).t - jointLog(1).t);
-        end
-        log_xhand = [log_xhand xhand];
-        log_yhand = [log_yhand yhand];
-        log_vxhand = [log_vxhand vx_hand];
-        log_vyhand = [log_vyhand vy_hand];
     end
     
+    %% Control calculations
+    %t2sL = positions(indexTorso,:) - positions(indexShoulderL,:);
+    %t2sR = positions(indexTorso,:) - positions(indexShoulderR,:);
+    sL2sR = positions(indexShoulderL,:) - positions(indexShoulderR,:);
+    h2t = positions(indexHead,:) - positions(indexTorso);
+    % Care really only about the xz plane
+    maxStep = 0.08;
+    offset_x = 0.02;
+    deadband = 0.01;
+    beta = 0.8;
+    vx = (-1 * h2t(3) / 5) - offset_x;
+    vx = beta*vx+(1-beta)*last_vx;
+    % Clamp
+    if(vx>maxStep)
+        vx = maxStep;
+    elseif(vx<-1*maxStep)
+        vx = -1*maxStep;
+    end
+    % Deadband
+    if(vx<deadband && vx>-1*deadband)
+        vx = 0;
+    end
+    last_vx = vx;
+    
+    % y control
+    vy = -1 * h2t(1) / 5;
+    vy = beta*vy+(1-beta)*last_vy;
+    % Clamp
+    if(vy>maxStep)
+        vy = maxStep;
+    elseif(vx<-1*maxStep)
+        vy = -1*maxStep;
+    end
+    % Deadband
+    if(vy<deadband && vy>-1*deadband)
+        vy = 0;
+    end
+    last_vy = vy;
+    
+    % a control
+    beta = 0.9;
+    va = atan2( sL2sR(1),sL2sR(3) ) + pi/2;
+    va = beta*va + (1-beta)*last_va;
+    last_va = va;
+    if(doing_punch)
+        vx = 0;
+        vy = 0;
+        va = 0;
+        last_vx = vx;
+        last_vy = vy;
+        last_va = va;
+    end
+    %{
+    if( confs(indexHead,1)>0 && confs(indexTorso,1)>0 )
+        fprintf('%f {%f %f %f}\n',jointLog(i).t-jointLog(1).t, vx,vy,va);
+    else
+        fprintf('Not confident\n');
+    end
+    %}
+    
+    log_va = [log_va va];
+    log_vx = [log_vx vx];
+    log_vy = [log_vy vy];
     %% Update Figure
     % Update plot3
     pc = confs(:,1)>0;
@@ -179,15 +236,17 @@ for i=1:nLogs-1
         'ZData', positions( ci, 3));
     
     % Update Velocity plot
-    set(h_vxhand,'XData',[1:numel(log_vyhand)]);
-    set(h_vxhand,'YData',log_vyhand(:) );
-    set(h_xhand,'XData',[1:numel(log_yhand)]);
-    set(h_xhand,'YData',log_yhand(:));
+    set(h_va,'XData',[1:numel(log_va)]);
+    set(h_va,'YData',log_va(:));
+    set(h_vx,'XData',[1:numel(log_vx)]);
+    set(h_vx,'YData',log_vx(:));
+    set(h_vy,'XData',[1:numel(log_vy)]);
+    set(h_vy,'YData',log_vy(:));
     
     %% Timing
     tf = toc(tstart);
     % Realistic pause
-    pause( max(twait-tf,0) );
+    %pause( max(twait-tf,0) );
     % Arbitrary pause:
-    %pause(.2);
+    pause(.01);
 end

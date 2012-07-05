@@ -1,5 +1,5 @@
 # Makefile used to build Webots files
-include ../../../Makefile.inc
+include ../../Makefile.inc
 
 TARGETS = all clean
 .PHONY: $(TARGETS)
@@ -14,7 +14,7 @@ all: primesense
 	$(CC) $(CXXFLAGS) $(INCLUDES) -I/usr/include/ni -o $@ -c $<
 
 primesense: luaprimesense.o
-	$(CC) -o $@.$(SHLIBEXT) $(LIBOPTS) $(LIB_DIR) -lOpenNI $^
+	$(CXX) -o $@.$(SHLIBEXT) $(LIBOPTS) $(LIB_DIR) $^ -lOpenNI -lstdc++
 
 #controller: openni_wrap.o
 #	$(CC) -o $@.$(SHLIBEXT) $(LIBOPTS) $(LIB_DIR) -lOpenNI $^

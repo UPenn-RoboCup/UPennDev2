@@ -6,7 +6,7 @@ if( exist('sk','var') == 0 )
 end
 
 %% Timing settings
-prep_time = 3;
+prep_time = 6;
 %prep_time = 0;
 nseconds_to_log = 45;
 run_once = 0;
@@ -14,7 +14,6 @@ counter = 0;
 fps = 30;
 twait = 1/fps;
 logsz = nseconds_to_log * fps;
-
 do_log = 0; % if zero, then inf time
 
 %% Joint Settings
@@ -54,13 +53,18 @@ for i=prep_time:-1:1
     pause(1);
 end
 
-
 %% Figure
 figure(1);
 clf;
-
+p_left=plot( positions(:,1), positions(:,2), 'o', ...
+    'MarkerEdgeColor','k', 'MarkerFaceColor', 'r', 'MarkerSize',10 );
+%hold on;
+%p_right=plot( positions(:,1), positions(:,2), 'o', ...
+%    'MarkerEdgeColor','k', 'MarkerFaceColor', 'g', 'MarkerSize',10 );
+%p_center=plot( positions(:,1), positions(:,2), 'o', ...
+%    'MarkerEdgeColor','k', 'MarkerFaceColor', 'b', 'MarkerSize',10 );
 %axis([-1000 1000 -1300 1200]);
-%axis([-1 1 -1.25 1.25 -2 2]);
+axis([-1 1 -1.25 1.25]);
 
 %% Go time
 t0=tic;
@@ -84,34 +88,24 @@ while(do_log == 0 || t_passed<nseconds_to_log)
     jointLog(counter).positions = positions;
     jointLog(counter).rots = rots;
     jointLog(counter).confs = confs;
-
-    waistPos = positions(3,:);
-    torsoPos = positions(4,:);
-    LSPos = positions (6,:);
-    LHPos = positions (9,:);
-    RSPos = positions (12,:);
-    RHPos = positions (15,:);
-
-    clf;
-    plot3(waistPos(1),waistPos(2),waistPos(3),'o');
-    hold on;
-    plot3(torsoPos(1),torsoPos(2),torsoPos(3),'o');
-    plot3(LSPos(1),LSPos(2),LSPos(3),'o');
-    plot3(LHPos(1),LHPos(2),LHPos(3),'o');
-    plot3(RSPos(1),RSPos(2),RSPos(3),'o');
-    plot3(RHPos(1),RHPos(2),RHPos(3),'o');
-    hold off;
-    axis([-1 1 -1 1 -1 1]);
-
-
+    
+    %% Plot the data
+    if( mod(counter,10)==0 )
+        set(p_left,   'XData', positions( left_idx&confs(:,1)>0,   1));
+        set(p_left,   'YData', positions( left_idx&confs(:,1)>0,   2));
+        %set(p_right,  'XData', positions( right_idx&confs(:,1)>0,  1));
+        %set(p_right,  'YData', positions( right_idx&confs(:,1)>0,  2));
+        %set(p_center, 'XData', positions( center_idx&confs(:,1)>0, 1));
+        %set(p_center, 'YData', positions( center_idx&confs(:,1)>0, 2));
+    end
     %% Timing
     if( run_once==1 )
         break;
     end
-    
+    drawnow;
     tf = toc(tstart);
-%    drawnow;
     pause( max(twait-tf,0) );
+    
 end
 
 %% Save data

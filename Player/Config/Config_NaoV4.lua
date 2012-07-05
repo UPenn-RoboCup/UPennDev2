@@ -57,7 +57,7 @@ dev.walk = 'Walk/NaoV4Walk';
 dev.kick = 'NewKick';
 
 --Speak enable
-speakenable = true;
+speakenable = 1;
 
 
 -- FSM Parameters
@@ -80,7 +80,6 @@ team.msgTimeout = 5.0;
 team.nonAttackerPenalty = 6.0; -- eta sec
 team.nonDefenderPenalty = 0.5; -- dist from goal
 
---Head Parameters
 
 head = {};
 head.camOffsetZ = 0.41;

@@ -60,7 +60,7 @@ dev.ip_wired = '192.168.123.255';
 dev.ip_wireless = '192.168.1.255'; --Our Router
 dev.ip_wireless_port = 54321;
 dev.game_control='OPGameControl';
-dev.team='TeamNSL';
+dev.team='TeamPrimeQ';
 --dev.walk='NewNewNewWalk';
 dev.walk='NewNewNewNewNewWalk';
 dev.kick = 'NewNewKick'
@@ -80,7 +80,7 @@ dev.gender = 1;
 game.role = 1; --Default attacker
 
 ball_shift={0,0};
-
+game.playerID = 1;
 if (robotName=='scarface') then
   game.playerID = 4; 
 elseif (robotName=='linus') then

@@ -3,6 +3,7 @@ module(..., package.seeall);
 require('Config')
 require('carray')
 require('ImageProc')
+require('Camera')
 require('vcm')
 
 -- Enable Webots specific
@@ -69,6 +70,19 @@ end
 function learn_lut_from_mask()
   -- Learn ball color from mask and rebuild colortable
   if enable_lut_for_obstacle == 1 then
+    -- load colortable
+    LUT = load_LUT();
+    -- get yuyv image from shm
+    yuyv = vcm.get_image_yuyv();
+    image_width = vcm.get_image_width();
+    image_height = vcm.get_image_height();
+    -- get labelA
+    if webots == 1 then
+      labelA_mask = Camera.get_labelA_obs( carray.pointer(LUT.Obstacle) );
+    else
+      labelA_mask  = ImageProc.yuyv_to_label_obs(vcm.get_image_yuyv(),
+                                    carray.pointer(LUT.Obstacle), image_width/2, image_height);
+    end
     print("learn new colortable for random ball from mask");
     mask = ImageProc.label_to_mask(labelA.data_obs, labelA.m, labelA.n);
     if webots == 1 then

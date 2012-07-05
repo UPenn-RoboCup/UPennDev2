@@ -169,6 +169,7 @@ function upper_body_override(qL, qR, bR)
   upper_body_overridden = 1;
   qLArmOR = qL;
   qRArmOR = qR;
+  bR[2] = -1*bR[2];
   bodyRot = bR;
 end
 

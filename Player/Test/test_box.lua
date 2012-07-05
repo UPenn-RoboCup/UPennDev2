@@ -151,9 +151,7 @@ Motion.entry()
 count = 0;
 lcount = 0;
 tUpdate = unix.time();
-Motion.event("walk");
-walk.start();
-walk.switch_stance(2);
+Motion.event("standup");
 
 -- if using Webots simulator just run update
 local tDelay = 0.005 * 1E6; -- Loop every 5ms

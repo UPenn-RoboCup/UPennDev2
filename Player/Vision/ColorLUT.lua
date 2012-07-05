@@ -3,11 +3,11 @@ module(..., package.seeall);
 require('Config')
 require('carray')
 require('ImageProc')
-require('Camera')
 require('vcm')
 
 -- Enable Webots specific
 if (string.find(Config.platform.name,'Webots')) then
+  require('Camera')
   webots = 1;
 end
 

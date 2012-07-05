@@ -1,14 +1,36 @@
-module(..., package.seeall);
+module(... or "", package.seeall)
+
+-- this module is used to facilitate interactive debuging
+
+cwd = '.';
+
+uname = io.popen('uname -s')
+system = uname:read();
+
+computer = os.getenv('COMPUTER') or system;
+package.cpath = cwd.."/Lib/?.so;"..package.cpath;
+
+package.path = cwd.."/Util/?.lua;"..package.path;
+package.path = cwd.."/Config/?.lua;"..package.path;
+package.path = cwd.."/Lib/?.lua;"..package.path;
+package.path = cwd.."/Lib/Util/?.lua;"..package.path;
+package.path = cwd.."/Dev/?.lua;"..package.path;
+package.path = cwd.."/Motion/?.lua;"..package.path;
+package.path = cwd.."/Motion/keyframes/?.lua;"..package.path;
+package.path = cwd.."/Vision/?.lua;"..package.path;
+package.path = cwd.."/World/?.lua;"..package.path;
+
 
 require('Config')
 require('carray')
 require('ImageProc')
-require('Camera')
 require('vcm')
+require('util')
 
 -- Enable Webots specific
 if (string.find(Config.platform.name,'Webots')) then
   webots = 1;
+  require('Camera')
 end
 
 enable_lut_for_obstacle = Config.vision.enable_lut_for_obstacle or 0;
@@ -69,50 +91,22 @@ function save_lutfile(fname, lut)
   f:close();
 end
 
-function save_rgb(rgb)
-  saveCount = saveCount + 1;
-  local filename = string.format("/tmp/rgb_%03d.raw", saveCount);
-  local f = io.open(filename, "w+");
-  assert(f, "Could not open save image file");
-  for i = 1,3*camera.width*camera.height do
-    local c = rgb[i];
-    if (c < 0) then
-      c = 256+c;
-    end
-    f:write(string.char(c));
+LUT = load_LUT();
+util.ptable(LUT)
+
+for i = 1, 262144 do
+  if LUT.Obstacle[i] ~= 0 then
+    print(i, LUT.Obstacle[i]);
+    LUT.Obstacle[i] = LUT.Obstacle[i] * 2;
   end
-  f:close();
 end
 
-function learn_lut_from_mask()
-  -- Learn ball color from mask and rebuild colortable
-  if enable_lut_for_obstacle == 1 then
-    -- load colortable
-    LUT = load_LUT();
-    -- get yuyv image from shm
-    yuyv = vcm.get_image_yuyv();
-    image_width = vcm.get_image_width();
-    image_height = vcm.get_image_height();
-    -- get labelA
-    if webots == 1 then
-      labelA_mask = Camera.get_labelA_obs( carray.pointer(LUT.Obstacle) );
-    else
-      labelA_mask  = ImageProc.yuyv_to_label_obs(vcm.get_image_yuyv(),
-                                    carray.pointer(LUT.Obstacle), image_width/2, image_height);
-    end
-    print("learn new colortable for random ball from mask");
-    mask = ImageProc.label_to_mask(labelA.data_obs, labelA.m, labelA.n);
-    if webots == 1 then
-      print("learn in webots")
-      lut_update = Camera.get_lut_update(mask, carray.pointer(camera.lut_obs));
-    else
-      print("learn in op")
-      lut_update = ImageProc.yuyv_mask_to_lut(vcm.get_image_yuyv(), mask, camera.lut, 
-                                              labelA.m, labelA.n);
-    end
-    save_lutfile(Config.camera.lut_file, lut_update);
-    print(type(mask),type(labelB.data))
-  else
-    print('Enable lut for obstacle in Vision to enable lut from mask');
+save_lutfile(Config.camera.lut_file_obs, LUT.Obstacle);
+LUT = load_LUT();
+util.ptable(LUT)
+
+for i = 1, 262144 do
+  if LUT.Obstacle[i] ~= 0 then
+    print(i, LUT.Obstacle[i]);
   end
 end

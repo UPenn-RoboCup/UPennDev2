@@ -21,6 +21,10 @@ use_gps_only = Config.use_gps_only or 0;
 
 enable_lut_for_obstacle = Config.vision.enable_lut_for_obstacle or 0;
 
+obs_challenge_enable = Config.obs_challenge or 0;
+enable_lut_for_obstacle = Config.vision.enable_lut_for_obstacle or 0;
+
+
 if use_gps_only==0 then
   require('Camera');
   require('Detection');

@@ -22,4 +22,3 @@ clean::
 	cd CUtil && make clean && cd $(CWD)
 	cd Unix && make clean && cd $(CWD)
 	cd Shm && make clean && cd $(CWD)
-	cd PrimeSense && make clean && cd $(CWD)

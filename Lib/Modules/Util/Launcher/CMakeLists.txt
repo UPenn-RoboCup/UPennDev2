@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 2.6.4 FATAL_ERROR)
 project(rocket)
 
 # include for lua headers
-include_directories(../../Lua/src)
+include_directories(../../../Lua/src)
 
 # luancher main library definition
 add_library(launcher SHARED lualauncher.c)

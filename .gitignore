@@ -69,3 +69,6 @@ remotes/
 
 # ball logs
 Player/Data/*.txt
+
+# screen log
+*screenlog*

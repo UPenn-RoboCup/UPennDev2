@@ -5,7 +5,7 @@ TARGETS = all clean
 
 include ../../../Makefile.inc
 
-WEBOTS_HOME = /Applications/Webots/
+WEBOTS_HOME = /usr/local/webots
 WEBOTS_INCLUDE_DIR = $(WEBOTS_HOME)/include
 WEBOTS_LIB_DIR = $(WEBOTS_HOME)/lib
 

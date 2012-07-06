@@ -8,11 +8,11 @@ include ../../../Makefile.inc
 all: GameControlPacket
 
 %.o: %.cc
-	$(CXX) $(CXXFLAGS) $(INCLUDE_DIRS) -o $@ -c $<
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
 %.o: %.cpp
-	$(CXX) $(CXXFLAGS) $(INCLUDE_DIRS) -o $@ -c $<
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
 %.o: %.c
-	$(CC) $(CXXFLAGS) $(INCLUDE_DIRS) -o $@ -c $<
+	$(CC) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
 
 GameControlPacket: luagamecontrolpacket.o
 	$(CXX) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ $(LIBRT)

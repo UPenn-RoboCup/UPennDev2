@@ -20,7 +20,7 @@ end
 if( isempty(sk) && ~run_from_log )
     disp('Recreating SHM block access...')
     startup;
-    team = 18;
+    team = 0;
     player = 1;
     sk = shm_primesense(team,player);
 end
@@ -69,14 +69,27 @@ clf;
 set(hfig,'KeyPressFcn',@KeyResponse);
     function init_skel()
         clf;
-        p_left=plot( positions(:,1), positions(:,2), 'o', ...
+    %    p_left=plot( positions(:,1), positions(:,2), 'o', ...
+    %        'MarkerEdgeColor','k', 'MarkerFaceColor', 'r', 'MarkerSize',10 );
+    %    hold on;
+    %    p_right=plot( positions(:,1), positions(:,2), 'o', ...
+    %        'MarkerEdgeColor','k', 'MarkerFaceColor', 'g', 'MarkerSize',10 );
+    %    p_center=plot( positions(:,1), positions(:,2), 'o', ...
+    %        'MarkerEdgeColor','k', 'MarkerFaceColor', 'b', 'MarkerSize',10 );
+        
+        
+        
+        p_left=plot3( positions(:,1), positions(:,2),positions(:,3), 'o', ...
             'MarkerEdgeColor','k', 'MarkerFaceColor', 'r', 'MarkerSize',10 );
         hold on;
-        p_right=plot( positions(:,1), positions(:,2), 'o', ...
+        p_right=plot3( positions(:,1), positions(:,2),positions(:,3), 'o', ...
             'MarkerEdgeColor','k', 'MarkerFaceColor', 'g', 'MarkerSize',10 );
-        p_center=plot( positions(:,1), positions(:,2), 'o', ...
+        p_center=plot3( positions(:,1), positions(:,2),positions(:,3), 'o', ...
             'MarkerEdgeColor','k', 'MarkerFaceColor', 'b', 'MarkerSize',10 );
-        axis([-1 1 -1.25 1.25]);
+        
+        
+        
+        axis([-1 1 -1.25 1.25 2 4]);
     end
 init_skel();
 
@@ -145,10 +158,16 @@ while( 1 )
         %positions( left_idx&confs(:,1)>0 )
         set(p_left,   'XData', positions( left_idx&confs(:,1)>0,   1));
         set(p_left,   'YData', positions( left_idx&confs(:,1)>0,   2));
+        set(p_left,   'ZData', positions( left_idx&confs(:,1)>0,   3));
+
         set(p_right,  'XData', positions( right_idx&confs(:,1)>0,  1));
         set(p_right,  'YData', positions( right_idx&confs(:,1)>0,  2));
+        set(p_right,  'ZData', positions( right_idx&confs(:,1)>0,  3));
+        
         set(p_center, 'XData', positions( center_idx&confs(:,1)>0, 1));
         set(p_center, 'YData', positions( center_idx&confs(:,1)>0, 2));
+        set(p_center, 'ZData', positions( center_idx&confs(:,1)>0, 3));
+    
     end
     
     %% Show Rotation Matrix

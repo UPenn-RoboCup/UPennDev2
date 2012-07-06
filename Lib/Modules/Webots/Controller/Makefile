@@ -6,7 +6,7 @@ TARGETS = all clean
 include ../../../Makefile.inc
 
 ifeq ($(OSTYPE),darwin)
-WEBOTS_HOME = /Application/Webots
+WEBOTS_HOME = /Applications/Webots
 else
 WEBOTS_HOME = /usr/local/webots
 endif

@@ -115,8 +115,8 @@ function learn_lut_from_mask()
       lut_update = ImageProc.yuyv_mask_to_lut(vcm.get_image_yuyv(), mask, carray.pointer(camera.lut), 
                                               labelA_m, labelA_n);
     end
-    save_lutfile(Config.camera.lut_file, lut_update);
-    print(type(mask),type(labelB.data))
+    save_lutfile(Config.camera.lut_file, 
+                  carray.cast(lut_update, 'c', 262144));
   else
     print('Enable lut for obstacle in Vision to enable lut from mask');
   end

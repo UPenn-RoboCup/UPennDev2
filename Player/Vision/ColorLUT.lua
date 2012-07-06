@@ -96,19 +96,24 @@ function learn_lut_from_mask()
     -- get labelA
     if webots == 1 then
       labelA_mask = Camera.get_labelA_obs( carray.pointer(camera.lut_obs) );
+      labelA_m = Config.camera.width;
+      labelA_n = Config.camera.height;
     else
       labelA_mask  = ImageProc.yuyv_to_label_obs(vcm.get_image_yuyv(),
                                     carray.pointer(camera.lut_obs), image_width/2, image_height);
+      labelA_m = Config.camera.width/2;
+      labelA_n = Config.camera.height/2;
     end
     print("learn new colortable for random ball from mask");
-    mask = ImageProc.label_to_mask(labelA.data_obs, labelA.m, labelA.n);
+    mask = ImageProc.label_to_mask(labelA_mask, labelA_m, labelA_n);
+
     if webots == 1 then
       print("learn in webots")
       lut_update = Camera.get_lut_update(mask, carray.pointer(camera.lut_obs));
     else
       print("learn in op")
-      lut_update = ImageProc.yuyv_mask_to_lut(vcm.get_image_yuyv(), mask, camera.lut, 
-                                              labelA.m, labelA.n);
+      lut_update = ImageProc.yuyv_mask_to_lut(vcm.get_image_yuyv(), mask, carray.pointer(camera.lut), 
+                                              labelA_m, labelA_n);
     end
     save_lutfile(Config.camera.lut_file, lut_update);
     print(type(mask),type(labelB.data))

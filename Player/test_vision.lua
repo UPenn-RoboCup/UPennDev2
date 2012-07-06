@@ -288,7 +288,8 @@ ocm.set_occ_reset(1);
       ocm.set_occ_reset(1);
       headangle[2]=50*math.pi/180;
     elseif byte==string.byte('p') then
-      print(Config.obs_challenge);
+      require('ColorLUT')
+      ColorLUT.learn_lut_from_mask();
     end
 
 

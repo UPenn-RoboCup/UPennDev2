@@ -34,6 +34,8 @@ extern "C" {
 #include "lua_field_occupancy.h"
 #include "lua_robots.h"
 
+#include <iostream>
+
 //Downsample camera YUYV image for monitor
 
 static int lua_subsample_yuyv2yuyv(lua_State *L){
@@ -653,7 +655,7 @@ static int lua_yuyv_mask_to_lut(lua_State *L) {
       uint32_t index = ((yuyv[yuyvidx] & 0xFC000000) >> 26)  
         | ((yuyv[yuyvidx] & 0x0000FC00) >> 4)
         | ((yuyv[yuyvidx] & 0x000000FC) << 10);
-        lut[index] = (lut[index] < 1)? lut[index] : 1;
+      lut[index] = (lut[index] < 1)? lut[index] : 1;
     }
 
   lua_pushlightuserdata(L, &lut[0]);

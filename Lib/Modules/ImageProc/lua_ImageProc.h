@@ -1,5 +1,5 @@
-#ifndef luaImageProc_h_DEFINED
-#define luaImageProc_H_DEFINED
+#ifndef lua_ImageProc_h_DEFINED
+#define lua_ImageProc_H_DEFINED
 
 extern "C"
 {

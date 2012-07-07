@@ -1,5 +1,6 @@
 cwd = os.getenv('PWD')
 require('init')
+--
 --require 'Config'
 require('unix')
 require('getch')

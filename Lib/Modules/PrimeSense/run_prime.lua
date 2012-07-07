@@ -7,7 +7,8 @@ require 'gcm'
 run_once = false;
 
 -- Broadcast over the network
-net = false;
+net = true;
+--net = false;
 -- run from log file (this is set automatically)
 -- lua run_prime XXX.lua where XXX.lua is the log
 logs = false;
@@ -35,8 +36,10 @@ print('Run Network?',net);
 print('Run Logs?',logs);
 print('Team/Player',teamID..'/'..playerID);
 print '=====================';
-unix.usleep(1e6*2);
 
+if( not logs ) then
+  unix.usleep(1e6*2);
+end
 t0 = unix.time();
 timestamp0 = t0;
 t_init = 0;
@@ -50,10 +53,17 @@ if( logs ) then
     it = it+1;
   end
 end
+
+print('Team entry...')
+io:flush()
+
 if( net ) then
-  require 'Team'
+  Team = require 'TeamPrimeQ'
   Team.entry()
 end
+
+print('Entering Loop...')
+io:flush()
 
 count = 0;
 init = false;
@@ -154,9 +164,13 @@ while( not logs or count<n_logs ) do
 
 libboxer.get_torso_orientation();
 
+
   -- Timing
   if( init and not logs ) then
     if( count % 30==0 ) then
+      local fps = 30 / (unix.time()-(t_count or 0))
+      t_count = unix.time();
+      print('FPS: ',fps)
       print('Time',timestamp-timestamp0 );
       print('User 1: ', active[1]);
       print('User 2: ', active[2]);

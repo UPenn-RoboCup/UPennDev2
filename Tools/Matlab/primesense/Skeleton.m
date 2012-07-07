@@ -34,11 +34,13 @@ if( ~run_from_log )
 end
 
 %% Timing settings
-fps = 30;
+%fps = 30;
+fps = 60;
 twait = 1/fps;
 
 %% Other plots
 rotation = 0;
+use_3d = 0;
 
 %% Joint Settings
 jointNames = { ...
@@ -67,31 +69,31 @@ hfig = figure(1);
 clf;
 % Add key press actions
 set(hfig,'KeyPressFcn',@KeyResponse);
-    function init_skel()
+
+    function init_skel(is_3d)
         clf;
-    %    p_left=plot( positions(:,1), positions(:,2), 'o', ...
-    %        'MarkerEdgeColor','k', 'MarkerFaceColor', 'r', 'MarkerSize',10 );
-    %    hold on;
-    %    p_right=plot( positions(:,1), positions(:,2), 'o', ...
-    %        'MarkerEdgeColor','k', 'MarkerFaceColor', 'g', 'MarkerSize',10 );
-    %    p_center=plot( positions(:,1), positions(:,2), 'o', ...
-    %        'MarkerEdgeColor','k', 'MarkerFaceColor', 'b', 'MarkerSize',10 );
+        if(is_3d~=1)
+            p_left=plot( positions(:,1), positions(:,2), 'o', ...
+                'MarkerEdgeColor','k', 'MarkerFaceColor', 'r', 'MarkerSize',10 );
+            hold on;
+            p_right=plot( positions(:,1), positions(:,2), 'o', ...
+                'MarkerEdgeColor','k', 'MarkerFaceColor', 'g', 'MarkerSize',10 );
+            p_center=plot( positions(:,1), positions(:,2), 'o', ...
+                'MarkerEdgeColor','k', 'MarkerFaceColor', 'b', 'MarkerSize',10 );
+            axis([-1 1 -1.25 1.25]);
+        else
+            p_left=plot3( positions(:,1), positions(:,2),positions(:,3), 'o', ...
+                'MarkerEdgeColor','k', 'MarkerFaceColor', 'r', 'MarkerSize',10 );
+            hold on;
+            p_right=plot3( positions(:,1), positions(:,2),positions(:,3), 'o', ...
+                'MarkerEdgeColor','k', 'MarkerFaceColor', 'g', 'MarkerSize',10 );
+            p_center=plot3( positions(:,1), positions(:,2),positions(:,3), 'o', ...
+                'MarkerEdgeColor','k', 'MarkerFaceColor', 'b', 'MarkerSize',10 );
+            axis([-1 1 -1.25 1.25 0 4]);
+        end
         
-        
-        
-        p_left=plot3( positions(:,1), positions(:,2),positions(:,3), 'o', ...
-            'MarkerEdgeColor','k', 'MarkerFaceColor', 'r', 'MarkerSize',10 );
-        hold on;
-        p_right=plot3( positions(:,1), positions(:,2),positions(:,3), 'o', ...
-            'MarkerEdgeColor','k', 'MarkerFaceColor', 'g', 'MarkerSize',10 );
-        p_center=plot3( positions(:,1), positions(:,2),positions(:,3), 'o', ...
-            'MarkerEdgeColor','k', 'MarkerFaceColor', 'b', 'MarkerSize',10 );
-        
-        
-        
-        axis([-1 1 -1.25 1.25 2 4]);
     end
-init_skel();
+init_skel(use_3d);
 
 %% Keypress Actions
     function KeyResponse(h_obj, evt)
@@ -112,8 +114,17 @@ init_skel();
             if( rotation==1 )
                 fprintf('Rotation: ON\n')
             else
-                init_skel();
+                init_skel(use_3d);
                 fprintf('Rotation: OFF\n')
+            end
+        elseif key=='3'
+            use_3d = 1-use_3d;
+            if( use_3d==1 )
+                init_skel(use_3d);
+                fprintf('3D: ON\n');
+            else
+                init_skel(use_3d);
+                fprintf('3D: OFF\n');
             end
         end
     end
@@ -151,7 +162,7 @@ while( 1 )
             twait = LOG{counter+1}.t-LOG{counter}.t;
         end
     end
-
+    
     %% Plot the data
     % Do not display while logging, so as to get 30fps
     if(~rotation && ~logging)
@@ -159,7 +170,7 @@ while( 1 )
         set(p_left,   'XData', positions( left_idx&confs(:,1)>0,   1));
         set(p_left,   'YData', positions( left_idx&confs(:,1)>0,   2));
         set(p_left,   'ZData', positions( left_idx&confs(:,1)>0,   3));
-
+        
         set(p_right,  'XData', positions( right_idx&confs(:,1)>0,  1));
         set(p_right,  'YData', positions( right_idx&confs(:,1)>0,  2));
         set(p_right,  'ZData', positions( right_idx&confs(:,1)>0,  3));
@@ -167,7 +178,7 @@ while( 1 )
         set(p_center, 'XData', positions( center_idx&confs(:,1)>0, 1));
         set(p_center, 'YData', positions( center_idx&confs(:,1)>0, 2));
         set(p_center, 'ZData', positions( center_idx&confs(:,1)>0, 3));
-    
+        
     end
     
     %% Show Rotation Matrix

@@ -37,8 +37,9 @@
 				<!-- Uncomment to set requested mode
 				<MapOutputMode xRes="640" yRes="480" FPS="30"/> 
 				-->
-
-				<!-- Uncomment to override global mirror
+				<MapOutputMode xRes="320" yRes="240" FPS="60"/> 
+        
+        <!-- Uncomment to override global mirror
 				<Mirror on="false" /> 
 				-->
 			</Configuration>

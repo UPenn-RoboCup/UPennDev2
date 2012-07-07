@@ -166,7 +166,7 @@ if ( webots or darwin ) then
       left_arm = arms[1] or left_arm or {0,0,0};
       right_arm = arms[2] or right_arm or {0,0,0};
       local rpy = libboxer.get_torso_orientation() or vector.new({0,0,0});
-      print(string.format('RPY: %.1f %.1f %.1f\n',unpack(180/math.pi*rpy)))
+      --print(string.format('RPY: %.1f %.1f %.1f\n',unpack(180/math.pi*rpy)))
       walk.upper_body_override(left_arm,right_arm,rpy)
     else
       walk.upper_body_override_off();

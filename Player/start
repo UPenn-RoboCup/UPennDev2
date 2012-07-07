@@ -76,7 +76,7 @@ run_visiontest(){
   run_dcm_vcm
   echo "Starting Test Vision..."
   cd $PLAYER_DIR
-  screen -m -L -S test $LUA_COM test_vision.lua
+  screen -m -L -S test $LUA_COM Test/test_vision.lua
   #
   echo "Rock and Roll!"
   screen -ls
@@ -92,7 +92,7 @@ run_obstacle(){
   #
   echo "Starting Test Vision..."
   cd $PLAYER_DIR
-  screen -m -L -S test $LUA_COM test_vision.lua
+  screen -m -L -S test $LUA_COM Test/test_vision.lua
   #
   echo "Rock and Roll!"
   screen -ls

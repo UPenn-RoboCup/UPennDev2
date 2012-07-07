@@ -1,3 +1,4 @@
+cwd = '.'
 dofile('init.lua')
 require('SoundFilter');
 require('Comm')

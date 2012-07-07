@@ -14,7 +14,6 @@ webots = 1
 -- Parameters Files
 params = {}
 params.name = {"Walk", "World", "Kick", "Vision", "FSM", "Camera"};
-params.World_Platform = "Nao"
 util.LoadConfig(params, platform)
 
 -- Device Interface Libraries

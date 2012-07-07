@@ -28,7 +28,11 @@ dev.body = 'WebotsOPBody';
 dev.camera = 'WebotsOPCam';
 dev.kinematics = 'OPKinematics';
 dev.game_control='WebotsGameControl';
-dev.team='TeamNSL';
+dev.team='TeamPrimeQ';
+
+dev.ip_wireless = '192.168.1.255'; --Our Router
+dev.ip_wireless_port = 54321;
+
 dev.walk='NewNewNewWalk'; --Walk with generalized walkkick definitions
 dev.kick='NewNewKick'; --Extended kick that supports upper body motion
 

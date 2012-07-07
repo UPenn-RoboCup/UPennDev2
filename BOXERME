@@ -1,0 +1,49 @@
+For testing on webots, please run:
+
+make setup_webots_boxer
+
+Then proceed to Player/Lib and run:
+
+lua run_prime.lua
+
+This will track your skeleton
+
+The open Webots and open the boxer.wbt world file.
+
+Press 8 to get the robot to walk.
+
+When standing in front of the Kinect, tilting back and forth affects the walking pitch.
+Twisting left and right affects the yaw, and rocking left and right affects the roll (the roll is the toughest to see an impact).
+
+
+MATLAB Debugging
+================
+While run_prime is still going, in MATLAB, execute:
+
+Skeleton
+
+Toggle 'r' to see the sate of the rotation.
+Toggle 'l' to log your movements.
+
+Kill Skeleton with Ctrl+C
+
+To replay your logs, load the skel_XXX.mat file into the workspace (you will see the LOG variable)
+Then run:
+
+Skeleton('l')
+
+which has the same 'r' functionality.
+
+Replay the logs for webots
+==========================
+The skel_XXX.lua file works with run_prime.lua
+
+Kill run_prime.lua, then run:
+
+lua run_prime.lua skel_XXX.lua
+
+This replays the logs so that webots can react to them.
+
+TODO
+====
+Concatenate log files, or loop the logfile over and over.

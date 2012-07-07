@@ -86,6 +86,16 @@ function send_body()
   state.ra = right_arm;
   state.rpy = rpy;
   local ret = Comm.send( serialization.serialize(state) );
+  ret = Comm.send( serialization.serialize(state) );
+  ret = Comm.send( serialization.serialize(state) );
+
+--[[
+t_send = unix.time()
+t_diff = t_send - (t_last or 0);
+t_last = t_send;
+print("Sending at ",1/t_diff)
+--]]
+
 --  print('Sent ',ret,'bytes',serialization.serialize(state))
 
   -- Keep in SHM, too, for local Webots

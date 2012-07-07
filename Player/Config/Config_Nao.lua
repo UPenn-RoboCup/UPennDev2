@@ -6,22 +6,12 @@ require('parse_hostname')
 platform = {};
 platform.name = 'Nao'
 
-
-param = {}
-param.world = 'World/Config_Nao_World'
-param.walk = 'Walk/Config_Nao_Walk' 
-param.kick = 'Kick/Config_Nao_Kick'
-param.vision = 'Vision/Config_Nao_Vision'
-param.camera = 'Vision/Config_Nao_Camera_Blimp_Room'
-param.fsm = 'FSM/Config_Nao_FSM'
-
-util.loadconfig(param.walk)
-util.loadconfig(param.world)
-util.loadconfig(param.kick)
-util.loadconfig(param.vision)
-
+params = {}
+params.name = {"Walk", "World", "Kick", "Vision", "FSM", "Camera"};
 --Location Specific Camera Parameters--
-util.loadconfig(param.camera)
+params.Camera = "Blimp_Room"
+
+util.LoadConfig(params, platform)
 
 -- Devive Interface Libraries
 dev = {};
@@ -48,8 +38,6 @@ game.nPlayers = 4;
 
 
 -- FSM Parameters
-fsm = {};
-util.loadconfig(param.fsm)
 fsm.game = 'RoboCup';
 if (game.playerID == 1) then
   fsm.body = {'NaoGoalie'};

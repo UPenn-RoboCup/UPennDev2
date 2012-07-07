@@ -1,25 +1,18 @@
 module(..., package.seeall);
-
+require('util')
 require('vector')
 require('parse_hostname')
 
 platform = {};
 platform.name = 'Nao'
 
-function loadconfig(configName)
-  local localConfig=require(configName);
-  for k,v in pairs(localConfig) do
-    Config[k]=localConfig[k];
-  end
-end
-
-loadconfig('Walk/Config_Nao_Walk_Blimp_Room')
-loadconfig('World/Config_Nao_World')
-loadconfig('Kick/Config_Nao_Kick')
-loadconfig('Vision/Config_Nao_Vision')
+util.loadconfig('Walk/Config_Nao_Walk_Blimp_Room')
+util.loadconfig('World/Config_Nao_World')
+util.loadconfig('Kick/Config_Nao_Kick')
+util.loadconfig('Vision/Config_Nao_Vision')
 
 --Location Specific Camera Parameters--
-loadconfig('Vision/Config_Nao_Camera_Blimp_Room')
+util.loadconfig('Vision/Config_Nao_Camera_Blimp_Room')
 
 -- Devive Interface Libraries
 dev = {};

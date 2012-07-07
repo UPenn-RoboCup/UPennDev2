@@ -1,5 +1,5 @@
 module(..., package.seeall);
-
+require('util')
 require('vector')
 require 'unix'
 local robotName=unix.gethostname();
@@ -7,21 +7,14 @@ local robotName=unix.gethostname();
 platform = {}; 
 platform.name = 'xos'
 
-function loadconfig(configName)
-  local localConfig=require(configName);
-  for k,v in pairs(localConfig) do
-    Config[k]=localConfig[k];
-  end
-end
-
 --Robot CFG should be loaded first to set PID values
-loadconfig('Robot/Config_XOS_Robot') 
-loadconfig('Walk/Config_XOS_Walk')
-loadconfig('World/Config_XOS_World')
-loadconfig('Kick/Config_XOS_Kick')
-loadconfig('Vision/Config_XOS_Vision')
+util.loadconfig('Robot/Config_XOS_Robot') 
+util.loadconfig('Walk/Config_XOS_Walk')
+util.loadconfig('World/Config_XOS_World')
+util.loadconfig('Kick/Config_XOS_Kick')
+util.loadconfig('Vision/Config_XOS_Vision')
 --Location Specific Camera Parameters--
-loadconfig('Vision/Config_XOS_Camera_Mexico_LC')
+util.loadconfig('Vision/Config_XOS_Camera_Mexico_LC')
 
 -- Device Interface Libraries
 dev = {};
@@ -65,7 +58,7 @@ game.nPlayers = 2;
 --FSM and behavior settings
 fsm = {};
 --SJ: loading FSM config  kills the variable fsm, so should be called first
-loadconfig('FSM/Config_XOS_FSM')
+util.loadconfig('FSM/Config_XOS_FSM')
 fsm.game = 'RoboCup';
 
 fsm.head = {'GeneralPlayer'};

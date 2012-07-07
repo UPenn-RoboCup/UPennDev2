@@ -1,19 +1,11 @@
 module(..., package.seeall);
-
+require('util')
 require('parse_hostname')
 require('vector')
 require('os')
 
 platform = {};
 platform.name = 'WebotsNao'
-
-
-function loadconfig(configName)
-  local localConfig=require(configName);
-  for k,v in pairs(localConfig) do
-    Config[k]=localConfig[k];
-  end
-end
 
 listen_monitor = 1
 
@@ -26,13 +18,13 @@ param.vision = 'Vision/Config_WebotsNao_Vision'
 param.camera = 'Vision/Config_WebotsNao_Camera'
 param.fsm = 'FSM/Config_WebotsNao_FSM'
 
-loadconfig(param.world)
-loadconfig(param.walk)
-loadconfig(param.kick)
-loadconfig(param.vision)
+util.loadconfig(param.world)
+util.loadconfig(param.walk)
+util.loadconfig(param.kick)
+util.loadconfig(param.vision)
 
 --Location Specific Camera Parameters--
-loadconfig(param.camera)
+util.loadconfig(param.camera)
 
 -- Device Interface Libraries
 dev = {};
@@ -60,7 +52,7 @@ else game.teamColor = 1; --Red team
 end
 
 fsm={}
-loadconfig(param.fsm)
+util.loadconfig(param.fsm)
 fsm.game = 'RoboCup';
 if (game.playerID == 1) then
   fsm.body = {'NaoGoalie'};

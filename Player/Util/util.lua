@@ -317,3 +317,11 @@ function get_wireless_ip()
   ip = ifconfig:read();
   return ip;
 end
+
+function loadconfig(configName)
+  local localConfig=require(configName);
+  for k,v in pairs(localConfig) do
+    Config[k]=localConfig[k];
+  end
+end
+

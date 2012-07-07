@@ -1,5 +1,4 @@
-module(... or "", package.seeall)
-
+module(... or "",package.seeall)
 cwd = os.getenv('PWD')
 require('init')
 

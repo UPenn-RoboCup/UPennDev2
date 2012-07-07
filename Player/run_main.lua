@@ -1,5 +1,6 @@
-module(... or "", package.seeall)
-package.cpath = './Lib/?.so;' .. package.cpath  
+cwd = os.getenv('PWD')
+require('init')
+
 require('unix');
 require('main');
 

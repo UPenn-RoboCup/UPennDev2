@@ -6,14 +6,15 @@ require('parse_hostname')
 platform = {}; 
 platform.name = 'OP'
 
---Simplified setup for distribution
-util.loadconfig('Walk/Config_OP_Walk_Basic')
-util.loadconfig('World/Config_OP_World_Expo')
-util.loadconfig('Kick/Config_OP_Kick')
-util.loadconfig('Vision/Config_OP_Vision')
-util.loadconfig('Robot/Config_OP_Robot')
+-- Parameters Files
+params = {}
+params.name = {"Robot", "Walk", "World", "Kick", "Vision", "FSM", "Camera"};
+params.Walk = "Basic"
+params.World = "Expo"
 --Location Specific Camera Parameters--
-util.loadconfig('Vision/Config_OP_Camera_Grasp')
+params.Camera = "Grasp"
+
+util.LoadConfig(params, platform)
 
 -- Device Interface Libraries
 dev = {};
@@ -43,9 +44,6 @@ game.nPlayers = 5;
 game.role = game.playerID-1; --default attacker
 
 --FSM and behavior settings
-fsm = {};
---SJ: loading FSM config  kills the variable fsm, so should be called first
-util.loadconfig('FSM/Config_OP_FSM')
 fsm.game = 'RoboCup';
 fsm.head = {'GeneralPlayer'};
 fsm.body = {'SimplePlayer'};

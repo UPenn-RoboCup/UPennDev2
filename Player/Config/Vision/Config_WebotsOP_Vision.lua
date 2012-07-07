@@ -37,6 +37,15 @@ vision.use_point_goal = 0;
 --vision.enable_robot_detection = 1;
 vision.enable_robot_detection = 0;
 
+-- testing goalpost detection only
+
+--[[
+vision.enable_line_detection = 0;
+vision.enable_midfield_landmark_detection = 0;
+--]]
+-- use this to enable freespace detection and occupancy map
+vision.enable_freespace_detection = 1;
+
 ----------------------------
 --OP specific
 ----------------------------
@@ -59,6 +68,8 @@ vision.ball.th_min_green2 = 40;
 
 vision.ball.check_for_ground = 1;
 
+vision.ball.check_for_field = 1;
+vision.ball.field_margin = 2.0;
 
 --Vision check values
 --For 320*240 labelA 
@@ -80,6 +91,34 @@ vision.goal.th_min_area_unknown_post = 40;
 vision.goal.use_centerpost = 1;
 vision.goal.check_for_ground = 1;
 
+vision.goal.far_goal_threshold= 4.0; --The range we triangulate
+vision.goal.distanceFactorCyan = 1.1; 
+vision.goal.distanceFactorYellow = 1.1; 
+
+	
+
+vision.landmark = {};
+vision.landmark.min_areaA = 6;
+vision.landmark.min_fill_extent = 0.35;
+vision.landmark.th_centroid = 20;
+vision.landmark.th_arearatio = 4;
+vision.landmark.th_distratio = 2;
+vision.landmark.th_angle = 45*math.pi/180;
+
+vision.landmark.distanceFactorCyan = 1; 
+vision.landmark.distanceFactorYellow = 1; 
+
+
+vision.line={};
+vision.line.max_width = 8;
+vision.line.connect_th = 1.4;
+vision.line.max_gap=1;
+vision.line.min_length=3;
+
+vision.corner={};
+vision.corner.dist_threshold = 10;
+vision.corner.length_threshold = 3;
+vision.corner.min_center_dist = 1.5;
 
 --for 40*30 labelB
 vision.robot={};
@@ -93,3 +132,5 @@ vision.robot.r_sigma = 4;  --gaussian radius
 vision.robot.max_r = 4.0;  
 vision.robot.min_r = 0.3;
 vision.robot.min_j = 5; 
+
+

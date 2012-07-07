@@ -29,6 +29,21 @@ function load_motion_file(fname, key)
   key = key or fname;
   local mot = dofile(fname);
   motData[key] = mot;
+  
+--  print_motion_file(fname,mot)
+end
+
+function print_motion_file(fname,mot)
+  print(fname)
+  for i=1,#mot.keyframes do
+    print("{\nangles=vector.new({")
+    ang=vector.new(mot.keyframes[i].angles);
+    print(string.format(
+	"%d,%d,\n%d,%d,%d,\n%d,%d,%d,%d,%d,%d,\n%d,%d,%d,%d,%d,%d,\n%d,%d,%d",
+      unpack(ang*180/math.pi) ));
+    print"})*math.pi/180,"
+    print(string.format("duration = %.1f;\n},",mot.keyframes[i].duration));
+  end
 end
 
 function do_motion(key)
@@ -57,6 +72,10 @@ function entry()
   end
 end
 
+function reset_tFrameStart()
+  tFrameStart = Body.get_time();
+end
+
 function update()
   if (#motQueue == 0) then
     return "done";
@@ -65,7 +84,9 @@ function update()
   local mot = motQueue[1];
   local t = Body.get_time();
   if not started then
-    if t-t0<0.1 then return;end--wait 0.1sec to read joint positions
+    if t-t0<0.1 then 
+        return iFrame;
+    end--wait 0.1sec to read joint positions
     started=true;
   end
   if (iFrame == 0) then
@@ -124,6 +145,7 @@ function update()
       iFrame = 0;
     end
   end
+  return iFrame;
 end
 
 function getJoints()

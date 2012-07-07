@@ -6,6 +6,7 @@ WorldInfo {
     "Webpage: http://www.robotstadium.org"
   ]
   title "Robotstadium"
+  displayRefresh 2
   basicTimeStep 40
 }
 Viewpoint {
@@ -21,12 +22,13 @@ DirectionalLight {
   ambientIntensity 1.6
   direction -0.5 -2 -0.5
   intensity 0.3
-  castShadows TRUE
+  castShadows FALSE
 }
 DirectionalLight {
   ambientIntensity 1.6
   direction 0.5 -0.5 0.5
   intensity 0.5
+  castShadows FALSE
 }
 SoccerField {
 }
@@ -51,7 +53,7 @@ DEF BLUE_LANDMARK Landmark {
   postColor1 0.152941 0.505882 0.733333
   postColor2 0.992157 0.854902 0.219608
 }
-DEF BALL Ball {
+DEF BALL BallGPS {
   translation 0 0.0323921 0
 }
 DEF PLAYER_1_1 DARwInOP {
@@ -63,4 +65,6 @@ DEF PLAYER_1_1 DARwInOP {
   cameraWindowPosition 0.125 0
   waistBand TRUE
   waistBandColor 1 0 0
+  cameraWidth 320
+  cameraHeight 240
 }

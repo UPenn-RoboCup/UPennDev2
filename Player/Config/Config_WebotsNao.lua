@@ -7,6 +7,7 @@ require('os')
 platform = {};
 platform.name = 'WebotsNao'
 
+
 function loadconfig(configName)
   local localConfig=require(configName);
   for k,v in pairs(localConfig) do
@@ -14,13 +15,24 @@ function loadconfig(configName)
   end
 end
 
-loadconfig('World/Config_Nao_World')
-loadconfig('Walk/Config_WebotsNao_Walk')
-loadconfig('Kick/Config_WebotsNao_Kick')
-loadconfig('Vision/Config_WebotsNao_Vision')
+listen_monitor = 1
+
+webots = 1
+param = {}
+param.world = 'World/Config_Nao_World'
+param.walk = 'Walk/Config_WebotsNao_Walk' 
+param.kick = 'Kick/Config_WebotsNao_Kick'
+param.vision = 'Vision/Config_WebotsNao_Vision'
+param.camera = 'Vision/Config_WebotsNao_Camera'
+param.fsm = 'FSM/Config_WebotsNao_FSM'
+
+loadconfig(param.world)
+loadconfig(param.walk)
+loadconfig(param.kick)
+loadconfig(param.vision)
 
 --Location Specific Camera Parameters--
-loadconfig('Vision/Config_WebotsNao_Camera')
+loadconfig(param.camera)
 
 -- Device Interface Libraries
 dev = {};
@@ -29,9 +41,8 @@ dev.camera = 'NaoWebotsCam';
 dev.kinematics = 'NaoWebotsKinematics';
 dev.game_control='WebotsGameControl';
 dev.team= 'TeamSPL';
-dev.walk = 'NewWalk';
 dev.kick = 'NewKick';
-dev.walk = 'NewNewWalk';
+dev.walk = 'Walk/NaoV4Walk';
 
 -- Game Parameters
 
@@ -48,39 +59,16 @@ if game.teamNumber==0 then game.teamColor = 0; --Blue team
 else game.teamColor = 1; --Red team
 end
 
--- FSM Parameters
-fsm = {};
-loadconfig('FSM/Config_WebotsNao_FSM')--For generalPlayer FSM
---[[
+fsm={}
+loadconfig(param.fsm)
 fsm.game = 'RoboCup';
 if (game.playerID == 1) then
   fsm.body = {'NaoGoalie'};
   fsm.head = {'NaoGoalie'};
 else
-  fsm.body = {'NaoPlayer'};
+  fsm.body = {'NaoKickLogic'};
   fsm.head = {'NaoPlayer'};
 end
---]]
-
---------------------------------------------------------------------
---GeneralPlayer FSM test
-fsm.game = 'RoboCup';
-fsm.body = {'GeneralPlayer'};
-fsm.head = {'NaoPlayer'};
---fsm.head = {'GeneralPlayer'};
-
---Penalty Kick FSM
---[[
-fsm.body = {'GeneralPK'};
-fsm.head = {'NaoDemo'};
---]]
-
---Behavior flags, should be defined in FSM Configs but can be overrided here
-fsm.enable_obstacle_detection = 1;
-fsm.kickoff_wait_enable = 0;
-fsm.playMode = 3; --1 for demo, 2 for orbit, 3 for direct approach
-fsm.enable_walkkick = 1;
-fsm.enable_sidekick = 1;
 
 -- Team Parameters
 team = {};
@@ -111,6 +99,12 @@ km.kick_right = 'km_WebotsNao_KickForwardRight.lua';
 km.kick_left = 'km_WebotsNao_KickForwardLeft.lua';
 km.standup_front = 'km_WebotsNao_StandupFromFront.lua';
 km.standup_back = 'km_WebotsNao_StandupFromBack.lua';
+
+
+km.standup_front = 'km_WebotsNao_StandupFromFront.lua';
+km.standup_back = 'km_WebotsNao_StandupFromBack.lua';
+km.time_to_stand = 30; -- average time it takes to stand up in seconds
+
 
 
 --Sit/stand stance parameters

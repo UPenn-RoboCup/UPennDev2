@@ -26,6 +26,48 @@ world.landmarkCyan = {0.0, -3.4};
 world.landmarkYellow = {0.0, 3.4};
 world.cResample = 10; --Resampling interval
 
+
+--Actual Teen/Adultsize values
+world.Lcorner={};
+--Field edge
+world.Lcorner[1]={4.5,3.0};
+world.Lcorner[2]={4.5,-3.0};
+world.Lcorner[3]={-4.5,3.0};
+world.Lcorner[4]={-4.5,-3.0};
+--Center T edge
+world.Lcorner[5]={0,3.0};
+world.Lcorner[6]={0,-3.0};
+--Penalty box edge
+world.Lcorner[7]={-3.5,2.25};
+world.Lcorner[8]={-3.5,-2.25};
+world.Lcorner[9]={3.5,2.25};
+world.Lcorner[10]={3.5,-2.25};
+--Penalty box T edge
+world.Lcorner[11]={4.5,2.25};
+world.Lcorner[12]={4.5,-2.25};
+world.Lcorner[13]={-4.5,2.25};
+world.Lcorner[14]={-4.5,-2.25};
+--Center circle junction
+world.Lcorner[15]={0,0.75};
+world.Lcorner[16]={0,-0.75};
+
+--Temporary Webot field values (SPL * 1.5)
+--Penalty box edge
+world.Lcorner[7]={-3.6,1.65};
+world.Lcorner[8]={-3.6,-1.65};
+world.Lcorner[9]={3.6,1.65};
+world.Lcorner[10]={3.6,-1.65};
+--Penalty box T edge
+world.Lcorner[11]={4.5,1.65};
+world.Lcorner[12]={4.5,-1.65};
+world.Lcorner[13]={-4.5,1.65};
+world.Lcorner[14]={-4.5,-1.65};
+--Center circle junction
+world.Lcorner[15]={0,0.9};
+world.Lcorner[16]={0,-0.9};
+
+
+
 --SJ: OP does not use yaw odometry data (only use gyro)
 world.odomScale = {1, 1, 0};  
 world.imuYaw = 1;
@@ -56,3 +98,10 @@ world.aPostFilter = 0.20;
 -- Occupancy Map parameters
 occmap = {};
 occmap.div = 72;
+
+-- Occupancy Map parameters
+occ = {};
+occ.mapsize = 50;
+occ.centroid = {occ.mapsize / 2, occ.mapsize * 4 / 5};
+
+

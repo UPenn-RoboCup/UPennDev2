@@ -190,7 +190,7 @@ std::vector<double> darwinop_kinematics_inverse_arm(
 			    )
 {
 
-  std::vector<double> qArm(3,0); // Init the 3 angles with value 0
+  std::vector<double> qArm(3,-999); // Init the 3 angles with value 0
   // Law of cosines to find end effector distance from shoulder
   double c_sq = pow(dArm[0],2)+pow(dArm[1],2)+pow(dArm[2],2);
   double c = sqrt( c_sq );

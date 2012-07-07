@@ -21,7 +21,7 @@ package.path = cwd .. '/Config/?.lua;' .. package.path;
 package.path = cwd .. '/Lib/?.lua;' .. package.path;
 package.path = cwd .. '/Dev/?.lua;' .. package.path;
 package.path = cwd .. '/Motion/?.lua;' .. package.path;
-package.path = cwd .. '/Motion/walk/?.lua;' .. package.path;
+package.path = cwd .. '/Motion/Walk/?.lua;' .. package.path;
 package.path = cwd .. '/Motion/keyframes/?.lua;' .. package.path;
 package.path = cwd .. '/Vision/?.lua;' .. package.path;
 package.path = cwd .. '/World/?.lua;' .. package.path;
@@ -43,6 +43,9 @@ require('Motion');
 require('walk');
 require('Speak')
 require('util')
+-- For team
+Team = require 'TeamPrime'
+
 darwin = false;
 webots = false;
 
@@ -67,6 +70,7 @@ end
 -- initialize state machines
 Motion.entry();
 --Motion.event("standup");
+Team.entry();
 
 Body.set_head_hardness({0.4,0.4});
 
@@ -96,19 +100,17 @@ Body.set_lleg_command({0,0,0,0,0,0,0,0,0,0,0,0})
 
 
 function process_keyinput()
-  local str;
+  local byte;
   if(webots) then
-    str = controller.wb_robot_keyboard_get_key();
-  else
-    str = getch.get();
-  end
-  if str>0 then
-    byte = str;
+    byte = controller.wb_robot_keyboard_get_key();
     -- Webots only return captal letter number
     if byte>=65 and byte<=90 then
       byte = byte + 32;
     end
-
+  else
+    byte = string.byte(getch.get(),1);
+  end
+  if byte~=48 then --48 is blank... (at least in webots)
     -- Walk velocity setting
     if byte==string.byte("i") then	targetvel[1]=targetvel[1]+0.02;
     elseif byte==string.byte("j") then	targetvel[3]=targetvel[3]+0.1;
@@ -150,6 +152,7 @@ function process_keyinput()
     -- Stretcher specific
     elseif byte==string.byte("s") then -- Search for the stretcher
 --      sm_running = 1-sm_running;
+      print('entering bodySearch!')
       sm_running = 1;
       BodyFSM.sm:set_state('bodySearch');
 
@@ -169,11 +172,11 @@ function update()
 
   -- Update the relevant engines
   Body.update();
-
+  Team.update();
   Motion.update();
   if( sm_running==1 ) then
     BodyFSM.update();
-    HeadFSM.update();
+--    HeadFSM.update();
   end
 
   -- Get a keypress
@@ -194,7 +197,7 @@ while 1 do
     local fps = ncount/(t-tUpdate);
     tUpdate = t;
     count = 1;
-    --    print(fps.." FPS")
+    print(fps.." FPS")
   end
 
   --Wait until dcm has done reading/writing

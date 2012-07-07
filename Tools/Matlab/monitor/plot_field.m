@@ -12,6 +12,22 @@ function h = plot_field(handle,type)
     spotX=1.2;
     circleR = .625;
     fieldB=[-3.5 3.5 -2.5 2.5];
+
+%{  
+
+%TEMPORARY VALUES FOR EXPO
+    fieldX = [-2.7  2.7 2.7 -2.7 -2.7];
+    fieldY = [-1.75 -1.75 1.75  1.75 -1.75];
+    goalX = [2.7 (2.7+0.40) (2.7+0.40) 2.7];
+    goalY = [-0.80 -0.80 0.80 0.80];
+    penaltyX = [2.7 (2.7-0.65) (2.7-0.65) 2.7];
+    penaltyY = [-1.22 -1.22 1.22 1.22];
+    spotX=1.35;
+    circleR = .1;
+    fieldB=[-3.1 3.1 -2.4 2.4];
+%}  
+
+
   elseif type==1 %SPL
     fieldX = [-3.00  3.00 3.00 -3.00 -3.00];
     fieldY = [-2.00 -2.00 2.00  2.00 -2.00];
@@ -22,7 +38,7 @@ function h = plot_field(handle,type)
     spotX=1.2;
     circleR = .6;
     fieldB=[-3.5 3.5 -2.5 2.5];
-  else % Teensize
+  elseif type==2 % Teensize
     fieldX = [-4.50  4.50 4.50 -4.50 -4.50];
     fieldY = [-3.00 -3.00 3.00  3.00 -3.00];
     goalX = [4.50 (4.50+0.40) (4.50+0.40) 4.50];
@@ -32,8 +48,9 @@ function h = plot_field(handle,type)
     spotX=2.4;
     circleR = .75;
     fieldB=[-5 5 -3.5 3.5];
-  end
 
+  end
+%  set(handle,'YDir','reverse');
   hold on;
   plot(fieldX, fieldY, 'g-');
   fill(goalX, goalY, 'y');

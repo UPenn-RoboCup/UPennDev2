@@ -4,13 +4,14 @@ require('vector')
 --Localization parameters 
 
 world={};
-world.n = 100;
+world.n = 200;
 world.xLineBoundary = 3.0;
 world.yLineBoundary = 2.0;
 world.xMax = 3.2;
 world.yMax = 2.2;
 world.goalWidth = 1.40;
 world.goalHeight= 0.80;
+world.goalDiameter=0.10; -- diameter of a post
 world.ballYellow= {{3.0,0.0}};
 world.ballCyan= {{-3.0,0.0}};
 world.postYellow = {};
@@ -25,7 +26,6 @@ world.spot[2] = {1.20, 0};
 world.landmarkCyan = {0.0, -2.4};
 world.landmarkYellow = {0.0, 2.4};
 world.cResample = 10; --Resampling interval
-world.odomScale = {1.06, 1.06, 0.97};
 
 --They are SPL values
 world.Lcorner={};
@@ -53,23 +53,28 @@ world.Lcorner[16]={0,-0.6};
 world.Lcorner[17]={0.6,0};
 world.Lcorner[18]={-0.6,0};
 
-
-
-
-
-
 --same-colored goalposts
 world.use_same_colored_goal=1;
---world.use_same_colored_goal=0;
 
 --should we use new triangulation?
-world.use_new_goalposts=1;
+world.use_new_goalposts=0;
 
 -- filter weights
 world.rGoalFilter = 0.02;
 world.aGoalFilter = 0.05;
 world.rPostFilter = 0.02;
-world.aPostFilter = 0.20;
+world.aPostFilter = 0.05;
+world.rKnownGoalFilter = 0.02;
+world.aKnownGoalFilter = 0.20;
+world.rKnownPostFilter = 0.02;
+world.aKnownPostFilter = 0.10;
+world.rUnknownGoalFilter = 0.02;
+world.aUnknownGoalFilter = 0.05;
+world.rUnknownPostFilter = 0.02;
+world.aUnKnownPostFilter = 0.05;
+
+world.rCornerFilter = 0.02;
+world.aCornerFilter = 0.05;
 
 -- default positions for our kickoff
 world.initPosition1={
@@ -87,6 +92,12 @@ world.initPosition2={
   {1.3,1}, --Supporter
 }
 
+-- use sound localization
+world.enable_sound_localization = 1;
+
 -- Occupancy Map parameters
-occmap = {};
-occmap.div = 72;
+occ = {};
+occ.mapsize = 50;
+occ.robot_pos = {occ.mapsize / 2, occ.mapsize * 4 / 5};
+
+

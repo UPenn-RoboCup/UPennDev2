@@ -60,13 +60,13 @@ fsm.bodyOrbit.rFar = 0.45;
 fsm.bodyOrbit.thAlign = 10*math.pi/180;
 fsm.bodyOrbit.timeout = 30.0 * speedFactor;
 fsm.bodyOrbit.tLost = 3.0*speedFactor;
+fsm.bodyOrbit.walkParam = 'Walk/Config_WebotsNao_Orbit'
 
 --------------------------------------------------
 --BodyPosition : Advanced chase-orbit
 --------------------------------------------------
+
 fsm.bodyPosition={};
-fsm.bodyPosition.maxStep = 0.06;--Normal velocity
-fsm.bodyPosition.maxStep2 = 0.08;--Front dash velocity
 
 --Trajectory parameters
 fsm.bodyPosition.rTurn = 0.25; 
@@ -77,8 +77,28 @@ fsm.bodyPosition.rOrbit = 0.60;
 
 fsm.bodyPosition.rClose = 0.35; 
 fsm.bodyPosition.thClose = {0.15,0.15,10*math.pi/180};
+
 fsm.bodyPosition.tLost =  5.0*speedFactor; 
 fsm.bodyPosition.timeout = 30*speedFactor; 
+
+--Velocity generation parameters
+
+--Slow speed
+fsm.bodyPosition.maxStep1 = 0.04;
+
+--Medium speed
+fsm.bodyPosition.maxStep2 = 0.06;
+fsm.bodyPosition.rVel2 = 0.5;
+fsm.bodyPosition.aVel2 = 45*math.pi/180;
+fsm.bodyPosition.maxA2 = 0.2;
+fsm.bodyPosition.maxY2 = 0.02;
+
+--Full speed front dash
+fsm.bodyPosition.maxStep3 = 0.08;
+fsm.bodyPosition.rVel3 = 0.8; 
+fsm.bodyPosition.aVel3 = 20*math.pi/180;
+fsm.bodyPosition.maxA3 = 0.0;
+fsm.bodyPosition.maxY3 = 0.0;
 
 --------------------------------------------------
 --BodyApproach :  Align the robot for kick
@@ -105,6 +125,10 @@ fsm.bodyApproach.yTarget21={0.03, 0.045, 0.06}; --min, target ,max
 --Target position for side walkkick to left
 fsm.bodyApproach.xTarget22={0, 0.15,0.18}; --min, target, max
 fsm.bodyApproach.yTarget22={0.01, 0.025, 0.04}; --min, target ,max
+
+fsm.bodyApproach.pFar = 2.8
+fsm.bodyApproach.pNear = .3
+fsm.bodyApproach.pRight = 1.8 
 
 --------------------------------------------------
 --BodyKick : Stationary Kick
@@ -207,3 +231,4 @@ fsm.headLookGoal.tScan = 1.0*speedFactor;
 --------------------------------------------------
 fsm.headSweep={};
 fsm.headSweep.tScan=1.0*speedFactor;
+fsm.headSweep.tWait=0.25*speedFactor;

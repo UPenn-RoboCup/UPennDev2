@@ -26,13 +26,19 @@ end
 shared.camera = {};
 shared.camera.select = vector.zeros(1);
 shared.camera.command = vector.zeros(1);
+shared.camera.ncamera = vector.zeros(1);
 
 --bodyTilt and height can be changed by sit/stand 
 shared.camera.height = vector.zeros(1);
 shared.camera.bodyTilt = vector.zeros(1);
 shared.camera.bodyHeight = vector.zeros(1);
-shared.camera.pitchBias = vector.zeros(1);--for camera angel fine tuning
 shared.camera.rollAngle = vector.zeros(1);--how much image is tilted
+
+--Used for monitor to auto-switch yuyv mode
+shared.camera.yuyvType = vector.zeros(1);
+--Now we use shm to enable broadcasting from test_vision
+shared.camera.broadcast = vector.zeros(1);
+shared.camera.teambroadcast = vector.zeros(1);
 
 shared.image = {};
 shared.image.select = vector.zeros(1);
@@ -48,15 +54,23 @@ shared.image.horizonDir = vector.zeros(4); -- Angle of horizon line rotation
 shared.image.yuyv = 2*Config.camera.width*Config.camera.height; 
 --Downsampled yuyv
 shared.image.yuyv2 = 2*Config.camera.width*Config.camera.height/2/2; 
+--Downsampled yuyv 2
+shared.image.yuyv3 = 2*Config.camera.width*Config.camera.height/4/4; 
 
 shared.image.width = vector.zeros(1);
 shared.image.height = vector.zeros(1);
+shared.image.scaleB = vector.zeros(1);
 
 shared.image.labelA = (processed_img_width)*(processed_img_height);
 shared.image.labelB = ((processed_img_width)/Config.vision.scaleB)*((processed_img_height)/Config.vision.scaleB);
+--shared.image.labelA_obs = (processed_img_width)*(processed_img_height);
+--shared.image.labelB_obs = ((processed_img_width)/Config.vision.scaleB)*((processed_img_height)/Config.vision.scaleB);
+
 -- calculate image shm size
-shsize.image = (shared.image.yuyv + shared.image.yuyv2+
-		shared.image.labelA + shared.image.labelB) + 2^16;
+shsize.image = (shared.image.yuyv + shared.image.yuyv2+ 
+	shared.image.yuyv3+shared.image.labelA + shared.image.labelB 
+--  +shared.image.labelA_obs + shared.image.labelB_obs
+  ) + 2^16;
 
 --Image field-of-view information
 shared.image.fovTL=vector.zeros(2);
@@ -64,6 +78,8 @@ shared.image.fovTR=vector.zeros(2);
 shared.image.fovBL=vector.zeros(2);
 shared.image.fovBR=vector.zeros(2);
 shared.image.fovC=vector.zeros(2);
+
+shared.image.learn_lut = vector.zeros(1);
 
 shared.ball = {};
 shared.ball.detect = vector.zeros(1);
@@ -190,9 +206,10 @@ function refresh_debug_message()
     --it is not updated for whatever reason
     --just keep the latest message
   else
+    --Update SHM
     set_debug_message(debug_message);
+    debug_message='';
   end
-  debug_message='';
 end
 function add_debug_message(message)
   if string.len(debug_message)>1000 then
@@ -200,6 +217,4 @@ function add_debug_message(message)
     debug_message='';
   end
   debug_message=debug_message..message;
-  set_debug_message(debug_message);
-
 end

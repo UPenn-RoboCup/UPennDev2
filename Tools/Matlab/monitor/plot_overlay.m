@@ -10,34 +10,39 @@ function plot_overlay(r_mon,scale,drawlevel)
         hold off;
       end
       if( r_mon.goal.detect == 1 )
-	rollAngle=r_mon.camera.rollAngle;
+				rollAngle=r_mon.camera.rollAngle;
         hold on;
         if (~isempty(r_mon.goal.postStat1))
-          plot_goalposts(r_mon.goal.postStat1,r_mon.goal.v1,rollAngle,scale);
+          plot_goalposts(r_mon.goal.postStat1,r_mon.goal.v1,rollAngle,scale,r_mon.camera.scaleB);
           if(r_mon.goal.type==3)
-            plot_goalposts(r_mon.goal.postStat2,r_mon.goal.v2,rollAngle,scale);
+            plot_goalposts(r_mon.goal.postStat2,r_mon.goal.v2,rollAngle,scale,r_mon.camera.scaleB);
           end
         end
         hold off;
       end
       if( r_mon.landmark.detect == 1 )
         hold on;
-	plot_landmark(r_mon.landmark,scale)
-	hold off;
+				plot_landmark(r_mon.landmark,scale)
+				hold off;
       end
       if (r_mon.line.detect == 1)
         hold on;
-	plot_line(r_mon.line,scale)
-	hold off;
+				plot_line(r_mon.line,scale)
+				hold off;
       end
       if (r_mon.corner.detect == 1)
         hold on;
-	plot_corner(r_mon.corner,scale)
-	hold off;
+				plot_corner(r_mon.corner,scale)
+				hold off;
       end
+			if (r_mon.free.detect == 1)
+				hold on;
+				plot_freespace(r_mon.free,scale)
+				hold off;
+			end
     
      if drawlevel ==2 
-       plot_robot_lowpoint(r_mon.robot,scale)
+			 plot_robot_lowpoint(r_mon.robot,scale)
      end
 
 
@@ -61,8 +66,7 @@ function plot_overlay(r_mon,scale,drawlevel)
     end
   end
 
-  function plot_goalposts( postStats, v, rollAngle, scale)
-
+  function plot_goalposts( postStats, v, rollAngle, scale, scaleB)
     x0=postStats.x;
     y0=postStats.y;
     w0=postStats.a/2;
@@ -85,10 +89,10 @@ function plot_overlay(r_mon,scale,drawlevel)
 
 
 
-    gbx1=(postStats.gbx1+.5)/scale*4;
-    gbx2=(postStats.gbx2+1.5)/scale*4;
-    gby1=(postStats.gby1+.5)/scale*4;
-    gby2=(postStats.gby2+1.5)/scale*4;
+    gbx1=(postStats.gbx1)/scale*scaleB;
+    gbx2=(postStats.gbx2+1)/scale*scaleB;
+    gby1=(postStats.gby1)/scale*scaleB;
+    gby2=(postStats.gby2+1)/scale*scaleB;
 
     xskew=tan(rollAngle);
     gbx11=gbx1+gby1*xskew;
@@ -187,7 +191,7 @@ function plot_overlay(r_mon,scale,drawlevel)
     if (scale == 4)
       X = free.Bx;
       Y = free.By;
-      plot(X,Y,'m--','LineWidth',2);
+      plot(X,Y,'mo','LineWidth',2);
    else
       %X = free.Ax;
       %Y = free.Ay;

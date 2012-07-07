@@ -7,6 +7,7 @@ module(..., package.seeall);
 require('Body')
 require('wcm')
 require('mcm')
+require('HeadTransform')
 
 t0 = 0;
 
@@ -29,10 +30,8 @@ function update()
   local t = Body.get_time();
   local ball = wcm.get_ball();
 
-  pitchBias=vcm.get_camera_pitchBias(); --Robot specific head angle bias
-
   if ball.x<xMax and math.abs(ball.y)<yMax then
-     Body.set_head_command({0, pitch0-pitchBias});
+     Body.set_head_command({0, pitch0});
   else
    local yaw, pitch = HeadTransform.ikineCam(ball.x, ball.y, 0.03);
    local currentYaw = Body.get_head_position()[1];

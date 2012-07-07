@@ -7,22 +7,17 @@ require('walk')
 require('vector')
 require('Transform')
 require('vcm')
+require('mcm')
 
 active = true;
 t0 = 0;
 
-footX = Config.walk.footX or 0;
 footY = Config.walk.footY;
 supportX = Config.walk.supportX;
 bodyHeight = Config.walk.bodyHeight;
 bodyTilt = Config.stance.bodyTiltStance or 0;
 qLArm = Config.walk.qLArm;
 qRArm = Config.walk.qRArm;
-
--- Final stance foot position6D
-pTorsoTarget = vector.new({0, 0, bodyHeight, 0,bodyTilt,0});
-pLLeg = vector.new({-supportX + footX, footY, 0, 0,0,0});
-pRLeg = vector.new({-supportX + footX, -footY, 0, 0,0,0});
 
 -- Max change in position6D to reach stance:
 dpLimit = Config.stance.dpLimitStance or vector.new({.04, .03, .07, .4, .4, .4});
@@ -34,8 +29,15 @@ tStart=0;
 
 finished=false;
 
+hardnessLeg = Config.stance.hardnessLeg or 1;
+
 function entry()
   print("Motion SM:".._NAME.." entry");
+  -- Final stance foot position6D
+  pTorsoTarget = vector.new({0, 0, bodyHeight, 0,bodyTilt,0});
+  pLLeg = vector.new({-supportX + mcm.get_footX(), footY, 0, 0,0,0});
+  pRLeg = vector.new({-supportX + mcm.get_footX(), -footY, 0, 0,0,0});
+
   Body.set_syncread_enable(1); 
   started=false; 
   finished=false;
@@ -51,8 +53,8 @@ function entry()
   Body.set_larm_hardness(.1);
   Body.set_rarm_hardness(.1);
 
-  Body.set_waist_hardness(1);
   Body.set_waist_command(0);
+  Body.set_waist_hardness(1);
 
   t0 = Body.get_time();
 
@@ -64,7 +66,7 @@ function update()
   local dt = t - t0;
   if finished then return; end
 
-  --For OP, wait a bit to read joint readings
+  --Wait a bit to read joint readings
   if not started then 
     if dt>tStartWait then
       started=true;
@@ -80,8 +82,8 @@ function update()
 
       Body.set_lleg_command(qLLeg);
       Body.set_rleg_command(qRLeg);
-      Body.set_lleg_hardness(1);
-      Body.set_rleg_hardness(1);
+      Body.set_lleg_hardness(hardnessLeg);
+      Body.set_rleg_hardness(hardnessLeg);
       t0 = Body.get_time();
       count=1;
       tStart=t0;

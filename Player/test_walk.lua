@@ -35,7 +35,9 @@ require('Speak')
 require('getch')
 require('Body')
 require('Motion')
+require('dive')
 
+require('grip')
 Motion.entry();
 darwin = false;
 webots = false;
@@ -44,9 +46,13 @@ webots = false;
 if(Config.platform.name == 'OP') then
   darwin = true;
   --SJ: OP specific initialization posing (to prevent twisting)
-  Body.set_body_hardness(0.3);
-  Body.set_actuator_command(Config.stance.initangle)
+--  Body.set_body_hardness(0.3);
+--  Body.set_actuator_command(Config.stance.initangle)
 end
+
+--TODO: enable new nao specific
+newnao = false; --Turn this on for new naos (run main code outside naoqi)
+newnao = true;
 
 getch.enableblock(1);
 unix.usleep(1E6*1.0);
@@ -63,6 +69,9 @@ end
 
 initToggle = true;
 targetvel=vector.zeros(3);
+button_pressed = {0,0};
+
+
 function process_keyinput()
   local str=getch.get();
   if #str>0 then
@@ -96,6 +105,52 @@ function process_keyinput()
       walk.doSideKickLeft();
     elseif byte==string.byte("y") then
       walk.doSideKickRight();
+
+
+    elseif byte==string.byte("w") then
+      Motion.event("diveready");
+    elseif byte==string.byte("a") then
+      dive.set_dive("diveLeft");
+      Motion.event("dive");
+    elseif byte==string.byte("s") then
+      dive.set_dive("diveCenter");
+      Motion.event("dive");
+    elseif byte==string.byte("d") then
+      dive.set_dive("diveRight");
+      Motion.event("dive");
+
+--[[
+	elseif byte==string.byte("z") then
+		grip.throw=0;
+		Motion.event("pickup");
+	elseif byte==string.byte("x") then
+		grip.throw=1;
+		Motion.event("throw");
+--]]
+
+	elseif byte==string.byte("z") then
+	    walk.startMotion("hurray1");
+
+	elseif byte==string.byte("x") then
+	    walk.startMotion("hurray2");
+
+	elseif byte==string.byte("c") then
+	    walk.startMotion("swing");
+
+	elseif byte==string.byte("v") then
+	    walk.startMotion("2punch");
+
+--	elseif byte==string.byte("b") then
+--	    walk.startMotion("point");
+
+
+
+	elseif byte==string.byte("b") then
+	    grip.throw=0;
+	    Motion.event("pickup");
+	elseif byte==string.byte("n") then
+	    grip.throw=1;
+	    Motion.event("pickup");
 
     elseif byte==string.byte("7") then	
       Motion.event("sit");
@@ -167,6 +222,16 @@ function update()
     Speak.talk('missed cycle');
     lcount = count;
   end
+
+  --Stop walking if button is pressed and the released
+  if (Body.get_change_state() == 1) then
+    button_pressed[1]=1;
+  else
+    if button_pressed[1]==1 then
+      Motion.event("sit");
+    end
+    button_pressed[1]=0;
+  end
 end
 
 -- if using Webots simulator just run update
@@ -178,7 +243,8 @@ if (webots) then
   end
 end
 
-if( darwin ) then
+--Now both nao and darwin runs this separately
+if (darwin) or (newnao) then
   local tDelay = 0.005 * 1E6; -- Loop every 5ms
   while 1 do
     update();

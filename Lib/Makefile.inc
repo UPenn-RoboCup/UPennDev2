@@ -2,6 +2,41 @@
 TARGETS = all clean
 .PHONY: $(TARGETS)
 
+## Path Definition
+
+NAODIR= Platform/Nao
+NAOV4DIR = Platform/NaoV4
+WEBOTSNAODIR= Platform/WebotsNao
+WEBOTSOPDIR= Platform/WebotsOP
+WEBOTSGENERICDIR= Platform/WebotsGeneric
+WEBOTSHUBODIR= Platform/WebotsHubo
+WEBOTSCHARLIDIR= Platform/WebotsCharli
+WEBOTSSAFFIRDIR= Platform/WebotsSaffir
+VISIONTESTDIR = Platform/VisionTest
+HPDIR= Platform/HP2
+OPDIR= Platform/OP
+XOSDIR= Platform/XOS
+CHARLIDIR = Platform/Charli
+MODULEDIR = Modules
+NAOQIDIR= NaoQi
+WEBOTSDIR = $(MODULEDIR)/Webots
+IMAGEDIR= $(MODULEDIR)/ImageProc
+COMMDIR= $(MODULEDIR)/Comm
+OCCMAPDIR = $(MODULEDIR)/OccMap
+UTILDIR= $(MODULEDIR)/Util
+MATLABDIR= ../Tools/Matlab
+COLORTABLEDIR= $(MATLABDIR)/Colortable
+VELODIR= $(MODULEDIR)/Velocity
+PRIMEDIR= $(MODULEDIR)/PrimeSense
+PLATFORMS = nao naov4 op xos webots_nao webots_op webots_generic webots_hubo visiontest
+INSTDIR= ../Player/Lib
+WEBOTSCONTDIR= ../WebotsController
+PLAYERDIR= ../Player
+NAODEPDIR= ../Install/dependencies
+NAODEPLUA51DIR= $(NAODEPDIR)/usr/local/lib/lua/5.1
+
+
+## Compiler Definition
 MODE=$(shell getconf LONG_BIT)
 CXX=g++
 CC=gcc
@@ -16,12 +51,18 @@ SHLIBEXT= so
 LIBOPTS= -shared -fpic
 LIBRT= -lrt
 
-INCLUDES= -I/usr/local/include -I/usr/include/lua -I/usr/include/lua5.1
+#This does not work 
+#INCLUDES= -I/usr/local/include -I../include/lua5.1.4
+INCLUDES= -I/usr/local/include -I/usr/include/lua -I/usr/include/lua5.1 -I/usr/local/include/lua5.1 -I/usr/local/include/lua -I/usr/local/include/luajit-2.0
 LIB_DIR= -L/usr/local/lib -L/usr/lib
 
 
 ifndef OSTYPE
   OSTYPE = $(shell uname -s|awk '{print tolower($$0)}')
+endif
+
+ifndef ARCH
+  ARCH= $(shell uname -m)
 endif
 
 ifndef USER
@@ -38,7 +79,8 @@ endif
 endif
 
 ifeq ($(OSTYPE),darwin)
-  SHLIBEXT= dylib
+#  SHLIBEXT= dylib
+  SHLIBEXT= so
   LIBOPTS= -bundle -undefined dynamic_lookup
   # -march=native is not supported, so tune as your system demand
   CXXFLAGS= -O2 -fomit-frame-pointer -mtune=native

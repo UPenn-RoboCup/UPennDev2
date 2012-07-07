@@ -1,9 +1,11 @@
- function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel)
+function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel,name)
 % This function shows the robot over the field map
 % Level 1: show position only
 % Level 2: show position and vision info
 % Level 3: show position, vision info and fov info
 % Level 4: show position, vision info and particles
+
+% Level 5: wireless (level 2 + robot name)
 
   x0 = robot_struct.pose.x;
   y0 = robot_struct.pose.y;
@@ -15,20 +17,35 @@
   if robot_struct.fall
     ca=1;sa=0;
     plot_fallen_robot(robot_struct,scale)
-    plot_info(robot_struct,scale);
+    if drawlevel==5
+      plot_info(robot_struct,scale,2,name);
+    else
+      plot_info(robot_struct,scale,2,'');
+    end
   else
     if drawlevel==1 
       %simple position and pose
       plot_robot(robot_struct,scale);
-      plot_info(robot_struct,scale);
+      plot_info(robot_struct,scale,1);
       plot_ball(robot_struct,scale);
-      plot_gps_robot(robot_struct,scale);
+      plot_sound(robot_struct,scale);
+      %plot_gps_robot(robot_struct,scale);
 
     elseif drawlevel==2 
       %additional simple vision info for team monitor
 
       plot_robot(robot_struct,scale);
-      plot_info(robot_struct,scale);
+      plot_info(robot_struct,scale,1);
+      plot_ball(robot_struct,scale);
+      plot_goal_team(robot_struct,scale);
+      plot_landmark_team(robot_struct,scale);
+      plot_corner_team(robot_struct,scale);
+      plot_gps_robot(robot_struct,scale);
+    elseif drawlevel==5 
+      %additional simple vision info for team monitor
+
+      plot_robot(robot_struct,scale);
+      plot_info(robot_struct,scale,2,name);
       plot_ball(robot_struct,scale);
       plot_goal_team(robot_struct,scale);
       plot_landmark_team(robot_struct,scale);
@@ -38,24 +55,30 @@
     elseif drawlevel==3 
       %Full vision info
       plot_robot(robot_struct,scale);
+      plot_info(robot_struct,scale,1);
+      plot_ball(robot_struct,scale);
+
+      plot_line(r_mon.line,scale);
+      plot_corner(r_mon.corner,scale);
+      plot_goal(r_mon.goal,scale);
+      plot_landmark(r_mon.landmark,scale);
+      plot_fov(r_mon.fov);
+
+      plot_gps_robot(robot_struct,scale);
+    elseif drawlevel==4
+      plot_robot(robot_struct,scale);
       plot_info(robot_struct,scale);
       plot_ball(robot_struct,scale);
-
-      plot_line(r_mon.line,scale);
-      plot_corner(r_mon.corner,scale);
-      plot_goal(r_mon.goal,scale);
-      plot_landmark(r_mon.landmark,scale);
-      plot_fov(r_mon.fov);
-
-    elseif drawlevel==4
+      plot_sound(robot_struct,scale);
+      %plot_particle(robot_struct,scale);
       plot_ball(robot_struct,scale);
-      plot_particle(r_mon.particle);
-      plot_goal(r_mon.goal,scale);
-      plot_landmark(r_mon.landmark,scale);
-      plot_line(r_mon.line,scale);
-      plot_corner(r_mon.corner,scale);
-      plot_fov(r_mon.fov);
-      plot_gps_robot(robot_struct,scale);
+      %plot_particle(r_mon.particle);
+      %plot_goal(r_mon.goal,scale);
+      %plot_landmark(r_mon.landmark,scale);
+      %plot_line(r_mon.line,scale);
+      %plot_corner(r_mon.corner,scale);
+      %plot_fov(r_mon.fov);
+      %plot_gps_robot(robot_struct,scale);
     end
   end
 
@@ -69,8 +92,8 @@
 
     teamColors = ['b', 'r'];
     idColors = ['k', 'r', 'g', 'b'];
-    % Role:  1:Attack / 2:Defend / 3:Support / 4: Goalie
-    roleColors = {'m','k', 'k--','g'};
+    % Role:  0:Goalie 1:Attack / 2:Defend / 3:Support / 4: R.player 5: R.goalie
+    roleColors = {'g','r','k', 'k--','r--','g--'};
 
     teamColors = ['b', 'r'];
     hr = fill(xr, yr, teamColors(max(1,robot.teamColor+1)));
@@ -82,22 +105,46 @@
   end
 
   function plot_gps_robot(robot,scale)
+    if (~isfield(robot, 'gpspose'))
+      return
+    end
     xgps = robot_struct.gpspose.x;
     ygps = robot_struct.gpspose.y;
-    cagps = cos(robot_struct.gpspose.a);
-    sagps = sin(robot_struct.gpspose.a);
+    rErr = sqrt((x0-xgps)^2+(y0-ygps)^2);
+    if rErr>0
+      cagps = cos(robot_struct.gpspose.a);
+      sagps = sin(robot_struct.gpspose.a);
 
-    pl_len=1;
-    dx=cagps*pl_len;
-    dy=sagps*pl_len;
-    quiver(xgps,ygps,dx,dy,0,'b');
-    plot(xgps,ygps,'bo');
+      pl_len=1/scale;
+      dx=cagps*pl_len;
+      dy=sagps*pl_len;
+      quiver(xgps,ygps,dx,dy,0,'b');
+      plot(xgps,ygps,'bo');
+
+      %Draw error circle
+      errBox = [xgps-rErr ygps-rErr 2*rErr 2*rErr];
+      rectangle('Position', errBox, 'Curvature',[1,1], ...
+	'LineStyle','--');
+
+      aErr=abs(robot.attackBearing-robot.gps_attackbearing);
+      a1 = robot.gps_attackbearing + aErr + robot_struct.gpspose.a;
+      a2 = robot.gps_attackbearing - aErr + robot_struct.gpspose.a;
+      rPie = 1/scale;
+
+      plot([xgps xgps+rPie*cos(a1)],[ygps ygps+rPie*sin(a1)]);
+      plot([xgps xgps+rPie*cos(a2)],[ygps ygps+rPie*sin(a2)]);
+
+    end
+
   end
 
 
-  function plot_robot(robot,scale)
-    xRobot = [0 -.25 -.25]*2/scale;
+  function plot_robot(robot,scale,name)
+%    xRobot = [0 -.25 -.25]*2/scale;
+%    yRobot = [0 -.10 +.10]*2/scale;
+    xRobot = [.125 -.125 -.125]*2/scale;
     yRobot = [0 -.10 +.10]*2/scale;
+
     xr = xRobot*ca - yRobot*sa + x0;
     yr = xRobot*sa + yRobot*ca + y0;
     xm = mean(xRobot);
@@ -117,19 +164,26 @@
     end
 
     % disp attack bearing
+    %{
     xab = cos(robot.attackBearing)*ca - sin(robot.attackBearing)*sa;
     yab = cos(robot.attackBearing)*sa + sin(robot.attackBearing)*ca;
     ab_scale = 1/scale;
     quiver(x0, y0, xab*ab_scale,yab*ab_scale, 'k' );
+    %}
   end
   
-  function plot_info(robot,angle)
-    infostr=robot_info(robot,0,1);
+  function plot_info(robot,angle,plottype,name)
+    if plottype==1
+      infostr=robot_info(robot,0,1);
+    else
+      infostr=robot_info(robot,0,3,name);
+    end
     xtext=-1/scale;   xtext2=-0.4/scale;
     xt = xtext*ca + x0+xtext2;
     yt = xtext*sa + y0;
     b_name=text(xt, yt, infostr);
-    set(b_name,'FontSize',8/scale);
+%    set(b_name,'FontSize',16/scale);
+    set(b_name,'FontSize',32/scale);
   end
 
   function plot_ball(robot,scale)
@@ -145,13 +199,14 @@
       if ballt<0.5 
         plot([x0 xb],[y0 yb],'r');
         set(hb, 'MarkerSize', 8/scale);
+%{
         ball_vel=[robot.ball.vx robot.ball.vy];
-
         xbv =  ball_vel(1)*ca - ball_vel(2)*sa;   
         ybv =  ball_vel(1)*sa + ball_vel(2)*ca;
         qvscale = 2;
         quiver(xb, yb, qvscale*xbv/scale, qvscale*ybv/scale,...
 		 0,'r','LineWidth',2/scale );
+%}
       else
         %TODO: add last seen time info
       end
@@ -332,14 +387,14 @@
     end
   end
 
-  function plot_particle(particle)
+  function plot_particle(robot,scale)
 %    plot(particle.x,particle.y,'x')
 
-    index=[1:5:100]';
+    index=[1:10:200]';
 
-    px=particle.x(index);
-    py=particle.y(index);
-    pa=particle.a(index);
+    px=robot.xp(index);
+    py=robot.yp(index);
+    pa=robot.ap(index);
 
 
     pl_len=1;
@@ -349,6 +404,33 @@
     quiver(px,py,dx,dy,0,'k');
     plot(px,py,'r.');
 
+  end
+
+  function plot_sound(robot, scale)
+    if (isfield(robot, 'soundFilter') && isfield(robot, 'soundOdomPose'))
+      if (any(robot.soundFilter))
+        disp(robot.soundFilter);
+      end
+      sound = robot.soundFilter/100;
+      ndiv = length(robot.soundFilter);
+      thdiv = 2*pi/ndiv;
+
+      cr = cos(robot.pose.a);
+      sr = sin(robot.pose.a);
+      cs = cos(robot.soundOdomPose.a);
+      ss = sin(robot.soundOdomPose.a);
+      wRr = [cr -sr; sr cr];
+      rRs = [cs -ss; ss cs]';
+      wRs = wRr * rRs;
+
+      u = sound .* cos(-pi+thdiv/2:thdiv:pi-thdiv/2);
+      v = sound .* sin(-pi+thdiv/2:thdiv:pi-thdiv/2);
+      U = wRs * [u;v];
+      x = robot.pose.x .* ones([1, ndiv]);
+      y = robot.pose.y .* ones([1, ndiv]);
+
+      quiver(x, y, U(1,:), U(2,:));
+    end
   end
 
 end

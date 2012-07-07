@@ -374,8 +374,8 @@ function get_torso_orientation()
   tc = primecm.get_confidence_Torso();
 
   if( sLc[1]==0 or sRc[1]==0 or nc[1]==0 or tc[1]==0 ) then
-    print('Confidence issues...')
-    print(sLc[1],sRc[1],nc[1],tc[1])
+    --print('Confidence issues...')
+    --print(sLc[1],sRc[1],nc[1],tc[1])
     return;
   end
 
@@ -420,7 +420,7 @@ function get_torso_orientation()
   y = util.procFunc(y,0,40*math.pi/180)
 
   rpy = vector.new({r,p,y})
-  print("RPY: ",unpack(180/math.pi* rpy) )
+  --print("RPY: ",unpack(180/math.pi* rpy) )
   return rpy;
 end
 

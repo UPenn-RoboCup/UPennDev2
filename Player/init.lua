@@ -1,5 +1,4 @@
-module(... or "", package.seeall)
-
+cwd = cwd or os.getenv('PWD')
 -- this module is used to facilitate interactive debuging
 
 package.cpath = cwd.."/Lib/?.so;"..package.cpath;
@@ -14,6 +13,7 @@ package.path = cwd.."/Motion/Walk/?.lua;"..package.path;
 package.path = cwd.."/Vision/?.lua;"..package.path;
 package.path = cwd.."/World/?.lua;"..package.path;
 package.path = cwd.."/Test/?.lua;"..package.path;
+package.path = cwd.."/?.lua;"..package.path;
 
 
 require('serialization')

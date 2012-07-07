@@ -102,6 +102,7 @@ function entry()
   vcm.set_camera_bodyTilt(0);
   vcm.set_camera_height(Config.walk.bodyHeight+Config.head.neckZ);
 	vcm.set_camera_ncamera(Config.camera.ncamera);
+  vcm.set_camera_reload_LUT(0);
 
   -- Start the HeadTransform machine
   HeadTransform.entry();
@@ -168,6 +169,13 @@ end
 
 
 function update()
+  -- reload color lut
+  if (vcm.get_camera_reload_LUT() == 1) then
+    print('reload color LUT')
+    camera = ColorLUT.load_LUT(camera);
+    vcm.set_camera_reload_LUT(0);
+  end
+
   --If we are only using gps info, skip whole vision update 	
   if use_gps_only>0 then
     update_gps_only();

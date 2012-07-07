@@ -95,12 +95,12 @@ function learn_lut_from_mask()
     image_height = vcm.get_image_height();
     -- get labelA
     if webots == 1 then
-      labelA_mask = Camera.get_labelA_obs( carray.pointer(camera.lut_obs) );
+      labelA_mask = Camera.get_labelA_obs( carray.pointer(camera.lut) );
       labelA_m = Config.camera.width;
       labelA_n = Config.camera.height;
     else
       labelA_mask  = ImageProc.yuyv_to_label_obs(vcm.get_image_yuyv(),
-                                    carray.pointer(camera.lut_obs), image_width/2, image_height);
+                                    carray.pointer(camera.lut), image_width/2, image_height);
       labelA_m = Config.camera.width/2;
       labelA_n = Config.camera.height/2;
     end
@@ -109,7 +109,7 @@ function learn_lut_from_mask()
 
     if webots == 1 then
       print("learn in webots")
-      lut_update = Camera.get_lut_update(mask, carray.pointer(camera.lut_obs));
+      lut_update = Camera.get_lut_update(mask, carray.pointer(camera.lut));
     else
       print("learn in op")
       lut_update = ImageProc.yuyv_mask_to_lut(vcm.get_image_yuyv(), mask, carray.pointer(camera.lut), 
@@ -120,4 +120,5 @@ function learn_lut_from_mask()
   else
     print('Enable lut for obstacle in Vision to enable lut from mask');
   end
+  vcm.get_camera_reload_LUT(1)
 end

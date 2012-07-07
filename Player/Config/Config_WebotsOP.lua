@@ -29,12 +29,8 @@ dev.camera = 'WebotsOPCam';
 dev.kinematics = 'OPKinematics';
 dev.game_control='WebotsGameControl';
 dev.team='TeamNSL';
-dev.walk='NewNewNewWalk'; --Walk with generalized walkkick definitions
+dev.walk='NewNewNewNewNewWalk'; --Walk with generalized walkkick definitions
 dev.kick='NewNewKick'; --Extended kick that supports upper body motion
-
-dev.walk='NewNewNewNewNewWalk'; 
-	--Walk with upper body motion playback
-
 
 --Sit/stand stance parameters
 stance={};

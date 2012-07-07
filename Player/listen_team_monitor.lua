@@ -7,7 +7,6 @@ cwd = '.';
 uname = io.popen('uname -s')
 system = uname:read()
 
-computer = os.getenv('COMPUTER') or system;
 package.cpath = cwd.."/Lib/?.so;"..package.cpath;
 
 package.path = cwd.."/Util/?.lua;"..package.path;

@@ -6,14 +6,7 @@ local platform = os.getenv('PLATFORM') or '';
 if (string.find(platform,'webots')) then cwd = cwd .. '/Player';
 end
 
--- Get Computer for Lib suffix
-local computer = os.getenv('COMPUTER') or '';
-if (string.find(computer, 'Darwin')) then
-  -- MacOS X uses .dylib:
-  package.cpath = cwd .. '/Lib/?.dylib;' .. package.cpath;
-else
-  package.cpath = cwd .. '/Lib/?.so;' .. package.cpath;
-end
+package.cpath = cwd .. '/Lib/?.so;' .. package.cpath;
 
 package.path = cwd .. '/?.lua;' .. package.path;
 package.path = cwd .. '/Util/?.lua;' .. package.path;

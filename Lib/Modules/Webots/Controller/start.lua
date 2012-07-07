@@ -3,6 +3,9 @@ package.cpath = './?.so;' .. package.cpath;
 
 require('controller');
 
+CWD = os.getenv('PWD')
+os.execute("cd "..CWD.."/Player")
+
 print("\nStarting Webots Lua controller...");
 
 playerID = os.getenv('PLAYER_ID') + 0;

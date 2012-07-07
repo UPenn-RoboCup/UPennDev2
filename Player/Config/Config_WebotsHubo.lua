@@ -7,13 +7,13 @@ require('os')
 platform = {};
 platform.name = 'WebotsHubo'
 
-util.loadconfig('Walk/Config_WebotsHubo_Walk')
-util.loadconfig('Kick/Config_WebotsHubo_Kick')
-util.loadconfig('World/Config_WebotsOP_World')
-util.loadconfig('Vision/Config_WebotsOP_Vision')
-
---Location Specific Camera Parameters--
-util.loadconfig('Vision/Config_WebotsOP_Camera')
+-- Parameters Files
+params = {}
+params.name = {"Walk", "World", "Kick", "Vision", "FSM", "Camera"};
+params.World_Platform = "WebotsOP"
+params.Vision_Platform = "WebotsOP"
+params.Camera_Platform = "WebotsOP"
+util.LoadConfig(params, platform)
 
 -- Device Interface Libraries
 dev = {};

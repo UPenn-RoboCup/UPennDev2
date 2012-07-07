@@ -5,16 +5,13 @@ require 'unix'
 local robotName=unix.gethostname();
 
 platform = {}; 
-platform.name = 'xos'
+platform.name = 'XOS'
 
---Robot CFG should be loaded first to set PID values
-util.loadconfig('Robot/Config_XOS_Robot') 
-util.loadconfig('Walk/Config_XOS_Walk')
-util.loadconfig('World/Config_XOS_World')
-util.loadconfig('Kick/Config_XOS_Kick')
-util.loadconfig('Vision/Config_XOS_Vision')
---Location Specific Camera Parameters--
-util.loadconfig('Vision/Config_XOS_Camera_Mexico_LC')
+params = {}
+params.name = {"Robot", "Walk", "World", "Kick", "Vision", "FSM", "Camera"};
+params.Camera = "Mexico_LC"
+
+util.LoadConfig(params, platform)
 
 -- Device Interface Libraries
 dev = {};
@@ -56,9 +53,6 @@ game.nPlayers = 2;
 --------------------
 
 --FSM and behavior settings
-fsm = {};
---SJ: loading FSM config  kills the variable fsm, so should be called first
-util.loadconfig('FSM/Config_XOS_FSM')
 fsm.game = 'RoboCup';
 
 fsm.head = {'GeneralPlayer'};

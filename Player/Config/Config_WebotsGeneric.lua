@@ -7,13 +7,11 @@ require('os')
 platform = {};
 platform.name = 'WebotsNao'
 
-util.loadconfig('Config_WebotsGeneric_Walk')
-util.loadconfig('Config_WebotsGeneric_Kick')
-util.loadconfig('Config_WebotsOP_World')
-util.loadconfig('Config_WebotsGeneric_Vision')
-
---Location Specific Camera Parameters--
-util.loadconfig('Config_WebotsGeneric_Camera')
+-- Parameters Files
+params = {}
+params.name = {"Walk", "World", "Kick", "Vision", "FSM", "Camera"};
+params.World_Platform = "OP"
+util.LoadConfig(params, platform)
 
 -- Device Interface Libraries
 dev = {};

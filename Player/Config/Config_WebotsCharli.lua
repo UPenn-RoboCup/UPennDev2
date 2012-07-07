@@ -7,14 +7,11 @@ require('os')
 platform = {};
 platform.name = 'WebotsCharli'
 
-util.loadconfig('Walk/Config_WebotsCharli_Walk')
-util.loadconfig('Kick/Config_WebotsCharli_Kick')
-util.loadconfig('World/Config_Charli_World')
-util.loadconfig('Vision/Config_WebotsCharli_Vision')
-
---Location Specific Camera Parameters--
-util.loadconfig('Vision/Config_WebotsOP_Camera')
---util.loadconfig('Vision/Config_WebotsCharli_Camera') --high-res
+-- Parameters Files
+params = {}
+params.name = {"Walk", "World", "Kick", "Vision", "FSM", "Camera"};
+params.World_Platform = "Charli"
+util.LoadConfig(params, platform)
 
 -- Device Interface Libraries
 dev = {};
@@ -40,8 +37,6 @@ game.role = game.playerID-1; -- 0 for goalie
 
 
 -- FSM Parameters
-fsm = {};
-util.loadconfig('FSM/Config_WebotsCharli_FSM')
 fsm.game = 'RoboCup';
 fsm.body = {'CharliPlayer'};
 fsm.head = {'GeneralPlayer'}; 

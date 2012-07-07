@@ -6,13 +6,13 @@ require('parse_hostname')
 platform = {};
 platform.name = 'Nao'
 
-util.loadconfig('Walk/Config_Nao_Walk_Blimp_Room')
-util.loadconfig('World/Config_Nao_World')
-util.loadconfig('Kick/Config_Nao_Kick')
-util.loadconfig('Vision/Config_Nao_Vision')
-
+params = {}
+params.name = {"Walk", "World", "Kick", "Vision", "FSM", "Camera"};
+params.Walk = "Blimp_Room"
 --Location Specific Camera Parameters--
-util.loadconfig('Vision/Config_Nao_Camera_Blimp_Room')
+params.Camera = "Blimp_Room"
+
+util.LoadConfig(params, platform)
 
 -- Devive Interface Libraries
 dev = {};

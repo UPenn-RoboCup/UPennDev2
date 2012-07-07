@@ -2,13 +2,8 @@ module(... or "", package.seeall)
 
 -- Add the required paths
 cwd = '.';
-computer = os.getenv('COMPUTER') or "";
-if (string.find(computer, "Darwin")) then
-   -- MacOS X uses .dylib:                                                      
-   package.cpath = cwd.."/Lib/?.dylib;"..package.cpath;
-else
-   package.cpath = cwd.."/Lib/?.so;"..package.cpath;
-end
+package.cpath = cwd.."/Lib/?.so;"..package.cpath;
+
 package.path = cwd.."/Util/?.lua;"..package.path;
 package.path = cwd.."/Config/?.lua;"..package.path;
 package.path = cwd.."/Lib/?.lua;"..package.path;

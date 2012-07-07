@@ -1886,71 +1886,6 @@ fail:
 }
 
 
-static int _wrap_wb_camera_move_window(lua_State* L) {
-  int SWIG_arg = 0;
-  WbDeviceTag arg1 ;
-  int arg2 ;
-  int arg3 ;
-  
-  SWIG_check_num_args("wb_camera_move_window",3,3)
-  if(!lua_isnumber(L,1)) SWIG_fail_arg("wb_camera_move_window",1,"WbDeviceTag");
-  if(!lua_isnumber(L,2)) SWIG_fail_arg("wb_camera_move_window",2,"int");
-  if(!lua_isnumber(L,3)) SWIG_fail_arg("wb_camera_move_window",3,"int");
-  SWIG_contract_assert((lua_tonumber(L,1)>=0),"number must not be negative")
-  arg1 = (WbDeviceTag)lua_tonumber(L, 1);
-  arg2 = (int)lua_tonumber(L, 2);
-  arg3 = (int)lua_tonumber(L, 3);
-  wb_camera_move_window(arg1,arg2,arg3);
-  
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_wb_camera_range_image_get_value(lua_State* L) {
-  int SWIG_arg = 0;
-  float *arg1 = (float *) 0 ;
-  double arg2 ;
-  double arg3 ;
-  int arg4 ;
-  int arg5 ;
-  int arg6 ;
-  float result;
-  
-  SWIG_check_num_args("wb_camera_range_image_get_value",6,6)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("wb_camera_range_image_get_value",1,"float const *");
-  if(!lua_isnumber(L,2)) SWIG_fail_arg("wb_camera_range_image_get_value",2,"double");
-  if(!lua_isnumber(L,3)) SWIG_fail_arg("wb_camera_range_image_get_value",3,"double");
-  if(!lua_isnumber(L,4)) SWIG_fail_arg("wb_camera_range_image_get_value",4,"int");
-  if(!lua_isnumber(L,5)) SWIG_fail_arg("wb_camera_range_image_get_value",5,"int");
-  if(!lua_isnumber(L,6)) SWIG_fail_arg("wb_camera_range_image_get_value",6,"int");
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_float,0))){
-    SWIG_fail_ptr("wb_camera_range_image_get_value",1,SWIGTYPE_p_float);
-  }
-  
-  arg2 = (double)lua_tonumber(L, 2);
-  arg3 = (double)lua_tonumber(L, 3);
-  arg4 = (int)lua_tonumber(L, 4);
-  arg5 = (int)lua_tonumber(L, 5);
-  arg6 = (int)lua_tonumber(L, 6);
-  result = (float)wb_camera_range_image_get_value((float const *)arg1,arg2,arg3,arg4,arg5,arg6);
-  lua_pushnumber(L, (lua_Number) result); SWIG_arg++;
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
 static int _wrap_wb_compass_enable(lua_State* L) {
   int SWIG_arg = 0;
   WbDeviceTag arg1 ;
@@ -5147,30 +5082,6 @@ fail:
 }
 
 
-static int _wrap_wb_supervisor_node_get_name(lua_State* L) {
-  int SWIG_arg = 0;
-  WbNodeRef arg1 = (WbNodeRef) 0 ;
-  char *result = 0 ;
-  
-  SWIG_check_num_args("wb_supervisor_node_get_name",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("wb_supervisor_node_get_name",1,"WbNodeRef");
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_WbNodeStructPrivate,0))){
-    SWIG_fail_ptr("wb_supervisor_node_get_name",1,SWIGTYPE_p_WbNodeStructPrivate);
-  }
-  
-  result = (char *)wb_supervisor_node_get_name(arg1);
-  lua_pushstring(L,(const char*)result); SWIG_arg++;
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
 static int _wrap_wb_supervisor_node_get_type_name(lua_State* L) {
   int SWIG_arg = 0;
   WbNodeRef arg1 = (WbNodeRef) 0 ;
@@ -6431,8 +6342,6 @@ static const struct luaL_reg swig_commands[] = {
     { "wb_camera_get_near", _wrap_wb_camera_get_near},
     { "wb_camera_get_max_range", _wrap_wb_camera_get_max_range},
     { "wb_camera_save_image", _wrap_wb_camera_save_image},
-    { "wb_camera_move_window", _wrap_wb_camera_move_window},
-    { "wb_camera_range_image_get_value", _wrap_wb_camera_range_image_get_value},
     { "wb_compass_enable", _wrap_wb_compass_enable},
     { "wb_compass_disable", _wrap_wb_compass_disable},
     { "wb_compass_get_values", _wrap_wb_compass_get_values},
@@ -6575,7 +6484,6 @@ static const struct luaL_reg swig_commands[] = {
     { "wb_supervisor_node_get_root", _wrap_wb_supervisor_node_get_root},
     { "wb_supervisor_node_get_from_def", _wrap_wb_supervisor_node_get_from_def},
     { "wb_supervisor_node_get_type", _wrap_wb_supervisor_node_get_type},
-    { "wb_supervisor_node_get_name", _wrap_wb_supervisor_node_get_name},
     { "wb_supervisor_node_get_type_name", _wrap_wb_supervisor_node_get_type_name},
     { "wb_supervisor_node_get_field", _wrap_wb_supervisor_node_get_field},
     { "wb_supervisor_node_get_position", _wrap_wb_supervisor_node_get_position},

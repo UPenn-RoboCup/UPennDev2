@@ -307,10 +307,11 @@ function get_arm_angles()
   saR = get_scaled_prime_arm(1);
   if( not saL or not saR) then
     return;
-  end 
-
+  end
   qLArm = Kinematics.inverse_arm( saL );
   qRArm = Kinematics.inverse_arm( saR );
+
+  qLArm[2] = -1*qLArm[2];
 
   return {qLArm,qRArm};
 end
@@ -345,9 +346,12 @@ function get_scaled_prime_arm( arm ) --left is 0
     --print('Not confident!',s,e,h);
     return nil;
   end
-  arm_len = vector.norm( e2h ) + vector.norm( s2e );
-  local offset_raw = s2h * (.189 / arm_len);
 
+  arm_len = vector.norm( e2h ) + vector.norm( s2e );
+  local offset_unit = s2h / arm_len;
+  --print('Unit Offset:',offset_unit)
+  
+  local offset_raw = offset_unit * .189;
 
   -- Filter the offset
   local beta = .9;
@@ -358,6 +362,11 @@ function get_scaled_prime_arm( arm ) --left is 0
   end
   -- Change to correct coordinates for OP
   local op_coord = vector.new({offset[3],-1*offset[1],offset[2]}); -- z is OP x, x is OP y, y is OP z
+  -- If left hand rev the y
+  if( arm==0 ) then
+  op_coord[2] = -1*op_coord[2];
+  end
+  
   if( op_coord[2] < 0 ) then
     op_coord[2] = 0;
   end

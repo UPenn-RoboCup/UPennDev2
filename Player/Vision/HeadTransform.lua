@@ -8,6 +8,7 @@ end
 require('Transform');
 require('vector');
 require('vcm');
+require('mcm');
 
 tHead = Transform.eye();
 tNeck = Transform.eye();
@@ -26,16 +27,13 @@ horizonA = 1;
 horizonB = 1;
 horizonDir = 0;
 
--- COPIED FROM Vision
--- Initialize the Labeling
--- Don't want to require Vision if not needed
 labelA = {};
--- labeled image is 1/4 the size of the original
-labelA.m = Config.camera.width/2;
-labelA.n = Config.camera.height/2;
 if( webots ) then
   labelA.m = Config.camera.width;
   labelA.n = Config.camera.height;
+else
+  labelA.m = Config.camera.width/2;
+  labelA.n = Config.camera.height/2;
 end
 
 nxA = labelA.m;
@@ -44,7 +42,7 @@ nyA = labelA.n;
 y0A = 0.5 * (nyA-1);
 focalA = Config.camera.focal_length/(Config.camera.focal_base/nxA);
 
-scaleB = 4;
+scaleB = Config.vision.scaleB;
 labelB = {};
 labelB.m = labelA.m/scaleB;
 labelB.n = labelA.n/scaleB;
@@ -69,7 +67,15 @@ function update(sel,headAngles)
   --Now bodyHeight, Tilt, camera pitch angle bias are read from vcm 
   bodyHeight=vcm.get_camera_bodyHeight();
   bodyTilt=vcm.get_camera_bodyTilt();
-  pitch0=vcm.get_camera_pitchBias(); --Robot specific head angle bias
+  pitch0 =  mcm.get_headPitchBias();
+
+--[[
+  vcm.add_debug_message(string.format(
+  "HeadTrasnform update:\n bodyHeight %.2f bodyTilt %d pitch0 %d headangle %d %d\n",
+	 bodyHeight, bodyTilt*180/math.pi, pitch0*180/math.pi, 
+	 headAngles[1]*180/math.pi, 
+	(headAngles[2]+pitch0)*180/math.pi));
+--]]
 
   -- cameras are 0 indexed so add one for use here
   sel = sel + 1;
@@ -122,7 +128,17 @@ function rayIntersectA(c)
   p1 = tHead * p1;
   local p0 = tNeck * p0;
   local v = p1 - p0;
+  -- if t < 0, the x value will be projected behind robot, simply reverse it
+  -- since it is always very far away
+  if (t < 0) then
+    t = -t;
+  end
   local t = -p0[3]/v[3];
+   -- if t < 0, the x value will be projected behind robot, simply reverse it
+  -- since it is always very far away
+  if (t < 0) then
+    t = -t;
+  end 
   local p = p0 + t * v;
   local uBodyOffset = mcm.get_walk_bodyOffset();
   p[1] = p[1] + uBodyOffset[1];
@@ -139,6 +155,11 @@ function rayIntersectB(c)
   local p0 = tNeck * p0;
   local v = p1 - p0;
   local t = -p0[3]/v[3];
+  -- if t < 0, the x value will be projected behind robot, simply reverse it
+  -- since it is always very far away
+  if (t < 0) then
+    t = -t;
+  end
   local p = p0 + t * v;
   local uBodyOffset = mcm.get_walk_bodyOffset();
   p[1] = p[1] + uBodyOffset[1];
@@ -195,7 +216,7 @@ end
 function ikineCam0(x,y,z,select)
   bodyHeight=vcm.get_camera_bodyHeight();
   bodyTilt=vcm.get_camera_bodyTilt();
-  pitch0=vcm.get_camera_pitchBias(); --Robot specific head angle bias
+  pitch0 =  mcm.get_headPitchBias();
 
   --Bottom camera by default (cameras are 0 indexed so add 1)
   select = (select or 0) + 1;

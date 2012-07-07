@@ -21,6 +21,7 @@ function [ ] = plot_surroundings( handle, mon_struct )
     plot_landmark(mon_struct.landmark);
     plot_line(mon_struct.line);
     plot_corner(mon_struct.corner);
+		plot_freespace(mon_struct.free);
     hold off;
 
     %subfunctions
@@ -50,7 +51,7 @@ function [ ] = plot_surroundings( handle, mon_struct )
         strballpos = sprintf('Ball: %.2f %.2f\n Vel: %.2f %.2f',...
 		ball.x,ball.y,ball.vx,ball.vy);
         b_name=text(posx-0.3, posy-0.3, strballpos);
-        set(b_name,'FontSize',8);
+        set(b_name,'FontSize',10);
       end
     end
 
@@ -72,7 +73,7 @@ function [ ] = plot_surroundings( handle, mon_struct )
             posy=min(max(posy,y_lim(1)),y_lim(2));
             plot(posx,posy, marker1,'MarkerSize',12);
 	    g_name1=text(posx-0.30,posy-0.3,sprintf('%.2f,%.2f',goal.v1.x,goal.v1.y));
-	    set(g_name1,'FontSize',8);
+	    set(g_name1,'FontSize',10);
         end
         if( goal.v2.scale ~= 0 )
             marker1 = strcat(marker,'>'); %right post 
@@ -81,7 +82,7 @@ function [ ] = plot_surroundings( handle, mon_struct )
             posy=min(max(posy,y_lim(1)),y_lim(2));
             plot(posx,posy, marker1,'MarkerSize',12);
 	    g_name2=text(posx-0.30,posy-0.3,sprintf('%.2f,%.2f',goal.v2.x,goal.v2.y));
-	    set(g_name2,'FontSize',8);
+	    set(g_name2,'FontSize',10);
         end
       end
     end 
@@ -97,7 +98,7 @@ function [ ] = plot_surroundings( handle, mon_struct )
 
         plot(posx,posy, marker1,'MarkerSize',12);
         g_name2=text(posx-0.30,posy-0.3,sprintf('%.2f,%.2f',landmark.v(1),landmark.v(2)));
-        set(g_name2,'FontSize',8);
+        set(g_name2,'FontSize',10);
       end
      end
 
@@ -127,6 +128,12 @@ function [ ] = plot_surroundings( handle, mon_struct )
         plot(-[v1(2) v(2)],[v1(1) v(1)],marker,'LineWidth',4);
       end
     end
+
+		function plot_freespace(free)
+		  if free.detect == 1
+        plot(-free.x, free.y, '--');
+			end
+		end
 
 %{
     bd = mon_struct.bd;

@@ -1,66 +1,104 @@
 function ret = LoggerShm(teamNumber, playerID)
-
-if (nargin < 2)
-  playerID = parse_hostname();
-end
-if (nargin < 1)
-  teamNumber = 26;
+  
+if nargin < 2
+  playerID  = 1;
+  teamNumber = 1;
 end
 
-playerID = 3;
-teamNumber = 18;
+global LOGGER MONITOR
 
-global LOG
+LOGGER=logger();
+LOGGER.init();
 
-if isempty(LOG)
-  LOG.camera = [];
-end
 
 % create shm interface
 robot = shm_robot(teamNumber, playerID);
 
-% flag of taking logs or not
-LOG.get_log = 0;
+% camera number
+ncamera = 1; %robot.vcmCamera.get_ncamera();
 
 % init window
 figure(1);
+if ncamera == 2
+	set(gcf, 'position', [1, 1, 1200, 400]);
+end
 clf;
 
+
+MONITOR=[];
+MONITOR.target_fps=16;
+MONITOR.logging = 0;
+
+%FPS button and text 
+MONITOR.hFpsText=uicontrol('Style','text',...
+	'Units','Normalized', 'Position',[.30 0.93 0.40 0.04]);
+
+MONITOR.hButton6=uicontrol('Style','pushbutton','String','FPS -',...
+	'Units','Normalized','Position',[.20 .93 .10 .04],'Callback',@button6);
+
+MONITOR.hButton7=uicontrol('Style','pushbutton','String','FPS +',...
+  'Units','Normalized', 'Position',[.70 .93 .10 .04],'Callback',@button7);
+
 % Log Button
-hButton = uicontrol('Style','pushbutton','String','LOG',...
-	'Position',[20 50 70 40],'Callback','LOG.get_log=1-LOG.get_log;');
+MONITOR.hButton11 = uicontrol('Style','pushbutton','String','LOG',...
+	'Position',[20 50 70 40],'Callback',@button11);
 
 while (1)
-	rgb = robot.get_rgb();
-	fig = image(rgb);
+  tic;
+  r_mon=robot.get_monitor_struct();
+%	subplot(1,2,r_mon.camera.select+1);
+  yuyv_type = r_mon.yuyv_type;
+ 	if yuyv_type==1
+   	  yuyv = robot.get_yuyv();
+%			disp('Got yuyv');
+     	plot_yuyv(yuyv);
+  elseif yuyv_type==2
+ 	    yuyv = robot.get_yuyv2();
+%			disp('Got yuyv2');
+			plot_yuyv(yuyv);
+ 	elseif yuyv_type==3
+   	  yuyv = robot.get_yuyv3();
+%			disp('Got yuyv3');
+			plot_yuyv(yuyv);
+	else 
+		continue;
+ 	end
 	drawnow;	
-	
-	if LOG.get_log == 1
-	  ilog = length(LOG.camera) + 1;
-	  LOG.camera(ilog).time = ilog;
-	  LOG.camera(ilog).yuyv = robot.get_yuyv() + 0;
-	  LOG.camera(ilog).headAngles = robot.vcmImage.get_headAngles() + 0; 
-	  % TODO: store the IMU data
-	  %LOG.camera(ilog).imuAngles = CAMERADATA.imuAngles;
-	  LOG.camera(ilog).select = robot.vcmImage.get_select() + 0;
-	
-	  if (rem(ilog,5) == 0)
-	    % print ticks to indicate that the logger is working
-	    fprintf('.');
-	  end
-	
-	  if (rem(ilog, 100) == 0)
 
-	    savefile = ['./colortable/log_' datestr(now,30) '.mat'];
-	    fprintf('\nSaving Log file: %s...', savefile)
-	    save(savefile, 'LOG');
-	    fprintf('done\n');
-	
-	    % clear log
-	    LOG.camera = [];
-	  end
-	end
 
-  pause(0.05);
+  if MONITOR.logging
+    LOGGER.log_data(yuyv + 0,r_mon);
+    logstr=sprintf('%d/100',LOGGER.log_count);
+    set(MONITOR.hButton11,'String', logstr);
+    if LOGGER.log_count==100 
+      LOGGER.save_log();
+    end
+  end
+
+  tPassed=toc;
+
+   set(MONITOR.hFpsText,'String',...
+     sprintf('Plot: %d ms FPS: %.1f / %.1f',	floor(tPassed*1000),...
+     min(1/tPassed,MONITOR.target_fps), MONITOR.target_fps ));
+
+
+  if tPassed<1/MONITOR.target_fps
+    pause(1/MONITOR.target_fps-tPassed);
+  end
+end
+
+  function button6(varargin)
+    %0.5fps means paused state
+    MONITOR.target_fps=max(0.5,MONITOR.target_fps/2);
+  end
+
+  function button7(varargin)
+    MONITOR.target_fps=min(32,MONITOR.target_fps*2);
+  end
+
+  function button11(varargin)
+    MONITOR.logging=1-MONITOR.logging;
+  end
+
 
 end

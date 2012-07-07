@@ -1,42 +1,14 @@
 module(... or '', package.seeall)
 
---[[
--- Get Platform for package path
-cwd = '.';
-local platform = os.getenv('PLATFORM') or '';
-if (string.find(platform,'webots')) then cwd = cwd .. '/Player';
-end
-
--- Get Computer for Lib suffix
-local computer = os.getenv('COMPUTER') or '';
-computer = 'Darwin'
-if (string.find(computer, 'Darwin')) then
-  -- MacOS X uses .dylib:
-  package.cpath = cwd .. '/Lib/?.dylib;' .. package.cpath;
-else
-  package.cpath = cwd .. '/Lib/?.*;' .. package.cpath;
-end
-
-package.path = cwd .. '/?.lua;' .. package.path;
-package.path = cwd .. '/Util/?.lua;' .. package.path;
-package.path = cwd .. '/Config/?.lua;' .. package.path;
-package.path = cwd .. '/Lib/?.lua;' .. package.path;
-package.path = cwd .. '/Dev/?.lua;' .. package.path;
-package.path = cwd .. '/Motion/?.lua;' .. package.path;
-package.path = cwd .. '/Motion/keyframes/?.lua;' .. package.path;
-package.path = cwd .. '/Vision/?.lua;' .. package.path;
-package.path = cwd .. '/World/?.lua;' .. package.path;
---]]
-
 -- Add the required paths
 cwd = '.';
-computer = os.getenv('COMPUTER') or "";
-if (string.find(computer, "Darwin")) then
-   -- MacOS X uses .dylib:                                                      
-   package.cpath = cwd.."/Lib/?.dylib;"..package.cpath;
-else
-   package.cpath = cwd.."/Lib/?.so;"..package.cpath;
-end
+
+uname  = io.popen('uname -s')
+system = uname:read();
+
+computer = os.getenv('COMPUTER') or system;
+package.cpath = cwd.."/Lib/?.so;"..package.cpath;
+
 package.path = cwd.."/Util/?.lua;"..package.path;
 package.path = cwd.."/Config/?.lua;"..package.path;
 package.path = cwd.."/Lib/?.lua;"..package.path;
@@ -48,6 +20,10 @@ package.path = cwd.."/Motion/?.lua;"..package.path;
 
 
 require ('Config')
+--We always store data from robot to shm (1,1) 
+Config.game.teamNumber = 1; 
+Config.game.playerID = 1; 
+
 require ('cutil')
 require ('vector')
 require ('serialization')
@@ -57,6 +33,8 @@ require ('util')
 require ('wcm')
 require ('gcm')
 require ('vcm')
+require ('ocm')
+require ('mcm')
 
 require 'unix'
 
@@ -71,9 +49,14 @@ FIRST_YUYV2 = true
 FIRST_LABELA = true
 yuyv_t_full = unix.time();
 yuyv2_t_full = unix.time();
+yuyv3_t_full = unix.time();
 labelA_t_full = unix.time();
 labelB_t_full = unix.time();
 data_t_full = unix.time();
+fps_count=0;
+fps_interval = 15;
+yuyv_type=0;
+
 
 Comm.init(Config.dev.ip_wired,111111);
 print('Receiving from',Config.dev.ip_wired);
@@ -98,6 +81,7 @@ function parse_name(namestr)
   return name
 end
 
+
 function push_yuyv(obj)
 --print('receive yuyv parts');
   yuyv = cutil.test_array();
@@ -109,23 +93,32 @@ function push_yuyv(obj)
   end
 
   yuyv_flag[name.partnum] = 1;
-  yuyv_all[name.partnum] = obj.data
---	print(check_flag(yuyv_flag));
-  if (check_flag(yuyv_flag) == name.parts) then
---  print("full yuyv\t"..1/(unix.time() - yuyv_t_full).." fps" );
---  yuyv_t_full = unix.time();
-                
---  print(obj.width,obj.height);
-    yuyv_flag = vector.zeros(name.parts);
+  yuyv_all[name.partnum] = obj.data;
+
+  --Just push the image after all segments are filled at the first scan
+  --Because the image will be broken anyway if packet loss occurs
+
+  if (check_flag(yuyv_flag) == name.parts and name.partnum==name.parts ) then
+    fps_count=fps_count+1;
+    if fps_count%fps_interval ==0 then
+      print("full yuyv\t"..1/(unix.time() - yuyv_t_full).." fps" );
+    end
+    yuyv_t_full = unix.time();
     local yuyv_str = "";
-      for i = 1 , name.partnum do
+      for i = 1 , name.parts do --fixed
       yuyv_str = yuyv_str .. yuyv_all[i];
     end
-    cutil.string2userdata(yuyv,yuyv_str);
+
+    height= string.len(yuyv_str)/obj.width/4;
+    cutil.string2userdata2(yuyv,yuyv_str,obj.width,height);
+--  cutil.string2userdata(yuyv,yuyv_str,obj.width,height);
     vcm.set_image_yuyv(yuyv);
-    yuyv_all = {}
   end
 end
+
+
+
+yuyv2_part_last = 0;
 
 function push_yuyv2(obj)
 --	print('receive yuyv parts');
@@ -137,27 +130,57 @@ function push_yuyv2(obj)
     FIRST_YUYV2 = false;
   end
 
+--[[
+  if name.partnum==yuyv2_part_last then
+    print("Duplicated packet");
+  elseif name.partnum~=(yuyv2_part_last%name.parts)+1 then
+    print("Missing packet");
+  end
+--]]
+
+  yuyv2_part_last = name.partnum;
   yuyv2_flag[name.partnum] = 1;
-  yuyv2_all[name.partnum] = obj.data
---	print(check_flag(yuyv_flag));
-  if (check_flag(yuyv2_flag) == name.parts) then
---print("full yuyv\t"..1/(unix.time() - yuyv_t_full).." fps" );
--- yuyv_t_full = unix.time();
-                
---print(obj.width,obj.height);
-   yuyv2_flag = vector.zeros(name.parts);
-   local yuyv2_str = "";
-   for i = 1 , name.partnum do
-     yuyv2_str = yuyv2_str .. yuyv2_all[i];
+  yuyv2_all[name.partnum] = obj.data;
+
+  --Just push the image after all segments are filled at the first scan
+  --Because the image will be broken anyway if packet loss occurs
+  if (check_flag(yuyv2_flag) == name.parts and name.partnum==name.parts ) then
+     fps_count=fps_count+1;
+     if fps_count%fps_interval ==0 then
+       print("yuyv2\t"..1/(unix.time() - yuyv2_t_full).." fps" );
+     end
+
+     yuyv2_t_full = unix.time();
+     local yuyv2_str = "";
+     for i = 1 , name.parts do --fixed
+       yuyv2_str = yuyv2_str .. yuyv2_all[i];
+     end
+     height= string.len(yuyv2_str)/obj.width/4;
+     cutil.string2userdata2(yuyv2,yuyv2_str,obj.width,height);
+     vcm.set_image_yuyv2(yuyv2);
    end
-   cutil.string2userdata(yuyv2,yuyv2_str);
-   vcm.set_image_yuyv2(yuyv2);
-   yuyv2_all = {}
- end
 end
 
+function push_yuyv3(obj)
+-- 1/4 size, we don't need to divide it 
+
+  fps_count=fps_count+1;
+  if fps_count%fps_interval ==0 then
+     print("yuyv3\t"..1/(unix.time() - yuyv3_t_full).." fps" );
+  end
+  yuyv3_t_full = unix.time();
+  yuyv3 = cutil.test_array();
+  name = parse_name(obj.name);
+  height= string.len(obj.data)/obj.width/4;
+  cutil.string2userdata2(yuyv3,obj.data,obj.width,height);
+  vcm.set_image_yuyv3(yuyv3);
+end
+
+
+--Function to OLD labelA packet
+--[[
 function push_labelA(obj)
---	print('receive labelA parts');
+--  print('receive labelA parts');
   local labelA = cutil.test_array();
   local name = parse_name(obj.name);
   if (FIRST_LABELA == true) then
@@ -172,7 +195,7 @@ function push_labelA(obj)
 --  labelA_t_full = unix.time();
     labelA_flag = vector.zeros(name.parts);
     local labelA_str = "";
-    for i = 1 , name.partnum do
+    for i = 1 , name.parts do
       labelA_str = labelA_str .. labelA_all[i];
     end
 
@@ -181,16 +204,32 @@ function push_labelA(obj)
     labelA_all = {};
   end
 end
+--]]
+
+--Function for new compactly encoded labelA
+function push_labelA(obj)
+  local name = parse_name(obj.name);
+  local labelA = cutil.test_array();
+--  cutil.string2label_double(labelA,obj.data);	
+  cutil.string2label_rle(labelA,obj.data);	
+  vcm.set_image_labelA(labelA);
+end
 
 function push_labelB(obj)
---	print('receive labelB parts');
---  print("full labelB\t",.1/(unix.time() - labelB_t_full).."fps");
---	labelB_t_full = unix.time();
-
   local name = parse_name(obj.name);
   local labelB = cutil.test_array();
-  cutil.string2userdata(labelB,obj.data);	
+--cutil.string2userdata(labelB,obj.data);	
+--cutil.string2label(labelB,obj.data);	
+--  cutil.string2label_double(labelB,obj.data);	
+  cutil.string2label_rle(labelB,obj.data);	
   vcm.set_image_labelB(labelB);
+end
+
+function push_occmap(obj)
+  occmap = cutil.test_array();
+  name = parse_name(obj.name);
+  cutil.string2userdata2(occmap, obj.data, obj.width, obj.height);
+  ocm.set_occ_map(occmap);
 end
 
 function push_data(obj)
@@ -217,18 +256,32 @@ while( true ) do
   if( msg ) then
     local obj = serialization.deserialize(msg);
     if( obj.arr ) then
-	if ( string.find(obj.arr.name,'yuyv') ) then 
- 	  push_yuyv(obj.arr);
-	elseif ( string.find(obj.arr.name,'ysub2') ) then 
- 	  push_yuyv2(obj.arr);
-	elseif ( string.find(obj.arr.name,'labelA') ) then 
-	  push_labelA(obj.arr);
-	elseif ( string.find(obj.arr.name,'labelB') ) then 
-	  push_labelB(obj.arr);
-	end
+    	if ( string.find(obj.arr.name,'yuyv') ) then 
+     	  push_yuyv(obj.arr);
+    	--print("yuyv_type00000000")
+    	  yuyv_type=1;
+    
+    	elseif ( string.find(obj.arr.name,'ysub2') ) then 
+     	  push_yuyv2(obj.arr);
+    	  yuyv_type=2;
+    
+    	elseif ( string.find(obj.arr.name,'ysub4') ) then 
+     	  push_yuyv3(obj.arr);
+    	  yuyv_type=3;
+    
+    	elseif ( string.find(obj.arr.name,'labelA') ) then 
+    	  push_labelA(obj.arr);
+    	elseif ( string.find(obj.arr.name,'labelB') ) then 
+    	  push_labelB(obj.arr);
+      elseif ( string.find(obj.arr.name,'occmap') ) then
+        push_occmap(obj.arr);
+    	end
+
     else
 	push_data(obj);
     end
   end
-  unix.usleep(1E6*0.01);
+  vcm.set_camera_yuyvType(yuyv_type);
+  unix.usleep(1E6*0.005);
+
 end

@@ -4,8 +4,8 @@ module(..., package.seeall);
 camera = {};
 camera.ncamera = 1;
 camera.switchFreq = 0; --unused for OP
-camera.width = 160; 
-camera.height = 120;
+camera.width = 320; 
+camera.height = 240;
 
 camera.x_center = camera.width/2;
 camera.y_center = camera.height/2;
@@ -26,9 +26,11 @@ camera.param[7] = {key='blue_balance',  val={120}};
 camera.param[8] = {key='hue',           val={0}};
 
 
-camera.focal_length = 120; -- in pixels
-camera.focal_base = 125.6; -- 1.0472 * 120 image width used in focal length calculatio
+camera.focal_length = 240; -- in pixels
+camera.focal_base = 251.3; -- 1.0472 * 120 image width used in focal length calculatio
 --camera.focal_length = 383; -- in pixels
 --camera.focal_base = 320; -- image width used in focal length calculatio
-camera.lut_file = 'lutWebots.raw';
+--camera.lut_file = 'lutWebots.raw';
+camera.lut_file_obs = 'lut_webots_ob.raw';
+camera.lut_file = 'lut_webots_ob.raw';
 

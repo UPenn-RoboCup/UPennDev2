@@ -51,7 +51,7 @@ DEF BLUE_LANDMARK Landmark {
   postColor1 0.152941 0.505882 0.733333
   postColor2 0.992157 0.854902 0.219608
 }
-DEF BALL Ball {
+DEF BALL BallGPS {
   translation 1.2 0.03 0
 }
 DEF OBSTACLE_1 Obstacle {
@@ -67,7 +67,7 @@ DEF OBSTACLE_2 Obstacle {
 
 #PlayerId 0 for goalie
 #TeamColor 1 for red team
-DEF PLAYER_1_1 DARwInOP {
+DEF PLAYER_1_1 DARwInOPGPS {
   translation 2.5 0.3 0.5
   rotation 0 1 0 -1.56
   controller "darwin-op_team_0"
@@ -76,8 +76,10 @@ DEF PLAYER_1_1 DARwInOP {
   waistBandColor 1 0 0
   plasticColor 1 0 0
   cameraWindowPosition 0.125 0 
+  cameraWidth 320
+  cameraHeight 240
 }
-DEF PLAYER_2_1 DARwInOP {
+DEF PLAYER_2_1 DARwInOPGPS {
   translation 2.5 0.3 -0.5
   rotation 0 1 0 -1.56
   controller "darwin-op_team_0"
@@ -86,4 +88,6 @@ DEF PLAYER_2_1 DARwInOP {
   waistBandColor 1 0 0
   plasticColor 1 0 0
   cameraWindowPosition 0.375 0 
+  cameraWidth 320
+  cameraHeight 240
 }

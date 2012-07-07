@@ -38,7 +38,7 @@ obstacles = vector.zeros(2);
 free = vector.zeros(2);
 distance = vector.zeros(2);
 
-obsThresh = .03*numSavedValues/5;--.03;
+obsThresh = .02*numSavedValues/5;--.03;
 freeThresh = .1*numSavedValues/5;--.15;
 disThresh = .6;
 
@@ -48,8 +48,8 @@ function entry()
   print("UltraSound entry");
 end
 
-obsThres = 0.55;
-clearThres = 0.80;
+obsThres = 0.28;
+clearThres = 0.50;
 
 leftObsCount = 0;
 rightObsCount = 0;

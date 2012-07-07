@@ -79,9 +79,7 @@ while (loop) do
 			  unpack(vector.new(sensorShm:get('position'))*180/math.pi)
 		    ));
 
-      print(string.format("Battery:\n Head: %.1f %.1f\n Larm: %.1f %.1f %.1f\n Lleg: %.1f %.1f %.1f %.1f %.1f %.1f\n Rleg: %.1f %.1f %.1f %.1f %.1f %.1f\n Rarm: %.1f %.1f %.1f\n",
-			  unpack(vector.new(sensorShm:get('battery'))/10)
-		    ));
+      print(string.format("Battery: %.1f V\n", sensorShm:get('battery')/10));
 
       print(string.format("Temp:\n Lleg: %.1f %.1f %.1f %.1f %.1f %.1f\n Rleg: %.1f %.1f %.1f %.1f %.1f %.1f\n\n",
 			  unpack(vector.slice(sensorShm:get('temperature'),6,18))

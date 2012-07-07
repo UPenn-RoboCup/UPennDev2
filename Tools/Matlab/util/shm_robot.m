@@ -8,9 +8,6 @@ global MONITOR %for sending the webots check information
   h.playerID = playerID;
   h.user = getenv('USER');
 
-%List of shms
-
-
 
 % create shm wrappers (in alphabetic order)
   h.gcmFsm  = shm(sprintf('gcmFsm%d%d%s',  h.teamNumber, h.playerID, h.user));
@@ -32,10 +29,17 @@ global MONITOR %for sending the webots check information
   h.wcmGoal  = shm(sprintf('wcmGoal%d%d%s',  h.teamNumber, h.playerID, h.user));
   h.wcmParticle  = shm(sprintf('wcmParticle%d%d%s',  h.teamNumber, h.playerID, h.user));
   %h.wcmKick
+  h.mcmUs = shm(sprintf('mcmUs%d%d%s', h.teamNumber, h.playerID, h.user));
 
 
   h.wcmTeamdata  = shm(sprintf('wcmTeamdata%d%d%s',  h.teamNumber, h.playerID, h.user));
+  h.wcmRobotNames  = shm(sprintf('wcmRobotNames%d%d%s',  h.teamNumber, h.playerID, h.user));
+  h.wcmLabelB  = shm(sprintf('wcmLabelB%d%d%s',  h.teamNumber, h.playerID, h.user));
   h.vcmRobot  = shm(sprintf('vcmRobot%d%d%s',  h.teamNumber, h.playerID, h.user)); 
+
+  %Be careful this no longer crashes some machines...
+	h.ocmOcc = shm(sprintf('ocmOcc%d%d%s', h.teamNumber, h.playerID, h.user));
+	h.ocmObstacle = shm(sprintf('ocmObstacle%d%d%s', h.teamNumber, h.playerID, h.user));
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -50,10 +54,12 @@ global MONITOR %for sending the webots check information
   h.get_monitor_struct = @get_monitor_struct;
   h.get_yuyv = @get_yuyv;
   h.get_yuyv2 = @get_yuyv2;
+  h.get_yuyv3 = @get_yuyv3;
   h.get_rgb = @get_rgb;
   h.get_labelA = @get_labelA;
   h.get_labelB = @get_labelB;
   h.get_particle = @get_particle;
+  h.get_occ_likeihood = @get_occ_likelihood;
 
   h.set_yuyv = @set_yuyv;
   h.set_labelA = @set_labelA;
@@ -64,6 +70,7 @@ global MONITOR %for sending the webots check information
   h.get_team_struct_wireless = @get_team_struct_wireless;
   h.get_monitor_struct_wireless = @get_monitor_struct_wireless;
 
+  h.get_labelB_wireless = @get_labelB_wireless;
 
   function update()
       % do nothing
@@ -82,8 +89,6 @@ global MONITOR %for sending the webots check information
         pose = h.wcmRobot.get_pose();
         r.pose = struct('x', pose(1), 'y', pose(2), 'a', pose(3));
         
- 	gpspose = h.wcmRobot.get_gpspose();
-        r.gpspose = struct('x', gpspose(1), 'y', gpspose(2), 'a', gpspose(3));
 
         ballx = h.wcmBall.get_x();
 	bally = h.wcmBall.get_y();
@@ -120,6 +125,10 @@ global MONITOR %for sending the webots check information
         r.time = h.wcmRobot.get_time();
         r.penalty = h.wcmRobot.get_penalty();
 
+ 	gpspose = h.wcmRobot.get_gpspose();
+        r.gpspose = struct('x', gpspose(1), 'y', gpspose(2), 'a', gpspose(3));
+ 	r.gps_attackbearing = h.wcmRobot.get_gps_attackbearing();
+
 
 
         r.tReceive = 0;
@@ -144,9 +153,13 @@ global MONITOR %for sending the webots check information
       posex= h.wcmTeamdata.get_posex();
       posey= h.wcmTeamdata.get_posey();
       posea= h.wcmTeamdata.get_posea();
+
       ballx= h.wcmTeamdata.get_ballx();
       bally= h.wcmTeamdata.get_bally();
       ballt= h.wcmTeamdata.get_ballt();
+      ballvx= h.wcmTeamdata.get_ballvx();
+      ballvy= h.wcmTeamdata.get_ballvy();
+
       attackBearing= h.wcmTeamdata.get_attackBearing();
       fall=h.wcmTeamdata.get_fall();
       penalty=h.wcmTeamdata.get_penalty();
@@ -158,8 +171,21 @@ global MONITOR %for sending the webots check information
       goalv21=h.wcmTeamdata.get_goalv21();
       goalv22=h.wcmTeamdata.get_goalv22();
 
+      goalB11=h.wcmTeamdata.get_goalB11();
+      goalB12=h.wcmTeamdata.get_goalB12();
+      goalB13=h.wcmTeamdata.get_goalB13();
+      goalB14=h.wcmTeamdata.get_goalB14();
+      goalB15=h.wcmTeamdata.get_goalB15();
+
+      goalB21=h.wcmTeamdata.get_goalB21();
+      goalB22=h.wcmTeamdata.get_goalB22();
+      goalB23=h.wcmTeamdata.get_goalB23();
+      goalB24=h.wcmTeamdata.get_goalB24();
+      goalB25=h.wcmTeamdata.get_goalB25();
+
       landmark=h.wcmTeamdata.get_landmark();
-      landmarkv=h.wcmTeamdata.get_landmarkv();
+      landmarkv1=h.wcmTeamdata.get_landmarkv1();
+      landmarkv2=h.wcmTeamdata.get_landmarkv2();
 
       r.teamColor=teamColor(id);
       r.id = robotId(id);
@@ -171,11 +197,13 @@ global MONITOR %for sending the webots check information
       r.pose.y= posey(id);
       r.pose.a= posea(id);
 
+      r.gpspose = r.pose;      
+
       r.ball={};
       r.ball.x= ballx(id);
       r.ball.y= bally(id);
-      r.ball.vx= 0;
-      r.ball.vy= 0;
+      r.ball.vx= ballvx(id);
+      r.ball.vy= ballvy(id);
       r.ball.t= ballt(id);
 
       r.attackBearing= attackBearing(id);
@@ -188,14 +216,75 @@ global MONITOR %for sending the webots check information
       r.goalv1=[goalv11(id) goalv12(id)];
       r.goalv2=[goalv21(id) goalv22(id)];
 
+
+      gc1 = [goalB11(id) goalB12(id)];
+      gc2 = [goalB21(id) goalB22(id)];
+
+      go1 = goalB13(id);
+      go2 = goalB23(id);
+
+      ga1 = [goalB14(id) goalB15(id)];
+      ga2 = [goalB24(id) goalB25(id)];
+
+      r.goalpostStat1 = struct('x',gc1(1), 'y',gc1(2), 'a',ga1(1), 'b',ga1(2),'o',go1);
+      r.goalpostStat2 = struct('x',gc2(1), 'y',gc2(2), 'a',ga2(1), 'b',ga2(2),'o',go2);
+
       r.landmark=landmark(id);
       r.landmarkv=[landmarkv1(id) landmarkv2(id)];
+
+      r.robotName='';
+      if id==1
+        r.robotName = char(h.wcmRobotNames.get_n1());
+      elseif id==2
+        r.robotName = char(h.wcmRobotNames.get_n2());
+      elseif id==3
+        r.robotName = char(h.wcmRobotNames.get_n3());
+      elseif id==4
+        r.robotName = char(h.wcmRobotNames.get_n4());
+      elseif id==5
+        r.robotName = char(h.wcmRobotNames.get_n5());
+      elseif id==6
+        r.robotName = char(h.wcmRobotNames.get_n6());
+      elseif id==7
+        r.robotName = char(h.wcmRobotNames.get_n7());
+      elseif id==8
+        r.robotName = char(h.wcmRobotNames.get_n8());
+      elseif id==9
+        r.robotName = char(h.wcmRobotNames.get_n9());
+      elseif id==10
+        r.robotName = char(h.wcmRobotNames.get_n10());
+      end
 
     catch
     end
   end
 
-
+  function labelB = get_labelB_wireless(robotID)
+    width = 80;
+    height = 60;
+    if robotID==1 
+      rawData = h.wcmLabelB().get_p1();
+    elseif robotID==2 
+      rawData = h.wcmLabelB().get_p2();
+    elseif robotID==3 
+      rawData = h.wcmLabelB().get_p3();
+    elseif robotID==4 
+      rawData = h.wcmLabelB().get_p4();
+    elseif robotID==5 
+      rawData = h.wcmLabelB().get_p5();
+    elseif robotID==6 
+      rawData = h.wcmLabelB().get_p6();
+    elseif robotID==7 
+      rawData = h.wcmLabelB().get_p7();
+    elseif robotID==8 
+      rawData = h.wcmLabelB().get_p8();
+    elseif robotID==9 
+      rawData = h.wcmLabelB().get_p9();
+    else
+      rawData = h.wcmLabelB().get_p10();
+    end
+    labelB = raw2label(rawData, width, height)';
+  end
 
   function r = get_monitor_struct()
     % returns the monitor struct (in the same form as the monitor messages)
@@ -221,16 +310,21 @@ global MONITOR %for sending the webots check information
 
     %Camera info
 
+		  select = h.vcmImage.get_select();
       width = h.vcmImage.get_width();
       height = h.vcmImage.get_height();
+			scaleB = h.vcmImage.get_scaleB();
       bodyHeight=h.vcmCamera.get_bodyHeight();
       bodyTilt=h.vcmCamera.get_bodyTilt();
       headAngles=h.vcmImage.get_headAngles();
       rollAngle=h.vcmCamera.get_rollAngle();
-      r.camera = struct('width',width,'height',height,...
+      r.camera = struct('select',select,'width',width,'height',height,'scaleB',scaleB,...
 	'bodyHeight',bodyHeight,'bodyTilt',bodyTilt,...
 	'headAngles',headAngles,'rollAngle',rollAngle);
 
+    %yuyv type info
+      r.yuyv_type = h.vcmCamera.get_yuyvType();
+ 
     %Image FOV boundary
           
       fovC=h.vcmImage.get_fovC();
@@ -331,8 +425,8 @@ global MONITOR %for sending the webots check information
       endpoint22=h.vcmLine.get_endpoint22();
 
       for i=1:r.line.nLines
-	r.line.v1{i}=[v1x(i) v1y(i)];
-	r.line.v2{i}=[v2x(i) v2y(i)];
+				r.line.v1{i}=[v1x(i) v1y(i)];
+				r.line.v2{i}=[v2x(i) v2y(i)];
         r.line.endpoint{i}=[endpoint11(i) endpoint21(i) ...
 			    endpoint12(i) endpoint22(i)];
       end
@@ -358,19 +452,32 @@ global MONITOR %for sending the webots check information
 %}
   % Add freespace boundary
       r.free = {};
+			r.free.detect = 0;
       freeCol = h.vcmFreespace.get_nCol();
-%		   freeValueA = h.vcmFreespace.get_pboundA();
       freeValueB = h.vcmFreespace.get_pboundB();
-      labelAm = h.vcmImage.get_width()/2;
-      labelBm = labelAm/4;
-%      r.free = struct('Ax',freeValueA(1:labelAm),
-%                      'Ay',freeValueA(labelAm+1:2*labelAm),
-      r.free = struct('Bx',freeValueB(1:labelBm),...
-                      'By',freeValueB(labelBm+1:2*labelBm),...
-                      'nCol',freeCol,...
-                      'detect',h.vcmFreespace.get_detect());
+			freeDis = h.vcmFreespace.get_vboundB();
+      labelBm = size(freeValueB,2)/2;
+			r.free.y = freeDis(1:labelBm);
+			r.free.x = freeDis(labelBm+1:2*labelBm);
+      r.free.Bx = freeValueB(1:labelBm);
+      r.free.By = freeValueB(labelBm+1:2*labelBm);
+      r.free.nCol = freeCol;
+      r.free.detect = h.vcmFreespace.get_detect();
       % Add visible boundary        
 
+      % Add occupancy map
+      if r.free.detect == 1
+        r.occ = {};
+  			map = h.ocmOcc.get_map();
+        map = typecast(map, 'uint32');
+  			mapsize = sqrt(size(map,2));
+  			map = reshape(map, [mapsize, mapsize]);
+  			r.occ.map = double(map)/10000;
+  			r.occ.mapsize = mapsize;
+  			r.occ.robot_pos = h.ocmOcc.get_robot_pos();
+        r.occ.odom = h.ocmOcc.get_odom();
+        r.occ.vel = h.ocmOcc.get_vel();
+      end
       
       r.bd = {};
       bdTop = h.vcmBoundary.get_top();
@@ -382,24 +489,11 @@ global MONITOR %for sending the webots check information
                     'topx',-bdTop(1,bdCol+1:2*bdCol),...
                     'btmy',bdBtm(1,1:bdCol),...
                     'btmx',-bdBtm(1,bdCol+1:2*bdCol));
-      % Add occupancy map
-%{
-      r.occ = {};
-      div = size(h.wcmOccmap.get_r(),2);
-      interval = 2*pi/div;
-      r.occ = struct('div',div,'interval',interval,...
-                     'halfInter',interval/2,...
-                     'r',h.wcmOccmap.get_r(),...
-                     'theta',zeros(div*4,1),...
-                     'rho',zeros(div*4,1),...
-                     'x',zeros(div*4,1),...
-                     'y',zeros(div*4,1));
-%}
 
       % add horizon line
       r.horizon = {};
       labelAm = h.vcmImage.get_width()/2;
-      labelBm = labelAm/4;
+      labelBm = labelAm/h.vcmImage.get_scaleB();
 	    horizonDir = h.vcmImage.get_horizonDir();
       horizonA = h.vcmImage.get_horizonA();
       horizonB = h.vcmImage.get_horizonB();
@@ -436,6 +530,14 @@ global MONITOR %for sending the webots check information
     yuyv2 = raw2yuyv(rawData, width, height); %for Nao, double for OP
   end
 
+  function yuyv3 = get_yuyv3() 
+% returns the quater-size raw YUYV image
+    width = h.vcmImage.get_width()/8;
+    height = h.vcmImage.get_height()/4;
+    rawData = h.vcmImage.get_yuyv3();
+    yuyv3 = raw2yuyv(rawData, width, height); 
+  end
+
   function rgb = get_rgb() 
 % returns the raw RGB image (not full size)
     yuyv = h.get_yuyv();
@@ -467,19 +569,35 @@ global MONITOR %for sending the webots check information
 
   function labelB = get_labelB()
     % returns the bit-ored labeled image
-    width = h.vcmImage.get_width()/8;
-    height = h.vcmImage.get_height()/8;
+    width = h.vcmImage.get_width()/2/h.vcmImage.get_scaleB();
+    height = h.vcmImage.get_height()/2/h.vcmImage.get_scaleB();
     rawData = h.vcmImage.get_labelB();
 
     %Webots vision check 
     %for webots with non-subsampling vision code, use 2x width/height 
     scale= length(rawData)*2/width/height;
     if scale==1 % TODO: check with webots
-      width = h.vcmImage.get_width()/4;
-      height = h.vcmImage.get_height()/4;
+      width = h.vcmImage.get_width()/h.vcmImage.get_scaleB();
+      height = h.vcmImage.get_height()/h.vcmImage.get_scaleB();
       MONITOR.is_webots=1;
     end
     labelB = raw2label(rawData, width, height)';
   end
-end
 
+
+  function occ_p = get_occ_likelihood()
+			map = h.ocmOcc.get_map();
+      map = typecast(map, 'uint32');
+      robot_pos = h.ocmOcc.get_robot_pos();
+			mapsize = sqrt(size(map,2));
+      map_resolution = 1 / mapsize;
+			map = reshape(map, [mapsize, mapsize]);
+			occ_p = double(map) / 10000;
+      occ = {};
+      occ.map = occ_p;
+      occ.robot_pos = robot_pos;
+      occ.mapsize = mapsize;
+%      save('mapdata.mat');
+      plot_occ(occ);
+  end
+end

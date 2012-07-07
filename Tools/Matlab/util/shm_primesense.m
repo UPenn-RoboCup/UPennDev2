@@ -1,8 +1,8 @@
-function h = shm_primesense()
+function h = shm_primesense(teamNumber, playerID)
 % function create access to the skeleton information from the Kinect
 
-h.teamNumber = 18;
-h.playerID = 1;
+h.teamNumber = teamNumber;
+h.playerID = playerID;
 h.user = getenv('USER');
 
 % create shm wrappers

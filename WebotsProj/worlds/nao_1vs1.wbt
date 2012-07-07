@@ -9,8 +9,8 @@ WorldInfo {
   basicTimeStep 40
 }
 Viewpoint {
-  orientation -0.483622 0.854639 0.188947 0.761485
-  position 3.06411 2.00783 4.41698
+  orientation -1 0 0 0.8
+  position 0 8 8
 }
 Background {
   skyColor [
@@ -21,12 +21,13 @@ DirectionalLight {
   ambientIntensity 1.6
   direction -0.5 -2 -0.5
   intensity 0.3
-  castShadows TRUE
+  castShadows FALSE
 }
 DirectionalLight {
   ambientIntensity 1.6
   direction 0.5 -0.5 0.5
   intensity 0.5
+  castShadows FALSE
 }
 SoccerField {
 }
@@ -39,27 +40,27 @@ DEF YELLOW_GOAL Goal {
 DEF BLUE_GOAL Goal {
   translation -3 0 0
   rotation 0 1 0 3.14159
-  postColor 0.152941 0.505882 0.733333
+  postColor 0.992157 0.854902 0.219608
 }
 DEF BALL Ball {
   translation 0 0.0323921 0
 }
-DEF PLAYER_1_0 NaoV3R {
-  translation -1.5 0.35 0
-  rotation 0 1 0 1.5708
-  controller "nao_team_0"
-  controllerArgs "1 0"
-  synchronization FALSE
-  cameraWindowPosition 0.125 0
-  waistBand TRUE
-}
-DEF PLAYER_1_1 NaoV3R {
-  translation 1.5 0.35 0
-  rotation 0 1 0 -1.5708
+DEF PLAYER_1_1 NaoV3RGPS {
+  translation 1.5 0.35 2
+  rotation 0 1 0 3.14
   controller "nao_team_0"
   controllerArgs "1 1"
   synchronization FALSE
-  cameraWindowPosition 0.125 1
+  cameraWindowPosition 0.375 0
   waistBand TRUE
   waistBandColor 0.9 0.5 0.5
+}
+DEF PLAYER_1_1 NaoV3RGPS {
+  translation -1.5 0.35 2
+  rotation 0 1 0 3.14
+  controller "nao_team_0"
+  controllerArgs "1 0"
+  synchronization FALSE
+  cameraWindowPosition 0.375 0
+  waistBand TRUE
 }

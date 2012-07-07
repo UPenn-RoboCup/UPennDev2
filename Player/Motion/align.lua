@@ -36,7 +36,6 @@ ankleImuParamY=Config.walk.ankleImuParamY;
 armImuParamX=Config.walk.armImuParamX;
 armImuParamY=Config.walk.armImuParamX;
 
-hipRollCompensation = Config.walk.hipRollCompensation;
 
 uLeft0=vector.zeros(3);
 uRight0=vector.zeros(3);
@@ -48,15 +47,30 @@ pTorso = vector.new({supportX, 0, bodyHeight, 0,bodyTilt,0});
 align_velocity = vector.new({0,0,0});
 align_velocity = vector.new({0,0,-math.pi/6});
 tStep = 1.0;
-ph1Single,ph2Single = 0.4,0.6;
-stepHeight = Config.walk.stepHeight;
+
+
+
+
 active = false;
+
+
+--For sally
+ph1Single,ph2Single = 0.3,0.7;
+
+tStep = 4.0;
+stepHeight = 0.01;
+hipRollCompensation = 3*math.pi/180;
+supportY = 0.02;
+
 
 function entry()
   print("Motion SM:".._NAME.." entry");
   walk.stop();
   started = false;
   active = false;
+  Body.set_lleg_slope(1);
+  Body.set_rleg_slope(1);
+
 end
 
 function set_velocity(vel)
@@ -260,7 +274,8 @@ end
 function exit()
   print("Align exit");
   active = false;
-  Body.set_lleg_slope(32);
-  Body.set_rleg_slope(32);
+  Body.set_lleg_slope(0);
+  Body.set_rleg_slope(0);
+
 end
 

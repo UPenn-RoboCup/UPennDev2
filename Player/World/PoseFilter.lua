@@ -38,10 +38,20 @@ rGoalFilter = Config.world.rGoalFilter;
 aGoalFilter = Config.world.aGoalFilter;
 rPostFilter = Config.world.rPostFilter;
 aPostFilter = Config.world.aPostFilter;
-
+rKnownGoalFilter = Config.world.rKnownGoalFilter;
+aKnownGoalFilter = Config.world.aKnownGoalFilter;
+rKnownPostFilter = Config.world.rKnownPostFilter;
+aKnownPostFilter = Config.world.aKnownPostFilter;
+rUnknownGoalFilter = Config.world.rUnknownGoalFilter;
+aUnknownGoalFilter = Config.world.aUnknownGoalFilter;
+rUnknownPostFilter = Config.world.rUnknownPostFilter;
+aUnknownPostFilter = Config.world.aUnknownPostFilter;
 
 rLandmarkFilter = Config.world.rLandmarkFilter;
 aLandmarkFilter = Config.world.aLandmarkFilter;
+
+rCornerFilter = Config.world.rCornerFilter;
+aCornerFilter = Config.world.aCornerFilter;
 
 
 
@@ -54,9 +64,20 @@ function initialize(p0, dp)
   p0 = p0 or {0, 0, 0};
   dp = dp or {.5*xMax, .5*yMax, 2*math.pi};
 
-  xp = p0[1]*vector.ones(n) + dp[1]*vector.new(util.randn(n));
-  yp = p0[2]*vector.ones(n) + dp[2]*vector.new(util.randn(n));
-  ap = p0[3]*vector.ones(n) + dp[3]*vector.new(util.randu(n));
+  xp = p0[1]*vector.ones(n) + dp[1]*(vector.new(util.randn(n))-0.5*vector.ones(n));
+  yp = p0[2]*vector.ones(n) + dp[2]*(vector.new(util.randn(n))-0.5*vector.ones(n));
+  ap = p0[3]*vector.ones(n) + dp[3]*(vector.new(util.randu(n))-0.5*vector.ones(n));
+  wp = vector.zeros(n);
+end
+
+function initialize_manual_placement(p0, dp)
+  p0 = p0 or {0, 0, 0};
+  dp = dp or {.5*xLineBoundary, .5*yLineBoundary, 2*math.pi};
+
+  print('re-init partcles for manual placement');
+  ap = math.atan2(wcm.get_goal_attack()[2],wcm.get_goal_attack()[1])*vector.ones(n);
+  xp = wcm.get_goal_defend()[1]/2*vector.ones(n);
+  yp = p0[2]*vector.ones(n) + dp[2]*(vector.new(util.randn(n))-0.5*vector.ones(n));
   wp = vector.zeros(n);
 end
 
@@ -65,17 +86,18 @@ function initialize_unified(p0,p1,dp)
   --Half of the particles at p0
   --Half of the particles at p1
   p0 = p0 or {0, 0, 0};
+  p1 = p1 or {0, 0, 0};
   --Low spread  
   dp = dp or {.15*xMax, .15*yMax, math.pi/6};
 
   for i=1,n/2 do
-    xp[i]=p0[1]+dp[1]*math.random();
-    yp[i]=p0[2]+dp[2]*math.random();
-    ap[i]=p0[3]+dp[3]*math.random();
+    xp[i]=p0[1]+dp[1]*(math.random()-.5); 
+    yp[i]=p0[2]+dp[2]*(math.random()-.5);
+    ap[i]=p0[3]+dp[3]*(math.random()-.5);
 
-    xp[i+n/2]=p1[1]+dp[1]*math.random();
-    yp[i+n/2]=p1[2]+dp[2]*math.random();
-    ap[i+n/2]=p1[3]+dp[3]*math.random();
+    xp[i+n/2]=p1[1]+dp[1]*(math.random()-.5);
+    yp[i+n/2]=p1[2]+dp[2]*(math.random()-.5);
+    ap[i+n/2]=p1[3]+dp[3]*(math.random()-.5);
   end
   wp = vector.zeros(n);
 end
@@ -84,7 +106,7 @@ function initialize_heading(aGoal)
   --Particle initialization at bodySet 
   --When bodySet, all players should face opponents' goal
   --So reduce weight of  particles that faces our goal
-
+  print('init_heading particles');
   dp = dp or {.15*xMax, .15*yMax, math.pi/6};
   ap = aGoal*vector.ones(n) + dp[3]*vector.new(util.randu(n));
   wp = vector.zeros(n);
@@ -166,9 +188,9 @@ function landmark_observation(pos, v, rLandmarkFilter, aLandmarkFilter)
     dyp[ip] = dy[imin];
     dap[ip] = da[imin];
   end
-
   --Filter toward best matching landmark position:
   for ip = 1,n do
+--print(string.format("%d %.1f %.1f %.1f",ip,xp[ip],yp[ip],ap[ip]));
     xp[ip] = xp[ip] + rFilter * (dxp[ip] - r * math.cos(ap[ip] + a));
     yp[ip] = yp[ip] + rFilter * (dyp[ip] - r * math.sin(ap[ip] + a));
     ap[ip] = ap[ip] + aFilter * dap[ip];
@@ -242,37 +264,49 @@ function triangulate2(pos,v)
    d2 = math.sqrt(d2Post[2]);
 
    vcm.add_debug_message(string.format(
-	"\nWorld: triangulation 2\nGoal dist: %.1f / %.1f\nGoal width: %.1f\n",
+	"===\n World: triangulation 2\nGoal dist: %.1f / %.1f\nGoal width: %.1f\n",
 	d1, d2 ,goalWidth ));
 
-   if d1>d2 then 
-     --left post correction based on right post
-     -- v1=kcos(a1),ksin(a1)
-     -- k^2 - 2k(v[2][1]cos(a1)+v[2][2]sin(a1)) + d2Post[2]-goalWidth^2 = 0
-     local ca=math.cos(aPost[1]);
-     local sa=math.sin(aPost[1]);
-     local b=v[2][1]*ca+ v[2][2]*sa;
-     local c=d2Post[2]-goalWidth^2;
 
-     if b*b-c>0 then
-       vcm.add_debug_message("Correcting left post\n");
-       vcm.add_debug_message(string.format("Left post angle: %d\n",aPost[1]*180/math.pi));
+   vcm.add_debug_message(string.format(
+	"Measured goal width: %.1f\n",
+	 math.sqrt((v[1][1]-v[2][1])^2+(v[1][2]-v[2][2])^2)
+	));
 
-       k1=b-math.sqrt(b*b-c);
-       k2=b+math.sqrt(b*b-c);
-       vcm.add_debug_message(string.format("d1: %.1f v1: %.1f %.1f\n",
-  	d1,v[1][1],v[1][2]));
-       vcm.add_debug_message(string.format("k1: %.1f v1_1: %.1f %.1f\n",
-	k1,k1*ca,k1*sa ));
-       vcm.add_debug_message(string.format("k2: %.1f v1_2: %.1f %.1f\n",
-	k2,k2*ca,k2*sa ));
-       if math.abs(d2-k1)<math.abs(d2-k2) then
-          v[1][1],v[1][2]=k1*ca,k1*sa;
-       else
-          v[1][1],v[1][2]=k2*ca,k2*sa;
+--SJ: still testing 
+   postfix=1;
+   postfix=0;
+
+   if postfix>0 then
+
+     if d1>d2 then 
+       --left post correction based on right post
+       -- v1=kcos(a1),ksin(a1)
+       -- k^2 - 2k(v[2][1]cos(a1)+v[2][2]sin(a1)) + d2Post[2]-goalWidth^2 = 0
+       local ca=math.cos(aPost[1]);
+       local sa=math.sin(aPost[1]);
+       local b=v[2][1]*ca+ v[2][2]*sa;
+       local c=d2Post[2]-goalWidth^2;
+
+       if b*b-c>0 then
+         vcm.add_debug_message("Correcting left post\n");
+         vcm.add_debug_message(string.format("Left post angle: %d\n",aPost[1]*180/math.pi));
+
+         k1=b-math.sqrt(b*b-c);
+         k2=b+math.sqrt(b*b-c);
+         vcm.add_debug_message(string.format("d1: %.1f v1: %.1f %.1f\n",
+    		d1,v[1][1],v[1][2]));
+         vcm.add_debug_message(string.format("k1: %.1f v1_1: %.1f %.1f\n",
+		k1,k1*ca,k1*sa ));
+         vcm.add_debug_message(string.format("k2: %.1f v1_2: %.1f %.1f\n",
+		k2,k2*ca,k2*sa ));
+         if math.abs(d2-k1)<math.abs(d2-k2) then
+  	        v[1][1],v[1][2]=k1*ca,k1*sa;
+         else
+	          v[1][1],v[1][2]=k2*ca,k2*sa;
+         end
        end
-     end
-   else 
+     else 
      --right post correction based on left post
      -- v2=kcos(a2),ksin(a2)
      -- k^2 - 2k(v[1][1]cos(a2)+v[1][2]sin(a2)) + d2Post[1]-goalWidth^2 = 0
@@ -296,6 +330,8 @@ function triangulate2(pos,v)
           v[2][1],v[2][2]=k2*ca,k2*sa;
        end
      end
+   end
+
    end
 
    --Use center of the post to fix angle
@@ -353,10 +389,11 @@ function goal_observation(pos, v)
 
   local rSigma = .25*dGoal + 0.20;
   local aSigma = 5*math.pi/180;
-  local rFilter = rGoalFilter;
-  local aFilter = aGoalFilter;
+  local rFilter = rKnownGoalFilter;
+  local aFilter = aKnownGoalFilter;
 
-triangulation_threshold=3.0;
+--SJ: testing
+triangulation_threshold=4.0;
 
   if dGoal<triangulation_threshold then 
 
@@ -378,7 +415,7 @@ triangulation_threshold=3.0;
   --Don't use triangulation for far goals
     goalpos={{(pos[1][1]+pos[2][1])/2, (pos[1][2]+pos[2][2])/2}}
     goalv={(v[1][1]+v[2][1])/2, (v[1][2]+v[2][2])/2}
-    landmark_observation(goalpos, goalv , rGoalFilter, aGoalFilter);
+    landmark_observation(goalpos, goalv , rKnownGoalFilter, aKnownGoalFilter);
   end
 
 
@@ -407,8 +444,8 @@ function goal_observation_unified(pos1,pos2,v)
   local rSigma1 = .25*dGoal1 + 0.20;
   local rSigma2 = .25*dGoal2 + 0.20;
   local aSigma = 5*math.pi/180;
-  local rFilter = rGoalFilter;
-  local aFilter = aGoalFilter;
+  local rFilter = rUnknownGoalFilter;
+  local aFilter = aUnknownGoalFilter;
 
   for ip = 1,n do
     local xErr1 = x1 - xp[ip];
@@ -421,7 +458,7 @@ function goal_observation_unified(pos1,pos2,v)
     local yErr2 = y2 - yp[ip];
     local rErr2 = math.sqrt(xErr2^2 + yErr2^2);
     local aErr2 = mod_angle(a2 - ap[ip]);
-    local err2 = (rErr2/rSigma1)^2 + (aErr2/aSigma)^2;
+    local err2 = (rErr2/rSigma2)^2 + (aErr2/aSigma)^2;
 
     --Filter towards best matching goal:
      if err1>err2 then
@@ -457,39 +494,39 @@ function goal_cyan(v)
 end
 
 function post_yellow_unknown(v)
-  landmark_observation(postYellow, v[1], rPostFilter, aPostFilter);
+  landmark_observation(postYellow, v[1], rKnownPostFilter, aKnownPostFilter);
 end
 
 function post_yellow_left(v)
-  landmark_observation({postYellow[1]}, v[1], rPostFilter, aPostFilter);
+  landmark_observation({postYellow[1]}, v[1], rKnownPostFilter, aKnownPostFilter);
 end
 
 function post_yellow_right(v)
-  landmark_observation({postYellow[2]}, v[1], rPostFilter, aPostFilter);
+  landmark_observation({postYellow[2]}, v[1], rKnownPostFilter, aKnownPostFilter);
 end
 
 function post_cyan_unknown(v)
-  landmark_observation(postCyan, v[1], rPostFilter, aPostFilter);
+  landmark_observation(postCyan, v[1], rKnownPostFilter, aKnownPostFilter);
 end
 
 function post_cyan_left(v)
-  landmark_observation({postCyan[1]}, v[1], rPostFilter, aPostFilter);
+  landmark_observation({postCyan[1]}, v[1], rKnownPostFilter, aKnownPostFilter);
 end
 
 function post_cyan_right(v)
-  landmark_observation({postCyan[2]}, v[1], rPostFilter, aPostFilter);
+  landmark_observation({postCyan[2]}, v[1], rKnownPostFilter, aKnownPostFilter);
 end
 
 function post_unified_unknown(v)
-  landmark_observation(postUnified, v[1], rPostFilter, aPostFilter);
+  landmark_observation(postUnified, v[1], rUnknownPostFilter, aUnknownPostFilter);
 end
 
 function post_unified_left(v)
-  landmark_observation(postLeft, v[1], rPostFilter, aPostFilter);
+  landmark_observation(postLeft, v[1], rUnknownPostFilter, aUnknownPostFilter);
 end
 
 function post_unified_right(v)
-  landmark_observation(postRight, v[1], rPostFilter, aPostFilter);
+  landmark_observation(postRight, v[1], rUnknownPostFilter, aUnknownPostFilter);
 end
 
 function goal_unified(v)
@@ -505,7 +542,7 @@ function landmark_yellow(v)
 end
 
 function corner(v,a)
-  landmark_observation(Lcorner,v,rPostFilter,aPostFilter);
+  landmark_observation(Lcorner,v,rCornerFilter,aCornerFilter);
 --  line(v,a);--Fix heading
 end
 

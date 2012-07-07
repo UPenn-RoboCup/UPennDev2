@@ -1,21 +1,45 @@
 module(..., package.seeall);
 require('vector')
+require('unix')
 
 --Sit/stand stance parameters
 stance={};
-stance.bodyHeightSit = 0.175;
-stance.footXSit = -0.03;
-stance.dpLimitSit=vector.new({.03,.01,.06,.1,.3,.1});
+
+stance.footXSit = -0.05;
+stance.bodyTiltSit = -5*math.pi/180;
+stance.bodyHeightSit = 0.18;
+stance.qLArmSit = math.pi/180*vector.new({140,8,-40});
+stance.qRArmSit = math.pi/180*vector.new({140,-8,-40});
+stance.dpLimitSit=vector.new({.03,.01,.06,.1,.3,.3});
+
+--This makes correct sideways dive
 stance.bodyHeightDive= 0.25;
+stance.bodyTiltDive= 0;
+
+--stance.bodyHeightDive= 0.28;
+stance.dpLimitDive=vector.new({.06,.06,.09,.9,.9,.9});
+
+--Same stance as walking, with zero tilt
+stance.bodyHeightDive= 0.295;
+stance.bodyTiltDive= 0*math.pi/180;
+stance.dpLimitDive=vector.new({.06,.06,.06,.7,.7,.7});
+
 stance.bodyTiltStance=20*math.pi/180; --bodyInitial bodyTilt, 0 for webots
 stance.dpLimitStance=vector.new({.04, .03, .07, .4, .4, .4});
-stance.initangle = {
+
+--Sit final value
+stance.initangle = vector.new({
   0,0,
-  105*math.pi/180, 30*math.pi/180, -45*math.pi/180,
-  0,  0.055, -0.77, 2.08, -1.31, -0.055, 
-  0, -0.055, -0.77, 2.08, -1.31, 0.055,
-  105*math.pi/180, -30*math.pi/180, -45*math.pi/180,
-}
+  105, 30, -45,
+--  0,  -2, -16, 110, -119, 2, 
+--  0, 2, -16, 110, -119, -2,
+
+  0,  -2, -26, 110, -119, 2, 
+  0, 2, -26, 110, -119, -2,
+
+  105, -30, -45,
+})*math.pi/180;
+
 
 -- Head Parameters
 head = {};
@@ -70,7 +94,7 @@ servo.dirReverse={
 --Robot-specific firmware version handling
 ----------------------------------------------
 servo.armBias = {0,0,0,0,0,0}; --in degree
-servo.pid =0;
+servo.pid =1;  --Default new firmware
 local robotName = unix.gethostname();
 require('calibration');
 if calibration.cal and calibration.cal[robotName] then
@@ -96,6 +120,12 @@ if servo.pid ==0 then -- For old firmware with 12-bit precision
     819,358,205,
     --		512,		--For aux
   }
+  -- SLOPE parameters
+  servo.slope_param={
+    32,	--Regular slope
+    16,	--Kick slope
+  };
+
 else -- For new, PID firmware with 14-bit precision
   print(robotName.." has 14-bit firmware")
   servo.steps=vector.ones(nJoint)*4096;
@@ -109,33 +139,14 @@ else -- For new, PID firmware with 14-bit precision
   };
 
   -- PID Parameters
-  servo.p_param={
-   32,32,                --Head
-   16,16,16,             --LArm
-   16,16,16,16,16,16,    --LLeg
-   16,16,16,16,16,16,    --RLeg
-   --  32,32,32,32,32,32,  --RLeg
-   16,16,16,             --RArm
-   --  21,                 --Aux servo 
-  }
-  servo.i_param={
-    0,0,          --Head
-    0,0,0,        --LArm
-    0,0,0,0,0,0,  --LLeg
-    0,0,0,0,0,0,  --RLeg
-    0,0,0,        --RArm
-    --  21,         --Aux servo 
-  }
-  servo.d_param={
-    8,8,              --Head
-    16,16,16,         --LArm
-    16,16,16,16,16,16,--LLeg
-    16,16,16,16,16,16,--RLeg
-    16,16,16,         --RArm
-    --  21,             --Aux servo
-  }
+  servo.pid_param={
+    --Regular PID gain
+    {32,0,4},
+    --Kick PID gain
+    {64,0,4},
+  };
+
   servo.moveRange=vector.ones(nJoint)*360*math.pi/180;
-  servo.armBias = vector.new({0,15,0,0,-45,0}) * math.pi/180 * servo.steps[1]/servo.moveRange[1];
   --[[ For aux
   servo.moveRange[21] = 300;
   servo.steps[21] = 1024;

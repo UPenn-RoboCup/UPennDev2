@@ -197,8 +197,9 @@ if ( webots or darwin ) then
     else
       walk.upper_body_override_off();
       --Motion.event('sit')
-      --process_keyinput();
     end
+
+    process_keyinput();
     update();
     io.stdout:flush();
     if(darwin) then

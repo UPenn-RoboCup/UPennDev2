@@ -1,9 +1,9 @@
 module(..., package.seeall);
 require 'primecm'
---if( Config.game.playerID==1 ) then
+if( Config.game.playerID==1 ) then
 require 'handfilter'
 require 'handfilter2'
---end
+end
 require 'vector'
 
 -- Global variables to track each boxer

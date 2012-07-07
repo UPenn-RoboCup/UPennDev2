@@ -81,11 +81,12 @@ print("bodyPass done")
 end
 
 function exit()
+--[[
   role=gcm.get_team_role();
   team_task_state=gcm.get_team_task_state();
   team_task_state[role]=team_task_state[role]+1;
   gcm.set_team_task_state(team_task_state);
-
+--]]
 end
 
 function checkballpos()
@@ -93,6 +94,8 @@ function checkballpos()
   team_task_state=gcm.get_team_task_state();
   task_state=team_task_state[role]; -- index start with 0
   ball = wcm.get_ball();
+
+print("Ball pos:",ball.x,ball.y);
   if (ball.y > 0) then
     kick.set_kick("PassForwardLeft");
   else

@@ -91,6 +91,7 @@ end
 
 count = 0;
 updateCount = 1;
+buttonPressed = 0;
 function update()
   -- get latest game control packet
   gamePacket = receive();
@@ -157,13 +158,18 @@ function update()
 
     -- use buttons to advance states
     if (Body.get_change_state() == 1) then
-      -- advance state
-      if (gameState < 3) then
-        gameState = gameState + 1;
-      elseif (gameState == 3) then
-        -- playing - toggle penalty state
-        teamPenalty[playerID] = 1 - teamPenalty[playerID]; 
+      buttonPressed = 1;
+    else
+      if buttonPressed ==1 then
+        -- advance state
+        if (gameState < 3) then
+          gameState = gameState + 1;
+        elseif (gameState == 3) then
+          -- playing - toggle penalty state
+          teamPenalty[playerID] = 1 - teamPenalty[playerID]; 
+        end
       end
+      buttonPressed = 0;
     end
   end
 

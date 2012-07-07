@@ -7,12 +7,8 @@ uname  = io.popen('uname -s')
 system = uname:read();
 
 computer = os.getenv('COMPUTER') or system;
-if (string.find(computer, "Darwin")) then
-   -- MacOS X uses .dylib:                                                      
-   package.cpath = cwd.."/Lib/?.dylib;"..package.cpath;
-else
-   package.cpath = cwd.."/Lib/?.so;"..package.cpath;
-end
+package.cpath = cwd.."/Lib/?.so;"..package.cpath;
+
 package.path = cwd.."/Util/?.lua;"..package.path;
 package.path = cwd.."/Config/?.lua;"..package.path;
 package.path = cwd.."/Lib/?.lua;"..package.path;
@@ -37,6 +33,8 @@ require ('util')
 require ('wcm')
 require ('gcm')
 require ('vcm')
+require ('ocm')
+require ('mcm')
 
 require 'unix'
 
@@ -227,6 +225,13 @@ function push_labelB(obj)
   vcm.set_image_labelB(labelB);
 end
 
+function push_occmap(obj)
+  occmap = cutil.test_array();
+  name = parse_name(obj.name);
+  cutil.string2userdata2(occmap, obj.data, obj.width, obj.height);
+  ocm.set_occ_map(occmap);
+end
+
 function push_data(obj)
 --	print('receive data');
 --  print("data\t",.1/(unix.time() - data_t_full).."fps");
@@ -249,32 +254,33 @@ while( true ) do
 
   msg = Comm.receive();
   if( msg ) then
-
     local obj = serialization.deserialize(msg);
     if( obj.arr ) then
-	if ( string.find(obj.arr.name,'yuyv') ) then 
- 	  push_yuyv(obj.arr);
-	  yuyv_type=0;
-
-	elseif ( string.find(obj.arr.name,'ysub2') ) then 
- 	  push_yuyv2(obj.arr);
-	  yuyv_type=1;
-
-	elseif ( string.find(obj.arr.name,'ysub4') ) then 
- 	  push_yuyv3(obj.arr);
-	  yuyv_type=2;
-
-	elseif ( string.find(obj.arr.name,'labelA') ) then 
-	  push_labelA(obj.arr);
-	elseif ( string.find(obj.arr.name,'labelB') ) then 
-	  push_labelB(obj.arr);
-	end
+    	if ( string.find(obj.arr.name,'yuyv') ) then 
+     	  push_yuyv(obj.arr);
+    	--print("yuyv_type00000000")
+    	  yuyv_type=1;
+    
+    	elseif ( string.find(obj.arr.name,'ysub2') ) then 
+     	  push_yuyv2(obj.arr);
+    	  yuyv_type=2;
+    
+    	elseif ( string.find(obj.arr.name,'ysub4') ) then 
+     	  push_yuyv3(obj.arr);
+    	  yuyv_type=3;
+    
+    	elseif ( string.find(obj.arr.name,'labelA') ) then 
+    	  push_labelA(obj.arr);
+    	elseif ( string.find(obj.arr.name,'labelB') ) then 
+    	  push_labelB(obj.arr);
+      elseif ( string.find(obj.arr.name,'occmap') ) then
+        push_occmap(obj.arr);
+    	end
 
     else
 	push_data(obj);
     end
   end
-
   vcm.set_camera_yuyvType(yuyv_type);
   unix.usleep(1E6*0.005);
 

@@ -3,7 +3,7 @@ module(..., package.seeall);
 require('shm');
 require('carray');
 require('vector');
-
+require('unix')
 
 function ptable(t)
   -- print a table key, value pairs
@@ -11,6 +11,7 @@ function ptable(t)
 end
 
 function mod_angle(a)
+  if a==nil then return nil end
   -- Reduce angle to [-pi, pi)
   a = a % (2*math.pi);
   if (a >= math.pi) then
@@ -39,6 +40,20 @@ function min(t)
     end
   end
   return tmin, imin;
+end
+
+function max(t)
+  -- find the maximum element in the array table
+  -- returns the min value and its index
+  local imax = 0;
+  local tmax = -math.huge;
+  for i = 1,#t do
+    if (t[i] > tmax) then
+      tmax = t[i];
+      imax = i;
+    end
+  end
+  return tmax, imax;
 end
 
 function se2_interpolate(t, u1, u2)
@@ -297,3 +312,8 @@ function bezier( alpha, s )
   return value;
   end
 
+function get_wireless_ip()
+  ifconfig = io.popen('/sbin/ifconfig wlan0 | grep "inet " | cut -d" " -f10-11');
+  ip = ifconfig:read();
+  return ip;
+end

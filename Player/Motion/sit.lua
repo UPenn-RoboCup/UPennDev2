@@ -17,12 +17,15 @@ supportX = Config.walk.supportX;
 
 footXSit = Config.stance.footXSit or 0;
 bodyHeightSit = Config.stance.bodyHeightSit;
-bodyTiltSit = 0;
+bodyTiltSit = Config.stance.bodyTiltSit or 0;
 
 -- Final stance foot position6D
 pTorsoTarget = vector.new({-footXSit, 0, bodyHeightSit, 0,bodyTiltSit,0});
 pLLeg = vector.new({-supportX, footY, 0, 0,0,0});
 pRLeg = vector.new({-supportX, -footY, 0, 0,0,0});
+
+qLArm = Config.stance.qLArmSit;
+qRArm = Config.stance.qRArmSit;
 
 -- Max change in postion6D to reach stance:
 dpLimit=Config.stance.dpLimitSit or vector.new({.1,.01,.03,.1,.3,.1});
@@ -36,13 +39,13 @@ function entry()
 
   walk.stop();
   started=false;
-  Body.set_head_command({0,0});
+  --This makes the robot look up and see goalposts while sitting down
+  Body.set_head_command({0,-20*math.pi/180});
   Body.set_head_hardness(.5);
   Body.set_larm_hardness(.1);
   Body.set_rarm_hardness(.1);
   t0=Body.get_time();
   Body.set_syncread_enable(1); 
-
 end
 
 function update()
@@ -68,11 +71,20 @@ function update()
 
       Body.set_lleg_command(qLLeg);
       Body.set_rleg_command(qRLeg);
-      Body.set_lleg_hardness(1);
-      Body.set_rleg_hardness(1);
+      Body.set_lleg_hardness(0.7);
+      Body.set_rleg_hardness(0.7);
       t0 = Body.get_time();
       count=1;
       Body.set_syncread_enable(0); 
+
+      if qLArm then
+        Body.set_larm_command(qLArm);
+        Body.set_rarm_command(qRArm);
+        Body.set_larm_hardness(0.4);
+        Body.set_rarm_hardness(0.4);
+      end
+
+
     else 
       Body.set_syncread_enable(1); 
       return; 

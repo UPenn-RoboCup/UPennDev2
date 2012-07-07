@@ -42,10 +42,15 @@ walk.hardnessArm=.3;
 ---------------------------------------------
 -- Gait parameters
 ---------------------------------------------
-walk.tStep = 0.44;
+walk.tStep = 0.30;
 walk.tZmp = 0.17;
-walk.stepHeight = 0.020;
-walk.phSingle={0.16,0.84};
+walk.stepHeight = 0.016;
+walk.phSingle={0.4,0.96};
+
+---------------------------------------------
+-- Odometry values
+--------------------------------------------
+walk.odomScale = {.95, 1.0, .75}; --1.06, 1.20, .95  
 
 --------------------------------------------
 -- Compensation parameters
@@ -56,10 +61,10 @@ walk.ankleMod = vector.new({-1,0})*3*math.pi/180;
 
 --------------------------------------------
 --Webots FIX
-walk.tStep = 0.48;
+--walk.tStep = 0.48;
 walk.supportX = 0.010;
 walk.supportY = 0.035;
-walk.phSingle={0.2,0.8};
+--walk.phSingle={0.2,0.8};
 walk.velLimitY={-.05,.05};
 -------------------------------------------
 
@@ -107,6 +112,17 @@ walk.walkKickDef["SideRight"]={
 }
 
 walk.walkKickPh=0.5;
+
+walk.walkKickVel = {0.03, 0.04} --step / kick / follow 
+walk.walkKickSupportMod = {{-0.03,0},{-0.03,0}}
+walk.walkKickHeightFactor = 1.5;
+--walk.tStepWalkKick = 0.35;  --Leave as default for now
+
+walk.sideKickVel1 = {0.04,0.04,0};
+walk.sideKickVel2 = {0.09,0.05,0};
+walk.sideKickVel3 = {0.09,-0.02,0};
+walk.sideKickSupportMod = {{0,0},{0,0}};
+walk.tStepSideKick = 0.70;
 
 --------------------------------------------
 -- Robot - specific calibration parameters

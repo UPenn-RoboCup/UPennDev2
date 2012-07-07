@@ -6,7 +6,8 @@ require('vector')
 kick={};
 
 --Imu feedback parameters, alpha / gain / deadband / max
-gyroFactor=0.273*math.pi/180 *300/1024;  --For degree per second unit
+--gyroFactor=0.273*math.pi/180 *300/1024;  --For degree per second unit
+gyroFactor=0*math.pi/180 *300/1024;  --For degree per second unit
 kick.ankleImuParamX={0.6,-0.3*gyroFactor, 0, 25*math.pi/180};
 kick.kneeImuParamX={0.6,-1.2*gyroFactor, 0, 25*math.pi/180};
 kick.ankleImuParamY={0.9,-0.7*gyroFactor, 0, 25*math.pi/180};
@@ -32,15 +33,19 @@ kick.hardnessLeg=1;
 --How much should we swing the arm? (smaller value = larger swing)
 kick.armGain= 0.10; 
 
-kick.bodyHeight = 0.295; --This should be the same as walk.bodyHeight
-
+kick.bodyHeight = 0.44; --This should be the same as walk.bodyHeight
 
 kick.def={};
+
+-- For each stage of the kick:
+-- 1 and 7:
+--{ type, duration, uBody, (zBody, bodyRoll, bodyPitch) }
+-- zBody seems to be the alternate boduHeight to switch to
 
 kick.def["kickForwardLeft"]={
    supportLeg = 1, --Right support
    def = {
-     {1, 0.6, {-0.01,-0.05,0} , 0.303          }, --COM slide
+     {1, 0.6, {-0.01,-0.05,0} , 0.42          }, --COM slide
      {2, 0.3, {-0.01,-0.05,0} , {-0.06,-0.02,0}, 0.05 , 0}, --Lifting
      {2, 0.1, {-0.01, -0.05,0} , {-0.06,0,0}, 0.10 , 40*math.pi/180}, --Lifting
      {4, 0.2, {-0.01,-0.05,0} , {0.30,0,0},  0.07 , 0*math.pi/180}, --Kicking
@@ -53,7 +58,7 @@ kick.def["kickForwardLeft"]={
 kick.def["kickForwardRight"]={
   supportLeg = 0,
   def = {
-    {1, 0.6, {-0.01 ,0.05,0},0.303}, --COM slide
+    {1, 0.6, {-0.01 ,0.05,0},0.42}, --COM slide
     {3, 0.3, {-0.01 ,0.05,0} , {-0.06, 0.02, 0}, 0.05 , 0},
     {3, 0.1, {-0.01 ,0.05,0} , {-0.06, 0.0, 0}, 0.10 , 40*math.pi/180}, 
     {5, 0.2, {-0.01 ,0.05,0} , {0.30, 0, 0},  0.07 , 0*math.pi/180}, --Kicking
@@ -66,7 +71,7 @@ kick.def["kickForwardRight"]={
 kick.def["kickSideLeft"]={
   supportLeg = 1,
   def = {
-    {1, 0.6, {-0.01,-0.05,0} , 0.299          }, --COM slide
+    {1, 0.6, {-0.01,-0.05,0} , 0.42          }, --COM slide
     {2, 0.4, {-0.01,-0.05,0} , { 0,      0.04,  0.6}, 0.03 ,0*math.pi/180}, --Lifting
     {4, 0.2, {-0.01,-0.05,0} , { 0.06,  -0.16,  -0.9},  0.03 , 0*math.pi/180}, --Kicking
     {2, 0.4, {-0.01,-0.05,0} , {-0.15,  0.017,  0.3}, 0, 0 }, --Landing
@@ -77,7 +82,7 @@ kick.def["kickSideLeft"]={
 kick.def["kickSideRight"]={
   supportLeg = 0,
   def = {
-    {1, 0.6, {-0.01,0.05,0}   ,0.299       }, --COM slide
+    {1, 0.6, {-0.01,0.05,0}   ,0.42       }, --COM slide
     {3, 0.4, {-0.01,0.05,0} ,  {0, -0.04, -0.6}, 0.03 ,0*math.pi/180 }, --Lifting
     {5, 0.2, {-0.01,0.05,0} , {0.06,  0.16, 0.9},  0.03 , 0*math.pi/180}, --Kicking
     {3, 0.4, {-0.01,0.05,0} , {-0.15, -0.017,-0.3}, 0, 0 }, --Landing
@@ -124,7 +129,7 @@ kick.kickRight={
 --Weaker sidekick (for obstacle)
 
 kick.kickSlowSideLeft={
-  {1, 0.6, {-0.010,-0.055,0} ,0.299          }, --COM slide
+  {1, 0.6, {-0.010,-0.055,0} ,0.42          }, --COM slide
   {2, 0.4, {-0.020,-0.060,0} , { 0,  0.04,  0.6}, 0.03 ,0*math.pi/180}, --Lifting
   {2, 0.25, {-0.025,-0.065,0} , { 0.06,-0.18,-0.9},  0.03 ,0*math.pi/180},--Kicking
   {2, 0.4, {-0.020,-0.060,0} , {-0.15,  0.02, 0.3}, 0, 0 }, --Landing
@@ -132,7 +137,7 @@ kick.kickSlowSideLeft={
 }
 
 kick.kickSlowSideRight={
-  {1, 0.6, {-0.01,0.055,0}   ,0.299       }, --COM slide
+  {1, 0.6, {-0.01,0.055,0}   ,0.42       }, --COM slide
   {3, 0.4, {-0.02,0.060,0} , {0, -0.04, -0.6}, 0.03 ,0*math.pi/180 }, --Lifting
   {3, 0.25, {-0.025,0.065,0} , {0.06,  0.18, 0.9},  0.03 , 0*math.pi/180}, --Kicking
   {3, 0.4, {-0.020,0.060,0} , {-0.15, -0.02,-0.3}, 0, 0 }, --Landing
@@ -151,8 +156,8 @@ kick.kickSlowSideRight={
 
 kick.kickBackLeft={
 
-  {1, 1.0, {-0.010,0,0} ,0.295, 20*math.pi/180         }, --Stabilize
-  {1, 1.0, {-0,-0.065,0} ,0.305          }, --COM slide
+  {1, 1.0, {-0.010,0,0} ,0.42, 20*math.pi/180         }, --Stabilize
+  {1, 1.0, {-0,-0.065,0} ,0.42          }, --COM slide
   {2, 1, {-0,-0.075,0} , { 0,  -0.03,  0}, 0.08 ,0*math.pi/180 , 0*math.pi/180}, --Lifting
   {2, 1, {-0,-0.065,0} , { 0.18,  0,  0}, 0.08 ,-30*math.pi/180 , 0*math.pi/180}, --Lifting
 
@@ -160,14 +165,14 @@ kick.kickBackLeft={
 
 
     {2, 0.6, {-0,-0.065,0} , {0.06,  0.030, 0}, 0, 0 }, --Landing
-  {1, 0.6, {0.010, -0.020, 0},0.305,0},--COM slide
+  {1, 0.6, {0.010, -0.020, 0},0.42,0},--COM slide
   {1, 0.6, {0.010, -0.020, 0},kick.bodyHeight},--Stabilize
 }
 
 
 kick.kickBackRight={
   {1, 0.6, {-0,0,0}          }, --Stabilize
-  {1, 0.8, {-0,0.055,0}   ,0.305       }, --COM slide
+  {1, 0.8, {-0,0.055,0}   ,0.42       }, --COM slide
   {3, 0.6, {-0,0.065,0} , {0, -0.03, 0}, 0.10 ,0*math.pi/180 , 0*math.pi/180}, --Lifting
   {3, 0.6, {-0,0.065,0} , {0.12, 0, 0}, 0.10 ,0*math.pi/180 , 0*math.pi/180}, --Lifting
 

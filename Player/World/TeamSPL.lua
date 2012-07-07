@@ -11,7 +11,7 @@ require('wcm');
 require('gcm');
 
 --Makes error with webots
-Comm.init(Config.dev.ip_wireless,54321);
+Comm.init(Config.dev.ip_wireless,12500);
 print('Receiving Team Message From',Config.dev.ip_wireless);
 
 playerID = gcm.get_team_player_id();
@@ -19,6 +19,7 @@ playerID = gcm.get_team_player_id();
 msgTimeout = Config.team.msgTimeout;
 nonAttackerPenalty = Config.team.nonAttackerPenalty;
 nonDefenderPenalty = Config.team.nonDefenderPenalty;
+time_to_stand = Config.km.time_to_stand;
 
 role = -1;
 
@@ -38,6 +39,14 @@ state.tReceive = Body.get_time();
 state.battery_level = wcm.get_robot_battery_level();
 state.fall=0;
 
+state.soundFilter = wcm.get_sound_detFilter();
+state.soundDetection = wcm.get_sound_detection();
+soundOdomPose = wcm.get_sound_odomPose();
+state.soundOdomPose = {x=soundOdomPose[1], y=soundOdomPose[2], a=soundOdomPose[3]};
+--state.xp = wcm.get_particle_x();
+--state.yp = wcm.get_particle_y();
+--state.ap = wcm.get_particle_a();
+
 --Added key vision infos
 state.goal=0;  --0 for non-detect, 1 for unknown, 2/3 for L/R, 4 for both
 state.goalv1={0,0};
@@ -47,11 +56,15 @@ state.landmarkv={0,0};
 states = {};
 states[playerID] = state;
 
+tLastReceived = 0
+
+
 function recv_msgs()
   while (Comm.size() > 0) do 
     t = serialization.deserialize(Comm.receive());
     if (t and (t.teamNumber) and (t.teamNumber == state.teamNumber) and (t.id) and (t.id ~= playerID)) then
       t.tReceive = Body.get_time();
+      tLastReceived = Body.get_time();
       states[t.id] = t;
     end
   end
@@ -83,6 +96,14 @@ function update()
     state.penalty = 0;
   end
 
+  state.soundFilter = wcm.get_sound_detFilter();
+  state.soundDetection = wcm.get_sound_detection();
+  soundOdomPose = wcm.get_sound_odomPose();
+  state.soundOdomPose = {x=soundOdomPose[1], y=soundOdomPose[2], a=soundOdomPose[3]};
+  --state.xp = wcm.get_particle_x();
+  --state.yp = wcm.get_particle_y();
+  --state.ap = wcm.get_particle_a();
+
   --Added Vision Info 
   state.goal=0;
   if vcm.get_goal_detect()>0 then
@@ -104,7 +125,9 @@ function update()
   end
 
   if (math.mod(count, 1) == 0) then
-    Comm.send(serialization.serialize(state));
+    -- use old serialization for team monitor so the 
+    --  old matlab team monitor can be used
+    Comm.send(serialization.serialize_orig(state));
     --Copy of message sent out to other players
     state.tReceive = Body.get_time();
     states[playerID] = state;
@@ -128,7 +151,8 @@ function update()
       -- eta to ball
       rBall = math.sqrt(states[id].ball.x^2 + states[id].ball.y^2);
       tBall = states[id].time - states[id].ball.t;
-      eta[id] = rBall/0.10 + 4*math.max(tBall-1.0,0);
+      fallPen = states[id].fall * time_to_stand; -- fall penalty
+      eta[id] = rBall/0.10 + 4*math.max(tBall-1.0,0) + fallPen;
       
       -- distance to goal
       dgoalPosition = vector.new(wcm.get_goal_defend());
@@ -150,19 +174,28 @@ function update()
       if (states[id].penalty > 0) or (t - states[id].tReceive > msgTimeout) then
         ddefend[id] = math.huge;
       end
-
     end
   end
+
 --[[
-  if count % 100 == 0 then
+  if count % 20 == 0 then
     print('---------------');
     print('eta:');
     util.ptable(eta)
+    print('fall penalty:');
+    for id = 1,4 do
+      if states[id] then
+        print(id..'\t'..states[id].fall);
+      else
+        print(id..'\tna');
+      end
+    end
     print('ddefend:');
     util.ptable(ddefend)
     print('---------------');
   end
 --]]
+
 
   if gcm.get_game_state()<2 then 
     --Don't switch roles until the gameSet state
@@ -218,7 +251,11 @@ end
 function set_role(r)
   if role ~= r then 
     role = r;
-    Body.set_indicator_role(role);
+    wireless = (Body.get_time()-tLastReceived) < 1;
+    if wireless then
+      Speak.talk('Received packet')
+    end
+    Body.set_indicator_role(role, wireless);
     if role == 1 then
       -- attack
       Speak.talk('Attack');

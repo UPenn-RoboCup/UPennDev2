@@ -19,6 +19,11 @@ velLimitA = Config.walk.velLimitA or {-.4, .4};
 velDelta = Config.walk.velDelta or {.03,.015,.15};
 vaFactor = Config.walk.vaFactor or 0.6;
 
+
+velXHigh = Config.walk.velXHigh or 0.06;
+velDeltaXHigh = Config.walk.velDeltaXHigh or 0.01;
+
+
 --Toe/heel overlap checking values
 footSizeX = Config.walk.footSizeX or {-0.05,0.05};
 stanceLimitMarginY = Config.walk.stanceLimitMarginY or 0.015;
@@ -72,16 +77,27 @@ armImuParamY = Config.walk.armImuParamY;
 
 --Support bias parameters to reduce backlash-based instability
 velFastForward = Config.walk.velFastForward or 0.06;
+velFastTurn = Config.walk.velFastTurn or 0.2;
 supportFront = Config.walk.supportFront or 0;
 supportFront2 = Config.walk.supportFront2 or 0;
 supportBack = Config.walk.supportBack or 0;
 supportSideX = Config.walk.supportSideX or 0;
 supportSideY = Config.walk.supportSideY or 0;
+supportTurn = Config.walk.supportTurn or 0;
+
+frontComp = Config.walk.frontComp or 0.003;
+AccelComp = Config.walk.AccelComp or 0.003;
+
+--Initial body swing 
+supportModYInitial = Config.walk.supportModYInitial or 0;
 
 --WalkKick parameters
 walkKickDef = Config.walk.walkKickDef;
 walkKickPh = Config.walk.walkKickPh;
 toeTipCompensation = 0;
+
+use_alternative_trajectory = Config.walk.use_alternative_trajectory or 0;
+
 
 ----------------------------------------------------------
 -- Walk state variables
@@ -134,13 +150,7 @@ function entry()
   print ("Motion: Walk entry")
   --SJ: now we always assume that we start walking with feet together
   --Because joint readings are not always available with darwins
-  uLeft = util.pose_global(vector.new({-supportX, footY, 0}),uTorso);
-  uRight = util.pose_global(vector.new({-supportX, -footY, 0}),uTorso);
-
-  uLeft1, uLeft2 = uLeft, uLeft;
-  uRight1, uRight2 = uRight, uRight;
-  uTorso1, uTorso2 = uTorso, uTorso;
-  uSupport = uTorso;
+  stance_reset();
 
   --Place arms in appropriate position at sides
   Body.set_larm_command(qLArm0);
@@ -177,8 +187,6 @@ function update()
     velLimitA = Config.walk.velLimitA or {-.4, .4};
     velDelta = Config.walk.velDelta or {.03,.015,.15};
   end
-
-
 
   footX = mcm.get_footX();
 
@@ -255,19 +263,31 @@ function update()
 	        supportMod[1] = supportFront;
           toeTipCompensation = ankleMod[1];
         elseif velCurrent[1]<0 then
-          supportMod[1] = supportBack; 
-        end
-        if velCurrent[2]>0.015 then
-          supportMod[1] = supportSideX; 
-          supportMod[2] = supportSideY; 
-        elseif velCurrent[2]<-0.015 then
-          supportMod[1] = supportSideX; 
-          supportMod[2] = -supportSideY; 
+          supportMod[1] = supportBack;
+	elseif math.abs(velCurrent[3])>velFastTurn then
+          supportMod[1] = supportTurn; 
+        else
+          if velCurrent[2]>0.015 then
+            supportMod[1] = supportSideX; 
+            supportMod[2] = supportSideY; 
+          elseif velCurrent[2]<-0.015 then
+            supportMod[1] = supportSideX; 
+            supportMod[2] = -supportSideY; 
+          end
         end
       end
     end
 
     uTorso2 = step_torso(uLeft2, uRight2,shiftFactor);
+
+    --Adjustable initial step body swing
+    if initial_step>0 then 
+      if supportLeg == 0 then --LS
+        supportMod[2]=supportModYInitial;
+      else --RS
+	supportMod[2]=-supportModYInitial;
+      end
+    end
 
     --Apply velocity-based support point modulation for uSupport
     if supportLeg == 0 then --LS
@@ -335,17 +355,25 @@ function update()
 
   uTorso = zmp_com(ph);
 
---Leg spread compensation
-  local spread=util.mod_angle((uLeft[3]-uRight[3])/2);
-  local spreadCompX = spreadComp * (1-math.cos(spread));
-
+  --Turning
   local turnCompX=0;
-  if math.abs(velCurrent[3])>turnCompThreshold then
+  if math.abs(velCurrent[3])>turnCompThreshold and
+    velCurrent[1]>-0.01 then
     turnCompX = turnComp;
   end
 
+  --Walking front
+  local frontCompX = 0;
+  if velCurrent[1]>0.04 then 
+    frontCompX = frontComp;
+  end
+  if velDiff[1]>0.02 then
+    frontCompX = frontCompX + AccelComp;
+  end
+
+
   uTorsoActual = util.pose_global(
-	vector.new({-footX+spreadCompX+turnCompX,0,0}),uTorso);
+	vector.new({-footX+frontCompX+turnCompX,0,0}),uTorso);
 
 --  uTorsoActual = util.pose_global(vector.new({-footX,0,0}),uTorso);
 
@@ -365,11 +393,14 @@ function check_walkkick()
 
   if walkKickRequest>0 and
     walkKickRequest>#walkKick then
+    
     print("NEWNEWNEWKICK: WALKKICK DONE");
     walkKickRequest = 0;
     tStep = tStep0;
     stepHeight = stepHeight0;
     current_step_type=0;
+    velCurrent=vector.new({0,0,0});
+    velCommand=vector.new({0,0,0});
     return;
   end
 
@@ -611,8 +642,14 @@ function set_velocity(vx, vy, va)
 end
 
 function update_velocity()
-  velDiff[1]= math.min(math.max(velCommand[1]-velCurrent[1],
+  if velCurrent[1]>velXHigh then
+    --Slower accelleration at high speed 
+    velDiff[1]= math.min(math.max(velCommand[1]-velCurrent[1],
+	-velDelta[1]),velDeltaXHigh); 
+  else
+    velDiff[1]= math.min(math.max(velCommand[1]-velCurrent[1],
 	-velDelta[1]),velDelta[1]);
+  end
   velDiff[2]= math.min(math.max(velCommand[2]-velCurrent[2],
 	-velDelta[2]),velDelta[2]);
   velDiff[3]= math.min(math.max(velCommand[3]-velCurrent[3],
@@ -626,6 +663,9 @@ function update_velocity()
      velCurrent=vector.new({0,0,0})
      initial_step=initial_step-1;
   end
+
+--  print(string.format("VEL:%.2f,%.2f,%.2f",unpack(velCurrent)));
+
 end
 
 function get_velocity()
@@ -668,6 +708,20 @@ function doWalkKickRight()
   end
 end
 
+function doWalkKickLeft2()
+  if walkKickRequest==0 then
+    walkKickRequest = 1; 
+    walkKick = walkKickDef["FrontLeft2"];
+  end
+end
+
+function doWalkKickRight2()
+ if walkKickRequest==0 then
+    walkKickRequest = 1; 
+    walkKick = walkKickDef["FrontRight2"];
+  end
+end
+
 function doSideKickLeft()
  if walkKickRequest==0 then
     walkKickRequest = 1; 
@@ -692,6 +746,18 @@ function doPunch(punchtype)
 end
 
 function stance_reset() --standup/sitdown/falldown handling
+print("Stance Resetted")
+  uLeft = util.pose_global(vector.new({-supportX, footY, 0}),uTorso);
+  uRight = util.pose_global(vector.new({-supportX, -footY, 0}),uTorso);
+  uLeft1, uLeft2 = uLeft, uLeft;
+  uRight1, uRight2 = uRight, uRight;
+  uTorso1, uTorso2 = uTorso, uTorso;
+  uSupport = uTorso;
+  tLastStep=Body.get_time();
+  walkKickRequest = 0; 
+  iStep0 = -1;
+  iStep = 0;
+  current_step_type=0;
 end
 
 function switch_stance(stance)
@@ -761,16 +827,38 @@ function foot_phase(ph)
   local xf = .5*(1-math.cos(math.pi*phSingleSkew));
   local zf = .5*(1-math.cos(2*math.pi*phSingleSkew));
 
-  --hack: vertical takeoff and landing
---  factor1 = 0.2;
-  factor1 = 0;
-  factor2 = 0;
-  phSingleSkew2 = math.max(
-	math.min(1,
-	(phSingleSkew-factor1)/(1-factor1-factor2)
-	 ), 0);
-  local xf = .5*(1-math.cos(math.pi*phSingleSkew2));
 
+  if use_alternative_trajectory>0 then
+    ph1FootPhase = 0.1;
+    ph2FootPhase = 0.5;
+    ph3FootPhase = 0.8;
+ 
+    exp1FootPhase = 2;
+    exp2FootPhase = 2;
+    exp3FootPhase = 2;
+
+    zFootLand = 0.3;    
+
+    if phSingle < ph1FootPhase then
+      phZTemp = phSingle / ph2FootPhase;
+--      xf = 0;
+--      zf = 1 - (1-phZTemp)^exp1FootPhase;
+    elseif phSingle < ph2FootPhase then
+      phXTemp = (phSingle-ph1FootPhase)/(ph3FootPhase-ph1FootPhase);
+      phZTemp = phSingle / ph2FootPhase;
+--      xf =  .5*(1-math.cos(math.pi*phXTemp));
+--      zf = 1 - (1-phZTemp)^exp1FootPhase;
+    elseif phSingle < ph3FootPhase then
+      phXTemp = (phSingle-ph1FootPhase)/(ph3FootPhase-ph1FootPhase);
+      phZTemp = (phSingle-ph2FootPhase)/(ph3FootPhase-ph2FootPhase);
+--      xf =  .5*(1-math.cos(math.pi*phXTemp));
+--      zf = 1 - phZTemp^exp2FootPhase*(1-zFootLand);
+    else
+      phZTemp = (1-phSingle) / (1-ph3FootPhase);
+--      xf = 1;
+--      zf = phZTemp^exp3FootPhase*zFootLand;
+    end
+  end
   return xf, zf;
 end
 

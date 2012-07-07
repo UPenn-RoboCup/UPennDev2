@@ -1,21 +1,14 @@
 module(..., package.seeall);
 require('vector')
 
---Sit/stand stance parameters
+sit_disable = 1;
+
 stance={};
-stance.bodyHeightSit = 0.175;
-stance.footXSit = -0.03;
-stance.dpLimitSit=vector.new({.03,.01,.06,.1,.3,.1});
-stance.bodyHeightDive= 0.25;
-stance.bodyTiltStance=20*math.pi/180; --bodyInitial bodyTilt, 0 for webots
-stance.dpLimitStance=vector.new({.04, .03, .07, .4, .4, .4});
-stance.initangle = {
-  0,0,
-  105*math.pi/180, 30*math.pi/180, -45*math.pi/180,
-  0,  0.055, -0.77, 2.08, -1.31, -0.055, 
-  0, -0.055, -0.77, 2.08, -1.31, 0.055,
-  105*math.pi/180, -30*math.pi/180, -45*math.pi/180,
-}
+stance.hardnessLeg = 0.5;
+stance.bodyTiltStance=4*math.pi/180; --bodyInitial bodyTilt, 0 for 
+stance.dpLimitStance=vector.new({.02, .01, .02, .4, .4, .4});
+stance.dpLimitSit=vector.new({.1,.01,.06,.1,.3,.1})*2;
+stance.delay = 80; 
 
 -- Head Parameters
 head = {};
@@ -25,7 +18,7 @@ head.pitchMax = 68*math.pi/180;
 head.yawMin = -135*math.pi/180;
 head.yawMax = 135*math.pi/180;
 head.cameraPos = {{0.08, 0, 0}} 
-head.cameraAngle = {{0.37.5*math.pi/180,0}}; 
+head.cameraAngle = {{0,37.5*math.pi/180,0}}; 
 head.neckZ=0.562 --From CoM to neck joint 
 head.neckX=0.0; --From CoM to neck joint
 
@@ -38,17 +31,21 @@ servo.idMap={
   10,12,14,16,18,20,--LLeg
   9,11,13,15,17,19,--RLeg
   1,3,5,7,		--RArm
-  24,25, --Aux (hand)
+  21, --Waist
+--  25,26, --Aux (hand)
 }
 --Haven't tested yet
 servo.dirReverse={
-  
+--  1,2, --Head
+--  3,4,5,6, --LArm
+  7,8,10,11,12, --LLeg
+  13,14,15,18, --RLeg
 }
 
 ----------------------------------------------
 --Robot-specific firmware version handling
 ----------------------------------------------
-servo.armBias = {0,0,0,0,0,0}; --in degree
+servo.armBias = {0,0,0,0,0,0,0,0}; --in degree
 servo.pid =1;  --Default new firmware
 local robotName = unix.gethostname();
 require('calibration');
@@ -69,10 +66,11 @@ print(robotName.." has 14-bit firmware")
 servo.steps=vector.ones(nJoint)*4096;
 servo.posZero={
     2048,2048, --Head
-    2816,2048,2304,2348, --LArm
+    1318,2048,2304,2048, --LArm
     2048,2048,2048,3413,2048,2048, --LLeg
     2048,2048,2048,683,2048,2048, --RLeg
-    1280,2048,1792,1748, --RArm
+    2748,2048,1792,2048, --RArm
+    2048, --Waist
     2048,2048, --Hands
 };
 
@@ -82,6 +80,7 @@ servo.moveRange=vector.new({
     360,120,120,120,120,160, --LLeg
     360,120,120,120,120,160, --RLeg
     360,360,360,360, --RArm
+    160, --Waist
     360,360, --Hands
 })*math.pi/180;
 

@@ -35,7 +35,9 @@ require('Speak')
 require('getch')
 require('Body')
 require('Motion')
+require('dive')
 
+require('grip')
 Motion.entry();
 darwin = false;
 webots = false;
@@ -44,8 +46,8 @@ webots = false;
 if(Config.platform.name == 'OP') then
   darwin = true;
   --SJ: OP specific initialization posing (to prevent twisting)
-  Body.set_body_hardness(0.3);
-  Body.set_actuator_command(Config.stance.initangle)
+--  Body.set_body_hardness(0.3);
+--  Body.set_actuator_command(Config.stance.initangle)
 end
 
 --TODO: enable new nao specific
@@ -103,6 +105,52 @@ function process_keyinput()
       walk.doSideKickLeft();
     elseif byte==string.byte("y") then
       walk.doSideKickRight();
+
+
+    elseif byte==string.byte("w") then
+      Motion.event("diveready");
+    elseif byte==string.byte("a") then
+      dive.set_dive("diveLeft");
+      Motion.event("dive");
+    elseif byte==string.byte("s") then
+      dive.set_dive("diveCenter");
+      Motion.event("dive");
+    elseif byte==string.byte("d") then
+      dive.set_dive("diveRight");
+      Motion.event("dive");
+
+--[[
+	elseif byte==string.byte("z") then
+		grip.throw=0;
+		Motion.event("pickup");
+	elseif byte==string.byte("x") then
+		grip.throw=1;
+		Motion.event("throw");
+--]]
+
+	elseif byte==string.byte("z") then
+	    walk.startMotion("hurray1");
+
+	elseif byte==string.byte("x") then
+	    walk.startMotion("hurray2");
+
+	elseif byte==string.byte("c") then
+	    walk.startMotion("swing");
+
+	elseif byte==string.byte("v") then
+	    walk.startMotion("2punch");
+
+--	elseif byte==string.byte("b") then
+--	    walk.startMotion("point");
+
+
+
+	elseif byte==string.byte("b") then
+	    grip.throw=0;
+	    Motion.event("pickup");
+	elseif byte==string.byte("n") then
+	    grip.throw=1;
+	    Motion.event("pickup");
 
     elseif byte==string.byte("7") then	
       Motion.event("sit");

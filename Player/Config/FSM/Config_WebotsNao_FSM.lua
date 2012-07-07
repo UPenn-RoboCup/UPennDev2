@@ -60,6 +60,7 @@ fsm.bodyOrbit.rFar = 0.45;
 fsm.bodyOrbit.thAlign = 10*math.pi/180;
 fsm.bodyOrbit.timeout = 30.0 * speedFactor;
 fsm.bodyOrbit.tLost = 3.0*speedFactor;
+fsm.bodyOrbit.walkParam = 'Walk/Config_WebotsNao_Orbit'
 
 --------------------------------------------------
 --BodyPosition : Advanced chase-orbit
@@ -124,6 +125,10 @@ fsm.bodyApproach.yTarget21={0.03, 0.045, 0.06}; --min, target ,max
 --Target position for side walkkick to left
 fsm.bodyApproach.xTarget22={0, 0.15,0.18}; --min, target, max
 fsm.bodyApproach.yTarget22={0.01, 0.025, 0.04}; --min, target ,max
+
+fsm.bodyApproach.pFar = 2.8
+fsm.bodyApproach.pNear = .3
+fsm.bodyApproach.pRight = 1.8 
 
 --------------------------------------------------
 --BodyKick : Stationary Kick
@@ -226,3 +231,4 @@ fsm.headLookGoal.tScan = 1.0*speedFactor;
 --------------------------------------------------
 fsm.headSweep={};
 fsm.headSweep.tScan=1.0*speedFactor;
+fsm.headSweep.tWait=0.25*speedFactor;

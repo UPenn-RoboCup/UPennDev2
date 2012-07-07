@@ -29,6 +29,21 @@ function load_motion_file(fname, key)
   key = key or fname;
   local mot = dofile(fname);
   motData[key] = mot;
+  
+--  print_motion_file(fname,mot)
+end
+
+function print_motion_file(fname,mot)
+  print(fname)
+  for i=1,#mot.keyframes do
+    print("{\nangles=vector.new({")
+    ang=vector.new(mot.keyframes[i].angles);
+    print(string.format(
+	"%d,%d,\n%d,%d,%d,\n%d,%d,%d,%d,%d,%d,\n%d,%d,%d,%d,%d,%d,\n%d,%d,%d",
+      unpack(ang*180/math.pi) ));
+    print"})*math.pi/180,"
+    print(string.format("duration = %.1f;\n},",mot.keyframes[i].duration));
+  end
 end
 
 function do_motion(key)

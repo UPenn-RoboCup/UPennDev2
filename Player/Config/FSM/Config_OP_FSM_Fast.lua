@@ -42,14 +42,18 @@ fsm.bodyChase.maxStep = 0.08;
 fsm.bodyChase.rClose = 0.35;
 fsm.bodyChase.timeout = 20.0*speedFactor;
 fsm.bodyChase.tLost = 3.0*speedFactor;
-
+fsm.bodyChase.rFar = 1.2;
 
 --------------------------------------------------
 --BodyAnticipate : Sit down and wait for kick (goalie)
 --------------------------------------------------
 fsm.bodyAnticipate={};
 fsm.bodyAnticipate.rClose = 1.0;
-fsm.bodyChase.rFar = 1.2;
+-- How far out of position are we allowed to be?
+fsm.bodyAnticipate.thFar = {0.2,0.2,15*math.pi/180};
+
+fsm.bodyGoaliePosition = {}; 
+fsm.bodyGoaliePosition.thClose = {.2, .2,10*math.pi/180}
 
 --------------------------------------------------
 --BodyOrbit : make the robot orbit around the ball

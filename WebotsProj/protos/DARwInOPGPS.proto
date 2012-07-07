@@ -22,8 +22,8 @@ PROTO DARwInOPGPS [
   field SFColor    plasticColor 0.301961 0.301961 0.301961
   field SFVec2f    cameraWindowPosition 0 0
   field SFFloat    cameraPixelSize 1.0
-  field SFInt32    cameraWidth 160
-  field SFInt32    cameraHeight 120
+  field SFInt32    cameraWidth 320
+  field SFInt32    cameraHeight 240
   field SFBool     waistBand FALSE
   field SFColor    waistBandColor 0 0 1
   field SFInt32    channel 0

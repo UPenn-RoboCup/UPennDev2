@@ -22,12 +22,18 @@ use_tilted_bbox = Config.vision.use_tilted_bbox or 0;
 use_centerpost=Config.vision.goal.use_centerpost or 0;
 --Check the bottom of the post for green
 check_for_ground = Config.vision.goal.check_for_ground or 0;
+--Min height of goalpost (to reject false positives at the ground)
+goal_height_min = Config.vision.goal.height_min or -0.5;
 
-
+distanceFactorYellow = Config.vision.goal.distanceFactorYellow or 1.0;
+distanceFactorCyan = Config.vision.goal.distanceFactorCyan or 1.0;
+	
 --Post dimension
-postDiameter = 0.10;
+postDiameter = Config.world.postDiameter or 0.10;
 postHeight = Config.world.goalHeight or 0.80;
 goalWidth = Config.world.goalWidth or 1.40;
+
+
 
 --------------------------------------------------------------
 --Vision threshold values (to support different resolutions)
@@ -58,20 +64,22 @@ function detect(color,color2)
     --where shoud we update the roll angle? HeadTransform?
     tiltAngle = HeadTransform.getCameraRoll();
     vcm.set_camera_rollAngle(tiltAngle);
---    postB = ImageProc.tilted_goal_posts(Vision.labelB.data, 
---	Vision.labelB.m, Vision.labelB.n, color, th_nPostB,tiltAngle);
-
 
 --Tilted labelB test for OP
 ------------------------------------------------------------------------
+
+    scaleBGoal = 4;
+
     Vision.labelBtilted={}
-    Vision.labelBtilted.moffset = Vision.labelA.m/Vision.scaleB/2;
-    Vision.labelBtilted.m = Vision.labelA.m/Vision.scaleB*2;
-    Vision.labelBtilted.n = Vision.labelA.n/Vision.scaleB;
+    Vision.labelBtilted.moffset = Vision.labelA.m/scaleBGoal/2;
+    Vision.labelBtilted.m = Vision.labelA.m/scaleBGoal*2;
+    Vision.labelBtilted.n = Vision.labelA.n/scaleBGoal;
     Vision.labelBtilted.npixel = Vision.labelBtilted.m*Vision.labelBtilted.n;
+
     Vision.labelBtilted.data = 
 	ImageProc.tilted_block_bitor(Vision.labelA.data, 
-	Vision.labelA.m, Vision.labelA.n, Vision.scaleB, Vision.scaleB, tiltAngle);
+	Vision.labelA.m, Vision.labelA.n, scaleBGoal, 
+	scaleBGoal, tiltAngle);
     postB = ImageProc.goal_posts(Vision.labelBtilted.data, 
 	Vision.labelBtilted.m, Vision.labelBtilted.n, color, th_nPostB);
     --discount tilt offset
@@ -92,7 +100,6 @@ function detect(color,color2)
 	Vision.labelB.m, Vision.labelB.n, color, th_nPostB);
   end
 
-
   if (not postB) then 	
     vcm.add_debug_message("No post detected\n")
     return goal; 
@@ -103,16 +110,51 @@ function detect(color,color2)
   local postA = {};
   vcm.add_debug_message(string.format("Checking %d posts\n",#postB));
 
+  lower_factor = 0.3;
+
   for i = 1,#postB do
     local valid = true;
+
+    --Check lower part of the goalpost for thickness
     
     if use_tilted_bbox>0 then
       vcm.add_debug_message("Use Tilted postStats\n");
-      postStats = Vision.bboxStats(color, postB[i].boundingBox,tiltAngle);
+      postStats = Vision.bboxStats(color,postB[i].boundingBox,tiltAngle,scaleBGoal);
+      boundingBoxLower={};
+      boundingBoxLower[1],boundingBoxLower[2],
+      boundingBoxLower[3],boundingBoxLower[4]=
+        postB[i].boundingBox[1], postB[i].boundingBox[2],
+        postB[i].boundingBox[3], postB[i].boundingBox[4];
+
+      boundingBoxLower[3] = (1-lower_factor)* boundingBoxLower[3] + 
+	lower_factor*boundingBoxLower[4];
+      postStatsLow = Vision.bboxStats(color, 
+	postB[i].boundingBox,tiltAngle,scaleBGoal);
     else
-      postStats = Vision.bboxStats(color, postB[i].boundingBox);
+      postStats = Vision.bboxStats(color, postB[i].boundingBox,scaleBGoal);
+      boundingBoxLower={};
+      boundingBoxLower[1],boundingBoxLower[2],
+      boundingBoxLower[3],boundingBoxLower[4]=
+        postB[i].boundingBox[1], postB[i].boundingBox[2],
+        postB[i].boundingBox[3], postB[i].boundingBox[4];
+      boundingBoxLower[3] = (1-lower_factor)* boundingBoxLower[3] + 
+	lower_factor*boundingBoxLower[4];
+      postStatsLow = Vision.bboxStats(color, 
+	  postB[i].boundingBox,tiltAngle,scaleBGoal);
     end
 
+--[[    
+    --REDUCE POST WIDTH 
+    --TODO: This seems to make crashing sometimes
+    vcm.add_debug_message(string.format(
+	"Thickness: full %.1f lower:%.1f\n",
+	postStats.axisMinor,postStatsLow.axisMinor));
+    widthRatio = postStats.axisMinor / postStatsLow.axisMinor;
+    if widthRatio < 2.0 then
+      postStats.axisMinor = math.min(
+	postStats.axisMinor, postStatsLow.axisMinor)
+    end
+--]]
     -- size and orientation check
     vcm.add_debug_message(string.format("Area check: %d\n", 
 	postStats.area));
@@ -225,27 +267,15 @@ function detect(color,color2)
       end
     end
 
-   --SJ: we may need this again...
-
---[[
-    -- check for posts in the ball
-    if (valid and color == colorYellow and Vision.ball.detect == 1) then
-      -- is the centroid of the post in the bounding box of the ball?
-      local pcent = postStats.centroid;
-      --print('pcent '..pcent[1]..', '..pcent[2]);
-      --print('ball bbox: '..ball.bboxA[1]..', '..ball.bboxA[2]..
-      --','..ball.bboxA[3]..', '..ball.bboxA[4]$
-
-      if ((pcent[1] > ball.bboxA[1] - 10 
-	   and pcent[1] < ball.bboxA[2] + 10)
-        and 
-	  (pcent[1] > ball.bboxA[1] - 10 
-	   and pcent[1] <  ball.bboxA[2] + 10)) then
-        print('failed outside ball check');
-        valid = false;
+    if valid then
+    --Height Check
+      scale = math.sqrt(postStats.area / (postDiameter*postHeight) );
+      v = HeadTransform.coordinatesA(postStats.centroid, scale);
+      if v[3] < goal_height_min then
+      vcm.add_debug_message(string.format("Height check fail:%.2f\n",v[3]));
+        valid = false; 
       end
-    en
---]]
+    end
 
     if (valid) then
       ivalidB[#ivalidB + 1] = i;
@@ -302,6 +332,15 @@ function detect(color,color2)
     end
 
     goal.v[i] = HeadTransform.coordinatesA(postA[i].centroid, scale);
+
+    if color == colorYellow then
+      goal.v[i][1]=goal.v[i][1]*distanceFactorYellow;
+      goal.v[i][2]=goal.v[i][2]*distanceFactorYellow;
+    else
+      goal.v[i][1]=goal.v[i][1]*distanceFactorCyan;
+      goal.v[i][2]=goal.v[i][2]*distanceFactorCyan;
+    end
+
 
     vcm.add_debug_message(string.format("post[%d] = %.2f %.2f %.2f\n",
 	 i, goal.v[i][1], goal.v[i][2], goal.v[i][3]));
@@ -374,6 +413,7 @@ function detect(color,color2)
         vcm.add_debug_message("Post size too small");
         return goal;
       end
+
     end
   end
   

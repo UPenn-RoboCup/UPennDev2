@@ -14,19 +14,24 @@ t0 = 0;
 tasklist={
   --left player 
   {
-    {1,{1,1.5,-math.pi/2}}, --approach the ball and kick to the position  
-    {2,{0,-1.5,math.pi/2}}, --move to the pose and wait there
-    {1,{-1.2,1.0,-math.pi/2}}, --approach the ball and kick to the position
-    {2,{-2.5,-1,0}}, --move to the pose and wait there
-    {1,{-3,0,0}}, --Kick to score
+    {1,{1.2,0,0},         {1,1.5,-math.pi/2}}, --approach the ball and kick to the position  
+--    {2,{0,-1.5,math.pi/2}                   }, --move to the pose and wait there
+    {2,{1.2,-1.5,math.pi}                   }, --move to the pose and wait there
+    {1,{-0.5,-0.8,0},   {-0.6,0,-math.pi/2}}, --approach the ball and kick to the position
+--    {2,{-2.5,-1,0}                           }, --move to the pose and wait there
+    {2,{-1.2,-1,math.pi}                           }, --move to the pose and wait there
+    {1,{-2.5,-0.5,0}, {-3,0,0}               }, --Kick to score
+--    {0,{-2,5,-0.5,0}                         }, --do nothing
   },
   --right player
   {
-    {2,{1,1.5,-math.pi/2}}, --move to the pose and wait tere
-    {1,{0,-1,math.pi/2}}, --approach and kick
-    {2,{-1.2,1.5,-math.pi/2}}, --move and wait
-    {1,{-2.5,-1,0}}, --approach and kick
-    {0,{-3,0,0}}, --do nothing
+--    {2,{1,1.5,-math.pi/2}                     }, --move to the pose and wait tere
+    {2,{1.8,1.5,math.pi}                     }, --move to the pose and wait tere
+    {1,{1,1.5,0},             {0.8,0,math.pi/2}}, --approach and kick
+--    {2,{-1.2,1.5,-math.pi/2}                  }, --move and wait
+    {2,{-0.6,1.5,math.pi}                  }, --move and wait
+    {1,{-1.5,1.0,0} , {-1.8,0,0}             }, --approach and kick
+--    {0,{-2.5,0.5,0}                           }, --do nothing
   },
 }  
 
@@ -52,8 +57,20 @@ function update()
 
   task_state=team_task_state[role]; 
   -- index start with 0 and is always a even number 
+  if task_state/2+1 > #tasklist[role] then
+    Motion.event("sit");
+    return;
+  end
+
   current_task=tasklist[role][task_state/2+1];
-  gcm.set_team_target(current_task[2]);
+  if current_task[1]~=1 then
+    --Passing
+    gcm.set_team_target(current_task[2]);
+  else
+    --Dribbling and kicking
+    gcm.set_team_balltarget(current_task[2]);
+    gcm.set_team_target(current_task[3]);
+  end
 
   if task_state/2+1 <=#tasklist[role] then
     --dispatch task

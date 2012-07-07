@@ -53,7 +53,7 @@ DEF BLUE_LANDMARK Landmark {
   postColor1 0.152941 0.505882 0.733333
   postColor2 0.992157 0.854902 0.219608
 }
-DEF BALL Ball {
+DEF BALL BallGPS {
   translation 0 0.0323921 0
 }
 DEF PLAYER_1_1 DARwInOP {

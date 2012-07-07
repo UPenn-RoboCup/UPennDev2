@@ -51,7 +51,7 @@ const double rKneeOffset2 = 0; //knee offset angle
 const double footHeight = .035;
 */
 
-//DARWIN IV VALUES
+//DARWIN XOS, Rev 2 VALUES
 //ORIGIN: WAIST JOINT
 //Modified from Darwin IV with leg length adjustments
 const double neckOffsetZ = .102;
@@ -64,11 +64,11 @@ const double lowerArmLength = .149;
 
 const double hipOffsetY = .0405;
 const double hipOffsetZ = .104;
-const double thighLength = .305;
-const double tibiaLength = .285;
+const double thighLength = .195;
+const double tibiaLength = .15;
 const double rKneeOffset1 = 0; //knee offset angle
 const double rKneeOffset2 = 0; //knee offset angle
-const double footHeight = .035;
+const double footHeight = .038;
 
 //DARWIN LC VALUES
 //origin: middle of hip joints

@@ -5,7 +5,7 @@ require('vector');
 require('Config');
 -- Enable Webots specific
 if (string.find(Config.platform.name,'Webots')) then
-  webots = true;
+  webots = 1;
 end
 --Added for webots fast simulation
 use_gps_only = Config.use_gps_only or 0;
@@ -16,6 +16,10 @@ require('HeadTransform');
 require('vcm');
 require('mcm');
 require('Body')
+
+obs_challenge_enable = Config.obs_challenge or 0;
+enable_lut_for_obstacle = Config.vision.enable_lut_for_obstacle or 0;
+
 
 if use_gps_only==0 then
   require('Camera');
@@ -46,7 +50,7 @@ if use_gps_only==0 then
   labelA.m = camera.width/2;
   labelA.n = camera.height/2;
   labelA.npixel = labelA.m*labelA.n;
-  if( webots ) then
+  if  webots == 1 then
     labelA.m = camera.width;
     labelA.n = camera.height;
     labelA.npixel = labelA.m*labelA.n;
@@ -84,7 +88,7 @@ vcm.set_debug_store_all_images(Config.vision.store_all_images);
 
 -- Timing
 count = 0;
-lastImageCount = 0;
+lastImageCount = {0,0};
 t0 = unix.time()
 
 function entry()
@@ -104,76 +108,74 @@ function entry()
 
   -- Initiate Detection
   Detection.entry();
-
+  
+  --set to switch cameras. 
   -- Load the lookup table
   print('loading lut: '..Config.camera.lut_file);
   camera.lut = carray.new('c', 262144);
   load_lut(Config.camera.lut_file);
- 
---  while (true) do 
-    for c=1,Config.camera.ncamera do
-      -- cameras are indexed starting at 0
-      Camera.select_camera(c-1);
-      Camera.set_param('White Balance, Automatic', 1);
-      Camera.set_param('Backlight Compensation', 1);
-      Camera.set_param('Auto Exposure',0);
-      unix.usleep(1000000);
-      local count  = 0;
-      local is_set = true;
-      for i, param in ipairs(Config.camera.param) do
-        is_set = is_set and (Camera.get_param(param.key) == param.val[c]);
-      end
-      while (is_set == false and count < 5) do
 
---[[     for i,auto_param in ipairs(Config.camera.auto_param) do
-        print('Camera '..c..': setting '..auto_param.key..': '..auto_param.val[c]);
-        Camera.set_param(auto_param.key, auto_param.val[c]);
-        unix.usleep(100000);
-        print('Camera '..c..': set to '..auto_param.key..': '..Camera.get_param(auto_param.key));
-     end   --]]
-        for i,param in ipairs(Config.camera.param) do
-          print('Camera '..c..': setting '..param.key..': '..param.val[c]);
-          Camera.set_param(param.key, param.val[c]);
-          unix.usleep(10000);
-          print('Camera '..c..': set to '..param.key..': '..Camera.get_param(param.key));
-        end
-        print ('this is the '..count..' cycle');
-        unix.usleep(100000);
-        is_set = true;
-        for i, param in ipairs (Config.camera.param) do
-          is_set = is_set and Camera.get_param(param.key) == param.val[c];
-        end
-        count = count + 1;
-      end
-    
-      Camera.set_param('White Balance, Automatic', 0);
-      Camera.set_param('Backlight Compensation', 0);
-      Camera.set_param('Auto Exposure',1);
-      print('Camera #'..c..' set');
-  
-    end 
+  --ADDED to prevent crashing with old camera config
+  if Config.camera.lut_file_obs == null then
+    Config.camera.lut_file_obs = Config.camera.lut_file;
+  end
 
-  --end
+  -- Load the obstacle LUT as well
+  if enable_lut_for_obstacle == 1 then
+    print('loading obs lut: '..Config.camera.lut_file_obs);
+    camera.lut_obs = carray.new('c', 262144);
+    load_lut_obs(Config.camera.lut_file_obs);
+  end
 
+  if Config.platform.name=="NaoV4" then
+    camera_init_naov4();
+  else
+    camera_init();
+  end 
+
+  -- in default, use prelearned colortable
+  vcm.set_image_learn_lut(0);
 end
 
-function redo_white_balance(cameraNumber)
-  print('Recalculating White Balance for Camera #', cameraNumber);
-  Camera.select_camera(cameraNumber);
-  --Camera.set_param('Backlight Compensation', 1);
-  --unix.usleep(1000000); 
-
-  Camera.set_param('Do White Balance', 1);
-  unix.usleep(1000000);
-  --Camera.set_param('Backlight Compensation' , 0);
-
-  for i,param in ipairs(Config.camera.param) do
-      print('Camera '..cameraNumber..': setting '..param.key..': '..param.val[cameraNumber+1]);
-      Camera.set_param(param.key, param.val[cameraNumber+1]);
+function camera_init()
+  for c=1,Config.camera.ncamera do 
+    Camera.select_camera(c-1);
+    for i,auto_param in ipairs(Config.camera.auto_param) do
+      print('Camera '..c..': setting '..auto_param.key..': '..auto_param.val[c]);
+      Camera.set_param(auto_param.key, auto_param.val[c]);
       unix.usleep(100000);
-      print('Camera '..cameraNumber..': set to '..param.key..': '..Camera.get_param(param.key));
+      print('Camera '..c..': set to '..auto_param.key..': '..Camera.get_param(auto_param.key));
+    end   
+    for i,param in ipairs(Config.camera.param) do
+      print('Camera '..c..': setting '..param.key..': '..param.val[c]);
+      Camera.set_param(param.key, param.val[c]);
+      unix.usleep(10000);
+      print('Camera '..c..': set to '..param.key..': '..Camera.get_param(param.key));
+    end
   end
-  
+end
+
+function camera_init_naov4()
+  for c=1,Config.camera.ncamera do
+    Camera.select_camera(c-1);   
+    Camera.set_param('Brightness', Config.camera.brightness);     
+    Camera.set_param('White Balance, Automatic', 1); 
+    Camera.set_param('Auto Exposure',0);
+    for i,param in ipairs(Config.camera.param) do
+      Camera.set_param(param.key, param.val[c]);
+      unix.usleep (100);
+    end
+    Camera.set_param('White Balance, Automatic', 0);
+    Camera.set_param('Auto Exposure',0);
+    local expo = Camera.get_param('Exposure');
+    local gain = Camera.get_param('Gain');
+    Camera.set_param('Auto Exposure',1);   
+    Camera.set_param('Auto Exposure',0);
+    --Camera.set_param ('Exposure', 255);
+    Camera.set_param ('Exposure', expo);
+    Camera.set_param ('Gain', gain);
+    print('Camera #'..c..' set');
+  end
 end
 
 
@@ -190,8 +192,8 @@ function update()
   camera.image = Camera.get_image();
 
   local status = Camera.get_camera_status();
-  if status.count ~= lastImageCount then
-    lastImageCount = status.count;
+  if status.count ~= lastImageCount[status.select+1] then
+    lastImageCount[status.select+1] = status.count;
   else
     return false; 
   end
@@ -211,10 +213,13 @@ function update()
     exit()
   end
 
+
+
   -- perform the initial labeling
-  if(webots) then
+  if webots == 1 then
     labelA.data = Camera.get_labelA( carray.pointer(camera.lut) );
   else
+
     labelA.data  = ImageProc.yuyv_to_label(vcm.get_image_yuyv(),
                                           carray.pointer(camera.lut),
                                           camera.width/2,
@@ -224,27 +229,66 @@ function update()
   -- determine total number of pixels of each color/label
   colorCount = ImageProc.color_count(labelA.data, labelA.npixel);
 
+
   -- bit-or the segmented image
   labelB.data = ImageProc.block_bitor(labelA.data, labelA.m, labelA.n, scaleB, scaleB);
 
-  vcm.refresh_debug_message();
-  Detection.update();
+  -- perform label process for obstacle specific lut
+  if enable_lut_for_obstacle == 1 then
+    -- label A
+    if webots == 1 then
+      labelA.data_obs = Camera.get_labelA_obs( carray.pointer(camera.lut_obs) );
+    else
+      labelA.data_obs  = ImageProc.yuyv_to_label_obs(vcm.get_image_yuyv(),
+                                    carray.pointer(camera.lut_obs), camera.width/2, camera.height);
+    end
+    -- count color pixels
+    colorCount_obs = ImageProc.color_count_obs(labelA.data_obs, labelA.npixel);
+    -- label B
+    labelB.data_obs = ImageProc.block_bitor_obs(labelA.data_obs, labelA.m, labelA.n, scaleB, scaleB);
+  end
 
-  update_shm(status)
+  update_shm(status, headAngles)
+
+  -- Learn ball color from mask and rebuild colortable
+  if obs_challenge_enable == 1 then
+--    print('enable obs challenge')
+    if vcm.get_image_learn_lut() == 1 then
+      print("learn new colortable for random ball from mask");
+      vcm.set_image_learn_lut(0);
+      mask = ImageProc.label_to_mask(labelA.data_obs, labelA.m, labelA.n);
+      if webots == 1 then
+        print("learn in webots")
+        lut_update = Camera.get_lut_update(mask, carray.pointer(camera.lut_obs));
+--        lut_update = Camera.get_lut_update(mask, carray.pointer(camera.lut));
+      else
+        print("learn in op")
+        lut_update = ImageProc.yuyv_mask_to_lut(vcm.get_image_yuyv(), mask, camera.lut, 
+                                                labelA.m, labelA.n);
+      end
+      print(type(mask),type(labelB.data))
+    end
+  end
+
+  vcm.refresh_debug_message();
+
+  Detection.update();
+  vcm.refresh_debug_message();
 
   -- switch camera
   local cmd = vcm.get_camera_command();
   if (cmd == -1) then
     if (count % camera.switchFreq == 0) then
-      Camera.select_camera(1-Camera.get_select()); 
+       Camera.select_camera(1-Camera.get_select()); 
     end
   else
     if (cmd >= 0 and cmd < camera.ncamera) then
       Camera.select_camera(cmd);
     else
-      --print('WARNING: attempting to switch to unkown camera select = '..cmd);
+      print('WARNING: attempting to switch to unkown camera select = '..cmd);
     end
   end
+
   return true;
 end
 
@@ -309,7 +353,7 @@ print("Check 4:",
 
 end
 
-function update_shm(status)
+function update_shm(status, headAngles)
   -- Update the shared memory
   -- Shared memory size argument is in number of bytes
 
@@ -320,36 +364,48 @@ function update_shm(status)
         or ((goalCyan.detect == 1 or goalYellow.detect == 1) 
             and vcm.get_debug_store_goal_detections() == 1)) then
 
-        vcm.set_image_labelA(labelA.data);
-        vcm.set_image_labelB(labelB.data);
---        vcm.set_image_yuyv(camera.image);
-        --Store downsampled yuyv for monitoring
+	if webots == 1  then
+          vcm.set_camera_yuyvType(1);
+          vcm.set_image_labelA(labelA.data);
+          vcm.set_image_labelB(labelB.data);
+--          vcm.set_image_labelA_obs(labelA.data_obs);
+--          vcm.set_image_labelB_obs(labelB.data_obs);
+	end
+        if vcm.get_camera_broadcast() > 0 then --Wired monitor broadcasting
+	  if vcm.get_camera_broadcast() == 1 then
+	    --Level 1: 1/4 yuyv, labelB
+            vcm.set_image_yuyv3(ImageProc.subsample_yuyv2yuyv(
+  	    vcm.get_image_yuyv(),
+	    camera.width/2, camera.height,4));
+            vcm.set_image_labelB(labelB.data);
+	  elseif vcm.get_camera_broadcast() == 2 then
+	    --Level 2: 1/2 yuyv, labelA, labelB
+            vcm.set_image_yuyv2(ImageProc.subsample_yuyv2yuyv(
+  	      vcm.get_image_yuyv(),
+  	      camera.width/2, camera.height,2));
+            vcm.set_image_labelA(labelA.data);
+            vcm.set_image_labelB(labelB.data);
+	  else
+	    --Level 3: 1/2 yuyv
+            vcm.set_image_yuyv2(ImageProc.subsample_yuyv2yuyv(
+  	    vcm.get_image_yuyv(),
+  	    camera.width/2, camera.height,2));
+	  end
 
-        if subsampling>0 then
-          vcm.set_image_yuyv2(ImageProc.subsample_yuyv2yuyv(
-	  vcm.get_image_yuyv(),
---  	  camera.image,
-	  camera.width/2, camera.height,2));
+	elseif vcm.get_camera_teambroadcast() > 0 then --Wireless Team broadcasting
+          --Only copy labelB
+          vcm.set_image_labelB(labelB.data);
         end
-        if subsampling2>0 then --1/4 sized image, for OP
-          vcm.set_image_yuyv3(ImageProc.subsample_yuyv2yuyv(
---  	  camera.image,
-	  vcm.get_image_yuyv(),
-	  camera.width/2, camera.height,4));
-        end
-
     end
   end
 
   vcm.set_image_select(status.select);
   vcm.set_image_count(status.count);
   vcm.set_image_time(status.time);
-  vcm.set_image_headAngles({status.joint[1], status.joint[2]});
+  vcm.set_image_headAngles(headAngles);
   vcm.set_image_horizonA(HeadTransform.get_horizonA());
   vcm.set_image_horizonB(HeadTransform.get_horizonB());
   vcm.set_image_horizonDir(HeadTransform.get_horizonDir())
-
-  Detection.update_shm();
 
   update_shm_fov();
 end
@@ -380,12 +436,13 @@ function exit()
   HeadTransform.exit();
 end
 
-function bboxStats(color, bboxB, rollAngle)
+function bboxStats(color, bboxB, rollAngle, scale)
+  scale = scale or scaleB;
   bboxA = {};
-  bboxA[1] = scaleB*bboxB[1];
-  bboxA[2] = scaleB*bboxB[2] + scaleB - 1;
-  bboxA[3] = scaleB*bboxB[3];
-  bboxA[4] = scaleB*bboxB[4] + scaleB - 1;
+  bboxA[1] = scale*bboxB[1];
+  bboxA[2] = scale*bboxB[2] + scale - 1;
+  bboxA[3] = scale*bboxB[3];
+  bboxA[4] = scale*bboxB[4] + scale - 1;
   if rollAngle then
  --hack: shift boundingbox 1 pix helps goal detection
  --not sure why this thing is happening...
@@ -427,6 +484,19 @@ function load_lut(fname)
   end
 end
 
+function load_lut_obs(fname)
+  local cwd = unix.getcwd();
+  if string.find(cwd, "WebotsController") then
+    cwd = cwd.."/Player";
+  end
+  cwd = cwd.."/Data/";
+  local f = io.open(cwd..fname, "r");
+  assert(f, "Could not open lut file");
+  local s = f:read("*a");
+  for i = 1,string.len(s) do
+    camera.lut_obs[i] = string.byte(s,i,i);
+  end
+end
 
 function save_rgb(rgb)
   saveCount = saveCount + 1;
@@ -442,5 +512,3 @@ function save_rgb(rgb)
   end
   f:close();
 end
-
-

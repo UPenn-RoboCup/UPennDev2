@@ -33,7 +33,6 @@ rFar = 0.45;
 -- alignment
 thAlign = 15.0*math.pi/180.0;
 
-
 function entry()
   print(_NAME.." entry");
 

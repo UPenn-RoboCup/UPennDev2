@@ -10,10 +10,10 @@ walk = {};
 walk.stanceLimitX={-0.60,0.60};
 walk.stanceLimitY={0.16,0.60};
 walk.stanceLimitA={-10*math.pi/180,30*math.pi/180};
-walk.velLimitX={-.20,.40};
-walk.velLimitY={-.15,.15};
-walk.velLimitA={-.3,.3};
-walk.velDelta={0.10,0.10,0.15} 
+walk.velLimitX={-.20,.20};
+walk.velLimitY={-.10,.10};
+walk.velLimitA={-.2,.2};
+walk.velDelta={0.10,0.10,0.3} 
 
 ----------------------------------------------
 -- Stance parameters
@@ -21,7 +21,7 @@ walk.velDelta={0.10,0.10,0.15}
 walk.bodyHeight = 0.75; 
 walk.bodyTilt=4*math.pi/180; 
 walk.footX= 0.01; 
-walk.footY = 0.10;
+walk.footY = 0.09;
 walk.supportX = 0;
 walk.supportY = 0.0;
 walk.qLArm = math.pi/180*vector.new({110, 12, -0, -40});
@@ -52,13 +52,16 @@ walk.ankleMod = vector.new({-1,0})/ 3*math.pi/180;
 -------------------------------------------------------------- 
 gyroFactor = 0.273*math.pi/180 * 300 / 1024; --dps to rad/s conversion
 
+--gyroFactor = gyroFactor*0.3;
 
-walk.ankleImuParamX={1,0.75*gyroFactor, 2*math.pi/180, 10*math.pi/180};
-walk.kneeImuParamX={1,1.5*gyroFactor, 2*math.pi/180, 10*math.pi/180};
-walk.ankleImuParamY={1,1*gyroFactor, 2*math.pi/180, 10*math.pi/180};
-walk.hipImuParamY={1,1*gyroFactor, 2*math.pi/180, 10*math.pi/180};
-walk.armImuParamX={0.3,10*gyroFactor, 20*math.pi/180, 45*math.pi/180};
-walk.armImuParamY={0.3,10*gyroFactor, 20*math.pi/180, 45*math.pi/180};
+
+walk.ankleImuParamX={0.3,0.75*gyroFactor, 0*math.pi/180, 5*math.pi/180};
+walk.kneeImuParamX={0.3,1.5*gyroFactor, 0*math.pi/180, 5*math.pi/180};
+walk.ankleImuParamY={0.3,0.25*gyroFactor, 0*math.pi/180, 2*math.pi/180};
+walk.hipImuParamY={0.3,0.25*gyroFactor, 0*math.pi/180, 2*math.pi/180};
+
+walk.armImuParamX={1,10*gyroFactor, 20*math.pi/180, 45*math.pi/180};
+walk.armImuParamY={1,10*gyroFactor, 20*math.pi/180, 45*math.pi/180};
 
 --------------------------------------------
 -- WalkKick parameters
@@ -99,6 +102,16 @@ walk.kickXComp = 0;
 walk.supportCompL = {0,0,0};
 walk.supportCompR = {0,0,0};
 
+walk.kickXComp = 0;
+walk.supportCompL = {0,0,0};
+walk.supportCompR = {0,0,0};
+walk.servoBias = {0,0,0,0,0,0,0,0,0,0,0,0};
+walk.footXComp = 0;
+walk.footYComp = 0;
+
+--Default pitch angle offset of Charli 
+walk.headPitchBias = 0* math.pi / 180; 
+
 --[[
 walk.tStep = 0.8;
 walk.tZmp = 0.25;
@@ -110,48 +123,25 @@ walk.hardnessSwing = 0.2;
 --]]
 
 
+--Slow and stable walk (like 2011)
 
 
-walk.velLimitA={-.6,.6};
-walk.stanceLimitA={-10*math.pi/180,45*math.pi/180};
-walk.hipRollCompensation = 1*math.pi/180;
+walk.hipRollCompensation = 3*math.pi/180;
 
---walk.phZmp={0.05,0.95};
+walk.tStep = 0.75;
+walk.tZmp = 0.26; --Com height 0.65
+--walk.tZmp = 0.20; --Com height 0.65
+walk.supportX = 0.03;
+walk.supportY = 0.02;
+walk.bodyTilt = 0*math.pi/180;
+walk.phSingle = {0.15,0.85};
+walk.phZmp = {0.15,0.85};
+walk.stepHeight = 0.052;
 
---Fast walking test
-gyroFactor = gyroFactor * 0.5;
-walk.tStep = 0.7;
-walk.velLimitY={-.10,.10};
-walk.supportY = -0.01;
-walk.tZmp = 0.20;
-walk.supportX = -0.01;
-walk.stepHeight = 0.08;
-walk.phSingle={0.15,0.85};
-walk.phZmp={0.15,0.85};
+--[[
+--Ridiculously fast walking (for webots)
+walk.tStep = 0.35;
+walk.supportY = 0.06;
+--]]
 
-
-walk.velLimitX={-.20,.30};
-walk.velDelta={0.10,0.10,0.3} 
-
-
---fast test
-walk.tStep = 0.6;
-walk.supportY = -0.01;
-walk.footY = 0.09;
-walk.velLimitA={-.2,.2};
-walk.stepHeight = 0.06;
-
-
-
-walk.stepHeight = 0.04;
-
-
---Calculated Com height: 0.65 with straight legs
---COM with bent leg: ~0.59
---walk.tZmp = 0.24;
-
---walk.velLimitA={-.3,.3};
-
---Faster turning test
-walk.stanceLimitA={-20*math.pi/180,45*math.pi/180};
-walk.velLimitA={-.6,.6};
+walk.supportModYInitial=-0.04; --Reduce initial body swing

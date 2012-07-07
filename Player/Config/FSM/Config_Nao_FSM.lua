@@ -105,6 +105,10 @@ fsm.bodyApproach.yTarget21={0.03, 0.045, 0.06}; --min, target ,max
 fsm.bodyApproach.xTarget22={0, 0.21,0.23}; --min, target, max
 fsm.bodyApproach.yTarget22={-0.00, 0.02, 0.04}; --min, target ,max
 
+--Near/far threshold for walking kick vs. stationary kick
+fsm.bodyApproach.pNear = .3
+fsm.bodyApproach.pFar = 2
+
 --------------------------------------------------
 --BodyKick : Stationary Kick
 --------------------------------------------------

@@ -43,17 +43,14 @@ local tUpdate = t0;
 
 -- Broadcast the images at a lower rate than other data
 local maxFPS = 30;
+local imgFPS = 30;
 
 local maxPeriod = 1.0 / maxFPS;
+local imgRate = math.max( math.floor( maxFPS / imgFPS ), 1);
 
 local broadcast_enable=0;
 
-subsampling=Config.vision.subsampling or 0;
-subsampling2=Config.vision.subsampling2 or 0;
-
 function update()
-   broadcast_enable = vcm.get_camera_broadcast();
-
   -- Get a keypress
   local str=getch.get();
   if #str>0 then
@@ -61,22 +58,10 @@ function update()
     if byte==string.byte("g") then	--Broadcast selection
       local mymod = 4;
       broadcast_enable = (broadcast_enable+1)%mymod;
-      vcm.set_camera_broadcast(broadcast_enable);
       print("Broadcast:", broadcast_enable);
     end
   end
-
-  if broadcast_enable==1 then 
-    --Mode 1, send 1/4 resolution, labeB, all info
-    imgRate = 1; --30fps
-  elseif broadcast_enable==2 then 
-    --Mode 2, send 1/2 resolution, labeA, labelB, all info
-    imgRate = 2; --15fps
-  else
-    --Mode 3, send 1/2 resolution, info for logging
-    imgRate = 1; --30fps
-  end
-
+  vcm.set_camera_broadcast(broadcast_enable); 
   if vcm.get_image_count()>imagecount then
     imagecount=vcm.get_image_count();
     -- Always send non-image data
@@ -85,9 +70,6 @@ function update()
     if( imagecount % imgRate == 0 ) then
       Broadcast.update_img(broadcast_enable);    
     end
-    --Reset this flag at every broadcast
-    --To prevent monitor running during actual game
-    vcm.set_camera_broadcast(0);
     return true;
   end
   return false;

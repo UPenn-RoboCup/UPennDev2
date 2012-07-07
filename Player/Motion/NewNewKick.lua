@@ -163,7 +163,8 @@ function update()
   -- Tosro X position offxet (for differetly calibrated robots)
   if kickState==1 then --Initial slide
      torsoShiftX=kickXComp*ph;
-  elseif kickState == #kickDef-1 then
+--  elseif kickState == #kickDef-1 then
+  elseif kickState == #kickDef then
      torsoShiftX=kickXComp*(1-ph);
   end
 
@@ -191,6 +192,9 @@ function update()
     end
     if #kickDef[kickState]>=5 then
       bodyRoll=ph*kickDef[kickState][5] + (1-ph)*bodyRoll1;
+    end
+    if #kickDef[kickState]>=6 then
+      bodyPitch=ph*kickDef[kickState][6] + (1-ph)*bodyPitch1;
     end
   elseif kickStepType==2 then --Lifting / Landing Left foot
     uLeft=util.se2_interpolate(ph,uLeft1,

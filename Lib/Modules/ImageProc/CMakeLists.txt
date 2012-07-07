@@ -16,7 +16,7 @@ add_library(ImageProc SHARED
               lua_field_occupancy.cpp
               lua_field_spots.cpp
               lua_goal_posts.cpp
-              luaImageProc.cpp
+              lua_ImageProc.cpp
               RadonTransform.cpp
               RegionProps.cpp)
 

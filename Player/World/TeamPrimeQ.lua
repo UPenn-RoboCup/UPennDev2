@@ -7,8 +7,14 @@ require 'Kinematics'
 require 'unix'
 
 -- Initialization
+--[[
 print("My address:",Config.dev.ip_wireless)
 Comm.init(Config.dev.ip_wireless,54321);
+--]]
+
+print("My address:",Config.dev.ip_wired)
+Comm.init(Config.dev.ip_wired,Config.dev.wired_port);
+
 teamID   = gcm.get_team_number();
 playerID = gcm.get_team_player_id();
 msgTimeout = Config.team.msgTimeout;

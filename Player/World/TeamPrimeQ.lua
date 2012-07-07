@@ -13,7 +13,7 @@ Comm.init(Config.dev.ip_wireless,54321);
 --]]
 
 print("My address:",Config.dev.ip_wired)
-Comm.init(Config.dev.ip_wired,Config.dev.wired_port);
+Comm.init(Config.dev.ip_wired,Config.dev.ip_wired_port);
 
 teamID   = gcm.get_team_number();
 playerID = gcm.get_team_player_id();
@@ -34,7 +34,8 @@ end
 function recv_msgs()
   while (Comm.size() > 0) do 
     t = serialization.deserialize(Comm.receive());
-    if (t and (t.tid) and (t.tid == teamID ) and (t.id) and (t.id ~= playerID)) then
+    --if (t and (t.tid) and (t.tid == teamID ) and (t.id) and (t.id ~= playerID)) then
+    if (t and (t.id) and (t.id ~= playerID)) then
       t.tReceive = unix.time();
       states[t.id] = t;
     end

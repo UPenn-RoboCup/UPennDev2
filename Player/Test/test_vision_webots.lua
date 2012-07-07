@@ -1,25 +1,6 @@
-module(... or "", package.seeall)
-
--- Get Platform for package path
-cwd = os.getenv('PWD');
-local platform = os.getenv('PLATFORM') or '';
-if (string.find(platform,'webots')) then cwd = cwd .. '/Player';
-end
-
--- Get Computer for Lib suffix
-local computer = os.getenv('COMPUTER') or '';
-package.cpath = cwd .. '/Lib/?.so;' .. package.cpath;
-
-package.path = cwd .. '/?.lua;' .. package.path;
-package.path = cwd .. '/Util/?.lua;' .. package.path;
-package.path = cwd .. '/Config/?.lua;' .. package.path;
-package.path = cwd .. '/Lib/?.lua;' .. package.path;
-package.path = cwd .. '/Dev/?.lua;' .. package.path;
-package.path = cwd .. '/Motion/?.lua;' .. package.path;
-package.path = cwd .. '/Motion/Walk/?.lua;' .. package.path;
-package.path = cwd .. '/Motion/keyframes/?.lua;' .. package.path;
-package.path = cwd .. '/Vision/?.lua;' .. package.path;
-package.path = cwd .. '/World/?.lua;' .. package.path;
+cwd = cwd or '.'
+package.path = cwd.."/?.lua;"..package.path;
+require('init')
 
 require('Config');
 smindex = 0;

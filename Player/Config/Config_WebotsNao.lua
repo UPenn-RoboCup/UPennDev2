@@ -10,21 +10,11 @@ platform.name = 'WebotsNao'
 listen_monitor = 1
 
 webots = 1
-param = {}
-param.world = 'World/Config_Nao_World'
-param.walk = 'Walk/Config_WebotsNao_Walk' 
-param.kick = 'Kick/Config_WebotsNao_Kick'
-param.vision = 'Vision/Config_WebotsNao_Vision'
-param.camera = 'Vision/Config_WebotsNao_Camera'
-param.fsm = 'FSM/Config_WebotsNao_FSM'
 
-util.loadconfig(param.world)
-util.loadconfig(param.walk)
-util.loadconfig(param.kick)
-util.loadconfig(param.vision)
-
---Location Specific Camera Parameters--
-util.loadconfig(param.camera)
+-- Parameters Files
+params = {}
+params.name = {"Walk", "World", "Kick", "Vision", "FSM", "Camera"};
+util.LoadConfig(params, platform)
 
 -- Device Interface Libraries
 dev = {};
@@ -51,8 +41,6 @@ if game.teamNumber==0 then game.teamColor = 0; --Blue team
 else game.teamColor = 1; --Red team
 end
 
-fsm={}
-util.loadconfig(param.fsm)
 fsm.game = 'RoboCup';
 if (game.playerID == 1) then
   fsm.body = {'NaoGoalie'};

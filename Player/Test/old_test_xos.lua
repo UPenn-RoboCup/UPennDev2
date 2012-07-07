@@ -44,7 +44,7 @@ webots = false;
 
 
 -- Enable OP specific 
-if(Config.platform.name == 'xos') then
+if(Config.platform.name == 'XOS') then
 	darwin = true;
 	--SJ: OP specific initialization posing (to prevent twisting)
 	Body.set_body_hardness(0.3);

@@ -120,5 +120,5 @@ function learn_lut_from_mask()
   else
     print('Enable lut for obstacle in Vision to enable lut from mask');
   end
-  vcm.get_camera_reload_LUT(1)
+  vcm.set_camera_reload_LUT(1)
 end

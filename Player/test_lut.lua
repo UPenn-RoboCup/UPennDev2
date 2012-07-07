@@ -94,6 +94,7 @@ end
 LUT = load_LUT();
 util.ptable(LUT)
 
+--[[
 for i = 1, 262144 do
   if LUT.Obstacle[i] ~= 0 then
     print(i, LUT.Obstacle[i]);
@@ -104,9 +105,10 @@ end
 save_lutfile(Config.camera.lut_file_obs, LUT.Obstacle);
 LUT = load_LUT();
 util.ptable(LUT)
-
+--]]
+--
 for i = 1, 262144 do
-  if LUT.Obstacle[i] ~= 0 then
-    print(i, LUT.Obstacle[i]);
+  if LUT.Detection[i] ~= 0 then
+    print(i, LUT.Detection[i]);
   end
 end

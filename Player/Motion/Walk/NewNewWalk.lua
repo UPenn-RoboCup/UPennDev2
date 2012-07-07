@@ -123,11 +123,15 @@ walkKickRequest = 0;
 walkKickType = 0;
 
 initial_step=2;
+
+testing = Config.walk.testing or false;
+
 ----------------------------------------------------------
 -- End initialization 
 ----------------------------------------------------------
 
 function entry()
+  
   print ("Motion: Walk entry")
   --SJ: now we always assume that we start walking with feet together
   --Because joint readings are not always available with darwins
@@ -151,7 +155,35 @@ end
 
 function update()
   t = Body.get_time();
+  if testing then
+      --Stance parameters
+      bodyHeight = Config.walk.bodyHeight;
+      bodyTilt=Config.walk.bodyTilt or 0;
+      footX = mcm.get_footX();
+      footY = Config.walk.footY;
+      supportX = Config.walk.supportX;
+      supportY = Config.walk.supportY;
 
+      tStep0 = Config.walk.tStep;
+      tStep = Config.walk.tStep;
+      tZmp = Config.walk.tZmp;
+      stepHeight0 = Config.walk.stepHeight;
+      stepHeight = Config.walk.stepHeight;
+      ph1Single = Config.walk.phSingle[1];
+      ph2Single = Config.walk.phSingle[2];
+      ph1Zmp,ph2Zmp=ph1Single,ph2Single;
+
+      velLimitX = Config.walk.velLimitX or {-.06, .08};
+      velLimitY = Config.walk.velLimitY or {-.06, .06};
+      velLimitA = Config.walk.velLimitA or {-.4, .4};
+      velDelta = Config.walk.velDelta or {.03,.015,.15};
+
+      --WalkKick parameters
+      walkKickVel = Config.walk.walkKickVel;
+      walkKickSupportMod = Config.walk.walkKickSupportMod;
+      walkKickHeightFactor = Config.walk.walkKickHeightFactor;
+      tStepWalkKick = Config.walk.tStepWalkKick or tStep;
+    end
   --Don't run update if the robot is sitting or standing
   bodyHeightCurrent = vcm.get_camera_bodyHeight();
   if  bodyHeightCurrent<bodyHeight-0.01 then

@@ -7,9 +7,9 @@ WorldInfo {
   ]
   title "Robotstadium"
   basicTimeStep 40
-#  runRealTime TRUE
-  displayRefresh 8
-  runRealTime FALSE
+  runRealTime TRUE
+  displayRefresh 1
+#  runRealTime FALSE
 }
 Viewpoint {
   orientation -0.483622 0.854639 0.188947 0.761485

@@ -30,5 +30,7 @@ camera.focal_length = 240; -- in pixels
 camera.focal_base = 251.3; -- 1.0472 * 120 image width used in focal length calculatio
 --camera.focal_length = 383; -- in pixels
 --camera.focal_base = 320; -- image width used in focal length calculatio
-camera.lut_file = 'lutWebots.raw';
+--camera.lut_file = 'lutWebots.raw';
+camera.lut_file_obs = 'lut_webots_ob.raw';
+camera.lut_file = 'lut_webots_ob.raw';
 

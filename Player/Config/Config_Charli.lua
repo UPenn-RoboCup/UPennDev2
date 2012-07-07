@@ -29,10 +29,11 @@ dev.camera = 'OPCam';
 dev.kinematics = 'CharliKinematics';
 dev.ip_wired = '192.168.123.255';
 dev.ip_wireless = '192.168.1.255';
+dev.ip_wireless_port = 54321;
 dev.game_control='OPGameControl';
 dev.team='TeamNSL';
 --dev.walk='BasicWalk';  --should be updated
-dev.walk='NewNewNewWalk';
+dev.walk='NewNewNewNewWalk';
 dev.kick = 'NewNewKick'
 
 speak = {}
@@ -96,3 +97,7 @@ gps_only = 0;
 
 --Speak enable
 speakenable = false;
+
+--Use soft-landing foot trajectory
+walk.use_alternative_trajectory = 1;
+walk.use_alternative_trajectory = 0;

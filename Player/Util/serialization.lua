@@ -2,8 +2,7 @@ module(..., package.seeall);
 
 require('cutil')
 
---[[
-function serialize(o)
+function serialize_orig(o)
   local str = "";
   if type(o) == "number" then
     str = tostring(o);
@@ -12,7 +11,7 @@ function serialize(o)
   elseif type(o) == "table" then
     str = "{";
     for k,v in pairs(o) do
-      str = str..string.format("[%s]=%s,",serialize(k),serialize(v));
+      str = str..string.format("[%s]=%s,",serialize_orig(k),serialize_orig(v));
     end
     str = str.."}";
   else	
@@ -20,7 +19,6 @@ function serialize(o)
   end
   return str;
 end
---]]
 
 --New serialization code omiting integer indexes for tables
 --Only do recursive call if v is a table

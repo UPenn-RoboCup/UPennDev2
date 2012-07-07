@@ -38,6 +38,7 @@ shared.camera.rollAngle = vector.zeros(1);--how much image is tilted
 shared.camera.yuyvType = vector.zeros(1);
 --Now we use shm to enable broadcasting from test_vision
 shared.camera.broadcast = vector.zeros(1);
+shared.camera.teambroadcast = vector.zeros(1);
 
 shared.image = {};
 shared.image.select = vector.zeros(1);
@@ -62,9 +63,14 @@ shared.image.scaleB = vector.zeros(1);
 
 shared.image.labelA = (processed_img_width)*(processed_img_height);
 shared.image.labelB = ((processed_img_width)/Config.vision.scaleB)*((processed_img_height)/Config.vision.scaleB);
+--shared.image.labelA_obs = (processed_img_width)*(processed_img_height);
+--shared.image.labelB_obs = ((processed_img_width)/Config.vision.scaleB)*((processed_img_height)/Config.vision.scaleB);
+
 -- calculate image shm size
 shsize.image = (shared.image.yuyv + shared.image.yuyv2+ 
-	shared.image.yuyv3+shared.image.labelA + shared.image.labelB) + 2^16;
+	shared.image.yuyv3+shared.image.labelA + shared.image.labelB 
+--  +shared.image.labelA_obs + shared.image.labelB_obs
+  ) + 2^16;
 
 --Image field-of-view information
 shared.image.fovTL=vector.zeros(2);
@@ -72,6 +78,8 @@ shared.image.fovTR=vector.zeros(2);
 shared.image.fovBL=vector.zeros(2);
 shared.image.fovBR=vector.zeros(2);
 shared.image.fovC=vector.zeros(2);
+
+shared.image.learn_lut = vector.zeros(1);
 
 shared.ball = {};
 shared.ball.detect = vector.zeros(1);

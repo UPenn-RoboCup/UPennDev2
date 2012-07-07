@@ -5,7 +5,7 @@ local cwd = unix.getcwd();
 package.path = cwd.."/../Util/?.lua;"..package.path; --For Transform
 package.path = cwd.."/../Vision/?.lua;"..package.path; --For vcm
 
-dcm = require('OPCommManager');
+dcm = require('CharliCommManager');
 print('Starting device comm manager...');
 dcm.entry()
 
@@ -15,6 +15,11 @@ sensorShm = shm.open('dcmSensor');
 actuatorShm = shm.open('dcmActuator');
 
 require('vcm') --Shared memory is created here, and ready for access
+local imu = require('microstrain')
+imu.open('/dev/ttyACM0')
+imu.set_continuous(0)
+
+
 
 print('Running controller');
 loop = true;
@@ -44,9 +49,19 @@ while (loop) do
    t_timing=t1;
    dcm.update()
 
---   pos=vector.new(sensorShm:get('position'))*180/math.pi;
---   print(string.format("Position:\n Head: %f %f",pos[1],pos[2]));
-
+   -- Update imu
+   imu.request_data()
+   imu_data = imu.receive_data()
+   --XYZ in g unit
+   acc=vector.new({-imu_data[2],-imu_data[1],-imu_data[3]})/9.8;
+   --RPY in rad/s unit
+   gyr=vector.new({imu_data[5],imu_data[4],-imu_data[6]});
+   --RPY in rad unit
+   angle=vector.new({imu_data[8],imu_data[7],imu_data[9]});
+ 
+   sensorShm:set('imuAcc',acc);
+   sensorShm:set('imuGyr',gyr);
+   sensorShm:set('imuAngle',angle);
 
    if (count % ncount == 0) then
       os.execute("clear")
@@ -61,20 +76,23 @@ while (loop) do
 
       print(string.format("Button: %d %d",  unpack(sensorShm:get('button'))));      
 
-      print(string.format("Position:\n Head: %.1f %.1f\n Larm: %.1f %.1f %.1f\n Lleg: %.1f %.1f %.1f %.1f %.1f %.1f\n Rleg: %.1f %.1f %.1f %.1f %.1f %.1f\n Rarm: %.1f %.1f %.1f\n",
-			  unpack(vector.new(sensorShm:get('position'))*180/math.pi)
-		    ));
+      pos = vector.new(sensorShm:get('position'))*180/math.pi;
+      print(
+	string.format("Position:\n")..
+	string.format(
+		"head:%.1f %.1f\n"..
+		"LArm:%.1f %.1f %.1f %.1f\n"..
+		"LLeg:%.1f %.1f %.1f %.1f %.1f %.1f\n"..
+		"RLeg:%.1f %.1f %.1f %.1f %.1f %.1f\n"..
+		"RArm:%.1f %.1f %.1f %.1f\n"..
+--		"Waist:%.1f\nHands:%.1f %.1f\n",
+		"Waist:%.1f\n",
+		unpack(pos)
+		)
+	);
 
       print(string.format("Battery: %.1f V\n", sensorShm:get('battery')/10));
 
---[[
-      print(string.format("Command:\n %f %f\n %f %f %f\n %f %f %f %f %f %f\n %f %f %f %f %f %f\n %f %f %f\n",
-			  unpack(vector.new(actuatorShm:get('command'))*180/math.pi)
-		    ));
-      print(string.format("Hardness:\n %f %f\n %f %f %f\n %f %f %f %f %f %f\n %f %f %f %f %f %f\n %f %f %f\n",
-			  unpack(actuatorShm:get('hardness'))
-		    ));
---]]
    end
 end
 

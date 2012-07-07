@@ -6,21 +6,23 @@
 module(..., package.seeall);
 
 
-require('Comm')
+CommWired=require('Comm');
 -- Only send items from shared memory
 require('vcm')
 require('gcm')
 require('wcm')
+require('ocm')
+require('mcm')
 require('serialization');
 require('ImageProc')
 require('Config');
 
 --sendShm = {'wcm','vcm','gcm'}
-sendShm = { wcmshm=wcm, gcmshm=gcm, vcmshm=vcm }
-itemReject = 'yuyv,labelA,labelB,yuyv2,yuyv3'
+sendShm = { wcmshm=wcm, gcmshm=gcm, vcmshm=vcm, ocmshm=ocm, mcmshm=mcm }
+itemReject = 'yuyv, labelA, labelB, yuyv2, yuyv3, map'
 
 -- Initiate Sending Address
-Comm.init(Config.dev.ip_wired,111111);
+CommWired.init(Config.dev.ip_wired,111111);
 print('Sending to',Config.dev.ip_wired);
 
 -- Add a little delay between packet sending
@@ -58,7 +60,7 @@ function sendB()
     infosize=infosize+#senddata;
     t1=unix.time();
     stime1=stime1+t1-t0;
-    Comm.send(senddata);
+    CommWired.send(senddata);
     t2=unix.time();
     stime2=stime2+t2-t1;
   end 
@@ -91,7 +93,7 @@ function sendA()
     infosize=infosize+#senddata;
     t1=unix.time();
     stime1=stime1+t1-t0;
-    Comm.send(senddata);
+    CommWired.send(senddata);
     t2=unix.time();
     stime2=stime2+t2-t1;
     -- Need to sleep in order to stop drinking out of firehose
@@ -111,16 +113,14 @@ end
 function sendB()
   -- labelB --
   labelB = vcm.get_image_labelB();
-  width = vcm.get_image_width()/8; 
-  height = vcm.get_image_height()/8;
+  width = vcm.get_image_width()/2/Config.vision.scaleB; 
+  height = vcm.get_image_height()/2/Config.vision.scaleB;
   count = vcm.get_image_count();
   
 --  array = serialization.serialize_label_double(
 --	labelB, width, height, 'uint8', 'labelB',count);
-
   array = serialization.serialize_label_rle(
 	labelB, width, height, 'uint8', 'labelB',count);
-
 
   sendlabelB = {};
   sendlabelB.team = {};
@@ -134,7 +134,7 @@ function sendB()
   infosize=infosize+#senddata;
   t1=unix.time();
   stime1=stime1+t1-t0;
-  Comm.send(senddata);
+  CommWired.send(senddata);
   t2=unix.time();
   stime2=stime2+t2-t1;
 
@@ -171,7 +171,7 @@ function sendA()
   infosize=infosize+#senddata;
   t1=unix.time();
   stime1=stime1+t1-t0;
-  Comm.send(senddata);
+  CommWired.send(senddata);
   t2=unix.time();
   stime2=stime2+t2-t1;
 
@@ -182,7 +182,45 @@ function sendA()
   end
 end
 
+function sendmap()
+  -- occmap --
+  occmap = ocm.get_occ_map();
+  width = Config.occ.mapsize; 
+  height = Config.occ.mapsize;
+  count = vcm.get_image_count();
 
+  array = serialization.serialize_array2(
+	occmap, width, height, 'int32', 'occmap',count);
+  
+  sendoccmap = {};
+  sendoccmap.team = {};
+  sendoccmap.team.number = gcm.get_team_number();
+  sendoccmap.team.player_id = gcm.get_team_player_id();
+
+  local tSerialize=0;
+  local tSend=0;  
+  local totalSize=0;
+  for i=1,#array do
+    sendoccmap.arr = array[i];
+    t0 = unix.time();
+    senddata=serialization.serialize(sendoccmap);     
+    t1 = unix.time();
+    tSerialize= tSerialize + t1-t0;
+    CommWired.send(senddata);
+    t2 = unix.time();
+    tSend=tSend+t2-t1;
+    totalSize=totalSize+#senddata;
+
+    -- Need to sleep in order to stop drinking out of firehose
+    unix.usleep(pktDelay);
+  end
+  if debug>0 then
+    print("Image info array num:",#array,"Total size",totalSize);
+    print("Total Serialize time:",#array,"Total",tSerialize);
+    print("Total Send time:",tSend);
+  end
+
+end
 
 function sendImg()
   -- yuyv --
@@ -210,7 +248,7 @@ function sendImg()
     senddata=serialization.serialize(sendyuyv);     
     t1 = unix.time();
     tSerialize= tSerialize + t1-t0;
-    Comm.send(senddata);
+    CommWired.send(senddata);
     t2 = unix.time();
     tSend=tSend+t2-t1;
     totalSize=totalSize+#senddata;
@@ -250,7 +288,7 @@ function sendImgSub2()
     senddata=serialization.serialize(sendyuyv2);
     t1 = unix.time();
     tSerialize= tSerialize + t1-t0;
-    Comm.send(senddata);
+    CommWired.send(senddata);
     t2 = unix.time();
     tSend=tSend+t2-t1;
     totalSize=totalSize+#senddata;
@@ -288,7 +326,7 @@ function sendImgSub4()
     senddata=serialization.serialize(sendyuyv3);
     t1 = unix.time();
     tSerialize= tSerialize + t1-t0;
-    Comm.send(senddata);
+    CommWired.send(senddata);
     t2 = unix.time();
     tSend=tSend+t2-t1;
 
@@ -330,7 +368,7 @@ function update(enable)
   t0 = unix.time();
   senddata=serialization.serialize(send);
   t1 = unix.time();
-  Comm.send(senddata);
+  CommWired.send(senddata);
   t2 = unix.time();
   unix.usleep(pktDelay2);
 
@@ -356,10 +394,12 @@ function update_img( enable, imagecount )
       sendImgSub2();
       sendA();
       sendB();
+      sendmap();
     else
       sendImg();
       sendA();
       sendB();
+      sendmap();
     end
   elseif enable==3 then
     --3: Logging mode

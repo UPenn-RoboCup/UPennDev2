@@ -280,7 +280,8 @@ function get_change_team()
 end
 
 function get_change_role()
-  return 0;
+  local b = get_sensor_button();
+  return b[2];
 end
 
 function get_change_kickoff()
@@ -302,3 +303,10 @@ end
 function calibrate( count )
   return true
 end
+
+function get_sensor_fsrRight()
+end
+
+function get_sensor_fsrLeft()
+end
+

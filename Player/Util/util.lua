@@ -326,7 +326,7 @@ function loadconfig(configName)
 end
 
 function LoadConfig(params, platform)
-  print(file_header)
+  file_header = "Config_"..platform.name;
   for k, v in pairs(params.name) do
     file_name = params[v] or "";
     overload_platform = params[v..'_Platform'] or "";

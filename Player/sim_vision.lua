@@ -1,18 +1,6 @@
-module(... or "", package.seeall)
+cwd = os.getenv('PWD');
 
--- Add the required paths
-local cwd = os.getenv('PWD');
-computer = os.getenv('COMPUTER') or "";
-package.cpath = cwd.."/Lib/?.so;"..package.cpath;
-
-package.path = cwd.."/Util/?.lua;"..package.path;
-package.path = cwd.."/Config/?.lua;"..package.path;
-package.path = cwd.."/Lib/?.lua;"..package.path;
-package.path = cwd.."/Dev/?.lua;"..package.path;
-package.path = cwd.."/World/?.lua;"..package.path;
-package.path = cwd.."/Vision/?.lua;"..package.path;
-package.path = cwd.."/Motion/?.lua;"..package.path; 
-
+require('init')
 require('Config')
 Config.dev.camera = 'SimCam';
 Config.dev.body = 'SimBody';

@@ -1,30 +1,5 @@
-module(... or '', package.seeall)
-
--- Get Platform for package path
-cwd = '.';
-local platform = os.getenv('PLATFORM') or '';
-if (string.find(platform,'webots')) then cwd = cwd .. '/Player';
-end
-
--- Get Computer for Lib suffix
-local computer = os.getenv('COMPUTER') or '';
-if (string.find(computer, 'Darwin')) then
-  -- MacOS X uses .dylib:
-  package.cpath = cwd .. '/Lib/?.dylib;' .. package.cpath;
-else
-  package.cpath = cwd .. '/Lib/?.so;' .. package.cpath;
-end
-
-package.path = cwd .. '/?.lua;' .. package.path;
-package.path = cwd .. '/Util/?.lua;' .. package.path;
-package.path = cwd .. '/Config/?.lua;' .. package.path;
-package.path = cwd .. '/Lib/?.lua;' .. package.path;
-package.path = cwd .. '/Dev/?.lua;' .. package.path;
-package.path = cwd .. '/Motion/?.lua;' .. package.path;
-package.path = cwd .. '/Motion/keyframes/?.lua;' .. package.path;
-package.path = cwd .. '/Motion/Walk/?.lua;' .. package.path;
-package.path = cwd .. '/Vision/?.lua;' .. package.path;
-package.path = cwd .. '/World/?.lua;' .. package.path;
+cwd = os.getenv('PWD')
+require('init')
 
 require('Config')
 require('unix')

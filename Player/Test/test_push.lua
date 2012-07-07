@@ -1,33 +1,11 @@
-module(... or '', package.seeall)
-
--- Get Platform for package path
-cwd = '.';
-local platform = os.getenv('PLATFORM') or '';
-if (string.find(platform,'webots')) then cwd = cwd .. '/Player';
-end
-
--- Get Computer for Lib suffix
-local computer = os.getenv('COMPUTER') or '';
-if (string.find(computer, 'Darwin')) then
-  -- MacOS X uses .dylib:
-  package.cpath = cwd .. '/Lib/?.dylib;' .. package.cpath;
-else
-  package.cpath = cwd .. '/Lib/?.so;' .. package.cpath;
-end
-
-package.path = cwd .. '/?.lua;' .. package.path;
-package.path = cwd .. '/Util/?.lua;' .. package.path;
-package.path = cwd .. '/Config/?.lua;' .. package.path;
-package.path = cwd .. '/Lib/?.lua;' .. package.path;
-package.path = cwd .. '/Dev/?.lua;' .. package.path;
-package.path = cwd .. '/Motion/?.lua;' .. package.path;
-package.path = cwd .. '/Motion/keyframes/?.lua;' .. package.path;
-package.path = cwd .. '/Motion/Walk/?.lua;' .. package.path;
-package.path = cwd .. '/Vision/?.lua;' .. package.path;
-package.path = cwd .. '/World/?.lua;' .. package.path;
+cwd = os.getenv('PWD')
+require('init')
 
 require('unix')
 require('Config')
+Config.dev.walk='PRWalk'; --Push Recovery Walk Demonstration
+Config.walk.fallAngle = 180*math.pi/180; --Don't do fall check
+
 require('shm')
 require('vector')
 require('mcm')
@@ -36,8 +14,8 @@ require('getch')
 require('Body')
 require('Motion')
 require('dive')
+require('walk')
 
-require('grip')
 Motion.entry();
 darwin = false;
 webots = false;
@@ -70,6 +48,10 @@ end
 initToggle = true;
 targetvel=vector.zeros(3);
 button_pressed = {0,0};
+
+
+is_standing = 0;
+push_recovery_type=0;
 
 
 function process_keyinput()
@@ -115,42 +97,11 @@ function process_keyinput()
     elseif byte==string.byte("s") then
       dive.set_dive("diveCenter");
       Motion.event("dive");
-    elseif byte==string.byte("d") then
+    elseif byte==string.byte("a") then
       dive.set_dive("diveRight");
       Motion.event("dive");
 
---[[
-	elseif byte==string.byte("z") then
-		grip.throw=0;
-		Motion.event("pickup");
-	elseif byte==string.byte("x") then
-		grip.throw=1;
-		Motion.event("throw");
---]]
 
-	elseif byte==string.byte("z") then
-	    walk.startMotion("hurray1");
-
-	elseif byte==string.byte("x") then
-	    walk.startMotion("hurray2");
-
-	elseif byte==string.byte("c") then
-	    walk.startMotion("swing");
-
-	elseif byte==string.byte("v") then
-	    walk.startMotion("2punch");
-
---	elseif byte==string.byte("b") then
---	    walk.startMotion("point");
-
-
-
-	elseif byte==string.byte("b") then
-	    grip.throw=0;
-	    Motion.event("pickup");
-	elseif byte==string.byte("n") then
-	    grip.throw=1;
-	    Motion.event("pickup");
 
     elseif byte==string.byte("7") then	
       Motion.event("sit");
@@ -228,9 +179,41 @@ function update()
     button_pressed[1]=1;
   else
     if button_pressed[1]==1 then
-      Motion.event("sit");
+      if is_standing==0 then
+        Motion.event("standup");
+      else
+        Motion.event("sit");
+      end
+      is_standing = 1-is_standing;
     end
     button_pressed[1]=0;
+  end
+
+  if (Body.get_change_role() == 1) then
+    button_pressed[2]=1;
+  else
+    if button_pressed[2]==1 then
+      is_standing = 0;
+      push_recovery_type=push_recovery_type+1;
+      if push_recovery_type==1 then
+	--Ankle only
+        Speak.talk('Ankle Strategy')
+	walk.enable_ankle_pr = true;
+	walk.enable_hip_pr = false;
+
+      elseif push_recovery_type==2 then
+	--Ankle and hip
+        Speak.talk('Hip Strategy')
+	walk.enable_ankle_pr = true;
+	walk.enable_hip_pr = true;
+      else
+        Speak.talk('No Strategy')
+	push_recovery_type=0;
+	walk.enable_ankle_pr = false;
+	walk.enable_hip_pr = false;
+      end
+    end
+    button_pressed[2]=0;
   end
 end
 

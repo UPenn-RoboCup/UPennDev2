@@ -3,30 +3,10 @@ Robot- specific setup code
 Can setup all robot-specific calibration parameters
 And automatically appends it to calibration file
 --]]
-module(... or "", package.seeall)
-
+cwd = os.getenv('PWD')
+require('init')
 webots = false;
 darwin = true;
-local cwd = '.';
--- the webots sim is run from the WebotsController dir (not Player)
-if string.find(cwd, "WebotsController") then
-  webots = true;
-  cwd = cwd.."/Player"
-  package.path = cwd.."/?.lua;"..package.path;
-end
-
-package.cpath = cwd.."/Lib/?.so;"..package.cpath;
-
-package.path = cwd.."/Util/?.lua;"..package.path;
-package.path = cwd.."/Config/?.lua;"..package.path;
-package.path = cwd.."/Lib/?.lua;"..package.path;
-package.path = cwd.."/Dev/?.lua;"..package.path;
-package.path = cwd.."/Motion/?.lua;"..package.path;
-package.path = cwd.."/Motion/Walk/?.lua;"..package.path;
-package.path = cwd.."/Vision/?.lua;"..package.path;
-package.path = cwd.."/World/?.lua;"..package.path;
-package.path = cwd.."/BodyFSM/?.lua;"..package.path;
-package.path = cwd.."/HeadFSM/?.lua;"..package.path;
 
 require('Config');
 --This FIXES monitor issue with test_vision trying to send team message

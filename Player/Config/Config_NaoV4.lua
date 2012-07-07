@@ -6,6 +6,14 @@ require('parse_hostname')
 platform = {};
 platform.name = 'NaoV4'
 
+params = {}
+params.name = {"Walk", "World", "Kick", "Vision", "FSM", "Camera"};
+params.World_Platform = "Nao"
+params.Walk = 'FastStable' 
+params.Camera = 'Grasp'
+
+util.LoadConfig(params, platform)
+
 listen_monitor=1
   
 -- Game Parameters
@@ -17,24 +25,6 @@ game.robotID = game.playerID;
 game.teamColor = parse_hostname.get_team_color();
 game.role = game.playerID-1; -- 0 for goalie
 game.nPlayers = 4;
-
-
-param = {}
-param.world = 'World/Config_Nao_World'
-param.walk = 'Walk/Config_NaoV4_Walk_FastStable' 
-param.kick = 'Kick/Config_Nao_Kick'
-param.vision = 'Vision/Config_NaoV4_Vision'
-param.camera = 'Vision/Config_NaoV4_Camera_Mexico621_fieldC'
-param.fsm = 'FSM/Config_NaoV4_FSM'
-
-util.loadconfig(param.world)
-util.loadconfig(param.kick)
-util.loadconfig(param.vision)
-util.loadconfig(param.walk)
-
---Location Specific Camera Parameters--
-util.loadconfig(param.camera)
-
 
 -- Devive Interface Libraries
 dev = {};
@@ -54,8 +44,6 @@ speakenable = 1;
 
 
 -- FSM Parameters
-fsm = {};
-util.loadconfig(param.fsm)
 fsm.game = 'RoboCup';
 if game.role == 0 then
   fsm.body = {'NaoGoalie'}

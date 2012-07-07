@@ -6,13 +6,12 @@ require('parse_hostname')
 platform = {}; 
 platform.name = 'OP'
 
-util.loadconfig('Walk/Config_OP_Walk')
-util.loadconfig('World/Config_OP_World')
-util.loadconfig('Kick/Config_OP_Kick')
-util.loadconfig('Vision/Config_OP_Vision')
-util.loadconfig('Robot/Config_OP_Robot')
---Location Specific Camera Parameters--
-util.loadconfig('Vision/Config_OP_Camera_Grasp')
+-- Parameters Files
+params = {}
+params.name = {"Robot", "Walk", "World", "Kick", "Vision", "FSM", "Camera"};
+params.Camera = "Grasp"
+
+util.LoadConfig(params, platform)
 
 -- Device Interface Libraries
 dev = {};
@@ -40,9 +39,6 @@ game.role = 1; --default attacker
 --game.role = 0; --goalie
 
 --FSM and behavior settings
-fsm = {};
---SJ: loading FSM config  kills the variable fsm, so should be called first
-util.loadconfig('FSM/Config_WebotsOP_FSM')
 fsm.game = 'RoboCup';
 fsm.head = {'GeneralPlayer'};
 fsm.body = {'GeneralPlayer'};

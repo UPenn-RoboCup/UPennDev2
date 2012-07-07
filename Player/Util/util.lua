@@ -330,6 +330,10 @@ function LoadConfig(params, platform)
   print(file_header)
   for k, v in pairs(params.name) do
     file_name = params[v] or "";
+    overload_platform = params[v..'_Platform'] or "";
+    if string.len(overload_platform) ~= 0 then 
+      file_header = "Config_"..overload_platform;
+    end
     if string.len(file_name) ~= 0 then file_name = '_'..file_name; end
     file_name = v..'/'..file_header..'_'..v..file_name
     loadconfig(file_name)

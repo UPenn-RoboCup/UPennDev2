@@ -1,25 +1,18 @@
 module(..., package.seeall);
-
+require('util')
 require('vector')
 require('parse_hostname')
 
 platform = {}; 
 platform.name = 'OP'
 
-function loadconfig(configName)
-  local localConfig=require(configName);
-  for k,v in pairs(localConfig) do
-    Config[k]=localConfig[k];
-  end
-end
-
-loadconfig('Walk/Config_OP_Walk')
-loadconfig('World/Config_OP_World')
-loadconfig('Kick/Config_OP_Kick')
-loadconfig('Vision/Config_OP_Vision')
-loadconfig('Robot/Config_OP_Robot')
+util.loadconfig('Walk/Config_OP_Walk')
+util.loadconfig('World/Config_OP_World')
+util.loadconfig('Kick/Config_OP_Kick')
+util.loadconfig('Vision/Config_OP_Vision')
+util.loadconfig('Robot/Config_OP_Robot')
 --Location Specific Camera Parameters--
-loadconfig('Vision/Config_OP_Camera_Grasp')
+util.loadconfig('Vision/Config_OP_Camera_Grasp')
 
 -- Device Interface Libraries
 dev = {};
@@ -49,7 +42,7 @@ game.role = 1; --default attacker
 --FSM and behavior settings
 fsm = {};
 --SJ: loading FSM config  kills the variable fsm, so should be called first
-loadconfig('FSM/Config_WebotsOP_FSM')
+util.loadconfig('FSM/Config_WebotsOP_FSM')
 fsm.game = 'RoboCup';
 fsm.head = {'GeneralPlayer'};
 fsm.body = {'GeneralPlayer'};

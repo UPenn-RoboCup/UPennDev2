@@ -1,5 +1,5 @@
 module(..., package.seeall);
-
+require('util')
 require('vector')
 require('parse_hostname')
 
@@ -15,13 +15,13 @@ param.vision = 'Vision/Config_Nao_Vision'
 param.camera = 'Vision/Config_Nao_Camera_Blimp_Room'
 param.fsm = 'FSM/Config_Nao_FSM'
 
-loadconfig(param.walk)
-loadconfig(param.world)
-loadconfig(param.kick)
-loadconfig(param.vision)
+util.loadconfig(param.walk)
+util.loadconfig(param.world)
+util.loadconfig(param.kick)
+util.loadconfig(param.vision)
 
 --Location Specific Camera Parameters--
-loadconfig(param.camera)
+util.loadconfig(param.camera)
 
 -- Devive Interface Libraries
 dev = {};
@@ -49,7 +49,7 @@ game.nPlayers = 4;
 
 -- FSM Parameters
 fsm = {};
-loadconfig(param.fsm)
+util.loadconfig(param.fsm)
 fsm.game = 'RoboCup';
 if (game.playerID == 1) then
   fsm.body = {'NaoGoalie'};

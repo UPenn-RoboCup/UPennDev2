@@ -1,5 +1,5 @@
 module(..., package.seeall);
-
+require('util')
 require('parse_hostname')
 require('vector')
 require('os')
@@ -7,21 +7,13 @@ require('os')
 platform = {};
 platform.name = 'WebotsSaffir'
 
-function loadconfig(configName)
-  local localConfig=require(configName);
-  for k,v in pairs(localConfig) do
-    Config[k]=localConfig[k];
-  end
-end
-
-
-loadconfig('Walk/Config_WebotsSaffir_Walk')
-loadconfig('Kick/Config_WebotsSaffir_Kick')
-loadconfig('World/Config_Charli_World')
-loadconfig('Vision/Config_WebotsOP_Vision')
+util.loadconfig('Walk/Config_WebotsSaffir_Walk')
+util.loadconfig('Kick/Config_WebotsSaffir_Kick')
+util.loadconfig('World/Config_Charli_World')
+util.loadconfig('Vision/Config_WebotsOP_Vision')
 
 --Location Specific Camera Parameters--
-loadconfig('Vision/Config_WebotsOP_Camera')
+util.loadconfig('Vision/Config_WebotsOP_Camera')
 
 -- Device Interface Libraries
 dev = {};
@@ -53,7 +45,7 @@ game.nPlayers = 4;
 
 -- FSM Parameters
 fsm = {};
-loadconfig('FSM/Config_WebotsCharli_FSM')
+util.loadconfig('FSM/Config_WebotsCharli_FSM')
 
 fsm.game = 'OpDemo'
 fsm.body = {'GeneralPlayer'};

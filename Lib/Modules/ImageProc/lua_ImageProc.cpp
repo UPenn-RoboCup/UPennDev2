@@ -23,11 +23,13 @@ extern "C" {
 #include <string>
 #include <algorithm>
 
-#include "color_count.h"
 #include "block_bitor.h"
 #include "ConnectRegions.h"
 
 #include "lua_color_stats.h"
+#include "lua_color_count.h"
+#include "lua_colorlut_gen.h"
+#include "lua_connect_regions.h"
 #include "lua_goal_posts.h"
 #include "lua_field_lines.h"
 #include "lua_field_spots.h"
@@ -388,38 +390,6 @@ static int lua_index_to_label(lua_State *L) {
   return 1;
 }
 
-static int lua_color_count(lua_State *L) {
-  uint8_t *label = (uint8_t *) lua_touserdata(L, 1);
-  if ((label == NULL) || !lua_islightuserdata(L, 1)) {
-    return luaL_error(L, "Input LABEL not light user data");
-  }
-  int n = luaL_checkint(L, 2);
-
-  int *count = color_count(label, n);
-  lua_createtable(L, nColor, 0);
-  for (int i = 0; i < nColor; i++) {
-    lua_pushinteger(L, count[i]);
-    lua_rawseti(L, -2, i);
-  }
-  return 1;
-}
-
-static int lua_color_count_obs(lua_State *L) {
-  uint8_t *label = (uint8_t *) lua_touserdata(L, 1);
-  if ((label == NULL) || !lua_islightuserdata(L, 1)) {
-    return luaL_error(L, "Input LABEL not light user data");
-  }
-  int n = luaL_checkint(L, 2);
-
-  int *count = color_count_obs(label, n);
-  lua_createtable(L, nColor, 0);
-  for (int i = 0; i < nColor; i++) {
-    lua_pushinteger(L, count[i]);
-    lua_rawseti(L, -2, i);
-  }
-  return 1;
-}
-
 static int lua_block_bitor(lua_State *L) {
   uint8_t *label = (uint8_t *) lua_touserdata(L, 1);
   if ((label == NULL) || !lua_islightuserdata(L, 1)) {
@@ -469,261 +439,11 @@ static int lua_tilted_block_bitor(lua_State *L) {
   return 1;
 }
 
-
-
-static int lua_connected_regions_obs(lua_State *L) {
-  static std::vector<RegionProps> props;
-
-  uint8_t *x = (uint8_t *) lua_touserdata(L, 1);
-  if ((x == NULL) || !lua_islightuserdata(L, 1)) {
-    return luaL_error(L, "Input image not light user data");
-  }
-  int mx = luaL_checkint(L, 2);
-  int nx = luaL_checkint(L, 3);
-  int8_t mask = luaL_optinteger(L, 4, 1);
-
-  // horizon attempt
-  //int no = luaL_checkint(L, 4);
-  //uint8_t mask = luaL_optinteger(L, 5, 1);
-  //int rowOffset = no * mx * sizeof(uint8);
-  //int nlabel = ConnectRegions(props, x+rowOffset, mx, nx-no, mask);
-
-  int nlabel = ConnectRegions_obs(props, x, mx, nx, mask);
-  if (nlabel <= 0) {
-    return 0;
-  }
-
-  lua_createtable(L, nlabel, 0);
-  for (int i = 0; i < nlabel; i++) {
-    lua_createtable(L, 0, 3);
-
-    // area field
-    lua_pushstring(L, "area");
-    lua_pushnumber(L, props[i].area);
-    lua_settable(L, -3);
-
-    // centroid field
-    lua_pushstring(L, "centroid");
-    double centroidI = (double)props[i].sumI/props[i].area;
-    double centroidJ = (double)props[i].sumJ/props[i].area;
-    //double centroidJ = (double)props[i].sumJ/props[i].area + rowOffset;
-    lua_createtable(L, 2, 0);
-    lua_pushnumber(L, centroidI);
-    lua_rawseti(L, -2, 1);
-    lua_pushnumber(L, centroidJ);
-    lua_rawseti(L, -2, 2);
-    lua_settable(L, -3);
-
-    // boundingBox field
-    lua_pushstring(L, "boundingBox");
-    lua_createtable(L, 2, 0);
-    lua_pushnumber(L, props[i].minI);
-    lua_rawseti(L, -2, 1);
-    lua_pushnumber(L, props[i].maxI);
-    lua_rawseti(L, -2, 2);
-    lua_pushnumber(L, props[i].minJ);
-    //lua_pushnumber(L, props[i].minJ + rowOffset);
-    lua_rawseti(L, -2, 3);
-    lua_pushnumber(L, props[i].maxJ);
-    //lua_pushnumber(L, props[i].maxJ + rowOffset);
-    lua_rawseti(L, -2, 4);
-    lua_settable(L, -3);
-
-    lua_rawseti(L, -2, i+1);
-  }
-  return 1;
-}
-
-
-static int lua_connected_regions(lua_State *L) {
-  static std::vector<RegionProps> props;
-
-  uint8_t *x = (uint8_t *) lua_touserdata(L, 1);
-  if ((x == NULL) || !lua_islightuserdata(L, 1)) {
-    return luaL_error(L, "Input image not light user data");
-  }
-  int mx = luaL_checkint(L, 2);
-  int nx = luaL_checkint(L, 3);
-  int8_t mask = luaL_optinteger(L, 4, 1);
-
-  // horizon attempt
-  //int no = luaL_checkint(L, 4);
-  //uint8_t mask = luaL_optinteger(L, 5, 1);
-  //int rowOffset = no * mx * sizeof(uint8);
-  //int nlabel = ConnectRegions(props, x+rowOffset, mx, nx-no, mask);
-
-  int nlabel = ConnectRegions(props, x, mx, nx, mask);
-  if (nlabel <= 0) {
-    return 0;
-  }
-
-  lua_createtable(L, nlabel, 0);
-  for (int i = 0; i < nlabel; i++) {
-    lua_createtable(L, 0, 3);
-
-    // area field
-    lua_pushstring(L, "area");
-    lua_pushnumber(L, props[i].area);
-    lua_settable(L, -3);
-
-    // centroid field
-    lua_pushstring(L, "centroid");
-    double centroidI = (double)props[i].sumI/props[i].area;
-    double centroidJ = (double)props[i].sumJ/props[i].area;
-    //double centroidJ = (double)props[i].sumJ/props[i].area + rowOffset;
-    lua_createtable(L, 2, 0);
-    lua_pushnumber(L, centroidI);
-    lua_rawseti(L, -2, 1);
-    lua_pushnumber(L, centroidJ);
-    lua_rawseti(L, -2, 2);
-    lua_settable(L, -3);
-
-    // boundingBox field
-    lua_pushstring(L, "boundingBox");
-    lua_createtable(L, 2, 0);
-    lua_pushnumber(L, props[i].minI);
-    lua_rawseti(L, -2, 1);
-    lua_pushnumber(L, props[i].maxI);
-    lua_rawseti(L, -2, 2);
-    lua_pushnumber(L, props[i].minJ);
-    //lua_pushnumber(L, props[i].minJ + rowOffset);
-    lua_rawseti(L, -2, 3);
-    lua_pushnumber(L, props[i].maxJ);
-    //lua_pushnumber(L, props[i].maxJ + rowOffset);
-    lua_rawseti(L, -2, 4);
-    lua_settable(L, -3);
-
-    lua_rawseti(L, -2, i+1);
-  }
-  return 1;
-}
-
-static int lua_label_to_mask(lua_State *L) {
-  static std::vector<uint32_t> mask;
-
-  uint8_t *label = (uint8_t *) lua_touserdata(L, 1);
-  if ((label == NULL) || !lua_islightuserdata(L, 1)) {
-    return luaL_error(L, "Input LABEL not light user data");
-  }
-  int mx = luaL_checkint(L, 2);
-  int nx = luaL_checkint(L, 3);
-  for (int cnt = 0; cnt < mx * nx; cnt++)
-    mask.push_back(0);
-  int idx = 0, counter = 0;
-  for (int n = 0; n < nx; n++) 
-    for (int m = 0; m < mx; m++) {
-      idx = n * mx + m;
-      if (label[idx] == 0)
-        mask[counter++] = idx; 
-    } 
-
-  lua_pushlightuserdata(L, &mask[0]);
-
-  return 1;
-}
-
-static int lua_yuyv_mask_to_lut(lua_State *L) {
-  static std::vector<uint8_t> cdt;
-
-  // 1st Input: Original RGB-format input image
-  uint32_t *yuyv = (uint32_t *) lua_touserdata(L, 1);
-  if ((yuyv == NULL) || !lua_islightuserdata(L, 1)) {
-    return luaL_error(L, "Input RGB not light user data");
-  }
-
-  // 2nd Input: Mask
-  uint32_t *mask = (uint32_t *) lua_touserdata(L, 2);
-  if (mask == NULL) {
-    return luaL_error(L, "Input Mask not light user data");
-  }
-
-  // 3rd Input: Lookup Table
-  uint8_t *lut = (uint8_t *) lua_touserdata(L, 3);
-  if (lut == NULL) {
-    return luaL_error(L, "Input Lut not light user data");
-  }
-
-  // 4rd Input: Width (in pixels) of the original RGB image  
-  int m = luaL_checkint(L, 4);
-  // 5th Input: Width (in pixels) of the original RGB image
-  int n = luaL_checkint(L, 5);
-
-  for (int cnt = 0; cnt < 262144; cnt ++) {
-    cdt.push_back(*lut);
-    lut++;
-  }
-
-  int labeln = 0, labelm = 0, yuyvidx = 0;
-  for (int cnt = 0; cnt < m * n; cnt++)
-    if (mask[cnt] != 0) {
-      labelm = mask[cnt] % m;
-      labeln = (mask[cnt] - labelm) / m;
-      yuyvidx = labelm + (labeln - 1) * 3 * m; 
-      uint32_t index = ((yuyv[yuyvidx] & 0xFC000000) >> 26)  
-        | ((yuyv[yuyvidx] & 0x0000FC00) >> 4)
-        | ((yuyv[yuyvidx] & 0x000000FC) << 10);
-      cdt[index] = 1;
-    }
-
-  lua_pushlightuserdata(L, &cdt[0]);
-  return 1;
-}
-
-static int lua_rgb_mask_to_lut(lua_State *L) {
-  static std::vector<uint8_t> cdt;
-
-  std::cout << "rgb and mask to lut" << std::endl;
-  // 1st Input: Original RGB-format input image
-  uint8_t *rgb = (uint8_t *) lua_touserdata(L, 1);
-  if ((rgb == NULL) || !lua_islightuserdata(L, 1)) {
-    return luaL_error(L, "Input RGB not light user data");
-  }
-
-  // 2nd Input: Mask
-  uint32_t *mask = (uint32_t *) lua_touserdata(L, 2);
-  if (mask == NULL) {
-    return luaL_error(L, "Input Mask not light user data");
-  }
-
-  // 3rd Input: Lookup Table
-  uint8_t *lut = (uint8_t *) lua_touserdata(L, 3);
-  if (lut == NULL) {
-    return luaL_error(L, "Input Lut not light user data");
-  }
-
-  // 4rd Input: Width (in pixels) of the original RGB image  
-  int m = luaL_checkint(L, 4);
-  // 5th Input: Width (in pixels) of the original RGB image
-  int n = luaL_checkint(L, 5);
-
-  for (int cnt = 0; cnt < 262144; cnt ++) {
-    cdt.push_back(*lut);
-    lut++;
-  }
-
-  for (int cnt = 0; cnt < m * n; cnt++)
-    if (mask[cnt] != 0) {
-      uint8_t r = rgb[3 * mask[cnt]];
-      uint8_t g = rgb[3 * mask[cnt] + 1];
-      uint8_t b = rgb[3 * mask[cnt] + 2];
-
-      uint8_t y = g;
-      uint8_t u = 128 + (b-g)/2;
-      uint8_t v = 128 + (r-g)/2;
-
-      uint32_t index = ((v & 0xFC) >> 2) | ((u & 0xFC) << 4) | ((y & 0xFC) << 10);
-      cdt[index] = 1;
-    }
-
-  lua_pushlightuserdata(L, &cdt[0]);
-  
-  return 1;
-}
-
 static const struct luaL_reg imageProc_lib [] = {
   {"label_to_mask", lua_label_to_mask},
   {"yuyv_mask_to_lut", lua_yuyv_mask_to_lut},
   {"rgb_mask_to_lut", lua_rgb_mask_to_lut},
+
   {"rgb_to_index", lua_rgb_to_index},
   {"rgb_to_yuyv", lua_rgb_to_yuyv},
   {"rgb_to_label", lua_rgb_to_label},
@@ -731,15 +451,20 @@ static const struct luaL_reg imageProc_lib [] = {
   {"yuyv_to_label", lua_yuyv_to_label},
   {"yuyv_to_label_obs", lua_yuyv_to_label_obs},
   {"index_to_label", lua_index_to_label},
+
   {"color_count", lua_color_count},
   {"color_count_obs", lua_color_count_obs},
+
   {"color_stats", lua_color_stats},
   {"tilted_color_stats", lua_tilted_color_stats},
+
   {"block_bitor", lua_block_bitor},
   {"block_bitor_obs", lua_block_bitor_obs},
   {"tilted_block_bitor", lua_tilted_block_bitor},
+
   {"connected_regions", lua_connected_regions},
   {"connected_regions_obs", lua_connected_regions_obs},
+
   {"goal_posts", lua_goal_posts},
   {"tilted_goal_posts", lua_tilted_goal_posts},
   {"field_lines", lua_field_lines},

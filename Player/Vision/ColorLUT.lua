@@ -85,6 +85,8 @@ function save_rgb(rgb)
 end
 
 function learn_lut_from_mask()
+  load_LUT();
+  util.ptable(LUT)
   -- Learn ball color from mask and rebuild colortable
   if enable_lut_for_obstacle == 1 then
     -- get yuyv image from shm

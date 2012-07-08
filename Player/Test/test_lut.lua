@@ -90,7 +90,13 @@ util.ptable(LUT)
 --]]
 --
 for i = 1, 262144 do
+  --[[
   if LUT.Obstacle[i] ~= 0 then
     print(LUT.Obstacle[i]);
   end
+  --]]
+  if LUT.Detection[i] ~= 0 then
+    print(LUT.Detection[i]);
+  end
+
 end

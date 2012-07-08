@@ -303,16 +303,24 @@ end
 -- General Utilities
 --
 function get_arm_angles()
-  saL = get_scaled_prime_arm(0);
-  saR = get_scaled_prime_arm(1);
+  saL,elL = get_scaled_prime_arm(0);
+  saR,elR = get_scaled_prime_arm(1);
   if( not saL or not saR) then
     return;
   end
-  qLArm = Kinematics.inverse_arm( saL );
-  qRArm = Kinematics.inverse_arm( saR );
+  qLArm = Kinematics.inverse_arm( saL,elL );
+  qRArm = Kinematics.inverse_arm( saR,elR );
 
   qLArm[2] = -1*qLArm[2];
 
+--  qLArm[1] = qLArm[1]+elL/2+math.pi;
+--  qRArm[1] = qRArm[1]+elR/2+math.pi;
+
+  qLArm[1] = qLArm[1]+elL;
+  qRArm[1] = qRArm[1]+elR;
+  
+  qLArm[3] = -elL;
+  qRArm[3] = -elR;
   return {qLArm,qRArm};
 end
 
@@ -323,7 +331,7 @@ function get_scaled_prime_arm( arm ) --left is 0
   if(arm==0) then
     e2h = primecm.get_position_ElbowL() - primecm.get_position_HandL();
     s2e = primecm.get_position_ShoulderL() - primecm.get_position_ElbowL();
-    s2h = primecm.get_position_ShoulderL() - primecm.get_position_HandL();
+    --s2h = primecm.get_position_ShoulderL() - primecm.get_position_HandL();
 
     -- Check confidence
     e = primecm.get_confidence_ElbowL();
@@ -333,7 +341,7 @@ function get_scaled_prime_arm( arm ) --left is 0
   else
     e2h = primecm.get_position_ElbowR() - primecm.get_position_HandR();
     s2e = primecm.get_position_ShoulderR() - primecm.get_position_ElbowR();
-    s2h = primecm.get_position_ShoulderR() - primecm.get_position_HandR();
+    --s2h = primecm.get_position_ShoulderR() - primecm.get_position_HandR();
 
     -- Check confidence
     e = primecm.get_confidence_ElbowR();
@@ -346,13 +354,19 @@ function get_scaled_prime_arm( arm ) --left is 0
     --print('Not confident!',s,e,h);
     return nil;
   end
+-- ELBOW ANGLE
+el = math.acos( s2e*e2h / (vector.norm(s2e)*vector.norm(e2h) ) )
 
-  arm_len = vector.norm( e2h ) + vector.norm( s2e );
+
+  e2h = e2h/vector.norm( e2h ) * .129;
+  s2e = s2e / vector.norm( s2e ) * .060;
+  --arm_len = vector.norm( e2h ) + vector.norm( s2e );
+  local offset_raw = s2e+e2h;
+  print('OR: ',offset_raw);
+  --[[
   local offset_unit = s2h / arm_len;
-  --print('Unit Offset:',offset_unit)
-  
   local offset_raw = offset_unit * .189;
-
+--]]
   -- Filter the offset
   local beta = .9;
   if( not offset ) then
@@ -370,7 +384,7 @@ function get_scaled_prime_arm( arm ) --left is 0
   if( op_coord[2] < 0 ) then
     op_coord[2] = 0;
   end
-  return op_coord;
+  return op_coord,el;
 end
 
 function get_torso_orientation()

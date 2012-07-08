@@ -1,25 +1,5 @@
-module(... or "", package.seeall)
-
--- this module is used to facilitate interactive debuging
-
-cwd = '.';
-
-uname = io.popen('uname -s')
-system = uname:read();
-
-computer = os.getenv('COMPUTER') or system;
-package.cpath = cwd.."/Lib/?.so;"..package.cpath;
-
-package.path = cwd.."/Util/?.lua;"..package.path;
-package.path = cwd.."/Config/?.lua;"..package.path;
-package.path = cwd.."/Lib/?.lua;"..package.path;
-package.path = cwd.."/Lib/Util/?.lua;"..package.path;
-package.path = cwd.."/Dev/?.lua;"..package.path;
-package.path = cwd.."/Motion/?.lua;"..package.path;
-package.path = cwd.."/Motion/keyframes/?.lua;"..package.path;
-package.path = cwd.."/Vision/?.lua;"..package.path;
-package.path = cwd.."/World/?.lua;"..package.path;
-
+cwd = os.getenv('PWD')
+require('init')
 
 require('Config')
 require('carray')
@@ -28,10 +8,12 @@ require('vcm')
 require('util')
 
 -- Enable Webots specific
+--[[
 if (string.find(Config.platform.name,'Webots')) then
   webots = 1;
   require('Camera')
 end
+--]]
 
 enable_lut_for_obstacle = Config.vision.enable_lut_for_obstacle or 0;
 
@@ -49,9 +31,9 @@ function load_LUT()
 
   -- Load the obstacle LUT as well
   if enable_lut_for_obstacle == 1 then
-    print('loading obs lut: '..Config.camera.lut_file_obs);
+    print('loading obs lut: '..Config.camera.lut_file_new);
     ColorLUT.Obstacle = carray.new('c', 262144);
-    load_lutfile(Config.camera.lut_file_obs, ColorLUT.Obstacle);
+    load_lutfile(Config.camera.lut_file_new, ColorLUT.Obstacle);
   end
 
   return ColorLUT;
@@ -108,7 +90,7 @@ util.ptable(LUT)
 --]]
 --
 for i = 1, 262144 do
-  if LUT.Detection[i] ~= 0 then
-    print(i, LUT.Detection[i]);
+  if LUT.Obstacle[i] ~= 0 then
+    print(LUT.Obstacle[i]);
   end
 end

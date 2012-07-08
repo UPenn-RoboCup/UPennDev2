@@ -345,7 +345,7 @@ setup_primesense: primesense setup_util
 	mkdir -p $(INSTDIR)
 	find $(PRIMEDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
 	cp $(PRIMEDIR)/SamplesConfig.xml $(INSTDIR)
-	rm $(PLAYERDIR)/Config/Config.lua
+	rm -f $(PLAYERDIR)/Config/Config.lua
 	cd $(PLAYERDIR)/Config && ln -s Config_WebotsOP.lua Config.lua && cd $(CWD)	
 	@echo "\n"
 

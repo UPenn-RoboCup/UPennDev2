@@ -16,7 +16,7 @@ void printTransform(Transform tr) {
 
 // NEED TO FIX HEAD AND ARM KINEMATICS:
 
-  Transform
+Transform
 darwinop_kinematics_forward_head(const double *q)
 {
   Transform t;
@@ -27,7 +27,7 @@ darwinop_kinematics_forward_head(const double *q)
   return t;
 }
 
-  Transform
+Transform
 darwinop_kinematics_forward_larm(const double *q)
 {
   Transform t;
@@ -42,7 +42,7 @@ darwinop_kinematics_forward_larm(const double *q)
   return t;
 }
 
-  Transform
+Transform
 darwinop_kinematics_forward_rarm(const double *q)
 {
   Transform t;
@@ -57,7 +57,7 @@ darwinop_kinematics_forward_rarm(const double *q)
   return t;
 }
 
-  Transform
+Transform
 darwinop_kinematics_forward_lleg(const double *q)
 {
   Transform t;
@@ -72,7 +72,7 @@ darwinop_kinematics_forward_lleg(const double *q)
   return t;
 }
 
-  Transform
+Transform
 darwinop_kinematics_forward_rleg(const double *q)
 {
   Transform t;
@@ -89,8 +89,8 @@ darwinop_kinematics_forward_rleg(const double *q)
 
 std::vector<double>
 darwinop_kinematics_inverse_leg(
-    Transform trLeg,
-    int leg, double unused)
+			   Transform trLeg,
+			   int leg, double unused)
 {
   std::vector<double> qLeg(6);
   bool left = (leg == LEG_LEFT); // Left leg
@@ -151,13 +151,13 @@ darwinop_kinematics_inverse_leg(
   return qLeg;
 }
 
-  std::vector<double>
+std::vector<double>
 darwinop_kinematics_inverse_lleg(Transform trLeg, double unused)
 {
   return darwinop_kinematics_inverse_leg(trLeg, LEG_LEFT, unused);
 }
 
-  std::vector<double>
+std::vector<double>
 darwinop_kinematics_inverse_rleg(Transform trLeg, double unused)
 {
   return darwinop_kinematics_inverse_leg(trLeg, LEG_RIGHT, unused);
@@ -165,10 +165,10 @@ darwinop_kinematics_inverse_rleg(Transform trLeg, double unused)
 
 std::vector<double>
 darwinop_kinematics_inverse_legs(
-    const double *pLLeg,
-    const double *pRLeg,
-    const double *pTorso,
-    int legSupport)
+			    const double *pLLeg,
+			    const double *pRLeg,
+			    const double *pTorso,
+			    int legSupport)
 {
   std::vector<double> qLLeg(12), qRLeg;
   Transform trLLeg = transform6D(pLLeg);
@@ -186,24 +186,31 @@ darwinop_kinematics_inverse_legs(
 }
 
 std::vector<double> darwinop_kinematics_inverse_arm(
-    const double *dArm
-    )
+			    const double *dArm
+			    )
 {
 
   std::vector<double> qArm(3,-999); // Init the 3 angles with value 0
   // Law of cosines to find end effector distance from shoulder
   double c_sq = pow(dArm[0],2)+pow(dArm[1],2)+pow(dArm[2],2);
   double c = sqrt( c_sq );
+  double a_l = lowerArmLength;
+  double a_u = upperArmLength;
+  /*
   if( c>lowerArmLength+upperArmLength )
     return qArm;
-  double y = dArm[1];
-fprintf(stdout,"y: %.2f,c: %.2f\n",y,c)
-fflush(stdout);
+  */
+double y = dArm[1];
+
+//  printf("y: %.2lf, c: %.2lf\n",y,c);
   double tmp = (pow(upperArmLength,2)+pow(lowerArmLength,2)-c_sq) / (2*upperArmLength*lowerArmLength);
   tmp = tmp>1?1:tmp;
   tmp = tmp<-1?-1:tmp;
 
-  qArm[2] = PI - acos( tmp );
+/*  
+  ////////////
+  // New Stuff
+  qArm[2] = PI - dArm[3];
   double stuff = y /(a_u+a_l*cos( qArm[2] ));
   stuff = stuff>1?1:stuff;
   qArm[1] = asin( stuff<-1 ? -1 : stuff );
@@ -211,21 +218,28 @@ fflush(stdout);
   double x_0 = a_l*sin(qArm[2]);
   qArm[0] = atan2(dArm[2],dArm[0]) - atan2(z_0,x_0);
 
-  qArm[2] = -1*qArm[2];
-  qArm[1] = -1*qArm[1];
-  qArm[0] = qArm[0] + PI/2;
+  //qArm[2] = -1*qArm[2];
+  //qArm[1] = -1*qArm[1];
+  qArm[0] = qArm[0] - PI/2;
+  ////////////
+  */
 
-  /*
-  qArm[2] = acos( tmp );
+  
+  ////////////
+  // Old Stuff
+  qArm[2] = acos( tmp ); // Inconsequential
+  
   // Angle of desired point with the y-axis
   qArm[1] = acos( dArm[1] / c );
   // How much rotation about the y-axis (in the xz plane
-  qArm[0] = atan2( dArm[2], dArm[0] ) - qArm[2];
+  qArm[0] = atan2( dArm[2], dArm[0] );// - qArm[2];
 
   // Condition for OP default joint position
-  qArm[2] = qArm[2] - PI;
+  qArm[2] = qArm[2] - PI;//Inconsequential
   qArm[1] = qArm[1] - PI/2;
-  qArm[0] = qArm[0] + PI;
-*/
+  qArm[0] = qArm[0];// + PI; // Do not apply yet
+  /////////////
+
   return qArm;
+
 }

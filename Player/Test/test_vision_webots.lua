@@ -1,4 +1,4 @@
-cwd = cwd or '.'
+cwd = cwd or os.getenv('PWD')
 package.path = cwd.."/?.lua;"..package.path;
 require('init')
 
@@ -191,7 +191,6 @@ function process_keyinput()
      ocm.set_occ_reset(1);
      headangle[2]=50*math.pi/180;
    elseif byte==string.byte('p') then
-     vcm.set_image_learn_lut(1);
    end
 
 

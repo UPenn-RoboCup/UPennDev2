@@ -3,5 +3,5 @@ if Config.fsm.playMode==1 then
   HeadFSM=require('HeadFSMDemo');
 else 
   print("Player HeadFSM loaded")
-  HeadFSM=require('HeadFSM1');
+  HeadFSM=require('HeadFSMDefault');
 end

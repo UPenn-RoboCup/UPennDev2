@@ -191,7 +191,8 @@ function process_keyinput()
      ocm.set_occ_reset(1);
      headangle[2]=50*math.pi/180;
    elseif byte==string.byte('p') then
-     vcm.set_image_learn_lut(1);
+     require('ColorLUT')
+     ColorLUT.learn_lut_from_mask();
    end
 
 

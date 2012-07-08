@@ -72,3 +72,6 @@ Player/Data/*.txt
 
 # screen log
 *screenlog*
+
+# Generated new lut
+*_new.raw

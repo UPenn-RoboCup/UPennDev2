@@ -23,7 +23,7 @@ reset_wb(){
 
 run_dcm_vcm(){
   echo "Starting DCM..."
-  cd $PLAYER_DIR/Lib
+  cd $PLAYER_DIR
   screen $SCREEN_FLAGS dcm $LUA_COM run_dcm.lua
   # Allow DCM some time to start
   sleep 1

@@ -162,9 +162,12 @@ if ( webots or darwin ) then
     process_keyinput();
     -- If skeleton is available:
     if( primecm.get_skeleton_enabled()) then
-      local arms = libboxer.get_arm_angles() or {{0,0,0},{0,0,0}};
-      left_arm = arms[1] or left_arm or {0,0,0};
-      right_arm = arms[2] or right_arm or {0,0,0};
+      local arms = libboxer.get_arm_angles();
+      left_arm = arms[1] or left_arm_old or {0,0,0};
+      right_arm = arms[2] or right_arm_old or {0,0,0};
+      left_arm_old = left_arm or left_arm_old or {0,0,0};
+      right_arm_old = right_arm or right_arm_old or {0,0,0};
+
       local rpy = libboxer.get_torso_orientation() or vector.new({0,0,0});
       --print(string.format('RPY: %.1f %.1f %.1f\n',unpack(180/math.pi*rpy)))
       walk.upper_body_override(left_arm,right_arm,rpy)

@@ -67,8 +67,10 @@ end
 
 --FSM and behavior settings
 fsm.game = 'RoboCup';
-fsm.head = {'GeneralPlayer'};
-fsm.body = {'GeneralPlayer'};
+--fsm.head = {'GeneralPlayer'};
+--fsm.body = {'GeneralPlayer'};
+fsm.head = {'ObstacleChallenge'};
+fsm.body = {'ObstacleChallenge'};
 
 --Behavior flags, should be defined in FSM Configs but can be overridden here
 fsm.playMode = 3; --1 for demo, 2 for orbit, 3 for direct approach

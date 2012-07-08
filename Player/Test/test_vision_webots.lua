@@ -52,7 +52,6 @@ Motion.entry();
 World.entry();
 Vision.entry();
 
-HeadFSM.sm:set_state('headScan');
 Body.set_head_hardness({0.4,0.4});
 controller.wb_robot_keyboard_enable(100);
 
@@ -73,6 +72,8 @@ camera_select = 1;
 
 -- set game state to ready to stop particle filter initiation
 gcm.set_game_state(1);
+
+Motion.event("standup")
 
 function process_keyinput()
   local str = controller.wb_robot_keyboard_get_key();
@@ -191,8 +192,14 @@ function process_keyinput()
      ocm.set_occ_reset(1);
      headangle[2]=50*math.pi/180;
    elseif byte==string.byte('p') then
-     require('ColorLUT')
-     ColorLUT.learn_lut_from_mask();
+     if walk.active then walk.stop();end
+     Motion.event('standup')
+     headsm_running = 1;
+     bodysm_running = 1;
+     HeadFSM.sm:set_state('headLearnLUT');
+     BodyFSM.sm:set_state('bodyLearnLUT');
+--     require('ColorLUT')
+--     ColorLUT.learn_lut_from_mask();
    end
 
 

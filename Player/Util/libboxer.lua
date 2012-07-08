@@ -305,22 +305,33 @@ end
 function get_arm_angles()
   saL,elL = get_scaled_prime_arm(0);
   saR,elR = get_scaled_prime_arm(1);
+  --[[
   if( not saL or not saR) then
     return;
   end
-  qLArm = Kinematics.inverse_arm( saL,elL );
-  qRArm = Kinematics.inverse_arm( saR,elR );
+  --]]
+  if( not saL ) then
+    qLArm = nil;
+  else
+    qLArm = Kinematics.inverse_arm( saL,elL );
+    qLArm[2] = -1*qLArm[2];
+    qLArm[1] = qLArm[1]+elL;
+    qLArm[3] = -elL;
+  end
+  if( not saR ) then
+    qRArm = nil;
+  else
+    qRArm = Kinematics.inverse_arm( saR,elR );
+ 
+  qRArm[1] = qRArm[1]+elR;
 
-  qLArm[2] = -1*qLArm[2];
+  qRArm[3] = -elR;
+end
 
 --  qLArm[1] = qLArm[1]+elL/2+math.pi;
 --  qRArm[1] = qRArm[1]+elR/2+math.pi;
 
-  qLArm[1] = qLArm[1]+elL;
-  qRArm[1] = qRArm[1]+elR;
   
-  qLArm[3] = -elL;
-  qRArm[3] = -elR;
   return {qLArm,qRArm};
 end
 
@@ -362,7 +373,7 @@ el = math.acos( s2e*e2h / (vector.norm(s2e)*vector.norm(e2h) ) )
   s2e = s2e / vector.norm( s2e ) * .060;
   --arm_len = vector.norm( e2h ) + vector.norm( s2e );
   local offset_raw = s2e+e2h;
-  print('OR: ',offset_raw);
+  --print('OR: ',offset_raw);
   --[[
   local offset_unit = s2h / arm_len;
   local offset_raw = offset_unit * .189;
@@ -438,9 +449,9 @@ function get_torso_orientation()
   p = math.atan2(-1*R[3][1],math.cos(y)*R[1][1]+math.sin(y)*R[2][1])
   
   -- Clamp them
-  r = util.procFunc(r,0,5*math.pi/180)
+  r = util.procFunc(r,0,10*math.pi/180)
   p = util.procFunc(p,0,20*math.pi/180)
-  y = util.procFunc(y,0,40*math.pi/180)
+  y = util.procFunc(y,0,30*math.pi/180)
 
   rpy = vector.new({r,p,y})
   --print("RPY: ",unpack(180/math.pi* rpy) )

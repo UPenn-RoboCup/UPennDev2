@@ -6,14 +6,12 @@ require('parse_hostname')
 platform = {}; 
 platform.name = 'Charli'
 
---Robot CFG should be loaded first to set PID values
-util.loadconfig('Robot/Config_Charli_Robot') 
-util.loadconfig('Walk/Config_Charli_Walk')
-util.loadconfig('World/Config_Charli_World')
-util.loadconfig('Kick/Config_Charli_Kick')
-util.loadconfig('Vision/Config_Charli_Vision')
---Location Specific Camera Parameters--
-util.loadconfig('Vision/Config_OP_Camera_Grasp')
+params = {}
+params.name = {"Robot", "Walk", "World", "Kick", "Vision", "FSM", "Camera"};
+params.Camera_Platform = "OP"
+params.Camera = "Grasp"
+
+util.LoadConfig(params, platform)
 
 -- Device Interface Libraries
 dev = {};
@@ -48,10 +46,6 @@ game.nPlayers = 2;
 --------------------
 
 --FSM and behavior settings
-fsm = {};
---SJ: loading FSM config  kills the variable fsm, so should be called first
---util.loadconfig('FSM/Config_OP_FSM')
-util.loadconfig('FSM/Config_Charli_FSM')
 fsm.game = 'RoboCup';
 fsm.head = {'GeneralPlayer'};
 fsm.body = {'GeneralPlayer'};

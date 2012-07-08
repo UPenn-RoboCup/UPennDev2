@@ -202,15 +202,15 @@ std::vector<double> darwinop_kinematics_inverse_arm(
   */
 double y = dArm[1];
 
-  printf("y: %.2lf, c: %.2lf\n",y,c);
+//  printf("y: %.2lf, c: %.2lf\n",y,c);
   double tmp = (pow(upperArmLength,2)+pow(lowerArmLength,2)-c_sq) / (2*upperArmLength*lowerArmLength);
   tmp = tmp>1?1:tmp;
   tmp = tmp<-1?-1:tmp;
 
-  /*
+/*  
   ////////////
   // New Stuff
-  qArm[2] = PI - acos( tmp );
+  qArm[2] = PI - dArm[3];
   double stuff = y /(a_u+a_l*cos( qArm[2] ));
   stuff = stuff>1?1:stuff;
   qArm[1] = asin( stuff<-1 ? -1 : stuff );
@@ -218,11 +218,12 @@ double y = dArm[1];
   double x_0 = a_l*sin(qArm[2]);
   qArm[0] = atan2(dArm[2],dArm[0]) - atan2(z_0,x_0);
 
-  qArm[2] = -1*qArm[2];
-  qArm[1] = -1*qArm[1];
-  qArm[0] = qArm[0] + PI/2;
+  //qArm[2] = -1*qArm[2];
+  //qArm[1] = -1*qArm[1];
+  qArm[0] = qArm[0] - PI/2;
   ////////////
   */
+
   
   ////////////
   // Old Stuff

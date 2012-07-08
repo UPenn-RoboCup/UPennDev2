@@ -623,6 +623,8 @@ static int lua_label_to_mask(lua_State *L) {
 }
 
 static int lua_yuyv_mask_to_lut(lua_State *L) {
+  static std::vector<uint8_t> cdt;
+
   // 1st Input: Original RGB-format input image
   uint32_t *yuyv = (uint32_t *) lua_touserdata(L, 1);
   if ((yuyv == NULL) || !lua_islightuserdata(L, 1)) {
@@ -646,6 +648,11 @@ static int lua_yuyv_mask_to_lut(lua_State *L) {
   // 5th Input: Width (in pixels) of the original RGB image
   int n = luaL_checkint(L, 5);
 
+  for (int cnt = 0; cnt < 262144; cnt ++) {
+    cdt.push_back(*lut);
+    lut++;
+  }
+
   int labeln = 0, labelm = 0, yuyvidx = 0;
   for (int cnt = 0; cnt < m * n; cnt++)
     if (mask[cnt] != 0) {
@@ -655,14 +662,17 @@ static int lua_yuyv_mask_to_lut(lua_State *L) {
       uint32_t index = ((yuyv[yuyvidx] & 0xFC000000) >> 26)  
         | ((yuyv[yuyvidx] & 0x0000FC00) >> 4)
         | ((yuyv[yuyvidx] & 0x000000FC) << 10);
-      lut[index] = (lut[index] < 1)? lut[index] : 1;
+      cdt[index] = 1;
     }
 
-  lua_pushlightuserdata(L, &lut[0]);
+  lua_pushlightuserdata(L, &cdt[0]);
   return 1;
 }
 
 static int lua_rgb_mask_to_lut(lua_State *L) {
+  static std::vector<uint8_t> cdt;
+
+  std::cout << "rgb and mask to lut" << std::endl;
   // 1st Input: Original RGB-format input image
   uint8_t *rgb = (uint8_t *) lua_touserdata(L, 1);
   if ((rgb == NULL) || !lua_islightuserdata(L, 1)) {
@@ -681,11 +691,15 @@ static int lua_rgb_mask_to_lut(lua_State *L) {
     return luaL_error(L, "Input Lut not light user data");
   }
 
-
   // 4rd Input: Width (in pixels) of the original RGB image  
   int m = luaL_checkint(L, 4);
   // 5th Input: Width (in pixels) of the original RGB image
   int n = luaL_checkint(L, 5);
+
+  for (int cnt = 0; cnt < 262144; cnt ++) {
+    cdt.push_back(*lut);
+    lut++;
+  }
 
   for (int cnt = 0; cnt < m * n; cnt++)
     if (mask[cnt] != 0) {
@@ -698,9 +712,10 @@ static int lua_rgb_mask_to_lut(lua_State *L) {
       uint8_t v = 128 + (r-g)/2;
 
       uint32_t index = ((v & 0xFC) >> 2) | ((u & 0xFC) << 4) | ((y & 0xFC) << 10);
-      lut[index] = (lut[index] < 1)? lut[index]:1; 
+      cdt[index] = 1;
     }
-  lua_pushlightuserdata(L, &lut[0]);
+
+  lua_pushlightuserdata(L, &cdt[0]);
   
   return 1;
 }

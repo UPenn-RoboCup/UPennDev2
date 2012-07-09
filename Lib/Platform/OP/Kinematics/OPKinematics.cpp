@@ -186,8 +186,9 @@ darwinop_kinematics_inverse_legs(
 }
 
 std::vector<double> darwinop_kinematics_inverse_arm(
-			    const double *dArm
-			    )
+			    const double *dArm,
+			    const double *elbow
+          )
 {
 
   std::vector<double> qArm(3,-999); // Init the 3 angles with value 0
@@ -207,13 +208,17 @@ double y = dArm[1];
   tmp = tmp>1?1:tmp;
   tmp = tmp<-1?-1:tmp;
 
-/*  
+  if( dArm[3]>PI || dArm[3] < -PI )
+    return qArm;
+
+  /*
   ////////////
   // New Stuff
-  qArm[2] = PI - dArm[3];
-  double stuff = y /(a_u+a_l*cos( qArm[2] ));
+  qArm[2] = PI - elbow[0];
+  double stuff = y /(upperArmLength+lowerArmLength*cos( qArm[2] ));
   stuff = stuff>1?1:stuff;
-  qArm[1] = asin( stuff<-1 ? -1 : stuff );
+  stuff = stuff<-1?-1:stuff;
+  qArm[1] = asin( stuff );
   double z_0 = (a_u+a_l*cos(qArm[2]))*cos(qArm[1]);
   double x_0 = a_l*sin(qArm[2]);
   qArm[0] = atan2(dArm[2],dArm[0]) - atan2(z_0,x_0);
@@ -222,9 +227,8 @@ double y = dArm[1];
   //qArm[1] = -1*qArm[1];
   qArm[0] = qArm[0] - PI/2;
   ////////////
-  */
+*/
 
-  
   ////////////
   // Old Stuff
   qArm[2] = acos( tmp ); // Inconsequential

@@ -19,7 +19,7 @@ sm:add_state(headLookGoal)
 sm:add_state(headScan)
 
 sm:set_transition(headLearnLUT, 'timeout', headLearnLUT);
-sm:set_transition(headLearnLUT, 'done', headStart);
+sm:set_transition(headLearnLUT, 'done', headScan);
 
 sm:set_transition(headStart, 'done', headTrack);
 

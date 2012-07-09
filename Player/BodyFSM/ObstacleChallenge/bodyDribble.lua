@@ -94,6 +94,8 @@ function update()
     end
   end
  
+--  print(vStep[1], vStep[2], vStep[3])
+--  print(walk.active)
   walk.set_velocity(vStep[1],vStep[2],vStep[3]);
 
   if (t - ball.t > tLost) then

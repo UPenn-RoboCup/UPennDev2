@@ -40,7 +40,7 @@ end
 
 function update()
   local t = Body.get_time();
-  ball = wcm.get_ball();
+  all = wcm.get_ball();
 
 
   -- search/spin until the ball is found

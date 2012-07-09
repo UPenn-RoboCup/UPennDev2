@@ -193,12 +193,12 @@ function process_keyinput()
      headangle[2]=50*math.pi/180;
    elseif byte==string.byte('p') then
      -- Change min color for ball
-     if walk.active then walk.stop();end
+--     if walk.active then walk.stop();end
 --     Motion.event('standup')
      headsm_running = 1;
---     bodysm_running = 1;
+     bodysm_running = 1;
      HeadFSM.sm:set_state('headLearnLUT');
---     BodyFSM.sm:set_state('bodyStop');
+     BodyFSM.sm:set_state('bodyWait');
 --     require('ColorLUT')
 --     ColorLUT.learn_lut_from_mask();
    end
@@ -209,6 +209,8 @@ function process_keyinput()
      Body.set_head_command(headangle);
      print("Headangle:", headangle[2]*180/math.pi)
    end
+
+   walk.set_velocity(unpack(targetvel));
  end
 end
 
@@ -270,7 +272,7 @@ function update()
   for i = 1, obstacle_num do
 
   end
-  walk.set_velocity(unpack(targetvel));
+
 
 end
 

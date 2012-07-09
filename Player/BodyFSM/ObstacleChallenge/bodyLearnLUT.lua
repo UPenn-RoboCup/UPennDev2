@@ -25,6 +25,13 @@ function update()
   if (t - t0 > timeout) then
     return "timeout";
   end
+
+  -- check if new lut learned
+  local flag = vcm.get_camera_learned_new_lut();
+  if (flag == 1) then
+    return 'done';
+  end
+
 end
 
 function exit()

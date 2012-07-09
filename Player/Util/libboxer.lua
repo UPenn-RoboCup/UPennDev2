@@ -310,23 +310,29 @@ function get_arm_angles()
     return;
   end
   --]]
-  if( not saL ) then
-    qLArm = nil;
-  else
-    qLArm = Kinematics.inverse_arm( saL,elL );
+  qLArm = nil;
+  qRArm = nil;
+  if( saL and math.abs(elL)<=math.pi ) then
+--    print('saL: ', unpack(saL) );
+    --print('ElbowL: ',elL);
+    qLArm = Kinematics.inverse_arm( saL,vector.ones(1)*elL );
+    if(qLArm) then
     qLArm[2] = -1*qLArm[2];
     qLArm[1] = qLArm[1]+elL;
     qLArm[3] = -elL;
+--    print('qL: ', unpack(qLArm) );
+    end
   end
-  if( not saR ) then
-    qRArm = nil;
-  else
-    qRArm = Kinematics.inverse_arm( saR,elR );
- 
-  qRArm[1] = qRArm[1]+elR;
 
-  qRArm[3] = -elR;
-end
+  if( saR and math.abs(elR)<=math.pi ) then
+    --print('ElbowR: ',elR);    
+    qRArm = Kinematics.inverse_arm( saR,vector.ones(1)*elR );
+    if(qRArm) then
+    
+    qRArm[1] = qRArm[1]+elR;
+    qRArm[3] = -elR;
+  end
+  end
 
 --  qLArm[1] = qLArm[1]+elL/2+math.pi;
 --  qRArm[1] = qRArm[1]+elR/2+math.pi;

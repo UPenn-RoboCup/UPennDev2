@@ -62,8 +62,7 @@ dev.ip_wireless = '192.168.1.255'; --Our Router
 dev.ip_wireless_port = 54321;
 dev.game_control='OPGameControl';
 dev.team='TeamPrimeQ';
---dev.walk='NewNewNewWalk';
-dev.walk='NewNewNewNewNewWalk';
+dev.walk='N5Walk';
 dev.kick = 'NewNewKick'
 dev.gender = 1; -- 1 for body and 0 for girl 
 

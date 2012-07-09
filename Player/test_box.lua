@@ -74,6 +74,10 @@ function process_keyinput()
     elseif byte==string.byte("d") then	
       walk.doPunch(3); 
 
+      -- Stabilization
+    elseif byte==string.byte("z") then
+      walk.no_stabilize = not walk.no_stabilize;
+      
       -- walk commands
     elseif byte==string.byte("7") then	
       Motion.event("sit");
@@ -164,7 +168,7 @@ if ( webots or darwin ) then
   while (true) do
     -- update motion process
     local using_ps = primecm.get_skeleton_enabled();
-    print('Using ps: ',using_ps)
+    --print('Using ps: ',using_ps)
     if( using_ps>0 ) then
       if( not walk.active ) then
         Motion.event('standup')
@@ -192,7 +196,7 @@ if ( webots or darwin ) then
       local left_arm = primecm.get_joints_qLArm();
       local right_arm = primecm.get_joints_qRArm();
       local rpy = primecm.get_joints_rpy();
-      print(string.format('RPY: %.1f %.1f %.1f\n',unpack(180/math.pi*rpy)))
+      --print(string.format('RPY: %.1f %.1f %.1f\n',unpack(180/math.pi*rpy)))
       walk.upper_body_override(left_arm,right_arm,rpy)
     else
       walk.upper_body_override_off();
@@ -201,6 +205,12 @@ if ( webots or darwin ) then
 
     process_keyinput();
     update();
+
+    t_diff = unix.time() - (t_last or 0);
+    if(t_diff>1) then
+      print('Stabilized: ', not walk.no_stabilize )
+      t_last = unix.time();
+    end
     io.stdout:flush();
     if(darwin) then
       unix.usleep(tDelay);

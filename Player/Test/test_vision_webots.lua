@@ -192,12 +192,13 @@ function process_keyinput()
      ocm.set_occ_reset(1);
      headangle[2]=50*math.pi/180;
    elseif byte==string.byte('p') then
+     -- Change min color for ball
      if walk.active then walk.stop();end
-     Motion.event('standup')
+--     Motion.event('standup')
      headsm_running = 1;
-     bodysm_running = 1;
+--     bodysm_running = 1;
      HeadFSM.sm:set_state('headLearnLUT');
-     BodyFSM.sm:set_state('bodyLearnLUT');
+--     BodyFSM.sm:set_state('bodyStop');
 --     require('ColorLUT')
 --     ColorLUT.learn_lut_from_mask();
    end

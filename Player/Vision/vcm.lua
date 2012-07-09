@@ -43,7 +43,9 @@ shared.camera.yuyvType = vector.zeros(1);
 --Now we use shm to enable broadcasting from test_vision
 shared.camera.broadcast = vector.zeros(1);
 shared.camera.teambroadcast = vector.zeros(1);
+
 shared.camera.reload_LUT = vector.zeros(1);
+shared.camera.learned_new_lut = vector.zeros(1);
 
 shared.image = {};
 shared.image.select = vector.zeros(1);

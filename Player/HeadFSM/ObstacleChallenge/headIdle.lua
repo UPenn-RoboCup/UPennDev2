@@ -16,7 +16,7 @@ function entry()
 
   -- set head to default position
   local yaw = 0;
-  local pitch = 20*math.pi/180;
+  local pitch = 0*math.pi/180;
 
   Body.set_head_command({yaw, pitch-pitchBias});
 

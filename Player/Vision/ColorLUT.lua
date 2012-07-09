@@ -86,7 +86,7 @@ end
 
 function learn_lut_from_mask()
   load_LUT();
-  util.ptable(LUT)
+--  util.ptable(LUT)
   -- Learn ball color from mask and rebuild colortable
   if enable_lut_for_obstacle == 1 then
     -- get yuyv image from shm
@@ -121,4 +121,5 @@ function learn_lut_from_mask()
     print('Enable lut for obstacle in Vision to enable lut from mask');
   end
   -- vcm.set_camera_reload_LUT(1)
+  vcm.set_camera_learned_new_lut(1)
 end

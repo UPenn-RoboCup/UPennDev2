@@ -20,9 +20,17 @@ shared.occ.vel = vector.zeros(3);
 -- max 5 obstacle clusters
 shared.obstacle = {};
 shared.obstacle.num = vector.zeros(1);
-shared.obstacle.centroid = vector.zeros(5 * 2);
-shared.obstacle.angle_range = vector.zeros(5 * 2);
-shared.obstacle.nearest = vector.zeros(5 * 2);
+-- centroids
+shared.obstacle.cx = vector.zeros(5);
+shared.obstacle.cy = vector.zeros(5);
+-- range in terms of angle
+shared.obstacle.la = vector.zeros(5);
+shared.obstacle.ra = vector.zeros(5);
+-- nearest point
+shared.obstacle.nx = vector.zeros(5);
+shared.obstacle.ny = vector.zeros(5);
+-- nearest distance
+shared.obstacle.ndist = vector.zeros(5);
 
 
 -- Robot Centroid x y on Map 

@@ -38,7 +38,7 @@ assert(f, 'Could not open file')
 header = f:read('*a')
 --print(header)
 
-fname_save = 'op_obs.wbt'
+fname_save = 'op_obs_auto.wbt'
 fs = io.open(fname_save, 'w+')
 
 obs_num = 5;

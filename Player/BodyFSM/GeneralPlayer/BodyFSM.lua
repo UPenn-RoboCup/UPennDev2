@@ -8,9 +8,9 @@ if Config.fsm.playMode==1 then
 elseif Config.fsm.playMode==2 then
   -- Simple FSM (Approach and orbit)
   print("====Simple FSM Loaded====")
-  BodyFSM = require('BodyFSM1');
+  BodyFSM = require('BodyFSMSimple');
 elseif Config.fsm.playMode==3 then
   -- Advanced FSM 
   print("====Advanced FSM Loaded====")
-  BodyFSM = require('BodyFSM2');
+  BodyFSM = require('BodyFSMAdvanced');
 end

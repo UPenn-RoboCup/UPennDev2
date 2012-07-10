@@ -1,55 +1,31 @@
 module(..., package.seeall);
-
+require('util')
 require('vector')
 require('unix')
+
+--Robot CFG should be loaded first to set PID values
+local robotName=unix.gethostname();
 
 platform = {}; 
 platform.name = 'OP'
 
-function loadconfig(configName)
-  local localConfig=require(configName);
-  for k,v in pairs(localConfig) do
-    Config[k]=localConfig[k];
-  end
+-- Parameters Files
+params = {}
+params.name = {"Robot", "Walk", "World", "Kick", "Vision", "FSM", "Camera"};
+if (robotName == 'sally') then 
+--  params.Robot = "Gripper_Robot" 
+  params.Robot = "Sally_Robot" 
 end
+params.Kick = "Slow"
+--params.Kick = "3"
 
---Robot CFG should be loaded first to set PID values
-local robotName=unix.gethostname();
-if (robotName=='sally') then 
---  loadconfig('Robot/Config_OPGripper_Robot') 
-  loadconfig('Robot/Config_OPSally_Robot') 
-  loadconfig('Walk/Config_OP_Walk')
---  walk.qLArm=math.pi/180*vector.new({90,20,-40});
---  walk.qRArm=math.pi/180*vector.new({90,-20,-40});
-else
-  loadconfig('Robot/Config_OP_Robot') 
-  loadconfig('Walk/Config_OP_Walk')
-end
+---Location Specific Camera Parameters--
+--params.Camera = "VT"
+params.Camera = "Grasp"
+--params.Camera = "L512"
+--params.Camera = "L512_Day"
 
-
-
-loadconfig('World/Config_OP_World')
---loadconfig('Kick/Config_OP_Kick')
-loadconfig('Kick/Config_OP_Kick_Slow')
---loadconfig('Kick/Config_OP_Kick3')
-loadconfig('Vision/Config_OP_Vision')
-
---Location Specific Camera Parameters--
---loadconfig('Vision/Config_OP_Camera_VT')
-loadconfig('Vision/Config_OP_Camera_Grasp')
---loadconfig('Vision/Config_OP_Camera_L512')
---loadconfig('Vision/Config_OP_Camera_L512_Day')
-
---RC12 -MEXICO
---loadconfig('Vision/Config_OP_Camera_RC12_day1_8AM')
---loadconfig('Vision/Config_OP_Camera_RC12_FieldA')
---loadconfig('Vision/Config_OP_Camera_RC12_FieldB')
---loadconfig('Vision/Config_OP_Camera_RC12_FieldB_New')
---loadconfig('Vision/Config_OP_Camera_RC12_FieldD')
---loadconfig('Vision/Config_OP_Camera_RC12_day0')
---loadconfig('Vision/Config_OP_Camera_RC12_day1_8AM')
-
---loadconfig('Vision/Config_OP_Camera_Ob_F1')
+util.LoadConfig(params, platform)
 
 -- Device Interface Libraries
 dev = {};
@@ -117,9 +93,6 @@ game.nPlayers = 5;
 --------------------
 
 --FSM and behavior settings
-fsm = {};
---SJ: loading FSM config  kills the variable fsm, so should be called first
-loadconfig('FSM/Config_OP_FSM')
 fsm.game = 'RoboCup';
 fsm.head = {'GeneralPlayer'};
 fsm.body = {'GeneralPlayer'};

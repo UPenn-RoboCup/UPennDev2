@@ -305,8 +305,12 @@ function calibrate( count )
 end
 
 function get_sensor_fsrRight()
+  fsr = {0};
+  return fsr
 end
 
 function get_sensor_fsrLeft()
+  fsr = {0};
+  return fsr
 end
 

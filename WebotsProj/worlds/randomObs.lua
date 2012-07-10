@@ -4,6 +4,9 @@ cwd = cwd ..'/../../Player'
 require('init')
 require('util')
 
+range_y = {-1.0, 1.0}
+range_x = {-1.5, 1.5}
+
 trigrid = {}
 trigrid.x = {}
 trigrid.y = {}
@@ -13,11 +16,14 @@ f = io.open(trigrid_file, 'r')
 line = f:read("*l")
 nline = 0;
 while line ~= nil do
-  nline = nline + 1;
+
   y = tonumber(string.sub(line, 1, 18))
   x = tonumber(string.sub(line, 19))
-  trigrid.x[nline] = x;
-  trigrid.y[nline] = y;
+  if (x >= range_x[1] and x <= range_x[2]) and ( y >= range_y[1] and y <= range_y[2]) then
+      nline = nline + 1;
+      trigrid.x[nline] = x;
+      trigrid.y[nline] = y;
+  end
 --  print(x, y)
   line = f:read("*l")
 end
@@ -35,7 +41,7 @@ header = f:read('*a')
 fname_save = 'op_obs.wbt'
 fs = io.open(fname_save, 'w+')
 
-obs_num = 20;
+obs_num = 5;
 obs = {}
 obs.x = {}
 obs.y = {}

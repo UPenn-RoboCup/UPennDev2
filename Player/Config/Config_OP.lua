@@ -323,8 +323,9 @@ fsm.bodyPosition.maxStep3 = 0.04;
 
 -----------------------------------------------------------------------
 --Setting for match #4
+
 --led_on = 0; --turn off eye led
-led_on = 1; --Grasp
+led_on = 1; --turn ON eye led
 fsm.enable_sidekick = 0;
 
 -----------------------------------------------------------------------

@@ -31,6 +31,7 @@ else
 
 --  dofile("Player/main.lua");
 
-    dofile("Player/Test/test_main_webots.lua");
+    --dofile("Player/Test/test_main_webots.lua");
+    dofile("Player/Test/test_box.lua");
 end
 

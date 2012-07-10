@@ -36,7 +36,7 @@ walk.qRArmKick=math.pi/180*vector.new({90,-30,-60});
 
 walk.hardnessSupport = 1;
 walk.hardnessSwing = 1;
-walk.hardnessArm=.9;
+walk.hardnessArm=.3;
 ---------------------------------------------
 -- Gait parameters
 ---------------------------------------------

@@ -75,3 +75,4 @@ Player/Data/*.txt
 
 # Generated new lut
 *_new.raw
+*_auto.*

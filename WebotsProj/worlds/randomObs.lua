@@ -9,6 +9,13 @@ fs = io.open(fname_save, 'w+')
 
 
 obs_num = 5;
+obs = {}
+obs.x = {}
+obs.y = {}
+for cnt = 1, obs_num do 
+  obs.x[cnt] = math.random() * 4 - 2;
+  obs.y[cnt] = math.random() * 3 - 1.5;
+end
 
 fs:write(header)
 for cnt = 1, obs_num do

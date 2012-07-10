@@ -197,8 +197,9 @@ function process_keyinput()
 --     Motion.event('standup')
      headsm_running = 1;
      bodysm_running = 1;
-     HeadFSM.sm:set_state('headLearnLUT');
-     BodyFSM.sm:set_state('bodyWait');
+--     HeadFSM.sm:set_state('headLearnLUT');
+     HeadFSM.sm:set_state('headScan');
+     BodyFSM.sm:set_state('bodySearch');
 --     require('ColorLUT')
 --     ColorLUT.learn_lut_from_mask();
    end

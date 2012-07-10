@@ -28,7 +28,7 @@ function update()
   local t = Body.get_time();
 
   -- get opponent position
-  local opose = wcm.get_opponent_pose();
+  local opose = footballcm.get_opponent_pose();
   local gps_pose = wcm.get_robot_gpspose();
   local vel = libfootball.update()
   walk.set_velocity(vel.vx, vel.vy, vel.va);

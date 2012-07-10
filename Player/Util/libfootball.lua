@@ -31,7 +31,7 @@ x_start = 3;
 
 function record_yardage( )
   if( playerID==1 ) then
-    local opose = wcm.get_opponent_pose();
+    local opose = footballcm.get_opponent_pose();
     local yardage = x_start - opose[1];
 
     -- Clamp: more yards --> 0, less yards --> 1
@@ -83,7 +83,7 @@ function update( )
 end
 
 function get_dist()
-  local opose    = wcm.get_opponent_pose();
+  local opose    = footballcm.get_opponent_pose();
   local gps_pose = wcm.get_robot_gpspose();
   local oppRelative = util.pose_relative(
   opose, gps_pose
@@ -101,7 +101,7 @@ function avoid()
 
   if( avoid_type==1 ) then
     -- Go to opposite corner
-    local opose    = wcm.get_opponent_pose();
+    local opose    = footballcm.get_opponent_pose();
     local gps_pose = wcm.get_robot_gpspose();
 
 
@@ -135,7 +135,7 @@ function avoid()
 end
 
 function direct()
-  local opose    = wcm.get_opponent_pose();
+  local opose    = footballcm.get_opponent_pose();
   local gps_pose = wcm.get_robot_gpspose();
   local ret = {};
 
@@ -155,7 +155,7 @@ function predict()
 
   -- Get opponent's velocity
   local opose_prev = opose;
-  opose = wcm.get_opponent_pose();
+  opose = footballcm.get_opponent_pose();
   local opose_diff = opose - opose_prev;
   local t_prev = t_opp;
   t_opp = Body.get_time();
@@ -193,7 +193,7 @@ function predict()
 end
 
 function mirror()
-  local opose    = wcm.get_opponent_pose();
+  local opose    = footballcm.get_opponent_pose();
   local gps_pose = wcm.get_robot_gpspose()
   local diff = (opose-gps_pose);
   if( math.abs(diff[2])<1 ) then -- within a yar mirrored
@@ -235,7 +235,7 @@ function go_predict()
 end
 
 function reset_vars()
-  opose = wcm.get_opponent_pose();
+  opose = footballcm.get_opponent_pose();
   t_opp = Body.get_time();
   o_vx = 0;
   o_vy = 0;

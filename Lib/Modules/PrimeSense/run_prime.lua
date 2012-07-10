@@ -7,8 +7,8 @@ require 'gcm'
 run_once = false;
 
 -- Broadcast over the network
-net = true;
---net = false;
+--net = true;
+net = false;
 -- run from log file (this is set automatically)
 -- lua run_prime XXX.lua where XXX.lua is the log
 logs = false;

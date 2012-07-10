@@ -40,13 +40,13 @@ end
 
 function update()
   local t = Body.get_time();
-  all = wcm.get_ball();
-
+  ball = wcm.get_ball();
 
   -- search/spin until the ball is found
   walk.set_velocity(0, 0, direction*vSpin);
 
   if (t - ball.t < 0.2) then
+    print('ball found in body Search')
     if role==0 then
       return "ballgoalie";
     else

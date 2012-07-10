@@ -140,11 +140,11 @@ function update()
   odom_update();
 	
 	-- shm Update
-  odom = OccMap.retrieve_odometry();
-  ocm.set_occ_odom(vector.new({odom.x, odom.y, odom.a}));
+--  odom = OccMap.retrieve_odometry();
+--  ocm.set_occ_odom(vector.new({odom.x, odom.y, odom.a}));
 --  print('odom from map',odom.x..' '..odom.y..' '..odom.a);
-	occmap = OccMap.retrieve_map();
-	ocm.set_occ_map(occmap);		
+--	occmap = OccMap.retrieve_map();
+--	ocm.set_occ_map(occmap);		
 
   local reset = ocm.get_occ_reset();
   if reset == 1 then

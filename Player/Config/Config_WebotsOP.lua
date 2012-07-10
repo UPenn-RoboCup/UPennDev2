@@ -221,7 +221,9 @@ fsm.headTrack.tLost = 1.5 * speedFactor;
 fsm.headTrack.minDist = 0.15; --Default value 0.30,If ball is closer than this, don't look up
 
 -- Play Football
+--[[
 fsm.game = 'Football';
 fsm.head = {'Football'};
 fsm.body = {'Football'};
 dev.team = 'TeamFootball'
+--]]

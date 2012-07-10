@@ -9,15 +9,6 @@ require('Config');
 shared = {};
 shsize = {};
 
-shared.opponent = {}
-shared.opponent.pose = vector.zeros(3);
-shared.opponent.ready = vector.zeros(1);
-shared.opponent.caught = vector.zeros(1)
-
-shared.agent = {}
-shared.agent.caught = vector.zeros(1);
-shared.agent.ready = vector.zeros(1);
-
 shared.robot = {};
 shared.robot.pose = vector.zeros(3);
 shared.robot.uTorso = vector.zeros(3);

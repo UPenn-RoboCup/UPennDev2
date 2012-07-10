@@ -263,9 +263,13 @@ function update()
 
 
   obstacle_num = ocm.get_obstacle_num();
-  obstacle_centroid = ocm.get_obstacle_centroid();
-  obstacle_angle_range = ocm.get_obstacle_angle_range();
-  obstacle_nearest = ocm.get_obstacle_nearest();
+  obstacle_centroid_x = ocm.get_obstacle_cx();
+  obstacle_centroid_y = ocm.get_obstacle_cy();
+  obstacle_angle_range_left = ocm.get_obstacle_la();
+  obstacle_angle_range_right = ocm.get_obstacle_ra();
+  obstacle_nearest_x = ocm.get_obstacle_nx();
+  obstacle_nearest_y = ocm.get_obstacle_ny();
+  obstacle_nearest_dist = ocm.get_obstacle_ndist();
 
 
   velangle = math.atan2(targetvel[2], targetvel[1]);

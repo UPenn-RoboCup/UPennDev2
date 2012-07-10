@@ -97,30 +97,29 @@ function obs_in_occ()
   obstacle = OccMap.get_obstacle();
   local nOb = obstacle[1];
   ocm.set_obstacle_num(nOb);
-  centroid = vector.zeros(maxOb * 2);
-  angle_range = vector.zeros(maxOb * 2);
-  nearest = vector.zeros(maxOb * 2);
---  print('Find ',nOb);
+  centroid_x = vector.zeros(maxOb);
+  centroid_y = vector.zeros(maxOb);
+  left_range = vector.zeros(maxOb);
+  right_range = vector.zeros(maxOb);
+  nearest_x = vector.zeros(maxOb);
+  nearest_y = vector.zeros(maxOb);
+  nearest_dist = vector.zeros(maxOb);
   for i = 1 , nOb do
---    print('centroid')
---    util.ptable(obstacle[i].centroid);
-    centroid[(i-1)*2+1] = obstacle[i + 1].centroid[1];
-    centroid[(i-1)*2+2] = obstacle[i + 1].centroid[2];
---    print('angle_range')
---    print(obstacle[i].angle_range[1] * 180 / math.pi, 
---          obstacle[i].angle_range[2] * 180 / math.pi);
-    angle_range[(i-1)*2+1] = obstacle[i + 1].angle_range[1];
-    angle_range[(i-1)*2+2] = obstacle[i + 1].angle_range[2];
---    print('nearest')
---    util.ptable(obstacle[i].nearest);
-    nearest[(i-1)*3+1] = obstacle[i + 1].nearest[1];
-    nearest[(i-1)*3+2] = obstacle[i + 1].nearest[3];
+    centroid_x[i] = obstacle[i + 1].centroid[1];
+    centroid_y[i] = obstacle[i + 1].centroid[2];
+    left_range[i] = obstacle[i + 1].angle_range[1];
+    right_range[i] = obstacle[i + 1].angle_range[2];
+    nearest_x[i] = obstacle[i + 1].nearest[1];
+    nearest_y[i] = obstacle[i + 1].nearest[2];
+    nearest_dist[i] = obstacle[i + 1].nearest[3];
   end
-  ocm.set_obstacle_centroid(centroid);
-  ocm.set_obstacle_angle_range(angle_range);
-  ocm.set_obstacle_nearest(nearest);
---  endd = unix.time();
---  print(endd - start);
+  ocm.set_obstacle_cx(centroid_x);
+  ocm.set_obstacle_cy(centroid_y);
+  ocm.set_obstacle_la(left_range);
+  ocm.set_obstacle_ra(right_range);
+  ocm.set_obstacle_nx(nearest_x);
+  ocm.set_obstacle_ny(nearest_y);
+  ocm.set_obstacle_ndist(nearest_dist);
 end
 
 counter = 0;
@@ -153,12 +152,12 @@ function update()
     ocm.set_occ_reset(0);
   end
 
-  local get_obstacle = ocm.get_occ_get_obstacle();
+--  local get_obstacle = ocm.get_occ_get_obstacle();
 --  if get_obstacle == 1 then
-  if counter == 25 then
+--  if counter == 25 then
     obs_in_occ();
-    counter = 0;
-  end
+--    counter = 0;
+--  end
 --    print("get obstacles from occmap");
 --    ocm.set_occ_get_obstacle(0);
 --  end

@@ -1,36 +1,5 @@
-module(... or "", package.seeall)
-
-require('unix')
-webots = false;
-darwin = false;
-
-
-local cwd = unix.getcwd();
--- the webots sim is run from the WebotsController dir (not Player)
-if string.find(cwd, "WebotsController") then
-  webots = true;
-  cwd = cwd.."/Player"
-  package.path = cwd.."/?.lua;"..package.path;
-end
-
-computer = os.getenv('COMPUTER') or "";
-if (string.find(computer, "Darwin")) then
-   -- MacOS X uses .dylib:
-   package.cpath = cwd.."/Lib/?.dylib;"..package.cpath;
-else
-   package.cpath = cwd.."/Lib/?.so;"..package.cpath;
-end
-
-package.path = cwd.."/Util/?.lua;"..package.path;
-package.path = cwd.."/Config/?.lua;"..package.path;
-package.path = cwd.."/Lib/?.lua;"..package.path;
-package.path = cwd.."/Dev/?.lua;"..package.path;
-package.path = cwd.."/Motion/?.lua;"..package.path;
-package.path = cwd.."/Motion/Walk/?.lua;"..package.path;
-package.path = cwd.."/Vision/?.lua;"..package.path;
-package.path = cwd.."/World/?.lua;"..package.path;
-package.path = cwd.."/BodyFSM/?.lua;"..package.path;
-package.path = cwd.."/HeadFSM/?.lua;"..package.path;
+cwd = os.getenv('PWD')
+require('init')
 
 require('Config')
 require('shm')
@@ -42,6 +11,10 @@ require("getch")
 require('kick')
 require('Speak')
 require('Comm')
+
+webots = false;
+darwin = false;
+
 
 -- initialize state machines
 Motion.entry();

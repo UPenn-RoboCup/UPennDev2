@@ -14,9 +14,6 @@ require('Speak')
 require('Body')
 require('Motion')
 require('gcm')
-require('ocm')
-
-gcm.say_id()
 
 smindex = 0;
 
@@ -60,7 +57,6 @@ local t0 = unix.time();
 local tUpdate = t0;
 
 -- Broadcast the images at a lower rate than other data
-local broadcast_enable=0;
 local imageCount=0;
 
 -- set game state to ready to stop init particle filter during debugging
@@ -74,7 +70,6 @@ tUpdate = unix.time();
 Config.fsm.playMode=1; --Always demo mode
 fsm.enable_walkkick = 0;
 fsm.enable_sidekick = 0;
-broadcast_enable=0;
 button_pressed = {0,0};
 
 function process_keyinput()
@@ -116,26 +111,6 @@ function process_keyinput()
     elseif byte==string.byte(",") then	targetvel[1]=targetvel[1]-0.02;
     elseif byte==string.byte("h") then	targetvel[2]=targetvel[2]+0.02;
     elseif byte==string.byte(";") then	targetvel[2]=targetvel[2]-0.02;
-
-    -- reset OccMap
-    elseif byte==string.byte("/") then 
-      print("reset occomap");
-      ocm.set_occ_reset(1);
-    elseif byte==string.byte(".") then
-      print("get obstacles");
-      nob = ocm.get_ob_num();
-      print(nob,' obstacle found');
-      if (nob > 0) then 
-        obx = ocm.get_ob_x();
-        print('obstacle x')
-        util.ptable(obx);
-        oby = ocm.get_ob_y();
-        print('obstacle y')
-        util.ptable(oby);
-        obdist = ocm.get_ob_dist();
-        print('obstacle dist')
-        util.ptable(obdist);
-      end
 
     --switch camera 
     elseif byte==string.byte("-") then
@@ -198,16 +173,9 @@ function process_keyinput()
       behavior.cycle_behavior();
 
     --Logging mode
-
-    elseif byte==string.byte("3") then
-      Body.set_head_hardness(0.4);
-      HeadFSM.sm:set_state('headLog');
-      headsm_running=1;
-
     elseif byte==string.byte("4") then
       Body.set_head_hardness(0.4);
       HeadFSM.sm:set_state('headLog');
---      HeadFSM.sm:set_state('headObs');
       headsm_running=1;
 
     elseif byte==string.byte("5") then
@@ -217,8 +185,6 @@ function process_keyinput()
       Body.set_head_hardness(0.5);
       BodyFSM.sm:set_state('bodySearch');   
       HeadFSM.sm:set_state('headScan');
-       ocm.set_occ_reset(1);
-
       walk.start();
 
     elseif byte==string.byte("6") then
@@ -230,16 +196,10 @@ function process_keyinput()
       footX = Config.walk.footX or 0;
       print("foot center to ball pos: ",ball.x,ball.y);      
 
-    elseif byte==string.byte("g") then	
-      --Broadcast selection
-      local mymod = 4;
-      broadcast_enable = (broadcast_enable+1)%mymod;
-
-      print("\nBroadcast:", broadcast_enable);
     --Left kicks (for camera angle calibration)
---    elseif byte==string.byte("3") then	
---      kick.set_kick("kickForwardLeft");
---      Motion.event("kick");
+    elseif byte==string.byte("3") then	
+      kick.set_kick("kickForwardLeft");
+      Motion.event("kick");
     elseif byte==string.byte("t") then
       walk.doWalkKickLeft();
     elseif byte==string.byte("y") then
@@ -252,22 +212,10 @@ function process_keyinput()
       bodysm_running=0;
       Motion.event("standup");
     elseif byte==string.byte("9") then	
-ocm.set_occ_reset(1);
-
       Motion.event("walk");
       walk.start();
-    elseif byte==string.byte("0") then	
-      Motion.event("diveready");
-    elseif byte==string.byte('o') then
-      print("reset occ map")
-      ocm.set_occ_reset(1);
-      headangle[2]=50*math.pi/180;
-    elseif byte==string.byte('p') then
-      print(Config.obs_challenge);
-      vcm.set_image_learn_lut(1);
     end
-
-
+    walk.set_velocity(unpack(targetvel));
     if headsm_running == 0 then
       Body.set_head_command({headangle[1],headangle[2]-headPitchBias});
       print("\nHead Yaw Pitch:", unpack(headangle*180/math.pi))
@@ -282,8 +230,11 @@ function update()
   count = count + 1;
   --Update battery info
   wcm.set_robot_battery_level(Body.get_battery_level());
+  vcm.set_camera_teambroadcast(1); --Turn on wireless team broadcast
+
   --Set game state to SET to prevent particle resetting
   gcm.set_game_state(1);
+
 
   if (not init)  then
     if (calibrating) then
@@ -324,50 +275,8 @@ function update()
   else
     -- update state machines 
     process_keyinput();
-    
---[[
-    if wcm.get_attack_bearing() ~= nil then
-    ob_num = ocm.get_obstacle_num();
-    ob_angle = ocm.get_obstacle_angle_range();
-    ob_nearest = ocm.get_obstacle_nearest();
-    dir = 1; -- left : 2 -- right
-    obstacle = 0;
-    close = 0
---    print(ob_angle);
-
-    for i = 1, ob_num * 2, 2 do
-      if ob_angle[i] > 1.4 and ob_angle[i+1] < 1.9 and ob_nearest[i+1] < 0.3 then
-        print("obstacle");
-        obstacle = 1;
-      end
-      if ob_angle[i] < 1.3 then dir = 2; print("turn right") end
-      if ob_angle[i] > 2 then dir = 1; print("turn left") end
-    end
-
-    if obstacle == 1 then
-      if dir == 1 then 
-        attackBearing = wcm.get_attack_bearing() - 25 * math.pi/180;
-      elseif dir == 2 then
-        attackBearing = wcm.get_attack_bearing() + 25 * math.pi/180;
-      end
-    else
-      attackBearing = wcm.get_attack_bearing();
-    end
-    obstacle = 0;
-    vx = 0.02;
-    vy = 0;
-    va = 0.2*attackBearing;
-  end
---]]
-
---    walk.set_velocity(vx,vy,va);
-    walk.set_velocity(unpack(targetvel));
-
-
     Motion.update();
     Body.update();
-    -- Keep setting monitor flag
-    vcm.set_camera_broadcast(broadcast_enable);
 
     if headsm_running>0 then
       HeadFSM.update();

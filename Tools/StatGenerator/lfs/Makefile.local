@@ -1,0 +1,22 @@
+# Makefile used to build libraries
+include ../../../Lib/Makefile.inc
+
+TARGETS = all clean
+.PHONY: $(TARGETS)
+
+all: lfs
+
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
+%.o: %.cc
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
+%.o: %.c
+	$(CC) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
+
+lfs: lfs.o 
+	$(LD) $(LDFLAGS) -o lfs.$(SHLIBEXT) $(LIBOPTS) $^ $(LIB_DIR) -lm
+	cp lfs.$(SHLIBEXT) ../.
+
+clean:
+	rm -f *.$(SHLIBEXT) *.o
+	rm -f ../*.$(SHLIBEXT)

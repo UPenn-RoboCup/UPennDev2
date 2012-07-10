@@ -1,24 +1,16 @@
 module(..., package.seeall);
+require('util')
 require('vector')
 
 -- Name Platform
 platform = {}; 
 platform.name = 'WebotsOP'
 
-function loadconfig(configName)
-  local localConfig=require(configName);
-  for k,v in pairs(localConfig) do
-    Config[k]=localConfig[k];
-  end
-end
-
-loadconfig('Walk/Config_WebotsOP_Walk')
-loadconfig('World/Config_OP_World')
-loadconfig('Kick/Config_WebotsOP_Kick')
-loadconfig('Vision/Config_WebotsOP_Vision')
-
---Location Specific Camera Parameters--
-loadconfig('Vision/Config_WebotsOP_Camera')
+-- Parameters Files
+params = {}
+params.name = {"Walk", "World", "Kick", "Vision", "FSM", "Camera"};
+params.World_Platform = "OP"
+util.LoadConfig(params, platform)
 
 -- Device Interface Libraries
 dev = {};
@@ -45,9 +37,6 @@ else game.teamColor = 1; --Red team
 end
 
 --FSM and behavior settings
-fsm = {};
---SJ: loading FSM config  kills the variable fsm, so should be called first
-loadconfig('FSM/Config_WebotsOP_FSM')
 fsm.game = 'RoboCup';
 fsm.head = {'GeneralPlayer'};
 fsm.body = {'SimplePlayer'};

@@ -1,5 +1,5 @@
 module(..., package.seeall);
-
+require('util')
 require('parse_hostname')
 require('vector')
 require('os')
@@ -7,20 +7,11 @@ require('os')
 platform = {};
 platform.name = 'WebotsNao'
 
-function loadconfig(configName)
-  local localConfig=require(configName);
-  for k,v in pairs(localConfig) do
-    Config[k]=localConfig[k];
-  end
-end
-
-loadconfig('Config_WebotsGeneric_Walk')
-loadconfig('Config_WebotsGeneric_Kick')
-loadconfig('Config_WebotsOP_World')
-loadconfig('Config_WebotsGeneric_Vision')
-
---Location Specific Camera Parameters--
-loadconfig('Config_WebotsGeneric_Camera')
+-- Parameters Files
+params = {}
+params.name = {"Walk", "World", "Kick", "Vision", "FSM", "Camera"};
+params.World_Platform = "OP"
+util.LoadConfig(params, platform)
 
 -- Device Interface Libraries
 dev = {};

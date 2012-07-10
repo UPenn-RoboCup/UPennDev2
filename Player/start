@@ -23,7 +23,7 @@ reset_wb(){
 
 run_dcm_vcm(){
   echo "Starting DCM..."
-  cd $PLAYER_DIR/Lib
+  cd $PLAYER_DIR
   screen $SCREEN_FLAGS dcm $LUA_COM run_dcm.lua
   # Allow DCM some time to start
   sleep 1
@@ -76,7 +76,7 @@ run_visiontest(){
   run_dcm_vcm
   echo "Starting Test Vision..."
   cd $PLAYER_DIR
-  screen -m -L -S test $LUA_COM test_vision.lua
+  screen -m -L -S test $LUA_COM Test/test_vision.lua
   #
   echo "Rock and Roll!"
   screen -ls
@@ -92,7 +92,7 @@ run_obstacle(){
   #
   echo "Starting Test Vision..."
   cd $PLAYER_DIR
-  screen -m -L -S test $LUA_COM test_vision.lua
+  screen -m -L -S test $LUA_COM Test/test_vision.lua
   #
   echo "Rock and Roll!"
   screen -ls

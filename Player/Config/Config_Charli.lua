@@ -1,26 +1,17 @@
 module(..., package.seeall);
-
+require('util')
 require('vector')
 require('parse_hostname')
 
 platform = {}; 
 platform.name = 'Charli'
 
-function loadconfig(configName)
-  local localConfig=require(configName);
-  for k,v in pairs(localConfig) do
-    Config[k]=localConfig[k];
-  end
-end
+params = {}
+params.name = {"Robot", "Walk", "World", "Kick", "Vision", "FSM", "Camera"};
+params.Camera_Platform = "OP"
+params.Camera = "Grasp"
 
---Robot CFG should be loaded first to set PID values
-loadconfig('Robot/Config_Charli_Robot') 
-loadconfig('Walk/Config_Charli_Walk')
-loadconfig('World/Config_Charli_World')
-loadconfig('Kick/Config_Charli_Kick')
-loadconfig('Vision/Config_Charli_Vision')
---Location Specific Camera Parameters--
-loadconfig('Vision/Config_OP_Camera_Grasp')
+util.LoadConfig(params, platform)
 
 -- Device Interface Libraries
 dev = {};
@@ -55,10 +46,6 @@ game.nPlayers = 2;
 --------------------
 
 --FSM and behavior settings
-fsm = {};
---SJ: loading FSM config  kills the variable fsm, so should be called first
---loadconfig('FSM/Config_OP_FSM')
-loadconfig('FSM/Config_Charli_FSM')
 fsm.game = 'RoboCup';
 fsm.head = {'GeneralPlayer'};
 fsm.body = {'GeneralPlayer'};

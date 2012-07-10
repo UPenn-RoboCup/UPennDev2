@@ -47,7 +47,7 @@ vision.enable_midfield_landmark_detection = 0;
 vision.enable_freespace_detection = 1;
 
 -- use this to enable obstacle specific colortable
-vision.enable_lut_for_obstacle = 0;
+vision.enable_lut_for_obstacle = 1;
 
 
 ----------------------------

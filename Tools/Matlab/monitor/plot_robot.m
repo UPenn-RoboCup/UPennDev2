@@ -67,7 +67,7 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel,name)
       plot_gps_robot(robot_struct,scale);
     elseif drawlevel==4
       plot_robot(robot_struct,scale);
-      plot_info(robot_struct,scale);
+      plot_info(robot_struct,scale,1);
       plot_ball(robot_struct,scale);
       plot_sound(robot_struct,scale);
       %plot_particle(robot_struct,scale);

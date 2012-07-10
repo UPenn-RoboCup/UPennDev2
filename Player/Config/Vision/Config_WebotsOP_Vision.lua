@@ -47,7 +47,7 @@ vision.enable_midfield_landmark_detection = 0;
 vision.enable_freespace_detection = 1;
 
 -- use this to enable obstacle specific colortable
-vision.enable_lut_for_obstacle = 1;
+vision.enable_lut_for_obstacle = 0;
 
 
 ----------------------------
@@ -62,12 +62,12 @@ vision.subsampling = 1;
 --For 320*240 labelA
 vision.ball={};
 vision.ball.diameter = 0.065;
---vision.ball.th_min_color = 2;
---vision.ball.th_min_color2 = 2;
+vision.ball.th_min_color = 2;
+vision.ball.th_min_color2 = 2;
 vision.ball.th_min_fill_rate = 0.35;
 -- Increase min colors for obstacle challenge
-vision.ball.th_min_color = 20;
-vision.ball.th_min_color2 = 20;
+--vision.ball.th_min_color = 20;
+--vision.ball.th_min_color2 = 20;
 
 vision.ball.th_height_max  = 0.20;
 vision.ball.th_ground_boundingbox = {-15,15,0,10};

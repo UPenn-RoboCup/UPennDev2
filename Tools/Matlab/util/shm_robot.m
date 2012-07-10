@@ -91,7 +91,7 @@ global MONITOR %for sending the webots check information
         
 
         ballx = h.wcmBall.get_x();
-	bally = h.wcmBall.get_y();
+	      bally = h.wcmBall.get_y();
         ballt = h.wcmBall.get_t();
         ballvelx = h.wcmBall.get_velx();
         ballvely = h.wcmBall.get_vely();
@@ -125,18 +125,27 @@ global MONITOR %for sending the webots check information
         r.time = h.wcmRobot.get_time();
         r.penalty = h.wcmRobot.get_penalty();
 
- 	gpspose = h.wcmRobot.get_gpspose();
+ 	      gpspose = h.wcmRobot.get_gpspose();
         r.gpspose = struct('x', gpspose(1), 'y', gpspose(2), 'a', gpspose(3));
- 	r.gps_attackbearing = h.wcmRobot.get_gps_attackbearing();
+ 	      r.gps_attackbearing = h.wcmRobot.get_gps_attackbearing();
 
-
+        free_detect = h.vcmFreespace.get_detect();
+        if free_detect == 1
+          r.obstacle = {};
+          r.obstacle.num = h.ocmObstacle.get_num();
+          r.obstacle.centroid_x = h.ocmObstacle.get_cx();
+          r.obstacle.centroid_y = h.ocmObstacle.get_cy();
+          r.obstacle.nearest_x = h.ocmObstacle.get_nx();
+          r.obstacle.nearest_y = h.ocmObstacle.get_ny();
+          r.obstacle.nearest_dist = h.ocmObstacle.get_ndist();
+        end
 
         r.tReceive = 0;
 %TODO: monitor timeout    
         if r.time>h.tLastUpdate 
-	  h.updated=1;
-	  h.tLastUpdate=r.time;
-	end
+    	    h.updated=1;
+	        h.tLastUpdate=r.time;
+	      end
  
     catch
     end
@@ -477,6 +486,16 @@ global MONITOR %for sending the webots check information
   			r.occ.robot_pos = h.ocmOcc.get_robot_pos();
         r.occ.odom = h.ocmOcc.get_odom();
         r.occ.vel = h.ocmOcc.get_vel();
+      end
+
+      if r.free.detect == 1
+        r.obstacle = {};
+        r.obstacle.num = h.ocmObstacle.get_num();
+        r.obstacle.centroid_x = h.ocmObstacle.get_cx();
+        r.obstacle.centroid_y = h.ocmObstacle.get_cy();
+        r.obstacle.nearest_x = h.ocmObstacle.get_nx();
+        r.obstacle.nearest_y = h.ocmObstacle.get_ny();
+        r.obstacle.nearest_dist = h.ocmObstacle.get_ndist();
       end
       
       r.bd = {};

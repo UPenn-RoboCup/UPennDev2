@@ -16,6 +16,7 @@ end
 enable_lut_for_obstacle = Config.vision.enable_lut_for_obstacle or 0;
 
 function load_LUT()
+  vcm.set_camera_learned_new_lut(0)
 
   print('loading lut: '..Config.camera.lut_file);
   LUT.Detection = carray.new('c', 262144);

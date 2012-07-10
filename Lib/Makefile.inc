@@ -28,6 +28,7 @@ MATLABDIR= ../Tools/Matlab
 COLORTABLEDIR= $(MATLABDIR)/Colortable
 VELODIR= $(MODULEDIR)/Velocity
 PRIMEDIR= $(MODULEDIR)/PrimeSense
+HANDSDIR= $(MODULEDIR)/Hands
 PLATFORMS = nao naov4 op xos webots_nao webots_op webots_generic webots_hubo visiontest
 INSTDIR= ../Player/Lib
 WEBOTSCONTDIR= ../WebotsController

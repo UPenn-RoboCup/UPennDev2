@@ -168,6 +168,11 @@ primesense:
 	@echo "Compiling PrimeSense Code...\n"
 	@cd $(PRIMEDIR) && make && cd $(CWD)
 	@echo "\n"
+
+hands::
+	@echo "Compiling Hands Code...\n"
+	@cd $(HANDSDIR) && make && cd $(CWD)
+	@echo "\n"
 	
 setup_nao: nao setup_util setup_image setup_comm
 	@echo "Setting up Nao Lua/C++ Libraries...\n"
@@ -340,7 +345,14 @@ setup_primesense: primesense setup_util
 	mkdir -p $(INSTDIR)
 	find $(PRIMEDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
 	cp $(PRIMEDIR)/SamplesConfig.xml $(INSTDIR)
+	rm -f $(PLAYERDIR)/Config/Config.lua
 	cd $(PLAYERDIR)/Config && ln -s Config_WebotsOP.lua Config.lua && cd $(CWD)	
+	@echo "\n"
+
+setup_hands: hands setup_util
+	@echo "Setting up Hands Lua/C++ Libraries...\n"
+	mkdir -p $(INSTDIR)
+	find $(HANDSDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
 	@echo "\n"
 
 setup_naoqi: naoqi setup_util
@@ -348,6 +360,10 @@ setup_naoqi: naoqi setup_util
 	mkdir -p $(INSTDIR)
 	rsync -avr --exclude=".*" $(NAOQIDIR)/build/sdk/lib/naoqi/* ../Install/naoqi/lib/naoqi/
 	@echo "\n"
+
+setup_boxer: setup_op setup_hands setup_primesense
+
+setup_webots_boxer: setup_webots_op setup_hands setup_primesense
 
 clean:
 	cd $(IMAGEDIR) && make clean && cd $(CWD)

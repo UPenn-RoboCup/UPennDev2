@@ -4,7 +4,7 @@ require('Body')
 require('Motion')
 
 t0 = 0
-timeout = 6.0;
+timeout = 60.0;
 
 function entry()
   print(_NAME..' entry');

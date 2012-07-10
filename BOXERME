@@ -1,14 +1,15 @@
 For testing on webots, please run:
+=====================
 
 make setup_webots_boxer
 
 Then proceed to Player/Lib and run:
 
-lua run_prime.lua
+sudo lua run_prime.lua
 
 This will track your skeleton
 
-The open Webots and open the boxer.wbt world file.
+Then sudo open Webots and open the boxer.wbt world file.
 
 Press 8 to get the robot to walk.
 
@@ -18,12 +19,13 @@ Twisting left and right affects the yaw, and rocking left and right affects the 
 
 MATLAB Debugging
 ================
-While run_prime is still going, in MATLAB, execute:
+While run_prime is still going, in sudo MATLAB, execute:
 
 Skeleton
 
 Toggle 'r' to see the sate of the rotation.
 Toggle 'l' to log your movements.
+Toggle '3' to see the coordinates in 3D
 
 Kill Skeleton with Ctrl+C
 
@@ -44,6 +46,24 @@ lua run_prime.lua skel_XXX.lua
 
 This replays the logs so that webots can react to them.
 
-TODO
-====
-Concatenate log files, or loop the logfile over and over.
+Running over the network
+========================
+run make clean
+run make setup_boxer
+
+cp Test/loadpaths.lua Player/Lib
+edit the run_prime.lua file and set net=true
+edit World/TeamPrimeQ.lua to select wired of wireless transmission
+
+lua run_prime.lua
+
+On the robot
+============
+run make setup_op
+
+edit World/TeamPrimeQ.lua to select wired of wireless transmission
+ENSURE ROBOT ID IS 2 or more
+lua run_dcm.lua
+
+lua test_box.lua
+Press 'z' to toggle stabilization

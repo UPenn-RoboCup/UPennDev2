@@ -103,19 +103,13 @@ function update()
   end
 --]]
 
-
-
-
-
-
-
   if role==1 then
     vx,vy,va=position.setAttackerVelocity(homePose);
   else
     vx,vy,va=position.setDefenderVelocity(homePose);
   end
 
-  --Get pushed away if other robots are around
+---- Localization based robot avoidance, Get pushed away if other robots are around
   obstacle_num = wcm.get_obstacle_num();
   obstacle_x = wcm.get_obstacle_x();
   obstacle_y = wcm.get_obstacle_y();
@@ -131,13 +125,10 @@ function update()
     if role==0 then --Goalie has the highest priority 
       r_reject = 0.4;
 
-
-
     elseif role==1 then --Attacker
       if obstacle_role[i]==0 then --Our goalie
 --        r_reject = 1.0;
         r_reject = 0.5;
-
 
       elseif obstacle_role[i]<4 then --Our team
         r_reject = 0.001;
@@ -164,6 +155,7 @@ function update()
     end
    end
   end
+---- Localization based Robot Avoidance
 
   walk.set_velocity(vx,vy,va);
 

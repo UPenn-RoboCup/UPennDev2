@@ -215,7 +215,7 @@ fsm.thSideKick1 = 30*math.pi/180;
 fsm.thSideKick2 = 135*math.pi/180;
 fsm.thDistSideKick = 1.0;
 
-use_rollback_getup = 1;
+use_rollback_getup = 0;
 batt_max = 120; --only do rollback getup when battery is enough
 
 

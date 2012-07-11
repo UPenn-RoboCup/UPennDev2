@@ -464,3 +464,13 @@ function get_sensor_gps( )
 --  print("Current gps pose:",gps[1],gps[2],gps[3]*180/math.pi)
   return gps;
 end
+
+function get_sensor_fsrRight()
+  fsr = {0};
+  return fsr
+end
+
+function get_sensor_fsrLeft()
+  fsr = {0};
+  return fsr
+end

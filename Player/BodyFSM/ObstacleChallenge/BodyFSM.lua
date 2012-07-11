@@ -50,8 +50,8 @@ sm:set_transition(bodyApproach, 'ballFar', bodyPosition);
 sm:set_transition(bodyApproach, 'ballLost', bodySearch);
 sm:set_transition(bodyApproach, 'timeout', bodyPosition);
 --sm:set_transition(bodyApproach, 'kick', bodyKick);
-sm:set_transition(bodyApproach, 'dribble', bodyDribble);
---sm:set_transition(bodyApproach, 'kick', bodyDribble);
+--sm:set_transition(bodyApproach, 'dribble', bodyDribble);
+sm:set_transition(bodyApproach, 'kick', bodyDribble);
 --sm:set_transition(bodyApproach, 'walkkick', bodyWalkKick);
 
 sm:set_transition(bodyLearnLUT, 'timeout', bodyLearnLUT);

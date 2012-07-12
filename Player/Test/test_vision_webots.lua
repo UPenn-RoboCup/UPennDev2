@@ -261,24 +261,6 @@ function update()
   -- Get a keypress
   process_keyinput();
 
-
-  obstacle_num = ocm.get_obstacle_num();
-  obstacle_centroid_x = ocm.get_obstacle_cx();
-  obstacle_centroid_y = ocm.get_obstacle_cy();
-  obstacle_angle_range_left = ocm.get_obstacle_la();
-  obstacle_angle_range_right = ocm.get_obstacle_ra();
-  obstacle_nearest_x = ocm.get_obstacle_nx();
-  obstacle_nearest_y = ocm.get_obstacle_ny();
-  obstacle_nearest_dist = ocm.get_obstacle_ndist();
-
-
-  velangle = math.atan2(targetvel[2], targetvel[1]);
---  print(obstacle_num,velangle*180/math.pi);
-  for i = 1, obstacle_num do
-
-  end
-
-
 end
 
 while 1 do

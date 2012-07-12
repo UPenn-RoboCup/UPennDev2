@@ -442,9 +442,11 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel,name)
     if (isfield(robot, 'obstacle'))
 %      disp('find obstacle and display')
       for cnt = 1 : robot.obstacle.num
-        xob = x0 + robot.obstacle.centroid_x(cnt)*ca - robot.obstacle.centroid_y(cnt)*sa;
-        yob = y0 + robot.obstacle.centroid_x(cnt)*sa + robot.obstacle.centroid_y(cnt)*ca;
-        plot(xob,yob,'b*');
+%        xob = x0 + robot.obstacle.centroid_x(cnt)*ca - robot.obstacle.centroid_y(cnt)*sa;
+%        yob = y0 + robot.obstacle.centroid_x(cnt)*sa + robot.obstacle.centroid_y(cnt)*ca;
+        xobn = x0 + robot.obstacle.nearest_x(cnt)*ca - robot.obstacle.nearest_y(cnt)*sa;
+        yobn = y0 + robot.obstacle.nearest_x(cnt)*sa + robot.obstacle.nearest_y(cnt)*ca;
+        plot(xobn,yobn,'b*');
       end
     end
   end

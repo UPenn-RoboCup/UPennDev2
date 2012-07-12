@@ -57,3 +57,13 @@ DEF PLAYER_1_99 DARwInOPGPS {
   channel 13
 }
 
+DEF YELLOW_LANDMARK Landmark {
+  translation 0 0 -2.4
+  postColor1 0.992157 0.854902 0.219608
+  postColor2 0.152941 0.505882 0.733333
+}
+DEF BLUE_LANDMARK Landmark {
+  translation 0 0 2.4
+  postColor1 0.152941 0.505882 0.733333
+  postColor2 0.992157 0.854902 0.219608
+}

@@ -8,7 +8,7 @@ require('vector')
 t0 = 0;
 
 --Todo 
-timeout = 10.0;
+timeout = 5.0;
 maxStep = 0.06;
 rFar = 0.50;
 tLost = 3.0;
@@ -76,24 +76,30 @@ function update()
     vStep[3]=0;
   end
 
+--[[
   --when the ball is on the side, backstep a bit
   local wAngle = math.atan2 (vStep[2], vStep[1]);
   if math.abs(wAngle) > 70*math.pi/180 then
+    print('backstep due to ball is on the side')
     vStep[1]=vStep[1] - 0.03;
   end
+--]]
 
   if t-ball.t>1.5 then --missed the ball, backstep a bit
-    vStep[1]=-0.03; 
+    print('backstep due to ball lost')
+    vStep[1]= vStep[1] - 0.03; 
   elseif t-ball.t>0.1 then --we are looking up, stop advancing
     vStep[1]=0;
   else 
     --we are tracking the ball. 
     --check ball is within threshold
-    if (math.abs(ball.y) > 0.03) and (math.abs(ball.y) < 0.06) then
+--    print('tracking the ball and check threshold'..ball.y)
+    --if (math.abs(ball.y) > 0.03) and (math.abs(ball.y) < 0.06) then
+    if (math.abs(ball.y) > -0.01) and (math.abs(ball.y) < 0.06) then
       vStep[1]=0.06;
     end
   end
- 
+
   walk.set_velocity(vStep[1],vStep[2],vStep[3]);
 
   if (t - ball.t > tLost) then
@@ -102,7 +108,7 @@ function update()
     return "ballLost";
   end
   if (t - t0 > timeout) then
-    HeadFSM.sm:set_state('headTrack');
+--    HeadFSM.sm:set_state('headTrack');
     print("timeout")
     return "timeout";
   end
@@ -115,7 +121,7 @@ function update()
 end
 
 function exit()
-  HeadFSM.sm:set_state('headTrack');
+--  HeadFSM.sm:set_state('headTrack');
 end
 
 function sign(x)

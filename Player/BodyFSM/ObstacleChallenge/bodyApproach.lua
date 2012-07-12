@@ -81,45 +81,6 @@ function check_approach_type()
     check_angle = 0; --Don't check angle if we're doing evade kick
   end
 
---  if role==0 then
-  if false then
-    --Goalie always approach the ball directly without turning
-    position.posCalc();
-    pose=wcm.get_pose();
-    aGoal = wcm.get_goal_attack_angle2(); --Global angle to goal
-    aRot = util.mod_angle(aGoal - pose.a);    
-    th_sidekick = math.pi*60/180;
-
-    if aRot > th_sidekick then 
-      --stationary kick to the right
-      kick_type = 1;
-      kick_dir = 2;
-      kickAngle = 90*math.pi/180;
-
-    elseif aRot<-th_sidekick then
-      --stationary kick to the left
-      kick_type = 1;
-      kick_dir = 3;
-      kickAngle = -90*math.pi/180;
-    else
-      kickAngle = 0*math.pi/180;
-      if Config.fsm.goalie_use_walkkick>0 then
-        --walkkick to front
-        kick_type = 2;
-      else
-        --stationary kick to front
-        kick_type = 1;
-      end
-      kick_dir = 1;
-    end
-    wcm.set_kick_dir(kick_dir);
-    wcm.set_kick_type(kick_type);
-    wcm.set_kick_angle(kickAngle);
-
---    check_angle = 0; --Don't check angle during approaching
-    check_angle = 1; --CHECK angle during approaching
-  end
-
   print("Approach: kick dir /type /angle",kick_dir,kick_type,kick_angle*180/math.pi)
 
   y_inv=0;
@@ -310,14 +271,10 @@ function update()
     vStep[1]=math.max(0,vStep[1]);
   end
 
-
-
-
   if walk.ph>0.95 then 
     print(string.format("Ball position: %.2f %.2f\n",ball.x,ball.y));
     print(string.format("Approach velocity:%.2f %.2f\n",vStep[1],vStep[2]));
   end
-
  
   walk.set_velocity(vStep[1],vStep[2],vStep[3]);
 

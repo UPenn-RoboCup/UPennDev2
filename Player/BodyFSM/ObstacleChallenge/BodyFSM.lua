@@ -58,10 +58,15 @@ sm:set_transition(bodyLearnLUT, 'timeout', bodyLearnLUT);
 sm:set_transition(bodyLearnLUT, 'done', bodyStart);
 
 sm:set_transition(bodyDribble, 'ballFar', bodyPosition);
-sm:set_transition(bodyDribble, 'ballLost', bodyPosition);
+sm:set_transition(bodyDribble, 'ballLost', bodySearch);
 sm:set_transition(bodyDribble, 'timeout', bodyPosition);
 --sm:set_transition(bodyDribble, 'timeout', bodyDribble);
 sm:set_transition(bodyDribble, 'done', bodyOrbit);
+
+sm:set_transition(bodyPosition, 'fall', bodyPosition);
+sm:set_transition(bodyApproach, 'fall', bodyPosition);
+sm:set_transition(bodyDribble, 'fall', bodyPosition);
+
 
 function entry()
   sm:entry()

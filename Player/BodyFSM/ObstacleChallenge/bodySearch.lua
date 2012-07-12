@@ -36,6 +36,7 @@ function entry()
   else
     timeout = Config.fsm.bodySearch.timeout or 10.0*Config.speedFactor;
   end
+
 end
 
 function update()

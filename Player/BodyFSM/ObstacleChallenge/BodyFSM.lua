@@ -13,6 +13,7 @@ require('bodyOrbit')
 require('bodyApproach')
 require('bodyWait')
 require('bodyKick')
+require('bodyAvoid')
 
 sm = fsm.new(bodyIdle);
 sm:add_state(bodyStop);
@@ -25,6 +26,7 @@ sm:add_state(bodyOrbit);
 sm:add_state(bodyApproach);
 sm:add_state(bodyWait);
 sm:add_state(bodyKick);
+sm:add_state(bodyAvoid);
 
 
 -- Obstacle Challenge FSM

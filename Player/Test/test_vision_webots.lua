@@ -27,6 +27,7 @@ require('util')
 require('wcm')
 require('gcm')
 require('ocm')
+require('behaviorObstacle')
 
 darwin = false;
 webots = false;
@@ -260,6 +261,11 @@ function update()
   
   -- Get a keypress
   process_keyinput();
+
+--  obs = behaviorObstacle.check_obstacle({0,0,0})
+--  if (obs == true) then
+--    print('obstacle in front found')
+--  end
 
 end
 

@@ -12,6 +12,7 @@ require('walk')
 
 require('behavior')
 require('position')
+require('behaviorObstacle')
 
 t0 = 0;
 
@@ -156,6 +157,14 @@ function update()
    end
   end
 ---- Localization based Robot Avoidance
+
+    -- check if there is obstacle in advancing direction
+  obs = behaviorObstacle.check_obstacle(vStep)
+  if obs == true then
+    print('facing obstacles')
+  --    return 'obstacle';
+  end
+
 
   walk.set_velocity(vx,vy,va);
 

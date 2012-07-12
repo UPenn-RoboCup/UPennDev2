@@ -6,6 +6,7 @@ require('walk')
 require('vector')
 require('walk')
 require('position')
+require('behaviorObstacle')
 
 t0 = 0;
 timeout = Config.fsm.bodyApproach.timeout;
@@ -275,6 +276,14 @@ function update()
     print(string.format("Ball position: %.2f %.2f\n",ball.x,ball.y));
     print(string.format("Approach velocity:%.2f %.2f\n",vStep[1],vStep[2]));
   end
+
+  -- check if there is obstacle in advancing direction
+  obs = behaviorObstacle.check_obstacle(vStep)
+  if obs == true then
+    print('facing obstacles')
+--    return 'obstacle';
+  end
+
  
   walk.set_velocity(vStep[1],vStep[2],vStep[3]);
 

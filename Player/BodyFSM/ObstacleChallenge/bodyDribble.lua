@@ -77,6 +77,14 @@ function update()
     vStep[3]=0;
   end
 
+  -- check if there is obstacle in advancing direction
+  obs = behaviorObstacle.check_obstacle(vStep)
+  if obs.front == true then
+    print('facing obstacles')
+--    return 'obstacle';
+  end
+
+  vStep = obs.vStep
 --[[
   --when the ball is on the side, backstep a bit
   local wAngle = math.atan2 (vStep[2], vStep[1]);
@@ -97,18 +105,14 @@ function update()
 --    print('tracking the ball and check threshold'..ball.y)
     --if (math.abs(ball.y) > 0.03) and (math.abs(ball.y) < 0.06) then
     if (math.abs(ball.y) > -0.01) and (math.abs(ball.y) < 0.06) then
-      vStep[1]=0.06;
+      vStep[1]=0.04;
     end
   end
 
-  walk.set_velocity(vStep[1],vStep[2],vStep[3]);
 
-  -- check if there is obstacle in advancing direction
-  obs = behaviorObstacle.check_obstacle(vStep)
-  if obs == true then
-    print('facing obstacles')
---    return 'obstacle';
-  end
+  walk.set_velocity(vStep[1],vStep[2],vStep[3]);
+--  walk.set_velocity(obs.vStep[1],obs.vStep[2],obs.vStep[3]);
+
 
   if (t - ball.t > tLost) then
     HeadFSM.sm:set_state('headScan');

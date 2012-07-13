@@ -279,13 +279,14 @@ function update()
 
   -- check if there is obstacle in advancing direction
   obs = behaviorObstacle.check_obstacle(vStep)
-  if obs == true then
+  if obs.front == true then
     print('facing obstacles')
 --    return 'obstacle';
   end
 
  
-  walk.set_velocity(vStep[1],vStep[2],vStep[3]);
+--  walk.set_velocity(vStep[1],vStep[2],vStep[3]);
+  walk.set_velocity(obs.vStep[1],obs.vStep[2],obs.vStep[3]);
 
   if (t - ball.t > tLost) and role>0 then
     HeadFSM.sm:set_state('headScan');

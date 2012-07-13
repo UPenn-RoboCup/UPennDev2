@@ -129,7 +129,6 @@ int OccMap::kmean_clustering(void) {
         x = ry * resolution - good_pt[iter].j * resolution;
         y = rx * resolution - good_pt[iter].i * resolution;
         dist = norm(x, y, odom_x, odom_y);
-    //      cout << dist << endl;
         if (dist < minDist) {
           minDist = dist;
           nearestIdx = iter;

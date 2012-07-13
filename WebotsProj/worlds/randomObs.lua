@@ -41,7 +41,7 @@ header = f:read('*a')
 fname_save = 'op_obs_auto.wbt'
 fs = io.open(fname_save, 'w+')
 
-obs_num = 5;
+obs_num = 6;
 obs = {}
 obs.x = {}
 obs.y = {}

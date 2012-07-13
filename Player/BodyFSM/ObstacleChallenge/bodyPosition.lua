@@ -159,14 +159,14 @@ function update()
 ---- Localization based Robot Avoidance
 
     -- check if there is obstacle in advancing direction
-  obs = behaviorObstacle.check_obstacle(vStep)
-  if obs == true then
+  obs = behaviorObstacle.check_obstacle({vx, vy, va})
+  if obs.front == true then
     print('facing obstacles')
   --    return 'obstacle';
   end
 
-
-  walk.set_velocity(vx,vy,va);
+--  walk.set_velocity(vx,vy,va);
+  walk.set_velocity(obs.vStep[1],obs.vStep[2],obs.vStep[3]);
 
   if (t - ball.t > tLost) then
     return "ballLost";

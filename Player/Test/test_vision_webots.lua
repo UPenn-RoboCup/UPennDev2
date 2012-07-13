@@ -262,10 +262,14 @@ function update()
   -- Get a keypress
   process_keyinput();
 
---  obs = behaviorObstacle.check_obstacle({0,0,0})
---  if (obs == true) then
---    print('obstacle in front found')
---  end
+  obs = behaviorObstacle.check_obstacle({0,0,0})
+  if (obs.front) then
+    print('obstacle in front found')
+  elseif (obs.leftside) then
+    print('obstacle on left found')
+  elseif (obs.rightside) then
+    print('obstacle on right found')
+  end
 
 end
 

@@ -80,8 +80,8 @@ function update()
   -- check if there is obstacle in advancing direction
   obs = behaviorObstacle.check_obstacle(vStep)
   if obs.front == true then
-    print('facing obstacles')
---    return 'obstacle';
+--    print('facing obstacles')
+    return 'obstacle';
   end
 
   vStep = obs.vStep

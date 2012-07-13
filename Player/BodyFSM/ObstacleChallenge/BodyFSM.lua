@@ -39,6 +39,7 @@ sm:set_transition(bodyPosition, 'ballClose', bodyOrbit);
 sm:set_transition(bodyPosition, 'done', bodyApproach);  
 --sm:set_transition(bodyPosition, 'done', bodyDribble);  
 --sm:set_transition(bodyPosition, 'dribble', bodyDribble);
+sm:set_transition(bodyPosition, 'obstacle', bodyAvoid);
 
 sm:set_transition(bodySearch, 'ball', bodyPosition);
 sm:set_transition(bodySearch, 'timeout', bodySearch);
@@ -55,6 +56,7 @@ sm:set_transition(bodyApproach, 'timeout', bodyPosition);
 --sm:set_transition(bodyApproach, 'dribble', bodyDribble);
 sm:set_transition(bodyApproach, 'kick', bodyDribble);
 --sm:set_transition(bodyApproach, 'walkkick', bodyWalkKick);
+sm:set_transition(bodyApproach, 'obstacle', bodyAvoid);
 
 sm:set_transition(bodyLearnLUT, 'timeout', bodyLearnLUT);
 sm:set_transition(bodyLearnLUT, 'done', bodyStart);
@@ -64,6 +66,11 @@ sm:set_transition(bodyDribble, 'ballLost', bodySearch);
 sm:set_transition(bodyDribble, 'timeout', bodyPosition);
 --sm:set_transition(bodyDribble, 'timeout', bodyDribble);
 sm:set_transition(bodyDribble, 'done', bodyOrbit);
+sm:set_transition(bodyDribble, 'obstacle', bodyAvoid);
+
+sm:set_transition(bodyAvoid, 'obstacle', bodyAvoid)
+sm:set_transition(bodyAvoid, 'clear', bodyPosition)
+sm:set_transition(bodyAvoid, 'timeout', bodyPosition)
 
 sm:set_transition(bodyPosition, 'fall', bodyPosition);
 sm:set_transition(bodyApproach, 'fall', bodyPosition);

@@ -121,7 +121,7 @@ int OccMap::kmean_clustering(void) {
     //    cout << "centroid:" << means[cnt].i << ' ' << means[cnt].j << ' ' 
     //          << new_ob.centroid_x << ' ' << new_ob.centroid_y << endl;
     // Get nearest obstacle corner and Angle Range
-    double dist = 0, minDist = 10000000, angle = 0, minAngle = M_PI, maxAngle = 0;
+    double dist = 0, minDist = 10000000, angle = 0, minAngle = M_PI, maxAngle = -M_PI;
     int nearestIdx = 0;
     double x = 0, y = 0;
     for (int iter = 0; iter < cluster.size(); iter++) {
@@ -134,6 +134,9 @@ int OccMap::kmean_clustering(void) {
           nearestIdx = iter;
         }
         angle = atan2(x, y);
+        if (x < 0 && y < 0) 
+          angle += 2 * M_PI;
+//        cout << x << ' ' << y << ' ' << angle*180/M_PI << endl;
         minAngle = min(minAngle, angle);
         maxAngle = max(maxAngle, angle);
       }

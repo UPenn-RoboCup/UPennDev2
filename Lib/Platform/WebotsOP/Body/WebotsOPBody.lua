@@ -466,6 +466,7 @@ function get_sensor_gps( )
 end
 
 function get_sensor_fsrRight()
+<<<<<<< HEAD
 end
 
 function get_sensor_fsrLeft()
@@ -474,3 +475,13 @@ end
 
 
 
+=======
+  fsr = {0};
+  return fsr
+end
+
+function get_sensor_fsrLeft()
+  fsr = {0};
+  return fsr
+end
+>>>>>>> a4e48526072edfc25c72df4d270202d1e46c09eb

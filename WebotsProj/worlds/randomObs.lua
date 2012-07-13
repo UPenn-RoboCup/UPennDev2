@@ -11,7 +11,8 @@ trigrid = {}
 trigrid.x = {}
 trigrid.y = {}
 
-trigrid_file = 'triangle_grid.txt'
+trigrid_den = 0.8
+trigrid_file = 'triangle_grid'..trigrid_den..'.txt';
 f = io.open(trigrid_file, 'r')
 line = f:read("*l")
 nline = 0;

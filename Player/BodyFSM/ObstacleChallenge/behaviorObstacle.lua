@@ -55,7 +55,7 @@ function check_obstacle(vStep)
   for cnt = 1, obs_num do
     flag = true; -- assume in cone 
     -- check in left cone range
-    print(cnt, obs_left_range[cnt]*180/math.pi, obs_right_range[cnt]*180/math.pi)
+--    print(cnt, obs_left_range[cnt]*180/math.pi, obs_right_range[cnt]*180/math.pi)
     if (obs_left_range[cnt] > left_angle[2]) or 
       (obs_right_range[cnt] < left_angle[1]) then
 --      print('range fail')
@@ -102,8 +102,8 @@ function check_obstacle(vStep)
   end
 
   
---[[
   obs.vStep = vStep
+--[[
   if front_obs then
     obs.vStep[1] = obs.vStep[1] - 0.01;
     if (math.pi/2 - obs_range[1]) > (obs_range[2] - math.pi/2) then
@@ -120,4 +120,8 @@ function check_obstacle(vStep)
   obs.right = right_obs;
    
   return obs;
+end
+
+
+function avoid(obs, vStep)
 end

@@ -62,7 +62,8 @@ dev.ip_wireless = '192.168.1.255'; --Our Router
 dev.ip_wireless_port = 54321;
 dev.game_control='OPGameControl';
 dev.team='TeamNSL';
-dev.walk='N5Walk';
+dev.walk='NewNewNewWalk' --For Grasp like surfaces, USED mostly!
+--dev.walk='N5Walk';	 --For RC12 @ Mexico
 dev.kick = 'NewNewKick'
 dev.gender = 1; -- 1 for body and 0 for girl 
 
@@ -228,7 +229,7 @@ speakenable = false;
 fallAngle = 50*math.pi/180;
 falling_timeout = 0.3;
 
-led_on = 0; --turn off eye led
+--led_on = 0; --turn off eye led
 led_on = 1; --turn on eye led
 
 --New multi-blob landmark detection code
@@ -240,11 +241,11 @@ vision.use_multi_landmark = 1;
 --led_on = 0; --turn on eye led
 
 --Slow down maximum speed (for testing)
---[[
-fsm.bodyPosition.maxStep1 = 0.06;
-fsm.bodyPosition.maxStep2 = 0.06;
-fsm.bodyPosition.maxStep3 = 0.06;
---]]
+
+fsm.bodyPosition.maxStep1 = 0.04; --Default 0.06
+fsm.bodyPosition.maxStep2 = 0.04;
+fsm.bodyPosition.maxStep3 = 0.04;
+
 
 --Disable walkkicks and sidekicks 
 fsm.enable_walkkick = 0; --Testing 
@@ -314,16 +315,18 @@ goalie_dive = 1; --1 for arm only, 2 for actual diving
 
 fsm.enable_walkkick = 1; --Enable front walkkick only
 
---[[
+
 --Slow down maximum speed (for testing)
-fsm.bodyPosition.maxStep1 = 0.06;
-fsm.bodyPosition.maxStep2 = 0.06;
-fsm.bodyPosition.maxStep3 = 0.06;
---]]
+fsm.bodyPosition.maxStep1 = 0.04; --Default 0.06
+fsm.bodyPosition.maxStep2 = 0.04;
+fsm.bodyPosition.maxStep3 = 0.04;
+
 
 -----------------------------------------------------------------------
 --Setting for match #4
-led_on = 0; --turn off eye led
+
+--led_on = 0; --turn off eye led
+--led_on = 1; --turn ON eye led
 fsm.enable_sidekick = 0;
 
 -----------------------------------------------------------------------
@@ -339,7 +342,8 @@ fsm.thDistSideKick = 1.0;
 obs_challenge = 0;
 --Roll backup setup
 use_rollback_getup = 1;
-batt_max = 120; --only do rollback getup when battery is enough
+--batt_max = 120; --only do rollback getup when battery is enough
+batt_max = 117; --For more back flips, use ONLY for DEMO purpose!
 
 
 
@@ -357,12 +361,12 @@ vision.landmark.distanceFactorYellow = 1.05;
 batt_max = 117; --only do rollback getup when battery is enough
 fsm.goalie_type = 2;--moving and stop goalie
 fsm.goalie_reposition=1; --Yaw reposition
-
+--[[
 --maximum speed
 fsm.bodyPosition.maxStep1 = 0.06;
 fsm.bodyPosition.maxStep2 = 0.07;
 fsm.bodyPosition.maxStep3 = 0.08;
-
+--]]
 bat_med = 119; -- Slow down walking if voltage drops below this 
 
 fsm.daPostmargin = 20*math.pi/180; --More margin for kick to the side

@@ -48,7 +48,6 @@ int lua_field_occupancy(lua_State *L) {
   }
 
 
-  // Scan vertical lines: Uphalf
   int nBlocks = 0, nBlockClusters = 0;
   for (int i = 0; i < ni; i++) {
     int iRegion = nRegions*i/ni;
@@ -74,8 +73,6 @@ int lua_field_occupancy(lua_State *L) {
       }
       im_row += ni;
     }
-//    std::cout << nBlocks << ' ' << nBlockClusters << std::endl;
-//    std::cout << nBlockClusters << ' ';
     // no black pixels found, return type 1
     if (nBlocks < 0.05 * nj) {
       flag[i] = 1;
@@ -101,30 +98,23 @@ int lua_field_occupancy(lua_State *L) {
       continue;
     }
   }
-//  std::cout << std::endl; 
   // return state
   lua_createtable(L,0,2);
   
   lua_pushstring(L,"range");
   lua_createtable(L,nRegions,0);
-//  std::cout << "counts: ";
   for (int i = 0; i < nRegions; i++){
-//    std::cout << count[i] << ' '; 
     lua_pushinteger(L, count[i]);
     lua_rawseti(L, -2, i+1);
   }
-//  std::cout << std::endl;
   lua_settable(L, -3);
   
   lua_pushstring(L,"flag");
   lua_createtable(L,nRegions,0);
-//  std::cout << "flags: ";
   for (int i = 0; i < nRegions; i++){
-//    std::cout << flag[i] << ' ';
     lua_pushinteger(L, flag[i]);
     lua_rawseti(L, -2, i+1);
   }
-//  std::cout << std::endl;
   lua_settable(L, -3);
   
   return 1;

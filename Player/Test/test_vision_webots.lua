@@ -27,7 +27,7 @@ require('util')
 require('wcm')
 require('gcm')
 require('ocm')
-require('behaviorObstacle')
+--require('behaviorObstacle')
 
 darwin = false;
 webots = false;
@@ -262,15 +262,47 @@ function update()
   -- Get a keypress
   process_keyinput();
 
-  obs = behaviorObstacle.check_obstacle({0,0,0})
-  if (obs.front) then
+  --[[
+  attackBearing = wcm.get_attack_bearing();
+  vStep = {0.02, 0, 0.2 * attackBearing}
+
+  obs = behaviorObstacle.check_obstacle(vStep)
+ if (obs.front) then
     print('obstacle in front found')
   elseif (obs.leftside) then
     print('obstacle on left found')
   elseif (obs.rightside) then
     print('obstacle on right found')
+  end  
+  
+  if obs.left and obs.right then
+    freeDir = 1 -- both size occupied, need slow down and backstep
+  elseif obs.left then
+    freeDir = 2 -- right side free
+  elseif obs.right then
+    freeDir = 3 -- left side free
+  else
+    freeDir = 0 -- both size free
   end
 
+  if freeDir == 1 then
+    vStep[1] = vStep[1] - 0.01
+  elseif freeDir == 2 then
+    vStep[3] = vStep[3] - 0.02
+  elseif freeDir == 3 then
+    vStep[3] = vStep[3] + 0.02
+  else
+    if angle > 10 * math.pi / 180 then
+      vStep = {0, 0, 0.2}
+    elseif angle < -10 * math.pi / 180 then
+      vStep = {0, 0, -0.2}
+    else
+      vStep = {0, 0, 0}
+    end
+  end
+
+  walk.set_velocity(vStep[1], vStep[2], vStep[3])
+  --]]
 end
 
 while 1 do

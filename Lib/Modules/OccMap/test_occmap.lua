@@ -6,18 +6,12 @@ cwd = '.';
 uname  = io.popen('uname -s')
 system = uname:read();
 
-computer = os.getenv('COMPUTER') or system;
-if (string.find(computer, "Darwin")) then
-   -- MacOS X uses .dylib:                                                      
-   package.cpath = cwd.."/?.dylib;"..package.cpath;
-   package.cpath = cwd.."/../../Player/Lib/?.dylib;"..package.cpath;
-else
-   package.cpath = cwd.."/?.so;"..package.cpath;
-end
+package.cpath = cwd.."/?.so;"..package.cpath;
+package.cpath = cwd.."/../../../Player/Lib/?.so;"..package.cpath;
 
-package.path = cwd.."/../../Player/Config/?.lua;"..package.path;
-package.path = cwd.."/../../Player/Util/?.lua;"..package.path;
-package.path = cwd.."/../../Player/World/?.lua;"..package.path;
+package.path = cwd.."/../../../Player/Config/?.lua;"..package.path;
+package.path = cwd.."/../../../Player/Util/?.lua;"..package.path;
+package.path = cwd.."/../../../Player/World/?.lua;"..package.path;
 
 require("util")
 require("ocm")
@@ -35,6 +29,10 @@ free_bound = {0.990064,0.906163,0.834005,0.742290,0.690532,0.644603,0.583879,0.5
 free_bound_type = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2}
 
 OccMap.vision_update(free_bound, free_bound_type, width, unix.time());
+while (true) do
+  OccMap.vision_update(free_bound, free_bound_type, width, unix.time());
+  unix.sleep(100)
+end
 --[[
 for i = 1, 50 do
   cur_time = unix.time();

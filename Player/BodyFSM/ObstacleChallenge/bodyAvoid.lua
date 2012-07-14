@@ -41,22 +41,21 @@ function update()
   attack_angle = util.mod_angle(attackBearing);
 
   if freeDir == 1 then
-    vStep = {-0.02, 0, 0}
+    vStep = {-0.01, 0, 0}
   elseif freeDir == 2 then
     vStep = {0, 0, -0.02}
   elseif freeDir == 3 then
     vStep = {0, 0, 0.02}
   else
-    if angle > 10 * math.pi / 180 then
+    if attack_angle > 10 * math.pi / 180 then
       vStep = {0, 0, 0.2}
-    elseif angle < -10 * math.pi / 180 then
+    elseif attack_angle < -10 * math.pi / 180 then
       vStep = {0, 0, -0.2}
     else
       vStep = {0, 0, 0}
     end
   end
   walk.set_velocity(vStep[1], vStep[2], vStep[3]);
-
   
   obs = behaviorObstacle.check_obstacle({0,0,0})
   

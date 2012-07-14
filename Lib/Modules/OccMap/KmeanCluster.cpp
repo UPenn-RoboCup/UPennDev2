@@ -7,13 +7,11 @@ inline double OccMap::norm(int x1, int y1, int x2, int y2) {
   return sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
 }
 
-
 inline double OccMap::norm(double x1, double y1, double x2, double y2) {
   return (double)sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
 }
 
 int OccMap::kmean_clustering(void) {
-//  cout << "clustering" << endl;
   vector<grid_ij> good_pt;
   vector<int> cluster;
   int i = 0, j = 0;
@@ -43,7 +41,6 @@ int OccMap::kmean_clustering(void) {
   }
 
 
-  //  cout << "iteration" << endl;
     // iteration to cluser points
   bool changed = false;
   int iteration = 0, minindex = -1, clusterIdx = 0, maxIteration = 15;
@@ -81,7 +78,6 @@ int OccMap::kmean_clustering(void) {
     }
 
     for (int cnt = 0; cnt < maxObstacleClusters; cnt++) {
-//      cout << means_new_counter[cnt] << endl;
       // if this cluster contain zero elements, regenerate
       if (means_new_counter[cnt]  == 0) {
         r = (rand() % good_pt.size());
@@ -91,36 +87,20 @@ int OccMap::kmean_clustering(void) {
         means_new[cnt].i /= means_new_counter[cnt];
         means_new[cnt].j /= means_new_counter[cnt];
       }
-//      cout << means[cnt].i << ' ' << means_new[cnt].i << ' ' << means[cnt].j << ' ' << means_new[cnt].j << ' ';
       if ((means[cnt].i != means_new[cnt].i) || (means[cnt].j != means_new[cnt].j)) {
-//        cout << "changed" << endl;
         changed = true; 
-      }
-      else {
-//        cout << "unchanged" << endl;
       }
       means[cnt] = means_new[cnt];
     }    
   }
   while (changed && iteration < maxIteration);
 
-//  cout << "iterations: " << iteration << endl;
-//  cout << changed <<endl;
-//  for (int cnt = 0; cnt < maxObstacleClusters; cnt++) {
-//    cout << means[cnt].i << ' ' << means[cnt].j << endl;
-//  }
-//  cout << endl;
-
-//  cout << "process obstacle" << endl;
   nOb = maxObstacleClusters;
   for (int cnt = 0; cnt < nOb; cnt++) {
     obstacle new_ob;
     // Get Centroid
     new_ob.centroid_y = rx * resolution - means[cnt].i * resolution;
     new_ob.centroid_x = ry * resolution - means[cnt].j * resolution;
-    //    cout << "centroid:" << means[cnt].i << ' ' << means[cnt].j << ' ' 
-    //          << new_ob.centroid_x << ' ' << new_ob.centroid_y << endl;
-    // Get nearest obstacle corner and Angle Range
     double dist = 0, minDist = 10000000, angle = 0, minAngle = M_PI, maxAngle = -M_PI;
     int nearestIdx = 0;
     double x = 0, y = 0;
@@ -136,7 +116,6 @@ int OccMap::kmean_clustering(void) {
         angle = atan2(x, y);
         if (x < 0 && y < 0) 
           angle += 2 * M_PI;
-//        cout << x << ' ' << y << ' ' << angle*180/M_PI << endl;
         minAngle = min(minAngle, angle);
         maxAngle = max(maxAngle, angle);
       }
@@ -145,18 +124,9 @@ int OccMap::kmean_clustering(void) {
     maxAngle += odom_a;
     new_ob.left_angle_range = minAngle;
     new_ob.right_angle_range = maxAngle;
-    //    cout << "angle range: " << new_ob.left_angle_range * 180 / M_PI  << ' ' 
-    //                            << new_ob.right_angle_range * 180 / M_PI << endl;
-    //    cout << "nearest idx: " << nearestIdx << ' ' << minDist << ' ' 
-    //          << cluster[cnt][nearestIdx].i << ' ' << cluster[cnt][nearestIdx].j << endl;
-    //    new_ob.left_angle_range = ;
-    //    new_ob.right_angle_range = ;
     new_ob.nearest_y = rx * resolution - good_pt[nearestIdx].i * resolution;
     new_ob.nearest_x = ry * resolution - good_pt[nearestIdx].j * resolution;
     new_ob.nearest_dist = minDist;
-    //  cout << "nearest point: " << new_ob.nearest_x << ' ' << new_ob.nearest_y << endl;
-    //    cout << "nearest point: " << cluster[cnt][nearestIdx].i << ' ' 
-    //                              << cluster[cnt][nearestIdx].j << endl;
     obs[cnt] = new_ob;
   }
   // check if obstacle overlays
@@ -178,7 +148,5 @@ int OccMap::kmean_clustering(void) {
       }
     }
 
-//  cout << good_pt.size() << ' ' << means.size() << ' ' << means_new.size() << endl;
-//  cout << obs.size() << endl;
   return 1;
 }

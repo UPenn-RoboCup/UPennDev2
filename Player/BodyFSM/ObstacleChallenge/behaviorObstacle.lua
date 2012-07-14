@@ -113,7 +113,11 @@ function check_obstacle(vStep)
     end
   end
 --]]
-  
+--[[
+  front_obs = false;
+  left_obs = false;
+  right_obs = false;
+  --]]
   obs.front = front_obs;
   obs.front_range = obs_range;
   obs.left = left_obs;

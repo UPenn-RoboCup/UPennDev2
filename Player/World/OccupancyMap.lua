@@ -96,7 +96,7 @@ function obs_in_occ()
   start = unix.time();
   obstacle = OccMap.get_obstacle();
   local nOb = obstacle[1];
-  ocm.set_obstacle_num(nOb);
+--  ocm.set_obstacle_num(nOb);
   centroid_x = vector.zeros(maxOb);
   centroid_y = vector.zeros(maxOb);
   left_range = vector.zeros(maxOb);
@@ -113,13 +113,13 @@ function obs_in_occ()
     nearest_y[i] = obstacle[i + 1].nearest[2];
     nearest_dist[i] = obstacle[i + 1].nearest[3];
   end
-  ocm.set_obstacle_cx(centroid_x);
-  ocm.set_obstacle_cy(centroid_y);
-  ocm.set_obstacle_la(left_range);
-  ocm.set_obstacle_ra(right_range);
-  ocm.set_obstacle_nx(nearest_x);
-  ocm.set_obstacle_ny(nearest_y);
-  ocm.set_obstacle_ndist(nearest_dist);
+--  ocm.set_obstacle_cx(centroid_x);
+--  ocm.set_obstacle_cy(centroid_y);
+--  ocm.set_obstacle_la(left_range);
+--  ocm.set_obstacle_ra(right_range);
+--  ocm.set_obstacle_nx(nearest_x);
+--  ocm.set_obstacle_ny(nearest_y);
+--  ocm.set_obstacle_ndist(nearest_dist);
 end
 
 counter = 0;
@@ -142,8 +142,8 @@ function update()
   odom = OccMap.retrieve_odometry();
   ocm.set_occ_odom(vector.new({odom.x, odom.y, odom.a}));
 --  print('odom from map',odom.x..' '..odom.y..' '..odom.a);
---	occmap = OccMap.retrieve_map();
---	ocm.set_occ_map(occmap);		
+	occmap = OccMap.retrieve_map();
+	ocm.set_occ_map(occmap);		
 
   local reset = ocm.get_occ_reset();
   if reset == 1 then
@@ -154,14 +154,31 @@ function update()
 
 --  local get_obstacle = ocm.get_occ_get_obstacle();
 --  if get_obstacle == 1 then
---  if counter == 25 then
+  if counter == 25 then
     obs_in_occ();
---    counter = 0;
---  end
+    counter = 0;
+  end
 --    print("get obstacles from occmap");
 --    ocm.set_occ_get_obstacle(0);
 --  end
 
+  local maxOb = 5;
+  centroid_x = vector.zeros(maxOb);
+  centroid_y = vector.zeros(maxOb);
+  left_range = vector.zeros(maxOb);
+  right_range = vector.zeros(maxOb);
+  nearest_x = vector.zeros(maxOb);
+  nearest_y = vector.zeros(maxOb);
+  nearest_dist = vector.zeros(maxOb);
+
+  ocm.set_obstacle_num(0);
+  ocm.set_obstacle_cx(centroid_x);
+  ocm.set_obstacle_cy(centroid_y);
+  ocm.set_obstacle_la(left_range);
+  ocm.set_obstacle_ra(right_range);
+  ocm.set_obstacle_nx(nearest_x);
+  ocm.set_obstacle_ny(nearest_y);
+  ocm.set_obstacle_ndist(nearest_dist);
 end
 
 function exit()

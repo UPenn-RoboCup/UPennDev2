@@ -16,8 +16,7 @@ extern "C" {
 #include <vector>
 #include <cassert>
 
-OccMap map;
-
+static OccMap map;
 
 static int lua_occmap_reset(lua_State *L) {
   map.randomize_map();

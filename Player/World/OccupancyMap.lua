@@ -162,23 +162,6 @@ function update()
 --    ocm.set_occ_get_obstacle(0);
 --  end
 
---  local maxOb = 5;
---  centroid_x = vector.zeros(maxOb);
---  centroid_y = vector.zeros(maxOb);
---  left_range = vector.zeros(maxOb);
---  right_range = vector.zeros(maxOb);
---  nearest_x = vector.zeros(maxOb);
---  nearest_y = vector.zeros(maxOb);
---  nearest_dist = vector.zeros(maxOb);
---
---  ocm.set_obstacle_num(0);
---  ocm.set_obstacle_cx(centroid_x);
---  ocm.set_obstacle_cy(centroid_y);
---  ocm.set_obstacle_la(left_range);
---  ocm.set_obstacle_ra(right_range);
---  ocm.set_obstacle_nx(nearest_x);
---  ocm.set_obstacle_ny(nearest_y);
---  ocm.set_obstacle_ndist(nearest_dist);
 end
 
 function exit()

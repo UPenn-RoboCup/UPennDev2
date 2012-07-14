@@ -155,11 +155,11 @@ static int lua_occmap_obstacle(lua_State *L) {
   for (int cnt = 0; cnt < maxOb; cnt++) {
     if (cnt < nobstacle) {
       ob = map.get_obstacle(cnt);
-      Debug = 1;
+//      Debug = 1;
     } else {
-      Debug = 0;
+//      Debug = 0;
       ob = zeros_ob;
-    }
+  }
     lua_createtable(L, 0, 3);
     // centroid field
 //    if (Debug)

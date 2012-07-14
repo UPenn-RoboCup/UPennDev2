@@ -96,7 +96,7 @@ function obs_in_occ()
   start = unix.time();
   obstacle = OccMap.get_obstacle();
   local nOb = obstacle[1];
---  ocm.set_obstacle_num(nOb);
+  ocm.set_obstacle_num(nOb);
   centroid_x = vector.zeros(maxOb);
   centroid_y = vector.zeros(maxOb);
   left_range = vector.zeros(maxOb);
@@ -113,13 +113,13 @@ function obs_in_occ()
     nearest_y[i] = obstacle[i + 1].nearest[2];
     nearest_dist[i] = obstacle[i + 1].nearest[3];
   end
---  ocm.set_obstacle_cx(centroid_x);
---  ocm.set_obstacle_cy(centroid_y);
---  ocm.set_obstacle_la(left_range);
---  ocm.set_obstacle_ra(right_range);
---  ocm.set_obstacle_nx(nearest_x);
---  ocm.set_obstacle_ny(nearest_y);
---  ocm.set_obstacle_ndist(nearest_dist);
+  ocm.set_obstacle_cx(centroid_x);
+  ocm.set_obstacle_cy(centroid_y);
+  ocm.set_obstacle_la(left_range);
+  ocm.set_obstacle_ra(right_range);
+  ocm.set_obstacle_nx(nearest_x);
+  ocm.set_obstacle_ny(nearest_y);
+  ocm.set_obstacle_ndist(nearest_dist);
 end
 
 counter = 0;
@@ -162,23 +162,23 @@ function update()
 --    ocm.set_occ_get_obstacle(0);
 --  end
 
-  local maxOb = 5;
-  centroid_x = vector.zeros(maxOb);
-  centroid_y = vector.zeros(maxOb);
-  left_range = vector.zeros(maxOb);
-  right_range = vector.zeros(maxOb);
-  nearest_x = vector.zeros(maxOb);
-  nearest_y = vector.zeros(maxOb);
-  nearest_dist = vector.zeros(maxOb);
-
-  ocm.set_obstacle_num(0);
-  ocm.set_obstacle_cx(centroid_x);
-  ocm.set_obstacle_cy(centroid_y);
-  ocm.set_obstacle_la(left_range);
-  ocm.set_obstacle_ra(right_range);
-  ocm.set_obstacle_nx(nearest_x);
-  ocm.set_obstacle_ny(nearest_y);
-  ocm.set_obstacle_ndist(nearest_dist);
+--  local maxOb = 5;
+--  centroid_x = vector.zeros(maxOb);
+--  centroid_y = vector.zeros(maxOb);
+--  left_range = vector.zeros(maxOb);
+--  right_range = vector.zeros(maxOb);
+--  nearest_x = vector.zeros(maxOb);
+--  nearest_y = vector.zeros(maxOb);
+--  nearest_dist = vector.zeros(maxOb);
+--
+--  ocm.set_obstacle_num(0);
+--  ocm.set_obstacle_cx(centroid_x);
+--  ocm.set_obstacle_cy(centroid_y);
+--  ocm.set_obstacle_la(left_range);
+--  ocm.set_obstacle_ra(right_range);
+--  ocm.set_obstacle_nx(nearest_x);
+--  ocm.set_obstacle_ny(nearest_y);
+--  ocm.set_obstacle_ndist(nearest_dist);
 end
 
 function exit()

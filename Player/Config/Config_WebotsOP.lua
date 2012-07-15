@@ -225,4 +225,4 @@ fsm.headTrack.timeout = 2.0 * speedFactor;
 fsm.headTrack.tLost = 1.5 * speedFactor;
 fsm.headTrack.minDist = 0.15; --Default value 0.30,If ball is closer than this, don't look up
 
---Roll backup setup
+speakenable = 0

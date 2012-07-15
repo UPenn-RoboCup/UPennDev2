@@ -225,4 +225,12 @@ fsm.headTrack.timeout = 2.0 * speedFactor;
 fsm.headTrack.tLost = 1.5 * speedFactor;
 fsm.headTrack.minDist = 0.15; --Default value 0.30,If ball is closer than this, don't look up
 
+-- disable speak for webots which causes lua crash with error if espeak not installed
 speakenable = 0
+
+fsm.avoidance_mode = 1 -- ball dribble
+fsm.avoidance_mode = 0 -- walk towards goal, no ball 
+
+
+
+

@@ -8,12 +8,16 @@ require('ColorLUT')
 t0 = 0;
 timeout = 6.0;
 
-enable_learning = 0
+enable_learning = 1
 
 function entry()
   pitchBias =  mcm.get_headPitchBias();--robot specific head bias
 
   print(_NAME.." entry");
+
+  if vcm.get_camera_learned_new_lut() == 1 then
+    return 'done'
+  end
 
   t0 = Body.get_time();
 

@@ -2,6 +2,7 @@ module(..., package.seeall);
 
 require('Body')
 require('Motion')
+require('vcm')
 
 t0 = 0
 timeout = 60.0;
@@ -11,6 +12,10 @@ function entry()
 
   walk.set_velocity(0,0,0);
   walk.stop();
+
+  if vcm.get_camera_learned_new_lut() == 1 then
+    return 'done'
+  end
 end
 
 function update()

@@ -2,6 +2,7 @@
 //
 
 #include "OccMap.h"
+#include <cassert>
 
 inline double OccMap::norm(int x1, int y1, int x2, int y2) {
   return sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
@@ -59,7 +60,6 @@ int OccMap::kmean_clustering(void) {
           minindex = mit;
         }
       }
-      //      cout << minindex << ' ' << cluster[minindex].size() <<  endl;
       cluster[it] = minindex;
     }
 
@@ -96,6 +96,8 @@ int OccMap::kmean_clustering(void) {
   while (changed && iteration < maxIteration);
 
   nOb = maxObstacleClusters;
+  vector<obstacle> obs_cluster;
+  obs_cluster.resize(nOb);
   for (int cnt = 0; cnt < nOb; cnt++) {
     obstacle new_ob;
     // Get Centroid
@@ -127,7 +129,7 @@ int OccMap::kmean_clustering(void) {
     new_ob.nearest_y = rx * resolution - good_pt[nearestIdx].i * resolution;
     new_ob.nearest_x = ry * resolution - good_pt[nearestIdx].j * resolution;
     new_ob.nearest_dist = minDist;
-    obs[cnt] = new_ob;
+    obs_cluster[cnt] = new_ob;
   }
   // check if obstacle overlays
 
@@ -137,16 +139,22 @@ int OccMap::kmean_clustering(void) {
     for (int j = i+1; j < maxObstacleClusters; j++) {
       if (obCheck[i] == 1 or obCheck[j] == 1)
         continue;
-      if ((abs(obs[i].left_angle_range - obs[j].left_angle_range) < 0.1) ||
-        (abs(obs[i].right_angle_range - obs[j].right_angle_range) < 0.1)) {
+      if ((abs(obs_cluster[i].left_angle_range - obs_cluster[j].left_angle_range) < 0.1) ||
+        (abs(obs_cluster[i].right_angle_range - obs_cluster[j].right_angle_range) < 0.1)) {
         // merge to one obstacle
-          nOb -= 1;
-          if (obs[j].nearest_dist < obs[i].nearest_dist)
+          nOb--;
+          if (obs_cluster[j].nearest_dist < obs_cluster[i].nearest_dist)
             obCheck[i] = 1;
           else
             obCheck[j] = 1;
       }
     }
+
+  int good_obstacle = 0;
+  for (int cnt = 0; cnt < maxObstacleClusters; cnt++)
+    if (obCheck[cnt] != 1)
+      obs[good_obstacle++] = obs_cluster[cnt];
+  assert(good_obstacle == nOb);
 
   return 1;
 }

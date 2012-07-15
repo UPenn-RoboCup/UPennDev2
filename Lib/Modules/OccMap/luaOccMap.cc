@@ -145,7 +145,6 @@ static int lua_occmap_obstacle(lua_State *L) {
   map.kmean_clustering();
   int maxOb = maxObstacleClusters;
   obstacle zeros_ob = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-  obstacle ob = zeros_ob;
   int nobstacle = map.get_nobstacle();
 //  cout << "obstacle number:" << nobstacle << endl; 
   lua_createtable(L, nobstacle + 1, 0);
@@ -153,17 +152,14 @@ static int lua_occmap_obstacle(lua_State *L) {
   lua_rawseti(L, -2, 1);
   int Debug = 0;
   for (int cnt = 0; cnt < maxOb; cnt++) {
+    obstacle ob;
     if (cnt < nobstacle) {
-      ob = map.get_obstacle(cnt);
-//      Debug = 1;
+      map.get_obstacle(cnt, ob);
     } else {
-//      Debug = 0;
       ob = zeros_ob;
-  }
+    }
     lua_createtable(L, 0, 3);
     // centroid field
-//    if (Debug)
-//      std::cout << "centroid:" << ob.centroid_x << ' ' << ob.centroid_y << endl; 
     lua_pushstring(L, "centroid");
     lua_createtable(L, 2, 0);
     lua_pushnumber(L, ob.centroid_x);

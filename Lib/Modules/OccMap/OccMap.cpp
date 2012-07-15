@@ -220,12 +220,6 @@ int OccMap::get_nobstacle() {
   return nOb;
 }
 
-obstacle& OccMap::get_obstacle(int index) {
-  int idx = -1, obIdx = -1;
-  while (idx < index) {
-    obIdx ++;
-    if (obCheck[obIdx] == 0)
-      idx ++;
-  }
-  return obs[obIdx];
+void OccMap::get_obstacle(int index, obstacle& obs_out) {
+   obs_out = obs[index];
 }

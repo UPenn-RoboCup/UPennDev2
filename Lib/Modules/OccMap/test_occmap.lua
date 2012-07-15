@@ -29,10 +29,10 @@ free_bound = {0.990064,0.906163,0.834005,0.742290,0.690532,0.644603,0.583879,0.5
 free_bound_type = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2}
 
 OccMap.vision_update(free_bound, free_bound_type, width, unix.time());
-while (true) do
-  OccMap.vision_update(free_bound, free_bound_type, width, unix.time());
-  unix.sleep(100)
-end
+--while (true) do
+--  OccMap.vision_update(free_bound, free_bound_type, width, unix.time());
+--  unix.sleep(100)
+--end
 --[[
 for i = 1, 50 do
   cur_time = unix.time();

@@ -17,6 +17,7 @@ $(PLATFORMS):
 	@if [ ! -z "$(shell which $(CMAKE_BIN))" ]; then \
 			rm -rf build; \
 			mkdir build;\
+			cd build && cmake .. -D$@=true; \
 		else \
 			make -f Makefile.mk $@; \
 		fi

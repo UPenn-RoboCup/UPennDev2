@@ -2,6 +2,7 @@ module(..., package.seeall);
 
 require('Body')
 require('wcm')
+require('ocm')
 require('walk')
 require('vector')
 require('behaviorObstacle')
@@ -78,13 +79,12 @@ function update()
   end
 
   -- check if there is obstacle in advancing direction
-  obs = behaviorObstacle.check_obstacle(vStep)
-  if obs.front == true then
+  front = ocm.get_obstacle_front(); 
+  if front == 1 then
 --    print('facing obstacles')
     return 'obstacle';
   end
 
-  vStep = obs.vStep
 --[[
   --when the ball is on the side, backstep a bit
   local wAngle = math.atan2 (vStep[2], vStep[1]);

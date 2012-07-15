@@ -29,6 +29,10 @@ shared.obstacle.nx = vector.zeros(5);
 shared.obstacle.ny = vector.zeros(5);
 -- nearest distance
 shared.obstacle.ndist = vector.zeros(5);
+-- general flag for occupied direction
+shared.obstacle.front = vector.zeros(1);
+shared.obstacle.left = vector.zeros(1);
+shared.obstacle.right = vector.zeros(1);
 
 
 -- Robot Centroid x y on Map 

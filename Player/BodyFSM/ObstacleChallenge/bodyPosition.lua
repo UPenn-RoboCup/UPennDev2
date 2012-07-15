@@ -5,6 +5,7 @@ require('World')
 require('walk')
 require('vector')
 require('wcm')
+require('ocm')
 require('Config')
 require('Team')
 require('util')
@@ -159,14 +160,13 @@ function update()
 ---- Localization based Robot Avoidance
 
     -- check if there is obstacle in advancing direction
-  obs = behaviorObstacle.check_obstacle({vx, vy, va})
-  if obs.front == true then
+  front = ocm.get_obstacle_front();
+  if front == 1 then
 --    print('facing obstacles')
     return 'obstacle';
   end
 
---  walk.set_velocity(vx,vy,va);
-  walk.set_velocity(obs.vStep[1],obs.vStep[2],obs.vStep[3]);
+  walk.set_velocity(vx,vy,va);
 
   if (t - ball.t > tLost) then
     return "ballLost";

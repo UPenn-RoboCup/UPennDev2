@@ -2,6 +2,7 @@ module(..., package.seeall);
 
 require('Body')
 require('wcm')
+require('ocm')
 require('walk')
 require('vector')
 require('walk')
@@ -278,15 +279,14 @@ function update()
   end
 
   -- check if there is obstacle in advancing direction
-  obs = behaviorObstacle.check_obstacle(vStep)
-  if obs.front then
+  front = ocm.get_obstacle_front(); 
+  if front == 1 then
     print('facing obstacles')
     return 'obstacle';
   end
 
  
---  walk.set_velocity(vStep[1],vStep[2],vStep[3]);
-  walk.set_velocity(obs.vStep[1],obs.vStep[2],obs.vStep[3]);
+  walk.set_velocity(vStep[1],vStep[2],vStep[3]);
 
   if (t - ball.t > tLost) and role>0 then
     HeadFSM.sm:set_state('headScan');

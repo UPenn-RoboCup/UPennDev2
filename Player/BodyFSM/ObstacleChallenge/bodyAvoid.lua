@@ -6,6 +6,7 @@ require('vector')
 require('util')
 require('wcm')
 require('gcm')
+require('ocm')
 require('behaviorObstacle')
 
 t0 = 0;
@@ -19,12 +20,14 @@ function entry()
   t0 = Body.get_time();
 
   Speak.talk('Avoiding Obstacle');
-  obs = behaviorObstacle.check_obstacle({0, 0, 0})
-  if obs.left and obs.right then
+  left_free = ocm.get_obstacle_left();
+  right_free = ocm.get_obstacle_right();
+
+  if left_free == 1 and right_free == 1 then
     freeDir = 1 -- both size occupied, need slow down and backstep
-  elseif obs.left then
+  elseif left_free == 1 then
     freeDir = 2 -- right side free
-  elseif obs.right then
+  elseif right_free == 1 then
     freeDir = 3 -- left side free
   else
     freeDir = 0 -- both size free
@@ -57,9 +60,8 @@ function update()
   end
   walk.set_velocity(vStep[1], vStep[2], vStep[3]);
   
-  obs = behaviorObstacle.check_obstacle({0,0,0})
-  
-  if obs.front then
+  front_free = ocm.get_obstacle_front(); 
+  if front_free == 1 then
     return "obstacle"
   else
     return "clear"

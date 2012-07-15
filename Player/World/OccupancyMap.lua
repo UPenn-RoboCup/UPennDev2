@@ -22,7 +22,10 @@ obs.right_range = vector.zeros(maxOb);
 obs.nearest_x = vector.zeros(maxOb);
 obs.nearest_y = vector.zeros(maxOb);
 obs.nearest_dist = vector.zeros(maxOb);
-
+obs.front = 0;
+obs.left = 0;
+obs.right = 0;
+ 
 
 uOdometry0 = vector.new({0, 0, 0});
 
@@ -99,18 +102,14 @@ lastPos = vector.zeros(3);
 function velocity_update()
   curTime = unix.time();
   uOdonmetry = cur_odometry();
---  print(curTime - lastTime);
-  vel = (uOdometry - lastPos); -- / (curTime - lastTime);
+  vel = (uOdometry - lastPos);
   ocm.set_occ_vel(vel);
 
---  print(vel[1], vel[2], vel[3]);
   lastPos = uOdometry; 
   lastTime = curTime;
 end
 
 function get_obstacle_info()
---  print('try find obstacle in occmap'); 
-  start = unix.time();
   obstacle = OccMap.get_obstacle();
   obs.num = obstacle[1];
   for i = 1 , obs.num do
@@ -122,6 +121,105 @@ function get_obstacle_info()
     obs.nearest_y[i] = obstacle[i + 1].nearest[2];
     obs.nearest_dist[i] = obstacle[i + 1].nearest[3];
   end
+end
+
+function get_obstacle_dir()
+  min_front_angle = Config.occ.min_front_angle or -15*math.pi/180;
+  max_front_angle = Config.occ.max_front_angle or 15*math.pi/180;
+  min_left_angle = Config.occ.min_left_angle or 0*math.pi/180;
+  max_left_angle = Config.occ.max_left_angle or 70*math.pi/180;
+  min_right_angle = Config.occ.min_right_angle or 110*math.pi/180;
+  max_right_angle = Config.occ.max_right_angle or 180*math.pi/180;
+  min_obstacle_range = Config.occ.min_obstacle_range or 3*math.pi/180;
+  min_obstacle_distance = Config.occ.min_obstacle_distance or 0.2
+
+  -- check front
+  front_angle = {min_front_angle, max_front_angle}
+  front_obs = false;
+
+  obs_range = {180*math.pi/180, 0*math.pi/180};
+  for cnt = 1 , obs.num do
+    flag = true; -- assume in cone 
+    -- check in front cone range
+    if (obs.left_range[cnt] > front_angle[2]) or 
+      (obs.right_range[cnt] < front_angle[1]) then
+      --print('range fail')
+      flag = flag and false;
+    end
+    -- check obstacle blob size in terms of angle range
+    --print((obs.right_range[cnt] - obs.left_range[cnt])*180/math.pi)
+    if (obs.right_range[cnt] - obs.left_range[cnt] < min_obstacle_range) then
+      --print('size fail')
+      flag = flag and false;
+    end
+    -- check distance for nearest poinpt of the blob
+    --print(obs.nearest_dist[cnt])
+    if (obs.nearest_dist[cnt] > min_obstacle_distance) then
+      --print('distance fail')
+      flag = flag and false;
+    end
+
+    if flag then
+      obs_range[1] = math.min(obs_range[1], obs.left_range[cnt]);
+      obs_range[2] = math.max(obs_range[2], obs.right_range[cnt]);
+    end
+
+    front_obs = front_obs or flag;
+  end
+
+  -- check left side obstacleleft_angle = {-45*math.pi/180, 45*math.pi/180}
+  left_angle = {min_left_angle, max_left_angle}
+  left_obs = false;
+  for cnt = 1, obs.num do
+    flag = true; -- assume in cone 
+    -- check in left cone range
+    --print(cnt, obs.left_range[cnt]*180/math.pi, obs.right_range[cnt]*180/math.pi)
+    if (obs.left_range[cnt] > left_angle[2]) or 
+      (obs.right_range[cnt] < left_angle[1]) then
+      --print('range fail')
+      flag = flag and false;
+    end
+    -- check obstacle blob size in terms of angle range
+    --print((obs.right_range[cnt] - obs.left_range[cnt])*180/math.pi)
+    if (obs.right_range[cnt] - obs.left_range[cnt] < min_obstacle_range) then
+      --print('size fail')
+      flag = flag and false;
+    end
+    -- check distance for nearest poinpt of the blob
+    --print(obs.nearest_dist[cnt])
+    if (obs.nearest_dist[cnt] > min_obstacle_distance) then
+      --print('distance fail')
+      flag = flag and false;
+    end
+    left_obs = left_obs or flag;
+  end
+  
+  -- check right side obstacle
+  right_angle = {min_right_angle, max_right_angle}
+  right_obs = false;
+  for cnt = 1, obs.num do
+    flag = true; -- assume in cone 
+    -- check in right cone range
+    if (obs.left_range[cnt] > right_angle[2]) or 
+      (obs.right_range[cnt] < right_angle[1]) then
+      flag = flag and false;
+    end
+    -- check obstacle blob size in terms of angle range
+    if (obs.right_range[cnt] - obs.left_range[cnt] < min_obstacle_range) then
+      flag = flag and false;
+    end
+    -- check distance for nearest poinpt of the blob
+    if (obs.nearest_dist[cnt] > min_obstacle_distance) then
+      flag = flag and false;
+    end
+    right_obs = right_obs or flag;
+  end
+
+  if front_obs then obs.front = 1; else obs.front = 0; end
+  if left_obs then obs.left = 1; else obs.left = 0; end
+  if right_obs then obs.right = 1; else obs.right = 0; end
+   
+  return obs;
 
 end
 
@@ -141,15 +239,12 @@ function update()
 	-- Odometry Update
   odom_update();
 
---  local get_obstacle = ocm.get_occ_get_obstacle();
---  if get_obstacle == 1 then
---  if counter == 25 then
+  if counter == 25 then
     get_obstacle_info();
---    counter = 0;
---  end
---    print("get obstacles from occmap");
---    ocm.set_occ_get_obstacle(0);
---  end
+  
+    get_obstacle_dir();
+    counter = 0;
+  end
 
   update_shm()
 
@@ -175,7 +270,12 @@ function update_shm()
   ocm.set_obstacle_ny(obs.nearest_y);
   ocm.set_obstacle_ndist(obs.nearest_dist);
 
+  ocm.set_obstacle_front(obs.front);
+  ocm.set_obstacle_left(obs.left);
+  ocm.set_obstacle_right(obs.right);
+
 end
 
 function exit()
+
 end

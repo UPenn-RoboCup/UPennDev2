@@ -4,6 +4,7 @@ require('ocm')
 
 function check_obstacle(vStep)
   obs = {}
+--[[
   obs_num = ocm.get_obstacle_num()
   obs_centroid_x = ocm.get_obstacle_cx();
   obs_centroid_y = ocm.get_obstacle_cy();
@@ -100,10 +101,9 @@ function check_obstacle(vStep)
     end
     right_obs = right_obs or flag;
   end
-
-  
+--]]
   obs.vStep = vStep
---[[
+  --[[
   if front_obs then
     obs.vStep[1] = obs.vStep[1] - 0.01;
     if (math.pi/2 - obs_range[1]) > (obs_range[2] - math.pi/2) then
@@ -113,11 +113,10 @@ function check_obstacle(vStep)
     end
   end
 --]]
---[[
   front_obs = false;
   left_obs = false;
   right_obs = false;
-  --]]
+
   obs.front = front_obs;
   obs.front_range = obs_range;
   obs.left = left_obs;

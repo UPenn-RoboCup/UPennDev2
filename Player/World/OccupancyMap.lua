@@ -12,6 +12,18 @@ require('OccMap');
 require('vector');
 require('walk');
 
+maxOb = 5;
+obs = {};
+obs.num = 0;
+obs.centroid_x = vector.zeros(maxOb);
+obs.centroid_y = vector.zeros(maxOb);
+obs.left_range = vector.zeros(maxOb);
+obs.right_range = vector.zeros(maxOb);
+obs.nearest_x = vector.zeros(maxOb);
+obs.nearest_y = vector.zeros(maxOb);
+obs.nearest_dist = vector.zeros(maxOb);
+
+
 uOdometry0 = vector.new({0, 0, 0});
 
 odomScale = Config.walk.odomScale or Config.world.odomScale;
@@ -23,6 +35,7 @@ else
   yawScale = 1;
 end
 lastTime = 0;
+
 
 function entry()
   lastTime = unix.time();
@@ -36,6 +49,11 @@ function entry()
   occdata = OccMap.retrieve_data();
 	ocm.set_occ_robot_pos(occdata.robot_pos);
 end 
+
+function reset_map()
+  print('Reset Occupancy Map and Robot Odometry')
+  OccMap.reset();
+end
 
 function cur_odometry()
   if mcm.get_walk_isFallDown() == 1 then
@@ -90,36 +108,21 @@ function velocity_update()
   lastTime = curTime;
 end
 
-function obs_in_occ()
+function get_obstacle_info()
 --  print('try find obstacle in occmap'); 
-  local maxOb = 5;
   start = unix.time();
   obstacle = OccMap.get_obstacle();
-  local nOb = obstacle[1];
-  ocm.set_obstacle_num(nOb);
-  centroid_x = vector.zeros(maxOb);
-  centroid_y = vector.zeros(maxOb);
-  left_range = vector.zeros(maxOb);
-  right_range = vector.zeros(maxOb);
-  nearest_x = vector.zeros(maxOb);
-  nearest_y = vector.zeros(maxOb);
-  nearest_dist = vector.zeros(maxOb);
-  for i = 1 , nOb do
-    centroid_x[i] = obstacle[i + 1].centroid[1];
-    centroid_y[i] = obstacle[i + 1].centroid[2];
-    left_range[i] = obstacle[i + 1].angle_range[1];
-    right_range[i] = obstacle[i + 1].angle_range[2];
-    nearest_x[i] = obstacle[i + 1].nearest[1];
-    nearest_y[i] = obstacle[i + 1].nearest[2];
-    nearest_dist[i] = obstacle[i + 1].nearest[3];
+  obs.num = obstacle[1];
+  for i = 1 , obs.num do
+    obs.centroid_x[i] = obstacle[i + 1].centroid[1];
+    obs.centroid_y[i] = obstacle[i + 1].centroid[2];
+    obs.left_range[i] = obstacle[i + 1].angle_range[1];
+    obs.right_range[i] = obstacle[i + 1].angle_range[2];
+    obs.nearest_x[i] = obstacle[i + 1].nearest[1];
+    obs.nearest_y[i] = obstacle[i + 1].nearest[2];
+    obs.nearest_dist[i] = obstacle[i + 1].nearest[3];
   end
-  ocm.set_obstacle_cx(centroid_x);
-  ocm.set_obstacle_cy(centroid_y);
-  ocm.set_obstacle_la(left_range);
-  ocm.set_obstacle_ra(right_range);
-  ocm.set_obstacle_nx(nearest_x);
-  ocm.set_obstacle_ny(nearest_y);
-  ocm.set_obstacle_ndist(nearest_dist);
+
 end
 
 counter = 0;
@@ -137,30 +140,40 @@ function update()
 
 	-- Odometry Update
   odom_update();
-	
-	-- shm Update
-  odom = OccMap.retrieve_odometry();
-  ocm.set_occ_odom(vector.new({odom.x, odom.y, odom.a}));
---  print('odom from map',odom.x..' '..odom.y..' '..odom.a);
-	occmap = OccMap.retrieve_map();
-	ocm.set_occ_map(occmap);		
-
-  local reset = ocm.get_occ_reset();
-  if reset == 1 then
-    OccMap.reset();
-    print('reset occmap in OccupancyMap');
-    ocm.set_occ_reset(0);
-  end
 
 --  local get_obstacle = ocm.get_occ_get_obstacle();
 --  if get_obstacle == 1 then
-  if counter == 25 then
-    obs_in_occ();
-    counter = 0;
-  end
+--  if counter == 25 then
+    get_obstacle_info();
+--    counter = 0;
+--  end
 --    print("get obstacles from occmap");
 --    ocm.set_occ_get_obstacle(0);
 --  end
+
+  update_shm()
+
+end
+
+function update_shm()
+	-- copy odometry to shm 
+  odom = OccMap.retrieve_odometry();
+  ocm.set_occ_odom(vector.new({odom.x, odom.y, odom.a}));
+--  print('odom from map',odom.x..' '..odom.y..' '..odom.a);
+
+  -- copy occmap to shm
+	occmap = OccMap.retrieve_map();
+	ocm.set_occ_map(occmap);		
+
+  -- copy obstacle info to shm
+  ocm.set_obstacle_num(obs.num);
+  ocm.set_obstacle_cx(obs.centroid_x);
+  ocm.set_obstacle_cy(obs.centroid_y);
+  ocm.set_obstacle_la(obs.left_range);
+  ocm.set_obstacle_ra(obs.right_range);
+  ocm.set_obstacle_nx(obs.nearest_x);
+  ocm.set_obstacle_ny(obs.nearest_y);
+  ocm.set_obstacle_ndist(obs.nearest_dist);
 
 end
 

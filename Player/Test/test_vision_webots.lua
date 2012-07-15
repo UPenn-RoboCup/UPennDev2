@@ -119,8 +119,7 @@ function process_keyinput()
 
     -- reset OccMap
   elseif byte == string.byte("/") then
-    print("reset occmap");
-    ocm.set_occ_reset(1);
+    OccupancyMap.reset_map();
   elseif byte == string.byte(".") then
     print("get obstacle");
     ocm.set_occ_get_obstacle(1);

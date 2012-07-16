@@ -77,15 +77,6 @@ function update()
     vStep[3]=0;
   end
 
---[[
-  --when the ball is on the side, backstep a bit
-  local wAngle = math.atan2 (vStep[2], vStep[1]);
-  if math.abs(wAngle) > 70*math.pi/180 then
-    print('backstep due to ball is on the side')
-    vStep[1]=vStep[1] - 0.03;
-  end
---]]
-
   if t-ball.t>1.5 then --missed the ball, backstep a bit
     print('backstep due to ball lost')
     vStep[1]= vStep[1] - 0.03; 
@@ -104,6 +95,10 @@ function update()
 
   walk.set_velocity(vStep[1],vStep[2],vStep[3]);
 --  walk.set_velocity(obs.vStep[1],obs.vStep[2],obs.vStep[3]);
+
+  if ocm.get_obstacle_front() == 1 then
+    return "obstacle"
+  end
 
   pose = wcm.get_robot_pose()
   if pose[1] > 3 then 

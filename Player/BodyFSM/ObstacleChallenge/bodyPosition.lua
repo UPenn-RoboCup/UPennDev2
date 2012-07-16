@@ -56,6 +56,10 @@ function update()
 
   walk.set_velocity(vx,vy,va);
 
+  if ocm.get_obstacle_front() == 1 then
+    return 'obstacle'
+  end
+
   if (t - ball.t > tLost) then
     return "ballLost";
   end
@@ -79,8 +83,6 @@ function update()
   homeRelative = util.pose_relative(homePose, uPose);  
   angleToTurn = math.max(0, homeRelative[3] - daPost1);
 
-  print(homeRelative[1], homeRelative[2], homeRelative[3])
-  print(ballR, rClose)
   if math.abs(homeRelative[1])<thClose[1] and
     math.abs(homeRelative[2])<thClose[2] and
     math.abs(homeRelative[3])<daPost1 and

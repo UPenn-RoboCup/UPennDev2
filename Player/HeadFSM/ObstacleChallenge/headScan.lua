@@ -97,6 +97,11 @@ function update()
 
   Body.set_head_command({yaw, pitch-pitchBias});
 
+  if vcm.get_freespace_allBlocked() == 1 then
+    print('blocked view')
+    return 'blocked'
+  end
+
   local ball = wcm.get_ball();
   if (t - ball.t < 0.1) then
     return "ball";

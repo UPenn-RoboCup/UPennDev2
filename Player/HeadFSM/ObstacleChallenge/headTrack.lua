@@ -28,9 +28,6 @@ function update()
   role = gcm.get_team_role();
   --Force attacker for demo code
   if Config.fsm.playMode==1 then role=1; end
-  if role==0 and goalie_type>2 then --Escape if diving goalie
-    return "goalie";
-  end
 
   local t = Body.get_time();
 
@@ -48,6 +45,11 @@ function update()
 
   Body.set_head_command({yaw, pitch});
 
+  if vcm.get_freespace_allBlocked() == 1 then
+    print('blocked view')
+    return 'blocked'
+  end
+
   if (t - ball.t > tLost) then
     print('Ball lost!');
     return "lost";
@@ -61,6 +63,7 @@ function update()
        return "timeout";  --Player, look up to see goalpost
      end
   end
+
 end
 
 function exit()

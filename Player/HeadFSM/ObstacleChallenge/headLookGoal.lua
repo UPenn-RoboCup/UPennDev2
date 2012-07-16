@@ -43,6 +43,11 @@ function update()
   ball = wcm.get_ball();
   ballR = math.sqrt (ball.x^2 + ball.y^2);
 
+  if vcm.get_freespace_allBlocked() == 1 then
+    print('blocked view')
+    return 'blocked'
+  end
+
   if (t - t0 > tScan) then
     tGoal = wcm.get_goal_t();
     if (tGoal - t0 > 0) or ballR<minDist then

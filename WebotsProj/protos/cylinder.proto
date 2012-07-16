@@ -17,7 +17,6 @@ PROTO cylinder [
   field SFRotation rotation 0 1 0 0
   field SFFloat postRadius 0.1
   field SFColor postColor1 0 0 0
-  field SFFloat height 0 
   field SFColor postColor2 0 0 0
   field SFBool locked TRUE
 ]

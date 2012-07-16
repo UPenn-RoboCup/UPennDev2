@@ -196,11 +196,11 @@ function process_keyinput()
 --     if walk.active then walk.stop();end
 --     Motion.event('standup')
      headsm_running = 1;
-   bodysm_running = 1;
+     bodysm_running = 1;
 --     HeadFSM.sm:set_state('headLearnLUT');
       vcm.set_camera_learned_new_lut(1)
      HeadFSM.sm:set_state('headLearnLUT');
-   BodyFSM.sm:set_state('bodyWait');
+     BodyFSM.sm:set_state('bodyWait');
 --     require('ColorLUT')
 --     ColorLUT.learn_lut_from_mask();
    end

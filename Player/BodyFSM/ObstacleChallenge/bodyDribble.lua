@@ -5,7 +5,6 @@ require('wcm')
 require('ocm')
 require('walk')
 require('vector')
-require('behaviorObstacle')
 
 t0 = 0;
 
@@ -78,13 +77,6 @@ function update()
     vStep[3]=0;
   end
 
-  -- check if there is obstacle in advancing direction
-  front = ocm.get_obstacle_front(); 
-  if front == 1 then
---    print('facing obstacles')
-    return 'obstacle';
-  end
-
 --[[
   --when the ball is on the side, backstep a bit
   local wAngle = math.atan2 (vStep[2], vStep[1]);
@@ -103,9 +95,9 @@ function update()
     --we are tracking the ball. 
     --check ball is within threshold
 --    print('tracking the ball and check threshold'..ball.y)
-    --if (math.abs(ball.y) > 0.03) and (math.abs(ball.y) < 0.06) then
-    if (math.abs(ball.y) > -0.01) and (math.abs(ball.y) < 0.06) then
-      vStep[1]=0.04;
+    if (math.abs(ball.y) > 0.03) and (math.abs(ball.y) < 0.06) then
+    --if (math.abs(ball.y) > -0.01) and (math.abs(ball.y) < 0.06) then
+      vStep[1]=0.02;
     end
   end
 
@@ -113,6 +105,10 @@ function update()
   walk.set_velocity(vStep[1],vStep[2],vStep[3]);
 --  walk.set_velocity(obs.vStep[1],obs.vStep[2],obs.vStep[3]);
 
+  pose = wcm.get_robot_pose()
+  if pose[1] > 3 then 
+    return 'done'
+  end
 
   if (t - ball.t > tLost) then
     HeadFSM.sm:set_state('headScan');

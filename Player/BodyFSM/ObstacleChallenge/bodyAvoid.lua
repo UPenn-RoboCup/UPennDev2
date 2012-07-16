@@ -7,7 +7,7 @@ require('util')
 require('wcm')
 require('gcm')
 require('ocm')
-require('behaviorObstacle')
+--require('behaviorObstacle')
 
 t0 = 0;
 timeout = 5.0;
@@ -19,19 +19,7 @@ function entry()
 
   t0 = Body.get_time();
 
-  Speak.talk('Avoiding Obstacle');
-  left_free = ocm.get_obstacle_left();
-  right_free = ocm.get_obstacle_right();
-
-  if left_free == 1 and right_free == 1 then
-    freeDir = 1 -- both size occupied, need slow down and backstep
-  elseif left_free == 1 then
-    freeDir = 2 -- right side free
-  elseif right_free == 1 then
-    freeDir = 3 -- left side free
-  else
-    freeDir = 0 -- both size free
-  end
+--  Speak.talk('Avoiding Obstacle');
 
 end
 
@@ -43,11 +31,13 @@ function update()
   attackBearing, daPost = wcm.get_attack_bearing();
   attack_angle = util.mod_angle(attackBearing);
 
-  if freeDir == 1 then
+  left_obs = ocm.get_obstacle_left();
+  right_obs = ocm.get_obstacle_right();
+  if left_obs == 1 and right_obs == 1 then
     vStep = {-0.01, 0, 0}
-  elseif freeDir == 2 then
+  elseif left_obs == 1 then
     vStep = {0, 0, -0.02}
-  elseif freeDir == 3 then
+  elseif right_obs == 1 then
     vStep = {0, 0, 0.02}
   else
     if attack_angle > 10 * math.pi / 180 then
@@ -60,11 +50,9 @@ function update()
   end
   walk.set_velocity(vStep[1], vStep[2], vStep[3]);
   
-  front_free = ocm.get_obstacle_front(); 
-  if front_free == 1 then
-    return "obstacle"
-  else
-    return "clear"
+  front_obs = ocm.get_obstacle_front(); 
+  if front_obs == 0 then
+    return "done"
   end
 
   if (t - t0 > timeout) then

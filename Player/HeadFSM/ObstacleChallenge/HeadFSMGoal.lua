@@ -22,13 +22,13 @@ sm:add_state(headScan)
 sm:add_state(headScanObs)
 sm:add_state(headKick)
 
-sm:set_transition(headLearnLUT, 'timeout', headLearnLUT);
+sm:set_transition(headLearnLUT, 'timeout', headScanObs);
 sm:set_transition(headLearnLUT, 'done', headLookGoal);
 
 sm:set_transition(headLookGoal, 'timeout', headScanObs);
 sm:set_transition(headLookGoal, 'lost', headSweep);
 
-sm:set_transition(headSweep, 'done', headTrack);
+sm:set_transition(headSweep, 'done', headScanObs);
 
 sm:set_transition(headScanObs, 'timeout', headLookGoal);
 

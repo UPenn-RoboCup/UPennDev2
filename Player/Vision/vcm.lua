@@ -190,6 +190,7 @@ if enable_freespace_detection>0 then
   shared.freespace.vboundB = vector.zeros(2*Config.camera.width/(Config.vision.scaleB));
   shared.freespace.pboundB = vector.zeros(2*Config.camera.width/(Config.vision.scaleB));
   shared.freespace.tboundB = vector.zeros(Config.camera.width/(Config.vision.scaleB));
+  shared.freespace.allBlocked = vector.zeros(1);
 
   shared.boundary.top = vector.zeros(2*Config.camera.width/Config.vision.scaleB);
   shared.boundary.bottom = vector.zeros(2*Config.camera.width/Config.vision.scaleB);

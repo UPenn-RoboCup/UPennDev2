@@ -110,7 +110,7 @@ function entry()
   if t0-ball.t<0.2 then
     ball_tracking=true;
     print("Ball Tracking")
-    HeadFSM.sm:set_state('headKick');
+    HeadFSM.sm:set_state('headTrack');
   else
     ball_tracking=false;
   end
@@ -127,7 +127,7 @@ function update()
 
   if t-ball.t<0.2 and ball_tracking==false then
     ball_tracking=true;
-    HeadFSM.sm:set_state('headKick');
+    HeadFSM.sm:set_state('headTrack');
   end
 
   factor_x = 0.6;
@@ -139,62 +139,51 @@ function update()
   scale = math.min(maxStep/math.sqrt(vStep[1]^2+vStep[2]^2), 1);
   vStep = scale*vStep;
 
-  if Config.fsm.playMode==1 then 
-    --Demo FSM, just turn towards the ball
-    ballA = math.atan2(ball.y - math.max(math.min(ball.y, 0.05), -0.05),
-            ball.x+0.10);
-    vStep[3] = 0.5*ballA;
-    targetangle = 0;
-    angleErrL = 0;
-    angleErrR = 0;
+  --Player FSM, turn towards the goal
+  --attackBearing, daPost = wcm.get_attack_bearing();
+  position.posCalc();
 
+  kickAngle = wcm.get_kick_angle();
+  attackAngle = wcm.get_goal_attack_angle2()-kickAngle;
+  daPost = wcm.get_goal_daPost2();
+
+  if dapost_check == 0 then
+    daPost1 = 2*aThresholdTurn;
   else
-    --Player FSM, turn towards the goal
---    attackBearing, daPost = wcm.get_attack_bearing();
-    position.posCalc();
+    daPost1 = math.max(2*aThresholdTurn,daPost - daPostMargin);
+  end
 
-    kickAngle = wcm.get_kick_angle();
-    attackAngle = wcm.get_goal_attack_angle2()-kickAngle;
-    daPost = wcm.get_goal_daPost2();
+  --Wider margin for sidekicks and goalies
+  if kick_dir~=1 or role==0 then 
+    daPost1 = math.max(25*math.pi/180,daPost1);
+  end
 
-    if dapost_check == 0 then
-      daPost1 = 2*aThresholdTurn;
+  pose=wcm.get_pose();
+
+  angleErrL = util.mod_angle(pose.a - (attackAngle + daPost1 * 0.5));
+  angleErrR = util.mod_angle((attackAngle - daPost1 * 0.5)-pose.a);
+
+  --If we have room for turn, turn to the ball
+  angleTurnMargin = -10*math.pi/180;
+  ballA = math.atan2(ball.y - math.max(math.min(ball.y, 0.05), -0.05),
+          ball.x+0.10);
+  if angleErrL < angleTurnMargin and ballA > 0 then
+    vStep[3] = 0.5*ballA;
+  elseif angleErrR < angleTurnMargin and ballA < 0 then
+    vStep[3] = 0.5*ballA;
+  end    
+
+
+  if check_angle>0 then
+
+    if angleErrR > 0 then
+    --print("TURNLEFT")
+      vStep[3]=0.2;
+    elseif angleErrL > 0 then
+    --print("TURNRIGHT")
+      vStep[3]=-0.2;
     else
-      daPost1 = math.max(2*aThresholdTurn,daPost - daPostMargin);
-    end
-
-    --Wider margin for sidekicks and goalies
-    if kick_dir~=1 or role==0 then 
-      daPost1 = math.max(25*math.pi/180,daPost1);
-    end
-
-    pose=wcm.get_pose();
-
-    angleErrL = util.mod_angle(pose.a - (attackAngle + daPost1 * 0.5));
-    angleErrR = util.mod_angle((attackAngle - daPost1 * 0.5)-pose.a);
-
-    --If we have room for turn, turn to the ball
-    angleTurnMargin = -10*math.pi/180;
-    ballA = math.atan2(ball.y - math.max(math.min(ball.y, 0.05), -0.05),
-            ball.x+0.10);
-    if angleErrL < angleTurnMargin and ballA > 0 then
-      vStep[3] = 0.5*ballA;
-    elseif angleErrR < angleTurnMargin and ballA < 0 then
-      vStep[3] = 0.5*ballA;
-    end    
-
-
-    if check_angle>0 then
-
-      if angleErrR > 0 then
---print("TURNLEFT")
-        vStep[3]=0.2;
-      elseif angleErrL > 0 then
---print("TURNRIGHT")
-        vStep[3]=-0.2;
-      else
-        vStep[3]=0;
-      end
+      vStep[3]=0;
     end
   end
 
@@ -225,17 +214,16 @@ function update()
     print(string.format("Approach velocity:%.2f %.2f\n",vStep[1],vStep[2]));
   end
 
-  --[[
-  -- check if there is obstacle in advancing direction
-  front = ocm.get_obstacle_front(); 
-  if front == 1 then
-    print('facing obstacles')
+  if ocm.get_obstacle_front() == 1 then 
     return 'obstacle';
   end
-  --]]
-
  
   walk.set_velocity(vStep[1],vStep[2],vStep[3]);
+  
+  pose = wcm.get_robot_pose()
+  if pose[1] > 3 then 
+    return 'done'
+  end
 
   if (t - ball.t > tLost) and role>0 then
     HeadFSM.sm:set_state('headScan');

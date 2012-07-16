@@ -22,7 +22,6 @@ yTarget = Config.fsm.bodyApproach.yTarget11;
 dapost_check = Config.fsm.daPost_check or 0;
 daPostMargin = Config.fsm.daPostMargin or 15*math.pi/180;
 
-fast_approach = Config.fsm.fast_approach or 0;
 enable_evade = Config.fsm.enable_evade or 0;
 evade_count=0;
 
@@ -38,31 +37,6 @@ function check_approach_type()
 
   --Evading kick check
   do_evade_kick=false;
-  if enable_evade==1 and role>0 then
-    evade_count = evade_count+1;
-    if evade_count % 2 ==0 then
-      do_evade_kick=true;
-    end
-  elseif enable_evade==2 then
-
--- Hack : use localization info to detect obstacle
--- We should use vision
-    obstacle_num = wcm.get_obstacle_num();
-    obstacle_x = wcm.get_obstacle_x();
-    obstacle_y = wcm.get_obstacle_y();
-    obstacle_dist = wcm.get_obstacle_dist();
-
-    for i=1,obstacle_num do
-      if obstacle_dist[i]<0.60 then
-        obsAngle = math.atan2(obstacle_y[i],obstacle_x[i]);
-        if math.abs(obsAngle) < 40*math.pi/180 then
-  	  do_evade_kick = true;
-        end
-      end
-    end
-  end
-
-
   if do_evade_kick then
     print("EVADE KICK!!!")
     pose=wcm.get_pose();
@@ -142,11 +116,7 @@ function entry()
   end
 
   role = gcm.get_team_role();
-  if role==0 then
-    aThresholdTurn = Config.fsm.bodyApproach.aThresholdTurnGoalie;
-  else
-    aThresholdTurn = Config.fsm.bodyApproach.aThresholdTurn;
-  end
+  aThresholdTurn = Config.fsm.bodyApproach.aThresholdTurn;
 end
 
 function update()
@@ -160,30 +130,7 @@ function update()
     HeadFSM.sm:set_state('headKick');
   end
 
-  --Current cordinate origin: midpoint of uLeft and uRight
-  --Calculate ball position from future origin
-  --Assuming we stop at next step
-  if fast_approach == 1 then
-    uLeft = walk.uLeft;
-    uRight = walk.uRight;
-    uFoot = util.se2_interpolate(0.5,uLeft,uRight); --Current origin 
-    if walk.supportLeg ==0 then --left support 
-      uRight2 = walk.uRight2;
-      uLeft2 = util.pose_global({0,2*walk.footY,0},uRight2);
-    else --Right support
-      uLeft2 = walk.uLeft2;
-      uRight2 = util.pose_global({0,-2*walk.footY,0},uLeft2);
-    end
-    uFoot2 = util.se2_interpolate(0.5,uLeft2,uRight2); --Projected origin 
-    uMovement = util.pose_relative(uFoot2,uFoot);
-    uBall2 = util.pose_relative({ball.x,ball.y,0},uMovement);
-    ball.x=uBall2[1];
-    ball.y=uBall2[2];
-    factor_x = 0.8;
-  else
-    factor_x = 0.6;
-  end
-
+  factor_x = 0.6;
   
   -- calculate walk velocity based on ball position
   vStep = vector.new({0,0,0});
@@ -278,12 +225,14 @@ function update()
     print(string.format("Approach velocity:%.2f %.2f\n",vStep[1],vStep[2]));
   end
 
+  --[[
   -- check if there is obstacle in advancing direction
   front = ocm.get_obstacle_front(); 
   if front == 1 then
     print('facing obstacles')
     return 'obstacle';
   end
+  --]]
 
  
   walk.set_velocity(vStep[1],vStep[2],vStep[3]);

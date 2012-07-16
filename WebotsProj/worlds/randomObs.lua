@@ -4,8 +4,10 @@ cwd = cwd ..'/../../Player'
 require('init')
 require('util')
 
-range_y = {-1.0, 1.0}
-range_x = {-1.5, 1.5}
+--range_y = {-1.0, 1.0}
+--range_x = {-1.5, 1.5}
+range_y = {-2.0, 2.0}
+range_x = {-2.0, 2.0}
 
 trigrid = {}
 trigrid.x = {}
@@ -42,7 +44,7 @@ header = f:read('*a')
 fname_save = 'op_obs_auto.wbt'
 fs = io.open(fname_save, 'w+')
 
-obs_num = 6;
+obs_num = 20;
 obs = {}
 obs.x = {}
 obs.y = {}

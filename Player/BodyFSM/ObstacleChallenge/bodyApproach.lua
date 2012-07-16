@@ -214,7 +214,7 @@ function update()
     print(string.format("Approach velocity:%.2f %.2f\n",vStep[1],vStep[2]));
   end
 
-  if ocm.get_obstacle_front() == 1 then 
+  if ocm.get_obstacle_free() == 1 then 
     return 'obstacle';
   end
  

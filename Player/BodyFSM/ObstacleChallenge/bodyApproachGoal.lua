@@ -36,7 +36,7 @@ function update()
     return "done"
   end
 
-  if ocm.get_obstacle_front() == 1 then
+  if ocm.get_obstacle_free() == 1 then
     return "obstacle"
   end
 

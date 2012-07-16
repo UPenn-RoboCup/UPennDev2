@@ -96,7 +96,7 @@ function update()
   walk.set_velocity(vStep[1],vStep[2],vStep[3]);
 --  walk.set_velocity(obs.vStep[1],obs.vStep[2],obs.vStep[3]);
 
-  if ocm.get_obstacle_front() == 1 then
+  if ocm.get_obstacle_free() == 1 then
     return "obstacle"
   end
 

@@ -36,9 +36,9 @@ function update()
   if left_obs == 1 and right_obs == 1 then
     vStep = {-0.01, 0, 0}
   elseif left_obs == 1 then
-    vStep = {0, 0, -0.02}
+    vStep = {0, -0.04, attackBearing - 25 * math.pi / 180}
   elseif right_obs == 1 then
-    vStep = {0, 0, 0.02}
+    vStep = {0, 0.04, attackBearing + 25 * math.pi / 180}
   else
     if attack_angle > 10 * math.pi / 180 then
       vStep = {0, 0, 0.2}
@@ -52,6 +52,7 @@ function update()
   
   front_obs = ocm.get_obstacle_front(); 
   if front_obs == 0 then
+    print('Avoided Front obstacle')
     return "done"
   end
 

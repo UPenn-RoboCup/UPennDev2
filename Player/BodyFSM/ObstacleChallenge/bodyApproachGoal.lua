@@ -6,6 +6,7 @@ require('vector')
 require('Config')
 require('wcm')
 require('mcm')
+require('ocm')
 
 t0 = 0;
 direction = 1;
@@ -30,12 +31,13 @@ function update()
     walk.set_velocity(vx, vy, va);
   end
 
---  if ( t - wcm.get_goal_t() > tLost) then
---    return 'GoalLost'
---  end
   pose = wcm.get_robot_pose();
   if pose[1] > 3 then
     return "done"
+  end
+
+  if ocm.get_obstacle_front() == 1 then
+    return "obstacle"
   end
 
   if (t - t0 > timeout) then

@@ -25,6 +25,7 @@ obs.nearest_dist = vector.zeros(maxOb);
 obs.front = 0;
 obs.left = 0;
 obs.right = 0;
+obs.free = 0;
  
 
 uOdometry0 = vector.new({0, 0, 0});
@@ -218,6 +219,9 @@ function get_obstacle_dir()
   if front_obs then obs.front = 1; else obs.front = 0; end
   if left_obs then obs.left = 1; else obs.left = 0; end
   if right_obs then obs.right = 1; else obs.right = 0; end
+  -- General obstacle info
+  obs.free = obs.front + obs.left + obs.right;
+  if obs.free > 0 then obs.free = 1 end
    
   return obs;
 
@@ -273,6 +277,7 @@ function update_shm()
   ocm.set_obstacle_front(obs.front);
   ocm.set_obstacle_left(obs.left);
   ocm.set_obstacle_right(obs.right);
+  ocm.set_obstacle_free(obs.free);
 
 end
 

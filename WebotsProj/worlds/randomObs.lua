@@ -58,7 +58,6 @@ fs:write(header)
 for cnt = 1, obs_num do
   fs:write('DEF OBSTACLE'..cnt..' cylinder {\n')
   fs:write('\ttranslation '..obs.x[cnt]..' 0.25 '..obs.y[cnt]..'\n')
-  fs:write('\theight 0.5\n')
   fs:write('}\n\n');
 end
 

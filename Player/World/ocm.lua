@@ -33,7 +33,7 @@ shared.obstacle.ndist = vector.zeros(5);
 shared.obstacle.front = vector.zeros(1);
 shared.obstacle.left = vector.zeros(1);
 shared.obstacle.right = vector.zeros(1);
-
+shared.obstacle.free = vector.zeros(1);
 
 -- Robot Centroid x y on Map 
 shared.occ.robot_pos = vector.zeros(2);

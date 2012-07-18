@@ -7,7 +7,6 @@ require('util')
 require('wcm')
 require('gcm')
 require('ocm')
---require('behaviorObstacle')
 
 t0 = 0;
 timeout = 5.0;

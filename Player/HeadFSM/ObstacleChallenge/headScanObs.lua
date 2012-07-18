@@ -13,7 +13,7 @@ pitchMag = 20.5*math.pi/180;
 yawMag = 10*math.pi/180;
 yaw0 = 0*math.pi/180;
 
-tScan = 4.0;
+tScan = 2.0;
 timeout = tScan * 2;
 
 t0 = 0;

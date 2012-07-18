@@ -7,7 +7,6 @@ require('walk')
 require('vector')
 require('walk')
 require('position')
-require('behaviorObstacle')
 
 t0 = 0;
 timeout = Config.fsm.bodyApproach.timeout;
@@ -34,28 +33,6 @@ function check_approach_type()
   kick_angle=wcm.get_kick_angle();
 
   role = gcm.get_team_role();
-
-  --Evading kick check
-  do_evade_kick=false;
-  if do_evade_kick then
-    print("EVADE KICK!!!")
-    pose=wcm.get_pose();
-    goalDefend = wcm.get_goal_defend();
-    --Always sidekick to center side
-    if (pose.y>0 and goalDefend[1]>0) or
-       (pose.y<0 and goalDefend[1]<0) then
-      kick_type = 2;
-      kick_dir = 2; --kick to the right
-      wcm.set_kick_dir(kick_dir);
-      wcm.set_kick_type(kick_type);
-    else
-      kick_type = 2;
-      kick_dir = 3; --kick to the left
-      wcm.set_kick_dir(kick_dir);
-      wcm.set_kick_type(kick_type);
-    end
-    check_angle = 0; --Don't check angle if we're doing evade kick
-  end
 
   print("Approach: kick dir /type /angle",kick_dir,kick_type,kick_angle*180/math.pi)
 
@@ -172,20 +149,6 @@ function update()
   elseif angleErrR < angleTurnMargin and ballA < 0 then
     vStep[3] = 0.5*ballA;
   end    
-
-
-  if check_angle>0 then
-
-    if angleErrR > 0 then
-    --print("TURNLEFT")
-      vStep[3]=0.2;
-    elseif angleErrL > 0 then
-    --print("TURNRIGHT")
-      vStep[3]=-0.2;
-    else
-      vStep[3]=0;
-    end
-  end
 
   --when the ball is on the side of the ROBOT, backstep a bit
   local wAngle = math.atan2 (ball.y,ball.x);

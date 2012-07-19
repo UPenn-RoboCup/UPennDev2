@@ -172,10 +172,10 @@ function update()
     vStep[1]=math.max(0,vStep[1]);
   end
 
-  if walk.ph>0.95 then 
-    print(string.format("Ball position: %.2f %.2f\n",ball.x,ball.y));
-    print(string.format("Approach velocity:%.2f %.2f\n",vStep[1],vStep[2]));
-  end
+--  if walk.ph>0.95 then 
+--    print(string.format("Ball position: %.2f %.2f\n",ball.x,ball.y));
+--    print(string.format("Approach velocity:%.2f %.2f\n",vStep[1],vStep[2]));
+--  end
 
   if ocm.get_obstacle_free() == 1 then 
     return 'obstacle';
@@ -217,20 +217,8 @@ function update()
     yTargetMin = math.min(math.abs(yTarget[1]),math.abs(yTarget[3]));
     yTargetMax = math.max(math.abs(yTarget[1]),math.abs(yTarget[3]));
 
-    if (ball.x < xTarget[3]) and (t-ball.t < 0.5) and
-       (math.abs(ball.y) > yTargetMin) and (math.abs(ball.y) < yTargetMax) and angle_check_done then
-      print(string.format("Approach done, ball position: %.2f %.2f\n",ball.x,ball.y))
-      print(string.format("Ball target: %.2f %.2f\n",xTarget[2],yTarget[2]))
-      if kick_type==1 then return "kick";
-      else return "walkkick";
-      end
-    end
-  else
-    --Side kick, only check one side
-    if (ball.x < xTarget[3]) and (t-ball.t < 0.5) and
-       (ball.y > yTarget[1]) and (ball.y < yTarget[3]) and
-       angle_check_done then
-
+    if (ball.x < xTarget[3]) and (t-ball.t < 0.5) then --and
+--       (math.abs(ball.y) > yTargetMin) and (math.abs(ball.y) < yTargetMax) and angle_check_done then
       print(string.format("Approach done, ball position: %.2f %.2f\n",ball.x,ball.y))
       print(string.format("Ball target: %.2f %.2f\n",xTarget[2],yTarget[2]))
       if kick_type==1 then return "kick";

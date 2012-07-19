@@ -28,9 +28,9 @@ sm:set_transition(bodyWait, 'timeout', bodyWait);
 sm:set_transition(bodyPosition, 'timeout', bodyPosition);
 sm:set_transition(bodyPosition, 'ballLost', bodySearch);
 sm:set_transition(bodyPosition, 'ballClose', bodyApproach);
-sm:set_transition(bodyPosition, 'done', bodyApproach);  
+--sm:set_transition(bodyPosition, 'done', bodyApproach);  
 sm:set_transition(bodyPosition, 'obstacle', bodyAvoid);
-sm:set_transition(bodyPosition, 'done', bodyStop);
+--sm:set_transition(bodyPosition, 'done', bodyStop);
 
 sm:set_transition(bodySearch, 'ball', bodyPosition);
 sm:set_transition(bodySearch, 'timeout', bodySearch);

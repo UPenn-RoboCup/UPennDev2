@@ -23,7 +23,7 @@ sm:add_state(headScanObs)
 sm:add_state(headViewBlocked)
 
 sm:set_transition(headLearnLUT, 'timeout', headScan);
-sm:set_transition(headLearnLUT, 'done', headTrack);
+sm:set_transition(headLearnLUT, 'done', headLookGoal);
 
 sm:set_transition(headTrack, 'lost', headScan);
 sm:set_transition(headTrack, 'timeout', headScanObs);

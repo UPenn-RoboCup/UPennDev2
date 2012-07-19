@@ -75,10 +75,10 @@ function update()
 
   Body.set_head_command({yaw, pitch-pitchBias+pitch0});
 
-  if vcm.get_freespace_allBlocked() == 1 then
-    print('blocked view')
-    return 'blocked'
-  end
+--  if vcm.get_freespace_allBlocked() == 1 then
+--    print('blocked view')
+--    return 'blocked'
+--  end
 
   if (t - t0 > timeout) then
     return 'timeout';

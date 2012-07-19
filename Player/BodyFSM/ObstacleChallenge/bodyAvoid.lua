@@ -63,6 +63,13 @@ function update()
     vStep = scale*vStep;
   end
 
+  if vcm.get_freespace_allBlocked() == 1 then
+    print('view blocked, STOP!!!')
+    vStep[1] = -0.02;
+    vStep[2] = 0;
+    vStep[3] = 0;
+  end
+
   walk.set_velocity(vStep[1], vStep[2], vStep[3]);
   
   if ocm.get_obstacle_free() == 0 then

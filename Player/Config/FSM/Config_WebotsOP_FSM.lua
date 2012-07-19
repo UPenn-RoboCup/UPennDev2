@@ -155,7 +155,7 @@ fsm.bodyApproach.aThresholdTurnGoalie = 35*math.pi/180;
 
 --x and y target position for stationary straight kick
 --fsm.bodyApproach.xTarget11={0, 0.12,0.13}; --min, target, max
-fsm.bodyApproach.xTarget11={0, 0.12,0.14}; --min, target, max
+fsm.bodyApproach.xTarget11={0, 0.13,0.14}; --min, target, max
 fsm.bodyApproach.yTarget11={0.03, 0.05, 0.06}; --min, target ,max
 
 --x and y target position for stationary kick to left

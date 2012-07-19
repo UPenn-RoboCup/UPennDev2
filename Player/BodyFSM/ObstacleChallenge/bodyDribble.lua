@@ -10,7 +10,7 @@ t0 = 0;
 
 --Todo 
 timeout = 5.0;
-maxStep = 0.06;
+maxStep = 0.02;
 rFar = 0.50;
 tLost = 3.0;
 

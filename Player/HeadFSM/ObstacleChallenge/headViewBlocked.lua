@@ -32,6 +32,14 @@ end
 function update()
 
   local t = Body.get_time()
+  --
+  pitchBias =  mcm.get_headPitchBias();--robot specific head bias
+  -- set head to default position
+  local yaw = 0;
+  local pitch = 50*math.pi/180;
+
+  Body.set_head_command({yaw, pitch-pitchBias});
+
   
   if (t - t0) > timeout then
     return 'timeout'

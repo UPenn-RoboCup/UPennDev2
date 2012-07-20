@@ -3,11 +3,10 @@ require('init')
 
 require 'primecm'
 require 'gcm'
-run_once = false;
 
 -- Broadcast over the network
 --net = true;
-net = false;
+net = true;
 -- run from log file (this is set automatically)
 -- lua run_prime XXX.lua where XXX.lua is the log
 logs = false;
@@ -21,14 +20,15 @@ else
 end
 
 --if( box ) then
-  require 'libboxer'
+require 'libboxer'
 --end
 
 -- Issue debug line telling which mode we are in
 teamID   = gcm.get_team_number();
 playerID = gcm.get_team_player_id();
+desired_fps = 20;
 print '\n\n=====================';
-print('Run Once?',run_once);
+print('Desired FPS: ',desired_fps);
 print('Run Network?',net);
 print('Run Logs?',logs);
 print('Team/Player',teamID..'/'..playerID);
@@ -51,11 +51,11 @@ if( logs ) then
   end
 end
 
-print('Team entry...')
+print(Config.dev.team..' entry...')
 io:flush()
 
 if( net ) then
-  Team = require 'TeamPrimeQ'
+  require 'Team'
   Team.entry()
 end
 
@@ -64,7 +64,6 @@ io:flush()
 
 count = 0;
 init = false;
-desired_fps = 20;
 primecm.set_skeleton_found( {0,0} );
 while( not logs or count<n_logs ) do
   count = count + 1;
@@ -111,11 +110,8 @@ while( not logs or count<n_logs ) do
         end
         primecm['set_confidence_'..v]( confidence );
       end
-      
-      -- Debug all the joints
-      if(run_once) then
-        print( v, unpack(pos) );
-      end
+
+
     end
 
     -- Update the global primesense information
@@ -145,12 +141,12 @@ while( not logs or count<n_logs ) do
   if( byte==string.byte('e') ) then
   primecm.set_skeleton_enabled( 1-primecm.get_skeleton_enabled() );
   end
-  if(run_once or byte==string.byte('q')) then
+  if(byte==string.byte('q')) then
   break;
   end
   --]]
 
-libboxer.get_torso_orientation();
+  libboxer.get_torso_orientation();
 
 
   -- Timing

@@ -44,12 +44,13 @@ header = f:read('*a')
 fname_save = 'op_obs_auto.wbt'
 fs = io.open(fname_save, 'w+')
 
-obs_num = 15;
+obs_num = trigrid.num;
 obs = {}
 obs.x = {}
 obs.y = {}
 for cnt = 1, obs_num do 
-  index = math.random(trigrid.num);
+--  index = math.random(trigrid.num);
+  index = cnt;
   obs.x[cnt] = trigrid.x[index];
   obs.y[cnt] = trigrid.y[index];
 end

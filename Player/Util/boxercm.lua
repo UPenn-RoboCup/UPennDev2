@@ -15,7 +15,7 @@ shared.body.enabled = vector.zeros(1);
 shared.body.rpy = vector.zeros(3);
 shared.body.velocity = vector.zeros(3);
 shared.body.punchL = vector.zeros(1);
-shared.body.punchR = vector.zeros(2);
+shared.body.punchR = vector.zeros(1);
 shared.body.qLArm = vector.zeros(3);
 shared.body.qRArm = vector.zeros(3);
 

@@ -51,7 +51,7 @@ jointNames = {
     };
 
 shared.skeleton = {};
-shared.skeleton.found = vector.zeros(2);
+shared.skeleton.found = vector.zeros(1);
 shared.skeleton.timestamp = vector.zeros(1);
 
 -- For default player

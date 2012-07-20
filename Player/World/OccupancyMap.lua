@@ -55,13 +55,13 @@ function entry()
 end 
 
 function reset_map()
-  print('Reset Occupancy Map and Robot Odometry')
+--  print('Reset Occupancy Map and Robot Odometry')
   OccMap.reset();
 end
 
 function cur_odometry()
   if mcm.get_walk_isFallDown() == 1 then
-    print('FallDown and Reset Occupancy Map')
+ --   print('FallDown and Reset Occupancy Map')
     OccMap.reset();
   end
 

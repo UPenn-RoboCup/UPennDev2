@@ -60,7 +60,7 @@ int OccMap::reset_size(int size, int robot_x, int robot_y, double time) {
 }
 
 int OccMap::randomize_map(void) {
-  cout << grid.size() << ' ' << grid_num << endl;
+//  cout << grid.size() << ' ' << grid_num << endl;
   assert(grid.size() == grid_num);
   int grid_size = grid_num;
   srand(time(NULL));
@@ -89,7 +89,7 @@ int& OccMap::get_robot_pos_y(void) {
 }
 
 int OccMap::time_decay(double time) {
-  double decay_coef = 0.002;
+  double decay_coef = 0.0005;
   double P = 0, P1 = 0;
   int i = 0;
   for (i = 0; i < grid_num; i++) {

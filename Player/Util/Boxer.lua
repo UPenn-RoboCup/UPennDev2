@@ -20,6 +20,7 @@ sm:set_transition(up,'down',side)
 
 -- For debugging
 sm:set_state_debug_handle(boxercm.set_fsm_state);
+boxercm.set_fsm_state('side')
 
 function entry()
   sm:entry()

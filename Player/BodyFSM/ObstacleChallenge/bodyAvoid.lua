@@ -12,7 +12,7 @@ t0 = 0;
 timeout = 5.0;
 maxStep = 0.03;
 freeDir = 0;
-tLost = 1;
+tLost = 0.5;
 
 function entry()
   print(_NAME.." entry");
@@ -57,15 +57,26 @@ function update()
   if Config.fsm.avoidance_mode == 1 and 
     -- when tracking the ball
     (t - ball.t < tLost )  then
-    vStep[1] = .6*(ball.x - vStep[1]);
-    vStep[2] = .5*(ball.y - vStep[2]);
+--    print('Avoidance Velocity calc from ball')
+    vStep[1] = (ball.x + 2.5 * vStep[1]);
+    vStep[2] = (ball.y + 2.5 * vStep[2]);
+    vStep[3] = 0;
+    if right_obs == 1 then 
+      vStep[3] = attackBearing -- - 55 * math.pi / 180;
+    elseif left_obs == 1 then
+      vStep[3] = attackBearing -- + 55 * math.pi / 180;
+    else
+      vStep[3] = 0 * math.pi / 180;
+    end
+--    print(vStep[1], vStep[2], vStep[3])
     scale = math.min(maxStep/math.sqrt(vStep[1]^2+vStep[2]^2), 1);
+--    print(scale)
     vStep = scale*vStep;
   end
 
   if vcm.get_freespace_allBlocked() == 1 then
-    print('view blocked, STOP!!!')
-    vStep[1] = -0.02;
+    print('BodyAvoid: view blocked, STOP!!!')
+    vStep[1] = -0.04;
     vStep[2] = 0;
     vStep[3] = 0;
   end

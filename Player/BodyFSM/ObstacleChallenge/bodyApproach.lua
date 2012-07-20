@@ -21,68 +21,11 @@ yTarget = Config.fsm.bodyApproach.yTarget11;
 dapost_check = Config.fsm.daPost_check or 0;
 daPostMargin = Config.fsm.daPostMargin or 15*math.pi/180;
 
-enable_evade = Config.fsm.enable_evade or 0;
-evade_count=0;
-
-function check_approach_type()
-  is_evading = 0;
-  check_angle=1;
-  ball = wcm.get_ball();
-  kick_dir=wcm.get_kick_dir();
-  kick_type=wcm.get_kick_type();
-  kick_angle=wcm.get_kick_angle();
-
-  role = gcm.get_team_role();
-
-  print("Approach: kick dir /type /angle",kick_dir,kick_type,kick_angle*180/math.pi)
-
-  y_inv=0;
-  if kick_type==1 then --Stationary 
-    if kick_dir==1 then --Front kick
-      xTarget = Config.fsm.bodyApproach.xTarget11;
-      yTarget0 = Config.fsm.bodyApproach.yTarget11;
-      if sign(ball.y)<0 then y_inv=1;end
-    elseif kick_dir==2 then --Kick to the left
-      xTarget = Config.fsm.bodyApproach.xTarget12;
-      yTarget0 = Config.fsm.bodyApproach.yTarget12;
-    else --Kick to the right
-      xTarget = Config.fsm.bodyApproach.xTarget12;
-      yTarget0 = Config.fsm.bodyApproach.yTarget12;
-      y_inv=1;
-    end
-  else --walkkick
-    if kick_dir==1 then --Front kick
-      xTarget = Config.fsm.bodyApproach.xTarget21;
-      yTarget0 = Config.fsm.bodyApproach.yTarget21;
-      if sign(ball.y)<0 then y_inv=1; end
-    elseif kick_dir==2 then --Kick to the left
-      xTarget = Config.fsm.bodyApproach.xTarget22;
-      yTarget0 = Config.fsm.bodyApproach.yTarget22;
-    else --Kick to the right
-      xTarget = Config.fsm.bodyApproach.xTarget22;
-      yTarget0 = Config.fsm.bodyApproach.yTarget22;
-      y_inv=1;
-    end
-  end
-
-  if y_inv>0 then
-    yTarget[1],yTarget[2],yTarget[3]=
-      -yTarget0[3],-yTarget0[2],-yTarget0[1];
-  else
-     yTarget[1],yTarget[2],yTarget[3]=
-       yTarget0[1],yTarget0[2],yTarget0[3];
-  end
-  print("Approach, target: ",xTarget[2],yTarget[2]);
-
-end
-
-
 
 function entry()
   print("Body FSM:".._NAME.." entry");
   t0 = Body.get_time();
   ball = wcm.get_ball();
-  check_approach_type(); --walkkick if available
 
   if t0-ball.t<0.2 then
     ball_tracking=true;
@@ -93,7 +36,6 @@ function entry()
   end
 
   role = gcm.get_team_role();
-  aThresholdTurn = Config.fsm.bodyApproach.aThresholdTurn;
 end
 
 function update()
@@ -124,31 +66,7 @@ function update()
   attackAngle = wcm.get_goal_attack_angle2()-kickAngle;
   daPost = wcm.get_goal_daPost2();
 
-  if dapost_check == 0 then
-    daPost1 = 2*aThresholdTurn;
-  else
-    daPost1 = math.max(2*aThresholdTurn,daPost - daPostMargin);
-  end
-
-  --Wider margin for sidekicks and goalies
-  if kick_dir~=1 or role==0 then 
-    daPost1 = math.max(25*math.pi/180,daPost1);
-  end
-
   pose=wcm.get_pose();
-
-  angleErrL = util.mod_angle(pose.a - (attackAngle + daPost1 * 0.5));
-  angleErrR = util.mod_angle((attackAngle - daPost1 * 0.5)-pose.a);
-
-  --If we have room for turn, turn to the ball
-  angleTurnMargin = -10*math.pi/180;
-  ballA = math.atan2(ball.y - math.max(math.min(ball.y, 0.05), -0.05),
-          ball.x+0.10);
-  if angleErrL < angleTurnMargin and ballA > 0 then
-    vStep[3] = 0.5*ballA;
-  elseif angleErrR < angleTurnMargin and ballA < 0 then
-    vStep[3] = 0.5*ballA;
-  end    
 
   --when the ball is on the side of the ROBOT, backstep a bit
   local wAngle = math.atan2 (ball.y,ball.x);
@@ -204,16 +122,7 @@ function update()
     return "ballFar";
   end
 
-  angle_check_done = true;
-  if check_angle>0 and
-     (angleErrL > 0 or
-     angleErrR > 0 )then
-    angle_check_done=false;
-  else
-  end
-
   --For front kick, check for other side too
-  if kick_dir==1 then --Front kick
     yTargetMin = math.min(math.abs(yTarget[1]),math.abs(yTarget[3]));
     yTargetMax = math.max(math.abs(yTarget[1]),math.abs(yTarget[3]));
 
@@ -221,11 +130,8 @@ function update()
 --       (math.abs(ball.y) > yTargetMin) and (math.abs(ball.y) < yTargetMax) and angle_check_done then
       print(string.format("Approach done, ball position: %.2f %.2f\n",ball.x,ball.y))
       print(string.format("Ball target: %.2f %.2f\n",xTarget[2],yTarget[2]))
-      if kick_type==1 then return "kick";
-      else return "walkkick";
-      end
+      return "kick";
     end
-  end
 end
 
 function exit()

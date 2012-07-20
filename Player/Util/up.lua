@@ -1,15 +1,14 @@
 module(..., package.seeall);
 
 require 'primecm'
-require 'Body'
 
 function entry()
   print("Boxer ".._NAME.." entry");
-  t0 = Body.get_time();
+  t0 = unix.time();
 end
 
 function update()
-  t = Body.get_time();
+  t = unix.time();
 
   -- TODO: Need to check the confidence values!
   --[[
@@ -27,11 +26,14 @@ function update()
   local left_hand  = vector.new({s2hL[3],s2hL[1],s2hL[2]}) / arm_lenL; -- z is OP x, x is OP y, y is OP z
   --]]
   local arm_lenR = vector.norm( e2hR ) + vector.norm( s2eR );
-  local right_hand = vector.new({s2hR[3],s2hR[1],s2hR[2]}) / arm_lenR;
+  local right_hand = vector.new({s2hR[3],s2hR[1],-1*s2hR[2]}) / arm_lenR;
+
+  -- Debug
+  print('Right hand:',right_hand)
 
   -- Check if the hand extends beyond a certain point
-  if( right_hand[3]<0 ) then
-    return 'relax'
+  if( right_hand[3]<0.2 ) then
+    return 'down'
   elseif(right_hand[1]>.6) then
     return 'forward';
   end

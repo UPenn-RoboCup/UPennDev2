@@ -1,5 +1,6 @@
 module(..., package.seeall);
 require('Comm');
+require 'Boxer'
 require 'primecm'; -- Sending and receiving Kinect Data
 require 'boxercm'
 
@@ -45,6 +46,8 @@ end
 function update()
   if( ps ) then -- We have a primesense
     Boxer.update()
+    print('Boxer state: ',boxercm.get_fsm_state())
+    print()
     if( primecm.get_skeleton_found() ) then
       send_body();
     end
@@ -80,7 +83,7 @@ function send_body()
   ret = Comm.send( serialization.serialize(state) );
   ret = Comm.send( serialization.serialize(state) );
   ret = Comm.send( serialization.serialize(state) );
-  print('Sent ',ret,'bytes',serialization.serialize(state))
+  --print('Sent '..ret..' bytes',serialization.serialize(state))
 
 end
 

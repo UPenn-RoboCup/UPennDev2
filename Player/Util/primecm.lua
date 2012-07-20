@@ -53,9 +53,6 @@ jointNames = {
 shared.skeleton = {};
 shared.skeleton.found = vector.zeros(2);
 shared.skeleton.timestamp = vector.zeros(1);
-shared.skeleton.enabled = vector.zeros(1);
-shared.skeleton.velocity = vector.zeros( 3 );
-shared.skeleton.velocity2 = vector.zeros( 3 );
 
 -- For default player
 shared.position = {};
@@ -66,23 +63,6 @@ for i,v in ipairs(jointNames) do
   shared.orientation[ v ] = vector.zeros(9);
   shared.confidence[ v ] = vector.zeros(2);
 end
-
--- For second player
-shared.position2 = {};
-shared.orientation2 = {};
-shared.confidence2 = {};
-for i,v in ipairs(jointNames) do
-  shared.position2[ v ] = vector.zeros(3);
-  shared.orientation2[ v ] = vector.zeros(9);
-  shared.confidence2[ v ] = vector.zeros(2);
-end
-
--- Add the joints
-shared.joints = {};
-shared.joints.qLArm = vector.zeros(3);
-shared.joints.qRArm = vector.zeros(3);
-shared.joints.rpy = vector.zeros(3);
-shared.joints.punch = vector.zeros(2); -- For both players
 
 util.init_shm_segment(getfenv(), _NAME, shared, shsize);
 

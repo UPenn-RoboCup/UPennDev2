@@ -1,6 +1,5 @@
-module(... or "", package.seeall)
-dofile('load_paths.lua')
---require('load_paths.lua')
+cwd = os.getenv('PWD')
+require('init')
 
 require 'primecm'
 require 'gcm'
@@ -28,8 +27,6 @@ end
 -- Issue debug line telling which mode we are in
 teamID   = gcm.get_team_number();
 playerID = gcm.get_team_player_id();
--- Enable using primecm (webots)
-primecm.set_skeleton_enabled(1);
 print '\n\n=====================';
 print('Run Once?',run_once);
 print('Run Network?',net);
@@ -114,16 +111,7 @@ while( not logs or count<n_logs ) do
         end
         primecm['set_confidence_'..v]( confidence );
       end
-      if( active[2]>0 ) then
-        --print('Player 2 '..v..': ',pos2)
-        -- If Two player mode...
-        primecm['set_position2_'..v]( pos2 );
-        if( not logs ) then
-          primecm['set_orientation2_'..v]( rot2 );
-        end
-        primecm['set_confidence2_'..v]( confidence2 );
-      end
-
+      
       -- Debug all the joints
       if(run_once) then
         print( v, unpack(pos) );
@@ -192,7 +180,6 @@ end
 -- After done playing, reset the skeleton found variable so no more movement
 print('Finished!')
 primecm.set_skeleton_found( {0,0} );
-primecm.set_skeleton_enabled( 0 );
 if( net ) then
   Team.update();
 end

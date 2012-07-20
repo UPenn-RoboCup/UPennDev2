@@ -14,6 +14,11 @@ maxStep = 0.03;
 freeDir = 0;
 tLost = 0.5;
 
+xTarget = Config.fsm.bodyApproach.xTarget11;
+yTarget = Config.fsm.bodyApproach.yTarget11;
+
+
+
 function entry()
   print(_NAME.." entry");
 
@@ -31,16 +36,7 @@ function update()
 
   attackBearing, daPost = wcm.get_attack_bearing();
   attack_angle = util.mod_angle(attackBearing);
-
-  left_obs = ocm.get_obstacle_left();
-  right_obs = ocm.get_obstacle_right();
-  if left_obs == 1 and right_obs == 1 then
-    vStep[1] = -0.02
-  elseif left_obs == 1 then
-    vStep[1] = -0.02
-    vStep[2] = -0.04
-    vStep[3] = attackBearing - 25 * math.pi / 180
-  elseif right_obs == 1 then
+left_obs = ocm.get_obstacle_left(); right_obs = ocm.get_obstacle_right(); if left_obs == 1 and right_obs == 1 then vStep[1] = -0.02 elseif left_obs == 1 then vStep[1] = -0.02 vStep[2] = -0.04 vStep[3] = attackBearing - 25 * math.pi / 180 elseif right_obs == 1 then
     vStep[1] = -0.02
     vStep[2] = 0.04
     vStep[3] = attackBearing + 25 * math.pi / 180
@@ -58,8 +54,8 @@ function update()
     -- when tracking the ball
     (t - ball.t < tLost )  then
 --    print('Avoidance Velocity calc from ball')
-    vStep[1] = (ball.x + 2.5 * vStep[1]);
-    vStep[2] = (ball.y + 2.5 * vStep[2]);
+    vStep[1] = 0.5 * (ball.x + 1.5 * vStep[1] + 1.0 * xTarget[2]); 
+    vStep[2] = 0.7 * (ball.y + 1.5 * vStep[2] + 1.0 * yTarget[2]);
     vStep[3] = 0;
     if right_obs == 1 then 
       vStep[3] = attackBearing -- - 55 * math.pi / 180;

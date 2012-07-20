@@ -13,8 +13,8 @@ pitchMag = 20.5*math.pi/180;
 yawMag = 10*math.pi/180;
 yaw0 = 0*math.pi/180;
 
-tScan = 2.0;
-timeout = tScan * 2;
+tScan = 1.0;
+timeout = tScan;
 
 t0 = 0;
 direction = 1;
@@ -73,7 +73,7 @@ function update()
     yaw = yaw0 + yawMag * yawDir;
   end
 
-  Body.set_head_command({yaw, pitch-pitchBias+pitch0});
+  Body.set_head_command({yaw0, pitch-pitchBias+pitch0});
 
 --  if vcm.get_freespace_allBlocked() == 1 then
 --    print('blocked view')

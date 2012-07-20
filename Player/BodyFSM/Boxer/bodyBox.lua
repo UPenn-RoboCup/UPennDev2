@@ -19,15 +19,16 @@ function update()
   local t = Body.get_time();
 
   -- Check if there is a punch activated
-  local punch = boxercm.get_body_punch();
-  local velocity = boxercm.get_body_velocity();
+  local pL = boxercm.get_body_punchL();
+  local pR = boxercm.get_body_punchR();
+  local vel = boxercm.get_body_velocity();
 
-  if( punch[1]==1 and punch[2]==0 ) then -- left arm punch
+  if( pL==1 and pR==0 ) then -- left arm punch
     --Check the stance
     if( walk.stance==1 ) then --left
     end
-  elseif( punch[1]==0 and punch[2]==1 ) then -- right arm punch
-  elseif( punch[1]==1 and punch[2]==1 ) then -- both arm punch (pushaway)
+  elseif( pL==0 and pR==1 ) then -- right arm punch
+  elseif( pL==1 and pR==1 ) then -- both arm punch (pushaway)
   else -- No punch
   end
 

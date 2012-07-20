@@ -23,7 +23,7 @@ sm:add_state(bodyAvoid);
 
 -- Obstacle Challenge FSM
 sm:set_transition(bodyWait, 'done', bodySearch);
-sm:set_transition(bodyWait, 'timeout', bodyWait);
+sm:set_transition(bodyWait, 'timeout', bodyPosition);
 
 sm:set_transition(bodyPosition, 'timeout', bodyPosition);
 sm:set_transition(bodyPosition, 'ballLost', bodySearch);

@@ -26,7 +26,7 @@ sm:set_transition(headLearnLUT, 'timeout', headScan);
 sm:set_transition(headLearnLUT, 'done', headLookGoal);
 
 sm:set_transition(headTrack, 'lost', headScan);
-sm:set_transition(headTrack, 'timeout', headScanObs);
+sm:set_transition(headTrack, 'timeout', headLookGoal);
 sm:set_transition(headTrack, 'sweep', headSweep);
 sm:set_transition(headTrack, 'blocked', headViewBlocked);
 

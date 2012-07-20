@@ -21,6 +21,8 @@ end
 function update()
   local t = Body.get_time();
 
+  walk.set_velocity(0,0,0);
+
   if (t - t0 > timeout) then
     return 'timeout'
   end

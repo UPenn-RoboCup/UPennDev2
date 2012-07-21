@@ -42,8 +42,10 @@ return;
 							'KeyPressFcn',@KeyResponse);
 
     % set the figure window size
+    scrsz = get(0, 'ScreenSize');
     figpos = get(hfig, 'Position');
     figpos(3:4) = [1100 600];
+    figpos = [scrsz(3)/2 - figpos(3)/2, scrsz(4) - figpos(4)/2, figpos(3), figpos(4)];
     set(hfig, 'Position', figpos);
 
     % default image size 
@@ -89,7 +91,7 @@ return;
     DATA.ImagePanel = uipanel('Parent', hfig, ...
                               'Title', 'Images', ...
                               'BackgroundColor', [.8 .8 .8], ...
-                              'Position', [.2 .15 .76 .8])
+                              'Position', [.2 .15 .76 .8]);
     DATA.ImageAxes = subplot(2, 3, [1 2 4 5], ...
                            'Parent', DATA.ImagePanel, ...
                            'YDir', 'reverse', ...

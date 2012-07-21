@@ -1,21 +1,10 @@
-function colortable_online(action, varargin)
+function h = colortable_online(action, varargin)
+  global COLORTABLE LUT DATA;
+  h.Initialize = @Initialize;
+  h.update = @update;
 %
 % main function for the colortable/lut training gui
 %
-
-global COLORTABLE
-if isempty(COLORTABLE)
-  colortable_init;
-end
-
-if (nargin < 1)
-  action = 'Initialize';
-end
-
-% colortable is the main callback, all interactions call colortable with
-%   the desired sub-function
-feval(action, varargin{:});
-return;
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -26,8 +15,6 @@ return;
   function Initialize()
   % initialize the colortable gui
   % creates the gui and ui elements for the colortable trainer
-
-    global COLORTABLE
 
     % create the gui
     hfig = gcf;
@@ -49,7 +36,15 @@ return;
     set(hfig, 'Position', figpos);
 
     % default image size 
-    DATA.size = [240 160];
+    DATA.size = [120 160];
+
+    % init mask 
+    for icolor = 1:COLORTABLE.ncolor
+      % clear out mask with new image
+      DATA.mask_pos{icolor} = false(DATA.size);
+      DATA.mask_neg{icolor} = false(DATA.size);
+    end
+
     % default color threshold value
     DATA.cthreshold = 14;
     % array containing the training images
@@ -78,14 +73,14 @@ return;
                                 'Parent', hfig,...
                                 'Style', 'pushbutton',...
                                 'String', 'Prev Log (Z)',...
-                                'Callback', 'colortable(''LoadMontage'',''Backward'')',...
+                                'Callback', 'colortable_online(''LoadMontage'',''Backward'')',...
                                 'Units', 'Normalized',...
                                 'Position', [.21 0.955 0.12 0.04]);
     DATA.NextLogFile = uicontrol(Std, ...
                                 'Parent', hfig,...
                                 'Style', 'pushbutton',...
                                 'String', 'Next Log (X)',...
-                                'Callback', 'colortable(''LoadMontage'',''Forward'')',...
+                                'Callback', 'colortable_online(''LoadMontage'',''Forward'')',...
                                 'Units', 'Normalized',...
                                 'Position', [.77 0.955 0.12 0.04]);
     DATA.ImagePanel = uipanel('Parent', hfig, ...
@@ -107,7 +102,7 @@ return;
                         'Parent', DATA.ImageAxes, ...
                         'XData', [1 DATA.size(2)], ...
                         'YData', [1 DATA.size(1)], ...
-                        'ButtonDownFcn', 'colortable(''Button'')', ...
+                        'ButtonDownFcn', @Button, ...
                         'CData', []);
 
     DATA.MaskAxes = subplot(2, 3, 3, ...
@@ -125,7 +120,6 @@ return;
                         'Parent', DATA.MaskAxes, ...
                         'XData', [1 DATA.size(2)], ...
                         'YData', [1 DATA.size(1)], ...
-                        'ButtonDownFcn', 'colortable(''Button'')', ...
                         'CData', []);
 
     DATA.LabelAxes = subplot(2, 3, 6, ...
@@ -143,7 +137,6 @@ return;
                         'Parent', DATA.LabelAxes, ...
                         'XData', [1 DATA.size(2)], ...
                         'YData', [1 DATA.size(1)], ...
-                        'ButtonDownFcn', 'colortable(''Button'')', ...
                         'CData', []);
 
 
@@ -152,7 +145,7 @@ return;
                                   'Parent', hfig, ...
                                   'Style', 'pushbutton', ...
                                   'String', 'Load Montage (L)', ...
-                                  'Callback','colortable(''LoadMontage'')', ...
+                                  'Callback','colortable_online(''LoadMontage'')', ...
                                   'Units', 'Normalized', ...
                                   'Position', [.025 .90 .15 .05]);
 
@@ -161,7 +154,7 @@ return;
                                   'Parent', hfig, ...
                                   'Style', 'pushbutton', ...
                                   'String', 'Save Colors (Q)', ...
-                                  'Callback','colortable(''SaveColor'')', ...
+                                  'Callback','colortable_online(''SaveColor'')', ...
                                   'Units', 'Normalized', ...
                                   'Position', [.025 .12 .15 .05]);
 
@@ -170,7 +163,7 @@ return;
                                   'Parent', hfig, ...
                                   'Style', 'pushbutton', ...
                                   'String', 'Save LUT (W)', ...
-                                  'Callback','colortable(''SaveLUT'')', ...
+                                  'Callback','colortable_online(''SaveLUT'')', ...
                                   'Units', 'Normalized', ...
                                   'Position', [.025 .05 .15 .05]);
 
@@ -179,7 +172,7 @@ return;
                                   'Parent', hfig, ...
                                   'Style', 'pushbutton', ...
                                   'String', 'Clear Selection (C)', ...
-                                  'Callback','colortable(''ClearSelection'')', ...
+                                  'Callback','colortable_online(''ClearSelection'')', ...
                                   'Units', 'Normalized', ...
                                   'Position', [.025 .35 .15 .05]);
 
@@ -188,7 +181,7 @@ return;
                                   'Parent', hfig, ...
                                   'Style', 'pushbutton', ...
                                   'String', 'Toggle View (T)', ...
-                                  'Callback','colortable(''ToggleView'')', ...
+                                  'Callback','colortable_online(''ToggleView'')', ...
                                   'Units', 'Normalized', ...
                                   'Position', [.025 .50 .15 .05]);
 
@@ -197,7 +190,7 @@ return;
                                     'Parent', hfig, ...
                                     'Style', 'pushbutton', ...
                                     'String', '-> (D)', ...
-                                    'Callback','colortable(''UpdateImage'',''forward'')', ...
+                                    'Callback','colortable_online(''UpdateImage'',''forward'')', ...
                                     'Units', 'Normalized', ...
                                     'Position', [.65 .05 .07 .05]);
 
@@ -206,7 +199,7 @@ return;
                                       'Parent', hfig, ...
                                       'Style', 'pushbutton', ...
                                       'String', '<- (S)', ...
-                                      'Callback','colortable(''UpdateImage'',''backward'')', ...
+                                      'Callback','colortable_online(''UpdateImage'',''backward'')', ...
                                       'Units', 'Normalized', ...
                                       'Position', [.4 .05 .07 .05]);
 
@@ -215,7 +208,7 @@ return;
                                         'Parent', hfig, ...
                                         'Style', 'pushbutton', ...
                                         'String', '>> (F)', ...
-                                        'Callback','colortable(''UpdateImage'',''fastforward'')', ...
+                                        'Callback','colortable_online(''UpdateImage'',''fastforward'')', ...
                                         'Units', 'Normalized', ...
                                         'Position', [.75 .05 .07 .05]);
 
@@ -224,7 +217,7 @@ return;
                                           'Parent', hfig, ...
                                           'Style', 'pushbutton', ...
                                           'String', '<< (A)', ...
-                                          'Callback','colortable(''UpdateImage'',''fastbackward'')', ...
+                                          'Callback','colortable_online(''UpdateImage'',''fastbackward'')', ...
                                           'Units', 'Normalized', ...
                                           'Position', [.3 .05 .07 .05]);
 
@@ -234,7 +227,7 @@ return;
                                   'Parent', hfig, ...
                                   'Style', 'edit', ...
                                   'String', '1', ...
-                                  'Callback','colortable(''UpdateImage'',str2num(get(gco,''String'')))', ...
+                                  'Callback','colortable_online(''UpdateImage'',str2num(get(gco,''String'')))', ...
                                   'Units', 'Normalized', ...
                                   'Position', [.5 .05 .1 .06]);
 
@@ -245,7 +238,7 @@ return;
                                              'Style', 'radiobutton', ...
                                              'String', strcat(COLORTABLE.color_name{icolor},' (',num2str(icolor), ')'), ...
                                              'UserData', icolor, ...
-                                             'Callback','colortable(''Color'',get(gco,''UserData''))',...
+                                             'Callback','colortable_online(''Color'',get(gco,''UserData''))',...
                                              'Value', 0, ...
                                              'Units', 'Normalized', ...
                                              'Position', [.025 .88-.045*icolor .15 .05]);
@@ -258,7 +251,7 @@ return;
                                        'Min', 0, ...
                                        'Max', 128, ...
                                        'Value', DATA.cthreshold, ...
-                                       'Callback','colortable(''UpdateThreshold'',get(gco,''Value''))', ...
+                                       'Callback','colortable_online(''UpdateThreshold'',get(gco,''Value''))', ...
                                        'Units', 'Normalized', ...
                                        'Position', [.025 .25 .15 .05]);
 
@@ -267,7 +260,7 @@ return;
                                     'Parent', hfig, ...
                                     'Style', 'edit', ...
                                     'String', num2str(DATA.cthreshold), ...
-                                    'Callback','colortable(''UpdateThreshold'',str2num(get(gco,''String'')))', ...
+                                    'Callback','colortable_online(''UpdateThreshold'',str2num(get(gco,''String'')))', ...
                                     'Units', 'Normalized', ...
                                     'Position', [.075 .20 .05 .05]);
 
@@ -284,6 +277,7 @@ return;
     set(hfig, 'UserData', DATA, 'Visible', 'on');
     drawnow;
     return;
+  end
 	
 	function KeyResponse(h_obj, evt)
     if evt.Key == 'z' | evt.Key == 'Z'
@@ -334,11 +328,11 @@ return;
 		elseif evt.Key >= '1' & evt.Key <= '7'
 			Color(str2num(evt.Key));
 		end
+  end
 				 
 
   function UpdateImage(index)
   % updates the image displayed in the gui
-    global COLORTABLE LUT
 
     % get the gui userdata
     hfig = gcbf;
@@ -449,20 +443,21 @@ return;
 
     set(hfig, 'UserData', DATA);
     return;
+  end
 
 
-  function Button()
+  function Button(varargin)
   % callback for clicking on the image
-    global COLORTABLE
 
     % get the gui userdata
     hfig = gcbf;
-    DATA = get(hfig, 'UserData');
+%    DATA = get(hfig, 'UserData');
 
     % get the pointer position
     pt = get(gca,'CurrentPoint');
     ptx = round(pt(1,1));
     pty = round(pt(1,2));
+
 
     % select similar colored pixels based on the color selection threshold
     % mask is a binary array where selected pixels have a value of 1
@@ -487,15 +482,11 @@ return;
       % remove any selected pixels from the negative examples mask
       DATA.mask_neg{DATA.icolor} = DATA.mask_neg{DATA.icolor} & ~mask;
     end
-
-    set(hfig, 'UserData', DATA);
-    UpdateImage();
-    return;
+  end
 
 
   function Color(icolor)
   % callback for selecting a color from the radio button array
-    global COLORTABLE
 
     % get the gui userdata
     hfig = gcbf;
@@ -516,11 +507,11 @@ return;
 
     UpdateImage();
     return;
+  end
 
 
   function UpdateThreshold(value)
   % callback for the color selection threshold slider
-    global COLORTABLE
 
     % get the gui userdata
     hfig = gcbf;
@@ -533,11 +524,11 @@ return;
     set(DATA.ThresholdEdit, 'String', num2str(DATA.cthreshold));
     set(hfig, 'UserData', DATA);
     return;
+  end
 
 
   function LoadMontage(index)
   % callback for the 'Load Montage' button
-    global COLORTABLE
 
     % get the gui userdata
     hfig = gcbf;
@@ -599,11 +590,11 @@ return;
     end
 
     return;
+  end
 
 
   function ClearSelection()
   % callback for the 'Clear Selection' button
-    global COLORTABLE
 
     % get the gui userdata
     hfig = gcbf;
@@ -617,11 +608,11 @@ return;
 
     UpdateImage();
     return;
+  end
 
 
   function SaveColor()
   % callback for the 'Save Colors' button
-    global COLORTABLE
 
     % open the save file gui
     [filename, pathname] = uiputfile('*.mat', 'Select colortable file to save');
@@ -630,10 +621,10 @@ return;
     end
 
     return;
+  end
 
   function SaveLUT()
     % callback for the 'Save LUT' button
-    global COLORTABLE LUT
 
     % open file select gui
     [filename, pathname] = uiputfile('*.raw', 'Select lut file to save');
@@ -647,10 +638,10 @@ return;
     end
 
     return;
+  end
 
   function ToggleView()
   % callback for the 'Toggle View' button
-    global COLORTABLE LUT
 
     % get the gui userdata
     hfig = gcbf;
@@ -666,5 +657,24 @@ return;
 
     UpdateImage();
     return;
+  end
 
 
+  function update(robots, teamNumber, playerNumber)
+    cbk=[0 0 0];cr=[1 0 0];cg=[0 1 0];cb=[0 0 1];cy=[1 1 0];cw=[1 1 1];
+    cmap=[cbk;cr;cy;cy;cb;cb;cb;cb;cg;cg;cg;cg;cg;cg;cg;cg;cw];
+
+    % Show yuyv Image
+    yuyv = robots{playerNumber, teamNumber}.get_yuyv(); 
+    labelA = robots{playerNumber, teamNumber}.get_labelA(); 
+    [ycbcr, rgb] = yuyv2rgb(yuyv);
+    DATA.rgb = rgb;
+    set(DATA.Image, 'CData', rgb);
+
+    % Show Label A
+    colormap(cmap);
+    set(DATA.Label, 'CData', labelA);
+    drawnow;
+  end
+
+end

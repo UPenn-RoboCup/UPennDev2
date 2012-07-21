@@ -2,6 +2,7 @@ function h = colortable_online(action, varargin)
   global COLORTABLE LUT DATA;
   h.Initialize = @Initialize;
   h.update = @update;
+  h.Color = @Color;
 %
 % main function for the colortable/lut training gui
 %
@@ -238,7 +239,7 @@ function h = colortable_online(action, varargin)
                                              'Style', 'radiobutton', ...
                                              'String', strcat(COLORTABLE.color_name{icolor},' (',num2str(icolor), ')'), ...
                                              'UserData', icolor, ...
-                                             'Callback','colortable_online(''Color'',get(gco,''UserData''))',...
+                                             'Callback',{@Color, get(gco,'')},...
                                              'Value', 0, ...
                                              'Units', 'Normalized', ...
                                              'Position', [.025 .88-.045*icolor .15 .05]);
@@ -485,16 +486,16 @@ function h = colortable_online(action, varargin)
   end
 
 
-  function Color(icolor)
+  function Color(varargin)
   % callback for selecting a color from the radio button array
-
+  varargin 
     % get the gui userdata
     hfig = gcbf;
-    DATA = get(hfig, 'UserData');
+%    DATA = get(hfig, 'UserData');
 
     % get the selected color
     DATA.icolor = icolor;
-    set(hfig, 'UserData', DATA);
+%    set(hfig, 'UserData', DATA);
 
     % update the selected color radio button (highlight)
     for icolor = 1:COLORTABLE.ncolor
@@ -505,8 +506,8 @@ function h = colortable_online(action, varargin)
       end
     end
 
-    UpdateImage();
-    return;
+%    UpdateImage();
+%    return;
   end
 
 

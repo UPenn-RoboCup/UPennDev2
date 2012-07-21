@@ -674,6 +674,10 @@ function h = colortable_online(action, varargin)
     % Show Label A
     colormap(cmap);
     set(DATA.Label, 'CData', labelA);
+
+    % Show mask
+    mask_disp = DATA.mask_pos{1};
+    set(DATA.Mask, 'CData', mask_disp);
     drawnow;
   end
 

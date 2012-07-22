@@ -239,7 +239,7 @@ function h = colortable_online(action, varargin)
                                              'Style', 'radiobutton', ...
                                              'String', strcat(COLORTABLE.color_name{icolor},' (',num2str(icolor), ')'), ...
                                              'UserData', icolor, ...
-                                             'Callback',{@Color, get(gco,'')},...
+                                             'Callback',@Color,...
                                              'Value', 0, ...
                                              'Units', 'Normalized', ...
                                              'Position', [.025 .88-.045*icolor .15 .05]);
@@ -488,14 +488,12 @@ function h = colortable_online(action, varargin)
 
   function Color(varargin)
   % callback for selecting a color from the radio button array
-  varargin 
+    icolor = get(varargin{1}, 'UserData');
     % get the gui userdata
     hfig = gcbf;
-%    DATA = get(hfig, 'UserData');
 
     % get the selected color
     DATA.icolor = icolor;
-%    set(hfig, 'UserData', DATA);
 
     % update the selected color radio button (highlight)
     for icolor = 1:COLORTABLE.ncolor
@@ -506,8 +504,6 @@ function h = colortable_online(action, varargin)
       end
     end
 
-%    UpdateImage();
-%    return;
   end
 
 
@@ -677,7 +673,7 @@ function h = colortable_online(action, varargin)
     set(DATA.Label, 'CData', labelA);
 
     % Show mask
-    mask_disp = DATA.mask_pos{1};
+    mask_disp = DATA.mask_pos{DATA.icolor};
     set(DATA.Mask, 'CData', mask_disp);
     drawnow;
   end

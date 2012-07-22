@@ -4,16 +4,16 @@ cwd = cwd ..'/../../Player'
 require('init')
 require('util')
 
-range_y = {-1.0, 1.0}
-range_x = {-1.5, 1.5}
---range_y = {-2.0, 2.0}
---range_x = {-2.0, 2.0}
+--range_y = {-1.0, 1.0}
+--range_x = {-1.5, 1.5}
+range_y = {-2.0, 2.0}
+range_x = {-2.0, 2.0}
 
 trigrid = {}
 trigrid.x = {}
 trigrid.y = {}
 
-trigrid_den = 0.6
+trigrid_den = 0.5
 trigrid_file = 'triangle_grid'..trigrid_den..'.txt';
 f = io.open(trigrid_file, 'r')
 line = f:read("*l")

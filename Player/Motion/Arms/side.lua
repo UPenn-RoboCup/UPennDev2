@@ -1,6 +1,11 @@
 module(..., package.seeall);
 
-require 'primecm'
+myplayer = 0;
+function init(forPlayer)
+  myplayer = forPlayer;
+  primecm = require('primecm'..forPlayer)
+  boxercm = require('boxercm'..forPlayer)
+end
 
 function entry()
   print("Boxer ".._NAME.." entry");

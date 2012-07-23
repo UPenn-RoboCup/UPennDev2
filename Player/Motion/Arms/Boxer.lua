@@ -5,6 +5,7 @@ require 'util'
 require 'side'
 require 'fore'
 require 'up'
+require 'libboxer'
 
 sm = fsm.new(side); -- right hand following.  Let's see how duplication is
 sm:add_state(fore);
@@ -23,6 +24,11 @@ function entry()
 end
 
 function update()
+  -- Update the joint angles and body RPY
+  boxercm.set_body_rpy( libboxer.get_torso_orientation() );
+  local arms = libboxer.get_arm_angles();
+  boxercm.set_body_qLArm( arms[1] );
+  boxercm.set_body_qLArm( arms[2] );
   sm:update();
 end
 

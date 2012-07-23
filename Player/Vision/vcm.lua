@@ -46,6 +46,7 @@ shared.camera.teambroadcast = vector.zeros(1);
 
 shared.camera.reload_LUT = vector.zeros(1);
 shared.camera.learned_new_lut = vector.zeros(1);
+shared.camera.lut = 262144;
 
 shared.image = {};
 shared.image.select = vector.zeros(1);
@@ -79,7 +80,7 @@ else
 end
 
 -- calculate image shm size
-shsize.image = (shared.image.yuyv + shared.image.yuyv2+ 
+shsize.image = (shard.camera.lut + shared.image.yuyv + shared.image.yuyv2+ 
 	shared.image.yuyv3+shared.image.labelA + shared.image.labelB 
   + shared.image.labelA_obs + shared.image.labelB_obs
   ) + 2^16;

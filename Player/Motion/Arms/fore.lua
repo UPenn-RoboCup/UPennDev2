@@ -14,7 +14,6 @@ function entry()
   -- Upon entry to the fore state,
   -- a punch should be executed
   boxercm.set_body_punchR(1);
-  -- This flag gets cleared only when the punch is executed
 
 end
 

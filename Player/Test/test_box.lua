@@ -158,26 +158,32 @@ local tDelay = 0.005 * 1E6; -- Loop every 5ms
 if ( webots or darwin ) then
   while (true) do
 
-    -- Listen to keyboard
-    process_keyinput();
     -- If skeleton is available:
-    if( primecm.get_skeleton_enabled()) then
+    if( boxercm.get_body_enabled() ) then
       local arms = libboxer.get_arm_angles();
-      left_arm = arms[1] or left_arm_old or {0,0,0};
-      right_arm = arms[2] or right_arm_old or {0,0,0};
-      left_arm_old = left_arm or left_arm_old or {0,0,0};
-      right_arm_old = right_arm or right_arm_old or {0,0,0};
-
-      local rpy = libboxer.get_torso_orientation() or vector.new({0,0,0});
-      --print(string.format('RPY: %.1f %.1f %.1f\n',unpack(180/math.pi*rpy)))
+      local left_arm = boxercm.get_body_qLArm();
+      local right_arm = boxercm.get_body_qRArm();
+      local rpy = boxercm.get_body_rpy();
       walk.upper_body_override(left_arm,right_arm,rpy)
     else
       walk.upper_body_override_off();
     end
+    
+    process_keyinput();
     update();
     io.stdout:flush();
+   
+    -- Debug
+    --[[
+    t_diff = unix.time() - (t_last or 0);
+    if(t_diff>1) then
+      print('Stabilized: ', not walk.no_stabilize )
+      print(string.format('RPY: %.1f %.1f %.1f\n',unpack(180/math.pi*rpy)))
+      t_last = unix.time();
+    end
+    --]]
+
     if(darwin) then
-      -- TODO: Update Team
       unix.usleep(tDelay);
     end
   end

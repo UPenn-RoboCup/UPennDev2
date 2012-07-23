@@ -15,10 +15,6 @@ for i=1,nPlayers do
   pc[i] = require('primecm'..i)
 end
 
-
--- Broadcast over the network
---net = true;
-net = false;
 -- run from log file (this is set automatically)
 -- lua run_prime XXX.lua where XXX.lua is the log
 logs = false;
@@ -39,7 +35,6 @@ require 'libboxer'
 desired_fps = 20;
 print '\n\n=====================';
 print('Desired FPS: ',desired_fps);
-print('Run Network?',net);
 print('Run Logs?',logs);
 print('Team/Player',teamID..'/'..playerID);
 print('nPlayers',nPlayers);

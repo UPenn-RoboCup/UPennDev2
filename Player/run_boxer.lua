@@ -1,6 +1,5 @@
 cwd = os.getenv('PWD')
 require('init')
-require 'Team'
 require 'gcm'
 
 teamID   = gcm.get_team_number();
@@ -12,19 +11,29 @@ else
   forPlayer = playerID;
 end
 
+-- Broadcast over the network
+--net = true;
+net = false;
+
 -- Issue debug line telling which mode we are in
 desired_fps = 60;
 twait = 1/desired_fps;
 print '=====================';
+print('Run Network?',net);
 print('Desired FPS: ',desired_fps);
 print('Team/Player',teamID..'/'..playerID);
 print '=====================';
+
+if( net ) then
+  require 'Team'  
+  Team.entry(forPlayer);
+end
 
 -- Set up the Boxing FSM
 require 'Boxer'
 Boxer.init(forPlayer)
 Boxer.entry();
-Team.entry(forPlayer);
+
 count = 0;
 t0 = unix.time();
 while true do
@@ -32,7 +41,9 @@ while true do
   
   -- Updates
   Boxer.update();
-  Team.update();
+  if( net ) then
+    Team.update();
+  end
   --print('Boxer state: ',boxercm.get_fsm_state())
 
   -- Timing

@@ -43,9 +43,10 @@ function get_arm_angles()
 
   --  qLArm[1] = qLArm[1]+elL/2+math.pi;
   --  qRArm[1] = qRArm[1]+elR/2+math.pi;
+  qLArm = qLArm or vector.zeros(3);
+  qRArm = qRArm or vector.zeros(3);
 
-
-  return {qLArm,qRArm};
+  return qLArm, qRArm;
 end
 
 function get_scaled_prime_arm( arm ) --left is 0

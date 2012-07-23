@@ -65,6 +65,9 @@ function update()
     boxercm.set_body_velocity( states[1].vel );
     boxercm.set_body_punchL( states[1].pL );
     boxercm.set_body_punchR( states[1].pR );
+    boxercm.set_body_qLArm( states[1].qR );
+    boxercm.set_body_qRArm( states[1].qR );
+    boxercm.set_body_rpy( states[1].rpy );
   end
 
 end
@@ -78,13 +81,16 @@ function send_body()
   state.vel = boxercm.get_body_velocity();
   state.pL = boxercm.get_body_punchL();
   state.pR = boxercm.get_body_punchR();
+  state.qL = boxercm.get_body_qLArm();
+  state.qR = boxercm.get_body_qRArm();
+  state.rpy = boxercm.get_body_rpy();
 
   -- Burst mode
   local ret = Comm.send( serialization.serialize(state) );
   ret = Comm.send( serialization.serialize(state) );
   ret = Comm.send( serialization.serialize(state) );
   ret = Comm.send( serialization.serialize(state) );
-  --print('Sent '..ret..' bytes',serialization.serialize(state))
+  print('Sent '..ret..' bytes',serialization.serialize(state))
 
 end
 

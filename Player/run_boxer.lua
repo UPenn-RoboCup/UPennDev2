@@ -12,8 +12,13 @@ else
 end
 
 -- Broadcast over the network
---net = true;
-net = false;
+net = true;
+-- Enable Webots specific
+if (string.find(Config.platform.name,'Webots')) then
+  print('On webots!')
+  webots = true;
+  net = false;
+end
 
 -- Issue debug line telling which mode we are in
 desired_fps = 60;

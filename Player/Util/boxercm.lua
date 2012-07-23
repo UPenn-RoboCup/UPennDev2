@@ -23,5 +23,16 @@ shared.body.qRArm = vector.zeros(3);
 shared.fsm = {}
 shared.fsm.state = '';
 
-util.init_shm_segment(getfenv(), _NAME, shared, shsize);
+print('Init shm for ',_NAME)
 
+-- Check if a number given
+-- This number accesses a playerID of that number
+if(string.len(_NAME)>7) then
+  pid = string.sub(_NAME,8);
+end
+
+if( pid ) then
+  util.init_shm_segment(getfenv(), 'primecm', shared, shsize,nil,pid);
+else
+  util.init_shm_segment(getfenv(), 'primecm', shared, shsize);
+end

@@ -1,14 +1,12 @@
 module(..., package.seeall);
 require('Comm');
 require 'Boxer'
-require 'primecm'; -- Sending and receiving Kinect Data
 require 'boxercm'
 
 require('gcm');
 require 'serialization'
 require 'Kinematics'
 require 'unix'
-require 'primecm'
 
 -- Initialization
 --[[
@@ -20,11 +18,14 @@ Comm.init(Config.dev.ip_wireless,Config.dev.ip_wireless_port);
 
 teamID   = gcm.get_team_number();
 playerID = gcm.get_team_player_id();
+nPlayers = gcm.get_game_nplayers();
+
 msgTimeout = Config.team.msgTimeout or 2;
 states = {};
 state = {};
 
 if( Config.game.playerID==1 ) then
+  require 'primecm'
   print('Using the PrimeSense for control!')  
   ps = true;
 end

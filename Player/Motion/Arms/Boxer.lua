@@ -26,9 +26,9 @@ end
 function update()
   -- Update the joint angles and body RPY
   boxercm.set_body_rpy( libboxer.get_torso_orientation() );
-  local arms = libboxer.get_arm_angles();
-  boxercm.set_body_qLArm( arms[1] );
-  boxercm.set_body_qLArm( arms[2] );
+  qL,qR = libboxer.get_arm_angles();
+  boxercm.set_body_qLArm( qL );
+  boxercm.set_body_qRArm( qR );
   sm:update();
 end
 

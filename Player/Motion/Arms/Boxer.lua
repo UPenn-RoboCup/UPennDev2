@@ -55,4 +55,6 @@ function init(forPlayer)
     s['init'](forPlayer);
   end
 
+  libboxer.init(forPlayer);
+
 end

@@ -19,6 +19,7 @@ dev.kinematics = 'OPKinematics';
 dev.game_control='WebotsGameControl';
 dev.team='TeamNSL';
 dev.team='TeamPrimeQ';
+dev.team = 'TeamBox'
 dev.ip_wired = '192.168.123.255';
 dev.ip_wired_port = 54321;
 dev.ip_wireless = '192.168.1.255'; --Our Router

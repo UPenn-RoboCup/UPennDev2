@@ -43,12 +43,12 @@ XN_SKEL_RIGHT_FOOT
 
 -- Waist is root...
 jointNames = { 
-    'Head', 'Neck', 'Torso', 'Waist', -- 1-4
-    'CollarL','ShoulderL', 'ElbowL', 'WristL', 'HandL', 'FingerL', --5-10
-    'CollarR','ShoulderR', 'ElbowR', 'WristR', 'HandR', 'FingerR', -- 11-16
-    'HipL', 'KneeL', 'AnkleL', 'FootL',  -- 17-20
-    'HipR', 'KneeR', 'AnkleR', 'FootR' -- 21-24
-    };
+  'Head', 'Neck', 'Torso', 'Waist', -- 1-4
+  'CollarL','ShoulderL', 'ElbowL', 'WristL', 'HandL', 'FingerL', --5-10
+  'CollarR','ShoulderR', 'ElbowR', 'WristR', 'HandR', 'FingerR', -- 11-16
+  'HipL', 'KneeL', 'AnkleL', 'FootL',  -- 17-20
+  'HipR', 'KneeR', 'AnkleR', 'FootR' -- 21-24
+};
 
 shared.skeleton = {};
 shared.skeleton.found = vector.zeros(1);
@@ -64,5 +64,17 @@ for i,v in ipairs(jointNames) do
   shared.confidence[ v ] = vector.zeros(2);
 end
 
-util.init_shm_segment(getfenv(), _NAME, shared, shsize);
+print('Init shm for ',_NAME)
+
+-- Check if a number given
+-- This number accesses a playerID of that number
+if(string.len(_NAME)>7) then
+  pid = string.sub(_NAME,8);
+end
+
+if( pid ) then
+  util.init_shm_segment(getfenv(), 'primecm', shared, shsize,nil,pid);
+else
+  util.init_shm_segment(getfenv(), 'primecm', shared, shsize);
+end
 

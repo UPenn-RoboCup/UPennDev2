@@ -46,8 +46,8 @@ end
 function update()
   if( ps ) then -- We have a primesense
     Boxer.update()
-    print('Boxer state: ',boxercm.get_fsm_state())
-    print()
+--    print('Boxer state: ',boxercm.get_fsm_state())
+--    print()
     if( primecm.get_skeleton_found() ) then
       send_body();
     end

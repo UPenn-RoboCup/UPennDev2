@@ -35,7 +35,7 @@ function update()
   local right_hand = vector.new({s2hR[3],s2hR[1],-1*s2hR[2]}) / arm_lenR;
 
   -- Debug
-  print('F Right hand:',right_hand)
+  --print('F Right hand:',right_hand)
 
   -- Check if the hand extends beyond a certain point
   if( right_hand[3]>.6 ) then

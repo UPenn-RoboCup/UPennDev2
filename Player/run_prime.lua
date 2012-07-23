@@ -1,12 +1,25 @@
 cwd = os.getenv('PWD')
 require('init')
 
-require 'primecm'
 require 'gcm'
+teamID   = gcm.get_team_number();
+playerID = gcm.get_team_player_id();
+nPlayers = gcm.get_game_nplayers();
+
+-- Always require self
+require('primecm'..playerID)
+
+--for i=1,nPlayers do
+for i=1,2 do
+  if( i~= playerID ) then -- redundant
+    require('primecm'..i)
+  end
+end
+
 
 -- Broadcast over the network
 --net = true;
-net = true;
+net = false;
 -- run from log file (this is set automatically)
 -- lua run_prime XXX.lua where XXX.lua is the log
 logs = false;
@@ -24,14 +37,13 @@ require 'libboxer'
 --end
 
 -- Issue debug line telling which mode we are in
-teamID   = gcm.get_team_number();
-playerID = gcm.get_team_player_id();
 desired_fps = 20;
 print '\n\n=====================';
 print('Desired FPS: ',desired_fps);
 print('Run Network?',net);
 print('Run Logs?',logs);
 print('Team/Player',teamID..'/'..playerID);
+print('nPlayers',nPlayers);
 print '=====================';
 
 if( not logs ) then

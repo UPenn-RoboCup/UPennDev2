@@ -72,7 +72,6 @@ io:flush()
 
 count = 0;
 init = false;
-primecm.set_skeleton_found( {0,0} );
 while( not logs or count<n_logs ) do
   count = count + 1;
   if( not logs ) then
@@ -92,7 +91,7 @@ while( not logs or count<n_logs ) do
     end
     -- Check each player
     -- Is each player active?
-    for i,v in ipairs(primecm.jointNames) do
+    for i,v in ipairs(pc[playerID].jointNames) do
       if( logs ) then
         pos = { log[count].x[i],log[count].y[i],log[count].z[i] };
         confidence = { log[count].posconf[i],log[count].rotconf[i] };

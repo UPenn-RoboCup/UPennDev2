@@ -10,6 +10,7 @@ end
 function entry()
   print("Boxer ".._NAME.." entry");
   t0 = unix.time();
+  boxercm.set_body_punchR(0);
 end
 
 function update()

@@ -1,17 +1,11 @@
-module(... or '', package.seeall)
-dofile('load_paths.lua'); -- Test files must look back to main player directory
-
+cwd = os.getenv('PWD')
+require('init')
 require('Config')
 require('vector')
-require('mcm')
-require('Speak')
 require('Body')
+require 'boxercm'
+require('Speak')
 require('Motion')
-
--- For motion capture
-require 'primecm'
-primecm.set_skeleton_enabled(0);
-require 'libboxer'
 
 darwin = false;
 -- Enable OP specific 
@@ -32,18 +26,31 @@ if( webots or darwin) then
   ready = true;
 end
 
-
-smindex = 0;
 initToggle = true;
 
 targetvel=vector.zeros(3);
 
 if( webots ) then
   controller.wb_robot_keyboard_enable( 100 );
+else
+  require 'getch'
+  getch.enableblock(1);
 end
+
+
 function process_keyinput()
 
-  local byte = get_key_byte();
+  if( webots ) then
+    byte = controller.wb_robot_keyboard_get_key()
+    -- Webots only return captal letter number
+    if byte>=65 and byte<=90 then
+      byte = byte + 32;
+    end
+  else
+    local str=getch.get();
+    local byte=string.byte(str,1);
+  end
+
   if byte~=0 then
     --    print('byte: ', byte)
     --    print('string: ',string.char(byte))
@@ -160,7 +167,6 @@ if ( webots or darwin ) then
 
     -- If skeleton is available:
     if( boxercm.get_body_enabled() ) then
-      local arms = libboxer.get_arm_angles();
       local left_arm = boxercm.get_body_qLArm();
       local right_arm = boxercm.get_body_qRArm();
       local rpy = boxercm.get_body_rpy();

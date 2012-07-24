@@ -229,5 +229,5 @@ fsm.headTrack.minDist = 0.15; --Default value 0.30,If ball is closer than this, 
 speakenable = 0
 
 fsm.avoidance_mode = 1 -- ball dribble
---fsm.avoidance_mode = 0 -- walk towards goal, no ball 
+fsm.avoidance_mode = 0 -- walk towards goal, no ball 
 

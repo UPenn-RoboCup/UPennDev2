@@ -11,6 +11,7 @@ require('Body')
 require('Vision')
 require('World')
 require('Detection') 
+require('OccupancyMap') 
 comm_inited = false;
 vcm.set_camera_teambroadcast(0);
 vcm.set_camera_broadcast(0);
@@ -53,6 +54,7 @@ end
 function entry()
   World.entry();
   Vision.entry();
+  OccupancyMap.entry();
 end
 
 function update()
@@ -76,6 +78,7 @@ function update()
         tUpdate = unix.time();
       end
     end
+    OccupancyMap.update();
   end
  
   if not comm_inited and 

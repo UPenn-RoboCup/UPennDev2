@@ -32,8 +32,10 @@ walk.footX= -0.0;
 walk.footY = 0.0375;
 walk.supportX = 0;
 walk.supportY = 0.025;
-walk.qLArm=math.pi/180*vector.new({90,2,-40});
-walk.qRArm=math.pi/180*vector.new({90,-2,-40});
+--walk.qLArm=math.pi/180*vector.new({90,2,-40});
+--walk.qRArm=math.pi/180*vector.new({90,-2,-40});
+walk.qLArm=math.pi/180*vector.new({110,2,-40});
+walk.qRArm=math.pi/180*vector.new({110,-2,-40});
 walk.qLArmKick=math.pi/180*vector.new({90,15,-40});
 walk.qRArmKick=math.pi/180*vector.new({90,-15,-40});
 

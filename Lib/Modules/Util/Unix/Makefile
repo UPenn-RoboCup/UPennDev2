@@ -1,10 +1,10 @@
 CWD= $(shell pwd)
-CHAIN= $(CTCDIR)
+CTC= $(NaoqiCTC)
 
 all: naoqi 
 
 naoqi:
-ifeq ($(CHAIN),)
+ifeq ($(CTC),)
 	@echo Cross compilitation tool not specified. \
 				Please download the ctc tool from \
 				the aldebaran website and follow the \
@@ -13,10 +13,13 @@ ifeq ($(CHAIN),)
 else
 	rm -rf build
 	mkdir build
-	cd build && cmake -DCMAKE_TOOLCHAIN_FILE="$(CHAIN)/toolchain-atom.cmake" .. \
+	cd build && cmake -DCMAKE_TOOLCHAIN_FILE="$(CTC)/toolchain-atom.cmake" .. \
 		&& make && cd $(CWD)
 endif
 
 clean:
+ifeq ($(CTC),)
 	make -f Makefile.local clean	
+else
 	rm -rf build
+endif

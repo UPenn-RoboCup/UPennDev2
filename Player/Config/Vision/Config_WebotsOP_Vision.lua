@@ -46,6 +46,10 @@ vision.enable_midfield_landmark_detection = 0;
 -- use this to enable freespace detection and occupancy map
 vision.enable_freespace_detection = 1;
 
+-- use this to enable obstacle specific colortable
+vision.enable_lut_for_obstacle = 1;
+
+
 ----------------------------
 --OP specific
 ----------------------------
@@ -61,6 +65,10 @@ vision.ball.diameter = 0.065;
 vision.ball.th_min_color = 2;
 vision.ball.th_min_color2 = 2;
 vision.ball.th_min_fill_rate = 0.35;
+-- Increase min colors for obstacle challenge
+--vision.ball.th_min_color = 20;
+--vision.ball.th_min_color2 = 20;
+
 vision.ball.th_height_max  = 0.20;
 vision.ball.th_ground_boundingbox = {-15,15,0,10};
 vision.ball.th_min_green1 = 100;

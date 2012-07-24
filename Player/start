@@ -119,14 +119,14 @@ run_pushtest(){
   
   echo "Starting Push Test.."
   cd $PLAYER_DIR
-  screen -m -L -S bias $LUA_COM test_push.lua
+  screen -m -L -S bias $LUA_COM Test/test_push.lua
 }
 
 run_roletest(){
   run_dcm_vcm
   echo "Starting Role Testing..."
   cd $PLAYER_DIR
-  screen -m -L -S test $LUA_COM test_role.lua
+  screen -m -L -S test $LUA_COM Test/test_role.lua
   #
   echo "Rock and Roll!"
 }

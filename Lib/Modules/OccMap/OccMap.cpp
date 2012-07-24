@@ -60,7 +60,7 @@ int OccMap::reset_size(int size, int robot_x, int robot_y, double time) {
 }
 
 int OccMap::randomize_map(void) {
-  cout << grid.size() << ' ' << grid_num << endl;
+//  cout << grid.size() << ' ' << grid_num << endl;
   assert(grid.size() == grid_num);
   int grid_size = grid_num;
   srand(time(NULL));
@@ -89,7 +89,7 @@ int& OccMap::get_robot_pos_y(void) {
 }
 
 int OccMap::time_decay(double time) {
-  double decay_coef = 0.01;
+  double decay_coef = 0.0005;
   double P = 0, P1 = 0;
   int i = 0;
   for (i = 0; i < grid_num; i++) {
@@ -191,29 +191,24 @@ int OccMap::odometry_update(const double odomX, const double odomY,
   odom_x = odom_x + odomX * cos(odom_a) - odomY * sin(odom_a);
   odom_y = odom_y + odomX * sin(odom_a) + odomY * cos(odom_a);
   odom_a += odomA;
-//  cout << odom_x << ' ' << odom_y << ' ' << odom_a << endl;
 //  Map shift
   int shift_scale = 5;
   double odom_i = odom_x / (shift_scale * resolution);
   double odom_j = odom_y / (shift_scale * resolution);
   if (odom_i >= 1) {
-//    cout << "down shift" << endl;
     map_shift(shift_scale, 0);
     odom_x -= shift_scale * resolution;
     odom_i--;
   } else if (odom_i <= -1) {
-//    cout << "up shift" << endl;
     map_shift(-shift_scale, 0);
     odom_x += shift_scale * resolution;
     odom_i++;
   }
   if (odom_j >= 1) {
-//    cout << "left shift" << endl;
     map_shift(0, shift_scale);
     odom_y -= shift_scale * resolution;
     odom_j--;
   } else if (odom_j <= -1) {
-//    cout << "right shift" << endl;
     map_shift(0, -shift_scale);
     odom_y += shift_scale * resolution;
     odom_j++;
@@ -225,12 +220,6 @@ int OccMap::get_nobstacle() {
   return nOb;
 }
 
-obstacle& OccMap::get_obstacle(int index) {
-  int idx = -1, obIdx = -1;
-  while (idx < index) {
-    obIdx ++;
-    if (obCheck[obIdx] == 0)
-      idx ++;
-  }
-  return obs[obIdx];
+void OccMap::get_obstacle(int index, obstacle& obs_out) {
+   obs_out = obs[index];
 }

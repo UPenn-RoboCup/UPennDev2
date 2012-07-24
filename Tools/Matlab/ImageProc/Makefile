@@ -26,7 +26,8 @@ all: yuyv2label.$(MEXSUFFIX) \
 	goal_posts.$(MEXSUFFIX) \
 	field_lines.$(MEXSUFFIX) \
 	field_occupancy.$(MEXSUFFIX) \
-	field_spots.$(MEXSUFFIX)
+	field_spots.$(MEXSUFFIX)\
+	label_to_mask.$(MEXSUFFIX)
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) $(INCLUDE_DIRS) -fPIC -o $@ -c $<

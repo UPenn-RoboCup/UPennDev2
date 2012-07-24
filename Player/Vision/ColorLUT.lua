@@ -21,6 +21,7 @@ function load_LUT()
   print('loading lut: '..Config.camera.lut_file);
   LUT.Detection = carray.new('c', 262144);
   load_lutfile(Config.camera.lut_file, LUT.Detection);
+  vcm.set_image_lut( carray.pointer(LUT.Detection));
 
   --ADDED to prevent crashing with old camera config
   if Config.camera.lut_file_obs == null then

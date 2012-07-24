@@ -15,6 +15,7 @@ trigrid.x = {}
 trigrid.y = {}
 
 trigrid_den = 1
+print('triangle grid minimum distance: '..trigrid_den);
 trigrid_file = 'triangle_grid'..trigrid_den..'.txt';
 f = io.open(trigrid_file, 'r')
 line = f:read("*l")
@@ -33,7 +34,7 @@ while line ~= nil do
 end
 trigrid.num = nline
 
-util.ptable(trigrid)
+--util.ptable(trigrid)
 
 
 fname = 'op_obs_base.wbt'
@@ -45,7 +46,8 @@ header = f:read('*a')
 fname_save = 'op_obs_auto.wbt'
 fs = io.open(fname_save, 'w+')
 
-obs_fillrate = 1
+obs_fillrate = 0.5
+print('triangle grid fillrate: '..obs_fillrate);
 obs_num = math.floor(obs_fillrate * trigrid.num + 0.5);
 
 

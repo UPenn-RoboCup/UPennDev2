@@ -37,4 +37,4 @@ camera.lut_file_obs = 'lutWebots.raw';
 camera.lut_file_new = 'lut_webots_auto.raw';
 --camera.lut_file = 'lut_webots_auto.raw';
 --camera.lut_file = 'lut_webots_ob_goal.raw';
-camera.lut_file = 'lut_empty.raw';
+--camera.lut_file = 'lut_empty.raw';

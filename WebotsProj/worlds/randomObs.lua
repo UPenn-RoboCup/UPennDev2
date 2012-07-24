@@ -14,7 +14,7 @@ trigrid = {}
 trigrid.x = {}
 trigrid.y = {}
 
-trigrid_den = 1
+trigrid_den = 0.9
 print('triangle grid minimum distance: '..trigrid_den);
 trigrid_file = 'triangle_grid'..trigrid_den..'.txt';
 f = io.open(trigrid_file, 'r')
@@ -46,25 +46,58 @@ header = f:read('*a')
 fname_save = 'op_obs_auto.wbt'
 fs = io.open(fname_save, 'w+')
 
-obs_fillrate = 0.5
-print('triangle grid fillrate: '..obs_fillrate);
+obs_fillrate = 0.8
 obs_num = math.floor(obs_fillrate * trigrid.num + 0.5);
+print('triangle grid fillrate: '..obs_fillrate..' with '..obs_num..' obs');
 
 
 obs = {}
 obs.x = {}
 obs.y = {}
 obs.pos = vector.zeros(trigrid.num)
+obs.direct = {}
+obs.direct_num = 0;
+obs.side = {}
+obs.side_num = 0;
 
-math.randomseed( os.time())
-for cnt = 1, obs_num do 
-  repeat
-    index = math.random(trigrid.num);
-  until obs.pos[index] == 0
-  obs.pos[index] = 1;
-  obs.x[cnt] = trigrid.x[index];
-  obs.y[cnt] = trigrid.y[index];
+math.randomseed( os.time() )
+-- separate obs to directly facing obs and side obs
+for cnt = 1, trigrid.num do
+  if math.abs(trigrid.y[cnt]) < 0.2 then
+    obs.direct_num = obs.direct_num + 1;
+    obs.direct[obs.direct_num] = cnt;
+  else
+    obs.side_num = obs.side_num + 1;
+    obs.side[obs.side_num] = cnt;
+  end
 end
+print(trigrid.num..' Spots with '..obs.direct_num..
+      ' Direct Spots and '..obs.side_num..' Side Spots');
+obs_direct_num = math.random(math.min(obs.direct_num, obs_num));
+obs_direct_num = math.random(math.min(obs.direct_num, obs_num));
+obs_direct_num = math.random(math.min(obs.direct_num, obs_num));
+obs_side_num = obs_num - obs_direct_num;
+print('Randomize '..obs_direct_num..' directly facing obs and '..obs_side_num..' side obs');
+for cnt = 1, obs_direct_num do 
+  repeat
+    index = math.random(obs.direct_num);
+    index = math.random(obs.direct_num);
+  until obs.pos[obs.direct[index]] == 0
+  obs.pos[obs.direct[index]] = 1;
+  obs.x[cnt] = trigrid.x[obs.direct[index]];
+  obs.y[cnt] = trigrid.y[obs.direct[index]];
+end
+
+for cnt = 1, obs_side_num do 
+  repeat
+    index = math.random(obs.side_num);
+    index = math.random(obs.side_num);
+  until obs.pos[obs.side[index]] == 0
+  obs.pos[obs.side[index]] = 1;
+  obs.x[cnt + obs_direct_num] = trigrid.x[obs.side[index]];
+  obs.y[cnt + obs_direct_num] = trigrid.y[obs.side[index]];
+end
+
 
 fs:write(header)
 for cnt = 1, obs_num do

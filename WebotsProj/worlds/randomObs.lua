@@ -3,6 +3,7 @@ package.path = cwd..'/../../Player/?.lua;'..package.path
 cwd = cwd ..'/../../Player'
 require('init')
 require('util')
+require('vector')
 
 --range_y = {-1.0, 1.0}
 --range_x = {-1.5, 1.5}
@@ -44,13 +45,21 @@ header = f:read('*a')
 fname_save = 'op_obs_auto.wbt'
 fs = io.open(fname_save, 'w+')
 
-obs_num = trigrid.num;
+obs_fillrate = 1
+obs_num = math.floor(obs_fillrate * trigrid.num + 0.5);
+
+
 obs = {}
 obs.x = {}
 obs.y = {}
+obs.pos = vector.zeros(trigrid.num)
+
+math.randomseed( os.time())
 for cnt = 1, obs_num do 
---  index = math.random(trigrid.num);
-  index = cnt;
+  repeat
+    index = math.random(trigrid.num);
+  until obs.pos[index] == 0
+  obs.pos[index] = 1;
   obs.x[cnt] = trigrid.x[index];
   obs.y[cnt] = trigrid.y[index];
 end

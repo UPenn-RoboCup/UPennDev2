@@ -1,5 +1,5 @@
 function h = colortable_online(action, varargin)
-  global COLORTABLE LUT DATA;
+  global COLORTABLE LUT DATA ROBOT;
   h.Initialize = @Initialize;
   h.update = @update;
   h.Color = @Color;
@@ -452,7 +452,6 @@ function h = colortable_online(action, varargin)
 
     % get the gui userdata
     hfig = gcbf;
-%    DATA = get(hfig, 'UserData');
 
     % get the pointer position
     pt = get(gca,'CurrentPoint');
@@ -483,6 +482,23 @@ function h = colortable_online(action, varargin)
       % remove any selected pixels from the negative examples mask
       DATA.mask_neg{DATA.icolor} = DATA.mask_neg{DATA.icolor} & ~mask;
     end
+
+    % update color score data
+    colortable_merge(DATA);
+
+    % convert yuv data into the index values of LUT
+    DATA.cindex = yuv2index(DATA.yuv, COLORTABLE.size);
+
+    % get the current colortable score
+    score = colortable_score(DATA.cindex, DATA.icolor);
+
+    colortable_smear;
+    LUT = colortable_lut();
+
+    lut_updated = ROBOT.vcmImage.get_lut_updated();
+    ROBOT.vcmImage.set_lut_updated(1 - lut_updated);
+    ROBOT.vcmImage.set_lut(typecast(LUT,'double'));
+
   end
 
 
@@ -657,14 +673,15 @@ function h = colortable_online(action, varargin)
   end
 
 
-  function update(robots, teamNumber, playerNumber)
+  function update()
     cbk=[0 0 0];cr=[1 0 0];cg=[0 1 0];cb=[0 0 1];cy=[1 1 0];cw=[1 1 1];
     cmap=[cbk;cr;cy;cy;cb;cb;cb;cb;cg;cg;cg;cg;cg;cg;cg;cg;cw];
 
     % Show yuyv Image
-    yuyv = robots{playerNumber, teamNumber}.get_yuyv(); 
-    labelA = robots{playerNumber, teamNumber}.get_labelA(); 
+    yuyv = ROBOT.get_yuyv(); 
+    labelA = ROBOT.get_labelA(); 
     [ycbcr, rgb] = yuyv2rgb(yuyv);
+    DATA.yuv = ycbcr;
     DATA.rgb = rgb;
     set(DATA.Image, 'CData', rgb);
 

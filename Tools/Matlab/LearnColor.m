@@ -6,7 +6,7 @@ function LearnColor(team,player)
 %
 %-----------------------------------------------------
 
-  global COLORTABLE SHM_DIR_LINUX SHM_DIR_OSX
+  global COLORTABLE SHM_DIR_LINUX SHM_DIR_OSX ROBOT;
 
   % Initiate colortable structure
   if isempty(COLORTABLE)
@@ -38,7 +38,7 @@ function LearnColor(team,player)
         disp('Team/Player ID error!');
         return;
       end
-      robots{player2track(i),1}=shm_robot(team2track,player2track(i));
+      ROBOT=shm_robot(team2track,player2track(i));
     end
 
 %% Init Colortable GUI display
@@ -54,7 +54,7 @@ function LearnColor(team,player)
   nUpdate = 0;
   while 1
     nUpdate = nUpdate + 1;
-    LEARNCOLOR.update(robots, 1, player2track);
+    LEARNCOLOR.update();
   end
 
 %% subfunction for checking the existnace of SHM

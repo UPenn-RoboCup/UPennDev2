@@ -46,7 +46,8 @@ shared.camera.teambroadcast = vector.zeros(1);
 
 shared.camera.reload_LUT = vector.zeros(1);
 shared.camera.learned_new_lut = vector.zeros(1);
-shared.camera.lut = 262144;
+--shared.camera.lut = 262144;
+--shared.camera.lut_obs = 262144;
 
 shared.image = {};
 shared.image.select = vector.zeros(1);
@@ -71,18 +72,22 @@ shared.image.scaleB = vector.zeros(1);
 
 shared.image.labelA = (processed_img_width)*(processed_img_height);
 shared.image.labelB = ((processed_img_width)/Config.vision.scaleB)*((processed_img_height)/Config.vision.scaleB);
-if enable_lut_for_obstacle == 1 then
-  shared.image.labelA_obs = (processed_img_width)*(processed_img_height);
-  shared.image.labelB_obs = ((processed_img_width)/Config.vision.scaleB)*((processed_img_height)/Config.vision.scaleB);
-else
-  shared.image.labelA_obs = 0;
-  shared.image.labelB_obs = 0;
-end
+
+shared.image.lut = 262144;
+shared.image.lut_updated = vector.zeros(1);
+--if enable_lut_for_obstacle == 1 then
+--  shared.image.labelA_obs = (processed_img_width)*(processed_img_height);
+--  shared.image.labelB_obs = ((processed_img_width)/Config.vision.scaleB)*((processed_img_height)/Config.vision.scaleB);
+--else
+--  shared.image.labelA_obs = 0;
+--  shared.image.labelB_obs = 0;
+--end
 
 -- calculate image shm size
-shsize.image = (shard.camera.lut + shared.image.yuyv + shared.image.yuyv2+ 
+--shsize.image = (shared.image.yuyv + shared.image.yuyv2+ 
+shsize.image = (shared.image.lut + shared.image.yuyv + shared.image.yuyv2+ 
 	shared.image.yuyv3+shared.image.labelA + shared.image.labelB 
-  + shared.image.labelA_obs + shared.image.labelB_obs
+--  + shared.image.labelA_obs + shared.image.labelB_obs
   ) + 2^16;
 
 --Image field-of-view information

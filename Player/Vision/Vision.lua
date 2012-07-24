@@ -96,6 +96,8 @@ count = 0;
 lastImageCount = {0,0};
 t0 = unix.time()
 
+lut_updated = 0;
+
 function entry()
   --Temporary value.. updated at body FSM at next frame
   vcm.set_camera_bodyHeight(Config.walk.bodyHeight);
@@ -103,6 +105,8 @@ function entry()
   vcm.set_camera_height(Config.walk.bodyHeight+Config.head.neckZ);
 	vcm.set_camera_ncamera(Config.camera.ncamera);
   vcm.set_camera_reload_LUT(0);
+
+  vcm.set_image_lut_updated(0);
 
   -- Start the HeadTransform machine
   HeadTransform.entry();
@@ -169,6 +173,11 @@ end
 
 
 function update()
+  if vcm.get_image_lut_updated() ~= lut_updated then
+    print('lut updated');
+    lut_updated = vcm.get_image_lut_updated();
+  end
+
   -- reload color lut
   if (vcm.get_camera_reload_LUT() == 1) then
     print('reload color LUT')
@@ -211,11 +220,13 @@ function update()
 
   -- perform the initial labeling
   if webots == 1 then
-    labelA.data = Camera.get_labelA( carray.pointer(ColorLUT.LUT.Detection) );
+--    labelA.data = Camera.get_labelA( carray.pointer( ColorLUT.LUT.Detection );
+    labelA.data = Camera.get_labelA( vcm.get_image_lut() );
   else
 
     labelA.data  = ImageProc.yuyv_to_label(vcm.get_image_yuyv(),
-                                          carray.pointer(ColorLUT.LUT.Detection),
+--                                          carray.pointer( ColorLUT.LUT.Detection ),
+                                          vcm.get_image_lut(),
                                           camera.width/2,
                                           camera.height);
   end
@@ -301,10 +312,10 @@ function update_shm(status, headAngles)
         vcm.set_camera_yuyvType(1);
         vcm.set_image_labelA(labelA.data);
         vcm.set_image_labelB(labelB.data);
-        if enable_lut_for_obstacle == 1 then
-          vcm.set_image_labelA_obs(labelA.data_obs);
-          vcm.set_image_labelB_obs(labelB.data_obs);
-        end
+--        if enable_lut_for_obstacle == 1 then
+--          vcm.set_image_labelA_obs(labelA.data_obs);
+--          vcm.set_image_labelB_obs(labelB.data_obs);
+--        end
 	    end
       if vcm.get_camera_broadcast() > 0 then --Wired monitor broadcasting
 	      if vcm.get_camera_broadcast() == 1 then
@@ -318,10 +329,10 @@ function update_shm(status, headAngles)
   	                                            camera.width/2, camera.height,2));
           vcm.set_image_labelA(labelA.data);
           vcm.set_image_labelB(labelB.data);
-          if enable_lut_for_obstacle == 1 then
-            vcm.set_image_labelA_obs(labelA.data_obs);
-            vcm.set_image_labelB_obs(labelB.data_obs);
-          end
+--          if enable_lut_for_obstacle == 1 then
+--            vcm.set_image_labelA_obs(labelA.data_obs);
+--            vcm.set_image_labelB_obs(labelB.data_obs);
+--          end
 	      else
 	        --Level 3: 1/2 yuyv
           vcm.set_image_yuyv2(ImageProc.subsample_yuyv2yuyv(

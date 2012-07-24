@@ -32,6 +32,7 @@ camera.param[5] = {key='white balance temperature', val={80}};
 camera.param[6] = {key='sharpness',     val={107}};
 camera.param[7] = {key='exposure (absolute)',      val={941}};
 --]]
+--[[
 camera.param = {};
 camera.param[1] = {key='brightness', val={216}};
 camera.param[2] = {key='contrast', val={2}};
@@ -40,6 +41,15 @@ camera.param[4] = {key='gain', val={255}};
 camera.param[5] = {key='white balance temperature', val={1000}};
 camera.param[6] = {key='sharpness', val={0}};
 camera.param[7] = {key='exposure (absolute)', val={1005}};
+--]]
+camera.param = {};
+camera.param[1] = {key='brightness', val={143}};
+camera.param[2] = {key='contrast', val={30}};
+camera.param[3] = {key='saturation', val={71}};
+camera.param[4] = {key='gain', val={255}};
+camera.param[5] = {key='white balance temperature', val={1420}};
+camera.param[6] = {key='sharpness', val={0}};
+camera.param[7] = {key='exposure (absolute)', val={713}};
 
 --camera.lut_file = 'lut_low_contrast_pink_n_green.raw';
 --camera.lut_file = 'lut_L512_05_21_time_22_51.raw';

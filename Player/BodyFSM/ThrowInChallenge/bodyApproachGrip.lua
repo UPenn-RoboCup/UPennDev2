@@ -19,6 +19,11 @@ tLost = 3.0;
 xTarget = Config.fsm.bodyApproach.xTargetGrip or {0.13,0.15,0.16};
 yTarget0 = Config.fsm.bodyApproach.yTargetGrip or {0.05,0.07,0.09};
 
+
+maxStep = 0.02;
+
+
+
 -- maximum ball distance threshold
 rFar = 0.45;
 
@@ -27,17 +32,10 @@ function entry()
   t0 = Body.get_time();
   ball = wcm.get_ball();
 
-  yTarget = {};
-  if ball.y<0 then
-     yTarget[1],yTarget[2],yTarget[3]=
-       yTarget0[1],yTarget0[2],yTarget0[3];
-  else
-    yTarget[1],yTarget[2],yTarget[3]=
-      -yTarget0[3],-yTarget0[2],-yTarget0[1];
-  end
 
-  -- Always on left hand side (for left-handed robot)
-  yTarget = yTarget0; 
+xTarget = {0.02,0.03,0.04};
+yTarget = {0.10,0.11,0.12};
+
 end
 
 function update()

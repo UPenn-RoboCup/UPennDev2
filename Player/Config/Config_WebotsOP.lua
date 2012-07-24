@@ -18,11 +18,14 @@ dev.camera = 'WebotsOPCam';
 dev.kinematics = 'OPKinematics';
 dev.game_control='WebotsGameControl';
 dev.team='TeamNSL';
+--dev.walk='NewNewNewNewNewWalk'; --Walk with generalized walkkick definitions
+--dev.walk='NewNewWalk'; --Walk with generalized walkkick definitions
 dev.ip_wired = '192.168.123.255';
 dev.ip_wired_port = 54321;
 dev.ip_wireless = '192.168.1.255'; --Our Router
 dev.ip_wireless_port = 54321;
 dev.walk='N5Walk'; --Walk with generalized walkkick definitions
+--dev.walk='NewNewWalk'
 dev.kick='NewNewKick'; --Extended kick that supports upper body motion
 
 --Sit/stand stance parameters
@@ -71,11 +74,13 @@ end
 
 --FSM and behavior settings
 fsm.game = 'RoboCup';
-fsm.head = {'GeneralPlayer'};
-fsm.body = {'GeneralPlayer'};
+--fsm.head = {'GeneralPlayer'};
+--fsm.body = {'GeneralPlayer'};
+fsm.head = {'ObstacleChallenge'};
+fsm.body = {'ObstacleChallenge'};
 
 --Behavior flags, should be defined in FSM Configs but can be overridden here
-fsm.playMode = 3; --1 for demo, 2 for orbit, 3 for direct approach
+fsm.playMode = 1; --1 for demo, 2 for orbit, 3 for direct approach
 fsm.enable_obstacle_detection = 1;
 fsm.wait_kickoff = 1;
 fsm.enable_walkkick = 1;
@@ -211,7 +216,7 @@ fsm.thSideKick1 = 30*math.pi/180;
 fsm.thSideKick2 = 135*math.pi/180;
 fsm.thDistSideKick = 1.0;
 
-use_rollback_getup = 1;
+use_rollback_getup = 0;
 batt_max = 120; --only do rollback getup when battery is enough
 
 
@@ -227,3 +232,9 @@ fsm.head = {'Football'};
 fsm.body = {'Football'};
 dev.team = 'TeamFootball'
 --]]
+-- disable speak for webots which causes lua crash with error if espeak not installed
+speakenable = 0
+
+fsm.avoidance_mode = 1 -- ball dribble
+fsm.avoidance_mode = 0 -- walk towards goal, no ball 
+

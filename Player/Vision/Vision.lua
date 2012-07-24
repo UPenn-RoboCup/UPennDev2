@@ -7,15 +7,19 @@ require('Config');
 if (string.find(Config.platform.name,'Webots')) then
   webots = 1;
 end
---Added for webots fast simulation
-use_gps_only = Config.use_gps_only or 0;
 
+require('ColorLUT');
 require('ImageProc');
 require('HeadTransform');
 
 require('vcm');
 require('mcm');
 require('Body')
+
+--Added for webots fast simulation
+use_gps_only = Config.use_gps_only or 0;
+
+enable_lut_for_obstacle = Config.vision.enable_lut_for_obstacle or 0;
 
 obs_challenge_enable = Config.obs_challenge or 0;
 enable_lut_for_obstacle = Config.vision.enable_lut_for_obstacle or 0;
@@ -24,7 +28,7 @@ enable_lut_for_obstacle = Config.vision.enable_lut_for_obstacle or 0;
 if use_gps_only==0 then
   require('Camera');
   require('Detection');
-
+  
   if (Config.camera.width ~= Camera.get_width()
       or Config.camera.height ~= Camera.get_height()) then
     print('Camera width/height mismatch');
@@ -34,9 +38,9 @@ if use_gps_only==0 then
   end
   vcm.set_image_width(Config.camera.width);
   vcm.set_image_height(Config.camera.height);
-
+  
   camera = {};
-
+  
   camera.width = Camera.get_width();
   camera.height = Camera.get_height();
   camera.npixel = camera.width*camera.height;
@@ -60,10 +64,11 @@ if use_gps_only==0 then
   labelB.m = labelA.m/scaleB;
   labelB.n = labelA.n/scaleB;
   labelB.npixel = labelB.m*labelB.n;
-	vcm.set_image_scaleB(Config.vision.scaleB);
+  vcm.set_image_scaleB(Config.vision.scaleB);
   print('Vision LabelA size: ('..labelA.m..', '..labelA.n..')');
   print('Vision LabelB size: ('..labelB.m..', '..labelB.n..')');
-
+else
+  require('GPSVision');
 end
 
 colorOrange = Config.color.orange;
@@ -91,12 +96,17 @@ count = 0;
 lastImageCount = {0,0};
 t0 = unix.time()
 
+lut_updated = 0;
+
 function entry()
   --Temporary value.. updated at body FSM at next frame
   vcm.set_camera_bodyHeight(Config.walk.bodyHeight);
   vcm.set_camera_bodyTilt(0);
   vcm.set_camera_height(Config.walk.bodyHeight+Config.head.neckZ);
 	vcm.set_camera_ncamera(Config.camera.ncamera);
+  vcm.set_camera_reload_LUT(0);
+
+  vcm.set_image_lut_updated(0);
 
   -- Start the HeadTransform machine
   HeadTransform.entry();
@@ -109,23 +119,8 @@ function entry()
   -- Initiate Detection
   Detection.entry();
   
-  --set to switch cameras. 
   -- Load the lookup table
-  print('loading lut: '..Config.camera.lut_file);
-  camera.lut = carray.new('c', 262144);
-  load_lut(Config.camera.lut_file);
-
-  --ADDED to prevent crashing with old camera config
-  if Config.camera.lut_file_obs == null then
-    Config.camera.lut_file_obs = Config.camera.lut_file;
-  end
-
-  -- Load the obstacle LUT as well
-  if enable_lut_for_obstacle == 1 then
-    print('loading obs lut: '..Config.camera.lut_file_obs);
-    camera.lut_obs = carray.new('c', 262144);
-    load_lut_obs(Config.camera.lut_file_obs);
-  end
+  ColorLUT.load_LUT();
 
   if Config.platform.name=="NaoV4" then
     camera_init_naov4();
@@ -133,8 +128,6 @@ function entry()
     camera_init();
   end 
 
-  -- in default, use prelearned colortable
-  vcm.set_image_learn_lut(0);
 end
 
 function camera_init()
@@ -180,6 +173,18 @@ end
 
 
 function update()
+  if vcm.get_image_lut_updated() ~= lut_updated then
+    print('lut updated');
+    lut_updated = vcm.get_image_lut_updated();
+  end
+
+  -- reload color lut
+  if (vcm.get_camera_reload_LUT() == 1) then
+    print('reload color LUT')
+    camera = ColorLUT.load_LUT(camera);
+    vcm.set_camera_reload_LUT(0);
+  end
+
   --If we are only using gps info, skip whole vision update 	
   if use_gps_only>0 then
     update_gps_only();
@@ -213,15 +218,15 @@ function update()
     exit()
   end
 
-
-
   -- perform the initial labeling
   if webots == 1 then
-    labelA.data = Camera.get_labelA( carray.pointer(camera.lut) );
+--    labelA.data = Camera.get_labelA( carray.pointer( ColorLUT.LUT.Detection );
+    labelA.data = Camera.get_labelA( vcm.get_image_lut() );
   else
 
     labelA.data  = ImageProc.yuyv_to_label(vcm.get_image_yuyv(),
-                                          carray.pointer(camera.lut),
+--                                          carray.pointer( ColorLUT.LUT.Detection ),
+                                          vcm.get_image_lut(),
                                           camera.width/2,
                                           camera.height);
   end
@@ -237,10 +242,10 @@ function update()
   if enable_lut_for_obstacle == 1 then
     -- label A
     if webots == 1 then
-      labelA.data_obs = Camera.get_labelA_obs( carray.pointer(camera.lut_obs) );
+      labelA.data_obs = Camera.get_labelA_obs( carray.pointer(ColorLUT.LUT.Obstacle) );
     else
       labelA.data_obs  = ImageProc.yuyv_to_label_obs(vcm.get_image_yuyv(),
-                                    carray.pointer(camera.lut_obs), camera.width/2, camera.height);
+                                    carray.pointer(ColorLUT.LUT.Obstacle), camera.width/2, camera.height);
     end
     -- count color pixels
     colorCount_obs = ImageProc.color_count_obs(labelA.data_obs, labelA.npixel);
@@ -250,25 +255,6 @@ function update()
 
   update_shm(status, headAngles)
 
-  -- Learn ball color from mask and rebuild colortable
-  if obs_challenge_enable == 1 then
---    print('enable obs challenge')
-    if vcm.get_image_learn_lut() == 1 then
-      print("learn new colortable for random ball from mask");
-      vcm.set_image_learn_lut(0);
-      mask = ImageProc.label_to_mask(labelA.data_obs, labelA.m, labelA.n);
-      if webots == 1 then
-        print("learn in webots")
-        lut_update = Camera.get_lut_update(mask, carray.pointer(camera.lut_obs));
---        lut_update = Camera.get_lut_update(mask, carray.pointer(camera.lut));
-      else
-        print("learn in op")
-        lut_update = ImageProc.yuyv_mask_to_lut(vcm.get_image_yuyv(), mask, camera.lut, 
-                                                labelA.m, labelA.n);
-      end
-      print(type(mask),type(labelB.data))
-    end
-  end
 
   vcm.refresh_debug_message();
 
@@ -292,124 +278,6 @@ function update()
   return true;
 end
 
-function check_side(v,v1,v2)
-  --find the angle from the vector v-v1 to vector v-v2
-  local vel1 = {v1[1]-v[1],v1[2]-v[2]};
-  local vel2 = {v2[1]-v[1],v2[2]-v[2]};
-  angle1 = math.atan2(vel1[2],vel1[1]);
-  angle2 = math.atan2(vel2[2],vel2[1]);
-  return util.mod_angle(angle1-angle2);
-end
-
-function update_gps_only()
-  --We are now using ground truth robot and ball pose data
-  headAngles = Body.get_head_position();
-  --TODO: camera select
---  HeadTransform.update(status.select, headAngles);
-  HeadTransform.update(0, headAngles);
-  
-  --update FOV
-  update_shm_fov()
-
-  --Get GPS coordinate of robot and ball
-  gps_pose = wcm.get_robot_gpspose();
-  ballGlobal=wcm.get_robot_gps_ball();  
-  
-  --Check whether ball is inside FOV
-  ballLocal = util.pose_relative(ballGlobal,gps_pose);
- 
-  --Get the coordinates of FOV boundary
-  local v_TL = vcm.get_image_fovTL();
-  local v_TR = vcm.get_image_fovTR();
-  local v_BL = vcm.get_image_fovBL();
-  local v_BR = vcm.get_image_fovBR();
-
---[[
-print("BallLocal:",unpack(ballLocal))
-print("V_TL:",unpack(v_TL))
-print("V_TR:",unpack(v_TR))
-print("V_BL:",unpack(v_BL))
-print("V_BR:",unpack(v_BR))
-print("Check 1:",
-   check_side(v_TL, ballLocal, v_TR));
-print("Check 2:",
-     check_side(v_TL, v_BL, ballLocal) );
-print("Check 3:",
-     check_side(v_BR, v_TR, ballLocal) );
-print("Check 4:",
-     check_side(v_BL, v_BR, ballLocal) );
---]]
-
-  --Check whether ball is within FOV boundary 
-  if check_side(v_TR, v_TL, ballLocal) < 0 and
-     check_side(v_TL, v_BL, ballLocal) < 0 and
-     check_side(v_BR, v_TR, ballLocal) < 0 and
-     check_side(v_BL, v_BR, ballLocal) < 0 then
-    vcm.set_ball_detect(1);
-  else
-    vcm.set_ball_detect(0);
-  end
-
-
-end
-
-function update_shm(status, headAngles)
-  -- Update the shared memory
-  -- Shared memory size argument is in number of bytes
-
-  if vcm.get_debug_enable_shm_copy() == 1 then
-    if ((vcm.get_debug_store_all_images() == 1)
-        or (ball.detect == 1
-            and vcm.get_debug_store_ball_detections() == 1)
-        or ((goalCyan.detect == 1 or goalYellow.detect == 1) 
-            and vcm.get_debug_store_goal_detections() == 1)) then
-
-	if webots == 1  then
-          vcm.set_camera_yuyvType(1);
-          vcm.set_image_labelA(labelA.data);
-          vcm.set_image_labelB(labelB.data);
---          vcm.set_image_labelA_obs(labelA.data_obs);
---          vcm.set_image_labelB_obs(labelB.data_obs);
-	end
-        if vcm.get_camera_broadcast() > 0 then --Wired monitor broadcasting
-	  if vcm.get_camera_broadcast() == 1 then
-	    --Level 1: 1/4 yuyv, labelB
-            vcm.set_image_yuyv3(ImageProc.subsample_yuyv2yuyv(
-  	    vcm.get_image_yuyv(),
-	    camera.width/2, camera.height,4));
-            vcm.set_image_labelB(labelB.data);
-	  elseif vcm.get_camera_broadcast() == 2 then
-	    --Level 2: 1/2 yuyv, labelA, labelB
-            vcm.set_image_yuyv2(ImageProc.subsample_yuyv2yuyv(
-  	      vcm.get_image_yuyv(),
-  	      camera.width/2, camera.height,2));
-            vcm.set_image_labelA(labelA.data);
-            vcm.set_image_labelB(labelB.data);
-	  else
-	    --Level 3: 1/2 yuyv
-            vcm.set_image_yuyv2(ImageProc.subsample_yuyv2yuyv(
-  	    vcm.get_image_yuyv(),
-  	    camera.width/2, camera.height,2));
-	  end
-
-	elseif vcm.get_camera_teambroadcast() > 0 then --Wireless Team broadcasting
-          --Only copy labelB
-          vcm.set_image_labelB(labelB.data);
-        end
-    end
-  end
-
-  vcm.set_image_select(status.select);
-  vcm.set_image_count(status.count);
-  vcm.set_image_time(status.time);
-  vcm.set_image_headAngles(headAngles);
-  vcm.set_image_horizonA(HeadTransform.get_horizonA());
-  vcm.set_image_horizonB(HeadTransform.get_horizonB());
-  vcm.set_image_horizonDir(HeadTransform.get_horizonDir())
-
-  update_shm_fov();
-end
-
 function update_shm_fov()
   --This function projects the boundary of current labeled image
 
@@ -431,6 +299,63 @@ function update_shm_fov()
  	  HeadTransform.coordinatesA(fovBR,0.1)),1,2));
 end
 
+function update_shm(status, headAngles)
+  -- Update the shared memory
+  -- Shared memory size argument is in number of bytes
+
+  if vcm.get_debug_enable_shm_copy() == 1 then
+    if ((vcm.get_debug_store_all_images() == 1)
+        or (ball.detect == 1 and vcm.get_debug_store_ball_detections() == 1)
+        or ((goalCyan.detect == 1 or goalYellow.detect == 1) 
+            and vcm.get_debug_store_goal_detections() == 1)) then
+      if webots == 1  then
+        vcm.set_camera_yuyvType(1);
+        vcm.set_image_labelA(labelA.data);
+        vcm.set_image_labelB(labelB.data);
+--        if enable_lut_for_obstacle == 1 then
+--          vcm.set_image_labelA_obs(labelA.data_obs);
+--          vcm.set_image_labelB_obs(labelB.data_obs);
+--        end
+	    end
+      if vcm.get_camera_broadcast() > 0 then --Wired monitor broadcasting
+	      if vcm.get_camera_broadcast() == 1 then
+	        --Level 1: 1/4 yuyv, labelB
+          vcm.set_image_yuyv3(ImageProc.subsample_yuyv2yuyv(vcm.get_image_yuyv(),
+	                                              camera.width/2, camera.height,4));
+          vcm.set_image_labelB(labelB.data);
+	      elseif vcm.get_camera_broadcast() == 2 then
+	        --Level 2: 1/2 yuyv, labelA, labelB
+          vcm.set_image_yuyv2(ImageProc.subsample_yuyv2yuyv(vcm.get_image_yuyv(),
+  	                                            camera.width/2, camera.height,2));
+          vcm.set_image_labelA(labelA.data);
+          vcm.set_image_labelB(labelB.data);
+--          if enable_lut_for_obstacle == 1 then
+--            vcm.set_image_labelA_obs(labelA.data_obs);
+--            vcm.set_image_labelB_obs(labelB.data_obs);
+--          end
+	      else
+	        --Level 3: 1/2 yuyv
+          vcm.set_image_yuyv2(ImageProc.subsample_yuyv2yuyv(
+  	      vcm.get_image_yuyv(),
+  	      camera.width/2, camera.height,2));
+	      end
+	    elseif vcm.get_camera_teambroadcast() > 0 then --Wireless Team broadcasting
+        --Only copy labelB
+        vcm.set_image_labelB(labelB.data);
+      end
+    end
+  end
+
+  vcm.set_image_select(status.select);
+  vcm.set_image_count(status.count);
+  vcm.set_image_time(status.time);
+  vcm.set_image_headAngles(headAngles);
+  vcm.set_image_horizonA(HeadTransform.get_horizonA());
+  vcm.set_image_horizonB(HeadTransform.get_horizonB());
+  vcm.set_image_horizonDir(HeadTransform.get_horizonDir())
+
+  update_shm_fov();
+end
 
 function exit()
   HeadTransform.exit();
@@ -468,47 +393,4 @@ end
 
 function bboxArea(bbox)
   return (bbox[2] - bbox[1] + 1) * (bbox[4] - bbox[3] + 1);
-end
-
-function load_lut(fname)
-  local cwd = unix.getcwd();
-  if string.find(cwd, "WebotsController") then
-    cwd = cwd.."/Player";
-  end
-  cwd = cwd.."/Data/";
-  local f = io.open(cwd..fname, "r");
-  assert(f, "Could not open lut file");
-  local s = f:read("*a");
-  for i = 1,string.len(s) do
-    camera.lut[i] = string.byte(s,i,i);
-  end
-end
-
-function load_lut_obs(fname)
-  local cwd = unix.getcwd();
-  if string.find(cwd, "WebotsController") then
-    cwd = cwd.."/Player";
-  end
-  cwd = cwd.."/Data/";
-  local f = io.open(cwd..fname, "r");
-  assert(f, "Could not open lut file");
-  local s = f:read("*a");
-  for i = 1,string.len(s) do
-    camera.lut_obs[i] = string.byte(s,i,i);
-  end
-end
-
-function save_rgb(rgb)
-  saveCount = saveCount + 1;
-  local filename = string.format("/tmp/rgb_%03d.raw", saveCount);
-  local f = io.open(filename, "w+");
-  assert(f, "Could not open save image file");
-  for i = 1,3*camera.width*camera.height do
-    local c = rgb[i];
-    if (c < 0) then
-      c = 256+c;
-    end
-    f:write(string.char(c));
-  end
-  f:close();
 end

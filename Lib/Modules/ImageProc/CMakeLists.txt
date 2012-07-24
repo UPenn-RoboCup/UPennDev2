@@ -12,11 +12,14 @@ add_library(ImageProc SHARED
               ConnectRegions.cpp
               lua_robots.cpp
               lua_color_stats.cpp
+              lua_color_count.cpp
+              lua_colorlut_gen.cpp
+              lua_connect_regions.cpp
               lua_field_lines.cpp
               lua_field_occupancy.cpp
               lua_field_spots.cpp
               lua_goal_posts.cpp
-              luaImageProc.cpp
+              lua_ImageProc.cpp
               RadonTransform.cpp
               RegionProps.cpp)
 

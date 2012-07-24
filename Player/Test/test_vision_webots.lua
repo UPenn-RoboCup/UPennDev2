@@ -27,6 +27,7 @@ require('util')
 require('wcm')
 require('gcm')
 require('ocm')
+--require('behaviorObstacle')
 
 darwin = false;
 webots = false;
@@ -52,7 +53,6 @@ Motion.entry();
 World.entry();
 Vision.entry();
 
-HeadFSM.sm:set_state('headScan');
 Body.set_head_hardness({0.4,0.4});
 controller.wb_robot_keyboard_enable(100);
 
@@ -73,6 +73,8 @@ camera_select = 1;
 
 -- set game state to ready to stop particle filter initiation
 gcm.set_game_state(1);
+
+Motion.event("standup")
 
 function process_keyinput()
   local str = controller.wb_robot_keyboard_get_key();
@@ -117,8 +119,7 @@ function process_keyinput()
 
     -- reset OccMap
   elseif byte == string.byte("/") then
-    print("reset occmap");
-    ocm.set_occ_reset(1);
+    OccupancyMap.reset_map();
   elseif byte == string.byte(".") then
     print("get obstacle");
     ocm.set_occ_get_obstacle(1);
@@ -191,6 +192,17 @@ function process_keyinput()
      ocm.set_occ_reset(1);
      headangle[2]=50*math.pi/180;
    elseif byte==string.byte('p') then
+     -- Change min color for ball
+--     if walk.active then walk.stop();end
+--     Motion.event('standup')
+     headsm_running = 1;
+     bodysm_running = 1;
+--     HeadFSM.sm:set_state('headLearnLUT');
+      vcm.set_camera_learned_new_lut(1)
+     HeadFSM.sm:set_state('headLearnLUT');
+     BodyFSM.sm:set_state('bodyWait');
+--     require('ColorLUT')
+--     ColorLUT.learn_lut_from_mask();
    end
 
 
@@ -199,6 +211,8 @@ function process_keyinput()
      Body.set_head_command(headangle);
      print("Headangle:", headangle[2]*180/math.pi)
    end
+
+   walk.set_velocity(unpack(targetvel));
  end
 end
 
@@ -248,20 +262,47 @@ function update()
   -- Get a keypress
   process_keyinput();
 
+  --[[
+  attackBearing = wcm.get_attack_bearing();
+  vStep = {0.02, 0, 0.2 * attackBearing}
 
-  obstacle_num = ocm.get_obstacle_num();
-  obstacle_centroid = ocm.get_obstacle_centroid();
-  obstacle_angle_range = ocm.get_obstacle_angle_range();
-  obstacle_nearest = ocm.get_obstacle_nearest();
-
-
-  velangle = math.atan2(targetvel[2], targetvel[1]);
---  print(obstacle_num,velangle*180/math.pi);
-  for i = 1, obstacle_num do
-
+  obs = behaviorObstacle.check_obstacle(vStep)
+ if (obs.front) then
+    print('obstacle in front found')
+  elseif (obs.leftside) then
+    print('obstacle on left found')
+  elseif (obs.rightside) then
+    print('obstacle on right found')
+  end  
+  
+  if obs.left and obs.right then
+    freeDir = 1 -- both size occupied, need slow down and backstep
+  elseif obs.left then
+    freeDir = 2 -- right side free
+  elseif obs.right then
+    freeDir = 3 -- left side free
+  else
+    freeDir = 0 -- both size free
   end
-  walk.set_velocity(unpack(targetvel));
 
+  if freeDir == 1 then
+    vStep[1] = vStep[1] - 0.01
+  elseif freeDir == 2 then
+    vStep[3] = vStep[3] - 0.02
+  elseif freeDir == 3 then
+    vStep[3] = vStep[3] + 0.02
+  else
+    if angle > 10 * math.pi / 180 then
+      vStep = {0, 0, 0.2}
+    elseif angle < -10 * math.pi / 180 then
+      vStep = {0, 0, -0.2}
+    else
+      vStep = {0, 0, 0}
+    end
+  end
+
+  walk.set_velocity(vStep[1], vStep[2], vStep[3])
+  --]]
 end
 
 while 1 do

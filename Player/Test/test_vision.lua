@@ -118,9 +118,6 @@ function process_keyinput()
     elseif byte==string.byte(";") then	targetvel[2]=targetvel[2]-0.02;
 
     -- reset OccMap
-    elseif byte==string.byte("/") then 
-      print("reset occomap");
-      ocm.set_occ_reset(1);
     elseif byte==string.byte(".") then
       print("get obstacles");
       nob = ocm.get_ob_num();
@@ -217,7 +214,6 @@ function process_keyinput()
       Body.set_head_hardness(0.5);
       BodyFSM.sm:set_state('bodySearch');   
       HeadFSM.sm:set_state('headScan');
-       ocm.set_occ_reset(1);
 
       walk.start();
 
@@ -252,19 +248,13 @@ function process_keyinput()
       bodysm_running=0;
       Motion.event("standup");
     elseif byte==string.byte("9") then	
-ocm.set_occ_reset(1);
-
       Motion.event("walk");
       walk.start();
     elseif byte==string.byte("0") then	
       Motion.event("diveready");
-    elseif byte==string.byte('o') then
-      print("reset occ map")
-      ocm.set_occ_reset(1);
-      headangle[2]=50*math.pi/180;
     elseif byte==string.byte('p') then
-      print(Config.obs_challenge);
-      vcm.set_image_learn_lut(1);
+      require('ColorLUT')
+      ColorLUT.learn_lut_from_mask();
     end
 
 

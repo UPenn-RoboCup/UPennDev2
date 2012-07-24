@@ -154,7 +154,8 @@ fsm.bodyApproach.aThresholdTurnGoalie = 35*math.pi/180;
 
 
 --x and y target position for stationary straight kick
-fsm.bodyApproach.xTarget11={0, 0.12,0.13}; --min, target, max
+--fsm.bodyApproach.xTarget11={0, 0.12,0.13}; --min, target, max
+fsm.bodyApproach.xTarget11={0, 0.14,0.16}; --min, target, max
 fsm.bodyApproach.yTarget11={0.03, 0.05, 0.06}; --min, target ,max
 
 --x and y target position for stationary kick to left
@@ -212,7 +213,8 @@ fsm.bodyGotoCenter.timeout=10.0*speedFactor;
 --HeadTrack : Track the ball
 --------------------------------------------------
 fsm.headTrack = {};
-fsm.headTrack.timeout = 3.0 * speedFactor;
+--fsm.headTrack.timeout = 3.0 * speedFactor;
+fsm.headTrack.timeout = 2.0 * speedFactor;
 fsm.headTrack.tLost = 1.5 * speedFactor;
 fsm.headTrack.minDist = 0.25; --Default value 0.30,If ball is closer than this, don't look up
 fsm.headTrack.fixTh={0.20,0.08}; --Fix yaw axis if ball is within this box
@@ -241,7 +243,8 @@ fsm.headScan.yawMag = 60*math.pi/180;
 fsm.headScan.yawMagGoalie = 90*math.pi/180;
 fsm.headScan.pitchTurn0 = 20*math.pi/180;
 fsm.headScan.pitchTurnMag = 20*math.pi/180;
-fsm.headScan.yawMagTurn = 45*math.pi/180;
+--fsm.headScan.yawMagTurn = 45*math.pi/180;
+fsm.headScan.yawMagTurn = 0*math.pi/180;
 fsm.headScan.tScan = 3.0*speedFactor;
 fsm.headScan.timeout = 7.0*speedFactor; --to headLookGoal
 fsm.headScan.minDist = 0.30;

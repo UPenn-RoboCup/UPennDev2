@@ -15,4 +15,4 @@ set(CMAKE_CXX_FLAGS "-O2")
 
 # set library prefix to "" otherwise it will create libNaoCam.so
 set_target_properties(OccMap PROPERTIES PREFIX "")
-target_link_libraries(OccMap m stdc++)
+target_link_libraries(OccMap m stdc++ lua)

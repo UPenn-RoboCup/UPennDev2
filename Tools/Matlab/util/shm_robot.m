@@ -489,6 +489,7 @@ global MONITOR %for sending the webots check information
   			r.occ.robot_pos = h.ocmOcc.get_robot_pos();
         r.occ.odom = h.ocmOcc.get_odom();
         r.occ.vel = h.mcmWalk.get_vel();
+        r.occ.attackBearing = h.wcmGoal.get_attack_bearing();
       end
 
       if r.free.detect == 1

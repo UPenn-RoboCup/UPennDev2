@@ -29,6 +29,7 @@ function plot_occ(occ)
   tri.v(:,1) = tri.v(:,1) - odom_y;
   tri.v(:,2) = tri.v(:,2) + odom_x;
 
+
 %{
 % calculate P field
 pvector = zeros(6, 2500);
@@ -74,6 +75,11 @@ pvector(6, :) = pvector(6, :) * reject_gain;
           occ.vel(1) * cos(occ.vel(3)+pi/2) - occ.vel(2) * sin(occ.vel(3)+pi/2), ...
           occ.vel(1) * sin(occ.vel(3)+pi/2) + occ.vel(2) * cos(occ.vel(3)+pi/2),...
           3, 'r--', 'LineWidth',2);
+  % show attack bearing
+  quiver(tri.v(1,1), tri.v(1,2), ...
+          cos(occ.attackBearing + pi/2), ...
+          sin(occ.attackBearing + pi/2),...
+          0.3, 'k--', 'LineWidth',1);
 
 %{
   % draw robot body

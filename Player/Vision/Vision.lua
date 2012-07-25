@@ -106,7 +106,7 @@ function entry()
 	vcm.set_camera_ncamera(Config.camera.ncamera);
   vcm.set_camera_reload_LUT(0);
 
-  vcm.set_image_lut_updated(0);
+--  vcm.set_image_lut_updated(0);
 
   -- Start the HeadTransform machine
   HeadTransform.entry();
@@ -173,10 +173,10 @@ end
 
 
 function update()
-  if vcm.get_image_lut_updated() ~= lut_updated then
-    print('lut updated');
-    lut_updated = vcm.get_image_lut_updated();
-  end
+--  if vcm.get_image_lut_updated() ~= lut_updated then
+--    print('lut updated');
+--    lut_updated = vcm.get_image_lut_updated();
+--  end
 
   -- reload color lut
   if (vcm.get_camera_reload_LUT() == 1) then

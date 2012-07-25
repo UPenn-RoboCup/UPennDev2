@@ -9,7 +9,8 @@ Config.game.playerID = 1;
 require ('cutil')
 require ('vector')
 require ('serialization')
-require ('Comm')
+CommWired = require ('Comm')
+CommWireless = require ('Comm')
 require ('util')
 
 require ('wcm')
@@ -40,7 +41,8 @@ fps_interval = 15;
 yuyv_type=0;
 
 
-Comm.init(Config.dev.ip_wired,111111);
+CommWired.init(Config.dev.ip_wired,Config.dev.ip_wired_port);
+CommWireless.init(Config.dev.ip_wireless,Config.dev.ip_wireless_port);
 print('Receiving from',Config.dev.ip_wired);
 
 function check_flag(flag)
@@ -250,13 +252,13 @@ function send_msgs()
     sendlut.arr = array;
     senddata = serialization.serialize(sendlut);
     print(senddata);
-    Comm.send(senddata);
+    CommWired.send(senddata);
   end
 end
 
 while( true ) do
 
-  msg = Comm.receive();
+  msg = CommWired.receive();
   if( msg ) then
     local obj = serialization.deserialize(msg);
     if( obj.arr ) then

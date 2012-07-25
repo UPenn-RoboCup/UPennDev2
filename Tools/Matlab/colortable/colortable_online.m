@@ -495,9 +495,9 @@ function h = colortable_online(action, varargin)
     colortable_smear;
     LUT = colortable_lut();
 
-    lut_updated = ROBOT.vcmImage.get_lut_updated();
+    lut_updated = ROBOT.matcmControl.get_lut_updated();
     disp('push shm from matlab');
-    ROBOT.vcmImage.set_lut_updated(1 - lut_updated);
+    ROBOT.matcmControl.set_lut_updated(1 - lut_updated);
     ROBOT.vcmImage.set_lut(typecast(LUT,'double'));
 
   end

@@ -496,6 +496,7 @@ function h = colortable_online(action, varargin)
     LUT = colortable_lut();
 
     lut_updated = ROBOT.vcmImage.get_lut_updated();
+    disp('push shm from matlab');
     ROBOT.vcmImage.set_lut_updated(1 - lut_updated);
     ROBOT.vcmImage.set_lut(typecast(LUT,'double'));
 
@@ -678,7 +679,16 @@ function h = colortable_online(action, varargin)
     cmap=[cbk;cr;cy;cy;cb;cb;cb;cb;cg;cg;cg;cg;cg;cg;cg;cg;cw];
 
     % Show yuyv Image
-    yuyv = ROBOT.get_yuyv(); 
+    yuyv_type = ROBOT.vcmCamera.get_yuyvType();
+    if yuyv_type == 1
+      yuyv = ROBOT.get_yuyv(); 
+    elseif yuyv_type == 2
+      yuyv = ROBOT.get_yuyv2();
+    elseif yuyv_type == 3
+      yuyv = ROBOT.get_yuyv3();
+    else
+      return;
+    end
     labelA = ROBOT.get_labelA(); 
     [ycbcr, rgb] = yuyv2rgb(yuyv);
     DATA.yuv = ycbcr;

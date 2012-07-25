@@ -93,6 +93,8 @@ function update()
     else
       require('Broadcast');
       print("Starting to send wired monitor message..");
+      require('Receive');
+      print("Starting to wired message..");
     end
     comm_inited = true;
   end
@@ -106,6 +108,7 @@ function update()
       end
     else
       broadcast();
+      Receive.update();
     end
   end
 end

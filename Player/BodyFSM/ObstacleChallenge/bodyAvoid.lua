@@ -36,12 +36,24 @@ function update()
 
   attackBearing, daPost = wcm.get_attack_bearing();
   attack_angle = util.mod_angle(attackBearing);
-left_obs = ocm.get_obstacle_left(); right_obs = ocm.get_obstacle_right(); if left_obs == 1 and right_obs == 1 then vStep[1] = -0.02 elseif left_obs == 1 then vStep[1] = -0.02 vStep[2] = -0.04 vStep[3] = attackBearing - 25 * math.pi / 180 elseif right_obs == 1 then
-    vStep[1] = -0.02
+  left_obs = ocm.get_obstacle_left(); 
+  right_obs = ocm.get_obstacle_right(); 
+  if left_obs == 1 and right_obs == 1 then 
+--    vStep[1] = -0.02 
+    vStep[1] = 0.0 
+  elseif left_obs == 1 then 
+--    vStep[1] = -0.02 
+    vStep[1] = 0.0 
+    vStep[2] = -0.04 
+    vStep[3] = attackBearing - 25 * math.pi / 180 
+  elseif right_obs == 1 then
+--    vStep[1] = -0.02
+    vStep[1] = 0.0
     vStep[2] = 0.04
     vStep[3] = attackBearing + 25 * math.pi / 180
   else
-    vStep[1] = -0.04
+    vStep[1] = 0.0
+--    vStep[1] = -0.04
     if attack_angle > 10 * math.pi / 180 then
       vStep[3] = attack_angle + 25 * math.pi / 180
     elseif attack_angle < -10 * math.pi / 180 then

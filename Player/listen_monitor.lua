@@ -232,6 +232,28 @@ function push_data(obj)
   end
 end
 
+lut_updated = 0;
+function send_msgs()
+  -- send lut
+  if vcm.get_image_lut_updated() ~= lut_updated then
+    sendlut = {}
+    print("send lut, since it changed");
+    lut_updated = vcm.get_image_lut_updated();
+    lut = vcm.get_image_lut();
+    width = 262144;
+    height = 1;
+    count = vcm.get_image_count();
+    array = serialization.serialize_label_rle(
+      lut, width, height, 'uint8', 'lut', count);
+
+    sendlut.updated = lut_updated;
+    sendlut.arr = array;
+    senddata = serialization.serialize(sendlut);
+    print(senddata);
+    Comm.send(senddata);
+  end
+end
+
 while( true ) do
 
   msg = Comm.receive();
@@ -240,17 +262,13 @@ while( true ) do
     if( obj.arr ) then
     	if ( string.find(obj.arr.name,'yuyv') ) then 
      	  push_yuyv(obj.arr);
-    	--print("yuyv_type00000000")
     	  yuyv_type=1;
-    
     	elseif ( string.find(obj.arr.name,'ysub2') ) then 
      	  push_yuyv2(obj.arr);
     	  yuyv_type=2;
-    
     	elseif ( string.find(obj.arr.name,'ysub4') ) then 
      	  push_yuyv3(obj.arr);
     	  yuyv_type=3;
-    
     	elseif ( string.find(obj.arr.name,'labelA') ) then 
     	  push_labelA(obj.arr);
     	elseif ( string.find(obj.arr.name,'labelB') ) then 
@@ -258,12 +276,12 @@ while( true ) do
       elseif ( string.find(obj.arr.name,'occmap') ) then
         push_occmap(obj.arr);
     	end
-
     else
-	push_data(obj);
+    	push_data(obj);
     end
   end
   vcm.set_camera_yuyvType(yuyv_type);
+  send_msgs();
   unix.usleep(1E6*0.005);
 
 end

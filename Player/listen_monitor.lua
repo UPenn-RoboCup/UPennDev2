@@ -10,7 +10,6 @@ require ('cutil')
 require ('vector')
 require ('serialization')
 CommWired = require ('Comm')
-CommWireless = require ('Comm')
 require ('util')
 
 require ('wcm')
@@ -18,6 +17,7 @@ require ('gcm')
 require ('vcm')
 require ('ocm')
 require ('mcm')
+require ('matcm')
 
 require 'unix'
 
@@ -39,11 +39,10 @@ data_t_full = unix.time();
 fps_count=0;
 fps_interval = 15;
 yuyv_type=0;
-
+lut_updated = 0;
 
 CommWired.init(Config.dev.ip_wired,Config.dev.ip_wired_port);
-CommWireless.init(Config.dev.ip_wireless,Config.dev.ip_wireless_port);
-print('Receiving from',Config.dev.ip_wired);
+print('Sending to',Config.dev.ip_wired, 'Receving from ANY');
 
 function check_flag(flag)
   sum = 0;
@@ -236,28 +235,49 @@ end
 
 lut_updated = 0;
 function send_msgs()
+  pktDelay = 1E6 * 0.1; --For image and colortable
   -- send lut
-  if vcm.get_image_lut_updated() ~= lut_updated then
+  if matcm.get_control_lut_updated() ~= lut_updated  then
+    lut_updated = matcm.get_control_lut_updated();
     sendlut = {}
     print("send lut, since it changed");
-    lut_updated = vcm.get_image_lut_updated();
     lut = vcm.get_image_lut();
-    width = 262144;
-    height = 1;
+    width = 512;
+    height = 512;
     count = vcm.get_image_count();
-    array = serialization.serialize_label_rle(
-      lut, width, height, 'uint8', 'lut', count);
 
+    array = serialization.serialize_array(lut, width,
+                    height, 'uint8', 'lut', count);
+    
     sendlut.updated = lut_updated;
     sendlut.arr = array;
-    senddata = serialization.serialize(sendlut);
-    print(senddata);
-    CommWired.send(senddata);
+    local tSerialize = 0;
+    local tSend = 0;
+    local totalSize = 0;
+    for i = 1, #array do
+      sendlut.arr = array[i];
+      print(sendlut.arr.name, i)
+      t0 = unix.time();
+      senddata = serialization.serialize(sendlut);
+      t1 = unix.time();
+      tSerialize = tSerialize + t1 - t0;
+      CommWired.send(senddata);
+      t2 = unix.time();
+      totalSize = totalSize + #senddata;
+      tSend = tSend + t2 - t1
+
+      unix.usleep(pktDelay);
+    end
+    print("LUT info array num:",#array,"Total size",totalSize);
+    print("Total Serialize time:",#array,"Total",tSerialize);
+    print("Total Send time:",tSend);
+--    senddata = serialization.serialize(sendlut);
+--    print(senddata);
+--    CommWired.send(senddata);
   end
 end
 
 while( true ) do
-
   msg = CommWired.receive();
   if( msg ) then
     local obj = serialization.deserialize(msg);
@@ -283,6 +303,7 @@ while( true ) do
     end
   end
   vcm.set_camera_yuyvType(yuyv_type);
+
   send_msgs();
   unix.usleep(1E6*0.005);
 

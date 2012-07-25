@@ -30,6 +30,7 @@ global MONITOR %for sending the webots check information
   h.wcmParticle  = shm(sprintf('wcmParticle%d%d%s',  h.teamNumber, h.playerID, h.user));
   %h.wcmKick
   h.mcmUs = shm(sprintf('mcmUs%d%d%s', h.teamNumber, h.playerID, h.user));
+  h.mcmWalk = shm(sprintf('mcmWalk%d%d%s', h.teamNumber, h.playerID, h.user));
 
 
   h.wcmTeamdata  = shm(sprintf('wcmTeamdata%d%d%s',  h.teamNumber, h.playerID, h.user));
@@ -316,6 +317,8 @@ global MONITOR %for sending the webots check information
       pose = h.wcmRobot.get_pose();
       r.robot = {};
       r.robot.pose = struct('x', pose(1), 'y', pose(2), 'a', pose(3));
+      vel = h.mcmWalk.get_vel();
+      r.robot.vel = struct('vx', vel(1), 'vy', vel(2), 'va', vel(3));
 
     %Camera info
 
@@ -485,7 +488,7 @@ global MONITOR %for sending the webots check information
   			r.occ.mapsize = mapsize;
   			r.occ.robot_pos = h.ocmOcc.get_robot_pos();
         r.occ.odom = h.ocmOcc.get_odom();
-        r.occ.vel = h.ocmOcc.get_vel();
+        r.occ.vel = h.mcmWalk.get_vel();
       end
 
       if r.free.detect == 1

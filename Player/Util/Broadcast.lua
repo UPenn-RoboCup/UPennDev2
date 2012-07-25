@@ -401,6 +401,17 @@ function update_img( enable, imagecount )
       sendB();
       sendmap();
     end
+
+    if CommWired.size() > 0 then
+      msg = CommWired.receive();
+      obj = serialization.deserialize(msg);
+      util.ptable(obj);
+      if (obj.arr) then
+        if (string.find(obj.arr.name,'lut')) then
+          print('receive lut');
+        end
+      end
+    end
   elseif enable==3 then
     --3: Logging mode
     --Only send 160*120 yuyv for logging

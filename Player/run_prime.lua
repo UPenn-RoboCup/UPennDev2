@@ -98,6 +98,37 @@ while( not logs or count<n_logs ) do
       init = true;
       timestamp0 = timestamp;
     end
+
+    --[[
+    -- Left person is always player 1
+    -- so that we don't switch in the middle of the program
+    center = {};
+    for pl=1,nPlayers do
+      -- Get the torso stats
+      local pos, rot, confidence, active = primesense.get_jointtables(pl,3);
+      if( active ) then
+        center[pl] = pos;
+      end
+    end
+    -- Match to closest centroid of before
+    if( prev_center and #center>0 ) then -- We have context
+      for pl=1,nPlayers do
+        if(center[pl]) then -- Match the found center with one from before
+          -- Just sort the differences...
+          diffs = center[pl] - prev_center;
+
+        end
+      end
+    else
+      prev_center = {}
+      for pl=1,nPlayers do
+        if(center[pl]) then
+          prev_center[pl] = center[pl];
+        end
+      end
+    end
+    --]]
+
     -- Check each player
     -- Is each player active?
     for i,v in ipairs(pc[playerID].jointNames) do

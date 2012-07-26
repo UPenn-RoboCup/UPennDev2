@@ -9,46 +9,46 @@ nPlayers = gcm.get_game_nplayers();
 -- For testing
 nPlayers = 2;
 
--- Require the primecm modules
-pc = {};
-for i=1,nPlayers do
-  pc[i] = require('primecm'..i)
+-- run from log file (this is set automatically)
+-- lua run_prime X.lua, Y.lua, Z.lua, ... 
+-- where X,Y,Z,... are the log files for users 1,2,3,...
+logs = false;
+inp_logs = {};
+-- box runs punch detection code
+print("Num args: ",#arg)
+if( arg[1] ) then
+  logs = true
+  nPlayers = #arg
+  for i=1,nPlayers do
+    dofile( arg[i] )
+    inp_logs[i] = log;
+  end
+else
+  require 'primesense'  
 end
 
 -- Enable Webots specific
 if (string.find(Config.platform.name,'Webots')) then
   print('On webots!')
   webots = true;
-  net = false;
 else
   print('Real robot!')
-  net = true;
 end
 
--- run from log file (this is set automatically)
--- lua run_prime XXX.lua where XXX.lua is the log
-logs = false;
-inp_logs = {};
--- box runs punch detection code
-box = false;
-if( arg[1] ) then
-  dofile( arg[1] )
-  logs = true;
-  inp_logs[1] = log;
-  nPlayers = 1;
-  if( arg[2] ) then
-    dofile( arg[2] );
-    inp_logs[2] = log;
-    nPlayers = 2;
-  end
-else
-  require 'primesense'  
+-- Enable the network
+net = true;
+if( webots ) then
+  net = false;
+end
+
+-- Require the primecm modules
+pc = {};
+for i=1,nPlayers do
+  pc[i] = require('primecm'..i)
 end
 
 -- Issue debug line telling which mode we are in
-desired_fps = 60;
 print '\n\n=====================';
-print('Desired FPS: ',desired_fps);
 print('Run Logs?',logs);
 print('Team/Player',teamID..'/'..playerID);
 print('nPlayers',nPlayers);
@@ -146,8 +146,8 @@ while( not logs or count<n_logs ) do
 
   -- Timing
   if( init and not logs ) then
-    if( count % 30==0 ) then
-      local fps = 30 / (unix.time()-(t_count or 0))
+    if( count % 60==0 ) then
+      local fps = 60 / (unix.time()-(t_count or 0))
       t_count = unix.time();
       print('FPS: ',fps)
       print('Time',timestamp-timestamp0 );
@@ -155,12 +155,11 @@ while( not logs or count<n_logs ) do
       print('User 2: ', pc[2]['get_skeleton_found']());
       print();
     end
-    local t_loop = unix.time() - t_start;
-    local twait = 1/desired_fps;
-    --    unix.usleep( 1e6*math.max(twait-t_loop,0) );
   end
   if(logs and count<n_logs) then
-    print('Count:',count,'Time:',timestamp );    
+    if( count % 60==0 ) then
+      print('Count:',count,'Time:',timestamp );    
+    end
     local timestamp_next = log[count+1].t;
     local twait = timestamp_next-timestamp;
     local t_loop = unix.time() - t_start;

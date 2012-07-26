@@ -42,6 +42,9 @@ global MONITOR %for sending the webots check information
 	h.ocmOcc = shm(sprintf('ocmOcc%d%d%s', h.teamNumber, h.playerID, h.user));
 	h.ocmObstacle = shm(sprintf('ocmObstacle%d%d%s', h.teamNumber, h.playerID, h.user));
 
+	h.matcmControl = shm(sprintf('matcmControl%d%d%s', h.teamNumber, h.playerID, h.user));
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %SJ - reading Occmap SHM from robot kills matlab

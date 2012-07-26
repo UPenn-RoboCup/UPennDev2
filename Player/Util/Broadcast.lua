@@ -22,8 +22,8 @@ sendShm = { wcmshm=wcm, gcmshm=gcm, vcmshm=vcm, ocmshm=ocm, mcmshm=mcm }
 itemReject = 'yuyv, labelA, labelB, yuyv2, yuyv3, map'
 
 -- Initiate Sending Address
-CommWired.init(Config.dev.ip_wired,111111);
-print('Sending to',Config.dev.ip_wired);
+CommWired.init(Config.dev.ip_wired,Config.dev.ip_wired_port);
+print('Broadcast to',Config.dev.ip_wired..':'..Config.dev.ip_wired_port);
 
 -- Add a little delay between packet sending
 -- pktDelay = 500; -- time in us
@@ -401,6 +401,7 @@ function update_img( enable, imagecount )
       sendB();
       sendmap();
     end
+
   elseif enable==3 then
     --3: Logging mode
     --Only send 160*120 yuyv for logging

@@ -59,9 +59,10 @@ camera.param[7] = {key='exposure (absolute)',      val={1005}};
 --camera.lut_file = 'lut_OP_Grasp_GreenOnly.raw';
 --camera.lut_file = '0427_grasp.raw'; --Red ball, not orange 
 --camera.lut_file = 'lut_Grasp_GreenOnly_SJ.raw';
---camera.lut_file = 'lut_ob_test';
+camera.lut_file = 'lut_ob_test';
 camera.lut_file = 'lut_ob_new';
 camera.lut_file_obs = 'lut_ob_test';
 camera.lut_file_new = 'lut_ob_new';
 --camera.lut_file_obs = '0427_grasp';
-
+--camera.lut_file = '0427_grasp';
+camera.lut_file = 'lut_empty';

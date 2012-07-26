@@ -225,6 +225,13 @@ fsm.headTrack.timeout = 2.0 * speedFactor;
 fsm.headTrack.tLost = 1.5 * speedFactor;
 fsm.headTrack.minDist = 0.15; --Default value 0.30,If ball is closer than this, don't look up
 
+-- Play Football
+--[[
+fsm.game = 'Football';
+fsm.head = {'Football'};
+fsm.body = {'Football'};
+dev.team = 'TeamFootball'
+--]]
 -- disable speak for webots which causes lua crash with error if espeak not installed
 speakenable = 0
 

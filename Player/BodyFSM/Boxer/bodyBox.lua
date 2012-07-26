@@ -13,6 +13,11 @@ function entry()
 
   t0 = Body.get_time();
 
+  if( walk.stance==0 ) then
+    print('switcing stance')
+    walk.switch_stance(1)
+  end
+
 end
 
 function update()
@@ -23,11 +28,19 @@ function update()
   local pR = boxercm.get_body_punchR();
 
   if( pL==1 and pR==0 ) then -- left arm punch
-    print('left punch!')
     --Check the stance
     if( walk.stance==1 ) then --left
+      walk.doPunch(1)
+    else
+      walk.doPunch(2)
     end
   elseif( pL==0 and pR==1 ) then -- right arm punch
+    --Check the stance
+    if( walk.stance==1 ) then --left
+      walk.doPunch(2)
+    else
+      walk.doPunch(1)
+    end
   elseif( pL==1 and pR==1 ) then -- both arm punch (pushaway)
   else -- No punch
   end

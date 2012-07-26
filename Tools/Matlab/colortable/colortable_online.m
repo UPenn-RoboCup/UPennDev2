@@ -37,7 +37,8 @@ function h = colortable_online(action, varargin)
     set(hfig, 'Position', figpos);
 
     % default image size 
-    DATA.size = [120 160];
+%    DATA.size = [120 160];
+    DATA.size = [240 320];
 
     % init mask 
     for icolor = 1:COLORTABLE.ncolor
@@ -67,23 +68,6 @@ function h = colortable_online(action, varargin)
     Std.BusyAction = 'queue';
 
     % create the axis to display the current image
-		DATA.LogFileName = uicontrol('Style','text',...
-		 										   'Units','Normalized',...
-													 'Position',[.35 0.955 0.40 0.04]);
-    DATA.PrevLogFile = uicontrol(Std, ...
-                                'Parent', hfig,...
-                                'Style', 'pushbutton',...
-                                'String', 'Prev Log (Z)',...
-                                'Callback', 'colortable_online(''LoadMontage'',''Backward'')',...
-                                'Units', 'Normalized',...
-                                'Position', [.21 0.955 0.12 0.04]);
-    DATA.NextLogFile = uicontrol(Std, ...
-                                'Parent', hfig,...
-                                'Style', 'pushbutton',...
-                                'String', 'Next Log (X)',...
-                                'Callback', 'colortable_online(''LoadMontage'',''Forward'')',...
-                                'Units', 'Normalized',...
-                                'Position', [.77 0.955 0.12 0.04]);
     DATA.ImagePanel = uipanel('Parent', hfig, ...
                               'Title', 'Images', ...
                               'BackgroundColor', [.8 .8 .8], ...
@@ -142,6 +126,7 @@ function h = colortable_online(action, varargin)
 
 
     % create 'Load Montage' button
+    %{
     DATA.LoadControl = uicontrol(Std, ...
                                   'Parent', hfig, ...
                                   'Style', 'pushbutton', ...
@@ -149,7 +134,7 @@ function h = colortable_online(action, varargin)
                                   'Callback','colortable_online(''LoadMontage'')', ...
                                   'Units', 'Normalized', ...
                                   'Position', [.025 .90 .15 .05]);
-
+%}
     % create 'Save Colors' button
     DATA.SaveColor = uicontrol(Std, ...
                                   'Parent', hfig, ...
@@ -177,15 +162,15 @@ function h = colortable_online(action, varargin)
                                   'Units', 'Normalized', ...
                                   'Position', [.025 .35 .15 .05]);
 
-    % create 'Toggle View' button
-    DATA.ToggleView = uicontrol(Std, ...
+    DATA.ClearLUT = uicontrol(Std, ...
                                   'Parent', hfig, ...
                                   'Style', 'pushbutton', ...
-                                  'String', 'Toggle View (T)', ...
-                                  'Callback','colortable_online(''ToggleView'')', ...
+                                  'String', 'Clear Colortable', ...
+                                  'Callback',@ClearLUT, ...
                                   'Units', 'Normalized', ...
                                   'Position', [.025 .50 .15 .05]);
 
+%{
     % create the Forward arrow button
     DATA.ForwardControl = uicontrol(Std, ...
                                     'Parent', hfig, ...
@@ -222,7 +207,6 @@ function h = colortable_online(action, varargin)
                                           'Units', 'Normalized', ...
                                           'Position', [.3 .05 .07 .05]);
 
-
     % create the image index select edit box
     DATA.IndexControl = uicontrol(Std, ...
                                   'Parent', hfig, ...
@@ -231,6 +215,7 @@ function h = colortable_online(action, varargin)
                                   'Callback','colortable_online(''UpdateImage'',str2num(get(gco,''String'')))', ...
                                   'Units', 'Normalized', ...
                                   'Position', [.5 .05 .1 .06]);
+%}
 
     % create the selection array for the colors of interest
     for icolor = 1:COLORTABLE.ncolor,
@@ -495,11 +480,23 @@ function h = colortable_online(action, varargin)
     colortable_smear;
     LUT = colortable_lut();
 
-    lut_updated = ROBOT.vcmImage.get_lut_updated();
-    ROBOT.vcmImage.set_lut_updated(1 - lut_updated);
+    lut_updated = ROBOT.matcmControl.get_lut_updated();
+    disp('push shm from matlab');
+    ROBOT.matcmControl.set_lut_updated(1 - lut_updated);
     ROBOT.vcmImage.set_lut(typecast(LUT,'double'));
 
   end
+
+  function ClearLUT(varargin)
+    nlut = size(COLORTABLE.score, 1);
+    lut = zeros(262144, 1, 'uint8');
+    lut_updated = ROBOT.matcmControl.get_lut_updated();
+    disp('push emtpy shm from matlab');
+    ROBOT.matcmControl.set_lut_updated(1 - lut_updated);
+    ROBOT.vcmImage.set_lut(typecast(LUT,'double'));
+  end
+
+
 
 
   function Color(varargin)
@@ -519,7 +516,6 @@ function h = colortable_online(action, varargin)
         set(DATA.ColorControl(icolor), 'Value', 0);
       end
     end
-
   end
 
 
@@ -536,72 +532,6 @@ function h = colortable_online(action, varargin)
     set(DATA.ThresholdControl, 'Value', DATA.cthreshold);
     set(DATA.ThresholdEdit, 'String', num2str(DATA.cthreshold));
     set(hfig, 'UserData', DATA);
-    return;
-  end
-
-
-  function LoadMontage(index)
-  % callback for the 'Load Montage' button
-
-    % get the gui userdata
-    hfig = gcbf;
-    DATA = get(hfig, 'UserData');
-    
-    if (nargin) 
-      index
-      pathname = DATA.LogFilePath;
-      filename = get(DATA.LogFileName, 'String');
-      fileorder = strmatch(filename, strvcat(DATA.LogList.name));
-      if strcmp(index,'Forward')
-        if (fileorder < size(DATA.LogList,1))
-          fileorder = fileorder + 1;
-        end
-      elseif strcmp(index,'Backward')
-        if (fileorder > 1)
-          fileorder = fileorder - 1;
-        end
-      else
-      end
-      filename = DATA.LogList(fileorder).name;
-    else
-      % open file select gui
-      [filename, pathname] = uigetfile('*.mat', 'Select montage file');
-    end
-
-    if (filename ~= 0)
-      % if a file was selected
-      s = load([pathname filename]);
-			set(DATA.LogFileName,'String', filename);
-      DATA.LogFilePath = pathname;
-      DATA.LogList = dir(strcat(pathname,'/*.mat'));
-
-      % make sure it has a yuyvMontage
-      if (isfield(s, 'yuyvMontage'))
-        % convert the yuyv montage to yuv data
-        yuvMontage = yuyv2yuv(s.yuyvMontage);
-        
-        % check the image size
-        sz = size(yuvMontage);
-        if (any(sz(1:2) ~= DATA.size))
-          % image size does not match current data size
-          %warndlg('YUYV montage image size changed.\nMake sure these images are from the same camera as the previous montage.');
-          % resize the image display
-          DATA.size = sz(1:2);
-          set(DATA.ImageAxes, 'XLim', .5+[0 DATA.size(2)], ...
-                              'YLim', .5+[0 DATA.size(1)]);
-          set(DATA.Image, 'XData', [1 DATA.size(2)], ...
-                          'YData', [1 DATA.size(1)], ...
-                          'Cdata', []);
-        end
-
-        DATA.montage = yuvMontage;
-        set(hfig, 'UserData', DATA);
-
-        % display the first image in the montage
-        UpdateImage(1);
-      end
-    end
-
     return;
   end
 
@@ -653,32 +583,21 @@ function h = colortable_online(action, varargin)
     return;
   end
 
-  function ToggleView()
-  % callback for the 'Toggle View' button
-
-    % get the gui userdata
-    hfig = gcbf;
-    DATA = get(hfig, 'UserData');
-
-    DATA.viewmode = 1-DATA.viewmode;
-    %Whenever entering label view, recalculate LUT
-    if DATA.viewmode
-      colortable_smear;
-      LUT = colortable_lut();
-    end
-    set(hfig, 'UserData', DATA);
-
-    UpdateImage();
-    return;
-  end
-
-
   function update()
     cbk=[0 0 0];cr=[1 0 0];cg=[0 1 0];cb=[0 0 1];cy=[1 1 0];cw=[1 1 1];
     cmap=[cbk;cr;cy;cy;cb;cb;cb;cb;cg;cg;cg;cg;cg;cg;cg;cg;cw];
 
     % Show yuyv Image
-    yuyv = ROBOT.get_yuyv(); 
+    yuyv_type = ROBOT.vcmCamera.get_yuyvType();
+    if yuyv_type == 1
+      yuyv = ROBOT.get_yuyv(); 
+    elseif yuyv_type == 2
+      yuyv = ROBOT.get_yuyv2();
+    elseif yuyv_type == 3
+      yuyv = ROBOT.get_yuyv3();
+    else
+      return;
+    end
     labelA = ROBOT.get_labelA(); 
     [ycbcr, rgb] = yuyv2rgb(yuyv);
     DATA.yuv = ycbcr;

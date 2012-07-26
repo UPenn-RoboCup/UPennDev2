@@ -22,8 +22,8 @@ sendShm = { wcmshm=wcm, gcmshm=gcm, vcmshm=vcm, ocmshm=ocm, mcmshm=mcm }
 itemReject = 'yuyv, labelA, labelB, yuyv2, yuyv3, map'
 
 -- Initiate Sending Address
-CommWired.init(Config.dev.ip_wired,111111);
-print('Sending to',Config.dev.ip_wired);
+CommWired.init(Config.dev.ip_wired,Config.dev.ip_wired_port);
+print('Broadcast to',Config.dev.ip_wired..':'..Config.dev.ip_wired_port);
 
 -- Add a little delay between packet sending
 -- pktDelay = 500; -- time in us
@@ -60,7 +60,7 @@ function sendB()
     infosize=infosize+#senddata;
     t1=unix.time();
     stime1=stime1+t1-t0;
-    CommWired.send(senddata);
+    CommWired.send(senddata, #senddata);
     t2=unix.time();
     stime2=stime2+t2-t1;
   end 
@@ -93,7 +93,7 @@ function sendA()
     infosize=infosize+#senddata;
     t1=unix.time();
     stime1=stime1+t1-t0;
-    CommWired.send(senddata);
+    CommWired.send(senddata, #senddata);
     t2=unix.time();
     stime2=stime2+t2-t1;
     -- Need to sleep in order to stop drinking out of firehose
@@ -131,10 +131,11 @@ function sendB()
   sendlabelB.arr = array;
   t0 = unix.time();
   local senddata=serialization.serialize(sendlabelB);
+  senddata = Z.compress(senddata, #senddata);
   infosize=infosize+#senddata;
   t1=unix.time();
   stime1=stime1+t1-t0;
-  CommWired.send(senddata);
+  CommWired.send(senddata, #senddata);
   t2=unix.time();
   stime2=stime2+t2-t1;
 
@@ -168,10 +169,11 @@ function sendA()
   sendlabelA.arr = array;
   t0 = unix.time();
   local senddata=serialization.serialize(sendlabelA);
+  senddata = Z.compress(senddata, #senddata);
   infosize=infosize+#senddata;
   t1=unix.time();
   stime1=stime1+t1-t0;
-  CommWired.send(senddata);
+  CommWired.send(senddata, #senddata);
   t2=unix.time();
   stime2=stime2+t2-t1;
 
@@ -204,9 +206,10 @@ function sendmap()
     sendoccmap.arr = array[i];
     t0 = unix.time();
     senddata=serialization.serialize(sendoccmap);     
+    senddata = Z.compress(senddata, #senddata);
     t1 = unix.time();
     tSerialize= tSerialize + t1-t0;
-    CommWired.send(senddata);
+    CommWired.send(senddata, #senddata);
     t2 = unix.time();
     tSend=tSend+t2-t1;
     totalSize=totalSize+#senddata;
@@ -246,9 +249,10 @@ function sendImg()
     sendyuyv.arr = array[i];
     t0 = unix.time();
     senddata=serialization.serialize(sendyuyv);     
+    senddata = Z.compress(senddata, #senddata);
     t1 = unix.time();
     tSerialize= tSerialize + t1-t0;
-    CommWired.send(senddata);
+    CommWired.send(senddata, #senddata);
     t2 = unix.time();
     tSend=tSend+t2-t1;
     totalSize=totalSize+#senddata;
@@ -286,9 +290,10 @@ function sendImgSub2()
     sendyuyv2.arr = array[i];
     t0 = unix.time();
     senddata=serialization.serialize(sendyuyv2);
+    senddata = Z.compress(senddata, #senddata);
     t1 = unix.time();
     tSerialize= tSerialize + t1-t0;
-    CommWired.send(senddata);
+    CommWired.send(senddata, #senddata);
     t2 = unix.time();
     tSend=tSend+t2-t1;
     totalSize=totalSize+#senddata;
@@ -324,9 +329,10 @@ function sendImgSub4()
     sendyuyv3.arr = array[i];
     t0 = unix.time();
     senddata=serialization.serialize(sendyuyv3);
+    senddata = Z.compress(senddata, #senddata);
     t1 = unix.time();
     tSerialize= tSerialize + t1-t0;
-    CommWired.send(senddata);
+    CommWired.send(senddata, #senddata);
     t2 = unix.time();
     tSend=tSend+t2-t1;
 
@@ -367,8 +373,9 @@ function update(enable)
   end
   t0 = unix.time();
   senddata=serialization.serialize(send);
+  senddata = Z.compress(senddata, #senddata);
   t1 = unix.time();
-  CommWired.send(senddata);
+  CommWired.send(senddata, #senddata);
   t2 = unix.time();
   unix.usleep(pktDelay2);
 
@@ -401,6 +408,7 @@ function update_img( enable, imagecount )
       sendB();
       sendmap();
     end
+
   elseif enable==3 then
     --3: Logging mode
     --Only send 160*120 yuyv for logging

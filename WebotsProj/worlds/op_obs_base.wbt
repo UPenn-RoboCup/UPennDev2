@@ -43,16 +43,16 @@ DEF BLUE_GOAL Goal {
   postColor 0.152941 0.505882 0.733333
 }
 DEF BALL Ball {
-  translation -2.21107 0.0323921 -0.0286801
+  translation -2.71107 0.0323921 -0.0286801
 #  color 0.0784314 0.113725 1
 }
 DEF PLAYER_1_99 DARwInOPGPS {
-  translation -2.49092 0.340872 0.00331587
+  translation -2.99092 0.340872 0.00331587
   rotation 0.000227446 1 -0.000302089 1.4389
   controller "darwin-op_team_0"
   controllerArgs "1 99"
   plasticColor 0.2 0.2 0.2
-  cameraWindowPosition 0.125 0
+  cameraWindowPosition 1.125 0
   waistBand TRUE
   channel 13
 }

@@ -1,6 +1,9 @@
 module(..., package.seeall);
 
 require('cutil')
+require('Z')
+
+use_zlib = 1;
 
 function serialize_orig(o)
   local str = "";
@@ -68,7 +71,11 @@ function serialize(o)
   else	
     str = "nil";
   end
-  return str;
+  if use_zlib == 1 then
+    return Z.compress(str, #str);
+  else
+    return str;
+  end
 end
 
 function serialize_array(ud, width, height, dtype, arrName, arrID)
@@ -166,6 +173,9 @@ function serialize_label_rle(ud, width, height, dtype, arrName, arrID)
 end
 
 function deserialize(s)
+  if use_zlib == 1 then
+    s = Z.uncompress(s, #s);
+  end
   --local x = assert(loadstring("return "..s))();
   if not s then
     return '';

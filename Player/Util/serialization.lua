@@ -3,7 +3,7 @@ module(..., package.seeall);
 require('cutil')
 require('Z')
 
-use_zlib = 1;
+use_zlib = 0;
 
 function serialize_orig(o)
   local str = "";

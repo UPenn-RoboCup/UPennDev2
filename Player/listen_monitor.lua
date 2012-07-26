@@ -20,6 +20,7 @@ require ('mcm')
 require ('matcm')
 
 require 'unix'
+require 'Z'
 
 yuyv_all = {}
 yuyv_flag = {}
@@ -235,7 +236,7 @@ end
 
 lut_updated = 0;
 function send_msgs()
-  pktDelay = 1E6 * 0.1; --For image and colortable
+  pktDelay = 1E6 * 0.001; --For image and colortable
   -- send lut
   if matcm.get_control_lut_updated() ~= lut_updated  then
     lut_updated = matcm.get_control_lut_updated();
@@ -259,9 +260,10 @@ function send_msgs()
       print(sendlut.arr.name, i)
       t0 = unix.time();
       senddata = serialization.serialize(sendlut);
+      senddata = Z.compress(senddata, #senddata);
       t1 = unix.time();
       tSerialize = tSerialize + t1 - t0;
-      CommWired.send(senddata);
+      CommWired.send(senddata, #senddata);
       t2 = unix.time();
       totalSize = totalSize + #senddata;
       tSend = tSend + t2 - t1
@@ -280,6 +282,10 @@ end
 while( true ) do
   msg = CommWired.receive();
   if( msg ) then
+--    print(#msg);
+    msg = Z.uncompress(msg, #msg);
+--    print(msg);
+--    print(#msg)
     local obj = serialization.deserialize(msg);
     if( obj.arr ) then
     	if ( string.find(obj.arr.name,'yuyv') ) then 

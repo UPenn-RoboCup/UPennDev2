@@ -15,10 +15,10 @@ function entry()
   -- Upon entry to the fore state,
   -- a punch should be executed
   if( myhand=='left' ) then
-    print('\n**\nleft punch!\n**\n')
+    print('\n**\n'..myplayer..': left punch!\n**\n')
     boxercm.set_body_punchL(1);
   else
-    print('\n**\nright punch!\n**\n')
+    print('\n**\n'..myplayer..': right punch!\n**\n')
     boxercm.set_body_punchR(1);
   end
 end

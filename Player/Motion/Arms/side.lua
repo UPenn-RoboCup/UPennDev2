@@ -42,7 +42,7 @@ function update()
   -- Check if the hand extends beyond a certain point
   if( hand[3]>.4 ) then
     return 'up'
-  elseif(hand[1]>.85) then
+  elseif(hand[1]>.9) then
     return 'forward';
   end
 

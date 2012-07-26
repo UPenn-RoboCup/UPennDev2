@@ -16,27 +16,26 @@ function entry()
   BodyFSM.sm:set_state('bodyIdle');
 
   Speak.talk('Penalized');
-	count = 0;
+
   -- set indicator
   Body.set_indicator_state({1,0,0});
 end
 
 function update()
-  local change = 0;
-  
-	if Body.get_change_state()==1 then
-		count=count+1;
-	else
-		count=0;
-	end
-	
-	if count > 80 then
-		change = 1;
-		count = 0;
-	end
-
-  if (change == 1) then
-    return 'playing';
+  local state = gcm.get_game_state();
+  -- check for penalty 
+  if not gcm.in_penalty() then
+    if (state == 0) then
+      return 'initial';
+    elseif (state == 1) then
+      return 'ready';
+    elseif (state == 2) then
+      return 'set';
+    elseif (state == 3) then
+      return 'playing';
+    elseif (state == 4) then
+      return 'finished';
+    end
   end
 end
 

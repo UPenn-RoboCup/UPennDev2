@@ -7,7 +7,7 @@ require('Motion')
 t0 = 0;
 
 function entry()
-  print("BodyFSM:".._NAME.." entry");
+  print("Boxer BodyFSM:".._NAME.." entry");
   t0 = Body.get_time();
   walk.set_velocity(0,0,0);
   Motion.event("sit");

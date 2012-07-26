@@ -13,10 +13,10 @@ function entry()
   t0 = unix.time();
 
   if( myhand=='left' ) then
-    print('\n==\nleft uppercut!\n==\n')
+    print('\n==\n'..myplayer..': left uppercut!\n==\n')
     boxercm.set_body_punchL(2);
   else
-    print('\n==\nright uppercut!\n==\n')
+    print('\n==\n'..myplayer..': right uppercut!\n==\n')
     boxercm.set_body_punchR(2);
   end
 end

@@ -9,7 +9,7 @@ Config.game.playerID = 1;
 require ('cutil')
 require ('vector')
 require ('serialization')
-require ('Comm')
+CommWired = require ('Comm')
 require ('util')
 
 require ('wcm')
@@ -17,8 +17,10 @@ require ('gcm')
 require ('vcm')
 require ('ocm')
 require ('mcm')
+require ('matcm')
 
 require 'unix'
+require 'Z'
 
 yuyv_all = {}
 yuyv_flag = {}
@@ -38,10 +40,10 @@ data_t_full = unix.time();
 fps_count=0;
 fps_interval = 15;
 yuyv_type=0;
+lut_updated = 0;
 
-
-Comm.init(Config.dev.ip_wired,111111);
-print('Receiving from',Config.dev.ip_wired);
+CommWired.init(Config.dev.ip_wired,Config.dev.ip_wired_port);
+print('Sending to',Config.dev.ip_wired, 'Receving from ANY');
 
 function check_flag(flag)
   sum = 0;
@@ -232,25 +234,69 @@ function push_data(obj)
   end
 end
 
-while( true ) do
+lut_updated = 0;
+function send_msgs()
+  pktDelay = 1E6 * 0.001; --For image and colortable
+  -- send lut
+  if matcm.get_control_lut_updated() ~= lut_updated  then
+    lut_updated = matcm.get_control_lut_updated();
+    sendlut = {}
+    print("send lut, since it changed");
+    lut = vcm.get_image_lut();
+    width = 512;
+    height = 512;
+    count = vcm.get_image_count();
 
-  msg = Comm.receive();
+    array = serialization.serialize_array(lut, width,
+                    height, 'uint8', 'lut', count);
+    
+    sendlut.updated = lut_updated;
+    sendlut.arr = array;
+    local tSerialize = 0;
+    local tSend = 0;
+    local totalSize = 0;
+    for i = 1, #array do
+      sendlut.arr = array[i];
+      print(sendlut.arr.name, i)
+      t0 = unix.time();
+      senddata = serialization.serialize(sendlut);
+      senddata = Z.compress(senddata, #senddata);
+      t1 = unix.time();
+      tSerialize = tSerialize + t1 - t0;
+      CommWired.send(senddata, #senddata);
+      t2 = unix.time();
+      totalSize = totalSize + #senddata;
+      tSend = tSend + t2 - t1
+
+      unix.usleep(pktDelay);
+    end
+    print("LUT info array num:",#array,"Total size",totalSize);
+    print("Total Serialize time:",#array,"Total",tSerialize);
+    print("Total Send time:",tSend);
+--    senddata = serialization.serialize(sendlut);
+--    print(senddata);
+--    CommWired.send(senddata);
+  end
+end
+
+while( true ) do
+  msg = CommWired.receive();
   if( msg ) then
+--    print(#msg);
+    msg = Z.uncompress(msg, #msg);
+--    print(msg);
+--    print(#msg)
     local obj = serialization.deserialize(msg);
     if( obj.arr ) then
     	if ( string.find(obj.arr.name,'yuyv') ) then 
      	  push_yuyv(obj.arr);
-    	--print("yuyv_type00000000")
     	  yuyv_type=1;
-    
     	elseif ( string.find(obj.arr.name,'ysub2') ) then 
      	  push_yuyv2(obj.arr);
     	  yuyv_type=2;
-    
     	elseif ( string.find(obj.arr.name,'ysub4') ) then 
      	  push_yuyv3(obj.arr);
     	  yuyv_type=3;
-    
     	elseif ( string.find(obj.arr.name,'labelA') ) then 
     	  push_labelA(obj.arr);
     	elseif ( string.find(obj.arr.name,'labelB') ) then 
@@ -258,12 +304,13 @@ while( true ) do
       elseif ( string.find(obj.arr.name,'occmap') ) then
         push_occmap(obj.arr);
     	end
-
     else
-	push_data(obj);
+    	push_data(obj);
     end
   end
   vcm.set_camera_yuyvType(yuyv_type);
+
+  send_msgs();
   unix.usleep(1E6*0.005);
 
 end

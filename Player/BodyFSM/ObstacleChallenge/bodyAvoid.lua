@@ -36,19 +36,39 @@ function update()
 
   attackBearing, daPost = wcm.get_attack_bearing();
   attack_angle = util.mod_angle(attackBearing);
-left_obs = ocm.get_obstacle_left(); right_obs = ocm.get_obstacle_right(); if left_obs == 1 and right_obs == 1 then vStep[1] = -0.02 elseif left_obs == 1 then vStep[1] = -0.02 vStep[2] = -0.04 vStep[3] = attackBearing - 25 * math.pi / 180 elseif right_obs == 1 then
-    vStep[1] = -0.02
-    vStep[2] = 0.04
-    vStep[3] = attackBearing + 25 * math.pi / 180
+  left_obs = ocm.get_obstacle_left(); 
+  right_obs = ocm.get_obstacle_right(); 
+  front_obs = ocm.get_obstacle_front();
+  if front_obs == 0 then
+    vStep[1] = 0.03;
+    vStep[2] = 0;
+    vStep[3] = 0;
   else
-    vStep[1] = -0.04
-    if attack_angle > 10 * math.pi / 180 then
-      vStep[3] = attack_angle + 25 * math.pi / 180
-    elseif attack_angle < -10 * math.pi / 180 then
-      vStep[3] = attack_angle - 25 * math.pi / 180
+    if left_obs == 1 and right_obs == 1 then 
+      vStep[1] = -0.02 
+  --    vStep[1] = 0.0 
+    elseif left_obs == 1 then 
+  --    vStep[1] = -0.02 
+      vStep[1] = 0.0 
+      vStep[2] = -0.04 
+      vStep[3] = attackBearing - 5 * math.pi / 180 
+    elseif right_obs == 1 then
+  --    vStep[1] = -0.02
+      vStep[1] = 0.0
+      vStep[2] = 0.04
+      vStep[3] = attackBearing + 5 * math.pi / 180
+    else
+      vStep[1] = 0.0
+  --    vStep[1] = -0.04
+      if attack_angle > 10 * math.pi / 180 then
+        vStep[3] = attackBearing + 5 * math.pi / 180
+      elseif attack_angle < -10 * math.pi / 180 then
+        vStep[3] = attackBearing - 5 * math.pi / 180
+      else
+        vStep[3] = attackBearing;
+      end
     end
   end
-  
   -- if dribble mode, calculate velocity based on ball
   if Config.fsm.avoidance_mode == 1 and 
     -- when tracking the ball
@@ -62,7 +82,7 @@ left_obs = ocm.get_obstacle_left(); right_obs = ocm.get_obstacle_right(); if lef
     elseif left_obs == 1 then
       vStep[3] = attackBearing -- + 55 * math.pi / 180;
     else
-      vStep[3] = 0 * math.pi / 180;
+      vStep[3] = attackBearing --0 * math.pi / 180;
     end
 --    print(vStep[1], vStep[2], vStep[3])
     scale = math.min(maxStep/math.sqrt(vStep[1]^2+vStep[2]^2), 1);

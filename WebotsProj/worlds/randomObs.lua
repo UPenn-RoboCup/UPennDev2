@@ -81,6 +81,12 @@ obs_direct_num = math.random(math.min(obs.direct_num, obs_num));
 obs_direct_num = math.random(math.min(obs.direct_num, obs_num));
 obs_direct_num = math.random(math.min(obs.direct_num, obs_num));
 obs_side_num = obs_num - obs_direct_num;
+
+if obs_side_num > obs.side_num then
+  obs_direct_num = obs_direct_num + (obs_side_num - obs.side_num);
+  obs_side_num = obs.side_num
+end
+
 print('Randomize '..obs_direct_num..' directly facing obs and '..obs_side_num..' side obs');
 for cnt = 1, obs_direct_num do 
   repeat

@@ -5,6 +5,10 @@ require('init')
 require('util')
 require('vector')
 
+io.write("Enter Triangle Grid Density and Fillrate: ");
+io.flush();
+trigrid_den, obs_fillrate = io.read("*number","*number");
+
 --range_y = {-1.0, 1.0}
 --range_x = {-1.5, 1.5}
 range_y = {-2.0, 2.0}
@@ -14,7 +18,7 @@ trigrid = {}
 trigrid.x = {}
 trigrid.y = {}
 
-trigrid_den = 0.9
+--trigrid_den = 0.9
 print('triangle grid minimum distance: '..trigrid_den);
 trigrid_file = 'triangle_grid'..trigrid_den..'.txt';
 f = io.open(trigrid_file, 'r')
@@ -46,7 +50,7 @@ header = f:read('*a')
 fname_save = 'op_obs_auto.wbt'
 fs = io.open(fname_save, 'w+')
 
-obs_fillrate = 0.8
+--obs_fillrate = 1
 obs_num = math.floor(obs_fillrate * trigrid.num + 0.5);
 print('triangle grid fillrate: '..obs_fillrate..' with '..obs_num..' obs');
 
@@ -87,7 +91,7 @@ for cnt = 1, obs_direct_num do
   obs.x[cnt] = trigrid.x[obs.direct[index]];
   obs.y[cnt] = trigrid.y[obs.direct[index]];
 end
-
+print('Random direct obs done!')
 for cnt = 1, obs_side_num do 
   repeat
     index = math.random(obs.side_num);

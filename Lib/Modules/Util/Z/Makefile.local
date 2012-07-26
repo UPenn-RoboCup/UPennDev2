@@ -7,7 +7,8 @@ ZLIB = zlib-src
 TARGETS = all clean
 .PHONY: $(TARGETS)
 
-all: serialize deserialize zlibCompress zlibUncompress z
+#all: serialize deserialize zlibCompress zlibUncompress z
+all: z
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<

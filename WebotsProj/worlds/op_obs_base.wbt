@@ -52,7 +52,7 @@ DEF PLAYER_1_99 DARwInOPGPS {
   controller "darwin-op_team_0"
   controllerArgs "1 99"
   plasticColor 0.2 0.2 0.2
-  cameraWindowPosition 0.125 0
+  cameraWindowPosition 1.125 0
   waistBand TRUE
   channel 13
 }

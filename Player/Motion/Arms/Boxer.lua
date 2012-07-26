@@ -1,6 +1,5 @@
 module(..., package.seeall);
 
-require 'Body'
 require 'fsm'
 require 'util'
 require 'side'
@@ -33,7 +32,7 @@ function update()
   -- If available data available
   if( libboxer.check_enabled() ) then
     boxercm.set_body_enabled( 1 );
-    boxercm.set_body_t( Body.get_time() );
+    boxercm.set_body_t( unix.time() );
     -- Update the joint angles and body RPY
     boxercm.set_body_rpy( libboxer.get_torso_orientation() );
     qL,qR = libboxer.get_arm_angles();

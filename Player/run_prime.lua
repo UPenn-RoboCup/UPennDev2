@@ -199,9 +199,10 @@ while( not logs or count<n_logs ) do
 
 end
 -- After done playing, reset the skeleton found variable so no more movement
-print('Finished!')
-primecm.set_skeleton_found( {0,0} );
-if( net ) then
-  Team.update();
+for pl=1,#pc do
+  print('Disabling user '..pl)
+  primecm = pc[pl];
+  primecm.set_skeleton_found( 0 );  
 end
 
+print('Finished!')

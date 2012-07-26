@@ -10,8 +10,8 @@ function init( forPlayer )
 end
 
 function check_enabled()
-  enabled = primecm.get_skeleton_found();
-  return enabled;
+  local enabled = primecm.get_skeleton_found();
+  return enabled==1;
 end
 
 function get_arm_angles()

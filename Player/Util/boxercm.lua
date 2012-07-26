@@ -11,6 +11,7 @@ shsize = {};
 
 -- Add the body information
 shared.body = {};
+shared.body.t = vector.zeros(1);
 shared.body.enabled = vector.zeros(1);
 shared.body.rpy = vector.zeros(3);
 shared.body.velocity = vector.zeros(3);

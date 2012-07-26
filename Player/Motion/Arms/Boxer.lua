@@ -61,6 +61,7 @@ end
 function exit()
   smR:exit();
   smL:exit();
+  boxercm.set_body_enabled( 0 );
 end
 
 function event(e)

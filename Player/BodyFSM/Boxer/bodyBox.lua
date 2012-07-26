@@ -23,6 +23,7 @@ function update()
   local pR = boxercm.get_body_punchR();
 
   if( pL==1 and pR==0 ) then -- left arm punch
+    print('left punch!')
     --Check the stance
     if( walk.stance==1 ) then --left
     end
@@ -32,6 +33,7 @@ function update()
   end
 
   if( boxercm.get_body_enabled() == 0 ) then
+    print('Disabled!')
     return "disabled";
   end
 

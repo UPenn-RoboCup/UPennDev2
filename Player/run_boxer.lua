@@ -30,7 +30,6 @@ while true do
   
   -- Updates
   Boxer.update();
---  print('Boxer state: ',boxercm.get_fsm_state())
 
   -- Timing
   if( count % desired_fps==0 ) then

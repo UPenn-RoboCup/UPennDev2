@@ -11,28 +11,12 @@ else
   forPlayer = playerID;
 end
 
--- Broadcast over the network
-net = true;
--- Enable Webots specific
-if (string.find(Config.platform.name,'Webots')) then
-  print('On webots!')
-  webots = true;
-  net = false;
-end
-
 -- Issue debug line telling which mode we are in
 desired_fps = 60;
 twait = 1/desired_fps;
 print '=====================';
-print('Run Network?',net);
 print('Desired FPS: ',desired_fps);
-print('Team/Player',teamID..'/'..playerID);
 print '=====================';
-
-if( net ) then
-  require 'Team'  
-  Team.entry(forPlayer);
-end
 
 -- Set up the Boxing FSM
 require 'Boxer'
@@ -46,10 +30,7 @@ while true do
   
   -- Updates
   Boxer.update();
-  if( net ) then
-    Team.update();
-  end
-  --print('Boxer state: ',boxercm.get_fsm_state())
+--  print('Boxer state: ',boxercm.get_fsm_state())
 
   -- Timing
   if( count % desired_fps==0 ) then

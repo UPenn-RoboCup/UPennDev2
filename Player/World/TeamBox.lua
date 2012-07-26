@@ -19,15 +19,22 @@ end
 teamID   = gcm.get_team_number();
 playerID = gcm.get_team_player_id();
 nPlayers = gcm.get_game_nplayers();
+-- For testing
+nPlayers = 2;
+bc = {};
 
 msgTimeout = Config.team.msgTimeout or 2;
 states = {};
 state = {};
 
-function entry(forPlayer)
-  if(forPlayer) then
-    boxercm = require('boxercm'..forPlayer);
+function entry( prime )
+  if(prime) then
     print('Using the PrimeSense for control!')  
+    -- Require the primecm modules
+    for i=1,nPlayers do
+      bc[i] = require('boxercm'..i)
+      print('Requiring ',i,bc[i])
+    end
     ps = true;
   else
     require 'boxercm'
@@ -46,8 +53,10 @@ end
 
 function update()
   if( ps ) then -- We have a primesense
-    if( boxercm.get_body_enabled() ) then
-      send_body();
+    for i=1,nPlayers do
+      if( bc[i].get_body_enabled() ) then
+        send_body(i);
+      end
     end
   else
     recv_msgs();
@@ -59,7 +68,7 @@ function update()
     end
 
     boxercm.set_body_enabled( 1 ); -- 2 is companion mode
-    boxercm.set_body_velocity( states[1].vel );
+    --    boxercm.set_body_velocity( states[1].vel );
     boxercm.set_body_punchL( states[1].pL );
     boxercm.set_body_punchR( states[1].pR );
     boxercm.set_body_qLArm( states[1].qL );
@@ -69,17 +78,18 @@ function update()
 
 end
 
-function send_body()
+function send_body( forPlayer )
 
   -- Organize the data
   state = {};
-  state.id = playerID;
-  state.vel = boxercm.get_body_velocity();
-  state.pL = boxercm.get_body_punchL();
-  state.pR = boxercm.get_body_punchR();
-  state.qL = boxercm.get_body_qLArm();
-  state.qR = boxercm.get_body_qRArm();
-  state.rpy = boxercm.get_body_rpy();
+  state.id = 1;
+  --  state.vel = boxercm.get_body_velocity();
+  bcm = bc[forPlayer];
+  state.pL = bcm.get_body_punchL();
+  state.pR = bcm.get_body_punchR();
+  state.qL = bcm.get_body_qLArm();
+  state.qR = bcm.get_body_qRArm();
+  state.rpy = bcm.get_body_rpy();
 
   -- Burst mode
   local ser = serialization.serialize(state)
@@ -87,7 +97,7 @@ function send_body()
   ret = Comm.send( ser );
   ret = Comm.send( ser );
   ret = Comm.send( ser );
-  print('Sent:'..ret..' bytes',ser)
+  print('Sent '..forPlayer..':'..ret..' bytes',ser)
 
 end
 

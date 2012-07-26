@@ -14,6 +14,16 @@ function entry()
 end
 
 function update()
+
+--[[
+  for n,v in pairs(_G) do
+    print (n,v)
+  end
+  print('\n\n========\n\n')
+  print( util.ptable(getfenv()) );
+  unix.usleep(10e6)
+--]]
+
   t = unix.time();
 
   -- TODO: Need to check the confidence values!

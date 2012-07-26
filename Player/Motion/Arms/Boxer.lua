@@ -7,20 +7,21 @@ require 'fore'
 require 'up'
 require 'libboxer'
 
-sm = fsm.new(side); -- right hand following.  Let's see how duplication is
-sm:add_state(fore);
-sm:add_state(up);
+smR = fsm.new(side); -- right hand following.  Let's see how duplication is
+smR:add_state(fore);
+smR:add_state(up);
 
-sm:set_transition(side,'forward',fore)
-sm:set_transition(side,'up',up)
+smR:set_transition(side,'forward',fore)
+smR:set_transition(side,'up',up)
 
-sm:set_transition(fore,'up',up)
-sm:set_transition(fore,'down',side)
+smR:set_transition(fore,'up',up)
+smR:set_transition(fore,'down',side)
 
-sm:set_transition(up,'down',side)
+smR:set_transition(up,'down',side)
 
 function entry()
-  sm:entry()
+  smR:entry()
+--  smL:entry()
 end
 
 function update()
@@ -29,15 +30,18 @@ function update()
   qL,qR = libboxer.get_arm_angles();
   boxercm.set_body_qLArm( qL );
   boxercm.set_body_qRArm( qR );
-  sm:update();
+  smR:update();
+--  smL:update();
 end
 
 function exit()
-  sm:exit();
+  smR:exit();
+--  smL:exit();
 end
 
 function event(e)
-  sm:add_event(e);
+  smR:add_event(e);
+--  smL:add_event(e);
 end
 
 function init(forPlayer)
@@ -47,11 +51,12 @@ function init(forPlayer)
     boxercm = require 'boxercm'
   end
   -- For debugging
-  sm:set_state_debug_handle(boxercm.set_fsm_state);
-  boxercm.set_fsm_state('side')
+  smR:set_state_debug_handle(boxercm.set_fsm_stateR);
+--  smL:set_state_debug_handle(boxercm.set_fsm_stateL);
+--  boxercm.set_fsm_state('side')
 
-  for i,v in ipairs(sm.states) do
-    local s = sm.states[i];
+  for i,v in ipairs(smR.states) do
+    local s = smR.states[i];
     s['init'](forPlayer);
   end
 

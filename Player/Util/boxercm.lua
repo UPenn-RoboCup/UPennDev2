@@ -21,7 +21,8 @@ shared.body.qRArm = vector.zeros(3);
 
 -- Add debugging of the state machine
 shared.fsm = {}
-shared.fsm.state = '';
+shared.fsm.stateL = '';
+shared.fsm.stateR = '';
 
 print('Init shm for ',_NAME)
 
@@ -32,7 +33,7 @@ if(string.len(_NAME)>7) then
 end
 
 if( pid ) then
-  util.init_shm_segment(getfenv(), 'primecm', shared, shsize,nil,pid);
+  util.init_shm_segment(getfenv(), 'boxercm', shared, shsize,nil,pid);
 else
-  util.init_shm_segment(getfenv(), 'primecm', shared, shsize);
+  util.init_shm_segment(getfenv(), 'boxercm', shared, shsize);
 end

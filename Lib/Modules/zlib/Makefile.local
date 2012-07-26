@@ -1,0 +1,33 @@
+# Makefile used to build libraries
+include ../../Makefile.inc
+
+MEXEXT= $(shell mexext)
+ZLIB = zlib
+
+TARGETS = all clean
+.PHONY: $(TARGETS)
+
+all: serialize deserialize zlibCompress zlibUncompress
+
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
+%.o: %.cc
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
+%.o: $(ZLIB)/%.c
+	$(CC) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
+
+serialize:
+	mex -O $@.c
+	
+deserialize:
+	mex -O $@.c 
+	
+zlibCompress: deflate.o adler32.o crc32.o trees.o zutil.o
+	mex -O $@.cc $^
+
+zlibUncompress: inflate.o inffast.o inftrees.o adler32.o crc32.o zutil.o
+	mex -O $@.cc $^ 
+
+clean:
+	rm -f *.$(MEXEXT) *.$(SHLIBEXT) *.o $(ZLIB)/*.o
+

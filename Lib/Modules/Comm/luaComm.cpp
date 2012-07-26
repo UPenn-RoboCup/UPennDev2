@@ -25,6 +25,7 @@ extern "C"
 #endif
 
 #include <vector>
+#include <algorithm>
 #include <stdint.h>
 
 #define MDELAY 2
@@ -181,11 +182,14 @@ static int lua_comm_send(lua_State *L) {
   int updateRet = lua_comm_update(L);
 
   const char *data = luaL_checkstring(L, 1);
+  int size = luaL_optint(L, 2, 0);
+
 	std::string header;
   std::string dataStr;
-	std::string contents(data);
-  header.push_back(11);
-	dataStr = header + contents;
+	std::string contents(data, size);
+//  header.push_back(11);
+//	dataStr = header + contents;
+	dataStr = contents;
   int ret = send(send_fd, dataStr.c_str(), dataStr.size(), 0);
     
   lua_pushinteger(L, ret);

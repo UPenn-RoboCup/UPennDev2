@@ -21,7 +21,6 @@ function update()
   -- Check if there is a punch activated
   local pL = boxercm.get_body_punchL();
   local pR = boxercm.get_body_punchR();
-  local vel = boxercm.get_body_velocity();
 
   if( pL==1 and pR==0 ) then -- left arm punch
     --Check the stance
@@ -32,8 +31,8 @@ function update()
   else -- No punch
   end
 
-  if( primecm.get_body_enabled() == 0 ) then
-    return "lost";
+  if( boxercm.get_body_enabled() == 0 ) then
+    return "disabled";
   end
 
 end

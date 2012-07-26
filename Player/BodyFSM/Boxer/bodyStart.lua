@@ -13,6 +13,11 @@ function entry()
 
   t0 = Body.get_time();
 
+  if( walk.stance~=0 ) then
+    print('switcing stance')
+    walk.switch_stance(0)
+  end
+
 end
 
 function update()

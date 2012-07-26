@@ -9,6 +9,11 @@ function init( forPlayer )
   primecm = require('primecm'..forPlayer)  
 end
 
+function check_enabled()
+  enabled = primecm.get_skeleton_found();
+  return enabled;
+end
+
 function get_arm_angles()
   saL,elL = get_scaled_prime_arm(0);
   saR,elR = get_scaled_prime_arm(1);

@@ -30,12 +30,12 @@ state = {};
 function entry( prime )
   if(prime) then
     print('Using the PrimeSense for control!')  
+    ps = true;
     -- Require the primecm modules
     for i=1,nPlayers do
       bc[i] = require('boxercm'..i)
       print('Requiring ',i,bc[i])
     end
-    ps = true;
   else
     require 'boxercm'
   end

@@ -11,7 +11,11 @@ end
 function entry()
   print("Boxer ".._NAME.." entry");
   t0 = unix.time();
-  boxercm.set_body_punchR(0);
+  if(myhand=='left') then
+    boxercm.set_body_punchL(0);
+  else
+    boxercm.set_body_punchR(0);
+  end
 end
 
 function update()
@@ -38,7 +42,7 @@ function update()
   -- Check if the hand extends beyond a certain point
   if( hand[3]>.4 ) then
     return 'up'
-  elseif(hand[1]>.75) then
+  elseif(hand[1]>.85) then
     return 'forward';
   end
 

@@ -43,9 +43,7 @@ function update()
   local hand = vector.new({s2h[3],s2h[1],-1*s2h[2]}) / arm_len;
   --
   -- Check if the hand extends beyond a certain point
-  if( hand[3]>.6 ) then
-    return 'up'
-  elseif(hand[1]<.4) then
+  if(hand[1]<.4) then
     return 'down';
   end
 

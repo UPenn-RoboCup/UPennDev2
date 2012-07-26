@@ -1,5 +1,6 @@
 module(..., package.seeall);
 
+require 'Body'
 require 'fsm'
 require 'util'
 require 'side'
@@ -29,17 +30,24 @@ function entry()
 end
 
 function update()
-  -- Update the joint angles and body RPY
-  boxercm.set_body_rpy( libboxer.get_torso_orientation() );
-  qL,qR = libboxer.get_arm_angles();
-  boxercm.set_body_qLArm( qL );
-  boxercm.set_body_qRArm( qR );
+  -- If available data available
+  if( libboxer.check_enabled() ) then
+    boxercm.set_body_enabled( 1 );
+    boxercm.set_body_t( Body.get_time() );
+    -- Update the joint angles and body RPY
+    boxercm.set_body_rpy( libboxer.get_torso_orientation() );
+    qL,qR = libboxer.get_arm_angles();
+    boxercm.set_body_qLArm( qL );
+    boxercm.set_body_qRArm( qR );
+  else
+    boxercm.set_body_enabled( 0 );
+  end
   -- Iterate through the states to prepare them for do the right hand
   for s = 1,#arm_states do
     arm_states[s].myhand = 'right'
   end
   smR:update();
-  
+
   -- Iterate through the states to prepare them for do the left hand
   for s = 1,#arm_states do
     arm_states[s].myhand = 'left'
@@ -76,12 +84,6 @@ function init(forPlayer)
   for s = 1,#arm_states do
     arm_states[s].init(forPlayer)
   end
---[[
-  for i,v in ipairs(smR.states) do
-    local s = smR.states[i];
-    s['init'](forPlayer);
-  end
---]]
 
   libboxer.init(forPlayer);
 

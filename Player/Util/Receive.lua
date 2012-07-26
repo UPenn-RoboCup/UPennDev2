@@ -5,8 +5,7 @@ CommWired=require('Comm');
 require('vcm')
 require('serialization');
 require('Config');
-
---sendShm = {'wcm','vcm','gcm'}
+require('Z');
 
 -- Initiate Sending Address
 IP = '192.168.123.201'
@@ -82,10 +81,10 @@ end
 function update()
   if CommWired.size() > 0 then
     msg = CommWired.receive();
+    msg = Z.uncompress(msg, #msg);
     obj = serialization.deserialize(msg);
     if (obj.arr) then
       if (string.find(obj.arr.name,'lut')) then
---        print('receive lut');
         pack_lut(obj.arr);  
       end
     end

@@ -15,6 +15,16 @@ for i=1,nPlayers do
   pc[i] = require('primecm'..i)
 end
 
+-- Enable Webots specific
+if (string.find(Config.platform.name,'Webots')) then
+  print('On webots!')
+  webots = true;
+  net = false;
+else
+  print('Real robot!')
+  net = true;
+end
+
 -- run from log file (this is set automatically)
 -- lua run_prime XXX.lua where XXX.lua is the log
 logs = false;
@@ -27,12 +37,8 @@ else
   require 'primesense'  
 end
 
---if( box ) then
-require 'libboxer'
---end
-
 -- Issue debug line telling which mode we are in
-desired_fps = 20;
+desired_fps = 60;
 print '\n\n=====================';
 print('Desired FPS: ',desired_fps);
 print('Run Logs?',logs);
@@ -59,7 +65,7 @@ io:flush()
 
 if( net ) then
   require 'Team'
-  Team.entry()
+  Team.entry(true) -- true means we have the primesense
 end
 
 print('Entering Loop...')

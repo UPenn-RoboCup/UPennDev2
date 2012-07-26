@@ -186,10 +186,12 @@ static int lua_comm_send(lua_State *L) {
 
 	std::string header;
   std::string dataStr;
+//	std::string contents(data);
 	std::string contents(data, size);
 //  header.push_back(11);
 //	dataStr = header + contents;
 	dataStr = contents;
+//  std::cout << dataStr.size() << std::endl;
   int ret = send(send_fd, dataStr.c_str(), dataStr.size(), 0);
     
   lua_pushinteger(L, ret);

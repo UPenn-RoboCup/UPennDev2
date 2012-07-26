@@ -44,7 +44,7 @@ end
 function recv_msgs()
   while (Comm.size() > 0) do 
     t = serialization.deserialize(Comm.receive());
-    if (t and (t.id) and (t.id ~= playerID)) then
+    if (t and (t.id) and (t.id == playerID)) then
       t.tReceive = unix.time();
       states[t.id] = t;
     end
@@ -82,7 +82,7 @@ function send_body( forPlayer )
 
   -- Organize the data
   state = {};
-  state.id = 1;
+  state.id = forPlayer;
   --  state.vel = boxercm.get_body_velocity();
   bcm = bc[forPlayer];
   state.pL = bcm.get_body_punchL();
@@ -97,8 +97,7 @@ function send_body( forPlayer )
   ret = Comm.send( ser );
   ret = Comm.send( ser );
   ret = Comm.send( ser );
- print('Sent '..forPlayer..':'..ret..' bytes',ser)
-
+  --print('Sent '..forPlayer..':'..ret..' bytes',ser)
 end
 
 function exit()

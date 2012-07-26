@@ -97,7 +97,7 @@ function send_body( forPlayer )
   ret = Comm.send( ser );
   ret = Comm.send( ser );
   ret = Comm.send( ser );
-  print('Sent '..forPlayer..':'..ret..' bytes',ser)
+--  print('Sent '..forPlayer..':'..ret..' bytes',ser)
 
 end
 

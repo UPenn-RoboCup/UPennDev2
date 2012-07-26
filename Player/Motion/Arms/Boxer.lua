@@ -7,21 +7,25 @@ require 'fore'
 require 'up'
 require 'libboxer'
 
-smR = fsm.new(side); -- right hand following.  Let's see how duplication is
-smR:add_state(fore);
-smR:add_state(up);
+arm_states = {side,fore,up}
 
+smR = fsm.new(unpack(arm_states)); -- right hand following.
 smR:set_transition(side,'forward',fore)
 smR:set_transition(side,'up',up)
-
 smR:set_transition(fore,'up',up)
 smR:set_transition(fore,'down',side)
-
 smR:set_transition(up,'down',side)
+
+smL = fsm.new(unpack(arm_states)); -- left hand following.
+smL:set_transition(side,'forward',fore)
+smL:set_transition(side,'up',up)
+smL:set_transition(fore,'up',up)
+smL:set_transition(fore,'down',side)
+smL:set_transition(up,'down',side)
 
 function entry()
   smR:entry()
---  smL:entry()
+  smL:entry()
 end
 
 function update()
@@ -30,18 +34,31 @@ function update()
   qL,qR = libboxer.get_arm_angles();
   boxercm.set_body_qLArm( qL );
   boxercm.set_body_qRArm( qR );
+  -- Iterate through the states to prepare them for do the right hand
+  for s = 1,#arm_states do
+    arm_states[s].myhand = 'right'
+  end
   smR:update();
---  smL:update();
+  
+  -- Iterate through the states to prepare them for do the left hand
+  for s = 1,#arm_states do
+    arm_states[s].myhand = 'left'
+  end
+  smL:update()
+
+  -- Debug
+  --print('R Boxer state: ',boxercm.get_fsm_stateR())
+  --print('L Boxer state: ',boxercm.get_fsm_stateL())
 end
 
 function exit()
   smR:exit();
---  smL:exit();
+  smL:exit();
 end
 
 function event(e)
   smR:add_event(e);
---  smL:add_event(e);
+  smL:add_event(e);
 end
 
 function init(forPlayer)
@@ -52,13 +69,19 @@ function init(forPlayer)
   end
   -- For debugging
   smR:set_state_debug_handle(boxercm.set_fsm_stateR);
---  smL:set_state_debug_handle(boxercm.set_fsm_stateL);
---  boxercm.set_fsm_state('side')
+  smL:set_state_debug_handle(boxercm.set_fsm_stateL);
+  boxercm.set_fsm_stateR('side')
+  boxercm.set_fsm_stateL('side')
 
+  for s = 1,#arm_states do
+    arm_states[s].init(forPlayer)
+  end
+--[[
   for i,v in ipairs(smR.states) do
     local s = smR.states[i];
     s['init'](forPlayer);
   end
+--]]
 
   libboxer.init(forPlayer);
 

@@ -7,6 +7,13 @@ require 'unix'
 wired = false;
 ps = false;
 
+if (string.find(Config.platform.name,'Webots')) then
+  print('TeamBox: On webots!')
+  webots = true;
+else
+  print('TeamBox: Real robot!')
+end
+
 -- Initialization
 if( wired ) then
   print("My address:",Config.dev.ip_wired)
@@ -52,6 +59,10 @@ function recv_msgs()
 end
 
 function update()
+  if( webots ) then
+    return;
+  end
+
   if( ps ) then -- We have a primesense
     for i=1,nPlayers do
       if( bc[i].get_body_enabled() ) then

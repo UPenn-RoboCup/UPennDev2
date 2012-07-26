@@ -1,10 +1,11 @@
 cwd = os.getenv('PWD')
 require('init')
-require 'gcm'
 
-teamID   = gcm.get_team_number();
-playerID = gcm.get_team_player_id();
-nPlayers = gcm.get_game_nplayers();
+require 'Config'
+
+teamID   = Config.game.teamNumber;
+playerID = Config.game.playerID;
+nPlayers = Config.game.nPlayers;
 if( arg[1] and tonumber(arg[1])<=nPlayers and tonumber(arg[1])>0 ) then
   forPlayer = tonumber(arg[1]);
 else
@@ -16,6 +17,7 @@ desired_fps = 60;
 twait = 1/desired_fps;
 print '=====================';
 print('Desired FPS: ',desired_fps);
+print('Team '..teamID,'Player '..playerID)
 print '=====================';
 
 -- Set up the Boxing FSM

@@ -1,10 +1,10 @@
 cwd = os.getenv('PWD')
 require('init')
+require 'Config'
 
-require 'gcm'
-teamID   = gcm.get_team_number();
-playerID = gcm.get_team_player_id();
-nPlayers = gcm.get_game_nplayers();
+teamID   = Config.game.teamNumber;
+playerID = Config.game.playerID;
+nPlayers = Config.game.nPlayers;
 
 -- For testing
 nPlayers = 2;

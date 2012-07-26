@@ -131,6 +131,7 @@ function sendB()
   sendlabelB.arr = array;
   t0 = unix.time();
   local senddata=serialization.serialize(sendlabelB);
+  senddata = Z.compress(senddata, #senddata);
   infosize=infosize+#senddata;
   t1=unix.time();
   stime1=stime1+t1-t0;
@@ -168,6 +169,7 @@ function sendA()
   sendlabelA.arr = array;
   t0 = unix.time();
   local senddata=serialization.serialize(sendlabelA);
+  senddata = Z.compress(senddata, #senddata);
   infosize=infosize+#senddata;
   t1=unix.time();
   stime1=stime1+t1-t0;
@@ -204,6 +206,7 @@ function sendmap()
     sendoccmap.arr = array[i];
     t0 = unix.time();
     senddata=serialization.serialize(sendoccmap);     
+    senddata = Z.compress(senddata, #senddata);
     t1 = unix.time();
     tSerialize= tSerialize + t1-t0;
     CommWired.send(senddata, #senddata);
@@ -246,6 +249,7 @@ function sendImg()
     sendyuyv.arr = array[i];
     t0 = unix.time();
     senddata=serialization.serialize(sendyuyv);     
+    senddata = Z.compress(senddata, #senddata);
     t1 = unix.time();
     tSerialize= tSerialize + t1-t0;
     CommWired.send(senddata, #senddata);
@@ -286,6 +290,7 @@ function sendImgSub2()
     sendyuyv2.arr = array[i];
     t0 = unix.time();
     senddata=serialization.serialize(sendyuyv2);
+    senddata = Z.compress(senddata, #senddata);
     t1 = unix.time();
     tSerialize= tSerialize + t1-t0;
     CommWired.send(senddata, #senddata);
@@ -324,6 +329,7 @@ function sendImgSub4()
     sendyuyv3.arr = array[i];
     t0 = unix.time();
     senddata=serialization.serialize(sendyuyv3);
+    senddata = Z.compress(senddata, #senddata);
     t1 = unix.time();
     tSerialize= tSerialize + t1-t0;
     CommWired.send(senddata, #senddata);
@@ -367,6 +373,7 @@ function update(enable)
   end
   t0 = unix.time();
   senddata=serialization.serialize(send);
+  senddata = Z.compress(senddata, #senddata);
   t1 = unix.time();
   CommWired.send(senddata, #senddata);
   t2 = unix.time();

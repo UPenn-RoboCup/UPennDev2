@@ -1,6 +1,6 @@
 CWD= $(shell pwd)
 
-all: carray cutil unix shm 
+all: carray cutil unix shm zlib
 
 carray::
 	cd CArray && make && cd $(CWD)
@@ -13,6 +13,9 @@ unix::
 
 shm::
 	cd Shm && make && cd $(CWD)
+
+zlib::
+	cd Z && make && cd $(CWD)
 
 primesense::
 	cd PrimeSense && make && cd $(CWD)

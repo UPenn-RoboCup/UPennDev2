@@ -133,7 +133,7 @@ static int lua_comm_update(lua_State *L) {
   while (len > 0) {
     std::string msg((const char *) data, len);
     recvQueue.push_back(msg);
-
+//    std::cout << len << ' ' << recvQueue.back().size() << std::endl;
     len = recvfrom(recv_fd, data, MAX_LENGTH, 0, (struct sockaddr *) &source_addr, &source_addr_len);
   }
 
@@ -161,7 +161,7 @@ static int lua_comm_receive(lua_State *L) {
   }
 
   // TODO: is this enough or do i need to pass an array with the bytes 
-  lua_pushstring(L, recvQueue.front().c_str());
+  lua_pushlstring(L, recvQueue.front().c_str(), recvQueue.front().size());
   recvQueue.pop_front();
 
   /*

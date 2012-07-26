@@ -28,11 +28,19 @@ end
 -- run from log file (this is set automatically)
 -- lua run_prime XXX.lua where XXX.lua is the log
 logs = false;
+inp_logs = {};
 -- box runs punch detection code
 box = false;
 if( arg[1] ) then
   dofile( arg[1] )
   logs = true;
+  inp_logs[1] = log;
+  nPlayers = 1;
+  if( arg[2] ) then
+    dofile( arg[2] );
+    inp_logs[2] = log;
+    nPlayers = 2;
+  end
 else
   require 'primesense'  
 end
@@ -94,13 +102,16 @@ while( not logs or count<n_logs ) do
     -- Is each player active?
     for i,v in ipairs(pc[playerID].jointNames) do
       if( logs ) then
-        pos = { log[count].x[i],log[count].y[i],log[count].z[i] };
-        confidence = { log[count].posconf[i],log[count].rotconf[i] };
-        primecm = pc[playerID];
-        primecm['set_position_'..v]( pos );
-        primecm['set_confidence_'..v]( confidence );
-        primecm.set_skeleton_found( 1 );
-        primecm.set_skeleton_timestamp( timestamp-timestamp0 );
+        for pl=1,nPlayers do
+          log = inp_logs[pl];
+          pos = { log[count].x[i],log[count].y[i],log[count].z[i] };
+          confidence = { log[count].posconf[i],log[count].rotconf[i] };
+          primecm = pc[pl];
+          primecm['set_position_'..v]( pos );
+          primecm['set_confidence_'..v]( confidence );
+          primecm.set_skeleton_found( 1 );
+          primecm.set_skeleton_timestamp( timestamp-timestamp0 );
+        end
       else
         -- Multiple players
         for pl=1,nPlayers do

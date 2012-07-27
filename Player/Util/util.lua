@@ -128,7 +128,9 @@ function randn(n)
 end
 
 
-function init_shm_segment(fenv, name, shared, shsize)
+function init_shm_segment(fenv, name, shared, shsize, tid, pid)
+  tid = tid or Config.game.teamNumber;
+  pid = pid or Config.game.playerID;
   -- initialize shm segments from the *cm format
   for shtable, shval in pairs(shared) do
     -- create shared memory segment
@@ -137,7 +139,7 @@ function init_shm_segment(fenv, name, shared, shsize)
     -- [file_name][shared_table_name][team_number][player_id][username]
     -- ex. vcmBall01brindza is the segment for shared.ball table in vcm.lua
     -- NOTE: the first letter of the shared_table_name is capitalized
-    local shmName = name..string.upper(string.sub(shtable, 1, 1))..string.sub(shtable, 2)..Config.game.teamNumber..Config.game.playerID..(os.getenv('USER') or '');
+    local shmName = name..string.upper(string.sub(shtable, 1, 1))..string.sub(shtable, 2)..tid..pid..(os.getenv('USER') or '');
     
     fenv[shmHandleName] = shm.new(shmName, shsize[shtable]);
     local shmHandle = fenv[shmHandleName];

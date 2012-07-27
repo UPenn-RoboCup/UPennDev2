@@ -9,6 +9,8 @@ require('Speak')
 require('vector')
 require('unix')
 require('gcm')
+require('BodyFSM')
+require('HeadFSM')
 
 
 t0 = 0;
@@ -17,33 +19,28 @@ timeout = 1.0;
 function entry()
   print(_NAME..' entry');
   t0 = Body.get_time();
-  walk.stopAlign();
+  walk.stop();
 
   HeadFSM.sm:set_state('headIdle');
   BodyFSM.sm:set_state('bodyIdle');
 
   Speak.talk('Initial');
-	count=0;
+
   -- set indicator
   --Body.set_indicator_state({1,1,1});
 end
 
 function update()
-	local change = 0;
-  
-	if Body.get_change_state()==1 then
-		count=count+1;
-	else
-		count=0;
-	end
-	
-	if count > 80 then
-		change = 1;
-		count = 0;
-	end
+  local state = gcm.get_game_state();
 
-  if (change == 1) then
+  if (state == 1) then
+    return 'ready';
+  elseif (state == 2) then
+    return 'set';
+  elseif (state == 3) then
     return 'playing';
+  elseif (state == 4) then
+    return 'finished';
   end
 
   -- if we have not recieved game control packets then left bumper switches team color
@@ -58,4 +55,5 @@ function update()
 end
 
 function exit()
+  walk.start();
 end

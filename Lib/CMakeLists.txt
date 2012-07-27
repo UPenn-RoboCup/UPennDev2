@@ -9,7 +9,7 @@ ENDIF( COMMAND cmake_policy )
 
 
 # Define Project
-PROJECT( UPennalizer_Library )
+PROJECT( "UPennalizer Library" )
 MESSAGE( STATUS "Configuring Project ${PROJECT_NAME}" )
 
 set( CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/Modules/CMake" )
@@ -29,33 +29,33 @@ option(WebotsOP "WebotsOP" off)
 option(Webots "Webots" off)
 
 if (setup_nao)
-  message( "NAO")
+  message( "-- Compile and Configure Libraries for Nao")
   option(NAO on)
 endif (setup_nao)
 
 if (setup_naov4)
-  message( "NAOV4")
+  message( "-- Compile and Configure Libraries for NaoV4")
   option(NAOV4 on)
 endif (setup_naov4)
 
 if (setup_op)
-  message( "OP")
+  message( "-- Compile and Configure Libraries for OP")
   option(OP on)
 endif (setup_op)
 
 if (setup_xop)
-  message( "XOP")
+  message( "-- Compile and Configure Libraries for XOS")
   option(XOP on)
 endif (setup_xop)
 
 if (setup_webots_nao)
-  message( "WebotsNao")
+  message( "-- Compile and Configure Libraries for WebotsNao")
   option(WebotsNao on)
   option(Webots on)
 endif (setup_webots_nao)
 
 if (setup_webots_op)
-  message( "WebotsOP")
+  message( "-- Compile and Configure Libraries for WebotsOP")
   option(WebotsOP on)
   option(Webots on)
 endif (setup_webots_op)

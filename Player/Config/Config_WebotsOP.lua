@@ -229,7 +229,7 @@ dev.team = 'TeamFootball'
 --]]
 
 -- Boxer
-fsm.game = 'Boxer';
+fsm.game = 'RoboCup';
 fsm.head = {'GeneralPlayer'};
 fsm.body = {'Boxer'};
 dev.team = 'TeamBox'

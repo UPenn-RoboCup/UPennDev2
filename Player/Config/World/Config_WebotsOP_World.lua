@@ -147,12 +147,14 @@ occ.min_front_angle = 75*math.pi/180;
 occ.max_front_angle = 105*math.pi/180;
 -- in which range do we say left
 occ.min_left_angle = 0*math.pi/180;
-occ.max_left_angle = 70*math.pi/180;
+occ.max_left_angle = 60*math.pi/180;
 -- in which range do we say right
-occ.min_right_angle = 110*math.pi/180;
+occ.min_right_angle = 120*math.pi/180;
 occ.max_right_angle = 180*math.pi/180;
 occ.min_obstacle_range = 3*math.pi/180;
-occ.min_obstacle_distance = 0.3;
+--occ.min_obstacle_distance = 0.3;
+occ.min_obstacle_distance = 0.18;
+occ.min_side_obstacle_distance = 0.15;
 
 world.use_same_colored_goal = 0;
 

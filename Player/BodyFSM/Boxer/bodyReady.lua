@@ -10,7 +10,7 @@ require('gcm')
 
 t0 = 0;
 prepmotion = 0;
-do_motion = true;
+do_motion = false;
 phase = 0;
 
 function entry()

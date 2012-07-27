@@ -15,11 +15,11 @@ function update()
   --for webots : we have to stop with 0 bodytilt
   if not started then
     if not walk.active then
-    Motion.sm:set_state('standstill');
-    started = true;
+      Motion.sm:set_state('standstill');
+      started = true;
     end
   end
-  
+
 end
 
 function exit()

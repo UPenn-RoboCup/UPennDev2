@@ -133,6 +133,7 @@ function get_obstacle_dir()
   max_right_angle = Config.occ.max_right_angle or 180*math.pi/180;
   min_obstacle_range = Config.occ.min_obstacle_range or 3*math.pi/180;
   min_obstacle_distance = Config.occ.min_obstacle_distance or 0.2
+  min_side_obstacle_distance = Config.occ.min_side_obstacle_distance or 0.1
 
   -- check front
   front_angle = {min_front_angle, max_front_angle}
@@ -188,7 +189,7 @@ function get_obstacle_dir()
     end
     -- check distance for nearest poinpt of the blob
     --print(obs.nearest_dist[cnt])
-    if (obs.nearest_dist[cnt] > min_obstacle_distance) then
+    if (obs.nearest_dist[cnt] > min_side_obstacle_distance) then
       --print('distance fail')
       flag = flag and false;
     end
@@ -210,7 +211,7 @@ function get_obstacle_dir()
       flag = flag and false;
     end
     -- check distance for nearest poinpt of the blob
-    if (obs.nearest_dist[cnt] > min_obstacle_distance) then
+    if (obs.nearest_dist[cnt] > min_side_obstacle_distance) then
       flag = flag and false;
     end
     right_obs = right_obs or flag;

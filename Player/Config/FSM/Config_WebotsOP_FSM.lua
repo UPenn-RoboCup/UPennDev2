@@ -245,7 +245,7 @@ fsm.headScan.pitchTurn0 = 20*math.pi/180;
 fsm.headScan.pitchTurnMag = 20*math.pi/180;
 --fsm.headScan.yawMagTurn = 45*math.pi/180;
 fsm.headScan.yawMagTurn = 0*math.pi/180;
-fsm.headScan.tScan = 3.0*speedFactor;
+fsm.headScan.tScan = 2.0*speedFactor;
 fsm.headScan.timeout = 7.0*speedFactor; --to headLookGoal
 fsm.headScan.minDist = 0.30;
 

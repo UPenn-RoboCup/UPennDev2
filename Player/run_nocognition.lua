@@ -5,7 +5,7 @@ require('nocognition')
 maxFPS = 60;
 tperiod = 1.0/maxFPS;
 
-cognition.entry();
+nocognition.entry();
 
 while (true) do
   tstart = unix.time();
@@ -19,5 +19,4 @@ while (true) do
   end
 end
 
-cognition.exit();
-
+nocognition.exit();

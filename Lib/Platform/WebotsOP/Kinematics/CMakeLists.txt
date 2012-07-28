@@ -2,9 +2,11 @@ CMAKE_MINIMUM_REQUIRED ( VERSION 2.4.6 )
 
 FIND_PACKAGE(lua REQUIRED)
 
-set(LibName carray)
+set(LibName OPKinematics)
 set(LibSrc 
-  luacarray.cpp
+    OPKinematics.cpp 
+    Transform.cpp 
+    luaOPKinematics.cpp
 )
 
 add_library(${LibName} MODULE ${LibSrc} )

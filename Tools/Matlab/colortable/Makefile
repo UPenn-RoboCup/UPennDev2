@@ -5,20 +5,14 @@ TARGETS = all clean
 
 ifndef OSTYPE
   OSTYPE = $(shell uname -s|awk '{print tolower($$0)}')
-  #export OSTYPE
 endif
 
 MEX = mex
 CXXFLAGS = -O
 
-ifeq ($(OSTYPE),linux)
-  MEXSUFFIX = mexglx
-  LIBRT=
-endif
-ifeq ($(OSTYPE),darwin)
-  MEXSUFFIX = mexmaci
-  LIBRT=
-endif
+LIBRT=
+
+MEXSUFFIX=$(shell mexext)
 
 all: rgbselect.$(MEXSUFFIX) 
 

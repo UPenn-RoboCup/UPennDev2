@@ -353,3 +353,4 @@ walk.motionDef["2punch"]={
         {0*math.pi/180,20*math.pi/180,0*math.pi/180}}
 } 
 
+walk.walkKickSupportMod = {{0,0},{0,0}}

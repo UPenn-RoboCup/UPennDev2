@@ -65,11 +65,17 @@ if (setup_webots_op)
   add_subdirectory("Modules/ImageProc")
   add_subdirectory("Modules/OccMap")
   set(symlinks "Config_WebotsOP.lua->Config.lua")
+<<<<<<< HEAD
 
 endif (setup_webots_op)
 
 
 
+=======
+
+endif (setup_webots_op)
+
+>>>>>>> dc31cba700681f17ef02dc9a1aa790965d067846
 ##### Create Symbolic Link for Config #######################
 set(symdir ${CMAKE_INSTALL_PREFIX}/Config)
 foreach(symlink ${symlinks})

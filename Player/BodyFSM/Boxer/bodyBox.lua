@@ -77,7 +77,7 @@ function doPunch(side)
       yaw0 = cur_sign*45*math.pi/180;
       yaw1 = -1*cur_sign*45*math.pi/180;
       -- Execute the kick motion
-      walk.doPunch(side);
+      --      walk.doPunch(side);
     end
 
     -- Initialize the arm swing
@@ -90,6 +90,11 @@ function doPunch(side)
     tArm0 = t;
     armStage = 1;
     arming = true;
+
+    -- We will be switching sides
+    if( sides[cur_sign]~=side ) then
+      cur_sign = -1*cur_sign;
+    end
 
     -- Ensure that we know we are punching
     punching = true;
@@ -125,7 +130,6 @@ function doPunch(side)
   -- Done punch!
   if( not footing and not arming ) then
     print('Done punch!');
-    cur_sign = -1*cur_sign;
     punching = false;
   end
 

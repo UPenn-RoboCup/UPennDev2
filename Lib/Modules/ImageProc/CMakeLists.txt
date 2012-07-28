@@ -1,34 +1,41 @@
 cmake_minimum_required(VERSION 2.6.4 FATAL_ERROR)
 
-project(ImageProc)
+FIND_PACKAGE(lua REQUIRED)
 
-# include for lua headers
-include_directories(../../Lua/src)
+set(LibName ImageProc)
+set(LibSrc 
+    block_bitor.cpp
+    color_count.cpp
+    ConnectRegions.cpp
+    lua_robots.cpp
+    lua_color_stats.cpp
+    lua_color_count.cpp
+    lua_colorlut_gen.cpp
+    lua_connect_regions.cpp
+    lua_field_lines.cpp
+    lua_field_occupancy.cpp
+    lua_field_spots.cpp
+    lua_goal_posts.cpp
+    lua_ImageProc.cpp
+    RadonTransform.cpp
+    RegionProps.cpp
+)
 
-# ImageProc main library definition
-add_library(ImageProc SHARED 
-              block_bitor.cpp
-              color_count.cpp
-              ConnectRegions.cpp
-              lua_robots.cpp
-              lua_color_stats.cpp
-              lua_color_count.cpp
-              lua_colorlut_gen.cpp
-              lua_connect_regions.cpp
-              lua_field_lines.cpp
-              lua_field_occupancy.cpp
-              lua_field_spots.cpp
-              lua_goal_posts.cpp
-              lua_ImageProc.cpp
-              RadonTransform.cpp
-              RegionProps.cpp)
 
-# set optimization level
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2")
 
-# set library prefix to "" otherwise it will create libImageProc.so
-set_target_properties(ImageProc PROPERTIES PREFIX "")
+INCLUDE_DIRECTORIES(${WEBOTS_INCLUDE_C_DIR})
+add_library(${LibName} MODULE ${LibSrc} )
 
-# link to math library 
-target_link_libraries(ImageProc m)
+set_target_properties(${LibName} PROPERTIES PREFIX "")
+target_link_libraries(${LibName} ${LUA_LIBRARY})
 
+FILE(GLOB files 
+  "${CMAKE_CURRENT_SOURCE_DIR}/*.lua")
+install (
+  FILES ${files}
+  DESTINATION ${CMAKE_INSTALL_PREFIX}/Lib
+)
+
+install(TARGETS ${LibName}
+  LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/Lib
+)

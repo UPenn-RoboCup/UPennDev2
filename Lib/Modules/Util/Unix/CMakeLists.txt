@@ -1,25 +1,27 @@
-cmake_minimum_required(VERSION 2.6.4 FATAL_ERROR)
+CMAKE_MINIMUM_REQUIRED ( VERSION 2.4.6 )
 
-project(LuaUnix)
+FIND_PACKAGE(lua REQUIRED)
 
-# include for lua headers
-include_directories(../../../Lua/src)
+set(LibNames unix stty serial)
+set(LibSrc_unix luaunix.c)
+set(LibSrc_stty luastty.cpp)
+set(LibSrc_serial luaserial.c)
+foreach (LibName ${LibNames})
+  #  message( "${LibName}")
+  add_library(${LibName} MODULE ${LibSrc_${LibName}})
+  set_target_properties(${LibName} PROPERTIES PREFIX "")
+  target_link_libraries(${LibName} ${LUA_LIBRARY})
+endforeach (LibName ${LibName})
 
-# unix main library definition
-add_library(unix SHARED luaunix.c)
+FILE(GLOB files "${CMAKE_CURRENT_SOURCE_DIR}/*.lua")
+install (
+  FILES ${files}
+  DESTINATION ${CMAKE_INSTALL_PREFIX}/Lib
+)
 
-# getch main library definition
-add_library(getch SHARED getch.c)
 
-# stty main library definition
-add_library(stty SHARED luastty.cpp)
-
-# set optimization level
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O2")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2")
-
-# set library prefix to "" otherwise it will create libunix.so
-set_target_properties(unix PROPERTIES PREFIX "")
-set_target_properties(getch PROPERTIES PREFIX "")
-set_target_properties(stty PROPERTIES PREFIX "")
-
+foreach (LibName ${LibNames})
+  install(TARGETS ${LibName}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/Lib
+  )
+endforeach (LibName ${LibName})

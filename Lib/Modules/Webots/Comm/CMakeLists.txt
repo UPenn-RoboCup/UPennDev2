@@ -2,9 +2,9 @@ CMAKE_MINIMUM_REQUIRED ( VERSION 2.4.6 )
 
 FIND_PACKAGE(lua REQUIRED)
 
-set(LibName carray)
+set(LibName GameControlPacket)
 set(LibSrc 
-  luacarray.cpp
+    luagamecontrolpacket.cpp
 )
 
 add_library(${LibName} MODULE ${LibSrc} )

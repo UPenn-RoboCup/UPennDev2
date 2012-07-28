@@ -1,16 +1,23 @@
-cmake_minimum_required(VERSION 2.6.4 FATAL_ERROR)
+CMAKE_MINIMUM_REQUIRED ( VERSION 2.4.6 )
 
-project(CUtil)
+FIND_PACKAGE(lua REQUIRED)
 
-# include for lua headers
-include_directories(../../../Lua/src)
+set(LibName cutil)
+set(LibSrc 
+  luacutil.cpp
+)
 
-# cutil main library definition
-add_library(cutil SHARED luacutil.cpp)
+add_library(${LibName} MODULE ${LibSrc} )
 
-# set optimization level
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2")
+set_target_properties(${LibName} PROPERTIES PREFIX "")
+target_link_libraries(${LibName} ${LUA_LIBRARY})
 
-# set library prefix to "" otherwise it will create libcutil.so
-set_target_properties(cutil PROPERTIES PREFIX "")
+FILE(GLOB files "${CMAKE_CURRENT_SOURCE_DIR}/*.lua")
+install (
+  FILES ${files}
+  DESTINATION ${CMAKE_INSTALL_PREFIX}/Lib
+)
 
+install(TARGETS ${LibName}
+  LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/Lib
+)

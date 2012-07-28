@@ -1,18 +1,25 @@
-cmake_minimum_required(VERSION 2.6.4 FATAL_ERROR)
+CMAKE_MINIMUM_REQUIRED ( VERSION 2.4.6 )
 
-project(LuaOccMap)
+FIND_PACKAGE(lua REQUIRED)
 
-# include for lua headers
-include_directories(/usr/local/include)
-include_directories(/usr/include/lua5.1)
+set(LibName OccMap)
+set(LibSrc 
+  KmeanCluster.cpp
+  OccMap.cpp
+  luaOccMap.cc
+)
 
-# unix main library definition
-add_library(OccMap MODULE luaOccMap.cc OccMap.cpp KmeanCluster.cpp)
+add_library(${LibName} MODULE ${LibSrc} )
 
-# set optimization level
-#   TODO: can we now use level 2? it would not work for NaoV3
-set(CMAKE_CXX_FLAGS "-O2")
+set_target_properties(${LibName} PROPERTIES PREFIX "")
+target_link_libraries(${LibName} ${LUA_LIBRARY})
 
-# set library prefix to "" otherwise it will create libNaoCam.so
-set_target_properties(OccMap PROPERTIES PREFIX "")
-target_link_libraries(OccMap m stdc++ lua)
+FILE(GLOB files "${CMAKE_CURRENT_SOURCE_DIR}/*.lua")
+install (
+  FILES ${files}
+  DESTINATION ${CMAKE_INSTALL_PREFIX}/Lib
+)
+
+install(TARGETS ${LibName}
+  LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/Lib
+)

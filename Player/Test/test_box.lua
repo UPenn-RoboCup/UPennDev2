@@ -1,27 +1,35 @@
-module(... or '', package.seeall)
-dofile('load_paths.lua'); -- Test files must look back to main player directory
+--cwd = os.getenv('PWD')
 
+cwd = cwd or os.getenv('PWD')
+package.path = cwd.."/?.lua;"..package.path;
+
+require('init')
 require('Config')
 require('vector')
-require('mcm')
-require('Speak')
 require('Body')
+require 'boxercm'
+require('Speak')
 require('Motion')
 
--- For motion capture
-require 'primecm'
-primecm.set_skeleton_enabled(0);
-require 'libboxer'
-
 darwin = false;
+webots = false;
+
+
 -- Enable OP specific 
 if(Config.platform.name == 'OP') then
   darwin = true;
+  print('On OP!')
   --SJ: OP specific initialization posing (to prevent twisting)
   Body.set_body_hardness(0.3);
   Body.set_actuator_command(Config.sit.initangle);
   unix.usleep(1E6*1.0);
   Body.set_body_hardness(0);
+end
+
+-- Enable Webots specific
+if (string.find(Config.platform.name,'Webots')) then
+  print('On webots!')
+  webots = true;
 end
 
 --This is robot specific 
@@ -32,21 +40,36 @@ if( webots or darwin) then
   ready = true;
 end
 
-
-smindex = 0;
 initToggle = true;
 
 targetvel=vector.zeros(3);
 
 if( webots ) then
   controller.wb_robot_keyboard_enable( 100 );
+else
+  require 'getch'
+  getch.enableblock(1);
 end
+
+
 function process_keyinput()
 
-  local byte = get_key_byte();
+  if( webots ) then
+    str = controller.wb_robot_keyboard_get_key()
+    byte = str;
+    -- Webots only return captal letter number
+    if byte>=65 and byte<=90 then
+      byte = byte + 32;
+    end
+  else
+    str  = getch.get();
+    byte = string.byte(str,1);
+  end
+
+  --print('byte: ', byte)
+  --print('string: ',string.char(byte))
+
   if byte~=0 then
-    --    print('byte: ', byte)
-    --    print('string: ',string.char(byte))
     -- Walk velocity setting
     if byte==string.byte("i") then	targetvel[1]=targetvel[1]+0.02;
     elseif byte==string.byte("j") then	targetvel[3]=targetvel[3]+0.1;
@@ -126,10 +149,21 @@ function update()
     -- update state machines 
     Motion.update();
     Body.update();
+
+    -- If skeleton is available:
+    if( boxercm.get_body_enabled() ) then
+      local left_arm = boxercm.get_body_qLArm();
+      local right_arm = boxercm.get_body_qRArm();
+      local rpy = boxercm.get_body_rpy();
+      walk.upper_body_override(left_arm,right_arm,rpy)
+    else
+      walk.upper_body_override_off();
+    end
+
   end
 
   local dcount = 50;
-  if (count % 50 == 0) then
+  if (count % dcount == 0) then
     --    print('fps: '..(50 / (unix.time() - tUpdate)));
     tUpdate = unix.time();
     -- update battery indicator
@@ -144,6 +178,7 @@ function update()
     Speak.talk('missed cycle');
     lcount = count;
   end
+  io.stdout:flush();  
 end
 
 -- Initialize
@@ -157,27 +192,21 @@ Motion.event("standup");
 local tDelay = 0.005 * 1E6; -- Loop every 5ms
 if ( webots or darwin ) then
   while (true) do
-
-    -- Listen to keyboard
+    
     process_keyinput();
-    -- If skeleton is available:
-    if( primecm.get_skeleton_enabled()) then
-      local arms = libboxer.get_arm_angles();
-      left_arm = arms[1] or left_arm_old or {0,0,0};
-      right_arm = arms[2] or right_arm_old or {0,0,0};
-      left_arm_old = left_arm or left_arm_old or {0,0,0};
-      right_arm_old = right_arm or right_arm_old or {0,0,0};
-
-      local rpy = libboxer.get_torso_orientation() or vector.new({0,0,0});
-      --print(string.format('RPY: %.1f %.1f %.1f\n',unpack(180/math.pi*rpy)))
-      walk.upper_body_override(left_arm,right_arm,rpy)
-    else
-      walk.upper_body_override_off();
-    end
     update();
-    io.stdout:flush();
+   
+    -- Debug
+    --[[
+    t_diff = unix.time() - (t_last or 0);
+    if(t_diff>1) then
+      print('Stabilized: ', not walk.no_stabilize )
+      print(string.format('RPY: %.1f %.1f %.1f\n',unpack(180/math.pi*rpy)))
+      t_last = unix.time();
+    end
+    --]]
+
     if(darwin) then
-      -- TODO: Update Team
       unix.usleep(tDelay);
     end
   end

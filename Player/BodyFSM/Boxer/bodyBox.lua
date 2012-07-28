@@ -23,14 +23,7 @@ qRArm = math.pi/180*vector.new({90,-40,-160});
 
 function entry()
   print("Body FSM:".._NAME.." entry");
-
   t0 = Body.get_time();
-
-  if( walk.stance==0 ) then
-    print('switching stance')
-    walk.switch_stance(1)
-  end
-
 end
 
 function update()

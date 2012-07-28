@@ -14,6 +14,22 @@ FIND_PACKAGE(lua REQUIRED)
 # Find boost
 FIND_PACKAGE(boost REQUIRED)
 
+set(FILE_PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE GROUP_READ GROUP_WRITE WORLD_READ WORLD_EXECUTE)
+set(CMAKE_CXX_COMPILER "/usr/bin/g++")
+set(COMM_LIBS ${LUA_LIBRARY})
+
+IF ( APPLE )
+	MESSAGE( STATUS "Configure for APPLE" )
+  set(CMAKE_CXX_FLAGS "-O2 -fomit-frame-pointer -mtune=native" CACHE STRING "" FORCE)
+  set(CMAKE_C_FLAGS ${CMAKE_CXX_FLAGS} CACHE STRING "" FORCE)
+ENDIF( APPLE )
+
+IF ( UNIX )
+	MESSAGE( STATUS "Configure for UNIX" )
+  set(COMM_LIBS ${COMM_LIBS} rt)
+ENDIF( UNIX )
+
+
 
 option(NAO "NAO" off)
 option(NAOV4 "NAOV4" off)
@@ -66,18 +82,6 @@ if (setup_webots_op)
   add_subdirectory("Modules/OccMap")
   set(symlinks "Config_WebotsOP.lua->Config.lua")
 endif (setup_webots_op)
-
-set(CMAKE_CXX_COMPILER "/usr/bin/g++")
-
-IF ( APPLE )
-	MESSAGE( STATUS "Configure for APPLE" )
-  set(CMAKE_CXX_FLAGS "-O2 -fomit-frame-pointer -mtune=native" CACHE STRING "" FORCE)
-  set(CMAKE_C_FLAGS ${CMAKE_CXX_FLAGS} CACHE STRING "" FORCE)
-ENDIF( APPLE )
-
-IF ( UNIX )
-	MESSAGE( STATUS "Configure for UNIX" )
-ENDIF( UNIX )
 
 
 ##### Create Symbolic Link for Config #######################

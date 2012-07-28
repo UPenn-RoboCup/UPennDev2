@@ -1,5 +1,9 @@
 CMAKE_MINIMUM_REQUIRED ( VERSION 2.4.6 )
 
+if(COMMAND cmake_policy)
+  cmake_policy(SET CMP0003 NEW)
+endif(COMMAND cmake_policy)
+
 FIND_PACKAGE(Webots REQUIRED)
 
 set(LibName controller)
@@ -12,27 +16,31 @@ add_library(${LibName} MODULE ${LibSrc} )
 include_directories(${LUA_INCLUDE_DIR})
 
 set_target_properties(${LibName} PROPERTIES PREFIX "")
-target_link_libraries(${LibName} ${WEBOTS_LIBRARY_C} ${LUA_LIBRARY})
+target_link_libraries(${LibName} ${WEBOTS_LIBRARY_C} ${COMM_LIBS})
 
 
 FILE(GLOB files 
   "${CMAKE_CURRENT_SOURCE_DIR}/*.lua"
   "${CMAKE_CURRENT_SOURCE_DIR}/*.sh")
+
 install (
   FILES ${files}
   DESTINATION ${CMAKE_INSTALL_PREFIX}/../WebotsController
+  PERMISSIONS ${FILE_PERMISSIONS}
 )
 
 install(TARGETS ${LibName}
   LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/../WebotsController
+  PERMISSIONS ${FILE_PERMISSIONS}
 )
 
 set(symdir ${CMAKE_INSTALL_PREFIX}/../WebotsController)
 set(symlinks 
+  "../Player->Player"
+  "lua_set.sh->darwin-op_team_0"
   "lua_set.sh->darwin-op_team_1"
-  "lua_set.sh->darwin-op_team_2"
-  "lua_set.sh->nao_team_1"
-  "lua_set.sh->nao_team_2")
+  "lua_set.sh->nao_team_0"
+  "lua_set.sh->nao_team_1")
 
 foreach(symlink ${symlinks})
 	string(REGEX REPLACE "->" ";" SRC_DEST "${symlink}")

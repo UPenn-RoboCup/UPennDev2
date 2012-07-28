@@ -1,7 +1,7 @@
 PLATFORMS = setup_nao setup_naov4 setup_op setup_xos setup_webots_nao setup_webots_op
 
-CMAKE = false
-#CMAKE = true 
+#CMAKE = false
+CMAKE = true 
 ifeq ($(CMAKE),false)
 	CMAKE_BIN= cmake_bin
 else

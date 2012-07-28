@@ -10,6 +10,7 @@ set(LibSrc
 )
 
 add_library(${LibName} MODULE ${LibSrc} )
+include_directories(${LUA_INCLUDE_DIR})
 
 set_target_properties(${LibName} PROPERTIES PREFIX "")
 target_link_libraries(${LibName} ${LUA_LIBRARY})

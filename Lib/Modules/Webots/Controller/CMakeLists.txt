@@ -9,6 +9,7 @@ set(LibSrc
 
 INCLUDE_DIRECTORIES(${WEBOTS_INCLUDE_C_DIR})
 add_library(${LibName} MODULE ${LibSrc} )
+include_directories(${LUA_INCLUDE_DIR})
 
 set_target_properties(${LibName} PROPERTIES PREFIX "")
 target_link_libraries(${LibName} ${WEBOTS_LIBRARY_C} ${LUA_LIBRARY})

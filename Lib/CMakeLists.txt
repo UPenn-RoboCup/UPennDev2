@@ -1,4 +1,3 @@
-
 CMAKE_MINIMUM_REQUIRED ( VERSION 2.4.6 )
 MARK_AS_ADVANCED( CMAKE_BACKARDS_COMPATIBILITY )
 
@@ -6,14 +5,15 @@ MARK_AS_ADVANCED( CMAKE_BACKARDS_COMPATIBILITY )
 PROJECT( "UPennalizer Library" )
 MESSAGE( STATUS "Configuring Project ${PROJECT_NAME}" )
 
-set( CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/Modules/CMake" )
 set( CMAKE_INSTALL_PREFIX "${PROJECT_SOURCE_DIR}/../Player" )
+set( CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/Modules/CMake" )
 
 # Find lua
 FIND_PACKAGE(lua REQUIRED)
 
 # Find boost
 FIND_PACKAGE(boost REQUIRED)
+
 
 option(NAO "NAO" off)
 option(NAOV4 "NAOV4" off)
@@ -65,17 +65,21 @@ if (setup_webots_op)
   add_subdirectory("Modules/ImageProc")
   add_subdirectory("Modules/OccMap")
   set(symlinks "Config_WebotsOP.lua->Config.lua")
-<<<<<<< HEAD
-
 endif (setup_webots_op)
 
+set(CMAKE_CXX_COMPILER "/usr/bin/g++")
+
+IF ( APPLE )
+	MESSAGE( STATUS "Configure for APPLE" )
+  set(CMAKE_CXX_FLAGS "-O2 -fomit-frame-pointer -mtune=native" CACHE STRING "" FORCE)
+  set(CMAKE_C_FLAGS ${CMAKE_CXX_FLAGS} CACHE STRING "" FORCE)
+ENDIF( APPLE )
+
+IF ( UNIX )
+	MESSAGE( STATUS "Configure for UNIX" )
+ENDIF( UNIX )
 
 
-=======
-
-endif (setup_webots_op)
-
->>>>>>> dc31cba700681f17ef02dc9a1aa790965d067846
 ##### Create Symbolic Link for Config #######################
 set(symdir ${CMAKE_INSTALL_PREFIX}/Config)
 foreach(symlink ${symlinks})

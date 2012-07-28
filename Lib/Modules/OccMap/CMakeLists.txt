@@ -12,14 +12,16 @@ set(LibSrc
 add_library(${LibName} MODULE ${LibSrc} )
 
 set_target_properties(${LibName} PROPERTIES PREFIX "")
-target_link_libraries(${LibName} ${LUA_LIBRARY})
+target_link_libraries(${LibName} ${COMM_LIBS})
 include_directories(${LUA_INCLUDE_DIR})
 FILE(GLOB files "${CMAKE_CURRENT_SOURCE_DIR}/*.lua")
 install (
   FILES ${files}
   DESTINATION ${CMAKE_INSTALL_PREFIX}/Lib
+  PERMISSIONS ${FILE_PERMISSIONS}
 )
 
 install(TARGETS ${LibName}
   LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/Lib
+  PERMISSIONS ${FILE_PERMISSIONS}
 )

@@ -8,7 +8,7 @@ require('mcm')
 require('unix')
 require('util')
 
-no_stabilize = true;
+no_stabilize = false;
 
 -- Walk Parameters
 -- Stance and velocity limit values

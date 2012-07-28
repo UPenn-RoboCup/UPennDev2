@@ -201,7 +201,7 @@ case "$1" in
     echo "[bias](sb)       -- Bias Setup Mode"
     echo "[roletest](sr)   -- Role Testing Mode"
     echo "[obstacle](so)   -- Role obstacle Mode"
-    echo "[wbreset](sw)   -- Reset WB Mode";;
+    echo "[wbreset](sw)   -- Reset WB Mode"
     echo "[boxer](sx)   -- Start Boxer/Mimic";;
   *)
     echo "Unknown Mode. use 'help ' to see Available Mode";;

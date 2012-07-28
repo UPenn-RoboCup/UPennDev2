@@ -6,7 +6,8 @@ endif(NOT DEFINED SYM_LINKS)
 
 #string(REGEX REPLACE "\n" ";" SYM_LINKS "${SYM_LINK}")
 
-foreach (SYM_LINK ${SYM_LINKS})
+foreach (SYM_LINK ${SYMLINKS})
+  message("${SYM_LINK}")
 	string(REGEX REPLACE "->" ";" SRC_DEST "${SYM_LINK}")
 	list(GET SRC_DEST 0 SRC)
 	list(GET SRC_DEST 1 DEST) 

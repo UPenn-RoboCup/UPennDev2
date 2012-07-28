@@ -10,49 +10,27 @@ timeout = 5;
 
 function entry()
   print("Body FSM:".._NAME.." entry");
-
   t0 = Body.get_time();
-
-  if( walk.stance==0 ) then
-    print('switcing stance')
-    walk.switch_stance(1)
-  end
-
 end
 
 function update()
   local t = Body.get_time();
 
   -- Check if there is a punch activated
-  local pL = boxercm.get_body_punchL();
-  local pR = boxercm.get_body_punchR();
+  local qL = boxercm.get_body_qLArm();
+  local qR = boxercm.get_body_qRArm();
+  local rpy = boxercm.get_body_rpy();
 
-  if( pL==1 and pR==0 ) then -- left arm punch
-    --Check the stance
-    if( walk.stance==1 ) then --left
-      walk.doPunch(1)
-    else
-      walk.doPunch(2)
-    end
-  elseif( pL==0 and pR==1 ) then -- right arm punch
-    --Check the stance
-    if( walk.stance==1 ) then --left
-      walk.doPunch(2)
-    else
-      walk.doPunch(1)
-    end
-  elseif( pL==1 and pR==1 ) then -- both arm punch (pushaway)
-    -- Switch states
-    return 'doublepunch'
-  else -- No punch
-  end
+  -- Add the override
+  walk.upper_body_override(qL, qR, rpy);
 
   if( boxercm.get_body_enabled() == 0 ) then
-    print('Disabled!')
+    print('Boxing disabled!')
     return "disabled";
   end
 
 end
 
 function exit()
+  walk.upper_body_override_off()
 end

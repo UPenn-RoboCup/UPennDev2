@@ -2,9 +2,9 @@
 CMAKE_MINIMUM_REQUIRED ( VERSION 2.4.6 )
 MARK_AS_ADVANCED( CMAKE_BACKARDS_COMPATIBILITY )
 
-IF ( COMMAND cmake_policy )
-	cmake_policy( SET CMP0003 NEW )
-ENDIF( COMMAND cmake_policy )
+#IF ( COMMAND cmake_policy )
+#	cmake_policy( SET CMP0003 NEW )
+#ENDIF( COMMAND cmake_policy )
 
 
 
@@ -13,6 +13,8 @@ PROJECT( "UPennalizer Library" )
 MESSAGE( STATUS "Configuring Project ${PROJECT_NAME}" )
 
 set( CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/Modules/CMake" )
+
+set( CMAKE_INSTALL_PREFIX "${PROJECT_SOURCE_DIR}/../Player" )
 
 # Find lua
 FIND_PACKAGE(lua REQUIRED)
@@ -58,6 +60,11 @@ if (setup_webots_op)
   message( "-- Compile and Configure Libraries for WebotsOP")
   option(WebotsOP on)
   option(Webots on)
+  #  add_subdirectory("Platform/WebotsOP")
+  add_subdirectory("Modules/Webots")
+  #  add_subdirectory("Modules/Util")
+  #  add_subdirectory("Modules/ImageProc")
+  #  add_subdirectory("Modules/OccMap")
 endif (setup_webots_op)
 
 ## uninstall target

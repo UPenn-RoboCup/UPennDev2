@@ -1,20 +1,5 @@
 CMAKE_MINIMUM_REQUIRED ( VERSION 2.4.6 )
 
-set(SYMLINK_DIR "${CMAKE_INSTALL_PREFIX}/../WebotsController")
-
-set(SYMLINKS
-	"${SYMLINK_DIR}/lua_set.sh->${SYMLINK_DIR}/nao_team_0"
-	"${SYMLINK_DIR}/lua_set.sh->${SYMLINK_DIR}/nao_team_1"
-	"${SYMLINK_DIR}/lua_set.sh->${SYMLINK_DIR}/darwin-op_team_0"
-	"${SYMLINK_DIR}/lua_set.sh->${SYMLINK_DIR}/darwin-op_team_1"
-	"${PLAYER_DIR}->${SYMLINK_DIR}/Player"
-)
-
-configure_file(
-  "${CMAKE_MODULE_PATH}/create_symlink.cmake.in"
-  IMMEDIATE @ONLY
-  )
-
 FIND_PACKAGE(Webots REQUIRED)
 
 set(LibName controller)
@@ -41,5 +26,25 @@ install(TARGETS ${LibName}
   LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/../WebotsController
 )
 
+set(symdir ${CMAKE_INSTALL_PREFIX}/../WebotsController)
+set(symlinks 
+  "lua_set.sh->darwin-op_team_1"
+  "lua_set.sh->darwin-op_team_2"
+  "lua_set.sh->nao_team_1"
+  "lua_set.sh->nao_team_2")
 
-INSTALL( SCRIPT ${CMAKE_MODULE_PATH}/create_symlink.cmake.in )
+foreach(symlink ${symlinks})
+	string(REGEX REPLACE "->" ";" SRC_DEST "${symlink}")
+	list(GET SRC_DEST 0 SRC)
+  list(GET SRC_DEST 1 DEST) 
+  #	message("${SRC} ${DEST}")
+  install(CODE "execute_process(COMMAND @CMAKE_COMMAND@ -E create_symlink ${SRC} ${symdir}/${DEST} OUTPUT_VARIABLE ln_out	RESULT_VARIABLE ln_retvel)"
+	)
+  install(CODE "
+	if (NOT ${ln_retval} EQUAL 0)
+		message(FATAL_ERROR \"Problem when creating symbolic link from ${SRC} to ${DEST}\")
+	else (NOT ${ln_retval} EQUAL 0)
+    message(STATUS \"Creating symbolic link from ${SRC} to ${DEST}\")
+	endif (NOT ${ln_retval} EQUAL 0)
+  ")
+endforeach(symlink ${symlinks})

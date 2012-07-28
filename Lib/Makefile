@@ -26,6 +26,9 @@ $(PLATFORMS):
 clean:
 	@if [ ! -z "$(shell which $(CMAKE_BIN))" ]; then \
 		rm -rf build; \
+		rm -rf ../WebotsController; \
+		rm -rf ../Player/Lib; \
+		rm -rf ../Player/Config/Config.lua; \
 	else \
 		make -f Makefile.mk clean; \
 	fi

@@ -35,6 +35,28 @@ run_dcm_vcm(){
   sleep 3
 }
 
+run_boxer(){
+  echo "Starting DCM..."
+  cd $PLAYER_DIR
+  screen $SCREEN_FLAGS dcm $LUA_COM run_dcm.lua
+  # Allow DCM some time to start
+  sleep 1
+  
+  echo "Starting NoCognition..."
+  cd $PLAYER_DIR
+  screen $SCREEN_FLAGS cognition $LUA_COM run_nocognition.lua
+  # Allow Cognition some time to start
+  sleep 3
+
+  echo "Starting Player..."
+  cd $PLAYER_DIR
+  screen $SCREEN_FLAGS player $LUA_COM run_main_op.lua
+  
+  echo "Rock and Roll!"
+  screen -ls
+
+}
+
 run_player(){
   run_dcm_vcm
  
@@ -168,6 +190,9 @@ case "$1" in
   'wbreset')
     echo "Reset White Balance"
     reset_wb;;
+  'boxer')
+    echo "Reset White Balance"
+    run_boxer;;
   'help')
     echo "[No Argu](s)     -- Player Mode"
     echo "[obstacleplay](sob) -- Player Mode with Obstacle"
@@ -177,6 +202,7 @@ case "$1" in
     echo "[roletest](sr)   -- Role Testing Mode"
     echo "[obstacle](so)   -- Role obstacle Mode"
     echo "[wbreset](sw)   -- Reset WB Mode";;
+    echo "[boxer](sx)   -- Start Boxer/Mimic";;
   *)
     echo "Unknown Mode. use 'help ' to see Available Mode";;
 esac

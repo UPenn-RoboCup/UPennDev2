@@ -153,18 +153,29 @@ walk.walkKickDef["FrontRight"]={
 --New walking sidekick
 walk.walkKickDef["SideLeft"]={
   {0.60, 1, 1, 0.035 , {0,0}, 0.3, {0,0.04,10*math.pi/180} },
-  {0.90, 3, 0, 0.035 , {-0.01,0.01}, 0.5, {0.06,-0.05,-20*math.pi/180},
-	{0.09,0.01,0}},
- {walk.tStep, 1, 1, 0.035 , {0,0}, 0.5, {0,0,0} },}
+  {0.90, 3, 0, 0.035 , {-0.01,0.01}, 0.5, {0.06,-0.05,-20*math.pi/180}, {0.09,0.01,0}},
+  {walk.tStep, 1, 1, 0.035 , {0,0}, 0.5, {0,0,0} },
+ }
 
 walk.walkKickDef["SideRight"]={
   {0.60, 1, 0, 0.035 , {0,0}, 0.7, {0,-0.04,-10*math.pi/180} },
-  {0.90, 3, 1, 0.035 , {-0.01,-0.01},0.5, 
-	{0.06,0.05,20*math.pi/180},{0.09,-0.01,0}},
+  {0.90, 3, 1, 0.035 , {-0.01,-0.01},0.5, {0.06,0.05,20*math.pi/180},{0.09,-0.01,0}},
   {walk.tStep, 1, 0, 0.035 , {0,0},0.5,  {0,0,0} },
 }
 
-
+-- tStep stepType supportLeg stepHeight 
+-- SupportMod shiftFactor footPos1 footPos2
+-- Boxing walk kick
+walk.walkKickDef["PunchLeft"]={
+  {0.60, 1, 0, 0.035 , {0,0}, 0.7, {0,0,0} },
+  {0.60, 2, 1, 0.07 , {0.02,-0.02}, 0.5, {0,0,0}, {0,0,0} },
+  {walk.tStep, 1, 0, 0.035 , {0,0}, 0.5, {0,0,0} },
+}
+walk.walkKickDef["PunchRight"]={
+  {0.60, 1, 1, 0.035 , {0,0}, 0.3, {0,0,0} },
+  {0.60, 2, 0, 0.07 , {0.02,0.02}, 0.5,  {0,0,0}, {0,0,0} },
+  {walk.tStep, 1, 1, 0.035 , {0,0}, 0.5, {0,0,0} },
+}
 
 
 walk.walkKickPh=0.5;
@@ -309,6 +320,33 @@ walk.motionDef["2punch"]={
  {0.3,{90*math.pi/180, 8*math.pi/180,-40*math.pi/180},
         {90*math.pi/180, -8*math.pi/180,-40*math.pi/180},
         {0*math.pi/180,20*math.pi/180,0*math.pi/180}}
-} 
+}
+
+
+walk.motionDef["jabright"]={
+  --right jab
+  {0.2,
+    {90*math.pi/180, 30*math.pi/180, -160*math.pi/180},
+    {-20*math.pi/180,-30*math.pi/180,0*math.pi/180},
+  },
+  --retract
+  {0.2,
+    {90*math.pi/180, 40*math.pi/180, -160*math.pi/180},
+    {90*math.pi/180,-40*math.pi/180,-160*math.pi/180},
+  },
+}
+
+walk.motionDef["jableft"]={
+  --right jab
+  {0.2,
+    {-20*math.pi/180, 30*math.pi/180, 0*math.pi/180},
+    {90*math.pi/180,-40*math.pi/180,-160*math.pi/180},
+  },
+  --retract
+  {0.2,
+    {90*math.pi/180, 40*math.pi/180, -160*math.pi/180},
+    {90*math.pi/180,-40*math.pi/180,-160*math.pi/180},
+  },
+}
 
 walk.walkKickSupportMod = {{0,0},{0,0}}

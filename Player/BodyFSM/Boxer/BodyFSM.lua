@@ -4,12 +4,14 @@ require('fsm')
 require('bodyIdle')
 require('bodyStart')
 require('bodyBox')
+require('bodyMimic')
 require('bodyReady')
 require('bodyStop')
 
 sm = fsm.new(bodyIdle);
 sm:add_state(bodyStart);
 sm:add_state(bodyBox);
+sm:add_state(bodyMimic);
 sm:add_state(bodyStop);
 sm:add_state(bodyReady);
 
@@ -17,9 +19,13 @@ sm:add_state(bodyReady);
 sm:set_transition(bodyStart,'done',bodyBox);
 sm:set_transition(bodyStart,'timeout',bodyStart);
 
--- Always box, unless lost data connection / skeleton
 sm:set_transition(bodyBox, 'timeout', bodyBox);
 sm:set_transition(bodyBox, 'disabled', bodyStart);
+sm:set_transition(bodyBox, 'doublepunch', bodyMimic);
+
+sm:set_transition(bodyMimic, 'timeout', bodyMimic);
+sm:set_transition(bodyMimic, 'disabled', bodyStart);
+sm:set_transition(bodyMimic, 'doublepunch', bodyBox);
 
 -- If you fall, what do you do?
 --sm:set_transition(bodyChase, 'fall', bodySearch);

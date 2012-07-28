@@ -16,8 +16,8 @@ sm:add_state(bodyStop);
 sm:add_state(bodyReady);
 
 -- Set transitions
---sm:set_transition(bodyStart,'done',bodyBox);
-sm:set_transition(bodyStart,'done',bodyMimic);
+sm:set_transition(bodyStart,'done',bodyBox);
+--sm:set_transition(bodyStart,'done',bodyMimic);
 sm:set_transition(bodyStart,'timeout',bodyStart);
 
 sm:set_transition(bodyBox, 'disabled', bodyStart);

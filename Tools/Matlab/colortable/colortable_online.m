@@ -309,7 +309,9 @@ function h = colortable_online(action, varargin)
     disp('push shm from matlab');
     ROBOT.matcmControl.set_lut_updated(1 - lut_updated);
     cur_lut = typecast(ROBOT.vcmImage.get_lut(),'uint8');
-    ROBOT.vcmImage.set_lut(typecast(LUT,'double'));
+    max_lut = max(cur_lut, LUT');
+    ROBOT.vcmImage.set_lut(typecast(max_lut,'double'));
+%    ROBOT.vcmImage.set_lut(typecast(cur_lut,'double'));
 
   end
 

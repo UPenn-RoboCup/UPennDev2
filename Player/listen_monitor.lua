@@ -300,7 +300,10 @@ function push_lut(obj)
   --Because the image will be broken anyway if packet loss occurs
 
   if (check_flag(lut_flag) == name.parts and name.partnum==name.parts ) then
-    print("full lut\t"..1/(unix.time() - lut_t_full).." fps" );
+    fps_count=fps_count+1;
+    if fps_count%fps_interval ==0 then
+      print("full lut\t"..1/(unix.time() - lut_t_full).." fps" );
+    end
     lut_t_full = unix.time();
     local lut_str = "";
     for i = 1 , name.parts do --fixed

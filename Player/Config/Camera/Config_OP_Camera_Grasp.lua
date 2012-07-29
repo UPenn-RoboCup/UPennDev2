@@ -64,5 +64,5 @@ camera.lut_file = 'lut_ob_new';
 camera.lut_file_obs = 'lut_ob_test';
 camera.lut_file_new = 'lut_ob_new';
 --camera.lut_file_obs = '0427_grasp';
---camera.lut_file = '0427_grasp';
-camera.lut_file = 'lut_empty';
+camera.lut_file = '0427_grasp';
+--camera.lut_file = 'lut_empty';

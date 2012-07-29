@@ -13,13 +13,14 @@ require('gcm')
 require('wcm')
 require('ocm')
 require('mcm')
+require('matcm')
 require('serialization');
 require('ImageProc')
 require('Config');
 
 --sendShm = {'wcm','vcm','gcm'}
 sendShm = { wcmshm=wcm, gcmshm=gcm, vcmshm=vcm, ocmshm=ocm, mcmshm=mcm }
-itemReject = 'yuyv, labelA, labelB, yuyv2, yuyv3, map'
+itemReject = 'yuyv, labelA, labelB, yuyv2, yuyv3, map, lut'
 
 -- Initiate Sending Address
 CommWired.init(Config.dev.ip_wired,Config.dev.ip_wired_port);
@@ -299,7 +300,7 @@ function sendImgSub2()
     totalSize=totalSize+#senddata;
 
     -- Need to sleep in order to stop drinking out of firehose
-    unix.usleep(pktDelay);
+--    unix.usleep(pktDelay);
   end
 
   if debug>0 then
@@ -346,13 +347,15 @@ function sendImgSub4()
   end
 end
 
+lut_count = 0;
 function send_lut()
-  pktDelay = 1E6 * 0.001; --For image and colortable
+  lut_count = lut_count + 1;
   -- send lut
-  if matcm.get_control_lut_updated() ~= lut_updated  then
-    lut_updated = matcm.get_control_lut_updated();
+--  if matcm.get_control_lut_updated() ~= lut_updated  then
+--    lut_updated = matcm.get_control_lut_updated();
+  if lut_count % 5 == 0 then
     sendlut = {}
-    print("send lut, since it changed");
+--    print("send lut, since it changed");
     lut = vcm.get_image_lut();
     width = 512;
     height = 512;
@@ -361,14 +364,14 @@ function send_lut()
     array = serialization.serialize_array(lut, width,
                     height, 'uint8', 'lut', count);
     
-    sendlut.updated = lut_updated;
+    sendlut.updated = 0; --lut_updated;
     sendlut.arr = array;
     local tSerialize = 0;
     local tSend = 0;
     local totalSize = 0;
     for i = 1, #array do
       sendlut.arr = array[i];
-      print(sendlut.arr.name, i)
+--     print(sendlut.arr.name, i)
       t0 = unix.time();
       senddata = serialization.serialize(sendlut);
       senddata = Z.compress(senddata, #senddata);
@@ -379,14 +382,15 @@ function send_lut()
       totalSize = totalSize + #senddata;
       tSend = tSend + t2 - t1
 
-      unix.usleep(pktDelay);
+    -- Need to sleep in order to stop drinking out of firehose
+--      unix.usleep(pktDelay);
     end
-    print("LUT info array num:",#array,"Total size",totalSize);
-    print("Total Serialize time:",#array,"Total",tSerialize);
-    print("Total Send time:",tSend);
---    senddata = serialization.serialize(sendlut);
---    print(senddata);
---    CommWired.send(senddata);
+
+    if debug>0 then
+      print("LUT info array num:",#array,"Total size",totalSize);
+      print("Total Serialize time:",#array,"Total",tSerialize);
+      print("Total Send time:",tSend);
+    end
   end
 end
 
@@ -445,15 +449,15 @@ function update_img( enable, imagecount )
     if subsampling>0 then
       sendImgSub2();
       sendA();
-      sendB();
-      sendmap();
-      send_lut();
+--      sendB();
+--      sendmap();
+--      send_lut();
     else
       sendImg();
       sendA();
       sendB();
-      sendmap();
-      send_lut();
+--      sendmap();
+--      send_lut();
     end
 
   elseif enable==3 then
@@ -461,6 +465,8 @@ function update_img( enable, imagecount )
     --Only send 160*120 yuyv for logging
     if subsampling>0 then
       sendImgSub2();
+--      sendA();
+      send_lut();
     else
       sendImg();
     end

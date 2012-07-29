@@ -238,12 +238,4 @@ speakenable = 0
 fsm.avoidance_mode = 1 -- ball dribble
 fsm.avoidance_mode = 0 -- walk towards goal, no ball 
 
---[[
--- Boxer
-fsm.game = 'RoboCup';
-fsm.head = {'GeneralPlayer'};
-fsm.body = {'Boxer'};
-dev.team = 'TeamBox'
---dev.walk='N5Walk'; --Walk with generalized walkkick definitions
-dev.walk='BoxWalk'; --Walk with generalized walkkick definitions
---]]
+--dev.walk='B5Walk'; --Walk with generalized walkkick definitions

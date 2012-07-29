@@ -15,15 +15,12 @@ function check_enabled()
 end
 
 function get_arm_angles()
+  -- Default is nil
+  qLArm = nil;
+  qRArm = nil;
+
   saL,elL = get_scaled_prime_arm(0);
   saR,elR = get_scaled_prime_arm(1);
-  --[[
-  if( not saL or not saR) then
-  return;
-  end
-  --]]
-  qLArm = vector.zeros(3);
-  qRArm = vector.zeros(3);
   if( saL and math.abs(elL)<=math.pi ) then
     --    print('saL: ', unpack(saL) );
     --print('ElbowL: ',elL);
@@ -40,7 +37,6 @@ function get_arm_angles()
     --print('ElbowR: ',elR);    
     qRArm = Kinematics.inverse_arm( saR,vector.ones(1)*elR );
     if(qRArm) then
-
       qRArm[1] = qRArm[1]+elR;
       qRArm[3] = -elR;
     end
@@ -48,8 +44,8 @@ function get_arm_angles()
 
   --  qLArm[1] = qLArm[1]+elL/2+math.pi;
   --  qRArm[1] = qRArm[1]+elR/2+math.pi;
-  qLArm = qLArm or vector.zeros(3);
-  qRArm = qRArm or vector.zeros(3);
+--  qLArm = qLArm or vector.zeros(3);
+--  qRArm = qRArm or vector.zeros(3);
 
   return qLArm, qRArm;
 end

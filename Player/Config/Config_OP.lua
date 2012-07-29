@@ -62,7 +62,7 @@ game.playerID = 1;
 if (robotName=='scarface') then
   game.playerID = 4; 
 elseif (robotName=='linus') then
-  game.playerID = 2; 
+  game.playerID = 1; 
   ball_shift={0.00,0.010};
 
 elseif (robotName=='betty') then
@@ -388,5 +388,5 @@ fsm.game = 'RoboCup';
 fsm.head = {'GeneralPlayer'};
 fsm.body = {'Boxer'};
 dev.team = 'TeamBox'
---dev.walk='N5Walk'; --Walk with generalized walkkick definitions
-dev.walk='BoxWalk'; --Walk with generalized walkkick definitions
+dev.walk='B5Walk';
+--dev.walk='BoxWalk'; --Walk with generalized walkkick definitions

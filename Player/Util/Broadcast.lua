@@ -346,6 +346,51 @@ function sendImgSub4()
   end
 end
 
+function send_lut()
+  pktDelay = 1E6 * 0.001; --For image and colortable
+  -- send lut
+  if matcm.get_control_lut_updated() ~= lut_updated  then
+    lut_updated = matcm.get_control_lut_updated();
+    sendlut = {}
+    print("send lut, since it changed");
+    lut = vcm.get_image_lut();
+    width = 512;
+    height = 512;
+    count = vcm.get_image_count();
+
+    array = serialization.serialize_array(lut, width,
+                    height, 'uint8', 'lut', count);
+    
+    sendlut.updated = lut_updated;
+    sendlut.arr = array;
+    local tSerialize = 0;
+    local tSend = 0;
+    local totalSize = 0;
+    for i = 1, #array do
+      sendlut.arr = array[i];
+      print(sendlut.arr.name, i)
+      t0 = unix.time();
+      senddata = serialization.serialize(sendlut);
+      senddata = Z.compress(senddata, #senddata);
+      t1 = unix.time();
+      tSerialize = tSerialize + t1 - t0;
+      CommWired.send(senddata, #senddata);
+      t2 = unix.time();
+      totalSize = totalSize + #senddata;
+      tSend = tSend + t2 - t1
+
+      unix.usleep(pktDelay);
+    end
+    print("LUT info array num:",#array,"Total size",totalSize);
+    print("Total Serialize time:",#array,"Total",tSerialize);
+    print("Total Send time:",tSend);
+--    senddata = serialization.serialize(sendlut);
+--    print(senddata);
+--    CommWired.send(senddata);
+  end
+end
+
+
 function update(enable)
   if enable == 0 then return; end
   --At level 3, we only send yuyv for logging and nothing else
@@ -402,11 +447,13 @@ function update_img( enable, imagecount )
       sendA();
       sendB();
       sendmap();
+      send_lut();
     else
       sendImg();
       sendA();
       sendB();
       sendmap();
+      send_lut();
     end
 
   elseif enable==3 then

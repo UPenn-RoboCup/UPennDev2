@@ -28,15 +28,19 @@ labelA_all = {}
 labelA_flag = {}
 yuyv2_all = {}
 yuyv2_flag = {}
+lut_all = {}
+lut_flag = {}
 FIRST_YUYV = true
 FIRST_YUYV2 = true
 FIRST_LABELA = true
+FIRST_LUT = true
 yuyv_t_full = unix.time();
 yuyv2_t_full = unix.time();
 yuyv3_t_full = unix.time();
 labelA_t_full = unix.time();
 labelB_t_full = unix.time();
 data_t_full = unix.time();
+lut_t_full = unix.time()
 fps_count=0;
 fps_interval = 15;
 yuyv_type=0;
@@ -235,7 +239,7 @@ function push_data(obj)
 end
 
 lut_updated = 0;
-function send_msgs()
+function send_lut()
   pktDelay = 1E6 * 0.001; --For image and colortable
   -- send lut
   if matcm.get_control_lut_updated() ~= lut_updated  then
@@ -279,6 +283,37 @@ function send_msgs()
   end
 end
 
+function push_lut(obj)
+--print('receive lut parts');
+  lut = cutil.test_array();
+  name = parse_name(obj.name);
+  if (FIRST_LUT == true) then
+    print("initiate lut flag");
+    lut_flag = vector.zeros(name.parts);
+    FIRST_LUT = false;
+  end
+
+  lut_flag[name.partnum] = 1;
+  lut_all[name.partnum] = obj.data;
+
+  --Just push the image after all segments are filled at the first scan
+  --Because the image will be broken anyway if packet loss occurs
+
+  if (check_flag(lut_flag) == name.parts and name.partnum==name.parts ) then
+    print("full lut\t"..1/(unix.time() - lut_t_full).." fps" );
+    lut_t_full = unix.time();
+    local lut_str = "";
+    for i = 1 , name.parts do --fixed
+      lut_str = lut_str .. lut_all[i];
+    end
+
+    height= 512;
+    cutil.string2userdata(lut,lut_str,obj.width,height);
+    vcm.set_image_lut(lut);
+  end
+
+end
+
 while( true ) do
   msg = CommWired.receive();
   if( msg ) then
@@ -303,6 +338,8 @@ while( true ) do
     	  push_labelB(obj.arr);
       elseif ( string.find(obj.arr.name,'occmap') ) then
         push_occmap(obj.arr);
+      elseif ( string.find(obj.arr.name,'lut') ) then
+        push_lut(obj.arr);
     	end
     else
     	push_data(obj);
@@ -310,7 +347,7 @@ while( true ) do
   end
   vcm.set_camera_yuyvType(yuyv_type);
 
-  send_msgs();
+  send_lut();
   unix.usleep(1E6*0.005);
 
 end

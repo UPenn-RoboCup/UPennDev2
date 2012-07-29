@@ -15,13 +15,13 @@ end
 %And generate lut from that matrix
 
 % initialize LUT array
-%nlut = size(COLORTABLE.score, 1);
-nlut = size(COLORTABLE.score_smeared, 1);
+nlut = size(COLORTABLE.score, 1);
+%nlut = size(COLORTABLE.score_smeared, 1);
 lut = zeros(nlut, 1, 'uint8');
 
 % find maximum score across colors
-%[ymax, imax] = max(COLORTABLE.score, [], 2);
-[ymax, imax] = max(COLORTABLE.score_smeared, [], 2);
+[ymax, imax] = max(COLORTABLE.score, [], 2);
+%[ymax, imax] = max(COLORTABLE.score_smeared, [], 2);
 
 % YUV color indices that have a score above the min threshold
 ivalid = (ymax > score_min);

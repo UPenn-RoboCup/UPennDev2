@@ -37,7 +37,7 @@ function h = colortable_online(action, varargin)
     set(hfig, 'Position', figpos);
 
     % default image size 
-    DATA.size = img_size;
+    DATA.size = [img_size(2)/2 img_size(1)];
 
     % init mask 
     for icolor = 1:COLORTABLE.ncolor
@@ -55,9 +55,6 @@ function h = colortable_online(action, varargin)
 
     % Toggle between masking mode and label preview mode
     DATA.viewmode = 0;
-
-    DATA.LogFilePath = './logs';
-    DATA.LogList = {};
 
     % standard options for all gui elements
     % do not allow callbacks to be interrupted
@@ -124,16 +121,6 @@ function h = colortable_online(action, varargin)
                         'CData', []);
 
 
-    % create 'Load Montage' button
-    %{
-    DATA.LoadControl = uicontrol(Std, ...
-                                  'Parent', hfig, ...
-                                  'Style', 'pushbutton', ...
-                                  'String', 'Load Montage (L)', ...
-                                  'Callback','colortable_online(''LoadMontage'')', ...
-                                  'Units', 'Normalized', ...
-                                  'Position', [.025 .90 .15 .05]);
-%}
     % create 'Save Colors' button
     DATA.SaveColor = uicontrol(Std, ...
                                   'Parent', hfig, ...
@@ -168,53 +155,6 @@ function h = colortable_online(action, varargin)
                                   'Callback',@ClearLUT, ...
                                   'Units', 'Normalized', ...
                                   'Position', [.025 .50 .15 .05]);
-
-%{
-    % create the Forward arrow button
-    DATA.ForwardControl = uicontrol(Std, ...
-                                    'Parent', hfig, ...
-                                    'Style', 'pushbutton', ...
-                                    'String', '-> (D)', ...
-                                    'Callback','colortable_online(''UpdateImage'',''forward'')', ...
-                                    'Units', 'Normalized', ...
-                                    'Position', [.65 .05 .07 .05]);
-
-    % create the Backward arrow button
-    DATA.BackwardControl = uicontrol(Std, ...
-                                      'Parent', hfig, ...
-                                      'Style', 'pushbutton', ...
-                                      'String', '<- (S)', ...
-                                      'Callback','colortable_online(''UpdateImage'',''backward'')', ...
-                                      'Units', 'Normalized', ...
-                                      'Position', [.4 .05 .07 .05]);
-
-    % create the double Forward arrow button
-    DATA.FastForwardControl = uicontrol(Std, ...
-                                        'Parent', hfig, ...
-                                        'Style', 'pushbutton', ...
-                                        'String', '>> (F)', ...
-                                        'Callback','colortable_online(''UpdateImage'',''fastforward'')', ...
-                                        'Units', 'Normalized', ...
-                                        'Position', [.75 .05 .07 .05]);
-
-    % create the double Backward arrow button
-    DATA.FastBackwardControl = uicontrol(Std, ...
-                                          'Parent', hfig, ...
-                                          'Style', 'pushbutton', ...
-                                          'String', '<< (A)', ...
-                                          'Callback','colortable_online(''UpdateImage'',''fastbackward'')', ...
-                                          'Units', 'Normalized', ...
-                                          'Position', [.3 .05 .07 .05]);
-
-    % create the image index select edit box
-    DATA.IndexControl = uicontrol(Std, ...
-                                  'Parent', hfig, ...
-                                  'Style', 'edit', ...
-                                  'String', '1', ...
-                                  'Callback','colortable_online(''UpdateImage'',str2num(get(gco,''String'')))', ...
-                                  'Units', 'Normalized', ...
-                                  'Position', [.5 .05 .1 .06]);
-%}
 
     % create the selection array for the colors of interest
     for icolor = 1:COLORTABLE.ncolor,
@@ -315,122 +255,6 @@ function h = colortable_online(action, varargin)
 		end
   end
 				 
-
-  function UpdateImage(index)
-  % updates the image displayed in the gui
-
-    % get the gui userdata
-    hfig = gcbf;
-    DATA = get(hfig, 'UserData');
-
-    if isempty(DATA.montage)
-      % if no montage has been loaded, do nothing
-      return;
-    end
-
-    % get the number of images in the montage
-    nMontage = size(DATA.montage, 4);
-
-    % iImage is the index of the current image
-    if ~isfield(DATA, 'iImage')
-      % if it is not already set (i.e. the montage was just loaded)
-      % then initialize it to one
-      DATA.iImage = 1;
-    end
-
-    % did the index change? (go to next image)
-    if (nargin >= 1)
-      % update color score data
-      colortable_merge(DATA);
-      
-      % determine new image index
-      if strcmp(index,'forward') 
-        % forward button was pressed
-        DATA.iImage = DATA.iImage + 1;
-      elseif strcmp(index,'fastforward')
-        % fast forward button was pressed
-        DATA.iImage = DATA.iImage + 10;
-      elseif strcmp(index,'backward')
-        % back button was pressed
-        DATA.iImage = DATA.iImage - 1;
-      elseif strcmp(index,'fastbackward')
-        % fast back button was pressed
-        DATA.iImage = DATA.iImage - 10;
-      else
-        % the index edit box was set
-        DATA.iImage = index;
-      end
-
-      % max sure iImage is a valid index
-      DATA.iImage = min(max(DATA.iImage, 1), nMontage);
-
-      % the yuv color data for the current image
-      DATA.yuv = DATA.montage(:, :, :, DATA.iImage);
-      % convert the yuyv data into the index values
-      % these are the indices of the LUT 
-      DATA.cindex = yuv2index(DATA.yuv, COLORTABLE.size);
-
-      % convert the yuv image to rgb so we can display it
-      DATA.rgb = ycbcr2rgb(DATA.yuv);
-
-      for icolor = 1:COLORTABLE.ncolor
-        % clear out mask with new image
-        DATA.mask_pos{icolor} = false(DATA.size);
-        DATA.mask_neg{icolor} = false(DATA.size);
-      end
-    end
-
-    % get the current colortable score
-    score = colortable_score(DATA.cindex, DATA.icolor);
-
-    % create the display image (visualizing the current mask)
-    im_display = DATA.rgb;
-
-    % visualize the current colortable score 
-    if (DATA.icolor == 5) % white
-      % special case for if the current color is white
-      %   the generic way is not visible (white on white)
-      im_display(:,:,2) = DATA.rgb(:,:,2) - uint8((score>0).*double(DATA.rgb(:,:,2)));
-      im_display(:,:,3) = DATA.rgb(:,:,3) - uint8((score>0).*double(DATA.rgb(:,:,3)));
-    else
-      im_display(:,:,2) = DATA.rgb(:,:,2) + uint8(score.*double(255-DATA.rgb(:,:,2)));
-    end
-
-    % visualize current pos/neg selection masks
-    im_display = rgbmask(im_display, DATA.mask_pos{DATA.icolor}, ...
-                           DATA.mask_neg{DATA.icolor}, DATA.icolor);
-
-
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %Live label view
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-    if DATA.viewmode 
-      class=LUT(DATA.cindex);
-      cbk=[0 0 0];cr=[1 0 0];cg=[0 1 0];cb=[0 0 1];cy=[1 1 0];cw=[1 1 1];
-      cmap=[cbk;cr;cy;cy;cb;cb;cb;cb;cg;cg;cg;cg;cg;cg;cg;cg;cw];
-      r_cast=cmap(:,1)*255;
-      g_cast=cmap(:,2)*255;
-      b_cast=cmap(:,3)*255;
-
-      %class starts with 0, index starts with 1 
-      im_display(:,:,1)=r_cast(class+1);
-      im_display(:,:,2)=g_cast(class+1);
-      im_display(:,:,3)=b_cast(class+1);
-    end
-
-
-    % set the display image data in the gui
-    set(DATA.Image, 'CData', im_display);
-
-    % update the current image index display
-    set(DATA.IndexControl, 'String', num2str(DATA.iImage));
-
-    set(hfig, 'UserData', DATA);
-    return;
-  end
-
-
   function Button(varargin)
   % callback for clicking on the image
 
@@ -441,6 +265,8 @@ function h = colortable_online(action, varargin)
     pt = get(gca,'CurrentPoint');
     ptx = round(pt(1,1));
     pty = round(pt(1,2));
+
+    yuv = DATA.yuv;
 
 
     % select similar colored pixels based on the color selection threshold
@@ -471,28 +297,29 @@ function h = colortable_online(action, varargin)
     colortable_merge(DATA);
 
     % convert yuv data into the index values of LUT
-    DATA.cindex = yuv2index(DATA.yuv, COLORTABLE.size);
+    DATA.cindex = yuv2index(yuv, COLORTABLE.size)
 
     % get the current colortable score
     score = colortable_score(DATA.cindex, DATA.icolor);
 
-    colortable_smear;
+%    colortable_smear;
     LUT = colortable_lut();
 
     lut_updated = ROBOT.matcmControl.get_lut_updated();
     disp('push shm from matlab');
     ROBOT.matcmControl.set_lut_updated(1 - lut_updated);
+    cur_lut = typecast(ROBOT.vcmImage.get_lut(),'uint8');
     ROBOT.vcmImage.set_lut(typecast(LUT,'double'));
 
   end
 
   function ClearLUT(varargin)
-    nlut = size(COLORTABLE.score, 1);
-    lut = zeros(262144, 1, 'uint8');
+    lut = zeros(1, 262144, 'uint8');
+    lut = typecast(lut, 'double');
     lut_updated = ROBOT.matcmControl.get_lut_updated();
     disp('push emtpy shm from matlab');
     ROBOT.matcmControl.set_lut_updated(1 - lut_updated);
-    ROBOT.vcmImage.set_lut(typecast(LUT,'double'));
+    ROBOT.vcmImage.set_lut(lut);
   end
 
 
@@ -582,12 +409,11 @@ function h = colortable_online(action, varargin)
     return;
   end
 
-  function update()
+  function update(yuyv_type)
     cbk=[0 0 0];cr=[1 0 0];cg=[0 1 0];cb=[0 0 1];cy=[1 1 0];cw=[1 1 1];
     cmap=[cbk;cr;cy;cy;cb;cb;cb;cb;cg;cg;cg;cg;cg;cg;cg;cg;cw];
 
     % Show yuyv Image
-    yuyv_type = ROBOT.vcmCamera.get_yuyvType();
     if yuyv_type == 1
       yuyv = ROBOT.get_yuyv(); 
     elseif yuyv_type == 2

@@ -46,7 +46,6 @@ function parse_name(namestr)
   return name
 end
 
-
 function pack_lut(obj)
 --print('receive lut parts');
   lut = cutil.test_array();

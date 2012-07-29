@@ -10,7 +10,7 @@ function LearnColor(team,player)
 
   % Initiate colortable structure
   if ~isempty(COLORTABLE)
-    clear COLORTABLE;
+    clear global COLORTABLE;
   end
 
   colortable_init;
@@ -56,6 +56,7 @@ function LearnColor(team,player)
 
 %% Init Colortable GUI display
 
+  img_size
   LEARNCOLOR = colortable_online();
   LEARNCOLOR.Initialize(img_size);
   t = toc( t0 );
@@ -67,7 +68,7 @@ function LearnColor(team,player)
   nUpdate = 0;
   while 1
     nUpdate = nUpdate + 1;
-    LEARNCOLOR.update();
+    LEARNCOLOR.update(yuyv_type);
   end
 
 %% subfunction for checking the existnace of SHM

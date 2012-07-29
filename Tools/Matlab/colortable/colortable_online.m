@@ -13,7 +13,7 @@ function h = colortable_online(action, varargin)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-  function Initialize()
+  function Initialize(img_size)
   % initialize the colortable gui
   % creates the gui and ui elements for the colortable trainer
 
@@ -37,8 +37,7 @@ function h = colortable_online(action, varargin)
     set(hfig, 'Position', figpos);
 
     % default image size 
-%    DATA.size = [120 160];
-    DATA.size = [240 320];
+    DATA.size = img_size;
 
     % init mask 
     for icolor = 1:COLORTABLE.ncolor

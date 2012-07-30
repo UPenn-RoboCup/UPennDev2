@@ -390,5 +390,6 @@ fsm.head = {'GeneralPlayer'};
 fsm.body = {'Boxer'};
 dev.team = 'TeamBox'
 dev.walk='B5Walk';
---dev.walk='BoxWalk'; --Walk with generalized walkkick definitions
+game.gcTimeout = 2;
+team.msgTimeout = 1.0;
 --]]

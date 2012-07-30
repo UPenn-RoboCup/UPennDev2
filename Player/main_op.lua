@@ -91,7 +91,7 @@ function update()
   --Check pause button Releases
   if (Body.get_change_role() == 1) then
     button_role=1;
-    if (t-tButtonRole>2.0) then --Button pressed for 2 sec
+    if (t-tButtonRole>4.0) then --Button pressed for 2 sec
       waiting = 1-waiting;
       if waiting==0 then
         Speak.talk('Playing');

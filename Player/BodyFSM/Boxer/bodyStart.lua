@@ -8,6 +8,8 @@ require('vector')
 t0 = 0;
 timeout = 5;
 
+boxMode = 'mimic'
+
 function entry()
   print("Body FSM:".._NAME.." entry");
   t0 = Body.get_time();
@@ -33,7 +35,11 @@ function update()
   end
 
   if( boxercm.get_body_enabled() == 1 ) then
-    return "done";
+    if(boxMode=='mimic') then
+      return "doneMimic";
+    else
+      return "doneBox"
+    end
   end
 
 end

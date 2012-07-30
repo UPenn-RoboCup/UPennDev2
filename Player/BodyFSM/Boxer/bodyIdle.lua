@@ -6,6 +6,9 @@ require 'walk'
 require 'Speak'
 require 'gcm'
 
+-- To change modes
+require 'bodyStart'
+
 t0 = 0;
 
 playerID = Config.game.playerID;
@@ -28,7 +31,7 @@ function update()
   if( gcm.in_penalty() ) then
     if( Body.get_change_role()==0  ) then
       -- toggle when button is released
-      if (buttonPressed == 1 and t-tButton<=2) then
+      if (buttonPressed == 1 and t-tButton<=1) then
         if(walk.no_stabilize) then
           Speak.talk('Enabling stabilization!')
         else
@@ -36,14 +39,24 @@ function update()
         end
         walk.no_stabilize = not walk.no_stabilize;
         buttonPressed = 0;
-      else if (buttonPressed==1 and t-tButton>2 ) then
-        Speak.talk('LONG PRESS!')
+      elseif (buttonPressed==1 and t-tButton>1 ) then
+        if(bodyStart.boxMode=='mimic') then
+          Speak.talk('Entering Boxing Mode');
+          bodyStart.boxMode = 'box';
+        else
+          Speak.talk('Entering Imitation Mode');
+          bodyStart.boxMode = 'mimic';
+        end
         buttonPressed = 0;
       end
+
     else
-      tButton = t;
+      if( buttonPressed==0 ) then
+        tButton = t;
+      end
       buttonPressed = 1;
     end
+
   end
 end
 

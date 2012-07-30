@@ -10,18 +10,23 @@ timeout = 5;
 
 function entry()
   print("Body FSM:".._NAME.." entry");
-
   t0 = Body.get_time();
 
-  if( walk.stance~=0 ) then
-    print('switcing stance')
-    walk.switch_stance(0)
-  end
+  walk.set_velocity(0,0,0);
+  walk.stop();
+  started = false;
 
 end
 
 function update()
   local t = Body.get_time();
+
+  if not started then
+    if not walk.active then
+      Motion.sm:set_state('standstill');
+      started = true;
+    end
+  end
 
   if( t-t0>timeout ) then
     return 'timeout'
@@ -34,4 +39,5 @@ function update()
 end
 
 function exit()
+  Motion.sm:add_event('walk');
 end

@@ -8,7 +8,8 @@ require('mcm')
 require('unix')
 require('util')
 
-no_stabilize = false;
+-- No stabilization by default
+no_stabilize = true;
 
 -- Walk Parameters
 -- Stance and velocity limit values
@@ -362,9 +363,9 @@ function update()
         velCurrent=vector.new({0,0,0});
         velCommand=vector.new({0,0,0});
         if supportLeg == 0 then        -- Left support
-          uRight2 = util.pose_global(-1*uLRFootOffset, uLeft1);
+          uRight2 = util.pose_global(-2*uLRFootOffset, uLeft1);
         else        -- Right support
-          uLeft2 = util.pose_global(uLRFootOffset, uRight1);
+          uLeft2 = util.pose_global(2*uLRFootOffset, uRight1);
         end
       else --Normal walk, advance steps
         tStep=tStep0; 

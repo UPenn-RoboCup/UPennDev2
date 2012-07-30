@@ -65,7 +65,7 @@ function update()
 
   if( ps ) then -- We have a primesense
     for i=1,nPlayers do
-      if( bc[i].get_body_enabled() ) then
+      if( bc[i].get_body_enabled()>0 ) then
         send_body(i);
       end
     end
@@ -103,12 +103,21 @@ function send_body( forPlayer )
   state.rpy = bcm.get_body_rpy();
 
   -- Burst mode
+  --[[
   local ser = serialization.serialize(state)
   local ret = Comm.send( ser );
   ret = Comm.send( ser );
   ret = Comm.send( ser );
   ret = Comm.send( ser );
-  --print('Sent '..forPlayer..':'..ret..' bytes',ser)
+  --]]
+
+  local ser = serialization.serialize(state)
+  local ret = Comm.send( ser, #ser );
+  ret = Comm.send( ser, #ser );
+  ret = Comm.send( ser, #ser );
+  ret = Comm.send( ser, #ser );
+  
+  print('Sent '..forPlayer..': '..ret..' bytes',ser)
 end
 
 function exit()

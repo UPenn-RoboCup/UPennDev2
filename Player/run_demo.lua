@@ -110,7 +110,7 @@ function update()
   end
 
   --Check center button press
-
+--[[
   if (Body.get_change_role() == 1) then
     button_state=1;
   else
@@ -119,6 +119,7 @@ function update()
       button_state=0;
     end
   end
+--]]
 
   if waiting>0 then --Waiting mode, check role change
 --[[

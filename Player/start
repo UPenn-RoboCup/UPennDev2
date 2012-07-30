@@ -50,7 +50,7 @@ run_boxer(){
 
   echo "Starting Player..."
   cd $PLAYER_DIR
-  screen $SCREEN_FLAGS player $LUA_COM run_main_op.lua
+  screen $SCREEN_FLAGS player $LUA_COM run_boxer_op.lua
   
   echo "Rock and Roll!"
   screen -ls

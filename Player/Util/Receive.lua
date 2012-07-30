@@ -8,7 +8,7 @@ require('Config');
 require('Z');
 
 -- Initiate Sending Address
-IP = '192.168.123.201'
+IP = '192.168.1.201'
 CommWired.init(IP,Config.dev.ip_wired_port);
 print('Receiving from port',Config.dev.ip_wired_port);
 
@@ -54,6 +54,7 @@ function pack_lut(obj)
     print("initiate lut flag");
     lut_flag = vector.zeros(name.parts);
     FIRST_LUT = false;
+    lut_t_full = 0;
   end
 
   lut_flag[name.partnum] = 1;
@@ -64,6 +65,7 @@ function pack_lut(obj)
 
   if (check_flag(lut_flag) == name.parts and name.partnum==name.parts ) then
     print("full lut\t"..1/(unix.time() - lut_t_full).." fps" );
+    vcm.set_camera_broadcast(1);
     lut_t_full = unix.time();
     local lut_str = "";
     for i = 1 , name.parts do --fixed
@@ -74,6 +76,8 @@ function pack_lut(obj)
     cutil.string2userdata(lut,lut_str,obj.arr.width,height);
     vcm.set_image_lut(lut);
     matcm.set_control_key(obj.ctrl_key);
+  else
+    vcm.set_camera_broadcast(3);
   end
 
 end

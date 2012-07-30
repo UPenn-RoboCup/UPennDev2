@@ -399,7 +399,7 @@ end
 function update(enable)
   if enable == 0 then return; end
   --At level 3, we only send yuyv for logging and nothing else
-  if enable == 3 then return; end
+--  if enable == 3 then return; end
 	
   send = {};	
   for shmHandlerkey,shmHandler in pairs(sendShm) do
@@ -470,6 +470,7 @@ function update_img( enable, imagecount )
       send_lut();
     else
       sendImg();
+      send_lut();
     end
   end
 end

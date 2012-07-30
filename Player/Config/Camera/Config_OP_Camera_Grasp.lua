@@ -59,10 +59,10 @@ camera.param = {};
 camera.param[1] = {key='brightness',    val={128}};
 camera.param[2] = {key='contrast',      val={32}};
 camera.param[3] = {key='saturation',    val={28}};
-camera.param[4] = {key='gain',          val={255}};
+camera.param[4] = {key='gain',          val={0}};
 camera.param[5] = {key='white balance temperature', val={4000}};
 camera.param[6] = {key='sharpness',     val={191}};
-camera.param[7] = {key='exposure (absolute)',      val={400}};
+camera.param[7] = {key='exposure (absolute)',      val={600}};
 
 
 --camera.lut_file = 'lut_low_contrast_pink_n_green.raw';

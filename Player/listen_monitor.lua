@@ -255,6 +255,8 @@ function send_lut()
                     height, 'uint8', 'lut', count);
     
     sendlut.updated = lut_updated;
+    -- send matlab control key
+    sendlut.ctrl_key = matcm.get_control_key();
     sendlut.arr = array;
     local tSerialize = 0;
     local tSend = 0;
@@ -286,7 +288,7 @@ end
 function push_lut(obj)
 --print('receive lut parts');
   lut = cutil.test_array();
-  name = parse_name(obj.name);
+  name = parse_name(obj.arr..name);
   if (FIRST_LUT == true) then
     print("initiate lut flag");
     lut_flag = vector.zeros(name.parts);
@@ -294,7 +296,7 @@ function push_lut(obj)
   end
 
   lut_flag[name.partnum] = 1;
-  lut_all[name.partnum] = obj.data;
+  lut_all[name.partnum] = obj.arr.data;
 
   --Just push the image after all segments are filled at the first scan
   --Because the image will be broken anyway if packet loss occurs
@@ -311,8 +313,9 @@ function push_lut(obj)
     end
 
     height= 512;
-    cutil.string2userdata(lut,lut_str,obj.width,height);
+    cutil.string2userdata(lut,lut_str,obj.arr.width,height);
     vcm.set_image_lut(lut);
+    matcm.set_control_key(obj.ctrl_key);
   end
 
 end
@@ -320,10 +323,7 @@ end
 while( true ) do
   msg = CommWired.receive();
   if( msg ) then
---    print(#msg);
     msg = Z.uncompress(msg, #msg);
---    print(msg);
---    print(#msg)
     local obj = serialization.deserialize(msg);
     if( obj.arr ) then
     	if ( string.find(obj.arr.name,'yuyv') ) then 
@@ -342,7 +342,7 @@ while( true ) do
       elseif ( string.find(obj.arr.name,'occmap') ) then
         push_occmap(obj.arr);
       elseif ( string.find(obj.arr.name,'lut') ) then
-        push_lut(obj.arr);
+        push_lut(obj);
     	end
     else
     	push_data(obj);

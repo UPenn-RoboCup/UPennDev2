@@ -365,6 +365,7 @@ function send_lut()
                     height, 'uint8', 'lut', count);
     
     sendlut.updated = 0; --lut_updated;
+    sendlut.ctrl_key = matcm.get_control_key();
     sendlut.arr = array;
     local tSerialize = 0;
     local tSend = 0;

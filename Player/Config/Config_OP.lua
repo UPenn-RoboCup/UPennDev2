@@ -33,7 +33,7 @@ dev = {};
 dev.body = 'OPBody'; 
 dev.camera = 'OPCam';
 dev.kinematics = 'OPKinematics';
-dev.ip_wired = '192.168.123.103';
+dev.ip_wired = '192.168.1.201';
 dev.ip_wired_port = 111111;
 dev.ip_wireless = '192.168.1.255'; --Our Router
 dev.ip_wireless_port = 54321;
@@ -382,9 +382,8 @@ vision.landmark.distanceFactorCyan = 1.1;
 vision.landmark.distanceFactorYellow = 1.1; 
 
 ------------------------------------------------------------------
-
--- Boxer
 --[[
+-- Boxer
 fsm.game = 'RoboCup';
 fsm.head = {'GeneralPlayer'};
 fsm.body = {'Boxer'};

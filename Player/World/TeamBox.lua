@@ -65,7 +65,7 @@ function update()
 
   if( ps ) then -- We have a primesense
     for i=1,nPlayers do
-      if( bc[i].get_body_enabled() ) then
+      if( bc[i].get_body_enabled()>0 ) then
         send_body(i);
       end
     end

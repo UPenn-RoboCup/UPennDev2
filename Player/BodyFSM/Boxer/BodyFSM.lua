@@ -16,15 +16,15 @@ sm:add_state(bodyStop);
 sm:add_state(bodyReady);
 
 -- Set transitions
---sm:set_transition(bodyStart,'done',bodyBox);
-sm:set_transition(bodyStart,'done',bodyMimic);
+sm:set_transition(bodyStart,'doneMimic',bodyMimic);
+sm:set_transition(bodyStart,'doneBox',bodyBox);
 sm:set_transition(bodyStart,'timeout',bodyStart);
 
 sm:set_transition(bodyBox, 'disabled', bodyStart);
-sm:set_transition(bodyBox, 'doublepunch', bodyMimic);
+--sm:set_transition(bodyBox, 'doublepunch', bodyMimic);
 
 sm:set_transition(bodyMimic, 'disabled', bodyStart);
-sm:set_transition(bodyMimic, 'doublepunch', bodyBox);
+--sm:set_transition(bodyMimic, 'doublepunch', bodyBox);
 
 -- If you fall, what do you do?
 --sm:set_transition(bodyChase, 'fall', bodySearch);

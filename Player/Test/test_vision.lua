@@ -89,6 +89,8 @@ function process_keyinput()
   else
     if button_pressed[1]==1 then
       if bodysm_running==0 then 
+-- Disable Yida
+broadcast_enable = 0
         Body.set_head_hardness(0.5);
         headsm_running=1;
         bodysm_running=1;
@@ -96,6 +98,12 @@ function process_keyinput()
         HeadFSM.sm:set_state('headScan');
         walk.start();
       else
+-- Enable Yida
+broadcast_enable = 3
+        headsm_running=0;
+        Body.set_head_hardness(0);
+        Body.set_head_command({0,0});
+
         if walk.active then walk.stop();end
         bodysm_running=0;
         Motion.event("standup");
@@ -258,11 +266,10 @@ function process_keyinput()
     end
 
 
+    walk.set_velocity(unpack(targetvel));
     if headsm_running == 0 then
       Body.set_head_command({headangle[1],headangle[2]-headPitchBias});
       print("\nHead Yaw Pitch:", unpack(headangle*180/math.pi))
-
-
     end
   end
 end
@@ -351,7 +358,7 @@ function update()
 --]]
 
 --    walk.set_velocity(vx,vy,va);
-    walk.set_velocity(unpack(targetvel));
+--    walk.set_velocity(unpack(targetvel));
 
 
     Motion.update();

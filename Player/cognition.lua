@@ -12,6 +12,8 @@ require('Vision')
 require('World')
 require('Detection') 
 require('OccupancyMap') 
+
+      require('Receive');
 comm_inited = false;
 vcm.set_camera_teambroadcast(0);
 vcm.set_camera_broadcast(0);
@@ -93,7 +95,6 @@ function update()
     else
       require('Broadcast');
       print("Starting to send wired monitor message..");
-      require('Receive');
       print("Starting to wired message..");
     end
     comm_inited = true;
@@ -108,9 +109,10 @@ function update()
       end
     else
       broadcast();
-      Receive.update();
     end
   end
+
+ Receive.update();
 end
 
 -- exit 

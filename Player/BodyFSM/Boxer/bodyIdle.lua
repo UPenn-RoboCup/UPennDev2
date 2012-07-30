@@ -31,7 +31,7 @@ function update()
   if( gcm.in_penalty() ) then
     if( Body.get_change_role()==0  ) then
       -- toggle when button is released
-      if (buttonPressed == 1 and t-tButton<=1) then
+      if (buttonPressed == 1 and t-tButton<=2) then
         if(walk.no_stabilize) then
           Speak.talk('Enabling stabilization!')
         else
@@ -39,7 +39,7 @@ function update()
         end
         walk.no_stabilize = not walk.no_stabilize;
         buttonPressed = 0;
-      elseif (buttonPressed==1 and t-tButton>1 ) then
+      elseif (buttonPressed==1 and t-tButton>2 ) then
         if(bodyStart.boxMode=='mimic') then
           Speak.talk('Entering Boxing Mode');
           bodyStart.boxMode = 'box';

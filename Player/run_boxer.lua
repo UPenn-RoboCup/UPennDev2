@@ -14,6 +14,7 @@ end
 
 -- Issue debug line telling which mode we are in
 desired_fps = 60;
+desired_fps = 70;
 twait = 1/desired_fps;
 print '=====================';
 print('Desired FPS: ',desired_fps);

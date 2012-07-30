@@ -384,9 +384,11 @@ vision.landmark.distanceFactorYellow = 1.1;
 ------------------------------------------------------------------
 
 -- Boxer
+--[[
 fsm.game = 'RoboCup';
 fsm.head = {'GeneralPlayer'};
 fsm.body = {'Boxer'};
 dev.team = 'TeamBox'
 dev.walk='B5Walk';
 --dev.walk='BoxWalk'; --Walk with generalized walkkick definitions
+--]]

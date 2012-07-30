@@ -62,7 +62,7 @@ game.playerID = 1;
 if (robotName=='scarface') then
   game.playerID = 4; 
 elseif (robotName=='linus') then
-  game.playerID = 1; 
+  game.playerID = 2; 
   ball_shift={0.00,0.010};
 
 elseif (robotName=='betty') then
@@ -83,8 +83,6 @@ elseif (robotName=='sally') then
   game.role = 0; --Default goalie
 end
 
--- PBS HACK
-game.playerID = 1
 
 game.role = 1;--hack
 
@@ -393,3 +391,4 @@ dev.team = 'TeamBox'
 dev.walk='B5Walk';
 game.gcTimeout = 2;
 team.msgTimeout = 1.0;
+game.playerID = 1

@@ -8,9 +8,12 @@ require('vector')
 t0 = 0;
 timeout = 5;
 
-roll0 = 0;
-pitch0 = 0; -- Default pitch offset
+roll0 = 0; -- Roll offset
+vpr = 1; -- Roll to velocity ratio
+pitch0 = 0;
+vpp = 1;
 yaw0 = 0;
+vpy = 1;
 
 function entry()
   print("Body FSM:".._NAME.." entry");
@@ -29,9 +32,9 @@ function update()
   walk.upper_body_override(qL, qR, {0,walk.bodyTilt,0});
 
   -- Add the velocity
-  local vx = rpy[2] - pitch0;
-  local vy = rpy[1] - roll0;
-  local va = rpy[3] - yaw0;
+  local vx = vpp*(rpy[2] - pitch0);
+  local vy = vpr*(rpy[1] - roll0);
+  local va = vpy*(rpy[3] - yaw0);
   walk.set_velocity({vx,vy,va});
 
   if( boxercm.get_body_enabled() == 0 ) then

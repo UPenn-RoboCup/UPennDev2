@@ -83,6 +83,8 @@ elseif (robotName=='sally') then
   game.role = 0; --Default goalie
 end
 
+-- PBS HACK
+game.playerID = 1
 
 game.role = 1;--hack
 
@@ -384,7 +386,6 @@ vision.landmark.distanceFactorYellow = 1.1;
 ------------------------------------------------------------------
 
 -- Boxer
---[[
 fsm.game = 'RoboCup';
 fsm.head = {'GeneralPlayer'};
 fsm.body = {'Boxer'};
@@ -392,4 +393,3 @@ dev.team = 'TeamBox'
 dev.walk='B5Walk';
 game.gcTimeout = 2;
 team.msgTimeout = 1.0;
---]]

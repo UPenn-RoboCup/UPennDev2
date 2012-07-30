@@ -18,7 +18,7 @@ $(PLATFORMS):
 	@if [ ! -z "$(shell which $(CMAKE_BIN))" ]; then \
 			rm -rf build; \
 			mkdir build;\
-			cd build && cmake .. -D$@=true; \
+			cd build && cmake .. -D$@=true -DCMAKE_TOOLCHAIN_FILE="toolchain.cmake" && make install; \
 		else \
 			make -f Makefile.mk $@; \
 		fi
@@ -26,6 +26,9 @@ $(PLATFORMS):
 clean:
 	@if [ ! -z "$(shell which $(CMAKE_BIN))" ]; then \
 		rm -rf build; \
+		rm -rf ../WebotsController; \
+		rm -rf ../Player/Lib; \
+		rm -rf ../Player/Config/Config.lua; \
 	else \
 		make -f Makefile.mk clean; \
 	fi

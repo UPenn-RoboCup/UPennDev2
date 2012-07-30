@@ -27,6 +27,7 @@ require('util')
 require('wcm')
 require('gcm')
 require('ocm')
+require('matcm')
 --require('behaviorObstacle')
 
 darwin = false;

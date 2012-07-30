@@ -18,11 +18,11 @@ local tUpdate = t0;
 
 -- Broadcast the images at a lower rate than other data
 local maxFPS = 30;
-local imgFPS = 30;
+local imgFPS = 10;
 
 local maxPeriod = 1.0 / maxFPS;
 local imgRate = math.max( math.floor( maxFPS / imgFPS ), 1);
-
+imgRate = 10
 local broadcast_enable=0;
 
 function update()

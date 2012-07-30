@@ -288,7 +288,7 @@ end
 function push_lut(obj)
 --print('receive lut parts');
   lut = cutil.test_array();
-  name = parse_name(obj.arr..name);
+  name = parse_name(obj.arr.name);
   if (FIRST_LUT == true) then
     print("initiate lut flag");
     lut_flag = vector.zeros(name.parts);

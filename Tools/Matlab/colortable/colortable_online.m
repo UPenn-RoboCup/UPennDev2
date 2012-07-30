@@ -195,11 +195,20 @@ function h = colortable_online(action, varargin)
                                              'Value', 0, ...
                                              'Units', 'Normalized', ...
                                              'Position', [.025 .88-.045*icolor .15 .05]);
-      icolor = 4;
+      icolor = 2;
       DATA.ColorControl(icolor) = uicontrol(Std, ...
                                              'Parent', hfig, ...
                                              'Style', 'radiobutton', ...
                                              'String', 'Not Ball', ...
+                                             'UserData', icolor, ...
+                                             'Callback',@Color,...
+                                             'Value', 0, ...
+                                             'Units', 'Normalized', ...
+                                             'Position', [.025 .88-.045*icolor .15 .05]);      icolor = 4;
+      DATA.ColorControl(icolor) = uicontrol(Std, ...
+                                             'Parent', hfig, ...
+                                             'Style', 'radiobutton', ...
+                                             'String', 'Field', ...
                                              'UserData', icolor, ...
                                              'Callback',@Color,...
                                              'Value', 0, ...
@@ -306,55 +315,68 @@ function h = colortable_online(action, varargin)
     pty = round(pt(1,2));
 
     yuv = DATA.yuv;
+    cur_lut = typecast(ROBOT.vcmImage.get_lut(),'uint8');
 
+    if DATA.icolor == 2 
+      colortable_init();
+      lut_updated = ROBOT.matcmControl.get_lut_updated();
+      disp('push shm from matlab');
+      ROBOT.matcmControl.set_lut_updated(1 - lut_updated);
+      cur_lut(find(cur_lut == 1)) = 0;
+      ROBOT.vcmImage.set_lut(typecast(cur_lut,'double'));
+    else
 
-    % select similar colored pixels based on the color selection threshold
-    % mask is a binary array where selected pixels have a value of 1
-    mask = rgbselect(DATA.rgb, ptx, pty, DATA.cthreshold);
-
-    if strcmp(get(hfig,'SelectionType'),'normal')
-      % left click
-      % add selected pixels to the positive examples mask
-      DATA.mask_pos{DATA.icolor} = DATA.mask_pos{DATA.icolor} | mask;
-      % remove any selected pixels from the negative examples mask
-      DATA.mask_neg{DATA.icolor} = DATA.mask_neg{DATA.icolor} & ~mask;
-    elseif strcmp(get(hfig,'SelectionType'),'extend')
-      % shift + left click
-      % remove any selected pixels from the positive examples mask
-      DATA.mask_pos{DATA.icolor} = DATA.mask_pos{DATA.icolor} & ~mask;
-      % add selected pixels to the negative examples mask
-      DATA.mask_neg{DATA.icolor} = DATA.mask_neg{DATA.icolor} | mask;
-    elseif strcmp(get(hfig,'SelectionType'),'alt')
-      % ctrl + left click
-      % remove any selected pixels from the positive examples mask
-      DATA.mask_pos{DATA.icolor} = DATA.mask_pos{DATA.icolor} & ~mask;
-      % remove any selected pixels from the negative examples mask
-      DATA.mask_neg{DATA.icolor} = DATA.mask_neg{DATA.icolor} & ~mask;
+      % select similar colored pixels based on the color selection threshold
+      % mask is a binary array where selected pixels have a value of 1
+      mask = rgbselect(DATA.rgb, ptx, pty, DATA.cthreshold);
+  
+      if strcmp(get(hfig,'SelectionType'),'normal')
+        % left click
+        % add selected pixels to the positive examples mask
+        DATA.mask_pos{DATA.icolor} = DATA.mask_pos{DATA.icolor} | mask;
+        % remove any selected pixels from the negative examples mask
+        DATA.mask_neg{DATA.icolor} = DATA.mask_neg{DATA.icolor} & ~mask;
+      elseif strcmp(get(hfig,'SelectionType'),'extend')
+        % shift + left click
+        % remove any selected pixels from the positive examples mask
+        DATA.mask_pos{DATA.icolor} = DATA.mask_pos{DATA.icolor} & ~mask;
+        % add selected pixels to the negative examples mask
+        DATA.mask_neg{DATA.icolor} = DATA.mask_neg{DATA.icolor} | mask;
+      elseif strcmp(get(hfig,'SelectionType'),'alt')
+        % ctrl + left click
+        % remove any selected pixels from the positive examples mask
+        DATA.mask_pos{DATA.icolor} = DATA.mask_pos{DATA.icolor} & ~mask;
+        % remove any selected pixels from the negative examples mask
+        DATA.mask_neg{DATA.icolor} = DATA.mask_neg{DATA.icolor} & ~mask;
+      end
+  
+      % update color score data
+      colortable_merge(DATA);
+  
+      % convert yuv data into the index values of LUT
+      DATA.cindex = yuv2index(yuv, COLORTABLE.size);
+  
+      % get the current colortable score
+      score = colortable_score(DATA.cindex, DATA.icolor);
+  
+      colortable_smear;
+      LUT = colortable_lut();
+  
+      lut_updated = ROBOT.matcmControl.get_lut_updated();
+      disp('push shm from matlab');
+      ROBOT.matcmControl.set_lut_updated(1 - lut_updated);
+      max_lut = max(cur_lut, LUT');
+      ROBOT.vcmImage.set_lut(typecast(max_lut,'double'));
+%    ROBOT.vcmImage.set_lut(typecast(cur_lut,'double'));
     end
 
-    % update color score data
-    colortable_merge(DATA);
-
-    % convert yuv data into the index values of LUT
-    DATA.cindex = yuv2index(yuv, COLORTABLE.size)
-
-    % get the current colortable score
-    score = colortable_score(DATA.cindex, DATA.icolor);
-
-%    colortable_smear;
-    LUT = colortable_lut();
-
-    lut_updated = ROBOT.matcmControl.get_lut_updated();
-    disp('push shm from matlab');
-    ROBOT.matcmControl.set_lut_updated(1 - lut_updated);
-    cur_lut = typecast(ROBOT.vcmImage.get_lut(),'uint8');
-    max_lut = max(cur_lut, LUT');
-    ROBOT.vcmImage.set_lut(typecast(max_lut,'double'));
-%    ROBOT.vcmImage.set_lut(typecast(cur_lut,'double'));
+    DATA.mask_pos{DATA.icolor} = false(DATA.size);
+    DATA.mask_neg{DATA.icolor} = false(DATA.size);
 
   end
 
   function ClearLUT(varargin)
+    colortable_init();
     lut = zeros(1, 262144, 'uint8');
     lut = typecast(lut, 'double');
     lut_updated = ROBOT.matcmControl.get_lut_updated();
@@ -385,9 +407,15 @@ function h = colortable_online(action, varargin)
 %    end
     if (icolor == 1)
       set(DATA.ColorControl(1), 'Value', 1);
+      set(DATA.ColorControl(2), 'Value', 0);
       set(DATA.ColorControl(4), 'Value', 0);
-    else
+    elseif (icolor == 4)
       set(DATA.ColorControl(4), 'Value', 1);
+      set(DATA.ColorControl(2), 'Value', 0);
+      set(DATA.ColorControl(1), 'Value', 0);    
+    elseif (icolor == 2)
+      set(DATA.ColorControl(4), 'Value', 0);
+      set(DATA.ColorControl(2), 'Value', 1);
       set(DATA.ColorControl(1), 'Value', 0);
     end
   end

@@ -791,6 +791,7 @@ function set_velocity(vx, vy, va)
   vx= math.min(math.max(vx,velLimitX[1]),velLimitX[2]);
   vy= math.min(math.max(vy,velLimitY[1]),velLimitY[2]);
   va= math.min(math.max(va,velLimitA[1]),velLimitA[2]);
+  mcm.set_walk_vel({vx, vy, va})
 
   --Slow down when turning
   vFactor = 1-math.abs(va)/vaFactor;

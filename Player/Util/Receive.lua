@@ -5,8 +5,7 @@ CommWired=require('Comm');
 require('vcm')
 require('serialization');
 require('Config');
-
---sendShm = {'wcm','vcm','gcm'}
+require('Z');
 
 -- Initiate Sending Address
 IP = '192.168.123.201'
@@ -47,11 +46,10 @@ function parse_name(namestr)
   return name
 end
 
-
 function pack_lut(obj)
 --print('receive lut parts');
   lut = cutil.test_array();
-  name = parse_name(obj.name);
+  name = parse_name(obj.arr.name);
   if (FIRST_LUT == true) then
     print("initiate lut flag");
     lut_flag = vector.zeros(name.parts);
@@ -59,7 +57,7 @@ function pack_lut(obj)
   end
 
   lut_flag[name.partnum] = 1;
-  lut_all[name.partnum] = obj.data;
+  lut_all[name.partnum] = obj.arr.data;
 
   --Just push the image after all segments are filled at the first scan
   --Because the image will be broken anyway if packet loss occurs
@@ -73,8 +71,9 @@ function pack_lut(obj)
     end
 
     height= 512;
-    cutil.string2userdata(lut,lut_str,obj.width,height);
+    cutil.string2userdata(lut,lut_str,obj.arr.width,height);
     vcm.set_image_lut(lut);
+    matcm.set_control_key(obj.ctrl_key);
   end
 
 end
@@ -82,11 +81,11 @@ end
 function update()
   if CommWired.size() > 0 then
     msg = CommWired.receive();
+    msg = Z.uncompress(msg, #msg);
     obj = serialization.deserialize(msg);
     if (obj.arr) then
       if (string.find(obj.arr.name,'lut')) then
---        print('receive lut');
-        pack_lut(obj.arr);  
+        pack_lut(obj);  
       end
     end
   end

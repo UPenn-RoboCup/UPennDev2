@@ -62,7 +62,7 @@ game.playerID = 1;
 if (robotName=='scarface') then
   game.playerID = 4; 
 elseif (robotName=='linus') then
-  game.playerID = 1; 
+  game.playerID = 2; 
   ball_shift={0.00,0.010};
 
 elseif (robotName=='betty') then
@@ -382,12 +382,13 @@ vision.landmark.distanceFactorCyan = 1.1;
 vision.landmark.distanceFactorYellow = 1.1; 
 
 ------------------------------------------------------------------
---[[
 -- Boxer
 fsm.game = 'RoboCup';
 fsm.head = {'GeneralPlayer'};
 fsm.body = {'Boxer'};
 dev.team = 'TeamBox'
 dev.walk='B5Walk';
---dev.walk='BoxWalk'; --Walk with generalized walkkick definitions
---]]
+game.gcTimeout = 2;
+team.msgTimeout = 1.0;
+game.playerID = 1
+use_rollback_getup = 0;

@@ -392,3 +392,4 @@ dev.walk='B5Walk';
 game.gcTimeout = 2;
 team.msgTimeout = 1.0;
 game.playerID = 1
+use_rollback_getup = 0;

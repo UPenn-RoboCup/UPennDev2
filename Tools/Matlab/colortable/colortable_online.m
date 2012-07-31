@@ -138,7 +138,7 @@ function h = colortable_online(action, varargin)
                                   'Parent', hfig, ...
                                   'Style', 'pushbutton', ...
                                   'String', 'Save Colors', ...
-                                  'Callback','colortable_online(''SaveColor'')', ...
+                                  'Callback',@SaveColor, ...
                                   'Units', 'Normalized', ...
                                   'FontSize', fontsize, ...
                                   'Position', [.725 .18 .15 .05]);
@@ -462,7 +462,7 @@ toc;
   end
 
 
-  function SaveColor()
+  function SaveColor(varargin)
   % callback for the 'Save Colors' button
 
     % open the save file gui
@@ -470,8 +470,6 @@ toc;
     if (filename ~= 0)
       save([pathname filename],'COLORTABLE');
     end
-
-    return;
   end
 
   function SaveLUT(varargin)

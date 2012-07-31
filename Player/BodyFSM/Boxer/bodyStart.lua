@@ -45,5 +45,5 @@ function update()
 end
 
 function exit()
-  Motion.sm:add_event('walk');
+--  Motion.sm:add_event('walk');
 end

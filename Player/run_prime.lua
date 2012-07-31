@@ -81,6 +81,7 @@ io:flush()
 
 count = 0;
 init = false;
+center = {};
 while( not logs or count<n_logs ) do
   count = count + 1;
   if( not logs ) then
@@ -101,7 +102,6 @@ while( not logs or count<n_logs ) do
 
     -- Left person is always player 1
     -- so that we don't switch in the middle of the program
-    center = {};
     for pl=1,nPlayers do
       -- Get the torso stats
       if(logs) then
@@ -135,6 +135,9 @@ while( not logs or count<n_logs ) do
     if( #center==2 and goofy and center[2]<center[1] ) then
       switch = true;
     end
+
+    -- What if we lost a player?
+    -- FOR NOW: just using persitent center array
 
     -- Check each player
     -- Is each player active?

@@ -73,18 +73,18 @@ function update()
     recv_msgs();
 
     -- Check when we last updated
-    if( not states[1] or (unix.time() - states[1].tReceive > msgTimeout) ) then
+    if( not states[playerID] or (unix.time() - states[playerID].tReceive > msgTimeout) ) then
       boxercm.set_body_enabled( 0 );
       return;
     end
 
     boxercm.set_body_enabled( 1 ); -- 2 is companion mode
     --    boxercm.set_body_velocity( states[1].vel );
-    boxercm.set_body_punchL( states[1].pL );
-    boxercm.set_body_punchR( states[1].pR );
-    boxercm.set_body_qLArm( states[1].qL );
-    boxercm.set_body_qRArm( states[1].qR );
-    boxercm.set_body_rpy( states[1].rpy );
+    boxercm.set_body_punchL( states[playerID].pL );
+    boxercm.set_body_punchR( states[playerID].pR );
+    boxercm.set_body_qLArm( states[playerID].qL );
+    boxercm.set_body_qRArm( states[playerID].qR );
+    boxercm.set_body_rpy( states[playerID].rpy );
   end
 
 end

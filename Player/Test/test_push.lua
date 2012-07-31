@@ -195,13 +195,13 @@ function update()
     if button_pressed[2]==1 then
       is_standing = 0;
       push_recovery_type=push_recovery_type+1;
-      if push_recovery_type==1 then
+     --[[ if push_recovery_type==1 then
 	--Ankle only
         Speak.talk('Ankle Strategy')
 	walk.enable_ankle_pr = true;
 	walk.enable_hip_pr = false;
-
-      elseif push_recovery_type==2 then
+--]]
+      if push_recovery_type==1 then
 	--Ankle and hip
         Speak.talk('Hip Strategy')
 	walk.enable_ankle_pr = true;

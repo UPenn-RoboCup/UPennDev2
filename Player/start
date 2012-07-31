@@ -122,7 +122,7 @@ run_obstacle(){
 
 run_bias(){
   echo "Starting DCM..."
-  cd $PLAYER_DIR/Lib
+  cd $PLAYER_DIR
   screen -dm -L -S dcm $LUA_COM run_dcm.lua
   # Allow DCM some time to start
   sleep 1
@@ -134,7 +134,7 @@ run_bias(){
 
 run_pushtest(){
   echo "Starting DCM..."
-  cd $PLAYER_DIR/Lib
+  cd $PLAYER_DIR
   screen -dm -L -S dcm $LUA_COM run_dcm.lua
   # Allow DCM some time to start
   sleep 1

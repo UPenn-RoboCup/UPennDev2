@@ -10,11 +10,15 @@ t0 = 0;
 timeout = 5;
 
 roll0 = 0; -- Roll offset
-vpr = 1; -- Roll to velocity ratio
-pitch0 = 0;
-vpp = -1;
+--vpr = 1; -- Roll to velocity ratio
+vpr = 1.5; -- Tuned value
+--pitch0 = 0;
+pitch0 = -10*math.pi/180; -- Tuned value
+--vpp = -1;
+vpp = -0.5; -- Tuned
 yaw0 = 0;
-vpy = 1;
+--vpy = 1;
+vpy = .5; -- Tuned value
 
 function entry()
   print("Body FSM:".._NAME.." entry");

@@ -109,32 +109,18 @@ while( not logs or count<n_logs ) do
         active = 1;
         pos = { log[count].x[3],log[count].y[3],log[count].z[3] };
       else
-        local pos, rot, confidence, active = primesense.get_jointtables(pl,3);
+        pos, rot, confidence, active = primesense.get_jointtables(pl,3);
       end
-
-      if( active ) then
-        if( #center < 2 and pl==2) then
-          -- New player 2
-          new_player = true
-        end
-        center[pl] = pos[1]; -- only left/right
-      end
-    end
-    
-    -- Determine the sides
-    if( new_player ) then
-      new_player = false;
-      if(center[1]<center[2]) then
-        -- Normal
-      else
-        goofy = true;
-      end
+      center[pl] = pos[1]; -- only left/right
     end
 
     switch = false;
-    if( #center==2 and goofy and center[2]<center[1] ) then
+    if( center[1]>0 ) then
       switch = true;
     end
+
+    -- What if we lost a player?
+    -- FOR NOW: just using persitent center array
 
     -- Check each player
     -- Is each player active?
@@ -159,7 +145,12 @@ while( not logs or count<n_logs ) do
         for pl=1,nPlayers do
           pos, rot, confidence, active = primesense.get_jointtables(pl,i);
           pos = vector.new(pos)/1000;
-          primecm = pc[pl];
+          if( switch ) then
+            primecm = pc[3-pl];
+          else
+            primecm = pc[pl];
+          end
+          io:flush()
           primecm['set_position_'..v]( pos );
           primecm['set_orientation_'..v]( rot );
           primecm['set_confidence_'..v]( confidence );
@@ -195,6 +186,7 @@ while( not logs or count<n_logs ) do
       print('Time',timestamp-timestamp0 );
       print('User 1: ', pc[1]['get_skeleton_found']());
       print('User 2: ', pc[2]['get_skeleton_found']());
+      print('Switched? ',switch)
       print();
     end
   end

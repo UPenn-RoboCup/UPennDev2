@@ -258,6 +258,8 @@ function upper_body_override(qL, qR, bR)
 
 
   bodyRot[2] = 	math.min(30*math.pi/180,math.max(10*math.pi/180,bodyRot[2]));
+  -- Limit the yawing so that we can maintain good balance
+  bodyRot[3] = 	math.min(30*math.pi/180,math.max(-30*math.pi/180,bodyRot[3]));
 
 end
 

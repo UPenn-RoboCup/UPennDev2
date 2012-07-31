@@ -99,35 +99,42 @@ while( not logs or count<n_logs ) do
       timestamp0 = timestamp;
     end
 
-    --[[
     -- Left person is always player 1
     -- so that we don't switch in the middle of the program
     center = {};
     for pl=1,nPlayers do
       -- Get the torso stats
-      local pos, rot, confidence, active = primesense.get_jointtables(pl,3);
-      if( active ) then
-        center[pl] = pos;
+      if(logs) then
+        log = inp_logs[pl];
+        active = 1;
+        pos = { log[count].x[3],log[count].y[3],log[count].z[3] };
+      else
+        local pos, rot, confidence, active = primesense.get_jointtables(pl,3);
       end
-    end
-    -- Match to closest centroid of before
-    if( prev_center and #center>0 ) then -- We have context
-      for pl=1,nPlayers do
-        if(center[pl]) then -- Match the found center with one from before
-          -- Just sort the differences...
-          diffs = center[pl] - prev_center;
 
+      if( active ) then
+        if( #center < 2 and pl==2) then
+          -- New player 2
+          new_player = true
         end
-      end
-    else
-      prev_center = {}
-      for pl=1,nPlayers do
-        if(center[pl]) then
-          prev_center[pl] = center[pl];
-        end
+        center[pl] = pos[1]; -- only left/right
       end
     end
-    --]]
+    
+    -- Determine the sides
+    if( new_player ) then
+      new_player = false;
+      if(center[1]<center[2]) then
+        -- Normal
+      else
+        goofy = true;
+      end
+    end
+
+    switch = false;
+    if( #center==2 and goofy and center[2]<center[1] ) then
+      switch = true;
+    end
 
     -- Check each player
     -- Is each player active?
@@ -137,7 +144,11 @@ while( not logs or count<n_logs ) do
           log = inp_logs[pl];
           pos = { log[count].x[i],log[count].y[i],log[count].z[i] };
           confidence = { log[count].posconf[i],log[count].rotconf[i] };
-          primecm = pc[pl];
+          if( switch and nPlayers==2) then
+            primecm = pc[3-pl];
+          else
+            primecm = pc[pl];
+          end
           primecm['set_position_'..v]( pos );
           primecm['set_confidence_'..v]( confidence );
           primecm.set_skeleton_found( 1 );

@@ -37,6 +37,8 @@ function update()
   if( boxercm.get_body_enabled() == 1 ) then
     if(boxMode=='mimic') then
       return "doneMimic";
+    elseif(boxMode=='mimicWalk') then
+      return "doneMimicWalk";
     else
       return "doneBox"
     end

@@ -51,6 +51,7 @@ end
 function recv_msgs()
   while (Comm.size() > 0) do 
     t = serialization.deserialize(Comm.receive());
+print('recv '..t.id)
     if (t and (t.id) and (t.id == playerID)) then
       t.tReceive = unix.time();
       states[t.id] = t;

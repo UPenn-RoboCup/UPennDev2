@@ -491,7 +491,8 @@ function update_led()
   end
 
   --Only disable eye LED during playing
-  if led_on>0 and gcm.get_game_state()~=3 then
+--  if led_on>0 and gcm.get_game_state()~=3 then
+  if led_on>0 then
     Body.set_indicator_goal(goal_led);
     Body.set_indicator_ball(ball_led);
   else

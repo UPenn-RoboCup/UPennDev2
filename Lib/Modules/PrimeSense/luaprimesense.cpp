@@ -40,7 +40,7 @@ extern "C"
 //---------------------------------------------------------------------------
 #define SAMPLE_XML_PATH "./Config/SamplesConfig.xml"
 #define SAMPLE_XML_PATH_LOCAL "SamplesConfig.xml"
-#define MAX_NUM_USERS 1
+#define MAX_NUM_USERS 2
 #define MAX_NUM_JOINTS 24
 
 //---------------------------------------------------------------------------

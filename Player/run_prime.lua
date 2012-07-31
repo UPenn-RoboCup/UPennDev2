@@ -130,10 +130,14 @@ while( not logs or count<n_logs ) do
           log = inp_logs[pl];
           pos = { log[count].x[i],log[count].y[i],log[count].z[i] };
           confidence = { log[count].posconf[i],log[count].rotconf[i] };
-          if( switch and nPlayers==2) then
-            primecm = pc[3-pl];
+          if( #center==2 ) then
+            if( switch ) then
+              primecm = pc[3-pl];
+            else
+              primecm = pc[pl];
+            end
           else
-            primecm = pc[pl];
+            primecm = pc[1];
           end
           primecm['set_position_'..v]( pos );
           primecm['set_confidence_'..v]( confidence );

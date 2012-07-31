@@ -24,7 +24,7 @@ function h = colortable_online(action, varargin)
               'NumberTitle', 'off', ...
               'tag', 'Colortable', ...
               'MenuBar', 'none', ...
-              'ToolBar', 'figure', ...
+              'ToolBar', 'none', ...
               'Color', [.8 .8 .8], ...
               'Colormap', gray(256), ...
 							'KeyPressFcn',@KeyResponse);
@@ -129,6 +129,7 @@ function h = colortable_online(action, varargin)
                         'Parent', DATA.LabelAxes, ...
                         'XData', [1 DATA.size(2)], ...
                         'YData', [1 DATA.size(1)], ...
+                        'ButtonDownFcn', @Button, ...
                         'CData', []);
 
 
@@ -245,6 +246,7 @@ function h = colortable_online(action, varargin)
                                     'Parent', hfig, ...
                                     'Style', 'text', ...
                                     'String','Threshold', ...
+                                    'HorizontalAlignment', 'center', ...
                                     'Units', 'Normalized', ...
                                     'FontSize', fontsize, ...
                                     'Position', [.325 .18 .15 .035]);
@@ -511,15 +513,38 @@ toc;
     DATA.yuv = ycbcr;
     DATA.rgb = rgb;
     set(DATA.Image, 'CData', rgb);
+%    image(rgb, 'Parent', DATA.ImageAxes);
 
     % Show Label A
     colormap(cmap);
+%    cla(DATA.LabelAxes);
     set(DATA.Label, 'CData', labelA');
+%    image(labelA', 'Parent', DATA.LabelAxes);
 
+%    r_mon = ROBOT.get_monitor_struct();
+%    if (r_mon.ball.detect == 1)
+%      hold on;
+%      plot_ball(r_mon.ball, 2, DATA.LabelAxes);
+%      hold off;
+%    end
     % Show mask
 %    mask_disp = DATA.mask_pos{DATA.icolor};
 %    set(DATA.Mask, 'CData', mask_disp);
     drawnow;
+  end
+
+  function plot_ball( ballStats, scale, handle)
+    radius = (ballStats.axisMajor / 2) / scale;
+    centroid = [ballStats.centroid.x ballStats.centroid.y] / scale;
+    ballBox = [centroid(1)-radius centroid(2)-radius 2*radius 2*radius];
+    plot( handle, centroid(1), centroid(2),'k+')
+    if( ~isnan(ballBox) )
+      rectangle('Position', ballBox, 'Curvature',[1,1])
+
+      strballpos = sprintf('%.2f %.2f',ballStats.x,ballStats.y);
+      b_name=text(centroid(1),centroid(2)+radius, strballpos);
+      set(b_name,'FontSize',8);
+    end
   end
 
 end

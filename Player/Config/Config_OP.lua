@@ -21,10 +21,10 @@ params.Kick = "Slow"
 
 ---Location Specific Camera Parameters--
 --params.Camera = "VT"
-params.Camera = "Grasp"
+--params.Camera = "Grasp"
 --params.Camera = "Grasp_obs"
 --params.Camera = "L512"
---params.Camera = "L512_Day"
+params.Camera = "L512_Day"
 
 util.LoadConfig(params, platform)
 

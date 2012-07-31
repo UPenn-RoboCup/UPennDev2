@@ -41,6 +41,9 @@ function update()
         buttonPressed = 0;
       elseif (buttonPressed==1 and t-tButton>2 ) then
         if(bodyStart.boxMode=='mimic') then
+          Speak.talk('Entering Walk Mode');
+          bodyStart.boxMode = 'mimicWalk';
+        elseif(bodyStart.boxMode=='mimicWalk') then
           Speak.talk('Entering Boxing Mode');
           bodyStart.boxMode = 'box';
         else

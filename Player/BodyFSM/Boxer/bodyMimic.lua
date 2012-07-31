@@ -16,6 +16,7 @@ end
 function update()
   local t = Body.get_time();
 
+walk.stop()
   -- Check if there is a punch activated
   local qL = boxercm.get_body_qLArm();
   local qR = boxercm.get_body_qRArm();

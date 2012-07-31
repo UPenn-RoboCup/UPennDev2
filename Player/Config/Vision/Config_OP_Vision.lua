@@ -52,8 +52,8 @@ vision.enable_lut_for_obstacle = 1;
 -- Use tilted bounding box?
 vision.use_tilted_bbox = 1;
 -- Subsample main image for monitor?
-vision.subsampling = 0;  --1/2 sized image
-vision.subsampling2 = 0; --1/4 sized image
+vision.subsampling = 1;  --1/2 sized image
+vision.subsampling2 = 1; --1/4 sized image
 
 --Vision parameter values
 

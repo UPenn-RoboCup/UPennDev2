@@ -11,6 +11,7 @@ timeout = 5;
 function entry()
   print("Body FSM:".._NAME.." entry");
   t0 = Body.get_time();
+Motion.sm:add_event('walk');
 end
 
 function update()

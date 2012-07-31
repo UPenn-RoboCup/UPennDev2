@@ -21,10 +21,10 @@ params.Kick = "Slow"
 
 ---Location Specific Camera Parameters--
 --params.Camera = "VT"
-params.Camera = "Grasp"
+--params.Camera = "Grasp"
 --params.Camera = "Grasp_obs"
 --params.Camera = "L512"
---params.Camera = "L512_Day"
+params.Camera = "L512_Day"
 
 util.LoadConfig(params, platform)
 
@@ -33,8 +33,9 @@ dev = {};
 dev.body = 'OPBody'; 
 dev.camera = 'OPCam';
 dev.kinematics = 'OPKinematics';
-dev.ip_wired = '192.168.123.201';
+dev.ip_wired = '192.168.123.255';
 dev.ip_wired_port = 111111;
+dev.ip_wireless = '192.168.1.201'; --Our Router
 dev.ip_wireless = '192.168.1.255'; --Our Router
 dev.ip_wireless_port = 54321;
 dev.game_control='OPGameControl';
@@ -100,7 +101,7 @@ fsm.head = {'GeneralPlayer'};
 fsm.body = {'GeneralPlayer'};
 
 --Behavior flags, should be defined in FSM Configs but can be overrided here
-fsm.enable_obstacle_detection = 1;
+fsm.enable_obstacle_detection = 0;
 fsm.kickoff_wait_enable = 0;
 fsm.playMode = 3; --1 for demo, 2 for orbit, 3 for direct approach
 fsm.forcePlayer = 0; --1 for attacker, 2 for defender, 3 for goalie 
@@ -382,6 +383,7 @@ vision.landmark.distanceFactorCyan = 1.1;
 vision.landmark.distanceFactorYellow = 1.1; 
 
 ------------------------------------------------------------------
+--[[
 -- Boxer
 --[[
 fsm.game = 'RoboCup';

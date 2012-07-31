@@ -246,6 +246,7 @@ function h = colortable_online(action, varargin)
                                     'Parent', hfig, ...
                                     'Style', 'text', ...
                                     'String','Threshold', ...
+                                    'HorizontalAlignment', 'center', ...
                                     'Units', 'Normalized', ...
                                     'FontSize', fontsize, ...
                                     'Position', [.325 .18 .15 .035]);
@@ -511,21 +512,21 @@ toc;
     [ycbcr, rgb] = yuyv2rgb(yuyv);
     DATA.yuv = ycbcr;
     DATA.rgb = rgb;
-%    set(DATA.Image, 'CData', rgb);
-    image(rgb, 'Parent', DATA.ImageAxes);
+    set(DATA.Image, 'CData', rgb);
+%    image(rgb, 'Parent', DATA.ImageAxes);
 
     % Show Label A
     colormap(cmap);
-    cla(DATA.LabelAxes);
-%    set(DATA.Label, 'CData', labelA');
-    image(labelA', 'Parent', DATA.LabelAxes);
+%    cla(DATA.LabelAxes);
+    set(DATA.Label, 'CData', labelA');
+%    image(labelA', 'Parent', DATA.LabelAxes);
 
-    r_mon = ROBOT.get_monitor_struct();
-    if (r_mon.ball.detect == 1)
-      hold on;
-      plot_ball(r_mon.ball, 2, DATA.LabelAxes);
-      hold off;
-    end
+%    r_mon = ROBOT.get_monitor_struct();
+%    if (r_mon.ball.detect == 1)
+%      hold on;
+%      plot_ball(r_mon.ball, 2, DATA.LabelAxes);
+%      hold off;
+%    end
     % Show mask
 %    mask_disp = DATA.mask_pos{DATA.icolor};
 %    set(DATA.Mask, 'CData', mask_disp);

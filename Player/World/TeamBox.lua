@@ -51,6 +51,7 @@ end
 function recv_msgs()
   while (Comm.size() > 0) do 
     t = serialization.deserialize(Comm.receive());
+print('recv '..t.id)
     if (t and (t.id) and (t.id == playerID)) then
       t.tReceive = unix.time();
       states[t.id] = t;
@@ -117,7 +118,7 @@ function send_body( forPlayer )
   ret = Comm.send( ser, #ser );
   ret = Comm.send( ser, #ser );
   
-  --print('Sent '..forPlayer..': '..ret..' bytes',ser)
+  print('Sent '..forPlayer..': '..ret..' bytes',ser)
 end
 
 function exit()

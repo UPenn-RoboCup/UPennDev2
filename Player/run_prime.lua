@@ -102,6 +102,7 @@ while( not logs or count<n_logs ) do
     -- Left person is always player 1
     -- so that we don't switch in the middle of the program
     center = {};
+    n_found_players = 0;
     for pl=1,nPlayers do
       -- Get the torso stats
       if(logs) then
@@ -111,6 +112,7 @@ while( not logs or count<n_logs ) do
       else
         pos, rot, confidence, active = primesense.get_jointtables(pl,3);
       end
+      n_found_players = n_found_players + active;
       center[pl] = pos[1]; -- only left/right
     end
 
@@ -130,10 +132,14 @@ while( not logs or count<n_logs ) do
           log = inp_logs[pl];
           pos = { log[count].x[i],log[count].y[i],log[count].z[i] };
           confidence = { log[count].posconf[i],log[count].rotconf[i] };
-          if( switch and nPlayers==2) then
-            primecm = pc[3-pl];
+          if( #center==2 ) then
+            if( switch ) then
+              primecm = pc[3-pl];
+            else
+              primecm = pc[pl];
+            end
           else
-            primecm = pc[pl];
+            primecm = pc[1];
           end
           primecm['set_position_'..v]( pos );
           primecm['set_confidence_'..v]( confidence );
@@ -187,6 +193,7 @@ while( not logs or count<n_logs ) do
       print('User 1: ', pc[1]['get_skeleton_found']());
       print('User 2: ', pc[2]['get_skeleton_found']());
       print('Switched? ',switch)
+      print('Number of users:',n_found_players)
       print();
     end
   end

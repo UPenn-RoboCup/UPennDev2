@@ -450,7 +450,7 @@ function update_img( enable, imagecount )
     if subsampling>0 then
       sendImgSub2();
       sendA();
---      sendB();
+      sendB();
 --      sendmap();
 --      send_lut();
     else

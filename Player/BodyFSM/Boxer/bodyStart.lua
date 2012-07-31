@@ -37,6 +37,8 @@ function update()
   if( boxercm.get_body_enabled() == 1 ) then
     if(boxMode=='mimic') then
       return "doneMimic";
+    elseif(boxMode=='mimicWalk') then
+      return "doneMimicWalk";
     else
       return "doneBox"
     end
@@ -45,5 +47,5 @@ function update()
 end
 
 function exit()
-  Motion.sm:add_event('walk');
+--  Motion.sm:add_event('walk');
 end

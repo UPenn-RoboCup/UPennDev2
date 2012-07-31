@@ -14,7 +14,8 @@ all none:
 	@echo "where PLATFORM is one of following:"
 	@echo "\t$(PLATFORMS)"
 
-$(PLATFORMS):
+#$(PLATFORMS):
+%:
 	@if [ ! -z "$(shell which $(CMAKE_BIN))" ]; then \
 			rm -rf build; \
 			mkdir build;\

@@ -20,9 +20,10 @@ end
 if( isempty(sk) && ~run_from_log )
     disp('Recreating SHM block access...')
     startup;
-    team = 0;
+    team = 18;
     player = 1;
     sk = shm_primesense(team,player);
+    sk2 = shm_primesense(team,player+1);
 end
 
 %% Recording Logs

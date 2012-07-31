@@ -33,7 +33,7 @@ dev = {};
 dev.body = 'OPBody'; 
 dev.camera = 'OPCam';
 dev.kinematics = 'OPKinematics';
-dev.ip_wired = '192.168.1.201';
+dev.ip_wired = '192.168.123.201';
 dev.ip_wired_port = 111111;
 dev.ip_wireless = '192.168.1.255'; --Our Router
 dev.ip_wireless_port = 54321;
@@ -42,7 +42,7 @@ dev.team='TeamNSL';
 dev.walk='NewNewNewWalk' --For Grasp like surfaces, USED mostly!
 --dev.walk='N5Walk';	 --For RC12 @ Mexico
 dev.kick = 'NewNewKick'
-dev.gender = 1; -- 1 for body and 0 for girl 
+dev.gender = 1; -- 1 for boy and 0 for girl 
 
 speak = {}
 speak.enable = false; 
@@ -383,6 +383,7 @@ vision.landmark.distanceFactorYellow = 1.1;
 
 ------------------------------------------------------------------
 -- Boxer
+--[[
 fsm.game = 'RoboCup';
 fsm.head = {'GeneralPlayer'};
 fsm.body = {'Boxer'};
@@ -392,3 +393,4 @@ game.gcTimeout = 2;
 team.msgTimeout = 1.0;
 game.playerID = 1
 use_rollback_getup = 0;
+--]]

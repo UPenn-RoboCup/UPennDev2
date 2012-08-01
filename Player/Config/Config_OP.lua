@@ -349,7 +349,6 @@ batt_max = 120; --12.0V rollback getup thershold
 fsm.headTrack.minDist = 0.30;
 
 ------------------------------------------------------------------
---[[
 -- Boxer
 --[[
 fsm.game = 'RoboCup';

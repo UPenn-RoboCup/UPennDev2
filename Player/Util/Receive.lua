@@ -12,7 +12,8 @@ enable_online_learning = Config.vision.enable_online_colortable_learning or 0;
 if enable_online_learning == 1 then
   command = 'last -w -d -i -1 | grep "darwin " | cut -d" " -f12-13'
   loginIP  = io.popen(command)
-  IP = loginIP:read();
+  IP = string.gsub(tostring(loginIP:read()),' ','')
+--  IP = '192.168.1.201';
   PORT = Config.dev.ip_wired_port;
 else
   IP = Config.dev.ip_wired;

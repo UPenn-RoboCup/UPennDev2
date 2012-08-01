@@ -23,17 +23,18 @@ itemReject = 'yuyv, labelA, labelB, yuyv2, yuyv3, map, lut'
 
 -- Initiate Sending Address
 enable_online_learning = Config.vision.enable_online_colortable_learning or 0;
+print('Enable online Learning: '..enable_online_learning);
 if enable_online_learning == 1 then
   loginIP  = io.popen('last -w -d -i -1 | grep "darwin " | cut -d" " -f12-13')
-  IP = tostring(loginIP:read());
+  IP = string.gsub(tostring(loginIP:read()), ' ','')
   PORT = Config.dev.ip_wired_port;
 else
   IP = Config.dev.ip_wired;
   PORT = Config.dev.ip_wired_port;
 end
 
---CommWired.init(IP,PORT);
-CommWired.init(Config.dev.ip_wired, Config.dev.ip_wired_port);
+CommWired.init(IP,PORT);
+--CommWired.init(Config.dev.ip_wired, Config.dev.ip_wired_port);
 --print('Broadcast to',Config.dev.ip_wired..':'..Config.dev.ip_wired_port);
 print('Broadcast to',IP..':'..PORT);
 
@@ -469,7 +470,6 @@ function update_img( enable, imagecount )
       sendB();
 --      sendmap();
     end
-
   elseif enable==3 then
     if enable_online_learning == 1 then
       send_lut();

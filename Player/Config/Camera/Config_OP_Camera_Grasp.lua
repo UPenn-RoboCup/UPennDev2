@@ -52,7 +52,6 @@ camera.param[4] = {key='gain',          val={255}};
 camera.param[5] = {key='white balance temperature', val={1000}};
 camera.param[6] = {key='sharpness',     val={0}};
 camera.param[7] = {key='exposure (absolute)',      val={1005}};
-
 --[[
 camera.param = {};
 camera.param[1] = {key='brightness',    val={128}};
@@ -73,5 +72,5 @@ camera.lut_file = 'lut_ob_new';
 camera.lut_file_obs = 'lut_ob_test';
 camera.lut_file_new = 'lut_ob_new';
 --camera.lut_file_obs = '0427_grasp';
-camera.lut_file = '0427_grasp';
---camera.lut_file = 'lut_empty';
+--camera.lut_file = '0427_grasp';
+camera.lut_file = 'lut_empty';

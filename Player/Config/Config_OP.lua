@@ -21,10 +21,10 @@ params.Kick = "Slow"
 
 ---Location Specific Camera Parameters--
 --params.Camera = "VT"
---params.Camera = "Grasp"
+params.Camera = "Grasp"
 --params.Camera = "Grasp_obs"
 --params.Camera = "L512"
-params.Camera = "L512_Day"
+--params.Camera = "L512_Day"
 
 util.LoadConfig(params, platform)
 
@@ -35,7 +35,6 @@ dev.camera = 'OPCam';
 dev.kinematics = 'OPKinematics';
 dev.ip_wired = '192.168.123.255';
 dev.ip_wired_port = 111111;
-dev.ip_wireless = '192.168.1.201'; --Our Router
 dev.ip_wireless = '192.168.1.255'; --Our Router
 dev.ip_wireless_port = 54321;
 dev.game_control='OPGameControl';
@@ -64,18 +63,14 @@ if (robotName=='scarface') then
   game.playerID = 4; 
 elseif (robotName=='linus') then
   game.playerID = 2; 
-  ball_shift={0.00,0.010};
-
 elseif (robotName=='betty') then
   game.playerID = 3; 
-  ball_shift={-0.010,0.010};
 elseif (robotName=='lucy') then
   game.playerID = 1; 
 elseif (robotName=='felix') then
   game.playerID = 2; 
 elseif (robotName=='jiminy') then
   game.playerID = 5; 
-  ball_shift={-0.020,0.015};
 elseif (robotName=='hokie') then
   game.playerID = 3; 
   game.role = 0; --Default goalie
@@ -83,7 +78,6 @@ elseif (robotName=='sally') then
   game.playerID = 5; 
   game.role = 0; --Default goalie
 end
-
 
 game.role = 1;--hack
 
@@ -173,8 +167,6 @@ bat_med = 119; -- Slow down walking if voltage drops below this
 
 bat_led = {118,119,122,123,124,125}; --for back LED indicator
 
-
-
 gps_only = 0;
 
 goalie_dive = 1; --1 for arm only, 2 for actual diving
@@ -232,7 +224,6 @@ goalie_dive = 1; --1 for arm only, 2 for actual diving
 
 --Let goalie log all the ball positions
 goalie_disable_arm = 1; 
-goalie_log_balls = 1;
 goalie_log_balls = 0;
 
 
@@ -317,23 +308,9 @@ fsm.thDistSideKick = 1.0;
 obs_challenge = 0;
 --Roll backup setup
 use_rollback_getup = 1;
---batt_max = 120; --only do rollback getup when battery is enough
-batt_max = 117; --For more back flips, use ONLY for DEMO purpose!
-
-
-
---VISION CALIBRATION VALUES
-vision.goal.distanceFactorCyan = 1.1; 
-vision.goal.distanceFactorYellow = 1.3; 
-vision.landmark.distanceFactorCyan = 1.05; 
-vision.landmark.distanceFactorYellow = 1.05; 
-
-
-
 
 ---------------------------------------------------------------
 -- FOR SEMIFINAL
-batt_max = 117; --only do rollback getup when battery is enough
 fsm.goalie_type = 2;--moving and stop goalie
 fsm.goalie_reposition=1; --Yaw reposition
 --[[
@@ -360,13 +337,8 @@ vision.landmark.distanceFactorCyan = 1.1;
 vision.landmark.distanceFactorYellow = 1.1; 
 
 
-enable_ceremony = 1;
-ceremony_score = 2;
------------------------------------------------------------------
-
-
 enable_ceremony = 0;
-
+ceremony_score = 2;
 -----------------------------------------------------------------
 -- FINAL MATCH CONFIG
 
@@ -375,12 +347,6 @@ ceremony_score = 3; --3 goal difference
 batt_max = 120; --12.0V rollback getup thershold
 --If ball is closer than this don't look up
 fsm.headTrack.minDist = 0.30;
-
---Vision calibration values
-vision.goal.distanceFactorCyan = 1.15; 
-vision.goal.distanceFactorYellow = 1.15; 
-vision.landmark.distanceFactorCyan = 1.1; 
-vision.landmark.distanceFactorYellow = 1.1; 
 
 ------------------------------------------------------------------
 --[[

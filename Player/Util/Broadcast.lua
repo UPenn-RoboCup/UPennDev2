@@ -471,9 +471,6 @@ function update_img( enable, imagecount )
 --      sendmap();
     end
   elseif enable==3 then
-    if enable_online_learning == 1 then
-      send_lut();
-    end
     --3: Logging mode
     --Only send 160*120 yuyv for logging
     if subsampling>0 then

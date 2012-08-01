@@ -333,15 +333,16 @@ global MONITOR %for sending the webots check information
       bodyTilt=h.vcmCamera.get_bodyTilt();
       headAngles=h.vcmImage.get_headAngles();
       rollAngle=h.vcmCamera.get_rollAngle();
+      lutFilename = char(h.vcmCamera.get_lut_filename());
       r.camera = struct('select',select,'width',width,'height',height,'scaleB',scaleB,...
-	'bodyHeight',bodyHeight,'bodyTilt',bodyTilt,...
-	'headAngles',headAngles,'rollAngle',rollAngle);
+                      	'bodyHeight',bodyHeight,'bodyTilt',bodyTilt,...
+                      	'headAngles',headAngles,'rollAngle',rollAngle,...
+                        'lutFileName',lutFileName);
 
     %yuyv type info
       r.yuyv_type = h.vcmCamera.get_yuyvType();
  
     %Image FOV boundary
-          
       fovC=h.vcmImage.get_fovC();
       fovTL=h.vcmImage.get_fovTL();
       fovTR=h.vcmImage.get_fovTR();

@@ -24,16 +24,17 @@ itemReject = 'yuyv, labelA, labelB, yuyv2, yuyv3, map, lut'
 -- Initiate Sending Address
 enable_online_learning = Config.vision.enable_online_colortable_learning or 0;
 if enable_online_learning == 1 then
-  command = 'last -w -d -i -1 | grep "darwin " | cut -d" " -f12-13'
-  loginIP  = io.popen(command)
-  IP = loginIP:read();
+  loginIP  = io.popen('last -w -d -i -1 | grep "darwin " | cut -d" " -f12-13')
+  IP = tostring(loginIP:read());
   PORT = Config.dev.ip_wired_port;
 else
   IP = Config.dev.ip_wired;
   PORT = Config.dev.ip_wired_port;
 end
 
-CommWired.init(IP,PORT);
+--CommWired.init(IP,PORT);
+CommWired.init(Config.dev.ip_wired, Config.dev.ip_wired_port);
+--print('Broadcast to',Config.dev.ip_wired..':'..Config.dev.ip_wired_port);
 print('Broadcast to',IP..':'..PORT);
 
 -- Add a little delay between packet sending
@@ -462,25 +463,23 @@ function update_img( enable, imagecount )
       sendA();
       sendB();
 --      sendmap();
---      send_lut();
     else
       sendImg();
       sendA();
       sendB();
 --      sendmap();
---      send_lut();
     end
 
   elseif enable==3 then
+    if enable_online_learning == 1 then
+      send_lut();
+    end
     --3: Logging mode
     --Only send 160*120 yuyv for logging
     if subsampling>0 then
       sendImgSub2();
---      sendA();
-      send_lut();
     else
       sendImg();
-      send_lut();
     end
   end
 end

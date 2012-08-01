@@ -12,7 +12,6 @@ require('Vision')
 require('World')
 require('Detection') 
 require('OccupancyMap') 
-require('Receive');
 
 comm_inited = false;
 vcm.set_camera_teambroadcast(0);
@@ -23,6 +22,8 @@ vcm.set_camera_broadcast(0);
 count = 0;
 nProcessedImages = 0;
 tUpdate = unix.time();
+
+enable_online_colortable_learning = Config.vision.enable_online_colortable_learning or 0;
 
 if (string.find(Config.platform.name,'Webots')) then
   webots = true;
@@ -84,23 +85,28 @@ function update()
   end
  
   if not comm_inited and 
-    (vcm.get_camera_broadcast()>0 or
-     vcm.get_camera_teambroadcast()>0) then
-    if vcm.get_camera_teambroadcast()>0 then 
-      require('Team');
-      require('GameControl');
-      Team.entry();
-      GameControl.entry();
-      print("Starting to send wireless team message..");
-    else
-      require('Broadcast');
-      print("Starting to send wired monitor message..");
-      print("Starting to wired message..");
-    end
-    comm_inited = true;
+    (vcm.get_camera_broadcast()>0 or vcm.get_camera_teambroadcast()>0) then
+      if enable_online_colortable_learning == 1 then
+        require('Receive')
+      end
+      if vcm.get_camera_teambroadcast()>0 then 
+        require('Team');
+        require('GameControl');
+        Team.entry();
+        GameControl.entry();
+        print("Starting to send wireless team message..");
+      else
+        require('Broadcast');
+        print("Starting to send wired monitor message..");
+        print("Starting to wired message..");
+      end
+      comm_inited = true;
   end
 
   if comm_inited and imageProcessed then
+    if enable_online_colortable_learning == 1 then
+      Receive.update();
+    end
     if vcm.get_camera_teambroadcast()>0 then 
       GameControl.update();
       if nProcessedImages % 3 ==0 then
@@ -112,7 +118,6 @@ function update()
     end
   end
 
- Receive.update();
 end
 
 -- exit 

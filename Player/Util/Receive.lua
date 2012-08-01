@@ -19,7 +19,7 @@ else
   PORT = Config.dev.ip_wired_port;
 end
 CommWired.init(IP,PORT);
-print('Receiving from port',PORT);
+print('Receiving LUT from port',PORT);
 
 -- Add a little delay between packet sending
 -- pktDelay = 500; -- time in us

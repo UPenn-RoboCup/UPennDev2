@@ -105,6 +105,7 @@ function entry()
   vcm.set_camera_height(Config.walk.bodyHeight+Config.head.neckZ);
 	vcm.set_camera_ncamera(Config.camera.ncamera);
   vcm.set_camera_reload_LUT(0);
+  vcm.set_camera_lut_filename(Config.camera.lut_file);
 
 --  vcm.set_image_lut_updated(0);
 

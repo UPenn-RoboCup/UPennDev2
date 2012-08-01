@@ -46,8 +46,7 @@ shared.camera.teambroadcast = vector.zeros(1);
 
 shared.camera.reload_LUT = vector.zeros(1);
 shared.camera.learned_new_lut = vector.zeros(1);
---shared.camera.lut = 262144;
---shared.camera.lut_obs = 262144;
+shared.camera.lut_filename = '';
 
 shared.image = {};
 shared.image.select = vector.zeros(1);

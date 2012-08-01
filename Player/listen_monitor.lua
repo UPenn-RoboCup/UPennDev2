@@ -46,6 +46,8 @@ fps_interval = 15;
 yuyv_type=0;
 lut_updated = 0;
 
+debug = 0;
+
 CommWired.init(Config.dev.ip_wired,Config.dev.ip_wired_port);
 print('Sending to',Config.dev.ip_wired, 'Receving from ANY');
 
@@ -238,6 +240,42 @@ function push_data(obj)
   end
 end
 
+
+function push_lut(obj)
+--print('receive lut parts');
+  lut = cutil.test_array();
+  name = parse_name(obj.arr.name);
+  if (FIRST_LUT == true) then
+    print("initiate lut flag");
+    lut_flag = vector.zeros(name.parts);
+    FIRST_LUT = false;
+  end
+
+  lut_flag[name.partnum] = 1;
+  lut_all[name.partnum] = obj.arr.data;
+
+  --Just push the image after all segments are filled at the first scan
+  --Because the image will be broken anyway if packet loss occurs
+
+  if (check_flag(lut_flag) == name.parts and name.partnum==name.parts ) then
+    fps_count=fps_count+1;
+    if fps_count%fps_interval ==0 then
+      print("full lut\t"..1/(unix.time() - lut_t_full).." fps" );
+    end
+    lut_t_full = unix.time();
+    local lut_str = "";
+    for i = 1 , name.parts do --fixed
+      lut_str = lut_str .. lut_all[i];
+    end
+
+    height= 512;
+    cutil.string2userdata(lut,lut_str,obj.arr.width,height);
+    vcm.set_image_lut(lut);
+    matcm.set_control_key(obj.ctrl_key);
+  end
+
+end
+
 lut_updated = 0;
 function send_lut()
   pktDelay = 1E6 * 0.001; --For image and colortable
@@ -276,49 +314,15 @@ function send_lut()
 
       unix.usleep(pktDelay);
     end
-    print("LUT info array num:",#array,"Total size",totalSize);
-    print("Total Serialize time:",#array,"Total",tSerialize);
-    print("Total Send time:",tSend);
---    senddata = serialization.serialize(sendlut);
---    print(senddata);
---    CommWired.send(senddata);
+
+    if debug > 0 then
+      print("LUT info array num:",#array,"Total size",totalSize);
+      print("Total Serialize time:",#array,"Total",tSerialize);
+      print("Total Send time:",tSend);
+    end
   end
 end
 
-function push_lut(obj)
---print('receive lut parts');
-  lut = cutil.test_array();
-  name = parse_name(obj.arr.name);
-  if (FIRST_LUT == true) then
-    print("initiate lut flag");
-    lut_flag = vector.zeros(name.parts);
-    FIRST_LUT = false;
-  end
-
-  lut_flag[name.partnum] = 1;
-  lut_all[name.partnum] = obj.arr.data;
-
-  --Just push the image after all segments are filled at the first scan
-  --Because the image will be broken anyway if packet loss occurs
-
-  if (check_flag(lut_flag) == name.parts and name.partnum==name.parts ) then
-    fps_count=fps_count+1;
-    if fps_count%fps_interval ==0 then
-      print("full lut\t"..1/(unix.time() - lut_t_full).." fps" );
-    end
-    lut_t_full = unix.time();
-    local lut_str = "";
-    for i = 1 , name.parts do --fixed
-      lut_str = lut_str .. lut_all[i];
-    end
-
-    height= 512;
-    cutil.string2userdata(lut,lut_str,obj.arr.width,height);
-    vcm.set_image_lut(lut);
-    matcm.set_control_key(obj.ctrl_key);
-  end
-
-end
 
 while( true ) do
   msg = CommWired.receive();

@@ -8,15 +8,22 @@ require('Config');
 require('Z');
 
 -- Initiate Sending Address
-IP = '192.168.123.255'
-CommWired.init(IP,Config.dev.ip_wired_port);
-print('Receiving from port',Config.dev.ip_wired_port);
+enable_online_learning = Config.vision.enable_online_colortable_learning or 0;
+if enable_online_learning == 1 then
+  command = 'last -w -d -i -1 | grep "darwin " | cut -d" " -f12-13'
+  loginIP  = io.popen(command)
+  IP = loginIP:read();
+  PORT = Config.dev.ip_wired_port;
+else
+  IP = Config.dev.ip_wired;
+  PORT = Config.dev.ip_wired_port;
+end
+CommWired.init(IP,PORT);
+print('Receiving from port',PORT);
 
 -- Add a little delay between packet sending
 -- pktDelay = 500; -- time in us
 -- Empirical value for keeping all packets intact
-pktDelay = 1E6 * 0.001; --For image and colortable
-pktDelay2 = 1E6 * 0.001; --For info
 
 FIRST_LUT = true
 lut_flag = {}

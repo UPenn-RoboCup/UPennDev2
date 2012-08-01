@@ -5,7 +5,6 @@
 
 module(..., package.seeall);
 
-
 CommWired=require('Comm');
 -- Only send items from shared memory
 require('vcm')
@@ -23,8 +22,19 @@ sendShm = { wcmshm=wcm, gcmshm=gcm, vcmshm=vcm, ocmshm=ocm, mcmshm=mcm }
 itemReject = 'yuyv, labelA, labelB, yuyv2, yuyv3, map, lut'
 
 -- Initiate Sending Address
-CommWired.init(Config.dev.ip_wired,Config.dev.ip_wired_port);
-print('Broadcast to',Config.dev.ip_wired..':'..Config.dev.ip_wired_port);
+enable_online_learning = Config.vision.enable_online_colortable_learning or 0;
+if enable_online_learning == 1 then
+  command = 'last -w -d -i -1 | grep "darwin " | cut -d" " -f12-13'
+  loginIP  = io.popen(command)
+  IP = loginIP:read();
+  PORT = Config.dev.ip_wired_port;
+else
+  IP = Config.dev.ip_wired;
+  PORT = Config.dev.ip_wired_port;
+end
+
+CommWired.init(IP,PORT);
+print('Broadcast to',IP..':'..PORT);
 
 -- Add a little delay between packet sending
 -- pktDelay = 500; -- time in us

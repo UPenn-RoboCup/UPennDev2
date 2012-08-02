@@ -472,7 +472,6 @@ function update_img( enable, imagecount )
     end
   elseif enable==3 then
     --3: Logging mode
-    --Only send 160*120 yuyv for logging
     if subsampling>0 then
       sendImgSub2();
     else

@@ -11,11 +11,11 @@ TARGETS = all clean
 all: z
 
 %.o: %.cpp
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -I$(ZLIB) -o $@ -c $<
 %.o: %.cc
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -I$(ZLIB) -o $@ -c $<
 %.o: $(ZLIB)/%.c
-	$(CC) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
+	$(CC) $(CXXFLAGS) $(INCLUDES) -I$(ZLIB) -o $@ -c $<
 
 serialize:
 	mex -O $@.c

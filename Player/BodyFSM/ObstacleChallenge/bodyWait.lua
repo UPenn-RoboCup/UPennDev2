@@ -24,7 +24,8 @@ function update()
   walk.set_velocity(0,0,0);
 
   if (t - t0 > timeout) then
-    return 'timeout'
+--    return 'timeout'
+    return 'done'
   end
 
   local flag = vcm.get_camera_learned_new_lut();

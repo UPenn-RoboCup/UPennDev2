@@ -88,17 +88,21 @@ function process_keyinput()
   else
     if button_pressed[1]==1 then
       if bodysm_running==0 then 
--- Disable Yida
-broadcast_enable = 0
+        broadcast_enable = 0
+--        Motion.event("standup");
         Body.set_head_hardness(0.5);
+        vcm.set_camera_learned_new_lut(1)
         headsm_running=1;
         bodysm_running=1;
-        BodyFSM.sm:set_state('bodySearch');   
-        HeadFSM.sm:set_state('headScan');
+--        BodyFSM.sm:set_state('bodySearch');   
+--        HeadFSM.sm:set_state('headScan');
+--     HeadFSM.sm:set_state('headLearnLUT');
+       HeadFSM.sm:set_state('headLearnLUT');
+       BodyFSM.sm:set_state('bodyWait');
+
         walk.start();
       else
--- Enable Yida
-broadcast_enable = 3
+        broadcast_enable = 3
         headsm_running=0;
         Body.set_head_hardness(0);
         Body.set_head_command({0,0});
@@ -192,11 +196,11 @@ broadcast_enable = 3
       -- TODO: Nao needs to add the camera select
       headangle = vector.zeros(2);
       headangle[1],headangle[2] = 
- 	HeadTransform.ikineCam(ball.x,	ball.y, trackZ);
+     	HeadTransform.ikineCam(ball.x,	ball.y, trackZ);
       headangle[2]=headangle[2]+headPitchBias; 
 	--this is substracted below
       print("Head Angles for looking directly at the ball:", 
-	unpack(headangle*180/math.pi));
+    	unpack(headangle*180/math.pi));
 
     elseif byte==string.byte("f") then
       behavior.cycle_behavior();
@@ -321,45 +325,6 @@ function update()
     -- update state machines 
     process_keyinput();
     
---[[
-    if wcm.get_attack_bearing() ~= nil then
-    ob_num = ocm.get_obstacle_num();
-    ob_angle = ocm.get_obstacle_angle_range();
-    ob_nearest = ocm.get_obstacle_nearest();
-    dir = 1; -- left : 2 -- right
-    obstacle = 0;
-    close = 0
---    print(ob_angle);
-
-    for i = 1, ob_num * 2, 2 do
-      if ob_angle[i] > 1.4 and ob_angle[i+1] < 1.9 and ob_nearest[i+1] < 0.3 then
-        print("obstacle");
-        obstacle = 1;
-      end
-      if ob_angle[i] < 1.3 then dir = 2; print("turn right") end
-      if ob_angle[i] > 2 then dir = 1; print("turn left") end
-    end
-
-    if obstacle == 1 then
-      if dir == 1 then 
-        attackBearing = wcm.get_attack_bearing() - 25 * math.pi/180;
-      elseif dir == 2 then
-        attackBearing = wcm.get_attack_bearing() + 25 * math.pi/180;
-      end
-    else
-      attackBearing = wcm.get_attack_bearing();
-    end
-    obstacle = 0;
-    vx = 0.02;
-    vy = 0;
-    va = 0.2*attackBearing;
-  end
---]]
-
---    walk.set_velocity(vx,vy,va);
---    walk.set_velocity(unpack(targetvel));
-
-
     Motion.update();
     Body.update();
     -- Keep setting monitor flag

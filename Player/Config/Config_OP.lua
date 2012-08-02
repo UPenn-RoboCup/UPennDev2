@@ -156,10 +156,6 @@ if (robotName=='sally') then
   km.standup_back = 'km_NSLOP_StandupFromBackSally.lua';
 end
 
-if (robotName=='hokie') then
---  km.standup_back = 'km_NSLOP_StandupFromBackHokie.lua';
-end
-
 -- Low battery level
 -- Need to implement this api better...
 bat_low = 117; -- 11.7V warning
@@ -361,3 +357,12 @@ team.msgTimeout = 1.0;
 game.playerID = 1
 use_rollback_getup = 0;
 --]]
+--
+-----------------------------------------------------------------
+-- avoider
+fsm.head = {'ObstacleChallenge'}
+fsm.body = {'ObstacleChallenge'}
+fsm.avoidance_mode = 1 -- ball dribble
+fsm.avoidance_mode = 0 -- walk towards goal, no ball 
+
+

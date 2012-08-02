@@ -46,7 +46,7 @@ vision.enable_freespace_detection = 1;
 vision.enable_lut_for_obstacle = 1;
 
 -- use this to enable online colortable learning broadcasting and receiving
-vision.enable_online_colortable_learning = 1;
+vision.enable_online_colortable_learning = 0;
 
 
 ----------------------------

@@ -1,6 +1,6 @@
 function h = plot_field(handle,type)
   % plots the robocup field on the current axis
-%  cla( handle );
+  cla( handle );
 
   if type==0 % Kidsize
     fieldX = [-3.00  3.00 3.00 -3.00 -3.00];
@@ -52,28 +52,31 @@ function h = plot_field(handle,type)
   end
 %  set(handle,'YDir','reverse');
   hold on;
-  plot(fieldX, fieldY, 'g-');
+  plot(handle, fieldX, fieldY, 'g-');
   fill(goalX, goalY, 'y');
-  plot(goalX, goalY, 'g-');
+  plot(handle, goalX, goalY, 'g-');
   fill(-goalX, goalY, 'c');
-  plot(-goalX, goalY, 'g-');
+  plot(handle, -goalX, goalY, 'g-');
 
-  plot(penaltyX, penaltyY, 'g-');
-  plot(-penaltyX, penaltyY, 'g-');
+  plot(handle, penaltyX, penaltyY, 'g-');
+  plot(handle, -penaltyX, penaltyY, 'g-');
 
-  plot(spotX,0,'go');
-  plot(-spotX,0,'go');
+  plot(handle, spotX,0,'go');
+  plot(handle, -spotX,0,'go');
 
   centerX = [0  0];
   centerY = [fieldY(1) fieldY(3)];
-  plot(centerX, centerY, 'g-');
+  plot(handle, centerX, centerY, 'g-');
 
   circleT = 2*pi*[0:.01:1];
   circleX = circleR*cos(circleT);
   circleY = circleR*sin(circleT);
-  hcircle = plot(circleX, circleY, 'g-');
+  hcircle = plot(handle, circleX, circleY, 'g-');
   hold off;
 
+  set(gca, 'XTickMode', 'auto');
+  set(gca, 'YTickMode', 'auto');
+  grid off;
   axis equal;
   axis(fieldB);
 

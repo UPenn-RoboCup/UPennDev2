@@ -463,12 +463,12 @@ function update_img( enable, imagecount )
       sendImgSub2();
       sendA();
       sendB();
---      sendmap();
+      sendmap();
     else
       sendImg();
       sendA();
       sendB();
---      sendmap();
+      sendmap();
     end
   elseif enable==3 then
     --3: Logging mode

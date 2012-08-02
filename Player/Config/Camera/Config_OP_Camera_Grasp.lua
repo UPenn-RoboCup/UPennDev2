@@ -52,16 +52,17 @@ camera.param[4] = {key='gain',          val={255}};
 camera.param[5] = {key='white balance temperature', val={1000}};
 camera.param[6] = {key='sharpness',     val={0}};
 camera.param[7] = {key='exposure (absolute)',      val={1005}};
---[[
+--
+--
 camera.param = {};
-camera.param[1] = {key='brightness',    val={128}};
-camera.param[2] = {key='contrast',      val={32}};
+camera.param[1] = {key='brightness',    val={150}};
+camera.param[2] = {key='contrast',      val={27}};
 camera.param[3] = {key='saturation',    val={28}};
 camera.param[4] = {key='gain',          val={0}};
-camera.param[5] = {key='white balance temperature', val={4000}};
-camera.param[6] = {key='sharpness',     val={191}};
+camera.param[5] = {key='white balance temperature', val={2000}};
+camera.param[6] = {key='sharpness',     val={0}};
 camera.param[7] = {key='exposure (absolute)',      val={800}};
---]]
+--
 --camera.lut_file = 'lut_low_contrast_pink_n_green.raw';
 --camera.lut_file = 'lut_Grasp_Greenonly.raw';
 --camera.lut_file = 'lut_OP_Grasp_GreenOnly.raw';
@@ -69,8 +70,9 @@ camera.param[7] = {key='exposure (absolute)',      val={800}};
 --camera.lut_file = 'lut_Grasp_GreenOnly_SJ.raw';
 camera.lut_file = 'lut_ob_test';
 camera.lut_file = 'lut_ob_new';
-camera.lut_file_obs = 'lut_ob_test';
-camera.lut_file_new = 'lut_ob_new';
+camera.lut_file = 'lut_801A';
+--camera.lut_file_obs = 'lut_ob_test';
+--camera.lut_file_new = 'lut_ob_new';
 --camera.lut_file_obs = '0427_grasp';
 --camera.lut_file = '0427_grasp';
-camera.lut_file = 'lut_empty';
+--camera.lut_file = 'lut_empty';

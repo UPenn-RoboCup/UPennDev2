@@ -89,6 +89,7 @@ function process_keyinput()
     if button_pressed[1]==1 then
       if bodysm_running==0 then 
         Motion.event("standup");
+        ocm.set_occ_reset(1);
         Body.set_head_hardness(0.5);
         vcm.set_camera_learned_new_lut(1)
         headsm_running=1;

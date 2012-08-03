@@ -233,6 +233,11 @@ function update()
   counter = counter + 1;
 --  velocity_update();
 
+  if ocm.get_occ_reset() == 1 then
+    OccMap.reset();
+    ocm.set_occ_reset(0);
+    print('OccMap reset');
+  end
 
   -- Time decay
   local time = unix.time();

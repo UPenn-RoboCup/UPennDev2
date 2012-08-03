@@ -364,5 +364,5 @@ fsm.head = {'ObstacleChallenge'}
 fsm.body = {'ObstacleChallenge'}
 fsm.avoidance_mode = 1 -- ball dribble
 fsm.avoidance_mode = 0 -- walk towards goal, no ball 
-
+use_rollback_getup = 0;
 

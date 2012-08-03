@@ -246,9 +246,9 @@ fsm.headScan.yawMagGoalie = 90*math.pi/180;
 
 fsm.headScan.pitchTurn0 = 20*math.pi/180;
 fsm.headScan.pitchTurnMag = 20*math.pi/180;
-fsm.headScan.yawMagTurn = 45*math.pi/180;
-fsm.headScan.tScan = 3.0*speedFactor;
-fsm.headScan.timeout = 7.0*speedFactor; --to headLookGoal
+fsm.headScan.yawMagTurn = 55*math.pi/180;
+fsm.headScan.tScan = 1.0*speedFactor;
+fsm.headScan.timeout = 3.0*speedFactor; --to headLookGoal
 
 --------------------------------------------------
 --HeadKick: Fix headangle for approaching
@@ -273,9 +273,8 @@ fsm.headKickFollow.tFollow = 1.0*speedFactor;
 --HeadLookGoal: Look up to see the goal
 --------------------------------------------------
 fsm.headLookGoal={};
---fsm.headLookGoal.yawSweep = 50*math.pi/180;
-fsm.headLookGoal.yawSweep = 70*math.pi/180;
-fsm.headLookGoal.tScan = 1.0*speedFactor;
+fsm.headLookGoal.yawSweep = 50*math.pi/180;
+fsm.headLookGoal.tScan = 2.0*speedFactor;
 fsm.headLookGoal.minDist = 0.35;--If ball is closer than this,don'tsweep
 
 

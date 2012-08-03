@@ -8,13 +8,13 @@ require('Body')
 require('wcm')
 require('mcm')
 
-pitch0 = 33*math.pi/180;
-pitchMag = 20.5*math.pi/180;
+pitch0 = 43*math.pi/180;
+pitchMag = 15.5*math.pi/180;
 yawMag = 10*math.pi/180;
 yaw0 = 0*math.pi/180;
 
 tScan = 3.0;
-timeout = tScan * 4;
+timeout = tScan * 16;
 
 t0 = 0;
 direction = 1;
@@ -73,7 +73,7 @@ function update()
     yaw = yaw0 + yawMag * yawDir;
   end
 
-  Body.set_head_command({yaw, pitch-pitchBias+pitch0});
+  Body.set_head_command({yaw0, pitch-pitchBias+pitch0});
 
 --  if vcm.get_freespace_allBlocked() == 1 then
 --    print('blocked view')

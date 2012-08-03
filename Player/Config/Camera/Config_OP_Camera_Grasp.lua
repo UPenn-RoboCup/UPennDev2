@@ -55,7 +55,7 @@ camera.param[7] = {key='exposure (absolute)',      val={1005}};
 --
 --
 camera.param = {};
-camera.param[1] = {key='brightness',    val={150}};
+camera.param[1] = {key='brightness',    val={120}};
 camera.param[2] = {key='contrast',      val={27}};
 camera.param[3] = {key='saturation',    val={28}};
 camera.param[4] = {key='gain',          val={0}};
@@ -70,7 +70,7 @@ camera.param[7] = {key='exposure (absolute)',      val={800}};
 --camera.lut_file = 'lut_Grasp_GreenOnly_SJ.raw';
 camera.lut_file = 'lut_ob_test';
 camera.lut_file = 'lut_ob_new';
-camera.lut_file = 'lut_801B';
+camera.lut_file = 'lut_802A';
 --camera.lut_file_obs = 'lut_ob_test';
 --camera.lut_file_new = 'lut_ob_new';
 --camera.lut_file_obs = '0427_grasp';

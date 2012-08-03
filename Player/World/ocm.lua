@@ -12,6 +12,7 @@ shsize = {}
 
 shared.occ = {};
 shared.occ.map = 4 * mapsize * mapsize;
+shared.occ.reset = vector.zeros(3);
 shared.occ.odom = vector.zeros(3);
 shared.occ.vel = vector.zeros(3);
 

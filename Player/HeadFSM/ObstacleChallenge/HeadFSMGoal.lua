@@ -30,6 +30,7 @@ sm:set_transition(headLookGoal, 'lost', headSweep);
 
 sm:set_transition(headSweep, 'done', headScanObs);
 
+--sm:set_transition(headScanObs, 'timeout', headScanObs);
 sm:set_transition(headScanObs, 'timeout', headLookGoal);
 
 function entry()

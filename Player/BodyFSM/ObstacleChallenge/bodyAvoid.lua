@@ -17,8 +17,6 @@ tLost = 0.5;
 xTarget = Config.fsm.bodyApproach.xTarget11;
 yTarget = Config.fsm.bodyApproach.yTarget11;
 
-
-
 function entry()
   print(_NAME.." entry");
 
@@ -51,23 +49,23 @@ function update()
     elseif left_obs == 1 then 
   --    vStep[1] = -0.02 
       vStep[1] = 0.0 
-      vStep[2] = -0.02 
-      vStep[3] = 0.2 * attackBearing - 12 * math.pi / 180 
+      vStep[2] = -0.02
+      vStep[3] = 0.2 * attackBearing - 5 * math.pi / 180 
     elseif right_obs == 1 then
   --    vStep[1] = -0.02
       vStep[1] = 0.0
       vStep[2] = 0.02
-      vStep[3] = 0.2 * attackBearing + 12 * math.pi / 180
+      vStep[3] = 0.2 * attackBearing + 5 * math.pi / 180
     else
       vStep[1] = 0.0
   --    vStep[1] = -0.04
-      if attack_angle > 10 * math.pi / 180 then
-        vStep[3] = 0.2 * attackBearing + 12 * math.pi / 180
-      elseif attack_angle < -10 * math.pi / 180 then
-        vStep[3] = 0.2 * attackBearing - 12 * math.pi / 180
-      else
-        vStep[3] = 0.2 * attackBearing;
-      end
+--      if attack_angle > 10 * math.pi / 180 then
+--        vStep[3] = 0.1 * attackBearing + 5 * math.pi / 180
+--      elseif attack_angle < -10 * math.pi / 180 then
+--        vStep[3] = 0.1 * attackBearing - 5 * math.pi / 180
+--      else
+      vStep[3] = 0.2 * attackBearing;
+--      end
     end
   end
   -- if dribble mode, calculate velocity based on ball
@@ -91,10 +89,10 @@ function update()
     vStep = scale*vStep;
   end
 
-  if vcm.get_freespace_allBlocked() == 1 then
-    print('BodyAvoid: view blocked, STOP!!!')
-    vStep[1] = -0.005;
-  end
+--  if vcm.get_freespace_allBlocked() == 1 then
+--    print('BodyAvoid: view blocked, STOP!!!')
+--    vStep[1] = -0.005;
+--  end
 
   walk.set_velocity(vStep[1], vStep[2], vStep[3]);
   

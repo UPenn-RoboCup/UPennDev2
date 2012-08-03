@@ -152,6 +152,18 @@ occ = {};
 occ.mapsize = 50;
 occ.robot_pos = {occ.mapsize / 2, occ.mapsize * 4 / 5};
 
+-- in which range do we say front
+occ.min_front_angle = 80*math.pi/180;
+occ.max_front_angle = 100*math.pi/180;
+-- in which range do we say left
+occ.min_left_angle = 0*math.pi/180;
+occ.max_left_angle = 45*math.pi/180;
+-- in which range do we say right
+occ.min_right_angle = 135*math.pi/180;
+occ.max_right_angle = 180*math.pi/180;
+occ.min_obstacle_range = 3*math.pi/180;
+occ.min_obstacle_distance = 0.2;
+occ.min_side_obstacle_distance = 0.20;
 
 
 --Use line information to fix angle

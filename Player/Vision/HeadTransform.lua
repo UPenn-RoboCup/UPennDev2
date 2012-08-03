@@ -125,6 +125,7 @@ function rayIntersectA(c)
   local p0 = vector.new({0,0,0,1.0});
   local p1 = vector.new({focalA,-(c[1]-x0A),-(c[2]-y0A),1.0});
 
+  outrange = 0;
   p1 = tHead * p1;
   local p0 = tNeck * p0;
   local v = p1 - p0;
@@ -138,12 +139,13 @@ function rayIntersectA(c)
   -- since it is always very far away
   if (t < 0) then
     t = -t;
+    outrange = 1;
   end 
   local p = p0 + t * v;
   local uBodyOffset = mcm.get_walk_bodyOffset();
   p[1] = p[1] + uBodyOffset[1];
   p[2] = p[2] + uBodyOffset[2];
-  return p;
+  return p, outrange;
 end
 
 
@@ -151,6 +153,7 @@ function rayIntersectB(c)
   local p0 = vector.new({0,0,0,1.0});
   local p1 = vector.new({focalB,-(c[1]-x0B),-(c[2]-y0B),1.0});
 
+  outrange = 0;
   p1 = tHead * p1;
   local p0 = tNeck * p0;
   local v = p1 - p0;
@@ -159,12 +162,13 @@ function rayIntersectB(c)
   -- since it is always very far away
   if (t < 0) then
     t = -t;
+    outrange = 1;
   end
   local p = p0 + t * v;
   local uBodyOffset = mcm.get_walk_bodyOffset();
   p[1] = p[1] + uBodyOffset[1];
   p[2] = p[2] + uBodyOffset[2];
-  return p;
+  return p, outrange;
 end
 
 function exit()

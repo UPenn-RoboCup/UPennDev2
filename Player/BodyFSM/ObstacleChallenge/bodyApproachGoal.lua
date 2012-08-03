@@ -25,7 +25,7 @@ function update()
 
   attackBearing = wcm.get_attack_bearing();
   if attackBearing ~= nil then
-    vx = 0.05;
+    vx = 0.03;
     vy = 0;
     va = 0.2 * attackBearing;
     walk.set_velocity(vx, vy, va);

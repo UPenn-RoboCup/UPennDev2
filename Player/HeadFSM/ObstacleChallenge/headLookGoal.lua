@@ -45,7 +45,7 @@ function update()
 
   if vcm.get_freespace_allBlocked() == 1 then
     print('blocked view')
-    return 'blocked'
+--    return 'blocked'
   end
 
   if (t - t0 > tScan) then

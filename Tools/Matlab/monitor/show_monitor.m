@@ -287,7 +287,7 @@ function h=show_monitor()
 
       if MONITOR.enable3==5 
         if isfield(r_mon, 'occ')
-          plot_occ(r_mon.occ);            
+          plot_occ(r_mon);            
 				end
 %        plot_field(MONITOR.h3,MONITOR.fieldtype);
 %        plot_robot( r_struct, r_mon,2,3 );

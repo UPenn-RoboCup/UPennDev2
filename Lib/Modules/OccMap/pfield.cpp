@@ -1,7 +1,7 @@
 #include "OccMap.h"
 
 void OccMap::velocity_generation(double attackBearing, double *velocity,
-                                double attractScale, double repulseScale) {
+                          double attractScale, double repulseScale) {
   double repulsion[2] = {0.0, 0.0}; // robot coordinate x, y
   double attraction[2] = {0.0, 0.0}; // robot coordinate x, y
   int nrepulsion = 0;
@@ -25,7 +25,7 @@ void OccMap::velocity_generation(double attackBearing, double *velocity,
       repulsion[1] += (y - odom_y) / dist * grid_prob;
     }
   }
-  double attractAngle = 0, repulseAngle = 0;
+  double attractAngle = 0, repulseAngle = 0, ballAngle = 0;
   attractAngle = attackBearing;
   
   if (nrepulsion > 0) {

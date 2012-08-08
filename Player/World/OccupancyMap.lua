@@ -102,15 +102,14 @@ function vision_update()
 --  print("scanned freespace width "..nCol);
 end
 
-lastPos = vector.zeros(3); 
-function velocity_update()
-  curTime = unix.time();
-  uOdonmetry = cur_odometry();
-  vel = (uOdometry - lastPos);
+-- Potential Field Based Velocity Generator
+function get_velocity()
+  attackBearing = wcm.get_attack_bearing();
+  vel = vector.zeros(3);
+  vel[1], vel[2], vel[3] = OccMap.get_velocity(attackBearing, 0.04, 0.07);
+--  print(vel[1], vel[2], vel[3])
   ocm.set_occ_vel(vel);
-
-  lastPos = uOdometry; 
-  lastTime = curTime;
+  vel[3] = 0;
 end
 
 function get_obstacle_info()
@@ -235,7 +234,7 @@ counter = 0;
 function update()
   counter = counter + 1;
 --  velocity_update();
-
+  
   if ocm.get_occ_reset() == 1 then
     OccMap.reset();
     ocm.set_occ_reset(0);
@@ -260,6 +259,8 @@ function update()
   end
 
   update_shm()
+
+  get_velocity();
 
 end
 
@@ -291,5 +292,4 @@ function update_shm()
 end
 
 function exit()
-
 end

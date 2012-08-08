@@ -43,6 +43,7 @@ function update()
   pose=wcm.get_pose();
   ballR = math.sqrt(ball.x^2 + ball.y^2);
 
+  attackBearing = wcm.get_attack_bearing();
   --recalculate approach path when ball is far away
   if ballR>0.60 then
     behavior.update();
@@ -55,10 +56,14 @@ function update()
 
   vx,vy,va=position.setAttackerVelocity(homePose);
 
+  vel = ocm.get_occ_vel();
+  vy = vy + 0.2 * vel[2];
   walk.set_velocity(vx,vy,va);
-
-  if ocm.get_obstacle_free() == 1 then
-    return 'obstacle'
+  
+  if Config.fsm.avoidance_mode == 1 then 
+    if ocm.get_obstacle_free() == 1 then
+      return 'obstacle'
+    end
   end
 
   if (t - ball.t > tLost) then

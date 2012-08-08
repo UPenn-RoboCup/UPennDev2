@@ -10,11 +10,8 @@ struct point {
 
 vector<point> pt;
 //void test(vector<point>& pt) {
-void test(void) {
-  point pt2;
-  pt2.x = 5.0;
-  pt2.y = 10.0;
-  pt[1] = pt2;
+void test(double *pt) {
+  pt[1] = 0.896;
 }
 
 int main() {
@@ -24,10 +21,8 @@ int main() {
 //  cout << &pt[1].x << ' ' << &pt[1].y << endl;
 //  cout << pt[1].x << ' ' << pt[1].y << endl;
 //  test(pt);
-  test();
-  cout << &pt[1].x << ' ' << &pt[1].y << endl;
-  cout << pt[1].x << ' ' << pt[1].y << endl;
-  cout << &pt[2].x << ' ' << &pt[2].y << endl;
-  cout << pt[2].x << ' ' << pt[2].y << endl;
+  double pt[3] = {0.564, 0.343, 0.111};
+  test(pt);
+  cout << pt[0] << ' ' << pt[1] << endl;
   return 0;
 }

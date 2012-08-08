@@ -27,7 +27,6 @@ obs.left = 0;
 obs.right = 0;
 obs.free = 0;
  
-
 uOdometry0 = vector.new({0, 0, 0});
 
 odomScale = Config.walk.odomScale or Config.world.odomScale;
@@ -109,7 +108,6 @@ function get_velocity()
   vel[1], vel[2], vel[3] = OccMap.get_velocity(attackBearing, 0.04, 0.07);
 --  print(vel[1], vel[2], vel[3])
   ocm.set_occ_vel(vel);
-  vel[3] = 0;
 end
 
 function get_obstacle_info()

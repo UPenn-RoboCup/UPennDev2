@@ -273,7 +273,7 @@ fsm.headKickFollow.tFollow = 1.0*speedFactor;
 --HeadLookGoal: Look up to see the goal
 --------------------------------------------------
 fsm.headLookGoal={};
-fsm.headLookGoal.yawSweep = 50*math.pi/180;
+fsm.headLookGoal.yawSweep = 45*math.pi/180;
 fsm.headLookGoal.tScan = 2.0*speedFactor;
 fsm.headLookGoal.minDist = 0.35;--If ball is closer than this,don'tsweep
 

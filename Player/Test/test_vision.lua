@@ -51,6 +51,7 @@ targetvel=vector.zeros(3);
 headangle=vector.new({0,10*math.pi/180});
 headsm_running=0;
 bodysm_running=0;
+ocm.set_vision_update(1);
 
 local count = 0;
 local ncount = 100;
@@ -78,8 +79,7 @@ button_pressed = {0,0};
 
 function process_keyinput()
   --Robot specific head pitch bias
-  headPitchBiasComp = 
-	mcm.get_walk_headPitchBiasComp();
+  headPitchBiasComp = mcm.get_walk_headPitchBiasComp();
   headPitchBias = mcm.get_headPitchBias()
 
   --Toggle body SM when button is pressed and then released
@@ -146,20 +146,22 @@ function process_keyinput()
 
     -- reset OccMap
     elseif byte==string.byte(".") then
-      print("get obstacles");
-      nob = ocm.get_ob_num();
-      print(nob,' obstacle found');
-      if (nob > 0) then 
-        obx = ocm.get_ob_x();
-        print('obstacle x')
-        util.ptable(obx);
-        oby = ocm.get_ob_y();
-        print('obstacle y')
-        util.ptable(oby);
-        obdist = ocm.get_ob_dist();
-        print('obstacle dist')
-        util.ptable(obdist);
-      end
+        ocm.set_occ_reset(1);
+
+--      print("get obstacles");
+--      nob = ocm.get_ob_num();
+--      print(nob,' obstacle found');
+--      if (nob > 0) then 
+--        obx = ocm.get_ob_x();
+--        print('obstacle x')
+--        util.ptable(obx);
+--        oby = ocm.get_ob_y();
+--        print('obstacle y')
+--        util.ptable(oby);
+--        obdist = ocm.get_ob_dist();
+--        print('obstacle dist')
+--        util.ptable(obdist);
+--      end
 
     --switch camera 
     elseif byte==string.byte("-") then
@@ -201,7 +203,7 @@ function process_keyinput()
       headsm_running = 1-headsm_running;
       if (headsm_running == 1) then
         Body.set_head_hardness(0.5);
-        HeadFSM.sm:set_state('headScan');
+        HeadFSM.sm:set_state('headLookGoal');
       end
 
     elseif byte==string.byte("2") then	
@@ -300,6 +302,9 @@ function update()
   wcm.set_robot_battery_level(Body.get_battery_level());
   --Set game state to SET to prevent particle resetting
   gcm.set_game_state(1);
+
+--  headAngle = Body.get_head_position();
+--  print(headAngle[1], headAngle[2]);
 
   if (not init)  then
     if (calibrating) then

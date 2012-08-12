@@ -76,3 +76,6 @@ camera.lut_file = 'lut_802A';
 --camera.lut_file_obs = '0427_grasp';
 --camera.lut_file = '0427_grasp';
 --camera.lut_file = 'lut_empty';
+camera.lut_file = 'lut_0811_L512_4PM.raw';
+--camera.lut_file = 'lut_0811_L512_5PM.raw';
+camera.lut_file = 'lut_0811_L512_6PM.raw';

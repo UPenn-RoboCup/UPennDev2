@@ -21,7 +21,6 @@ yTarget = Config.fsm.bodyApproach.yTarget11;
 dapost_check = Config.fsm.daPost_check or 0;
 daPostMargin = Config.fsm.daPostMargin or 15*math.pi/180;
 
-
 function entry()
   print("Body FSM:".._NAME.." entry");
   t0 = Body.get_time();
@@ -73,7 +72,6 @@ function update()
 
   ballYMin = Config.fsm.bodyApproach.ballYMin or 0.20;
 
-
   if math.abs(wAngle) > 45*math.pi/180 then
     vStep[1]=vStep[1] - 0.03;
 
@@ -95,10 +93,14 @@ function update()
 --    print(string.format("Approach velocity:%.2f %.2f\n",vStep[1],vStep[2]));
 --  end
 
-  if ocm.get_obstacle_free() == 1 then 
-    return 'obstacle';
+  if Config.fsm.avoidance_mode == 1 then
+    if ocm.get_obstacle_free() == 1 then 
+      return 'obstacle';
+    end
   end
  
+  vel = ocm.get_occ_vel();
+  vStep[2] = vStep[2] + 0.2 * vel[2];
   walk.set_velocity(vStep[1],vStep[2],vStep[3]);
   
   pose = wcm.get_robot_pose()

@@ -221,6 +221,18 @@ static int lua_occmap_obstacle(lua_State *L) {
   return 1;
 }
 
+static int lua_occmap_pvelocity(lua_State *L) {
+  double attackBearing = luaL_checknumber(L, 1);
+  double attackScale = luaL_checknumber(L, 2);
+  double repulseScale = luaL_checknumber(L, 3);
+  double velocity[3] = {0.0, 0.0, 0.0};
+  map.velocity_generation(attackBearing, velocity, attackScale, repulseScale);
+  lua_pushnumber(L, velocity[0]); 
+  lua_pushnumber(L, velocity[1]); 
+  lua_pushnumber(L, velocity[2]); 
+  return 3;
+}
+
 static const struct luaL_reg OccMap_lib [] = {
   {"init", lua_occmap_init_map},
   {"reset", lua_occmap_reset},
@@ -234,6 +246,7 @@ static const struct luaL_reg OccMap_lib [] = {
   {"retrieve_odometry", lua_occmap_retrieve_odometry},
   {"empty_userdata", lua_occmap_empty_userdata},
   {"get_obstacle", lua_occmap_obstacle},
+  {"get_velocity", lua_occmap_pvelocity},
   {NULL, NULL}
 };
 

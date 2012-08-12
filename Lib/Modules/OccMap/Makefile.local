@@ -13,7 +13,7 @@ all: OccMap
 %.o: %.c
 	$(CC) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
 
-OccMap: luaOccMap.o OccMap.o KmeanCluster.o
+OccMap: luaOccMap.o MapUpdate.o MapRetrieve.o pfield.o KmeanCluster.o
 	$(LD) $(LDFLAGS) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ $(LIB_DIR) -lm
 
 clean:

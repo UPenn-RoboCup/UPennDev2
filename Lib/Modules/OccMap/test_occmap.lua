@@ -70,3 +70,6 @@ end
 
 odom = OccMap.retrieve_odometry();
 util.ptable(odom);
+
+
+OccMap.get_velocity(0.02);

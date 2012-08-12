@@ -76,6 +76,9 @@ public:
   inline double norm(int x1, int y1, int x2, int y2);
   inline double norm(double x1, double y1, double x2, double y2);
 
+  void velocity_generation(double attackBearing, double *velocity, 
+                double attractScale, double repulseScale);
+
 private:
   // Map size in grids
   int map_size;

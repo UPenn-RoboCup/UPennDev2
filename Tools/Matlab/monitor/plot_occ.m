@@ -1,4 +1,7 @@
-function plot_occ(occ)
+function plot_occ(r_mon)
+  x_lim = [-0.5 0.5];
+  y_lim = [-0.2 0.8];
+  occ = r_mon.occ;
   occ_p = occ.map;
   robot_pos = occ.robot_pos();
   map_resolution = 1 / occ.mapsize;
@@ -29,6 +32,21 @@ function plot_occ(occ)
   tri.v(:,1) = tri.v(:,1) - odom_y;
   tri.v(:,2) = tri.v(:,2) + odom_x;
 
+  ball = r_mon.ball;
+  if( ball.detect )
+    posx=-1*ball.y;posy=ball.x;
+    posx=min(max(posx,x_lim(1)),x_lim(2));
+    posy=min(max(posy,y_lim(1)),y_lim(2));
+
+    plot(posx, posy,'ro');
+
+    posx2 = -1* (ball.y+ball.vy);
+    posy2 = (ball.x+ball.vx);
+
+    posx2=min(max(posx2,x_lim(1)),x_lim(2));
+    posy2=min(max(posy2,y_lim(1)),y_lim(2));
+
+  end
 
 %{
 % calculate P field
@@ -75,11 +93,25 @@ pvector(6, :) = pvector(6, :) * reject_gain;
           occ.vel(1) * cos(occ.vel(3)+pi/2) - occ.vel(2) * sin(occ.vel(3)+pi/2), ...
           occ.vel(1) * sin(occ.vel(3)+pi/2) + occ.vel(2) * cos(occ.vel(3)+pi/2),...
           3, 'r--', 'LineWidth',2);
+  % show potential field velocity
+  quiver(tri.v(1,1), tri.v(1,2), ...
+          cos(occ.pvel(3) + odom_a + pi/2), ...
+          sin(occ.pvel(3) + odom_a + pi/2),...
+          0.3, 'b--', 'LineWidth',1);
   % show attack bearing
   quiver(tri.v(1,1), tri.v(1,2), ...
-          cos(occ.attackBearing + pi/2), ...
-          sin(occ.attackBearing + pi/2),...
+          cos(occ.attackBearing + odom_a + pi/2), ...
+          sin(occ.attackBearing + odom_a + pi/2),...
           0.3, 'k--', 'LineWidth',1);
+
+  if (ball.detect)
+    plot([posx posx2],[posy posy2],'r--','LineWidth',2);
+
+%    strballpos = sprintf('Ball: %.2f %.2f\n Vel: %.2f %.2f',...
+%                      		ball.x,ball.y,ball.vx,ball.vy);
+%    b_name=text(posx-0.3, posy-0.3, strballpos);
+%    set(b_name,'FontSize',10);
+  end
 
 %{
   % draw robot body

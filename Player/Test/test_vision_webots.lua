@@ -123,7 +123,8 @@ function process_keyinput()
     OccupancyMap.reset_map();
   elseif byte == string.byte(".") then
     print("get obstacle");
-    ocm.set_occ_get_obstacle(1);
+    OccupancyMap.get_velocity();
+--    ocm.set_occ_get_obstacle(1);
 
 
    elseif byte==string.byte("-") then

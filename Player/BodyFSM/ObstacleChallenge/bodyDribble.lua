@@ -35,8 +35,6 @@ function check_approach_type()
   print("Dribble, target: ",xTarget[2],yTarget[2]);
 end
 
-
-
 function entry()
   print("Body FSM:".._NAME.." entry");
   t0 = Body.get_time();
@@ -92,12 +90,15 @@ function update()
     end
   end
 
-
+  vel = ocm.get_occ_vel();
+  vStep[2] = vStep[2] + 0.2 * vel[2];
   walk.set_velocity(vStep[1],vStep[2],vStep[3]);
 --  walk.set_velocity(obs.vStep[1],obs.vStep[2],obs.vStep[3]);
 
-  if ocm.get_obstacle_free() == 1 then
-    return "obstacle"
+  if Config.fsm.avoidance_mode == 1 then
+    if ocm.get_obstacle_free() == 1 then
+      return "obstacle"
+    end
   end
 
   pose = wcm.get_robot_pose()

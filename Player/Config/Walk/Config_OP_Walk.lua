@@ -28,8 +28,8 @@ walk.supportY = 0.010;
 --walk.qLArm=math.pi/180*vector.new({90,8,-40});
 --walk.qRArm=math.pi/180*vector.new({90,-8,-40});
 
-walk.qLArm=math.pi/180*vector.new({90,2,-40});
-walk.qRArm=math.pi/180*vector.new({90,-2,-40});
+walk.qLArm=math.pi/180*vector.new({90,2,-20});
+walk.qRArm=math.pi/180*vector.new({90,-2,-20});
 
 walk.qLArmKick=math.pi/180*vector.new({90,30,-60});
 walk.qRArmKick=math.pi/180*vector.new({90,-30,-60});

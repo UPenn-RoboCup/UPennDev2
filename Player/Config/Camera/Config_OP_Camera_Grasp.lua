@@ -79,3 +79,4 @@ camera.lut_file = 'lut_802A';
 camera.lut_file = 'lut_0811_L512_4PM.raw';
 --camera.lut_file = 'lut_0811_L512_5PM.raw';
 camera.lut_file = 'lut_0811_L512_6PM.raw';
+camera.lut_file = 'lut_0812_L512.raw';

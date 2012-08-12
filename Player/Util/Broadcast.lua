@@ -465,9 +465,9 @@ function update_img( enable, imagecount )
       sendB();
       sendmap();
     else
-      sendImg();
-      sendA();
-      sendB();
+--      sendImg();
+--      sendA();
+--      sendB();
       sendmap();
     end
   elseif enable==3 then

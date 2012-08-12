@@ -5,6 +5,7 @@ module(..., package.seeall);
 require('Body')
 require('Config')
 require('vcm')
+require('ocm')
 
 t0 = 0;
 yawSweep = Config.fsm.headLookGoal.yawSweep;
@@ -15,6 +16,7 @@ minDist = Config.fsm.headLookGoal.minDist;
 
 function entry()
   print(_NAME.." entry");
+  ocm.set_vision_update(0);
 
   t0 = Body.get_time();
   attackAngle = wcm.get_attack_angle();
@@ -44,17 +46,17 @@ function update()
   ballR = math.sqrt (ball.x^2 + ball.y^2);
 
   if vcm.get_freespace_allBlocked() == 1 then
-    print('blocked view')
+--    print('blocked view')
 --    return 'blocked'
   end
 
   if (t - t0 > tScan) then
-    tGoal = wcm.get_goal_t();
-    if (tGoal - t0 > 0) or ballR<minDist then
+--    tGoal = wcm.get_goal_t();
+--    if (tGoal - t0 > 0) or ballR<minDist then
       return 'timeout';
-    else
-      return 'lost';
-    end
+--    else
+--      return 'lost';
+--    end
   end
 end
 

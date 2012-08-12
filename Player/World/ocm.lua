@@ -16,6 +16,9 @@ shared.occ.reset = vector.zeros(3);
 shared.occ.odom = vector.zeros(3);
 shared.occ.vel = vector.zeros(3);
 
+shared.vision = {};
+shared.vision.update = vector.zeros(1);
+
 -- max 5 obstacle clusters
 shared.obstacle = {};
 shared.obstacle.num = vector.zeros(1);

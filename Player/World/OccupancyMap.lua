@@ -244,7 +244,9 @@ function update()
   OccMap.time_decay(time);
 
 	-- Vision Update
-  vision_update();
+  if ocm.get_vision_update() == 1 then
+    vision_update();
+  end
 
 	-- Odometry Update
   odom_update();

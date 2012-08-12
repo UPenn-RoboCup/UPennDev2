@@ -3,7 +3,7 @@
 #include <time.h>
 #include <stdio.h>
 
-const double obs_threshold = 0.85;
+const double obs_threshold = 0.95;
 
 OccMap::OccMap()
 :map_size(50), map_size_metric(1.0) ,resolution(map_size_metric / map_size)

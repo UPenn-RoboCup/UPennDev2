@@ -8,7 +8,7 @@ require('Body')
 require('wcm')
 require('mcm')
 
-pitch0 = 43*math.pi/180;
+pitch0 = 33*math.pi/180;
 pitchMag = 15.5*math.pi/180;
 yawMag = 10*math.pi/180;
 yaw0 = 0*math.pi/180;

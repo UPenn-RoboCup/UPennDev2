@@ -154,7 +154,7 @@ occ.max_right_angle = 180*math.pi/180;
 occ.min_obstacle_range = 3*math.pi/180;
 --occ.min_obstacle_distance = 0.3;
 occ.min_obstacle_distance = 0.18;
-occ.min_side_obstacle_distance = 0.15;
+occ.min_side_obstacle_distance = 0.14;
 
 world.use_same_colored_goal = 0;
 

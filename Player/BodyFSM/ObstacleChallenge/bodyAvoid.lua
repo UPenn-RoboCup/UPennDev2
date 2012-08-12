@@ -58,6 +58,7 @@ function update()
       vStep[3] = 0.2 * attackBearing + 5 * math.pi / 180
     else
       vStep[1] = 0.0
+      vStep[2] = 0.02
   --    vStep[1] = -0.04
 --      if attack_angle > 10 * math.pi / 180 then
 --        vStep[3] = 0.1 * attackBearing + 5 * math.pi / 180

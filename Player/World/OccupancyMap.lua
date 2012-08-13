@@ -107,7 +107,7 @@ function get_velocity()
   vel = vector.zeros(3);
   vel[1], vel[2], vel[3] = OccMap.get_velocity(attackBearing, 0.04, 0.12);
 --  print(vel[1], vel[2], vel[3])
-  ocm.set_occ_vel(vel);
+  ocm.set_occ_vel(0.5 * vel);
 end
 
 function get_obstacle_info()

@@ -74,11 +74,9 @@ end
 
 --FSM and behavior settings
 fsm.game = 'RoboCup';
---fsm.head = {'GeneralPlayer'};
---fsm.body = {'GeneralPlayer'};
-fsm.head = {'ObstacleChallenge'};
-fsm.body = {'ObstacleChallenge'};
-
+fsm.head = {'GeneralPlayer'};
+fsm.body = {'GeneralPlayer'};
+--
 --Behavior flags, should be defined in FSM Configs but can be overridden here
 fsm.playMode = 1; --1 for demo, 2 for orbit, 3 for direct approach
 fsm.enable_obstacle_detection = 1;
@@ -235,9 +233,11 @@ dev.team = 'TeamFootball'
 -- disable speak for webots which causes lua crash with error if espeak not installed
 speakenable = 0
 
+fsm.head = {'ObstacleChallenge'};
+fsm.body = {'ObstacleChallenge'};
 fsm.avoidance_mode = 1 -- ball dribble
 fsm.avoidance_mode = 0 -- walk towards goal, no ball 
---fsm.avoidance_mode = 2 -- Potential Field based navigation
+fsm.avoidance_mode = 2 -- Potential Field based navigation
 --fsm.avoidance_mode = 3 -- Potential Field based Dribble
 
 --dev.walk='B5Walk'; --Walk with generalized walkkick definitions

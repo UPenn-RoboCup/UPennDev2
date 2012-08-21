@@ -1,5 +1,13 @@
 CWD= $(shell pwd)
 
+ifeq ($(CTCDIR),)
+  ifeq ($(CROSS),true)
+    CTCDIR=$(NaoqiCTC)
+  endif
+endif
+
+export CTCDIR
+
 all:
 	cd Body && make && cd $(CWD)
 	cd Camera && make && cd $(CWD)

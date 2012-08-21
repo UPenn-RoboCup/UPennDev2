@@ -1,5 +1,13 @@
 CWD= $(shell pwd)
 
+ifeq ($(CTCDIR),)
+  ifeq ($(CROSS),true)
+    CTCDIR= $(NaoqiCTC)
+  endif
+endif
+
+export CTCDIR
+
 all: carray cutil unix shm 
 
 carray::

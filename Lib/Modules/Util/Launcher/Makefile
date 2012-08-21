@@ -3,6 +3,11 @@ include ../../../Makefile.inc
 all: launcher
 
 CWD= $(shell pwd)
+ifeq ($(CTCDIR),)
+  ifeq ($(CROSS),true)
+    CTCDIR= $(NaoqiCTC)
+  endif
+endif
 CHAIN= $(CTCDIR)
 
 CXXFLAGS=-O1 -fpic

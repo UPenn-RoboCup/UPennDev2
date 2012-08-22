@@ -1,0 +1,42 @@
+#! /bin/sh
+# webots_controller : launches lua scripts in webots
+
+# Setup dynamic library path
+# ---------------------------------------------------------------------
+Webots_Home=/usr/local/webots
+export LD_LIBRARY_PATH=$Webots_Home/lib:$LD_LIBRARY_PATH
+
+# Change to directory containing this file 
+# ---------------------------------------------------------------------
+RELATIVE_PATH=`echo $0 | sed 's/\(.*\)\/.*$/\1/'`
+cd -P $RELATIVE_PATH
+
+# Run lua script depending on controller arguments
+# ---------------------------------------------------------------------
+if [ "$1" = "keyframe_editor" ]
+then
+  echo Starting keyframe_editor...
+  exec xterm -fn 9x15 -hold -e luajit keyframe_editor.lua
+elif [ "$1" = "bias_editor" ]
+then
+  echo Starting bias_editor...
+  exec xterm -fn 9x15 -hold -e luajit bias_editor.lua
+elif [ "$1" = "test_balance" ]
+then
+  echo Starting test_balance...
+  cd Test
+  exec luajit test_balance.lua
+elif [ "$1" = "test_pid" ]
+then
+  echo Starting test_pid...
+  cd Test
+  exec luajit test_pid.lua
+elif [ "$1" = "test_walk" ]
+then
+  echo Starting test_walk...
+  cd Test
+  exec xterm -fn 9x15 -hold -e luajit test_walk.lua 
+else 
+  echo Starting demo...
+  exec xterm -fn 9x15 -hold -e luajit demo.lua 
+fi

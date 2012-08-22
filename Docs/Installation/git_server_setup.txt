@@ -1,0 +1,149 @@
+This tutorial describes the process to configure the mac osx server to host
+git repositories using the git-http-backend protocol with gitweb access.
+
+last edited: 8/21/21
+
+// Getting Git
+/////////////////////////////////////////////////////////////////////////////
+
+1. ssh into server and install binary git package 
+
+   $ cd ~/Downloads
+   $ curl -O http://git-osx-installer-ppc.googlecode.com/files/git-1.7.7.4-ppc-leopard.dmg 
+   $ hdiutil mount git-1.7.7.4-ppc-leopard.dmg
+   $ sudo installer -verbose -pkg /Volumes/Git\ 1.7.7.4\ ppc\ Leopard/git-1.7.7.4-ppc-leopard.pkg -target /
+   $ hdiutil unmount /Volumes/Git\ 1.7.7.4\ ppc\ Leopard/ 
+
+2. get full git source
+
+   $ cd ~/Downloads
+   $ git clone https://github.com/git/git.git
+   $ cd git
+   $ git checkout v1.7.12
+
+3. uninstall binary git package (why?, because the binary version doesn't come with git-http-backend)
+
+   $ cd ~/Downloads
+   $ hdiutil mount git-1.7.7.4-ppc-leopard.dmg
+   $ sudo sh /Volumes/Git\ 1.7.7.4\ ppc\ Leopard/uninstall.sh
+   $ hdiutil unmount /Volumes/Git\ 1.7.7.4\ ppc\ Leopard/ 
+
+4. build full git source
+
+   $ cd ~/Downloads/git
+   $ make prefix=/usr/local all
+   $ sudo make prefix=/usr/local install
+
+// Configuring the System 
+/////////////////////////////////////////////////////////////////////////////
+
+5. initialize a git project root directory on the RAID disk
+
+   $ cd /Volumes/RAID
+   $ sudo mkdir Git
+   $ sudo chown -R _www Git
+   $ sudo chgrp -R _www Git
+
+6. install the gitweb web interface
+
+   $ sudo mkdir /Library/WebServer/CGI-Executables/gitweb
+   $ sudo mkdir /Library/WebServer/Documents/gitweb
+   $ cd ~/Downloads/git
+   $ sudo make GITWEB_PROJECTROOT="/Volumes/RAID/Git" \
+     GITWEB_CSS="/gitweb/gitweb.css" \
+     GITWEB_LOGO="/gitweb/git-logo.png"  \
+     GITWEB_FAVICON="/gitweb/git-favicon.png"  \
+     GITWEB_JS="/gitweb/gitweb.js" \
+     bindir=/usr/local/bin \
+     gitwebdir=/Library/WebServer/CGI-Executables/gitweb \
+     install-gitweb
+   $ cd /Library/WebServer
+   $ sudo mv CGI-Executables/gitweb/static/* Documents/gitweb
+
+7. configure Apache for efficient http access to git repositories 
+
+   A. create a new file named /etc/apache2/other/git.conf with the following contents : 
+
+      SetEnv GIT_PROJECT_ROOT /Volumes/RAID/Git
+      SetEnv GIT_HTTP_EXPORT_ALL
+      
+      ScriptAliasMatch \
+              "(?x)^/git/(.*/(HEAD | \
+                              info/refs | \
+                              objects/(info/[^/]+ | \
+                                       [0-9a-f]{2}/[0-9a-f]{38} | \
+                                       pack/pack-[0-9a-f]{40}\.(pack|idx)) | \
+                              git-(upload|receive)-pack))$" \
+              /usr/local/libexec/git-core/git-http-backend/$1
+      ScriptAlias /git /Library/WebServer/CGI-Executables/gitweb/gitweb.cgi
+      
+      <Directory /Library/WebServer/CGI-Executables/gitweb>
+          Options ExecCGI +FollowSymLinks +SymLinksIfOwnerMatch
+          AllowOverride All
+          order allow,deny
+          Allow from all
+          AddHandler cgi-script .cgi
+          DirectoryIndex gitweb.cgi
+          AuthType Basic
+          AuthName "gitweb authentication"
+          AuthUserFile /etc/apache2/other/authfiles/gitweb
+          Require valid-user
+      </Directory>
+
+   B. make a directory to hold htaccess files for gitweb and repository access :
+    
+      $ sudo mkdir /etc/apache2/other/authfiles
+
+   C. create initial htaccess file for gitweb authorization (full read-only access to all repositories)
+
+      $ sudo htpasswd -c /etc/apache2/other/authfiles/gitweb <username>
+ 
+   C. edit the /etc/apache2/httpd.conf file and add the following line :
+     
+      Include "/etc/apache2/other/git.conf" 
+
+// Adding a new repository (here project.git is used as an example)
+/////////////////////////////////////////////////////////////////////////////
+   
+8. add a new repository
+
+   $ cd /Volumes/RAID/Git
+   $ sudo su
+   $ mkdir project.git
+   $ cd project.git
+   $ git init --bare --shared
+   $ cd .. 
+   $ chown -R _www project.git
+   $ chgrp -R _www project.git
+   $ exit
+
+// Adding user authentication (here project.git is used as an example)
+/////////////////////////////////////////////////////////////////////////////
+
+9. add user authentication
+   
+   A. Create a user authorization file for the repository
+ 
+      $ sudo htpasswd -c /etc/apache2/other/authfiles/project.git <username>
+
+   B. Add a location directive to /etc/apache2/other/git.conf for private access to the repository
+     
+      <LocationMatch "/git/project.git/.*">
+          AuthType Basic
+          AuthName "project.git authentication"
+          AuthUserFile /etc/apache2/other/authfiles/project.git
+          Require valid-user
+      </LocationMatch>
+
+   C. Add additional usernames to authorization file
+     
+      $ sudo htpasswd /etc/apache2/other/authfiles/project.git <username>
+
+// Resources
+/////////////////////////////////////////////////////////////////////////////
+
+   http://kasunh.wordpress.com/2011/01/15/git-over-https/
+   http://www.kernel.org/pub/software/scm/git/docs/git-http-backend.html
+   http://git-scm.com/2010/03/04/smart-http.html
+   http://cafenate.wordpress.com/2012/08/18/building-git-on-mac-with-docs/
+   http://www.jmesnil.net/weblog/2010/11/08/updated-gitweb-setup-on-mac-os-x/

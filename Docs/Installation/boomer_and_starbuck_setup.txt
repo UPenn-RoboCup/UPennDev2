@@ -1,0 +1,57 @@
+1. Install Ubuntu
+
+download ubuntu 12.04 64-bit ISO
+burn a cd and boot the disc
+install ubuntu, choose to install third party drivers
+setup username romela, password r2d2c3po
+for partitioning: make the root partition ext4, leave about 4 Gb swap space
+
+2. Install Updates
+
+install all updates when prompeted by the update manager
+
+3. Install utilities
+
+sudo apt-get install build-essential lua5.1 liblua5.1-0-dev luajit swig
+libboost1.46-dev subversion git-core vim emacs openssh-server
+
+5. Install webots
+
+download webots debian 64-bit deb file from http://www.cyberbotics.com/linux
+double click deb file to install
+
+6. Install matlab
+
+** Need to look into further for access from multiple accounts
+
+7. Add user accounts
+
+log into romela account.
+go to Menu->System->Users and Groups
+add new user, choose username and password
+go to Advance Settings and check all User Privileges
+
+8. Install pcan-usb driver
+
+Download peak-linux-drive-7.4.tar.gz from http://www.peak-system.com/fileadmin/media/linux/index.htm
+
+Install dependencies:
+sudo apt-get install libpopt-dev
+
+Install pcan driver:
+tar xzf peak-linux-driver-7.6.tar.gz
+cd peak-linux-driver-7.6
+make
+sudo make install
+
+9. Install Codebase
+
+cd ~
+svn checkout http://romela.me.vt.edu:8080/Saffir
+
+10. Install SocketCAN utilities
+
+cd ~
+svn checkout http://svn.berlios.de/svnroot/repos/socketcan/trunk SocketCAN
+cd SocketCAN/can-utils
+make

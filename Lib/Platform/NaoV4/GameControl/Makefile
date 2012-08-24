@@ -1,4 +1,9 @@
 CWD= $(shell pwd)
+ifeq ($(CTCDIR),)
+  ifeq ($(CROSS),true)
+    CTCDIR= $(NaoqiCTC)
+  endif
+endif
 CHAIN= $(CTCDIR)
 
 all: naoqi 

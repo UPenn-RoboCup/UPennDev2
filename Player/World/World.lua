@@ -80,7 +80,7 @@ function init_particles()
       SoundFilter.reset();
     end
   else
-    PoseFilter.initialize();  
+    PoseFilter.initialize(nil, nil);  
   end
 end
 

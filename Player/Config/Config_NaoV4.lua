@@ -1,20 +1,19 @@
 module(..., package.seeall);
-require('util')
+
 require('vector')
 require('parse_hostname')
 
 platform = {};
 platform.name = 'NaoV4'
 
-params = {}
-params.name = {"Walk", "World", "Kick", "Vision", "FSM", "Camera"};
-params.World_Platform = "Nao"
-params.Walk = 'FastStable' 
-params.Camera = 'Grasp'
-
-util.LoadConfig(params, platform)
-
 listen_monitor=1
+
+function loadconfig(configName)
+  local localConfig=require(configName);
+  for k,v in pairs(localConfig) do
+    Config[k]=localConfig[k];
+  end
+end
   
 -- Game Parameters
 
@@ -25,6 +24,24 @@ game.robotID = game.playerID;
 game.teamColor = parse_hostname.get_team_color();
 game.role = game.playerID-1; -- 0 for goalie
 game.nPlayers = 4;
+
+
+param = {}
+param.world = 'World/Config_Nao_World'
+param.walk = 'Walk/Config_NaoV4_Walk_FastStable' 
+param.kick = 'Kick/Config_Nao_Kick'
+param.vision = 'Vision/Config_NaoV4_Vision'
+param.camera = 'Vision/Config_NaoV4_Camera_Levine512'
+param.fsm = 'FSM/Config_NaoV4_FSM'
+
+loadconfig(param.world)
+loadconfig(param.kick)
+loadconfig(param.vision)
+loadconfig(param.walk)
+
+--Location Specific Camera Parameters--
+loadconfig(param.camera)
+
 
 -- Devive Interface Libraries
 dev = {};
@@ -40,10 +57,12 @@ dev.walk = 'Walk/NaoV4Walk';
 dev.kick = 'NewKick';
 
 --Speak enable
-speakenable = 1;
+speakenable = 0;
 
 
 -- FSM Parameters
+fsm = {};
+loadconfig(param.fsm)
 fsm.game = 'RoboCup';
 if game.role == 0 then
   fsm.body = {'NaoGoalie'}

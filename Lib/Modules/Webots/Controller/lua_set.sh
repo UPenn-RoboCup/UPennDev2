@@ -1,6 +1,6 @@
 #!/bin/sh
 
-EXT_TERM=1
+EXT_TERM=0
 LUA=lua
 #LUA=luajit
 

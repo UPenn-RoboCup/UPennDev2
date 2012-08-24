@@ -1,16 +1,11 @@
-include ../../../Makefile.inc
+include ../../Makefile.inc
 
-all: launcher
+all: joystick
 
 CWD= $(shell pwd)
-ifeq ($(CTCDIR),)
-  ifeq ($(CROSS),true)
-    CTCDIR= $(NaoqiCTC)
-  endif
-endif
 CHAIN= $(CTCDIR)
 
-CXXFLAGS=-O1 -fpic
+CXXFLAGS=-O2 -fpic
 
 %.o: %.cc
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
@@ -19,7 +14,7 @@ CXXFLAGS=-O1 -fpic
 %.o: %.c
 	$(CC) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
 
-launcher: lualauncher.o
+joystick: luajoystick.o
 	$(CXX) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ $(LIBRT)
 
 

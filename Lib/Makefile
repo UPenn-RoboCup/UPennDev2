@@ -11,8 +11,6 @@ else
 REGEX=-regex '.*\($(SHLIBEXT)\|$(LUAEXT)\|sh\)'
 endif
 
-CROSS= false
-
 ifndef OSTYPE
   OSTYPE = $(shell uname -s|awk '{print tolower($$0)}')
 endif
@@ -184,7 +182,7 @@ setup_nao: nao setup_util setup_image setup_comm
 	rm -f $(NAODEPLUA51DIR)/*;
 	@echo "\n"
 
-setup_naov4: naov4 setup_util setup_image setup_comm setup_occmap
+setup_naov4: naov4 setup_util setup_image setup_comm
 	@echo "Setting up Nao V4 Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
 	find $(NAOV4DIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;

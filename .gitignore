@@ -1,4 +1,14 @@
+# ignore standard build files
+
 *.o
 *.a
 *.so
 *~
+
+# ignore all symbolic links
+
+Webots
+Config/Config.lua
+Framework/Robot/Body.lua
+Run/comms_manager
+Run/init_robot

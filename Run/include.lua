@@ -18,7 +18,7 @@ end
 
 -- get absolute path prefix for code directory
 local pwd = run_shell_command('pwd') 
-local prefix = string.gsub(pwd, 'Code.*$', 'Code')
+local prefix = string.gsub(pwd, '/Run.*$', '')
 
 -- set path for lua modules 
 package.path = prefix.."/Config/?.lua;"..package.path

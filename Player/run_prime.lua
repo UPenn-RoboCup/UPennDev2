@@ -68,10 +68,10 @@ if( logs ) then
   end
 end
 
-print(Config.dev.team..' entry...')
 io:flush()
 
 if( net ) then
+  print(Config.dev.team..' entry...')
   require 'Team'
   Team.entry(true) -- true means we have the primesense
 end

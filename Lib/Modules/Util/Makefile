@@ -8,7 +8,7 @@ endif
 
 export CTCDIR
 
-all: carray cutil unix shm 
+all: carray cutil unix shm zlib
 
 carray::
 	cd CArray && make && cd $(CWD)
@@ -22,11 +22,12 @@ unix::
 shm::
 	cd Shm && make && cd $(CWD)
 
-primesense::
-	cd PrimeSense && make && cd $(CWD)
+zlib::
+	cd Z && make && cd $(CWD)
 
 clean::
 	cd CArray && make clean && cd $(CWD)
 	cd CUtil && make clean && cd $(CWD)
 	cd Unix && make clean && cd $(CWD)
 	cd Shm && make clean && cd $(CWD)
+	cd Z && make clean && cd $(CWD)

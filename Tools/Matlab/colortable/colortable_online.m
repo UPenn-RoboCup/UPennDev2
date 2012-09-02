@@ -535,7 +535,7 @@ toc;
     % Show Label A
     colormap(cmap);
 %    cla(DATA.LabelAxes);
-    set(DATA.Label, 'CData', labelA');
+    set(DATA.Label, 'CData', labelA);
 %    image(labelA', 'Parent', DATA.LabelAxes);
 
 %    r_mon = ROBOT.get_monitor_struct();

@@ -1,31 +1,39 @@
 module(..., package.seeall);
 
-myplayer = 0;
 myhand = 'right'
 timeout = .5;
+nPlayers = Config.game.nPlayers;
+nPlayers = 2
 
-function init(forPlayer)
-  myplayer = forPlayer;
-  primecm = require('primecm'..forPlayer)
-  boxercm = require('boxercm'..forPlayer)
+pc = {}	
+bc = {}
+for i=1,nPlayers do
+	pc[i] = require('primecm'..i)
+	bc[i] = require('boxercm'..i)
 end
 
 function entry()
-  print("Boxer ".._NAME.." entry");
+	boxercm = bc[playerID];
+	primecm = pc[playerID];
+
+  print("Boxer "..playerID..': '.._NAME.." entry");
   t0 = unix.time();
 
   if( myhand=='left' ) then
-    print('\n==\n'..myplayer..': left uppercut!\n==\n')
+    print('\n==\n'..playerID..': left uppercut!\n==\n')
     boxercm.set_body_punchL(2);
     t0L = unix.time();
   else
-    print('\n==\n'..myplayer..': right uppercut!\n==\n')
+    print('\n==\n'..playerID..': right uppercut!\n==\n')
     boxercm.set_body_punchR(2);
     t0R = unix.time();
   end
 end
 
 function update()
+	boxercm = bc[playerID];
+	primecm = pc[playerID];
+
   t = unix.time();
 
   -- TODO: Need to check the confidence values!
@@ -70,3 +78,4 @@ end
 function exit()
   print("Boxer ".._NAME.." exit");  
 end
+

@@ -20,7 +20,7 @@ end
 if( isempty(sk) && ~run_from_log )
     disp('Recreating SHM block access...')
     startup;
-    team = 18;
+    team = 0;
     player = 1;
     sk = shm_primesense(team,player);
     sk2 = shm_primesense(team,player+1);
@@ -45,11 +45,11 @@ use_3d = 0;
 
 %% Joint Settings
 jointNames = { ...
-    'Head', 'Neck', 'Torso', 'Waist', ... %1-4
-    'CollarL','ShoulderL', 'ElbowL', 'WristL', 'HandL', 'FingerL', ... %5-10 % SHOULD BE 7-12!
-    'CollarR','ShoulderR', 'ElbowR', 'WristR', 'HandR', 'FingerR', ... %11-16
-    'HipL', 'KneeL', 'AnkleL', 'FootL', ... % 17-20
-    'HipR', 'KneeR', 'AnkleR', 'FootR'... %21-24
+    'Head', 'Neck', 'Torso', 'Waist', ...
+    'CollarL','ShoulderL', 'ElbowL', 'WristL', 'HandL', 'FingerL', ...
+    'CollarR','ShoulderR', 'ElbowR', 'WristR', 'HandR', 'FingerR', ...
+    'HipL', 'KneeL', 'AnkleL', 'FootL', ...
+    'HipR', 'KneeR', 'AnkleR', 'FootR'...
     };
 nJoints = numel(jointNames);
 % Set up indexing

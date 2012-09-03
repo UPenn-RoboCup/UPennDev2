@@ -1,13 +1,12 @@
 function t_passed = Skeleton(varargin)
 
-global sk SKLOGGER LOG jointNames positions rots confs
-
-%fprintf('Number of arguments: %d\n',nargin);
-%celldisp(varargin);
+global SKLOGGER LOG jointNames players
 
 %% Check if running from a log file
 %% Run Skeleton('l') to run from a LOG
 %% load the log into the workspace
+%fprintf('Number of arguments: %d\n',nargin);
+%celldisp(varargin);
 run_from_log = 0;
 if( find([varargin{:}]=='l') )
     run_from_log = 1;
@@ -16,14 +15,38 @@ else
     disp('Running Live!');
 end
 
+%% Initialize variables
+jointNames = { ...
+    'Head', 'Neck', 'Torso', 'Waist', ...
+    'CollarL','ShoulderL', 'ElbowL', 'WristL', 'HandL', 'FingerL', ...
+    'CollarR','ShoulderR', 'ElbowR', 'WristR', 'HandR', 'FingerR', ...
+    'HipL', 'KneeL', 'AnkleL', 'FootL', ...
+    'HipR', 'KneeR', 'AnkleR', 'FootR'...
+    };
+nJoints = numel(jointNames);
+
+nPlayers = 2;
+if( run_from_log )
+    nPlayers = 1;
+end
+
+if ~( exist('players','var') && numel( players )>=nPlayers )
+    players = cell(nPlayers,1);
+    for pl=1:nPlayers
+        players{pl}.positions = zeros(nJoints,3);
+        players{pl}.rots = zeros(3,3,nJoints);
+        players{pl}.confs = zeros(nJoints,2);
+    end
+end
+
 %% Access SHM quickly
-if( isempty(sk) && ~run_from_log )
+if( ~isfield( players{1},'sk' ) && ~run_from_log )
     disp('Recreating SHM block access...')
     startup;
     team = 0;
-    player = 1;
-    sk = shm_primesense(team,player);
-    sk2 = shm_primesense(team,player+1);
+    for pl=1:nPlayers
+        players{pl}.sk = shm_primesense(team,pl);
+    end
 end
 
 %% Recording Logs
@@ -44,14 +67,6 @@ rotation = 0;
 use_3d = 0;
 
 %% Joint Settings
-jointNames = { ...
-    'Head', 'Neck', 'Torso', 'Waist', ...
-    'CollarL','ShoulderL', 'ElbowL', 'WristL', 'HandL', 'FingerL', ...
-    'CollarR','ShoulderR', 'ElbowR', 'WristR', 'HandR', 'FingerR', ...
-    'HipL', 'KneeL', 'AnkleL', 'FootL', ...
-    'HipR', 'KneeR', 'AnkleR', 'FootR'...
-    };
-nJoints = numel(jointNames);
 % Set up indexing
 left_idx   = zeros(nJoints,1);
 right_idx  = zeros(nJoints,1);
@@ -59,11 +74,6 @@ center_idx = zeros(nJoints,1);
 left_idx([5:10 17:20]) = 1;
 right_idx([11:16 21:24]) = 1;
 center_idx([1:4]) = 1;
-
-%% Initialize variables
-positions = zeros(nJoints,3);
-rots = zeros(3,3,nJoints);
-confs = zeros(nJoints,2);
 
 %% Figure
 hfig = figure(1);
@@ -74,22 +84,30 @@ set(hfig,'KeyPressFcn',@KeyResponse);
     function init_skel(is_3d)
         clf;
         if(is_3d~=1)
-            p_left=plot( positions(:,1), positions(:,2), 'o', ...
-                'MarkerEdgeColor','k', 'MarkerFaceColor', 'r', 'MarkerSize',10 );
-            hold on;
-            p_right=plot( positions(:,1), positions(:,2), 'o', ...
-                'MarkerEdgeColor','k', 'MarkerFaceColor', 'g', 'MarkerSize',10 );
-            p_center=plot( positions(:,1), positions(:,2), 'o', ...
-                'MarkerEdgeColor','k', 'MarkerFaceColor', 'b', 'MarkerSize',10 );
+            for pll=1:nPlayers
+                positions = players{pll}.positions;
+                confs = players{pll}.confs;
+                players{pll}.p_left=plot( positions(:,1), positions(:,2), 'o', ...
+                    'MarkerEdgeColor','k', 'MarkerFaceColor', 'r', 'MarkerSize',10 );
+                hold on;
+                players{pll}.p_right=plot( positions(:,1), positions(:,2), 'o', ...
+                    'MarkerEdgeColor','k', 'MarkerFaceColor', 'g', 'MarkerSize',10 );
+                players{pll}.p_center=plot( positions(:,1), positions(:,2), 'o', ...
+                    'MarkerEdgeColor','k', 'MarkerFaceColor', 'b', 'MarkerSize',10 );
+            end
             axis([-1 1 -1.25 1.25]);
         else
-            p_left=plot3( positions(:,1), positions(:,2),positions(:,3), 'o', ...
-                'MarkerEdgeColor','k', 'MarkerFaceColor', 'r', 'MarkerSize',10 );
-            hold on;
-            p_right=plot3( positions(:,1), positions(:,2),positions(:,3), 'o', ...
-                'MarkerEdgeColor','k', 'MarkerFaceColor', 'g', 'MarkerSize',10 );
-            p_center=plot3( positions(:,1), positions(:,2),positions(:,3), 'o', ...
-                'MarkerEdgeColor','k', 'MarkerFaceColor', 'b', 'MarkerSize',10 );
+            for pll=1:nPlayers
+                positions = players{pll}.positions;
+                confs = players{pll}.confs;
+                players{pll}.p_left=plot3( positions(:,1), positions(:,2),positions(:,3), 'o', ...
+                    'MarkerEdgeColor','k', 'MarkerFaceColor', 'r', 'MarkerSize',10 );
+                hold on;
+                players{pll}.p_right=plot3( positions(:,1), positions(:,2),positions(:,3), 'o', ...
+                    'MarkerEdgeColor','k', 'MarkerFaceColor', 'g', 'MarkerSize',10 );
+                players{pll}.p_center=plot3( positions(:,1), positions(:,2),positions(:,3), 'o', ...
+                    'MarkerEdgeColor','k', 'MarkerFaceColor', 'b', 'MarkerSize',10 );
+            end
             axis([-1 1 -1.25 1.25 0 4]);
         end
         
@@ -97,7 +115,7 @@ set(hfig,'KeyPressFcn',@KeyResponse);
 init_skel(use_3d);
 
 %% Keypress Actions
-    function KeyResponse(h_obj, evt)
+    function KeyResponse(~, evt)
         key = lower(evt.Key);
         if key=='l'
             % No toggling either, if running from logs
@@ -136,12 +154,15 @@ while( 1 )
     tstart=tic;
     %% Loop through each joint
     if( ~run_from_log )
-        for j=1:nJoints
-            jName = jointNames{j};
-            joint = sk.get_joint( jName );
-            positions(j,:) = joint.position;
-            rots(:,:,j) = joint.rot;
-            confs(j,:) = joint.confidence;
+        for pl=1:nPlayers
+            sk = players{pl}.sk;
+            for j=1:nJoints
+                jName = jointNames{j};
+                joint = sk.get_joint( jName );
+                players{pl}.positions(j,:) = joint.position;
+                players{pl}.rots(:,:,j) = joint.rot;
+                players{pl}.confs(j,:) = joint.confidence;
+            end
         end
     else
         % Grab data from log file source
@@ -153,9 +174,9 @@ while( 1 )
         if(counter>logsz)
             return;
         end
-        positions = LOG{counter}.positions;
-        rots = LOG{counter}.rots;
-        confs = LOG{counter}.confs;
+        players{1}.positions = LOG{counter}.positions;
+        players{1}.rots = LOG{counter}.rots;
+        players{1}.confs = LOG{counter}.confs;
         % Address log file timing concerns
         if(counter+1>logsz)
             twait = 0;
@@ -167,24 +188,34 @@ while( 1 )
     %% Plot the data
     % Do not display while logging, so as to get 30fps
     if(~rotation && ~logging)
-        %positions( left_idx&confs(:,1)>0 )
-        set(p_left,   'XData', positions( left_idx&confs(:,1)>0,   1));
-        set(p_left,   'YData', positions( left_idx&confs(:,1)>0,   2));
-        set(p_left,   'ZData', positions( left_idx&confs(:,1)>0,   3));
-        
-        set(p_right,  'XData', positions( right_idx&confs(:,1)>0,  1));
-        set(p_right,  'YData', positions( right_idx&confs(:,1)>0,  2));
-        set(p_right,  'ZData', positions( right_idx&confs(:,1)>0,  3));
-        
-        set(p_center, 'XData', positions( center_idx&confs(:,1)>0, 1));
-        set(p_center, 'YData', positions( center_idx&confs(:,1)>0, 2));
-        set(p_center, 'ZData', positions( center_idx&confs(:,1)>0, 3));
-        
+        for pl=1:nPlayers
+            positions = players{pl}.positions;
+            confs = players{pl}.confs;
+            p_left = players{pl}.p_left;
+            p_right = players{pl}.p_right;
+            p_center = players{pl}.p_center;
+            set(p_left,   'XData', positions( left_idx&confs(:,1)>0,   1));
+            set(p_left,   'YData', positions( left_idx&confs(:,1)>0,   2));
+            set(p_left,   'ZData', positions( left_idx&confs(:,1)>0,   3));
+            
+            set(p_right,  'XData', positions( right_idx&confs(:,1)>0,  1));
+            set(p_right,  'YData', positions( right_idx&confs(:,1)>0,  2));
+            set(p_right,  'ZData', positions( right_idx&confs(:,1)>0,  3));
+            
+            set(p_center, 'XData', positions( center_idx&confs(:,1)>0, 1));
+            set(p_center, 'YData', positions( center_idx&confs(:,1)>0, 2));
+            set(p_center, 'ZData', positions( center_idx&confs(:,1)>0, 3));
+        end
     end
     
     %% Show Rotation Matrix
     if(rotation && ~logging)
-        [roll pitch yaw] = show_rotation(1);
+        pl = 1;
+        [roll pitch yaw] = show_rotation(pl);
+        players{pl}.roll = roll;
+        players{pl}.pitch = pitch;
+        players{pl}.yaw = yaw;
+        
     end
     %% Execute Logging
     if( logging && ~run_from_log )

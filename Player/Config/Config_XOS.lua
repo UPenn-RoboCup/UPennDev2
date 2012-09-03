@@ -23,7 +23,7 @@ dev.ip_wireless = '192.168.126.255';
 dev.ip_wireless_port = 54321;
 dev.game_control='XOSGameControl';
 dev.team='TeamNull';
-dev.walk='NewNewNewNewWalk';
+dev.walk='BetterWalk';
 dev.kick = 'NewNewKick'
 
 speak = {}

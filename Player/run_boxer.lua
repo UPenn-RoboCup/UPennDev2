@@ -9,14 +9,24 @@ playerID = Config.game.playerID;
 nPlayers = Config.game.nPlayers;
 nPlayers = 2
 
+-- Check inputs
+print("Num args: ",#arg)
+inp_logs = {};
+if( arg[1] ) then
+  nPlayers = #arg
+  for i=1,nPlayers do
+    dofile( arg[i] )
+    inp_logs[i] = log;
+  end
+end
+
 print '=====================';
 print('Team '..teamID,'Player '..playerID)
 print '=====================';
 
 -- Initialize FSMs
-skeleton.entry()
+skeleton.entry(inp_logs)
 for pl=1,nPlayers do
-	print('init:',pl)
 	Boxer.entry(pl);
 end
 
@@ -27,7 +37,9 @@ while true do
   local t_start = unix.time();
   
   -- Updates
-	skeleton.update();
+	if not skeleton.update() then
+		break;
+	end
 	for pl=1,nPlayers do
   	Boxer.update(pl);
 	end
@@ -44,3 +56,7 @@ while true do
 
 end
 
+skeleton.exit()
+for pl=1,nPlayers do
+	Boxer.exit(pl)
+end

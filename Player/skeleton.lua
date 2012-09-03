@@ -1,12 +1,15 @@
 module(... or "",package.seeall)
+require 'unix'
 
 function entry( mylogs )
 
-	if(mylogs) then
+	if(mylogs and #mylogs>0) then
+		print("Running Skeleton from logs for "..#mylogs.." users.")
 		logs = mylogs
 		nPlayers = #logs
 		timestamp0 = 0
-		timestamp_last = timestamp0
+		count = 0
+		timestamp = timestamp0
 		t_update = unix.time()
 	else
 		require 'primesense'
@@ -24,32 +27,40 @@ end
 
 function update()
 	if(logs) then
-		update_logs()
+		return update_logs()
 	else
-		update_primesense()
+		return update_primesense()
 	end
 end
 
 function update_logs()
-
+	count = count+1
+	if(count>#logs[1]) then
+		return false
+	end
+	--print("Log Count:",count)
+	timestamp_last = timestamp
+	timestamp = logs[1][count].t;
+	timestamp_diff = timestamp - timestamp_last
 	for pl=1,nPlayers do
 		log = logs[pl];
-		timestamp_last = timestamp
-		timestamp = log[count].t;
-		timestamp_diff = timestamp - timestamp_last
-		pos = { log[count].x[i],log[count].y[i],log[count].z[i] };
-		confidence = { log[count].posconf[i],log[count].rotconf[i] };
-		primecm = pc[pl];
-		primecm['set_position_'..v]( pos );
-		primecm['set_confidence_'..v]( confidence );
+		for i,v in ipairs(pc[playerID].jointNames) do
+			pos = { log[count].x[i],log[count].y[i],log[count].z[i] };
+			confidence = { log[count].posconf[i],log[count].rotconf[i] };
+			primecm = pc[pl];
+			primecm['set_position_'..v]( pos );
+			primecm['set_confidence_'..v]( confidence );
+		end
 		primecm.set_skeleton_found( 1 );
 		primecm.set_skeleton_timestamp( timestamp-timestamp0 );
 	end
-	t_last_update = t_update;
-	t_update = unix.time();
-	t_update_diff = t_update - t_last_update;
-	unix.usleep( math.max(0,timestamp_diff-t_update_diff) );
 
+	-- Timing	
+	t_update_diff = unix.time() - t_update;
+	unix.usleep( 1e6*math.max(0,timestamp_diff-t_update_diff) );
+	t_update = unix.time();
+
+	return true
 end
 
 function update_primesense()
@@ -79,7 +90,7 @@ function update_primesense()
 			primecm.set_skeleton_timestamp( timestamp-timestamp0 );
 		end
 	end
-	
+	return true
 end
 
 function exit()

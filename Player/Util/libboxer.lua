@@ -4,17 +4,23 @@ require 'vector'
 require 'Kinematics'
 
 playerID = Config.game.playerID;
+--nPlayers = Config.game.nPlayers;
+nPlayers = 2;
 
-function init( forPlayer )
-  primecm = require('primecm'..forPlayer)  
+-- Require the primecm modules
+pc = {};
+for i=1,nPlayers do
+	pc[i] = require('primecm'..i)
 end
 
-function check_enabled()
+function check_enabled(playerID)
+	primecm = pc[playerID]
   local enabled = primecm.get_skeleton_found();
   return enabled==1;
 end
 
-function get_arm_angles()
+function get_arm_angles(playerID)
+	primecm = pc[playerID]
   -- Default is nil
   qLArm = nil;
   qRArm = nil;
@@ -50,6 +56,7 @@ function get_arm_angles()
   return qLArm, qRArm;
 end
 
+-- Helper function
 function get_scaled_prime_arm( arm ) --left is 0
   --%const double upperArmLength = .060;  //OP, spec
   --%const double lowerArmLength = .129;  //OP, spec
@@ -113,7 +120,8 @@ function get_scaled_prime_arm( arm ) --left is 0
   return op_coord,el;
 end
 
-function get_torso_orientation()
+function get_torso_orientation(playerID)
+primecm = pc[playerID]
 
   rpy = vector.zeros(3);
   -- Grab Confidence

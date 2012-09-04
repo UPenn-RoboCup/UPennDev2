@@ -10,8 +10,8 @@ WorldInfo {
   basicTimeStep 40
 }
 Viewpoint {
-  orientation -1 0 0 0.8
-  position 0 8 8
+  orientation -0.6 -0.8 -0.2 0.98
+  position -0.06 1.4 2
 }
 Background {
   skyColor [

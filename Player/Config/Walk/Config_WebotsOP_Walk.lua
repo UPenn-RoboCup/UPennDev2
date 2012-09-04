@@ -1,6 +1,21 @@
 module(..., package.seeall); require('vector')
--- Walk Parameters
 
+--Sit/stand stance parameters
+stance={};
+
+stance.bodyHeightSit = 0.20;
+stance.supportXSit = -0.010;
+stance.bodyHeightDive= 0.295;
+stance.bodyTiltDive = 0;
+stance.bodyTiltStance=0*math.pi/180; --bodyInitial bodyTilt, 0 for webots
+stance.dpLimitStance=vector.new({.04, .03, .07, .4, .4, .4});
+stance.dpLimitSit=vector.new({.1,.01,.06,.1,.3,.1});
+
+stance.dpLimitStance=vector.new({.04, .03, .07, .4, .9, .4});
+stance.dpLimitDive = vector.new({.04, .03, .07, .4, .9, .4});
+
+
+-- Walk Parameters
 walk = {};
 
 ----------------------------------------------

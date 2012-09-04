@@ -1,6 +1,5 @@
 module(..., package.seeall);
 
-
 -- Vision Parameters
 
 color = {};
@@ -23,6 +22,13 @@ vision.enable_line_detection = 1;
 vision.enable_spot_detection = 0;
 -- use this to enable midfield landmark detection
 vision.enable_midfield_landmark_detection = 1;
+--vision.enable_robot_detection = 1;
+vision.enable_robot_detection = 0;
+-- use this to enable freespace detection and occupancy map
+vision.enable_freespace_detection = 1;
+-- use this to enable obstacle specific colortable
+vision.enable_lut_for_obstacle = 1;
+
 -- use this to enable copying images to shm (for colortables, testing)
 vision.copy_image_to_shm = 1;
 -- use this to enable storing all images
@@ -31,24 +37,11 @@ vision.store_all_images = 1;
 vision.store_goal_detections = 0;
 -- use this to enable storing images where the ball was detected
 vision.store_ball_detections = 0;
+
 -- use this to substitute goal check with blue/yellow ball check
 vision.use_point_goal = 0;
-
---vision.enable_robot_detection = 1;
-vision.enable_robot_detection = 0;
-
--- testing goalpost detection only
-
---[[
-vision.enable_line_detection = 0;
-vision.enable_midfield_landmark_detection = 0;
---]]
--- use this to enable freespace detection and occupancy map
-vision.enable_freespace_detection = 1;
-
--- use this to enable obstacle specific colortable
-vision.enable_lut_for_obstacle = 1;
-
+--New multi-blob landmark detection code
+vision.use_multi_landmark = 1;
 
 ----------------------------
 --OP specific
@@ -68,14 +61,11 @@ vision.ball.th_min_fill_rate = 0.35;
 -- Increase min colors for obstacle challenge
 --vision.ball.th_min_color = 20;
 --vision.ball.th_min_color2 = 20;
-
 vision.ball.th_height_max  = 0.20;
 vision.ball.th_ground_boundingbox = {-15,15,0,10};
 vision.ball.th_min_green1 = 100;
 vision.ball.th_min_green2 = 40;
-
 vision.ball.check_for_ground = 1;
-
 vision.ball.check_for_field = 1;
 vision.ball.field_margin = 2.0;
 
@@ -95,15 +85,12 @@ vision.goal.th_min_green_ratio = 0.2;
 vision.goal.th_min_bad_color_ratio = 0.1;
 vision.goal.th_goal_separation = {0.35,3.0}; --for OP
 vision.goal.th_min_area_unknown_post = 40;
-
 vision.goal.use_centerpost = 1;
 vision.goal.check_for_ground = 1;
-
 vision.goal.far_goal_threshold= 4.0; --The range we triangulate
 vision.goal.distanceFactorCyan = 1.1; 
 vision.goal.distanceFactorYellow = 1.1; 
 
-	
 
 vision.landmark = {};
 vision.landmark.min_areaA = 6;
@@ -112,10 +99,8 @@ vision.landmark.th_centroid = 20;
 vision.landmark.th_arearatio = 4;
 vision.landmark.th_distratio = 2;
 vision.landmark.th_angle = 45*math.pi/180;
-
 vision.landmark.distanceFactorCyan = 1; 
 vision.landmark.distanceFactorYellow = 1; 
-
 
 vision.line={};
 vision.line.max_width = 8;
@@ -140,5 +125,3 @@ vision.robot.r_sigma = 4;  --gaussian radius
 vision.robot.max_r = 4.0;  
 vision.robot.min_r = 0.3;
 vision.robot.min_j = 5; 
-
-

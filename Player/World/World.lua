@@ -169,7 +169,7 @@ end
 function update_vision()
 
   --update ground truth
-  if Body.gps_enable then
+  if Body.gps_enable>0 then
     gps_pose0=Body.get_sensor_gps();
     --GPS is attached at torso, so we should discount body offset
     uBodyOffset = mcm.get_walk_bodyOffset();

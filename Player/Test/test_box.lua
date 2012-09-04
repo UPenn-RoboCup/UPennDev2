@@ -1,25 +1,27 @@
---cwd = os.getenv('PWD')
-
 cwd = cwd or os.getenv('PWD')
 package.path = cwd.."/?.lua;"..package.path;
-
 require('init')
+
 require('Config')
-require('vector')
 require('Body')
-require 'boxercm'
 require('Speak')
 require('Motion')
+require('vector')
+require 'boxercm'
+package.path = cwd..'/BodyFSM/Boxer/?.lua;'..package.path;
+require 'bodyBox'
+require 'bodyMimicWalk'
+
+-- Initialize Variables
+darwin = false;
+webots = false;
 teamID   = Config.game.teamNumber;
 playerID = Config.game.playerID;
 print '=====================';
 print('Team '..teamID,'Player '..playerID)
 print '=====================';
-
-
-darwin = false;
-webots = false;
-
+targetvel=vector.zeros(3);
+hri_vel = false
 
 -- Enable OP specific 
 if(Config.platform.name == 'OP') then
@@ -38,18 +40,7 @@ if (string.find(Config.platform.name,'Webots')) then
   webots = true;
 end
 
---This is robot specific 
-init = false;
-calibrating = false;
-ready = false;
-if( webots or darwin) then
-  ready = true;
-end
-
-initToggle = true;
-
-targetvel=vector.zeros(3);
-
+-- Key Input
 if( webots ) then
   controller.wb_robot_keyboard_enable( 100 );
 else
@@ -57,7 +48,16 @@ else
   getch.enableblock(1);
 end
 
+--This is robot specific 
+init = false;
+initToggle = true;
+calibrating = false;
+ready = false;
+if( webots or darwin) then
+  ready = true;
+end
 
+-- Process Key Inputs
 function process_keyinput()
 
   if( webots ) then
@@ -71,52 +71,62 @@ function process_keyinput()
     str  = getch.get();
     byte = string.byte(str,1);
   end
-
   --print('byte: ', byte)
   --print('string: ',string.char(byte))
 
-  if byte~=0 then
-    -- Walk velocity setting
-    if byte==string.byte("i") then	targetvel[1]=targetvel[1]+0.02;
-    elseif byte==string.byte("j") then	targetvel[3]=targetvel[3]+0.1;
-    elseif byte==string.byte("k") then	targetvel[1],targetvel[2],targetvel[3]=0,0,0;
-    elseif byte==string.byte("l") then	targetvel[3]=targetvel[3]-0.1;
-    elseif byte==string.byte(",") then	targetvel[1]=targetvel[1]-0.02;
-    elseif byte==string.byte("h") then	targetvel[2]=targetvel[2]+0.02;
-    elseif byte==string.byte(";") then	targetvel[2]=targetvel[2]-0.02;
+  if byte==0 then
+		return false
+	end
+	
+  -- Walk velocity setting
+  if byte==string.byte("i") then	targetvel[1]=targetvel[1]+0.02;
+  elseif byte==string.byte("j") then	targetvel[3]=targetvel[3]+0.1;
+  elseif byte==string.byte("k") then	targetvel[1],targetvel[2],targetvel[3]=0,0,0;
+  elseif byte==string.byte("l") then	targetvel[3]=targetvel[3]-0.1;
+  elseif byte==string.byte(",") then	targetvel[1]=targetvel[1]-0.02;
+  elseif byte==string.byte("h") then	targetvel[2]=targetvel[2]+0.02;
+  elseif byte==string.byte(";") then	targetvel[2]=targetvel[2]-0.02;
 
-      -- Stance commands
-    elseif byte==string.byte("q") then	
-      walk.switch_stance(1);
-    elseif byte==string.byte("w") then	
-      walk.switch_stance(0);
-    elseif byte==string.byte("e") then	
-      walk.switch_stance(2);
+  -- Stance commands
+  elseif byte==string.byte("q") then
+    walk.switch_stance(1);
+  elseif byte==string.byte("w") then
+    walk.switch_stance(0);
+  elseif byte==string.byte("e") then
+    walk.switch_stance(2);
 
-      -- Punch commands
-    elseif byte==string.byte("a") then
-      walk.doPunch(1);
-    elseif byte==string.byte("s") then
-      walk.doPunch(2); 
-    elseif byte==string.byte("d") then
-      walk.doPunch(3); 
+  -- Punch commands
+  elseif byte==string.byte("a") then
+    walk.doPunch(1);
+  elseif byte==string.byte("s") then
+    walk.doPunch(2); 
+  elseif byte==string.byte("d") then
+    walk.doPunch(3);
+	-- Toggle vel commands and body angle
+  elseif byte==string.byte("z") then
+    hri_vel = not hri_vel
 
-      -- walk commands
-    elseif byte==string.byte("7") then	
-      Motion.event("sit");
-    elseif byte==string.byte("8") then	
-      if walk.active then 
-        walk.stopAlign();
-      end
-      Motion.event("standup");
-    elseif byte==string.byte("9") then	
-      Motion.event("walk");
-      walk.start();
+  -- Walk commands
+  elseif byte==string.byte("7") then
+    Motion.event("sit");
+  elseif byte==string.byte("8") then
+    if walk.active then 
+      walk.stopAlign();
     end
-    walk.set_velocity(unpack(targetvel));
-
-    --    print("Command velocity:",unpack(walk.velCommand))
+    Motion.event("standup");
+  elseif byte==string.byte("9") then
+    Motion.event("walk");
+    walk.start();
+  elseif byte==string.byte("0") then
+		-- Toggle Body Stabilization
+    walk.no_stabilize = not walk.no_stabilize;
   end
+	
+	--print("Command velocity:",unpack(walk.velCommand))
+  walk.set_velocity(unpack(targetvel));
+	
+	return true
+  
 end
 
 function update()
@@ -152,20 +162,10 @@ function update()
     end
 
   else
-    -- update state machines 
+    -- Update State Machines 
     Motion.update();
     Body.update();
-
-    -- If skeleton is available:
-    if( boxercm.get_body_enabled() ) then
-      local left_arm = boxercm.get_body_qLArm();
-      local right_arm = boxercm.get_body_qRArm();
-      local rpy = boxercm.get_body_rpy();
-      walk.upper_body_override(left_arm,right_arm,rpy)
-    else
-      walk.upper_body_override_off();
-    end
-
+		update_boxer()
   end
 
   local dcount = 50;
@@ -176,7 +176,7 @@ function update()
     Body.set_indicator_batteryLevel(Body.get_battery_level());
   end
 
-  -- check if the last update completed without errors
+  -- Check if the last update completed without errors
   lcount = lcount + 1;
   if (count ~= lcount) then
     print('count: '..count)
@@ -185,6 +185,18 @@ function update()
     lcount = count;
   end
   io.stdout:flush();  
+end
+
+function update_boxer()
+  if( boxercm.get_body_enabled() ) then
+		if hri_vel then
+			bodyBox.update()
+		else
+			bodyMimicWalk.update()
+		end
+  else
+    walk.upper_body_override_off();
+  end
 end
 
 -- Initialize
@@ -196,25 +208,26 @@ Motion.event("standup");
 
 -- if using Webots simulator just run update
 local tDelay = 0.005 * 1E6; -- Loop every 5ms
-if ( webots or darwin ) then
-  while (true) do
-    
-    process_keyinput();
-    update();
-   
-    -- Debug
-    --[[
-    t_diff = unix.time() - (t_last or 0);
-    if(t_diff>1) then
-      print('Stabilized: ', not walk.no_stabilize )
-      print(string.format('RPY: %.1f %.1f %.1f\n',unpack(180/math.pi*rpy)))
-      t_last = unix.time();
-    end
-    --]]
+while (true) do
+	-- Run Updates
+  process_keyinput();
+  update();
 
-    if(darwin) then
-      unix.usleep(tDelay);
-    end
+  -- Debug Messages
+  t_diff = Body.get_time() - (t_last or 0);
+  if(t_diff>1) then
+    print('Stabilized: ', not walk.no_stabilize )
+		if hri_vel then
+			print('PrimeSense Controls velocity')
+    	print("Command velocity:",unpack(walk.velCommand))
+		else
+			print('PrimeSense Controls body angle')
+	    print(string.format('RPY: %.1f %.1f %.1f\n',unpack(180/math.pi*bodyMimicWalk.rpy)))
+		end
+    t_last = Body.get_time();
+  end
+
+  if(darwin) then
+    unix.usleep(tDelay);
   end
 end
-

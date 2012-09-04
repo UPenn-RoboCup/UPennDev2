@@ -7,6 +7,9 @@ require('vector')
 
 t0 = 0;
 timeout = 5;
+qL = boxercm.get_body_qLArm();
+qR = boxercm.get_body_qRArm();
+rpy = boxercm.get_body_rpy();
 
 function entry()
   print("Body FSM:".._NAME.." entry");
@@ -17,9 +20,9 @@ function update()
   local t = Body.get_time();
 
   -- Check if there is a punch activated
-  local qL = boxercm.get_body_qLArm();
-  local qR = boxercm.get_body_qRArm();
-  local rpy = boxercm.get_body_rpy();
+  qL = boxercm.get_body_qLArm();
+  qR = boxercm.get_body_qRArm();
+  rpy = boxercm.get_body_rpy();
 
   -- Add the override
   walk.upper_body_override(qL, qR, rpy);

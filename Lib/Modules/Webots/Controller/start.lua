@@ -1,16 +1,15 @@
 -- Get Computer for Lib suffix
 package.cpath = './?.so;' .. package.cpath;
-
 require('controller');
 
 cwd = os.getenv('PWD')
 cwd = cwd ..'/Player'
-
-print("\nStarting Webots Lua controller...");
-
 playerID = os.getenv('PLAYER_ID') + 0;
 teamID = os.getenv('TEAM_ID') + 0;
 
+print("\nStarting Webots Lua controller...");
+print("CWD:",cwd)
+print("Team, Player:",teamID,playerID)
 
 --SJ: Team-specific test code running 
 if teamID == 98 then
@@ -23,18 +22,12 @@ elseif teamID==22 then
   print('football')
   dofile("Player/Test/test_football.lua");
 else
-
-
---Default
+	--Default
+--  dofile("Player/Test/test_joints_webots.lua");
 --  dofile("Player/Test/test_walk_webots.lua");
 --  dofile("Player/Test/test_vision_webots.lua");
---  dofile("Player/Test/test_joints_webots.lua");
---  dofile("Player/Test/test_punch_webots_op.lua");
---  dofile("Player/Test/test_stretcher.lua")
-
+--	dofile("Player/Test/test_main_webots.lua");
 --  dofile("Player/main.lua");
-
-    dofile("Player/Test/test_main_webots.lua");
-    --dofile("Player/Test/test_box.lua");
+  dofile("Player/Test/test_box.lua");
 end
 

@@ -9,7 +9,7 @@ require('unix')
 require('util')
 
 -- No stabilization by default
-no_stabilize = true;
+no_stabilize = false;
 
 -- Walk Parameters
 -- Stance and velocity limit values

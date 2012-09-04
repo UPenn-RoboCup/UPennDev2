@@ -10,6 +10,12 @@ require('Body')
 require 'boxercm'
 require('Speak')
 require('Motion')
+teamID   = Config.game.teamNumber;
+playerID = Config.game.playerID;
+print '=====================';
+print('Team '..teamID,'Player '..playerID)
+print '=====================';
+
 
 darwin = false;
 webots = false;

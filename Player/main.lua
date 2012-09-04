@@ -1,5 +1,9 @@
-cwd = os.getenv('PWD')
+cwd = cwd or os.getenv('PWD')
+package.path = cwd.."/?.lua;"..package.path;
 require('init')
+
+--cwd = os.getenv('PWD')
+--require('init')
 
 require('unix')
 require('Config')

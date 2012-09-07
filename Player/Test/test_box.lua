@@ -21,7 +21,7 @@ print '=====================';
 print('Team '..teamID,'Player '..playerID)
 print '=====================';
 targetvel=vector.zeros(3);
-hri_vel = false
+hri_level = 0
 
 -- Enable OP specific 
 if(Config.platform.name == 'OP') then
@@ -104,7 +104,7 @@ function process_keyinput()
     walk.doPunch(3);
 	-- Toggle vel commands and body angle
   elseif byte==string.byte("z") then
-    hri_vel = not hri_vel
+    hri_vel = (hri_vel+1)%3
 
   -- Walk commands
   elseif byte==string.byte("7") then
@@ -189,10 +189,13 @@ end
 
 function update_boxer()
   if( boxercm.get_body_enabled() ) then
-		if hri_vel then
+		if hri_vel==0 then
 			bodyBox.update()
-		else
-			bodyMimicWalk.update()
+		elseif hri_vel==1 then
+			bodyMimic.update()
+		elseif hri_vel==2 then
+			-- Make sure the skeleton module uses constraints
+			bodyMimic.update()
 		end
   else
     walk.upper_body_override_off();
@@ -217,12 +220,14 @@ while (true) do
   t_diff = Body.get_time() - (t_last or 0);
   if(t_diff>1) then
     print('Stabilized: ', not walk.no_stabilize )
-		if hri_vel then
+		if hri_level==0 then
 			print('PrimeSense Controls velocity')
     	print("Command velocity:",unpack(walk.velCommand))
-		else
+		elseif hri_level==1 then
 			print('PrimeSense Controls body angle')
 	    print(string.format('RPY: %.1f %.1f %.1f\n',unpack(180/math.pi*bodyMimicWalk.rpy)))
+		elseif hri_level==2 then
+			print('PrimeSense Controls in Null Space')
 		end
     t_last = Body.get_time();
   end

@@ -66,9 +66,13 @@ function update(playerID)
 	if( libboxer.check_enabled(playerID) ) then
 		boxercm.set_body_enabled( 1 );
 		boxercm.set_body_t( unix.time() );
+		
+		-- TODO: Add Task Space constraints
 		-- Update the joint angles and body RPY
 		boxercm.set_body_rpy( libboxer.get_torso_orientation(playerID) );
 		qL,qR = libboxer.get_arm_angles(playerID);
+		--
+		
 		if( qL ) then
 			boxercm.set_body_qLArm( qL );
 		end

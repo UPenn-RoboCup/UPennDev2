@@ -16,6 +16,6 @@ loadconfig('Config_ASH_Bias')
 platform = {}
 platform.name = 'ASH'
 platform.action_table = 'action_table_ASH'
-platform.walk = 'walkSine'
+platform.walk = 'walkOSC'
 
 walk = getfenv()[platform.walk] or {}

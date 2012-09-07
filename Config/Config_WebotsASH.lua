@@ -16,7 +16,7 @@ loadconfig('Config_WebotsASH_Bias')
 platform = {}
 platform.name = 'WebotsASH'
 platform.action_table = 'action_table_ASH'
-platform.walk = 'walkZMP'
+platform.walk = 'walkOSC'
 
 walk = getfenv()[platform.walk] or {}
 

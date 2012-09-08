@@ -35,11 +35,39 @@ int stopRequest = 0;
 int jsFD;
 
 // number of buttons and axes
-char nbutton;
-char naxis;
+static const char nbutton = 16;
+static const char naxis = 8;
 // arrays for button and axis data
-int16_t *buttons;
-int16_t *axes;
+uint8_t *buttons;
+/*
+Buttons
+0: D-Pad up	 D-Pad up
+1: D-Pad down	 D-Pad down
+2: D-Pad left	 D-Pad left
+3: D-pad right	 D-Pad right
+4: Start button	 Button 8
+5: Back button	 Button 7
+6: Left stick press	 Button 9
+7: Right stick press	 Button 10
+8: Button LB	 Button 5
+9: Button RB	 Button 6
+10: Xbox logo button
+11: Unused
+12: Button A	 Button 1
+13: Button B	 Button 2
+14: Button X	 Button 3
+15: Button Y	 Button 4
+
+Axes
+1	 Left trigger	 Z-axis down
+2	 Right trigger	 Z-axis up
+3	 Left stick X-axis	 X-axis
+4	 Left stick Y-axis	 Y-axis
+5	 Right stick X-axis	 X-turn
+6	 Right stick Y-axis	 Y-turn
+7	 Unused
+*/
+uint8_t *axes;
 // time of last event (in milliseconds)
 uint32_t *tbutton; 
 uint32_t *taxis; 
@@ -93,7 +121,7 @@ int xbox360_thread_init() {
   ///////////////////
   // INIT
 
-  int result;
+  int result, i;
 
   result = libusb_init(NULL);
   if (result < 0)
@@ -126,16 +154,22 @@ int xbox360_thread_init() {
 
 
   // allocate array data
-  buttons = (int16_t *)malloc(nbutton * sizeof(int16_t));
+  buttons = (uint8_t *)malloc(nbutton * sizeof(uint8_t));
   if (!buttons) {
     fprintf(stderr, "unable to allocate button data array\n");
     return -1;
   }
-  axes = (int16_t *)malloc(naxis * sizeof(int16_t));
+	for(i=0;i<nbutton;i++) {
+		buttons[i] = 0;
+	}
+  axes = (uint8_t *)malloc(naxis * sizeof(uint8_t));
   if (!axes) {
     fprintf(stderr, "unable to allocate axes data array\n");
     return -1;
   }
+	for(i=0;i<nbutton;i++) {
+		axes[i] = 0;
+	}
   tbutton = (uint32_t *)malloc(nbutton * sizeof(uint32_t));
   if (!tbutton) {
     fprintf(stderr, "unable to allocate button time array\n");
@@ -173,8 +207,6 @@ int xbox360_thread_cleanup() {
     libusb_exit(NULL);
 
     // free arrays
-    nbutton = 0;
-    naxis = 0;
     free(buttons);
     free(axes);
     free(tbutton);
@@ -210,33 +242,21 @@ void *xbox360_thread_func(void *) {
         &bytes_transferred,
         0); // Timeout of 0 waits forever...
 
-    if (result >= 0)
-    {
-      if (bytes_transferred > 0)
-      {
-        printf("Data received via interrupt transfer:\n");
-        for(i = 0; i < bytes_transferred; i++)
-        {
-          printf("%02x ",data_in[i]);
-        }
-        printf("\n");
-      }
-      else
-      {
-        fprintf(stderr, "No data received in interrupt transfer (%d)\n", result);
-      }
+    if (result >= 0 && bytes_transferred > 0) {
+			for(i=0;i<nbutton;i++) {
+				uint8_t mybyte = i / 8 + 2;
+				uint8_t myoffset = i % 8;
+				buttons[i] = (data_in[mybyte]>>myoffset)&0x01 ? 1 : 0;
+			}
+			for(i=0;i<naxis;i++) {
+				axes[i] = data_in[i+4];
+			}
+			/*
+	    tbutton[event.number] = event.time;
+	    taxis[event.number] = event.time;
+			*/
     }
-    else
-    {
-			// Timeout occurs -7
-      //fprintf(stderr, "Error receiving data via interrupt transfer %d\n", result);
-    }
-		/*
-    buttons[event.number] = event.value;
-    tbutton[event.number] = event.time;
-    axes[event.number] = event.value;
-    taxis[event.number] = event.time;
-		*/
+
   }
 
   xbox360_thread_cleanup();

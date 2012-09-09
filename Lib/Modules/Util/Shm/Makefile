@@ -24,8 +24,5 @@ else
 endif
 
 clean:
-ifeq ($(CTC),)
 	make -f Makefile.local clean	
-else
 	rm -rf build
-endif

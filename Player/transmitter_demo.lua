@@ -49,7 +49,8 @@ while (1) do
       end 
    else
      -- button pressed?
-     if (Body.get_sensor_button()[1] == 1 and unix.time() - lastPress > 1) then
+     if (((Body.get_sensor_button()[1] == 1) or (byte and byte == string.byte('p')))
+         and unix.time() - lastPress > 1) then
         -- pick random tone symbol
         ind = math.random(#symbols);
         symbol = symbols[ind];

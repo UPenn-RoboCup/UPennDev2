@@ -19,6 +19,8 @@ platform.action_table = 'action_table_ASH'
 platform.walk = 'walkOSC'
 
 walk = getfenv()[platform.walk] or {}
+walk.parameters = walk.parameters or {}
+walk.increments = walk.increments or {}
 
 webots = {}
 webots.controlP = 50

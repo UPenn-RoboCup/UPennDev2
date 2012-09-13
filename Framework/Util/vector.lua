@@ -26,6 +26,7 @@ function zeros(n)
 end
 
 function copy(t1)
+  if not t1 then return nil end
   local t = {};
   for i = 1,#t1 do
     t[i] = t1[i];

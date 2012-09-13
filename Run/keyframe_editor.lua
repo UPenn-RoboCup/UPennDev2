@@ -55,31 +55,6 @@ function create_action_table()
   return pages
 end
 
-function save_action_table()
-  local serialize = serialization.serialize
-  local f = assert(io.open('../Data/'..action_table_name..'.lua','w+'))
-  f:write('action_table = {}\n')
-  for i = 1,#action_table do
-    local page = action_table[i]
-    f:write(string.format('action_table[%d] = {\n', i))
-    f:write(string.format('  name = "%s",\n', page.name))
-    f:write(string.format('  steps = {\n'))
-    for j = 1,#page.steps do
-      local step = page.steps[j]
-      f:write(string.format('    {\n'))
-      f:write(string.format('      joint_position = %s, \n',
-        serialize(step.joint_position)))
-      f:write(string.format('      duration = %f,\n', step.duration))
-      f:write(string.format('      pause = %f,\n', step.pause))
-      f:write(string.format('    },\n')) 
-    end
-    f:write(string.format('  }\n')) 
-    f:write(string.format('}\n')) 
-  end
-  f:write('return action_table')
-  f:close()
-end
-
 -- Commands
 ----------------------------------------------------------------------
 
@@ -345,7 +320,28 @@ end
 function cmd_save(arg)
   local varg = parse_string_arguments(arg)
   action_table_name = varg[1] or action_table_name 
-  save_action_table()
+  local serialize = serialization.serialize
+  local f = assert(io.open('../Data/'..action_table_name..'.lua','w+'))
+  f:write('action_table = {}\n')
+  for i = 1,#action_table do
+    local page = action_table[i]
+    f:write(string.format('action_table[%d] = {\n', i))
+    f:write(string.format('  name = "%s",\n', page.name))
+    f:write(string.format('  steps = {\n'))
+    for j = 1,#page.steps do
+      local step = page.steps[j]
+      f:write(string.format('    {\n'))
+      f:write(string.format('      joint_position = %s, \n',
+        serialize(step.joint_position)))
+      f:write(string.format('      duration = %f,\n', step.duration))
+      f:write(string.format('      pause = %f,\n', step.pause))
+      f:write(string.format('    },\n')) 
+    end
+    f:write(string.format('  }\n')) 
+    f:write(string.format('}\n')) 
+  end
+  f:write('return action_table')
+  f:close()
 end
 
 function cmd_quit()
@@ -420,53 +416,6 @@ local commands = {
   ['exit'] = cmd_quit,
 }
 
--- Parsing
------------------------------------------------------------------
-
-function parse_int_arguments(arg)
-  local varg = {}
-  for int in arg:gmatch('[ ,](%-?%d+)') do
-    varg[#varg + 1] = tonumber(int)
-  end
-  return varg
-end
-
-function parse_double_arguments(arg)
-  local varg = {}
-  for double in arg:gmatch('[ ,](%-?%d*%.?%d+e?-?%d*)') do
-    varg[#varg + 1] = tonumber(double)
-  end
-  return varg
-end
-
-function parse_string_arguments(arg)
-  local varg = {}
-  for token in arg:gmatch('[ ,](%a[%a_%d]*)') do
-    varg[#varg + 1] = token 
-  end
-  return varg
-end
-
-function read_command(key)
-  -- clear prompt
-  draw_command_row('')
-  -- get command string
-  curses.echo()
-  curses.timeout(-1)
-  local str = curses.getstr()
-  curses.timeout(10)
-  curses.noecho()
-  -- call command
-  local cmd, arg = str:match('^([%a_]+)(.*)$')
-  if commands[cmd] then
-    commands[cmd](arg)
-  elseif cmd then
-    draw_command_row('Invalid command')
-  end
-  -- restore cursor 
-  curses.move(get_cursor(row, col))
-end
-
 -- Access
 ---------------------------------------------------------------------
 
@@ -540,47 +489,6 @@ function get_increment(r, c)
   end
 end
 
--- Navigation
-----------------------------------------------------------------------
-
-function get_cursor(r, c)
-  local y = ROW_OFFSET + (r-1)*ROW_WIDTH
-  local x = COL_OFFSET + (c-1)*COL_WIDTH
-  return y, x 
-end
-
-function cursor_right()
-  if (col == NCOLS) then
-    cmd_next_step()
-  end
-  col = math.min(col + 1, NCOLS)
-  curses.move(get_cursor(row, col))
-end
-
-function cursor_left()
-  if (col == 1) then
-    cmd_previous_step()
-  end
-  col = math.max(col - 1, 1)
-  curses.move(get_cursor(row, col))
-end
-
-function cursor_up()
-  row = math.max(row - 1, 1)
-  if (row == ROW_LINE) then
-    row = row - 1
-  end
-  curses.move(get_cursor(row, col))
-end
-
-function cursor_down()
-  row = math.min(row + 1, NROWS)
-  if (row == ROW_LINE) then
-    row = row + 1
-  end
-  curses.move(get_cursor(row, col))
-end
-
 -- Display
 ----------------------------------------------------------------------
 
@@ -594,7 +502,7 @@ function draw_command_row(str)
 end
 
 function draw_col(c)
-  for r = 1, NROWS do
+  for r = 1,NROWS do
     curses.move(get_cursor(r, c))
     val = get_value(r, c)
     if val then
@@ -634,6 +542,94 @@ function draw_screen()
   curses.printw('              pause\n')
   for c = 1,NCOLS do
     draw_col(c)
+  end
+  curses.move(get_cursor(row, col))
+end
+
+-- Parsing
+-----------------------------------------------------------------
+
+function parse_int_arguments(arg)
+  local varg = {}
+  for int in arg:gmatch('[ ,](%-?%d+)') do
+    varg[#varg + 1] = tonumber(int)
+  end
+  return varg
+end
+
+function parse_double_arguments(arg)
+  local varg = {}
+  for double in arg:gmatch('[ ,](%-?%d*%.?%d+e?-?%d*)') do
+    varg[#varg + 1] = tonumber(double)
+  end
+  return varg
+end
+
+function parse_string_arguments(arg)
+  local varg = {}
+  for token in arg:gmatch('[ ,](%a[%a_%d]*)') do
+    varg[#varg + 1] = token 
+  end
+  return varg
+end
+
+function read_command(key)
+  -- clear prompt
+  draw_command_row('')
+  -- get command string
+  curses.echo()
+  curses.timeout(-1)
+  local str = curses.getstr()
+  curses.timeout(10)
+  curses.noecho()
+  -- call command
+  local cmd, arg = str:match('^([%a_]+)(.*)$')
+  if commands[cmd] then
+    commands[cmd](arg)
+  elseif cmd then
+    draw_command_row('Invalid command')
+  end
+  -- restore cursor 
+  curses.move(get_cursor(row, col))
+end
+
+-- Navigation
+----------------------------------------------------------------------
+
+function get_cursor(r, c)
+  local y = ROW_OFFSET + (r-1)*ROW_WIDTH
+  local x = COL_OFFSET + (c-1)*COL_WIDTH
+  return y, x 
+end
+
+function cursor_right()
+  if (col == NCOLS) then
+    cmd_next_step()
+  end
+  col = math.min(col + 1, NCOLS)
+  curses.move(get_cursor(row, col))
+end
+
+function cursor_left()
+  if (col == 1) then
+    cmd_previous_step()
+  end
+  col = math.max(col - 1, 1)
+  curses.move(get_cursor(row, col))
+end
+
+function cursor_up()
+  row = math.max(row - 1, 1)
+  if (row == ROW_LINE) then
+    row = row - 1
+  end
+  curses.move(get_cursor(row, col))
+end
+
+function cursor_down()
+  row = math.min(row + 1, NROWS)
+  if (row == ROW_LINE) then
+    row = row + 1
   end
   curses.move(get_cursor(row, col))
 end

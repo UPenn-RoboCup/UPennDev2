@@ -14,6 +14,9 @@ walk = MotionState.new(...);
 local actuator = walk.actuator;
 local sensor = walk.sensor;
 
+walk.parameters = {
+}
+
 -- Gait Parameters
 ----------------------------------------------
 -- Stance and velocity limit values

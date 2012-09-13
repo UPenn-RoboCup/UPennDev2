@@ -763,5 +763,5 @@ DEF SAFFiR Supervisor {
     ]
   }
   controller "webots_controller"
-  controllerArgs "keyframe_editor"
+  controllerArgs "walk_tuner"
 }

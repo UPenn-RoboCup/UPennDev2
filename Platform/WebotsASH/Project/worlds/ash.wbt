@@ -600,5 +600,5 @@ DEF SAFFiR Supervisor {
     ]
   }
   controller "webots_controller"
-  controllerArgs "demo"
+  controllerArgs "walk_tuner"
 }

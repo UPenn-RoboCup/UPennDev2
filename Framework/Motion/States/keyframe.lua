@@ -89,14 +89,13 @@ function keyframe:stop()
 end
 
 function keyframe:entry()
+  self.running = true
   self:set_joint_access(1, 'all')
-  keyframe.active = false
   steps = {}
 end
 
 function keyframe:update()
   if steps[iStep] then
-    keyframe.active = true
     -- update joint trajectories
     local step = steps[iStep]
     local t = Body.get_time()
@@ -117,14 +116,13 @@ function keyframe:update()
       update_step_parameters()
     else
       -- exit
-      keyframe.active = false
       return 'done'
     end
   end
 end
 
 function keyframe:exit()
-  keyframe.active = false
+  self.running = false
 end
 
 return keyframe

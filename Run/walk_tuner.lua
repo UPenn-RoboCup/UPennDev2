@@ -59,11 +59,13 @@ function cmd_increment_value(scale)
 end
 
 function cmd_start_walking()
+  walk:set_velocity(0, 0, 0)
   walk:start()
   draw_command_row('Walk Mode: press <space> to stop...')
 end
 
 function cmd_stop_walking()
+  walk:set_velocity(0, 0, 0)
   walk:stop()
   draw_command_row('                                      ')
 end
@@ -309,6 +311,7 @@ function entry()
   -- initialize motion engine
   Body.entry()
   Motion.add_fsm(Locomotion)
+  Locomotion:add_event('walk')
 end
 
 function update()

@@ -24,9 +24,7 @@ end
 function Motion.check_joint_access()
   local joint_access = vector.zeros(#joint.id)
   for i,sm in ipairs(state_machines) do
-    if (sm:is_active()) then
-      joint_access = joint_access + vector.new(sm:get_joint_access())
-    end
+    joint_access = joint_access + vector.new(sm:get_joint_access())
   end
   for i = 1,#joint_access do
     assert(joint_access[i] <= 1, 

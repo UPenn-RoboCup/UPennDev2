@@ -16,7 +16,7 @@ require('Locomotion')
 
 Body.entry()
 Motion.add_fsm(Locomotion)
---Locomotion:set_joint_access(0, 'l_leg')
+Locomotion:add_event('walk')
 
 local stats = util.loop_stats(20)
 

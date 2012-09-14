@@ -27,10 +27,9 @@ function MotionFSM:get_joint_access(index)
   return current_state:get_joint_access(index) 
 end
 
-function MotionFSM:is_active()
-  -- return active status for current state
-  local current_state = self:get_current_state()
-  return current_state:is_active()
+function MotionFSM:event(event)
+  -- add new fsm event
+  self:add_event(event)
 end
 
 return MotionFSM

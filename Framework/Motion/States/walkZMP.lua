@@ -89,6 +89,7 @@ local iStep = 0;
 local t0 = Body.get_time();
 local tLastStep = Body.get_time();
 
+local active = false;
 local stopRequest=0;
 local initdone=false;
 local tInit=0;
@@ -270,7 +271,7 @@ local function motion_legs(qLegs)
   gyro_roll0,gyro_pitch0=0,0; --Disable feedback for now
 
   --get effective gyro angle considering body angle offset
-  if not walk.active then --double support
+  if not active then --double support
     yawAngle = (uLeft[3]+uRight[3])/2-uTorsoActual[3];
   elseif supportLeg == 0 then  -- Left support
     yawAngle = uLeft[3]-uTorsoActual[3];
@@ -294,7 +295,7 @@ local function motion_legs(qLegs)
 
   toeTipCompensation = 0;
 
-  if not walk.active then --Double support, standing still
+  if not active then --Double support, standing still
     qLegs[4] = qLegs[4] + kneeShift;    --Knee pitch stabilization
     qLegs[5] = qLegs[5]  + ankleShift[1];    --Ankle pitch stabilization
 
@@ -370,8 +371,8 @@ end
 
 function walk:start()
   stopRequest = 0;
-  if (not walk.active) then
-    walk.active = true;
+  if (not active) then
+    active = true;
     iStep0 = -1;
     t0 = Body.get_time();
     tLastStep = Body.get_time();
@@ -381,6 +382,11 @@ end
 
 function walk:stop()
   stopRequest = math.max(1,stopRequest);
+end
+
+function walk:is_active()
+  -- return true is gait is active
+  return active
 end
 
 function walk:set_velocity(vx, vy, va)
@@ -400,10 +406,11 @@ function walk:get_velocity()
 end
 
 function walk:exit()
+  self.running = false;
 end
 
 function walk:entry()
-  walk.active = true
+  self.running = true;
   tInit = Body.get_time();
 
   uLeft = pose_global(vector.new({-supportX, footY, 0}),uTorso);
@@ -423,7 +430,7 @@ function walk:update()
      return;
   end
 
-  if (not walk.active) then 
+  if (not active) then 
     update_still();
     return; 
   end
@@ -440,7 +447,7 @@ function walk:update()
   --Stop when stopping sequence is done
   if (iStep > iStep0) and(stopRequest==2) then
       stopRequest = 0;
-      walk.active = false;
+      active = false;
       return "stop";
   end
 

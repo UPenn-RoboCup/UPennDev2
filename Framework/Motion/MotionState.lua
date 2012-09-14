@@ -17,7 +17,7 @@ function MotionState.new(name)
   -- initialize member data
   o.actuator = acm.new_access_point()
   o.sensor = scm.new_access_point()
-  o.active = false
+  o.running = false
   return setmetatable(o, MotionState)
 end
 
@@ -33,18 +33,23 @@ function MotionState:get_joint_access(index)
   return self.actuator:get_joint_write_access(index)
 end
 
-function MotionState:is_active()
-  -- return active status of state
-  return self.active 
+function MotionState:is_running()
+  -- return true if state is executing 
+  return self.running 
 end
 
 function MotionState:entry()
+  -- default entry
+  self.running = true
 end
 
 function MotionState:update()
+  -- default update
 end
 
 function MotionState:exit()
+  -- default exit
+  self.running = false
 end
 
 return MotionState

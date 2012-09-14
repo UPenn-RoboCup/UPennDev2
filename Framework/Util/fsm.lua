@@ -25,9 +25,8 @@ module(..., package.seeall);
   sm:set_state(state_string); -- sets the state by the string name
 
   mike:
-  added support for object oriented states
   changed state.entry(), state.update(), state.exit() calls to 
-  state:entry(), state:update(), state:exit()
+  state:entry(), state:update(), state:exit() for OO state support
 --]]-------
 
 mt = getfenv();
@@ -153,7 +152,7 @@ function update(self)
     self.previousState = self.currentState;
     self.currentState = self.nextState;
     self.nextState = nil;
-    self.currentState.entry();
+    self.currentState:entry();
   end
 
   return ret;

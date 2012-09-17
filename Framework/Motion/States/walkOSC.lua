@@ -24,8 +24,10 @@ walk.parameters = {
   x_offset              = 0.025, -- meters
   y_offset              = 0.1,   -- meters
   z_offset              = -0.75, -- meters
+  a_offset              = 0,     -- radians
   hip_pitch_offset      = 0,     -- radians
-  x_swing_ratio         = 0,     -- ratio
+  x_shift_ratio         = 0.5,   -- ratio
+  y_shift_ratio         = 0.5,   -- ratio
   y_swing_amplitude     = 0,     -- meters
   z_swing_amplitude     = 0,     -- meters
   r_swing_amplitude     = 0,     -- radians
@@ -43,8 +45,10 @@ end
 local x_offset          = walk.parameters.x_offset
 local y_offset          = walk.parameters.y_offset
 local z_offset          = walk.parameters.z_offset
+local a_offset          = walk.parameters.a_offset
 local hip_pitch_offset  = walk.parameters.hip_pitch_offset
-local x_swing_ratio     = walk.parameters.x_swing_ratio
+local x_shift_ratio     = walk.parameters.x_shift_ratio
+local y_shift_ratio     = walk.parameters.y_shift_ratio
 local y_swing_amplitude = walk.parameters.y_swing_amplitude
 local z_swing_amplitude = walk.parameters.z_swing_amplitude
 local r_swing_amplitude = walk.parameters.r_swing_amplitude
@@ -61,8 +65,10 @@ local t0                = Body.get_time()
 local q0                = scm:get_joint_position('legs')
 local qStance           = vector.copy(q0)
 
-local square_cos = waveform.square_cos
-local impulse_sin = waveform.impulse_sin
+local step_sin = waveform.step_sin
+local step_cos = waveform.step_cos
+local stride_sin = waveform.stride_sin
+local stride_cos = waveform.stride_cos
 
 -- Private
 ----------------------------------------------------------------------
@@ -73,8 +79,10 @@ local function update_gait_parameters()
   x_offset = walk.parameters.x_offset
   y_offset = walk.parameters.y_offset
   z_offset = walk.parameters.z_offset
+  a_offset = walk.parameters.a_offset
   hip_pitch_offset = walk.parameters.hip_pitch_offset
-  x_swing_ratio = walk.parameters.x_swing_ratio
+  x_shift_ratio = walk.parameters.x_shift_ratio
+  y_shift_ratio = walk.parameters.y_shift_ratio
   y_swing_amplitude = walk.parameters.y_swing_amplitude
   z_swing_amplitude = walk.parameters.z_swing_amplitude
   r_swing_amplitude = walk.parameters.r_swing_amplitude
@@ -138,34 +146,45 @@ function walk:update()
     -- update phase
     local ph = 2*math.pi/period_time*(Body.get_time() - t0)
 
-    -- update foot trajectories
+    -- update left foot trajectory
     local l_foot_pos = vector.zeros(6)
-    l_foot_pos[1] = x_offset - velocity[1]*square_cos(ph, dsp_ratio)
-    l_foot_pos[2] = y_offset - velocity[2]*square_cos(ph, dsp_ratio)
-    l_foot_pos[3] = z_offset + step_amplitude*impulse_sin(ph, dsp_ratio)
-    l_foot_pos[6] = -velocity[3]*square_cos(ph, dsp_ratio)
+    l_foot_pos[1] = x_offset - velocity[1]*stride_cos(ph, dsp_ratio)
+    l_foot_pos[2] = y_offset - velocity[2]*stride_cos(ph, dsp_ratio)
+    l_foot_pos[6] = a_offset - velocity[3]*stride_cos(ph, dsp_ratio)
+    if (ph < math.pi) then
+      l_foot_pos[3] = z_offset + step_amplitude*step_sin(ph, dsp_ratio)
+    else
+      l_foot_pos[3] = z_offset
+    end
+
+    -- update right foot trajectory
     local r_foot_pos = vector.zeros(6) 
-    r_foot_pos[1] = x_offset + velocity[1]*square_cos(ph, dsp_ratio)
-    r_foot_pos[2] =-y_offset + velocity[2]*square_cos(ph, dsp_ratio)
-    r_foot_pos[3] = z_offset - step_amplitude*impulse_sin(ph, dsp_ratio)
-    r_foot_pos[6] = velocity[3]*square_cos(ph, dsp_ratio)
+    r_foot_pos[1] = x_offset + velocity[1]*stride_cos(ph, dsp_ratio)
+    r_foot_pos[2] =-y_offset + velocity[2]*stride_cos(ph, dsp_ratio)
+    r_foot_pos[6] =-a_offset + velocity[3]*stride_cos(ph, dsp_ratio)
+    if (ph > math.pi) then
+      r_foot_pos[3] = z_offset - step_amplitude*step_sin(ph, dsp_ratio)
+    else
+      r_foot_pos[3] = z_offset
+    end
 
     -- update torso trajectory
     local torso_pos = vector.zeros(6) 
-    local x_swing_amplitude = velocity[1]*x_swing_ratio
-    torso_pos[1] = x_swing_amplitude*-math.cos(2*ph)
-    torso_pos[2] = y_swing_amplitude*-math.sin(ph)
-    torso_pos[3] = z_swing_amplitude*math.cos(2*ph)
+    torso_pos[1] = velocity[1]*x_shift_ratio*math.sin(2*ph)
+    torso_pos[2] = velocity[2]*y_shift_ratio*math.sin(2*ph)
+                 - y_swing_amplitude*math.sin(ph)
+    torso_pos[3] = z_swing_amplitude*-math.cos(2*ph)
     torso_pos[5] = hip_pitch_offset
 
     -- calculate inverse kinematics
     local qLegs = Kinematics.inverse_legs(l_foot_pos, r_foot_pos, torso_pos)
 
-    -- update hip roll swing
+    -- add hip roll swing
     if (ph < math.pi) then 
-      qLegs[2] = qLegs[2] + r_swing_amplitude*impulse_sin(ph, dsp_ratio)
+      qLegs[2] = qLegs[2] + r_swing_amplitude*step_sin(ph, dsp_ratio)
     else
-      qLegs[8] = qLegs[8] - r_swing_amplitude*impulse_sin(ph, dsp_ratio)
+      assert(dsp_ratio)
+      qLegs[8] = qLegs[8] + r_swing_amplitude*step_sin(ph, dsp_ratio)
     end
 
     -- write joint angles to actuator shared memory 

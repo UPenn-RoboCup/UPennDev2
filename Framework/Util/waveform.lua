@@ -1,5 +1,7 @@
 module(..., package.seeall)
 
+require('util')
+
 function impulse_sin(theta, alpha)
   -- generate a sinusoidal waveform with extended zero regions 
   -- alpha in [0, 1] determines the percentage of deadband in a cycle
@@ -29,7 +31,36 @@ function impulse_cos(theta, alpha)
   return impulse_sin(theta + math.pi/2, alpha) 
 end
 
-function square_sin(theta, alpha)
+function step_sin(theta, alpha)
+  -- generate a smoothed sinusoidal waveform with extended zero regions 
+  -- alpha in [0, 1] determines the percentage of deadband in a cycle
+
+  alpha = util.min{util.max{alpha, 0}, 1}
+  local PI = math.pi
+  local theta = theta % (2*PI)
+  local offset = PI/2*alpha
+  if ((theta > 0)
+  and (theta < offset)) then
+    return 0
+  elseif ((theta >= offset)
+  and     (theta <= PI - offset)) then
+    return (alpha == 1) and 1 or math.sin((theta - offset)/(1 - alpha))^2
+  elseif ((theta > PI - offset)
+  and     (theta < PI + offset)) then
+    return 0
+  elseif ((theta >= PI + offset)
+  and     (theta <= 2*PI - offset)) then
+    return (alpha == 1) and -1 or -math.sin((theta - PI - offset)/(1 - alpha))^2
+  else
+    return 0
+  end
+end
+
+function step_cos(theta, alpha)
+  return step_sin(theta + math.pi/2, alpha) 
+end
+
+function stride_sin(theta, alpha)
   -- generate a sinusoidal waveform with extended peak regions
   -- alpha in [0, 1] determines the percentage of deadband in a cycle
 
@@ -45,7 +76,7 @@ function square_sin(theta, alpha)
     return 1
   elseif ((theta > PI/2 + offset)
   and     (theta < 3*PI/2 - offset)) then
-    return (alpha == 1) and 1 or -math.sin((theta - PI)/(1 - alpha))
+    return (alpha == 1) and -1 or -math.sin((theta - PI)/(1 - alpha))
   elseif ((theta >= 3*PI/2 - offset)
   and     (theta <= 3*PI/2 + offset)) then
     return -1
@@ -54,6 +85,7 @@ function square_sin(theta, alpha)
   end
 end
 
-function square_cos(theta, alpha)
-  return square_sin(theta + math.pi/2, alpha) 
+function stride_cos(theta, alpha)
+  return stride_sin(theta + math.pi/2, alpha) 
 end
+

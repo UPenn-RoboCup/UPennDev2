@@ -6,14 +6,15 @@ walkOSC = {}
 
 walkOSC.parameters = {
   y_offset = 0.100000,
-  z_offset = -0.775000,
-  x_offset = 0.025000,
-  z_swing_amplitude = 0.005000,
-  period_time = 0.610000,
-  y_swing_amplitude = 0.013000,
-  step_amplitude = 0.011000,
-  dsp_ratio = 0.110000,
-  x_swing_ratio = 0.000000,
+  z_offset = -0.760000,
+  x_offset = 0.000000,
+  r_swing_amplitude = 0.030000,
+  z_swing_amplitude = 0.000000,
+  period_time = 1.360000,
+  y_swing_amplitude = 0.057000,
+  step_amplitude = 0.034000,
+  dsp_ratio = 0.250000,
+  x_swing_ratio = 0.500000,
   hip_pitch_offset = 0.000000,
 }
 
@@ -21,6 +22,7 @@ walkOSC.increments = {
   y_offset = 0.001000,
   z_offset = 0.001000,
   x_offset = 0.001000,
+  r_swing_amplitude = 0.001000,
   z_swing_amplitude = 0.001000,
   period_time = 0.001000,
   y_swing_amplitude = 0.001000,

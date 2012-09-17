@@ -6,6 +6,7 @@ require('util')
 require('Body')
 require('vector')
 require('Config')
+require('waveform')
 require('Kinematics')
 require('MotionState')
 
@@ -23,11 +24,12 @@ walk.parameters = {
   x_offset              = 0.025, -- meters
   y_offset              = 0.1,   -- meters
   z_offset              = -0.75, -- meters
+  hip_pitch_offset      = 0,     -- radians
   x_swing_ratio         = 0,     -- ratio
   y_swing_amplitude     = 0,     -- meters
   z_swing_amplitude     = 0,     -- meters
+  r_swing_amplitude     = 0,     -- radians
   step_amplitude        = 0,     -- meters
-  hip_pitch_offset      = 0,     -- radians
   period_time           = 1,     -- seconds
   dsp_ratio             = 0.25,  -- ratio
 }
@@ -41,11 +43,12 @@ end
 local x_offset          = walk.parameters.x_offset
 local y_offset          = walk.parameters.y_offset
 local z_offset          = walk.parameters.z_offset
+local hip_pitch_offset  = walk.parameters.hip_pitch_offset
 local x_swing_ratio     = walk.parameters.x_swing_ratio
 local y_swing_amplitude = walk.parameters.y_swing_amplitude
 local z_swing_amplitude = walk.parameters.z_swing_amplitude
+local r_swing_amplitude = walk.parameters.r_swing_amplitude
 local step_amplitude    = walk.parameters.step_amplitude
-local hip_pitch_offset  = walk.parameters.hip_pitch_offset
 local period_time       = walk.parameters.period_time
 local dsp_ratio         = walk.parameters.dsp_ratio
 
@@ -58,6 +61,9 @@ local t0                = Body.get_time()
 local q0                = scm:get_joint_position('legs')
 local qStance           = vector.copy(q0)
 
+local square_cos = waveform.square_cos
+local impulse_sin = waveform.impulse_sin
+
 -- Private
 ----------------------------------------------------------------------
 
@@ -67,11 +73,12 @@ local function update_gait_parameters()
   x_offset = walk.parameters.x_offset
   y_offset = walk.parameters.y_offset
   z_offset = walk.parameters.z_offset
+  hip_pitch_offset = walk.parameters.hip_pitch_offset
   x_swing_ratio = walk.parameters.x_swing_ratio
   y_swing_amplitude = walk.parameters.y_swing_amplitude
   z_swing_amplitude = walk.parameters.z_swing_amplitude
+  r_swing_amplitude = walk.parameters.r_swing_amplitude
   step_amplitude = walk.parameters.step_amplitude
-  hip_pitch_offset = walk.parameters.hip_pitch_offset
   period_time = walk.parameters.period_time
   dsp_ratio = walk.parameters.dsp_ratio
 end
@@ -84,65 +91,6 @@ local function update_stance_parameters()
   local torso_pos = {0, 0, 0, 0, hip_pitch_offset, 0}
   q0 = scm:get_joint_position('legs')
   qStance = Kinematics.inverse_legs(l_foot_pos, r_foot_pos, torso_pos)
-end
-
-
-local function impulse_sin(theta, alpha)
-  -- generate a sinusoidal waveform with extended zero regions 
-  -- alpha in [0, 1] determines the percentage of deadband in a cycle
-
-  alpha = util.min{util.max{alpha, 0}, 1}
-  local PI = math.pi
-  local theta = theta % (2*PI)
-  local offset = PI/2*alpha
-  if ((theta > 0)
-  and (theta < offset)) then
-    return 0
-  elseif ((theta >= offset)
-  and     (theta <= PI - offset)) then
-    return (alpha == 1) and 1 or math.sin((theta - offset)/(1 - alpha))
-  elseif ((theta > PI - offset)
-  and     (theta < PI + offset)) then
-    return 0
-  elseif ((theta >= PI + offset)
-  and     (theta <= 2*PI - offset)) then
-    return (alpha == 1) and -1 or -math.sin((theta - PI - offset)/(1 - alpha))
-  else
-    return 0
-  end
-end
-
-local function square_sin(theta, alpha)
-  -- generate a sinusoidal waveform with extended peak regions
-  -- alpha in [0, 1] determines the percentage of deadband in a cycle
-
-  alpha = util.min{util.max{alpha, 0}, 1}
-  local PI = math.pi
-  local theta = theta % (2*PI)
-  local offset = PI/2*alpha
-  if ((theta > 0)
-  and (theta < PI/2 - offset)) then
-    return math.sin((theta)/(1 - alpha))
-  elseif ((theta >= PI/2 - offset)
-  and     (theta <= PI/2 + offset)) then
-    return 1
-  elseif ((theta > PI/2 + offset)
-  and     (theta < 3*PI/2 - offset)) then
-    return (alpha == 1) and 1 or -math.sin((theta - PI)/(1 - alpha))
-  elseif ((theta >= 3*PI/2 - offset)
-  and     (theta <= 3*PI/2 + offset)) then
-    return -1
-  else
-    return math.sin((theta - 2*PI)/(1 - alpha))
-  end
-end
-
-local function impulse_cos(theta, alpha)
-  return impulse_sin(theta + math.pi/2, alpha) 
-end
-
-local function square_cos(theta, alpha)
-  return square_sin(theta + math.pi/2, alpha) 
 end
 
 -- Public
@@ -187,27 +135,38 @@ function walk:update()
     local gyro = sensor:get_ahrs('gyro')
     local tilt = sensor:get_ahrs('euler')
 
-    -- update endpoint trajectories
+    -- update phase
     local ph = 2*math.pi/period_time*(Body.get_time() - t0)
-    local x_swing_amplitude = velocity[1]*x_swing_ratio
-    local x_swing = x_swing_amplitude*math.cos(2*ph)
-    local y_swing = y_swing_amplitude*math.sin(ph)
-    local z_swing = z_swing_amplitude*math.cos(2*ph)
+
+    -- update foot trajectories
     local l_foot_pos = vector.zeros(6)
-    l_foot_pos[1] = x_offset + x_swing - velocity[1]*square_cos(ph, dsp_ratio)
-    l_foot_pos[2] = y_offset + y_swing - velocity[2]*square_cos(ph, dsp_ratio)
-    l_foot_pos[3] = z_offset - z_swing + step_amplitude*impulse_sin(ph, dsp_ratio)
+    l_foot_pos[1] = x_offset - velocity[1]*square_cos(ph, dsp_ratio)
+    l_foot_pos[2] = y_offset - velocity[2]*square_cos(ph, dsp_ratio)
+    l_foot_pos[3] = z_offset + step_amplitude*impulse_sin(ph, dsp_ratio)
     l_foot_pos[6] = -velocity[3]*square_cos(ph, dsp_ratio)
     local r_foot_pos = vector.zeros(6) 
-    r_foot_pos[1] = x_offset + x_swing + velocity[1]*square_cos(ph, dsp_ratio)
-    r_foot_pos[2] =-y_offset + y_swing + velocity[2]*square_cos(ph, dsp_ratio)
-    r_foot_pos[3] = z_offset - z_swing - step_amplitude*impulse_sin(ph, dsp_ratio)
+    r_foot_pos[1] = x_offset + velocity[1]*square_cos(ph, dsp_ratio)
+    r_foot_pos[2] =-y_offset + velocity[2]*square_cos(ph, dsp_ratio)
+    r_foot_pos[3] = z_offset - step_amplitude*impulse_sin(ph, dsp_ratio)
     r_foot_pos[6] = velocity[3]*square_cos(ph, dsp_ratio)
+
+    -- update torso trajectory
     local torso_pos = vector.zeros(6) 
+    local x_swing_amplitude = velocity[1]*x_swing_ratio
+    torso_pos[1] = x_swing_amplitude*-math.cos(2*ph)
+    torso_pos[2] = y_swing_amplitude*-math.sin(ph)
+    torso_pos[3] = z_swing_amplitude*math.cos(2*ph)
     torso_pos[5] = hip_pitch_offset
 
     -- calculate inverse kinematics
     local qLegs = Kinematics.inverse_legs(l_foot_pos, r_foot_pos, torso_pos)
+
+    -- update hip roll swing
+    if (ph < math.pi) then 
+      qLegs[2] = qLegs[2] + r_swing_amplitude*impulse_sin(ph, dsp_ratio)
+    else
+      qLegs[8] = qLegs[8] - r_swing_amplitude*impulse_sin(ph, dsp_ratio)
+    end
 
     -- write joint angles to actuator shared memory 
     actuator:set_joint_position(qLegs, 'legs')

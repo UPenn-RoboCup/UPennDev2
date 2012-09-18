@@ -100,8 +100,8 @@ local function update_sensors()
   t[3] = vector.new({orientation[7], orientation[8], orientation[9], 0})
   t[4] = vector.new({0, 0, 0, 1});
   local euler_angles = Transform.getEuler(t)
-  scm:set_ahrs(webots.wb_gyro_get_values(tags.gyro), 'accel')
-  scm:set_ahrs(webots.wb_accelerometer_get_values(tags.accel), 'gyro')
+  scm:set_ahrs(webots.wb_gyro_get_values(tags.gyro), 'gyro')
+  scm:set_ahrs(webots.wb_accelerometer_get_values(tags.accel), 'accel')
   scm:set_ahrs(euler_angles, 'euler')
 
   -- update force-torque readings

@@ -1,12 +1,10 @@
 module(..., package.seeall)
 
-require('util')
-
 function impulse_sin(theta, alpha)
   -- generate a sinusoidal waveform with extended zero regions 
   -- alpha in [0, 1] determines the percentage of deadband in a cycle
 
-  alpha = util.min{util.max{alpha, 0}, 1}
+  alpha = math.min(math.max(alpha, 0), 1)
   local PI = math.pi
   local theta = theta % (2*PI)
   local offset = PI/2*alpha
@@ -35,7 +33,7 @@ function step_sin(theta, alpha)
   -- generate a smoothed sinusoidal waveform with extended zero regions 
   -- alpha in [0, 1] determines the percentage of deadband in a cycle
 
-  alpha = util.min{util.max{alpha, 0}, 1}
+  alpha = math.min(math.max(alpha, 0), 1)
   local PI = math.pi
   local theta = theta % (2*PI)
   local offset = PI/2*alpha
@@ -64,7 +62,7 @@ function stride_sin(theta, alpha)
   -- generate a sinusoidal waveform with extended peak regions
   -- alpha in [0, 1] determines the percentage of deadband in a cycle
 
-  alpha = util.min{util.max{alpha, 0}, 1}
+  alpha = math.min(math.max(alpha, 0), 1)
   local PI = math.pi
   local theta = theta % (2*PI)
   local offset = PI/2*alpha

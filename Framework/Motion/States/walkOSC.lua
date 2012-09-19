@@ -72,8 +72,9 @@ local stop_request      = false
 local start_request     = false
 local t0                = Body.get_time()
 local t                 = t0
-local q0                = scm:get_joint_position('legs')
-local qstance           = vector.copy(q0)
+local q0                = sensor:get_joint_position('legs')
+local gyro              = vector.new{0, 0, 0}
+local gyro_limits       = vector.new(Config.walk.gyro_max or {1, 1, 1})
 
 -- Private
 ----------------------------------------------------------------------
@@ -115,16 +116,14 @@ local function update_velocity(dt)
   velocity[3] = limit(velocity[3], v_limits[3]) 
 end
 
-local function update_legs(qlegs)
-  -- add gyro feedback to ankle and hip joints
-  local gyro = sensor:get_ahrs('gyro')
-  qlegs[5] = qlegs[5] + ankle_pitch_fb*gyro[2]
-  qlegs[6] = qlegs[6] + ankle_roll_fb*gyro[1]
-  qlegs[11] = qlegs[11] + ankle_pitch_fb*gyro[2]
-  qlegs[12] = qlegs[12] + ankle_roll_fb*gyro[1]
-
-  -- write joint angles to actuator shared memory 
-  actuator:set_joint_position(qlegs, 'legs')
+local function update_gyro(dt)
+  -- update low pass filter for local gyro estimate 
+  local beta = 0.75
+  local raw_gyro = sensor:get_ahrs('gyro')
+  gyro = (1 - beta)*gyro + beta*raw_gyro
+  gyro[1] = limit(gyro[1], gyro_limits[1])
+  gyro[2] = limit(gyro[2], gyro_limits[2])
+  gyro[3] = limit(gyro[3], gyro_limits[3])
 end
 
 -- Public
@@ -161,16 +160,22 @@ function walk:entry()
   update_parameters()
   t0 = Body.get_time()
   q0 = sensor:get_joint_position('legs')
+  velocity = vector.new{0, 0, 0}
 end
 
 function walk:update()
+
+  -- update timing, velocity and sensor values
+  --------------------------------------------------------------------
+  local dt = t - Body.get_time()
+  t = Body.get_time()
+  update_velocity(dt)
+  update_gyro(dt)
+
+  -- update joint positions in active gait mode
+  --------------------------------------------------------------------
   if active then
    
-    -- update timing and velocity
-    local tlast = t
-    t = Body.get_time()
-    update_velocity(t - tlast)
-
     -- update phase
     local ph = 2*math.pi/period_time*(t - t0)
     local step_sin = waveform.step_sin(ph, dsp_ratio)
@@ -208,14 +213,20 @@ function walk:update()
 
     -- calculate inverse kinematics and add hip roll swing
     local q = Kinematics.inverse_legs(l_foot_pos, r_foot_pos, torso_pos)
+
+    -- add gyro feedback and hip roll swing
     if (ph < math.pi) then 
       q[2] = q[2] + r_swing_amplitude*step_sin
     else
       q[8] = q[8] + r_swing_amplitude*step_sin
     end
+    q[5] = q[5] + ankle_pitch_fb*gyro[2]
+    q[6] = q[6] + ankle_roll_fb*gyro[1]
+    q[11] = q[11] + ankle_pitch_fb*gyro[2]
+    q[12] = q[12] + ankle_roll_fb*gyro[1]
 
-    -- update legs with gyro stabilization
-    update_legs(q)
+    -- write joint angles to actuator shared memory 
+    actuator:set_joint_position(q, 'legs')
 
     -- update gait parameters at the end of each cycle 
     if (ph > 2*math.pi) then
@@ -224,7 +235,7 @@ function walk:update()
     end
 
     -- check for start and stop requests
-    if (math.abs(math.sin(ph)) < 0.025 and stop_request) then
+    if (math.abs(math.sin(ph)) < 0.025) and stop_request then
        active = false
        stop_request = false
        t0 = t
@@ -234,25 +245,37 @@ function walk:update()
        start_request = false
     end
 
+  -- update joint positions in inactive stance mode
+  --------------------------------------------------------------------
   else
+
     -- calculate current walking stance
     local l_foot_pos = {x_offset, y_offset, z_offset, 0, 0, a_offset}
     local r_foot_pos = {x_offset,-y_offset, z_offset, 0, 0, -a_offset}
     local torso_pos = {0, 0, 0, 0, hip_pitch_offset, 0}
     local qstance = Kinematics.inverse_legs(l_foot_pos, r_foot_pos, torso_pos)
 
-    -- update stance
-    t = Body.get_time()
+    -- caclutate joint configuration
     update_parameters()
     local d = util.min{(t - t0)/2, 1}
     local q = q0 + d*(vector.new(qstance) - vector.new(q0))
-    update_legs(q)
+
+    -- add gyro feedback
+    q[5] = q[5] + ankle_pitch_fb*gyro[2]
+    q[6] = q[6] + ankle_roll_fb*gyro[1]
+    q[11] = q[11] + ankle_pitch_fb*gyro[2]
+    q[12] = q[12] + ankle_roll_fb*gyro[1]
+
+    -- write joint angles to actuator shared memory 
+    actuator:set_joint_position(q, 'legs')
 
     -- check for start and stop requests
     if (t - t0 > 2) and start_request then
       active = true
       start_request = false
-      t0 = t 
+      t0 = t
+      q0 = sensor:get_joint_position('legs')
+      velocity = vector.new{0, 0, 0}
     elseif stop_request then
       stop_request = false
     end

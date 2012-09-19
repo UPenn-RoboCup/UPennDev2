@@ -52,7 +52,7 @@ curses.initscr()
 curses.cbreak()
 curses.noecho()
 curses.keypad(1)
-curses.timeout(0)
+curses.timeout(1)
 draw_screen()
 
 while true do

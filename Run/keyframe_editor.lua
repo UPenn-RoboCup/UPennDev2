@@ -23,6 +23,7 @@ local step_no = 1
 local command_duration = 1 
 local command_pause = 0
 
+local TIMEOUT = 5
 local NCOLS = 6 
 local NROWS = #joint.id + 3
 local ROW_WIDTH = 1
@@ -380,7 +381,7 @@ function cmd_help()
   curses.getch()
   curses.clear()
   draw_screen()
-  curses.timeout(10)
+  curses.timeout(TIMEOUT)
 end
 
 local commands = {
@@ -580,7 +581,7 @@ function read_command(key)
   curses.echo()
   curses.timeout(-1)
   local str = curses.getstr()
-  curses.timeout(10)
+  curses.timeout(TIMEOUT)
   curses.noecho()
   -- call command
   local cmd, arg = str:match('^([%a_]+)(.*)$')
@@ -643,7 +644,7 @@ function entry()
   curses.cbreak()
   curses.noecho()
   curses.keypad(1)
-  curses.timeout(10)
+  curses.timeout(TIMEOUT)
   -- initialize action table
   if (not action_table) then
     action_table = create_action_table()

@@ -53,13 +53,13 @@ local nominal_value = nominal_values[key_no]
 local initial_bias_value = initial_bias_values[key_no]
 local bias_increment = bias_increments[key_no]
 
+local TIMEOUT = 5
 local NCOLS = 4 
 local NROWS = #bias_value
 local ROW_WIDTH = 1
 local COL_WIDTH = 14
 local COL_OFFSET = 21
 local ROW_OFFSET = 4
-
 local COL_BIASED = 1
 local COL_UNBIASED = 2
 local COL_NOMINAL = 3
@@ -206,7 +206,7 @@ function cmd_help()
   curses.getch()
   curses.clear()
   draw_screen()
-  curses.timeout(10)
+  curses.timeout(TIMEOUT)
 end
 
 local commands = {
@@ -333,7 +333,7 @@ function read_command(key)
   curses.echo()
   curses.timeout(-1)
   local str = curses.getstr()
-  curses.timeout(10)
+  curses.timeout(TIMEOUT)
   curses.noecho()
   -- call command
   local cmd, arg = str:match('^([%a_]+)(.*)$')
@@ -384,7 +384,7 @@ function entry()
   curses.cbreak()
   curses.noecho()
   curses.keypad(1)
-  curses.timeout(5)
+  curses.timeout(TIMEOUT)
   draw_screen()
   -- initialize shared memory
   unix.usleep(5e5)

@@ -1,34 +1,5 @@
 module(..., package.seeall)
 
-function impulse_sin(theta, alpha)
-  -- generate a sinusoidal waveform with extended zero regions 
-  -- alpha in [0, 1] determines the percentage of deadband in a cycle
-
-  alpha = math.min(math.max(alpha, 0), 1)
-  local PI = math.pi
-  local theta = theta % (2*PI)
-  local offset = PI/2*alpha
-  if ((theta > 0)
-  and (theta < offset)) then
-    return 0
-  elseif ((theta >= offset)
-  and     (theta <= PI - offset)) then
-    return (alpha == 1) and 1 or math.sin((theta - offset)/(1 - alpha))
-  elseif ((theta > PI - offset)
-  and     (theta < PI + offset)) then
-    return 0
-  elseif ((theta >= PI + offset)
-  and     (theta <= 2*PI - offset)) then
-    return (alpha == 1) and -1 or -math.sin((theta - PI - offset)/(1 - alpha))
-  else
-    return 0
-  end
-end
-
-function impulse_cos(theta, alpha)
-  return impulse_sin(theta + math.pi/2, alpha) 
-end
-
 function step_sin(theta, alpha)
   -- generate a smoothed sinusoidal waveform with extended zero regions 
   -- alpha in [0, 1] determines the percentage of deadband in a cycle

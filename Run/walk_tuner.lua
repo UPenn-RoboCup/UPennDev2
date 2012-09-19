@@ -25,13 +25,13 @@ for k,v in pairs(walk.parameters) do
     Config.walk.increments[k] or 0.001
 end
 
+local TIMEOUT = 1
 local NCOLS = 1
 local NROWS = #parameter_keys
 local ROW_WIDTH = 1
 local COL_WIDTH = 14
 local COL_OFFSET = 30
 local ROW_OFFSET = 4
-
 local COL_PARAM = 1
 local ROW_CMD = NROWS + 2
 
@@ -131,7 +131,7 @@ function cmd_help()
   curses.getch()
   curses.clear()
   draw_screen()
-  curses.timeout(10)
+  curses.timeout(TIMEOUT)
 end
 
 local commands = {
@@ -252,7 +252,7 @@ function read_command(key)
   curses.echo()
   curses.timeout(-1)
   local str = curses.getstr()
-  curses.timeout(10)
+  curses.timeout(TIMEOUT)
   curses.noecho()
   -- call command
   local cmd, arg = str:match('^([%a_]+)(.*)$')
@@ -303,7 +303,7 @@ function entry()
   curses.cbreak()
   curses.noecho()
   curses.keypad(1)
-  curses.timeout(5)
+  curses.timeout(TIMEOUT)
   draw_screen()
   -- initialize shared memory
   unix.usleep(5e5)

@@ -91,3 +91,5 @@ clean:
 	rm -f Webots
 	rm -f Run/init_robot
 	rm -f Run/comms_manager
+
+.PHONY: all ash teststand webots_ash tools clean

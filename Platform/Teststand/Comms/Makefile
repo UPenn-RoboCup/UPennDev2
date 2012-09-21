@@ -41,6 +41,8 @@ LIB_DIRS = -L/usr/local/lib -L/usr/lib -L../../Lib/CANopen -L../../Lib/Epos \
 
 LIBS = -lMechanics -lepos -lcanopen -lpthread -lcurses -lrt -llua5.1
 
+all: comms_manager
+
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
 %.o: %.c
@@ -51,3 +53,5 @@ comms_manager: comms_manager.o epos_thread.o comms_thread.o shared_data.o
 
 clean:
 	rm -f *.o *.$(SHLIBEXT) comms_manager
+
+.PHONY: all clean

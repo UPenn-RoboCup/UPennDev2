@@ -12,3 +12,5 @@ clean:
 	cd Mechanics && make clean && cd $(CWD)
 	cd Project && make clean && cd $(CWD)
 	rm -f Project/controllers/webots_controller
+
+.PHONY: all clean

@@ -1,5 +1,5 @@
 ----------------------------------------------------------------------
--- keyframe : plays keyframe actions
+-- keyframe : plays keyframe motions
 ----------------------------------------------------------------------
 
 require('Body')
@@ -16,9 +16,9 @@ keyframe = MotionState.new(...)
 local sensor = keyframe.sensor
 local actuator = keyframe.actuator
 
-local action_table = {}
-local action_index = {}
-local action_queue = {}
+local keyframe_table = {}
+local motion_index = {}
+local motion_queue = {}
 local joint = Config.joint
 
 -- book-keeping
@@ -58,25 +58,25 @@ end
 -- Interface
 ----------------------------------------------------------------------
 
-function keyframe:load_action_table(actions)
+function keyframe:load_keyframe_table(motions)
   -- load a keyframe motion table
-  action_table = actions
-  action_queue = {}
-  action_index = {}
-  for i = 1,#action_table do 
-    action_index[action_table[i].name] = i
+  keyframe_table = motions
+  motion_queue = {}
+  motion_index = {}
+  for i = 1,#keyframe_table do 
+    motion_index[keyframe_table[i].name] = i
   end
   steps = {}
 end
 
-function keyframe:play(action)
-  -- add an action to the play queue
-  if (type(action) == 'number') then
-    table.insert(action_queue, action_table[action])
-  elseif (type(action) == 'string') then
-    table.insert(action_queue, action_table[action_index[action]])
-  elseif (type(action) == 'table') then
-    table.insert(action_queue, action)
+function keyframe:play(motion)
+  -- add a motion to the play queue
+  if (type(motion) == 'number') then
+    table.insert(motion_queue, keyframe_table[motion])
+  elseif (type(motion) == 'string') then
+    table.insert(motion_queue, keyframe_table[motion_index[motion]])
+  elseif (type(motion) == 'table') then
+    table.insert(motion_queue, motion)
   else
     return false
   end
@@ -84,7 +84,7 @@ function keyframe:play(action)
 end
 
 function keyframe:stop()
-  action_queue = {}
+  motion_queue = {}
   steps = {}
 end
 
@@ -107,9 +107,9 @@ function keyframe:update()
       update_step_parameters()
     end
   else
-    if (#action_queue > 0) then
-      -- load new keyframe action
-      steps = table.remove(action_queue, 1).steps
+    if (#motion_queue > 0) then
+      -- load new keyframe motion
+      steps = table.remove(motion_queue, 1).steps
       iStep = 1
       qStep = vector.new(sensor:get_joint_position()) 
       mStep = vector.zeros(#joint.id)

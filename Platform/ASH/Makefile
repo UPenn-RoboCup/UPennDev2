@@ -7,3 +7,5 @@ all:
 clean:
 	cd Mechanics && make clean && cd $(CWD)
 	cd Comms && make clean && cd $(CWD)
+
+.PHONY: all clean

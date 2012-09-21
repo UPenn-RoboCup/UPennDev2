@@ -13,3 +13,5 @@ clean:
 	cd cutil && make clean && cd $(CWD)
 	cd cbuffer && make clean && cd $(CWD)
 	cd unix && make clean && cd $(CWD)
+
+.PHONY: all clean

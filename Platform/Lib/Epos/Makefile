@@ -36,12 +36,12 @@ INCLUDES = -I/usr/local/include -I/usr/include -I../CANopen
 
 LIB_DIRS = -L/usr/local/lib -L/usr/lib -L../CANopen
 
+all: libepos.a test_epos
+
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
 %.o: %.c
 	$(CC) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
-
-all: libepos.a test_epos
 
 libepos.a: epos_slave.o
 	$(AR) $(ARFLAGS) $@ $^
@@ -51,3 +51,5 @@ test_epos: test_epos.o libepos.a
 
 clean:
 	rm -f *.o *.$(SHLIBEXT) libepos.a test_epos
+
+.PHONY: all clean

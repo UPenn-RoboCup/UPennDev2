@@ -14,6 +14,6 @@ loadconfig('Config_Teststand_Bias')
 
 Config.platform = {}
 Config.platform.name = 'Teststand'
-Config.platform.action_table = 'action_table_Teststand'
+Config.platform.keyframe_table = 'keyframe_table_Teststand'
 
 return Config

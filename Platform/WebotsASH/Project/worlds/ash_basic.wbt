@@ -13,7 +13,7 @@ WorldInfo {
 }
 Viewpoint {
   orientation 0.294287 0.578057 0.761082 2.41727
-  position 5.21502 -1.24612 1.24861
+  position 5.83483 -0.786564 1.45991
   follow "SAFFiR"
 }
 Background {
@@ -378,5 +378,5 @@ DEF SAFFiR Supervisor {
     ]
   }
   controller "webots_controller"
-  controllerArgs "demo"
+  controllerArgs "walk_tuner"
 }

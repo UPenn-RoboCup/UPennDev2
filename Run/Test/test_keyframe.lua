@@ -9,9 +9,9 @@ require('Config')
 require('gnuplot')
 require('keyframe')
 
-local action = tonumber(arg[1]) or arg[1]
+local motion = tonumber(arg[1]) or arg[1]
 local qJoints, tJoints = {}, {}
-local action_table = require(Config.platform.action_table)
+local keyframe_table = require(Config.platform.keyframe_table)
 
 -- Setup 
 -----------------------------------------------------
@@ -20,18 +20,18 @@ acm:set_joint_position(scm:get_joint_position())
 acm:set_joint_mode(0, 'all')
 acm:set_joint_enable(1, 'all')
 
-keyframe:load_action_table(action_table)
+keyframe:load_keyframe_table(keyframe_table)
 
--- Play keyframe action
+-- Play keyframe motion
 -----------------------------------------------------
 
 Body.entry()
 keyframe:entry()
 
-if keyframe:play(action) then
+if keyframe:play(motion) then
   print('playing... press any key to stop')
 else
-  print('usage: lua test_keyframe.lua [action]')
+  print('usage: lua test_keyframe.lua [motion]')
   os.exit()
 end
 

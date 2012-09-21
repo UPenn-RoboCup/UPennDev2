@@ -14,8 +14,8 @@ require('Config')
 require('keyframe')
 require('serialization')
 
-local action_table_name = arg[1] or Config.platform.action_table
-pcall(require, action_table_name)
+local keyframe_table_name = arg[1] or Config.platform.keyframe_table
+pcall(require, keyframe_table_name)
 
 local joint = Config.joint
 local page_no = 1
@@ -48,7 +48,7 @@ function new_page()
   return {name = '', steps = {}}
 end
 
-function create_action_table()
+function create_keyframe_table()
   local pages = {}
   for i = 1,99 do
     pages[i] = new_page()
@@ -113,7 +113,7 @@ function cmd_write_step(arg)
   local varg = parse_int_arguments(arg)
   local step_index = varg[1]
   if (step_index and step_index > 0) then
-    action_table[page_no].steps[step_index] = { 
+    keyframe_table[page_no].steps[step_index] = { 
       joint_position = acm:get_joint_position(),
       duration = command_duration,
       pause = command_pause,
@@ -128,7 +128,7 @@ function cmd_insert_step(arg)
   local varg = parse_int_arguments(arg)
   local step_index = varg[1]
   if (step_index and step_index > 0) then
-    table.insert(action_table[page_no].steps, step_index, { 
+    table.insert(keyframe_table[page_no].steps, step_index, { 
       joint_position = acm:get_joint_position(),
       duration = command_duration,
       pause = command_pause,
@@ -142,9 +142,9 @@ end
 function cmd_copy_step(arg)
   local varg = parse_int_arguments(arg)
   local step_index = varg[2]
-  local source = varg[1] and action_table[page_no].steps[varg[1]]
+  local source = varg[1] and keyframe_table[page_no].steps[varg[1]]
   if (step_index and step_index > 0) and source then
-    action_table[page_no].steps[step_index] = {
+    keyframe_table[page_no].steps[step_index] = {
       joint_position = vector.copy(source.joint_position),
       duration = source.duration,
       pause = source.pause,
@@ -159,10 +159,10 @@ function cmd_delete_step(arg)
   local varg = parse_int_arguments(arg)
   local step_index = varg[1]
   if (step_index and step_index > 0) then
-    if (step_index > #action_table[page_no].steps) then
-      action_table[page_no].steps[step_index] = nil
+    if (step_index > #keyframe_table[page_no].steps) then
+      keyframe_table[page_no].steps[step_index] = nil
     else
-      table.remove(action_table[page_no].steps, step_index)
+      table.remove(keyframe_table[page_no].steps, step_index)
     end
   else
     draw_command_row('Invalid step index')
@@ -182,23 +182,23 @@ end
 
 function cmd_name_page(arg)
   local varg = parse_string_arguments(arg)
-  action_table[page_no].name = varg[1] or ''
+  keyframe_table[page_no].name = varg[1] or ''
   draw_screen()
 end
 
 function cmd_clear_page()
-  action_table[page_no] = new_page()
+  keyframe_table[page_no] = new_page()
   draw_screen()
 end
 
 function cmd_read_page(arg)
   local varg = parse_int_arguments(arg)
-  local page = varg[1] and action_table[varg[1]]
-  local offset = table.maxn(action_table[page_no].steps)
+  local page = varg[1] and keyframe_table[varg[1]]
+  local offset = table.maxn(keyframe_table[page_no].steps)
   if page then
     for i = 1,#page.steps do
       local step = page.steps[i]
-      action_table[page_no].steps[offset + i] = {
+      keyframe_table[page_no].steps[offset + i] = {
         joint_position = vector.copy(step.joint_position),
         duration = step.duration,
         pause = step.pause,
@@ -210,7 +210,7 @@ end
 
 function cmd_page(arg)
   local varg = parse_int_arguments(arg)
-  if (varg[1] and varg[1] > 0 and varg[1] <= #action_table) then
+  if (varg[1] and varg[1] > 0 and varg[1] <= #keyframe_table) then
     page_no = varg[1]
   else
     draw_command_row('Invalid page index')
@@ -220,7 +220,7 @@ end
 
 function cmd_next_page()
   step_no = 1
-  page_no = math.min(page_no + 1, #action_table)
+  page_no = math.min(page_no + 1, #keyframe_table)
   draw_screen()
 end
 
@@ -232,7 +232,7 @@ end
 
 function cmd_goto(arg)
   local varg = parse_int_arguments(arg)
-  local step = varg[1] and action_table[page_no].steps[varg[1]]
+  local step = varg[1] and keyframe_table[page_no].steps[varg[1]]
   if step then
     local page = new_page()
     page.steps[1] = {
@@ -281,7 +281,7 @@ function cmd_zero()
 end
 
 function cmd_play()
-  keyframe:load_action_table(action_table)
+  keyframe:load_keyframe_table(keyframe_table)
   keyframe:stop()
   keyframe:play(page_no)
   keyframe:entry()
@@ -300,7 +300,7 @@ end
 
 function cmd_loop(arg)
   local count = parse_int_arguments(arg)[1] or 0
-  keyframe:load_action_table(action_table)
+  keyframe:load_keyframe_table(keyframe_table)
   for i = 1,count do
     keyframe:play(page_no)
   end
@@ -320,18 +320,18 @@ end
 
 function cmd_save(arg)
   local varg = parse_string_arguments(arg)
-  action_table_name = varg[1] or action_table_name 
+  keyframe_table_name = varg[1] or keyframe_table_name 
   local serialize = serialization.serialize
-  local f = assert(io.open('../Data/'..action_table_name..'.lua','w+'))
-  f:write('action_table = {}\n')
-  for i = 1,#action_table do
-    local page = action_table[i]
-    f:write(string.format('action_table[%d] = {\n', i))
+  local f = assert(io.open('../Data/'..keyframe_table_name..'.lua','w+'))
+  f:write('keyframe_table = {}\n\n')
+  for i = 1,#keyframe_table do
+    local page = keyframe_table[i]
+    f:write(string.format('keyframe_table[%d] = {\n', i))
     f:write(string.format('  name = "%s",\n', page.name))
     f:write(string.format('  steps = {\n'))
     for j = 1,#page.steps do
       local step = page.steps[j]
-      f:write(string.format('    {\n'))
+      f:write(string.format('    [%d] = {\n', j))
       f:write(string.format('      joint_position = %s, \n',
         serialize(step.joint_position)))
       f:write(string.format('      duration = %f,\n', step.duration))
@@ -339,9 +339,9 @@ function cmd_save(arg)
       f:write(string.format('    },\n')) 
     end
     f:write(string.format('  }\n')) 
-    f:write(string.format('}\n')) 
+    f:write(string.format('}\n\n')) 
   end
-  f:write('return action_table')
+  f:write('return keyframe_table')
   f:close()
 end
 
@@ -355,7 +355,7 @@ function cmd_help()
   curses.clear()
   curses.move(0, 0)
   curses.printw('------------------------------------------------ Navigation\n')
-  curses.printw('save           write current action_table to file\n')
+  curses.printw('save           write current keyframe_table to file\n')
   curses.printw('page [i]       move to page i\n')
   curses.printw('n              next page\n')
   curses.printw('p              previous page\n')
@@ -418,7 +418,7 @@ local commands = {
 }
 
 -- Access
----------------------------------------------------------------------
+----------------------------------------------------------------------
 
 function get_value(r, c)
   -- command column
@@ -438,16 +438,16 @@ function get_value(r, c)
   -- step column
   elseif (c >= COL_STEP) then
     local step = step_no + (c - COL_STEP)
-    if (not action_table[page_no].steps[step]) then
+    if (not keyframe_table[page_no].steps[step]) then
       return
     end
     if (r < ROW_LINE) then
       local id = 1 + (r - ROW_JOINT)
-      return action_table[page_no].steps[step].joint_position[id]
+      return keyframe_table[page_no].steps[step].joint_position[id]
     elseif (r == ROW_DURAT) then
-      return action_table[page_no].steps[step].duration
+      return keyframe_table[page_no].steps[step].duration
     elseif (r == ROW_PAUSE) then
-      return action_table[page_no].steps[step].pause
+      return keyframe_table[page_no].steps[step].pause
     end
   end
 end
@@ -466,16 +466,16 @@ function set_value(val, r, c)
   -- step column
   elseif (c >= COL_STEP) then
     local step = step_no + (col - COL_STEP)
-    if (not action_table[page_no].steps[step]) then
+    if (not keyframe_table[page_no].steps[step]) then
       return
     end
     if (r < ROW_LINE) then
       local id = 1 + (r - ROW_JOINT)
-      action_table[page_no].steps[step].joint_position[id] = val
+      keyframe_table[page_no].steps[step].joint_position[id] = val
     elseif (r == ROW_DURAT) then
-      action_table[page_no].steps[step].duration = val
+      keyframe_table[page_no].steps[step].duration = val
     elseif (r == ROW_PAUSE) then
-      action_table[page_no].steps[step].pause = val
+      keyframe_table[page_no].steps[step].pause = val
     end
   end
 end
@@ -521,7 +521,7 @@ function draw_screen()
   curses.printw('                               Keyframe Editor\n')
   curses.printw('///////////////////////////////////////')
   curses.printw('///////////////////////////////////////\n')
-  curses.printw('%2d %16s     cmd   ', page_no, action_table[page_no].name)
+  curses.printw('%2d %16s     cmd   ', page_no, keyframe_table[page_no].name)
   for i = 0,4 do
     curses.printw('  stp%2d  ', step_no + i)
   end
@@ -548,7 +548,7 @@ function draw_screen()
 end
 
 -- Parsing
------------------------------------------------------------------
+----------------------------------------------------------------------
 
 function parse_int_arguments(arg)
   local varg = {}
@@ -636,7 +636,7 @@ function cursor_down()
 end
 
 -- Main
-------------------------------------------------------------------
+----------------------------------------------------------------------
 
 function entry()
   -- setup curses environment
@@ -645,9 +645,9 @@ function entry()
   curses.noecho()
   curses.keypad(1)
   curses.timeout(TIMEOUT)
-  -- initialize action table
-  if (not action_table) then
-    action_table = create_action_table()
+  -- initialize keyframe table
+  if (not keyframe_table) then
+    keyframe_table = create_keyframe_table()
   end
   draw_screen()
   -- initialize shared memory

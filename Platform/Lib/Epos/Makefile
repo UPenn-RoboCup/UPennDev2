@@ -51,5 +51,3 @@ test_epos: test_epos.o libepos.a
 
 clean:
 	rm -f *.o *.$(SHLIBEXT) libepos.a test_epos
-
-.PHONY: all clean

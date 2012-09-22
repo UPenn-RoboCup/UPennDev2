@@ -8,6 +8,7 @@
 #include <ncurses.h>
 #include "shared_data.h"
 #include "epos_thread.h"
+#include "sensor_thread.h"
 #include "utils.h"
 
 // comms_manager : communications manager for actuator teststand
@@ -29,6 +30,7 @@ namespace shared_data {
 namespace {
   epos_thread l_leg_thread;
   epos_thread r_leg_thread;
+  sensor_thread _sensor_thread;
 };
 
 int main(int argc, char **argv)
@@ -44,22 +46,28 @@ int main(int argc, char **argv)
     l_leg_joints[i] = i;
     r_leg_joints[i] = i + 6;
   }
-  l_leg_thread.set_interface("can1");
-  r_leg_thread.set_interface("can0");
+  l_leg_thread.set_can_interface("can1");
+  r_leg_thread.set_can_interface("can0");
   l_leg_thread.set_joints(l_leg_joints);
   r_leg_thread.set_joints(r_leg_joints);
+  //_sensor_thread.set_can_interface("can2");
+  //_sensor_thread.set_imu_interface("/dev/ttyACM0");
 
   // start communication threads
   fprintf(stderr, "starting comms threads...\n");
   l_leg_thread.start();
   r_leg_thread.start();
-  while (!l_leg_thread.is_running() || !r_leg_thread.is_running())
-  {
+  while (!l_leg_thread.is_running() || !r_leg_thread.is_running()) {
     usleep(2e5);
   }
+  //_sensor_thread.start();
+  //while (!_sensor_thread.is_running()) {
+  //  usleep(2e5);
+  //}
 
   // move joints to zero position
   fprintf(stderr, "zeroing joints...\n");
+  usleep(2e5);
   zero_joints();
 
   // update display data
@@ -73,12 +81,19 @@ int main(int argc, char **argv)
     clear();
     draw_screen();
     refresh();
+    if (!l_leg_thread.is_running())
+       break;
+    if (!r_leg_thread.is_running())
+       break;
+//  if (!_sensor_thread.is_running())
+//     break;
   }
   endwin();
   
   // stop communication threads 
   l_leg_thread.stop();
   r_leg_thread.stop();
+  //_sensor_thread.stop();
 
   // destroy shared memory
   shared_data::exit();

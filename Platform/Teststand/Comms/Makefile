@@ -32,12 +32,12 @@ ifeq ($(OSTYPE),darwin)
   LIBRT=
 endif
 
-INCLUDES = -I/usr/local/include -I/usr/include -I/usr/local/include/boost \
-           -I/usr/include/lua5.1 -I../../Lib/Epos -I../../Lib/CANopen \
-           -I../Mechanics
+INCLUDES  = -I/usr/local/include -I/usr/include -I/usr/local/include/boost
+INCLUDES += -I/usr/include/lua5.1 -I../../Lib/Epos -I../../Lib/CANopen
+INCLUDES += -I../Mechanics
 
-LIB_DIRS = -L/usr/local/lib -L/usr/lib -L../../Lib/CANopen -L../../Lib/Epos \
-           -L../Mechanics
+LIB_DIRS  = -L/usr/local/lib -L/usr/lib
+LIB_DIRS += -L../../Lib/CANopen -L../../Lib/Epos -L../Mechanics
 
 LIBS = -lMechanics -lepos -lcanopen -lpthread -lcurses -lrt -llua5.1
 
@@ -53,5 +53,3 @@ comms_manager: comms_manager.o epos_thread.o comms_thread.o shared_data.o
 
 clean:
 	rm -f *.o *.$(SHLIBEXT) comms_manager
-
-.PHONY: all clean

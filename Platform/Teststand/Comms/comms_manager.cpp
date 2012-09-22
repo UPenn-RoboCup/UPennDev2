@@ -36,7 +36,7 @@ int main(int argc, char **argv)
 
   // initialize communication threads
   std::vector<int> actuator_joints(1, 0);
-  actuator_thread.set_interface("can0");
+  actuator_thread.set_can_interface("can0");
   actuator_thread.set_joints(actuator_joints);
 
   // start communication threads

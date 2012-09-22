@@ -13,7 +13,7 @@
 class epos_thread : public comms_thread {
 protected:
   std::vector<int> m_id;
-  char m_interface[128];
+  char m_can_interface[128];
   epos_slave *m_epos[128];
   can_channel m_channel;
   co_master m_master;
@@ -28,7 +28,7 @@ protected:
 public:
   epos_thread();
   void set_joints(std::vector<int> id);
-  void set_interface(const char *interface);
+  void set_can_interface(const char *interface);
 };
 
 #endif

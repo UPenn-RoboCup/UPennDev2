@@ -32,14 +32,15 @@ ifeq ($(OSTYPE),darwin)
   LIBRT=
 endif
 
-INCLUDES = -I/usr/local/include -I/usr/include -I/usr/local/include/boost \
-           -I/usr/include/lua5.1 -I../../Lib/Epos -I../../Lib/CANopen \
-           -I../Mechanics
+INCLUDES  = -I/usr/local/include -I/usr/include -I/usr/local/include/boost
+INCLUDES += -I/usr/include/lua5.1 -I../../Lib/CANopen -I../Mechanics
+INCLUDES += -I../../Lib/Microstrain -I../../Lib/NetFT -I../../Lib/Epos
 
-LIB_DIRS = -L/usr/local/lib -L/usr/lib -L../../Lib/CANopen -L../../Lib/Epos \
-           -L../Mechanics
+LIB_DIRS  = -L/usr/local/lib -L/usr/lib -L../Mechanics -L../../Lib/CANopen
+LIB_DIRS += -L../../Lib/Microstrain -L../../Lib/NetFT -L../../Lib/Epos
 
-LIBS = -lMechanics -lepos -lcanopen -lpthread -lcurses -lrt -llua5.1
+LIBS  = -lMechanics -lMicrostrain -lnetft -lepos 
+LIBS += -lcanopen -lpthread -lcurses -lrt -llua5.1
 
 all: comms_manager
 
@@ -48,10 +49,8 @@ all: comms_manager
 %.o: %.c
 	$(CC) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
 
-comms_manager: comms_manager.o epos_thread.o comms_thread.o shared_data.o
+comms_manager: comms_manager.o epos_thread.o comms_thread.o sensor_thread.o shared_data.o
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(INCLUDES) $(LIB_DIRS) $(LIBS)
 
 clean:
 	rm -f *.o *.$(SHLIBEXT) comms_manager
-
-.PHONY: all clean

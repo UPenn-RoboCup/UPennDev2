@@ -36,12 +36,12 @@ INCLUDES = -I/usr/local/include -I/usr/include -I../CANopen
 
 LIB_DIRS = -L/usr/local/lib -L/usr/lib -L../CANopen
 
+all: libnetft.a test_netft
+
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
 %.o: %.c
 	$(CC) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
-
-all: libnetft.a test_netft
 
 libnetft.a: netft_node.o
 	$(AR) $(ARFLAGS) $@ $^

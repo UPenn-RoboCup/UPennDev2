@@ -41,7 +41,7 @@ namespace shared_data {
 epos_thread::epos_thread()
 {
   m_id.resize(0);
-  sprintf(m_interface, "\0");
+  sprintf(m_can_interface, "\0");
 }
 
 void epos_thread::emcy_callback(int node_id, void *user_data)
@@ -122,12 +122,13 @@ void epos_thread::home_motor_controllers()
   {
     m_master.send_sync(); 
     m_master.receive(sync_ids, m_id.size(), SYNC_TIMEOUT); 
-    bool homing_attained = true;
+    int homing_attained = 0;
     for (int i = 0; i < m_id.size(); i++)
-      homing_attained &= (m_epos[i]->get_statusbit_homing_attained() == 1);
-    if (homing_attained)
+      homing_attained += m_epos[i]->get_statusbit_homing_attained();
+    if (homing_attained == m_id.size())
       break;
   }
+  fprintf(stderr, "homing done!\n");
 }
 
 void epos_thread::update_actuator_settings()
@@ -283,7 +284,7 @@ void epos_thread::update_sensor_readings()
 void epos_thread::entry()
 {
   // initialize can bus
-  assert(0 == m_channel.open_channel(m_interface));
+  assert(0 == m_channel.open_channel(m_can_interface));
 
   // initialize epos slave objects
   for (int i = 0; i < m_id.size(); i++)
@@ -313,7 +314,7 @@ void epos_thread::entry()
   m_master.register_emcy_callback(&epos_thread::emcy_callback, this);
 
   // home_motor_controllers
-  //home_motor_controllers();
+  home_motor_controllers();
 
   // enable position control
   m_master.send_sync(0);
@@ -350,7 +351,7 @@ void epos_thread::set_joints(std::vector<int> id)
   m_id = id;
 }
 
-void epos_thread::set_interface(const char *interface)
+void epos_thread::set_can_interface(const char *interface)
 {
-  sprintf(m_interface, "%s", interface);
+  sprintf(m_can_interface, "%s", interface);
 }

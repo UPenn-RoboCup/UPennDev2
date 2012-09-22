@@ -36,20 +36,18 @@ INCLUDES = -I/usr/local/include -I/usr/include -I../CANopen
 
 LIB_DIRS = -L/usr/local/lib -L/usr/lib
 
-all: libmicrostrain.a test_microstrain
+all: libMicrostrain.a test_microstrain
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
 %.o: %.c
 	$(CC) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
 
-libmicrostrain.a: Microstrain.o
+libMicrostrain.a: Microstrain.o
 	$(AR) $(ARFLAGS) $@ $^
 
-test_microstrain: test_microstrain.o libmicrostrain.a
+test_microstrain: test_microstrain.o libMicrostrain.a
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(INCLUDES) $(LIB_DIRS)
 
 clean:
-	rm -f *.o *.$(SHLIBEXT) libmicrostrain.a test_microstrain
-
-.PHONY: all clean
+	rm -f *.o *.$(SHLIBEXT) libMicrostrain.a test_microstrain

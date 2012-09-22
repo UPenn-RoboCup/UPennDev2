@@ -38,7 +38,23 @@ namespace shared_data {
   extern struct bias_data bias;
 };
 
-static bool check_joint_settings()
+epos_thread::epos_thread()
+{
+  m_id.resize(0);
+  sprintf(m_can_interface, "\0");
+}
+
+void epos_thread::set_joints(std::vector<int> id)
+{
+  m_id = id;
+}
+
+void epos_thread::set_can_interface(const char *interface)
+{
+  strncpy(m_can_interface, interface, 128);
+}
+
+bool epos_thread::check_joint_settings()
 {
   bool joint_enable_valid = 
     (actuator.joint_enable[0] == actuator.joint_enable[1] == 
@@ -55,12 +71,6 @@ static bool check_joint_settings()
      actuator.joint_mode[8]) &&
     (actuator.joint_mode[10] == actuator.joint_mode[11]);
   return joint_enable_valid && joint_mode_valid;
-}
-
-epos_thread::epos_thread()
-{
-  m_id.resize(0);
-  sprintf(m_interface, "\0");
 }
 
 void epos_thread::emcy_callback(int node_id, void *user_data)
@@ -312,7 +322,7 @@ void epos_thread::update_sensor_readings()
 void epos_thread::entry()
 {
   // initialize can bus
-  assert(0 == m_channel.open_channel(m_interface));
+  assert(0 == m_channel.open_channel(m_can_interface));
 
   // initialize epos slave objects
   for (int i = 0; i < m_id.size(); i++)
@@ -372,14 +382,4 @@ void epos_thread::exit()
   {
     delete m_epos[i];
   }
-}
-
-void epos_thread::set_joints(std::vector<int> id)
-{
-  m_id = id;
-}
-
-void epos_thread::set_interface(const char *interface)
-{
-  sprintf(m_interface, "%s", interface);
 }

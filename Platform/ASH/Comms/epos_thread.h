@@ -13,10 +13,11 @@
 class epos_thread : public comms_thread {
 protected:
   std::vector<int> m_id;
-  char m_interface[128];
+  char m_can_interface[128];
   epos_slave *m_epos[128];
   can_channel m_channel;
   co_master m_master;
+  bool check_joint_settings();
   static void emcy_callback(int node_id, void *user_data);
   void initialize_motor_controllers();
   void home_motor_controllers();
@@ -28,7 +29,7 @@ protected:
 public:
   epos_thread();
   void set_joints(std::vector<int> id);
-  void set_interface(const char *interface);
+  void set_can_interface(const char *interface);
 };
 
 #endif

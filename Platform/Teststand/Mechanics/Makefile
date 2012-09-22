@@ -1,6 +1,6 @@
 # Makefile used to build libraries
 
-TARGETS = all clean
+TARGETS = all Kinematics Statics clean
 .PHONY: $(TARGETS)
 
 CXX=g++
@@ -54,5 +54,3 @@ libMechanics.a: Kinematics.o Statics.o Transform.o Lut.o
 
 clean:
 	rm -f *.$(SHLIBEXT) *.o libMechanics.a
-
-.PHONY: all clean

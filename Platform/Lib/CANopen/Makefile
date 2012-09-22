@@ -48,5 +48,3 @@ libcanopen.a: co_packet.o co_master.o co_slave.o dsp402_slave.o co_types.o can_c
 
 clean:
 	rm -f *.o *.$(SHLIBEXT) libcanopen.a test_canopen
-
-.PHONY: all clean

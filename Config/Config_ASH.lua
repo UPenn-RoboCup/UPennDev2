@@ -21,3 +21,5 @@ platform.walk = 'walkOSC'
 walk = getfenv()[platform.walk] or {}
 walk.parameters = walk.parameters or {}
 walk.increments = walk.increments or {}
+walk.a_limits = {0.04, 0.04, 0.10}
+walk.v_limits = {0.08, 0.08, 0.10}

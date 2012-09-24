@@ -9,9 +9,9 @@ function loadconfig(configName)
   end
 end
 
-loadconfig('Config_ASH_Robot')
-loadconfig('Config_ASH_Walk')
+loadconfig('Config_ASH_Devices')
 loadconfig('Config_ASH_Bias')
+loadconfig('Config_ASH_Walk')
 
 platform = {}
 platform.name = 'ASH'

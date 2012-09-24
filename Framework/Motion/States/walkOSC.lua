@@ -161,6 +161,7 @@ function walk:entry()
   t0 = Body.get_time()
   q0 = sensor:get_joint_position('legs')
   velocity = vector.new{0, 0, 0}
+  actuator:set_joint_position_gain(1, 'legs')
 end
 
 function walk:update()

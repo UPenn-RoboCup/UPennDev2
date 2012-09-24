@@ -3,6 +3,7 @@ require('cbuffer')
 require('Config')
 require('webots')
 require('vector')
+require('util')
 require('acm')
 require('scm')
 
@@ -61,17 +62,17 @@ end
 
 local function update_actuators()
   -- update webots actuator values 
-  local mode = acm:get_joint_mode()
   local enable = acm:get_joint_enable()
-  local joint_position = acm:get_joint_position() - joint_position_bias
+  local position_gain = acm:get_joint_position_gain()
   local joint_force = acm:get_joint_force() - joint_force_bias
+  local joint_position = acm:get_joint_position() - joint_position_bias
 
   for i = 1,#joint.id do
     if (enable[i] == 0) then   -- disabled
       webots.wb_servo_set_force(tags.servo[i], 0)
-    elseif (mode[i] == 0) then -- position control
+    elseif (position_gain[i] == 1) then -- position control
       webots.wb_servo_set_position(tags.servo[i], joint_position[i])
-    elseif (mode[i] == 1) then -- force control
+    elseif (position_gain[i] == 0) then -- force control
       webots.wb_servo_set_force(tags.servo[i], -joint_force[i])
     end
   end
@@ -79,14 +80,14 @@ end
 
 local function update_sensors()
   -- update webots sensor values
-  local mode = acm:get_joint_mode()
   local enable = acm:get_joint_enable()
+  local position_gain = acm:get_joint_position_gain()
   for i = 1,#joint.id do
     if (enable[i] == 0) then   -- disabled
       scm:set_joint_force(0, i)
-    elseif (mode[i] == 0) then -- position control
+    elseif (position_gain[i] == 1) then -- position control
       scm:set_joint_force(-webots.wb_servo_get_motor_force_feedback(tags.servo[i]), i)
-    elseif (mode[i] == 1) then -- force control
+    elseif (position_gain[i] == 0) then -- force control
       scm:set_joint_force(acm:get_joint_force(i), i)
     end
     scm:set_joint_position(webots.wb_servo_get_position(tags.servo[i]), i)
@@ -135,7 +136,7 @@ function Body.entry()
   update_sensors()
 
   -- initialize actuator commands 
-  acm:set_joint_mode(0, 'all') -- position mode
+  acm:set_joint_position_gain(1, 'all') -- position control
   acm:set_joint_enable(1, 'all')
   acm:set_joint_position(scm:get_joint_position())
   acm:set_joint_force(0, 'all')

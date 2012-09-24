@@ -9,7 +9,7 @@ function loadconfig(configName)
   end
 end
 
-loadconfig('Config_Teststand_Robot')
+loadconfig('Config_Teststand_Devices')
 loadconfig('Config_Teststand_Bias')
 
 Config.platform = {}

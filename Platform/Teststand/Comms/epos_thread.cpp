@@ -198,19 +198,19 @@ void epos_thread::update_actuator_settings()
 
     // set controller mode
     int mode = m_epos[i]->get_value(MODES_OF_OPERATION_DISPLAY);
-    if ((actuator.joint_mode_updated[joint_id] == 1)
-    || (((int)actuator.joint_mode[joint_id] == 0) && (mode != -1))
-    || (((int)actuator.joint_mode[joint_id] == 1) && (mode != -3)))
+    if ((actuator.joint_position_gain_updated[joint_id] == 1)
+    || (((int)actuator.joint_position_gain[joint_id] == 1) && (mode != -1))
+    || (((int)actuator.joint_position_gain[joint_id] == 0) && (mode != -3)))
     {
-      actuator.joint_mode_updated[joint_id] = 0; 
-      switch ((int)actuator.joint_mode[joint_id])
+      actuator.joint_position_gain_updated[joint_id] = 0; 
+      switch ((int)actuator.joint_position_gain[joint_id])
       {
-        case 0 :
+        case 1 :
           m_epos[i]->set_value(MODES_OF_OPERATION, -1);
           m_epos[i]->set_controlbit_new_setpoint(1);
           m_epos[i]->set_controlbit_change_set_immediately(1);
           break;
-        case 1 :
+        case 0 :
           m_epos[i]->set_value(MODES_OF_OPERATION, -3);
           m_epos[i]->set_controlbit_new_setpoint(1);
           m_epos[i]->set_controlbit_change_set_immediately(1);
@@ -322,7 +322,7 @@ void epos_thread::entry()
   for (int i = 0; i < m_id.size(); i++) 
   {
     int joint_id = m_id[i];
-    actuator.joint_mode[joint_id] = 0;
+    actuator.joint_position_gain[joint_id] = 1;
     actuator.joint_enable[joint_id] = 1;
     actuator.joint_position[joint_id] = sensor.joint_position[joint_id];
   }

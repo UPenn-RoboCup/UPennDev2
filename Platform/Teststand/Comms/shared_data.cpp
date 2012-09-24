@@ -35,42 +35,42 @@ void shared_data::entry()
     actuator_segment.construct<double>("joint_write_access")[N_JOINT](0);
   actuator.joint_enable =
     actuator_segment.construct<double>("joint_enable")[N_JOINT](0);
-  actuator.joint_mode = 
-    actuator_segment.construct<double>("joint_mode")[N_JOINT](0);
-  actuator.joint_position =
-    actuator_segment.construct<double>("joint_position")[N_JOINT](0);
-  actuator.joint_force = 
-    actuator_segment.construct<double>("joint_force")[N_JOINT](0);
   actuator.joint_stiffness = 
     actuator_segment.construct<double>("joint_stiffness")[N_JOINT](0);
   actuator.joint_damping = 
     actuator_segment.construct<double>("joint_damping")[N_JOINT](0);
+  actuator.joint_force = 
+    actuator_segment.construct<double>("joint_force")[N_JOINT](0);
+  actuator.joint_position =
+    actuator_segment.construct<double>("joint_position")[N_JOINT](0);
+  actuator.joint_position_gain = 
+    actuator_segment.construct<double>("joint_position_gain")[N_JOINT](0);
 
   // create actuator update flags
   actuator.joint_write_access_updated = 
     actuator_segment.construct<double>("joint_write_access_updated")[N_JOINT](0);
   actuator.joint_enable_updated =
     actuator_segment.construct<double>("joint_enable_updated")[N_JOINT](0);
-  actuator.joint_mode_updated = 
-    actuator_segment.construct<double>("joint_mode_updated")[N_JOINT](0);
-  actuator.joint_position_updated =
-    actuator_segment.construct<double>("joint_position_updated")[N_JOINT](0);
-  actuator.joint_force_updated = 
-    actuator_segment.construct<double>("joint_force_updated")[N_JOINT](0);
   actuator.joint_stiffness_updated = 
     actuator_segment.construct<double>("joint_stiffness_updated")[N_JOINT](0);
   actuator.joint_damping_updated = 
     actuator_segment.construct<double>("joint_damping_updated")[N_JOINT](0);
+  actuator.joint_force_updated = 
+    actuator_segment.construct<double>("joint_force_updated")[N_JOINT](0);
+  actuator.joint_position_updated =
+    actuator_segment.construct<double>("joint_position_updated")[N_JOINT](0);
+  actuator.joint_position_gain_updated = 
+    actuator_segment.construct<double>("joint_position_gain_updated")[N_JOINT](0);
 
   // create sensor objects
-  sensor.joint_position = 
-    sensor_segment.construct<double>("joint_position")[N_JOINT](0);
   sensor.joint_force = 
     sensor_segment.construct<double>("joint_force")[N_JOINT](0);
-  sensor.motor_position = 
-    sensor_segment.construct<double>("motor_position")[N_MOTOR](0);
+  sensor.joint_position = 
+    sensor_segment.construct<double>("joint_position")[N_JOINT](0);
   sensor.motor_force = 
     sensor_segment.construct<double>("motor_force")[N_MOTOR](0);
+  sensor.motor_position = 
+    sensor_segment.construct<double>("motor_position")[N_MOTOR](0);
   sensor.motor_current = 
     sensor_segment.construct<double>("motor_current")[N_MOTOR](0);
   sensor.motor_temperature = 
@@ -85,14 +85,14 @@ void shared_data::entry()
     sensor_segment.construct<double>("battery")[N_BATTERY](0);
 
   // create sensor update flag
-  sensor.joint_position_updated = 
-    sensor_segment.construct<double>("joint_position_updated")[N_JOINT](0);
   sensor.joint_force_updated = 
     sensor_segment.construct<double>("joint_force_updated")[N_JOINT](0);
-  sensor.motor_position_updated = 
-    sensor_segment.construct<double>("motor_position_updated")[N_MOTOR](0);
+  sensor.joint_position_updated = 
+    sensor_segment.construct<double>("joint_position_updated")[N_JOINT](0);
   sensor.motor_force_updated = 
     sensor_segment.construct<double>("motor_force_updated")[N_MOTOR](0);
+  sensor.motor_position_updated = 
+    sensor_segment.construct<double>("motor_position_updated")[N_MOTOR](0);
   sensor.motor_current_updated = 
     sensor_segment.construct<double>("motor_current_updated")[N_MOTOR](0);
   sensor.motor_temperature_updated = 

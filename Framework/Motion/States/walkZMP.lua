@@ -421,7 +421,7 @@ function walk:entry()
   uTorso1, uTorso2 = uTorso, uTorso;
 
   uSupport = uTorso;
-  
+  actuator:set_joint_position_gain(1, 'legs')
 end
 
 function walk:update()

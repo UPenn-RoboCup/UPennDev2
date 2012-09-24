@@ -4,14 +4,6 @@ module(..., package.seeall)
 
 local mt = {}
 
-local function max(a, b)
-  return a > b and a or b
-end
-
-local function min(a, b)
-  return a < b and a or b
-end
-
 function new(pgain, igain, dgain)
   o = {}
   -- gains
@@ -55,7 +47,7 @@ function update(o, set_point, process_value, dt)
   local e = set_point - process_value
   o.process_value = o.process_value or process_value
   o.p = e
-  o.i = max(min(o.i + e*dt, o.ilimit), -o.ilimit)
+  o.i = math.max(math.min(o.i + e*dt, o.ilimit), -o.ilimit)
   o.d = (o.dT*o.d - (process_value - o.process_value))/(o.dT + dt + 1e-12)
   o.process_value = process_value
 --return control output

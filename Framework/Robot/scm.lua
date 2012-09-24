@@ -5,54 +5,54 @@ require('util')
 require('shm')
 
 ---------------------------------------------------------------------------
--- scm : sensor communication manager
+-- scm : sensor communications manager
 ---------------------------------------------------------------------------
 
 scm = {}
 
--- configure data groups and keys
+-- configure device data and write access
 ---------------------------------------------------------------------------
 
-local groups = {
+local devices = {
   joint = {
+    'joint_force',
     'joint_position',
-    'joint_force'
   },
   motor = {
-    'motor_position',
     'motor_force',
+    'motor_position',
     'motor_current',
-    'motor_temperature'
+    'motor_temperature',
   },
   force_torque = {
-    'force_torque'
+    'force_torque',
   },
   tactile_array = {
-    'tactile_array'
+    'tactile_array',
   },
   ahrs = {
-    'ahrs'
+    'ahrs',
   },
   battery = {
-    'battery'
+    'battery',
   }
 }
 
-local key_group = {}
-scm.group_size = {}
-scm.group_index = {}
-scm.group_write_access = {}
+local key_device = {}
+scm.device_id = {}
+scm.device_index = {}
+scm.device_write_access = {}
 
-for group in pairs(groups) do
-  for _,key in pairs(groups[group]) do
-    key_group[key] = group
+for device in pairs(devices) do
+  for _,key in pairs(devices[device]) do
+    key_device[key] = device
   end
 end
 
-for group in pairs(groups) do
-  scm.group_size[group] = Config[group] and #Config[group].id or 1
-  scm.group_index[group] = Config[group] and Config[group].index or {}
-  scm.group_write_access[group] = vector.ones(scm.group_size[group])
+for device in pairs(devices) do
+  scm.device_id[device] = Config[device] and Config[device].id
+  scm.device_index[device] = Config[device] and Config[device].index
+  scm.device_write_access[device] = vector.ones(#scm.device_id[device])
 end
 
 -- configure shared memory
@@ -60,9 +60,9 @@ end
 
 -- define shared data fields and update flags 
 local shared_data = {}
-for key,group in pairs(key_group) do
-  shared_data[key] = vector.zeros(scm.group_size[group])
-  shared_data[key..'_updated'] = vector.zeros(scm.group_size[group])
+for key,device in pairs(key_device) do
+  shared_data[key] = vector.zeros(#scm.device_id[device])
+  shared_data[key..'_updated'] = vector.zeros(#scm.device_id[device])
 end
 
 -- initialize shared memory segment
@@ -104,19 +104,19 @@ local function get_settings_table(value, index)
 end
 
 function scm:set_key(key, value, index)
-  local group = key_group[key]
-  if (not group) then
+  local device = key_device[key]
+  if (not device) then
     return false
   end
-  local group_index = self.group_index[group]
-  local group_write_access = self.group_write_access[group]
+  local device_index = self.device_index[device]
+  local device_write_access = self.device_write_access[device]
   if (type(index) == 'string') then
-    index = group_index[index]
+    index = device_index[index]
   end
   local key_updated = key..'_updated'
   local settings = get_settings_table(value, index)
   for i,v in pairs(settings) do
-    if (group_write_access[i] == 1) then
+    if (device_write_access[i] == 1) then
       data[key][i] = v
       data[key_updated][i] = 1
     end
@@ -125,13 +125,13 @@ function scm:set_key(key, value, index)
 end
 
 function scm:get_key(key, index)
-  local group = key_group[key]
-  if (not group) then
+  local device = key_device[key]
+  if (not device) then
     return nil
   end
-  local group_index = self.group_index[group]
+  local device_index = self.device_index[device]
   if (type(index) == 'string') then
-    index = group_index[index]
+    index = device_index[index]
   end
   if (type(index) == 'number') then
     return data[key][index]
@@ -151,55 +151,55 @@ function scm:get_key(key, index)
 end
 
 function scm:set_write_access(key, value, index)
-  local group = groups[key] and key or key_group[key]
-  if (not group) then
+  local device = devices[key] and key or key_device[key]
+  if (not device) then
     return false
   end
-  local group_index = self.group_index[group]
-  local group_write_access = self.group_write_access[group]
+  local device_index = self.device_index[device]
+  local device_write_access = self.device_write_access[device]
   if (type(index) == 'string') then
-    index = group_index[index]
+    index = device_index[index]
   end
   local settings = get_settings_table(value, index)
   for i,v in pairs(settings) do
-    group_write_access[i] = v
+    device_write_access[i] = v
   end
   return true
 end
 
 function scm:get_write_access(key, value, index)
-  local group = groups[key] and key or key_group[key]
-  if (not group) then
+  local device = devices[key] and key or key_device[key]
+  if (not device) then
     return nil
   end
-  local group_index = self.group_index[group]
-  local group_write_access = self.group_write_access[group]
+  local device_index = self.device_index[device]
+  local device_write_access = self.device_write_access[device]
   if (type(index) == 'string') then
-    index = group_index[index]
+    index = device_index[index]
   end
 
   if (type(index) == 'number') then
-    return group_write_access[index]
+    return device_write_access[index]
   elseif (type(index) == 'table') then
     local t = vector.new()
     for i = 1,#index do
-      t[i] = group_write_access[index[i]]
+      t[i] = device_write_access[index[i]]
     end
     return t
   elseif (type(index) == 'nil') then
     local t = vector.new()
-    for i = 1,#group_write_access do
-      t[i] = group_write_access[i]
+    for i = 1,#device_write_access do
+      t[i] = device_write_access[i]
     end
     return t
   end
 end
 
-function scm:get_group(key)
-  return key_group[key]
+function scm:get_device(key)
+  return key_device[key]
 end
 
-for key,group in pairs(key_group) do
+for key,device in pairs(key_device) do
   scm['set_'..key] =
     function (self, value, index)
       return self:set_key(key, value, index)
@@ -210,26 +210,26 @@ for key,group in pairs(key_group) do
     end
   scm['set_'..key..'_write_access'] =
     function (self, value, index)
-      return self:set_write_access(group, value, index)
+      return self:set_write_access(device, value, index)
     end
   scm['get_'..key..'_write_access'] =
     function (self, index)
-      return self:get_write_access(group, index)
+      return self:get_write_access(device, index)
     end
-  scm['get_'..key..'_group'] = 
+  scm['get_'..key..'_device'] = 
     function (self, index)
-      return group
+      return device
     end
 end
 
-for group in pairs(groups) do
-  scm['set_'..group..'_write_access'] =
+for device in pairs(devices) do
+  scm['set_'..device..'_write_access'] =
     function (self, value, index)
-      return self:set_write_access(group, value, index)
+      return self:set_write_access(device, value, index)
     end
-  scm['get_'..group..'_write_access'] =
+  scm['get_'..device..'_write_access'] =
     function (self, index)
-      return self:get_write_access(group, index)
+      return self:get_write_access(device, index)
     end
 end
 
@@ -238,9 +238,9 @@ end
 
 function scm.new_access_point()
   local o = {}
-  o.group_write_access = {}
-  for k,v in pairs(scm.group_write_access) do
-    o.group_write_access[k] = vector.zeros(#v) -- access disabled by default
+  o.device_write_access = {}
+  for k,v in pairs(scm.device_write_access) do
+    o.device_write_access[k] = vector.zeros(#v) -- access disabled by default
   end
   return setmetatable(o, {__index = scm})
 end

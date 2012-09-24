@@ -131,16 +131,16 @@ void draw_screen()
   
   printw("enable\n");
   print_joint_array(actuator.joint_enable);
-  printw("mode\n");
-  print_joint_array(actuator.joint_mode);
-  printw("position\n");
-  print_joint_array(sensor.joint_position);
-  printw("force\n");
-  print_joint_array(sensor.joint_force);
   printw("stiffness\n");
   print_joint_array(actuator.joint_stiffness);
   printw("damping\n");
   print_joint_array(actuator.joint_damping);
+  printw("force\n");
+  print_joint_array(sensor.joint_force);
+  printw("position\n");
+  print_joint_array(sensor.joint_position);
+  printw("position_gain\n");
+  print_joint_array(actuator.joint_position_gain);
   printw("thread fps\n");
   printw("            [ %7.0f %7.0f   ]\n", 
     l_leg_thread.get_fps(), r_leg_thread.get_fps());

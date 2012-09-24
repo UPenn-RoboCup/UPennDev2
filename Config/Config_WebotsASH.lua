@@ -9,9 +9,9 @@ function loadconfig(configName)
   end
 end
 
-loadconfig('Config_WebotsASH_Robot')
-loadconfig('Config_WebotsASH_Walk')
+loadconfig('Config_WebotsASH_Devices')
 loadconfig('Config_WebotsASH_Bias')
+loadconfig('Config_WebotsASH_Walk')
 
 platform = {}
 platform.name = 'WebotsASH'

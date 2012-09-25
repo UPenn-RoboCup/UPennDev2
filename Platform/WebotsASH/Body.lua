@@ -73,7 +73,7 @@ local function update_actuators()
     elseif (position_gain[i] == 1) then -- position control
       webots.wb_servo_set_position(tags.servo[i], joint_position[i])
     elseif (position_gain[i] == 0) then -- force control
-      webots.wb_servo_set_force(tags.servo[i], -joint_force[i])
+      webots.wb_servo_set_force(tags.servo[i], joint_force[i])
     end
   end
 end
@@ -86,7 +86,7 @@ local function update_sensors()
     if (enable[i] == 0) then   -- disabled
       scm:set_joint_force(0, i)
     elseif (position_gain[i] == 1) then -- position control
-      scm:set_joint_force(-webots.wb_servo_get_motor_force_feedback(tags.servo[i]), i)
+      scm:set_joint_force(webots.wb_servo_get_motor_force_feedback(tags.servo[i]), i)
     elseif (position_gain[i] == 0) then -- force control
       scm:set_joint_force(acm:get_joint_force(i), i)
     end

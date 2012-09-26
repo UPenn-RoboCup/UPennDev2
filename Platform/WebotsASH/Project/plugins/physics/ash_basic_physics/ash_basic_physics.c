@@ -3,14 +3,15 @@
 #include <plugins/physics.h>
 #include <string.h>
 
-// saffir_phyics.c 
+// ash_basic_physics.c 
 // refer to stewart_platform_physics.c and contact_points_physics.c for reference
 
-
-#define FTS_RECEIVER_CHANNEL 10
-#define MAX_CONTACTS         10
-#define MAX_COP              10
-#define DRAW_FOOT_CONTACTS   1
+#define N_SERVO               12
+#define FTS_RECEIVER_CHANNEL  10
+#define MAX_CONTACTS          10
+#define MAX_COP               10
+#define DRAW_COP              1
+#define DRAW_CONTACT_POINTS   0
 
 // define global variables 
 static dWorldID world = NULL;
@@ -38,6 +39,22 @@ static const char *foot_name[2] = {
   "R_ANKLE_P2",
 };
 
+// define webots servo names
+static const char *servo_name[N_SERVO] = {
+  "L_HIPYAW", 
+  "L_HIPROLL",
+  "L_HIPPITCH", 
+  "L_KNEE_PIVOT",
+  "L_ANKLE",
+  "L_ANKLE_P2",
+  "R_HIPYAW",
+  "R_HIPROLL",
+  "R_HIPPITCH", 
+  "R_KNEE_PIVOT",
+  "R_ANKLE",
+  "R_ANKLE_P2",
+};
+
 // convenience function to print a 3d vector
 void print_vec3(const char *msg, const dVector3 v) {
   dWebotsConsolePrintf("%s: %g %g %g\n", msg, v[0], v[1], v[2]);
@@ -47,7 +64,7 @@ void print_vec3(const char *msg, const dVector3 v) {
 dGeomID getGeom(const char *def) {
   dGeomID geom = dWebotsGetGeomFromDEF(def);
   if (!geom)
-    dWebotsConsolePrintf("Warning: did not find geometry with DEF name: %s", def);
+    dWebotsConsolePrintf("Warning: did not find geometry with DEF name: %s\n", def);
   return geom;
 }
 
@@ -55,12 +72,12 @@ dGeomID getGeom(const char *def) {
 dBodyID getBody(const char *def) {
   dBodyID body = dWebotsGetBodyFromDEF(def);
   if (!body)
-    dWebotsConsolePrintf("Warning: did not find body with DEF name: %s", def);
+    dWebotsConsolePrintf("Warning: did not find body with DEF name: %s\n", def);
   return body;
 }
 
-// debug function for rendering foot contact points and center of pressure
-void draw_foot_contacts() {
+// debug function for rendering center of pressure and foot contact points 
+void draw_cop() {
 
   int i, j;
   double total_pressure = 0;
@@ -84,11 +101,13 @@ void draw_foot_contacts() {
       total_pressure += n[2] * d;
 
       // draw contact points
-      glBegin(GL_LINES);
-      glColor3f(0, 1, 0);  // Specify color 
-      glVertex3f(p[0], p[1], p[2]);
-      glVertex3f(p[0] + n[0] * d, p[1] + n[1] * d, p[2] + n[2] * d);
-      glEnd();
+      if (DRAW_CONTACT_POINTS) {
+        glBegin(GL_LINES);
+        glColor3f(0, 1, 0);
+        glVertex3f(p[0], p[1], p[2]);
+        glVertex3f(p[0] + n[0] * d, p[1] + n[1] * d, p[2] + n[2] * d);
+        glEnd();
+      }
     }
   }
   foot_cop[0][0] /= total_pressure;
@@ -130,7 +149,6 @@ void webots_physics_init(dWorldID w, dSpaceID s, dJointGroupID j) {
     if (!foot_body[i])
       return;
   }
-
 }
 
 // implemented to overide Webots collision detection,
@@ -175,7 +193,24 @@ int webots_physics_collide(dGeomID g1, dGeomID g2) {
 
 // called by Webots for every WorldInfo.basicTimeStep
 void webots_physics_step() {
-  // nothing to do ...
+
+  // get feedforward torques from emitter channel 0
+  int i, size = 0;
+  double servo_torque[N_SERVO];
+  void *data = dWebotsReceive(&size);
+  if (size == sizeof(double)*N_SERVO) {
+    memcpy(servo_torque, data, size);
+  }
+
+  // add feedforward torque to each servo
+  for (i = 0; i < N_SERVO; i++) {
+    // find dJointID for the hinge joint at each servo
+    dBodyID body_id = getBody(servo_name[i]);
+    int njoints = dBodyGetNumJoints(body_id);
+    dJointID joint_id = dBodyGetJoint(body_id, njoints - 1);
+    // add torque directly to the joint
+    dJointAddHingeTorque(joint_id, -servo_torque[i]);
+  }
 }
 
 // called by Webots after dWorldStep()
@@ -211,14 +246,13 @@ void webots_physics_step_end() {
     // send force-torque array to Webots receiver sensor
     dWebotsSend(FTS_RECEIVER_CHANNEL + i, filtered_fts, 6*sizeof(double)); 
   }
-
 }
 
 // called by Webots at each graphics step
 void webots_physics_draw() {
 
-  if (DRAW_FOOT_CONTACTS)
-    draw_foot_contacts();
+  if (DRAW_COP)
+    draw_cop();
 
 }
 

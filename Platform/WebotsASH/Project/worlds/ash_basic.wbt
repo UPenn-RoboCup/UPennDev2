@@ -6,14 +6,14 @@ WorldInfo {
     "Date: DD MMM YYYY"
   ]
   gravity 0 0 -9.81
-  physics "saffir_physics_no_actuators"
+  physics "ash_basic_physics"
   basicTimeStep 8
   displayRefresh 1
   runRealTime TRUE
 }
 Viewpoint {
   orientation 0.294287 0.578057 0.761082 2.41727
-  position 5.83483 -0.786564 1.45991
+  position 8.00416 0.821881 2.19945
   follow "SAFFiR"
 }
 Background {
@@ -53,6 +53,11 @@ DEF SAFFiR Supervisor {
       type "serial"
       channel 11
       byteSize 48
+    }
+    DEF SERVO_TORQUE Emitter {
+      name "servo_torque_emitter"
+      type "serial"
+      byteSize 96
     }
     DEF BODYGROUP Group {
       children [

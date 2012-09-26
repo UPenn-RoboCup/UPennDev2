@@ -23,9 +23,3 @@ walk.parameters = walk.parameters or {}
 walk.increments = walk.increments or {}
 walk.a_limits = {0.06, 0.06, 0.10}
 walk.v_limits = {0.14, 0.14, 0.20}
-
-webots = {}
-webots.controlP = 50
-webots.maxForce = 1000
-webots.maxVelocity = 10
-webots.maxAcceleration = -1

@@ -6,7 +6,7 @@ WorldInfo {
     "Date: DD MMM YYYY"
   ]
   gravity 0 0 -9.81
-  physics "saffir_physics"
+  physics "ash_physics"
   basicTimeStep 8
   displayRefresh 1
   runRealTime TRUE
@@ -216,6 +216,10 @@ DEF SAFFiR Supervisor {
       type "serial"
       channel 11
       byteSize 48
+    }
+    DEF SERVO_TORQUE Emitter {
+      name "servo_torque_emitter"
+      type "serial"
     }
     DEF BODYGROUP Group {
       children [
@@ -763,5 +767,5 @@ DEF SAFFiR Supervisor {
     ]
   }
   controller "webots_controller"
-  controllerArgs "keyframe_editor"
+  controllerArgs "walk_tuner"
 }

@@ -110,16 +110,16 @@ void draw_screen()
 */
 
   printw("actuator joint enable    [ %10.3f ]\n", actuator.joint_enable[0]);
+  printw("actuator joint force     [ %10.3f ]\n", actuator.joint_force[0]);
+  printw("actuator joint position  [ %10.3f ]\n", actuator.joint_position[0]);
+  printw("actuator joint pos gain  [ %10.3f ]\n\n", actuator.joint_position_gain[0]);
   printw("actuator joint stiffness [ %10.3f ]\n", actuator.joint_stiffness[0]);
   printw("actuator joint damping   [ %10.3f ]\n", actuator.joint_damping[0]);
-  printw("actuator joint pos gain  [ %10.3f ]\n", actuator.joint_position_gain[0]);
-  printw("actuator joint force     [ %10.3f ]\n", actuator.joint_force[0]);
-  printw("actuator joint position  [ %10.3f ]\n\n", actuator.joint_position[0]);
 
-  printw("sensor joint position    [ %10.3f ]\n", sensor.joint_position[0]);
   printw("sensor joint force       [ %10.3f ]\n", sensor.joint_force[0]);
-  printw("sensor motor position    [ %10.3f ]\n", sensor.motor_position[0]);
+  printw("sensor joint position    [ %10.3f ]\n", sensor.joint_position[0]);
   printw("sensor motor force       [ %10.3f ]\n", sensor.motor_force[0]);
+  printw("sensor motor position    [ %10.3f ]\n", sensor.motor_position[0]);
   printw("sensor motor current     [ %10.3f ]\n", sensor.motor_current[0]);
   printw("sensor motor temperature [ %10.3f ]\n\n", sensor.motor_temperature[0]);
 

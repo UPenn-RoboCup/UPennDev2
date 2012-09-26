@@ -6,7 +6,7 @@ WorldInfo {
     "Date: DD MMM YYYY"
   ]
   gravity 0 0 -9.81
-  physics "saffir_physics"
+  physics "ash_physics"
   basicTimeStep 8
   displayRefresh 1
   runRealTime TRUE
@@ -42,6 +42,11 @@ DEF SAFFiR Supervisor {
     }
     Accelerometer {
     }
+    DEF SERVO Emitter {
+      name "servo_emitter"
+      type "serial"
+      byteSize 96
+    }
     DEF L_FTS Receiver {
       name "left_fts_receiver"
       type "serial"
@@ -53,6 +58,11 @@ DEF SAFFiR Supervisor {
       type "serial"
       channel 11
       byteSize 48
+    }
+    DEF SERVO_TORQUE Emitter {
+      name "servo_torque_emitter"
+      type "serial"
+      byteSize 96
     }
     DEF BODYGROUP Group {
       children [

@@ -21,6 +21,11 @@ elif [ "$1" = "bias_editor" ]
 then
   echo Starting bias_editor...
   exec xterm -fn 9x15 -hold -e luajit bias_editor.lua
+elif [ "$1" = "test_webots" ]
+then
+  echo Starting test_webots
+  cd Test
+  exec xterm -fn 9x15 -hold -e luajit test_webots.lua
 elif [ "$1" = "test_balance" ]
 then
   echo Starting test_balance...

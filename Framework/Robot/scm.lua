@@ -17,10 +17,12 @@ local devices = {
   joint = {
     'joint_force',
     'joint_position',
+    'joint_velocity',
   },
   motor = {
     'motor_force',
     'motor_position',
+    'motor_velocity',
     'motor_current',
     'motor_temperature',
   },

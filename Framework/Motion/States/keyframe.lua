@@ -95,6 +95,7 @@ function keyframe:entry()
   local q0 = sensor:get_joint_position('all')
   actuator:set_joint_force(0, 'all')
   actuator:set_joint_position(q0, 'all')
+  actuator:set_joint_velocity(0, 'all')
   actuator:set_joint_stiffness(1, 'all')
   actuator:set_joint_damping(0, 'all')
 end

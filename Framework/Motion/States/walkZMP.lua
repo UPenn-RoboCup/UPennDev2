@@ -425,6 +425,7 @@ function walk:entry()
   local q0 = sensor:get_joint_position('legs')
   actuator:set_joint_force(0, 'legs')
   actuator:set_joint_position(q0, 'legs')
+  actuator:set_joint_velocity(0, 'legs')
   actuator:set_joint_stiffness(1, 'legs')
   actuator:set_joint_damping(0, 'legs')
 end

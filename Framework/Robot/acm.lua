@@ -18,6 +18,7 @@ local devices = {
     'joint_enable',
     'joint_force',
     'joint_position',
+    'joint_velocity',
     'joint_stiffness',
     'joint_damping',
   }

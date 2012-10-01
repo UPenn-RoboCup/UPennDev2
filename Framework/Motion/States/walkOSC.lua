@@ -163,6 +163,7 @@ function walk:entry()
   velocity = vector.new{0, 0, 0}
   actuator:set_joint_force(0, 'legs')
   actuator:set_joint_position(q0, 'legs')
+  actuator:set_joint_velocity(0, 'legs')
   actuator:set_joint_stiffness(1, 'legs')
   actuator:set_joint_damping(0, 'legs')
 end

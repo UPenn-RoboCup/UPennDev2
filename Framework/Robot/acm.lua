@@ -16,11 +16,10 @@ acm = {}
 local devices = {
   joint = {
     'joint_enable',
-    'joint_stiffness',
-    'joint_damping',
-    'joint_position_gain',
     'joint_force',
     'joint_position',
+    'joint_stiffness',
+    'joint_damping',
   }
 }
 

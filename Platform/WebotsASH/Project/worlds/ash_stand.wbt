@@ -6,14 +6,15 @@ WorldInfo {
     "Date: DD MMM YYYY"
   ]
   gravity 0 0 -9.81
+  CFM 1e-06
   physics "ash_physics"
   basicTimeStep 8
   displayRefresh 1
   runRealTime TRUE
 }
 Viewpoint {
-  orientation -0.49195 0.58412 0.645591 4.1525
-  position -0.022038 -1.85135 1.09857
+  orientation -0.415914 0.589227 0.692695 4.06589
+  position 0.625377 -1.17778 1.19143
   follow "SAFFiR"
 }
 Background {
@@ -205,21 +206,16 @@ DEF SAFFiR Supervisor {
     }
     Accelerometer {
     }
-    DEF L_FTS Receiver {
-      name "left_fts_receiver"
+    DEF PHYSICS_RECEIVER Receiver {
+      name "physics_receiver"
       type "serial"
       channel 10
-      byteSize 48
+      byteSize 192
     }
-    DEF R_FTS Receiver {
-      name "right_fts_receiver"
+    DEF PHYSICS_EMITTER Emitter {
+      name "physics_emitter"
       type "serial"
-      channel 11
-      byteSize 48
-    }
-    DEF SERVO_TORQUE Emitter {
-      name "servo_torque_emitter"
-      type "serial"
+      byteSize 96
     }
     DEF BODYGROUP Group {
       children [
@@ -767,5 +763,5 @@ DEF SAFFiR Supervisor {
     ]
   }
   controller "webots_controller"
-  controllerArgs "walk_tuner"
+  controllerArgs "test_webots"
 }

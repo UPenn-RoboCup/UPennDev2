@@ -42,25 +42,14 @@ DEF SAFFiR Supervisor {
     }
     Accelerometer {
     }
-    DEF SERVO Emitter {
-      name "servo_emitter"
-      type "serial"
-      byteSize 96
-    }
-    DEF L_FTS Receiver {
-      name "left_fts_receiver"
+    DEF PHYSICS_RECEIVER Receiver {
+      name "physics_receiver"
       type "serial"
       channel 10
-      byteSize 48
+      byteSize 192
     }
-    DEF R_FTS Receiver {
-      name "right_fts_receiver"
-      type "serial"
-      channel 11
-      byteSize 48
-    }
-    DEF SERVO_TORQUE Emitter {
-      name "servo_torque_emitter"
+    DEF PHYSICS_EMITTER Emitter {
+      name "physics_emitter"
       type "serial"
       byteSize 96
     }

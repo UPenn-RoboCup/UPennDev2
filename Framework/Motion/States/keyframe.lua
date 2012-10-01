@@ -92,6 +92,11 @@ function keyframe:entry()
   self.running = true
   self:set_joint_access(1, 'all')
   steps = {}
+  local q0 = sensor:get_joint_position('all')
+  actuator:set_joint_force(0, 'all')
+  actuator:set_joint_position(q0, 'all')
+  actuator:set_joint_stiffness(1, 'all')
+  actuator:set_joint_damping(0, 'all')
 end
 
 function keyframe:update()

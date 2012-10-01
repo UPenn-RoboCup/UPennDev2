@@ -3,15 +3,17 @@
 #include <plugins/physics.h>
 #include <string.h>
 
-// ash_basic_physics.c 
+// ash_physics.c 
 // refer to stewart_platform_physics.c and contact_points_physics.c for reference
 
-#define N_SERVO               12
-#define FTS_RECEIVER_CHANNEL  10
-#define MAX_CONTACTS          10
-#define MAX_COP               10
-#define DRAW_COP              1
-#define DRAW_CONTACT_POINTS   0
+#define N_SERVO                    12
+#define EMITTER_CHANNEL            10
+#define EMITTER_BYTES              192
+#define RECEIVER_BYTES             96
+#define MAX_CONTACTS               10
+#define MAX_COP                    10
+#define DRAW_COP                   1
+#define DRAW_CONTACT_POINTS        0
 
 // define global variables 
 static dWorldID world = NULL;
@@ -296,29 +298,44 @@ int webots_physics_collide(dGeomID g1, dGeomID g2) {
 // called by Webots for every WorldInfo.basicTimeStep
 void webots_physics_step() {
 
-  // get feedforward torques from emitter channel 0
   int i, size = 0;
-  double servo_torque[N_SERVO];
-  void *data = dWebotsReceive(&size);
-  if (size == sizeof(double)*N_SERVO) {
-    memcpy(servo_torque, data, size);
+  double joint_ff_force[N_SERVO];
+
+  // get feedforward forces from webots controller
+  double *receiver_data = (double *)dWebotsReceive(&size);
+  if (size == RECEIVER_BYTES) {
+    memcpy(joint_ff_force, receiver_data, sizeof(joint_ff_force));
   }
 
-  // add feedforward torque to each servo
+  // add feedforward forces to each servo
   for (i = 0; i < N_SERVO; i++) {
     // find dJointID for the hinge joint at each servo
     dBodyID body_id = getBody(servo_name[i]);
     int njoints = dBodyGetNumJoints(body_id);
     dJointID joint_id = dBodyGetJoint(body_id, njoints - 1);
-    // add torque directly to the joint
-    dJointAddHingeTorque(joint_id, -servo_torque[i]);
+    // add force directly to joint
+    dJointAddHingeTorque(joint_id, -joint_ff_force[i]);
   }
 }
 
 // called by Webots after dWorldStep()
 void webots_physics_step_end() {
 
-  int i,j;
+  int i, j;
+  double joint_velocity[N_SERVO];
+  double emitter_data[EMITTER_BYTES];
+
+  // get joint velocities
+  for (i = 0; i < N_SERVO; i++) {
+    // find dJointID for the hinge joint at each servo
+    dBodyID body_id = getBody(servo_name[i]);
+    int njoints = dBodyGetNumJoints(body_id);
+    dJointID joint_id = dBodyGetJoint(body_id, njoints - 1);
+    // get joint velocity
+    joint_velocity[i] = dJointGetHingeAngleRate(joint_id);
+  }
+
+  memcpy(emitter_data, joint_velocity, sizeof(joint_velocity)); 
 
   // calculate force-torque measurements for foot contacts
   for (i = 0; i < N_FEET; i++) {
@@ -345,9 +362,12 @@ void webots_physics_step_end() {
       filtered_fts[j] = (foot_fts[i][j] + past_fts[j])/2;
     }
 
-    // send force-torque array to Webots receiver sensor
-    dWebotsSend(FTS_RECEIVER_CHANNEL + i, filtered_fts, 6*sizeof(double)); 
+    memcpy(emitter_data + sizeof(joint_velocity) + i*sizeof(filtered_fts),
+           filtered_fts, sizeof(filtered_fts));
   }
+
+  // send joint velocity and force-torque values to Webots controller
+  dWebotsSend(EMITTER_CHANNEL, emitter_data, EMITTER_BYTES); 
 }
 
 // called by Webots at each graphics step

@@ -139,8 +139,8 @@ void draw_screen()
   print_joint_array(sensor.joint_force);
   printw("position\n");
   print_joint_array(sensor.joint_position);
-  printw("position_gain\n");
-  print_joint_array(actuator.joint_position_gain);
+  printw("velocity\n");
+  print_joint_array(sensor.joint_velocity);
   printw("thread fps\n");
   printw("            [ %7.0f %7.0f   ]\n", 
     l_leg_thread.get_fps(), r_leg_thread.get_fps());

@@ -43,8 +43,8 @@ void shared_data::entry()
     actuator_segment.construct<double>("joint_force")[N_JOINT](0);
   actuator.joint_position =
     actuator_segment.construct<double>("joint_position")[N_JOINT](0);
-  actuator.joint_position_gain = 
-    actuator_segment.construct<double>("joint_position_gain")[N_JOINT](0);
+  actuator.joint_velocity = 
+    actuator_segment.construct<double>("joint_velocity")[N_JOINT](0);
 
   // create actuator update flags
   actuator.joint_write_access_updated = 
@@ -59,18 +59,22 @@ void shared_data::entry()
     actuator_segment.construct<double>("joint_force_updated")[N_JOINT](0);
   actuator.joint_position_updated =
     actuator_segment.construct<double>("joint_position_updated")[N_JOINT](0);
-  actuator.joint_position_gain_updated = 
-    actuator_segment.construct<double>("joint_position_gain_updated")[N_JOINT](0);
+  actuator.joint_velocity_updated = 
+    actuator_segment.construct<double>("joint_velocity_updated")[N_JOINT](0);
 
   // create sensor objects
   sensor.joint_force = 
     sensor_segment.construct<double>("joint_force")[N_JOINT](0);
   sensor.joint_position = 
     sensor_segment.construct<double>("joint_position")[N_JOINT](0);
+  sensor.joint_velocity = 
+    sensor_segment.construct<double>("joint_velocity")[N_JOINT](0);
   sensor.motor_force = 
     sensor_segment.construct<double>("motor_force")[N_MOTOR](0);
   sensor.motor_position = 
     sensor_segment.construct<double>("motor_position")[N_MOTOR](0);
+  sensor.motor_velocity = 
+    sensor_segment.construct<double>("motor_velocity")[N_MOTOR](0);
   sensor.motor_current = 
     sensor_segment.construct<double>("motor_current")[N_MOTOR](0);
   sensor.motor_temperature = 
@@ -89,10 +93,14 @@ void shared_data::entry()
     sensor_segment.construct<double>("joint_force_updated")[N_JOINT](0);
   sensor.joint_position_updated = 
     sensor_segment.construct<double>("joint_position_updated")[N_JOINT](0);
+  sensor.joint_velocity_updated = 
+    sensor_segment.construct<double>("joint_velocity_updated")[N_JOINT](0);
   sensor.motor_force_updated = 
     sensor_segment.construct<double>("motor_force_updated")[N_MOTOR](0);
   sensor.motor_position_updated = 
     sensor_segment.construct<double>("motor_position_updated")[N_MOTOR](0);
+  sensor.motor_velocity_updated = 
+    sensor_segment.construct<double>("motor_velocity_updated")[N_MOTOR](0);
   sensor.motor_current_updated = 
     sensor_segment.construct<double>("motor_current_updated")[N_MOTOR](0);
   sensor.motor_temperature_updated = 
@@ -106,7 +114,7 @@ void shared_data::entry()
   sensor.battery_updated = 
     sensor_segment.construct<double>("battery_updated")[N_BATTERY](0);
 
-  // load bias settings from lua config file 
+  // load bias settings from lua config file
   load_bias_settings();
 }
 

@@ -44,6 +44,15 @@ epos_thread::epos_thread()
   sprintf(m_can_interface, "\0");
 }
 
+void epos_thread::set_joints(std::vector<int> id)
+{
+  m_id = id;
+}
+
+void epos_thread::set_can_interface(const char *interface)
+{
+  strncpy(m_can_interface, interface, 128);
+}
 void epos_thread::emcy_callback(int node_id, void *user_data)
 {
   // terminate comms manager upon receiving any emergency messages
@@ -198,12 +207,12 @@ void epos_thread::update_actuator_settings()
 
     // set controller mode
     int mode = m_epos[i]->get_value(MODES_OF_OPERATION_DISPLAY);
-    if ((actuator.joint_position_gain_updated[joint_id] == 1)
-    || (((int)actuator.joint_position_gain[joint_id] == 1) && (mode != -1))
-    || (((int)actuator.joint_position_gain[joint_id] == 0) && (mode != -3)))
+    if ((actuator.joint_stiffness_updated[joint_id] == 1)
+    || (((int)actuator.joint_stiffness[joint_id] == 1) && (mode != -1))
+    || (((int)actuator.joint_stiffness[joint_id] == 0) && (mode != -3)))
     {
-      actuator.joint_position_gain_updated[joint_id] = 0; 
-      switch ((int)actuator.joint_position_gain[joint_id])
+      actuator.joint_stiffness_updated[joint_id] = 0; 
+      switch ((int)actuator.joint_stiffness[joint_id])
       {
         case 1 :
           m_epos[i]->set_value(MODES_OF_OPERATION, -1);
@@ -322,9 +331,12 @@ void epos_thread::entry()
   for (int i = 0; i < m_id.size(); i++) 
   {
     int joint_id = m_id[i];
-    actuator.joint_position_gain[joint_id] = 1;
     actuator.joint_enable[joint_id] = 1;
+    actuator.joint_stiffness[joint_id] = 1;
+    actuator.joint_damping[joint_id] = 0;
+    actuator.joint_force[joint_id] = 0;
     actuator.joint_position[joint_id] = sensor.joint_position[joint_id];
+    actuator.joint_velocity[joint_id] = 0; 
   }
 }
 
@@ -344,14 +356,4 @@ void epos_thread::exit()
   {
     delete m_epos[i];
   }
-}
-
-void epos_thread::set_joints(std::vector<int> id)
-{
-  m_id = id;
-}
-
-void epos_thread::set_can_interface(const char *interface)
-{
-  sprintf(m_can_interface, "%s", interface);
 }

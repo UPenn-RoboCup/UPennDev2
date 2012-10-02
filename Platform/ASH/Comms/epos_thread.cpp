@@ -63,14 +63,14 @@ bool epos_thread::check_joint_settings()
     (actuator.joint_enable[6] == actuator.joint_enable[7] == 
      actuator.joint_enable[8]) &&
     (actuator.joint_enable[10] == actuator.joint_enable[11]);
-  bool joint_position_gain_valid = 
-    (actuator.joint_position_gain[0] == actuator.joint_position_gain[1] == 
-     actuator.joint_position_gain[2]) &&
-    (actuator.joint_position_gain[4] == actuator.joint_position_gain[5]) &&
-    (actuator.joint_position_gain[6] == actuator.joint_position_gain[7] ==
-     actuator.joint_position_gain[8]) &&
-    (actuator.joint_position_gain[10] == actuator.joint_position_gain[11]);
-  return joint_enable_valid && joint_position_gain_valid;
+  bool joint_stiffness_valid = 
+    (actuator.joint_stiffness[0] == actuator.joint_stiffness[1] == 
+     actuator.joint_stiffness[2]) &&
+    (actuator.joint_stiffness[4] == actuator.joint_stiffness[5]) &&
+    (actuator.joint_stiffness[6] == actuator.joint_stiffness[7] ==
+     actuator.joint_stiffness[8]) &&
+    (actuator.joint_stiffness[10] == actuator.joint_stiffness[11]);
+  return joint_enable_valid && joint_stiffness_valid;
 }
 
 void epos_thread::emcy_callback(int node_id, void *user_data)
@@ -236,12 +236,12 @@ void epos_thread::update_actuator_settings()
 
     // set controller mode
     int mode = m_epos[i]->get_value(MODES_OF_OPERATION_DISPLAY);
-    if ((actuator.joint_position_gain_updated[joint_id] == 1)
-    || (((int)actuator.joint_position_gain[joint_id] == 1) && (mode != -1))
-    || (((int)actuator.joint_position_gain[joint_id] == 0) && (mode != -3)))
+    if ((actuator.joint_stiffness_updated[joint_id] == 1)
+    || (((int)actuator.joint_stiffness[joint_id] == 1) && (mode != -1))
+    || (((int)actuator.joint_stiffness[joint_id] == 0) && (mode != -3)))
     {
-      actuator.joint_position_gain_updated[joint_id] = 0; 
-      switch ((int)actuator.joint_position_gain[joint_id])
+      actuator.joint_stiffness_updated[joint_id] = 0; 
+      switch ((int)actuator.joint_stiffness[joint_id])
       {
         case 1 :
           m_epos[i]->set_value(MODES_OF_OPERATION, -1);
@@ -360,9 +360,12 @@ void epos_thread::entry()
   for (int i = 0; i < m_id.size(); i++) 
   {
     int joint_id = m_id[i];
-    actuator.joint_position_gain[joint_id] = 1;
     actuator.joint_enable[joint_id] = 1;
+    actuator.joint_stiffness[joint_id] = 1;
+    actuator.joint_damping[joint_id] = 0;
+    actuator.joint_force[joint_id] = 0;
     actuator.joint_position[joint_id] = sensor.joint_position[joint_id];
+    actuator.joint_velocity[joint_id] = 0; 
   }
 }
 

@@ -21,7 +21,7 @@ struct actuator_data {
   double *joint_damping;
   double *joint_force;
   double *joint_position;
-  double *joint_position_gain;
+  double *joint_velocity;
 
   double *joint_write_access_updated;
   double *joint_enable_updated;
@@ -29,14 +29,16 @@ struct actuator_data {
   double *joint_damping_updated;
   double *joint_force_updated;
   double *joint_position_updated;
-  double *joint_position_gain_updated;
+  double *joint_velocity_updated;
 };
 
 struct sensor_data {
   double *joint_force;
   double *joint_position;
+  double *joint_velocity;
   double *motor_force;
   double *motor_position;
+  double *motor_velocity;
   double *motor_current;
   double *motor_temperature;
   double *force_torque;
@@ -46,8 +48,10 @@ struct sensor_data {
 
   double *joint_force_updated;
   double *joint_position_updated;
+  double *joint_velocity_updated;
   double *motor_force_updated;
   double *motor_position_updated;
+  double *motor_velocity_updated;
   double *motor_current_updated;
   double *motor_temperature_updated;
   double *force_torque_updated;

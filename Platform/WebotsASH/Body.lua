@@ -22,15 +22,10 @@ local max_velocity = 999
 local max_acceleration = 5000
 local velocity_gain = 0.5*vector.ones(#joint.id) 
 
-local joint_position_bias = Config.bias.joint_position_bias
-  or vector.zeros(#joint.id)
-local joint_force_bias = Config.bias.joint_force_bias
-  or vector.zeros(#joint.id)
 local joint_ff_force = vector.zeros(#joint.id)
 local joint_p_force = vector.zeros(#joint.id)
 local joint_d_force = vector.zeros(#joint.id)
 local joint_pd_force = vector.zeros(#joint.id)
-local joint_velocity = vector.zeros(#joint.id)
 
 local tags = {} -- webots tags
 local time_step = nil
@@ -71,18 +66,21 @@ end
 local function update_actuators()
   -- update webots actuator values 
   local enable = acm:get_joint_enable()
-  local joint_force = acm:get_joint_force() + joint_force_bias
-  local joint_position = acm:get_joint_position() + joint_position_bias
+  local joint_force = acm:get_joint_force()
+  local joint_position = acm:get_joint_position()
+  local joint_velocity = acm:get_joint_velocity()
   local joint_position_actual = scm:get_joint_position()
+  local joint_velocity_actual = scm:get_joint_velocity()
   local joint_stiffness = acm:get_joint_stiffness()
   local joint_damping = acm:get_joint_damping()
   local position_error = vector.zeros(#joint.id)
+  local velocity_error = vector.zeros(#joint.id)
 
   -- calculate joint forces
   for i = 1,#joint.id do
     if (enable[i] == 0) then
       -- zero forces
-      joint_ff_force[i] = joint_force_bias[i]
+      joint_ff_force[i] = 0 
       joint_d_force[i] = 0
       joint_p_force[i] = 0
       joint_pd_force[i] = 0
@@ -94,12 +92,11 @@ local function update_actuators()
       -- calculate spring force 
       position_error[i] = joint_position[i] - joint_position_actual[i]
       joint_stiffness[i] = math.max(math.min(joint_stiffness[i], 1), 0)
-      joint_stiffness[i] = joint_stiffness[i]*max_stiffness
-      joint_p_force[i] = joint_stiffness[i]*position_error[i]
+      joint_p_force[i] = joint_stiffness[i]*max_stiffness*position_error[i]
       -- calculate damper force
+      velocity_error[i] = joint_velocity[i] - joint_velocity_actual[i]
       joint_damping[i] = math.max(math.min(joint_damping[i], 1), 0)
-      joint_damping[i] = joint_damping[i]*max_damping
-      joint_d_force[i] = -joint_damping[i]*joint_velocity[i]
+      joint_d_force[i] = joint_damping[i]*max_damping*velocity_error[i]
       -- calculate total spring / damper force
       joint_pd_force[i] = joint_p_force[i] + joint_d_force[i]
       joint_pd_force[i] = math.max(math.min(joint_pd_force[i], max_force), -max_force)
@@ -108,19 +105,22 @@ local function update_actuators()
 
   -- update spring / damper forces using motor velocity controller
   for i = 1,#joint.id do
-    local motor_velocity
+    local motor_velocity = 0
+    local damper_velocity = joint_velocity[i]
+    local spring_velocity = velocity_gain[i]*position_error[i]*(1000/time_step)
     if (util.sign(joint_p_force[i]) == util.sign(joint_d_force[i])) then
-      motor_velocity = position_error[i]*(1000/time_step)
-      motor_velocity = motor_velocity*math.abs(joint_p_force[i])
+      motor_velocity = spring_velocity*math.abs(joint_p_force[i])
+                     / (math.abs(joint_p_force[i]) + math.abs(joint_d_force[i]))
+                     + damper_velocity*math.abs(joint_d_force[i])
                      / (math.abs(joint_p_force[i]) + math.abs(joint_d_force[i]))
     elseif (math.abs(joint_p_force[i]) > math.abs(joint_d_force[i])) then
-      motor_velocity = position_error[i]*(1000/time_step)
+      motor_velocity = spring_velocity 
     else
-      motor_velocity = 0
+      motor_velocity = damper_velocity 
     end
     motor_velocity = math.max(math.min(motor_velocity, max_velocity), -max_velocity)
     webots.wb_servo_set_motor_force(tags.servo[i], math.abs(joint_pd_force[i]))
-    webots.wb_servo_set_velocity(tags.servo[i], velocity_gain[i]*motor_velocity)
+    webots.wb_servo_set_velocity(tags.servo[i], motor_velocity)
   end
 
   -- update feedforward forces using physics plugin
@@ -138,11 +138,10 @@ local function update_sensors()
     if (enable[i] == 0) then
       scm:set_joint_force(0, i)
     else
-      scm:set_joint_force(webots.wb_servo_get_motor_force_feedback(tags.servo[i]) + 
-          joint_ff_force[i] - joint_force_bias[i], i)
+      scm:set_joint_force(webots.wb_servo_get_motor_force_feedback(
+          tags.servo[i]) + joint_ff_force[i], i)
     end
-    scm:set_joint_position(webots.wb_servo_get_position(tags.servo[i]) -
-        joint_position_bias[i], i)
+    scm:set_joint_position(webots.wb_servo_get_position(tags.servo[i]), i)
   end
   
   -- update imu readings
@@ -159,9 +158,11 @@ local function update_sensors()
 
   -- update force-torque readings and joint velocities using physics plugin
   local buffer = cbuffer.new(webots.wb_receiver_get_data(tags.physics_receiver))
+  local joint_velocity = {}
   for i = 1,#joint.id do
     joint_velocity[i] = buffer:get('double', (i-1)*8)
   end
+  scm:set_joint_velocity(joint_velocity)
   local l_fts = {}
   local r_fts = {}
   for i = 1,6 do
@@ -186,12 +187,14 @@ function Body.entry()
 
   -- initialize shared memory 
   acm:set_joint_enable(1, 'all')
-  acm:set_joint_stiffness(1, 'all') -- position control
-  acm:set_joint_damping(0, 'all')
   acm:set_joint_force(0, 'all')
   acm:set_joint_position(0, 'all')
+  acm:set_joint_velocity(0, 'all')
+  acm:set_joint_stiffness(1, 'all') -- position control
+  acm:set_joint_damping(0, 'all')
   scm:set_joint_force(0, 'all')
   scm:set_joint_position(0, 'all')
+  scm:set_joint_velocity(0, 'all')
 
   -- initialize sensor shared memory
   Body.update()

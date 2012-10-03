@@ -6,7 +6,7 @@
 #include "utils.h"
 
 // comms_thread : base class for active communication objects
-// author: Mike Hopkins
+// author : Mike Hopkins
 ///////////////////////////////////////////////////////////////////////////
 
 #define FPS_UPDATE 20

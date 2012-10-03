@@ -1,7 +1,6 @@
 dofile('../include.lua')
 
-require('acm')
-require('scm')
+require('dcm')
 require('Body')
 require('unix')
 require('getch')
@@ -16,9 +15,12 @@ local keyframe_table = require(Config.platform.keyframe_table)
 -- Setup 
 -----------------------------------------------------
 
-acm:set_joint_position(scm:get_joint_position())
-acm:set_joint_mode(0, 'all')
-acm:set_joint_enable(1, 'all')
+dcm:set_joint_stiffness(1, 'all')
+dcm:set_joint_damping(0, 'all')
+dcm:set_joint_force(0, 'all')
+dcm:set_joint_position(dcm:get_joint_position_sensor())
+dcm:set_joint_velocity(0, 'all')
+dcm:set_joint_enable(1, 'all')
 
 keyframe:load_keyframe_table(keyframe_table)
 
@@ -39,7 +41,7 @@ local t0 = Body.get_time()
 while (keyframe:update() ~= 'done') and (not getch.nonblock()) do
   Body.update()
   tJoints[#tJoints+1] = Body.get_time() - t0
-  qJoints[#qJoints+1] = acm:get_joint_position()
+  qJoints[#qJoints+1] = dcm:get_joint_position()
   unix.usleep(5000)
 end
 

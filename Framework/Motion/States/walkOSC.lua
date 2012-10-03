@@ -14,8 +14,7 @@ require('MotionState')
 ----------------------------------------------------------------------
 
 walk = MotionState.new(...)
-local sensor = walk.sensor
-local actuator = walk.actuator
+local dcm = walk.dcm
 walk:set_joint_access(0, 'all')
 walk:set_joint_access(1, 'legs')
 
@@ -72,7 +71,7 @@ local stop_request      = false
 local start_request     = false
 local t0                = Body.get_time()
 local t                 = t0
-local q0                = sensor:get_joint_position('legs')
+local q0                = dcm:get_joint_position_sensor('legs')
 local gyro              = vector.new{0, 0, 0}
 local gyro_limits       = vector.new(Config.walk.gyro_max or {1, 1, 1})
 
@@ -119,7 +118,7 @@ end
 local function update_gyro(dt)
   -- update low pass filter for local gyro estimate 
   local beta = 0.75
-  local raw_gyro = sensor:get_ahrs('gyro')
+  local raw_gyro = dcm:get_ahrs('gyro')
   gyro = (1 - beta)*gyro + beta*raw_gyro
   gyro[1] = limit(gyro[1], gyro_limits[1])
   gyro[2] = limit(gyro[2], gyro_limits[2])
@@ -159,13 +158,13 @@ function walk:entry()
   active = false
   update_parameters()
   t0 = Body.get_time()
-  q0 = sensor:get_joint_position('legs')
+  q0 = dcm:get_joint_position_sensor('legs')
   velocity = vector.new{0, 0, 0}
-  actuator:set_joint_force(0, 'legs')
-  actuator:set_joint_position(q0, 'legs')
-  actuator:set_joint_velocity(0, 'legs')
-  actuator:set_joint_stiffness(1, 'legs')
-  actuator:set_joint_damping(0, 'legs')
+  dcm:set_joint_force(0, 'legs')
+  dcm:set_joint_position(q0, 'legs')
+  dcm:set_joint_velocity(0, 'legs')
+  dcm:set_joint_stiffness(1, 'legs')
+  dcm:set_joint_damping(0, 'legs')
 end
 
 function walk:update()
@@ -230,8 +229,8 @@ function walk:update()
     q[11] = q[11] + ankle_pitch_fb*gyro[2]
     q[12] = q[12] + ankle_roll_fb*gyro[1]
 
-    -- write joint angles to actuator shared memory 
-    actuator:set_joint_position(q, 'legs')
+    -- write joint angles to shared memory 
+    dcm:set_joint_position(q, 'legs')
 
     -- update gait parameters at the end of each cycle 
     if (ph > 2*math.pi) then
@@ -244,7 +243,7 @@ function walk:update()
        active = false
        stop_request = false
        t0 = t
-       q0 = sensor:get_joint_position('legs')
+       q0 = dcm:get_joint_position_sensor('legs')
        velocity = vector.new{0, 0, 0}
     elseif start_request then
        start_request = false
@@ -271,15 +270,15 @@ function walk:update()
     q[11] = q[11] + ankle_pitch_fb*gyro[2]
     q[12] = q[12] + ankle_roll_fb*gyro[1]
 
-    -- write joint angles to actuator shared memory 
-    actuator:set_joint_position(q, 'legs')
+    -- write joint angles to shared memory 
+    dcm:set_joint_position(q, 'legs')
 
     -- check for start and stop requests
     if (t - t0 > 2) and start_request then
       active = true
       start_request = false
       t0 = t
-      q0 = sensor:get_joint_position('legs')
+      q0 = dcm:get_joint_position_sensor('legs')
       velocity = vector.new{0, 0, 0}
     elseif stop_request then
       stop_request = false

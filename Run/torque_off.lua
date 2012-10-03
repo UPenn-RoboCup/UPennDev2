@@ -1,10 +1,10 @@
 dofile('include.lua')
 
-require('acm')
-require('scm')
+require('dcm')
 
-acm:set_joint_stiffness(0, 'all')
-acm:set_joint_damping(0, 'all')
-acm:set_joint_force(0, 'all')
-acm:set_joint_position(scm:get_joint_position())
-acm:set_joint_enable(0, 'all')
+dcm:set_joint_stiffness(0, 'all')
+dcm:set_joint_damping(0, 'all')
+dcm:set_joint_force(0, 'all')
+dcm:set_joint_position(dcm:get_joint_position_sensor())
+dcm:set_joint_velocity(0, 'all')
+dcm:set_joint_enable(0, 'all')

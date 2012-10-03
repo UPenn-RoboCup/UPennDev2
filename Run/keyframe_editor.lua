@@ -4,8 +4,7 @@ dofile('include.lua')
 -- Keyframe Editor
 ----------------------------------------------------------------------
 
-require('acm')
-require('scm')
+require('dcm')
 require('Body')
 require('util')
 require('unix')
@@ -71,8 +70,8 @@ function cmd_on(arg)
       end
     end
   end
-  acm:set_joint_position(scm:get_joint_position(joints), joints)
-  acm:set_joint_enable(1, joints)
+  dcm:set_joint_position(dcm:get_joint_position_sensor(joints), joints)
+  dcm:set_joint_enable(1, joints)
   draw_screen()
 end
 
@@ -88,7 +87,7 @@ function cmd_off(arg)
       end
     end
   end
-  acm:set_joint_enable(0, joints)
+  dcm:set_joint_enable(0, joints)
   draw_screen()
 end
 
@@ -114,7 +113,7 @@ function cmd_write_step(arg)
   local step_index = varg[1]
   if (step_index and step_index > 0) then
     keyframe_table[page_no].steps[step_index] = { 
-      joint_position = acm:get_joint_position(),
+      joint_position = dcm:get_joint_position(),
       duration = command_duration,
       pause = command_pause,
     }
@@ -129,7 +128,7 @@ function cmd_insert_step(arg)
   local step_index = varg[1]
   if (step_index and step_index > 0) then
     table.insert(keyframe_table[page_no].steps, step_index, { 
-      joint_position = acm:get_joint_position(),
+      joint_position = dcm:get_joint_position(),
       duration = command_duration,
       pause = command_pause,
     })
@@ -425,10 +424,10 @@ function get_value(r, c)
   if (c == COL_CMD) then
     if (r < ROW_LINE) then
       local id = 1 + (r - ROW_JOINT)
-      if (acm:get_joint_enable(id) == 1) then
-        return acm:get_joint_position(id)
-      elseif (acm:get_joint_enable(id) == 0) then
-        return scm:get_joint_position(id)
+      if (dcm:get_joint_enable(id) == 1) then
+        return dcm:get_joint_position(id)
+      elseif (dcm:get_joint_enable(id) == 0) then
+        return dcm:get_joint_position_sensor(id)
       end
     elseif (r == ROW_DURAT) then
       return command_duration
@@ -457,7 +456,7 @@ function set_value(val, r, c)
   if (c == COL_CMD) then
     if (r < ROW_LINE) then
       local id = 1 + (r - ROW_JOINT)
-      acm:set_joint_position(val, id)
+      dcm:set_joint_position(val, id)
     elseif (r == ROW_DURAT) then
       command_duration = val
     elseif (r == ROW_PAUSE) then
@@ -530,7 +529,7 @@ function draw_screen()
   curses.refresh()
   unix.usleep(1000)
   for i = 1,#joint.id do
-    if (acm:get_joint_enable(i) == 1) then
+    if (dcm:get_joint_enable(i) == 1) then
       curses.attron(curses.A_STANDOUT)
     end
     curses.printw('%2d', i)
@@ -653,7 +652,11 @@ function entry()
   -- initialize shared memory
   Body.entry()
   unix.usleep(5e5)
-  acm:set_joint_position(scm:get_joint_position())
+  dcm:set_joint_stiffness(1, 'all')
+  dcm:set_joint_damping(0, 'all')
+  dcm:set_joint_position(dcm:get_joint_position_sensor())
+  dcm:set_joint_force(0, 'all')
+  dcm:set_joint_velocity(0, 'all')
   draw_screen()
 end
 

@@ -7,7 +7,7 @@
 #include "co_master.h"
 
 // sensor_thread : motion sensor communication thread for ASH
-// author: Mike Hopkins
+// author : Mike Hopkins
 ///////////////////////////////////////////////////////////////////////////
 
 class sensor_thread : public comms_thread {

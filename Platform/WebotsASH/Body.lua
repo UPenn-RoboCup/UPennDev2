@@ -4,8 +4,7 @@ require('Config')
 require('webots')
 require('vector')
 require('util')
-require('acm')
-require('scm')
+require('dcm')
 
 Body = {}
 
@@ -65,20 +64,20 @@ end
 
 local function update_actuators()
   -- update webots actuator values 
-  local enable = acm:get_joint_enable()
-  local joint_force = acm:get_joint_force()
-  local joint_position = acm:get_joint_position()
-  local joint_velocity = acm:get_joint_velocity()
-  local joint_position_actual = scm:get_joint_position()
-  local joint_velocity_actual = scm:get_joint_velocity()
-  local joint_stiffness = acm:get_joint_stiffness()
-  local joint_damping = acm:get_joint_damping()
+  local joint_enable = dcm:get_joint_enable()
+  local joint_force_desired = dcm:get_joint_force()
+  local joint_position_desired = dcm:get_joint_position()
+  local joint_velocity_desired = dcm:get_joint_velocity()
+  local joint_position_actual = dcm:get_joint_position_sensor()
+  local joint_velocity_actual = dcm:get_joint_velocity_sensor()
+  local joint_stiffness = dcm:get_joint_stiffness()
+  local joint_damping = dcm:get_joint_damping()
   local position_error = vector.zeros(#joint.id)
   local velocity_error = vector.zeros(#joint.id)
 
   -- calculate joint forces
   for i = 1,#joint.id do
-    if (enable[i] == 0) then
+    if (joint_enable[i] == 0) then
       -- zero forces
       joint_ff_force[i] = 0 
       joint_d_force[i] = 0
@@ -87,14 +86,14 @@ local function update_actuators()
       webots.wb_servo_set_force(tags.servo[i], 0)
     else
       -- calculate feedforward force 
-      joint_ff_force[i] = joint_force[i]
+      joint_ff_force[i] = joint_force_desired[i]
       joint_ff_force[i] = math.max(math.min(joint_ff_force[i], max_force), -max_force)
       -- calculate spring force 
-      position_error[i] = joint_position[i] - joint_position_actual[i]
+      position_error[i] = joint_position_desired[i] - joint_position_actual[i]
       joint_stiffness[i] = math.max(math.min(joint_stiffness[i], 1), 0)
       joint_p_force[i] = joint_stiffness[i]*max_stiffness*position_error[i]
       -- calculate damper force
-      velocity_error[i] = joint_velocity[i] - joint_velocity_actual[i]
+      velocity_error[i] = joint_velocity_desired[i] - joint_velocity_actual[i]
       joint_damping[i] = math.max(math.min(joint_damping[i], 1), 0)
       joint_d_force[i] = joint_damping[i]*max_damping*velocity_error[i]
       -- calculate total spring / damper force
@@ -106,7 +105,7 @@ local function update_actuators()
   -- update spring / damper forces using motor velocity controller
   for i = 1,#joint.id do
     local motor_velocity = 0
-    local damper_velocity = joint_velocity[i]
+    local damper_velocity = joint_velocity_desired[i]
     local spring_velocity = velocity_gain[i]*position_error[i]*(1000/time_step)
     if (util.sign(joint_p_force[i]) == util.sign(joint_d_force[i])) then
       motor_velocity = spring_velocity*math.abs(joint_p_force[i])
@@ -133,15 +132,16 @@ end
 
 local function update_sensors()
   -- update webots sensor values
-  local enable = acm:get_joint_enable()
+  local joint_enable = dcm:get_joint_enable()
   for i = 1,#joint.id do
-    if (enable[i] == 0) then
-      scm:set_joint_force(0, i)
+    if (joint_enable[i] == 0) then
+      dcm:set_joint_force_sensor(0, i)
     else
-      scm:set_joint_force(webots.wb_servo_get_motor_force_feedback(
+      dcm:set_joint_force_sensor(webots.wb_servo_get_motor_force_feedback(
           tags.servo[i]) + joint_ff_force[i], i)
     end
-    scm:set_joint_position(webots.wb_servo_get_position(tags.servo[i]), i)
+    dcm:set_joint_position_sensor(
+        webots.wb_servo_get_position(tags.servo[i]), i)
   end
   
   -- update imu readings
@@ -152,9 +152,9 @@ local function update_sensors()
   t[3] = vector.new({orientation[7], orientation[8], orientation[9], 0})
   t[4] = vector.new({0, 0, 0, 1});
   local euler_angles = Transform.getEuler(t)
-  scm:set_ahrs(webots.wb_gyro_get_values(tags.gyro), 'gyro')
-  scm:set_ahrs(webots.wb_accelerometer_get_values(tags.accel), 'accel')
-  scm:set_ahrs(euler_angles, 'euler')
+  dcm:set_ahrs(webots.wb_gyro_get_values(tags.gyro), 'gyro')
+  dcm:set_ahrs(webots.wb_accelerometer_get_values(tags.accel), 'accel')
+  dcm:set_ahrs(euler_angles, 'euler')
 
   -- update force-torque readings and joint velocities using physics plugin
   local buffer = cbuffer.new(webots.wb_receiver_get_data(tags.physics_receiver))
@@ -162,15 +162,15 @@ local function update_sensors()
   for i = 1,#joint.id do
     joint_velocity[i] = buffer:get('double', (i-1)*8)
   end
-  scm:set_joint_velocity(joint_velocity)
+  dcm:set_joint_velocity_sensor(joint_velocity)
   local l_fts = {}
   local r_fts = {}
   for i = 1,6 do
     l_fts[i] = buffer:get('double', (i-1)*8 + #joint.id*8)
     r_fts[i] = buffer:get('double', (i-1)*8 + #joint.id*8 + 48)
   end
-  scm:set_force_torque(l_fts, 'l_ankle')
-  scm:set_force_torque(r_fts, 'r_ankle')
+  dcm:set_force_torque(l_fts, 'l_ankle')
+  dcm:set_force_torque(r_fts, 'r_ankle')
   webots.wb_receiver_next_packet(tags.physics_receiver)
 end
 
@@ -186,15 +186,15 @@ function Body.entry()
   initialize_devices()
 
   -- initialize shared memory 
-  acm:set_joint_enable(1, 'all')
-  acm:set_joint_force(0, 'all')
-  acm:set_joint_position(0, 'all')
-  acm:set_joint_velocity(0, 'all')
-  acm:set_joint_stiffness(1, 'all') -- position control
-  acm:set_joint_damping(0, 'all')
-  scm:set_joint_force(0, 'all')
-  scm:set_joint_position(0, 'all')
-  scm:set_joint_velocity(0, 'all')
+  dcm:set_joint_enable(1, 'all')
+  dcm:set_joint_stiffness(1, 'all') -- position control
+  dcm:set_joint_damping(0, 'all')
+  dcm:set_joint_force(0, 'all')
+  dcm:set_joint_position(0, 'all')
+  dcm:set_joint_velocity(0, 'all')
+  dcm:set_joint_force_sensor(0, 'all')
+  dcm:set_joint_position_sensor(0, 'all')
+  dcm:set_joint_velocity_sensor(0, 'all')
 
   -- initialize sensor shared memory
   Body.update()

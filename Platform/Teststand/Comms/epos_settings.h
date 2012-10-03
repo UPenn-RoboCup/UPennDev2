@@ -1,9 +1,9 @@
 #ifndef EPOS_SETTINGS_H
 #define EPOS_SETTINGS_H
 
-#include "shared_data.h"
 #include "epos_slave.h"
 #include "co_types.h"
+#include "config.h"
 
 // epos_settings : sdo and pdo configuration settings for epos controllers 
 // author: Mike Hopkins

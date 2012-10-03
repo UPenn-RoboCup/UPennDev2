@@ -4,8 +4,7 @@ dofile('include.lua')
 -- Bias Editor
 ----------------------------------------------------------------------
 
-require('acm')
-require('scm')
+require('dcm')
 require('Body')
 require('util')
 require('unix')
@@ -17,10 +16,10 @@ local bias_config_file = arg[1]
   or '../Config/Robot/Config_'..Config.platform.name..'_Bias.lua'
 
 local bias_keys = {
-  [1] = 'joint_position',
-  [2] = 'joint_force',
-  [3] = 'motor_position',
-  [4] = 'motor_force',
+  [1] = 'joint_position_sensor',
+  [2] = 'joint_force_sensor',
+  [3] = 'motor_position_sensor',
+  [4] = 'motor_force_sensor',
   [5] = 'force_torque',
   [6] = 'tactile_array',
 }
@@ -40,9 +39,9 @@ local initial_bias_values = {}
 
 for i = 1,#bias_keys do
   bias_values[i] = Config.bias[bias_keys[i]..'_bias']
-    or vector.zeros(#scm:get_key(bias_keys[i]))
+    or vector.zeros(#dcm:get_key(bias_keys[i]))
   nominal_values[i] = Config.bias[bias_keys[i]..'_nominal']
-    or vector.zeros(#scm:get_key(bias_keys[i]))
+    or vector.zeros(#dcm:get_key(bias_keys[i]))
   initial_bias_values[i] = vector.copy(bias_values[i]) 
 end
 
@@ -92,7 +91,7 @@ end
 function cmd_bias(arg)
   local indices = {}
   local id = parse_string_arguments(arg)[1]
-  local group = Config[scm:get_group(bias_key)]
+  local group = Config[dcm:get_device(bias_key)]
   if (id and group.index[id]) then
     indices = group.index[id]
   else
@@ -104,7 +103,7 @@ function cmd_bias(arg)
   end
   if (type(indices) == 'number') then indices = {indices} end
   for i,index in pairs(indices) do
-    bias_value[index] = scm:get_key(bias_key, index)
+    bias_value[index] = dcm:get_key(bias_key, index)
       + initial_bias_value[index] - nominal_value[index]
   end
   draw_screen()
@@ -113,7 +112,7 @@ end
 function cmd_unbias(arg)
   local indices = {}
   local id = parse_string_arguments(arg)[1]
-  local group = Config[scm:get_group(bias_key)]
+  local group = Config[dcm:get_device(bias_key)]
   if (id and group.index[id]) then 
     indices = group.index[id]
   else
@@ -228,9 +227,9 @@ local commands = {
 
 function get_value(r, c)
   if (c == COL_BIASED) then
-    return scm:get_key(bias_key, r) + initial_bias_value[r] - bias_value[r]
+    return dcm:get_key(bias_key, r) + initial_bias_value[r] - bias_value[r]
   elseif (c == COL_UNBIASED) then
-    return scm:get_key(bias_key, r) + initial_bias_value[r]
+    return dcm:get_key(bias_key, r) + initial_bias_value[r]
   elseif (c == COL_NOMINAL) then
     return nominal_value[r]
   elseif (c == COL_BIAS) then
@@ -277,16 +276,17 @@ function draw_col(c)
 end
 
 function draw_screen()
+  local key_name = string.gsub(bias_key, '_sensor', '')
   curses.clear()
   curses.move(0, 0)
   curses.printw('                                Bias Editor\n')
   curses.printw('///////////////////////////////////////')
   curses.printw('//////////////////////////////////////\n')
-  curses.printw('%-19s %12s  %12s  %12s  %12s\n', bias_key,
+  curses.printw('%-19s %12s  %12s  %12s  %12s\n', key_name,
     'biased', 'unbiased', 'nominal', 'bias')
   curses.printw('---------------------------------------')
   curses.printw('--------------------------------------\n')
-  local group = Config[scm:get_group(bias_key)]
+  local group = Config[dcm:get_device(bias_key)]
   for i = 1,#group.id do
     curses.printw('%2d', i)
     curses.printw(' %16s\n', group.id[i])

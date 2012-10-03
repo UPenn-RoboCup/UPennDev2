@@ -11,8 +11,7 @@ require('MotionState')
 -- Setup 
 ----------------------------------------------------------------------
 walk = MotionState.new(...);
-local actuator = walk.actuator;
-local sensor = walk.sensor;
+local dcm = walk.dcm;
 
 walk.parameters = {
 }
@@ -100,7 +99,7 @@ local initial_step=2;
 ----------------------------------------------------------
 
 local t0 = Body.get_time()
-local q0 = sensor:get_joint_position('legs')
+local q0 = dcm:get_joint_position_sensor('legs')
 local qStance = vector.copy(q0)
 
 ----------------------------------------------------------
@@ -320,9 +319,9 @@ local function motion_legs(qLegs)
     qLegs[8] = qLegs[8] - hipRollCompensation*phComp;--Hip roll compensation
   end
 
-  -- write joint angles to actuator shared memory 
+  -- write joint angles to shared memory 
   -- Body.set_lleg_command(qLegs);
-  actuator:set_joint_position(qLegs, 'legs')
+  dcm:set_joint_position(qLegs, 'legs')
 
 end
 
@@ -357,7 +356,7 @@ local function init()
    
   qLegs = Kinematics.inverse_legs(pLLeg, pRLeg, pTorso);
 --  Body.set_lleg_command(qLegs);
-  actuator:set_joint_position(qLegs, 'legs')
+  dcm:set_joint_position(qLegs, 'legs')
 
   if init_ph>1 then
     initdone=true;
@@ -422,12 +421,12 @@ function walk:entry()
 
   uSupport = uTorso;
 
-  local q0 = sensor:get_joint_position('legs')
-  actuator:set_joint_force(0, 'legs')
-  actuator:set_joint_position(q0, 'legs')
-  actuator:set_joint_velocity(0, 'legs')
-  actuator:set_joint_stiffness(1, 'legs')
-  actuator:set_joint_damping(0, 'legs')
+  local q0 = dcm:get_joint_position_sensor('legs')
+  dcm:set_joint_force(0, 'legs')
+  dcm:set_joint_position(q0, 'legs')
+  dcm:set_joint_velocity(0, 'legs')
+  dcm:set_joint_stiffness(1, 'legs')
+  dcm:set_joint_damping(0, 'legs')
 end
 
 function walk:update()

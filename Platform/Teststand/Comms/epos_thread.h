@@ -6,8 +6,8 @@
 #include "epos_slave.h"
 #include "comms_thread.h"
 
-// epos_thread : epos controller communication thread for actuator teststand
-// author: Mike Hopkins
+// epos_thread : epos controller communication thread for ASH
+// author : Mike Hopkins
 ///////////////////////////////////////////////////////////////////////////
 
 class epos_thread : public comms_thread {
@@ -17,6 +17,7 @@ protected:
   epos_slave *m_epos[128];
   can_channel m_channel;
   co_master m_master;
+  bool check_joint_settings();
   static void emcy_callback(int node_id, void *user_data);
   void initialize_motor_controllers();
   void home_motor_controllers();

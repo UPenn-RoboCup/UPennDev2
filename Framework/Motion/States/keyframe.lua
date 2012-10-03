@@ -13,8 +13,7 @@ require('MotionState')
 ----------------------------------------------------------------------
 
 keyframe = MotionState.new(...)
-local sensor = keyframe.sensor
-local actuator = keyframe.actuator
+local dcm = keyframe.dcm
 
 local keyframe_table = {}
 local motion_index = {}
@@ -25,7 +24,7 @@ local joint = Config.joint
 local steps = {}
 local iStep = 1
 local mStep = 0 
-local qStep = sensor:get_joint_position() 
+local qStep = dcm:get_joint_position_sensor() 
 local qSpline = nil
 local t0 = Body.get_time()
 
@@ -92,12 +91,12 @@ function keyframe:entry()
   self.running = true
   self:set_joint_access(1, 'all')
   steps = {}
-  local q0 = sensor:get_joint_position('all')
-  actuator:set_joint_force(0, 'all')
-  actuator:set_joint_position(q0, 'all')
-  actuator:set_joint_velocity(0, 'all')
-  actuator:set_joint_stiffness(1, 'all')
-  actuator:set_joint_damping(0, 'all')
+  local q0 = dcm:get_joint_position_sensor('all')
+  dcm:set_joint_force(0, 'all')
+  dcm:set_joint_position(q0, 'all')
+  dcm:set_joint_velocity(0, 'all')
+  dcm:set_joint_stiffness(1, 'all')
+  dcm:set_joint_damping(0, 'all')
 end
 
 function keyframe:update()
@@ -106,7 +105,7 @@ function keyframe:update()
     local step = steps[iStep]
     local t = Body.get_time()
     local q = qSpline(t - t0)
-    actuator:set_joint_position(q)
+    dcm:set_joint_position(q)
     -- advance to next keyframe step
     if ((t - t0) > (step.duration + step.pause)) then
       iStep = iStep + 1
@@ -117,7 +116,7 @@ function keyframe:update()
       -- load new keyframe motion
       steps = table.remove(motion_queue, 1).steps
       iStep = 1
-      qStep = vector.new(sensor:get_joint_position()) 
+      qStep = vector.new(dcm:get_joint_position_sensor()) 
       mStep = vector.zeros(#joint.id)
       update_step_parameters()
     else

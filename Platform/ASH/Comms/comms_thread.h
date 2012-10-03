@@ -4,7 +4,7 @@
 #include <pthread.h>
 
 // comms_thread : base class for active communication objects
-// author: Mike Hopkins
+// author : Mike Hopkins
 ///////////////////////////////////////////////////////////////////////////
 
 class comms_thread {

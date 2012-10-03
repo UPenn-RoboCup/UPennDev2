@@ -6,38 +6,28 @@
 #include <assert.h>
 #include <string.h>
 #include <ncurses.h>
-#include "shared_data.h"
+#include "dcm.h"
+#include "config.h"
 #include "epos_thread.h"
 #include "sensor_thread.h"
 #include "utils.h"
 
-// comms_manager : communications manager for actuator teststand
-// author: Mike Hopkins
+// comms_manager : communications manager for ash
+// author : Mike Hopkins
 ///////////////////////////////////////////////////////////////////////////
+
+extern Dcm dcm;
+extern Config config;
+static epos_thread l_leg_thread;
+static epos_thread r_leg_thread;
+static sensor_thread motion_sensor_thread;
 
 static void zero_joints();
 static void draw_screen();
 static void print_joint_array(double *joint_array);
 
-using namespace shared_data;
-
-namespace shared_data {
-  extern struct actuator_data actuator;
-  extern struct sensor_data sensor;
-  extern struct bias_data bias;
-};
-
-namespace {
-  epos_thread l_leg_thread;
-  epos_thread r_leg_thread;
-  sensor_thread _sensor_thread;
-};
-
 int main(int argc, char **argv)
 {
-  // initialize shared data
-  shared_data::entry();
-
   // initialize communication threads
   std::vector<int> l_leg_joints(6);
   std::vector<int> r_leg_joints(6);
@@ -50,8 +40,8 @@ int main(int argc, char **argv)
   r_leg_thread.set_can_interface("can0");
   l_leg_thread.set_joints(l_leg_joints);
   r_leg_thread.set_joints(r_leg_joints);
-  //_sensor_thread.set_can_interface("can2");
-  //_sensor_thread.set_imu_interface("/dev/ttyACM0");
+  //motion_sensor_thread.set_can_interface("can2");
+  //motion_sensor_thread.set_imu_interface("/dev/ttyACM0");
 
   // start communication threads
   fprintf(stderr, "starting comms threads...\n");
@@ -60,8 +50,8 @@ int main(int argc, char **argv)
   while (!l_leg_thread.is_running() || !r_leg_thread.is_running()) {
     usleep(2e5);
   }
-  //_sensor_thread.start();
-  //while (!_sensor_thread.is_running()) {
+  //motion_sensor_thread.start();
+  //while (!motion_sensor_thread.is_running()) {
   //  usleep(2e5);
   //}
 
@@ -85,7 +75,7 @@ int main(int argc, char **argv)
        break;
     if (!r_leg_thread.is_running())
        break;
-//  if (!_sensor_thread.is_running())
+//  if (!motion_sensor_thread.is_running())
 //     break;
   }
   endwin();
@@ -93,10 +83,7 @@ int main(int argc, char **argv)
   // stop communication threads 
   l_leg_thread.stop();
   r_leg_thread.stop();
-  //_sensor_thread.stop();
-
-  // destroy shared memory
-  shared_data::exit();
+  //motion_sensor_thread.stop();
 
   return 0;
 }
@@ -109,14 +96,14 @@ void zero_joints()
   double t = t0;
   for (int i = 0; i < N_JOINT; i++)
   {
-    q0[i] = sensor.joint_position[i];
+    q0[i] = dcm.joint_position_sensor[i];
   }
   while (t - t0 < 1)
   {
     t = get_time();
     for (int i = 0; i < N_JOINT; i++)
     {
-      actuator.joint_position[i] = (1 - min(t - t0, 1))*q0[i];
+      dcm.joint_position[i] = (1 - min(t - t0, 1))*q0[i];
     }
   }
 }
@@ -130,17 +117,17 @@ void draw_screen()
   printw("///////////////////////////////////////\n\n");
   
   printw("enable\n");
-  print_joint_array(actuator.joint_enable);
+  print_joint_array(dcm.joint_enable);
   printw("stiffness\n");
-  print_joint_array(actuator.joint_stiffness);
+  print_joint_array(dcm.joint_stiffness);
   printw("damping\n");
-  print_joint_array(actuator.joint_damping);
+  print_joint_array(dcm.joint_damping);
   printw("force\n");
-  print_joint_array(sensor.joint_force);
+  print_joint_array(dcm.joint_force_sensor);
   printw("position\n");
-  print_joint_array(sensor.joint_position);
+  print_joint_array(dcm.joint_position_sensor);
   printw("velocity\n");
-  print_joint_array(sensor.joint_velocity);
+  print_joint_array(dcm.joint_velocity_sensor);
   printw("thread fps\n");
   printw("            [ %7.0f %7.0f   ]\n", 
     l_leg_thread.get_fps(), r_leg_thread.get_fps());
@@ -168,4 +155,3 @@ void print_joint_array(double *joint_array)
     printw("%7.3f ", joint_array[i]);
   printw("  ]   r_leg\n");
 }
-

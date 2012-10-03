@@ -42,6 +42,9 @@ LIB_DIRS += -L../../Lib/Microstrain -L../../Lib/NetFT -L../../Lib/Epos
 LIBS  = -lMechanics -lMicrostrain -lnetft -lepos 
 LIBS += -lcanopen -lpthread -lcurses -lrt -llua5.1
 
+OBJECTS  = comms_manager.o epos_thread.o sensor_thread.o 
+OBJECTS += comms_thread.o dcm.o config.o
+
 all: comms_manager
 
 %.o: %.cpp
@@ -49,7 +52,7 @@ all: comms_manager
 %.o: %.c
 	$(CC) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
 
-comms_manager: comms_manager.o epos_thread.o comms_thread.o sensor_thread.o shared_data.o
+comms_manager: $(OBJECTS)
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(INCLUDES) $(LIB_DIRS) $(LIBS)
 
 clean:

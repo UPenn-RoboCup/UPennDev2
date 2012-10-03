@@ -1,6 +1,6 @@
 dofile('../include.lua')
 
-require('scm')
+require('dcm')
 require('unix')
 require('curses')
 
@@ -31,7 +31,7 @@ while (key ~= string.byte('q')) do
   t = unix.time()
 
   -- log data
-  local force = scm:get_motor_force()
+  local force = dcm:get_motor_force_sensor()
   for i = 1,#force do
     f:write(string.format('%f ', force[i]))
   end

@@ -5,26 +5,32 @@ require('util')
 require('shm')
 
 ---------------------------------------------------------------------------
--- scm : sensor communications manager
+-- dcm : device communications manager
 ---------------------------------------------------------------------------
 
-scm = {}
+dcm = {}
 
 -- configure device data and write access
 ---------------------------------------------------------------------------
 
 local devices = {
   joint = {
+    'joint_enable',
+    'joint_stiffness',
+    'joint_damping',
     'joint_force',
     'joint_position',
     'joint_velocity',
+    'joint_force_sensor',
+    'joint_position_sensor',
+    'joint_velocity_sensor',
   },
   motor = {
-    'motor_force',
-    'motor_position',
-    'motor_velocity',
-    'motor_current',
-    'motor_temperature',
+    'motor_force_sensor',
+    'motor_position_sensor',
+    'motor_velocity_sensor',
+    'motor_current_sensor',
+    'motor_temperature_sensor',
   },
   force_torque = {
     'force_torque',
@@ -41,9 +47,9 @@ local devices = {
 }
 
 local key_device = {}
-scm.device_id = {}
-scm.device_index = {}
-scm.device_write_access = {}
+dcm.device_id = {}
+dcm.device_index = {}
+dcm.device_write_access = {}
 
 for device in pairs(devices) do
   for _,key in pairs(devices[device]) do
@@ -52,9 +58,9 @@ for device in pairs(devices) do
 end
 
 for device in pairs(devices) do
-  scm.device_id[device] = Config[device] and Config[device].id
-  scm.device_index[device] = Config[device] and Config[device].index
-  scm.device_write_access[device] = vector.ones(#scm.device_id[device])
+  dcm.device_id[device] = Config[device] and Config[device].id
+  dcm.device_index[device] = Config[device] and Config[device].index
+  dcm.device_write_access[device] = vector.ones(#dcm.device_id[device])
 end
 
 -- configure shared memory
@@ -63,18 +69,18 @@ end
 -- define shared data fields and update flags 
 local shared_data = {}
 for key,device in pairs(key_device) do
-  shared_data[key] = vector.zeros(#scm.device_id[device])
-  shared_data[key..'_updated'] = vector.zeros(#scm.device_id[device])
+  shared_data[key] = vector.zeros(#dcm.device_id[device])
+  shared_data[key..'_updated'] = vector.zeros(#dcm.device_id[device])
 end
 
 -- initialize shared memory segment
-scm.shm = shm.new('sensor')
-util.init_shm_keys(scm.shm, shared_data)
+dcm.shm = shm.new('dcm')
+util.init_shm_keys(dcm.shm, shared_data)
 
 -- get array access to shared data 
 local data = {}
 for key in pairs(shared_data) do
-  data[key] = carray.cast(scm.shm:pointer(key))
+  data[key] = carray.cast(dcm.shm:pointer(key))
 end
 
 -- define access methods
@@ -105,7 +111,7 @@ local function get_settings_table(value, index)
   return t
 end
 
-function scm:set_key(key, value, index)
+function dcm:set_key(key, value, index)
   local device = key_device[key]
   if (not device) then
     return false
@@ -126,7 +132,7 @@ function scm:set_key(key, value, index)
   return true
 end
 
-function scm:get_key(key, index)
+function dcm:get_key(key, index)
   local device = key_device[key]
   if (not device) then
     return nil
@@ -152,7 +158,7 @@ function scm:get_key(key, index)
   end
 end
 
-function scm:set_write_access(key, value, index)
+function dcm:set_write_access(key, value, index)
   local device = devices[key] and key or key_device[key]
   if (not device) then
     return false
@@ -169,7 +175,7 @@ function scm:set_write_access(key, value, index)
   return true
 end
 
-function scm:get_write_access(key, value, index)
+function dcm:get_write_access(key, value, index)
   local device = devices[key] and key or key_device[key]
   if (not device) then
     return nil
@@ -197,39 +203,39 @@ function scm:get_write_access(key, value, index)
   end
 end
 
-function scm:get_device(key)
+function dcm:get_device(key)
   return key_device[key]
 end
 
 for key,device in pairs(key_device) do
-  scm['set_'..key] =
+  dcm['set_'..key] =
     function (self, value, index)
       return self:set_key(key, value, index)
     end
-  scm["get_"..key] =
+  dcm["get_"..key] =
     function (self, index)
       return self:get_key(key, index)
     end
-  scm['set_'..key..'_write_access'] =
+  dcm['set_'..key..'_write_access'] =
     function (self, value, index)
       return self:set_write_access(device, value, index)
     end
-  scm['get_'..key..'_write_access'] =
+  dcm['get_'..key..'_write_access'] =
     function (self, index)
       return self:get_write_access(device, index)
     end
-  scm['get_'..key..'_device'] = 
+  dcm['get_'..key..'_device'] = 
     function (self, index)
       return device
     end
 end
 
 for device in pairs(devices) do
-  scm['set_'..device..'_write_access'] =
+  dcm['set_'..device..'_write_access'] =
     function (self, value, index)
       return self:set_write_access(device, value, index)
     end
-  scm['get_'..device..'_write_access'] =
+  dcm['get_'..device..'_write_access'] =
     function (self, index)
       return self:get_write_access(device, index)
     end
@@ -238,13 +244,13 @@ end
 -- define constructor for instances with private write access
 ---------------------------------------------------------------------------
 
-function scm.new_access_point()
+function dcm.new_access_point()
   local o = {}
   o.device_write_access = {}
-  for k,v in pairs(scm.device_write_access) do
-    o.device_write_access[k] = vector.zeros(#v) -- access disabled by default
+  for k,v in pairs(dcm.device_write_access) do
+    o.device_write_access[k] = vector.ones(#v) -- access enabled by default
   end
-  return setmetatable(o, {__index = scm})
+  return setmetatable(o, {__index = dcm})
 end
 
-return scm
+return dcm

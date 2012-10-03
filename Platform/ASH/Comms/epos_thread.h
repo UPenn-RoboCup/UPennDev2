@@ -7,7 +7,7 @@
 #include "comms_thread.h"
 
 // epos_thread : epos controller communication thread for ASH
-// author: Mike Hopkins
+// author : Mike Hopkins
 ///////////////////////////////////////////////////////////////////////////
 
 class epos_thread : public comms_thread {

@@ -1,19 +1,15 @@
 #include <math.h>
 #include <string.h>
-#include "shared_data.h"
 #include "sensor_thread.h"
+#include "dcm.h"
+#include "config.h"
 
 // sensor_thread : motion sensor communication thread for ASH
-// author: Mike Hopkins
+// author : Mike Hopkins
 ///////////////////////////////////////////////////////////////////////////
 
-using namespace shared_data;
-
-namespace shared_data {
-  extern struct actuator_data actuator;
-  extern struct sensor_data sensor;
-  extern struct bias_data bias;
-};
+extern Dcm dcm;
+extern Config config;
 
 sensor_thread::sensor_thread()
 {
@@ -49,15 +45,15 @@ void sensor_thread::update()
     m_imu.receiveAccelAngrateOrientation(&time, accel, gyro, orientation);
 
     // upate sensor shared memory
-    sensor.ahrs[0] = accel[1];                              // x accel
-    sensor.ahrs[1] = accel[0];                              // y accel
-    sensor.ahrs[2] = -accel[2];                             // z accel
-    sensor.ahrs[4] = gyro[1];                               // x gyro
-    sensor.ahrs[3] = gyro[0];                               // y gyro
-    sensor.ahrs[5] = -gyro[2];                              // z gyro
-    sensor.ahrs[7] = -asin(orientation[2]);                 // x euler
-    sensor.ahrs[6] = atan(orientation[5]/orientation[8]);   // y euler
-    sensor.ahrs[8] = -atan2(orientation[1],orientation[0]); // z euler
+    dcm.ahrs[0] = accel[1];                              // x accel
+    dcm.ahrs[1] = accel[0];                              // y accel
+    dcm.ahrs[2] = -accel[2];                             // z accel
+    dcm.ahrs[4] = gyro[1];                               // x gyro
+    dcm.ahrs[3] = gyro[0];                               // y gyro
+    dcm.ahrs[5] = -gyro[2];                              // z gyro
+    dcm.ahrs[7] = -asin(orientation[2]);                 // x euler
+    dcm.ahrs[6] = atan(orientation[5]/orientation[8]);   // y euler
+    dcm.ahrs[8] = -atan2(orientation[1],orientation[0]); // z euler
 }
 
 void sensor_thread::exit()

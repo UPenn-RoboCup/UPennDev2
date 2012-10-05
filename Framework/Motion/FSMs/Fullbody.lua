@@ -1,10 +1,10 @@
 ---------------------------------------------------------
--- FullBody State Machine 
+-- Fullbody State Machine 
 ---------------------------------------------------------
 
 require('nullState')
 require('MotionFSM')
 
-FullBody = MotionFSM.new(nullState)
+Fullbody = MotionFSM.new(nullState)
 
-return FullBody
+return Fullbody

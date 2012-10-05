@@ -16,10 +16,10 @@ local bias_config_file = arg[1]
   or '../Config/Robot/Config_'..Config.platform.name..'_Bias.lua'
 
 local bias_keys = {
-  [1] = 'joint_position_sensor',
-  [2] = 'joint_force_sensor',
-  [3] = 'motor_position_sensor',
-  [4] = 'motor_force_sensor',
+  [1] = 'motor_position',
+  [2] = 'motor_force',
+  [3] = 'joint_position',
+  [4] = 'joint_force',
   [5] = 'force_torque',
   [6] = 'tactile_array',
 }
@@ -45,8 +45,13 @@ for i = 1,#bias_keys do
   initial_bias_values[i] = vector.copy(bias_values[i]) 
 end
 
+local function get_sensor_key(bias_key)
+  return dcm:get_key(bias_key..'_sensor') and bias_key..'_sensor' or bias_key
+end
+
 local key_no = 1
 local bias_key = bias_keys[key_no]
+local sensor_key = get_sensor_key(bias_key) 
 local bias_value = bias_values[key_no]
 local nominal_value = nominal_values[key_no]
 local initial_bias_value = initial_bias_values[key_no]
@@ -91,7 +96,7 @@ end
 function cmd_bias(arg)
   local indices = {}
   local id = parse_string_arguments(arg)[1]
-  local group = Config[dcm:get_device(bias_key)]
+  local group = Config[dcm:get_device(sensor_key)]
   if (id and group.index[id]) then
     indices = group.index[id]
   else
@@ -103,7 +108,7 @@ function cmd_bias(arg)
   end
   if (type(indices) == 'number') then indices = {indices} end
   for i,index in pairs(indices) do
-    bias_value[index] = dcm:get_key(bias_key, index)
+    bias_value[index] = dcm:get_key(sensor_key, index)
       + initial_bias_value[index] - nominal_value[index]
   end
   draw_screen()
@@ -112,7 +117,7 @@ end
 function cmd_unbias(arg)
   local indices = {}
   local id = parse_string_arguments(arg)[1]
-  local group = Config[dcm:get_device(bias_key)]
+  local group = Config[dcm:get_device(sensor_key)]
   if (id and group.index[id]) then 
     indices = group.index[id]
   else
@@ -133,6 +138,7 @@ function cmd_next_key()
   key_no = math.min(key_no + 1, #bias_keys)
 
   bias_key = bias_keys[key_no]
+  sensor_key = get_sensor_key(bias_key)
   bias_value = bias_values[key_no]
   nominal_value = nominal_values[key_no]
   initial_bias_value = initial_bias_values[key_no]
@@ -148,6 +154,7 @@ function cmd_previous_key()
   key_no = math.max(key_no - 1, 1)
 
   bias_key = bias_keys[key_no]
+  sensor_key = get_sensor_key(bias_key)
   bias_value = bias_values[key_no]
   nominal_value = nominal_values[key_no]
   initial_bias_value = initial_bias_values[key_no]
@@ -227,9 +234,9 @@ local commands = {
 
 function get_value(r, c)
   if (c == COL_BIASED) then
-    return dcm:get_key(bias_key, r) + initial_bias_value[r] - bias_value[r]
+    return dcm:get_key(sensor_key, r) + initial_bias_value[r] - bias_value[r]
   elseif (c == COL_UNBIASED) then
-    return dcm:get_key(bias_key, r) + initial_bias_value[r]
+    return dcm:get_key(sensor_key, r) + initial_bias_value[r]
   elseif (c == COL_NOMINAL) then
     return nominal_value[r]
   elseif (c == COL_BIAS) then
@@ -276,17 +283,16 @@ function draw_col(c)
 end
 
 function draw_screen()
-  local key_name = string.gsub(bias_key, '_sensor', '')
   curses.clear()
   curses.move(0, 0)
   curses.printw('                                Bias Editor\n')
   curses.printw('///////////////////////////////////////')
   curses.printw('//////////////////////////////////////\n')
-  curses.printw('%-19s %12s  %12s  %12s  %12s\n', key_name,
+  curses.printw('%-19s %12s  %12s  %12s  %12s\n', bias_key,
     'biased', 'unbiased', 'nominal', 'bias')
   curses.printw('---------------------------------------')
   curses.printw('--------------------------------------\n')
-  local group = Config[dcm:get_device(bias_key)]
+  local group = Config[dcm:get_device(sensor_key)]
   for i = 1,#group.id do
     curses.printw('%2d', i)
     curses.printw(' %16s\n', group.id[i])

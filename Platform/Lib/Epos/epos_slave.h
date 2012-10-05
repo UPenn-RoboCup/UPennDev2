@@ -51,6 +51,10 @@
 #define EPOS_ANALOG_CURRENT_SETPOINT_CONFIGURATION        0x2301
 #define EPOS_ANALOG_VELOCITY_SETPOINT_CONFIGURATION       0x2302
 #define EPOS_ANALOG_POSITION_SETPOINT_CONFIGURATION       0x2303
+#define EPOS_TARGET_TORQUE                                0x4290
+#define EPOS_TORQUE_ACTUAL_VALUE                          0x4291
+#define EPOS_TORQUE_CONTROL_PARAMETER_SET                 0x4292
+#define EPOS_ANALOG_TORQUE_FEEDBACK_CONFIGURATION         0x4293
 
 class epos_slave : public dsp402_slave {
 public:

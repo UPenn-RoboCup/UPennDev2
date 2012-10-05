@@ -25,10 +25,10 @@
 #define MODES_OF_OPERATION          DSP402_MODES_OF_OPERATION, 0x00
 #define MODES_OF_OPERATION_DISPLAY  DSP402_MODES_OF_OPERATION_DISPLAY, 0x00
 #define POSITION_MODE_SETTING_VALUE EPOS_POSITION_MODE_SETTING_VALUE, 0x00
-#define CURRENT_MODE_SETTING_VALUE  EPOS_CURRENT_MODE_SETTING_VALUE, 0x00
+#define TARGET_TORQUE               EPOS_TARGET_TORQUE, 0X00
 #define POSITION_ACTUAL_VALUE       DSP402_POSITION_ACTUAL_VALUE, 0x00
 #define CURRENT_ACTUAL_VALUE        DSP402_CURRENT_ACTUAL_VALUE, 0x00
-#define ANALOG_INPUT_1              EPOS_ANALOG_INPUTS, 0x01
+#define TORQUE_ACTUAL               EPOS_TORQUE_ACTUAL, 0x00
 
 extern Dcm dcm;
 extern Config config;
@@ -51,21 +51,7 @@ void epos_thread::set_can_interface(const char *interface)
 
 bool epos_thread::check_joint_settings()
 {
-  bool joint_enable_valid = 
-    (dcm.joint_enable[0] == dcm.joint_enable[1] == 
-     dcm.joint_enable[2]) &&
-    (dcm.joint_enable[4] == dcm.joint_enable[5]) &&
-    (dcm.joint_enable[6] == dcm.joint_enable[7] == 
-     dcm.joint_enable[8]) &&
-    (dcm.joint_enable[10] == dcm.joint_enable[11]);
-  bool joint_stiffness_valid = 
-    (dcm.joint_stiffness[0] == dcm.joint_stiffness[1] == 
-     dcm.joint_stiffness[2]) &&
-    (dcm.joint_stiffness[4] == dcm.joint_stiffness[5]) &&
-    (dcm.joint_stiffness[6] == dcm.joint_stiffness[7] ==
-     dcm.joint_stiffness[8]) &&
-    (dcm.joint_stiffness[10] == dcm.joint_stiffness[11]);
-  return joint_enable_valid && joint_stiffness_valid;
+  return true; 
 }
 
 void epos_thread::emcy_callback(int node_id, void *user_data)
@@ -93,6 +79,9 @@ void epos_thread::initialize_motor_controllers()
   {
     int node_id = m_epos[i]->get_node_id(); 
     int motor_id = m_id[i];
+    double torque_feedback_offset;
+    double torque_feedback_scaling;
+    double home_offset, position_offset;
 
     m_master.enter_preoperational_state(node_id);
     usleep(1e3);
@@ -106,10 +95,35 @@ void epos_thread::initialize_motor_controllers()
 
     // configure object dictionary
     fprintf(stderr, "node %d: configuring controller mappings\n", node_id);
-    assert(m_master.configure_pdo_settings(node_id));
+    m_master.configure_pdo_settings(node_id);
     fprintf(stderr, "node %d: configuring controller settings\n", node_id);
     assert(m_master.configure_sdo_settings(node_id, epos_default_settings));
     assert(m_master.configure_sdo_settings(node_id, epos_custom_settings[motor_id]));
+
+    // configure position bias
+    fprintf(stderr, "node %d: configuring position bias\n", node_id);
+    home_offset = m_epos[i]->get_value(
+      DSP402_HOME_OFFSET, 0x00); 
+    position_offset  = config.motor_position_bias[motor_id];
+    position_offset *= motor_position_sign[motor_id]*motor_position_ratio[motor_id];
+    m_epos[i]->set_value(
+      DSP402_HOME_OFFSET, 0x00, home_offset + position_offset);
+    assert(m_master.sdo_download(node_id,
+      DSP402_HOME_OFFSET, 0x00, SDO_TIMEOUT));
+
+    // configure torque bias
+    fprintf(stderr, "node %d: configuring torque bias\n", node_id);
+    torque_feedback_scaling = m_epos[i]->get_value(
+      EPOS_ANALOG_TORQUE_FEEDBACK_CONFIGURATION, 0x01);
+    torque_feedback_offset  = config.motor_force_bias[motor_id];
+    torque_feedback_offset *= motor_force_sign[motor_id]*motor_force_ratio[motor_id];
+    torque_feedback_offset /= torque_feedback_scaling;
+    m_epos[i]->set_value(
+      EPOS_ANALOG_TORQUE_FEEDBACK_CONFIGURATION, 0x02, torque_feedback_offset);
+    m_master.sdo_download(node_id,
+      EPOS_ANALOG_TORQUE_FEEDBACK_CONFIGURATION, 0x02, SDO_TIMEOUT);
+    
+    // store object dictionary
     assert(m_master.store_all_parameters(node_id));
 
     usleep(1e3);
@@ -158,44 +172,30 @@ void epos_thread::home_motor_controllers()
 void epos_thread::update_actuator_settings()
 {
 
-  /************* TEMPORARY JOINT TO MOTOR CONVERSIONS ***************/
-
-  // apply joint bias values
+  // apply joint bias settings
+  std::vector<double> joint_position_sensor(N_JOINT);
   std::vector<double> joint_position(N_JOINT);
   std::vector<double> joint_force(N_JOINT);
   for (int i = 0; i < N_JOINT; i++)
   {
-    joint_position[i] = dcm.joint_position[i];
-    joint_position[i] += config.joint_position_bias[i];
-    joint_force[i] = dcm.joint_force[i]; 
-    joint_force[i] += config.joint_force_bias[i];
+    joint_position_sensor[i] = dcm.joint_position_sensor[i] + config.joint_position_bias[i];
+    joint_position[i] = dcm.joint_position[i] + config.joint_position_bias[i];
+    joint_force[i] = dcm.joint_force[i] + config.joint_force_bias[i];
   }
 
   // convert joint units to motor units
   std::vector<double> motor_position =
     kinematics_inverse_joints(&joint_position[0]);
   std::vector<double> motor_force =
-    statics_inverse_joints(&joint_force[0], &joint_position[0], &motor_position[0]);
-
-  // apply motor unit conversions
-  for (int i = 0; i < N_MOTOR; i++)
-  {
-    motor_position[i] *= motor_position_sign[i]*motor_position_ratio[i];
-    motor_position[i] += config.motor_position_bias[i];
-    motor_force[i] *= motor_force_sign[i]*motor_force_ratio[i];
-    motor_force[i] += config.motor_force_bias[i];
-  }
+    statics_inverse_joints(&joint_force[0], 
+    &joint_position_sensor[0], dcm.motor_position_sensor);
 
   // gaurd against invalid joint settings
   if (!check_joint_settings())
   {
-     /*
-     sprintf(m_error_message, "invalid joint settings");
-     m_stop_request = 1;
-     */
+    // sprintf(m_error_message, "invalid joint settings");
+    // m_stop_request = 1;
   }
-
-  /******************************************************************/
 
   // send actuator settings 
   for (int i = 0; i < m_id.size(); i++)
@@ -205,11 +205,12 @@ void epos_thread::update_actuator_settings()
     int joint_id = m_id[i];
 
     // set controller setpoints
+    motor_position[motor_id] *= motor_position_sign[motor_id]*motor_position_ratio[motor_id];
+    motor_force[motor_id] *= motor_force_sign[motor_id]*motor_force_ratio[motor_id];
     m_epos[i]->set_value(POSITION_MODE_SETTING_VALUE, motor_position[motor_id]);
+    m_epos[i]->set_value(TARGET_TORQUE, motor_force[motor_id]);
 
-    // not updating CURRENT_MODE_SETTING_VALUE for safety reasons
-
-    // set controller enable 
+    // update controller enable 
     int enable = m_epos[i]->get_statusbit_operation_enabled();
     if ((dcm.joint_enable_updated[joint_id] == 1)
     || ((int)dcm.joint_enable[joint_id] != enable))
@@ -227,13 +228,17 @@ void epos_thread::update_actuator_settings()
       }
     }
 
-    m_master.send_rpdo(node_id, 1);
+    // update setpoints
+    if ((int)dcm.joint_stiffness[joint_id] == 0)
+      m_master.send_rpdo(node_id, 2);
+    else
+      m_master.send_rpdo(node_id, 1);
 
-    // set controller mode
+    // update controller mode
     int mode = m_epos[i]->get_value(MODES_OF_OPERATION_DISPLAY);
     if ((dcm.joint_stiffness_updated[joint_id] == 1)
     || (((int)dcm.joint_stiffness[joint_id] == 1) && (mode != -1))
-    || (((int)dcm.joint_stiffness[joint_id] == 0) && (mode != -3)))
+    || (((int)dcm.joint_stiffness[joint_id] == 0) && (mode != -32)))
     {
       dcm.joint_stiffness_updated[joint_id] = 0; 
       switch ((int)dcm.joint_stiffness[joint_id])
@@ -244,7 +249,7 @@ void epos_thread::update_actuator_settings()
           m_epos[i]->set_controlbit_change_set_immediately(1);
           break;
         case 0 :
-          m_epos[i]->set_value(MODES_OF_OPERATION, -3);
+          m_epos[i]->set_value(MODES_OF_OPERATION, -32);
           m_epos[i]->set_controlbit_new_setpoint(1);
           m_epos[i]->set_controlbit_change_set_immediately(1);
           break;
@@ -270,37 +275,34 @@ void epos_thread::update_sensor_readings()
   m_master.receive(sync_ids, m_id.size(), SYNC_TIMEOUT);
   m_master.flush_can_channel();
 
-  // update sensor values
+  // update motor sensor values
   for (int i = 0; i < m_id.size(); i++)
   {
     int motor_id = m_id[i];
-    dcm.motor_position_sensor[motor_id] = m_epos[i]->get_value(POSITION_ACTUAL_VALUE)
-      - config.motor_position_bias[motor_id];
-    dcm.motor_force_sensor[motor_id] = m_epos[i]->get_value(ANALOG_INPUT_1)
-      - config.motor_force_bias[motor_id];
+    double motor_force, motor_position;
+    double torque_feedback_scaling = m_epos[i]->get_value(
+      EPOS_ANALOG_TORQUE_FEEDBACK_CONFIGURATION,  0x01);
+    double torque_feedback_offset = m_epos[i]->get_value(
+      EPOS_ANALOG_TORQUE_FEEDBACK_CONFIGURATION,  0x02);
+    motor_force  = m_epos[i]->get_value(EPOS_ANALOG_INPUTS, 0x01);
+    motor_force += torque_feedback_offset;
+    motor_force *= torque_feedback_scaling;
+    motor_force /= motor_force_sign[motor_id]*motor_force_ratio[motor_id];
+    motor_position  = m_epos[i]->get_value(POSITION_ACTUAL_VALUE);
+    motor_position /= motor_position_sign[motor_id]*motor_position_ratio[motor_id];
+    dcm.motor_force_sensor[motor_id] = motor_force;
+    dcm.motor_position_sensor[motor_id] = motor_position;
     dcm.motor_current_sensor[motor_id] = m_epos[i]->get_value(CURRENT_ACTUAL_VALUE);
   }
 
-  /************* TEMPORARY MOTOR TO JOINT CONVERSIONS ***************/
-
-  // apply motor unit conversions
-  std::vector<double> motor_position(N_MOTOR);
-  std::vector<double> motor_force(N_MOTOR);
-  for (int i = 0; i < N_MOTOR; i++)
-  {
-    motor_position[i] = dcm.motor_position_sensor[i];
-    motor_position[i] /= motor_position_sign[i]*motor_position_ratio[i];
-    motor_force[i] = dcm.motor_force_sensor[i];
-    motor_force[i] /= motor_force_sign[i]*motor_force_ratio[i];
-  }
-
-  // convert motor units to joint units 
+  // convert motor units to joint units
   std::vector<double> joint_position =
-    kinematics_forward_joints(&motor_position[0]);
+    kinematics_forward_joints(dcm.motor_position_sensor);
   std::vector<double> joint_force =
-    statics_forward_joints(&motor_force[0], &joint_position[0], &motor_position[0]);
+    statics_forward_joints(dcm.motor_force_sensor,
+    &joint_position[0], dcm.motor_position_sensor);
 
-  // apply joint bias values 
+  // apply joint bias settings 
   for (int i = 0; i < m_id.size(); i++)
   {
     int joint_id = m_id[i];
@@ -309,8 +311,6 @@ void epos_thread::update_sensor_readings()
     dcm.joint_force_sensor[joint_id] = joint_force[joint_id]
       - config.joint_force_bias[joint_id];
   }  
-
-  /******************************************************************/
 
 }
 

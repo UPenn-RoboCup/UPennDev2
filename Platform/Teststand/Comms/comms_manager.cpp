@@ -89,21 +89,21 @@ void draw_screen()
   printw("///////////////////////////////////////");
   printw("///////////////////////////////////////\n\n");
   
-  printw("actuator joint enable    [ %10.3f ]\n", dcm.joint_enable[0]);
-  printw("actuator joint force     [ %10.3f ]\n", dcm.joint_force[0]);
-  printw("actuator joint position  [ %10.3f ]\n", dcm.joint_position[0]);
-  printw("actuator joint velocity  [ %10.3f ]\n", dcm.joint_velocity[0]);
-  printw("actuator joint stiffness [ %10.3f ]\n", dcm.joint_stiffness[0]);
-  printw("actuator joint damping   [ %10.3f ]\n", dcm.joint_damping[0]);
+  printw("joint enable             [ %10.3f ]\n", dcm.joint_enable[0]);
+  printw("joint force              [ %10.3f ]\n", dcm.joint_force[0]);
+  printw("joint position           [ %10.3f ]\n", dcm.joint_position[0]);
+  printw("joint velocity           [ %10.3f ]\n", dcm.joint_velocity[0]);
+  printw("joint stiffness          [ %10.3f ]\n", dcm.joint_stiffness[0]);
+  printw("joint damping            [ %10.3f ]\n", dcm.joint_damping[0]);
 
-  printw("sensor joint force       [ %10.3f ]\n", dcm.joint_force_sensor[0]);
-  printw("sensor joint position    [ %10.3f ]\n", dcm.joint_position_sensor[0]);
-  printw("sensor joint velocity    [ %10.3f ]\n", dcm.joint_velocity_sensor[0]);
-  printw("sensor motor force       [ %10.3f ]\n", dcm.motor_force_sensor[0]);
-  printw("sensor motor position    [ %10.3f ]\n", dcm.motor_position_sensor[0]);
-  printw("sensor motor velocity    [ %10.3f ]\n", dcm.motor_velocity_sensor[0]);
-  printw("sensor motor current     [ %10.3f ]\n", dcm.motor_current_sensor[0]);
-  printw("sensor motor temperature [ %10.3f ]\n\n", dcm.motor_temperature_sensor[0]);
+  printw("joint force sensor       [ %10.3f ]\n", dcm.joint_force_sensor[0]);
+  printw("joint position sensor    [ %10.3f ]\n", dcm.joint_position_sensor[0]);
+  printw("joint velocity sensor    [ %10.3f ]\n", dcm.joint_velocity_sensor[0]);
+  printw("motor force sensor       [ %10.3f ]\n", dcm.motor_force_sensor[0]);
+  printw("motor position sensor    [ %10.3f ]\n", dcm.motor_position_sensor[0]);
+  printw("motor velocity sensor    [ %10.3f ]\n", dcm.motor_velocity_sensor[0]);
+  printw("motor current sensor     [ %10.3f ]\n", dcm.motor_current_sensor[0]);
+  printw("motor temperature sensor [ %10.3f ]\n\n", dcm.motor_temperature_sensor[0]);
 
   printw("actuator thread fps      [ %10.3f ]\n", actuator_thread.get_fps());
   if (strlen(actuator_thread.get_error_message()))

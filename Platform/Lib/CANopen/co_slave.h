@@ -42,8 +42,6 @@ private:
   uint8_t m_state;
   uint8_t m_error_register;
   uint16_t m_error_code;
-  char m_process_image[64];
-  uint8_t m_process_size[8];
   co_sdo_connection m_sdo_connection;
   co_dictionary_map m_object_dictionary;
   bool set_entry(const co_dictionary_entry *entry);
@@ -62,14 +60,12 @@ public:
   bool register_sdo_settings(const co_sdo_setting settings[]);
   bool register_pdo_parameters(const co_pdo_parameter parameters[]);
   bool register_pdo_mappings(const co_pdo_mapping mappings[]);
-  bool link_pdo_mappings();
-  bool unlink_pdo_mappings();
   void set_sdo_connection(co_sdo_connection connection);
   co_sdo_connection get_sdo_connection();
   int get_sdo_status();
   int get_sdo_abort_code();
-  int set_pdo(uint32_t func_id, char data[8]);
-  int get_pdo(uint32_t func_id, char data[8]);
+  int set_pdo(uint32_t func_id, char pdo_data[8]);
+  int get_pdo(uint32_t func_id, char pdo_data[8]);
   void *get_data_pointer(uint16_t index, uint8_t subindex);
   int set_data(uint16_t index, uint8_t subindex, const void *data);
   int get_data(uint16_t index, uint8_t subindex, void *data);

@@ -4,6 +4,22 @@ module(..., package.seeall)
 
 bias = {}
 
+bias.motor_position_bias = {
+  [1] = 0.000000,
+}
+
+bias.motor_position_nominal = {
+  [1] = 0.000000,
+}
+
+bias.motor_force_bias = {
+  [1] = 19.328613,
+}
+
+bias.motor_force_nominal = {
+  [1] = 0.000000,
+}
+
 bias.joint_position_bias = {
   [1] = 0.000000,
 }
@@ -17,22 +33,6 @@ bias.joint_force_bias = {
 }
 
 bias.joint_force_nominal = {
-  [1] = 0.000000,
-}
-
-bias.motor_position_bias = {
-  [1] = 0.000000,
-}
-
-bias.motor_position_nominal = {
-  [1] = 0.000000,
-}
-
-bias.motor_force_bias = {
-  [1] = 0.000000,
-}
-
-bias.motor_force_nominal = {
   [1] = 0.000000,
 }
 

@@ -150,7 +150,6 @@ co_slave::co_slave(uint8_t node_id) :
 m_node_id(node_id), m_state(0), m_error_register(0), m_error_code(0)
 {
   /* initialize object dictionary */
-  memset(m_process_size, 0, 8);
   register_dictionary_entries(co_slave_dictionary);
   set_value(CO_RPDO1_MAPPING, 0x00, 0);
   set_value(CO_RPDO2_MAPPING, 0x00, 0);
@@ -286,7 +285,6 @@ bool co_slave::register_pdo_mappings(const co_pdo_mapping mappings[])
 {
   /* register pdo mappings for pdo configuration */
   const co_pdo_mapping *mapping = mappings;
-  unlink_pdo_mappings();
   while (1)
   {
     if(mapping->func_id == CO_SENTINEL)
@@ -342,76 +340,7 @@ bool co_slave::register_pdo_mappings(const co_pdo_mapping mappings[])
     set_data(mapping_index, 0x00, &(mapping->n_entries));
     mapping++;
   }
-  return link_pdo_mappings();
-}
-
-bool co_slave::link_pdo_mappings()
-{
-  /* link pdo mappings to process image for pdo communication */
-  bool success = true;
-  uint16_t mapping_index[8] =
-    {0x1600, 0x1601, 0x1602, 0x1603, 0x1A00, 0x1A01, 0x1A02, 0x1A03};
-  for (int i = 0; i < 8; i++)
-  {
-    m_process_size[i] = 0;
-    uint8_t process_offset = 8*i;
-    uint8_t n_entries = get_value(mapping_index[i], 0x00);
-    for (int j = 0; j < n_entries; j++)
-    {
-      /* get dictionary entry for current mapping */
-      uint32_t mapping_data;
-      get_data(mapping_index[i], j + 1, &mapping_data);
-      uint8_t entry_size = (mapping_data & 0x000000FF) >> 3;
-      uint16_t entry_index = (mapping_data & 0xFFFF0000) >> 16;
-      uint8_t entry_subindex = (mapping_data & 0x0000FF00) >> 8;
-      co_dictionary_entry *entry = get_entry(entry_index, entry_subindex);
-      if (entry == NULL)
-        success = false;
-      else
-      {
-        /* link entry's process data pointer to process image */
-        memcpy(m_process_image + process_offset, entry->process_data, entry_size);
-        entry->process_data = m_process_image + process_offset;
-      }
-      process_offset += entry_size;
-      m_process_size[i] += entry_size;
-    }
-  }
-  return success;
-}
-
-bool co_slave::unlink_pdo_mappings()
-{
-  /* unlink pdo mappings from process image */
-  bool success = true;
-  uint16_t mapping_index[8] =
-    {0x1600, 0x1601, 0x1602, 0x1603, 0x1A00, 0x1A01, 0x1A02, 0x1A03};
-  for (int i = 0; i < 8; i++)
-  {
-    m_process_size[i] = 0;
-    uint8_t process_offset = 8*i;
-    uint8_t n_entries = get_value(mapping_index[i], 0x00);
-    for (int j = 0; j < n_entries; j++)
-    {
-      /* get dictionary entry for current mapping */
-      uint32_t mapping_data;
-      get_data(mapping_index[i], j + 1, &mapping_data);
-      uint8_t entry_size = (mapping_data & 0x000000FF) >> 3;
-      uint16_t entry_index = (mapping_data & 0xFFFF0000) >> 16;
-      uint8_t entry_subindex = (mapping_data & 0x0000FF00) >> 8;
-      co_dictionary_entry *entry = get_entry(entry_index, entry_subindex);
-      if (entry == NULL)
-        success = false;
-      else
-      {
-        /* unlink entry's process data pointer from process image */
-        memcpy(entry->service_data, entry->process_data, entry_size);
-        entry->process_data = entry->service_data;
-      }
-      process_offset += entry_size;
-    }
-  }
-  return success;
+  return true; 
 }
 
 void co_slave::set_sdo_connection(co_sdo_connection connection)
@@ -434,92 +363,110 @@ int co_slave::get_sdo_abort_code()
   return m_sdo_connection.abort_code;
 }
 
-int co_slave::set_pdo(uint32_t func_id, char data[8])
+int co_slave::set_pdo(uint32_t func_id, char pdo_data[8])
 {
-  /* set pdo data in process image */
-  int process_size;
+  /* load pdo data into object dictionary */
+  uint16_t mapping_index;
   switch (func_id)
   {
     case CO_RPDO1 :
-      process_size = m_process_size[0];
-      memcpy(m_process_image, data, process_size);
+      mapping_index = CO_RPDO1_MAPPING;
       break;
     case CO_RPDO2 :
-      process_size = m_process_size[1];
-      memcpy(m_process_image + 8, data, process_size);
+      mapping_index = CO_RPDO2_MAPPING;
       break;
     case CO_RPDO3 :
-      process_size = m_process_size[2];
-      memcpy(m_process_image + 16, data, process_size);
+      mapping_index = CO_RPDO3_MAPPING;
       break;
     case CO_RPDO4 :
-      process_size = m_process_size[3];
-      memcpy(m_process_image + 24, data, process_size);
+      mapping_index = CO_RPDO4_MAPPING;
       break;
     case CO_TPDO1 :
-      process_size = m_process_size[4];
-      memcpy(m_process_image + 32, data, process_size);
+      mapping_index = CO_TPDO1_MAPPING;
       break;
     case CO_TPDO2 :
-      process_size = m_process_size[5];
-      memcpy(m_process_image + 40, data, process_size);
+      mapping_index = CO_TPDO2_MAPPING;
       break;
     case CO_TPDO3 :
-      process_size = m_process_size[6];
-      memcpy(m_process_image + 48, data, process_size);
+      mapping_index = CO_TPDO3_MAPPING;
       break;
     case CO_TPDO4 :
-      process_size = m_process_size[7];
-      memcpy(m_process_image + 56, data, process_size);
+      mapping_index = CO_TPDO4_MAPPING;
       break;
-    default :
-      process_size = 0; 
+    default:
+      return 0;
   }
-  return process_size;
+
+  int pdo_size = 0;
+  int n_entries = get_value(mapping_index, 0x00);
+  for (int i = 0; i < n_entries; i++)
+  {
+    /* get dictionary entry for current mapping */
+    uint32_t mapping_data;
+    get_data(mapping_index, i + 1, &mapping_data);
+    uint8_t entry_size = (mapping_data & 0x000000FF) >> 3;
+    uint16_t entry_index = (mapping_data & 0xFFFF0000) >> 16;
+    uint8_t entry_subindex = (mapping_data & 0x0000FF00) >> 8;
+    co_dictionary_entry *entry = get_entry(entry_index, entry_subindex);
+    /* load pdo data into dictionary entry's data buffer */
+    if (entry != NULL)
+      memcpy(entry->process_data, pdo_data + pdo_size, entry_size);
+    pdo_size += entry_size;
+  }
+  return pdo_size;
 }
 
-int co_slave::get_pdo(uint32_t func_id, char data[8])
+int co_slave::get_pdo(uint32_t func_id, char pdo_data[8])
 {
-  /* get pdo data from process image */
-  int process_size;
+  /* load object dictionary data into pdo */
+  uint16_t mapping_index;
   switch (func_id)
   {
     case CO_RPDO1 :
-      process_size = m_process_size[0];
-      memcpy(data, m_process_image, process_size);
+      mapping_index = CO_RPDO1_MAPPING;
       break;
     case CO_RPDO2 :
-      process_size = m_process_size[1];
-      memcpy(data, m_process_image + 8, process_size);
+      mapping_index = CO_RPDO2_MAPPING;
       break;
     case CO_RPDO3 :
-      process_size = m_process_size[2];
-      memcpy(data, m_process_image + 16, process_size);
+      mapping_index = CO_RPDO3_MAPPING;
       break;
     case CO_RPDO4 :
-      process_size = m_process_size[3];
-      memcpy(data, m_process_image + 24, process_size);
+      mapping_index = CO_RPDO4_MAPPING;
       break;
     case CO_TPDO1 :
-      process_size = m_process_size[4];
-      memcpy(data, m_process_image + 32, process_size);
+      mapping_index = CO_TPDO1_MAPPING;
       break;
     case CO_TPDO2 :
-      process_size = m_process_size[5];
-      memcpy(data, m_process_image + 40, process_size);
+      mapping_index = CO_TPDO2_MAPPING;
       break;
     case CO_TPDO3 :
-      process_size = m_process_size[6];
-      memcpy(data, m_process_image + 48, process_size);
+      mapping_index = CO_TPDO3_MAPPING;
       break;
     case CO_TPDO4 :
-      process_size = m_process_size[7];
-      memcpy(data, m_process_image + 56, process_size);
+      mapping_index = CO_TPDO4_MAPPING;
       break;
-    default :
-      process_size = 0; 
+    default:
+      return 0;
   }
-  return process_size;
+
+  int pdo_size = 0;
+  int n_entries = get_value(mapping_index, 0x00);
+  for (int i = 0; i < n_entries; i++)
+  {
+    /* get dictionary entry for current mapping */
+    uint32_t mapping_data;
+    get_data(mapping_index, i + 1, &mapping_data);
+    uint8_t entry_size = (mapping_data & 0x000000FF) >> 3;
+    uint16_t entry_index = (mapping_data & 0xFFFF0000) >> 16;
+    uint8_t entry_subindex = (mapping_data & 0x0000FF00) >> 8;
+    co_dictionary_entry *entry = get_entry(entry_index, entry_subindex);
+    /* load dictionary entry data into pdo's data buffer */
+    if (entry != NULL)
+      memcpy(pdo_data + pdo_size, entry->process_data, entry_size);
+    pdo_size += entry_size;
+  }
+  return pdo_size;
 }
 
 void* co_slave::get_data_pointer(uint16_t index, uint8_t subindex)
@@ -684,9 +631,7 @@ bool co_slave::set_entry(const co_dictionary_entry *entry)
     m_object_dictionary[key] = private_entry;
   }
   memcpy(private_entry, entry, sizeof(co_dictionary_entry)); 
-  /* link process data pointer to service data buffer */
-  private_entry->process_data = private_entry->service_data;
-  memset(private_entry->service_data, 0, 8);
+  memset(private_entry->process_data, 0, 8);
   return true;
 }
 

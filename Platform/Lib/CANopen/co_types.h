@@ -115,8 +115,7 @@ typedef struct co_dictionary_entry {
   uint16_t index;
   uint8_t subindex;
   uint8_t data_type;
-  char *process_data;
-  char service_data[8];
+  char process_data[8];
 } co_dictionary_entry;
 
 /* defines structure for communication objects */

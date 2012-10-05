@@ -62,7 +62,7 @@ static const co_sdo_setting epos_custom_settings[N_MOTOR][20] = {
 };
 
 static const co_sdo_setting epos_default_settings[] = {
-  {EPOS_CAN_BITRATE, 0x00, 0x02}, // change to 1Mbps ?
+  {EPOS_CAN_BITRATE, 0x00, 0x00},
   {EPOS_SENSOR_CONFIGURATION, 0x01, 1000},
   {EPOS_SENSOR_CONFIGURATION, 0x02, 1},
   {EPOS_SENSOR_CONFIGURATION, 0x04, 0},

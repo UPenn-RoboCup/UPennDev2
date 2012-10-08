@@ -31,14 +31,16 @@ walk.parameters = {
   z_offset              = -0.75, -- meters
   a_offset              = 0,     -- radians
   hip_pitch_offset      = 0,     -- radians
-  x_shift_ratio         = 0.5,   -- ratio
-  y_shift_ratio         = 0.5,   -- ratio
+  y_offset_ratio        = 0,     -- ratio
+  zmp_shift_ratio       = 0.5,   -- ratio
   y_swing_amplitude     = 0,     -- meters
   z_swing_amplitude     = 0,     -- meters
   r_swing_amplitude     = 0,     -- radians
   step_amplitude        = 0,     -- meters
   period_time           = 1,     -- seconds
   dsp_ratio             = 0.25,  -- ratio
+  hip_roll_fb           = 0,     -- ratio
+  hip_pitch_fb          = 0,     -- ratio
   ankle_roll_fb         = 0,     -- ratio
   ankle_pitch_fb        = 0,     -- ratio
 }
@@ -54,14 +56,16 @@ local y_offset          = walk.parameters.y_offset
 local z_offset          = walk.parameters.z_offset
 local a_offset          = walk.parameters.a_offset
 local hip_pitch_offset  = walk.parameters.hip_pitch_offset
-local x_shift_ratio     = walk.parameters.x_shift_ratio
-local y_shift_ratio     = walk.parameters.y_shift_ratio
+local y_offset_ratio    = walk.parameters.y_offset_ratio
+local zmp_shift_ratio   = walk.parameters.zmp_shift_ratio
 local y_swing_amplitude = walk.parameters.y_swing_amplitude
 local z_swing_amplitude = walk.parameters.z_swing_amplitude
 local r_swing_amplitude = walk.parameters.r_swing_amplitude
 local step_amplitude    = walk.parameters.step_amplitude
 local period_time       = walk.parameters.period_time
 local dsp_ratio         = walk.parameters.dsp_ratio
+local hip_roll_fb       = walk.parameters.hip_roll_fb
+local hip_pitch_fb      = walk.parameters.hip_pitch_fb
 local ankle_roll_fb     = walk.parameters.ankle_roll_fb
 local ankle_pitch_fb    = walk.parameters.ankle_pitch_fb
 
@@ -73,7 +77,7 @@ local t0                = Body.get_time()
 local t                 = t0
 local q0                = dcm:get_joint_position_sensor('legs')
 local gyro              = vector.new{0, 0, 0}
-local gyro_limits       = vector.new(Config.walk.gyro_max or {1, 1, 1})
+local gyro_limits       = vector.new(Config.walk.gyro_max or {5, 5, 5})
 
 -- Private
 ----------------------------------------------------------------------
@@ -90,8 +94,8 @@ local function update_parameters()
   z_offset = walk.parameters.z_offset
   a_offset = walk.parameters.a_offset
   hip_pitch_offset = walk.parameters.hip_pitch_offset
-  x_shift_ratio = walk.parameters.x_shift_ratio
-  y_shift_ratio = walk.parameters.y_shift_ratio
+  y_offset_ratio = walk.parameters.y_offset_ratio
+  zmp_shift_ratio = walk.parameters.zmp_shift_ratio
   y_swing_amplitude = walk.parameters.y_swing_amplitude
   z_swing_amplitude = walk.parameters.z_swing_amplitude
   r_swing_amplitude = walk.parameters.r_swing_amplitude
@@ -100,6 +104,8 @@ local function update_parameters()
   dsp_ratio = walk.parameters.dsp_ratio
   ankle_roll_fb = walk.parameters.ankle_roll_fb
   ankle_pitch_fb = walk.parameters.ankle_pitch_fb
+  hip_roll_fb = walk.parameters.hip_roll_fb
+  hip_pitch_fb = walk.parameters.hip_pitch_fb
 end
 
 local function update_velocity(dt)
@@ -117,7 +123,7 @@ end
 
 local function update_gyro(dt)
   -- update low pass filter for local gyro estimate 
-  local beta = 0.75
+  local beta = 0.1
   local raw_gyro = dcm:get_ahrs('gyro')
   gyro = (1 - beta)*gyro + beta*raw_gyro
   gyro[1] = limit(gyro[1], gyro_limits[1])
@@ -184,11 +190,12 @@ function walk:update()
     local ph = 2*math.pi/period_time*(t - t0)
     local step_sin = waveform.step_sin(ph, dsp_ratio)
     local stride_cos = waveform.stride_cos(ph, dsp_ratio)
+    local y_stride_offset = math.abs(velocity[2])*y_offset_ratio
 
     -- calculate left foot trajectory
     local l_foot_pos = vector.zeros(6)
     l_foot_pos[1] = x_offset - velocity[1]*stride_cos
-    l_foot_pos[2] = y_offset - velocity[2]*stride_cos
+    l_foot_pos[2] = y_offset - velocity[2]*stride_cos + y_stride_offset
     l_foot_pos[6] = a_offset - velocity[3]*stride_cos
     if (ph < math.pi) then
       l_foot_pos[3] = z_offset + step_amplitude*step_sin
@@ -199,7 +206,7 @@ function walk:update()
     -- calculate right foot trajectory
     local r_foot_pos = vector.zeros(6) 
     r_foot_pos[1] = x_offset + velocity[1]*stride_cos
-    r_foot_pos[2] =-y_offset + velocity[2]*stride_cos
+    r_foot_pos[2] =-y_offset + velocity[2]*stride_cos - y_stride_offset
     r_foot_pos[6] =-a_offset + velocity[3]*stride_cos
     if (ph > math.pi) then
       r_foot_pos[3] = z_offset - step_amplitude*step_sin
@@ -209,8 +216,8 @@ function walk:update()
 
     -- calculate torso trajectory
     local torso_pos = vector.zeros(6) 
-    torso_pos[1] = velocity[1]*x_shift_ratio*math.sin(2*ph)
-    torso_pos[2] = velocity[2]*y_shift_ratio*math.sin(2*ph)
+    torso_pos[1] = velocity[1]*zmp_shift_ratio*math.sin(2*ph)
+    torso_pos[2] = velocity[2]*zmp_shift_ratio*math.sin(2*ph)
                  - y_swing_amplitude*math.sin(ph)
     torso_pos[3] = z_swing_amplitude*-math.cos(2*ph)
     torso_pos[5] = hip_pitch_offset
@@ -224,8 +231,12 @@ function walk:update()
     else
       q[8] = q[8] + r_swing_amplitude*step_sin
     end
+    q[2] = q[2] - hip_roll_fb*gyro[1]
+    q[4] = q[4] + hip_pitch_fb*gyro[2]
     q[5] = q[5] + ankle_pitch_fb*gyro[2]
     q[6] = q[6] + ankle_roll_fb*gyro[1]
+    q[8] = q[8] - hip_roll_fb*gyro[1]
+    q[10] = q[10] + hip_pitch_fb*gyro[2]
     q[11] = q[11] + ankle_pitch_fb*gyro[2]
     q[12] = q[12] + ankle_roll_fb*gyro[1]
 
@@ -239,7 +250,9 @@ function walk:update()
     end
 
     -- check for start and stop requests
-    if (math.abs(math.sin(ph)) < 0.025) and stop_request then
+    if stop_request
+    and (math.max(unpack(velocity)) == 0)
+    and (math.abs(math.sin(ph)) < 0.025) then
        active = false
        stop_request = false
        t0 = t
@@ -265,8 +278,12 @@ function walk:update()
     local q = q0 + d*(vector.new(qstance) - vector.new(q0))
 
     -- add gyro feedback
+    q[2] = q[2] - hip_roll_fb*gyro[1]
+    q[4] = q[4] - hip_pitch_fb*gyro[2]
     q[5] = q[5] + ankle_pitch_fb*gyro[2]
     q[6] = q[6] + ankle_roll_fb*gyro[1]
+    q[8] = q[8] - hip_roll_fb*gyro[1]
+    q[10] = q[10] - hip_pitch_fb*gyro[2]
     q[11] = q[11] + ankle_pitch_fb*gyro[2]
     q[12] = q[12] + ankle_roll_fb*gyro[1]
 
@@ -274,7 +291,7 @@ function walk:update()
     dcm:set_joint_position(q, 'legs')
 
     -- check for start and stop requests
-    if (t - t0 > 2) and start_request then
+    if start_request and (t - t0 > 2) then
       active = true
       start_request = false
       t0 = t

@@ -7,7 +7,7 @@ WorldInfo {
   ]
   gravity 0 0 -9.81
   physics "ash_basic_physics"
-  basicTimeStep 8
+  basicTimeStep 4
   displayRefresh 1
   runRealTime TRUE
 }

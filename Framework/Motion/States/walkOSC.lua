@@ -175,11 +175,10 @@ end
 
 function walk:update()
 
-  -- update timing, velocity and sensor values
+  -- update timing and sensor values
   --------------------------------------------------------------------
   local dt = t - Body.get_time()
   t = Body.get_time()
-  update_velocity(dt)
   update_gyro(dt)
 
   -- update joint positions in active gait mode
@@ -243,6 +242,11 @@ function walk:update()
     -- write joint angles to shared memory 
     dcm:set_joint_position(q, 'legs')
 
+    -- update velocity during SSP 
+    if (step_sin ~= 0) then
+      update_velocity(dt)
+    end
+
     -- update gait parameters at the end of each cycle 
     if (ph > 2*math.pi) then
       update_parameters()
@@ -251,7 +255,7 @@ function walk:update()
 
     -- check for start and stop requests
     if stop_request
-    and (math.max(unpack(velocity)) == 0)
+    and (velocity*velocity == 0)
     and (math.abs(math.sin(ph)) < 0.025) then
        active = false
        stop_request = false

@@ -8,7 +8,7 @@ require('Config');
 require('Z');
 
 -- Initiate Sending Address
-IP = '192.168.123.255'
+IP = '192.168.1.100'
 CommWired.init(IP,Config.dev.ip_wired_port);
 print('Receiving from port',Config.dev.ip_wired_port);
 

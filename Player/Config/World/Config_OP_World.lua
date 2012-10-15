@@ -132,15 +132,21 @@ world.rGoalFilter = 0.02;
 world.aGoalFilter = 0.05;
 world.rPostFilter = 0.02;
 world.aPostFilter = 0.10;
-
 world.rLandmarkFilter = 0.05;
 world.aLandmarkFilter = 0.10;
-
 --SJ: Corner shouldn't turn angle too much (may cause flipping)
 world.rCornerFilter = 0.01;
 world.aCornerFilter = 0.03;
-
 world.aLineFilter = 0.02;
+
+world.rKnownGoalFilter = 0.02;
+world.aKnownGoalFilter = 0.20; --from Nao, normally 0.05
+world.rKnownPostFilter = 0.02;
+world.aKnownPostFilter = 0.10;
+world.rUnknownGoalFilter = 0.02;
+world.aUnknownGoalFilter = 0.05;
+world.rUnknownPostFilter = 0.02;
+world.aUnKnownPostFilter = 0.05;
 
 --New two-goalpost localization
 world.use_new_goalposts=1;

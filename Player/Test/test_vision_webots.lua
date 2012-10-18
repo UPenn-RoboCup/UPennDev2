@@ -90,24 +90,31 @@ function process_keyinput()
     if byte==string.byte("w") then
       headsm_running=0;
       headangle[2]=headangle[2]-5*math.pi/180;
+     print("Headangle:", headangle[2]*180/math.pi)
     elseif byte==string.byte("a") then
       headangle[1]=headangle[1]+5*math.pi/180;
       headsm_running=0;
+     print("Headangle:", headangle[2]*180/math.pi)
     elseif byte==string.byte("s") then	
       headangle[1],headangle[2]=0,0;
       headsm_running=0;
+     print("Headangle:", headangle[2]*180/math.pi)
     elseif byte==string.byte("d") then
       headangle[1]=headangle[1]-5*math.pi/180;
       headsm_running=0;
+     print("Headangle:", headangle[2]*180/math.pi)
     elseif byte==string.byte("x") then	
       headangle[2]=headangle[2]+5*math.pi/180;
+     print("Headangle:", headangle[2]*180/math.pi)
       headsm_running=0;
     elseif byte==string.byte("e") then	
       headangle[2]=headangle[2]-1*math.pi/180;
       headsm_running=0;
+     print("Headangle:", headangle[2]*180/math.pi)
     elseif byte==string.byte("c") then	
       headangle[2]=headangle[2]+1*math.pi/180;
       headsm_running=0;
+     print("Headangle:", headangle[2]*180/math.pi)
 
   -- Walk velocity setting
     elseif byte==string.byte("i") then	targetvel[1]=targetvel[1]+0.02;
@@ -211,7 +218,6 @@ function process_keyinput()
    -- Apply manul control head angle
    if headsm_running == 0 then
      Body.set_head_command(headangle);
-     print("Headangle:", headangle[2]*180/math.pi)
    end
 
    walk.set_velocity(unpack(targetvel));

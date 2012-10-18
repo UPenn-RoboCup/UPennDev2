@@ -3,6 +3,6 @@
 sudo modprobe pcan
 sudo ifconfig can0 up
 sudo ifconfig can1 up
-#sudo su -c "echo 'i 0x0014 e' > /dev/pcanusb0"
-#sudo su -c "echo 'i 0x0014 e' > /dev/pcanusb1"
+sudo su -c "echo 'i 0x0014 e' > /dev/pcanusb0"
+sudo su -c "echo 'i 0x0014 e' > /dev/pcanusb1"
 cat /proc/pcan

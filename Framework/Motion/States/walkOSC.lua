@@ -40,7 +40,7 @@ walk.parameters = {
   period_time           = 1,     -- seconds
   dsp_ratio             = 0.25,  -- ratio
   hip_roll_fb           = 0,     -- ratio
-  hip_pitch_fb          = 0,     -- ratio
+  knee_pitch_fb         = 0,     -- ratio
   ankle_roll_fb         = 0,     -- ratio
   ankle_pitch_fb        = 0,     -- ratio
 }
@@ -65,7 +65,7 @@ local step_amplitude    = walk.parameters.step_amplitude
 local period_time       = walk.parameters.period_time
 local dsp_ratio         = walk.parameters.dsp_ratio
 local hip_roll_fb       = walk.parameters.hip_roll_fb
-local hip_pitch_fb      = walk.parameters.hip_pitch_fb
+local knee_pitch_fb     = walk.parameters.knee_pitch_fb
 local ankle_roll_fb     = walk.parameters.ankle_roll_fb
 local ankle_pitch_fb    = walk.parameters.ankle_pitch_fb
 
@@ -105,7 +105,7 @@ local function update_parameters()
   ankle_roll_fb = walk.parameters.ankle_roll_fb
   ankle_pitch_fb = walk.parameters.ankle_pitch_fb
   hip_roll_fb = walk.parameters.hip_roll_fb
-  hip_pitch_fb = walk.parameters.hip_pitch_fb
+  knee_pitch_fb = walk.parameters.knee_pitch_fb
 end
 
 local function update_velocity(dt)
@@ -231,11 +231,11 @@ function walk:update()
       q[8] = q[8] + r_swing_amplitude*step_sin
     end
     q[2] = q[2] - hip_roll_fb*gyro[1]
-    q[4] = q[4] + hip_pitch_fb*gyro[2]
+    q[4] = q[4] + knee_pitch_fb*gyro[2]
     q[5] = q[5] + ankle_pitch_fb*gyro[2]
     q[6] = q[6] + ankle_roll_fb*gyro[1]
     q[8] = q[8] - hip_roll_fb*gyro[1]
-    q[10] = q[10] + hip_pitch_fb*gyro[2]
+    q[10] = q[10] + knee_pitch_fb*gyro[2]
     q[11] = q[11] + ankle_pitch_fb*gyro[2]
     q[12] = q[12] + ankle_roll_fb*gyro[1]
 
@@ -283,11 +283,11 @@ function walk:update()
 
     -- add gyro feedback
     q[2] = q[2] - hip_roll_fb*gyro[1]
-    q[4] = q[4] - hip_pitch_fb*gyro[2]
+    q[4] = q[4] - knee_pitch_fb*gyro[2]
     q[5] = q[5] + ankle_pitch_fb*gyro[2]
     q[6] = q[6] + ankle_roll_fb*gyro[1]
     q[8] = q[8] - hip_roll_fb*gyro[1]
-    q[10] = q[10] - hip_pitch_fb*gyro[2]
+    q[10] = q[10] - knee_pitch_fb*gyro[2]
     q[11] = q[11] + ankle_pitch_fb*gyro[2]
     q[12] = q[12] + ankle_roll_fb*gyro[1]
 

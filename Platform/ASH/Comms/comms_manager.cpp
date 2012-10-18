@@ -40,8 +40,8 @@ int main(int argc, char **argv)
   r_leg_thread.set_can_interface("can0");
   l_leg_thread.set_joints(l_leg_joints);
   r_leg_thread.set_joints(r_leg_joints);
-  //motion_sensor_thread.set_can_interface("can2");
-  //motion_sensor_thread.set_imu_interface("/dev/ttyACM0");
+  motion_sensor_thread.set_can_interface("can2");
+  motion_sensor_thread.set_imu_interface("/dev/ttyACM0");
 
   // start communication threads
   fprintf(stderr, "starting comms threads...\n");
@@ -50,10 +50,10 @@ int main(int argc, char **argv)
   while (!l_leg_thread.is_running() || !r_leg_thread.is_running()) {
     usleep(2e5);
   }
-  //motion_sensor_thread.start();
-  //while (!motion_sensor_thread.is_running()) {
-  //  usleep(2e5);
-  //}
+  motion_sensor_thread.start();
+  while (!motion_sensor_thread.is_running()) {
+    usleep(2e5);
+  }
 
   // move joints to zero position
   fprintf(stderr, "zeroing joints...\n");
@@ -75,15 +75,15 @@ int main(int argc, char **argv)
        break;
     if (!r_leg_thread.is_running())
        break;
-//  if (!motion_sensor_thread.is_running())
-//     break;
+    if (!motion_sensor_thread.is_running())
+       break;
   }
   endwin();
   
   // stop communication threads 
   l_leg_thread.stop();
   r_leg_thread.stop();
-  //motion_sensor_thread.stop();
+  motion_sensor_thread.stop();
 
   return 0;
 }

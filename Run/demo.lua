@@ -18,11 +18,9 @@ Body.entry()
 Motion.add_fsm(Locomotion)
 Locomotion:add_event('walk')
 
-local stats = util.loop_stats(20)
-
 function draw_screen()
   curses.clear()
-  curses.printw('fps : %.2f     \n', stats.fps())
+  curses.printw('fps : %.2f     \n', Body.get_update_rate())
   curses.printw('===================================\n')
   curses.printw('               Demo\n')
   curses.printw('===================================\n')
@@ -42,7 +40,7 @@ end
 
 function update_display()
   curses.move(0, 0)
-  curses.printw('fps : %.2f     \n', stats.fps())
+  curses.printw('fps : %.2f     \n', Body.get_update_rate())
   curses.move(15, 0)
   curses.printw('velocity : %7.4f %7.4f %7.4f', unpack(walk:get_velocity()))
   curses.refresh()
@@ -54,6 +52,8 @@ curses.noecho()
 curses.keypad(1)
 curses.timeout(1)
 draw_screen()
+
+local count = 0
 
 while true do
 
@@ -86,7 +86,8 @@ while true do
     break
   end
   -- update screen
-  if (key or stats.update()) then
+  count = count + 1
+  if (key or (count % 20 == 0)) then
     update_display()
   end
 end

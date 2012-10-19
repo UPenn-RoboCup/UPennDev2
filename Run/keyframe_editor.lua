@@ -699,12 +699,13 @@ function exit()
   curses.endwin()
 end
 
-local stats = util.loop_stats(25)
+local count = 0
 
 entry()
 while true do
   update()
-  if stats.update() then
+  count = count + 1
+  if (count % 25 == 0) then
     draw_col(COL_CMD)
   end
 end

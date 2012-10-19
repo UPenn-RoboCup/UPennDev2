@@ -375,12 +375,13 @@ function exit()
   Body.exit()
 end
 
-local stats = util.loop_stats(5)
+local count = 0
 
 entry()
 while true do
   update()
-  if stats.update() then
+  count = count + 1
+  if (count % 5 == 0) then
     draw_stats()
   end
 end

@@ -9,7 +9,7 @@ require('gnuplot')
 require('keyframe')
 
 local motion = tonumber(arg[1]) or arg[1]
-local qJoints, tJoints = {}, {}
+local q_joints, t_joints = {}, {}
 local keyframe_table = require(Config.platform.keyframe_table)
 
 -- Setup 
@@ -40,8 +40,8 @@ end
 local t0 = Body.get_time() 
 while (keyframe:update() ~= 'done') and (not getch.nonblock()) do
   Body.update()
-  tJoints[#tJoints+1] = Body.get_time() - t0
-  qJoints[#qJoints+1] = dcm:get_joint_position()
+  t_joints[#t_joints+1] = Body.get_time() - t0
+  q_joints[#q_joints+1] = dcm:get_joint_position()
   unix.usleep(5000)
 end
 
@@ -54,10 +54,10 @@ Body.exit()
 local plotvars = {}
 for i = 1,joint.count do
   local q = {}
-  for k = 1,#qJoints do
-    q[k] = qJoints[k][i]
+  for k = 1,#q_joints do
+    q[k] = q_joints[k][i]
   end
-  plotvars[i] = {joint.id[i], tJoints, q, '-'}
+  plotvars[i] = {joint.id[i], t_joints, q, '-'}
 end
 
 gnuplot.figure()

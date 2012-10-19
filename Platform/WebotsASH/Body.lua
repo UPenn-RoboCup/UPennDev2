@@ -179,6 +179,18 @@ end
 
 Body.get_time = webots.wb_robot_get_time
 
+function Body.set_time_step(t)
+  -- for compatibility
+end
+
+function Body.get_time_step()
+  return time_step 
+end
+
+function Body.get_update_rate()
+  return 1/time_step
+end
+
 function Body.entry()
   -- initialize webots devices
   webots.wb_robot_init()

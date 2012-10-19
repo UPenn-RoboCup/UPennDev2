@@ -123,7 +123,7 @@ end
 
 local function update_gyro(dt)
   -- update low pass filter for local gyro estimate 
-  local beta = 0.1
+  local beta = 0.025
   local raw_gyro = dcm:get_ahrs('gyro')
   gyro = (1 - beta)*gyro + beta*raw_gyro
   gyro[1] = limit(gyro[1], gyro_limits[1])

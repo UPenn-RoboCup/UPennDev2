@@ -78,7 +78,9 @@ int main(int argc, char **argv)
     if (!motion_sensor_thread.is_running())
        break;
   }
-  endwin();
+  draw_screen();
+  refresh();
+//endwin();
   
   // stop communication threads 
   l_leg_thread.stop();

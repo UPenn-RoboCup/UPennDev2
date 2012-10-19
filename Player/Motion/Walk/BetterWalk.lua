@@ -190,8 +190,8 @@ qRArm2=math.pi/180*vector.new({-20,-30,0});
 qLArm=math.pi/180*vector.new({90,40,-160});
 qRArm=math.pi/180*vector.new({90,-40,-160});
 
-qLArm0={qLArm[1],qLArm[2]};
-qRArm0={qRArm[1],qRArm[2]};
+--qLArm0={qLArm[1],qLArm[2]};
+--qRArm0={qRArm[1],qRArm[2]};
 
 --Standard offset 
 uLRFootOffset = vector.new({0,footY,0});

@@ -180,7 +180,7 @@ function draw_col(c)
     curses.move(get_cursor(r, c))
     val = get_value(r, c)
     if val then
-      curses.printw('[%10.3f]', val)
+      curses.printw('[%10.4f]', val)
     else
       curses.printw('[----------]')
     end

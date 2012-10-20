@@ -1,6 +1,6 @@
-----------------------------------------------------------------------
+--------------------------------------------------------------------------
 -- Oscillatory Walking
-----------------------------------------------------------------------
+--------------------------------------------------------------------------
 
 require('util')
 require('Body')
@@ -11,7 +11,7 @@ require('Kinematics')
 require('MotionState')
 
 -- Setup 
-----------------------------------------------------------------------
+--------------------------------------------------------------------------
 
 walk = MotionState.new(...)
 local dcm = walk.dcm
@@ -19,30 +19,31 @@ walk:set_joint_access(0, 'all')
 walk:set_joint_access(1, 'legs')
 
 -- define velocity parameters
-walk.velocity           = vector.new{0, 0, 0}
-local velocity          = vector.new{0, 0, 0}
-local v_limits          = vector.new(Config.walk.v_limits or {1, 1, 1})
-local a_limits          = vector.new(Config.walk.a_limits or {1, 1, 1})
+walk.velocity              = vector.new{0, 0, 0}
+local velocity             = vector.new{0, 0, 0}
+local v_limits             = vector.new(Config.walk.v_limits or {1, 1, 1})
+local a_limits             = vector.new(Config.walk.a_limits or {1, 1, 1})
 
 -- define default parameters
 walk.parameters = {
-  x_offset              = 0.025, -- meters
-  y_offset              = 0.1,   -- meters
-  z_offset              = -0.75, -- meters
-  a_offset              = 0,     -- radians
-  hip_pitch_offset      = 0,     -- radians
-  y_offset_ratio        = 0,     -- ratio
-  zmp_shift_ratio       = 0.5,   -- ratio
-  y_swing_amplitude     = 0,     -- meters
-  z_swing_amplitude     = 0,     -- meters
-  r_swing_amplitude     = 0,     -- radians
-  step_amplitude        = 0,     -- meters
-  period_time           = 1,     -- seconds
-  dsp_ratio             = 0.25,  -- ratio
-  hip_roll_fb           = 0,     -- ratio
-  knee_pitch_fb         = 0,     -- ratio
-  ankle_roll_fb         = 0,     -- ratio
-  ankle_pitch_fb        = 0,     -- ratio
+  x_offset                 = 0.025, -- meters
+  y_offset                 = 0.1,   -- meters
+  z_offset                 = -0.75, -- meters
+  a_offset                 = 0,     -- radians
+  hip_pitch_offset         = 0,     -- radians
+  y_offset_ratio           = 0,     -- ratio
+  zmp_shift_ratio          = 0.5,   -- ratio
+  y_swing_amplitude        = 0,     -- meters
+  z_swing_amplitude        = 0,     -- meters
+  step_amplitude           = 0,     -- meters
+  period_time              = 1,     -- seconds
+  dsp_ratio                = 0.25,  -- ratio
+  hip_roll_fb              = 0,     -- ratio 
+  knee_pitch_fb            = 0,     -- ratio
+  ankle_roll_fb            = 0,     -- ratio
+  ankle_pitch_fb           = 0,     -- ratio
+  ankle_roll_fb_slope      = 0,     -- ratio
+  ankle_pitch_fb_slope     = 0,     -- ratio
 }
 
 -- load config parameters
@@ -51,36 +52,37 @@ for k,v in pairs(walk.parameters) do
 end
 
 -- define local copies
-local x_offset          = walk.parameters.x_offset
-local y_offset          = walk.parameters.y_offset
-local z_offset          = walk.parameters.z_offset
-local a_offset          = walk.parameters.a_offset
-local hip_pitch_offset  = walk.parameters.hip_pitch_offset
-local y_offset_ratio    = walk.parameters.y_offset_ratio
-local zmp_shift_ratio   = walk.parameters.zmp_shift_ratio
-local y_swing_amplitude = walk.parameters.y_swing_amplitude
-local z_swing_amplitude = walk.parameters.z_swing_amplitude
-local r_swing_amplitude = walk.parameters.r_swing_amplitude
-local step_amplitude    = walk.parameters.step_amplitude
-local period_time       = walk.parameters.period_time
-local dsp_ratio         = walk.parameters.dsp_ratio
-local hip_roll_fb       = walk.parameters.hip_roll_fb
-local knee_pitch_fb     = walk.parameters.knee_pitch_fb
-local ankle_roll_fb     = walk.parameters.ankle_roll_fb
-local ankle_pitch_fb    = walk.parameters.ankle_pitch_fb
+local x_offset             = walk.parameters.x_offset
+local y_offset             = walk.parameters.y_offset
+local z_offset             = walk.parameters.z_offset
+local a_offset             = walk.parameters.a_offset
+local hip_pitch_offset     = walk.parameters.hip_pitch_offset
+local y_offset_ratio       = walk.parameters.y_offset_ratio
+local zmp_shift_ratio      = walk.parameters.zmp_shift_ratio
+local y_swing_amplitude    = walk.parameters.y_swing_amplitude
+local z_swing_amplitude    = walk.parameters.z_swing_amplitude
+local step_amplitude       = walk.parameters.step_amplitude
+local period_time          = walk.parameters.period_time
+local dsp_ratio            = walk.parameters.dsp_ratio
+local hip_roll_fb          = walk.parameters.hip_roll_fb
+local knee_pitch_fb        = walk.parameters.knee_pitch_fb
+local ankle_roll_fb        = walk.parameters.ankle_roll_fb
+local ankle_pitch_fb       = walk.parameters.ankle_pitch_fb
+local ankle_roll_fb_slope  = walk.parameters.ankle_roll_fb_slope
+local ankle_pitch_fb_slope = walk.parameters.ankle_pitch_fb_slope
 
 -- initialize control variables
-local active            = false
-local stop_request      = false
-local start_request     = false
-local t0                = Body.get_time()
-local t                 = t0
-local q0                = dcm:get_joint_position_sensor('legs')
-local gyro              = vector.new{0, 0, 0}
-local gyro_limits       = vector.new(Config.walk.gyro_max or {5, 5, 5})
+local active               = false
+local stop_request         = false
+local start_request        = false
+local t0                   = Body.get_time()
+local t                    = t0
+local q0                   = dcm:get_joint_position_sensor('legs')
+local gyro                 = vector.new{0, 0, 0}
+local gyro_limits          = vector.new(Config.walk.gyro_max or {5, 5, 5})
 
 -- Private
-----------------------------------------------------------------------
+--------------------------------------------------------------------------
 
 local function limit(value, threshold)
   local threshold = math.abs(threshold)
@@ -98,14 +100,9 @@ local function update_parameters()
   zmp_shift_ratio = walk.parameters.zmp_shift_ratio
   y_swing_amplitude = walk.parameters.y_swing_amplitude
   z_swing_amplitude = walk.parameters.z_swing_amplitude
-  r_swing_amplitude = walk.parameters.r_swing_amplitude
   step_amplitude = walk.parameters.step_amplitude
   period_time = walk.parameters.period_time
   dsp_ratio = walk.parameters.dsp_ratio
-  ankle_roll_fb = walk.parameters.ankle_roll_fb
-  ankle_pitch_fb = walk.parameters.ankle_pitch_fb
-  hip_roll_fb = walk.parameters.hip_roll_fb
-  knee_pitch_fb = walk.parameters.knee_pitch_fb
 end
 
 local function update_velocity(dt)
@@ -121,7 +118,7 @@ local function update_velocity(dt)
   velocity[3] = limit(velocity[3], v_limits[3]) 
 end
 
-local function update_gyro(dt)
+local function update_gyro()
   -- update low pass filter for local gyro estimate 
   local beta = 0.025
   local raw_gyro = dcm:get_ahrs('gyro')
@@ -131,8 +128,22 @@ local function update_gyro(dt)
   gyro[3] = limit(gyro[3], gyro_limits[3])
 end
 
+local function update_feedback()
+  -- update feedback gains
+  hip_roll_fb = math.max(walk.parameters.hip_roll_fb, 0) 
+  knee_pitch_fb = math.max(walk.parameters.knee_pitch_fb, 0) 
+  ankle_roll_fb = math.max(walk.parameters.ankle_roll_fb, 0) 
+  ankle_pitch_fb = math.max(walk.parameters.ankle_pitch_fb, 0)
+  ankle_roll_fb_slope = math.max(walk.parameters.ankle_roll_fb_slope, 0)
+  ankle_pitch_fb_slope = math.max(walk.parameters.ankle_pitch_fb_slope, 0)
+  ankle_roll_fb = math.max(ankle_roll_fb 
+    - ankle_roll_fb*ankle_roll_fb_slope*40*math.abs(velocity[2]), 0)
+  ankle_pitch_fb = math.max(ankle_pitch_fb 
+    - ankle_pitch_fb*ankle_pitch_fb_slope*40*math.abs(velocity[1]), 0)
+end
+
 -- Public
-----------------------------------------------------------------------
+--------------------------------------------------------------------------
 
 function walk:start()
   -- issue start request
@@ -176,13 +187,14 @@ end
 function walk:update()
 
   -- update timing and sensor values
-  --------------------------------------------------------------------
+  ------------------------------------------------------------------------
   local dt = t - Body.get_time()
   t = Body.get_time()
-  update_gyro(dt)
+  update_feedback()
+  update_gyro()
 
   -- update joint positions in active gait mode
-  --------------------------------------------------------------------
+  ------------------------------------------------------------------------
   if active then
    
     -- update phase
@@ -224,12 +236,7 @@ function walk:update()
     -- calculate inverse kinematics and add hip roll swing
     local q = Kinematics.inverse_legs(l_foot_pos, r_foot_pos, torso_pos)
 
-    -- add gyro feedback and hip roll swing
-    if (ph < math.pi) then 
-      q[2] = q[2] + r_swing_amplitude*step_sin
-    else
-      q[8] = q[8] + r_swing_amplitude*step_sin
-    end
+    -- add gyro feedback
     q[2] = q[2] - hip_roll_fb*gyro[1]
     q[4] = q[4] + knee_pitch_fb*gyro[2]
     q[5] = q[5] + ankle_pitch_fb*gyro[2]
@@ -267,7 +274,7 @@ function walk:update()
     end
 
   -- update joint positions in inactive stance mode
-  --------------------------------------------------------------------
+  ------------------------------------------------------------------------
   else
 
     -- calculate current walking stance
@@ -283,11 +290,11 @@ function walk:update()
 
     -- add gyro feedback
     q[2] = q[2] - hip_roll_fb*gyro[1]
-    q[4] = q[4] - knee_pitch_fb*gyro[2]
+    q[4] = q[4] + knee_pitch_fb*gyro[2]
     q[5] = q[5] + ankle_pitch_fb*gyro[2]
     q[6] = q[6] + ankle_roll_fb*gyro[1]
     q[8] = q[8] - hip_roll_fb*gyro[1]
-    q[10] = q[10] - knee_pitch_fb*gyro[2]
+    q[10] = q[10] + knee_pitch_fb*gyro[2]
     q[11] = q[11] + ankle_pitch_fb*gyro[2]
     q[12] = q[12] + ankle_roll_fb*gyro[1]
 

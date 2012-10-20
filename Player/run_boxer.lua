@@ -11,6 +11,7 @@ playerID = Config.game.playerID;
 nPlayers = Config.game.nPlayers;
 nPlayers = 2
 
+net = true
 function entry()
 	-- Check inputs
 	print("Num args: ",#arg)
@@ -33,7 +34,7 @@ function entry()
 		Boxer.entry(pl);
 	end
 	if( net ) then
-		require 'TeamBox'
+		require 'Team'
 		Team.entry(true) -- true means we have the primesense
 	end
 

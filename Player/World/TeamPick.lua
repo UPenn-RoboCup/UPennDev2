@@ -9,7 +9,7 @@ require 'unix'
 require 'util'
 require 'pickercm'
 
-wired = false;
+wired = true;
 ps = false;
 
 if (string.find(Config.platform.name,'Webots')) then
@@ -130,7 +130,7 @@ function send_body()
   ret = Comm.send( ser, #ser );
   ret = Comm.send( ser, #ser );
 
-  --print('Sent: '..ret..' bytes')
+  print('Sent: '..ret..' bytes')
   --  print('Sent: '..ret..' bytes',ser)
 end
 

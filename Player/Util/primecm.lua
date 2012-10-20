@@ -53,6 +53,7 @@ jointNames = {
 shared.skeleton = {};
 shared.skeleton.found = vector.zeros(1);
 shared.skeleton.timestamp = vector.zeros(1);
+shared.skeleton.torsocenter = vector.zeros(3);
 
 -- For default player
 shared.position = {};

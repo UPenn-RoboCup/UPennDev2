@@ -28,14 +28,14 @@ function get_arm_angles(playerID)
   saL,elL = get_scaled_prime_arm(0);
   saR,elR = get_scaled_prime_arm(1);
   if( saL and math.abs(elL)<=math.pi ) then
-    --    print('saL: ', unpack(saL) );
+    --print('saL: ', unpack(saL) );
     --print('ElbowL: ',elL);
     qLArm = Kinematics.inverse_arm( saL,vector.ones(1)*elL );
     if(qLArm) then
       qLArm[2] = -1*qLArm[2];
       qLArm[1] = qLArm[1]+elL;
       qLArm[3] = -elL;
-      --    print('qL: ', unpack(qLArm) );
+      --print('qL: ', unpack(qLArm) );
     end
   end
 
@@ -89,8 +89,7 @@ function get_scaled_prime_arm( arm ) --left is 0
   end
   -- ELBOW ANGLE
   el = math.acos( s2e*e2h / (vector.norm(s2e)*vector.norm(e2h) ) )
-
-
+	
   e2h = e2h/vector.norm( e2h ) * .129;
   s2e = s2e / vector.norm( s2e ) * .060;
   --arm_len = vector.norm( e2h ) + vector.norm( s2e );

@@ -10,11 +10,14 @@ timeout = 5;
 
 function entry()
   print("Body FSM:".._NAME.." entry");
+  Motion.sm:add_event('walk');
   t0 = Body.get_time();
 end
 
 function update()
   local t = Body.get_time();
+
+  walk.start()
 
   -- Check if there is a punch activated
   local qL = boxercm.get_body_qLArm();

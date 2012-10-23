@@ -24,6 +24,7 @@ nProcessedImages = 0;
 tUpdate = unix.time();
 
 enable_online_colortable_learning = Config.vision.enable_online_colortable_learning or 0;
+enable_freespace_detection = Config.vision.enable_freespace_detection or 0;
 
 if (string.find(Config.platform.name,'Webots')) then
   webots = true;
@@ -57,7 +58,9 @@ end
 function entry()
   World.entry();
   Vision.entry();
-  OccupancyMap.entry();
+  if enable_freespace_detection == 1 then
+    OccupancyMap.entry();
+  end
 end
 
 function update()
@@ -81,7 +84,9 @@ function update()
         tUpdate = unix.time();
       end
     end
-    OccupancyMap.update();
+    if enable_freespace_detection == 1 then
+      OccupancyMap.update();
+    end
   end
  
   if not comm_inited and 

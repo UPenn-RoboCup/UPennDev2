@@ -8,19 +8,22 @@ require('Config');
 require('Z');
 
 -- Initiate Sending Address
-enable_online_learning = Config.vision.enable_online_colortable_learning or 0;
-if enable_online_learning == 1 then
-  command = 'last -w -d -i -1 | grep "darwin " | cut -d" " -f12-13'
-  loginIP  = io.popen(command)
-  IP = string.gsub(tostring(loginIP:read()),' ','')
---  IP = '192.168.1.201';
-  PORT = Config.dev.ip_wired_port;
-else
-  IP = Config.dev.ip_wired;
-  PORT = Config.dev.ip_wired_port;
-end
-CommWired.init(IP,PORT);
-print('Receiving LUT from port',PORT);
+--enable_online_learning = Config.vision.enable_online_colortable_learning or 0;
+--if enable_online_learning == 1 then
+--  command = 'last -w -d -i -1 | grep "darwin " | cut -d" " -f12-13'
+--  loginIP  = io.popen(command)
+--  IP = string.gsub(tostring(loginIP:read()),' ','')
+----  IP = '192.168.1.201';
+--  PORT = Config.dev.ip_wired_port;
+--else
+--  IP = Config.dev.ip_wired;
+--  PORT = Config.dev.ip_wired_port;
+--end
+--CommWired.init(IP,PORT);
+--print('Receiving LUT from port',PORT);
+IP = '192.168.1.100'
+CommWired.init(IP,Config.dev.ip_wired_port);
+print('Receiving from port',Config.dev.ip_wired_port);
 
 -- Add a little delay between packet sending
 -- pktDelay = 500; -- time in us

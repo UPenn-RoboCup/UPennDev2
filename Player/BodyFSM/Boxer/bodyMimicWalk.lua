@@ -13,11 +13,14 @@ rpy = boxercm.get_body_rpy();
 
 function entry()
   print("Body FSM:".._NAME.." entry");
+  Motion.sm:add_event('walk');
   t0 = Body.get_time();
 end
 
 function update()
   local t = Body.get_time();
+
+  walk.start()
 
   -- Check if there is a punch activated
   qL = boxercm.get_body_qLArm();

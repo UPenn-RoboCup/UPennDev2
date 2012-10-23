@@ -197,6 +197,7 @@ case "$1" in
     echo "[No Argu](s)     -- Player Mode"
     echo "[obstacleplay](sob) -- Player Mode with Obstacle"
     echo "[Demo](sd)       -- Demo Mode"
+    echo "[pushtest](sp)       -- Push Recovery Demo Mode"
     echo "[visiontest](sv) -- Vision Debug Mode"
     echo "[bias](sb)       -- Bias Setup Mode"
     echo "[roletest](sr)   -- Role Testing Mode"

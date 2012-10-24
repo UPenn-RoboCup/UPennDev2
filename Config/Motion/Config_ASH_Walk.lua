@@ -6,11 +6,11 @@ walkOSC = {}
 
 walkOSC.parameters = {
   a_offset = -0.000000,
-  ankle_roll_fb = 0.140000,
-  knee_pitch_fb = 0.027500,
+  ankle_roll_fb = 0.150000,
+  knee_pitch_fb = 0.025000,
   period_time = 1.600000,
   y_swing_amplitude = 0.050000,
-  ankle_pitch_fb = 0.150000,
+  ankle_pitch_fb = 0.170000,
   ankle_pitch_fb_slope = 0.750000,
   hip_pitch_offset = -0.000000,
   ankle_roll_fb_slope = 0.200000,
@@ -19,10 +19,10 @@ walkOSC.parameters = {
   y_offset = 0.102300,
   x_offset = -0.000000,
   hip_roll_fb = 0.010000,
-  dsp_ratio = 0.300300,
-  y_offset_ratio = 0.002000,
-  step_amplitude = 0.028000,
-  zmp_shift_ratio = 0.400000,
+  dsp_ratio = 0.300000,
+  y_offset_ratio = 0.004000,
+  step_amplitude = 0.026700,
+  zmp_shift_ratio = 0.460000,
 }
 
 walkOSC.increments = {

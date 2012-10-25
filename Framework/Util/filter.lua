@@ -8,6 +8,7 @@ filter = {}
 filter.__index = filter
 
 function filter.new(b, a)
+  -- b, a : LTI difference equation coefficients 
   o = {}
   o.b = b or {1}
   o.a = a or {1}
@@ -25,19 +26,27 @@ function filter.new(b, a)
 end
 
 function filter.new_integrator(Ts)
+  -- Ts : time step
   return filter.new({Ts/2, Ts/2}, {1, -1})
 end
 
 function filter.new_differentiator(Ts, w)
+  -- Ts : time step
+  -- w  : corner frequency
   local w = w or math.huge
   filter.new({2*w, -2*w}, {w*Ts + 2, w*Ts - 2})
 end
 
-function filter.new_first_order(Ts, w)
+function filter.new_low_pass(Ts, w)
+  -- Ts : time step
+  -- w  : corner frequency
   filter.new({w*Ts, w*Ts}, {w*Ts + 2, w*Ts - 2})
 end
 
-function filter.new_second_order(Ts, w, Q)
+function filter.new_second_order_low_pass(Ts, w, Q)
+  -- Ts : time step
+  -- w  : corner frequency
+  -- Q  : Q factor
   local Q = Q or 1/2
   local b = {}
   b[1] = w^2*Ts^2
@@ -50,34 +59,50 @@ function filter.new_second_order(Ts, w, Q)
   return filter.new(b, a)
 end
 
-function filter:set_output_limits(min_output, max_output)
-  self.min_output = min_output
-  self.max_output = max_output
+function filter.new_second_order_differentiator(Ts, w, Q)
+  -- Ts : time step
+  -- w  : corner frequency
+  -- Q  : Q factor
+  local Q = Q or 1/2
+  local b = {}
+  b[1] = 2*w^2*Ts
+  b[2] = 0
+  b[3] = -2*w^2*Ts
+  local a = {}
+  a[1] = w^2*Ts^2 + 2*w*Ts/Q + 4
+  a[2] = 2*w^2*Ts^2 - 8
+  a[3] = w^2*Ts^2 - 2*w*Ts/Q + 4
+  return filter.new(b, a)
 end
 
-function filter:reset()
-  self.input = {}
-  self.output = {}
+function filter.set_output_limits(o, min_output, max_output)
+  o.min_output = min_output
+  o.max_output = max_output
 end
 
-function filter:update(input)
+function filter.reset(o)
+  o.input = {}
+  o.output = {}
+end
+
+function filter.update(o, input)
   -- update input / output history
-  for i = #self.b, 1, -1 do
-    self.input[i] = self.input[i-1] or input
+  for i = #o.b, 1, -1 do
+    o.input[i] = o.input[i-1] or input
   end
-  for i = #self.a, 1, -1 do
-    self.output[i] = self.output[i-1] or 0
+  for i = #o.a, 1, -1 do
+    o.output[i] = o.output[i-1] or 0
   end
-  -- return linear filter output
-  for i = 1, #self.b do
-    self.output[1] = self.output[1] + self.b[i]*self.input[i]
+  -- return filter output
+  for i = 1, #o.b do
+    o.output[1] = o.output[1] + o.b[i]*o.input[i]
   end
-  for i = 2, #self.a do
-    self.output[1] = self.output[1] - self.a[i]*self.output[i]
+  for i = 2, #o.a do
+    o.output[1] = o.output[1] - o.a[i]*o.output[i]
   end
-  self.output[1] = math.max(self.output[1], self.min_output)
-  self.output[1] = math.min(self.output[1], self.max_output)
-  return self.output[1]
+  o.output[1] = math.max(o.output[1], o.min_output)
+  o.output[1] = math.min(o.output[1], o.max_output)
+  return o.output[1]
 end
 
 return filter

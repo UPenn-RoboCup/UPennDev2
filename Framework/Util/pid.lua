@@ -1,28 +1,31 @@
 ---------------------------------------------------------------------------
--- PID : simple proportional integrator differentiator controller 
+-- pid : simple proportional integrator differentiator controller
 ---------------------------------------------------------------------------
 
 pid = {}
 pid.__index = pid
 
-function pid.new(Ts, pgain, igain, dgain)
+local Q = 1.4142
+
+function pid.new(Ts, p_gain, i_gain, d_gain)
   o = {}
   o.Ts = Ts or 0
   o.p_gain = p_gain or 0
   o.i_gain = i_gain or 0
   o.d_gain = d_gain or 0
-  o.min_output = -math.huge 
-  o.max_output = math.huge 
-  o.min_setpoint = -math.huge 
-  o.max_setpoint = math.huge 
+  o.min_output = -math.huge
+  o.max_output = math.huge
+  o.min_setpoint = -math.huge
+  o.max_setpoint = math.huge
   o.setpoint = 0
   o.error = 0
   o.output = 0
   o.p_term = 0
   o.i_term = 0
   o.d_term = 0
-  o.d_corner_frequency = math.huge
-  o.d_filter = filter.new_differentiator(o.Ts, o.d_corner_frequency)
+  o.d_corner_frequency = o.Ts/2
+  o.d_filter = filter.new_second_order_differentiator(
+    o.Ts, o.d_corner_frequency, Q)
   return setmetatable(o, pid)
 end
 
@@ -38,7 +41,8 @@ end
 
 function pid.set_time_step(o, Ts)
   o.Ts = Ts
-  o.d_filter = filter.new_differentiator(o.Ts, o.d_corner_frequency)
+  o.d_filter = filter.new_second_order_differentiator(
+    o.Ts, o.d_corner_frequency, Q)
 end
 
 function pid.set_gains(o, p_gain, i_gain, d_gain)
@@ -67,7 +71,8 @@ end
 
 function pid.set_d_corner_frequency(o, d_corner_frequency)
   o.d_corner_frequency = d_corner_frequency
-  o.d_filter = filter.new_differentiator(o.Ts, o.d_corner_frequency)
+  o.d_filter = filter.new_second_order_differentiator(
+    o.Ts, o.d_corner_frequency, Q)
 end
 
 function pid.set_setpoint(o, setpoint)

@@ -1,5 +1,17 @@
-WEBOTS_HOME = /usr/local/webots
 CWD = $(shell pwd)
+
+# Define Environmental variables for use in some Make
+ifndef OSTYPE
+  export OSTYPE = $(shell uname -s|awk '{print tolower($$0)}')
+endif
+
+# Webots directory
+export WEBOTS_HOME = /usr/local/webots
+# Mac specific Overrides
+ifeq ($(OSTYPE),darwin)
+	export WEBOTS_HOME = /Applications/Webots
+endif
+
 
 all:
 	@echo " Please choose one of the following targets:"

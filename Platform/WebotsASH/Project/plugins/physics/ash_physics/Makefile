@@ -31,7 +31,7 @@
 # LIBRARIES=-L/path/to/my/library -lmy_library -lmy_other_library
 
 ### Do not modify: this includes Webots global Makefile.include
-WEBOTS_HOME=/usr/local/webots
+#WEBOTS_HOME=/usr/local/webots
 
 space :=
 space +=

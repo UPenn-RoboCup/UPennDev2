@@ -1,5 +1,5 @@
 ---------------------------------------------------------------------------
--- pid : simple proportional integrator differentiator controller
+-- pid : proportional integrator differentiator controller
 ---------------------------------------------------------------------------
 
 pid = {}
@@ -41,6 +41,7 @@ end
 
 function pid.set_time_step(o, Ts)
   o.Ts = Ts
+  o.d_corner_frequency = math.min(o.d_corner_frequency, 1/(2*o.Ts))
   o.d_filter = filter.new_second_order_differentiator(
     o.Ts, o.d_corner_frequency, Q)
 end
@@ -70,7 +71,8 @@ function pid.set_d_gain(o, d_gain)
 end
 
 function pid.set_d_corner_frequency(o, d_corner_frequency)
-  o.d_corner_frequency = d_corner_frequency
+  o.d_corner_frequency = d_corner_frequency 
+  o.d_corner_frequency = math.min(o.d_corner_frequency, 1/(2*o.Ts))
   o.d_filter = filter.new_second_order_differentiator(
     o.Ts, o.d_corner_frequency, Q)
 end
@@ -84,7 +86,6 @@ function pid.reset(o)
   o.i_term = 0
   o.d_term = 0
   o.error = 0
-  o.output = 0
   o.d_filter:reset()
 end
 
@@ -107,9 +108,11 @@ function pid.update(o, process_value)
   o.output = output
   o.p_term = p_term
   o.d_term = d_term
-  if ((output < o.max_output) && (output > o.min_output)) then
+  if ((output < o.max_output) and (output > o.min_output)) then
     o.i_term = i_term
   end
+
+  return output
 end
 
 return pid

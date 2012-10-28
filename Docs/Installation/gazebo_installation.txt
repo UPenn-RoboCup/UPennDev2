@@ -1,0 +1,38 @@
+This guide assumes you are running Ubuntu 12.04.
+
+0. Install dependencies
+   $ sudo apt-get install build-essential libtinyxml-dev libtbb-dev libxml2-dev libqt4-dev pkg-config  libprotoc-dev libfreeimage-dev libprotobuf-dev protobuf-compiler libboost-all-dev freeglut3-dev cmake libtar-dev libcurl4-openssl-dev
+
+1. Install OGRE from source
+   $ cd ~
+   $ hg clone http://bitbucket.org/sinbad/ogre/ ogre
+   $ cd ogre
+   $ hg tags
+   $ hg update v1-8-1  (or whichever is the newest version listed by hg tags) 
+   $ mkdir build
+   $ cd build
+   $ cmake ..
+   $ make
+   $ sudo make install 
+   $ sudo mv /usr/local/lib/OGRE/*.so* /usr/local/lib/
+   $ sudo ldconfig
+
+2. Install Gazebo from source
+   $ cd ~
+   $ hg clone https://bitbucket.org/osrf/gazebo gazebo
+   $ cd gazebo
+   $ hg tags
+   $ hg update gazebo_1.2.5 (or whichever is the newest version listed by hg tags) 
+   $ mkdir build
+   $ cd build
+   $ cmake ..
+   $ make
+   $ sudo make install 
+   $ sudo ldconfig
+
+3. Setup Gazebo environment variables 
+   $ echo "export PKG_CONFIG_PATH=/usr/lib/pkgconfig:\$PKG_CONFIG_PATH" >> ~/.bashrc
+   $ echo "source /usr/share/gazebo-1.2/setup.sh" >> ~/.bashrc
+   - edit /usr/share/gazebo-1.2/setup.sh and add the following line:
+     export OGRE_RESOURCE_PATH=/usr/local/lib:
+   (replace "gazebo-1.2" above with whichever version you installed)

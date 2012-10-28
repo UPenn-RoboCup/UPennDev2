@@ -1,81 +1,118 @@
-module(..., package.seeall)
+---------------------------------------------------------------------------
+-- pid : proportional integrator differentiator controller
+---------------------------------------------------------------------------
 
---basic pid controller
+pid = {}
+pid.__index = pid
 
-local mt = {}
+local Q = 1.4142
 
-function new(pgain, igain, dgain)
+function pid.new(Ts, p_gain, i_gain, d_gain)
   o = {}
-  -- gains
-  o.pgain = pgain or 0
-  o.igain = igain or 0
-  o.dgain = dgain or 0
-  -- filter parameters
-  o.ilimit = math.huge
-  o.dconst = 0
-  -- book-keeping
-  o.p = 0 -- error 
-  o.i = 0 -- integral
-  o.d = 0 -- derivative
-  return setmetatable(o, mt)
+  o.Ts = Ts or 0
+  o.p_gain = p_gain or 0
+  o.i_gain = i_gain or 0
+  o.d_gain = d_gain or 0
+  o.min_output = -math.huge
+  o.max_output = math.huge
+  o.min_setpoint = -math.huge
+  o.max_setpoint = math.huge
+  o.setpoint = 0
+  o.error = 0
+  o.output = 0
+  o.p_term = 0
+  o.i_term = 0
+  o.d_term = 0
+  o.d_corner_frequency = o.Ts/2
+  o.d_filter = filter.new_second_order_differentiator(
+    o.Ts, o.d_corner_frequency, Q)
+  return setmetatable(o, pid)
 end
 
-function set_gains(o, pgain, igain, dgain)
-  o.pgain = pgain
-  o.igain = igain
-  o.dgain = dgain
+function pid.set_output_limits(o, min_output, max_output)
+  o.min_output = min_output
+  o.max_output = max_output
 end
 
-function set_pgain(o, pgain)
-  o.pgain = pgain
+function pid.set_setpoint_limits(o, min_setpoint, max_setpoint)
+  o.min_setpoint = min_setpoint
+  o.max_setpoint = max_setpoint
 end
 
-function set_igain(o, igain)
-  o.igain = igain
+function pid.set_time_step(o, Ts)
+  o.Ts = Ts
+  o.d_corner_frequency = math.min(o.d_corner_frequency, 1/(2*o.Ts))
+  o.d_filter = filter.new_second_order_differentiator(
+    o.Ts, o.d_corner_frequency, Q)
 end
 
-function set_dgain(o, dgain)
-  o.dgain = dgain
+function pid.set_gains(o, p_gain, i_gain, d_gain)
+  o.p_gain = p_gain
+  o.i_gain = i_gain
+  o.d_gain = d_gain
+  o.p_term = 0
+  o.i_term = 0
+  o.d_term = 0
 end
 
-function set_ilimit(o, ilimit)
-  -- set integral limit for anti-windup
-  o.ilimit = ilimit 
+function pid.set_p_gain(o, p_gain)
+  o.p_gain = p_gain
+  o.p_term = 0
 end
 
-function set_dconst(o, dconst)
-  -- set time costant for derivative filter
-  o.dconst = dconst
+function pid.set_i_gain(o, i_gain)
+  o.i_gain = i_gain
+  o.i_term = 0
 end
 
-function reset(o)
-  -- clear pid data
-  o.p = 0
-  o.i = 0
-  o.d = 0
-  o.process_value = nil
+function pid.set_d_gain(o, d_gain)
+  o.d_gain = d_gain
+  o.d_term = 0
 end
 
-function update(o, setpoint, process_value, dt)
---estimate proportional, integral and derivative terms
-  local e = setpoint - process_value
-  o.process_value = o.process_value or process_value
-  o.p = e
-  o.i = math.max(math.min(o.i + e*dt, o.ilimit), -o.ilimit)
-  o.d = (o.dconst*o.d - (process_value - o.process_value))
-      / (o.dconst + dt + 1e-12)
-  o.process_value = process_value
---return control output
-  return (o.pgain*o.p + o.igain*o.i + o.dgain*o.d)
+function pid.set_d_corner_frequency(o, d_corner_frequency)
+  o.d_corner_frequency = d_corner_frequency 
+  o.d_corner_frequency = math.min(o.d_corner_frequency, 1/(2*o.Ts))
+  o.d_filter = filter.new_second_order_differentiator(
+    o.Ts, o.d_corner_frequency, Q)
 end
 
-mt.__index = {
-  set_gains = set_gains,
-  set_pgain = set_pgain,
-  set_igain = set_igain,
-  set_dgain = set_dgain,
-  set_ilimit = set_ilimit,
-  set_dconst = set_dconst,
-  reset = reset,
-  update = update,
-}
+function pid.set_setpoint(o, setpoint)
+  o.setpoint = math.max(math.min(setpoint, o.max_setpoint), o.min_setpoint)
+end
+
+function pid.reset(o)
+  o.p_term = 0
+  o.i_term = 0
+  o.d_term = 0
+  o.error = 0
+  o.d_filter:reset()
+end
+
+function pid.update(o, process_value)
+  local e = o.setpoint - process_value
+  local e_mean = (e + o.error)/2
+  local d = o.d_filter:update(process_value)
+
+  -- update pid terms
+  local p_term = o.p_gain*e
+  local i_term = o.i_gain*e_mean*o.Ts + o.i_term
+  local d_term = o.d_gain*-d
+
+  -- calculate output
+  local output = p_term + i_term + d_term
+  output = math.max(math.min(output, o.max_output), o.min_output)
+
+  -- update control variables
+  o.error = e
+  o.output = output
+  o.p_term = p_term
+  o.d_term = d_term
+  if ((output < o.max_output) and (output > o.min_output)) then
+    o.i_term = i_term
+  end
+
+  return output
+end
+
+return pid

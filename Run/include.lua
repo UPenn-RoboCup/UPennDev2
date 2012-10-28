@@ -1,7 +1,7 @@
 -- sets include paths for lua module access
 -- usage: dofile('include.lua')
 
-function run_shell_command(command)
+function shell(command)
   local pipe = io.popen(command, 'r')
   local result = pipe:read('*a')
   pipe:close()
@@ -9,7 +9,7 @@ function run_shell_command(command)
 end
 
 -- get dynamic lib suffix
-local uname = run_shell_command('uname') 
+local uname = shell('uname') 
 if string.match(uname, 'Darwin') then
   csuffix = 'dylib'
 else
@@ -17,7 +17,7 @@ else
 end
 
 -- get absolute path prefix for code directory
-local pwd = run_shell_command('pwd') 
+local pwd = shell('pwd') 
 local prefix = string.gsub(pwd, '/Run.*$', '')
 
 -- set path for lua modules 

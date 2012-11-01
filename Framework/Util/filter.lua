@@ -43,22 +43,6 @@ function filter.new_low_pass(Ts, w)
   filter.new({w*Ts, w*Ts}, {w*Ts + 2, w*Ts - 2})
 end
 
-function filter.new_second_order_low_pass(Ts, w, Q)
-  -- Ts : time step
-  -- w  : corner frequency
-  -- Q  : Q factor
-  local Q = Q or 1/2
-  local b = {}
-  b[1] = w^2*Ts^2
-  b[2] = 2*w^2*Ts^2
-  b[3] = w^2*Ts^2
-  local a = {}
-  a[1] = w^2*Ts^2 + 2*w*Ts/Q + 4
-  a[2] = 2*w^2*Ts^2 - 8
-  a[3] = w^2*Ts^2 - 2*w*Ts/Q + 4
-  return filter.new(b, a)
-end
-
 function filter.new_second_order_differentiator(Ts, w, Q)
   -- Ts : time step
   -- w  : corner frequency
@@ -68,6 +52,22 @@ function filter.new_second_order_differentiator(Ts, w, Q)
   b[1] = 2*w^2*Ts
   b[2] = 0
   b[3] = -2*w^2*Ts
+  local a = {}
+  a[1] = w^2*Ts^2 + 2*w*Ts/Q + 4
+  a[2] = 2*w^2*Ts^2 - 8
+  a[3] = w^2*Ts^2 - 2*w*Ts/Q + 4
+  return filter.new(b, a)
+end
+
+function filter.new_second_order_low_pass(Ts, w, Q)
+  -- Ts : time step
+  -- w  : corner frequency
+  -- Q  : Q factor
+  local Q = Q or 1/2
+  local b = {}
+  b[1] = w^2*Ts^2
+  b[2] = 2*w^2*Ts^2
+  b[3] = w^2*Ts^2
   local a = {}
   a[1] = w^2*Ts^2 + 2*w*Ts/Q + 4
   a[2] = 2*w^2*Ts^2 - 8

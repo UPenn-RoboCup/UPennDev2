@@ -9,7 +9,7 @@ local Q = 1.4142
 
 function pid.new(Ts, p_gain, i_gain, d_gain)
   o = {}
-  o.Ts = Ts or 0
+  o.Ts = Ts or 1e-10
   o.p_gain = p_gain or 0
   o.i_gain = i_gain or 0
   o.d_gain = d_gain or 0
@@ -23,7 +23,7 @@ function pid.new(Ts, p_gain, i_gain, d_gain)
   o.p_term = 0
   o.i_term = 0
   o.d_term = 0
-  o.d_corner_frequency = o.Ts/2
+  o.d_corner_frequency = 1/(2*o.Ts)
   o.d_filter = filter.new_second_order_differentiator(
     o.Ts, o.d_corner_frequency, Q)
   return setmetatable(o, pid)

@@ -86,6 +86,18 @@ function update()
   wcm.set_robot_battery_level(Body.get_battery_level());
   vcm.set_camera_teambroadcast(1); --Turn on wireless team broadcast
 
+  if (vcm.get_ball_detect() == 1) then
+    ball_led = {0,1,0}
+  else
+    ball_led = {0,0,0}
+  end
+
+  if Config.led_on > 0 then
+    Body.set_indicator_ball(ball_led);
+  else
+    Body.set_indicator_bakk({0,0,0});
+  end
+
   --Check pause button Releases
   if (Body.get_change_state() == 1) then
     button_role=1;

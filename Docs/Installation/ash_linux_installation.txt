@@ -1,171 +1,192 @@
-ARCH LINUX INSTALLATION ON ASH'S FIT-PC
+ARCH LINUX INSTALLATION ON ASH'S FIT-PC 3
 
 A. Boot Arch
 ////////////////////////////////////////////////////////////////////////////
 
 1. Get arch linux core image installation media
-   - download arch core image i686 iso (http://www.archlinux.org/download/)
-   - this installation used the august 2011 release
+   - download arch linux iso (http://www.archlinux.org/download/)
+   - this installation used the october 2012 release
    - create live usb (https://wiki.archlinux.org/index.php/USB_Installation_Media)
 
 2. Boot fit-pc from the live usb
    - make sure the bios is set to boot from usb
-   - choose to boot arch linux at the arch start menu
-   - type /arch/setup to start the installer
-   - see https://wiki.archlinux.org/index.php/Official_Arch_Linux_Install_Guide
+   - choose to boot arch linux i686 from the arch start menu
 
 B. Install Arch
 /////////////////////////////////////////////////////////////////////////////
 
-1. Select source
-   - choose core local
+* see https://wiki.archlinux.org/index.php/Beginners'_Guide
 
-2. Set editor
-   - choose nano if you don't know vi 
+0. Establish internet connection
+   - connect wired ethernet
+   # ping google.com
 
-3. Set clock
-   - select region and timezone 
+1. Prepare the storage drive
+   - partition the hard drive :
+   # cfdisk /dev/sda
+   - recommended configuration :
+     [<-- name : sda1; flags:     ; part type: primary; filesystem: Linux; size: 15000MB -->]
+   - format root partition:
+   # mkfs.ext4 /dev/sda1
 
-4. Prepare hard drive 
-   - manually partition hard drives to create the necessary disk partitions
-   - manually configure block devices to setup filesystems and mountpoints
-   - recommended configuration: 
-     [<-- size:   50MB; flags: Boot; part type: primary; filesystem: ext4; mountpoint: /boot -->]
-     [<-- size:  500MB; flags:     ; part type: logical; filesystem: swap; mountpoint:       -->]
-     [<-- size: 7000MB; flags:     ; part type: primary; filesystem: ext4; mountpoint: /     -->]
+2. Mount partition
+   - mount root partition on /mnt
+   # mount /dev/sda1 /mnt 
 
-5. Select packages
-   - choose grub bootloader
-   - choose base and base-devel package groups
-   - select the following packages to install:
-     * ncurses
-     * netcfg
-     * pacman-mirrorlist
-     * sudo
-     * wireless_tools
-   - deselect the following packages
-     * ppp
-     * lvm2
+3. Select a mirror for the package manager
+   - edit the mirrorlist and place preferred mirror first
+   # nano /etc/pacman.d/mirrorlist
 
-6. Install packages
+4. Install the base system
+   # pacstrap -i /mnt base base-devel
+   - hit <enter> to install all packages
 
-7. Configure system  
-   - edit /etc.pacman.d/mirrorlist
-     - find the united states section and uncomment the virginia tech server
-   - set the root password
-    
-8. Install bootloader
-   - set the timeout parameter to 2
+5. Install bootloader
+   # arch-chroot /mnt pacman -S grub-bios
 
-9. Exit Install 
-   - type poweroff at the command prompt to shutdown
-   - remove live usb, reboot and login as root
+6. Configure the system
+   A. generate an fstab file 
+   # genfstab -p /mnt >> /mnt/etc/fstab
 
-C : Add new user
-/////////////////////////////////////////////////////////////////////////////
+   B. chroot into newly installed system
+   # arch-chroot /mnt
 
-1. Create new user and set passwd
-   - useradd -m -g users -G wheel ash
-   - passwd ash
+   C. setup timezone 
+   # ln -s /usr/share/zoneinfo/US/Eastern /etc/localtime
 
-2. Add sudo access to the wheel group 
-   - visudo 
-     - uncomment the following line :
-     # %wheel ALL=(ALL) ALL
+   D. setup hardware clock 
+   # hwclock --systohc --utc
 
-2. Exit root shell and login as ash
+   E. write hostname to /etc/hostname
+   # echo ash > /etc/hostname
 
-D : Configure networking (example for romela wifi)
-/////////////////////////////////////////////////////////////////////////////
-
-1. Create netcfg profile for wifi access
-   - sudo cp /etc/network.d/examples/wireless-open /etc/network.d/romela
-   - sudo nano /etc/network.d/romela
-     - enter these settings for the romela network :
+   F. configure wired network 
+   # pacman -S ifplugd
+   # cd /etc/network.d
+   # ln -s examples/ethernet-dhcp .
+   # ln -s examples/ethernet-static .
+   # nano ethernet-static
+     - enter these settings :
+       ADDR='192.168.1.123'
+   
+   G. configure wireless network
+   # pacman -S wireless_tools wpa_supplicant wpa_actiond dialog 
+   # cd /etc/network.d
+   # cp examples/wireless-open romela
+   # nano romela
+     - enter these settings :
        CONNECTION='wireless'
-       DESCRIPTION='romela wireless'
        INTERFACE='wlan0'
        SECURITY='none'
        ESSID='romela'
        IP='dhcp'
        HIDDEN=yes
-   - see https://wiki.archlinux.org/index.php/Netcfg
 
-2. Connect to wireless network 
-   - sudo netcfg romela
-     
-3. Configure system network settings
-   - sudo nano /etc/rc.conf
-     - set the hostname :
-         HOSTNAME="ash"
-     - set static ip for ethernet connection :
-         interface=eth0
-         address=192.168.123.1
-         netmask=255.255.255.0
-         broadcast=192.168.123.255
-         gateway=
-     - enable automatic wireless connection on startup :
-         NETWORKS=(romela)
-     - add "net-profiles" to the DAEMONS array
+   H. set root password
+   # passwd
 
-4. Set the hostname
-   - sudo nano /etc/hosts
-     - add ash after localhost under the <hostname> column
+   I. add regular user
+   # useradd -m -g users -G wheel ash
+   # passwd ash
 
-E : Upgrade system
+   J. install and configure grub
+   # pacman -S grub-bios
+   # grub-install --target=i386-pc --recheck /dev/sda
+   # cp /usr/share/locale/en\@quot/LC_MESSAGES/grub.mo /boot/grub/locale/en.mo
+   # grub-mkconfig -o /boot/grub/grub.cfg
+
+   H. install sudo
+   # pacman -S sudo
+   # visudo
+     - uncomment the following line and save:
+     %wheel ALL=(ALL) ALL
+    
+7. Unmount and reboot 
+   # exit
+   # umount /mnt
+   # poweroff
+   - remove live usb, reboot and login as ash
+
+C : Upgrade system
 /////////////////////////////////////////////////////////////////////////////
 
-1. Initialize package verification :
-   - sudo pacman-key --init
+0. Establish internet connection (with wired ethernet)
+   $ sudo netcfg ethernet-dhcp
+   $ ping google.com
+
+1. Install amd-ucode package (for fit-pc 3 only)
+   $ sudo pacman -S extra/amd-ucode
+   $ sudo nano /etc/modules-load.d/microcode.conf 
+     -- add the following line and save :
+     microcode
+
+2. Initialize package verification :
+   $ sudo pacman-key --init
      - (you'll need to type randomly on your keyboard to get this to finish)
-   - sudo pacman-key --populate archlinux
+   $ sudo pacman-key --populate archlinux
 
-2. try to upgrade all packages :
-   - sudo pacman -Syu
-   - enter no if asked to upgrade pacman first
+3. try to upgrade all packages :
+   $ sudo pacman -Syu
+     - enter no if asked to upgrade pacman first
 
-3. if the upgrade fails (very likely) :
+4. if the upgrade fails :
    - search the forums for the specific errors in order to find a solution :
      https://wiki.archlinux.org/index.php/Pacman#Troubleshooting
-   - during installation I followed this guide :
-     http://allanmcrae.com/2012/07/updating-arch-linux-from-a-core-install/
    - the solution will vary between installations
 
-F : Install utilities 
+D : Install utilities 
 /////////////////////////////////////////////////////////////////////////////
 
+0. Establish internet connection (with wired ethernet)
+   $ sudo netcfg ethernet-dhcp
+   $ ping google.com
+
 1. Get yaourt package manager for access to more packages :
-   http://archlinux.fr/yaourt-en#get_it
+   - see http://archlinux.fr/yaourt-en#get_it
+   - add following repository to /etc/pacman.conf:
+     [archlinuxfr] 
+     Server = http://repo.archlinux.fr/i686
+   $ sudo pacman -Sy yaourt
 
 2. Install ssh
-   - sudo yaourt -S openssh
-   - sudo yaourt -S xorg-xauth
-   - sudo nano /etc/ssh/sshd_config
+   $ sudo yaourt -S openssh
+   $ sudo yaourt -S xorg-xauth
+   $ sudo nano /etc/ssh/sshd_config
      - set the following options : 
      AllowTcpForwarding yes
      X11Forwarding yes 
      X11DisplayOffset 10
      X11UseLocalHost yes
-   - sudo nano /etc/rc.conf
-     - add "sshd" to the DAEMONS array
-   - see https://wiki.archlinux.org/index.php/Secure_Shell for more options
+     - see https://wiki.archlinux.org/index.php/Secure_Shell for more options
+   $ sudo nano /etc/modules-load.d/sshd.conf 
+     - add the following line and save :
+     sshd
   
 3. Install useful programs 
-   - sudo yaourt -S screen acpid vim subversion git
+   $ sudo yaourt -S screen acpid vim git
 
-G : Add CAN bus support 
+E : Add CAN bus support 
 /////////////////////////////////////////////////////////////////////////////
 
+0. Establish internet connection (with wired ethernet)
+   $ sudo netcfg ethernet-dhcp
+   $ ping google.com
+
 1. Add CAN modules to the linux kernel :
-   - cd
-   - mkdir kernel
-   - pacman -S abs xmlto docbook-xsl
-   - ABSROOT=. abs core/linux
-   - cd core/linux 
-   - sudo nano PKGBUILD 
-     - find load configuration section and uncomment "make menuconfig"
-   - makepkg
+   $ cd
+   $ mkdir kernel
+   $ cd kernel
+   $ pacman -S abs xmlto docbook-xsl
+   $ ABSROOT=. abs core/linux
+   $ cd core/linux 
+   $ nano PKGBUILD 
+     - set pkgbase variable to :
+     pkgbase=linux-custom
+     - find load configuration section and uncomment the following line :
+     make menuconfig
+   $ makepkg
      - eventually the menuconfig kernel configuration interface will appear
+     - exit first menu, on second menu :
        - enter the Networking support menu
        - disable Amateur Radio support
        - enable <M> CAN bus subsystem support
@@ -174,7 +195,6 @@ G : Add CAN bus support
          - enable <M> Broadcast Manager CAN Protocol 
          - enable <M> CAN Gateway/Router
        - enter CAN Device Drivers menue
-         - enable <M> Virtual Local CAN Interface
          - <M> Virtual Local CAN Interface (vcan)
          - <M> Serial / USB serial CAN Adaptors (slcan)
          - <M> Platform CAN drivers with Netlink support
@@ -184,46 +204,52 @@ G : Add CAN bus support
        - enter CAN USB interfaces menu
          - enable <M> PEAK PCAN-USB/USB Pro interfaces
        - exit menuconfig and choose to save config settings
-     - building the kernel will take a LONG time (~ 3 hours)
-   - sudo pacman -U linux-3.4.5-1-i686.pkg.tar.xz 
-   - sudo pacman -U linux-headers-3.4.5-1-i686.pkg.tar.xz
-     - replace "3.4.5-1-i686" with whatever kernel version was compiled
+     - building the kernel will take a LONG TIME (~ 4 hours)
+   $ sudo pacman -U linux-custom-3.6.3-1-i686.pkg.tar.xz
+   $ sudo pacman -U linux-custom-headers-3.6.3-1-i686.pkg.tar.xz
+     - replace "3.6.3-1-i686" with whatever kernel version was compiled
+   $ sudo grub-mkconfig -o /boot/grub/grub.cfg
    - see https://wiki.archlinux.org/index.php/Kernels/Compilation/Arch_Build_System
 
 2. Install pcan linux driver :
-   - cd
-   - mkdir drivers && cd drivers
-   - curl -O http://www.peak-system.com/fileadmin/media/linux/files/peak-linux-driver-7.6.tar.gz 
-   - tar xzf peak-linux-driver-7.6.tar.gz
-   - cd peak-linux-driver-7.6
-   - make
-     - there may be an error regarding missing a include file: asm/system.h
-     - if so you will need to edit pcam_main.c, pcan_fops.c and pcan_fifo.c
-       in the driver/src directory and comment out any #include<asm/system.h>
-   - sudo make install
+   $ cd
+   $ mkdir dependencies && cd dependencies
+   $ curl -O http://www.peak-system.com/fileadmin/media/linux/files/peak-linux-driver-7.7.tar.gz
+   $ tar xzf peak-linux-driver-7.7.tar.gz
+   $ cd peak-linux-driver-7.7
+   $ make
+   $ sudo make install
 
 3. Test can interfaces :
-   - sudo modprobe can pcan
+   - sudo modprobe can
+   - sudo modprobe pcan
    - sudo ip link set can0 up
    - sudo ip link set can1 up
+   - sudo ip link set can2 up
+   - sudo ip link set can3 up
    - cat /proc/pcan 
-   - this should show something like (pcan usb pro example):
 
-*------------- PEAK-System CAN interfaces (www.peak-system.com) -------------
-*-------------------------- Release_20120522_n (7.6.0) ----------------------
-*------------- [mod] [isa] [pci] [dng] [par] [usb] [pcc] [net] --------------
-*--------------------- 2 interfaces @ major 252 found -----------------------
-*n -type- ndev --base-- irq --btr- --read-- --write- --irqs-- -errors- status
- 0 usbpro can0 ffffffff 001 0x001c 00000000 00000000 00000000 00000000 0x0000
- 1 usbpro can1 ffffffff 000 0x001c 00000000 00000000 00000000 00000000 0x0000
-
-4. Enable loading of can modules at boot-up : 
-    - sudo nano /etc/rc.conf
-      - add can and pcan to the MODULES array
-
-H : Install Saffir Codebase
+H : Setup ASH Codebase
 /////////////////////////////////////////////////////////////////////////////
 
-1. Install dependencies
+0. Establish internet connection (with wired ethernet)
+   $ sudo netcfg ethernet-dhcp
+   $ ping google.com
 
+1. Clone ASH Git repository
+   $ git clone http://romela.me.vt.edu:8080/git/ash.git 
 
+2. Install dependencies
+   $ sudo yaourt -S lua
+   $ sudo yaourt -S boost-libs
+   $ sudo yaourt -S boost
+   $ sudo yaourt -S swig
+   $ sudo yaourt -S gnuplot
+   $ sudo yaourt -S ncurses
+   $ sudo ln -s /usr/lib/liblua.so.5.1.5 /usr/lib/liblua5.1.so
+
+3. Get luajit
+   $ git clone http://luajit.org/git/luajit-2.0.git
+   $ cd luajit-2.0  
+   $ make
+   $ sudo make install

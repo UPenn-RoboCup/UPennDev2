@@ -40,7 +40,7 @@ LIB_DIRS  = -L/usr/local/lib -L/usr/lib -L../Mechanics -L../../Lib/CANopen
 LIB_DIRS += -L../../Lib/Microstrain -L../../Lib/NetFT -L../../Lib/Epos
 
 LIBS  = -lMechanics -lMicrostrain -lnetft -lepos 
-LIBS += -lcanopen -lpthread -lcurses -lrt -llua5.1
+LIBS += -lcanopen -lpthread -lcurses -lrt -llua5.1 -ldl -lm
 
 OBJECTS  = comms_manager.o epos_thread.o
 OBJECTS += comms_thread.o dcm.o config.o
@@ -53,7 +53,7 @@ all: comms_manager
 	$(CC) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
 
 comms_manager: $(OBJECTS)
-	$(CXX) $(CXXFLAGS) -o $@ $^ $(INCLUDES) $(LIB_DIRS) $(LIBS)
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIB_DIRS) $(LIBS)
 
 clean:
 	rm -f *.o *.$(SHLIBEXT) comms_manager

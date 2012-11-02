@@ -1,6 +1,7 @@
 #include <math.h>
 #include <vector>
 #include <stdio.h>
+#include <unistd.h>
 #include <assert.h>
 #include <pthread.h>
 #include <string.h>

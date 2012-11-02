@@ -1,9 +1,12 @@
 #include <boost/interprocess/managed_shared_memory.hpp>
 #include <boost/interprocess/allocators/allocator.hpp>
+#include "config.h"
+
+extern "C" {
 #include "lua.h"
 #include "lualib.h"
 #include "lauxlib.h"
-#include "config.h"
+}
 
 // config : global interface for config data
 // author : Mike Hopkins

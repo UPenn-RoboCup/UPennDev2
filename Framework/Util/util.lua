@@ -11,6 +11,13 @@ function ptable(t)
   for k,v in pairs(t) do print(k,v) end
 end
 
+function ptransform(t)
+  --prints tranform
+  for i1 = 1, 4 do 
+    print(i1, t[i1][1], t[i1][2], t[i1][3], t[i1][4])
+  end
+end
+
 function parray(v, fmt)
   -- print array v according to the
   -- format string specified in fmt

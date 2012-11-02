@@ -86,6 +86,7 @@ function trans(dx, dy, dz)
 end
 
 function transform6D(p)
+  local t = Transform.eye(); 
   local cwx = math.cos(p[4]);
   local swx = math.sin(p[4]);
   local cwy = math.cos(p[5]);

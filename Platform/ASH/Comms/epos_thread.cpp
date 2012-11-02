@@ -2,6 +2,7 @@
 #include <vector>
 #include <stdio.h>
 #include <assert.h>
+#include <unistd.h>
 #include <pthread.h>
 #include <string.h>
 #include "epos_thread.h"

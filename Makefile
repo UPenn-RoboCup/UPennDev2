@@ -91,13 +91,6 @@ tools:
 	cd Tools/Lib && make && cd $(CWD)
 
 clean:
-	cd Framework/Lib && make clean && cd $(CWD)
-	cd Framework/Lib/webots && make clean && cd $(CWD)
-	cd Platform/Lib && make clean && cd $(CWD)
-	cd Tools/Lib && make clean && cd $(CWD)
-	cd Platform/ASH && make clean && cd $(CWD)
-	cd Platform/Teststand && make clean && cd $(CWD)
-	cd Platform/WebotsASH && make clean && cd $(CWD)
 	rm -f Framework/Robot/Body.lua
 	rm -f Framework/Robot/Kinematics.so
 	rm -f Framework/Robot/Statics.so
@@ -105,5 +98,12 @@ clean:
 	rm -f Webots
 	rm -f Run/init_robot
 	rm -f Run/comms_manager
+	cd Framework/Lib && make clean && cd $(CWD)
+	cd Framework/Lib/webots && make clean && cd $(CWD)
+	cd Platform/Lib && make clean && cd $(CWD)
+	cd Tools/Lib && make clean && cd $(CWD)
+	cd Platform/ASH && make clean && cd $(CWD)
+	cd Platform/Teststand && make clean && cd $(CWD)
+	cd Platform/WebotsASH && make clean && cd $(CWD)
 
 .PHONY: all ash teststand webots_ash tools clean

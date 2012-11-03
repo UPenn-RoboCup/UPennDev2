@@ -146,25 +146,28 @@ Transform inv (const Transform &t1) {
 Transform transform6D(const double p[6]) {
   Transform t;
   //  t = t.translate(p[0],p[1],p[2]).rotateZ(p[5]).rotateY(p[4]).rotateX(p[3]);
-
   double cwx = cos(p[3]);
   double swx = sin(p[3]);
   double cwy = cos(p[4]);
   double swy = sin(p[4]);
   double cwz = cos(p[5]);
   double swz = sin(p[5]);
-  t(0,0) = cwy*cwz;
-  t(0,1) = swx*swy*cwz-cwx*swz;
-  t(0,2) = cwx*swy*cwz+swx*swz;
+  t(0,0) = cwy*cwz; 
+  t(0,1) = -cwy*swz;
+  t(0,2) = swy; 
   t(0,3) = p[0];
-  t(1,0) = cwy*swz;
-  t(1,1) = swx*swy*swz+cwx*cwz;
-  t(1,2) = cwx*swy*swz-swx*cwz;
-  t(1,3) = p[1];
-  t(2,0) = -swy;
-  t(2,1) = swx*cwy;
-  t(2,2) = cwx*cwy;
-  t(2,3) = p[2];
+  t(1,0) = cwx*swz + swx*swy*cwz;
+  t(1,1) = cwx*cwz - swx*swy*swz;
+  t(1,2) = -swx*cwy;
+  t(1,3) = p[1]; 
+  t(2,0) = swx*swz - cwx*swy*cwz;
+  t(2,1) = swx*cwz + cwx*swy*swz; 
+  t(2,2) = cwx*cwy; 
+  t(2,3) = p[2]; 
+  t(3,0) = 0; 
+  t(3,1) = 0; 
+  t(3,2) = 0; 
+  t(3,3) = 1; 
   return t;
 }
 
@@ -173,22 +176,19 @@ std::vector<double> position6D(const Transform &t1) {
   p[0] = t1(0,3);
   p[1] = t1(1,3);
   p[2] = t1(2,3);
-  /* Euler angle calculation */
-  /* http://gregslabaugh.name/publications/euler.pdf */
-  if (t1(2,0) == -1) { 
-    p[3] = atan2(t1(0,1), t1(0,2));
-    p[4] = asin(1);  /* PI/2 */
+  // calculate euler angles corresponding to rotation matrix RxRyRz
+  p[4] = asin(t1(0,2));
+  if (t1(0,2) == -1) {
+    p[3] = -atan2(t1(1,0), t1(1,1));
     p[5] = 0;
   }
-  else if (t1(2,0) == 1) { 
-    p[3] = atan2(-t1(0,1), -t1(0,2));
-    p[4] = -asin(1); /* -PI/2 */
+  else if (t1(0,2) == 1) {
+    p[3] = atan2(t1(1,0), t1(1,1));
     p[5] = 0;
   }
   else {
-    p[4] = -asin(t1(2,0));
-    p[3] = atan2(t1(2,1)/cos(p[4]), t1(2,2)/cos(p[4]));
-    p[5] = atan2(t1(1,0)/cos(p[4]), t1(0,0)/cos(p[4]));
+    p[3] = atan2(-t1(1,2)/cos(p[4]), t1(2,2)/cos(p[4])); 
+    p[5] = atan2(-t1(0,1)/cos(p[4]), t1(0,0)/cos(p[4]));
   }
   return p;
 }

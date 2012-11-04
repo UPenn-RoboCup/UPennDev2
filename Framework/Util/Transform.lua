@@ -89,9 +89,9 @@ function transform6D(p)
   local t = Transform.eye(); 
   --[[
   t = Transform.trans(p[1], p[2], p[3])
-  t = Transform.rotZ(p[6])*t
-  t = Transform.rotY(p[5])*t
   t = Transform.rotX(p[4])*t
+  t = Transform.rotY(p[5])*t
+  t = Transform.rotZ(p[6])*t
   --]]
   local cwx = math.cos(p[4]);
   local swx = math.sin(p[4]);
@@ -165,8 +165,8 @@ end
 
 function tostring(t)
   local str = ''
-  for j = 1,4 do
-    for i = 1,4 do
+  for i = 1,4 do
+    for j = 1,4 do
       str = str..string.format('%.4f ', t[i][j]);
     end
     str = str..'\n';

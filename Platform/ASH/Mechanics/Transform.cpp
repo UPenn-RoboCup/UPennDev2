@@ -145,7 +145,7 @@ Transform inv (const Transform &t1) {
 
 Transform transform6D(const double p[6]) {
   Transform t;
-  //  t = t.translate(p[0],p[1],p[2]).rotateZ(p[5]).rotateY(p[4]).rotateX(p[3]);
+  //  t = t.translate(p[0],p[1],p[2]).rotateX(p[3]).rotateY(p[4]).rotateZ(p[5]);
   double cwx = cos(p[3]);
   double swx = sin(p[3]);
   double cwy = cos(p[4]);

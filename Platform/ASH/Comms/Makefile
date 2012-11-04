@@ -33,17 +33,17 @@ ifeq ($(OSTYPE),darwin)
 endif
 
 INCLUDES  = -I/usr/local/include -I/usr/include -I/usr/local/include/boost
-INCLUDES += -I/usr/include/lua5.1 -I../../Lib/CANopen -I../Mechanics
+INCLUDES += -I/usr/include/lua5.1 -I../../Lib/CANopen
 INCLUDES += -I../../Lib/Microstrain -I../../Lib/NetFT -I../../Lib/Epos
 
-LIB_DIRS  = -L/usr/local/lib -L/usr/lib -L../Mechanics -L../../Lib/CANopen
+LIB_DIRS  = -L/usr/local/lib -L/usr/lib -L../../Lib/CANopen
 LIB_DIRS += -L../../Lib/Microstrain -L../../Lib/NetFT -L../../Lib/Epos
 
-LIBS  = -lMechanics -lMicrostrain -lnetft -lepos 
-LIBS += -lcanopen -lpthread -lcurses -lrt -llua5.1 -ldl -lm
+LIBS  = -lMicrostrain -lnetft -lepos -lcanopen -lpthread -lrt
+LIBS += -llua5.1 -ldl -lm -lncurses
 
-OBJECTS  = comms_manager.o epos_thread.o sensor_thread.o 
-OBJECTS += comms_thread.o dcm.o config.o
+OBJECTS  = comms_manager.o epos_thread.o sensor_thread.o comms_thread.o
+OBJECTS += dcm.o config.o joint_kinematics.o joint_statics.o Lut.o Transform.o
 
 all: comms_manager
 

@@ -1,11 +1,11 @@
-#include "Kinematics.h"
+#include "joint_kinematics.h"
 #include "Transform.h"
 #include "Lut.h"
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
 
-// Kinematics.h : kinematics interface for actuator teststand 
+// joint_kinematics.h : kinematics interface for actuator teststand 
 ///////////////////////////////////////////////////////////////////////////
 
 double distance3d(const double *point1, const double *point2)

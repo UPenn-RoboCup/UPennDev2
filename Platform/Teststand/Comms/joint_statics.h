@@ -1,11 +1,11 @@
-#ifndef STATICS_H 
-#define STATICS_H 
+#ifndef _JOINT_STATICS_H_
+#define _JOINT_STATICS_H_
 
 #include <math.h>
 #include <vector>
 #include "Transform.h"
 
-// Statics.h : statics interface for actuator teststand 
+// joint_statics.h : statics interface for actuator teststand 
 ///////////////////////////////////////////////////////////////////////////
 
 const double axes[1][3] = {

@@ -1,0 +1,2 @@
+Statics = {}
+return Statics

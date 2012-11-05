@@ -9,7 +9,7 @@ filter.__index = filter
 
 function filter.new(b, a)
   -- b, a : LTI difference equation coefficients 
-  o = {}
+  local o = {}
   o.b = b or {1}
   o.a = a or {1}
   o.input = {}
@@ -34,13 +34,13 @@ function filter.new_differentiator(Ts, w)
   -- Ts : time step
   -- w  : corner frequency
   local w = w or math.huge
-  filter.new({2*w, -2*w}, {w*Ts + 2, w*Ts - 2})
+  return filter.new({2*w, -2*w}, {w*Ts + 2, w*Ts - 2})
 end
 
 function filter.new_low_pass(Ts, w)
   -- Ts : time step
   -- w  : corner frequency
-  filter.new({w*Ts, w*Ts}, {w*Ts + 2, w*Ts - 2})
+  return filter.new({w*Ts, w*Ts}, {w*Ts + 2, w*Ts - 2})
 end
 
 function filter.new_second_order_differentiator(Ts, w, Q)
@@ -103,6 +103,14 @@ function filter.update(o, input)
   o.output[1] = math.max(o.output[1], o.min_output)
   o.output[1] = math.min(o.output[1], o.max_output)
   return o.output[1]
+end
+
+function filter.__tostring(o)
+  local str = '' 
+  for k,v in pairs(o) do
+    str = str..string.format('\n%20s : %s', k, tostring(v))
+  end
+  return str..'\n'
 end
 
 return filter

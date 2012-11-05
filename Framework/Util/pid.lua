@@ -2,13 +2,15 @@
 -- pid : proportional integrator differentiator controller
 ---------------------------------------------------------------------------
 
+require('filter')
+
 pid = {}
 pid.__index = pid
 
 local Q = 1.4142
 
 function pid.new(Ts, p_gain, i_gain, d_gain)
-  o = {}
+  local o = {}
   o.Ts = Ts or 1e-10
   o.p_gain = p_gain or 0
   o.i_gain = i_gain or 0
@@ -113,6 +115,16 @@ function pid.update(o, process_value)
   end
 
   return output
+end
+
+function pid.__tostring(o)
+  local str = '' 
+  for k,v in pairs(o) do
+    if (k ~= 'd_filter') then
+      str = str..string.format('\n%20s : %s', k, tostring(v))
+    end
+  end
+  return str..'\n'
 end
 
 return pid

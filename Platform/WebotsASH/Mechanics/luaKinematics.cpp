@@ -90,6 +90,20 @@ static int forward_r_leg(lua_State *L) {
   return 1;
 }
 
+static int forward_legs(lua_State *L) {
+  /* returns left and right foot tranforms with respect to the base frame */
+  std::vector<double> qLegs = lua_checkvector(L, 1);
+  std::vector<double> pTorso = lua_checkvector(L, 2);
+  Transform trTorso = transform6D(&pTorso[0]);
+  Transform trLLeg = kinematics_forward_l_leg(&qLegs[0]);
+  Transform trRLeg = kinematics_forward_r_leg(&qLegs[6]);
+  trLLeg = trTorso*trLLeg;
+  trRLeg = trTorso*trRLeg;
+  lua_pushtransform(L, trLLeg);
+  lua_pushtransform(L, trRLeg);
+  return 2;
+}
+
 static int l_arm_torso(lua_State *L) {
   std::vector<double> q = lua_checkvector(L, 1);
   Transform t = kinematics_forward_l_arm(&q[0]);
@@ -228,6 +242,7 @@ static const struct luaL_reg kinematics_lib [] = {
   {"forward_r_arm", forward_r_arm},
   {"forward_l_leg", forward_l_leg},
   {"forward_r_leg", forward_r_leg},
+  {"forward_legs", forward_legs},
   {"l_leg_torso", l_leg_torso},
   {"torso_l_leg", torso_l_leg},
   {"r_leg_torso", r_leg_torso},
@@ -248,6 +263,5 @@ static const struct luaL_reg kinematics_lib [] = {
 extern "C"
 int luaopen_Kinematics (lua_State *L) {
   luaL_register(L, "Kinematics", kinematics_lib);
-  
   return 1;
 }

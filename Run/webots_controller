@@ -31,6 +31,11 @@ then
   echo Starting test_balance...
   cd Test
   exec luajit test_balance.lua
+elif [ "$1" = "test_swing" ]
+then
+  echo Starting test_swing...
+  cd Test
+  exec luajit test_swing.lua
 elif [ "$1" = "test_pid" ]
 then
   echo Starting test_pid...

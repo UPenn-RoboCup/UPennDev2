@@ -230,7 +230,8 @@ function update_joint_torques(foot_state_l)
   local max = {[5] = 13, [6] = 13, [11] = 13, [12] = 13 } --max torques in x, y for l and r feet
   local min = {[5] = -13, [6] = -13, [11] = -13, [12] = -13 }
   for i, pid_loop in pairs(position_pids) do
-    temp = pid_loop:update(qt[i], joint_pos[i], dt) --qt[i] --need to update
+    pid_loop:set_setpoint(qt[i])
+    temp = pid_loop:update(joint_pos[i]) 
     temp = math.min(temp, (foot_state_l[i] + 1)*max[i] )
     temp = math.max(temp, (foot_state_l[i] + 1)*min[i] )
     if (i == 5 or i == 6) then --turns act to 0 if foot is off grnd

@@ -12,7 +12,7 @@ MotionState.__index = MotionState
 local joint = Config.joint
 
 function MotionState.new(name)
-  o = {_NAME = name}
+  local o = {_NAME = name}
   -- initialize member data
   o.dcm = dcm.new_access_point()
   o.running = false

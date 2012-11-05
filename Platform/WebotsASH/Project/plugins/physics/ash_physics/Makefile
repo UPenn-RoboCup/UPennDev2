@@ -32,6 +32,7 @@
 
 ### Do not modify: this includes Webots global Makefile.include
 
+WEBOTS_HOME ?= /usr/local/webots
 space :=
 space +=
 WEBOTS_HOME_PATH=$(subst $(space),\ ,$(strip $(subst \,/,$(WEBOTS_HOME))))

@@ -1,6 +1,14 @@
 cwd = os.getenv('PWD')
 require('init')
 require 'Config'
+
+--SJ: Config values are directly overriden here 
+--So that we don't need to modify config variables every time
+Config.dev.team = 'TeamBox'
+Config.game.gcTimeout = 2;
+Config.team.msgTimeout = 1.0;
+Config.game.playerID = 1
+
 require 'skeleton'
 require 'Boxer'
 require('getch')

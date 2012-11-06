@@ -181,7 +181,6 @@ phSingle = 0;
 --Stance state --0: open, 1: left-front, 2: right-front 
 stance,stance1=0,0; 
 
-hardnessArm = 1;
 velLimitX = {-.05, .05};
 stanceLimitX={-0.08 , 0.08};
 
@@ -356,8 +355,17 @@ function upper_body_override(qL, qR, bR)
 
 end
 
+
+function upper_body_override_on()
+  upper_body_overridden = 1;
+  Body.set_larm_hardness(1);
+  Body.set_rarm_hardness(1);
+end
+
 function upper_body_override_off()
   upper_body_overridden = 0;
+  Body.set_larm_hardness(hardnessArm);
+  Body.set_rarm_hardness(hardnessArm);
 end
 
 function entry()
@@ -376,8 +384,7 @@ function entry()
   hipStrategy = 0;
   hipAngle = {0,0};
   hipTargetAngle = {0,0};
-  hipStrategyTime = 0;
-
+  hipStrategyTime = Body.get_time() + 1.0;
   walkKickRequest = 0;
 end
 
@@ -797,12 +804,15 @@ function motion_legs(qLegs)
   gyro_pitch = gyro_pitch0*math.cos(yawAngle)
   -gyro_roll0* math.sin(yawAngle);
 
-  ankleShiftX=util.procFunc(gyro_pitch*ankleImuParamX[2],ankleImuParamX[3],ankleImuParamX[4]);
-  ankleShiftY=util.procFunc(gyro_roll*ankleImuParamY[2],ankleImuParamY[3],ankleImuParamY[4]);
-  kneeShiftX=util.procFunc(gyro_pitch*kneeImuParamX[2],kneeImuParamX[3],kneeImuParamX[4]);
-  hipShiftY=util.procFunc(gyro_roll*hipImuParamY[2],hipImuParamY[3],hipImuParamY[4]);
   armShiftX=util.procFunc(gyro_pitch*armImuParamY[2],armImuParamY[3],armImuParamY[4]);
   armShiftY=util.procFunc(gyro_roll*armImuParamY[2],armImuParamY[3],armImuParamY[4]);
+
+  if hipStrategy == 0 then
+   ankleShiftX=util.procFunc(gyro_pitch*ankleImuParamX[2],ankleImuParamX[3],ankleImuParamX[4]);
+   ankleShiftY=util.procFunc(gyro_roll*ankleImuParamY[2],ankleImuParamY[3],ankleImuParamY[4]);
+   kneeShiftX=util.procFunc(gyro_pitch*kneeImuParamX[2],kneeImuParamX[3],kneeImuParamX[4]);
+   hipShiftY=util.procFunc(gyro_roll*hipImuParamY[2],hipImuParamY[3],hipImuParamY[4]);
+  end
 
   ankleShift[1]=ankleShift[1]+ankleImuParamX[1]*(ankleShiftX-ankleShift[1]);
   ankleShift[2]=ankleShift[2]+ankleImuParamY[1]*(ankleShiftY-ankleShift[2]);
@@ -810,6 +820,15 @@ function motion_legs(qLegs)
   hipShift[2]=hipShift[2]+hipImuParamY[1]*(hipShiftY-hipShift[2]);
   armShift[1]=armShift[1]+armImuParamX[1]*(armShiftX-armShift[1]);
   armShift[2]=armShift[2]+armImuParamY[1]*(armShiftY-armShift[2]);
+
+
+
+
+
+
+
+
+print(armShift[1],armShift[2])
 
   --TODO: Toe/heel lifting
 
@@ -850,8 +869,7 @@ function motion_arms()
   local qRArmActual={};   
 
   --  if current_step_type== 3 then --Side kick, wide arm stance
-  if false then --Side kick, wide arm stance
-
+  if enable_hip_pr then --Wide stance for push recovery
     qLArmActual[1],qLArmActual[2]=qLArmKick0[1]+armShift[1],qLArmKick0[2]+armShift[2];
     qRArmActual[1],qRArmActual[2]=qRArmKick0[1]+armShift[1],qRArmKick0[2]+armShift[2];
   else --Normal arm stance
@@ -860,14 +878,11 @@ function motion_arms()
   end
 
   if upper_body_overridden>0 or motion_playing>0 then
+print("OVERRIDEN")
 
     qLArmActual[1],qLArmActual[2],qLArmActual[3]=qLArmOR[1],qLArmOR[2],qLArmOR[3];
-
     qRArmActual[1],qRArmActual[2],qRArmActual[3]=qRArmOR[1],qRArmOR[2],qRArmOR[3];
   end
-
-
-  --Make arm narrower
 
   --Check leg hitting
   RotLeftA =  util.mod_angle(uLeft[3] - uTorso[3]);

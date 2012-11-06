@@ -5,8 +5,7 @@ require('unix')
 require('Config')
 Config.fsm.playMode = 1; --Force demo
 Config.fsm.forcePlayer = 1; --Force attacker
-Config.fsm.enable_walkkick = 1;
-Config.fsm.enable_sidekick = 1;
+Config.dev.team = 'TeamBox'; --For mimicing
 
 require('shm')
 require('vector')
@@ -19,6 +18,8 @@ require('getch')
 require('Body')
 require('Motion')
 
+require('boxercm') --For mimicing
+
 gcm.say_id();
 
 Motion.entry();
@@ -26,19 +27,12 @@ Motion.entry();
 darwin = false;
 webots = false;
 
---Demo mode, 0 for soccer, 1 for push recovery
+--Demo mode, 0 for soccer, 1 for push recovery, 2 for mimic
 demo_mode = 0; 
 
 --Cycle time for kick types
 kick_cycle_time = 15;
 kick_cycle_t0 = 0;
-
-
-
-
-
-
-
 
 -- Enable OP specific 
 if(Config.platform.name == 'OP') then
@@ -92,6 +86,18 @@ waiting = 1;
 button_role,button_state = 0,0;
 tButtonRole = 0;
 
+function do_mimic()
+  walk.stop()
+  -- Check if there is a punch activated
+  local qL = boxercm.get_body_qLArm();
+  local qR = boxercm.get_body_qRArm();
+  local rpy = boxercm.get_body_rpy();
+  -- Add the override
+  walk.upper_body_override(qL, qR, rpy);
+end
+
+
+
 function update()
   count = count + 1;
   t = Body.get_time();
@@ -105,12 +111,11 @@ function update()
     ball_led = {0,0,0}
   end
 
---test
-  if Config.led_on > 0 then
+--  if Config.led_on > 0 then
     Body.set_indicator_ball(ball_led);
-  else
-    Body.set_indicator_ball({0,0,0});
-  end
+--  else
+--    Body.set_indicator_ball({0,0,0});
+--  end
 
   --Check pause button Releases
   if (Body.get_change_state() == 1) then
@@ -129,21 +134,29 @@ function update()
           HeadFSM.sm:set_state('headScan');
           Motion.event("standup");
           kick_cycle_t0 = unix.time();
-
-	else -- Push demo
+	elseif demo_mode == 1 then -- Push demo
 	  walk.enable_ankle_pr = true;
 	  walk.enable_hip_pr = true; --Enable hip strategy
 	  Motion.fallAngle = 240*math.pi/180;--Disable falldown check
           Speak.talk('Push Demo');
           if walk.active then walk.stop(); end
 	  Motion.event("standup");
-	end
+	else -- Mimic demo
+	  walk.enable_ankle_pr = true;
+	  walk.enable_hip_pr = false; --Enable hip strategy
+	  Motion.fallAngle = 240*math.pi/180;--Disable falldown check
+          Speak.talk('Mimic Demo');
+          if walk.active then walk.stop(); end
+	  Motion.event("standup");
+          walk.upper_body_override_on()
+        end
       else
 	--Sit down and rest
 	batlevel = string.format("Battery Level %.1f",
 		Body.get_battery_level());
 	Speak.talk(batlevel)
         Motion.event("sit");
+        walk.upper_body_override_off()
       end
       tButtonRole = t;
     end
@@ -161,11 +174,13 @@ function update()
 --      behavior.cycle_behavior();
       button_state=0;
       if waiting > 0 then --Cycle demo mode while in waiting
-        demo_mode = (demo_mode + 1 )%2; --Cycle demo mode
+        demo_mode = (demo_mode + 1 )%3; --Cycle demo mode
         if demo_mode == 0 then
           Speak.talk('Soccer');
         elseif demo_mode ==1 then
           Speak.talk('Push Recovery');
+        else
+          Speak.talk('Mimic');
         end
       end
     end
@@ -176,6 +191,8 @@ function update()
       Body.set_indicator_ball({0,1,0}); --Green eye LED for soccer demo
     elseif demo_mode == 1 then --Push demo 
       Body.set_indicator_ball({0,0,1}); --Blue eye LED for push demo
+    else -- Mimic mode
+      Body.set_indicator_ball({1,1,0}); --Yellow eye LED for mimic demo
     end
     Motion.update();
     Body.update();
@@ -191,6 +208,8 @@ function update()
         behavior.cycle_behavior();
         kick_cycle_t0 = t;
       end
+    elseif demo_mode == 2 then -- Mimic mode
+      do_mimic();
     end
 
     Motion.update(); -- Other modes just requires motion

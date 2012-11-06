@@ -51,6 +51,9 @@ qRArmKick0=Config.walk.qRArmKick;
 --Hardness parameters
 hardnessSupport = Config.walk.hardnessSupport or 0.7;
 hardnessSwing = Config.walk.hardnessSwing or 0.5;
+
+
+hardnessArm0 = Config.walk.hardnessArm or 0.2;
 hardnessArm = Config.walk.hardnessArm or 0.2;
 
 --Gait parameters
@@ -358,14 +361,12 @@ end
 
 function upper_body_override_on()
   upper_body_overridden = 1;
-  Body.set_larm_hardness(1);
-  Body.set_rarm_hardness(1);
+  hardnessArm = 1;
 end
 
 function upper_body_override_off()
   upper_body_overridden = 0;
-  Body.set_larm_hardness(hardnessArm);
-  Body.set_rarm_hardness(hardnessArm);
+  hardnessArm = hardnessArm0;
 end
 
 function entry()
@@ -821,15 +822,6 @@ function motion_legs(qLegs)
   armShift[1]=armShift[1]+armImuParamX[1]*(armShiftX-armShift[1]);
   armShift[2]=armShift[2]+armImuParamY[1]*(armShiftY-armShift[2]);
 
-
-
-
-
-
-
-
-print(armShift[1],armShift[2])
-
   --TODO: Toe/heel lifting
 
   if not active then --Double support, standing still
@@ -878,8 +870,6 @@ function motion_arms()
   end
 
   if upper_body_overridden>0 or motion_playing>0 then
-print("OVERRIDEN")
-
     qLArmActual[1],qLArmActual[2],qLArmActual[3]=qLArmOR[1],qLArmOR[2],qLArmOR[3];
     qRArmActual[1],qRArmActual[2],qRArmActual[3]=qRArmOR[1],qRArmOR[2],qRArmOR[3];
   end

@@ -63,6 +63,52 @@ function entry()
   end
 end
 
+--Update function for wired kinnect input
+function update_box()
+  count = count + 1;
+  tstart = unix.time();
+
+  -- update vision 
+  imageProcessed = Vision.update();
+  World.update_odometry();
+
+  -- update localization
+  if imageProcessed then
+    nProcessedImages = nProcessedImages + 1;
+    World.update_vision();
+  end
+ 
+  if not comm_inited and 
+    (vcm.get_camera_broadcast()>0 or vcm.get_camera_teambroadcast()>0) then
+      Config.dev.team = 'TeamBox'; --Force using Team box here 
+      require('Team');
+      require('GameControl');
+      Team.entry();
+      GameControl.entry();
+      print("Starting to send wireless team message..");
+      comm_inited = true;
+  end
+  if comm_inited then
+  -- SJ: TeamBox receives KINNECT data, so should run every frame
+    Team.update();
+  end
+
+  if comm_inited and imageProcessed then
+    GameControl.update();
+  end
+end
+
+
+
+
+
+
+
+
+
+
+
+
 function update()
   count = count + 1;
   tstart = unix.time();
@@ -115,7 +161,6 @@ function update()
     if vcm.get_camera_teambroadcast()>0 then 
       GameControl.update();
       if nProcessedImages % 3 ==0 then
-	--10 fps team update
         Team.update();
       end
     else

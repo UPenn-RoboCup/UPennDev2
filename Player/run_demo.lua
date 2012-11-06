@@ -148,7 +148,7 @@ function update()
           Speak.talk('Mimic Demo');
           if walk.active then walk.stop(); end
 	  Motion.event("standup");
-          walk.upper_body_override_on()
+          walk.upper_body_override_on();
         end
       else
 	--Sit down and rest

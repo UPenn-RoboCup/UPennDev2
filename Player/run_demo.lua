@@ -8,9 +8,6 @@ Config.fsm.forcePlayer = 1; --Force attacker
 Config.fsm.enable_walkkick = 1;
 Config.fsm.enable_sidekick = 1;
 
---Config.dev.walk='PRWalk'; --Push Recovery Walk Demonstration
-Config.fsm.enable_walkkick = 0; --No walkkick for PRwalk
-
 require('shm')
 require('vector')
 require('vcm')
@@ -32,11 +29,15 @@ webots = false;
 --Demo mode, 0 for soccer, 1 for push recovery
 demo_mode = 0; 
 
---Setup for soccer mode
---Ankle strategy only, enable falldown check
-walk.enable_ankle_pr = true;
-walk.enable_hip_pr = false;
-Motion.fallAngle = Config.fallAngle; --Enable falldown check
+--Cycle time for kick types
+kick_cycle_time = 15;
+kick_cycle_t0 = 0;
+
+
+
+
+
+
 
 
 -- Enable OP specific 
@@ -104,6 +105,7 @@ function update()
     ball_led = {0,0,0}
   end
 
+--test
   if Config.led_on > 0 then
     Body.set_indicator_ball(ball_led);
   else
@@ -120,17 +122,20 @@ function update()
 
 	if demo_mode == 0 then --Soccer demo 
 	  walk.enable_ankle_pr = true;
-	  walk.enable_hip_pr = false;
+	  walk.enable_hip_pr = false; --Disable hip strategy
 	  Motion.fallAngle = Config.fallAngle; --Enable falldown check
           Speak.talk('Soccer Demo');
           BodyFSM.sm:set_state('bodySearch');   
           HeadFSM.sm:set_state('headScan');
           Motion.event("standup");
+          kick_cycle_t0 = unix.time();
+
 	else -- Push demo
 	  walk.enable_ankle_pr = true;
 	  walk.enable_hip_pr = true; --Enable hip strategy
 	  Motion.fallAngle = 240*math.pi/180;--Disable falldown check
           Speak.talk('Push Demo');
+          if walk.active then walk.stop(); end
 	  Motion.event("standup");
 	end
       else
@@ -147,23 +152,22 @@ function update()
     tButtonRole = t;
   end
 
-  --Randomly cycle stationary kick types for demonstration
---[[
-  if
-      behavior.cycle_behavior();
-
-  end
---]]
-
 
   --Check center button press
   if (Body.get_change_role() == 1) then
     button_state=1;
   else
     if button_state==1 then --Button released
-
-      behavior.cycle_behavior();
+--      behavior.cycle_behavior();
       button_state=0;
+      if waiting > 0 then --Cycle demo mode while in waiting
+        demo_mode = (demo_mode + 1 )%2; --Cycle demo mode
+        if demo_mode == 0 then
+          Speak.talk('Soccer');
+        elseif demo_mode ==1 then
+          Speak.talk('Push Recovery');
+        end
+      end
     end
   end
 
@@ -173,27 +177,25 @@ function update()
     elseif demo_mode == 1 then --Push demo 
       Body.set_indicator_ball({0,0,1}); --Blue eye LED for push demo
     end
-
---[[
-
-    gcm.set_game_paused(1);
-    if role==0 then
-      gcm.set_team_role(5); --Reserve goalie
-      Body.set_indicator_ball({0,0,1});
-    else
-      gcm.set_team_role(4); --Reserve player
-      Body.set_indicator_ball({1,1,1});
-    end
---]]
-
     Motion.update();
     Body.update();
   else --Playing mode, update state machines  
-    gcm.set_game_paused(0);
-    BodyFSM.update();
-    HeadFSM.update();
-    Motion.update();
+
+    if demo_mode == 0 then -- Soccer mode requires FSM to run
+      gcm.set_game_paused(0);
+      BodyFSM.update();
+      HeadFSM.update();
+
+      --Cycle kick types when in soccer mode
+      if t-kick_cycle_t0>kick_cycle_time then 
+        behavior.cycle_behavior();
+        kick_cycle_t0 = t;
+      end
+    end
+
+    Motion.update(); -- Other modes just requires motion
     Body.update();
+
   end
 
   local dcount = 50;

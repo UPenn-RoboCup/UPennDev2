@@ -18,21 +18,17 @@ local devices = {
     'joint_enable',
     'joint_stiffness',
     'joint_damping',
---  'joint_inertia',
     'joint_force',
     'joint_position',
     'joint_velocity',
---  'joint_acceleration',
     'joint_force_sensor',
     'joint_position_sensor',
     'joint_velocity_sensor',
---  'joint_acceleration_sensor',
   },
   motor = {
     'motor_force_sensor',
     'motor_position_sensor',
     'motor_velocity_sensor',
---  'motor_acceleration_sensor',
     'motor_current_sensor',
     'motor_temperature_sensor',
   },
@@ -90,31 +86,6 @@ end
 -- define access methods
 ---------------------------------------------------------------------------
 
-local function get_settings_table(value, index)
-  index = index or 1
-  local t = {}
-  if (type(index) == 'number') then
-    if (type(value) == 'table') then
-      for i = 1,#value do
-        t[index+i-1] = value[i]
-      end
-    elseif (type(value) == 'number') then
-      t[index] = value
-    end
-  elseif (type(index) == 'table') then
-    if (type(value) == 'table') then
-      for i = 1,#index do
-        t[index[i]] = value[i]
-      end
-    elseif (type(value) == 'number') then
-      for i = 1,#index do
-        t[index[i]] = value
-      end
-    end
-  end
-  return t
-end
-
 function dcm:set_key(key, value, index)
   local device = key_device[key]
   if (not device) then
@@ -126,7 +97,7 @@ function dcm:set_key(key, value, index)
     index = device_index[index]
   end
   local key_updated = key..'_updated'
-  local settings = get_settings_table(value, index)
+  local settings = util.settings_table(value, index)
   for i,v in pairs(settings) do
     if (device_write_access[i] == 1) then
       data[key][i] = v
@@ -172,7 +143,7 @@ function dcm:set_write_access(key, value, index)
   if (type(index) == 'string') then
     index = device_index[index]
   end
-  local settings = get_settings_table(value, index)
+  local settings = util.settings_table(value, index)
   for i,v in pairs(settings) do
     device_write_access[i] = v
   end

@@ -39,7 +39,8 @@ dev.ip_wireless = '192.168.1.255'; --Our Router
 dev.ip_wireless_port = 54321;
 dev.game_control='OPGameControl';
 dev.team='TeamNSL';
-dev.walk='BetterWalk'
+--dev.walk='BetterWalk'
+dev.walk='EvenBetterWalk'
 dev.kick = 'NewNewKick'
 dev.gender = 1; -- 1 for boy and 0 for girl 
 

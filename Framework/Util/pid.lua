@@ -7,7 +7,7 @@ require('filter')
 pid = {}
 pid.__index = pid
 
-local Q = 1.4142
+local Q = 0.5
 
 function pid.new(Ts, p_gain, i_gain, d_gain)
   local o = {}

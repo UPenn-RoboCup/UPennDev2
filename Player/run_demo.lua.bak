@@ -8,8 +8,6 @@ Config.fsm.forcePlayer = 1; --Force attacker
 Config.fsm.enable_walkkick = 1;
 Config.fsm.enable_sidekick = 1;
 
---Config.dev.walk='PRWalk'; --Push Recovery Walk Demonstration
-Config.fsm.enable_walkkick = 0; --No walkkick for PRwalk
 
 require('shm')
 require('vector')
@@ -28,16 +26,6 @@ Motion.entry();
 
 darwin = false;
 webots = false;
-
---Demo mode, 0 for soccer, 1 for push recovery
-demo_mode = 0; 
-
---Setup for soccer mode
---Ankle strategy only, enable falldown check
-walk.enable_ankle_pr = true;
-walk.enable_hip_pr = false;
-Motion.fallAngle = Config.fallAngle; --Enable falldown check
-
 
 -- Enable OP specific 
 if(Config.platform.name == 'OP') then
@@ -107,7 +95,7 @@ function update()
   if Config.led_on > 0 then
     Body.set_indicator_ball(ball_led);
   else
-    Body.set_indicator_ball({0,0,0});
+    Body.set_indicator_bakk({0,0,0});
   end
 
   --Check pause button Releases
@@ -116,25 +104,11 @@ function update()
     if (t-tButtonRole>1.0) then --Button pressed for 1 sec
       waiting = 1-waiting;
       if waiting==0 then
-	--Start up and start demo
-
-	if demo_mode == 0 then --Soccer demo 
-	  walk.enable_ankle_pr = true;
-	  walk.enable_hip_pr = false;
-	  Motion.fallAngle = Config.fallAngle; --Enable falldown check
-          Speak.talk('Soccer Demo');
-          BodyFSM.sm:set_state('bodySearch');   
-          HeadFSM.sm:set_state('headScan');
-          Motion.event("standup");
-	else -- Push demo
-	  walk.enable_ankle_pr = true;
-	  walk.enable_hip_pr = true; --Enable hip strategy
-	  Motion.fallAngle = 240*math.pi/180;--Disable falldown check
-          Speak.talk('Push Demo');
-	  Motion.event("standup");
-	end
+        Speak.talk('Playing');
+        BodyFSM.sm:set_state('bodySearch');   
+        HeadFSM.sm:set_state('headScan');
+        Motion.event("standup");
       else
-	--Sit down and rest
 	batlevel = string.format("Battery Level %.1f",
 		Body.get_battery_level());
 	Speak.talk(batlevel)
@@ -147,33 +121,17 @@ function update()
     tButtonRole = t;
   end
 
-  --Randomly cycle stationary kick types for demonstration
---[[
-  if
-      behavior.cycle_behavior();
-
-  end
---]]
-
-
   --Check center button press
   if (Body.get_change_role() == 1) then
     button_state=1;
   else
     if button_state==1 then --Button released
-
       behavior.cycle_behavior();
       button_state=0;
     end
   end
 
   if waiting>0 then --Waiting mode, check role change
-    if demo_mode == 0 then --Soccer demo 
-      Body.set_indicator_ball({0,1,0}); --Green eye LED for soccer demo
-    elseif demo_mode == 1 then --Push demo 
-      Body.set_indicator_ball({0,0,1}); --Blue eye LED for push demo
-    end
-
 --[[
 
     gcm.set_game_paused(1);

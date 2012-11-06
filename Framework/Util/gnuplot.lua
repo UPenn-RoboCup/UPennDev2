@@ -768,6 +768,17 @@ function gnuplot.grid(toggle)
       refreshCurrent()
    end
 end
+
+function gnuplot.xrange(xmin, xmax)
+  writeToCurrent('set xrange [ '..xmin..' : '..xmax..' ]')
+  refreshCurrent()
+end
+
+function gnuplot.yrange(ymin, ymax)
+  writeToCurrent('set yrange [ '..ymin..' : '..ymax..' ]')
+  refreshCurrent()
+end
+
 function gnuplot.movelegend(hloc,vloc)
    if not _gptable.hasrefresh then
       print('gnuplot.movelegend disabled')

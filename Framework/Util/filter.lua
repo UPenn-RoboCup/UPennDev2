@@ -33,25 +33,25 @@ end
 
 function filter.new_differentiator(Ts, f)
   -- Ts : time step
-  -- w  : corner frequency
-  local w = 2*math.pi*f or math.huge
+  -- f  : corner frequency
+  local w = 2*math.pi*f
   return filter.new({2*w, -2*w}, {w*Ts + 2, w*Ts - 2})
 end
 
 function filter.new_low_pass(Ts, f)
   -- Ts : time step
-  -- w  : corner frequency
+  -- f  : corner frequency
   local w = 2*math.pi*f
   return filter.new({w*Ts, w*Ts}, {w*Ts + 2, w*Ts - 2})
 end
 
 function filter.new_second_order_differentiator(Ts, f, Q)
   -- Ts : time step
-  -- w  : corner frequency
+  -- f  : corner frequency
   -- Q  : Q factor
+  local w = 2*math.pi*f
   local Q = Q or 1/2
   local b = {}
-  local w = 2*math.pi*f
   b[1] = 2*w^2*Ts
   b[2] = 0
   b[3] = -2*w^2*Ts
@@ -64,11 +64,11 @@ end
 
 function filter.new_second_order_low_pass(Ts, f, Q)
   -- Ts : time step
-  -- w  : corner frequency
+  -- f  : corner frequency
   -- Q  : Q factor
+  local w = 2*math.pi*f
   local Q = Q or 1/2
   local b = {}
-  local w = 2*math.pi*f
   b[1] = w^2*Ts^2
   b[2] = 2*w^2*Ts^2
   b[3] = w^2*Ts^2

@@ -270,17 +270,15 @@ function check_push_recovery()
 
   tReflex = 0.3;
 --  tRecover = 0.3;
-  tRecover = 0.4;
+  tRecover0 = 0.3;
+  tRecoverInc = 0.1;
+
   gyro_min = 0.3 * 180/math.pi;
   gyro_min = 0.4 * 180/math.pi;
 
-
-
-
   if hipStrategy ==0 then
     if t>hipStrategyTime then
-      if gyromag>gyro_min and math.abs(gyro_pitch) > 0.8 * gyro_min  
-then
+      if gyromag>gyro_min and math.abs(gyro_pitch) > 0.8 * gyro_min then
         factor = (gyromag/gyro_min)-1; 
         factor = math.min(1+factor*0.5,2) 
 --      print("Gyro IMU:",gyro_pitch,gyro_roll,gyromag)
@@ -290,6 +288,7 @@ then
                 15*math.pi/180*gyro_roll/gyromag*factor
                 };
         hipStrategyTime = t;
+	tRecover = tRecover0 + tRecoverInc * factor;
         print("Hip state 1",t)
       else
       end

@@ -86,6 +86,34 @@ waiting = 1;
 button_role,button_state = 0,0;
 tButtonRole = 0;
 
+qL_old = {0,0,0};
+qR_old = {0,0,0};
+rpy_old = {0,0,0};
+
+qL_threshold = {10*math.pi/180, 10*math.pi/180, 10*math.pi/180};
+qR_threshold = {10*math.pi/180, 10*math.pi/180, 10*math.pi/180};
+rpy_threshold = {70*math.pi/180, 10*math.pi/180, 20*math.pi/180};
+
+qL_alpha = {0.2,0.2,0.2};
+qR_alpha = {0.2,0.2,0.};
+rpy_alpha = {0.0,0.2,0.1};
+
+
+function mov_filter(oldvel, newvel, threshold, filter_alpha)
+  local filteredvel = {0,0,0};
+  for i=1,3 do
+    diff = newvel[i]-oldvel[i];
+    if math.abs(diff) > threshold[i] then
+      filteredvel[i] = newvel[i];
+    else
+      filteredvel[i] = newvel[i]*(1-filter_alpha[i]) + 
+			oldvel[i]* filter_alpha[i];
+    end
+  end
+  return filteredvel;
+end
+
+
 function do_mimic()
   walk.stop()
   -- Check if there is a punch activated
@@ -93,9 +121,16 @@ function do_mimic()
   local qR = boxercm.get_body_qRArm();
   local rpy = boxercm.get_body_rpy();
   -- Add the override
-  walk.upper_body_override(qL, qR, rpy);
-end
+--  walk.upper_body_override(qL, qR, rpy);
 
+  qL_old = mov_filter(qL_old,qL,qL_threshold, qL_alpha);
+  qR_old = mov_filter(qR_old,qR,qR_threshold, qR_alpha);
+  rpy_old = mov_filter(rpy_old,rpy,rpy_threshold, rpy_alpha);
+
+  rpy_old[1] = 0; --Kill roll angle
+
+  walk.upper_body_override(qL_old, qR_old, rpy_old);
+end
 
 
 function update()

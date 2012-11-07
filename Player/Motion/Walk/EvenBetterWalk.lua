@@ -262,19 +262,25 @@ function check_push_recovery()
      Body.set_body_hardness(0);
      return;
   else
-    Body.set_larm_hardness(hardnessArm);
-    Body.set_rarm_hardness(hardnessArm);
+    Body.set_larm_hardness(1);
+    Body.set_rarm_hardness(1);
     Body.set_lleg_hardness(hardnessSupport);
     Body.set_rleg_hardness(hardnessSupport);
   end
 
   tReflex = 0.3;
-  tRecover = 0.3;
+--  tRecover = 0.3;
+  tRecover = 0.4;
   gyro_min = 0.3 * 180/math.pi;
+  gyro_min = 0.4 * 180/math.pi;
+
+
+
 
   if hipStrategy ==0 then
     if t>hipStrategyTime then
-      if gyromag>gyro_min then
+      if gyromag>gyro_min and math.abs(gyro_pitch) > 0.8 * gyro_min  
+then
         factor = (gyromag/gyro_min)-1; 
         factor = math.min(1+factor*0.5,2) 
 --      print("Gyro IMU:",gyro_pitch,gyro_roll,gyromag)
@@ -862,8 +868,13 @@ function motion_arms()
 
   --  if current_step_type== 3 then --Side kick, wide arm stance
   if enable_hip_pr then --Wide stance for push recovery
-    qLArmActual[1],qLArmActual[2]=qLArmKick0[1]+armShift[1],qLArmKick0[2]+armShift[2];
-    qRArmActual[1],qRArmActual[2]=qRArmKick0[1]+armShift[1],qRArmKick0[2]+armShift[2];
+
+
+    qLArmActual[1],qLArmActual[2]=
+	qLArmKick0[1]+armShift[1],qLArmKick0[2]*0.5+armShift[2];
+    qRArmActual[1],qRArmActual[2]=
+	qRArmKick0[1]+armShift[1],qRArmKick0[2]*0.5+armShift[2];
+
   else --Normal arm stance
     qLArmActual[1],qLArmActual[2]=qLArm0[1]+armShift[1],qLArm0[2]+armShift[2];
     qRArmActual[1],qRArmActual[2]=qRArm0[1]+armShift[1],qRArm0[2]+armShift[2];
@@ -873,6 +884,16 @@ function motion_arms()
     qLArmActual[1],qLArmActual[2],qLArmActual[3]=qLArmOR[1],qLArmOR[2],qLArmOR[3];
     qRArmActual[1],qRArmActual[2],qRArmActual[3]=qRArmOR[1],qRArmOR[2],qRArmOR[3];
   end
+
+  armXF = 2.0;
+  armYF = 2.0;
+
+  qLArmActual[1],qLArmActual[2]= 
+	qLArmActual[1] + armXF*hipAngle[1],
+	qLArmActual[2] + armYF*hipAngle[2];
+  qRArmActual[1],qRArmActual[2]= 
+	qRArmActual[1] + armXF * hipAngle[1],
+	qRArmActual[2] + armYF * hipAngle[2];
 
   --Check leg hitting
   RotLeftA =  util.mod_angle(uLeft[3] - uTorso[3]);

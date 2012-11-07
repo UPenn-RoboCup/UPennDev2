@@ -79,6 +79,10 @@ function pid.set_d_corner_frequency(o, d_corner_frequency)
     o.Ts, o.d_corner_frequency, Q)
 end
 
+function pid.set_d_filter(o, d_filter_b, d_filter_a)
+  o.d_filter = filter.new(d_filter_b, d_filter_a)
+end
+
 function pid.set_setpoint(o, setpoint)
   o.setpoint = math.max(math.min(setpoint, o.max_setpoint), o.min_setpoint)
 end

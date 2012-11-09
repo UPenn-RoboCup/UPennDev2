@@ -159,7 +159,7 @@ function init_shm_module(M, shm_name, shm_data, shm_size)
     if (type(v) == 'string') then
       -- string access
       M['get_'..k] = 
-        function ()
+        function (self)
           local bytes = shm_handle:get(k)
 	  if (bytes == nil) then
 	     return ''
@@ -168,23 +168,23 @@ function init_shm_module(M, shm_name, shm_data, shm_size)
 	   end
         end
       M['set_'..k] =
-        function (value)
+        function (self, value)
           return shm_handle:set(k, {string.byte(value, 1, string.len(value))});
         end
     elseif (type(v) == 'number') then
       -- userdata access
       M['get_'..k] =
-        function ()
+        function (self)
           return shm_handle:pointer(k)
         end
       M['set_'..k] =
-        function (value)
+        function (self, value)
           return shm_handle:set(k, value, v)
         end
     elseif (type(v) == 'table') then
       -- number/vector access
       M['get_'..k] =
-	function (index)
+	function (self, index)
 	  if (type(index) == 'number') then
 	    return shm_pointer[k][index]
 	  elseif (type(index) == 'table') then
@@ -202,7 +202,7 @@ function init_shm_module(M, shm_name, shm_data, shm_size)
 	  end
         end
       M['set_'..k] =
-        function (value, index)
+        function (self, value, index)
 	  local settings = settings_table(value, index)
 	  for i,s in pairs(settings) do
 	    shm_pointer[k][i] = s

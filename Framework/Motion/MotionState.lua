@@ -13,10 +13,21 @@ local joint = Config.joint
 
 function MotionState.new(name)
   local o = {_NAME = name}
-  -- initialize member data
   o.dcm = dcm.new_access_point()
   o.running = false
+  o.parameters = {}
   return setmetatable(o, MotionState)
+end
+
+function MotionState:set_parameter(key, value)
+  -- set controller parameter
+  if (type(self.parameters[key]) == 'number') then
+    self.parameters[key] = value
+  elseif (type(self.parameters[key]) == 'table') then
+    for i = 1,#value do
+      self.parameters[key][i] = v
+    end
+  end
 end
 
 function MotionState:set_joint_access(value, index)

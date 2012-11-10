@@ -3,6 +3,8 @@ This guide assumes you are running Ubuntu 12.04.
 0. Install dependencies
    $ sudo apt-get install build-essential libtinyxml-dev libtbb-dev libxml2-dev libqt4-dev pkg-config  libprotoc-dev libfreeimage-dev libprotobuf-dev protobuf-compiler libboost-all-dev freeglut3-dev cmake libtar-dev libcurl4-openssl-dev
 
+   $ sudo apt-get install ros-fuerte-common-msgs ros-fuerte-geometry ros-fuerte-image-common ros-fuerte-pr2-mechanism ros-fuerte-std-msgs ros-fuerte-urdfdom ros-fuerte-pr2-controllers ros-fuerte-geometry-experimental ros-fuerte-robot-model-visualization
+
 1. Install OGRE from source
    $ cd ~
    $ hg clone http://bitbucket.org/sinbad/ogre/ ogre
@@ -21,18 +23,39 @@ This guide assumes you are running Ubuntu 12.04.
    $ cd ~
    $ hg clone https://bitbucket.org/osrf/gazebo gazebo
    $ cd gazebo
-   $ hg tags
-   $ hg update gazebo_1.2.5 (or whichever is the newest version listed by hg tags) 
+   $ hg update
    $ mkdir build
    $ cd build
-   $ cmake ..
+   $ cmake -DPKG_CONFIG_PATH=/opt/ros/fuerte/lib/pkgconfig/ ..
    $ make
    $ sudo make install 
    $ sudo ldconfig
 
 3. Setup Gazebo environment variables 
-   $ echo "export PKG_CONFIG_PATH=/usr/lib/pkgconfig:\$PKG_CONFIG_PATH" >> ~/.bashrc
-   $ echo "source /usr/share/gazebo-1.2/setup.sh" >> ~/.bashrc
+   - edit ~/.bashrc and add the following lines: 
+     export PKG_CONFIG_PATH=/usr/lib/pkgconfig:$PKG_CONFIG_PATH
+     source /usr/share/gazebo-1.2/setup.sh
+     export GAZEBO_MODEL_DATABASE_URI=http://gazebosim.org/models
+
    - edit /usr/share/gazebo-1.2/setup.sh and add the following line:
      export OGRE_RESOURCE_PATH=/usr/local/lib:
+
    (replace "gazebo-1.2" above with whichever version you installed)
+
+4. Install drcsim from source
+   - At this point gazebo should be working. Test it out using
+   $ gazebo
+   - To install the drcsim extras follow these instructions
+
+   $ cd ~
+   $ hg clone https://bitbucket.org/osrf/drcsim
+   $ cd drcsim
+   $ hg update
+   $ mkdir build
+   $ cd build
+   $ cmake ..
+   $ make
+   $ sudo make install
+   - edit ~/.bashrc and add the following line:
+     source /usr/local/share/drcsim-1.0/setup.sh
+     source /opt/ros/fuerte/setup.sh

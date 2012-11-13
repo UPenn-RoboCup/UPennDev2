@@ -26,7 +26,7 @@ function waveform.step_sin(theta, alpha)
 end
 
 function waveform.step_cos(theta, alpha)
-  return step_sin(theta + math.pi/2, alpha) 
+  return waveform.step_sin(theta + math.pi/2, alpha) 
 end
 
 function waveform.stride_sin(theta, alpha)
@@ -55,7 +55,7 @@ function waveform.stride_sin(theta, alpha)
 end
 
 function waveform.stride_cos(theta, alpha)
-  return stride_sin(theta + math.pi/2, alpha) 
+  return waveform.stride_sin(theta + math.pi/2, alpha) 
 end
 
 return waveform

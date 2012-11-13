@@ -67,12 +67,11 @@ B. Install Arch
    # ln -s examples/ethernet-static .
    # nano ethernet-static
      - enter these settings :
-       ADDR='192.168.1.123'
-   # nano /etc/conf.d/netcfg
-     - set the NETWORKS variable to:
-     NETWORKS=(ethernet-static)
-   # systemctl enable netcfg
-   
+       ADDR='192.168.123.1'
+       GATEWAY='192.168.123.100'
+       AUTO_WIRED=1
+   # systemctl enable net-auto-wired
+
    G. configure wireless network
    # pacman -S wireless_tools wpa_supplicant wpa_actiond dialog 
    # cd /etc/network.d
@@ -165,6 +164,7 @@ D : Install utilities
    $ sudo nano /etc/modules-load.d/sshd.conf 
      - add the following line and save :
      sshd
+   $ sudo systemctl enable sshd
   
 3. Install useful programs 
    $ sudo yaourt -S screen acpid vim git

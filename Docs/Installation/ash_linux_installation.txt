@@ -68,6 +68,10 @@ B. Install Arch
    # nano ethernet-static
      - enter these settings :
        ADDR='192.168.1.123'
+   # nano /etc/conf.d/netcfg
+     - set the NETWORKS variable to:
+     NETWORKS=(ethernet-static)
+   # systemctl enable netcfg
    
    G. configure wireless network
    # pacman -S wireless_tools wpa_supplicant wpa_actiond dialog 

@@ -87,28 +87,34 @@ end
 
 function transform6D(p)
   local t = Transform.eye(); 
+  --[[
+  t = Transform.trans(p[1], p[2], p[3])
+  t = t*Transform.rotX(p[4])
+  t = t*Transform.rotY(p[5])
+  t = t*Transform.rotZ(p[6])
+  --]]
   local cwx = math.cos(p[4]);
   local swx = math.sin(p[4]);
   local cwy = math.cos(p[5]);
   local swy = math.sin(p[5]);
   local cwz = math.cos(p[6]);
   local swz = math.sin(p[6]);
-  t[1][1] = cwy*cwz;
-  t[1][2] = swx*swy*cwz-cwx*swz;
-  t[1][3] = cwx*swy*cwz+swx*swz;
+  t[1][1] = cwy*cwz; 
+  t[1][2] = -cwy*swz;
+  t[1][3] = swy; 
   t[1][4] = p[1];
-  t[2][1] = cwy*swz;
-  t[2][2] = swx*swy*swz+cwx*cwz;
-  t[2][3] = cwx*swy*swz-swx*cwz;
-  t[2][4] = p[2];
-  t[3][1] = -swy;
-  t[3][2] = swx*cwy;
-  t[3][3] = cwx*cwy;
-  t[3][4] = p[3];
+  t[2][1] = cwx*swz + swx*swy*cwz;
+  t[2][2] = cwx*cwz - swx*swy*swz;
+  t[2][3] = -swx*cwy;
+  t[2][4] = p[2]; 
+  t[3][1] = swx*swz - cwx*swy*cwz;
+  t[3][2] = swx*cwz + cwx*swy*swz; 
+  t[3][3] = cwx*cwy; 
+  t[3][4] = p[3]; 
   t[4][1] = 0; 
   t[4][2] = 0; 
-  t[4][3] = 0;
-  t[4][4] = 1;
+  t[4][3] = 0; 
+  t[4][4] = 1; 
   return setmetatable(t, mt);
 end
 
@@ -130,50 +136,37 @@ end
 
 function position6D(t)
   local p = vector.zeros(6);
-  local e = getEuler(t);
+  local w = getEuler(t);
   p[1] = t[1][4];
   p[2] = t[2][4];
   p[3] = t[3][4];
-  p[4] = e[1];
-  p[5] = e[2];
-  p[6] = e[3];
+  p[4] = w[1];
+  p[5] = w[2];
+  p[6] = w[3];
   return p;
 end
 
 function getEuler(t)
-  -- http://gregslabaugh.name/publications/euler.pdf
-  -- returns [roll, pitch, yaw] vector
-  local e = vector.zeros(3);
-  if (t[3][1] == -1) then
-    e[1] = math.atan2(t[1][2], t[1][3]);
-    e[2] = math.pi/2;
-    e[3] = 0;
-  elseif (t[3][1] == 1) then
-    e[1] = math.atan2(-t[1][2], -t[1][3]);
-    e[2] = -math.pi/2;
-    e[3] = 0;
+  -- returns euler angles {wx, wy, wz} corresponding to rotation RxRyRz
+  local w = vector.zeros(3);
+  w[2] = math.asin(t[1][3]);
+  if (t[1][3] == -1) then
+    w[1] = -math.atan2(t[2][1], t[2][2]);
+    w[3] = 0;
+  elseif (t[1][3] == 1) then
+    w[1] = math.atan2(t[2][1], t[2][2]);
+    w[3] = 0;
   else
-    e[2] = -math.asin(t[3][1]);
-    e[1] = math.atan2(t[3][2]/math.cos(e[2]), t[3][3]/math.cos(e[2]));
-    e[3] = math.atan2(t[2][1]/math.cos(e[2]), t[1][1]/math.cos(e[2]));
+    w[1] = math.atan2(-t[2][3]/math.cos(w[2]), t[3][3]/math.cos(w[2])); 
+    w[3] = math.atan2(-t[1][2]/math.cos(w[2]), t[1][1]/math.cos(w[2]));
   end
-  return e;
-end
-
-function getRPY(t)
-  -- http://planning.cs.uiuc.edu/node103.html
-  -- returns [roll, pitch, yaw] vector
-  local e = vector.zeros(3);
-  e[1] = math.atan2(t[3][2],t[3][3]); --Roll
-  e[2] = math.atan2(-t[3][1],math.sqrt( t[3][2]^2 + t[3][3]^2) ); -- Pitch
-  e[3] = math.atan2(t[2][1],t[1][1]); -- Yaw
-  return e;
+  return w;
 end
 
 function tostring(t)
   local str = ''
-  for j = 1,4 do
-    for i = 1,4 do
+  for i = 1,4 do
+    for j = 1,4 do
       str = str..string.format('%.4f ', t[i][j]);
     end
     str = str..'\n';
@@ -206,4 +199,3 @@ mt.__mul = function(t1, t2)
     return setmetatable(t, mt);
   end
 end
-

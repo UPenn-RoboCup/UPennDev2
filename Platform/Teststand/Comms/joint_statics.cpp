@@ -1,5 +1,5 @@
-#include "Statics.h"
-#include "Kinematics.h"
+#include "joint_statics.h"
+#include "joint_kinematics.h"
 #include "Transform.h"
 #include <math.h>
 #include <stdio.h>

@@ -2,13 +2,15 @@
 -- pid : proportional integrator differentiator controller
 ---------------------------------------------------------------------------
 
+require('filter')
+
 pid = {}
 pid.__index = pid
 
-local Q = 1.4142
+local Q = 0.5
 
 function pid.new(Ts, p_gain, i_gain, d_gain)
-  o = {}
+  local o = {}
   o.Ts = Ts or 1e-10
   o.p_gain = p_gain or 0
   o.i_gain = i_gain or 0
@@ -77,6 +79,10 @@ function pid.set_d_corner_frequency(o, d_corner_frequency)
     o.Ts, o.d_corner_frequency, Q)
 end
 
+function pid.set_d_filter(o, d_filter_b, d_filter_a)
+  o.d_filter = filter.new(d_filter_b, d_filter_a)
+end
+
 function pid.set_setpoint(o, setpoint)
   o.setpoint = math.max(math.min(setpoint, o.max_setpoint), o.min_setpoint)
 end
@@ -113,6 +119,16 @@ function pid.update(o, process_value)
   end
 
   return output
+end
+
+function pid.__tostring(o)
+  local str = '' 
+  for k,v in pairs(o) do
+    if (k ~= 'd_filter') then
+      str = str..string.format('\n%20s : %s', k, tostring(v))
+    end
+  end
+  return str..'\n'
 end
 
 return pid

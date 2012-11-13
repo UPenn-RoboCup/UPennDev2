@@ -1,5 +1,5 @@
-#ifndef KINEMATICS_H
-#define KINEMATICS_H
+#ifndef _JOINT_KINEMATICS_H_
+#define _JOINT_KINEMATICS_H_
 
 #include <math.h>
 #include <vector>
@@ -7,7 +7,7 @@
 #include "Transform.h"
 #include "fk_tables.h"
 
-// Kinematics.h : kinematics interface for actuator teststand 
+// joint_kinematics.h : kinematics interface for actuator teststand 
 ///////////////////////////////////////////////////////////////////////////
 
 const double PI = 2*asin(1);

@@ -265,8 +265,7 @@ void webots_physics_step_end() {
       filtered_fts[j] = (foot_fts[i][j] + past_fts[j])/2;
     }
 
-    memcpy(emitter_data + sizeof(joint_velocity) + i*sizeof(filtered_fts),
-           filtered_fts, sizeof(filtered_fts));
+    memcpy(emitter_data + N_SERVO + i*6, filtered_fts, sizeof(filtered_fts));
   }
 
   // send joint velocity and force-torque values to Webots controller

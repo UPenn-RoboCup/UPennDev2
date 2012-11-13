@@ -1,7 +1,7 @@
 -- sets include paths for lua module access
 -- usage: dofile('include.lua')
 
-function shell(command)
+local function shell(command)
   local pipe = io.popen(command, 'r')
   local result = pipe:read('*a')
   pipe:close()

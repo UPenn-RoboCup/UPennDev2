@@ -117,9 +117,111 @@ function randn(n)
   return t;
 end
 
+function settings_table(value, index)
+  -- return table with values mapped to index keys
+  index = index or 1
+  local t = {}
+  if (type(index) == 'number') then
+    if (type(value) == 'table') then
+      for i = 1,#value do
+        t[index+i-1] = value[i]
+      end
+    elseif (type(value) == 'number') then
+      t[index] = value
+    end
+  elseif (type(index) == 'table') then
+    if (type(value) == 'table') then
+      for i = 1,#index do
+        t[index[i]] = value[i]
+      end
+    elseif (type(value) == 'number') then
+      for i = 1,#index do
+        t[index[i]] = value
+      end
+    end
+  end
+  return t
+end
+
+function init_shm_module(M, shm_name, shm_data, shm_size)
+  -- initialize shm segment and add accessor methods to module M
+  local shm_handle = shm.new(shm_name, shm_size) 
+  local shm_pointer = {}
+
+  -- intialize shared memory
+  init_shm_keys(shm_handle, shm_data)
+  for k,v in pairs(shm_data) do
+    shm_pointer[k] = carray.cast(shm_handle:pointer(k))
+  end
+ 
+  -- setup accessor methods
+  for k,v in pairs(shm_data) do
+    if (type(v) == 'string') then
+      -- string access
+      M['get_'..k] = 
+        function (self)
+          local bytes = shm_handle:get(k)
+	  if (bytes == nil) then
+	     return ''
+	   else
+	     return string.char(unpack(bytes))
+	   end
+        end
+      M['set_'..k] =
+        function (self, value)
+          return shm_handle:set(k, {string.byte(value, 1, string.len(value))});
+        end
+    elseif (type(v) == 'number') then
+      -- userdata access
+      M['get_'..k] =
+        function (self)
+          return shm_handle:pointer(k)
+        end
+      M['set_'..k] =
+        function (self, value)
+          return shm_handle:set(k, value, v)
+        end
+    elseif (type(v) == 'table') then
+      -- number/vector access
+      M['get_'..k] =
+	function (self, index)
+	  if (type(index) == 'number') then
+	    return shm_pointer[k][index]
+	  elseif (type(index) == 'table') then
+	    local t = vector.new()
+	    for i = 1,#index do
+	      t[i] = shm_pointer[k][index[i]]
+	    end
+	    return t
+	  elseif (type(index) == 'nil') then
+	    local t = vector.new()
+	    for i = 1,#shm_pointer[k] do
+	      t[i] = shm_pointer[k][i]
+	    end
+	    return t
+	  end
+        end
+      M['set_'..k] =
+        function (self, value, index)
+	  local settings = settings_table(value, index)
+	  for i,s in pairs(settings) do
+	    shm_pointer[k][i] = s
+	  end
+        end
+    else
+      -- unsupported type
+      error('Unsupported shm type '..type(v))
+    end
+  end
+
+  -- store shm variable in module
+  M[shm_name] = shm_handle
+  M[shm_name..'_pointer'] = shm_ptr
+end
 
 function init_shm_segment(fenv, name, shared, shsize)
   -- initialize shm segments from the *cm format
+  local shsize = shsize or {};
   for shtable, shval in pairs(shared) do
     -- create shared memory segment
     local shmHandleName = shtable..'Shm';

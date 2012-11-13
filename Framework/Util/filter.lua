@@ -3,13 +3,14 @@
 ----------------------------------------------------------------------
 
 require('vector')
+require('math')
 
 filter = {}
 filter.__index = filter
 
 function filter.new(b, a)
   -- b, a : LTI difference equation coefficients 
-  o = {}
+  local o = {}
   o.b = b or {1}
   o.a = a or {1}
   o.input = {}
@@ -30,23 +31,25 @@ function filter.new_integrator(Ts)
   return filter.new({Ts/2, Ts/2}, {1, -1})
 end
 
-function filter.new_differentiator(Ts, w)
+function filter.new_differentiator(Ts, f)
   -- Ts : time step
-  -- w  : corner frequency
-  local w = w or math.huge
-  filter.new({2*w, -2*w}, {w*Ts + 2, w*Ts - 2})
+  -- f  : corner frequency
+  local w = 2*math.pi*f
+  return filter.new({2*w, -2*w}, {w*Ts + 2, w*Ts - 2})
 end
 
-function filter.new_low_pass(Ts, w)
+function filter.new_low_pass(Ts, f)
   -- Ts : time step
-  -- w  : corner frequency
-  filter.new({w*Ts, w*Ts}, {w*Ts + 2, w*Ts - 2})
+  -- f  : corner frequency
+  local w = 2*math.pi*f
+  return filter.new({w*Ts, w*Ts}, {w*Ts + 2, w*Ts - 2})
 end
 
-function filter.new_second_order_differentiator(Ts, w, Q)
+function filter.new_second_order_differentiator(Ts, f, Q)
   -- Ts : time step
-  -- w  : corner frequency
+  -- f  : corner frequency
   -- Q  : Q factor
+  local w = 2*math.pi*f
   local Q = Q or 1/2
   local b = {}
   b[1] = 2*w^2*Ts
@@ -59,10 +62,11 @@ function filter.new_second_order_differentiator(Ts, w, Q)
   return filter.new(b, a)
 end
 
-function filter.new_second_order_low_pass(Ts, w, Q)
+function filter.new_second_order_low_pass(Ts, f, Q)
   -- Ts : time step
-  -- w  : corner frequency
+  -- f  : corner frequency
   -- Q  : Q factor
+  local w = 2*math.pi*f
   local Q = Q or 1/2
   local b = {}
   b[1] = w^2*Ts^2
@@ -103,6 +107,14 @@ function filter.update(o, input)
   o.output[1] = math.max(o.output[1], o.min_output)
   o.output[1] = math.min(o.output[1], o.max_output)
   return o.output[1]
+end
+
+function filter.__tostring(o)
+  local str = '' 
+  for k,v in pairs(o) do
+    str = str..string.format('\n%20s : %s', k, tostring(v))
+  end
+  return str..'\n'
 end
 
 return filter

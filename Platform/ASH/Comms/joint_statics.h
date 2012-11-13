@@ -1,10 +1,9 @@
-#ifndef STATICS_H
-#define STATICS_H
+#ifndef _JOINT_STATICS_H_
+#define _JOINT_STATICS_H_
 
 #include <math.h>
 #include <vector>
 #include "Transform.h"
-
 
 const double axes [12][3] = {
   {0, 0, 1}, //begin left leg

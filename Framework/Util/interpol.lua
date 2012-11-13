@@ -1,6 +1,6 @@
-module(..., package.seeall)
+interpol = {}
 
-function linear_segment(p0, p1, t0, t1)
+function interpol.linear_segment(p0, p1, t0, t1)
   -- linear interpolation on the interval t = (t0, t1)
   local t0 = t0 or 0 
   local t1 = t1 or 1 
@@ -12,7 +12,7 @@ function linear_segment(p0, p1, t0, t1)
   end
 end
 
-function hermite_curve(p0, p1, m0, m1, t0, t1)
+function interpol.hermite_curve(p0, p1, m0, m1, t0, t1)
   -- hermite cubic spline interpolation on the interval t = (t0, t1)
   local t0 = t0 or 0 
   local t1 = t1 or 1 
@@ -29,3 +29,5 @@ function hermite_curve(p0, p1, m0, m1, t0, t1)
          + (t3 - t2)*m1
   end
 end
+
+return interpol

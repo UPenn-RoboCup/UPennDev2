@@ -1,6 +1,6 @@
-module(..., package.seeall)
+waveform = {}
 
-function step_sin(theta, alpha)
+function waveform.step_sin(theta, alpha)
   -- generate a smoothed sinusoidal waveform with extended zero regions 
   -- alpha in [0, 1] determines the percentage of deadband in a cycle
 
@@ -25,11 +25,11 @@ function step_sin(theta, alpha)
   end
 end
 
-function step_cos(theta, alpha)
+function waveform.step_cos(theta, alpha)
   return step_sin(theta + math.pi/2, alpha) 
 end
 
-function stride_sin(theta, alpha)
+function waveform.stride_sin(theta, alpha)
   -- generate a sinusoidal waveform with extended peak regions
   -- alpha in [0, 1] determines the percentage of deadband in a cycle
 
@@ -54,7 +54,8 @@ function stride_sin(theta, alpha)
   end
 end
 
-function stride_cos(theta, alpha)
+function waveform.stride_cos(theta, alpha)
   return stride_sin(theta + math.pi/2, alpha) 
 end
 
+return waveform

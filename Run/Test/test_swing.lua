@@ -59,6 +59,7 @@ local l_cop_t = {}
 local r_cop_t = {}
 local lf, rf = {}, {}
 local grav_comp_torques = {0, 0}
+local bias = {['L'] = 0.5, ['R'] = 0.5}
 
 ------------------------------------------------------------------
 --Control objects:
@@ -95,7 +96,7 @@ end
 
 local ft_filters = {}
 for i = 1, 12 do
-  ft_filters[i] = filter.new_second_order_low_pass(0.004, 60, 0.7)
+  ft_filters[i] = filter.new_second_order_low_pass(0.004, 20, 0.7)
 end
 
 local ahrs_filters = {}
@@ -108,7 +109,6 @@ end
 ------------------------------------------------------------------
 --Utilities:
 ------------------------------------------------------------------
-
 function cop(ft)  -- finds the x and y position of the COP under the foot
   local cop_left, cop_right = {}, {}
   if (ft[3]~=0) then
@@ -151,7 +151,7 @@ end
 
 function COP_update()
   force_torque = dcm:get_force_torque()
-  ft = force_torque --
+  ft = force_torque --log force torque data
   left_cop, right_cop = cop(force_torque) --compute COP
   COP = robot_cop(force_torque, left_cop, right_cop) 
   COP_filt[1] = COP_filters[1]:update(COP[1])
@@ -187,35 +187,49 @@ function trajectory_percentage(final_pos,time_final,time)
   return percent
 end
 
+function calculate_bias()
+  local bias, tempx, tempy = 0, 0, 0
+  tempx = (COG[1]-lf[1])/(rf[1]-lf[1])
+  tempy = (COG[2]-lf[2])/(rf[2]-lf[2])
+  bias = (tempx + tempy)/2
+  return bias
+end
+
 function update_joint_torques(foot_state_l)
   -- update force commands
   local torques = vector.new{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0} 
   local temp = 0
-  local max = {[5] = 13, [6] = 13, [11] = 13, [12] = 13 } --max torques in x, y for l and r
-  local min = {[5] = -11, [6] = -13, [11] = -11, [12] = -13 }
   for i, pid_loop in pairs(position_pids) do
     pid_loop:set_setpoint(qt[i])
-    temp = pid_loop:update(joint_pos_sense[i]) 
-    if (i == 5 or i == 6) then --turns act to 0 if foot is off grnd
-       if (force_torque[3] < 60) then temp = 0 end
-    end
-    if (i == 11 or i == 12) then
-       if (force_torque[9] < 60) then temp = 0 end
-    end
-    temp = torque_filters[i]:update(temp)
-    if (temp < .15) and (temp > -0.15) then temp = 0 end
-    torques[i] = temp
+    torques[i] = pid_loop:update(joint_pos_sense[i])  --pid
   end
-  torques[5] = torques[5] +  grav_comp_torques[1]/2 
-  torques[5] = math.min(torques[5], (foot_state_l[5])*max[5])
-  torques[5] = math.max(torques[5], (foot_state_l[5])*min[5])
-  torques[11] = torques[11] + grav_comp_torques[1]/2 
-  torques[11] = math.min(torques[11], (foot_state_l[11])*max[11])
-  torques[11] = math.max(torques[11], (foot_state_l[11])*min[11])
+  bias.L = 0.5*bias.L + 0.5*ft_filt[3]/(ft_filt[3] + ft_filt[9])
+  bias.R = 0.5*bias.R + 0.5*ft_filt[9]/(ft_filt[3] + ft_filt[9])
+  --print('bias', bias.L, bias.R)
+  bias.L = math.min(bias.L, 1)
+  bias.R = math.min(bias.R, 1)
+  torques[5] = torques[5] --+  grav_comp_torques[1]*bias.L
+  torques[11] = torques[11] --+ grav_comp_torques[1]*bias.R
+  torques = regulate_ankle_torques(torques) --max min
+  for i, torque_loop in pairs(torque_filters) do
+    torques[i] = torque_filters[i]:update(torques[i])
+  end
   return torques
 end
 
---make function to scale ankle torques with respect to the normal force
+function regulate_ankle_torques(torque)
+  local max = {[5] = 11, [6] = 5, [11] = 11, [12] = 5 }
+  local min = {[5] = -11, [6] = -5, [11] = -11, [12] = -5 }
+  local f = 0
+  local tbias = calculate_bias()
+  for i,v in pairs{[5] = 3, [6] = 3, [11] = 9, [12] = 9} do
+    if math.abs(ft_filt[v])>50 then f = 1 else f = 0 end
+    torque[i] = math.min(torque[i], f*max[i])
+    torque[i] = math.max(torque[i], f*min[i])
+  end
+   print('t torq', t, torque[6], tbias)
+  return torque
+end
 
 function update_joint_data()
   raw_pos = dcm:get_joint_position_sensor()
@@ -342,7 +356,7 @@ function state_machine(t)
   if (state == 0) then
     local left_leg_position = Kinematics.forward_l_leg(joint_pos)
     l_leg_offset = {left_leg_position[1][4], left_leg_position[2][4], left_leg_position[3][4]}
-    torso = vector.new{0,0,0,0,0.2,0} -- {0, 0, -0.05, 0, 0, 0}
+    torso = vector.new{0, 0, -0.05, 0, 0, 0}  --{0,0,0,0,0.2,0}
     if state_t >= 0.5 then
       print("move to ready", t)
       state = 1
@@ -351,9 +365,7 @@ function state_machine(t)
   elseif (state == 1) then 
     --move to ready position
     local percent = trajectory_percentage(1, 2, state_t)
-    --qt = move_legs(percent*torso)
-    qt[3] = percent * -0.6
-    qt[9] = percent * -0.6
+    qt = move_legs(percent*torso)
     if (percent >= 1) then  --when movement is complete, advance state
       state = 2
       state_t = 0
@@ -366,7 +378,6 @@ function state_machine(t)
       print(t)
       state = 3
       state_t = 0
-      run = false
     end
   elseif (state == 3) then 
     --measure COG
@@ -386,6 +397,7 @@ function state_machine(t)
     if (percent >= 1) then  --when movement is complete, advance state
       state = 5
       state_t = 0
+      run = false
       print("wait 0.7", t)
     end
   elseif (state == 5) then
@@ -462,9 +474,6 @@ local fw_COG_des = assert(io.open("Logs/fw_COG_des.txt","w"))
 local fw_lf = assert(io.open("Logs/fw_lf.txt","w"))
 
 function write_to_file(filename, data, test)
-  if test then
-    print(data[5], data[6])
-  end
   for i = 1,#data do
     filename:write(data[i], ", ")
   end
@@ -475,13 +484,11 @@ end
 --Main
 --------------------------------------------------------------------
 while run do   --run step<20
-  --update run parameters
   Body.update()
   dt = Body.get_time() - t --
   t = t + dt --simulation time
   state_t = state_t + dt --time used in state machine
   step = step + 1  --step number
-  local mod_print = step - math.modf(step/5)*5  --modulo of step for printing
 
   update_joint_data()
   ahrs_update()
@@ -490,10 +497,9 @@ while run do   --run step<20
   COG = COG_update(joint_pos_sense)
   state_machine(t) 
   dcm:set_joint_position(qt,'all')
-  grav_comp_torques = {0, 0} --gravity_comp({0,0}) 
+  grav_comp_torques = gravity_comp({0,0}) 
   joint_torques = update_joint_torques(foot_state)
   COG_des = COG_update(joint_pos)
-
   dcm:set_joint_force(joint_torques, 'all')  
 
   if (printdata) then -- mod_print == 0 and

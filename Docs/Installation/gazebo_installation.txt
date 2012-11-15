@@ -16,7 +16,6 @@ This guide assumes you are running Ubuntu 12.04.
    $ cmake ..
    $ make
    $ sudo make install 
-   $ sudo mv /usr/local/lib/OGRE/*.so* /usr/local/lib/
    $ sudo ldconfig
 
 2. Install Gazebo from source
@@ -36,6 +35,7 @@ This guide assumes you are running Ubuntu 12.04.
      export PKG_CONFIG_PATH=/usr/lib/pkgconfig:$PKG_CONFIG_PATH
      source /usr/share/gazebo-1.2/setup.sh
      export GAZEBO_MODEL_DATABASE_URI=http://gazebosim.org/models
+     source /opt/ros/fuerte/setup.sh
 
    - edit /usr/share/gazebo-1.2/setup.sh and add the following line:
      export OGRE_RESOURCE_PATH=/usr/local/lib:
@@ -58,4 +58,3 @@ This guide assumes you are running Ubuntu 12.04.
    $ sudo make install
    - edit ~/.bashrc and add the following line:
      source /usr/local/share/drcsim-1.0/setup.sh
-     source /opt/ros/fuerte/setup.sh

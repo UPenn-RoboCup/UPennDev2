@@ -49,7 +49,7 @@ local run = true --boolean to quit program
 local move_leg = vector.new{0, 0, 0} 
 local torso_position = vector.new{0, 0, 0}
 local step = 1
-local left_cop = {}
+local left_cop = {} --these are duplicates of l_cop_t
 local right_cop = {}
 local force_torque = {}
 local printdata = false
@@ -57,6 +57,9 @@ local temp_accel = 0
 local joint_torques_temp = 0
 local l_cop_t = {}
 local r_cop_t = {}
+local lf, rf = {}, {}
+local grav_comp_torques = {0, 0}
+local bias = {['L'] = 0.5, ['R'] = 0.5}
 
 ------------------------------------------------------------------
 --Control objects:
@@ -93,7 +96,7 @@ end
 
 local ft_filters = {}
 for i = 1, 12 do
-  ft_filters[i] = filter.new_second_order_low_pass(0.004, 60, 0.7)
+  ft_filters[i] = filter.new_second_order_low_pass(0.004, 20, 0.7)
 end
 
 local ahrs_filters = {}
@@ -106,7 +109,6 @@ end
 ------------------------------------------------------------------
 --Utilities:
 ------------------------------------------------------------------
-
 function cop(ft)  -- finds the x and y position of the COP under the foot
   local cop_left, cop_right = {}, {}
   if (ft[3]~=0) then
@@ -137,6 +139,7 @@ function robot_cop(ft, cop_left, cop_right)
   --returns the center of pressure for the whole robot
   local cop_robot = {}
   local l_foot_pos, r_foot_pos = foot_rel_torso_proj()
+  lf, rf = l_foot_pos, r_foot_pos
   if not(ft[3] == 0 and ft[9] == 0) then
     cop_robot[1] = ((cop_left[1] + l_foot_pos[1])*ft[3] + (cop_right[1] + r_foot_pos[1])*ft[9])/(ft[3]+ft[9])
     cop_robot[2] = ((cop_left[2] + l_foot_pos[2])*ft[3] + (cop_right[2] + r_foot_pos[2])*ft[9])/(ft[3]+ft[9])
@@ -148,7 +151,7 @@ end
 
 function COP_update()
   force_torque = dcm:get_force_torque()
-  ft = force_torque --
+  ft = force_torque --log force torque data
   left_cop, right_cop = cop(force_torque) --compute COP
   COP = robot_cop(force_torque, left_cop, right_cop) 
   COP_filt[1] = COP_filters[1]:update(COP[1])
@@ -184,28 +187,48 @@ function trajectory_percentage(final_pos,time_final,time)
   return percent
 end
 
+function calculate_bias()
+  local bias, tempx, tempy = 0, 0, 0
+  tempx = (COG[1]-lf[1])/(rf[1]-lf[1])
+  tempy = (COG[2]-lf[2])/(rf[2]-lf[2])
+  bias = (tempx + tempy)/2
+  return bias
+end
+
 function update_joint_torques(foot_state_l)
   -- update force commands
   local torques = vector.new{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0} 
   local temp = 0
-  local max = {[5] = 13, [6] = 13, [11] = 13, [12] = 13 } --max torques in x, y for l and r
-  local min = {[5] = -13, [6] = -13, [11] = -13, [12] = -13 }
   for i, pid_loop in pairs(position_pids) do
     pid_loop:set_setpoint(qt[i])
-    temp = pid_loop:update(joint_pos_sense[i]) 
-    temp = math.min(temp, (foot_state_l[i])*max[i])
-    temp = math.max(temp, (foot_state_l[i])*min[i])
-    if (i == 5 or i == 6) then --turns act to 0 if foot is off grnd
-       if (force_torque[3] < 60) then temp = 0 end
-    end
-    if (i == 11 or i == 12) then
-       if (force_torque[9] < 60) then temp = 0 end
-    end
-    temp = torque_filters[i]:update(temp)
-    if (temp < .15) and (temp > -0.15) then temp = 0 end
-    torques[i] = temp
+    torques[i] = pid_loop:update(joint_pos_sense[i])  --pid
+  end
+  bias.L = 0.5*bias.L + 0.5*ft_filt[3]/(ft_filt[3] + ft_filt[9])
+  bias.R = 0.5*bias.R + 0.5*ft_filt[9]/(ft_filt[3] + ft_filt[9])
+  --print('bias', bias.L, bias.R)
+  bias.L = math.min(bias.L, 1)
+  bias.R = math.min(bias.R, 1)
+  torques[5] = torques[5] --+  grav_comp_torques[1]*bias.L
+  torques[11] = torques[11] --+ grav_comp_torques[1]*bias.R
+  torques = regulate_ankle_torques(torques) --max min
+  for i, torque_loop in pairs(torque_filters) do
+    torques[i] = torque_filters[i]:update(torques[i])
   end
   return torques
+end
+
+function regulate_ankle_torques(torque)
+  local max = {[5] = 11, [6] = 5, [11] = 11, [12] = 5 }
+  local min = {[5] = -11, [6] = -5, [11] = -11, [12] = -5 }
+  local f = 0
+  local tbias = calculate_bias()
+  for i,v in pairs{[5] = 3, [6] = 3, [11] = 9, [12] = 9} do
+    if math.abs(ft_filt[v])>50 then f = 1 else f = 0 end
+    torque[i] = math.min(torque[i], f*max[i])
+    torque[i] = math.max(torque[i], f*min[i])
+  end
+   print('t torq', t, torque[6], tbias)
+  return torque
 end
 
 function update_joint_data()
@@ -230,24 +253,28 @@ function update_force_torque()
   end 
 end
 
-function COG_update()
+function COG_update(pos)
+  --returns location of COG wrt base frame
   local jnt_vec_x = vector.new{0, 0, 0, 1}
   local jnt_vec_y = vector.new{0, 0, 0, 1}
   local bsx = vector.new{0.0732, -0.0742, -0.0295, 0.0046}
   local bsy = vector.new{-0.0737, 0.1025, 0.0201, 0.0004}
-  
+  local COG_l = {}
+  --local pos = joint_pos_sense
+  --need to check on ahrs orientation
   jnt_vec_x[1] = math.sin(ahrs_filt[8])
-  jnt_vec_x[2] = math.sin(ahrs_filt[8] + joint_pos[3]) + math.sin(ahrs_filt[8] + joint_pos[9]) 
-  jnt_vec_x[3] = math.sin(ahrs_filt[8] + joint_pos[3] + joint_pos[4]) 
-  jnt_vec_x[3] = jnt_vec_x[3] +  math.sin(ahrs_filt[8] + joint_pos[9] + joint_pos[10]) 
+  jnt_vec_x[2] = math.sin(ahrs_filt[8] + pos[3]) + math.sin(ahrs_filt[8] + pos[9]) 
+  jnt_vec_x[3] = math.sin(ahrs_filt[8] + pos[3] + pos[4]) 
+  jnt_vec_x[3] = jnt_vec_x[3] +  math.sin(ahrs_filt[8] + pos[9] + pos[10]) 
 
   jnt_vec_y[1] = math.sin(ahrs_filt[7])
-  jnt_vec_y[2] = math.sin(ahrs_filt[7] + joint_pos[2]) + math.sin(ahrs_filt[7] + joint_pos[8])
-  jnt_vec_y[3] = math.sin(ahrs_filt[7] + joint_pos[2])*joint_pos[3]*joint_pos[4]
-  jnt_vec_y[3] = jnt_vec_y[3] + math.sin(ahrs_filt[7] + joint_pos[8])*joint_pos[9]*joint_pos[10]
+  jnt_vec_y[2] = math.sin(ahrs_filt[7] + pos[2]) + math.sin(ahrs_filt[7] + pos[8])
+  jnt_vec_y[3] = math.sin(ahrs_filt[7] + pos[2])*pos[3]*pos[4]
+  jnt_vec_y[3] = jnt_vec_y[3] + math.sin(ahrs_filt[7] + pos[8])*pos[9]*pos[10]
 
-  COG[1] = vector.mul(jnt_vec_x, bsx)
-  COG[2] = vector.mul(jnt_vec_y, bsy)
+  COG_l[1] = vector.mul(jnt_vec_x, bsx)
+  COG_l[2] = vector.mul(jnt_vec_y, bsy)
+  return COG_l
 end
 
 function ahrs_update()
@@ -256,7 +283,6 @@ function ahrs_update()
     ahrs_filt[i] = ahrs_filters[i]:update(ahrs[i])
   end 
 end
-
 
 --------------------------------------------------------------------
 --Motion Functions:
@@ -306,17 +332,21 @@ function swing_balance()
   local C_alpha = 1.352
   local p_fx = 10
   local temp_torque = 0
-  temp_torque = -1*C_alpha*joint_acc[9] --+ ft_filt[1]*p_fx
+  temp_torque = -1*C_alpha*joint_acc[9] + ft_filt[1]*p_fx
   joint_torques_temp = temp_torque
 end
 
-function gravity_comp()
+function gravity_comp(des_cog)
   --works for left foot only at this point
-  local mg = 240
-  local torso_rpy = {0, 0, 0, ahrs_filt[7], ahrs_filt[8], ahrs_filt[9]}
-  local lf, rf = Kinematics.forward_legs(joint_pos, torso_rpy)
-  local tx = (COG[1] - lf[1])
-  local ty = (COG[2] - lf[2])
+  local mg = 230
+  local kp = 0
+  --local torso_rpy = {0, 0, 0, ahrs_filt[7], ahrs_filt[8], ahrs_filt[9]}
+  --local lf, rf = Kinematics.forward_legs(joint_pos, torso_rpy)
+  local ex = COG[1] - lf[1] --lever arm of COG wrt left foot in x
+  local ey = COG[2] - lf[2] -- in y 
+  local tx = ex*mg + (des_cog[1] - ex)*kp
+  local ty = ey*mg + (des_cog[2] - ey)*kp
+  return {tx, ty}
 end
 
 ------------------------------------------------------------------------
@@ -326,7 +356,7 @@ function state_machine(t)
   if (state == 0) then
     local left_leg_position = Kinematics.forward_l_leg(joint_pos)
     l_leg_offset = {left_leg_position[1][4], left_leg_position[2][4], left_leg_position[3][4]}
-    torso = vector.new{0, 0, -0.05, 0, 0, 0}
+    torso = vector.new{0, 0, -0.05, 0, 0, 0}  --{0,0,0,0,0.2,0}
     if state_t >= 0.5 then
       print("move to ready", t)
       state = 1
@@ -367,6 +397,7 @@ function state_machine(t)
     if (percent >= 1) then  --when movement is complete, advance state
       state = 5
       state_t = 0
+      run = false
       print("wait 0.7", t)
     end
   elseif (state == 5) then
@@ -424,6 +455,7 @@ qt = set_values
 printdata = true
 
 local fw_joint_pos = assert(io.open("Logs/fw_joint_pos.txt","w"))
+local fw_grav_comp_torques = assert(io.open("Logs/fw_grav_comp_torques.txt","w"))
 local fw_qt = assert(io.open("Logs/fw_qt.txt","w"))
 local fw_raw_pos = assert(io.open("Logs/fw_raw_pos.txt","w"))
 local fw_joint_pos_sense = assert(io.open("Logs/fw_joint_pos_sense.txt","w"))
@@ -438,11 +470,10 @@ local fw_ft = assert(io.open("Logs/fw_ft.txt","w"))
 local fw_lr_cop_t = assert(io.open("Logs/fw_lr_cop_t.txt","w"))
 local fw_COP_filt = assert(io.open("Logs/fw_COP_filt.txt","w"))
 local fw_ahrs_filt = assert(io.open("Logs/fw_ahrs_filt.txt","w"))
+local fw_COG_des = assert(io.open("Logs/fw_COG_des.txt","w"))
+local fw_lf = assert(io.open("Logs/fw_lf.txt","w"))
 
 function write_to_file(filename, data, test)
-  if test then
-    print(data[5], data[6])
-  end
   for i = 1,#data do
     filename:write(data[i], ", ")
   end
@@ -453,25 +484,27 @@ end
 --Main
 --------------------------------------------------------------------
 while run do   --run step<20
-  --update run parameters
   Body.update()
   dt = Body.get_time() - t --
   t = t + dt --simulation time
   state_t = state_t + dt --time used in state machine
   step = step + 1  --step number
-  local mod_print = step - math.modf(step/5)*5  --modulo of step for printing
 
   update_joint_data()
   ahrs_update()
   update_force_torque()
   COP_update()
-  COG_update()
+  COG = COG_update(joint_pos_sense)
   state_machine(t) 
   dcm:set_joint_position(qt,'all')
+  grav_comp_torques = gravity_comp({0,0}) 
   joint_torques = update_joint_torques(foot_state)
+  COG_des = COG_update(joint_pos)
   dcm:set_joint_force(joint_torques, 'all')  
 
   if (printdata) then -- mod_print == 0 and
+    write_to_file(fw_grav_comp_torques, grav_comp_torques)
+    write_to_file(fw_COG_des, COG_des)
     write_to_file(fw_joint_pos, joint_pos)
     write_to_file(fw_joint_pos_sense, joint_pos_sense)
     write_to_file(fw_raw_pos, raw_pos)
@@ -487,8 +520,8 @@ while run do   --run step<20
     write_to_file(fw_lr_cop_t, {l_cop_t[1], l_cop_t[2], r_cop_t[1], r_cop_t[2]})
     write_to_file(fw_COP_filt, COP_filt)
     write_to_file(fw_ahrs_filt, ahrs_filt)
+    write_to_file(fw_lf, lf)
   end
-  --end
 end
 Body.exit()
 

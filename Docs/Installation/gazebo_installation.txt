@@ -16,7 +16,6 @@ This guide assumes you are running Ubuntu 12.04.
    $ cmake ..
    $ make
    $ sudo make install 
-   $ sudo mv /usr/local/lib/OGRE/*.so* /usr/local/lib/
    $ sudo ldconfig
 
 2. Install Gazebo from source

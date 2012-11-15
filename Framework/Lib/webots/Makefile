@@ -1,65 +1,33 @@
-# Makefile used to build Webots files
+include ../../../Makefile.inc
 
-TARGETS = all clean
-.PHONY: $(TARGETS)
-
-CXX=g++
-CC=gcc
-LD=ld
-STRIP=strip
-CXXFLAGS= -O2 -fpic
-
-WEBOTS_HOME= /usr/local/webots
-SHLIBEXT= so
-LIBOPTS= -shared -fpic
-
-ifndef OSTYPE
-  OSTYPE = $(shell uname -s|awk '{print tolower($$0)}')
-endif
-
-ifeq ($(OSTYPE),linux)
-	MODE ?= 32
-  SHLIBEXT= so
-  LIBOPTS= -shared -fpic
-  SYS_INC= 
-endif
+WEBOTS_HOME=/usr/local/webots
+SYS_INC=
 ifeq ($(OSTYPE),darwin)
-	MODE ?= 64
-  WEBOTS_HOME= /Applications/Webots
-  SHLIBEXT= dylib
-  LIBOPTS= -bundle -undefined dynamic_lookup
-  SYS_INC= -I/usr/include/sys
-ifeq ($(MODE),32)
-  CC=gcc -arch i386
-  CXX=g++ -arch i386
-  LD= ld -arch i386
-endif
-  CXXFLAGS= -O2
+  WEBOTS_HOME=/Applications/Webots
+  SYS_INC=-I/usr/include/sys
 endif
 
-WEBOTS_INC= -I$(WEBOTS_HOME)/include
-WEBOTS_C_INC= -I$(WEBOTS_HOME)/include/controller/c
-
-LUA_INC= -I/usr/local/include -I/usr/include/lua5.1
-
-LIB_DIR= $(WEBOTS_HOME)/lib
-
-all: webots
+WEBOTS_INC=-I$(WEBOTS_HOME)/include
+WEBOTS_C_INC=-I$(WEBOTS_HOME)/include/controller/c
+LIB_DIR=-L$(WEBOTS_HOME)/lib
 
 %.o: %.cc
-	$(CXX) $(CXXFLAGS) $(LUAINCLUDE) $(WEBOTS_INC) $(SYS_INC) -o $@ -c $<
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $(SYS_INC) $(WEBOTS_INC) -o $@ -c $<
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $(SYS_INC) $(WEBOTS_INC) -o $@ -c $<
 %.o: %.c
-	$(CC) $(CXXFLAGS) $(LUA_INC) $(WEBOTS_INC) $(WEBOTS_C_INC) $(SYS_INC) -o $@ -c $<
+	$(CC)  $(CXXFLAGS) $(INCLUDES) $(SYS_INC) $(WEBOTS_INC) $(WEBOTS_C_INC)  -o $@ -c $<
 
+all: webots
 
 webots_wrap.c: webots.i
 	swig -lua $(WEBOTS_C_INC) webots.i
 
 webots: webots_wrap.o
-	$(LD) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ -L$(LIB_DIR) -lController
-ifeq ($(OSTYPE),darwin)
-	ln -s -f webots.dylib webots.so
-endif
+	$(LD) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ $(LIB_DIR) -lController
+#ifeq ($(OSTYPE),darwin)
+#	ln -s -f webots.dylib webots.so
+#endif
 
 clean:
 	rm -f webots.$(SHLIBEXT) webots_wrap.c *.o *.so *.dylib 

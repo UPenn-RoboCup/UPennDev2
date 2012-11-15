@@ -1,6 +1,14 @@
 #! /bin/sh
 # webots_controller : launches lua scripts in webots
 
+# For Mac systems!
+echo $OSTYPE
+if [[ ${OSTYPE} == *darwin* ]]; then
+  #export OSTYPE = $(shell uname -s|awk '{print tolower($$0)}')
+	eval `/usr/libexec/path_helper -s`
+	source ~/.bash_profile
+fi
+
 # Setup dynamic library path
 # ---------------------------------------------------------------------
 Webots_Home=/usr/local/webots

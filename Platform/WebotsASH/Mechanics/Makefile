@@ -6,11 +6,11 @@ include ../../../Makefile.inc
 #ARFLAGS= rcs
 
 %.o: %.cpp
-	$(CXX) $(CXXFLAGS) -I$(INCLUDES) -o $@ -c $<
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
 %.o: %.cc
-	$(CXX) $(CXXFLAGS) -I$(INCLUDES) -o $@ -c $<
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
 %.o: %.c
-	$(CC)  $(CXXFLAGS) -I$(INCLUDES) -o $@ -c $<
+	$(CC)  $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
 
 all: Kinematics
 

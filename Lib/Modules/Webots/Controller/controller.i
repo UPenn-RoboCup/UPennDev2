@@ -2,7 +2,7 @@
   Swig interface which maps Webots C API into a Lua module
 */
 
-%module webots
+%module controller
 
 %{
 #include <webots/types.h>

@@ -1,16 +1,7 @@
-CWD = $(shell pwd)
-
 # Define environmental variables
 ###########################################################################
-ifndef OSTYPE
-  export OSTYPE = $(shell uname -s|awk '{print tolower($$0)}')
-endif
-
-ifeq ($(OSTYPE),darwin)
-  export WEBOTS_HOME = /Applications/Webots
-else
-  export WEBOTS_HOME = /usr/local/webots
-endif
+CWD = $(shell pwd)
+include Makefile.inc
 
 # Define targets
 ###########################################################################
@@ -28,9 +19,9 @@ ash:
 	cd Platform/Lib && make && cd $(CWD)
 	cd Platform/ASH && make && cd $(CWD)
 	cd Framework/Robot \
-	&& rm -f Body.lua Kinematics.so Statics.lua Dynamics.lua \
+	&& rm -f Body.lua Kinematics.$(SHLIBEXT) Statics.lua Dynamics.lua \
 	&& ln -s ../../Platform/ASH/Body.lua Body.lua \
-	&& ln -s ../../Platform/ASH/Mechanics/Kinematics.so Kinematics.so \
+	&& ln -s ../../Platform/ASH/Mechanics/Kinematics.$(SHLIBEXT) Kinematics.$(SHLIBEXT) \
 	&& ln -s ../../Platform/ASH/Mechanics/Statics.lua Statics.lua \
 	&& ln -s ../../Platform/ASH/Mechanics/Dynamics.lua Dynamics.lua \
 	&& cd $(CWD)
@@ -68,14 +59,13 @@ teststand:
 	&& cd $(CWD)
 
 webots_ash:
-	export WEBOTS_HOME=$(WEBOTS_HOME)
 	cd Framework/Lib && make && cd $(CWD)
 	cd Framework/Lib/webots && make && cd $(CWD)
 	cd Platform/WebotsASH && make && cd $(CWD)
 	cd Framework/Robot \
-	&& rm -f Body.lua Kinematics.so Statics.lua Dynamics.lua \
+	&& rm -f Body.lua Kinematics.$(SHLIBEXT) Statics.lua Dynamics.lua \
 	&& ln -s ../../Platform/WebotsASH/Body.lua Body.lua \
-	&& ln -s ../../Platform/WebotsASH/Mechanics/Kinematics.so Kinematics.so \
+	&& ln -s ../../Platform/WebotsASH/Mechanics/Kinematics.$(SHLIBEXT) Kinematics.$(SHLIBEXT) \
 	&& ln -s ../../Platform/WebotsASH/Mechanics/Statics.lua Statics.lua \
 	&& ln -s ../../Platform/WebotsASH/Mechanics/Dynamics.lua Dynamics.lua \
 	&& cd $(CWD)

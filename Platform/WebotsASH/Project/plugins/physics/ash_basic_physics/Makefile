@@ -30,7 +30,7 @@
 ### if your plugin needs additional libraries:
 # LIBRARIES=-L/path/to/my/library -lmy_library -lmy_other_library
 
-# Include the default settings
+# Include the common settings
 include ../../../../../../Makefile.inc
 WEBOTS_HOME=/usr/local/webots
 ifeq ($(OSTYPE),darwin)

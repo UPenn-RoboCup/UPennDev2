@@ -1,7 +1,7 @@
 TARGETS = all clean
 .PHONY: $(TARGETS)
 
-## Compiler Definition
+# Compiler Definition
 # Default values here are for Linux
 CXX=g++
 CC=gcc
@@ -16,7 +16,12 @@ LIBOPTS=-shared -fpic
 LIBRT=-lrt
 
 # Library and Include Paths
-LUA_INC=`pkg-config lua --cflags`
+
+ifeq ($(shell pkg-config --exists lua),0)
+  LUA_INC=`pkg-config lua --cflags`
+else
+  LUA_INC=`pkg-config lua5.1 --cflags`
+endif
 INCLUDES=-I/usr/local/include -I/usr/include $(LUA_INC)
 LIB_DIR=-L/usr/local/lib -L/usr/lib
 

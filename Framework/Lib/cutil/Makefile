@@ -10,7 +10,7 @@ include ../../../Makefile.inc
 all: cutil
 
 cutil: luacutil.o
-	$(CXX) -o $@.$(SHLIBEXT) $(LIB_DIR) $(LIBOPTS) $(LIBRT) $^
+	$(CXX) -o $@.$(SHLIBEXT) $^ $(LIB_DIR) $(LIBOPTS) $(LIBRT)
 
 clean:
 	rm -f *.o *.$(SHLIBEXT)

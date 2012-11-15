@@ -10,7 +10,7 @@ include ../../../Makefile.inc
 all: carray
 
 carray: luacarray.o
-	$(CXX) -o $@.$(SHLIBEXT) $(LIB_DIR) $(LIBOPTS) $(LIBRT) $^
+	$(CXX) -o $@.$(SHLIBEXT) $^ $(LIB_DIR) $(LIBOPTS) $(LIBRT)
 
 clean:
 	rm -f *.o *.$(SHLIBEXT)

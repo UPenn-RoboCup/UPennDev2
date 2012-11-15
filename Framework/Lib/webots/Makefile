@@ -24,7 +24,7 @@ webots_wrap.c: webots.i
 	swig -lua $(WEBOTS_C_INC) webots.i
 
 webots: webots_wrap.o
-	$(LD) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ $(LIB_DIR) -lController
+	$(LD) -o $@.$(SHLIBEXT) $^ $(LIBOPTS) $(LIB_DIR) -lController
 #ifeq ($(OSTYPE),darwin)
 #	ln -s -f webots.dylib webots.so
 #endif

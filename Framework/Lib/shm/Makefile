@@ -12,7 +12,7 @@ BOOST_INCLUDE_DIRS=-I/usr/local/include/boost
 all: shm
 
 shm: luashm.o
-	$(CXX) -o $@.$(SHLIBEXT) $(LIBOPTS) $(LIBRT) $^
+	$(CXX) -o $@.$(SHLIBEXT) $^ $(LIBOPTS) $(LIBRT)
 
 clean:
 	rm -f *.o *.$(SHLIBEXT) *.$(MEXEXT)

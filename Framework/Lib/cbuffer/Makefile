@@ -10,7 +10,7 @@ include ../../../Makefile.inc
 all: cbuffer 
 
 cbuffer: luacbuffer.o
-	$(CC) -o $@.$(SHLIBEXT) $(LIB_DIR) $(LIBOPTS) $^
+	$(CC) -o $@.$(SHLIBEXT) $^ $(LIB_DIR) $(LIBOPTS)
 
 clean:
 	rm -f *.o *.$(SHLIBEXT)

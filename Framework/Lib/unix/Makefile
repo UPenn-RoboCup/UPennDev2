@@ -19,7 +19,7 @@ getch: luagetch.o
 	$(CXX) -o $@.$(SHLIBEXT) $(LIBOPTS) $^
 
 curses: luacurses.o
-	$(CC) -o $@.$(SHLIBEXT) $(LIBOPTS) $(LIB_DIRS) -lncurses $^
+	$(CC) -o $@.$(SHLIBEXT) $^ $(LIBOPTS) $(LIB_DIRS) -lncurses
 
 clean:
 	rm -f *.o *.$(SHLIBEXT)

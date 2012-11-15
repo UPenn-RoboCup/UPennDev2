@@ -1,5 +1,13 @@
 #!/bin/sh
 
+# For Mac systems!
+echo $OSTYPE
+if [[ ${OSTYPE} == *darwin* ]]; then
+  #export OSTYPE = $(shell uname -s|awk '{print tolower($$0)}')
+	eval `/usr/libexec/path_helper -s`
+	source ~/.bash_profile
+fi
+
 EXT_TERM=0
 LUA=lua
 #LUA=luajit

@@ -4,12 +4,15 @@ Webots_Home=/usr/local/webots
 
 # For Mac systems!
 echo $OSTYPE
-if [ "${OSTYPE}" = "darwin" ]
+if [[ "${OSTYPE}" = darwin* ]]
 then
+	echo "On a mac!"
   #export OSTYPE = $(shell uname -s|awk '{print tolower($$0)}')
 	eval `/usr/libexec/path_helper -s`
 	source ~/.bash_profile
 	Webots_Home=/Applications/Webots
+else
+	echo "On Linux!"
 fi
 
 # Setup dynamic library path

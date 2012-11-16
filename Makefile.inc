@@ -17,7 +17,7 @@ LIBRT=-lrt
 
 # Library and Include Paths
 
-ifeq ($(shell pkg-config --exists lua),0)
+ifeq ($(shell pkg-config --exists lua && echo 0),0)
   LUA_INC=`pkg-config lua --cflags`
 else
   LUA_INC=`pkg-config lua5.1 --cflags`

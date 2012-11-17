@@ -33,5 +33,6 @@ package.path = prefix.."/Framework/Robot/?.lua;"..package.path
 
 -- set path for c modules 
 package.cpath = prefix.."/Framework/Lib/?/?."..csuffix..";"..package.cpath
+package.cpath = prefix.."/Framework/Lib/lcm/?."..csuffix..";"..package.cpath
 package.cpath = prefix.."/Framework/Lib/unix/?."..csuffix..";"..package.cpath
 package.cpath = prefix.."/Framework/Robot/?."..csuffix..";"..package.cpath

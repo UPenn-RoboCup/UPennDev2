@@ -2,7 +2,6 @@ package lcm;
 
 struct rpc_t
 {
-    int64_t  timestamp;
     int32_t  process_id;
     int32_t  request_id;
     int32_t  nbytes;

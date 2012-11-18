@@ -28,7 +28,7 @@ static void lua_lcm_rpc_t_encode(lua_State *L, lcm_rpc_t *msg)
 
   lua_getfield(L, 3, "eval_string");
   if (!lua_isnil(L, 4))
-    memcpy(msg->eval_string, lua_tostring(L, 4), msg->nbytes);
+    msg->eval_string = (uint8_t *)lua_tostring(L, 4);
   lua_pop(L, 1);
   /****************************************************************************/
 }

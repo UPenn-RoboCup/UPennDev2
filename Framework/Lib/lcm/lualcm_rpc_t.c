@@ -33,7 +33,7 @@ static void lua_lcm_rpc_t_encode(lua_State *L, lcm_rpc_t *msg)
   /****************************************************************************/
 }
 
-static void lua_lcm_rpc_t_decode(lua_State *L, lcm_rpc_t *msg)
+static void lua_lcm_rpc_t_decode(lua_State *L, const lcm_rpc_t *msg)
 {
   /***************************  Type Specific Code ****************************/
   lua_pushstring(L, "process_id");

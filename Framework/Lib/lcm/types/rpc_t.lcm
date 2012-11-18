@@ -4,6 +4,7 @@ struct rpc_t
 {
     int32_t  process_id;
     int32_t  request_id;
-    int32_t  nbytes;
-    byte     eval_string[nbytes];
+    int32_t  eval_nbytes;
+    byte     eval_string[eval_nbytes];
+    boolean  synchronous;
 }

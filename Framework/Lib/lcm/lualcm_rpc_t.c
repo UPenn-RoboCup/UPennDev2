@@ -21,14 +21,19 @@ static void lua_lcm_rpc_t_encode(lua_State *L, lcm_rpc_t *msg)
     msg->request_id = (int32_t)lua_tonumber(L, 4);
   lua_pop(L, 1);
 
-  lua_getfield(L, 3, "nbytes");
+  lua_getfield(L, 3, "eval_nbytes");
   if (!lua_isnil(L, 4))
-    msg->nbytes = (int32_t)lua_tonumber(L, 4);
+    msg->eval_nbytes = (int32_t)lua_tonumber(L, 4);
   lua_pop(L, 1);
 
   lua_getfield(L, 3, "eval_string");
   if (!lua_isnil(L, 4))
-    msg->eval_string = (uint8_t *)lua_tostring(L, 4);
+    msg->eval_string = (int8_t *)lua_tostring(L, 4);
+  lua_pop(L, 1);
+
+  lua_getfield(L, 3, "synchronous");
+  if (!lua_isnil(L, 4))
+    msg->synchronous = (int8_t)lua_toboolean(L, 4);
   lua_pop(L, 1);
   /****************************************************************************/
 }
@@ -44,12 +49,16 @@ static void lua_lcm_rpc_t_decode(lua_State *L, const lcm_rpc_t *msg)
   lua_pushinteger(L, msg->request_id);
   lua_settable(L, -3);
 
-  lua_pushstring(L, "nbytes");
-  lua_pushinteger(L, msg->nbytes);
+  lua_pushstring(L, "eval_nbytes");
+  lua_pushinteger(L, msg->eval_nbytes);
   lua_settable(L, -3);
 
   lua_pushstring(L, "eval_string");
-  lua_pushlstring(L, msg->eval_string, msg->nbytes);
+  lua_pushlstring(L, msg->eval_string, msg->eval_nbytes);
+  lua_settable(L, -3);
+
+  lua_pushstring(L, "synchronous");
+  lua_pushboolean(L, msg->synchronous);
   lua_settable(L, -3);
   /****************************************************************************/
 }
@@ -57,10 +66,11 @@ static void lua_lcm_rpc_t_decode(lua_State *L, const lcm_rpc_t *msg)
 static void lua_lcm_rpc_t_handler(const lcm_recv_buf_t *rbuf, const char *channel,
                                   const lcm_rpc_t *msg, void *userdata)
 {
-  /* push message handler */
   lua_lcm_handler_t *handler = (lua_lcm_handler_t *)userdata;
   lua_State *L = handler->L;
-  lua_rawgeti(L, LUA_REGISTRYINDEX, handler->reference);
+
+  /* push lua callback function */
+  lua_rawgeti(L, LUA_REGISTRYINDEX, handler->callback_reference);
 
   /* push channel name */
   lua_pushstring(L, channel);
@@ -69,8 +79,11 @@ static void lua_lcm_rpc_t_handler(const lcm_recv_buf_t *rbuf, const char *channe
   lua_newtable(L);
   lua_lcm_rpc_t_decode(L, msg);
 
+  /* push userdata */
+  lua_rawgeti(L, LUA_REGISTRYINDEX, handler->userdata_reference);
+
   /* call handler */
-  lua_call(L, 2, 0);
+  lua_call(L, 3, 0);
 } 
 
 static int lua_lcm_rpc_t_publish(lua_State *L)
@@ -98,17 +111,24 @@ static int lua_lcm_rpc_t_subscribe(lua_State *L)
   lcm_rpc_t_subscription_t *subs;
   lua_lcm_handler_t *handler;
 
-  /* initialize handler for lua callback */
   if (!lua_isfunction(L, 3))
     return luaL_error(L, "invalid callback function");
+  if (lua_gettop(L) > 4)
+    lua_pop(L, lua_gettop(L) - 4);
+  if (lua_gettop(L) < 4)
+    lua_pushnil(L);
+
   if (lcm->n_handlers >= MAX_HANDLERS)
   {
     /* max handlers exceeded */
     lua_pushnil(L);
     return 1;
   }
+
+  /* initialize message handler */
   handler = &(lcm->handlers[lcm->n_handlers++]);
-  handler->reference = luaL_ref(L, LUA_REGISTRYINDEX);
+  handler->userdata_reference = luaL_ref(L, LUA_REGISTRYINDEX); 
+  handler->callback_reference = luaL_ref(L, LUA_REGISTRYINDEX);
   handler->L = L;
 
   /* subscribe to message */

@@ -13,7 +13,8 @@
 
 typedef struct _lua_lcm_handler_t {
   lua_State *L;
-  int reference;
+  int callback_reference;
+  int userdata_reference; 
 } lua_lcm_handler_t;
 
 typedef struct _lua_lcm_t {

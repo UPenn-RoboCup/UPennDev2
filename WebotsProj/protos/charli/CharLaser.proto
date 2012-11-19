@@ -12,7 +12,7 @@ PROTO CharLaser [
   field SFString   controller "void"
   field SFString   controllerArgs ""
   field SFBool     synchronization TRUE
-  field SFString   name "Charlaser"
+  field SFString   name "CharLaser"
   field SFVec2f    cameraWindowPosition 0 0
   field SFFloat    cameraPixelSize 1.0
   field SFInt32    cameraWidth 160
@@ -361,7 +361,6 @@ Robot {
 		  rotation 1 0 0 0
 		  children [
 		    DEF DHeadShape Group {
-        Hokuyo_UTM30LX
 		      children [
 		        Shape {
 		          appearance Appearance {

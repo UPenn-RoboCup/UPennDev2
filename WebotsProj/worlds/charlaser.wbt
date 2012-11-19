@@ -32,17 +32,16 @@ DirectionalLight {
 TeenSoccerField {
 }
 
+#hokuyo{}
+
 CharLaser {
   translation 0 0.8 0.5
   rotation 0 1 0 -1.57
   controller "darwin-op_team_0"
   controllerArgs "1 1"
-  cameraWindowPosition 0.125 0 
-  cameraWidth 320
-  cameraHeight 240
 }
 
-xos {}
+#xos {}
 
 DEF BALL Ball {
   translation 2 0.1 0

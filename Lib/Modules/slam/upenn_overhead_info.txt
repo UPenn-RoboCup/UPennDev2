@@ -1,0 +1,17 @@
+Coordinates (centers of intersections)
+Location       : Latitude, Longitude  : UTM Easting, Northing         : Pixel Coordinates
+=========================================================================================
+Chestnut, 33rd : 39.954088,-75.189728 : 483794.028474, 4422678.673532 : 8082, 744
+Chestnut, 34th : 39.95434,-75.191792  : 483617.788066, 4422707.019813 : 6546, 495
+Walnut, 34th   : 39.952821,-75.192101 : 483591.031342, 4422538.483639 : 6315, 1971
+Walnut, 33rd   : 39.952562,-75.190043 : 483766.761388, 4422509.360924 : 7849, 2226
+Walnut, 36th   : 39.953154,-75.19479  : 483361.421677, 4422575.941110 : 4308, 1648
+Spruce, 38th   : 39.951279,-75.199187 : 482985.373749, 4422368.665169 : 1019, 3472
+
+pixel resolution (using Chestnut and 33rd  and  Spruce and 38th) 
+
+~ 0.1145 meters/pixel (x-direction)
+~ 0.1136 meters/pixel (y-direction) 
+(not sure why different - maybe due to stitching errors)
+
+

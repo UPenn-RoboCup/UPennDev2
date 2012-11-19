@@ -6,7 +6,7 @@
 #  - dimension : 0.06 x 0.087 x 0.06 [m]
 #  - weight : 0.37 [kg]
 
-PROTO Hokuyo_UTM30LX [
+PROTO hokuyo [
   field SFVec3f translation 0 0 0
   field SFRotation rotation  0 1 0 0
   field SFString name "UTM-30LX"

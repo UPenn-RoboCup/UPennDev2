@@ -36,6 +36,7 @@ Robot {
     DEF HipGroup Group {
       children [
         topPelvisMount {}  
+        hokuyo{}
       ]
     }
     DEF R_Hip_Yaw Servo {
@@ -398,6 +399,7 @@ Robot {
 				headGroup {}
 		      ]
 		    }
+		    #hokuyo{}
 		    Camera {
 		      translation 0 0.0329074 0.0359816
 		      rotation 0 -1 0 3.14159

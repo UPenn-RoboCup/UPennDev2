@@ -6,13 +6,13 @@
 #Adapted for XOS by Peter Arriaza
 #############################################
 
-PROTO Charli2mod [
+PROTO xos [
   field SFVec3f    translation 0 0.4 0
   field SFRotation rotation 0 1 0 0
   field SFString   controller "void"
   field SFString   controllerArgs ""
   field SFBool     synchronization TRUE
-  field SFString   name "Charli2mod"
+  field SFString   name "xos"
   field SFVec2f    cameraWindowPosition 0 0
   field SFFloat    cameraPixelSize 1.0
   field SFInt32    cameraWidth 160

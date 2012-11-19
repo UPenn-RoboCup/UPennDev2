@@ -33,7 +33,7 @@ TeenSoccerField {
 }
 
 CharLaser {
-  translation 0 0.8 0
+  translation 0 0.8 0.5
   rotation 0 1 0 -1.57
   controller "darwin-op_team_0"
   controllerArgs "1 1"
@@ -41,29 +41,13 @@ CharLaser {
   cameraWidth 320
   cameraHeight 240
 }
+
+xos {}
+
 DEF BALL Ball {
   translation 2 0.1 0
   radius 0.1
 }
 
 TeenWalls {
-}
-DEF YELLOW_GOAL TeenGoal {
-  translation 4.5 0 0
-  postColor 0.992157 0.854902 0.219608
-}
-DEF BLUE_GOAL TeenGoal {
-  translation -4.5 0 0
-  rotation 0 1 0 3.14159
-  postColor 0.152941 0.505882 0.733333
-}
-DEF YELLOW_LANDMARK Landmark {
-  translation 0 0 -3.4
-  postColor1 0.992157 0.854902 0.219608
-  postColor2 0.152941 0.505882 0.733333
-}
-DEF BLUE_LANDMARK Landmark {
-  translation 0 0 3.4
-  postColor1 0.152941 0.505882 0.733333
-  postColor2 0.992157 0.854902 0.219608
 }

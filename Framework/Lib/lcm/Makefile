@@ -42,12 +42,15 @@ LIB_DIRS = -L/usr/local/lib -L/usr/lib
 lcm_%.c lcm_%.h: types/%.lcm
 	lcm-gen -c $<
 
-all: lcm lcm_rpc_t
+all: lcm lcm_rpc_request_t lcm_rpc_response_t
 
 lcm: lualcm.o
 	$(CC) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ `pkg-config --libs lcm` 
 
-lcm_rpc_t: lcm_rpc_t.o lualcm_rpc_t.o
+lcm_rpc_request_t: lcm_rpc_request_t.o lualcm_rpc_request_t.o
+	$(CC) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ `pkg-config --libs lcm` 
+
+lcm_rpc_response_t: lcm_rpc_response_t.o lualcm_rpc_response_t.o
 	$(CC) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ `pkg-config --libs lcm` 
 
 clean:

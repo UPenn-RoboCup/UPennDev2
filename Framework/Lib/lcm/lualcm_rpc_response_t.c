@@ -13,7 +13,7 @@ static void lua_lcm_rpc_response_t_encode(lua_State *L, lcm_rpc_response_t *msg)
   /***************************  Type Specific Code ****************************/
   lua_getfield(L, 3, "client_id");
   if (!lua_isnil(L, 4))
-    msg->client_id = (int16_t)lua_tonumber(L, 4);
+    msg->client_id = lua_tostring(L, 4);
   lua_pop(L, 1);
 
   lua_getfield(L, 3, "request_id");
@@ -42,7 +42,7 @@ static void lua_lcm_rpc_response_t_decode(lua_State *L, const lcm_rpc_response_t
 {
   /***************************  Type Specific Code ****************************/
   lua_pushstring(L, "client_id");
-  lua_pushinteger(L, msg->client_id);
+  lua_pushstring(L, msg->client_id);
   lua_settable(L, -3);
 
   lua_pushstring(L, "request_id");

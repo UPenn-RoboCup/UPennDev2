@@ -1,9 +1,9 @@
 require('lcm')
 require('lcm_rpc_request_t')
 
-local userdata = "some useful data"
+local userdata = "useful_userdata"
 
-function rpc_callback(channel, msg, userdata)
+function rpc_request_callback(channel, msg, userdata)
   print(channel)
   print('client_id',   msg.client_id)
   print('request_id',  msg.request_id)
@@ -13,7 +13,7 @@ function rpc_callback(channel, msg, userdata)
 end
 
 rpc_server = lcm.new()
-rpc_server:rpc_request_t_subscribe("EXAMPLE", rpc_callback, userdata)
+rpc_server:rpc_request_t_subscribe("EXAMPLE", rpc_request_callback, userdata)
 
 while (true) do
   rpc_server:handle()

@@ -2,7 +2,7 @@ package lcm;
 
 struct rpc_request_t
 {
-    int16_t  client_id;
+    string   client_id;
     int16_t  request_id;
     int32_t  eval_nbytes;
     byte     eval_string[eval_nbytes];

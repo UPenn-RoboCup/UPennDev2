@@ -1,0 +1,26 @@
+# Makefile used to build Lcm files
+
+TARGETS = all clean
+.PHONY: $(TARGETS)
+
+include Makefile.inc
+
+LCMINCLUDE = /usr/local/include
+
+NAME = lualcm
+
+all: $(NAME)
+
+%.o: %.cc
+	$(CXX) $(CXXFLAGS) $(LUAINCLUDE) -I$(INCLUDES) -o $@ -c $<
+%.o: %.c
+	$(CC) $(CXXFLAGS) $(LUAINCLUDE) -I$(INCLUDES) -o $@ -c $<
+
+$(NAME)_wrap.c: $(NAME).i
+	swig -lua -I$(LCMINCLUDE) $(NAME).i
+
+$(NAME): $(NAME)_wrap.o
+	$(LD) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ `pkg-config --libs lcm`
+
+clean:
+	rm -f $(NAME).$(SHLIBEXT) *.o *.so *_wrap.c

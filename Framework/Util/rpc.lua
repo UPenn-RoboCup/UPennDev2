@@ -43,9 +43,28 @@ local function serialize_return_values(...)
   return 'return '..table.concat(arg_list, ',')
 end
 
+local function get_functions(t, searched)
+  if (t == package) then return {} end
+  local searched = searched or {}
+  local functions = {}
+  searched[t] = true
+  for k,v in pairs(t) do
+    if (type(v) == 'function') then
+      functions[k] = true
+    elseif (type(v) == 'table') then
+      if not(searched[v]) then
+        local methods = get_functions(v, searched)
+        for m in pairs(methods) do
+          functions[k..'.'..m] = true
+        end
+      end
+    end
+  end
+  return functions
+end
+
 local function generate_dictionary()
-  -- TODO generate dictionary by recursive search of _G
-  return {}
+  return get_functions(_G)
 end
 
 -- message handlers

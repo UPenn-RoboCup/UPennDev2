@@ -2,7 +2,8 @@ module(..., package.seeall);
 
 function serialize(o)
   local str = "";
-  if type(o) == "number" then
+  if type(o) == "number" or 
+     type(o) == "boolean" then
     str = tostring(o);
   elseif type(o) == "string" then
     str = string.format("%q",o);

@@ -7,20 +7,23 @@ include ../../../Makefile.inc
 
 LCMINCLUDE = /usr/local/include
 
-NAME = lualcm
+NAME = lcm
 
-all: $(NAME) lcm_rpc_t
+LIBLCM = `pkg-config --libs lcm`
+
+all: lcm
+#lcm_rpc_t
 
 %.o: %.cc
 	$(CXX) $(CXXFLAGS) $(LUAINCLUDE) -I$(INCLUDES) -o $@ -c $<
 %.o: %.c
 	$(CC) $(CXXFLAGS) $(LUAINCLUDE) -I$(INCLUDES) -o $@ -c $<
 
-$(NAME)_wrap.c: $(NAME).i
-	swig -lua -I$(LCMINCLUDE) $(NAME).i
+lualcm_wrap.c: lualcm.i
+	swig -lua -I$(LCMINCLUDE) $^
 
-$(NAME): $(NAME)_wrap.o
-	$(LD) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ `pkg-config --libs lcm`
+lcm: lualcm_wrap.o
+	$(LD) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ -pthread -L/usr/local/lib -llcm -lgthread-2.0 -lrt -lglib-2.0
 
 lcm_rpc_t.c: rpc_t.lcm
 	lcm-gen -c $^

@@ -26,4 +26,4 @@ all: $(TARGETS_LUA) $(TARGETS_MEX)
 	$(LD) $(LDFLAGS) -o $@ $(LIBOPTS) $^ $(LIB_DIR) -lm
 	
 clean:
-	rm -rf $(TARGETS_MEX) $(TARGETS) *.o *~
+	rm -rf $(TARGETS_MEX) $(TARGETS_LUA) *.o *~

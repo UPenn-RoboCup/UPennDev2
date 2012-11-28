@@ -9,8 +9,6 @@ LCMINCLUDE = /usr/local/include
 
 NAME = lcm
 
-LIBLCM = `pkg-config --libs lcm`
-
 all: lcm
 #lcm_rpc_t
 
@@ -23,7 +21,7 @@ lualcm_wrap.c: lualcm.i
 	swig -lua -I$(LCMINCLUDE) $^
 
 lcm: lualcm_wrap.o
-	$(LD) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ -pthread -L/usr/local/lib -llcm -lgthread-2.0 -lrt -lglib-2.0
+	$(LD) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ `pkg-config --libs lcm`
 
 lcm_rpc_t.c: rpc_t.lcm
 	lcm-gen -c $^
@@ -37,4 +35,4 @@ lcm_rpc_t: lcm_rpc_t_wrap.o lcm_rpc_t.o
 
 
 clean:
-	rm -f $(NAME).$(SHLIBEXT) *.o *.so *_wrap.c lcm_*_t.c lcm_*_t.h
+	rm -f $(NAME).$(SHLIBEXT) *.o *.so *_wrap.c lualcm_*_t.c lualcm_*_t.h

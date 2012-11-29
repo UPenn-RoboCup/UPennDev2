@@ -45,7 +45,10 @@ static int lua_lcm_destroy(lua_State *L)
   if (lcm->lcm)
     lcm_destroy(lcm->lcm);
   for (i = 0; i < lcm->n_handlers; i++)
-    luaL_unref(L, LUA_REGISTRYINDEX, lcm->handlers[i].reference);
+  {
+    luaL_unref(L, LUA_REGISTRYINDEX, lcm->handlers[i].callback_reference);
+    luaL_unref(L, LUA_REGISTRYINDEX, lcm->handlers[i].userdata_reference);
+  }
   return 0;
 };
 

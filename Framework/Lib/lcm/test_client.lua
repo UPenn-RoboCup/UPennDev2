@@ -1,12 +1,13 @@
 require('lcm')
-require('lcm_rpc_t')
+require('lcm_rpc_request_t')
 
-local rpc_request = {
-  process_id = 123,
+local msg = {
+  client_id = "uuid",
   request_id = 456,
-  eval_string = "walk.stop()" 
+  eval_string = "walk.stop()",
+  synchronous = true
 }
-rpc_request.nbytes = #rpc_request.eval_string 
+msg.eval_nbytes = #msg.eval_string
 
 rpc_client = lcm.new()
-rpc_client:rpc_t_publish("EXAMPLE", rpc_request)
+rpc_client:rpc_request_t_publish("EXAMPLE", msg)

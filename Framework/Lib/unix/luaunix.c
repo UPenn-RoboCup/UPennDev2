@@ -10,6 +10,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <string.h>
+#include <math.h>
 
 #include "lua.h"
 #include "lualib.h"
@@ -191,6 +192,48 @@ static int lua_writefd(lua_State *L) {
   return 1;
 }
 
+static int lua_select(lua_State *L) {
+  int i;
+  int status;
+  int fd = 0, nfds = 0, maxfd = 0;
+
+  fd_set fds;
+  FD_ZERO(&fds);
+
+  luaL_checktype(L, 1, LUA_TTABLE);
+  nfds = lua_objlen(L, 1);
+
+  for (i = 1; i <= nfds; i++) {
+    lua_rawgeti(L, 1, i);
+    fd = luaL_checkinteger(L, -1);
+    lua_pop(L, 1);
+    maxfd = fd > maxfd ? fd : maxfd;
+    FD_SET(fd, &fds);
+  }
+
+  if (lua_isnumber(L, 2)) {
+    double timeout = lua_tonumber(L, 2);
+    struct timeval tv = {
+      floor(timeout),
+      (timeout - floor(timeout))*1E6
+    };
+    status = select(maxfd + 1, &fds, 0, 0, &tv);
+  }
+  else {
+    status = select(maxfd + 1, &fds, 0, 0, NULL);
+  }
+  lua_pushinteger(L, status);
+
+  lua_createtable(L, 0, nfds);
+  for (i = 1; i <= nfds; i++) {
+    lua_rawgeti(L, 1, i);
+    fd = luaL_checkinteger(L, -1);
+    lua_pushboolean(L, FD_ISSET(fd, &fds));
+    lua_settable(L, -3);
+  }
+  return 2;
+}
+
 static int lua_mkfifo(lua_State *L) {
   const char *path = luaL_checkstring(L, 1);
   int mode = luaL_checkinteger(L, 2);
@@ -249,6 +292,7 @@ static const struct luaL_reg unix_lib [] = {
   {"fdopen", lua_fdopen},
   {"read", lua_readfd},
   {"write", lua_writefd},
+  {"select", lua_select},
   {"chmod", lua_chmod},
   {"fcntl", lua_fcntl},
   {"unlink", lua_unlink},

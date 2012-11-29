@@ -240,7 +240,8 @@ local function getvars(t)
    local format = nil
 
    local function isvector(v)
-      return type(v) == 'table' and type(v[1]) == 'number'
+      return (type(v) == 'table' and type(v[1]) == 'number')
+          or (type(v) == 'userdata' and type(v[1]) == 'number')
    end
 
    local function isstring(v)
@@ -317,7 +318,8 @@ local function getsplotvars(t)
    local format = nil
 
    local function ismatrix(v)
-      return type(v) == 'table' and type(v[1]) == 'table' and type(v[1][1]) == 'number'
+      return (type(v) == 'table' and type(v[1]) == 'table' and type(v[1][1]) == 'number')
+          or (type(v) == 'userdata' and type(v[1]) == 'userdata' and type(v[1][1]) == 'number')
    end
 
    local function isstring(v)
@@ -391,7 +393,8 @@ local function getplot3dvars(t)
    local palette = nil
 
    local function ismatrix(v)
-      return type(v) == 'table' and type(v[1]) == 'table' and type(v[1][1]) == 'number'
+      return (type(v) == 'table' and type(v[1]) == 'table' and type(v[1][1]) == 'number')
+          or (type(v) == 'userdata' and type(v[1]) == 'userdata' and type(v[1][1]) == 'number')
    end
 
    local function isstring(v)
@@ -461,7 +464,8 @@ local function getimagescvars(t)
    local x = nil
 
    local function ismatrix(v)
-      return type(v) == 'table' and type(v[1]) == 'table' and type(v[1][1]) == 'number'
+      return (type(v) == 'table' and type(v[1]) == 'table' and type(v[1][1]) == 'number')
+          or (type(v) == 'userdata' and type(v[1]) == 'userdata' and type(v[1][1]) == 'number')
    end
 
    local function isstring(v)
@@ -808,7 +812,8 @@ function gnuplot.plot(...)
    end
 
    local function isvector(v)
-      return type(v) == 'table' and type(v[1]) == 'number'
+      return (type(v) == 'table' and type(v[1]) == 'number')
+          or (type(v) == 'userdata' and type(v[1]) == 'number')
    end
 
    local formats = {}
@@ -845,7 +850,8 @@ function gnuplot.splot(...)
    end
 
    local function ismatrix(v)
-      return type(v) == 'table' and type(v[1]) == 'table' and type(v[1][1]) == 'number'
+      return (type(v) == 'table' and type(v[1]) == 'table' and type(v[1][1]) == 'number')
+          or (type(v) == 'userdata' and type(v[1]) == 'userdata' and type(v[1][1]) == 'number')
    end
 
    local formats = {}

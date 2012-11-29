@@ -6,11 +6,8 @@
 
 %{
 #include <lcm/lcm.h>
-#include <lcm/lcm_coretypes.h>
 %}
 
-// Emit Types
-%include <lcm/lcm_coretypes.h>
 
 // Emit Functions
 %include <lcm/lcm.h>

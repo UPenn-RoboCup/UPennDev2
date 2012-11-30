@@ -1,7 +1,6 @@
 dofile('../include.lua')
 
 require('gnuplot')
-require('matrix')
 require('vector')
 
 local N = 50
@@ -11,10 +10,11 @@ for i = 0,N-1 do
   x[i+1] =  math.cos(2*math.pi/(N-1)*i)
 end
 
-local xx = matrix:new(N, N)
+local xx = {}
 for i = 0,N-1 do
+  xx[i+1] = {}
   for j = 0,N-1 do
-    xx[i+1][j+1] =  math.cos(2*math.pi/(N-1)*i)*math.cos(2*math.pi/(N-1)*j)
+    xx[i+1][j+1] = math.cos(2*math.pi/(N-1)*i)*math.cos(2*math.pi/(N-1)*j)
   end
 end
 

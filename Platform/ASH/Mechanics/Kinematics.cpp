@@ -65,10 +65,10 @@ kinematics_forward_r_leg(const double *q) //tested DFL
 {
   Transform t;
   t = t.translateY(-1*hipOffsetY)
-    .rotateZ(q[6]).rotateX(q[7]).rotateY(q[8])
+    .rotateZ(q[0]).rotateX(q[1]).rotateY(q[2])
     .translateZ(-1*thighLength).translateX(kneeOffsetX)
-    .rotateY(q[9]).translateZ(-1*tibiaLength)
-    .rotateY(q[10]).rotateX(q[11]).translateZ(-1*footHeight);
+    .rotateY(q[3]).translateZ(-1*tibiaLength)
+    .rotateY(q[4]).rotateX(q[5]).translateZ(-1*footHeight);
   return t;
 }
 

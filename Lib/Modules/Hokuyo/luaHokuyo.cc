@@ -14,8 +14,6 @@ using namespace Upenn;
 
 
 #define HOKUYO_DEF_DEVICE "/dev/ttyACM0"
-#define HOKUYO_DEF_LOG_NAME "hokuyo"
-//#define HOKUYO_DEF_DEVICE "/dev/cu.usbmodem3d11"
 
 //SCAN_NAME is used to determine the scanType and scanSkip values
 //See below for details
@@ -56,28 +54,16 @@ static int lua_hokuyo_shutdown(lua_State *L) {
 }
 
 static int lua_hokuyo_open(lua_State* L) {
-  string address = string(HOKUYO_DEF_DEVICE);
-  string ipcHost = string("localhost");
+  string address(luaL_checkstring(L, 1));
+  if (address.length() < 1) 
+    address = string(HOKUYO_DEF_DEVICE);
+
+  string lidarSerial(luaL_checkstring(L, 2));
+  if (lidarSerial.length() < 1)
+    luaL_error(L, "LIDAR serial not defined");
 
   string id = string();
 
-//  if (argc>=2)
-//    address = string(argv[1]);
-//
-//  if (argc>=3)
-//    id = string(argv[2]);
-  
-  string logName          = string(HOKUYO_DEF_LOG_NAME) + id;
-
-//  char * robotIdStr       = getenv("ROBOT_ID");
-//  if (!robotIdStr)
-//  {
-//    printf("ROBOT_ID must be defined\n");
-//    return -1;
-//  }
-//
-//  string robotName        = string("Robot") + robotIdStr;
-  
   char * lidar0Type = getenv("LIDAR0_TYPE");
 //  char * lidar1Type = getenv("LIDAR1_TYPE");
 
@@ -113,7 +99,7 @@ static int lua_hokuyo_open(lua_State* L) {
 
   if (id.empty() || id.compare("-1") == 0)
   {
-    char * lidar0serial = getenv("LIDAR0_SERIAL");
+//    char * lidar0serial = getenv("LIDAR0_SERIAL");
 //    char * lidar1serial = getenv("LIDAR1_SERIAL");
 
 //    if ( !lidar0serial || !lidar1serial)
@@ -121,14 +107,8 @@ static int lua_hokuyo_open(lua_State* L) {
 //      luaL_error(L, "LIDAR0_SERIAL and/or LIDAR1_SERIAL are not defined\n");
 //      return -1;
 //    }
-    if ( !lidar0serial )
-    {
-      luaL_error(L, "LIDAR0_SERIAL are not defined\n");
-      return -1;
-    }
 
-
-    if (serial.compare(lidar0serial) == 0)
+    if (serial.compare(lidarSerial) == 0)
     {
       id = string("0");
       lidarTypeStr = string(lidar0Type);
@@ -217,14 +197,6 @@ static int lua_hokuyo_open(lua_State* L) {
     PRINT_INFO("Error setting the scan parameters\n");
     exit(1);
   }
-
-
-  double timeout_sec = 0.1;
-  double time_stamp;
-
-  vector< vector<unsigned int> > values;
-  vector<double> timeStamps;
-
 
   //fill the lidarScan static values
   lidarScan.ranges.size = nPoints;

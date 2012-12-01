@@ -22,7 +22,11 @@ function ShutDownFN()
   os.exit(1);
 end
 
-Hokuyo.open();
+hokuyo = {}
+hokuyo.serial = "00805676"
+--hokuyo.serial = "00907258"
+hokuyo.device = "/dev/ttyACM0"
+Hokuyo.open(hokuyo.device, hokuyo.serial);
 
 cntr = 0;
 t0 = unix.time();

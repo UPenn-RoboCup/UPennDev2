@@ -34,20 +34,19 @@ HokuyoCircularHardware * dev = NULL;
 LidarScan lidarScan;
 
 static int lua_hokuyo_shutdown(lua_State *L) {
-  std::cout << "Proper Shutdown Hokuyo" << std::endl;
   PRINT_INFO("exiting..\n");
   if (dev)
   { 
     PRINT_INFO("Stopping thread\n");
     if (dev->StopThread())
     {
-      PRINT_ERROR("could not stop thread\n");
+      luaL_error(L, "could not stop thread\n");
     }
 
     PRINT_INFO("Stopping device\n");
     if (dev->StopDevice())
     {
-      PRINT_ERROR("could not stop device\n");
+      luaL_error(L, "could not stop device\n");
     }
 
     dev->Disconnect();
@@ -104,7 +103,7 @@ static int lua_hokuyo_open(lua_State* L) {
   PRINT_INFO("Connecting to device "<< address <<"\n");
   if (dev->Connect(address,baudRate))   //args: device name, baud rate
   {
-    PRINT_ERROR("could not connect\n");
+    luaL_error(L, "could not connect\n");
     return -1;
   }
 
@@ -120,12 +119,12 @@ static int lua_hokuyo_open(lua_State* L) {
 
 //    if ( !lidar0serial || !lidar1serial)
 //    {
-//      PRINT_ERROR("LIDAR0_SERIAL and/or LIDAR1_SERIAL are not defined\n");
+//      luaL_error(L, "LIDAR0_SERIAL and/or LIDAR1_SERIAL are not defined\n");
 //      return -1;
 //    }
     if ( !lidar0serial )
     {
-      PRINT_ERROR("LIDAR0_SERIAL are not defined\n");
+      luaL_error(L, "LIDAR0_SERIAL are not defined\n");
       return -1;
     }
 
@@ -142,7 +141,7 @@ static int lua_hokuyo_open(lua_State* L) {
 //    }
     else
     {
-      PRINT_ERROR("lidar id is not defined and current serial (" <<serial<<") does not match neither LIDAR0_SERIAL nor LIDAR1_SERIAL\n");
+      luaL_error(L, "lidar id is not defined and current serial (\" %s\") does not match neither LIDAR0_SERIAL nor LIDAR1_SERIAL\n", serial.c_str());
       return -1;
     }
     PRINT_INFO("Sensor identified as LIDAR"<<id<<"\n");
@@ -167,7 +166,7 @@ static int lua_hokuyo_open(lua_State* L) {
       maxPoints = 769;
       break;
     default:
-      PRINT_ERROR("unknown sensor type: " << lidarType << "\n");
+      luaL_error(L, "unknown sensor type: \" %d\"\n", lidarType);
       return -1;
   }
 
@@ -175,7 +174,7 @@ static int lua_hokuyo_open(lua_State* L) {
     nPoints = maxPoints;
   else if (nPoints > maxPoints)
   {
-    PRINT_ERROR("nPoints is larger than maxPoints : " << nPoints << " > " << maxPoints << "\n");
+    luaL_error(L, "nPoints is larger than maxPoints : \" %d \" > \" %d \"\n", nPoints, maxPoints);
     return -1;
   }
 
@@ -219,7 +218,7 @@ static int lua_hokuyo_open(lua_State* L) {
 
   //get the special skip value (if needed) and scan type, depending on the scanName and sensor type
   if (dev->GetScanTypeAndSkipFromName(sensorType, scanName, &newSkip, &scanType)){
-    PRINT_ERROR("Error getting the scan parameters\n");
+    luaL_error(L, "Error getting the scan parameters\n");
     exit(1);
   }
 
@@ -232,7 +231,7 @@ static int lua_hokuyo_open(lua_State* L) {
   PRINT_INFO("Starting thread\n");
   if (dev->StartThread())
   {
-    PRINT_ERROR("could not start thread\n");
+    luaL_error(L, "could not start thread\n");
     return -1;
   }
 
@@ -263,7 +262,7 @@ static int lua_hokuyo_open(lua_State* L) {
 //  HeartBeatPublisher hBeatPublisher;
 //  if ( hBeatPublisher.Initialize((char*)processName.c_str(),(char*)lidarScanMsgName.c_str()) )
 //  {
-//    PRINT_ERROR("could not initialize the heartbeat publisher\n");
+//    luaL_error(L, "could not initialize the heartbeat publisher\n");
 //    return -1;
 //  }
 
@@ -311,7 +310,7 @@ static int lua_hokuyo_update(lua_State *L) {
 //      {
 //        if (hBeatPublisher.Publish(0))
 //        {
-//          PRINT_ERROR("could not publish heartbeat\n");
+//          luaL_error(L, "could not publish heartbeat\n");
 //          //return -1;
 //        }
 //      }
@@ -327,7 +326,7 @@ static int lua_hokuyo_update(lua_State *L) {
 
   else
   {
-    PRINT_ERROR("could not get values (timeout)\n");
+    luaL_error(L, "could not get values (timeout)\n");
   }
 
   return 1;

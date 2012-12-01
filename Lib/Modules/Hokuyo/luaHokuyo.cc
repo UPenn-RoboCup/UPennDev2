@@ -14,7 +14,7 @@
 
 using namespace std;
 using namespace Upenn;
-using namespace Magic;
+//using namespace Magic;
 
 
 #define HOKUYO_DEF_DEVICE "/dev/ttyACM0"
@@ -34,6 +34,7 @@ enum { HOKUYO_TYPE_UTM,
      };
 
 HokuyoCircularHardware * dev = NULL;
+Magic::LidarScan lidarScan;
 
 static int lua_hokuyo_shutdown(lua_State *L) {
   std::cout << "Proper Shutdown Hokuyo" << std::endl;
@@ -59,15 +60,7 @@ static int lua_hokuyo_shutdown(lua_State *L) {
   return 1;
 }
 
-static const struct luaL_reg hokuyo_lib [] = {
-  {"shutdown", lua_hokuyo_shutdown}, 
-  {NULL, NULL}
-};
-
-int luaopen_Hokuyo(lua_State *L) {
-  luaL_register(L, "Hokuyo", hokuyo_lib);
-
-  
+static int lua_hokuyo_open(lua_State* L) {
   string address = string(HOKUYO_DEF_DEVICE);
   string ipcHost = string("localhost");
 
@@ -81,14 +74,14 @@ int luaopen_Hokuyo(lua_State *L) {
   
   string logName          = string(HOKUYO_DEF_LOG_NAME) + id;
 
-  char * robotIdStr       = getenv("ROBOT_ID");
-  if (!robotIdStr)
-  {
-    printf("ROBOT_ID must be defined\n");
-    return -1;
-  }
-
-  string robotName        = string("Robot") + robotIdStr;
+//  char * robotIdStr       = getenv("ROBOT_ID");
+//  if (!robotIdStr)
+//  {
+//    printf("ROBOT_ID must be defined\n");
+//    return -1;
+//  }
+//
+//  string robotName        = string("Robot") + robotIdStr;
   
   char * lidar0Type = getenv("LIDAR0_TYPE");
 //  char * lidar1Type = getenv("LIDAR1_TYPE");
@@ -192,13 +185,13 @@ int luaopen_Hokuyo(lua_State *L) {
   PRINT_INFO("Number of points in scan = " << nPoints << "\n");
 
 
-  string lidarScanMsgName = robotName + "/Lidar" + id;
-  //connect to ipc
-  string processName      = string("runHokuyo") + id; 
-  IPC_connectModule(processName.c_str(),ipcHost.c_str());
-
-  IPC_defineMsg(lidarScanMsgName.c_str(),IPC_VARIABLE_LENGTH,
-                 Magic::LidarScan::getIPCFormat());
+//  string lidarScanMsgName = robotName + "/Lidar" + id;
+//  //connect to ipc
+//  string processName      = string("runHokuyo") + id; 
+//  IPC_connectModule(processName.c_str(),ipcHost.c_str());
+//
+//  IPC_defineMsg(lidarScanMsgName.c_str(),IPC_VARIABLE_LENGTH,
+//                 Magic::LidarScan::getIPCFormat());
 
 /*
   if (dev->InitializeLogging(logName))   //initialize logging
@@ -262,7 +255,7 @@ int luaopen_Hokuyo(lua_State *L) {
 
 
   //fill the lidarScan static values
-  Magic::LidarScan lidarScan;
+//  Magic::LidarScan lidarScan;
   lidarScan.ranges.size = nPoints;
   lidarScan.ranges.data = new float[lidarScan.ranges.size];
   lidarScan.startAngle  = -135.0/180.0*M_PI;;
@@ -271,16 +264,88 @@ int luaopen_Hokuyo(lua_State *L) {
   lidarScan.counter     = 0;
   lidarScan.id          = 0;
 
-  HeartBeatPublisher hBeatPublisher;
-  if ( hBeatPublisher.Initialize((char*)processName.c_str(),(char*)lidarScanMsgName.c_str()) )
-  {
-    PRINT_ERROR("could not initialize the heartbeat publisher\n");
-    return -1;
-  }
+//  HeartBeatPublisher hBeatPublisher;
+//  if ( hBeatPublisher.Initialize((char*)processName.c_str(),(char*)lidarScanMsgName.c_str()) )
+//  {
+//    PRINT_ERROR("could not initialize the heartbeat publisher\n");
+//    return -1;
+//  }
 
   Timer scanTimer;
   scanTimer.Tic();
   int cntr =0;
+
+  return 1;
+}
+
+static int lua_hokuyo_update(lua_State *L) {
+
+  double timeout_sec = 0.1;
+  double time_stamp;
+
+  vector< vector<unsigned int> > values;
+  vector<double> timeStamps;
+
+  if (dev->GetValues(values,timeStamps,timeout_sec) == 0)
+  {
+    int numPackets = values.size();
+    //printf("num packets = %d\n",numPackets);
+    for (int j=0; j<numPackets; j++)
+    {
+//      cntr++;
+      time_stamp = timeStamps[j];
+      
+      //copy ranges
+      vector<unsigned int> & ranges = values[j];
+      
+      //fill the LidarScan packet
+      lidarScan.startTime = lidarScan.stopTime = time_stamp;
+      lidarScan.counter++;
+      
+      float * rangesF = lidarScan.ranges.data;
+      for (unsigned int jj=0;jj<lidarScan.ranges.size; jj++)
+        *rangesF++ = (float)ranges[jj]*0.001;
+
+
+//      //publish messages
+//      IPC_publishData(lidarScanMsgName.c_str(),&lidarScan);
+//
+      //publis heart beat message
+      if (lidarScan.counter % 40 == 0)
+      {
+//        if (hBeatPublisher.Publish(0))
+//        {
+//          PRINT_ERROR("could not publish heartbeat\n");
+//          //return -1;
+//        }
+      }
+
+      //printf(".");fflush(stdout);
+//      if( cntr % 40 == 0)
+//      {
+//        double dt = scanTimer.Toc(); scanTimer.Tic();
+//        printf("scan rate = %f\n",40/dt);
+//      }
+    }
+  }
+
+  else
+  {
+    PRINT_ERROR("could not get values (timeout)\n");
+  }
+
+  return 1;
+}
+
+static const struct luaL_reg hokuyo_lib [] = {
+  {"open", lua_hokuyo_open},
+  {"update", lua_hokuyo_update},
+  {"shutdown", lua_hokuyo_shutdown}, 
+  {NULL, NULL}
+};
+
+int luaopen_Hokuyo(lua_State *L) {
+  luaL_register(L, "Hokuyo", hokuyo_lib);
 
   return 1;
 }

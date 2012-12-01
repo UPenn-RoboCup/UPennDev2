@@ -20,9 +20,7 @@ dev.camera = 'WebotsOPCam';
 dev.kinematics = 'CharliKinematics';
 dev.game_control='WebotsGameControl';
 dev.team='TeamNull';
---dev.walk = 'NewWalk';
-dev.walk = 'NewNewWalk';
-dev.walk = 'NewNewNewNewWalk';
+dev.walk = 'BetterWalk';
 dev.kick = 'NewKick';
 
 -- Game Parameters

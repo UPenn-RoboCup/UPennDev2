@@ -8,9 +8,6 @@
 
 #include "HokuyoCircularHardware.hh"
 
-#ifdef USE_HARDWARE_LOGGING
-  #include "SensorDataTypes.hh"
-#endif
 #include "ErrorMessage.hh"
 
 using namespace Upenn;
@@ -25,14 +22,6 @@ HokuyoCircularHardware::HokuyoCircularHardware(int bufferSize, int numBuffers)
   //default scan type
   this->scanTypeName        = string("range");
   
-#ifdef USE_HARDWARE_LOGGING
-  //header to write to log file if logging is enabled
-  this->logInfoHeader       = string("CREATOR HokuyoCircularHardware\n");
-  
-  //log format for serialization
-  this->logFormat           = string(HokuyoScan::getIPCFormat());
-  this->logInfoHeader      += "IPC_LOG_FORMAT " + this->logFormat + "\n";
-#endif
 }
 
 ///////////////////////////////////////////////////////////////////
@@ -172,46 +161,6 @@ int HokuyoCircularHardware::GetData(char * writePtr, int maxLength,
       //fill in the remaining output variables
       timestamp = this->GetAbsoluteTime();
       dataLength = numData * sizeof(unsigned int);
-
-#ifdef USE_HARDWARE_LOGGING
-      if (needToLog)
-      {
-        if (!this->logger)
-        {
-          PRINT_ERROR("logging is enabled, but logger is null\n");
-          return -1;
-        }
-      
-        //pack the data struct for logging
-        HokuyoScan raw;
-        raw.ranges.size      = numData;
-        raw.ranges.data      = (unsigned int *)writePtr;
-        raw.timestamp        = timestamp; 
-
-        //serialize data - this allocates memory using IPC calls
-        //this memory will be freed in DeviceInterface when the logger
-        //writes the data (FreeLogMem() function)
-        IPC_VARCONTENT_TYPE serializedData;
-        if (IPC_marshall(this->logFormatter, &raw, &serializedData) != IPC_OK)
-        {
-          PRINT_ERROR("could not serialize the data for logging!!!\n");
-          return -1;
-        }
-        
-        //create an object to be inserted into the logging queue
-        QBData qbd;
-        qbd.data      = (char*)serializedData.content;
-        qbd.size      = serializedData.length;
-        qbd.timestamp = timestamp;
-        
-        //insert the data into the logging queue
-        if (this->logger->Write(&qbd))
-        {
-          PRINT_ERROR("could not log data\n");
-          return -1;
-        }
-      }
-#endif
       return 0;
     } 
 

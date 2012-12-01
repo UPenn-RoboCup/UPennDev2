@@ -23,18 +23,6 @@
 void setup_c_options(getopt_t *gopt);
 int emit_c(lcmgen_t *lcm);
 
-void setup_java_options(getopt_t *gopt);
-int emit_java(lcmgen_t *lcm);
-
-void setup_python_options(getopt_t *gopt);
-int emit_python(lcmgen_t *lcm);
-
-void setup_csharp_options(getopt_t *gopt);
-int emit_csharp(lcmgen_t *lcm);
-
-void setup_cpp_options(getopt_t *gopt);
-int emit_cpp(lcmgen_t *lcm);
-
 void setup_lua_options(getopt_t *gopt);
 int emit_lua(lcmgen_t *lcm);
 
@@ -53,22 +41,6 @@ int main(int argc, char *argv[])
     getopt_add_spacer(gopt, "**** C options ****");
     getopt_add_bool  (gopt, 'c', "c",         0,     "Emit C code");
     setup_c_options(gopt);
-
-    getopt_add_spacer(gopt, "**** C++ options ****");
-    getopt_add_bool  (gopt, 'x', "cpp",         0,     "Emit C++ code");
-    setup_cpp_options(gopt);
-
-    getopt_add_spacer(gopt, "**** Java options ****");
-    getopt_add_bool  (gopt, 'j', "java",      0,     "Emit Java code");
-    setup_java_options(gopt);
-
-    getopt_add_spacer(gopt, "**** Python options ****");
-    getopt_add_bool  (gopt, 'p', "python",      0,     "Emit Python code");
-    setup_python_options(gopt);
-
-    getopt_add_spacer(gopt, "**** C#.NET options ****");
-    getopt_add_bool  (gopt, 0, "csharp",      0,     "Emit C#.NET code");
-    setup_csharp_options(gopt);
 
     getopt_add_spacer(gopt, "**** Lua options ****");
     getopt_add_bool  (gopt, 0, "lua",      0,     "Emit Lua code");
@@ -107,34 +79,6 @@ int main(int argc, char *argv[])
         did_something = 1;
         if (emit_c(lcm)) {
             printf("An error occurred while emitting C code.\n");
-        }
-    }
-
-    if (getopt_get_bool(gopt, "cpp")) {
-        did_something = 1;
-        if (emit_cpp(lcm)) {
-            printf("An error occurred while emitting C++ code.\n");
-        }
-    }
-
-    if (getopt_get_bool(gopt, "java")) {
-        did_something = 1;
-        if (emit_java(lcm)) {
-            perror("An error occurred while emitting Java code.\n");
-        }
-    }
-
-    if (getopt_get_bool(gopt, "python")) {
-        did_something = 1;
-        if (emit_python(lcm)) {
-            printf("An error occurred while emitting Python code.\n");
-        }
-    }
-
-    if (getopt_get_bool(gopt, "csharp")) {
-        did_something = 1;
-        if (emit_csharp(lcm)) {
-            printf("An error occurred while emitting C#.NET code.\n");
         }
     }
 

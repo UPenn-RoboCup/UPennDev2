@@ -9,7 +9,7 @@ LCMINCLUDE = /usr/local/include
 
 NAME = lcm
 
-all: lcm
+all: lcm lcm_rpc_request_t lcm_rpc_response_t 
 #lcm_rpc_t
 
 %.o: %.cc
@@ -17,22 +17,14 @@ all: lcm
 %.o: %.c
 	$(CC) $(CXXFLAGS) $(LUAINCLUDE) -I$(INCLUDES) -o $@ -c $<
 
-lualcm_wrap.c: lualcm.i
-	swig -lua -I$(LCMINCLUDE) $^
-
-lcm: lualcm_wrap.o
+lcm: lualcm.o
 	$(LD) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ `pkg-config --libs lcm`
 
-lcm_rpc_t.c: rpc_t.lcm
-	lcm-gen -c $^
+lcm_%.c lcm_%.h: types/%.lcm
+	lcm-gen -c $<
 
-lcm_rpc_t_wrap.c: lcm_rpc_t.i
-	swig -lua -I$(LCMINCLUDE) $^
-
-lcm_rpc_t: lcm_rpc_t_wrap.o lcm_rpc_t.o
+lcm_%: lcm_%.o lualcm_%.o 
 	$(LD) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ `pkg-config --libs lcm`
-
-
 
 clean:
-	rm -f $(NAME).$(SHLIBEXT) *.o *.so *_wrap.c lualcm_*_t.c lualcm_*_t.h
+	rm -f $(NAME).$(SHLIBEXT) *.o *.so 

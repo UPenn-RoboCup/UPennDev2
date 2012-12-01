@@ -4,7 +4,6 @@
 #include <string>
 #include <vector>
 #include "ErrorMessage.hh"
-#include <ipc.h>
 #include <stdlib.h>
 
 
@@ -180,29 +179,6 @@ static int lua_hokuyo_open(lua_State* L) {
 
   PRINT_INFO("Number of points in scan = " << nPoints << "\n");
 
-
-//  string lidarScanMsgName = robotName + "/Lidar" + id;
-//  //connect to ipc
-//  string processName      = string("runHokuyo") + id; 
-//  IPC_connectModule(processName.c_str(),ipcHost.c_str());
-//
-//  IPC_defineMsg(lidarScanMsgName.c_str(),IPC_VARIABLE_LENGTH,
-//                 Magic::LidarScan::getIPCFormat());
-
-/*
-  if (dev->InitializeLogging(logName))   //initialize logging
-  {
-    PRINT_INFO("could not initialize logging\n");
-    return -1;
-  }
-
-  if (dev->EnableLogging())   //enable logging
-  {
-    PRINT_INFO("could not enable logging\n");
-    return -1;
-  }
-*/
-
   int scanStart=0;      //start of the scan
   int scanEnd=nPoints -1;//1080;      //end of the scan
   int scanSkip=1;       
@@ -259,13 +235,6 @@ static int lua_hokuyo_open(lua_State* L) {
   lidarScan.counter     = 0;
   lidarScan.id          = 0;
 
-//  HeartBeatPublisher hBeatPublisher;
-//  if ( hBeatPublisher.Initialize((char*)processName.c_str(),(char*)lidarScanMsgName.c_str()) )
-//  {
-//    luaL_error(L, "could not initialize the heartbeat publisher\n");
-//    return -1;
-//  }
-
   Timer scanTimer;
   scanTimer.Tic();
   int cntr =0;
@@ -287,7 +256,6 @@ static int lua_hokuyo_update(lua_State *L) {
     //printf("num packets = %d\n",numPackets);
     for (int j=0; j<numPackets; j++)
     {
-//      cntr++;
       time_stamp = timeStamps[j];
       
       //copy ranges
@@ -301,26 +269,6 @@ static int lua_hokuyo_update(lua_State *L) {
       for (unsigned int jj=0;jj<lidarScan.ranges.size; jj++)
         *rangesF++ = (float)ranges[jj]*0.001;
 
-
-//      //publish messages
-//      IPC_publishData(lidarScanMsgName.c_str(),&lidarScan);
-//
-      //publis heart beat message
-//      if (lidarScan.counter % 40 == 0)
-//      {
-//        if (hBeatPublisher.Publish(0))
-//        {
-//          luaL_error(L, "could not publish heartbeat\n");
-//          //return -1;
-//        }
-//      }
-
-      //printf(".");fflush(stdout);
-//      if( cntr % 40 == 0)
-//      {
-//        double dt = scanTimer.Toc(); scanTimer.Tic();
-//        printf("scan rate = %f\n",40/dt);
-//      }
     }
   }
 

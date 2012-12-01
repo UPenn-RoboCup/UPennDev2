@@ -13,7 +13,7 @@
 #include "Hokuyo.hh"
 #include <vector>
 #include "DeviceInterface.hh"
-#include "DataLogger.hh"
+//#include "DataLogger.hh"
 
 using namespace std;
 

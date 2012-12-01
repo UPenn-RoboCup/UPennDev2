@@ -8,10 +8,13 @@ system = uname:read();
 
 package.cpath = cwd.."/?.so;"..package.cpath;
 package.cpath = cwd.."/../../../Player/Lib/?.so;"..package.cpath;
+package.path = cwd.."/../../../Player/Util/?.lua;"..package.path;
+package.path = cwd.."/../../../Player/Config/?.lua;"..package.path;
 
 require('Hokuyo')
 require('signal')
 require('unix')
+require('hcm')
 
 function ShutDownFN()
   print("Proper shutdown")
@@ -29,6 +32,11 @@ while (true) do
   if (cntr % 40 == 0) then
     print("Scan rate "..40/(unix.time() - t0));
     t0 = unix.time();
+  end
+
+  lidar = Hokuyo.retrieve();
+  for k, v in pairs(lidar) do
+    print(k,v)
   end
 
   signal.signal("SIGINT", ShutDownFN);

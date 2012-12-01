@@ -1,7 +1,5 @@
 #include "luaHokuyo.h"
 #include "HokuyoCircularHardware.hh"
-#include "MagicSensorDataTypes.hh"
-#include "MagicStatus.hh"
 #include "Timer.hh"
 #include <string>
 #include <vector>
@@ -14,7 +12,6 @@
 
 using namespace std;
 using namespace Upenn;
-//using namespace Magic;
 
 
 #define HOKUYO_DEF_DEVICE "/dev/ttyACM0"
@@ -34,7 +31,7 @@ enum { HOKUYO_TYPE_UTM,
      };
 
 HokuyoCircularHardware * dev = NULL;
-Magic::LidarScan lidarScan;
+LidarScan lidarScan;
 
 static int lua_hokuyo_shutdown(lua_State *L) {
   std::cout << "Proper Shutdown Hokuyo" << std::endl;
@@ -255,7 +252,6 @@ static int lua_hokuyo_open(lua_State* L) {
 
 
   //fill the lidarScan static values
-//  Magic::LidarScan lidarScan;
   lidarScan.ranges.size = nPoints;
   lidarScan.ranges.data = new float[lidarScan.ranges.size];
   lidarScan.startAngle  = -135.0/180.0*M_PI;;
@@ -311,14 +307,14 @@ static int lua_hokuyo_update(lua_State *L) {
 //      IPC_publishData(lidarScanMsgName.c_str(),&lidarScan);
 //
       //publis heart beat message
-      if (lidarScan.counter % 40 == 0)
-      {
+//      if (lidarScan.counter % 40 == 0)
+//      {
 //        if (hBeatPublisher.Publish(0))
 //        {
 //          PRINT_ERROR("could not publish heartbeat\n");
 //          //return -1;
 //        }
-      }
+//      }
 
       //printf(".");fflush(stdout);
 //      if( cntr % 40 == 0)
@@ -337,9 +333,52 @@ static int lua_hokuyo_update(lua_State *L) {
   return 1;
 }
 
+static int lua_hokuyo_retrieve(lua_State *L) {
+  lua_createtable(L, 0, 1);
+
+  lua_pushstring(L, "counter");
+  lua_pushinteger(L, lidarScan.counter);
+  lua_settable(L, -3);
+
+  lua_pushstring(L, "id");
+  lua_pushinteger(L, lidarScan.id);
+  lua_settable(L, -3);
+
+  lua_pushstring(L, "ranges");
+  lua_createtable(L, lidarScan.ranges.size, 0);
+  for (int i = 0; i < lidarScan.ranges.size; i++) {
+    lua_pushnumber(L, lidarScan.ranges.data[i]);
+    lua_rawseti(L, -2, i+1);
+  }
+  lua_settable(L, -3);
+
+  lua_pushstring(L, "startAngle");
+  lua_pushnumber(L, lidarScan.startAngle);
+  lua_settable(L, -3);
+
+  lua_pushstring(L, "stopAngle");
+  lua_pushnumber(L, lidarScan.stopAngle);
+  lua_settable(L, -3);
+
+  lua_pushstring(L, "angleStep");
+  lua_pushnumber(L, lidarScan.angleStep);
+  lua_settable(L, -3);
+
+  lua_pushstring(L, "startTime");
+  lua_pushnumber(L, lidarScan.startTime);
+  lua_settable(L, -3);
+
+  lua_pushstring(L, "stopTime");
+  lua_pushnumber(L, lidarScan.stopTime);
+  lua_settable(L, -3);
+
+  return 1;
+}
+
 static const struct luaL_reg hokuyo_lib [] = {
   {"open", lua_hokuyo_open},
   {"update", lua_hokuyo_update},
+  {"retrieve", lua_hokuyo_retrieve},
   {"shutdown", lua_hokuyo_shutdown}, 
   {NULL, NULL}
 };

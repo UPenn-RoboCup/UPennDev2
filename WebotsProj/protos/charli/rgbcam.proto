@@ -1,15 +1,8 @@
-# Model of Hokuyo UTM-30LX (range-finder device).
-# specs:
-#  - field : 270 [deg]
-#  - range : 0.1 to 30 [m]
-#  - resolution : 1080 * 0.25 [deg]
-#  - dimension : 0.06 x 0.087 x 0.06 [m]
-#  - weight : 0.37 [kg]
-
+# Model of Hokuyo RGB Camera
 PROTO rgbcam [
 #  field SFVec3f translation 0 0 0
 #  field SFRotation rotation  0 1 0 0
-#  field SFString name "RGB Camera"
+  field SFString name "Camera"
 #  field SFFloat noise 0.0
   field SFVec2f    cameraWindowPosition 0 0
   field SFFloat    cameraPixelSize 1.0
@@ -57,7 +50,7 @@ Camera {
 		          }
 		        }
 		      ]
-		      name "Camera"
+		      name IS name
 		      windowPosition IS cameraWindowPosition
 		      fieldOfView 1.0472
 		      width IS cameraWidth

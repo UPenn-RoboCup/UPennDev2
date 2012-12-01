@@ -3,16 +3,7 @@ OBJECTS  = Hokuyo.o HokuyoCircular.o HokuyoCircularHardware.o \
 #all: runHokuyo luaHokuyo lua_signal
 all: luaHokuyo lua_signal
 
-#include $(MAGIC_DIR)/Makefile.mk
 include ../../Makefile.inc
-
-#MAGIC_LIB_DIR    = $(MAGIC_DIR)/lib
-#MAGIC_INCLUDE_DIR = $(MAGIC_DIR)/include
-
-#INCLUDES += -I$(MAGIC_INCLUDE_DIR)
-#LIB_DIRS += -L$(MAGIC_LIB_DIR)
-#LIBS     += -lpthread 
-# -lSerialDevice -lgz -lipc 
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<

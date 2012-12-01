@@ -1,5 +1,5 @@
 OBJECTS  = Hokuyo.o HokuyoCircular.o HokuyoCircularHardware.o 
-all: runHokuyo luaHokuyo
+all: runHokuyo luaHokuyo lua_signal
 
 #include $(MAGIC_DIR)/Makefile.mk
 include ../../Makefile.inc
@@ -24,6 +24,9 @@ runHokuyo: runHokuyo.cc $(OBJECTS)
 
 luaHokuyo: luaHokuyo.o
 	$(LD) $(LDFLAGS) -o Hokuyo.$(SHLIBEXT) $(LIBOPTS) $^ $(LIB_DIR)
+
+lua_signal: lua_signal.o
+	$(LD) $(LDFLAGS) -o signal.$(SHLIBEXT) $(LIBOPTS) $^ $(LIB_DIR)
 
 clean:
 	rm -f *.$(SHLIBEXT) *.o runHokuyo

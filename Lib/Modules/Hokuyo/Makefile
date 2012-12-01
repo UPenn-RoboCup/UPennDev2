@@ -22,8 +22,8 @@ LIBS     += -lpthread -lSerialDevice -lgz -lipc -ldb_cxx
 runHokuyo: runHokuyo.cc $(OBJECTS)
 	g++ $(INCLUDES) $(LIB_DIRS) $(CPP_FLAGS) -o $@ $^ $(LIBS)
 
-luaHokuyo: luaHokuyo.o
-	$(LD) $(LDFLAGS) -o Hokuyo.$(SHLIBEXT) $(LIBOPTS) $^ $(LIB_DIR)
+luaHokuyo: luaHokuyo.o $(OBJECTS)
+	$(LD) $(LDFLAGS) -o Hokuyo.$(SHLIBEXT) $(LIBOPTS) $^ $(LIB_DIR) $(LIB_DIRS) $(LIBS)
 
 lua_signal: lua_signal.o
 	$(LD) $(LDFLAGS) -o signal.$(SHLIBEXT) $(LIBOPTS) $^ $(LIB_DIR)

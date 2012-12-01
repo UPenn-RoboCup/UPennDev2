@@ -35,9 +35,15 @@ while (true) do
   end
 
   lidar = Hokuyo.retrieve();
-  for k, v in pairs(lidar) do
-    print(k,v)
-  end
+  
+  hcm.set_hokuyo_counter(lidar.counter);
+  hcm.set_hokuyo_id(lidar.id);
+  hcm.set_hokuyo_ranges(lidar.ranges);
+  hcm.set_hokuyo_startAngle(lidar.startAngle);
+  hcm.set_hokuyo_stopAngle(lidar.stopAngle);
+  hcm.set_hokuyo_startTime(lidar.startTime);
+  hcm.set_hokuyo_startTime(lidar.startTime);
+  
 
   signal.signal("SIGINT", ShutDownFN);
   signal.signal("SIGTERM", ShutDownFN);

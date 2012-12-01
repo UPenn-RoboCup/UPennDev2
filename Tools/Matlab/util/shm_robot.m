@@ -44,6 +44,8 @@ global MONITOR %for sending the webots check information
 
 	h.matcmControl = shm(sprintf('matcmControl%d%d%s', h.teamNumber, h.playerID, h.user));
 
+	h.hokuyo = shm(sprintf('hcmHokuyo%d%d%s', h.teamNumber, h.playerID, h.user));
+
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

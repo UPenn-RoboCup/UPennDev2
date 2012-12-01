@@ -12,7 +12,7 @@
 #include <string>
 #include <vector>
 #include "HokuyoCircular.hh"
-#include "DataLoggerQueueDB.hh"
+//#include "DataLoggerQueueDB.hh"
 
 
 #define HOKUYO_CIRCULAR_SENSOR_NUM_STOP_LASER_RETRIES 3

@@ -19,8 +19,8 @@ elseif teamID == 99 then
   print("Starting test_vision");
   dofile("Player/Test/test_vision_webots.lua");
 elseif teamID==22 then
-  print('football')
-  dofile("Player/Test/test_football.lua");
+  print('laser')
+  dofile("Player/Test/test_laser.lua");
 else
 	--Default
 --  dofile("Player/Test/test_joints_webots.lua");

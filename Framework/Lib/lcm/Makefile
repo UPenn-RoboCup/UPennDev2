@@ -1,33 +1,36 @@
 # Makefile used to build Lcm files
+CWD = $(shell pwd)
 
 TARGETS = all clean
 .PHONY: $(TARGETS)
 
-include Makefile.inc
+include ../../../Makefile.inc
 
 LCMINCLUDE = /usr/local/include
 
-LUALCM = lualcm
+NAME = lcm 
 
-all: $(LUALCM) lcm_rpc_t
+all:: lcmgen lcm  lcm_rpc_request_t lcm_rpc_response_t 
+#lcm_rpc_t
 
 %.o: %.cc
 	$(CXX) $(CXXFLAGS) $(LUAINCLUDE) -I$(INCLUDES) -o $@ -c $<
 %.o: %.c
 	$(CC) $(CXXFLAGS) $(LUAINCLUDE) -I$(INCLUDES) -o $@ -c $<
 
-$(LUALCM)_wrap.c: $(LUALCM).i
-	swig -lua -I$(LCMINCLUDE) $(LUALCM).i
-
-$(LUALCM): $(LUALCM)_wrap.o
+lcm: lualcm.o
 	$(LD) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ `pkg-config --libs lcm`
 
-lcm_%.c: types/*.lcm
-	lcm-gen -c $<
+lcmgen::
+	cd lcmgen && make && cd $(CWD)
 
-lcm_rpc_t: lcm_rpc_t.o lualcm_rpc_t.o
-	$(LD) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ `pkg-config --libs lcm` 
+lcm_%.c lcm_%.h: types/%.lcm
+	./lcmgen/lcmgen -c $<
+	./lcmgen/lcmgen --lua $<
 
+lcm_%: lcm_%.o lualcm_%.o 
+	$(LD) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ `pkg-config --libs lcm`
 
 clean:
-	rm -f $(LUALCM).$(SHLIBEXT) *.o *.so *_wrap.c lcm_*_t.h
+	rm -f $(NAME).$(SHLIBEXT) *.o *.so lcm_*_t.* lualcm_*_t.*
+	cd lcmgen && make clean && cd $(CWD)

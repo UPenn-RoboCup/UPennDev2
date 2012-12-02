@@ -17,6 +17,8 @@ require('vector')
 require 'WebotsLaser'
 print( "LIDAR Dim:", WebotsLaser.get_width(), WebotsLaser.get_height())
 nlidar_readings = WebotsLaser.get_width() * WebotsLaser.get_height();
+require 'rcm'
+--
 
 -- Initialize Variables
 webots = false;
@@ -105,7 +107,9 @@ function update()
 	-- Update the laser scanner
 	lidar_scan = WebotsLaser.get_scan()
 	-- Set the Range Comm Manager values
-	--rcm.set_range_returns(lidar_scan)
+	rcm.set_lidar_ranges( carray.pointer(lidar_scan) );
+	rcm.set_lidar_timestamp( Body.get_time() )
+	--print("Laser data:",unpack(rcm.get_lidar_ranges()))
 
   -- Check if the last update completed without errors
   lcount = lcount + 1;
@@ -132,16 +136,13 @@ while (true) do
   process_keyinput();
   update();
 
-  -- Debug Messages
+  -- Debug Messages every 1 second
   t_diff = Body.get_time() - (t_last or 0);
   if(t_diff>1) then
-    print("Debug...")
-		print("Laser data: ",lidar_scan)
-		print( "Pointer: ",carray.pointer(lidar_scan))
 		lmax = -999;lmin = 999;
 		for i=1,nlidar_readings,10 do
 			if lidar_scan[i]<5 then
-			print(i,lidar_scan[i])
+			--print(i,lidar_scan[i])
 			if lidar_scan[i]>lmax then
 				lmax = lidar_scan[i];
 				--print('new max!',i)
@@ -153,7 +154,6 @@ while (true) do
 			end
 		end
 		print('Laser ranges:', lmin,lmax)
-		--print("Laser data: ", vector.new(lidar_scan) )
     t_last = Body.get_time();
   end
 

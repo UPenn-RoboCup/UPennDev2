@@ -42,6 +42,27 @@ static char *dots_to_underscores(const char *s)
     return p;
 }
 
+static char *remove_dots_and_above(const char *s)
+{
+    char *p = strdup(s);
+
+    int idx = 0;
+    for (char *t=p; *t!=0; t++) {
+        idx++;
+        if (*t == '_') {
+          break;
+        }
+    }
+    int len = strlen(p);
+    printf("%d %d\n", idx, len);
+    int t = 0;
+    for (t = 0; t < (len-idx); t++)
+      p[t] = p[t+idx];
+    p[t] = '\0';
+    printf("%s\n", p);
+    return p;
+}
+
 static void emit_auto_generated_warning(FILE *f)
 {
     fprintf(f,
@@ -192,14 +213,14 @@ static void emit_header_luaopen(lcmgen_t *lcm, FILE *f, char *name)
     fprintf(f, "\n");
 }
 
-static void emit_lua_module_struct(lcmgen_t *lcm, FILE *f, char *name)
+static void emit_lua_module_struct(lcmgen_t *lcm, FILE *f, char *name, char *shortname)
 {
 //    printf("%s\n", name);    
     fprintf(f, "static const struct luaL_reg %s_methods[] = {\n", name);
-    fprintf(f, "%*s{\"%s_publish\", lua_%s_publish},\n", INDENT(1), "", name, name);
-    fprintf(f, "%*s{\"%s_subscribe\", lua_%s_subscribe},\n", INDENT(1), "", name, name);
-    fprintf(f, "%*s{\"%s_unsubscribe\", lua_%s_unsubscribe},\n", INDENT(1), "", name, name);
-    fprintf(f, "%*s{\"%s_subscription_set_queue_capacity\",\n", INDENT(1), "", name);
+    fprintf(f, "%*s{\"%s_publish\", lua_%s_publish},\n", INDENT(1), "", shortname, name);
+    fprintf(f, "%*s{\"%s_subscribe\", lua_%s_subscribe},\n", INDENT(1), "", shortname, name);
+    fprintf(f, "%*s{\"%s_unsubscribe\", lua_%s_unsubscribe},\n", INDENT(1), "", shortname, name);
+    fprintf(f, "%*s{\"%s_subscription_set_queue_capacity\",\n", INDENT(1), "", shortname);
     fprintf(f, "%*slua_%s_subscription_set_queue_capacity},\n", INDENT(4), "", name);
     fprintf(f, "%*s{NULL, NULL},\n", INDENT(1), "");
     fprintf(f, "};\n");
@@ -271,7 +292,7 @@ static void emit_lua_encode(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     char *tn = ls->structname->lctypename;
     char *tn_ = dots_to_underscores(tn);
 
-    emit(0,"static void lua_%s_encode(lua_State *L, const %s *msg)", tn_, tn_);
+    emit(0,"static void lua_%s_encode(lua_State *L, %s *msg)", tn_, tn_);
 
     emit(0,"{");
     for (unsigned int m = 0; m < g_ptr_array_size(ls->members); m++) {
@@ -302,7 +323,7 @@ static void emit_lua_encode(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
                 emit_end("(L, 4);");
             }
         }
-        emit(1, "lua_pop(L ,1)\n");
+        emit(1, "lua_pop(L ,1);\n");
     }
 
     emit(0,"}");
@@ -340,7 +361,7 @@ static void emit_lua_decode(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 //                emit_end("%s;", lm->membername);
             }
         }
-        emit(1, "lua_settable(L ,-3)\n");
+        emit(1, "lua_settable(L ,-3);\n");
     }
 
     emit(0,"}");
@@ -444,10 +465,10 @@ static void emit_lua_struct_subscribe(lcmgen_t *lcm, FILE *f, lcm_struct_t *lr)
             "}\n\n", ltn_, tn_, tn_, tn_);
    
     fprintf(f,
-            "static int %s_unsubscribe(lua_state *L)\n"
+            "static int %s_unsubscribe(lua_State *L)\n"
             "{\n"
             "  lua_lcm_t *lcm = lua_checklcm(L, 1);\n"
-            "  lcm_%s_subscription_t *subs = NULL;\n"
+            "  %s_subscription_t *subs = NULL;\n"
             "  int result;\n"
             "\n"
             "  if (!lua_islightuserdata(L, 2))\n"
@@ -461,7 +482,7 @@ static void emit_lua_struct_subscribe(lcmgen_t *lcm, FILE *f, lcm_struct_t *lr)
             "}\n\n", ltn_, tn_, tn_, tn_);
 
     fprintf(f,
-            "static int %s_subscription_set_queue_capacity(lua_state *L)\n"
+            "static int %s_subscription_set_queue_capacity(lua_State *L)\n"
             "{\n"
             "  lua_lcm_t *lcm = lua_checklcm(L, 1);\n"
             "  %s_subscription_t *subs = NULL;\n"
@@ -469,7 +490,7 @@ static void emit_lua_struct_subscribe(lcmgen_t *lcm, FILE *f, lcm_struct_t *lr)
             "\n"
             "  if (!lua_islightuserdata(L, 2))\n"
             "    return luaL_error(L, \"invalid subscription handle\");\n"
-            "  subs = (%s_t_subscription_t *)lua_touserdata(L, 2);\n"
+            "  subs = (%s_subscription_t *)lua_touserdata(L, 2);\n"
             "\n"  
             "  /* set queue capacity for subscription */\n"
             "  num_messages = luaL_checkint(L, 3);\n"
@@ -493,6 +514,7 @@ int emit_lua_struct(lcmgen_t *lcmgen, lcm_struct_t *lr) {
     char *tn = lr->structname->lctypename;
     char *tn_ = dots_to_underscores(tn);
     char *ltn_ = sprintfalloc("lua%s", tn_);
+    char *n_ = remove_dots_and_above(tn_);
     char *header_name = sprintfalloc("%s/%s.h", 
                         getopt_get_string(lcmgen->gopt, "lpath"), ltn_);
     char *c_name      = sprintfalloc("%s/%s.c", 
@@ -538,7 +560,7 @@ int emit_lua_struct(lcmgen_t *lcmgen, lcm_struct_t *lr) {
         emit_lua_struct_publish(lcmgen, f, lr );
         emit_lua_struct_subscribe(lcmgen, f, lr );
 
-        emit_lua_module_struct(lcmgen, f, tn_);
+        emit_lua_module_struct(lcmgen, f, tn_, n_);
 
         fclose(f);
     }

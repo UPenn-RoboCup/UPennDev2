@@ -1,8 +1,8 @@
 function initMapProps
 global MAPS POSE
 
-%MAPS.res        = 0.05;
-MAPS.res        = 0.1;
+MAPS.res        = 0.05;
+%MAPS.res        = 0.1;
 MAPS.invRes     = 1/MAPS.res;
 
 MAPS.windowSize = 10;

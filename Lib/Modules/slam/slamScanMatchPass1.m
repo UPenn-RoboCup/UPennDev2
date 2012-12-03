@@ -6,20 +6,20 @@ dyaw1 = 1.0/180.0*pi;
 %resolution of the candidate poses
 %TODO: make this dependent on angular velocity / motion speed
 
-tEncoders = ENCODERS.counts.t;
+%tEncoders = ENCODERS.counts.t;
 tLidar0   = LIDAR0.scan.startTime;
 
-if abs(tLidar0-tEncoders) < 0.1
+%if abs(tLidar0-tEncoders) < 0.1
   nxs1  = 5;
   nys1  = 5;
   dx1   = 0.02;
   dy1   = 0.02;
-else
-  nxs1  = 11;
-  nys1  = 11;
-  dx1   = 0.05;
-  dy1   = 0.05;
-end
+%else
+%  nxs1  = 11;
+%  nys1  = 11;
+%  dx1   = 0.05;
+%  dy1   = 0.05;
+%end
 
 yawRange1 = floor(nyaw1/2);
 xRange1   = floor(nxs1/2);

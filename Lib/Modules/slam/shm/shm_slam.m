@@ -1,8 +1,10 @@
 function [local_map global_map] = shm_slam()
 
-global LIDAR IMU
+global LIDAR IMU OMAP SLAM MAPS
 
 init_slam();
+figure(1);
+clf;
 
 %% Run the update
 while 1
@@ -13,11 +15,21 @@ while 1
     data = {};
     data.ranges = myranges.ranges;
     data.startTime = myranges.t;
-    IMU.data.t = myranges.t;;
-    IMU.tLastArrival = myranges.t;;
+    IMU.data.t = myranges.t;
+    IMU.tLastArrival = myranges.t;
     
     shm_slam_process_lidar0(data);
-    pause(.1);
+    
+    % Simple plot
+    figure(1);
+    image( OMAP.map.data )
+    colormap(gray)
+    hold on;
+    img_coords = MAPS.invRes * [SLAM.x,SLAM.y] + [MAPS.map.sizex MAPS.map.sizey]/2;
+    plot(img_coords(2),img_coords(1),'y.','MarkerSize',20)
+    title(sprintf('x:%f, y:%f, yaw: %f',SLAM.x,SLAM.y,SLAM.yaw*180/pi));
+    
+    pause(.05);
 end
 
 end

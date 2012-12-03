@@ -229,7 +229,8 @@ if (mod(SLAM.lidar0Cntr,20) == 0)
   xiCenter = ceil((SLAM.x - OMAP.xmin) * OMAP.invRes);
   yiCenter = ceil((SLAM.y - OMAP.ymin) * OMAP.invRes);
 
-  windowSize = 30 *OMAP.invRes;
+  %windowSize = 30 *OMAP.invRes;
+  windowSize = 10 *OMAP.invRes;
   ximin = ceil(xiCenter - windowSize/2);
   ximax = ximin + windowSize - 1;
 

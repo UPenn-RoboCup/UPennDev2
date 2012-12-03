@@ -4,7 +4,7 @@ global IMU
 ret = 0;
 if isempty(IMU),return, end
 if ~isfield(IMU,'data')
-  fprintf(1,'waiting for initial imu message\n');
+  fprintf(1,'waiting for initial imu message 1\n');
   return;
 end
 if ~isfield(IMU.data,'t')
@@ -13,12 +13,12 @@ if ~isfield(IMU.data,'t')
 end
 
 if isempty(IMU.tLastArrival)
-  fprintf(1,'waiting for initial imu message\n');
+  fprintf(1,'waiting for initial imu message 2\n');
   return;
 end
 
 %check if data is old
-currTime = GetUnixTime();
+currTime = 0;
 dt = currTime - IMU.tLastArrival;
 if ( dt > IMU.timeout)
   fprintf(1,'imu data is old!! : dt = %f\n',dt);

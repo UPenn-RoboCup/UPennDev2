@@ -17,7 +17,9 @@ OBJECTS = emit_c.o \
 INCLUDES += `pkg-config --cflags glib-2.0`
  
 CXXFLAGS += -std=c99
-GLIB_LIBS = -pthread -lgthread-2.0 -lglib-2.0
+CFLAGS += -std=c99
+#GLIB_LIBS = -pthread -lgthread-2.0 -lglib-2.0
+GLIB_LIBS = `pkg-config --libs glib-2.0`
 ifeq ($(OSTYPE),darwin)
 else
 GLIB_LIBS += -lrt
@@ -29,11 +31,11 @@ endif
 %.o: %.cc
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
 %.o: %.c
-	$(CC) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
+	$(CC) $(CFLAGS) $(INCLUDES) -o $@ -c $<
 
 
 lcmgen: $(OBJECTS)
-	g++ $(INCLUDES) $(LIB_DIRS) $(CPP_FLAGS) -o $@ $^ $(GLIB_LIBS)
+	g++ $(INCLUDES) $(LIB_DIRS) $(CFLAGS) -o $@ $^ $(GLIB_LIBS)
 
 clean:
 	rm -f lcmgen *.o

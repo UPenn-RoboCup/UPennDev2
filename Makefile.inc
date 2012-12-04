@@ -10,7 +10,6 @@ LD=g++
 LDFLAGS=
 CFLAGS=-O2 -fpic
 CXXFLAGS=-O2 -fpic
-MEXEXT=mexglx
 SHLIBEXT=so
 LIBOPTS=-shared -fpic
 LIBRT=-lrt
@@ -32,17 +31,16 @@ endif
 # Mac specific settings
 ifeq ($(OSTYPE),darwin)
   # Universal Binaries
-  CC=gcc -arch x86_64 -arch i386
-  CXX=g++ -arch x86_64 -arch i386
-  LD=g++ -arch x86_64 -arch i386
+  #CC=gcc -arch x86_64 -arch i386
+  #CXX=g++ -arch x86_64 -arch i386
+  #LD=g++ -arch x86_64 -arch i386
+	# 64 bit only for OSX
+  CC=gcc -arch x86_64
+  CXX=g++ -arch x86_64
+  LD=g++ -arch x86_64
+	
   SHLIBEXT=dylib
   LIBOPTS= -bundle -undefined dynamic_lookup
   LIBRT=
   MODE=$(shell getconf LONG_BIT)
-ifeq ($(MODE),64)
-  MEXEXT=mexmaci64
-else
-  MEXEXT=mexmaci
-endif
-
 endif

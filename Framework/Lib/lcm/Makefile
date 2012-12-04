@@ -25,12 +25,25 @@ lcmgen::
 	@echo "Building the LCM generator..."
 	cd lcmgen && make && cd $(CWD)
 
-#lcm_%.c lcm_%.h: types/%.lcm
-lcm_%: types/%.lcm
+lcm_%.c: types/%.lcm
 	@echo
-	@echo "Building the LCM types..."
+	@echo "Building the LCM types for c..."
 	./lcmgen/lcmgen -c $<
+
+lualcm_%.c: types/%.lcm
+	@echo
+	@echo "Building the LCM types for lua..."
 	./lcmgen/lcmgen --lua $<
+
+lcm_%.o: lcm_%.c
+	@echo
+	@echo "Building the LCM modules for types..."
+	$(CC) $(CFLAGS) $(INCLUDES) -o $@ -c $<
+
+lualcm_%.o: lualcm_%.c
+	@echo
+	@echo "Building the LCM modules for types..."
+	$(CC) $(CFLAGS) $(INCLUDES) -o $@ -c $<
 
 lcm_%: lcm_%.o lualcm_%.o 
 	@echo

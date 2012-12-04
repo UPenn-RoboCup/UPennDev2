@@ -1,23 +1,18 @@
 # Makefile used to build Lcm files
-CWD = $(shell pwd)
-
-TARGETS = all clean
-.PHONY: $(TARGETS)
-
 include ../../../Makefile.inc
-
-LCMINCLUDE = /usr/local/include
-
+CWD = $(shell pwd)
 NAME = lcm 
 
-all:: lcmgen lcm  lcm_rpc_request_t lcm_rpc_response_t 
+all:: lcmgen lcm lcm_rpc_request_t lcm_rpc_response_t 
 #lcm_rpc_t
 
 %.o: %.cc
-	$(CXX) $(CXXFLAGS) $(LUAINCLUDE) -I$(INCLUDES) -o $@ -c $<
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
 %.o: %.c
-	$(CC) $(CXXFLAGS) $(LUAINCLUDE) -I$(INCLUDES) -o $@ -c $<
-
+	$(CC) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
+	
 lcm: lualcm.o
 	$(LD) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ `pkg-config --libs lcm`
 

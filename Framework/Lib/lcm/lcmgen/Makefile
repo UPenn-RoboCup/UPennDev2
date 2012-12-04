@@ -13,10 +13,16 @@ OBJECTS = emit_c.o \
 
 .PHONY: $(TARGETS)
 
-INCLUDES +=-I/usr/include/glib-2.0 -I/usr/lib/i386-linux-gnu/glib-2.0/include  
+#INCLUDES +=-I/usr/include/glib-2.0 -I/usr/lib/i386-linux-gnu/glib-2.0/include  
+INCLUDES += `pkg-config --cflags glib-2.0`
  
 CXXFLAGS += -std=c99
-GLIB_LIBS = -pthread -lgthread-2.0 -lrt -lglib-2.0  
+GLIB_LIBS = -pthread -lgthread-2.0 -lglib-2.0
+ifeq ($(OSTYPE),darwin)
+else
+GLIB_LIBS += -lrt
+endif
+
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<

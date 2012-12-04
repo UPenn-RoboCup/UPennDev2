@@ -308,7 +308,7 @@ static void emit_lua_encode(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
         } else {
             if (lcm_is_constant_size_array(lm)) {
                 emit_start(2, "msg->%s = ", lm->membername);
-                emit_continue(map_type_tocommand(lm->type->lctypename, 0));
+                emit_continue( map_type_tocommand(lm->type->lctypename, 0),"%s" );
 //                for (unsigned int d = 0; d < ndim; d++) {
 //                    lcm_dimension_t *ld = (lcm_dimension_t *) g_ptr_array_index(lm->dimensions, d);
 //                    emit_continue("[%s]", ld->size);
@@ -318,8 +318,8 @@ static void emit_lua_encode(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 //                emit(2, "msg->%s = %s%s(L, 4);", lm->membername, map_type_change(lm->type->lctypename),
 //                                map_type_tocommand(lm->type->lctypename, 1));
                 emit_start(2, "msg->%s = ", lm->membername);
-                emit_continue(map_array_type(lm->type->lctypename));
-                emit_continue(map_type_tocommand(lm->type->lctypename, 1));
+                emit_continue(map_array_type(lm->type->lctypename),"%s");
+                emit_continue(map_type_tocommand(lm->type->lctypename, 1),"%s");
                 emit_end("(L, 4);");
             }
         }

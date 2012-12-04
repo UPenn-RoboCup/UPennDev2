@@ -202,7 +202,7 @@ static int inverse_l_leg(lua_State *L) {
   std::vector<double> qLeg;
   std::vector<double> pLeg = lua_checkvector(L, 1);
   Transform trLeg = transform6D(&pLeg[0]);
-  qLeg = kinematics_inverse_r_leg(trLeg);
+  qLeg = kinematics_inverse_l_leg(trLeg);
   lua_pushvector(L, qLeg);
   return 1;
 }
@@ -211,7 +211,7 @@ static int inverse_r_leg(lua_State *L) {
   std::vector<double> qLeg;
   std::vector<double> pLeg = lua_checkvector(L, 1);
   Transform trLeg = transform6D(&pLeg[0]);
-  qLeg = kinematics_inverse_l_leg(trLeg);
+  qLeg = kinematics_inverse_r_leg(trLeg);
   lua_pushvector(L, qLeg);
   return 1;
 }

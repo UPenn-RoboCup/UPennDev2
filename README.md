@@ -9,12 +9,21 @@ This is the development repository for team THOR.
 Dependencies
 ------------
 
-For Ubuntu 12.04, install the necessary dependencies using:
+For Ubuntu 12.04, install necessary dependencies using:
 
     sudo apt-get install build-essential lua5.1 liblua5.1-0-dev luajit swig \
     libboost1.46-dev mesa-common-dev gnuplot libpopt-dev libncurses5-dev
 
     sudo ln -s /usr/bin/luajit* /usr/bin/luajit
+
+Install the numlua library using:
+    
+    sudo apt-get install luarocks libblas-dev liblapack-dev libfftw3-dev \
+    libhdf5-serial-dev
+
+    git clone https://github.com/carvalho/numlua
+    cd numlua
+    sudo luarocks make numlua-0.3-1.rockspec
 
 Build Instructions
 ------------------

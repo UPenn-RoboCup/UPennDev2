@@ -19,7 +19,7 @@ ash:
 	cd Platform/Lib && make && cd $(CWD)
 	cd Platform/ASH && make && cd $(CWD)
 	cd Framework/Robot \
-	&& rm -f Body.lua Kinematics.$(SHLIBEXT) Statics.lua Dynamics.lua \
+	&& rm -f Body.lua Kinematics.* Statics.* Dynamics.* \
 	&& ln -s ../../Platform/ASH/Body.lua Body.lua \
 	&& ln -s ../../Platform/ASH/Mechanics/Kinematics.$(SHLIBEXT) Kinematics.$(SHLIBEXT) \
 	&& ln -s ../../Platform/ASH/Mechanics/Statics.lua Statics.lua \
@@ -41,7 +41,7 @@ teststand:
 	cd Platform/Lib && make && cd $(CWD)
 	cd Platform/Teststand && make && cd $(CWD)
 	cd Framework/Robot \
-	&& rm -f Body.lua Kinematics.lua Statics.lua Dynamics.lua \
+	&& rm -f Body.lua Kinematics.* Statics.* Dynamics.* \
 	&& ln -s ../../Platform/Teststand/Body.lua Body.lua \
 	&& ln -s ../../Platform/Teststand/Mechanics/Kinematics.lua Kinematics.lua \
 	&& ln -s ../../Platform/Teststand/Mechanics/Statics.lua Statics.lua \
@@ -63,7 +63,7 @@ webots_ash:
 	cd Framework/Lib/webots && make && cd $(CWD)
 	cd Platform/WebotsASH && make && cd $(CWD)
 	cd Framework/Robot \
-	&& rm -f Body.lua Kinematics.$(SHLIBEXT) Statics.lua Dynamics.lua \
+	&& rm -f Body.lua Kinematics.* Statics.* Dynamics.* \
 	&& ln -s ../../Platform/WebotsASH/Body.lua Body.lua \
 	&& ln -s ../../Platform/WebotsASH/Mechanics/Kinematics.$(SHLIBEXT) Kinematics.$(SHLIBEXT) \
 	&& ln -s ../../Platform/WebotsASH/Mechanics/Statics.lua Statics.lua \

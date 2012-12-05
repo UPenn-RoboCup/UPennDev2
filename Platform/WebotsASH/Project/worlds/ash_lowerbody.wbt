@@ -6,21 +6,24 @@ WorldInfo {
     "Date: DD MMM YYYY"
   ]
   gravity 0 0 -9.81
+  physics "ash_lowerbody_physics"
+  basicTimeStep 4
 }
 Viewpoint {
   fieldOfView 0.7
-  orientation -0.853763 0.313375 0.415795 4.84166
-  position -1.70469 -2.25073 1.36358
+  orientation -0.997452 0.0466014 0.0540167 4.89398
+  position -0.0447478 -0.902883 1.21128
 }
 Background {
   skyColor [
-    0.4 0.7 1
+    0.117647 0.564706 1
   ]
 }
 PointLight {
+  ambientIntensity 0.75
   location 0 0 100
 }
-DEF Ash_v2 Supervisor {
+DEF Ash Supervisor {
   translation 0 0 0.77
   rotation 1 0 0 1.5708
   children [
@@ -33,7 +36,7 @@ DEF Ash_v2 Supervisor {
           children [
             DEF r_hip_pitch Servo {
               translation -0.0015 0 0
-              rotation -1 0 0 0
+              rotation 1 0 0 0
               children [
                 DEF r_knee_pitch Servo {
                   translation 0 -0.3788 0
@@ -691,7 +694,7 @@ DEF Ash_v2 Supervisor {
                               ]
                             }
                           ]
-                          name "r_ankle_roll_servo"
+                          name "r_ankle_roll"
                           boundingObject Transform {
                             translation 0 -0.015 0.021
                             children [
@@ -708,7 +711,8 @@ DEF Ash_v2 Supervisor {
                               0.0017, 0.002, 0.0005, -0.0001, 0, 0
                             ]
                           }
-                          maxForce 100
+                          maxVelocity 1000
+                          maxForce 10000
                           minPosition -0.349
                           maxPosition 0.349
                         }
@@ -1503,7 +1507,7 @@ DEF Ash_v2 Supervisor {
                           ]
                         }
                       ]
-                      name "r_ankle_pitch_servo"
+                      name "r_ankle_pitch"
                       boundingObject Transform {
                         children [
                           Box {
@@ -1513,7 +1517,8 @@ DEF Ash_v2 Supervisor {
                       }
                       physics Physics {
                       }
-                      maxForce 100
+                      maxVelocity 1000
+                      maxForce 10000
                       minPosition -0.7854
                       maxPosition 0.7854
                     }
@@ -2420,7 +2425,7 @@ DEF Ash_v2 Supervisor {
                       ]
                     }
                   ]
-                  name "r_knee_pitch_servo"
+                  name "r_knee_pitch"
                   boundingObject Transform {
                     translation 0 -0.19 0
                     children [
@@ -2437,7 +2442,8 @@ DEF Ash_v2 Supervisor {
                       0.0348, 0.01188, 0.0284, 0.0058, 0, 0
                     ]
                   }
-                  maxForce 100
+                  maxVelocity 1000
+                  maxForce 10000
                   maxPosition 1.57
                 }
                 DEF UpperLeg_v2:1 Transform {
@@ -3099,7 +3105,7 @@ DEF Ash_v2 Supervisor {
                   ]
                 }
               ]
-              name "r_hip_pitch_servo"
+              name "r_hip_pitch"
               boundingObject Transform {
                 translation 0 -0.1895 0
                 children [
@@ -3116,7 +3122,8 @@ DEF Ash_v2 Supervisor {
                   0.0301, 0.0089, 0.0279, 0, 0.0019, 0.0022
                 ]
               }
-              maxForce 100
+              maxVelocity 1000
+              maxForce 10000
               minPosition -0.785
               maxPosition 0.785
             }
@@ -3911,7 +3918,7 @@ DEF Ash_v2 Supervisor {
               ]
             }
           ]
-          name "r_hip_roll_servo"
+          name "r_hip_roll"
           boundingObject Transform {
             children [
               Box {
@@ -3921,7 +3928,8 @@ DEF Ash_v2 Supervisor {
           }
           physics Physics {
           }
-          maxForce 100
+          maxVelocity 1000
+          maxForce 10000
           minPosition -0.349
           maxPosition 0.349
         }
@@ -4554,7 +4562,7 @@ DEF Ash_v2 Supervisor {
           ]
         }
       ]
-      name "r_hip_yaw_servo"
+      name "r_hip_yaw"
       boundingObject Transform {
         translation 0 0.0275 0
         children [
@@ -4571,13 +4579,13 @@ DEF Ash_v2 Supervisor {
           0.0003, 0.0002, 0.0002, 0, 0, 0
         ]
       }
-      maxForce 100
+      maxVelocity 1000
+      maxForce 10000
       minPosition -0.0872
       maxPosition 0.349
     }
     DEF l_hip_yaw Servo {
       translation 0.0957 0.0428 -0.024
-      rotation 0 -1 0 0
       children [
         DEF l_hip_roll Servo {
           translation 0 0 0.0025
@@ -4585,7 +4593,7 @@ DEF Ash_v2 Supervisor {
           children [
             DEF l_hip_pitch Servo {
               translation -0.0015 0 0
-              rotation -1 0 0 0
+              rotation 1 0 0 0
               children [
                 DEF l_knee_pitch Servo {
                   translation 0 -0.3788 0
@@ -5243,7 +5251,7 @@ DEF Ash_v2 Supervisor {
                               ]
                             }
                           ]
-                          name "l_ankle_roll_servo"
+                          name "l_ankle_roll"
                           boundingObject Transform {
                             translation 0 -0.015 0.021
                             children [
@@ -5260,7 +5268,8 @@ DEF Ash_v2 Supervisor {
                               0.0017, 0.002, 0.0005, -0.0001, 0, 0
                             ]
                           }
-                          maxForce 100
+                          maxVelocity 1000
+                          maxForce 10000
                           minPosition -0.349
                           maxPosition 0.349
                         }
@@ -6055,7 +6064,7 @@ DEF Ash_v2 Supervisor {
                           ]
                         }
                       ]
-                      name "l_ankle_pitch_servo"
+                      name "l_ankle_pitch"
                       boundingObject Transform {
                         children [
                           Box {
@@ -6065,7 +6074,8 @@ DEF Ash_v2 Supervisor {
                       }
                       physics Physics {
                       }
-                      maxForce 100
+                      maxVelocity 1000
+                      maxForce 10000
                       minPosition -0.7854
                       maxPosition 0.7854
                     }
@@ -6972,7 +6982,7 @@ DEF Ash_v2 Supervisor {
                       ]
                     }
                   ]
-                  name "l_knee_pitch_servo"
+                  name "l_knee_pitch"
                   boundingObject Transform {
                     translation 0 -0.19 0
                     children [
@@ -6989,7 +6999,8 @@ DEF Ash_v2 Supervisor {
                       0.0348, 0.01188, 0.0284, 0.0058, 0, 0
                     ]
                   }
-                  maxForce 100
+                  maxVelocity 1000
+                  maxForce 10000
                   maxPosition 1.57
                 }
                 DEF UpperLeg_v2:1 Transform {
@@ -7651,7 +7662,7 @@ DEF Ash_v2 Supervisor {
                   ]
                 }
               ]
-              name "l_hip_pitch_servo"
+              name "l_hip_pitch"
               boundingObject Transform {
                 translation 0 -0.1895 0
                 children [
@@ -7668,7 +7679,8 @@ DEF Ash_v2 Supervisor {
                   0.0301, 0.0089, 0.0279, 0, 0.0019, 0.0022
                 ]
               }
-              maxForce 100
+              maxVelocity 1000
+              maxForce 10000
               minPosition -0.785
               maxPosition 0.785
             }
@@ -8463,7 +8475,7 @@ DEF Ash_v2 Supervisor {
               ]
             }
           ]
-          name "l_hip_roll_servo"
+          name "l_hip_roll"
           boundingObject Transform {
             children [
               Box {
@@ -8473,7 +8485,8 @@ DEF Ash_v2 Supervisor {
           }
           physics Physics {
           }
-          maxForce 100
+          maxVelocity 1000
+          maxForce 10000
           minPosition -0.349
           maxPosition 0.349
         }
@@ -9106,7 +9119,7 @@ DEF Ash_v2 Supervisor {
           ]
         }
       ]
-      name "l_hip_yaw_servo"
+      name "l_hip_yaw"
       boundingObject Transform {
         translation 0 0.0275 0
         children [
@@ -9123,7 +9136,8 @@ DEF Ash_v2 Supervisor {
           0.0003, 0.0002, 0.0002, 0, 0, 0
         ]
       }
-      maxForce 100
+      maxVelocity 1000
+      maxForce 10000
       minPosition -0.0872
       maxPosition 0.349
     }
@@ -10144,6 +10158,22 @@ DEF Ash_v2 Supervisor {
         }
       ]
     }
+    Gyro {
+      rotation 0 0 1 0
+    }
+    Accelerometer {
+    }
+    DEF PHYSICS_RECEIVER Receiver {
+      name "physics_receiver"
+      type "serial"
+      channel 10
+      byteSize 192
+    }
+    DEF PHYSICS_EMITTER Emitter {
+      name "physics_emitter"
+      type "serial"
+      byteSize 96
+    }
   ]
   boundingObject Transform {
     translation 0 0.242 -0.012
@@ -10161,7 +10191,10 @@ DEF Ash_v2 Supervisor {
       0.1341, 0.1207, 0.1761, 0.0002, 0.0004, 0.0007
     ]
   }
+  controller "webots_controller"
+  controllerArgs "walk_tuner"
 }
-MetricFloor {
+DEF FLOOR MetricFloor {
   rotation 1 0 0 1.5708
+  color 0.901961 0.901961 0.980392
 }

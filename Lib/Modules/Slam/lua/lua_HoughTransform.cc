@@ -114,9 +114,3 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   }
 }
 
-// Exposing functions to lua
-static const struct luaL_reg imageProc_lib [] = {
-  {"label_to_mask", lua_label_to_mask},
-
-  {NULL, NULL}
-};

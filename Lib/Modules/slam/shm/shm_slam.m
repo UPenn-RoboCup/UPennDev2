@@ -8,16 +8,19 @@ clf;
 
 %% Run the update
 while 1
+    myranges = LIDAR.get_ranges();
     IMU.data.roll = 0;
     IMU.data.pitch = 0;
     IMU.data.yaw = 0;
-    myranges = LIDAR.get_ranges();
-    data = {};
-    data.ranges = myranges.ranges;
-    data.startTime = myranges.t;
     IMU.data.t = myranges.t;
     IMU.tLastArrival = myranges.t;
     
+    % Update encoders
+    shm_slam_process_odometry(myranges.odom);
+    
+    data = {};
+    data.ranges = myranges.ranges;
+    data.startTime = myranges.t;
     shm_slam_process_lidar0(data);
     
     % Simple plot
@@ -27,7 +30,7 @@ while 1
     hold on;
     img_coords = MAPS.invRes * [SLAM.x,SLAM.y] + [MAPS.map.sizex MAPS.map.sizey]/2;
     plot(img_coords(2),img_coords(1),'y.','MarkerSize',20)
-    title(sprintf('x:%f, y:%f, yaw: %f',SLAM.x,SLAM.y,SLAM.yaw*180/pi));
+    title(sprintf('x:%f, y:%f, yaw: %f',SLAM.xOdom,SLAM.yawOdom,SLAM.yaw*180/pi),'FontSize',12);
     
     pause(.05);
 end
@@ -52,9 +55,10 @@ loadConfig();
 SLAM.updateExplorationMap    = 0;
 SLAM.explorationUpdatePeriod = 5;
 SLAM.plannerUpdatePeriod     = 2;
+myranges = LIDAR.get_ranges();
 
-SLAM.explorationUpdateTime   = ROBOT.wcmRobot.get_time();
-SLAM.plannerUpdateTime       = ROBOT.wcmRobot.get_time();
+SLAM.explorationUpdateTime   = myranges.t;
+SLAM.plannerUpdateTime       = myranges.t;
 poseInit();
 
 SLAM.x            = POSE.xInit;
@@ -90,6 +94,7 @@ dhmapInit;       %horizontal lidar delta map
 % Initialize data structures
 imuInit;
 lidar0Init;
+odometryInit;
 
 %initialize scan matching function
 ScanMatch2D('setBoundaries',OMAP.xmin,OMAP.ymin,OMAP.xmax,OMAP.ymax);

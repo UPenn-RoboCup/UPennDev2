@@ -19,6 +19,7 @@ print( "LIDAR Dim:", WebotsLaser.get_width(), WebotsLaser.get_height())
 nlidar_readings = WebotsLaser.get_width() * WebotsLaser.get_height();
 require 'rcm'
 --
+require 'mcm'
 
 -- Initialize Variables
 webots = false;
@@ -110,7 +111,12 @@ function update()
 	rcm.set_lidar_ranges( carray.pointer(lidar_scan) );
 	rcm.set_lidar_timestamp( Body.get_time() )
 	--print("Laser data:",unpack(rcm.get_lidar_ranges()))
-
+	
+	-- Show the odometry
+	local odom, odom0 = mcm.get_odometry();
+	print('Odometry: ',odom)
+	rcm.set_lidar_odom( vector.new(odom) )
+	
   -- Check if the last update completed without errors
   lcount = lcount + 1;
   if (count ~= lcount) then

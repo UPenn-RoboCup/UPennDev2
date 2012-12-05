@@ -3,9 +3,8 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function shm_slam_process_lidar0(data,name)
-global SLAM LIDAR0 OMAP EMAP POSE IMU CMAP DHMAP MAPS DVMAP TRACK GPS POSES
+global SLAM LIDAR0 OMAP EMAP POSE IMU CMAP DHMAP MAPS DVMAP GPS POSES
 global LIDAR0_TS
-runTrackObs = 1;
 
 if isempty(LIDAR0_TS)
     LIDAR0_TS.ts  = zeros(1,1000);

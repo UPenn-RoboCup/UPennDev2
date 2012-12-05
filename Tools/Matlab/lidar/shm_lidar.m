@@ -18,6 +18,7 @@ h.set_ranges = @set_ranges;
         r = [];
         try
             r.t = h.lidar.get_timestamp();
+            r.odom = h.lidar.get_odom();
             tmp = h.lidar.get_ranges();
             r.ranges = typecast(tmp,'single'); % 16bit precision
         catch

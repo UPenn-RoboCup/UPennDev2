@@ -25,6 +25,13 @@ Install the numlua library using:
     cd numlua
     sudo luarocks make numlua-0.3-1.rockspec
 
+For Mac OSX 10.8, install necessary dependencies using:
+		Xcode from the App Store
+		XQuartz from http://xquartz.macosforge.org/
+		Homebrew from http://mxcl.github.com/homebrew/
+		brew install lua boost gnuplot
+		
+
 Build Instructions
 ------------------
 

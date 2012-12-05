@@ -80,6 +80,28 @@ webots_ash:
 	&& rm -f comms_manager \
 	&& cd $(CWD)
 
+robotis_arm:
+	cd Framework/Lib && make && cd $(CWD)
+	cd Platform/Lib && make && cd $(CWD)
+	cd Platform/RobotisArm && make && cd $(CWD)
+	cd Framework/Robot \
+	&& rm -f Body.lua Kinematics.* Statics.* Dynamics.* \
+	&& ln -s ../../Platform/RobotisArm/Body.lua Body.lua \
+	&& ln -s ../../Platform/RobotisArm/Mechanics/Kinematics.so Kinematics.so \
+	&& ln -s ../../Platform/RobotisArm/Mechanics/Statics.lua Statics.lua \
+	&& ln -s ../../Platform/RobotisArm/Mechanics/Dynamics.lua Dynamics.lua \
+	&& cd $(CWD)
+	cd Config \
+	&& rm -f Config.lua \
+	&& ln -s Config_RobotisArm.lua Config.lua \
+	&& cd $(CWD)
+	cd Run \
+	&& rm -f init_robot \
+	&& rm -f comms_manager \
+	&& ln -s ../Platform/RobotisArm/Init/init_robot init_robot \
+	&& ln -s ../Platform/RobotisArm/Comms/comms_manager comms_manager \
+	&& cd $(CWD)
+
 tools:
 	cd Tools/Lib && make && cd $(CWD)
 
@@ -99,5 +121,6 @@ clean:
 	cd Platform/ASH && make clean && cd $(CWD)
 	cd Platform/Teststand && make clean && cd $(CWD)
 	cd Platform/WebotsASH && make clean && cd $(CWD)
+	cd Platform/RobotisArm && make clean && cd $(CWD)
 
-.PHONY: all ash teststand webots_ash tools clean
+.PHONY: all ash teststand webots_ash robotis_arm tools clean

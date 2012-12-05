@@ -714,6 +714,8 @@ DEF Ash Supervisor {
                           maxForce 10000
                           minPosition -0.785398
                           maxPosition 0.785398
+                          minStop -0.785398
+                          maxStop 0.785398
                         }
                         DEF l_ankle_roll Transform {
                           rotation 1 0 0 1.57
@@ -1518,6 +1520,8 @@ DEF Ash Supervisor {
                       maxForce 10000
                       minPosition -0.349066
                       maxPosition 0.349066
+                      minStop -0.349066
+                      maxStop 0.349066
                     }
                     DEF l_knee_pitch Transform {
                       rotation 1 0 0 1.57
@@ -2443,6 +2447,7 @@ DEF Ash Supervisor {
                   maxVelocity 1000
                   maxForce 10000
                   maxPosition 1.5708
+                  maxStop 1.5708
                 }
                 DEF l_hip_pitch Transform {
                   rotation 1 0 0 1.57
@@ -3125,6 +3130,8 @@ DEF Ash Supervisor {
               maxForce 10000
               minPosition -0.785398
               maxPosition 0.785398
+              minStop -0.785398
+              maxStop 0.785398
             }
             DEF l_hip_roll Transform {
               rotation 1 0 0 1.57
@@ -3929,6 +3936,8 @@ DEF Ash Supervisor {
           maxForce 10000
           minPosition -0.349066
           maxPosition 0.349066
+          minStop -0.349066
+          maxStop 0.349066
         }
         DEF l_hip_yaw Transform {
           rotation 1 0 0 1.57
@@ -4571,6 +4580,8 @@ DEF Ash Supervisor {
       maxForce 10000
       minPosition -0.349066
       maxPosition 0.349066
+      minStop -0.349066
+      maxStop 0.349066
     }
     DEF r_hip_yaw Servo {
       translation -0.024 -0.0957 0.212
@@ -5259,6 +5270,8 @@ DEF Ash Supervisor {
                           maxForce 10000
                           minPosition -0.785398
                           maxPosition 0.785398
+                          minStop -0.785398
+                          maxStop 0.785398
                         }
                         DEF r_ankle_roll Transform {
                           rotation 1 0 0 1.57
@@ -6063,6 +6076,8 @@ DEF Ash Supervisor {
                       maxForce 10000
                       minPosition -0.349066
                       maxPosition 0.349066
+                      minStop -0.349066
+                      maxStop 0.349066
                     }
                     DEF r_knee_pitch Transform {
                       rotation 1 0 0 1.57
@@ -6988,6 +7003,7 @@ DEF Ash Supervisor {
                   maxVelocity 1000
                   maxForce 10000
                   maxPosition 1.5708
+                  maxStop 1.5708
                 }
                 DEF r_hip_pitch Transform {
                   rotation 1 0 0 1.57
@@ -7670,6 +7686,8 @@ DEF Ash Supervisor {
               maxForce 10000
               minPosition -0.785398
               maxPosition 0.785398
+              minStop -0.785398
+              maxStop 0.785398
             }
             DEF r_hip_roll Transform {
               rotation 1 0 0 1.57
@@ -8474,6 +8492,8 @@ DEF Ash Supervisor {
           maxForce 10000
           minPosition -0.349066
           maxPosition 0.349066
+          minStop -0.349066
+          maxStop 0.349066
         }
         DEF r_hip_yaw Transform {
           rotation 1 0 0 1.57

@@ -15,6 +15,9 @@ extern "C" {
 #include "Timer.hh"
 #include <string.h>
 #include <vector>
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
 
 #define MAX_NUM_CELLS 3000000
 

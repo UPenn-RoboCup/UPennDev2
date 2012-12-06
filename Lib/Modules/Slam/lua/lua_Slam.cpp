@@ -11,6 +11,7 @@ extern "C" {
 #endif
 
 #include "lua_binStats.h"
+#include "lua_getMapCellsFromRay.h"
 
 static int lua_test(lua_State *L) {
   lua_createtable(L, 0, 1);
@@ -29,7 +30,7 @@ static int lua_test(lua_State *L) {
 static const struct luaL_reg Slam_lib [] = {
   {"test", lua_test},
   {"binStats", lua_binStats},
-//  {"getMapCellsFromRay", lua_getMapCellsFromRay},
+  {"getMapCellsFromRay", lua_getMapCellsFromRay},
 //  {"HoughTransform", lua_HoughTransform},
 //  {"ScanMatch2D", lua_ScanMatch2D},
 //  {"SubsambleDistance", lua_SubsambleDistance},

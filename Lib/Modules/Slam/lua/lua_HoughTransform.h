@@ -1,5 +1,5 @@
-#undef __lua_HoughTransform_H
-#define  __lua_HoughTransform_H
+#undef   __lua_HoughTransform_h__
+#define  __lua_HoughTransform_h__
 
 int lua_HoughTransform(lua_State *L);
 

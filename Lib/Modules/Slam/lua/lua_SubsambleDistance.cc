@@ -20,19 +20,27 @@ extern "C" {
 #define MAX_NUM_POINTS 1081
 double idxs[MAX_NUM_POINTS];
 
-void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+int lua_SubsambleDistance(lua_State *L)
+//void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
-  if (nrhs != 3)
-    mexErrMsgTxt("need 3 arguments: rs, angleStep, maxdist");
+  if (lua_isnoneornil(L, 3))
+    luaL_error(L,"need 3 arguments: rs, angleStep, maxdist"); 
     
-    
-  double * rs = mxGetPr(prhs[0]);
-  double astep = mxGetPr(prhs[1])[0];
-  double maxdist = mxGetPr(prhs[2])[0];
-  int nrs = mxGetNumberOfElements(prhs[0]);
+  double * rs = (double *)lua_touserdata(L, 1);
+  if ((rs == NULL) || !lua_islightuserdata(L, 1)) {
+    return luaL_error(L, "Input rs not light user data");
+  }
+//  int nrs = mxGetNumberOfElements(prhs[0]);
+  int nrs = sizeof(rs) / sizeof(double);
+
+  double astep = luaL_optnumber(L, 2, 0);
+//  double astep = mxGetPr(prhs[1])[0];
+  double maxdist = luaL_optnumber(L, 3, 0);
+//  double maxdist = mxGetPr(prhs[2])[0];
   
   if (nrs > MAX_NUM_POINTS)
-    mexErrMsgTxt("too many points");
+    luaL_error(L ,"too many points");
+//    mexErrMsgTxt("too many points");
   
   double costh = cos(astep);
   double nextBreak = maxdist;
@@ -67,7 +75,11 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   }
   
   
-  plhs[0] = mxCreateDoubleMatrix(nBreaks,1,mxREAL);
-  memcpy(mxGetData(plhs[0]),idxs,nBreaks*sizeof(double));
+//  plhs[0] = mxCreateDoubleMatrix(nBreaks,1,mxREAL);
+//  memcpy(mxGetData(plhs[0]),idxs,nBreaks*sizeof(double));
+  lua_pushlightuserdata(L, idxs);
+  lua_pushstring(L, "double");
+  lua_pushinteger(L, nBreaks);
+  return 3;
 
 }

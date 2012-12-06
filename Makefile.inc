@@ -34,10 +34,17 @@ ifeq ($(OSTYPE),darwin)
   #CC=gcc -arch x86_64 -arch i386
   #CXX=g++ -arch x86_64 -arch i386
   #LD=g++ -arch x86_64 -arch i386
+	
 	# 64 bit only for OSX
-  CC=gcc -arch x86_64
-  CXX=g++ -arch x86_64
-  LD=g++ -arch x86_64
+  #CC=gcc -arch x86_64
+  #CXX=g++ -arch x86_64
+  #LD=g++ -arch x86_64
+
+	# 64 bit only for OSX
+	# clang!
+  CC=cc
+  CXX=c++
+  LD=ld
 	
   #SHLIBEXT=dylib
   LIBOPTS= -bundle -undefined dynamic_lookup

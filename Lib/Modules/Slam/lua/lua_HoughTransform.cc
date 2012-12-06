@@ -10,7 +10,6 @@ extern "C" {
 }
 #endif
 
-#include "lua_HoughTransform.h"
 #include "HoughTransform.hh"
 #include <iostream>
 #include "Timer.hh"
@@ -26,7 +25,8 @@ vector<double> rhos;
 int * h_transform = NULL;
 int nh = 0;
 
-void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+int lua_HoughTransform(lua_State *L)
+//void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
   Upenn::Timer timer0;
 
@@ -39,22 +39,67 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   vector< pair<double, double> > points;
   double angle_center, angle_range, angle_res, rho_center, rho_range, rho_res;
 
-  double * xs = mxGetPr(prhs[XS]);
-  double * ys = mxGetPr(prhs[YS]);
+  int nlhs = 0;
+//  double * xs = mxGetPr(prhs[XS]);
+  double * xs = (double *)lua_touserdata(L, XS + 1);
+  if ((xs == NULL) || !lua_islightuserdata(L, XS + 1)) {
+    return luaL_error(L, "Input xs not light user data");
+  } else nlhs++;
+//  double * ys = mxGetPr(prhs[YS]);
+  double * ys = (double *)lua_touserdata(L, YS + 1);
+  if ((ys == NULL) || !lua_islightuserdata(L, YS + 1)) {
+    return luaL_error(L, "Input ys not light user data");
+  } else nlhs++;
 
-  int n_xs = mxGetNumberOfElements(prhs[XS]);
-  int n_ys = mxGetNumberOfElements(prhs[YS]);
+//  int n_xs = mxGetNumberOfElements(prhs[XS]);
+  int n_xs = sizeof(n_xs) / sizeof(double); 
+//  int n_ys = mxGetNumberOfElements(prhs[YS]);
+  int n_ys = sizeof(n_ys) / sizeof(double); 
 
   if (n_xs != n_ys)
-    mexErrMsgTxt("xs and ys vectors must be have the same length");
+    luaL_error(L, "xs and ys vectors must be have the same length");
 
-  angle_center = mxGetPr(prhs[A_CENTER])[0];
-  angle_range  = mxGetPr(prhs[A_RANGE])[0];
-  angle_res    = mxGetPr(prhs[A_RES])[0];
+  if (lua_isnoneornil(L, A_CENTER + 1)) 
+    angle_center = 0;
+  else {
+    angle_center = luaL_checknumber(L, A_CENTER + 1);
+    nlhs ++;
+  }
+
+  if (lua_isnoneornil(L, A_RANGE + 1)) 
+    angle_range = 0;
+  else {
+    angle_range  = luaL_checknumber(L, A_RANGE + 1);
+    nlhs ++;
+  }
+
+  if (lua_isnoneornil(L, A_RES + 1))
+    angle_res = 0;
+  else {
+    angle_res = luaL_checknumber(L, A_RES + 1);
+    nlhs ++;
+  }
   
-  rho_center   = mxGetPr(prhs[R_CENTER])[0];
-  rho_range    = mxGetPr(prhs[R_RANGE])[0];
-  rho_res      = mxGetPr(prhs[R_RES])[0];
+  if (lua_isnoneornil(L, R_CENTER + 1))
+    rho_center = 0;
+  else {
+    rho_center = luaL_checknumber(L, R_CENTER + 1);
+    nlhs ++;
+  }
+  
+  if (lua_isnoneornil(L, R_RANGE + 1))
+    rho_range = 0;
+  else {
+    rho_range = luaL_checknumber(L, R_RANGE + 1);
+    nlhs ++;
+  }
+  
+  if (lua_isnoneornil(L, R_RES + 1))
+    rho_res = 0;
+  else {
+    rho_res = luaL_checknumber(L, R_RES + 1);
+    nlhs ++;
+  }
 
   int n_angles, n_rhos;
 
@@ -90,28 +135,42 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   }
 
   if (CalculateHoughTransform(xs, ys, n_xs, angles, rho_center, rho_range, rho_res, h_transform) != 0)
-    mexErrMsgTxt("Could not compute Hough Transform");
+    luaL_error(L,"Could not compute Hough Transform"); 
   
+  int out = 0;
   if (nlhs > 0)
   {    
-    plhs[0] = mxCreateDoubleMatrix(n_rhos, n_angles, mxREAL);
-    double * p_out = mxGetPr(plhs[0]);
+    lua_createtable(L, n_out, 0);
     int * h_tr = h_transform;
-
-    for (int i=0; i< n_out; i++)
-      *(p_out++) = *(h_tr++);
+    for (int cnt = 0; cnt < n_out; cnt ++) {
+      lua_pushnumber(L, *(h_tr++));
+      lua_rawseti(L, -2, cnt + 1);
+    }
+    lua_settable(L, -3);
+    out ++;
   }
 
   if (nlhs>1)
   {
-    plhs[1] = mxCreateDoubleMatrix(n_angles,1,mxREAL);
-    memcpy(mxGetPr(plhs[1]),&(angles[0]),n_angles*sizeof(double));
+    lua_createtable(L, n_angles, 0);
+    for (int cnt = 0; cnt < n_angles; cnt ++) {
+      lua_pushnumber(L, angles[cnt]);
+      lua_rawseti(L, -2, cnt + 1);
+    }
+    lua_settable(L, -3);
+    out ++;
   }
 
   if (nlhs>2)
   {
-    plhs[2] = mxCreateDoubleMatrix(n_rhos,1,mxREAL);
-    memcpy(mxGetPr(plhs[2]),&(rhos[0]),n_rhos*sizeof(double));
+    lua_createtable(L, n_rhos, 0);
+    for (int cnt = 0; cnt < n_rhos; cnt ++) {
+      lua_pushnumber(L, rhos[cnt]);
+      lua_rawseti(L, -2, cnt + 1);
+    }
+    lua_settable(L, -3);
+    out ++;
   }
+  return out;
 }
 

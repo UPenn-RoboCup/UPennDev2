@@ -7,11 +7,11 @@ WorldInfo {
   ]
   gravity 0 0 -9.81
   physics "ash_lowerbody_physics"
-  basicTimeStep 4
+  basicTimeStep 1
 }
 Viewpoint {
-  orientation 0.568505 0.522037 0.635829 1.95096
-  position 1.69022 -0.118125 0.998932
+  orientation 0.530159 0.622999 0.575155 2.18399
+  position 3.62923 0.506953 0.5669
 }
 Background {
   skyColor [
@@ -19,13 +19,15 @@ Background {
   ]
 }
 PointLight {
+  ambientIntensity 0.5
   location 0 0 100
 }
-MetricFloor {
+DEF FLOOR MetricFloor {
   rotation 1 0 0 1.5708
+  color 0.870588 0.870588 0.870588
 }
 DEF Ash Supervisor {
-  translation 0 0 0.6
+  translation 0.0124727 2.77556e-17 0.665266
   children [
     DEF l_hip_yaw Servo {
       translation -0.024 0.0957 0.212

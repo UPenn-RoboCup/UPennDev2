@@ -6,22 +6,22 @@
   mex -O binStats.cc
 */
 
-	#ifdef __cplusplus
-	extern "C" {
-	#endif
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-	#include "lua.h"
-	#include "lualib.h"
-	#include "lauxlib.h"
+#include "lua.h"
+#include "lualib.h"
+#include "lauxlib.h"
 
-	#ifdef __cplusplus
-	}
-	#endif
+#ifdef __cplusplus
+}
+#endif
 
-	#include "HoughTransform.hh"
-	#include <iostream>
-	#include "Timer.hh"
-	#include <string.h>
+#include "HoughTransform.hh"
+#include <iostream>
+#include "Timer.hh"
+#include <string.h>
 
 #include <math.h>
 #include <float.h>
@@ -32,28 +32,35 @@ std::vector<int> count;
 std::vector<double> sumY, sumYY, maxY, minY;
 std::vector<double> nbin;
 
-void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+
+int lua_binStats(lua_State *L)
 {
-  if (nrhs < 2) {
-    mexErrMsgTxt("Need at least two input arguments");
+  double *prX = (double *) lua_touserdata(L, 1); 
+  if ((prX == NULL) || !lua_islightuserdata(L, 1)) {
+    return luaL_error(L, "Input X not light user data");
   }
 
-  int nX = mxGetNumberOfElements(prhs[0]);
-  if (mxGetNumberOfElements(prhs[1]) != nX)
-    mexErrMsgTxt("Number of elements in inputs should match");
+  double *prY = (double *) lua_touserdata(L, 2); 
+  if ((prY == NULL) || !lua_islightuserdata(L, 2)) {
+    return luaL_error(L, "Input Y not light user data");
+  }
 
-  double *prX = mxGetPr(prhs[0]);
-  double *prY = mxGetPr(prhs[1]);
+  int nX = sizeof(prX) / sizeof(double);
+  int nY = sizeof(prY) / sizeof(double);
+  
+  if (nX != nY)
+    luaL_error(L, "Number of elements in inputs should match");
 
   int n = 0;
-  if (nrhs >= 3) {
-    n = mxGetScalar(prhs[2]);
-  }
-  else {
+  bool thirdvar = false;
     // Find max value of x:
+  if (lua_isnoneornil(L, 3)) {
     for (int i = 0; i < nX; i++) {
       if (prX[i] > n) n = round(prX[i]);
     }
+  } else {
+    n = luaL_checkint(L, 3);
+    thirdvar = true;
   }
 
   // Initialize statistics vectors:
@@ -85,28 +92,50 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   const char *fields[] = {"count", "mean", "std", "max", "min","nbin"};
   const int nfields = sizeof(fields)/sizeof(*fields);
-  plhs[0] = mxCreateStructMatrix(n, 1, nfields, fields);
+  double mean = 0, std = 0, max = 0, min = 0;
+  lua_createtable(L, n, 0);
   for (int i = 0; i < n; i++) { 
-    mxSetField(plhs[0], i, "count", mxCreateDoubleScalar(count[i]));
+    lua_createtable(L, 0, nfields - 1);
+    
+    lua_pushstring(L, fields[0]);
+    lua_pushnumber(L, count[i]);
+    lua_settable(L, -3);
+
+    mean = 0; std = 0; max = 0; min = 0;
     if (count[i] > 0) {
-      mxSetField(plhs[0], i, "mean",
-		 mxCreateDoubleScalar(sumY[i]/count[i]));
-      mxSetField(plhs[0], i, "std",
-		 mxCreateDoubleScalar(sqrt((sumYY[i]-sumY[i]*sumY[i]/count[i])/count[i]))); 
-      mxSetField(plhs[0], i, "max", mxCreateDoubleScalar(maxY[i]));
-      mxSetField(plhs[0], i, "min", mxCreateDoubleScalar(minY[i]));
+      mean = sumY[i]/count[i];
+      std = sqrt((sumYY[i]-sumY[i]*sumY[i]/count[i])/count[i]);
+      max = maxY[i];
+      min = minY[i];
     }
-    else {
-      mxSetField(plhs[0], i, "mean", mxCreateDoubleScalar(0));
-      mxSetField(plhs[0], i, "std", mxCreateDoubleScalar(0));
-      mxSetField(plhs[0], i, "max", mxCreateDoubleScalar(0));
-      mxSetField(plhs[0], i, "min", mxCreateDoubleScalar(0));
-    }
+
+    lua_pushstring(L, fields[1]);
+    lua_pushnumber(L, mean);
+    lua_settable(L, -3);
+
+    lua_pushstring(L, fields[2]);
+    lua_pushnumber(L, std);
+    lua_settable(L, -3);    
+
+    lua_pushstring(L, fields[3]);
+    lua_pushnumber(L, max);
+    lua_settable(L, -3);     
+
+    lua_pushstring(L, fields[4]);
+    lua_pushnumber(L, min);
+    lua_settable(L, -3); 
+
   }
 
-  if (nlhs >=2)
-  {
-    plhs[1] = mxCreateDoubleMatrix(1,nX,mxREAL);
-    memcpy(mxGetData(plhs[1]),&(nbin[0]),nX*sizeof(double));
+  if (thirdvar) {
+    lua_createtable(L, nX, 0);
+    for (int cnt = 0; cnt < nX; cnt++) {
+      lua_pushnumber(L, nbin[cnt]);
+      lua_rawseti(L, -2, cnt + 1);
+    }
+    lua_settable(L, -3);
+    return 2;
+  } else {
+    return 1;
   }
 }

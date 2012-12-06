@@ -31,21 +31,22 @@ double lyss[1081];
 vector<double> xss;
 vector<double> yss;
 
+int lua_ScanMatch2D(lua_State *L);
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
   const int BUFLEN = 256;
   char command[BUFLEN];
 
-  if (mxGetString(prhs[0], command, BUFLEN) != 0) {
-    mexErrMsgTxt("Could not read string. (1st argument)");
+  command = luaL_checkstring(L, 1);
+  if (command == NULL) {
+    luaL_error(L, "Could not read string. (1st argument)");
   }
-  
   
   if (strcasecmp(command, "setResolution") == 0) 
   {
-    if (nrhs != 2)
-      mexErrMsgTxt("resolution must be provided as the second argument");
-    res = *mxGetPr(prhs[1]);
+    if (lua_isnoneornil(L, 2))
+      luaL_error(L, "resolution must be provided as the second argument");
+    res = luaL_checknumber(L, 2);
     invRes = 1.0/res;
     printf("ScanMatch2D: set the resolution\n");
     return;
@@ -53,22 +54,25 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   if (strcasecmp(command, "setBoundaries") == 0) 
   {
-    if (nrhs != 5)
-      mexErrMsgTxt("a min and max value must be provided for each dimension, 4 total");
-    xmin = *mxGetPr(prhs[1]);
-    ymin = *mxGetPr(prhs[2]);
-    xmax = *mxGetPr(prhs[3]);
-    ymax = *mxGetPr(prhs[4]);
+    if (lua_isnoneornil(L, 5))
+      luaL_error(L, "a min and max value must be provided for each dimension, 4 total");
+    xmin = luaL_checknumber(L, 2);
+    ymin = luaL_checknumber(L, 3);
+    xmax = luaL_checknumber(L, 4);
+    ymax = luaL_checknumber(L, 5);
     printf("ScanMatch2D: set the boundaries\n");
     return;
   }
 
   if (strcasecmp(command, "setSensorOffsets") == 0) 
   {
-    if (nrhs != 2)
-      mexErrMsgTxt("please provide sensor xyz offsets as second argument");
+    if (lua_isnoneornil(L, 2))
+      luaL_error(L, "please provide sensor xyz offsets as second argument");
 
-    double * offsets = mxGetPr(prhs[1]);
+    double * offsets = (double *)lua_touserdata(L, 2);
+    if ((offsets == NULL) || !lua_islightuserdata(L, 2)) {
+      return luaL_error(L, "Input offsets not light user data");
+    }
     sensorOffsetX = offsets[0];
     sensorOffsetY = offsets[1];
     sensorOffsetZ = offsets[2];
@@ -82,33 +86,54 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     timer0.Tic();
 
     //make sure that the map is uint8
-    if (mxGetClassID(prhs[1]) != mxUINT8_CLASS)
-      mexErrMsgTxt("the map must be a uint8 matrix");
   
-    uint8_t * map    = (uint8_t*)mxGetData(prhs[1]);
-    int nDims        = mxGetNumberOfDimensions(prhs[1]);
-    const int * dims = mxGetDimensions(prhs[1]);
-    const int sizex  = dims[0];
-    const int sizey  = dims[1];
+    uint8_t * map = (uint8_t *) lua_touserdata(L, 2);
+    if ((map == NULL) || !lua_islightuserdata(L, 2)) {
+      return luaL_error(L, "Input map not uint8 light user data");
+    }
+    int nDims = sizeof(map) / sizeof(uint8_t);
+
+//    int nDims        = mxGetNumberOfDimensions(prhs[1]);
+    int nDims = luaL_checkint(L, 3); 
+
+    const int sizex = luaL_checkint(L, 4);
+    const int sizey = luaL_checkint(L, 5);
     const int size   = sizex*sizey;
-  
-    int nlxs = mxGetNumberOfElements(prhs[2]);
-    int nlys = mxGetNumberOfElements(prhs[3]);
+
+    double * lxs   = mxGetPr(prhs[2]);
+    double * lxs = (double *) lua_touserdata(L, 6);
+    if ((lxs == NULL) || !lua_islightuserdata(L, 6)) {
+      return luaL_error(L, "Input xsss not light user data");
+    }
+    double * lys   = mxGetPr(prhs[3]);  
+    double * lys = (double *) lua_touserdata(L, 7);
+    if ((lys == NULL) || !lua_islightuserdata(L, 7)) {
+      return luaL_error(L, "Input ysss not light user data");
+    }
+
+    int nlxs = sizeof(lxs) / sizeof(double);
+    int nlys = sizeof(lys) / sizeof(double);
     int nps  = nlxs;
 
     if (nlxs != nlys)
-      mexErrMsgTxt("arrays with point coordinates must be same length");
+      luaL_error(L, "arrays with point coordinates must be same length");
 
-    double * lxs   = mxGetPr(prhs[2]);
-    double * lys   = mxGetPr(prhs[3]);
+    double * pxs = (double *) lua_touserdata(L, 8);
+    if ((pxs == NULL) || !lua_islightuserdata(L, 8)) {
+      return luaL_error(L, "Input xcand1 not light user data");
+    }
+    double * pys = (double *) lua_touserdata(L, 9);
+    if ((pys == NULL) || !lua_islightuserdata(L, 9)) {
+      return luaL_error(L, "Input ycand1 not light user data");
+    }
+    double * pths = (double *) lua_touserdata(L, 10);
+    if ((pths == NULL) || !lua_islightuserdata(L, 10)) {
+      return luaL_error(L, "Input acand1 not light user data");
+    }
 
-    int npxs  = mxGetNumberOfElements(prhs[4]);
-    int npys  = mxGetNumberOfElements(prhs[5]);
-    int npths = mxGetNumberOfElements(prhs[6]);
-
-    double * pxs   = mxGetPr(prhs[4]);
-    double * pys   = mxGetPr(prhs[5]);
-    double * pths  = mxGetPr(prhs[6]);
+    int npxs = sizeof(pxs) / sizeof(double);
+    int npys = sizeof(pys) / sizeof(double);
+    int npths = sizeof(pths) / sizeof(double);
 
     double * tpxs  = pxs;
     double * tpys  = pys;
@@ -205,6 +230,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   }
 
   else 
-    mexErrMsgTxt("unknown command");
+    luaL_error(L ,"unknown command");
 }
 

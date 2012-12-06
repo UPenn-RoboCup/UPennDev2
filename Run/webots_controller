@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 # webots_controller : launches lua scripts in webots
 Webots_Home=/usr/local/webots
 

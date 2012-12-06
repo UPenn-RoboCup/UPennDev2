@@ -3,6 +3,7 @@
 //#include "DataLoggerQueueDB.hh"
 #include "PointerQueueBuffer.hh"
 #include <signal.h>
+#include <unistd.h>
 
 using namespace Upenn;
 

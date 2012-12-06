@@ -10,6 +10,7 @@ extern "C" {
 }
 #endif
 
+#include "lua_HoughTransform.h"
 #include "HoughTransform.hh"
 #include <iostream>
 #include "Timer.hh"

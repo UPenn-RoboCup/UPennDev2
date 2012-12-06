@@ -13,7 +13,7 @@ all: Slam
 %.o: %.c
 	$(CC) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
 
-Slam: luaOccMap.o MapUpdate.o MapRetrieve.o pfield.o KmeanCluster.o
+Slam: lua_Slam.o lua_binStats.o
 	$(LD) $(LDFLAGS) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ $(LIB_DIR) -lm
 
 clean:

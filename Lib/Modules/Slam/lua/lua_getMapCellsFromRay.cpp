@@ -31,9 +31,7 @@ void mexExit(void)
 }
 
 //Bresenham's line algorithm
-void mexFunction( int nlhs, mxArray *plhs[], 
-		  int nrhs, const mxArray*prhs[] ){ 
-
+int lua_getMapCellsFromRay(lua_State *L)
 
     if (!xio)
     {

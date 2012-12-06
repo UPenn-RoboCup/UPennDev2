@@ -31,13 +31,12 @@ double lyss[1081];
 vector<double> xss;
 vector<double> yss;
 
-int lua_ScanMatch2D(lua_State *L);
-void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+int lua_ScanMatch2D(lua_State *L)
+//void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
-  const int BUFLEN = 256;
-  char command[BUFLEN];
+//  const int BUFLEN = 256;
+  const char *command = luaL_checkstring(L, 1);
 
-  command = luaL_checkstring(L, 1);
   if (command == NULL) {
     luaL_error(L, "Could not read string. (1st argument)");
   }
@@ -49,7 +48,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     res = luaL_checknumber(L, 2);
     invRes = 1.0/res;
     printf("ScanMatch2D: set the resolution\n");
-    return;
+    return 1;
   }
 
   if (strcasecmp(command, "setBoundaries") == 0) 
@@ -61,7 +60,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     xmax = luaL_checknumber(L, 4);
     ymax = luaL_checknumber(L, 5);
     printf("ScanMatch2D: set the boundaries\n");
-    return;
+    return 1;
   }
 
   if (strcasecmp(command, "setSensorOffsets") == 0) 
@@ -77,7 +76,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     sensorOffsetY = offsets[1];
     sensorOffsetZ = offsets[2];
     printf("ScanMatch2D: set sensor offsets\n");
-    return;
+    return 1;
   }
 
   if (strcasecmp(command, "match") == 0) 
@@ -91,7 +90,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     if ((map == NULL) || !lua_islightuserdata(L, 2)) {
       return luaL_error(L, "Input map not uint8 light user data");
     }
-    int nDims = sizeof(map) / sizeof(uint8_t);
+//    int nDims = sizeof(map) / sizeof(uint8_t);
 
 //    int nDims        = mxGetNumberOfDimensions(prhs[1]);
     int nDims = luaL_checkint(L, 3); 
@@ -100,12 +99,12 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     const int sizey = luaL_checkint(L, 5);
     const int size   = sizex*sizey;
 
-    double * lxs   = mxGetPr(prhs[2]);
+//    double * lxs   = mxGetPr(prhs[2]);
     double * lxs = (double *) lua_touserdata(L, 6);
     if ((lxs == NULL) || !lua_islightuserdata(L, 6)) {
       return luaL_error(L, "Input xsss not light user data");
     }
-    double * lys   = mxGetPr(prhs[3]);  
+//    double * lys   = mxGetPr(prhs[3]);  
     double * lys = (double *) lua_touserdata(L, 7);
     if ((lys == NULL) || !lua_islightuserdata(L, 7)) {
       return luaL_error(L, "Input ysss not light user data");
@@ -144,9 +143,10 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     const int nDimsOut = 3;
     int dimsOut[] = {npxs,npys,npths};    
 
-    plhs[0] = mxCreateNumericArray(nDimsOut,dimsOut,
-                              mxDOUBLE_CLASS,mxREAL);
-    double * likelihoods = mxGetPr(plhs[0]);
+//    plhs[0] = mxCreateNumericArray(nDimsOut,dimsOut,
+//                              mxDOUBLE_CLASS,mxREAL);
+//    double * likelihoods = mxGetPr(plhs[0]);
+    double * likelihoods = new double[npxs * npys * npths];
 
     //resize the container if needed
     xss.resize(npxs);
@@ -226,9 +226,12 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
         }
       }
     }
-    //timer0.Toc(true);
+    //timer0.Toc(true); 
+    lua_pushlightuserdata(L, likelihoods);
+    lua_pushstring(L, "double");
+    lua_pushinteger(L, npths*npxs*npys);
+    return 3;
   }
-
   else 
     luaL_error(L ,"unknown command");
 }

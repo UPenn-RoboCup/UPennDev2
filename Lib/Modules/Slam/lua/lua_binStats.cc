@@ -28,7 +28,7 @@ extern "C" {
 #include <vector>
 #include <string.h>
 
-std::vector<int> count;
+std::vector<int> Count;
 std::vector<double> sumY, sumYY, maxY, minY;
 std::vector<double> nbin;
 
@@ -64,14 +64,14 @@ int lua_binStats(lua_State *L)
   }
 
   // Initialize statistics vectors:
-  count.resize(n);
+  Count.resize(n);
   sumY.resize(n);
   sumYY.resize(n);
   maxY.resize(n);
   minY.resize(n);
   nbin.resize(nX,-1);
   for (int i = 0; i < n; i++) {
-    count[i] = 0;
+    Count[i] = 0;
     sumY[i] = 0;
     sumYY[i] = 0;
     maxY[i] = -__FLT_MAX__;
@@ -81,7 +81,7 @@ int lua_binStats(lua_State *L)
   for (int i = 0; i < nX; i++) {
     int j = round(prX[i]) - 1;
     if ((j >= 0) && (j < n)) {
-      count[j]++;
+      Count[j]++;
       sumY[j] += prY[i];
       sumYY[j] += prY[i]*prY[i];
       if (prY[i] > maxY[j]) maxY[j] = prY[i];
@@ -98,13 +98,13 @@ int lua_binStats(lua_State *L)
     lua_createtable(L, 0, nfields - 1);
     
     lua_pushstring(L, fields[0]);
-    lua_pushnumber(L, count[i]);
+    lua_pushnumber(L, Count[i]);
     lua_settable(L, -3);
 
     mean = 0; std = 0; max = 0; min = 0;
-    if (count[i] > 0) {
-      mean = sumY[i]/count[i];
-      std = sqrt((sumYY[i]-sumY[i]*sumY[i]/count[i])/count[i]);
+    if (Count[i] > 0) {
+      mean = sumY[i]/Count[i];
+      std = sqrt((sumYY[i]-sumY[i]*sumY[i]/Count[i])/Count[i]);
       max = maxY[i];
       min = minY[i];
     }

@@ -264,12 +264,23 @@ static int lua_hokuyo_retrieve(lua_State *L) {
   lua_settable(L, -3);
 
   lua_pushstring(L, "ranges");
-  lua_createtable(L, lidarScan.ranges.size, 0);
-  for (int i = 0; i < lidarScan.ranges.size; i++) {
-    lua_pushnumber(L, lidarScan.ranges.data[i]);
-    lua_rawseti(L, -2, i+1);
-  }
+  lua_pushlightuserdata(L, (void *)lidarScan.ranges.data);
   lua_settable(L, -3);
+
+  lua_pushstring(L, "range_size");
+  lua_pushinteger(L, lidarScan.ranges.size);
+  lua_settable(L, -3);
+  
+  lua_pushstring(L, "float_size");
+  lua_pushinteger(L, sizeof(float));
+  lua_settable(L, -3);
+ 
+//  lua_createtable(L, lidarScan.ranges.size, 0);
+//  for (int i = 0; i < lidarScan.ranges.size; i++) {
+//    lua_pushnumber(L, lidarScan.ranges.data[i]);
+//    lua_rawseti(L, -2, i+1);
+//  }
+//  lua_settable(L, -3);
 
   lua_pushstring(L, "startAngle");
   lua_pushnumber(L, lidarScan.startAngle);

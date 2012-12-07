@@ -11,6 +11,8 @@ else
 REGEX=-regex '.*\($(SHLIBEXT)\|$(LUAEXT)\|sh\)'
 endif
 
+CROSS= false
+
 ifndef OSTYPE
   OSTYPE = $(shell uname -s|awk '{print tolower($$0)}')
 endif
@@ -147,6 +149,11 @@ comm::
 	@cd $(COMMDIR) && make && cd $(CWD)
 	@echo "\n"
 
+hokuyo::
+	@echo "Compiling Hokuyo Lua/C++ Libraries...\n"
+	@cd $(HOKUYODIR) && make && cd $(CWD)
+	@echo "\n"
+
 occmap::
 	@echo "Compiling OccupancyMap Lua/C++ Libraries...\n"
 	@cd $(OCCMAPDIR) && make && cd $(CWD)
@@ -280,7 +287,7 @@ setup_xos: xos setup_util setup_image setup_comm
 	cd $(PLAYERDIR)/Config && ln -s Config_XOS.lua Config.lua && cd $(CWD)
 	@echo "\n"
 
-setup_charli: charli setup_util setup_image setup_comm
+setup_charli: charli setup_util setup_image setup_comm setup_hokuyo
 	@echo "Setting up Charli Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
 	find $(CHARLIDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
@@ -322,6 +329,12 @@ setup_comm: comm
 	@echo "Setting up Communication Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
 	find $(COMMDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
+	@echo "\n"
+
+setup_hokuyo: hokuyo
+	@echo "Setting up Hokuyo Lua/C++ Libraries...\n"
+	mkdir -p $(INSTDIR)
+	find $(HOKUYODIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
 	@echo "\n"
 
 setup_occmap: occmap
@@ -366,6 +379,7 @@ setup_webots_boxer: setup_webots_op setup_hands setup_primesense
 clean:
 	cd $(IMAGEDIR) && make clean && cd $(CWD)
 	cd $(COMMDIR) && make clean && cd $(CWD)
+	cd $(HOKUYODIR) && make clean && cd $(CWD)
 	cd $(UTILDIR) && make clean && cd $(CWD)
 	cd $(PRIMEDIR) && make clean && cd $(CWD)
 	cd $(WEBOTSDIR) && make clean && cd $(CWD)

@@ -1,1 +1,3 @@
 lcm_*_t.h
+lualcm_*_t.h
+lcmgen/lcmgen

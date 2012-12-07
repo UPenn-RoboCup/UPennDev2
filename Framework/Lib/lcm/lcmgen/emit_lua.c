@@ -387,7 +387,7 @@ static void emit_lua_handler(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     emit(0,"");
     emit(0,"  /* push message table */");
     emit(0,"  lua_newtable(L);");
-    emit(0,"  lua_lcm_rpc_request_t_decode(L, msg);");
+    emit(0,"  lua_%s_decode(L, msg);",tn_);
     emit(0,"");
     emit(0,"  /* push userdata */");
     emit(0,"  lua_rawgeti(L, LUA_REGISTRYINDEX, handler->userdata_reference);");

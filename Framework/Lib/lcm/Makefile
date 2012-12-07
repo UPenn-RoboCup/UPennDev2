@@ -3,10 +3,9 @@ include ../../../Makefile.inc
 CWD = $(shell pwd)
 NAME = lcm 
 
-TYPE_TARGETS=lcm_rpc_request_t lcm_rpc_response_t 
+TYPE_TARGETS=lcm_rpc_request_t lcm_rpc_response_t
 
 all:: lcmgen lcm $(TYPE_TARGETS)
-#lcm_rpc_t
 
 %.o: %.cc
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<

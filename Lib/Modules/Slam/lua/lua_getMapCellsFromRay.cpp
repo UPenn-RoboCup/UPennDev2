@@ -14,51 +14,47 @@ extern "C" {
 #include <iostream>
 #include "Timer.hh"
 #include <string.h>
-
-
-#include <string.h>
-
-double * xio = NULL;
-double * yio = NULL;
+#include <vector>
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
 
 #define MAX_NUM_CELLS 3000000
 
-void mexExit(void)
-{
-  printf("exiting getMapCellsFromRay\n");
-  if (xio) delete [] xio; xio = NULL;
-  if (yio) delete [] yio; yio = NULL;
-}
-
 //Bresenham's line algorithm
-void mexFunction( int nlhs, mxArray *plhs[], 
-		  int nrhs, const mxArray*prhs[] ){ 
+int lua_getMapCellsFromRay(lua_State *L)
+{
+    static std::vector<double> xio;
+    static std::vector<double> yio;
 
-
-    if (!xio)
+    if (!xio.size())
     {
-      xio = new double[MAX_NUM_CELLS];
-      yio = new double[MAX_NUM_CELLS];
-      mexAtExit(mexExit);
+      xio.resize(MAX_NUM_CELLS);
+      yio.resize(MAX_NUM_CELLS);
     }
 
-    int x0t = *mxGetPr(prhs[0]); 
-    int y0t = *mxGetPr(prhs[1]);
+    int x0t = luaL_checkint(L, 1);
+    int y0t = luaL_checkint(L, 2);
 
-    double * xis = mxGetPr(prhs[2]);
-    double * yis = mxGetPr(prhs[3]);
-    int nPoints = mxGetNumberOfElements(prhs[2]);
+    double * xis = (double *) lua_touserdata(L, 3); 
+    if ((xis == NULL) || !lua_islightuserdata(L, 3)) {
+      return luaL_error(L, "Input Xis not light user data");
+    }
+  
+    double * yis = (double *) lua_touserdata(L, 4); 
+    if ((yis == NULL) || !lua_islightuserdata(L, 4)) {
+      return luaL_error(L, "Input Yis not light user data");
+    }
+    int nPoints = sizeof(xis) / sizeof(double);
 
-    double * pxio = xio;
-    double * pyio = yio;
+    std::vector<double> pxio = xio;
+    std::vector<double> pyio = yio;
 
     for (int ii=0; ii<nPoints; ii++)
     {
       int x0 = x0t;
       int y0 = y0t;
 
-      //int x1 = *mxGetPr(prhs[2]);    
-      //int y1 = *mxGetPr(prhs[3]);
       int x1 = (int)*xis++;
       int y1 = (int)*yis++;    
 
@@ -95,8 +91,8 @@ void mexFunction( int nlhs, mxArray *plhs[],
       
       if(steep){
           for(int x=x0; x<(x1); x++){
-              *pxio++ = y;
-              *pyio++ = x;
+              pxio.push_back(y);
+              pyio.push_back(x);
               //cells[x-x0] = y;
               //cells[num_pts + x-x0] = x;
               error = error - deltay;
@@ -108,8 +104,8 @@ void mexFunction( int nlhs, mxArray *plhs[],
       }
       else{
           for(int x=x0; x<(x1); x++){
-              *pxio++ = x;
-              *pyio++ = y;
+              pxio.push_back(x);
+              pyio.push_back(y);
               //cells[x-x0] = x;
               //cells[num_pts + x-x0] = y;
               error = error - deltay;
@@ -121,14 +117,24 @@ void mexFunction( int nlhs, mxArray *plhs[],
       }
     }
 
-    int numCells = pxio - xio;
+    int numCells = pxio.size() - xio.size();
 
-    //printf("generated %d cells\n",numCells);
+    printf("generated %d cells\n",numCells);
 
-    plhs[0] = mxCreateDoubleMatrix(numCells,1,mxREAL);
-    plhs[1] = mxCreateDoubleMatrix(numCells,1,mxREAL);
+    lua_createtable(L, numCells, 0);
+    for (int cnt = 0; cnt < numCells; cnt ++) {
+      lua_pushnumber(L, xio[cnt]);
+      lua_rawseti(L, -2, cnt + 1);
+    }
+    lua_settable(L, -3);
 
-    memcpy(mxGetPr(plhs[0]),xio,numCells*sizeof(double));
-    memcpy(mxGetPr(plhs[1]),yio,numCells*sizeof(double));
-    return;
+    lua_createtable(L, numCells, 0);
+    for (int cnt = 0; cnt < numCells; cnt ++) {
+      lua_pushnumber(L, yio[cnt]);
+      lua_rawseti(L, -2, cnt + 1);
+    }
+    lua_settable(L, -3);
+
+    return 2;
+
 }

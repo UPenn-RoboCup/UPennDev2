@@ -5,7 +5,7 @@
 //#include "DataLoggerQueueDB.hh"
 #include <pthread.h>
 #include <string>
-#include <ipc.h>
+//#include <ipc.h>
 #include "Timer.hh"
 
 #define DEVICE_INTERFACE_UPDATE_FUNCTION_ERROR_SLEEP_US 10000

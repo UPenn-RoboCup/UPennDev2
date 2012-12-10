@@ -7,6 +7,7 @@ h.user = getenv('USER');
 
 % create shm wrappers
 h.lidar  = shm(sprintf('rcmLidar%d%d%s',  h.teamNumber, h.playerID, h.user));
+h.robot  = shm(sprintf('rcmRobot%d%d%s',  h.teamNumber, h.playerID, h.user));
 
 
 % set function pointers
@@ -18,9 +19,11 @@ h.set_ranges = @set_ranges;
         r = [];
         try
             r.t = h.lidar.get_timestamp();
-            r.odom = h.lidar.get_odom();
+            r.odom = h.robot.get_odom();
+            r.imu = h.robot.get_imu();
             tmp = h.lidar.get_ranges();
-            r.ranges = typecast(tmp,'single'); % 16bit precision
+            tmp = typecast(tmp,'single'); % 16bit precision
+            r.ranges = tmp(1:1081);
         catch
             fprintf('Illegal LIDAR get!');
             r = [];

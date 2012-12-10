@@ -3873,7 +3873,7 @@ Camera {
     mass 0.37
   }
   fieldOfView 4.71238
-  width 1080
+  width 1081
   height 1
   type "range-finder"
   spherical TRUE

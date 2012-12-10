@@ -19,7 +19,7 @@ end
 
 if ~isempty(data)
   ODOMETRY.odomLast = ODOMETRY.odom;
-  ODOMETRY.odom = data;
+  ODOMETRY.odom = data.odometry;
   ODOMETRY.cntr  = ODOMETRY.cntr + 1;
   
   if isempty(ODOMETRY.tLastReset)
@@ -44,14 +44,16 @@ if ~isempty(data)
   end
   
   % if too still, then dont change the yaw
+  wdt = 0;
   if (stopCntr < 40)
     %wdt = IMU.data.wyaw * 0.025; %(GetUnixTime()-tLastUpdate);
-    %wdt = IMU.data.wyaw * (IMU.data.t-tLastUpdate);
-    wdt = 0;
+    wdt = IMU.data.wyaw * (IMU.data.t-tLastUpdate);
+    %wdt = 0;
   else
-    wdt = 0;
-    %fprintf(1,'not moving\n');
+    %wdt = 0;
+    fprintf(1,'not moving\n');
   end
+  %fprintf(1,'wdt: %f\n', wdt);
   
   tLastUpdate = IMU.data.t;
   %dt = counts.t - ODOMETRY.tLast;
@@ -68,7 +70,9 @@ if ~isempty(data)
   
   SLAM.xOdom   = xPrev   + dTrans(1);
   SLAM.yOdom   = yPrev   + dTrans(2);
-  SLAM.yawOdom = yawPrev + dpose(3);
+  %SLAM.yawOdom = yawPrev + dpose(3);
+  %SLAM.yawOdom = yawPrev + wdt;
+  SLAM.yawOdom = -1*IMU.data.yaw;
 
   %{
   if (abs(SLAM.xOdom-SLAM.x) > 0.00001 || abs(SLAM.yOdom-SLAM.y) > 0.00001 || abs(SLAM.yawOdom-SLAM.yaw) > 0.00001)

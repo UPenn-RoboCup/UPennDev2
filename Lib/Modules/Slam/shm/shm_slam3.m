@@ -9,18 +9,19 @@ clf;
 %% Run the update
 while 1
     myranges = LIDAR.get_ranges();
+    data = {};
+    data.ranges = myranges.ranges;
+    data.startTime = myranges.t;
+    data.odometry = myranges.odom;
     IMU.data.roll = 0;
     IMU.data.pitch = 0;
     IMU.data.yaw = myranges.imu(3);%0;
+    IMU.data.wyaw = myranges.gyro(3);
     IMU.data.t = myranges.t;
     IMU.tLastArrival = myranges.t;
     
     % Update encoders
-    shm_slam_process_odometry(myranges.odom);
-    
-    data = {};
-    data.ranges = myranges.ranges;
-    data.startTime = myranges.t;
+    shm_slam_process_odometry(data);
     shm_slam_process_lidar0(data);
     
     % Simple plot
@@ -32,6 +33,9 @@ while 1
     hold on;
     img_coords = MAPS.invRes * [SLAM.x,SLAM.y] + [MAPS.map.sizex MAPS.map.sizey]/2;
     plot(img_coords(1),img_coords(2),'y.','MarkerSize',20)
+    xd = 25*cos(SLAM.yaw);
+    yd = 25*sin(SLAM.yaw);
+    quiver(img_coords(1),img_coords(2),xd,yd,'y');
     title(sprintf('x:%f, y:%f, yaw: %f',SLAM.xOdom,SLAM.yawOdom,SLAM.yaw*180/pi),'FontSize',12);
     
     subplot(2,1,2);

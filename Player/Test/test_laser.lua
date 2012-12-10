@@ -119,6 +119,8 @@ function update()
 	-- Show IMU
   imuAngle = Body.get_sensor_imuAngle();
 	rcm.set_robot_imu( vector.new(imuAngle) )
+	gyr = Body.get_sensor_imuGyrRPY();
+	rcm.set_robot_gyro( vector.new(gyr) );
 	
   -- Check if the last update completed without errors
   lcount = lcount + 1;
@@ -150,6 +152,7 @@ while (true) do
   if(t_diff>1) then
 		print('Odometry: ',odom)
 		print('IMU: ',imuAngle)
+		print('Gyro: ',vector.new(gyr) )
     t_last = Body.get_time();
   end
 

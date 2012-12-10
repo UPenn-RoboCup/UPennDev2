@@ -20,11 +20,11 @@ local simulator_iterations = 2
 
 -- servo controller parameters
 local max_force = 100
-local max_stiffness = 11000
+local max_stiffness = 10000
 local max_damping = 0  -- damping disabled due to ODE instability
 local max_velocity = 7
 local max_acceleration = 70
-local velocity_p_gain = 0.11*vector.ones(#joint.id) 
+local velocity_p_gain = 0.1*vector.ones(#joint.id)
 
 local joint_ff_force = vector.zeros(#joint.id)
 local joint_p_force = vector.zeros(#joint.id)
@@ -59,6 +59,7 @@ local function initialize_devices()
     tags.servo[i] = webots.wb_robot_get_device(servoNames[i])
     webots.wb_servo_enable_position(tags.servo[i], time_step)
     webots.wb_servo_enable_motor_force_feedback(tags.servo[i], time_step)
+    webots.wb_servo_set_control_p(tags.servo[i], 100)
     webots.wb_servo_set_position(tags.servo[i], 1/0)
     webots.wb_servo_set_velocity(tags.servo[i], 0)
     webots.wb_servo_set_motor_force(tags.servo[i], 1e-15)
@@ -106,9 +107,10 @@ local function update_actuators()
 
   -- update spring force using motor velocity controller
   for i = 1,#joint.id do
+    local max_servo_force = math.abs(joint_p_force[i])
     local servo_velocity = velocity_p_gain[i]*position_error[i]*(1000/time_step)
     servo_velocity = limit(servo_velocity, -max_velocity, max_velocity)
-    webots.wb_servo_set_motor_force(tags.servo[i], math.abs(joint_p_force[i]))
+    webots.wb_servo_set_motor_force(tags.servo[i], max_servo_force)
     webots.wb_servo_set_velocity(tags.servo[i], servo_velocity)
   end
 

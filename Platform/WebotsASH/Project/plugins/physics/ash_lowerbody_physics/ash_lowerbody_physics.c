@@ -127,7 +127,7 @@ void draw_cop() {
     cop_points[i][1] = (foot_cop[i][1] + foot_cop[i+1][1])/2;
   }
   glBegin(GL_LINE_STRIP);
-  glColor3f(1, 1, 1);
+  glColor3f(0, 0, 1);
   for (i = 0; i < MAX_COP-1; i++) 
     glVertex3f(cop_points[i][0], cop_points[i][1], 0);
   glEnd( );

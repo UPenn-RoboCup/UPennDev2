@@ -30,13 +30,15 @@ local function serialize_call(call_string, ...)
   local arg_list = {}
   for i = 1,#arg do
     arg_list[i] = serialization.serialize(arg[i])
-    print(arg_list[i])
   end
   local oo_string = call_string:match('^([%a_%d%.]+):[%a_%d]+$')
   if (oo_string) then
     call_string = call_string:gsub(':', '.')..','..oo_string
   end
-  return 'return '..call_string..','..table.concat(arg_list, ',')
+  if (#arg_list > 0) then
+    call_string = call_string..','..table.concat(arg_list, ',')
+  end
+  return 'return '..call_string
 end
 
 local function serialize_return_values(...)

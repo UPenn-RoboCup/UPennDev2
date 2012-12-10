@@ -10,7 +10,7 @@ require('MotionState')
 
 -- Setup 
 ----------------------------------------------------------------------
-walk = MotionState.new(...);
+walk = MotionState.new('walk')
 local dcm = walk.dcm;
 
 walk.parameters = {

@@ -13,7 +13,7 @@ require('MotionState')
 -- Setup 
 --------------------------------------------------------------------------
 
-walk = MotionState.new(...)
+walk = MotionState.new('walk')
 local dcm = walk.dcm
 walk:set_joint_access(0, 'all')
 walk:set_joint_access(1, 'legs')
@@ -153,6 +153,7 @@ end
 function walk:stop()
   -- issue stop request
   stop_request = true
+  self:set_velocity(0, 0, 0)
 end
 
 function walk:is_active()

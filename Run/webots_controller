@@ -26,7 +26,11 @@ cd -P $RELATIVE_PATH
 
 # Run lua script depending on controller arguments
 # ---------------------------------------------------------------------
-if [ "$1" = "keyframe_editor" ]
+if [ "$1" = "motion_manager" ]
+then
+  echo Starting motion_manager...
+  exec xterm -fn 9x15 -hold -e luajit motion_manager.lua
+elif [ "$1" = "keyframe_editor" ]
 then
   echo Starting keyframe_editor...
   exec xterm -fn 9x15 -hold -e luajit keyframe_editor.lua

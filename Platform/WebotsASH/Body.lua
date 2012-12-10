@@ -176,11 +176,11 @@ function Body.set_time_step(t)
 end
 
 function Body.get_time_step()
-  return time_step 
+  return time_step*simulator_iterations
 end
 
 function Body.get_update_rate()
-  return 1/time_step
+  return 1000/(time_step*simulator_iterations)
 end
 
 function Body.entry()

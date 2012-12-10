@@ -34,14 +34,12 @@ DEF Ash Supervisor {
       rotation 0 0 1 0
       children [
         DEF l_hip_roll Servo {
-          translation 0.0025 0 0
           rotation 1 0 0 0
           children [
             DEF l_hip_pitch Servo {
-              translation 0 -0.0015 0
               children [
                 DEF l_knee_pitch Servo {
-                  translation 0 0 -0.379
+                  translation 0.00255 0 -0.379025
                   children [
                     DEF l_ankle_pitch Servo {
                       translation 0 0 -0.38
@@ -4591,14 +4589,12 @@ DEF Ash Supervisor {
       rotation 0 0 1 0
       children [
         DEF r_hip_roll Servo {
-          translation 0.0025 0 0
           rotation 1 0 0 0
           children [
             DEF r_hip_pitch Servo {
-              translation 0 0.0015 0
               children [
                 DEF r_knee_pitch Servo {
-                  translation 0 0 -0.379
+                  translation 0.00255 0 -0.379025
                   children [
                     DEF r_ankle_pitch Servo {
                       translation 0 0 -0.38

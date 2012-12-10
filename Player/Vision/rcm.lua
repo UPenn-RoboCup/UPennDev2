@@ -29,6 +29,7 @@ shared.lidar.stopTime = vector.zeros(1);   -- seconds
 shared.robot = {};
 shared.robot.odom = vector.zeros(3);
 shared.robot.imu = vector.zeros(3);
+shared.robot.gyro = vector.zeros(3); -- Just to give the rate
 
 print('Init shm for ',_NAME)
 

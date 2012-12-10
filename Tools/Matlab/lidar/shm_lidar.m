@@ -21,6 +21,7 @@ h.set_ranges = @set_ranges;
             r.t = h.lidar.get_timestamp();
             r.odom = h.robot.get_odom();
             r.imu = h.robot.get_imu();
+            r.gyro = h.robot.get_gyro();
             tmp = h.lidar.get_ranges();
             tmp = typecast(tmp,'single'); % 16bit precision
             r.ranges = tmp(1:1081);

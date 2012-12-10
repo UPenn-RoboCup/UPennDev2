@@ -12,4 +12,5 @@ Locomotion:add_state(walk)
 
 Locomotion:set_transition(nullState, 'walk', walk)
 
+Locomotion:set_joint_access(0, 'upperbody')
 return Locomotion

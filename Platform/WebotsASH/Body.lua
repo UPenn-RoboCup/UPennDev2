@@ -8,32 +8,36 @@ require('dcm')
 
 Body = {}
 
+local function limit(x, min, max)
+  return math.min(math.max(x, min), max)
+end
+
 -- Setup
 ---------------------------------------------------------------------------
 
 local joint = Config.joint
+local simulator_iterations = 2
 
 -- servo controller parameters
-local max_force = 10000
-local max_stiffness = 10000
-local max_damping = 500
-local max_velocity = 999
-local max_acceleration = 5000
-local velocity_gain = 0.5*vector.ones(#joint.id) 
+local max_force = 100
+local max_stiffness = 11000
+local max_damping = 0  -- damping disabled due to ODE instability
+local max_velocity = 7
+local max_acceleration = 70
+local velocity_p_gain = 0.11*vector.ones(#joint.id) 
 
 local joint_ff_force = vector.zeros(#joint.id)
 local joint_p_force = vector.zeros(#joint.id)
 local joint_d_force = vector.zeros(#joint.id)
-local joint_pd_force = vector.zeros(#joint.id)
 
 local tags = {} -- webots tags
 local time_step = nil
 
 local servoNames = { -- webots servo names
-  'l_hipyaw', 'l_hiproll', 'l_hippitch', 
-  'l_knee_pivot', 'l_ankle', 'l_ankle_p2',
-  'r_hipyaw', 'r_hiproll', 'r_hippitch', 
-  'r_knee_pivot', 'r_ankle', 'r_ankle_p2',
+  'l_hip_yaw', 'l_hip_roll', 'l_hip_pitch', 
+  'l_knee_pitch', 'l_ankle_pitch', 'l_ankle_roll',
+  'r_hip_yaw', 'r_hip_roll', 'r_hip_pitch', 
+  'r_knee_pitch', 'r_ankle_pitch', 'r_ankle_roll',
 }
 
 -- Actuator / sensor interface 
@@ -41,7 +45,7 @@ local servoNames = { -- webots servo names
 
 local function initialize_devices()
   -- intialize webots devices
-  tags.saffir = webots.wb_supervisor_node_get_from_def('SAFFiR')
+  tags.saffir = webots.wb_supervisor_node_get_from_def('Ash')
   tags.gyro = webots.wb_robot_get_device('gyro')
   webots.wb_gyro_enable(tags.gyro, time_step)
   tags.accel = webots.wb_robot_get_device('accelerometer')
@@ -82,50 +86,38 @@ local function update_actuators()
       joint_ff_force[i] = 0 
       joint_d_force[i] = 0
       joint_p_force[i] = 0
-      joint_pd_force[i] = 0
       webots.wb_servo_set_force(tags.servo[i], 0)
     else
       -- calculate feedforward force 
       joint_ff_force[i] = joint_force_desired[i]
-      joint_ff_force[i] = math.max(math.min(joint_ff_force[i], max_force), -max_force)
+      joint_ff_force[i] = limit(joint_ff_force[i], -max_force, max_force)
       -- calculate spring force 
       position_error[i] = joint_position_desired[i] - joint_position_actual[i]
-      joint_stiffness[i] = math.max(math.min(joint_stiffness[i], 1), 0)
+      joint_stiffness[i] = limit(joint_stiffness[i], 0, 1)
       joint_p_force[i] = joint_stiffness[i]*max_stiffness*position_error[i]
-      -- calculate damper force
+      joint_p_force[i] = limit(joint_p_force[i], -max_force, max_force)
+      -- calculate damping force
       velocity_error[i] = joint_velocity_desired[i] - joint_velocity_actual[i]
-      joint_damping[i] = math.max(math.min(joint_damping[i], 1), 0)
+      joint_damping[i] = limit(joint_damping[i], 0, 1)
       joint_d_force[i] = joint_damping[i]*max_damping*velocity_error[i]
-      -- calculate total spring / damper force
-      joint_pd_force[i] = joint_p_force[i] + joint_d_force[i]
-      joint_pd_force[i] = math.max(math.min(joint_pd_force[i], max_force), -max_force)
+      joint_d_force[i] = limit(joint_d_force[i], -max_force, max_force)
     end
   end
 
-  -- update spring / damper forces using motor velocity controller
+  -- update spring force using motor velocity controller
   for i = 1,#joint.id do
-    local motor_velocity = 0
-    local damper_velocity = joint_velocity_desired[i]
-    local spring_velocity = velocity_gain[i]*position_error[i]*(1000/time_step)
-    if (util.sign(joint_p_force[i]) == util.sign(joint_d_force[i])) then
-      motor_velocity = spring_velocity*math.abs(joint_p_force[i])
-                     / (math.abs(joint_p_force[i]) + math.abs(joint_d_force[i]))
-                     + damper_velocity*math.abs(joint_d_force[i])
-                     / (math.abs(joint_p_force[i]) + math.abs(joint_d_force[i]))
-    elseif (math.abs(joint_p_force[i]) > math.abs(joint_d_force[i])) then
-      motor_velocity = spring_velocity 
-    else
-      motor_velocity = damper_velocity 
-    end
-    motor_velocity = math.max(math.min(motor_velocity, max_velocity), -max_velocity)
-    webots.wb_servo_set_motor_force(tags.servo[i], math.abs(joint_pd_force[i]))
-    webots.wb_servo_set_velocity(tags.servo[i], motor_velocity)
+    local servo_velocity = velocity_p_gain[i]*position_error[i]*(1000/time_step)
+    servo_velocity = limit(servo_velocity, -max_velocity, max_velocity)
+    webots.wb_servo_set_motor_force(tags.servo[i], math.abs(joint_p_force[i]))
+    webots.wb_servo_set_velocity(tags.servo[i], servo_velocity)
   end
 
-  -- update feedforward forces using physics plugin
+  -- update feedforward and damping forces using physics plugin
   local buffer = cbuffer.new(#joint.id*8)
   for i = 1,#joint.id do
-    buffer:set('double', joint_ff_force[i], (i-1)*8)
+    local servo_force = joint_ff_force[i] + joint_d_force[i]
+    servo_force =  limit(servo_force, -max_force, max_force)
+    buffer:set('double', servo_force, (i-1)*8)
   end
   webots.wb_emitter_send(tags.physics_emitter, tostring(buffer))
 end
@@ -184,11 +176,11 @@ function Body.set_time_step(t)
 end
 
 function Body.get_time_step()
-  return time_step 
+  return time_step*simulator_iterations
 end
 
 function Body.get_update_rate()
-  return 1/time_step
+  return 1000/(time_step*simulator_iterations)
 end
 
 function Body.entry()
@@ -213,11 +205,13 @@ function Body.entry()
 end
 
 function Body.update()
-  update_actuators()
-  if (webots.wb_robot_step(time_step) < 0) then
-    os.exit()
+  for i = 1, simulator_iterations do
+    update_actuators()
+    if (webots.wb_robot_step(time_step) < 0) then
+      os.exit()
+    end
+    update_sensors()
   end
-  update_sensors()
 end
 
 function Body.exit()

@@ -1,5 +1,10 @@
 #include <ode/ode.h>
-#include <GL/gl.h>
+//http://stackoverflow.com/questions/10866331/freeglut-on-mac-os-x-lion
+#if __APPLE__
+  #include <OpenGL/gl.h>
+#else
+  #include <GL/gl.h>
+#endif
 #include <plugins/physics.h>
 #include <string.h>
 

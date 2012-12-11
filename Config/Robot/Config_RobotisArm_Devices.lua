@@ -23,8 +23,8 @@ joint.id = {
   [5] = 'r_wrist_yaw',
   [6] = 'r_wrist_roll',
   [7] = 'r_thumb',
-  [8] = 'r_index_finger',
-  [9] = 'r_second_finger',
+  [8] = 'r_finger1',
+  [9] = 'r_finger2',
 
   -- group ids
   l_hip = {

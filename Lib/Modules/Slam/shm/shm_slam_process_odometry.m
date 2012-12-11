@@ -2,11 +2,12 @@
 % Encoder message handler
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function shm_slam_process_odometry(data,name)
-global ODOMETRY SLAM IMU
+global ODOMETRY SLAM IMU POSE
 persistent tLastUpdate stopCntr
 
 if isempty(IMU.data)
-    return
+    disp('No IMU data!');
+    return;
 end
 
 if isempty(tLastUpdate)
@@ -25,6 +26,7 @@ if ~isempty(data)
   if isempty(ODOMETRY.tLastReset)
     ODOMETRY.tLastReset = IMU.data.t;
     ODOMETRY.tLast = IMU.data.t;
+    disp('Setting the last timestep...');
     return;
   end
   
@@ -51,7 +53,7 @@ if ~isempty(data)
     %wdt = 0;
   else
     %wdt = 0;
-    fprintf(1,'not moving\n');
+    %fprintf(1,'not moving\n');
   end
   %fprintf(1,'wdt: %f\n', wdt);
   
@@ -70,10 +72,16 @@ if ~isempty(data)
   
   SLAM.xOdom   = xPrev   + dTrans(1);
   SLAM.yOdom   = yPrev   + dTrans(2);
-  %SLAM.yawOdom = yawPrev + dpose(3);
+  SLAM.yawOdom = yawPrev + dpose(3);
   %SLAM.yawOdom = yawPrev + wdt;
-  SLAM.yawOdom = -1*IMU.data.yaw;
+  %SLAM.yawOdom = IMU.data.yaw;
 
+  %% For using dead reckoning
+  POSE.data.x = SLAM.xOdom;
+  POSE.data.y = SLAM.yOdom;
+  POSE.data.yaw = SLAM.yawOdom;
+  
+  %disp('Updating POSE...');
   %{
   if (abs(SLAM.xOdom-SLAM.x) > 0.00001 || abs(SLAM.yOdom-SLAM.y) > 0.00001 || abs(SLAM.yawOdom-SLAM.yaw) > 0.00001)
     SLAM.odomChanged = 1;

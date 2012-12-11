@@ -10,7 +10,11 @@ hMap = [];
 hPose = [];
 hOrientation = [];
 initSlam = [];
-
+%{
+hTitle = title(sprintf('x:%f, y:%f, yaw: %f', ...
+        POSE.data.x,POSE.data.y,POSE.data.yaw*180/pi), ...
+        'FontSize',12);
+%}
 if isempty(initSlam)
     
     %% Initialize shared memory segment
@@ -84,10 +88,12 @@ while 1
     data.ranges = myranges.ranges;
     data.startTime = myranges.t;
     data.odometry = myranges.odom;
+    myranges.odom(2) = myranges.odom(2)* -1; % -1 raw data from webots to MATLAB
+    myranges.odom(3) = myranges.odom(3)* -1; % -1 raw data from webots to MATLAB
     IMU.data.roll = 0;
     IMU.data.pitch = 0;
     IMU.data.yaw = myranges.imu(3);%0;
-    IMU.data.wyaw = myranges.gyro(3);
+    IMU.data.wyaw = myranges.gyro(3) * -1; % -1 raw data from webots to MATLAB
     IMU.data.t = myranges.t;
     IMU.tLastArrival = myranges.t;
     
@@ -98,6 +104,7 @@ while 1
     %% Simple plotting
     if isempty(hMap)
         hMap = imagesc( OMAP.map.data' );
+        axis([0 MAPS.map.sizex 0 MAPS.map.sizey]);
     else
         set(hMap,'cdata',OMAP.map.data');
     end
@@ -114,7 +121,8 @@ while 1
         set( hOrientation, 'xdata',xi, 'ydata',yi );
         set( hOrientation, 'udata',xd, 'vdata',yd );
     end
-    title(sprintf('x:%f, y:%f, yaw: %f', ...
+    
+    hTitle = title(sprintf('x:%f, y:%f, yaw: %f', ...
         POSE.data.x,POSE.data.y,POSE.data.yaw*180/pi), ...
         'FontSize',12);
     

@@ -9,8 +9,9 @@ include Makefile.inc
 all:
 	@echo " Please choose one of the following targets:"
 	@echo " make ash"
-	@echo " make teststand"
 	@echo " make webots_ash"
+	@echo " make teststand"
+	@echo " make robotis_arm"
 	@echo " make tools"
 	@echo " make clean"
 
@@ -22,8 +23,8 @@ ash:
 	&& rm -f Body.lua Kinematics.* Statics.* Dynamics.* \
 	&& ln -s ../../Platform/ASH/Body.lua Body.lua \
 	&& ln -s ../../Platform/ASH/Mechanics/Kinematics.$(SHLIBEXT) Kinematics.$(SHLIBEXT) \
-	&& ln -s ../../Platform/ASH/Mechanics/Statics.lua Statics.lua \
-	&& ln -s ../../Platform/ASH/Mechanics/Dynamics.lua Dynamics.lua \
+	&& ln -s ../../Platform/ASH/Mechanics/Statics.$(SHLIBEXT) Statics.$(SHLIBEXT) \
+	&& ln -s ../../Platform/ASH/Mechanics/Dynamics.$(SHLIBEXT) Dynamics.$(SHLIBEXT) \
 	&& cd $(CWD)
 	cd Config \
 	&& rm -f Config.lua \
@@ -66,8 +67,8 @@ webots_ash:
 	&& rm -f Body.lua Kinematics.* Statics.* Dynamics.* \
 	&& ln -s ../../Platform/WebotsASH/Body.lua Body.lua \
 	&& ln -s ../../Platform/WebotsASH/Mechanics/Kinematics.$(SHLIBEXT) Kinematics.$(SHLIBEXT) \
-	&& ln -s ../../Platform/WebotsASH/Mechanics/Statics.lua Statics.lua \
-	&& ln -s ../../Platform/WebotsASH/Mechanics/Dynamics.lua Dynamics.lua \
+	&& ln -s ../../Platform/WebotsASH/Mechanics/Statics.$(SHLIBEXT) Statics.$(SHLIBEXT) \
+	&& ln -s ../../Platform/WebotsASH/Mechanics/Dynamics.$(SHLIBEXT) Dynamics.$(SHLIBEXT) \
 	&& cd $(CWD)
 	cd Config \
 	&& rm -f Config.lua \

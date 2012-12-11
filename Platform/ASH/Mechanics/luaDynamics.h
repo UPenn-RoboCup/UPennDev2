@@ -1,5 +1,5 @@
-#ifndef LUA_KINEMATICS_H 
-#define LUA_KINEMATICS_H 
+#ifndef _LUA_DYNAMICS_H_
+#define _LUA_DYNAMICS_H_
 
 extern "C"
 {
@@ -9,6 +9,6 @@ extern "C"
 }
 
 extern "C"
-int luaopen_Kinematics(lua_State *L);
+int luaopen_Dynamics(lua_State *L);
 
 #endif

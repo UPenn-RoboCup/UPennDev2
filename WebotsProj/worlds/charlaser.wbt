@@ -10,8 +10,8 @@ WorldInfo {
   displayRefresh 3
 }
 Viewpoint {
-  orientation 0.510472 0.694818 0.506602 4.36322
-  position -4.17396 11.6933 1.0081
+  orientation 0.999525 -0.0247179 -0.0184002 5.00273
+  position -0.341077 11.7743 5.4063
 }
 Background {
   skyColor [
@@ -57,8 +57,8 @@ Wall {
   rotation 0 1 0 1.57
 }
 CharLaser {
-  translation -0.00754725 0.8 1.4118
-  rotation 0 1 0 -1.57
+  translation -2.59041 0.8 1.44753
+  rotation -0.028694 -0.999588 -0.00053017 3.10307
   controller "darwin-op_team_0"
   controllerArgs "1 22"
 }

@@ -45,6 +45,8 @@ if (SLAM.lidar0Cntr > 1)
 
   %create a grid of distance-based costs from each cell to odometry pose
   [yGrid1 xGrid1] = meshgrid(yCand1,xCand1);
+  figure(2);
+  surf(yGrid1,xGrid1,hitsXY);
   %xDiff1 = xGrid1 - SLAM.xOdom;
   %yDiff1 = yGrid1 - SLAM.yOdom;
   %distGrid1 = 1000*sqrt(xDiff1.^2 + yDiff1.^2);
@@ -58,8 +60,8 @@ if (SLAM.lidar0Cntr > 1)
   costGrid1 = - hitsXY;
   % How valuable is the odometry preidiction?
   % Should make a gaussian depression around this point...
-  %costGrid1(indx,indy) = costGrid1(indx,indy) - 500;
-  costGrid1(indx,indy) = costGrid1(indx,indy) - 1500;
+  costGrid1(indx,indy) = costGrid1(indx,indy) - 500;
+  %costGrid1(indx,indy) = costGrid1(indx,indy) - 1500;
   
   %find the minimum and save the new pose
   [cmin cimin] = min(costGrid1(:));

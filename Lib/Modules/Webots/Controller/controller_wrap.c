@@ -1623,16 +1623,15 @@ SWIG_Lua_dostring(lua_State *L, const char* str) {
 #define SWIGTYPE_p_WbFieldStructPrivate swig_types[0]
 #define SWIGTYPE_p_WbImageStructPrivate swig_types[1]
 #define SWIGTYPE_p_WbNodeStructPrivate swig_types[2]
-#define SWIGTYPE_p_WbRobotMode swig_types[3]
-#define SWIGTYPE_p_double swig_types[4]
-#define SWIGTYPE_p_f_p_void__void swig_types[5]
-#define SWIGTYPE_p_f_q_const__p_void__void swig_types[6]
-#define SWIGTYPE_p_float swig_types[7]
-#define SWIGTYPE_p_int swig_types[8]
-#define SWIGTYPE_p_unsigned_short swig_types[9]
-#define SWIGTYPE_p_void swig_types[10]
-static swig_type_info *swig_types[12];
-static swig_module_info swig_module = {swig_types, 11, 0, 0, 0, 0};
+#define SWIGTYPE_p_double swig_types[3]
+#define SWIGTYPE_p_f_p_void__void swig_types[4]
+#define SWIGTYPE_p_f_q_const__p_void__void swig_types[5]
+#define SWIGTYPE_p_float swig_types[6]
+#define SWIGTYPE_p_int swig_types[7]
+#define SWIGTYPE_p_unsigned_short swig_types[8]
+#define SWIGTYPE_p_void swig_types[9]
+static swig_type_info *swig_types[11];
+static swig_module_info swig_module = {swig_types, 10, 0, 0, 0, 0};
 #define SWIG_TypeQuery(name) SWIG_TypeQueryModule(&swig_module, &swig_module, name)
 #define SWIG_MangledTypeQuery(name) SWIG_MangledTypeQueryModule(&swig_module, &swig_module, name)
 
@@ -1739,27 +1738,6 @@ fail:
 }
 
 
-static int _wrap_wb_accelerometer_get_sampling_period(lua_State* L) {
-  int SWIG_arg = 0;
-  WbDeviceTag arg1 ;
-  int result;
-  
-  SWIG_check_num_args("wb_accelerometer_get_sampling_period",1,1)
-  if(!lua_isnumber(L,1)) SWIG_fail_arg("wb_accelerometer_get_sampling_period",1,"WbDeviceTag");
-  SWIG_contract_assert((lua_tonumber(L,1)>=0),"number must not be negative")
-  arg1 = (WbDeviceTag)lua_tonumber(L, 1);
-  result = (int)wb_accelerometer_get_sampling_period(arg1);
-  lua_pushnumber(L, (lua_Number) result); SWIG_arg++;
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
 static int _wrap_wb_accelerometer_get_values(lua_State* L) {
   int SWIG_arg = 0;
   WbDeviceTag arg1 ;
@@ -1830,27 +1808,6 @@ static int _wrap_wb_camera_disable(lua_State* L) {
   arg1 = (WbDeviceTag)lua_tonumber(L, 1);
   wb_camera_disable(arg1);
   
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_wb_camera_get_sampling_period(lua_State* L) {
-  int SWIG_arg = 0;
-  WbDeviceTag arg1 ;
-  int result;
-  
-  SWIG_check_num_args("wb_camera_get_sampling_period",1,1)
-  if(!lua_isnumber(L,1)) SWIG_fail_arg("wb_camera_get_sampling_period",1,"WbDeviceTag");
-  SWIG_contract_assert((lua_tonumber(L,1)>=0),"number must not be negative")
-  arg1 = (WbDeviceTag)lua_tonumber(L, 1);
-  result = (int)wb_camera_get_sampling_period(arg1);
-  lua_pushnumber(L, (lua_Number) result); SWIG_arg++;
   return SWIG_arg;
   
   if(0) SWIG_fail;
@@ -2190,27 +2147,6 @@ fail:
 }
 
 
-static int _wrap_wb_compass_get_sampling_period(lua_State* L) {
-  int SWIG_arg = 0;
-  WbDeviceTag arg1 ;
-  int result;
-  
-  SWIG_check_num_args("wb_compass_get_sampling_period",1,1)
-  if(!lua_isnumber(L,1)) SWIG_fail_arg("wb_compass_get_sampling_period",1,"WbDeviceTag");
-  SWIG_contract_assert((lua_tonumber(L,1)>=0),"number must not be negative")
-  arg1 = (WbDeviceTag)lua_tonumber(L, 1);
-  result = (int)wb_compass_get_sampling_period(arg1);
-  lua_pushnumber(L, (lua_Number) result); SWIG_arg++;
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
 static int _wrap_wb_compass_get_values(lua_State* L) {
   int SWIG_arg = 0;
   WbDeviceTag arg1 ;
@@ -2409,23 +2345,6 @@ fail:
 }
 
 
-static int _wrap_wb_differential_wheels_get_encoders_sampling_period(lua_State* L) {
-  int SWIG_arg = 0;
-  int result;
-  
-  SWIG_check_num_args("wb_differential_wheels_get_encoders_sampling_period",0,0)
-  result = (int)wb_differential_wheels_get_encoders_sampling_period();
-  lua_pushnumber(L, (lua_Number) result); SWIG_arg++;
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
 static int _wrap_wb_differential_wheels_get_left_encoder(lua_State* L) {
   int SWIG_arg = 0;
   double result;
@@ -2472,74 +2391,6 @@ static int _wrap_wb_differential_wheels_set_encoders(lua_State* L) {
   arg2 = (double)lua_tonumber(L, 2);
   wb_differential_wheels_set_encoders(arg1,arg2);
   
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_wb_differential_wheels_get_left_speed(lua_State* L) {
-  int SWIG_arg = 0;
-  double result;
-  
-  SWIG_check_num_args("wb_differential_wheels_get_left_speed",0,0)
-  result = (double)wb_differential_wheels_get_left_speed();
-  lua_pushnumber(L, (lua_Number) result); SWIG_arg++;
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_wb_differential_wheels_get_right_speed(lua_State* L) {
-  int SWIG_arg = 0;
-  double result;
-  
-  SWIG_check_num_args("wb_differential_wheels_get_right_speed",0,0)
-  result = (double)wb_differential_wheels_get_right_speed();
-  lua_pushnumber(L, (lua_Number) result); SWIG_arg++;
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_wb_differential_wheels_get_max_speed(lua_State* L) {
-  int SWIG_arg = 0;
-  double result;
-  
-  SWIG_check_num_args("wb_differential_wheels_get_max_speed",0,0)
-  result = (double)wb_differential_wheels_get_max_speed();
-  lua_pushnumber(L, (lua_Number) result); SWIG_arg++;
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_wb_differential_wheels_get_speed_unit(lua_State* L) {
-  int SWIG_arg = 0;
-  double result;
-  
-  SWIG_check_num_args("wb_differential_wheels_get_speed_unit",0,0)
-  result = (double)wb_differential_wheels_get_speed_unit();
-  lua_pushnumber(L, (lua_Number) result); SWIG_arg++;
   return SWIG_arg;
   
   if(0) SWIG_fail;
@@ -3173,27 +3024,6 @@ fail:
 }
 
 
-static int _wrap_wb_distance_sensor_get_sampling_period(lua_State* L) {
-  int SWIG_arg = 0;
-  WbDeviceTag arg1 ;
-  int result;
-  
-  SWIG_check_num_args("wb_distance_sensor_get_sampling_period",1,1)
-  if(!lua_isnumber(L,1)) SWIG_fail_arg("wb_distance_sensor_get_sampling_period",1,"WbDeviceTag");
-  SWIG_contract_assert((lua_tonumber(L,1)>=0),"number must not be negative")
-  arg1 = (WbDeviceTag)lua_tonumber(L, 1);
-  result = (int)wb_distance_sensor_get_sampling_period(arg1);
-  lua_pushnumber(L, (lua_Number) result); SWIG_arg++;
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
 static int _wrap_wb_distance_sensor_get_value(lua_State* L) {
   int SWIG_arg = 0;
   WbDeviceTag arg1 ;
@@ -3395,27 +3225,6 @@ fail:
 }
 
 
-static int _wrap_wb_gps_get_sampling_period(lua_State* L) {
-  int SWIG_arg = 0;
-  WbDeviceTag arg1 ;
-  int result;
-  
-  SWIG_check_num_args("wb_gps_get_sampling_period",1,1)
-  if(!lua_isnumber(L,1)) SWIG_fail_arg("wb_gps_get_sampling_period",1,"WbDeviceTag");
-  SWIG_contract_assert((lua_tonumber(L,1)>=0),"number must not be negative")
-  arg1 = (WbDeviceTag)lua_tonumber(L, 1);
-  result = (int)wb_gps_get_sampling_period(arg1);
-  lua_pushnumber(L, (lua_Number) result); SWIG_arg++;
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
 static int _wrap_wb_gps_get_values(lua_State* L) {
   int SWIG_arg = 0;
   WbDeviceTag arg1 ;
@@ -3496,27 +3305,6 @@ fail:
 }
 
 
-static int _wrap_wb_gyro_get_sampling_period(lua_State* L) {
-  int SWIG_arg = 0;
-  WbDeviceTag arg1 ;
-  int result;
-  
-  SWIG_check_num_args("wb_gyro_get_sampling_period",1,1)
-  if(!lua_isnumber(L,1)) SWIG_fail_arg("wb_gyro_get_sampling_period",1,"WbDeviceTag");
-  SWIG_contract_assert((lua_tonumber(L,1)>=0),"number must not be negative")
-  arg1 = (WbDeviceTag)lua_tonumber(L, 1);
-  result = (int)wb_gyro_get_sampling_period(arg1);
-  lua_pushnumber(L, (lua_Number) result); SWIG_arg++;
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
 static int _wrap_wb_gyro_get_values(lua_State* L) {
   int SWIG_arg = 0;
   WbDeviceTag arg1 ;
@@ -3577,27 +3365,6 @@ fail:
 }
 
 
-static int _wrap_wb_led_get(lua_State* L) {
-  int SWIG_arg = 0;
-  WbDeviceTag arg1 ;
-  int result;
-  
-  SWIG_check_num_args("wb_led_get",1,1)
-  if(!lua_isnumber(L,1)) SWIG_fail_arg("wb_led_get",1,"WbDeviceTag");
-  SWIG_contract_assert((lua_tonumber(L,1)>=0),"number must not be negative")
-  arg1 = (WbDeviceTag)lua_tonumber(L, 1);
-  result = (int)wb_led_get(arg1);
-  lua_pushnumber(L, (lua_Number) result); SWIG_arg++;
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
 static int _wrap_wb_light_sensor_enable(lua_State* L) {
   int SWIG_arg = 0;
   WbDeviceTag arg1 ;
@@ -3631,27 +3398,6 @@ static int _wrap_wb_light_sensor_disable(lua_State* L) {
   arg1 = (WbDeviceTag)lua_tonumber(L, 1);
   wb_light_sensor_disable(arg1);
   
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_wb_light_sensor_get_sampling_period(lua_State* L) {
-  int SWIG_arg = 0;
-  WbDeviceTag arg1 ;
-  int result;
-  
-  SWIG_check_num_args("wb_light_sensor_get_sampling_period",1,1)
-  if(!lua_isnumber(L,1)) SWIG_fail_arg("wb_light_sensor_get_sampling_period",1,"WbDeviceTag");
-  SWIG_contract_assert((lua_tonumber(L,1)>=0),"number must not be negative")
-  arg1 = (WbDeviceTag)lua_tonumber(L, 1);
-  result = (int)wb_light_sensor_get_sampling_period(arg1);
-  lua_pushnumber(L, (lua_Number) result); SWIG_arg++;
   return SWIG_arg;
   
   if(0) SWIG_fail;
@@ -3716,27 +3462,6 @@ static int _wrap_wb_microphone_disable(lua_State* L) {
   arg1 = (WbDeviceTag)lua_tonumber(L, 1);
   wb_microphone_disable(arg1);
   
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_wb_microphone_get_sampling_period(lua_State* L) {
-  int SWIG_arg = 0;
-  WbDeviceTag arg1 ;
-  int result;
-  
-  SWIG_check_num_args("wb_microphone_get_sampling_period",1,1)
-  if(!lua_isnumber(L,1)) SWIG_fail_arg("wb_microphone_get_sampling_period",1,"WbDeviceTag");
-  SWIG_contract_assert((lua_tonumber(L,1)>=0),"number must not be negative")
-  arg1 = (WbDeviceTag)lua_tonumber(L, 1);
-  result = (int)wb_microphone_get_sampling_period(arg1);
-  lua_pushnumber(L, (lua_Number) result); SWIG_arg++;
   return SWIG_arg;
   
   if(0) SWIG_fail;
@@ -4446,27 +4171,6 @@ fail:
 }
 
 
-static int _wrap_wb_receiver_get_sampling_period(lua_State* L) {
-  int SWIG_arg = 0;
-  WbDeviceTag arg1 ;
-  int result;
-  
-  SWIG_check_num_args("wb_receiver_get_sampling_period",1,1)
-  if(!lua_isnumber(L,1)) SWIG_fail_arg("wb_receiver_get_sampling_period",1,"WbDeviceTag");
-  SWIG_contract_assert((lua_tonumber(L,1)>=0),"number must not be negative")
-  arg1 = (WbDeviceTag)lua_tonumber(L, 1);
-  result = (int)wb_receiver_get_sampling_period(arg1);
-  lua_pushnumber(L, (lua_Number) result); SWIG_arg++;
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
 static int _wrap_wb_receiver_set_channel(lua_State* L) {
   int SWIG_arg = 0;
   WbDeviceTag arg1 ;
@@ -4742,23 +4446,6 @@ fail:
 }
 
 
-static int _wrap_wb_robot_get_model(lua_State* L) {
-  int SWIG_arg = 0;
-  char *result = 0 ;
-  
-  SWIG_check_num_args("wb_robot_get_model",0,0)
-  result = (char *)wb_robot_get_model();
-  lua_pushstring(L,(const char *)result); SWIG_arg++;
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
 static int _wrap_wb_robot_get_mode(lua_State* L) {
   int SWIG_arg = 0;
   int result;
@@ -4776,18 +4463,13 @@ fail:
 }
 
 
-static int _wrap_wb_robot_set_mode(lua_State* L) {
+static int _wrap_wb_robot_get_license(lua_State* L) {
   int SWIG_arg = 0;
-  int arg1 ;
-  void *arg2 = (void *) 0 ;
+  int result;
   
-  SWIG_check_num_args("wb_robot_set_mode",2,2)
-  if(!lua_isnumber(L,1)) SWIG_fail_arg("wb_robot_set_mode",1,"int");
-  if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("wb_robot_set_mode",2,"void *");
-  arg1 = (int)lua_tonumber(L, 1);
-  arg2=(void *)SWIG_MustGetPtr(L,2,0,0,2,"wb_robot_set_mode");
-  wb_robot_set_mode(arg1,arg2);
-  
+  SWIG_check_num_args("wb_robot_get_license",0,0)
+  result = (int)wb_robot_get_license();
+  lua_pushnumber(L, (lua_Number) result); SWIG_arg++;
   return SWIG_arg;
   
   if(0) SWIG_fail;
@@ -4956,23 +4638,6 @@ fail:
 }
 
 
-static int _wrap_wb_robot_get_battery_sensor_sampling_period(lua_State* L) {
-  int SWIG_arg = 0;
-  int result;
-  
-  SWIG_check_num_args("wb_robot_get_battery_sensor_sampling_period",0,0)
-  result = (int)wb_robot_get_battery_sensor_sampling_period();
-  lua_pushnumber(L, (lua_Number) result); SWIG_arg++;
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
 static int _wrap_wb_robot_battery_sensor_get_value(lua_State* L) {
   int SWIG_arg = 0;
   double result;
@@ -5090,83 +4755,6 @@ fail:
 }
 
 
-static int _wrap_wb_robot_get_number_of_devices(lua_State* L) {
-  int SWIG_arg = 0;
-  int result;
-  
-  SWIG_check_num_args("wb_robot_get_number_of_devices",0,0)
-  result = (int)wb_robot_get_number_of_devices();
-  lua_pushnumber(L, (lua_Number) result); SWIG_arg++;
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_wb_robot_get_device_by_index(lua_State* L) {
-  int SWIG_arg = 0;
-  int arg1 ;
-  WbDeviceTag result;
-  
-  SWIG_check_num_args("wb_robot_get_device_by_index",1,1)
-  if(!lua_isnumber(L,1)) SWIG_fail_arg("wb_robot_get_device_by_index",1,"int");
-  arg1 = (int)lua_tonumber(L, 1);
-  result = (WbDeviceTag)wb_robot_get_device_by_index(arg1);
-  lua_pushnumber(L, (lua_Number) result); SWIG_arg++;
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_wb_robot_get_type(lua_State* L) {
-  int SWIG_arg = 0;
-  WbNodeType result;
-  
-  SWIG_check_num_args("wb_robot_get_type",0,0)
-  result = (WbNodeType)wb_robot_get_type();
-  lua_pushnumber(L, (lua_Number) result); SWIG_arg++;
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_wb_servo_set_position(lua_State* L) {
-  int SWIG_arg = 0;
-  WbDeviceTag arg1 ;
-  double arg2 ;
-  
-  SWIG_check_num_args("wb_servo_set_position",2,2)
-  if(!lua_isnumber(L,1)) SWIG_fail_arg("wb_servo_set_position",1,"WbDeviceTag");
-  if(!lua_isnumber(L,2)) SWIG_fail_arg("wb_servo_set_position",2,"double");
-  SWIG_contract_assert((lua_tonumber(L,1)>=0),"number must not be negative")
-  arg1 = (WbDeviceTag)lua_tonumber(L, 1);
-  arg2 = (double)lua_tonumber(L, 2);
-  wb_servo_set_position(arg1,arg2);
-  
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
 static int _wrap_wb_servo_set_acceleration(lua_State* L) {
   int SWIG_arg = 0;
   WbDeviceTag arg1 ;
@@ -5202,6 +4790,49 @@ static int _wrap_wb_servo_set_velocity(lua_State* L) {
   arg1 = (WbDeviceTag)lua_tonumber(L, 1);
   arg2 = (double)lua_tonumber(L, 2);
   wb_servo_set_velocity(arg1,arg2);
+  
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
+static int _wrap_wb_servo_enable_position(lua_State* L) {
+  int SWIG_arg = 0;
+  WbDeviceTag arg1 ;
+  int arg2 ;
+  
+  SWIG_check_num_args("wb_servo_enable_position",2,2)
+  if(!lua_isnumber(L,1)) SWIG_fail_arg("wb_servo_enable_position",1,"WbDeviceTag");
+  if(!lua_isnumber(L,2)) SWIG_fail_arg("wb_servo_enable_position",2,"int");
+  SWIG_contract_assert((lua_tonumber(L,1)>=0),"number must not be negative")
+  arg1 = (WbDeviceTag)lua_tonumber(L, 1);
+  arg2 = (int)lua_tonumber(L, 2);
+  wb_servo_enable_position(arg1,arg2);
+  
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
+static int _wrap_wb_servo_disable_position(lua_State* L) {
+  int SWIG_arg = 0;
+  WbDeviceTag arg1 ;
+  
+  SWIG_check_num_args("wb_servo_disable_position",1,1)
+  if(!lua_isnumber(L,1)) SWIG_fail_arg("wb_servo_disable_position",1,"WbDeviceTag");
+  SWIG_contract_assert((lua_tonumber(L,1)>=0),"number must not be negative")
+  arg1 = (WbDeviceTag)lua_tonumber(L, 1);
+  wb_servo_disable_position(arg1);
   
   return SWIG_arg;
   
@@ -5282,91 +4913,6 @@ fail:
 }
 
 
-static int _wrap_wb_servo_enable_position(lua_State* L) {
-  int SWIG_arg = 0;
-  WbDeviceTag arg1 ;
-  int arg2 ;
-  
-  SWIG_check_num_args("wb_servo_enable_position",2,2)
-  if(!lua_isnumber(L,1)) SWIG_fail_arg("wb_servo_enable_position",1,"WbDeviceTag");
-  if(!lua_isnumber(L,2)) SWIG_fail_arg("wb_servo_enable_position",2,"int");
-  SWIG_contract_assert((lua_tonumber(L,1)>=0),"number must not be negative")
-  arg1 = (WbDeviceTag)lua_tonumber(L, 1);
-  arg2 = (int)lua_tonumber(L, 2);
-  wb_servo_enable_position(arg1,arg2);
-  
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_wb_servo_disable_position(lua_State* L) {
-  int SWIG_arg = 0;
-  WbDeviceTag arg1 ;
-  
-  SWIG_check_num_args("wb_servo_disable_position",1,1)
-  if(!lua_isnumber(L,1)) SWIG_fail_arg("wb_servo_disable_position",1,"WbDeviceTag");
-  SWIG_contract_assert((lua_tonumber(L,1)>=0),"number must not be negative")
-  arg1 = (WbDeviceTag)lua_tonumber(L, 1);
-  wb_servo_disable_position(arg1);
-  
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_wb_servo_get_position_sampling_period(lua_State* L) {
-  int SWIG_arg = 0;
-  WbDeviceTag arg1 ;
-  int result;
-  
-  SWIG_check_num_args("wb_servo_get_position_sampling_period",1,1)
-  if(!lua_isnumber(L,1)) SWIG_fail_arg("wb_servo_get_position_sampling_period",1,"WbDeviceTag");
-  SWIG_contract_assert((lua_tonumber(L,1)>=0),"number must not be negative")
-  arg1 = (WbDeviceTag)lua_tonumber(L, 1);
-  result = (int)wb_servo_get_position_sampling_period(arg1);
-  lua_pushnumber(L, (lua_Number) result); SWIG_arg++;
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_wb_servo_get_position(lua_State* L) {
-  int SWIG_arg = 0;
-  WbDeviceTag arg1 ;
-  double result;
-  
-  SWIG_check_num_args("wb_servo_get_position",1,1)
-  if(!lua_isnumber(L,1)) SWIG_fail_arg("wb_servo_get_position",1,"WbDeviceTag");
-  SWIG_contract_assert((lua_tonumber(L,1)>=0),"number must not be negative")
-  arg1 = (WbDeviceTag)lua_tonumber(L, 1);
-  result = (double)wb_servo_get_position(arg1);
-  lua_pushnumber(L, (lua_Number) result); SWIG_arg++;
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
 static int _wrap_wb_servo_enable_motor_force_feedback(lua_State* L) {
   int SWIG_arg = 0;
   WbDeviceTag arg1 ;
@@ -5410,27 +4956,6 @@ fail:
 }
 
 
-static int _wrap_wb_servo_get_motor_force_feedback_sampling_period(lua_State* L) {
-  int SWIG_arg = 0;
-  WbDeviceTag arg1 ;
-  int result;
-  
-  SWIG_check_num_args("wb_servo_get_motor_force_feedback_sampling_period",1,1)
-  if(!lua_isnumber(L,1)) SWIG_fail_arg("wb_servo_get_motor_force_feedback_sampling_period",1,"WbDeviceTag");
-  SWIG_contract_assert((lua_tonumber(L,1)>=0),"number must not be negative")
-  arg1 = (WbDeviceTag)lua_tonumber(L, 1);
-  result = (int)wb_servo_get_motor_force_feedback_sampling_period(arg1);
-  lua_pushnumber(L, (lua_Number) result); SWIG_arg++;
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
 static int _wrap_wb_servo_get_motor_force_feedback(lua_State* L) {
   int SWIG_arg = 0;
   WbDeviceTag arg1 ;
@@ -5452,16 +4977,16 @@ fail:
 }
 
 
-static int _wrap_wb_servo_get_target_position(lua_State* L) {
+static int _wrap_wb_servo_get_position(lua_State* L) {
   int SWIG_arg = 0;
   WbDeviceTag arg1 ;
   double result;
   
-  SWIG_check_num_args("wb_servo_get_target_position",1,1)
-  if(!lua_isnumber(L,1)) SWIG_fail_arg("wb_servo_get_target_position",1,"WbDeviceTag");
+  SWIG_check_num_args("wb_servo_get_position",1,1)
+  if(!lua_isnumber(L,1)) SWIG_fail_arg("wb_servo_get_position",1,"WbDeviceTag");
   SWIG_contract_assert((lua_tonumber(L,1)>=0),"number must not be negative")
   arg1 = (WbDeviceTag)lua_tonumber(L, 1);
-  result = (double)wb_servo_get_target_position(arg1);
+  result = (double)wb_servo_get_position(arg1);
   lua_pushnumber(L, (lua_Number) result); SWIG_arg++;
   return SWIG_arg;
   
@@ -5473,59 +4998,19 @@ fail:
 }
 
 
-static int _wrap_wb_servo_get_min_position(lua_State* L) {
+static int _wrap_wb_servo_set_position(lua_State* L) {
   int SWIG_arg = 0;
   WbDeviceTag arg1 ;
-  double result;
+  double arg2 ;
   
-  SWIG_check_num_args("wb_servo_get_min_position",1,1)
-  if(!lua_isnumber(L,1)) SWIG_fail_arg("wb_servo_get_min_position",1,"WbDeviceTag");
+  SWIG_check_num_args("wb_servo_set_position",2,2)
+  if(!lua_isnumber(L,1)) SWIG_fail_arg("wb_servo_set_position",1,"WbDeviceTag");
+  if(!lua_isnumber(L,2)) SWIG_fail_arg("wb_servo_set_position",2,"double");
   SWIG_contract_assert((lua_tonumber(L,1)>=0),"number must not be negative")
   arg1 = (WbDeviceTag)lua_tonumber(L, 1);
-  result = (double)wb_servo_get_min_position(arg1);
-  lua_pushnumber(L, (lua_Number) result); SWIG_arg++;
-  return SWIG_arg;
+  arg2 = (double)lua_tonumber(L, 2);
+  wb_servo_set_position(arg1,arg2);
   
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_wb_servo_get_max_position(lua_State* L) {
-  int SWIG_arg = 0;
-  WbDeviceTag arg1 ;
-  double result;
-  
-  SWIG_check_num_args("wb_servo_get_max_position",1,1)
-  if(!lua_isnumber(L,1)) SWIG_fail_arg("wb_servo_get_max_position",1,"WbDeviceTag");
-  SWIG_contract_assert((lua_tonumber(L,1)>=0),"number must not be negative")
-  arg1 = (WbDeviceTag)lua_tonumber(L, 1);
-  result = (double)wb_servo_get_max_position(arg1);
-  lua_pushnumber(L, (lua_Number) result); SWIG_arg++;
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_wb_servo_get_type(lua_State* L) {
-  int SWIG_arg = 0;
-  WbDeviceTag arg1 ;
-  WbServoType result;
-  
-  SWIG_check_num_args("wb_servo_get_type",1,1)
-  if(!lua_isnumber(L,1)) SWIG_fail_arg("wb_servo_get_type",1,"WbDeviceTag");
-  SWIG_contract_assert((lua_tonumber(L,1)>=0),"number must not be negative")
-  arg1 = (WbDeviceTag)lua_tonumber(L, 1);
-  result = (WbServoType)wb_servo_get_type(arg1);
-  lua_pushnumber(L, (lua_Number) result); SWIG_arg++;
   return SWIG_arg;
   
   if(0) SWIG_fail;
@@ -5624,6 +5109,41 @@ static int _wrap_wb_supervisor_export_image(lua_State* L) {
   arg1 = (char *)lua_tostring(L, 1);
   arg2 = (int)lua_tonumber(L, 2);
   wb_supervisor_export_image((char const *)arg1,arg2);
+  
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
+static int _wrap_wb_supervisor_start_animation(lua_State* L) {
+  int SWIG_arg = 0;
+  char *arg1 = (char *) 0 ;
+  
+  SWIG_check_num_args("wb_supervisor_start_animation",1,1)
+  if(!SWIG_lua_isnilstring(L,1)) SWIG_fail_arg("wb_supervisor_start_animation",1,"char const *");
+  arg1 = (char *)lua_tostring(L, 1);
+  wb_supervisor_start_animation((char const *)arg1);
+  
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
+static int _wrap_wb_supervisor_stop_animation(lua_State* L) {
+  int SWIG_arg = 0;
+  
+  SWIG_check_num_args("wb_supervisor_stop_animation",0,0)
+  wb_supervisor_stop_animation();
   
   return SWIG_arg;
   
@@ -5780,6 +5300,30 @@ fail:
 }
 
 
+static int _wrap_wb_supervisor_node_get_name(lua_State* L) {
+  int SWIG_arg = 0;
+  WbNodeRef arg1 = (WbNodeRef) 0 ;
+  char *result = 0 ;
+  
+  SWIG_check_num_args("wb_supervisor_node_get_name",1,1)
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("wb_supervisor_node_get_name",1,"WbNodeRef");
+  
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_WbNodeStructPrivate,0))){
+    SWIG_fail_ptr("wb_supervisor_node_get_name",1,SWIGTYPE_p_WbNodeStructPrivate);
+  }
+  
+  result = (char *)wb_supervisor_node_get_name(arg1);
+  lua_pushstring(L,(const char *)result); SWIG_arg++;
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
 static int _wrap_wb_supervisor_node_get_type_name(lua_State* L) {
   int SWIG_arg = 0;
   WbNodeRef arg1 = (WbNodeRef) 0 ;
@@ -5831,73 +5375,26 @@ fail:
 }
 
 
-static int _wrap_wb_supervisor_node_get_center_of_mass(lua_State* L) {
+static int _wrap_wb_supervisor_node_get_position(lua_State* L) {
   int SWIG_arg = 0;
   WbNodeRef arg1 = (WbNodeRef) 0 ;
   double *result = 0 ;
   
-  SWIG_check_num_args("wb_supervisor_node_get_center_of_mass",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("wb_supervisor_node_get_center_of_mass",1,"WbNodeRef");
+  SWIG_check_num_args("wb_supervisor_node_get_position",1,1)
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("wb_supervisor_node_get_position",1,"WbNodeRef");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_WbNodeStructPrivate,0))){
-    SWIG_fail_ptr("wb_supervisor_node_get_center_of_mass",1,SWIGTYPE_p_WbNodeStructPrivate);
+    SWIG_fail_ptr("wb_supervisor_node_get_position",1,SWIGTYPE_p_WbNodeStructPrivate);
   }
   
-  result = (double *)wb_supervisor_node_get_center_of_mass(arg1);
+  result = (double *)wb_supervisor_node_get_position(arg1);
   {
     int i, len;
-    if (match_suffix("wb_supervisor_node_get_center_of_mass", "_vec2f"))
+    if (match_suffix("wb_supervisor_node_get_position", "_vec2f"))
     len = 2;
-    else if (match_suffix("wb_supervisor_node_get_center_of_mass", "_sf_rotation"))
+    else if (match_suffix("wb_supervisor_node_get_position", "_sf_rotation"))
     len = 4;
-    else if (match_suffix("wb_supervisor_node_get_center_of_mass", "_orientation"))
-    len = 9;
-    else
-    len = 3;
-    lua_createtable(L, len, 0);
-    for (i = 0; i < len; i++) {
-      lua_pushnumber(L, result[i]);
-      lua_rawseti(L, -2, i+1);
-    }
-    SWIG_arg++;
-  }
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_wb_supervisor_node_get_contact_points(lua_State* L) {
-  int SWIG_arg = 0;
-  WbNodeRef arg1 = (WbNodeRef) 0 ;
-  int *arg2 = (int *) 0 ;
-  double *result = 0 ;
-  
-  SWIG_check_num_args("wb_supervisor_node_get_contact_points",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("wb_supervisor_node_get_contact_points",1,"WbNodeRef");
-  if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("wb_supervisor_node_get_contact_points",2,"int *");
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_WbNodeStructPrivate,0))){
-    SWIG_fail_ptr("wb_supervisor_node_get_contact_points",1,SWIGTYPE_p_WbNodeStructPrivate);
-  }
-  
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,2,(void**)&arg2,SWIGTYPE_p_int,0))){
-    SWIG_fail_ptr("wb_supervisor_node_get_contact_points",2,SWIGTYPE_p_int);
-  }
-  
-  result = (double *)wb_supervisor_node_get_contact_points(arg1,arg2);
-  {
-    int i, len;
-    if (match_suffix("wb_supervisor_node_get_contact_points", "_vec2f"))
-    len = 2;
-    else if (match_suffix("wb_supervisor_node_get_contact_points", "_sf_rotation"))
-    len = 4;
-    else if (match_suffix("wb_supervisor_node_get_contact_points", "_orientation"))
+    else if (match_suffix("wb_supervisor_node_get_position", "_orientation"))
     len = 9;
     else
     len = 3;
@@ -5948,70 +5445,6 @@ static int _wrap_wb_supervisor_node_get_orientation(lua_State* L) {
     }
     SWIG_arg++;
   }
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_wb_supervisor_node_get_position(lua_State* L) {
-  int SWIG_arg = 0;
-  WbNodeRef arg1 = (WbNodeRef) 0 ;
-  double *result = 0 ;
-  
-  SWIG_check_num_args("wb_supervisor_node_get_position",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("wb_supervisor_node_get_position",1,"WbNodeRef");
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_WbNodeStructPrivate,0))){
-    SWIG_fail_ptr("wb_supervisor_node_get_position",1,SWIGTYPE_p_WbNodeStructPrivate);
-  }
-  
-  result = (double *)wb_supervisor_node_get_position(arg1);
-  {
-    int i, len;
-    if (match_suffix("wb_supervisor_node_get_position", "_vec2f"))
-    len = 2;
-    else if (match_suffix("wb_supervisor_node_get_position", "_sf_rotation"))
-    len = 4;
-    else if (match_suffix("wb_supervisor_node_get_position", "_orientation"))
-    len = 9;
-    else
-    len = 3;
-    lua_createtable(L, len, 0);
-    for (i = 0; i < len; i++) {
-      lua_pushnumber(L, result[i]);
-      lua_rawseti(L, -2, i+1);
-    }
-    SWIG_arg++;
-  }
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_wb_supervisor_node_get_static_balance(lua_State* L) {
-  int SWIG_arg = 0;
-  WbNodeRef arg1 = (WbNodeRef) 0 ;
-  char result;
-  
-  SWIG_check_num_args("wb_supervisor_node_get_static_balance",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("wb_supervisor_node_get_static_balance",1,"WbNodeRef");
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_WbNodeStructPrivate,0))){
-    SWIG_fail_ptr("wb_supervisor_node_get_static_balance",1,SWIGTYPE_p_WbNodeStructPrivate);
-  }
-  
-  result = (char)wb_supervisor_node_get_static_balance(arg1);
-  lua_pushfstring(L,"%c",result); SWIG_arg++;
   return SWIG_arg;
   
   if(0) SWIG_fail;
@@ -7093,27 +6526,6 @@ fail:
 }
 
 
-static int _wrap_wb_touch_sensor_get_sampling_period(lua_State* L) {
-  int SWIG_arg = 0;
-  WbDeviceTag arg1 ;
-  int result;
-  
-  SWIG_check_num_args("wb_touch_sensor_get_sampling_period",1,1)
-  if(!lua_isnumber(L,1)) SWIG_fail_arg("wb_touch_sensor_get_sampling_period",1,"WbDeviceTag");
-  SWIG_contract_assert((lua_tonumber(L,1)>=0),"number must not be negative")
-  arg1 = (WbDeviceTag)lua_tonumber(L, 1);
-  result = (int)wb_touch_sensor_get_sampling_period(arg1);
-  lua_pushnumber(L, (lua_Number) result); SWIG_arg++;
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
 static int _wrap_wb_touch_sensor_get_value(lua_State* L) {
   int SWIG_arg = 0;
   WbDeviceTag arg1 ;
@@ -7172,27 +6584,6 @@ fail:
 }
 
 
-static int _wrap_wb_touch_sensor_get_type(lua_State* L) {
-  int SWIG_arg = 0;
-  WbDeviceTag arg1 ;
-  WbTouchSensorType result;
-  
-  SWIG_check_num_args("wb_touch_sensor_get_type",1,1)
-  if(!lua_isnumber(L,1)) SWIG_fail_arg("wb_touch_sensor_get_type",1,"WbDeviceTag");
-  SWIG_contract_assert((lua_tonumber(L,1)>=0),"number must not be negative")
-  arg1 = (WbDeviceTag)lua_tonumber(L, 1);
-  result = (WbTouchSensorType)wb_touch_sensor_get_type(arg1);
-  lua_pushnumber(L, (lua_Number) result); SWIG_arg++;
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
 #ifdef __cplusplus
 }
 #endif
@@ -7200,11 +6591,9 @@ fail:
 static const struct luaL_Reg swig_commands[] = {
     { "wb_accelerometer_enable", _wrap_wb_accelerometer_enable},
     { "wb_accelerometer_disable", _wrap_wb_accelerometer_disable},
-    { "wb_accelerometer_get_sampling_period", _wrap_wb_accelerometer_get_sampling_period},
     { "wb_accelerometer_get_values", _wrap_wb_accelerometer_get_values},
     { "wb_camera_enable", _wrap_wb_camera_enable},
     { "wb_camera_disable", _wrap_wb_camera_disable},
-    { "wb_camera_get_sampling_period", _wrap_wb_camera_get_sampling_period},
     { "wb_camera_get_image", _wrap_wb_camera_get_image},
     { "wb_camera_get_range_image", _wrap_wb_camera_get_range_image},
     { "wb_camera_get_width", _wrap_wb_camera_get_width},
@@ -7219,7 +6608,6 @@ static const struct luaL_Reg swig_commands[] = {
     { "wb_camera_range_image_get_value", _wrap_wb_camera_range_image_get_value},
     { "wb_compass_enable", _wrap_wb_compass_enable},
     { "wb_compass_disable", _wrap_wb_compass_disable},
-    { "wb_compass_get_sampling_period", _wrap_wb_compass_get_sampling_period},
     { "wb_compass_get_values", _wrap_wb_compass_get_values},
     { "wb_connector_enable_presence", _wrap_wb_connector_enable_presence},
     { "wb_connector_disable_presence", _wrap_wb_connector_disable_presence},
@@ -7229,14 +6617,9 @@ static const struct luaL_Reg swig_commands[] = {
     { "wb_differential_wheels_set_speed", _wrap_wb_differential_wheels_set_speed},
     { "wb_differential_wheels_enable_encoders", _wrap_wb_differential_wheels_enable_encoders},
     { "wb_differential_wheels_disable_encoders", _wrap_wb_differential_wheels_disable_encoders},
-    { "wb_differential_wheels_get_encoders_sampling_period", _wrap_wb_differential_wheels_get_encoders_sampling_period},
     { "wb_differential_wheels_get_left_encoder", _wrap_wb_differential_wheels_get_left_encoder},
     { "wb_differential_wheels_get_right_encoder", _wrap_wb_differential_wheels_get_right_encoder},
     { "wb_differential_wheels_set_encoders", _wrap_wb_differential_wheels_set_encoders},
-    { "wb_differential_wheels_get_left_speed", _wrap_wb_differential_wheels_get_left_speed},
-    { "wb_differential_wheels_get_right_speed", _wrap_wb_differential_wheels_get_right_speed},
-    { "wb_differential_wheels_get_max_speed", _wrap_wb_differential_wheels_get_max_speed},
-    { "wb_differential_wheels_get_speed_unit", _wrap_wb_differential_wheels_get_speed_unit},
     { "wb_display_get_width", _wrap_wb_display_get_width},
     { "wb_display_get_height", _wrap_wb_display_get_height},
     { "wb_display_set_color", _wrap_wb_display_set_color},
@@ -7259,7 +6642,6 @@ static const struct luaL_Reg swig_commands[] = {
     { "wb_display_image_save", _wrap_wb_display_image_save},
     { "wb_distance_sensor_enable", _wrap_wb_distance_sensor_enable},
     { "wb_distance_sensor_disable", _wrap_wb_distance_sensor_disable},
-    { "wb_distance_sensor_get_sampling_period", _wrap_wb_distance_sensor_get_sampling_period},
     { "wb_distance_sensor_get_value", _wrap_wb_distance_sensor_get_value},
     { "wb_emitter_send", _wrap_wb_emitter_send},
     { "wb_emitter_get_buffer_size", _wrap_wb_emitter_get_buffer_size},
@@ -7269,21 +6651,16 @@ static const struct luaL_Reg swig_commands[] = {
     { "wb_emitter_set_range", _wrap_wb_emitter_set_range},
     { "wb_gps_enable", _wrap_wb_gps_enable},
     { "wb_gps_disable", _wrap_wb_gps_disable},
-    { "wb_gps_get_sampling_period", _wrap_wb_gps_get_sampling_period},
     { "wb_gps_get_values", _wrap_wb_gps_get_values},
     { "wb_gyro_enable", _wrap_wb_gyro_enable},
     { "wb_gyro_disable", _wrap_wb_gyro_disable},
-    { "wb_gyro_get_sampling_period", _wrap_wb_gyro_get_sampling_period},
     { "wb_gyro_get_values", _wrap_wb_gyro_get_values},
     { "wb_led_set", _wrap_wb_led_set},
-    { "wb_led_get", _wrap_wb_led_get},
     { "wb_light_sensor_enable", _wrap_wb_light_sensor_enable},
     { "wb_light_sensor_disable", _wrap_wb_light_sensor_disable},
-    { "wb_light_sensor_get_sampling_period", _wrap_wb_light_sensor_get_sampling_period},
     { "wb_light_sensor_get_value", _wrap_wb_light_sensor_get_value},
     { "wb_microphone_enable", _wrap_wb_microphone_enable},
     { "wb_microphone_disable", _wrap_wb_microphone_disable},
-    { "wb_microphone_get_sampling_period", _wrap_wb_microphone_get_sampling_period},
     { "wb_microphone_get_sample_data", _wrap_wb_microphone_get_sample_data},
     { "wb_microphone_get_sample_size", _wrap_wb_microphone_get_sample_size},
     { "wb_pen_write", _wrap_wb_pen_write},
@@ -7316,7 +6693,6 @@ static const struct luaL_Reg swig_commands[] = {
     { "wb_radio_send", _wrap_wb_radio_send},
     { "wb_receiver_enable", _wrap_wb_receiver_enable},
     { "wb_receiver_disable", _wrap_wb_receiver_disable},
-    { "wb_receiver_get_sampling_period", _wrap_wb_receiver_get_sampling_period},
     { "wb_receiver_set_channel", _wrap_wb_receiver_set_channel},
     { "wb_receiver_get_channel", _wrap_wb_receiver_get_channel},
     { "wb_receiver_get_queue_length", _wrap_wb_receiver_get_queue_length},
@@ -7330,9 +6706,8 @@ static const struct luaL_Reg swig_commands[] = {
     { "wb_robot_cleanup", _wrap_wb_robot_cleanup},
     { "wb_robot_get_time", _wrap_wb_robot_get_time},
     { "wb_robot_get_name", _wrap_wb_robot_get_name},
-    { "wb_robot_get_model", _wrap_wb_robot_get_model},
     { "wb_robot_get_mode", _wrap_wb_robot_get_mode},
-    { "wb_robot_set_mode", _wrap_wb_robot_set_mode},
+    { "wb_robot_get_license", _wrap_wb_robot_get_license},
     { "wb_robot_get_synchronization", _wrap_wb_robot_get_synchronization},
     { "wb_robot_get_project_path", _wrap_wb_robot_get_project_path},
     { "wb_robot_get_basic_time_step", _wrap_wb_robot_get_basic_time_step},
@@ -7342,52 +6717,42 @@ static const struct luaL_Reg swig_commands[] = {
     { "wb_robot_keyboard_get_key", _wrap_wb_robot_keyboard_get_key},
     { "wb_robot_battery_sensor_enable", _wrap_wb_robot_battery_sensor_enable},
     { "wb_robot_battery_sensor_disable", _wrap_wb_robot_battery_sensor_disable},
-    { "wb_robot_get_battery_sensor_sampling_period", _wrap_wb_robot_get_battery_sensor_sampling_period},
     { "wb_robot_battery_sensor_get_value", _wrap_wb_robot_battery_sensor_get_value},
     { "wb_robot_task_new", _wrap_wb_robot_task_new},
     { "wb_robot_mutex_new", _wrap_wb_robot_mutex_new},
     { "wb_robot_mutex_lock", _wrap_wb_robot_mutex_lock},
     { "wb_robot_mutex_unlock", _wrap_wb_robot_mutex_unlock},
     { "wb_robot_mutex_delete", _wrap_wb_robot_mutex_delete},
-    { "wb_robot_get_number_of_devices", _wrap_wb_robot_get_number_of_devices},
-    { "wb_robot_get_device_by_index", _wrap_wb_robot_get_device_by_index},
-    { "wb_robot_get_type", _wrap_wb_robot_get_type},
-    { "wb_servo_set_position", _wrap_wb_servo_set_position},
     { "wb_servo_set_acceleration", _wrap_wb_servo_set_acceleration},
     { "wb_servo_set_velocity", _wrap_wb_servo_set_velocity},
+    { "wb_servo_enable_position", _wrap_wb_servo_enable_position},
+    { "wb_servo_disable_position", _wrap_wb_servo_disable_position},
     { "wb_servo_set_force", _wrap_wb_servo_set_force},
     { "wb_servo_set_motor_force", _wrap_wb_servo_set_motor_force},
     { "wb_servo_set_control_p", _wrap_wb_servo_set_control_p},
-    { "wb_servo_enable_position", _wrap_wb_servo_enable_position},
-    { "wb_servo_disable_position", _wrap_wb_servo_disable_position},
-    { "wb_servo_get_position_sampling_period", _wrap_wb_servo_get_position_sampling_period},
-    { "wb_servo_get_position", _wrap_wb_servo_get_position},
     { "wb_servo_enable_motor_force_feedback", _wrap_wb_servo_enable_motor_force_feedback},
     { "wb_servo_disable_motor_force_feedback", _wrap_wb_servo_disable_motor_force_feedback},
-    { "wb_servo_get_motor_force_feedback_sampling_period", _wrap_wb_servo_get_motor_force_feedback_sampling_period},
     { "wb_servo_get_motor_force_feedback", _wrap_wb_servo_get_motor_force_feedback},
-    { "wb_servo_get_target_position", _wrap_wb_servo_get_target_position},
-    { "wb_servo_get_min_position", _wrap_wb_servo_get_min_position},
-    { "wb_servo_get_max_position", _wrap_wb_servo_get_max_position},
-    { "wb_servo_get_type", _wrap_wb_servo_get_type},
+    { "wb_servo_get_position", _wrap_wb_servo_get_position},
+    { "wb_servo_set_position", _wrap_wb_servo_set_position},
     { "wb_speaker_emit_sample", _wrap_wb_speaker_emit_sample},
     { "wb_supervisor_simulation_quit", _wrap_wb_supervisor_simulation_quit},
     { "wb_supervisor_simulation_revert", _wrap_wb_supervisor_simulation_revert},
     { "wb_supervisor_simulation_physics_reset", _wrap_wb_supervisor_simulation_physics_reset},
     { "wb_supervisor_export_image", _wrap_wb_supervisor_export_image},
+    { "wb_supervisor_start_animation", _wrap_wb_supervisor_start_animation},
+    { "wb_supervisor_stop_animation", _wrap_wb_supervisor_stop_animation},
     { "wb_supervisor_start_movie", _wrap_wb_supervisor_start_movie},
     { "wb_supervisor_stop_movie", _wrap_wb_supervisor_stop_movie},
     { "wb_supervisor_set_label", _wrap_wb_supervisor_set_label},
     { "wb_supervisor_node_get_root", _wrap_wb_supervisor_node_get_root},
     { "wb_supervisor_node_get_from_def", _wrap_wb_supervisor_node_get_from_def},
     { "wb_supervisor_node_get_type", _wrap_wb_supervisor_node_get_type},
+    { "wb_supervisor_node_get_name", _wrap_wb_supervisor_node_get_name},
     { "wb_supervisor_node_get_type_name", _wrap_wb_supervisor_node_get_type_name},
     { "wb_supervisor_node_get_field", _wrap_wb_supervisor_node_get_field},
-    { "wb_supervisor_node_get_center_of_mass", _wrap_wb_supervisor_node_get_center_of_mass},
-    { "wb_supervisor_node_get_contact_points", _wrap_wb_supervisor_node_get_contact_points},
-    { "wb_supervisor_node_get_orientation", _wrap_wb_supervisor_node_get_orientation},
     { "wb_supervisor_node_get_position", _wrap_wb_supervisor_node_get_position},
-    { "wb_supervisor_node_get_static_balance", _wrap_wb_supervisor_node_get_static_balance},
+    { "wb_supervisor_node_get_orientation", _wrap_wb_supervisor_node_get_orientation},
     { "wb_supervisor_field_get_type", _wrap_wb_supervisor_field_get_type},
     { "wb_supervisor_field_get_type_name", _wrap_wb_supervisor_field_get_type_name},
     { "wb_supervisor_field_get_count", _wrap_wb_supervisor_field_get_count},
@@ -7424,10 +6789,8 @@ static const struct luaL_Reg swig_commands[] = {
     { "wb_supervisor_field_import_mf_node", _wrap_wb_supervisor_field_import_mf_node},
     { "wb_touch_sensor_enable", _wrap_wb_touch_sensor_enable},
     { "wb_touch_sensor_disable", _wrap_wb_touch_sensor_disable},
-    { "wb_touch_sensor_get_sampling_period", _wrap_wb_touch_sensor_get_sampling_period},
     { "wb_touch_sensor_get_value", _wrap_wb_touch_sensor_get_value},
     { "wb_touch_sensor_get_values", _wrap_wb_touch_sensor_get_values},
-    { "wb_touch_sensor_get_type", _wrap_wb_touch_sensor_get_type},
     {0,0}
 };
 
@@ -7439,11 +6802,9 @@ static swig_lua_const_info swig_constants[] = {
     {SWIG_LUA_CONSTTAB_FLOAT("INFINITY", (1.0/0.0))},
     {SWIG_LUA_CONSTTAB_INT("WB_CAMERA_COLOR", 99)},
     {SWIG_LUA_CONSTTAB_INT("WB_CAMERA_RANGE_FINDER", 114)},
-    {SWIG_LUA_CONSTTAB_INT("WB_CAMERA_BOTH", 98)},
     {SWIG_LUA_CONSTTAB_INT("WB_IMAGE_RGB", 3)},
     {SWIG_LUA_CONSTTAB_INT("WB_IMAGE_RGBA", 4)},
     {SWIG_LUA_CONSTTAB_INT("WB_IMAGE_ARGB", 5)},
-    {SWIG_LUA_CONSTTAB_INT("WB_IMAGE_BGRA", 6)},
     {SWIG_LUA_CONSTTAB_INT("WB_CHANNEL_BROADCAST", -1)},
     {SWIG_LUA_CONSTTAB_INT("WB_NODE_NO_NODE", 0)},
     {SWIG_LUA_CONSTTAB_INT("WB_NODE_APPEARANCE", 1)},
@@ -7492,19 +6853,15 @@ static swig_lua_const_info swig_constants[] = {
     {SWIG_LUA_CONSTTAB_INT("WB_NODE_EMITTER", 66)},
     {SWIG_LUA_CONSTTAB_INT("WB_NODE_GPS", 67)},
     {SWIG_LUA_CONSTTAB_INT("WB_NODE_GYRO", 68)},
-    {SWIG_LUA_CONSTTAB_INT("WB_NODE_INERTIAL_UNIT", 69)},
-    {SWIG_LUA_CONSTTAB_INT("WB_NODE_LED", 70)},
-    {SWIG_LUA_CONSTTAB_INT("WB_NODE_LIGHT_SENSOR", 71)},
-    {SWIG_LUA_CONSTTAB_INT("WB_NODE_MICROPHONE", 72)},
-    {SWIG_LUA_CONSTTAB_INT("WB_NODE_PEN", 73)},
-    {SWIG_LUA_CONSTTAB_INT("WB_NODE_RADIO", 74)},
-    {SWIG_LUA_CONSTTAB_INT("WB_NODE_RECEIVER", 75)},
-    {SWIG_LUA_CONSTTAB_INT("WB_NODE_SERVO", 76)},
-    {SWIG_LUA_CONSTTAB_INT("WB_NODE_SPEAKER", 77)},
-    {SWIG_LUA_CONSTTAB_INT("WB_NODE_TOUCH_SENSOR", 78)},
-    {SWIG_LUA_CONSTTAB_INT("WB_MODE_SIMULATION", WB_MODE_SIMULATION)},
-    {SWIG_LUA_CONSTTAB_INT("WB_MODE_CROSS_COMPILATION", WB_MODE_CROSS_COMPILATION)},
-    {SWIG_LUA_CONSTTAB_INT("WB_MODE_REMOTE_CONTROL", WB_MODE_REMOTE_CONTROL)},
+    {SWIG_LUA_CONSTTAB_INT("WB_NODE_LED", 69)},
+    {SWIG_LUA_CONSTTAB_INT("WB_NODE_LIGHT_SENSOR", 70)},
+    {SWIG_LUA_CONSTTAB_INT("WB_NODE_MICROPHONE", 71)},
+    {SWIG_LUA_CONSTTAB_INT("WB_NODE_PEN", 72)},
+    {SWIG_LUA_CONSTTAB_INT("WB_NODE_RADIO", 73)},
+    {SWIG_LUA_CONSTTAB_INT("WB_NODE_RECEIVER", 74)},
+    {SWIG_LUA_CONSTTAB_INT("WB_NODE_SERVO", 75)},
+    {SWIG_LUA_CONSTTAB_INT("WB_NODE_SPEAKER", 76)},
+    {SWIG_LUA_CONSTTAB_INT("WB_NODE_TOUCH_SENSOR", 77)},
     {SWIG_LUA_CONSTTAB_INT("WB_ROBOT_KEYBOARD_KEY", 0x000ffff)},
     {SWIG_LUA_CONSTTAB_INT("WB_ROBOT_KEYBOARD_SHIFT", 0x0010000)},
     {SWIG_LUA_CONSTTAB_INT("WB_ROBOT_KEYBOARD_CONTROL", 0x0020000)},
@@ -7517,9 +6874,13 @@ static swig_lua_const_info swig_constants[] = {
     {SWIG_LUA_CONSTTAB_INT("WB_ROBOT_KEYBOARD_PAGEDOWN", 367)},
     {SWIG_LUA_CONSTTAB_INT("WB_ROBOT_KEYBOARD_HOME", 313)},
     {SWIG_LUA_CONSTTAB_INT("WB_ROBOT_KEYBOARD_END", 312)},
-    {SWIG_LUA_CONSTTAB_INT("WB_SERVO_ROTATIONAL", 0)},
-    {SWIG_LUA_CONSTTAB_INT("WB_SERVO_LINEAR", 1)},
-    {SWIG_LUA_CONSTTAB_INT("WB_SERVO_NONE", 2)},
+    {SWIG_LUA_CONSTTAB_INT("WB_ROBOT_KEYBOARD_NUMPAD_UP", 377)},
+    {SWIG_LUA_CONSTTAB_INT("WB_ROBOT_KEYBOARD_NUMPAD_DOWN", 379)},
+    {SWIG_LUA_CONSTTAB_INT("WB_ROBOT_KEYBOARD_NUMPAD_LEFT", 376)},
+    {SWIG_LUA_CONSTTAB_INT("WB_ROBOT_KEYBOARD_NUMPAD_RIGHT", 378)},
+    {SWIG_LUA_CONSTTAB_INT("WB_ROBOT_KEYBOARD_NUMPAD_HOME", 375)},
+    {SWIG_LUA_CONSTTAB_INT("WB_ROBOT_KEYBOARD_NUMPAD_END", 382)},
+    {SWIG_LUA_CONSTTAB_FLOAT("WB_SERVO_INFINITY", (1.0/0.0))},
     {SWIG_LUA_CONSTTAB_INT("WB_SF_BOOL", 0x01)},
     {SWIG_LUA_CONSTTAB_INT("WB_SF_INT32", 0x02)},
     {SWIG_LUA_CONSTTAB_INT("WB_SF_FLOAT", 0x03)},
@@ -7537,10 +6898,6 @@ static swig_lua_const_info swig_constants[] = {
     {SWIG_LUA_CONSTTAB_INT("WB_MF_COLOR", (0x10|0x07))},
     {SWIG_LUA_CONSTTAB_INT("WB_MF_STRING", (0x10|0x08))},
     {SWIG_LUA_CONSTTAB_INT("WB_MF_NODE", (0x10|0x09))},
-    {SWIG_LUA_CONSTTAB_INT("WB_TOUCH_SENSOR_UNKNOWN", 0)},
-    {SWIG_LUA_CONSTTAB_INT("WB_TOUCH_SENSOR_BUMPER", 1)},
-    {SWIG_LUA_CONSTTAB_INT("WB_TOUCH_SENSOR_FORCE", 2)},
-    {SWIG_LUA_CONSTTAB_INT("WB_TOUCH_SENSOR_FORCE3D", 3)},
     {0,0,0,0,0,0}
 };
 
@@ -7549,12 +6906,11 @@ static swig_lua_const_info swig_constants[] = {
 static swig_type_info _swigt__p_WbFieldStructPrivate = {"_p_WbFieldStructPrivate", "WbFieldRef|struct WbFieldStructPrivate *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_WbImageStructPrivate = {"_p_WbImageStructPrivate", "WbImageRef|struct WbImageStructPrivate *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_WbNodeStructPrivate = {"_p_WbNodeStructPrivate", "struct WbNodeStructPrivate *|WbNodeRef", 0, 0, (void*)0, 0};
-static swig_type_info _swigt__p_WbRobotMode = {"_p_WbRobotMode", "enum WbRobotMode *|WbRobotMode *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_double = {"_p_double", "double *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_f_p_void__void = {"_p_f_p_void__void", "void (*)(void *)", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_f_q_const__p_void__void = {"_p_f_q_const__p_void__void", "void (*)(void *const)|void (*)(WbRadioEvent const)", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_float = {"_p_float", "float *", 0, 0, (void*)0, 0};
-static swig_type_info _swigt__p_int = {"_p_int", "WbTouchSensorType *|WbFieldType *|int *|WbNodeType *|WbServoType *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_int = {"_p_int", "WbTouchSensorType *|WbFieldType *|int *|WbNodeType *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_unsigned_short = {"_p_unsigned_short", "WbDeviceTag *|unsigned short *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_void = {"_p_void", "WbMutexRef|WbRadioMessage|void *", 0, 0, (void*)0, 0};
 
@@ -7562,7 +6918,6 @@ static swig_type_info *swig_type_initial[] = {
   &_swigt__p_WbFieldStructPrivate,
   &_swigt__p_WbImageStructPrivate,
   &_swigt__p_WbNodeStructPrivate,
-  &_swigt__p_WbRobotMode,
   &_swigt__p_double,
   &_swigt__p_f_p_void__void,
   &_swigt__p_f_q_const__p_void__void,
@@ -7575,7 +6930,6 @@ static swig_type_info *swig_type_initial[] = {
 static swig_cast_info _swigc__p_WbFieldStructPrivate[] = {  {&_swigt__p_WbFieldStructPrivate, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_WbImageStructPrivate[] = {  {&_swigt__p_WbImageStructPrivate, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_WbNodeStructPrivate[] = {  {&_swigt__p_WbNodeStructPrivate, 0, 0, 0},{0, 0, 0, 0}};
-static swig_cast_info _swigc__p_WbRobotMode[] = {  {&_swigt__p_WbRobotMode, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_double[] = {  {&_swigt__p_double, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_f_p_void__void[] = {  {&_swigt__p_f_p_void__void, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_f_q_const__p_void__void[] = {  {&_swigt__p_f_q_const__p_void__void, 0, 0, 0},{0, 0, 0, 0}};
@@ -7588,7 +6942,6 @@ static swig_cast_info *swig_cast_initial[] = {
   _swigc__p_WbFieldStructPrivate,
   _swigc__p_WbImageStructPrivate,
   _swigc__p_WbNodeStructPrivate,
-  _swigc__p_WbRobotMode,
   _swigc__p_double,
   _swigc__p_f_p_void__void,
   _swigc__p_f_q_const__p_void__void,

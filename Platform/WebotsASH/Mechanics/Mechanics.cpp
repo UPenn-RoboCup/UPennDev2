@@ -27,18 +27,18 @@ _Mechanics::_Mechanics()
   r_forearm_transform = Frame(Vector(0, 0, 0));
   r_hand_transform = Frame(Vector(0, 0, 0));
 
-  // torso
-  lower_torso_transform = Frame(Vector(0, 0, 0));
-  upper_torso_transform = Frame(Vector(0, 0, 0));
+  // waist
+  torso_waist_transform = Frame(Vector(0, 0, 0));
+  waist_chest_transform = Frame(Vector(0, 0, 0));
 
   // l_leg
-  l_waist_transform = Frame(Vector(0, 0.097, 0));
+  l_torso_transform = Frame(Vector(0, 0.097, 0));
   l_thigh_transform = Frame(Vector(0.00255, 0, -0.379025));
   l_shin_transform = Frame(Vector(0, 0, -0.3800));
   l_foot_transform = Frame(Vector(0, 0, -0.0487));
 
   // r_leg
-  r_waist_transform = Frame(Vector(0, -0.097, 0));
+  r_torso_transform = Frame(Vector(0, -0.097, 0));
   r_thigh_transform = Frame(Vector(0.00255, 0, -0.379025));
   r_shin_transform = Frame(Vector(0, 0, -0.3800));
   r_foot_transform = Frame(Vector(0, 0, -0.0487));
@@ -92,8 +92,8 @@ _Mechanics::_Mechanics()
     RotationalInertia()
   );
 
-  // torso
-  waist_inertia = RigidBodyInertia(
+  // waist
+  torso_inertia = RigidBodyInertia(
     9.846994362,
     Vector(0.008823089, 0.000468598, 0.140308293),
     RotationalInertia(0.161770745, 0.120602231, 0.120207907,
@@ -183,15 +183,15 @@ _Mechanics::_Mechanics()
   r_arm.addSegment(Segment(Joint(Joint::RotY),
     r_hand_transform, r_hand_inertia));
 
-  // torso
-  torso.addSegment(Segment(Joint(Joint::None),
-    lower_torso_transform, waist_inertia));
-  torso.addSegment(Segment(Joint(Joint::RotZ),
-    upper_torso_transform, chest_inertia));
+  // waist
+  waist.addSegment(Segment(Joint(Joint::None),
+    torso_waist_transform, torso_inertia));
+  waist.addSegment(Segment(Joint(Joint::RotZ),
+    waist_chest_transform, chest_inertia));
 
   // l_leg
   l_leg.addSegment(Segment(Joint(Joint::None),
-    l_waist_transform));
+    l_torso_transform));
   l_leg.addSegment(Segment(Joint(Joint::RotZ)));
   l_leg.addSegment(Segment(Joint(Joint::RotX)));
   l_leg.addSegment(Segment(Joint(Joint::RotY), 
@@ -204,7 +204,7 @@ _Mechanics::_Mechanics()
 
   // r_leg
   r_leg.addSegment(Segment(Joint(Joint::None),
-    r_waist_transform));
+    r_torso_transform));
   r_leg.addSegment(Segment(Joint(Joint::RotZ)));
   r_leg.addSegment(Segment(Joint(Joint::RotX)));
   r_leg.addSegment(Segment(Joint(Joint::RotY), 
@@ -239,12 +239,12 @@ _Mechanics::_Mechanics()
   r_arm_jnt_to_jac_solver = new ChainJntToJacSolver(r_arm);
   r_arm_dynamic_param = new ChainDynParam(r_arm, gravity); 
 
-  // torso
-  torso_fk_pos_solver = new ChainFkSolverPos_recursive(torso);
-  torso_fk_vel_solver = new ChainFkSolverVel_recursive(torso);
-  torso_ik_vel_solver = new ChainIkSolverVel_pinv(torso);
-  torso_jnt_to_jac_solver = new ChainJntToJacSolver(torso);
-  torso_dynamic_param = new ChainDynParam(torso, gravity); 
+  // waist
+  waist_fk_pos_solver = new ChainFkSolverPos_recursive(waist);
+  waist_fk_vel_solver = new ChainFkSolverVel_recursive(waist);
+  waist_ik_vel_solver = new ChainIkSolverVel_pinv(waist);
+  waist_jnt_to_jac_solver = new ChainJntToJacSolver(waist);
+  waist_dynamic_param = new ChainDynParam(waist, gravity); 
   
   // l_leg
   l_leg_fk_pos_solver = new ChainFkSolverPos_recursive(l_leg);

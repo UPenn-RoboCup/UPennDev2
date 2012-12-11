@@ -32,7 +32,7 @@ static void leg_ik_pos_solver(const Chain &leg, const Frame &p_foot,
   // * thigh x offset is nonnegative and y offset is zero
 
   // get coordinate transformations
-  Frame waist_transform = leg.getSegment(0).getFrameToTip();
+  Frame torso_transform = leg.getSegment(0).getFrameToTip();
   Frame thigh_transform = leg.getSegment(3).getFrameToTip();
   Frame shin_transform = leg.getSegment(4).getFrameToTip();
   Frame foot_transform = leg.getSegment(6).getFrameToTip();
@@ -45,7 +45,7 @@ static void leg_ik_pos_solver(const Chain &leg, const Frame &p_foot,
   double a_thigh = atan2(v_thigh(0), -v_thigh(2));
 
   // get hip coordinates relative to ankle frame
-  Frame p_leg = foot_transform*p_foot.Inverse()*waist_transform;
+  Frame p_leg = foot_transform*p_foot.Inverse()*torso_transform;
   Vector v_leg = p_leg.p;
   double d_leg = v_leg.Norm();
 
@@ -111,19 +111,19 @@ static int lua_forward_pos_r_arm(lua_State *L)
   return 1;
 }
 
-static int lua_forward_pos_torso(lua_State *L)
+static int lua_forward_pos_waist(lua_State *L)
 {
-  // returns chest frame relative to waist frame
+  // returns chest frame relative to torso frame
   Frame p_chest;
-  JntArray q_torso = lua_checkJntArray(L, 1);
-  assert(!Mechanics.torso_fk_pos_solver->JntToCart(q_torso, p_chest));
+  JntArray q_waist = lua_checkJntArray(L, 1);
+  assert(!Mechanics.waist_fk_pos_solver->JntToCart(q_waist, p_chest));
   lua_pushFrame(L, p_chest);
   return 1;
 }
 
 static int lua_forward_pos_l_leg(lua_State *L)
 {
-  // returns l_foot frame relative to waist frame
+  // returns l_foot frame relative to torso frame
   Frame p_foot;
   JntArray q_leg = lua_checkJntArray(L, 1);
   assert(!Mechanics.l_leg_fk_pos_solver->JntToCart(q_leg, p_foot));
@@ -133,7 +133,7 @@ static int lua_forward_pos_l_leg(lua_State *L)
 
 static int lua_forward_pos_r_leg(lua_State *L)
 {
-  // returns r_foot frame relative to waist frame
+  // returns r_foot frame relative to torso frame
   Frame p_foot;
   JntArray q_leg = lua_checkJntArray(L, 1);
   assert(!Mechanics.r_leg_fk_pos_solver->JntToCart(q_leg, p_foot));
@@ -170,7 +170,7 @@ static int lua_forward_pos_arms(lua_State *L)
 
 static int lua_forward_pos_legs(lua_State *L)
 {
-  // returns l_foot and r_foot frames relative to waist frame
+  // returns l_foot and r_foot frames relative to torso frame
   JntArray q_l_leg = JntArray(6);
   JntArray q_r_leg = JntArray(6);
   JntArray q_legs = lua_checkJntArray(L, 1);
@@ -186,9 +186,9 @@ static int lua_forward_pos_legs(lua_State *L)
 
   if (lua_istable(L, 2))
   {
-    Frame p_waist_offset = lua_checkFrame(L, 2);
-    p_l_foot = p_waist_offset*p_l_foot;
-    p_r_foot = p_waist_offset*p_r_foot;
+    Frame p_torso_offset = lua_checkFrame(L, 2);
+    p_l_foot = p_torso_offset*p_l_foot;
+    p_r_foot = p_torso_offset*p_r_foot;
   }
   lua_pushFrame(L, p_l_foot);
   lua_pushFrame(L, p_r_foot);
@@ -231,13 +231,13 @@ static int lua_forward_vel_r_arm(lua_State *L)
   return 2;
 }
 
-static int lua_forward_vel_torso(lua_State *L)
+static int lua_forward_vel_waist(lua_State *L)
 {
-  // returns chest frame and velocity relative to waist frame
+  // returns chest frame and velocity relative to torso frame
 
   FrameVel pv_chest;
-  JntArrayVel qv_torso(lua_checkJntArray(L, 1), lua_checkJntArray(L, 2));
-  assert(!Mechanics.torso_fk_vel_solver->JntToCart(qv_torso, pv_chest));
+  JntArrayVel qv_waist(lua_checkJntArray(L, 1), lua_checkJntArray(L, 2));
+  assert(!Mechanics.waist_fk_vel_solver->JntToCart(qv_waist, pv_chest));
   lua_pushFrame(L, pv_chest.GetFrame());
   lua_pushTwist(L, pv_chest.GetTwist());
   return 2;
@@ -245,7 +245,7 @@ static int lua_forward_vel_torso(lua_State *L)
 
 static int lua_forward_vel_l_leg(lua_State *L)
 {
-  // returns l_foot frame and velocity relative to waist frame
+  // returns l_foot frame and velocity relative to torso frame
   FrameVel pv_foot;
   JntArrayVel qv_leg(lua_checkJntArray(L, 1), lua_checkJntArray(L, 2));
   assert(!Mechanics.l_leg_fk_vel_solver->JntToCart(qv_leg, pv_foot));
@@ -256,7 +256,7 @@ static int lua_forward_vel_l_leg(lua_State *L)
 
 static int lua_forward_vel_r_leg(lua_State *L)
 {
-  // returns r_foot frame and velocity relative to waist frame
+  // returns r_foot frame and velocity relative to torso frame
   FrameVel pv_foot;
   JntArrayVel qv_leg(lua_checkJntArray(L, 1), lua_checkJntArray(L, 2));
   assert(!Mechanics.r_leg_fk_vel_solver->JntToCart(qv_leg, pv_foot));
@@ -306,7 +306,7 @@ static int lua_forward_vel_arms(lua_State *L)
 
 static int lua_forward_vel_legs(lua_State *L)
 {
-  // returns r_foot and l_foot frames and velocities relative to waist frame
+  // returns r_foot and l_foot frames and velocities relative to torso frame
   JntArrayVel qv_legs(lua_checkJntArray(L, 1), lua_checkJntArray(L, 2));
   JntArrayVel qv_l_leg(6);
   JntArrayVel qv_r_leg(6);
@@ -325,14 +325,14 @@ static int lua_forward_vel_legs(lua_State *L)
 
   if (lua_istable(L, 3))
   {
-    Twist v_waist_offset;
-    Frame p_waist_offset = lua_checkFrame(L, 3);
+    Twist v_torso_offset;
+    Frame p_torso_offset = lua_checkFrame(L, 3);
     if (lua_istable(L, 4))
-      v_waist_offset = lua_checkTwist(L, 4);
+      v_torso_offset = lua_checkTwist(L, 4);
 
-    FrameVel pv_waist_offset = FrameVel(p_waist_offset, v_waist_offset);
-    pv_l_foot = pv_waist_offset*pv_l_foot;
-    pv_r_foot = pv_waist_offset*pv_r_foot;
+    FrameVel pv_torso_offset = FrameVel(p_torso_offset, v_torso_offset);
+    pv_l_foot = pv_torso_offset*pv_l_foot;
+    pv_r_foot = pv_torso_offset*pv_r_foot;
   }
 
   lua_pushFrame(L, pv_l_foot.GetFrame());
@@ -357,7 +357,7 @@ static int lua_inverse_pos_head(lua_State *L)
 
 static int lua_inverse_pos_l_arm(lua_State *L)
 {
-  // returns joint positions for l_leg
+  // returns joint positions for l_arm
   Frame p_hand = lua_checkFrame(L, 1);
   JntArray q_arm(6);
   arm_ik_pos_solver(Mechanics.l_arm, p_hand, q_arm);
@@ -367,7 +367,7 @@ static int lua_inverse_pos_l_arm(lua_State *L)
 
 static int lua_inverse_pos_r_arm(lua_State *L)
 {
-  // returns joint positions for r_leg
+  // returns joint positions for r_arm
   Frame p_hand = lua_checkFrame(L, 1);
   JntArray q_arm(6);
   arm_ik_pos_solver(Mechanics.r_arm, p_hand, q_arm);
@@ -429,9 +429,9 @@ static int lua_inverse_pos_legs(lua_State *L)
   Frame p_r_foot = lua_checkFrame(L, 2);
   if (lua_istable(L, 3))
   {
-    Frame p_waist_offset_inv = lua_checkFrame(L, 3).Inverse();
-    p_l_foot = p_waist_offset_inv*p_l_foot;
-    p_r_foot = p_waist_offset_inv*p_r_foot;
+    Frame p_torso_offset_inv = lua_checkFrame(L, 3).Inverse();
+    p_l_foot = p_torso_offset_inv*p_l_foot;
+    p_r_foot = p_torso_offset_inv*p_r_foot;
   }
 
   JntArray q_l_leg(6);
@@ -576,14 +576,14 @@ static int lua_inverse_vel_legs(lua_State *L)
 
   if (lua_istable(L, 5))
   {
-    Twist v_waist_offset;
-    Frame p_waist_offset = lua_checkFrame(L, 5);
+    Twist v_torso_offset;
+    Frame p_torso_offset = lua_checkFrame(L, 5);
     if (lua_istable(L, 6))
-      v_waist_offset = lua_checkTwist(L, 6);
+      v_torso_offset = lua_checkTwist(L, 6);
 
-    FrameVel pv_waist_offset_inv = FrameVel(p_waist_offset, v_waist_offset).Inverse();
-    FrameVel pv_l_foot = pv_waist_offset_inv*FrameVel(p_l_foot, v_l_foot);
-    FrameVel pv_r_foot = pv_waist_offset_inv*FrameVel(p_r_foot, v_r_foot);
+    FrameVel pv_torso_offset_inv = FrameVel(p_torso_offset, v_torso_offset).Inverse();
+    FrameVel pv_l_foot = pv_torso_offset_inv*FrameVel(p_l_foot, v_l_foot);
+    FrameVel pv_r_foot = pv_torso_offset_inv*FrameVel(p_r_foot, v_r_foot);
     
     p_l_foot = pv_l_foot.GetFrame();
     p_r_foot = pv_r_foot.GetFrame();
@@ -645,18 +645,18 @@ static int lua_get_r_arm_jacobian(lua_State *L)
   lua_pushJacobian(L, J_r_arm);
 }
 
-static int lua_get_torso_jacobian(lua_State *L)
+static int lua_get_waist_jacobian(lua_State *L)
 {
-  // returns torso jacobian matrix relative to waist frame
-  Jacobian J_torso;
-  JntArray q_torso = lua_checkJntArray(L, 1);
-  assert(!Mechanics.torso_jnt_to_jac_solver->JntToJac(q_torso, J_torso));
-  lua_pushJacobian(L, J_torso);
+  // returns waist jacobian matrix relative to torso frame
+  Jacobian J_waist;
+  JntArray q_waist = lua_checkJntArray(L, 1);
+  assert(!Mechanics.waist_jnt_to_jac_solver->JntToJac(q_waist, J_waist));
+  lua_pushJacobian(L, J_waist);
 }
 
 static int lua_get_l_leg_jacobian(lua_State *L)
 {
-  // returns l_leg jacobian matrix relative to waist frame
+  // returns l_leg jacobian matrix relative to torso frame
   Jacobian J_l_leg;
   JntArray q_l_leg = lua_checkJntArray(L, 1);
   assert(!Mechanics.l_leg_jnt_to_jac_solver->JntToJac(q_l_leg, J_l_leg));
@@ -665,7 +665,7 @@ static int lua_get_l_leg_jacobian(lua_State *L)
 
 static int lua_get_r_leg_jacobian(lua_State *L)
 {
-  // returns r_leg jacobian matrix relative to waist frame
+  // returns r_leg jacobian matrix relative to torso frame
   Jacobian J_r_leg;
   JntArray q_r_leg = lua_checkJntArray(L, 1);
   assert(!Mechanics.r_leg_jnt_to_jac_solver->JntToJac(q_r_leg, J_r_leg));
@@ -676,7 +676,7 @@ static const struct luaL_reg Kinematics_lib [] = {
   {"forward_pos_head", lua_forward_pos_head},
   {"forward_pos_l_arm", lua_forward_pos_l_arm},
   {"forward_pos_r_arm", lua_forward_pos_r_arm},
-  {"forward_pos_torso", lua_forward_pos_torso},
+  {"forward_pos_waist", lua_forward_pos_waist},
   {"forward_pos_l_leg", lua_forward_pos_l_leg},
   {"forward_pos_r_leg", lua_forward_pos_r_leg},
   {"forward_pos_arms", lua_forward_pos_arms},
@@ -684,7 +684,7 @@ static const struct luaL_reg Kinematics_lib [] = {
   {"forward_vel_head", lua_forward_vel_head},
   {"forward_vel_l_arm", lua_forward_vel_l_arm},
   {"forward_vel_r_arm", lua_forward_vel_r_arm},
-  {"forward_vel_torso", lua_forward_vel_torso},
+  {"forward_vel_waist", lua_forward_vel_waist},
   {"forward_vel_l_leg", lua_forward_vel_l_leg},
   {"forward_vel_r_leg", lua_forward_vel_r_leg},
   {"forward_vel_arms", lua_forward_vel_arms},
@@ -705,7 +705,7 @@ static const struct luaL_reg Kinematics_lib [] = {
   {"get_head_jacobian", lua_get_head_jacobian},
   {"get_l_arm_jacobian", lua_get_l_arm_jacobian},
   {"get_r_arm_jacobian", lua_get_r_arm_jacobian},
-  {"get_torso_jacobian", lua_get_torso_jacobian},
+  {"get_waist_jacobian", lua_get_waist_jacobian},
   {"get_l_leg_jacobian", lua_get_l_leg_jacobian},
   {"get_r_leg_jacobian", lua_get_r_leg_jacobian},
   {NULL, NULL}

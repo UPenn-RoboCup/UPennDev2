@@ -36,18 +36,18 @@ typedef struct _Mechanics {
   Frame r_forearm_transform;
   Frame r_hand_transform;
 
-  // torso
-  Frame lower_torso_transform;
-  Frame upper_torso_transform;
+  // waist
+  Frame torso_waist_transform;
+  Frame waist_chest_transform;
 
   // l_leg
-  Frame l_waist_transform;
+  Frame l_torso_transform;
   Frame l_thigh_transform;
   Frame l_shin_transform;
   Frame l_foot_transform;
 
   // r_leg
-  Frame r_waist_transform;
+  Frame r_torso_transform;
   Frame r_thigh_transform;
   Frame r_shin_transform;
   Frame r_foot_transform;
@@ -69,8 +69,8 @@ typedef struct _Mechanics {
   RigidBodyInertia r_forearm_inertia;
   RigidBodyInertia r_hand_inertia;
 
-  // torso
-  RigidBodyInertia waist_inertia;
+  // waist
+  RigidBodyInertia torso_inertia;
   RigidBodyInertia chest_inertia;
 
   // l_leg
@@ -89,7 +89,7 @@ typedef struct _Mechanics {
   Chain head;
   Chain l_arm;
   Chain r_arm;
-  Chain torso;
+  Chain waist;
   Chain l_leg;
   Chain r_leg;
 
@@ -117,12 +117,12 @@ typedef struct _Mechanics {
   ChainJntToJacSolver *r_arm_jnt_to_jac_solver;
   ChainDynParam *r_arm_dynamic_param;
 
-  // torso
-  ChainFkSolverPos_recursive *torso_fk_pos_solver;
-  ChainFkSolverVel_recursive *torso_fk_vel_solver;
-  ChainIkSolverVel_pinv *torso_ik_vel_solver;
-  ChainJntToJacSolver *torso_jnt_to_jac_solver;
-  ChainDynParam *torso_dynamic_param;
+  // waist
+  ChainFkSolverPos_recursive *waist_fk_pos_solver;
+  ChainFkSolverVel_recursive *waist_fk_vel_solver;
+  ChainIkSolverVel_pinv *waist_ik_vel_solver;
+  ChainJntToJacSolver *waist_jnt_to_jac_solver;
+  ChainDynParam *waist_dynamic_param;
 
   // l_leg
   ChainFkSolverPos_recursive *l_leg_fk_pos_solver;

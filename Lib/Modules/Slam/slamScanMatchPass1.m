@@ -48,7 +48,7 @@ if (SLAM.lidar0Cntr > 1)
   
   xDiff1 = xGrid1 - SLAM.xOdom;
   yDiff1 = yGrid1 - SLAM.yOdom;
-  distGrid1 = 1e6*sqrt(xDiff1.^2 + yDiff1.^2);
+  distGrid1 = (1/3)*1e6*sqrt(xDiff1.^2 + yDiff1.^2);
   %distGrid1(abs(distGrid1
   [minIndX indx] = min(abs(xCand1-SLAM.xOdom));
   [minIndY indy] = min(abs(yCand1-SLAM.yOdom));

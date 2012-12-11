@@ -1,5 +1,5 @@
-#ifndef LUA_KINEMATICS_H 
-#define LUA_KINEMATICS_H 
+#ifndef _LUA_KINEMATICS_H_
+#define _LUA_KINEMATICS_H_
 
 extern "C"
 {

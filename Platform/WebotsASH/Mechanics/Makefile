@@ -1,9 +1,7 @@
 include ../../../Makefile.inc
 
-#TARGETS = all Kinematics Statics clean
-#.PHONY: $(TARGETS)
-#AR=ar
-#ARFLAGS= rcs
+INCLUDES += -I/usr/include/
+LIB_KDL   = `pkg-config --libs orocos-kdl`
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
@@ -12,10 +10,15 @@ include ../../../Makefile.inc
 %.o: %.c
 	$(CC)  $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
 
-all: Kinematics
+all: Kinematics Statics Dynamics
 
-Kinematics: luaKinematics.o Kinematics.o Transform.o
-	$(LD) $(LDFLAGS) -o $@.$(SHLIBEXT) $(LIBOPTS) $(LIB_DIR) -lm $^
+Kinematics: luaKinematics.o Mechanics.o
+	$(LD) $(LDFLAGS) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ $(LIB_DIR) $(LIB_KDL)
 
+Statics: luaStatics.o Mechanics.o
+	$(LD) $(LDFLAGS) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ $(LIB_DIR) $(LIB_KDL)
+
+Dynamics: luaDynamics.o Mechanics.o
+	$(LD) $(LDFLAGS) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ $(LIB_DIR) $(LIB_KDL)
 clean:
 	rm -f *.$(SHLIBEXT) *.o

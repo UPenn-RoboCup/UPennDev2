@@ -1,2 +1,0 @@
-Statics = {}
-return Statics

@@ -25,6 +25,18 @@ Install the numlua library using:
     cd numlua
     sudo luarocks make numlua-0.3-1.rockspec
 
+Install the Kinematics and Dynamics Library using:
+
+    sudo apt-get install libeigen2-dev
+
+    git clone http://git.mech.kuleuven.be/robotics/orocos_kinematics_dynamics.git 
+    cd orocos_kinematics_dynamics/orocos_kdl
+    mkdir build
+    cd build
+    cmake ..
+    make
+    sudo make install
+
 For Mac OSX 10.8, install necessary dependencies using:
 
 		Xcode from the App Store
@@ -40,7 +52,8 @@ Build Instructions
 
 To build the codebase, run 'make' with one of the following options:
 
-    make ash        # for operating the physical ASH robot
-    make webots_ash # for running ASH simulations in webots
-    make teststand  # for operating the linear actuator teststand
-    make tools      # for run-time monitoring using Matlab
+    make ash         # for operating the physical ASH robot
+    make webots_ash  # for running ASH simulations in webots
+    make teststand   # for operating the linear actuator teststand
+    make robotis_arm # for operating the robotis arm
+    make tools       # for run-time monitoring using Matlab

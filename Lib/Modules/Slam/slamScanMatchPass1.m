@@ -56,7 +56,10 @@ if (SLAM.lidar0Cntr > 1)
   %TODO: play around with the weights!!
   %costGrid1 = distGrid1 - hitsXY;
   costGrid1 = - hitsXY;
-  costGrid1(indx,indy) = costGrid1(indx,indy) - 500;
+  % How valuable is the odometry preidiction?
+  % Should make a gaussian depression around this point...
+  %costGrid1(indx,indy) = costGrid1(indx,indy) - 500;
+  costGrid1(indx,indy) = costGrid1(indx,indy) - 1500;
   
   %find the minimum and save the new pose
   [cmin cimin] = min(costGrid1(:));

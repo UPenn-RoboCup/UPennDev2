@@ -1,7 +1,7 @@
 function poseInit
 global POSE
 
-if isempty(POSE) || ~isfield(POSE,'initialized') ||(POSE.initialized ~= 1)
+%if isempty(POSE) || ~isfield(POSE,'initialized') ||(POSE.initialized ~= 1)
 
   POSE.pose = [];
   POSE.data.x       = 0;
@@ -13,4 +13,4 @@ if isempty(POSE) || ~isfield(POSE,'initialized') ||(POSE.initialized ~= 1)
   
   POSE.initialized  = 1;
   disp('Pose initialized');
-end
+%end

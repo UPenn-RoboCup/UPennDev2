@@ -245,9 +245,9 @@ function update_arms()
 	
   --print('fk1: ',pLArm1, 'fk2: ',pLArm2 )
 	--print('L:', s2eL, 'y',yawdL)
-	print('yawL:',yawL*180/math.pi)
-	print(qLArm*180/math.pi)
-	print()
+	--print('yawL:',yawL*180/math.pi)
+	--print(qLArm*180/math.pi)
+	--print()
 
 end
 

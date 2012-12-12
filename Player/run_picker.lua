@@ -12,7 +12,7 @@ teamID   = Config.game.teamNumber;
 playerID = Config.game.playerID;
 nPlayers = Config.game.nPlayers;
 nPlayers = 1
---net = true
+net = true
 
 function entry()
   -- Check inputs
@@ -32,10 +32,21 @@ function entry()
 
   -- Initialize FSMs
   skeleton.entry(inp_logs)
+
   if( net ) then
-    require 'Team'
-    Team.entry(true) -- true means we have the primesense
+		require 'Comm'
+		-- Initialization
+		if( wired ) then
+		  print("My address:",Config.dev.ip_wired)
+		  Comm.init(Config.dev.ip_wired,Config.dev.ip_wired_port)
+		else
+		  print("My address:",Config.dev.ip_wireless)
+		  Comm.init(Config.dev.ip_wireless,Config.dev.ip_wireless_port);
+		end
+    --require 'Team'
+    --Team.entry(true) -- true means we have the primesense
   end
+
 
   t0 = unix.time();
   t_last_debug = t0;
@@ -95,10 +106,18 @@ function update()
     return true;
   end
 
-  if( net ) then
-    Team.update()
-  end
 
+  if( net ) then
+		local state = {};
+		state.qL = skeleton.qLArm;
+		state.qR = skeleton.qRArm;
+		local ser = serialization.serialize(state)
+		local ret = Comm.send( ser, #ser );
+		print('Sent: '..ret..' bytes',ser)
+    --Team.update()
+  end
+	
+	
   -- Update the SHM blocks
   if primecm.get_skeleton_found()>0  then
     pickercm.set_desired_velocity( skeleton.velocity );

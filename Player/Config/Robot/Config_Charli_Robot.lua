@@ -40,16 +40,18 @@ servo.dirReverse={
 --  3,4,5,6, --LArm
   7,8,10,11,12, --LLeg
   13,14,15,18, --RLeg
+  19,--RArm
 }
 
 ----------------------------------------------
 --Robot-specific firmware version handling
 ----------------------------------------------
-servo.armBias = {0,0,0,0,0,0,0,0}; --in degree
+servo.armBias = vector.new( {-90,0,0,45,    -90,0,0,-45} )*math.pi/180; --in radians
 servo.pid =1;  --Default new firmware
 local robotName = unix.gethostname();
 require('calibration');
 if calibration.cal and calibration.cal[robotName] then
+print('READING FROM CALIBRATION!!!')
   if calibration.cal[robotName].pid then
     servo.pid = calibration.cal[robotName].pid;
   end
@@ -66,10 +68,12 @@ print(robotName.." has 14-bit firmware")
 servo.steps=vector.ones(nJoint)*4096;
 servo.posZero={
     2048,2048, --Head
-    1318,2048,2304,2048, --LArm
+    --1318,2048,2304,2048, --LArm
+    2048,2048,2048,2048, --LArm
     2048,2048,2048,3413,2048,2048, --LLeg
     2048,2048,2048,683,2048,2048, --RLeg
-    2748,2048,1792,2048, --RArm
+    --2748,2048,1792,2048, --RArm
+    2048,2048,2048,2048, --RArm
     2048, --Waist
     2048,2048, --Hands
 };

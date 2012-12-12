@@ -96,7 +96,7 @@ function shm_init()
   actuatorShm.d_param=vector.ones(nJoint)*0; 
 
   --SJ: list of servo IDs to read
-  --0: Head only 1: All servos 2: Head+Leg
+  --0: Head only 1: All servos 2: Head+Leg 3: Head+Arms
   --readID: 1 for readable, 0 for non-readable
   actuatorShm.readType=vector.zeros(1);   
   actuatorShm.readID=vector.zeros(nJoint); 
@@ -114,7 +114,7 @@ function entry()
   shm_init();
   carray_init();
   -- Read head and not legs
-  actuator.readType[1]=1;
+  actuator.readType[1]=0;
 
   -- Read initial leg bias from config
   for i=1,12 do 	
@@ -125,6 +125,7 @@ function entry()
 
   --Setting arm bias
   for i=1,4 do
+print('Arm Bias!!', armBias[i])
     actuator.offset[i+2]=armBias[i];
   end
   for i=5,8 do
@@ -305,16 +306,20 @@ function nonsync_read()
     for i=1,#idMap do 
       idToRead[i]=i;
     end
-  elseif actuator.readType[1]==3 then -- Read ankles only
+  elseif actuator.readType[1]==2 then -- Read ankles only
     idToRead = {10,16}; --kankle ids
     for i = 1,#idMap do
       sensor.position[i] = actuator.command[i];
     end;
+  elseif actuator.readType[1]==3 then --Head+Arms reading
+    idToRead = {3,4,5,6,  19,20,21,22}; -- L,R arm joints
+    for i = 1,#idMap do
+      sensor.position[i] = actuator.command[i];
+    end
   else --if actuator.readType[1]==0 then --Head only reading
     for i = 3,#idMap do
       sensor.position[i] = actuator.command[i];
     end;
-
   end
   -- Update the readings
   for i = 1,#idToRead do
@@ -325,9 +330,19 @@ function nonsync_read()
       raw=Dynamixel.get_position(id);
       if raw then
 	sensor.servoposition[idToRead[i]] = raw;
+
         sensor.position[idToRead[i]] = 
-		(raw-posZero[i]-actuator.bias[i])/scale[i] - 
-		 actuator.offset[i];
+		(raw
+		-posZero[idToRead[i]]
+		-actuator.bias[idToRead[i]]
+		)
+		/scale[idToRead[i]]
+		-actuator.offset[idToRead[i]];
+--if idToRead[i]==6 then
+--print('raw',raw)
+--print('pos',sensor.position[idToRead[i]])
+--print( 'offset: ', actuator.offset[idToRead[i]] )
+--end
       end
     end
   end

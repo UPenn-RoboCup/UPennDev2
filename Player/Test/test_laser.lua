@@ -129,6 +129,11 @@ function update()
 	qLArm = pickercm.get_desired_qLArm();
 	qRArm = pickercm.get_desired_qRArm();
 	Body.set_larm_command(qLArm)
+	Body.set_rarm_command(qRArm)
+--local janglesL = {90,0,0,0}
+--Body.set_larm_command(math.pi/180*vector.new(janglesL))
+--local janglesR = {90,0,0,0}
+--Body.set_rarm_command(math.pi/180*vector.new(janglesR))
 	
   -- Check if the last update completed without errors
   lcount = lcount + 1;

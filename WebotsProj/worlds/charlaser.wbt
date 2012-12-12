@@ -58,7 +58,6 @@ Wall {
 }
 CharLaser {
   translation 0.0769452 0.8 1.36128
-#  rotation -0.0544117 -0.998216 0.0245734 1.44742
   controller "darwin-op_team_0"
-  controllerArgs "1 22"
+  controllerArgs "0 22"
 }

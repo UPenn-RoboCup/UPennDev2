@@ -43,7 +43,7 @@ end
 if( ~isfield( players{1},'sk' ) && ~run_from_log )
     disp('Recreating SHM block access...')
     startup;
-    team = 18;
+    team = 22;
     for pl=1:nPlayers
         players{pl}.sk = shm_primesense(team,pl);
     end

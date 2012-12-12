@@ -42,8 +42,10 @@ function entry()
   count = 0;
 
   pickercm.set_device_kind(1)
-  pickercm.set_desired_pLArm( Kinematics.forward_larm({0,0,0}) )
-  pickercm.set_desired_pRArm( Kinematics.forward_rarm({0,0,0}) )
+  pickercm.set_desired_pLArm( Kinematics.forward_larm({0,0,0,0}) )
+  pickercm.set_desired_pRArm( Kinematics.forward_rarm({0,0,0,0}) )
+	pickercm.set_desired_qRArm( vector.new({0,0,0,0}) )
+	pickercm.set_desired_qLArm( vector.new({0,0,0,0}) )
 
   -- Calibration warning
   print('Please get in position...')
@@ -81,7 +83,7 @@ function update()
     if tNow-tCalibrate>1 then -- 1 sec calibration
       print('DONE Calibrating!',ncalibration.." samples taken")
       torso_point = torso_point / ncalibration;
-      print('Toroso point:',torso_point )
+      print('Torso point:',torso_point )
       primecm.set_skeleton_torsocenter(torso_point)
       calibrated = true;
     end
@@ -100,6 +102,8 @@ function update()
   -- Update the SHM blocks
   if primecm.get_skeleton_found()>0  then
     pickercm.set_desired_velocity( skeleton.velocity );
+		pickercm.set_desired_qLArm(skeleton.qLArm);
+		pickercm.set_desired_qRArm(skeleton.qRArm);
     local tLArm = Kinematics.forward_larm( skeleton.qLArm )
     local pLArm = vector.new({tLArm[1][4],tLArm[2][4],tLArm[3][4]})
     pickercm.set_desired_pLArm( pLArm )

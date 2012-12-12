@@ -21,6 +21,9 @@ require 'rcm'
 --
 require 'mcm'
 
+-- Arms
+require 'pickercm'
+
 -- Initialize Variables
 webots = false;
 teamID   = Config.game.teamNumber;
@@ -122,6 +125,11 @@ function update()
 	gyr = Body.get_sensor_imuGyrRPY();
 	rcm.set_robot_gyro( vector.new(gyr) );
 	
+	-- Set the arm positions
+	qLArm = pickercm.get_desired_qLArm();
+	qRArm = pickercm.get_desired_qRArm();
+	Body.set_larm_command(qLArm)
+	
   -- Check if the last update completed without errors
   lcount = lcount + 1;
   if (count ~= lcount) then
@@ -150,9 +158,7 @@ while (true) do
   -- Debug Messages every 1 second
   t_diff = Body.get_time() - (t_last or 0);
   if(t_diff>1) then
-		print('Odometry: ',odom)
-		print('IMU: ',imuAngle)
-		print('Gyro: ',vector.new(gyr) )
+		print('qLArm',qLArm)
     t_last = Body.get_time();
   end
 

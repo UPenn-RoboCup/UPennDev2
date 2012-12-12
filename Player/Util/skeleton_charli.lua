@@ -228,7 +228,9 @@ function update_arms()
   -- YZ plane defines the shoulder roll
   srL = math.atan2( s2eL[2], math.sqrt(s2eL[1]^2+s2eL[3]^2) ) or 0;
   srR = math.atan2( s2eR[2], math.sqrt(s2eR[1]^2+s2eR[3]^2) ) or 0;
+
   -- TODO: Arm Yaw
+	-- Left
 	local zeroTrans1 = Transform.rotY(spL)
 	s2eL[4] = 1;
 	local pLArm1 = zeroTrans1 * s2eL;
@@ -237,7 +239,17 @@ function update_arms()
 	e2hL[4] = 1;
 	local yawdL = zeroTrans2 * zeroTrans1 * e2hL;
   yawL = math.atan2(yawdL[2],-1*yawdL[3]) or 0;
-  yawR = 0;
+
+	-- Right
+	local zeroTrans1 = Transform.rotY(spR)
+	s2eR[4] = 1;
+	local pRArm1 = zeroTrans1 * s2eR;
+	local zeroTrans2 = Transform.rotZ(-1*srR)
+	local pRArm2 = zeroTrans2 * pRArm1;
+	e2hR[4] = 1;
+	local yawdR = zeroTrans2 * zeroTrans1 * e2hR;
+  yawR = -1*math.atan2(yawdR[2],-1*yawdR[3]) or 0;
+--yawR = yawR+math.pi
 
   -- Organize the vector
   qLArm = vector.new({spL,-1*srL,yawL,-1*elL});

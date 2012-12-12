@@ -36,6 +36,7 @@ function entry()
   if( net ) then
 		require 'Comm'
 		-- Initialization
+    wired = true
 		if( wired ) then
 		  print("My address:",Config.dev.ip_wired)
 		  Comm.init(Config.dev.ip_wired,Config.dev.ip_wired_port)

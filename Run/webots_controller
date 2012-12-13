@@ -67,6 +67,11 @@ elif [ "$1" = "walk_tuner" ]
 then
   echo Starting walk_tuner...
   exec xterm -fn 9x15 -hold -e luajit walk_tuner.lua
+elif [ "$1" = "test_step" ]
+then
+  echo Starting test_step...
+  cd Test
+  exec luajit test_step.lua
 else 
   echo Starting demo...
   exec xterm -fn 9x15 -hold -e luajit demo.lua 

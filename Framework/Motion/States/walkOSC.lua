@@ -7,6 +7,7 @@ require('Body')
 require('vector')
 require('Config')
 require('waveform')
+require('Transform')
 require('Kinematics')
 require('MotionState')
 

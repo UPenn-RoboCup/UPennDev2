@@ -46,13 +46,13 @@ local function update_step_parameters()
       mPast[i] = (step.joint_position[i] - qPast[i])/step.duration
       mStep[i] = (nextstep.joint_position[i] - qStep[i])/nextstep.duration
       -- prevent overshoot scenarios
-      if (mPast[i] == 0) or (mStep[i]*mPast[i] < 0) then
+      if (iStep == 1) or (mPast[i] == 0) or (mStep[i]*mPast[i] < 0) then
         mStep[i] = 0
       end
     end
   end
   -- get spline function for the current step interval
-  qSpline = trajectory.offline_hermite_curve(
+  qSpline = trajectory.hermite_curve(
     {qPast, mPast}, {qStep, mStep}, step.duration)
   -- initialize time
   t0 = Body.get_time()

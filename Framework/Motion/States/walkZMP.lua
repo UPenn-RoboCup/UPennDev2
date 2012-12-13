@@ -5,6 +5,7 @@
 require('Body')
 require('vector')
 require('Config')
+require('Transform')
 require('Kinematics')
 require('MotionState')
 

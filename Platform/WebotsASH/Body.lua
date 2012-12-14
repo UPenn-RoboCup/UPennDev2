@@ -149,7 +149,7 @@ local function update_sensors()
   t[2] = vector.new({orientation[4], orientation[5], orientation[6], 0})
   t[3] = vector.new({orientation[7], orientation[8], orientation[9], 0})
   t[4] = vector.new({0, 0, 0, 1});
-  local euler_angles = Transform.getEuler(t)
+  local euler_angles = Transform.get_euler(t)
   dcm:set_ahrs(webots.wb_gyro_get_values(tags.gyro), 'gyro')
   dcm:set_ahrs(webots.wb_accelerometer_get_values(tags.accel), 'accel')
   dcm:set_ahrs(euler_angles, 'euler')

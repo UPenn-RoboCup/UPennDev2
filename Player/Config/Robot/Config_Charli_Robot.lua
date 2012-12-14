@@ -40,13 +40,13 @@ servo.dirReverse={
 --  3,4,5,6, --LArm
   7,8,10,11,12, --LLeg
   13,14,15,18, --RLeg
-  19,--RArm
+  19,21,22--RArm
 }
 
 ----------------------------------------------
 --Robot-specific firmware version handling
 ----------------------------------------------
-servo.armBias = vector.new( {-90,0,0,45,    -90,0,0,-45} )*math.pi/180; --in radians
+servo.armBias = vector.new( {-90,0,0,45,    -90,0,0,45} )*math.pi/180; --in radians
 servo.pid =1;  --Default new firmware
 local robotName = unix.gethostname();
 require('calibration');

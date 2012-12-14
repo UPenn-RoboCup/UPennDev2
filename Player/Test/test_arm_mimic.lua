@@ -130,8 +130,13 @@ lcount = 0;
 tUpdate = unix.time();
 
 function update()
+Body.set_head_command({0,0})
+Body.set_head_hardness({1,1})
+
 Body.set_larm_hardness(vector.new({.5,.5,.5,.5}))
 --Body.set_larm_hardness(vector.new({0,0,0,0}))
+Body.set_rarm_hardness(vector.new({.5,.5,.5,.5}))
+--Body.set_rarm_hardness(vector.new({0,0,0,0}))
   count = count + 1;
   -- update state machines 
   process_keyinput();
@@ -149,7 +154,12 @@ Body.set_larm_hardness(vector.new({.5,.5,.5,.5}))
 --print('Update!')
       t.tReceive = unix.time();
       state = t;
-Body.set_larm_command(vector.new(t.qL))
+local beta = .7;
+qL2 = beta*vector.new(t.qL) + (1-beta)*(qL2 or vector.new(t.qL))
+Body.set_larm_command(qL2)
+qR2 = beta*vector.new(t.qR) + (1-beta)*(qR2 or vector.new(t.qR))
+--Body.set_rarm_command(qR2)
+Body.set_rarm_command(vector.new(t.qR))
     end
   end
 --local jangles = {0,0,0,0}

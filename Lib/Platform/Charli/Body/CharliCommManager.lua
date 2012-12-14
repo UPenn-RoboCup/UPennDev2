@@ -312,7 +312,7 @@ function nonsync_read()
       sensor.position[i] = actuator.command[i];
     end;
   elseif actuator.readType[1]==3 then --Head+Arms reading
-    idToRead = {3,4,5,6,  19,20,21,22}; -- L,R arm joints
+    idToRead = {1,2,   3,4,5,6,  19,20,21,22}; -- Head, L,R arm joints
     for i = 1,#idMap do
       sensor.position[i] = actuator.command[i];
     end

@@ -138,16 +138,16 @@ function stance_update()
   local t = Body.get_time()
   if (t - t0 < 1) then
     -- transform left and right foot coordinates into torso base frame 
-    local p_l_foot = Transform.new({0, 0, 0})
-    local p_r_foot = Transform.new(swing_start_position)
-    local p_torso = Transform.new(torso_start_position)
+    local p_l_foot = Transform.pose6D({0, 0, 0})
+    local p_r_foot = Transform.pose6D(swing_start_position)
+    local p_torso = Transform.pose6D(torso_start_position)
     p_l_foot = p_torso:inv()
     p_r_foot = p_l_foot*p_r_foot
     local qstance = Kinematics.inverse_pos_legs(p_l_foot, p_r_foot)
 
     -- update actuators
     local d = util.min{(t - t0)/1, 1}
-    local q = q0 + d*(vector.new(qstance) - vector.new(q0))
+    local q = q0 + d*(vector.pose6D(qstance) - vector.pose6D(q0))
     dcm:set_joint_position(q, 'legs')
     return true
   end
@@ -173,9 +173,9 @@ function step_update()
     end
 
     -- transform left and right foot coordinates into torso base frame 
-    local p_l_foot = Transform.new({0, 0, 0})
-    local p_r_foot = Transform.new(swing_position)
-    local p_torso = Transform.new(torso_position)
+    local p_l_foot = Transform.pose6D({0, 0, 0})
+    local p_r_foot = Transform.pose6D(swing_position)
+    local p_torso = Transform.pose6D(torso_position)
     p_l_foot = p_torso:inv()
     p_r_foot = p_l_foot*p_r_foot
 

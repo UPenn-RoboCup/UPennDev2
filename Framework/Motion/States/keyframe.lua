@@ -6,7 +6,7 @@ require('Body')
 require('unix')
 require('vector')
 require('Config')
-require('interpol')
+require('trajectory')
 require('MotionState') 
 
 -- Setup 
@@ -43,13 +43,17 @@ local function update_step_parameters()
   mStep = vector.zeros(#joint.id)
   if (step.pause == 0 and steps[iStep + 1]) then
     for i = 1,#joint.id do
-      -- using the three point difference method
-      mStep[i] = (step.joint_position[i] - qPast[i])/(2*step.duration)
-        + (nextstep.joint_position[i] - qStep[i])/(2*nextstep.duration)
+      mPast[i] = (step.joint_position[i] - qPast[i])/step.duration
+      mStep[i] = (nextstep.joint_position[i] - qStep[i])/nextstep.duration
+      -- prevent overshoot scenarios
+      if (iStep == 1) or (mPast[i] == 0) or (mStep[i]*mPast[i] < 0) then
+        mStep[i] = 0
+      end
     end
   end
   -- get spline function for the current step interval
-  qSpline = interpol.hermite_curve(qPast, qStep, mPast, mStep, 0, step.duration)
+  qSpline = trajectory.hermite_curve(
+    {qPast, mPast}, {qStep, mStep}, step.duration)
   -- initialize time
   t0 = Body.get_time()
 end

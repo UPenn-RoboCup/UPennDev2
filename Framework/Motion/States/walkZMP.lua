@@ -5,12 +5,13 @@
 require('Body')
 require('vector')
 require('Config')
+require('Transform')
 require('Kinematics')
 require('MotionState')
 
 -- Setup 
 ----------------------------------------------------------------------
-walk = MotionState.new(...);
+walk = MotionState.new('walk')
 local dcm = walk.dcm;
 
 walk.parameters = {
@@ -332,7 +333,11 @@ local function update_still()
   pRLeg[1], pRLeg[2], pRLeg[6] = uRight[1], uRight[2], uRight[3];
   pLLeg[3], pRLeg[3] = 0;
   pTorso[1], pTorso[2], pTorso[6] = uTorsoActual[1], uTorsoActual[2], uTorsoActual[3];
-  qLegs = Kinematics.inverse_legs(pLLeg, pRLeg, pTorso, supportLeg);
+
+  local trLLeg = Transform.new(pLLeg);
+  local trRleg = Transform.new(pRLeg);
+  local trTorso = Transform.new(pTorso);
+  qLegs = Kinematics.inverse_pos_legs(trLLeg, trRLeg, trTorso, supportLeg);
   motion_legs(qLegs);
 end
 
@@ -354,7 +359,11 @@ local function init()
   pTorso = vector.new{uTorso[1], uTorso[2], 
 	bodyHeightInit, 0, bodyTiltInit, uTorso[3]};
    
-  qLegs = Kinematics.inverse_legs(pLLeg, pRLeg, pTorso);
+  local trLLeg = Transform.new(pLLeg);
+  local trRleg = Transform.new(pRLeg);
+  local trTorso = Transform.new(pTorso);
+  qLegs = Kinematics.inverse_pos_legs(trLLeg, trRLeg, trTorso);
+
 --  Body.set_lleg_command(qLegs);
   dcm:set_joint_position(qLegs, 'legs')
 
@@ -521,7 +530,11 @@ function walk:update()
   pLLeg[1], pLLeg[2], pLLeg[6] = uLeft[1], uLeft[2], uLeft[3];
   pRLeg[1], pRLeg[2], pRLeg[6] = uRight[1], uRight[2], uRight[3];
   pTorso[1], pTorso[2], pTorso[6] = uTorsoActual[1], uTorsoActual[2], uTorsoActual[3];
-  qLegs = Kinematics.inverse_legs(pLLeg, pRLeg, pTorso, supportLeg);
+
+  local trLLeg = Transform.new(pLLeg);
+  local trRleg = Transform.new(pRLeg);
+  local trTorso = Transform.new(pTorso);
+  qLegs = Kinematics.inverse_pos_legs(trLLeg, trRLeg, trTorso, supportLeg);
   motion_legs(qLegs);
 end
 

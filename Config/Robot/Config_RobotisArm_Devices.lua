@@ -22,9 +22,9 @@ joint.id = {
   [4] = 'r_elbow_pitch',
   [5] = 'r_wrist_yaw',
   [6] = 'r_wrist_roll',
-  [7] = 'r_gripper_thumb',
-  [8] = 'r_gripper_middle',
-  [9] = 'r_gripper_index',
+  [7] = 'r_thumb',
+  [8] = 'r_finger1',
+  [9] = 'r_finger2',
 
   -- group ids
   l_hip = {

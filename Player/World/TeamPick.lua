@@ -79,6 +79,8 @@ function update()
     if kind == 1 then --kinect
       -- Set the walking engine
       pickercm.set_desired_velocity( states[0].vel );
+      pickercm.set_desired_qLArm(states[0].qL)
+      pickercm.set_desired_qRArm(states[0].qR)
       pickercm.set_desired_pLArm(states[0].pL)
       pickercm.set_desired_pRArm(states[0].pR)
       pickercm.set_desired_rpy( states[0].rpy );
@@ -110,6 +112,8 @@ function send_body()
   if state.k == 1 then --kinect
     state.vel = pickercm.get_desired_velocity();
     state.bH  = pickercm.get_desired_bodyHeight();
+    state.qL  = pickercm.get_desired_qLArm();
+    state.qR  = pickercm.get_desired_qRArm();
     state.pL  = pickercm.get_desired_pLArm();
     state.pR  = pickercm.get_desired_pRArm();
     state.rpy = pickercm.get_desired_rpy();

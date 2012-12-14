@@ -10,8 +10,8 @@ WorldInfo {
   displayRefresh 3
 }
 Viewpoint {
-  orientation -1 0 0 0.8
-  position 0 12 12
+  orientation 0.999525 -0.0247179 -0.0184002 5.00273
+  position -0.341077 11.7743 5.4063
 }
 Background {
   skyColor [
@@ -31,41 +31,33 @@ DirectionalLight {
 }
 TeenSoccerField {
 }
-
-Wall{
-	translation 2.75 0 .8
-	rotation 0 1 0 -0.57	
+Wall {
+  translation 2.54118 3.55271e-14 0.757267
+  rotation 0 1 0 -0.57
 }
-
-Wall{}
-
-Wall{
-	translation -1.75 0 0
-	rotation 0 1 0 1.57	
+Wall {
 }
-
-Wall{
-	translation -2.5 0 3
-	rotation 0 1 0 2.7
+Wall {
+  translation -1.6453 0 0.000166542
+  rotation 0 1 0 1.57
 }
-
-Wall{
-	translation 0 0 3.5
+Wall {
+  translation -2.5 0 3
+  rotation 0 1 0 2.7
 }
-
-Wall{
-	translation 2.5 0 2.5
-	rotation 0 1 0 -2.35	
+Wall {
+  translation 0 0 3.5
 }
-
-Wall{
-	translation -3.8 0 1
-	rotation 0 1 0 1.57	
+Wall {
+  translation 2.5 0 2.5
+  rotation 0 1 0 -2.35
 }
-
+Wall {
+  translation -3.8 0 1
+  rotation 0 1 0 1.57
+}
 CharLaser {
-  translation 0 0.8 0.5
-  rotation 0 1 0 -1.57
+  translation 0.0769452 0.8 1.36128
   controller "darwin-op_team_0"
-  controllerArgs "1 22"
+  controllerArgs "0 22"
 }

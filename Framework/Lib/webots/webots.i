@@ -57,6 +57,8 @@ int match_suffix(char *str1, char* str2) {
   int i, len;
   if (match_suffix("$name", "_vec2f"))
     len = 2;
+  else if (match_suffix("$name", "_vec3f"))
+    len = 3;
   else if (match_suffix("$name", "_sf_rotation"))
     len = 4;
   else if (match_suffix("$name", "_orientation"))
@@ -69,6 +71,27 @@ int match_suffix(char *str1, char* str2) {
     lua_rawseti(L, -2, i+1);
   }
   SWIG_arg++;
+}
+
+%typemap(in) (const double[ANY]) {
+  int i, len;
+  double values[9];
+  if (match_suffix("$name", "_vec2f"))
+    len = 2;
+  else if (match_suffix("$name", "_vec3f"))
+    len = 3;
+  else if (match_suffix("$name", "_sf_rotation"))
+    len = 4;
+  else if (match_suffix("$name", "_orientation"))
+    len = 9;
+  else
+    len = 3;
+  for (i = 0; i < len; i++) {
+    lua_rawgeti(L, $input, i+1);
+    values[i] = lua_tonumber(L, -1);
+    lua_pop(L, 1);
+  }
+  $1 = values;
 }
 
 %include <webots/accelerometer.h>

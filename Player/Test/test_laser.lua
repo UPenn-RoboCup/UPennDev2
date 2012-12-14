@@ -21,6 +21,9 @@ require 'rcm'
 --
 require 'mcm'
 
+-- Arms
+require 'pickercm'
+
 -- Initialize Variables
 webots = false;
 teamID   = Config.game.teamNumber;
@@ -113,9 +116,24 @@ function update()
 	--print("Laser data:",unpack(rcm.get_lidar_ranges()))
 	
 	-- Show the odometry
-	local odom, odom0 = mcm.get_odometry();
-	print('Odometry: ',odom)
-	rcm.set_lidar_odom( vector.new(odom) )
+	odom, odom0 = mcm.get_odometry();
+	rcm.set_robot_odom( vector.new(odom) )
+	
+	-- Show IMU
+  imuAngle = Body.get_sensor_imuAngle();
+	rcm.set_robot_imu( vector.new(imuAngle) )
+	gyr = Body.get_sensor_imuGyrRPY();
+	rcm.set_robot_gyro( vector.new(gyr) );
+	
+	-- Set the arm positions
+	qLArm = pickercm.get_desired_qLArm();
+	qRArm = pickercm.get_desired_qRArm();
+	Body.set_larm_command(qLArm)
+	Body.set_rarm_command(qRArm)
+--local janglesL = {90,0,0,0}
+--Body.set_larm_command(math.pi/180*vector.new(janglesL))
+--local janglesR = {90,0,0,0}
+--Body.set_rarm_command(math.pi/180*vector.new(janglesR))
 	
   -- Check if the last update completed without errors
   lcount = lcount + 1;
@@ -145,21 +163,7 @@ while (true) do
   -- Debug Messages every 1 second
   t_diff = Body.get_time() - (t_last or 0);
   if(t_diff>1) then
-		lmax = -999;lmin = 999;
-		for i=1,nlidar_readings,10 do
-			if lidar_scan[i]<5 then
-			--print(i,lidar_scan[i])
-			if lidar_scan[i]>lmax then
-				lmax = lidar_scan[i];
-				--print('new max!',i)
-			end
-			if lidar_scan[i]<lmin then
-				lmin = lidar_scan[i];
-				--print('new max!',i)
-			end
-			end
-		end
-		print('Laser ranges:', lmin,lmax)
+		print('qLArm',qLArm)
     t_last = Body.get_time();
   end
 

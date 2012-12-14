@@ -25,7 +25,7 @@ jointNames = { ...
     };
 nJoints = numel(jointNames);
 
-nPlayers =1; %2;
+nPlayers = 1; %2;
 if( run_from_log )
     nPlayers = 1;
 end
@@ -43,7 +43,7 @@ end
 if( ~isfield( players{1},'sk' ) && ~run_from_log )
     disp('Recreating SHM block access...')
     startup;
-    team = 18;
+    team = 22;
     for pl=1:nPlayers
         players{pl}.sk = shm_primesense(team,pl);
     end
@@ -115,7 +115,7 @@ set(hfig,'KeyPressFcn',@KeyResponse);
 init_skel(use_3d);
 
 %% Keypress Actions
-    function KeyResponse(~, evt)
+    function KeyResponse(src, evt)
         key = lower(evt.Key);
         if key=='l'
             % No toggling either, if running from logs

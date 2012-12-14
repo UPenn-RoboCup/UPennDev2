@@ -12,7 +12,7 @@ teamID   = Config.game.teamNumber;
 playerID = Config.game.playerID;
 nPlayers = Config.game.nPlayers;
 nPlayers = 1
---net = true
+net = true
 
 function entry()
   -- Check inputs
@@ -32,18 +32,32 @@ function entry()
 
   -- Initialize FSMs
   skeleton.entry(inp_logs)
+
   if( net ) then
-    require 'Team'
-    Team.entry(true) -- true means we have the primesense
+		require 'Comm'
+		-- Initialization
+    wired = true
+		if( wired ) then
+		  print("My address:",Config.dev.ip_wired)
+		  Comm.init(Config.dev.ip_wired,Config.dev.ip_wired_port)
+		else
+		  print("My address:",Config.dev.ip_wireless)
+		  Comm.init(Config.dev.ip_wireless,Config.dev.ip_wireless_port);
+		end
+    --require 'Team'
+    --Team.entry(true) -- true means we have the primesense
   end
+
 
   t0 = unix.time();
   t_last_debug = t0;
   count = 0;
 
   pickercm.set_device_kind(1)
-  pickercm.set_desired_pLArm( Kinematics.forward_larm({0,0,0}) )
-  pickercm.set_desired_pRArm( Kinematics.forward_rarm({0,0,0}) )
+  pickercm.set_desired_pLArm( Kinematics.forward_larm({0,0,0,0}) )
+  pickercm.set_desired_pRArm( Kinematics.forward_rarm({0,0,0,0}) )
+	pickercm.set_desired_qRArm( vector.new({0,0,0,0}) )
+	pickercm.set_desired_qLArm( vector.new({0,0,0,0}) )
 
   -- Calibration warning
   print('Please get in position...')
@@ -81,7 +95,7 @@ function update()
     if tNow-tCalibrate>1 then -- 1 sec calibration
       print('DONE Calibrating!',ncalibration.." samples taken")
       torso_point = torso_point / ncalibration;
-      print('Toroso point:',torso_point )
+      print('Torso point:',torso_point )
       primecm.set_skeleton_torsocenter(torso_point)
       calibrated = true;
     end
@@ -93,13 +107,23 @@ function update()
     return true;
   end
 
-  if( net ) then
-    Team.update()
-  end
 
+  if( net ) then
+		local state = {};
+		state.qL = skeleton.qLArm;
+		state.qR = skeleton.qRArm;
+		local ser = serialization.serialize(state)
+		local ret = Comm.send( ser, #ser );
+		print('Sent: '..ret..' bytes',ser)
+    --Team.update()
+  end
+	
+	
   -- Update the SHM blocks
   if primecm.get_skeleton_found()>0  then
     pickercm.set_desired_velocity( skeleton.velocity );
+		pickercm.set_desired_qLArm(skeleton.qLArm);
+		pickercm.set_desired_qRArm(skeleton.qRArm);
     local tLArm = Kinematics.forward_larm( skeleton.qLArm )
     local pLArm = vector.new({tLArm[1][4],tLArm[2][4],tLArm[3][4]})
     pickercm.set_desired_pLArm( pLArm )

@@ -1,7 +1,7 @@
 function omapInit
 global OMAP MAPS
 
-if isempty(OMAP) || ~isfield(OMAP,'initialized') ||(OMAP.initialized ~= 1)
+%if isempty(OMAP) || ~isfield(OMAP,'initialized') ||(OMAP.initialized ~= 1)
 
   OMAP.res        = MAPS.res;
   OMAP.invRes     = MAPS.invRes;
@@ -20,4 +20,4 @@ if isempty(OMAP) || ~isfield(OMAP,'initialized') ||(OMAP.initialized ~= 1)
   
   OMAP.initialized  = 1;
   disp('Obstacle map initialized');
-end
+%end

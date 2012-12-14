@@ -45,9 +45,10 @@ if (SLAM.lidar0Cntr > 1)
 
   %create a grid of distance-based costs from each cell to odometry pose
   [yGrid1 xGrid1] = meshgrid(yCand1,xCand1);
-  %xDiff1 = xGrid1 - SLAM.xOdom;
-  %yDiff1 = yGrid1 - SLAM.yOdom;
-  %distGrid1 = 1000*sqrt(xDiff1.^2 + yDiff1.^2);
+  
+  xDiff1 = xGrid1 - SLAM.xOdom;
+  yDiff1 = yGrid1 - SLAM.yOdom;
+  distGrid1 = (1/3)*1e6*sqrt(xDiff1.^2 + yDiff1.^2);
   %distGrid1(abs(distGrid1
   [minIndX indx] = min(abs(xCand1-SLAM.xOdom));
   [minIndY indy] = min(abs(yCand1-SLAM.yOdom));
@@ -55,8 +56,15 @@ if (SLAM.lidar0Cntr > 1)
   %combine the pose likelihoods with the distance from odometry prediction
   %TODO: play around with the weights!!
   %costGrid1 = distGrid1 - hitsXY;
+  %figure(2);
+  %surf(yGrid1,xGrid1,distGrid1); % ~ 0 to 6*10^4 @ 1e6 muliplier
+  %figure(3);
+  %surf(yGrid1,xGrid1,hitsXY); % ~ 1*10^4 to 3*10^4
+  % How valuable is the odometry preidiction?
+  % Should make a gaussian depression around this point...
   costGrid1 = - hitsXY;
   costGrid1(indx,indy) = costGrid1(indx,indy) - 500;
+  %costGrid1(indx,indy) = costGrid1(indx,indy) - 2e4;
   
   %find the minimum and save the new pose
   [cmin cimin] = min(costGrid1(:));

@@ -22,10 +22,14 @@ dev.game_control='WebotsGameControl';
 dev.team='TeamNull';
 dev.walk = 'BetterWalk';
 dev.kick = 'NewKick';
+dev.ip_wired = '192.168.123.255'; 
+dev.ip_wired_port = 111111;
+dev.ip_wireless = '192.168.1.255'; --Our Router
+dev.ip_wireless_port = 54321;
 
 -- Game Parameters
 game = {};
-game.teamNumber = (os.getenv('TEAM_ID') or 0) + 0;
+game.teamNumber = (os.getenv('TEAM_ID') or 22) + 0;
 -- webots player ids begin at 0 but we use 1 as the first id
 game.playerID = (os.getenv('PLAYER_ID') or 0) + 1;
 game.robotID = game.playerID;

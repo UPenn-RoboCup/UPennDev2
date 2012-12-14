@@ -25,7 +25,7 @@ jointNames = { ...
     };
 nJoints = numel(jointNames);
 
-nPlayers =1; %2;
+nPlayers = 1; %2;
 if( run_from_log )
     nPlayers = 1;
 end
@@ -115,7 +115,7 @@ set(hfig,'KeyPressFcn',@KeyResponse);
 init_skel(use_3d);
 
 %% Keypress Actions
-    function KeyResponse(~, evt)
+    function KeyResponse(src, evt)
         key = lower(evt.Key);
         if key=='l'
             % No toggling either, if running from logs

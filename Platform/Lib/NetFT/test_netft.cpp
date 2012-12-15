@@ -43,8 +43,8 @@ int main()
   co_can_id receive_ids[] = {NODE_ID + 5, NODE_ID + 6};
   while (1)
   {
-    int forces[3];
-    int torques[3];
+    double forces[3];
+    double torques[3];
     /* request short data */
     struct can_frame frame = node.get_short_request();
     can0_master.send_can_frame(&frame);
@@ -54,8 +54,8 @@ int main()
     node.get_forces(forces);
     node.get_torques(torques);
     /* display results */
-    fprintf(stderr, "forces : %d, %d, %d\n", forces[0], forces[1], forces[2]);
-    fprintf(stderr, "torques : %d, %d, %d\n", torques[0], torques[1], torques[2]);
+    fprintf(stderr, "forces : %f, %f, %f\n", forces[0], forces[1], forces[2]);
+    fprintf(stderr, "torques : %f, %f, %f\n", torques[0], torques[1], torques[2]);
     fprintf(stderr, "status : %d\nsample : %d\n", node.get_status(), node.get_sample());
     usleep(1000);
     system("clear");

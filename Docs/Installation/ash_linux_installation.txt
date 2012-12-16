@@ -90,6 +90,7 @@ B. Install Arch
 
    I. add regular user
    # useradd -m -g users -G wheel ash
+   # usermod -a -G uucp ash
    # passwd ash
 
    J. install and configure grub
@@ -103,8 +104,14 @@ B. Install Arch
    # visudo
      - uncomment the following line and save:
      %wheel ALL=(ALL) ALL
+
+7. Add /usr/local/lib to shared library path
+   # cd /etc/ld.so.conf.d
+   # nano local.conf
+     - add the following line and save:
+     /usr/local/lib
     
-7. Unmount and reboot 
+8. Unmount and reboot 
    # exit
    # umount /mnt
    # poweroff
@@ -244,13 +251,14 @@ H : Setup ASH Codebase
    $ git clone http://romela.me.vt.edu:8080/git/ash.git 
 
 2. Install dependencies
-   $ sudo yaourt -S lua
+   $ sudo yaourt -S lua51
+   $ sudo yaourt -S gnuplot
    $ sudo yaourt -S boost-libs
    $ sudo yaourt -S boost
    $ sudo yaourt -S swig
-   $ sudo yaourt -S gnuplot
    $ sudo yaourt -S ncurses
-   $ sudo ln -s /usr/lib/liblua.so.5.1.5 /usr/lib/liblua5.1.so
+   $ sudo mv /usr/bin/lua /usr/bin/lua5.2
+   $ sudo ln -s /usr/bin/lua5.1 /usr/bin/lua
 
 3. Get luajit
    $ git clone http://luajit.org/git/luajit-2.0.git

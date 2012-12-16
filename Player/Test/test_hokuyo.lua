@@ -15,8 +15,8 @@ end
 hokuyo = {}
 hokuyo.serial = "00805676"
 --hokuyo.serial = "00907258"
---hokuyo.device = "/dev/ttyACM1"
-hokuyo.device = "/dev/ttyACM0"
+hokuyo.device = "/dev/ttyACM1"
+--hokuyo.device = "/dev/ttyACM0"
 Hokuyo.open(hokuyo.device, hokuyo.serial);
 
 cntr = 0;
@@ -30,7 +30,9 @@ while (true) do
   end
 
   lidar = Hokuyo.retrieve();
-  
+
+  --rcm.set_lidar_timestamp( Body.get_time() ); 
+  rcm.set_lidar_timestamp( unix.time() ); 
   rcm.set_lidar_counter(lidar.counter);
   rcm.set_lidar_id(lidar.id);
   rcm.set_lidar_ranges(lidar.ranges);

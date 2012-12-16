@@ -59,8 +59,8 @@ void sensor_thread::entry()
   m_netft[0].set_torque_scale_factor(L_FT_TORQUE_SCALE_FACTOR);
   m_netft[1].set_torque_scale_factor(R_FT_TORQUE_SCALE_FACTOR);
 
-  std::vector<struct can_frame> l_ft_buffers = m_netft[0].get_can_buffers();
-  std::vector<struct can_frame> r_ft_buffers = m_netft[1].get_can_buffers();
+  std::vector<struct can_frame> &l_ft_buffers = m_netft[0].get_can_buffers();
+  std::vector<struct can_frame> &r_ft_buffers = m_netft[1].get_can_buffers();
   for (int i = 0; i < l_ft_buffers.size(); i++)
     m_master.register_can_buffer(&l_ft_buffers[i]);
   for (int i = 0; i < r_ft_buffers.size(); i++)
@@ -98,10 +98,14 @@ void sensor_thread::update()
     m_netft[1].get_forces(r_forces);
     m_netft[0].get_torques(l_torques);
     m_netft[1].get_torques(r_torques);
-    memcpy(dcm.force_torque, l_forces, 3*sizeof(double));
-    memcpy(dcm.force_torque + 3, l_torques, 3*sizeof(double));
-    memcpy(dcm.force_torque + 6, r_forces, 3*sizeof(double));
-    memcpy(dcm.force_torque + 9, r_torques, 3*sizeof(double));
+    for (int i = 0; i < 3; i++)
+     dcm.force_torque[i] = l_forces[i] - config.force_torque_bias[i];
+    for (int i = 0; i < 3; i++)
+     dcm.force_torque[i+3] = l_torques[i] - config.force_torque_bias[i+3];
+    for (int i = 0; i < 3; i++)
+     dcm.force_torque[i+6] = r_forces[i] - config.force_torque_bias[i+6];
+    for (int i = 0; i < 3; i++)
+     dcm.force_torque[i+9] = r_torques[i] - config.force_torque_bias[i+9];
 
     // receive imu data
     uint64_t time;

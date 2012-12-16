@@ -1,8 +1,13 @@
 # Init script for ASH robot
 
+sudo modprobe -r pcan
 sudo modprobe pcan
-sudo ifconfig can0 up
-sudo ifconfig can1 up
-sudo su -c "echo 'i 0x0014 e' > /dev/pcanusb0"
-sudo su -c "echo 'i 0x0014 e' > /dev/pcanusb1"
+sudo ip link set dev can0 up
+sudo ip link set dev can1 up
+sudo ip link set dev can2 up
+sudo ip link set dev can3 up
+sudo su -c "echo 'i 0x0014 e' > /dev/pcan0"
+sudo su -c "echo 'i 0x0014 e' > /dev/pcan1"
+sudo su -c "echo 'i 0x001c e' > /dev/pcan2"
+sudo su -c "echo 'i 0x001c e' > /dev/pcan3"
 cat /proc/pcan

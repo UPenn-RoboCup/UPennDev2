@@ -20,11 +20,11 @@ if isempty(initSlam)
     %% Initialize shared memory segment
     disp('Initializing robot shm...')
     if isempty(ROBOT)
-        ROBOT = shm_robot(22,2);
+        ROBOT = shm_robot(1,1);
     end
     disp('Initializing lidar shm...')
     if isempty(LIDAR)
-        LIDAR = shm_lidar(22,2);
+        LIDAR = shm_lidar(1,1);
     end
     disp('Loading the Config file')
     loadConfig();

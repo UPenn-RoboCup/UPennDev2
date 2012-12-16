@@ -17,6 +17,7 @@ require ('gcm')
 require ('vcm')
 require ('ocm')
 require ('mcm')
+require 'rcm'
 require ('matcm')
 
 require 'unix'
@@ -196,6 +197,15 @@ function push_labelA(obj)
 end
 --]]
 
+
+--Function for new compactly encoded labelA
+function push_ranges(obj)
+  local name = parse_name(obj.name);
+  local ranges = cutil.test_array();
+  cutil.string2userdata(ranges,obj.data);
+  rcm.set_lidar_ranges(ranges);
+end
+
 --Function for new compactly encoded labelA
 function push_labelA(obj)
   local name = parse_name(obj.name);
@@ -326,27 +336,25 @@ end
 
 while( true ) do
   msg = CommWired.receive();
+
+  --[[
+  if debug>0 then
+    print('checking the loop...')
+  end
+--]]
   if( msg ) then
     msg = Z.uncompress(msg, #msg);
     local obj = serialization.deserialize(msg);
+    if debug>0 then
+      print('receiving',msg)
+      util.ptable(obj)
+    end
+    
     if( obj.arr ) then
-    	if ( string.find(obj.arr.name,'yuyv') ) then 
-     	  push_yuyv(obj.arr);
-    	  yuyv_type=1;
-    	elseif ( string.find(obj.arr.name,'ysub2') ) then 
-     	  push_yuyv2(obj.arr);
-    	  yuyv_type=2;
-    	elseif ( string.find(obj.arr.name,'ysub4') ) then 
-     	  push_yuyv3(obj.arr);
-    	  yuyv_type=3;
-    	elseif ( string.find(obj.arr.name,'labelA') ) then 
-    	  push_labelA(obj.arr);
-    	elseif ( string.find(obj.arr.name,'labelB') ) then 
-    	  push_labelB(obj.arr);
-      elseif ( string.find(obj.arr.name,'occmap') ) then
-        push_occmap(obj.arr);
-      elseif ( string.find(obj.arr.name,'lut') ) then
-        push_lut(obj);
+      --util.ptable(obj.arr)
+      if ( string.find(obj.arr[1].name,'ranges') ) then
+       if debug>0 then print('happy ranges face!') end;
+        push_ranges(obj.arr[1]);
     	end
     else
     	push_data(obj);

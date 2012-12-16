@@ -31,6 +31,12 @@ shared.robot.odom = vector.zeros(3);
 shared.robot.imu = vector.zeros(3);
 shared.robot.gyro = vector.zeros(3); -- Just to give the rate
 
-print('Init shm for ',_NAME)
+-- Generated Map
+--mapSize = 400;
+--shared.map = {};
+--shared.map.omap = mapSize*mapSize;
 
+shsize.lidar = shared.lidar.ranges + 2^16
+
+print('Init shm for ',_NAME)
 util.init_shm_segment(getfenv(), 'rcm', shared, shsize);

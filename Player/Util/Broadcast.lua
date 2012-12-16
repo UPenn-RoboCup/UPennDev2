@@ -12,14 +12,17 @@ require('gcm')
 require('wcm')
 require('ocm')
 require('mcm')
+require('rcm')
 require('matcm')
 require('serialization');
 require('ImageProc')
 require('Config');
 
 --sendShm = {'wcm','vcm','gcm'}
-sendShm = { wcmshm=wcm, gcmshm=gcm, vcmshm=vcm, ocmshm=ocm, mcmshm=mcm }
-itemReject = 'yuyv, labelA, labelB, yuyv2, yuyv3, map, lut'
+--sendShm = { wcmshm=wcm, gcmshm=gcm, vcmshm=vcm, ocmshm=ocm, mcmshm=mcm }
+--itemReject = 'yuyv, labelA, labelB, yuyv2, yuyv3, map, lut'
+sendShm = { rcmshm=rcm }
+itemReject = 'ranges'
 
 -- Initiate Sending Address
 enable_online_learning = Config.vision.enable_online_colortable_learning or 0;
@@ -408,6 +411,44 @@ function send_lut()
 end
 
 
+
+function sendRanges()
+  -- labelA --
+  local ranges = rcm.get_lidar_ranges();
+  width = rcm.nReturns; 
+  height = 1;
+  count = rcm.get_lidar_counter();
+
+--  array = serialization.serialize_label_rle(ranges, width, height, 'single', 'ranges',count);
+--  array = serialization.serialize_array(labelB, width, height, 'uint8', 'labelB', count);
+  array = serialization.serialize_array(
+	ranges, width, height, 'single', 'ranges',count);
+
+  sendranges = {};
+  sendranges.team = {};
+  sendranges.team.number = gcm.get_team_number();
+  sendranges.team.player_id = gcm.get_team_player_id();
+
+  stime1,stime2,infosize=0,0,0;
+  sendranges.arr = array;
+  t0 = unix.time();
+  local senddata=serialization.serialize(sendranges);
+  local uncompress_sz = #senddata
+  senddata = Z.compress(senddata, #senddata);
+  local infosize=infosize+#senddata;
+  t1=unix.time();
+  local stime1=stime1+t1-t0;
+  CommWired.send(senddata, #senddata);
+  t2=unix.time();
+  local stime2=stime2+t2-t1;
+
+  if debug>0 then
+    print("Ranges info sizes:",uncompress_sz,infosize);
+    print("Total serialization time:",stime1);
+    print("Total comm time:",stime2);
+  end
+end
+
 function update(enable)
   if enable == 0 then return; end
   --At level 3, we only send yuyv for logging and nothing else
@@ -449,6 +490,10 @@ function update(enable)
 end
 
 function update_img( enable, imagecount )
+if enable>0 then
+sendRanges()
+end
+--[[
   if(enable==1) then
     --1: Fast debug mode
     --send 1/4 image and labelB
@@ -478,4 +523,5 @@ function update_img( enable, imagecount )
       sendImg();
     end
   end
+--]]
 end

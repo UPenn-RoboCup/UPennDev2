@@ -1,37 +1,32 @@
 #!/bin/sh
 
-# For Mac systems!
-echo $OSTYPE
-if [[ ${OSTYPE} == *darwin* ]]; then
-  #export OSTYPE = $(shell uname -s|awk '{print tolower($$0)}')
-	eval `/usr/libexec/path_helper -s`
-	source ~/.bash_profile
-fi
-
+##############################
+##### USER ADJUSTABLE SETTINGS
+##############################
 EXT_TERM=0
 LUA=lua
 #LUA=luajit
 
-# On Linux, need to verify that xterm is not setgid
-# Otherwise, LD_LIBRARY_PATH gets unset in xterm
-
+echo $OSTYPE
+echo `which xterm`
+echo $PATH
 COMPUTER=`uname`
 export COMPUTER
+if [ "$COMPUTER" = "Darwin" ]
+then
+  #export OSTYPE = $(shell uname -s|awk '{print tolower($$0)}')
+	eval `/usr/libexec/path_helper -s`
+	source ~/.bash_profile
+fi
+TERM=`which xterm`
 
+# On Linux, need to verify that xterm is not setgid
+# Otherwise, LD_LIBRARY_PATH gets unset in xterm
 export PLAYER_ID=$1
 export TEAM_ID=$2
 
 PLATFORM=webots
 export PLATFORM
-
-echo `which xterm`
-echo $PATH
-
-TERM=xterm
-if [ "$COMPUTER" = "Darwin" ]
-then
-  TERM=/opt/X11/bin/xterm
-fi
 
 if [ "$EXT_TERM" -gt "0" ]
 then

@@ -11,18 +11,18 @@ local function gaussian(x, center, width)
   return math.exp(-width*(x - center)^2)
 end
 
-function linreg.new(psi)
+function linreg.new(psi, w)
   -- new linear regression
   local o = {}
   o.psi = psi or {} -- table of basis functions
-  o.w = {}          -- table of basis weights
+  o.w = w or {}     -- table of basis weights
   for i = 1,#psi do
     o.w[i] = 0
   end
   return setmetatable(o, linreg)
 end
 
-function linreg.new_rbf(centers, widths)
+function linreg.new_rbf(centers, widths, w)
   -- new linear regression using radial basis functions
   local psi = {}
   for i = 1,#centers do
@@ -30,7 +30,7 @@ function linreg.new_rbf(centers, widths)
       return gaussian(x, centers[i], widths[i])
     end
   end
-  return linreg.new(psi)
+  return linreg.new(psi, w)
 end
 
 function linreg.get_basis_functions(o)

@@ -8,8 +8,8 @@
 // author : Mike Hopkins
 ///////////////////////////////////////////////////////////////////////////
 
-#define TORQUE_P_GAIN      160000
-#define TORQUE_D_GAIN      300000
+#define TORQUE_P_GAIN      20000  // 160000
+#define TORQUE_D_GAIN      100000 // 300000
 #define TORQUE_FF_CONSTANT 6493421
 
 #define POSITION_P_GAIN    23
@@ -356,7 +356,7 @@ static const co_pdo_mapping epos_pdo_mappings[] = {
      CO_ENTRY(EPOS_TARGET_TORQUE, 0x00)}
   },
   {CO_RPDO3, 1,
-    {CO_ENTRY(DSP402_CONTROLWORD, 0x00)}
+    {CO_ENTRY(EPOS_CONFIGURATION_OF_ANALOG_INPUTS, 0x01)}
   },
   {CO_RPDO4, 1,
     {CO_ENTRY(DSP402_MODES_OF_OPERATION, 0x00)}

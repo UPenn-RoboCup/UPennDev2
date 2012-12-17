@@ -33,7 +33,7 @@ speak.enable = false;
 
 -- Game Parameters
 game = {};
-game.teamNumber = 18;
+game.teamNumber = 30;
 --Not a very clean implementation but we're using this way for now
 local robotName=unix.gethostname();
 --Default role: 0 for goalie, 1 for attacker, 2 for defender

@@ -189,6 +189,14 @@ function Body.get_update_rate()
   return 1000/(time_step*simulator_iterations)
 end
 
+function Body.reset_simulator()
+  webots.wb_supervisor_simulation_revert()
+end
+
+function Body.reset_simulator_physics()
+  webots.wb_supervisor_simulation_physics_reset()
+end
+
 function Body.set_simulator_pose(pose)
   webots.wb_supervisor_field_set_sf_vec3f(tags.robot_translation,
     {pose[1], pose[2], pose[3]})

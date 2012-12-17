@@ -20,6 +20,15 @@ function Body.get_update_rate()
   return update_rate
 end
 
+function Body.reset_simulator()
+end
+
+function Body.reset_simulator_physics()
+end
+
+function Body.set_simulator_pose(pose)
+end
+
 function Body.entry()
 end
 

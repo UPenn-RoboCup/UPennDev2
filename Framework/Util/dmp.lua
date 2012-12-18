@@ -1,5 +1,5 @@
-require('linreg')
-require('interpol')
+require('numlua')
+require('trajectory')
 
 ----------------------------------------------------------------------
 -- dmp : dynamic movement primitives
@@ -35,18 +35,28 @@ require('interpol')
 --]]
 
 dmp = {}
-local canonical_system = {}
-local transformation_system = {}
+local dmp_nonlinearity = {}
+local dmp_canonical_system = {}
+local dmp_transform_system = {}
 
 dmp.__index = dmp
-canonical_system.__index = canonical_system
-transformation_system.__index = transformation_system
+dmp_nonlinearity.__index = dmp_nonlinearity
+dmp_canonical_system.__index = dmp_canonical_system
+dmp_transform_system.__index = dmp_transform_system
 
 -- utilities
 ----------------------------------------------------------------------
 
-local function zero(s)
-  return 0
+local function gaussian(x, center, width)
+  return math.exp(-width*(x - center)^2)
+end
+
+local function zeros(n)
+  local t = {}
+  for i = 1,n do
+    t[i] = 0
+  end
+  return t
 end
 
 local function copy_array(t)
@@ -58,35 +68,35 @@ local function copy_array(t)
   return c
 end
 
--- interface
+-- dynamic movement primitive
 ----------------------------------------------------------------------
 
-function dmp.new(ndims, canononical_sys, transformation_sys)
+function dmp.new(ndims, canononical_system, transform_system)
   local o = {}
   assert(ndims > 0, "invalid dimensionality")
   o.ndims = ndims -- number of transformation systems
   o.iters = 1     -- integrator iterations
   o.dt    = nil   -- integrator time step
-  o.canonical_sys = canonical_sys or canonical_system.new()
-  o.canonical_sys:reset()
-  o.transformation_sys = {} 
+  o.canonical_system = canonical_system or dmp_canonical_system.new()
+  o.canonical_system:reset()
+  o.transform_system = {} 
   for i = 1,o.ndims do
-    if (transformation_sys and transformation_sys[i]) then
-      o.transformation_sys[i] = transformation_sys[i]
+    if (transform_system and transform_system[i]) then
+      o.transform_system[i] = transform_system[i]
     else
-      o.transformation_sys[i] = transformation_system.new()
+      o.transform_system[i] = dmp_transform_system.new()
     end
-    o.transformation_sys[i]:reset()
-    o.transformation_sys[i]:set_duration(o.canonical_sys:get_duration())
+    o.transform_system[i]:reset()
+    o.transform_system[i]:set_duration(o.canonical_system:get_duration())
   end
   return setmetatable(o, dmp)
 end
 
 function dmp.set_time_step(o, dt)
   o.dt = dt
-  o.canonical_sys.dt = dt
+  o.canonical_system.dt = dt
   for i = 1,o.ndims do
-    o.transformation_sys[i].dt = dt
+    o.transform_system[i].dt = dt
   end
 end
 
@@ -97,58 +107,58 @@ end
 function dmp.reset(o, x, g, tau)
   local x = x or {}
   local g = g or {}
-  o.canonical_sys:reset(tau)
+  o.canonical_system:reset(tau)
   for i = 1,o.ndims do
-    o.transformation_sys[i]:reset(x[i], g[i], tau)
+    o.transform_system[i]:reset(x[i], g[i], tau)
   end
 end
 
 function dmp.set_phase(o, s)
-  o.canonical_sys.s = s
+  o.canonical_system.s = s
 end
 
 function dmp.set_start_position(o, x)
   for i = 1,o.ndims do
-    o.transformation_sys[i].x = x[i]
+    o.transform_system[i].x = x[i]
   end
 end
 
 function dmp.set_goal_position(o, g)
   for i = 1,o.ndims do
-    o.transformation_sys[i].g = g[i]
+    o.transform_system[i].g = g[i]
   end
 end
 
 function dmp.set_duration(o, tau)
-  o.canonical_sys.tau = tau
+  o.canonical_system.tau = tau
   for i = 1,o.ndims do
-    o.transformation_sys[i].tau = tau
+    o.transform_system[i].tau = tau
   end
 end
 
 function dmp.set_state(o, state, dim)
   if (dim) then
-    o.transformation_sys[dim].state = copy_array(state)
+    o.transform_system[dim].state = copy_array(state)
   else
     for i = 1,o.ndims do 
       if (state[i]) then
-        o.transformation_sys[i].state = copy_array(state[i])
+        o.transform_system[i].state = copy_array(state[i])
       end
     end
   end
 end
 
 function dmp.get_phase(o)
-  return o.canonical_sys.s
+  return o.canonical_system.s
 end
 
 function dmp.get_position(o, dim)
   if (dim) then
-   return o.transformation_sys[dim].state[1]
+   return o.transform_system[dim].state[1]
   else
     local x = {}
     for i = 1,o.ndims do
-      x[i] = o.transformation_sys[i].state[1]
+      x[i] = o.transform_system[i].state[1]
     end
     return x
   end
@@ -156,11 +166,11 @@ end
 
 function dmp.get_velocity(o, dim)
   if (dim) then
-   return o.transformation_sys[dim].state[2]
+   return o.transform_system[dim].state[2]
   else
     local xd = {}
     for i = 1,o.ndims do
-      xd[i] = o.transformation_sys[i].state[2]
+      xd[i] = o.transform_system[i].state[2]
     end
     return xd
   end
@@ -168,11 +178,11 @@ end
 
 function dmp.get_acceleration(o, dim)
   if (dim) then
-   return o.transformation_sys[dim].state[3]
+   return o.transform_system[dim].state[3]
   else
     local xdd = {} 
     for i = 1,o.ndims do
-      xdd[i] = o.transformation_sys[i].state[3]
+      xdd[i] = o.transform_system[i].state[3]
     end
     return xdd
   end
@@ -181,7 +191,7 @@ end
 function dmp.get_start_position(o)
   local x = {}
   for i = 1,o.ndims do
-    x[i] = o.transformation_sys[i].x
+    x[i] = o.transform_system[i].x
   end
   return x
 end
@@ -189,33 +199,33 @@ end
 function dmp.get_goal_position(o)
   local g = {}
   for i = 1,o.ndims do
-    g[i] = o.transformation_sys[i].g
+    g[i] = o.transform_system[i].g
   end
   return g
 end
 
 function dmp.get_duration(o)
-  return o.canonical_sys.tau
+  return o.canonical_system.tau
 end
 
 function dmp.get_state(o, dim)
   if (dim) then
-    return copy_array(o.transformation_sys[dim].state)
+    return copy_array(o.transform_system[dim].state)
   else
     local state = {}
     for i = 1,o.ndims do
-      state[i] = copy_array(o.transformation_sys[i].state)
+      state[i] = copy_array(o.transform_system[i].state)
     end
     return state
   end
 end
 
 function dmp.get_canonical_system(o)
-  return o.canonical_sys
+  return o.canonical_system
 end
 
-function dmp.get_transformation_system(o, dim)
-  return o.transformation_sys[dim]
+function dmp.get_transform_system(o, dim)
+  return o.transform_system[dim]
 end
 
 function dmp.init(o, x, g, tau, k_gain, d_gain)
@@ -226,9 +236,9 @@ function dmp.init(o, x, g, tau, k_gain, d_gain)
   -- k_gain          : optional spring constant
   -- d_gain          : optional damping coefficient
 
-  o.canonical_sys:init(tau)
+  o.canonical_system:init(tau)
   for i = 1,o.ndims do
-    o.transformation_sys[i]:init(x[i], g[i], tau, k_gain, d_gain, zero)
+    o.transform_system[i]:init(x[i], g[i], tau, k_gain, d_gain, zero)
   end
 end
 
@@ -250,7 +260,7 @@ function dmp.learn_minimum_jerk_trajectory(o, x, g, tau, nbasis, k_gain, d_gain)
   -- compute minimum jerk trajectory given x, g and tau
   for i = 1,o.ndims do
     xdata[i] = {}
-    minimum_jerk[i] = interpol.minimum_jerk_trajectory(x[i], g[i], 0, tau)
+    minimum_jerk[i] = trajectory.minimum_jerk(x[i], g[i], tau)
   end
 
   for i = 1,N do
@@ -277,16 +287,15 @@ function dmp.learn_trajectory(o, xdata, tdata, nbasis, k_gain, d_gain)
   local state        = {}
   local fdata        = {}
   local sdata        = {}
-  local regressions  = {}
   local tau          = tdata[#tdata] - tdata[1]
   assert(#xdata == o.ndims, 'invalid xdata dimensions')
 
   -- initialize dynamical systems
-  o.canonical_sys:init(tau)
+  o.canonical_system:init(tau)
   for i = 1,o.ndims do
     local x0 = xdata[i][1]
     local g0 = xdata[i][#xdata[i]]
-    o.transformation_sys[i]:init(x0, g0, tau, k_gain, d_gain, zero)
+    o.transform_system[i]:init(x0, g0, tau, k_gain, d_gain, zero)
     x[i] = xdata[i]
     xd[i] = {}
     xdd[i] = {}
@@ -310,12 +319,12 @@ function dmp.learn_trajectory(o, xdata, tdata, nbasis, k_gain, d_gain)
     local ipast = math.max(i - 1, 1)
     local inext = math.min(i + 1, #tdata)
     local dt = (tdata[inext] - tdata[ipast])/2
-    local s = o.canonical_sys:integrate(dt)
+    local s = o.canonical_system:integrate(dt)
     for j = 1,o.ndims do
       state[1] = x[j][i]
       state[2] = xd[j][i]
       state[3] = xdd[j][i]
-      fdata[j][i] = o.transformation_sys[j]:estimate_nonlinearity(s, state)/s
+      fdata[j][i] = o.transform_system[j]:estimate_nonlinearity(s, state)
     end
     sdata[i] = s
   end
@@ -323,7 +332,7 @@ function dmp.learn_trajectory(o, xdata, tdata, nbasis, k_gain, d_gain)
   -- initialize parameters for radial basis functions
   local centers = {}
   local widths  = {}
-  local alpha = o.canonical_sys.alpha
+  local alpha = o.canonical_system.alpha
   for i = 1,nbasis do
     centers[i] = math.exp(-alpha*(i - 1)/(nbasis - 1))
     widths[i] = 0.5*(centers[i] - (centers[i-1] or 0))^(-2)
@@ -331,15 +340,10 @@ function dmp.learn_trajectory(o, xdata, tdata, nbasis, k_gain, d_gain)
 
   -- learn nonlinear functions via linear regression
   for i = 1,o.ndims do
-    local r = linreg.new_rbf(centers, widths)
-    r:fit(fdata[i], sdata)
-    local f = function (s)
-      return r:predict(s)*s
-    end
-    o.transformation_sys[i]:set_nonlinearity(f)
-    regressions[i] = r
+    local f = dmp_nonlinearity.new(centers, widths)
+    f:fit(fdata[i], sdata)
+    o.transform_system[i]:set_nonlinearity(f)
   end
-  return regressions
 end
 
 function dmp.integrate(o, coupling, dt)
@@ -351,24 +355,104 @@ function dmp.integrate(o, coupling, dt)
   local dt       = dt or o.dt
 
   for i = 1,o.iters do
-    local s = o.canonical_sys:integrate(dt/o.iters)
+    local s = o.canonical_system:integrate(dt/o.iters)
     for j = 1,o.ndims do
-      o.transformation_sys[j]:integrate(s, coupling[j], dt/o.iters)
+      o.transform_system[j]:integrate(s, coupling[j], dt/o.iters)
     end
   end
   return o:get_state()
 end
 
+-- nonlinearity
+----------------------------------------------------------------------
+
+function dmp_nonlinearity.new(...)
+  local o = {}
+  local arg = {...}
+  if #arg < 2 then
+    o.nbasis = arg[1] or 1                  -- number of basis functions
+    o.center = zeros(o.nbasis)              -- radial basis centers
+    o.width = zeros(o.nbasis)               -- radial basis widths
+    o.theta = zeros(o.nbasis)               -- radial basis weigths
+  else
+    o.nbasis = #arg[1]
+    o.center = arg[1]
+    o.width = arg[2]
+    o.theta = arg[3] or zeros(o.nbasis)
+  end
+  return setmetatable(o, dmp_nonlinearity)
+end
+
+function dmp_nonlinearity.get_basis_centers(o)
+  return copy_array(o.center)
+end
+
+function dmp_nonlinearity.get_basis_widths(o)
+  return copy_array(o.width)
+end
+
+function dmp_nonlinearity.get_basis_weights(o)
+  return copy_array(o.theta)
+end
+
+function dmp_nonlinearity.set_basis_centers(o, centers)
+  o.center = copy_array(centers)
+end
+
+function dmp_nonlinearity.set_basis_widths(o, widths)
+  o.width = copy_array(widths)
+end
+
+function dmp_nonlinearity.set_basis_weights(o, thetas)
+  o.theta = copy_array(weights)
+end
+
+function dmp_nonlinearity.fit(o, fdata, sdata)
+  -- calculate basis weights via ordinary least squares
+  -- fdata           : sampled nonlinearity signal [1 x N]
+  -- sdata           : phase values at each sample [1 x N]
+
+  local y = matrix.fromtable(fdata)
+  local X = matrix.new(#sdata, o.nbasis)
+
+  for i = 1,#sdata do
+    local psi = matrix.new(o.nbasis)
+    for j = 1,o.nbasis do
+      psi[j] = gaussian(sdata[i], o.center[j], o.width[j])
+    end
+    local sum = matrix.sum(psi)
+    for j = 1,o.nbasis do
+      X[i][j] = psi[j]*sdata[i]/sum
+    end
+  end
+
+  o.theta = (X % y):totable()
+end
+
+function dmp_nonlinearity.predict(o, s)
+  -- predict y = f(s) using linear regression
+  -- s               : canonical system state (dmp phase)
+
+  local f, sum = 0, 0
+  for i = 1,o.nbasis do
+    local psi = gaussian(s, o.center[i], o.width[i])
+    f = f + o.theta[i]*psi
+    sum = sum + psi
+  end
+
+  return f*s/sum
+end
+
 -- canonical system
 ----------------------------------------------------------------------
 
-function canonical_system.new(tau, alpha)
+function dmp_canonical_system.new(tau, alpha)
   local o = {}
-  canonical_system.init(o, tau, alpha)
-  return setmetatable(o, canonical_system)
+  dmp_canonical_system.init(o, tau, alpha)
+  return setmetatable(o, dmp_canonical_system)
 end
 
-function canonical_system.init(o, tau, alpha)
+function dmp_canonical_system.init(o, tau, alpha)
   o.s     = 1                               -- phase
   o.tau   = tau or 1                        -- duration
   o.tau0  = tau or 1                        -- nominal duration
@@ -376,41 +460,41 @@ function canonical_system.init(o, tau, alpha)
   o.dt    = nil                             -- integrator time step
 end
 
-function canonical_system.set_time_step(o, dt)
+function dmp_canonical_system.set_time_step(o, dt)
   o.dt = dt
 end
 
-function canonical_system.reset(o, tau)
+function dmp_canonical_system.reset(o, tau)
   o.s   = 1
   o.tau = tau or o.tau0
 end
 
-function canonical_system.set_epsilon(o, epsilon)
+function dmp_canonical_system.set_epsilon(o, epsilon)
   -- assign alpha such that s(t) < epsilon after tau seconds
   o.alpha = -math.log(epsilon)
 end
 
-function canonical_system.set_duration(o, tau)
+function dmp_canonical_system.set_duration(o, tau)
   o.tau  = tau
 end
 
-function canonical_system.set_phase(o, s)
+function dmp_canonical_system.set_phase(o, s)
   o.s = s
 end
 
-function canonical_system.get_epsilon(o)
+function dmp_canonical_system.get_epsilon(o)
   return math.exp(-o.alpha)
 end
 
-function canonical_system.get_duration(o)
+function dmp_canonical_system.get_duration(o)
   return o.tau
 end
 
-function canonical_system.get_phase(o)
+function dmp_canonical_system.get_phase(o)
   return o.s
 end
 
-function canonical_system.integrate(o, dt)
+function dmp_canonical_system.integrate(o, dt)
   -- integrate the canonical system using the midpoint method 
   -- dt : optional time_step 
 
@@ -429,13 +513,13 @@ end
 -- transformation system
 ----------------------------------------------------------------------
 
-function transformation_system.new(x, g, tau, k_gain, d_gain, f)
+function dmp_transform_system.new(x, g, tau, k_gain, d_gain, f)
   local o = {}
-  transformation_system.init(o, x, g, tau, k_gain, d_gain, f)
-  return setmetatable(o, transformation_system)
+  dmp_transform_system.init(o, x, g, tau, k_gain, d_gain, f)
+  return setmetatable(o, dmp_transform_system)
 end
 
-function transformation_system.init(o, x, g, tau, k_gain, d_gain, f)
+function dmp_transform_system.init(o, x, g, tau, k_gain, d_gain, f)
   o.x       = x or 0                          -- start position
   o.x0      = x or 0                          -- nominal start position
   o.g       = g or 0                          -- goal position
@@ -445,63 +529,63 @@ function transformation_system.init(o, x, g, tau, k_gain, d_gain, f)
   o.state   = {o.x, 0, 0}                     -- state {x, xd, xdd}
   o.k_gain  = k_gain or 250                   -- spring constant
   o.d_gain  = d_gain or 2*math.sqrt(o.k_gain) -- damping coefficient
-  o.f       = f or zero                       -- nonlinear function f(s)
+  o.f       = f or dmp_nonlinearity.new()     -- nonlinear function f(s)
   o.dt      = nil                             -- integrator time step
 end
 
-function transformation_system.set_time_step(o, dt)
+function dmp_transform_system.set_time_step(o, dt)
   o.dt = dt
 end
 
-function transformation_system.set_nonlinearity(o, f)
+function dmp_transform_system.set_nonlinearity(o, f)
   o.f = f
 end
 
-function transformation_system.reset(o, x, g, tau)
+function dmp_transform_system.reset(o, x, g, tau)
   o.x   = x or o.x0 
   o.g   = g or o.g0
   o.tau = tau or o.tau0
 end
 
-function transformation_system.set_start_position(o, x)
+function dmp_transform_system.set_start_position(o, x)
   o.x = x
 end
 
-function transformation_system.set_goal_position(o, g)
+function dmp_transform_system.set_goal_position(o, g)
   o.g = g
 end
 
-function transformation_system.set_duration(o, tau)
+function dmp_transform_system.set_duration(o, tau)
   o.tau = tau
 end
 
-function transformation_system.set_state(o, state)
+function dmp_transform_system.set_state(o, state)
   o.state[1] = state[1]
   o.state[2] = state[2]
   o.state[3] = state[3]
 end
 
-function transformation_system.get_nonlinearity(o)
+function dmp_transform_system.get_nonlinearity(o)
   return o.f
 end
 
-function transformation_system.get_start_position(o)
+function dmp_transform_system.get_start_position(o)
   return o.x
 end
 
-function transformation_system.get_goal_position(o)
+function dmp_transform_system.get_goal_position(o)
   return o.g
 end
 
-function canonical_system.get_duration(o)
+function dmp_transform_system.get_duration(o)
   return o.tau
 end
 
-function transformation_system.get_state(o)
+function dmp_transform_system.get_state(o)
   return copy_array(state)
 end
 
-function transformation_system.estimate_nonlinearity(o, s, state)
+function dmp_transform_system.estimate_nonlinearity(o, s, state)
   -- estimate the nonlinearity f(s) given the desired phase / state
   -- s             : canonical system state (dmp phase)
   -- state         : desired system state {x, xd, xdd}
@@ -515,7 +599,7 @@ function transformation_system.estimate_nonlinearity(o, s, state)
   return fs
 end
 
-function transformation_system.integrate(o, s, coupling, dt)
+function dmp_transform_system.integrate(o, s, coupling, dt)
   -- integrate the transformation system using the velocity verlet method
   -- s             : canonical system state (dmp phase)
   -- coupling      : optional additive acceleration term
@@ -523,7 +607,7 @@ function transformation_system.integrate(o, s, coupling, dt)
 
   local coupling   = coupling or 0
   local dt         = dt or o.dt
-  local fs         = o.f(s)
+  local fs         = o.f:predict(s)
   local x, xd, xdd = unpack(o.state)
 
   xd  = xd + 1/2*xdd*dt

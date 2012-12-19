@@ -26,7 +26,10 @@ end
 function Body.reset_simulator_physics()
 end
 
-function Body.set_simulator_pose(pose)
+function Body.set_simulator_torso_frame(frame)
+end
+
+function Body.set_simulator_torso_twist(twist)
 end
 
 function Body.entry()

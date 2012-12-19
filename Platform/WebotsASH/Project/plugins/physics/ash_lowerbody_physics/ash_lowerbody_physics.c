@@ -15,7 +15,7 @@
 #define N_SERVO                    12
 #define EMITTER_CHANNEL            10
 #define EMITTER_BYTES              192
-#define RECEIVER_BYTES             96
+#define RECEIVER_BYTES             152
 #define MAX_CONTACTS               10
 #define MAX_COP                    10
 #define DRAW_COP                   1
@@ -25,6 +25,7 @@
 static dWorldID world = NULL;
 static dSpaceID space = NULL;
 static dJointGroupID contact_joint_group = NULL;
+static dBodyID torso_body = NULL;
 
 // define foot / floor contact variables
 enum foot {LEFT_FOOT, RIGHT_FOOT, N_FEET};
@@ -39,6 +40,9 @@ static double foot_fts[2][6] = {
   {0, 0, 0, 0, 0, 0},
 };
 static double foot_cop[MAX_COP][2];
+
+// define torso name
+static const char *torso_name = "Ash";
 
 // define foot / floor names
 static const char *floor_name = "FLOOR";
@@ -148,6 +152,9 @@ void webots_physics_init(dWorldID w, dSpaceID s, dJointGroupID j) {
   if (!floor_geom)
     return;
 
+  // get torso body id
+  torso_body = getBody(torso_name);
+
   // get foot geometry and body id's
   for (i = 0; i < N_FEET; i++) {
     foot_geom[i] = getGeom(foot_name[i]);
@@ -203,14 +210,26 @@ int webots_physics_collide(dGeomID g1, dGeomID g2) {
 void webots_physics_step() {
 
   int i, size = 0;
+  double torso_twist_updated = 0;
+  double torso_twist[6];
   double joint_ff_force[N_SERVO];
 
   // get feedforward forces from webots controller
   double *receiver_data = (double *)dWebotsReceive(&size);
   if (size == RECEIVER_BYTES) {
     memcpy(joint_ff_force, receiver_data, sizeof(joint_ff_force));
+    memcpy(&torso_twist_updated, (receiver_data + N_SERVO), sizeof(double));
+    memcpy(torso_twist, (receiver_data + N_SERVO + 1), sizeof(torso_twist));
   }
 
+  // update torso twist if necessary
+  if (torso_twist_updated)
+  {
+    dWebotsConsolePrintf("torso twist updated\n");
+    dBodySetLinearVel(torso_body, torso_twist[0], torso_twist[1], torso_twist[2]);
+    dBodySetAngularVel(torso_body, torso_twist[3], torso_twist[4], torso_twist[5]);
+  }
+  
   // add feedforward forces to each servo
   for (i = 0; i < N_SERVO; i++) {
     // find dJointID for the hinge joint at each servo

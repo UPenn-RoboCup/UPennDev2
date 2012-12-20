@@ -11,8 +11,8 @@ WorldInfo {
   runRealTime TRUE
 }
 Viewpoint {
-  orientation 0.490004 0.47038 0.73392 1.83603
-  position 0.836972 0.002451 0.49074
+  orientation 0.529469 0.513371 0.675361 1.92471
+  position 1.54901 0.0253452 0.941943
 }
 Background {
   skyColor [
@@ -28,8 +28,8 @@ DEF FLOOR MetricFloor {
   color 0.870588 0.870588 0.870588
 }
 DEF Ash Supervisor {
-  translation -0.000740221 4.78005e-05 0.557769
-  rotation -0.12351 0.106168 0.986648 -0.000582446
+  translation -0.00325818 2.97639e-05 0.557756
+  rotation 0.0209613 0.0405447 0.998958 -0.0020879
   children [
     DEF l_hip_yaw Servo {
       translation -0.024 0.0957 0.212
@@ -715,7 +715,7 @@ DEF Ash Supervisor {
                           maxForce 10000
                           controlP 100
                           acceleration 70
-                          position -7.84318e-05
+                          position 8.12948e-06
                           minPosition -0.349066
                           maxPosition 0.349066
                           minStop -0.349066
@@ -1524,7 +1524,7 @@ DEF Ash Supervisor {
                       maxForce 10000
                       controlP 100
                       acceleration 70
-                      position -0.239757
+                      position -0.239673
                       minPosition -0.785398
                       maxPosition 0.785398
                       minStop -0.785398
@@ -2454,7 +2454,7 @@ DEF Ash Supervisor {
                   maxForce 10000
                   controlP 100
                   acceleration 70
-                  position 0.611995
+                  position 0.612078
                   maxPosition 1.5708
                   minStop -0.087266
                   maxStop 1.5708
@@ -3139,7 +3139,7 @@ DEF Ash Supervisor {
               maxForce 10000
               controlP 100
               acceleration 70
-              position -0.37219
+              position -0.372317
               minPosition -0.785398
               maxPosition 0.785398
               minStop -0.785398
@@ -3948,7 +3948,7 @@ DEF Ash Supervisor {
           maxForce 10000
           controlP 100
           acceleration 70
-          position 2.01578e-05
+          position -1.29866e-05
           minPosition -0.349066
           maxPosition 0.349066
           minStop -0.349066
@@ -4595,7 +4595,7 @@ DEF Ash Supervisor {
       maxForce 10000
       controlP 100
       acceleration 70
-      position 8.44427e-06
+      position 1.65409e-05
       minPosition -0.349066
       maxPosition 0.349066
       minStop -0.349066
@@ -5285,7 +5285,7 @@ DEF Ash Supervisor {
                           maxForce 10000
                           controlP 100
                           acceleration 70
-                          position -8.05404e-05
+                          position 0.00012308
                           minPosition -0.349066
                           maxPosition 0.349066
                           minStop -0.349066
@@ -6094,7 +6094,7 @@ DEF Ash Supervisor {
                       maxForce 10000
                       controlP 100
                       acceleration 70
-                      position -0.378271
+                      position -0.378356
                       minPosition -0.785398
                       maxPosition 0.785398
                       minStop -0.785398
@@ -7024,7 +7024,7 @@ DEF Ash Supervisor {
                   maxForce 10000
                   controlP 100
                   acceleration 70
-                  position 0.612013
+                  position 0.61207
                   maxPosition 1.5708
                   minStop -0.087266
                   maxStop 1.5708
@@ -7709,7 +7709,7 @@ DEF Ash Supervisor {
               maxForce 10000
               controlP 100
               acceleration 70
-              position -0.233662
+              position -0.233587
               minPosition -0.785398
               maxPosition 0.785398
               minStop -0.785398
@@ -8518,7 +8518,7 @@ DEF Ash Supervisor {
           maxForce 10000
           controlP 100
           acceleration 70
-          position 2.03588e-05
+          position -1.47175e-05
           minPosition -0.349066
           maxPosition 0.349066
           minStop -0.349066
@@ -9165,7 +9165,7 @@ DEF Ash Supervisor {
       maxForce 10000
       controlP 100
       acceleration 70
-      position 8.61911e-06
+      position 1.59302e-05
       minPosition -0.349066
       maxPosition 0.349066
       minStop -0.349066

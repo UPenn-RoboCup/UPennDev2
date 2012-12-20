@@ -21,18 +21,20 @@ step:set_joint_access(1, 'legs')
 step.parameters = {
   step_size                   = 0.2,    -- meters
   step_duration               = 1.0,    -- seconds
-  step_height                 = 0.036,  -- meters
-  step_ds_ratio               = 0.5,    -- ratio
+  step_height                 = 0.04,  -- meters
+  step_ds_ratio               = 0.4,    -- ratio
   x_torso_offset              = 0.0,    -- meters
   y_torso_offset              = -0.097, -- meters
   z_torso_offset              = 0.77,   -- meters
   x_torso_swing               = 0.00,   -- meters
-  y_torso_swing               = 0.03,   -- meters
+  y_torso_swing               = 0.063,  -- meters
   z_torso_swing               = 0,      -- meters
-  x_torso_swing_momentum      = 0.0,   -- meters/second
-  y_torso_swing_momentum      = -0.1,   -- meters/second
-  z_torso_swing_momentum      = 0,      -- meters/second
-  torso_midpoint_ratio        = 0.5,    -- ratio
+  x_torso_start_velocity      = 0.12,   -- meters/second
+  y_torso_start_velocity      = 0.20,   -- meters/second
+  z_torso_start_velocity      = 0.0,    -- meters/second
+  x_torso_midpoint_velocity   = 0.05,   -- meters/second
+  y_torso_midpoint_velocity   = 0.0,    -- meters/second
+  z_torso_midpoint_velocity   = 0.0,    -- meters/second
 }
 
 -- load config parameters
@@ -41,25 +43,25 @@ for k,v in pairs(step.parameters) do
 end
 
 -- define local copies
-local step_size               = step.parameters.step_size 
-local step_duration           = step.parameters.step_duration 
-local step_height             = step.parameters.step_height 
-local step_ds_ratio           = step.parameters.step_ds_ratio 
-local x_torso_offset          = step.parameters.x_torso_offset
-local y_torso_offset          = step.parameters.y_torso_offset
-local z_torso_offset          = step.parameters.z_torso_offset
-local x_torso_swing           = step.parameters.x_torso_swing 
-local y_torso_swing           = step.parameters.y_torso_swing 
-local z_torso_swing           = step.parameters.z_torso_swing 
-local x_torso_swing_momentum  = step.parameters.x_torso_swing_momentum 
-local y_torso_swing_momentum  = step.parameters.y_torso_swing_momentum 
-local z_torso_swing_momentum  = step.parameters.z_torso_swing_momentum 
-local torso_midpoint_ratio    = step.parameters.torso_midpoint_ratio 
+local step_size                 = step.parameters.step_size 
+local step_duration             = step.parameters.step_duration 
+local step_height               = step.parameters.step_height 
+local step_ds_ratio             = step.parameters.step_ds_ratio 
+local x_torso_offset            = step.parameters.x_torso_offset
+local y_torso_offset            = step.parameters.y_torso_offset
+local z_torso_offset            = step.parameters.z_torso_offset
+local x_torso_swing             = step.parameters.x_torso_swing 
+local y_torso_swing             = step.parameters.y_torso_swing 
+local z_torso_swing             = step.parameters.z_torso_swing 
+local x_torso_start_velocity    = step.parameters.x_torso_start_velocity
+local y_torso_start_velocity    = step.parameters.y_torso_start_velocity
+local z_torso_start_velocity    = step.parameters.z_torso_start_velocity
+local x_torso_midpoint_velocity = step.parameters.x_torso_midpoint_velocity
+local y_torso_midpoint_velocity = step.parameters.y_torso_midpoint_velocity
+local z_torso_midpoint_velocity = step.parameters.z_torso_midpoint_velocity
 
 local active                  = false
 local t0                      = Body.get_time()
-local q0                      = dcm:get_joint_position_sensor('legs')
-local qstance                 = dcm:get_joint_position_sensor('legs')
 
 local foot_start_t            = nil
 local foot_midpoint_t         = nil
@@ -68,13 +70,17 @@ local torso_start_t           = nil
 local torso_midpoint_t        = nil
 local torso_goal_t            = nil
 local foot_start_position     = {}
+local foot_start_velocity     = {}
 local torso_start_position    = {}
+local torso_start_velocity    = {}
 local foot_midpoint_position  = {}
 local foot_midpoint_velocity  = {}
 local torso_midpoint_position = {}
 local torso_midpoint_velocity = {}
 local foot_goal_position      = {}
+local foot_goal_velocity      = {}
 local torso_goal_position     = {}
+local torso_goal_velocity     = {}
 local foot_trajectory         = {}
 local torso_trajectory        = {}
 
@@ -93,10 +99,12 @@ local function update_parameters()
   x_torso_swing = step.parameters.x_torso_swing 
   y_torso_swing = step.parameters.y_torso_swing 
   z_torso_swing = step.parameters.z_torso_swing 
-  x_torso_swing_momentum = step.parameters.x_torso_swing_momentum 
-  y_torso_swing_momentum = step.parameters.y_torso_swing_momentum 
-  z_torso_swing_momentum = step.parameters.z_torso_swing_momentum 
-  torso_midpoint_ratio = step.parameters.torso_midpoint_ratio 
+  x_torso_start_velocity = step.parameters.x_torso_start_velocity
+  y_torso_start_velocity = step.parameters.y_torso_start_velocity
+  z_torso_start_velocity = step.parameters.z_torso_start_velocity
+  x_torso_midpoint_velocity = step.parameters.x_torso_midpoint_velocity
+  y_torso_midpoint_velocity = step.parameters.y_torso_midpoint_velocity
+  z_torso_midpoint_velocity = step.parameters.z_torso_midpoint_velocity
 end
 
 local function update_trajectories()
@@ -106,7 +114,7 @@ local function update_trajectories()
   foot_goal_t = step_duration*(1 - step_ds_ratio/2)
 
   torso_start_t = 0
-  torso_midpoint_t = torso_midpoint_ratio*step_duration
+  torso_midpoint_t = step_duration/2
   torso_goal_t = step_duration
 
   -- start state
@@ -114,9 +122,17 @@ local function update_trajectories()
   foot_start_position[2] = 2*y_torso_offset
   foot_start_position[3] = 0
 
+  foot_start_velocity[1] = 0 
+  foot_start_velocity[2] = 0 
+  foot_start_velocity[3] = 0
+
   torso_start_position[1] = x_torso_offset - step_size/4
   torso_start_position[2] = y_torso_offset
   torso_start_position[3] = z_torso_offset
+
+  torso_start_velocity[1] = x_torso_start_velocity
+  torso_start_velocity[2] = y_torso_start_velocity
+  torso_start_velocity[3] = z_torso_start_velocity
 
   -- midpoint state
   foot_midpoint_position[1] = 0
@@ -131,37 +147,45 @@ local function update_trajectories()
   torso_midpoint_position[2] = y_torso_offset + y_torso_swing
   torso_midpoint_position[3] = z_torso_offset + z_torso_swing
 
-  torso_midpoint_velocity[1] = x_torso_swing_momentum
-  torso_midpoint_velocity[2] = y_torso_swing_momentum
-  torso_midpoint_velocity[3] = z_torso_swing_momentum
+  torso_midpoint_velocity[1] = x_torso_midpoint_velocity
+  torso_midpoint_velocity[2] = y_torso_midpoint_velocity
+  torso_midpoint_velocity[3] = z_torso_midpoint_velocity
 
   -- goal state
   foot_goal_position[1] = step_size/2
   foot_goal_position[2] = 2*y_torso_offset
   foot_goal_position[3] = 0
 
+  foot_goal_velocity[1] = 0 
+  foot_goal_velocity[2] = 0
+  foot_goal_velocity[3] = 0
+
   torso_goal_position[1] = x_torso_offset + step_size/4
   torso_goal_position[2] = y_torso_offset
   torso_goal_position[3] = z_torso_offset
 
+  torso_goal_velocity[1] = x_torso_start_velocity 
+  torso_goal_velocity[2] = -y_torso_start_velocity
+  torso_goal_velocity[3] = z_torso_start_velocity
+
   -- torso and swing foot trajectories
   for i = 1,3 do
     local foot_lift_trajectory = trajectory.minimum_jerk(
-      {foot_start_position[i]},
+      {foot_start_position[i], foot_start_velocity[i]},
       {foot_midpoint_position[i], foot_midpoint_velocity[i]},
       foot_midpoint_t - foot_start_t)
     local foot_land_trajectory = trajectory.minimum_jerk(
       {foot_midpoint_position[i], foot_midpoint_velocity[i]},
-      {foot_goal_position[i],},
+      {foot_goal_position[i], foot_goal_velocity[i]},
       foot_goal_t - foot_midpoint_t)
 
     local torso_lift_trajectory = trajectory.minimum_jerk(
-      {torso_start_position[i]},
+      {torso_start_position[i], torso_start_velocity[i]},
       {torso_midpoint_position[i], torso_midpoint_velocity[i]},
       torso_midpoint_t - torso_start_t)
     local torso_land_trajectory = trajectory.minimum_jerk(
       {torso_midpoint_position[i], torso_midpoint_velocity[i]},
-      {torso_goal_position[i]},
+      {torso_goal_position[i], torso_goal_velocity[i]},
       torso_goal_t - torso_midpoint_t)
 
     foot_trajectory[i] = function (t)
@@ -198,25 +222,32 @@ function step:get_swing_foot_trajectory()
   return foot_trajectory
 end
 
-function step:get_stance()
-  return qstance
+function step:get_torso_start_position()
+  return torso_start_position
 end
 
-function step:reset()
-  t0 = Body.get_time()
-  update_parameters()
-  update_trajectories()
+function step:get_torso_start_velocity()
+  return torso_start_velocity
+end
+
+function step:get_joint_start_position()
   -- initialize stance 
   local p_l_foot = Transform.pose6D({0, 0, 0})
   local p_r_foot = Transform.pose6D(foot_start_position)
   local p_torso = Transform.pose6D(torso_start_position)
   p_l_foot = p_torso:inv()
   p_r_foot = p_l_foot*p_r_foot
-  qstance = Kinematics.inverse_pos_legs(p_l_foot, p_r_foot)
+  return Kinematics.inverse_pos_legs(p_l_foot, p_r_foot)
+end
+
+function step:reset()
+  t0 = Body.get_time()
+  update_parameters()
+  update_trajectories()
 end
 
 function step:entry()
-  q0 = dcm:get_joint_position_sensor('legs')
+  local q0 = dcm:get_joint_position_sensor('legs')
   dcm:set_joint_force(0, 'legs')
   dcm:set_joint_position(q0, 'legs')
   dcm:set_joint_velocity(0, 'legs')

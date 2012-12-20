@@ -237,10 +237,18 @@ if (mod(SLAM.lidar0Cntr,20) == 0)
   yimax = yimin + windowSize - 1;
   
   
-  if ximin < 1,ximin=1; end
-  if ximax > OMAP.map.sizex; end
-  if yimin < 1,yimin=1; end
-  if yimax > OMAP.map.sizey; end
+  if ximin < 1
+      ximin = 1;
+  end
+  if ximax > OMAP.map.sizex
+      ximax = OMAP.map.sizex;
+  end
+  if yimin < 1
+      yimin=1;
+  end
+  if yimax > OMAP.map.sizey
+      yimax= OMAP.map.sizey;
+  end
 
   %get a small map around current location and decay it
   localMap = OMAP.map.data(ximin:ximax,...

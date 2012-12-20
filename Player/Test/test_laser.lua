@@ -163,7 +163,7 @@ while (true) do
   -- Debug Messages every 1 second
   t_diff = Body.get_time() - (t_last or 0);
   if(t_diff>1) then
-		print('qLArm',qLArm)
+		--print('qLArm',qLArm)
     t_last = Body.get_time();
   end
 

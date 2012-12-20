@@ -20,11 +20,11 @@ local simulator_iterations = 2
 
 -- servo controller parameters
 local max_force = 100
-local max_stiffness = 25000
+local max_stiffness = 20000
 local max_damping = 0  -- damping disabled due to ODE instability
 local max_velocity = 7
 local max_acceleration = 70
-local velocity_p_gain = 0.1*vector.ones(#joint.id)
+local velocity_p_gain = 0.25*vector.ones(#joint.id)
 
 local joint_ff_force = vector.zeros(#joint.id)
 local joint_p_force = vector.zeros(#joint.id)

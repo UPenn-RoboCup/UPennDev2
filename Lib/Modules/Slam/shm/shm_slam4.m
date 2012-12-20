@@ -104,13 +104,13 @@ while 1
     %% Simple plotting
     if isempty(hMap)
         hMap = imagesc( OMAP.map.data' );
-        axis([0 MAPS.map.sizex 0 MAPS.map.sizey]);
+        axis([0 OMAP.map.sizex 0 OMAP.map.sizey]);
     else
         set(hMap,'cdata',OMAP.map.data');
     end
     % Define how to plot the robot's pose
-    xi = (POSE.data.x-MAPS.xmin)*MAPS.invRes; % x image coord
-    yi = (POSE.data.y-MAPS.ymin)*MAPS.invRes; % y image coord
+    xi = (POSE.data.x-OMAP.xmin)*OMAP.invRes; % x image coord
+    yi = (POSE.data.y-OMAP.ymin)*OMAP.invRes; % y image coord
     xd = 25*cos(POSE.data.yaw);
     yd = 25*sin(POSE.data.yaw);
     if isempty(hOrientation) || isempty(hPose)

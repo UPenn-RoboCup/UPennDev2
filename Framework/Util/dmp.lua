@@ -2,7 +2,7 @@ require('numlua')
 require('trajectory')
 
 ----------------------------------------------------------------------
--- dmp : dynamic movement primitives
+-- dmp : discrete movement primitives
 ----------------------------------------------------------------------
 
 --[[
@@ -11,26 +11,38 @@ require('trajectory')
 
   Example usage
   -------------
-  local dof = 6     -- degrees of freedom
+  local dof = 1     -- degrees of freedom
   local dt = 0.001  -- integrator time step
   local nbasis = 20 -- number of radial basis functions
+  local tau = 1     -- movement duration
+  local xdata = {}  -- training trajectory
+  local tdata = {}  -- training sample times
+
+  -- initialize example trajectory
+  for i = 1, math.floor(tau/dt) do
+    tdata[i] = i*dt
+    xdata[i] = math.sin(math.pi*tdata[i]/2)
+  end
 
   -- initialize dmp
   local primitive = dmp.new(dof)
   primitive:set_time_step(dt)
-  primitive:learn_trajectory(xdata, tdata, nbasis)
+  primitive:learn_trajectory({xdata}, tdata, nbasis)
   primitive:reset()
 
   -- integrate dmp
-  local tau = primitive:get_duration()
   for i = 1, math.floor(tau/dt) do
-    local dmp_state = primitive:integrate()
+    primitive:integrate()
+    print('t :', i*dt, ' x :', primitive:get_position(1))
   end
 
   References
   ----------
   "Learning and Generalization of Motor Skills by Learning from 
   Demonstration", ICRA2009
+
+  "Dynamical Movement Primitives: Learning Attractor Models for
+  Motor Behaviors", NC2013
   
 --]]
 
@@ -47,8 +59,8 @@ dmp_transform_system.__index = dmp_transform_system
 -- utilities
 ----------------------------------------------------------------------
 
-local function gaussian(x, center, width)
-  return math.exp(-width*(x - center)^2)
+local function gaussian(s, center, width)
+  return math.exp(-width*(s - center)^2)
 end
 
 local function zeros(n)
@@ -107,6 +119,7 @@ end
 function dmp.reset(o, x, g, tau)
   local x = x or {}
   local g = g or {}
+  local tau = tau or o.canonical_system.tau_
   o.canonical_system:reset(tau)
   for i = 1,o.ndims do
     o.transform_system[i]:reset(x[i], g[i], tau)
@@ -117,15 +130,23 @@ function dmp.set_phase(o, s)
   o.canonical_system.s = s
 end
 
-function dmp.set_start_position(o, x)
-  for i = 1,o.ndims do
-    o.transform_system[i].x = x[i]
+function dmp.set_state(o, state, dim)
+  if (dim) then
+    o.transform_system[dim]:set_state(state)
+  else
+    for i = 1,o.ndims do 
+      o.transform_system[i]:set_state(state[i])
+    end
   end
 end
 
-function dmp.set_goal_position(o, g)
-  for i = 1,o.ndims do
-    o.transform_system[i].g = g[i]
+function dmp.set_goal_position(o, g, dim)
+  if (dim) then
+    o.transform_system[dim]:set_goal_position(g)
+  else
+    for i = 1,o.ndims do
+      o.transform_system[i]:set_goal_position(g[i])
+    end
   end
 end
 
@@ -136,14 +157,12 @@ function dmp.set_duration(o, tau)
   end
 end
 
-function dmp.set_state(o, state, dim)
+function dmp.set_start_position(o, x, dim)
   if (dim) then
-    o.transform_system[dim].state = copy_array(state)
+    o.transform_system[dim]:set_start_position(x)
   else
-    for i = 1,o.ndims do 
-      if (state[i]) then
-        o.transform_system[i].state = copy_array(state[i])
-      end
+    for i = 1,o.ndims do
+      o.transform_system[i]:set_start_position(x[i])
     end
   end
 end
@@ -188,26 +207,6 @@ function dmp.get_acceleration(o, dim)
   end
 end
 
-function dmp.get_start_position(o)
-  local x = {}
-  for i = 1,o.ndims do
-    x[i] = o.transform_system[i].x
-  end
-  return x
-end
-
-function dmp.get_goal_position(o)
-  local g = {}
-  for i = 1,o.ndims do
-    g[i] = o.transform_system[i].g
-  end
-  return g
-end
-
-function dmp.get_duration(o)
-  return o.canonical_system.tau
-end
-
 function dmp.get_state(o, dim)
   if (dim) then
     return copy_array(o.transform_system[dim].state)
@@ -220,6 +219,34 @@ function dmp.get_state(o, dim)
   end
 end
 
+function dmp.get_goal_position(o, dim)
+  if (dim) then
+    return o.transform_system[i].g
+  else
+    local g = {}
+    for i = 1,o.ndims do
+      g[i] = o.transform_system[i].g
+    end
+    return g
+  end
+end
+
+function dmp.get_duration(o)
+  return o.canonical_system.tau
+end
+
+function dmp.get_start_position(o, dim)
+  if (dim) then
+    return o.transform_system[i].x 
+  else
+    local x = {}
+    for i = 1,o.ndims do
+      x[i] = o.transform_system[i].x
+    end
+    return x
+  end
+end
+
 function dmp.get_canonical_system(o)
   return o.canonical_system
 end
@@ -228,24 +255,24 @@ function dmp.get_transform_system(o, dim)
   return o.transform_system[dim]
 end
 
-function dmp.init(o, x, g, tau, k_gain, d_gain)
+function dmp.init(o, state, g, tau, k_gain, d_gain)
   -- initialize dmp parameters to unforced spring and damper system 
-  -- x               : start position
-  -- g               : goal position
+  -- x               : start position(s)
+  -- g               : goal position(s)
   -- tau             : duration
   -- k_gain          : optional spring constant
   -- d_gain          : optional damping coefficient
 
   o.canonical_system:init(tau)
   for i = 1,o.ndims do
-    o.transform_system[i]:init(x[i], g[i], tau, k_gain, d_gain, zero)
+    o.transform_system[i]:init(state[i], g[i], tau, k_gain, d_gain, zero)
   end
 end
 
-function dmp.learn_minimum_jerk_trajectory(o, x, g, tau, nbasis, k_gain, d_gain)
+function dmp.learn_minimum_jerk_trajectory(o, state, g, tau, nbasis, k_gain, d_gain)
   -- learn dmp parameters from minimum jerk trajectory
-  -- x               : starting position
-  -- g               : goal position
+  -- x               : start position(s)
+  -- g               : goal position(s)
   -- tau             : duration
   -- nbasis          : optional number of basis functions
   -- k_gain          : optional spring constant
@@ -260,7 +287,7 @@ function dmp.learn_minimum_jerk_trajectory(o, x, g, tau, nbasis, k_gain, d_gain)
   -- compute minimum jerk trajectory given x, g and tau
   for i = 1,o.ndims do
     xdata[i] = {}
-    minimum_jerk[i] = trajectory.minimum_jerk(x[i], g[i], tau)
+    minimum_jerk[i] = trajectory.minimum_jerk(state[i], g[i], tau)
   end
 
   for i = 1,N do
@@ -290,12 +317,7 @@ function dmp.learn_trajectory(o, xdata, tdata, nbasis, k_gain, d_gain)
   local tau          = tdata[#tdata] - tdata[1]
   assert(#xdata == o.ndims, 'invalid xdata dimensions')
 
-  -- initialize dynamical systems
-  o.canonical_system:init(tau)
   for i = 1,o.ndims do
-    local x0 = xdata[i][1]
-    local g0 = xdata[i][#xdata[i]]
-    o.transform_system[i]:init(x0, g0, tau, k_gain, d_gain, zero)
     x[i] = xdata[i]
     xd[i] = {}
     xdd[i] = {}
@@ -314,6 +336,14 @@ function dmp.learn_trajectory(o, xdata, tdata, nbasis, k_gain, d_gain)
     end
   end
 
+  -- initialize dynamical systems
+  o.canonical_system:init(tau)
+  for i = 1,o.ndims do
+    local state = {x[i][1], xd[i][2], xdd[i][2]}
+    local g = x[i][#x[i]]
+    o.transform_system[i]:init(state, g, tau, k_gain, d_gain, zero)
+  end
+
   -- calculate nonlinearities
   for i = 1,#tdata do
     local ipast = math.max(i - 1, 1)
@@ -329,18 +359,9 @@ function dmp.learn_trajectory(o, xdata, tdata, nbasis, k_gain, d_gain)
     sdata[i] = s
   end
 
-  -- initialize parameters for radial basis functions
-  local centers = {}
-  local widths  = {}
-  local alpha = o.canonical_system.alpha
-  for i = 1,nbasis do
-    centers[i] = math.exp(-alpha*(i - 1)/(nbasis - 1))
-    widths[i] = 0.5*(centers[i] - (centers[i-1] or 0))^(-2)
-  end
-
   -- learn nonlinear functions via linear regression
   for i = 1,o.ndims do
-    local f = dmp_nonlinearity.new(centers, widths)
+    local f = dmp_nonlinearity.new(nbasis, o.canonical_system.alpha)
     f:fit(fdata[i], sdata)
     o.transform_system[i]:set_nonlinearity(f)
   end
@@ -364,22 +385,29 @@ function dmp.integrate(o, coupling, dt)
 end
 
 -- nonlinearity
-----------------------------------------------------------------------
+---------------------------------------------------------------------------
 
-function dmp_nonlinearity.new(...)
-  local o = {}
-  local arg = {...}
-  if #arg < 2 then
-    o.nbasis = arg[1] or 1                  -- number of basis functions
-    o.center = zeros(o.nbasis)              -- radial basis centers
-    o.width = zeros(o.nbasis)               -- radial basis widths
-    o.theta = zeros(o.nbasis)               -- radial basis weigths
-  else
-    o.nbasis = #arg[1]
-    o.center = arg[1]
-    o.width = arg[2]
-    o.theta = arg[3] or zeros(o.nbasis)
+function dmp_nonlinearity.new(nbasis, alpha, theta)
+  local o     = {}
+  o.nbasis    = nbasis or 1                 -- number of basis functions
+  o.center    = {}                          -- basis function centers
+  o.width     = {}                          -- basis function widths
+  o.theta     = zeros(o.nbasis)             -- basis function weigths
+  local alpha = alpha or -math.log(0.01)    -- canonical spring constant 
+
+  -- initialize basis parameters
+  for i = 1,o.nbasis do
+    o.center[i] = math.exp(-alpha*(i - 1)/(o.nbasis - 1))
+    o.width[i] = 0.5*(o.center[i] - (o.center[i-1] or 0))^(-2)
   end
+
+  -- initialize basis weights
+  if (theta) then
+    for i = 1,#theta do
+      o.theta[i] = theta[i]
+    end
+  end
+
   return setmetatable(o, dmp_nonlinearity)
 end
 
@@ -455,7 +483,7 @@ end
 function dmp_canonical_system.init(o, tau, alpha)
   o.s     = 1                               -- phase
   o.tau   = tau or 1                        -- duration
-  o.tau0  = tau or 1                        -- nominal duration
+  o.tau_  = tau or 1                        -- nominal duration
   o.alpha = alpha or -math.log(0.01)        -- spring constant 
   o.dt    = nil                             -- integrator time step
 end
@@ -465,8 +493,8 @@ function dmp_canonical_system.set_time_step(o, dt)
 end
 
 function dmp_canonical_system.reset(o, tau)
-  o.s   = 1
-  o.tau = tau or o.tau0
+  o:set_phase(1)
+  o:set_duration(tau or o.tau_)
 end
 
 function dmp_canonical_system.set_epsilon(o, epsilon)
@@ -511,22 +539,22 @@ function dmp_canonical_system.integrate(o, dt)
 end
 
 -- transformation system
-----------------------------------------------------------------------
+---------------------------------------------------------------------------
 
-function dmp_transform_system.new(x, g, tau, k_gain, d_gain, f)
+function dmp_transform_system.new(state, g, tau, k_gain, d_gain, f)
   local o = {}
-  dmp_transform_system.init(o, x, g, tau, k_gain, d_gain, f)
+  dmp_transform_system.init(o, state, g, tau, k_gain, d_gain, f)
   return setmetatable(o, dmp_transform_system)
 end
 
-function dmp_transform_system.init(o, x, g, tau, k_gain, d_gain, f)
-  o.x       = x or 0                          -- start position
-  o.x0      = x or 0                          -- nominal start position
+function dmp_transform_system.init(o, state, g, tau, k_gain, d_gain, f)
+  o.state   = state or {0, 0, 0}              -- state {x, xd, xdd}
+  o.state_  = state or {0, 0, 0}              -- nominal state
   o.g       = g or 0                          -- goal position
-  o.g0      = g or 0                          -- nominal goal position
+  o.g_      = g or 0                          -- nominal goal position
   o.tau     = tau or 1                        -- duration
-  o.tau0    = tau or 1                        -- nominal duration
-  o.state   = {o.x, 0, 0}                     -- state {x, xd, xdd}
+  o.tau_    = tau or 1                        -- nominal duration
+  o.x0      = o.state[1]                      -- start position
   o.k_gain  = k_gain or 250                   -- spring constant
   o.d_gain  = d_gain or 2*math.sqrt(o.k_gain) -- damping coefficient
   o.f       = f or dmp_nonlinearity.new()     -- nonlinear function f(s)
@@ -537,18 +565,20 @@ function dmp_transform_system.set_time_step(o, dt)
   o.dt = dt
 end
 
-function dmp_transform_system.set_nonlinearity(o, f)
-  o.f = f
+function dmp_transform_system.reset(o, state, g, tau)
+  o:set_state(state or o.state_)
+  o:set_goal_position(g or o.g_)
+  o:set_duration(tau or o.tau_)
+  o:set_start_position(o.state[1])
 end
 
-function dmp_transform_system.reset(o, x, g, tau)
-  o.x   = x or o.x0 
-  o.g   = g or o.g0
-  o.tau = tau or o.tau0
-end
-
-function dmp_transform_system.set_start_position(o, x)
-  o.x = x
+function dmp_transform_system.set_state(o, state)
+  if type(state) == 'number' then
+    state = {state}
+  end
+  o.state[1] = state[1]
+  o.state[2] = state[2] or 0
+  o.state[3] = state[3] or 0
 end
 
 function dmp_transform_system.set_goal_position(o, g)
@@ -559,18 +589,16 @@ function dmp_transform_system.set_duration(o, tau)
   o.tau = tau
 end
 
-function dmp_transform_system.set_state(o, state)
-  o.state[1] = state[1]
-  o.state[2] = state[2]
-  o.state[3] = state[3]
+function dmp_transform_system.set_start_position(o, x0)
+  o.x0 = x0
 end
 
-function dmp_transform_system.get_nonlinearity(o)
-  return o.f
+function dmp_transform_system.set_nonlinearity(o, f)
+  o.f = f
 end
 
-function dmp_transform_system.get_start_position(o)
-  return o.x
+function dmp_transform_system.get_state(o)
+  return copy_array(state)
 end
 
 function dmp_transform_system.get_goal_position(o)
@@ -581,8 +609,12 @@ function dmp_transform_system.get_duration(o)
   return o.tau
 end
 
-function dmp_transform_system.get_state(o)
-  return copy_array(state)
+function dmp_transform_system.get_start_position(o)
+  return o.x0
+end
+
+function dmp_transform_system.get_nonlinearity(o)
+  return o.f
 end
 
 function dmp_transform_system.estimate_nonlinearity(o, s, state)
@@ -594,7 +626,7 @@ function dmp_transform_system.estimate_nonlinearity(o, s, state)
   local x, xd, xdd = unpack(state)
 
   fs = (xdd*o.tau^2 + o.d_gain*(xd*o.tau))/o.k_gain
-     - (o.g - x) + (o.g - o.x)*s
+     - (o.g - x) + (o.g - o.x0)*s
 
   return fs
 end
@@ -613,7 +645,7 @@ function dmp_transform_system.integrate(o, s, coupling, dt)
   xd  = xd + 1/2*xdd*dt
   x   = x + xd*dt
   xdd = o.k_gain*(o.g - x) - o.d_gain*(xd*o.tau)
-      - o.k_gain*(o.g - o.x)*s + o.k_gain*fs
+      - o.k_gain*(o.g - o.x0)*s + o.k_gain*fs
   xdd = xdd/o.tau^2 + coupling
   xd  = xd + 1/2*xdd*dt
 

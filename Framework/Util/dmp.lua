@@ -13,7 +13,7 @@ require('trajectory')
   -------------
   local dof = 1     -- degrees of freedom
   local dt = 0.001  -- integrator time step
-  local nbasis = 20 -- number of radial basis functions
+  local nbasis = 20 -- number of basis functions
   local tau = 1     -- movement duration
   local xdata = {}  -- training trajectory
   local tdata = {}  -- training sample times
@@ -21,7 +21,7 @@ require('trajectory')
   -- initialize example trajectory
   for i = 1, math.floor(tau/dt) do
     tdata[i] = i*dt
-    xdata[i] = math.sin(math.pi*tdata[i]/2)
+    xdata[i] = math.sin(math.pi*tdata[i]/2)^2
   end
 
   -- initialize dmp
@@ -109,6 +109,21 @@ function dmp.set_integrator_iterations(o, iters)
   o.iters = iters
 end
 
+function dmp.init(o, state, g, tau)
+  -- initialize dmp default parameters
+  -- state           : initial state(s) {x, xd, xdd}
+  -- g               : goal position(s)
+  -- tau             : duration
+
+  local state = state or {}
+  local g = g or {}
+
+  o.canonical_system:init(tau)
+  for i = 1,o.ndims do
+    o.transform_system[i]:init(state[i], g[i], tau)
+  end
+end
+
 function dmp.reset(o, state, g, tau)
   -- reset dmp parameters
   -- state           : initial state(s) {x, xd, xdd}
@@ -121,21 +136,6 @@ function dmp.reset(o, state, g, tau)
   o.canonical_system:reset(tau)
   for i = 1,o.ndims do
     o.transform_system[i]:reset(state[i], g[i], tau)
-  end
-end
-
-function dmp.init(o, state, g, tau)
-  -- initialize dmp defualt parameters
-  -- state           : initial state(s) {x, xd, xdd}
-  -- g               : goal position(s)
-  -- tau             : duration
-
-  local state = state or {}
-  local g = g or {}
-
-  o.canonical_system:init(tau)
-  for i = 1,o.ndims do
-    o.transform_system[i]:init(state[i], g[i], tau)
   end
 end
 
@@ -332,9 +332,16 @@ function dmp.learn_trajectory(o, xdata, tdata, nbasis)
     end
   end
 
+  for i = 1,o.ndims do
+    xd[i][1] = xd[i][2]
+    xdd[i][1] = xdd[i][2]
+    xd[i][#tdata] = xd[i][#tdata - 1]
+    xdd[i][#tdata] = xdd[i][#tdata - 1]
+  end
+
   -- initialize dynamical system
   for i = 1,o.ndims do
-    state[i] = {x[i][1], xd[i][2], xdd[i][2]}
+    state[i] = {x[i][1], xd[i][1], xdd[i][1]}
     g[i] = x[i][#x[i]]
   end
   o:init(state, g, tau)
@@ -360,6 +367,7 @@ function dmp.learn_trajectory(o, xdata, tdata, nbasis)
     f:fit(fdata[i], sdata)
     o.transform_system[i]:set_nonlinearity(f)
   end
+  return fdata, sdata
 end
 
 function dmp.integrate(o, coupling, dt)
@@ -389,11 +397,14 @@ function dmp_nonlinearity.new(nbasis, alpha, theta)
   o.width     = {}                          -- basis function widths
   o.theta     = zeros(o.nbasis)             -- basis function weigths
   local alpha = alpha or -math.log(0.01)    -- canonical spring constant 
+  local c0    = (math.exp(alpha/(o.nbasis - 1) - math.exp(-alpha)))
+              / (1 - math.exp(-alpha))
 
   -- initialize basis parameters
   for i = 1,o.nbasis do
     o.center[i] = math.exp(-alpha*(i - 1)/(o.nbasis - 1))
-    o.width[i] = 0.5*(o.center[i] - (o.center[i-1] or 0))^(-2)
+    o.center[i] = (o.center[i] - math.exp(-alpha))/(1 - math.exp(-alpha))
+    o.width[i] = 0.5*(o.center[i] - (o.center[i-1] or c0))^(-2)
   end
 
   -- initialize basis weights

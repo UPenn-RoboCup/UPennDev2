@@ -71,6 +71,14 @@ local function zeros(n)
   return t
 end
 
+local function ones(n)
+  local t = {}
+  for i = 1,n do
+    t[i] = 1
+  end
+  return t
+end
+
 local function copy_array(t)
   if not t then return nil end
   local c = {}
@@ -234,7 +242,7 @@ end
 
 function dmp.get_goal_position(o, dim)
   if (dim) then
-    return o.transform_system[i].g
+    return o.transform_system[dim].g
   else
     local g = {}
     for i = 1,o.ndims do
@@ -250,7 +258,7 @@ end
 
 function dmp.get_start_position(o, dim)
   if (dim) then
-    return o.transform_system[i].x 
+    return o.transform_system[dim].x 
   else
     local x = {}
     for i = 1,o.ndims do

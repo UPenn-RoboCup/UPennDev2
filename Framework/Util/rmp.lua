@@ -77,6 +77,14 @@ local function zeros(n)
   return t
 end
 
+local function ones(n)
+  local t = {}
+  for i = 1,n do
+    t[i] = 1
+  end
+  return t
+end
+
 local function copy_array(t)
   if not t then return nil end
   local c = {}
@@ -244,7 +252,7 @@ end
 
 function rmp.get_setpoint(o, dim)
   if (dim) then
-    return o.transform_system[i].g
+    return o.transform_system[dim].g
   else
     local g = {}
     for i = 1,o.ndims do
@@ -256,7 +264,7 @@ end
 
 function rmp.get_amplitude(o, dim)
   if (dim) then
-    return o.transform_system[i].a
+    return o.transform_system[dim].a
   else
     local a = {}
     for i = 1,o.ndims do
@@ -291,8 +299,8 @@ function rmp.learn_trajectory(o, xdata, tdata, nbasis, basis_type)
   local fdata        = {}
   local sdata        = {}
   local state        = {}
-  local g            = o:get_setpoint()
-  local a            = o:get_amplitude()
+  local g            = zeros(o.ndims)
+  local a            = ones(o.ndims)
   local tau          = tdata[#tdata] - tdata[1]
   assert(#xdata == o.ndims, 'invalid xdata dimensions')
 
@@ -320,6 +328,16 @@ function rmp.learn_trajectory(o, xdata, tdata, nbasis, basis_type)
     xdd[i][1] = xdd[i][2]
     xd[i][#tdata] = xd[i][#tdata - 1]
     xdd[i][#tdata] = xdd[i][#tdata - 1]
+  end
+
+  -- estimate setpoint from mean training value
+  for i = 1,#tdata do
+    local ipast = math.max(i - 1, 1)
+    local inext = math.min(i + 1, #tdata)
+    local dt = (tdata[inext] - tdata[ipast])/2
+    for j = 1,o.ndims do
+      g[j] = g[j] + x[j][i]*dt/tau
+    end
   end
 
   -- initialize dynamical system

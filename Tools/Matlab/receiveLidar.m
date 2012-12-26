@@ -1,4 +1,4 @@
-%robot = shm_robot(1,1);
+robot = shm_robot(0,1);
 
 while(1)
       range = typecast(robot.lidar.get_ranges() ,'SINGLE');

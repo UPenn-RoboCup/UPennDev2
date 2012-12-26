@@ -32,9 +32,16 @@ Install Lightweight Communications and Marshalling (LCM) using:
     make
     sudo make install
 
-Install Kinematics and Dynamics Library (KDL) using:
+Install Eigen3 and Kinematics and Dynamics Library (KDL) using:
 
-    sudo apt-get install libeigen2-dev
+    wget http://bitbucket.org/eigen/eigen/get/3.1.2.tar.gz
+    tar xzf 3.1.2.tar.gz
+    cd eigen-eigen-5097c01bcdc4/
+    mkdir build
+    cd build
+    cmake ..
+    make
+    sudo make install
 
     git clone http://git.mech.kuleuven.be/robotics/orocos_kinematics_dynamics.git 
     cd orocos_kinematics_dynamics/orocos_kdl

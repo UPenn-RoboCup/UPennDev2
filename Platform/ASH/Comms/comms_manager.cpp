@@ -45,13 +45,13 @@ int main(int argc, char **argv)
 
   // start communication threads
   fprintf(stderr, "starting comms threads...\n");
+  motion_sensor_thread.start();
+  while (!motion_sensor_thread.is_running()) {
+    usleep(2e5);
+  }
   l_leg_thread.start();
   r_leg_thread.start();
   while (!l_leg_thread.is_running() || !r_leg_thread.is_running()) {
-    usleep(2e5);
-  }
-  motion_sensor_thread.start();
-  while (!motion_sensor_thread.is_running()) {
     usleep(2e5);
   }
 

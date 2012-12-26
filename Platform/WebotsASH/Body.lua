@@ -45,7 +45,11 @@ local servoNames = { -- webots servo names
 
 local function initialize_devices()
   -- intialize webots devices
-  tags.saffir = webots.wb_supervisor_node_get_from_def('Ash')
+  tags.robot = webots.wb_supervisor_node_get_from_def('Ash')
+  tags.robot_translation = webots.wb_supervisor_node_get_field(
+    tags.robot, "translation")
+  tags.robot_rotation = webots.wb_supervisor_node_get_field(
+    tags.robot, "rotation")
   tags.gyro = webots.wb_robot_get_device('gyro')
   webots.wb_gyro_enable(tags.gyro, time_step)
   tags.accel = webots.wb_robot_get_device('accelerometer')
@@ -140,12 +144,12 @@ local function update_sensors()
   
   -- update imu readings
   local t = {}
-  local orientation = webots.wb_supervisor_node_get_orientation(tags.saffir)
+  local orientation = webots.wb_supervisor_node_get_orientation(tags.robot)
   t[1] = vector.new({orientation[1], orientation[2], orientation[3], 0})
   t[2] = vector.new({orientation[4], orientation[5], orientation[6], 0})
   t[3] = vector.new({orientation[7], orientation[8], orientation[9], 0})
   t[4] = vector.new({0, 0, 0, 1});
-  local euler_angles = Transform.getEuler(t)
+  local euler_angles = Transform.get_euler(t)
   dcm:set_ahrs(webots.wb_gyro_get_values(tags.gyro), 'gyro')
   dcm:set_ahrs(webots.wb_accelerometer_get_values(tags.accel), 'accel')
   dcm:set_ahrs(euler_angles, 'euler')
@@ -183,6 +187,13 @@ end
 
 function Body.get_update_rate()
   return 1000/(time_step*simulator_iterations)
+end
+
+function Body.set_simulator_pose(pose)
+  webots.wb_supervisor_field_set_sf_vec3f(tags.robot_translation,
+    {pose[1], pose[2], pose[3]})
+  webots.wb_supervisor_field_set_sf_rotation(tags.robot_rotation, 
+    {0, 0, 1, pose[4] or 0})
 end
 
 function Body.entry()

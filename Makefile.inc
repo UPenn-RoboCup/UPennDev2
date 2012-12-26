@@ -16,11 +16,18 @@ LIBRT=-lrt
 
 # Library and Include Paths
 
-ifeq ($(shell pkg-config --exists lua && echo 0),0)
-  LUA_INC=`pkg-config lua --cflags`
+ifeq ($(shell pkg-config --exists orocos-kdl && echo 0),0)
+  LIB_KDL= `pkg-config --libs orocos-kdl`
 else
-  LUA_INC=`pkg-config lua5.1 --cflags`
+  LIB_KDL= -L/usr/local/lib/ -lorocos-kdl
 endif
+
+ifeq ($(shell pkg-config --exists lua5.1 && echo 0),0)
+  LUA_INC=`pkg-config lua5.1 --cflags`
+else
+  LUA_INC=`pkg-config lua --cflags`
+endif
+
 INCLUDES=-I/usr/local/include -I/usr/include $(LUA_INC)
 LIB_DIR=-L/usr/local/lib -L/usr/lib
 

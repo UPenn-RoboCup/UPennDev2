@@ -9,12 +9,13 @@
 
 netft_node::netft_node(co_can_id node_id)
 {
-  /* initialize data members and can frame buffers */
   set_node_id(node_id);
   memset(m_forces, 0, 3*sizeof(int));
   memset(m_torques, 0, 3*sizeof(int));
   m_status = 0;
   m_sample = 0;
+  m_force_scale_factor = 1;
+  m_torque_scale_factor = 1;
 }
 
 co_can_id netft_node::get_node_id()
@@ -67,16 +68,30 @@ struct can_frame netft_node::get_clear_threshold_command()
   return frame; 
 }
 
-void netft_node::get_forces(int forces[3])
+void netft_node::set_force_scale_factor(double factor)
 {
-  /* get current force data */
-  memcpy(forces, m_forces, 3*sizeof(int));
+  m_force_scale_factor = factor;
 }
 
-void netft_node::get_torques(int torques[3])
+void netft_node::set_torque_scale_factor(double factor)
+{
+  m_torque_scale_factor = factor;
+}
+
+void netft_node::get_forces(double forces[3])
+{
+  /* get current force data */
+  forces[0] = (double)m_forces[0]*m_force_scale_factor/1e6;
+  forces[1] = (double)m_forces[1]*m_force_scale_factor/1e6;
+  forces[2] = (double)m_forces[2]*m_force_scale_factor/1e6;
+}
+
+void netft_node::get_torques(double torques[3])
 {
   /* get current torque data */
-  memcpy(torques, m_torques, 3*sizeof(int));
+  torques[0] = (double)m_torques[0]*m_torque_scale_factor/1e6;
+  torques[1] = (double)m_torques[1]*m_torque_scale_factor/1e6;
+  torques[2] = (double)m_torques[2]*m_torque_scale_factor/1e6;
 }
 
 int netft_node::get_status()

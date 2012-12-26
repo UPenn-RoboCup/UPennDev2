@@ -1,7 +1,6 @@
 include ../../../Makefile.inc
 
-INCLUDES += -I/usr/include/
-LIB_KDL   = `pkg-config --libs orocos-kdl`
+INCLUDES += -I/usr/include/ -I/usr/local/include/eigen3
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<

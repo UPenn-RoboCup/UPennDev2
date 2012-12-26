@@ -111,11 +111,106 @@ static int lua_Serial_shutdown(lua_State *L) {
   return 1;
 }
 
+static int lua_Serial_imuparser(lua_State *L) {
+  uint8_t *data = (uint8_t *) lua_touserdata(L, 1); 
+  if ((data == NULL) || !lua_islightuserdata(L, 1)) {
+    return luaL_error(L, "Input string not light user data");
+  }
+  int len = luaL_checkint(L, 2);  
+////////////////////////
+//cout << len << endl;
+//for (int cnt = 0; cnt < len; cnt ++) 
+//  cout << (unsigned int)data[cnt] << ' ';
+//cout << endl;
+////////////////////////
+  uint32_t tuc = data[8] << 24 | data[7] << 16 | data[6] << 8 | data[5];
+  double id = static_cast<double>(data[9]);
+  double cntr = static_cast<double>(data[10]);
+
+  int16_t rpy = 0;
+  double rpy_gain = 5000;
+  rpy = data[12] << 8 | data[11];
+  double r = static_cast<double>(rpy) / rpy_gain;
+  rpy = data[14] << 8 | data[13];
+  double p = static_cast<double>(rpy) / rpy_gain;
+  rpy = data[16] << 8 | data[15];
+  double y = static_cast<double>(rpy) / rpy_gain;
+
+  int16_t wrpy = 0;
+  double wrpy_gain = 500;
+  wrpy = data[18] << 8 | data[17]; 
+  double wr = static_cast<double>(wrpy) / wrpy_gain;
+  wrpy = data[20] << 8 | data[19];
+  double wp = static_cast<double>(wrpy) / wrpy_gain;
+  wrpy = data[22] << 8 | data[21];
+  double wy = static_cast<double>(wrpy) / wrpy_gain;
+
+  int16_t acc = 0;
+  double acc_gain = 5000;
+  acc = data[24] << 8 | data[23];
+  double ax = static_cast<double>(acc) / acc_gain;
+  acc = data[26] << 8 | data[25];
+  double ay = static_cast<double>(acc) / acc_gain;
+  acc = data[28] << 8 | data[27];
+  double az = static_cast<double>(acc) / acc_gain;
+
+//  cout << tuc << ' ' << id << ' ' << cntr << endl;
+//  cout << r << ' ' << p << ' ' << y << endl;
+//  cout << wr << ' ' << wp << ' ' << wy << endl;
+//  cout << ax << ' ' << ay << ' ' << az << endl;
+
+  lua_createtable(L, 0, 1);
+  lua_pushstring(L, "tuc");
+  lua_pushinteger(L, tuc);
+  lua_settable(L, -3);
+
+  lua_pushstring(L, "id");
+  lua_pushnumber(L, id);
+  lua_settable(L, -3);
+
+  lua_pushstring(L, "cntr");
+  lua_pushnumber(L, cntr);
+  lua_settable(L, -3);
+
+  lua_pushstring(L, "rpy");
+  lua_createtable(L, 3, 0);
+  lua_pushnumber(L, r);
+  lua_rawseti(L, -2, 1);
+  lua_pushnumber(L, p);
+  lua_rawseti(L, -2, 2);
+  lua_pushnumber(L, y);
+  lua_rawseti(L, -2, 3);
+  lua_settable(L, -3);
+
+  lua_pushstring(L, "wrpy");
+  lua_createtable(L, 3, 0);
+  lua_pushnumber(L, wr);
+  lua_rawseti(L, -2, 1);
+  lua_pushnumber(L, wp);
+  lua_rawseti(L, -2, 2);
+  lua_pushnumber(L, wy);
+  lua_rawseti(L, -2, 3);
+  lua_settable(L, -3);
+
+  lua_pushstring(L, "acc");
+  lua_createtable(L, 3, 0);
+  lua_pushnumber(L, ax);
+  lua_rawseti(L, -2, 1);
+  lua_pushnumber(L, ay);
+  lua_rawseti(L, -2, 2);
+  lua_pushnumber(L, az);
+  lua_rawseti(L, -2, 3);
+  lua_settable(L, -3);
+
+  return 1;
+}
+
 static const struct luaL_reg Serial_lib [] = {
   {"connect", lua_Serial_connect},
   {"read", lua_Serial_read},
   {"write", lua_Serial_write},
   {"shutdown", lua_Serial_shutdown},
+  {"imuparser", lua_Serial_imuparser},
   {NULL, NULL}
 };
 

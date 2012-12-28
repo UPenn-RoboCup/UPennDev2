@@ -85,13 +85,13 @@ local function ones(n)
   return t
 end
 
-local function copy_array(t)
-  if not t then return nil end
-  local c = {}
-  for i = 1,#t do
-    c[i] = t[i]
+local function copy_array(ts, td)
+  if not ts then return nil end
+  local td = td or {}
+  for i = 1,#ts do
+    td[i] = ts[i]
   end
-  return c
+  return td
 end
 
 -- rhythmic movement primitive
@@ -198,6 +198,26 @@ function rmp.set_period(o, tau)
   end
 end
 
+function rmp.set_parameter_vector(o, theta, dim)
+  if (dim) then
+    o.transform_system[dim]:set_parameter_vector(theta)
+  else
+    for i = 1,o.ndims do
+      o.transform_system[i]:set_parameter_vector(theta[i])
+    end
+  end
+end
+
+function rmp.set_noise_vector(o, epsilon, dim)
+  if (dim) then
+    o.transform_system[dim]:set_noise_vector(epsilon)
+  else
+    for i = 1,o.ndims do
+      o.transform_system[i]:set_noise_vector(epsilon[i])
+    end
+  end
+end
+
 function rmp.get_phase(o)
   return o.canonical_system.s
 end
@@ -276,6 +296,44 @@ end
 
 function rmp.get_period(o)
   return o.canonical_system.tau
+end
+
+function rmp.get_parameter_vector(o, dim)
+  if (dim) then
+    return o.transform_system[dim]:get_parameter_vector()
+  else
+    local theta = {}
+    for i = 1,o.ndims do
+      theta[i] = o.transform_system[i]:get_parameter_vector()
+    end
+    return theta
+  end
+end
+
+function rmp.get_noise_vector(o, dim)
+  if (dim) then
+    return o.transform_system[dim]:get_noise_vector()
+  else
+    local epsilon = {}
+    for i = 1,o.ndims do
+      epsilon[i] = o.transform_system[i]:get_noise_vector()
+    end
+    return epsilon
+  end
+end
+
+function rmp.get_basis_vector(o, dim)
+  if (dim) then
+    local s = o.canonical_system.s
+    return o.transform_system[dim]:get_basis_vector(s)
+  else
+    local psi = {}
+    local s = o.canonical_system.s
+    for i = 1,o.ndims do
+      psi[i] = o.transform_system[i]:get_basis_vector(s)
+    end
+    return psi
+  end
 end
 
 function rmp.get_canonical_system(o)
@@ -392,26 +450,26 @@ end
 
 function rmp_nonlinearity.new(nbasis, basis_type, theta)
   local o     = {}
-  o.nbasis    = nbasis or 10                -- number of basis functions
-  o.center    = {}                          -- basis function centers
-  o.width     = {}                          -- basis function widths
-  o.theta     = zeros(o.nbasis)             -- basis function weigths
+  o.nbasis    = nbasis or 20                -- number of basis functions
   o.basis     = nil                         -- basis function
+  o.centers   = {}                          -- basis function centers
+  o.widths    = {}                          -- basis function widths
+  o.theta     = zeros(o.nbasis)             -- parameter vector
+  o.epsilon   = zeros(o.nbasis)             -- parameter noise vector
 
-  -- initialize basis function
+  -- initialize basis functions
   if (basis_type == 'antiperiodic') then
     o.basis = antiperiodic_von_mises
   else
     o.basis = von_mises
   end
 
-  -- initialize basis parameters
   for i = 1,o.nbasis do
-    o.center[i] = 2*math.pi*(i - 1)/o.nbasis
-    o.width[i] = o.nbasis
+    o.centers[i] = 2*math.pi*(i - 1)/o.nbasis
+    o.widths[i] = o.nbasis
   end
 
-  -- initialize basis weights
+  -- initialize parameter vector
   if (theta) then
     for i = 1,#theta do
       o.theta[i] = theta[i]
@@ -421,28 +479,54 @@ function rmp_nonlinearity.new(nbasis, basis_type, theta)
   return setmetatable(o, rmp_nonlinearity)
 end
 
+function rmp_nonlinearity.set_basis_centers(o, centers)
+  copy_array(centers, o.centers)
+end
+
+function rmp_nonlinearity.set_basis_bandwidths(o, widths)
+  copy_array(widths, o.widths)
+end
+
+function rmp_nonlinearity.set_parameter_vector(o, theta)
+  copy_array(theta, o.theta)
+end
+
+function rmp_nonlinearity.set_noise_vector(o, epsilon)
+  copy_array(epsilon, o.epsilon)
+end
+
 function rmp_nonlinearity.get_basis_centers(o)
-  return copy_array(o.center)
+  return copy_array(o.centers)
 end
 
-function rmp_nonlinearity.get_basis_widths(o)
-  return copy_array(o.width)
+function rmp_nonlinearity.get_basis_bandwidths(o)
+  return copy_array(o.widths)
 end
 
-function rmp_nonlinearity.get_basis_weights(o)
+function rmp_nonlinearity.get_parameter_vector(o)
   return copy_array(o.theta)
 end
 
-function rmp_nonlinearity.set_basis_centers(o, centers)
-  o.center = copy_array(centers)
+function rmp_nonlinearity.get_noise_vector(o)
+  return copy_array(o.epsilon)
 end
 
-function rmp_nonlinearity.set_basis_widths(o, widths)
-  o.width = copy_array(widths)
-end
+function rmp_nonlinearity.get_basis_vector(o, s)
+  -- return basis activation vector (for learning parameters)
+  -- s               : canonical system state (rmp phase)
 
-function rmp_nonlinearity.set_basis_weights(o, thetas)
-  o.theta = copy_array(weights)
+  local psi = {}
+  local sum = 0
+
+  for i = 1,o.nbasis do
+    psi[i] = o.basis(s, o.centers[i], o.widths[i])
+    sum = sum + psi[i]
+  end
+  for i = 1,o.nbasis do
+    psi[i] = psi[i]/sum
+  end
+
+  return psi
 end
 
 function rmp_nonlinearity.fit(o, fdata, sdata)
@@ -454,13 +538,9 @@ function rmp_nonlinearity.fit(o, fdata, sdata)
   local X = matrix.new(#sdata, o.nbasis)
 
   for i = 1,#sdata do
-    local psi = matrix.new(o.nbasis)
+    local psi = o:get_basis_vector(sdata[i])
     for j = 1,o.nbasis do
-      psi[j] = o.basis(sdata[i], o.center[j], o.width[j])
-    end
-    local sum = matrix.sum(psi)
-    for j = 1,o.nbasis do
-      X[i][j] = psi[j]/sum
+      X[i][j] = psi[j]
     end
   end
 
@@ -468,13 +548,13 @@ function rmp_nonlinearity.fit(o, fdata, sdata)
 end
 
 function rmp_nonlinearity.predict(o, s)
-  -- predict y = f(s) using linear regression
+  -- predict f(s) using linear regression
   -- s               : canonical system state (rmp phase)
 
   local f, sum = 0, 0
   for i = 1,o.nbasis do
-    local psi = o.basis(s, o.center[i], o.width[i])
-    f = f + o.theta[i]*psi
+    local psi = o.basis(s, o.centers[i], o.widths[i])
+    f = f + (o.theta[i] + o.epsilon[i])*psi
     sum = sum + psi
   end
 
@@ -594,6 +674,14 @@ function rmp_transform_system.set_period(o, tau)
   o.tau = tau
 end
 
+function rmp_transform_system.set_parameter_vector(o, theta)
+  o.f:set_parameter_vector(theta)
+end
+
+function rmp_transform_system.set_noise_vector(o, epsilon)
+  o.f:set_noise_vector(epsilon)
+end
+
 function rmp_transform_system.set_nonlinearity(o, f)
   o.f = f
 end
@@ -612,6 +700,18 @@ end
 
 function rmp_transform_system.get_period(o)
   return o.tau
+end
+
+function rmp_transform_system.get_parameter_vector(o)
+  return o.f:get_parameter_vector()
+end
+
+function rmp_transform_system.get_noise_vector(o)
+  return o.f:get_noise_vector()
+end
+
+function rmp_transform_system.get_basis_vector(o, s)
+  return o.f:get_basis_vector(s)
 end
 
 function rmp_transform_system.get_nonlinearity(o)

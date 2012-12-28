@@ -65,8 +65,8 @@ local function von_mises(s, center, width)
 end
 
 local function antiperiodic_von_mises(s, center, width)
-  local cs = math.cos(s - center)
-  return cs*math.exp(width*(cs*cs - 1))
+  local cs = math.cos((s - center)/2)
+  return cs*math.exp(2*width*(cs^2 - 1))
 end
 
 local function zeros(n)
@@ -407,11 +407,7 @@ function rmp_nonlinearity.new(nbasis, basis_type, theta)
 
   -- initialize basis parameters
   for i = 1,o.nbasis do
-    if (basis_type == 'antiperiodic') then
-      o.center[i] = 1*math.pi*(i - 1)/o.nbasis
-    else
-      o.center[i] = 2*math.pi*(i - 1)/o.nbasis 
-    end
+    o.center[i] = 2*math.pi*(i - 1)/o.nbasis
     o.width[i] = o.nbasis
   end
 

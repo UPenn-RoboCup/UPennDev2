@@ -1,8 +1,8 @@
 require('numlua')
 
----------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 -- rmp : rhythmic movement primitives
----------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
 --[[
 
@@ -57,7 +57,7 @@ rmp_canonical_system.__index = rmp_canonical_system
 rmp_transform_system.__index = rmp_transform_system
 
 -- utilities
----------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
 local function von_mises(s, center, width)
   local cs = math.cos(s - center)
@@ -95,7 +95,7 @@ local function copy_array(ts, td)
 end
 
 -- rhythmic movement primitive
----------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
 function rmp.new(ndims, k_gain, d_gain, alpha)
   local o = {}
@@ -208,16 +208,6 @@ function rmp.set_parameter_vector(o, theta, dim)
   end
 end
 
-function rmp.set_noise_vector(o, epsilon, dim)
-  if (dim) then
-    o.transform_system[dim]:set_noise_vector(epsilon)
-  else
-    for i = 1,o.ndims do
-      o.transform_system[i]:set_noise_vector(epsilon[i])
-    end
-  end
-end
-
 function rmp.get_phase(o)
   return o.canonical_system.s
 end
@@ -307,18 +297,6 @@ function rmp.get_parameter_vector(o, dim)
       theta[i] = o.transform_system[i]:get_parameter_vector()
     end
     return theta
-  end
-end
-
-function rmp.get_noise_vector(o, dim)
-  if (dim) then
-    return o.transform_system[dim]:get_noise_vector()
-  else
-    local epsilon = {}
-    for i = 1,o.ndims do
-      epsilon[i] = o.transform_system[i]:get_noise_vector()
-    end
-    return epsilon
   end
 end
 
@@ -446,7 +424,7 @@ function rmp.integrate(o, coupling, dt)
 end
 
 -- nonlinearity
----------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
 function rmp_nonlinearity.new(nbasis, basis_type, theta)
   local o     = {}
@@ -455,7 +433,6 @@ function rmp_nonlinearity.new(nbasis, basis_type, theta)
   o.centers   = {}                          -- basis function centers
   o.widths    = {}                          -- basis function widths
   o.theta     = zeros(o.nbasis)             -- parameter vector
-  o.epsilon   = zeros(o.nbasis)             -- parameter noise vector
 
   -- initialize basis functions
   if (basis_type == 'antiperiodic') then
@@ -491,10 +468,6 @@ function rmp_nonlinearity.set_parameter_vector(o, theta)
   copy_array(theta, o.theta)
 end
 
-function rmp_nonlinearity.set_noise_vector(o, epsilon)
-  copy_array(epsilon, o.epsilon)
-end
-
 function rmp_nonlinearity.get_basis_centers(o)
   return copy_array(o.centers)
 end
@@ -505,10 +478,6 @@ end
 
 function rmp_nonlinearity.get_parameter_vector(o)
   return copy_array(o.theta)
-end
-
-function rmp_nonlinearity.get_noise_vector(o)
-  return copy_array(o.epsilon)
 end
 
 function rmp_nonlinearity.get_basis_vector(o, s)
@@ -554,7 +523,7 @@ function rmp_nonlinearity.predict(o, s)
   local f, sum = 0, 0
   for i = 1,o.nbasis do
     local psi = o.basis(s, o.centers[i], o.widths[i])
-    f = f + (o.theta[i] + o.epsilon[i])*psi
+    f = f + o.theta[i]*psi
     sum = sum + psi
   end
 
@@ -562,7 +531,7 @@ function rmp_nonlinearity.predict(o, s)
 end
 
 -- canonical system
----------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
 function rmp_canonical_system.new()
   local o = {}
@@ -612,7 +581,7 @@ function rmp_canonical_system.integrate(o, dt)
 end
 
 -- transformation system
----------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
 function rmp_transform_system.new(k_gain, d_gain, f)
   local o = {}
@@ -678,10 +647,6 @@ function rmp_transform_system.set_parameter_vector(o, theta)
   o.f:set_parameter_vector(theta)
 end
 
-function rmp_transform_system.set_noise_vector(o, epsilon)
-  o.f:set_noise_vector(epsilon)
-end
-
 function rmp_transform_system.set_nonlinearity(o, f)
   o.f = f
 end
@@ -704,10 +669,6 @@ end
 
 function rmp_transform_system.get_parameter_vector(o)
   return o.f:get_parameter_vector()
-end
-
-function rmp_transform_system.get_noise_vector(o)
-  return o.f:get_noise_vector()
 end
 
 function rmp_transform_system.get_basis_vector(o, s)

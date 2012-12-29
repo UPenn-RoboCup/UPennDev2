@@ -1,9 +1,9 @@
 require('numlua')
 require('trajectory')
 
----------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 -- dmp : discrete movement primitives
----------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
 --[[
 
@@ -57,7 +57,7 @@ dmp_canonical_system.__index = dmp_canonical_system
 dmp_transform_system.__index = dmp_transform_system
 
 -- utilities
----------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
 local function gaussian(s, center, width)
   return math.exp(-width*(s - center)^2)
@@ -89,7 +89,7 @@ local function copy_array(ts, td)
 end
 
 -- dynamic movement primitive
----------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
 function dmp.new(ndims, k_gain, d_gain, alpha)
   local o = {}
@@ -198,16 +198,6 @@ function dmp.set_parameter_vector(o, theta, dim)
   end
 end
 
-function dmp.set_noise_vector(o, epsilon, dim)
-  if (dim) then
-    o.transform_system[dim]:set_noise_vector(epsilon)
-  else
-    for i = 1,o.ndims do
-      o.transform_system[i]:set_noise_vector(epsilon[i])
-    end
-  end
-end
-
 function dmp.get_phase(o)
   return o.canonical_system.s
 end
@@ -297,18 +287,6 @@ function dmp.get_parameter_vector(o, dim)
       theta[i] = o.transform_system[i]:get_parameter_vector()
     end
     return theta
-  end
-end
-
-function dmp.get_noise_vector(o, dim)
-  if (dim) then
-    return o.transform_system[dim]:get_noise_vector()
-  else
-    local epsilon = {}
-    for i = 1,o.ndims do
-      epsilon[i] = o.transform_system[i]:get_noise_vector()
-    end
-    return epsilon
   end
 end
 
@@ -454,7 +432,7 @@ function dmp.integrate(o, coupling, dt)
 end
 
 -- nonlinearity
----------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
 function dmp_nonlinearity.new(nbasis, alpha, theta)
   local o     = {}
@@ -462,7 +440,6 @@ function dmp_nonlinearity.new(nbasis, alpha, theta)
   o.centers   = {}                          -- basis function centers
   o.widths    = {}                          -- basis function bandwidths
   o.theta     = zeros(o.nbasis)             -- parameter vector
-  o.epsilon   = zeros(o.nbasis)             -- parameter noise vector
   local alpha = alpha or -math.log(0.01)    -- canonical spring constant
 
   -- initialize basis functions
@@ -497,10 +474,6 @@ function dmp_nonlinearity.set_parameter_vector(o, theta)
   copy_array(theta, o.theta)
 end
 
-function dmp_nonlinearity.set_noise_vector(o, epsilon)
-  copy_array(epsilon, o.epsilon)
-end
-
 function dmp_nonlinearity.get_basis_centers(o)
   return copy_array(o.centers)
 end
@@ -511,10 +484,6 @@ end
 
 function dmp_nonlinearity.get_parameter_vector(o)
   return copy_array(o.theta)
-end
-
-function dmp_nonlinearity.get_noise_vector(o)
-  return copy_array(o.epsilon)
 end
 
 function dmp_nonlinearity.get_basis_vector(o, s)
@@ -560,7 +529,7 @@ function dmp_nonlinearity.predict(o, s)
   local f, sum = 0, 0
   for i = 1,o.nbasis do
     local psi = gaussian(s, o.centers[i], o.widths[i])
-    f = f + (o.theta[i] + o.epsilon[i])*psi
+    f = f + o.theta[i]*psi
     sum = sum + psi
   end
 
@@ -568,7 +537,7 @@ function dmp_nonlinearity.predict(o, s)
 end
 
 -- canonical system
----------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
 function dmp_canonical_system.new(alpha)
   local o = {}
@@ -635,7 +604,7 @@ function dmp_canonical_system.integrate(o, dt)
 end
 
 -- transformation system
----------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
 function dmp_transform_system.new(k_gain, d_gain, f)
   local o = {}
@@ -700,10 +669,6 @@ function dmp_transform_system.set_parameter_vector(o, theta)
   o.f:set_parameter_vector(theta)
 end
 
-function dmp_transform_system.set_noise_vector(o, epsilon)
-  o.f:set_noise_vector(epsilon)
-end
-
 function dmp_transform_system.set_nonlinearity(o, f)
   o.f = f
 end
@@ -726,10 +691,6 @@ end
 
 function dmp_transform_system.get_parameter_vector(o)
   return o.f:get_parameter_vector()
-end
-
-function dmp_transform_system.get_noise_vector(o)
-  return o.f:get_noise_vector()
 end
 
 function dmp_transform_system.get_basis_vector(o, s)

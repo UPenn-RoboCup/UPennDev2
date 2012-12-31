@@ -198,12 +198,12 @@ function rmp.set_period(o, tau)
   end
 end
 
-function rmp.set_parameter_vector(o, theta, dim)
+function rmp.set_parameters(o, theta, dim)
   if (dim) then
-    o.transform_system[dim]:set_parameter_vector(theta)
+    o.transform_system[dim]:set_parameters(theta)
   else
     for i = 1,o.n_dimensions do
-      o.transform_system[i]:set_parameter_vector(theta[i])
+      o.transform_system[i]:set_parameters(theta[i])
     end
   end
 end
@@ -292,13 +292,13 @@ function rmp.get_period(o)
   return o.canonical_system.tau
 end
 
-function rmp.get_parameter_vector(o, dim)
+function rmp.get_parameters(o, dim)
   if (dim) then
-    return o.transform_system[dim]:get_parameter_vector()
+    return o.transform_system[dim]:get_parameters()
   else
     local theta = {}
     for i = 1,o.n_dimensions do
-      theta[i] = o.transform_system[i]:get_parameter_vector()
+      theta[i] = o.transform_system[i]:get_parameters()
     end
     return theta
   end
@@ -458,7 +458,7 @@ function rmp_nonlinearity.set_basis_bandwidths(o, widths)
   copy_array(widths, o.widths)
 end
 
-function rmp_nonlinearity.set_parameter_vector(o, theta)
+function rmp_nonlinearity.set_parameters(o, theta)
   copy_array(theta, o.theta)
 end
 
@@ -470,7 +470,7 @@ function rmp_nonlinearity.get_basis_bandwidths(o)
   return copy_array(o.widths)
 end
 
-function rmp_nonlinearity.get_parameter_vector(o)
+function rmp_nonlinearity.get_parameters(o)
   return copy_array(o.theta)
 end
 
@@ -637,8 +637,8 @@ function rmp_transform_system.set_period(o, tau)
   o.tau = tau
 end
 
-function rmp_transform_system.set_parameter_vector(o, theta)
-  o.f:set_parameter_vector(theta)
+function rmp_transform_system.set_parameters(o, theta)
+  o.f:set_parameters(theta)
 end
 
 function rmp_transform_system.set_nonlinearity(o, f)
@@ -661,8 +661,8 @@ function rmp_transform_system.get_period(o)
   return o.tau
 end
 
-function rmp_transform_system.get_parameter_vector(o)
-  return o.f:get_parameter_vector()
+function rmp_transform_system.get_parameters(o)
+  return o.f:get_parameters()
 end
 
 function rmp_transform_system.get_basis_vector(o, s)

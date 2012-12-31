@@ -91,15 +91,15 @@ end
 -- dynamic movement primitive
 --------------------------------------------------------------------------------
 
-function dmp.new(ndims, k_gain, d_gain, alpha)
+function dmp.new(n_dimensions, k_gain, d_gain, alpha)
   local o = {}
-  assert(ndims > 0, "invalid dimensionality")
-  o.ndims = ndims -- number of transformation systems
-  o.iters = 1     -- integrator iterations
-  o.dt    = nil   -- integrator time step
+  assert(n_dimensions > 0, "invalid dimensionality")
+  o.n_dimensions = n_dimensions -- number of transformation systems
+  o.iters        = 1            -- integrator iterations
+  o.dt           = nil          -- integrator time step
   o.canonical_system = dmp_canonical_system.new(alpha)
   o.transform_system = {}
-  for i = 1,o.ndims do
+  for i = 1,o.n_dimensions do
     o.transform_system[i] = dmp_transform_system.new(k_gain, d_gain)
   end
   return setmetatable(o, dmp)
@@ -108,7 +108,7 @@ end
 function dmp.set_time_step(o, dt)
   o.dt = dt
   o.canonical_system.dt = dt
-  for i = 1,o.ndims do
+  for i = 1,o.n_dimensions do
     o.transform_system[i].dt = dt
   end
 end
@@ -127,7 +127,7 @@ function dmp.init(o, state, g, tau)
   local g = g or {}
 
   o.canonical_system:init(tau)
-  for i = 1,o.ndims do
+  for i = 1,o.n_dimensions do
     o.transform_system[i]:init(state[i], g[i], tau)
   end
 end
@@ -142,7 +142,7 @@ function dmp.reset(o, state, g, tau)
   local g = g or {}
 
   o.canonical_system:reset(tau)
-  for i = 1,o.ndims do
+  for i = 1,o.n_dimensions do
     o.transform_system[i]:reset(state[i], g[i], tau)
   end
 end
@@ -155,7 +155,7 @@ function dmp.set_state(o, state, dim)
   if (dim) then
     o.transform_system[dim]:set_state(state)
   else
-    for i = 1,o.ndims do 
+    for i = 1,o.n_dimensions do 
       o.transform_system[i]:set_state(state[i])
     end
   end
@@ -165,7 +165,7 @@ function dmp.set_goal_position(o, g, dim)
   if (dim) then
     o.transform_system[dim]:set_goal_position(g)
   else
-    for i = 1,o.ndims do
+    for i = 1,o.n_dimensions do
       o.transform_system[i]:set_goal_position(g[i])
     end
   end
@@ -173,7 +173,7 @@ end
 
 function dmp.set_duration(o, tau)
   o.canonical_system.tau = tau
-  for i = 1,o.ndims do
+  for i = 1,o.n_dimensions do
     o.transform_system[i].tau = tau
   end
 end
@@ -182,7 +182,7 @@ function dmp.set_start_position(o, x, dim)
   if (dim) then
     o.transform_system[dim]:set_start_position(x)
   else
-    for i = 1,o.ndims do
+    for i = 1,o.n_dimensions do
       o.transform_system[i]:set_start_position(x[i])
     end
   end
@@ -192,10 +192,14 @@ function dmp.set_parameter_vector(o, theta, dim)
   if (dim) then
     o.transform_system[dim]:set_parameter_vector(theta)
   else
-    for i = 1,o.ndims do
+    for i = 1,o.n_dimensions do
       o.transform_system[i]:set_parameter_vector(theta[i])
     end
   end
+end
+
+function dmp.get_dimensions(o)
+  return o.n_dimensions
 end
 
 function dmp.get_phase(o)
@@ -207,7 +211,7 @@ function dmp.get_position(o, dim)
    return o.transform_system[dim].state[1]
   else
     local x = {}
-    for i = 1,o.ndims do
+    for i = 1,o.n_dimensions do
       x[i] = o.transform_system[i].state[1]
     end
     return x
@@ -219,7 +223,7 @@ function dmp.get_velocity(o, dim)
    return o.transform_system[dim].state[2]
   else
     local xd = {}
-    for i = 1,o.ndims do
+    for i = 1,o.n_dimensions do
       xd[i] = o.transform_system[i].state[2]
     end
     return xd
@@ -231,7 +235,7 @@ function dmp.get_acceleration(o, dim)
    return o.transform_system[dim].state[3]
   else
     local xdd = {} 
-    for i = 1,o.ndims do
+    for i = 1,o.n_dimensions do
       xdd[i] = o.transform_system[i].state[3]
     end
     return xdd
@@ -243,7 +247,7 @@ function dmp.get_state(o, dim)
     return copy_array(o.transform_system[dim].state)
   else
     local state = {}
-    for i = 1,o.ndims do
+    for i = 1,o.n_dimensions do
       state[i] = copy_array(o.transform_system[i].state)
     end
     return state
@@ -255,7 +259,7 @@ function dmp.get_goal_position(o, dim)
     return o.transform_system[dim].g
   else
     local g = {}
-    for i = 1,o.ndims do
+    for i = 1,o.n_dimensions do
       g[i] = o.transform_system[i].g
     end
     return g
@@ -271,7 +275,7 @@ function dmp.get_start_position(o, dim)
     return o.transform_system[dim].x 
   else
     local x = {}
-    for i = 1,o.ndims do
+    for i = 1,o.n_dimensions do
       x[i] = o.transform_system[i].x
     end
     return x
@@ -283,7 +287,7 @@ function dmp.get_parameter_vector(o, dim)
     return o.transform_system[dim]:get_parameter_vector()
   else
     local theta = {}
-    for i = 1,o.ndims do
+    for i = 1,o.n_dimensions do
       theta[i] = o.transform_system[i]:get_parameter_vector()
     end
     return theta
@@ -297,7 +301,7 @@ function dmp.get_basis_vector(o, dim)
   else
     local psi = {}
     local s = o.canonical_system.s
-    for i = 1,o.ndims do
+    for i = 1,o.n_dimensions do
       psi[i] = o.transform_system[i]:get_basis_vector(s)
     end
     return psi
@@ -326,14 +330,14 @@ function dmp.learn_minimum_jerk_trajectory(o, nbasis)
   local tau          = o:get_duration()
 
   -- compute minimum jerk trajectory given x, g and tau
-  for i = 1,o.ndims do
+  for i = 1,o.n_dimensions do
     xdata[i] = {}
     minimum_jerk[i] = trajectory.minimum_jerk(state[i], g[i], tau)
   end
 
   for i = 1,N do
     tdata[i] = tau*(i - 1)/(N - 1)
-    for j = 1,o.ndims do
+    for j = 1,o.n_dimensions do
       xdata[j][i] = (minimum_jerk[j])(tdata[i])
     end
   end
@@ -343,7 +347,7 @@ end
 
 function dmp.learn_trajectory(o, xdata, tdata, nbasis)
   -- learn dmp parameters from discrete time-series trajectory
-  -- xdata           : position samples for each DoF  [ndims x N]
+  -- xdata           : position samples for each DoF  [n_dimensions x N]
   -- tdata           : sample times for each position [1 x N]
   -- nbasis          : optional number of basis functions
 
@@ -355,9 +359,9 @@ function dmp.learn_trajectory(o, xdata, tdata, nbasis)
   local state        = {}
   local g            = {}
   local tau          = tdata[#tdata] - tdata[1]
-  assert(#xdata == o.ndims, 'invalid xdata dimensions')
+  assert(#xdata == o.n_dimensions, 'invalid xdata dimensions')
 
-  for i = 1,o.ndims do
+  for i = 1,o.n_dimensions do
     x[i] = xdata[i]
     xd[i] = {}
     xdd[i] = {}
@@ -370,13 +374,13 @@ function dmp.learn_trajectory(o, xdata, tdata, nbasis)
     local ipast = math.max(i - 1, 1)
     local inext = math.min(i + 1, #tdata)
     local dt = (tdata[inext] - tdata[ipast])/2
-    for j = 1,o.ndims do
+    for j = 1,o.n_dimensions do
       xd[j][i] = (x[j][inext] - x[j][ipast])/(2*dt)
       xdd[j][i] = (x[j][inext] - 2*x[j][i] + x[j][ipast])/(dt)^2
     end
   end
 
-  for i = 1,o.ndims do
+  for i = 1,o.n_dimensions do
     xd[i][1] = xd[i][2]
     xdd[i][1] = xdd[i][2]
     xd[i][#tdata] = xd[i][#tdata - 1]
@@ -384,7 +388,7 @@ function dmp.learn_trajectory(o, xdata, tdata, nbasis)
   end
 
   -- initialize dynamical system
-  for i = 1,o.ndims do
+  for i = 1,o.n_dimensions do
     state[i] = {x[i][1], xd[i][1], xdd[i][1]}
     g[i] = x[i][#x[i]]
   end
@@ -396,7 +400,7 @@ function dmp.learn_trajectory(o, xdata, tdata, nbasis)
     local inext = math.min(i + 1, #tdata)
     local dt = (tdata[inext] - tdata[ipast])/2
     local s = o.canonical_system:integrate(dt)
-    for j = 1,o.ndims do
+    for j = 1,o.n_dimensions do
       state[j][1] = x[j][i]
       state[j][2] = xd[j][i]
       state[j][3] = xdd[j][i]
@@ -406,7 +410,7 @@ function dmp.learn_trajectory(o, xdata, tdata, nbasis)
   end
 
   -- learn nonlinear functions via linear regression
-  for i = 1,o.ndims do
+  for i = 1,o.n_dimensions do
     local f = dmp_nonlinearity.new(nbasis, o.canonical_system.alpha)
     f:fit(fdata[i], sdata)
     o.transform_system[i]:set_nonlinearity(f)
@@ -424,7 +428,7 @@ function dmp.integrate(o, coupling, dt)
 
   for i = 1,o.iters do
     local s = o.canonical_system:integrate(dt/o.iters)
-    for j = 1,o.ndims do
+    for j = 1,o.n_dimensions do
       o.transform_system[j]:integrate(s, coupling[j], dt/o.iters)
     end
   end

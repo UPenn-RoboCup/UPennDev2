@@ -26,7 +26,7 @@ require('numlua')
   -- initialize rmp
   local primitive = rmp.new(dof)
   primitive:set_time_step(dt)
-  primitive:set_setpoint({0})
+  primitive:set_setpoint({0}) -- define setpoint prior to training
   primitive:learn_trajectory({xdata}, tdata, nbasis, 'periodic')
   primitive:reset()
 
@@ -97,15 +97,15 @@ end
 -- rhythmic movement primitive
 --------------------------------------------------------------------------------
 
-function rmp.new(ndims, k_gain, d_gain, alpha)
+function rmp.new(n_dimensions, k_gain, d_gain, alpha)
   local o = {}
-  assert(ndims > 0, "invalid dimensionality")
-  o.ndims = ndims -- number of transformation systems
-  o.iters = 1     -- integrator iterations
-  o.dt    = nil   -- integrator time step
+  assert(n_dimensions > 0, "invalid dimensionality")
+  o.n_dimensions = n_dimensions -- number of transformation systems
+  o.iters        = 1            -- integrator iterations
+  o.dt           = nil          -- integrator time step
   o.canonical_system = rmp_canonical_system.new(alpha)
   o.transform_system = {}
-  for i = 1,o.ndims do
+  for i = 1,o.n_dimensions do
     o.transform_system[i] = rmp_transform_system.new(k_gain, d_gain)
   end
   return setmetatable(o, rmp)
@@ -114,7 +114,7 @@ end
 function rmp.set_time_step(o, dt)
   o.dt = dt
   o.canonical_system.dt = dt
-  for i = 1,o.ndims do
+  for i = 1,o.n_dimensions do
     o.transform_system[i].dt = dt
   end
 end
@@ -135,7 +135,7 @@ function rmp.init(o, state, g, a, tau)
   local a = a or {}
 
   o.canonical_system:init(tau)
-  for i = 1,o.ndims do
+  for i = 1,o.n_dimensions do
     o.transform_system[i]:init(state[i], g[i], a[i], tau)
   end
 end
@@ -152,7 +152,7 @@ function rmp.reset(o, state, g, a, tau)
   local a = a or {}
 
   o.canonical_system:reset(tau)
-  for i = 1,o.ndims do
+  for i = 1,o.n_dimensions do
     o.transform_system[i]:reset(state[i], g[i], a[i], tau)
   end
 end
@@ -165,7 +165,7 @@ function rmp.set_state(o, state, dim)
   if (dim) then
     o.transform_system[dim]:set_state(state)
   else
-    for i = 1,o.ndims do 
+    for i = 1,o.n_dimensions do 
       o.transform_system[i]:set_state(state[i])
     end
   end
@@ -175,7 +175,7 @@ function rmp.set_setpoint(o, g, dim)
   if (dim) then
     o.transform_system[dim]:set_setpoint(g)
   else
-    for i = 1,o.ndims do
+    for i = 1,o.n_dimensions do
       o.transform_system[i]:set_setpoint(g[i])
     end
   end
@@ -185,7 +185,7 @@ function rmp.set_amplitude(o, a, dim)
   if (dim) then
     o.transform_system[dim]:set_amplitude(a)
   else
-    for i = 1,o.ndims do
+    for i = 1,o.n_dimensions do
       o.transform_system[i]:set_amplitude(a[i])
     end
   end
@@ -193,7 +193,7 @@ end
 
 function rmp.set_period(o, tau)
   o.canonical_system.tau = tau
-  for i = 1,o.ndims do
+  for i = 1,o.n_dimensions do
     o.transform_system[i].tau = tau
   end
 end
@@ -202,10 +202,14 @@ function rmp.set_parameter_vector(o, theta, dim)
   if (dim) then
     o.transform_system[dim]:set_parameter_vector(theta)
   else
-    for i = 1,o.ndims do
+    for i = 1,o.n_dimensions do
       o.transform_system[i]:set_parameter_vector(theta[i])
     end
   end
+end
+
+function rmp.get_dimensions(o)
+  return o.n_dimensions
 end
 
 function rmp.get_phase(o)
@@ -217,7 +221,7 @@ function rmp.get_position(o, dim)
    return o.transform_system[dim].state[1]
   else
     local x = {}
-    for i = 1,o.ndims do
+    for i = 1,o.n_dimensions do
       x[i] = o.transform_system[i].state[1]
     end
     return x
@@ -229,7 +233,7 @@ function rmp.get_velocity(o, dim)
    return o.transform_system[dim].state[2]
   else
     local xd = {}
-    for i = 1,o.ndims do
+    for i = 1,o.n_dimensions do
       xd[i] = o.transform_system[i].state[2]
     end
     return xd
@@ -241,7 +245,7 @@ function rmp.get_acceleration(o, dim)
    return o.transform_system[dim].state[3]
   else
     local xdd = {} 
-    for i = 1,o.ndims do
+    for i = 1,o.n_dimensions do
       xdd[i] = o.transform_system[i].state[3]
     end
     return xdd
@@ -253,7 +257,7 @@ function rmp.get_state(o, dim)
     return copy_array(o.transform_system[dim].state)
   else
     local state = {}
-    for i = 1,o.ndims do
+    for i = 1,o.n_dimensions do
       state[i] = copy_array(o.transform_system[i].state)
     end
     return state
@@ -265,7 +269,7 @@ function rmp.get_setpoint(o, dim)
     return o.transform_system[dim].g
   else
     local g = {}
-    for i = 1,o.ndims do
+    for i = 1,o.n_dimensions do
       g[i] = o.transform_system[i].g
     end
     return g
@@ -277,7 +281,7 @@ function rmp.get_amplitude(o, dim)
     return o.transform_system[dim].a
   else
     local a = {}
-    for i = 1,o.ndims do
+    for i = 1,o.n_dimensions do
       a[i] = o.transform_system[i].a
     end
     return a
@@ -293,7 +297,7 @@ function rmp.get_parameter_vector(o, dim)
     return o.transform_system[dim]:get_parameter_vector()
   else
     local theta = {}
-    for i = 1,o.ndims do
+    for i = 1,o.n_dimensions do
       theta[i] = o.transform_system[i]:get_parameter_vector()
     end
     return theta
@@ -307,7 +311,7 @@ function rmp.get_basis_vector(o, dim)
   else
     local psi = {}
     local s = o.canonical_system.s
-    for i = 1,o.ndims do
+    for i = 1,o.n_dimensions do
       psi[i] = o.transform_system[i]:get_basis_vector(s)
     end
     return psi
@@ -324,7 +328,7 @@ end
 
 function rmp.learn_trajectory(o, xdata, tdata, nbasis, basis_type)
   -- learn rmp parameters from periodic or antiperiodic time-series trajectory
-  -- xdata           : position samples for each DoF  [ndims x N]
+  -- xdata           : position samples for each DoF  [n_dimensions x N]
   -- tdata           : sample times for each position [1 x N]
   -- nbasis          : optional number of basis functions
   -- basis_type      : 'periodic' or 'antiperiodic'
@@ -335,12 +339,12 @@ function rmp.learn_trajectory(o, xdata, tdata, nbasis, basis_type)
   local fdata        = {}
   local sdata        = {}
   local state        = {}
-  local g            = zeros(o.ndims)
-  local a            = ones(o.ndims)
+  local g            = o:get_setpoint()
+  local a            = ones(o.n_dimensions)
   local tau          = tdata[#tdata] - tdata[1]
-  assert(#xdata == o.ndims, 'invalid xdata dimensions')
+  assert(#xdata == o.n_dimensions, 'invalid xdata dimensions')
 
-  for i = 1,o.ndims do
+  for i = 1,o.n_dimensions do
     x[i] = xdata[i]
     xd[i] = {}
     xdd[i] = {}
@@ -353,31 +357,21 @@ function rmp.learn_trajectory(o, xdata, tdata, nbasis, basis_type)
     local ipast = math.max(i - 1, 1)
     local inext = math.min(i + 1, #tdata)
     local dt = (tdata[inext] - tdata[ipast])/2
-    for j = 1,o.ndims do
+    for j = 1,o.n_dimensions do
       xd[j][i] = (x[j][inext] - x[j][ipast])/(2*dt)
       xdd[j][i] = (x[j][inext] - 2*x[j][i] + x[j][ipast])/(dt)^2
     end
   end
 
-  for i = 1,o.ndims do
+  for i = 1,o.n_dimensions do
     xd[i][1] = xd[i][2]
     xdd[i][1] = xdd[i][2]
     xd[i][#tdata] = xd[i][#tdata - 1]
     xdd[i][#tdata] = xdd[i][#tdata - 1]
   end
 
-  -- estimate setpoint from mean training value
-  for i = 1,#tdata do
-    local ipast = math.max(i - 1, 1)
-    local inext = math.min(i + 1, #tdata)
-    local dt = (tdata[inext] - tdata[ipast])/2
-    for j = 1,o.ndims do
-      g[j] = g[j] + x[j][i]*dt/tau
-    end
-  end
-
   -- initialize dynamical system
-  for i = 1,o.ndims do
+  for i = 1,o.n_dimensions do
     state[i] = {x[i][1], xd[i][1], xdd[i][1]}
   end
   o:init(state, g, a, tau)
@@ -388,7 +382,7 @@ function rmp.learn_trajectory(o, xdata, tdata, nbasis, basis_type)
     local inext = math.min(i + 1, #tdata)
     local dt = (tdata[inext] - tdata[ipast])/2
     local s = o.canonical_system:integrate(dt)
-    for j = 1,o.ndims do
+    for j = 1,o.n_dimensions do
       state[j][1] = x[j][i]
       state[j][2] = xd[j][i]
       state[j][3] = xdd[j][i]
@@ -398,7 +392,7 @@ function rmp.learn_trajectory(o, xdata, tdata, nbasis, basis_type)
   end
 
   -- learn nonlinear functions via linear regression
-  for i = 1,o.ndims do
+  for i = 1,o.n_dimensions do
     local f = rmp_nonlinearity.new(nbasis, basis_type)
     f:fit(fdata[i], sdata)
     o.transform_system[i]:set_nonlinearity(f)
@@ -416,7 +410,7 @@ function rmp.integrate(o, coupling, dt)
 
   for i = 1,o.iters do
     local s = o.canonical_system:integrate(dt/o.iters)
-    for j = 1,o.ndims do
+    for j = 1,o.n_dimensions do
       o.transform_system[j]:integrate(s, coupling[j], dt/o.iters)
     end
   end

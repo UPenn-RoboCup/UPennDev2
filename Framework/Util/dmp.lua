@@ -415,6 +415,8 @@ function dmp.learn_trajectory(o, xdata, tdata, nbasis)
     f:fit(fdata[i], sdata)
     o.transform_system[i]:set_nonlinearity(f)
   end
+
+  o:reset()
   return fdata, sdata
 end
 

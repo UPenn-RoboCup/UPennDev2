@@ -20,11 +20,11 @@ local simulator_iterations = 2
 
 -- servo controller parameters
 local max_force = 100
-local max_stiffness = 10000
+local max_stiffness = 20000
 local max_damping = 0  -- damping disabled due to ODE instability
 local max_velocity = 7
 local max_acceleration = 70
-local velocity_p_gain = 0.1*vector.ones(#joint.id)
+local velocity_p_gain = 0.25*vector.ones(#joint.id)
 
 local joint_ff_force = vector.zeros(#joint.id)
 local joint_p_force = vector.zeros(#joint.id)
@@ -32,6 +32,8 @@ local joint_d_force = vector.zeros(#joint.id)
 
 local tags = {} -- webots tags
 local time_step = nil
+local torso_twist_updated = 0
+local torso_twist = vector.zeros(6)
 
 local servoNames = { -- webots servo names
   'l_hip_yaw', 'l_hip_roll', 'l_hip_pitch', 
@@ -118,13 +120,22 @@ local function update_actuators()
     webots.wb_servo_set_velocity(tags.servo[i], servo_velocity)
   end
 
+  local buffer = cbuffer.new((#joint.id + 7)*8)
+
   -- update feedforward and damping forces using physics plugin
-  local buffer = cbuffer.new(#joint.id*8)
   for i = 1,#joint.id do
     local servo_force = joint_ff_force[i] + joint_d_force[i]
     servo_force =  limit(servo_force, -max_force, max_force)
     buffer:set('double', servo_force, (i-1)*8)
   end
+
+  -- update torso twist using physics plugin
+  buffer:set('double', torso_twist_updated, (#joint.id)*8)
+  for i = 1,6 do
+    buffer:set('double', torso_twist[i], (#joint.id + i)*8)
+  end
+  torso_twist_updated = 0
+
   webots.wb_emitter_send(tags.physics_emitter, tostring(buffer))
 end
 
@@ -189,11 +200,25 @@ function Body.get_update_rate()
   return 1000/(time_step*simulator_iterations)
 end
 
-function Body.set_simulator_pose(pose)
+function Body.reset_simulator()
+  webots.wb_supervisor_simulation_revert()
+end
+
+function Body.reset_simulator_physics()
+  webots.wb_supervisor_simulation_physics_reset()
+end
+
+function Body.set_simulator_torso_frame(frame)
+  local pose = frame:get_pose6D()
   webots.wb_supervisor_field_set_sf_vec3f(tags.robot_translation,
     {pose[1], pose[2], pose[3]})
   webots.wb_supervisor_field_set_sf_rotation(tags.robot_rotation, 
-    {0, 0, 1, pose[4] or 0})
+    {0, 0, 1, pose[4]})
+end
+
+function Body.set_simulator_torso_twist(twist)
+  torso_twist = twist
+  torso_twist_updated = 1
 end
 
 function Body.entry()

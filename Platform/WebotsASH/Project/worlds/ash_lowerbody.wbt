@@ -10166,7 +10166,7 @@ DEF Ash Supervisor {
     DEF PHYSICS_EMITTER Emitter {
       name "physics_emitter"
       type "serial"
-      byteSize 96
+      byteSize 152
     }
   ]
   name "Ash"

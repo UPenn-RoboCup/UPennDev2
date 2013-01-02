@@ -7,10 +7,17 @@ end
 
 function serialization.serialize(o)
   local str = 'nil'
-  if (type(o) == 'number')
-  or (type(o) == 'boolean') 
-  or (type(o) == 'nil') then
+
+  -- serialize object
+  if (type(o) == 'boolean') then
     str = tostring(o)
+  elseif (type(o) == 'number') then
+    str = tostring(o) 
+    if (str == 'inf') then
+      str = 'math.huge'
+    elseif (str == '-inf') then 
+      str = '-math.huge'
+    end
   elseif (type(o) == 'string') then
     str = string.format('%q',o)
   elseif (type(o) == 'table') then
@@ -31,6 +38,13 @@ function serialization.serialize(o)
        str = string.format('complex(%f, %f)', o:real(), o:imag())
     end
   end
+
+  -- set object metatable if __mtstring field is defined
+  local mt = getmetatable(o)
+  if (mt and mt.__mtstring) then
+    str = 'setmetatable('..str..','..mt.__mtstring..')'
+  end
+
   return str
 end
 

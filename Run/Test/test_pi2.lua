@@ -22,7 +22,7 @@ local n_pi2_iterations = 500     -- number of pi2 iterations
 --------------------------------------------------------------------------------
 local primitive = dmp.new(1)
 primitive:set_time_step(dt)
-primitive:init(start_state, goal_state, tau)
+primitive:initialize(start_state, goal_state, tau)
 primitive:learn_minimum_jerk_trajectory(nbasis)
 primitive:reset()
 local nonlinearity = primitive:get_transform_system(1):get_nonlinearity()
@@ -49,7 +49,7 @@ end
 
 -- intialize pi2 policy for dmp
 --------------------------------------------------------------------------------
-local policy = pi2.new_dmp_policy(primitive, n_time_steps)
+local policy = pi2.dmp_policy.new(primitive, n_time_steps)
 
 -- define policy evaluation function to improve parameters 
 function policy:evaluate(parameters)
@@ -75,7 +75,7 @@ end
 --------------------------------------------------------------------------------
 
 local learner = 
-  pi2.new_learner(policy, noise_variances, n_rollouts, n_reused_rollouts)
+  pi2.learner.new(policy, noise_variances, n_rollouts, n_reused_rollouts)
 
 -- improve policy 
 --------------------------------------------------------------------------------

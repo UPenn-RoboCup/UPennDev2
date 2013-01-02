@@ -47,14 +47,19 @@ require('numlua')
 --]]
 
 rmp = {}
-local rmp_nonlinearity = {}
-local rmp_canonical_system = {}
-local rmp_transform_system = {}
+rmp.nonlinearity = {}
+rmp.canonical_system = {}
+rmp.transform_system = {}
 
 rmp.__index = rmp
-rmp_nonlinearity.__index = rmp_nonlinearity
-rmp_canonical_system.__index = rmp_canonical_system
-rmp_transform_system.__index = rmp_transform_system
+rmp.nonlinearity.__index = rmp.nonlinearity
+rmp.canonical_system.__index = rmp.canonical_system
+rmp.transform_system.__index = rmp.transform_system
+
+rmp.__mtstring = 'rmp'
+rmp.nonlinearity.__mtstring = 'rmp.nonlinearity'
+rmp.canonical_system.__mtstring = 'rmp.canonical_system'
+rmp.transform_system.__mtstring = 'rmp.transform_system'
 
 -- utilities
 --------------------------------------------------------------------------------
@@ -103,10 +108,10 @@ function rmp.new(n_dimensions, k_gain, d_gain, alpha)
   o.n_dimensions = n_dimensions -- number of transformation systems
   o.iters        = 1            -- integrator iterations
   o.dt           = nil          -- integrator time step
-  o.canonical_system = rmp_canonical_system.new(alpha)
+  o.canonical_system = rmp.canonical_system.new(alpha)
   o.transform_system = {}
   for i = 1,o.n_dimensions do
-    o.transform_system[i] = rmp_transform_system.new(k_gain, d_gain)
+    o.transform_system[i] = rmp.transform_system.new(k_gain, d_gain)
   end
   return setmetatable(o, rmp)
 end
@@ -123,7 +128,7 @@ function rmp.set_integrator_iterations(o, iters)
   o.iters = iters
 end
 
-function rmp.init(o, state, g, a, tau)
+function rmp.initialize(o, state, g, a, tau)
   -- initialize rmp default parameters
   -- state           : initial state(s) {x, xd, xdd}
   -- g               : setpoint(s)
@@ -134,9 +139,9 @@ function rmp.init(o, state, g, a, tau)
   local g = g or {}
   local a = a or {}
 
-  o.canonical_system:init(tau)
+  o.canonical_system:initialize(tau)
   for i = 1,o.n_dimensions do
-    o.transform_system[i]:init(state[i], g[i], a[i], tau)
+    o.transform_system[i]:initialize(state[i], g[i], a[i], tau)
   end
 end
 
@@ -374,7 +379,7 @@ function rmp.learn_trajectory(o, xdata, tdata, nbasis, basis_type)
   for i = 1,o.n_dimensions do
     state[i] = {x[i][1], xd[i][1], xdd[i][1]}
   end
-  o:init(state, g, a, tau)
+  o:initialize(state, g, a, tau)
 
   -- calculate nonlinearities
   for i = 1,#tdata do
@@ -393,7 +398,7 @@ function rmp.learn_trajectory(o, xdata, tdata, nbasis, basis_type)
 
   -- learn nonlinear functions via linear regression
   for i = 1,o.n_dimensions do
-    local f = rmp_nonlinearity.new(nbasis, basis_type)
+    local f = rmp.nonlinearity.new(nbasis, basis_type)
     f:fit(fdata[i], sdata)
     o.transform_system[i]:set_nonlinearity(f)
   end
@@ -422,7 +427,7 @@ end
 -- nonlinearity
 --------------------------------------------------------------------------------
 
-function rmp_nonlinearity.new(nbasis, basis_type, theta)
+function rmp.nonlinearity.new(nbasis, basis_type, theta)
   local o     = {}
   o.nbasis    = nbasis or 20                -- number of basis functions
   o.basis     = nil                         -- basis function
@@ -449,34 +454,34 @@ function rmp_nonlinearity.new(nbasis, basis_type, theta)
     end
   end
 
-  return setmetatable(o, rmp_nonlinearity)
+  return setmetatable(o, rmp.nonlinearity)
 end
 
-function rmp_nonlinearity.set_basis_centers(o, centers)
+function rmp.nonlinearity.set_basis_centers(o, centers)
   copy_array(centers, o.centers)
 end
 
-function rmp_nonlinearity.set_basis_bandwidths(o, widths)
+function rmp.nonlinearity.set_basis_bandwidths(o, widths)
   copy_array(widths, o.widths)
 end
 
-function rmp_nonlinearity.set_parameters(o, theta)
+function rmp.nonlinearity.set_parameters(o, theta)
   copy_array(theta, o.theta)
 end
 
-function rmp_nonlinearity.get_basis_centers(o)
+function rmp.nonlinearity.get_basis_centers(o)
   return copy_array(o.centers)
 end
 
-function rmp_nonlinearity.get_basis_bandwidths(o)
+function rmp.nonlinearity.get_basis_bandwidths(o)
   return copy_array(o.widths)
 end
 
-function rmp_nonlinearity.get_parameters(o)
+function rmp.nonlinearity.get_parameters(o)
   return copy_array(o.theta)
 end
 
-function rmp_nonlinearity.get_basis_vector(o, s)
+function rmp.nonlinearity.get_basis_vector(o, s)
   -- return basis activation vector (for learning parameters)
   -- s               : canonical system state (rmp phase)
 
@@ -494,7 +499,7 @@ function rmp_nonlinearity.get_basis_vector(o, s)
   return psi
 end
 
-function rmp_nonlinearity.fit(o, fdata, sdata)
+function rmp.nonlinearity.fit(o, fdata, sdata)
   -- calculate basis weights via ordinary least squares
   -- fdata           : sampled nonlinearity signal [1 x N]
   -- sdata           : phase values at each sample [1 x N]
@@ -512,7 +517,7 @@ function rmp_nonlinearity.fit(o, fdata, sdata)
   o.theta = (X % y):totable()
 end
 
-function rmp_nonlinearity.predict(o, s)
+function rmp.nonlinearity.predict(o, s)
   -- predict f(s) using linear regression
   -- s               : canonical system state (rmp phase)
 
@@ -529,45 +534,45 @@ end
 -- canonical system
 --------------------------------------------------------------------------------
 
-function rmp_canonical_system.new()
+function rmp.canonical_system.new()
   local o = {}
   o.dt    = nil                             -- integrator time step
-  rmp_canonical_system.init(o)
-  return setmetatable(o, rmp_canonical_system)
+  rmp.canonical_system.initialize(o)
+  return setmetatable(o, rmp.canonical_system)
 end
 
-function rmp_canonical_system.init(o, tau)
+function rmp.canonical_system.initialize(o, tau)
   o.s     = 0                               -- phase
   o.tau   = tau or 1                        -- period
   o.tau_  = tau or 1                        -- nominal period
 end
 
-function rmp_canonical_system.reset(o, tau)
+function rmp.canonical_system.reset(o, tau)
   o.s     = 0                               -- phase
   o.tau   = tau or o.tau_                   -- period
 end
 
-function rmp_canonical_system.set_time_step(o, dt)
+function rmp.canonical_system.set_time_step(o, dt)
   o.dt = dt
 end
 
-function rmp_canonical_system.set_period(o, tau)
+function rmp.canonical_system.set_period(o, tau)
   o.tau  = tau
 end
 
-function rmp_canonical_system.set_phase(o, s)
+function rmp.canonical_system.set_phase(o, s)
   o.s = s
 end
 
-function rmp_canonical_system.get_period(o)
+function rmp.canonical_system.get_period(o)
   return o.tau
 end
 
-function rmp_canonical_system.get_phase(o)
+function rmp.canonical_system.get_phase(o)
   return o.s
 end
 
-function rmp_canonical_system.integrate(o, dt)
+function rmp.canonical_system.integrate(o, dt)
   -- integrate the canonical system
   -- dt : optional time step 
 
@@ -579,17 +584,17 @@ end
 -- transformation system
 --------------------------------------------------------------------------------
 
-function rmp_transform_system.new(k_gain, d_gain, f)
+function rmp.transform_system.new(k_gain, d_gain, f)
   local o = {}
   o.k_gain  = k_gain or 250                   -- spring constant
   o.d_gain  = d_gain or 2*math.sqrt(o.k_gain) -- damping coefficient
-  o.f       = f or rmp_nonlinearity.new()     -- nonlinear function f(s)
+  o.f       = f or rmp.nonlinearity.new()     -- nonlinear function f(s)
   o.dt      = nil                             -- integrator time step
-  rmp_transform_system.init(o)
-  return setmetatable(o, rmp_transform_system)
+  rmp.transform_system.initialize(o)
+  return setmetatable(o, rmp.transform_system)
 end
 
-function rmp_transform_system.init(o, state, g, a, tau)
+function rmp.transform_system.initialize(o, state, g, a, tau)
   if type(state) ~= 'table' then
     state = {state}
   end
@@ -607,18 +612,18 @@ function rmp_transform_system.init(o, state, g, a, tau)
   o.tau_    = tau or 1                        -- nominal period
 end
 
-function rmp_transform_system.reset(o, state, g, a, tau)
+function rmp.transform_system.reset(o, state, g, a, tau)
   o:set_state(state or o.state_)
   o:set_setpoint(g or o.g_)
   o:set_amplitude(a or o.a_)
   o:set_period(tau or o.tau_)
 end
 
-function rmp_transform_system.set_time_step(o, dt)
+function rmp.transform_system.set_time_step(o, dt)
   o.dt = dt
 end
 
-function rmp_transform_system.set_state(o, state)
+function rmp.transform_system.set_state(o, state)
   if type(state) ~= 'table' then
     state = {state}
   end
@@ -627,55 +632,55 @@ function rmp_transform_system.set_state(o, state)
   o.state[3] = state[3] or 0
 end
 
-function rmp_transform_system.set_setpoint(o, g)
+function rmp.transform_system.set_setpoint(o, g)
   o.g = g
 end
 
-function rmp_transform_system.set_amplitude(o, a)
+function rmp.transform_system.set_amplitude(o, a)
   o.a = a
 end
 
-function rmp_transform_system.set_period(o, tau)
+function rmp.transform_system.set_period(o, tau)
   o.tau = tau
 end
 
-function rmp_transform_system.set_parameters(o, theta)
+function rmp.transform_system.set_parameters(o, theta)
   o.f:set_parameters(theta)
 end
 
-function rmp_transform_system.set_nonlinearity(o, f)
+function rmp.transform_system.set_nonlinearity(o, f)
   o.f = f
 end
 
-function rmp_transform_system.get_state(o)
+function rmp.transform_system.get_state(o)
   return copy_array(state)
 end
 
-function rmp_transform_system.get_setpoint(o)
+function rmp.transform_system.get_setpoint(o)
   return o.g
 end
 
-function rmp_transform_system.get_amplitude(o)
+function rmp.transform_system.get_amplitude(o)
   return o.a
 end
 
-function rmp_transform_system.get_period(o)
+function rmp.transform_system.get_period(o)
   return o.tau
 end
 
-function rmp_transform_system.get_parameters(o)
+function rmp.transform_system.get_parameters(o)
   return o.f:get_parameters()
 end
 
-function rmp_transform_system.get_basis_vector(o, s)
+function rmp.transform_system.get_basis_vector(o, s)
   return o.f:get_basis_vector(s)
 end
 
-function rmp_transform_system.get_nonlinearity(o)
+function rmp.transform_system.get_nonlinearity(o)
   return o.f
 end
 
-function rmp_transform_system.estimate_nonlinearity(o, s, state)
+function rmp.transform_system.estimate_nonlinearity(o, s, state)
   -- estimate the nonlinearity f(s) given the desired phase / state
   -- s             : canonical system state (rmp phase)
   -- state         : desired system state {x, xd, xdd}
@@ -689,7 +694,7 @@ function rmp_transform_system.estimate_nonlinearity(o, s, state)
   return fs
 end
 
-function rmp_transform_system.integrate(o, s, coupling, dt)
+function rmp.transform_system.integrate(o, s, coupling, dt)
   -- integrate the transformation system using the velocity verlet method
   -- s             : canonical system state (rmp phase)
   -- coupling      : optional additive acceleration term

@@ -26,6 +26,7 @@ DEF FLOOR MetricFloor {
   rotation 1 0 0 1.5708
   color 0.870588 0.870588 0.870588
 }
+
 DEF Ash Supervisor {
   translation 0 0 0.6
   children [
@@ -7142,9 +7143,12 @@ DEF Ash Supervisor {
             DEF head_pitch Servo {
               translation 0 0 0.114
               children [
+            hokuyo{}
+#            rgbcam{}
                 DEF head_pitch Transform {
                   rotation 1 0 0 1.57
                   children [
+									
                     Shape {
                       appearance Appearance {
                         material Material {

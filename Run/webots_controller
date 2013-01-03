@@ -1,22 +1,22 @@
 #! /bin/bash
+
+#LUA=lua
+LUA=luajit
+
 # webots_controller : launches lua scripts in webots
 Webots_Home=/usr/local/webots
 
 # For Mac systems!
-echo $OSTYPE
-if [[ "${OSTYPE}" = darwin* ]]
+COMPUTER=`uname`
+if [ "$COMPUTER" = "Darwin" ]
 then
-	echo "On a mac!"
-  #export OSTYPE = $(shell uname -s|awk '{print tolower($$0)}')
+	echo "On OSX!"
 	eval `/usr/libexec/path_helper -s`
 	source ~/.bash_profile
 	Webots_Home=/Applications/Webots
 else
 	echo "On Linux!"
 fi
-
-#LUA_PROG=lua
-LUA_PROG=luajit
 
 # Setup dynamic library path
 # ---------------------------------------------------------------------
@@ -32,49 +32,49 @@ cd -P $RELATIVE_PATH
 if [ "$1" = "motion_manager" ]
 then
   echo Starting motion_manager...
-  exec xterm -fn 9x15 -hold -e $LUA_PROG motion_manager.lua
+  exec xterm -fn 9x15 -hold -e $LUA motion_manager.lua
 elif [ "$1" = "keyframe_editor" ]
 then
   echo Starting keyframe_editor...
-  exec xterm -fn 9x15 -hold -e $LUA_PROG keyframe_editor.lua
+  exec xterm -fn 9x15 -hold -e $LUA keyframe_editor.lua
 elif [ "$1" = "bias_editor" ]
 then
   echo Starting bias_editor...
-  exec xterm -fn 9x15 -hold -e $LUA_PROG bias_editor.lua
+  exec xterm -fn 9x15 -hold -e $LUA bias_editor.lua
 elif [ "$1" = "test_webots" ]
 then
   echo Starting test_webots
   cd Test
-  exec xterm -fn 9x15 -hold -e $LUA_PROG test_webots.lua
+  exec xterm -fn 9x15 -hold -e $LUA test_webots.lua
 elif [ "$1" = "test_balance" ]
 then
   echo Starting test_balance...
   cd Test
-  exec $LUA_PROG test_balance.lua
+  exec $LUA test_balance.lua
 elif [ "$1" = "test_swing" ]
 then
   echo Starting test_swing...
   cd Test
-  exec $LUA_PROG test_swing.lua
+  exec $LUA test_swing.lua
 elif [ "$1" = "test_pid" ]
 then
   echo Starting test_pid...
   cd Test
-  exec $LUA_PROG test_pid.lua
+  exec $LUA test_pid.lua
 elif [ "$1" = "test_walk" ]
 then
   echo Starting test_walk...
   cd Test
-  exec xterm -fn 9x15 -hold -e $LUA_PROG test_walk.lua 
+  exec xterm -fn 9x15 -hold -e $LUA test_walk.lua 
 elif [ "$1" = "walk_tuner" ]
 then
   echo Starting walk_tuner...
-  exec xterm -fn 9x15 -hold -e $LUA_PROG walk_tuner.lua
+  exec xterm -fn 9x15 -hold -e $LUA walk_tuner.lua
 elif [ "$1" = "slam_test" ]
 then
   echo Starting slam_test...
-  exec xterm -fn 9x15 -hold -e $LUA_PROG slam_test.lua
+  exec xterm -geometry 80x40 -fn 9x15 -hold -e $LUA slam_test.lua
 else 
   echo Starting demo...
-  exec xterm -fn 9x15 -hold -e $LUA_PROG demo.lua 
+  exec xterm -fn 9x15 -hold -e $LUA demo.lua 
 fi

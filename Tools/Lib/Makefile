@@ -4,7 +4,7 @@ MEXEXT=$(shell mexext)
 all: monitorComm time mexshm
 
 monitorComm: monitorComm.cc
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -fPIC -o libMonitor.o -c libMonitor.cc
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -o libMonitor.o -c libMonitor.cc
 	mex -O $^ libMonitor.o $(INCLUDES)
 
 time: time.cc timeScalar.cc

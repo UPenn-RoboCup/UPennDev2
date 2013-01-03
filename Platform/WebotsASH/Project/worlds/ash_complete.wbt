@@ -19130,5 +19130,5 @@ DEF Ash Supervisor {
     ]
   }
   controller "webots_controller"
-  controllerArgs "walk_tuner"
+  controllerArgs "slam_test"
 }

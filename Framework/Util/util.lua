@@ -76,16 +76,16 @@ end
 function se2_interpolate(t, u1, u2)
   -- helps smooth out the motions using a weighted average
   return vector.new{u1[1]+t*(u2[1]-u1[1]),
-                    u1[2]+t*(u2[2]-u1[2]),
-                    u1[3]+t*mod_angle(u2[3]-u1[3])};
+  u1[2]+t*(u2[2]-u1[2]),
+  u1[3]+t*mod_angle(u2[3]-u1[3])};
 end
 
 function pose_global(pRelative, pose)
   local ca = math.cos(pose[3]);
   local sa = math.sin(pose[3]);
   return vector.new{pose[1] + ca*pRelative[1] - sa*pRelative[2],
-                    pose[2] + sa*pRelative[1] + ca*pRelative[2],
-                    pose[3] + pRelative[3]};
+  pose[2] + sa*pRelative[1] + ca*pRelative[2],
+  pose[3] + pRelative[3]};
 end
 
 function pose_relative(pGlobal, pose)
@@ -112,7 +112,7 @@ function randn(n)
   for i = 1,n do
     --Inefficient implementation:
     t[i] = math.sqrt(-2.0*math.log(1.0-math.random())) *
-                      math.cos(math.pi*math.random());
+    math.cos(math.pi*math.random());
   end
   return t;
 end
@@ -153,67 +153,67 @@ function init_shm_module(M, shm_name, shm_data, shm_size)
   for k,v in pairs(shm_data) do
     shm_pointer[k] = carray.cast(shm_handle:pointer(k))
   end
- 
+
   -- setup accessor methods
   for k,v in pairs(shm_data) do
     if (type(v) == 'string') then
       -- string access
       M['get_'..k] = 
-        function (self)
-          local bytes = shm_handle:get(k)
-	  if (bytes == nil) then
-	     return ''
-	   else
-      for i=1,#bytes do
-        if not (bytes[i]>0) then --Testing NaN
-	  print("NaN Detected at string!");
-          return;
-	end
+      function (self)
+        local bytes = shm_handle:get(k)
+        if (bytes == nil) then
+          return ''
+        else
+          for i=1,#bytes do
+            if not (bytes[i]>0) then --Testing NaN
+              print("NaN Detected at string!");
+              return;
+            end
+          end
+          return string.char(unpack(bytes))
+        end
       end
-	     return string.char(unpack(bytes))
-	   end
-        end
       M['set_'..k] =
-        function (self, value)
-          return shm_handle:set(k, {string.byte(value, 1, string.len(value))});
-        end
+      function (self, value)
+        return shm_handle:set(k, {string.byte(value, 1, string.len(value))});
+      end
     elseif (type(v) == 'number') then
       -- userdata access
       M['get_'..k] =
-        function (self)
-          return shm_handle:pointer(k)
-        end
+      function (self)
+        return shm_handle:pointer(k)
+      end
       M['set_'..k] =
-        function (self, value)
-          return shm_handle:set(k, value, v)
-        end
+      function (self, value)
+        return shm_handle:set(k, value, v)
+      end
     elseif (type(v) == 'table') then
       -- number/vector access
       M['get_'..k] =
-	function (self, index)
-	  if (type(index) == 'number') then
-	    return shm_pointer[k][index]
-	  elseif (type(index) == 'table') then
-	    local t = vector.new()
-	    for i = 1,#index do
-	      t[i] = shm_pointer[k][index[i]]
-	    end
-	    return t
-	  elseif (type(index) == 'nil') then
-	    local t = vector.new()
-	    for i = 1,#shm_pointer[k] do
-	      t[i] = shm_pointer[k][i]
-	    end
-	    return t
-	  end
+      function (self, index)
+        if (type(index) == 'number') then
+          return shm_pointer[k][index]
+        elseif (type(index) == 'table') then
+          local t = vector.new()
+          for i = 1,#index do
+            t[i] = shm_pointer[k][index[i]]
+          end
+          return t
+        elseif (type(index) == 'nil') then
+          local t = vector.new()
+          for i = 1,#shm_pointer[k] do
+            t[i] = shm_pointer[k][i]
+          end
+          return t
         end
+      end
       M['set_'..k] =
-        function (self, value, index)
-	  local settings = settings_table(value, index)
-	  for i,s in pairs(settings) do
-	    shm_pointer[k][i] = s
-	  end
+      function (self, value, index)
+        local settings = settings_table(value, index)
+        for i,s in pairs(settings) do
+          shm_pointer[k][i] = s
         end
+      end
     else
       -- unsupported type
       error('Unsupported shm type '..type(v))
@@ -237,7 +237,7 @@ function init_shm_segment(fenv, name, shared, shsize, tid, pid)
     -- ex. vcmBall01brindza is the segment for shared.ball table in vcm.lua
     -- NOTE: the first letter of the shared_table_name is capitalized
     local shmName = name..string.upper(string.sub(shtable, 1, 1))..string.sub(shtable, 2)..tid..pid..(os.getenv('USER') or '');
-    
+
     fenv[shmHandleName] = shm.new(shmName, shsize[shtable]);
     local shmHandle = fenv[shmHandleName];
 
@@ -254,48 +254,48 @@ function init_shm_segment(fenv, name, shared, shsize, tid, pid)
       if (type(v) == 'string') then
         -- setup accessors for a string
         fenv['get_'..shtable..'_'..k] =
-          function()
-            local bytes = shmHandle:get(k);
-            if (bytes == nil) then
-              return '';
-            else
-	      for i=1,#bytes do
-	        if not (bytes[i]>0) then --Testing NaN
-		  print("NaN Detected at string!");
-	          return;
-		end
-	      end
-              return string.char(unpack(bytes));
+        function()
+          local bytes = shmHandle:get(k);
+          if (bytes == nil) then
+            return '';
+          else
+            for i=1,#bytes do
+              if not (bytes[i]>0) then --Testing NaN
+                print("NaN Detected at string!");
+                return;
+              end
             end
+            return string.char(unpack(bytes));
           end
+        end
         fenv['set_'..shtable..'_'..k] =
-          function(val)
-            return shmHandle:set(k, {string.byte(val, 1, string.len(val))});
-          end
+        function(val)
+          return shmHandle:set(k, {string.byte(val, 1, string.len(val))});
+        end
       elseif (type(v) == 'number') then
         -- setup accessors for a userdata
         fenv['get_'..shtable..'_'..k] =
-          function()
-            return shmHandle:pointer(k);
-          end
+        function()
+          return shmHandle:pointer(k);
+        end
         fenv['set_'..shtable..'_'..k] =
-          function(val)
-            return shmHandle:set(k, val, v);
-          end
+        function(val)
+          return shmHandle:set(k, val, v);
+        end
       elseif (type(v) == 'table') then
         -- setup accessors for a number/vector 
         fenv['get_'..shtable..'_'..k] =
-          function()
-            val = shmHandle:get(k);
-            if type(val) == 'table' then
-              val = vector.new(val);
-            end
-            return val;
+        function()
+          val = shmHandle:get(k);
+          if type(val) == 'table' then
+            val = vector.new(val);
           end
+          return val;
+        end
         fenv['set_'..shtable..'_'..k] =
-          function(val, ...)
-            return shmHandle:set(k, val, ...);
-          end
+        function(val, ...)
+          return shmHandle:set(k, val, ...);
+        end
       else
         -- unsupported type
         error('Unsupported shm type '..type(v));
@@ -317,7 +317,7 @@ function init_shm_keys(shmHandle, shmTable)
       if (not shm_key_exists(shmHandle, k) or shmHandle:size(k) ~= v) then
         --local tmp = carray.new('c', v);
         --shmHandle:set(k, carray.pointer(tmp), v);
-				shmHandle:empty(k, v);
+        shmHandle:empty(k, v);
       end
     elseif (type(v) == 'table') then
       if (not shm_key_exists(shmHandle, k, #v)) then

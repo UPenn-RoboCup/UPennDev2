@@ -33,8 +33,8 @@ shared_data.gyro = vector.zeros(3); -- Just to give the rate
 --shared_data.map = {};
 --shared_data.map.omap = mapSize*mapSize;
 
-print('Init shm for rcm')
-util.init_shm_module(rcm, 'rcm', shared_data)
-print('Done rcm')
+local shared_size = shared_data.ranges + 2^16;
+
+util.init_shm_module(rcm, 'rcm', shared_data,shared_size)
 
 return rcm

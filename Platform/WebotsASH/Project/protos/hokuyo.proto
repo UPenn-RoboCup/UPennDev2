@@ -7,9 +7,8 @@
 #  - weight : 0.37 [kg]
 
 PROTO hokuyo [
-  field SFVec3f translation 0 0 0
-#  field SFRotation rotation  0 1 0 0
-#  field SFRotation rotation  0 1 0 3.14
+#  field SFVec3f translation 0 0 0
+	  field SFVec3f translation 0 0 0.1
   field SFRotation rotation  1 0 0 1.57
   field SFString name "UTM-30LX"
   field SFFloat noise 0.0

@@ -46,7 +46,6 @@ function update_display()
   curses.move(15, 0)
   curses.printw('velocity : %7.4f %7.4f %7.4f', unpack(walk:get_velocity()))
   curses.move(16, 0)
---	util.ptable(rcm.get_timestamp())
   curses.printw('timescan : %7.4f', rcm:get_timestamp(1) )
   curses.refresh()
 end

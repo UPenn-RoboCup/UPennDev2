@@ -43,7 +43,7 @@ LIBS  = -lpthread -lrt
 LIBS += -llua5.1 -ldl -lm -lncurses
 
 OBJECTS  = comms_manager.o dynamixel_thread.o comms_thread.o
-OBJECTS += dcm.o config.o
+OBJECTS += dcm.o config.o dxl_hal.o dynamixel.o
 
 all: comms_manager
 

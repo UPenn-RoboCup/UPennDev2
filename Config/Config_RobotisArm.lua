@@ -15,3 +15,6 @@ loadconfig('Config_RobotisArm_Bias')
 platform = {}
 platform.name = 'RobotisArm'
 platform.keyframe_table = 'keyframe_table_RobotisArm'
+
+bias = bias or {}
+

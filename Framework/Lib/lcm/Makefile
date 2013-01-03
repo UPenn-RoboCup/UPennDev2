@@ -5,7 +5,7 @@ NAME = lcm
 
 TYPE_TARGETS=thor_rpc_request_t thor_rpc_response_t
 
-all:: lcmgen lcm $(TYPE_TARGETS) matlab
+all:: lcmgen lcm $(TYPE_TARGETS)
 
 %.o: %.cc
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<

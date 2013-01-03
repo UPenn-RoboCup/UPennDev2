@@ -53,7 +53,7 @@ ifeq ($(OSTYPE),darwin)
   CXX=c++
   LD=ld
 	
-  #SHLIBEXT=dylib
+  SHLIBEXT=dylib
   LIBOPTS= -bundle -undefined dynamic_lookup
   LIBRT=
   MODE=$(shell getconf LONG_BIT)

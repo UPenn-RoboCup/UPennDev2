@@ -164,6 +164,12 @@ function init_shm_module(M, shm_name, shm_data, shm_size)
 	  if (bytes == nil) then
 	     return ''
 	   else
+      for i=1,#bytes do
+        if not (bytes[i]>0) then --Testing NaN
+	  print("NaN Detected at string!");
+          return;
+	end
+      end
 	     return string.char(unpack(bytes))
 	   end
         end
@@ -219,13 +225,18 @@ function init_shm_module(M, shm_name, shm_data, shm_size)
   M[shm_name..'_pointer'] = shm_ptr
 end
 
-function init_shm_segment(fenv, name, shared, shsize)
+function init_shm_segment(fenv, name, shared, shsize, tid, pid)
+  tid = tid or Config.game.teamNumber;
+  pid = pid or Config.game.playerID;
   -- initialize shm segments from the *cm format
-  local shsize = shsize or {};
   for shtable, shval in pairs(shared) do
     -- create shared memory segment
     local shmHandleName = shtable..'Shm';
-    local shmName = name..string.upper(string.sub(shtable, 1, 1))..string.sub(shtable, 2);
+    -- segment names are constructed as follows:
+    -- [file_name][shared_table_name][team_number][player_id][username]
+    -- ex. vcmBall01brindza is the segment for shared.ball table in vcm.lua
+    -- NOTE: the first letter of the shared_table_name is capitalized
+    local shmName = name..string.upper(string.sub(shtable, 1, 1))..string.sub(shtable, 2)..tid..pid..(os.getenv('USER') or '');
     
     fenv[shmHandleName] = shm.new(shmName, shsize[shtable]);
     local shmHandle = fenv[shmHandleName];
@@ -237,7 +248,7 @@ function init_shm_segment(fenv, name, shared, shsize)
     local shmPointerName = shtable..'Ptr';
     fenv[shmPointerName] = {};
     local shmPointer = fenv[shmPointerName];
-    
+
     for k,v in pairs(shared[shtable]) do
       shmPointer[k] = carray.cast(shmHandle:pointer(k));
       if (type(v) == 'string') then
@@ -248,6 +259,12 @@ function init_shm_segment(fenv, name, shared, shsize)
             if (bytes == nil) then
               return '';
             else
+	      for i=1,#bytes do
+	        if not (bytes[i]>0) then --Testing NaN
+		  print("NaN Detected at string!");
+	          return;
+		end
+	      end
               return string.char(unpack(bytes));
             end
           end
@@ -287,6 +304,7 @@ function init_shm_segment(fenv, name, shared, shsize)
   end
 end
 
+
 function init_shm_keys(shmHandle, shmTable)
   -- initialize a shared memory block (creating the entries if needed)
   for k,v in pairs(shmTable) do 
@@ -297,8 +315,9 @@ function init_shm_keys(shmHandle, shmTable)
       end
     elseif (type(v) == 'number') then 
       if (not shm_key_exists(shmHandle, k) or shmHandle:size(k) ~= v) then
-        local tmp = carray.new('c', v);
-        shmHandle:set(k, carray.pointer(tmp), v);
+        --local tmp = carray.new('c', v);
+        --shmHandle:set(k, carray.pointer(tmp), v);
+				shmHandle:empty(k, v);
       end
     elseif (type(v) == 'table') then
       if (not shm_key_exists(shmHandle, k, #v)) then

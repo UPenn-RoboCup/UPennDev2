@@ -265,14 +265,15 @@ void epos_thread::update_actuator_settings()
       {
         case 1 :
           m_epos[i]->set_value(MODES_OF_OPERATION, -1);
+          m_master.send_rpdo(node_id, 4);
           break;
         case 0 :
           m_epos[i]->set_value(MODES_OF_OPERATION, -32);
+          m_master.send_rpdo(node_id, 4);
           break;
         default :
           break;
       }
-      m_master.send_rpdo(node_id, 4);
     }
   }
 }

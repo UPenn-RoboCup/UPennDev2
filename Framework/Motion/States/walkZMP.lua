@@ -5,6 +5,7 @@
 require('Body')
 require('vector')
 require('Config')
+require('Transform')
 require('Kinematics')
 require('MotionState')
 
@@ -333,9 +334,9 @@ local function update_still()
   pLLeg[3], pRLeg[3] = 0;
   pTorso[1], pTorso[2], pTorso[6] = uTorsoActual[1], uTorsoActual[2], uTorsoActual[3];
 
-  local trLLeg = Transform.new(pLLeg);
-  local trRleg = Transform.new(pRLeg);
-  local trTorso = Transform.new(pTorso);
+  local trLLeg = Transform.pose6D(pLLeg);
+  local trRleg = Transform.pose6D(pRLeg);
+  local trTorso = Transform.pose6D(pTorso);
   qLegs = Kinematics.inverse_pos_legs(trLLeg, trRLeg, trTorso, supportLeg);
   motion_legs(qLegs);
 end
@@ -358,9 +359,9 @@ local function init()
   pTorso = vector.new{uTorso[1], uTorso[2], 
 	bodyHeightInit, 0, bodyTiltInit, uTorso[3]};
    
-  local trLLeg = Transform.new(pLLeg);
-  local trRleg = Transform.new(pRLeg);
-  local trTorso = Transform.new(pTorso);
+  local trLLeg = Transform.pose6D(pLLeg);
+  local trRleg = Transform.pose6D(pRLeg);
+  local trTorso = Transform.pose6D(pTorso);
   qLegs = Kinematics.inverse_pos_legs(trLLeg, trRLeg, trTorso);
 
 --  Body.set_lleg_command(qLegs);
@@ -530,9 +531,9 @@ function walk:update()
   pRLeg[1], pRLeg[2], pRLeg[6] = uRight[1], uRight[2], uRight[3];
   pTorso[1], pTorso[2], pTorso[6] = uTorsoActual[1], uTorsoActual[2], uTorsoActual[3];
 
-  local trLLeg = Transform.new(pLLeg);
-  local trRleg = Transform.new(pRLeg);
-  local trTorso = Transform.new(pTorso);
+  local trLLeg = Transform.pose6D(pLLeg);
+  local trRleg = Transform.pose6D(pRLeg);
+  local trTorso = Transform.pose6D(pTorso);
   qLegs = Kinematics.inverse_pos_legs(trLLeg, trRLeg, trTorso, supportLeg);
   motion_legs(qLegs);
 end

@@ -51,8 +51,7 @@ thor_%: thor_%.o luathor_%.o
 
 matlab:
 	lcm-gen -j types/*.lcm
-	export CLASSPATH="`pkg-config --variable=classpath lcm-java`:."
-	javac thor/*.java
+	javac -cp `pkg-config --variable=classpath lcm-java` thor/*.java
 	jar cf thor_matlab.jar thor/*.class
 
 clean:

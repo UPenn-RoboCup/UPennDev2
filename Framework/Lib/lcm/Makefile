@@ -49,14 +49,9 @@ thor_%: thor_%.o luathor_%.o
 	@echo "Linking the LCM module..."
 	$(LD) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ `pkg-config --libs lcm`
 
-matlab:
-	lcm-gen -j types/*.lcm
-	javac -cp `pkg-config --variable=classpath lcm-java` thor/*.java
-	jar cf thor_matlab.jar thor/*.class
-
 clean:
 	@echo
 	@echo "Cleaning LCM support"
 	rm -rf thor
-	rm -f $(NAME).$(SHLIBEXT) *.o *.so thor_*_t.* luathor_*_t.* *.jar
+	rm -f *.o *.$(SHLIBEXT) thor_*_t.* luathor_*_t.*
 	cd lcmgen && make clean && cd $(CWD)

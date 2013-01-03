@@ -1,7 +1,7 @@
 % Include the classpath definitions
 [status,result] = ...
     system('/usr/local/bin/pkg-config --variable=classpath lcm-java');
-javaaddpath({result(1:end-1),'../Framework/Lib/lcm/thor_matlab.jar'})
+javaaddpath({result(1:end-1),'Lib/thor_matlab.jar'})
 p = javaclasspath
 
 % Secret Sauce

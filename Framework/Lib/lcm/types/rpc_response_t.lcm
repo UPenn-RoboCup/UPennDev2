@@ -1,4 +1,4 @@
-package lcm;
+package thor;
 
 struct rpc_response_t
 {

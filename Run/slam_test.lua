@@ -14,7 +14,7 @@ require('Motion')
 require('Locomotion')
 
 require 'rcm'
-require 'Sensor'
+require 'WebotsLaser'
 
 Body.entry()
 Motion.add_fsm(Locomotion)
@@ -65,7 +65,7 @@ while true do
   Motion.update()
 	
 	-- Update the laser scanner
-	local lidar_scan = Sensor.get_scan()
+	local lidar_scan = WebotsLaser.get_scan()
 	-- Set the Range Comm Manager values
 	rcm:set_ranges( carray.pointer(lidar_scan) );
 	rcm:set_timestamp( Body.get_time() )

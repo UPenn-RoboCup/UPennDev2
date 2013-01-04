@@ -5,8 +5,7 @@
   g++ -arch i386 -o CharliKinematics.dylib -bundle -undefined dynamic_lookup luaCharliKinematics.pp CharliKinematics.cc Transform.cc -lm
 */
 
-#include "CharliKinematics.h"
-#include "luaCharliKinematics.h"
+#include "luaKinematics.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -281,8 +280,8 @@ static const struct luaL_reg kinematics_lib [] = {
 };
 
 extern "C"
-int luaopen_CharliKinematics (lua_State *L) {
-  luaL_register(L, "CharliKinematics", kinematics_lib);
+int luaopen_Kinematics (lua_State *L) {
+  luaL_register(L, "Kinematics", kinematics_lib);
   
   return 1;
 }

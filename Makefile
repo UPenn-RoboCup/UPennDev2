@@ -66,7 +66,8 @@ webots_ash:
 	cd Framework/Robot \
 	&& rm -f Body.lua Kinematics.* Statics.* Dynamics.* \
 	&& ln -s ../../Platform/WebotsASH/Body.lua Body.lua \
-	&& ln -s ../../Platform/WebotsASH/Sensor.lua Sensor.lua \
+	&& ln -s ../../Platform/WebotsCharli/WebotsLaser.lua WebotsLaser.lua \
+	&& ln -s ../../Platform/WebotsCharli/WebotsCamera.lua WebotsCamera.lua \
 	&& ln -s ../../Platform/WebotsASH/Mechanics/Kinematics.$(SHLIBEXT) Kinematics.$(SHLIBEXT) \
 	&& ln -s ../../Platform/WebotsASH/Mechanics/Statics.$(SHLIBEXT) Statics.$(SHLIBEXT) \
 	&& ln -s ../../Platform/WebotsASH/Mechanics/Dynamics.$(SHLIBEXT) Dynamics.$(SHLIBEXT) \
@@ -77,6 +78,30 @@ webots_ash:
 	&& cd $(CWD)
 	rm -f Webots \
 	&& ln -s Platform/WebotsASH/Project Webots
+	cd Run \
+	&& rm -f init_robot \
+	&& rm -f comms_manager \
+	&& cd $(CWD)
+
+webots_charli:
+	cd Framework/Lib && make && cd $(CWD)
+	cd Framework/Lib/webots && make && cd $(CWD)
+	cd Platform/WebotsCharli && make && cd $(CWD)
+	cd Framework/Robot \
+	&& rm -f Body.lua Kinematics.* Statics.* Dynamics.* \
+	&& ln -s ../../Platform/WebotsCharli/Body.lua Body.lua \
+	&& ln -s ../../Platform/WebotsCharli/WebotsLaser.lua WebotsLaser.lua \
+	&& ln -s ../../Platform/WebotsCharli/WebotsCamera.lua WebotsCamera.lua \
+	&& ln -s ../../Platform/WebotsCharli/Mechanics/Kinematics.$(SHLIBEXT) Kinematics.$(SHLIBEXT) \
+	&& ln -s ../../Platform/WebotsCharli/Mechanics/Statics.$(SHLIBEXT) Statics.$(SHLIBEXT) \
+	&& ln -s ../../Platform/WebotsCharli/Mechanics/Dynamics.$(SHLIBEXT) Dynamics.$(SHLIBEXT) \
+	&& cd $(CWD)
+	cd Config \
+	&& rm -f Config.lua \
+	&& ln -s Config_WebotsCharli.lua Config.lua \
+	&& cd $(CWD)
+	rm -f Webots \
+	&& ln -s Platform/WebotsCharli/Project Webots
 	cd Run \
 	&& rm -f init_robot \
 	&& rm -f comms_manager \
@@ -108,8 +133,7 @@ tools:
 	cd Tools/Lib && make && cd $(CWD)
 
 clean:
-	rm -f Framework/Robot/Body.lua
-	rm -f Framework/Robot/Sensor.lua
+	rm -f Framework/Robot/Webots*.lua
 	rm -f Framework/Robot/Kinematics.*
 	rm -f Framework/Robot/Statics.*
 	rm -f Framework/Robot/Dynamics.*

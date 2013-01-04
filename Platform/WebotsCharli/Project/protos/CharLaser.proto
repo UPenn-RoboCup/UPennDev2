@@ -22,7 +22,7 @@ PROTO CharLaser [
 ]
 {
 
-Robot {
+Supervisor {
   translation IS translation
   rotation IS rotation
   controller IS controller
@@ -306,7 +306,7 @@ Robot {
        Accelerometer {
      	 translation 0 -0.0684064 -0.01
          rotation 1 0 0 1.5708
-         name "Accelerometer"
+         name "accelerometer"
          lookupTable [
            -39.24 0 0
            39.24 1024 0
@@ -315,7 +315,7 @@ Robot {
        Gyro {
          translation 0 -0.0684064 0.01
          rotation -0.57735 0.57735 0.57735 2.0944
-         name "Gyro"
+         name "gyro"
          lookupTable [
            -27.925 0 0
            27.925 1024 0

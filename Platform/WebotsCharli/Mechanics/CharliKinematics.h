@@ -1,9 +1,10 @@
 #ifndef CHARLI_KINEMATICS_H_
 #define CHARLI_KINEMATICS_H_
 
+#include "Transform.h"
 #include <math.h>
 #include <vector>
-#include "Transform.h"
+#include <stdio.h>
 
 const double PI = 2*asin(1);
 const double SQRT2 = sqrt(2);

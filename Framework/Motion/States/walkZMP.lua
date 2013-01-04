@@ -8,6 +8,7 @@ require('Config')
 require('Transform')
 require('Kinematics')
 require('MotionState')
+require('util')
 
 -- Setup 
 ----------------------------------------------------------------------
@@ -104,89 +105,46 @@ local q0 = dcm:get_joint_position_sensor('legs')
 local qStance = vector.copy(q0)
 
 ----------------------------------------------------------
--- Utilities
+-- Helper Functions
 ----------------------------------------------------------
 
-local function mod_angle(a)
-  -- Reduce angle to [-pi, pi)
-  a = a % (2*math.pi);
-  if (a >= math.pi) then
-    a = a - 2*math.pi;
-  end
-  return a;
-end
-
-local function se2_interpolate(t, u1, u2)
-  -- helps smooth out the motions using a weighted average
-  return vector.new{u1[1]+t*(u2[1]-u1[1]),
-                    u1[2]+t*(u2[2]-u1[2]),
-                    u1[3]+t*mod_angle(u2[3]-u1[3])};
-end
-
-local function procFunc(a,deadband,maxvalue)
-  --Piecewise linear function for IMU feedback
-  if a>0 then
-        b=math.min( math.max(0,math.abs(a)-deadband), maxvalue);
-  else
-        b=-math.min( math.max(0,math.abs(a)-deadband), maxvalue);
-  end
-  return b;
-end
-
-local function pose_global(pRelative, pose)
-  local ca = math.cos(pose[3]);
-  local sa = math.sin(pose[3]);
-  return vector.new{pose[1] + ca*pRelative[1] - sa*pRelative[2],
-                    pose[2] + sa*pRelative[1] + ca*pRelative[2],
-                    pose[3] + pRelative[3]};
-end
-
-local function pose_relative(pGlobal, pose)
-  local ca = math.cos(pose[3]);
-  local sa = math.sin(pose[3]);
-  local px = pGlobal[1]-pose[1];
-  local py = pGlobal[2]-pose[2];
-  local pa = pGlobal[3]-pose[3];
-  return vector.new{ca*px + sa*py, -sa*px + ca*py, mod_angle(pa)};
-end
-
 local function step_left_destination(vel, uLeft, uRight)
-  local u0 = se2_interpolate(.5, uLeft, uRight);
+  local u0 = util.se2_interpolate(.5, uLeft, uRight);
   -- Determine nominal midpoint position 1.5 steps in future
-  local u1 = pose_global(vel, u0);
-  local u2 = pose_global(.5*vel, u1);
-  local uLeftPredict = pose_global({0, footY, 0}, u2);
-  local uLeftRight = pose_relative(uLeftPredict, uRight);
+  local u1 = util.pose_global(vel, u0);
+  local u2 = util.pose_global(.5*vel, u1);
+  local uLeftPredict = util.pose_global({0, footY, 0}, u2);
+  local uLeftRight = util.pose_relative(uLeftPredict, uRight);
   -- Do not pidgeon toe, cross feet:
 
   uLeftRight[1] = math.min(math.max(uLeftRight[1], stanceLimitX[1]), stanceLimitX[2]);
   uLeftRight[2] = math.min(math.max(uLeftRight[2], stanceLimitY[1]), stanceLimitY[2]);
   uLeftRight[3] = math.min(math.max(uLeftRight[3], stanceLimitA[1]), stanceLimitA[2]);
 
-  return pose_global(uLeftRight, uRight);
+  return util.pose_global(uLeftRight, uRight);
 end
 
 local function step_right_destination(vel, uLeft, uRight)
-  local u0 = se2_interpolate(.5, uLeft, uRight);
+  local u0 = util.se2_interpolate(.5, uLeft, uRight);
   -- Determine nominal midpoint position 1.5 steps in future
-  local u1 = pose_global(vel, u0);
-  local u2 = pose_global(.5*vel, u1);
-  local uRightPredict = pose_global({0, -footY, 0}, u2);
-  local uRightLeft = pose_relative(uRightPredict, uLeft);
+  local u1 = util.pose_global(vel, u0);
+  local u2 = util.pose_global(.5*vel, u1);
+  local uRightPredict = util.pose_global({0, -footY, 0}, u2);
+  local uRightLeft = util.pose_relative(uRightPredict, uLeft);
   -- Do not pidgeon toe, cross feet:
 
   uRightLeft[1] = math.min(math.max(uRightLeft[1], stanceLimitX[1]), stanceLimitX[2]);
   uRightLeft[2] = math.min(math.max(uRightLeft[2], -stanceLimitY[2]), -stanceLimitY[1]);
   uRightLeft[3] = math.min(math.max(uRightLeft[3], -stanceLimitA[2]), -stanceLimitA[1]);
 
-  return pose_global(uRightLeft, uLeft);
+  return util.pose_global(uRightLeft, uLeft);
 end
 
 local function step_torso(uLeft, uRight,shiftFactor)
-  local u0 = se2_interpolate(.5, uLeft, uRight);
-  local uLeftSupport = pose_global({supportX, supportY, 0}, uLeft);
-  local uRightSupport = pose_global({supportX, -supportY, 0}, uRight);
-  return se2_interpolate(shiftFactor, uLeftSupport, uRightSupport);
+  local u0 = util.se2_interpolate(.5, uLeft, uRight);
+  local uLeftSupport = util.pose_global({supportX, supportY, 0}, uLeft);
+  local uRightSupport = util.pose_global({supportX, -supportY, 0}, uRight);
+  return util.se2_interpolate(shiftFactor, uLeftSupport, uRightSupport);
 end
 
 local function update_velocity()
@@ -283,10 +241,10 @@ local function motion_legs(qLegs)
   gyro_pitch = gyro_pitch0*math.cos(yawAngle)
     -gyro_roll0* math.sin(yawAngle);
 
-  ankleShiftX=procFunc(gyro_pitch*ankleImuParamX[2],ankleImuParamX[3],ankleImuParamX[4]);
-  ankleShiftY=procFunc(gyro_roll*ankleImuParamY[2],ankleImuParamY[3],ankleImuParamY[4]);
-  kneeShiftX=procFunc(gyro_pitch*kneeImuParamX[2],kneeImuParamX[3],kneeImuParamX[4]);
-  hipShiftY=procFunc(gyro_roll*hipImuParamY[2],hipImuParamY[3],hipImuParamY[4]);
+  ankleShiftX=util.procFunc(gyro_pitch*ankleImuParamX[2],ankleImuParamX[3],ankleImuParamX[4]);
+  ankleShiftY=util.procFunc(gyro_roll*ankleImuParamY[2],ankleImuParamY[3],ankleImuParamY[4]);
+  kneeShiftX=util.procFunc(gyro_pitch*kneeImuParamX[2],kneeImuParamX[3],kneeImuParamX[4]);
+  hipShiftY=util.procFunc(gyro_roll*hipImuParamY[2],hipImuParamY[3],hipImuParamY[4]);
 
   ankleShift[1]=ankleShift[1]+ankleImuParamX[1]*(ankleShiftX-ankleShift[1]);
   ankleShift[2]=ankleShift[2]+ankleImuParamY[1]*(ankleShiftY-ankleShift[2]);
@@ -328,7 +286,7 @@ end
 
 local function update_still()
   uTorso = step_torso(uLeft, uRight,0.5);
-  uTorsoActual = pose_global(vector.new({-footX,0,0}),uTorso);
+  uTorsoActual = util.pose_global(vector.new({-footX,0,0}),uTorso);
   pLLeg[1], pLLeg[2], pLLeg[6] = uLeft[1], uLeft[2], uLeft[3];
   pRLeg[1], pRLeg[2], pRLeg[6] = uRight[1], uRight[2], uRight[3];
   pLLeg[3], pRLeg[3] = 0;
@@ -421,8 +379,8 @@ function walk:entry()
   self.running = true;
   tInit = Body.get_time();
 
-  uLeft = pose_global(vector.new({-supportX, footY, 0}),uTorso);
-  uRight = pose_global(vector.new({-supportX, -footY, 0}),uTorso);
+  uLeft = util.pose_global(vector.new({-supportX, footY, 0}),uTorso);
+  uRight = util.pose_global(vector.new({-supportX, -footY, 0}),uTorso);
 
   uLeft1, uLeft2 = uLeft, uLeft;
   uRight1, uRight2 = uRight, uRight;
@@ -481,9 +439,9 @@ function walk:update()
       velCurrent=vector.new({0,0,0});
       velCommand=vector.new({0,0,0});
       if supportLeg == 0 then        -- Left support
-        uRight2 = pose_global({0,-2*footY,0}, uLeft1);
+        uRight2 = util.pose_global({0,-2*footY,0}, uLeft1);
       else        -- Right support
-        uLeft2 = pose_global({0,2*footY,0}, uRight1);
+        uLeft2 = util.pose_global({0,2*footY,0}, uRight1);
       end
     else --Normal walk, advance steps
       if supportLeg == 0 then-- Left support
@@ -496,11 +454,11 @@ function walk:update()
     uTorso2 = step_torso(uLeft2, uRight2,0.5);
 
     if supportLeg == 0 then --LS
-	local uLeftTorso = pose_relative(uLeft1,uTorso1);
-        uSupport = pose_global({supportX, supportY, 0},uLeft);
+	local uLeftTorso = util.pose_relative(uLeft1,uTorso1);
+        uSupport = util.pose_global({supportX, supportY, 0},uLeft);
     else --RS
-	local uRightTorso = pose_relative(uRight1,uTorso1);
-        uSupport = pose_global({supportX, -supportY, 0}, uRight);
+	local uRightTorso = util.pose_relative(uRight1,uTorso1);
+        uSupport = util.pose_global({supportX, -supportY, 0}, uRight);
     end
 
     --Compute ZMP coefficients
@@ -518,15 +476,15 @@ function walk:update()
   if initial_step>0 then zFoot=0;  end --Don't lift foot at initial step
   pLLeg[3], pRLeg[3] = 0;
   if supportLeg == 0 then    -- Left support
-    uRight = se2_interpolate(xFoot, uRight1, uRight2);
+    uRight = util.se2_interpolate(xFoot, uRight1, uRight2);
     pRLeg[3] = stepHeight*zFoot;
   else    -- Right support
-    uLeft = se2_interpolate(xFoot, uLeft1, uLeft2);
+    uLeft = util.se2_interpolate(xFoot, uLeft1, uLeft2);
     pLLeg[3] = stepHeight*zFoot;
   end
 
   uTorso = zmp_com(ph);
-  uTorsoActual = pose_global(vector.new({-footX,0,0}),uTorso);
+  uTorsoActual = util.pose_global(vector.new({-footX,0,0}),uTorso);
   pLLeg[1], pLLeg[2], pLLeg[6] = uLeft[1], uLeft[2], uLeft[3];
   pRLeg[1], pRLeg[2], pRLeg[6] = uRight[1], uRight[2], uRight[3];
   pTorso[1], pTorso[2], pTorso[6] = uTorsoActual[1], uTorsoActual[2], uTorsoActual[3];

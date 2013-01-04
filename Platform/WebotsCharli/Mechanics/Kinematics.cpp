@@ -1,8 +1,4 @@
 #include "Kinematics.h"
-#include "Transform.h"
-#include <math.h>
-#include <stdio.h>
-#include <string.h>
 
 enum {LEG_LEFT = 0, LEG_RIGHT = 1};
 enum {ARM_LEFT = 0, ARM_RIGHT = 1};

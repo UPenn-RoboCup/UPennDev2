@@ -1,9 +1,11 @@
 #ifndef KINEMATICS_H
 #define KINEMATICS_H
 
+#include "Transform.h"
 #include <math.h>
 #include <vector>
-#include "Transform.h"
+#include <stdio.h>
+#include <string.h>
 
 const double PI = 2*asin(1);
 const double SQRT2 = sqrt(2);

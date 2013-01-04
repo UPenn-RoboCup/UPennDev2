@@ -15,7 +15,7 @@ all:: kinematics
 %.o: %.c
 	$(CC) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
 
-kinematics:: luaCharliKinematics.o CharliKinematics.o Transform.o
+kinematics:: luaKinematics.o CharliKinematics.o Transform.o
 	$(LD) $(LDFLAGS) -o $(LIBNAME).$(SHLIBEXT) $(LIBOPTS) $^ $(LIB_DIR) -lm
 
 clean:

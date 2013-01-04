@@ -56,8 +56,8 @@ local function initialize_devices()
     webots.wb_servo_enable_position(tags.servo[i], time_step)
     webots.wb_servo_enable_motor_force_feedback(tags.servo[i], time_step)
     webots.wb_servo_set_position(tags.servo[i], 1/0)
-    webots.wb_servo_set_velocity(tags.servo[i], 0)
-    webots.wb_servo_set_motor_force(tags.servo[i], 1e-15)
+    --webots.wb_servo_set_velocity(tags.servo[i], 0)
+    --webots.wb_servo_set_motor_force(tags.servo[i], 1e-15)
     webots.wb_servo_set_acceleration(tags.servo[i], max_acceleration)
   end
 end
@@ -118,8 +118,8 @@ local function update_actuators()
       motor_velocity = damper_velocity 
     end
     motor_velocity = math.max(math.min(motor_velocity, max_velocity), -max_velocity)
-    webots.wb_servo_set_motor_force(tags.servo[i], math.abs(joint_pd_force[i]))
-    webots.wb_servo_set_velocity(tags.servo[i], motor_velocity)
+    --webots.wb_servo_set_motor_force(tags.servo[i], math.abs(joint_pd_force[i]))
+    --webots.wb_servo_set_velocity(tags.servo[i], motor_velocity)
   end
 
 end

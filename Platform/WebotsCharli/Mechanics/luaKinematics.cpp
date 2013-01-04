@@ -233,7 +233,7 @@ static int inverse_r_leg(lua_State *L) {
   return 1;
 }
 
-static int inverse_legs(lua_State *L) {
+static int inverse_pos_legs(lua_State *L) {
   std::vector<double> qLLeg(12), qRLeg;
   std::vector<double> pLLeg = lua_checkvector(L, 1);
   std::vector<double> pRLeg = lua_checkvector(L, 2);
@@ -270,7 +270,7 @@ static const struct luaL_reg kinematics_lib [] = {
   {"torso_r_arm", torso_r_arm},
   {"inverse_l_leg", inverse_l_leg},
   {"inverse_r_leg", inverse_r_leg},
-  {"inverse_legs", inverse_legs},
+  {"inverse_pos_legs", inverse_pos_legs},
   {"inverse_l_arm", inverse_l_arm},
   {"inverse_r_arm", inverse_r_arm},
   {"inverse_arms", inverse_arms},

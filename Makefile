@@ -66,6 +66,7 @@ webots_ash:
 	cd Framework/Robot \
 	&& rm -f Body.lua Kinematics.* Statics.* Dynamics.* \
 	&& ln -s ../../Platform/WebotsASH/Body.lua Body.lua \
+	&& ln -s ../../Platform/WebotsASH/Sensor.lua Sensor.lua \
 	&& ln -s ../../Platform/WebotsASH/Mechanics/Kinematics.$(SHLIBEXT) Kinematics.$(SHLIBEXT) \
 	&& ln -s ../../Platform/WebotsASH/Mechanics/Statics.$(SHLIBEXT) Statics.$(SHLIBEXT) \
 	&& ln -s ../../Platform/WebotsASH/Mechanics/Dynamics.$(SHLIBEXT) Dynamics.$(SHLIBEXT) \
@@ -108,6 +109,7 @@ tools:
 
 clean:
 	rm -f Framework/Robot/Body.lua
+	rm -f Framework/Robot/Sensor.lua
 	rm -f Framework/Robot/Kinematics.*
 	rm -f Framework/Robot/Statics.*
 	rm -f Framework/Robot/Dynamics.*

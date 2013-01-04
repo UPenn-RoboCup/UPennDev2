@@ -58,7 +58,10 @@ For Mac OSX 10.8, install necessary dependencies using:
 		Webots from http://www.cyberbotics.com/
 		Homebrew from http://mxcl.github.com/homebrew/
 		
-		brew install lua boost gnuplot
+		brew install lua luajit luarocks boost gnuplot eigen swig
+		Install numlua via luarocks
+		Install Lightweight Communications and Marshalling (LCM)
+		Install Kinematics and Dynamics Library (KDL)
 		
 
 Build Instructions

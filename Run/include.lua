@@ -30,9 +30,11 @@ package.path = prefix.."/Framework/Motion/?.lua;"..package.path
 package.path = prefix.."/Framework/Motion/FSMs/?.lua;"..package.path
 package.path = prefix.."/Framework/Motion/States/?.lua;"..package.path
 package.path = prefix.."/Framework/Robot/?.lua;"..package.path
+package.path = prefix.."/Framework/Slam/?.lua;"..package.path
 
 -- set path for c modules 
 package.cpath = prefix.."/Framework/Lib/?/?."..csuffix..";"..package.cpath
 package.cpath = prefix.."/Framework/Lib/lcm/?."..csuffix..";"..package.cpath
 package.cpath = prefix.."/Framework/Lib/unix/?."..csuffix..";"..package.cpath
 package.cpath = prefix.."/Framework/Robot/?."..csuffix..";"..package.cpath
+package.cpath = prefix.."/Framework/Slam/?."..csuffix..";"..package.cpath

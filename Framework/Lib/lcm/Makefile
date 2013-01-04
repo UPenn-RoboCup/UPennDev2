@@ -1,9 +1,9 @@
 # Makefile used to build Lcm files
 include ../../../Makefile.inc
 CWD = $(shell pwd)
-NAME = lcm 
+NAME = lcm
 
-TYPE_TARGETS=lcm_rpc_request_t lcm_rpc_response_t
+TYPE_TARGETS=thor_rpc_request_t thor_rpc_response_t
 
 all:: lcmgen lcm $(TYPE_TARGETS)
 
@@ -24,17 +24,17 @@ lcmgen::
 	@echo "Building the LCM generator..."
 	cd lcmgen && make && cd $(CWD)
 
-lcm_%.c: types/%.lcm
+thor_%.c: types/%.lcm
 	@echo
 	@echo "Building the LCM types for c..."
 	./lcmgen/lcmgen -c $<
 
-lualcm_%.c: types/%.lcm
+luathor_%.c: types/%.lcm
 	@echo
 	@echo "Building the LCM types for lua..."
 	./lcmgen/lcmgen --lua $<
 
-lcm_%.o: lcm_%.c
+thor_%.o: thorlcm_%.c
 	@echo
 	@echo "Building the LCM modules for types..."
 	$(CC) $(CFLAGS) $(INCLUDES) -o $@ -c $<
@@ -44,7 +44,7 @@ lualcm_%.o: lualcm_%.c
 	@echo "Building the LCM modules for types..."
 	$(CC) $(CFLAGS) $(INCLUDES) -o $@ -c $<
 
-lcm_%: lcm_%.o lualcm_%.o 
+thor_%: thor_%.o luathor_%.o 
 	@echo
 	@echo "Linking the LCM module..."
 	$(LD) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ `pkg-config --libs lcm`
@@ -52,5 +52,6 @@ lcm_%: lcm_%.o lualcm_%.o
 clean:
 	@echo
 	@echo "Cleaning LCM support"
-	rm -f $(NAME).$(SHLIBEXT) *.o *.so lcm_*_t.* lualcm_*_t.*
+	rm -rf thor
+	rm -f *.o *.$(SHLIBEXT) thor_*_t.* luathor_*_t.*
 	cd lcmgen && make clean && cd $(CWD)

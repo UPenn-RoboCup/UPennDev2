@@ -1,6 +1,6 @@
 require('lcm')
-require('lcm_rpc_request_t')
-require('lcm_rpc_response_t')
+require('thor_rpc_request_t')
+require('thor_rpc_response_t')
 require('serialization')
 require('unix')
 

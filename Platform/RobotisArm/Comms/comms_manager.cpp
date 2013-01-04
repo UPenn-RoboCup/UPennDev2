@@ -33,6 +33,8 @@ int main(int argc, char **argv)
   while (!arm_thread.is_running()) {
     usleep(2e5);
   }
+  
+  arm_thread.set_interface("/dev/ttyUSB0");
 
   // update display data
   int key = 0;
@@ -50,7 +52,7 @@ int main(int argc, char **argv)
   }
   draw_screen();
   refresh();
-//endwin();
+  endwin();
   
   // stop communication threads 
   arm_thread.stop();

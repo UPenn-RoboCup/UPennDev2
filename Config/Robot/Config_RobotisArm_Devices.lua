@@ -72,8 +72,16 @@ motor = {}
 
 motor.id = { 
   -- device ids
-  [1] = 'l_knee_pitch',
-
+  [1] = 'r_shoulder_pitch',
+  [2] = 'r_shoulder_roll',
+  [3] = 'r_shoulder_yaw',
+  [4] = 'r_elbow_pitch',
+  [5] = 'r_wrist_yaw',
+  [6] = 'r_wrist_roll',
+  [7] = 'r_thumb',
+  [8] = 'r_finger1',
+  [9] = 'r_finger2',
+  
   -- group ids
   l_hip = {
   },

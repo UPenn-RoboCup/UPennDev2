@@ -7,7 +7,7 @@ INCLUDES += -I/usr/include/ -I/usr/local/include/eigen3
 %.o: %.cc
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
 %.o: %.c
-	$(CC)  $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
+	$(CC)  $(CFLAGS) $(INCLUDES) -o $@ -c $<
 
 all: Kinematics Statics Dynamics
 
@@ -19,5 +19,6 @@ Statics: luaStatics.o Mechanics.o
 
 Dynamics: luaDynamics.o Mechanics.o
 	$(LD) $(LDFLAGS) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ $(LIB_DIR) $(LIB_KDL)
+	
 clean:
 	rm -f *.$(SHLIBEXT) *.o

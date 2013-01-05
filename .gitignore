@@ -6,6 +6,7 @@
 *.dylib
 *~
 *.mexmaci64
+*.mexa64
 
 # ignore all symbolic links
 

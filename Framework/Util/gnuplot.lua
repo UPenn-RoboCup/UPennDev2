@@ -84,14 +84,19 @@ local function gnuplothasterm(term)
    fi:write('set terminal\n\n')
    fi:close()
    os.execute(getexec() .. ' < ' .. tfni .. ' > ' .. tfno .. ' 2>&1 ')
+   os.remove(tfni)
    local tf = io.open(tfno,'r')
    local s = tf:read('*l')
    while s do
       if s:match('^.*%s+  '.. term .. ' ') then
-	 return true
+	 tf:close()
+	 os.remove(tfno)
+         return true
       end
       s = tf:read('*l')
    end
+   tf:close()
+   os.remove(tfno)
    return false
 end
 
@@ -292,7 +297,7 @@ local function getvars(t)
       end
    end
    legend = legend or ''
-   format = format or '+'
+   format = format or ''
    if not x then
       error('expecting [string,] vector [,vector] [,string]')
    end
@@ -773,16 +778,6 @@ function gnuplot.grid(toggle)
    end
 end
 
-function gnuplot.xrange(xmin, xmax)
-  writeToCurrent('set xrange [ '..xmin..' : '..xmax..' ]')
-  refreshCurrent()
-end
-
-function gnuplot.yrange(ymin, ymax)
-  writeToCurrent('set yrange [ '..ymin..' : '..ymax..' ]')
-  refreshCurrent()
-end
-
 function gnuplot.movelegend(hloc,vloc)
    if not _gptable.hasrefresh then
       print('gnuplot.movelegend disabled')
@@ -797,6 +792,30 @@ function gnuplot.movelegend(hloc,vloc)
    writeToCurrent('set key ' .. hloc .. ' ' .. vloc)
    refreshCurrent()
 end
+
+function gnuplot.axis(axis)
+   if not _gptable.hasrefresh then
+      print('gnuplot.axis disabled')
+      return
+   end
+   if axis == 'auto' then
+      writeToCurrent('set size nosquare')
+      writeToCurrent('set autoscale')
+      refreshCurrent()
+   elseif axis == 'image' or axis == 'equal' then
+      writeToCurrent('set size ratio -1')
+      refreshCurrent()
+   elseif axis == 'fill' then
+      writeToCurrent('set size ratio 1,1')
+      refreshCurrent()
+   elseif type(axis) == 'table' then
+      if #axis ~= 4 then print('axis should have 4 componets {xmin,xmax,ymin,ymax}'); return end
+      writeToCurrent('set xrange [' .. axis[1] .. ':' .. axis[2] .. ']')
+      writeToCurrent('set yrange [' .. axis[3] .. ':' .. axis[4] .. ']')
+      refreshCurrent()
+   end
+end
+
 function gnuplot.raw(str)
    writeToCurrent(str)
 end

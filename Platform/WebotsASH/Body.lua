@@ -178,8 +178,8 @@ local function update_sensors()
     l_fts[i] = buffer:get('double', (i-1)*8 + #joint.id*8)
     r_fts[i] = buffer:get('double', (i-1)*8 + #joint.id*8 + 48)
   end
-  dcm:set_force_torque(l_fts, 'l_ankle')
-  dcm:set_force_torque(r_fts, 'r_ankle')
+  dcm:set_force_torque(l_fts, 'l_foot')
+  dcm:set_force_torque(r_fts, 'r_foot')
   webots.wb_receiver_next_packet(tags.physics_receiver)
 end
 

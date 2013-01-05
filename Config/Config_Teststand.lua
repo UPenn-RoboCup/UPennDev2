@@ -10,6 +10,7 @@ function loadconfig(configName)
 end
 
 loadconfig('Config_Teststand_Devices')
+loadconfig('Config_Teststand_Mechanics')
 loadconfig('Config_Teststand_Bias')
 
 Config.platform = {}

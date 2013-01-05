@@ -1,11 +1,13 @@
+require('fsm')
+
 ---------------------------------------------------------
 -- Motion State Machine Base Class
 ---------------------------------------------------------
 
-require('fsm')
-
 MotionFSM = {}
+
 MotionFSM.__index = MotionFSM
+MotionFSM.__mtstring = 'MotionFSM'
 setmetatable(MotionFSM, fsm)
 
 function MotionFSM.new(initialState, ...)

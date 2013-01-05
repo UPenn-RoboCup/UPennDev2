@@ -1,7 +1,6 @@
 addpath(genpath('.'))
-init_monitor
-actuator = shm('actuatorShm');
-sensor = shm('sensorShm');
+startup
+dcm = shm('dcm');
 
 % test stand servo id
 servo_id = 1
@@ -30,10 +29,10 @@ while (true)
   i = mod(i, N) + 1;
 
   % update shared memory
-  position_command = actuator.get_servo_position();
-  position_actual = sensor.get_servo_position();
-  force_command = actuator.get_servo_force();
-  force_actual = sensor.get_servo_force();
+  position_command = dcm.get_joint_position();
+  position_actual = dcm.get_joint_position_sensor();
+  force_command = dcm.get_joint_force();
+  force_actual = dcm.get_joint_force_sensor();
 
   % update buffers
   position_buffer(i) = position_actual(servo_id);

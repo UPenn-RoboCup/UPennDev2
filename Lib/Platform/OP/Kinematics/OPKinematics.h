@@ -12,7 +12,6 @@ const double PI = 2*asin(1);
 const double SQRT2 = sqrt(2);
 
 
-//Those values are not correct for OP.. we need actual spec sheet
 const double neckOffsetZ = .026+.0505;//OP, calculated from spec
 const double neckOffsetX = .013;//OP, calculated from spec
 const double shoulderOffsetX = .013;//OP, calculated from spec
@@ -24,7 +23,6 @@ const double upperArmLength = .060;  //OP, spec
 const double lowerArmLength = .129;  //OP, spec
 
 const double hipOffsetY = .037;    //OP, measured
-//const double hipOffsetZ = .050;    //OP, Guesswork
 const double hipOffsetZ = .096;    //OP, Calculated from spec
 const double hipOffsetX = .008;    //OP, Calculated from spec
 const double thighLength = .0930;  //OP, spec
@@ -61,4 +59,8 @@ darwinop_kinematics_inverse_legs(
 			    const double *pTorso,
 			    int legSupport=0);
 
+std::vector<double> darwinop_kinematics_inverse_arm(
+			    const double *dArm,
+			    const double *elbow
+			    );
 #endif

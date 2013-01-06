@@ -76,6 +76,32 @@ function set_waist_hardness(val)
 
 end
 
+function set_lleg_pid(val)
+  --Usage: {P gain, I gain, D gain}
+
+  p_param = val[1]*vector.ones(nJointLLeg);
+  i_param = val[2]*vector.ones(nJointLLeg);
+  d_param = val[3]*vector.ones(nJointLLeg);
+
+  set_actuator_p_param(p_param,indexLLeg);
+  set_actuator_i_param(i_param,indexLLeg);
+  set_actuator_d_param(d_param,indexLLeg);
+  set_actuator_slopeChanged(1,1);
+end
+
+function set_rleg_pid(val)
+  --Usage: {P gain, I gain, D gain}
+  p_param = val[1]*vector.ones(nJointRLeg);
+  i_param = val[2]*vector.ones(nJointRLeg);
+  d_param = val[3]*vector.ones(nJointRLeg);
+
+  set_actuator_p_param(p_param,indexRLeg);
+  set_actuator_i_param(i_param,indexRLeg);
+  set_actuator_d_param(d_param,indexRLeg);
+
+  set_actuator_slopeChanged(1,1);
+end
+
 function set_body_hardness(val)
   if (type(val) == "number") then
     val = val*vector.ones(nJoint);
@@ -166,50 +192,22 @@ function set_syncread_enable(val)
 end
 
 function set_lleg_slope(val)
-  if Config.servo.pid==0 then 
-    --Usage: compliance slope
+  if (type(val) == "number") then
     val = val*vector.ones(nJointLLeg);
-    set_actuator_slope(val, indexLLeg);
-  else
---SJ: default P gain:4, stiffened P gain: 8 for new firmware
---    default c.slope:32, stiffened c.slope: 16 for old firmware
-
-    p_param = 128/val *vector.ones(nJointLLeg);
-    set_actuator_p_param(p_param,indexLLeg);
-
---[[
-    --Usage: {P gain, I gain, D gain}
-    p_param = val[2]*vector.ones(nJointLLeg);
-    i_param = val[2]*vector.ones(nJointLLeg);
-    d_param = val[3]*vector.ones(nJointLLeg);
-    set_actuator_p_param(p_param,indexLLeg);
-    set_actuator_i_param(i_param,indexLLeg);
-    set_actuator_d_param(d_param,indexLLeg);
---]]
   end
-  set_actuator_slopeChanged(1,1);
+  set_actuator_gain(val, indexLLeg);
+  set_actuator_gainChanged(1,1);
 end
 
 function set_rleg_slope(val)
-  if Config.servo.pid==0 then 
-    --Usage: compliance slope
-    val = val*vector.ones(nJointRLeg);
-    set_actuator_slope(val, indexRLeg);
-  else
-    p_param = 128/val *vector.ones(nJointRLeg);
-    set_actuator_p_param(p_param,indexRLeg);
+  --Now val==0 for regular p gain
+  --    val==1 for stiff p gain (for kicking
 
---[[
-    --Usage: {P gain, I gain, D gain}
-    p_param = val[1]*vector.ones(nJointRLeg);
-    i_param = val[2]*vector.ones(nJointRLeg);
-    d_param = val[3]*vector.ones(nJointRLeg);
-    set_actuator_p_param(p_param,indexRLeg);
-    set_actuator_i_param(i_param,indexRLeg);
-    set_actuator_d_param(d_param,indexRLeg);
---]]
+  if (type(val) == "number") then
+    val = val*vector.ones(nJointRLeg);
   end
-  set_actuator_slopeChanged(1,1);
+  set_actuator_gain(val, indexRLeg);
+  set_actuator_gainChanged(1,1);
 end
 
 function set_torque_enable(val)
@@ -217,19 +215,7 @@ function set_torque_enable(val)
   set_actuator_torqueEnableChanged(1);
 end
 
---[[
-function 
-for k,v in actuatorShm.next, actuatorShm do
-  actuator[k] = carray.cast(actuatorShm:pointer(k));
-  getfenv()["set_actuator_"..k] =
-    function(val, index)
-      return set_actuator_shm(k, val, index);
-    end
-end
---]]
-
 -- Set API compliance functions
-
 function get_sensor_imuGyr0()
   return vector.zeros(3)
 end
@@ -276,11 +262,13 @@ function set_indicator_goal(color)
 end
 
 function get_battery_level()
-  return 10;
+  batt=get_sensor_battery();
+  return batt[1]/10;
 end
 
 function get_change_state()
-  return 0;
+  local b = get_sensor_button();
+  return b[1];
 end
 
 function get_change_enable()
@@ -292,7 +280,8 @@ function get_change_team()
 end
 
 function get_change_role()
-  return 0;
+  local b = get_sensor_button();
+  return b[2];
 end
 
 function get_change_kickoff()
@@ -314,3 +303,14 @@ end
 function calibrate( count )
   return true
 end
+
+function get_sensor_fsrRight()
+  fsr = {0};
+  return fsr
+end
+
+function get_sensor_fsrLeft()
+  fsr = {0};
+  return fsr
+end
+

@@ -27,9 +27,8 @@ dev = {};
 dev.body = 'GenericWebotsBody'; 
 dev.camera = 'NaoWebotsCam';
 dev.kinematics = 'GenericKinematics';
-dev.comm = 'WebotsNaoComm';
-dev.monitor_comm = 'NaoMonitorComm';
 dev.game_control = 'WebotsNaoGameControl';
+dev.team='TeamNull';
 dev.walk = 'NaoWalk';
 dev.kick = 'NaoKick';
 

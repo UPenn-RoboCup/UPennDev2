@@ -1,0 +1,25 @@
+#!/bin/bash
+
+case "$1" in
+  'scarface')
+    IP=192.168.123.101;;
+  'betty')
+    IP=192.168.123.102;;
+  'linus')
+    IP=192.168.123.103;;
+  'lucy')
+    IP=192.168.123.104;;
+  'hokie')
+    IP=192.168.123.105;;
+  'jiminy')
+    IP=192.168.123.106;;
+  'felix')
+    IP=192.168.123.107;;
+  'sally')
+    IP=192.168.123.108;;
+  '')
+    echo "Arguments must be one of following robot"
+    echo "scarface betty linus lucy hokie jiminy felix sally"
+esac
+
+ssh darwin@$IP

@@ -424,17 +424,35 @@ end
 -- pi2 dmp policy
 --------------------------------------------------------------------------------
 
-function pi2.dmp_policy.new(dmp_object, n_time_steps)
+function pi2.dmp_policy.new(dmp_object, n_time_steps, dimensions)
   local o = {}
   o.dmp = dmp_object                               -- dmp object
-  o.n_dimensions = dmp_object:get_dimensions()     -- number of dimensions
   o.n_time_steps = n_time_steps                    -- number of time_steps
+  o.n_dimensions = nil                             -- number of open dimensions
+  o.dimensions = {}                                -- open dimensions
+
+  if (dimensions) then
+    o.n_dimensions = #dimensions
+    for d = 1, o.n_dimensions do
+      o.dimensions[d] = dimensions[d]
+    end
+  else
+    o.n_dimensions = o.dmp:get_dimensions() 
+    for d = 1, o.n_dimensions do
+      o.dimensions[d] = d
+    end
+  end
+
   return setmetatable(o, pi2.dmp_policy)
 end
 
 function pi2.dmp_policy.get_parameters(o)
   -- get controller parameter vectors
-  return o.dmp:get_parameters()
+  local parameters = {}
+  for d = 1, o.n_dimensions do
+    parameters[d] = o.dmp:get_parameters(o.dimensions[d])
+  end
+  return parameters
 end
 
 function pi2.dmp_policy.get_basis_vectors(o)
@@ -449,7 +467,7 @@ function pi2.dmp_policy.get_basis_vectors(o)
   o.dmp:reset()
   for i = 1, o.n_time_steps do
     for d = 1, o.n_dimensions do
-      basis_vectors[d][i] = o.dmp:get_basis_vector(d)
+      basis_vectors[d][i] = o.dmp:get_basis_vector(o.dimensions[d])
     end
     o.dmp:integrate()
   end
@@ -461,8 +479,7 @@ end
 function pi2.dmp_policy.get_temporal_weights(o)
   -- get temporal weights for parameter update averaging
 
-  -- use basis activations for temporal weighting
-  return o:get_basis_vectors()
+  return o:get_basis_vectors() -- use basis activations for temporal weighting
 end
 
 function pi2.dmp_policy.evaluate(o, parameters)
@@ -477,14 +494,32 @@ end
 function pi2.rmp_policy.new(rmp_object, n_time_steps)
   local o = {} 
   o.rmp = rmp_object                               -- rmp object
-  o.n_dimensions = rmp_object:get_dimensions()     -- number of dimensions
   o.n_time_steps = n_time_steps                    -- number of time steps
+  o.n_dimensions = nil                             -- number of open dimensions
+  o.dimensions = {}                                -- open dimensions
+
+  if (dimensions) then
+    o.n_dimensions = #dimensions
+    for d = 1, o.n_dimensions do
+      o.dimensions[d] = dimensions[d]
+    end
+  else
+    o.n_dimensions = o.rmp:get_dimensions() 
+    for d = 1, o.n_dimensions do
+      o.dimensions[d] = d
+    end
+  end
+
   return setmetatable(o, pi2.rmp_policy)
 end
 
 function pi2.rmp_policy.get_parameters(o)
   -- get controller parameter vectors
-  return o.rmp:get_parameters()
+  local parameters = {}
+  for d = 1, o.n_dimensions do
+    parameters[d] = o.rmp:get_parameters(o.dimensions[d])
+  end
+  return parameters
 end
 
 function pi2.rmp_policy.get_basis_vectors(o)
@@ -499,7 +534,7 @@ function pi2.rmp_policy.get_basis_vectors(o)
   o.rmp:reset()
   for i = 1, o.n_time_steps do
     for d = 1, o.n_dimensions do
-      basis_vectors[d][i] = o.rmp:get_basis_vector(d)
+      basis_vectors[d][i] = o.rmp:get_basis_vector(o.dimensions[d])
     end
     o.rmp:integrate()
   end
@@ -511,8 +546,7 @@ end
 function pi2.rmp_policy.get_temporal_weights(o)
   -- get temporal weights for parameter update averaging
 
-  -- use basis activations for temporal weighting
-  return o:get_basis_vectors()
+  return o:get_basis_vectors() -- use basis activations for temporal weighting
 end
 
 function pi2.rmp_policy.evaluate(o, parameters)

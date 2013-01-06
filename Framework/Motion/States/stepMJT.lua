@@ -2,8 +2,10 @@
 -- Minimum Jerk Trajectory Step Controller
 --------------------------------------------------------------------------
 
+require('mcm')
 require('util')
 require('Body')
+require('vector')
 require('Config')
 require('trajectory')
 require('Kinematics')
@@ -62,27 +64,39 @@ local z_torso_midpoint_velocity = step.parameters.z_torso_midpoint_velocity
 
 local active                  = false
 local t0                      = Body.get_time()
+local ssp_begin_t             = nil
+local ssp_end_t               = nil
 
-local foot_start_t            = nil
-local foot_midpoint_t         = nil
-local foot_goal_t             = nil
-local torso_start_t           = nil
-local torso_midpoint_t        = nil
-local torso_goal_t            = nil
 local foot_start_position     = {}
 local foot_start_velocity     = {}
-local torso_start_position    = {}
-local torso_start_velocity    = {}
 local foot_midpoint_position  = {}
 local foot_midpoint_velocity  = {}
-local torso_midpoint_position = {}
-local torso_midpoint_velocity = {}
 local foot_goal_position      = {}
 local foot_goal_velocity      = {}
+local foot_trajectory         = {}
+
+local torso_start_position    = {}
+local torso_start_velocity    = {}
+local torso_midpoint_position = {}
+local torso_midpoint_velocity = {}
 local torso_goal_position     = {}
 local torso_goal_velocity     = {}
-local foot_trajectory         = {}
 local torso_trajectory        = {}
+
+local cop_start_position      = {}
+local cop_start_velocity      = {}
+local cop_ssp_begin_position  = {}
+local cop_ssp_begin_velocity  = {}
+local cop_ssp_end_position    = {}
+local cop_ssp_end_velocity    = {}
+local cop_goal_position       = {}
+local cop_goal_velocity       = {}
+local cop_trajectory          = {}
+
+local l_foot_sole_transform   = Config.mechanics.l_foot.sole_transform
+local r_foot_sole_transform   = Config.mechanics.r_foot.sole_transform
+local l_foot_sole_offset      = l_foot_sole_transform:get_pose6D()
+local r_foot_sole_offset      = r_foot_sole_transform:get_pose6D()
 
 -- Private
 --------------------------------------------------------------------------
@@ -109,100 +123,141 @@ end
 
 local function update_trajectories()
   -- timing
-  foot_start_t = step_duration*step_ds_ratio/2
-  foot_midpoint_t = step_duration/2
-  foot_goal_t = step_duration*(1 - step_ds_ratio/2)
+  ssp_begin_t = step_duration*step_ds_ratio/2
+  ssp_end_t = step_duration*(1 - step_ds_ratio/2)
 
-  torso_start_t = 0
-  torso_midpoint_t = step_duration/2
-  torso_goal_t = step_duration
-
-  -- start state
+  -- foot state
   foot_start_position[1] = -step_size/2
   foot_start_position[2] = 2*y_torso_offset
   foot_start_position[3] = 0
-
   foot_start_velocity[1] = 0 
   foot_start_velocity[2] = 0 
   foot_start_velocity[3] = 0
 
-  torso_start_position[1] = x_torso_offset - step_size/4
-  torso_start_position[2] = y_torso_offset
-  torso_start_position[3] = z_torso_offset
-
-  torso_start_velocity[1] = x_torso_start_velocity
-  torso_start_velocity[2] = y_torso_start_velocity
-  torso_start_velocity[3] = z_torso_start_velocity
-
-  -- midpoint state
   foot_midpoint_position[1] = 0
   foot_midpoint_position[2] = 2*y_torso_offset
   foot_midpoint_position[3] = step_height
-
-  foot_midpoint_velocity[1] = step_size/(foot_goal_t - foot_start_t)
+  foot_midpoint_velocity[1] = step_size/(ssp_end_t - ssp_begin_t)
   foot_midpoint_velocity[2] = 0
   foot_midpoint_velocity[3] = 0
 
-  torso_midpoint_position[1] = x_torso_offset + x_torso_swing
-  torso_midpoint_position[2] = y_torso_offset + y_torso_swing
-  torso_midpoint_position[3] = z_torso_offset + z_torso_swing
-
-  torso_midpoint_velocity[1] = x_torso_midpoint_velocity
-  torso_midpoint_velocity[2] = y_torso_midpoint_velocity
-  torso_midpoint_velocity[3] = z_torso_midpoint_velocity
-
-  -- goal state
   foot_goal_position[1] = step_size/2
   foot_goal_position[2] = 2*y_torso_offset
   foot_goal_position[3] = 0
-
   foot_goal_velocity[1] = 0 
   foot_goal_velocity[2] = 0
   foot_goal_velocity[3] = 0
 
+  -- torso state
+  torso_start_position[1] = x_torso_offset - step_size/4
+  torso_start_position[2] = y_torso_offset
+  torso_start_position[3] = z_torso_offset
+  torso_start_velocity[1] = x_torso_start_velocity
+  torso_start_velocity[2] = y_torso_start_velocity
+  torso_start_velocity[3] = z_torso_start_velocity
+
+  torso_midpoint_position[1] = x_torso_offset + x_torso_swing
+  torso_midpoint_position[2] = y_torso_offset + y_torso_swing
+  torso_midpoint_position[3] = z_torso_offset + z_torso_swing
+  torso_midpoint_velocity[1] = x_torso_midpoint_velocity
+  torso_midpoint_velocity[2] = y_torso_midpoint_velocity
+  torso_midpoint_velocity[3] = z_torso_midpoint_velocity
+
   torso_goal_position[1] = x_torso_offset + step_size/4
   torso_goal_position[2] = y_torso_offset
   torso_goal_position[3] = z_torso_offset
-
   torso_goal_velocity[1] = x_torso_start_velocity 
   torso_goal_velocity[2] = -y_torso_start_velocity
   torso_goal_velocity[3] = z_torso_start_velocity
+
+  -- cop state
+  cop_start_position[1] = -step_size/2 + r_foot_sole_offset[1]
+  cop_start_position[2] = 2*y_torso_offset + r_foot_sole_offset[2]
+  cop_start_position[3] = 0 
+  cop_start_velocity[1] = 0
+  cop_start_velocity[2] = 0
+  cop_start_velocity[3] = 0
+
+  cop_ssp_begin_position[1] = l_foot_sole_offset[1] 
+  cop_ssp_begin_position[2] = l_foot_sole_offset[2] 
+  cop_ssp_begin_position[3] = 0
+  cop_ssp_begin_velocity[1] = 0
+  cop_ssp_begin_velocity[2] = 0
+  cop_ssp_begin_velocity[3] = 0
+
+  cop_ssp_end_position[1] = l_foot_sole_offset[1]
+  cop_ssp_end_position[2] = l_foot_sole_offset[2]
+  cop_ssp_end_position[3] = 0
+  cop_ssp_end_velocity[1] = 0
+  cop_ssp_end_velocity[2] = 0
+  cop_ssp_end_velocity[3] = 0
+
+  cop_goal_position[1] = step_size/2 + r_foot_sole_offset[1]
+  cop_goal_position[2] = 2*y_torso_offset + r_foot_sole_offset[2]
+  cop_goal_position[3] = 0
+  cop_goal_velocity[1] = 0
+  cop_goal_velocity[2] = 0
+  cop_goal_velocity[3] = 0
 
   -- torso and swing foot trajectories
   for i = 1,3 do
     local foot_lift_trajectory = trajectory.minimum_jerk(
       {foot_start_position[i], foot_start_velocity[i]},
       {foot_midpoint_position[i], foot_midpoint_velocity[i]},
-      foot_midpoint_t - foot_start_t)
+      (ssp_end_t- ssp_begin_t)/2)
     local foot_land_trajectory = trajectory.minimum_jerk(
       {foot_midpoint_position[i], foot_midpoint_velocity[i]},
       {foot_goal_position[i], foot_goal_velocity[i]},
-      foot_goal_t - foot_midpoint_t)
+      (ssp_end_t - ssp_begin_t)/2)
 
     local torso_lift_trajectory = trajectory.minimum_jerk(
       {torso_start_position[i], torso_start_velocity[i]},
       {torso_midpoint_position[i], torso_midpoint_velocity[i]},
-      torso_midpoint_t - torso_start_t)
+      step_duration/2)
     local torso_land_trajectory = trajectory.minimum_jerk(
       {torso_midpoint_position[i], torso_midpoint_velocity[i]},
       {torso_goal_position[i], torso_goal_velocity[i]},
-      torso_goal_t - torso_midpoint_t)
+      step_duration/2)
+
+    local cop_lift_trajectory = trajectory.minimum_jerk(
+      {cop_start_position[i], cop_start_velocity[i]},
+      {cop_ssp_begin_position[i], cop_ssp_begin_velocity[i]},
+      ssp_begin_t*2)
+    local cop_ssp_trajectory = trajectory.minimum_jerk(
+      {cop_ssp_begin_position[i], cop_ssp_begin_velocity[i]},
+      {cop_ssp_end_position[i], cop_ssp_end_velocity[i]},
+      (ssp_end_t - ssp_begin_t))
+    local cop_land_trajectory = trajectory.minimum_jerk(
+      {cop_ssp_end_position[i], cop_ssp_end_velocity[i]},
+      {cop_goal_position[i], cop_goal_velocity[i]},
+      ssp_begin_t*2)
 
     foot_trajectory[i] = function (t)
-      if (t < foot_midpoint_t) then
-	return foot_lift_trajectory(t - foot_start_t)
+      if (t < step_duration/2) then
+	return foot_lift_trajectory(t - ssp_begin_t)
       else
-	return foot_land_trajectory(t - foot_midpoint_t)
+	return foot_land_trajectory(t - step_duration/2)
       end
     end
 
     torso_trajectory[i] = function (t) 
-      if (t < torso_midpoint_t) then
-	return torso_lift_trajectory(t - torso_start_t)
+      if (t < step_duration/2) then
+	return torso_lift_trajectory(t)
       else
-	return torso_land_trajectory(t - torso_midpoint_t)
+	return torso_land_trajectory(t - step_duration/2)
       end
     end
+
+    cop_trajectory[i] = function (t) 
+      if (t < ssp_begin_t) then
+        return cop_lift_trajectory(t + ssp_begin_t)
+      elseif (t > ssp_end_t) then
+        return cop_land_trajectory(t - ssp_end_t)
+      else
+        return cop_ssp_trajectory(t - ssp_begin_t)
+      end
+    end
+
   end
 end
 
@@ -222,6 +277,10 @@ function step:get_swing_foot_trajectory()
   return foot_trajectory
 end
 
+function step:get_cop_trajectory()
+  return cop_trajectory
+end
+
 function step:get_torso_start_position()
   return torso_start_position
 end
@@ -238,6 +297,10 @@ function step:get_joint_start_position()
   p_l_foot = p_torso:inv()
   p_r_foot = p_l_foot*p_r_foot
   return Kinematics.inverse_pos_legs(p_l_foot, p_r_foot)
+end
+
+function step:get_desired_cop()
+  return desired_cop
 end
 
 function step:reset()
@@ -260,12 +323,14 @@ end
 function step:update()
   local t = Body.get_time() - t0
   if (t < step_duration) then
-     -- calculate swing foot and torso coordinates relative stance foot 
+    -- calculate swing foot and torso coordinates relative stance foot 
     local foot_position = {}
     local torso_position = {}
+    local desired_cop = {}
     for i = 1,3 do
       torso_position[i] = torso_trajectory[i](t)
       foot_position[i] = foot_trajectory[i](t)
+      desired_cop[i] = cop_trajectory[i](t) - torso_position[i]
     end
 
     -- transform left and right foot coordinates into torso base frame 
@@ -278,6 +343,11 @@ function step:update()
     -- update actuators
     local q = Kinematics.inverse_pos_legs(p_l_foot, p_r_foot)
     dcm:set_joint_position(q, 'legs')
+
+    -- update desired center of pressure
+    mcm:set_desired_cop(desired_cop)
+  else
+    active = false
   end
 end
 

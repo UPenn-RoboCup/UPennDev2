@@ -33,13 +33,13 @@ field_margin = Config.vision.ball.field_margin or 0;
 
 th_headAngle = Config.vision.ball.th_headAngle or -10*math.pi/180;
 
-function detect(color)
+--function detect(color)
 
 --  enable_obs_challenge = Config.obs_challenge or 0;
 --  if enable_obs_challenge == 1 then
 --    colorCount = Vision.colorCount_obs;
 --  else
-    colorCount = Vision.colorCount;
+--    colorCount = Vision.colorCount;
 --  end
 
 ---Detects a ball of a given color.
@@ -47,13 +47,13 @@ function detect(color)
 --@return Table containing whether a ball was detected
 --If a ball is detected, also contains additional stats about the ball
 function detect(color)
+  colorCount = Vision.colorCount;
   headAngle = Body.get_head_position();
   --print("headPitch:",headAngle[2]*180/math.pi);
   local ball = {};
   ball.detect = 0;
   vcm.add_debug_message(string.format("\nBall: pixel count: %d\n",
-	colorCount[color]));
-  
+    colorCount[color] ));
 --  print(string.format("\nBall: pixel count: %d\n",
 --	      colorCount[color]));
 

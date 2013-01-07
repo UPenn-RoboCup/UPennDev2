@@ -227,7 +227,7 @@ end
 --@param pos All possible positions of the goals
 --For example, each post location is an entry in pos
 --@param v x and y coordinates of detected goal relative to robot
-function goal_observation(pos, v)
+--function goal_observation(pos, v)
 ---------------------------------------------------------------------------
 -- Now we have two ambiguous goals to check
 -- So we separate the triangulation part and the update part

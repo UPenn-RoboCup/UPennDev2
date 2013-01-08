@@ -16,7 +16,7 @@ end
 package.cpath = "./?."..csuffix..";"..package.cpath
 
 require('lcm')
-require('lcm_rpc_request_t')
+require('thor_rpc_request_t')
 
 local userdata = "useful_userdata"
 

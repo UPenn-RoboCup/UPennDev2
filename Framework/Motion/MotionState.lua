@@ -1,6 +1,7 @@
 require('dcm')
 require('vector')
 require('Config')
+require('serialization')
 
 ---------------------------------------------------------
 -- Motion State Base Class
@@ -38,6 +39,15 @@ function MotionState:set_parameters(parameters)
   end
 end
 
+function MotionState:load_parameters(filepath)
+  -- load control parameters from file
+  local success, parameters = pcall(dofile, filepath)
+  if (not success) then
+    error(string.format('Could not load parameter file %s', filepath))
+  end
+  self:set_parameters(parameters)
+end
+
 function MotionState:set_joint_access(value, index)
   -- set joint write access privileges
   if value == true then value = 1 end
@@ -66,6 +76,12 @@ function MotionState:get_parameters()
     parameters[k] = self:get_parameter(k)
   end
   return parameters
+end
+
+function MotionState:save_parameters(filepath)
+  local f = assert(io.open(filepath,'w+'))
+  f:write('return '..serialization.serialize(self:get_parameters()))
+  f:close()
 end
 
 function MotionState:get_joint_access(index)

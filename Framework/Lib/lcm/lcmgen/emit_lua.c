@@ -149,7 +149,7 @@ static const char *map_type_tocommand(const char *t, int flag)
     
     if (!strcmp(t, "byte") && flag > 0)
         return "lua_tostring";
-    else
+    else if (!strcmp(t, "byte"))
         return "lua_tointeger";
 
     if (!strcmp(t,"double") || !strcmp(t, "float"))
@@ -172,7 +172,7 @@ static const char *map_type_pushcommand(const char *t, int flag)
     
     if (!strcmp(t, "byte") && flag > 0)
         return "lua_pushstring";
-    else
+    else if (!strcmp(t, "byte"))
         return "lua_pushinteger";
 
     if (!strcmp(t,"double") || !strcmp(t, "float"))
@@ -299,7 +299,7 @@ static void emit_lua_encode(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
         lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(ls->members, m);
 
         emit(1,"lua_getfield(L, 3, \"%s\");", lm->membername);
-        emit(1,"if (!lua_isnil(L, 4))");
+        emit(1,"if (!lua_isnil(L, 4)) {");
 
         int ndim = g_ptr_array_size(lm->dimensions);
         if (ndim == 0) {
@@ -307,13 +307,23 @@ static void emit_lua_encode(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
                                 map_type_tocommand(lm->type->lctypename, 0));
         } else {
             if (lcm_is_constant_size_array(lm)) {
-                emit_start(2, "msg->%s = ", lm->membername);
-                emit_continue( map_type_tocommand(lm->type->lctypename, 0),"%s" );
+                emit(2, "int len = lua_objlen(L, 4);");
+                lcm_dimension_t *ld = (lcm_dimension_t *) g_ptr_array_index(lm->dimensions, 0);
+                emit(2, "if (len != %s)", ld->size);
+                emit(3, "luaL_error(L, \"Input table size and defined lcm type size not match!\");");
+                emit(2, "for (int i = 1; i <= %s; i++) {", ld->size);
+                emit(3, "lua_rawgeti(L, 4, i);");
+                emit_start(3, "msg->%s", lm->membername);
+                emit_continue("[i] = %s", map_type_tocommand(lm->type->lctypename, 0));
+                emit_end("(L, -1);");
+                emit(2, "}");
+//                emit_start(2, "msg->%s = ", lm->membername);
+//                emit_continue( map_type_tocommand(lm->type->lctypename, 0),"%s" );
 //                for (unsigned int d = 0; d < ndim; d++) {
 //                    lcm_dimension_t *ld = (lcm_dimension_t *) g_ptr_array_index(lm->dimensions, d);
 //                    emit_continue("[%s]", ld->size);
 //                }
-                emit_end("(L, 4);");
+//                emit_end("(L, 4);");
             } else {
 //                emit(2, "msg->%s = %s%s(L, 4);", lm->membername, map_type_change(lm->type->lctypename),
 //                                map_type_tocommand(lm->type->lctypename, 1));
@@ -323,6 +333,7 @@ static void emit_lua_encode(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
                 emit_end("(L, 4);");
             }
         }
+        emit(1, "}");
         emit(1, "lua_pop(L ,1);\n");
     }
 
@@ -348,6 +359,12 @@ static void emit_lua_decode(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
         } else {
             printf("size not 0 %s\n", lm->membername);
             if (lcm_is_constant_size_array(lm)) {
+              lcm_dimension_t *ld = (lcm_dimension_t *) g_ptr_array_index(lm->dimensions, 0);
+              emit(1, "lua_createtable(L, %s, 0);", ld->size);
+              emit(1, "for (int i = 1; i <= %s; i++) {", ld->size);
+              emit(2, "%s(L, msg->%s[i]);", map_type_pushcommand(lm->type->lctypename, 1), lm->membername);
+              emit(2, "lua_rawseti(L, -2, i);");
+              emit(1, "}");
 //                for (unsigned int d = 0; d < ndim; d++) {
 //                    lcm_dimension_t *ld = (lcm_dimension_t *) g_ptr_array_index(lm->dimensions, d);
 //                    emit_continue("[%s]", ld->size);

@@ -2,13 +2,10 @@ package thor;
 
 struct shm_t
 {
-    double   position[3];
-    int8_t  imageSize[2];
-    int16_t width;
-    int16_t height;
-    int16_t image[width][height];
-    int32_t  process_id;
     int32_t  request_id;
     int32_t  nbytes;
     byte     eval_string[nbytes];
+    int32_t  position[3];
+    int32_t   id;
+    double  vel[2];
 }

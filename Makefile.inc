@@ -22,13 +22,15 @@ else
   LIB_KDL= -L/usr/local/lib/ -lorocos-kdl
 endif
 
+ifeq ($(shell pkg-config --exists luajit && echo 0),0)
+  LUAJIT_INC=`pkg-config luajit --cflags`
+else 
 ifeq ($(shell pkg-config --exists lua5.1 && echo 0),0)
   LUA_INC=`pkg-config lua5.1 --cflags`
 else
   LUA_INC=`pkg-config lua --cflags`
 endif
-
-LUAJIT_INC=`pkg-config luajit --cflags`
+endif
 
 INCLUDES=-I/usr/local/include -I/usr/include $(LUA_INC) $(LUAJIT_INC)
 LIB_DIR=-L/usr/local/lib -L/usr/lib

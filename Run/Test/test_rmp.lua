@@ -4,8 +4,8 @@ require('rmp')
 require('unix')
 require('gnuplot')
 
+local n_basis = 10 -- number of basis functions
 local dt = 0.001   -- integrator time step
-local nbasis = 10  -- number of basis functions
 local tau = 1      -- movement period
 local xdata = {}   -- training trajectory
 local tdata = {}   -- training sample times
@@ -17,10 +17,10 @@ for i = 1, 10000 do
 end
 
 -- initialize rmp
-local primitive = rmp.new(1)
+local primitive = rmp.new(1, n_basis, 'periodic')
 primitive:set_time_step(dt)
 primitive:set_setpoint({0})
-local fdata, sdata = primitive:learn_trajectory({xdata}, tdata, nbasis)
+local fdata, sdata = primitive:learn_trajectory({xdata}, tdata)
 primitive:reset()
 
 local flearn = {}

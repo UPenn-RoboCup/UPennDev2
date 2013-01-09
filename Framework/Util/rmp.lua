@@ -10,12 +10,12 @@ require('numlua')
 
   Example usage
   -------------
-  local dof = 1     -- degrees of freedom
-  local dt = 0.001  -- integrator time step
-  local nbasis = 20 -- number of basis functions
-  local tau = 1     -- movement period
-  local xdata = {}  -- training trajectory
-  local tdata = {}  -- training sample times
+  local n_dimensions = 1 -- degrees of freedom
+  local n_basis = 20     -- number of basis functions
+  local dt = 0.001       -- integrator time step
+  local tau = 1          -- movement period
+  local xdata = {}       -- training trajectory
+  local tdata = {}       -- training sample times
 
   -- initialize example trajectory
   for i = 1, math.floor(tau/dt) do
@@ -24,10 +24,10 @@ require('numlua')
   end
 
   -- initialize rmp
-  local primitive = rmp.new(dof)
+  local primitive = rmp.new(n_dimensions, n_basis)
   primitive:set_time_step(dt)
   primitive:set_setpoint({0}) -- define setpoint prior to training
-  primitive:learn_trajectory({xdata}, tdata, nbasis, 'periodic')
+  primitive:learn_trajectory({xdata}, tdata)
   primitive:reset()
 
   -- integrate rmp
@@ -102,16 +102,37 @@ end
 -- rhythmic movement primitive
 --------------------------------------------------------------------------------
 
-function rmp.new(n_dimensions, k_gain, d_gain, alpha)
+function rmp.new(n_dimensions, n_basis, basis_type, k_gain, d_gain, alpha)
   local o = {}
-  assert(n_dimensions > 0, "invalid dimensionality")
   o.n_dimensions = n_dimensions -- number of transformation systems
   o.iters        = 1            -- integrator iterations
   o.dt           = nil          -- integrator time step
+  assert(o.n_dimensions > 0, "invalid dimensionality")
+
+  -- initialize number of basis functions per dimension
+  if (type(n_basis) ~= 'table') then
+    local value = n_basis 
+    n_basis = {}
+    for i = 1,o.n_dimensions do
+      n_basis[i] = value 
+    end
+  end
+
+  -- intialize basis type for each dimension 
+  if (type(basis_type) ~= 'table') then
+    local value = basis_type 
+    basis_type = {}
+    for i = 1,o.n_dimensions do
+      basis_type[i] = value 
+    end
+  end
+
+  -- intialize canonical and transformation systems
   o.canonical_system = rmp.canonical_system.new(alpha)
   o.transform_system = {}
   for i = 1,o.n_dimensions do
-    o.transform_system[i] = rmp.transform_system.new(k_gain, d_gain)
+    o.transform_system[i] =
+      rmp.transform_system.new(n_basis[i], basis_type[i], k_gain, d_gain)
   end
   return setmetatable(o, rmp)
 end
@@ -331,12 +352,10 @@ function rmp.get_transform_system(o, dim)
   return o.transform_system[dim]
 end
 
-function rmp.learn_trajectory(o, xdata, tdata, nbasis, basis_type)
+function rmp.learn_trajectory(o, xdata, tdata)
   -- learn rmp parameters from periodic or antiperiodic time-series trajectory
   -- xdata           : position samples for each DoF  [n_dimensions x N]
   -- tdata           : sample times for each position [1 x N]
-  -- nbasis          : optional number of basis functions
-  -- basis_type      : 'periodic' or 'antiperiodic'
 
   local x            = {}
   local xd           = {}
@@ -398,9 +417,8 @@ function rmp.learn_trajectory(o, xdata, tdata, nbasis, basis_type)
 
   -- learn nonlinear functions via linear regression
   for i = 1,o.n_dimensions do
-    local f = rmp.nonlinearity.new(nbasis, basis_type)
+    local f = o.transform_system[i]:get_nonlinearity()
     f:fit(fdata[i], sdata)
-    o.transform_system[i]:set_nonlinearity(f)
   end
 
   o:reset()
@@ -427,13 +445,13 @@ end
 -- nonlinearity
 --------------------------------------------------------------------------------
 
-function rmp.nonlinearity.new(nbasis, basis_type, theta)
+function rmp.nonlinearity.new(n_basis, basis_type, theta)
   local o     = {}
-  o.nbasis    = nbasis or 20                -- number of basis functions
+  o.n_basis   = n_basis or 20               -- number of basis functions
   o.basis     = nil                         -- basis function
   o.centers   = {}                          -- basis function centers
   o.widths    = {}                          -- basis function widths
-  o.theta     = zeros(o.nbasis)             -- parameter vector
+  o.theta     = zeros(o.n_basis)            -- parameter vector
 
   -- initialize basis functions
   if (basis_type == 'antiperiodic') then
@@ -442,9 +460,9 @@ function rmp.nonlinearity.new(nbasis, basis_type, theta)
     o.basis = von_mises
   end
 
-  for i = 1,o.nbasis do
-    o.centers[i] = 2*math.pi*(i - 1)/o.nbasis
-    o.widths[i] = o.nbasis
+  for i = 1,o.n_basis do
+    o.centers[i] = 2*math.pi*(i - 1)/o.n_basis
+    o.widths[i] = o.n_basis
   end
 
   -- initialize parameter vector
@@ -488,11 +506,11 @@ function rmp.nonlinearity.get_basis_vector(o, s)
   local psi = {}
   local sum = 0
 
-  for i = 1,o.nbasis do
+  for i = 1,o.n_basis do
     psi[i] = o.basis(s, o.centers[i], o.widths[i])
     sum = sum + psi[i]
   end
-  for i = 1,o.nbasis do
+  for i = 1,o.n_basis do
     psi[i] = psi[i]/sum
   end
 
@@ -505,11 +523,11 @@ function rmp.nonlinearity.fit(o, fdata, sdata)
   -- sdata           : phase values at each sample [1 x N]
 
   local y = matrix.fromtable(fdata)
-  local X = matrix.new(#sdata, o.nbasis)
+  local X = matrix.new(#sdata, o.n_basis)
 
   for i = 1,#sdata do
     local psi = o:get_basis_vector(sdata[i])
-    for j = 1,o.nbasis do
+    for j = 1,o.n_basis do
       X[i][j] = psi[j]
     end
   end
@@ -522,7 +540,7 @@ function rmp.nonlinearity.predict(o, s)
   -- s               : canonical system state (rmp phase)
 
   local f, sum = 0, 0
-  for i = 1,o.nbasis do
+  for i = 1,o.n_basis do
     local psi = o.basis(s, o.centers[i], o.widths[i])
     f = f + o.theta[i]*psi
     sum = sum + psi
@@ -584,12 +602,12 @@ end
 -- transformation system
 --------------------------------------------------------------------------------
 
-function rmp.transform_system.new(k_gain, d_gain, f)
+function rmp.transform_system.new(n_basis, basis_type, k_gain, d_gain)
   local o = {}
   o.k_gain  = k_gain or 250                   -- spring constant
   o.d_gain  = d_gain or 2*math.sqrt(o.k_gain) -- damping coefficient
-  o.f       = f or rmp.nonlinearity.new()     -- nonlinear function f(s)
   o.dt      = nil                             -- integrator time step
+  o.f       = rmp.nonlinearity.new(n_basis, basis_type)
   rmp.transform_system.initialize(o)
   return setmetatable(o, rmp.transform_system)
 end

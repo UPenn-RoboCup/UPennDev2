@@ -1,4 +1,6 @@
 include ../../Makefile.inc
+#MEX=mex -v
+MEX=mex
 MEXEXT=$(shell mexext)
 LCMDIR=../../Framework/Lib/lcm
 
@@ -6,16 +8,22 @@ all: monitorComm time mexshm udpComm mexlcm
 
 monitorComm: monitorComm.cc
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -o libMonitor.o -c libMonitor.cc
-	mex -O $^ libMonitor.o $(INCLUDES)
+	$(MEX) -O $^ libMonitor.o $(INCLUDES)
 
 time: time.cc timeScalar.cc
-	mex -O $^ $(INCLUDES) $(LIBRT)
+	$(MEX) -O $^ $(INCLUDES) $(LIBRT)
+
+cjpeg: cjpeg.cpp
+	$(MEX) -O $^ $(INCLUDES) -ljpeg
+
+djpeg: djpeg.cpp
+	$(MEX) -O $^ $(INCLUDES) -ljpeg
 
 mexshm: mexshm.cpp
-	mex -O $^ $(INCLUDES) $(LIBRT)
+	$(MEX) -O $^ $(INCLUDES) $(LIBRT)
 	
 udpComm: UDPComm.cc
-	mex -O $^ $(INCLUDES) $(LIBRT)
+	$(MEX) -O $^ $(INCLUDES) $(LIBRT)
 
 mexlcm:
 	lcm-gen -j $(LCMDIR)/types/*.lcm

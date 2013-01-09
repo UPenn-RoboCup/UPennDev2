@@ -28,15 +28,22 @@ local slearn = {}
 local xlearn = {}
 local tlearn = {}
 local nonlinearity = primitive:get_transform_system(1):get_nonlinearity()
+local basis_vector = {}
+for i = 1, n_basis do
+  basis_vector[i] = {}
+end
 
 -- integrate rmp
 t0 = unix.time()
-for i = 1, math.floor(tau/dt) do
+for i = 1, math.floor(2*tau/dt) do
   primitive:integrate()
   tlearn[i] = i*dt
   xlearn[i] = primitive:get_position(1)
   slearn[i] = primitive:get_phase()
   flearn[i] = nonlinearity:predict(slearn[i])
+  for j = 1, n_basis do
+    basis_vector[j][i] = primitive:get_basis_vector(1)[j]
+  end
 end
 print('integration time', unix.time() - t0)
 
@@ -51,3 +58,12 @@ gnuplot.plot(
   {'f_learned(s)', slearn, flearn, '-'},
   {'f_target(s)', sdata, fdata[1], '-'}
 )
+
+
+local basis_plots = {}
+for j = 1, n_basis do
+  basis_plots[j] = {slearn, basis_vector[j], '-'}
+end
+
+gnuplot.figure()
+gnuplot.plot(unpack(basis_plots))

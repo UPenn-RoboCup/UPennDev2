@@ -508,7 +508,7 @@ function rmp.nonlinearity.get_basis_vector(o, s)
 
   for i = 1,o.n_basis do
     psi[i] = o.basis(s, o.centers[i], o.widths[i])
-    sum = sum + psi[i]
+    sum = sum + math.abs(psi[i])
   end
   for i = 1,o.n_basis do
     psi[i] = psi[i]/sum
@@ -543,7 +543,7 @@ function rmp.nonlinearity.predict(o, s)
   for i = 1,o.n_basis do
     local psi = o.basis(s, o.centers[i], o.widths[i])
     f = f + o.theta[i]*psi
-    sum = sum + psi
+    sum = sum + math.abs(psi)
   end
 
   return f/sum
@@ -595,7 +595,7 @@ function rmp.canonical_system.integrate(o, dt)
   -- dt : optional time step 
 
   local dt = dt or o.dt
-  o.s = o.s + dt/o.tau
+  o.s = o.s + 2*math.pi*dt/o.tau
   return o.s
 end
 

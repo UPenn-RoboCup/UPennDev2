@@ -75,6 +75,11 @@ then
   echo Starting test_step...
   cd Test
   exec $LUA test_step.lua
+elif [ "$1" = "train_step_rmp" ]
+then
+  echo Starting train_step_rmp...
+  cd Learn
+  exec $LUA train_step_rmp.lua
 elif [ "$1" = "slam_test" ]
 then
   echo Starting slam_test...

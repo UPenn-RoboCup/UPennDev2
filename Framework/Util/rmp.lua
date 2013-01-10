@@ -604,7 +604,7 @@ end
 
 function rmp.transform_system.new(n_basis, basis_type, k_gain, d_gain)
   local o = {}
-  o.k_gain  = k_gain or 250                   -- spring constant
+  o.k_gain  = k_gain or 500                   -- spring constant
   o.d_gain  = d_gain or 2*math.sqrt(o.k_gain) -- damping coefficient
   o.dt      = nil                             -- integrator time step
   o.f       = rmp.nonlinearity.new(n_basis, basis_type)

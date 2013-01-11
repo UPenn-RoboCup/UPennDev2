@@ -58,7 +58,7 @@ end
 --------------------------------------------------------------------------------
 step.parameters = {
   step_duration               = 0.70,   -- seconds
-  step_height                 = 0.04,   -- meters
+  step_height                 = 0.03,   -- meters
   step_ds_ratio               = 0.40,   -- ratio
   x_foot_offset               = 0.00,   -- meters
   y_foot_offset               = 0.097,  -- meters
@@ -176,35 +176,37 @@ local function initialize_torso_variables()
   torso_rmp:reset()
   torso_rmp:set_period(step_duration)
   torso_rmp:set_parameters(rmp_parameters)
+  torso_rmp:set_time_step(Body.get_time_step())
   if (support_foot == 'r') then
-    -- TEMPORARY HACK FOR FORWARD/VERTICAL STEPPING ONLY !
+    -- TEMPORARY HACK (FOR FORWARD/VERTICAL STEPPING ONLY !)
     torso_rmp:set_phase(2*math.pi)
   end
   
   -- intialize torso rmp state
   if (nominal_initialization) then
-    -- TEMPORARY HACK FOR FORWARD/VERTICAL STEPPING ONLY !
+    -- TEMPORARY HACK (FOR FORWARD/VERTICAL STEPPING ONLY !)
     local rmp_state = {{}, {}, {}} 
     if (support_foot == 'r') then
       for i = 1, 3 do
-        rmp_state[i][1] = nominal_rmp_state[i][1]
-        rmp_state[i][2] =-nominal_rmp_state[i][2]
-        rmp_state[i][3] = nominal_rmp_state[i][3]
+        rmp_state[1][i] = nominal_rmp_state[1][i]
+        rmp_state[2][i] =-nominal_rmp_state[2][i]
+        rmp_state[3][i] = nominal_rmp_state[3][i]
       end
     else
       for i = 1, 3 do
-        rmp_state[i][1] = nominal_rmp_state[i][1]
-        rmp_state[i][2] = nominal_rmp_state[i][2]
-        rmp_state[i][3] = nominal_rmp_state[i][3]
+        rmp_state[1][i] = nominal_rmp_state[1][i]
+        rmp_state[2][i] = nominal_rmp_state[2][i]
+        rmp_state[3][i] = nominal_rmp_state[3][i]
       end
     end
     torso_rmp:set_state(rmp_state)
   else
     local rmp_state = {{}, {}, {}}
     for i = 1, 3 do
-      rmp_state[1][i] = -support_foot_start_pose[i] - reference_start_position[i]
-      rmp_state[2][i] = -support_foot_start_twist[i] - reference_start_velocity[i]
-      rmp_state[3][i] = 0
+      -- TEMPORARY HACK (WHY DOES SUPPORT FOOT TWIST HAVE OPPOSITE SIGN?)
+      rmp_state[i][1] =-support_foot_start_pose[i] - reference_start_position[i]
+      rmp_state[i][2] = support_foot_start_twist[i] - reference_start_velocity[i]
+      rmp_state[i][3] = 0
     end
     torso_rmp:set_state(rmp_state)
   end
@@ -219,13 +221,13 @@ end
 
 local function initialize_swing_foot_variables()
 
-  local reference_start_position = torso_reference_trajectory(0)
-  local reference_goal_position = torso_reference_trajectory(step_duration)
+  local reference_prev_position = torso_reference_trajectory(-step_duration/2)
+  local reference_next_position = torso_reference_trajectory(3*step_duration/2)
 
   -- initialize swing foot state
   if (nominal_initialization) then
     for i = 1, 3 do
-      swing_foot_state[1][i] = reference_start_position[i] + swing_foot_offset[i]
+      swing_foot_state[1][i] = reference_prev_position[i] + swing_foot_offset[i]
       swing_foot_state[2][i] = 0
       swing_foot_state[3][i] = 0
     end
@@ -239,7 +241,7 @@ local function initialize_swing_foot_variables()
 
   -- initialize goal state
   for i = 1, 3 do
-    swing_foot_goal_state[1][i] = reference_goal_position[i] + swing_foot_offset[i]
+    swing_foot_goal_state[1][i] = reference_next_position[i] + swing_foot_offset[i]
     swing_foot_goal_state[2][i] = 0
     swing_foot_goal_state[3][i] = 0
   end
@@ -407,8 +409,16 @@ function step:set_foothold(pose)
   -- TODO
 end
 
-function step:set_torso_rmp(rmp_object)
+function step:set_rmp(rmp_object)
   torso_rmp = rmp_object
+end
+
+function step:set_rmp_parameters(parameters, dim)
+  if (dim) then
+    self.parameters.rmp_parameters[dim] = parameters
+  else
+    self.parameters.rmp_parameters = parameters
+  end
 end
 
 function step:get_support_foot()
@@ -423,8 +433,16 @@ function step:get_foothold()
   -- TODO
 end
 
-function step:get_torso_rmp()
+function step:get_rmp()
   return torso_rmp
+end
+
+function step:get_rmp_parameters(dim)
+  if (dim) then
+    return self.parameters.rmp_parameters[dim]
+  else
+    return self.parameters.rmp_parameters
+  end
 end
 
 function step:get_torso_state()

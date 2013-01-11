@@ -1,6 +1,6 @@
 include ../../../Makefile.inc
 
-INCLUDES += -I/usr/include/ -I/usr/local/include/eigen3
+INCLUDES += `pkg-config --cflags eigen3`
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<

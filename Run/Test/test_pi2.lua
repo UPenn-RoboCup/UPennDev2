@@ -8,7 +8,7 @@ require('gnuplot')
 
 -- initialize parameters 
 --------------------------------------------------------------------------------
-local nbasis = 10                -- number of basis functions
+local n_basis = 10               -- number of basis functions
 local dt = 0.005                 -- integrator time step
 local tau = 0.5                  -- movement duration
 local n_time_steps = tau/dt      -- number of time steps
@@ -17,20 +17,19 @@ local goal_state = {1}           -- goal position
 local n_rollouts = 10            -- number of rollouts per pi2 iteration
 local n_reused_rollouts = 5      -- number of reused rollouts
 local n_pi2_iterations = 500     -- number of pi2 iterations
+local noise_factor = 1/20        -- exploration noise scaling factor
 
 -- initialize one-dimensional dmp
 --------------------------------------------------------------------------------
-local primitive = dmp.new(1)
+local primitive = dmp.new(1, n_basis)
 primitive:set_time_step(dt)
 primitive:initialize(start_state, goal_state, tau)
-primitive:learn_minimum_jerk_trajectory(nbasis)
+primitive:learn_minimum_jerk_trajectory()
 primitive:reset()
 local nonlinearity = primitive:get_transform_system(1):get_nonlinearity()
 
--- initialize cost functions and noise variances
+-- initialize cost functions
 --------------------------------------------------------------------------------
-
-local noise_variances = {1/20*matrix.eye(#primitive:get_parameters(1))}
 
 function evaluate_step_cost(t)
   local xdd = primitive:get_acceleration(1)
@@ -75,7 +74,7 @@ end
 --------------------------------------------------------------------------------
 
 local learner = 
-  pi2.learner.new(policy, noise_variances, n_rollouts, n_reused_rollouts)
+  pi2.learner.new(policy, noise_factor, n_rollouts, n_reused_rollouts)
 
 -- improve policy 
 --------------------------------------------------------------------------------

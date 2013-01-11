@@ -104,7 +104,7 @@ end
 -- pi2 learner
 --------------------------------------------------------------------------------
 
-function pi2.learner.new(policy, noise_variances, n_rollouts, n_reused_rollouts)
+function pi2.learner.new(policy, noise_factor, n_rollouts, n_reused_rollouts)
   local o = {}
   o.policy               = policy                 -- pi2.policy object
   o.n_dimensions         = policy:get_n_dimensions() -- number of dimensions
@@ -121,12 +121,13 @@ function pi2.learner.new(policy, noise_variances, n_rollouts, n_reused_rollouts)
   o.basis_vectors        = {}                     -- basis vectors g(t)
   o.temporal_weights     = {}                     -- temporal weights w(t)
   o.projection_matrices  = {}                     -- projection matrices M(t)
-  o.noise_factor         = 1                      -- noise scaling factor
+  o.noise_factor         = noise_factor or 0.05   -- noise scaling factor
   o.noise_decay_factor   = 1                      -- noise decay factor
   o.noise_variances      = {}                     -- noise variance matrices R
-  o.noise_variances_inv  = {}
-  o.noise_variances_chol = {}
+  o.noise_variances_inv  = {}                     -- inverse of R
+  o.noise_variances_chol = {}                     -- Cholskey decomposition of R
 
+  local noise_variances  = policy:get_noise_variances()
   local parameters       = policy:get_parameters()
   local basis_vectors    = policy:get_basis_vectors()
   local temporal_weights = policy:get_temporal_weights()
@@ -426,6 +427,11 @@ function pi2.dmp_policy.get_n_time_steps(o)
   return o.n_time_steps
 end
 
+function pi2.policy.get_noise_variances(o)
+  -- abstract function  : get default controller noise variances
+  -- return noise_variances (n_dimensions x n_parameters x n_parameters table)
+end
+
 function pi2.policy.get_parameters(o)
   -- abstract function  : get controller parameter vectors
   -- return parameters (n_dimensions x n_parameters table)
@@ -479,6 +485,27 @@ function pi2.dmp_policy.get_n_time_steps(o)
   return o.n_time_steps
 end
 
+function pi2.dmp_policy.get_noise_variances(o)
+  -- get default controller noise variances
+  local noise_variances = {}
+  for d = 1, o.n_dimensions do
+    local parameters = o.dmp:get_parameters(o.dimensions[d])
+    noise_variances[d] = {}
+    for i = 1, #parameters do
+      noise_variances[d][i] = {}
+      for j = 1, #parameters do
+        -- set to identity matrix
+        if (i == j) then
+          noise_variances[d][i][j] = 1
+        else
+          noise_variances[d][i][j] = 0
+        end
+      end
+    end
+  end
+  return noise_variances
+end
+
 function pi2.dmp_policy.get_parameters(o)
   -- get controller parameter vectors
   local parameters = {}
@@ -490,7 +517,6 @@ end
 
 function pi2.dmp_policy.get_basis_vectors(o)
   -- get controller basis vectors (assumes dmp time step is set to correct value)
-
   local basis_vectors = {}
   for d = 1, o.n_dimensions do
     basis_vectors[d] = {}
@@ -511,7 +537,6 @@ end
 
 function pi2.dmp_policy.get_temporal_weights(o)
   -- get temporal weights for parameter update averaging
-
   return o:get_basis_vectors() -- use basis activations for temporal weighting
 end
 
@@ -554,6 +579,27 @@ function pi2.rmp_policy.get_n_time_steps(o)
   return o.n_time_steps
 end
 
+function pi2.rmp_policy.get_noise_variances(o)
+  -- get default controller noise variances
+  local noise_variances = {}
+  for d = 1, o.n_dimensions do
+    local parameters = o.rmp:get_parameters(o.dimensions[d])
+    noise_variances[d] = {}
+    for i = 1, #parameters do
+      noise_variances[d][i] = {}
+      for j = 1, #parameters do
+        -- set to identity matrix
+        if (i == j) then
+          noise_variances[d][i][j] = 1
+        else
+          noise_variances[d][i][j] = 0
+        end
+      end
+    end
+  end
+  return noise_variances
+end
+
 function pi2.rmp_policy.get_parameters(o)
   -- get controller parameter vectors
   local parameters = {}
@@ -565,7 +611,6 @@ end
 
 function pi2.rmp_policy.get_basis_vectors(o)
   -- get controller basis vectors (assumes rmp time step is set to correct value)
-
   local basis_vectors = {}
   for d = 1, o.n_dimensions do
     basis_vectors[d] = {}
@@ -586,7 +631,6 @@ end
 
 function pi2.rmp_policy.get_temporal_weights(o)
   -- get temporal weights for parameter update averaging
-
   return o:get_basis_vectors() -- use basis activations for temporal weighting
 end
 

@@ -12,7 +12,7 @@ end
 function Proprioception.update()
   -- update end-effector pose and twist estimates
   local q_legs = dcm:get_joint_position_sensor('legs')
-  local qdot_legs = dcm:get_joint_position_sensor('legs')
+  local qdot_legs = dcm:get_joint_velocity_sensor('legs')
   local l_foot_frame, r_foot_frame, l_foot_twist, r_foot_twist =
     Kinematics.forward_vel_legs(q_legs, qdot_legs)
   local l_foot_pose = l_foot_frame:get_pose6D()

@@ -107,8 +107,8 @@ end
 function pi2.learner.new(policy, noise_variances, n_rollouts, n_reused_rollouts)
   local o = {}
   o.policy               = policy                 -- pi2.policy object
-  o.n_dimensions         = policy.n_dimensions    -- number of dimensions
-  o.n_time_steps         = policy.n_time_steps    -- number of time steps
+  o.n_dimensions         = policy:get_n_dimensions() -- number of dimensions
+  o.n_time_steps         = policy:get_n_time_steps() -- number of time steps
   o.n_parameters         = {}                     -- number of parameters per dim
   o.n_rollouts           = n_rollouts or 10       -- number of evaluated rollouts
   o.n_reused_rollouts    = n_reused_rollouts or 5 -- number of reused rollouts
@@ -116,6 +116,7 @@ function pi2.learner.new(policy, noise_variances, n_rollouts, n_reused_rollouts)
   o.cost_curve           = {}                     -- policy improvement cost curve
   o.rollouts             = {}                     -- trajectory rollouts
   o.rollouts_initialized = false                  -- are rollouts initialized?
+  o.reevealute_rollouts  = false                  -- reevaluate reused rollouts?
   o.parameters           = {}                     -- parameter vectors
   o.basis_vectors        = {}                     -- basis vectors g(t)
   o.temporal_weights     = {}                     -- temporal weights w(t)
@@ -174,6 +175,11 @@ function pi2.learner.get_policy(o)
   return o.policy
 end
 
+function pi2.learner.set_reevaluate_rollouts(o, bool)
+  -- set option to reevaluate reused rollouts
+  o.reevealute_rollouts = bool
+end
+
 function pi2.learner.set_noise_factor(o, noise_factor)
   -- set noise scaling factor
   o.noise_factor = noise_factor
@@ -227,17 +233,28 @@ function pi2.learner.generate_noisy_rollouts(o)
      end
 
      -- evaluate the policy using the noisy parameters and record the costs
-     local step_costs, terminal_cost = o.policy:evaluate(r.parameters)
+     local step_costs, terminal_cost = o.policy:evaluate(r.parameters, false)
      r.step_costs = copy_matrix(step_costs)
      r.terminal_cost = terminal_cost
      r.cost = compute_cost_to_go(step_costs, terminal_cost)
    end
 
    -- update noise vectors for reused rollouts
-   for k = 1, o.n_reused_rollouts do
+   for k = 1, (index - 1) do
      local r = o.rollouts[k]
      for d = 1, o.n_dimensions do 
        r.noise[d]  = r.parameters[d] - o.parameters[d]
+     end
+   end
+
+   -- reevaluate reused rollouts if needed
+   if (o.reevaluate_rollouts) then
+     for k = 1, (index - 1) do
+       local r = o.rollouts[k]
+       local step_costs, terminal_cost = o.policy:evaluate(r.parameters, false)
+       r.step_costs = copy_matrix(step_costs)
+       r.terminal_cost = terminal_cost
+       r.cost = compute_cost_to_go(step_costs, terminal_cost)
      end
    end
 
@@ -370,7 +387,7 @@ end
 
 function pi2.learner.compute_trajectory_cost(o)
    -- generate one noiseless rollout to evaluate current trajectory cost
-   return compute_cost_to_go(o.policy:evaluate(o.parameters))
+   return compute_cost_to_go(o.policy:evaluate(o.parameters, true))
 end
 
 function pi2.learner.improve_policy(o)
@@ -401,6 +418,14 @@ function pi2.policy.new(n_dimensions, n_time_steps)
   return setmetatable(o, pi2.policy)
 end
 
+function pi2.dmp_policy.get_n_dimensions(o)
+  return o.n_dimensions
+end
+
+function pi2.dmp_policy.get_n_time_steps(o)
+  return o.n_time_steps
+end
+
 function pi2.policy.get_parameters(o)
   -- abstract function  : get controller parameter vectors
   -- return parameters (n_dimensions x n_parameters table)
@@ -416,7 +441,7 @@ function pi2.policy.get_temporal_weights(o)
   -- return temporal_weights (ndimensions x n_time_steps x n_parameters table)
 end
 
-function pi2.policy.evaluate(o, parameters)
+function pi2.policy.evaluate(o, parameters, noiseless)
   -- abstract function  :  evaluate the policy and return costs
   -- return step_costs (n_time_steps x 1 table), terminal_cost (double value)
 end
@@ -444,6 +469,14 @@ function pi2.dmp_policy.new(dmp_object, n_time_steps, dimensions)
   end
 
   return setmetatable(o, pi2.dmp_policy)
+end
+
+function pi2.dmp_policy.get_n_dimensions(o)
+  return o.n_dimensions
+end
+
+function pi2.dmp_policy.get_n_time_steps(o)
+  return o.n_time_steps
 end
 
 function pi2.dmp_policy.get_parameters(o)
@@ -482,7 +515,7 @@ function pi2.dmp_policy.get_temporal_weights(o)
   return o:get_basis_vectors() -- use basis activations for temporal weighting
 end
 
-function pi2.dmp_policy.evaluate(o, parameters)
+function pi2.dmp_policy.evaluate(o, parameters, noiseless)
   -- abstract function  :  evaluate the policy and return costs
   -- return step_costs (n_time_steps x 1 table), terminal_cost (double value)
 end
@@ -491,7 +524,7 @@ end
 -- pi2 rmp policy
 --------------------------------------------------------------------------------
 
-function pi2.rmp_policy.new(rmp_object, n_time_steps)
+function pi2.rmp_policy.new(rmp_object, n_time_steps, dimensions)
   local o = {} 
   o.rmp = rmp_object                               -- rmp object
   o.n_time_steps = n_time_steps                    -- number of time steps
@@ -511,6 +544,14 @@ function pi2.rmp_policy.new(rmp_object, n_time_steps)
   end
 
   return setmetatable(o, pi2.rmp_policy)
+end
+
+function pi2.rmp_policy.get_n_dimensions(o)
+  return o.n_dimensions
+end
+
+function pi2.rmp_policy.get_n_time_steps(o)
+  return o.n_time_steps
 end
 
 function pi2.rmp_policy.get_parameters(o)
@@ -549,7 +590,7 @@ function pi2.rmp_policy.get_temporal_weights(o)
   return o:get_basis_vectors() -- use basis activations for temporal weighting
 end
 
-function pi2.rmp_policy.evaluate(o, parameters)
+function pi2.rmp_policy.evaluate(o, parameters, noiseless)
   -- abstract function  :  evaluate the policy and return costs
   -- return step_costs (n_time_steps x 1 table), terminal_cost (double value)
 end

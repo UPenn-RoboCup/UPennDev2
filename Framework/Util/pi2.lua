@@ -419,11 +419,11 @@ function pi2.policy.new(n_dimensions, n_time_steps)
   return setmetatable(o, pi2.policy)
 end
 
-function pi2.dmp_policy.get_n_dimensions(o)
+function pi2.policy.get_n_dimensions(o)
   return o.n_dimensions
 end
 
-function pi2.dmp_policy.get_n_time_steps(o)
+function pi2.policy.get_n_time_steps(o)
   return o.n_time_steps
 end
 

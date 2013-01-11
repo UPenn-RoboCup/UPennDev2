@@ -8,27 +8,45 @@ require('stepRMP')
 require('gnuplot')
 require('dcm')
 
+local LOOP = true
+local SLOW_MO = false
 local INIT_STANCE = false
-local SLOW_MO = true
 local PARAMETER_FILE = '../../Data/parameters_stepRMP_WebotsASH_0.lua'
 
 local period = 0.7
-local velocity = {0, 0, 0} 
 local n_samples = 5000
 
 -- define periodic torso trajectories
 --------------------------------------------------------------------------------
 
+--[[
+local velocity = {0.1, 0, 0} 
+
 local start_state = {
-  {0.00, 0.00, 0.00}, -- x pos, vel, acc
-  {0.00, 0.20, 0.00}, -- y pos, vel, acc
-  {0.00, 0.00, 0.00}, -- z pos, vel, acc
+  { 0.00, 0.03, 0.00}, -- x pos, vel, acc
+  { 0.00, 0.20, 0.00}, -- y pos, vel, acc
+  { 0.00, 0.00, 0.00}, -- z pos, vel, acc
 }
 
-local midpoint_state = {
-  {0.00, 0.00, 0.00}, -- x pos, vel, acc
-  {0.04, 0.00, 0.00}, -- y pos, vel, acc
-  {0.00, 0.00, 0.00}, -- z pos, vel, acc
+local via_state = {
+  { 0.00,-0.05, 0.00}, -- x pos, vel, acc
+  { 0.05, 0.00, 0.00}, -- y pos, vel, acc
+  { 0.00, 0.00, 0.00}, -- z pos, vel, acc
+}
+--]]
+
+local velocity = {0, 0, 0} 
+
+local start_state = {
+  { 0.00, 0.00, 0.00}, -- x pos, vel, acc
+  { 0.00, 0.20, 0.00}, -- y pos, vel, acc
+  { 0.00, 0.00, 0.00}, -- z pos, vel, acc
+}
+
+local via_state = {
+  { 0.00, 0.00, 0.00}, -- x pos, vel, acc
+  { 0.05, 0.00, 0.00}, -- y pos, vel, acc
+  { 0.00, 0.00, 0.00}, -- z pos, vel, acc
 }
 
 local goal_state = {{}, {}, {}}
@@ -43,11 +61,11 @@ local land_trajectory = {{}, {}, {}}
 for i = 1, 3 do
   lift_trajectory[i] = trajectory.minimum_jerk(
     start_state[i],
-    midpoint_state[i],
+    via_state[i],
     period/2
   )
   land_trajectory[i] = trajectory.minimum_jerk(
-    midpoint_state[i],
+    via_state[i],
     goal_state[i],
     period/2
   )
@@ -70,10 +88,13 @@ end
 --------------------------------------------------------------------------------
 Body.entry()
 Proprioception.entry()
-step:entry()
+Body.update()
+Proprioception.update()
 
+step:entry()
 print('training rmp...')
 step:learn_torso_orbit(xdata, tdata)
+step:save_parameters(PARAMETER_FILE)
 print('done')
 step:set_support_foot('l')
 step:set_nominal_initialization(true)
@@ -102,23 +123,38 @@ end
 
 -- run step controller
 --------------------------------------------------------------------------------
-print('updating step controller...')
 Body.set_simulator_torso_twist({v_torso[1], v_torso[2], v_torso[3], 0, 0, 0})
 
-step:start()
-while (step:is_active()) do
-  Body.update()
-  Proprioception.update()
-  step:update()
-  if (SLOW_MO) then
-    unix.usleep(1e4)
+print('updating step controller...')
+
+while true do
+
+  step:start()
+  while (step:is_active()) do
+    Body.update()
+    Proprioception.update()
+    step:update()
+    if (SLOW_MO) then
+      unix.usleep(1e4)
+    end
+  end
+
+  if (not LOOP) then
+    break
+  else
+    if (step:get_support_foot() == 'l') then
+      step:set_support_foot('r')
+    else
+      step:set_support_foot('l')
+    end
+    --step:set_nominal_initialization(false)
   end
 end
+
 print('done')
 
 -- save step parameters and exit
 --------------------------------------------------------------------------------
-step:save_parameters(PARAMETER_FILE)
 step:exit()
 Proprioception.exit()
 Body.exit()

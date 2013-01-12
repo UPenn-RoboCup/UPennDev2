@@ -121,11 +121,11 @@ function pi2.learner.new(policy, noise_factor, n_rollouts, n_reused_rollouts)
   o.basis_vectors        = {}                     -- basis vectors g(t)
   o.temporal_weights     = {}                     -- temporal weights w(t)
   o.projection_matrices  = {}                     -- projection matrices M(t)
-  o.noise_factor         = noise_factor or 0.05   -- noise scaling factor
+  o.noise_factor         = noise_factor           -- noise scaling factor
   o.noise_decay_factor   = 1                      -- noise decay factor
-  o.noise_variances      = {}                     -- noise variance matrices R
-  o.noise_variances_inv  = {}                     -- inverse of R
-  o.noise_variances_chol = {}                     -- Cholskey decomposition of R
+  o.noise_variances      = {}                     -- noise variance matrices Rinv
+  o.noise_variances_inv  = {}                     -- inverse noise variances R
+  o.noise_variances_chol = {}                     -- Cholskey decomposition of Rinv
 
   local noise_variances  = policy:get_noise_variances()
   local parameters       = policy:get_parameters()
@@ -228,8 +228,8 @@ function pi2.learner.generate_noisy_rollouts(o)
      -- add multivariate gaussian noise to the current parameter vector
      local r = o.rollouts[k]
      for d = 1, o.n_dimensions do
-       local Rchol = o.noise_variances_chol[d]*math.sqrt(o.noise_factor)
-       rng.rmvnorm(matrix.zeros(#r.noise[d]), Rchol, r.noise[d])
+       local Rinv_chol = o.noise_variances_chol[d]*math.sqrt(o.noise_factor)
+       rng.rmvnorm(matrix.zeros(#r.noise[d]), Rinv_chol, r.noise[d])
        r.parameters[d] = o.parameters[d] + r.noise[d]
      end
 
@@ -279,7 +279,7 @@ function pi2.learner.compute_projection_matrices(o)
   -- compute projection matrices M(t) (independent of rollouts)
   for d = 1, o.n_dimensions do
 
-    local Rinv = o.noise_variances_inv[d]/o.noise_factor
+    local Rinv = o.noise_variances[d]*o.noise_factor
     o.projection_matrices[d] = {}
 
     for i = 1, o.n_time_steps do
@@ -303,7 +303,7 @@ function pi2.learner.compute_generalized_path_costs(o)
 
     -- add the control costs for each dimension
     for d = 1, o.n_dimensions do
-      local R = o.noise_variances[d]*o.noise_factor
+      local R = o.noise_variances_inv[d]/o.noise_factor
       local M = o.projection_matrices[d]
       local eps = row_vector(r.noise[d])
       local theta = row_vector(o.parameters[d])

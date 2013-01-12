@@ -1,4 +1,5 @@
 # Makefile Includes (http://owen.sj.ca.us/~rk/howto/slides/make/slides/makerecurs.html)
+TOP := $(dir $(lastword $(MAKEFILE_LIST)))
 TARGETS = all clean
 .PHONY: $(TARGETS)
 
@@ -54,7 +55,7 @@ LIBRT= -lrt
 
 #This does not work 
 #INCLUDES= -I/usr/local/include -I../include/lua5.1.4
-INCLUDES= -I/usr/local/include -I/usr/include/lua -I/usr/include/lua5.1 -I/usr/local/include/lua5.1 -I/usr/local/include/lua -I/usr/local/include/luajit-2.0 -I/usr/include/lua -I/usr/include/luajit-2.0
+INCLUDES= -I$(TOP)Common -I/usr/local/include -I/usr/include/lua -I/usr/include/lua5.1 -I/usr/local/include/lua5.1 -I/usr/local/include/lua -I/usr/local/include/luajit-2.0 -I/usr/include/lua -I/usr/include/luajit-2.0
 LIB_DIR= -L/usr/local/lib -L/usr/lib
 
 

@@ -19,6 +19,7 @@ extern "C" {
 }
 #endif
 
+#include <common.h>
 
 static void lua_pushvector(lua_State *L, std::vector<double> v) {
   int n = v.size();

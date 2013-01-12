@@ -537,7 +537,15 @@ end
 
 function pi2.dmp_policy.get_temporal_weights(o)
   -- get temporal weights for parameter update averaging
-  return o:get_basis_vectors() -- use basis activations for temporal weighting
+  local temporal_weights = o:get_basis_vectors() -- use basis activations
+  for d = 1, o.n_dimensions do
+    for i = 1, o.n_time_steps do
+      for k = 1, #temporal_weights[d][i] do
+        temporal_weights[d][i][k] = math.abs(temporal_weights[d][i][k])
+      end
+    end
+  end
+  return temporal_weights
 end
 
 function pi2.dmp_policy.evaluate(o, parameters, noiseless)
@@ -631,7 +639,18 @@ end
 
 function pi2.rmp_policy.get_temporal_weights(o)
   -- get temporal weights for parameter update averaging
-  return o:get_basis_vectors() -- use basis activations for temporal weighting
+  local temporal_weights = {}
+  local parameters = o:get_parameters()
+  for d = 1, o.n_dimensions do
+    temporal_weights[d] = {}
+    for i = 1, o.n_time_steps do
+      temporal_weights[d][i] = {}
+      for k = 1, #parameters[d] do
+        temporal_weights[d][i][k] = 1/o.n_time_steps
+      end
+    end
+  end
+  return temporal_weights
 end
 
 function pi2.rmp_policy.evaluate(o, parameters, noiseless)

@@ -12,6 +12,7 @@ static void luaL_register(lua_State *L, const char *libname, const luaL_Reg *l) 
 }
 
 #define luaL_reg luaL_Reg
+#define lua_objlen lua_rawlen 
 
 #endif
 

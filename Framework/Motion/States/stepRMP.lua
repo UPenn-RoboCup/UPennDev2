@@ -71,6 +71,7 @@ step.parameters = {
 --------------------------------------------------------------------------------
 
 -- define config variables
+local sole_dimensions            = Config.mechanics.l_foot.sole_dimensions
 local l_foot_sole_transform      = Config.mechanics.l_foot.sole_transform
 local r_foot_sole_transform      = Config.mechanics.r_foot.sole_transform
 local l_foot_sole_offset         = l_foot_sole_transform:get_pose6D()
@@ -94,9 +95,6 @@ local support_foot_start_pose    = nil
 local support_foot_start_twist   = nil
 
 -- define control variables
-local cop_state                  = {zeros(3), zeros(3), zeros(3)}
-local cop_via_state              = {zeros(3), zeros(3), zeros(3)}
-local cop_goal_state             = {zeros(3), zeros(3), zeros(3)}
 local swing_foot_state           = {zeros(3), zeros(3), zeros(3)}
 local swing_foot_via_state       = {zeros(3), zeros(3), zeros(3)}
 local swing_foot_goal_state      = {zeros(3), zeros(3), zeros(3)}
@@ -173,8 +171,7 @@ local function initialize_torso_variables()
   local reference_start_velocity = velocity
 
   -- initialize torso rmp
-  torso_rmp:reset()
-  torso_rmp:set_period(step_duration)
+  torso_rmp:initialize({zeros(3)}, zeros(3), ones(3), step_duration)
   torso_rmp:set_parameters(rmp_parameters)
   torso_rmp:set_time_step(Body.get_time_step())
   if (support_foot == 'r') then
@@ -257,48 +254,6 @@ local function initialize_swing_foot_variables()
   swing_foot_via_state[1][3] = swing_foot_via_state[1][3] + step_height
 end
 
-local function initialize_cop_variables()
-  
-  local swing_sole_start_position = {}
-  local swing_sole_goal_position = {}
-  local support_sole_position = {}
-  for i = 1, 3 do
-    swing_sole_start_position[i] = swing_foot_state[1][i]
-                                 + swing_foot_sole_offset[i]
-    swing_sole_goal_position[i] = swing_foot_goal_state[1][i]
-                                + swing_foot_sole_offset[i]
-    support_sole_position[i] = support_foot_sole_offset[i]
-  end
-
-  -- initialize state
-  for i = 1, 3 do
-    local initial_state = {
-      trajectory.minimum_jerk(
-        swing_sole_start_position[i],
-        support_sole_position[i],
-        2*ss_begin_t
-      )(ss_begin_t)
-    }
-    cop_state[1][i] = initial_state[1]
-    cop_state[2][i] = initial_state[2]
-    cop_state[3][i] = initial_state[3]
-  end
-
-  -- intialize goal state
-  for i = 1, 3 do
-    cop_goal_state[1][i] = swing_sole_goal_position[i]
-    cop_goal_state[2][i] = 0 
-    cop_goal_state[3][i] = 0 
-  end
-
-  -- initialize via state
-  for i = 1, 3 do
-    cop_via_state[1][i] = support_sole_position[i] 
-    cop_via_state[2][i] = 0 
-    cop_via_state[3][i] = 0 
-  end
-end
-
 local function update_torso_state(t, dt)
 
   local reference_start_position = torso_reference_trajectory(t)
@@ -354,40 +309,93 @@ local function update_swing_foot_state(t, dt)
   end
 end
 
-local function update_cop_state(t, dt)
+local function update_desired_cop(t, dt)
 
-  local duration, desired_state
-
-  if (t < ss_begin_t) then
-    -- cop moves toward center of support foot
-    duration = ss_begin_t - t
-    desired_state = cop_via_state
-  elseif (t < ss_end_t) then
-    -- cop remains stationary at center of support foot 
-    return
+  local support_foot_position, swing_foot_position
+  if (support_foot == 'r') then
+    support_foot_position = pcm:get_r_foot_pose()
+    swing_foot_position = pcm:get_l_foot_pose()
   else
-    -- cop moves toward center of next support foot
-    duration = step_duration + ss_begin_t - t
-    desired_state = cop_goal_state
+    support_foot_position = pcm:get_l_foot_pose()
+    swing_foot_position = pcm:get_r_foot_pose()
   end
 
-  -- update desired cop state via minimum jerk trajectory
-  for i = 1, 3 do
-    local s0 = {
-      cop_state[1][i],
-      cop_state[2][i],
-      cop_state[3][i],
-    }
-    local s1 = {
-      desired_state[1][i],
-      desired_state[2][i],
-      desired_state[3][i],
-    }
-    local s = {trajectory.minimum_jerk_step(s0, s1, duration, dt)}
-    cop_state[1][i] = s[1]
-    cop_state[2][i] = s[2]
-    cop_state[3][i] = s[3]
+  local support_sole_position = {}
+  local swing_sole_position = {}
+  for i = 1, 2 do
+    support_sole_position[i] = support_foot_position[i]
+                             + support_foot_sole_offset[i]
+    swing_sole_position[i] = swing_foot_position[i]
+                           + swing_foot_sole_offset[i]
   end
+
+  local tipping_eps = 5e-3
+  local tipping_status = 0
+  local actual_cop = pcm:get_cop()
+  local desired_cop = zeros(3)
+  local cop_error = zeros(3)
+
+  if (t > ss_begin_t) and (t < ss_end_t) then
+    -- desired CoP is the center of the support foot during single support
+
+    -- calculate desired CoP
+    for i = 1, 2 do
+      desired_cop[i] = support_sole_position[i]
+      cop_error[i] = actual_cop[i] - desired_cop[i] 
+    end
+
+    -- determine tipping status
+    for i = 1, 2 do
+      if (math.abs(cop_error[i]) > sole_dimensions[i]/2 - tipping_eps) then
+        tipping_status = 1
+      end
+    end
+  else
+    -- desired CoP is the projection of the actual CoP onto the line segment 
+    -- connecting the center of each foot during double support
+
+    -- calculate desired CoP
+    local cop_vector = {}
+    local support_vector = {} 
+    for i = 1, 2 do
+      support_vector[i] = swing_sole_position[i] - support_sole_position[i]
+      cop_vector[i] = actual_cop[i] - support_sole_position[i]
+    end
+
+    local support_norm = support_vector[1]^2 + support_vector[2]^2
+    local cop_projection = 0 
+    for i = 1, 2 do
+      cop_projection = cop_projection + cop_vector[i]*support_vector[i]
+    end
+    cop_projection = cop_projection/support_norm
+
+    if (cop_projection > 1) then cop_projection = 1 end
+    if (cop_projection < 0) then cop_projection = 0 end
+
+    for i = 1, 2 do
+      desired_cop[i] = support_sole_position[i]
+                     + cop_projection*support_vector[i]
+      cop_error[i] = actual_cop[i] - desired_cop[i] 
+    end
+
+    -- determine tipping status
+    if (cop_projection > 0) and (cop_projection < 1) then
+      local cop_error_magnitude = math.sqrt(cop_error[1]^2 + cop_error[2]^2)
+      local sole_diagonal = math.sqrt(sole_dimensions[1]^2 + sole_dimensions[2]^2)
+      if (cop_error_magnitude > sole_diagonal/2 - tipping_eps) then
+        tipping_status = 1
+      end
+    else
+      for i = 1, 2 do
+	if (math.abs(cop_error[i]) > sole_dimensions[i]/2 - tipping_eps) then
+	  tipping_status = 1
+	end
+      end
+    end
+  end
+
+  mcm:set_desired_cop(desired_cop)
+  mcm:set_tipping_status(tipping_status)
 end
 
 -- Public
@@ -483,7 +491,7 @@ function step:initialize()
   initialize_step_variables()
   initialize_torso_variables()
   initialize_swing_foot_variables()
-  initialize_cop_variables()
+  update_desired_cop(0)
 end
 
 function step:start()
@@ -517,18 +525,11 @@ function step:update()
 
     update_torso_state(t, dt)
     update_swing_foot_state(t, dt)
-    update_cop_state(t, dt)
+    update_desired_cop(t, dt)
 
     -- update actuators
     local q = self:get_configuration()
     dcm:set_joint_position(q, 'legs')
-
-    -- update desired center of pressure
-    local desired_cop = {} 
-    for i = 1, 3 do
-      desired_cop[i] = cop_state[1][i] - torso_state[1][i]
-    end
-    mcm:set_desired_cop(desired_cop)
 
     if (t >= step_duration) then
       active = false 

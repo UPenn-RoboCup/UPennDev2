@@ -32,7 +32,8 @@ function monitor_cop
     h_foot = rectangle('Position', [x_sole, y_sole, foot_length, foot_width]);
   end
 
-  function update_cop(h_cop, cop_trace)
+  function update_cop(h_cop, cop_trace, color)
+    set(h_cop, 'Color', color);
     set(h_cop, 'XData', cop_trace(1, :));
     set(h_cop, 'YData', cop_trace(2, :));
   end
@@ -49,7 +50,7 @@ function monitor_cop
   hold on;
   title('cop trajectory');
   h_actual_cop = plot_cop(actual_cop_trace, '-b');
-  h_desired_cop = plot_cop(desired_cop_trace, '-r');
+  h_desired_cop = plot_cop(desired_cop_trace, '-k');
   h_l_foot = plot_foot(l_foot_pose);
   h_r_foot = plot_foot(r_foot_pose);
   axis([-0.4 0.4 -0.4 0.4]);
@@ -63,6 +64,13 @@ function monitor_cop
     r_foot_pose = pcm.get_r_foot_pose();
     actual_cop = pcm.get_cop();
     desired_cop = mcm.get_desired_cop();
+    tipping_status = mcm.get_tipping_status();
+
+    if (tipping_status(1) == 1)
+      cop_color = 'r';
+    else
+      cop_color = 'b';
+    end
 
     actual_cop_trace(1, i) = actual_cop(1);
     actual_cop_trace(2, i) = actual_cop(2);
@@ -71,9 +79,13 @@ function monitor_cop
 
     if (mod(i, refresh_rate) == 0)
       update_cop(h_actual_cop, ...
-        [actual_cop_trace(:, i + 1:end) actual_cop_trace(:, 1:i)]);
+        [actual_cop_trace(:, i + 1:end) actual_cop_trace(:, 1:i)], ...
+        cop_color ...
+      );
       update_cop(h_desired_cop, ...
-        [desired_cop_trace(:, i + 1:end) desired_cop_trace(:, 1:i)]);
+        [desired_cop_trace(:, i + 1:end) desired_cop_trace(:, 1:i)], ...
+        'k' ...
+      );
       update_foot(h_l_foot, l_foot_pose);
       update_foot(h_r_foot, r_foot_pose);
       drawnow;

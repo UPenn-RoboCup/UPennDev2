@@ -15,6 +15,8 @@
 #include "lualib.h"
 #include "lauxlib.h"
 
+#include <common.h>
+
 typedef const struct const_info {
   const char *name;
   int value;

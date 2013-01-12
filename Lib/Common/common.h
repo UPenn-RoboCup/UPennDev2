@@ -8,7 +8,8 @@
 static void luaL_register(lua_State *L, const char *libname, const luaL_Reg *l) {
   luaL_newlib(L, l);
   lua_pushvalue(L, -1);
-  lua_setglobal(L, libname);
+  if (libname != NULL)
+    lua_setglobal(L, libname);
 }
 
 static int luaL_typerror(lua_State *L, int narg, const char *tname) {

@@ -17,7 +17,7 @@ local goal_state = {1}           -- goal position
 local n_rollouts = 10            -- number of rollouts per pi2 iteration
 local n_reused_rollouts = 5      -- number of reused rollouts
 local n_pi2_iterations = 500     -- number of pi2 iterations
-local noise_factor = 1/20        -- exploration noise scaling factor
+local noise_factor = 200         -- exploration noise scaling factor
 
 -- initialize one-dimensional dmp
 --------------------------------------------------------------------------------
@@ -34,7 +34,7 @@ local nonlinearity = primitive:get_transform_system(1):get_nonlinearity()
 function evaluate_step_cost(t)
   local xdd = primitive:get_acceleration(1)
   if (t == 0.3) then
-    return 0.5*xdd^2 + 10000000*(0.2 - primitive:get_position(1))^2
+    return 0.5*xdd^2 + 100000000*(0.2 - primitive:get_position(1))^2
   else
     return 0.5*xdd^2
   end

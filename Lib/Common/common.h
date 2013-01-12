@@ -11,6 +11,12 @@ static void luaL_register(lua_State *L, const char *libname, const luaL_Reg *l) 
   lua_setglobal(L, libname);
 }
 
+static int luaL_typerror(lua_State *L, int narg, const char *tname) {
+  const char *msg = lua_pushfstring(L, "%s expected, got %s",
+                                            tname, luaL_typename(L, narg));
+  return luaL_argerror(L, narg, msg);
+}
+
 #define luaL_reg luaL_Reg
 #define lua_objlen lua_rawlen 
 

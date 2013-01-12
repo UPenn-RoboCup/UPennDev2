@@ -494,9 +494,9 @@ function pi2.dmp_policy.get_noise_variances(o)
     for i = 1, #parameters do
       noise_variances[d][i] = {}
       for j = 1, #parameters do
-        -- set to identity matrix
+        -- set to 0.001*I
         if (i == j) then
-          noise_variances[d][i][j] = 1
+          noise_variances[d][i][j] = 0.001
         else
           noise_variances[d][i][j] = 0
         end
@@ -588,9 +588,9 @@ function pi2.rmp_policy.get_noise_variances(o)
     for i = 1, #parameters do
       noise_variances[d][i] = {}
       for j = 1, #parameters do
-        -- set to identity matrix
+        -- set to 0.001*I
         if (i == j) then
-          noise_variances[d][i][j] = 1
+          noise_variances[d][i][j] = 0.001
         else
           noise_variances[d][i][j] = 0
         end

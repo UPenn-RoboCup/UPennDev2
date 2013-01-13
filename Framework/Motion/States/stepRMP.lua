@@ -22,7 +22,7 @@ step:set_joint_access(1, 'legs')
 
 local torso_rmp = rmp.new(
   3,                                       -- number of rmp dimensions
-  30,                                      -- number of basis functions
+  50,                                      -- number of basis functions
   {'periodic', 'antiperiodic', 'periodic'} -- type of basis functions
 )
 
@@ -505,6 +505,58 @@ end
 
 function step:is_active()
   return active
+end
+
+function step:initialize_simulator_state(duration)
+  -- intialize torso position using minimum jerk trajectory
+  -- (for simulation initialization)
+
+  -- integrate rmp to get intial torso state
+  support_foot = 'r'
+  self:initialize()
+  for i = 1, step_duration/Body.get_time_step() do
+    torso_rmp:integrate()
+  end
+  local rmp_state = torso_rmp:get_state()
+  self:set_parameter('nominal_rmp_state', rmp_state)
+  support_foot = 'l'
+  self:initialize()
+
+  -- move torso to initial state
+  local torso_mjt = {}
+  for i = 1, 3 do
+    -- TEMPORARY HACK (WHY DOES SUPPORT FOOT TWIST HAVE OPPOSITE SIGN?)
+    local start_position =-support_foot_start_pose[i]
+    local goal_position = torso_state[1][i]
+    torso_mjt[i] = trajectory.minimum_jerk(start_position, goal_position, duration)
+  end
+
+  local t0 = Body.get_time()
+  local t  = t0
+  while (t < duration) do
+    t = Body.get_time() 
+    local torso_position = {} 
+    for i = 1, 3 do
+      torso_position[i] = torso_mjt[i](t)
+    end
+    local torso_frame = Transform.pose6D(torso_position)
+    local l_foot_frame, r_foot_frame
+    if (support_foot == 'r') then
+      r_foot_frame = Transform.pose6D({0, 0, 0})
+      l_foot_frame = Transform.pose6D(swing_foot_state[1])
+    else
+      l_foot_frame = Transform.pose6D({0, 0, 0})
+      r_foot_frame = Transform.pose6D(swing_foot_state[1])
+    end
+    local q = Kinematics.inverse_pos_legs(l_foot_frame, r_foot_frame, torso_frame)
+    dcm:set_joint_position(q, 'legs')
+    Body.update()
+  end
+
+  -- initialize simulator physics state
+  local torso_twist = torso_state[2]
+  Body.reset_simulator_physics()
+  Body.set_simulator_torso_twist(torso_twist)
 end
 
 function step:entry()

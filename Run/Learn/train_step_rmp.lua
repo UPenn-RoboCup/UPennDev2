@@ -12,30 +12,45 @@ local LOOP = true
 local SLOW_MO = false
 local INIT_STANCE = false
 local PARAMETER_FILE = '../../Data/parameters_stepRMP_WebotsASH_0.lua'
+--local PARAMETER_FILE = '../../Data/parameters_stepRMP_WebotsASH_eval.lua'
 
 local period = 0.7
 local n_samples = 5000
 
 -- define periodic torso trajectories
 --------------------------------------------------------------------------------
-
 --[[
-local velocity = {0.1, 0, 0} 
+local velocity = {0.25, 0, 0}
 
 local start_state = {
-  { 0.00, 0.03, 0.00}, -- x pos, vel, acc
+  { 0.00, 0.06, 0.00}, -- x pos, vel, acc
   { 0.00, 0.20, 0.00}, -- y pos, vel, acc
   { 0.00, 0.00, 0.00}, -- z pos, vel, acc
 }
 
 local via_state = {
-  { 0.00,-0.05, 0.00}, -- x pos, vel, acc
+  { 0.00,-0.10, 0.00}, -- x pos, vel, acc
   { 0.05, 0.00, 0.00}, -- y pos, vel, acc
   { 0.00, 0.00, 0.00}, -- z pos, vel, acc
 }
 --]]
 
-local velocity = {0, 0, 0} 
+local velocity = {0.125, 0, 0}
+
+local start_state = {
+  { 0.00, 0.05, 0.00}, -- x pos, vel, acc
+  { 0.00, 0.20, 0.00}, -- y pos, vel, acc
+  { 0.00, 0.00, 0.00}, -- z pos, vel, acc
+}
+
+local via_state = {
+  { 0.00,-0.10, 0.00}, -- x pos, vel, acc
+  { 0.05, 0.00, 0.00}, -- y pos, vel, acc
+  { 0.00, 0.00, 0.00}, -- z pos, vel, acc
+}
+
+--[[
+local velocity = {0, 0, 0}
 
 local start_state = {
   { 0.00, 0.00, 0.00}, -- x pos, vel, acc
@@ -48,6 +63,7 @@ local via_state = {
   { 0.05, 0.00, 0.00}, -- y pos, vel, acc
   { 0.00, 0.00, 0.00}, -- z pos, vel, acc
 }
+--]]
 
 local goal_state = {{}, {}, {}}
 for i = 1, 3 do
@@ -95,6 +111,7 @@ step:entry()
 print('training rmp...')
 step:learn_torso_orbit(xdata, tdata)
 step:save_parameters(PARAMETER_FILE)
+--step:load_parameters(PARAMETER_FILE)
 print('done')
 step:set_support_foot('l')
 step:set_nominal_initialization(true)
@@ -123,9 +140,10 @@ end
 
 -- run step controller
 --------------------------------------------------------------------------------
-Body.set_simulator_torso_twist({v_torso[1], v_torso[2], v_torso[3], 0, 0, 0})
-
 print('updating step controller...')
+
+step:initialize_simulator_state(0.2)
+step:set_support_foot('l')
 
 while true do
 

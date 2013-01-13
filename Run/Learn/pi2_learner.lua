@@ -3,6 +3,7 @@ dofile('../include.lua')
 require('rpc')
 require('pi2')
 require('serialization')
+require('gnuplot')
 
 --------------------------------------------------------------------------------
 -- PI^2 learner
@@ -11,12 +12,12 @@ require('serialization')
 -- initialize PI^2 parameters 
 --------------------------------------------------------------------------------
 
-local n_rollouts = 10             -- number of rollouts per update
+local n_rollouts = 15             -- number of rollouts per update
 local n_reused_rollouts = 5       -- number of reused rollouts
 local n_pi2_updates = 500         -- number of pi2 updates
-local noise_factor = 0.01         -- exploration noise scale factor
+local noise_factor = 0.0005       -- exploration noise scale factor
 local noise_decay_factor = 1      -- exploration noise decay factor
-local reevaluate_rollouts = true  -- reevaluate reused rollouts?
+local reevaluate_rollouts = false -- reevaluate reused rollouts?
 
 -- initialize RPC client 
 --------------------------------------------------------------------------------
@@ -89,9 +90,15 @@ local learner =
 learner:set_reevaluate_rollouts(reevaluate_rollouts)
 learner:set_noise_decay(noise_decay_factor)
 
+gnuplot.figure()
 for i = 1, n_pi2_updates do
   local cost = learner:improve_policy()
-  print(i, 'cost : ', cost)
+  local rollouts = learner:get_rollouts()
+  for k = 1, #rollouts do
+    print(i, '------------> ', rollouts[k].cost)
+  end
+  print(i, 'update cost : ', cost)
+  gnuplot.plot('update cost', learner:get_cost_curve(), '-')
 end
 
 print('done')

@@ -22,7 +22,7 @@ step:set_joint_access(1, 'legs')
 
 local torso_rmp = rmp.new(
   3,                                       -- number of rmp dimensions
-  50,                                      -- number of basis functions
+  30,                                      -- number of basis functions
   {'periodic', 'antiperiodic', 'periodic'} -- type of basis functions
 )
 

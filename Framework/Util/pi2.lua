@@ -113,7 +113,8 @@ function pi2.learner.new(policy, noise_factor, n_rollouts, n_reused_rollouts)
   o.n_rollouts           = n_rollouts or 10       -- number of evaluated rollouts
   o.n_reused_rollouts    = n_reused_rollouts or 5 -- number of reused rollouts
   o.iteration            = 1                      -- policy improvement iteration
-  o.cost_curve           = {}                     -- policy improvement cost curve
+  o.costs                = {}                     -- policy improvement cost curve
+  o.rollout_costs        = {}                     -- rollout costs at each update
   o.rollouts             = {}                     -- trajectory rollouts
   o.rollouts_initialized = false                  -- are rollouts initialized?
   o.reevealute_rollouts  = false                  -- reevaluate reused rollouts?
@@ -166,9 +167,14 @@ function pi2.learner.get_rollouts(o)
   return o.rollouts
 end
 
-function pi2.learner.get_cost_curve(o)
+function pi2.learner.get_costs(o)
   -- get current cost curve (indexed by policy improvement iteration)
-  return o.cost_curve
+  return o.costs
+end
+
+function pi2.learner.get_rollout_costs(o)
+  -- get rollout costs (indexed by policy improvement iteration)
+  return o.rollout_costs
 end
 
 function pi2.learner.get_policy(o)
@@ -217,13 +223,9 @@ end
 
 function pi2.learner.generate_noisy_rollouts(o)
    -- generate noisy rollouts for policy improvement
-   local index = o.rollouts_initialized and (1 + o.n_reused_rollouts) or 1 
-
-   -- sort current rollouts by total cost (reuse the lowest cost trajectories)
-   table.sort(o.rollouts, function (a, b) return a.cost < b.cost end)
 
    -- generate new noisy rollouts
-   for k = index, o.n_rollouts do
+   for k = o.n_reused_rollouts + 1, o.n_rollouts do
 
      -- add multivariate gaussian noise to the current parameter vector
      local r = o.rollouts[k]
@@ -240,8 +242,24 @@ function pi2.learner.generate_noisy_rollouts(o)
      r.cost = compute_cost_to_go(step_costs, terminal_cost)
    end
 
+   -- initialize reused rollouts if needed
+   if (not o.rollouts_initialized) then
+     local step_costs, terminal_cost = o.policy:evaluate(o.parameters, false)
+     for k = 1, o.n_reused_rollouts do
+       local r = o.rollouts[k]
+       for d = 1, o.n_dimensions do
+	 r.parameters[d] = o.parameters[d]
+	 r.noise[d] = matrix.zeros(#r.noise[d])
+       end
+       r.step_costs = copy_matrix(step_costs)
+       r.terminal_cost = terminal_cost
+       r.cost = compute_cost_to_go(step_costs, terminal_cost)
+     end
+     o.rollouts_initialized = true
+   end
+
    -- update noise vectors for reused rollouts
-   for k = 1, (index - 1) do
+   for k = 1, o.n_reused_rollouts do
      local r = o.rollouts[k]
      for d = 1, o.n_dimensions do 
        r.noise[d]  = r.parameters[d] - o.parameters[d]
@@ -250,7 +268,7 @@ function pi2.learner.generate_noisy_rollouts(o)
 
    -- reevaluate reused rollouts if needed
    if (o.reevaluate_rollouts) then
-     for k = 1, (index - 1) do
+     for k = 1, o.n_reused_rollouts do
        local r = o.rollouts[k]
        local step_costs, terminal_cost = o.policy:evaluate(r.parameters, false)
        r.step_costs = copy_matrix(step_costs)
@@ -258,8 +276,6 @@ function pi2.learner.generate_noisy_rollouts(o)
        r.cost = compute_cost_to_go(step_costs, terminal_cost)
      end
    end
-
-   o.rollouts_initialized = true
 end
 
 function pi2.learner.normalize_temporal_weights(o)
@@ -401,9 +417,16 @@ function pi2.learner.improve_policy(o)
   -- evaluate the current cost by evaluating one noiseless rollout
   local cost = o:compute_trajectory_cost()
 
+  -- sort current rollouts by total cost (reuse the lowest cost trajectories)
+  table.sort(o.rollouts, function (a, b) return a.cost < b.cost end)
+
   -- update learning parameters
   o.noise_factor = o.noise_factor * o.noise_decay_factor
-  o.cost_curve[o.iteration] = cost
+  o.costs[o.iteration] = cost
+  o.rollout_costs[o.iteration] = {}
+  for k = 1, o.n_rollouts do
+    o.rollout_costs[o.iteration][k] = o.rollouts[k].cost
+  end
   o.iteration = o.iteration + 1
   return cost
 end

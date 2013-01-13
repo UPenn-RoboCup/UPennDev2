@@ -2,21 +2,24 @@ dofile('../include.lua')
 
 require('rpc')
 require('pi2')
-require('serialization')
 require('gnuplot')
+require('serialization')
 
 --------------------------------------------------------------------------------
 -- PI^2 learner
 --------------------------------------------------------------------------------
+
+local OUTPUT_FILE = arg[1] or 'pi2_results.lua'
 
 -- initialize PI^2 parameters 
 --------------------------------------------------------------------------------
 
 local n_rollouts = 15             -- number of rollouts per update
 local n_reused_rollouts = 5       -- number of reused rollouts
-local n_pi2_updates = 500         -- number of pi2 updates
-local noise_factor = 0.0005       -- exploration noise scale factor
-local noise_decay_factor = 1      -- exploration noise decay factor
+local n_pi2_updates = 100         -- number of pi2 updates
+--local noise_factor = 0.0005     -- exploration noise scale factor
+local noise_factor = 0.001        -- exploration noise scale factor
+local noise_decay_factor = 0.97   -- exploration noise decay factor
 local reevaluate_rollouts = false -- reevaluate reused rollouts?
 
 -- initialize RPC client 
@@ -82,13 +85,45 @@ print('done')
 
 -- initiliaze PI^2 learner
 --------------------------------------------------------------------------------
-print('improving PI2 policy...')
+
+print('initializing PI2 policy...')
 
 local learner = 
   pi2.learner.new(policy, noise_factor, n_rollouts, n_reused_rollouts)
 
 learner:set_reevaluate_rollouts(reevaluate_rollouts)
 learner:set_noise_decay(noise_decay_factor)
+
+local function save_pi2_results(filename)
+  local serialize = serialization.serialize
+  local costs = learner:get_costs()
+  local rollout_costs = learner:get_rollout_costs()
+  local best_rollout = learner:get_rollouts()[1]
+
+  local best_parameters = {}
+  local final_parameters = {}
+  for i = 1, #initial_parameters do
+    best_parameters[i] = best_rollout.parameters[i]:totable()
+    final_parameters[i] = learner.parameters[i]:totable()
+  end
+
+  local f = io.open(filename, 'w+') 
+  f:write('return {')
+  f:write('costs = '..serialize(costs)..',')
+  f:write('rollout_costs = '..serialize(rollout_costs)..',')
+  f:write('initial_parameters = '..serialize(initial_parameters)..',')
+  f:write('final_parameters = '..serialize(final_parameters)..',')
+  f:write('best_parameters = '..serialize(best_parameters)..',')
+  f:write('}')
+  f:close()
+end
+
+print('done')
+
+-- run experiment
+--------------------------------------------------------------------------------
+
+print('improving PI2 policy...')
 
 gnuplot.figure()
 for i = 1, n_pi2_updates do
@@ -98,7 +133,9 @@ for i = 1, n_pi2_updates do
     print(i, '------------> ', rollouts[k].cost)
   end
   print(i, 'update cost : ', cost)
-  gnuplot.plot('update cost', learner:get_cost_curve(), '-')
+  gnuplot.plot('update cost', learner:get_costs(), '-')
+  save_pi2_results(OUTPUT_FILE)
+  save_pi2_results(OUTPUT_FILE..'.backup')
 end
 
 print('done')

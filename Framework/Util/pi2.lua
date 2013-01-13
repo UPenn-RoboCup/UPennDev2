@@ -320,7 +320,7 @@ function pi2.learner.compute_generalized_path_costs(o)
     end
     
      -- compute cumlative sum over the path costs
-     for i = (o.n_time_steps - 1), -1, 1 do
+     for i = (o.n_time_steps - 1), 1, -1 do
         r.path_costs[i] =  r.path_costs[i] + r.path_costs[i + 1]
      end
   end

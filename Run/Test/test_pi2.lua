@@ -9,15 +9,16 @@ require('gnuplot')
 -- initialize parameters 
 --------------------------------------------------------------------------------
 local n_basis = 10               -- number of basis functions
-local dt = 0.005                 -- integrator time step
-local tau = 0.5                  -- movement duration
-local n_time_steps = tau/dt      -- number of time steps
 local start_state = {0}          -- start position
 local goal_state = {1}           -- goal position
-local n_rollouts = 10            -- number of rollouts per pi2 iteration
+local dt = 0.005                 -- integrator time step
+local tau = 0.5                  -- movement duration
+local n_time_steps = math.floor(tau/dt + 0.5)
+
+local n_rollouts = 15            -- number of rollouts per pi2 iteration
 local n_reused_rollouts = 5      -- number of reused rollouts
 local n_pi2_iterations = 500     -- number of pi2 iterations
-local noise_factor = 200         -- exploration noise scaling factor
+local noise_factor = 10          -- exploration noise scaling factor
 
 -- initialize one-dimensional dmp
 --------------------------------------------------------------------------------
@@ -34,7 +35,7 @@ local nonlinearity = primitive:get_transform_system(1):get_nonlinearity()
 function evaluate_step_cost(t)
   local xdd = primitive:get_acceleration(1)
   if (t == 0.3) then
-    return 0.5*xdd^2 + 100000000*(0.2 - primitive:get_position(1))^2
+    return 0.5*xdd^2 + 1e10*(0.2 - primitive:get_position(1))^2
   else
     return 0.5*xdd^2
   end
@@ -43,7 +44,7 @@ end
 function evaluate_terminal_cost(t)
   local x = primitive:get_position(1)
   local xd = primitive:get_velocity(1)
-  return 10000*(xd^2 + 10*(goal_state[1] - x)^2)
+  return 0 -- 10000*(xd^2 + 10*(goal_state[1] - x)^2)
 end
 
 -- intialize pi2 policy for dmp
@@ -83,6 +84,7 @@ local theta_initial = policy:get_parameters()
 
 for i = 1, n_pi2_iterations do
   local cost = learner:improve_policy()
+  local rollouts = learner:get_rollouts()
   print(i, 'cost : ', cost)
 end
 

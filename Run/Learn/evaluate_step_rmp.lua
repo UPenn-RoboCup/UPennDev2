@@ -18,10 +18,10 @@ RESET_SIMULATOR = false
 -- initialize parameters
 --------------------------------------------------------------------------------
 
-local velocity = {0.125, 0, 0}
+local velocity = {0, 0, 0}
 local dimensions = {1, 2}  -- active learning dimensions
-local parameter_load_file = '../../Data/parameters_stepRMP_WebotsASH_0.lua'
-local parameter_save_file = '../../Data/parameters_stepRMP_WebotsASH_eval.lua'
+local parameter_load_file = '../../Data/parameters_stepRMP_WebotsASH_train0.lua'
+local parameter_save_file = '../../Data/parameters_stepRMP_WebotsASH_eval0.lua'
 
 local function compute_cost_to_go(step_costs, terminal_cost)
    local cost = terminal_cost
@@ -46,7 +46,7 @@ step:set_velocity(velocity)
 step:set_support_foot('l')
 step:initialize()
 
-local n_time_steps = step:get_parameter('step_duration')/Body.get_time_step()
+local n_time_steps = 2*step:get_parameter('step_duration')/Body.get_time_step()
 n_time_steps = math.floor(n_time_steps + 0.5)
 
 -- define cost functions
@@ -75,7 +75,6 @@ local function evaluate_step_cost()
   end
 
   return 0*accel_cost + 1e6*(cop_cost + 10*tipping_cost)
---return 0*accel_cost + 1e9*(cop_cost + 10*tipping_cost)
 end
 
 local function evaluate_terminal_cost()
@@ -97,11 +96,20 @@ function policy:evaluate(parameters, noiseless)
 
   -- initialize simulator state 
   step:initialize_simulator_state(0.2)
-  step:set_support_foot('l')
 
   -- run trial to get step costs
+  step:set_support_foot('l')
   step:start()
-  for i = 1, self.n_time_steps do
+  for i = 1, self.n_time_steps/2 do
+    Body.update()
+    Proprioception.update()
+    step:update()
+    step_costs[i] = evaluate_step_cost()
+  end
+
+  step:set_support_foot('r')
+  step:start()
+  for i = self.n_time_steps/2 + 1, self.n_time_steps do
     Body.update()
     Proprioception.update()
     step:update()

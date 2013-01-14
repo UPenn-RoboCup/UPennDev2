@@ -11,7 +11,7 @@ require('dcm')
 local LOOP = true
 local SLOW_MO = false
 local INIT_STANCE = false
-local PARAMETER_FILE = '../../Data/parameters_stepRMP_WebotsASH_0.lua'
+local PARAMETER_FILE = '../../Data/parameters_stepRMP_WebotsASH_train125.lua'
 --local PARAMETER_FILE = '../../Data/parameters_stepRMP_WebotsASH_eval.lua'
 
 local period = 0.7
@@ -23,13 +23,13 @@ local n_samples = 5000
 local velocity = {0.25, 0, 0}
 
 local start_state = {
-  { 0.00, 0.06, 0.00}, -- x pos, vel, acc
+  { 0.00, 0.07, 0.00}, -- x pos, vel, acc
   { 0.00, 0.20, 0.00}, -- y pos, vel, acc
   { 0.00, 0.00, 0.00}, -- z pos, vel, acc
 }
 
 local via_state = {
-  { 0.00,-0.10, 0.00}, -- x pos, vel, acc
+  { 0.00,-0.16, 0.00}, -- x pos, vel, acc
   { 0.05, 0.00, 0.00}, -- y pos, vel, acc
   { 0.00, 0.00, 0.00}, -- z pos, vel, acc
 }
@@ -38,13 +38,13 @@ local via_state = {
 local velocity = {0.125, 0, 0}
 
 local start_state = {
-  { 0.00, 0.05, 0.00}, -- x pos, vel, acc
+  { 0.00, 0.02, 0.00}, -- x pos, vel, acc
   { 0.00, 0.20, 0.00}, -- y pos, vel, acc
   { 0.00, 0.00, 0.00}, -- z pos, vel, acc
 }
 
 local via_state = {
-  { 0.00,-0.10, 0.00}, -- x pos, vel, acc
+  { 0.00,-0.08, 0.00}, -- x pos, vel, acc
   { 0.05, 0.00, 0.00}, -- y pos, vel, acc
   { 0.00, 0.00, 0.00}, -- z pos, vel, acc
 }

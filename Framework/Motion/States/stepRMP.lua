@@ -507,11 +507,9 @@ function step:is_active()
   return active
 end
 
-function step:initialize_simulator_state(duration)
-  -- intialize torso position using minimum jerk trajectory
-  -- (for simulation initialization)
-
-  -- integrate rmp to get intial torso state
+function step:iterate_nominal_rmp_state()
+  -- integrate rmp to improve estimate of intial rmp state
+  local current_support_foot = support_foot
   support_foot = 'r'
   self:initialize()
   for i = 1, step_duration/Body.get_time_step() do
@@ -519,6 +517,16 @@ function step:initialize_simulator_state(duration)
   end
   local rmp_state = torso_rmp:get_state()
   self:set_parameter('nominal_rmp_state', rmp_state)
+  support_foot = current_support_foot
+  self:initialize()
+end
+
+function step:initialize_simulator_state(duration)
+  -- intialize torso position using minimum jerk trajectory
+  -- (for simulation initialization)
+
+  -- update initial rmp state
+  step:iterate_nominal_rmp_state()
   support_foot = 'l'
   self:initialize()
 

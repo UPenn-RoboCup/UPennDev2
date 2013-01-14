@@ -86,6 +86,9 @@ for i = 1, n_pi2_iterations do
   local cost = learner:improve_policy()
   local rollouts = learner:get_rollouts()
   print(i, 'cost : ', cost)
+  for k = 1, #rollouts do
+    print(rollouts[k].cost)
+  end
 end
 
 local theta_final = policy:get_parameters()
@@ -144,5 +147,5 @@ gnuplot.plot(
 -- plot cost curve 
 gnuplot.figure()
 gnuplot.plot(
-  {'pi2 cost curve', learner:get_cost_curve(), '-'}
+  {'pi2 cost curve', learner:get_costs(), '-'}
 )

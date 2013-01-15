@@ -11,8 +11,7 @@ require('dcm')
 local LOOP = true
 local SLOW_MO = false
 local INIT_STANCE = false
-local PARAMETER_FILE = '../../Data/parameters_stepRMP_WebotsASH_train125.lua'
---local PARAMETER_FILE = '../../Data/parameters_stepRMP_WebotsASH_eval.lua'
+local PARAMETER_FILE = '../../Data/parameters_stepRMP_WebotsASH_train0.lua'
 
 local period = 0.7
 local n_samples = 5000
@@ -35,6 +34,23 @@ local via_state = {
 }
 --]]
 
+--[[
+local velocity = {0.1875, 0, 0}
+
+local start_state = {
+  { 0.00, 0.05, 0.00}, -- x pos, vel, acc
+  { 0.00, 0.20, 0.00}, -- y pos, vel, acc
+  { 0.00, 0.00, 0.00}, -- z pos, vel, acc
+}
+
+local via_state = {
+  { 0.00,-0.15, 0.00}, -- x pos, vel, acc
+  { 0.05, 0.00, 0.00}, -- y pos, vel, acc
+  { 0.00, 0.00, 0.00}, -- z pos, vel, acc
+}
+--]]
+
+--[[
 local velocity = {0.125, 0, 0}
 
 local start_state = {
@@ -48,8 +64,24 @@ local via_state = {
   { 0.05, 0.00, 0.00}, -- y pos, vel, acc
   { 0.00, 0.00, 0.00}, -- z pos, vel, acc
 }
+--]]
 
 --[[
+local velocity = {0.0625, 0, 0}
+
+local start_state = {
+  { 0.00, 0.01, 0.00}, -- x pos, vel, acc
+  { 0.00, 0.20, 0.00}, -- y pos, vel, acc
+  { 0.00, 0.00, 0.00}, -- z pos, vel, acc
+}
+
+local via_state = {
+  { 0.00,-0.04, 0.00}, -- x pos, vel, acc
+  { 0.05, 0.00, 0.00}, -- y pos, vel, acc
+  { 0.00, 0.00, 0.00}, -- z pos, vel, acc
+}
+--]]
+
 local velocity = {0, 0, 0}
 
 local start_state = {
@@ -63,7 +95,6 @@ local via_state = {
   { 0.05, 0.00, 0.00}, -- y pos, vel, acc
   { 0.00, 0.00, 0.00}, -- z pos, vel, acc
 }
---]]
 
 local goal_state = {{}, {}, {}}
 for i = 1, 3 do
@@ -111,7 +142,6 @@ step:entry()
 print('training rmp...')
 step:learn_torso_orbit(xdata, tdata)
 step:save_parameters(PARAMETER_FILE)
---step:load_parameters(PARAMETER_FILE)
 print('done')
 step:set_support_foot('l')
 step:set_nominal_initialization(true)

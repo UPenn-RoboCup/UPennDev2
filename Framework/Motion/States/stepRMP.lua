@@ -99,6 +99,7 @@ local swing_foot_state           = {zeros(3), zeros(3), zeros(3)}
 local swing_foot_via_state       = {zeros(3), zeros(3), zeros(3)}
 local swing_foot_goal_state      = {zeros(3), zeros(3), zeros(3)}
 local torso_state                = {zeros(3), zeros(3), zeros(3)}
+local torso_reference_state      = {zeros(3), zeros(3), zeros(3)}
 local torso_reference_trajectory = nil
 
 -- define local parameters
@@ -210,6 +211,9 @@ local function initialize_torso_variables()
 
   -- intialize torso state
   for i = 1, 3 do
+    torso_reference_state[1][i] = reference_start_position[i]
+    torso_reference_state[2][i] = reference_start_velocity[i]
+    torso_reference_state[3][i] = 0
     torso_state[1][i] = reference_start_position[i] + torso_rmp:get_position(i)
     torso_state[2][i] = reference_start_velocity[i] + torso_rmp:get_velocity(i) 
     torso_state[3][i] = torso_rmp:get_acceleration(i)
@@ -256,16 +260,19 @@ end
 
 local function update_torso_state(t, dt)
 
-  local reference_start_position = torso_reference_trajectory(t)
-  local reference_start_velocity = velocity
+  local reference_position = torso_reference_trajectory(t)
+  local reference_velocity = velocity
 
   -- update torso state via rhythmic movement primitive
   torso_rmp:set_time_step(dt)
   torso_rmp:integrate()
 
   for i = 1, 3 do
-    torso_state[1][i] = reference_start_position[i] + torso_rmp:get_position(i)
-    torso_state[2][i] = reference_start_velocity[i] + torso_rmp:get_velocity(i) 
+    torso_reference_state[1][i] = reference_position[i]
+    torso_reference_state[2][i] = reference_velocity[i]
+    torso_reference_state[3][i] = 0
+    torso_state[1][i] = reference_position[i] + torso_rmp:get_position(i)
+    torso_state[2][i] = reference_velocity[i] + torso_rmp:get_velocity(i) 
     torso_state[3][i] = torso_rmp:get_acceleration(i)
   end
 end
@@ -455,6 +462,10 @@ end
 
 function step:get_torso_state()
   return torso_state
+end
+
+function step:get_torso_reference_state()
+  return torso_reference_state
 end
 
 function step:get_swing_foot_state()

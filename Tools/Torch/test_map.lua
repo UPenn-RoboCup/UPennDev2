@@ -25,7 +25,7 @@ require 'torch'
 local MAPS = {}
 MAPS.res        = .2;
 MAPS.invRes     = 1/MAPS.res;
-MAPS.windowSize = 1; -- meters to see 
+MAPS.windowSize = 10; -- meters to see 
 MAPS.edgeProx   = 2;
 MAPS.xmin       = 0 - MAPS.windowSize;
 MAPS.ymin       = 0 - MAPS.windowSize;
@@ -53,12 +53,13 @@ OMAP.sizey  = MAPS.sizey;
 OMAP.data = torch.Tensor(OMAP.sizex,OMAP.sizex):zero()
 
 OMAP.data = OMAP.data:copy( torch.ceil( torch.rand(OMAP.sizex,OMAP.sizex):mul(9) ) )
+OMAP.data = torch.rand(OMAP.sizex,OMAP.sizex):mul(10):ceil():div(10)
 
 -- Helper Functions
 require 'mapShift'
 
 --print(OMAP.data)
-mapShift( OMAP, 5*OMAP.res, 5*OMAP.res )
+--mapShift( OMAP, 5*OMAP.res, 5*OMAP.res )
 --print(OMAP.data)
 
 --
@@ -85,7 +86,9 @@ LIDAR0.mask    = torch.Tensor(LIDAR0.angles:size()):fill(1);
 LIDAR0.present = 1;
 
 --LIDAR0.ranges = torch.Tensor(1081):fill(2);
-LIDAR0.ranges = torch.randn(1081):mul(3);
+--LIDAR0.ranges = torch.rand(LIDAR0.nRays):mul(3);
+LIDAR0.ranges = torch.rand(LIDAR0.nRays):mul(.5)+3;
+--LIDAR0.ranges = torch.range(1,20,19/LIDAR0.nRays);
 
 IMU = {}
 IMU.roll = 0;
@@ -96,5 +99,5 @@ require 'processL0'
 
 --ranges = rcm.get_lidar_ranges();
 --print( carray.get(ranges,1) )
-processL0( LIDAR0, IMU )
+processL0( LIDAR0, IMU, OMAP, MAPS )
 

@@ -28,15 +28,15 @@ function processL0( LIDAR0, IMU )
     if ranges[i]>0.25 and LIDAR0.mask then
       good_cnt = good_cnt+1;
       xs[good_cnt] = xs[i];
-      ys[good_cnt] = xs[i];
+      ys[good_cnt] = ys[i];
     end
   end
 
   -- Resize to include just the good readings
   nranges = good_cnt;
+  print('Good returns:',nranges)
   xs:resize(nranges)
   ys:resizeAs(xs)
-  zs = torch.Tensor( nranges );
 
   -- Apply the transformation given current roll and pitch
   T = torch.mm(roty(IMU.pitch),rotx(IMU.roll)):t();
@@ -49,26 +49,35 @@ function processL0( LIDAR0, IMU )
   X = torch.Tensor(nranges,4)
   X:select(2,1):copy(xs)
   X:select(2,2):copy(ys)
-  X:select(2,3):copy(zs)
+  X:select(2,3):fill(0)
   X:select(2,4):fill(1);
   Y=torch.mm(X,T);  --reverse the order because of transpose
-
+-- TODO: Don't make Y as a new memory place - do inplace 
+-- multiply and store to X
+  --print(Y)
+  --print(Y:select(2,1))
   -- Do not use the points that supposedly hit the ground (check!!)
   -- TODO: Make fast masking!
-  zs = X:select(2,3);
-  for i=1,#ranges do
-    indGood[i] = zs[i]>-0.3
+  xs = Y:select(2,1);
+  ys = Y:select(2,2);
+  zs = Y:select(2,3);
+  local good_cnt = 0;
+  for i=1,nranges do
+    if zs[i]>-0.3 then
+      good_cnt = good_cnt+1;
+      xs[good_cnt] = xs[i];
+      ys[good_cnt] = ys[i];
+      zs[good_cnt] = zs[i];
+    end
   end
-
-  -- Separate coordinates in the sensor frame
-  xsss = Y(indGood,1);
-  ysss = Y(indGood,2);
-  zsss = Y(indGood,3);
-  onez = ones(size(xsss));
-
+  nranges = good_cnt;
+  print('Good returns above floor:',nranges)
+  Y:resize(nranges,4)
+  --print(Y)
+  
   -- These are now the default cartesian points
-  LIDAR0.xs = xsss;
-  LIDAR0.ys = ysss;
+  LIDAR0.xs = xs;
+  LIDAR0.ys = ys;
 
   --number of poses in each dimension to try
 
@@ -78,16 +87,17 @@ function processL0( LIDAR0, IMU )
   -- if encoders are zero, don't move
   -- if(SLAM.odomChanged > 0)
   if true then
-    SLAM.odomChanged = 0;
 
     -- figure out how much to search over the yaw space based on the 
     -- instantaneous angular velocity from imu
 
     -- Perfrom the scan matching
-    slamScanMatchPass1();
-    slamScanMatchPass2();
+    -- TODO
+--    slamScanMatchPass1();
+--    slamScanMatchPass2();
 
     -- If no good fits, then use pure odometry readings
+    local hmax = 1000;
     if hmax < 500 then
       SLAM.x = SLAM.xOdom;
       SLAM.y = SLAM.yOdom;
@@ -100,6 +110,8 @@ function processL0( LIDAR0, IMU )
 
   -- Save pose data from SLAM to the 
   -- global POSE structure
+  -- TODO
+  --[[
   POSE.data.x     = SLAM.x;
   POSE.data.y     = SLAM.y;
   POSE.data.z     = SLAM.z;
@@ -111,7 +123,7 @@ function processL0( LIDAR0, IMU )
   SLAM.xOdom      = SLAM.x;
   SLAM.yOdom      = SLAM.y;
   SLAM.yawOdom    = SLAM.yaw;
-
+  --]]
   -- Log some data
   --[[
   if (POSES.log)
@@ -238,11 +250,10 @@ function processL0( LIDAR0, IMU )
 
 end
 
+-- TODO: Make sure the helper functions are working properly!
 function rotx(t)
-
 -- Homogeneous transformation representing a rotation of theta
 -- about the X axis.
-
 local ct = math.cos(t);
 local st = math.sin(t);
 local r = torch.eye(4);
@@ -250,17 +261,14 @@ r[2][2] = ct;
 r[3][3] = ct;
 r[2][3] = -1*st;
 r[3][2] = st;
-print(r);
 return r
 
 end
 
 
 function roty(t)
-
 -- Homogeneous transformation representing a rotation of theta
--- about the X axis.
-
+-- about the Y axis.
 local ct = math.cos(t);
 local st = math.sin(t);
 local r = torch.eye(4);
@@ -268,7 +276,6 @@ r[1][1] = ct;
 r[3][3] = ct;
 r[1][3] = st;
 r[3][1] = -1*st;
-print(r);
 return r
 
 end

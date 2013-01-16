@@ -84,11 +84,12 @@ LIDAR0.mask    = torch.Tensor(LIDAR0.angles:size()):fill(1);
 --LIDAR0.mask(end-189:end) = 0;
 LIDAR0.present = 1;
 
-LIDAR0.ranges = torch.Tensor(1081)
+--LIDAR0.ranges = torch.Tensor(1081):fill(2);
+LIDAR0.ranges = torch.randn(1081):mul(3);
 
 IMU = {}
 IMU.roll = 0;
-IMU.pitch = 0;
+IMU.pitch = -10 * math.pi/180; -- Look down a little
 IMU.roll = 0;
 
 require 'processL0'

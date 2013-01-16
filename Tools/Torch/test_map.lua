@@ -1,8 +1,25 @@
+module(... or '', package.seeall)
+
+-- Add the required paths
+cwd = '.';
+
+uname  = io.popen('uname -s')
+system = uname:read();
+
+package.cpath = cwd.."/?.so;"..package.cpath;
+package.cpath = cwd.."/../../Player/Lib/?.so;"..package.cpath;
+package.path = cwd.."/../../Player/Util/?.lua;"..package.path;
+package.path = cwd.."/../../Player/Config/?.lua;"..package.path;
+package.path = cwd.."/../../Player/Vision/?.lua;"..package.path;
+
+require('serialization');
+require('util');
+require('unix');
+require('cutil');
+require('rcm');
+require('vector');
+
 require 'torch'
-
--- Helper Functions
-require 'mapShift'
-
 
 -- Default values
 local MAPS = {}
@@ -36,6 +53,14 @@ OMAP.sizey  = MAPS.sizey;
 OMAP.data = torch.Tensor(OMAP.sizex,OMAP.sizex):zero()
 
 OMAP.data = OMAP.data:copy( torch.ceil( torch.rand(OMAP.sizex,OMAP.sizex):mul(9) ) )
+
+-- Helper Functions
+require 'mapShift'
+
 print(OMAP.data)
 mapShift( OMAP, 5*OMAP.res, 5*OMAP.res )
 print(OMAP.data)
+
+require 'processL0'
+processL0()
+

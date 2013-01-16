@@ -20,16 +20,6 @@ function processL0( LIDAR0, IMU, OMAP, MAPS )
   xs = ranges:clone():cmul( LIDAR0.cosines );
   ys = ranges:clone():cmul( LIDAR0.sines );
 
-  --[[
-  gnuplot.figure(1)
-  gnuplot.plot('Ranges',xs,ys,'+')
---]]
-
-  -- TODO: DEBUG
-  --print(ranges)
-  --print(xs)
-  --print(zs)
-
   -- Accept only ranges that are sufficiently far away
   --dranges = [0; diff(ranges)];
   --  local indGood_s = torch.CharStorage(nranges):fill(0)
@@ -89,8 +79,8 @@ function processL0( LIDAR0, IMU, OMAP, MAPS )
   xs = Y:select(2,1);
   ys = Y:select(2,2);
   zs = Y:select(2,3);
-  gnuplot.figure(2)
-  gnuplot.plot('Ranges',xs,ys,'+')
+  --gnuplot.figure(2)
+  --gnuplot.plot('Ranges',xs,ys,'+')
 
   -- These are now the default cartesian points
   LIDAR0.xs = xs;
@@ -108,7 +98,7 @@ function processL0( LIDAR0, IMU, OMAP, MAPS )
 
     -- Perfrom the scan matching
     -- TODO
-    scanMatchOne( OMAP );
+    scanMatchOne( LIDAR0, OMAP, xs, ys );
 --    slamScanMatchPass2();
 
     -- If no good fits, then use pure odometry readings
@@ -209,8 +199,8 @@ function processL0( LIDAR0, IMU, OMAP, MAPS )
       OMAP.data[ xis[i] ][ yis[i] ] = OMAP.data[ xis[i] ][ yis[i] ] + inc;
     end
   end
-  gnuplot.figure(4)
-  gnuplot.imagesc( OMAP.data,'color')
+  --gnuplot.figure(4)
+  --gnuplot.imagesc( OMAP.data,'color')
 
   -- TODO
   -- Decay the map around the robot

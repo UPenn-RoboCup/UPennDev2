@@ -20,6 +20,7 @@ require('rcm');
 require('vector');
 
 require 'torch'
+require 'gnuplot'
 
 -- Default values
 local MAPS = {}

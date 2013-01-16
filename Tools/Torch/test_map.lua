@@ -57,10 +57,43 @@ OMAP.data = OMAP.data:copy( torch.ceil( torch.rand(OMAP.sizex,OMAP.sizex):mul(9)
 -- Helper Functions
 require 'mapShift'
 
-print(OMAP.data)
+--print(OMAP.data)
 mapShift( OMAP, 5*OMAP.res, 5*OMAP.res )
-print(OMAP.data)
+--print(OMAP.data)
+
+--
+-- Test LIDAR processing
+--
+--
+LIDAR0 = {}
+LIDAR0.resd    = 0.25;
+LIDAR0.res     = LIDAR0.resd/180*math.pi;
+LIDAR0.nRays   = 1081;
+--LIDAR0.angles  = ((0:LIDAR0.resd:(LIDAR0.nRays-1)*LIDAR0.resd)-135)*pi/180;
+LIDAR0.angles  = torch.range(0,(LIDAR0.nRays-1)*LIDAR0.resd,LIDAR0.resd)
+LIDAR0.angles = (LIDAR0.angles - 135) * math.pi/180
+LIDAR0.cosines = torch.cos(LIDAR0.angles);
+LIDAR0.sines   = torch.sin(LIDAR0.angles);
+LIDAR0.offsetx = 0.137;
+LIDAR0.offsety = 0;
+LIDAR0.offsetz = 0.54;  --from the body origin (not floor)
+
+LIDAR0.mask    = torch.Tensor(LIDAR0.angles:size()):fill(1);
+-- Be very conservative to ensure no interpolated antenna obstacles
+--LIDAR0.mask(1:190) = 0;
+--LIDAR0.mask(end-189:end) = 0;
+LIDAR0.present = 1;
+
+LIDAR0.ranges = torch.Tensor(1081)
+
+IMU = {}
+IMU.roll = 0;
+IMU.pitch = 0;
+IMU.roll = 0;
 
 require 'processL0'
-processL0()
+
+--ranges = rcm.get_lidar_ranges();
+--print( carray.get(ranges,1) )
+processL0( LIDAR0, IMU )
 

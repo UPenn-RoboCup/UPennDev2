@@ -2,7 +2,13 @@
 -- Lidar0 message handler (horizontal lidar)
 --
 
-require 'gnuplot'
+require('Slam');
+print()
+for k,v in pairs(Slam) do
+  print(k,v);
+end
+print('\n=== Processing LIDAR0 ===\n')
+require 'scanMatchOne'
 
 function processL0( LIDAR0, IMU, OMAP, MAPS )
 
@@ -41,13 +47,13 @@ function processL0( LIDAR0, IMU, OMAP, MAPS )
 
   -- Resize to include just the good readings
   nranges = good_cnt;
-  print('Good returns:',nranges)
+  --print('Good returns:',nranges)
   xs:resize(nranges)
   ys:resizeAs(xs)
 
   -- Apply the transformation given current roll and pitch
   T = torch.mm(roty(IMU.pitch),rotx(IMU.roll)):t();
-  --T = eye(4);
+  --T = torch.eye(4);
   --X = [xsg ysg zsg onesg];
   -- TODO: for memory efficiency, this Tensor should be 
   -- declared up top, and "views" should just be manipulated as
@@ -59,10 +65,9 @@ function processL0( LIDAR0, IMU, OMAP, MAPS )
   X:select(2,3):fill(0)
   X:select(2,4):fill(1);
   Y=torch.mm(X,T);  --reverse the order because of transpose
--- TODO: Don't make Y as a new memory place - do inplace 
--- multiply and store to X
-  --print(Y)
-  --print(Y:select(2,1))
+	-- TODO: Don't make Y as a new memory place - do inplace 
+	-- multiply and store to X
+
   -- Do not use the points that supposedly hit the ground (check!!)
   -- TODO: Make fast masking!
   xs = Y:select(2,1);
@@ -78,7 +83,7 @@ function processL0( LIDAR0, IMU, OMAP, MAPS )
     end
   end
   nranges = good_cnt;
-  print('Good returns above floor:',nranges)
+  -- print('Good returns above floor:',nranges)
   Y:resize(nranges,4)
   -- Reset the views
   xs = Y:select(2,1);
@@ -91,11 +96,9 @@ function processL0( LIDAR0, IMU, OMAP, MAPS )
   LIDAR0.xs = xs;
   LIDAR0.ys = ys;
 
-  --number of poses in each dimension to try
-
-  --
+  ----------------------
   -- Begin the scan matching to update the SLAM pose
-  --
+  ----------------------
   -- if encoders are zero, don't move
   -- if(SLAM.odomChanged > 0)
   if true then
@@ -105,7 +108,7 @@ function processL0( LIDAR0, IMU, OMAP, MAPS )
 
     -- Perfrom the scan matching
     -- TODO
---    slamScanMatchPass1();
+    scanMatchOne( OMAP );
 --    slamScanMatchPass2();
 
     -- If no good fits, then use pure odometry readings
@@ -272,8 +275,8 @@ function processL0( LIDAR0, IMU, OMAP, MAPS )
 
   -- Perform the shift via helper functions
   if xShift ~= 0 or yShift ~= 0 then
-    OMAP  = mapResize(OMAP,xShift,yShift);
-    ScanMatch2D('setBoundaries',OMAP.xmin,OMAP.ymin,OMAP.xmax,OMAP.ymax);
+    mapShift(OMAP,xShift,yShift);
+    Slam.ScanMatch2D('setBoundaries',OMAP.xmin,OMAP.ymin,OMAP.xmax,OMAP.ymax);
   end
 
   -- TODO

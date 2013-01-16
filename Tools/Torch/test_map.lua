@@ -85,6 +85,7 @@ LIDAR0.mask    = torch.Tensor(LIDAR0.angles:size()):fill(1);
 --LIDAR0.mask(1:190) = 0;
 --LIDAR0.mask(end-189:end) = 0;
 LIDAR0.present = 1;
+LIDAR0.startTime = 0;
 
 --LIDAR0.ranges = torch.Tensor(1081):fill(2);
 --LIDAR0.ranges = torch.rand(LIDAR0.nRays):mul(3);

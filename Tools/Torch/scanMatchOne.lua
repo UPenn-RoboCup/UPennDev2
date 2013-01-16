@@ -1,4 +1,4 @@
-function scanMatchOne( OMAP )
+function scanMatchOne( LIDAR0, OMAP, xs, ys )
 
 	SLAM = {}
 	SLAM.xOdom = 0
@@ -14,7 +14,7 @@ function scanMatchOne( OMAP )
   -- TODO: make this dependent on angular velocity / motion speed
 
   --tEncoders = ENCODERS.counts.t;
-  tLidar0   = LIDAR0.scan.startTime;
+  tLidar0   = LIDAR0.startTime;
 
   --if abs(tLidar0-tEncoders) < 0.1
   nxs1  = 5;
@@ -28,9 +28,9 @@ function scanMatchOne( OMAP )
   --  dy1   = 0.05;
   --end
 
-  yawRange1 = floor(nyaw1/2);
-  xRange1   = floor(nxs1/2);
-  yRange1   = floor(nys1/2);
+  yawRange1 = math.floor(nyaw1/2);
+  xRange1   = math.floor(nxs1/2);
+  yRange1   = math.floor(nys1/2);
 
   -- create the candidate locations in each dimension
   aCand1 = torch.range(-yawRange1,yawRange1)*dyaw1 + SLAM.yawOdom;
@@ -41,10 +41,15 @@ function scanMatchOne( OMAP )
   -- get a local 3D sampling of pose likelihood
   hits = Slam.ScanMatch2D(
 	'match',
-	OMAP.data,
-	xs,--xsss(1:2:end),
+	OMAP.data:storage(),
+--	OMAP.data,
+	OMAP.data:dim(),
+	OMAP.sizex, OMAP.sizey,
+--  xs:nElement(),
+--  ys:nElement(),
+	xs:storage(),--xsss(1:2:end),
 	-- TODO: unfold to mean the 1:2:end syntax?
-	ys,--ysss(1:2:end),
+	ys:storage(),--ysss(1:2:end),
   xCand1,yCand1,aCand1
 	);
 
@@ -68,17 +73,17 @@ function scanMatchOne( OMAP )
   if (SLAM.lidar0Cntr > 1) then
 
     -- Extract the 2D slice of xy poses at the best angle
-    hitsXY = hits(:,:,jmax);
+    --hitsXY = hits(:,:,jmax);
+		hitsXY = hits:select(3,jmax)
 
     -- Create a grid of distance-based costs from each cell to odometry pose
-    [yGrid1 xGrid1] = meshgrid(yCand1,xCand1);
-
+    yGrid1, xGrid1 = meshgrid( yCand1, xCand1 );
     xDiff1 = xGrid1 - SLAM.xOdom;
     yDiff1 = yGrid1 - SLAM.yOdom;
-    distGrid1 = (1/3)*1e6*sqrt(xDiff1.^2 + yDiff1.^2);
+    distGrid1 = (1/3)*1e6*torch.sqrt(xDiff1:pow(2) + yDiff1:pow(2) );
     --distGrid1(abs(distGrid1
-    [minIndX indx] = min(abs(xCand1-SLAM.xOdom));
-    [minIndY indy] = min(abs(yCand1-SLAM.yOdom));
+    minIndX, indx = torch.min( xCand1:add(-SLAM.xOdom):abs() );
+    minIndY, indy = torch.min( yCand1:add(-SLAM.yOdom):abs() );
 
     -- Combine the pose likelihoods with the distance from odometry prediction
     -- TODO: play around with the weights!!
@@ -92,22 +97,24 @@ function scanMatchOne( OMAP )
     -- How valuable is the odometry preidiction?
     -- Should make a gaussian depression around this point...
     costGrid1 = - hitsXY;
-    costGrid1(indx,indy) = costGrid1(indx,indy) - 500;
+    costGrid1[indx][indy] = costGrid1[indx][indy] - 500;
     --costGrid1(indx,indy) = costGrid1(indx,indy) - 2e4;
 
     -- Find the minimum and save the new pose
-    [cmin cimin] = min(costGrid1(:));
+    cmin, cimin = torch.min( costGrid1:resize( costGrid1:nElement() ) );
 
-    -- print( 'distGrid min %f, hits xy min =%f\n', distGrid1(cimin), hitsXY(cimin) );
+    -- print( 'distGrid min %f, hits xy min =%f\n',
+		-- distGrid1(cimin), hitsXY(cimin) );
 
     -- Save the best pose
     SLAM.yaw = aCand1(jmax);
     SLAM.x   = xGrid1(cimin);
     SLAM.y   = yGrid1(cimin);
   else
-    [xStart yStart thStart] = FindStartPose(SLAM.x, SLAM.y, SLAM.yaw, xsss,ysss);
+    xStart, yStart, thStart = FindStartPose(SLAM.x, SLAM.y, SLAM.yaw, xsss,ysss);
 
-    if ~isempty(xStart) then
+    --if not isempty(xStart) then
+		if xStart then
       SLAM.x = xStart;
       SLAM.Y = yStart;
       SLAM.yaw = thStart;

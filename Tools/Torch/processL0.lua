@@ -2,42 +2,51 @@
 -- Lidar0 message handler (horizontal lidar)
 --
 
-function processL0()
+function processL0( LIDAR0, IMU )
 
-  -- Convert from float to double, since lidar readings are floats
-  ranges = rcm.get_lidar_ranges();
+  local ranges = LIDAR0.ranges;
+  local nranges = LIDAR0.nRays;
   -- Put lidar readings into relative cartesian coordinate
+  --print( 'Ranges sz:\t', ranges:size() )
+  --print( 'Cosines sz:\t', LIDAR0.cosines:size() )
   xs = ranges:clone():cmul( LIDAR0.cosines );
   ys = ranges:clone():cmul( LIDAR0.sines );
-  zs = ranges:clone():zero();
 
   -- TODO: DEBUG
-  print(ranges)
-  print(xs)
-  print(zs)
+  --print(ranges)
+  --print(xs)
+  --print(zs)
 
   -- Accept only ranges that are sufficiently far away
   --dranges = [0; diff(ranges)];
-  indGood = ranges:clone():zero();
+  --  local indGood_s = torch.CharStorage(nranges):fill(0)
+  --  local indGood = torch.Tensor(indGood_s);
   -- TODO: Make fast masking!
-  for i=1,#ranges do
+  local good_cnt = 0;
+  for i=1,nranges do
     --indGood[i] = ranges[i]>0.25 and LIDAR0.mask and abs(dranges)<0.1;
-    indGood[i] = ranges[i]>0.25 and LIDAR0.mask
+    if ranges[i]>0.25 and LIDAR0.mask then
+      good_cnt = good_cnt+1;
+      xs[good_cnt] = xs[i];
+      ys[good_cnt] = xs[i];
+    end
   end
-  -- Select only the "good" readings
-  xs:apply( domask(indGood) );
-  ys:apply( domask(indGood) );
-  ys:apply( domask(indGood) );
+
+  -- Resize to include just the good readings
+  nranges = good_cnt;
+  xs:resize(nranges)
+  ys:resizeAs(xs)
+  zs = torch.Tensor( nranges );
 
   -- Apply the transformation given current roll and pitch
-  T = transpose(roty(IMU.data.pitch)*rotx(IMU.data.roll));
+  T = torch.mm(roty(IMU.pitch),rotx(IMU.roll)):t();
   --T = eye(4);
   --X = [xsg ysg zsg onesg];
   -- TODO: for memory efficiency, this Tensor should be 
   -- declared up top, and "views" should just be manipulated as
   -- xs, ys, zs.  Look at the memory allocation, so it's 
   -- just [<---xs---><---ys---><---zs--->]
-  X = torch.Tensor(#ranges,4)
+  X = torch.Tensor(nranges,4)
   X:select(2,1):copy(xs)
   X:select(2,2):copy(ys)
   X:select(2,3):copy(zs)
@@ -226,5 +235,40 @@ function processL0()
 
   -- Set the last updated time
   LIDAR0.lastTime = LIDAR0.scan.startTime;
+
+end
+
+function rotx(t)
+
+-- Homogeneous transformation representing a rotation of theta
+-- about the X axis.
+
+local ct = math.cos(t);
+local st = math.sin(t);
+local r = torch.eye(4);
+r[2][2] = ct;
+r[3][3] = ct;
+r[2][3] = -1*st;
+r[3][2] = st;
+print(r);
+return r
+
+end
+
+
+function roty(t)
+
+-- Homogeneous transformation representing a rotation of theta
+-- about the X axis.
+
+local ct = math.cos(t);
+local st = math.sin(t);
+local r = torch.eye(4);
+r[1][1] = ct;
+r[3][3] = ct;
+r[1][3] = st;
+r[3][1] = -1*st;
+print(r);
+return r
 
 end

@@ -1,7 +1,7 @@
 TARGETS = all clean
 .PHONY: $(TARGETS)
 
-BOOST_INCLUDE_DIRS=
+BOOST_INCLUDE_DIRS=/opt/boost
 INCLUDES=
 
 ifndef OSTYPE

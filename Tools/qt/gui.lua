@@ -4,7 +4,7 @@ package.cpath = pwd..'/lib/?.so;'..package.cpath
 require 'qtcore'
 require 'qtgui'
 -- Require torch example to integration testing
-require 'tch'
+--require 'tch'
 
 app = QApplication(1 + select('#', ...), {arg[0], ...})
 app.__gc = app.delete -- take ownership of object
@@ -56,6 +56,7 @@ local new_gui = function(...)
   slider:connect('2valueChanged(int)', slider, '1mySlot(int)')
 
 	QObject.connect(slider, '2valueChanged(int)', lcd, '1display(int)')
+
 
 	local layout = QVBoxLayout.new()
 	layout:addWidget(lcd)

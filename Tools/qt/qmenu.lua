@@ -87,7 +87,7 @@ local skeleton = function(...)
   QObject.connect(quit, '2triggered()', app, '1quit()')
 
   local toolbar = this.addToolBar(this, "Main toolbar")
-  QToolBar.addAction(toolbar, pnewpix, "New File")
+  toolbar:addAction(pnewpix, "New File")
   QToolBar.addAction(toolbar, openpix, "Open File")
   QToolBar.addSeparator(toolbar)
   

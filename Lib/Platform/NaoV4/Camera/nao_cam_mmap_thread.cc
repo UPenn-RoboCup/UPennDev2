@@ -1,5 +1,5 @@
 
-#include "nao_cam_thread.h"
+#include "nao_cam_mmap_thread.h"
 #include "cam_util.h"
 #include "timeScalar.h"
 

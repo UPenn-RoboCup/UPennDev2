@@ -143,10 +143,10 @@ end
 
 --window = simple_layout()
 --window = VerticalBox()
---window = Button()
---window = Layout()
-window = Calculator()
-window = Karenina()
+window = Button()
+window = Layout()
+--window = Calculator()
+--window = Karenina()
 
 window:setWindowTitle("UPennalizers")
 

@@ -26,8 +26,8 @@ local new_gui = function(...)
 
   local scene = QGraphicsScene.new()
 --  local glcd = scene.addWidget(lcd);
-  local gbutton = scene.addWidget(quit);
-  local gslider = scene.addWidget(slider);
+--  local gbutton = scene:addWidget(quit);
+--  local gslider = scene:addWidget(slider);
   local piximage = QPixmap('Image-1-10.png')
   local image = QGraphicsPixmapItem(piximage)
   scene:addItem(image)
@@ -35,9 +35,9 @@ local new_gui = function(...)
   view = QGraphicsView(scene)
   local layout = QGraphicsGridLayout.new()
 --  layout:addItem(lcd)
-  layout:addItem(gbutton)
-  layout:addItem(gslider)
-  layout:addItem(glcd)
+--  layout:addItem(gbutton)
+--  layout:addItem(gslider)
+--  layout:addItem(glcd)
   this:setLayout(layout)
   return this
 end

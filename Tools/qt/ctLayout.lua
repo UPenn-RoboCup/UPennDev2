@@ -1,8 +1,29 @@
+local glue = require'glue'
+local ffi = require'ffi'
+local bmpconv = require'bmpconv'
+local readfile = glue.readfile
+require'unit'
+local libpng = require'libpng'
+
+
 local  open = function(self, state)
 --  print('open file')
   local fileDialog = QFileDialog()
   local fileName = fileDialog:getOpenFileName("Open File", "", "Log File (*.lua)")
   print(fileName:toUtf8())
+end
+
+local imageview = function()
+    local scene = QGraphicsScene.new()
+--    local piximage = QPixmap('Image-1-10.png')
+    local piximage = QPixmap();
+    local filename = 'Image-1-10.png'
+    local img = libpng.load({path = filename})
+    piximage:loadFromData(tostring(img.data), img.w * img.h)
+    local image = QGraphicsPixmapItem(piximage)
+    scene:addItem(image)
+    local view = QGraphicsView(scene)
+    return view
 end
 
 Widget = function(...)
@@ -53,11 +74,7 @@ Widget = function(...)
 
   local rightvbox = QVBoxLayout()
     -- Image Display
-    local scene = QGraphicsScene.new()
-    local piximage = QPixmap('Image-1-10.png')
-    local image = QGraphicsPixmapItem(piximage)
-    scene:addItem(image)
-    local view = QGraphicsView(scene)
+    local view = imageview()
     -- Image file Control Buttons
     local fileControlhbox = QHBoxLayout()
       -- add file control buttons

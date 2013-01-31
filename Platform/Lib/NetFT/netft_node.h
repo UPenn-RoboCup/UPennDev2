@@ -15,6 +15,8 @@ private:
   std::vector<struct can_frame> m_can_buffers;
   int m_forces[3];
   int m_torques[3];
+  double m_force_scale_factor;
+  double m_torque_scale_factor;
   int m_status;
   int m_sample;
 public:
@@ -26,8 +28,10 @@ public:
   struct can_frame get_short_request();
   struct can_frame get_bias_command();
   struct can_frame get_clear_threshold_command();
-  void get_forces(int forces[3]);
-  void get_torques(int torques[3]);
+  void set_force_scale_factor(double factor);
+  void set_torque_scale_factor(double factor);
+  void get_forces(double forces[3]);
+  void get_torques(double torques[3]);
   int get_status();
   int get_sample();
   void update_data();

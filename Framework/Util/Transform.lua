@@ -85,14 +85,18 @@ function trans(dx, dy, dz)
   return setmetatable(t, mt);
 end
 
-function transform6D(p)
-  local t = Transform.eye(); 
+function pose6D(p)
   --[[
+  return transform :
   t = Transform.trans(p[1], p[2], p[3])
   t = t*Transform.rotX(p[4])
   t = t*Transform.rotY(p[5])
   t = t*Transform.rotZ(p[6])
   --]]
+  local t = Transform.eye(); 
+  for i = 4,6 do
+    p[i] = p[i] or 0
+  end
   local cwx = math.cos(p[4]);
   local swx = math.sin(p[4]);
   local cwy = math.cos(p[5]);
@@ -118,6 +122,16 @@ function transform6D(p)
   return setmetatable(t, mt);
 end
 
+function euler(w)
+  --[[
+  return transform :
+  t = t*Transform.rotX(w[1])
+  t = t*Transform.rotY(w[2])
+  t = t*Transform.rotZ(w[3])
+  --]]
+  return pose6D({0, 0, 0, w[1], w[2], w[3]})
+end
+
 -- Methods
 --------------------------------------------------------------------------
 
@@ -134,9 +148,9 @@ function inv(t)
   return tinv;
 end
 
-function position6D(t)
+function get_pose6D(t)
   local p = vector.zeros(6);
-  local w = getEuler(t);
+  local w = get_euler(t);
   p[1] = t[1][4];
   p[2] = t[2][4];
   p[3] = t[3][4];
@@ -146,7 +160,7 @@ function position6D(t)
   return p;
 end
 
-function getEuler(t)
+function get_euler(t)
   -- returns euler angles {wx, wy, wz} corresponding to rotation RxRyRz
   local w = vector.zeros(3);
   w[2] = math.asin(t[1][3]);

@@ -7,13 +7,14 @@ require('Body')
 require('vector')
 require('Config')
 require('waveform')
+require('Transform')
 require('Kinematics')
 require('MotionState')
 
 -- Setup 
 --------------------------------------------------------------------------
 
-walk = MotionState.new(...)
+walk = MotionState.new('walk')
 local dcm = walk.dcm
 walk:set_joint_access(0, 'all')
 walk:set_joint_access(1, 'legs')
@@ -153,6 +154,7 @@ end
 function walk:stop()
   -- issue stop request
   stop_request = true
+  self:set_velocity(0, 0, 0)
 end
 
 function walk:is_active()
@@ -234,7 +236,10 @@ function walk:update()
     torso_pos[5] = hip_pitch_offset
 
     -- calculate inverse kinematics and add hip roll swing
-    local q = Kinematics.inverse_legs(l_foot_pos, r_foot_pos, torso_pos)
+    local p_l_foot = Transform.pose6D(l_foot_pos)
+    local p_r_foot = Transform.pose6D(r_foot_pos)
+    local p_torso = Transform.pose6D(torso_pos)
+    local q = Kinematics.inverse_pos_legs(p_l_foot, p_r_foot, p_torso)
 
     -- add gyro feedback
     q[2] = q[2] - hip_roll_fb*gyro[1]
@@ -281,7 +286,10 @@ function walk:update()
     local l_foot_pos = {x_offset, y_offset, z_offset, 0, 0, a_offset}
     local r_foot_pos = {x_offset,-y_offset, z_offset, 0, 0, -a_offset}
     local torso_pos = {0, 0, 0, 0, hip_pitch_offset, 0}
-    local qstance = Kinematics.inverse_legs(l_foot_pos, r_foot_pos, torso_pos)
+    local p_l_foot = Transform.pose6D(l_foot_pos)
+    local p_r_foot = Transform.pose6D(r_foot_pos)
+    local p_torso = Transform.pose6D(torso_pos)
+    local qstance = Kinematics.inverse_pos_legs(p_l_foot, p_r_foot, p_torso)
 
     -- caclutate joint configuration
     update_parameters()

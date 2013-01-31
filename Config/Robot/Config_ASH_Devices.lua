@@ -112,6 +112,8 @@ joint.id = {
   },
   head = {
   },
+  upperbody = {
+  },
 }
 
 -- motor config
@@ -216,6 +218,8 @@ motor.id = {
   arms = {
   },
   head = {
+  },
+  upperbody = {
   },
 }
 

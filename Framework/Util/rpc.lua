@@ -1,6 +1,6 @@
 require('lcm')
-require('lcm_rpc_request_t')
-require('lcm_rpc_response_t')
+require('thor_rpc_request_t')
+require('thor_rpc_response_t')
 require('serialization')
 require('unix')
 
@@ -31,7 +31,14 @@ local function serialize_call(call_string, ...)
   for i = 1,#arg do
     arg_list[i] = serialization.serialize(arg[i])
   end
-  return 'return '..call_string..'('..table.concat(arg_list, ',')..')'
+  local oo_string = call_string:match('^([%a_%d%.]+):[%a_%d]+$')
+  if (oo_string) then
+    call_string = call_string:gsub(':', '.')..','..oo_string
+  end
+  if (#arg_list > 0) then
+    call_string = call_string..','..table.concat(arg_list, ',')
+  end
+  return 'return '..call_string
 end
 
 local function serialize_return_values(...)
@@ -49,14 +56,16 @@ local function get_functions(t, searched)
   local functions = {}
   searched[t] = true
   for k,v in pairs(t) do
-    if (type(v) == 'function') then
-      functions[k] = true
-    elseif (type(v) == 'table') then
-      if not(searched[v]) then
-        local methods = get_functions(v, searched)
-        for m in pairs(methods) do
-          functions[k..'.'..m] = true
-        end
+    if (type(k) == 'string') then
+      if (type(v) == 'function') then
+	functions[k] = true
+      elseif (type(v) == 'table') then
+	if not(searched[v]) then
+	  local methods = get_functions(v, searched)
+	  for m in pairs(methods) do
+	    functions[k..'.'..m] = true
+	  end
+	end
       end
     end
   end
@@ -79,6 +88,10 @@ local function handle_rpc_request(channel, msg, o)
   else
     return_values = {pcall(loadstring(msg.eval_string))}
     return_status = table.remove(return_values, 1)
+    if (return_status) then
+      return_values = {pcall(unpack(return_values))}
+      return_status = table.remove(return_values, 1)
+    end
   end
   if (msg.synchronous) then
     local eval_string = serialize_return_values(unpack(return_values))
@@ -86,7 +99,6 @@ local function handle_rpc_request(channel, msg, o)
       client_id      = msg.client_id,
       request_id     = msg.request_id,
       eval_string    = eval_string,
-      eval_nbytes    = #eval_string,
       return_status  = return_status,
     }
     o.lcm:rpc_response_t_publish(o.response_channel, response)
@@ -188,7 +200,6 @@ function rpc_client_mt.connect(o, timeout)
     client_id   = o.client_id,
     request_id  = o.request_id,
     eval_string = '',
-    eval_nbytes = 0,
     synchronous = true,
   }
   o.lcm:rpc_request_t_publish(o.request_channel, rpc_request)
@@ -209,7 +220,6 @@ function rpc_client_mt.eval(o, call_string, ...)
     client_id   = o.client_id,
     request_id  = o.request_id,
     eval_string = eval_string,
-    eval_nbytes = #eval_string,
     synchronous = false,
   }
   o.lcm:rpc_request_t_publish(o.request_channel, rpc_request)
@@ -226,7 +236,6 @@ function rpc_client_mt.call(o, call_string, ...)
     client_id   = o.client_id,
     request_id  = o.request_id,
     eval_string = eval_string,
-    eval_nbytes = #eval_string,
     synchronous = true,
   }
   o.lcm:rpc_request_t_publish(o.request_channel, rpc_request)

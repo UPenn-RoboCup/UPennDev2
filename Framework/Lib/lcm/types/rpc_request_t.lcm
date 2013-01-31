@@ -1,10 +1,9 @@
-package lcm;
+package thor;
 
 struct rpc_request_t
 {
     string   client_id;
     int16_t  request_id;
-    int32_t  eval_nbytes;
-    byte     eval_string[eval_nbytes];
+    string   eval_string;
     boolean  synchronous;
 }

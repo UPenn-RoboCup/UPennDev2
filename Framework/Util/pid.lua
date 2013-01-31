@@ -6,6 +6,7 @@ require('filter')
 
 pid = {}
 pid.__index = pid
+pid.__mtstring = 'pid'
 
 local Q = 0.5
 

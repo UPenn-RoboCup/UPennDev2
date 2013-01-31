@@ -1,16 +1,7 @@
-CWD = $(shell pwd)
-
 # Define environmental variables
 ###########################################################################
-ifndef OSTYPE
-  export OSTYPE = $(shell uname -s|awk '{print tolower($$0)}')
-endif
-
-ifeq ($(OSTYPE),darwin)
-  export WEBOTS_HOME = /Applications/Webots
-else
-  export WEBOTS_HOME = /usr/local/webots
-endif
+CWD = $(shell pwd)
+include Makefile.inc
 
 # Define targets
 ###########################################################################
@@ -18,8 +9,9 @@ endif
 all:
 	@echo " Please choose one of the following targets:"
 	@echo " make ash"
-	@echo " make teststand"
 	@echo " make webots_ash"
+	@echo " make teststand"
+	@echo " make robotis_arm"
 	@echo " make tools"
 	@echo " make clean"
 
@@ -30,9 +22,9 @@ ash:
 	cd Framework/Robot \
 	&& rm -f Body.lua Kinematics.* Statics.* Dynamics.* \
 	&& ln -s ../../Platform/ASH/Body.lua Body.lua \
-	&& ln -s ../../Platform/ASH/Mechanics/Kinematics.so Kinematics.so \
-	&& ln -s ../../Platform/ASH/Mechanics/Statics.lua Statics.lua \
-	&& ln -s ../../Platform/ASH/Mechanics/Dynamics.lua Dynamics.lua \
+	&& ln -s ../../Platform/ASH/Mechanics/Kinematics.$(SHLIBEXT) Kinematics.$(SHLIBEXT) \
+	&& ln -s ../../Platform/ASH/Mechanics/Statics.$(SHLIBEXT) Statics.$(SHLIBEXT) \
+	&& ln -s ../../Platform/ASH/Mechanics/Dynamics.$(SHLIBEXT) Dynamics.$(SHLIBEXT) \
 	&& cd $(CWD)
 	cd Config \
 	&& rm -f Config.lua \
@@ -68,16 +60,16 @@ teststand:
 	&& cd $(CWD)
 
 webots_ash:
-	export WEBOTS_HOME=$(WEBOTS_HOME)
 	cd Framework/Lib && make && cd $(CWD)
 	cd Framework/Lib/webots && make && cd $(CWD)
 	cd Platform/WebotsASH && make && cd $(CWD)
 	cd Framework/Robot \
 	&& rm -f Body.lua Kinematics.* Statics.* Dynamics.* \
 	&& ln -s ../../Platform/WebotsASH/Body.lua Body.lua \
-	&& ln -s ../../Platform/WebotsASH/Mechanics/Kinematics.so Kinematics.so \
-	&& ln -s ../../Platform/WebotsASH/Mechanics/Statics.lua Statics.lua \
-	&& ln -s ../../Platform/WebotsASH/Mechanics/Dynamics.lua Dynamics.lua \
+	&& ln -s ../../Platform/WebotsASH/Sensor.lua Sensor.lua \
+	&& ln -s ../../Platform/WebotsASH/Mechanics/Kinematics.$(SHLIBEXT) Kinematics.$(SHLIBEXT) \
+	&& ln -s ../../Platform/WebotsASH/Mechanics/Statics.$(SHLIBEXT) Statics.$(SHLIBEXT) \
+	&& ln -s ../../Platform/WebotsASH/Mechanics/Dynamics.$(SHLIBEXT) Dynamics.$(SHLIBEXT) \
 	&& cd $(CWD)
 	cd Config \
 	&& rm -f Config.lua \
@@ -90,11 +82,34 @@ webots_ash:
 	&& rm -f comms_manager \
 	&& cd $(CWD)
 
+robotis_arm:
+	cd Framework/Lib && make && cd $(CWD)
+	cd Platform/Lib && make && cd $(CWD)
+	cd Platform/RobotisArm && make && cd $(CWD)
+	cd Framework/Robot \
+	&& rm -f Body.lua Kinematics.* Statics.* Dynamics.* \
+	&& ln -s ../../Platform/RobotisArm/Body.lua Body.lua \
+	&& ln -s ../../Platform/RobotisArm/Mechanics/Kinematics.so Kinematics.so \
+	&& ln -s ../../Platform/RobotisArm/Mechanics/Statics.lua Statics.lua \
+	&& ln -s ../../Platform/RobotisArm/Mechanics/Dynamics.lua Dynamics.lua \
+	&& cd $(CWD)
+	cd Config \
+	&& rm -f Config.lua \
+	&& ln -s Config_RobotisArm.lua Config.lua \
+	&& cd $(CWD)
+	cd Run \
+	&& rm -f init_robot \
+	&& rm -f comms_manager \
+	&& ln -s ../Platform/RobotisArm/Init/init_robot init_robot \
+	&& ln -s ../Platform/RobotisArm/Comms/comms_manager comms_manager \
+	&& cd $(CWD)
+
 tools:
 	cd Tools/Lib && make && cd $(CWD)
 
 clean:
 	rm -f Framework/Robot/Body.lua
+	rm -f Framework/Robot/Sensor.lua
 	rm -f Framework/Robot/Kinematics.*
 	rm -f Framework/Robot/Statics.*
 	rm -f Framework/Robot/Dynamics.*
@@ -109,5 +124,6 @@ clean:
 	cd Platform/ASH && make clean && cd $(CWD)
 	cd Platform/Teststand && make clean && cd $(CWD)
 	cd Platform/WebotsASH && make clean && cd $(CWD)
+	cd Platform/RobotisArm && make clean && cd $(CWD)
 
-.PHONY: all ash teststand webots_ash tools clean
+.PHONY: all ash teststand webots_ash robotis_arm tools clean

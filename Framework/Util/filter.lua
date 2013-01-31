@@ -7,6 +7,7 @@ require('math')
 
 filter = {}
 filter.__index = filter
+filter.__mtstring = 'filter'
 
 function filter.new(b, a)
   -- b, a : LTI difference equation coefficients 

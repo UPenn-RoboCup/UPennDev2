@@ -8,7 +8,7 @@ function my_remote_function(x)
 end
 
 -- initialize server
-server = rpc.new_server('EXAMPLE')
+server = rpc.server.new('EXAMPLE')
 
 -- handle rpc requests
 while true do

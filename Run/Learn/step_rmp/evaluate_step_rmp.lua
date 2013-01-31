@@ -126,7 +126,7 @@ end
 -- start rpc server
 --------------------------------------------------------------------------------
 
-local pi2_server = rpc.new_server('PI2_EVALUATION')
+local pi2_server = rpc.server.new('PI2_EVALUATION')
 pi2_server:set_timeout(nil)
 
 function ping()

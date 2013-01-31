@@ -21,20 +21,11 @@ local noise_factor = 0.001        -- exploration noise scale factor
 local noise_decay_factor = 0.97   -- exploration noise decay factor
 local reevaluate_rollouts = false -- reevaluate reused rollouts?
 
---[[
-local n_rollouts = 15             -- number of rollouts per update
-local n_reused_rollouts = 5       -- number of reused rollouts
-local n_pi2_updates = 1000        -- number of pi2 updates
-local noise_factor = 0.1          -- exploration noise scale factor
-local noise_decay_factor = 0.995  -- exploration noise decay factor
-local reevaluate_rollouts = false -- reevaluate reused rollouts?
---]]
-
 -- initialize RPC client 
 --------------------------------------------------------------------------------
 print('connecting to RPC server on PI2_EVALUATION channel...')
 
-local pi2_client = rpc.new_client('PI2_EVALUATION')
+local pi2_client = rpc.client.new('PI2_EVALUATION')
 
 pi2_client:set_timeout(0.1)
 while (not pi2_client:connect()) do

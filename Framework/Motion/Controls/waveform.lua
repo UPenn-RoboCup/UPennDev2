@@ -1,5 +1,9 @@
 waveform = {}
 
+----------------------------------------------------------------------
+-- waveform : utilities for pattern generators
+----------------------------------------------------------------------
+
 function waveform.step_sin(theta, alpha)
   -- generate a smoothed sinusoidal waveform with extended zero regions 
   -- alpha in [0, 1] determines the percentage of deadband in a cycle

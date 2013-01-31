@@ -31,8 +31,8 @@ DEF FLOOR MetricFloor {
   color 0.870588 0.870588 0.870588
 }
 DEF Ash Supervisor {
-  translation 5.7323e-05 -5.39333e-05 0.557359
-  rotation -0.57709 0.798902 -0.16948 -0.000150787
+  translation 5.47113e-05 -6.6569e-05 0.557357
+  rotation -0.747528 0.663195 -0.03708 -0.000191025
   children [
     DEF l_hip_yaw Servo {
       translation -0.024 0.0957 0.212
@@ -718,7 +718,7 @@ DEF Ash Supervisor {
                           maxForce 10000
                           controlP 100
                           acceleration 70
-                          position -0.000102596
+                          position -0.000123408
                           minPosition -0.349066
                           maxPosition 0.349066
                           minStop -0.349066
@@ -1527,7 +1527,7 @@ DEF Ash Supervisor {
                       maxForce 10000
                       controlP 100
                       acceleration 70
-                      position -0.25022
+                      position -0.316385
                       minPosition -0.785398
                       maxPosition 0.785398
                       minStop -0.785398
@@ -2457,7 +2457,7 @@ DEF Ash Supervisor {
                   maxForce 10000
                   controlP 100
                   acceleration 70
-                  position 0.61558
+                  position 0.626902
                   maxPosition 1.5708
                   minStop -0.087266
                   maxStop 1.5708
@@ -3142,7 +3142,7 @@ DEF Ash Supervisor {
               maxForce 10000
               controlP 100
               acceleration 70
-              position -0.365258
+              position -0.310345
               minPosition -0.785398
               maxPosition 0.785398
               minStop -0.785398
@@ -3951,7 +3951,7 @@ DEF Ash Supervisor {
           maxForce 10000
           controlP 100
           acceleration 70
-          position 1.96494e-05
+          position -2.54927e-06
           minPosition -0.349066
           maxPosition 0.349066
           minStop -0.349066
@@ -4598,7 +4598,7 @@ DEF Ash Supervisor {
       maxForce 10000
       controlP 100
       acceleration 70
-      position -8.03525e-06
+      position 1.06058e-05
       minPosition -0.349066
       maxPosition 0.349066
       minStop -0.349066
@@ -5288,7 +5288,7 @@ DEF Ash Supervisor {
                           maxForce 10000
                           controlP 100
                           acceleration 70
-                          position -0.000164526
+                          position -0.000101581
                           minPosition -0.349066
                           maxPosition 0.349066
                           minStop -0.349066
@@ -6097,7 +6097,7 @@ DEF Ash Supervisor {
                       maxForce 10000
                       controlP 100
                       acceleration 70
-                      position -0.371338
+                      position -0.316462
                       minPosition -0.785398
                       maxPosition 0.785398
                       minStop -0.785398
@@ -7027,7 +7027,7 @@ DEF Ash Supervisor {
                   maxForce 10000
                   controlP 100
                   acceleration 70
-                  position 0.615609
+                  position 0.626924
                   maxPosition 1.5708
                   minStop -0.087266
                   maxStop 1.5708
@@ -7712,7 +7712,7 @@ DEF Ash Supervisor {
               maxForce 10000
               controlP 100
               acceleration 70
-              position -0.244102
+              position -0.310348
               minPosition -0.785398
               maxPosition 0.785398
               minStop -0.785398
@@ -8521,7 +8521,7 @@ DEF Ash Supervisor {
           maxForce 10000
           controlP 100
           acceleration 70
-          position 1.80496e-05
+          position -1.04801e-05
           minPosition -0.349066
           maxPosition 0.349066
           minStop -0.349066
@@ -9168,7 +9168,7 @@ DEF Ash Supervisor {
       maxForce 10000
       controlP 100
       acceleration 70
-      position -2.67313e-05
+      position -8.43958e-06
       minPosition -0.349066
       maxPosition 0.349066
       minStop -0.349066

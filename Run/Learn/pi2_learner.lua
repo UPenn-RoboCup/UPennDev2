@@ -9,7 +9,7 @@ require('serialization')
 -- PI^2 learner
 --------------------------------------------------------------------------------
 
-local OUTPUT_FILE = arg[1] or 'pi2_results.lua'
+local OUTPUT_FILE = arg[1] or 'Results/pi2_results.lua'
 
 -- initialize PI^2 parameters 
 --------------------------------------------------------------------------------

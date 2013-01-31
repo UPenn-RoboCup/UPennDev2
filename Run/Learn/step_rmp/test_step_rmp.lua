@@ -1,4 +1,4 @@
-dofile('../include.lua')
+dofile('../../include.lua')
 
 require('Body')
 require('Proprioception')
@@ -12,8 +12,8 @@ local LOOP = false
 local SLOW_MO = false
 local PI2_RESULTS_FILE = 'results0.lua'
 local MATLAB_SAVE_FILE = 'test.txt'
-local PARAMETER_LOAD_FILE = '../../Data/parameters_stepRMP_WebotsASH_train0.lua'
-local PARAMETER_SAVE_FILE = '../../Data/parameters_stepRMP_WebotsASH_learn0.lua'
+local PARAMETER_LOAD_FILE = '../../../Data/parameters_stepRMP_WebotsASH_train0.lua'
+local PARAMETER_SAVE_FILE = '../../../Data/parameters_stepRMP_WebotsASH_learn0.lua'
 local pi2_dimensions = {1, 2}
 local velocity = {0, 0, 0}
 

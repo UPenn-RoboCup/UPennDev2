@@ -70,25 +70,20 @@ elif [ "$1" = "walk_tuner" ]
 then
   echo Starting walk_tuner...
   exec xterm -fn 9x15 -hold -e $LUA walk_tuner.lua
-elif [ "$1" = "test_step" ]
-then
-  echo Starting test_step...
-  cd Test
-  exec $LUA test_step.lua
 elif [ "$1" = "train_step_rmp" ]
 then
   echo Starting train_step_rmp...
-  cd Learn
+  cd Learn/step_rmp
   exec $LUA train_step_rmp.lua
 elif [ "$1" = "test_step_rmp" ]
 then
   echo Starting test_step_rmp...
-  cd Learn
+  cd Learn/step_rmp
   exec $LUA test_step_rmp.lua
 elif [ "$1" = "evaluate_step_rmp" ]
 then
   echo Starting evaluate_step_rmp...
-  cd Learn
+  cd Learn/step_rmp
   exec $LUA evaluate_step_rmp.lua
 elif [ "$1" = "slam_test" ]
 then

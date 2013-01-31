@@ -16,20 +16,20 @@ _Mechanics::_Mechanics()
   head_transform = Frame(Vector(0, 0, 0));
 
   // l_arm
-  l_chest_transform = Frame(Vector(0, 0, 0));
-  l_arm_transform = Frame(Vector(0, 0, 0));
-  l_forearm_transform = Frame(Vector(0, 0, 0));
+  l_chest_transform = Frame(Vector(0, 0.219, 0));
+  l_arm_transform = Frame(Vector(0.03, 0, -0.246));
+  l_forearm_transform = Frame(Vector(-0.03, 0, -0.242));
   l_hand_transform = Frame(Vector(0, 0, 0));
 
   // r_arm 
-  r_chest_transform = Frame(Vector(0, 0, 0));
-  r_arm_transform = Frame(Vector(0, 0, 0));
-  r_forearm_transform = Frame(Vector(0, 0, 0));
+  r_chest_transform = Frame(Vector(0, -0.219, 0));
+  r_arm_transform = Frame(Vector(0.03, 0, -0.246));
+  r_forearm_transform = Frame(Vector(-0.03, 0, -0.242));
   r_hand_transform = Frame(Vector(0, 0, 0));
 
   // waist
-  torso_waist_transform = Frame(Vector(0, 0, 0));
-  waist_chest_transform = Frame(Vector(0, 0, 0));
+  torso_waist_transform = Frame(Vector(-0.001, 0, 0.372));
+  waist_chest_transform = Frame(Vector(0, 0, 0.144));
 
   // l_leg
   l_torso_transform = Frame(Vector(0, 0.097, 0));

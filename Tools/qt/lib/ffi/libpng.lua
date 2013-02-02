@@ -13,7 +13,7 @@ local function cdata_reader(data, size)
 	data = ffi.cast('uint8_t*', data) --ensure byte type
 	return function(_, buf, sz)
 		if sz < 1 or size < 1 then error'reading past eof' end
-		sz = math.min(size, sz)
+		sz = math.min(size, tonumber(sz))
 		ffi.copy(buf, data, sz)
 		data = data + sz
 		size = size - sz

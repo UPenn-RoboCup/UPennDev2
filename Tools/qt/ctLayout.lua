@@ -5,24 +5,30 @@ local readfile = glue.readfile
 require'unit'
 local libpng = require'libpng'
 
-
 local  open = function(self, state)
 --  print('open file')
   local fileDialog = QFileDialog()
-  local fileName = fileDialog:getOpenFileName("Open File", "", "Log File (*.lua)")
+  local fileName = fileDialog:getOpenFileName(
+                          "Open File", "", "Log File (*.lua)")
   print(fileName:toUtf8())
 end
 
 local imageview = function()
+    -- Create GraphicsScene
     local scene = QGraphicsScene.new()
---    local piximage = QPixmap('Image-1-10.png')
-    local piximage = QPixmap();
+    -- Create GraphicView, based on Graphic Scene, widget on GUI
+    local view = QGraphicsView.new(scene)
+    local piximage = QPixmap.new()
     local filename = 'Image-1-10.png'
+    -- load png with libpng
     local img = libpng.load({path = filename})
-    piximage:loadFromData(tostring(img.data), img.w * img.h)
-    local image = QGraphicsPixmapItem(piximage)
-    scene:addItem(image)
-    local view = QGraphicsView(scene)
+    -- use raw pixel data to create a QImage for display
+    local qimage = QImage(img.data, img.w, img.h, 
+                          img.w * 3, QImage.Format.Format_RGB888)
+    -- ConvertToPixmap for Graphic Scene
+    piximage:convertFromImage(qimage, Qt.AutoColor)
+    local pixmapitem = QGraphicsPixmapItem.new(piximage)
+    scene:addItem(pixmapitem)
     return view
 end
 

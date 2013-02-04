@@ -12,12 +12,12 @@ PROTO THOROP [
   field SFString   controllerArgs ""
   field SFBool     synchronization TRUE
   field SFString   name "THOROP"
-#  field SFColor    plasticColor 0.301961 0.301961 0.301961
-#  field SFVec2f    cameraWindowPosition 0 0
-#  field SFFloat    cameraPixelSize 1.0
-#  field SFInt32    cameraWidth 160
-#  field SFInt32    cameraHeight 120
-#  field SFInt32    channel 0
+  field SFColor    plasticColor 0.301961 0.301961 0.301961
+  field SFVec2f    cameraWindowPosition 0 0
+  field SFFloat    cameraPixelSize 1.0
+  field SFInt32    cameraWidth 160
+  field SFInt32    cameraHeight 120
+  field SFInt32    channel 0
 ]
 {
 Robot {
@@ -33,13 +33,13 @@ Robot {
       translation -0.023 0 0.74
       rotation 0 0 1 0
       children [
-        DEF r_shoulder_pitch Servo {
+        DEF r_sholder_pitch Servo {
           translation 0 -0.219 0
           children [
-            DEF r_shoulder_roll Servo {
+            DEF r_sholder_roll Servo {
               rotation 1 0 0 0
               children [
-                DEF r_shoulder_yaw Servo {
+                DEF r_sholder_yaw Servo {
                   translation 0 0 -0.039
                   rotation 0 0 1 0
                   children [
@@ -2026,7 +2026,7 @@ Robot {
                       physics Physics {
                       }
                     }
-                    DEF r_shoulder_yaw Transform {
+                    DEF r_sholder_yaw Transform {
                       rotation 1 0 0 1.57
                       children [
                         Shape {
@@ -2035,8 +2035,8 @@ Robot {
                               diffuseColor 0.749 0.749 0.749
                             }
                           }
-                          geometry DEF l_shoulder_yaw-FACES IndexedFaceSet {
-                            coord DEF l_shoulder_yaw-COORD Coordinate {
+                          geometry DEF l_sholder_yaw-FACES IndexedFaceSet {
+                            coord DEF l_sholder_yaw-COORD Coordinate {
                               point [
                                 0.0525 -0.193 -0.057
                                 0.0569 -0.207 -0.027
@@ -2536,7 +2536,7 @@ Robot {
                       ]
                     }
                   ]
-                  name "r_shoulder_yaw"
+                  name "r_sholder_yaw"
                   boundingObject Transform {
                     translation 0.0175 0 -0.123
                     children [
@@ -2548,7 +2548,7 @@ Robot {
                   physics Physics {
                   }
                 }
-                DEF r_shoulder_roll Transform {
+                DEF r_sholder_roll Transform {
                   rotation 1 0 0 1.57
                   children [
                     Shape {
@@ -2557,8 +2557,8 @@ Robot {
                           diffuseColor 0.749 0.749 0.749
                         }
                       }
-                      geometry DEF l_shoulder_roll-FACES IndexedFaceSet {
-                        coord DEF l_shoulder_roll-COORD Coordinate {
+                      geometry DEF l_sholder_roll-FACES IndexedFaceSet {
+                        coord DEF l_sholder_roll-COORD Coordinate {
                           point [
                             0 -0.027 -0.027
                             -0.00491 -0.039 0.0265
@@ -2973,7 +2973,7 @@ Robot {
                   ]
                 }
               ]
-              name "r_shoulder_roll"
+              name "r_sholder_roll"
               boundingObject Transform {
                 translation 0 0 -0.006
                 children [
@@ -2985,7 +2985,7 @@ Robot {
               physics Physics {
               }
             }
-            DEF r_shoulder_pitch Transform {
+            DEF r_sholder_pitch Transform {
               rotation -1 0 0 1.57
               children [
                 Shape {
@@ -2994,8 +2994,8 @@ Robot {
                       diffuseColor 0.749 0.749 0.749
                     }
                   }
-                  geometry DEF l_shoulder_pitch-FACES IndexedFaceSet {
-                    coord DEF l_shoulder_pitch-COORD Coordinate {
+                  geometry DEF l_sholder_pitch-FACES IndexedFaceSet {
+                    coord DEF l_sholder_pitch-COORD Coordinate {
                       point [
                         -0.069 0.027 0.048
                         -0.069 0.027 -0.027
@@ -3616,7 +3616,7 @@ Robot {
               ]
             }
           ]
-          name "r_shoulder_pitch"
+          name "r_sholder_pitch"
           boundingObject Transform {
             translation 0 0.027 0
             children [
@@ -3629,13 +3629,13 @@ Robot {
             centerOfMass 0 -0.027 0
           }
         }
-        DEF l_shoulder_pitch Servo {
+        DEF l_sholder_pitch Servo {
           translation 0 0.219 0
           children [
-            DEF l_shoulder_roll Servo {
+            DEF l_sholder_roll Servo {
               rotation 1 0 0 0
               children [
-                DEF l_shoulder_yaw Servo {
+                DEF l_sholder_yaw Servo {
                   translation 0 0 -0.039
                   rotation 0 0 1 0
                   children [
@@ -5622,7 +5622,7 @@ Robot {
                       physics Physics {
                       }
                     }
-                    DEF l_shoulder_yaw Transform {
+                    DEF l_sholder_yaw Transform {
                       rotation 1 0 0 1.57
                       children [
                         Shape {
@@ -5631,8 +5631,8 @@ Robot {
                               diffuseColor 0.749 0.749 0.749
                             }
                           }
-                          geometry DEF l_shoulder_yaw-FACES IndexedFaceSet {
-                            coord DEF l_shoulder_yaw-COORD Coordinate {
+                          geometry DEF l_sholder_yaw-FACES IndexedFaceSet {
+                            coord DEF l_sholder_yaw-COORD Coordinate {
                               point [
                                 0.0525 -0.193 -0.057
                                 0.0569 -0.207 -0.027
@@ -6132,7 +6132,7 @@ Robot {
                       ]
                     }
                   ]
-                  name "l_shoulder_yaw"
+                  name "l_sholder_yaw"
                   boundingObject Transform {
                     translation 0.0175 0 -0.123
                     children [
@@ -6144,7 +6144,7 @@ Robot {
                   physics Physics {
                   }
                 }
-                DEF l_shoulder_roll Transform {
+                DEF l_sholder_roll Transform {
                   rotation 1 0 0 1.57
                   children [
                     Shape {
@@ -6153,8 +6153,8 @@ Robot {
                           diffuseColor 0.749 0.749 0.749
                         }
                       }
-                      geometry DEF l_shoulder_roll-FACES IndexedFaceSet {
-                        coord DEF l_shoulder_roll-COORD Coordinate {
+                      geometry DEF l_sholder_roll-FACES IndexedFaceSet {
+                        coord DEF l_sholder_roll-COORD Coordinate {
                           point [
                             0 -0.027 -0.027
                             -0.00491 -0.039 0.0265
@@ -6569,7 +6569,7 @@ Robot {
                   ]
                 }
               ]
-              name "l_shoulder_roll"
+              name "l_sholder_roll"
               boundingObject Transform {
                 translation 0 0 -0.006
                 children [
@@ -6581,7 +6581,7 @@ Robot {
               physics Physics {
               }
             }
-            DEF l_shoulder_pitch Transform {
+            DEF l_sholder_pitch Transform {
               rotation 1 0 0 1.57
               children [
                 Shape {
@@ -6590,8 +6590,8 @@ Robot {
                       diffuseColor 0.749 0.749 0.749
                     }
                   }
-                  geometry DEF l_shoulder_pitch-FACES IndexedFaceSet {
-                    coord DEF l_shoulder_pitch-COORD Coordinate {
+                  geometry DEF l_sholder_pitch-FACES IndexedFaceSet {
+                    coord DEF l_sholder_pitch-COORD Coordinate {
                       point [
                         -0.069 0.027 0.048
                         -0.069 0.027 -0.027
@@ -7212,7 +7212,7 @@ Robot {
               ]
             }
           ]
-          name "l_shoulder_pitch"
+          name "l_sholder_pitch"
           boundingObject Transform {
             translation 0 -0.027 0
             children [
@@ -7231,10 +7231,12 @@ Robot {
             DEF head_pitch Servo {
               translation 0 0 0.114
               children [
+                hokuyo_thor {
+                }
                 DEF head_pitch Transform {
                   rotation 1 0 0 1.57
-                  children[
-  	            Shape {
+                  children [
+                    Shape {
                       appearance Appearance {
                         material Material {
                           diffuseColor 0.749 0.749 0.749
@@ -7864,7 +7866,6 @@ Robot {
                   ]
                 }
               ]
-              name "head_pitch"
             }
             DEF neck_yaw Transform {
               rotation 1 0 0 1.57
@@ -8279,7 +8280,6 @@ Robot {
               ]
             }
           ]
-          name "neck_yaw"
           boundingObject Transform {
             children [
               Box {
@@ -8288,7 +8288,6 @@ Robot {
             ]
           }
         }
-        hokuyo_thor {}    
         DEF upper_torso_yaw Transform {
           rotation 1 0 0 1.57
           children [
@@ -19212,26 +19211,11 @@ Robot {
         }
       ]
     }
-    DEF zero GPS {
-       name "zero"
-    }
     Accelerometer {
       translation 0.027711 0 0.23735
-#     rotation 1 0 0 1.5708
-      name "Accelerometer"
-      lookupTable [
-          -39.24 0 0
-           39.24 1024 0
-      ]
     }
     Gyro {
       translation 0.027711 0 0.23735
- #    rotation -0.57735 0.57735 0.57735 2.0944
-      name "Gyro"
-      lookupTable [
-        -27.925 0 0
-        27.925 1024 0
-      ]
     }
     DEF PHYSICS_RECEIVER Receiver {
       name "physics_receiver"

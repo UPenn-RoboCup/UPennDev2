@@ -12,6 +12,7 @@ WEBOTSGENERICDIR= Platform/WebotsGeneric
 WEBOTSHUBODIR= Platform/WebotsHubo
 WEBOTSCHARLIDIR= Platform/WebotsCharli
 WEBOTSSAFFIRDIR= Platform/WebotsSaffir
+WEBOTSTHOROPDIR= Platform/WebotsTHOROP
 VISIONTESTDIR = Platform/VisionTest
 HPDIR= Platform/HP2
 OPDIR= Platform/OP

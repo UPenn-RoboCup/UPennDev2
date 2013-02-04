@@ -13,10 +13,10 @@ PROTO THOROP [
   field SFBool     synchronization TRUE
   field SFString   name "THOROP"
 #  field SFColor    plasticColor 0.301961 0.301961 0.301961
-#  field SFVec2f    cameraWindowPosition 0 0
-#  field SFFloat    cameraPixelSize 1.0
-#  field SFInt32    cameraWidth 160
-#  field SFInt32    cameraHeight 120
+  field SFVec2f    cameraWindowPosition 0 0
+  field SFFloat    cameraPixelSize 1.0
+  field SFInt32    cameraWidth 160
+  field SFInt32    cameraHeight 120
 #  field SFInt32    channel 0
 ]
 {
@@ -287,9 +287,7 @@ Robot {
             }
             DEF l_shoulder_pitch Transform {
               rotation 1 0 0 1.57
-              children [
-		SHOULDER_PITCH{}
-              ]
+              children [SHOULDER_PITCH{}]
             }
           ]
           name "l_shoulder_pitch"
@@ -314,9 +312,32 @@ Robot {
                 DEF head_pitch Transform {
                   rotation 1 0 0 1.57
                   children[
-#hokuyo_thor {}  
-  	            HEAD_PITCH{}
-  
+#  	            HEAD_PITCH{}
+		    Transform{
+		      rotation 0 1 0 1.57
+ 		      children[
+#SJ: Trying to graft OP head to THOR, but it is not working so far
+		        Camera {
+		          translation 0 0.0329074 0.0359816
+		          rotation 0 -1 0 3.14159
+		          children [CAMERASHAPE{}]
+			  name "Camera"
+	   	          windowPosition IS cameraWindowPosition
+		          fieldOfView 1.0472
+		          width IS cameraWidth
+		          height IS cameraHeight
+		          pixelSize IS cameraPixelSize
+			}
+			DEF DEyeLED LED {
+		      	  rotation 1 0 0 0
+		          children [EYELED{}]
+			  name "EyeLed"
+	 	          color []
+		          gradual TRUE
+		        }
+			headGroup{}
+		      ]		      
+		    }
                   ]
                 }
               ]

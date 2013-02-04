@@ -1,15 +1,11 @@
 /*
-
+	C++ routines to access V4L2 camera
   Author: Daniel D. Lee <ddlee@seas.upenn.edu>, 05/10
   	: Stephen McGill 10/10
 */
 			
-// C++ routines to access V4L2 camera
 #include "v4l2.h"
 
-extern int nbuffer = NBUFFERS;
-extern int width = WIDTH;
-extern int height = HEIGHT;
 int video_fd = -1;
 
 struct buffer {
@@ -17,9 +13,9 @@ struct buffer {
   size_t length;
 };
 
+// Global variables
 std::map<std::string, struct v4l2_queryctrl> ctrlMap;
 std::map<std::string, struct v4l2_querymenu> menuMap;
-
 std::vector<struct buffer> buffers;
 
 static int xioctl(int fd, int request, void *arg) {
@@ -171,7 +167,7 @@ int v4l2_open(const char *device) {
 
 int v4l2_init_mmap() {
   struct v4l2_requestbuffers req;
-  req.count = nbuffer;
+  req.count = NBUFFERS;
   req.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
   req.memory = V4L2_MEMORY_MMAP;
   if (xioctl(video_fd, VIDIOC_REQBUFS, &req))
@@ -209,15 +205,7 @@ int v4l2_uninit_mmap() {
   buffers.clear();
 }
 
-int v4l2_init(int resolution) {
-
-  if( resolution == 1 ){
-    width = 640;
-    height = 480;
-  } else {
-    width = 320;
-    height = 240;
-  }
+int v4l2_init() {
 
   struct v4l2_capability video_cap;
   if (xioctl(video_fd, VIDIOC_QUERYCAP, &video_cap) == -1)
@@ -243,8 +231,8 @@ int v4l2_init(int resolution) {
 
 
   video_fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-  video_fmt.fmt.pix.width       = width;
-  video_fmt.fmt.pix.height      = height;
+  video_fmt.fmt.pix.width       = WIDTH;
+  video_fmt.fmt.pix.height      = HEIGHT;
   video_fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_YUYV;
   //video_fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_UYVY; // iSight
   video_fmt.fmt.pix.field       = V4L2_FIELD_ANY;
@@ -336,7 +324,7 @@ void * v4l2_get_buffer(int index, size_t *length) {
   if (length != NULL)
     *length = buffers[index].length;
   #if INVERT>0
-  return (void *) yuyv_rotate( (uint8_t*)buffers[index].start, width, height );
+  return (void *) yuyv_rotate( (uint8_t*)buffers[index].start );
 	#else
   return buffers[index].start;
 	#endif
@@ -384,21 +372,21 @@ int v4l2_close() {
 }
 
 int v4l2_get_width(){
-  return width;
+  return WIDTH;
 }
 
 int v4l2_get_height(){
-  return height;
+  return HEIGHT;
 }
 
-uint8_t* yuyv_rotate(uint8_t* frame, int width, int height) {
+uint8_t* yuyv_rotate(uint8_t* frame) {
   int i;
   //SJ: I maintain a second buffer here
   //So that we do not directly rewrite on camera buffer address
 
-  static uint8_t frame2[640*480*4];
+  static uint8_t frame2[WIDTH*HEIGHT*4];
 
-  int siz = width*height/2;
+  int siz = WIDTH*HEIGHT/2;
   for (int i=0;i<siz/2;i++){
     int index_1 = i*4;
     int index_2 = (siz-1-i)*4;

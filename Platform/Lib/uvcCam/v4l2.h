@@ -15,6 +15,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <string.h>
 
 #include <unistd.h>
 #include <fcntl.h>
@@ -55,14 +56,14 @@ int v4l2_open(const char *device);
 int v4l2_set_ctrl(const char *name, int value);
 int v4l2_set_ctrl_by_id(int id, int value);
 int v4l2_get_ctrl(const char *name, int *value);
-int v4l2_get_height();
-int v4l2_get_width();
-int v4l2_init( int resolution );
-int v4l2_stream_on();
-int v4l2_read_frame();
+int v4l2_get_height(void);
+int v4l2_get_width(void);
+int v4l2_init(void);
+int v4l2_stream_on(void);
+int v4l2_read_frame(void);
 void *v4l2_get_buffer(int index, size_t *length);
-int v4l2_stream_off();
-int v4l2_close();
-uint8_t* yuyv_rotate(uint8_t* frame, int width, int height);
+int v4l2_stream_off(void);
+int v4l2_close(void);
+uint8_t* yuyv_rotate(uint8_t* frame);
 
 #endif

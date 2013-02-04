@@ -29,8 +29,6 @@ walk.qRArm = math.pi/180*vector.new({110, -12, 0, 40});
 walk.qLArmKick = math.pi/180*vector.new({110, 12, -0, -40});
 walk.qRArmKick = math.pi/180*vector.new({110, -12, 0, 40});
 
-
-
 walk.hardnessSupport = 1;
 walk.hardnessSwing = 1;
 walk.hardnessArm=.1;
@@ -42,6 +40,7 @@ walk.tZmp = 0.25;
 walk.stepHeight = 0.06;
 walk.phSingle={0.1,0.9};
 walk.phZmp={0.1,0.9};
+
 
 --------------------------------------------
 -- Compensation parameters
@@ -55,6 +54,8 @@ walk.ankleMod = vector.new({-1,0})/ 3*math.pi/180;
 gyroFactor = 0.273*math.pi/180 * 300 / 1024; --dps to rad/s conversion
 
 --gyroFactor = gyroFactor*0.3;
+gyroFactor = gyroFactor*0;
+--SJ: gyro values are inverted - need double check
 
 
 walk.ankleImuParamX={0.3,0.75*gyroFactor, 0*math.pi/180, 5*math.pi/180};
@@ -114,17 +115,6 @@ walk.footYComp = 0;
 --Default pitch angle offset of Charli 
 walk.headPitchBias = 0* math.pi / 180; 
 
---[[
-walk.tStep = 0.8;
-walk.tZmp = 0.25;
-walk.supportY = -0.03;
-walk.footY = 0.09;
-walk.stepHeight = 0.13;
-walk.hardnessSupport = .7;
-walk.hardnessSwing = 0.2;
---]]
-
-
 --Slow and stable walk (like 2011)
 
 
@@ -132,7 +122,6 @@ walk.hipRollCompensation = 3*math.pi/180;
 
 walk.tStep = 0.75;
 walk.tZmp = 0.26; --Com height 0.65
---walk.tZmp = 0.20; --Com height 0.65
 walk.supportX = 0.03;
 walk.supportY = 0.02;
 walk.bodyTilt = 0*math.pi/180;
@@ -140,10 +129,19 @@ walk.phSingle = {0.15,0.85};
 walk.phZmp = {0.15,0.85};
 walk.stepHeight = 0.052;
 
---[[
---Ridiculously fast walking (for webots)
-walk.tStep = 0.35;
-walk.supportY = 0.06;
---]]
-
 walk.supportModYInitial=-0.04; --Reduce initial body swing
+
+--webots thor-op values
+walk.bodyHeight = 1.15; 
+walk.footX= 0.005; 
+walk.footY = 0.07;
+-----------------------
+
+
+--Very fast walk
+--walk.velLimitX={-.20,.20};
+--walk.tStep = 0.45;
+
+
+--Large stride test
+walk.velLimitX={-.20,.30};

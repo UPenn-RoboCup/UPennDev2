@@ -42,7 +42,7 @@ THOROP {
   translation 0 0.6 1
   rotation -0.602413 -0.563011 -0.565789 2.06115
   controller "darwin-op_team_0"
-  controllerArgs "0 22"
+  controllerArgs "0 23"
 }
 FruitBowl {
   translation 0.410195 0.709908 1.84842

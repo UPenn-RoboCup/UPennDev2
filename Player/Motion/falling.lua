@@ -10,6 +10,9 @@ timeout = Config.falling_timeout or 0.3;
 qLArmFront = vector.new({45,9,-135})*math.pi/180;
 qRArmFront = vector.new({45,-9,-135})*math.pi/180;
 
+---
+--Prepare the body to safely fall. This primarily involves setting all joints
+--to zero hardness, so that the motors will be safe after the fall.
 function entry()
   print(_NAME.." entry");
 
@@ -34,6 +37,10 @@ print("UKEMI FRONT")
   walk.stance_reset();--reset current stance
 end
 
+---
+--Update the body after the fall has occurred. This is primarily used to set
+--the actuator commands to the values of the motors in the robot's position
+--after it has completed its fall.
 function update()
   local t = Body.get_time();
   -- set the robots command joint angles to thier current positions

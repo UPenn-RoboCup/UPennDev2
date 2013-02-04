@@ -19,7 +19,7 @@ Camera {
   rotation IS rotation
   children [
     Transform {
-      translation 0 -0.065 0
+      translation 0 -0.075 0
       children [
         Shape {
           appearance Appearance {

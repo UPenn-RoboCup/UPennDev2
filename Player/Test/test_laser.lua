@@ -124,12 +124,16 @@ function update()
 	rcm.set_robot_imu( vector.new(imuAngle) )
 	gyr = Body.get_sensor_imuGyrRPY();
 	rcm.set_robot_gyro( vector.new(gyr) );
-	
+
+--SJ: this causes initial jerk
+--[[	
 	-- Set the arm positions
 	qLArm = pickercm.get_desired_qLArm();
 	qRArm = pickercm.get_desired_qRArm();
 	Body.set_larm_command(qLArm)
 	Body.set_rarm_command(qRArm)
+--]]
+
 --local janglesL = {90,0,0,0}
 --Body.set_larm_command(math.pi/180*vector.new(janglesL))
 --local janglesR = {90,0,0,0}

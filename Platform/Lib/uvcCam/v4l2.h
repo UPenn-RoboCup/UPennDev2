@@ -3,10 +3,10 @@
   	: Stephen McGill 10/10
 */
 			
-#ifndef luauvcCam_h_DEFINED
-#define luauvcCam_H_DEFINED
+#ifndef v4l2driver_h_DEFINED
+#define v4l2driver_h_DEFINED
 
-#define INVERT 1
+#define INVERT 0
 #define WIDTH 640
 #define HEIGHT 480
 #define NBUFFERS 2

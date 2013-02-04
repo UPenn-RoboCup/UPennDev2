@@ -6,7 +6,7 @@
 #  - dimension : 0.06 x 0.087 x 0.06 [m]
 #  - weight : 0.37 [kg]
 
-PROTO hokuyo [
+PROTO hokuyo_thor [
 #  field SFVec3f translation 0 0 0
 	  field SFVec3f translation 0 0 0.1
   field SFRotation rotation  1 0 0 1.57

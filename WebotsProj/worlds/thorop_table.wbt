@@ -41,7 +41,7 @@ Desk {
 THOROP {
   translation 0 0.6 1
   rotation -0.602413 -0.563011 -0.565789 2.06115
-#  controller "darwin-op_team_0"
+  controller "darwin-op_team_0"
   controllerArgs "0 22"
 }
 FruitBowl {

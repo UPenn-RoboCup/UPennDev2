@@ -5,6 +5,8 @@ require('Body')
 t0 = 0;
 timeout = 1.0;
 
+---
+--Prepare robot to enter relax state; set body hardnesses to zero.
 footX = Config.walk.footX or 0;
 footY = Config.walk.footY;
 supportX = Config.walk.supportX;
@@ -40,6 +42,8 @@ function entry()
   Body.set_syncread_enable(1);
 end
 
+---
+--Set actuator commands to resting position, as gotten from joint encoders.
 function update()
   local t = Body.get_time();
 

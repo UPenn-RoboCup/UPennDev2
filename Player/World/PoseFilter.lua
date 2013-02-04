@@ -55,11 +55,14 @@ aCornerFilter = Config.world.aCornerFilter;
 
 
 
-xp = .5*xMax*vector.new(util.randn(n));
-yp = .5*yMax*vector.new(util.randn(n));
-ap = 2*math.pi*vector.new(util.randu(n));
-wp = vector.zeros(n);
+xp = .5*xMax*vector.new(util.randn(n)); -- x coordinate of each particle
+yp = .5*yMax*vector.new(util.randn(n)); -- y coordinate
+ap = 2*math.pi*vector.new(util.randu(n)); -- angle
+wp = vector.zeros(n); -- weight
 
+---Initializes a gaussian distribution of particles centered at p0
+--@param p0 center of distribution
+--@param dp scales how wide the distrubution is
 function initialize(p0, dp)
   p0 = p0 or {0, 0, 0};
   dp = dp or {.5*xMax, .5*yMax, 2*math.pi};
@@ -112,18 +115,25 @@ function initialize_heading(aGoal)
   wp = vector.zeros(n);
 end
 
+---Sets headings of all particles to random angles with 0 weight
+--@usage For when robot falls down
 function reset_heading()
   ap = 2*math.pi*vector.new(util.randu(n));
   wp = vector.zeros(n);
 end
 
+---Returns best pose out of all particles
 function get_pose()
   local wmax, imax = max(wp);
   return xp[imax], yp[imax], mod_angle(ap[imax]);
 end
 
+---Caluclates weighted sample variance of current particles.
+--@param x0 x coordinates of current particles
+--@param y0 y coordinates of current particles
+--@param a0 angles of current particles
+--@return weighted sample variance of x coordinates, y coordinates, and angles
 function get_sv(x0, y0, a0)
-  -- weighted sample variance of current particles
   local xs = 0.0;
   local ys = 0.0;
   local as = 0.0;
@@ -142,6 +152,11 @@ function get_sv(x0, y0, a0)
   return math.sqrt(xs)/ws, math.sqrt(ys)/ws, math.sqrt(as)/ws;
 end
 
+---Calcualtes distance and angle from each particle to landmark
+--@param xlandmark x coordinate of landmark in world frame
+--@param ylandmark y coordinate of landmark in world frame
+--@return r distance from landmark to each particle
+--@return a angle between landmkark and each particle
 function landmark_ra(xlandmark, ylandmark)
   local r = vector.zeros(n);
   local a = vector.zeros(n);
@@ -154,6 +169,13 @@ function landmark_ra(xlandmark, ylandmark)
   return r, a;
 end
 
+---Updates particles with respect to the detection of a landmark
+--@param pos Table of possible positions for a landmark
+--@param v x and y coordinates of detected landmark relative to robot
+--@param rLandmarkFilter How much to adjust particles according to
+--distance to landmark
+--@param aLandmarkFilter How much to adjust particles according to 
+--angle to landmark
 function landmark_observation(pos, v, rLandmarkFilter, aLandmarkFilter)
   local r = math.sqrt(v[1]^2 + v[2]^2);
   local a = math.atan2(v[2], v[1]);
@@ -201,6 +223,11 @@ function landmark_observation(pos, v, rLandmarkFilter, aLandmarkFilter)
   end
 end
 
+---Update particles according to a goal detection
+--@param pos All possible positions of the goals
+--For example, each post location is an entry in pos
+--@param v x and y coordinates of detected goal relative to robot
+--function goal_observation(pos, v)
 ---------------------------------------------------------------------------
 -- Now we have two ambiguous goals to check
 -- So we separate the triangulation part and the update part
@@ -533,6 +560,9 @@ function goal_unified(v)
   goal_observation_unified(postCyan,postYellow, v);
 end
 
+---Updates weights of particles according to the detection of a line
+--@param v z and y coordinates of center of line relative to robot
+--@param a angle of line relative to angle of robot
 function landmark_cyan(v)
   landmark_observation({landmarkCyan}, v, rLandmarkFilter, aLandmarkFilter);
 end
@@ -576,6 +606,12 @@ function line(v, a)
   end
 end
 
+---Updates particles according to the movement of the robot.
+--Moves each particle the distance that the robot has moved
+--since the last update.
+--@param dx distance moved in x direction since last update
+--@param dy distance moved in y direction since last update
+--@param da angle turned since last update
 function odometry(dx, dy, da)
   for ip = 1,n do
     ca = math.cos(ap[ip]);
@@ -586,12 +622,17 @@ function odometry(dx, dy, da)
   end
 end
 
+---Set all particles to x,y,a=0,0,0.
+--This function does not update the weights
 function zero_pose()
   xp = vector.zeros(n);
   yp = vector.zeros(n);
   ap = vector.zeros(n);
 end
 
+---Return the largest value of a table and it's index
+--@param t table of values
+--@return largest value and it's index
 function max(t)
   local imax = 0;
   local tmax = -math.huge;
@@ -638,6 +679,7 @@ function addNoise()
   add_noise();
 end
 
+---Adds noise to particle x,y coordinates and angle.
 function add_noise()
   da = 2.0*math.pi/180.0;
   dr = 0.01;
@@ -646,6 +688,10 @@ function add_noise()
   ap = ap + da * vector.new(util.randn(n));
 end
 
+---Resample particles.
+--If enough particles have low enough weights, then
+--replaces low-weighted particles with new random particles
+--and new particles that are nearby high-weighted particles
 function resample()
   -- resample particles
 

@@ -46,6 +46,7 @@ CC=gcc
 LD=g++
 LDFLAGS=
 STRIP=strip
+CFLAGS=-O2 -fpic
 CXXFLAGS= -O2 -fpic
 
 MEXEXT=mexglx
@@ -53,11 +54,19 @@ SHLIBEXT= so
 LIBOPTS= -shared -fpic
 LIBRT= -lrt
 
-#This does not work 
-LUA_INC=-I/usr/include/lua -I/usr/local/include/lua
-LUA_VERSION_SPECIFIC=-I/usr/include/lua5.1 -I/usr/local/include/lua5.1 -I/usr/local/include/luajit-2.0 -I/usr/include/luajit-2.0
-INCLUDES= -I/usr/local/include -I/usr/include $(LUA_INC) $(LUA_VERSION_SPECIFIC)
-#INCLUDES= -I/usr/local/include -I/usr/include $(LUA_INC)
+# Library and Include Paths
+ifeq ($(shell pkg-config --exists luajit && echo 0),0)
+  LUAJIT_INC=`pkg-config luajit --cflags`
+else 
+# No LuaJIT found, falling back to regular Lua
+ifeq ($(shell pkg-config --exists lua5.1 && echo 0),0)
+  LUA_INC=`pkg-config lua5.1 --cflags`
+else
+  LUA_INC=`pkg-config lua --cflags`
+endif
+endif
+
+INCLUDES= -I/usr/local/include -I/usr/include $(LUA_INC) $(LUAJIT_INC)
 LIB_DIR= -L/usr/local/lib -L/usr/lib
 
 

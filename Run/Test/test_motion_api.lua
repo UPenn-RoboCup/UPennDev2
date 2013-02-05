@@ -54,7 +54,7 @@ function test_walk_api()
 end
 
 -- create an rpc client to communicate with the motion manager
-mm = rpc.new_client('MOTION')
+mm = rpc.client.new('MOTION')
 mm:connect()
 
 -- test walk api 

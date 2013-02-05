@@ -10,6 +10,7 @@ function loadconfig(configName)
 end
 
 loadconfig('Config_ASH_Devices')
+loadconfig('Config_ASH_Mechanics')
 loadconfig('Config_ASH_Bias')
 loadconfig('Config_ASH_Walk')
 

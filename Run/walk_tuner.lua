@@ -13,6 +13,7 @@ require('curses')
 require('Config')
 require('Motion')
 require('Locomotion')
+require('Proprioception')
 
 local walk_config_file = arg[1]
   or '../Config/Motion/Config_'..Config.platform.name..'_Walk.lua'
@@ -310,6 +311,8 @@ function entry()
   draw_screen()
   -- initialize motion engine
   Body.entry()
+  Proprioception.entry()
+  Motion.entry()
   Motion.add_fsm(Locomotion)
   Locomotion:add_event('walk')
 end
@@ -366,12 +369,14 @@ function update()
     cmd_increment_velocity(0, -0.005, 0)
   end
   Body.update()
+  Proprioception.update()
   Motion.update()
 end
 
 function exit()
   curses.endwin()
   Motion.exit()
+  Proprioception.exit()
   Body.exit()
 end
 

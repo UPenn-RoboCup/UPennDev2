@@ -13,6 +13,7 @@ require('Config')
 require('Motion')
 require('Locomotion')
 require('Manipulation')
+require('Proprioception')
 
 local function draw_screen()
   curses.clear()
@@ -25,6 +26,8 @@ end
 
 -- initialize motion state machines
 Body.entry()
+Proprioception.entry()
+Motion.entry()
 Motion.add_fsm(Locomotion)
 Motion.add_fsm(Manipulation)
 Locomotion:add_event('walk')
@@ -38,7 +41,7 @@ curses.timeout(1)
 draw_screen()
 
 local count = 0
-local motion_rpc_server = rpc.new_server('MOTION')
+local motion_rpc_server = rpc.server.new('MOTION')
 
 while true do
   -- handle remote procedure calls
@@ -46,6 +49,7 @@ while true do
 
   -- update controllers
   Body.update()
+  Proprioception.update()
   Motion.update()
 
   -- handle keystrokes
@@ -63,4 +67,5 @@ end
 
 curses.endwin()
 Motion.exit()
+Proprioception.exit()
 Body.exit()

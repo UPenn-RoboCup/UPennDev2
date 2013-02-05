@@ -9,11 +9,12 @@ require('unix')
 ----------------------------------------------------------------------
 
 rpc = {}
-
-local rpc_client_mt = {}
-local rpc_server_mt = {}
-rpc_client_mt.__index = rpc_client_mt 
-rpc_server_mt.__index = rpc_server_mt 
+rpc.client = {}
+rpc.server = {}
+rpc.client.__index = rpc.client
+rpc.server.__index = rpc.server
+rpc.client.__mtstring = 'rpc.client'
+rpc.server.__mtstring = 'rpc.server'
 
 -- utilities
 ----------------------------------------------------------------------
@@ -116,10 +117,10 @@ local function handle_rpc_response(channel, msg, o)
   end
 end
 
--- rpc client / server constuctors
+-- rpc client
 ----------------------------------------------------------------------
 
-function rpc.new_client(channel, provider)
+function rpc.client.new(channel, provider)
   local o = {}
   o.client_id = uuidgen() -- 36 character uuid
   o.request_id = 0        -- 16 bit signed integer
@@ -133,62 +134,46 @@ function rpc.new_client(channel, provider)
   o.request_channel = channel..'_RPC_REQUEST'
   o.response_channel = channel..'_RPC_RESPONSE'
   o.lcm:rpc_response_t_subscribe(o.response_channel, handle_rpc_response, o)
-  return setmetatable(o, rpc_client_mt)
+  return setmetatable(o, rpc.client)
 end
 
-function rpc.new_server(channel, provider)
-  local o = {}
-  o.timeout = 0
-  o.clients = 0
-  o.blacklist = {}
-  o.dictionary = generate_dictionary()
-  o.lcm = lcm.new(provider)
-  o.request_channel = channel..'_RPC_REQUEST'
-  o.response_channel = channel..'_RPC_RESPONSE'
-  o.lcm:rpc_request_t_subscribe(o.request_channel, handle_rpc_request, o)
-  return setmetatable(o, rpc_server_mt)
-end
-
--- rpc client methods
-----------------------------------------------------------------------
-
-function rpc_client_mt.set_strict(o)
+function rpc.client.set_strict(o)
   o.mode = 'strict'
 end 
 
-function rpc_client_mt.set_lenient(o)
+function rpc.client.set_lenient(o)
   o.mode = 'lenient'
 end
 
-function rpc_client_mt.set_lazy(o)
+function rpc.client.set_lazy(o)
   o.mode = 'lazy'
 end
 
-function rpc_client_mt.set_timeout(o, seconds)
+function rpc.client.set_timeout(o, seconds)
   o.timeout = seconds
 end
 
-function rpc_client_mt.get_timeout(o)
+function rpc.client.get_timeout(o)
   return o.timeout
 end
 
-function rpc_client_mt.get_lcm(o)
+function rpc.client.get_lcm(o)
   return o.lcm
 end
 
-function rpc_client_mt.get_dictionary(o)
+function rpc.client.get_dictionary(o)
   return o.dictionary
 end
 
-function rpc_client_mt.get_client_id(o)
+function rpc.client.get_client_id(o)
   return o.client_id
 end
 
-function rpc_client_mt.get_request_id(o)
+function rpc.client.get_request_id(o)
   return o.request_id
 end
 
-function rpc_client_mt.connect(o, timeout)
+function rpc.client.connect(o, timeout)
   -- get call dictionary from server 
   local _timeout = o.timeout
   o.timeout = timeout
@@ -209,7 +194,7 @@ function rpc_client_mt.connect(o, timeout)
   return status
 end
 
-function rpc_client_mt.eval(o, call_string, ...)
+function rpc.client.eval(o, call_string, ...)
   -- non-blocking remote procedure call (TODO perform dictionary check)
   o.return_values = {}
   o.return_status = true
@@ -225,7 +210,7 @@ function rpc_client_mt.eval(o, call_string, ...)
   o.lcm:rpc_request_t_publish(o.request_channel, rpc_request)
 end
 
-function rpc_client_mt.call(o, call_string, ...)
+function rpc.client.call(o, call_string, ...)
   -- blocking remote procedure call (TODO perform dictionary check)
   o.return_values = {}
   o.return_status = false
@@ -242,7 +227,7 @@ function rpc_client_mt.call(o, call_string, ...)
   return o:get_results()
 end
 
-function rpc_client_mt.get_results(o)
+function rpc.client.get_results(o)
   -- block for rpc response (avoid calling directly)
   if (not o.timeout) then
     while (not o.response) do
@@ -265,31 +250,45 @@ end
 -- rpc server methods
 ----------------------------------------------------------------------
 
-function rpc_server_mt.set_timeout(o, seconds)
+function rpc.server.new(channel, provider)
+  local o = {}
+  o.timeout = 0
+  o.clients = 0
+  o.blacklist = {}
+  o.dictionary = generate_dictionary()
+  o.lcm = lcm.new(provider)
+  o.request_channel = channel..'_RPC_REQUEST'
+  o.response_channel = channel..'_RPC_RESPONSE'
+  o.lcm:rpc_request_t_subscribe(o.request_channel, handle_rpc_request, o)
+  return setmetatable(o, rpc.server)
+end
+
+
+function rpc.server.set_timeout(o, seconds)
   o.timeout = seconds
 end
 
-function rpc_server_mt.get_timeout(o)
+function rpc.server.get_timeout(o)
   return o.timeout
 end
 
-function rpc_server_mt.get_lcm(o)
+function rpc.server.get_lcm(o)
   return o.lcm  
 end
 
-function rpc_server_mt.get_dictionary(o)
+function rpc.server.get_dictionary(o)
   return o.dictionary
 end
 
-function rpc_server_mt.generate_dictionary(o)
+function rpc.server.generate_dictionary(o)
   o.dictionary = generate_dictionary()
 end
 
-function rpc_server_mt.blacklist(o)
+function rpc.server.blacklist(o)
   -- TODO purge blacklisted functions from dictionary
 end
 
-function rpc_server_mt.update(o)
+function rpc.server.update(o)
   local fd = o.lcm:get_fileno()
   if (unix.select({fd}, o.timeout) > 0) then
     o.lcm:handle()

@@ -116,55 +116,55 @@ force_torque = {}
 
 force_torque.id = {
   -- device ids
-  [1] = 'l_ankle_force_x',
-  [2] = 'l_ankle_force_y',
-  [3] = 'l_ankle_force_z',
-  [4] = 'l_ankle_torque_x',
-  [5] = 'l_ankle_torque_y',
-  [6] = 'r_ankle_torque_z',
-  [7] = 'r_ankle_force_x',
-  [8] = 'r_ankle_force_y',
-  [9] = 'r_ankle_force_z',
-  [10] = 'r_ankle_torque_x',
-  [11] = 'r_ankle_torque_y',
-  [12] = 'r_ankle_torque_z',
+  [1] = 'l_foot_force_x',
+  [2] = 'l_foot_force_y',
+  [3] = 'l_foot_force_z',
+  [4] = 'l_foot_torque_x',
+  [5] = 'l_foot_torque_y',
+  [6] = 'r_foot_torque_z',
+  [7] = 'r_foot_force_x',
+  [8] = 'r_foot_force_y',
+  [9] = 'r_foot_force_z',
+  [10] = 'r_foot_torque_x',
+  [11] = 'r_foot_torque_y',
+  [12] = 'r_foot_torque_z',
   
   -- group ids
-  l_ankle_force = {
-    'l_ankle_force_x',
-    'l_ankle_force_y',
-    'l_ankle_force_z',
+  l_foot_force = {
+    'l_foot_force_x',
+    'l_foot_force_y',
+    'l_foot_force_z',
   },
-  l_ankle_torque = {
-    'l_ankle_torque_x',
-    'l_ankle_torque_y',
-    'l_ankle_torque_z',
+  l_foot_torque = {
+    'l_foot_torque_x',
+    'l_foot_torque_y',
+    'l_foot_torque_z',
   },
-  l_ankle = {
-    'l_ankle_force_x',
-    'l_ankle_force_y',
-    'l_ankle_force_z',
-    'l_ankle_torque_x',
-    'l_ankle_torque_y',
-    'l_ankle_torque_z',
+  l_foot = {
+    'l_foot_force_x',
+    'l_foot_force_y',
+    'l_foot_force_z',
+    'l_foot_torque_x',
+    'l_foot_torque_y',
+    'l_foot_torque_z',
   },
-  r_ankle_force = {
-    'r_ankle_force_x',
-    'r_ankle_force_y',
-    'r_ankle_force_z',
+  r_foot_force = {
+    'r_foot_force_x',
+    'r_foot_force_y',
+    'r_foot_force_z',
   },
-  r_ankle_torque = {
-    'r_ankle_torque_x',
-    'r_ankle_torque_y',
-    'r_ankle_torque_z',
+  r_foot_torque = {
+    'r_foot_torque_x',
+    'r_foot_torque_y',
+    'r_foot_torque_z',
   },
-  r_ankle = {
-    'r_ankle_force_x',
-    'r_ankle_force_y',
-    'r_ankle_force_z',
-    'r_ankle_torque_x',
-    'r_ankle_torque_y',
-    'r_ankle_torque_z',
+  r_foot = {
+    'r_foot_force_x',
+    'r_foot_force_y',
+    'r_foot_force_z',
+    'r_foot_torque_x',
+    'r_foot_torque_y',
+    'r_foot_torque_z',
   },
 }
 

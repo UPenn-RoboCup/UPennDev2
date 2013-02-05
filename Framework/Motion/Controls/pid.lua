@@ -1,8 +1,8 @@
+require('filter')
+
 ---------------------------------------------------------------------------
 -- pid : proportional integrator differentiator controller
 ---------------------------------------------------------------------------
-
-require('filter')
 
 pid = {}
 pid.__index = pid
@@ -78,10 +78,6 @@ function pid.set_d_corner_frequency(o, d_corner_frequency)
   o.d_corner_frequency = math.min(o.d_corner_frequency, 1/(2*o.Ts))
   o.d_filter = filter.new_second_order_differentiator(
     o.Ts, o.d_corner_frequency, Q)
-end
-
-function pid.set_d_filter(o, d_filter_b, d_filter_a)
-  o.d_filter = filter.new(d_filter_b, d_filter_a)
 end
 
 function pid.set_setpoint(o, setpoint)

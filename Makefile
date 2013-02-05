@@ -19,8 +19,8 @@ ash:
 	cd Framework/Lib && make && cd $(CWD)
 	cd Platform/Lib && make && cd $(CWD)
 	cd Platform/ASH && make && cd $(CWD)
-	cd Framework/Robot \
-	&& rm -f Body.lua Kinematics.* Statics.* Dynamics.* \
+	cd Framework/Platform \
+	&& rm -f ./* \
 	&& ln -s ../../Platform/ASH/Body.lua Body.lua \
 	&& ln -s ../../Platform/ASH/Mechanics/Kinematics.$(SHLIBEXT) Kinematics.$(SHLIBEXT) \
 	&& ln -s ../../Platform/ASH/Mechanics/Statics.$(SHLIBEXT) Statics.$(SHLIBEXT) \
@@ -41,8 +41,8 @@ teststand:
 	cd Framework/Lib && make && cd $(CWD)
 	cd Platform/Lib && make && cd $(CWD)
 	cd Platform/Teststand && make && cd $(CWD)
-	cd Framework/Robot \
-	&& rm -f Body.lua Kinematics.* Statics.* Dynamics.* \
+	cd Framework/Platform \
+	&& rm -f ./* \
 	&& ln -s ../../Platform/Teststand/Body.lua Body.lua \
 	&& ln -s ../../Platform/Teststand/Mechanics/Kinematics.lua Kinematics.lua \
 	&& ln -s ../../Platform/Teststand/Mechanics/Statics.lua Statics.lua \
@@ -63,8 +63,8 @@ webots_ash:
 	cd Framework/Lib && make && cd $(CWD)
 	cd Framework/Lib/webots && make && cd $(CWD)
 	cd Platform/WebotsASH && make && cd $(CWD)
-	cd Framework/Robot \
-	&& rm -f Body.lua Kinematics.* Statics.* Dynamics.* \
+	cd Framework/Platform \
+	&& rm -f ./* \
 	&& ln -s ../../Platform/WebotsASH/Body.lua Body.lua \
 	&& ln -s ../../Platform/WebotsCharli/WebotsLaser.lua WebotsLaser.lua \
 	&& ln -s ../../Platform/WebotsCharli/WebotsCamera.lua WebotsCamera.lua \
@@ -111,8 +111,8 @@ robotis_arm:
 	cd Framework/Lib && make && cd $(CWD)
 	cd Platform/Lib && make && cd $(CWD)
 	cd Platform/RobotisArm && make && cd $(CWD)
-	cd Framework/Robot \
-	&& rm -f Body.lua Kinematics.* Statics.* Dynamics.* \
+	cd Framework/Platform \
+	&& rm -f ./* \
 	&& ln -s ../../Platform/RobotisArm/Body.lua Body.lua \
 	&& ln -s ../../Platform/RobotisArm/Mechanics/Kinematics.so Kinematics.so \
 	&& ln -s ../../Platform/RobotisArm/Mechanics/Statics.lua Statics.lua \
@@ -133,10 +133,7 @@ tools:
 	cd Tools/Lib && make && cd $(CWD)
 
 clean:
-	rm -f Framework/Robot/Webots*.lua
-	rm -f Framework/Robot/Kinematics.*
-	rm -f Framework/Robot/Statics.*
-	rm -f Framework/Robot/Dynamics.*
+	rm -f Framework/Platform/*
 	rm -f Config/Config.lua
 	rm -f Webots
 	rm -f Run/init_robot

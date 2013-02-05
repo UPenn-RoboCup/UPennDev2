@@ -10,6 +10,7 @@ function loadconfig(configName)
 end
 
 loadconfig('Config_WebotsASH_Devices')
+loadconfig('Config_WebotsASH_Mechanics')
 loadconfig('Config_WebotsASH_Bias')
 loadconfig('Config_WebotsASH_Walk')
 

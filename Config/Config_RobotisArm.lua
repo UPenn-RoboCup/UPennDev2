@@ -10,6 +10,7 @@ function loadconfig(configName)
 end
 
 loadconfig('Config_RobotisArm_Devices')
+loadconfig('Config_RobotisArm_Mechanics')
 loadconfig('Config_RobotisArm_Bias')
 
 platform = {}

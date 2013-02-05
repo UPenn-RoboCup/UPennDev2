@@ -8,6 +8,8 @@ extern "C"
 #include "lauxlib.h"
 }
 
+#include <common.h>
+
 extern "C"
 int luaopen_darwinCam(lua_State *L);
 

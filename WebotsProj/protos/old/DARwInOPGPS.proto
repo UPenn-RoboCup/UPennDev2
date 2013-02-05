@@ -5357,7 +5357,6 @@ Robot {
     }
   ]
   name "DARwIn-OP"
-  model "DARwIn-OP"
   boundingObject Group {
     children [
       Transform {

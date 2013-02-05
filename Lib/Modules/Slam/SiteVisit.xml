@@ -1,0 +1,609 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vis>
+
+  <gui>
+    <size>1200 800</size>
+    <name>Vis</name>
+    <menuOn>0</menuOn>
+    <frame>
+      <name>mapping</name>
+      <frameRate>30</frameRate>
+      <FSAA>0</FSAA>
+      <camera>
+        <name>cam2</name>
+        <position>-100 150 30</position>
+        <lookAt>-110 140 0</lookAt>
+        <clipDist>1</clipDist>
+      </camera>
+    </frame>
+  <position>0 0</position></gui>
+
+  <plugin>
+    <id>light1</id>
+    <filename>Light.so</filename>
+    <position>0 0 100</position>
+    <diffuse>1 1 1</diffuse>
+    <specular>1 1 1</specular>
+    <xyz>0 0 0</xyz>
+    <rpy>0 0 0</rpy>
+  </plugin>
+
+<!--
+  <plugin>
+    <id>light2</id>
+    <filename>Light.so</filename>
+    <position>-200 150 30</position>
+    <diffuse>1 1 1</diffuse>
+    <specular>1 1 1</specular>
+    <xyz>0 0 0</xyz>
+    <rpy>0 0 0</rpy>
+  </plugin>
+/-->
+
+<!--
+  <ipcHost>192.168.1.123</ipcHost>
+/-->
+<!--
+
+  <plugin>
+    <id>grid</id>
+    <filename>Grid.so</filename>
+    <segments>10</segments>
+    <range>50 50</range>
+    <res>1 1</res>
+  </plugin>
+
+
+  <plugin>
+    <id>sky</id>
+    <filename>Sky.so</filename>
+  </plugin>
+
+  <plugin>
+    <id>floor1</id>
+    <filename>Plane.so</filename>
+    <segments>10</segments>
+    <range>50 50</range>
+    <material>carpet</material>
+  </plugin>
+
+ 
+
+/-->
+
+
+
+  <plugin>
+    <id>ambient</id>
+    <filename>Ambient.so</filename>
+    <color>1 1 1</color>
+  <xyz>0 0 0</xyz><rpy>0 0 0</rpy></plugin>
+
+
+  
+  
+  <plugin>
+    <id>Robot0Odom</id>
+    <filename>Hummingbird.so</filename>
+    
+    <plugin>
+      <id>mark</id>
+      <filename>Box.so</filename>
+      <xyz>0.11 0 0</xyz>
+      <dims>0.07 0.019 0.007</dims>
+      <material>Colors/Blue</material>
+    <rpy>0 0 0</rpy></plugin>
+  <xyz>0 0 0</xyz><rpy>0 0 0</rpy></plugin>
+
+  <plugin>
+    <id>Robot0</id>
+    <filename>Hummingbird.so</filename>
+    
+    <plugin>
+      <id>mark</id>
+      <filename>Box.so</filename>
+      <xyz>0.11 0 0</xyz>
+      <dims>0.07 0.019 0.007</dims>
+      <material>Colors/Red</material>
+    <rpy>0 0 0</rpy></plugin>
+
+    <plugin>
+      <id>poseUpdater</id>
+      <filename>MagicPose2VisPose3D.so</filename>
+      <msgName>Robot0/Pose</msgName>
+    <xyz>-1315.87 1142.37 -277.969</xyz><rpy>0 0 0</rpy></plugin>
+
+    <plugin>
+      <id>Lidar2DVisual</id>
+      <xyz>0 0 0</xyz>
+      <rpy>0 0 0</rpy>
+      <filename>Lidar2DVisual.so</filename>
+      <material>Transparent/Red</material>
+      <detach>false</detach>
+
+      <plugin>
+        <id>dataConverter</id>
+        <filename>MagicLidarScan2VisLidarData.so</filename>
+        <msgName>Robot0/Lidar0</msgName>
+      <xyz>-1315.87 1142.37 -277.969</xyz><rpy>0 0 0</rpy></plugin>
+
+    </plugin>
+
+  <xyz>0 0 0</xyz><rpy>0 0 0</rpy></plugin>
+
+    
+
+   <plugin>
+    <id>matchedPoints</id>
+    <filename>PointCloud.so</filename>
+    <pointSize>0.05 0.05 1.0</pointSize>
+  <xyz>0 0 0</xyz><rpy>0 0 0</rpy></plugin>
+
+
+   <plugin>
+      <id>lidar0Points</id>
+      <filename>PointCloud.so</filename>
+      <pointSize>0.05 0.05 0.05</pointSize>
+    <xyz>0 0 0</xyz><rpy>0 0 0</rpy></plugin>
+
+   <plugin>
+      <id>pointCloud</id>
+      <filename>PointCloud.so</filename>
+      <pointSize>0.05 0.05 0.05</pointSize>
+    <xyz>0 0 0</xyz><rpy>0 0 0</rpy></plugin>
+
+    <plugin>
+      <id>lidar1Points</id>
+      <filename>PointCloud.so</filename>
+      <pointSize>0.05 0.05 0.05</pointSize>
+    <xyz>0 0 0</xyz><rpy>0 0 0</rpy></plugin>
+
+
+  <plugin>
+    <id>map2d</id>
+    <filename>PointCloud.so</filename>
+    <pointSize>0.05 0.05 0.05</pointSize>
+  <xyz>0 0 0</xyz><rpy>0 0 0</rpy></plugin>
+
+  <plugin>
+    <id>map3d</id>
+    <filename>PointCloud.so</filename>
+    <pointSize>0.05 0.05 0.05</pointSize>
+  <xyz>0 0 0</xyz><rpy>0 0 0</rpy></plugin>
+
+  <plugin>
+		<id>Robot0/ObstacleMap2D</id>
+		<filename>Map2D.so</filename>
+    <xyz>0 0 0</xyz>
+    
+    <plugin>
+      <id>colormap</id>
+      <filename>CmGray.so</filename>
+      <min_val>0</min_val>
+      <max_val>255</max_val>
+    <xyz>0 0 0</xyz><rpy>0 0 0</rpy></plugin>
+
+	<rpy>0 0 0</rpy></plugin>
+
+  <plugin>
+		<id>Robot0/ExplorationMap2D</id>
+		<filename>Map2D.so</filename>
+    <xyz>0 0 0</xyz>
+    
+    <plugin>
+      <id>colormap</id>
+      <filename>CmGray.so</filename>
+      <min_val>0</min_val>
+      <max_val>255</max_val>
+    <xyz>0 0 0</xyz><rpy>0 0 0</rpy></plugin>
+
+	<rpy>0 0 0</rpy></plugin>
+
+
+  <plugin>
+    <id>overhead</id>
+    <filename>Image.so</filename>
+    <resolution>0.1145</resolution>
+    <rpy>0 0 0</rpy>
+    <xyz>-326.596 -202.994 0</xyz>
+    <lockXYZ>0 0 1</lockXYZ>
+  </plugin>
+
+  <plugin>
+    <id>Robot0Traj</id>
+    <filename>TrajPos3DColorRGBA.so</filename>
+  <xyz>0 0 0</xyz><rpy>0 0 0</rpy></plugin>
+
+
+  <plugin>
+    <id>box1</id>
+    <filename>Box2.so</filename>
+    <material>WoodMaterial1</material>
+    <dims>4 4 1.2</dims>
+    <xyz>-97.262 161.992 0.6</xyz>
+    <lockXYZ>0 0 1</lockXYZ>
+    <rpy>0 0 -0.15</rpy>
+  </plugin>
+
+  <plugin>
+    <id>box2</id>
+    <filename>Box2.so</filename>
+    <material>WoodMaterial1</material>
+    <dims>4 4 1.2</dims>
+    <xyz>-107.787 144.232 0.6</xyz>
+    <lockXYZ>0 0 1</lockXYZ>
+    <rpy>0 0 -0.15</rpy>
+  </plugin>
+
+  <plugin>
+    <id>box3</id>
+    <filename>Box2.so</filename>
+    <material>WoodMaterial1</material>
+    <dims>4 4 1.2</dims>
+    <xyz>-99.8206 147.153 0.6</xyz>
+    <lockXYZ>0 0 1</lockXYZ>
+    <rpy>0 0 -0.15</rpy>
+  </plugin>
+
+  <plugin>
+    <id>box4</id>
+    <filename>Box2.so</filename>
+    <material>WoodMaterial1</material>
+    <dims>4 4 1.2</dims>
+    <xyz>-120.426 153.876 0.6</xyz>
+    <lockXYZ>0 0 1</lockXYZ>
+    <rpy>0 0 -0.15</rpy>
+  </plugin>
+
+  <plugin>
+    <id>box5</id>
+    <filename>Box2.so</filename>
+    <material>WoodMaterial1</material>
+    <dims>4 4 1.2</dims>
+    <xyz>-112.888 157.46 0.6</xyz>
+    <lockXYZ>0 0 1</lockXYZ>
+    <rpy>0 0 -0.15</rpy>
+  </plugin>
+
+  <plugin>
+    <id>box6</id>
+    <filename>Box2.so</filename>
+    <material>WoodMaterial1</material>
+    <dims>4 4 1.2</dims>
+    <xyz>-114.524 148.218 0.6</xyz>
+    <lockXYZ>0 0 1</lockXYZ>
+    <rpy>0 0 -0.15</rpy>
+  </plugin>
+
+  <plugin>
+    <id>box7</id>
+    <filename>Box2.so</filename>
+    <material>WoodMaterial1</material>
+    <dims>4 4 1.2</dims>
+    <xyz>-101.112 140.211 0.6</xyz>
+    <lockXYZ>0 0 1</lockXYZ>
+    <rpy>0 0 -0.15</rpy>
+  </plugin>
+
+  <plugin>
+    <id>box8</id>
+    <filename>Box2.so</filename>
+    <material>WoodMaterial1</material>
+    <dims>4 4 1.2</dims>
+    <xyz>-98.5852 154.412 0.6</xyz>
+    <lockXYZ>0 0 1</lockXYZ>
+    <rpy>0 0 -0.15</rpy>
+  </plugin>
+
+  <plugin>
+    <id>box9</id>
+    <filename>Box2.so</filename>
+    <material>WoodMaterial1</material>
+    <dims>4 4 1.2</dims>
+    <xyz>-106.238 151.931 0.6</xyz>
+    <lockXYZ>0 0 1</lockXYZ>
+    <rpy>0 0 -0.15</rpy>
+  </plugin>
+
+  <plugin>
+    <id>box10</id>
+    <filename>Box2.so</filename>
+    <material>WoodMaterial1</material>
+    <dims>4 4 1.2</dims>
+    <xyz>-105.127 159.266 0.6</xyz>
+    <lockXYZ>0 0 1</lockXYZ>
+    <rpy>0 0 -0.15</rpy>
+  </plugin>
+
+  <plugin>
+    <id>fenceTop</id>
+    <filename>Box2.so</filename>
+    <material>Colors/Blue</material>
+    <dims>72 0.1 1.2</dims>
+    <xyz>-89.1029 167.331 0.6</xyz>
+    <lockXYZ>0 0 1</lockXYZ>
+    <rpy>0 0 -0.15</rpy>
+  </plugin>
+
+  <plugin>
+    <id>fenceBottom</id>
+    <filename>Box2.so</filename>
+    <material>Colors/Blue</material>
+    <dims>72 0.1 1.2</dims>
+    <xyz>-94.6136 131.772 0.6</xyz>
+    <lockXYZ>0 0 1</lockXYZ>
+    <rpy>0 0 -0.15</rpy>
+  </plugin>
+
+  <plugin>
+    <id>fenceLeft</id>
+    <filename>Box2.so</filename>
+    <material>Colors/Blue</material>
+    <dims>36 0.1 1.2</dims>
+    <xyz>-127.497 154.904 0.6</xyz>
+    <lockXYZ>0 0 1</lockXYZ>
+    <rpy>0 0 1.421</rpy>
+  </plugin>
+
+  <plugin>
+    <id>fenceRight</id>
+    <filename>Box2.so</filename>
+    <material>Colors/Blue</material>
+    <dims>36 0.1 1.2</dims>
+    <xyz>-56.1177 144.204 0.6</xyz>
+    <lockXYZ>0 0 1</lockXYZ>
+    <rpy>0 0 1.421</rpy>
+  </plugin>
+
+
+  <plugin>
+    <id>barrier1</id>
+    <filename>Box2.so</filename>
+    <material>Colors/DarkGray</material>
+    <dims>3 0.2 1.2</dims>
+    <xyz>-99.6008 143.537 0.6</xyz>
+    <lockXYZ>0 0 1</lockXYZ>
+    <rpy>0 0 1.421</rpy>
+  </plugin>
+
+  <plugin>
+    <id>barrier2</id>
+    <filename>Box2.so</filename>
+    <material>Colors/DarkGray</material>
+    <dims>3 0.2 1.2</dims>
+    <xyz>-104.687 138.76 0.6</xyz>
+    <lockXYZ>0 0 1</lockXYZ>
+    <rpy>0 0 -0.15</rpy>
+  </plugin>
+
+  <plugin>
+    <id>barrier3</id>
+    <filename>Box2.so</filename>
+    <material>Colors/DarkGray</material>
+    <dims>3 0.2 1.2</dims>
+    <xyz>-103.003 149.594 0.6</xyz>
+    <lockXYZ>0 0 1</lockXYZ>
+    <rpy>0 0 -0.15</rpy>
+  </plugin>
+
+  <plugin>
+    <id>net1</id>
+    <filename>Box2.so</filename>
+    <material>Transparent/Green</material>
+    <dims>10 0.2 1.2</dims>
+    <xyz>-113.376 153.02 0.6</xyz>
+    <lockXYZ>0 0 1</lockXYZ>
+    <rpy>0 0 -0.15</rpy>
+  </plugin>
+
+  <plugin>
+    <id>net2</id>
+    <filename>Box2.so</filename>
+    <material>Transparent/Green</material>
+    <dims>10 0.2 1.2</dims>
+    <xyz>-99.3445 150.888 0.6</xyz>
+    <lockXYZ>0 0 1</lockXYZ>
+    <rpy>0 0 -0.15</rpy>
+  </plugin>
+
+  <plugin>
+    <id>staticOOI1</id>
+    <filename>Cylinder.so</filename>
+    <material>Colors/Red</material>
+    <radius>0.2</radius>
+    <height>0.5</height>
+    <xyz>-106.705 154.876 0.25</xyz>
+    <lockXYZ>0 0 1</lockXYZ>
+    <rpy>1.5708 0 0</rpy>
+
+    <plugin>
+      <id>label</id>
+      <text>Static OOI 1</text>
+      <charHeight>1</charHeight>
+      <alignment>center</alignment>
+      <filename>MovableText.so</filename>
+      <lockXYZ>0 0 1</lockXYZ>
+      <xyz>0 0 3</xyz>
+      <rpy>0 0 0</rpy>
+    </plugin>
+  </plugin>
+
+  <plugin>
+    <id>staticOOI2</id>
+    <filename>Cylinder.so</filename>
+    <material>Colors/Red</material>
+    <radius>0.2</radius>
+    <height>0.5</height>
+    <xyz>-102.302 148.766 0.25</xyz>
+    <lockXYZ>0 0 1</lockXYZ>
+    <rpy>1.5708 0 0</rpy>
+
+    <plugin>
+      <id>label</id>
+      <text>Static OOI 2</text>
+      <charHeight>1</charHeight>
+      <alignment>center</alignment>
+      <filename>MovableText.so</filename>
+      <lockXYZ>0 0 1</lockXYZ>
+      <xyz>0 0 3</xyz>
+      <rpy>0 0 0</rpy>
+    </plugin>
+  </plugin>
+
+  <plugin>
+    <id>net3</id>
+    <filename>Box2.so</filename>
+    <material>Transparent/Yellow</material>
+    <dims>22 0.2 1.2</dims>
+    <xyz>-89.4187 156.308 0.6</xyz>
+    <lockXYZ>0 0 1</lockXYZ>
+    <rpy>0 0 1.421</rpy>
+  </plugin>
+
+  <plugin>
+    <id>net4</id>
+    <filename>Box2.so</filename>
+    <material>Transparent/Yellow</material>
+    <dims>12.5 0.2 1.2</dims>
+    <xyz>-92.1797 138.043 0.6</xyz>
+    <lockXYZ>0 0 1</lockXYZ>
+    <rpy>0 0 1.421</rpy>
+  </plugin>
+
+  <plugin>
+    <id>SpectatorArea</id>
+    <filename>Box2.so</filename>
+    <material>Transparent/Yellow</material>
+    <dims>60 5 0.2</dims>
+    <xyz>-95.5359 126.342 0.1</xyz>
+    <lockXYZ>0 0 1</lockXYZ>
+    <rpy>0 0 -0.15</rpy>
+
+    <plugin>
+      <id>label</id>
+      <text>Spectator Area</text>
+      <charHeight>1</charHeight>
+      <alignment>center</alignment>
+      <filename>MovableText.so</filename>
+      <lockXYZ>0 0 1</lockXYZ>
+      <xyz>0 0 3</xyz>
+      <rpy>0 0 0</rpy>
+    </plugin>
+  </plugin>
+
+
+
+  <plugin>
+    <id>GroundStation</id>
+    <filename>Box2.so</filename>
+    <material>Transparent/Red</material>
+    <dims>3 3 0.2</dims>
+    <xyz>-71.1734 93.6438 0.1</xyz>
+    <lockXYZ>0 0 1</lockXYZ>
+    <rpy>0 0 -0.15</rpy>
+
+    <plugin>
+      <id>label</id>
+      <text>Ground Station</text>
+      <charHeight>1</charHeight>
+      <alignment>center</alignment>
+      <filename>MovableText.so</filename>
+      <lockXYZ>0 0 1</lockXYZ>
+      <xyz>0 0 3</xyz>
+      <rpy>0 0 0</rpy>
+    </plugin>
+  </plugin>
+
+
+  <plugin>
+    <id>soldier1</id>
+    <filename>Soldier1.so</filename>
+    <xyz>-79.4999 132.189 0</xyz>
+    <lockXYZ>0 0 1</lockXYZ>
+    <rpy>0 0 -1.621</rpy>
+
+    <plugin>
+      <id>label</id>
+      <text>Non-Combatant</text>
+      <charHeight>1</charHeight>
+      <alignment>center</alignment>
+      <filename>MovableText.so</filename>
+      <lockXYZ>0 0 1</lockXYZ>
+      <xyz>0 0 2</xyz>
+      <rpy>0 0 0</rpy>
+    </plugin>
+  </plugin>
+
+  <plugin>
+    <id>soldier2</id>
+    <filename>Soldier2.so</filename>
+    <xyz>-70.4999 132.189 0</xyz>
+    <lockXYZ>0 0 1</lockXYZ>
+    <rpy>0 0 -1.621</rpy>
+
+    <plugin>
+      <id>label</id>
+      <text>Mobile OOI</text>
+      <charHeight>1</charHeight>
+      <alignment>center</alignment>
+      <filename>MovableText.so</filename>
+      <lockXYZ>0 0 1</lockXYZ>
+      <xyz>0 0 2</xyz>
+      <rpy>0 0 0</rpy>
+    </plugin>
+  </plugin>
+
+
+  <plugin>
+    <id>UgvStartPosition</id>
+    <filename>Cylinder.so</filename>
+    <material>Colors/Blue</material>
+    <radius>0.5</radius>
+    <height>0.5</height>
+    <xyz>-119.378 167.312 0.25</xyz>
+    <lockXYZ>0 0 1</lockXYZ>
+    <rpy>1.5708 0 0</rpy>
+
+    <plugin>
+      <id>label</id>
+      <text>Sensor UGV Start Position</text>
+      <charHeight>1</charHeight>
+      <alignment>center</alignment>
+      <filename>MovableText.so</filename>
+      <lockXYZ>0 0 1</lockXYZ>
+      <xyz>0 0 3</xyz>
+      <rpy>0 0 0</rpy>
+    </plugin>
+  </plugin>
+<!--  
+  <plugin>
+	  <id>Hokuyo_UTM-30LX</id>
+	  <filename>Lidar2D.so</filename>
+    <xyz>-117.378 167.312 0.1</xyz>
+    <invalidRange>0.05</invalidRange>
+    <minRange>0.05</minRange>
+    <maxRange>30</maxRange>
+    <scanRate>40</scanRate>
+    <angleStep>0.25</angleStep>
+    <msgPrefix>lidar</msgPrefix>
+    <publishPoints>false</publishPoints>
+    <publishRays>false</publishRays>
+    <pointsMsgPrefix>lidarPoints</pointsMsgPrefix>
+    <pointColor>0.5 0.2 0.2 0.7</pointColor>
+
+    <plugin>
+	    <id>Lidar2DVisual</id>
+	    <filename>Lidar2DVisual.so</filename>
+      <material>Transparent/Yellow</material>
+    </plugin>
+    <plugin>
+      <id>dataPublisher</id>
+      <filename>MagicLidarScanPublisher.so</filename>
+	    <msgName>Robot0/Lidar0</msgName>
+    </plugin>
+
+
+  </plugin>
+/-->
+
+<xyz>0 0 0</xyz><rpy>0 0 0</rpy></vis>

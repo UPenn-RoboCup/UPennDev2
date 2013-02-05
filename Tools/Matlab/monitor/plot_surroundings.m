@@ -10,6 +10,9 @@ function [ ] = plot_surroundings( handle, mon_struct )
 
     x_lim=[-2 2];
     y_lim=[0 4];
+    grid on;
+    set(gca, 'XTick', x_lim(1):0.1:x_lim(2));
+    set(gca, 'YTick', y_lim(1):0.1:y_lim(2));
     xlim(x_lim);
     ylim(y_lim);
 

@@ -11,6 +11,8 @@ else
 REGEX=-regex '.*\($(SHLIBEXT)\|$(LUAEXT)\|sh\)'
 endif
 
+CROSS= false
+
 ifndef OSTYPE
   OSTYPE = $(shell uname -s|awk '{print tolower($$0)}')
 endif
@@ -126,6 +128,11 @@ webots_saffir:
 	@cd $(WEBOTSSAFFIRDIR) && make && cd $(CWD)
 	@echo "\n"
 
+webots_thorop:
+	@echo "Compiling Webots THOR-OP Lua/C++ Libraries...\n"
+	@cd $(WEBOTSTHOROPDIR) && make && cd $(CWD)
+	@echo "\n"
+
 visiontest:
 	@echo "Compiling Vision Test Lua/C++ Libraries...\n"
 	@cd $(VISIONTESTDIR) && make && cd $(CWD)
@@ -145,6 +152,11 @@ image:
 comm::
 	@echo "Compiling Communication Lua/C++ Libraries...\n"
 	@cd $(COMMDIR) && make && cd $(CWD)
+	@echo "\n"
+
+hokuyo::
+	@echo "Compiling Hokuyo Lua/C++ Libraries...\n"
+	@cd $(HOKUYODIR) && make && cd $(CWD)
 	@echo "\n"
 
 occmap::
@@ -243,6 +255,14 @@ setup_webots_saffir: webots_saffir setup_util setup_image setup_webots
 	cd $(PLAYERDIR)/Config && ln -s Config_WebotsSaffir.lua Config.lua && cd $(CWD)
 	@echo "\n"
 
+setup_webots_thorop: webots_thorop setup_util setup_image setup_webots
+	@echo "Setting up Webots Lua/C++ Libraries...\n"
+	mkdir -p $(INSTDIR)
+	find $(WEBOTSTHOROPDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
+	rm -f $(PLAYERDIR)/Config/Config.lua
+	cd $(PLAYERDIR)/Config && ln -s Config_WebotsTHOROP.lua Config.lua && cd $(CWD)
+	@echo "\n"
+
 setup_visiontest: visiontest setup_util setup_image 
 	@echo "Setting up Darwin OP Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
@@ -280,7 +300,7 @@ setup_xos: xos setup_util setup_image setup_comm
 	cd $(PLAYERDIR)/Config && ln -s Config_XOS.lua Config.lua && cd $(CWD)
 	@echo "\n"
 
-setup_charli: charli setup_util setup_image setup_comm
+setup_charli: charli setup_util setup_image setup_comm setup_hokuyo
 	@echo "Setting up Charli Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
 	find $(CHARLIDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
@@ -322,6 +342,12 @@ setup_comm: comm
 	@echo "Setting up Communication Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
 	find $(COMMDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
+	@echo "\n"
+
+setup_hokuyo: hokuyo
+	@echo "Setting up Hokuyo Lua/C++ Libraries...\n"
+	mkdir -p $(INSTDIR)
+	find $(HOKUYODIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
 	@echo "\n"
 
 setup_occmap: occmap
@@ -366,6 +392,7 @@ setup_webots_boxer: setup_webots_op setup_hands setup_primesense
 clean:
 	cd $(IMAGEDIR) && make clean && cd $(CWD)
 	cd $(COMMDIR) && make clean && cd $(CWD)
+	cd $(HOKUYODIR) && make clean && cd $(CWD)
 	cd $(UTILDIR) && make clean && cd $(CWD)
 	cd $(PRIMEDIR) && make clean && cd $(CWD)
 	cd $(WEBOTSDIR) && make clean && cd $(CWD)
@@ -380,7 +407,9 @@ clean:
 #	cd $(WEBOTSCONTDIR) && make clean && cd $(CWD)
 	rm -rf $(WEBOTSCONTDIR) 
 	cd $(WEBOTSCHARLIDIR) && make clean && cd $(CWD)
-	cd $(WEBOTSSAFFIRDIR) && make clean && cd $(CWD)
+	cd $(WEBOTSSAFFIRDIR) && make clean && cd $(CWD) 	
+	cd $(WEBOTSTHOROPDIR) && make clean && cd $(CWD)
+
 #	cd $(HPDIR) && make clean && cd $(CWD)
 	cd $(OPDIR) && make clean && cd $(CWD)
 	cd $(PLAYERDIR)/Config && rm -f Config.lua && cd $(CWD)

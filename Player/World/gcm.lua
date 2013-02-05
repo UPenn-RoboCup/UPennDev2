@@ -54,6 +54,9 @@ set_team_player_id( Config.game.playerID );
 -- initialize team id
 set_team_number(Config.game.teamNumber);
 
+-- Initialize nPlayers
+set_game_nplayers(Config.game.nPlayers);
+
 -- initialize state to 'initial'
 set_game_state(0);
 set_team_role(Config.game.role);

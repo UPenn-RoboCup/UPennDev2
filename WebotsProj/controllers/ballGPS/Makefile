@@ -42,7 +42,16 @@ C_SOURCES = ballGPS.c
 ### Do not modify: this includes Webots global Makefile.include
 space :=
 space +=
-WEBOTS_HOME_PATH=$(subst $(space),\ ,$(strip $(subst \,/,$(WEBOTS_HOME))))
 #TODO: fix makefile
-#include $(WEBOTS_HOME_PATH)/resources/projects/default/controllers/Makefile.include
-include /usr/local/webots/resources/projects/default/controllers/Makefile.include
+#WEBOTS_HOME=/Applications/Webots
+ifndef OSTYPE
+	OSTYPE = $(shell uname -s|awk '{print tolower($$0)}')
+endif
+ifeq ($(OSTYPE),darwin)
+	WEBOTS_HOME = /Applications/Webots
+else
+	WEBOTS_HOME = /usr/local/webots
+endif
+WEBOTS_HOME_PATH=$(subst $(space),\ ,$(strip $(subst \,/,$(WEBOTS_HOME))))
+include $(WEBOTS_HOME_PATH)/resources/projects/default/controllers/Makefile.include
+#include /usr/local/webots/resources/projects/default/controllers/Makefile.include

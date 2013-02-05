@@ -1,25 +1,6 @@
-module(... or "", package.seeall)
-
--- Get Platform for package path
-cwd = os.getenv('PWD');
-local platform = os.getenv('PLATFORM') or '';
-if (string.find(platform,'webots')) then cwd = cwd .. '/Player';
-end
-
--- Get Computer for Lib suffix
-local computer = os.getenv('COMPUTER') or '';
-package.cpath = cwd .. '/Lib/?.so;' .. package.cpath;
-
-package.path = cwd .. '/?.lua;' .. package.path;
-package.path = cwd .. '/Util/?.lua;' .. package.path;
-package.path = cwd .. '/Config/?.lua;' .. package.path;
-package.path = cwd .. '/Lib/?.lua;' .. package.path;
-package.path = cwd .. '/Dev/?.lua;' .. package.path;
-package.path = cwd .. '/Motion/?.lua;' .. package.path;
-package.path = cwd .. '/Motion/Walk/?.lua;' .. package.path;
-package.path = cwd .. '/Motion/keyframes/?.lua;' .. package.path;
-package.path = cwd .. '/Vision/?.lua;' .. package.path;
-package.path = cwd .. '/World/?.lua;' .. package.path;
+cwd = cwd or os.getenv('PWD')
+package.path = cwd.."/?.lua;"..package.path;
+require('init')
 
 require('Config');
 smindex = 0;
@@ -46,6 +27,8 @@ require('util')
 require('wcm')
 require('gcm')
 require('ocm')
+require('matcm')
+--require('behaviorObstacle')
 
 darwin = false;
 webots = false;
@@ -71,7 +54,6 @@ Motion.entry();
 World.entry();
 Vision.entry();
 
-HeadFSM.sm:set_state('headScan');
 Body.set_head_hardness({0.4,0.4});
 controller.wb_robot_keyboard_enable(100);
 
@@ -93,6 +75,8 @@ camera_select = 1;
 -- set game state to ready to stop particle filter initiation
 gcm.set_game_state(1);
 
+Motion.event("standup")
+
 function process_keyinput()
   local str = controller.wb_robot_keyboard_get_key();
   if str>0 then
@@ -106,24 +90,31 @@ function process_keyinput()
     if byte==string.byte("w") then
       headsm_running=0;
       headangle[2]=headangle[2]-5*math.pi/180;
+     print("Headangle:", headangle[2]*180/math.pi)
     elseif byte==string.byte("a") then
       headangle[1]=headangle[1]+5*math.pi/180;
       headsm_running=0;
+     print("Headangle:", headangle[2]*180/math.pi)
     elseif byte==string.byte("s") then	
       headangle[1],headangle[2]=0,0;
       headsm_running=0;
+     print("Headangle:", headangle[2]*180/math.pi)
     elseif byte==string.byte("d") then
       headangle[1]=headangle[1]-5*math.pi/180;
       headsm_running=0;
+     print("Headangle:", headangle[2]*180/math.pi)
     elseif byte==string.byte("x") then	
       headangle[2]=headangle[2]+5*math.pi/180;
+     print("Headangle:", headangle[2]*180/math.pi)
       headsm_running=0;
     elseif byte==string.byte("e") then	
       headangle[2]=headangle[2]-1*math.pi/180;
       headsm_running=0;
+     print("Headangle:", headangle[2]*180/math.pi)
     elseif byte==string.byte("c") then	
       headangle[2]=headangle[2]+1*math.pi/180;
       headsm_running=0;
+     print("Headangle:", headangle[2]*180/math.pi)
 
   -- Walk velocity setting
     elseif byte==string.byte("i") then	targetvel[1]=targetvel[1]+0.02;
@@ -136,11 +127,11 @@ function process_keyinput()
 
     -- reset OccMap
   elseif byte == string.byte("/") then
-    print("reset occmap");
-    ocm.set_occ_reset(1);
+    OccupancyMap.reset_map();
   elseif byte == string.byte(".") then
     print("get obstacle");
-    ocm.set_occ_get_obstacle(1);
+    OccupancyMap.get_velocity();
+--    ocm.set_occ_get_obstacle(1);
 
 
    elseif byte==string.byte("-") then
@@ -210,15 +201,26 @@ function process_keyinput()
      ocm.set_occ_reset(1);
      headangle[2]=50*math.pi/180;
    elseif byte==string.byte('p') then
-     vcm.set_image_learn_lut(1);
+     -- Change min color for ball
+--     if walk.active then walk.stop();end
+--     Motion.event('standup')
+     headsm_running = 1;
+     bodysm_running = 1;
+--     HeadFSM.sm:set_state('headLearnLUT');
+      vcm.set_camera_learned_new_lut(1)
+     HeadFSM.sm:set_state('headLearnLUT');
+     BodyFSM.sm:set_state('bodyWait');
+--     require('ColorLUT')
+--     ColorLUT.learn_lut_from_mask();
    end
 
 
    -- Apply manul control head angle
    if headsm_running == 0 then
      Body.set_head_command(headangle);
-     print("Headangle:", headangle[2]*180/math.pi)
    end
+
+   walk.set_velocity(unpack(targetvel));
  end
 end
 
@@ -268,20 +270,47 @@ function update()
   -- Get a keypress
   process_keyinput();
 
+  --[[
+  attackBearing = wcm.get_attack_bearing();
+  vStep = {0.02, 0, 0.2 * attackBearing}
 
-  obstacle_num = ocm.get_obstacle_num();
-  obstacle_centroid = ocm.get_obstacle_centroid();
-  obstacle_angle_range = ocm.get_obstacle_angle_range();
-  obstacle_nearest = ocm.get_obstacle_nearest();
-
-
-  velangle = math.atan2(targetvel[2], targetvel[1]);
---  print(obstacle_num,velangle*180/math.pi);
-  for i = 1, obstacle_num do
-
+  obs = behaviorObstacle.check_obstacle(vStep)
+ if (obs.front) then
+    print('obstacle in front found')
+  elseif (obs.leftside) then
+    print('obstacle on left found')
+  elseif (obs.rightside) then
+    print('obstacle on right found')
+  end  
+  
+  if obs.left and obs.right then
+    freeDir = 1 -- both size occupied, need slow down and backstep
+  elseif obs.left then
+    freeDir = 2 -- right side free
+  elseif obs.right then
+    freeDir = 3 -- left side free
+  else
+    freeDir = 0 -- both size free
   end
-  walk.set_velocity(unpack(targetvel));
 
+  if freeDir == 1 then
+    vStep[1] = vStep[1] - 0.01
+  elseif freeDir == 2 then
+    vStep[3] = vStep[3] - 0.02
+  elseif freeDir == 3 then
+    vStep[3] = vStep[3] + 0.02
+  else
+    if angle > 10 * math.pi / 180 then
+      vStep = {0, 0, 0.2}
+    elseif angle < -10 * math.pi / 180 then
+      vStep = {0, 0, -0.2}
+    else
+      vStep = {0, 0, 0}
+    end
+  end
+
+  walk.set_velocity(vStep[1], vStep[2], vStep[3])
+  --]]
 end
 
 while 1 do

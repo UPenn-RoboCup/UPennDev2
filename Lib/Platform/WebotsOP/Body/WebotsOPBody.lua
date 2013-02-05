@@ -9,7 +9,7 @@ imuAngle = {0, 0, 0};
 aImuFilter = 1 - math.exp(-tDelta/0.5);
 
 
-gps_enable = 1;
+gps_enable = 0;
 
 
 -- Get webots tags:
@@ -66,10 +66,12 @@ tags.accelerometer = controller.wb_robot_get_device("Accelerometer");
 controller.wb_accelerometer_enable(tags.accelerometer, timeStep);
 tags.gyro = controller.wb_robot_get_device("Gyro");
 controller.wb_gyro_enable(tags.gyro, timeStep);
-tags.gps = controller.wb_robot_get_device("GPS");
-controller.wb_gps_enable(tags.gps, timeStep);
-tags.compass = controller.wb_robot_get_device("Compass");
-controller.wb_compass_enable(tags.compass, timeStep);
+if( gps_enable>0 ) then 
+  tags.gps = controller.wb_robot_get_device("GPS");
+  controller.wb_gps_enable(tags.gps, timeStep);
+  tags.compass = controller.wb_robot_get_device("Compass");
+  controller.wb_compass_enable(tags.compass, timeStep);
+end
 
 tags.eyeled = controller.wb_robot_get_device("EyeLed");
 controller.wb_led_set(tags.eyeled,0xffffff)
@@ -232,7 +234,10 @@ function set_rarm_command(val)
 end
 
 function update()
-get_sensor_gps()
+
+if( gps_enable>0 ) then 
+  get_sensor_gps()
+end
   -- Set actuators
   for i = 1,nJoint do
     if actuator.hardness[i] > 0 then

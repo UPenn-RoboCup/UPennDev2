@@ -40,10 +40,13 @@ vision.use_point_goal = 0;
 vision.enable_robot_detection = 0;
 
 -- use this to enable freespace detection and occupancy map
-vision.enable_freespace_detection = 1;
+vision.enable_freespace_detection = 0;
 
 -- use this to enable obstacle specific colortable
-vision.enable_lut_for_obstacle = 1;
+vision.enable_lut_for_obstacle = 0;
+
+-- use this to enable online colortable learning broadcasting and receiving
+vision.enable_online_colortable_learning = 0;
 
 
 ----------------------------

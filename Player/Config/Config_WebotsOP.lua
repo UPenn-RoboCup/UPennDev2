@@ -1,26 +1,15 @@
 module(..., package.seeall);
+require('util')
 require('vector')
 
 -- Name Platform
 platform = {}; 
 platform.name = 'WebotsOP'
 
-function loadconfig(configName)
-  local localConfig=require(configName);
-  for k,v in pairs(localConfig) do
-    Config[k]=localConfig[k];
-  end
-end
-
-loadconfig('Walk/Config_WebotsOP_Walk')
---loadconfig('World/Config_OP_World')
-loadconfig('World/Config_WebotsOP_World')
-loadconfig('Kick/Config_WebotsOP_Kick')
---loadconfig('Kick/Config_WebotsOP_KickPunch')
-loadconfig('Vision/Config_WebotsOP_Vision')
-
---Location Specific Camera Parameters--
-loadconfig('Vision/Config_WebotsOP_Camera')
+-- Parameters Files
+params = {}
+params.name = {"Walk", "World", "Kick", "Vision", "FSM", "Camera"};
+util.LoadConfig(params, platform)
 
 -- Device Interface Libraries
 dev = {};
@@ -33,22 +22,11 @@ dev.ip_wired = '192.168.123.255';
 dev.ip_wired_port = 54321;
 dev.ip_wireless = '192.168.1.255'; --Our Router
 dev.ip_wireless_port = 54321;
-dev.walk='N5Walk'; --Walk with generalized walkkick definitions
+dev.walk='BetterWalk'; --Walk with generalized walkkick definitions
 dev.kick='NewNewKick'; --Extended kick that supports upper body motion
 
---Sit/stand stance parameters
-stance={};
-stance.bodyHeightSit = 0.20;
-stance.supportXSit = -0.010;
-stance.bodyHeightDive= 0.295;
-stance.bodyTiltDive = 0;
-stance.bodyTiltStance=0*math.pi/180; --bodyInitial bodyTilt, 0 for webots
-stance.dpLimitStance=vector.new({.04, .03, .07, .4, .4, .4});
-stance.dpLimitSit=vector.new({.1,.01,.06,.1,.3,.1});
-
-stance.dpLimitStance=vector.new({.04, .03, .07, .4, .9, .4});
-stance.dpLimitDive = vector.new({.04, .03, .07, .4, .9, .4});
-
+-- disable speak for webots which causes lua crash with error if espeak not installed
+speakenable = 0
 
 -- Head Parameters
 head = {};
@@ -80,37 +58,48 @@ if game.teamNumber==0 then  game.teamColor = 0; --Blue team
 else game.teamColor = 1; --Red team
 end
 
---FSM and behavior settings
-fsm = {};
---SJ: loading FSM config  kills the variable fsm, so should be called first
-loadconfig('FSM/Config_WebotsOP_FSM')
+-- FSM and Behavior flags, should be defined in FSM Configs but can be overridden here
 fsm.game = 'RoboCup';
 fsm.head = {'GeneralPlayer'};
 fsm.body = {'GeneralPlayer'};
 
---Behavior flags, should be defined in FSM Configs but can be overridden here
-fsm.playMode = 3; --1 for demo, 2 for orbit, 3 for direct approach
-fsm.enable_obstacle_detection = 1;
-fsm.wait_kickoff = 1;
-fsm.enable_walkkick = 1;
-fsm.enable_sidekick = 1;
-fsm.enable_dribble = 1;
+-- Keyframe files
+km = {};
+km.standup_front = 'km_NSLOP_StandupFromFront.lua';
+km.standup_back = 'km_NSLOP_StandupFromBack.lua';
+km.standup_back2 = 'km_NSLOP_StandupFromBack3.lua';
+--km.standup_back = 'km_NSLOP_StandupFromBack3.lua';
+--km.kick_right = 'km_NSLOP_taunt1.lua';
+--km.kick_left = 'km_NSLOP_StandupFromFront2.lua';
 
-fsm.daPost_check = 1;
-fsm.daPostmargin = 15*math.pi/180;
-fsm.variable_dapost = 1;
+goalie_dive = 2; --1 for arm only, 2 for actual diving
+goalie_dive_waittime = 6.0; --How long does goalie lie down?
 
+-- Low battery level
+bat_med = 122; -- Slow down if voltage drops below 12.2V 
+bat_low = 118; -- 11.8V warning
+batt_max = 120; --only do rollback getup when battery is enough
+use_rollback_getup = 0;
+	
+--Fall check
+fallAngle = 40*math.pi/180;
+falling_timeout = 0.3;
 
---FAST APPROACH TEST
---fsm.fast_approach = 1;
---fsm.bodyApproach.maxStep = 0.06;
-fsm.fast_approach = 0;
-fsm.bodyApproach.maxStep = 0.04;
+-- Shutdown Vision and use ground truth gps info only
+use_gps_only = 0;
+--use_gps_only = 1;
 
-fsm.enable_evade = 0;
---fsm.enable_evade = 1;--Randomly do evade kick
-fsm.enable_evade = 2;--Do evade kick when obstructed
+------------------------------------
+-- Game-type Specific Configurations
+------------------------------------
 
+-- Play Football
+--[[
+fsm.game = 'Football';
+fsm.head = {'Football'};
+fsm.body = {'Football'};
+dev.team = 'TeamFootball'
+--]]
 
 --[[
 --Enable these for penalty-kick
@@ -124,114 +113,27 @@ dev.team='TeamNull'; --Turn off teamplay for challenges
 fsm.body = {'ThrowInChallenge'};
 --]]
 
---Enable this for double pass
+-- Doublepass challenge
 --[[
-fsm.body={'DoublePassChallenge'};
 dev.team='TeamDoublePass';
+fsm.body={'DoublePassChallenge'};
+fsm.headTrack.timeout = 2.0 * speedFactor;
+fsm.headTrack.tLost = 1.5 * speedFactor;
+fsm.headTrack.minDist = 0.15; --Default value 0.30,If ball is closer than this, don't look up
 --]]
 
--- Team Parameters
-team = {};
-team.msgTimeout = 5.0;
-team.tKickOffWear = 15.0;
-
-team.walkSpeed = 0.25; --Average walking speed 
-team.turnSpeed = 2.0; --Average turning time for 360 deg
-team.ballLostPenalty = 4.0; --ETA penalty per ball loss time
-team.fallDownPenalty = 4.0; --ETA penalty per ball loss time
-team.nonAttackerPenalty = 0.8; -- dist from ball
-team.nonDefenderPenalty = 0.5; -- dist from goal
-
-
-
---if ball is away than this from our goal, go support
-team.support_dist = 3.0; 
-team.supportPenalty = 0.5; --dist from goal
-
-team.force_defender = 0; --Enable this to force defender
-
-team.use_team_ball = 1;
-team.team_ball_timeout = 3.0;  --use team ball info after this delay
-team.team_ball_threshold = 0.5;
-
-team.avoid_own_team = 1;
-team.avoid_other_team = 1;
-
-
-
-
--- keyframe files
-km = {};
-km.standup_front = 'km_NSLOP_StandupFromFront.lua';
-km.standup_back = 'km_NSLOP_StandupFromBack.lua';
-km.standup_back2 = 'km_NSLOP_StandupFromBack3.lua';
-
-
---km.standup_back = 'km_NSLOP_StandupFromBack3.lua';
---km.kick_right = 'km_NSLOP_taunt1.lua';
---km.kick_left = 'km_NSLOP_StandupFromFront2.lua';
-
-goalie_dive = 2; --1 for arm only, 2 for actual diving
-goalie_dive_waittime = 6.0; --How long does goalie lie down?
---fsm.goalie_type = 1;--moving/move+stop/stop+dive/stop+dive+move
---fsm.goalie_type = 2;--moving/move+stop/stop+dive/stop+dive+move
-fsm.goalie_type = 3;--moving/move+stop/stop+dive/stop+dive+move
---fsm.goalie_type = 4;--moving/move+stop/stop+dive/stop+dive+move
---fsm.goalie_reposition=0; --No reposition
-fsm.goalie_reposition=1; --Yaw reposition
---fsm.goalie_reposition=2; --Position reposition
-fsm.bodyAnticipate.thFar = {0.4,0.4,30*math.pi/180};
-fsm.goalie_use_walkkick = 1;--should goalie use walkkick or long kick?
-
---Diving detection parameters
-fsm.bodyAnticipate.timeout = 3.0;
-fsm.bodyAnticipate.center_dive_threshold_y = 0.05; 
-fsm.bodyAnticipate.dive_threshold_y = 1.0;
-fsm.bodyAnticipate.ball_velocity_th = 1.0; --min velocity for diving
-fsm.bodyAnticipate.ball_velocity_thx = -1.0; --min x velocity for diving
-fsm.bodyAnticipate.rCloseDive = 2.0; --ball distance threshold for diving
-
-
--- Low battery level
-bat_med = 122; -- Slow down if voltage drops below 12.2V 
-bat_low = 118; -- 11.8V warning
-
---Fall check
-fallAngle = 40*math.pi/180;
-falling_timeout = 0.3;
-
---Slow down top speed
+-- Obstacle Avoidance Challenge
 --[[
-fsm.bodyPosition.maxStep1 = 0.06;
-fsm.bodyPosition.maxStep2 = 0.07;
-fsm.bodyPosition.maxStep3 = 0.08;
---]]
-
---Shutdown Vision and use ground truth gps info only
-use_gps_only = 0;
---use_gps_only = 1;
-
-fsm.enable_walkkick = 0;
---fsm.enable_sidekick = 0;
-
---New multi-blob landmark detection code
-vision.use_multi_landmark = 1;
-
--- obstacle avoidance challenge
+fsm.head = {'ObstacleChallenge'};
+fsm.body = {'ObstacleChallenge'};
+fsm.avoidance_mode = 1 -- ball dribble
+fsm.avoidance_mode = 0 -- walk towards goal, no ball 
+fsm.avoidance_mode = 2 -- Potential Field based navigation
+--fsm.avoidance_mode = 3 -- Potential Field based Dribble
 obs_challenge = 1;
 obs_challenge = 0;
 fsm.enable_sidekick = 1;
 fsm.thSideKick1 = 30*math.pi/180;
 fsm.thSideKick2 = 135*math.pi/180;
 fsm.thDistSideKick = 1.0;
-
-use_rollback_getup = 1;
-batt_max = 120; --only do rollback getup when battery is enough
-
-
---For doublepass
-fsm.headTrack.timeout = 2.0 * speedFactor;
-fsm.headTrack.tLost = 1.5 * speedFactor;
-fsm.headTrack.minDist = 0.15; --Default value 0.30,If ball is closer than this, don't look up
-
---Roll backup setup
+--]]

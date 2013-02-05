@@ -68,7 +68,7 @@ else
 endif
 endif
 
-INCLUDES= -I/usr/local/include -I/usr/include $(LUA_INC) $(LUAJIT_INC)
+INCLUDES= -I$(TOP)/Common -I/usr/local/include -I/usr/include $(LUA_INC) $(LUAJIT_INC)
 LIB_DIR= -L/usr/local/lib -L/usr/lib
 
 

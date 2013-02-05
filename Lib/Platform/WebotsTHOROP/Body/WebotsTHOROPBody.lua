@@ -306,14 +306,16 @@ end
 --Roll, Pitch, Yaw in degree per seconds unit
 function get_sensor_imuGyrRPY( )
   gyro = controller.wb_gyro_get_values(tags.gyro);
-  gyro_proc={-(gyro[1]-512)/0.273, -(gyro[2]-512)/0.273,(gyro[3]-512)/0.273};
+--Fixed for THOR model
+  gyro_proc={(gyro[1]-512)/0.273, (gyro[2]-512)/0.273,(gyro[3]-512)/0.273};
   return gyro_proc;
 end
 
 
 function get_sensor_imuAcc( )
   accel = controller.wb_accelerometer_get_values(tags.accelerometer);
-  return {-(accel[2]-512)/128,-(accel[1]-512)/128,(accel[3]-512)/128};
+--not checked yet
+  return {(accel[2]-512)/128,(accel[1]-512)/128,(accel[3]-512)/128};
 end
 
 function get_sensor_gps()

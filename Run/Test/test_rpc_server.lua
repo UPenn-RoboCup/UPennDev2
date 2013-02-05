@@ -1,6 +1,7 @@
 dofile('../include.lua')
 
 require('rpc')
+require('zmq')
 require('unix')
 
 function my_remote_function(x)
@@ -8,7 +9,9 @@ function my_remote_function(x)
 end
 
 -- initialize server
-server = rpc.server.new('EXAMPLE')
+local context = zmq.init()
+server = rpc.server.new('tcp://lo:5555', context)
+server:set_timeout(0)
 
 -- handle rpc requests
 while true do
@@ -16,3 +19,5 @@ while true do
   io.stderr:write('.')
   server:update()
 end
+
+context:term()

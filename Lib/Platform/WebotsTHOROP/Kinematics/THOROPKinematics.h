@@ -10,20 +10,27 @@ const double SQRT2 = sqrt(2);
 
 const double neckOffsetZ = 0;
 const double neckOffsetX = 0;
+
+//COM assumed at the chestYaw joint
 const double shoulderOffsetX = 0;
-const double shoulderOffsetY = 0;
-const double shoulderOffsetZ = 0;
-const double handOffsetX = 0;
-const double handOffsetZ = 0;
-const double upperArmLength = .190;
-const double lowerArmLength = .210;
-const double hipOffsetY = 0.070;
-const double hipOffsetZ = 0.0;
-const double hipOffsetX = 0.0;
-const double thighLength = 0.350;
-const double tibiaLength = 0.350;
-const double footHeight = 0.076;
+const double shoulderOffsetY = .219;
+const double shoulderOffsetZ = .144;
+
+const double upperArmLength = .246;
+const double elbowOffsetX = .030; //Elbow offset
+const double lowerArmLength = .242;
+const double handOffsetX = 0;//TBD
+const double handOffsetZ = 0;//TBD
+
+const double hipOffsetX = 0.01;
+const double hipOffsetY = 0.094;
+const double hipOffsetZ = 0.372;
+
+const double thighLength = 0.379;
+const double tibiaLength = 0.380;
+const double footHeight = 0.04869;//calculated from webots model
 const double kneeOffsetX = 0.0;
+
 const double dThigh = sqrt(thighLength*thighLength+kneeOffsetX*kneeOffsetX);
 const double aThigh = atan(kneeOffsetX/thighLength);
 const double dTibia = sqrt(tibiaLength*tibiaLength+kneeOffsetX*kneeOffsetX);

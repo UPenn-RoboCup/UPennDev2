@@ -37,6 +37,8 @@ Config.lua
 # auto-generated webots controller wrapper
 WebotsController/
 WebotsController/controller_wrap.c
+controller_wrap.c
+*.wbproj
 
 #controller links
 WebotsProj/controllers/nao_soccer_supervisor/

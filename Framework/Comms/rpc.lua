@@ -47,8 +47,6 @@ end
 ----------------------------------------------------------------------
 
 function rpc.client.new(endpoint, zmq_context)
-  assert(type(endpoint) == 'string')
-  assert(type(zmq_context) == 'userdata')
   local o = {}
   o.request_id = 0
   o.mode = 'strict'
@@ -167,8 +165,6 @@ end
 ----------------------------------------------------------------------
 
 function rpc.server.new(endpoint, zmq_context)
-  assert(type(endpoint) == 'string')
-  assert(type(zmq_context) == 'userdata')
   local o = {}
   o.timeout = nil
   o.blacklist = {}

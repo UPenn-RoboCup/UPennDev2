@@ -14,7 +14,7 @@ for k in pairs(client:get_dictionary()) do
   print(k)
 end
 
-status = client:call('print', 'HELLO REMOTE WORLD')
+status = client:call('io.stderr:write', 'HELLO REMOTE WORLD')
 status, result = client:call('my_remote_function', 0)
 
 print('')

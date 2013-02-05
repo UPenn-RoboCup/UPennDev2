@@ -16,6 +16,8 @@ extern "C"
 }
 #endif
 
+#include <common.h>
+
 typedef struct {
   const void *ptr;
   char type;

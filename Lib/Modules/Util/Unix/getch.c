@@ -10,6 +10,8 @@
 #include "lualib.h"
 #include "lauxlib.h"
 
+#include <common.h>
+
 static int lua_getch(lua_State *L) {
   int n,dims[2];
   char str[2];

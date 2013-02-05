@@ -1,5 +1,5 @@
 # Makefile used to build libraries
-include ../../Lib/Makefile.inc
+include ../../../Lib/Makefile.inc
 
 TARGETS = all clean
 .PHONY: $(TARGETS)

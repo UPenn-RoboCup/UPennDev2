@@ -1,5 +1,6 @@
 local pwd = os.getenv('PWD')
-package.cpath = pwd..'/lib/?.so;'..package.cpath
+package.cpath = pwd..'/../lib/qt/?.so;'..package.cpath
+package.path = pwd..'/../lib/ffi/?.lua;'..package.path
 
 require 'qtcore'
 require 'qtgui'
@@ -43,6 +44,8 @@ local new_window = function(...)
   layout = QGridLayout.new()
   layout:addWidget(label, 1, 1)
   this:setLayout(layout)
+
+  libpng.save('image.png', img.w, img.h, img.data)
   
   return this
 end

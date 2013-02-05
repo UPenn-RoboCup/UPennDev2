@@ -24,18 +24,18 @@ void printVector(std::vector<double> v) {
   printf("\n");
 }
 
-std::vector<double>
+  std::vector<double>
 charli_kinematics_forward_joints(const double *r)
 {
   /* forward kinematics to convert servo positions to joint angles */
- std::vector<double> q(23);
- for (int i = 0; i < 23; i++) {
-   q[i] = r[i];
- }
- return q;
+  std::vector<double> q(23);
+  for (int i = 0; i < 23; i++) {
+    q[i] = r[i];
+  }
+  return q;
 }
 
-Transform
+  Transform
 charli_kinematics_forward_head(const double *q)
 {
   Transform t;
@@ -45,38 +45,37 @@ charli_kinematics_forward_head(const double *q)
     .rotateX(PI/2).rotateY(PI/2);
   return t;
 }
-
-Transform
-charli_kinematics_forward_l_arm(const double *q)
+  Transform
+charli_kinematics_forward_l_arm(const double *q) 
 {
   Transform t;
-  t = t.translateY(shoulderOffsetY).translateZ(shoulderOffsetZ)
+  t = t.translateY(shoulderOffsetY)
+    .translateZ(shoulderOffsetZ)
     .mDH(-PI/2, 0, q[0], 0)
-    .mDH(PI/2, 0, PI/2, 0)
-    .mDH(PI/2, 0, q[1], upperArmLength)
-    .mDH(-PI/2, 0, q[2], 0)
+    .mDH(PI/2, 0, PI/2+q[1], 0)
+    .mDH(PI/2, 0, 0, upperArmLength)
+    .mDH(q[2]-PI/2, 0, 0, 0)
     .mDH(PI/2, 0, 0, lowerArmLength)
-    .rotateX(-PI/2).rotateZ(-PI/2)
-    .translateX(handOffsetX).translateZ(-handOffsetZ);
+    .rotateX(-PI/2).rotateZ(-PI/2);
   return t;
 }
 
-Transform
-charli_kinematics_forward_r_arm(const double *q)
+  Transform
+charli_kinematics_forward_r_arm(const double *q) 
 {
   Transform t;
-  t = t.translateY(-shoulderOffsetY).translateZ(shoulderOffsetZ)
+  t = t.translateY(-shoulderOffsetY)
+    .translateZ(shoulderOffsetZ)
     .mDH(-PI/2, 0, q[0], 0)
-    .mDH(PI/2, 0, PI/2, 0)
-    .mDH(PI/2, 0, q[1], upperArmLength)
-    .mDH(-PI/2, 0, q[2], 0)
+    .mDH(PI/2, 0, PI/2+q[1], 0)
+    .mDH(PI/2, 0, 0, upperArmLength)
+    .mDH(q[2]-PI/2, 0, 0, 0)
     .mDH(PI/2, 0, 0, lowerArmLength)
-    .rotateX(-PI/2).rotateZ(-PI/2)
-    .translateX(handOffsetX).translateZ(-handOffsetZ);
+    .rotateX(-PI/2).rotateZ(-PI/2);
   return t;
 }
 
-Transform
+  Transform
 charli_kinematics_forward_l_leg(const double *q)
 {
   Transform t;
@@ -91,7 +90,7 @@ charli_kinematics_forward_l_leg(const double *q)
   return t;
 }
 
-Transform
+  Transform
 charli_kinematics_forward_r_leg(const double *q)
 {
   Transform t;
@@ -108,45 +107,45 @@ charli_kinematics_forward_r_leg(const double *q)
 
 double actlength (double top[], double bot[])
 {
-       double sum = 0;
-       for (int i1=0; i1<3; i1++){
-           sum=sum+pow((top[i1]-bot[i1]),2);
-       }
-       return sqrt(sum);    
-       
+  double sum = 0;
+  for (int i1=0; i1<3; i1++){
+    sum=sum+pow((top[i1]-bot[i1]),2);
+  }
+  return sqrt(sum);    
+
 }
 
-std::vector<double>
+  std::vector<double>
 charli_kinematics_inverse_joints(const double *q)  //dereks code to write
 {
   /* inverse kinematics to convert joint angles to servo positions */
- std::vector<double> r(23);
- for (int i = 0; i < 23; i++) {
-   r[i] = q[i];
- }
- return r;
+  std::vector<double> r(23);
+  for (int i = 0; i < 23; i++) {
+    r[i] = q[i];
+  }
+  return r;
 }
 
-std::vector<double>
+  std::vector<double>
 charli_kinematics_inverse_arm(Transform trArm, int arm)
 {
   std::vector<double> qArm(6);
   return qArm;
 }
 
-std::vector<double>
+  std::vector<double>
 charli_kinematics_inverse_l_arm(Transform trArm)
 {
   return charli_kinematics_inverse_arm(trArm, ARM_LEFT);
 }
 
-std::vector<double>
+  std::vector<double>
 charli_kinematics_inverse_r_arm(Transform trArm)
 {
   return charli_kinematics_inverse_arm(trArm, ARM_RIGHT);
 }
 
-std::vector<double>
+  std::vector<double>
 charli_kinematics_inverse_leg(Transform trLeg, int leg)
 {
   std::vector<double> qLeg(6);
@@ -204,13 +203,13 @@ charli_kinematics_inverse_leg(Transform trLeg, int leg)
   return qLeg;
 }
 
-std::vector<double>
+  std::vector<double>
 charli_kinematics_inverse_l_leg(Transform trLeg)
 {
   return charli_kinematics_inverse_leg(trLeg, LEG_LEFT);
 }
 
-std::vector<double>
+  std::vector<double>
 charli_kinematics_inverse_r_leg(Transform trLeg)
 {
   return charli_kinematics_inverse_leg(trLeg, LEG_RIGHT);

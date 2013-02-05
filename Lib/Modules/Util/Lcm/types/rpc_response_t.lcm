@@ -1,0 +1,10 @@
+package lcm;
+
+struct rpc_response_t
+{
+    string   client_id;
+    int16_t  request_id;
+    int32_t  eval_nbytes;
+    byte     eval_string[eval_nbytes];
+    boolean  return_status;
+}

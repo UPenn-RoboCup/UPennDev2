@@ -18,6 +18,7 @@ gameState = 0;
 timeRemaining = 0;
 lastUpdate = 0;
 lastUpdate = unix.time(); --SJ:omitting this makes button not working
+gcTimeout = Config.game.gcTimeout or 10;
 
 buttonPressed = 0;
 
@@ -178,7 +179,7 @@ function update()
   --GameController Latency
   gcm.set_game_gc_latency(math.min(999, unix.time() - lastUpdate));
 
-  if (unix.time() - lastUpdate > 10.0) then
+  if (unix.time() - lastUpdate > gcTimeout) then
     -- we have not received a game control packet in over 10 seconds
     if (updateCount < count - 1 ) then
       Speak.talk('Off Game Controller');

@@ -28,6 +28,7 @@ require('Velocity');
 use_same_colored_goal = Config.world.use_same_colored_goal or 0;
 --Use ground truth pose and ball information for webots?
 use_gps_only = Config.use_gps_only or 0;
+gps_enable = Body.gps_enable or 0;
 
 --Use team vision information when we cannot find the ball ourselves
 tVisionBall = 0;
@@ -169,7 +170,7 @@ end
 function update_vision()
 
   --update ground truth
-  if Body.gps_enable then
+	if gps_enable>0 then
     gps_pose0=Body.get_sensor_gps();
     --GPS is attached at torso, so we should discount body offset
     uBodyOffset = mcm.get_walk_bodyOffset();
@@ -491,7 +492,8 @@ function update_led()
   end
 
   --Only disable eye LED during playing
-  if led_on>0 and gcm.get_game_state()~=3 then
+--  if led_on>0 and gcm.get_game_state()~=3 then
+  if led_on>0 then
     Body.set_indicator_goal(goal_led);
     Body.set_indicator_ball(ball_led);
   else

@@ -29,6 +29,7 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel,name)
       plot_info(robot_struct,scale,1);
       plot_ball(robot_struct,scale);
       plot_sound(robot_struct,scale);
+      plot_obstacle(robot_struct,scale);
       %plot_gps_robot(robot_struct,scale);
 
     elseif drawlevel==2 
@@ -41,6 +42,7 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel,name)
       plot_landmark_team(robot_struct,scale);
       plot_corner_team(robot_struct,scale);
       plot_gps_robot(robot_struct,scale);
+      plot_obstacle(robot_struct,scale);
     elseif drawlevel==5 
       %additional simple vision info for team monitor
 
@@ -51,6 +53,7 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel,name)
       plot_landmark_team(robot_struct,scale);
       plot_corner_team(robot_struct,scale);
       plot_gps_robot(robot_struct,scale);
+      plot_obstacle(robot_struct,scale);
 
     elseif drawlevel==3 
       %Full vision info
@@ -65,9 +68,10 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel,name)
       plot_fov(r_mon.fov);
 
       plot_gps_robot(robot_struct,scale);
+      plot_obstacle(robot_struct,scale);
     elseif drawlevel==4
       plot_robot(robot_struct,scale);
-      plot_info(robot_struct,scale);
+      plot_info(robot_struct,scale,1);
       plot_ball(robot_struct,scale);
       plot_sound(robot_struct,scale);
       %plot_particle(robot_struct,scale);
@@ -79,6 +83,7 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel,name)
       %plot_corner(r_mon.corner,scale);
       %plot_fov(r_mon.fov);
       %plot_gps_robot(robot_struct,scale);
+      plot_obstacle(robot_struct,scale);
     end
   end
 
@@ -182,8 +187,8 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel,name)
     xt = xtext*ca + x0+xtext2;
     yt = xtext*sa + y0;
     b_name=text(xt, yt, infostr);
-%    set(b_name,'FontSize',16/scale);
-    set(b_name,'FontSize',32/scale);
+    set(b_name,'FontSize',16/scale);
+%    set(b_name,'FontSize',32/scale);
   end
 
   function plot_ball(robot,scale)
@@ -430,6 +435,19 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel,name)
       y = robot.pose.y .* ones([1, ndiv]);
 
       quiver(x, y, U(1,:), U(2,:));
+    end
+  end
+  
+  function plot_obstacle(robot, scale)
+    if (isfield(robot, 'obstacle'))
+%      disp('find obstacle and display')
+      for cnt = 1 : robot.obstacle.num
+%        xob = x0 + robot.obstacle.centroid_x(cnt)*ca - robot.obstacle.centroid_y(cnt)*sa;
+%        yob = y0 + robot.obstacle.centroid_x(cnt)*sa + robot.obstacle.centroid_y(cnt)*ca;
+        xobn = x0 + robot.obstacle.nearest_x(cnt)*ca - robot.obstacle.nearest_y(cnt)*sa;
+        yobn = y0 + robot.obstacle.nearest_x(cnt)*sa + robot.obstacle.nearest_y(cnt)*ca;
+        plot(xobn,yobn,'b*');
+      end
     end
   end
 

@@ -50,8 +50,8 @@ function entry()
   Body.set_larm_command(qLArm);
   Body.set_rarm_command(qRArm);
 
-  Body.set_larm_hardness(.1);
-  Body.set_rarm_hardness(.1);
+--  Body.set_larm_hardness(.1);
+--  Body.set_rarm_hardness(.1);
 
   Body.set_waist_command(0);
   Body.set_waist_hardness(1);

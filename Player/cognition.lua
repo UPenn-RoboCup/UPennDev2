@@ -1,21 +1,6 @@
-module(... or "", package.seeall)
-
--- Add the required paths
-cwd = '.';
-computer = os.getenv('COMPUTER') or "";
-if (string.find(computer, "Darwin")) then
-   -- MacOS X uses .dylib:                                                      
-   package.cpath = cwd.."/Lib/?.dylib;"..package.cpath;
-else
-   package.cpath = cwd.."/Lib/?.so;"..package.cpath;
-end
-package.path = cwd.."/Util/?.lua;"..package.path;
-package.path = cwd.."/Config/?.lua;"..package.path;
-package.path = cwd.."/Lib/?.lua;"..package.path;
-package.path = cwd.."/Dev/?.lua;"..package.path;
-package.path = cwd.."/World/?.lua;"..package.path;
-package.path = cwd.."/Vision/?.lua;"..package.path;
-package.path = cwd.."/Motion/?.lua;"..package.path; 
+module(... or "",package.seeall)
+cwd = os.getenv('PWD')
+require('init')
 
 require('unix')
 require('vcm')
@@ -26,6 +11,8 @@ require('Body')
 require('Vision')
 require('World')
 require('Detection') 
+require('OccupancyMap') 
+
 comm_inited = false;
 vcm.set_camera_teambroadcast(0);
 vcm.set_camera_broadcast(0);
@@ -35,6 +22,9 @@ vcm.set_camera_broadcast(0);
 count = 0;
 nProcessedImages = 0;
 tUpdate = unix.time();
+
+enable_online_colortable_learning = Config.vision.enable_online_colortable_learning or 0;
+enable_freespace_detection = Config.vision.enable_freespace_detection or 0;
 
 if (string.find(Config.platform.name,'Webots')) then
   webots = true;
@@ -68,7 +58,56 @@ end
 function entry()
   World.entry();
   Vision.entry();
+  if enable_freespace_detection == 1 then
+    OccupancyMap.entry();
+  end
 end
+
+--Update function for wired kinnect input
+function update_box()
+  count = count + 1;
+  tstart = unix.time();
+
+  -- update vision 
+  imageProcessed = Vision.update();
+  World.update_odometry();
+
+  -- update localization
+  if imageProcessed then
+    nProcessedImages = nProcessedImages + 1;
+    World.update_vision();
+  end
+ 
+  if not comm_inited and 
+    (vcm.get_camera_broadcast()>0 or vcm.get_camera_teambroadcast()>0) then
+      Config.dev.team = 'TeamBox'; --Force using Team box here 
+      require('Team');
+      require('GameControl');
+      Team.entry();
+      GameControl.entry();
+      print("Starting to send wireless team message..");
+      comm_inited = true;
+  end
+  if comm_inited then
+  -- SJ: TeamBox receives KINNECT data, so should run every frame
+    Team.update();
+  end
+
+  if comm_inited and imageProcessed then
+    GameControl.update();
+  end
+end
+
+
+
+
+
+
+
+
+
+
+
 
 function update()
   count = count + 1;
@@ -91,35 +130,44 @@ function update()
         tUpdate = unix.time();
       end
     end
+    if enable_freespace_detection == 1 then
+      OccupancyMap.update();
+    end
   end
  
   if not comm_inited and 
-    (vcm.get_camera_broadcast()>0 or
-     vcm.get_camera_teambroadcast()>0) then
-    if vcm.get_camera_teambroadcast()>0 then 
-      require('Team');
-      require('GameControl');
-      Team.entry();
-      GameControl.entry();
-      print("Starting to send wireless team message..");
-    else
-      require('Broadcast');
-      print("Starting to send wired monitor message..");
-    end
-    comm_inited = true;
+    (vcm.get_camera_broadcast()>0 or vcm.get_camera_teambroadcast()>0) then
+      if enable_online_colortable_learning == 1 then
+        require('Receive')
+      end
+      if vcm.get_camera_teambroadcast()>0 then 
+        require('Team');
+        require('GameControl');
+        Team.entry();
+        GameControl.entry();
+        print("Starting to send wireless team message..");
+      else
+        require('Broadcast');
+        print("Starting to send wired monitor message..");
+        print("Starting to wired message..");
+      end
+      comm_inited = true;
   end
 
   if comm_inited and imageProcessed then
+    if enable_online_colortable_learning == 1 then
+      Receive.update();
+    end
     if vcm.get_camera_teambroadcast()>0 then 
       GameControl.update();
       if nProcessedImages % 3 ==0 then
-	--10 fps team update
         Team.update();
       end
     else
       broadcast();
     end
   end
+
 end
 
 -- exit 

@@ -1,71 +1,48 @@
 module(..., package.seeall);
-
+require('util')
 require('vector')
 require('unix')
+
+--Robot CFG should be loaded first to set PID values
+local robotName=unix.gethostname();
 
 platform = {}; 
 platform.name = 'OP'
 
-function loadconfig(configName)
-  local localConfig=require(configName);
-  for k,v in pairs(localConfig) do
-    Config[k]=localConfig[k];
-  end
+-- Parameters Files
+params = {}
+params.name = {"Robot", "Walk", "World", "Kick", "Vision", "FSM", "Camera"};
+if (robotName == 'sally') then 
+--  params.Robot = "Gripper_Robot" 
+  params.Robot = "Sally_Robot" 
 end
+params.Kick = "Slow"
+--params.Kick = "3"
 
---Robot CFG should be loaded first to set PID values
-local robotName=unix.gethostname();
-if (robotName=='sally') then 
---  loadconfig('Robot/Config_OPGripper_Robot') 
-  loadconfig('Robot/Config_OPSally_Robot') 
-  loadconfig('Walk/Config_OP_Walk')
---  walk.qLArm=math.pi/180*vector.new({90,20,-40});
---  walk.qRArm=math.pi/180*vector.new({90,-20,-40});
-else
-  loadconfig('Robot/Config_OP_Robot') 
-  loadconfig('Walk/Config_OP_Walk')
-end
+---Location Specific Camera Parameters--
+--params.Camera = "VT"
+params.Camera = "Grasp"
+--params.Camera = "Grasp_obs"
+--params.Camera = "L512"
+--params.Camera = "L512_Day"
 
-
-
-loadconfig('World/Config_OP_World')
---loadconfig('Kick/Config_OP_Kick')
-loadconfig('Kick/Config_OP_Kick_Slow')
---loadconfig('Kick/Config_OP_Kick3')
-loadconfig('Vision/Config_OP_Vision')
-
---Location Specific Camera Parameters--
---loadconfig('Vision/Config_OP_Camera_VT')
---loadconfig('Vision/Config_OP_Camera_Grasp')
-loadconfig('Vision/Config_OP_Camera_L512')
---loadconfig('Vision/Config_OP_Camera_L512_Day')
-
---RC12 -MEXICO
---loadconfig('Vision/Config_OP_Camera_RC12_day1_8AM')
---loadconfig('Vision/Config_OP_Camera_RC12_FieldA')
---loadconfig('Vision/Config_OP_Camera_RC12_FieldB')
---loadconfig('Vision/Config_OP_Camera_RC12_FieldB_New')
---loadconfig('Vision/Config_OP_Camera_RC12_FieldD')
---loadconfig('Vision/Config_OP_Camera_RC12_day0')
---loadconfig('Vision/Config_OP_Camera_RC12_day1_8AM')
-
---loadconfig('Vision/Config_OP_Camera_Ob_F1')
+util.LoadConfig(params, platform)
 
 -- Device Interface Libraries
 dev = {};
 dev.body = 'OPBody'; 
 dev.camera = 'OPCam';
 dev.kinematics = 'OPKinematics';
-dev.ip_wired = '192.168.123.255';
-dev.ip_wired_port = 54321;
+dev.ip_wired = '192.168.123.255'; 
+dev.ip_wired_port = 111111;
 dev.ip_wireless = '192.168.1.255'; --Our Router
 dev.ip_wireless_port = 54321;
 dev.game_control='OPGameControl';
 dev.team='TeamNSL';
-dev.walk='NewNewNewWalk' --For Grasp like surfaces, USED mostly!
---dev.walk='N5Walk';	 --For RC12 @ Mexico
+--dev.walk='BetterWalk'
+dev.walk='EvenBetterWalk'
 dev.kick = 'NewNewKick'
-dev.gender = 1; -- 1 for body and 0 for girl 
+dev.gender = 1; -- 1 for boy and 0 for girl 
 
 speak = {}
 speak.enable = false; 
@@ -86,18 +63,14 @@ if (robotName=='scarface') then
   game.playerID = 4; 
 elseif (robotName=='linus') then
   game.playerID = 2; 
-  ball_shift={0.00,0.010};
-
 elseif (robotName=='betty') then
   game.playerID = 3; 
-  ball_shift={-0.010,0.010};
 elseif (robotName=='lucy') then
   game.playerID = 1; 
 elseif (robotName=='felix') then
   game.playerID = 2; 
 elseif (robotName=='jiminy') then
   game.playerID = 5; 
-  ball_shift={-0.020,0.015};
 elseif (robotName=='hokie') then
   game.playerID = 3; 
   game.role = 0; --Default goalie
@@ -105,7 +78,6 @@ elseif (robotName=='sally') then
   game.playerID = 5; 
   game.role = 0; --Default goalie
 end
-
 
 game.role = 1;--hack
 
@@ -118,15 +90,12 @@ game.nPlayers = 5;
 --------------------
 
 --FSM and behavior settings
-fsm = {};
---SJ: loading FSM config  kills the variable fsm, so should be called first
-loadconfig('FSM/Config_OP_FSM')
 fsm.game = 'RoboCup';
 fsm.head = {'GeneralPlayer'};
 fsm.body = {'GeneralPlayer'};
 
 --Behavior flags, should be defined in FSM Configs but can be overrided here
-fsm.enable_obstacle_detection = 1;
+fsm.enable_obstacle_detection = 0;
 fsm.kickoff_wait_enable = 0;
 fsm.playMode = 3; --1 for demo, 2 for orbit, 3 for direct approach
 fsm.forcePlayer = 0; --1 for attacker, 2 for defender, 3 for goalie 
@@ -187,18 +156,12 @@ if (robotName=='sally') then
   km.standup_back = 'km_NSLOP_StandupFromBackSally.lua';
 end
 
-if (robotName=='hokie') then
---  km.standup_back = 'km_NSLOP_StandupFromBackHokie.lua';
-end
-
 -- Low battery level
 -- Need to implement this api better...
 bat_low = 117; -- 11.7V warning
 bat_med = 119; -- Slow down walking if voltage drops below this 
 
 bat_led = {118,119,122,123,124,125}; --for back LED indicator
-
-
 
 gps_only = 0;
 
@@ -257,7 +220,6 @@ goalie_dive = 1; --1 for arm only, 2 for actual diving
 
 --Let goalie log all the ball positions
 goalie_disable_arm = 1; 
-goalie_log_balls = 1;
 goalie_log_balls = 0;
 
 
@@ -342,23 +304,9 @@ fsm.thDistSideKick = 1.0;
 obs_challenge = 0;
 --Roll backup setup
 use_rollback_getup = 1;
---batt_max = 120; --only do rollback getup when battery is enough
-batt_max = 117; --For more back flips, use ONLY for DEMO purpose!
-
-
-
---VISION CALIBRATION VALUES
-vision.goal.distanceFactorCyan = 1.1; 
-vision.goal.distanceFactorYellow = 1.3; 
-vision.landmark.distanceFactorCyan = 1.05; 
-vision.landmark.distanceFactorYellow = 1.05; 
-
-
-
 
 ---------------------------------------------------------------
 -- FOR SEMIFINAL
-batt_max = 117; --only do rollback getup when battery is enough
 fsm.goalie_type = 2;--moving and stop goalie
 fsm.goalie_reposition=1; --Yaw reposition
 --[[
@@ -385,13 +333,8 @@ vision.landmark.distanceFactorCyan = 1.1;
 vision.landmark.distanceFactorYellow = 1.1; 
 
 
-enable_ceremony = 1;
-ceremony_score = 2;
------------------------------------------------------------------
-
-
 enable_ceremony = 0;
-
+ceremony_score = 2;
 -----------------------------------------------------------------
 -- FINAL MATCH CONFIG
 
@@ -401,10 +344,26 @@ batt_max = 120; --12.0V rollback getup thershold
 --If ball is closer than this don't look up
 fsm.headTrack.minDist = 0.30;
 
---Vision calibration values
-vision.goal.distanceFactorCyan = 1.15; 
-vision.goal.distanceFactorYellow = 1.15; 
-vision.landmark.distanceFactorCyan = 1.1; 
-vision.landmark.distanceFactorYellow = 1.1; 
-
 ------------------------------------------------------------------
+-- Boxer
+--[[
+fsm.game = 'RoboCup';
+fsm.head = {'Boxer'};
+fsm.body = {'Boxer'};
+dev.team = 'TeamPick'
+game.gcTimeout = 2;
+team.msgTimeout = 1.0;
+game.playerID = 1
+use_rollback_getup = 0;
+--]]
+--
+-----------------------------------------------------------------
+-- avoider
+--[[
+fsm.head = {'ObstacleChallenge'}
+fsm.body = {'ObstacleChallenge'}
+fsm.avoidance_mode = 1 -- ball dribble
+fsm.avoidance_mode = 0 -- walk towards goal, no ball 
+fsm.avoidance_mode = 2 -- walk towards goal, no ball 
+use_rollback_getup = 0;
+-]]

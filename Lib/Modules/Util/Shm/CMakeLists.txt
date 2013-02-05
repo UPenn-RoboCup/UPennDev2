@@ -1,19 +1,26 @@
-cmake_minimum_required(VERSION 2.6.4 FATAL_ERROR)
+CMAKE_MINIMUM_REQUIRED ( VERSION 2.4.6 )
 
-project(LuaShm)
+FIND_PACKAGE(lua REQUIRED)
 
-# include for lua headers
-include_directories(../../../Lua/src)
+set(LibName shm)
+set(LibSrc 
+  luashm.cpp
+)
 
-# shm main library definition
-add_library(shm SHARED luashm.cpp)
+add_library(${LibName} MODULE ${LibSrc} )
+include_directories(${LUA_INCLUDE_DIR})
+set_target_properties(${LibName} PROPERTIES PREFIX "")
+target_link_libraries(${LibName} ${COMM_LIBS})
 
-# set optimization level (shm cannot be higher than 1)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O1")
+FILE(GLOB files "${CMAKE_CURRENT_SOURCE_DIR}/*.lua")
+install (
+  FILES ${files}
+  DESTINATION ${CMAKE_INSTALL_PREFIX}/Lib
+  PERMISSIONS ${FILE_PERMISSIONS}
+)
 
-# set library prefix to "" otherwise it will create libshm.so
-set_target_properties(shm PROPERTIES PREFIX "")
-
-# link to rt for shared memory ipc
-target_link_libraries(shm rt)
+install(TARGETS ${LibName}
+  LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/Lib
+  PERMISSIONS ${FILE_PERMISSIONS}
+  )
 

@@ -18,29 +18,34 @@ extern "C" {
 #include <vector>
 #include <cassert>
 
-OccMap map;
-
+static OccMap map;
 
 static int lua_occmap_reset(lua_State *L) {
+  //std::cout << "reset in" << std::endl;
   map.randomize_map();
   map.odometry_reset();
+  //std::cout << "reset out" << std::endl;
   return 1;
 }
 
 static int lua_occmap_init_map(lua_State *L) {
+  //std::cout << "init in" << std::endl;
   int map_size = luaL_checkint(L, 1);
   int robot_x = luaL_checkint(L, 2);
   int robot_y = luaL_checkint(L, 3);
   double time = luaL_checknumber(L, 4);
   map.reset_size(map_size, robot_x, robot_y, time);
+  //std::cout << "init out" << std::endl;
   return 1;
 }
 
 static int lua_occmap_odometry_update(lua_State *L) {
+  //std::cout << "odom update in" << std::endl;
   double odomX = luaL_checknumber(L, 1);
   double odomY = luaL_checknumber(L, 2);
   double odomA = luaL_checknumber(L, 3);
   map.odometry_update(odomX, odomY, odomA);
+  //std::cout << "odom update out" << std::endl;
   return 1;
 }
 
@@ -50,6 +55,7 @@ static int lua_occmap_odometry_update(lua_State *L) {
 //}
 
 static int lua_occmap_vision_update(lua_State *L) {
+  //std::cout << "vision update in" << std::endl;
   if (!lua_istable(L, 1))
     return luaL_error(L, "Input freespace bound not table data");
   vector<double> free_bound;
@@ -70,31 +76,39 @@ static int lua_occmap_vision_update(lua_State *L) {
   if (free_bound.size() != 2 * width) {
     cout << "WARN: freespace bound data size must be double width" 
           << free_bound.size() << endl;
+    //std::cout << "vision update out" << std::endl;
     return 0;
   }
   if (free_bound_type.size() != width) {
     cout << "WARN: freespace type data size must be width" 
           << free_bound_type.size() << endl;
+    //std::cout << "vision update out" << std::endl;
     return 0;
   }
   double time = luaL_checknumber(L, 4);
 // cout << "Vision Udpate before" << endl;
   map.vision_update(free_bound, free_bound_type, width, time);
 //  cout << "vision update" << endl;
+  //std::cout << "vision update out" << std::endl;
   return 1;
 }
 
 static int lua_occmap_retrieve_map(lua_State *L) {
+  //std::cout << "map retri in" << std::endl;
 	lua_pushlightuserdata(L, &map.get_map()[0]);
+  //std::cout << "map retri out" << std::endl;
   return 1;
 }
 
 static int lua_occmap_retrieve_map_updated_time(lua_State *L) {
+  //std::cout << "update time retri in" << std::endl;
 	lua_pushlightuserdata(L, &map.get_map_updated_time()[0]);
+  //std::cout << "update time retri out" << std::endl;
   return 1;
 }
 
 static int lua_occmap_retrieve_data(lua_State *L) {
+  //std::cout << "retri data in" << std::endl;
   lua_createtable(L, 0, 1);
 
   lua_pushstring(L, "robot_pos");
@@ -104,11 +118,13 @@ static int lua_occmap_retrieve_data(lua_State *L) {
   lua_pushinteger(L, map.get_robot_pos_y());
   lua_rawseti(L, -2, 2);
   lua_settable(L, -3);
+  //std::cout << "retri data out" << std::endl;
 
   return 1;
 }
 
 static int lua_occmap_retrieve_odometry(lua_State *L) {
+  //std::cout << "retri data in" << std::endl;
   double pose_x = 0.0, pose_y = 0.0, pose_a = 0.0;
   map.get_odometry(pose_x, pose_y, pose_a);
   
@@ -126,6 +142,7 @@ static int lua_occmap_retrieve_odometry(lua_State *L) {
   lua_pushnumber(L, pose_a);
   lua_settable(L, -3);
 
+  //std::cout << "retri data out" << std::endl;
 
   return 1;
 }
@@ -139,16 +156,18 @@ static int lua_occmap_empty_userdata(lua_State *L) {
 }
 
 static int lua_occmap_time_decay(lua_State *L) {
+  //std::cout << "time decay in" << std::endl;
   double time = luaL_checknumber(L, 1);
   map.time_decay(time);
+  //std::cout << "time decay out" << std::endl;
   return 1;
 }
 
 static int lua_occmap_obstacle(lua_State *L) {
+  //std::cout << "obstacle in" << std::endl;
   map.kmean_clustering();
   int maxOb = maxObstacleClusters;
   obstacle zeros_ob = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-  obstacle ob = zeros_ob;
   int nobstacle = map.get_nobstacle();
 //  cout << "obstacle number:" << nobstacle << endl; 
   lua_createtable(L, nobstacle + 1, 0);
@@ -156,17 +175,14 @@ static int lua_occmap_obstacle(lua_State *L) {
   lua_rawseti(L, -2, 1);
   int Debug = 0;
   for (int cnt = 0; cnt < maxOb; cnt++) {
+    obstacle ob;
     if (cnt < nobstacle) {
-      ob = map.get_obstacle(cnt);
-      Debug = 1;
+      map.get_obstacle(cnt, ob);
     } else {
-      Debug = 0;
       ob = zeros_ob;
     }
     lua_createtable(L, 0, 3);
     // centroid field
-//    if (Debug)
-//      std::cout << "centroid:" << ob.centroid_x << ' ' << ob.centroid_y << endl; 
     lua_pushstring(L, "centroid");
     lua_createtable(L, 2, 0);
     lua_pushnumber(L, ob.centroid_x);
@@ -203,7 +219,20 @@ static int lua_occmap_obstacle(lua_State *L) {
 
     lua_rawseti(L, -2, cnt+1+1);
   }
+  //std::cout << "obstacle out" << std::endl;
   return 1;
+}
+
+static int lua_occmap_pvelocity(lua_State *L) {
+  double attackBearing = luaL_checknumber(L, 1);
+  double attackScale = luaL_checknumber(L, 2);
+  double repulseScale = luaL_checknumber(L, 3);
+  double velocity[3] = {0.0, 0.0, 0.0};
+  map.velocity_generation(attackBearing, velocity, attackScale, repulseScale);
+  lua_pushnumber(L, velocity[0]); 
+  lua_pushnumber(L, velocity[1]); 
+  lua_pushnumber(L, velocity[2]); 
+  return 3;
 }
 
 static const struct luaL_reg OccMap_lib [] = {
@@ -219,6 +248,7 @@ static const struct luaL_reg OccMap_lib [] = {
   {"retrieve_odometry", lua_occmap_retrieve_odometry},
   {"empty_userdata", lua_occmap_empty_userdata},
   {"get_obstacle", lua_occmap_obstacle},
+  {"get_velocity", lua_occmap_pvelocity},
   {NULL, NULL}
 };
 

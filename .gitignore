@@ -44,6 +44,10 @@ controller_wrap.c
 WebotsProj/controllers/nao_soccer_supervisor/
 WebotsProj/controllers/nsl_soccer_supervisor/
 
+#auto-generated webots file
+*.wrl
+*.wbproj
+
 # Temp and Swap files
 *~
 *.swp
@@ -74,3 +78,8 @@ Player/Data/*.txt
 
 # screen log
 *screenlog*
+
+# Generated new lut
+*_new.raw
+*_auto.*
+Tools/Matlab/*.raw

@@ -1,3 +1,4 @@
+cwd = '.'
 dofile('init.lua')
 require('SoundComm');
 SoundComm.set_receiver_volume(75);

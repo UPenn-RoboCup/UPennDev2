@@ -1,5 +1,5 @@
 module(..., package.seeall);
-
+require('util')
 require('parse_hostname')
 require('vector')
 require('os')
@@ -7,21 +7,13 @@ require('os')
 platform = {};
 platform.name = 'WebotsHubo'
 
-function loadconfig(configName)
-  local localConfig=require(configName);
-  for k,v in pairs(localConfig) do
-    Config[k]=localConfig[k];
-  end
-end
-
-
-loadconfig('Walk/Config_WebotsHubo_Walk')
-loadconfig('Kick/Config_WebotsHubo_Kick')
-loadconfig('World/Config_WebotsOP_World')
-loadconfig('Vision/Config_WebotsOP_Vision')
-
---Location Specific Camera Parameters--
-loadconfig('Vision/Config_WebotsOP_Camera')
+-- Parameters Files
+params = {}
+params.name = {"Walk", "World", "Kick", "Vision", "FSM", "Camera"};
+params.World_Platform = "WebotsOP"
+params.Vision_Platform = "WebotsOP"
+params.Camera_Platform = "WebotsOP"
+util.LoadConfig(params, platform)
 
 -- Device Interface Libraries
 dev = {};

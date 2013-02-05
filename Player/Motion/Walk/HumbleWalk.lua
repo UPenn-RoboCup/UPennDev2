@@ -1,3 +1,5 @@
+--THOR-OP specific (FOR 6DOF ARM)
+
 module(..., package.seeall);
 
 require('Body')
@@ -151,18 +153,22 @@ upper_body_overridden = 0;
 motion_playing = 0;
 
 qLArmOR0,qRArmOR0={},{};
-qLArmOR0[1],qLArmOR0[2],qLArmOR0[3]=qLArm0[1],qLArm0[2],qLArm0[3];
-qRArmOR0[1],qRArmOR0[2],qRArmOR0[3]=qRArm0[1],qRArm0[2],qRArm0[3];
+qLArmOR0[1],qLArmOR0[2],qLArmOR0[3],qLArmOR0[4],qLArmOR0[5],qLArmOR0[6]
+=qLArm0[1],qLArm0[2],qLArm0[3],qLArm0[4],qLArm0[5],qLArm0[6];
+qRArmOR0[1],qRArmOR0[2],qRArmOR0[3],qRArmOR0[4],qRArmOR0[5],qRArmOR0[6]=
+qRArm0[1],qRArm0[2],qRArm0[3],qRArm0[4],qRArm0[5],qRArm0[6];
 bodyRot0 = {0,bodyTilt,0};
 
 qLArmOR,qRArmOR={},{};
-qLArmOR[1],qLArmOR[2],qLArmOR[3]=qLArm0[1],qLArm0[2],qLArm0[3];
-qRArmOR[1],qRArmOR[2],qRArmOR[3]=qRArm0[1],qRArm0[2],qRArm0[3];
+qLArmOR[1],qLArmOR[2],qLArmOR[3],qLArmOR[4],qLArmOR[5],qLArmOR[6]
+=qLArm0[1],qLArm0[2],qLArm0[3],qLArm0[4],qLArm0[5],qLArm0[6];
+qRArmOR[1],qRArmOR[2],qRArmOR[3],qRArmOR[4],qRArmOR[5],qRArmOR[6]=
+qRArm0[1],qRArm0[2],qRArm0[3],qRArm0[4],qRArm0[5],qRArm0[6];
 bodyRot = {0,bodyTilt,0};
 
 
-qLArmOR1 = {0,0,0};
-qRArmOR1 = {0,0,0};
+qLArmOR1 = {0,0,0,0,0,0};
+qRArmOR1 = {0,0,0,0,0,0};
 bodyRot1 = {0,0,0};
 
 testing = Config.walk.testing or false
@@ -327,34 +333,31 @@ function upper_body_override(qL, qR, bR)
   alphaArm = 0.2;
   alphaBody = 0.05;
 
+
+  --Values for IK-based direct control
+  alphaArm = 1;  alphaBody = 0;
+
+
   qLArmOR[1] = alphaArm * qLArmOR0[1] + (1-alphaArm)*qLArmOR[1];
   qLArmOR[2] = alphaArm * qLArmOR0[2] + (1-alphaArm)*qLArmOR[2];
   qLArmOR[3] = alphaArm * qLArmOR0[3] + (1-alphaArm)*qLArmOR[3];
+  qLArmOR[4] = alphaArm * qLArmOR0[4] + (1-alphaArm)*qLArmOR[4];
+  qLArmOR[5] = alphaArm * qLArmOR0[5] + (1-alphaArm)*qLArmOR[5];
+  qLArmOR[6] = alphaArm * qLArmOR0[6] + (1-alphaArm)*qLArmOR[6];
 
   qRArmOR[1] = alphaArm * qRArmOR0[1] + (1-alphaArm)*qRArmOR[1];
   qRArmOR[2] = alphaArm * qRArmOR0[2] + (1-alphaArm)*qRArmOR[2];
   qRArmOR[3] = alphaArm * qRArmOR0[3] + (1-alphaArm)*qRArmOR[3];
+  qRArmOR[4] = alphaArm * qRArmOR0[4] + (1-alphaArm)*qRArmOR[4];
+  qRArmOR[5] = alphaArm * qRArmOR0[5] + (1-alphaArm)*qRArmOR[5];
+  qRArmOR[6] = alphaArm * qRArmOR0[6] + (1-alphaArm)*qRArmOR[6];
 
   bodyRot[1] = alphaBody * bodyRot0[1] + (1-alphaBody)*bodyRot[1];
   bodyRot[2] = alphaBody * bodyRot0[2] + (1-alphaBody)*bodyRot[2];
   bodyRot[3] = alphaBody * bodyRot0[3] + (1-alphaBody)*bodyRot[3];
-  --[[
-  bodyRotTh = {10*math.pi/180, 10*math.pi/180,20*math.pi/180};
-  bodyRot[1] = 
-  math.min(bodyRotTh[1],
-  math.max(-bodyRotTh[1],bodyRot[1]));
 
-  bodyRot[2] = 
-  math.min(bodyRotTh[2],
-  math.max(-bodyRotTh[2],bodyRot[2]));
+--  bodyRot[2] = 	math.min(30*math.pi/180,math.max(10*math.pi/180,bodyRot[2]));
 
-  bodyRot[3] = 
-  math.min(bodyRotTh[3],
-  math.max(-bodyRotTh[3],bodyRot[3]));
-  --]]
-
-
-  bodyRot[2] = 	math.min(30*math.pi/180,math.max(10*math.pi/180,bodyRot[2]));
   -- Limit the yawing so that we can maintain good balance
   bodyRot[3] = 	math.min(30*math.pi/180,math.max(-30*math.pi/180,bodyRot[3]));
 
@@ -614,23 +617,13 @@ function update()
     elbowY = math.sin(qLArmOR[2]) + math.sin(qRArmOR[2]);
     armPosCompX = elbowX * - 0.007;
     armPosCompY = elbowY * - 0.007;
-
-
     armPosCompX = elbowX * - 0.009;
     armPosCompY = elbowY * - 0.009;
-
-
-    -------------------------------------------------------------------------------
-    --------------------------------------------------------------------------------
     ---- SJ: Turn off torso compensation here for A/B comparison
     if( no_stabilize ) then
       armPosCompX = 0;
       armPosCompY = 0;
     end
-    --        ------------------------------------------------------------------------------
-    --        ------------------------------------------------------------------------------
-
-
     pTorso[4], pTorso[5],pTorso[6] = 
     bodyRot[1],bodyRot[2],bodyRot[3];
   else
@@ -638,6 +631,10 @@ function update()
     pTorso[4], pTorso[5],pTorso[6] = 
     0,bodyTilt,0;
   end
+
+  --Do not compensate for arm motions here
+  armPosCompX=0;
+  armPosCompY=0;
 
   uTorsoActual = util.pose_global(
     vector.new({-footX+frontCompX+turnCompX+armPosCompX,armPosCompY,0}),
@@ -865,7 +862,6 @@ function motion_arms()
   --  if current_step_type== 3 then --Side kick, wide arm stance
   if enable_hip_pr then --Wide stance for push recovery
 
-
     qLArmActual[1],qLArmActual[2]=
 	qLArmKick0[1]+armShift[1],qLArmKick0[2]*0.5+armShift[2];
     qRArmActual[1],qRArmActual[2]=
@@ -879,6 +875,11 @@ function motion_arms()
   if upper_body_overridden>0 or motion_playing>0 then
     qLArmActual[1],qLArmActual[2],qLArmActual[3]=qLArmOR[1],qLArmOR[2],qLArmOR[3];
     qRArmActual[1],qRArmActual[2],qRArmActual[3]=qRArmOR[1],qRArmOR[2],qRArmOR[3];
+
+    qLArmActual[4],qLArmActual[5],qLArmActual[6]=qLArmOR[4],qLArmOR[5],qLArmOR[6];
+    qRArmActual[4],qRArmActual[5],qRArmActual[6]=qRArmOR[4],qRArmOR[5],qRArmOR[6];
+
+
   end
 
   armXF = 2.0;
@@ -893,22 +894,6 @@ function motion_arms()
 
   --Check leg hitting
 --They are OP specific
---[[
-  RotLeftA =  util.mod_angle(uLeft[3] - uTorso[3]);
-  RotRightA =  util.mod_angle(uTorso[3] - uRight[3]);
-
-  LLegTorso = util.pose_relative(uLeft,uTorso);
-  RLegTorso = util.pose_relative(uRight,uTorso);
-
-  qLArmActual[2]=math.max(
-	  5*math.pi/180 + math.max(0, RotLeftA)/2
-	  + math.max(0,LLegTorso[2] - 0.04) /0.02 * 6*math.pi/180
-	  ,qLArmActual[2])
-  qRArmActual[2]=math.min(
-	  -5*math.pi/180 - math.max(0, RotRightA)/2
-	  - math.max(0,-RLegTorso[2] - 0.04)/0.02 * 6*math.pi/180
-	  ,qRArmActual[2]);
---]]
   if upper_body_overridden>0 or motion_playing>0 then
   else
     qLArmActual[3]=qLArm0[3];

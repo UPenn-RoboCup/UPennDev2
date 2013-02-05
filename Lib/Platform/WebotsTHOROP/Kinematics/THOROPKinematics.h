@@ -8,7 +8,8 @@
 const double PI = 2*asin(1);
 const double SQRT2 = sqrt(2);
 
-const double neckOffsetZ = 0;
+//From COM to neck joint
+const double neckOffsetZ = .144+0.027+0.114;
 const double neckOffsetX = 0;
 
 //COM assumed at the chestYaw joint

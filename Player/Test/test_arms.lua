@@ -24,6 +24,12 @@ require 'mcm'
 -- Arms
 require 'pickercm'
 
+
+-- Left arm 
+qLArmOD = math.pi/180*vector.new({110, 12, -0, -40,0,0});
+
+
+
 -- Initialize Variables
 webots = false;
 teamID   = Config.game.teamNumber;
@@ -66,15 +72,32 @@ function process_keyinput()
 		return false
 	end
 	
-	local update_walk_vel = false;
+  local update_walk_vel = false;
+  local update_arm = false;
   -- Walk velocity setting
   if byte==string.byte("i") then	targetvel[1]=targetvel[1]+0.02; update_walk_vel = true;
   elseif byte==string.byte("j") then	targetvel[3]=targetvel[3]+0.1; update_walk_vel = true;
   elseif byte==string.byte("k") then	targetvel[1],targetvel[2],targetvel[3]=0,0,0; update_walk_vel = true;
   elseif byte==string.byte("l") then	targetvel[3]=targetvel[3]-0.1; update_walk_vel = true;
   elseif byte==string.byte(",") then	targetvel[1]=targetvel[1]-0.02; update_walk_vel = true;
-  elseif byte==string.byte("h") then	targetvel[2]=targetvel[2]+0.02; update_walk_vel = true;
+--  elseif byte==string.byte("h") then	targetvel[2]=targetvel[2]+0.02; update_walk_vel = true;
   elseif byte==string.byte(";") then	targetvel[2]=targetvel[2]-0.02; update_walk_vel = true;
+
+  -- Arm direct control
+
+  elseif byte==string.byte("q") then  qLArmOD[1]=qLArmOD[1] + 5*math.pi/180; update_arm=true;
+  elseif byte==string.byte("w") then  qLArmOD[2]=qLArmOD[2] + 5*math.pi/180; update_arm=true;
+  elseif byte==string.byte("e") then  qLArmOD[3]=qLArmOD[3] + 5*math.pi/180; update_arm=true;
+  elseif byte==string.byte("r") then  qLArmOD[4]=qLArmOD[4] + 5*math.pi/180; update_arm=true;
+  elseif byte==string.byte("t") then  qLArmOD[5]=qLArmOD[5] + 5*math.pi/180; update_arm=true;
+  elseif byte==string.byte("y") then  qLArmOD[6]=qLArmOD[6] + 5*math.pi/180; update_arm=true;
+
+  elseif byte==string.byte("a") then  qLArmOD[1]=qLArmOD[1] - 5*math.pi/180; update_arm=true;
+  elseif byte==string.byte("s") then  qLArmOD[2]=qLArmOD[2] - 5*math.pi/180; update_arm=true;
+  elseif byte==string.byte("d") then  qLArmOD[3]=qLArmOD[3] - 5*math.pi/180; update_arm=true;
+  elseif byte==string.byte("f") then  qLArmOD[4]=qLArmOD[4] - 5*math.pi/180; update_arm=true;
+  elseif byte==string.byte("g") then  qLArmOD[5]=qLArmOD[5] - 5*math.pi/180; update_arm=true;
+  elseif byte==string.byte("h") then  qLArmOD[6]=qLArmOD[6] - 5*math.pi/180; update_arm=true;
 
   -- Walk commands
   elseif byte==string.byte("7") then
@@ -87,17 +110,20 @@ function process_keyinput()
   elseif byte==string.byte("9") then
     Motion.event("walk");
     walk.start();
-
-
-
   end
 	
-	if( update_walk_vel ) then
-		print("Commanded velocity:",unpack(walk.velCommand))
-		walk.set_velocity(unpack(targetvel));
-	end
-	
-	return true
+  if( update_walk_vel ) then
+    print("Commanded velocity:",unpack(walk.velCommand))
+    walk.set_velocity(unpack(targetvel));
+  end
+  if ( update_arm ) then
+    print("Arm update",qLArmOD);
+  end
+
+  walk.upper_body_override_on();
+  walk.upper_body_override(qLArmOD,walk.qRArm0, walk.bodyRot0);
+
+  return true
   
 end
 

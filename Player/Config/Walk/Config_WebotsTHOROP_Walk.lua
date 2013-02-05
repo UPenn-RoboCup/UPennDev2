@@ -24,10 +24,10 @@ walk.footX= 0.01;
 walk.footY = 0.09;
 walk.supportX = 0;
 walk.supportY = 0.0;
-walk.qLArm = math.pi/180*vector.new({110, 12, -0, -40});
-walk.qRArm = math.pi/180*vector.new({110, -12, 0, 40});
-walk.qLArmKick = math.pi/180*vector.new({110, 12, -0, -40});
-walk.qRArmKick = math.pi/180*vector.new({110, -12, 0, 40});
+walk.qLArm = math.pi/180*vector.new({110, 12, -0, -40,0,0});
+walk.qRArm = math.pi/180*vector.new({110, -12, 0, 40,0,0});
+walk.qLArmKick = math.pi/180*vector.new({110, 12, -0, -40,0,0});
+walk.qRArmKick = math.pi/180*vector.new({110, -12, 0, 40,0,0});
 
 walk.hardnessSupport = 1;
 walk.hardnessSwing = 1;
@@ -54,8 +54,6 @@ walk.ankleMod = vector.new({-1,0})/ 3*math.pi/180;
 gyroFactor = 0.273*math.pi/180 * 300 / 1024; --dps to rad/s conversion
 
 --gyroFactor = gyroFactor*0.3;
-gyroFactor = gyroFactor*0;
---SJ: gyro values are inverted - need double check
 
 
 walk.ankleImuParamX={0.3,0.75*gyroFactor, 0*math.pi/180, 5*math.pi/180};

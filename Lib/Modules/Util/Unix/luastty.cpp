@@ -25,6 +25,8 @@ extern "C"
 #include "lauxlib.h"
 }
 
+#include <common.h>
+
 #define LUA_FILEHANDLE "FILE*"
 #define tofilep(L) ((FILE **)luaL_checkudata(L, 1, LUA_FILEHANDLE))
 

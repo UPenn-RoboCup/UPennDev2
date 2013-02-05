@@ -10,6 +10,8 @@ extern "C" {
 }
 #endif
 
+#include <common.h>
+
 #include "OccMap.h"
 #include <iostream>
 #include <iomanip>

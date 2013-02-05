@@ -11,12 +11,14 @@ TARGETS = all clean
 
 all: shm 
 
+BOOST_INC=-I/usr/local/include/boost -I/usr/include/boost
+
 %.o: %.cc
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -I/usr/local/include/boost -o $@ -c $<
+	$(CXX) $(CXXFLAGS) $(INCLUDES)  $(BOOST_INC)-o $@ -c $<
 %.o: %.cpp
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -I/usr/local/include/boost -o $@ -c $<
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $(BOOST_INC) -o $@ -c $<
 %.o: %.c
-	$(CC) $(CXXFLAGS) $(INCLUDES) -I/usr/local/include/boost -o $@ -c $<
+	$(CC) $(CXXFLAGS) $(INCLUDES) $(BOOST_INC) -o $@ -c $<
 
 shm: luashm.o
 	$(CXX) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ $(LIBRT)

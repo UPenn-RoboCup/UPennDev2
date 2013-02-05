@@ -26,6 +26,8 @@ extern "C"
 }
 #endif
 
+#include <common.h>
+
 #define PORT 3838
 
 static int sock_fd = 0;

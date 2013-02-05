@@ -40,6 +40,61 @@ local pixel_formats = {
 	[C.PNG_COLOR_TYPE_GRAY_ALPHA] = 'ga',
 }
 
+function save(path, width, height, prgb_data)
+  return glue.fcall(function(finally)
+    local png_ptr = assert(C.png_create_write_struct(PNG_LIBPNG_VER_STRING, nil, nil, nil))
+    local info_ptr = assert(C.png_create_info_struct(png_ptr))
+    finally(function()
+      local png_ptr = ffi.new('png_structp[1]', png_ptr)
+      local info_ptr = ffi.new('png_infop[1]', info_ptr)
+      C.png_destroy_write_struct(png_ptr, nil)
+    end)
+
+		--setup error handling
+		local warnings = {}
+		local warning_cb = ffi.cast('png_error_ptr', function(png_ptr, err)
+			warnings[#warnings+1] = ffi.string(err)
+		end)
+		local error_cb = ffi.cast('png_error_ptr', function(png_ptr, err)
+			error(string.format('libpng error: %s', ffi.string(err)))
+		end)
+		finally(function()
+			C.png_set_error_fn(png_ptr, nil, nil, nil)
+			error_cb:free()
+			warning_cb:free()
+		end)
+		C.png_set_error_fn(png_ptr, nil, error_cb, warning_cb)
+
+		local f = ffi.C.fopen(path, 'wb')
+		glue.assert(f ~= nil, 'could not open file %s', path)
+		finally(function()
+			C.png_init_io(png_ptr, nil)
+			ffi.C.fclose(f)
+		end)
+		C.png_init_io(png_ptr, f)
+
+    C.png_set_IHDR(png_ptr, info_ptr, width, height, 8, 
+                C.PNG_COLOR_TYPE_RGB, C.PNG_INTERLACE_NONE, 
+                C.PNG_COMPRESSION_TYPE_DEFAULT, C.PNG_FILTER_TYPE_DEFAULT)
+
+--    local text_ptr = ffi.new('png_text[3]', nil)
+--    text_ptr[0].
+
+    C.png_write_info(png_ptr, info_ptr)
+
+		local rows_ptr = ffi.new('uint8_t*[?]', height)
+    for l = 0, height - 1 do
+      rows_ptr[l] = prgb_data + l * width * 3
+    end
+
+    C.png_write_image(png_ptr, rows_ptr)
+    C.png_write_end(png_ptr, info_ptr)
+
+--    C.png_destroy_write_struct(png_ptr, info_ptr)
+
+  end)
+end
+
 local function load(src, opt)
 	return glue.fcall(function(finally)
 		opt = opt or {}
@@ -335,5 +390,6 @@ if not ... then require'libpng_test' end
 
 return {
 	load = load,
+  save = save,
 	C = C,
 }

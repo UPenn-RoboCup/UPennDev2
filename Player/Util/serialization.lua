@@ -1,7 +1,6 @@
 module(..., package.seeall);
 
 require('cutil')
-require('Z')
 
 function serialize_orig(o)
   local str = "";

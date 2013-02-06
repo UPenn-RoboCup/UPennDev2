@@ -48,8 +48,6 @@ Dcm::Dcm()
     dcm_segment.construct<double>("motor_temperature_sensor")[N_MOTOR](0);
   force_torque = 
     dcm_segment.construct<double>("force_torque")[N_FORCE_TORQUE](0);
-  tactile_array = 
-    dcm_segment.construct<double>("tactile_array")[N_TACTILE_ARRAY](0);
   ahrs = 
     dcm_segment.construct<double>("ahrs")[N_AHRS](0);
   battery = 
@@ -86,8 +84,6 @@ Dcm::Dcm()
     dcm_segment.construct<double>("motor_temperature_sensor_updated")[N_MOTOR](0);
   force_torque_updated = 
     dcm_segment.construct<double>("force_torque_updated")[N_FORCE_TORQUE](0);
-  tactile_array_updated = 
-    dcm_segment.construct<double>("tactile_array_updated")[N_TACTILE_ARRAY](0);
   ahrs_updated = 
     dcm_segment.construct<double>("ahrs_updated")[N_AHRS](0);
   battery_updated = 

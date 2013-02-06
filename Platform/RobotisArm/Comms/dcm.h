@@ -25,7 +25,6 @@ public:
   double *motor_current_sensor;
   double *motor_temperature_sensor;
   double *force_torque;
-  double *tactile_array;
   double *ahrs;
   double *battery;
   // update flags
@@ -44,7 +43,6 @@ public:
   double *motor_current_sensor_updated;
   double *motor_temperature_sensor_updated;
   double *force_torque_updated;
-  double *tactile_array_updated;
   double *ahrs_updated;
   double *battery_updated;
   Dcm();

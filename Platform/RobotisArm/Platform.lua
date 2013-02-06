@@ -50,4 +50,4 @@ end
 function Platform.exit()
 end
 
-return Body
+return Platform

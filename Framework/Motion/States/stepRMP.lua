@@ -402,7 +402,7 @@ local function update_desired_cop(t, dt)
   end
 
   mcm:set_desired_cop(desired_cop)
-  mcm:set_tipping_status(tipping_status)
+  pcm:set_tipping_status(tipping_status)
 end
 
 -- Public

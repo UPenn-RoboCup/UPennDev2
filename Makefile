@@ -21,7 +21,7 @@ ash:
 	cd Platform/ASH && make && cd $(CWD)
 	cd Framework/Platform \
 	&& rm -f ./* \
-	&& ln -s ../../Platform/ASH/Body.lua Body.lua \
+	&& ln -s ../../Platform/ASH/Platform.lua Platform.lua \
 	&& ln -s ../../Platform/ASH/Mechanics/Kinematics.$(SHLIBEXT) Kinematics.$(SHLIBEXT) \
 	&& ln -s ../../Platform/ASH/Mechanics/Statics.$(SHLIBEXT) Statics.$(SHLIBEXT) \
 	&& ln -s ../../Platform/ASH/Mechanics/Dynamics.$(SHLIBEXT) Dynamics.$(SHLIBEXT) \
@@ -43,7 +43,7 @@ teststand:
 	cd Platform/Teststand && make && cd $(CWD)
 	cd Framework/Platform \
 	&& rm -f ./* \
-	&& ln -s ../../Platform/Teststand/Body.lua Body.lua \
+	&& ln -s ../../Platform/Teststand/Platform.lua Platform.lua \
 	&& ln -s ../../Platform/Teststand/Mechanics/Kinematics.lua Kinematics.lua \
 	&& ln -s ../../Platform/Teststand/Mechanics/Statics.lua Statics.lua \
 	&& ln -s ../../Platform/Teststand/Mechanics/Dynamics.lua Dynamics.lua \
@@ -65,7 +65,7 @@ webots_ash:
 	cd Platform/WebotsASH && make && cd $(CWD)
 	cd Framework/Platform \
 	&& rm -f ./* \
-	&& ln -s ../../Platform/WebotsASH/Body.lua Body.lua \
+	&& ln -s ../../Platform/WebotsASH/Platform.lua Platform.lua \
 	&& ln -s ../../Platform/WebotsASH/Sensor.lua Sensor.lua \
 	&& ln -s ../../Platform/WebotsASH/Mechanics/Kinematics.$(SHLIBEXT) Kinematics.$(SHLIBEXT) \
 	&& ln -s ../../Platform/WebotsASH/Mechanics/Statics.$(SHLIBEXT) Statics.$(SHLIBEXT) \
@@ -88,7 +88,7 @@ robotis_arm:
 	cd Platform/RobotisArm && make && cd $(CWD)
 	cd Framework/Platform \
 	&& rm -f ./* \
-	&& ln -s ../../Platform/RobotisArm/Body.lua Body.lua \
+	&& ln -s ../../Platform/RobotisArm/Platform.lua Platform.lua \
 	&& ln -s ../../Platform/RobotisArm/Mechanics/Kinematics.so Kinematics.so \
 	&& ln -s ../../Platform/RobotisArm/Mechanics/Statics.lua Statics.lua \
 	&& ln -s ../../Platform/RobotisArm/Mechanics/Dynamics.lua Dynamics.lua \

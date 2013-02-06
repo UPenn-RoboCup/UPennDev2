@@ -2,7 +2,7 @@
 -- ZMP Walking
 ----------------------------------------------------------------------
 
-require('Body')
+require('Platform')
 require('vector')
 require('Config')
 require('Transform')
@@ -86,8 +86,8 @@ local hipShift = vector.new({0,0});
 
 local iStep0 = -1;
 local iStep = 0;
-local t0 = Body.get_time();
-local tLastStep = Body.get_time();
+local t0 = Platform.get_time();
+local tLastStep = Platform.get_time();
 
 local active = false;
 local stopRequest=0;
@@ -99,7 +99,7 @@ local initial_step=2;
 -- End initialization 
 ----------------------------------------------------------
 
-local t0 = Body.get_time()
+local t0 = Platform.get_time()
 local q0 = dcm:get_joint_position_sensor('legs')
 local qStance = vector.copy(q0)
 
@@ -263,7 +263,7 @@ local function motion_legs(qLegs)
 
 --[[
   --Ankle stabilization using gyro feedback
-  imuGyr = Body.get_sensor_imuGyrRPY();
+  imuGyr = Platform.get_sensor_imuGyrRPY();
   gyro_roll0=imuGyr[1];
   gyro_pitch0=imuGyr[2];
 --]]
@@ -321,7 +321,7 @@ local function motion_legs(qLegs)
   end
 
   -- write joint angles to shared memory 
-  -- Body.set_lleg_command(qLegs);
+  -- Platform.set_lleg_command(qLegs);
   dcm:set_joint_position(qLegs, 'legs')
 
 end
@@ -344,7 +344,7 @@ end
 local function init()
   --Lower body height for walking
 
-  t = Body.get_time();
+  t = Platform.get_time();
   init_time = 3.0;
   init_ph = (t-tInit) / init_time;
 
@@ -364,7 +364,7 @@ local function init()
   local trTorso = Transform.pose6D(pTorso);
   qLegs = Kinematics.inverse_pos_legs(trLLeg, trRLeg, trTorso);
 
---  Body.set_lleg_command(qLegs);
+--  Platform.set_lleg_command(qLegs);
   dcm:set_joint_position(qLegs, 'legs')
 
   if init_ph>1 then
@@ -382,8 +382,8 @@ function walk:start()
   if (not active) then
     active = true;
     iStep0 = -1;
-    t0 = Body.get_time();
-    tLastStep = Body.get_time();
+    t0 = Platform.get_time();
+    tLastStep = Platform.get_time();
     initial_step=2;
   end
 end
@@ -419,7 +419,7 @@ end
 
 function walk:entry()
   self.running = true;
-  tInit = Body.get_time();
+  tInit = Platform.get_time();
 
   uLeft = pose_global(vector.new({-supportX, footY, 0}),uTorso);
   uRight = pose_global(vector.new({-supportX, -footY, 0}),uTorso);
@@ -449,7 +449,7 @@ function walk:update()
     return; 
   end
 
-  t = Body.get_time();
+  t = Platform.get_time();
 
   ph = (t-tLastStep)/tStep;
   if ph>1 then

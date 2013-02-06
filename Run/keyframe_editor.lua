@@ -5,7 +5,7 @@ dofile('include.lua')
 ----------------------------------------------------------------------
 
 require('dcm')
-require('Body')
+require('Platform')
 require('util')
 require('unix')
 require('curses')
@@ -248,7 +248,7 @@ function cmd_goto(arg)
         keyframe:stop()
         break
       end
-      Body.update()
+      Platform.update()
       draw_col(COL_CMD)
     end
     keyframe:exit()
@@ -272,7 +272,7 @@ function cmd_zero()
       keyframe:stop()
       break
     end
-    Body.update()
+    Platform.update()
     draw_col(COL_CMD)
   end
   keyframe:exit()
@@ -290,7 +290,7 @@ function cmd_play()
       keyframe:stop()
       break
     end
-    Body.update()
+    Platform.update()
     draw_col(COL_CMD)
   end
   keyframe:exit()
@@ -310,7 +310,7 @@ function cmd_loop(arg)
       keyframe:stop()
       break
     end
-    Body.update()
+    Platform.update()
     draw_col(COL_CMD)
   end
   keyframe:exit()
@@ -650,7 +650,7 @@ function entry()
   end
   draw_screen()
   -- initialize shared memory
-  Body.entry()
+  Platform.entry()
   unix.usleep(5e5)
   dcm:set_joint_stiffness(1, 'all')
   dcm:set_joint_damping(0, 'all')
@@ -691,11 +691,11 @@ function update()
     curses.ungetch(key)
     read_command()
   end
-  Body.update()
+  Platform.update()
 end
 
 function exit()
-  Body.exit()
+  Platform.exit()
   curses.endwin()
 end
 

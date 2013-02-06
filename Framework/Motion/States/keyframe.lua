@@ -2,7 +2,7 @@
 -- keyframe : keyframe motion player
 ----------------------------------------------------------------------
 
-require('Body')
+require('Platform')
 require('unix')
 require('vector')
 require('Config')
@@ -26,7 +26,7 @@ local iStep = 1
 local mStep = 0 
 local qStep = dcm:get_joint_position_sensor() 
 local qSpline = nil
-local t0 = Body.get_time()
+local t0 = Platform.get_time()
 
 -- Utilities
 ----------------------------------------------------------------------
@@ -55,7 +55,7 @@ local function update_step_parameters()
   qSpline = trajectory.hermite_curve(
     {qPast, mPast}, {qStep, mStep}, step.duration)
   -- initialize time
-  t0 = Body.get_time()
+  t0 = Platform.get_time()
 end
 
 -- Interface
@@ -107,7 +107,7 @@ function keyframe:update()
   if steps[iStep] then
     -- update joint trajectories
     local step = steps[iStep]
-    local t = Body.get_time()
+    local t = Platform.get_time()
     local q = qSpline(t - t0)
     dcm:set_joint_position(q)
     -- advance to next keyframe step

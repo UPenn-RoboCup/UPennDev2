@@ -7,7 +7,7 @@ require('dcm')
 require('pid')
 require('unix')
 require('util')
-require('Body')
+require('Platform')
 require('walk')
 require('curses')
 require('Config')
@@ -25,7 +25,7 @@ local joint = Config.joint
 -- Parameters
 --------------------------------------------------------------------
 --local stats = util.loop_stats(100)
-local t, dt = Body.get_time(), 0
+local t, dt = Platform.get_time(), 0
 local COG_ratio = 1.182 --m_total/(m_torso+2*leg_length_ratio*m_leg)-- tune this and just set it instead
 local qt = {} --desired joint angles 
 local joint_pos = vector.new{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0} --current joint positions
@@ -444,7 +444,7 @@ end
 --------------------------------------------------------------------
 --Initialize
 --------------------------------------------------------------------
-Body.entry()
+Platform.entry()
 dcm:set_joint_enable(0,'all')
 local set_values = dcm:get_joint_position('all') --records original joint pos
 dcm:set_joint_stiffness(1, 'all') -- position control
@@ -484,8 +484,8 @@ end
 --Main
 --------------------------------------------------------------------
 while run do   --run step<20
-  Body.update()
-  dt = Body.get_time() - t --
+  Platform.update()
+  dt = Platform.get_time() - t --
   t = t + dt --simulation time
   state_t = state_t + dt --time used in state machine
   step = step + 1  --step number
@@ -523,6 +523,6 @@ while run do   --run step<20
     write_to_file(fw_lf, lf)
   end
 end
-Body.exit()
+Platform.exit()
 
 

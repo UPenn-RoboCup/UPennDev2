@@ -5,7 +5,7 @@ dofile('include.lua')
 ----------------------------------------------------------------------
 
 require('dcm')
-require('Body')
+require('Platform')
 require('util')
 require('unix')
 require('curses')

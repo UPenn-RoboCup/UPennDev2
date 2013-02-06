@@ -143,3 +143,20 @@ walk.footY = 0.07;
 
 --Large stride test
 walk.velLimitX={-.20,.30};
+walk.stanceLimitX={-0.80,0.80};
+walk.tStep = 0.45;
+
+
+
+
+--[[
+--VERY large stride test
+walk.bodyHeight = 1.0; 
+walk.tStep = 2;
+walk.velLimitX={-.80,.80};
+walk.stanceLimitX={-1.20,1.20};
+walk.phSingle = {0.25,0.75};
+walk.phZmp = {0.25,0.75};
+walk.hipRollCompensation = 1*math.pi/180;
+walk.supportY = 0.00;
+--]]

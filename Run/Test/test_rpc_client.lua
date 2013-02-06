@@ -3,7 +3,7 @@ dofile('../include.lua')
 require('rpc')
 
 -- initialize client
-client = rpc.new_client('EXAMPLE')
+client = rpc.client.new('EXAMPLE')
 client:set_timeout(0.5)
 assert(client:connect(1))
 

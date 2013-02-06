@@ -21,7 +21,6 @@ local bias_keys = {
   [3] = 'joint_position',
   [4] = 'joint_force',
   [5] = 'force_torque',
-  [6] = 'tactile_array',
 }
 
 local bias_increments = {
@@ -30,7 +29,6 @@ local bias_increments = {
   [3] = 10,
   [4] = 10,
   [5] = 10,
-  [6] = 0.1,
 }
 
 local bias_values = {}

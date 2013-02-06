@@ -41,7 +41,7 @@ curses.timeout(1)
 draw_screen()
 
 local count = 0
-local motion_rpc_server = rpc.new_server('MOTION')
+local motion_rpc_server = rpc.server.new('MOTION')
 
 while true do
   -- handle remote procedure calls

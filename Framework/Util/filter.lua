@@ -1,9 +1,9 @@
+require('vector')
+require('math')
+
 ----------------------------------------------------------------------
 -- filter : FIR/IIR digital filter implementation
 ----------------------------------------------------------------------
-
-require('vector')
-require('math')
 
 filter = {}
 filter.__index = filter

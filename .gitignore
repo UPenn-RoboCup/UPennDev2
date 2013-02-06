@@ -12,10 +12,6 @@
 
 Webots
 Config/Config.lua
-Framework/Robot/Body.lua
-Framework/Robot/Sensor.lua
-Framework/Robot/Kinematics.lua
-Framework/Robot/Statics.lua
-Framework/Robot/Dynamics.lua
+Framework/Platform/*
 Run/comms_manager
 Run/init_robot

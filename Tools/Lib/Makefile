@@ -2,7 +2,7 @@ include ../../Makefile.inc
 MEXEXT=$(shell mexext)
 LCMDIR=../../Framework/Lib/lcm
 
-all: monitorComm time mexshm udpComm mexlcm
+all: monitorComm time mexshm udpComm #mexlcm
 
 monitorComm: monitorComm.cc
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -o libMonitor.o -c libMonitor.cc

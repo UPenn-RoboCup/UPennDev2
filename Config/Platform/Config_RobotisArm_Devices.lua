@@ -4,7 +4,6 @@ devices = {
   'joint',
   'motor',
   'force_torque',
-  'tactile_array',
   'ahrs',
   'battery',
 }
@@ -16,7 +15,15 @@ joint = {}
 
 joint.id = { 
   -- device ids
-  [1] = 'l_knee_pitch',
+  [1] = 'r_shoulder_pitch',
+  [2] = 'r_shoulder_roll',
+  [3] = 'r_shoulder_yaw',
+  [4] = 'r_elbow_pitch',
+  [5] = 'r_wrist_yaw',
+  [6] = 'r_wrist_roll',
+  [7] = 'r_thumb',
+  [8] = 'r_finger1',
+  [9] = 'r_finger2',
 
   -- group ids
   l_hip = {
@@ -26,12 +33,10 @@ joint.id = {
   hips = {
   },
   l_knee = {
-    'l_knee_pitch',
   },
   r_knee = {
   },
   knees = {
-    'l_knee_pitch',
   },
   l_ankle = {
   },
@@ -40,12 +45,10 @@ joint.id = {
   ankles = {
   },
   l_leg = {
-    'l_knee_pitch',
   },
   r_leg = {
   },
   legs = {
-    'l_knee_pitch',
   },
   torso = {
   },
@@ -56,6 +59,8 @@ joint.id = {
   arms = {
   },
   head = {
+  },
+  upperbody = {
   },
 }
 
@@ -66,8 +71,16 @@ motor = {}
 
 motor.id = { 
   -- device ids
-  [1] = 'l_knee_pitch',
-
+  [1] = 'r_shoulder_pitch',
+  [2] = 'r_shoulder_roll',
+  [3] = 'r_shoulder_yaw',
+  [4] = 'r_elbow_pitch',
+  [5] = 'r_wrist_yaw',
+  [6] = 'r_wrist_roll',
+  [7] = 'r_thumb',
+  [8] = 'r_finger1',
+  [9] = 'r_finger2',
+  
   -- group ids
   l_hip = {
   },
@@ -76,12 +89,10 @@ motor.id = {
   hips = {
   },
   l_knee = {
-    'l_knee_pitch',
   },
   r_knee = {
   },
   knees = {
-    'l_knee_pitch',
   },
   l_ankle = {
   },
@@ -90,12 +101,10 @@ motor.id = {
   ankles = {
   },
   l_leg = {
-    'l_knee_pitch',
   },
   r_leg = {
   },
   legs = {
-    'l_knee_pitch',
   },
   torso = {
   },
@@ -106,6 +115,8 @@ motor.id = {
   arms = {
   },
   head = {
+  },
+  upperbody = {
   },
 }
 
@@ -121,25 +132,27 @@ force_torque.id = {
   [3] = 'l_foot_force_z',
   [4] = 'l_foot_torque_x',
   [5] = 'l_foot_torque_y',
-  [6] = 'r_foot_torque_z',
+  [6] = 'l_foot_torque_z',
   [7] = 'r_foot_force_x',
   [8] = 'r_foot_force_y',
   [9] = 'r_foot_force_z',
   [10] = 'r_foot_torque_x',
   [11] = 'r_foot_torque_y',
   [12] = 'r_foot_torque_z',
+  [13] = 'l_hand_force_x',
+  [14] = 'l_hand_force_y',
+  [15] = 'l_hand_force_z',
+  [16] = 'l_hand_torque_x',
+  [17] = 'l_hand_torque_y',
+  [18] = 'l_hand_torque_z',
+  [19] = 'r_hand_force_x',
+  [20] = 'r_hand_force_y',
+  [21] = 'r_hand_force_z',
+  [22] = 'r_hand_torque_x',
+  [23] = 'r_hand_torque_y',
+  [24] = 'r_hand_torque_z',
   
   -- group ids
-  l_foot_force = {
-    'l_foot_force_x',
-    'l_foot_force_y',
-    'l_foot_force_z',
-  },
-  l_foot_torque = {
-    'l_foot_torque_x',
-    'l_foot_torque_y',
-    'l_foot_torque_z',
-  },
   l_foot = {
     'l_foot_force_x',
     'l_foot_force_y',
@@ -147,16 +160,6 @@ force_torque.id = {
     'l_foot_torque_x',
     'l_foot_torque_y',
     'l_foot_torque_z',
-  },
-  r_foot_force = {
-    'r_foot_force_x',
-    'r_foot_force_y',
-    'r_foot_force_z',
-  },
-  r_foot_torque = {
-    'r_foot_torque_x',
-    'r_foot_torque_y',
-    'r_foot_torque_z',
   },
   r_foot = {
     'r_foot_force_x',
@@ -166,32 +169,21 @@ force_torque.id = {
     'r_foot_torque_y',
     'r_foot_torque_z',
   },
-}
-
-
--- tactile_array config
----------------------------------------------------------------------------
-tactile_array = {}
-
-tactile_array.id = {
-  -- device ids
-  [1] = 'l_thumb',
-  [2] = 'l_index_finger',
-  [3] = 'l_middle_finger',
-  [4] = 'r_thumb',
-  [5] = 'r_index_finger',
-  [6] = 'r_middle_finger',
-
-  -- group ids
   l_hand = {
-    'l_thumb',
-    'l_index_finger',
-    'l_middle_finger',
+    'l_hand_force_x',
+    'l_hand_force_y',
+    'l_hand_force_z',
+    'l_hand_torque_x',
+    'l_hand_torque_y',
+    'l_hand_torque_z',
   },
   r_hand = {
-    'r_thumb',
-    'r_index_finger',
-    'r_middle_finger',
+    'r_hand_force_x',
+    'r_hand_force_y',
+    'r_hand_force_z',
+    'r_hand_torque_x',
+    'r_hand_torque_y',
+    'r_hand_torque_z',
   },
 }
 

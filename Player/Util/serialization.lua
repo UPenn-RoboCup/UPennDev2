@@ -48,7 +48,7 @@ function s.serialize(o)
 	elseif type(v)=="string" then
           str = str..string.format("[%q]=%q,",k,v);
 	elseif type(v)=="table" then
-          str = str..string.format("[%q]=%s,",k,serialize(v));
+          str = str..string.format("[%q]=%s,",k, s.serialize(v));
 	end
       else
         if type(v) == "number" then
@@ -60,7 +60,7 @@ function s.serialize(o)
 	elseif type(v)=="string" then
           str = str..string.format("%q,",v);
 	elseif type(v)=="table" then
-          str = str..string.format("%s,",serialize(v));
+          str = str..string.format("%s,", s.serialize(v));
 	end
       end
 

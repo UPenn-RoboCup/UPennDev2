@@ -1,6 +1,6 @@
 dofile('../../include.lua')
 
-require('Body')
+require('Platform')
 require('Proprioception')
 require('trajectory')
 require('Transform')
@@ -133,9 +133,9 @@ end
 
 -- initialize step controller and train torso rmp
 --------------------------------------------------------------------------------
-Body.entry()
+Platform.entry()
 Proprioception.entry()
-Body.update()
+Platform.update()
 Proprioception.update()
 
 step:entry()
@@ -155,16 +155,16 @@ local v_torso = step:get_torso_state()[2]
 --------------------------------------------------------------------------------
 if (INIT_STANCE) then
   print('initializing stance...')
-  Body.set_simulator_torso_frame(Transform.pose6D{0, 0, 100})
+  Platform.set_simulator_torso_frame(Transform.pose6D{0, 0, 100})
 
-  while Body.get_time() < 2 do
+  while Platform.get_time() < 2 do
     dcm:set_joint_position(q_legs, 'legs')
-    Body.update()
+    Platform.update()
   end
 
-  Body.set_simulator_torso_frame(Transform.pose6D{0, 0, 0.558})
+  Platform.set_simulator_torso_frame(Transform.pose6D{0, 0, 0.558})
   while true do
-    Body.update()
+    Platform.update()
   end
 end
 
@@ -179,7 +179,7 @@ while true do
 
   step:start()
   while (step:is_active()) do
-    Body.update()
+    Platform.update()
     Proprioception.update()
     step:update()
     if (SLOW_MO) then
@@ -205,4 +205,4 @@ print('done')
 --------------------------------------------------------------------------------
 step:exit()
 Proprioception.exit()
-Body.exit()
+Platform.exit()

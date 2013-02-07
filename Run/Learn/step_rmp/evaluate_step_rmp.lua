@@ -6,7 +6,7 @@ require('mcm')
 require('pcm')
 require('stepRMP')
 require('Proprioception')
-require('Body')
+require('Platform')
 require('unix')
 
 --------------------------------------------------------------------------------
@@ -34,9 +34,9 @@ end
 -- initialize step controller
 --------------------------------------------------------------------------------
 
-Body.entry()
+Platform.entry()
 Proprioception.entry()
-Body.update()
+Platform.update()
 Proprioception.update()
 
 step:entry()
@@ -46,7 +46,7 @@ step:set_velocity(velocity)
 step:set_support_foot('l')
 step:initialize()
 
-local n_time_steps = 2*step:get_parameter('step_duration')/Body.get_time_step()
+local n_time_steps = 2*step:get_parameter('step_duration')/Platform.get_time_step()
 n_time_steps = math.floor(n_time_steps + 0.5)
 
 -- define cost functions
@@ -101,7 +101,7 @@ function policy:evaluate(parameters, noiseless)
   step:set_support_foot('l')
   step:start()
   for i = 1, self.n_time_steps/2 do
-    Body.update()
+    Platform.update()
     Proprioception.update()
     step:update()
     step_costs[i] = evaluate_step_cost()
@@ -110,7 +110,7 @@ function policy:evaluate(parameters, noiseless)
   step:set_support_foot('r')
   step:start()
   for i = self.n_time_steps/2 + 1, self.n_time_steps do
-    Body.update()
+    Platform.update()
     Proprioception.update()
     step:update()
     step_costs[i] = evaluate_step_cost()
@@ -140,5 +140,5 @@ step:save_parameters(parameter_save_file)
 
 step:exit()
 Proprioception.exit()
-Body.exit()
-Body.reset_simulator()
+Platform.exit()
+Platform.reset_simulator()

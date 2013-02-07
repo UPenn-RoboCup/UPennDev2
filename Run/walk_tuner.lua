@@ -6,7 +6,7 @@ dofile('include.lua')
 
 require('unix')
 require('util')
-require('Body')
+require('Platform')
 require('walk')
 require('getch')
 require('curses')
@@ -310,7 +310,7 @@ function entry()
   unix.usleep(5e5)
   draw_screen()
   -- initialize motion engine
-  Body.entry()
+  Platform.entry()
   Proprioception.entry()
   Motion.entry()
   Motion.add_fsm(Locomotion)
@@ -368,7 +368,7 @@ function update()
   elseif key == string.byte(';') then
     cmd_increment_velocity(0, -0.005, 0)
   end
-  Body.update()
+  Platform.update()
   Proprioception.update()
   Motion.update()
 end
@@ -377,7 +377,7 @@ function exit()
   curses.endwin()
   Motion.exit()
   Proprioception.exit()
-  Body.exit()
+  Platform.exit()
 end
 
 local count = 0

@@ -1,6 +1,6 @@
 dofile('../../include.lua')
 
-require('Body')
+require('Platform')
 require('Proprioception')
 require('trajectory')
 require('Transform')
@@ -19,9 +19,9 @@ local velocity = {0, 0, 0}
 
 -- initialize step controller
 --------------------------------------------------------------------------------
-Body.entry()
+Platform.entry()
 Proprioception.entry()
-Body.update()
+Platform.update()
 Proprioception.update()
 
 local pi2_results = dofile(PI2_RESULTS_FILE)
@@ -40,9 +40,9 @@ step:set_support_foot('l')
 --------------------------------------------------------------------------------
 print('updating step controller...')
 
-local t0 = Body.get_time()
+local t0 = Platform.get_time()
 local n_time_steps = 
-  2*math.floor(step:get_parameter('step_duration')/Body.get_time_step() + 0.5)
+  2*math.floor(step:get_parameter('step_duration')/Platform.get_time_step() + 0.5)
 
 local x_torso_rmp = {}
 local y_torso_rmp = {}
@@ -76,14 +76,14 @@ while true do
   step:set_support_foot('l')
   step:start()
   for i = 1, n_time_steps/2 do
-    Body.update()
+    Platform.update()
     Proprioception.update()
     step:update()
     if (SLOW_MO) then
       unix.usleep(1e4)
     end
 
-    t[i] = Body.get_time() - t0 
+    t[i] = Platform.get_time() - t0
     x_torso_rmp[i] = step:get_rmp():get_position(1)
     y_torso_rmp[i] = step:get_rmp():get_position(2)
     z_torso_rmp[i] = step:get_rmp():get_position(2)
@@ -117,14 +117,14 @@ while true do
   step:set_support_foot('r')
   step:start()
   for i = n_time_steps/2 + 1, n_time_steps do
-    Body.update()
+    Platform.update()
     Proprioception.update()
     step:update()
     if (SLOW_MO) then
       unix.usleep(1e4)
     end
 
-    t[i] = Body.get_time() - t0 
+    t[i] = Platform.get_time() - t0
     x_torso_rmp[i] = step:get_rmp():get_position(1)
     y_torso_rmp[i] = step:get_rmp():get_position(2)
     z_torso_rmp[i] = step:get_rmp():get_position(2)
@@ -239,4 +239,4 @@ f:close()
 
 step:exit()
 Proprioception.exit()
-Body.exit()
+Platform.exit()

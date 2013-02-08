@@ -108,6 +108,13 @@ void epos_thread::initialize_motor_controllers()
     m_epos[i]->shutdown();
     assert(m_master.sdo_download(node_id, CONTROLWORD));
 
+    // hack for torque mode analog input configuration bug
+    if (i > 0)
+    {
+      m_epos[i]->set_value(MODES_OF_OPERATION, -32);
+      m_master.sdo_download(node_id, MODES_OF_OPERATION);
+    }
+
     // configure object dictionary
     fprintf(stderr, "node %d: configuring controller mappings\n", node_id);
     m_master.configure_pdo_settings(node_id);

@@ -3,7 +3,7 @@
 --------------------------------------------------------------------------
 
 require('util')
-require('Body')
+require('Platform')
 require('vector')
 require('Config')
 require('waveform')
@@ -76,7 +76,7 @@ local ankle_pitch_fb_slope = walk.parameters.ankle_pitch_fb_slope
 local active               = false
 local stop_request         = false
 local start_request        = false
-local t0                   = Body.get_time()
+local t0                   = Platform.get_time()
 local t                    = t0
 local q0                   = dcm:get_joint_position_sensor('legs')
 local gyro                 = vector.new{0, 0, 0}
@@ -176,7 +176,7 @@ function walk:entry()
   self.running = true
   active = false
   update_parameters()
-  t0 = Body.get_time()
+  t0 = Platform.get_time()
   q0 = dcm:get_joint_position_sensor('legs')
   velocity = vector.new{0, 0, 0}
   dcm:set_joint_force(0, 'legs')
@@ -190,8 +190,8 @@ function walk:update()
 
   -- update timing and sensor values
   ------------------------------------------------------------------------
-  local dt = t - Body.get_time()
-  t = Body.get_time()
+  local dt = t - Platform.get_time()
+  t = Platform.get_time()
   update_feedback()
   update_gyro()
 

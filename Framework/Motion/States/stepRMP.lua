@@ -1,4 +1,4 @@
-require('Body')
+require('Platform')
 require('Config')
 require('Kinematics')
 require('MotionState')
@@ -125,7 +125,7 @@ end
 
 local function initialize_step_variables()
 
-  t0 = Body.get_time() 
+  t0 = Platform.get_time()
   ss_begin_t = step_duration*(step_ds_ratio/2)
   ss_end_t = step_duration*(1 - step_ds_ratio/2)
 
@@ -174,7 +174,7 @@ local function initialize_torso_variables()
   -- initialize torso rmp
   torso_rmp:initialize({zeros(3)}, zeros(3), ones(3), step_duration)
   torso_rmp:set_parameters(rmp_parameters)
-  torso_rmp:set_time_step(Body.get_time_step())
+  torso_rmp:set_time_step(Platform.get_time_step())
   if (support_foot == 'r') then
     -- TEMPORARY HACK (FOR FORWARD/VERTICAL STEPPING ONLY !)
     torso_rmp:set_phase(2*math.pi)
@@ -402,7 +402,7 @@ local function update_desired_cop(t, dt)
   end
 
   mcm:set_desired_cop(desired_cop)
-  mcm:set_tipping_status(tipping_status)
+  pcm:set_tipping_status(tipping_status)
 end
 
 -- Public
@@ -523,7 +523,7 @@ function step:iterate_nominal_rmp_state()
   local current_support_foot = support_foot
   support_foot = 'r'
   self:initialize()
-  for i = 1, step_duration/Body.get_time_step() do
+  for i = 1, step_duration/Platform.get_time_step() do
     torso_rmp:integrate()
   end
   local rmp_state = torso_rmp:get_state()
@@ -550,10 +550,10 @@ function step:initialize_simulator_state(duration)
     torso_mjt[i] = trajectory.minimum_jerk(start_position, goal_position, duration)
   end
 
-  local t0 = Body.get_time()
+  local t0 = Platform.get_time()
   local t  = t0
   while (t < duration) do
-    t = Body.get_time() 
+    t = Platform.get_time()
     local torso_position = {} 
     for i = 1, 3 do
       torso_position[i] = torso_mjt[i](t)
@@ -569,13 +569,13 @@ function step:initialize_simulator_state(duration)
     end
     local q = Kinematics.inverse_pos_legs(l_foot_frame, r_foot_frame, torso_frame)
     dcm:set_joint_position(q, 'legs')
-    Body.update()
+    Platform.update()
   end
 
   -- initialize simulator physics state
   local torso_twist = torso_state[2]
-  Body.reset_simulator_physics()
-  Body.set_simulator_torso_twist(torso_twist)
+  Platform.reset_simulator_physics()
+  Platform.set_simulator_torso_twist(torso_twist)
 end
 
 function step:entry()
@@ -591,8 +591,8 @@ end
 function step:update()
   if active then
 
-    local t = Body.get_time() - t0
-    local dt = Body.get_time_step()
+    local t = Platform.get_time() - t0
+    local dt = Platform.get_time_step()
 
     update_torso_state(t, dt)
     update_swing_foot_state(t, dt)

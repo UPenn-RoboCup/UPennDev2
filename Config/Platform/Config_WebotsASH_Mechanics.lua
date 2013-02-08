@@ -20,3 +20,10 @@ mechanics.r_foot = {
   force_torque_transform = Transform.pose6D{0.00361603, 0.00027595, 0.01908749}
 }
 
+mechanics.l_hand = {
+  force_torque_transform = Transform.pose6D{0, 0, 0} -- FIXME
+}
+
+mechanics.r_hand = {
+  force_torque_transform = Transform.pose6D{0, 0, 0} -- FIXME
+}

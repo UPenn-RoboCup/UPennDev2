@@ -1,5 +1,5 @@
 -- CHARLI laser testing
-print('Testing LIDAR on CHARLI')
+print('Testing ARMS')
 
 cwd = cwd or os.getenv('PWD')
 package.path = cwd.."/?.lua;"..package.path;
@@ -14,9 +14,11 @@ require('Motion')
 require('vector')
 
 -- Laser getting
-require 'WebotsLaser'
-print( "LIDAR Dim:", WebotsLaser.get_width(), WebotsLaser.get_height())
-nlidar_readings = WebotsLaser.get_width() * WebotsLaser.get_height();
+--require 'WebotsLaser'
+--print( "LIDAR Dim:", WebotsLaser.get_width(), WebotsLaser.get_height())
+--nlidar_readings = WebotsLaser.get_width() * WebotsLaser.get_height();
+
+
 require 'rcm'
 --
 require 'mcm'
@@ -133,7 +135,8 @@ function update()
   -- Update State Machines 
   Motion.update();
   Body.update();
-	
+
+--[[	
 	-- Update the laser scanner
 	lidar_scan = WebotsLaser.get_scan()
 	-- Set the Range Comm Manager values
@@ -150,25 +153,11 @@ function update()
 	rcm.set_robot_imu( vector.new(imuAngle) )
 	gyr = Body.get_sensor_imuGyrRPY();
 	rcm.set_robot_gyro( vector.new(gyr) );
+--]]
+
 
 --print("Roll", gyr[1], "Pitch",gyr[2]);
 
-
-
---SJ: this causes initial jerk
---[[	
-	-- Set the arm positions
-	qLArm = pickercm.get_desired_qLArm();
-	qRArm = pickercm.get_desired_qRArm();
-	Body.set_larm_command(qLArm)
-	Body.set_rarm_command(qRArm)
---]]
-
---local janglesL = {90,0,0,0}
---Body.set_larm_command(math.pi/180*vector.new(janglesL))
---local janglesR = {90,0,0,0}
---Body.set_rarm_command(math.pi/180*vector.new(janglesR))
-	
   -- Check if the last update completed without errors
   lcount = lcount + 1;
   if (count ~= lcount) then

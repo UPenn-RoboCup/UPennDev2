@@ -13,7 +13,7 @@ require('vector')
 require('Config')
 
 local bias_config_file = arg[1]
-  or '../Config/Robot/Config_'..Config.platform.name..'_Bias.lua'
+  or '../Config/Platform/Config_'..Config.platform.name..'_Bias.lua'
 
 local bias_keys = {
   [1] = 'motor_position',

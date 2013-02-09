@@ -1,0 +1,18 @@
+# Makefile used to build libraries
+include ../../../Makefile.inc
+
+TARGETS = all clean
+.PHONY: $(TARGETS)
+
+all: libKDLcustom.a
+
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
+%.o: %.c
+	$(CC) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
+
+libKDLcustom.a: treeidsolver_recursive_newton_euler.o
+	$(AR) $(ARFLAGS) $@ $^
+
+clean:
+	rm -f *.o *.$(SHLIBEXT) libKDLcustom.a

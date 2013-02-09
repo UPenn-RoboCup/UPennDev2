@@ -14,6 +14,13 @@ function util.ptable(t)
   for k,v in pairs(t) do print(k,v) end
 end
 
+function util.tablesize(table)
+  local count = 0
+  for _ in pairs(table) do count = count + 1 end
+  return count 
+end
+
+
 function util.mod_angle(a)
   if a==nil then return nil end
   -- Reduce angle to [-pi, pi)

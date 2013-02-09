@@ -5,7 +5,7 @@ dofile('include.lua')
 ----------------------------------------------------------------------
 
 require('dcm')
-require('Body')
+require('Platform')
 require('util')
 require('unix')
 require('curses')
@@ -13,7 +13,7 @@ require('vector')
 require('Config')
 
 local bias_config_file = arg[1]
-  or '../Config/Robot/Config_'..Config.platform.name..'_Bias.lua'
+  or '../Config/Platform/Config_'..Config.platform.name..'_Bias.lua'
 
 local bias_keys = {
   [1] = 'motor_position',
@@ -21,7 +21,6 @@ local bias_keys = {
   [3] = 'joint_position',
   [4] = 'joint_force',
   [5] = 'force_torque',
-  [6] = 'tactile_array',
 }
 
 local bias_increments = {
@@ -30,7 +29,6 @@ local bias_increments = {
   [3] = 10,
   [4] = 10,
   [5] = 10,
-  [6] = 0.1,
 }
 
 local bias_values = {}

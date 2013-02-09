@@ -1,4 +1,3 @@
-require('Statics')
 require('Kinematics')
 require('Transform')
 require('vector')

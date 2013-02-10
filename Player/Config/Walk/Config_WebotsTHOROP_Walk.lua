@@ -41,7 +41,6 @@ walk.stepHeight = 0.06;
 walk.phSingle={0.1,0.9};
 walk.phZmp={0.1,0.9};
 
-
 --------------------------------------------
 -- Compensation parameters
 --------------------------------------------
@@ -56,44 +55,24 @@ gyroFactor = 0.273*math.pi/180 * 300 / 1024; --dps to rad/s conversion
 --gyroFactor = gyroFactor*0.3;
 
 
+--gyroFactor = gyroFactor*3;
+
+
 walk.ankleImuParamX={0.3,0.75*gyroFactor, 0*math.pi/180, 5*math.pi/180};
 walk.kneeImuParamX={0.3,1.5*gyroFactor, 0*math.pi/180, 5*math.pi/180};
 walk.ankleImuParamY={0.3,0.25*gyroFactor, 0*math.pi/180, 2*math.pi/180};
 walk.hipImuParamY={0.3,0.25*gyroFactor, 0*math.pi/180, 2*math.pi/180};
-
 walk.armImuParamX={1,10*gyroFactor, 20*math.pi/180, 45*math.pi/180};
 walk.armImuParamY={1,10*gyroFactor, 20*math.pi/180, 45*math.pi/180};
+
+
+
 
 --------------------------------------------
 -- WalkKick parameters
 --------------------------------------------
 
 walk.walkKickDef={}
-
---tStep stepType supportLeg stepHeight SupportMod shiftFactor footPos1 footPos2
-
-walk.walkKickDef["FrontLeft"]={
-  {1.00, 1, 0, 0.035 , {0,0}, 0.7, {0.15,0,0} },
-  {1.00, 2, 1, 0.07 , {0.02,-0.02}, 0.5, {0.25,0,0}, {0.15,0,0} },
-  {walk.tStep, 1, 0, 0.035 , {0,0}, 0.5, {0,0,0} },
-}
-walk.walkKickDef["FrontRight"]={
-  {1.00, 1, 1, 0.035 , {0,0}, 0.3, {0.15,0,0} },
-  {1.00, 2, 0, 0.07 , {0.02,0.02}, 0.5,  {0.25,0,0}, {0.15,0,0} },
-  {walk.tStep, 1, 1, 0.035 , {0,0}, 0.5, {0,0,0} },
-}
-walk.walkKickDef["SideLeft"]={
-  {1.00, 1, 1, 0.035 , {0,0}, 0.3, {0.08,0.10,0} },
-  {1.00, 3, 0, 0.07 , {-0.01,0.06}, 0.5, {0.18,-0.20,0},{0.18,0.04,0}},
- {walk.tStep, 1, 1, 0.035 , {0,0}, 0.5, {0,0,0} },}
-
-walk.walkKickDef["SideRight"]={
-  {1.00, 1, 0, 0.035 , {0,0}, 0.7, {0.08,-0.10,0} },
-  {1.00, 3, 1, 0.07 , {-0.01,-0.06},0.5, {0.18,0.20,0},{0.18,-0.04,0}},
-  {walk.tStep, 1, 0, 0.035 , {0,0},0.5,  {0,0,0} },
-}
-
-walk.walkKickPh=0.5;
 
 --------------------------------------------
 -- Robot - specific calibration parameters
@@ -137,26 +116,26 @@ walk.footY = 0.07;
 
 
 --Very fast walk
---walk.velLimitX={-.20,.20};
---walk.tStep = 0.45;
-
-
---Large stride test
-walk.velLimitX={-.20,.30};
-walk.stanceLimitX={-0.80,0.80};
 walk.tStep = 0.45;
 
+--Large stride test (up to 300mm)
+walk.velLimitX={-.30,.30};
+walk.stanceLimitX={-0.80,0.80};
+walk.velDelta={0.30,0.10,0.3} 
+walk.velXHigh = 0.30;
+walk.supportY = 0.04;
+walk.tStep = 0.8;
 
 
 
+--Slow, High, Long stride walk (for stair climbing)
 --[[
---VERY large stride test
-walk.bodyHeight = 1.0; 
-walk.tStep = 2;
-walk.velLimitX={-.80,.80};
-walk.stanceLimitX={-1.20,1.20};
-walk.phSingle = {0.25,0.75};
-walk.phZmp = {0.25,0.75};
-walk.hipRollCompensation = 1*math.pi/180;
-walk.supportY = 0.00;
+walk.phSingle = {0.2,0.8};
+walk.phZmp = {0.2,0.8};
+walk.hipRollCompensation = 3*math.pi/180;
+walk.stepHeight = 0.25;
+walk.tStep = 1;
 --]]
+
+--Wider stance
+--walk.footY = 0.09;

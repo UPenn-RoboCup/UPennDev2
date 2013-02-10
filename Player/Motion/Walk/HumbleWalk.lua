@@ -10,9 +10,6 @@ require('mcm')
 require('unix')
 require('util')
 
--- No stabilization by default
-no_stabilize = false;
-
 -- Walk Parameters
 -- Stance and velocity limit values
 stanceLimitX=Config.walk.stanceLimitX or {-0.10 , 0.10};
@@ -24,10 +21,8 @@ velLimitA = Config.walk.velLimitA or {-.4, .4};
 velDelta = Config.walk.velDelta or {.03,.015,.15};
 vaFactor = Config.walk.vaFactor or 0.6;
 
-
 velXHigh = Config.walk.velXHigh or 0.06;
 velDeltaXHigh = Config.walk.velDeltaXHigh or 0.01;
-
 
 --Toe/heel overlap checking values
 footSizeX = Config.walk.footSizeX or {-0.05,0.05};
@@ -47,13 +42,10 @@ supportX = Config.walk.supportX;
 supportY = Config.walk.supportY;
 qLArm0=Config.walk.qLArm;
 qRArm0=Config.walk.qRArm;
-qLArmKick0=Config.walk.qLArmKick;
-qRArmKick0=Config.walk.qRArmKick;
 
 --Hardness parameters
 hardnessSupport = Config.walk.hardnessSupport or 0.7;
 hardnessSwing = Config.walk.hardnessSwing or 0.5;
-
 
 hardnessArm0 = Config.walk.hardnessArm or 0.2;
 hardnessArm = Config.walk.hardnessArm or 0.2;
@@ -83,29 +75,8 @@ hipImuParamY = Config.walk.hipImuParamY;
 armImuParamX = Config.walk.armImuParamX;
 armImuParamY = Config.walk.armImuParamY;
 
---Support bias parameters to reduce backlash-based instability
-velFastForward = Config.walk.velFastForward or 0.06;
-velFastTurn = Config.walk.velFastTurn or 0.2;
-supportFront = Config.walk.supportFront or 0;
-supportFront2 = Config.walk.supportFront2 or 0;
-supportBack = Config.walk.supportBack or 0;
-supportSideX = Config.walk.supportSideX or 0;
-supportSideY = Config.walk.supportSideY or 0;
-supportTurn = Config.walk.supportTurn or 0;
-
-frontComp = Config.walk.frontComp or 0.003;
-AccelComp = Config.walk.AccelComp or 0.003;
-
 --Initial body swing 
 supportModYInitial = Config.walk.supportModYInitial or 0;
-
---WalkKick parameters
-walkKickDef = Config.walk.walkKickDef;
-walkKickPh = Config.walk.walkKickPh;
-toeTipCompensation = 0;
-
-use_alternative_trajectory = Config.walk.use_alternative_trajectory or 0;
-
 
 ----------------------------------------------------------
 -- Walk state variables
@@ -141,10 +112,7 @@ tLastStep = Body.get_time();
 ph0=0;ph=0;
 
 stopRequest = 2;
-canWalkKick = 1; --Can we do walkkick with this walk code?
-walkKickRequest = 0; 
-walkKick = walkKickDef["FrontLeft"];
-current_step_type = 0;
+canWalkKick = 0; --Can we do walkkick with this walk code?
 
 initial_step=2;
 
@@ -171,154 +139,20 @@ qLArmOR1 = {0,0,0,0,0,0};
 qRArmOR1 = {0,0,0,0,0,0};
 bodyRot1 = {0,0,0};
 
-testing = Config.walk.testing or false
-
---Push Recovery (Demo) Settings
-enable_hip_pr = false;
-
-hipStrategy = 0;
-hipAngle = {0,0};
-hipTargetAngle = {0,0};
-hipStrategyTime = 0;
-
 phSingle = 0;
-
--------------------------------------------
---Boxing variables
--------------------------------------------
-
---Stance state --0: open, 1: left-front, 2: right-front 
-stance,stance1=0,0; 
-
---Boxing arm pose
-qLArm1=math.pi/180*vector.new({90,40,-160});
-qRArm1=math.pi/180*vector.new({90,-40,-160});
-
---Straight arm pose
-qLArm2=math.pi/180*vector.new({-20,40,0});
-qRArm2=math.pi/180*vector.new({-20,-40,0});
-
-qLArm2=math.pi/180*vector.new({-20,30,0});
-qRArm2=math.pi/180*vector.new({-20,-30,0});
-
---Current arm pose
-qLArm=math.pi/180*vector.new({90,40,-160});
-qRArm=math.pi/180*vector.new({90,-40,-160});
-
---qLArm0={qLArm[1],qLArm[2]};
---qRArm0={qRArm[1],qRArm[2]};
 
 --Standard offset 
 uLRFootOffset = vector.new({0,footY,0});
 uTorsoOffset = {-footX,0,0};
 
---Punch 
-tPunch=0;
-punchType=1;
-punchTime={{0,0.12,0.12},{0.3,0.2,0.2}};
-
---punchTime={{0.4,0.4,0.4},{0.2,0.2,0.2}};
-
-
 --For torso offset change
 tStance0,tStance1 = 0,0;
-
-----------------------------------------------------------
--- End Boxing variables 
-----------------------------------------------------------
-
 
 ----------------------------------------------------------
 -- End initialization 
 ----------------------------------------------------------
 
 --Push Recovery Check
-
-angleTiltOld = 0;
-function check_push_recovery()
-  if not enable_hip_pr then return; end
-
-  imuGyr = Body.get_sensor_imuGyr();
-  gyro_roll=imuGyr[1];
-  gyro_pitch=imuGyr[2];
-
-  imuAngle = Body.get_sensor_imuAngle();
-  imuRoll = imuAngle[1];
-  imuPitch = imuAngle[2]-Config.walk.bodyTilt;
-
-  llegReading= Body.get_lleg_position();
-  rlegReading= Body.get_rleg_position();
-  angle1= llegReading[3];
-  angle2= rlegReading[3];
-
-  angleTilt=- ((angle1+angle2)/2 + Config.walk.bodyTilt + 28.76*math.pi/180);
-  gyroTilt = (angleTilt-angleTiltOld)/0.010;
-  angleTiltOld =angleTilt;
-
-  gyromag= math.sqrt(gyro_pitch^2+gyro_roll^2);
-  imuMag = math.sqrt(imuPitch^2+imuRoll^2);
-
-  t = Body.get_time();
-
-  if imuMag>60*math.pi/180 and hipStrategy==0 then
-     hipStrategyTime = t+3;
-     Body.set_body_hardness(0);
-     return;
-  else
-    Body.set_larm_hardness(1);
-    Body.set_rarm_hardness(1);
-    Body.set_lleg_hardness(hardnessSupport);
-    Body.set_rleg_hardness(hardnessSupport);
-  end
-
-  tReflex = 0.3;
---  tRecover = 0.3;
-  tRecover0 = 0.3;
-  tRecoverInc = 0.1;
-
-  gyro_min = 0.3 * 180/math.pi;
-  gyro_min = 0.4 * 180/math.pi;
-
-  if hipStrategy ==0 then
-    if t>hipStrategyTime then
-      if gyromag>gyro_min and math.abs(gyro_pitch) > 0.8 * gyro_min then
-        factor = (gyromag/gyro_min)-1; 
-        factor = math.min(1+factor*0.5,2) 
---      print("Gyro IMU:",gyro_pitch,gyro_roll,gyromag)
-        hipStrategy =1;
-        hipTargetAngle = {
-                15*math.pi/180*gyro_pitch/gyromag*factor,
-                15*math.pi/180*gyro_roll/gyromag*factor
-                };
-        hipStrategyTime = t;
-	tRecover = tRecover0 + tRecoverInc * factor;
-        print("Hip state 1",t)
-      else
-      end
-    end
-  elseif hipStrategy ==1 then
-    hipAngle[1],hipAngle[2]=hipTargetAngle[1],hipTargetAngle[2];
-    if t-hipStrategyTime > tReflex then
-      print("Hip state 2",t) 
-      hipStrategy=2;
-      hipStrategyTime = t;
-    end
-  elseif hipStrategy ==2 then
-    if t-hipStrategyTime > tRecover then
-      print("Hip state End",t) 
-      active=false; --stop walking any more
-      hipStrategy=0;
-      hipStrategyTime = t+0.5;
-    else
-      phHip= (t- hipStrategyTime) /tRecover;     
-      hipAngle[1],hipAngle[2]=
-        (1-phHip)*hipTargetAngle[1],(1-phHip)*hipTargetAngle[2];
-    end
-  end
-
-end
-
-
 
 --Direct control of upper body
 function upper_body_override(qL, qR, bR)
@@ -333,10 +167,8 @@ function upper_body_override(qL, qR, bR)
   alphaArm = 0.2;
   alphaBody = 0.05;
 
-
   --Values for IK-based direct control
   alphaArm = 1;  alphaBody = 0;
-
 
   qLArmOR[1] = alphaArm * qLArmOR0[1] + (1-alphaArm)*qLArmOR[1];
   qLArmOR[2] = alphaArm * qLArmOR0[2] + (1-alphaArm)*qLArmOR[2];
@@ -386,42 +218,10 @@ function entry()
   Body.set_larm_hardness(hardnessArm);
   Body.set_rarm_hardness(hardnessArm);
 
-  --Reset push recovery variables 
-  hipStrategy = 0;
-  hipAngle = {0,0};
-  hipTargetAngle = {0,0};
-  hipStrategyTime = Body.get_time() + 1.0;
-  walkKickRequest = 0;
 end
 
 
 function update()
-
-  if testing then
-    --Stance parameters
-    bodyHeight = Config.walk.bodyHeight;
-    bodyTilt=Config.walk.bodyTilt or 0;
-    footX = mcm.get_footX();
-    footY = Config.walk.footY;
-    supportX = Config.walk.supportX;
-    supportY = Config.walk.supportY;
-
-    tStep0 = Config.walk.tStep;
-    tStep = Config.walk.tStep;
-    tZmp = Config.walk.tZmp;
-    stepHeight0 = Config.walk.stepHeight;
-    stepHeight = Config.walk.stepHeight;
-    ph1Single = Config.walk.phSingle[1];
-    ph2Single = Config.walk.phSingle[2];
-    ph1Zmp,ph2Zmp=ph1Single,ph2Single;
-
-    velLimitX = Config.walk.velLimitX or {-.06, .08};
-    velLimitY = Config.walk.velLimitY or {-.06, .06};
-    velLimitA = Config.walk.velLimitA or {-.4, .4};
-    velDelta = Config.walk.velDelta or {.03,.015,.15};
-  end
-
-  advanceMotion();
   footX = mcm.get_footX();
 
   t = Body.get_time();
@@ -434,7 +234,6 @@ function update()
   if enable_hip_pr then active= false; end
 
   if (not active) then 
-    check_push_recovery();
     update_still();
     return; 
   end
@@ -472,7 +271,6 @@ function update()
     supportMod = {0,0}; --Support Point modulation for walkkick
     shiftFactor = 0.5; --How much should we shift final Torso pose?
 
-    check_walkkick(); 
 
     if walkKickRequest==0 then
       if (stopRequest==1) then  --Final step
@@ -490,26 +288,6 @@ function update()
           uRight2 = step_right_destination(velCurrent, uLeft1, uRight1);
         else  -- Right support
           uLeft2 = step_left_destination(velCurrent, uLeft1, uRight1);
-        end
-        --Velocity-based support point modulation
-        toeTipCompensation = 0;
-        if velDiff[1]>0 then --Accelerating to front
-          supportMod[1] = supportFront2;
-        elseif velCurrent[1]>velFastForward then
-          supportMod[1] = supportFront;
-          toeTipCompensation = ankleMod[1];
-        elseif velCurrent[1]<0 then
-          supportMod[1] = supportBack;
-        elseif math.abs(velCurrent[3])>velFastTurn then
-          supportMod[1] = supportTurn; 
-        else
-          if velCurrent[2]>0.015 then
-            supportMod[1] = supportSideX; 
-            supportMod[2] = supportSideY; 
-          elseif velCurrent[2]<-0.015 then
-            supportMod[1] = supportSideX; 
-            supportMod[2] = -supportSideY; 
-          end
         end
       end
     end
@@ -529,19 +307,17 @@ function update()
     if supportLeg == 0 then --LS
       local uLeftTorso = util.pose_relative(uLeft1,uTorso1);
       local uTorsoModded = util.pose_global(
-      vector.new({supportMod[1],supportMod[2],0}),uTorso);
+        vector.new({supportMod[1],supportMod[2],0}),uTorso);
       local uLeftModded = util.pose_global (uLeftTorso,uTorsoModded); 
-      uSupport = util.pose_global(
-      {supportX, supportY, 0},uLeftModded);
+      uSupport = util.pose_global({supportX, supportY, 0},uLeftModded);
       Body.set_lleg_hardness(hardnessSupport);
       Body.set_rleg_hardness(hardnessSwing);
     else --RS
       local uRightTorso = util.pose_relative(uRight1,uTorso1);
       local uTorsoModded = util.pose_global(
-      vector.new({supportMod[1],supportMod[2],0}),uTorso);
+        vector.new({supportMod[1],supportMod[2],0}),uTorso);
       local uRightModded = util.pose_global (uRightTorso,uTorsoModded); 
-      uSupport = util.pose_global(
-      {supportX, -supportY, 0}, uRightModded);
+      uSupport = util.pose_global({supportX, -supportY, 0}, uRightModded);
       Body.set_lleg_hardness(hardnessSwing);
       Body.set_rleg_hardness(hardnessSupport);
     end
@@ -556,89 +332,30 @@ function update()
     aYP, aYN = zmp_solve(uSupport[2], uTorso1[2], uTorso2[2],
     uTorso1[2], uTorso2[2]);
 
-    --Compute maximum COM speed
-    --[[
-    dy0=(aYP-aYN)/tZmp + m1Y* (1-math.cosh(ph1Zmp*tStep/tZmp));
-    print("max DY:",dy0);
-    --]]
-
   end --End new step
 
   xFoot, zFoot = foot_phase(ph);  
   if initial_step>0 then zFoot=0;  end --Don't lift foot at initial step
   pLLeg[3], pRLeg[3] = 0;
   if supportLeg == 0 then    -- Left support
-    if current_step_type>1 then --walkkick
-      if xFoot<walkKickPh then uRight = 
-        util.se2_interpolate(xFoot*2, uRight1, uRight15);
-      else uRight = util.se2_interpolate(xFoot*2-1, uRight15, uRight2);
-      end
-    else
-      uRight = util.se2_interpolate(xFoot, uRight1, uRight2);
-    end
+    uRight = util.se2_interpolate(xFoot, uRight1, uRight2);
     pRLeg[3] = stepHeight*zFoot;
   else    -- Right support
-    if current_step_type>1 then --walkkick
-      if xFoot<walkKickPh then uLeft = util.se2_interpolate(xFoot*2, uLeft1, uLeft15);
-      else uLeft = util.se2_interpolate(xFoot*2-1, uLeft15, uLeft2);      
-      end
-    else
-      uLeft = util.se2_interpolate(xFoot, uLeft1, uLeft2);
-    end
+    uLeft = util.se2_interpolate(xFoot, uLeft1, uLeft2);
     pLLeg[3] = stepHeight*zFoot;
   end
   uTorsoOld=uTorso;
-
   uTorso = zmp_com(ph);
-
-  --Turning
-  local turnCompX=0;
-  if math.abs(velCurrent[3])>turnCompThreshold and
-    velCurrent[1]>-0.01 then
-    turnCompX = turnComp;
-  end
-
-  --Walking front
-  local frontCompX = 0;
-  if velCurrent[1]>0.04 then 
-    frontCompX = frontComp;
-  end
-  if velDiff[1]>0.02 then
-    frontCompX = frontCompX + AccelComp;
-  end
 
   --Arm movement compensation
   if upper_body_overridden>0 or motion_playing > 0 then
-    --mass shift to X
-    elbowX = 
-    - math.sin(qLArmOR[1]-math.pi/2+bodyRot[1])*math.cos(qLArmOR[2])
-    - math.sin(qRArmOR[1]-math.pi/2+bodyRot[1])*math.cos(qRArmOR[2]);
-    --mass shift to Y
-    elbowY = math.sin(qLArmOR[2]) + math.sin(qRArmOR[2]);
-    armPosCompX = elbowX * - 0.007;
-    armPosCompY = elbowY * - 0.007;
-    armPosCompX = elbowX * - 0.009;
-    armPosCompY = elbowY * - 0.009;
-    ---- SJ: Turn off torso compensation here for A/B comparison
-    if( no_stabilize ) then
-      armPosCompX = 0;
-      armPosCompY = 0;
-    end
-    pTorso[4], pTorso[5],pTorso[6] = 
-    bodyRot[1],bodyRot[2],bodyRot[3];
+    pTorso[4], pTorso[5],pTorso[6] = bodyRot[1],bodyRot[2],bodyRot[3];
   else
-    armPosCompX, armPosCompY = 0,0;
-    pTorso[4], pTorso[5],pTorso[6] = 
-    0,bodyTilt,0;
+    pTorso[4], pTorso[5],pTorso[6] = 0,bodyTilt,0;
   end
 
-  --Do not compensate for arm motions here
-  armPosCompX=0;
-  armPosCompY=0;
+  uTorsoActual = util.pose_global(vector.new({-footX,0,0}),uTorso);
 
-  uTorsoActual = util.pose_global(
-    vector.new({-footX+frontCompX+turnCompX+armPosCompX,armPosCompY,0}),
-    uTorso);
   pTorso[1], pTorso[2] = uTorsoActual[1],uTorsoActual[2]; 
   pTorso[6] = pTorso[6]+ uTorsoActual[3];
   pLLeg[1], pLLeg[2], pLLeg[6] = uLeft[1], uLeft[2], uLeft[3];
@@ -650,113 +367,17 @@ function update()
   -- end motion_body
 end
 
-function check_walkkick()
-  --Walkkick def: 
-  --tStep stepType supportFoot stepHeight bodyPosMod footPos1 footPos2
-  if walkKickRequest==0 then return; end
-
-  if walkKickRequest>0 and
-    walkKickRequest>#walkKick then
-
-    print("NEWNEWNEWKICK: WALKKICK DONE");
-    walkKickRequest = 0;
-    tStep = tStep0;
-    stepHeight = stepHeight0;
-    current_step_type=0;
-    velCurrent=vector.new({0,0,0});
-    velCommand=vector.new({0,0,0});
-    return;
-  end
-
-  if walkKickRequest==1 then 
-    --Check current supporLeg and feet positions
-    --and advance steps until ready
-    uFootErr = util.pose_relative(uLeft1,
-    util.pose_global(2*uLRFootOffset,uRight1) );
-    if supportLeg~=walkKick[1][3] or 
-      math.abs(uFootErr[1])>0.02 or
-      math.abs(uFootErr[2])>0.01 or
-      math.abs(uFootErr[3])>10*math.pi/180 then
-      if supportLeg == 0 then
-        uRight2 = util.pose_global( -2*uLRFootOffset, uLeft1); 
-      else
-        uLeft2 = util.pose_global( 2*uLRFootOffset, uRight1); 
-      end
-      return;
-    end
-  end
-  --  print("NEWNEWNEWKICK: WALKKICK, count",walkKickRequest);
-
-  tStep = walkKick[walkKickRequest][1];   
-  current_step_type = walkKick[walkKickRequest][2];   
-  supportLeg = walkKick[walkKickRequest][3];
-  stepHeight = walkKick[walkKickRequest][4];
-  supportMod = walkKick[walkKickRequest][5];
-  shiftFactor = walkKick[walkKickRequest][6];
-
-  if #walkKick[walkKickRequest] <=7 then
-    footPos1 =  walkKick[walkKickRequest][7];
-    if supportLeg == 0 then
-      -- TODO: look at uLRFootOffset for use here
-      uRight2 = util.pose_global(
-      {footPos1[1],footPos1[2]-2*footY,footPos1[3]},uLeft1);
-    else
-      uLeft2 = util.pose_global(
-      {footPos1[1],footPos1[2]+2*footY,footPos1[3]},uRight1);
-    end
-  else
-    footPos1 =  walkKick[walkKickRequest][7];
-    footPos2 =  walkKick[walkKickRequest][8];
-    if supportLeg == 0 then
-      uRight15 = util.pose_global(
-      {footPos1[1],footPos1[2]-2*footY,footPos1[3]},uLeft1);
-      uRight2 = util.pose_global(
-      {footPos2[1],footPos2[2]-2*footY,footPos2[3]},uLeft1);
-    else
-      uLeft15 = util.pose_global(
-      {footPos1[1],footPos1[2]+2*footY,footPos1[3]},uRight1);
-      uLeft2 = util.pose_global(
-      {footPos2[1],footPos2[2]+2*footY,footPos2[3]},uRight1);
-    end
-  end
-
-  walkKickRequest = walkKickRequest + 1;
-end
-
-
 function update_still()
   uTorso = step_torso(uLeft, uRight,0.5);
 
   --Arm movement compensation
   if upper_body_overridden>0 or motion_playing>0 then
-    --mass shift to X
-    elbowX = 
-    - math.sin(qLArmOR[1]-math.pi/2+bodyRot[1])*math.cos(qLArmOR[2])
-    - math.sin(qRArmOR[1]-math.pi/2+bodyRot[1])*math.cos(qRArmOR[2]);
-    --mass shift to Y
-    elbowY = math.sin(qLArmOR[2]) + math.sin(qRArmOR[2]);
-    armPosCompX = elbowX * - 0.007;
-    armPosCompY = elbowY * - 0.007;
-    pTorso[4], pTorso[5],pTorso[6] = 
-    bodyRot[1],bodyRot[2],bodyRot[3];
+    pTorso[4], pTorso[5],pTorso[6] = bodyRot[1],bodyRot[2],bodyRot[3];
   else
-    armPosCompX, armPosCompY = 0,0;
-    pTorso[4], pTorso[5],pTorso[6] = 
-    0,bodyTilt,0;
+    pTorso[4], pTorso[5],pTorso[6] = 0,bodyTilt,0;
   end
 
-  if enable_hip_pr then -- Hip strategy case
-    torsoShiftModY=-0.03;
-    torsoShiftModX=0;
-    uTorsoActual = util.pose_global(
-      vector.new({-footX+armPosCompX,armPosCompY,0})+
-      vector.new({torsoShiftModX*math.sin(hipAngle[1]),
-         torsoShiftModY*math.sin(hipAngle[2]),0}),uTorso);
-    pTorso[4],pTorso[5]=hipAngle[2],bodyTilt+hipAngle[1];
-  else
-    uTorsoActual = util.pose_global(
-      vector.new({-footX+armPosCompX,armPosCompY,0}), uTorso);
-  end
+  uTorsoActual = util.pose_global(vector.new({-footX,0,0}),uTorso);
 
   pTorso[6] = pTorso[6]+ uTorsoActual[3];
   pTorso[1], pTorso[2] = uTorsoActual[1],uTorsoActual[2]; 
@@ -779,18 +400,6 @@ function motion_legs(qLegs)
   gyro_roll0=imuGyr[1];
   gyro_pitch0=imuGyr[2];
 
-
-  -------------------------------------------------------------------------------
-  --------------------------------------------------------------------------------
-  ---- SJ: Turn off gyro feedback here for A/B comparison
-  if( no_stabilize ) then
-    gyro_roll0=0;
-    gyro_pitch0=0;
-  end
-  --    ------------------------------------------------------------------------------
-  --    ------------------------------------------------------------------------------
-
-
   --get effective gyro angle considering body angle offset
   if not active then --double support
     yawAngle = (uLeft[3]+uRight[3])/2-uTorsoActual[3];
@@ -799,20 +408,16 @@ function motion_legs(qLegs)
   elseif supportLeg==1 then
     yawAngle = uRight[3]-uTorsoActual[3];
   end
-  gyro_roll = gyro_roll0*math.cos(yawAngle) +
-  -gyro_pitch0* math.sin(yawAngle);
-  gyro_pitch = gyro_pitch0*math.cos(yawAngle)
-  -gyro_roll0* math.sin(yawAngle);
+  gyro_roll = gyro_roll0*math.cos(yawAngle) -gyro_pitch0* math.sin(yawAngle);
+  gyro_pitch = gyro_pitch0*math.cos(yawAngle) -gyro_roll0* math.sin(yawAngle);
 
   armShiftX=util.procFunc(gyro_pitch*armImuParamY[2],armImuParamY[3],armImuParamY[4]);
   armShiftY=util.procFunc(gyro_roll*armImuParamY[2],armImuParamY[3],armImuParamY[4]);
 
-  if hipStrategy == 0 then
-   ankleShiftX=util.procFunc(gyro_pitch*ankleImuParamX[2],ankleImuParamX[3],ankleImuParamX[4]);
-   ankleShiftY=util.procFunc(gyro_roll*ankleImuParamY[2],ankleImuParamY[3],ankleImuParamY[4]);
-   kneeShiftX=util.procFunc(gyro_pitch*kneeImuParamX[2],kneeImuParamX[3],kneeImuParamX[4]);
-   hipShiftY=util.procFunc(gyro_roll*hipImuParamY[2],hipImuParamY[3],hipImuParamY[4]);
-  end
+  ankleShiftX=util.procFunc(gyro_pitch*ankleImuParamX[2],ankleImuParamX[3],ankleImuParamX[4]);
+  ankleShiftY=util.procFunc(gyro_roll*ankleImuParamY[2],ankleImuParamY[3],ankleImuParamY[4]);
+  kneeShiftX=util.procFunc(gyro_pitch*kneeImuParamX[2],kneeImuParamX[3],kneeImuParamX[4]);
+  hipShiftY=util.procFunc(gyro_roll*hipImuParamY[2],hipImuParamY[3],hipImuParamY[4]);
 
   ankleShift[1]=ankleShift[1]+ankleImuParamX[1]*(ankleShiftX-ankleShift[1]);
   ankleShift[2]=ankleShift[2]+ankleImuParamY[1]*(ankleShiftY-ankleShift[2]);
@@ -822,6 +427,8 @@ function motion_legs(qLegs)
   armShift[2]=armShift[2]+armImuParamY[1]*(armShiftY-armShift[2]);
 
   --TODO: Toe/heel lifting
+  toeTipCompensation = 0;
+
 
   if not active then --Double support, standing still
     --qLegs[2] = qLegs[2] + hipShift[2];    --Hip roll stabilization
@@ -841,7 +448,11 @@ function motion_legs(qLegs)
     qLegs[6] = qLegs[6] + ankleShift[2];    --Ankle roll stabilization
 
     qLegs[11] = qLegs[11]  + toeTipCompensation*phComp;--Lifting toetip
-    qLegs[2] = qLegs[2] + hipRollCompensation*phComp; --Hip roll compensation
+
+--    if initial_step==0 then 
+    if true then
+      qLegs[2] = qLegs[2] + hipRollCompensation*phComp; --Hip roll compensation
+    end
   else
     qLegs[8] = qLegs[8]  + hipShift[2];    --Hip roll stabilization
     qLegs[10] = qLegs[10] + kneeShift;    --Knee pitch stabilization
@@ -849,7 +460,10 @@ function motion_legs(qLegs)
     qLegs[12] = qLegs[12] + ankleShift[2];    --Ankle roll stabilization
 
     qLegs[5] = qLegs[5]  + toeTipCompensation*phComp;--Lifting toetip
-    qLegs[8] = qLegs[8] - hipRollCompensation*phComp;--Hip roll compensation
+--    if initial_step==0 then 
+    if true then
+      qLegs[8] = qLegs[8] - hipRollCompensation*phComp;--Hip roll compensation
+    end
   end
 
   Body.set_lleg_command(qLegs);
@@ -859,46 +473,20 @@ function motion_arms()
   local qLArmActual={};   
   local qRArmActual={};   
 
-  --  if current_step_type== 3 then --Side kick, wide arm stance
-  if enable_hip_pr then --Wide stance for push recovery
+  qLArmActual[1],qLArmActual[2]=qLArm0[1]+armShift[1],qLArm0[2]+armShift[2];
+  qRArmActual[1],qRArmActual[2]=qRArm0[1]+armShift[1],qRArm0[2]+armShift[2];
 
-    qLArmActual[1],qLArmActual[2]=
-	qLArmKick0[1]+armShift[1],qLArmKick0[2]*0.5+armShift[2];
-    qRArmActual[1],qRArmActual[2]=
-	qRArmKick0[1]+armShift[1],qRArmKick0[2]*0.5+armShift[2];
-
-  else --Normal arm stance
-    qLArmActual[1],qLArmActual[2]=qLArm0[1]+armShift[1],qLArm0[2]+armShift[2];
-    qRArmActual[1],qRArmActual[2]=qRArm0[1]+armShift[1],qRArm0[2]+armShift[2];
-  end
-
+--[[
   if upper_body_overridden>0 or motion_playing>0 then
     qLArmActual[1],qLArmActual[2],qLArmActual[3]=qLArmOR[1],qLArmOR[2],qLArmOR[3];
     qRArmActual[1],qRArmActual[2],qRArmActual[3]=qRArmOR[1],qRArmOR[2],qRArmOR[3];
-
     qLArmActual[4],qLArmActual[5],qLArmActual[6]=qLArmOR[4],qLArmOR[5],qLArmOR[6];
     qRArmActual[4],qRArmActual[5],qRArmActual[6]=qRArmOR[4],qRArmOR[5],qRArmOR[6];
-
-
   end
+--]]
 
-  armXF = 2.0;
-  armYF = 2.0;
-
-  qLArmActual[1],qLArmActual[2]= 
-	qLArmActual[1] + armXF*hipAngle[1],
-	qLArmActual[2] + armYF*hipAngle[2];
-  qRArmActual[1],qRArmActual[2]= 
-	qRArmActual[1] + armXF * hipAngle[1],
-	qRArmActual[2] + armYF * hipAngle[2];
-
-  --Check leg hitting
---They are OP specific
-  if upper_body_overridden>0 or motion_playing>0 then
-  else
-    qLArmActual[3]=qLArm0[3];
-    qRArmActual[3]=qRArm0[3];
-  end
+  qLArmActual[3]=qLArm0[3];
+  qRArmActual[3]=qRArm0[3];
   Body.set_larm_command(qLArmActual);
   Body.set_rarm_command(qRArmActual);
 
@@ -986,14 +574,8 @@ function set_velocity(vx, vy, va)
 end
 
 function update_velocity()
-  if velCurrent[1]>velXHigh then
-    --Slower accelleration at high speed 
-    velDiff[1]= math.min(math.max(velCommand[1]-velCurrent[1],
-    -velDelta[1]),velDeltaXHigh); 
-  else
-    velDiff[1]= math.min(math.max(velCommand[1]-velCurrent[1],
+  velDiff[1]= math.min(math.max(velCommand[1]-velCurrent[1],
     -velDelta[1]),velDelta[1]);
-  end
   velDiff[2]= math.min(math.max(velCommand[2]-velCurrent[2],
   -velDelta[2]),velDelta[2]);
   velDiff[3]= math.min(math.max(velCommand[3]-velCurrent[3],
@@ -1036,136 +618,6 @@ end
 
 function stopAlign() --Depreciated, we always stop with feet together 
   stop()
-end
-
-function doWalkKickLeft()
-  if walkKickRequest==0 then
-    walkKickRequest = 1; 
-    walkKick = walkKickDef["FrontLeft"];
-  end
-end
-
-function doWalkKickRight()
-  if walkKickRequest==0 then
-    walkKickRequest = 1; 
-    walkKick = walkKickDef["FrontRight"];
-  end
-end
-
-function doWalkKickLeft2()
-  if walkKickRequest==0 then
-    walkKickRequest = 1; 
-    walkKick = walkKickDef["FrontLeft2"];
-  end
-end
-
-function doWalkKickRight2()
-  if walkKickRequest==0 then
-    walkKickRequest = 1; 
-    walkKick = walkKickDef["FrontRight2"];
-  end
-end
-
-function doSideKickLeft()
-  if walkKickRequest==0 then
-    walkKickRequest = 1; 
-    walkKick = walkKickDef["SideLeft"];
-  end
-end
-
-function doSideKickRight()
-  if walkKickRequest==0 then
-    walkKickRequest = 1; 
-    walkKick = walkKickDef["SideRight"];
-  end
-end
-
-
-
---dummy function for NSL kick, depreciated
-function zero_velocity()
-end
-
-function doPunch(punchtype)
-  if(punchtype=='left') then
-    if walkKickRequest==0 then
-      walkKickRequest = 1;
-      walkKick = walkKickDef["PunchRight"];
-    end
-  else
-    if walkKickRequest==0 then
-      walkKickRequest = 1;
-      walkKick = walkKickDef["PunchLeft"];
-    end
-  end
-end
-
-function startMotion(motionname)
-  if motion_playing==0 then
-    motion_playing = 1;
-    current_motion = Config.walk.motionDef[motionname];
-    motion_index = 1;
-    motion_start_time = Body.get_time();
-
-    qLArmOR1 = current_motion[1][2];
-    qRArmOR1 = current_motion[1][3];
-    bodyRot0 = {0,bodyTilt,0};
-
-    if #current_motion[1] > 3 then
-      bodyRot1 = current_motion[1][4];
-    else
-      bodyRot1 = bodyRot0;
-    end
-
-    Body.set_larm_hardness({0.7,0.7,0.7});
-    Body.set_rarm_hardness({0.7,0.7,0.7});
-
-  end
-end
-
-function advanceMotion()
-  if motion_playing==0 then
-    return;
-  end
-  t = Body.get_time();
-  cur_motion_frame = current_motion[motion_index];
-  ph = (t-motion_start_time) / cur_motion_frame[1];
-  if ph>1 then --Advance frame
-    if #current_motion == motion_index then
-      motion_playing = 0;
-      Body.set_larm_hardness(hardnessArm);
-      Body.set_rarm_hardness(hardnessArm);
-
-    else
-      motion_index = motion_index + 1;
-      motion_start_time = t;
-      qLArmOR0[1],qLArmOR0[2],qLArmOR0[3]=
-      qLArmOR1[1],qLArmOR1[2],qLArmOR1[3];
-      qRArmOR0[1],qRArmOR0[2],qRArmOR0[3]=
-      qRArmOR1[1],qRArmOR1[2],qRArmOR1[3];
-      bodyRot0[1],bodyRot0[2],bodyRot0[3]=
-      bodyRot1[1],bodyRot1[2],bodyRot1[3];
-
-      qLArmOR1 = current_motion[motion_index][2];
-      qRArmOR1 = current_motion[motion_index][3];
-      if #current_motion[1] > 3 then
-        bodyRot1 = current_motion[motion_index][4];
-      else
-        bodyRot1 = bodyRot0;
-      end
-    end
-  else
-    qLArmOR[1] = (1-ph) * qLArmOR0[1] + ph* qLArmOR1[1];
-    qLArmOR[2] = (1-ph) * qLArmOR0[2] + ph* qLArmOR1[2];
-    qLArmOR[3] = (1-ph) * qLArmOR0[3] + ph* qLArmOR1[3];
-    qRArmOR[1] = (1-ph) * qRArmOR0[1] + ph* qRArmOR1[1];
-    qRArmOR[2] = (1-ph) * qRArmOR0[2] + ph* qRArmOR1[2];
-    qRArmOR[3] = (1-ph) * qRArmOR0[3] + ph* qRArmOR1[3];
-
-    bodyRot[1] = (1-ph) * bodyRot0[1] + ph* bodyRot1[1];
-    bodyRot[2] = (1-ph) * bodyRot0[2] + ph* bodyRot1[2];
-    bodyRot[3] = (1-ph) * bodyRot0[3] + ph* bodyRot1[3];
-  end
 end
 
 
@@ -1251,42 +703,45 @@ function foot_phase(ph)
   -- phSingle = 0: x=0, z=0, phSingle = 1: x=1,z=0
   phSingle = math.min(math.max(ph-ph1Single, 0)/(ph2Single-ph1Single),1);
   local phSingleSkew = phSingle^0.8 - 0.17*phSingle*(1-phSingle);
-  local xf = .5*(1-math.cos(math.pi*phSingleSkew));
+
+
+  ph1SingleX,ph2SingleX = ph1Single, ph2Single;
+--  ph1SingleX,ph2SingleX = 0.35, 0.65; -- Vertical takeoff / landing
+--  ph1SingleX,ph2SingleX = 0.25, 0.75; -- Vertical takeoff / landing
+
+  phSingleX = math.min(math.max(ph-ph1SingleX, 0)/(ph2Single-ph1SingleX),1);
+  local phSingleSkewX = phSingleX^0.8 - 0.17*phSingleX*(1-phSingleX);
+
+
+--  local xf = .5*(1-math.cos(math.pi*phSingleSkew));
+  local xf = .5*(1-math.cos(math.pi*phSingleSkewX));
   local zf = .5*(1-math.cos(2*math.pi*phSingleSkew));
-
-
-  if use_alternative_trajectory>0 then
-    ph1FootPhase = 0.1;
-    ph2FootPhase = 0.5;
-    ph3FootPhase = 0.8;
-
-    exp1FootPhase = 2;
-    exp2FootPhase = 2;
-    exp3FootPhase = 2;
-
-    zFootLand = 0.3;    
-
-    if phSingle < ph1FootPhase then
-      phZTemp = phSingle / ph2FootPhase;
-      --      xf = 0;
-      --      zf = 1 - (1-phZTemp)^exp1FootPhase;
-    elseif phSingle < ph2FootPhase then
-      phXTemp = (phSingle-ph1FootPhase)/(ph3FootPhase-ph1FootPhase);
-      phZTemp = phSingle / ph2FootPhase;
-      --      xf =  .5*(1-math.cos(math.pi*phXTemp));
-      --      zf = 1 - (1-phZTemp)^exp1FootPhase;
-    elseif phSingle < ph3FootPhase then
-      phXTemp = (phSingle-ph1FootPhase)/(ph3FootPhase-ph1FootPhase);
-      phZTemp = (phSingle-ph2FootPhase)/(ph3FootPhase-ph2FootPhase);
-      --      xf =  .5*(1-math.cos(math.pi*phXTemp));
-      --      zf = 1 - phZTemp^exp2FootPhase*(1-zFootLand);
-    else
-      phZTemp = (1-phSingle) / (1-ph3FootPhase);
-      --      xf = 1;
-      --      zf = phZTemp^exp3FootPhase*zFootLand;
-    end
-  end
   return xf, zf;
 end
 
 entry();
+
+function doWalkKickLeft()
+end
+
+function doWalkKickRight()
+end
+
+function doWalkKickLeft2()
+end
+
+function doWalkKickRight2()
+end
+
+function doSideKickLeft()
+end
+
+function doSideKickRight()
+end
+
+function zero_velocity()
+end
+
+function doPunch(punchtype)
+end
+

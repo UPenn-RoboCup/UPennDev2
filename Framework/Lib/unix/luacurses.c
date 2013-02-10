@@ -191,6 +191,22 @@ static int luacurses_scanw(lua_State *L) {
   return lua_gettop(L);
 }
 
+static int luacurses_resizeterm(lua_State *L) {
+  int lines = luaL_checkint(L, 1);
+  int columns = luaL_checkint(L, 2);
+  lua_pushinteger(L, resizeterm(lines, columns));
+  return 1;
+}
+
+static int luacurses_getmaxyx(lua_State *L) {
+  int y;
+  int x;
+  getmaxyx(stdscr, y, x);
+  lua_pushinteger(L, y);
+  lua_pushinteger(L, x);
+  return 2;
+}
+
 /* Attributes */
 
 static int luacurses_attron(lua_State *L) {
@@ -231,6 +247,8 @@ static const struct luaL_reg curses_lib [] = {
   {"attron", luacurses_attron},
   {"attroff", luacurses_attroff},
   {"scanw", luacurses_scanw},
+  {"resizeterm", luacurses_resizeterm},
+  {"getmaxyx", luacurses_getmaxyx},
   {NULL, NULL}
 };
 

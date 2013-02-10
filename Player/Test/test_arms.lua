@@ -77,11 +77,11 @@ function process_keyinput()
   local update_walk_vel = false;
   local update_arm = false;
   -- Walk velocity setting
-  if byte==string.byte("i") then	targetvel[1]=targetvel[1]+0.05; update_walk_vel = true;
+  if byte==string.byte("i") then	targetvel[1]=targetvel[1]+0.1; update_walk_vel = true;
   elseif byte==string.byte("j") then	targetvel[3]=targetvel[3]+0.1; update_walk_vel = true;
   elseif byte==string.byte("k") then	targetvel[1],targetvel[2],targetvel[3]=0,0,0; update_walk_vel = true;
   elseif byte==string.byte("l") then	targetvel[3]=targetvel[3]-0.1; update_walk_vel = true;
-  elseif byte==string.byte(",") then	targetvel[1]=targetvel[1]-0.05; update_walk_vel = true;
+  elseif byte==string.byte(",") then	targetvel[1]=targetvel[1]-0.1; update_walk_vel = true;
 --  elseif byte==string.byte("h") then	targetvel[2]=targetvel[2]+0.02; update_walk_vel = true;
   elseif byte==string.byte(";") then	targetvel[2]=targetvel[2]-0.02; update_walk_vel = true;
 

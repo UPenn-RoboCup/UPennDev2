@@ -15,6 +15,7 @@ end
 -- Setup
 ---------------------------------------------------------------------------
 
+local N_JOINT = 12
 local joint = Config.joint
 local simulator_iterations = 2
 
@@ -24,11 +25,11 @@ local max_stiffness = 20000
 local max_damping = 0  -- damping disabled due to ODE instability
 local max_velocity = 7
 local max_acceleration = 70
-local velocity_p_gain = 0.25*vector.ones(#joint.id)
+local velocity_p_gain = 0.25*vector.ones(N_JOINT)
 
-local joint_ff_force = vector.zeros(#joint.id)
-local joint_p_force = vector.zeros(#joint.id)
-local joint_d_force = vector.zeros(#joint.id)
+local joint_ff_force = vector.zeros(N_JOINT)
+local joint_p_force = vector.zeros(N_JOINT)
+local joint_d_force = vector.zeros(N_JOINT)
 
 local tags = {} -- webots tags
 local time_step = nil
@@ -61,7 +62,7 @@ local function initialize_devices()
   tags.physics_emitter = webots.wb_robot_get_device('physics_emitter')
 
   tags.servo = {}
-  for i = 1,#joint.id do
+  for i = 1,N_JOINT do
     tags.servo[i] = webots.wb_robot_get_device(servoNames[i])
     webots.wb_servo_enable_position(tags.servo[i], time_step)
     webots.wb_servo_enable_motor_force_feedback(tags.servo[i], time_step)
@@ -83,11 +84,11 @@ local function update_actuators()
   local joint_velocity_actual = dcm:get_joint_velocity_sensor()
   local joint_stiffness = dcm:get_joint_stiffness()
   local joint_damping = dcm:get_joint_damping()
-  local position_error = vector.zeros(#joint.id)
-  local velocity_error = vector.zeros(#joint.id)
+  local position_error = vector.zeros(N_JOINT)
+  local velocity_error = vector.zeros(N_JOINT)
 
   -- calculate joint forces
-  for i = 1,#joint.id do
+  for i = 1,N_JOINT do
     if (joint_enable[i] == 0) then
       -- zero forces
       joint_ff_force[i] = 0 
@@ -112,7 +113,7 @@ local function update_actuators()
   end
 
   -- update spring force using motor velocity controller
-  for i = 1,#joint.id do
+  for i = 1,N_JOINT do
     local max_servo_force = math.abs(joint_p_force[i])
     local servo_velocity = velocity_p_gain[i]*position_error[i]*(1000/time_step)
     servo_velocity = limit(servo_velocity, -max_velocity, max_velocity)
@@ -120,19 +121,19 @@ local function update_actuators()
     webots.wb_servo_set_velocity(tags.servo[i], servo_velocity)
   end
 
-  local buffer = cbuffer.new((#joint.id + 7)*8)
+  local buffer = cbuffer.new((N_JOINT + 7)*8)
 
   -- update feedforward and damping forces using physics plugin
-  for i = 1,#joint.id do
+  for i = 1,N_JOINT do
     local servo_force = joint_ff_force[i] + joint_d_force[i]
     servo_force =  limit(servo_force, -max_force, max_force)
     buffer:set('double', servo_force, (i-1)*8)
   end
 
   -- update torso twist using physics plugin
-  buffer:set('double', torso_twist_updated, (#joint.id)*8)
+  buffer:set('double', torso_twist_updated, (N_JOINT)*8)
   for i = 1,6 do
-    buffer:set('double', torso_twist[i], (#joint.id + i)*8)
+    buffer:set('double', torso_twist[i], (N_JOINT + i)*8)
   end
   torso_twist_updated = 0
 
@@ -142,7 +143,7 @@ end
 local function update_sensors()
   -- update webots sensor values
   local joint_enable = dcm:get_joint_enable()
-  for i = 1,#joint.id do
+  for i = 1,N_JOINT do
     if (joint_enable[i] == 0) then
       dcm:set_joint_force_sensor(0, i)
     else
@@ -168,15 +169,15 @@ local function update_sensors()
   -- update force-torque readings and joint velocities using physics plugin
   local buffer = cbuffer.new(webots.wb_receiver_get_data(tags.physics_receiver))
   local joint_velocity = {}
-  for i = 1,#joint.id do
+  for i = 1,N_JOINT do
     joint_velocity[i] = buffer:get('double', (i-1)*8)
   end
   dcm:set_joint_velocity_sensor(joint_velocity)
   local l_fts = {}
   local r_fts = {}
   for i = 1,6 do
-    l_fts[i] = buffer:get('double', (i-1)*8 + #joint.id*8)
-    r_fts[i] = buffer:get('double', (i-1)*8 + #joint.id*8 + 48)
+    l_fts[i] = buffer:get('double', (i-1)*8 + N_JOINT*8)
+    r_fts[i] = buffer:get('double', (i-1)*8 + N_JOINT*8 + 48)
   end
   dcm:set_force_torque(l_fts, 'l_foot')
   dcm:set_force_torque(r_fts, 'r_foot')

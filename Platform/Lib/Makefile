@@ -12,6 +12,6 @@ clean:
 	cd Epos && make clean && cd $(CWD)
 	cd Microstrain && make clean && cd $(CWD)
 	cd NetFT && make clean && cd $(CWD)
-	cd KDL && make && cd $(CWD)
+	cd KDL && make clean && cd $(CWD)
 
 .PHONY: all clean

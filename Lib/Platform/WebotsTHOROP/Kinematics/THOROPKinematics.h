@@ -37,6 +37,13 @@ const double aThigh = atan(kneeOffsetX/thighLength);
 const double dTibia = sqrt(tibiaLength*tibiaLength+kneeOffsetX*kneeOffsetX);
 const double aTibia = atan(kneeOffsetX/tibiaLength);
 
+const double dUpperArm = sqrt(upperArmLength*upperArmLength+elbowOffsetX*elbowOffsetX);
+const double dLowerArm = sqrt(lowerArmLength*lowerArmLength+elbowOffsetX*elbowOffsetX);
+const double aUpperArm = atan(elbowOffsetX/upperArmLength);
+const double aLowerArm = atan(elbowOffsetX/lowerArmLength);
+
+
+
 const double servoOffset[] = {
   0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
   0.0, 0.0, 0.0, 0.0, 0.0, 0.0

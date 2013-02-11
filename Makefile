@@ -79,6 +79,28 @@ webots_ash:
 	&& rm -f comms_manager \
 	&& cd $(CWD)
 
+webots_ash_lowerbody:
+	cd Framework/Lib && make && cd $(CWD)
+	cd Framework/Lib/webots && make && cd $(CWD)
+	cd Platform/WebotsASHLowerbody && make && cd $(CWD)
+	cd Framework/Platform \
+	&& rm -f ./* \
+	&& ln -s ../../Platform/WebotsASHLowerbody/Platform.lua Platform.lua \
+	&& ln -s ../../Platform/WebotsASHLowerbody/Sensor.lua Sensor.lua \
+	&& ln -s ../../Platform/WebotsASHLowerbody/Mechanics/Kinematics.$(SHLIBEXT) Kinematics.$(SHLIBEXT) \
+	&& ln -s ../../Platform/WebotsASHLowerbody/Mechanics/Dynamics.$(SHLIBEXT) Dynamics.$(SHLIBEXT) \
+	&& cd $(CWD)
+	cd Config \
+	&& rm -f Config.lua \
+	&& ln -s Config_WebotsASHLowerbody.lua Config.lua \
+	&& cd $(CWD)
+	rm -f Webots \
+	&& ln -s Platform/WebotsASHLowerbody/Project Webots
+	cd Run \
+	&& rm -f init_robot \
+	&& rm -f comms_manager \
+	&& cd $(CWD)
+
 robotis_arm:
 	cd Framework/Lib && make && cd $(CWD)
 	cd Platform/Lib && make && cd $(CWD)

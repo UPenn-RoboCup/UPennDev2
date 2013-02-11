@@ -35,6 +35,8 @@ THOROP_kinematics_forward_joints(const double *r)
   return q;
 }
 
+//DH transform params: (alpha, a, theta, d)
+
   Transform
 THOROP_kinematics_forward_head(const double *q)
 {
@@ -48,30 +50,32 @@ THOROP_kinematics_forward_head(const double *q)
   Transform
 THOROP_kinematics_forward_l_arm(const double *q) 
 {
+//New FK for 6-dof arm (pitch-roll-yaw-pitch-yaw-roll)
   Transform t;
   t = t.translateY(shoulderOffsetY)
     .translateZ(shoulderOffsetZ)
     .mDH(-PI/2, 0, q[0], 0)
     .mDH(PI/2, 0, PI/2+q[1], 0)
-    .mDH(PI/2, 0, 0, upperArmLength)
-    .mDH(q[2]-PI/2, 0, 0, 0)
-    .mDH(PI/2, 0, 0, lowerArmLength)
-    .rotateX(-PI/2).rotateZ(-PI/2);
+    .mDH(PI/2, 0, PI/2+q[2], upperArmLength)
+    .mDH(PI/2, elbowOffsetX, q[3], 0)
+    .mDH(-PI/2, -elbowOffsetX, -PI/2+q[4], lowerArmLength)
+    .mDH(-PI/2, 0, -PI/2+q[5], 0);
   return t;
 }
 
   Transform
 THOROP_kinematics_forward_r_arm(const double *q) 
 {
+//New FK for 6-dof arm (pitch-roll-yaw-pitch-yaw-roll)
   Transform t;
   t = t.translateY(-shoulderOffsetY)
     .translateZ(shoulderOffsetZ)
     .mDH(-PI/2, 0, q[0], 0)
     .mDH(PI/2, 0, PI/2+q[1], 0)
-    .mDH(PI/2, 0, 0, upperArmLength)
-    .mDH(q[2]-PI/2, 0, 0, 0)
-    .mDH(PI/2, 0, 0, lowerArmLength)
-    .rotateX(-PI/2).rotateZ(-PI/2);
+    .mDH(PI/2, 0, PI/2+q[2], upperArmLength)
+    .mDH(PI/2, elbowOffsetX, q[3], 0)
+    .mDH(-PI/2, -elbowOffsetX, -PI/2+q[4], lowerArmLength)
+    .mDH(-PI/2, 0, -PI/2+q[5], 0);
   return t;
 }
 
@@ -129,6 +133,20 @@ THOROP_kinematics_inverse_joints(const double *q)  //dereks code to write
   std::vector<double>
 THOROP_kinematics_inverse_arm(Transform trArm, int arm)
 {
+  Transform t;
+  if (arm==ARM_LEFT){
+    t=t.translateZ(-shoulderOffsetZ)
+	.translateY(-shoulderOffsetY)
+	*trArm;
+  }else{
+    t=t.translateZ(-shoulderOffsetZ)
+	.translateY(shoulderOffsetY)
+	*trArm;
+  }
+
+  printTransform(t) ;
+
+
   std::vector<double> qArm(6);
   return qArm;
 }

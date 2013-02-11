@@ -26,9 +26,10 @@ require 'mcm'
 -- Arms
 require 'pickercm'
 
+require ('Kinematics')
 
 -- Left arm 
-qLArmOD = math.pi/180*vector.new({110, 12, -0, -40,0,0});
+qLArmOD = math.pi/180*vector.new({90, 0, 0, 0,0,0});
 
 
 
@@ -87,19 +88,19 @@ function process_keyinput()
 
   -- Arm direct control
 
-  elseif byte==string.byte("q") then  qLArmOD[1]=qLArmOD[1] + 5*math.pi/180; update_arm=true;
-  elseif byte==string.byte("w") then  qLArmOD[2]=qLArmOD[2] + 5*math.pi/180; update_arm=true;
-  elseif byte==string.byte("e") then  qLArmOD[3]=qLArmOD[3] + 5*math.pi/180; update_arm=true;
-  elseif byte==string.byte("r") then  qLArmOD[4]=qLArmOD[4] + 5*math.pi/180; update_arm=true;
-  elseif byte==string.byte("t") then  qLArmOD[5]=qLArmOD[5] + 5*math.pi/180; update_arm=true;
-  elseif byte==string.byte("y") then  qLArmOD[6]=qLArmOD[6] + 5*math.pi/180; update_arm=true;
+  elseif byte==string.byte("q") then  qLArmOD[1]=qLArmOD[1] + 15*math.pi/180; update_arm=true;
+  elseif byte==string.byte("w") then  qLArmOD[2]=qLArmOD[2] + 15*math.pi/180; update_arm=true;
+  elseif byte==string.byte("e") then  qLArmOD[3]=qLArmOD[3] + 15*math.pi/180; update_arm=true;
+  elseif byte==string.byte("r") then  qLArmOD[4]=qLArmOD[4] + 15*math.pi/180; update_arm=true;
+  elseif byte==string.byte("t") then  qLArmOD[5]=qLArmOD[5] + 15*math.pi/180; update_arm=true;
+  elseif byte==string.byte("y") then  qLArmOD[6]=qLArmOD[6] + 15*math.pi/180; update_arm=true;
 
-  elseif byte==string.byte("a") then  qLArmOD[1]=qLArmOD[1] - 5*math.pi/180; update_arm=true;
-  elseif byte==string.byte("s") then  qLArmOD[2]=qLArmOD[2] - 5*math.pi/180; update_arm=true;
-  elseif byte==string.byte("d") then  qLArmOD[3]=qLArmOD[3] - 5*math.pi/180; update_arm=true;
-  elseif byte==string.byte("f") then  qLArmOD[4]=qLArmOD[4] - 5*math.pi/180; update_arm=true;
-  elseif byte==string.byte("g") then  qLArmOD[5]=qLArmOD[5] - 5*math.pi/180; update_arm=true;
-  elseif byte==string.byte("h") then  qLArmOD[6]=qLArmOD[6] - 5*math.pi/180; update_arm=true;
+  elseif byte==string.byte("a") then  qLArmOD[1]=qLArmOD[1] - 15*math.pi/180; update_arm=true;
+  elseif byte==string.byte("s") then  qLArmOD[2]=qLArmOD[2] - 15*math.pi/180; update_arm=true;
+  elseif byte==string.byte("d") then  qLArmOD[3]=qLArmOD[3] - 15*math.pi/180; update_arm=true;
+  elseif byte==string.byte("f") then  qLArmOD[4]=qLArmOD[4] - 15*math.pi/180; update_arm=true;
+  elseif byte==string.byte("g") then  qLArmOD[5]=qLArmOD[5] - 15*math.pi/180; update_arm=true;
+  elseif byte==string.byte("h") then  qLArmOD[6]=qLArmOD[6] - 15*math.pi/180; update_arm=true;
 
   -- Walk commands
   elseif byte==string.byte("7") then
@@ -119,11 +120,42 @@ function process_keyinput()
     walk.set_velocity(unpack(targetvel));
   end
   if ( update_arm ) then
-    print("Arm update",qLArmOD);
+    print("Arm update",	vector.new(qLArmOD)*180/math.pi);
+
+    local torso_larm = Kinematics.l_arm_torso(qLArmOD);
+    print("Position:",
+	torso_larm[1],
+	torso_larm[2]-0.219, --Shoulder offset
+	torso_larm[3]-0.144);
+    print("RPY:",
+	torso_larm[4]*180/math.pi,
+	torso_larm[5]*180/math.pi,
+	torso_larm[6]*180/math.pi);
+
+    print("LINV")
+    local qLarmInv = Kinematics.inverse_l_arm(torso_larm);
+    walk.upper_body_override_on();
+    walk.upper_body_override(qLArmOD, walk.qRArm0, walk.bodyRot0);
+
+
+--[[
+    local torso_larm = Kinematics.r_arm_torso(qLArmOD);
+    print("Position:",
+	torso_larm[1],
+	torso_larm[2]+0.219, --YShoulder offset
+	torso_larm[3]-0.144);
+    print("RPY:",
+	torso_larm[4]*180/math.pi,
+	torso_larm[5]*180/math.pi,
+	torso_larm[6]*180/math.pi);
+    print("RINV")
+    local qLarmInv = Kinematics.inverse_r_arm(torso_larm);
+    walk.upper_body_override_on();
+    walk.upper_body_override(walk.qLArm0,qLArmOD, walk.bodyRot0);
+--]]
+
   end
 
-  walk.upper_body_override_on();
-  walk.upper_body_override(qLArmOD,walk.qRArm0, walk.bodyRot0);
 
   return true
   

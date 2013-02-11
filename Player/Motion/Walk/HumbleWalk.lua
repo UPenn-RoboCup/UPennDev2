@@ -231,7 +231,6 @@ function update()
   if  bodyHeightCurrent<bodyHeight-0.01 then
     return;
   end
-  if enable_hip_pr then active= false; end
 
   if (not active) then 
     update_still();
@@ -476,17 +475,15 @@ function motion_arms()
   qLArmActual[1],qLArmActual[2]=qLArm0[1]+armShift[1],qLArm0[2]+armShift[2];
   qRArmActual[1],qRArmActual[2]=qRArm0[1]+armShift[1],qRArm0[2]+armShift[2];
 
---[[
   if upper_body_overridden>0 or motion_playing>0 then
     qLArmActual[1],qLArmActual[2],qLArmActual[3]=qLArmOR[1],qLArmOR[2],qLArmOR[3];
     qRArmActual[1],qRArmActual[2],qRArmActual[3]=qRArmOR[1],qRArmOR[2],qRArmOR[3];
     qLArmActual[4],qLArmActual[5],qLArmActual[6]=qLArmOR[4],qLArmOR[5],qLArmOR[6];
     qRArmActual[4],qRArmActual[5],qRArmActual[6]=qRArmOR[4],qRArmOR[5],qRArmOR[6];
   end
---]]
 
-  qLArmActual[3]=qLArm0[3];
-  qRArmActual[3]=qRArm0[3];
+--  qLArmActual[3]=qLArm0[3];
+--  qRArmActual[3]=qRArm0[3];
   Body.set_larm_command(qLArmActual);
   Body.set_rarm_command(qRArmActual);
 

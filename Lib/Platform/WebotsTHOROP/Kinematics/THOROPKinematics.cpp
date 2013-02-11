@@ -59,7 +59,8 @@ THOROP_kinematics_forward_l_arm(const double *q)
     .mDH(PI/2, 0, PI/2+q[2], upperArmLength)
     .mDH(PI/2, elbowOffsetX, q[3], 0)
     .mDH(-PI/2, -elbowOffsetX, -PI/2+q[4], lowerArmLength)
-    .mDH(-PI/2, 0, -PI/2+q[5], 0);
+    .mDH(-PI/2, 0, -PI/2+q[5], 0)
+    .translateX(handOffsetX).translateZ(handOffsetZ);
   return t;
 }
 
@@ -75,7 +76,9 @@ THOROP_kinematics_forward_r_arm(const double *q)
     .mDH(PI/2, 0, PI/2+q[2], upperArmLength)
     .mDH(PI/2, elbowOffsetX, q[3], 0)
     .mDH(-PI/2, -elbowOffsetX, -PI/2+q[4], lowerArmLength)
-    .mDH(-PI/2, 0, -PI/2+q[5], 0);
+    .mDH(-PI/2, 0, -PI/2+q[5], 0)
+    .translateX(handOffsetX).translateZ(handOffsetZ);
+
   return t;
 }
 
@@ -137,12 +140,30 @@ THOROP_kinematics_inverse_arm(Transform trArm, int arm)
   if (arm==ARM_LEFT){
     t=t.translateZ(-shoulderOffsetZ)
 	.translateY(-shoulderOffsetY)
-	*trArm;
+	*trArm
+        .translateZ(-handOffsetZ)
+	.translateX(-handOffsetX);
   }else{
     t=t.translateZ(-shoulderOffsetZ)
 	.translateY(shoulderOffsetY)
-	*trArm;
+	*trArm
+        .translateZ(-handOffsetZ)
+	.translateX(-handOffsetX);
   }
+
+  double xWrist[3];
+  for (int i = 0; i < 3; i++) xWrist[i]=0;
+  t.apply(xWrist);
+
+  // Elbow pitch
+  double dWrist = xWrist[0]*xWrist[0]+xWrist[1]*xWrist[1]+xWrist[2]*xWrist[2];
+  double cElbow = .5*(dWrist-dUpperArm*dUpperArm-dLowerArm*dLowerArm)/(dUpperArm*dLowerArm);
+  if (cElbow > 1) cElbow = 1;
+  if (cElbow < -1) cElbow = -1;
+  double elbowPitch = -acos(cElbow)-aUpperArm-aLowerArm;
+// printf("Elbow pitch: %f \n",elbowPitch*180/3.1415);
+
+
 
   printTransform(t) ;
 

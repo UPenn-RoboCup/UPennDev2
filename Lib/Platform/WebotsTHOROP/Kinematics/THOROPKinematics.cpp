@@ -136,7 +136,12 @@ THOROP_kinematics_inverse_joints(const double *q)  //dereks code to write
   std::vector<double>
 THOROP_kinematics_inverse_arm(Transform trArm, int arm)
 {
+  //Closed-form inverse kinematics for THOR-OP 6DOF arm
+
+
   Transform t;
+
+  //Getting rid of hand, shoulder offsets
   if (arm==ARM_LEFT){
     t=t.translateZ(-shoulderOffsetZ)
 	.translateY(-shoulderOffsetY)
@@ -151,24 +156,137 @@ THOROP_kinematics_inverse_arm(Transform trArm, int arm)
 	.translateX(-handOffsetX);
   }
 
+//---------------------------------------------------------------------------
+// Calculating elbow pitch from shoulder-wrist distance
+
   double xWrist[3];
   for (int i = 0; i < 3; i++) xWrist[i]=0;
   t.apply(xWrist);
 
-  // Elbow pitch
   double dWrist = xWrist[0]*xWrist[0]+xWrist[1]*xWrist[1]+xWrist[2]*xWrist[2];
   double cElbow = .5*(dWrist-dUpperArm*dUpperArm-dLowerArm*dLowerArm)/(dUpperArm*dLowerArm);
   if (cElbow > 1) cElbow = 1;
   if (cElbow < -1) cElbow = -1;
+
+//SJ: Robot can have TWO elbow pitch values (near elbowPitch==0)
   double elbowPitch = -acos(cElbow)-aUpperArm-aLowerArm;
-// printf("Elbow pitch: %f \n",elbowPitch*180/3.1415);
+  printf("Elbow pitch: %.2f \n",elbowPitch*180/3.1415);
+  
+//---------------------------------------------------------------------------
 
 
+//---------------------------------------------------------------------------
+//Calculating wrist yaw and roll from shoulder-wrist position 
 
-  printTransform(t) ;
+  //m: transform from shoulder to wrist 
+  Transform m;
+  m=m.translateX(upperArmLength)
+     .translateZ(elbowOffsetX)
+     .rotateY(elbowPitch)
+     .translateZ(-elbowOffsetX)
+     .translateX(lowerArmLength);
+  Transform mInv = inv(m);
 
+  //mInvWrist: relative position of shoulder joint from wrist frame before yaw
+  double mInvWrist[3];
+  for (int i = 0; i < 3; i++) mInvWrist[i]=0;
+  mInv.apply(mInvWrist);
+
+  //printf("MinvWrist: %.2f %.2f %.2f\n",mInvWrist[0],mInvWrist[1],mInvWrist[2]);
+
+  //pShoulder: relative position of shoulder joint from wrist frame after yaw/roll
+  Transform tInv = inv(t);   
+  double pShoulder[3];
+  for (int i = 0; i < 3; i++) pShoulder[i]=0;
+  tInv.apply(pShoulder);
+
+  //printf("pShoulder: %.2f %.2f %.2f\n",pShoulder[0],pShoulder[1],pShoulder[2]);
+
+  //Solve equation: pShoulder = RotZ(-q[5])RotX(-q[4])mInvWrist
+  double a,b,c; //coefficients of 2nd order equation
+  a = mInvWrist[1]* mInvWrist[1]+ mInvWrist[2]* mInvWrist[2];
+  b = mInvWrist[1] * pShoulder[2]; //This is always zero
+  c = pShoulder[2]*pShoulder[2] - mInvWrist[2]*mInvWrist[2];
+  //printf("Coeff: %.4f,%.4f,%.4f\n",a,b,c);
+  double wristYaw,s5;
+  if ((b*b-a*c<0)|| a==0 ) {//NaN handling
+   s5 = 0;
+   wristYaw = 0;
+//   printf("NAN\n");
+  } 
+  else {
+    s5= (-b+sqrt(b*b-a*c))/a;
+    if (s5 > 1) s5 = 1;
+    if (s5 < -1) s5 = -1;
+    wristYaw=asin(s5);
+  }
+  //Two possible solutions
+  printf("Wrist yaw = %.2f or %.2f\n",wristYaw*180/3.1415,-wristYaw*180/3.1415);
+
+/////////////////////////////////////////////////////
+//Use wrist yaw joint to solve for wrist roll joint
+/////////////////////////////////////////////////////
+
+//Eq; pShoulder[0] = C6 mInvWrist[0] + S6 (C5*mInvWrist[1]+S5*mInvWrist[2])
+// or  (pShoulder[0] - C6 mInvWrist[0])^2 = (1-C6^2) *  t5 ^2
+ 
+  double c5 = sqrt(1-s5*s5);
+  double t5;
+
+//Case 1: wristYaw>0 (s5>0)
+  t5 = c5 * mInvWrist[1] + s5*mInvWrist[2];
+//2nd order equation coefficients
+  a = mInvWrist[0]*mInvWrist[0] + t5*t5;
+  b = -pShoulder[0]*mInvWrist[0];
+  c = pShoulder[0]*pShoulder[0] - t5*t5;
+
+  double wristRoll,c6;
+  if ((b*b-a*c<0)|| a==0 ) {//NaN handling
+   c6 = 0;
+   wristRoll = 0;
+// printf("NAN at wristRoll\n");
+  } 
+  else {
+    c6= (-b+sqrt(b*b-a*c))/a;
+    if (c6 > 1) c6 = 1;
+    if (c6 < -1) c6 = -1;
+    wristRoll=acos(c6);
+  }
+
+  //Two possible solutions
+  printf("Wrist roll = %.2f or %.2f\n",wristRoll*180/3.1415,-wristRoll*180/3.1415);
+
+
+//---------------------------------------------------------------------------
+// Now solve shoulder RPY angles using elbow and wrist angles
+// TODO: iterate all 8 possible combinations 
+
+  //append to transform m to get the full transform to the final one
+  m=m.rotateX(wristYaw).rotateZ(wristRoll);
+  //get P-Y-R rotation matrix
+  Transform pyr = t * inv(m);
+
+  double shoulderRoll = atan2(-pyr(1,2),pyr(1,1));
+  double shoulderPitch = atan2(-pyr(2,0),pyr(0,0));
+  double shoulderYaw = atan2(pyr(1,0),
+			sqrt(pyr(0,0)*pyr(0,0) + pyr(2,0)*pyr(2,0)));
+
+  printf("Shoulder P-Y-R = %.2f, %.2f, %.2f\n",
+	shoulderPitch*180/3.1415,
+	shoulderYaw*180/3.1415,
+	shoulderRoll*180/3.1415);
+
+
+//  printTransform(t) ;
 
   std::vector<double> qArm(6);
+  qArm[0] = shoulderPitch;
+  qArm[1] = shoulderYaw;
+  qArm[2] = shoulderRoll;
+  qArm[3] = elbowPitch;
+  qArm[4] = wristYaw;
+  qArm[5] = wristRoll;
+
   return qArm;
 }
 

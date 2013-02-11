@@ -3,7 +3,12 @@
 
 local function shell(command)
   local pipe = io.popen(command, 'r')
-  local result = pipe:read('*a')
+  -- Sometimes in V-Rep we close the pipe before we've actually
+  -- read anything. Make sure that we actually get our output!
+  local result
+  while result == nil do
+    result = pipe:read('*a')
+  end
   pipe:close()
   return result
 end

@@ -34,10 +34,10 @@ indexWaist = 27;
 nJointWaist = 1;
 
 jointReverse={
-	 --LArm:  3 4 5 6 7 8
-         --LLeg: 9 10 11 12 13 14
-	 --RLeg: 15 16 17 18 19 20
-	 24,--RArm: 21 22 23 24 25 26
+	5,7,  --LArm:  3 4 5 6 7 8
+        --LLeg: 9 10 11 12 13 14
+        --RLeg: 15 16 17 18 19 20
+        23,25,--RArm: 21 22 23 24 25 26
 	 --Waist: 27
 }
 

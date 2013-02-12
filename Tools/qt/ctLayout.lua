@@ -1,16 +1,53 @@
-local glue = require'glue'
-local ffi = require'ffi'
-local bmpconv = require'bmpconv'
+local glue = require 'glue'
+local ffi = require 'ffi'
+local bmpconv = require 'bmpconv'
 local readfile = glue.readfile
-require'unit'
-local libpng = require'libpng'
+require 'unit'
+local libpng = require 'libpng'
 
-local  open = function(self, state)
+-- load png with libpng
+-- use raw pixel data to create a QImage for display
+img = ffi.new('unsigned char[?]', 640*480*3)
+
+
+local  initDraw = function(self, state)
 --  print('open file')
   local fileDialog = QFileDialog()
   local fileName = fileDialog:getOpenFileName(
-                          "Open File", "", "Log File (*.lua)")
+                          "Open File", "", "Log File (*.png)")
   print(fileName:toUtf8())
+  local fname = fileName:toUtf8()
+  imgload = libpng.load({path = fname})
+  ffi.copy(img, imgload.data, imgload.h * imgload.w * 3)
+  --img = openimage(fname)
+  qimage = QImage(img, imgload.w, imgload.h, imgload.w * 3, QImage.Format.Format_RGB888)
+  local piximage = QPixmap.new()
+  -- ConvertToPixmap for Graphic Scene
+  piximage:convertFromImage(qimage, Qt.AutoColor)
+  local pixmapitem = QGraphicsPixmapItem.new(piximage)
+  local scene = QGraphicsScene.new()
+  scene:addItem(pixmapitem)
+  self:setScene(scene)
+
+  self:update(0,0,640,480)
+end
+
+local  updateDraw = function(self, state)
+  print(state)
+  local fname = 'image1.png'
+  imgload = libpng.load({path = fname})
+  ffi.copy(img, imgload.data, imgload.h * imgload.w * 3)
+  --img = openimage(fname)
+  qimage = QImage(img, imgload.w, imgload.h, imgload.w * 3, QImage.Format.Format_RGB888)
+  local piximage = QPixmap.new()
+  -- ConvertToPixmap for Graphic Scene
+  piximage:convertFromImage(qimage, Qt.AutoColor)
+  local pixmapitem = QGraphicsPixmapItem.new(piximage)
+  local scene = QGraphicsScene.new()
+  scene:addItem(pixmapitem)
+  self:setScene(scene)
+
+  self:update(0,0,640,480)
 end
 
 local imageview = function()
@@ -18,17 +55,16 @@ local imageview = function()
     local scene = QGraphicsScene.new()
     -- Create GraphicView, based on Graphic Scene, widget on GUI
     local view = QGraphicsView.new(scene)
+    -- create empty image
+    local qimage = QImage(640, 480, QImage.Format.Format_RGB888)
     local piximage = QPixmap.new()
-    local filename = 'Image-1-10.png'
-    -- load png with libpng
-    local img = libpng.load({path = filename})
-    -- use raw pixel data to create a QImage for display
-    local qimage = QImage(img.data, img.w, img.h, 
-                          img.w * 3, QImage.Format.Format_RGB888)
     -- ConvertToPixmap for Graphic Scene
     piximage:convertFromImage(qimage, Qt.AutoColor)
     local pixmapitem = QGraphicsPixmapItem.new(piximage)
     scene:addItem(pixmapitem)
+    
+    view:setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+    view:setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
     return view
 end
 
@@ -39,8 +75,7 @@ Widget = function(...)
   -- left buttons 
   local leftvbox = QVBoxLayout()
     local loadMontage = QPushButton("Load Montage", this)
-    loadMontage:__addmethod("open()", open)
-    loadMontage:connect('2clicked()', loadMontage, '1open()')
+--    loadMontage:__addMethod('open()', initDraw())
     leftvbox:addWidget(loadMontage)
     
     local colorGroup = QGroupBox("Colors", this)
@@ -81,6 +116,9 @@ Widget = function(...)
   local rightvbox = QVBoxLayout()
     -- Image Display
     local view = imageview()
+    view:__addmethod("open()", initDraw)
+    view:__addmethod("update()", updateDraw)
+
     -- Image file Control Buttons
     local fileControlhbox = QHBoxLayout()
       -- add file control buttons
@@ -114,6 +152,10 @@ Widget = function(...)
   hbox:addLayout(rightvbox)
 --  hbox:addSpacing(10)
 --  hbox:addWidget(view)
+  
+  loadMontage:connect('2clicked()', view, '1open()')
+  backward:connect('2clicked()', view, '1update()')
+  forward:connect('2clicked()', view, '1update()')
 
   this:setLayout(hbox)
 

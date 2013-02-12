@@ -34,10 +34,10 @@ indexWaist = 27;
 nJointWaist = 1;
 
 jointReverse={
-	 --LArm:  3 4 5 6 7 8
-         --LLeg: 9 10 11 12 13 14
-	 --RLeg: 15 16 17 18 19 20
-	 24,--RArm: 21 22 23 24 25 26
+	5,7,  --LArm:  3 4 5 6 7 8
+        --LLeg: 9 10 11 12 13 14
+        --RLeg: 15 16 17 18 19 20
+        23,25,--RArm: 21 22 23 24 25 26
 	 --Waist: 27
 }
 
@@ -306,14 +306,16 @@ end
 --Roll, Pitch, Yaw in degree per seconds unit
 function get_sensor_imuGyrRPY( )
   gyro = controller.wb_gyro_get_values(tags.gyro);
-  gyro_proc={-(gyro[1]-512)/0.273, -(gyro[2]-512)/0.273,(gyro[3]-512)/0.273};
+--Fixed for THOR model
+  gyro_proc={(gyro[1]-512)/0.273, (gyro[2]-512)/0.273,(gyro[3]-512)/0.273};
   return gyro_proc;
 end
 
 
 function get_sensor_imuAcc( )
   accel = controller.wb_accelerometer_get_values(tags.accelerometer);
-  return {-(accel[2]-512)/128,-(accel[1]-512)/128,(accel[3]-512)/128};
+--not checked yet
+  return {(accel[2]-512)/128,(accel[1]-512)/128,(accel[3]-512)/128};
 end
 
 function get_sensor_gps()

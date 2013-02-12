@@ -1,0 +1,85 @@
+#VRML_SIM V6.0 utf8
+WorldInfo {
+  info [
+    "Qual-1 arena for DRC"
+  ]
+  title "Qual1"
+  basicTimeStep 15
+  displayRefresh 3
+}
+Viewpoint {
+  orientation -0.354364 0.866625 0.351264 1.68548
+  position 1.69285 5.04084 0.0823868
+}
+Background {
+  skyColor [
+    0.678431 0.847059 0.901961
+  ]
+}
+DirectionalLight {
+  ambientIntensity 1.6
+  direction -0.5 -2 -0.5
+  intensity 0.3
+  castShadows TRUE
+}
+DirectionalLight {
+  direction 0.5 -0.5 0.5
+  intensity 0.5
+}
+DEF GROUND Solid {
+  translation 0 1 0
+  children [
+    Shape {
+      appearance DEF GroundAppearance Appearance {
+        material Material {
+          diffuseColor 0.601961 0.601961 0.601961
+          emissiveColor 0.201961 0.201961 0.201961
+        }
+      }
+      geometry DEF GroundBox Box {
+        size 5 2 5
+      }
+    }
+  ]
+  boundingObject Transform {
+    children [
+      Box {
+        size 5 2 5
+      }
+    ]
+  }
+  locked TRUE
+}
+DEF GROUND5 Solid {
+  translation 1.15 1.4 0
+  children [
+    Shape {
+      appearance USE GroundAppearance
+      geometry Box {
+      }
+    }
+  ]
+  boundingObject Transform {
+    children [
+      Box {
+      }
+    ]
+  }
+  locked TRUE
+}
+Desk {
+  translation 0.5 2.4 0
+  rotation 0 1 0 1.57
+}
+Can {
+  translation 0.3 3.172 0.15
+}
+FruitBowl {
+  translation 0.26 3.1 0.5
+}
+THOROP {
+  translation 0 2.6 0
+  rotation -1 0 0 1.57
+  controller "darwin-op_team_0"
+  controllerArgs "0 23"
+}

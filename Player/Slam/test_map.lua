@@ -45,12 +45,8 @@ OMAP.zmin       = MAPS.zmin;
 OMAP.zmax       = MAPS.zmax;
 OMAP.sizex  = MAPS.sizex;
 OMAP.sizey  = MAPS.sizey;
---OMAP.storage = torch.ByteStorage(OMAP.sizex*OMAP.sizey)
---OMAP.data = torch.Tensor( OMAP.storage )
-OMAP.data = torch.Tensor(OMAP.sizex,OMAP.sizex):zero()
-
-OMAP.data = OMAP.data:copy( torch.ceil( torch.rand(OMAP.sizex,OMAP.sizex):mul(9) ) )
---OMAP.data = torch.ByteTensor():rand(OMAP.sizex,OMAP.sizex):mul(10):ceil():div(10)
+--OMAP.data = torch.Tensor(OMAP.sizex,OMAP.sizex):zero()
+OMAP.data = torch.ByteTensor(OMAP.sizex,OMAP.sizex)
 
 -- Helper Functions
 require 'mapShift'

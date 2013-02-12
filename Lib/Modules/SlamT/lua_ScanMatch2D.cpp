@@ -25,9 +25,6 @@ double sensorOffsetZ = 0;
 double lxss[1081];
 double lyss[1081];
 
-vector<double> xss;
-vector<double> yss;
-
 int lua_ScanMatch2D(lua_State *L) {
   //  const int BUFLEN = 256;
   const char *command = luaL_checkstring(L, 1);
@@ -75,102 +72,48 @@ int lua_ScanMatch2D(lua_State *L) {
 
   if (strcasecmp(command, "match") == 0) 
   {
+		// Initialize max finding
+			double hmax = 0;
+			double xmax = 1; // Lua index
+			double ymax = 1; // Lua index
+			double thmax = 11; // Lua index
+		
+	// TODO: Check for NULL pointers
     luaT_stackdump( L );
-
-    // Make sure that the map is uint8
-    // TODO: check that it is a ByteStorage
-    const char* name = luaT_typename( L, 2 );
-    //printf("\nMap name: [%s]\n", name);
-
-    THByteTensor * map_t = (THByteTensor *) luaT_checkudata(L, 2, name);
-    if ( map_t==NULL || !luaT_isudata(L, 2, name) )
-      return luaL_error(L, "Input map not Torch userdata");
-
-    THByteStorage * map_s = map_t->storage;
-    /*
-       printf("\n%dD Map Size: (%ld)x(%ld)=[%ld]\n",
-       map_t->nDimension,
-       map_t->size[0],
-       map_t->size[1],
-       map_s->size
-       );
-       */
-    uint8_t * map = map_s->data;
-    // TODO: ensure that the map is explore with the right dimensions
-    // MATLAB may malloc rows/columns in a different way than torch
+	// Get the map, which is a ByteTensor
+	// TODO: ensure that the map is explored with the right dimensions
+    THByteTensor * map_t = (THByteTensor *) luaT_checkudata(L, 2, "torch.ByteTensor");    
     const int sizex = map_t->size[0];
     const int sizey = map_t->size[1];
     const int size  = sizex * sizey;
 
-    /* Grab the xs */
+    /* Grab the xs and ys from the last laser scan*/
     THDoubleTensor * lxs_t = (THDoubleTensor *) luaT_checkudata(L, 3, "torch.DoubleTensor");
-	printf("xs: %lf %lf\n", THTensor_fastGet1d(lxs_t,0), THTensor_fastGet1d(lxs_t,1) );
-
-    /* Grab the ys */
     THDoubleTensor * lys_t = (THDoubleTensor *) luaT_checkudata(L, 4, "torch.DoubleTensor");
-	// From THTensorMacros.h
-	printf("ys: %lf %lf\n", THTensor_fastGet1d(lys_t,0), THTensor_fastGet1d(lys_t,1) );
-
-    /* Account for the number of laser points to match */
-    const int nps = lys_t->size[0];
+    const int nps = lys_t->size[0]; // The number of laser points to match
 
     /* Grab the scanning values for theta, x, y */
-    const char* name_px = luaT_typename( L, 5 );
-    //printf("Name px: %s\n", name_px);
-    THDoubleTensor * pxs_t = (THDoubleTensor *) luaT_toudata(L, 5, name_px);
-    if ( pxs_t==NULL || !luaT_isudata(L, 5, name_px) )
-      return luaL_error(L, "Input pxs not Torch userdata");
-    THDoubleStorage * pxs_s = pxs_t->storage;
-    double * pxs = pxs_s->data;
-    int npxs = pxs_t->size[0];
-    //printf("Number of px elements: [%d],[%lf]\n",npxs,pxs[0]);
-
-    THDoubleTensor * pys_t = (THDoubleTensor *) luaT_toudata(L, 6, luaT_typename( L, 6 ));
-    if ( pys_t==NULL || !luaT_isudata(L, 6, luaT_typename( L, 6 )) )
-      return luaL_error(L, "Input pys not double light user data");
-    THDoubleStorage * pys_s = pys_t->storage;
-    double * pys = pys_s->data;
+    THDoubleTensor * pxs_t = (THDoubleTensor *) luaT_checkudata(L, 5, "torch.DoubleTensor");
+    THDoubleTensor * pys_t = (THDoubleTensor *) luaT_checkudata(L, 6, "torch.DoubleTensor");
+    THDoubleTensor * pths_t = (THDoubleTensor *) luaT_checkudata(L, 7, "torch.DoubleTensor");
+	int npxs = pxs_t->size[0];
     int npys = pys_t->size[0];
-    //printf("Number of py elements: [%d],[%lf]\n",npys,pys[0]);
-
-    THDoubleTensor * pths_t = (THDoubleTensor *) luaT_toudata(L, 7, luaT_typename( L, 7 ));
-    if ( pths_t==NULL || !luaT_isudata(L, 7, luaT_typename( L, 7 )) )
-      return luaL_error(L, "Input pths not double light user data");
-    THDoubleStorage * pths_s = pths_t->storage;
-    double * pths = pths_s->data;
-    int npths = pths_t->size[0];
-    //printf("Number of pth elements: [%d],[%lf]\n",npths,pths[0]);
-
-		// TODO: just use access functions
-    double * tpxs  = pxs;
-    double * tpys  = pys;
-    double * tpths = pths;
-    double * tlxs  = NULL;
-    double * tlys  = NULL;
-
-    const int nDimsOut = 3;
-    int dimsOut[] = {npxs,npys,npths};    
-
-    //    plhs[0] = mxCreateNumericArray(nDimsOut,dimsOut,
-    //                              mxDOUBLE_CLASS,mxREAL);
-    //    double * likelihoods = mxGetPr(plhs[0]);
-    double * likelihoods = new double[npxs * npys * npths];
-
-    // Resize the container if needed
-    xss.resize(npxs);
-    yss.resize(npys);
-
-    // Get pointers to the temporary arrays
-    double * pxss  = &(xss[0]);
-    double * pyss  = &(yss[0]);
+	int npths = pths_t->size[0];
+	
+	/* Grab the output Tensor */
+	THDoubleTensor * likelihoods_t = (THDoubleTensor *) luaT_checkudata(L, 8, "torch.DoubleTensor");
+	// TODO: Check that the dimensions are correct
+	fprintf( stdout, "Size of the likelihoods_t: (%d dim): %ld x %ld x %ld\n",
+		likelihoods_t->nDimension, 
+		likelihoods_t->size[0],likelihoods_t->size[1],likelihoods_t->size[2]
+	);
 
     // Divide the candidate pose xy by resolution, to save computations later
     // Subtract the min values too
     for (int ii=0; ii<npxs; ii++)
-      pxss[ii] = (pxs[ii]-xmin)*invRes; 
-
+      THTensor_fastSet1d(pxs_t, ii, (THTensor_fastGet1d(pys_t,ii)-ymin)*invRes );
     for (int ii=0; ii<npys; ii++)
-      pyss[ii] = (pys[ii]-ymin)*invRes;
+      THTensor_fastSet1d(pys_t, ii, (THTensor_fastGet1d(pys_t,ii)-ymin)*invRes );
 
     for (int ii=0; ii<nps; ii++)
     {
@@ -178,70 +121,79 @@ int lua_ScanMatch2D(lua_State *L) {
       lyss[ii] = THTensor_fastGet1d(lys_t,ii) * invRes;
     }
 
-    tpths = pths;
     for (int pthi =0; pthi<npths; pthi++)   //iterate over all yaw values
     {
-      double costh = cos(*tpths);
-      double sinth = sin(*tpths);
-      tpths++;
+      double costh = cos( THTensor_fastGet1d(pths_t,pthi) );
+      double sinth = sin( THTensor_fastGet1d(pths_t,pthi) );
+	  //THTensor_fastGet3d( likelihoods_t, pthi, npxs, npys )
+      //double * likelihoodsXY = likelihoods + pthi*npxs*npys;
 
-      double * likelihoodsXY = likelihoods + pthi*npxs*npys;
-
-      //sensor global offset due to robot's yaw and local offsets
+      // Sensor global offset due to robot's yaw and local offsets
       double offsetx = (sensorOffsetX*costh - sensorOffsetY*sinth)*invRes;
       double offsety = (sensorOffsetX*sinth + sensorOffsetY*costh)*invRes;
-
-      tlxs  = lxss;
-      tlys  = lyss;
 
       // Iterate over all points
       for (int pi=0; pi<nps; pi++)
       {
         // Reset the pointer to the likelyhoods of the poses
-        double * tl = likelihoodsXY;
+        //double * tl = likelihoodsXY;
 
         // Convert the laser points to the map coordinates
-        double xd = (*tlxs)*costh   - (*tlys)*sinth   + offsetx;
-        double yd = (*tlxs++)*sinth + (*tlys++)*costh + offsety;
+        double xd = THTensor_fastGet1d( lxs_t, pi )*costh - THTensor_fastGet1d( lys_t, pi )*sinth + offsetx;
+        double yd = THTensor_fastGet1d( lxs_t, pi )*sinth + THTensor_fastGet1d( lys_t, pi )*costh + offsety;
 
-        tpys = pyss;
         // Iterate over all pose ys
-        for (int pyi=0; pyi<npys; pyi++)
-        {
+        for (int pyi=0; pyi<npys; pyi++) {
           // Use unsigned int - don't have to check < 0
-          unsigned int yi  = yd + *tpys++;// + 0.0;
+          unsigned int yi  = yd + THTensor_fastGet1d( pys_t, pyi );// + 0.0;
 
-          if (yi >= sizey)
-          {
+          if (yi >= sizey) {
             // Increment the pointer to likelyhoods by number of x poses
-            tl+=npxs;
+            //tl+=npxs;
             continue;
           }
 
-          int tmi = yi*sizex;
-          uint8_t * mapp = &(map[tmi]);
+          //int tmi = yi*sizex;
+          //uint8_t * mapp = &(map[tmi]);
 
-          tpxs = pxss;
-          for (int pxi=0; pxi<npxs; pxi++)  //iterate over all pose xs
-          {
+          // Iterate over all pose xs
+          for (int pxi=0; pxi<npxs; pxi++) {
             //use unsigned int - don't have to check < 0
-            unsigned int xi = xd + *tpxs++;
+            //unsigned int xi = xd + *tpxs++;
+			unsigned int xi = xd + THTensor_fastGet1d( pxs_t, pxi );
             if (xi >= sizex)
             {
-              tl++;
+              //tl++;
               continue;
             }
 
-            *tl++ += mapp[xi];
+            //*tl++ += mapp[xi];
+			double newLikelihood = THTensor_fastGet3d(likelihoods_t,xi,yi,pthi) + (double)THTensor_fastGet2d(map_t,xi,yi);
+			// Find the maximum likelihood
+			if( newLikelihood > hmax ){
+				hmax = newLikelihood;
+				xmax = xi+1; // Lua index
+				ymax = yi+1; // Lua index
+				thmax = pthi+1; // Lua index
+			}
+			THTensor_fastSet3d(likelihoods_t,xi,yi,pthi,newLikelihood);
+//			fprintf(stdout,"Setting values...\n");
+			THTensor_fastSet3d(likelihoods_t,xi,yi,pthi,22);
           }
         }
       }
     }
-		// TODO: convert to a torch object? or just convert using utility function?
-    lua_pushlightuserdata(L, likelihoods);
-    lua_pushstring(L, "double");
-    lua_pushinteger(L, npths*npxs*npys);
-    return 3;
+	//luaT_pushudata(L, likelihoods_t, "torch.DoubleTensor");
+	//return 1;
+		lua_pushnumber(L,hmax);
+		lua_pushinteger(L,xmax);
+		lua_pushinteger(L,ymax);
+		lua_pushinteger(L,thmax);
+		return 4;
+	//lua_pushlightuserdata(L, likelihoods);
+    //lua_pushstring(L, "double");
+    //lua_pushinteger(L, npths*npxs*npys);
+    //return 3;
   }
   else {
     luaL_error(L ,"unknown command");

@@ -1,10 +1,10 @@
 function scanMatchOne( LIDAR0, OMAP, xs, ys )
 
-	SLAM = {}
-	SLAM.xOdom = 0
-	SLAM.yOdom = 0
-	SLAM.yawOdom = 0
-
+  SLAM = {}
+  SLAM.xOdom = 0
+  SLAM.yOdom = 0
+  SLAM.yawOdom = 0
+  SLAM.lidar0Cntr = 2;
   -- Number of yaw positions to check
   nyaw1 = 15;
   -- At this resolution
@@ -33,45 +33,27 @@ function scanMatchOne( LIDAR0, OMAP, xs, ys )
   yRange1   = math.floor(nys1/2);
 
   -- create the candidate locations in each dimension
-  aCand1 = torch.range(-yawRange1,yawRange1)*dyaw1 + SLAM.yawOdom;
-	-- + IMU.data.wyaw*0.025;
   xCand1 = torch.range(-xRange1,xRange1)*dx1 + SLAM.xOdom;
   yCand1 = torch.range(-yRange1,yRange1)*dy1 + SLAM.yOdom;
+  aCand1 = torch.range(-yawRange1,yawRange1)*dyaw1 + SLAM.yawOdom;
+  -- + IMU.data.wyaw*0.025;
+  local hits = 
+	torch.DoubleTensor( 
+		xCand1:nElement(), yCand1:nElement(), aCand1:nElement()
+	):zero()
 
-  -- get a local 3D sampling of pose likelihood
-	print('xs',xs[1],xs[2]);
-	print('ys',ys[1],ys[2]);
---	print(#xCand1,xCand1[1],#yCand1,yCand1[1],#aCand1,aCand1[1]);
-  hits = Slam.ScanMatch2D('match',
-	OMAP.data,
-	xs, ys,
-  xCand1,yCand1,aCand1
-	);
-	-- TODO: unfold to mean the 1:2:end syntax?
-	-- NOTE: xs should be xsss(1:2:end) (same for ys)
-
-  -- Find maximum
-	hits_all = torch.resize( hits, hits:nElement() )
-  hmax, imax = torch.max(hits,1);
-	hmax = hmax[1];
-	-- TODO: Find ind2sub replacement
-  --kmax, mmax, jmax = ind2sub({nxs1,nys1,nyaw1},imax[i] );
-	for k=1,nxs1 do
-		for m=1,ny1 do
-			for j=1,nyaw1 do
-				if hits[{k,m,j}]==hmax then
-					print('Found it!')
-					kmax, mmax, jmax = k,m,j;
-				end
-			end
-		end
-	end
+  local hmax, xmax, ymax, thmax = Slam.ScanMatch2D('match',
+  OMAP.data,
+  xs, ys,
+  xCand1,yCand1,aCand1,
+  hits
+  );
+  -- TODO: unfold to mean the 1:2:end syntax?
+  -- NOTE: xs should be xsss(1:2:end) (same for ys)
 
   if (SLAM.lidar0Cntr > 1) then
-
     -- Extract the 2D slice of xy poses at the best angle
-    --hitsXY = hits(:,:,jmax);
-		hitsXY = hits:select(3,jmax)
+    hitsXY = hits:select(3,thmax)
 
     -- Create a grid of distance-based costs from each cell to odometry pose
     yGrid1, xGrid1 = meshgrid( yCand1, xCand1 );
@@ -101,7 +83,7 @@ function scanMatchOne( LIDAR0, OMAP, xs, ys )
     cmin, cimin = torch.min( costGrid1:resize( costGrid1:nElement() ) );
 
     -- print( 'distGrid min %f, hits xy min =%f\n',
-		-- distGrid1(cimin), hitsXY(cimin) );
+    -- distGrid1(cimin), hitsXY(cimin) );
 
     -- Save the best pose
     SLAM.yaw = aCand1(jmax);
@@ -111,7 +93,7 @@ function scanMatchOne( LIDAR0, OMAP, xs, ys )
     xStart, yStart, thStart = FindStartPose(SLAM.x, SLAM.y, SLAM.yaw, xsss,ysss);
 
     --if not isempty(xStart) then
-		if xStart then
+    if xStart then
       SLAM.x = xStart;
       SLAM.Y = yStart;
       SLAM.yaw = thStart;

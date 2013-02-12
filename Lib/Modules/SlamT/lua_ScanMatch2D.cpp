@@ -11,15 +11,9 @@ extern "C" {
 }
 #endif
 
-#include <inttypes.h>
-#include <string.h>
-#include <math.h>
-#include <vector>
-#include <iostream>
+#include "lua_ScanMatch2D.h"
 
 using namespace std;
-
-#define DEFAULT_RESOLUTION 0.05
 
 double xmin,ymin,zmin,xmax,ymax,zmax;
 double res = DEFAULT_RESOLUTION;
@@ -81,7 +75,7 @@ int lua_ScanMatch2D(lua_State *L) {
 
   if (strcasecmp(command, "match") == 0) 
   {
-    //luaT_stackdump( L );
+    luaT_stackdump( L );
 
     // Make sure that the map is uint8
     // TODO: check that it is a ByteStorage
@@ -109,28 +103,13 @@ int lua_ScanMatch2D(lua_State *L) {
     const int size  = sizex * sizey;
 
     /* Grab the xs */
-    const char* name_lx = luaT_typename( L, 3 );
-    //printf("Name xs: %s\n", name_lx);
-    THDoubleTensor * lxs_t = (THDoubleTensor *) luaT_checkudata(L, 3, name_lx);		
-    if ( lxs_t==NULL || !luaT_isudata(L, 3, name_lx) )
-      return luaL_error(L, "Input lxs not Torch userdata");
-    THDoubleStorage * lxs_s = lxs_t->storage;
-    double * lxs = lxs_s->data + lxs_t->storageOffset;
-    printf("nlxs: [%ld], Storage# [%ld], Offset: [%ld]\n", 
-        lxs_t->size[0], lxs_s->size, lxs_t->storageOffset );
-    printf("X Vals: %lf %lf\n", lxs[0], lxs[1] );
+    THDoubleTensor * lxs_t = (THDoubleTensor *) luaT_checkudata(L, 3, "torch.DoubleTensor");
+	printf("xs: %lf %lf\n", THTensor_fastGet1d(lxs_t,0), THTensor_fastGet1d(lxs_t,1) );
 
     /* Grab the ys */
-    const char* name_ly = luaT_typename( L, 4 );
-    //printf("Name ys: %s\n", name_ly);
-    THDoubleTensor * lys_t = (THDoubleTensor *) luaT_checkudata(L, 4, name_ly);		
-    if ( lys_t==NULL || !luaT_isudata(L, 4, name_ly) )
-      return luaL_error(L, "Input lys not Torch userdata");
-    THDoubleStorage * lys_s = lys_t->storage;
-    double * lys = lys_s->data + lys_t->storageOffset;
-    printf("nlys: [%ld], Storage# [%ld], Offset: [%ld]\n", 
-        lys_t->size[0], lys_s->size, lys_t->storageOffset );
-    printf("ys: %lf %lf\n", lys[0], lys[1]);
+    THDoubleTensor * lys_t = (THDoubleTensor *) luaT_checkudata(L, 4, "torch.DoubleTensor");
+	// From THTensorMacros.h
+	printf("ys: %lf %lf\n", THTensor_fastGet1d(lys_t,0), THTensor_fastGet1d(lys_t,1) );
 
     /* Account for the number of laser points to match */
     const int nps = lys_t->size[0];
@@ -162,11 +141,12 @@ int lua_ScanMatch2D(lua_State *L) {
     int npths = pths_t->size[0];
     //printf("Number of pth elements: [%d],[%lf]\n",npths,pths[0]);
 
+		// TODO: just use access functions
     double * tpxs  = pxs;
     double * tpys  = pys;
     double * tpths = pths;
-    double * tlxs  = lxs;
-    double * tlys  = lys;
+    double * tlxs  = NULL;
+    double * tlys  = NULL;
 
     const int nDimsOut = 3;
     int dimsOut[] = {npxs,npys,npths};    
@@ -192,11 +172,10 @@ int lua_ScanMatch2D(lua_State *L) {
     for (int ii=0; ii<npys; ii++)
       pyss[ii] = (pys[ii]-ymin)*invRes;
 
-
     for (int ii=0; ii<nps; ii++)
     {
-      lxss[ii] = lxs[ii] * invRes;
-      lyss[ii] = lys[ii] * invRes;
+      lxss[ii] = THTensor_fastGet1d(lxs_t,ii) * invRes;
+      lyss[ii] = THTensor_fastGet1d(lys_t,ii) * invRes;
     }
 
     tpths = pths;
@@ -258,6 +237,7 @@ int lua_ScanMatch2D(lua_State *L) {
         }
       }
     }
+		// TODO: convert to a torch object? or just convert using utility function?
     lua_pushlightuserdata(L, likelihoods);
     lua_pushstring(L, "double");
     lua_pushinteger(L, npths*npxs*npys);

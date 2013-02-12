@@ -1,52 +1,25 @@
 # Master Makefile to compile all Lua/C++ libraries
 
-CWD= $(shell pwd)
+CWD=$(shell pwd)
 include $(CWD)/Makefile.inc
+CROSS=false
 
-
-LUAEXT= lua
+LUAEXT=lua
 ifeq ($(OSTYPE),darwin)
 REGEX=\( -regex '.*.$(LUAEXT)' -or -regex '.*.$(SHLIBEXT)' -or -regex '.*.sh' \)
 else
 REGEX=-regex '.*\($(SHLIBEXT)\|$(LUAEXT)\|sh\)'
 endif
 
-CROSS= false
-
-ifndef OSTYPE
-  OSTYPE = $(shell uname -s|awk '{print tolower($$0)}')
-endif
-
-ifndef ARCH
-  ARCH= $(shell uname -m)
-endif
-
+CTCDIR=
 ifeq ($(CROSS),true)
   CTCDIR = $(NaoqiCTC)
-else
-  CTCDIR = 
 endif
-
-ifeq ($(CTCDIR),)
-  ifeq ($(OSTYPE),linux)
-    SHLIBEXT= so
-  endif
-
-  #ifeq ($(OSTYPE),darwin)
-  #  SHLIBEXT= dylib
-  #  REGEX=\( -regex '.*.$(LUAEXT)' -or -regex '.*.$(SHLIBEXT)' -or -regex '.*.sh' \)
-  #endif
-  else
-    SHLIBEXT= so
-  #ifeq ($(OSTYPE),darwin)
-  #  REGEX=\( -regex '.*.$(LUAEXT)' -or -regex '.*.$(SHLIBEXT)' -or -regex '.*.sh' \)
-  #endif
-endif
-
 export CTCDIR
 
 all none:
 	@echo "Please do:"
+	@echo $(IS_JIT)
 	@echo "\tmake setup_PLATFORM"
 	@echo "where PLATFORM is one of following:"
 	@echo "\t$(PLATFORMS)"
@@ -59,6 +32,14 @@ colortable:
 matlab:
 	@echo "Compiling MATLAB Mex Files...\n"
 	@cd $(MATLABDIR) && make && cd $(CWD)
+	@echo "\n"
+
+torch:
+	@echo "Compiling torch module...\n"
+	@cd $(TORCHDIR) && make && cd $(CWD)
+	@mkdir -p $(INSTDIR)
+	@cp $(TORCHDIR)/$(TORCHLIB).$(SHLIBEXT) $(INSTDIR)/torch.$(SHLIBEXT)
+	@cp $(TORCHDIR)/lib$(TORCHLIB).$(SHLIBEXT) $(INSTDIR)/
 	@echo "\n"
 
 nao:
@@ -138,7 +119,6 @@ visiontest:
 	@cd $(VISIONTESTDIR) && make && cd $(CWD)
 	@echo "\n"
 
-
 webot:
 	@echo "Compiling Webots Lua/C++ Libraries...\n"
 	@cd $(WEBOTSDIR) && make && cd $(CWD)
@@ -157,6 +137,11 @@ comm::
 hokuyo::
 	@echo "Compiling Hokuyo Lua/C++ Libraries...\n"
 	@cd $(HOKUYODIR) && make && cd $(CWD)
+	@echo "\n"
+
+SlamT::
+	@echo "Compiling Slam Torch/Lua/C++ Libraries...\n"
+	cd Modules/$@ && make && cd $(CWD)
 	@echo "\n"
 
 occmap::
@@ -204,7 +189,6 @@ setup_naov4: naov4 setup_util setup_image setup_comm
 	rm -f $(NAODEPLUA51DIR)/*;
 	@echo "\n"
 
-setup_webots_nao: webots_nao setup_util setup_image setup_webots
 setup_webots_nao: webots_nao setup_util setup_image setup_webots setup_occmap
 	@echo "Setting up Webots Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
@@ -213,9 +197,7 @@ setup_webots_nao: webots_nao setup_util setup_image setup_webots setup_occmap
 	cd $(PLAYERDIR)/Config && ln -s Config_WebotsNao.lua Config.lua && cd $(CWD)
 	@echo "\n"
 
-#setup_webots_op: webots_op setup_util setup_image setup_velocity setup_webots
 setup_webots_op: webots_op setup_util setup_image setup_webots setup_occmap
-#setup_webots_op: webots_op setup_util setup_image setup_webots
 	@echo "Setting up Webots Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
 	find $(WEBOTSOPDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
@@ -271,7 +253,6 @@ setup_visiontest: visiontest setup_util setup_image
 	cd $(PLAYERDIR)/Config && ln -s Config_VisionTest.lua Config.lua && cd $(CWD)
 	@echo "\n"
 
-
 setup_hp: hp setup_util setup_image setup_comm
 	@echo "Setting up HP Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
@@ -281,9 +262,7 @@ setup_hp: hp setup_util setup_image setup_comm
 	cp $(INSTDIR)/unix.$(SHLIBEXT) $(PLAYERDIR)/
 	@echo "\n"
 
-#setup_op: op setup_util setup_image setup_velocity
 setup_op: op setup_util setup_image setup_comm setup_occmap
-#setup_op: op setup_util setup_image setup_comm
 	@echo "Setting up Darwin OP Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
 	find $(OPDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
@@ -295,7 +274,6 @@ setup_xos: xos setup_util setup_image setup_comm
 	@echo "Setting up Darwin XOS Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
 	find $(XOSDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
-#	touch $(PLAYERDIR)/Config/Config.lua
 	rm -f $(PLAYERDIR)/Config/Config.lua
 	cd $(PLAYERDIR)/Config && ln -s Config_XOS.lua Config.lua && cd $(CWD)
 	@echo "\n"
@@ -335,7 +313,6 @@ setup_util: util
 	@echo "Setting up Utility Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
 	find $(UTILDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
-
 	@echo "\n"
 
 setup_comm: comm
@@ -350,6 +327,12 @@ setup_hokuyo: hokuyo
 	find $(HOKUYODIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
 	@echo "\n"
 
+setup_slamT: torch SlamT
+	@echo "Setting up Slam Torch/Lua/C++ Libraries...\n"
+	mkdir -p $(INSTDIR)
+	find Modules/SlamT $(REGEX) -exec cp -v {} $(INSTDIR) \;
+	@echo "\n"
+
 setup_occmap: occmap
 	@echo "Setting up Occupancy Map Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
@@ -361,7 +344,6 @@ setup_velocity: velocity
 	mkdir -p $(INSTDIR)
 	find $(VELODIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
 	find $(VELODIR) $(REGEX) -exec cp -v {} $(WEBOTSCONTDIR) \;
-#	cp $(VELODIR)/testmodel.xml $(INSTDIR)/../Vision/
 	@echo "\n"
 
 setup_primesense: primesense setup_util
@@ -396,7 +378,6 @@ clean:
 	cd $(UTILDIR) && make clean && cd $(CWD)
 	cd $(PRIMEDIR) && make clean && cd $(CWD)
 	cd $(WEBOTSDIR) && make clean && cd $(CWD)
-#	cd $(VELODIR) && make clean && cd $(CWD)
 	cd $(NAODIR) && make clean && cd $(CWD)
 	cd $(NAOV4DIR) && make clean && cd $(CWD)
 	cd $(NAOQIDIR) && make clean && cd $(CWD)
@@ -404,13 +385,10 @@ clean:
 	cd $(WEBOTSOPDIR) && make clean && cd $(CWD)
 	cd $(XOSDIR) && make clean && cd $(CWD)
 	cd $(WEBOTSGENERICDIR) && make clean && cd $(CWD)
-#	cd $(WEBOTSCONTDIR) && make clean && cd $(CWD)
 	rm -rf $(WEBOTSCONTDIR) 
 	cd $(WEBOTSCHARLIDIR) && make clean && cd $(CWD)
 	cd $(WEBOTSSAFFIRDIR) && make clean && cd $(CWD) 	
 	cd $(WEBOTSTHOROPDIR) && make clean && cd $(CWD)
-
-#	cd $(HPDIR) && make clean && cd $(CWD)
 	cd $(OPDIR) && make clean && cd $(CWD)
 	cd $(PLAYERDIR)/Config && rm -f Config.lua && cd $(CWD)
 	cd $(PLAYERDIR) && rm -rf Lib && cd $(CWD)

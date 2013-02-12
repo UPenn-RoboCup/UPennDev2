@@ -4,11 +4,14 @@ local bmpconv = require 'bmpconv'
 local readfile = glue.readfile
 require 'unit'
 local libpng = require 'libpng'
+local carray = require 'carray'
+
+--imghandle = carray.byte(640*480*3)
+--img = ffi.cast('unsigned char*', imghandle:pointer())
+img = ffi.new('unsigned char[?], 640 * 480 * 3)
 
 -- load png with libpng
 -- use raw pixel data to create a QImage for display
-img = ffi.new('unsigned char[?]', 640*480*3)
-
 
 local  initDraw = function(self, state)
 --  print('open file')
@@ -34,20 +37,45 @@ end
 
 local  updateDraw = function(self, state)
   print(state)
-  local fname = 'image1.png'
+  if state == 1 then
+    fname = 'image1.png'
+  else
+    fname = 'image.png'
+  end
   imgload = libpng.load({path = fname})
   ffi.copy(img, imgload.data, imgload.h * imgload.w * 3)
-  --img = openimage(fname)
-  qimage = QImage(img, imgload.w, imgload.h, imgload.w * 3, QImage.Format.Format_RGB888)
-  local piximage = QPixmap.new()
-  -- ConvertToPixmap for Graphic Scene
-  piximage:convertFromImage(qimage, Qt.AutoColor)
-  local pixmapitem = QGraphicsPixmapItem.new(piximage)
-  local scene = QGraphicsScene.new()
-  scene:addItem(pixmapitem)
-  self:setScene(scene)
+--  --img = openimage(fname)
+--  qimage = QImage(img, imgload.w, imgload.h, imgload.w * 3, QImage.Format.Format_RGB888)
+--  local piximage = QPixmap.new()
+--  -- ConvertToPixmap for Graphic Scene
+--  piximage:convertFromImage(qimage, Qt.AutoColor)
+--  local pixmapitem = QGraphicsPixmapItem.new(piximage)
+--  local scene = QGraphicsScene.new()
+--  scene:addItem(pixmapitem)
+--  self:setScene(scene)
 
   self:update(0,0,640,480)
+  print(img)
+end
+
+local updateBackward = function(self, state)
+  print('Backward')
+  updateDraw(self, 1)
+end
+
+local updateBBackward = function(self, state)
+  print('BBackward')
+  updateDraw(self, 2)
+end
+
+local updateForward = function(self, state)
+  print('Forward')
+  updateDraw(self, 3)
+end
+
+local updateFForward = function(self, state)
+  print('FForward')
+  updateDraw(self, 4)
 end
 
 local imageview = function()
@@ -117,7 +145,10 @@ Widget = function(...)
     -- Image Display
     local view = imageview()
     view:__addmethod("open()", initDraw)
-    view:__addmethod("update()", updateDraw)
+    view:__addmethod("updateBackward()", updateBackward)
+    view:__addmethod("updateBBackward()", updateBBackward)
+    view:__addmethod("updateForward()", updateForward)
+    view:__addmethod("updateFForward()", updateFForward)
 
     -- Image file Control Buttons
     local fileControlhbox = QHBoxLayout()
@@ -154,8 +185,10 @@ Widget = function(...)
 --  hbox:addWidget(view)
   
   loadMontage:connect('2clicked()', view, '1open()')
-  backward:connect('2clicked()', view, '1update()')
-  forward:connect('2clicked()', view, '1update()')
+  backward:connect('2clicked()', view, '1updateBackward()')
+  bbackward:connect('2clicked()', view, '1updateBBackward()')
+  forward:connect('2clicked()', view, '1updateForward()')
+  fforward:connect('2clicked()', view, '1updateFForward()')
 
   this:setLayout(hbox)
 

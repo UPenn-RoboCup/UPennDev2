@@ -31,6 +31,10 @@ local splitPath = function(str)
   return path, filename
 end
 
+local selectPixel = function(e)
+  print(e:button())
+end
+
 local  initDraw = function(self, state)
   local fileDialog = QFileDialog()
   local fileName = fileDialog:getOpenFileName(
@@ -113,11 +117,7 @@ local imageview = function()
     -- Create GraphicView, based on Graphic Scene, widget on GUI
     local view = QGraphicsView.new(scene)
     -- create empty image
-    local qimage = QImage(640, 480, QImage.Format.Format_RGB888)
-    local piximage = QPixmap.new()
-    -- ConvertToPixmap for Graphic Scene
-    piximage:convertFromImage(qimage, Qt.AutoColor)
-    local pixmapitem = QGraphicsPixmapItem.new(piximage)
+    local pixmapitem = QGraphicsPixmapItem.new(QPixmap(640, 480))
     scene:addItem(pixmapitem)
     
     view:setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
@@ -178,6 +178,9 @@ Widget = function(...)
     view:__addmethod("updateBBackward()", updateBBackward)
     view:__addmethod("updateForward()", updateForward)
     view:__addmethod("updateFForward()", updateFForward)
+    function view:mousePressEvent(e)
+      print(1, e:pos():x(), e:pos():y())
+    end
 
     -- Image file Control Buttons
     local fileControlhbox = QHBoxLayout()

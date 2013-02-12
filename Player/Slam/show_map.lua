@@ -17,10 +17,10 @@ local centralizeWindow = function(window)
   local desktop = QApplication.desktop()
   local screenWidth = desktop:width()
   local screenHeight = desktop:height()
-   
+
   local x = (screenWidth - window.width) / 2
   local y = (screenHeight - window.height) / 2
-  
+
   window:resize(window.width, window.height)
   window:move(x, y)
 end
@@ -31,12 +31,12 @@ local createWindow = function(...)
   -- add menu
   -- add toolbar
   -- statusbar
-  
+
   -- Add central Widget
   local widget = Widget()
   this:setCentralWidget(widget)
 
-  return this
+  return this;
 end
 
 -- Set the Window properties

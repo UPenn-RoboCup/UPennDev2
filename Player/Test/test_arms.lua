@@ -28,8 +28,40 @@ require 'pickercm'
 
 require ('Kinematics')
 
--- Left arm 
-qLArmOD = math.pi/180*vector.new({90, 0, 0, 0,0,0});
+--Arm target transforms
+
+trLArmOld = vector.new({0.144498, 0.219, -0.1140422, 0,0,0});
+trRArmOld = vector.new({0.144498, -0.219, -0.1140422, 0,0,0});
+
+trLArmOld = vector.new({0.16, 0.219, -0.09, 0,0,0});
+trRArmOld = vector.new({0.16, -0.219, -0.09, 0,0,0});
+
+trLArmOld = vector.new({0.16, 0.24, -0.09, 0,0,0});
+trRArmOld = vector.new({0.16, -0.24, -0.09, 0,0,0});
+
+
+trLArm=vector.new({0,0,0,0,0,0});
+trRArm=vector.new({0,0,0,0,0,0});
+trLArm0=vector.new({0,0,0,0,0,0});
+trRArm0=vector.new({0,0,0,0,0,0});
+
+trLArm[1],trLArm[2],trLArm[3],trLArm[4],trLArm[5],trLArm[6]=
+trLArmOld[1],trLArmOld[2],trLArmOld[3],trLArmOld[4],trLArmOld[5],trLArmOld[6];
+
+trLArm0[1],trLArm0[2],trLArm0[3],trLArm0[4],trLArm0[5],trLArm0[6]=
+trLArmOld[1],trLArmOld[2],trLArmOld[3],trLArmOld[4],trLArmOld[5],trLArmOld[6];
+
+trRArm[1],trRArm[2],trRArm[3],trRArm[4],trRArm[5],trRArm[6]=
+trRArmOld[1],trRArmOld[2],trRArmOld[3],trRArmOld[4],trRArmOld[5],trRArmOld[6];
+
+trRArm0[1],trRArm0[2],trRArm0[3],trRArm0[4],trRArm0[5],trRArm0[6]=
+trRArmOld[1],trRArmOld[2],trRArmOld[3],trRArmOld[4],trRArmOld[5],trRArmOld[6];
+
+
+
+
+
+
 
 
 
@@ -54,6 +86,87 @@ else
   getch.enableblock(1);
 end
 
+arm_count=1;
+
+function arm_demo()
+
+  arm_count=(arm_count+1)%400;
+
+  if arm_count<100 then
+    trLArm[1]=trLArm[1]+0.001;
+    trRArm[3]=trRArm[3]+0.001;
+  elseif arm_count<200 then
+    trLArm[2]=trLArm[2]+0.001;
+    trRArm[1]=trRArm[1]+0.001;
+  elseif arm_count<300 then
+    trLArm[1]=trLArm[1]-0.001;
+    trRArm[3]=trRArm[3]-0.001;
+  else 
+    trLArm[2]=trLArm[2]-0.001;
+    trRArm[1]=trRArm[1]-0.001;
+
+  end
+  motion_arms_ik();
+end
+
+
+
+function motion_arms_ik()
+    local qLArmInv = Kinematics.inverse_l_arm(trLArm);
+    local qRArmInv = Kinematics.inverse_r_arm(trRArm);
+    local torso_larm_ik = Kinematics.l_arm_torso(qLArmInv);
+    local torso_rarm_ik = Kinematics.r_arm_torso(qRArmInv);
+
+    --Check if the error is small enough
+    local dist1 = 
+	(torso_larm_ik[1]-trLArm[1])^2+
+	(torso_larm_ik[2]-trLArm[2])^2+
+	(torso_larm_ik[3]-trLArm[3])^2;
+
+    local dist2 = 
+	(torso_rarm_ik[1]-trRArm[1])^2+
+	(torso_rarm_ik[2]-trRArm[2])^2+
+	(torso_rarm_ik[3]-trRArm[3])^2;
+
+--[[
+    if dist1<0.001 and dist2<0.001 then
+      walk.upper_body_override_on();
+      walk.upper_body_override(qLArmInv, qRArmInv, walk.bodyRot0);
+
+      trLArmOld[1],trLArmOld[2],trLArmOld[3],trLArmOld[4],trLArmOld[5],trLArmOld[6]=
+      trLArm[1],trLArm[2],trLArm[3],trLArm[4],trLArm[5],trLArm[6];
+
+      trRArmOld[1],trRArmOld[2],trRArmOld[3],trRArmOld[4],trRArmOld[5],trRArmOld[6]=
+      trRArm[1],trRArm[2],trRArm[3],trRArm[4],trRArm[5],trRArm[6];
+    else
+      trLArm[1],trLArm[2],trLArm[3],trLArm[4],trLArm[5],trLArm[6]=
+      trLArmOld[1],trLArmOld[2],trLArmOld[3],trLArmOld[4],trLArmOld[5],trLArmOld[6];
+
+      trRArm[1],trRArm[2],trRArm[3],trRArm[4],trRArm[5],trRArm[6]=
+      trRArmOld[1],trRArmOld[2],trRArmOld[3],trRArmOld[4],trRArmOld[5],trRArmOld[6];
+    end
+--]]
+
+
+    if true then
+
+--    if dist1<0.001 and dist2<0.001 then
+      walk.upper_body_override_on();
+      walk.upper_body_override(qLArmInv, qRArmInv, walk.bodyRot0);
+    end
+
+    trLArmOld[1],trLArmOld[2],trLArmOld[3],trLArmOld[4],trLArmOld[5],trLArmOld[6]=
+    trLArm[1],trLArm[2],trLArm[3],trLArm[4],trLArm[5],trLArm[6];
+
+    trRArmOld[1],trRArmOld[2],trRArmOld[3],trRArmOld[4],trRArmOld[5],trRArmOld[6]=
+    trRArm[1],trRArm[2],trRArm[3],trRArm[4],trRArm[5],trRArm[6];
+
+
+
+end
+
+
+
 -- Process Key Inputs
 function process_keyinput()
 
@@ -77,85 +190,68 @@ function process_keyinput()
 	
   local update_walk_vel = false;
   local update_arm = false;
-  -- Walk velocity setting
-  if byte==string.byte("i") then	targetvel[1]=targetvel[1]+0.1; update_walk_vel = true;
-  elseif byte==string.byte("j") then	targetvel[3]=targetvel[3]+0.1; update_walk_vel = true;
-  elseif byte==string.byte("k") then	targetvel[1],targetvel[2],targetvel[3]=0,0,0; update_walk_vel = true;
-  elseif byte==string.byte("l") then	targetvel[3]=targetvel[3]-0.1; update_walk_vel = true;
-  elseif byte==string.byte(",") then	targetvel[1]=targetvel[1]-0.1; update_walk_vel = true;
---  elseif byte==string.byte("h") then	targetvel[2]=targetvel[2]+0.02; update_walk_vel = true;
-  elseif byte==string.byte(";") then	targetvel[2]=targetvel[2]-0.02; update_walk_vel = true;
 
-  -- Arm direct control
+  --Arm target position control
+  if byte==string.byte("s") then  
+    trLArm[1],trLArm[2],trLArm[3],trLArm[4],trLArm[5],trLArm[6]=
+    trLArm0[1],trLArm0[2],trLArm0[3],trLArm0[4],trLArm0[5],trLArm0[6];
 
-  elseif byte==string.byte("q") then  qLArmOD[1]=qLArmOD[1] + 15*math.pi/180; update_arm=true;
-  elseif byte==string.byte("w") then  qLArmOD[2]=qLArmOD[2] + 15*math.pi/180; update_arm=true;
-  elseif byte==string.byte("e") then  qLArmOD[3]=qLArmOD[3] + 15*math.pi/180; update_arm=true;
-  elseif byte==string.byte("r") then  qLArmOD[4]=qLArmOD[4] + 15*math.pi/180; update_arm=true;
-  elseif byte==string.byte("t") then  qLArmOD[5]=qLArmOD[5] + 15*math.pi/180; update_arm=true;
-  elseif byte==string.byte("y") then  qLArmOD[6]=qLArmOD[6] + 15*math.pi/180; update_arm=true;
+    trLArmOld[1],trLArmOld[2],trLArmOld[3],trLArmOld[4],trLArmOld[5],trLArmOld[6]=
+    trLArm[1],trLArm[2],trLArm[3],trLArm[4],trLArm[5],trLArm[6];
 
-  elseif byte==string.byte("a") then  qLArmOD[1]=qLArmOD[1] - 15*math.pi/180; update_arm=true;
-  elseif byte==string.byte("s") then  qLArmOD[2]=qLArmOD[2] - 15*math.pi/180; update_arm=true;
-  elseif byte==string.byte("d") then  qLArmOD[3]=qLArmOD[3] - 15*math.pi/180; update_arm=true;
-  elseif byte==string.byte("f") then  qLArmOD[4]=qLArmOD[4] - 15*math.pi/180; update_arm=true;
-  elseif byte==string.byte("g") then  qLArmOD[5]=qLArmOD[5] - 15*math.pi/180; update_arm=true;
-  elseif byte==string.byte("h") then  qLArmOD[6]=qLArmOD[6] - 15*math.pi/180; update_arm=true;
+    update_arm = true;
 
-  -- Walk commands
-  elseif byte==string.byte("7") then
-    Motion.event("sit");
-  elseif byte==string.byte("8") then
-    if walk.active then 
-      walk.stopAlign();
-    end
-    Motion.event("standup");
-  elseif byte==string.byte("9") then
-    Motion.event("walk");
-    walk.start();
+  elseif byte==string.byte("k") then  
+    trRArm[1],trRArm[2],trRArm[3],trRArm[4],trRArm[5],trRArm[6]=
+    trRArm0[1],trRArm0[2],trRArm0[3],trRArm0[4],trRArm0[5],trRArm0[6];
+
+    trRArmOld[1],trRArmOld[2],trRArmOld[3],trRArmOld[4],trRArmOld[5],trRArmOld[6]=
+    trRArm[1],trRArm[2],trRArm[3],trRArm[4],trRArm[5],trRArm[6];
+
+    update_arm = true;
+
+  elseif byte==string.byte("w") then  
+    trLArm[1]=trLArm[1]+0.01;
+    update_arm = true;
+  elseif byte==string.byte("x") then  
+    trLArm[1]=trLArm[1]-0.01;
+    update_arm = true;
+  elseif byte==string.byte("a") then  
+    trLArm[2]=trLArm[2]+0.01;
+    update_arm = true;
+  elseif byte==string.byte("d") then  
+    trLArm[2]=trLArm[2]-0.01;
+    update_arm = true;
+  elseif byte==string.byte("q") then  
+    trLArm[3]=trLArm[3]+0.01;
+    update_arm = true;
+  elseif byte==string.byte("z") then  
+    trLArm[3]=trLArm[3]-0.01;
+    update_arm = true;
+
+  elseif byte==string.byte("i") then  
+    trRArm[1]=trRArm[1]+0.01;
+    update_arm = true;
+  elseif byte==string.byte(",") then  
+    trRArm[1]=trRArm[1]-0.01;
+    update_arm = true;
+  elseif byte==string.byte("j") then  
+    trRArm[2]=trRArm[2]+0.01;
+    update_arm = true;
+  elseif byte==string.byte("l") then  
+    trRArm[2]=trRArm[2]-0.01;
+    update_arm = true;
+  elseif byte==string.byte("u") then  
+    trRArm[3]=trRArm[3]+0.01;
+    update_arm = true;
+  elseif byte==string.byte("m") then  
+    trRArm[3]=trRArm[3]-0.01;
+    update_arm = true;
   end
-	
-  if( update_walk_vel ) then
-    print("Commanded velocity:",unpack(walk.velCommand))
-    walk.set_velocity(unpack(targetvel));
-  end
+
   if ( update_arm ) then
-    print("Arm update",	vector.new(qLArmOD)*180/math.pi);
-
-    local torso_larm = Kinematics.l_arm_torso(qLArmOD);
-    print("Position:",
-	torso_larm[1],
-	torso_larm[2]-0.219, --Shoulder offset
-	torso_larm[3]-0.144);
-    print("RPY:",
-	torso_larm[4]*180/math.pi,
-	torso_larm[5]*180/math.pi,
-	torso_larm[6]*180/math.pi);
-
-    print("LINV")
-    local qLarmInv = Kinematics.inverse_l_arm(torso_larm);
-    walk.upper_body_override_on();
-    walk.upper_body_override(qLArmOD, walk.qRArm0, walk.bodyRot0);
-
-
---[[
-    local torso_larm = Kinematics.r_arm_torso(qLArmOD);
-    print("Position:",
-	torso_larm[1],
-	torso_larm[2]+0.219, --YShoulder offset
-	torso_larm[3]-0.144);
-    print("RPY:",
-	torso_larm[4]*180/math.pi,
-	torso_larm[5]*180/math.pi,
-	torso_larm[6]*180/math.pi);
-    print("RINV")
-    local qLarmInv = Kinematics.inverse_r_arm(torso_larm);
-    walk.upper_body_override_on();
-    walk.upper_body_override(walk.qLArm0,qLArmOD, walk.bodyRot0);
---]]
-
+    motion_arms_ik();
   end
-
 
   return true
   
@@ -212,7 +308,10 @@ Motion.event("standup");
 local tDelay = 0.005 * 1E6; -- Loop every 5ms
 while (true) do
 	-- Run Updates
-  process_keyinput();
+--  process_keyinput();
+
+  arm_demo();
+
   update();
 
   -- Debug Messages every 1 second

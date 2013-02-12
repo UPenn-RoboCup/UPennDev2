@@ -218,6 +218,11 @@ function entry()
   Body.set_larm_hardness(hardnessArm);
   Body.set_rarm_hardness(hardnessArm);
 
+  --Let the robot wait in standing state
+  if Config.sit_disable>0 then
+    active=false;
+  end
+
 end
 
 

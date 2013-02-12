@@ -168,9 +168,10 @@ THOROP_kinematics_inverse_arm(Transform trArm, int arm)
   if (cElbow > 1) cElbow = 1;
   if (cElbow < -1) cElbow = -1;
 
-//SJ: Robot can have TWO elbow pitch values (near elbowPitch==0)
+// SJ: Robot can have TWO elbow pitch values (near elbowPitch==0)
+// We are only using the smaller one (arm more bent) 
   double elbowPitch = -acos(cElbow)-aUpperArm-aLowerArm;
-  printf("Elbow pitch: %.2f \n",elbowPitch*180/3.1415);
+//  printf("Elbow pitch: %.2f \n",elbowPitch*180/3.1415);
   
 //---------------------------------------------------------------------------
 
@@ -221,7 +222,7 @@ THOROP_kinematics_inverse_arm(Transform trArm, int arm)
     wristYaw=asin(s5);
   }
   //Two possible solutions
-  printf("Wrist yaw = %.2f or %.2f\n",wristYaw*180/3.1415,-wristYaw*180/3.1415);
+//  printf("Wrist yaw = %.2f or %.2f\n",wristYaw*180/3.1415,-wristYaw*180/3.1415);
 
 /////////////////////////////////////////////////////
 //Use wrist yaw joint to solve for wrist roll joint
@@ -231,7 +232,9 @@ THOROP_kinematics_inverse_arm(Transform trArm, int arm)
 // or  (pShoulder[0] - C6 mInvWrist[0])^2 = (1-C6^2) *  t5 ^2
  
   double c5 = sqrt(1-s5*s5);
-  double t5;
+  double t5,c6;
+  double wristRoll1, wristRoll2;
+
 
 //Case 1: wristYaw>0 (s5>0)
   t5 = c5 * mInvWrist[1] + s5*mInvWrist[2];
@@ -239,53 +242,147 @@ THOROP_kinematics_inverse_arm(Transform trArm, int arm)
   a = mInvWrist[0]*mInvWrist[0] + t5*t5;
   b = -pShoulder[0]*mInvWrist[0];
   c = pShoulder[0]*pShoulder[0] - t5*t5;
-
-  double wristRoll,c6;
   if ((b*b-a*c<0)|| a==0 ) {//NaN handling
    c6 = 0;
-   wristRoll = 0;
+   wristRoll1 = 0;
 // printf("NAN at wristRoll\n");
   } 
   else {
     c6= (-b+sqrt(b*b-a*c))/a;
     if (c6 > 1) c6 = 1;
     if (c6 < -1) c6 = -1;
-    wristRoll=acos(c6);
+    wristRoll1=acos(c6);
   }
 
-  //Two possible solutions
-  printf("Wrist roll = %.2f or %.2f\n",wristRoll*180/3.1415,-wristRoll*180/3.1415);
+//Two possible solutions
+//  printf("Wrist yaw 1 = %.2f \n",wristYaw*180/3.1415);
+//  printf("Wrist roll = %.2f or %.2f\n",wristRoll1*180/3.1415,-wristRoll1*180/3.1415);
 
 
-//---------------------------------------------------------------------------
-// Now solve shoulder RPY angles using elbow and wrist angles
-// TODO: iterate all 8 possible combinations 
+//Case 2: wristYaw<0 (s5<0)
+  t5 = c5 * mInvWrist[1] - s5*mInvWrist[2];
+//2nd order equation coefficients
+  a = mInvWrist[0]*mInvWrist[0] + t5*t5;
+  b = -pShoulder[0]*mInvWrist[0];
+  c = pShoulder[0]*pShoulder[0] - t5*t5;
+  if ((b*b-a*c<0)|| a==0 ) {//NaN handling
+   c6 = 0;
+   wristRoll2 = 0;
+// printf("NAN at wristRoll\n");
+  } 
+  else {
+    c6= (-b+sqrt(b*b-a*c))/a;
+    if (c6 > 1) c6 = 1;
+    if (c6 < -1) c6 = -1;
+    wristRoll2=acos(c6);
+  }
 
-  //append to transform m to get the full transform to the final one
-  m=m.rotateX(wristYaw).rotateZ(wristRoll);
-  //get P-Y-R rotation matrix
-  Transform pyr = t * inv(m);
-
-  double shoulderRoll = atan2(-pyr(1,2),pyr(1,1));
-  double shoulderPitch = atan2(-pyr(2,0),pyr(0,0));
-  double shoulderYaw = atan2(pyr(1,0),
-			sqrt(pyr(0,0)*pyr(0,0) + pyr(2,0)*pyr(2,0)));
-
-  printf("Shoulder P-Y-R = %.2f, %.2f, %.2f\n",
-	shoulderPitch*180/3.1415,
-	shoulderYaw*180/3.1415,
-	shoulderRoll*180/3.1415);
+//Two possible solutions
+//  printf("Wrist yaw 2 = %.2f \n",-wristYaw*180/3.1415);
+//  printf("Wrist roll = %.2f or %.2f\n",wristRoll2*180/3.1415,-wristRoll2*180/3.1415);
 
 
-//  printTransform(t) ;
+//--------------------------------------------------------------------------- 
 
+
+// Solve shoulder PYR angles for all possible solutions 
+// and pick one with smallest postion error 
+
+  double wristYawC[4];
+  double wristRollC[4];
+  double minError = 999;
   std::vector<double> qArm(6);
-  qArm[0] = shoulderPitch;
-  qArm[1] = shoulderYaw;
-  qArm[2] = shoulderRoll;
-  qArm[3] = elbowPitch;
-  qArm[4] = wristYaw;
-  qArm[5] = wristRoll;
+
+//We have 4 solution for wrist joints
+// (wristYaw, wristRoll1)
+// (wristYaw, -wristRoll1)
+// (-wristYaw, wristRoll1)
+// (-wristYaw, -wristRoll1)
+
+  wristYawC[0]=wristYaw;
+  wristYawC[1]=wristYaw;
+  wristYawC[2]=-wristYaw;
+  wristYawC[3]=-wristYaw;
+  wristRollC[0]=wristRoll1;
+  wristRollC[1]=-wristRoll1;
+  wristRollC[2]=wristRoll2;
+  wristRollC[3]=-wristRoll2;
+
+  for (int i=0; i<4; i++){
+    Transform m;
+    m=m.translateX(upperArmLength)
+       .translateZ(elbowOffsetX)
+       .rotateY(elbowPitch)
+       .translateZ(-elbowOffsetX)
+       .translateX(lowerArmLength)
+       .rotateX(wristYawC[i]).rotateZ(wristRollC[i]);
+    //get P-Y-R rotation matrix
+    Transform pyr = t * inv(m);
+    double shoulderPitchC = atan2(-pyr(2,0),pyr(0,0));
+    double shoulderYawC = atan2(pyr(1,0),
+			sqrt(pyr(0,0)*pyr(0,0) + pyr(2,0)*pyr(2,0)));
+    double shoulderRollC = atan2(-pyr(1,2),pyr(1,1));
+
+    double armTransformC[6];
+    armTransformC[0]=shoulderPitchC; 
+    armTransformC[1]=shoulderYawC; 
+    armTransformC[2]=shoulderRollC; 
+    armTransformC[3]=elbowPitch;
+    armTransformC[4]=wristYawC[i];
+    armTransformC[5]=wristRollC[i];
+
+    Transform arm_transform_c;
+
+    //Check shoulder angle constraints
+    //Elbow should always be out side of the robot
+    if (arm==ARM_LEFT){
+      if (armTransformC[1]<0) armTransformC[1] = 0;
+      arm_transform_c=
+	THOROP_kinematics_forward_l_arm(armTransformC); 
+    }else{
+      if (armTransformC[1]>0) armTransformC[1] = 0;
+      arm_transform_c=
+	THOROP_kinematics_forward_r_arm(armTransformC); 
+    }
+
+    double x_err = trArm(0,3) - arm_transform_c(0,3);
+    double y_err = trArm(1,3) - arm_transform_c(1,3);
+    double z_err = trArm(2,3) - arm_transform_c(2,3);
+    double d_err = x_err*x_err + y_err*y_err + z_err*z_err;
+/*
+    printf("Candidate #%d: %.1f %.1f %.1f %.1f %.1f %.1f\n",
+	i,
+	armTransformC[0]*180/3.1415,
+	armTransformC[1]*180/3.1415,
+	armTransformC[2]*180/3.1415,
+	armTransformC[3]*180/3.1415,
+	armTransformC[4]*180/3.1415,
+	armTransformC[5]*180/3.1415);
+    printf("Target: %.2f %.2f %.2f Actual: %.2f %.2f %.2f Error: %.3f\n\n",
+	trArm(0,3),
+	trArm(1,3),
+	trArm(2,3),
+	arm_transform_c(0,3),
+	arm_transform_c(1,3),
+	arm_transform_c(2,3),
+	d_err);
+*/
+    if (d_err<minError){
+      minError = d_err;
+
+      qArm[0] = armTransformC[0];
+      qArm[1] = armTransformC[1];
+      qArm[2] = armTransformC[2];
+      qArm[3] = armTransformC[3];
+      qArm[4] = armTransformC[4];
+      qArm[5] = armTransformC[5];
+
+    }
+  }
+
+
+
+
 
   return qArm;
 }

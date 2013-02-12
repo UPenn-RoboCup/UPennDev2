@@ -64,7 +64,11 @@ end
 function update()
   local t = Body.get_time();
   local dt = t - t0;
-  if finished then return; end
+  if finished then 
+   print("Standstill exit")
+
+   return "done"; 
+  end
 
   --Wait a bit to read joint readings
   if not started then 

@@ -8,8 +8,7 @@
 const double PI = 2*asin(1);
 const double SQRT2 = sqrt(2);
 
-//From COM to neck joint
-const double neckOffsetZ = .144+0.027+0.114;
+const double neckOffsetZ = 0;
 const double neckOffsetX = 0;
 
 //COM assumed at the chestYaw joint
@@ -36,13 +35,6 @@ const double dThigh = sqrt(thighLength*thighLength+kneeOffsetX*kneeOffsetX);
 const double aThigh = atan(kneeOffsetX/thighLength);
 const double dTibia = sqrt(tibiaLength*tibiaLength+kneeOffsetX*kneeOffsetX);
 const double aTibia = atan(kneeOffsetX/tibiaLength);
-
-const double dUpperArm = sqrt(upperArmLength*upperArmLength+elbowOffsetX*elbowOffsetX);
-const double dLowerArm = sqrt(lowerArmLength*lowerArmLength+elbowOffsetX*elbowOffsetX);
-const double aUpperArm = atan(elbowOffsetX/upperArmLength);
-const double aLowerArm = atan(elbowOffsetX/lowerArmLength);
-
-
 
 const double servoOffset[] = {
   0.0, 0.0, 0.0, 0.0, 0.0, 0.0,

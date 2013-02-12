@@ -82,6 +82,7 @@ if sit_disable==0 then --For smaller robots
   sm:set_transition(standstill, 'sit', sit);
   sm:set_transition(standstill, 'diveready', divewait);
 
+
   -- Grip
   sm:set_transition(grip, 'timeout', grip);
   sm:set_transition(grip, 'done', stance);
@@ -115,6 +116,8 @@ else --For large robots that cannot sit down or getup
   --standstill makes the robot stand still with 0 bodytilt (for webots)
   sm:set_transition(standstill, 'stance', stance);
   sm:set_transition(standstill, 'walk', stance);
+  sm:set_transition(standstill, 'done', stance); 
+
 
   -- kick behaviours
   sm:set_transition(walk, 'kick', kick);

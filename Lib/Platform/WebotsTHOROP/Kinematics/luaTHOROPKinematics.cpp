@@ -169,7 +169,7 @@ static int inverse_l_arm(lua_State *L) {
   std::vector<double> qArm;
   std::vector<double> pArm = lua_checkvector(L, 1);
   Transform trArm = transform6D(&pArm[0]);
-  qArm = THOROP_kinematics_inverse_r_arm(trArm);
+  qArm = THOROP_kinematics_inverse_l_arm(trArm);
   lua_pushvector(L, qArm);
   return 1;
 }
@@ -178,7 +178,7 @@ static int inverse_r_arm(lua_State *L) {
   std::vector<double> qArm;
   std::vector<double> pArm = lua_checkvector(L, 1);
   Transform trArm = transform6D(&pArm[0]);
-  qArm = THOROP_kinematics_inverse_l_arm(trArm);
+  qArm = THOROP_kinematics_inverse_r_arm(trArm);
   lua_pushvector(L, qArm);
   return 1;
 }

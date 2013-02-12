@@ -1,0 +1,88 @@
+#
+#  DARPA Qualification gate
+#  4 meter tall, 2 meter wide
+#
+
+
+PROTO QualGate [
+  field SFVec3f translation 0 0 0
+  field SFRotation rotation 0 1 0 0
+  field SFFloat postRadius 0.05
+  field SFColor postColor1 0 1 0
+  field SFColor postColor2 0 0 1
+  field SFColor postColor3 1 0 0
+  field SFBool locked TRUE
+]
+{
+Solid {
+  translation IS translation
+  rotation IS rotation
+  children [
+    DEF HORIZONTAL_POST_TRANS Transform {
+      translation 0 4.0 0
+      rotation 1 0 0 1.5708
+      children [
+        Shape {
+          appearance DEF POST_APP Appearance {
+            material Material {
+              diffuseColor IS postColor1
+              specularColor IS postColor1
+            }
+          }
+          geometry Cylinder {
+            bottom FALSE
+            height 2.0
+            radius IS postRadius
+            top FALSE
+          }
+        }
+      ]
+    }
+    DEF RIGHT_POST_TRANS Transform {
+      translation 0 2.0 -1.0
+      children [
+        Shape {
+          appearance DEF POST_APP2 Appearance {
+            material Material {
+              diffuseColor IS postColor2
+              specularColor IS postColor2
+            }
+          }
+          geometry Cylinder {
+            bottom FALSE
+            height 4.0
+            radius IS postRadius
+          }
+        }
+      ]
+    }
+    DEF LEFT_POST_TRANS Transform {
+      translation 0 2.0 1.0
+      children [
+        Shape {
+          appearance DEF POST_APP3 Appearance {
+            material Material {
+              diffuseColor IS postColor3
+              specularColor IS postColor3
+            }
+          }
+          geometry Cylinder {
+            bottom FALSE
+            height 4.0
+            radius IS postRadius
+          }
+        }
+      ]
+    }
+
+  ]
+  boundingObject Group {
+    children [
+      USE HORIZONTAL_POST_TRANS
+      USE RIGHT_POST_TRANS
+      USE LEFT_POST_TRANS
+    ]
+  }
+  locked IS locked
+}
+}

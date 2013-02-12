@@ -21,6 +21,9 @@ elseif teamID == 99 then
 elseif teamID==22 then
   print('laser')
   dofile("Player/Test/test_laser.lua");
+elseif teamID==23 then
+  print('arms')
+  dofile("Player/Test/test_arms.lua");
 else
 	--Default
 --  dofile("Player/Test/test_joints_webots.lua");

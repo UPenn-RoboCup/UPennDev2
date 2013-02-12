@@ -2,52 +2,82 @@ local ffi = require 'ffi'
 local libpng = require 'libpng'
 local carray = require 'carray'
 
---imghandle = carray.byte(640*480*3)
---img = ffi.cast('unsigned char*', imghandle:pointer())
-img = ffi.new('unsigned char[?]', 640 * 480 * 3)
-
 -- load png with libpng
 -- use raw pixel data to create a QImage for display
 
+local fileList = {}
+local currentFile = '' 
+local currentFileIdx = 0
+
+local loadImageffi = function()
+  img = ffi.new('unsigned char[?]', 640 * 480 * 3)
+  imgload = libpng.load({path = fname})
+  ffi.copy(img, imgload.data, imgload.h * imgload.w * 3)
+  --img = openimage(fname)
+  qimage = QImage(img, imgload.w, imgload.h, imgload.w * 3, QImage.Format.Format_RGB888)
+  local piximage = QPixmap.new()
+  -- ConvertToPixmap for Graphic Scene
+  piximage:convertFromImage(qimage, Qt.AutoColor)
+end
+
+local splitPath = function(str)
+  local ptr = 1
+  while str:find('/', ptr) ~= nil do
+    ptr = ptr + 1
+  end
+  path = str:sub(1, ptr - 1)
+  filename = str:sub(ptr, #str)
+  print(path, filename)
+  return path, filename
+end
+
 local  initDraw = function(self, state)
---  print('open file')
   local fileDialog = QFileDialog()
   local fileName = fileDialog:getOpenFileName(
                           "Open File", "", "Log File (*.png)")
   print(fileName:toUtf8())
-  local fname = fileName:toUtf8()
---  imgload = libpng.load({path = fname})
---  ffi.copy(img, imgload.data, imgload.h * imgload.w * 3)
-  --img = openimage(fname)
---  qimage = QImage(img, imgload.w, imgload.h, imgload.w * 3, QImage.Format.Format_RGB888)
---  qimage = QImage(imgload.data, imgload.w, imgload.h, imgload.w * 3, QImage.Format.Format_RGB888)
---  local piximage = QPixmap.new()
-  local piximage = QPixmap.new(fname)
-  -- ConvertToPixmap for Graphic Scene
---  piximage:convertFromImage(qimage, Qt.AutoColor)
+  local fullfilename = fileName:toUtf8()
+  local path, filename = splitPath(fileName:toUtf8())
+  local listFile = assert(io.popen('/bin/ls '..path..'*.png', 'r'))
+  local listFileCount = 0
+  for file in listFile:lines() do
+    listFileCount = listFileCount + 1
+    fileList[listFileCount] = file
+    if fileList[listFileCount] == fullfilename then
+      currentFileIdx = listFileCount
+      currentFile = fullfilename
+    end
+  end
+
+  local piximage = QPixmap.new(fullfilename)
   local pixmapitem = QGraphicsPixmapItem.new(piximage)
   local scene = QGraphicsScene.new()
   scene:addItem(pixmapitem)
   self:setScene(scene)
 
---  self:update(0,0,640,480)
+  self:update(0,0,640,480)
 end
 
-local  updateDraw = function(self, state)
-  print(state)
+local updateDraw = function(self, state)
+  local idxShift = 0
   if state == 1 then
-    fname = 'image1.png'
-  else
-    fname = 'image.png'
+    idxShift = -10
+  elseif state == 2 then
+    idxShift = -1
+  elseif state == 3 then
+    idxShift = 1
+  elseif state == 4 then
+    idxShift = 10
   end
- imgload = libpng.load({path = fname})
-  ffi.copy(img, imgload.data, imgload.h * imgload.w * 3)
---  --img = openimage(fname)
-  qimage = QImage(img, imgload.w, imgload.h, imgload.w * 3, QImage.Format.Format_RGB888)
---  local piximage = QPixmap.new(fname)
-  local piximage = QPixmap.new()
+  if #fileList > 0 then
+    local afterShiftIdx = currentFileIdx + idxShift
+    if afterShiftIdx > 0 and afterShiftIdx <= #fileList then
+      currentFileIdx = afterShiftIdx
+      currentFile = fileList[currentFileIdx]
+    end
+  end
+  local piximage = QPixmap.new(currentFile)
   -- ConvertToPixmap for Graphic Scene
-  piximage:convertFromImage(qimage, Qt.AutoColor)
   local pixmapitem = QGraphicsPixmapItem.new(piximage)
   local scene = QGraphicsScene.new()
   scene:addItem(pixmapitem)
@@ -57,13 +87,13 @@ local  updateDraw = function(self, state)
 --  print(img)
 end
 
-local updateBackward = function(self, state)
-  print('Backward')
+local updateBBackward = function(self, state)
+  print('BBackward')
   updateDraw(self, 1)
 end
 
-local updateBBackward = function(self, state)
-  print('BBackward')
+local updateBackward = function(self, state)
+  print('Backward')
   updateDraw(self, 2)
 end
 

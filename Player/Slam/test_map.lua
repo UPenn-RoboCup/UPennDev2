@@ -1,16 +1,13 @@
-module(... or '', package.seeall)
-
 -- Add the required paths
 cwd = '.';
-
 uname  = io.popen('uname -s')
 system = uname:read();
 
-package.cpath = cwd.."/?.so;"..package.cpath;
-package.cpath = cwd.."/../../Player/Lib/?.so;"..package.cpath;
-package.path = cwd.."/../../Player/Util/?.lua;"..package.path;
-package.path = cwd.."/../../Player/Config/?.lua;"..package.path;
-package.path = cwd.."/../../Player/Vision/?.lua;"..package.path;
+package.cpath = cwd.."/../?.so;"..package.cpath;
+package.cpath = cwd.."/../Lib/?.so;"..package.cpath;
+package.path = cwd.."/../Util/?.lua;"..package.path;
+package.path = cwd.."/../Config/?.lua;"..package.path;
+package.path = cwd.."/../Vision/?.lua;"..package.path;
 
 require('serialization');
 require('util');
@@ -19,7 +16,7 @@ require('cutil');
 require('vector');
 
 require 'torch'
-require 'gnuplot'
+torch.Tensor = torch.DoubleTensor
 
 -- Default values
 local MAPS = {}
@@ -53,7 +50,7 @@ OMAP.sizey  = MAPS.sizey;
 OMAP.data = torch.Tensor(OMAP.sizex,OMAP.sizex):zero()
 
 OMAP.data = OMAP.data:copy( torch.ceil( torch.rand(OMAP.sizex,OMAP.sizex):mul(9) ) )
-OMAP.data = torch.rand(OMAP.sizex,OMAP.sizex):mul(10):ceil():div(10):type('torch.ByteTensor');
+--OMAP.data = torch.ByteTensor():rand(OMAP.sizex,OMAP.sizex):mul(10):ceil():div(10)
 
 -- Helper Functions
 require 'mapShift'

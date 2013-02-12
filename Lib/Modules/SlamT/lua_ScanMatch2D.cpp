@@ -263,7 +263,9 @@ int lua_ScanMatch2D(lua_State *L) {
     lua_pushinteger(L, npths*npxs*npys);
     return 3;
   }
-  else 
+  else {
     luaL_error(L ,"unknown command");
+		return 0;
+	}
 }
 

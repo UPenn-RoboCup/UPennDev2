@@ -1,14 +1,10 @@
-local glue = require 'glue'
 local ffi = require 'ffi'
-local bmpconv = require 'bmpconv'
-local readfile = glue.readfile
-require 'unit'
 local libpng = require 'libpng'
 local carray = require 'carray'
 
 --imghandle = carray.byte(640*480*3)
 --img = ffi.cast('unsigned char*', imghandle:pointer())
-img = ffi.new('unsigned char[?], 640 * 480 * 3)
+img = ffi.new('unsigned char[?]', 640 * 480 * 3)
 
 -- load png with libpng
 -- use raw pixel data to create a QImage for display
@@ -20,19 +16,21 @@ local  initDraw = function(self, state)
                           "Open File", "", "Log File (*.png)")
   print(fileName:toUtf8())
   local fname = fileName:toUtf8()
-  imgload = libpng.load({path = fname})
-  ffi.copy(img, imgload.data, imgload.h * imgload.w * 3)
+--  imgload = libpng.load({path = fname})
+--  ffi.copy(img, imgload.data, imgload.h * imgload.w * 3)
   --img = openimage(fname)
-  qimage = QImage(img, imgload.w, imgload.h, imgload.w * 3, QImage.Format.Format_RGB888)
-  local piximage = QPixmap.new()
+--  qimage = QImage(img, imgload.w, imgload.h, imgload.w * 3, QImage.Format.Format_RGB888)
+--  qimage = QImage(imgload.data, imgload.w, imgload.h, imgload.w * 3, QImage.Format.Format_RGB888)
+--  local piximage = QPixmap.new()
+  local piximage = QPixmap.new(fname)
   -- ConvertToPixmap for Graphic Scene
-  piximage:convertFromImage(qimage, Qt.AutoColor)
+--  piximage:convertFromImage(qimage, Qt.AutoColor)
   local pixmapitem = QGraphicsPixmapItem.new(piximage)
   local scene = QGraphicsScene.new()
   scene:addItem(pixmapitem)
   self:setScene(scene)
 
-  self:update(0,0,640,480)
+--  self:update(0,0,640,480)
 end
 
 local  updateDraw = function(self, state)
@@ -42,20 +40,21 @@ local  updateDraw = function(self, state)
   else
     fname = 'image.png'
   end
-  imgload = libpng.load({path = fname})
+ imgload = libpng.load({path = fname})
   ffi.copy(img, imgload.data, imgload.h * imgload.w * 3)
 --  --img = openimage(fname)
---  qimage = QImage(img, imgload.w, imgload.h, imgload.w * 3, QImage.Format.Format_RGB888)
---  local piximage = QPixmap.new()
---  -- ConvertToPixmap for Graphic Scene
---  piximage:convertFromImage(qimage, Qt.AutoColor)
---  local pixmapitem = QGraphicsPixmapItem.new(piximage)
---  local scene = QGraphicsScene.new()
---  scene:addItem(pixmapitem)
---  self:setScene(scene)
+  qimage = QImage(img, imgload.w, imgload.h, imgload.w * 3, QImage.Format.Format_RGB888)
+--  local piximage = QPixmap.new(fname)
+  local piximage = QPixmap.new()
+  -- ConvertToPixmap for Graphic Scene
+  piximage:convertFromImage(qimage, Qt.AutoColor)
+  local pixmapitem = QGraphicsPixmapItem.new(piximage)
+  local scene = QGraphicsScene.new()
+  scene:addItem(pixmapitem)
+  self:setScene(scene)
 
   self:update(0,0,640,480)
-  print(img)
+--  print(img)
 end
 
 local updateBackward = function(self, state)
@@ -163,12 +162,12 @@ Widget = function(...)
 
     -- Image frame Control Buttons
     local frameControlhbox = QHBoxLayout()
-      local bbackward = QPushButton("<<", this)
-      local backward = QPushButton("<-", this)
+      local bbackward = QPushButton("&<< (A)", this)
+      local backward = QPushButton("<- (S)", this)
       local frameLabel = QLabel("1", this)
       frameLabel:setAlignment(Qt.AlignmentFlag.AlignHCenter + Qt.AlignmentFlag.AlignVCenter)
-      local forward = QPushButton("->", this)
-      local fforward = QPushButton(">>", this)
+      local forward = QPushButton("(D) ->", this)
+      local fforward = QPushButton("(F) >>", this)
       frameControlhbox:addWidget(bbackward)
       frameControlhbox:addWidget(backward)
       frameControlhbox:addWidget(frameLabel)

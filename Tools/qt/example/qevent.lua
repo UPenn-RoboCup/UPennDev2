@@ -1,12 +1,11 @@
 local pwd = os.getenv('PWD')
-package.cpath = pwd..'/lib/?.so;'..package.cpath
+package.cpath = pwd..'/../lib/qt/?.so;'..package.cpath
 
 require 'qtcore'
 require 'qtgui'
 
 app = QApplication(1 + select('#', ...), {arg[0], ...})
 app.__gc = app.delete -- take ownership of object
-
 
 local onCheck = function (self, state)
   if (state == Qt.CheckState.Checked) then
@@ -42,7 +41,7 @@ local KeyEvent = function(...)
 
   return this
 end
-
+window = KeyEvent()
 
 function window:timerEvent(e)
   local qtime = QTime.currentTime()
@@ -65,11 +64,6 @@ function window:moveEvent(e)
   self:setWindowTitle(text)
 end
 
-window = KeyEvent()
-
 window:setWindowTitle("UPennalizers")
-
 window:show()
-
 app.exec()
-

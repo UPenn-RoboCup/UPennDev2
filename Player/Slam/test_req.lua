@@ -84,15 +84,26 @@ require 'unix'
 t0 = unix.time()
 for i=1,5 do
 	-- Manipulate a new tensor
+	tt = unix.time()
 	tensor2send = tensor2send:rand(320,240);
+	print(unix.time()-tt)
+	tt = unix.time()
 	serialized2send = torch.serialize( tensor2send )
+	print(unix.time()-tt)
+	tt = unix.time()
 	ffi.copy(send_buf, serialized2send)
+	print(unix.time()-tt)
+	tt = unix.time()
 	local r1 = sc:send( send_buf, send_buf_sz )
+	print(unix.time()-tt)
 	assert( r1 == send_buf_sz )
 	-- Receive an ACK
 	-- TODO: Remove the need...
+	tt = unix.time()
   local r2 = sc:recv( recv_buf, recv_buf_sz )
+	print(unix.time()-tt)
   assert( r2 == recv_buf_sz )
+	print()
 end
 t1 = unix.time()
 print('FPS:',5/(t1-t0))

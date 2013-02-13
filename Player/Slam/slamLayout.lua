@@ -3,12 +3,6 @@ require 'torch'
 require 'unix'
 require 'tutil'
 
-local zmq = require"zmq"
-local ctx = zmq.init()
-local s = ctx:socket(zmq.SUB)
-s:setopt(zmq.SUBSCRIBE, "")
-s:connect("tcp://localhost:5555")
-
 -- Globally accessable QImage
 sz = {240,320}
 torch.Tensor = torch.ByteTensor
@@ -19,6 +13,11 @@ local tmp2 = slam_map:select(1, 1); -- smooth stride!
 print('Strd',slam_map:stride(1), slam_map:stride(2) )
 print('Cont', tmp1:isContiguous(),tmp2:isContiguous() )
 print('Sz', tmp1:size()[1],tmp2:size()[1] )
+
+-- ZMQ
+print('map io!')
+require 'map_io'
+init_receive()
 
 for line_no = 1,sz[1] do
 	local map_line = slam_map:select(1, line_no); -- smooth stride!
@@ -48,12 +47,8 @@ Widget = function(...)
 
   -- Set up the timer event
   function this:timerEvent(e)
-		--local msg, err = s:recv(z_NOBLOCK)
-		if err == 'timeout' then
-					-- need to block on read IO
-					print('Timeout!')
-				end
-		--print(msg)
+		local m = receive_map()
+		print('recv map')
     drawTensor(this, e)
 	-- Only redraws every other timer event??? why?
   end

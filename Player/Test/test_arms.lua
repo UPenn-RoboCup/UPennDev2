@@ -30,15 +30,22 @@ require 'Transform'
 
 
 require 'Team' --To receive the GPS coordinates from objects
+require 'wcm'
 
 
 --Arm target transforms
 
---trLArmOld = vector.new({0.16, 0.24, -0.09, 0,0,0});
---trRArmOld = vector.new({0.16, -0.24, -0.09, 0,0,0});
+--[[
+trLArmOld = vector.new({0.16, 0.24, -0.09, 0,0,0});
+trRArmOld = vector.new({0.16, -0.24, -0.09, 0,0,0});
 
-trLArmOld = vector.new({0.16, 0.24, -0.09, 0, 0, -math.pi/4});
-trRArmOld = vector.new({0.16, -0.24, -0.09, 0, 0, math.pi/4});
+trLArmOld = vector.new({0.16, 0.24, -0.07, 0, 0, -math.pi/4});
+trRArmOld = vector.new({0.16, -0.24, -0.07, 0, 0, math.pi/4});
+--]]
+
+--New position considering the hand offset
+trLArmOld = vector.new({0.28, 0.22, 0.05, 0, 0, -math.pi/4});
+trRArmOld = vector.new({0.28, -0.22,0.05, 0, 0, math.pi/4});
 
 
 trLArm=vector.new({0,0,0,0,0,0});
@@ -306,9 +313,38 @@ function process_keyinput()
 
   if ( update_arm ) then
     motion_arms_ik();
+   
+    body_pos = Body.get_sensor_gps();
+    body_rpy = Body.get_sensor_imuAngle();
+    object_pos = wcm.get_robot_gps_ball();
+    
+
+print("body abs pos:",unpack( body_pos )); --Check Body GPS 
+--print("body pitch and yaw:",body_rpy[2]*180/math.pi, body_rpy[3]*180/math.pi);
+print("object abs pos:",unpack( object_pos )); 
 
 
-print(unpack(Body.get_sensor_gps())); --Check Body GPS 
+  trBody=Transform.eye()
+   * Transform.trans(body_pos[1],body_pos[2],body_pos[3])
+   * Transform.rotZ(body_rpy[3])
+   * Transform.rotY(body_rpy[2]);
+
+  trEffector = Transform.eye()
+   * Transform.trans(object_pos[1],object_pos[2],object_pos[3])
+   * Transform.rotZ(-math.pi/4); --For L arm (45 deg yaw)
+
+  trRelative = Transform.inv(trBody)*trEffector;
+
+  pRelative = {trRelative[1][4],trRelative[2][4],trRelative[3][4]};
+
+print("object rel pos:",unpack(pRelative))
+
+
+print("current LArm rel pos:",
+	trLArm[1],trLArm[2],trLArm[3]);
+
+
+
   end
 
   return true

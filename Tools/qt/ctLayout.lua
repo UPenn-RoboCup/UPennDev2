@@ -12,26 +12,30 @@ local currentFileIdx = 0
 local defaultW = 640
 local defaultH = 480
 
-local pimage = nil
-local pcimage = nil
-local imageW = 640
-local imageH = 480
-
+-- load img with libpng + ffi
 local loadImageffi = function(filename)
   local imgload = libpng.load({path = filename})
-  pcimage = carray.byte(imgload.data, imgload.stride * imgload.h)
-  imageW = imgload.w
-  imageH = imgload.h
-  local qimage = QImage(pcimage:pointer(), imageW, imageH, 
-                  imageW * 3, QImage.Format.Format_RGB888)
-  pimage:convertFromImage(qimage, Qt.AutoColor)
+--  window.widget.pcimage = carray.byte(imgload.data, imgload.stride * imgload.h)
+--  local qimage = QImage(window.widget.pcimage:pointer(), imgload.w, imgload.h, 
+--                  imgload.w * 3, QImage.Format.Format_RGB888)
+  local qimage = QImage(imgload.data, imgload.w, imgload.h, 
+                  imgload.w * 3, QImage.Format.Format_RGB888)
+
+  window.widget.pimage:convertFromImage(qimage, Qt.AutoColor)
+  if window.widget.pimage:height() ~= defaultH or pimage:width() ~= defaultW then
+    print('scale image')
+    window.widget.pimage = window.widget.pimage:scaled(defaultW, defaultH, Qt.KeepAspectRatio, 
+                            Qt.FastTransformation)
+  end
+
 end
 
+-- load img with QPixmap constructor
 local loadImage = function(filename)
-  pimage:load(filename, 'PNG', Qt.AutoColor)
-  if pimage:height() ~= defaultH or pimage:width() ~= defaultW then
+  window.widget.pimage:load(filename, 'PNG', Qt.AutoColor)
+  if window.widget.pimage:height() ~= defaultH or pimage:width() ~= defaultW then
     print('scale image')
-    pimage = pimage:scaled(defaultW, defaultH, Qt.KeepAspectRatio, 
+    window.widget.pimage = window.widget.pimage:scaled(defaultW, defaultH, Qt.KeepAspectRatio, 
                             Qt.FastTransformation)
   end
 end
@@ -48,7 +52,7 @@ local splitPath = function(str)
 end
 
 local selectPixel = function(o, e)
-  print(e:button(), e:pos():x(), e:pos():y(), pimage:height())
+  print(e:button(), e:pos():x(), e:pos():y(), window.widget.pimage:height())
 end
 
 local  initDraw = function(self, state)
@@ -69,14 +73,10 @@ local  initDraw = function(self, state)
     end
   end
 
---  local piximage = QPixmap.new(fullfilename)
---  loadImageffi(fullfilename)
-  loadImage(fullfilename)
-  local pixmapitem = QGraphicsPixmapItem.new(pimage)
-  local scene = QGraphicsScene.new()
-  scene:addItem(pixmapitem)
-  self:setScene(scene)
-
+  loadImageffi(fullfilename)
+--  loadImage(fullfilename)
+  window.widget.pixmapitem:setPixmap(window.widget.pimage)
+  self:fitInView(0, 0, 640, 480, Qt.IgnoreAspectRatio)
   self:update(0,0,640,480)
 end
 
@@ -98,15 +98,11 @@ local updateDraw = function(self, state)
       currentFile = fileList[currentFileIdx]
     end
   end
-  loadImage(currentFile)
---  loadImageffi(currentFile)
-  local pixmapitem = QGraphicsPixmapItem.new(pimage)
-  local scene = QGraphicsScene.new()
-  scene:addItem(pixmapitem)
-  self:setScene(scene)
+--  loadImage(currentFile)
+  loadImageffi(currentFile)
+  window.widget.pixmapitem:setPixmap(window.widget.pimage)
 
   self:update(0,0,640,480)
---  print(img)
 end
 
 local updateBBackward = function(self, state)
@@ -180,9 +176,10 @@ Widget = function(...)
   this.rightvbox = QVBoxLayout()
     this.pimage = QPixmap.new(defaultW, defaultH)
     -- Create GraphicsScene
-    this.scene = QGraphicsScene.new()
+    this.scene = QGraphicsScene.new(0, 0, defaultW, defaultH)
     -- Create GraphicView, based on Graphic Scene, widget on GUI
     this.view = QGraphicsView.new(this.scene)
+    this.view:fitInView(0, 0, defaultW, defaultH, Qt.IgnoreAspectRatio)
     -- create empty image
     this.pixmapitem = QGraphicsPixmapItem.new(this.pimage)
     this.scene:addItem(this.pixmapitem)

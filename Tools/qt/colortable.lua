@@ -39,9 +39,12 @@ local createWindow = function(...)
 end
 
 window = createWindow()
+window.resizeEvent = function(e)
+--  print(e:size():width(), e:size():height())
+end
 
 window.width = 800
-window.height = 600
+window.height = 550
 
 window:setWindowTitle("UPennalizers Colortable Selection")
 --window:setToolTip("QWidget")

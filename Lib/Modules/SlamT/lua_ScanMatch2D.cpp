@@ -79,10 +79,10 @@ int lua_ScanMatch2D(lua_State *L) {
 			double thmax = 11; // Lua index
 		
 	// TODO: Check for NULL pointers
-    luaT_stackdump( L );
+    //luaT_stackdump( L );
 	// Get the map, which is a ByteTensor
 	// TODO: ensure that the map is explored with the right dimensions
-    THByteTensor * map_t = (THByteTensor *) luaT_checkudata(L, 2, "torch.ByteTensor");    
+    THByteTensor * map_t = (THByteTensor *) luaT_checkudata(L, 2, "torch.ByteTensor");
     const int sizex = map_t->size[0];
     const int sizey = map_t->size[1];
     const int size  = sizex * sizey;

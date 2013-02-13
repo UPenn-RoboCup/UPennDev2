@@ -21,24 +21,15 @@ int poll(struct pollfd *fds, unsigned long nfds, int timeout);
 function sleep(s)
     ffi.C.poll(nil, 0, s*1000)
 end
-
+-- Alias
 local send, recv = zmq.zmq_send, zmq.zmq_recv
 
-content = {}
-
-for i=0,65535 do
-  content[#content + 1] = string.char(math.floor(math.random(255)))
-end
-
-content = table.concat(content)
-print(#content)
-
-local buf  = ffi.new( "char[?]", #content, content )
-local buf1 = ffi.new( "char[?]", #content )
-local buf2 = ffi.new( "char[?]", #content )
-local send, recv = zmq.zmq_send, zmq.zmq_recv
-
-local size, size1, size2 = ffi.sizeof(buf), ffi.sizeof(buf1), ffi.sizeof(buf2)
+-- Data to receive
+local recv_buf_sz = 720000;
+local recv_buf = ffi.new( "char[?]", recv_buf_sz )
+--local size1 = ffi.sizeof(buf1)
+local send_buf_sz = 1;
+local send_buf = ffi.new( "char[?]", send_buf_sz )
 
 local connection = { }
 
@@ -75,9 +66,7 @@ local function bounce( sb )
 	 print(size1,#buf1str)
 	 local z = torch.deserialize(buf1str);
 	 print(z,z[1])
---   r3 = sb:send( buf1str, #buf1str )
    assert( r2 == size1 )
---   assert( r3 == size1 )
 end
 
 -- Init the context
@@ -96,20 +85,21 @@ assert (rc == 0);
 local sb = new_connection( sb )
 
 for i=1,5 do
-	print('Sending msg...')
-	bounce( sb )
-  sleep(1)
+	local r2 = sb:recv( recv_buf, recv_buf_sz )
+	local recv_tensor = torch.deserialize( ffi.string(recv_buf) )
+	assert( r2 == recv_buf_sz )
+	-- Send an ACK
+	-- TODO: Remove this need
+  local r1 = sb:send(send_buf,send_buf_sz)
+	assert( r1 == send_buf_sz )
 end
 
--- Debug
-print(1024*1024/64)
-print(recv_buffer)
-
 -- Close everything
---rc = zmq.zmq_close (sb);
---assert (rc == 0);
+sb = sb.handle
+rc = zmq.zmq_close (sb);
+assert (rc == 0);
 
---rc = zmq.zmq_term (ctx);
---assert (rc == 0);
+rc = zmq.zmq_term (ctx);
+assert (rc == 0);
 
 print("DONE")

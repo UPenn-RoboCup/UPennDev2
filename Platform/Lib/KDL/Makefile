@@ -13,7 +13,7 @@ all: libKDLcustom.a
 %.o: %.c
 	$(CC) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
 
-libKDLcustom.a: treeidsolver_recursive_newton_euler.o chainidsolver_recursive_newton_euler.o
+libKDLcustom.a: treeidsolver_recursive_newton_euler.o
 	$(AR) $(ARFLAGS) $@ $^
 
 clean:

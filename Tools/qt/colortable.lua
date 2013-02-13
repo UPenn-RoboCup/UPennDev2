@@ -6,12 +6,14 @@ require 'qtcore'
 require 'qtgui'
 
 require ('ctLayout')
+require ('ctCommon')
+require ('ctEvent')
 
 -- Initial Qt Application
 app = QApplication(1 + select('#', ...), {arg[0], ...})
 app.__gc = app.delete -- take ownership of object
 
-local centralizeWindow = function(window)
+centralizeWindow = function(window)
   -- Get Screen Size
   local desktop = QApplication.desktop()
   local screenWidth = desktop:width()
@@ -24,7 +26,7 @@ local centralizeWindow = function(window)
   window:move(x, y)
 end
 
-local createWindow = function(...)
+createWindow = function(...)
   local this = QMainWindow(...)
 
   -- add menu

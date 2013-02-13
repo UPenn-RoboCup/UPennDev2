@@ -21,7 +21,6 @@ Widget = function(...)
   this.color[1]:setChecked(true)
   this.colorGroup:setLayout(this.colorGroupVbox)
   
-  
   this.toggleView = QPushButton("Toggle View", this)
   this.leftvbox:addWidget(this.toggleView)
   
@@ -34,7 +33,7 @@ Widget = function(...)
   
   this.thresholdSlider = QSlider("Horizontal", this)
   this.thresholdSlider:setRange(0, 128)
-  this.thresholdSlider:setValue(14)
+  this.thresholdSlider:setValue(defaultThreshold)
   this.leftvbox:addWidget(this.thresholdSlider)
   
   this.saveColors = QPushButton("Save Colors", this)
@@ -45,6 +44,7 @@ Widget = function(...)
 
   this.rightvbox = QVBoxLayout()
   this.pimage = QPixmap.new(defaultW, defaultH)
+  this.pimage:fill(Qt.white)
   -- Create GraphicsScene
   this.scene = QGraphicsScene.new(0, 0, defaultW, defaultH)
   -- Create GraphicView, based on Graphic Scene, widget on GUI

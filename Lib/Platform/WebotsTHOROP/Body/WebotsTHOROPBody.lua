@@ -17,6 +17,8 @@ jointNames = {"neck_yaw","head_pitch",
               "r_hip_yaw","r_hip_roll","r_hip_pitch", "r_knee_pitch","r_ankle_pitch","r_ankle_roll",
               "r_shoulder_pitch", "r_shoulder_roll", "r_shoulder_yaw","r_elbow_pitch","r_wrist_yaw","r_wrist_roll",
 	      "chest_yaw",
+	      "l_wrist_grip1","l_wrist_grip2",
+	      "r_wrist_grip1","r_wrist_grip2"
              };
 
 nJoint = #jointNames;
@@ -33,12 +35,19 @@ nJointRArm = 6;
 indexWaist = 27;
 nJointWaist = 1;
 
+indexLGrip = 28;
+nJointLGrip = 2;
+indexRGrip = 30;
+nJointRGrip = 2;
+
 jointReverse={
 	5,7,  --LArm:  3 4 5 6 7 8
         --LLeg: 9 10 11 12 13 14
         --RLeg: 15 16 17 18 19 20
         23,25,--RArm: 21 22 23 24 25 26
 	 --Waist: 27
+	--Left gripper: 28 29
+	--Right gripper: 30 31
 }
 
 jointBias={
@@ -48,6 +57,8 @@ jointBias={
 	0,0,0,0,0,0,
 	-90*math.pi/180,0,0,0,0,0,
 	0,
+	0,0,
+	0,0,
 }
 
 moveDir={};
@@ -66,10 +77,9 @@ tags.gyro = controller.wb_robot_get_device("Gyro");
 controller.wb_gyro_enable(tags.gyro, timeStep);
 tags.gps = controller.wb_robot_get_device("zero");
 controller.wb_gps_enable(tags.gps, timeStep);
-tags.eyeled = controller.wb_robot_get_device("EyeLed");
-controller.wb_led_set(tags.eyeled,0xffffff)
-tags.headled = controller.wb_robot_get_device("HeadLed");
-controller.wb_led_set(tags.headled,0x00ff00);
+tags.compass = controller.wb_robot_get_device("compass");
+controller.wb_compass_enable(tags.compass, timeStep);
+
 
 controller.wb_robot_step(timeStep);
 get_time = controller.wb_robot_get_time;
@@ -211,6 +221,9 @@ end
 function set_waist_hardness( val )
   set_actuator_hardness(val, indexWaist);
 end
+
+
+
 function set_head_command(val)
   set_actuator_command(val, indexHead);
 end
@@ -276,15 +289,21 @@ function update_IMU()
   tTrans=tTrans*tTransDelta;
   imuAngle = Transform.getRPY(tTrans);
 
-  local accMag = acc[1]^2+acc[2]^2+acc[3]^2;
-  if accMag>0.8 and accMag<1 then
-    local angR=math.asin(-acc[2]);
-    local angP=math.asin(acc[1]);
+  local accMag = math.sqrt(acc[1]^2+acc[2]^2+acc[3]^2);
+  if accMag>0.8 and accMag<1.1 then
+--    print("Acc:",unpack(acc))
+    --SJ: Corrected these 
+    local angP=math.asin(-acc[1]/accMag);
+    local angR=math.asin(acc[2]/accMag);
     imuAngle[1] = imuAngle[1] + aImuFilter*(angR - imuAngle[1]);
     imuAngle[2] = imuAngle[2] + aImuFilter*(angP - imuAngle[2]);
   end
 
---  print("RPY:",unpack(imuAngle*180/math.pi))
+  compass=get_sensor_compass();
+  imuAngle[3] = math.atan2(compass[2],compass[1]);
+
+--  print("Robot RPY:",imuAngle[1]*180/math.pi,imuAngle[2]*180/math.pi,imuAngle[3]*180/math.pi);
+
 end
 
 
@@ -306,7 +325,7 @@ end
 --Roll, Pitch, Yaw in degree per seconds unit
 function get_sensor_imuGyrRPY( )
   gyro = controller.wb_gyro_get_values(tags.gyro);
---Fixed for THOR model
+--Roll, pitch corrected for THOROP model
   gyro_proc={(gyro[1]-512)/0.273, (gyro[2]-512)/0.273,(gyro[3]-512)/0.273};
   return gyro_proc;
 end
@@ -314,25 +333,29 @@ end
 
 function get_sensor_imuAcc( )
   accel = controller.wb_accelerometer_get_values(tags.accelerometer);
---not checked yet
-  return {(accel[2]-512)/128,(accel[1]-512)/128,(accel[3]-512)/128};
+--Checked with THOROP model
+  accel_proc = {(accel[1]-512)/128,(accel[2]-512)/128,-(accel[3]-512)/128};
+  return accel_proc;
 end
 
 function get_sensor_gps()
+--Checked with THOROP model and world
   gps = controller.wb_gps_get_values(tags.gps);
-  return gps;
+  return {gps[1],-gps[3],gps[2]};
 end
 
+function get_sensor_compass()
+--Checked with THOROP model and the world
+  compass = controller.wb_compass_get_values(tags.compass);
+  return {compass[1],-compass[2],compass[3]};
+
+end
+
+
 function set_actuator_eyeled(color)
---input color is 0 to 31, so multiply by 8 to make 0-255
-  code= color[1] * 0x80000 + color[2] * 0x800 + color[3]*8;
-  controller.wb_led_set(tags.eyeled,code)
 end
 
 function set_actuator_headled(color)
- --input color is 0 to 31, so multiply by 8 to make 0-255
-  code= color[1] * 0x80000 + color[2] * 0x800 + color[3]*8;
-  controller.wb_led_set(tags.headled,code)
 end
 
 function set_indicator_state(color)
@@ -351,25 +374,9 @@ function set_indicator_role(role)
 end
 
 function set_indicator_ball(color)
-  -- color is a 3 element vector
-  -- convention is all zero indicates no detection
-  if( color[1]==0 and color[2]==0 and color[3]==0 ) then
-    set_actuator_eyeled({15,15,15});
-  else
-    set_actuator_eyeled({31*color[1],31*color[2],31*color[3]});
-  end
-
 end
 
 function set_indicator_goal(color)
-  -- color is a 3 element vector
-  -- convention is all zero indicates no detection
-  if( color[1]==0 and color[2]==0 and color[3]==0 ) then
-    set_actuator_headled({15,15,15});
-  else
-    set_actuator_headled({31*color[1],31*color[2],31*color[3]});
-  end
-
 end
 
 function get_battery_level()
@@ -418,11 +425,24 @@ end
 function set_rleg_slope(val)
 end
 
+
+
+
 -- Gripper method needed
-function set_gripper_hardness(val)
+function set_l_gripper_hardness(val)
+  set_actuator_hardness(val, indexLGrip);
 end
 
-function set_gripper_command(val)
+function set_r_gripper_hardness(val)
+  set_actuator_hardness(val, indexRGrip);
+end
+
+function set_l_gripper_command(val)
+  set_actuator_command(val, indexLGrip);
+end
+
+function set_r_gripper_command(val)
+  set_actuator_command(val, indexRGrip);
 end
 
 function set_aux_hardness(val)
@@ -430,8 +450,6 @@ end
 
 function set_aux_command(val)
 end
-
-
 
 
 

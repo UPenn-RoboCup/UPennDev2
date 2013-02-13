@@ -6,6 +6,7 @@ require 'qtcore'
 require 'qtgui'
 
 require ('ctLayout')
+require ('ctImageProc')
 require ('ctCommon')
 require ('ctEvent')
 

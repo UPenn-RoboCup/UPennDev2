@@ -4,10 +4,12 @@ local carray = require 'carray'
 
 defaultW = 640
 defaultH = 480
+defaultThreshold = 14
 
 -- load img with libpng + ffi
 loadImageffi = function(filename)
   local imgload = libpng.load({path = filename})
+  window.widget.imgload = imgload
 --  window.widget.pcimage = carray.byte(imgload.data, imgload.stride * imgload.h)
 --  local qimage = QImage(window.widget.pcimage:pointer(), imgload.w, imgload.h, 
 --                  imgload.w * 3, QImage.Format.Format_RGB888)
@@ -35,4 +37,6 @@ loadImage = function(filename)
   end
 end
 
-
+rgbselect = function(data, w, h, ptx, pty, threshold)
+  print(data[0], data[1], data[2], ptx, pty, threshold)
+end

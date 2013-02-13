@@ -77,7 +77,17 @@ selectPixel = function(o, e)
   local imageW = window.widget.pimage:size():width()
   local imageH = window.widget.pimage:size():height()
   print(imageW, imageH)
-
+  if window.widget.imgload ~= nil then
+--    print(window.widget.imgload)
+--    for k, v in pairs(window.widget.imgload) do
+--      print(k, v)
+--    end
+--    print(window.widget.imgload.data[0], 
+--          window.widget.imgload.data[1], window.widget.imgload.data[2])
+    local threshold = window.widget.thresholdSlider:value()
+    rgbselect(window.widget.imgload.data, window.widget.imgload.w,
+              window.widget.imgload.h, e:pos():x(), e:pos():y(), threshold)
+  end
 end
 
 

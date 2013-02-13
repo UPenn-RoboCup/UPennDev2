@@ -55,10 +55,15 @@ Robot {
                               rotation 1 0 0 0
 
                               children [
-
+  	   	  	        Transform{   #Palm
+             			  translation 0 0 -0.065
+                                  children [
+                                    Shape{geometry Box {size 0.02 0.05 0.05}}
+	                          ]
+			        }
 				DEF r_wrist_grip1 Servo{ #First finger for gripper
-				  translation 0 0.03 -0.05
-				  rotation 1 0 0 0
+				  translation 0 0.02 -0.04
+				  rotation 1 0 0 0.78
 				  name "r_wrist_grip1"
 				  children[
 				    Transform{
@@ -77,8 +82,8 @@ Robot {
                                   physics Physics {}
 				}
 	   	 	        DEF r_wrist_grip2 Servo{ #Second finger for gripper
-				  translation 0 -0.03 -0.05
-				  rotation 1 0 0 0
+				  translation 0 -0.02 -0.08
+				  rotation 1 0 0 0.78
 				  name "r_wrist_grip2"
 				  children[
 				    Transform{
@@ -216,11 +221,15 @@ Robot {
                               translation 0 0 -0.0543
                               rotation 1 0 0 0
                               children [
-
-
+				Transform{   #Palm
+                                  translation 0 0 -0.065
+                                  children [
+                                    Shape{geometry Box {size 0.02 0.05 0.05}}
+                                  ]
+                                }
 	   	 	        DEF l_wrist_grip1 Servo{ #First finger for gripper
-				  translation 0 0.03 -0.05
-				  rotation 1 0 0 0
+				  translation 0 0.02 -0.08
+				  rotation 1 0 0 -0.78
 				  name "l_wrist_grip1"
 				  children[
 				    Transform{
@@ -239,8 +248,8 @@ Robot {
                                   physics Physics {}
 				}
 	   	 	        DEF l_wrist_grip2 Servo{ #Second finger for gripper
-				  translation 0 -0.03 -0.05
-				  rotation 1 0 0 0
+				  translation 0 -0.02 -0.04
+				  rotation 1 0 0 -0.78
 				  name "l_wrist_grip2"
 				  children[
 				    Transform{
@@ -804,6 +813,16 @@ Robot {
         27.925 1024 0
       ]
     }
+#SH: those are for sending/receiving team messages
+    DEF RECEIVER Receiver {
+      name "receiver"
+      channel IS channel
+    }
+    DEF EMITTER Emitter {
+      name "emitter"
+      channel IS channel
+    }
+
     DEF PHYSICS_RECEIVER Receiver {
       name "physics_receiver"
       type "serial"

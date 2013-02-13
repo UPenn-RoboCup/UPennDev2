@@ -1,5 +1,5 @@
 local pwd = os.getenv('PWD')
-package.cpath = pwd..'/lib/qt/?.so;'..package.cpath
+package.cpath = pwd..'/../lib/qt/?.so;'..package.cpath
 
 require 'qtcore'
 require 'qtgui'
@@ -28,7 +28,7 @@ local new_gui = function(...)
 --  local glcd = scene.addWidget(lcd);
 --  local gbutton = scene:addWidget(quit);
 --  local gslider = scene:addWidget(slider);
-  local piximage = QPixmap('Image-1-10.png')
+--  local piximage = QPixmap('../Image-1-10.png')
   local image = QGraphicsPixmapItem(piximage)
   scene:addItem(image)
   

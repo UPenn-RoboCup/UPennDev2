@@ -77,6 +77,7 @@ selectPixel = function(o, e)
   local imageW = window.widget.pimage:size():width()
   local imageH = window.widget.pimage:size():height()
   print(imageW, imageH)
+
 end
 
 

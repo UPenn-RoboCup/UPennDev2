@@ -15,7 +15,7 @@ sz = {101,101}
 qimage = QImage(sz[2],sz[1],QImage.Format.Format_RGB32)
 
 
-slam_map = torch.ones(sz[1],sz[2])*128
+slam_map = torch.ByteTensor():ones(sz[1],sz[2])*128
 local tmp1 = slam_map:select(2, 1); -- smooth stride!
 local tmp2 = slam_map:select(1, 1); -- smooth stride!
 print('Strd',slam_map:stride(1), slam_map:stride(2) )

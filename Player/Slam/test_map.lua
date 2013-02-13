@@ -93,9 +93,11 @@ IMU.roll = 0;
 
 --ranges = rcm.get_lidar_ranges();
 --print( carray.get(ranges,1) )
+for i=1,20 do
 processL0( LIDAR0, IMU, OMAP, MAPS )
 require 'map_io'
 init_send()
 -- Play it again Sam!
 print('Sending map!')
 send_map(OMAP.data)
+end

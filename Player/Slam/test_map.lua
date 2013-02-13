@@ -94,6 +94,7 @@ IMU.roll = 0;
 
 require 'map_io'
 init_send()
+print('Sending map!')
 send_map(OMAP.data)
 
 --ranges = rcm.get_lidar_ranges();

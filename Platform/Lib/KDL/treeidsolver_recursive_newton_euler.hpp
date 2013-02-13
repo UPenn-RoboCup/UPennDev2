@@ -19,7 +19,8 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-#pragma once
+#ifndef KDL_TREE_IKSOLVER_RECURSIVE_NEWTON_EULER_HPP
+#define KDL_TREE_IKSOLVER_RECURSIVE_NEWTON_EULER_HPP
 
 #include "treeidsolver.hpp"
 
@@ -40,7 +41,7 @@ namespace KDL{
     public:
         /**
          * Constructor for the solver, it will allocate all the necessary memory
-         * \param chain The kinematic chain to calculate the inverse dynamics for, an internal copy will be made.
+         * \param tree The kinematic tree to calculate the inverse dynamics for, an internal copy will be made.
          * \param grav The gravity vector to use during the calculation.
          */
         TreeIdSolver_RNE(const Tree& tree,Vector grav);
@@ -56,25 +57,22 @@ namespace KDL{
          * Output parameters:
          * \param torques the resulting torques for the joints
          */
-        int CartToJnt(const JntArray &q, const JntArray &q_dot, const JntArray &q_dotdot, const Wrenches& f_ext,JntArray &torques);
-        int CartToJnt(const std::vector<double> &q, const std::vector<double> &q_dot, const std::vector<double> &q_dotdot, const Wrenches& f_ext,JntArray &torques);
-
+        int CartToJnt(const JntArray &q, const JntArray &q_dot, const JntArray &q_dotdot, const Wrenches& f_ext, JntArray &torques);
 
     private:
-		struct Entry{
-			Frame X;
-			Twist S;
-			Twist v;
-			Twist a;
-			Wrench f;
-			Wrench f_ext;
-		};
-    
+        int initSegments(const SegmentMap::const_iterator parent_it, int index = -1);
         Tree tree;
         unsigned int nj;
         unsigned int ns;
-        std::string root_name;
-        std::map<std::string, Entry> db;	///indexed by segment name
+        std::vector<Segment> segment;
+        std::vector<int> parent;
+        std::vector<Frame> X;
+        std::vector<Twist> S;
+        std::vector<Twist> v;
+        std::vector<Twist> a;
+        std::vector<Wrench> f;
         Twist ag;
     };
 }
+
+#endif

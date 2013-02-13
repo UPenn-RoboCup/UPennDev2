@@ -52,8 +52,6 @@ namespace KDL
 			 * @return if < 0 something went wrong
 			 */
         virtual int CartToJnt(const JntArray &q, const JntArray &q_dot, const JntArray &q_dotdot, const Wrenches& f_ext,JntArray &torques)=0;
-        virtual int CartToJnt(const std::vector<double> &q, const std::vector<double> &q_dot, const std::vector<double> &q_dotdot, const Wrenches& f_ext,JntArray &torques) =0;
-
 
         // Need functions to return the manipulator mass, coriolis and gravity matrices - Lagrangian Formulation.
 	};

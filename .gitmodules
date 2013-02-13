@@ -1,3 +1,6 @@
 [submodule "Tools/torch"]
 	path = Tools/torch
 	url = git://github.com/smcgill3/torch.git
+[submodule "Tools/lqt"]
+	path = Tools/lqt
+	url = git@github.com:yida/lqt.git

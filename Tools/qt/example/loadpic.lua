@@ -1,5 +1,5 @@
 local pwd = os.getenv('PWD')
-package.cpath = pwd..'/lib/?.so;'..package.cpath
+package.cpath = pwd..'/lib/qt/?.so;'..package.cpath
 
 require 'qtcore'
 require 'qtgui'

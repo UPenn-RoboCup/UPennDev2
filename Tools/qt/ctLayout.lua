@@ -9,6 +9,10 @@ local fileList = {}
 local currentFile = '' 
 local currentFileIdx = 0
 
+local defaultW = 640
+local defaultH = 480
+local pimage = nil
+
 local loadImageffi = function()
   img = ffi.new('unsigned char[?]', 640 * 480 * 3)
   imgload = libpng.load({path = fname})
@@ -31,8 +35,8 @@ local splitPath = function(str)
   return path, filename
 end
 
-local selectPixel = function(e)
-  print(e:button())
+local selectPixel = function(o, e)
+  print(e:button(), e:pos():x(), e:pos():y(), pimage:height())
 end
 
 local  initDraw = function(self, state)
@@ -53,8 +57,13 @@ local  initDraw = function(self, state)
     end
   end
 
-  local piximage = QPixmap.new(fullfilename)
-  local pixmapitem = QGraphicsPixmapItem.new(piximage)
+--  local piximage = QPixmap.new(fullfilename)
+  pimage:load(fullfilename, 'PNG', Qt.AutoColor)
+  if pimage:height() ~= defaultH or pimage:width() ~= defaultW then
+    print('scale image')
+    pimage = pimage:scaled(defaultW, defaultH, Qt.KeepAspectRatio, Qt.FastTransformation)
+  end
+  local pixmapitem = QGraphicsPixmapItem.new(pimage)
   local scene = QGraphicsScene.new()
   scene:addItem(pixmapitem)
   self:setScene(scene)
@@ -80,9 +89,12 @@ local updateDraw = function(self, state)
       currentFile = fileList[currentFileIdx]
     end
   end
-  local piximage = QPixmap.new(currentFile)
-  -- ConvertToPixmap for Graphic Scene
-  local pixmapitem = QGraphicsPixmapItem.new(piximage)
+  pimage:load(currentFile, 'PNG', Qt.AutoColor)
+  if pimage:height() ~= defaultH or pimage:width() ~= defaultW then
+    print('scale image')
+    pimage = pimage:scaled(defaultW, defaultH, Qt.IgnoreAspectRatio, Qt.FastTransformation)
+  end
+  local pixmapitem = QGraphicsPixmapItem.new(pimage)
   local scene = QGraphicsScene.new()
   scene:addItem(pixmapitem)
   self:setScene(scene)
@@ -117,7 +129,7 @@ local imageview = function()
     -- Create GraphicView, based on Graphic Scene, widget on GUI
     local view = QGraphicsView.new(scene)
     -- create empty image
-    local pixmapitem = QGraphicsPixmapItem.new(QPixmap(640, 480))
+    local pixmapitem = QGraphicsPixmapItem.new(pimage)
     scene:addItem(pixmapitem)
     
     view:setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
@@ -171,6 +183,7 @@ Widget = function(...)
     leftvbox:addWidget(saveLut)
 
   local rightvbox = QVBoxLayout()
+    pimage = QPixmap.new(defaultW, defaultH)
     -- Image Display
     local view = imageview()
     view:__addmethod("open()", initDraw)
@@ -178,9 +191,7 @@ Widget = function(...)
     view:__addmethod("updateBBackward()", updateBBackward)
     view:__addmethod("updateForward()", updateForward)
     view:__addmethod("updateFForward()", updateFForward)
-    function view:mousePressEvent(e)
-      print(1, e:pos():x(), e:pos():y())
-    end
+    view.mousePressEvent = selectPixel
 
     -- Image file Control Buttons
     local fileControlhbox = QHBoxLayout()

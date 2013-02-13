@@ -4,3 +4,6 @@
 [submodule "Tools/lqt"]
 	path = Tools/lqt
 	url = git@github.com:yida/lqt.git
+[submodule "Tools/zmq"]
+	path = Tools/zmq
+	url = git@github.com:Neopallium/lua-zmq.git

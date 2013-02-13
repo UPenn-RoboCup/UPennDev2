@@ -21,35 +21,19 @@ int poll(struct pollfd *fds, unsigned long nfds, int timeout);
 function sleep(s)
     ffi.C.poll(nil, 0, s*1000)
 end
-
-local tensor2send = torch.rand(5);
-print('s:',tensor2send[1])
-local buf2send = torch.serialize( tensor2send )
-
---[[
-print(buf2send)
-for i=1,5 do
-  print( tensor2send[i] )
-end
---]]
+-- Alias
 local send, recv = zmq.zmq_send, zmq.zmq_recv
 
-content = {}
-
-for i=0,65535 do
-  content[#content + 1] = string.char(math.floor(math.random(255)))
-end
-
-content = table.concat(content)
-print(#content)
-
-local buf  = ffi.new( "char[?]", #content, content )
-local buf1 = ffi.new( "char[?]", #content )
-ffi.copy(buf1, buf2send)
-
-local buf2 = ffi.new( "char[?]", #content )
-local size, size1, size2 = ffi.sizeof(buf), ffi.sizeof(buf1), ffi.sizeof(buf2)
-print('Size of serialized:',#buf2send,size1);
+-- Data to send
+local send_buf_sz = 720000;
+local send_buf = ffi.new( "char[?]", send_buf_sz )
+local tensor2send = torch.rand(320,240);
+local serialized2send = torch.serialize( tensor2send )
+--local buf1 = ffi.new( "char[?]", #serialized2send, serialized2send )
+--local size1 = ffi.sizeof(buf1)
+-- Data to receive
+local recv_buf_sz = 1;
+local recv_buf = ffi.new( "char[?]", recv_buf_sz )
 
 local connection = { }
 
@@ -79,16 +63,6 @@ function new_connection( handle )
    return c
 end
 
-local function bounce( sc )
-   local r1, r4
-	 r1 = sc:send( buf1, size1 )
-	 print('Sending',size1)
-   r4 = sc:recv( buf2, #content )
-	 print('Received',buf2[1])
-   assert( r1 == size )
-   assert( r4 == size2 )
-end
-
 -- Init the context
 local ctx = zmq.zmq_init (1);
 assert (ctx);
@@ -106,17 +80,26 @@ print('Bound to the Socket!')
 -- Establish connection helpers...?
 local sc = new_connection( sc )
 
+require 'unix'
+t0 = unix.time()
 for i=1,5 do
-	print('Sending msg...')
-	bounce(sc)
-  sleep(1)
+	-- Manipulate a new tensor
+	tensor2send = tensor2send:rand(320,240);
+	serialized2send = torch.serialize( tensor2send )
+	ffi.copy(send_buf, serialized2send)
+	local r1 = sc:send( send_buf, send_buf_sz )
+	assert( r1 == send_buf_sz )
+	-- Receive an ACK
+	-- TODO: Remove the need...
+  local r2 = sc:recv( recv_buf, recv_buf_sz )
+  assert( r2 == recv_buf_sz )
 end
-
--- Debug
-print(1024*1024/64)
+t1 = unix.time()
+print('FPS:',5/(t1-t0))
 
 -- Close everything
-rc = zmq.zmq_close (sb);
+sc = sc.handle;
+rc = zmq.zmq_close (sc);
 assert (rc == 0);
 
 rc = zmq.zmq_term (ctx);

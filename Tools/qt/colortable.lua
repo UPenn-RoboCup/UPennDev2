@@ -32,8 +32,8 @@ local createWindow = function(...)
   -- statusbar
   
   -- Add central Widget
-  local widget = Widget()
-  this:setCentralWidget(widget)
+  this.widget = Widget()
+  this:setCentralWidget(this.widget)
 
   return this
 end

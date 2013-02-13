@@ -34,41 +34,24 @@ using namespace std;
 namespace KDL{
     
     TreeIdSolver_RNE::TreeIdSolver_RNE(const Tree& tree_,Vector grav)
-    :tree(tree_)
+    :tree(tree_), nj(tree_.getNrOfJoints()), ns(tree_.getNrOfSegments())
+
     {
-		root_name = tree.getRootSegment()->first;
-		
+        root_name = tree.getRootSegment()->first;
         ag=-Twist(grav,Vector::Zero());
+
         const SegmentMap& sm = tree.getSegments();
-        
-        int jnt =0;
         for( SegmentMap::const_iterator i=sm.begin(); i!=sm.end(); ++i ){
-			const Segment& s = i->second.segment;
-			const Joint& j = s.getJoint();
-			if( j.getType() != Joint::None ){
-				JntEntry& je = jntdb[ j.getName() ];
-				je.idx = jnt++;
-			}
-				
-				
 			const string& name = i->first;
 			db[ name ]; // create the element here, but don't have anything to fill in
-			/*
-			X[ name ];
-			S[ name ];
-			v[ name ];
-			a[ name ];
-			f[ name ];
-			f_ext_map[ name ];
-			*/
-		}
+        }
     }
 
     int TreeIdSolver_RNE::CartToJnt(const std::vector<double> &q, const std::vector<double> &q_dot, const std::vector<double> &q_dotdot, const Wrenches& f_ext,JntArray &torques)
     {
         //Check sizes when in debug mode
-        //if(q.rows()!=nj || q_dot.rows()!=nj || q_dotdot.rows()!=nj || torques.rows()!=nj || f_ext.size()!=ns)
-         //   return -1;
+        if(q.size()!=nj || q_dot.size()!=nj || q_dotdot.size()!=nj || torques.rows()!=nj || f_ext.size()!=ns)
+            return -1;
         
         {
 			const SegmentMap& sm = tree.getSegments();
@@ -104,8 +87,7 @@ namespace KDL{
 			
             double q_,qdot_,qdotdot_;
             if(jnt.getType() !=Joint::None){
-				
-				int idx = jntdb[ jnt.getName() ].idx;
+                int idx = te->second.q_nr; 
                 q_=q[idx];
                 qdot_=q_dot[idx];
                 qdotdot_=q_dotdot[idx];
@@ -149,26 +131,26 @@ namespace KDL{
             //Collect RigidBodyInertia and external forces
             RigidBodyInertia Ii=seg.getInertia();
             ef=Ii*ea+ev*(Ii*ev)-ef_ext;
-	    //std::cout << "a[i]=" << a[i] << "\n f[i]=" << f[i] << "\n S[i]" << S[i] << std::endl;
+	  //std::cout << "a[i]=" << ea << "\n f[i]=" << ef << "\n S[i]" << eS << std::endl;
         }
         // process processed back to front...        
         //Sweep from leaf to root
         int size = processed.size()-1;
         for(int i=size; i>0; i--){
-			SegmentMap::const_iterator te = processed[i];
-			const Segment& seg = te->second.segment;
+			TreeElement te = processed[i]->second;
+			const Segment& seg = te.segment;
 			const Joint& jnt = seg.getJoint();
 			Entry& e = db[seg.getName()];
 			Frame& eX = e.X;
             Twist& eS = e.S;
             Wrench& ef = e.f;
-            string parent_name = te->second.parent->first;
+            string parent_name = te.parent->first;
 			Entry& parent_e = db[parent_name];
 			Wrench& pre_f = parent_e.f;
 			
 			
             if(jnt.getType()!=Joint::None)
-                jntdb[jnt.getName()].torque=dot(eS,ef);
+                torques(te.q_nr) = dot(eS,ef);
             pre_f +=eX*ef;
         }
         // do root element
@@ -179,11 +161,8 @@ namespace KDL{
 			const Joint& jnt = seg.getJoint();
 			Entry& e = db[root_name];
 			if( jnt.getType() != Joint::None )
-				jntdb[jnt.getName()].torque = dot( e.S, e.f );
-		}
-		for( map<string, JntEntry>::const_iterator i= jntdb.begin(); i!= jntdb.end(); ++i ){
-			torques(i->second.idx) = i->second.torque;
-		}
+				torques(te.q_nr) = dot( e.S, e.f );
+	}
 	return 0;
     }
 
@@ -225,14 +204,13 @@ namespace KDL{
 			
             double q_,qdot_,qdotdot_;
             if(jnt.getType() !=Joint::None){
-				
-				int idx = jntdb[ jnt.getName() ].idx;
+                int idx = te->second.q_nr;
                 q_=q(idx);
                 qdot_=q_dot(idx);
                 qdotdot_=q_dotdot(idx);
             }else
                 q_=qdot_=qdotdot_=0.0;
-                
+
             Entry& e = db[seg.getName()];
                 
             Frame& eX  = e.X;
@@ -270,26 +248,26 @@ namespace KDL{
             //Collect RigidBodyInertia and external forces
             RigidBodyInertia Ii=seg.getInertia();
             ef=Ii*ea+ev*(Ii*ev)-ef_ext;
-	    //std::cout << "a[i]=" << a[i] << "\n f[i]=" << f[i] << "\n S[i]" << S[i] << std::endl;
+	  //std::cout << "a[i]=" << ea << "\n f[i]=" << ef << "\n S[i]" << eS << std::endl;
         }
         // process processed back to front...        
         //Sweep from leaf to root
         int size = processed.size()-1;
         for(int i=size; i>0; i--){
-			SegmentMap::const_iterator te = processed[i];
-			const Segment& seg = te->second.segment;
+			TreeElement te = processed[i]->second;
+			const Segment& seg = te.segment;
 			const Joint& jnt = seg.getJoint();
 			Entry& e = db[seg.getName()];
 			Frame& eX = e.X;
             Twist& eS = e.S;
             Wrench& ef = e.f;
-            string parent_name = te->second.parent->first;
+            string parent_name = te.parent->first;
 			Entry& parent_e = db[parent_name];
 			Wrench& pre_f = parent_e.f;
 			
 			
             if(jnt.getType()!=Joint::None)
-                jntdb[jnt.getName()].torque=dot(eS,ef);
+                torques(te.q_nr) = dot(eS,ef);
             pre_f +=eX*ef;
         }
         // do root element
@@ -300,11 +278,8 @@ namespace KDL{
 			const Joint& jnt = seg.getJoint();
 			Entry& e = db[root_name];
 			if( jnt.getType() != Joint::None )
-				jntdb[jnt.getName()].torque = dot( e.S, e.f );
-		}
-		for( map<string, JntEntry>::const_iterator i= jntdb.begin(); i!= jntdb.end(); ++i ){
-			torques(i->second.idx) = i->second.torque;
-		}
+				torques(te.q_nr) = dot( e.S, e.f );
+	}
 	return 0;
     }
 

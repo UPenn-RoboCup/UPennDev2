@@ -69,32 +69,12 @@ namespace KDL{
 			Wrench f;
 			Wrench f_ext;
 		};
-		struct JntEntry{
-			int idx;
-			double torque;
-		};
-			
-    
-    
     
         Tree tree;
         unsigned int nj;
         unsigned int ns;
         std::string root_name;
-        //std::map<std::string, Frame> X;
-        //std::map<std::string, Twist> S;
-        //std::map<std::string, Twist> v;
-        //std::map<std::string, Twist> a;
-        //std::map<std::string, Wrench> f;
-        //std::map<std::string, Wrench> f_ext_map;
-        //much faster not to have to look up each individual element
-        //better to group the variables together and only have one lookup
-        //before was nearly 25% to look up each individually
         std::map<std::string, Entry> db;	///indexed by segment name
-        std::map<std::string, JntEntry> jntdb;/// indexed by joint name
-        
-        //std::map<std::string, double> torque_map; /// takes in joint names
-        //std::map<std::string, int> name2idx;
         Twist ag;
     };
 }

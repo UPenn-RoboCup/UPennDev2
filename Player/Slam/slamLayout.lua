@@ -3,6 +3,12 @@ require 'torch'
 require 'unix'
 require 'tutil'
 
+local zmq = require"zmq"
+local ctx = zmq.init()
+local s = ctx:socket(zmq.SUB)
+s:setopt(zmq.SUBSCRIBE, "")
+s:connect("tcp://localhost:5555")
+
 -- Globally accessable QImage
 sz = {240,320}
 torch.Tensor = torch.ByteTensor
@@ -42,6 +48,12 @@ Widget = function(...)
 
   -- Set up the timer event
   function this:timerEvent(e)
+		--local msg, err = s:recv(z_NOBLOCK)
+		if err == 'timeout' then
+					-- need to block on read IO
+					print('Timeout!')
+				end
+		--print(msg)
     drawTensor(this, e)
 	-- Only redraws every other timer event??? why?
   end

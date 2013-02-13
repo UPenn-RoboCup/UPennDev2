@@ -2,6 +2,7 @@ module(..., package.seeall);
 
 require('Config');
 require('Body');
+require('Comm')
 require('Speak');
 require('vector');
 require('serialization');
@@ -35,6 +36,20 @@ states = {};
 states[playerID] = state;
 
 function recv_msgs()
+
+--We need to update object positions via GPS
+
+  while (Comm.size() > 0) do 
+    msg=Comm.receive();
+    --Ball GPS Info hadling
+    if msg and #msg==20 then --Ball position message
+      obj_gpsx=(tonumber(string.sub(msg,2,6))-5)*2;
+      obj_gpsy=(tonumber(string.sub(msg,8,12))-5)*2;
+      obj_gpsz=(tonumber(string.sub(msg,14,18))-5)*2;
+      wcm.set_robot_gps_ball({obj_gpsx,obj_gpsy,obj_gpsz});
+--    print("Object pos:",obj_gpsx,obj_gpsy,obj_gpsz)
+    end
+  end
 end
 
 function entry()
@@ -46,24 +61,9 @@ function update()
 
   count = count + 1;
 
-  state.time = Body.get_time();
-  state.teamNumber = gcm.get_team_number();
-  state.teamColor = gcm.get_team_color();
-  state.pose = wcm.get_pose();
-  state.ball = wcm.get_ball();
-  state.role = role;
-  state.attackBearing = wcm.get_attack_bearing();
-  state.battery_level = wcm.get_robot_battery_level();
-
-  if gcm.in_penalty() then
-    state.penalty = 1;
-  else
-    state.penalty = 0;
-  end
+  recv_msgs();
   set_role(1); --Always attacker
 
-  t = Body.get_time();
-  -- update shm
   update_shm() 
 end
 

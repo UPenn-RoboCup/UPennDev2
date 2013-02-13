@@ -17,6 +17,8 @@ jointNames = {"neck_yaw","head_pitch",
               "r_hip_yaw","r_hip_roll","r_hip_pitch", "r_knee_pitch","r_ankle_pitch","r_ankle_roll",
               "r_shoulder_pitch", "r_shoulder_roll", "r_shoulder_yaw","r_elbow_pitch","r_wrist_yaw","r_wrist_roll",
 	      "chest_yaw",
+	      "l_wrist_grip1","l_wrist_grip2",
+	      "r_wrist_grip1","r_wrist_grip2"
              };
 
 nJoint = #jointNames;
@@ -33,12 +35,19 @@ nJointRArm = 6;
 indexWaist = 27;
 nJointWaist = 1;
 
+indexLGrip = 28;
+nJointLGrip = 2;
+indexRGrip = 30;
+nJointRGrip = 2;
+
 jointReverse={
 	5,7,  --LArm:  3 4 5 6 7 8
         --LLeg: 9 10 11 12 13 14
         --RLeg: 15 16 17 18 19 20
         23,25,--RArm: 21 22 23 24 25 26
 	 --Waist: 27
+	--Left gripper: 28 29
+	--Right gripper: 30 31
 }
 
 jointBias={
@@ -48,6 +57,8 @@ jointBias={
 	0,0,0,0,0,0,
 	-90*math.pi/180,0,0,0,0,0,
 	0,
+	0,0,
+	0,0,
 }
 
 moveDir={};
@@ -211,6 +222,9 @@ end
 function set_waist_hardness( val )
   set_actuator_hardness(val, indexWaist);
 end
+
+
+
 function set_head_command(val)
   set_actuator_command(val, indexHead);
 end
@@ -418,11 +432,24 @@ end
 function set_rleg_slope(val)
 end
 
+
+
+
 -- Gripper method needed
-function set_gripper_hardness(val)
+function set_l_gripper_hardness(val)
+  set_actuator_hardness(val, indexLGrip);
 end
 
-function set_gripper_command(val)
+function set_r_gripper_hardness(val)
+  set_actuator_hardness(val, indexRGrip);
+end
+
+function set_l_gripper_command(val)
+  set_actuator_command(val, indexLGrip);
+end
+
+function set_r_gripper_command(val)
+  set_actuator_command(val, indexRGrip);
 end
 
 function set_aux_hardness(val)
@@ -430,8 +457,6 @@ end
 
 function set_aux_command(val)
 end
-
-
 
 
 

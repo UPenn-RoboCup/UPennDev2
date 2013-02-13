@@ -8,8 +8,8 @@ WorldInfo {
   displayRefresh 3
 }
 Viewpoint {
-  orientation -0.732615 -0.637825 -0.237603 0.968331
-  position -0.459148 3.9521 0.708075
+  orientation -0.515192 -0.837794 -0.180774 0.828881
+  position -1.05998 1.72862 1.41895
 }
 Background {
   skyColor [
@@ -27,7 +27,7 @@ DirectionalLight {
   intensity 0.5
 }
 DEF GROUND Solid {
-  translation 0 1 0
+  translation 0 -1 0
   children [
     Shape {
       appearance DEF GroundAppearance Appearance {
@@ -51,7 +51,7 @@ DEF GROUND Solid {
   locked TRUE
 }
 DEF GROUND5 Solid {
-  translation 1.15 1.3 0
+  translation 1.15 -0.7 0
   children [
     Shape {
       appearance USE GroundAppearance
@@ -68,21 +68,20 @@ DEF GROUND5 Solid {
   locked TRUE
 }
 Desk {
-  translation 0.5 2.3 0
+  translation 0.5 0.3 0
   rotation 0 1 0 1.57
 }
 Can {
-  translation 0.3 3.06 0.15
+  translation 0.3 1.06 0.15
 }
 ObjectGPS {
-  translation 0.3 3.06 -0.15
-  locked TRUE
+  translation 0.3 1.06 -0.15
 }
 FruitBowl {
-  translation 0.26 3.01 0.5
+  translation 0.26 1.01 0.5
 }
 THOROP {
-  translation -0.18 2.6 0
+  translation -0.18 0.6 0
   rotation -1 0 0 1.57
   controller "darwin-op_team_0"
   controllerArgs "0 23"

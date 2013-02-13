@@ -60,7 +60,9 @@ THOROP_kinematics_forward_l_arm(const double *q)
     .mDH(PI/2, elbowOffsetX, q[3], 0)
     .mDH(-PI/2, -elbowOffsetX, -PI/2+q[4], lowerArmLength)
     .mDH(-PI/2, 0, -PI/2+q[5], 0)
-    .translateX(handOffsetX).translateZ(handOffsetZ);
+    .translateX(handOffsetX)
+    .translateY(-handOffsetY)
+    .translateZ(handOffsetZ);
   return t;
 }
 
@@ -77,7 +79,9 @@ THOROP_kinematics_forward_r_arm(const double *q)
     .mDH(PI/2, elbowOffsetX, q[3], 0)
     .mDH(-PI/2, -elbowOffsetX, -PI/2+q[4], lowerArmLength)
     .mDH(-PI/2, 0, -PI/2+q[5], 0)
-    .translateX(handOffsetX).translateZ(handOffsetZ);
+    .translateX(handOffsetX)
+    .translateY(handOffsetY)
+    .translateZ(handOffsetZ);
 
   return t;
 }
@@ -147,12 +151,14 @@ THOROP_kinematics_inverse_arm(Transform trArm, int arm)
 	.translateY(-shoulderOffsetY)
 	*trArm
         .translateZ(-handOffsetZ)
+        .translateY(handOffsetY)
 	.translateX(-handOffsetX);
   }else{
     t=t.translateZ(-shoulderOffsetZ)
 	.translateY(shoulderOffsetY)
 	*trArm
         .translateZ(-handOffsetZ)
+        .translateY(-handOffsetY)
 	.translateX(-handOffsetX);
   }
 

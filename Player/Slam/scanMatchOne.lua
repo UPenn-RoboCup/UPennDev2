@@ -33,9 +33,9 @@ function scanMatchOne( LIDAR0, OMAP, xs, ys )
   yRange1   = math.floor(nys1/2);
 
   -- create the candidate locations in each dimension
-  xCand1 = torch.range(-xRange1,xRange1)*dx1 + SLAM.xOdom;
-  yCand1 = torch.range(-yRange1,yRange1)*dy1 + SLAM.yOdom;
-  aCand1 = torch.range(-yawRange1,yawRange1)*dyaw1 + SLAM.yawOdom;
+  xCand1 = torch.DoubleTensor():range(-xRange1,xRange1)*dx1 + SLAM.xOdom;
+  yCand1 = torch.DoubleTensor():range(-yRange1,yRange1)*dy1 + SLAM.yOdom;
+  aCand1 = torch.DoubleTensor():range(-yawRange1,yawRange1)*dyaw1 + SLAM.yawOdom;
   -- + IMU.data.wyaw*0.025;
   local hits = 
 	torch.DoubleTensor( 

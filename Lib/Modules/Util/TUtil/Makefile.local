@@ -1,0 +1,23 @@
+# Makefile used to build Webots files
+
+include ../../../Makefile.inc
+INCLUDES+=-I../../../../Tools/torch/include/
+LIB_DIR+=-L../../../../Tools/torch/
+
+TARGETS = all clean
+.PHONY: $(TARGETS)
+
+all: tutil
+
+%.o: %.cc
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
+%.o: %.c
+	$(CC) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
+
+tutil: luatutil.o
+	$(CXX) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ $(LIBRT) $(LIB_DIR) -l$(TORCHLIB)
+
+clean:
+	rm -f *.o *.$(SHLIBEXT)

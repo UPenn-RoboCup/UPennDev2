@@ -13,15 +13,18 @@ local defaultW = 640
 local defaultH = 480
 local pimage = nil
 
-local loadImageffi = function()
-  img = ffi.new('unsigned char[?]', 640 * 480 * 3)
-  imgload = libpng.load({path = fname})
-  ffi.copy(img, imgload.data, imgload.h * imgload.w * 3)
-  --img = openimage(fname)
-  qimage = QImage(img, imgload.w, imgload.h, imgload.w * 3, QImage.Format.Format_RGB888)
-  local piximage = QPixmap.new()
-  -- ConvertToPixmap for Graphic Scene
-  piximage:convertFromImage(qimage, Qt.AutoColor)
+local loadImageffi = function(filename)
+  imgload = libpng.load({path = filename})
+  qimage = QImage(imgload.data, imgload.w, imgload.h, imgload.stride, QImage.Format.Format_RGB888)
+  pimage:convertFromImage(qimage, Qt.AutoColor)
+end
+
+local loadImage = function(filename)
+  pimage:load(filename, 'PNG', Qt.AutoColor)
+  if pimage:height() ~= defaultH or pimage:width() ~= defaultW then
+    print('scale image')
+    pimage = pimage:scaled(defaultW, defaultH, Qt.KeepAspectRatio, Qt.FastTransformation)
+  end
 end
 
 local splitPath = function(str)
@@ -58,11 +61,7 @@ local  initDraw = function(self, state)
   end
 
 --  local piximage = QPixmap.new(fullfilename)
-  pimage:load(fullfilename, 'PNG', Qt.AutoColor)
-  if pimage:height() ~= defaultH or pimage:width() ~= defaultW then
-    print('scale image')
-    pimage = pimage:scaled(defaultW, defaultH, Qt.KeepAspectRatio, Qt.FastTransformation)
-  end
+  loadImage(fullfilename)
   local pixmapitem = QGraphicsPixmapItem.new(pimage)
   local scene = QGraphicsScene.new()
   scene:addItem(pixmapitem)
@@ -89,11 +88,7 @@ local updateDraw = function(self, state)
       currentFile = fileList[currentFileIdx]
     end
   end
-  pimage:load(currentFile, 'PNG', Qt.AutoColor)
-  if pimage:height() ~= defaultH or pimage:width() ~= defaultW then
-    print('scale image')
-    pimage = pimage:scaled(defaultW, defaultH, Qt.IgnoreAspectRatio, Qt.FastTransformation)
-  end
+  loadImage(currentFile)
   local pixmapitem = QGraphicsPixmapItem.new(pimage)
   local scene = QGraphicsScene.new()
   scene:addItem(pixmapitem)

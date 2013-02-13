@@ -53,7 +53,6 @@ OMAP.data = torch.ByteTensor(OMAP.sizex,OMAP.sizex)
 
 -- Helper Functions
 
-
 --print(OMAP.data)
 --mapShift( OMAP, 5*OMAP.res, 5*OMAP.res )
 --print(OMAP.data)
@@ -92,13 +91,11 @@ IMU.roll = 0;
 IMU.pitch = -10 * math.pi/180; -- Look down a little
 IMU.roll = 0;
 
-require 'map_io'
-init_send()
-print('Sending map!')
-send_map(OMAP.data)
-
 --ranges = rcm.get_lidar_ranges();
 --print( carray.get(ranges,1) )
 processL0( LIDAR0, IMU, OMAP, MAPS )
+require 'map_io'
+init_send()
 -- Play it again Sam!
+print('Sending map!')
 send_map(OMAP.data)

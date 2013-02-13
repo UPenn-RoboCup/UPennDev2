@@ -8,8 +8,7 @@ package.path = cwd.."/../Vision/?.lua;"..package.path;
 
 -- Add torch and the Serialization utilities
 require 'torch'
---torch.Tensor = torch.DoubleTensor
-torch.Tensor = torch.ByteTensor
+torch.Tensor = torch.DoubleTensor
 dofile('../Util/File.lua')
 
 -- Add the FFI sugar

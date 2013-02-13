@@ -1,13 +1,14 @@
 --
 -- Lidar0 message handler (horizontal lidar)
 --
-
 require('Slam');
+--[[
 print()
 for k,v in pairs(Slam) do
   print(k,v);
 end
 print('\n=== Processing LIDAR0 ===\n')
+--]]
 require 'scanMatchOne'
 
 function processL0( LIDAR0, IMU, OMAP, MAPS )

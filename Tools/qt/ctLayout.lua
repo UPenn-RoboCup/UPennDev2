@@ -11,11 +11,19 @@ local currentFileIdx = 0
 
 local defaultW = 640
 local defaultH = 480
+
 local pimage = nil
+local pcimage = nil
+local imageW = 640
+local imageH = 480
 
 local loadImageffi = function(filename)
-  imgload = libpng.load({path = filename})
-  qimage = QImage(imgload.data, imgload.w, imgload.h, imgload.stride, QImage.Format.Format_RGB888)
+  local imgload = libpng.load({path = filename})
+  pcimage = carray.byte(imgload.data, imgload.stride * imgload.h)
+  imageW = imgload.w
+  imageH = imgload.h
+  local qimage = QImage(pcimage:pointer(), imageW, imageH, 
+                  imageW * 3, QImage.Format.Format_RGB888)
   pimage:convertFromImage(qimage, Qt.AutoColor)
 end
 
@@ -23,7 +31,8 @@ local loadImage = function(filename)
   pimage:load(filename, 'PNG', Qt.AutoColor)
   if pimage:height() ~= defaultH or pimage:width() ~= defaultW then
     print('scale image')
-    pimage = pimage:scaled(defaultW, defaultH, Qt.KeepAspectRatio, Qt.FastTransformation)
+    pimage = pimage:scaled(defaultW, defaultH, Qt.KeepAspectRatio, 
+                            Qt.FastTransformation)
   end
 end
 
@@ -61,6 +70,7 @@ local  initDraw = function(self, state)
   end
 
 --  local piximage = QPixmap.new(fullfilename)
+--  loadImageffi(fullfilename)
   loadImage(fullfilename)
   local pixmapitem = QGraphicsPixmapItem.new(pimage)
   local scene = QGraphicsScene.new()
@@ -89,6 +99,7 @@ local updateDraw = function(self, state)
     end
   end
   loadImage(currentFile)
+--  loadImageffi(currentFile)
   local pixmapitem = QGraphicsPixmapItem.new(pimage)
   local scene = QGraphicsScene.new()
   scene:addItem(pixmapitem)

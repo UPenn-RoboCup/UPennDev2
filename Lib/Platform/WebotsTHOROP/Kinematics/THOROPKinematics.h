@@ -9,23 +9,33 @@ const double PI = 2*asin(1);
 const double SQRT2 = sqrt(2);
 
 //From COM to neck joint
-const double neckOffsetZ = .144+0.027+0.114;
-const double neckOffsetX = 0;
+const double neckOffsetZ = .144+0.027+0.114;//from webots value
+const double neckOffsetX = 0.023;//from webots value
 
 //COM assumed at the chestYaw joint
-const double shoulderOffsetX = 0;
+//const double shoulderOffsetX = 0;
+const double shoulderOffsetX = 0;//From webots value
 const double shoulderOffsetY = .219;
 const double shoulderOffsetZ = .144;
 
 const double upperArmLength = .246;
 const double elbowOffsetX = .030; //Elbow offset
 const double lowerArmLength = .242;
-const double handOffsetX = 0;//TBD
-const double handOffsetZ = 0;//TBD
 
-const double hipOffsetX = 0.01;
+//Hand offset is based on current webots model
+//We assume hand is offseted inside 
+
+const double handOffsetX = 0.113;
+const double handOffsetY = 0.053;
+//const double handOffsetY = 0.0;
+const double handOffsetZ = 0;
+
+
+//const double hipOffsetX = 0.01;
+const double hipOffsetX = -0.001;//From webots model
 const double hipOffsetY = 0.094;
-const double hipOffsetZ = 0.372;
+//const double hipOffsetZ = 0.372;
+const double hipOffsetZ = 0.384;//calculated from webots model
 
 const double thighLength = 0.379;
 const double tibiaLength = 0.380;

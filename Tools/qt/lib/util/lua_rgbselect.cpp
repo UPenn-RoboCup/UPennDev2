@@ -40,30 +40,23 @@ static int lua_(lua_State *L) {
 {
   const int MAX_COLS = 65536;
 
-  // Check arguments
-  if ((nrhs < 1)  || 
-      (mxGetClassID(prhs[0]) != mxUINT8_CLASS) ||
-      (mxGetNumberOfDimensions(prhs[0]) != 3)) {
-    mexErrMsgTxt("Need input RGB image.");
-  }
+  int ix0 = luaL_checkint(L, 2);
 
-  int ix0 = 0;
-  if (nrhs >= 2)
-    ix0 = (int)mxGetScalar(prhs[1]) - 1;
-
-  int iy0 = 0;
-  if (nrhs >= 3)
-    iy0 = (int)mxGetScalar(prhs[2]) - 1;
+  int iy0 = luaL_checkint(L, 3);
 
   double threshold = 16;
-  if (nrhs >= 4)
-    threshold = mxGetScalar(prhs[3]);
+  if (lua_isnoneornil(L, 6) == 0) 
+    threshold = luaL_checknumber(L, 6);
 
+  uint8_t *in_ptr = (uint8_t *)lua_touserdata(L, 1);
+  if ((in_ptr == NULL) || !lua_islightuserdata(L, 1)) {
+    return luaL_error(L, "RGB Input needed");
+  }
+  
 
-  uint8 *in_ptr = (uint8 *)mxGetData(prhs[0]);
   const int *dims = mxGetDimensions(prhs[0]);
-  int ny = dims[0];
-  int nx = dims[1];
+  int ny = luaL_checkint(L, 2);
+  int nx = luaL_checkint(L, 3);
 
   // Create output argument
   plhs[0] = mxCreateLogicalArray(2, dims);

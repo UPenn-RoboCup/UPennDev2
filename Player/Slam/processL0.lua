@@ -1,14 +1,16 @@
 --
 -- Lidar0 message handler (horizontal lidar)
 --
-
 require('Slam');
+--[[
 print()
 for k,v in pairs(Slam) do
   print(k,v);
 end
 print('\n=== Processing LIDAR0 ===\n')
+--]]
 require 'scanMatchOne'
+print( SLAM.lidar0Cntr )
 
 function processL0( LIDAR0, IMU, OMAP, MAPS )
 
@@ -148,7 +150,7 @@ function processL0( LIDAR0, IMU, OMAP, MAPS )
   -- world frame
 
   -- TODO
-  SLAM = {}
+  --SLAM = {}
   SLAM.x = 0;
   SLAM.y = 0;
   SLAM.z = 0;
@@ -206,33 +208,35 @@ function processL0( LIDAR0, IMU, OMAP, MAPS )
 
   -- TODO
   -- Decay the map around the robot
-  --[[
+			print('merging!',SLAM.lidar0Cntr)
+  
   if SLAM.lidar0Cntr%20 == 0 then
+		print('domerge')
     -- Get the map indicies for the robot
-    xiCenter = ceil((SLAM.x - OMAP.xmin) * OMAP.invRes);
-    yiCenter = ceil((SLAM.y - OMAP.ymin) * OMAP.invRes);
+    xiCenter = math.ceil((SLAM.x - OMAP.xmin) * OMAP.invRes);
+    yiCenter = math.ceil((SLAM.y - OMAP.ymin) * OMAP.invRes);
 
     -- Amount of the surrounding to decay
     --windowSize = 30 *OMAP.invRes;
     windowSize = 10 * OMAP.invRes;
     -- Get the surrounding's extreme indicies
-    ximin = ceil(xiCenter - windowSize/2);
+    ximin = math.ceil(xiCenter - windowSize/2);
     ximax = ximin + windowSize - 1;
-    yimin = ceil(yiCenter - windowSize/2);
+    yimin = math.ceil(yiCenter - windowSize/2);
     yimax = yimin + windowSize - 1;
 
     -- Clamp if the surrounding exceeds the map boundaries
     if ximin < 1 then
       ximin = 1;
     end
-    if ximax > OMAP.map.sizex then
-      ximax = OMAP.map.sizex;
+    if ximax > OMAP.sizex then
+      ximax = OMAP.sizex;
     end
     if yimin < 1 then
       yimin=1;
     end
-    if yimax > OMAP.map.sizey then
-      yimax= OMAP.map.sizey;
+    if yimax > OMAP.sizey then
+      yimax= OMAP.sizey;
     end
 
     -- Perform the decay on the surreoundings
@@ -244,11 +248,12 @@ function processL0( LIDAR0, IMU, OMAP, MAPS )
     --
     -- merge the small map back into the full map
     -- TODO
-    --OMAP.data:sub( ximin,ximax,   yimin,yimax ) = localMap;
+
+    OMAP.data:sub( ximin,ximax,   yimin,yimax ):copy( localMap );
 
   end
   -- Finished the decay
---]]
+
 
 
   --

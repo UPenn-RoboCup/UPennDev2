@@ -1,6 +1,8 @@
 -- Add the FFI bindings and the lqt library
 local pwd = os.getenv('PWD')
 package.cpath = pwd..'/../Lib/qt/?.so;'..package.cpath
+package.cpath = pwd..'/../Lib/?.so;'..package.cpath
+package.cpath = pwd..'/../Util/?.lua;'..package.cpath
 package.path = pwd..'/../Lib/ffi/?.lua;'..package.path
 
 require 'qtcore'
@@ -43,8 +45,8 @@ end
 window = createWindow()
 window:setWindowTitle("THOR SLAM Visualizer")
 window:setWindowIcon(QIcon("favicon.ico"));
-window.width = 960
-window.height = 720
+window.width = 640
+window.height = 480
 centralizeWindow(window)
 window:show()
 app.exec()

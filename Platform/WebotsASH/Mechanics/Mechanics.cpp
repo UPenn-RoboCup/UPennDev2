@@ -11,18 +11,18 @@ _Mechanics::_Mechanics()
   /////////////////////////////////////////////////////////////////////////
 
   // head
-  chest_transform = Frame(Vector(0, 0, 0));
+  clavicle_transform = Frame(Vector(0, 0, 0));
   neck_transform = Frame(Vector(0, 0, 0));
   head_transform = Frame(Vector(0, 0, 0));
 
   // l_arm
-  l_chest_transform = Frame(Vector(0, 0.219, 0));
+  l_shoulder_transform = Frame(Vector(0, 0.219, 0));
   l_arm_transform = Frame(Vector(0.03, 0, -0.246));
   l_forearm_transform = Frame(Vector(-0.03, 0, -0.242));
   l_hand_transform = Frame(Vector(0, 0, 0));
 
   // r_arm 
-  r_chest_transform = Frame(Vector(0, -0.219, 0));
+  r_shoulder_transform = Frame(Vector(0, -0.219, 0));
   r_arm_transform = Frame(Vector(0.03, 0, -0.246));
   r_forearm_transform = Frame(Vector(-0.03, 0, -0.242));
   r_hand_transform = Frame(Vector(0, 0, 0));
@@ -32,13 +32,13 @@ _Mechanics::_Mechanics()
   waist_chest_transform = Frame(Vector(0, 0, 0.144));
 
   // l_leg
-  l_torso_transform = Frame(Vector(0, 0.097, 0));
+  l_hip_transform = Frame(Vector(0, 0.097, 0));
   l_thigh_transform = Frame(Vector(0.00255, 0, -0.379025));
   l_shin_transform = Frame(Vector(0, 0, -0.3800));
   l_foot_transform = Frame(Vector(0, 0, -0.0487));
 
   // r_leg
-  r_torso_transform = Frame(Vector(0, -0.097, 0));
+  r_hip_transform = Frame(Vector(0, -0.097, 0));
   r_thigh_transform = Frame(Vector(0.00255, 0, -0.379025));
   r_shin_transform = Frame(Vector(0, 0, -0.3800));
   r_foot_transform = Frame(Vector(0, 0, -0.0487));
@@ -93,25 +93,18 @@ _Mechanics::_Mechanics()
   );
 
   // waist
-  torso_inertia = RigidBodyInertia(
-    9.846994362,
-    Vector(0.008823089, 0.000468598, 0.140308293),
-    RotationalInertia(0.161770745, 0.120602231, 0.120207907,
-                      0.000443915, -0.000174501, 0.000354588)
-  );
   chest_inertia = RigidBodyInertia(
-    3.339282487,
-    Vector(-0.036092089, -0.002796037, -0.043379732),
-    RotationalInertia(0.014820430, 0.013937830, 0.011896701,
-                      0.000279902, -0.000885669, -0.000425140)
+    0,
+    Vector::Zero(),
+    RotationalInertia()
   );
 
   // l_leg
   l_thigh_inertia = RigidBodyInertia(
     2.214889327,
-    Vector(-0.009015634, -0.016546555, -0.159241491),
+    Vector(-0.009015634, 0.016546555, -0.159241491),
     RotationalInertia(0.021142224, 0.024067859, 0.008757645,
-                      0.002091864, -0.001007431, 0.001750657)
+                      -0.002091864, -0.001007431, -0.001750657)
   );
   l_shin_inertia = RigidBodyInertia(
     2.239063803,
@@ -146,74 +139,111 @@ _Mechanics::_Mechanics()
                       0.000004512, -0.000179602, -0.000001187)
   );
 
+  // base
+  torso_inertia = RigidBodyInertia(
+    9.846994362,
+    Vector(0.009821043, 0.000461078, 0.205279880),
+    RotationalInertia(0.161838147, 0.120693934, 0.120189496,
+                      0.000446170, -0.000151051, 0.000329275)
+  );
+
   // kinematic chains
   /////////////////////////////////////////////////////////////////////////
 
   // head
-  head.addSegment(Segment(Joint(Joint::None),
-    chest_transform));
-  head.addSegment(Segment(Joint(Joint::RotZ),
+  head.addSegment(Segment("clavicle", Joint(Joint::None),
+    clavicle_transform));
+  head.addSegment(Segment("neck", Joint(Joint::RotZ),
     neck_transform, neck_inertia));
-  head.addSegment(Segment(Joint(Joint::RotY), 
-    head_transform, head_inertia)); 
+  head.addSegment(Segment("head", Joint(Joint::RotY), 
+    head_transform, head_inertia));
 
   // l_arm
-  l_arm.addSegment(Segment(Joint(Joint::None),
-    l_chest_transform));
-  l_arm.addSegment(Segment(Joint(Joint::RotY)));
-  l_arm.addSegment(Segment(Joint(Joint::RotX)));
-  l_arm.addSegment(Segment(Joint(Joint::RotZ), 
+  l_arm.addSegment(Segment("l_shoulder", Joint(Joint::None),
+    l_shoulder_transform));
+  l_arm.addSegment(Segment("l_shoulder_pitch", Joint(Joint::RotY)));
+  l_arm.addSegment(Segment("l_shoulder_roll", Joint(Joint::RotX)));
+  l_arm.addSegment(Segment("l_arm", Joint(Joint::RotZ), 
     l_arm_transform, l_arm_inertia)); 
-  l_arm.addSegment(Segment(Joint(Joint::RotY),
+  l_arm.addSegment(Segment("l_forearm", Joint(Joint::RotY),
     l_forearm_transform, l_forearm_inertia));
-  l_arm.addSegment(Segment(Joint(Joint::RotZ)));
-  l_arm.addSegment(Segment(Joint(Joint::RotY),
+  l_arm.addSegment(Segment("l_wrist_yaw", Joint(Joint::RotZ)));
+  l_arm.addSegment(Segment("l_hand", Joint(Joint::RotY),
     l_hand_transform, l_hand_inertia));
 
   // r_arm
-  r_arm.addSegment(Segment(Joint(Joint::None),
-    r_chest_transform));
-  r_arm.addSegment(Segment(Joint(Joint::RotY)));
-  r_arm.addSegment(Segment(Joint(Joint::RotX)));
-  r_arm.addSegment(Segment(Joint(Joint::RotZ), 
+  r_arm.addSegment(Segment("r_shoulder", Joint(Joint::None),
+    r_shoulder_transform));
+  r_arm.addSegment(Segment("r_shoulder_pitch", Joint(Joint::RotY)));
+  r_arm.addSegment(Segment("r_shoulder_roll", Joint(Joint::RotX)));
+  r_arm.addSegment(Segment("r_arm", Joint(Joint::RotZ), 
     r_arm_transform, r_arm_inertia)); 
-  r_arm.addSegment(Segment(Joint(Joint::RotY),
+  r_arm.addSegment(Segment("r_forearm", Joint(Joint::RotY),
     r_forearm_transform, r_forearm_inertia));
-  r_arm.addSegment(Segment(Joint(Joint::RotZ)));
-  r_arm.addSegment(Segment(Joint(Joint::RotY),
+  r_arm.addSegment(Segment("r_wrist_yaw", Joint(Joint::RotZ)));
+  r_arm.addSegment(Segment("r_hand", Joint(Joint::RotY),
     r_hand_transform, r_hand_inertia));
 
   // waist
-  waist.addSegment(Segment(Joint(Joint::None),
-    torso_waist_transform, torso_inertia));
-  waist.addSegment(Segment(Joint(Joint::RotZ),
+  waist.addSegment(Segment("waist", Joint(Joint::None),
+    torso_waist_transform));
+  waist.addSegment(Segment("chest", Joint(Joint::RotZ),
     waist_chest_transform, chest_inertia));
 
   // l_leg
-  l_leg.addSegment(Segment(Joint(Joint::None),
-    l_torso_transform));
-  l_leg.addSegment(Segment(Joint(Joint::RotZ)));
-  l_leg.addSegment(Segment(Joint(Joint::RotX)));
-  l_leg.addSegment(Segment(Joint(Joint::RotY), 
+  l_leg.addSegment(Segment("l_hip", Joint(Joint::None),
+    l_hip_transform));
+  l_leg.addSegment(Segment("l_hip_yaw", Joint(Joint::RotZ)));
+  l_leg.addSegment(Segment("l_hip_roll", Joint(Joint::RotX)));
+  l_leg.addSegment(Segment("l_thigh", Joint(Joint::RotY), 
     l_thigh_transform, l_thigh_inertia)); 
-  l_leg.addSegment(Segment(Joint(Joint::RotY),
+  l_leg.addSegment(Segment("l_shin", Joint(Joint::RotY),
     l_shin_transform, l_shin_inertia));
-  l_leg.addSegment(Segment(Joint(Joint::RotY)));
-  l_leg.addSegment(Segment(Joint(Joint::RotX),
+  l_leg.addSegment(Segment("l_ankle_pitch", Joint(Joint::RotY)));
+  l_leg.addSegment(Segment("l_foot", Joint(Joint::RotX),
     l_foot_transform, l_foot_inertia));
 
   // r_leg
-  r_leg.addSegment(Segment(Joint(Joint::None),
-    r_torso_transform));
-  r_leg.addSegment(Segment(Joint(Joint::RotZ)));
-  r_leg.addSegment(Segment(Joint(Joint::RotX)));
-  r_leg.addSegment(Segment(Joint(Joint::RotY), 
+  r_leg.addSegment(Segment("r_hip", Joint(Joint::None),
+    r_hip_transform));
+  r_leg.addSegment(Segment("r_hip_yaw", Joint(Joint::RotZ)));
+  r_leg.addSegment(Segment("r_hip_roll", Joint(Joint::RotX)));
+  r_leg.addSegment(Segment("r_thigh", Joint(Joint::RotY), 
     r_thigh_transform, r_thigh_inertia)); 
-  r_leg.addSegment(Segment(Joint(Joint::RotY),
+  r_leg.addSegment(Segment("r_shin", Joint(Joint::RotY),
     r_shin_transform, r_shin_inertia));
-  r_leg.addSegment(Segment(Joint(Joint::RotY)));
-  r_leg.addSegment(Segment(Joint(Joint::RotX),
+  r_leg.addSegment(Segment("r_ankle_pitch", Joint(Joint::RotY)));
+  r_leg.addSegment(Segment("r_foot", Joint(Joint::RotX),
     r_foot_transform, r_foot_inertia));
+
+  // base
+  base.addSegment(Segment("base_x", Joint(Joint::TransX)));
+  base.addSegment(Segment("base_y", Joint(Joint::TransY)));
+  base.addSegment(Segment("base_z", Joint(Joint::TransZ)));
+  base.addSegment(Segment("base_roll", Joint(Joint::RotX)));
+  base.addSegment(Segment("base_pitch", Joint(Joint::RotY)));
+  base.addSegment(Segment("torso", Joint(Joint::RotZ),
+    Frame::Identity(), torso_inertia));
+
+  // kinematic trees
+  /////////////////////////////////////////////////////////////////////////
+  body.addChain(base, "root");
+  body.addChain(l_leg, "torso");
+  body.addChain(r_leg, "torso");
+  body.addChain(waist, "torso");
+  body.addChain(l_arm, "chest");
+  body.addChain(r_arm, "chest");
+  body.addChain(head, "chest");
+
+  // tree segment indices
+  /////////////////////////////////////////////////////////////////////////
+  body_torso_index = base.getNrOfSegments() - 1;
+  body_l_foot_index = body_torso_index + l_leg.getNrOfSegments();
+  body_r_foot_index = body_l_foot_index + r_leg.getNrOfSegments();
+  body_chest_index = body_r_foot_index + waist.getNrOfSegments();
+  body_l_hand_index = body_chest_index + l_arm.getNrOfSegments();
+  body_r_hand_index = body_l_hand_index + r_arm.getNrOfSegments();
+  body_head_index = body_r_hand_index + head.getNrOfSegments();
 
   // kinematic and dynamic solvers
   /////////////////////////////////////////////////////////////////////////
@@ -259,4 +289,7 @@ _Mechanics::_Mechanics()
   r_leg_ik_vel_solver = new ChainIkSolverVel_pinv(r_leg);
   r_leg_jnt_to_jac_solver = new ChainJntToJacSolver(r_leg);
   r_leg_dynamic_param = new ChainDynParam(r_leg, gravity); 
+
+  // body
+  body_id_solver = new TreeIdSolver_RNE(body, gravity);
 };

@@ -60,50 +60,43 @@ _Mechanics::_Mechanics()
 
   // l_arm
   l_arm_inertia = RigidBodyInertia(
-    8.282695889,
-    Vector(0.008418388, -0.000536018, -0.110449252),
-    RotationalInertia(0.089047014, 0.091979393, 0.010624728,
-                      -0.000095894, -0.009268308, 0.000602044)
+    0,
+    Vector::Zero(),
+    RotationalInertia()
   );
   l_forearm_inertia = RigidBodyInertia(
-    3.134156798,
-    Vector(-0.030261110, 0.000635042, -0.144485627),
-    RotationalInertia(0.016765270, 0.016175558, 0.002923078,
-                      0.000029334, 0.000471794, 0.000258425)
+    0,
+    Vector::Zero(),
+    RotationalInertia()
   );
   l_hand_inertia = RigidBodyInertia(
-    2.130412358,
-    Vector(0.002252340, -0.007063941, -0.110456457),
-    RotationalInertia(0.005981976, 0.005688715, 0.002226253,
-                      0.000084308, -0.000065941, 0.000777435)
+    0,
+    Vector::Zero(),
+    RotationalInertia()
   );
 
   // r_arm
   r_arm_inertia = RigidBodyInertia(
-    8.282695889,
-    Vector(0.008418388, -0.000536018, -0.110449252),
-    RotationalInertia(0.089047014, 0.091979393, 0.010624728,
-                      -0.000095894, -0.009268308, 0.000602044)
+    0,
+    Vector::Zero(),
+    RotationalInertia()
   );
   r_forearm_inertia = RigidBodyInertia(
-    3.134156798,
-    Vector(-0.030261110, 0.000635042, -0.144485627),
-    RotationalInertia(0.016765270, 0.016175558, 0.002923078,
-                      0.000029334, 0.000471794, 0.000258425)
+    0,
+    Vector::Zero(),
+    RotationalInertia()
   );
   r_hand_inertia = RigidBodyInertia(
-    2.130412358,
-    Vector(-0.000841234, 0.006961820, -0.110456457),
-    RotationalInertia(0.005981410, 0.005691425, 0.002228396,
-                      0.000078228, 0.000157972, -0.000774389)
+    0,
+    Vector::Zero(),
+    RotationalInertia()
   );
 
   // waist
   chest_inertia = RigidBodyInertia(
-    3.339282487,
-    Vector(-0.036092089, -0.002796037, 0.100620268),
-    RotationalInertia(0.048654895, 0.052096069, 0.016272686,
-                      0.000616885, -0.013012592, -0.001364607)
+    0,
+    Vector::Zero(),
+    RotationalInertia()
   );
 
   // l_leg

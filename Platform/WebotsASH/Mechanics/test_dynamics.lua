@@ -1,2 +1,0 @@
-require('Dynamics')
-Dynamics.inverse()

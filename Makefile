@@ -60,6 +60,7 @@ teststand:
 webots_ash:
 	cd Framework/Lib && make && cd $(CWD)
 	cd Framework/Lib/webots && make && cd $(CWD)
+	cd Platform/Lib/KDL && make && cd $(CWD)
 	cd Platform/WebotsASH && make && cd $(CWD)
 	cd Framework/Platform \
 	&& rm -f ./* \
@@ -82,6 +83,7 @@ webots_ash:
 webots_ash_lowerbody:
 	cd Framework/Lib && make && cd $(CWD)
 	cd Framework/Lib/webots && make && cd $(CWD)
+	cd Platform/Lib/KDL && make && cd $(CWD)
 	cd Platform/WebotsASHLowerbody && make && cd $(CWD)
 	cd Framework/Platform \
 	&& rm -f ./* \

@@ -9,6 +9,7 @@ include Makefile.inc
 all:
 	@echo " Please choose one of the following targets:"
 	@echo " make ash"
+	@echo " make vrep_ash"
 	@echo " make webots_ash"
 	@echo " make teststand"
 	@echo " make robotis_arm"
@@ -55,6 +56,21 @@ teststand:
 	&& rm -f comms_manager \
 	&& ln -s ../Platform/Teststand/Init/init_robot init_robot \
 	&& ln -s ../Platform/Teststand/Comms/comms_manager comms_manager \
+	&& cd $(CWD)
+
+vrep_ash:
+	cd Framework/Lib && make && cd $(CWD)
+	cd Framework/Platform \
+	&& rm -f ./* \
+	&& ln -s ../../Platform/VRepASH/Platform.lua Platform.lua \
+	&& cd $(CWD)
+	cd Config \
+	&& rm -f Config.lua \
+	&& ln -s Config_ASH.lua Config.lua \
+	&& cd $(CWD)
+	cd Run \
+	&& rm -f init_robot \
+	&& rm -f comms_manager \
 	&& cd $(CWD)
 
 webots_ash:

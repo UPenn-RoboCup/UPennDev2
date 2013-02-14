@@ -1,0 +1,31 @@
+#! /bin/bash
+
+#LUA=lua
+LUA=luajit
+
+COMPUTER=`uname`
+if [ "$COMPUTER" = "Darwin" ]
+then
+  echo "On OSX!"
+  eval `/usr/libexec/path_helper -s`
+  source ~/.bash_profile
+  
+  Vrep_Home=/Applications/V-Rep/vrep.app/Contents/MacOS
+  Vrep_Command="/Applications/V-Rep/vrep.app/Contents/MacOS/vrep"
+else
+  echo "On Linux!"
+  echo "Please fix Vrep_Home and Vrep_Command paths!"
+  exit
+  
+  Vrep_Home=/usr/local/vrep
+  Vrep_Command=
+fi
+
+# Copy the controller add-on to the vrep directory
+Target_File=$Vrep_Home/vrepAddOnScript_ASH.lua
+echo "prefix='$(dirname `pwd`)'" > $Target_File
+cat ../Platform/VRepASH/VRepAddOn.lua >> $Target_File
+
+Scene_File="$PWD/../Platform/VRepASH/Scenes/Ash-VREP.ttt"
+
+exec $Vrep_Command $Scene_File &

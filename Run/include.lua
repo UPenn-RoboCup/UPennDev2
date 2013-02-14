@@ -24,10 +24,8 @@ end
 -- Get absolute path prefix for code directory.
 -- If the script calling this one is not in a subdirectory,
 -- it must supply the prefix itself.
-if prefix == nil then
-  local pwd = shell('pwd')
-  local prefix = string.gsub(pwd, '/Run.*$', '')
-end
+local pwd = shell('pwd')
+local prefix = prefix or string.gsub(pwd, '/Run.*$', '')
 
 -- set path for lua modules 
 package.path = prefix.."/Config/?.lua;"..package.path

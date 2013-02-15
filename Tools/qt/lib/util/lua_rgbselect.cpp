@@ -23,8 +23,9 @@ extern "C" {
 #endif
 
 #include <deque>
+#include <stdint.h>
+#include <iostream>
 #include <math.h>
-//#include "mex.h"
 
 using namespace std;
 typedef unsigned char uint8;
@@ -35,40 +36,43 @@ public:
   int x,y;
 };
 
-static int lua_(lua_State *L) {
-//void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
-{
+static int lua_select(lua_State *L) {
   const int MAX_COLS = 65536;
 
-  int ix0 = luaL_checkint(L, 2);
+  int iy0 = luaL_checkint(L, 4);
 
-  int iy0 = luaL_checkint(L, 3);
+  int ix0 = luaL_checkint(L, 5);
 
   double threshold = 16;
   if (lua_isnoneornil(L, 6) == 0) 
     threshold = luaL_checknumber(L, 6);
 
-  uint8_t *in_ptr = (uint8_t *)lua_touserdata(L, 1);
-  if ((in_ptr == NULL) || !lua_islightuserdata(L, 1)) {
+  uint8_t *in_ptr = (uint8_t *)lua_topointer(L, 1);
+  if (in_ptr == NULL) {
     return luaL_error(L, "RGB Input needed");
   }
   
-
-  const int *dims = mxGetDimensions(prhs[0]);
   int ny = luaL_checkint(L, 2);
   int nx = luaL_checkint(L, 3);
 
   // Create output argument
-  plhs[0] = mxCreateLogicalArray(2, dims);
-  uint8 *out_ptr = (uint8 *)mxGetData(plhs[0]);
+  uint8_t out_ptr[nx * ny];
 
   // Construct array pointers
-  uint8 *r_in[MAX_COLS], *g_in[MAX_COLS], *b_in[MAX_COLS];
-  uint8 *label[MAX_COLS];
+  uint8_t r_in[nx][ny], g_in[nx][ny], b_in[nx][ny];
+  uint8_t *label[MAX_COLS];
+
+  int pxcounter = 0;
   for (int ix = 0; ix < nx; ix++) {
-    r_in[ix] = in_ptr + ix*ny;
-    g_in[ix] = in_ptr + (nx+ix)*ny;
-    b_in[ix] = in_ptr + (2*nx+ix)*ny;
+    for (int iy = 0; iy < ny; iy++) {
+      r_in[ix][iy] = in_ptr[pxcounter];
+      g_in[ix][iy] = in_ptr[pxcounter + 1];
+      b_in[ix][iy] = in_ptr[pxcounter + 2];
+      pxcounter += 3;
+    }
+  }
+
+  for (int ix = 0; ix < nx; ix++) {
     label[ix] = out_ptr + ix*ny;
   }
 
@@ -125,10 +129,12 @@ static int lua_(lua_State *L) {
   // Remove checked labels
   for (int ix = 0; ix < nx; ix++) {
     for (int iy = 0; iy < ny; iy++) {
-      if (label[ix][iy] > 1)
-	label[ix][iy] = 0;
+      if (label[ix][iy] > 1) label[ix][iy] = 0;
     }
   }
+
+  lua_pushlightuserdata(L, out_ptr);
+  return 1;
 
 }
 

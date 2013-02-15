@@ -25,9 +25,9 @@ static int lua_inverse(lua_State *L)
   JntArray qdot_in = lua_checkJntArray(L, 2);
   JntArray qdotdot_in = lua_checkJntArray(L, 3);
 
-  luaL_argcheck(L, (q_in.rows() == n_joints - 6), 1, "dimension error");
-  luaL_argcheck(L, (qdot_in.rows() == n_joints - 6), 2, "dimension error");
-  luaL_argcheck(L, (qdotdot_in.rows() == n_joints - 6), 3, "dimension error");
+  luaL_argcheck(L, (q_in.rows() >= n_joints - 6), 1, "dimension error");
+  luaL_argcheck(L, (qdot_in.rows() >= n_joints - 6), 2, "dimension error");
+  luaL_argcheck(L, (qdotdot_in.rows() >= n_joints - 6), 3, "dimension error");
 
   // Get optional 6 DOF position, velocity and acceleration of torso
   if (lua_istable(L, 4))

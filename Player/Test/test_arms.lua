@@ -25,19 +25,27 @@ require 'mcm'
 
 -- Arms
 require 'pickercm'
-
 require ('Kinematics')
+require 'Transform'
+
+
+require 'Team' --To receive the GPS coordinates from objects
+require 'wcm'
+
 
 --Arm target transforms
 
-trLArmOld = vector.new({0.144498, 0.219, -0.1140422, 0,0,0});
-trRArmOld = vector.new({0.144498, -0.219, -0.1140422, 0,0,0});
-
-trLArmOld = vector.new({0.16, 0.219, -0.09, 0,0,0});
-trRArmOld = vector.new({0.16, -0.219, -0.09, 0,0,0});
-
+--[[
 trLArmOld = vector.new({0.16, 0.24, -0.09, 0,0,0});
 trRArmOld = vector.new({0.16, -0.24, -0.09, 0,0,0});
+
+trLArmOld = vector.new({0.16, 0.24, -0.07, 0, 0, -math.pi/4});
+trRArmOld = vector.new({0.16, -0.24, -0.07, 0, 0, math.pi/4});
+--]]
+
+--New position considering the hand offset
+trLArmOld = vector.new({0.28, 0.22, 0.05, 0, 0, -math.pi/4});
+trRArmOld = vector.new({0.28, -0.22,0.05, 0, 0, math.pi/4});
 
 
 trLArm=vector.new({0,0,0,0,0,0});
@@ -58,8 +66,10 @@ trRArm0[1],trRArm0[2],trRArm0[3],trRArm0[4],trRArm0[5],trRArm0[6]=
 trRArmOld[1],trRArmOld[2],trRArmOld[3],trRArmOld[4],trRArmOld[5],trRArmOld[6];
 
 
-
-
+Body.set_l_gripper_command({0,0});
+Body.set_r_gripper_command({0,0});
+Body.set_l_gripper_hardness({1,1});
+Body.set_r_gripper_hardness({1,1});
 
 
 
@@ -77,6 +87,8 @@ if (string.find(Config.platform.name,'Webots')) then
   print('On webots!')
   webots = true;
 end
+Team.entry();
+
 
 -- Key Input
 if( webots ) then
@@ -104,8 +116,22 @@ function arm_demo()
   else 
     trLArm[2]=trLArm[2]-0.001;
     trRArm[1]=trRArm[1]-0.001;
-
   end
+
+--[[
+  ph = arm_count/400;
+  trL=Transform.eye()
+--   * Transform.trans(0.16,0,-0.09)
+   * Transform.trans(0.18,0,-0.09)
+   * Transform.rotX((ph-0.5) * math.pi/2)
+   * Transform.trans(0,0.24,0);
+  trLArm[1]=trL[1][4];
+  trLArm[2]=trL[2][4];
+  trLArm[3]=trL[3][4];
+  trLArm[4]=(ph-0.5) * math.pi/2;
+  print(unpack(trLArm));
+--]]
+
   motion_arms_ik();
 end
 
@@ -128,7 +154,6 @@ function motion_arms_ik()
 	(torso_rarm_ik[2]-trRArm[2])^2+
 	(torso_rarm_ik[3]-trRArm[3])^2;
 
---[[
     if dist1<0.001 and dist2<0.001 then
       walk.upper_body_override_on();
       walk.upper_body_override(qLArmInv, qRArmInv, walk.bodyRot0);
@@ -145,12 +170,13 @@ function motion_arms_ik()
       trRArm[1],trRArm[2],trRArm[3],trRArm[4],trRArm[5],trRArm[6]=
       trRArmOld[1],trRArmOld[2],trRArmOld[3],trRArmOld[4],trRArmOld[5],trRArmOld[6];
     end
---]]
 
 
-    if true then
+--    if true then
 
---    if dist1<0.001 and dist2<0.001 then
+--[[
+
+    if dist1<0.001 and dist2<0.001 then
       walk.upper_body_override_on();
       walk.upper_body_override(qLArmInv, qRArmInv, walk.bodyRot0);
     end
@@ -161,6 +187,7 @@ function motion_arms_ik()
     trRArmOld[1],trRArmOld[2],trRArmOld[3],trRArmOld[4],trRArmOld[5],trRArmOld[6]=
     trRArm[1],trRArm[2],trRArm[3],trRArm[4],trRArm[5],trRArm[6];
 
+--]]
 
 
 end
@@ -228,6 +255,24 @@ function process_keyinput()
   elseif byte==string.byte("z") then  
     trLArm[3]=trLArm[3]-0.01;
     update_arm = true;
+  elseif byte==string.byte("c") then  
+    trLArm[6]=trLArm[6]+0.1;
+    update_arm = true;
+  elseif byte==string.byte("v") then  
+    trLArm[6]=trLArm[6]-0.1;
+    update_arm = true;
+
+  elseif byte==string.byte("e") then  --Open gripper
+    Body.set_l_gripper_command({math.pi/6,-math.pi/6});
+
+  elseif byte==string.byte("r") then  --Close gripper
+    Body.set_l_gripper_command({0,0});
+
+
+
+
+
+
 
   elseif byte==string.byte("i") then  
     trRArm[1]=trRArm[1]+0.01;
@@ -247,10 +292,59 @@ function process_keyinput()
   elseif byte==string.byte("m") then  
     trRArm[3]=trRArm[3]-0.01;
     update_arm = true;
+  elseif byte==string.byte("b") then  
+    trRArm[6]=trRArm[6]+0.1;
+    update_arm = true;
+  elseif byte==string.byte("n") then  
+    trRArm[6]=trRArm[6]-0.1;
+    update_arm = true;
+
+  elseif byte==string.byte("t") then  --Open gripper
+    Body.set_r_gripper_command({math.pi/6,-math.pi/6});
+
+  elseif byte==string.byte("y") then  --Close gripper
+    Body.set_r_gripper_command({0,0});
+
+
   end
+
+
+
 
   if ( update_arm ) then
     motion_arms_ik();
+   
+    body_pos = Body.get_sensor_gps();
+    body_rpy = Body.get_sensor_imuAngle();
+    object_pos = wcm.get_robot_gps_ball();
+    
+
+print("body abs pos:",unpack( body_pos )); --Check Body GPS 
+--print("body pitch and yaw:",body_rpy[2]*180/math.pi, body_rpy[3]*180/math.pi);
+print("object abs pos:",unpack( object_pos )); 
+
+
+  trBody=Transform.eye()
+   * Transform.trans(body_pos[1],body_pos[2],body_pos[3])
+   * Transform.rotZ(body_rpy[3])
+   * Transform.rotY(body_rpy[2]);
+
+  trEffector = Transform.eye()
+   * Transform.trans(object_pos[1],object_pos[2],object_pos[3])
+   * Transform.rotZ(-math.pi/4); --For L arm (45 deg yaw)
+
+  trRelative = Transform.inv(trBody)*trEffector;
+
+  pRelative = {trRelative[1][4],trRelative[2][4],trRelative[3][4]};
+
+print("object rel pos:",unpack(pRelative))
+
+
+print("current LArm rel pos:",
+	trLArm[1],trLArm[2],trLArm[3]);
+
+
+
   end
 
   return true
@@ -308,9 +402,10 @@ Motion.event("standup");
 local tDelay = 0.005 * 1E6; -- Loop every 5ms
 while (true) do
 	-- Run Updates
---  process_keyinput();
+  process_keyinput();
 
-  arm_demo();
+--  arm_demo();
+  Team.update();
 
   update();
 

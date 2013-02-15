@@ -18,6 +18,9 @@ require('vector');
 require 'torch'
 torch.Tensor = torch.DoubleTensor
 
+require 'mapShift'
+require 'processL0'
+
 -- Default values
 local MAPS = {}
 MAPS.res        = .2;
@@ -49,7 +52,6 @@ OMAP.sizey  = MAPS.sizey;
 OMAP.data = torch.ByteTensor(OMAP.sizex,OMAP.sizex)
 
 -- Helper Functions
-require 'mapShift'
 
 --print(OMAP.data)
 --mapShift( OMAP, 5*OMAP.res, 5*OMAP.res )
@@ -89,9 +91,13 @@ IMU.roll = 0;
 IMU.pitch = -10 * math.pi/180; -- Look down a little
 IMU.roll = 0;
 
-require 'processL0'
-
 --ranges = rcm.get_lidar_ranges();
 --print( carray.get(ranges,1) )
+for i=1,20 do
 processL0( LIDAR0, IMU, OMAP, MAPS )
-
+require 'map_io'
+init_send()
+-- Play it again Sam!
+print('Sending map!')
+send_map(OMAP.data)
+end

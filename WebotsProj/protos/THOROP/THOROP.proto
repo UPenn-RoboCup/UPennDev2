@@ -53,7 +53,55 @@ Robot {
                             DEF r_wrist_roll Servo {
                               translation 0 0 -0.0543
                               rotation 1 0 0 0
+
                               children [
+  	   	  	        Transform{   #Palm
+             			  translation 0 0 -0.065
+                                  children [
+                                    Shape{geometry Box {size 0.02 0.05 0.05}}
+	                          ]
+			        }
+				DEF r_wrist_grip1 Servo{ #First finger for gripper
+				  translation 0 0.02 -0.04
+				  rotation 1 0 0 0.78
+				  name "r_wrist_grip1"
+				  children[
+				    Transform{
+                              	      translation 0 0 -0.05
+                                      children [
+                                        Shape{geometry Box {size 0.02 0.02 0.10}}
+				      ]
+                                    }
+				  ]
+				  boundingObject Transform {
+                            	    translation 0 0 -0.05
+                                    children [
+                                      Box {size 0.02 0.02 0.10}
+                                    ]
+                                  }
+                                  physics Physics {}
+				}
+	   	 	        DEF r_wrist_grip2 Servo{ #Second finger for gripper
+				  translation 0 -0.02 -0.08
+				  rotation 1 0 0 0.78
+				  name "r_wrist_grip2"
+				  children[
+				    Transform{
+                              	      translation 0 0 -0.05
+                                      children [
+                                        Shape{geometry Box {size 0.02 0.02 0.10}}
+				      ]
+                                    }
+				  ]
+				  boundingObject Transform {
+                            	    translation 0 0 -0.05
+                                    children [
+                                      Box {size 0.02 0.02 0.10}
+                                    ]
+                                  }
+                                  physics Physics {}
+				}
+
                                 DEF r_wrist_roll Transform {
                                   rotation 1 0 0 1.57
                                   children [
@@ -65,13 +113,10 @@ Robot {
                               boundingObject Transform {
                                 translation 0 0 -0.0095
                                 children [
-                                  Box {
-                                    size 0.096 0.042 0.059
-                                  }
+                                  Box {size 0.096 0.042 0.059}
                                 ]
                               }
-                              physics Physics {
-                              }
+                              physics Physics {}
                             }
                             DEF r_wrist_yaw Transform {
                               rotation 1 0 0 1.57
@@ -84,13 +129,10 @@ Robot {
                           boundingObject Transform {
                             translation 0 0 -0.0375
                             children [
-                              Box {
-                                size 0.09 0.048 0.075
-                              }
+                              Box {size 0.09 0.048 0.075}
                             ]
                           }
-                          physics Physics {
-                          }
+                          physics Physics {}
                         }
                         DEF r_elbow_pitch Transform {
                           rotation 1 0 0 1.57
@@ -103,13 +145,10 @@ Robot {
                       boundingObject Transform {
                         translation -0.0185 0 -0.084
                         children [
-                          Box {
-                            size 0.077 0.12 0.208
-                          }
+                          Box {size 0.077 0.12 0.208}
                         ]
                       }
-                      physics Physics {
-                      }
+                      physics Physics {}
                     }
                     DEF r_shoulder_yaw Transform {
                       rotation 1 0 0 1.57
@@ -122,13 +161,10 @@ Robot {
                   boundingObject Transform {
                     translation 0.0175 0 -0.123
                     children [
-                      Box {
-                        size 0.102 0.114 0.246
-                      }
+                      Box {size 0.102 0.114 0.246}
                     ]
                   }
-                  physics Physics {
-                  }
+                  physics Physics {}
                 }
                 DEF r_shoulder_roll Transform {
                   rotation 1 0 0 1.57
@@ -141,13 +177,10 @@ Robot {
               boundingObject Transform {
                 translation 0 0 -0.006
                 children [
-                  Box {
-                    size 0.138 0.054 0.066
-                  }
+                  Box {size 0.138 0.054 0.066}
                 ]
               }
-              physics Physics {
-              }
+              physics Physics {}
             }
             DEF r_shoulder_pitch Transform {
               rotation -1 0 0 1.57
@@ -160,9 +193,7 @@ Robot {
           boundingObject Transform {
             translation 0 0.027 0
             children [
-              Box {
-                size 0.144 0.108 0.054
-              }
+              Box {size 0.144 0.108 0.054}
             ]
           }
           physics Physics {
@@ -190,24 +221,67 @@ Robot {
                               translation 0 0 -0.0543
                               rotation 1 0 0 0
                               children [
-                                DEF l_wrist_roll Transform {
-                                  rotation 1 0 0 1.57
+				Transform{   #Palm
+                                  translation 0 0 -0.065
                                   children [
-                                     WRIST_ROLL{}
+                                    Shape{geometry Box {size 0.02 0.05 0.05}}
                                   ]
+                                }
+	   	 	        DEF l_wrist_grip1 Servo{ #First finger for gripper
+				  translation 0 0.02 -0.08
+				  rotation 1 0 0 -0.78
+				  name "l_wrist_grip1"
+				  children[
+				    Transform{
+                              	      translation 0 0 -0.05
+                                      children [
+                                        Shape{geometry Box {size 0.02 0.02 0.10}}
+				      ]
+                                    }
+				  ]
+				  boundingObject Transform {
+                            	    translation 0 0 -0.05
+                                    children [
+                                      Box {size 0.02 0.02 0.10}
+                                    ]
+                                  }
+                                  physics Physics {}
+				}
+	   	 	        DEF l_wrist_grip2 Servo{ #Second finger for gripper
+				  translation 0 -0.02 -0.04
+				  rotation 1 0 0 -0.78
+				  name "l_wrist_grip2"
+				  children[
+				    Transform{
+                              	      translation 0 0 -0.05
+                                      children [
+                                        Shape{geometry Box {size 0.02 0.02 0.10}}
+				      ]
+                                    }
+				  ]
+				  boundingObject Transform {
+                            	    translation 0 0 -0.05
+                                    children [
+                                      Box {size 0.02 0.02 0.10}
+                                    ]
+                                  }
+                                  physics Physics {}
+				}
+
+                                DEF l_wrist_roll Transform{
+                                  rotation 1 0 0 1.57
+                                  children[
+                                    WRIST_ROLL{}                                  ]
                                 }
                               ]
                               name "l_wrist_roll"
                               boundingObject Transform {
                                 translation 0 0 -0.0095
                                 children [
-                                  Box {
-                                    size 0.096 0.042 0.059
-                                  }
+                                  Box {size 0.096 0.042 0.059}
                                 ]
                               }
-                              physics Physics {
-                              }
+                              physics Physics {}
                             }
                             DEF l_wrist_yaw Transform {
                               rotation 1 0 0 1.57
@@ -220,13 +294,10 @@ Robot {
                           boundingObject Transform {
                             translation 0 0 -0.0375
                             children [
-                              Box {
-                                size 0.09 0.048 0.075
-                              }
+                              Box {size 0.09 0.048 0.075}
                             ]
                           }
-                          physics Physics {
-                          }
+                          physics Physics {}
                         }
                         DEF l_elbow_pitch Transform {
                           rotation 1 0 0 1.57
@@ -239,13 +310,10 @@ Robot {
                       boundingObject Transform {
                         translation -0.0185 0 -0.084
                         children [
-                          Box {
-                            size 0.077 0.12 0.208
-                          }
+                          Box {size 0.077 0.12 0.208}
                         ]
                       }
-                      physics Physics {
-                      }
+                      physics Physics {}
                     }
                     DEF l_shoulder_yaw Transform {
                       rotation 1 0 0 1.57
@@ -258,13 +326,10 @@ Robot {
                   boundingObject Transform {
                     translation 0.0175 0 -0.123
                     children [
-                      Box {
-                        size 0.102 0.114 0.246
-                      }
+                      Box {size 0.102 0.114 0.246}
                     ]
                   }
-                  physics Physics {
-                  }
+                  physics Physics {}
                 }
                 DEF l_shoulder_roll Transform {
                   rotation 1 0 0 1.57
@@ -277,9 +342,7 @@ Robot {
               boundingObject Transform {
                 translation 0 0 -0.006
                 children [
-                  Box {
-                    size 0.138 0.054 0.066
-                  }
+                  Box {size 0.138 0.054 0.066}
                 ]
               }
               physics Physics {
@@ -294,13 +357,10 @@ Robot {
           boundingObject Transform {
             translation 0 -0.027 0
             children [
-              Box {
-                size 0.144 0.108 0.054
-              }
+              Box {size 0.144 0.108 0.054}
             ]
           }
-          physics Physics {
-          }
+          physics Physics {}
         }
         DEF neck_yaw Servo {
           translation 0 0 0.027
@@ -312,30 +372,12 @@ Robot {
                 DEF head_pitch Transform {
                   rotation 1 0 0 1.57
                   children[
-#  	            HEAD_PITCH{}
+  	            HEAD_PITCH{}
 		    Transform{
-		      rotation 0 1 0 1.57
+		      translation 0.03 0.07 0
+		      rotation 0 1 0 -1.57
  		      children[
-#SJ: Trying to graft OP head to THOR, but it is not working so far
-		        Camera {
-		          translation 0 0.0329074 0.0359816
-		          rotation 0 -1 0 3.14159
-		          children [CAMERASHAPE{}]
-			  name "Camera"
-	   	          windowPosition IS cameraWindowPosition
-		          fieldOfView 1.0472
-		          width IS cameraWidth
-		          height IS cameraHeight
-		          pixelSize IS cameraPixelSize
-			}
-			DEF DEyeLED LED {
-		      	  rotation 1 0 0 0
-		          children [EYELED{}]
-			  name "EyeLed"
-	 	          color []
-		          gradual TRUE
-		        }
-			headGroup{}
+#			KinectWithoutFoot{}
 		      ]		      
 		    }
                   ]
@@ -344,9 +386,7 @@ Robot {
               name "head_pitch"
  	      boundingObject Transform {
                 children [
-                  Box {
-                    size 0.05 0.05 0.05
-                  }
+                  Box {size 0.05 0.05 0.05}
                 ]
               }
             }
@@ -360,13 +400,11 @@ Robot {
           name "neck_yaw"
           boundingObject Transform {
             children [
-              Box {
-                size 0.05 0.05 0.05
-              }
+              Box {size 0.05 0.05 0.05}
             ]
           }
         }
-        hokuyo_thor {}    
+#       hokuyo_thor {}    
         DEF upper_torso_yaw Transform {
           rotation 1 0 0 1.57
           children [
@@ -378,13 +416,10 @@ Robot {
       boundingObject Transform {
         translation 0 0 -0.058
         children [
-          Box {
-            size 0.06 0.276 0.171
-          }
+          Box {size 0.06 0.276 0.171}
         ]
       }
-      physics Physics {
-      }
+      physics Physics {}
     }
     DEF l_hip_yaw Servo {
       translation -0.024 0.0957 0.212
@@ -417,9 +452,7 @@ Robot {
                           boundingObject Transform {
                             translation 0.0213876 0 -0.0143448
                             children [
-                              Box {
-                                size 0.23 0.125 0.0686897
-                              }
+                              Box {size 0.23 0.125 0.0686897}
                             ]
                           }
                           physics Physics {
@@ -471,9 +504,7 @@ Robot {
                   boundingObject Transform {
                     translation 0 0 -0.19
                     children [
-                      Box {
-                        size 0.045 0.055 0.42
-                      }
+                      Box {size 0.045 0.055 0.42}
                     ]
                   }
                   physics Physics {
@@ -502,9 +533,7 @@ Robot {
               boundingObject Transform {
                 translation 0 0 -0.1895
                 children [
-                  Box {
-                    size 0.045 0.074 0.419
-                  }
+                  Box {size 0.045 0.074 0.419}
                 ]
               }
               physics Physics {
@@ -598,9 +627,7 @@ Robot {
                           boundingObject Transform {
                             translation 0.0213876 0 -0.0143448
                             children [
-                              Box {
-                                size 0.23 0.125 0.0686897
-                              }
+                              Box {size 0.23 0.125 0.0686897}
                             ]
                           }
                           physics Physics {
@@ -627,9 +654,7 @@ Robot {
                         }
                       ]
                       name "r_ankle_pitch"
-                      boundingObject Box {
-                        size 0.067 0.067 0.01
-                      }
+                      boundingObject Box {size 0.067 0.067 0.01}
                       physics Physics {
                         density -1
                         mass 0.001
@@ -652,9 +677,7 @@ Robot {
                   boundingObject Transform {
                     translation 0 0 -0.19
                     children [
-                      Box {
-                        size 0.045 0.055 0.42
-                      }
+                      Box {size 0.045 0.055 0.42}
                     ]
                   }
                   physics Physics {
@@ -683,9 +706,7 @@ Robot {
               boundingObject Transform {
                 translation 0 0 -0.1895
                 children [
-                  Box {
-                    size 0.045 0.074 0.419
-                  }
+                  Box {size 0.045 0.074 0.419}
                 ]
               }
               physics Physics {
@@ -712,9 +733,7 @@ Robot {
             }
           ]
           name "r_hip_roll"
-          boundingObject Box {
-            size 0.083 0.083 0.01
-          }
+          boundingObject Box {size 0.083 0.083 0.01}
           physics Physics {
             density -1
             mass 0.001
@@ -756,7 +775,12 @@ Robot {
       ]
     }
     DEF zero GPS {
+       translation -0.023 0 0.596
        name "zero"
+    }
+    Compass {
+       translation -0.023 0 0.596
+       name "compass"
     }
     Accelerometer {
       translation 0.027711 0 0.23735
@@ -776,6 +800,16 @@ Robot {
         27.925 1024 0
       ]
     }
+#SH: those are for sending/receiving team messages
+    DEF RECEIVER Receiver {
+      name "receiver"
+      channel IS channel
+    }
+    DEF EMITTER Emitter {
+      name "emitter"
+      channel IS channel
+    }
+
     DEF PHYSICS_RECEIVER Receiver {
       name "physics_receiver"
       type "serial"

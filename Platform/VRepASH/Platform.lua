@@ -41,14 +41,14 @@ local servoNames = { -- vrep servo names
 local function initialize_devices()
   -- intialize vrep devices
   handles.robot = simGetObjectHandle('Ash')
-  handles.gyro = simTubeOpen(0, 'gyroData#')
-  handles.accel = simTubeOpen(0, 'accelerometerData#')
+  handles.gyro = simTubeOpen(0, 'gyroData#', 10)
+  handles.accel = simTubeOpen(0, 'accelerometerData#', 10)
 
   handles.servo = {}
   for i = 1,N_JOINT do
     handles.servo[i] = simGetObjectHandle(servoNames[i])
-    -- make joint motion cyclic (unbounded)
-    simSetJointInterval(handles.servo[i], true, nil)
+    -- Make joint motion cyclic (unbounded). Third argument is ignored.
+    simSetJointInterval(handles.servo[i], true, {0, 0})
     simSetJointTargetVelocity(handles.servo[i], 0)
     simSetJointForce(handles.servo[i], 0)
   end
@@ -70,6 +70,8 @@ local function update_actuators()
     local max_servo_force = math.abs(joint_force_desired[i])
     simSetJointForce(handles.servo[i], max_servo_force)
     simSetJointTargetVelocity(handles.servo[i], joint_velocity_desired[i])
+    -- Object attribute 2000 is whether the motor is enabled
+    simSetObjectIntParameter(handles.servo[i], 2000, joint_enable[i])
   end
 end
 
@@ -89,7 +91,7 @@ local function update_sensors()
   end
 
   -- update imu readings
-  local euler_angles = simGetObjectOrientation(handles.robot)
+  local euler_angles = simGetObjectOrientation(handles.robot, -1)
   dcm:set_ahrs(euler_angles, 'euler')
   
   local data = simTubeRead(handles.gyro)

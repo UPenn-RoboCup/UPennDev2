@@ -1,6 +1,7 @@
 local ffi = require 'ffi'
 local libpng = require 'libpng'
 local carray = require 'carray'
+rgb = require 'rgbselect'
 
 defaultW = 640
 defaultH = 480
@@ -39,4 +40,16 @@ end
 
 rgbselect = function(data, w, h, ptx, pty, threshold)
   print(data[0], data[1], data[2], ptx, pty, threshold)
+  dd = rgb.select(data, w, h, ptx, pty, threshold)
+  df = ffi.cast('uint8_t*', dd)
+  count = 0
+  for x = 0, h - 1 do
+    for y = 0, w - 1 do
+     if df[x * w + y] ~= 0 then
+       print(df[x * w + y], x, y)
+       count = count + 1
+     end
+    end
+  end
+  print('dddddd', count)
 end

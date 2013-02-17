@@ -1,5 +1,5 @@
-#ifndef KDL_PLUCKER_TRANSFORM_HPP
-#define KDL_PLUCKER_TRANSFORM_HPP
+#ifndef KDL_PLUCKER_MATRIX_HPP
+#define KDL_PLUCKER_MATRIX_HPP
 
 #include <kdl/tree.hpp>
 #include <kdl/chain.hpp>
@@ -16,22 +16,22 @@ namespace KDL
 
     class SpatialVector;
 
-    class PluckerTransform {
+    class PluckerMatrix {
     public:
         Matrix6d X;
 
-        PluckerTransform();
-        PluckerTransform(const Matrix6d &X_);
-        PluckerTransform(const Frame &F);
-        PluckerTransform(RigidBodyInertia I);
+        PluckerMatrix();
+        PluckerMatrix(const Matrix6d &X_);
+        PluckerMatrix(const Frame &F);
+        PluckerMatrix(RigidBodyInertia I);
 
         Frame toFrame() const;
         RigidBodyInertia toRigidBodyInertia() const;
-        PluckerTransform Inverse() const;
-        PluckerTransform Transpose() const;
+        PluckerMatrix Inverse() const;
+        PluckerMatrix Transpose() const;
 
         SpatialVector operator * (const SpatialVector &v) const;
-        PluckerTransform operator * (const PluckerTransform &Y) const;
+        PluckerMatrix operator * (const PluckerMatrix &Y) const;
     };
 }
 

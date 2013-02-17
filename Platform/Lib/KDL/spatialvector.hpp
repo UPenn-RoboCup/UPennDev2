@@ -12,7 +12,7 @@ using namespace Eigen;
 
 namespace KDL
 {
-    class PluckerTransform;
+    class PluckerMatrix;
 
     class SpatialVector {
     public:
@@ -25,7 +25,7 @@ namespace KDL
 
         Wrench toWrench() const;
         Twist toTwist() const;
-        SpatialVector operator * (const PluckerTransform &X) const;
+        SpatialVector operator * (const PluckerMatrix &X) const;
     };
 }
 

@@ -1,5 +1,5 @@
 #include "spatialvector.hpp"
-#include "pluckertransform.hpp"
+#include "pluckermatrix.hpp"
 #include <cassert>
 
 // Mike Hopkins 2/15/2013
@@ -65,7 +65,7 @@ namespace KDL
 	return w;
     }
 
-    SpatialVector SpatialVector::operator * (const PluckerTransform &X) const
+    SpatialVector SpatialVector::operator * (const PluckerMatrix &X) const
     {
       return SpatialVector((v.transpose()*X.X).transpose());
     }

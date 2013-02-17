@@ -13,7 +13,7 @@ all: libKDLcustom.a
 %.o: %.c
 	$(CC) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
 
-libKDLcustom.a: treeidsolver_recursive_newton_euler.o pluckertransform.o spatialvector.o
+libKDLcustom.a: treeidsolver_recursive_newton_euler.o pluckermatrix.o spatialvector.o
 	$(AR) $(ARFLAGS) $@ $^
 
 clean:

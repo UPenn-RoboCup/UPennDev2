@@ -2,6 +2,7 @@ require('dcm')
 require('pcm')
 require('vector')
 require('Config')
+require('Kinematics')
 require('Transform')
 
 --------------------------------------------------------------------------------

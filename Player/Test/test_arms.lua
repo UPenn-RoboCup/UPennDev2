@@ -98,18 +98,19 @@ end
 arm_initing = 1;
 arm_init_stage = 0;
 arm_init_t0 = 0;
-arm_stage_duration=2.0;
+arm_stage_duration={2.0,1.0,1.0,1.0};
 is_moving = 0;
 
 function init_arms()
   t = Body.get_time();
   if arm_initing>0 then     
     walk.upper_body_override_on();
-    if arm_init_t0+arm_stage_duration< t then
+    current_duration = arm_stage_duration[arm_init_stage+1];
+    if arm_init_t0+current_duration< t then
       arm_init_stage = arm_init_stage+1;
       arm_init_t0 = t;
     end
-    ph = (t-arm_init_t0) / arm_stage_duration;
+    ph = (t-arm_init_t0) /current_duration;
     if arm_init_stage==0 then
       qLArm =  {math.pi/2, math.pi/2 * ph, 0, 0,0,0};
       qRArm =  {math.pi/2, -math.pi/2 * ph, 0, 0,0,0};      
@@ -138,9 +139,9 @@ function init_arms()
       --Lower the hand a bit to avoid singularity
       trLArmOld[3]=trLArmOld[3] - 0.02; 
       trRArmOld[3]=trRArmOld[3] - 0.02;
+
       trLArmOld[6]= - math.pi/2; 
       trRArmOld[6]= math.pi/2;
-
 
       trLArm[1],trLArm[2],trLArm[3],trLArm[4],trLArm[5],trLArm[6]=
 	trLArmOld[1],trLArmOld[2],trLArmOld[3],trLArmOld[4],trLArmOld[5],trLArmOld[6];
@@ -281,6 +282,7 @@ function check_ik(tr, is_left)
     qInv = Kinematics.inverse_r_arm(tr);
     torso_arm_ik = Kinematics.r_arm_torso(qInv);
   end
+
   dist = math.sqrt(
 	(torso_arm_ik[1]-tr[1])^2+
 	(torso_arm_ik[2]-tr[2])^2+
@@ -296,7 +298,11 @@ function motion_arms_ik()
   qLArmInv, dist1 = check_ik(trLArm, 1);
   qRArmInv, dist2 = check_ik(trRArm, 0);
 
+--  print("Error:",dist1)
+
+
   if dist1<0.01 and dist2<0.01 then
+--  if true then
       walk.upper_body_override_on();
       walk.upper_body_override(qLArmInv, qRArmInv, walk.bodyRot0);
 
@@ -382,12 +388,30 @@ function process_keyinput()
   elseif byte==string.byte("z") then  
     trLArm[3]=trLArm[3]-0.01;
     update_arm = true;
-  elseif byte==string.byte("c") then  
+
+
+
+  elseif byte==string.byte("1") then  
     trLArm[6]=trLArm[6]+0.1;
     update_arm = true;
-  elseif byte==string.byte("v") then  
+  elseif byte==string.byte("2") then  
     trLArm[6]=trLArm[6]-0.1;
     update_arm = true;
+  elseif byte==string.byte("3") then  
+    trLArm[4]=trLArm[4]+0.1;
+    update_arm = true;
+  elseif byte==string.byte("4") then  
+    trLArm[4]=trLArm[4]-0.1;
+    update_arm = true;
+  elseif byte==string.byte("5") then  
+    trLArm[5]=trLArm[5]+0.1;
+    update_arm = true;
+  elseif byte==string.byte("6") then  
+    trLArm[5]=trLArm[5]-0.1;
+    update_arm = true;
+
+
+
 
   elseif byte==string.byte("e") then  --Open gripper
     Body.set_l_gripper_command({math.pi/6,-math.pi/6});

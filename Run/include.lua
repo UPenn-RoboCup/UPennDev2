@@ -13,14 +13,6 @@ local function shell(command)
   return result
 end
 
--- get dynamic lib suffix
-local uname = shell('uname') 
-if string.match(uname, 'Darwin') then
-  csuffix = 'dylib'
-else
-  csuffix = 'so'
-end
-
 -- Get absolute path for THOR repository
 -- If the script calling this one is not in a subdirectory,
 -- then the THOR_HOME env variable must be set.
@@ -45,10 +37,12 @@ package.path = THOR_HOME.."/Framework/Proprioception/?.lua;"..package.path
 package.path = THOR_HOME.."/Framework/Cognition/?.lua;"..package.path
 package.path = THOR_HOME.."/Framework/Util/?.lua;"..package.path
 
--- set path for c modules 
-package.cpath = THOR_HOME.."/Framework/Cognition/Slam/?."..csuffix..";"..package.cpath
-package.cpath = THOR_HOME.."/Framework/Lib/?/?."..csuffix..";"..package.cpath
-package.cpath = THOR_HOME.."/Framework/Lib/lcm/?."..csuffix..";"..package.cpath
-package.cpath = THOR_HOME.."/Framework/Lib/unix/?."..csuffix..";"..package.cpath
-package.cpath = THOR_HOME.."/Framework/Cognition/Slam/?."..csuffix..";"..package.cpath
-package.cpath = THOR_HOME.."/Framework/Platform/?."..csuffix..";"..package.cpath
+-- set path for c modules
+csuffix = {'dylib', 'so'}
+for i = 1, #csuffix do
+  package.cpath = THOR_HOME.."/Framework/Cognition/Slam/?."..csuffix[i]..";"..package.cpath
+  package.cpath = THOR_HOME.."/Framework/Lib/?/?."..csuffix[i]..";"..package.cpath
+  package.cpath = THOR_HOME.."/Framework/Lib/lcm/?."..csuffix[i]..";"..package.cpath
+  package.cpath = THOR_HOME.."/Framework/Lib/unix/?."..csuffix[i]..";"..package.cpath
+  package.cpath = THOR_HOME.."/Framework/Platform/?."..csuffix[i]..";"..package.cpath
+end

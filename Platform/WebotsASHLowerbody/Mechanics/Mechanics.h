@@ -9,8 +9,8 @@
 #include <kdl/chainiksolvervel_pinv.hpp>
 #include <kdl/chainidsolver_recursive_newton_euler.hpp>
 #include <kdl/chaindynparam.hpp>
-#include "treeidsolver.hpp"
-#include "treeidsolver_recursive_newton_euler.hpp"
+#include "treeidfbsolver.hpp"
+#include "treeidfbsolver_recursive_newton_euler.hpp"
 
 using namespace KDL;
 
@@ -94,7 +94,6 @@ typedef struct _Mechanics {
   Chain waist;
   Chain l_leg;
   Chain r_leg;
-  Chain base;
 
   // kinematic trees
   /////////////////////////////////////////////////////////////////////////
@@ -156,7 +155,7 @@ typedef struct _Mechanics {
   ChainDynParam *r_leg_dynamic_param;
 
   // body
-  TreeIdSolver *body_id_solver;
+  TreeIdFbSolver *body_id_solver;
 
   _Mechanics();
 } _Mechanics;

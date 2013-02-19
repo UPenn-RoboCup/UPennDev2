@@ -19,45 +19,50 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-#ifndef KDL_TREE_ID_SOLVER_RECURSIVE_NEWTON_EULER_HPP
-#define KDL_TREE_ID_SOLVER_RECURSIVE_NEWTON_EULER_HPP
+#ifndef KDL_TREE_ID_FB_SOLVER_RECURSIVE_NEWTON_EULER_HPP
+#define KDL_TREE_ID_FB_SOLVER_RECURSIVE_NEWTON_EULER_HPP
 
-#include "treeidsolver.hpp"
+#include "treeidfbsolver.hpp"
 
 namespace KDL{
     /**
-     * \brief Recursive newton euler inverse dynamics solver
+     * \brief Recursive newton euler floating base inverse dynamics solver
      *
      * The algorithm implementation is based on the book "Rigid Body
      * Dynamics Algorithms" of Roy Featherstone, 2008
-     * (ISBN:978-0-387-74314-1) See page 96 for the pseudo-code.
+     * (ISBN:978-0-387-74314-1) See page 185 for the pseudo-code.
      * 
-     * It calculates the torques for the joints, given the motion of
-     * the joints (q,qdot,qdotdot), external forces on the segments
-     * (expressed in the segments reference frame) and the dynamical
-     * parameters of the segments.
+     * It calculates the torques for the joints and acceleration of the
+     * floating base given the motion of the the joints (q,qdot,qdotdot),
+     * the floating base frame pose and twist in fixed base coordinates, 
+     * the external forces on the segments (expressed in the segments 
+     * reference frame) and the dynamical parameters of the segments.
      */
-    class TreeIdSolver_RNE : public TreeIdSolver{
+    class TreeIdFbSolver_RNE : public TreeIdFbSolver{
     public:
         /**
          * Constructor for the solver, it will allocate all the necessary memory
          * \param tree The kinematic tree to calculate the inverse dynamics for, an internal copy will be made.
          * \param grav The gravity vector to use during the calculation.
          */
-        TreeIdSolver_RNE(const Tree& tree,Vector grav);
-        ~TreeIdSolver_RNE(){};
+        TreeIdFbSolver_RNE(const Tree& tree,Vector grav);
+        ~TreeIdFbSolver_RNE(){};
         
         /**
-         * Calculate inverse dynamics, from joint positions, velocity, acceleration, external forces
+         * Calculate floating base inverse dynamics, from joint positions, velocity, acceleration, external forces
          * Input parameters;
          * \param q The current joint positions
          * \param q_dot The current joint velocities
          * \param q_dotdot The current joint accelerations
          * \param f_ext The external forces (no gravity) on the segments
+         * \param X_fb The floating base frame in fixed base coordinates
+         * \param v_fb The floating base twist in fixed base coordinates 
          * Output parameters:
+         * \param a_fb The floating base accelartion in fixed base coordinates
          * \param torques the resulting torques for the joints
          */
-        int CartToJnt(const JntArray &q, const JntArray &q_dot, const JntArray &q_dotdot, const Wrenches& f_ext, JntArray &torques);
+
+        int CartToJnt(const JntArray &q, const JntArray &q_dot, const JntArray &q_dotdot, const Wrenches& f_ext, const Frame &X_fb, const Twist &v_fb, Twist &a_fb, JntArray &torques);
 
     private:
         int initSegments(const SegmentMap::const_iterator parent_it, int index = -1);
@@ -66,6 +71,7 @@ namespace KDL{
         unsigned int ns;
         std::vector<Segment> segment;
         std::vector<int> parent;
+        std::vector<RigidBodyInertia> I;
         std::vector<Frame> X;
         std::vector<Twist> S;
         std::vector<Twist> v;

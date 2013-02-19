@@ -9,6 +9,8 @@
 #include <kdl/chainiksolvervel_pinv.hpp>
 #include <kdl/chainidsolver_recursive_newton_euler.hpp>
 #include <kdl/chaindynparam.hpp>
+#include "treeidfbsolver.hpp"
+#include "treeidfbsolver_recursive_newton_euler.hpp"
 
 using namespace KDL;
 
@@ -20,18 +22,18 @@ typedef struct _Mechanics {
   /////////////////////////////////////////////////////////////////////////
 
   // head
-  Frame chest_transform;
+  Frame clavicle_transform;
   Frame neck_transform;
   Frame head_transform;
 
   // l_arm
-  Frame l_chest_transform;
+  Frame l_shoulder_transform;
   Frame l_arm_transform;
   Frame l_forearm_transform;
   Frame l_hand_transform;
 
   // r_arm 
-  Frame r_chest_transform;
+  Frame r_shoulder_transform;
   Frame r_arm_transform;
   Frame r_forearm_transform;
   Frame r_hand_transform;
@@ -41,13 +43,13 @@ typedef struct _Mechanics {
   Frame waist_chest_transform;
 
   // l_leg
-  Frame l_torso_transform;
+  Frame l_hip_transform;
   Frame l_thigh_transform;
   Frame l_shin_transform;
   Frame l_foot_transform;
 
   // r_leg
-  Frame r_torso_transform;
+  Frame r_hip_transform;
   Frame r_thigh_transform;
   Frame r_shin_transform;
   Frame r_foot_transform;
@@ -93,6 +95,20 @@ typedef struct _Mechanics {
   Chain l_leg;
   Chain r_leg;
 
+  // kinematic trees
+  /////////////////////////////////////////////////////////////////////////
+  Tree body;
+
+  // tree segment indices
+  /////////////////////////////////////////////////////////////////////////
+  int body_torso_index;
+  int body_l_foot_index;
+  int body_r_foot_index;
+  int body_chest_index;
+  int body_l_hand_index;
+  int body_r_hand_index;
+  int body_head_index;
+
   // kinematic and dynamic solvers
   /////////////////////////////////////////////////////////////////////////
 
@@ -137,6 +153,9 @@ typedef struct _Mechanics {
   ChainIkSolverVel_pinv *r_leg_ik_vel_solver;
   ChainJntToJacSolver *r_leg_jnt_to_jac_solver;
   ChainDynParam *r_leg_dynamic_param;
+
+  // body
+  TreeIdFbSolver *body_id_solver;
 
   _Mechanics();
 } _Mechanics;

@@ -4,6 +4,7 @@ dofile('include.lua')
 -- Motion Manager
 ----------------------------------------------------------------------
 
+require('zmq')
 require('rpc')
 require('unix')
 require('util')
@@ -14,6 +15,8 @@ require('Motion')
 require('Locomotion')
 require('Manipulation')
 require('Proprioception')
+
+local rpc_endpoint = 'tcp://lo:12000'
 
 local function draw_screen()
   curses.clear()
@@ -41,7 +44,9 @@ curses.timeout(1)
 draw_screen()
 
 local count = 0
-local motion_rpc_server = rpc.server.new('MOTION')
+local context = zmq.init()
+local motion_rpc_server = rpc.server.new(rpc_endpoint, context)
+motion_rpc_server:set_timeout(0)
 
 while true do
   -- handle remote procedure calls
@@ -65,7 +70,10 @@ while true do
   end
 end
 
+motion_rpc_server:close()
+context:term()
 curses.endwin()
+
 Motion.exit()
 Proprioception.exit()
 Platform.exit()

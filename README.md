@@ -11,17 +11,11 @@ Dependencies
 
 #### For Ubuntu 12.04, install necessary dependencies using:
 
-    sudo apt-get install build-essential lua5.1 liblua5.1-0-dev luajit swig libboost1.46-dev mesa-common-dev gnuplot libpopt-dev libncurses5-dev
+    sudo apt-get install build-essential lua5.1 liblua5.1-0-dev luajit swig libboost1.46-dev mesa-common-dev gnuplot libpopt-dev libncurses5-dev luarocks libblas-dev liblapack-dev libfftw3-dev libhdf5-serial-dev
+
+    sudo luarocks install numlua lua-cmsgpack
 
     sudo ln -s /usr/bin/luajit* /usr/bin/luajit
-
-Install numlua using:
-    
-    sudo apt-get install luarocks libblas-dev liblapack-dev libfftw3-dev libhdf5-serial-dev
-
-    git clone https://github.com/carvalho/numlua
-    cd numlua
-    sudo luarocks make numlua-0.3-1.rockspec
 
 Install Eigen3 using:
 
@@ -33,6 +27,17 @@ Install Eigen3 using:
     cmake ..
     make
     sudo make install
+
+Install zeromq 3.2 using:
+
+    wget http://download.zeromq.org/zeromq-3.2.2.tar.gz
+    tar xzf zeromq-3.2.2.tar.gz 
+    cd zeromq-3.2.2
+    ./configure
+    make
+    sudo make install
+
+    sudo luarocks install https://raw.github.com/Neopallium/lua-zmq/master/rockspecs/lua-zmq-scm-1.rockspec
 
 Finally, install Lightweight Communications and Marshalling (LCM) and Kinematics and Dynamics Library (KDL) using the instructions below.
 

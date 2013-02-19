@@ -4,14 +4,14 @@ require('Platform')
 require('Proprioception')
 require('trajectory')
 require('Transform')
-require('stepRMP')
+require('step_rmp')
 require('gnuplot')
 require('dcm')
 
 local LOOP = true
 local SLOW_MO = false
 local INIT_STANCE = false
-local PARAMETER_FILE = '../../../Data/parameters_stepRMP_WebotsASH_train0.lua'
+local PARAMETER_FILE = '../../../Data/parameters_step_rmp_WebotsASH_train0.lua'
 
 local period = 0.7
 local n_samples = 5000

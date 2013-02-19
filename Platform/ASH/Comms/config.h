@@ -8,8 +8,8 @@
 ///////////////////////////////////////////////////////////////////////////
 
 // define device array lengths
-#define N_JOINT 12
-#define N_MOTOR 12
+#define N_JOINT 33
+#define N_MOTOR 33
 #define N_FORCE_TORQUE 24
 #define N_AHRS 9 
 #define N_BATTERY 3

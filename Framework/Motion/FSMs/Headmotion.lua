@@ -2,9 +2,9 @@
 -- Headmotion State Machine 
 ---------------------------------------------------------
 
-require('nullState')
+require('null_state')
 require('MotionFSM')
 
-Headmotion = MotionFSM.new(nullState)
+Headmotion = MotionFSM.new(null_state)
 
 return Headmotion

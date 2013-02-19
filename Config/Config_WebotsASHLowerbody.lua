@@ -17,7 +17,7 @@ loadconfig('Config_WebotsASHLowerbody_Walk')
 platform = {}
 platform.name = 'WebotsASHLowerbody'
 platform.keyframe_table = 'keyframe_table_ASH'
-platform.walk = 'walkOSC'
+platform.walk = 'walk_osc'
 
 walk = getfenv()[platform.walk] or {}
 walk.parameters = walk.parameters or {}

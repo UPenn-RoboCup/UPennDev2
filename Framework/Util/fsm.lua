@@ -61,6 +61,7 @@ function new(state1, ...)
   o.previousState = nil;
   o.nextState = nil;
   o.nextAction = nil;
+  o.lastEvent = nil;
 
   setmetatable(o, mt);
 
@@ -95,14 +96,24 @@ function add_state(self, newState)
   self.transitions[newState] = {};
   self.actions[newState] = {};
 end
+
 function add_event(self, event)
   self.events[#self.events+1] = event;
 end
+
+function get_event(self)
+  return self.lastEvent;
+end
+
 function set_state(self, nextState)
   if self.statesHash[nextState] == nil then
     error('unkown state '..nextState);
   end
   self.nextState = self.states[self.statesHash[nextState]];
+end
+
+function get_state(self)
+  return self.currentState;
 end
 
 function get_current_state(self)
@@ -132,6 +143,7 @@ function update(self)
     -- process events
     for i = 1,#self.events do
       local event = self.events[i];
+      self.lastEvent = event;
       if (self.transitions[state][event]) then
         self.nextState = self.transitions[state][event];
         self.nextAction = self.actions[state][event];

@@ -3,7 +3,12 @@
 
 local function shell(command)
   local pipe = io.popen(command, 'r')
-  local result = pipe:read('*a')
+  -- Sometimes in V-Rep we close the pipe before we've actually
+  -- read anything. Make sure that we actually get our output!
+  local result
+  while result == nil do
+    result = pipe:read('*a')
+  end
   pipe:close()
   return result
 end
@@ -16,9 +21,11 @@ else
   csuffix = 'so'
 end
 
--- get absolute path prefix for code directory
-local pwd = shell('pwd') 
-local prefix = string.gsub(pwd, '/Run.*$', '')
+-- Get absolute path prefix for code directory.
+-- If the script calling this one is not in a subdirectory,
+-- it must supply the prefix itself.
+local pwd = shell('pwd')
+local prefix = prefix or string.gsub(pwd, '/Run.*$', '')
 
 -- set path for lua modules 
 package.path = prefix.."/Config/?.lua;"..package.path

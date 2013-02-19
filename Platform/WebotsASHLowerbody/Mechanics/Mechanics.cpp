@@ -60,13 +60,13 @@ _Mechanics::_Mechanics()
 
   // l_arm
   l_arm_inertia = RigidBodyInertia(
-    2.546284964,
+    0, // 2.546284964,
     Vector(-0.023246817,   -0.000615575,    0.138161618),
     RotationalInertia(0.027298352,    0.028397454,    0.003461075,
                      -0.000036439,   -0.003096603,    0.000216571)
   );
   l_forearm_inertia = RigidBodyInertia(
-    0.954274172,
+    0, // 0.954274172,
     Vector(-0.000861109,    0.000360798,    0.067377121),
     RotationalInertia(0.004522058,    0.004457692,    0.000767547,
                       0.000005284,    0.000082660,    0.000046156)
@@ -79,13 +79,13 @@ _Mechanics::_Mechanics()
 
   // r_arm
   r_arm_inertia = RigidBodyInertia(
-    2.546284964,
+    0, // 2.546284964,
     Vector(-0.023246817,   -0.000615575,    0.138161618),
     RotationalInertia(0.027298352,    0.028397454,    0.003461075,
                      -0.000036439,   -0.003096603,    0.000216571)
   );
   r_forearm_inertia = RigidBodyInertia(
-    0.954274172,
+    0, // 0.954274172,
     Vector(-0.000861109,    0.000360798,    0.067377121),
     RotationalInertia(0.004522058,    0.004457692,    0.000767547,
                       0.000005284,    0.000082660,    0.000046156)
@@ -105,7 +105,7 @@ _Mechanics::_Mechanics()
                       
   );
   chest_inertia = RigidBodyInertia(
-    5.130439826,
+    0, // 5.130439826,
     Vector(-0.022756960,   -0.002600375,   -0.027321530),
     RotationalInertia(0.046536953,    0.022100838,    0.046349342,
                       0.000589242,    0.000521208,   -0.000112157)
@@ -296,4 +296,5 @@ _Mechanics::_Mechanics()
 
   // body
   body_id_solver = new TreeIdFbSolver_RNE(body, gravity);
+  body_cog_solver = new TreeCoGSolver_recursive(body);
 };

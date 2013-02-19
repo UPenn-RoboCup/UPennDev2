@@ -21,9 +21,8 @@ ash:
 	cd Platform/ASH && make && cd $(CWD)
 	cd Framework/Platform \
 	&& rm -f ./* \
-	&& ln -s ../../Platform/ASH/Body.lua Body.lua \
+	&& ln -s ../../Platform/ASH/Platform.lua Platform.lua \
 	&& ln -s ../../Platform/ASH/Mechanics/Kinematics.$(SHLIBEXT) Kinematics.$(SHLIBEXT) \
-	&& ln -s ../../Platform/ASH/Mechanics/Statics.$(SHLIBEXT) Statics.$(SHLIBEXT) \
 	&& ln -s ../../Platform/ASH/Mechanics/Dynamics.$(SHLIBEXT) Dynamics.$(SHLIBEXT) \
 	&& cd $(CWD)
 	cd Config \
@@ -43,9 +42,8 @@ teststand:
 	cd Platform/Teststand && make && cd $(CWD)
 	cd Framework/Platform \
 	&& rm -f ./* \
-	&& ln -s ../../Platform/Teststand/Body.lua Body.lua \
+	&& ln -s ../../Platform/Teststand/Platform.lua Platform.lua \
 	&& ln -s ../../Platform/Teststand/Mechanics/Kinematics.lua Kinematics.lua \
-	&& ln -s ../../Platform/Teststand/Mechanics/Statics.lua Statics.lua \
 	&& ln -s ../../Platform/Teststand/Mechanics/Dynamics.lua Dynamics.lua \
 	&& cd $(CWD)
 	cd Config \
@@ -65,11 +63,9 @@ webots_ash:
 	cd Platform/WebotsASH && make && cd $(CWD)
 	cd Framework/Platform \
 	&& rm -f ./* \
-	&& ln -s ../../Platform/WebotsASH/Body.lua Body.lua \
-	&& ln -s ../../Platform/WebotsCharli/WebotsLaser.lua WebotsLaser.lua \
-	&& ln -s ../../Platform/WebotsCharli/WebotsCamera.lua WebotsCamera.lua \
+	&& ln -s ../../Platform/WebotsASH/Platform.lua Platform.lua \
+	&& ln -s ../../Platform/WebotsASH/Sensor.lua Sensor.lua \
 	&& ln -s ../../Platform/WebotsASH/Mechanics/Kinematics.$(SHLIBEXT) Kinematics.$(SHLIBEXT) \
-	&& ln -s ../../Platform/WebotsASH/Mechanics/Statics.$(SHLIBEXT) Statics.$(SHLIBEXT) \
 	&& ln -s ../../Platform/WebotsASH/Mechanics/Dynamics.$(SHLIBEXT) Dynamics.$(SHLIBEXT) \
 	&& cd $(CWD)
 	cd Config \
@@ -83,25 +79,23 @@ webots_ash:
 	&& rm -f comms_manager \
 	&& cd $(CWD)
 
-webots_charli:
+webots_ash_lowerbody:
 	cd Framework/Lib && make && cd $(CWD)
 	cd Framework/Lib/webots && make && cd $(CWD)
-	cd Platform/WebotsCharli && make && cd $(CWD)
-	cd Framework/Robot \
-	&& rm -f Body.lua Kinematics.* Statics.* Dynamics.* \
-	&& ln -s ../../Platform/WebotsCharli/Body.lua Body.lua \
-	&& ln -s ../../Platform/WebotsCharli/WebotsLaser.lua WebotsLaser.lua \
-	&& ln -s ../../Platform/WebotsCharli/WebotsCamera.lua WebotsCamera.lua \
-	&& ln -s ../../Platform/WebotsCharli/Mechanics/Kinematics.$(SHLIBEXT) Kinematics.$(SHLIBEXT) \
-	&& ln -s ../../Platform/WebotsCharli/Mechanics/Statics.$(SHLIBEXT) Statics.$(SHLIBEXT) \
-	&& ln -s ../../Platform/WebotsCharli/Mechanics/Dynamics.$(SHLIBEXT) Dynamics.$(SHLIBEXT) \
+	cd Platform/WebotsASHLowerbody && make && cd $(CWD)
+	cd Framework/Platform \
+	&& rm -f ./* \
+	&& ln -s ../../Platform/WebotsASHLowerbody/Platform.lua Platform.lua \
+	&& ln -s ../../Platform/WebotsASHLowerbody/Sensor.lua Sensor.lua \
+	&& ln -s ../../Platform/WebotsASHLowerbody/Mechanics/Kinematics.$(SHLIBEXT) Kinematics.$(SHLIBEXT) \
+	&& ln -s ../../Platform/WebotsASHLowerbody/Mechanics/Dynamics.$(SHLIBEXT) Dynamics.$(SHLIBEXT) \
 	&& cd $(CWD)
 	cd Config \
 	&& rm -f Config.lua \
-	&& ln -s Config_WebotsCharli.lua Config.lua \
+	&& ln -s Config_WebotsASHLowerbody.lua Config.lua \
 	&& cd $(CWD)
 	rm -f Webots \
-	&& ln -s Platform/WebotsCharli/Project Webots
+	&& ln -s Platform/WebotsASHLowerbody/Project Webots
 	cd Run \
 	&& rm -f init_robot \
 	&& rm -f comms_manager \
@@ -113,9 +107,8 @@ robotis_arm:
 	cd Platform/RobotisArm && make && cd $(CWD)
 	cd Framework/Platform \
 	&& rm -f ./* \
-	&& ln -s ../../Platform/RobotisArm/Body.lua Body.lua \
+	&& ln -s ../../Platform/RobotisArm/Platform.lua Platform.lua \
 	&& ln -s ../../Platform/RobotisArm/Mechanics/Kinematics.so Kinematics.so \
-	&& ln -s ../../Platform/RobotisArm/Mechanics/Statics.lua Statics.lua \
 	&& ln -s ../../Platform/RobotisArm/Mechanics/Dynamics.lua Dynamics.lua \
 	&& cd $(CWD)
 	cd Config \

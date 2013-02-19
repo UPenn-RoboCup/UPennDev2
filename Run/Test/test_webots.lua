@@ -4,12 +4,12 @@ dofile('../include.lua')
 -- Test Webots Controller
 ----------------------------------------------------------------------
 
-require('Body')
+require('Platform')
 
 print("test_webots: interface to the robot via shared memory...\n");
 
-Body.entry()
+Platform.entry()
 while true do
-  Body.update()
+  Platform.update()
 end
-Body.exit()
+Platform.exit()

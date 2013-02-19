@@ -1,6 +1,7 @@
 include ../../../Makefile.inc
 
-INCLUDES += `pkg-config --cflags eigen3`
+INCLUDES += -I/usr/include/ -I/usr/local/include/eigen3
+INCLUDES += -I../../Lib/KDL
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
@@ -9,15 +10,12 @@ INCLUDES += `pkg-config --cflags eigen3`
 %.o: %.c
 	$(CC)  $(CFLAGS) $(INCLUDES) -o $@ -c $<
 
-all: Kinematics Statics Dynamics
+all: Kinematics Dynamics
 
-Kinematics: luaKinematics.o Mechanics.o
+Kinematics: luaKinematics.o Mechanics.o ../../Lib/KDL/libKDLcustom.a
 	$(LD) $(LDFLAGS) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ $(LIB_DIR) $(LIB_KDL)
 
-Statics: luaStatics.o Mechanics.o
-	$(LD) $(LDFLAGS) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ $(LIB_DIR) $(LIB_KDL)
-
-Dynamics: luaDynamics.o Mechanics.o
+Dynamics: luaDynamics.o Mechanics.o ../../Lib/KDL/libKDLcustom.a
 	$(LD) $(LDFLAGS) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ $(LIB_DIR) $(LIB_KDL)
 	
 clean:

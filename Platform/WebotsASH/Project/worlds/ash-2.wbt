@@ -3134,7 +3134,7 @@ DEF Ash Supervisor {
                 mass 2.21489
                 centerOfMass -0.00901563 -0.0165466 -0.159241
                 inertiaMatrix [
-                  0.0211422, 0.0240679, 0.00875764, 0.00175066, -0.00100743, 0.00209186
+                  0.0211422, 0.0240679, 0.00875764, -0.00175066, -0.00100743, -0.00209186
                 ]
               }
               maxVelocity 1000
@@ -19096,5 +19096,5 @@ DEF Ash Supervisor {
     ]
   }
   controller "webots_controller"
-  controllerArgs "walk_tuner"
+  controllerArgs "keyframe_editor"
 }

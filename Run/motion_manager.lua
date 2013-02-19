@@ -7,7 +7,7 @@ dofile('include.lua')
 require('rpc')
 require('unix')
 require('util')
-require('Body')
+require('Platform')
 require('curses')
 require('Config')
 require('Motion')
@@ -20,12 +20,12 @@ local function draw_screen()
   curses.printw('                              Motion Manager\n')
   curses.printw('///////////////////////////////////////')
   curses.printw('///////////////////////////////////////\n')
-  curses.printw('update rate : %.2f     \n', Body.get_update_rate())
+  curses.printw('update rate : %.2f     \n', Platform.get_update_rate())
   curses.refresh()
 end
 
 -- initialize motion state machines
-Body.entry()
+Platform.entry()
 Proprioception.entry()
 Motion.entry()
 Motion.add_fsm(Locomotion)
@@ -48,7 +48,7 @@ while true do
   motion_rpc_server:update()
 
   -- update controllers
-  Body.update()
+  Platform.update()
   Proprioception.update()
   Motion.update()
 
@@ -68,4 +68,4 @@ end
 curses.endwin()
 Motion.exit()
 Proprioception.exit()
-Body.exit()
+Platform.exit()

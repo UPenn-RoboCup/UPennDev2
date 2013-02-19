@@ -6,7 +6,7 @@ dofile('include.lua')
 
 require('unix')
 require('util')
-require('Body')
+require('Platform')
 require('walk')
 require('curses')
 require('Config')
@@ -16,13 +16,13 @@ require('Locomotion')
 require 'rcm'
 require 'WebotsLaser'
 
-Body.entry()
+Platform.entry()
 Motion.add_fsm(Locomotion)
 Locomotion:add_event('walk')
 
 function draw_screen()
   curses.clear()
-  curses.printw('fps : %.2f     \n', Body.get_update_rate())
+  curses.printw('fps : %.2f     \n', Platform.get_update_rate())
   curses.printw('===================================\n')
   curses.printw('             SLAMMER\n')
   curses.printw('===================================\n')
@@ -42,7 +42,7 @@ end
 
 function update_display()
   curses.move(0, 0)
-  curses.printw('fps : %.2f     \n', Body.get_update_rate())
+  curses.printw('fps : %.2f     \n', Platform.get_update_rate())
   curses.move(15, 0)
   curses.printw('velocity : %7.4f %7.4f %7.4f', unpack(walk:get_velocity()))
   curses.move(16, 0)
@@ -61,14 +61,14 @@ local count = 0
 
 while true do
 
-  Body.update()
+  Platform.update()
   Motion.update()
 	
 	-- Update the laser scanner
 	local lidar_scan = WebotsLaser.get_scan()
 	-- Set the Range Comm Manager values
 	rcm:set_ranges( carray.pointer(lidar_scan) );
-	rcm:set_timestamp( Body.get_time() )
+	rcm:set_timestamp( Platform.get_time() )
 
   -- handle keystrokes
   local key = curses.getch()
@@ -104,4 +104,4 @@ end
 
 curses.endwin()
 Motion.exit()
-Body.exit()
+Platform.exit()

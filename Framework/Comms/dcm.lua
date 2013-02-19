@@ -35,9 +35,6 @@ local devices = {
   force_torque = {
     'force_torque',
   },
-  tactile_array = {
-    'tactile_array',
-  },
   ahrs = {
     'ahrs',
   },

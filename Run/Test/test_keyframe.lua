@@ -1,7 +1,7 @@
 dofile('../include.lua')
 
 require('dcm')
-require('Body')
+require('Platform')
 require('unix')
 require('getch')
 require('Config')
@@ -27,7 +27,7 @@ keyframe:load_keyframe_table(keyframe_table)
 -- Play keyframe motion
 -----------------------------------------------------
 
-Body.entry()
+Platform.entry()
 keyframe:entry()
 
 if keyframe:play(motion) then
@@ -37,16 +37,16 @@ else
   os.exit()
 end
 
-local t0 = Body.get_time() 
+local t0 = Platform.get_time()
 while (keyframe:update() ~= 'done') and (not getch.nonblock()) do
-  Body.update()
-  t_joints[#t_joints+1] = Body.get_time() - t0
+  Platform.update()
+  t_joints[#t_joints+1] = Platform.get_time() - t0
   q_joints[#q_joints+1] = dcm:get_joint_position()
   unix.usleep(5000)
 end
 
 keyframe:exit()
-Body.exit()
+Platform.exit()
 
 -- Plot the joint trajectories
 -----------------------------------------------------

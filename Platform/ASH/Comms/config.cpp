@@ -71,11 +71,6 @@ Config::Config()
   force_torque_bias.resize(N_FORCE_TORQUE, 0);
   lua_pop(L, 1);
 
-  lua_getfield(L, -1, "tactile_array_bias");
-  tactile_array_bias = lua_getvector(L, -1);
-  tactile_array_bias.resize(N_TACTILE_ARRAY, 0);
-  lua_pop(L, 1);
-
   lua_close(L);
 }
 

@@ -12,11 +12,19 @@ local joint = Config.joint
 local state_machines = {} -- MotionFSM's
 
 function Motion.add_fsm(sm)
-  state_machines[#state_machines+1] = sm
-  sm:entry()
+  if (type(sm) == 'string') then
+    sm = loadstring('return '..sm)()
+  end
+  if (type(sm) == 'table') then
+    state_machines[#state_machines+1] = sm
+    sm:entry()
+  end
 end
 
 function Motion.remove_fsm(sm)
+  if (type(sm) == 'string') then
+    sm = loadstring('return '..sm)()
+  end
   for i,smi in ipairs(state_machines) do
     if (smi == sm) then
       table.remove(state_machines, i)

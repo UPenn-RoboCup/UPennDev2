@@ -39,4 +39,4 @@ end
 function fk_sensor.exit()
 end
 
-return reference_sensor
+return fk_sensor

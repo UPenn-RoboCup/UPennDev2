@@ -50,9 +50,16 @@ static int lua_q_show(lua_State *L) {
   return 1;
 }
 
+static int lua_q_udata(lua_State *L) {
+  QVector<QRgb> const arg1 = *static_cast<QVector<QRgb>*>(lqtL_toudata(L, 1, "QVector<QRgb>*"));
+//  self->QImage::setColorTable(arg1);
+  return 1;
+}
+
 static const struct luaL_reg Q_lib [] = {
   {"init", lua_q_init},
   {"show", lua_q_show},
+  {"udata", lua_q_udata},
   {NULL, NULL}
 };
 

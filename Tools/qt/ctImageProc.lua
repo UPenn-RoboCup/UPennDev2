@@ -28,6 +28,28 @@ loadImageffi = function(filename)
 
 end
 
+loadIndexImg = function(filename)
+  local imgload = ffi.new('uint8_t[?]', 640 * 480)
+  for i = 0, 640 * 480 - 1 do
+    imgload[i] = math.random(4) * 2
+  end
+  local indexImg = QImage(imgload, 640, 480, 640, QImage.Format.Format_Indexed8)
+  local rgb = _G['QVector<QRgb>'].new(4)
+  rgb[1] = QColor(0,255,0):rgb()
+  rgb[2] = QColor(0,0,255):rgb()
+  rgb[3] = QColor(255,0,0):rgb()
+  rgb[4] = QColor(0,255,255):rgb()
+  indexImg:setColorTable(rgb)
+  window.widget.pimage:convertFromImage(indexImg, Qt.AutoColor)
+  if window.widget.pimage:height() ~= defaultH or 
+    window.widget.pimage:width() ~= defaultW then
+    print('scale image')
+    window.widget.pimage = window.widget.pimage:scaled(defaultW, defaultH, 
+                              Qt.KeepAspectRatio, Qt.FastTransformation)
+  end
+
+end
+
 -- load img with QPixmap constructor
 loadImage = function(filename)
   window.widget.pimage:load(filename, 'PNG', Qt.AutoColor)
@@ -43,13 +65,5 @@ rgbselect = function(data, w, h, ptx, pty, threshold)
   dd = rgb.select(data, w, h, ptx, pty, threshold)
   df = ffi.cast('uint8_t*', dd)
   count = 0
-  for x = 0, h - 1 do
-    for y = 0, w - 1 do
-     if df[x * w + y] ~= 0 then
-       print(df[x * w + y], x, y)
-       count = count + 1
-     end
-    end
-  end
   print('dddddd', count)
 end

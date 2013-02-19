@@ -4,13 +4,13 @@ require('pi2')
 require('rpc')
 require('mcm')
 require('pcm')
-require('stepRMP')
+require('step_rmp')
 require('Proprioception')
 require('Platform')
 require('unix')
 
 --------------------------------------------------------------------------------
--- Evaluate stepRMP
+-- Evaluate step_rmp
 --------------------------------------------------------------------------------
 
 local context = zmq.init()
@@ -23,8 +23,8 @@ RESET_SIMULATOR = false
 
 local velocity = {0, 0, 0}
 local dimensions = {1, 2}  -- active learning dimensions
-local parameter_load_file = '../../../Data/parameters_stepRMP_WebotsASH_train0.lua'
-local parameter_save_file = '../../../Data/parameters_stepRMP_WebotsASH_eval0.lua'
+local parameter_load_file = '../../../Data/parameters_step_rmp_WebotsASH_train0.lua'
+local parameter_save_file = '../../../Data/parameters_step_rmp_WebotsASH_eval0.lua'
 
 local function compute_cost_to_go(step_costs, terminal_cost)
    local cost = terminal_cost

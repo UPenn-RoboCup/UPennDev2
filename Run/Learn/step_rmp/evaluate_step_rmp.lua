@@ -13,6 +13,9 @@ require('unix')
 -- Evaluate stepRMP
 --------------------------------------------------------------------------------
 
+local context = zmq.init()
+local rpc_endpoint = 'tcp://lo:12012'
+
 RESET_SIMULATOR = false
 
 -- initialize parameters
@@ -126,7 +129,7 @@ end
 -- start rpc server
 --------------------------------------------------------------------------------
 
-local pi2_server = rpc.server.new('PI2_EVALUATION')
+local pi2_server = rpc.server.new(rpc_endpoint, context)
 pi2_server:set_timeout(nil)
 
 function ping()

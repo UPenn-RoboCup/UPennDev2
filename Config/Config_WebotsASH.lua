@@ -17,7 +17,7 @@ loadconfig('Config_WebotsASH_Walk')
 platform = {}
 platform.name = 'WebotsASH'
 platform.keyframe_table = 'keyframe_table_ASH'
-platform.walk = 'walkOSC'
+platform.walk = 'walk_osc'
 
 walk = getfenv()[platform.walk] or {}
 walk.parameters = walk.parameters or {}

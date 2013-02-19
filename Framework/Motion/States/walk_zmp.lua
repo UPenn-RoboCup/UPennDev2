@@ -414,11 +414,9 @@ function walk:get_velocity()
 end
 
 function walk:exit()
-  self.running = false;
 end
 
 function walk:entry()
-  self.running = true;
   tInit = Platform.get_time();
 
   uLeft = pose_global(vector.new({-supportX, footY, 0}),uTorso);

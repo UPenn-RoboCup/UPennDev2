@@ -173,7 +173,6 @@ function walk:get_velocity()
 end
 
 function walk:entry()
-  self.running = true
   active = false
   update_parameters()
   t0 = Platform.get_time()
@@ -323,7 +322,6 @@ function walk:update()
 end
 
 function walk:exit()
-  self.running = false
 end
 
 return walk

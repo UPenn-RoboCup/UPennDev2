@@ -5,7 +5,7 @@ require('vector')
 require('util')
 require('dcm')
 
-Platform = {}
+VRepCommsManager = {}
 
 local function limit(x, min, max)
   return math.min(math.max(x, min), max)
@@ -112,26 +112,26 @@ end
 -- User interface
 ---------------------------------------------------------------------------
 
-Platform.get_time = simGetSimulationTime
+VRepCommsManager.get_time = simGetSimulationTime
 
-function Platform.set_time_step(t)
+function VRepCommsManager.set_time_step(t)
   -- for compatibility
 end
 
-function Platform.get_time_step()
+function VRepCommsManager.get_time_step()
   return time_step_ms/1000
 end
 
-function Platform.get_update_rate()
+function VRepCommsManager.get_update_rate()
   return 1000/time_step_ms
 end
 
-function Platform.reset_simulator()
+function VRepCommsManager.reset_simulator()
   simStopSimulation()
   simStartSimulation()
 end
 
-function Platform.reset_simulator_physics()
+function VRepCommsManager.reset_simulator_physics()
   simResetDynamicObject(handles.robot)
 end
 
@@ -142,10 +142,10 @@ function Platform.set_simulator_torso_frame(frame)
   simSetObjectOrientation(handles.robot, -1, {pose[4], pose[5], pose[6]})
 end
 
-function Platform.set_simulator_torso_twist(twist)
+function VRepCommsManager.set_simulator_torso_twist(twist)
 end
 
-function Platform.entry()
+function VRepCommsManager.entry()
   -- initialize vrep devices
   initialize_devices()
   time_step_ms = simGetSimulationTimeStep()
@@ -162,15 +162,15 @@ function Platform.entry()
   dcm:set_joint_velocity_sensor(0, 'all')
 
   -- initialize sensor shared memory
-  Platform.update()
+  VRepCommsManager.update()
 end
 
-function Platform.update()
+function VRepCommsManager.update()
   update_actuators()
   update_sensors()
 end
 
-function Platform.exit()
+function VRepCommsManager.exit()
 end
 
-return Platform
+return VRepCommsManager

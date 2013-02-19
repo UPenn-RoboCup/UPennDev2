@@ -9,5 +9,8 @@ if simGetScriptExecutionCount() == 0 then
   
   dofile(prefix..'/Run/include.lua')
   
-  require('Platform')
+  require('VRepCommsManager')
+  VRepCommsManager.entry()
 end
+
+VRepCommsManager.update()

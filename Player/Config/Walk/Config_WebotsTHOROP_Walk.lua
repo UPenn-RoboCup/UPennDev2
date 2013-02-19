@@ -1,5 +1,36 @@
 module(..., package.seeall); require('vector')
 require 'unix'
+
+----------------------------------------------------
+-- Kneeling parameters
+----------------------------------------------------
+kneel = {};
+kneel.bodyHeight = 0.50;
+kneel.bodyTilt = 90*math.pi/180;
+--kneel.armX = 0.294;
+kneel.armX = 0.35;
+kneel.armY = 0.296;
+kneel.armZ = 0.078;
+kneel.LArmRPY = {-math.pi/2,0,0};
+kneel.RArmRPY = {math.pi/2,0,0};
+kneel.footX = -0.395;
+kneel.footY = 0.210;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 -- Walk Parameters
 
 walk = {};

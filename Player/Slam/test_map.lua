@@ -23,7 +23,7 @@ require 'processL0'
 
 -- Default values
 local MAPS = {}
-MAPS.res        = .2;
+MAPS.res        = .1;
 MAPS.invRes     = 1/MAPS.res;
 MAPS.windowSize = 10; -- meters to see 
 MAPS.edgeProx   = 2;
@@ -65,7 +65,6 @@ LIDAR0 = {}
 LIDAR0.resd    = 0.25;
 LIDAR0.res     = LIDAR0.resd/180*math.pi;
 LIDAR0.nRays   = 1081;
---LIDAR0.angles  = ((0:LIDAR0.resd:(LIDAR0.nRays-1)*LIDAR0.resd)-135)*pi/180;
 LIDAR0.angles  = torch.range(0,(LIDAR0.nRays-1)*LIDAR0.resd,LIDAR0.resd)
 LIDAR0.angles = (LIDAR0.angles - 135) * math.pi/180
 LIDAR0.cosines = torch.cos(LIDAR0.angles);
@@ -80,24 +79,24 @@ LIDAR0.mask    = torch.Tensor(LIDAR0.angles:size()):fill(1);
 --LIDAR0.mask(end-189:end) = 0;
 LIDAR0.present = 1;
 LIDAR0.startTime = 0;
-
---LIDAR0.ranges = torch.Tensor(1081):fill(2);
---LIDAR0.ranges = torch.rand(LIDAR0.nRays):mul(3);
 LIDAR0.ranges = torch.rand(LIDAR0.nRays):mul(.5)+3;
---LIDAR0.ranges = torch.range(1,20,19/LIDAR0.nRays);
 
 IMU = {}
 IMU.roll = 0;
-IMU.pitch = -10 * math.pi/180; -- Look down a little
+IMU.pitch = 0;-- -10 * math.pi/180; -- Look down a little
 IMU.roll = 0;
 
 --ranges = rcm.get_lidar_ranges();
 --print( carray.get(ranges,1) )
-for i=1,20 do
-processL0( LIDAR0, IMU, OMAP, MAPS )
 require 'map_io'
-init_send()
--- Play it again Sam!
-print('Sending map!')
-send_map(OMAP.data)
+print('Map Size:',MAPS.sizex,MAPS.sizey)
+for i=1,20 do
+  -- Generate random readings...
+  LIDAR0.ranges = torch.rand(LIDAR0.nRays):mul(.5)+3;
+  processL0( LIDAR0, IMU, OMAP, MAPS )
+	if(i==10) then mapShift( OMAP, 10*OMAP.res, 10*OMAP.res ) end
+  init_send()
+  -- Play it again Sam!
+  print('Sending map!')
+  send_map(OMAP.data)
 end

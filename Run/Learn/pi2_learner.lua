@@ -10,6 +10,8 @@ require('serialization')
 --------------------------------------------------------------------------------
 
 local OUTPUT_FILE = arg[1] or 'Results/pi2_results.lua'
+local rpc_endpoint = 'tcp://localhost:12012'
+local context = zmq.init()
 
 -- initialize PI^2 parameters 
 --------------------------------------------------------------------------------
@@ -25,7 +27,7 @@ local reevaluate_rollouts = false -- reevaluate reused rollouts?
 --------------------------------------------------------------------------------
 print('connecting to RPC server on PI2_EVALUATION channel...')
 
-local pi2_client = rpc.client.new('PI2_EVALUATION')
+local pi2_client = rpc.client.new(rpc_endpoint, context)
 
 pi2_client:set_timeout(0.1)
 while (not pi2_client:connect()) do

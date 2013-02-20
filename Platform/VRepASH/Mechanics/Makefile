@@ -1,6 +1,7 @@
 include ../../../Makefile.inc
 
 INCLUDES += -I/usr/include/ -I/usr/local/include/eigen3
+INCLUDES += -I../../Lib/KDL
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<

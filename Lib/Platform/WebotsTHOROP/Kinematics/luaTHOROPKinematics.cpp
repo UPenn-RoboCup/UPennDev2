@@ -203,6 +203,30 @@ static int inverse_arms(lua_State *L) {
   return 1;
 }
 
+//Added for crawling
+static int inverse_l_wrist(lua_State *L) {
+  std::vector<double> qArm;
+  std::vector<double> pArm = lua_checkvector(L, 1);
+  double shoulderYaw = luaL_optnumber(L, 2,0.0);
+  Transform trArm = transform6D(&pArm[0]);
+  qArm = THOROP_kinematics_inverse_l_wrist(trArm,shoulderYaw);
+  lua_pushvector(L, qArm);
+  return 1;
+}
+
+static int inverse_r_wrist(lua_State *L) {
+  std::vector<double> qArm;
+  std::vector<double> pArm = lua_checkvector(L, 1);
+  double shoulderYaw = luaL_optnumber(L, 2,0.0);
+  Transform trArm = transform6D(&pArm[0]);
+  qArm = THOROP_kinematics_inverse_r_wrist(trArm,shoulderYaw);
+  lua_pushvector(L, qArm);
+  return 1;
+}
+
+
+
+
 static int inverse_l_leg(lua_State *L) {
   std::vector<double> qLeg;
   std::vector<double> pLeg = lua_checkvector(L, 1);
@@ -262,6 +286,8 @@ static const struct luaL_reg kinematics_lib [] = {
   {"inverse_l_arm", inverse_l_arm},
   {"inverse_r_arm", inverse_r_arm},
   {"inverse_arms", inverse_arms},
+  {"inverse_l_wrist", inverse_l_wrist},
+  {"inverse_r_wrist", inverse_r_wrist},
   {"inverse_joints", inverse_joints},
   {NULL, NULL}
 };

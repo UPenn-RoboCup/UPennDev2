@@ -255,6 +255,7 @@ THOROP_kinematics_inverse_arm(Transform trArm, int arm)
     s52 = s51;
     wristYaw2 = -PI-wristYaw1;
   }
+
   c51=cos(wristYaw1);
   c52=cos(wristYaw2);
 
@@ -425,6 +426,133 @@ THOROP_kinematics_inverse_arm(Transform trArm, int arm)
   return qArm;
 }
 
+
+
+
+
+//This function calcaulates IK for THOR-OP 6DOF arm
+//Given the wrist joint position and shoulder yaw angle
+//Main purpose:  quadruped locomotion
+
+  std::vector<double>
+THOROP_kinematics_inverse_wrist(Transform trArm, 
+	double shoulderYaw, int arm)
+{
+  //Closed-form inverse kinematics for THOR-OP 6DOF arm
+  Transform t;
+
+  //Getting rid of shoulder offsets
+  if (arm==ARM_LEFT){
+    t=t.translateZ(-shoulderOffsetZ)
+	.translateY(-shoulderOffsetY)
+	*trArm;
+  }else{
+
+    t=t.translateZ(-shoulderOffsetZ)
+	.translateY(shoulderOffsetY)
+	*trArm;
+  }
+
+  double wPos[3]; 
+  wPos[0]=t(0,3);
+  wPos[1]=t(1,3);
+  wPos[2]=t(2,3);
+
+//---------------------------------------------------------------------------
+// Calculating elbow pitch from shoulder-wrist distance
+
+  double xWrist[3];
+  for (int i = 0; i < 3; i++) xWrist[i]=0;
+  t.apply(xWrist);
+
+  double dWrist = xWrist[0]*xWrist[0]+xWrist[1]*xWrist[1]+xWrist[2]*xWrist[2];
+  double cElbow = .5*(dWrist-dUpperArm*dUpperArm-dLowerArm*dLowerArm)/(dUpperArm*dLowerArm);
+  if (cElbow > 1) cElbow = 1;
+  if (cElbow < -1) cElbow = -1;
+// SJ: Robot can have TWO elbow pitch values (near elbowPitch==0)
+// We are only using the smaller one (arm more bent) 
+  double elbowPitch = -acos(cElbow)-aUpperArm-aLowerArm;
+
+  //m: transform from shoulder yaw to wrist 
+  Transform m;
+  m=m.rotateX(shoulderYaw)
+     .translateX(upperArmLength)
+     .translateZ(elbowOffsetX)
+     .rotateY(elbowPitch)
+     .translateZ(-elbowOffsetX)
+     .translateX(lowerArmLength);
+
+  double a,b,c;
+
+  //Ry(shoulderPitch) * Rz(ShoulderRoll) * m * (0 0 0 1)^T= Target Position
+  
+  //s1x + c1z = m3
+  //or (z^2+x^2) s1^2 + (2m3z) s1 + (m3^2-x^2) = 0
+  double s11=0.0, s12=0.0, shoulderPitch=0.0;
+
+  a = wPos[2]*wPos[2] + wPos[0]*wPos[0];
+  b = -m(2,3)*wPos[0];
+  c = m(2,3)*m(2,3) - wPos[2]*wPos[2];
+
+  if ((b*b-a*c<0)|| a==0 ) {//NaN handling
+    shoulderPitch = 0.0;
+  }else{
+    double s11= (-b+sqrt(b*b-a*c))/a;
+    double s12= (-b-sqrt(b*b-a*c))/a;
+    if (s11<-1) s11=1; 
+    if (s11>1) s11=1;
+    if (s12<-1) s12=1; 
+    if (s12>1) s12=1;
+    double c11 = sqrt(1-s11*s11); //pitch is between -pi/2 and pi/2
+    double c12 = sqrt(1-s12*s12);
+    double error1 = fabs(s11* wPos[0] + c11*wPos[2]- m(2,3));
+    double error2 = fabs(s12* wPos[0] + c12*wPos[2]- m(2,3));
+    if (error1<error2) shoulderPitch = asin(s11);
+    else shoulderPitch = asin(s12);
+  }
+
+  double c21=0.0, c22=0.0, shoulderRoll=0.0;
+  // m2 = k* s2 + y* c2 , k = s1 z -  c1 x
+  // or (y^2 + k^2) s2^2 - 2 m2 k s2 + m2^2-y^2 = 0
+
+  double k = sin(shoulderPitch)*wPos[2] - cos(shoulderPitch)*wPos[0];
+  a = wPos[1]*wPos[1] + k*k;
+  b = - m(1,3)*k;
+  c = m(1,3)*m(1,3) - wPos[1]*wPos[1]; 
+
+  if ((b*b-a*c<0)|| a==0 ) {//NaN handling
+    shoulderRoll = 0.0;
+  }else{
+    double s21,s22,c21,c22;
+    s21= (-b+sqrt(b*b-a*c))/a;
+    s22= (-b-sqrt(b*b-a*c))/a;
+    if (s21<-1) s21=1; 
+    if (s21>1) s21=1;
+    if (s22<-1) s22=1; 
+    if (s22>1) s22=1;
+    c21 = sqrt(1-c21*c21);
+    c22 = sqrt(1-c22*c22);
+    double error1 = fabs(c21* wPos[1] + s21*k- m(1,3));
+    double error2 = fabs(c22* wPos[1] + s22*k- m(1,3));
+    if (error1<error2)	shoulderRoll = asin(s21);
+    else	shoulderRoll = asin(s22);
+  }
+
+  std::vector<double> qArm(6);
+  qArm[0] = shoulderPitch;
+  qArm[1] = shoulderRoll;
+  qArm[2] = shoulderYaw;
+  qArm[3] = elbowPitch;
+  qArm[4] = 0;
+  qArm[5] = 0;
+
+  return qArm;
+}
+
+
+
+
+
   std::vector<double>
 THOROP_kinematics_inverse_l_arm(Transform trArm)
 {
@@ -436,6 +564,20 @@ THOROP_kinematics_inverse_r_arm(Transform trArm)
 {
   return THOROP_kinematics_inverse_arm(trArm, ARM_RIGHT);
 }
+
+  std::vector<double>
+THOROP_kinematics_inverse_l_wrist(Transform trArm, double shoulderYaw)
+{
+  return THOROP_kinematics_inverse_wrist(trArm, shoulderYaw,ARM_LEFT);
+}
+
+  std::vector<double>
+THOROP_kinematics_inverse_r_wrist(Transform trArm, double shoulderYaw)
+{
+  return THOROP_kinematics_inverse_wrist(trArm, shoulderYaw, ARM_RIGHT);
+}
+
+
 
   std::vector<double>
 THOROP_kinematics_inverse_leg(Transform trLeg, int leg)

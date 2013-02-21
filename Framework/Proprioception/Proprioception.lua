@@ -1,5 +1,6 @@
 require('reference_sensor')
 require('contact_sensor')
+require('cog_sensor')
 require('cop_sensor')
 require('fk_sensor')
 
@@ -14,6 +15,7 @@ function Proprioception.entry()
   fk_sensor.entry()
   contact_sensor.entry()
   cop_sensor.entry()
+  cog_sensor.entry()
 end
 
 function Proprioception.update()
@@ -21,6 +23,7 @@ function Proprioception.update()
   fk_sensor.update()
   contact_sensor.update()
   cop_sensor.update()
+  cog_sensor.update()
 end
 
 function Proprioception.exit()
@@ -28,6 +31,7 @@ function Proprioception.exit()
   fk_sensor.exit()
   contact_sensor.exit()
   cop_sensor.exit()
+  cog_sensor.exit()
 end
 
 return Proprioception

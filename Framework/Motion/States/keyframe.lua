@@ -92,7 +92,6 @@ function keyframe:stop()
 end
 
 function keyframe:entry()
-  self.running = true
   self:set_joint_access(1, 'all')
   steps = {}
   local q0 = dcm:get_joint_position_sensor('all')
@@ -131,7 +130,6 @@ function keyframe:update()
 end
 
 function keyframe:exit()
-  self.running = false
 end
 
 return keyframe

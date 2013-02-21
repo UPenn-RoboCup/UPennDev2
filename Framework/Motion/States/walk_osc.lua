@@ -173,7 +173,6 @@ function walk:get_velocity()
 end
 
 function walk:entry()
-  self.running = true
   active = false
   update_parameters()
   t0 = Platform.get_time()
@@ -236,9 +235,9 @@ function walk:update()
     torso_pos[5] = hip_pitch_offset
 
     -- calculate inverse kinematics and add hip roll swing
-    local p_l_foot = Transform.pose6D(l_foot_pos)
-    local p_r_foot = Transform.pose6D(r_foot_pos)
-    local p_torso = Transform.pose6D(torso_pos)
+    local p_l_foot = Transform.pose(l_foot_pos)
+    local p_r_foot = Transform.pose(r_foot_pos)
+    local p_torso = Transform.pose(torso_pos)
     local q = Kinematics.inverse_pos_legs(p_l_foot, p_r_foot, p_torso)
 
     -- add gyro feedback
@@ -286,9 +285,9 @@ function walk:update()
     local l_foot_pos = {x_offset, y_offset, z_offset, 0, 0, a_offset}
     local r_foot_pos = {x_offset,-y_offset, z_offset, 0, 0, -a_offset}
     local torso_pos = {0, 0, 0, 0, hip_pitch_offset, 0}
-    local p_l_foot = Transform.pose6D(l_foot_pos)
-    local p_r_foot = Transform.pose6D(r_foot_pos)
-    local p_torso = Transform.pose6D(torso_pos)
+    local p_l_foot = Transform.pose(l_foot_pos)
+    local p_r_foot = Transform.pose(r_foot_pos)
+    local p_torso = Transform.pose(torso_pos)
     local qstance = Kinematics.inverse_pos_legs(p_l_foot, p_r_foot, p_torso)
 
     -- caclutate joint configuration
@@ -323,7 +322,6 @@ function walk:update()
 end
 
 function walk:exit()
-  self.running = false
 end
 
 return walk

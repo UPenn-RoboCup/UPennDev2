@@ -130,10 +130,18 @@ namespace KDL
 
     RigidBodyInertia PluckerMatrix::toRigidBodyInertia() const
     {
+	Vector3d c;
+	Matrix3d Ic;
         double m = X(5, 5);
-        Matrix3d mC = X.topRightCorner(3, 3); 
-        Vector3d c = unskew(mC)/m;
-        Matrix3d Ic = X.topLeftCorner(3, 3) - mC*mC.transpose()/m;
+        if (m == 0) {
+	    c = Vector3d::Zero();
+	    Ic = Matrix3d::Zero();
+        }
+        else {
+	    Matrix3d mC = X.topRightCorner(3, 3); 
+	    c = unskew(mC)/m;
+	    Ic = X.topLeftCorner(3, 3) - mC*mC.transpose()/m;
+        }
         Vector cog;
         RotationalInertia I;
         Vector3dtoArray(c, cog.data);

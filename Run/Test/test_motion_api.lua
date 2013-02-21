@@ -1,17 +1,20 @@
 dofile('../include.lua')
 
 require('rpc')
+require('zmq')
 require('unix')
 
-function test_walk_api()
-  print('        Test walk api')
-  print('*******************************')
+local rpc_endpoint = 'tcp://localhost:12000'
+local context = zmq.init()
+local mm = rpc.client.new(rpc_endpoint, context)
 
+function test_walk_api()
   -- enable walk controller
-  print('start walking')
+  print('Set locomotion state to walk...')
   assert(mm:call('Locomotion:set_state', 'walk'))
 
   -- start walking
+  print('Start walking...')
   assert(mm:call('walk:start'))
 
   -- block until robot is walking
@@ -53,9 +56,15 @@ function test_walk_api()
   assert(mm:call('walk:stop'))
 end
 
--- create an rpc client to communicate with the motion manager
-mm = rpc.client.new('MOTION')
-mm:connect()
+print('        Test walk api')
+print('*******************************')
+print('Connect to motion manager...')
 
--- test walk api 
+-- connect to motion manager and test api
+assert(mm:connect(1))
+mm:set_timeout(0.1)
 test_walk_api()
+
+-- cleanup
+mm:close()
+context:term()

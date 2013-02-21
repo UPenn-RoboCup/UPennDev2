@@ -74,8 +74,8 @@ step.parameters = {
 local sole_dimensions            = Config.mechanics.l_foot.sole_dimensions
 local l_foot_sole_transform      = Config.mechanics.l_foot.sole_transform
 local r_foot_sole_transform      = Config.mechanics.r_foot.sole_transform
-local l_foot_sole_offset         = l_foot_sole_transform:get_pose6D()
-local r_foot_sole_offset         = r_foot_sole_transform:get_pose6D()
+local l_foot_sole_offset         = l_foot_sole_transform:get_pose()
+local r_foot_sole_offset         = r_foot_sole_transform:get_pose()
 
 -- define step variables
 local active                     = false
@@ -478,14 +478,14 @@ end
 
 function step:get_configuration()
   -- get current joint positions for both legs
-    local torso_frame = Transform.pose6D(torso_state[1])
+    local torso_frame = Transform.pose(torso_state[1])
     local l_foot_frame, r_foot_frame
     if (support_foot == 'r') then
-      r_foot_frame = Transform.pose6D({0, 0, 0})
-      l_foot_frame = Transform.pose6D(swing_foot_state[1])
+      r_foot_frame = Transform.pose({0, 0, 0})
+      l_foot_frame = Transform.pose(swing_foot_state[1])
     else
-      l_foot_frame = Transform.pose6D({0, 0, 0})
-      r_foot_frame = Transform.pose6D(swing_foot_state[1])
+      l_foot_frame = Transform.pose({0, 0, 0})
+      r_foot_frame = Transform.pose(swing_foot_state[1])
     end
     return Kinematics.inverse_pos_legs(l_foot_frame, r_foot_frame, torso_frame)
 end
@@ -558,14 +558,14 @@ function step:initialize_simulator_state(duration)
     for i = 1, 3 do
       torso_position[i] = torso_mjt[i](t)
     end
-    local torso_frame = Transform.pose6D(torso_position)
+    local torso_frame = Transform.pose(torso_position)
     local l_foot_frame, r_foot_frame
     if (support_foot == 'r') then
-      r_foot_frame = Transform.pose6D({0, 0, 0})
-      l_foot_frame = Transform.pose6D(swing_foot_state[1])
+      r_foot_frame = Transform.pose({0, 0, 0})
+      l_foot_frame = Transform.pose(swing_foot_state[1])
     else
-      l_foot_frame = Transform.pose6D({0, 0, 0})
-      r_foot_frame = Transform.pose6D(swing_foot_state[1])
+      l_foot_frame = Transform.pose({0, 0, 0})
+      r_foot_frame = Transform.pose(swing_foot_state[1])
     end
     local q = Kinematics.inverse_pos_legs(l_foot_frame, r_foot_frame, torso_frame)
     dcm:set_joint_position(q, 'legs')

@@ -1,85 +1,97 @@
-module(..., package.seeall);
+----------------------------------------------------------------------
+-- vector
+----------------------------------------------------------------------
 
-local mt = {};
+vector = {}
+vector.__index = vector
+vector.__mtstring = 'vector'
 
-function new(t)
+function vector.new(t)
   t = t or {};
-  return setmetatable(t, mt);
+  return setmetatable(t, vector);
 end
 
-function ones(n)
+function vector.ones(n)
   n = n or 1;
-  local t = {};
+  local v = {};
   for i = 1, n do
-    t[i] = 1;
+    v[i] = 1;
   end
-  return setmetatable(t, mt);
+  return setmetatable(v, vector);
 end
 
-function zeros(n)
+function vector.zeros(n)
   n = n or 1;
-  local t = {};
+  local v = {};
   for i = 1, n do
-    t[i] = 0;
+    v[i] = 0;
   end
-  return setmetatable(t, mt);
+  return setmetatable(v, vector);
 end
 
-function copy(t1)
-  if not t1 then return nil end
-  local t = {};
-  for i = 1,#t1 do
-    t[i] = t1[i];
+function vector.copy(v1)
+  if not v1 then return nil end
+  local v = {};
+  for i = 1,#v1 do
+    v[i] = v1[i];
   end
-  return setmetatable(t, mt);
+  return setmetatable(v, vector);
 end
 
-function slice(v1, istart, iend)
+function vector.slice(v1, istart, iend)
   local v = {};
   iend = iend or #v1;
   for i = 1,iend-istart+1 do
     v[i] = v1[istart+i-1];
   end
-  return setmetatable(v, mt);
+  return setmetatable(v, vector);
 end
 
-function add(v1, v2)
-  local v = {};
+function vector.norm(v1)
+  local s = 0;
   for i = 1, #v1 do
-    v[i] = v1[i] + v2[i];
+    s = s + v1[i] * v1[i];
   end
-  return setmetatable(v, mt);
+  return math.sqrt(s);
 end
 
-function sub(v1, v2)
-  local v = {};
-  for i = 1, #v1 do
-    v[i] = v1[i] - v2[i];
-  end
-  return setmetatable(v, mt);
-end
-
-function mulnum(v1, a)
+function vector.mulnum(v1, a)
   local v = {};
   for i = 1, #v1 do
     v[i] = a * v1[i];
   end
-  return setmetatable(v, mt);
+  return setmetatable(v, vector);
 end
 
-function divnum(v1, a)
+function vector.divnum(v1, a)
   local v = {};
   for i = 1, #v1 do
     v[i] = v1[i]/a;
   end
-  return setmetatable(v, mt);
+  return setmetatable(v, vector);
 end
 
-function mul(v1, v2)
+function vector.__add(v1, v2)
+  local v = {};
+  for i = 1, #v1 do
+    v[i] = v1[i] + v2[i];
+  end
+  return setmetatable(v, vector);
+end
+
+function vector.__sub(v1, v2)
+  local v = {};
+  for i = 1, #v1 do
+    v[i] = v1[i] - v2[i];
+  end
+  return setmetatable(v, vector);
+end
+
+function vector.__mul(v1, v2)
   if type(v2) == "number" then
-    return mulnum(v1, v2);
+    return vector.mulnum(v1, v2);
   elseif type(v1) == "number" then
-    return mulnum(v2, v1);
+    return vector.mulnum(v2, v1);
   else
     local s = 0;
     for i = 1, #v1 do
@@ -89,27 +101,19 @@ function mul(v1, v2)
   end
 end
 
-function unm(v1)
-  return mulnum(v1, -1);
-end
-
-function div(v1, v2)
+function vector.__div(v1, v2)
   if type(v2) == "number" then
-    return divnum(v1, v2);
+    return vector.divnum(v1, v2);
   else
     return nil;
   end
 end
 
-function norm(v1)
-  local s = 0;
-  for i = 1, #v1 do
-    s = s + v1[i] * v1[i];
-  end
-  return math.sqrt(s);
+function vector.__unm(v1)
+  return vector.mulnum(v1, -1);
 end
 
-function tostring(v1, formatstr)
+function vector.__tostring(v1, formatstr)
   formatstr = formatstr or "%g";
   local str = "{"..string.format(formatstr, v1[1]);
   for i = 2, #v1 do
@@ -119,10 +123,4 @@ function tostring(v1, formatstr)
   return str;
 end
 
-mt.__add = add;
-mt.__sub = sub;
-mt.__mul = mul;
-mt.__div = div;
-mt.__unm = unm;
-mt.__tostring = tostring;
-
+return vector

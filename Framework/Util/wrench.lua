@@ -10,7 +10,7 @@ wrench.__mtstring = 'wrench'
 
 function wrench.new(w)
   w = w or {}
-  for i = #w,6 do
+  for i = #w + 1,6 do
     w[i] = 0
   end
   return setmetatable(w, wrench)

@@ -10,7 +10,7 @@ twist.__mtstring = 'twist'
 
 function twist.new(t)
   t = t or {}
-  for i = #t,6 do
+  for i = #t + 1,6 do
     t[i] = 0
   end
   return setmetatable(t, twist)

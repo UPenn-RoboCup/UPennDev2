@@ -65,6 +65,7 @@ vrep_ash:
 	cd Framework/Platform \
 	&& rm -f ./* \
 	&& ln -s ../../Platform/VRepASH/Platform.lua Platform.lua \
+	&& ln -s ../../Platform/VRepASH/VRepCommsManager.lua VRepCommsManager.lua \
 	&& ln -s ../../Platform/VRepASH/Mechanics/Kinematics.$(SHLIBEXT) Kinematics.$(SHLIBEXT) \
 	&& ln -s ../../Platform/VRepASH/Mechanics/Dynamics.$(SHLIBEXT) Dynamics.$(SHLIBEXT) \
 	&& cd $(CWD)

@@ -12,10 +12,10 @@ INCLUDES += -I../../Lib/KDL
 
 all: Kinematics Dynamics
 
-Kinematics: luaKinematics.o Mechanics.o
+Kinematics: luaKinematics.o Mechanics.o ../../Lib/KDL/libKDLcustom.a
 	$(LD) $(LDFLAGS) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ $(LIB_DIR) $(LIB_KDL)
 
-Dynamics: luaDynamics.o Mechanics.o
+Dynamics: luaDynamics.o Mechanics.o ../../Lib/KDL/libKDLcustom.a
 	$(LD) $(LDFLAGS) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ $(LIB_DIR) $(LIB_KDL)
 	
 clean:

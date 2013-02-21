@@ -1,12 +1,14 @@
 require('vector');
+require('wrench');
+require('twist');
 
 ----------------------------------------------------------------------
--- Transform
+-- Transform : homogeneous transform
 ----------------------------------------------------------------------
 
-Transform = {}
-Transform.__index = Transform
-Transform.__mtstring = 'Transform'
+Transform = {};
+Transform.__index = Transform;
+Transform.__mtstring = 'Transform';
 
 -- Constructors
 --------------------------------------------------------------------------
@@ -90,12 +92,12 @@ function Transform.rotation(r)
   return setmetatable(t, Transform);
 end
 
-function Transform.translation(v)
+function Transform.translation(p)
   local t = {};
-  assert(#v == 3);
-  t[1] = vector.new({1, 0, 0, v[1]});
-  t[2] = vector.new({0, 1, 0, v[2]});
-  t[3] = vector.new({0, 0, 1, v[3]});
+  assert(#p == 3);
+  t[1] = vector.new({1, 0, 0, p[1]});
+  t[2] = vector.new({0, 1, 0, p[2]});
+  t[3] = vector.new({0, 0, 1, p[3]});
   t[4] = vector.new({0, 0, 0, 1});
   return setmetatable(t, Transform);
 end
@@ -182,11 +184,11 @@ function Transform.get_rotation(t)
 end
 
 function Transform.get_translation(t)
-  local v = {}; 
-  v[1] = t[1][4];
-  v[2] = t[2][4];
-  v[3] = t[3][4];
-  return vector.new(v);
+  local p = {}; 
+  p[1] = t[1][4];
+  p[2] = t[2][4];
+  p[3] = t[3][4];
+  return vector.new(p);
 end
 
 function Transform.get_pose(t)
@@ -231,16 +233,20 @@ function Transform.__tostring(t)
 end
 
 function Transform.__mul(t1, t2)
-  local t = {};
-  if (type(t2[1]) == "number") then
+  if (getmetatable(t2) == vector) then
+    local v = {};
     for i = 1,4 do
-      t[i] = t1[i][1] * t2[1]
+      v[i] = t1[i][1] * t2[1]
               + t1[i][2] * t2[2]
               + t1[i][3] * t2[3]
-              + t1[i][4] * t2[4];
+              + t1[i][4] *(t2[4] or 1);
     end
-    return vector.new(t);
-  elseif (type(t2[1] == "table")) then
+    for i = 1,4 do
+      v[i] = v[i]/v[4];
+    end
+    return setmetatable(v, vector);
+  elseif (getmetatable(t2) == Transform) then
+    local t = {};
     for i = 1,4 do
       t[i] = {};
       for j = 1,4 do
@@ -251,7 +257,23 @@ function Transform.__mul(t1, t2)
       end
     end
     return setmetatable(t, Transform);
+  elseif (getmetatable(t2) == wrench) then
+    local M = Transform.rotation(t1:get_rotation());
+    local p = t1:get_translation();
+    local w = wrench.new();
+    w:set_force(M*t2:get_force());
+    w:set_torque(M*t2:get_torque());
+    return w:translate(-p);
+  elseif (getmetatable(t2) == twist) then
+    local M = Transform.rotation(t1:get_rotation());
+    local p = t1:get_translation();
+    local t = twist.new();
+    t:set_lin(M*t2:get_lin());
+    t:set_rot(M*t2:get_rot());
+    return t:translate(-p);
+  else
+    error('attempt to multiply Transform by incompatible type');
   end
 end
 
-return Transform
+return Transform;

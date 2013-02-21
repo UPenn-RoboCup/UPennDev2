@@ -210,7 +210,7 @@ function Platform.reset_simulator_physics()
 end
 
 function Platform.set_simulator_torso_frame(frame)
-  local pose = frame:get_pose6D()
+  local pose = frame:get_pose()
   webots.wb_supervisor_field_set_sf_vec3f(tags.robot_translation,
     {pose[1], pose[2], pose[3]})
   webots.wb_supervisor_field_set_sf_rotation(tags.robot_rotation, 

@@ -136,7 +136,7 @@ function Platform.reset_simulator_physics()
 end
 
 function Platform.set_simulator_torso_frame(frame)
-  local pose = frame:get_pose6D()
+  local pose = frame:get_pose()
   -- -1 means set absolute position/orientation
   simSetObjectPosition(handles.robot, -1, {pose[1], pose[2], pose[3]})
   simSetObjectOrientation(handles.robot, -1, {pose[4], pose[5], pose[6]})

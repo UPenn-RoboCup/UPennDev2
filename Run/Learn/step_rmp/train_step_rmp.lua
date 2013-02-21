@@ -155,14 +155,14 @@ local v_torso = step:get_torso_state()[2]
 --------------------------------------------------------------------------------
 if (INIT_STANCE) then
   print('initializing stance...')
-  Platform.set_simulator_torso_frame(Transform.pose6D{0, 0, 100})
+  Platform.set_simulator_torso_frame(Transform.pose{0, 0, 100})
 
   while Platform.get_time() < 2 do
     dcm:set_joint_position(q_legs, 'legs')
     Platform.update()
   end
 
-  Platform.set_simulator_torso_frame(Transform.pose6D{0, 0, 0.558})
+  Platform.set_simulator_torso_frame(Transform.pose{0, 0, 0.558})
   while true do
     Platform.update()
   end

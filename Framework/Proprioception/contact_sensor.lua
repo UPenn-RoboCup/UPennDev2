@@ -12,10 +12,10 @@ local l_foot = Config.mechanics.l_foot
 local r_foot = Config.mechanics.r_foot
 local l_hand = Config.mechanics.l_hand
 local r_hand = Config.mechanics.r_hand
-local l_foot_wrench_offset = -l_foot.force_torque_transform:get_pose6D()
-local r_foot_wrench_offset = -r_foot.force_torque_transform:get_pose6D()
-local l_hand_wrench_offset = -l_hand.force_torque_transform:get_pose6D()
-local r_hand_wrench_offset = -r_hand.force_torque_transform:get_pose6D()
+local l_foot_wrench_offset = -l_foot.force_torque_transform:get_pose()
+local r_foot_wrench_offset = -r_foot.force_torque_transform:get_pose()
+local l_hand_wrench_offset = -l_hand.force_torque_transform:get_pose()
+local r_hand_wrench_offset = -r_hand.force_torque_transform:get_pose()
 
 local function translate_wrench(w, offset)
   -- compute equivalent wrench at desired offset using sum of moments

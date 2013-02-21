@@ -28,7 +28,7 @@ function reference_sensor.update()
   torso_accel[6] = (torso_twist[6] - pcm:get_torso_twist(6))/dt
 
   -- TODO use AHRS orientation data instead of euler angles
-  local torso_transform = Transform.pose6D(torso_pose)
+  local torso_transform = Transform.pose(torso_pose)
   local torso_orientation = {}
   for i = 1, 3 do
     for j = 1, 3 do

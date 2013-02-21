@@ -11,6 +11,8 @@
 #include <kdl/chaindynparam.hpp>
 #include "treeidfbsolver.hpp"
 #include "treeidfbsolver_recursive_newton_euler.hpp"
+#include "treecogsolver.hpp"
+#include "treecogsolver_recursive.hpp"
 
 using namespace KDL;
 
@@ -156,6 +158,7 @@ typedef struct _Mechanics {
 
   // body
   TreeIdFbSolver *body_id_solver;
+  TreeCoGSolver *body_cog_solver;
 
   _Mechanics();
 } _Mechanics;

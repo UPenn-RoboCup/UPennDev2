@@ -42,8 +42,13 @@ static int lua_inverse(lua_State *L)
   // Get optional position and velocity of torso relative fixed base
   if (lua_istable(L, 4))
     torso_frame = lua_checkFrame(L, 4);
+  else
+    torso_frame = Frame::Identity();
+
   if (lua_istable(L, 5))
     torso_twist = lua_checkTwist(L, 5);
+  else
+    torso_twist = Twist::Zero();
 
   // Get optional contact wrenches at each end-effector
   for (int i = 0; i < n_joints; i++)
@@ -81,8 +86,32 @@ static int lua_inverse(lua_State *L)
 
 static int lua_cog(lua_State *L)
 {
-  // TODO
-  return 0;
+  // Compute center of gravity relative to fixed base
+  int n_joints = Mechanics.body.getNrOfJoints();
+
+  // Get joint positions
+  JntArray q(n_joints);
+  JntArray q_in = lua_checkJntArray(L, 1);
+  luaL_argcheck(L, (q_in.rows() >= n_joints), 1, "dimension error");
+  for (int i = 0; i < n_joints; i++)
+    q(i) = q_in(i);
+
+  // Get torso frame relative to fixed base
+  Frame torso_frame;
+  if (lua_istable(L, 2))
+    torso_frame = lua_checkFrame(L, 2);      
+  else
+    torso_frame = Frame::Identity();
+
+  // Compute center of gravity (CoG)
+  Vector CoG;
+  int status = Mechanics.body_cog_solver->JntToCoG(q, CoG);
+  if (status != 0)
+    luaL_error(L, "CoG solver failed");
+  
+  // Return CoG in fixed base coordinates
+  lua_pushVector(L, torso_frame*CoG);
+  return 1;
 }
 
 static const struct luaL_reg Dynamics_lib [] = {

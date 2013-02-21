@@ -60,9 +60,13 @@ teststand:
 
 vrep_ash:
 	cd Framework/Lib && make && cd $(CWD)
+	cd Platform/Lib/KDL && make && cd $(CWD)
+	cd Platform/VRepASH/Mechanics && make && cd $(CWD)
 	cd Framework/Platform \
 	&& rm -f ./* \
 	&& ln -s ../../Platform/VRepASH/Platform.lua Platform.lua \
+	&& ln -s ../../Platform/VRepASH/Mechanics/Kinematics.$(SHLIBEXT) Kinematics.$(SHLIBEXT) \
+	&& ln -s ../../Platform/VRepASH/Mechanics/Dynamics.$(SHLIBEXT) Dynamics.$(SHLIBEXT) \
 	&& cd $(CWD)
 	cd Config \
 	&& rm -f Config.lua \

@@ -296,4 +296,5 @@ _Mechanics::_Mechanics()
 
   // body
   body_id_solver = new TreeIdFbSolver_RNE(body, gravity);
+  body_cog_solver = new TreeCoGSolver_recursive(body);
 };

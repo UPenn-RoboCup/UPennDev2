@@ -135,7 +135,7 @@ function VRepCommsManager.reset_simulator_physics()
   simResetDynamicObject(handles.robot)
 end
 
-function Platform.set_simulator_torso_frame(frame)
+function VRepCommsManager.set_simulator_torso_frame(frame)
   local pose = frame:get_pose()
   -- -1 means set absolute position/orientation
   simSetObjectPosition(handles.robot, -1, {pose[1], pose[2], pose[3]})

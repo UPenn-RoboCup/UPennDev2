@@ -5,9 +5,9 @@ require 'unix'
 -- Kneeling parameters
 ----------------------------------------------------
 kneel = {};
-kneel.bodyHeight = 0.50;
+kneel.bodyHeight = 0.45;
 kneel.bodyTilt = 90*math.pi/180;
---kneel.armX = 0.294;
+
 kneel.armX = 0.35;
 kneel.armY = 0.296;
 kneel.armZ = 0.078;
@@ -16,17 +16,30 @@ kneel.RArmRPY = {math.pi/2,0,0};
 kneel.footX = -0.395;
 kneel.footY = 0.210;
 
+kneel.tStep = 0.50;
+kneel.stepHeight = 0.15;
+
+kneel.velLimitX = {-.10,.20};
+kneel.velLimitY = {-.5,.5};
+kneel.velLimitA = {-.2,.2};
+
+kneel.ph1Single = 0.2;
+kneel.ph2Single = 0.8;
+
+kneel.tZmp = 0.22;
 
 
 
 
+--For wrist-walking 
+kneel.armX = 0.26;
+kneel.armZ = 0.02;
 
 
 
 
-
-
-
+--kneel.torsoX = 0.0225;
+kneel.torsoX = -(kneel.armX + kneel.footX)/2;
 
 
 

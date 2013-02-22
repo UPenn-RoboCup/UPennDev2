@@ -20,9 +20,12 @@ dev.camera = 'WebotsOPCam';
 dev.kinematics = 'THOROPKinematics';
 dev.game_control='WebotsGameControl';
 dev.team='TeamNull';
---dev.walk = 'HumbleWalk';
-dev.walk = 'HumbleCrawl';
+dev.walk = 'HumbleWalk';
+dev.crawl = 'HumbleCrawl';
+--dev.walk = 'HumbleCrawl';
+
 dev.kick = 'NewKick';
+
 dev.ip_wired = '192.168.123.255'; 
 dev.ip_wired_port = 111111;
 dev.ip_wireless = '192.168.1.255'; --Our Router

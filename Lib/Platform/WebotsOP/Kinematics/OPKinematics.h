@@ -21,6 +21,10 @@ const double handOffsetZ = 0;//.0159;
 const double upperArmLength = .060;  //OP, spec
 const double lowerArmLength = .129;  //OP, spec
 
+//Added for more precise arm IK
+const double shoulderJointOffsetZ = 0.016; //spec
+const double elbowOffsetX = 0.016;//spec
+
 const double hipOffsetY = .037;    //OP, measured
 const double hipOffsetZ = .096;    //OP, Calculated from spec
 const double hipOffsetX = .008;    //OP, Calculated from spec

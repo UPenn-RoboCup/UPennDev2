@@ -15,12 +15,11 @@ function cog_sensor.entry()
 end
 
 function cog_sensor.update()
-  -- TODO use torso_orientation instead of torso_pose
   local q = dcm:get_joint_position_sensor()
-  local torso_pose = pcm:get_torso_pose()
-  local torso_frame = Transform.pose(torso_pose)
+  local torso_frame = Transform.rotation(pcm:get_torso_rotation())
   local cog = Dynamics.cog(q, torso_frame)
 
+  -- update pcm
   pcm:set_cog(cog)
 end
 

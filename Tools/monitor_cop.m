@@ -64,7 +64,7 @@ function monitor_cop
     r_foot_pose = pcm.get_r_foot_pose();
     actual_cop = pcm.get_cop();
     desired_cop = mcm.get_desired_cop();
-    tipping_status = mcm.get_tipping_status();
+    tipping_status = pcm.get_tipping_status();
 
     if (tipping_status(1) == 1)
       cop_color = 'r';

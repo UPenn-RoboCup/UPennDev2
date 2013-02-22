@@ -17,8 +17,8 @@ armY = Config.kneel.armY;
 armZ = Config.kneel.armZ;
 LArmRPY = Config.kneel.LArmRPY;
 RArmRPY = Config.kneel.RArmRPY;
-footX = Config.kneel.footX;
-footY = Config.kneel.footY;
+legX = Config.kneel.legX;
+legY = Config.kneel.legY;
 torsoX = Config.kneel.torsoX;
 
 tStep = Config.kneel.tStep;
@@ -41,26 +41,26 @@ hardnessSwing = Config.walk.hardnessSwing or 0.5;
 ----------------------------------------------------------
 
 uTorso = vector.new({-torsoX, 0, 0});
-uLLeg = vector.new({footX, footY, 0});
-uRLeg = vector.new({footX, -footY, 0});
+uLLeg = vector.new({legX, legY, 0});
+uRLeg = vector.new({legX, -legY, 0});
 uLArm = vector.new({armX, armY, 0});
 uRArm = vector.new({armX, -armY, 0});
 
 uTorso1 = vector.new({-torsoX, 0, 0});
-uLLeg1 = vector.new({footX, footY, 0});
-uRLeg1 = vector.new({footX, -footY, 0});
+uLLeg1 = vector.new({legX, legY, 0});
+uRLeg1 = vector.new({legX, -legY, 0});
 uLArm1 = vector.new({armX, armY, 0});
 uRArm1 = vector.new({armX, -armY, 0});
 
 uTorso2 = vector.new({-torsoX, 0, 0});
-uLLeg2 = vector.new({footX, footY, 0});
-uRLeg2 = vector.new({footX, -footY, 0});
+uLLeg2 = vector.new({legX, legY, 0});
+uRLeg2 = vector.new({legX, -legY, 0});
 uLArm2 = vector.new({armX, armY, 0});
 uRArm2 = vector.new({armX, -armY, 0});
 
 pTorsoActual = vector.new({0, 0, bodyHeight, 0,bodyTilt,0});
-pLLeg = vector.new({footX, footY, 0, 0,0,0});
-pRLeg = vector.new({footX, -footY, 0, 0,0,0});
+pLLeg = vector.new({legX, legY, 0, 0,0,0});
+pRLeg = vector.new({legX, -legY, 0, 0,0,0});
 pLArm = vector.new({armX, armY, 0, LArmRPY[1],LArmRPY[2],LArmRPY[3]});
 pRArm = vector.new({armX, -armY, 0, RArmRPY[1],RArmRPY[2],RArmRPY[3]});
 
@@ -74,7 +74,7 @@ aXP, aXN, aYP, aYN = 0, 0, 0, 0;
 
 ---------------------------------------------------------
 
-active = true;
+active = false;
 started = false;
 iStep0 = -1;
 iStep = 0;
@@ -91,6 +91,7 @@ walk_style = 0;
 
 function entry()
   print ("Motion: Crawl entry")
+  mcm.set_walk_bipedal(0);
 end
 
 
@@ -193,7 +194,7 @@ function do_walk_gait(iStep)
     uSupport = get_com(uRArm2,uLLeg2,uRLeg2);
   elseif swingFoot == 1 then
     moving_legs={0,0,0,1};
-    uRLeg2=step_destination(uRLeg1,vector.new({footX,-footY,0}));
+    uRLeg2=step_destination(uRLeg1,vector.new({legX,-legY,0}));
     uSupport = get_com(uLArm2,uRArm2,uLLeg2);
   elseif swingFoot == 2 then
     moving_legs={0,1,0,0};
@@ -201,7 +202,7 @@ function do_walk_gait(iStep)
     uSupport = get_com(uLArm2,uLLeg2,uRLeg2);
   else
     moving_legs={0,0,1,0};
-    uLLeg2=step_destination(uLLeg1,vector.new({footX,footY,0}));
+    uLLeg2=step_destination(uLLeg1,vector.new({legX,legY,0}));
     uSupport = get_com(uLArm2,uRArm2,uRLeg2);
   end
 --    uSupport = get_com(uLArm2,uRArm2,uLLeg2,uRLeg2);
@@ -213,12 +214,12 @@ function do_trot_gait(iStep)
   if swingFoot == 0 then
     moving_legs={1,0,0,1};
     uLArm2=step_destination(uLArm1,vector.new({armX,armY,0}));
-    uRLeg2=step_destination(uRLeg1,vector.new({footX,-footY,0}));
+    uRLeg2=step_destination(uRLeg1,vector.new({legX,-legY,0}));
     uSupport = util.se2_interpolate(0.5,uRArm2,uLLeg2);
   elseif swingFoot == 1 then
     moving_legs={0,1,1,0};
     uRArm2=step_destination(uRArm1,vector.new({armX,-armY,0}));
-    uLLeg2=step_destination(uLLeg1,vector.new({footX,footY,0}));
+    uLLeg2=step_destination(uLLeg1,vector.new({legX,legY,0}));
     uSupport = util.se2_interpolate(0.5,uLArm2,uRLeg2);
   end
 end
@@ -229,13 +230,13 @@ function do_pace_gait(iStep)
   if swingFoot == 0 then
     moving_legs={1,0,1,0};
     uLArm2=step_destination(uLArm1,vector.new({armX,armY,0}));
-    uLLeg2=step_destination(uLLeg1,vector.new({footX,footY,0}));
+    uLLeg2=step_destination(uLLeg1,vector.new({legX,legY,0}));
     uSupport = util.se2_interpolate(0.5,uRArm2,uRLeg2);
 
   elseif swingFoot == 1 then
     moving_legs={0,1,0,1};
     uRArm2=step_destination(uRArm1,vector.new({armX,-armY,0}));
-    uRLeg2=step_destination(uRLeg1,vector.new({footX,-footY,0}));
+    uRLeg2=step_destination(uRLeg1,vector.new({legX,-legY,0}));
     uSupport = util.se2_interpolate(0.5,uLArm2,uLLeg2);
 
   end
@@ -252,8 +253,8 @@ function do_gallop_gait(iStep)
 
   elseif swingFoot == 1 then
     moving_legs={0,0,1,1};
-    uLLeg2=step_destination(uLLeg1,vector.new({footX,footY,0}));
-    uRLeg2=step_destination(uRLeg1,vector.new({footX,-footY,0}));
+    uLLeg2=step_destination(uLLeg1,vector.new({legX,legY,0}));
+    uRLeg2=step_destination(uRLeg1,vector.new({legX,-legY,0}));
     uSupport = util.se2_interpolate(0.5,uLArm2,uRArm2);
 
   end
@@ -326,6 +327,9 @@ function motion_limbs()
   Body.set_lleg_command(qLegs);
   Body.set_larm_command(qLArm);
   Body.set_rarm_command(qRArm);
+
+--  print(unpack(qLArm))
+
 end
 
 function exit()

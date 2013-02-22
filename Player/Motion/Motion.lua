@@ -26,6 +26,17 @@ require('dive')
 -- Aux
 require 'grip'
 
+
+
+require 'crawl'
+require 'stancetocrawl'
+
+
+
+
+
+
+
 sit_disable = Config.sit_disable or 0;
 
 if sit_disable==0 then --For smaller robots
@@ -101,6 +112,39 @@ if sit_disable==0 then --For smaller robots
   sm:set_transition(kick, 'done', walk);
 else --For large robots that cannot sit down or getup
 
+  --THOROP specific (walk-crawl)
+
+  fallAngle = 1E6; --NEVER check falldown
+
+  sm = fsm.new(standstill);
+  sm:add_state(stance);
+  sm:add_state(walk);
+
+  sm:add_state(stancetocrawl);
+--  sm:add_state(crawltostance);
+  sm:add_state(crawl);
+
+  sm:set_transition(stance, 'done', walk);
+  sm:set_transition(stance, 'sit', stancetocrawl);
+
+  sm:set_transition(walk, 'stance', stance);
+  sm:set_transition(walk, 'standstill', standstill);
+  sm:set_transition(walk, 'sit', stancetocrawl);
+
+
+  sm:set_transition(stancetocrawl,'crawldone',crawl);
+  sm:set_transition(stancetocrawl,'stancedone',stance);
+
+  sm:set_transition(crawl, 'sit', stancetocrawl);
+
+  --standstill makes the robot stand still with 0 bodytilt (for webots)
+  sm:set_transition(standstill, 'stance', stance);
+  sm:set_transition(standstill, 'walk', stance);
+  sm:set_transition(standstill, 'done', stance); 
+
+  sm:set_transition(standstill, 'sit', stancetocrawl);
+
+--[[
   fallAngle = 1E6; --NEVER check falldown
 
   sm = fsm.new(standstill);
@@ -122,6 +166,8 @@ else --For large robots that cannot sit down or getup
   -- kick behaviours
   sm:set_transition(walk, 'kick', kick);
   sm:set_transition(kick, 'done', walk);
+--]]
+
 
 end
 
@@ -184,6 +230,27 @@ function update()
 
   -- update shm
   update_shm();
+end
+
+function walk_start()
+  is_bipedal = mcm.get_walk_bipedal();
+  if is_bipedal>0 then     walk.start();
+  else   crawl.start();
+  end
+end
+
+function walk_stop()
+  is_bipedal = mcm.get_walk_bipedal();
+  if is_bipedal>0 then     walk.stop();
+  else   crawl.stop();
+  end
+end
+
+function set_walk_velocity(vx,vy,va)
+  is_bipedal = mcm.get_walk_bipedal();
+  if is_bipedal>0 then     walk.set_velocity(vx,vy,va);
+  else   crawl.set_velocity(vx,vy,va);
+  end
 end
 
 function exit()

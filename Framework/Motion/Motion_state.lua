@@ -7,20 +7,20 @@ require('serialization')
 -- Motion State Base Class
 ---------------------------------------------------------
 
-MotionState = {}
-MotionState.__index = MotionState
-MotionState.__mtstring = 'MotionState'
+Motion_state = {}
+Motion_state.__index = Motion_state
+Motion_state.__mtstring = 'Motion_state'
 
 local joint = Config.joint
 
-function MotionState.new(name)
+function Motion_state.new(name)
   local o = {_NAME = name}
   o.dcm = dcm.new_access_point()
   o.parameters = {}
-  return setmetatable(o, MotionState)
+  return setmetatable(o, Motion_state)
 end
 
-function MotionState:set_parameter(key, value)
+function Motion_state:set_parameter(key, value)
   -- set control parameter value
   if (type(value) == 'table') then
     for i = 1, #value do
@@ -31,14 +31,14 @@ function MotionState:set_parameter(key, value)
   end
 end
 
-function MotionState:set_parameters(parameters)
+function Motion_state:set_parameters(parameters)
   -- set contol parameter values
   for k, v in pairs(parameters) do
     self:set_parameter(k, v)
   end
 end
 
-function MotionState:load_parameters(filepath)
+function Motion_state:load_parameters(filepath)
   -- load control parameters from file
   local success, parameters = pcall(dofile, filepath)
   if (not success) then
@@ -47,14 +47,14 @@ function MotionState:load_parameters(filepath)
   self:set_parameters(parameters)
 end
 
-function MotionState:set_joint_access(value, index)
+function Motion_state:set_joint_access(value, index)
   -- set joint write access privileges
   if value == true then value = 1 end
   if value == false then value = 0 end
   self.dcm:set_joint_write_access(value, index) 
 end
 
-function MotionState:get_parameter(key)
+function Motion_state:get_parameter(key)
   -- get control parameter value
   local value = self.parameters[key]
   if (type(value) == 'table') then
@@ -68,7 +68,7 @@ function MotionState:get_parameter(key)
   end
 end
 
-function MotionState:get_parameters()
+function Motion_state:get_parameters()
   -- get contol parameter values
   local parameters = {}
   for k, v in pairs(self.parameters) do
@@ -77,27 +77,27 @@ function MotionState:get_parameters()
   return parameters
 end
 
-function MotionState:save_parameters(filepath)
+function Motion_state:save_parameters(filepath)
   local f = assert(io.open(filepath,'w+'))
   f:write('return '..serialization.serialize(self:get_parameters()))
   f:close()
 end
 
-function MotionState:get_joint_access(index)
+function Motion_state:get_joint_access(index)
   -- get joint write access privileges
   return self.dcm:get_joint_write_access(index)
 end
 
-function MotionState:entry()
+function Motion_state:entry()
   -- default entry
 end
 
-function MotionState:update()
+function Motion_state:update()
   -- default update
 end
 
-function MotionState:exit()
+function Motion_state:exit()
   -- default exit
 end
 
-return MotionState
+return Motion_state

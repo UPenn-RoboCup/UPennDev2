@@ -7,11 +7,11 @@ require('vector')
 require('Config')
 require('Transform')
 require('Kinematics')
-require('MotionState')
+require('Motion_state')
 
 -- Setup 
 ----------------------------------------------------------------------
-walk = MotionState.new('walk')
+walk = Motion_state.new('walk')
 local dcm = walk.dcm;
 
 walk.parameters = {

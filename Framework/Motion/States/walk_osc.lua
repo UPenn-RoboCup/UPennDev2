@@ -9,12 +9,12 @@ require('Config')
 require('waveform')
 require('Transform')
 require('Kinematics')
-require('MotionState')
+require('Motion_state')
 
 -- Setup 
 --------------------------------------------------------------------------
 
-walk = MotionState.new('walk')
+walk = Motion_state.new('walk')
 local dcm = walk.dcm
 walk:set_joint_access(0, 'all')
 walk:set_joint_access(1, 'legs')

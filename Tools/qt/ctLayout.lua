@@ -1,121 +1,112 @@
-local glue = require'glue'
-local ffi = require'ffi'
-local bmpconv = require'bmpconv'
-local readfile = glue.readfile
-require'unit'
-local libpng = require'libpng'
-
-local  open = function(self, state)
---  print('open file')
-  local fileDialog = QFileDialog()
-  local fileName = fileDialog:getOpenFileName(
-                          "Open File", "", "Log File (*.lua)")
-  print(fileName:toUtf8())
-end
-
-local imageview = function()
-    -- Create GraphicsScene
-    local scene = QGraphicsScene.new()
-    -- Create GraphicView, based on Graphic Scene, widget on GUI
-    local view = QGraphicsView.new(scene)
-    local piximage = QPixmap.new()
-    local filename = 'Image-1-10.png'
-    -- load png with libpng
-    local img = libpng.load({path = filename})
-    -- use raw pixel data to create a QImage for display
-    local qimage = QImage(img.data, img.w, img.h, 
-                          img.w * 3, QImage.Format.Format_RGB888)
-    -- ConvertToPixmap for Graphic Scene
-    piximage:convertFromImage(qimage, Qt.AutoColor)
-    local pixmapitem = QGraphicsPixmapItem.new(piximage)
-    scene:addItem(pixmapitem)
-    return view
-end
 
 Widget = function(...)
   local this = QWidget(...)
-  local hbox = QHBoxLayout(...)
+  this.hbox = QHBoxLayout(...)
 
   -- left buttons 
-  local leftvbox = QVBoxLayout()
-    local loadMontage = QPushButton("Load Montage", this)
-    loadMontage:__addmethod("open()", open)
-    loadMontage:connect('2clicked()', loadMontage, '1open()')
-    leftvbox:addWidget(loadMontage)
-    
-    local colorGroup = QGroupBox("Colors", this)
-    leftvbox:addWidget(colorGroup)
-    local colorGroupVbox = QVBoxLayout()
-    local color = {}
-    colorLabel = {"Orange", "Yellow", "Cyan", "Field", "White", "Robot Blue", "Robot Pink"}
-    for i = 1 , 7 do
-      color[i] = QRadioButton(colorLabel[i], this)
-      colorGroupVbox:addWidget(color[i])
-    end
-    colorGroupVbox:addStretch(1)
-    color[1]:setChecked(true)
-    colorGroup:setLayout(colorGroupVbox)
-    
+  this.leftvbox = QVBoxLayout()
+  this.loadMontage = QPushButton("Load Montage", this)
+  this.leftvbox:addWidget(this.loadMontage)
   
-    local toggleView = QPushButton("Toggle View", this)
-    leftvbox:addWidget(toggleView)
+  this.colorGroup = QGroupBox("Colors", this)
+  this.leftvbox:addWidget(this.colorGroup)
+  this.colorGroupVbox = QVBoxLayout()
+  this.color = {}
+  local colorLabel = {"Orange", "Yellow", "Cyan", "Field", "White", "Robot Blue", "Robot Pink"}
+  for i = 1 , 7 do
+    this.color[i] = QRadioButton(colorLabel[i], this)
+    this.colorGroupVbox:addWidget(this.color[i])
+  end
+  this.colorGroupVbox:addStretch(1)
+  this.color[1]:setChecked(true)
+  this.colorGroup:setLayout(this.colorGroupVbox)
   
-    local clearSelection = QPushButton("Clear Selection", this)
-    leftvbox:addWidget(clearSelection)
+  this.toggleView = QPushButton("Toggle View", this)
+  this.leftvbox:addWidget(this.toggleView)
   
-    local threshold = QLabel("Threshold", this)
-    threshold:setAlignment(Qt.AlignmentFlag.AlignHCenter)
-    leftvbox:addWidget(threshold)
+  this.clearSelection = QPushButton("Clear Selection", this)
+  this.leftvbox:addWidget(this.clearSelection)
   
-    local thresholdSlider = QSlider("Horizontal", this)
-    thresholdSlider:setRange(0, 128)
-    thresholdSlider:setValue(14)
-    leftvbox:addWidget(thresholdSlider)
+  this.threshold = QLabel("Threshold", this)
+  this.threshold:setAlignment(Qt.AlignmentFlag.AlignHCenter)
+  this.leftvbox:addWidget(this.threshold)
   
-    local saveColors = QPushButton("Save Colors", this)
-    leftvbox:addWidget(saveColors)
+  this.thresholdSlider = QSlider("Horizontal", this)
+  this.thresholdSlider:setRange(0, 128)
+  this.thresholdSlider:setValue(defaultThreshold)
+  this.leftvbox:addWidget(this.thresholdSlider)
   
-    local saveLut = QPushButton("Save LUT", this)
-    leftvbox:addWidget(saveLut)
+  this.saveColors = QPushButton("Save Colors", this)
+  this.leftvbox:addWidget(this.saveColors)
+  
+  this.saveLut = QPushButton("Save LUT", this)
+  this.leftvbox:addWidget(this.saveLut)
 
-  local rightvbox = QVBoxLayout()
-    -- Image Display
-    local view = imageview()
-    -- Image file Control Buttons
-    local fileControlhbox = QHBoxLayout()
-      -- add file control buttons
-      local prevLog = QPushButton("Prev Log", this)
-      local logName = QLabel("No File Selected", this)
-      logName:setAlignment(Qt.AlignmentFlag.AlignHCenter + Qt.AlignmentFlag.AlignVCenter)
-      local nextLog = QPushButton("Next Log", this)
-      fileControlhbox:addWidget(prevLog)
-      fileControlhbox:addWidget(logName)
-      fileControlhbox:addWidget(nextLog)
+  this.rightvbox = QVBoxLayout()
+  this.pimage = QPixmap.new(defaultW, defaultH)
+  this.pimage:fill(Qt.white)
+  -- Create GraphicsScene
+  this.scene = QGraphicsScene.new(0, 0, defaultW, defaultH)
+  -- Create GraphicView, based on Graphic Scene, widget on GUI
+  this.view = QGraphicsView.new(this.scene)
+  this.view:fitInView(0, 0, defaultW, defaultH, Qt.IgnoreAspectRatio)
+  -- create empty image
+  this.pixmapitem = QGraphicsPixmapItem.new(this.pimage)
+  this.scene:addItem(this.pixmapitem)
+  
+  this.view:setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+  this.view:setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
-    -- Image frame Control Buttons
-    local frameControlhbox = QHBoxLayout()
-      local bbackward = QPushButton("<<", this)
-      local backward = QPushButton("<-", this)
-      local frameLabel = QLabel("1", this)
-      frameLabel:setAlignment(Qt.AlignmentFlag.AlignHCenter + Qt.AlignmentFlag.AlignVCenter)
-      local forward = QPushButton("->", this)
-      local fforward = QPushButton(">>", this)
-      frameControlhbox:addWidget(bbackward)
-      frameControlhbox:addWidget(backward)
-      frameControlhbox:addWidget(frameLabel)
-      frameControlhbox:addWidget(forward)
-      frameControlhbox:addWidget(fforward)
+  -- Image Display
+  this.view:__addmethod("open()", initDraw)
+  this.view:__addmethod("updateBackward()", updateBackward)
+  this.view:__addmethod("updateBBackward()", updateBBackward)
+  this.view:__addmethod("updateForward()", updateForward)
+  this.view:__addmethod("updateFForward()", updateFForward)
+  this.view.mousePressEvent = selectPixel
 
-    rightvbox:addWidget(view)
-    rightvbox:addLayout(fileControlhbox)
-    rightvbox:addLayout(frameControlhbox)
+  -- Image file Control Buttons
+  this.fileControlhbox = QHBoxLayout()
+  -- add file control buttons
+  this.prevLog = QPushButton("Prev Log", this)
+  this.logName = QLabel("No File Selected", this)
+  this.logName:setAlignment(Qt.AlignmentFlag.AlignHCenter + 
+                            Qt.AlignmentFlag.AlignVCenter)
+  this.nextLog = QPushButton("Next Log", this)
+  this.fileControlhbox:addWidget(this.prevLog)
+  this.fileControlhbox:addWidget(this.logName)
+  this.fileControlhbox:addWidget(this.nextLog)
 
-  hbox:addLayout(leftvbox)
-  hbox:addLayout(rightvbox)
---  hbox:addSpacing(10)
---  hbox:addWidget(view)
+  -- Image frame Control Buttons
+  this.frameControlhbox = QHBoxLayout()
+  this.bbackward = QPushButton("&<< (A)", this)
+  this.backward = QPushButton("<- (S)", this)
+  this.frameLabel = QLabel("1", this)
+  this.frameLabel:setAlignment(Qt.AlignmentFlag.AlignHCenter + Qt.AlignmentFlag.AlignVCenter)
+  this.forward = QPushButton("(D) ->", this)
+  this.fforward = QPushButton("(F) >>", this)
+  this.frameControlhbox:addWidget(this.bbackward)
+  this.frameControlhbox:addWidget(this.backward)
+  this.frameControlhbox:addWidget(this.frameLabel)
+  this.frameControlhbox:addWidget(this.forward)
+  this.frameControlhbox:addWidget(this.fforward)
 
-  this:setLayout(hbox)
+  this.rightvbox:addWidget(this.view)
+  this.rightvbox:addLayout(this.fileControlhbox)
+  this.rightvbox:addLayout(this.frameControlhbox)
+
+  this.hbox:addLayout(this.leftvbox)
+  this.hbox:addLayout(this.rightvbox)
+--  this.hbox:addSpacing(10)
+--  this.hbox:addWidget(view)
+  
+  this.loadMontage:connect('2clicked()', this.view, '1open()')
+  this.backward:connect('2clicked()',    this.view, '1updateBackward()')
+  this.bbackward:connect('2clicked()',   this.view, '1updateBBackward()')
+  this.forward:connect('2clicked()',     this.view, '1updateForward()')
+  this.fforward:connect('2clicked()',    this.view, '1updateFForward()')
+
+  this:setLayout(this.hbox)
 
   return this
 end

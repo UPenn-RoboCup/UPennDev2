@@ -32,6 +32,7 @@ require 'Transform'
 require 'Team' --To receive the GPS coordinates from objects
 require 'wcm'
 
+require 'walk'
 
 --Arm target transforms
 
@@ -311,6 +312,27 @@ function motion_arms_ik()
 
       trRArmOld[1],trRArmOld[2],trRArmOld[3],trRArmOld[4],trRArmOld[5],trRArmOld[6]=
       trRArm[1],trRArm[2],trRArm[3],trRArm[4],trRArm[5],trRArm[6];
+
+
+
+
+      pTorso = 
+        Transform.transform6D(
+	  vector.new({walk.supportX,0,walk.bodyHeight,0,walk.bodyTilt,0})
+	);
+      
+      LH_global = pTorso * Transform.transform6D(trLArm);
+      RH_global = pTorso * Transform.transform6D(trRArm);
+ 
+
+
+
+
+
+
+
+
+
   else
 
     is_moving=0;
@@ -392,65 +414,71 @@ function process_keyinput()
 
 
   elseif byte==string.byte("1") then  
-    trLArm[6]=trLArm[6]+0.1;
+    trLArm[6]=trLArm[6]+math.pi/18;
     update_arm = true;
   elseif byte==string.byte("2") then  
-    trLArm[6]=trLArm[6]-0.1;
+    trLArm[6]=trLArm[6]-math.pi/18;
     update_arm = true;
   elseif byte==string.byte("3") then  
-    trLArm[4]=trLArm[4]+0.1;
+    trLArm[4]=trLArm[4]+math.pi/18;
     update_arm = true;
   elseif byte==string.byte("4") then  
-    trLArm[4]=trLArm[4]-0.1;
+    trLArm[4]=trLArm[4]-math.pi/18;
     update_arm = true;
   elseif byte==string.byte("5") then  
-    trLArm[5]=trLArm[5]+0.1;
+    trLArm[5]=trLArm[5]+math.pi/18;
     update_arm = true;
   elseif byte==string.byte("6") then  
-    trLArm[5]=trLArm[5]-0.1;
+    trLArm[5]=trLArm[5]-math.pi/18;
     update_arm = true;
 
-
-
-
-  elseif byte==string.byte("e") then  --Open gripper
-    Body.set_l_gripper_command({math.pi/6,-math.pi/6});
-  elseif byte==string.byte("r") then  --Close gripper
-    Body.set_l_gripper_command({0,0});
-
-  elseif byte==string.byte("i") then  
-    trRArm[1]=trRArm[1]+0.01;
-    update_arm = true;
-  elseif byte==string.byte(",") then  
-    trRArm[1]=trRArm[1]-0.01;
-    update_arm = true;
   elseif byte==string.byte("j") then  
-    trRArm[2]=trRArm[2]+0.01;
+    walk.bodyTilt = walk.bodyTilt + 1*math.pi/180;
     update_arm = true;
   elseif byte==string.byte("l") then  
-    trRArm[2]=trRArm[2]-0.01;
+    walk.bodyTilt = walk.bodyTilt - 1*math.pi/180;
     update_arm = true;
+
+  elseif byte==string.byte("i") then  
+    walk.bodyHeight = walk.bodyHeight + 0.01;
+    update_arm = true;
+  elseif byte==string.byte(",") then  
+    walk.bodyHeight = walk.bodyHeight - 0.01;
+    update_arm = true;
+
+  elseif byte==string.byte("h") then  
+    mcm.footX = mcm.footX -0.01;
+    update_arm = true;
+  elseif byte==string.byte(";") then  
+    mcm.footX = mcm.footX +0.01;
+    update_arm = true;
+
   elseif byte==string.byte("u") then  
-    trRArm[3]=trRArm[3]+0.01;
+    walk.footY = walk.footY + 0.01;
     update_arm = true;
   elseif byte==string.byte("m") then  
-    trRArm[3]=trRArm[3]-0.01;
-    update_arm = true;
-  elseif byte==string.byte("b") then  
-    trRArm[6]=trRArm[6]+0.1;
-    update_arm = true;
-  elseif byte==string.byte("n") then  
-    trRArm[6]=trRArm[6]-0.1;
+    walk.footY = walk.footY - 0.01;
     update_arm = true;
 
-  elseif byte==string.byte("t") then  --Open gripper
-    Body.set_r_gripper_command({math.pi/6,-math.pi/6});
-  elseif byte==string.byte("y") then  --Close gripper
-    Body.set_r_gripper_command({0,0});
 
-  elseif byte==string.byte("g") then  --Move to the object
-   is_moving=1;
+  elseif byte==string.byte("g") then  
+
+    print("armX:",LH_global[1][4]);
+    print("armY:",LH_global[2][4]);
+    print("armZ:",LH_global[3][4]);
+
+
+    print("Wrist RPY:",trLArm[4],trLArm[5],trLArm[6]);
+    print("bodyTilt:",walk.bodyTilt*180/math.pi)
+    print("bodyHeight:",walk.bodyHeight)
+    print("footX:",mcm.footX)
+    print("footY:",walk.footY)
+
+
   end
+
+  trRArm[1],trRArm[2],trRArm[3],trRArm[4],trRArm[5],trRArm[6]=
+  trLArm[1],-trLArm[2],trLArm[3],-trLArm[4],trLArm[5],-trLArm[6];
 
 
   if ( update_arm ) then  

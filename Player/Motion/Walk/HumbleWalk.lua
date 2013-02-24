@@ -223,6 +223,8 @@ function entry()
     active=false;
   end
 
+  mcm.set_walk_bipedal(1);
+
 end
 
 

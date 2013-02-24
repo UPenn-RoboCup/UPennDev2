@@ -6,12 +6,15 @@ require 'qtcore'
 require 'qtgui'
 
 require ('ctLayout')
+require ('ctImageProc')
+require ('ctCommon')
+require ('ctEvent')
 
 -- Initial Qt Application
 app = QApplication(1 + select('#', ...), {arg[0], ...})
 app.__gc = app.delete -- take ownership of object
 
-local centralizeWindow = function(window)
+centralizeWindow = function(window)
   -- Get Screen Size
   local desktop = QApplication.desktop()
   local screenWidth = desktop:width()
@@ -24,7 +27,7 @@ local centralizeWindow = function(window)
   window:move(x, y)
 end
 
-local createWindow = function(...)
+createWindow = function(...)
   local this = QMainWindow(...)
 
   -- add menu
@@ -32,16 +35,19 @@ local createWindow = function(...)
   -- statusbar
   
   -- Add central Widget
-  local widget = Widget()
-  this:setCentralWidget(widget)
+  this.widget = Widget()
+  this:setCentralWidget(this.widget)
 
   return this
 end
 
 window = createWindow()
+window.resizeEvent = function(e)
+--  print(e:size():width(), e:size():height())
+end
 
 window.width = 800
-window.height = 600
+window.height = 550
 
 window:setWindowTitle("UPennalizers Colortable Selection")
 --window:setToolTip("QWidget")

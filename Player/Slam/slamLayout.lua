@@ -12,6 +12,7 @@ init_receive()
 -- Globally accessable QImage
 sz = {240,320}
 sz = {101,101}
+sz = {201,201}
 qimage = QImage(sz[2],sz[1],QImage.Format.Format_RGB32)
 
 

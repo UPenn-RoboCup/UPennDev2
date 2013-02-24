@@ -18,14 +18,14 @@ require('signal')
 require('Serial');
 require('kBPacket');
 require('unix');
-require('rcm');
 
 hokuyo = {}
+hokuyo.nReturns = 1081;
 hokuyo.serial = "00805676"
 --hokuyo.serial = "00907258"
 hokuyo.device = "/dev/ttyACM0"
+--hokuyo.device = "/dev/tty.usbmodem1411"
 Hokuyo.open(hokuyo.device, hokuyo.serial);
-
 
 function ShutDownFN()
   print("Proper shutdown")
@@ -59,7 +59,7 @@ while (1) do
   end
 
   lidar = Hokuyo.retrieve();
-  width = rcm.nReturns;
+  width = hokuyo.nReturns;
   height = 1;
   lidarArray = serialization.serialize_array(lidar.ranges, width,
                 height, 'single', 'ranges', lidar.counter);

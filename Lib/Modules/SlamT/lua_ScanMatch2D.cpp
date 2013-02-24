@@ -38,7 +38,7 @@ int lua_ScanMatch2D(lua_State *L) {
       luaL_error(L, "resolution must be provided as the second argument");
     res = luaL_checknumber(L, 2);
     invRes = 1.0/res;
-    printf("ScanMatch2D: set the resolution\n");
+    fprintf(stdout,"ScanMatch2D: set the resolution\n");
     return 1;
   }
 
@@ -50,7 +50,7 @@ int lua_ScanMatch2D(lua_State *L) {
     ymin = luaL_checknumber(L, 3);
     xmax = luaL_checknumber(L, 4);
     ymax = luaL_checknumber(L, 5);
-    printf("ScanMatch2D: set the boundaries\n");
+    fprintf(stdout,"ScanMatch2D: set the boundaries\n");
     return 1;
   }
 
@@ -66,7 +66,7 @@ int lua_ScanMatch2D(lua_State *L) {
     sensorOffsetX = offsets[0];
     sensorOffsetY = offsets[1];
     sensorOffsetZ = offsets[2];
-    printf("ScanMatch2D: set sensor offsets\n");
+    fprintf(stdout,"ScanMatch2D: set sensor offsets\n");
     return 1;
   }
 
@@ -103,10 +103,12 @@ int lua_ScanMatch2D(lua_State *L) {
 	/* Grab the output Tensor */
 	THDoubleTensor * likelihoods_t = (THDoubleTensor *) luaT_checkudata(L, 8, "torch.DoubleTensor");
 	// TODO: Check that the dimensions are correct
+	/*
 	fprintf( stdout, "Size of the likelihoods_t: (%d dim): %ld x %ld x %ld\n",
 		likelihoods_t->nDimension, 
 		likelihoods_t->size[0],likelihoods_t->size[1],likelihoods_t->size[2]
 	);
+	*/
 
     // Divide the candidate pose xy by resolution, to save computations later
     // Subtract the min values too

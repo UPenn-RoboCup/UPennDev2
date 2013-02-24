@@ -1,9 +1,9 @@
-module(..., package.seeall);
 
-require('cutil')
-require('Z')
+local cutil = require('cutil')
 
-function serialize_orig(o)
+local s = {}
+
+function s.serialize_orig(o)
   local str = "";
   if type(o) == "number" then
     str = tostring(o);
@@ -24,7 +24,7 @@ end
 --New serialization code omiting integer indexes for tables
 --Only do recursive call if v is a table
 -- Pack size 2.3X smaller, Serilization time 3.4X faster on OP
-function serialize(o)
+function s.serialize(o)
   local str = "";
   if type(o) == "number" then
     if o%1==0 then --quickest check for integer
@@ -48,7 +48,7 @@ function serialize(o)
 	elseif type(v)=="string" then
           str = str..string.format("[%q]=%q,",k,v);
 	elseif type(v)=="table" then
-          str = str..string.format("[%q]=%s,",k,serialize(v));
+          str = str..string.format("[%q]=%s,",k, s.serialize(v));
 	end
       else
         if type(v) == "number" then
@@ -60,7 +60,7 @@ function serialize(o)
 	elseif type(v)=="string" then
           str = str..string.format("%q,",v);
 	elseif type(v)=="table" then
-          str = str..string.format("%s,",serialize(v));
+          str = str..string.format("%s,", s.serialize(v));
 	end
       end
 
@@ -72,8 +72,8 @@ function serialize(o)
   return str;
 end
 
-function serialize_array(ud, width, height, dtype, arrName, arrID)
-  -- function to serialize an userdata array
+function s.serialize_array(ud, width, height, dtype, arrName, arrID)
+  -- function s.to serialize an userdata array
   -- returns an array of lua arr tables
   -- Max size of a UDP packet
   local maxSize = 2^16 - 2^12;
@@ -104,7 +104,7 @@ end
 --We don't care even rows in yuyv
 --So just skip every other line and save 1/2 bandwidth
 
-function serialize_array2(ud, width, height, dtype, arrName, arrID)
+function s.serialize_array2(ud, width, height, dtype, arrName, arrID)
   -- function to serialize an userdata array
   -- returns an array of lua arr tables
   -- Max size of a UDP packet
@@ -134,7 +134,7 @@ end
 
 --Label-only serialization code
 --Exploiting label data range (0-31) to pack each label to a single byte
-function serialize_label(ud, width, height, dtype, arrName, arrID)
+function s.serialize_label(ud, width, height, dtype, arrName, arrID)
   local dsize = cutil.sizeof(dtype);
   local arrSize = width*height*dsize;
   local ret = {};
@@ -145,7 +145,7 @@ function serialize_label(ud, width, height, dtype, arrName, arrID)
 end
 
 --Double-packing
-function serialize_label_double(ud, width, height, dtype, arrName, arrID)
+function s.serialize_label_double(ud, width, height, dtype, arrName, arrID)
   local dsize = cutil.sizeof(dtype);
   local arrSize = width*height*dsize;
   local ret = {};
@@ -156,7 +156,7 @@ function serialize_label_double(ud, width, height, dtype, arrName, arrID)
 end
 
 --Run-length enclding
-function serialize_label_rle(ud, width, height, dtype, arrName, arrID)
+function s.serialize_label_rle(ud, width, height, dtype, arrName, arrID)
   local dsize = cutil.sizeof(dtype);
   local arrSize = width*height*dsize;
   local ret = {};
@@ -166,7 +166,7 @@ function serialize_label_rle(ud, width, height, dtype, arrName, arrID)
   return ret;
 end
 
-function deserialize(s)
+function s.deserialize(s)
   --local x = assert(loadstring("return "..s))();
   if not s then
     return '';
@@ -181,3 +181,5 @@ function deserialize(s)
     return ret;
   end
 end
+
+return s

@@ -10,7 +10,6 @@ end
 print('\n=== Processing LIDAR0 ===\n')
 --]]
 require 'scanMatchOne'
-print( SLAM.lidar0Cntr )
 
 function processL0( LIDAR0, IMU, OMAP, MAPS )
 
@@ -208,10 +207,8 @@ function processL0( LIDAR0, IMU, OMAP, MAPS )
 
   -- TODO
   -- Decay the map around the robot
-			print('merging!',SLAM.lidar0Cntr)
   
   if SLAM.lidar0Cntr%20 == 0 then
-		print('domerge')
     -- Get the map indicies for the robot
     xiCenter = math.ceil((SLAM.x - OMAP.xmin) * OMAP.invRes);
     yiCenter = math.ceil((SLAM.y - OMAP.ymin) * OMAP.invRes);

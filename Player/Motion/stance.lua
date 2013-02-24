@@ -52,6 +52,7 @@ function entry()
   Body.set_waist_command(0);
 
   t0 = Body.get_time();
+  mcm.set_walk_bipedal(1); --now on feet
 
   walk.active=false;
 end

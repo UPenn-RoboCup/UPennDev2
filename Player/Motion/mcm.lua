@@ -10,6 +10,8 @@ shared = {};
 shsize = {};
 
 shared.walk = {};
+shared.walk.bipedal = vector.zeros(1); --are we on foot or on four?
+
 shared.walk.bodyOffset = vector.zeros(3);
 shared.walk.tStep = vector.zeros(1);
 shared.walk.bodyHeight = vector.zeros(1);

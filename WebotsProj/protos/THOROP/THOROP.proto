@@ -133,6 +133,7 @@ Robot {
                             ]
                           }
                           physics Physics {}
+                          maxForce 10000
                         }
                         DEF r_elbow_pitch Transform {
                           rotation 1 0 0 1.57
@@ -149,6 +150,7 @@ Robot {
                         ]
                       }
                       physics Physics {}
+                      maxForce 10000
                     }
                     DEF r_shoulder_yaw Transform {
                       rotation 1 0 0 1.57
@@ -165,6 +167,7 @@ Robot {
                     ]
                   }
                   physics Physics {}
+                  maxForce 10000
                 }
                 DEF r_shoulder_roll Transform {
                   rotation 1 0 0 1.57
@@ -181,6 +184,7 @@ Robot {
                 ]
               }
               physics Physics {}
+              maxForce 10000
             }
             DEF r_shoulder_pitch Transform {
               rotation -1 0 0 1.57
@@ -199,6 +203,8 @@ Robot {
           physics Physics {
             centerOfMass 0 -0.027 0
           }
+          maxForce 10000
+
         }
         DEF l_shoulder_pitch Servo {
           translation 0 0.219 0
@@ -282,6 +288,8 @@ Robot {
                                 ]
                               }
                               physics Physics {}
+                              maxForce 10000
+
                             }
                             DEF l_wrist_yaw Transform {
                               rotation 1 0 0 1.57
@@ -298,6 +306,8 @@ Robot {
                             ]
                           }
                           physics Physics {}
+                          maxForce 10000
+
                         }
                         DEF l_elbow_pitch Transform {
                           rotation 1 0 0 1.57
@@ -314,6 +324,7 @@ Robot {
                         ]
                       }
                       physics Physics {}
+                      maxForce 10000
                     }
                     DEF l_shoulder_yaw Transform {
                       rotation 1 0 0 1.57
@@ -330,6 +341,7 @@ Robot {
                     ]
                   }
                   physics Physics {}
+                  maxForce 10000
                 }
                 DEF l_shoulder_roll Transform {
                   rotation 1 0 0 1.57
@@ -347,6 +359,8 @@ Robot {
               }
               physics Physics {
               }
+              maxForce 10000
+
             }
             DEF l_shoulder_pitch Transform {
               rotation 1 0 0 1.57
@@ -361,6 +375,8 @@ Robot {
             ]
           }
           physics Physics {}
+          maxForce 10000
+
         }
         DEF neck_yaw Servo {
           translation 0 0 0.027
@@ -420,6 +436,8 @@ Robot {
         ]
       }
       physics Physics {}
+      maxForce 10000
+
     }
     DEF l_hip_yaw Servo {
       translation -0.024 0.0957 0.212
@@ -459,17 +477,8 @@ Robot {
                             density -1
                             mass 0.589
                             centerOfMass 0.003 0 -0.029
-                            inertiaMatrix [
-                              0.00054543 0.00182544 0.00205439
-                              -1.187e-06 -0.000179602 4.512e-06
-                            ]
                           }
-                          maxVelocity 1000
                           maxForce 10000
-                          minPosition -0.349066
-                          maxPosition 0.349066
-                          minStop -0.349066
-                          maxStop 0.349066
                         }
                         DEF l_ankle_pitch Transform {
                           rotation 1 0 0 1.57
@@ -484,14 +493,9 @@ Robot {
                       }
                       physics Physics {
                         density -1
-                        mass 0.001
+                        mass 0.01
                       }
-                      maxVelocity 1000
                       maxForce 10000
-                      minPosition -0.785398
-                      maxPosition 0.785398
-                      minStop -0.785398
-                      maxStop 0.785398
                     }
                     DEF l_knee_pitch Transform {
                       rotation 1 0 0 1.57
@@ -511,16 +515,8 @@ Robot {
                     density -1
                     mass 2.239
                     centerOfMass -0.025 0 -0.126
-                    inertiaMatrix [
-                      0.0217489 0.0270285 0.0105835
-                      3.5634e-05 0.00488971 5.6002e-05
-                    ]
                   }
-                  maxVelocity 1000
                   maxForce 10000
-                  maxPosition 1.5708
-                  minStop -0.087266
-                  maxStop 1.5708
                 }
                 DEF l_hip_pitch Transform {
                   rotation 1 0 0 1.57
@@ -540,17 +536,8 @@ Robot {
                 density -1
                 mass 2.214
                 centerOfMass -0.009 0.016 -0.159
-                inertiaMatrix [
-                  0.0211422 0.0240679 0.00875764
-                  0.00175066 -0.00100743 0.00209186
-                ]
               }
-              maxVelocity 1000
               maxForce 10000
-              minPosition -0.785398
-              maxPosition 0.785398
-              minStop -0.785398
-              maxStop 0.785398
             }
             DEF l_hip_roll Transform {
               rotation 1 0 0 1.57
@@ -565,14 +552,9 @@ Robot {
           }
           physics Physics {
             density -1
-            mass 0.001
+            mass 0.01
           }
-          maxVelocity 1000
           maxForce 10000
-          minPosition -0.349066
-          maxPosition 0.349066
-          minStop -0.349066
-          maxStop 0.349066
         }
         DEF l_hip_yaw Transform {
           rotation 1 0 0 1.57
@@ -587,14 +569,9 @@ Robot {
       }
       physics Physics {
         density -1
-        mass 0.001
+        mass 0.01
       }
-      maxVelocity 1000
       maxForce 10000
-      minPosition -0.349066
-      maxPosition 0.349066
-      minStop -0.349066
-      maxStop 0.349066
     }
     DEF r_hip_yaw Servo {
       translation -0.024 -0.0957 0.212
@@ -634,17 +611,8 @@ Robot {
                             density -1
                             mass 0.589
                             centerOfMass 0.003 0 -0.029
-                            inertiaMatrix [
-                              0.00054543 0.00182544 0.00205439
-                              -1.187e-06 -0.000179602 4.512e-06
-                            ]
                           }
-                          maxVelocity 1000
                           maxForce 10000
-                          minPosition -0.349066
-                          maxPosition 0.349066
-                          minStop -0.349066
-                          maxStop 0.349066
                         }
                         DEF r_ankle_pitch Transform {
                           rotation 1 0 0 1.57
@@ -657,14 +625,9 @@ Robot {
                       boundingObject Box {size 0.067 0.067 0.01}
                       physics Physics {
                         density -1
-                        mass 0.001
+                        mass 0.01
                       }
-                      maxVelocity 1000
                       maxForce 10000
-                      minPosition -0.785398
-                      maxPosition 0.785398
-                      minStop -0.785398
-                      maxStop 0.785398
                     }
                     DEF r_knee_pitch Transform {
                       rotation 1 0 0 1.57
@@ -684,16 +647,8 @@ Robot {
                     density -1
                     mass 2.239
                     centerOfMass -0.025 0 -0.126
-                    inertiaMatrix [
-                      0.0217489 0.0270285 0.0105835
-                      3.5634e-05 0.00488971 5.6002e-05
-                    ]
                   }
-                  maxVelocity 1000
                   maxForce 10000
-                  maxPosition 1.5708
-                  minStop -0.087266
-                  maxStop 1.5708
                 }
                 DEF r_hip_pitch Transform {
                   rotation 1 0 0 1.57
@@ -713,17 +668,8 @@ Robot {
                 density -1
                 mass 2.214
                 centerOfMass -0.009 -0.016 -0.159
-                inertiaMatrix [
-                  0.0211422 0.0240679 0.00875764
-                  0.00175066 -0.00100743 0.00209186
-                ]
               }
-              maxVelocity 1000
               maxForce 10000
-              minPosition -0.785398
-              maxPosition 0.785398
-              minStop -0.785398
-              maxStop 0.785398
             }
             DEF r_hip_roll Transform {
               rotation 1 0 0 1.57
@@ -736,14 +682,9 @@ Robot {
           boundingObject Box {size 0.083 0.083 0.01}
           physics Physics {
             density -1
-            mass 0.001
+            mass 0.01
           }
-          maxVelocity 1000
           maxForce 10000
-          minPosition -0.349066
-          maxPosition 0.349066
-          minStop -0.349066
-          maxStop 0.349066
         }
         DEF r_hip_yaw Transform {
           rotation 1 0 0 1.57
@@ -758,14 +699,9 @@ Robot {
       }
       physics Physics {
         density -1
-        mass 0.001
+        mass 0.01
       }
-      maxVelocity 1000
       maxForce 10000
-      minPosition -0.349066
-      maxPosition 0.349066
-      minStop -0.349066
-      maxStop 0.349066
     }
     DEF lower_torso Transform {
       translation -0.023 0 0.287
@@ -835,10 +771,6 @@ Robot {
     density -1
     mass 9.846
     centerOfMass -0.015 0 0.427
-    inertiaMatrix [
-      0.161771 0.120602 0.120208
-      0.000354588 -0.000174501 0.000443915
-    ]
   }
   controller "void"
 }

@@ -9,10 +9,19 @@ local ffi = require 'ffi'
 local Serial = require('Serial');
 local unix = require('unix');
 
---dev = '/dev/ttyUSB0';
-dev = '/dev/tty.usbserial-A700eEMV'
+dev = '/dev/ttyUSB0';
+--dev = '/dev/tty.usbserial-A700eEMV'
 baud = 115200;
 s1 = Serial.connect(dev, baud);
+
+logfile_cnt = 1;
+counter = 0;
+max_count = 500;
+function get_filename()
+  local filetime = os.date('%m.%d.%Y.%H.%M');
+  local filename = string.format("arduimu%s-%04d", filetime, logfile_cnt);
+  return filename;
+end
 
 function ReceivePacket( nbytes ) 
   local buf, buftype, bufsize = Serial.read( nbytes, 5000 );
@@ -48,11 +57,11 @@ end
 function record()
   -- Make sure we are writing to a file
   if not imu_file then
-		filename = string.format('imu_%05d.raw',logfile);
-    imu_file = io.open( filename , 'w')
+    imu_file = io.open( get_filename() , 'w')
+    imu_file:write( "t Ax Ay Az Wx Wy Wz dt\n" )
   end
   -- Receive data
-  imu_data_str, ts = ReceivePacket( 36 );
+  imu_data_str, ts = ReceivePacket( 32 );
   -- Write data
   if imu_data_str and #imu_data_str>0 then
     imu_file:write( ts.." "..imu_data_str.."\n" )
@@ -60,10 +69,10 @@ function record()
   end
   
   -- Close file at certain intervals
-  if counter%500==0 then
-		print('Writing',filename)
+  if counter>max_count then
+		print('Writing',logfile_cnt)
     counter = 0;
-    logfile = logfile+1;
+    logfile_cnt = logfile_cnt+1;
     imu_file:close()
     imu_file = nil;
   end
@@ -71,8 +80,6 @@ end
 
 -- Run the Recording
 flush_initial()
-counter = 0;
-logfile = 1;
 while true do
   record()
 --  return;

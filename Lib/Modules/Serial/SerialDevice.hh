@@ -38,21 +38,25 @@
 
 //#define SERIAL_DEVICE_DEBUG
 
+#include <stdlib.h>
+#include <stdio.h>
 #include <iostream>
+#include <sstream>
+#include <string.h>
+#include <vector>
 #include <fcntl.h>
 #include <sys/ioctl.h>
-#include <termios.h>
-#include <sys/time.h>
+#include <unistd.h>
 #include <errno.h>
+#include <sys/time.h>
+#include <sys/stat.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
-#include <sys/stat.h>
-#include <string.h>
+#include <termios.h>
 #include <pthread.h>
-#include <vector>
-
+#include <signal.h>
 #include "Timer.hh"
 
 #ifdef __APPLE__

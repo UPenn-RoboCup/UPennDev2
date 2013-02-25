@@ -33,12 +33,6 @@
 */
 
 #include "SerialDevice.hh"
-#include <stdlib.h>
-#include <stdio.h>
-#include "Timer.hh"
-#include <signal.h>
-
-#include <sstream>
 
 #define SD_VERBOSE
 #ifdef SD_VERBOSE 

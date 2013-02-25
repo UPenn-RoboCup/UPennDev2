@@ -61,7 +61,7 @@ while (1) do
   lidarArray = serialization.serialize_array(lidar.ranges, width,
                 height, 'single', 'ranges', lidar.counter);
   savelidar = {};
-  savelidar.timestamp = t1;
+  savelidar.t = t1;
   savelidar.arr = lidarArray[1];
   local savedata=serialization.serialize(savelidar);
 --  print(savedata);

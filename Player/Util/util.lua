@@ -147,8 +147,8 @@ function util.init_shm_segment(fenv, name, shared, shsize, tid, pid)
   local shm = require('shm');
   local carray = require('carray');
 
-  tid = tid or Config.game.teamNumber;
-  pid = pid or Config.game.playerID;
+  tid = tid or 0; --Config.game.teamNumber;
+  pid = pid or 1; --Config.game.playerID;
   -- initialize shm segments from the *cm format
   for shtable, shval in pairs(shared) do
     -- create shared memory segment
@@ -225,7 +225,7 @@ function util.init_shm_segment(fenv, name, shared, shsize, tid, pid)
   end
 end
 
-function util.init_shm_keys(shmHandle, shmTable)
+function init_shm_keys(shmHandle, shmTable)
   -- initialize a shared memory block (creating the entries if needed)
   for k,v in pairs(shmTable) do 
     -- create the key if needed
@@ -245,7 +245,7 @@ function util.init_shm_keys(shmHandle, shmTable)
   end
 end
 
-function util.shm_key_exists(shmHandle, k, nvals)
+function shm_key_exists(shmHandle, k, nvals)
   -- checks the shm segment for the given key
   -- returns true if the key exists and is of the correct length nvals (if provided)
   local carray = require('carray');

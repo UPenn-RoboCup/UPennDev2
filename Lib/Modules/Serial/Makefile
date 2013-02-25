@@ -9,7 +9,7 @@ SerialDevice.o : SerialDevice.cc
 	$(CXX) -c -o $@ $^ $(CXXFLAGS) $(INCLUDES)
 
 lua_Serial: lua_Serial.o SerialDevice.o
-	$(LD) $(LDFLAGS) -o Serial.$(SHLIBEXT) $(LIBOPTS) $^ $(LIB_DIR) -lpthread
+	$(CXX) $(LDFLAGS) -o Serial.$(SHLIBEXT) $(LIBOPTS) $^ $(LIB_DIR) -lpthread
 
 clean:
 	rm -f *.so *.o 

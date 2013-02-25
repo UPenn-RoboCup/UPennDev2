@@ -48,19 +48,20 @@ end
 function record()
   -- Make sure we are writing to a file
   if not imu_file then
-    imu_file = io.open('imu_'..logfile, 'w')
+		filename = string.format('imu_%05d.raw',logfile);
+    imu_file = io.open( filename , 'w')
   end
   -- Receive data
   imu_data_str, ts = ReceivePacket( 36 );
   -- Write data
   if imu_data_str and #imu_data_str>0 then
-    print( ts.." "..imu_data_str )
     imu_file:write( ts.." "..imu_data_str.."\n" )
     counter = counter+1;
   end
   
   -- Close file at certain intervals
-  if counter%150==0 then
+  if counter%500==0 then
+		print('Writing',filename)
     counter = 0;
     logfile = logfile+1;
     imu_file:close()

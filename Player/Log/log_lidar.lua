@@ -10,7 +10,7 @@ cwd = '.';
 package.cpath = cwd.."/../Lib/?.so;"..package.cpath;
 package.path = cwd.."/../Util/?.lua;"..package.path;
 
-require('serialization');
+local serialization = require('serialization');
 require('Hokuyo')
 require('signal')
 require('Serial');
@@ -37,7 +37,7 @@ filename = string.format("lidar%s-%d", filetime, lidarfilecnt);
 
 file = io.open(filename, "w");
 linecount = 0;
-maxlinecount = 1000;
+maxlinecount = 500;
 
 
 

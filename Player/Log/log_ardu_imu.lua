@@ -67,12 +67,12 @@ function record()
   if imu_data_str and #imu_data_str>0 then
     local tbl_data = {}
     vals=string.gmatch(imu_data_str, "%d+")
-    tbl_data['Ax'] = vals(1);
-    tbl_data['Ay'] = vals(1);
-    tbl_data['Az'] = vals(1);
-    tbl_data['Wx'] = vals(1);
-    tbl_data['Wy'] = vals(1);
-    tbl_data['Wz'] = vals(1);
+    tbl_data['Ax'] = tonumber(vals());
+    tbl_data['Ay'] = tonumber(vals());
+    tbl_data['Az'] = tonumber(vals());
+    tbl_data['Wx'] = tonumber(vals());
+    tbl_data['Wy'] = tonumber(vals());
+    tbl_data['Wz'] = tonumber(vals());
     tbl_data['t'] = ts;
     local s_vals = serialization.serialize( tbl_data );
     imu_file:write( s_vals..'\n' )

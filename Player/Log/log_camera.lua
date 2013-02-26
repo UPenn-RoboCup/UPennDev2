@@ -2,7 +2,6 @@
 cwd = '.';
 package.cpath = cwd.."/../Lib/?.so;"..package.cpath;
 package.path = cwd.."/../Util/?.lua;"..package.path;
-package.path = cwd.."/../Config/?.lua;"..package.path;
 package.path = cwd..'/../Util/ffi/?.lua;'..package.path
 
 fps = 30;
@@ -11,7 +10,7 @@ nframes = fps*seconds;
 
 local ffi = require 'ffi'
 local libpng = require 'libpng'
-local Camera = require "OPCam"
+local Camera = require "uvcCam"
 local unix = require 'unix'
 Config = {}
 Config.camera = require 'Config'

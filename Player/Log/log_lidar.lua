@@ -32,14 +32,17 @@ end
 
 -- Create files
 lidarfilecnt = 0;
-filetime = os.date('%m.%d.%Y.%H.%M');
-filename = string.format("lidar%s-%d", filetime, lidarfilecnt);
+function get_filename()
+  local filetime = os.date('%m.%d.%Y.%H.%M');
+  local filename = 
+string.format("/mnt/logs/shadwell/logs/lidar%s-%04d", filetime, 
+lidarfilecnt);
+  return filename;
+end
 
-file = io.open(filename, "w");
+file = io.open(get_filename(), "w");
 linecount = 0;
 maxlinecount = 500;
-
-
 
 cntr = 0;
 cnti = 0;
@@ -73,8 +76,7 @@ while (1) do
     linecount = 0;
     file:close();
     lidarfilecnt = lidarfilecnt + 1;
-    filename = string.format("lidar%s-%d", filetime, lidarfilecnt);
-    file = io.open(filename, "w");
+    file = io.open(get_filename(), "w");
   end
 
   signal.signal("SIGINT", ShutDownFN);

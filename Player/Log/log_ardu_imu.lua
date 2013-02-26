@@ -8,6 +8,7 @@ package.path = cwd..'/../Util/ffi/?.lua;'..package.path
 local ffi = require 'ffi'
 local Serial = require('Serial');
 local unix = require('unix');
+local serialization = require 'serialization'
 
 dev = '/dev/ttyUSB0';
 --dev = '/dev/tty.usbserial-A700eEMV'
@@ -19,7 +20,7 @@ counter = 0;
 max_count = 500;
 function get_filename()
   local filetime = os.date('%m.%d.%Y.%H.%M');
-  local filename = string.format("arduimu%s-%04d", filetime, logfile_cnt);
+  local filename = string.format("/mnt/logs/shadwell/logs/arduimu%s-%04d", filetime, logfile_cnt);
   return filename;
 end
 
@@ -58,13 +59,24 @@ function record()
   -- Make sure we are writing to a file
   if not imu_file then
     imu_file = io.open( get_filename() , 'w')
-    imu_file:write( "t Ax Ay Az Wx Wy Wz dt\n" )
+    --imu_file:write( "t Ax Ay Az Wx Wy Wz dt\n" )
   end
   -- Receive data
   imu_data_str, ts = ReceivePacket( 32 );
   -- Write data
   if imu_data_str and #imu_data_str>0 then
-    imu_file:write( ts.." "..imu_data_str.."\n" )
+    local tbl_data = {}
+    vals=string.gmatch(imu_data_str, "%d+")
+    tbl_data['Ax'] = vals(1);
+    tbl_data['Ay'] = vals(1);
+    tbl_data['Az'] = vals(1);
+    tbl_data['Wx'] = vals(1);
+    tbl_data['Wy'] = vals(1);
+    tbl_data['Wz'] = vals(1);
+    tbl_data['t'] = ts;
+    local s_vals = serialization.serialize( tbl_data );
+    imu_file:write( s_vals..'\n' )
+    --imu_file:write( ts.." "..imu_data_str.."\n" )
     counter = counter+1;
   end
   

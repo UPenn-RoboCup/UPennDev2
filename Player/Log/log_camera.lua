@@ -1,6 +1,9 @@
-local pwd = os.getenv('PWD')
-package.cpath = pwd..'/../qt/lib/qt/?.so;'..package.cpath
-package.path = pwd..'/../qt/lib/ffi/?.lua;'..package.path
+-- Include the proper directories
+cwd = '.';
+package.cpath = cwd.."/../Lib/?.so;"..package.cpath;
+package.path = cwd.."/../Util/?.lua;"..package.path;
+package.path = cwd.."/../Config/?.lua;"..package.path;
+package.path = cwd..'/../Util/ffi/?.lua;'..package.path
 
 fps = 30;
 seconds = 20;

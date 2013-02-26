@@ -34,10 +34,6 @@ function get_log_file_list()
   return log_file_list_iter;
 end
 
-function open_log_file( log_file_list )
-  local log_f_handle = assert(io.open(log_file_list, 'r+'));
-  return log_f_handle;
-end
 
 -- Parse the name from a lidar entry
 function parse_name(namestr)
@@ -73,18 +69,12 @@ parsers_tbl[1] = function ( str )
   end
   return lidar_tbl;
 end
+-- IMU Parser
 parsers_tbl[2] = function ( str )
   local imu_data = serialization.deserialize( str );
-  print('Parsing IMU!')
   local imu_tbl = {};
-  if imu_data.arr then
-    -- Grab the counter of this lidar scan
-    local name = parse_name( imu_data.arr.name );
-    -- Store the timestamp of the data
-    imu_tbl.t = imu_data.t;
-  else
-    return nil;
-  end
+  -- Store the timestamp of the data
+  imu_tbl.t = imu_data.t;
   return imu_tbl;
 end
 
@@ -94,48 +84,83 @@ function push_entry( lidar_tbl )
   rcm.set_lidar_counter(lidar_tbl.counter);
 end
 
--- Run the main push loop
-local log_file_iters = get_log_file_list();
+function open_log_file( d )
+  -- Use a Global variable.  Assume it is defined
+  local log_file_name = log_file_iters[d]()
+  if not log_file_name then
+    return false
+  end
+  local log_f_handle = assert(io.open(log_file_name, 'r+'));
+  -- Update global variabels
+  log_handles[d] = log_f_handle;
+  entry_iters[d] = log_f_handle:lines()
+  return true;
+end
 
--- Initially open all logs
-local entry_iters = {};
+
+-- Initialize Global Variables
+entry_iters = {};
 -- Save the log handles
-local log_handles = {};
+log_handles = {};
 -- Save the latest entry
-local latest_entry_tbls = {};
+latest_entry_tbls = {};
+-- Set the Log file List
+log_file_iters = get_log_file_list();
+
+-- Initial Opening
 for i=1,#log_file_iters do
-  local f_tmp = open_log_file( log_file_iters[i]() );
-  print('Opening a new file...')
-  entry_iters[i] = f_tmp:lines()
-  log_handles[i] = f_tmp
+  print('Opening a new '..dataTypes[i]..' file...')
+  open_log_file( i );
   latest_entry_tbls[i] = nil;
 end
 
 -- Loop until we say to stop
 local last_ts = nil;
-local entry_tbls = {};
 local entry_timestamps = {}
 while true do
+  --for trials=1,50 do
   -- Read in datatypes that have not been loaded
   for d=1,#dataTypes do
     -- Only update the blank entries
     if latest_entry_tbls[d]==nil then
       local entry_str = entry_iters[d]();
       if entry_str then
-        print('Entry:',entry_str)
-        entry_tbls[d] = parsers_tbl[d]( entry_str )
+        --print('Entry:',entry_str)
+        latest_entry_tbls[d] = parsers_tbl[d]( entry_str )
       else
-        log_handles[i]:close()
-        -- NEED TO OPEN NEW FILE and add an entry!
+        log_handles[d]:close()
+        print('Opening a new '..dataTypes[d]..' file...')
+        local file_status = open_log_file( d );
+        if file_status==false then
+          entry_str = nil;
+        else
+          entry_str = entry_iters[d]();
+        end
+        if not entry_str then
+          print('Done with the '..dataTypes[d]..' logs.')
+          latest_entry_tbls[d] = {};
+          latest_entry_tbls[d].t = nil;
+        else
+          latest_entry_tbls[d] = parsers_tbl[d]( entry_str )
+        end
       end
       -- Store the timestamps, so we can search easily
-      entry_timestamps[d] = entry_tbls[d].t;
+      entry_timestamps[d] = latest_entry_tbls[d].t;
     end
   end
 
   -- Who has the min timestamp?
   local min_ts, d_idx = util.min(entry_timestamps)
-  print('Pushing',dataTypes[d_idx]);
+
+  if not dataTypes[d_idx] then
+    print('Done all logs!')
+    return
+  end
+
+  -- Empty the data structure
+  latest_entry_tbls[d_idx]=nil
+--  print('Pushing',d_idx,dataTypes[d_idx], min_ts)
+--  print('ts:',entry_timestamps[1],entry_timestamps[2]);
 
   -- Push this entry to SHM
   local t_diff = min_ts - (last_ts or min_ts);
@@ -144,6 +169,5 @@ while true do
   if realtime then
     unix.usleep( 1e6*t_diff );
   end
-  push_entry( entry_tbls[d_idx] )
-
+  --  push_entry( latest_entry_tbls[d_idx] )
 end

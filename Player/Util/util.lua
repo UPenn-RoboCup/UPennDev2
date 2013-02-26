@@ -147,8 +147,8 @@ function init_shm_segment(fenv, name, shared, shsize, tid, pid)
   local shm = require('shm');
   local carray = require('carray');
 
-  tid = tid or Config.game.teamNumber;
-  pid = pid or Config.game.playerID;
+  tid = tid or 0; --Config.game.teamNumber;
+  pid = pid or 1; --Config.game.playerID;
   -- initialize shm segments from the *cm format
   for shtable, shval in pairs(shared) do
     -- create shared memory segment

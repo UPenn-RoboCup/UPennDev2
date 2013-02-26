@@ -18,8 +18,8 @@ require('unix');
 
 hokuyo = {}
 hokuyo.nReturns = 1081;
-hokuyo.serial = "00805676"
---hokuyo.serial = "00907258"
+--hokuyo.serial = "00805676"
+hokuyo.serial = "00907258"
 hokuyo.device = "/dev/ttyACM0"
 --hokuyo.device = "/dev/tty.usbmodem1411"
 Hokuyo.open(hokuyo.device, hokuyo.serial);

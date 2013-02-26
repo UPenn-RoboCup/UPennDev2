@@ -62,7 +62,7 @@ function record()
     --imu_file:write( "t Ax Ay Az Wx Wy Wz dt\n" )
   end
   -- Receive data
-  imu_data_str, ts = ReceivePacket( 32 );
+  imu_data_str, ts = ReceivePacket( 38 );
   -- Write data
   if imu_data_str and #imu_data_str>0 then
     local tbl_data = {}
@@ -73,6 +73,9 @@ function record()
     tbl_data['Wx'] = tonumber(vals());
     tbl_data['Wy'] = tonumber(vals());
     tbl_data['Wz'] = tonumber(vals());
+    tbl_data['R'] = tonumber(vals());
+    tbl_data['P'] = tonumber(vals());
+    tbl_data['Y'] = tonumber(vals());
     tbl_data['t'] = ts;
     local s_vals = serialization.serialize( tbl_data );
     imu_file:write( s_vals..'\n' )

@@ -8,8 +8,8 @@ WorldInfo {
   displayRefresh 3
 }
 Viewpoint {
-  orientation -0.515192 -0.837794 -0.180774 0.828881
-  position -1.05998 1.72862 1.41895
+  orientation -0.891675 -0.415035 -0.180728 0.944412
+  position -0.475646 2.42565 1.35964
 }
 Background {
   skyColor [
@@ -68,17 +68,11 @@ DEF GROUND5 Solid {
   locked TRUE
 }
 Desk {
-  translation 0.5 0.3 0
+  translation 0.323212 0.3 -0.00634968
   rotation 0 1 0 1.57
 }
-Can {
-  translation 0.3 1.06 0.15
-}
 ObjectGPS {
-  translation 0.3 1.06 -0.15
-}
-FruitBowl {
-  translation 0.26 1.01 0.5
+  translation 0.160613 1.06 -0.0859687
 }
 THOROP {
   translation -0.18 0.6 0

@@ -58,11 +58,6 @@ naoqi:
 	@cd $(NAOQIDIR) && make && cd $(CWD)
 	@echo "\n"
 
-hp:
-	@echo "Compiling HP Lua/C++ Libraries...\n"
-	@cd $(HPDIR) && make && cd $(CWD)
-	@echo "\n"
-
 xos:
 	@echo "Compiling XOS Lua/C++ Libraries...\n"
 	@cd $(XOSDIR) && make && cd $(CWD)
@@ -134,9 +129,14 @@ comm::
 	@cd $(COMMDIR) && make && cd $(CWD)
 	@echo "\n"
 
-hokuyo::
+hokuyo:
 	@echo "Compiling Hokuyo Lua/C++ Libraries...\n"
 	@cd $(HOKUYODIR) && make && cd $(CWD)
+	@echo "\n"
+
+serial:
+	@echo "Compiling Serial Lua/C++ Libraries...\n"
+	@cd $(SERIALDIR) && make && cd $(CWD)
 	@echo "\n"
 
 SlamT::
@@ -253,15 +253,6 @@ setup_visiontest: visiontest setup_util setup_image
 	cd $(PLAYERDIR)/Config && ln -s Config_VisionTest.lua Config.lua && cd $(CWD)
 	@echo "\n"
 
-setup_hp: hp setup_util setup_image setup_comm
-	@echo "Setting up HP Lua/C++ Libraries...\n"
-	mkdir -p $(INSTDIR)
-	find $(HPDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
-	touch $(PLAYERDIR)/Config/Config.lua
-	cd $(PLAYERDIR)/Config && ln -s Config_HP.lua Config.lua && cd $(CWD)
-	cp $(INSTDIR)/unix.$(SHLIBEXT) $(PLAYERDIR)/
-	@echo "\n"
-
 setup_op: op setup_util setup_image setup_comm setup_occmap
 	@echo "Setting up Darwin OP Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
@@ -321,6 +312,12 @@ setup_comm: comm
 	find $(COMMDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
 	@echo "\n"
 
+setup_serial: serial
+	@echo "Setting up Serial Lua/C++ Libraries...\n"
+	mkdir -p $(INSTDIR)
+	find $(SERIALDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
+	@echo "\n"
+
 setup_hokuyo: hokuyo
 	@echo "Setting up Hokuyo Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
@@ -370,7 +367,10 @@ setup_naoqi: naoqi setup_util
 setup_boxer: setup_op setup_hands setup_primesense
 
 setup_webots_boxer: setup_webots_op setup_hands setup_primesense
-
+	
+setup_saffir_board: setup_serial setup_util setup_hokuyo
+	@echo "Setting up SAFFiR Board...\n"
+	
 clean:
 	cd $(IMAGEDIR) && make clean && cd $(CWD)
 	cd $(COMMDIR) && make clean && cd $(CWD)

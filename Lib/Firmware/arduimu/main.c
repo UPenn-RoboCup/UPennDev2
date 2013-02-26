@@ -87,15 +87,25 @@ int main(void)
       {
         if ( ret2 == 0)
         {
-          uart_printf("(%d %d %d) %d\r\n",(int)(roll*180.0/M_PI),(int)(pitch*180.0/M_PI),(int)(yaw*180.0/M_PI),dt);
+          //uart_printf("(%d %d %d) %d\r\n",(int)(roll*180.0/M_PI),(int)(pitch*180.0/M_PI),(int)(yaw*180.0/M_PI),dt);
+          uart_printf("%d %d %d\n",
+              (int)(roll*180.0/M_PI), (int)(pitch*180.0/M_PI), (int)(yaw*180.0/M_PI)
+              );
           cntr++;
         }
         else if (ret2 == 1)
         {
-          uart_printf("(%d %d %d)   (%d %d %d)  %d\r\n",
+					// uart_printf("(%d %d %d)   (%d %d %d)  %d\r\n",
+          /*
+          uart_printf("%d %d %d %d %d %d %d\n",
               adcVals[ADC_AX_IND],adcVals[ADC_AY_IND],adcVals[ADC_AZ_IND],
               adcVals[ADC_WX_IND],adcVals[ADC_WY_IND],adcVals[ADC_WZ_IND], dt);
-
+          */
+          uart_printf("%d %d %d %d %d %d %d %d %d %d\n",
+              adcVals[ADC_AX_IND],adcVals[ADC_AY_IND],adcVals[ADC_AZ_IND],
+              adcVals[ADC_WX_IND],adcVals[ADC_WY_IND],adcVals[ADC_WZ_IND], 
+              (int)(roll*180.0/M_PI), (int)(pitch*180.0/M_PI), (int)(yaw*180.0/M_PI),
+              dt);
         }
       }
       else if (outputMode == OUTPUT_MODE_BINARY)

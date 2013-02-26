@@ -120,3 +120,44 @@ function getRPY(t)
   return e;
 end
 
+function position6D(tr)
+  local p = vector.new({
+	tr[1][4],tr[2][4],tr[3][4],0,0,0});
+  p[4] = math.atan2(tr[3][2],tr[3][3]);
+  p[5] = -math.asin(tr[3][1]);
+  p[6] = math.atan2(tr[2][1],tr[1][1]);
+  return p;
+end
+
+
+function transform6D(p)
+  local t = {};
+
+  local cwx = math.cos(p[4]);
+  local swx = math.sin(p[4]);
+  local cwy = math.cos(p[5]);
+  local swy = math.sin(p[5]);
+  local cwz = math.cos(p[6]);
+  local swz = math.sin(p[6]);
+
+  t[1] = vector.new({1,0,0,0});
+  t[2] = vector.new({0, 1, 0, 0});
+  t[3] = vector.new({0, 0, 1, 0});
+  t[4] = vector.new({0, 0, 0, 1});
+
+  t[1][1] = cwy*cwz;
+  t[1][2] = swx*swy*cwz-cwx*swz;
+  t[1][3] = cwx*swy*cwz+swx*swz;
+  t[1][4] = p[1];
+  t[2][1] = cwy*swz;
+  t[2][2] = swx*swy*swz+cwx*cwz;
+  t[2][3] = cwx*swy*swz-swx*cwz;
+  t[2][4] = p[2];
+  t[3][1] = -swy;
+  t[3][2] = swx*cwy;
+  t[3][3] = cwx*cwy;
+  t[3][4] = p[3];
+
+  return setmetatable(t, mt);
+end
+

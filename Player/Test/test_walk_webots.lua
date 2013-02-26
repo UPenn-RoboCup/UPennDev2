@@ -146,6 +146,14 @@ function process_keyinput()
 
 	elseif byte==string.byte("x") then
 	    walk.upper_body_override_off();
+
+    elseif byte==string.byte("b") then 
+       walk.walk_style = (walk.walk_style+1)%4;
+       print("Walk style:",walk.walk_style);
+
+
+
+
 	elseif byte==string.byte("c") then
 	    walk.upper_body_override(
 --		vector.new({150,8,0})*math.pi/180,

@@ -23,7 +23,7 @@ ifeq ($(OSTYPE),linux)
   USBDEVICE = /dev/ttyUSB0
 endif
 ifeq ($(OSTYPE),darwin)
-  USBDEVICE = /dev/cu.usbserial-A700eEMR
+  USBDEVICE = /dev/cu.usbserial-A700eEMV
 endif
 
 DEVICE     = atmega328p

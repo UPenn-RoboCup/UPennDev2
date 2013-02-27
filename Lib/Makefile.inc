@@ -100,3 +100,4 @@ PLAYERDIR= ../Player
 NAODEPDIR= ../Install/dependencies
 NAODEPLUA51DIR= $(NAODEPDIR)/usr/local/lib/lua/5.1
 TORCHDIR= ../Tools/torch
+SERIALDIR=$(MODULEDIR)/Serial

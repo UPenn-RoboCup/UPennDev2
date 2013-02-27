@@ -310,8 +310,6 @@ int ImuPacketHandler()
   pitch = npitch;
   yaw  = nyaw;
 
-  
-  
   axa = 0;
   aya = 0;
   aza = 0;
@@ -319,6 +317,7 @@ int ImuPacketHandler()
   wya = 0;
   wza = 0;
 
+	// Returning 0: RPY output
+	// Returning 1: Raw data out
   return 1;
 }
-

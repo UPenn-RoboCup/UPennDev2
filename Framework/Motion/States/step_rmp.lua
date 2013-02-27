@@ -16,9 +16,9 @@ require('rmp')
 --------------------------------------------------------------------------------
 
 step = Motion_state.new(...)
-local dcm = step.dcm
 step:set_joint_access(0, 'all')
-step:set_joint_access(1, 'legs')
+step:set_joint_access(1, 'lowerbody')
+local dcm = step.dcm
 
 local torso_rmp = rmp.new(
   3,                                       -- number of rmp dimensions

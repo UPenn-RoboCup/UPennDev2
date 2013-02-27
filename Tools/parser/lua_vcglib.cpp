@@ -87,9 +87,39 @@ static int lua_vcglib_stl2vrml(lua_State *L) {
   return 1;
 }
 
+static int lua_vcglib_sdf2vrml(lua_State *L) {
+  std::string sdffilename(luaL_checkstring(L, 1));
+  cout << sdffilename << endl;
+  std::string vrmlfilename(sdffilename);
+  vrmlfilename.replace(vrmlfilename.length() - 3, 3, "wrl");
+  cout << vrmlfilename << endl;
+
+  MyMesh m;
+  int mask = 0;
+	tri::io::ImporterPLY<MyMesh>::LoadMask(sdffilename.c_str(), mask); 
+	// small patch to allow the loading of per wedge color into faces.  
+	if(mask & tri::io::Mask::IOM_WEDGCOLOR) mask |= tri::io::Mask::IOM_FACECOLOR;
+ 
+	int result = tri::io::ImporterPLY<MyMesh>::Open(m, sdffilename.c_str(), mask, 0);
+	if (result != 0) // all the importers return 0 on success
+	{
+		if(tri::io::ImporterPLY<MyMesh>::ErrorCritical(result) )
+			return luaL_error(L, tri::io::ImporterPLY<MyMesh>::ErrorMsg(result));
+	}
+
+	result = tri::io::ExporterWRL<MyMesh>::Save(m,vrmlfilename.c_str(),mask, 0);
+	if(result!=0)
+	{
+		return luaL_error(L, tri::io::ExporterWRL<MyMesh>::ErrorMsg(result));
+	}
+
+  return 1;
+}
+
 static const struct luaL_reg vcg_lib [] = {
   {"dae2vrml", lua_vcglib_dae2vrml},
   {"stl2vrml", lua_vcglib_stl2vrml},
+  {"sdf2vrml", lua_vcglib_sdf2vrml},
   {NULL, NULL}
 };
 

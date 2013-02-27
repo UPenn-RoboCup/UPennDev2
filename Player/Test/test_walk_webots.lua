@@ -20,6 +20,8 @@ darwin = false;
 webots = false;
 
 require('grip')
+require('crawl')
+
 
 -- Enable OP specific 
 if(Config.platform.name == 'OP') then
@@ -81,20 +83,23 @@ function process_keyinput()
 	end
 
   -- Walk velocity setting
-	if byte==string.byte("i") then	targetvel[1]=targetvel[1]+0.02;
+--	if byte==string.byte("i") then	targetvel[1]=targetvel[1]+0.02;
+--	elseif byte==string.byte(",") then	targetvel[1]=targetvel[1]-0.02;
+
+	if byte==string.byte("i") then	targetvel[1]=targetvel[1]+0.30;
+	elseif byte==string.byte(",") then	targetvel[1]=targetvel[1]-0.30;
+
+
 	elseif byte==string.byte("j") then	targetvel[3]=targetvel[3]+0.1;
 	elseif byte==string.byte("k") then	targetvel[1],targetvel[2],targetvel[3]=0,0,0;
 	elseif byte==string.byte("l") then	targetvel[3]=targetvel[3]-0.1;
-	elseif byte==string.byte(",") then	targetvel[1]=targetvel[1]-0.02;
 	elseif byte==string.byte("h") then	targetvel[2]=targetvel[2]+0.02;
 	elseif byte==string.byte(";") then	targetvel[2]=targetvel[2]-0.02;
 
+--[[
 	elseif byte==string.byte("1") then	
 --		kick.set_kick("kickForwardLeft");
 --		Motion.event("kick");
-
-
-
 		Motion.event("align");
 
 	elseif byte==string.byte("2") then	
@@ -106,6 +111,17 @@ function process_keyinput()
 	elseif byte==string.byte("4") then	
 		kick.set_kick("kickSideRight");
 		Motion.event("kick");
+--]]
+    elseif byte==string.byte("1") then 
+       crawl.walk_style = 0;
+    elseif byte==string.byte("2") then 
+       crawl.walk_style = 1;
+    elseif byte==string.byte("3") then 
+       crawl.walk_style = 2;
+    elseif byte==string.byte("4") then 
+       crawl.walk_style = 3;
+
+
 
 	elseif byte==string.byte("w") then
 		Motion.event("diveready");
@@ -147,9 +163,6 @@ function process_keyinput()
 	elseif byte==string.byte("x") then
 	    walk.upper_body_override_off();
 
-    elseif byte==string.byte("b") then 
-       walk.walk_style = (walk.walk_style+1)%4;
-       print("Walk style:",walk.walk_style);
 
 
 
@@ -177,16 +190,19 @@ function process_keyinput()
 
 	elseif byte==string.byte("7") then	Motion.event("sit");
 	elseif byte==string.byte("8") then	
-		if walk.active then 
-  		  walk.stop();
+		if walk.active or crawl.active then 
+--  		  walk.stop();
+   		  Motion.walk_stop();
 		end
 		Motion.event("standup");
 	
 	elseif byte==string.byte("9") then	
 		Motion.event("walk");
-		walk.start();
+--		walk.start();
+		Motion.walk_start();
 	end
-	walk.set_velocity(unpack(targetvel));
+--	walk.set_velocity(unpack(targetvel));
+	Motion.set_walk_velocity(unpack(targetvel));
         print("Command velocity:",unpack(walk.velCommand))
 
   end

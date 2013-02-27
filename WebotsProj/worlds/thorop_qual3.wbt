@@ -27,7 +27,7 @@ DirectionalLight {
   intensity 0.5
 }
 DEF GROUND Solid {
-  translation 0 0.97 -0.5
+  translation 0 1 -0.5
   children [
     Shape {
       appearance DEF GroundAppearance Appearance {
@@ -119,7 +119,7 @@ THOROP {
   translation -7 2.6 0
   rotation -1 0 0 1.57
   controller "darwin-op_team_0"
-  controllerArgs "0 23"
+  controllerArgs "0 98"
 }
 QualGate {
   translation -6 2 0

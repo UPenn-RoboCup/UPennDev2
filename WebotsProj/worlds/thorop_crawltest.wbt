@@ -28,7 +28,7 @@ DirectionalLight {
 }
 
 DEF FLOOR MetricFloor{
-  color 0.8 0.8 0.8
+  color 0.95 0.95 0.95
   locked TRUE
 }
 

@@ -41,7 +41,12 @@ kneel.torsoX = -(kneel.armX + kneel.legX)/2;
 kneel.qLArm0 = {0.43,0.26,0.09,-1.15,-1.57,-1.57};
 
 
-
+--[[
+--Higher step testing
+kneel.tStep = 1;
+kneel.ph1Single = 0.1;
+kneel.ph2Single = 0.9;
+--]]
 
 
 
@@ -101,13 +106,17 @@ walk.ankleMod = vector.new({-1,0})/ 3*math.pi/180;
 gyroFactor = 0.273*math.pi/180 * 300 / 1024; --dps to rad/s conversion
 
 --gyroFactor = gyroFactor*3;
+gyroFactorX = gyroFactor*1;
+gyroFactorY = gyroFactor*1;
 
-walk.ankleImuParamX={0.3,0.75*gyroFactor, 0*math.pi/180, 5*math.pi/180};
-walk.kneeImuParamX={0.3,1.5*gyroFactor, 0*math.pi/180, 5*math.pi/180};
-walk.ankleImuParamY={0.3,0.25*gyroFactor, 0*math.pi/180, 2*math.pi/180};
-walk.hipImuParamY={0.3,0.25*gyroFactor, 0*math.pi/180, 2*math.pi/180};
-walk.armImuParamX={1,10*gyroFactor, 20*math.pi/180, 45*math.pi/180};
-walk.armImuParamY={1,10*gyroFactor, 20*math.pi/180, 45*math.pi/180};
+
+walk.ankleImuParamX={0.3,0.75*gyroFactorX, 0*math.pi/180, 5*math.pi/180};
+walk.kneeImuParamX={0.3,1.5*gyroFactorX, 0*math.pi/180, 5*math.pi/180};
+
+walk.ankleImuParamY={0.3,0.25*gyroFactorY, 0*math.pi/180, 2*math.pi/180};
+walk.hipImuParamY={0.3,0.25*gyroFactorY, 0*math.pi/180, 2*math.pi/180};
+walk.armImuParamX={1,10*gyroFactorX, 20*math.pi/180, 45*math.pi/180};
+walk.armImuParamY={1,10*gyroFactorY, 20*math.pi/180, 45*math.pi/180};
 
 --------------------------------------------
 -- WalkKick parameters
@@ -145,7 +154,12 @@ walk.supportX = 0.0;
 walk.supportY = 0.04;
 walk.bodyTilt = 0*math.pi/180;
 
-walk.tZmp = 0.26; --Com height 0.65
+--walk.tZmp = 0.26; --Com height 0.65
+--walk.tZmp = 0.34; --Com height 1.15
+--walk.tZmp = 0.32; --Com height 1.0
+walk.tZmp = 0.30; --Com height 0.9
+
+
 walk.tStep = 0.8;
 walk.stepHeight = 0.052;
 walk.phSingle = {0.15,0.85};
@@ -159,3 +173,25 @@ walk.velDelta={0.30,0.10,0.3}
 walk.velXHigh = 0.30;
 
 walk.supportModYInitial=-0.04; --Reduce initial body swing
+
+
+
+-------------------------------------
+-- ZMP preview stepping test
+-- This works with 750mm stride
+
+walk.tZmp = 0.28; --Com height 0.9
+walk.supportY = 0.0;
+
+--Larger stride test with ZMP preview
+walk.velLimitX={-.60,.60};
+walk.stanceLimitX={-.60,.60};
+walk.velDelta={0.20,0.10,0.3} 
+walk.velXHigh = 0.60;
+walk.stepHeight = 0.10;
+walk.footY = 0.10;
+walk.supportX = 0.04;
+walk.bodyHeight = 0.98; 
+walk.supportX = 0.02;
+
+-----------------------------------------

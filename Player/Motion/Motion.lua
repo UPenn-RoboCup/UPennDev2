@@ -31,7 +31,7 @@ require 'grip'
 require 'crawl'
 require 'stancetocrawl'
 
-
+--require 'largestep'
 
 
 
@@ -132,6 +132,11 @@ else --For large robots that cannot sit down or getup
   sm:set_transition(walk, 'sit', stancetocrawl);
 
 
+--  sm:set_transition(walk, 'hop',largestep)
+--  sm:set_transition(largestep, 'done',walk)
+
+
+
   sm:set_transition(stancetocrawl,'crawldone',crawl);
   sm:set_transition(stancetocrawl,'stancedone',stance);
 
@@ -144,29 +149,6 @@ else --For large robots that cannot sit down or getup
 
   sm:set_transition(standstill, 'sit', stancetocrawl);
 
---[[
-  fallAngle = 1E6; --NEVER check falldown
-
-  sm = fsm.new(standstill);
-  sm:add_state(stance);
-  sm:add_state(walk);
-  sm:add_state(kick);
-
-  sm:set_transition(stance, 'done', walk);
-
-  sm:set_transition(walk, 'stance', stance);
-  sm:set_transition(walk, 'standstill', standstill);
-
-  --standstill makes the robot stand still with 0 bodytilt (for webots)
-  sm:set_transition(standstill, 'stance', stance);
-  sm:set_transition(standstill, 'walk', stance);
-  sm:set_transition(standstill, 'done', stance); 
-
-
-  -- kick behaviours
-  sm:set_transition(walk, 'kick', kick);
-  sm:set_transition(kick, 'done', walk);
---]]
 
 
 end

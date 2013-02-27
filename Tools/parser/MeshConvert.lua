@@ -1,15 +1,24 @@
-require 'common'
-require 'include'
+--require 'common'
+--require 'include'
 
-require 'LuaXml'
-local util = require 'util'
-require 'vcglib'
+--require 'LuaXml'
+--local util = require 'util'
+local vcglib = require 'vcglib'
 
 --local datapath = '/home/yida/drcsim/ros/atlas_description/gazebo/atlas/meshes/' 
 local datapath = '' 
 local filename = datapath..'head.stl' 
+local filename = datapath..'model.sdf' 
 
-vcglib.stl2vrml(filename)
+local drcsimPath = '../../../drcsim'
+
+--vcglib.stl2vrml(filename)
+--vcglib.dae2vrml(filename)
+--vcglib.sdf2vrml(filename)
+
+-- gazebo_model
+-- ros
+-- world
 
 --local daefile = xml.load(filename)
 --

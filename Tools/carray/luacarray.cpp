@@ -16,6 +16,9 @@ extern "C"
 #endif
 
 #define MT_NAME "carray_mt"
+#define LUA_TCDATA 10
+
+#include <iostream>
 
 typedef unsigned char byte;
 typedef unsigned int uint;
@@ -44,7 +47,13 @@ static int lua_carray_new(lua_State *L) {
   structCArray *ud = (structCArray *)lua_newuserdata(L, sizeof(structCArray));
   ud->type = name;
 
-  if (lua_type(L, 1) == LUA_TLIGHTUSERDATA) { // Cast from pointer
+  if (lua_type(L, 1) == LUA_TCDATA) {
+//    ud->size = luaL_optint(L, -2, 1);  // Get optional size argument
+    ud->size = lua_tointeger(L, 2);  // Get optional size argument
+    ud->own = 0; // Do not free memory when deleting
+    ud->ptr = (void *) lua_topointer(L, 1);
+  }
+  else if (lua_type(L, 1) == LUA_TLIGHTUSERDATA) { // Cast from pointer
     ud->size = luaL_optint(L, -2, 1);  // Get optional size argument
     ud->own = 0; // Do not free memory when deleting
     ud->ptr = (void *) lua_topointer(L, 1);

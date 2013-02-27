@@ -1,0 +1,9 @@
+Requirement:
+  1. Qt
+  2. vcglib
+
+How to use?
+  1. Download vcglib for source
+    http://vcg.isti.cnr.it/~cignoni/newvcglib/html/install.html
+    svn co https://vcg.svn.sourceforge.net/svnroot/vcg/trunk/vcglib vcglib
+  2. make

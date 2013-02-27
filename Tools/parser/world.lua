@@ -2,44 +2,33 @@ require 'include'
 require 'LuaXml'
 local util = require 'util'
 
-local datapath = 'powerplant/'
-local filename = datapath..'manifest.xml' 
+require 'vrml'
 
-local file = xml.load(filename)
-local data = file:find('model')
-local model = {}
-if data ~= nil then
-  for i = 1, #data do
-    model[data[i]:tag()] = data[i]
-  end
-end
+header = '#VRML_SIM V6.0 utf8'
+local world = createVRML(header)
 
-function showInfo(tbl)
-  if tbl then
-    for k, v in ipairs(tbl) do
-      if type(v) == 'table' then
-        showInfo(v)
-      else
-        print(v)
-      end
-    end
-  end
-end
+world[1] = createNode(_, 'WorldInfo')
+world[2] = createNode(_, 'Viewpoint')
+world[3] = createNode(_, 'Background')
+world[4] = createNode(_, 'PointLight')
 
-showInfo(model.name)
-showInfo(model.version)
-showInfo(model.license)
-showInfo(model.description)
-showInfo(model.author)
+info = {'Description','Author: first name last name <e-mail>','Date: DD MMM YYYY'}
+world[1][1] = createMultiField('info', info)
 
-if model.sdf then
-  for i = 1, #model.sdf do
-    print('sdf - '..model.sdf[i])
-  end
-end
+orientation = {1,0,0,-0.8}
+world[2][1] = createField('orientation', orientation)
+position = {0.25,0.708035,0.894691}
+world[2][2] = createField('position',position)
 
---if model.depend then
---  for i = 1, #model.depend do
---    print(model.depend[i])
---  end
---end
+skyColor = {0.4, 0.7, 1}
+world[3][1] = createMultiField('skyColor', skyColor)
+
+ambientIntensity = {0.54}
+world[4][1] = createField('ambientIntensity', ambientIntensity)
+intensity = {0.5}
+world[4][2] = createField('intensity', intensity)
+location = {0, 1, 0}
+world[4][3] = createField('location', location)
+
+
+saveVRML(world, 'aa.wbt')

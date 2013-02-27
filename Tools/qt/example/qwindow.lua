@@ -1,5 +1,5 @@
 local pwd = os.getenv('PWD')
-package.cpath = pwd..'/lib/?.so;'..package.cpath
+package.cpath = pwd..'/../lib/qt/?.so;'..package.cpath
 
 require 'qtcore'
 require 'qtgui'
@@ -19,44 +19,45 @@ local new_window = function(...)
   
   local this = QWidget.new(...)
   
-  local button = QPushButton("Quit", this)
+  this.button = QPushButton("Quit", this)
   -- [horizontal, vertical, width, height]
-  button:setGeometry(0, 0, 75, 30);
-  button:connect("2clicked()", app, "1quit()")
+  this.button:setGeometry(0, 0, 75, 30);
+  this.button:connect("2clicked()", app, "1quit()")
   
-  local frame1 = QFrame(this, ...)
-  frame1:setFrameStyle(1)
-  frame1:setCursor('SizeAllCursor')
+  this.frame1 = QFrame(this, ...)
+  this.frame1:setFrameStyle(1)
+  this.frame1:setCursor('SizeAllCursor')
   --
-  local frame2 = QFrame(this, ...)
-  frame2:setFrameStyle(1)
-  frame2:setCursor('WaitCursor')
+  this.frame2 = QFrame(this, ...)
+  this.frame2:setFrameStyle(1)
+  this.frame2:setCursor('WaitCursor')
   --
-  local frame3 = QFrame(this, ...)
-  frame3:setFrameStyle(1)
-  frame3:setCursor('PointingHandCursor')
+  this.frame3 = QFrame(this, ...)
+  this.frame3:setFrameStyle(1)
+  this.frame3:setCursor('PointingHandCursor')
 
-  local label = QLabel(this, ...)
-  label:setGeometry(190, 80, 20, 30)
-  label:setText(QString.number(40))
-  label:__addmethod("OnPlus()", onplus)
-  local plusbutton = QPushButton("+", this)
-  plusbutton:connect('2clicked()', label, '1OnPlus()');
+  this.label = QLabel(this, ...)
+  this.label:setGeometry(190, 80, 20, 30)
+  this.label:setText(QString.number(40))
+  this.label:__addmethod("OnPlus()", onplus)
+  this.plusbutton = QPushButton("+", this)
+  this.plusbutton:connect('2clicked()', this.label, '1OnPlus()');
 
 
-  layout = QGridLayout.new()
-  layout:addWidget(button, 0, 0)
-  layout:addWidget(frame1, 0, 1)
-  layout:addWidget(frame2, 1, 0)
-  layout:addWidget(frame3, 0, 2)
-  layout:addWidget(label, 1, 1)
-  layout:addWidget(plusbutton, 1, 2)
-  this:setLayout(layout)
+  this.layout = QGridLayout.new()
+  this.layout:addWidget(this.button, 0, 0)
+  this.layout:addWidget(this.frame1, 0, 1)
+  this.layout:addWidget(this.frame2, 1, 0)
+  this.layout:addWidget(this.frame3, 0, 2)
+  this.layout:addWidget(this.label, 1, 1)
+  this.layout:addWidget(this.plusbutton, 1, 2)
+  this:setLayout(this.layout)
   
   return this
 end
 
 window = new_window()
+window.label:setText(QString.number(50))
 -- Get Screen Size
 desktop = QApplication.desktop()
 screenWidth = desktop:width()

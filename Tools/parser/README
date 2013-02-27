@@ -1,0 +1,2 @@
+http://vcg.isti.cnr.it/~cignoni/newvcglib/html/install.html
+svn co https://vcg.svn.sourceforge.net/svnroot/vcg/trunk/vcglib vcglib

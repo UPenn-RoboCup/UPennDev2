@@ -109,122 +109,32 @@ iStep0 = -1;
 iStep = 0;
 t0 = Body.get_time();
 tLastStep = Body.get_time();
-ph0=0;ph=0;
+ph0=0;ph=0;phSingle = 0;
 
 stopRequest = 2;
 canWalkKick = 0; --Can we do walkkick with this walk code?
-
 initial_step=2;
 
-
-upper_body_overridden = 0;
-motion_playing = 0;
-
-qLArmOR0,qRArmOR0={},{};
-qLArmOR0[1],qLArmOR0[2],qLArmOR0[3],qLArmOR0[4],qLArmOR0[5],qLArmOR0[6]
-=qLArm0[1],qLArm0[2],qLArm0[3],qLArm0[4],qLArm0[5],qLArm0[6];
-qRArmOR0[1],qRArmOR0[2],qRArmOR0[3],qRArmOR0[4],qRArmOR0[5],qRArmOR0[6]=
-qRArm0[1],qRArm0[2],qRArm0[3],qRArm0[4],qRArm0[5],qRArm0[6];
-bodyRot0 = {0,bodyTilt,0};
-
-qLArmOR,qRArmOR={},{};
-qLArmOR[1],qLArmOR[2],qLArmOR[3],qLArmOR[4],qLArmOR[5],qLArmOR[6]
-=qLArm0[1],qLArm0[2],qLArm0[3],qLArm0[4],qLArm0[5],qLArm0[6];
-qRArmOR[1],qRArmOR[2],qRArmOR[3],qRArmOR[4],qRArmOR[5],qRArmOR[6]=
-qRArm0[1],qRArm0[2],qRArm0[3],qRArm0[4],qRArm0[5],qRArm0[6];
-bodyRot = {0,bodyTilt,0};
-
-
-qLArmOR1 = {0,0,0,0,0,0};
-qRArmOR1 = {0,0,0,0,0,0};
-bodyRot1 = {0,0,0};
-
-phSingle = 0;
-
---Standard offset 
-uLRFootOffset = vector.new({0,footY,0});
-uTorsoOffset = {-footX,0,0};
-
---For torso offset change
-tStance0,tStance1 = 0,0;
 
 ----------------------------------------------------------
 -- End initialization 
 ----------------------------------------------------------
-
---Push Recovery Check
-
---Direct control of upper body
-function upper_body_override(qL, qR, bR)
-  upper_body_overridden = 1;
-  qLArmOR0 = qL;
-  qRArmOR0 = qR;
-  bR[1] = -1*bR[1];
-  bR[2] = -1*bR[2];
-  bodyRot0 = bR;
-
-  --Simple exponential filtering
-  alphaArm = 0.2;
-  alphaBody = 0.05;
-
-  --Values for IK-based direct control
-  alphaArm = 1;  alphaBody = 0;
-
-  qLArmOR[1] = alphaArm * qLArmOR0[1] + (1-alphaArm)*qLArmOR[1];
-  qLArmOR[2] = alphaArm * qLArmOR0[2] + (1-alphaArm)*qLArmOR[2];
-  qLArmOR[3] = alphaArm * qLArmOR0[3] + (1-alphaArm)*qLArmOR[3];
-  qLArmOR[4] = alphaArm * qLArmOR0[4] + (1-alphaArm)*qLArmOR[4];
-  qLArmOR[5] = alphaArm * qLArmOR0[5] + (1-alphaArm)*qLArmOR[5];
-  qLArmOR[6] = alphaArm * qLArmOR0[6] + (1-alphaArm)*qLArmOR[6];
-
-  qRArmOR[1] = alphaArm * qRArmOR0[1] + (1-alphaArm)*qRArmOR[1];
-  qRArmOR[2] = alphaArm * qRArmOR0[2] + (1-alphaArm)*qRArmOR[2];
-  qRArmOR[3] = alphaArm * qRArmOR0[3] + (1-alphaArm)*qRArmOR[3];
-  qRArmOR[4] = alphaArm * qRArmOR0[4] + (1-alphaArm)*qRArmOR[4];
-  qRArmOR[5] = alphaArm * qRArmOR0[5] + (1-alphaArm)*qRArmOR[5];
-  qRArmOR[6] = alphaArm * qRArmOR0[6] + (1-alphaArm)*qRArmOR[6];
-
-  bodyRot[1] = alphaBody * bodyRot0[1] + (1-alphaBody)*bodyRot[1];
-  bodyRot[2] = alphaBody * bodyRot0[2] + (1-alphaBody)*bodyRot[2];
-  bodyRot[3] = alphaBody * bodyRot0[3] + (1-alphaBody)*bodyRot[3];
-
---  bodyRot[2] = 	math.min(30*math.pi/180,math.max(10*math.pi/180,bodyRot[2]));
-
-  -- Limit the yawing so that we can maintain good balance
-  bodyRot[3] = 	math.min(30*math.pi/180,math.max(-30*math.pi/180,bodyRot[3]));
-
-end
-
-
-function upper_body_override_on()
-  upper_body_overridden = 1;
-  hardnessArm = 1;
-end
-
-function upper_body_override_off()
-  upper_body_overridden = 0;
-  hardnessArm = hardnessArm0;
-end
 
 function entry()
   print ("Motion: Walk entry")
   --SJ: now we always assume that we start walking with feet together
   --Because joint readings are not always available with darwins
   stance_reset();
-
   --Place arms in appropriate position at sides
   Body.set_larm_command(qLArm0);
   Body.set_rarm_command(qRArm0);
   Body.set_larm_hardness(hardnessArm);
   Body.set_rarm_hardness(hardnessArm);
-
   --Let the robot wait in standing state
   if Config.sit_disable>0 then
     active=false;
   end
-
   mcm.set_walk_bipedal(1);
-
 end
 
 
@@ -232,7 +142,6 @@ function update()
   footX = mcm.get_footX();
 
   t = Body.get_time();
-
   --Don't run update if the robot is sitting or standing
   bodyHeightCurrent = vcm.get_camera_bodyHeight();
   if  bodyHeightCurrent<bodyHeight-0.01 then
@@ -276,7 +185,6 @@ function update()
 
     supportMod = {0,0}; --Support Point modulation for walkkick
     shiftFactor = 0.5; --How much should we shift final Torso pose?
-
 
     if walkKickRequest==0 then
       if (stopRequest==1) then  --Final step
@@ -353,12 +261,7 @@ function update()
   uTorsoOld=uTorso;
   uTorso = zmp_com(ph);
 
-  --Arm movement compensation
-  if upper_body_overridden>0 or motion_playing > 0 then
-    pTorso[4], pTorso[5],pTorso[6] = bodyRot[1],bodyRot[2],bodyRot[3];
-  else
-    pTorso[4], pTorso[5],pTorso[6] = 0,bodyTilt,0;
-  end
+  pTorso[4], pTorso[5],pTorso[6] = 0,bodyTilt,0;
 
   uTorsoActual = util.pose_global(vector.new({-footX,0,0}),uTorso);
 
@@ -376,12 +279,7 @@ end
 function update_still()
   uTorso = step_torso(uLeft, uRight,0.5);
 
-  --Arm movement compensation
-  if upper_body_overridden>0 or motion_playing>0 then
-    pTorso[4], pTorso[5],pTorso[6] = bodyRot[1],bodyRot[2],bodyRot[3];
-  else
-    pTorso[4], pTorso[5],pTorso[6] = 0,bodyTilt,0;
-  end
+  pTorso[4], pTorso[5],pTorso[6] = 0,bodyTilt,0;
 
   uTorsoActual = util.pose_global(vector.new({-footX,0,0}),uTorso);
 
@@ -405,6 +303,11 @@ function motion_legs(qLegs)
 
   gyro_roll0=imuGyr[1];
   gyro_pitch0=imuGyr[2];
+
+
+gyro_roll0, gyro_pitch0 = 0,0;
+
+
 
   --get effective gyro angle considering body angle offset
   if not active then --double support
@@ -620,11 +523,6 @@ function stop()
   --  stopRequest = 2; --Stop w/o feet together
 end
 
-function stopAlign() --Depreciated, we always stop with feet together 
-  stop()
-end
-
-
 function stance_reset() --standup/sitdown/falldown handling
   print("Stance Resetted")
   uLeft = util.pose_global(vector.new({-supportX, footY, 0}),uTorso);
@@ -641,9 +539,6 @@ function stance_reset() --standup/sitdown/falldown handling
   motion_playing = 0;
   upper_body_overridden=0;
   uLRFootOffset = vector.new({0,footY,0});
-end
-
-function switch_stance(stance)
 end
 
 function get_odometry(u0)
@@ -670,7 +565,6 @@ function zmp_solve(zs, z1, z2, x1, x2)
   local T2 = tStep*ph2Zmp;
   local m1 = (zs-z1)/T1;
   local m2 = -(zs-z2)/(tStep-T2);
-
   local c1 = x1-z1+tZmp*m1*math.sinh(-T1/tZmp);
   local c2 = x2-z2+tZmp*m2*math.sinh((tStep-T2)/tZmp);
   local expTStep = math.exp(tStep/tZmp);
@@ -707,18 +601,7 @@ function foot_phase(ph)
   -- phSingle = 0: x=0, z=0, phSingle = 1: x=1,z=0
   phSingle = math.min(math.max(ph-ph1Single, 0)/(ph2Single-ph1Single),1);
   local phSingleSkew = phSingle^0.8 - 0.17*phSingle*(1-phSingle);
-
-
-  ph1SingleX,ph2SingleX = ph1Single, ph2Single;
---  ph1SingleX,ph2SingleX = 0.35, 0.65; -- Vertical takeoff / landing
---  ph1SingleX,ph2SingleX = 0.25, 0.75; -- Vertical takeoff / landing
-
-  phSingleX = math.min(math.max(ph-ph1SingleX, 0)/(ph2Single-ph1SingleX),1);
-  local phSingleSkewX = phSingleX^0.8 - 0.17*phSingleX*(1-phSingleX);
-
-
---  local xf = .5*(1-math.cos(math.pi*phSingleSkew));
-  local xf = .5*(1-math.cos(math.pi*phSingleSkewX));
+  local xf = .5*(1-math.cos(math.pi*phSingleSkew));
   local zf = .5*(1-math.cos(2*math.pi*phSingleSkew));
   return xf, zf;
 end
@@ -749,3 +632,11 @@ end
 function doPunch(punchtype)
 end
 
+function switch_stance(stance)
+end
+function upper_body_override(qL, qR, bR)
+end
+function upper_body_override_on()
+end
+function upper_body_override_off()
+end

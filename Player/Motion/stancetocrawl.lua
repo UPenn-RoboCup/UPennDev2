@@ -86,7 +86,8 @@ crawltostance={
   },
   {
 	{torsoXKneel, 0.7,0 }, --Torso X,Z and pitch
-	qLArm0,
+	{math.pi/4, 0,0,0,-1.57,0},
+--	qLArm0,
         {-supportX,footY,0,0}, --LFoot XYZ and pitch 
 	3, --Keyframe duration
   },

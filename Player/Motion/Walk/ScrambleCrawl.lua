@@ -374,6 +374,27 @@ function foot_phase(ph)
   local phSingleSkew = phSingle^0.8 - 0.17*phSingle*(1-phSingle);
   local xf = .5*(1-math.cos(math.pi*phSingleSkew));
   local zf = .5*(1-math.cos(2*math.pi*phSingleSkew));
+
+
+--[[
+
+  --Square pattern
+  local trajA1=0.3;
+  local trajA2=0.7;
+  phFoot=.5*(1-math.cos(math.pi*phSingle));
+  if phFoot<trajA1 then 
+     xf=0;
+     zf=phFoot/trajA1;
+  elseif phFoot<trajA2 then
+     xf = (phFoot-trajA1)/(trajA2-trajA1);
+     zf = 1;
+  else
+     xf=1;
+     zf=(1-phFoot)/(1-trajA2);
+  end
+--]]
+
+
   return xf, zf;
 end
 

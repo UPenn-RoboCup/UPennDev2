@@ -20,9 +20,15 @@ dev.camera = 'WebotsOPCam';
 dev.kinematics = 'THOROPKinematics';
 dev.game_control='WebotsGameControl';
 dev.team='TeamNull';
-dev.walk = 'HumbleWalk';
-dev.crawl = 'HumbleCrawl';
---dev.walk = 'HumbleCrawl';
+
+--dev.walk = 'HumbleWalk';
+dev.walk = 'ZMPPreviewWalk';
+
+dev.crawl = 'ScrambleCrawl';
+
+--dev.walk = 'JumbleWalk';
+--dev.crawl = 'JumbleCrawl';
+
 
 dev.kick = 'NewKick';
 

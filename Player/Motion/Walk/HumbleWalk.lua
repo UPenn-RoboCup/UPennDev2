@@ -130,10 +130,9 @@ function entry()
   Body.set_rarm_command(qRArm0);
   Body.set_larm_hardness(hardnessArm);
   Body.set_rarm_hardness(hardnessArm);
-  --Let the robot wait in standing state
-  if Config.sit_disable>0 then
-    active=false;
-  end
+  Body.set_waist_command(0);
+  Body.set_waist_hardness(1.0);
+
   mcm.set_walk_bipedal(1);
 end
 
@@ -303,11 +302,6 @@ function motion_legs(qLegs)
 
   gyro_roll0=imuGyr[1];
   gyro_pitch0=imuGyr[2];
-
-
-gyro_roll0, gyro_pitch0 = 0,0;
-
-
 
   --get effective gyro angle considering body angle offset
   if not active then --double support

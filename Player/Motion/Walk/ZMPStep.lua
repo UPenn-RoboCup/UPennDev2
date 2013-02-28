@@ -1,5 +1,11 @@
 module(..., package.seeall);
 
+------------------------------------------------
+-- This function uses ZMP preview algorithm
+-- To make robot a number of pre-defined steps
+-- 2013/2 SJ
+------------------------------------------------
+
 require('Body')
 require('Kinematics')
 require('Config');
@@ -8,25 +14,18 @@ require('mcm')
 require('unix')
 require('util')
 
-local matrix = require('matrix')
-
--- Walk Parameters
--- Stance and velocity limit values
-stanceLimitX=Config.walk.stanceLimitX or {-0.10 , 0.10};
-stanceLimitY=Config.walk.stanceLimitY or {0.09 , 0.20};
-stanceLimitA=Config.walk.stanceLimitA or {-0*math.pi/180, 40*math.pi/180};
-velLimitX = Config.walk.velLimitX or {-.06, .08};
-velLimitY = Config.walk.velLimitY or {-.06, .06};
-velLimitA = Config.walk.velLimitA or {-.4, .4};
-velDelta = Config.walk.velDelta or {.03,.015,.15};
+local matrix = require('matrix_zmp')
 
 --Stance parameters
+bodyHeight1 = Config.zmpstep.bodyHeight;
+bodyHeight0 = Config.walk.bodyHeight;
 bodyHeight = Config.walk.bodyHeight;
-bodyTilt=Config.walk.bodyTilt or 0;
+
+bodyTilt=Config.zmpstep.bodyTilt or 0;
+
 footX = Config.walk.footX or 0;
 footY = Config.walk.footY;
-supportX = Config.walk.supportX;
-supportY = Config.walk.supportY;
+
 qLArm=Config.walk.qLArm;
 qRArm=Config.walk.qRArm;
 qLArm0={qLArm[1],qLArm[2]};
@@ -36,17 +35,15 @@ hardnessSwing = Config.walk.hardnessSwing or 0.5;
 hardnessArm = Config.walk.hardnessArm or 0.2;
 
 --Gait parameters
-tStep0 = Config.walk.tStep;
-tStep = Config.walk.tStep;
-tZmp = Config.walk.tZmp;
-stepHeight = Config.walk.stepHeight;
-ph1Single = Config.walk.phSingle[1];
-ph2Single = Config.walk.phSingle[2];
-ph1Zmp,ph2Zmp=ph1Single,ph2Single;
+tZmp = Config.zmpstep.tZmp;
+supportX = Config.zmpstep.supportX;
+supportY = Config.zmpstep.supportY;
+stepHeight = Config.zmpstep.stepHeight;
+ph1Single = Config.zmpstep.phSingle[1];
+ph2Single = Config.zmpstep.phSingle[2];
 
 --Compensation parameters
-hipRollCompensation = Config.walk.hipRollCompensation;
-ankleMod = Config.walk.ankleMod or {0,0};
+hipRollCompensation = Config.zmpstep.hipRollCompensation;
 
 --Gyro stabilization parameters
 ankleImuParamX = Config.walk.ankleImuParamX;
@@ -70,7 +67,6 @@ uLeftF = vector.new({-supportX, footY, 0});
 uRightF = vector.new({-supportX, -footY, 0});
 uSupportF = vector.new({0,0,0});
 
-
 supportLegF = 2; --DS
 
 pLLeg = vector.new({-supportX, footY, 0, 0,0,0});
@@ -90,23 +86,13 @@ hipShift = vector.new({0,0});
 armShift = vector.new({0, 0});
 
 active = false;
-iStep0 = -1;
-iStep = 0;
 t0 = Body.get_time();
 t1 = Body.get_time();
 
-stopRequest = 2;
-canWalkKick = 0; --Can we do walkkick with this walk code?
-
-initdone=false;
-
 --ZMP preview parameters
 timeStep = 0.015; --15ms
-nPreview = 80; --preview interval, 80*10ms = 0.8sec
-
-nPreview = 150; --preview interval, 150*15ms 
-
-
+tPreview = 1.60; --preview interval, 1600ms
+nPreview = tPreview / timeStep; 
 r_q = 10^-6; --balacing parameter for optimization
 
 --Zmp preview variables
@@ -115,7 +101,7 @@ zmpx={};zmpy={};
 uLeftTargets={};
 uRightTargets={};
 supportLegs={};
-
+phs={};
 
 ------------------------------------------------------
 --Step queue information
@@ -123,14 +109,11 @@ supportLegs={};
 gapX = 0.75;
 gapY = 0.0;
 
-
 gapX = 0.25;
 gapY = -0.30;
 
 gapX = 0.80;
 gapY = -0.40;
-
-
 
 step_queue= {
    {
@@ -151,13 +134,9 @@ step_queue= {
     2, -- Double support
     0.8, --duration
    },
-
-
 };
 step_queue_count = 0;
 step_queue_t0 = 0;
-
-
 
 ----------------------------------------------------------
 -- End initialization 
@@ -192,21 +171,44 @@ function precompute()
 end
 
 function stance_reset()
+  --Quick hack: reset uTorso 
+  --TODO: integrated odometry handling at Motion.lua
+  uTorso = {0,0,0};
+
+  --Clear current position variables
   uLeft = util.pose_global(vector.new({-supportX, footY, 0}),uTorso);
   uRight = util.pose_global(vector.new({-supportX, -footY, 0}),uTorso);
   uLeft1, uLeft2 = uLeft, uLeft;
   uRight1, uRight2 = uRight, uRight;
-  uLeftF1, uLeftF2 = uLeft, uLeft;
-  uRightF1, uRightF2 = uRight, uRight;
-  uTorso1, uTorso2 = uTorso, uTorso;
   uSupport = uTorso;
+
+  --Clear future trajectory variable
+  uLeftF, uLeftF = uLeft, uLeft;
+  uRightF, uRightF = uRight, uRight;
+  supportLegF = 0;
+
+  --Clear trajectory queue
+  x=matrix:new{{uTorso[1],uTorso[2]},{0,0},{0,0}};
+  for i=1,nPreview do
+     zmpx[i]=uTorso[1];
+     zmpy[i]=uTorso[2]; 
+     supportLegs[i]=2; --double support
+     uLeftTargets[i]={uLeft[1],uLeft[2],uLeft[3]};
+     uRightTargets[i]={uRight[1],uRight[2],uRight[3]};
+     phs[i]= 0;
+  end
+
+  --reset step queue count
+  step_queue_t0 = Body.get_time();
+  step_queue_count = 0;
+
+  bodyHeight = bodyHeight0; --Start from walking body height
 end
 
 function entry()
   print ("walk entry")
   --SJ: now we always assume that we start walking with feet together
   --Because joint readings are not always available with darwins
-
   stance_reset();
 
   --Place arms in appropriate position at sides
@@ -215,65 +217,10 @@ function entry()
   Body.set_rarm_command(qRArm);
   Body.set_rarm_hardness(hardnessArm);
 
-  x=matrix:new{{uTorso[1],uTorso[2]},{0,0},{0,0}};
-  for i=1,nPreview do
-     zmpx[i]=uTorso[1];
-     zmpy[i]=uTorso[2]; 
-     supportLegs[i]=2; --double support
-     uLeftTargets[i]={uLeft[1],uLeft[2],uLeft[3]};
-     uRightTargets[i]={uRight[1],uRight[2],uRight[3]};
-  end
-  if Config.sit_disable>0 then
-    active = false;
-  end
+  active = true; --Automatically start stepping
 end
 
 function update_zmp_array()
-  t = Body.get_time();
-  local iStepF, phF = math.modf((t-t0)/tStep);
-
-  if (iStepF>iStepF0) then
-    if stopRequest>0 or not active then --stop
-      supportLegF = 2; --Double support end
-
-      uLeftSupport = util.pose_global({supportX, supportY, 0}, uLeftF1);
-      uRightSupport = util.pose_global({supportX, -supportY, 0}, uRightF1);
-      uSupportF = util.se2_interpolate(0.5,uLeftSupport,uRightSupport);
-
-      uLeftF1 = uLeftF2;
-      uRightF1 = uRightF2;
-    else
-      update_velocity();
-      uLeftF1 = uLeftF2;
-      uRightF1 = uRightF2;
-      supportLegF = 1-supportLegF;
-
-      if supportLegF == 0 then-- Left support
-        uRightF2 = step_right_destination(velCurrent, uLeftF1, uRightF1);
-        uSupportF = util.pose_global({supportX, supportY, 0}, uLeftF1);
-      else  -- Right support
-        uLeftF2 = step_left_destination(velCurrent, uLeftF1, uRightF1);
-        uSupportF = util.pose_global({supportX, -supportY, 0}, uRightF1);
-      end
-    end
-  end
-
-  iStepF0=iStepF;
-
-  table.remove(zmpx,1);
-  table.remove(zmpy,1);
-  table.remove(uLeftTargets,1);
-  table.remove(uRightTargets,1);
-  table.remove(supportLegs,1);
-  table.insert(zmpx, uSupportF[1]);
-  table.insert(zmpy, uSupportF[2]);
-  table.insert(uLeftTargets, {uLeftF2[1],uLeftF2[2],uLeftF2[3]});
-  table.insert(uRightTargets,{uRightF2[1],uRightF2[2],uRightF2[3]});
-  table.insert(supportLegs, supportLegF);
-end
-
-
-function update_zmp_array2()
   t = Body.get_time();
   local new_step = false;
   if step_queue_count== 0 then
@@ -303,22 +250,26 @@ function update_zmp_array2()
     end
   end
 
+  if supportLegF ~=3 then 
+    phF = (t-step_queue_t0)/step_queue[step_queue_count][4];
+  else
+    phF = 0;
+  end
+
   table.remove(zmpx,1);
   table.remove(zmpy,1);
   table.remove(uLeftTargets,1);
   table.remove(uRightTargets,1);
   table.remove(supportLegs,1);
+  table.remove(phs,1);
 
   table.insert(zmpx, uSupportF[1]);
   table.insert(zmpy, uSupportF[2]);
   table.insert(uLeftTargets, {uLeftF[1],uLeftF[2],uLeftF[3]});
   table.insert(uRightTargets,{uRightF[1],uRightF[2],uRightF[3]});
   table.insert(supportLegs, supportLegF);
+  table.insert(phs, phF);
 end
-
-
-
-
 
 function update()
   if (not active) then 
@@ -327,28 +278,22 @@ function update()
     return; 
   end
 
-  if (stopRequest==2) then
-    return 'done';
-  end
-
   t = Body.get_time();
---  update_zmp_array();
-  update_zmp_array2();
+  update_zmp_array();
 
---print(supportLegs[1],zmpy[1]);
+  dpLimit = .1; 
+
+  --Lower the bodyHeight to prepare stepping
+  local bodyHeightDiff = bodyHeight-bodyHeight1;
+
+  bodyHeight = bodyHeight - math.min(
+	bodyHeightDiff, dpLimit*timeStep);
 
   --Stop when stopping sequence is done
---  if (supportLegs[1]==2) and(stopRequest>0) then
   if (supportLegs[1]==3) then --End state reached
-      uTorsoTarget = util.se2_interpolate(0.5,uLeft,uRight);
-      dist = math.sqrt((uTorsoTarget[1]-uTorso[1])^2 + 
-	       (uTorsoTarget[2]-uTorso[2])^2);
-
-      if dist < 0.005 then
-        stopRequest = 0;
-        active = false;
---        return "done";
-      end
+    print("STOPPED")
+    active = false;
+    return "done";
   end
 
   if supportLeg ~= supportLegs[1] then --New step
@@ -369,8 +314,7 @@ function update()
     end
   end
 
-
-  iStep, ph = math.modf((t-t1)/tStep);
+  ph = phs[1];
   xFoot, zFoot = foot_phase(ph);  
   if not active then zFoot = 0; end
 
@@ -385,12 +329,11 @@ function update()
     pRLeg[3]=0;
   end
 
-  --State feedback
+  -- Get state feedback
   imuAngle = Body.get_sensor_imuAngle();
+  imuGyr = Body.get_sensor_imuGyrRPY();
   imuRoll = imuAngle[1];
   imuPitch = imuAngle[2]-bodyTilt;
-
-  imuGyr = Body.get_sensor_imuGyrRPY();
   gyro_roll=imuGyr[1];
   gyro_pitch=imuGyr[2];
 
@@ -422,9 +365,9 @@ function update()
   x_closed=x[1][1]+x_err[1]*feedback_gain1;
   y_closed=x[1][2]+x_err[2]*feedback_gain1;
 
---Update state variable
---  u = param_k1_px * x - param_k1* zmparray; --Control output
---  x = param_a * x + param_b * u;
+  --  Update state variable
+  --  u = param_k1_px * x - param_k1* zmparray; --Control output
+  --  x = param_a * x + param_b * u;
 
   ux = param_k1_px[1][1] * x_closed+
 	param_k1_px[1][2] * x[2][1]+
@@ -443,14 +386,7 @@ function update()
 
   x[1][1]=x[1][1]+x_err[1]*feedback_gain2;
   x[1][2]=x[1][2]+x_err[2]*feedback_gain2;
-
   x= param_a*x + param_b * matrix:new({{ux,uy}});
-
---[[
-print("zmpy:")
-print(unpack(zmpy))
-print("Torso y:",x[1][2]);
---]]
 
   uTorso=vector.new({x[1][1],x[1][2],(uLeft[3]+uRight[3])/2 });
   uTorsoActual = util.pose_global(vector.new({-footX,0,0}),uTorso);
@@ -458,6 +394,7 @@ print("Torso y:",x[1][2]);
   pLLeg[1], pLLeg[2], pLLeg[6] = uLeft[1], uLeft[2], uLeft[3];
   pRLeg[1], pRLeg[2], pRLeg[6] = uRight[1], uRight[2], uRight[3];
   pTorso[1], pTorso[2], pTorso[6] = uTorsoActual[1], uTorsoActual[2], uTorsoActual[3];
+  pTorso[3] = bodyHeight;
 
   qLegs = Kinematics.inverse_legs(pLLeg, pRLeg, pTorso, supportLeg);
   motion_legs(qLegs);
@@ -474,9 +411,8 @@ function motion_legs(qLegs)
   gyro_roll=imuGyr[1];
   gyro_pitch=imuGyr[2];
 
---Hack: No gyro-based ankle strategy here
+  --Hack: No gyro-based ankle strategy here
   gyro_roll, gyro_pitch =0,0;
-
 
   ankleShiftX=util.procFunc(gyro_pitch*ankleImuParamX[2],ankleImuParamX[3],ankleImuParamX[4]);
   ankleShiftY=util.procFunc(gyro_roll*ankleImuParamY[2],ankleImuParamY[3],ankleImuParamY[4]);
@@ -535,107 +471,15 @@ end
 function exit()
 end
 
-function step_left_destination(vel, uLeft, uRight)
-  local u0 = util.se2_interpolate(.5, uLeft, uRight);
-  -- Determine nominal midpoint position 1.5 steps in future
-  local u1 = util.pose_global(vel, u0);
-  local u2 = util.pose_global(.5*vel, u1);
-  local uLeftPredict = util.pose_global({0, footY, 0}, u2);
-  local uLeftRight = util.pose_relative(uLeftPredict, uRight);
-  -- Do not pidgeon toe, cross feet:
-
-  uLeftRight[1] = math.min(math.max(uLeftRight[1], stanceLimitX[1]), stanceLimitX[2]);
-  uLeftRight[2] = math.min(math.max(uLeftRight[2], stanceLimitY[1]), stanceLimitY[2]);
-  uLeftRight[3] = math.min(math.max(uLeftRight[3], stanceLimitA[1]), stanceLimitA[2]);
-
-  return util.pose_global(uLeftRight, uRight);
-end
-
-function step_right_destination(vel, uLeft, uRight)
-  local u0 = util.se2_interpolate(.5, uLeft, uRight);
-  -- Determine nominal midpoint position 1.5 steps in future
-  local u1 = util.pose_global(vel, u0);
-  local u2 = util.pose_global(.5*vel, u1);
-  local uRightPredict = util.pose_global({0, -footY, 0}, u2);
-  local uRightLeft = util.pose_relative(uRightPredict, uLeft);
-  -- Do not pidgeon toe, cross feet:
-
-  uRightLeft[1] = math.min(math.max(uRightLeft[1], stanceLimitX[1]), stanceLimitX[2]);
-  uRightLeft[2] = math.min(math.max(uRightLeft[2], -stanceLimitY[2]), -stanceLimitY[1]);
-  uRightLeft[3] = math.min(math.max(uRightLeft[3], -stanceLimitA[2]), -stanceLimitA[1]);
-
-  return util.pose_global(uRightLeft, uLeft);
-end
-
-function step_torso(uLeft, uRight)
-  local u0 = util.se2_interpolate(.5, uLeft, uRight);
-  local uLeftSupport = util.pose_global({supportX, supportY, 0}, uLeft);
-  local uRightSupport = util.pose_global({supportX, -supportY, 0}, uRight);
-  return util.se2_interpolate(.5, uLeftSupport, uRightSupport);
-end
-
-function set_velocity(vx, vy, vz)
-  --Filter the commanded speed
---[[
-  vz= math.min(math.max(vz,velLimitA[1]),velLimitA[2]);
-  local stepMag=math.sqrt(vx^2+vy^2);
-  local magFactor=math.min(0.10,stepMag)/(stepMag+0.000001);
---]]
-
-  magFactor = 1;
-  velCommand[1]=vx*magFactor;
-  velCommand[2]=vy*magFactor;
-  velCommand[3]=vz;
-end
-
-function update_velocity()
-  local velDiff={};
-  velDiff[1]= math.min(math.max(velCommand[1]-velCurrent[1],
-	-velDelta[1]),velDelta[1]);
-  velDiff[2]= math.min(math.max(velCommand[2]-velCurrent[2],
-	-velDelta[2]),velDelta[2]);
-  velDiff[3]= math.min(math.max(velCommand[3]-velCurrent[3],
-	-velDelta[3]),velDelta[3]);
-
-  velCurrent[1] = math.min(math.max(velCurrent[1]+velDiff[1],
-	velLimitX[1]),velLimitX[2]);
-  velCurrent[2] = math.min(math.max(velCurrent[2]+velDiff[2],
-	velLimitY[1]),velLimitY[2]);
-  velCurrent[3] = math.min(math.max(velCurrent[3]+velDiff[3],
-	velLimitA[1]),velLimitA[2]);
-end
-
-function get_velocity()
-  return velCurrent;
-end
-
 function start()
-  stopRequest = 0;
   if (not active) then
     active = true;
-    supportLegF = 0;
-
-    iStep0 = -1;
-    iStepF0 = -1;
     t0 = Body.get_time();
-    initdone=false;
-
-    step_queue_t0 = Body.get_time();
-
+    stance_reset();
   end
 end
 
 function stop()
-  stopRequest = math.max(1,stopRequest);
---  stopRequest = 2;
-end
-
-function stopAlign()
-  stop()
-end
-
---dummy function for NSL kick
-function zero_velocity()
 end
 
 function get_odometry(u0)
@@ -673,10 +517,5 @@ end
 precompute();
 
 
---Dummy functions
-
-function set_push_recovery(ankle,hip,step)
-end
-
-function start_push_recovery(fx,fy)
+function set_velocity()
 end

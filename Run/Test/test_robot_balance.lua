@@ -197,7 +197,7 @@ end
 ------------------------------------------------------------------------
 function state_machine(t) 
   if (state == 0) then
-    if state_t >= .1 then
+    if state_t >= 1 then
       print('ident_stride', ident)
       print("move to ready", t)
       state = 1

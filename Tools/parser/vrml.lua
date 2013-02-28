@@ -6,6 +6,16 @@ function createVRML(header)
   return vrml
 end
 
+function createPROTO(protoName)
+  local proto = {}
+  proto.__name = protoName
+  proto.__type = 'proto'
+
+  return proto
+end
+
+
+
 function createNode(nodeName, nodeType)
   local node = {}
   node.__name = nodeName
@@ -52,7 +62,18 @@ function indentSpace(indent)
   return str
 end
 
+function writeproto(file, proto, indent)
+  file:write(indentSpace(indent)..'PROTO '..proto.__name..' [')
+  if proto.declaration then
+  end
+  file:write(indentSpace(indent)..']\n')
+  file:write(indentSpace(indent)..' {\n')
 
+  for k, v in ipairs(proto) do
+    _G['write'..v.__type](file, v, indent + 1)
+  end
+  file:write(indentSpace(indent)..'}\n')
+end
 
 function writenode(file, node, indent)
   if node.__name then
@@ -79,7 +100,7 @@ end
 function writemultifield(file, field, indent)
   file:write(indentSpace(indent)..field.__name..' [\n')
   local numCount = 0
-  local maxLineNum = 8
+  local maxLineNum = 4
 
   for i = 1, #field do
     if type(field[i]) == 'string' then

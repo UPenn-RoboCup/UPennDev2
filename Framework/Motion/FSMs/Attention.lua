@@ -1,10 +1,10 @@
 ---------------------------------------------------------
--- Fullbody State Machine 
+-- Attention State Machine 
 ---------------------------------------------------------
 
 require('null_state')
-require('MotionFSM')
+require('Motion_fsm')
 
-Fullbody = MotionFSM.new(null_state)
+Attention = Motion_fsm.new(null_state)
 
-return Fullbody
+return Attention

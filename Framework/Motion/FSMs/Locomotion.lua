@@ -4,9 +4,9 @@
 
 require('walk')
 require('null_state')
-require('MotionFSM')
+require('Motion_fsm')
 
-Locomotion = MotionFSM.new(null_state)
+Locomotion = Motion_fsm.new(null_state)
 Locomotion:add_state(null_state)
 Locomotion:add_state(walk)
 

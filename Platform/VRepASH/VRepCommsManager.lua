@@ -40,9 +40,9 @@ local servoNames = { -- vrep servo names
 
 local function initialize_devices()
   -- intialize vrep devices
-  handles.robot = simGetObjectHandle('Ash')
-  handles.gyro = simTubeOpen(0, 'gyroData#', 10)
-  handles.accel = simTubeOpen(0, 'accelerometerData#', 10)
+  handles.robot = simGetObjectHandle('torso')
+  handles.gyro = simTubeOpen(0, 'gyroData'..simGetNameSuffix(nil), 10)
+  handles.accel = simTubeOpen(0, 'accelerometerData'..simGetNameSuffix(nil), 10)
 
   handles.servo = {}
   for i = 1,N_JOINT do
@@ -96,12 +96,14 @@ local function update_sensors()
   
   local data = simTubeRead(handles.gyro)
   if (data) then
-    dcm:set_ahrs(simUnpackFloats(data), 'gyro')
+    floats = simUnpackFloats(data)
+    dcm:set_ahrs(floats, 'gyro')
   end
   
   data = simTubeRead(handles.accel)
   if (data) then
-    dcm:set_ahrs(simUnpackFloats(data), 'accel')
+    floats = simUnpackFloats(data)
+    dcm:set_ahrs(floats, 'accel')
   end
 
   -- update force-torque readings

@@ -1,7 +1,7 @@
 require('Platform')
 require('Config')
 require('Kinematics')
-require('MotionState')
+require('Motion_state')
 require('trajectory')
 require('vector')
 require('mcm')
@@ -15,10 +15,10 @@ require('rmp')
 -- Setup 
 --------------------------------------------------------------------------------
 
-step = MotionState.new(...)
-local dcm = step.dcm
+step = Motion_state.new(...)
 step:set_joint_access(0, 'all')
-step:set_joint_access(1, 'legs')
+step:set_joint_access(1, 'lowerbody')
+local dcm = step.dcm
 
 local torso_rmp = rmp.new(
   3,                                       -- number of rmp dimensions

@@ -1,7 +1,3 @@
---------------------------------------------------------------------------
--- Oscillatory Walking
---------------------------------------------------------------------------
-
 require('util')
 require('Platform')
 require('vector')
@@ -9,15 +5,19 @@ require('Config')
 require('waveform')
 require('Transform')
 require('Kinematics')
-require('MotionState')
+require('Motion_state')
+
+--------------------------------------------------------------------------
+-- Oscillatory Walking
+--------------------------------------------------------------------------
 
 -- Setup 
 --------------------------------------------------------------------------
 
-walk = MotionState.new('walk')
-local dcm = walk.dcm
+walk = Motion_state.new('walk')
 walk:set_joint_access(0, 'all')
-walk:set_joint_access(1, 'legs')
+walk:set_joint_access(1, 'lowerbody')
+local dcm = walk.dcm
 
 -- define velocity parameters
 walk.velocity              = vector.new{0, 0, 0}

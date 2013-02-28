@@ -3,9 +3,9 @@
 ---------------------------------------------------------
 
 require('null_state')
-require('MotionFSM')
+require('Motion_fsm')
 
-Manipulation = MotionFSM.new(null_state)
+Manipulation = Motion_fsm.new(null_state)
 
 Manipulation:set_joint_access(0, 'legs')
 return Manipulation

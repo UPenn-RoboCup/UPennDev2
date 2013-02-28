@@ -48,9 +48,23 @@ kneel.ph1Single = 0.1;
 kneel.ph2Single = 0.9;
 --]]
 
+-----------------------------------------------
+-- ZMP preview stepping values
+-----------------------------------------------
 
+zmpstep = {};
+zmpstep.bodyHeight = 0.98; 
+zmpstep.bodyTilt = 0;
+zmpstep.tZmp = 0.28; 
 
+zmpstep.supportX = 0.02;
+zmpstep.supportY = 0.0;
+zmpstep.stepHeight = 0.10;
 
+zmpstep.phSingle={0.1,0.9};
+zmpstep.hipRollCompensation = 3*math.pi/180;
+
+-----------------------------------------
 
 -- Walk Parameters
 
@@ -105,10 +119,9 @@ walk.ankleMod = vector.new({-1,0})/ 3*math.pi/180;
 -------------------------------------------------------------- 
 gyroFactor = 0.273*math.pi/180 * 300 / 1024; --dps to rad/s conversion
 
---gyroFactor = gyroFactor*3;
-gyroFactorX = gyroFactor*1;
-gyroFactorY = gyroFactor*1;
-
+--We won't use gyro feedback on webots
+gyroFactorX = gyroFactor*0;
+gyroFactorY = gyroFactor*0;
 
 walk.ankleImuParamX={0.3,0.75*gyroFactorX, 0*math.pi/180, 5*math.pi/180};
 walk.kneeImuParamX={0.3,1.5*gyroFactorX, 0*math.pi/180, 5*math.pi/180};
@@ -145,12 +158,10 @@ walk.headPitchBias = 0* math.pi / 180;
 --webots thor-op values
 walk.bodyHeight = 1.15; 
 walk.footX= 0.00;  --depreciated now
---Relative position of torso from COM position
---torsoX is -footX 
-walk.torsoX = 0.00; 
-
+walk.torsoX = 0.00; --Now use this... torsoX is -footX 
 walk.footY = 0.07;
-walk.supportX = 0.0;
+
+walk.supportX = 0.03;
 walk.supportY = 0.04;
 walk.bodyTilt = 0*math.pi/180;
 
@@ -159,39 +170,21 @@ walk.bodyTilt = 0*math.pi/180;
 --walk.tZmp = 0.32; --Com height 1.0
 walk.tZmp = 0.30; --Com height 0.9
 
-
 walk.tStep = 0.8;
 walk.stepHeight = 0.052;
 walk.phSingle = {0.15,0.85};
 walk.phZmp = {0.15,0.85};
 walk.hipRollCompensation = 3*math.pi/180;
 
---Large stride test (up to 300mm)
-walk.velLimitX={-.30,.30};
-walk.stanceLimitX={-0.80,0.80};
-walk.velDelta={0.30,0.10,0.3} 
-walk.velXHigh = 0.30;
-
 walk.supportModYInitial=-0.04; --Reduce initial body swing
 
+--Large stride test (up to 300mm)
+walk.velLimitX={-.20,.30};
+walk.stanceLimitX={-0.60,0.60};
+walk.stanceLimitY={0.16,0.60};
 
+walk.velLimitY={-.20,.20};
+walk.velLimitA={-.3,.3};
+walk.velDelta={0.15,0.10,0.3} 
+walk.velXHigh = 0.30;
 
--------------------------------------
--- ZMP preview stepping test
--- This works with 750mm stride
-
-walk.tZmp = 0.28; --Com height 0.9
-walk.supportY = 0.0;
-
---Larger stride test with ZMP preview
-walk.velLimitX={-.60,.60};
-walk.stanceLimitX={-.60,.60};
-walk.velDelta={0.20,0.10,0.3} 
-walk.velXHigh = 0.60;
-walk.stepHeight = 0.10;
-walk.footY = 0.10;
-walk.supportX = 0.04;
-walk.bodyHeight = 0.98; 
-walk.supportX = 0.02;
-
------------------------------------------

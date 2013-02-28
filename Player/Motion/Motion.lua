@@ -28,10 +28,11 @@ require 'grip'
 
 
 
-require 'crawl'
-require 'stancetocrawl'
+require 'crawl'  --Quadruped locomotion controller
+require 'largestep' --Special walk controller with footstep planning
 
---require 'largestep'
+require 'stancetocrawl' -- Changes between standing, sitting, crawling state
+
 
 
 
@@ -120,9 +121,12 @@ else --For large robots that cannot sit down or getup
   sm:add_state(stance);
   sm:add_state(walk);
 
-  sm:add_state(stancetocrawl);
---  sm:add_state(crawltostance);
   sm:add_state(crawl);
+  sm:add_state(largestep);
+
+  sm:add_state(stancetocrawl);
+
+
 
   sm:set_transition(stance, 'done', walk);
   sm:set_transition(stance, 'sit', stancetocrawl);
@@ -132,10 +136,8 @@ else --For large robots that cannot sit down or getup
   sm:set_transition(walk, 'sit', stancetocrawl);
 
 
---  sm:set_transition(walk, 'hop',largestep)
---  sm:set_transition(largestep, 'done',walk)
-
-
+  sm:set_transition(walk, 'step', largestep);
+  sm:set_transition(largestep, 'done', stance);
 
   sm:set_transition(stancetocrawl,'crawldone',crawl);
   sm:set_transition(stancetocrawl,'stancedone',stance);

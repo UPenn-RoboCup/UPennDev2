@@ -111,6 +111,12 @@ function process_keyinput()
 	elseif byte==string.byte("4") then	
 		kick.set_kick("kickSideRight");
 		Motion.event("kick");
+        elseif byte==string.byte("5") then
+                walk.doWalkKickLeft();
+        elseif byte==string.byte("6") then
+--                walk.doWalkKickRight();
+                walk.doSideKickRight();
+
 --]]
     elseif byte==string.byte("1") then 
        crawl.walk_style = 0;
@@ -120,6 +126,8 @@ function process_keyinput()
        crawl.walk_style = 2;
     elseif byte==string.byte("4") then 
        crawl.walk_style = 3;
+    elseif byte==string.byte("5") then 
+	Motion.event("step");
 
 
 
@@ -182,11 +190,6 @@ function process_keyinput()
 
 	elseif byte==string.byte(";") then	targetvel[2]=targetvel[2]-0.02;
 
-        elseif byte==string.byte("5") then
-                walk.doWalkKickLeft();
-        elseif byte==string.byte("6") then
---                walk.doWalkKickRight();
-                walk.doSideKickRight();
 
 	elseif byte==string.byte("7") then	Motion.event("sit");
 	elseif byte==string.byte("8") then	

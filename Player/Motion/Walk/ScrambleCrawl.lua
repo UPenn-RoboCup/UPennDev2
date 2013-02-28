@@ -1,4 +1,10 @@
---THOR-OP specific (FOR 6DOF ARM)
+------------------------------------------------
+-- Quadruped walk controller 
+-- ZMP-based upper body movement
+-- And IK based Arm and Leg movement
+-- Walk, Trot, Pace, Gallop supported
+-- 2013/2 SJ
+------------------------------------------------
 
 module(..., package.seeall);
 

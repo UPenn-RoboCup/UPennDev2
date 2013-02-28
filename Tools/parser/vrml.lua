@@ -37,8 +37,6 @@ function createMultiField(fieldName, value)
   return field
 end
 
-
-
 function createProto(protoName)
   local proto = {}
   proto.__name = protoName
@@ -58,7 +56,8 @@ end
 
 function writenode(file, node, indent)
   if node.__name then
-    file:write(indentSpace(indent)..'DEF '..node.__name..' ')
+--    file:write(indentSpace(indent)..'DEF '..node.__name..' ')
+    file:write(indentSpace(indent)..node.__name..' ')
     file:write(node.__nodeType..' {\n')
   else
     file:write(indentSpace(indent)..node.__nodeType..' {\n')
@@ -66,7 +65,7 @@ function writenode(file, node, indent)
   for k, v in ipairs(node) do
     _G['write'..v.__type](file, v, indent + 1)
   end
-  file:write('}\n')
+  file:write(indentSpace(indent)..'}\n')
 end
 
 function writefield(file, field, indent)
@@ -74,23 +73,29 @@ function writefield(file, field, indent)
   for k, v in ipairs(field) do
     file:write(' '..v)
   end
-  file:write('\n')
+  file:write(indentSpace(indent)..'\n')
 end
 
 function writemultifield(file, field, indent)
   file:write(indentSpace(indent)..field.__name..' [\n')
   local numCount = 0
-  local maxLineNum = 4
-  for k, v in ipairs(field) do
-    if type(v) == 'string' then
-      file:write(indentSpace(indent+1)..'"'..v..'"\n')
-    elseif type(v) == 'number' then
+  local maxLineNum = 8
+
+  for i = 1, #field do
+    if type(field[i]) == 'string' then
+      file:write(indentSpace(indent+1)..'"'..field[i]..'"\n')
+    elseif type(field[i]) == 'number' then
       file:write(indentSpace(indent+1))
-      file:write(v..' ')
+      file:write(field[i]..' ')
       numCount = numCount + 1
-      if numCount % maxLineNum == 0 then
-        file:write('\n')
+      if field.__delimiterFreq and numCount % field.__delimiterFreq == 0 then
+        file:write(field.__delimiter)
       end
+      if numCount % maxLineNum == 0 then
+        file:write(indentSpace(indent)..'\n')
+      end
+    elseif type(field[i]) == 'table' then
+      _G['write'..field[i].__type](file, field[i], indent + 1)
     end
   end
   file:write(indentSpace(indent)..']\n')

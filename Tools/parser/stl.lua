@@ -101,14 +101,8 @@ end
 local datapath = ''
 local filename = 'head.stl' 
 
+modelname = filename:sub(1, #filename - 4)
 facets = parseBinarySTL(datapath..filename)
---print(#facets)
---for i = 1, #facets do
---  print('facets:'..i)
---  print('vertex1',facets[i].ver1[1], facets[i].ver1[2], facets[i].ver1[3])
---  print('vertex2',facets[i].ver2[1], facets[i].ver2[2], facets[i].ver2[3])
---  print('vertex3',facets[i].ver3[1], facets[i].ver3[2], facets[i].ver3[3])
---end
 
 vertexes = facets2vertexes(facets)
 
@@ -137,10 +131,13 @@ local translation = {0,0,0}
 Transform[2] = createField('translation', translation)
 Transform[3] = children
 
+local proto = createPROTO(modelname)
+proto[1] = Transform
+
 local NavigationInfo = createNode(_, 'NavigationInfo')
 local navitype = {'EXAMINE', 'ANY'}
 NavigationInfo[1] = createMultiField('type', navitype)
 
-model[1] = Transform
+model[1] = proto
 
-saveVRML(model, 'robot.wrl')
+saveVRML(model, 'robot.proto')

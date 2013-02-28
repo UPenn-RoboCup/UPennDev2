@@ -126,10 +126,13 @@ function entry()
   --Because joint readings are not always available with darwins
   stance_reset();
   --Place arms in appropriate position at sides
-  Body.set_larm_command(qLArm0);
-  Body.set_rarm_command(qRArm0);
-  Body.set_larm_hardness(hardnessArm);
-  Body.set_rarm_hardness(hardnessArm);
+
+  if upper_body_overridden==0 then
+    Body.set_larm_command(qLArm0);
+    Body.set_rarm_command(qRArm0);
+    Body.set_larm_hardness(hardnessArm);
+    Body.set_rarm_hardness(hardnessArm);
+  end
   Body.set_waist_command(0);
   Body.set_waist_hardness(1.0);
 
@@ -373,6 +376,8 @@ function motion_legs(qLegs)
 end
 
 function motion_arms()
+  if upper_body_overridden>0 then return; end
+  
   local qLArmActual={};   
   local qRArmActual={};   
 
@@ -631,6 +636,8 @@ end
 function upper_body_override(qL, qR, bR)
 end
 function upper_body_override_on()
+  upper_body_overridden=1;
 end
 function upper_body_override_off()
+  upper_body_overridden=0;
 end

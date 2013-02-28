@@ -80,6 +80,9 @@ controller.wb_gps_enable(tags.gps, timeStep);
 tags.compass = controller.wb_robot_get_device("compass");
 controller.wb_compass_enable(tags.compass, timeStep);
 
+tags.kinect = controller.wb_robot_get_device("kinect");
+controller.wb_camera_enable(tags.kinect, timeStep);
+
 
 controller.wb_robot_step(timeStep);
 get_time = controller.wb_robot_get_time;

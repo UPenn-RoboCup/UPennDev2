@@ -156,9 +156,14 @@ function init_arms()
 	trRArmOld[1],trRArmOld[2],trRArmOld[3],trRArmOld[4],trRArmOld[5],trRArmOld[6];
 
     end   
-    walk.upper_body_override(qLArm, qRArm, walk.bodyRot0);
+
+    Body.set_larm_command(qLArm);
+    Body.set_rarm_command(qRArm);
+--    walk.upper_body_override(qLArm, qRArm, walk.bodyRot0);
 
   end
+  Body.set_head_command({0,60*math.pi/180});
+
 end
 
 
@@ -303,8 +308,13 @@ function motion_arms_ik()
 
   if dist1<0.01 and dist2<0.01 then
 --  if true then
+
       walk.upper_body_override_on();
-      walk.upper_body_override(qLArmInv, qRArmInv, walk.bodyRot0);
+--      walk.upper_body_override(qLArmInv, qRArmInv, walk.bodyRot0);
+
+
+    Body.set_larm_command(qLArmInv);
+    Body.set_rarm_command(qRArmInv);
 
       trLArmOld[1],trLArmOld[2],trLArmOld[3],trLArmOld[4],trLArmOld[5],trLArmOld[6]=
       trLArm[1],trLArm[2],trLArm[3],trLArm[4],trLArm[5],trLArm[6];
@@ -463,6 +473,8 @@ end
 
 function update()
   count = count + 1;
+
+  walk.active = false;
 
   -- Update State Machines 
   Motion.update();

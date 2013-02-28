@@ -135,6 +135,186 @@ step_queue= {
     0.8, --duration
    },
 };
+
+gap0={0,0}
+gap1={0.50,0}
+gap2={0.75,0.20}
+
+gap3={1.05,0.60};
+gap4={1.30,0.50};
+
+gap5={1.95,0.20};
+gap6={2.25,0.10};
+
+gap7={2.95,0.10};
+gap7={3.0,0.10};
+
+
+
+
+
+step_queue= {
+--Initial wait 
+   {
+    {-supportX+gap0[1], footY+gap0[2], 0}, --uLeft
+    {-supportX+gap0[1], -footY+gap0[2], 0}, --uRight
+    2, -- Right support
+    1, --duration
+   },
+
+--First cross
+   {
+    {-supportX+gap1[1], footY+gap1[2], 0}, --uLeft
+    {-supportX+gap0[1], -footY+gap0[2], 0}, --uRight
+    1, -- Right support
+    0.8, --duration
+   },
+   {
+    {-supportX+gap1[1], footY+gap1[2], 0}, --uLeft
+    {-supportX+gap1[1], -footY+gap1[2], 0}, --uRight
+    0, -- LS
+    0.8, --duration
+   },
+--One step forward
+
+   {
+    {-supportX+gap2[1], footY+gap2[2], 0}, --uLeft
+    {-supportX+gap1[1], -footY+gap1[2], 0}, --uRight
+    1, -- RS
+    0.8, --duration
+   },
+   {
+    {-supportX+gap2[1], footY+gap2[2], 0}, --uLeft
+    {-supportX+gap2[1], -footY+gap2[2], 0}, --uRight
+    0, -- LS
+    0.8, --duration
+   },
+   {
+    {-supportX+gap2[1], footY+gap2[2], 0}, --uLeft
+    {-supportX+gap2[1], -footY+gap2[2], 0}, --uRight
+    2, -- LS
+    2.5, --duration
+   },
+
+
+--Second cross
+   {
+    {-supportX+gap3[1], footY+gap3[2], 0}, --uLeft
+    {-supportX+gap2[1], -footY+gap2[2], 0}, --uRight
+    1, -- RS
+    0.8, --duration
+   },
+   {
+    {-supportX+gap3[1], footY+gap3[2], 0}, --uLeft
+    {-supportX+gap3[1], -footY+gap3[2], 0}, --uRight
+    0, -- LS 
+    0.8, --duration
+   },
+   {
+    {-supportX+gap3[1], footY+gap3[2], 0}, --uLeft
+    {-supportX+gap3[1], -footY+gap3[2], 0}, --uRight
+    2, -- DS 
+    2.5, --duration
+--    0.8, --duration
+   },
+--Step forward
+   {
+    {-supportX+gap4[1], footY+gap4[2], 0}, --uLeft
+    {-supportX+gap3[1], -footY+gap3[2], 0}, --uRight
+    1, -- RS
+    0.8, --duration
+   },
+   {
+    {-supportX+gap4[1], footY+gap4[2], 0}, --uLeft
+    {-supportX+gap4[1], -footY+gap4[2], 0}, --uRight
+    0, -- LS 
+    0.8, --duration
+   },
+   {
+    {-supportX+gap4[1], footY+gap4[2], 0}, --uLeft
+    {-supportX+gap4[1], -footY+gap4[2], 0}, --uRight
+    2, -- DS 
+    0.8, --duration
+   },
+
+
+--Third cross
+
+   {
+    {-supportX+gap4[1], footY+gap4[2], 0}, --uLeft
+    {-supportX+gap5[1], -footY+gap5[2], 0}, --uRight
+    0, -- LS 
+    0.8, --duration
+   },
+   {
+    {-supportX+gap5[1], footY+gap5[2], 0}, --uLeft
+    {-supportX+gap5[1], -footY+gap5[2], 0}, --uRight
+    1, -- RS
+    0.8, --duration
+   },
+   {
+    {-supportX+gap5[1], footY+gap5[2], 0}, --uLeft
+    {-supportX+gap5[1], -footY+gap5[2], 0}, --uRight
+    2, -- RS
+    1.5, --duration
+   },
+
+--step forward
+   {
+    {-supportX+gap5[1], footY+gap5[2], 0}, --uLeft
+    {-supportX+gap6[1], -footY+gap6[2], 0}, --uRight
+    0, -- LS
+    0.8, --duration
+   },
+   {
+    {-supportX+gap6[1], footY+gap6[2], 0}, --uLeft
+    {-supportX+gap6[1], -footY+gap6[2], 0}, --uRight
+    1, -- RS 
+    0.8, --duration
+   },
+   {
+    {-supportX+gap6[1], footY+gap6[2], 0}, --uLeft
+    {-supportX+gap6[1], -footY+gap6[2], 0}, --uRight
+    2, -- DS 
+    1.5, --duration
+   },
+
+--Final crossing
+
+   {
+    {-supportX+gap6[1], footY+gap6[2], 0}, --uLeft
+    {-supportX+gap7[1], -footY+gap7[2], 0}, --uRight
+    0, -- LS 
+    0.8, --duration
+   },
+   {
+    {-supportX+gap7[1], footY+gap7[2], 0}, --uLeft
+    {-supportX+gap7[1], -footY+gap7[2], 0}, --uRight
+    1, -- RS 
+    0.8, --duration
+   },
+   {
+    {-supportX+gap7[1], footY+gap7[2], 0}, --uLeft
+    {-supportX+gap7[1], -footY+gap7[2], 0}, --uRight
+    2, --DS
+    0.8, --duration
+   },
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 step_queue_count = 0;
 step_queue_t0 = 0;
 

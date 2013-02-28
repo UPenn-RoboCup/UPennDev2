@@ -393,7 +393,8 @@ Robot {
 		      translation 0.03 0.07 0
 		      rotation 0 1 0 -1.57
  		      children[
-#			KinectWithoutFoot{}
+			#ADDED FOR DEPTH SENSING
+			DEF kinect KinectWithoutFoot{}
 		      ]		      
 		    }
                   ]

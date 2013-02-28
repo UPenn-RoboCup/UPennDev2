@@ -2,44 +2,53 @@ require 'include'
 require 'LuaXml'
 local util = require 'util'
 
-local datapath = 'powerplant/'
-local filename = datapath..'manifest.xml' 
+local datapath = ''
+--local filename = datapath..'atlas_simple_shapes.urdf' 
+local filename = datapath..'atlas.urdf' 
 
 local file = xml.load(filename)
-local data = file:find('model')
-local model = {}
+local data = file:find('robot')
+local robot = {}
+
+robot.joints = {}
+robot.links = {}
+robot.name = data.name
 if data ~= nil then
   for i = 1, #data do
-    model[data[i]:tag()] = data[i]
-  end
-end
-
-function showInfo(tbl)
-  if tbl then
-    for k, v in ipairs(tbl) do
-      if type(v) == 'table' then
-        showInfo(v)
-      else
-        print(v)
-      end
+    if data[i]:tag() == 'joint' then
+      robot.joints[#robot.joints + 1] = data[i]
+    elseif data[i]:tag() == 'link' then
+      robot.links[#robot.links + 1] = data[i]
     end
   end
 end
 
-showInfo(model.name)
-showInfo(model.version)
-showInfo(model.license)
-showInfo(model.description)
-showInfo(model.author)
-
-if model.sdf then
-  for i = 1, #model.sdf do
-    print('sdf - '..model.sdf[i])
+function str2num(str, n)
+  local vals = string.gmatch(str, "%d+")
+  local num = {}
+  for i = 1, n do
+    print(vals())
   end
 end
 
---if model.depend then
---  for i = 1, #model.depend do
---    print(model.depend[i])
---  end
+print(robot.name)
+print(#robot.joints)
+print(#robot.links)
+--for i = 1, #robot.joints do
+--  print(robot.joints[i])
 --end
+--for i = 1, #robot.links do
+--  print(robot.links[i])
+--end
+
+--for i = 1, #robot.joints do
+for i = 1, 1 do
+  local joint = robot.joints[i]
+  print(joint.name, joint.type)
+  for j = 1, #joint do
+    joint[joint[j]:tag()] = joint[j]
+  end
+  print(joint.origin.xyz)
+  str2num(joint.origin.xyz, 3)
+--  print(joint.origin.rpy)
+end

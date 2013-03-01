@@ -20,6 +20,7 @@ PROTO SteeringWheel [
 {
   Servo {
     maxForce 0
+    staticFriction 0.1
     name "SteeringWheel"
     rotation 1 0 0 0
     children [

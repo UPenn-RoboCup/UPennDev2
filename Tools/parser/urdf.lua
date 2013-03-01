@@ -37,18 +37,21 @@ print(#robot.links)
 --for i = 1, #robot.joints do
 --  print(robot.joints[i])
 --end
---for i = 1, #robot.links do
---  print(robot.links[i])
---end
+for i = 1, #robot.links do
+--  print(robot.links[i].name)
+  robot.links[robot.links[i].name] = {}
+end
 
---for i = 1, #robot.joints do
-for i = 1, 1 do
+
+for i = 1, #robot.joints do
+--for i = 1, 1 do
   local joint = robot.joints[i]
-  print(joint.name, joint.type)
   for j = 1, #joint do
     joint[joint[j]:tag()] = joint[j]
   end
-  print(joint.origin.xyz)
-  str2num(joint.origin.xyz, 3)
+--  print('child:'..joint.child.link)
+--  print('parent:'..joint.parent.link)
+--  str2num(joint.origin.xyz, 3)
 --  print(joint.origin.rpy)
 end
+

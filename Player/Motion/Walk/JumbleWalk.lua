@@ -1,4 +1,6 @@
---THOR-OP specific (FOR 6DOF ARM)
+--THOR-OP specific 
+--Bipedal walk code for uneven terrain
+
 
 module(..., package.seeall);
 
@@ -113,31 +115,7 @@ ph0=0;ph=0;
 
 stopRequest = 2;
 canWalkKick = 0; --Can we do walkkick with this walk code?
-
 initial_step=2;
-
-
-upper_body_overridden = 0;
-motion_playing = 0;
-
-qLArmOR0,qRArmOR0={},{};
-qLArmOR0[1],qLArmOR0[2],qLArmOR0[3],qLArmOR0[4],qLArmOR0[5],qLArmOR0[6]
-=qLArm0[1],qLArm0[2],qLArm0[3],qLArm0[4],qLArm0[5],qLArm0[6];
-qRArmOR0[1],qRArmOR0[2],qRArmOR0[3],qRArmOR0[4],qRArmOR0[5],qRArmOR0[6]=
-qRArm0[1],qRArm0[2],qRArm0[3],qRArm0[4],qRArm0[5],qRArm0[6];
-bodyRot0 = {0,bodyTilt,0};
-
-qLArmOR,qRArmOR={},{};
-qLArmOR[1],qLArmOR[2],qLArmOR[3],qLArmOR[4],qLArmOR[5],qLArmOR[6]
-=qLArm0[1],qLArm0[2],qLArm0[3],qLArm0[4],qLArm0[5],qLArm0[6];
-qRArmOR[1],qRArmOR[2],qRArmOR[3],qRArmOR[4],qRArmOR[5],qRArmOR[6]=
-qRArm0[1],qRArm0[2],qRArm0[3],qRArm0[4],qRArm0[5],qRArm0[6];
-bodyRot = {0,bodyTilt,0};
-
-
-qLArmOR1 = {0,0,0,0,0,0};
-qRArmOR1 = {0,0,0,0,0,0};
-bodyRot1 = {0,0,0};
 
 phSingle = 0;
 
@@ -152,48 +130,8 @@ tStance0,tStance1 = 0,0;
 -- End initialization 
 ----------------------------------------------------------
 
---Push Recovery Check
-
---Direct control of upper body
-function upper_body_override(qL, qR, bR)
-  upper_body_overridden = 1;
-  qLArmOR0 = qL;
-  qRArmOR0 = qR;
-  bR[1] = -1*bR[1];
-  bR[2] = -1*bR[2];
-  bodyRot0 = bR;
-
-  --Simple exponential filtering
-  alphaArm = 0.2;
-  alphaBody = 0.05;
-
-  --Values for IK-based direct control
-  alphaArm = 1;  alphaBody = 0;
-
-  qLArmOR=qL;
-  qRArmOR=qR;
-
-  bodyRot[1] = alphaBody * bodyRot0[1] + (1-alphaBody)*bodyRot[1];
-  bodyRot[2] = alphaBody * bodyRot0[2] + (1-alphaBody)*bodyRot[2];
-  bodyRot[3] = alphaBody * bodyRot0[3] + (1-alphaBody)*bodyRot[3];
-
---  bodyRot[2] = 	math.min(30*math.pi/180,math.max(10*math.pi/180,bodyRot[2]));
-
-  -- Limit the yawing so that we can maintain good balance
-  bodyRot[3] = 	math.min(30*math.pi/180,math.max(-30*math.pi/180,bodyRot[3]));
-
-end
 
 
-function upper_body_override_on()
-  upper_body_overridden = 1;
-  hardnessArm = 1;
-end
-
-function upper_body_override_off()
-  upper_body_overridden = 0;
-  hardnessArm = hardnessArm0;
-end
 
 function entry()
   print ("Motion: Walk entry")
@@ -211,7 +149,6 @@ function entry()
   if Config.sit_disable>0 then
     active=false;
   end
-
 end
 
 
@@ -340,13 +277,7 @@ function update()
   uTorsoOld=uTorso;
   uTorso = zmp_com(ph);
 
-  --Arm movement compensation
-  if upper_body_overridden>0 or motion_playing > 0 then
-    pTorso[4], pTorso[5],pTorso[6] = bodyRot[1],bodyRot[2],bodyRot[3];
-  else
-    pTorso[4], pTorso[5],pTorso[6] = 0,bodyTilt,0;
-  end
-
+  pTorso[4], pTorso[5],pTorso[6] = 0,bodyTilt,0;
   uTorsoActual = util.pose_global(vector.new({-footX,0,0}),uTorso);
 
   pTorso[1], pTorso[2] = uTorsoActual[1],uTorsoActual[2]; 
@@ -363,29 +294,7 @@ end
 function update_still()
   uTorso = step_torso(uLeft, uRight,0.5);
 
-  --Arm movement compensation
-  if upper_body_overridden>0 or motion_playing>0 then
-    pTorso[4], pTorso[5],pTorso[6] = bodyRot[1],bodyRot[2],bodyRot[3];
-  else
-    pTorso[4], pTorso[5],pTorso[6] = 0,bodyTilt,0;
-  end
-
-
-
-
-
-  --Overriden here from test_crawl
-  pTorso[5] = bodyTilt;
-  pTorso[3] = bodyHeight;
-
-uLeft = vector.new({0, footY, 0});
-uRight = vector.new({0, -footY, 0});
-
-
-
-
-
-
+  pTorso[4], pTorso[5],pTorso[6] = 0,bodyTilt,0;
 
   uTorsoActual = util.pose_global(vector.new({-footX,0,0}),uTorso);
 
@@ -418,6 +327,7 @@ function motion_legs(qLegs)
   elseif supportLeg==1 then
     yawAngle = uRight[3]-uTorsoActual[3];
   end
+
   gyro_roll = gyro_roll0*math.cos(yawAngle) -gyro_pitch0* math.sin(yawAngle);
   gyro_pitch = gyro_pitch0*math.cos(yawAngle) -gyro_roll0* math.sin(yawAngle);
 
@@ -486,19 +396,8 @@ function motion_arms()
   qLArmActual[1],qLArmActual[2]=qLArm0[1]+armShift[1],qLArm0[2]+armShift[2];
   qRArmActual[1],qRArmActual[2]=qRArm0[1]+armShift[1],qRArm0[2]+armShift[2];
 
-  if upper_body_overridden>0 or motion_playing>0 then
-    qLArmActual[1],qLArmActual[2],qLArmActual[3]=qLArmOR[1],qLArmOR[2],qLArmOR[3];
-    qRArmActual[1],qRArmActual[2],qRArmActual[3]=qRArmOR[1],qRArmOR[2],qRArmOR[3];
-    qLArmActual[4],qLArmActual[5],qLArmActual[6]=qLArmOR[4],qLArmOR[5],qLArmOR[6];
-    qRArmActual[4],qRArmActual[5],qRArmActual[6]=qRArmOR[4],qRArmOR[5],qRArmOR[6];
-  end
-
---  qLArmActual[3]=qLArm0[3];
---  qRArmActual[3]=qRArm0[3];
   Body.set_larm_command(qLArmActual);
   Body.set_rarm_command(qRArmActual);
-
-
 end
 
 function exit()
@@ -599,7 +498,6 @@ function update_velocity()
   end
 
   --  print(string.format("VEL:%.2f,%.2f,%.2f",unpack(velCurrent)));
-
 end
 
 function get_velocity()
@@ -624,9 +522,6 @@ function stop()
   --  stopRequest = 2; --Stop w/o feet together
 end
 
-function stopAlign() --Depreciated, we always stop with feet together 
-  stop()
-end
 
 
 function stance_reset() --standup/sitdown/falldown handling
@@ -645,9 +540,6 @@ function stance_reset() --standup/sitdown/falldown handling
   motion_playing = 0;
   upper_body_overridden=0;
   uLRFootOffset = vector.new({0,footY,0});
-end
-
-function switch_stance(stance)
 end
 
 function get_odometry(u0)
@@ -711,45 +603,42 @@ function foot_phase(ph)
   -- phSingle = 0: x=0, z=0, phSingle = 1: x=1,z=0
   phSingle = math.min(math.max(ph-ph1Single, 0)/(ph2Single-ph1Single),1);
   local phSingleSkew = phSingle^0.8 - 0.17*phSingle*(1-phSingle);
-
-
-  ph1SingleX,ph2SingleX = ph1Single, ph2Single;
---  ph1SingleX,ph2SingleX = 0.35, 0.65; -- Vertical takeoff / landing
---  ph1SingleX,ph2SingleX = 0.25, 0.75; -- Vertical takeoff / landing
-
-  phSingleX = math.min(math.max(ph-ph1SingleX, 0)/(ph2Single-ph1SingleX),1);
-  local phSingleSkewX = phSingleX^0.8 - 0.17*phSingleX*(1-phSingleX);
-
-
---  local xf = .5*(1-math.cos(math.pi*phSingleSkew));
-  local xf = .5*(1-math.cos(math.pi*phSingleSkewX));
+  local xf = .5*(1-math.cos(math.pi*phSingleSkew));
   local zf = .5*(1-math.cos(2*math.pi*phSingleSkew));
+
+
+  local trajA1=0.3;
+  local trajA2=0.7;
+  phFoot=.5*(1-math.cos(math.pi*phSingle));
+  if phFoot<trajA1 then 
+     xf=0;
+     zf=phFoot/trajA1;
+  elseif phFoot<trajA2 then
+     xf = (phFoot-trajA1)/(trajA2-trajA1);
+     zf = 1;
+  else
+     xf=1;
+     zf=(1-phFoot)/(1-trajA2);
+  end
+
+
+
+
   return xf, zf;
 end
 
 entry();
 
-function doWalkKickLeft()
-end
-
-function doWalkKickRight()
-end
-
-function doWalkKickLeft2()
-end
-
-function doWalkKickRight2()
-end
-
-function doSideKickLeft()
-end
-
-function doSideKickRight()
-end
-
-function zero_velocity()
-end
-
-function doPunch(punchtype)
-end
+function doWalkKickLeft() end
+function doWalkKickRight() end
+function doWalkKickLeft2() end
+function doWalkKickRight2() end
+function doSideKickLeft() end
+function doSideKickRight() end
+function zero_velocity() end
+function doPunch(punchtype) end
+function upper_body_override_on() end
+function upper_body_override_off() end
+function upper_body_override(qL, qR, bR) end
+function switch_stance(stance)end
 

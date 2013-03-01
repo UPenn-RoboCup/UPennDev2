@@ -129,31 +129,31 @@ local function draw()
   gl.glClear( bor( gl.GL_COLOR_BUFFER_BIT, gl.GL_DEPTH_BUFFER_BIT ) )
   gl.glPushMatrix()
   do
-		-- This rotates the GEARS not the CAMERAVIEW
-		--[[
+    -- This rotates the GEARS not the CAMERAVIEW
+    --[[
     gl.glRotated( view_rotx, 1, 0, 0 )
     gl.glRotated( view_roty, 0, 1, 0 )
     gl.glRotated( view_rotz, 0, 0, 1 )
-		--]]
-		
-		-- Red
+    --]]
+
+    -- Red
     gl.glPushMatrix()
     do
-			-- Static transtion
+      -- Static transtion
       gl.glTranslatef( -3, -2, 0 )
-			-- Dynamic rotation of the gears
-			-- This is the based in time stuff
+      -- Dynamic rotation of the gears
+      -- This is the based in time stuff
       gl.glRotated( angle, 0,  0, 1 )
-			-- The list has had the trig precalculated
-			-- using lua and stored as gl calls
-			-- using the glBegin/glEnd sections
-			-- we just care about the predefined glcalls
-			-- and execute them here
+      -- The list has had the trig precalculated
+      -- using lua and stored as gl calls
+      -- using the glBegin/glEnd sections
+      -- we just care about the predefined glcalls
+      -- and execute them here
       gl.glCallList( gear1 )
     end
     gl.glPopMatrix()
 
-		-- Green
+    -- Green
     gl.glPushMatrix();
     do
       gl.glTranslated( 3.1, -2, 0 )
@@ -162,7 +162,7 @@ local function draw()
     end
     gl.glPopMatrix()
 
-		-- Blue
+    -- Blue
     gl.glPushMatrix();
     do
       gl.glTranslated( -3, 5, 0 )
@@ -193,20 +193,20 @@ local function reshape( width, height )
   gl.glFrustum( -xmax, xmax, -xmax*h, xmax*h, znear, zfar )
   gl.glMatrixMode( gl.GL_MODELVIEW )
   gl.glLoadIdentity()
-	-- the last number is how far away from the gears we are
-	-- glTranslatef: float
-	-- glTranslated: double
+  -- the last number is how far away from the gears we are
+  -- glTranslatef: float
+  -- glTranslated: double
   gl.glTranslatef( 0, 0, -50 );
-	-- You can also rotate the view
-	-- Is this better than rotation of the gears?
-	-- I think they only rotate the gears and not the view
-	-- because they are doing rotation there anyway, so it saves
-	-- on some computation potentially
-	-- In our case, we will not be having rotation of 
-	-- the gears always, so rotation of the view is probably safe
---  gl.glRotated( view_rotx, 1, 0, 0 )
---  gl.glRotated( view_roty, 0, 1, 0 )
---  gl.glRotated( view_rotz, 0, 0, 1 )
+  -- You can also rotate the view
+  -- Is this better than rotation of the gears?
+  -- I think they only rotate the gears and not the view
+  -- because they are doing rotation there anyway, so it saves
+  -- on some computation potentially
+  -- In our case, we will not be having rotation of 
+  -- the gears always, so rotation of the view is probably safe
+  --  gl.glRotated( view_rotx, 1, 0, 0 )
+  --  gl.glRotated( view_roty, 0, 1, 0 )
+  --  gl.glRotated( view_rotz, 0, 0, 1 )
 end
 
 -- Initialize the gears, lighting
@@ -248,19 +248,69 @@ local function pressed( key )
   return glfw.glfwGetKey( glfw["GLFW_KEY_" .. key:upper()] ) == glfw.GLFW_PRESS
 end
 
+--local buffer = ffi.new( "GLuint" )
+dd = carray.int(1)
+dd_star = dd:pointer()
+buffer = ffi.cast('GLuint',dd)
+buffer_star = ffi.cast('GLuint*',dd_star)
 local function init_pointcloud()
-	local dd = carray.int(1)
-	local dd_star = dd:pointer()
-	--local buffer = ffi.new( "GLuint" )
-	local buffer = ffi.cast('GLuint',dd)
-	local buffer_star = ffi.cast('GLuint*',dd_star)
-	
   gl.glGenBuffers(1, buffer_star); -- Needs pointer
   gl.glBindBuffer(gl.GL_ARRAY_BUFFER, buffer); -- Needs value
   gl.glBufferData(gl.GL_ARRAY_BUFFER, 
-		(ffi.sizeof('GLfloat') * 640 * 480 * 3) 
-		+ (ffi.sizeof('GLbyte') * 640 * 480 * 3),
-		 nil, gl.GL_STREAM_DRAW);
+  (ffi.sizeof('GLfloat') * 640 * 480 * 3) 
+  + (ffi.sizeof('GLbyte') * 640 * 480 * 3),
+  nil, gl.GL_STREAM_DRAW);
+end
+
+local point_cloud = {}
+point_cloud.points_color = ffi.new('GLbyte[?]',640 * 480 * 3, 127)
+point_cloud.points_position = ffi.new('GLfloat[?]',640 * 480 * 3, 0)
+
+for j=1,480 do
+ for i=1,640 do
+	local coord = ( (j-1)*640 + (i-1) )*3;
+	point_cloud.points_position[coord] = i;
+	point_cloud.points_position[coord+1] = j;
+	point_cloud.points_position[coord+2] = 0;
+ end
+end
+
+for c=1,640 * 480 * 3 do
+	point_cloud.points_color[c] = math.random(0, 127)
+end
+
+local function update_pointcloud()
+  -- save the initial ModelView matrix before modifying ModelView matrix
+  --gl.glPushMatrix();
+
+  gl.glBindBuffer(gl.GL_ARRAY_BUFFER, buffer);
+  gl.glBufferSubData(gl.GL_ARRAY_BUFFER, 0,  
+	ffi.sizeof('char') * 640 * 480 * 3, 
+	point_cloud.points_color);
+	
+  gl.glBufferSubData(gl.GL_ARRAY_BUFFER, ffi.sizeof('char') * 640 * 480 * 3, 
+	(ffi.sizeof('float') * 640 * 480 * 3), 
+	point_cloud.points_position);
+
+  -- enable vertex arrays
+  gl.glEnableClientState(gl.GL_VERTEX_ARRAY);
+  gl.glEnableClientState(gl.GL_COLOR_ARRAY);
+
+  gl.glColorPointer(3, gl.GL_UNSIGNED_BYTE, 0, ffi.cast('void*',0) );
+  --EDIT: Added the right offset at the vertex pointer position
+  --gl.glVertexPointer(3, GL_FLOAT, 0, (void*)(sizeof(char) * 640 * 480 * 3));
+	gl.glVertexPointer(3, gl.GL_FLOAT, 0, ffi.cast('void*',ffi.sizeof('char')*640*480*3) );
+
+  --EDIT: Was using GL_POINT instead of GL_POINTS
+  gl.glDrawArrays(gl.GL_POINTS, 0, 640*480);
+
+-- disable vertex arrays
+  gl.glDisableClientState(gl.GL_VERTEX_ARRAY);  
+  gl.glDisableClientState(gl.GL_COLOR_ARRAY);
+
+  gl.glBindBuffer(gl.GL_ARRAY_BUFFER, 0);
+
+  --gl.glPopMatrix();
 end
 
 local t0 = 0;
@@ -275,7 +325,7 @@ local function main()
   glfw.GLFW_WINDOW)
   glfw.glfwSetWindowTitle("Team THOR 3D Point Cloud Visualizer")
   init()
-init_pointcloud()
+  init_pointcloud()
   local ffi_w, ffi_h = ffi.new( "int[1]" ), ffi.new( "int[1]" )
   local width, height
 
@@ -287,44 +337,45 @@ init_pointcloud()
       reshape( width, height )
     end
 
-		--[[
-	  gl.glRotated( view_rotx, 1, 0, 0 )
-	  gl.glRotated( view_roty, 0, 1, 0 )
-	  gl.glRotated( view_rotz, 0, 0, 1 )
-		--]]
+    --[[
+    gl.glRotated( view_rotx, 1, 0, 0 )
+    gl.glRotated( view_roty, 0, 1, 0 )
+    gl.glRotated( view_rotz, 0, 0, 1 )
+    --]]
+		
     draw();
     animate();
-
+update_pointcloud();
     glfw.glfwSwapBuffers();
     glfw.glfwPollEvents();
 
-		-- Timing and display
-		local dt = glfw.glfwGetTime() - t0;
-		t0 = glfw.glfwGetTime()
-		if math.floor(t0)>disp_t then
-			disp_t = math.floor(t0)
-			glfw.glfwSetWindowTitle(
-			string.format("Team THOR 3D Point Cloud Visualizer (%0.2f FPS)",1/dt)
-			)
-		end
+    -- Timing and display
+    local dt = glfw.glfwGetTime() - t0;
+    t0 = glfw.glfwGetTime()
+    if math.floor(t0)>disp_t then
+      disp_t = math.floor(t0)
+      glfw.glfwSetWindowTitle(
+      string.format("Team THOR 3D Point Cloud Visualizer (%0.2f FPS)",1/dt)
+      )
+    end
 
     if pressed( "Z" ) and pressed( "LSHIFT" ) then
-			gl.glRotated( -1*dtScaling*dt, 0, 0, 1 )
+      gl.glRotated( -1*dtScaling*dt, 0, 0, 1 )
     end
     if pressed( "Z" ) and not pressed( "LSHIFT" ) then
-			gl.glRotated( dtScaling*dt, 0, 0, 1 )
+      gl.glRotated( dtScaling*dt, 0, 0, 1 )
     end
     if pressed( "UP" ) then
-			gl.glRotated( dtScaling*dt, 1, 0, 0 )
+      gl.glRotated( dtScaling*dt, 1, 0, 0 )
     end
     if pressed( "DOWN" ) then
-			gl.glRotated( -1*dtScaling*dt, 1, 0, 0 )
+      gl.glRotated( -1*dtScaling*dt, 1, 0, 0 )
     end
     if pressed( "LEFT" ) then
-			gl.glRotated( dtScaling*dt, 0, 1, 0 )
+      gl.glRotated( dtScaling*dt, 0, 1, 0 )
     end
     if pressed( "RIGHT" ) then
-			gl.glRotated( -1*dtScaling*dt, 0, 1, 0 )
+      gl.glRotated( -1*dtScaling*dt, 0, 1, 0 )
     end
   end -- while
   glfw.glfwCloseWindow()

@@ -222,12 +222,9 @@ local function init()
 
   gl.glLightfv( gl.GL_LIGHT0, gl.GL_POSITION, pos);
   gl.glEnable(  gl.GL_CULL_FACE  )
-	-- http://www.opengl.org/discussion_boards/showthread.php/149490-glColorPointer-PROBLEM!!
   gl.glEnable(  gl.GL_LIGHTING   )
   gl.glEnable(  gl.GL_LIGHT0     )
   gl.glEnable(  gl.GL_DEPTH_TEST )
-	gl.glColorMaterial(gl.GL_FRONT_AND_BACK, gl.GL_AMBIENT_AND_DIFFUSE);
-	gl.glEnable(gl.GL_COLOR_MATERIAL);
 
   gear1 = gl.glGenLists(1)
   gl.glNewList( gear1, gl.GL_COMPILE )
@@ -265,13 +262,13 @@ local function init_pointcloud()
   gl.glGenBuffers(1, buffer_star); -- Needs pointer
   gl.glBindBuffer(gl.GL_ARRAY_BUFFER, buffer); -- Needs value
   gl.glBufferData(gl.GL_ARRAY_BUFFER, 
-  (ffi.sizeof('GLfloat') * 640 * 480 * 3) --position
-  + (ffi.sizeof('GLfloat') * 640 * 480 * 3), --color
+  (ffi.sizeof('GLfloat') * 640 * 480 * 3) 
+  + (ffi.sizeof('GLbyte') * 640 * 480 * 3),
   nil, gl.GL_STREAM_DRAW);
 	
 	-- Set point size
 	gl.glEnable( gl.GL_POINT_SMOOTH );
-	gl.glPointSize( .01 );
+	gl.glPointSize( .1 );
 end
 
 local point_cloud = {}
@@ -281,21 +278,15 @@ point_cloud.points_position = ffi.new('GLfloat[?]',640 * 480 * 3, 0)
 for j=1,480 do
  for i=1,640 do
 	local coord = ( (j-1)*640 + (i-1) )*3;
-	local x = (i - 320) / 10;
-	local y = (j - 240) / 10;
+	local x = (i - 320) / 100;
+	local y = (j - 240) / 100;
 	local z = 10/(x^2+y^2+1);
 	point_cloud.points_position[coord] = z;
 	point_cloud.points_position[coord+1] = y
 	point_cloud.points_position[coord+2] = x;
-	if x<0 then
-		point_cloud.points_color[coord] = 0
-		point_cloud.points_color[coord+1] = 1
-		point_cloud.points_color[coord+2] = 0
-	else
-		point_cloud.points_color[coord] = 0
-		point_cloud.points_color[coord+1] = 0
-		point_cloud.points_color[coord+2] = 1
-	end
+	point_cloud.points_color[coord] = z/(x+y+z)*255
+	point_cloud.points_color[coord+1] = 0
+	point_cloud.points_color[coord+2] = 0
  end
 end
 
@@ -305,10 +296,10 @@ local function update_pointcloud()
 
   gl.glBindBuffer(gl.GL_ARRAY_BUFFER, buffer);
   gl.glBufferSubData(gl.GL_ARRAY_BUFFER, 0,  
-	ffi.sizeof('GLfloat') * 640 * 480 * 3, 
+	ffi.sizeof('GLubyte') * 640 * 480 * 3, 
 	point_cloud.points_color);
-  gl.glBufferSubData(gl.GL_ARRAY_BUFFER, 
-	ffi.sizeof('GLfloat') * 640 * 480 * 3, --offset of the size of the colors
+	
+  gl.glBufferSubData(gl.GL_ARRAY_BUFFER, ffi.sizeof('GLubyte') * 640 * 480 * 3, 
 	(ffi.sizeof('GLfloat') * 640 * 480 * 3), 
 	point_cloud.points_position);
 
@@ -316,11 +307,13 @@ local function update_pointcloud()
   gl.glEnableClientState(gl.GL_VERTEX_ARRAY);
   gl.glEnableClientState(gl.GL_COLOR_ARRAY);
 
-  gl.glColorPointer(3, gl.GL_FLOAT, 0, ffi.cast('void*',0) );
-	gl.glVertexPointer(3, gl.GL_FLOAT, 0, ffi.cast('void*',ffi.sizeof('GLfloat')*640*480*3) );
+  gl.glColorPointer(3, gl.GL_UNSIGNED_BYTE, 0, ffi.cast('void*',0) );
+  --EDIT: Added the right offset at the vertex pointer position
+  --gl.glVertexPointer(3, GL_FLOAT, 0, (void*)(sizeof(char) * 640 * 480 * 3));
+	gl.glVertexPointer(3, gl.GL_FLOAT, 0, ffi.cast('void*',ffi.sizeof('GLubyte')*640*480*3) );
 
-	-- Draw the points
-	gl.glDrawArrays(gl.GL_POINTS, 0, 640*480);
+  --EDIT: Was using GL_POINT instead of GL_POINTS
+  gl.glDrawArrays(gl.GL_POINTS, 0, 640*480);
 
 -- disable vertex arrays
   gl.glDisableClientState(gl.GL_VERTEX_ARRAY);  

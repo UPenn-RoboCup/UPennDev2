@@ -72,7 +72,7 @@ if ~isempty(data)
   
   SLAM.xOdom   = xPrev   + dTrans(1);
   SLAM.yOdom   = yPrev   + dTrans(2);
-  SLAM.yawOdom = yawPrev + dpose(3);
+  SLAM.yawOdom = yawPrev + dpose(3); % This is good
   %SLAM.yawOdom = yawPrev + wdt;
   %SLAM.yawOdom = IMU.data.yaw;
 

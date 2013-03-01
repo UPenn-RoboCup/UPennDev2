@@ -24,6 +24,12 @@ elseif teamID==22 then
 elseif teamID==23 then
   print('arms')
   dofile("Player/Test/test_arms.lua");
+elseif teamID==25 then
+  print('wheeltest')
+  dofile("Player/Test/test_wheel.lua");
+elseif teamID==26 then
+  print('Ladder test')
+  dofile("Player/Test/test_ladder.lua");
 else
 	--Default
 --  dofile("Player/Test/test_joints_webots.lua");

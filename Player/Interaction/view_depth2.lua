@@ -3,6 +3,10 @@
 -- Include the right directories
 cwd = '.';
 package.path = cwd.."/../Util/?.lua;"..package.path;
+package.path = cwd.."/../Lib/?.lua;"..package.path;
+
+require( "unix" )
+
 -- The ffi libraty is with luajit
 local ffi  = require( "ffi" )
 -- The ffi directory is in Util
@@ -247,9 +251,16 @@ local function pressed( key )
   return glfw.glfwGetKey( glfw["GLFW_KEY_" .. key:upper()] ) == glfw.GLFW_PRESS
 end
 
-local t0 = 0;
+--local t0 = 0;
+local t0 = unix.time(); --Now we use system time
 local disp_t = 0; -- Last display update
-local dtScaling = 50;
+--local dtScaling = 50;
+local dtScaling = 100;
+
+
+
+
+
 local function main()
   assert( glfw.glfwInit() )
   glfw.glfwOpenWindowHint( glfw.GLFW_DEPTH_BITS, 8 );
@@ -282,15 +293,28 @@ local function main()
     glfw.glfwSwapBuffers();
     glfw.glfwPollEvents();
 
+
+
 		-- Timing and display
-		local dt = glfw.glfwGetTime() - t0;
-		t0 = glfw.glfwGetTime()
-		if math.floor(t0)>disp_t then
-			disp_t = math.floor(t0)
-			glfw.glfwSetWindowTitle(
-			string.format("Team THOR 3D Point Cloud Visualizer (%0.2f FPS)",1/dt)
-			)
-		end
+--   local dt = glfw.glfwGetTime() - t0;
+   --SJ: should use system time
+
+   local dt = unix.time()-t0;
+
+   local time_wait = math.max(0.0, 0.02-dt);
+--   print("DT, tWait:",dt,time_wait)
+-- t0 = glfw.glfwGetTime()
+   t0 = unix.time();
+
+
+   unix.usleep(time_wait*1E6);
+
+   if math.floor(t0)>disp_t then
+    disp_t = math.floor(t0)
+    glfw.glfwSetWindowTitle(
+    string.format("Team THOR 3D Point Cloud Visualizer (%0.2f FPS)",1/dt)
+   )
+   end
 
     if pressed( "Z" ) and pressed( "LSHIFT" ) then
 			gl.glRotated( -1*dtScaling*dt, 0, 0, 1 )

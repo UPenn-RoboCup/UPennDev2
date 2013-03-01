@@ -1,8 +1,8 @@
-%global LIDAR IMU OMAP MAPS POSE
+%% Set up variables
 global SLAM OMAP POSE LIDAR0 REF_MAP START_POSITION ROBOT LIDAR MAPS IMU
 
-%vidObj = VideoWriter('slam.avi');
-%open(vidObj);
+vidObj = VideoWriter('slam.avi');
+open(vidObj);
 
 figure(1);
 clf(gcf);
@@ -18,6 +18,8 @@ hTitle = title(sprintf('x:%f, y:%f, yaw: %f', ...
         POSE.data.x,POSE.data.y,POSE.data.yaw*180/pi), ...
         'FontSize',12);
 %}
+
+%% Initialize structures
 if isempty(initSlam)
     
     %% Initialize shared memory segment
@@ -84,8 +86,9 @@ if isempty(initSlam)
 end
 
 %% Run the update
-%t_start = tic;
-%is_rec = 1;
+t_start = tic;
+is_rec = 1;
+
 while 1
     %% Grab the data, and massage is for API compliance
     myranges = LIDAR.get_ranges();
@@ -98,10 +101,11 @@ while 1
     myranges.odom(3) = myranges.odom(3)* -1; % -1 raw data from webots to MATLAB
     IMU.data.roll = 0;
     IMU.data.pitch = 0;
-    IMU.data.yaw = myranges.rpy(3);%0;
+    IMU.data.yaw = myranges.imu(3);%0;
     IMU.data.wyaw = myranges.gyro(3) * -1; % -1 raw data from webots to MATLAB
     IMU.data.t = myranges.t;
     IMU.tLastArrival = myranges.t;
+    
     
     %% Run SLAM Update processes
     shm_slam_process_odometry(data);
@@ -128,14 +132,10 @@ while 1
         set( hOrientation, 'udata',xd, 'vdata',yd );
     end
     
-    %{
     hTitle = title(sprintf('x:%f, y:%f, yaw: %f', ...
         POSE.data.x,POSE.data.y,POSE.data.yaw*180/pi), ...
         'FontSize',12);
-    %}
-    
-    %% Timing
-    %t_stop = toc( t_start )
+    t_stop = toc( t_start )
     %{
     subplot(2,1,2);
     cla;
@@ -145,9 +145,8 @@ while 1
     yd = max(myranges.ranges)*sin(IMU.data.yaw);
     compass(xd,yd);
     %}
+    drawnow;
     
-    
-    %{
     if( t_stop > 125 )
         if( is_rec==1 )
             disp('Done Recording!')
@@ -158,9 +157,5 @@ while 1
         currFrame = getframe;
         writeVideo(vidObj,currFrame)
     end
-    %}
-    
-    % Timiing
-    drawnow;
-    %pause(.02);
+    pause(.02);
 end

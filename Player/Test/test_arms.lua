@@ -312,6 +312,8 @@ function motion_arms_ik()
       walk.upper_body_override_on();
 --      walk.upper_body_override(qLArmInv, qRArmInv, walk.bodyRot0);
 
+    qLArmInv[5] = util.mod_angle(qLArmInv[5]);
+    qRArmInv[5] = util.mod_angle(qRArmInv[5]);
 
     Body.set_larm_command(qLArmInv);
     Body.set_rarm_command(qRArmInv);

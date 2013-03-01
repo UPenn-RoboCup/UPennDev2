@@ -1,0 +1,80 @@
+cwd = '.';
+package.path = cwd.."/../Util/?.lua;"..package.path;
+local ffi = require( "ffi" )
+local gl = require( "ffi/OpenGL" ) -- This is required on Windows to work with REGAL
+local glfw = require( "ffi/glfw" )
+local cr = require ( "ffi/cairo" )
+assert( glfw.glfwInit() )
+
+local function detect( window)
+   local t, f = {}, function() end
+   for _, id in ipairs({
+	"Win32Window", "WGLContext",
+	"CocoaWindow", "NSGLContext",
+	"X11Display",  "X11Window",  "GLXContext"
+      })
+   do
+      xpcall( function() t[id] = glfw[ "glfwGet" .. id ]( window ) end, f)
+   end
+   return t
+end
+print('window...')
+local window = glfw.glfwCreateWindow(320,200,glfw.GLFW_WINDOWED, "GLFW Window System Detection", nil)
+--[[
+local window = assert( ffi.gc(
+   glfw.glfwCreateWindow(320,200,glfw.GLFW_WINDOWED, "GLFW Window System Detection", nil),
+   glfw.glfwDestroyWindow
+))
+--]]
+
+print('Setting inputs...')
+glfw.glfwSetInputMode( window, glfw.GLFW_STICKY_KEYS, 1 )
+glfw.glfwMakeContextCurrent( window );
+glfw.glfwSwapInterval( 1 ) -- 0=nosync 1=60fps
+
+print('Setting callback...')
+
+glfw.glfwSetCharCallback(
+   window, -- newer glfw api requires window handle!
+   ffi.cast(
+      "GLFWcharfun", 
+      function(w,c) 
+	 print(w)
+	 print(c)
+      end
+))
+
+while glfw.glfwGetKey( window, glfw.GLFW_KEY_ESCAPE ) ~= glfw.GLFW_PRESS do
+  gl.glBegin( gl.GL_QUADS )
+  local da = 2 * pi / teeth / 4
+  local width = 10
+  for i = 0, 10 - 1 do
+    local angle = i * 2 * pi / teeth
+    gl.glVertex3d( r1*cos(angle),        r1*sin(angle),        width * 0.5 )
+    gl.glVertex3d( r2*cos(angle + da),   r2*sin(angle + da),   width * 0.5 )
+    gl.glVertex3d( r2*cos(angle + 2*da), r2*sin(angle + 2*da), width * 0.5 )
+    gl.glVertex3d( r1*cos(angle + 3*da), r1*sin(angle + 3*da), width * 0.5 )
+  end
+  gl.glEnd()
+  glfw.glfwSwapBuffers(window)
+    glfw.glfwPollEvents() 
+ end
+
+print()
+print('GLFW Window', window)
+local t = detect(window)
+for k,v in pairs(t) do
+   print(k,v)
+end
+
+local device
+
+if t.Win32Window ~= nil and t.WGLContext ~= nil then
+   -- Windows
+--   device = cr.cairo_wgl_device_create( t.WGLContext );
+end
+
+print( device )
+
+window = nil
+collectgarbage()

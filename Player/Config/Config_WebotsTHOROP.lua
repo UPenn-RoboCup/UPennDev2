@@ -20,11 +20,23 @@ dev.camera = 'WebotsOPCam';
 dev.kinematics = 'THOROPKinematics';
 dev.game_control='WebotsGameControl';
 dev.team='TeamNull';
+
 dev.walk = 'HumbleWalk';
-dev.crawl = 'HumbleCrawl';
---dev.walk = 'HumbleCrawl';
+dev.crawl = 'ScrambleCrawl';
+dev.largestep = 'ZMPStep';
+
+--dev.walk = 'ZMPPreviewWalk';
+--dev.walk = 'zmpstep';
+
+--Jumble*** are for uneven grounds 
+--dev.walk = 'JumbleWalk';
+--dev.crawl = 'JumbleCrawl';
 
 dev.kick = 'NewKick';
+
+
+
+
 
 dev.ip_wired = '192.168.123.255'; 
 dev.ip_wired_port = 111111;

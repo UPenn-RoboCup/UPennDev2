@@ -20,6 +20,8 @@
 --   - Enabled vsync
 cwd = '.';
 package.path = cwd.."/../Util/?.lua;"..package.path;
+package.path = cwd.."/../Lib/?.lua;"..package.path;
+require('unix')
 local ffi  = require( "ffi" )
 local gl   = require( "ffi/OpenGL" )
 local glfw = require( "ffi/glfw" )
@@ -224,6 +226,7 @@ local function pressed( key )
   return glfw.glfwGetKey( glfw["GLFW_KEY_" .. key:upper()] ) == glfw.GLFW_PRESS
 end
 
+
 local function main()
   assert( glfw.glfwInit() )
   glfw.glfwOpenWindowHint( glfw.GLFW_DEPTH_BITS, 16 );
@@ -237,20 +240,25 @@ local function main()
   local ffi_w, ffi_h = ffi.new( "int[1]" ), ffi.new( "int[1]" )
   local width, height
 
+
+
   while glfw.glfwGetKey( glfw.GLFW_KEY_ESC ) ~= glfw.GLFW_PRESS
     do
+
+
       -- Resize 
       glfw.glfwGetWindowSize( ffi_w, ffi_h)
       if width ~= ffi_w[0] or height ~= ffi_h[0] then
         width, height = ffi_w[0], ffi_h[0]
         reshape( window, width, height )
       end
-
       draw();
       animate();
 
       glfw.glfwSwapBuffers();
       glfw.glfwPollEvents();
+
+      unix.usleep(0.02*1E6); --50fps 
 
       if pressed( "Z" ) and pressed( "LSHIFT" ) then
         view_rotz = view_rotz - 2

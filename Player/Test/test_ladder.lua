@@ -101,6 +101,22 @@ arm_init_t0 = 0;
 arm_stage_duration={2.0,1.0,1.0,1.0};
 is_moving = 0;
 
+qLArm0 = vector.new({90,0,0,0,0,0})*math.pi/180;
+qRArm0 = vector.new({90,0,0,0,0,0})*math.pi/180;
+
+--Arm pose for qual4
+qLArm1 = vector.new({71,81,18,-87,-90,30})*math.pi/180;
+qRArm1 = vector.new({71,-81,-18,-87,90,-30})*math.pi/180;
+
+
+
+bodyHeight = walk.bodyHeight;
+bodyTilt = walk.bodyTilt;
+footX = walk.footX;
+footY = walk.footY;
+supportX = walk.supportX;
+
+
 function init_arms()
   t = Body.get_time();
   if arm_initing>0 then     
@@ -112,36 +128,19 @@ function init_arms()
     end
     ph = (t-arm_init_t0) /current_duration;
     if arm_init_stage==0 then
-      qLArm =  {math.pi/2, math.pi/2 * ph, 0, 0,0,0};
-      qRArm =  {math.pi/2, -math.pi/2 * ph, 0, 0,0,0};      
-    elseif arm_init_stage==1 then
+      qLArm =  (1-ph)*qLArm0 + qLArm1 * ph;
+      qRArm =  (1-ph)*qRArm0 +  qRArm1 * ph;
+ 
+      Body.set_l_gripper_command({math.pi/4,-math.pi/4});
+      Body.set_r_gripper_command({math.pi/4,-math.pi/4});
 
-      qLArm =  {(1-ph)*math.pi/2, math.pi/2 , ph*math.pi/2,  
-			0,-math.pi/2*ph,0};
-      qRArm =  {(1-ph)*math.pi/2, -math.pi/2,  -ph*math.pi/2, 
-			0,math.pi/2*ph,0};      
-
-    elseif arm_init_stage==2 then
-      qLArm =  {0, math.pi/2-math.pi/9*ph , math.pi/2,
-		 (math.pi/9-math.pi/2)*ph, -math.pi/2,-math.pi/2*ph};
-      qRArm =  {0, -math.pi/2+ math.pi/9*ph , -math.pi/2,
-		  (math.pi/9-math.pi/2)*ph, math.pi/2,math.pi/2*ph};      
     else
-      qLArm =  {0, math.pi/2 -math.pi/9 ,math.pi/2,
-		 (math.pi/9-math.pi/2), -math.pi/2,-math.pi/2};
-      qRArm =  {0, -math.pi/2+ math.pi/9 ,-math.pi/2,
-		  (math.pi/9-math.pi/2), math.pi/2, math.pi/2};      
+      qLArm = qLArm1;
+      qRArm = qRArm1;
 
       arm_initing = 0;
       trLArmOld = Kinematics.l_arm_torso(qLArm);
       trRArmOld = Kinematics.r_arm_torso(qRArm);
-
-      --Lower the hand a bit to avoid singularity
-      trLArmOld[3]=trLArmOld[3] - 0.02; 
-      trRArmOld[3]=trRArmOld[3] - 0.02;
-
-      trLArmOld[6]= - math.pi/2; 
-      trRArmOld[6]= math.pi/2;
 
       trLArm[1],trLArm[2],trLArm[3],trLArm[4],trLArm[5],trLArm[6]=
 	trLArmOld[1],trLArmOld[2],trLArmOld[3],trLArmOld[4],trLArmOld[5],trLArmOld[6];
@@ -159,121 +158,302 @@ function init_arms()
 
     Body.set_larm_command(qLArm);
     Body.set_rarm_command(qRArm);
---    walk.upper_body_override(qLArm, qRArm, walk.bodyRot0);
-
   end
   Body.set_head_command({0,60*math.pi/180});
-
 end
 
+current_action = 0;
 
 
-function update_cognition()
-
-  body_pos = Body.get_sensor_gps();
-  body_rpy = Body.get_sensor_imuAngle();
-  object_pos = wcm.get_robot_gps_ball();
-
-  trBody=Transform.eye()
-   * Transform.trans(body_pos[1],body_pos[2],body_pos[3])
-   * Transform.rotZ(body_rpy[3])
-   * Transform.rotY(body_rpy[2]);
-
-  trEffector = Transform.eye()
-   * Transform.trans(object_pos[1],object_pos[2],object_pos[3])
-   * Transform.rotZ(trLArm[6]); --End effector transform (currently yaw only)
-
-  trRelative = Transform.inv(trBody)*trEffector;
-  pRelative = {trRelative[1][4],trRelative[2][4],trRelative[3][4]};
+--ArmX: 0.48 
+--ArmY: 0.50
+--Fully raised arm: 0.30
+--Lowered arm height : 0
 
 
---[[
-  print("body abs pos:",unpack( body_pos )); --Check Body GPS 
-  --print("body pitch and yaw:",body_rpy[2]*180/math.pi, body_rpy[3]*180/math.pi);
-  print("object abs pos:",unpack( object_pos )); 
+action_start_time = 0;
+action_duration = 0;
+current_action=0;
 
-  print("object rel pos:",unpack(pRelative))
 
-  print("current LArm rel pos:",
-	trLArm[1],trLArm[2],trLArm[3]);
---]]
 
-end
+LLeg={0,footY,0};
+RLeg={0,-footY,0};
 
+LLegPitch = 0;
+RLegPitch = 0;
+
+cycle = 0;
 
 
 function auto_move_arms()
-  if is_moving==0 then return;
+  t = Body.get_time();
+  if is_moving==0 then 
+    LArmTarget0 = {trLArm[1],trLArm[2],trLArm[3]};
+    LArmTarget1 = {trLArm[1],trLArm[2],trLArm[3]};
+
+    RArmTarget0 = {trRArm[1],trRArm[2],trRArm[3]};
+    RArmTarget1 = {trRArm[1],trRArm[2],trRArm[3]};
+
+    LLegTarget0 = {LLeg[1],LLeg[2],LLeg[3]};
+    LLegTarget1 = {LLeg[1],LLeg[2],LLeg[3]};
+
+    RLegTarget0 = {RLeg[1],RLeg[2],RLeg[3]};
+    RLegTarget1 = {RLeg[1],RLeg[2],RLeg[3]};
+
+    action_start_time = t;
+    action_duration = 0;
+    return;
   end
 
-  qInv, dist = check_ik(pRelative,1);
+  if action_duration==0 then
+    action_start_time = t;
+  end
+
+
+  if (t>action_start_time + action_duration) and
+	action_duration ~=0 then
+    is_moving = is_moving + 1;
+    action_start_time = action_start_time + action_duration;
+  end
+
+
+  if current_action == 1 then --Raise Left arm and grip
+    if is_moving==1 then --Raise 
+      Body.set_l_gripper_command({math.pi/4,-math.pi/4});--Release 
+      LArmTarget0 = {trLArm[1],trLArm[2],trLArm[3]};
+      LArmTarget1 = {0.41,0.50,-0.03};   --Retract
+      action_duration = 0.2;
+    elseif is_moving==2 then --Move up
+      LArmTarget0 = {0.41,0.50,-0.03};   --Retract
+      LArmTarget1 = {0.41,0.50,0.25};   
+      action_duration = 1.0;
+    elseif is_moving==3 then --Extend
+      LArmTarget0 = {0.41,0.50,0.25};   
+      LArmTarget1 = {0.49,0.50,0.27};   
+      LArmTarget1 = {0.50,0.50,0.27};   
+      action_duration = 1.0;
+    elseif is_moving==4 then
+      Body.set_l_gripper_command({0,0});--Grip
+      is_moving = 0;
+      return;
+    end
+
+
+  elseif current_action == 2 then --Raise Right arm and grip
+    if is_moving==1 then --Raise 
+      Body.set_r_gripper_command({math.pi/4,-math.pi/4});--Release 
+      RArmTarget0 = {trRArm[1],trRArm[2],trRArm[3]};
+      RArmTarget1 = {0.41,-0.50,-0.03};   --Retract
+      action_duration = 0.2;
+    elseif is_moving==2 then --Move up
+      RArmTarget0 = {0.41,-0.50,-0.03};   --Retract
+      RArmTarget1 = {0.41,-0.50,0.25};   
+      action_duration = 1.0;
+    elseif is_moving==3 then --Extend
+      RArmTarget0 = {0.41,-0.50,0.25};   
+      RArmTarget1 = {0.49,-0.50,0.27};   
+      RArmTarget1 = {0.50,-0.50,0.27};   
+      action_duration = 1.0;
+    elseif is_moving==4 then
+      Body.set_r_gripper_command({0,0});--Grip
+      is_moving = 0;
+      return;
+    end
+
+
+  elseif current_action == 3 then --Initial Left leg movement
+    if is_moving==1 then --Raise leg 
+      LLegTarget0 = {0, 0.10, 0};
+      LLegTarget1 = {0, 0.10, 0.35};
+      action_duration = 1.0;
+    elseif is_moving==2 then --Move forward
+      LLegTarget0 = {0, 0.10, 0.35};
+      LLegTarget1 = {0.48, 0.18, 0.35};
+      action_duration = 1.0;
+
+      LLegPitch = -15*math.pi/180;
+    elseif is_moving==3 then --Land
+      LLegTarget0 = {0.48, 0.18, 0.35};
+      LLegTarget1 = {0.48, 0.18, 0.33};
+      action_duration = 1.0;
+    elseif is_moving==4 then
+      is_moving = 0;
+      return;
+    end
+
+  elseif current_action == 4 then --Initial Right leg movement
+    if is_moving==1 then --Raise leg 
+      RLegTarget0 = {0, -0.10, 0};
+      RLegTarget1 = {0, -0.10, 0.35};
+      action_duration = 1.0;
+    elseif is_moving==2 then --Move forward
+      RLegTarget0 = {0, -0.10, 0.35};
+      RLegTarget1 = {0.48, -0.18, 0.35};
+      action_duration = 1.0;
+
+      RLegPitch = -15*math.pi/180;
+
+    elseif is_moving==3 then --Land
+      RLegTarget0 = {0.48, -0.18, 0.35};
+      RLegTarget1 = {0.48, -0.18, 0.33};
+      action_duration = 1.0;
+    elseif is_moving==4 then
+      is_moving = 0;
+      return;
+    end
+
+
+  elseif current_action == 5 then 
+    if is_moving==1 then --Raise and retract 
+
+--Pull body up by 20cm
+
+      LArmTarget0 = {0.48,0.50,0.27};   
+      RArmTarget0 = {0.48,-0.50,0.27};   
+      LLegTarget0 = {0.48, 0.18, 0.33};
+      RLegTarget0 = {0.48, -0.18, 0.33};
+
+      LArmTarget1 = {0.48,0.50,0.07};   
+      RArmTarget1 = {0.48,-0.50,0.07};   
+      LLegTarget1 = {0.48, 0.18, 0.13};
+      RLegTarget1 = {0.48, -0.18, 0.13};
+      action_duration = 2.0;
+    elseif is_moving==2 then
+
+      LArmTarget0 = {0.48,0.50,0.07};   
+      RArmTarget0 = {0.48,-0.50,0.07};   
+
+      LLegTarget0 = {0.48, 0.18, 0.13};
+      RLegTarget0 = {0.48, -0.18, 0.13};
+
+      RLegTarget1 = {0.0, -0.18, 0.16}; --Raise and extract rfoot
+      action_duration = 0.2;
+
+    elseif is_moving==3 then
+
+      RLegTarget0 = {0.0, -0.18, 0.16}; 
+      RLegTarget1 = {0.48, -0.18, 0.49}; --Raise rfoot higher
+      action_duration = 1.0;
+
+    elseif is_moving==4 then
+
+      RLegTarget0 = {0.48, -0.18, 0.49}; --Raise rfoot higher
+      RLegTarget1 = {0.48, -0.18, 0.43}; --Land RFoot
+      action_duration = 0.2;
+
+    elseif is_moving==5 then 
+
+      is_moving = 0;
+      return;
+    end
+
+  elseif current_action == 6 then 
+    if is_moving==1 then --Raise and retract 
+      LLegTarget0 = {0.48, 0.18, 0.13}; --Raise and extract foot
+      LLegTarget1 = {0.0, 0.18, 0.16};
+      action_duration = 0.2;
+    elseif is_moving==2 then 
+      LLegTarget0 = {0.0, 0.18, 0.16};
+      LLegTarget1 = {0.0, 0.18, 0.49};  --Raise lfoot high
+      action_duration = 1.0;
+    elseif is_moving==3 then --Put foot back
+      LLegTarget0 = {0.0, 0.18, 0.49};
+      LLegTarget1 = {0.48, 0.18, 0.49};  --Raise lfoot high
+      action_duration = 1.0;
+    elseif is_moving==4 then --Land
+      LLegTarget0 = {0.48, 0.18, 0.49};  --Raise lfoot high
+      LLegTarget1 = {0.48, 0.18, 0.43};  --Raise lfoot high
+      action_duration = 0.2;
+    elseif is_moving==5 then --Pull body up by 10cm
+
+      LArmTarget0 = {0.48,0.50,0.07};   
+      RArmTarget0 = {0.48,-0.50,0.07};   
+      LLegTarget0 = {0.48, 0.18, 0.43};
+      RLegTarget0 = {0.48, -0.18, 0.43};
+
+      LArmTarget1 = {0.48,0.50,-0.03};   
+      RArmTarget1 = {0.48,-0.50,-0.03};   
+      LLegTarget1 = {0.48, 0.18, 0.33};
+      RLegTarget1 = {0.48, -0.18, 0.33};
+
+
+      LLegTarget1 = {0.48, 0.39, 0.33};
+      RLegTarget1 = {0.48, -0.39, 0.33};
+
+
+      action_duration = 2.0;
+
+    elseif is_moving==6 then 
+      is_moving = 0;
+      cycle = cycle+1;
+
+      return;
+    end
+
+
+
 
 --[[
-  if dist>0.001 then 
-    print("Target unreachabe")
-    is_moving=0; 
-    return; 
-  end
---]]
 
-  --Check if the object is reachable
-  armDir = vector.new({
-	pRelative[1]-trLArm[1],
-	pRelative[2]-trLArm[2],
-	pRelative[3]-trLArm[3]});
-
-  if is_moving==1 then
-    armDir[3] = armDir[3]+ 0.11; --Approach : aim higher
-  elseif is_moving==2 then
-    armDir[3] = armDir[3]+ 0.02; --pickup bit higherr
-  elseif is_moving==3 then --pick up
-    armDir[1],armDir[2]=0,0;
-    armDir[3] = 0.05-trLArm[3];
-  elseif is_moving==4 then --put down
-    armDir[1],armDir[2]=0,0;
-    armDir[3] = -0.04-trLArm[3];
-  elseif is_moving==5 then --put down
-    armDir[1],armDir[2]=0,0;
-    armDir[3] = 0.05-trLArm[3];
-  end
-
-
---print("Target dir:",unpack(armDir))
-
-  dRelative = math.sqrt(armDir[1]^2 + armDir[2]^2+armDir[3]^2);
-
-  vel=0.001;
-  if dRelative<0.02 then 
-   vel=0.00025;
-  end
-
-  if dRelative<0.0025 then --Approached the target
-    print("TARGET REACHED")
-    if is_moving==1 then 
-      --Open gripper
-      Body.set_l_gripper_command({math.pi/6,-math.pi/6});
-      is_moving = 2;
-    elseif is_moving==2 then
-      --Now grasp
-      print("Arm height:",trLArm[3])
-      Body.set_l_gripper_command({0,0});
-      is_moving = 3;
-    elseif is_moving==3 then
-      is_moving = 4; 
-    elseif is_moving==4 then
-      Body.set_l_gripper_command({math.pi/6,-math.pi/6});
-      is_moving = 5; 
+  elseif current_action == 5 then --Left leg up
+    if is_moving==1 then --Raise and retract 
+      RLegTarget1 = {0.48, 0.18, 0.33};
+      RLegTarget1 = {0.20, 0.18, 0.36};
+      action_duration = 1.0;
+      action_start_time = t;
+    elseif is_moving==2 then --Raise higher
+      LLegTarget0 = {0.20, 0.18, 0.36};
+      LLegTarget1 = {0.20, 0.18, 0.66};
+      action_duration = 1.0;
+    elseif is_moving==3 then --Extend
+      LLegTarget0 = {0.20, 0.18, 0.66};
+      LLegTarget0 = {0.48, 0.18, 0.66};
+      action_duration = 1.0;
+    elseif is_moving==4 then --Land
+      LLegTarget0 = {0.48, 0.18, 0.63};
+      LLegTarget0 = {0.48, 0.18, 0.63};
+      action_duration = 1.0;
     elseif is_moving==5 then
       is_moving = 0;
       return;
     end
+--]]
+
+
+
   end
+  ph = (t-action_start_time)/action_duration;
 
-  trLArm[1] = trLArm[1] + vel*armDir[1]/dRelative;
-  trLArm[2] = trLArm[2] + vel*armDir[2]/dRelative;
-  trLArm[3] = trLArm[3] + vel*armDir[3]/dRelative;
+  trLArm[1] = (1-ph)*LArmTarget0[1] + ph*LArmTarget1[1];      
+  trLArm[2] = (1-ph)*LArmTarget0[2] + ph*LArmTarget1[2];      
+  trLArm[3] = (1-ph)*LArmTarget0[3] + ph*LArmTarget1[3];      
 
-  motion_arms_ik();  
+  trRArm[1] = (1-ph)*RArmTarget0[1] + ph*RArmTarget1[1];      
+  trRArm[2] = (1-ph)*RArmTarget0[2] + ph*RArmTarget1[2];      
+  trRArm[3] = (1-ph)*RArmTarget0[3] + ph*RArmTarget1[3];      
+
+  LLeg[1] = (1-ph)*LLegTarget0[1] + ph*LLegTarget1[1];
+  LLeg[2] = (1-ph)*LLegTarget0[2] + ph*LLegTarget1[2];
+  LLeg[3] = (1-ph)*LLegTarget0[3] + ph*LLegTarget1[3];
+
+  RLeg[1] = (1-ph)*RLegTarget0[1] + ph*RLegTarget1[1];
+  RLeg[2] = (1-ph)*RLegTarget0[2] + ph*RLegTarget1[2];
+  RLeg[3] = (1-ph)*RLegTarget0[3] + ph*RLegTarget1[3];
+  
+
+  pTorso = vector.new({supportX-footX, 0,bodyHeight,0,bodyTilt,0});
+  pLLeg = {LLeg[1], LLeg[2], LLeg[3],0,LLegPitch,0};
+  pRLeg = {RLeg[1], RLeg[2], RLeg[3],0,RLegPitch,0};
+
+  motion_arms_ik();
+
+  q = Kinematics.inverse_legs(pLLeg, pRLeg, pTorso, 0);
+
+  Body.set_body_hardness(1);
+  Body.set_lleg_command(q);
+
+
 end
 
 
@@ -312,6 +492,8 @@ function motion_arms_ik()
       walk.upper_body_override_on();
 --      walk.upper_body_override(qLArmInv, qRArmInv, walk.bodyRot0);
 
+    qLArmInv[5] = util.mod_angle(qLArmInv[5]);
+    qRArmInv[5] = util.mod_angle(qRArmInv[5]);
 
     Body.set_larm_command(qLArmInv);
     Body.set_rarm_command(qRArmInv);
@@ -321,17 +503,20 @@ function motion_arms_ik()
 
       trRArmOld[1],trRArmOld[2],trRArmOld[3],trRArmOld[4],trRArmOld[5],trRArmOld[6]=
       trRArm[1],trRArm[2],trRArm[3],trRArm[4],trRArm[5],trRArm[6];
+
+
   else
 
-    is_moving=0;
+--    is_moving=0;
     print("STUCK!")
 
-
+--[[
       trLArm[1],trLArm[2],trLArm[3],trLArm[4],trLArm[5],trLArm[6]=
       trLArmOld[1],trLArmOld[2],trLArmOld[3],trLArmOld[4],trLArmOld[5],trLArmOld[6];
 
       trRArm[1],trRArm[2],trRArm[3],trRArm[4],trRArm[5],trRArm[6]=
       trRArmOld[1],trRArmOld[2],trRArmOld[3],trRArmOld[4],trRArmOld[5],trRArmOld[6];
+--]]
   end
 
 end
@@ -402,29 +587,46 @@ function process_keyinput()
 
 
   elseif byte==string.byte("1") then  
-    trLArm[6]=trLArm[6]+0.1;
-    update_arm = true;
+    if is_moving==0 then
+      current_action = 1;
+      is_moving = 1;
+    end
   elseif byte==string.byte("2") then  
-    trLArm[6]=trLArm[6]-0.1;
-    update_arm = true;
+    if is_moving==0 then
+      current_action = 2;
+      is_moving = 1;
+    end
+
   elseif byte==string.byte("3") then  
-    trLArm[4]=trLArm[4]+0.1;
-    update_arm = true;
+    if is_moving==0 then
+      current_action = 3;
+      is_moving = 1;
+    end
+
   elseif byte==string.byte("4") then  
-    trLArm[4]=trLArm[4]-0.1;
-    update_arm = true;
+    if is_moving==0 then
+      current_action = 4;
+      is_moving = 1;
+    end
+
   elseif byte==string.byte("5") then  
-    trLArm[5]=trLArm[5]+0.1;
-    update_arm = true;
+    if is_moving==0 then
+      current_action = 5;
+      is_moving = 1;
+    end
+
   elseif byte==string.byte("6") then  
-    trLArm[5]=trLArm[5]-0.1;
-    update_arm = true;
+    if is_moving==0 then
+      current_action = 6;
+      is_moving = 1;
+    end
 
 
 
 
   elseif byte==string.byte("e") then  --Open gripper
     Body.set_l_gripper_command({math.pi/6,-math.pi/6});
+
   elseif byte==string.byte("r") then  --Close gripper
     Body.set_l_gripper_command({0,0});
 
@@ -452,6 +654,16 @@ function process_keyinput()
   elseif byte==string.byte("n") then  
     trRArm[6]=trRArm[6]-0.1;
     update_arm = true;
+  elseif byte==string.byte("c") then  
+    trRArm[4]=trRArm[4]+0.1;
+    update_arm = true;
+  elseif byte==string.byte("v") then  
+    trRArm[4]=trRArm[4]-0.1;
+    update_arm = true;
+
+
+
+
 
   elseif byte==string.byte("t") then  --Open gripper
     Body.set_r_gripper_command({math.pi/6,-math.pi/6});
@@ -477,29 +689,11 @@ function update()
   walk.active = false;
 
   -- Update State Machines 
-  Motion.update();
+  if arm_initing>0 then
+    Motion.update();
+  end
   Body.update();
-  update_cognition();
   auto_move_arms();
---[[	
-	-- Update the laser scanner
-	lidar_scan = WebotsLaser.get_scan()
-	-- Set the Range Comm Manager values
-	rcm.set_lidar_ranges( carray.pointer(lidar_scan) );
-	rcm.set_lidar_timestamp( Body.get_time() )
-	--print("Laser data:",unpack(rcm.get_lidar_ranges()))
-	
-	-- Show the odometry
-	odom, odom0 = mcm.get_odometry();
-	rcm.set_robot_odom( vector.new(odom) )
-	
-	-- Show IMU
-  imuAngle = Body.get_sensor_imuAngle();
-	rcm.set_robot_imu( vector.new(imuAngle) )
-	gyr = Body.get_sensor_imuGyrRPY();
-	rcm.set_robot_gyro( vector.new(gyr) );
---]]
-
 
 --print("Roll", gyr[1], "Pitch",gyr[2]);
 

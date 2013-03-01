@@ -5,7 +5,7 @@
 # 2013/1
 #############################################
 
-PROTO THOROP [
+PROTO THOROP_claw [
   field SFVec3f    translation 0 1 0
   field SFRotation rotation 0 1 0 0
   field SFString   controller "void"
@@ -67,16 +67,28 @@ Robot {
 				  name "r_wrist_grip1"
 				  children[
 				    Transform{
-                              	      translation 0 0 -0.05
+                              	      translation 0 0 -0.06
                                       children [
-                                        Shape{geometry Box {size 0.02 0.02 0.10}}
+                                        Shape{geometry Box {size 0.02 0.02 0.12}}
+				      ]
+                                    }
+				    Transform{
+                              	      translation 0 -0.025 -0.12
+                                      children [
+                                        Shape{geometry Box {size 0.02 0.05 0.02}}
 				      ]
                                     }
 				  ]
-				  boundingObject Transform {
-                            	    translation 0 0 -0.05
-                                    children [
-                                      Box {size 0.02 0.02 0.10}
+				  boundingObject Group{
+			            children[
+				      Transform {
+                             	        translation 0 0 -0.06
+                                        children [Box {size 0.02 0.02 0.12}]
+                                      }
+				      Transform {
+                             	        translation 0 -0.025 -0.12
+                                        children [Box {size 0.02 0.05 0.02}]
+                                      }
                                     ]
                                   }
                                   physics Physics {}
@@ -87,16 +99,28 @@ Robot {
 				  name "r_wrist_grip2"
 				  children[
 				    Transform{
-                              	      translation 0 0 -0.05
+                              	      translation 0 0 -0.06
                                       children [
-                                        Shape{geometry Box {size 0.02 0.02 0.10}}
+                                        Shape{geometry Box {size 0.02 0.02 0.12}}
+				      ]
+                                    }
+				    Transform{
+                              	      translation 0 0.025 -0.12
+                                      children [
+                                        Shape{geometry Box {size 0.02 0.05 0.02}}
 				      ]
                                     }
 				  ]
-				  boundingObject Transform {
-                            	    translation 0 0 -0.05
-                                    children [
-                                      Box {size 0.02 0.02 0.10}
+				  boundingObject Group{
+			            children[
+                                      Transform{
+	                                translation 0 0 -0.06
+                                        children [Box {size 0.02 0.02 0.12}]
+                                      }
+                                      Transform{
+	                                translation 0 0.025 -0.12
+                                        children [Box {size 0.02 0.05 0.02}]
+                                      }
                                     ]
                                   }
                                   physics Physics {}
@@ -239,18 +263,31 @@ Robot {
 				  name "l_wrist_grip1"
 				  children[
 				    Transform{
-                              	      translation 0 0 -0.05
+                              	      translation 0 0 -0.06
                                       children [
-                                        Shape{geometry Box {size 0.02 0.02 0.10}}
+                                        Shape{geometry Box {size 0.02 0.02 0.12}}
+				      ]
+                                    }
+				    Transform{
+                              	      translation 0 -0.025 -0.12
+                                      children [
+                                        Shape{geometry Box {size 0.02 0.05 0.02}}
 				      ]
                                     }
 				  ]
-				  boundingObject Transform {
-                            	    translation 0 0 -0.05
-                                    children [
-                                      Box {size 0.02 0.02 0.10}
+                                  boundingObject Group{
+                                    children[
+                                      Transform {
+                                        translation 0 0 -0.06
+                                        children [Box {size 0.02 0.02 0.12}]
+                                      }
+                                      Transform {
+                                        translation 0 -0.025 -0.12
+                                        children [Box {size 0.02 0.05 0.02}]
+                                      }
                                     ]
                                   }
+
                                   physics Physics {}
 				}
 	   	 	        DEF l_wrist_grip2 Servo{ #Second finger for gripper
@@ -259,18 +296,31 @@ Robot {
 				  name "l_wrist_grip2"
 				  children[
 				    Transform{
-                              	      translation 0 0 -0.05
+                              	      translation 0 0 -0.06
                                       children [
-                                        Shape{geometry Box {size 0.02 0.02 0.10}}
+                                        Shape{geometry Box {size 0.02 0.02 0.12}}
 				      ]
                                     }
+				    Transform{
+                              	      translation 0 0.025 -0.12
+                                      children [
+                                        Shape{geometry Box {size 0.02 0.05 0.02}}
+				      ]
+				    }
 				  ]
-				  boundingObject Transform {
-                            	    translation 0 0 -0.05
-                                    children [
-                                      Box {size 0.02 0.02 0.10}
+                                  boundingObject Group{
+                                    children[
+                                      Transform {
+                                        translation 0 0 -0.06
+                                        children [Box {size 0.02 0.02 0.12}]
+                                      }
+                                      Transform {
+                                        translation 0 0.025 -0.12
+                                        children [Box {size 0.02 0.05 0.02}]
+                                      }
                                     ]
                                   }
+
                                   physics Physics {}
 				}
 
@@ -394,7 +444,7 @@ Robot {
 		      rotation 0 1 0 -1.57
  		      children[
 			#ADDED FOR DEPTH SENSING
-			DEF kinect KinectWithoutFoot{}
+#			DEF kinect KinectWithoutFoot{}
 		      ]		      
 		    }
                   ]

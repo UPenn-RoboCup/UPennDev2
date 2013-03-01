@@ -1,0 +1,159 @@
+# Quck steerng wheel for DRC
+# Seung-Joon Yi
+# Feb 2013
+
+PROTO SteeringWheelSmall [
+  field SFVec3f translation 0 0.0325 0
+  field SFRotation rotation 0 1 0 0
+  field SFColor color 1.0 0.54 0.08
+
+#  field SFFloat radius 0.03175
+  field SFFloat radius 0.02
+  field SFFloat height 0.12
+#  field SFFloat height 0.18
+  field SFFloat mass 0.35
+
+  field SFVec3f centerOfMass 0 -0.0001 0
+  field SFFloat linearDamping 0.17
+  field SFFloat angularDamping 0.33
+  field SFString contactMaterial "default"
+]
+{
+  Servo {
+    maxForce 0
+    staticFriction 0.1
+    name "SteeringWheelSmall"
+    rotation 1 0 0 0
+    children [
+      Transform{
+        translation 0 0.15 0
+        rotation 1 0 0 1.57
+        children[ 
+          DEF WHEEL_SEGMENT_SHAPE Shape {
+            appearance DEF SEGMENT_APP Appearance {
+              material Material {
+                ambientIntensity 0.4
+                diffuseColor IS color
+                shininess 0.8
+                specularColor 1 1 1
+              }
+            }
+            geometry Cylinder {
+              radius IS radius
+              height IS height
+            }
+	  }
+        ]
+      }
+
+      Transform{
+        translation 0 -0.15 0
+        rotation 1 0 0 1.57
+        children[USE WHEEL_SEGMENT_SHAPE]
+      }
+
+      Transform{
+        translation 0 0 0.15
+        rotation 1 0 0 0
+        children[USE WHEEL_SEGMENT_SHAPE]
+      }
+
+      Transform{
+        translation 0 0 -0.15
+        rotation 1 0 0 0
+        children[USE WHEEL_SEGMENT_SHAPE]
+      }
+
+      Transform{
+        translation 0 -0.106 0.106
+        rotation 1 0 0 0.785
+        children[USE WHEEL_SEGMENT_SHAPE]
+      }
+
+      Transform{
+        translation 0 0.106 -0.106
+        rotation 1 0 0 0.785
+        children[USE WHEEL_SEGMENT_SHAPE]
+      }
+
+      Transform{
+        translation 0 0.106 0.106
+        rotation 1 0 0 -0.785
+        children[USE WHEEL_SEGMENT_SHAPE]
+      }
+
+      Transform{
+        translation 0 -0.106 -0.106
+        rotation 1 0 0 -0.785
+        children[USE WHEEL_SEGMENT_SHAPE]
+      }
+
+
+
+
+
+
+
+
+
+
+    ]
+    boundingObject Group{
+      children [
+	Transform{
+          translation 0 0.15 0
+          rotation 1 0 0 1.57
+          children[USE WHEEL_SEGMENT_SHAPE]
+        }
+
+      Transform{
+        translation 0 -0.15 0
+        rotation 1 0 0 1.57
+        children[USE WHEEL_SEGMENT_SHAPE]
+      }
+
+      Transform{
+        translation 0 0 0.15
+        rotation 1 0 0 0
+        children[USE WHEEL_SEGMENT_SHAPE]
+      }
+
+      Transform{
+        translation 0 0 -0.15
+        rotation 1 0 0 0
+        children[USE WHEEL_SEGMENT_SHAPE]
+      }
+
+      Transform{
+        translation 0 -0.106 0.106
+        rotation 1 0 0 0.785
+        children[USE WHEEL_SEGMENT_SHAPE]
+      }
+
+      Transform{
+        translation 0 0.106 -0.106
+        rotation 1 0 0 0.785
+        children[USE WHEEL_SEGMENT_SHAPE]
+      }
+
+      Transform{
+        translation 0 0.106 0.106
+        rotation 1 0 0 -0.785
+        children[USE WHEEL_SEGMENT_SHAPE]
+      }
+
+      Transform{
+        translation 0 -0.106 -0.106
+        rotation 1 0 0 -0.785
+        children[USE WHEEL_SEGMENT_SHAPE]
+      }
+
+
+      ]
+    }
+    physics Physics {
+      density -1
+      mass IS mass
+    }
+  }
+}

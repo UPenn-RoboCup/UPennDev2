@@ -39,7 +39,8 @@ THOROP {
 Solid{
   translation 0.3 1.2 0
   children[
-    SteeringWheel{}
+    SteeringWheelSmall{}
+#    SteeringWheel{}
   ]
   locked TRUE
 }

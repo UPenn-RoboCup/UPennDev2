@@ -264,7 +264,15 @@ function auto_move_arms()
   velR = 0.001;
 
 
-  radius0 = 0.23;
+
+
+
+
+  radius0 = 0.23; --Large wheel
+  radius0 = 0.16; --Small wheel
+
+
+
   radius1 = 0.30;
   angle0 = 23*math.pi/180;
   angle1 = -23*math.pi/180;

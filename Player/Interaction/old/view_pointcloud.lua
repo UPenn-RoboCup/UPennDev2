@@ -223,11 +223,11 @@ local function init()
   gl.glLightfv( gl.GL_LIGHT0, gl.GL_POSITION, pos);
   gl.glEnable(  gl.GL_CULL_FACE  )
 	-- http://www.opengl.org/discussion_boards/showthread.php/149490-glColorPointer-PROBLEM!!
+	gl.glColorMaterial(gl.GL_FRONT_AND_BACK, gl.GL_AMBIENT_AND_DIFFUSE);
+	gl.glEnable(gl.GL_COLOR_MATERIAL);
   gl.glEnable(  gl.GL_LIGHTING   )
   gl.glEnable(  gl.GL_LIGHT0     )
   gl.glEnable(  gl.GL_DEPTH_TEST )
-	gl.glColorMaterial(gl.GL_FRONT_AND_BACK, gl.GL_AMBIENT_AND_DIFFUSE);
-	gl.glEnable(gl.GL_COLOR_MATERIAL);
 
   gear1 = gl.glGenLists(1)
   gl.glNewList( gear1, gl.GL_COMPILE )

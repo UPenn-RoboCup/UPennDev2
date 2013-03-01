@@ -12,8 +12,8 @@ local serialization = require 'serialization'
 require 'cutil'
 
 -- Data Type specific
-local dataPath = '~/Desktop/logs';
-local dataStamp = '02.25.2013.00.*';
+local dataPath = '~/shadwell/day2_third/logs/'
+local dataStamp = '02.27.2013';
 local dataType = 'lidar'
 local realtime = true;
 require 'rcm'
@@ -23,7 +23,7 @@ end
 
 function get_log_file_list()
   -- TODO: use a Lua directory call
-  local log_file = dataType..dataStamp..'-'..'*'
+  local log_file = dataType..dataStamp..'*'
   local log_file_list = 
   assert(io.popen('/bin/ls '..dataPath..'/'..log_file, 'r'));
   return log_file_list;
@@ -62,7 +62,7 @@ function parse_log_entry( str )
     cutil.string2userdata(lidar_ranges, lidar_data.arr.data);
     lidar_tbl.ranges = lidar_ranges;
     -- Store the timestamp of the data
-    lidar_tbl.tstamp = lidar_data.timestamp;
+    lidar_tbl.t = lidar_data.t;
   else
     return nil;
   end
@@ -70,7 +70,7 @@ function parse_log_entry( str )
 end
 
 function push_entry( lidar_tbl )
-  rcm.set_lidar_timestamp(lidar_tbl.tstamp);
+  rcm.set_lidar_timestamp(lidar_tbl.t);
   rcm.set_lidar_ranges( lidar_tbl.ranges );
   rcm.set_lidar_counter(lidar_tbl.counter);
 end
@@ -84,12 +84,12 @@ for l in log_file_list:lines() do
   for log_entry in f_handle:lines() do
     local entry_tbl = parse_log_entry( log_entry )
     -- Push to SHM
-    local t_diff = entry_tbl.tstamp - (last_ts or entry_tbl.tstamp);
+    local t_diff = entry_tbl.t - (last_ts or entry_tbl.t);
     if realtime then
       unix.usleep( 1e6*t_diff );
     end
     push_entry( entry_tbl )
-    last_ts = entry_tbl.tstamp;
+    last_ts = entry_tbl.t;
   end
   --print('Closing',l)
   f_handle:close()

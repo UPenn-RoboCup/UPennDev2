@@ -41,11 +41,30 @@ kneel.torsoX = -(kneel.armX + kneel.legX)/2;
 kneel.qLArm0 = {0.43,0.26,0.09,-1.15,-1.57,-1.57};
 
 
+--[[
+--Higher step testing
+kneel.tStep = 1;
+kneel.ph1Single = 0.1;
+kneel.ph2Single = 0.9;
+--]]
 
+-----------------------------------------------
+-- ZMP preview stepping values
+-----------------------------------------------
 
+zmpstep = {};
+zmpstep.bodyHeight = 0.98; 
+zmpstep.bodyTilt = 0;
+zmpstep.tZmp = 0.28; 
 
+zmpstep.supportX = 0.02;
+zmpstep.supportY = 0.0;
+zmpstep.stepHeight = 0.10;
 
+zmpstep.phSingle={0.1,0.9};
+zmpstep.hipRollCompensation = 3*math.pi/180;
 
+-----------------------------------------
 
 -- Walk Parameters
 
@@ -100,14 +119,17 @@ walk.ankleMod = vector.new({-1,0})/ 3*math.pi/180;
 -------------------------------------------------------------- 
 gyroFactor = 0.273*math.pi/180 * 300 / 1024; --dps to rad/s conversion
 
---gyroFactor = gyroFactor*3;
+--We won't use gyro feedback on webots
+gyroFactorX = gyroFactor*0;
+gyroFactorY = gyroFactor*0;
 
-walk.ankleImuParamX={0.3,0.75*gyroFactor, 0*math.pi/180, 5*math.pi/180};
-walk.kneeImuParamX={0.3,1.5*gyroFactor, 0*math.pi/180, 5*math.pi/180};
-walk.ankleImuParamY={0.3,0.25*gyroFactor, 0*math.pi/180, 2*math.pi/180};
-walk.hipImuParamY={0.3,0.25*gyroFactor, 0*math.pi/180, 2*math.pi/180};
-walk.armImuParamX={1,10*gyroFactor, 20*math.pi/180, 45*math.pi/180};
-walk.armImuParamY={1,10*gyroFactor, 20*math.pi/180, 45*math.pi/180};
+walk.ankleImuParamX={0.3,0.75*gyroFactorX, 0*math.pi/180, 5*math.pi/180};
+walk.kneeImuParamX={0.3,1.5*gyroFactorX, 0*math.pi/180, 5*math.pi/180};
+
+walk.ankleImuParamY={0.3,0.25*gyroFactorY, 0*math.pi/180, 2*math.pi/180};
+walk.hipImuParamY={0.3,0.25*gyroFactorY, 0*math.pi/180, 2*math.pi/180};
+walk.armImuParamX={1,10*gyroFactorX, 20*math.pi/180, 45*math.pi/180};
+walk.armImuParamY={1,10*gyroFactorY, 20*math.pi/180, 45*math.pi/180};
 
 --------------------------------------------
 -- WalkKick parameters
@@ -136,26 +158,33 @@ walk.headPitchBias = 0* math.pi / 180;
 --webots thor-op values
 walk.bodyHeight = 1.15; 
 walk.footX= 0.00;  --depreciated now
---Relative position of torso from COM position
---torsoX is -footX 
-walk.torsoX = 0.00; 
-
+walk.torsoX = 0.00; --Now use this... torsoX is -footX 
 walk.footY = 0.07;
-walk.supportX = 0.0;
+
+walk.supportX = 0.03;
 walk.supportY = 0.04;
 walk.bodyTilt = 0*math.pi/180;
 
-walk.tZmp = 0.26; --Com height 0.65
+--walk.tZmp = 0.26; --Com height 0.65
+--walk.tZmp = 0.34; --Com height 1.15
+--walk.tZmp = 0.32; --Com height 1.0
+walk.tZmp = 0.30; --Com height 0.9
+
 walk.tStep = 0.8;
 walk.stepHeight = 0.052;
 walk.phSingle = {0.15,0.85};
 walk.phZmp = {0.15,0.85};
 walk.hipRollCompensation = 3*math.pi/180;
 
+walk.supportModYInitial=-0.04; --Reduce initial body swing
+
 --Large stride test (up to 300mm)
-walk.velLimitX={-.30,.30};
-walk.stanceLimitX={-0.80,0.80};
-walk.velDelta={0.30,0.10,0.3} 
+walk.velLimitX={-.20,.30};
+walk.stanceLimitX={-0.60,0.60};
+walk.stanceLimitY={0.16,0.60};
+
+walk.velLimitY={-.20,.20};
+walk.velLimitA={-.3,.3};
+walk.velDelta={0.15,0.10,0.3} 
 walk.velXHigh = 0.30;
 
-walk.supportModYInitial=-0.04; --Reduce initial body swing

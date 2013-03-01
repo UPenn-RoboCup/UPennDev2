@@ -37,76 +37,52 @@ print("qlarm:",unpack(qLArm0))
 
 
 
-stancetocrawl={
-  {--Bipedal stance
-	{torsoX,bodyHeight,bodyTilt }, --Torso X,Z and pitch
-	qLArm0,
-        {-supportX,footY,0,0}, --LFoot XYZ and pitch 
-	1, --Keyframe duration
-  },
-  {
-	{torsoXKneel, 0.7,bodyTilt }, --Torso X,Z and pitch
-	qLArm0,
-        {-supportX,footY,0,0}, --LFoot XYZ and pitch 
-	1, --Keyframe duration
-  },
-  {
-	{torsoXKneel, 0.7,bodyTilt }, --Torso X,Z and pitch
-	{math.pi/4, 0,0,0,-1.57,0},
-        {-supportX,footY,0,0}, --LFoot XYZ and pitch 
-	1, --Keyframe duration
-  },
-  {
-	{torsoXKneel, 0.5,bodyTiltKneel }, --Torso X,Z and pitch
-	qLArm0Kneel,
-        {-0.18,footY,0,0}, --LFoot XYZ and pitch 
-	3, --Keyframe duration
-  },
-  {--Quadruped stance
-	{torsoXKneel,bodyHeightKneel,bodyTiltKneel }, --Torso X,Z and pitch
-	qLArm0Kneel,
-        {legX, legY,0,0}, --LFoot XYZ and pitch 
-	1, --Keyframe duration
-  },
+keyframe_stance = {
+  {torsoX,bodyHeight,bodyTilt }, --Torso X,Z and pitch
+  qLArm0,
+  {-supportX,footY,0,0}, --LFoot XYZ and pitch 
 }
 
-
-crawltostance={
-  {--Quadruped stance
-	{torsoXKneel,bodyHeightKneel,bodyTiltKneel }, --Torso X,Z and pitch
-	qLArm0Kneel,
-        {legX, legY,0,0}, --LFoot XYZ and pitch 
-	1, --Keyframe duration
-  },
-  {
-	{torsoXKneel, 0.5,math.pi/4 }, --Torso X,Z and pitch
-	{math.pi/4, 0,0,0,-1.57,0},
-        {-0.18,footY,0,0}, --LFoot XYZ and pitch 
-	1, --Keyframe duration
-  },
-  {
-	{torsoXKneel, 0.7,0 }, --Torso X,Z and pitch
-	qLArm0,
-        {-supportX,footY,0,0}, --LFoot XYZ and pitch 
-	3, --Keyframe duration
-  },
-  {
-	{torsoXKneel, 0.6,0 }, --Torso X,Z and pitch
-	qLArm0,
-        {-supportX+0.05,footY,0,0}, --LFoot XYZ and pitch 
-	2, --Keyframe duration
-  },
-  {--Bipedal stance
-	{torsoX,bodyHeight,bodyTilt }, --Torso X,Z and pitch
-	qLArm0,
-        {-supportX,footY,0,0}, --LFoot XYZ and pitch 
-	1, --Keyframe duration
-  },
+keyframe_sit= {
+  {torsoX, 0.65,-3*math.pi/180 }, --Torso X,Z and pitch
+  qLArm0,
+  {-supportX,footY,0,0}, --LFoot XYZ and pitch 
 }
 
+keyframe_crawl = {
+  {torsoXKneel,bodyHeightKneel,bodyTiltKneel }, --Torso X,Z and pitch
+  qLArm0Kneel,
+  {legX, legY,0,0}, --LFoot XYZ and pitch 
+}
 
+keyframe_kneel1 = {
+  {torsoXKneel, 0.5,math.pi/4 }, --Torso X,Z and pitch
+--  {math.pi/4, 0,0,0,-1.57,0},
+  {math.pi/4, 0,0,0,-1.57,-1.57},
+  {-0.18,footY,0,0}, --LFoot XYZ and pitch 
+}
 
+keyframe_kneel2 = {
+  {torsoXKneel-0.05, 0.65,-3*math.pi/180 }, --Torso X,Z and pitch
+  {math.pi/4, 0,0,0,-1.57,0},
+  {-supportX,footY,0,0}, --LFoot XYZ and pitch 
+}
 
+motion_stancetocrawl={
+  {keyframe_stance,1},
+  {keyframe_sit,1},
+  {keyframe_kneel2,1},
+  {keyframe_kneel1,2},
+  {keyframe_crawl,1},
+}
+
+motion_crawltostance={
+  {keyframe_crawl,1},
+  {keyframe_kneel1,1},
+  {keyframe_kneel2,2},
+  {keyframe_sit,1},
+  {keyframe_stance,1},
+}
 
 function entry()
   print("Motion SM:".._NAME.." entry");
@@ -115,9 +91,9 @@ function entry()
   started=false;
   is_bipedal = mcm.get_walk_bipedal();
   if is_bipedal>0 then
-    current_keyframe = stancetocrawl;  
+    current_motion = motion_stancetocrawl;  
   else
-    current_keyframe = crawltostance;  
+    current_motion = motion_crawltostance;  
   end
 end
 
@@ -160,44 +136,48 @@ function update()
     return;
   end
 
-  if t>keyframe_start_time+current_keyframe[keyframe_count][4] then
-    if keyframe_count == #current_keyframe then
+  local current_keyframe = current_motion[keyframe_count][1];
+  local current_duration = current_motion[keyframe_count][2];
+
+  if t>keyframe_start_time+current_duration then
+    if keyframe_count == #current_motion then
       if is_bipedal>0 then
         return "crawldone"
       else
         return "stancedone"
       end
     end
-    keyframe_start_time = keyframe_start_time+current_keyframe[keyframe_count][4];
+    keyframe_start_time = keyframe_start_time+current_duration;
     keyframe_count = keyframe_count + 1;
   end
 
-  ph =  (t-keyframe_start_time)/current_keyframe[keyframe_count][4];
-
-  torsoXZP = (1-ph)*vector.new(current_keyframe[keyframe_count-1][1])
-	+ ph*vector.new(current_keyframe[keyframe_count][1]);
+  local ph =  (t-keyframe_start_time)/current_duration;
+  local previous_keyframe = current_motion[keyframe_count-1][1];
 
 
-  qLArm = (1-ph)*vector.new(current_keyframe[keyframe_count-1][2])
-	+ph*vector.new(current_keyframe[keyframe_count][2]);
+  local torsoXZP = (1-ph)*vector.new(previous_keyframe[1])
+	+ ph*vector.new(current_keyframe[1]);
+
+  local qLArm = (1-ph)*vector.new(previous_keyframe[2])
+	+ph*vector.new(current_keyframe[2]);
+
+  local qRArm = {qLArm[1],-qLArm[2],-qLArm[3],qLArm[4],-qLArm[5],-qLArm[6]};
 
 
-  qRArm = {qLArm[1],-qLArm[2],-qLArm[3],qLArm[4],-qLArm[5],-qLArm[6]};
+  local footXYZP = (1-ph)*vector.new(previous_keyframe[3])
+	+ph*vector.new(current_keyframe[3]);
+
+  local pTorso = vector.new({	torsoXZP[1],0,torsoXZP[2],0,torsoXZP[3],0});
+  local pLLeg = vector.new({ footXYZP[1],footXYZP[2],footXYZP[3],
+			0,footXYZP[4],0});
+  local pRLeg = vector.new({ footXYZP[1],-footXYZP[2],footXYZP[3],
+			0,footXYZP[4],0});
+
+  local q = Kinematics.inverse_legs(pLLeg, pRLeg, pTorso, 0);
+
 
   Body.set_larm_command(qLArm);
   Body.set_rarm_command(qRArm);
-
-
-  footXYZP = (1-ph)*vector.new(current_keyframe[keyframe_count-1][3])
-	+ph*vector.new(current_keyframe[keyframe_count][3]);
-
-  pTorso = vector.new({	torsoXZP[1],0,torsoXZP[2],0,torsoXZP[3],0});
-  pLLeg = vector.new({ footXYZP[1],footXYZP[2],footXYZP[3],
-			0,footXYZP[4],0});
-  pRLeg = vector.new({ footXYZP[1],-footXYZP[2],footXYZP[3],
-			0,footXYZP[4],0});
-
-  q = Kinematics.inverse_legs(pLLeg, pRLeg, pTorso, 0);
 
   Body.set_lleg_command(q);
 

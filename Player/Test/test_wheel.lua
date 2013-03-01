@@ -167,6 +167,58 @@ function init_arms()
 end
 
 
+turnAngle = 0;
+radius = 0.2;
+
+
+function calculate_arm_position()
+  --We assume that the wheel is centered at (0.3,0,1.2) and has radius 0.2
+
+   local handle_pos = {0.3,0,1.2};
+
+   trGripL = Transform.eye()
+       * Transform.trans(handle_pos[1],handle_pos[2],handle_pos[3])
+       * Transform.rotX(turnAngle*rotating_direction)
+       * Transform.trans(0,radius,0)
+       * Transform.rotZ(-math.pi/2);
+
+   trGripR = Transform.eye()
+       * Transform.trans(handle_pos[1],handle_pos[2],handle_pos[3])
+       * Transform.rotX(turnAngle*rotating_direction)
+       * Transform.trans(0,-radius,0)
+       * Transform.rotZ(math.pi/2);
+
+   body_pos = Body.get_sensor_gps();
+   body_rpy = Body.get_sensor_imuAngle();
+
+   body_pos = {0.02,0,1.145};
+   body_rpy = {0,0,0};
+
+
+   trBody=Transform.eye()
+   * Transform.trans(body_pos[1],body_pos[2],body_pos[3])
+   * Transform.rotZ(body_rpy[3])
+   * Transform.rotY(body_rpy[2]);
+
+   trLArm = Transform.position6D(Transform.inv(trBody)*trGripL);
+   trRArm = Transform.position6D(Transform.inv(trBody)*trGripR);
+
+   motion_arms_ik();
+
+--print("Angle radius:",turnAngle*180/math.pi, radius)
+end
+
+
+
+
+
+
+
+
+
+
+
+
 
 function update_cognition()
 
@@ -201,79 +253,72 @@ function update_cognition()
 end
 
 
+rotating_direction = 1;
+
 
 function auto_move_arms()
   if is_moving==0 then return;
   end
-
-  qInv, dist = check_ik(pRelative,1);
-
---[[
-  if dist>0.001 then 
-    print("Target unreachabe")
-    is_moving=0; 
-    return; 
-  end
---]]
-
-  --Check if the object is reachable
-  armDir = vector.new({
-	pRelative[1]-trLArm[1],
-	pRelative[2]-trLArm[2],
-	pRelative[3]-trLArm[3]});
-
-  if is_moving==1 then
-    armDir[3] = armDir[3]+ 0.11; --Approach : aim higher
-  elseif is_moving==2 then
-    armDir[3] = armDir[3]+ 0.02; --pickup bit higherr
-  elseif is_moving==3 then --pick up
-    armDir[1],armDir[2]=0,0;
-    armDir[3] = 0.05-trLArm[3];
-  elseif is_moving==4 then --put down
-    armDir[1],armDir[2]=0,0;
-    armDir[3] = -0.04-trLArm[3];
-  elseif is_moving==5 then --put down
-    armDir[1],armDir[2]=0,0;
-    armDir[3] = 0.05-trLArm[3];
-  end
+  
+  velATurn = 1*math.pi/180;
+  velR = 0.001;
 
 
---print("Target dir:",unpack(armDir))
 
-  dRelative = math.sqrt(armDir[1]^2 + armDir[2]^2+armDir[3]^2);
 
-  vel=0.001;
-  if dRelative<0.02 then 
-   vel=0.00025;
+
+
+  radius0 = 0.23; --Large wheel
+  radius0 = 0.16; --Small wheel
+
+
+
+  radius1 = 0.30;
+  angle0 = 23*math.pi/180;
+  angle1 = -23*math.pi/180;
+
+  nTurn = 8;
+
+  if is_moving == 2*nTurn+1 then --Finished rotating
+    if radius < radius1 then radius = radius + velR; end    
+    if turnAngle <0 then turnAngle = turnAngle + velATurn;end
+    if radius>=radius1 and turnAngle>=0 then
+      is_moving = 0; --Finish this
+    end
+    calculate_arm_position();
+   
+    return;
   end
 
-  if dRelative<0.0025 then --Approached the target
-    print("TARGET REACHED")
-    if is_moving==1 then 
-      --Open gripper
-      Body.set_l_gripper_command({math.pi/6,-math.pi/6});
-      is_moving = 2;
-    elseif is_moving==2 then
-      --Now grasp
-      print("Arm height:",trLArm[3])
+
+
+  if is_moving%2==1 then 
+    if radius > radius0 then radius = radius - velR; 
+    elseif turnAngle<angle0 then 
+      turnAngle = turnAngle + velATurn;
+    else
+      --Close gripper
       Body.set_l_gripper_command({0,0});
-      is_moving = 3;
-    elseif is_moving==3 then
-      is_moving = 4; 
-    elseif is_moving==4 then
-      Body.set_l_gripper_command({math.pi/6,-math.pi/6});
-      is_moving = 5; 
-    elseif is_moving==5 then
-      is_moving = 0;
-      return;
+      Body.set_r_gripper_command({0,0});
+      is_moving = is_moving + 1;
+    end
+  elseif is_moving%2==0 then
+    --rotate
+    if turnAngle >angle1 then
+      turnAngle = turnAngle - velATurn;
+    else
+      is_moving = is_moving + 1;
+      --Open gripper 
+      Body.set_l_gripper_command({math.pi/4,-math.pi/4});
+      Body.set_r_gripper_command({math.pi/4,-math.pi/4});
     end
   end
 
-  trLArm[1] = trLArm[1] + vel*armDir[1]/dRelative;
-  trLArm[2] = trLArm[2] + vel*armDir[2]/dRelative;
-  trLArm[3] = trLArm[3] + vel*armDir[3]/dRelative;
+  calculate_arm_position();
 
-  motion_arms_ik();  
+  
+
+
 end
 
 
@@ -309,9 +354,13 @@ function motion_arms_ik()
   if dist1<0.01 and dist2<0.01 then
 --  if true then
 
-      walk.upper_body_override_on();
+    walk.upper_body_override_on();
 --      walk.upper_body_override(qLArmInv, qRArmInv, walk.bodyRot0);
 
+--HACK: WRIST ANGLE INVERSION
+
+    qLArmInv[5] = util.mod_angle(qLArmInv[5]);
+    qRArmInv[5] = util.mod_angle(qRArmInv[5]);
 
     Body.set_larm_command(qLArmInv);
     Body.set_rarm_command(qRArmInv);
@@ -334,9 +383,9 @@ function motion_arms_ik()
       trRArmOld[1],trRArmOld[2],trRArmOld[3],trRArmOld[4],trRArmOld[5],trRArmOld[6];
   end
 
+--  print("LArm transform:",unpack(trLArm))
+
 end
-
-
 
 
 
@@ -362,22 +411,70 @@ function process_keyinput()
   local update_arm = false;
 
   --Arm target position control
-  if byte==string.byte("s") then  
-    trLArm[1],trLArm[2],trLArm[3],trLArm[4],trLArm[5],trLArm[6]=
-    trLArm0[1],trLArm0[2],trLArm0[3],trLArm0[4],trLArm0[5],trLArm0[6];
 
-    trLArmOld[1],trLArmOld[2],trLArmOld[3],trLArmOld[4],trLArmOld[5],trLArmOld[6]=
-    trLArm[1],trLArm[2],trLArm[3],trLArm[4],trLArm[5],trLArm[6];
+  if byte==string.byte("j") then  
+    turnAngle = turnAngle + 5*math.pi/180;
+    calculate_arm_position();
 
-    update_arm = true;
+  elseif byte==string.byte("l") then  
+    turnAngle = turnAngle - 5*math.pi/180;
+    calculate_arm_position();
 
   elseif byte==string.byte("k") then  
-    trRArm[1],trRArm[2],trRArm[3],trRArm[4],trRArm[5],trRArm[6]=
-    trRArm0[1],trRArm0[2],trRArm0[3],trRArm0[4],trRArm0[5],trRArm0[6];
+    turnAngle = 0;
+    radius = 0.25;
+    calculate_arm_position();
 
-    trRArmOld[1],trRArmOld[2],trRArmOld[3],trRArmOld[4],trRArmOld[5],trRArmOld[6]=
-    trRArm[1],trRArm[2],trRArm[3],trRArm[4],trRArm[5],trRArm[6];
+  elseif byte==string.byte("i") then  
+    radius = radius + 0.01;
+    calculate_arm_position();
 
+  elseif byte==string.byte(",") then  
+    radius = radius - 0.01;
+    calculate_arm_position();
+
+  elseif byte==string.byte("e") then  --Open gripper
+    Body.set_l_gripper_command({math.pi/6,-math.pi/6});
+    Body.set_r_gripper_command({math.pi/6,-math.pi/6});
+    update_arm = true;
+
+  elseif byte==string.byte("r") then  --Close gripper
+    Body.set_l_gripper_command({0,0});
+    Body.set_r_gripper_command({0,0});
+    update_arm = true;
+
+
+
+
+  elseif byte==string.byte("f") then  --Start turning
+    --open gripper
+    Body.set_l_gripper_command({math.pi/4,-math.pi/4});
+    Body.set_r_gripper_command({math.pi/4,-math.pi/4});
+    is_moving = 1;
+    rotating_direction = 1;
+    
+
+
+  elseif byte==string.byte("g") then  --Start turning
+    --open gripper
+    Body.set_l_gripper_command({math.pi/4,-math.pi/4});
+    Body.set_r_gripper_command({math.pi/4,-math.pi/4});
+    is_moving = 1;
+    rotating_direction = -1;
+
+
+
+
+
+
+
+
+
+  elseif byte==string.byte("s") then  
+    trLArm[1],trLArm[2],trLArm[3],trLArm[4],trLArm[5],trLArm[6]=
+    trLArm0[1],trLArm0[2],trLArm0[3],trLArm0[4],trLArm0[5],trLArm0[6];
+    trLArmOld[1],trLArmOld[2],trLArmOld[3],trLArmOld[4],trLArmOld[5],trLArmOld[6]=
+    trLArm[1],trLArm[2],trLArm[3],trLArm[4],trLArm[5],trLArm[6];
     update_arm = true;
 
   elseif byte==string.byte("w") then  
@@ -398,74 +495,11 @@ function process_keyinput()
   elseif byte==string.byte("z") then  
     trLArm[3]=trLArm[3]-0.01;
     update_arm = true;
-
-
-
-  elseif byte==string.byte("1") then  
-    trLArm[6]=trLArm[6]+0.1;
-    update_arm = true;
-  elseif byte==string.byte("2") then  
-    trLArm[6]=trLArm[6]-0.1;
-    update_arm = true;
-  elseif byte==string.byte("3") then  
-    trLArm[4]=trLArm[4]+0.1;
-    update_arm = true;
-  elseif byte==string.byte("4") then  
-    trLArm[4]=trLArm[4]-0.1;
-    update_arm = true;
-  elseif byte==string.byte("5") then  
-    trLArm[5]=trLArm[5]+0.1;
-    update_arm = true;
-  elseif byte==string.byte("6") then  
-    trLArm[5]=trLArm[5]-0.1;
-    update_arm = true;
-
-
-
-
-  elseif byte==string.byte("e") then  --Open gripper
-    Body.set_l_gripper_command({math.pi/6,-math.pi/6});
-  elseif byte==string.byte("r") then  --Close gripper
-    Body.set_l_gripper_command({0,0});
-
-  elseif byte==string.byte("i") then  
-    trRArm[1]=trRArm[1]+0.01;
-    update_arm = true;
-  elseif byte==string.byte(",") then  
-    trRArm[1]=trRArm[1]-0.01;
-    update_arm = true;
-  elseif byte==string.byte("j") then  
-    trRArm[2]=trRArm[2]+0.01;
-    update_arm = true;
-  elseif byte==string.byte("l") then  
-    trRArm[2]=trRArm[2]-0.01;
-    update_arm = true;
-  elseif byte==string.byte("u") then  
-    trRArm[3]=trRArm[3]+0.01;
-    update_arm = true;
-  elseif byte==string.byte("m") then  
-    trRArm[3]=trRArm[3]-0.01;
-    update_arm = true;
-  elseif byte==string.byte("b") then  
-    trRArm[6]=trRArm[6]+0.1;
-    update_arm = true;
-  elseif byte==string.byte("n") then  
-    trRArm[6]=trRArm[6]-0.1;
-    update_arm = true;
-
-  elseif byte==string.byte("t") then  --Open gripper
-    Body.set_r_gripper_command({math.pi/6,-math.pi/6});
-  elseif byte==string.byte("y") then  --Close gripper
-    Body.set_r_gripper_command({0,0});
-
-  elseif byte==string.byte("g") then  --Move to the object
-   is_moving=1;
   end
-
 
   if ( update_arm ) then  
    is_moving=0;
-   motion_arms_ik();  
+   motion_arms_ik();     
   end
   return true
  
@@ -481,27 +515,6 @@ function update()
   Body.update();
   update_cognition();
   auto_move_arms();
---[[	
-	-- Update the laser scanner
-	lidar_scan = WebotsLaser.get_scan()
-	-- Set the Range Comm Manager values
-	rcm.set_lidar_ranges( carray.pointer(lidar_scan) );
-	rcm.set_lidar_timestamp( Body.get_time() )
-	--print("Laser data:",unpack(rcm.get_lidar_ranges()))
-	
-	-- Show the odometry
-	odom, odom0 = mcm.get_odometry();
-	rcm.set_robot_odom( vector.new(odom) )
-	
-	-- Show IMU
-  imuAngle = Body.get_sensor_imuAngle();
-	rcm.set_robot_imu( vector.new(imuAngle) )
-	gyr = Body.get_sensor_imuGyrRPY();
-	rcm.set_robot_gyro( vector.new(gyr) );
---]]
-
-
---print("Roll", gyr[1], "Pitch",gyr[2]);
 
   -- Check if the last update completed without errors
   lcount = lcount + 1;

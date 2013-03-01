@@ -1,0 +1,142 @@
+#VRML_SIM V6.0 utf8
+WorldInfo {
+  info [
+    "Qual-1 arena for DRC"
+  ]
+  title "Qual1"
+  basicTimeStep 15
+  displayRefresh 3
+}
+Viewpoint {
+  orientation -0.0457558 -0.959234 -0.278883 2.6916
+  position -1.97987 4.13827 -3.88289
+}
+Background {
+  skyColor [
+    0.678431 0.847059 0.901961
+  ]
+}
+DirectionalLight {
+  ambientIntensity 1.6
+  direction -0.5 -2 -0.5
+  intensity 0.3
+  castShadows TRUE
+}
+DirectionalLight {
+  direction 0.5 -0.5 0.5
+  intensity 0.5
+}
+DEF FLOOR MetricFloor {
+  color 0.95 0.95 0.95
+}
+DEF GROUND Solid {
+  translation 0 1.5 1.5
+  children [
+    Shape {
+      appearance DEF GroundAppearance Appearance {
+        material Material {
+          diffuseColor 0.201961 0.201961 0.201961
+          emissiveColor 0.201961 0.201961 0.201961
+        }
+      }
+      geometry DEF GroundBox Box {
+        size 4 0.1 2
+      }
+    }
+  ]
+  boundingObject Transform {
+    children [
+      Box {
+        size 4 0.1 2
+      }
+    ]
+  }
+  locked TRUE
+}
+Solid {
+  translation 1 2 0.5
+  children [
+    DEF UPRIGHT_SHAPE Shape {
+      appearance Appearance {
+        material Material {
+          ambientIntensity 0.4
+          shininess 0.8
+          specularColor 1 1 1
+        }
+      }
+      geometry Cylinder {
+        height 4
+        radius 0.05
+      }
+    }
+  ]
+  boundingObject USE UPRIGHT_SHAPE
+  locked TRUE
+}
+Solid {
+  translation 1 2 -0.5
+  children [
+    USE UPRIGHT_SHAPE
+  ]
+  boundingObject USE UPRIGHT_SHAPE
+  locked TRUE
+}
+Solid {
+  translation 1 0.3 0
+  rotation 1 0 0 1.57
+  children [
+    DEF RUNG_SHAPE Shape {
+      appearance Appearance {
+        material Material {
+          ambientIntensity 0.4
+          shininess 0.8
+          specularColor 1 1 1
+        }
+      }
+      geometry Cylinder {
+        height 1
+        radius 0.03
+      }
+    }
+  ]
+  boundingObject USE RUNG_SHAPE
+  locked TRUE
+}
+Solid {
+  translation 1 0.6 0
+  rotation 1 0 0 1.57
+  children [
+    USE RUNG_SHAPE
+  ]
+  boundingObject USE RUNG_SHAPE
+  locked TRUE
+}
+Solid {
+  translation 1 0.9 0
+  rotation 1 0 0 1.57
+  children [
+    USE RUNG_SHAPE
+  ]
+  boundingObject USE RUNG_SHAPE
+  locked TRUE
+}
+Solid {
+  translation 1 1.2 0
+  rotation 1 0 0 1.57
+  children [
+    USE RUNG_SHAPE
+  ]
+  boundingObject USE RUNG_SHAPE
+  locked TRUE
+}
+
+
+
+
+
+THOROP {
+  translation 0.7 0.6 0
+  rotation -1 0 0 1.57
+  controller "darwin-op_team_0"
+  controllerArgs "0 26"
+}

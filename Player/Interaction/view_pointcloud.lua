@@ -211,6 +211,10 @@ end
 
 -- Initialize the gears, lighting
 local function init()
+	
+	-- White background
+	gl.glClearColor(1.0, 1.0, 1.0, 0.0);
+	
   local pos   = ffi.new( "float[4]", 5, 5, 10, 0 )
   local red   = ffi.new( "float[4]", 0.8, 0.1, 0, 1 )
   local green = ffi.new( "float[4]", 0, 0.8, 0.2, 1 )
@@ -249,6 +253,7 @@ local function pressed( key )
 end
 
 --local buffer = ffi.new( "GLuint" )
+--http://stackoverflow.com/questions/7561165/rendering-kinect-point-cloud-with-vertex-buffer-object-vbo
 dd = carray.int(1)
 dd_star = dd:pointer()
 buffer = ffi.cast('GLuint',dd)
@@ -260,10 +265,14 @@ local function init_pointcloud()
   (ffi.sizeof('GLfloat') * 640 * 480 * 3) 
   + (ffi.sizeof('GLbyte') * 640 * 480 * 3),
   nil, gl.GL_STREAM_DRAW);
+	
+	-- Set point size
+	gl.glEnable( gl.GL_POINT_SMOOTH );
+	gl.glPointSize( 10.0 );
 end
 
 local point_cloud = {}
-point_cloud.points_color = ffi.new('GLbyte[?]',640 * 480 * 3, 127)
+point_cloud.points_color = ffi.new('GLubyte[?]',640 * 480 * 3, 127)
 point_cloud.points_position = ffi.new('GLfloat[?]',640 * 480 * 3, 0)
 
 for j=1,480 do
@@ -276,7 +285,7 @@ for j=1,480 do
 end
 
 for c=1,640 * 480 * 3 do
-	point_cloud.points_color[c] = math.random(0, 127)
+	point_cloud.points_color[c] = 255;--math.random(0, 127)
 end
 
 local function update_pointcloud()

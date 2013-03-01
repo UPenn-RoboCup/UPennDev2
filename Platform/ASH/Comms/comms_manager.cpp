@@ -24,6 +24,7 @@ static sensor_thread motion_sensor_thread;
 
 static void zero_joints();
 static void draw_screen();
+static void print_force_torque(double *force_torque);
 static void print_joint_array(double *joint_array);
 
 int main(int argc, char **argv)
@@ -122,17 +123,17 @@ void draw_screen()
   print_joint_array(dcm.joint_enable);
   printw("stiffness\n");
   print_joint_array(dcm.joint_stiffness);
-  printw("damping\n");
-  print_joint_array(dcm.joint_damping);
   printw("force\n");
   print_joint_array(dcm.joint_force_sensor);
   printw("position\n");
   print_joint_array(dcm.joint_position_sensor);
   printw("velocity\n");
   print_joint_array(dcm.joint_velocity_sensor);
+  printw("force torque\n");
+  print_force_torque(dcm.force_torque);
   printw("thread fps\n");
-  printw("            [ %7.0f %7.0f   ]\n", 
-    l_leg_thread.get_fps(), r_leg_thread.get_fps());
+  printw("            [ %7.0f %7.0f %7.0f ]\n", 
+    l_leg_thread.get_fps(), r_leg_thread.get_fps(), motion_sensor_thread.get_fps());
   if (strlen(l_leg_thread.get_error_message()))
   {
     printw("l_leg error\n");
@@ -143,7 +144,24 @@ void draw_screen()
     printw("r_leg error\n");
     printw("            [ %s ]\n", r_leg_thread.get_error_message());
   }
+  if (strlen(motion_sensor_thread.get_error_message()))
+  {
+    printw("sensor error\n");
+    printw("            [ %s ]\n", motion_sensor_thread.get_error_message());
+  }
   printw("\npress <q> to quit...");
+}
+
+void print_force_torque(double *force_torque)
+{
+  printw("            [ ");
+  for (int i = 0; i < 6; i++)
+    printw("%7.3f ", force_torque[i]);
+  printw("  ]\n");
+  printw("            [ ");
+  for (int i = 6; i < 12; i++)
+    printw("%7.3f ", force_torque[i]);
+  printw("  ]\n");
 }
 
 void print_joint_array(double *joint_array)
@@ -151,9 +169,9 @@ void print_joint_array(double *joint_array)
   printw("            [ ");
   for (int i = 0; i < 6; i++)
     printw("%7.3f ", joint_array[i]);
-  printw("  ]   l_leg\n");
+  printw("  ]\n");
   printw("            [ ");
   for (int i = 6; i < 12; i++)
     printw("%7.3f ", joint_array[i]);
-  printw("  ]   r_leg\n");
+  printw("  ]\n");
 }

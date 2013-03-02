@@ -43,14 +43,10 @@ local col = 1
 -- Data
 ----------------------------------------------------------------------
 
-function new_page()
-  return {name = '', steps = {}}
-end
-
 function create_keyframe_table()
   local pages = {}
   for i = 1,99 do
-    pages[i] = new_page()
+    pages[i] = keyframe.new_page()
   end
   return pages
 end
@@ -186,7 +182,7 @@ function cmd_name_page(arg)
 end
 
 function cmd_clear_page()
-  keyframe_table[page_no] = new_page()
+  keyframe_table[page_no] = keyframe.new_page()
   draw_screen()
 end
 
@@ -233,87 +229,100 @@ function cmd_goto(arg)
   local varg = parse_int_arguments(arg)
   local step = varg[1] and keyframe_table[page_no].steps[varg[1]]
   if step then
-    local page = new_page()
+    local page = keyframe.new_page()
     page.steps[1] = {
       joint_position = step.joint_position,
       duration = 3,
       pause = 0,
     }
-    keyframe:stop()
-    keyframe:play(page)
-    keyframe:entry()
+    local key_motion = keyframe.new(page)
+    key_motion:initialize(dcm:get_joint_position_sensor())
+
     draw_command_row('going...')
-    while true do
-      if curses.getch() or (keyframe:update() == 'done') then
-        keyframe:stop()
+    local t0 = Platform.get_time()
+    local t = 0
+    while (t < key_motion:get_duration()) do
+      if curses.getch() then
         break
       end
+      t = Platform.get_time() - t0
+      local q = key_motion:evaluate(t)
+      dcm:set_joint_position(q)
       Platform.update()
       draw_col(COL_CMD)
     end
-    keyframe:exit()
     draw_command_row('done')
   end
 end
 
 function cmd_zero()
-  local page = new_page()
+  local page = keyframe.new_page()
   page.steps[1] = {
     joint_position = vector.zeros(#joint.id),
     duration = 3,
     pause = 0,
   }
-  keyframe:stop()
-  keyframe:play(page)
-  keyframe:entry()
+  local key_motion = keyframe.new(page)
+  key_motion:initialize(dcm:get_joint_position_sensor())
+
   draw_command_row('going...')
-  while true do
-    if curses.getch() or (keyframe:update() == 'done') then
-      keyframe:stop()
+  local t0 = Platform.get_time()
+  local t = 0
+  while (t < key_motion:get_duration()) do
+    if curses.getch() then
       break
     end
+    t = Platform.get_time() - t0
+    local q = key_motion:evaluate(t)
+    dcm:set_joint_position(q)
     Platform.update()
     draw_col(COL_CMD)
   end
-  keyframe:exit()
   draw_command_row('done')
 end
 
 function cmd_play()
-  keyframe:load_keyframe_table(keyframe_table)
-  keyframe:stop()
-  keyframe:play(page_no)
-  keyframe:entry()
+  local key_motion = keyframe.new(keyframe_table[page_no])
+  key_motion:initialize(dcm:get_joint_position_sensor())
+
   draw_command_row('playing...')
-  while true do
-    if curses.getch() or (keyframe:update() == 'done') then
-      keyframe:stop()
+  local t0 = Platform.get_time()
+  local t = 0
+  while (t < key_motion:get_duration()) do
+    if curses.getch() then
       break
     end
+    t = Platform.get_time() - t0
+    local q = key_motion:evaluate(t)
+    dcm:set_joint_position(q)
     Platform.update()
     draw_col(COL_CMD)
   end
-  keyframe:exit()
   draw_command_row('done')
 end
 
 function cmd_loop(arg)
   local count = parse_int_arguments(arg)[1] or 0
-  keyframe:load_keyframe_table(keyframe_table)
-  for i = 1,count do
-    keyframe:play(page_no)
-  end
-  keyframe:entry()
+  local key_motion = keyframe.new(keyframe_table[page_no])
+  key_motion:initialize(dcm:get_joint_position_sensor())
+
   draw_command_row('playing...')
-  while true do
-    if curses.getch() or (keyframe:update() == 'done') then
-      keyframe:stop()
-      break
+  while (count > 0) do
+    local t0 = Platform.get_time()
+    local t = 0
+    while (t < key_motion:get_duration()) do
+      if curses.getch() then
+        count = 0
+	break
+      end
+      t = Platform.get_time() - t0
+      local q = key_motion:evaluate(t)
+      dcm:set_joint_position(q)
+      Platform.update()
+      draw_col(COL_CMD)
     end
-    Platform.update()
-    draw_col(COL_CMD)
+    count = count - 1
   end
-  keyframe:exit()
   draw_command_row('done')
 end
 

@@ -241,6 +241,7 @@ function Platform.entry()
 
   -- initialize sensor shared memory
   Platform.update()
+
 end
 
 function Platform.update()

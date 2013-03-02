@@ -167,13 +167,13 @@ while true do
   -- Push this entry to SHM
   local t_diff = min_ts - (last_ts or min_ts);
   last_ts = min_ts;
-
+	--[[
   if( min_ts<1361997212.4557 ) then
     realtime = false;
   else
     realtime = true;
   end
-
+	--]]
   -- If we wish to run in realtime, then sleep accordingly
   if realtime then
     unix.usleep( 1e6*t_diff );

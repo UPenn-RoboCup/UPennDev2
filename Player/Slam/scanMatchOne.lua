@@ -1,48 +1,48 @@
+-- Number of yaw positions to check
+nyaw1 = 15;
+dyaw1 = 1.0 * math.pi/180.0;
+-- At this resolution
+-- TODO: make this dependent on angular velocity / motion speed
+--if abs(tLidar0-tEncoders) < 0.1
+nxs1  = 5;
+nys1  = 5;
+-- resolution of the candidate poses
+dx1   = 0.02;
+dy1   = 0.02;
+--else
+--  nxs1  = 11;
+--  nys1  = 11;
+--  dx1   = 0.05;
+--  dy1   = 0.05;
+--end
+
+yawRange1 = math.floor(nyaw1/2);
+xRange1   = math.floor(nxs1/2);
+yRange1   = math.floor(nys1/2);
+
+-- create the candidate locations in each dimension
+xCand1 = torch.range(-xRange1,xRange1)
+yCand1 = torch.range(-yRange1,yRange1)
+aCand1 = torch.range(-yawRange1,yawRange1)
+hits = torch.DoubleTensor( 
+	xCand1:nElement(), yCand1:nElement(), aCand1:nElement()
+)
+
 function scanMatchOne( SLAM, LIDAR0, OMAP, xs, ys )
-
-  -- Number of yaw positions to check
-  nyaw1 = 15;
-  -- At this resolution
-  dyaw1 = 1.0 * math.pi/180.0;
-
-  -- resolution of the candidate poses
-  -- TODO: make this dependent on angular velocity / motion speed
-
   --tEncoders = ENCODERS.counts.t;
   tLidar0   = LIDAR0.startTime;
-
-  --if abs(tLidar0-tEncoders) < 0.1
-  nxs1  = 5;
-  nys1  = 5;
-  dx1   = 0.02;
-  dy1   = 0.02;
-  --else
-  --  nxs1  = 11;
-  --  nys1  = 11;
-  --  dx1   = 0.05;
-  --  dy1   = 0.05;
-  --end
-
-  yawRange1 = math.floor(nyaw1/2);
-  xRange1   = math.floor(nxs1/2);
-  yRange1   = math.floor(nys1/2);
-
-  -- create the candidate locations in each dimension
-  xCand1 = torch.range(-xRange1,xRange1)*dx1 + SLAM.xOdom;
-  yCand1 = torch.range(-yRange1,yRange1)*dy1 + SLAM.yOdom;
-  aCand1 = torch.range(-yawRange1,yawRange1)*dyaw1 + SLAM.yawOdom;
-  -- + IMU.data.wyaw*0.025;
-  local hits = 
-	torch.DoubleTensor( 
-		xCand1:nElement(), yCand1:nElement(), aCand1:nElement()
-	):zero()
-
+	xCand1:range(-xRange1,xRange1):mul(dx1):add(SLAM.xOdom);
+	yCand1:range(-yRange1,yRange1):mul(dy1):add(SLAM.yOdom);
+	aCand1:range(-yawRange1,yawRange1):mul(dyaw1):add(SLAM.yawOdom); -- + IMU.data.wyaw*0.025;
+  hits:zero()
+		
   local hmax, xmax, ymax, thmax = Slam.ScanMatch2D('match',
   OMAP.data,
   xs, ys,
   xCand1,yCand1,aCand1,
   hits
   );
+
   -- TODO: unfold to mean the 1:2:end syntax?
   -- NOTE: xs should be xsss(1:2:end) (same for ys)
 
@@ -87,5 +87,4 @@ function scanMatchOne( SLAM, LIDAR0, OMAP, xs, ys )
     end
 
   end
-	return SLAM
 end

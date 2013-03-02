@@ -1,6 +1,5 @@
 -- Include the proper directories
 cwd = '.';
-package.cpath = cwd.."/../../Lib/?.so;"..package.cpath;
 package.path = cwd.."/../../Util/?.lua;"..package.path;
 
 -- Require the ffi modules

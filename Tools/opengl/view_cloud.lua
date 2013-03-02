@@ -1,6 +1,6 @@
 -- Include the relevant directories
 cwd = '.';
-package.path = cwd.."/../Util/?.lua;"..package.path;
+package.path = cwd.."/../../Tools/?.lua;"..package.path;
 
 -- Require the right libraries
 -- The ffi libraty is with luajit

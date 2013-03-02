@@ -1,14 +1,15 @@
 -- Add the FFI bindings and the lqt library
-local pwd = os.getenv('PWD')
+--local pwd = os.getenv('PWD')
+pwd = '.'
 package.cpath = pwd..'/../Lib/qt/?.so;'..package.cpath
 package.cpath = pwd..'/../Lib/?.so;'..package.cpath
-package.cpath = pwd..'/../Util/?.lua;'..package.cpath
-package.path = pwd..'/../Lib/ffi/?.lua;'..package.path
+--package.cpath = pwd..'/../Util/?.lua;'..package.cpath
+--package.path = pwd..'/../Lib/ffi/?.lua;'..package.path
 
 require 'qtcore'
 require 'qtgui'
 -- Help definitions
-require ('slamLayout')
+require ('layout_slam')
 
 -- Initial Qt Application
 app = QApplication(1 + select('#', ...), {arg[0], ...})

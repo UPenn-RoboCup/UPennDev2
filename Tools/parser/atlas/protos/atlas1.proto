@@ -1,0 +1,294 @@
+#VRML V2.0 utf8
+
+PROTO atlas []
+ {
+  Robot  {
+    children [
+      pelvis  {
+        translation 0 0 0        
+        children [
+          DEF ltorso_pelvis Servo {
+            translation 0 0 0            
+            children [
+              ltorso  {
+                translation 0 0 0                
+                children [
+                  DEF mtorso_ltorso Servo {
+                    translation 0 0 0                    
+                    children [
+                      mtorso  {
+                        translation 0 0 0                        
+                        children [
+                          DEF utorso_mtorso Servo {
+                            translation 0 0 0                            
+                            children [
+                              utorso  {
+                                translation 0 0 0                                
+                                children [
+                                  DEF l_clav_utorso Servo {
+                                    translation 0 0 0                                    
+                                    children [
+                                      l_clav  {
+                                        translation 0 0 0                                        
+                                        children [
+                                          DEF l_scap_l_clav Servo {
+                                            translation 0 0 0                                            
+                                            children [
+                                              l_scap  {
+                                                translation 0 0 0                                                
+                                                children [
+                                                  DEF l_uarm_l_scap Servo {
+                                                    translation 0 0 0                                                    
+                                                    children [
+                                                      l_uarm  {
+                                                        translation 0 0 0                                                        
+                                                        children [
+                                                          DEF l_larm_l_uarm Servo {
+                                                            translation 0 0 0                                                            
+                                                            children [
+                                                              l_larm  {
+                                                                translation 0 0 0                                                                
+                                                                children [
+                                                                  DEF l_farm_l_larm Servo {
+                                                                    translation 0 0 0                                                                    
+                                                                    children [
+                                                                      l_farm  {
+                                                                        translation 0 0 0                                                                        
+                                                                        children [
+                                                                          DEF l_hand_l_farm Servo {
+                                                                            translation 0 0 0                                                                            
+                                                                            children [
+                                                                              l_hand  {
+                                                                                translation 0 0 0                                                                                
+                                                                                children [
+                                                                                ]
+                                                                              }
+                                                                            ]
+                                                                          }
+                                                                        ]
+                                                                      }
+                                                                    ]
+                                                                  }
+                                                                ]
+                                                              }
+                                                            ]
+                                                          }
+                                                        ]
+                                                      }
+                                                    ]
+                                                  }
+                                                ]
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                  DEF head_utorso Servo {
+                                    translation 0 0 0                                    
+                                    children [
+                                      head  {
+                                        translation 0 0 0                                        
+                                        children [
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                  DEF r_clav_utorso Servo {
+                                    translation 0 0 0                                    
+                                    children [
+                                      r_clav  {
+                                        translation 0 0 0                                        
+                                        children [
+                                          DEF r_scap_r_clav Servo {
+                                            translation 0 0 0                                            
+                                            children [
+                                              r_scap  {
+                                                translation 0 0 0                                                
+                                                children [
+                                                  DEF r_uarm_r_scap Servo {
+                                                    translation 0 0 0                                                    
+                                                    children [
+                                                      r_uarm  {
+                                                        translation 0 0 0                                                        
+                                                        children [
+                                                          DEF r_larm_r_uarm Servo {
+                                                            translation 0 0 0                                                            
+                                                            children [
+                                                              r_larm  {
+                                                                translation 0 0 0                                                                
+                                                                children [
+                                                                  DEF r_farm_r_larm Servo {
+                                                                    translation 0 0 0                                                                    
+                                                                    children [
+                                                                      r_farm  {
+                                                                        translation 0 0 0                                                                        
+                                                                        children [
+                                                                          DEF r_hand_r_farm Servo {
+                                                                            translation 0 0 0                                                                            
+                                                                            children [
+                                                                              r_hand  {
+                                                                                translation 0 0 0                                                                                
+                                                                                children [
+                                                                                ]
+                                                                              }
+                                                                            ]
+                                                                          }
+                                                                        ]
+                                                                      }
+                                                                    ]
+                                                                  }
+                                                                ]
+                                                              }
+                                                            ]
+                                                          }
+                                                        ]
+                                                      }
+                                                    ]
+                                                  }
+                                                ]
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+          DEF l_uglut_pelvis Servo {
+            translation 0 0 0            
+            children [
+              l_uglut  {
+                translation 0 0 0                
+                children [
+                  DEF l_lglut_l_uglut Servo {
+                    translation 0 0 0                    
+                    children [
+                      l_lglut  {
+                        translation 0 0 0                        
+                        children [
+                          DEF l_uleg_l_lglut Servo {
+                            translation 0 0 0                            
+                            children [
+                              l_uleg  {
+                                translation 0 0 0                                
+                                children [
+                                  DEF l_lleg_l_uleg Servo {
+                                    translation 0 0 0                                    
+                                    children [
+                                      l_lleg  {
+                                        translation 0 0 0                                        
+                                        children [
+                                          DEF l_talus_l_lleg Servo {
+                                            translation 0 0 0                                            
+                                            children [
+                                              l_talus  {
+                                                translation 0 0 0                                                
+                                                children [
+                                                  DEF l_foot_l_talus Servo {
+                                                    translation 0 0 0                                                    
+                                                    children [
+                                                      l_foot  {
+                                                        translation 0 0 0                                                        
+                                                        children [
+                                                        ]
+                                                      }
+                                                    ]
+                                                  }
+                                                ]
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+          DEF r_uglut_pelvis Servo {
+            translation 0 0 0            
+            children [
+              r_uglut  {
+                translation 0 0 0                
+                children [
+                  DEF r_lglut_r_uglut Servo {
+                    translation 0 0 0                    
+                    children [
+                      r_lglut  {
+                        translation 0 0 0                        
+                        children [
+                          DEF r_uleg_r_lglut Servo {
+                            translation 0 0 0                            
+                            children [
+                              r_uleg  {
+                                translation 0 0 0                                
+                                children [
+                                  DEF r_lleg_r_uleg Servo {
+                                    translation 0 0 0                                    
+                                    children [
+                                      r_lleg  {
+                                        translation 0 0 0                                        
+                                        children [
+                                          DEF r_talus_r_lleg Servo {
+                                            translation 0 0 0                                            
+                                            children [
+                                              r_talus  {
+                                                translation 0 0 0                                                
+                                                children [
+                                                  DEF r_foot_r_talus Servo {
+                                                    translation 0 0 0                                                    
+                                                    children [
+                                                      r_foot  {
+                                                        translation 0 0 0                                                        
+                                                        children [
+                                                        ]
+                                                      }
+                                                    ]
+                                                  }
+                                                ]
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

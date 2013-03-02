@@ -89,7 +89,7 @@ LIDAR0.mask    = torch.Tensor(LIDAR0.angles:size()):fill(1);
 --LIDAR0.mask(end-189:end) = 0;
 LIDAR0.present = 1;
 LIDAR0.startTime = 0;
-LIDAR0.ranges = torch.rand(LIDAR0.nRays):mul(.5)+3;
+LIDAR0.ranges = torch.Tensor(LIDAR0.nRays):fill(1);
 if not LIDAR0.ranges:isContiguous() then
 	print('Ranges are not contiguous!')
 	return;
@@ -101,7 +101,6 @@ IMU.pitch = 0;-- -10 * math.pi/180; -- Look down a little
 IMU.roll = 0;
 
 require 'rcm'
-local ranges_cdata = torch.data( LIDAR0.ranges )
 print('Map Size:',MAPS.sizex,MAPS.sizey)
 local map_cdata = torch.data( OMAP.data )
 print(map_cdata)
@@ -120,18 +119,20 @@ local test_socket = zmq.zmq_socket (context_handle, zmq.ZMQ_PUB);
 assert (test_socket);
 
 -- Bind to a message pipeline
-local rc = zmq.zmq_connect( test_socket, "ipc:///tmp/test_pubsub" )
+local rc = zmq.zmq_connect( test_socket, "ipc:///tmp/map_pubsub" )
 assert (rc == 0);
 
-print('Sucessfully subscribed to the message pipeline!')
-
+print('Successfully subscribed to the message pipeline!')
 
 while true do
 	-- Copy in the SHM data
-	ffi.copy(ranges_cdata,rcm.get_lidar_ranges(),LIDAR0.nRays);
+	local ranges_cdata = torch.data( LIDAR0.ranges )
+	local sensor_readings = ffi.cast('float*',rcm.get_lidar_ranges());
+	print(sensor_readings,ranges_cdata)
+	ffi.copy(ranges_cdata,sensor_readings,LIDAR0.nRays*4);
   SLAMMER = processL0( SLAMMER, LIDAR0, IMU, OMAP, MAPS )
 	unix.usleep(1e5)
   local n_bytes_sent = zmq.zmq_send( test_socket, map_cdata, OMAP.data_sz, 0);
-  print('Sent '..n_bytes_sent.." bytes")
+  --print('Sent '..n_bytes_sent.." bytes")
 --	if(i==10) then mapShift( OMAP, 10*OMAP.res, 10*OMAP.res ) end
 end

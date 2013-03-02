@@ -106,4 +106,21 @@ function simple_ipc.setup_subscriber( channel )
   return channel_obj;
 end
 
+function simple_ipc.wait_on_channels( channels )
+	local poll_obj = {}
+	local poll_items = ffi.new('zmq_pollitem_t[?]',#channels)
+	--print(poll_items,#poll_items,ffi.sizeof(poll_items))
+	for i=1,#channels do
+		poll_items[i-1].socket = channels[i].socket_handle
+		poll_items[i-1].events = zmq.ZMQ_POLLIN;
+	end
+	poll_obj.poll_items = poll_items
+	poll_obj.nitems = #channels;
+	function poll_obj.wait_on_any( self, timeout )
+		local nevents = zmq.zmq_poll(self.poll_items, self.nitems, timeout);
+		return nevents
+	end
+	return poll_obj;
+end
+
 return simple_ipc

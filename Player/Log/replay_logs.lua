@@ -11,6 +11,8 @@ package.path = cwd.."/../Vision/?.lua;"..package.path;
 local serialization = require 'serialization'
 local util = require 'util'
 require 'cutil'
+local simple_ipc = require 'simple_ipc'
+local lidar_channel = simple_ipc.setup_publisher('lidar');
 
 -- Data Type specific
 local dataPath = '~/shadwell/day2_third/logs/';
@@ -18,7 +20,7 @@ local dataStamp = '02.27.2013';
 local dataTypes = {'lidar','arduimu'}
 --local dataTypes = {'lidar'}
 local realtime = true;
-require 'rcm'
+--require 'rcm'
 if realtime then
   require 'unix'
 end
@@ -80,9 +82,11 @@ end
 
 local pushers_tbl = {}
 pushers_tbl[1] = function ( lidar_tbl )
-  rcm.set_lidar_timestamp(lidar_tbl.t);
-  rcm.set_lidar_ranges( lidar_tbl.ranges );
-  rcm.set_lidar_counter(lidar_tbl.counter);
+  --rcm.set_lidar_timestamp(lidar_tbl.t);
+  --rcm.set_lidar_ranges( lidar_tbl.ranges );
+  --rcm.set_lidar_counter(lidar_tbl.counter);
+	-- Push over ipc
+	lidar_channel:send(lidar_tbl.ranges,1081*4)
 end
 pushers_tbl[2] = function ( imu_tbl )
 end

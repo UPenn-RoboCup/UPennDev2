@@ -1,12 +1,5 @@
 local ffi = require( "ffi" )
-
-local libs = ffi_zmq_libs or {
-   OSX     = { x86 = "bin/OSX/zmq.dylib", x64 = "/usr/local/lib/libzmq.dylib" },
-   Windows = { x86 = "bin/Windows/x86/zmq.dll", x64 = "bin/Windows/x64/zmq.dll" },
-   Linux   = { x86 = "bin/Linux/x86/zmq.so", x64 = "bin/Linux/x64/zmq.so", arm = "bin/Linux/arm/zmq.so"  },
-}
-
-local zmq = ffi.load( ffi_zmq_lib or libs[ ffi.os ][ ffi.arch ] )
+local zmq = ffi.load('zmq');
 
 ffi.cdef([[
    enum {
@@ -85,8 +78,10 @@ ffi.cdef([[
       ZMQ_STREAMER            = 1,
       ZMQ_FORWARDER           = 2,
       ZMQ_QUEUE               = 4,
-   }
+   };
+]])
 
+ffi.cdef([[
    typedef struct zmq_socket_t* zmq_socket_t;
    typedef struct zmq_ctx_t*    zmq_ctx_t;
 

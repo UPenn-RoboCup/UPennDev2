@@ -46,6 +46,36 @@ inline void lua_createtransform(lua_State *L)
   lua_remove(L, -2);
 }
 
+inline void lua_createtwist(lua_State *L)
+{
+  lua_getglobal(L, "twist");
+  if (lua_istable(L, -1))
+  {
+    lua_getfield(L, -1, "new");
+    lua_call(L, 0, 1);
+  }
+  else
+  {
+    lua_createtable(L, 0, 0);
+  }
+  lua_remove(L, -2);
+}
+
+inline void lua_createwrench(lua_State *L)
+{
+  lua_getglobal(L, "wrench");
+  if (lua_istable(L, -1))
+  {
+    lua_getfield(L, -1, "new");
+    lua_call(L, 0, 1);
+  }
+  else
+  {
+    lua_createtable(L, 0, 0);
+  }
+  lua_remove(L, -2);
+}
+
 inline void lua_pushJntArray(lua_State *L, KDL::JntArray q)
 {
   int n = q.rows();
@@ -84,7 +114,7 @@ inline void lua_pushFrame(lua_State *L, KDL::Frame f)
 
 inline void lua_pushTwist(lua_State *L, KDL::Twist t)
 {
-  lua_createvector(L);
+  lua_createtwist(L);
   for (int i = 0; i < 6; i++)
   {
     lua_pushnumber(L, t(i));
@@ -94,7 +124,7 @@ inline void lua_pushTwist(lua_State *L, KDL::Twist t)
 
 inline void lua_pushWrench(lua_State *L, KDL::Wrench w)
 {
-  lua_createvector(L);
+  lua_createwrench(L);
   for (int i = 0; i < 6; i++)
   {
     lua_pushnumber(L, w(i));

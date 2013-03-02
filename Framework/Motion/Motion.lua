@@ -9,7 +9,7 @@ require('mcm')
 Motion = {}
 
 local joint = Config.joint
-local state_machines = {} -- MotionFSM's
+local state_machines = {} -- Motion_fsm's
 
 function Motion.add_fsm(sm)
   if (type(sm) == 'string') then

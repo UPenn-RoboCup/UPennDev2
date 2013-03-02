@@ -1,128 +1,128 @@
-module(..., package.seeall);
+----------------------------------------------------------------------
+-- vector : variable length vector
+----------------------------------------------------------------------
 
-local mt = {};
+vector = {}
+vector.__index = vector
+vector.__mtstring = 'vector'
 
-function new(t)
-  t = t or {};
-  return setmetatable(t, mt);
+function vector.new(v)
+  v = v or {}
+  return setmetatable(v, vector)
 end
 
-function ones(n)
-  n = n or 1;
-  local t = {};
+function vector.ones(n)
+  n = n or 1
+  local v = {}
   for i = 1, n do
-    t[i] = 1;
+    v[i] = 1
   end
-  return setmetatable(t, mt);
+  return setmetatable(v, vector)
 end
 
-function zeros(n)
-  n = n or 1;
-  local t = {};
+function vector.zeros(n)
+  n = n or 1
+  local v = {}
   for i = 1, n do
-    t[i] = 0;
+    v[i] = 0
   end
-  return setmetatable(t, mt);
+  return setmetatable(v, vector)
 end
 
-function copy(t1)
-  if not t1 then return nil end
-  local t = {};
-  for i = 1,#t1 do
-    t[i] = t1[i];
+function vector.copy(v1)
+  if not v1 then return nil end
+  local v = {}
+  for i = 1,#v1 do
+    v[i] = v1[i]
   end
-  return setmetatable(t, mt);
+  return setmetatable(v, vector)
 end
 
-function slice(v1, istart, iend)
-  local v = {};
-  iend = iend or #v1;
+function vector.slice(v1, istart, iend)
+  local v = {}
+  iend = iend or #v1
   for i = 1,iend-istart+1 do
-    v[i] = v1[istart+i-1];
+    v[i] = v1[istart+i-1]
   end
-  return setmetatable(v, mt);
+  return setmetatable(v, vector)
 end
 
-function add(v1, v2)
-  local v = {};
+function vector.norm(v1)
+  local s = 0
   for i = 1, #v1 do
-    v[i] = v1[i] + v2[i];
+    s = s + v1[i] * v1[i]
   end
-  return setmetatable(v, mt);
+  return math.sqrt(s)
 end
 
-function sub(v1, v2)
-  local v = {};
+function vector.mulnum(v1, a)
+  local v = {}
   for i = 1, #v1 do
-    v[i] = v1[i] - v2[i];
+    v[i] = a * v1[i]
   end
-  return setmetatable(v, mt);
+  return setmetatable(v, vector)
 end
 
-function mulnum(v1, a)
-  local v = {};
+function vector.divnum(v1, a)
+  local v = {}
   for i = 1, #v1 do
-    v[i] = a * v1[i];
+    v[i] = v1[i]/a
   end
-  return setmetatable(v, mt);
+  return setmetatable(v, vector)
 end
 
-function divnum(v1, a)
-  local v = {};
-  for i = 1, #v1 do
-    v[i] = v1[i]/a;
-  end
-  return setmetatable(v, mt);
-end
-
-function mul(v1, v2)
-  if type(v2) == "number" then
-    return mulnum(v1, v2);
-  elseif type(v1) == "number" then
-    return mulnum(v2, v1);
-  else
-    local s = 0;
+function vector.__add(v1, v2)
+  if getmetatable(v1) == getmetatable(v2) then 
+    local v = {}
     for i = 1, #v1 do
-      s = s + v1[i] * v2[i];
+      v[i] = v1[i] + v2[i]
     end
-    return s;
-  end
-end
-
-function unm(v1)
-  return mulnum(v1, -1);
-end
-
-function div(v1, v2)
-  if type(v2) == "number" then
-    return divnum(v1, v2);
+    return setmetatable(v, vector)
   else
-    return nil;
+    error("attempt to add vector to non-vector type")
   end
 end
 
-function norm(v1)
-  local s = 0;
-  for i = 1, #v1 do
-    s = s + v1[i] * v1[i];
+function vector.__sub(v1, v2)
+  if getmetatable(v1) == getmetatable(v2) then 
+    local v = {}
+    for i = 1, #v1 do
+      v[i] = v1[i] - v2[i]
+    end
+    return setmetatable(v, vector)
+  else
+    error("attempt to subtract non-vector type from vector")
   end
-  return math.sqrt(s);
 end
 
-function tostring(v1, formatstr)
-  formatstr = formatstr or "%g";
-  local str = "{"..string.format(formatstr, v1[1]);
-  for i = 2, #v1 do
-    str = str..", "..string.format(formatstr,v1[i]);
+function vector.__mul(v1, v2)
+  if type(v2) == "number" then
+    return vector.mulnum(v1, v2)
+  elseif type(v1) == "number" then
+    return vector.mulnum(v2, v1)
+  else
+    local s = 0
+    for i = 1, #v1 do
+      s = s + v1[i] * v2[i]
+    end
+    return s
   end
-  str = str.."}";
-  return str;
 end
 
-mt.__add = add;
-mt.__sub = sub;
-mt.__mul = mul;
-mt.__div = div;
-mt.__unm = unm;
-mt.__tostring = tostring;
+function vector.__div(v1, v2)
+  if type(v2) == "number" then
+    return vector.divnum(v1, v2)
+  else
+    error("attempt to divide vector by non-number type")
+  end
+end
 
+function vector.__unm(v1)
+  return vector.mulnum(v1, -1)
+end
+
+function vector.__tostring(v1)
+  return "{"..table.concat(v1, ', ').."}"
+end
+
+return vector

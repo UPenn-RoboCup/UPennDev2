@@ -7,12 +7,12 @@ require('unix')
 require('vector')
 require('Config')
 require('trajectory')
-require('MotionState') 
+require('Motion_state') 
 
 -- Setup 
 ----------------------------------------------------------------------
 
-keyframe = MotionState.new(...)
+keyframe = Motion_state.new(...)
 local dcm = keyframe.dcm
 
 local keyframe_table = {}

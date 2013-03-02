@@ -1,5 +1,6 @@
 require('dcm')
 require('pcm')
+require('wrench')
 require('Config')
 
 --------------------------------------------------------------------------------
@@ -41,8 +42,10 @@ function cop_sensor.update()
   -- compute net CoP relative to base frame
   local l_foot_pose = pcm:get_l_foot_pose()
   local r_foot_pose = pcm:get_r_foot_pose()
-  local l_foot_cop, l_foot_pressure = compute_foot_cop(pcm:get_l_foot_wrench())
-  local r_foot_cop, r_foot_pressure = compute_foot_cop(pcm:get_r_foot_wrench())
+  local l_foot_wrench = wrench.new(pcm:get_l_foot_wrench())
+  local r_foot_wrench = wrench.new(pcm:get_r_foot_wrench())
+  local l_foot_cop, l_foot_pressure = compute_foot_cop(l_foot_wrench)
+  local r_foot_cop, r_foot_pressure = compute_foot_cop(r_foot_wrench)
   local pressure = l_foot_pressure + r_foot_pressure
 
   if (math.abs(pressure) < 1e-10) then

@@ -99,45 +99,49 @@ function generateCoordIndex(facets, vertexes)
 end
 
 local datapath = ''
-local filename = 'head.stl' 
 
-modelname = filename:sub(1, #filename - 4)
-facets = parseBinarySTL(datapath..filename)
-
-vertexes = facets2vertexes(facets)
-
-local header = '#VRML V2.0 utf8'
-local model = createVRML(header)
-
-local geometry = createNode('geometry', 'IndexedFaceSet')
-local point = generatePoint(vertexes)
-local points = createMultiField('point', point)
-geometry[1] = createNode('coord', 'Coordinate')
-geometry[1][1] = points
-geometry[1][1].__delimiter = ','
-geometry[1][1].__delimiterFreq = 3
-coordIndex = generateCoordIndex(facets, vertexes)
-geometry[2] = createMultiField('coordIndex', coordIndex)
-
-local Shape = createNode(_, 'Shape')
-Shape[1] = geometry
-local children = createMultiField('children')
-children[1] = Shape
-
-local Transform = createNode(_, 'Transform')
-local scale = {1,1,1}
-Transform[1] = createField('scale', scale)
-local translation = {0,0,0}
-Transform[2] = createField('translation', translation)
-Transform[3] = children
-
-local proto = createPROTO(modelname)
-proto[1] = Transform
-
-local NavigationInfo = createNode(_, 'NavigationInfo')
-local navitype = {'EXAMINE', 'ANY'}
-NavigationInfo[1] = createMultiField('type', navitype)
-
-model[1] = proto
-
-saveVRML(model, 'robot.proto')
+local path = '../../../drcsim/ros/atlas_description/gazebo/atlas/meshes'
+local stllists = assert(io.popen('/bin/ls '..path..'/*.stl', 'r'))
+for file in stllists:lines() do 
+  local filename = file:sub(#path + 2, #file)
+  print(filename)
+  modelname = filename:sub(1, #filename - 4)
+  facets = parseBinarySTL(file)
+  
+  vertexes = facets2vertexes(facets)
+  
+  local geometry = createNode('geometry', 'IndexedFaceSet')
+  local point = generatePoint(vertexes)
+  local points = createMultiField('point', point)
+  geometry[1] = createNode('coord', 'Coordinate')
+  geometry[1][1] = points
+  geometry[1][1].__delimiter = ','
+  geometry[1][1].__delimiterFreq = 3
+  coordIndex = generateCoordIndex(facets, vertexes)
+  geometry[2] = createMultiField('coordIndex', coordIndex)
+  
+  local Shape = createNode(_, 'Shape')
+  Shape[1] = geometry
+  local children = createMultiField('children')
+  children[1] = Shape
+  
+  local Transform = createNode(_, 'Transform')
+  local scale = {1,1,1}
+  Transform[1] = createField('scale', scale)
+  local translation = {0,0,0}
+  Transform[2] = createField('translation', translation)
+  Transform[3] = children
+  
+  local proto = createPROTO(modelname)
+  proto[1] = Transform
+  
+  local NavigationInfo = createNode(_, 'NavigationInfo')
+  local navitype = {'EXAMINE', 'ANY'}
+  NavigationInfo[1] = createMultiField('type', navitype)
+  
+  local header = '#VRML V2.0 utf8'
+  local model = createVRML(header)
+  model[1] = proto
+  
+  saveVRML(model, 'atlas/protos/'..modelname..'.proto')
+end

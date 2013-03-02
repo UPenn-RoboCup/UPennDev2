@@ -13,19 +13,21 @@ require('serialization');
 require('util');
 require('unix');
 require('cutil');
+require('tutil');
 require('vector');
 local ffi = require 'ffi'
 require 'torch'
 require 'ffi/torchffi'
 --torch.Tensor = torch.DoubleTensor
 torch.Tensor = torch.FloatTensor -- Comply with Hokuyo readings
+local simple_ipc = require 'simple_ipc'
 
 require 'mapShift'
 require 'processL0'
 
 -- Default values
 local MAPS = {}
-MAPS.res        = .1;
+MAPS.res        = .05;
 MAPS.invRes     = 1/MAPS.res;
 MAPS.windowSize = 10; -- meters to see 
 MAPS.edgeProx   = 2;
@@ -89,50 +91,30 @@ LIDAR0.mask    = torch.Tensor(LIDAR0.angles:size()):fill(1);
 --LIDAR0.mask(end-189:end) = 0;
 LIDAR0.present = 1;
 LIDAR0.startTime = 0;
-LIDAR0.ranges = torch.Tensor(LIDAR0.nRays):fill(1);
-if not LIDAR0.ranges:isContiguous() then
-	print('Ranges are not contiguous!')
-	return;
-end
+LIDAR0.ranges = torch.Tensor(LIDAR0.nRays);
+local ranges_cdata = ffi.cast('float*',tutil.get_pointer( LIDAR0.ranges ) )
+--print("Pointer:",LIDAR0.ranges_cdata,torch.data(LIDAR0.ranges))
 
 IMU = {}
 IMU.roll = 0;
 IMU.pitch = 0;-- -10 * math.pi/180; -- Look down a little
 IMU.roll = 0;
 
-require 'rcm'
+--require 'rcm'
+--local sensor_readings = ffi.cast('float*',rcm.get_lidar_ranges());
+-- Setup IPC
+local lidar_channel = simple_ipc.setup_subscriber('lidar');
+local omap_channel = simple_ipc.setup_publisher('omap');
+
 print('Map Size:',MAPS.sizex,MAPS.sizey)
 local map_cdata = torch.data( OMAP.data )
-print(map_cdata)
 
-print('Float Size:',ffi.sizeof('float'))
-print('Double Size:',ffi.sizeof('double'))
-
-local zmq = require 'ffi/zmq'
--- Initialize the context
-local n_zmq_threads = 1;
-local context_handle = zmq.zmq_init( n_zmq_threads );
-assert (context_handle);
-
--- Set the socket type
-local test_socket = zmq.zmq_socket (context_handle, zmq.ZMQ_PUB);
-assert (test_socket);
-
--- Bind to a message pipeline
-local rc = zmq.zmq_connect( test_socket, "ipc:///tmp/map_pubsub" )
-assert (rc == 0);
-
-print('Successfully subscribed to the message pipeline!')
+--print('Float Size:',ffi.sizeof('float'))
+--print('Double Size:',ffi.sizeof('double'))
 
 while true do
-	-- Copy in the SHM data
-	local ranges_cdata = torch.data( LIDAR0.ranges )
-	local sensor_readings = ffi.cast('float*',rcm.get_lidar_ranges());
-	print(sensor_readings,ranges_cdata)
-	ffi.copy(ranges_cdata,sensor_readings,LIDAR0.nRays*4);
-  SLAMMER = processL0( SLAMMER, LIDAR0, IMU, OMAP, MAPS )
-	unix.usleep(1e5)
-  local n_bytes_sent = zmq.zmq_send( test_socket, map_cdata, OMAP.data_sz, 0);
-  --print('Sent '..n_bytes_sent.." bytes")
---	if(i==10) then mapShift( OMAP, 10*OMAP.res, 10*OMAP.res ) end
+	-- Receive ipc data
+	local nbytes = lidar_channel:receive(ranges_cdata, 1081*4)
+  processL0( SLAMMER, LIDAR0, IMU, OMAP, MAPS, xs )
+  omap_channel:send( map_cdata, OMAP.data_sz );
 end

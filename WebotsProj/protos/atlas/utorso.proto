@@ -4,10 +4,7 @@ PROTO utorso []
  {
   Transform {
     scale 1 1 1    
-#    translation 0 0 0    
-    translation 0 -0.30 0    
-    rotation 1 0 0 -1.57
-
+    translation 0 0 0    
     children [
       Shape {
         geometry IndexedFaceSet {

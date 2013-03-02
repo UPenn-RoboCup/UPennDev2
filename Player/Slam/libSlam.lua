@@ -1,12 +1,15 @@
 local ffi = require 'ffi'
 require('Slam');
+local Sensors = require 'Config_Sensors'
 require 'torch'
+require 'tutil'
 require 'ffi/torchffi'
 torch.Tensor = torch.FloatTensor
+require 'unix'
 
 libSlam = {}
 
--- Default values
+-- Default SLAM Map values
 local MAPS = {}
 MAPS.res        = .05;
 MAPS.invRes     = 1/MAPS.res;
@@ -20,6 +23,7 @@ MAPS.zmin       = 0;
 MAPS.zmax       = 5;
 MAPS.sizex  = (MAPS.xmax - MAPS.xmin) / MAPS.res + 1;
 MAPS.sizey  = (MAPS.ymax - MAPS.ymin) / MAPS.res + 1;
+libSlam.MAPS = MAPS;
 
 -- Occupancy Map
 local OMAP = {}
@@ -35,51 +39,16 @@ OMAP.sizex  = MAPS.sizex;
 OMAP.sizey  = MAPS.sizey;
 --OMAP.data = torch.Tensor(OMAP.sizex,OMAP.sizex):zero()
 OMAP.data = torch.ByteTensor(OMAP.sizex,OMAP.sizex)
-OMAP.data_sz = OMAP.sizex*OMAP.sizex
+OMAP.timestamp = unix.time();
+libSlam.OMAP = OMAP;
 
 -- Setup SLAM thing
-SLAMMER = {}
-SLAMMER.xOdom = 0
-SLAMMER.yOdom = 0
-SLAMMER.yawOdom = 0
-SLAMMER.lidar0Cntr = 20;
-
--- Helper Functions
-
---print(OMAP.data)
---mapShift( OMAP, 5*OMAP.res, 5*OMAP.res )
---print(OMAP.data)
-
---
--- Test LIDAR processing
---
---
-LIDAR0 = {}
-LIDAR0.resd    = 0.25;
-LIDAR0.res     = LIDAR0.resd/180*math.pi;
-LIDAR0.nRays   = 1081;
-LIDAR0.angles  = torch.range(0,(LIDAR0.nRays-1)*LIDAR0.resd,LIDAR0.resd)
-LIDAR0.angles = (LIDAR0.angles - 135) * math.pi/180
-LIDAR0.cosines = torch.cos(LIDAR0.angles);
-LIDAR0.sines   = torch.sin(LIDAR0.angles);
-LIDAR0.offsetx = 0.137;
-LIDAR0.offsety = 0;
-LIDAR0.offsetz = 0.54;  --from the body origin (not floor)
-
-LIDAR0.mask    = torch.Tensor(LIDAR0.angles:size()):fill(1);
--- Be very conservative to ensure no interpolated antenna obstacles
---LIDAR0.mask(1:190) = 0;
---LIDAR0.mask(end-189:end) = 0;
-LIDAR0.present = 1;
-LIDAR0.startTime = 0;
-LIDAR0.ranges = torch.Tensor(LIDAR0.nRays);
-local ranges_cdata = ffi.cast('float*',tutil.get_pointer( LIDAR0.ranges ) )
---print("Pointer:",LIDAR0.ranges_cdata,torch.data(LIDAR0.ranges))
-
-IMU = {}
-IMU.roll = 0;
-IMU.pitch = 0;-- -10 * math.pi/180; -- Look down a little
-IMU.roll = 0;
+local SLAM = {}
+SLAM.xOdom = 0
+SLAM.yOdom = 0
+SLAM.yawOdom = 0
+SLAM.lidar0Cntr = 20;
+libSlam.SLAM = SLAM;
 
 -- Number of yaw positions to check
 nyaw1 = 15;
@@ -111,16 +80,17 @@ hits = torch.DoubleTensor(
 	xCand1:nElement(), yCand1:nElement(), aCand1:nElement()
 )
 
-function libSlam.processL0( SLAMMER, LIDAR0, IMU, OMAP, MAPS )
-	local ranges = LIDAR0.ranges
-  local nranges = LIDAR0.nRays
+-- Process lidar readings as the come in
+local function processL0()
+	local ranges = Sensors.LIDAR0.ranges
+  local nranges = Sensors.LIDAR0.nRays
   -- Put lidar readings into relative cartesian coordinate
   --print( 'Ranges sz:\t', ranges:size() )
   --print( 'Cosines sz:\t', LIDAR0.cosines:size() )
-  xs = LIDAR0.cosines:clone()
-	xs:cmul( ranges )
-  ys = LIDAR0.sines:clone()
-	ys:cmul( ranges )
+  xs = ranges:clone()
+	xs:cmul( Sensors.LIDAR0.cosines )
+  ys = ranges:clone()
+	ys:cmul( Sensors.LIDAR0.sines )
 
   -- Accept only ranges that are sufficiently far away
   --dranges = [0; diff(ranges)];
@@ -130,7 +100,7 @@ function libSlam.processL0( SLAMMER, LIDAR0, IMU, OMAP, MAPS )
   local good_cnt = 0;
   for i=1,nranges do
     --indGood[i] = ranges[i]>0.25 and LIDAR0.mask and abs(dranges)<0.1;
-    if ranges[i]>0.25 and LIDAR0.mask then
+    if ranges[i]>0.25 and Sensors.LIDAR0.mask then
       good_cnt = good_cnt+1;
       xs[good_cnt] = xs[i];
       ys[good_cnt] = ys[i];
@@ -144,7 +114,7 @@ function libSlam.processL0( SLAMMER, LIDAR0, IMU, OMAP, MAPS )
   ys:resize(nranges)
 
   -- Apply the transformation given current roll and pitch
-  T = torch.mm(roty(IMU.pitch),rotx(IMU.roll)):t();
+  T = torch.mm(libSlam.roty(Sensors.IMU.pitch),libSlam.rotx(Sensors.IMU.roll)):t();
   --T = torch.eye(4);
   --X = [xsg ysg zsg onesg];
   -- TODO: for memory efficiency, this Tensor should be 
@@ -187,8 +157,8 @@ function libSlam.processL0( SLAMMER, LIDAR0, IMU, OMAP, MAPS )
   --gnuplot.plot('Ranges',xs,ys,'+')
 
   -- These are now the default cartesian points
-  LIDAR0.xs = xs;
-  LIDAR0.ys = ys;
+  --LIDAR0.xs = xs;
+  --LIDAR0.ys = ys;
 
   ----------------------
   -- Begin the scan matching to update the SLAM pose
@@ -202,7 +172,7 @@ function libSlam.processL0( SLAMMER, LIDAR0, IMU, OMAP, MAPS )
 
     -- Perform the scan matching
     -- TODO
-		scanMatchOne( SLAMMER, LIDAR0, OMAP, xs, ys );
+		libSlam.scanMatchOne( xs, ys );
 --    slamScanMatchPass2();
 
     -- If no good fits, then use pure odometry readings
@@ -251,17 +221,17 @@ function libSlam.processL0( SLAMMER, LIDAR0, IMU, OMAP, MAPS )
 
   -- TODO
   --SLAM = {}
-  SLAMMER.x = 0;
-  SLAMMER.y = 0;
-  SLAMMER.z = 0;
-  SLAMMER.yaw = 0;
+  SLAM.x = 0;
+  SLAM.y = 0;
+  SLAM.z = 0;
+  SLAM.yaw = 0;
   local tmp = torch.mm( 
-    trans( {SLAMMER.x, SLAMMER.y, SLAMMER.z} ),
-    rotz(SLAMMER.yaw) 
+    libSlam.trans( {SLAM.x, SLAM.y, SLAM.z} ),
+    libSlam.rotz(SLAM.yaw) 
     )
   T = torch.mm( 
     tmp, 
-    trans( {LIDAR0.offsetx, LIDAR0.offsety, LIDAR0.offsetz}) 
+    libSlam.trans( {Sensors.LIDAR0.offsetx, Sensors.LIDAR0.offsety, Sensors.LIDAR0.offsetz}) 
   ):t()
   
   -- X = [xsss ysss zsss onez];
@@ -303,16 +273,17 @@ function libSlam.processL0( SLAMMER, LIDAR0, IMU, OMAP, MAPS )
       OMAP.data[ xis[i] ][ yis[i] ] = OMAP.data[ xis[i] ][ yis[i] ] + inc;
     end
   end
+	OMAP.timestamp = unix.time();
   --gnuplot.figure(4)
   --gnuplot.imagesc( OMAP.data,'color')
 
   -- TODO
   -- Decay the map around the robot
   
-  if SLAMMER.lidar0Cntr%20 == 0 then
+  if SLAM.lidar0Cntr%20 == 0 then
     -- Get the map indicies for the robot
-    xiCenter = math.ceil((SLAMMER.x - OMAP.xmin) * OMAP.invRes);
-    yiCenter = math.ceil((SLAMMER.y - OMAP.ymin) * OMAP.invRes);
+    xiCenter = math.ceil((SLAM.x - OMAP.xmin) * OMAP.invRes);
+    yiCenter = math.ceil((SLAM.y - OMAP.ymin) * OMAP.invRes);
 
     -- Amount of the surrounding to decay
     --windowSize = 30 *OMAP.invRes;
@@ -348,7 +319,7 @@ function libSlam.processL0( SLAMMER, LIDAR0, IMU, OMAP, MAPS )
     -- TODO
 
     OMAP.data:sub( ximin,ximax,   yimin,yimax ):copy( localMap );
-
+		OMAP.timestamp = unix.time();
   end
   -- Finished the decay
 
@@ -363,10 +334,10 @@ function libSlam.processL0( SLAMMER, LIDAR0, IMU, OMAP, MAPS )
   xShift = 0;
   yShift = 0;
   -- Check in which directions we need to shift
-  if (SLAMMER.x - OMAP.xmin < MAPS.edgeProx) then xShift = -shiftAmount; end
-  if (SLAMMER.y - OMAP.ymin < MAPS.edgeProx) then yShift = -shiftAmount; end
-  if (OMAP.xmax - SLAMMER.x < MAPS.edgeProx) then xShift = shiftAmount; end
-  if (OMAP.ymax - SLAMMER.y < MAPS.edgeProx) then yShift = shiftAmount; end
+  if (SLAM.x - OMAP.xmin < MAPS.edgeProx) then xShift = -shiftAmount; end
+  if (SLAM.y - OMAP.ymin < MAPS.edgeProx) then yShift = -shiftAmount; end
+  if (OMAP.xmax - SLAM.x < MAPS.edgeProx) then xShift = shiftAmount; end
+  if (OMAP.ymax - SLAM.y < MAPS.edgeProx) then yShift = shiftAmount; end
 
   -- Perform the shift via helper functions
   if xShift ~= 0 or yShift ~= 0 then
@@ -378,10 +349,11 @@ function libSlam.processL0( SLAMMER, LIDAR0, IMU, OMAP, MAPS )
   -- Set the last updated time
   --LIDAR0.lastTime = LIDAR0.scan.startTime;
 end
+libSlam.processL0 = processL0
 
-function libSlam.scanMatchOne( SLAM, LIDAR0, OMAP, xs, ys )
+local function scanMatchOne( xs, ys )
   --tEncoders = ENCODERS.counts.t;
-  tLidar0   = LIDAR0.startTime;
+  tLidar0   = Sensors.LIDAR0.startTime;
 	xCand1:range(-xRange1,xRange1):mul(dx1):add(SLAM.xOdom);
 	yCand1:range(-yRange1,yRange1):mul(dy1):add(SLAM.yOdom);
 	aCand1:range(-yawRange1,yawRange1):mul(dyaw1):add(SLAM.yawOdom); -- + IMU.data.wyaw*0.025;
@@ -439,12 +411,14 @@ function libSlam.scanMatchOne( SLAM, LIDAR0, OMAP, xs, ys )
 
   end
 end
+libSlam.scanMatchOne = scanMatchOne
 
 -- mapShift(myMap,x,y)
 -- myMap: Map table to be copied.
 -- x: Amount (in meters) to shift map by in the x direction
 -- y: Amount (in meters) to shift map by in the y direction
 -- Steve McGill's Torch copy of Alex's mapResize function
+	--mapShift( OMAP, 5*OMAP.res, 5*OMAP.res )
 	
 function libSlam.mapShift(myMap,x,y)
 
@@ -508,7 +482,7 @@ myMap.name,myMap.xmin,myMap.xmax,myMap.ymin,myMap.ymax
 end
 
 -- TODO: Make sure the helper functions are working properly!
-function .rotx(t)
+local function rotx(t)
 -- Homogeneous transformation representing a rotation of theta
 -- about the X axis.
 local ct = math.cos(t);
@@ -520,9 +494,9 @@ r[2][3] = -1*st;
 r[3][2] = st;
 return r
 end
+libSlam.rotx = rotx
 
-
-function libSlam.roty(t)
+local function roty(t)
 -- Homogeneous transformation representing a rotation of theta
 -- about the Y axis.
 local ct = math.cos(t);
@@ -534,8 +508,9 @@ r[1][3] = st;
 r[3][1] = -1*st;
 return r
 end
+libSlam.roty = roty
 
-function libSlam.rotz(t)
+local function rotz(t)
 -- Homogeneous transformation representing a rotation of theta
 -- about the Y axis.
 local ct = math.cos(t);
@@ -547,13 +522,15 @@ r[1][2] = -1*st;
 r[2][1] = st;
 return r
 end
+libSlam.rotz = rotz
 
-function libSlam.trans(v)
+local function trans(v)
   local t = torch.eye(4);
   t[1][4] = v[1];
   t[2][4] = v[2];
   t[3][4] = v[3];
   return t;
 end
+libSlam.trans = trans
 
 return libSlam

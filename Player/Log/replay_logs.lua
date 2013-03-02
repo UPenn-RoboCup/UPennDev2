@@ -82,11 +82,11 @@ end
 
 local pushers_tbl = {}
 pushers_tbl[1] = function ( lidar_tbl )
-  --rcm.set_lidar_timestamp(lidar_tbl.t);
   --rcm.set_lidar_ranges( lidar_tbl.ranges );
-  --rcm.set_lidar_counter(lidar_tbl.counter);
-	-- Push over ipc
-	lidar_channel:send(lidar_tbl.ranges,1081*4)
+	--rcm.set_lidar_timestamp(lidar_tbl.t);
+	-- Push over ipc (Data and timestamp)
+	lidar_channel:send( lidar_tbl.ranges, 1081*4, true )--send more
+	lidar_channel:send( lidar_tbl.t )
 end
 pushers_tbl[2] = function ( imu_tbl )
 end
@@ -98,7 +98,7 @@ function open_log_file( d )
     return false
   end
   local log_f_handle = assert(io.open(log_file_name, 'r+'));
-  -- Update global variabels
+  -- Update global variables
   log_handles[d] = log_f_handle;
   entry_iters[d] = log_f_handle:lines()
   return true;

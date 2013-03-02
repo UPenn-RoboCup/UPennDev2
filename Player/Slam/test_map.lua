@@ -3,32 +3,56 @@ cwd = '.';
 package.cpath = cwd.."/../Lib/?.so;"..package.cpath;
 package.path = cwd.."/../Util/?.lua;"..package.path;
 
+-- Require the right modules
 local ffi = require 'ffi'
 require 'ffi/torchffi'
 local simple_ipc = require 'simple_ipc'
+local libSlam = require 'libSlam'
+local Sensors = require 'Config_Sensors'
+require 'unix'
 
 -- Setup IPC
 local lidar_channel = simple_ipc.setup_subscriber('lidar');
 local omap_channel = simple_ipc.setup_publisher('omap');
 
 -- Initialize the map
---print('Map Size:',MAPS.sizex,MAPS.sizey)
---local map_cdata = torch.data( OMAP.data )
+local omap = libSlam.OMAP.data
+local map_cdata = torch.data( omap )
+local map_cdata_sz = omap:storage():size() * ffi.sizeof('char')
+print('Map size',map_cdata_sz)
 
-local ranges = torch.FloatTensor(1081);
-local ranges_cdata = ffi.cast('float*',torch.data( ranges ) )
+-- Reference the sensors
+local ranges = Sensors.LIDAR0.ranges;
+local ranges_cdata = torch.data( ranges )
+local ranges_cdata_sz = ranges:storage():size() * ffi.sizeof('float')
+print('Ranges size',ranges_cdata_sz)
 local timestamp_cdata = ffi.new('double[1]',0);
 
+local t = unix.time();
+local t_last = t;
+local map_rate = 15; --15Hz
+local map_t = 1/(map_rate)
 while true do
 	-- Receive ipc sensor payload
 	local nbytes, has_more = lidar_channel:receive(ranges_cdata, 1081*4)
 	-- Receive sensor timestamp
 	if has_more then 
 		local nbytes, has_more = lidar_channel:receive(timestamp_cdata)
-		timestamp = timestamp_cdata[0]
+		Sensors.LIDAR0.timestamp = timestamp_cdata[0]
 	else
 		print('No sensor timestamp received!')
 	end
-  --processL0( SLAMMER, LIDAR0, IMU, OMAP, MAPS, xs )
-  --omap_channel:send( map_cdata, OMAP.data_sz );
+	-- Process the first LIDAR
+  libSlam.processL0()
+	
+	-- Send the map a few times per second
+	t = unix.time()
+	if t-t_last>map_t then
+		t_last = t;
+		print('sending map...')
+		-- Send the payload
+		omap_channel:send( map_cdata, map_cdata_sz, true );
+		-- Send the timestamp
+		omap_channel:send( libSlam.OMAP.timestamp )
+end
 end

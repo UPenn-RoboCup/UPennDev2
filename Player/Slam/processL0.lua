@@ -12,13 +12,15 @@ print('\n=== Processing LIDAR0 ===\n')
 require 'scanMatchOne'
 
 function processL0( SLAMMER, LIDAR0, IMU, OMAP, MAPS )
-  local ranges = LIDAR0.ranges;
-  local nranges = LIDAR0.nRays;
+	local ranges = LIDAR0.ranges
+  local nranges = LIDAR0.nRays
   -- Put lidar readings into relative cartesian coordinate
   --print( 'Ranges sz:\t', ranges:size() )
   --print( 'Cosines sz:\t', LIDAR0.cosines:size() )
-  xs = ranges:clone():cmul( LIDAR0.cosines );
-  ys = ranges:clone():cmul( LIDAR0.sines );
+  xs = LIDAR0.cosines:clone()
+	xs:cmul( ranges )
+  ys = LIDAR0.sines:clone()
+	ys:cmul( ranges )
 
   -- Accept only ranges that are sufficiently far away
   --dranges = [0; diff(ranges)];
@@ -100,7 +102,7 @@ function processL0( SLAMMER, LIDAR0, IMU, OMAP, MAPS )
 
     -- Perform the scan matching
     -- TODO
-    SLAMMER = scanMatchOne( SLAMMER, LIDAR0, OMAP, xs, ys );
+		scanMatchOne( SLAMMER, LIDAR0, OMAP, xs, ys );
 --    slamScanMatchPass2();
 
     -- If no good fits, then use pure odometry readings
@@ -275,7 +277,6 @@ function processL0( SLAMMER, LIDAR0, IMU, OMAP, MAPS )
   -- TODO
   -- Set the last updated time
   --LIDAR0.lastTime = LIDAR0.scan.startTime;
-	return SLAMMER
 end
 
 -- TODO: Make sure the helper functions are working properly!

@@ -1,137 +1,58 @@
 -- Add the required paths
 cwd = '.';
-uname  = io.popen('uname -s')
-system = uname:read();
-
-package.cpath = cwd.."/../?.so;"..package.cpath;
 package.cpath = cwd.."/../Lib/?.so;"..package.cpath;
 package.path = cwd.."/../Util/?.lua;"..package.path;
-package.path = cwd.."/../Config/?.lua;"..package.path;
-package.path = cwd.."/../Vision/?.lua;"..package.path;
 
-require('serialization');
-require('util');
-require('unix');
-require('cutil');
-require('vector');
+-- Require the right modules
 local ffi = require 'ffi'
-require 'torch'
 require 'ffi/torchffi'
---torch.Tensor = torch.DoubleTensor
-torch.Tensor = torch.FloatTensor -- Comply with Hokuyo readings
+local simple_ipc = require 'simple_ipc'
+local libSlam = require 'libSlam'
+local Sensors = require 'Config_Sensors'
+require 'unix'
 
-require 'mapShift'
-require 'processL0'
+-- Setup IPC
+local lidar_channel = simple_ipc.setup_subscriber('lidar');
+local omap_channel = simple_ipc.setup_publisher('omap');
 
--- Default values
-local MAPS = {}
-MAPS.res        = .1;
-MAPS.invRes     = 1/MAPS.res;
-MAPS.windowSize = 10; -- meters to see 
-MAPS.edgeProx   = 2;
-MAPS.xmin       = 0 - MAPS.windowSize;
-MAPS.ymin       = 0 - MAPS.windowSize;
-MAPS.xmax       = 0 + MAPS.windowSize;
-MAPS.ymax       = 0 + MAPS.windowSize;
-MAPS.zmin       = 0;
-MAPS.zmax       = 5;
-MAPS.sizex  = (MAPS.xmax - MAPS.xmin) / MAPS.res + 1;
-MAPS.sizey  = (MAPS.ymax - MAPS.ymin) / MAPS.res + 1;
+-- Initialize the map
+local omap = libSlam.OMAP.data
+local map_cdata = torch.data( omap )
+local map_cdata_sz = omap:storage():size() * ffi.sizeof('char')
+print('Map size',map_cdata_sz)
 
--- Occupancy Map
-local OMAP = {}
-OMAP.res        = MAPS.res;
-OMAP.invRes     = MAPS.invRes;
-OMAP.xmin       = MAPS.xmin;
-OMAP.ymin       = MAPS.ymin;
-OMAP.xmax       = MAPS.xmax;
-OMAP.ymax       = MAPS.ymax;
-OMAP.zmin       = MAPS.zmin;
-OMAP.zmax       = MAPS.zmax;
-OMAP.sizex  = MAPS.sizex;
-OMAP.sizey  = MAPS.sizey;
---OMAP.data = torch.Tensor(OMAP.sizex,OMAP.sizex):zero()
-OMAP.data = torch.ByteTensor(OMAP.sizex,OMAP.sizex)
-OMAP.data_sz = OMAP.sizex*OMAP.sizex
+-- Reference the sensors
+local ranges = Sensors.LIDAR0.ranges;
+local ranges_cdata = torch.data( ranges )
+local ranges_cdata_sz = ranges:storage():size() * ffi.sizeof('float')
+print('Ranges size',ranges_cdata_sz)
+local timestamp_cdata = ffi.new('double[1]',0);
 
--- Setup SLAM thing
-SLAMMER = {}
-SLAMMER.xOdom = 0
-SLAMMER.yOdom = 0
-SLAMMER.yawOdom = 0
-SLAMMER.lidar0Cntr = 20;
-
--- Helper Functions
-
---print(OMAP.data)
---mapShift( OMAP, 5*OMAP.res, 5*OMAP.res )
---print(OMAP.data)
-
---
--- Test LIDAR processing
---
---
-LIDAR0 = {}
-LIDAR0.resd    = 0.25;
-LIDAR0.res     = LIDAR0.resd/180*math.pi;
-LIDAR0.nRays   = 1081;
-LIDAR0.angles  = torch.range(0,(LIDAR0.nRays-1)*LIDAR0.resd,LIDAR0.resd)
-LIDAR0.angles = (LIDAR0.angles - 135) * math.pi/180
-LIDAR0.cosines = torch.cos(LIDAR0.angles);
-LIDAR0.sines   = torch.sin(LIDAR0.angles);
-LIDAR0.offsetx = 0.137;
-LIDAR0.offsety = 0;
-LIDAR0.offsetz = 0.54;  --from the body origin (not floor)
-
-LIDAR0.mask    = torch.Tensor(LIDAR0.angles:size()):fill(1);
--- Be very conservative to ensure no interpolated antenna obstacles
---LIDAR0.mask(1:190) = 0;
---LIDAR0.mask(end-189:end) = 0;
-LIDAR0.present = 1;
-LIDAR0.startTime = 0;
-LIDAR0.ranges = torch.rand(LIDAR0.nRays):mul(.5)+3;
-if not LIDAR0.ranges:isContiguous() then
-	print('Ranges are not contiguous!')
-	return;
-end
-
-IMU = {}
-IMU.roll = 0;
-IMU.pitch = 0;-- -10 * math.pi/180; -- Look down a little
-IMU.roll = 0;
-
-require 'rcm'
-local ranges_cdata = torch.data( LIDAR0.ranges )
-print('Map Size:',MAPS.sizex,MAPS.sizey)
-local map_cdata = torch.data( OMAP.data )
-print(map_cdata)
-
-print('Float Size:',ffi.sizeof('float'))
-print('Double Size:',ffi.sizeof('double'))
-
-local zmq = require 'ffi/zmq'
--- Initialize the context
-local n_zmq_threads = 1;
-local context_handle = zmq.zmq_init( n_zmq_threads );
-assert (context_handle);
-
--- Set the socket type
-local test_socket = zmq.zmq_socket (context_handle, zmq.ZMQ_PUB);
-assert (test_socket);
-
--- Bind to a message pipeline
-local rc = zmq.zmq_connect( test_socket, "ipc:///tmp/test_pubsub" )
-assert (rc == 0);
-
-print('Sucessfully subscribed to the message pipeline!')
-
-
+local t = unix.time();
+local t_last = t;
+local map_rate = 15; --15Hz
+local map_t = 1/(map_rate)
 while true do
-	-- Copy in the SHM data
-	ffi.copy(ranges_cdata,rcm.get_lidar_ranges(),LIDAR0.nRays);
-  SLAMMER = processL0( SLAMMER, LIDAR0, IMU, OMAP, MAPS )
-	unix.usleep(1e5)
-  local n_bytes_sent = zmq.zmq_send( test_socket, map_cdata, OMAP.data_sz, 0);
-  print('Sent '..n_bytes_sent.." bytes")
---	if(i==10) then mapShift( OMAP, 10*OMAP.res, 10*OMAP.res ) end
+	-- Receive ipc sensor payload
+	local nbytes, has_more = lidar_channel:receive(ranges_cdata, 1081*4)
+	-- Receive sensor timestamp
+	if has_more then 
+		local nbytes, has_more = lidar_channel:receive(timestamp_cdata)
+		Sensors.LIDAR0.timestamp = timestamp_cdata[0]
+	else
+		print('No sensor timestamp received!')
+	end
+	-- Process the first LIDAR
+  libSlam.processL0()
+	
+	-- Send the map a few times per second
+	t = unix.time()
+	if t-t_last>map_t then
+		t_last = t;
+		print('sending map...')
+		-- Send the payload
+		omap_channel:send( map_cdata, map_cdata_sz, true );
+		-- Send the timestamp
+		omap_channel:send( libSlam.OMAP.timestamp )
+end
 end

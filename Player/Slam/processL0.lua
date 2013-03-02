@@ -11,8 +11,7 @@ print('\n=== Processing LIDAR0 ===\n')
 --]]
 require 'scanMatchOne'
 
-function processL0( LIDAR0, IMU, OMAP, MAPS )
-
+function processL0( SLAMMER, LIDAR0, IMU, OMAP, MAPS )
   local ranges = LIDAR0.ranges;
   local nranges = LIDAR0.nRays;
   -- Put lidar readings into relative cartesian coordinate
@@ -99,9 +98,9 @@ function processL0( LIDAR0, IMU, OMAP, MAPS )
     -- figure out how much to search over the yaw space based on the 
     -- instantaneous angular velocity from imu
 
-    -- Perfrom the scan matching
+    -- Perform the scan matching
     -- TODO
-    scanMatchOne( LIDAR0, OMAP, xs, ys );
+    SLAMMER = scanMatchOne( SLAMMER, LIDAR0, OMAP, xs, ys );
 --    slamScanMatchPass2();
 
     -- If no good fits, then use pure odometry readings
@@ -150,13 +149,13 @@ function processL0( LIDAR0, IMU, OMAP, MAPS )
 
   -- TODO
   --SLAM = {}
-  SLAM.x = 0;
-  SLAM.y = 0;
-  SLAM.z = 0;
-  SLAM.yaw = 0;
+  SLAMMER.x = 0;
+  SLAMMER.y = 0;
+  SLAMMER.z = 0;
+  SLAMMER.yaw = 0;
   local tmp = torch.mm( 
-    trans( {SLAM.x, SLAM.y, SLAM.z} ),
-    rotz(SLAM.yaw) 
+    trans( {SLAMMER.x, SLAMMER.y, SLAMMER.z} ),
+    rotz(SLAMMER.yaw) 
     )
   T = torch.mm( 
     tmp, 
@@ -190,7 +189,7 @@ function processL0( LIDAR0, IMU, OMAP, MAPS )
   local inc = 5;
   -- TODO
   --[[
-  if SLAM.lidar0Cntr == 1 then
+  if SLAMMER.lidar0Cntr == 1 then
     inc=100;
   end
   --]]
@@ -208,10 +207,10 @@ function processL0( LIDAR0, IMU, OMAP, MAPS )
   -- TODO
   -- Decay the map around the robot
   
-  if SLAM.lidar0Cntr%20 == 0 then
+  if SLAMMER.lidar0Cntr%20 == 0 then
     -- Get the map indicies for the robot
-    xiCenter = math.ceil((SLAM.x - OMAP.xmin) * OMAP.invRes);
-    yiCenter = math.ceil((SLAM.y - OMAP.ymin) * OMAP.invRes);
+    xiCenter = math.ceil((SLAMMER.x - OMAP.xmin) * OMAP.invRes);
+    yiCenter = math.ceil((SLAMMER.y - OMAP.ymin) * OMAP.invRes);
 
     -- Amount of the surrounding to decay
     --windowSize = 30 *OMAP.invRes;
@@ -236,7 +235,7 @@ function processL0( LIDAR0, IMU, OMAP, MAPS )
       yimax= OMAP.sizey;
     end
 
-    -- Perform the decay on the surreoundings
+    -- Perform the decay on the surroundings
     localMap = OMAP.data:sub( ximin,ximax,  yimin,yimax );
     -- TODO
     --indd = localMap<50 & localMap > 0;
@@ -262,10 +261,10 @@ function processL0( LIDAR0, IMU, OMAP, MAPS )
   xShift = 0;
   yShift = 0;
   -- Check in which directions we need to shift
-  if (SLAM.x - OMAP.xmin < MAPS.edgeProx) then xShift = -shiftAmount; end
-  if (SLAM.y - OMAP.ymin < MAPS.edgeProx) then yShift = -shiftAmount; end
-  if (OMAP.xmax - SLAM.x < MAPS.edgeProx) then xShift = shiftAmount; end
-  if (OMAP.ymax - SLAM.y < MAPS.edgeProx) then yShift = shiftAmount; end
+  if (SLAMMER.x - OMAP.xmin < MAPS.edgeProx) then xShift = -shiftAmount; end
+  if (SLAMMER.y - OMAP.ymin < MAPS.edgeProx) then yShift = -shiftAmount; end
+  if (OMAP.xmax - SLAMMER.x < MAPS.edgeProx) then xShift = shiftAmount; end
+  if (OMAP.ymax - SLAMMER.y < MAPS.edgeProx) then yShift = shiftAmount; end
 
   -- Perform the shift via helper functions
   if xShift ~= 0 or yShift ~= 0 then
@@ -276,7 +275,7 @@ function processL0( LIDAR0, IMU, OMAP, MAPS )
   -- TODO
   -- Set the last updated time
   --LIDAR0.lastTime = LIDAR0.scan.startTime;
-
+	return SLAMMER
 end
 
 -- TODO: Make sure the helper functions are working properly!

@@ -19,8 +19,16 @@ int lua_tensor2qimage(lua_State *L) {
 	return 0;
 }
 
+int lua_get_pointer(lua_State *L) {
+	THFloatTensor * data_t = (THFloatTensor *) luaT_checkudata(L, 1, "torch.FloatTensor");
+	THFloatStorage * data_s = (THFloatStorage *)(data_t->storage);
+	lua_pushlightuserdata(L, (float*)(data_s->data));
+	return 1;
+}
+
 static const struct luaL_reg tutil_lib [] = {
   {"tensor2qimage", lua_tensor2qimage},
+	{"get_pointer", lua_get_pointer},
 
   {NULL, NULL}
 };

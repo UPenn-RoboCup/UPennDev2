@@ -9,7 +9,7 @@ package.cpath = pwd..'/../Lib/?.so;'..package.cpath
 require 'qtcore'
 require 'qtgui'
 -- Help definitions
-require ('slamLayout')
+require ('layout_slam')
 
 -- Initial Qt Application
 app = QApplication(1 + select('#', ...), {arg[0], ...})

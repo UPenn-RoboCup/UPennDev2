@@ -4,17 +4,11 @@ torch.Tensor = torch.ByteTensor
 require 'unix'
 require 'tutil'
 
--- ZMQ
-print('map io!')
-require 'map_io'
-init_receive()
-
 -- Globally accessable QImage
 sz = {240,320}
 sz = {101,101}
 sz = {201,201}
 qimage = QImage(sz[2],sz[1],QImage.Format.Format_RGB32)
-
 
 slam_map = torch.ByteTensor():ones(sz[1],sz[2])*128
 local tmp1 = slam_map:select(2, 1); -- smooth stride!
@@ -51,8 +45,6 @@ Widget = function(...)
 
   -- Set up the timer event
   function this:timerEvent(e)
-		slam_map = receive_map()
-		print('recv map')
     drawTensor(this)
 	-- Only redraws every other timer event??? why?
   end

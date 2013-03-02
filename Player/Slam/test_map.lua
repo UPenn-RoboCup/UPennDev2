@@ -17,7 +17,8 @@ require('vector');
 local ffi = require 'ffi'
 require 'torch'
 require 'ffi/torchffi'
-torch.Tensor = torch.DoubleTensor
+--torch.Tensor = torch.DoubleTensor
+torch.Tensor = torch.FloatTensor -- Comply with Hokuyo readings
 
 require 'mapShift'
 require 'processL0'
@@ -51,6 +52,14 @@ OMAP.sizex  = MAPS.sizex;
 OMAP.sizey  = MAPS.sizey;
 --OMAP.data = torch.Tensor(OMAP.sizex,OMAP.sizex):zero()
 OMAP.data = torch.ByteTensor(OMAP.sizex,OMAP.sizex)
+OMAP.data_sz = OMAP.sizex*OMAP.sizex
+
+-- Setup SLAM thing
+SLAMMER = {}
+SLAMMER.xOdom = 0
+SLAMMER.yOdom = 0
+SLAMMER.yawOdom = 0
+SLAMMER.lidar0Cntr = 20;
 
 -- Helper Functions
 
@@ -80,12 +89,11 @@ LIDAR0.mask    = torch.Tensor(LIDAR0.angles:size()):fill(1);
 --LIDAR0.mask(end-189:end) = 0;
 LIDAR0.present = 1;
 LIDAR0.startTime = 0;
-LIDAR0.ranges = torch.FloatTensor():rand(LIDAR0.nRays):mul(.5)+3;
+LIDAR0.ranges = torch.rand(LIDAR0.nRays):mul(.5)+3;
 if not LIDAR0.ranges:isContiguous() then
 	print('Ranges are not contiguous!')
 	return;
 end
-
 
 IMU = {}
 IMU.roll = 0;
@@ -93,17 +101,37 @@ IMU.pitch = 0;-- -10 * math.pi/180; -- Look down a little
 IMU.roll = 0;
 
 require 'rcm'
---local ranges = ffi.new('float[?]',LIDAR0.nRays)
 local ranges_cdata = torch.data( LIDAR0.ranges )
-
---print( carray.get(ranges,1) )
 print('Map Size:',MAPS.sizex,MAPS.sizey)
---for i=1,20 do
+local map_cdata = torch.data( OMAP.data )
+print(map_cdata)
+
+print('Float Size:',ffi.sizeof('float'))
+print('Double Size:',ffi.sizeof('double'))
+
+local zmq = require 'ffi/zmq'
+-- Initialize the context
+local n_zmq_threads = 1;
+local context_handle = zmq.zmq_init( n_zmq_threads );
+assert (context_handle);
+
+-- Set the socket type
+local test_socket = zmq.zmq_socket (context_handle, zmq.ZMQ_PUB);
+assert (test_socket);
+
+-- Bind to a message pipeline
+local rc = zmq.zmq_connect( test_socket, "ipc:///tmp/test_pubsub" )
+assert (rc == 0);
+
+print('Sucessfully subscribed to the message pipeline!')
+
+
 while true do
+	-- Copy in the SHM data
 	ffi.copy(ranges_cdata,rcm.get_lidar_ranges(),LIDAR0.nRays);
---	print(ranges_cdata[1],LIDAR0.ranges[1])
-  --LIDAR0.ranges = torch.rand(LIDAR0.nRays):mul(.5)+3;
-  processL0( LIDAR0, IMU, OMAP, MAPS )
+  SLAMMER = processL0( SLAMMER, LIDAR0, IMU, OMAP, MAPS )
 	unix.usleep(1e5)
+  local n_bytes_sent = zmq.zmq_send( test_socket, map_cdata, OMAP.data_sz, 0);
+  print('Sent '..n_bytes_sent.." bytes")
 --	if(i==10) then mapShift( OMAP, 10*OMAP.res, 10*OMAP.res ) end
 end

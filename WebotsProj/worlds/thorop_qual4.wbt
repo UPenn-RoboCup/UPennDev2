@@ -138,5 +138,5 @@ THOROP_claw {
   translation 0.5 0.6 0
   rotation -1 0 0 1.57
   controller "darwin-op_team_0"
-  controllerArgs "0 26"
+  controllerArgs "0 27"
 }

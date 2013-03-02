@@ -1,0 +1,790 @@
+#############################################
+# ATLAS webots prototype file 
+# Based on Gazebo model
+# Mesh converted by Yida
+# Converted and augmented by SJ
+# 2013/3
+#############################################
+
+PROTO ATLAS [
+  field SFVec3f    translation 0 1 0
+  field SFRotation rotation 0 1 0 0
+  field SFString   controller "void"
+  field SFString   controllerArgs ""
+  field SFBool     synchronization TRUE
+  field SFString   name "THOROP"
+#  field SFColor    plasticColor 0.301961 0.301961 0.301961
+  field SFVec2f    cameraWindowPosition 0 0
+  field SFFloat    cameraPixelSize 1.0
+  field SFInt32    cameraWidth 160
+  field SFInt32    cameraHeight 120
+#  field SFInt32    channel 0
+]
+{
+Robot {
+  translation IS translation
+  rotation IS rotation
+  controller IS controller
+  controllerArgs IS controllerArgs
+  synchronization IS synchronization
+  name IS name
+
+  children [
+    DEF chest_yaw Servo {
+      translation -0.023 0 0.74
+      rotation 0 0 1 0
+      children [
+        DEF r_shoulder_pitch Servo {
+          translation 0 -0.219 0
+          children [
+            DEF r_shoulder_roll Servo {
+              rotation 1 0 0 0
+              children [
+                DEF r_shoulder_yaw Servo {
+                  translation 0 0 -0.039
+                  rotation 0 0 1 0
+                  children [
+                    DEF r_elbow_pitch Servo {
+                      translation 0.02991 0 -0.208
+                      children [
+                        DEF r_wrist_yaw Servo {
+                          translation -0.02961 0 -0.187
+                          rotation 0 0 1 0
+                          children [
+                            DEF r_wrist_roll Servo {
+                              translation 0 0 -0.0543
+                              rotation 1 0 0 0
+
+                              children [
+  	   	  	        Transform{   #Palm
+             			  translation 0 0 -0.065
+                                  children [
+                                    Shape{geometry Box {size 0.02 0.05 0.05}}
+	                          ]
+			        }
+				DEF r_wrist_grip1 Servo{ #First finger for gripper
+				  translation 0 0.02 -0.04
+				  rotation 1 0 0 0.78
+				  name "r_wrist_grip1"
+				  children[
+				    Transform{
+                              	      translation 0 0 -0.05
+                                      children [
+                                        Shape{geometry Box {size 0.02 0.02 0.10}}
+				      ]
+                                    }
+				  ]
+				  boundingObject Transform {
+                            	    translation 0 0 -0.05
+                                    children [
+                                      Box {size 0.02 0.02 0.10}
+                                    ]
+                                  }
+                                  physics Physics {}
+				}
+	   	 	        DEF r_wrist_grip2 Servo{ #Second finger for gripper
+				  translation 0 -0.02 -0.08
+				  rotation 1 0 0 0.78
+				  name "r_wrist_grip2"
+				  children[
+				    Transform{
+                              	      translation 0 0 -0.05
+                                      children [
+                                        Shape{geometry Box {size 0.02 0.02 0.10}}
+				      ]
+                                    }
+				  ]
+				  boundingObject Transform {
+                            	    translation 0 0 -0.05
+                                    children [
+                                      Box {size 0.02 0.02 0.10}
+                                    ]
+                                  }
+                                  physics Physics {}
+				}
+
+                                DEF r_wrist_roll Transform {
+                                  rotation 1 0 0 1.57
+                                  children [
+				     WRIST_ROLL{}
+                                  ]
+				}
+			      ]
+                              name "r_wrist_roll"
+                              boundingObject Transform {
+                                translation 0 0 -0.0095
+                                children [
+                                  Box {size 0.096 0.042 0.059}
+                                ]
+                              }
+                              physics Physics {}
+                            }
+                            DEF r_wrist_yaw Transform {
+                              rotation 1 0 0 1.57
+                              children [
+ 				WRIST_YAW{}
+                              ]
+                            }
+                          ]
+                          name "r_wrist_yaw"
+                          boundingObject Transform {
+                            translation 0 0 -0.0375
+                            children [
+                              Box {size 0.09 0.048 0.075}
+                            ]
+                          }
+                          physics Physics {}
+                          maxForce 10000
+                        }
+                        DEF r_elbow_pitch Transform {
+                          rotation 1 0 0 1.57
+                          children [
+                            ELBOW_PITCH{}
+                          ]
+                        }
+                      ]
+                      name "r_elbow_pitch"
+                      boundingObject Transform {
+                        translation -0.0185 0 -0.084
+                        children [
+                          Box {size 0.077 0.12 0.208}
+                        ]
+                      }
+                      physics Physics {}
+                      maxForce 10000
+                    }
+                    DEF r_shoulder_yaw Transform {
+                      rotation 1 0 0 1.57
+                      children [
+                        SHOULDER_YAW{}
+                      ]
+                    }
+                  ]
+                  name "r_shoulder_yaw"
+                  boundingObject Transform {
+                    translation 0.0175 0 -0.123
+                    children [
+                      Box {size 0.102 0.114 0.246}
+                    ]
+                  }
+                  physics Physics {}
+                  maxForce 10000
+                }
+                DEF r_shoulder_roll Transform {
+                  rotation 1 0 0 1.57
+                  children [
+                    SHOULDER_ROLL{}
+                  ]
+                }
+              ]
+              name "r_shoulder_roll"
+              boundingObject Transform {
+                translation 0 0 -0.006
+                children [
+                  Box {size 0.138 0.054 0.066}
+                ]
+              }
+              physics Physics {}
+              maxForce 10000
+            }
+            DEF r_shoulder_pitch Transform {
+              rotation -1 0 0 1.57
+              children [
+                SHOULDER_PITCH{}
+              ]
+            }
+          ]
+          name "r_shoulder_pitch"
+          boundingObject Transform {
+            translation 0 0.027 0
+            children [
+              Box {size 0.144 0.108 0.054}
+            ]
+          }
+          physics Physics {
+            centerOfMass 0 -0.027 0
+          }
+          maxForce 10000
+
+        }
+        DEF l_shoulder_pitch Servo {
+          translation 0 0.219 0
+          children [
+            DEF l_shoulder_roll Servo {
+              rotation 1 0 0 0
+              children [
+                DEF l_shoulder_yaw Servo {
+                  translation 0 0 -0.039
+                  rotation 0 0 1 0
+                  children [
+                    DEF l_elbow_pitch Servo {
+                      translation 0.02991 0 -0.208
+                      children [
+                        DEF l_wrist_yaw Servo {
+                          translation -0.02961 0 -0.187
+                          rotation 0 0 1 0
+                          children [
+                            DEF l_wrist_roll Servo {
+                              translation 0 0 -0.0543
+                              rotation 1 0 0 0
+                              children [
+				Transform{   #Palm
+                                  translation 0 0 -0.065
+                                  children [
+                                    Shape{geometry Box {size 0.02 0.05 0.05}}
+                                  ]
+                                }
+	   	 	        DEF l_wrist_grip1 Servo{ #First finger for gripper
+				  translation 0 0.02 -0.08
+				  rotation 1 0 0 -0.78
+				  name "l_wrist_grip1"
+				  children[
+				    Transform{
+                              	      translation 0 0 -0.05
+                                      children [
+                                        Shape{geometry Box {size 0.02 0.02 0.10}}
+				      ]
+                                    }
+				  ]
+				  boundingObject Transform {
+                            	    translation 0 0 -0.05
+                                    children [
+                                      Box {size 0.02 0.02 0.10}
+                                    ]
+                                  }
+                                  physics Physics {}
+				}
+	   	 	        DEF l_wrist_grip2 Servo{ #Second finger for gripper
+				  translation 0 -0.02 -0.04
+				  rotation 1 0 0 -0.78
+				  name "l_wrist_grip2"
+				  children[
+				    Transform{
+                              	      translation 0 0 -0.05
+                                      children [
+                                        Shape{geometry Box {size 0.02 0.02 0.10}}
+				      ]
+                                    }
+				  ]
+				  boundingObject Transform {
+                            	    translation 0 0 -0.05
+                                    children [
+                                      Box {size 0.02 0.02 0.10}
+                                    ]
+                                  }
+                                  physics Physics {}
+				}
+
+                                DEF l_wrist_roll Transform{
+                                  rotation 1 0 0 1.57
+                                  children[
+                                    WRIST_ROLL{}                                  ]
+                                }
+                              ]
+                              name "l_wrist_roll"
+                              boundingObject Transform {
+                                translation 0 0 -0.0095
+                                children [
+                                  Box {size 0.096 0.042 0.059}
+                                ]
+                              }
+                              physics Physics {}
+                              maxForce 10000
+
+                            }
+                            DEF l_wrist_yaw Transform {
+                              rotation 1 0 0 1.57
+                              children [
+                                 WRIST_YAW{}
+                              ]
+                            }
+                          ]
+                          name "l_wrist_yaw"
+                          boundingObject Transform {
+                            translation 0 0 -0.0375
+                            children [
+                              Box {size 0.09 0.048 0.075}
+                            ]
+                          }
+                          physics Physics {}
+                          maxForce 10000
+
+                        }
+                        DEF l_elbow_pitch Transform {
+                          rotation 1 0 0 1.57
+                          children [
+			    ELBOW_PITCH{}
+ # 			    l_uarm{}
+                          ]
+                        }
+                      ]
+                      name "l_elbow_pitch"
+                      boundingObject Transform {
+                        translation -0.0185 0 -0.084
+                        children [
+                          Box {size 0.077 0.12 0.208}
+                        ]
+                      }
+                      physics Physics {}
+                      maxForce 10000
+                    }
+                    DEF l_shoulder_yaw Transform {
+                      rotation 1 0 0 1.57
+                      children [
+                        SHOULDER_YAW{}
+# 	 	         l_clav{}
+
+                      ]
+                    }
+                  ]
+                  name "l_shoulder_yaw"
+                  boundingObject Transform {
+                    translation 0.0175 0 -0.123
+                    children [
+                      Box {size 0.102 0.114 0.246}
+                    ]
+                  }
+                  physics Physics {}
+                  maxForce 10000
+                }
+                DEF l_shoulder_roll Transform {
+                  rotation 1 0 0 1.57
+                  children [
+                    SHOULDER_ROLL{}
+                  ]
+                }
+              ]
+              name "l_shoulder_roll"
+              boundingObject Transform {
+                translation 0 0 -0.006
+                children [
+                  Box {size 0.138 0.054 0.066}
+                ]
+              }
+              physics Physics {
+              }
+              maxForce 10000
+
+            }
+            DEF l_shoulder_pitch Transform {
+              rotation 1 0 0 1.57
+              children [SHOULDER_PITCH{}]
+            }
+          ]
+          name "l_shoulder_pitch"
+          boundingObject Transform {
+            translation 0 -0.027 0
+            children [
+              Box {size 0.144 0.108 0.054}
+            ]
+          }
+          physics Physics {}
+          maxForce 10000
+
+        }
+        DEF neck_yaw Servo {
+          translation 0 0 0.027
+          rotation 0 0 1 0
+          children [
+            DEF head_pitch Servo {
+              translation 0 0 0.114
+              children [
+                DEF head_pitch Transform {
+                  rotation 1 0 0 1.57
+                  children[
+#  	            HEAD_PITCH{}
+		    head{}
+		    Transform{
+		      translation 0.03 0.07 0
+		      rotation 0 1 0 -1.57
+ 		      children[
+			#ADDED FOR DEPTH SENSING
+#			DEF kinect KinectWithoutFoot{}
+		      ]		      
+		    }
+                  ]
+                }
+              ]
+              name "head_pitch"
+ 	      boundingObject Transform {
+                children [
+                  Box {size 0.05 0.05 0.05}
+                ]
+              }
+            }
+            DEF neck_yaw Transform {
+              rotation 1 0 0 1.57
+              children [
+                NECK_YAW{}
+              ]
+            }
+          ]
+          name "neck_yaw"
+          boundingObject Transform {
+            children [
+              Box {size 0.05 0.05 0.05}
+            ]
+          }
+        }
+#       hokuyo_thor {}    
+        DEF upper_torso_yaw Transform {
+          rotation 1 0 0 1.57
+          children [
+#            UPPER_TORSO_YAW{}
+	     utorso{}
+          ]
+        }
+      ]
+      name "chest_yaw"
+      boundingObject Transform {
+        translation 0 0 -0.058
+        children [
+          Box {size 0.06 0.276 0.171}
+        ]
+      }
+      physics Physics {}
+      maxForce 10000
+
+    }
+    DEF l_hip_yaw Servo {
+      translation -0.024 0.0957 0.212
+      rotation 0 0 1 0
+      children [
+        DEF l_hip_roll Servo {
+          translation 0.0025 0 0
+          rotation 1 0 0 0
+          children [
+            DEF l_hip_pitch Servo {
+              translation 0 -0.0015 0
+              children [
+                DEF l_knee_pitch Servo {
+                  translation 0 0 -0.379
+                  children [
+                    DEF l_ankle_pitch Servo {
+                      translation 0 0 -0.38
+                      children [
+                        DEF l_ankle_roll Servo {
+                          rotation 1 0 0 0
+                          children [
+                            DEF l_foot Transform {
+                              rotation 1 0 0 1.57
+                              children [
+#                                LFOOT{}
+				 l_foot{}
+                              ]
+                            }
+                          ]
+                          name "l_ankle_roll"
+                          boundingObject Transform {
+                            translation 0.05 0 -0.05
+                            children [
+                               Box {size 0.26 0.125 0.0686897}
+                            ]
+                          }
+                          physics Physics {
+                            density -1
+                            mass 0.589
+                            centerOfMass 0.003 0 -0.029
+                          }
+                          maxForce 10000
+                        }
+                        DEF l_ankle_pitch Transform {
+                          rotation 1 0 0 1.57
+                          children [
+                            ANKLE_PITCH{}
+                          ]
+                        }
+                      ]
+                      name "l_ankle_pitch"
+                      boundingObject Box {
+                        size 0.067 0.067 0.01
+                      }
+                      physics Physics {
+                        density -1
+                        mass 0.01
+                      }
+                      maxForce 10000
+                    }
+                    DEF l_knee_pitch Transform {
+                      rotation 1 0 0 1.57
+                      children [
+		         l_lleg{}
+                      ]
+                    }
+                  ]
+                  name "l_knee_pitch"
+                  boundingObject Transform {
+                    translation 0 0 -0.19
+                    children [
+                      Box {size 0.045 0.055 0.42}
+                    ]
+                  }
+                  physics Physics {
+                    density -1
+                    mass 2.239
+                    centerOfMass -0.025 0 -0.126
+                  }
+                  maxForce 10000
+                }
+                DEF l_hip_pitch Transform {
+                  rotation 1 0 0 1.57
+                  children [
+#                    HIP_PITCH{}
+		     l_uleg{}
+                  ]
+                }
+              ]
+              name "l_hip_pitch"
+              boundingObject Transform {
+                translation 0 0 -0.1895
+                children [
+                  Box {size 0.045 0.074 0.419}
+                ]
+              }
+              physics Physics {
+                density -1
+                mass 2.214
+                centerOfMass -0.009 0.016 -0.159
+              }
+              maxForce 10000
+            }
+            DEF l_hip_roll Transform {
+              rotation 1 0 0 1.57
+              children [
+                HIP_ROLL{}
+              ]
+            }
+          ]
+          name "l_hip_roll"
+          boundingObject Box {
+            size 0.083 0.083 0.01
+          }
+          physics Physics {
+            density -1
+            mass 0.01
+          }
+          maxForce 10000
+        }
+        DEF l_hip_yaw Transform {
+          rotation 1 0 0 1.57
+          children [
+            HIP_YAW{}
+          ]
+        }
+      ]
+      name "l_hip_yaw"
+      boundingObject Box {
+        size 0.05 0.05 0.05
+      }
+      physics Physics {
+        density -1
+        mass 0.01
+      }
+      maxForce 10000
+    }
+    DEF r_hip_yaw Servo {
+      translation -0.024 -0.0957 0.212
+      rotation 0 0 1 0
+      children [
+        DEF r_hip_roll Servo {
+          translation 0.0025 0 0
+          rotation 1 0 0 0
+          children [
+            DEF r_hip_pitch Servo {
+              translation 0 0.0015 0
+              children [
+                DEF r_knee_pitch Servo {
+                  translation 0 0 -0.379
+                  children [
+                    DEF r_ankle_pitch Servo {
+                      translation 0 0 -0.38
+                      children [
+                        DEF r_ankle_roll Servo {
+                          rotation 1 0 0 0
+                          children [
+                            DEF r_foot Transform {
+                              rotation 1 0 0 1.57
+                              children [
+                                r_foot{}
+                              ]
+                            }
+                          ]
+                          name "r_ankle_roll"
+                          boundingObject Transform {
+                            translation 0.05 0 -0.05
+                            children [
+                               Box {size 0.26 0.125 0.0686897}
+                            ]
+                          }
+                          physics Physics {
+                            density -1
+                            mass 0.589
+                            centerOfMass 0.003 0 -0.029
+                          }
+                          maxForce 10000
+                        }
+                        DEF r_ankle_pitch Transform {
+                          rotation 1 0 0 1.57
+                          children [
+                            ANKLE_PITCH{}
+                          ]
+                        }
+                      ]
+                      name "r_ankle_pitch"
+                      boundingObject Box {size 0.067 0.067 0.01}
+                      physics Physics {
+                        density -1
+                        mass 0.01
+                      }
+                      maxForce 10000
+                    }
+                    DEF r_knee_pitch Transform {
+                      rotation 1 0 0 1.57
+                      children [
+#                        KNEE_PITCH{}
+			 r_lleg{}
+
+                      ]
+                    }
+                  ]
+                  name "r_knee_pitch"
+                  boundingObject Transform {
+                    translation 0 0 -0.19
+                    children [
+                      Box {size 0.045 0.055 0.42}
+                    ]
+                  }
+                  physics Physics {
+                    density -1
+                    mass 2.239
+                    centerOfMass -0.025 0 -0.126
+                  }
+                  maxForce 10000
+                }
+                DEF r_hip_pitch Transform {
+                  rotation 1 0 0 1.57
+                  children [
+#                    HIP_PITCH{}
+		     r_uleg{}
+                  ]
+                }
+              ]
+              name "r_hip_pitch"
+              boundingObject Transform {
+                translation 0 0 -0.1895
+                children [
+                  Box {size 0.045 0.074 0.419}
+                ]
+              }
+              physics Physics {
+                density -1
+                mass 2.214
+                centerOfMass -0.009 -0.016 -0.159
+              }
+              maxForce 10000
+            }
+            DEF r_hip_roll Transform {
+              rotation 1 0 0 1.57
+              children [
+                HIP_ROLL{}
+              ]
+            }
+          ]
+          name "r_hip_roll"
+          boundingObject Box {size 0.083 0.083 0.01}
+          physics Physics {
+            density -1
+            mass 0.01
+          }
+          maxForce 10000
+        }
+        DEF r_hip_yaw Transform {
+          rotation 1 0 0 1.57
+          children [
+            HIP_YAW{}
+          ]
+        }
+      ]
+      name "r_hip_yaw"
+      boundingObject Box {
+        size 0.05 0.05 0.05
+      }
+      physics Physics {
+        density -1
+        mass 0.01
+      }
+      maxForce 10000
+    }
+    DEF lower_torso Transform {
+      translation -0.023 0 0.287
+      rotation -1 0 0 -1.57
+      children [
+#        LOWER_TORSO{}
+	 pelvis{}
+      ]
+    }
+    DEF zero GPS {
+       translation -0.023 0 0.596
+       name "zero"
+    }
+    Compass {
+       translation -0.023 0 0.596
+       name "compass"
+    }
+    Accelerometer {
+      translation 0.027711 0 0.23735
+#     rotation 1 0 0 1.5708
+      name "Accelerometer"
+      lookupTable [
+          -39.24 0 0
+           39.24 1024 0
+      ]
+    }
+    Gyro {
+      translation 0.027711 0 0.23735
+ #    rotation -0.57735 0.57735 0.57735 2.0944
+      name "Gyro"
+      lookupTable [
+        -27.925 0 0
+        27.925 1024 0
+      ]
+    }
+#SH: those are for sending/receiving team messages
+    DEF RECEIVER Receiver {
+      name "receiver"
+      channel IS channel
+    }
+    DEF EMITTER Emitter {
+      name "emitter"
+      channel IS channel
+    }
+
+    DEF PHYSICS_RECEIVER Receiver {
+      name "physics_receiver"
+      type "serial"
+      channel 10
+      byteSize 192
+    }
+    DEF PHYSICS_EMITTER Emitter {
+      name "physics_emitter"
+      type "serial"
+      byteSize 96
+    }
+  ]
+  name "THOROP"
+  boundingObject Transform {
+    translation -0.0115 0 0.4115
+    children [
+      Box {
+        size 0.143 0.234 0.367
+      }
+    ]
+  }
+  physics Physics {
+    density -1
+    mass 9.846
+    centerOfMass -0.015 0 0.427
+  }
+  controller "void"
+}
+}

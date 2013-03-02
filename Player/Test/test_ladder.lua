@@ -177,253 +177,279 @@ current_action=0;
 
 
 
-LLeg={0,footY,0};
-RLeg={0,-footY,0};
-
-LLegPitch = 0;
-RLegPitch = 0;
 
 cycle = 0;
 
+action_mount_ladder =  {
+  --Attach left arm
+  {
+   {0.41,0.50,0.25,0};   --Raise Left arm 
+   null,null,null,
+   0.5, --duration
+  },
+  {
+   {0.49,0.50,0.27,0};   --Extend
+   null,null,null,
+   0.5, --duration
+  },
+  {
+   {0.49,0.50,0.27,1};   --Grip
+   null,null,null,
+   0.1, --duration
+  },
+
+  --Attach right arm
+  {
+   null, 
+   {0.41,-0.50,0.25,0};   --Raise Left arm 
+   null, null, 
+   0.5, --duration
+  },
+  {
+   null, 
+   {0.49,-0.50,0.27,0};   --Extend
+   null, null, 
+   0.5, --duration
+  },
+  {
+   null, 
+   {0.49,-0.50,0.27,1};   --Grip
+   null, null, 
+   0.1, --duration
+  },
+
+  --Place left foot
+  {
+    null,null,
+    {0,0.10,0.35,0}, 
+    null,
+    0.5,
+  },
+  {
+    null,null,
+    {0.48,0.18,0.35,-0.26}, --Tilt
+    null,
+    0.5,
+  },
+  {
+    null,null,
+    {0.48,0.18,0.33,-0.26},
+    null,
+    0.2,
+  },
+
+  --Place right foot
+  {
+    null,null,
+    null,
+    {0,-0.10,0.35,0},
+    0.5,
+  },
+  {
+    null,null,
+    null,
+    {0.48,-0.18,0.35,-0.26},
+    0.5,
+  },
+  {
+    null,null,
+    null,
+    {0.48,-0.18,0.33,-0.26},
+    0.2,
+  },
+}
+
+
+action_llarm_up = {
+  {
+   {0.41,0.50,-0.03,0};   --Left arm retract, gripper open
+   null, --Right arm not moving
+   null, --LLeg not movin
+   null, --RLeg not movin
+   0.2, --duration
+  },
+  {
+   {0.41,0.50,0.25,0};   --Raise Left arm 
+   null,null,null,
+   0.7, --duration
+  },
+  {
+   {0.50,0.50,0.27,0};   --Extend
+   null,null,null,
+   0.7, --duration
+  },
+  {
+   {0.50,0.50,0.27,1};   --Grip
+   null,null,null,
+   0.1, --duration
+  },
+}
+
+action_rlarm_up = {
+  {
+   null, --Left arm not moving
+   {0.41,-0.50,-0.03,0};   --R arm retract, gripper open
+   null, null, 
+   0.2, --duration
+  },
+  {
+   null, 
+   {0.41,-0.50,0.25,0};   --Raise Left arm 
+   null, null, 
+   0.7, --duration
+  },
+  {
+   null, 
+   {0.50,-0.50,0.27,0};   --Extend
+   null, null, 
+   0.7, --duration
+  },
+  {
+   null, 
+   {0.50,-0.50,0.27,1};   --Grip
+   null, null, 
+   0.1, --duration
+  },
+}
+
+action_legs_up = {
+
+  {  --Pull body 2ocm higher
+    {0.48, 0.50,0.07,1}, 
+    {0.48,-0.50,0.07,1},
+    {0.48, 0.18,0.13,-0.26}, 
+    {0.48,-0.18,0.13,-0.26},
+    1.0,
+  },
+  {  --Lift right foot
+    null,null,null,
+    {0.0, -0.18, 0.16,-0.26},
+     0.2,
+  },
+  {  --Raise right foot
+    null,null,null,
+    {0.48, -0.18, 0.49,-0.26}, 
+     0.5,
+  },
+  {  --Land right foot
+    null,null,null,
+    {0.48, -0.18, 0.43,-0.26},
+     0.2,
+  },
+
+  { --Lift left foot
+    null,null,
+    {0.0, 0.18, 0.16,-0.26}, 
+    null,
+    0.5,
+  },
+  { --Raise left foot
+    null,null,
+    {0.48, 0.18, 0.49,-0.26}, 
+    null,
+    0.5,
+  },
+  { --Raise left foot
+    null,null,
+    {0.48, 0.18, 0.43,-0.26}, 
+    null,
+    0.2,
+  },
+  {  --Pull body 1ocm higher
+    {0.48, 0.50,-0.03,1}, 
+    {0.48,-0.50,-0.03,1},
+    {0.48, 0.39,0.33,-0.26}, --Wider stance
+    {0.48,-0.39,0.33,-0.26},
+    1.0,
+  },
+}
+
+
+LLeg={0,footY,0,0};
+RLeg={0,-footY,0,0};
 
 function auto_move_arms()
   t = Body.get_time();
   if is_moving==0 then 
-    LArmTarget0 = {trLArm[1],trLArm[2],trLArm[3]};
-    LArmTarget1 = {trLArm[1],trLArm[2],trLArm[3]};
-
-    RArmTarget0 = {trRArm[1],trRArm[2],trRArm[3]};
-    RArmTarget1 = {trRArm[1],trRArm[2],trRArm[3]};
-
-    LLegTarget0 = {LLeg[1],LLeg[2],LLeg[3]};
-    LLegTarget1 = {LLeg[1],LLeg[2],LLeg[3]};
-
-    RLegTarget0 = {RLeg[1],RLeg[2],RLeg[3]};
-    RLegTarget1 = {RLeg[1],RLeg[2],RLeg[3]};
-
     action_start_time = t;
     action_duration = 0;
     return;
   end
 
-  if action_duration==0 then
+  if is_moving==1 then --Start moving
+    LArmTarget1 = {trLArm[1],trLArm[2],trLArm[3]};
+    RArmTarget1 = {trRArm[1],trRArm[2],trRArm[3]};
+    LLegTarget1 = {LLeg[1],LLeg[2],LLeg[3],LLeg[4]};
+    RLegTarget1 = {RLeg[1],RLeg[2],RLeg[3],LLeg[4]};
+    is_moving = 2;
+    action_count = 0;
+    action_duration = 0;
     action_start_time = t;
+    return;
   end
 
-
-  if (t>action_start_time + action_duration) and
-	action_duration ~=0 then
-    is_moving = is_moving + 1;
+  if (t>action_start_time + action_duration) then --New motion
+    action_count = action_count + 1;
     action_start_time = action_start_time + action_duration;
+
+    if action_count > #current_action then
+      is_moving = 0;
+      return;
+    end
+
+    LArmTarget0 = LArmTarget1;
+    RArmTarget0 = RArmTarget1;
+    LLegTarget0 = LLegTarget1;
+    RLegTarget0 = RLegTarget1;
+
+
+    current_frame = current_action[action_count];
+    LArmTargetF = current_frame[1];    
+    RArmTargetF = current_frame[2];    
+    LLegTargetF = current_frame[3];    
+    RLegTargetF = current_frame[4];    
+    action_duration = current_frame[5];
+
+    if LArmTargetF then
+      LArmTarget1 = {LArmTargetF[1],LArmTargetF[2],LArmTargetF[3]};
+      if LArmTargetF[4]>0 then
+        Body.set_l_gripper_command({0,0});--Grip
+      else
+        Body.set_l_gripper_command({math.pi/4,-math.pi/4});--Release 
+      end
+    else
+      LArmTarget1 = LArmTarget0;
+    end
+
+    if RArmTargetF then
+      RArmTarget1 = {RArmTargetF[1],RArmTargetF[2],RArmTargetF[3]};
+      if RArmTargetF[4]>0 then
+        Body.set_r_gripper_command({0,0});--Grip
+      else
+        Body.set_r_gripper_command({math.pi/4,-math.pi/4});--Release 
+      end
+    else
+      RArmTarget1 = RArmTarget0;
+    end
+
+    if LLegTargetF then
+      LLegTarget1 = {
+	LLegTargetF[1],LLegTargetF[2],LLegTargetF[3],LLegTargetF[4]};
+    else
+      LLegTarget1 = LLegTarget0;
+    end
+
+    if RLegTargetF then
+      RLegTarget1 = {
+	RLegTargetF[1],RLegTargetF[2],RLegTargetF[3],RLegTargetF[4]};
+    else
+      RLegTarget1 = RLegTarget0;
+    end
   end
 
-
-  if current_action == 1 then --Raise Left arm and grip
-    if is_moving==1 then --Raise 
-      Body.set_l_gripper_command({math.pi/4,-math.pi/4});--Release 
-      LArmTarget0 = {trLArm[1],trLArm[2],trLArm[3]};
-      LArmTarget1 = {0.41,0.50,-0.03};   --Retract
-      action_duration = 0.2;
-    elseif is_moving==2 then --Move up
-      LArmTarget0 = {0.41,0.50,-0.03};   --Retract
-      LArmTarget1 = {0.41,0.50,0.25};   
-      action_duration = 1.0;
-    elseif is_moving==3 then --Extend
-      LArmTarget0 = {0.41,0.50,0.25};   
-      LArmTarget1 = {0.49,0.50,0.27};   
-      LArmTarget1 = {0.50,0.50,0.27};   
-      action_duration = 1.0;
-    elseif is_moving==4 then
-      Body.set_l_gripper_command({0,0});--Grip
-      is_moving = 0;
-      return;
-    end
-
-
-  elseif current_action == 2 then --Raise Right arm and grip
-    if is_moving==1 then --Raise 
-      Body.set_r_gripper_command({math.pi/4,-math.pi/4});--Release 
-      RArmTarget0 = {trRArm[1],trRArm[2],trRArm[3]};
-      RArmTarget1 = {0.41,-0.50,-0.03};   --Retract
-      action_duration = 0.2;
-    elseif is_moving==2 then --Move up
-      RArmTarget0 = {0.41,-0.50,-0.03};   --Retract
-      RArmTarget1 = {0.41,-0.50,0.25};   
-      action_duration = 1.0;
-    elseif is_moving==3 then --Extend
-      RArmTarget0 = {0.41,-0.50,0.25};   
-      RArmTarget1 = {0.49,-0.50,0.27};   
-      RArmTarget1 = {0.50,-0.50,0.27};   
-      action_duration = 1.0;
-    elseif is_moving==4 then
-      Body.set_r_gripper_command({0,0});--Grip
-      is_moving = 0;
-      return;
-    end
-
-
-  elseif current_action == 3 then --Initial Left leg movement
-    if is_moving==1 then --Raise leg 
-      LLegTarget0 = {0, 0.10, 0};
-      LLegTarget1 = {0, 0.10, 0.35};
-      action_duration = 1.0;
-    elseif is_moving==2 then --Move forward
-      LLegTarget0 = {0, 0.10, 0.35};
-      LLegTarget1 = {0.48, 0.18, 0.35};
-      action_duration = 1.0;
-
-      LLegPitch = -15*math.pi/180;
-    elseif is_moving==3 then --Land
-      LLegTarget0 = {0.48, 0.18, 0.35};
-      LLegTarget1 = {0.48, 0.18, 0.33};
-      action_duration = 1.0;
-    elseif is_moving==4 then
-      is_moving = 0;
-      return;
-    end
-
-  elseif current_action == 4 then --Initial Right leg movement
-    if is_moving==1 then --Raise leg 
-      RLegTarget0 = {0, -0.10, 0};
-      RLegTarget1 = {0, -0.10, 0.35};
-      action_duration = 1.0;
-    elseif is_moving==2 then --Move forward
-      RLegTarget0 = {0, -0.10, 0.35};
-      RLegTarget1 = {0.48, -0.18, 0.35};
-      action_duration = 1.0;
-
-      RLegPitch = -15*math.pi/180;
-
-    elseif is_moving==3 then --Land
-      RLegTarget0 = {0.48, -0.18, 0.35};
-      RLegTarget1 = {0.48, -0.18, 0.33};
-      action_duration = 1.0;
-    elseif is_moving==4 then
-      is_moving = 0;
-      return;
-    end
-
-
-  elseif current_action == 5 then 
-    if is_moving==1 then --Raise and retract 
-
---Pull body up by 20cm
-
-      LArmTarget0 = {0.48,0.50,0.27};   
-      RArmTarget0 = {0.48,-0.50,0.27};   
-      LLegTarget0 = {0.48, 0.18, 0.33};
-      RLegTarget0 = {0.48, -0.18, 0.33};
-
-      LArmTarget1 = {0.48,0.50,0.07};   
-      RArmTarget1 = {0.48,-0.50,0.07};   
-      LLegTarget1 = {0.48, 0.18, 0.13};
-      RLegTarget1 = {0.48, -0.18, 0.13};
-      action_duration = 2.0;
-    elseif is_moving==2 then
-
-      LArmTarget0 = {0.48,0.50,0.07};   
-      RArmTarget0 = {0.48,-0.50,0.07};   
-
-      LLegTarget0 = {0.48, 0.18, 0.13};
-      RLegTarget0 = {0.48, -0.18, 0.13};
-
-      RLegTarget1 = {0.0, -0.18, 0.16}; --Raise and extract rfoot
-      action_duration = 0.2;
-
-    elseif is_moving==3 then
-
-      RLegTarget0 = {0.0, -0.18, 0.16}; 
-      RLegTarget1 = {0.48, -0.18, 0.49}; --Raise rfoot higher
-      action_duration = 1.0;
-
-    elseif is_moving==4 then
-
-      RLegTarget0 = {0.48, -0.18, 0.49}; --Raise rfoot higher
-      RLegTarget1 = {0.48, -0.18, 0.43}; --Land RFoot
-      action_duration = 0.2;
-
-    elseif is_moving==5 then 
-
-      is_moving = 0;
-      return;
-    end
-
-  elseif current_action == 6 then 
-    if is_moving==1 then --Raise and retract 
-      LLegTarget0 = {0.48, 0.18, 0.13}; --Raise and extract foot
-      LLegTarget1 = {0.0, 0.18, 0.16};
-      action_duration = 0.2;
-    elseif is_moving==2 then 
-      LLegTarget0 = {0.0, 0.18, 0.16};
-      LLegTarget1 = {0.0, 0.18, 0.49};  --Raise lfoot high
-      action_duration = 1.0;
-    elseif is_moving==3 then --Put foot back
-      LLegTarget0 = {0.0, 0.18, 0.49};
-      LLegTarget1 = {0.48, 0.18, 0.49};  --Raise lfoot high
-      action_duration = 1.0;
-    elseif is_moving==4 then --Land
-      LLegTarget0 = {0.48, 0.18, 0.49};  --Raise lfoot high
-      LLegTarget1 = {0.48, 0.18, 0.43};  --Raise lfoot high
-      action_duration = 0.2;
-    elseif is_moving==5 then --Pull body up by 10cm
-
-      LArmTarget0 = {0.48,0.50,0.07};   
-      RArmTarget0 = {0.48,-0.50,0.07};   
-      LLegTarget0 = {0.48, 0.18, 0.43};
-      RLegTarget0 = {0.48, -0.18, 0.43};
-
-      LArmTarget1 = {0.48,0.50,-0.03};   
-      RArmTarget1 = {0.48,-0.50,-0.03};   
-      LLegTarget1 = {0.48, 0.18, 0.33};
-      RLegTarget1 = {0.48, -0.18, 0.33};
-
-
-      LLegTarget1 = {0.48, 0.39, 0.33};
-      RLegTarget1 = {0.48, -0.39, 0.33};
-
-
-      action_duration = 2.0;
-
-    elseif is_moving==6 then 
-      is_moving = 0;
-      cycle = cycle+1;
-
-      return;
-    end
-
-
-
-
---[[
-
-  elseif current_action == 5 then --Left leg up
-    if is_moving==1 then --Raise and retract 
-      RLegTarget1 = {0.48, 0.18, 0.33};
-      RLegTarget1 = {0.20, 0.18, 0.36};
-      action_duration = 1.0;
-      action_start_time = t;
-    elseif is_moving==2 then --Raise higher
-      LLegTarget0 = {0.20, 0.18, 0.36};
-      LLegTarget1 = {0.20, 0.18, 0.66};
-      action_duration = 1.0;
-    elseif is_moving==3 then --Extend
-      LLegTarget0 = {0.20, 0.18, 0.66};
-      LLegTarget0 = {0.48, 0.18, 0.66};
-      action_duration = 1.0;
-    elseif is_moving==4 then --Land
-      LLegTarget0 = {0.48, 0.18, 0.63};
-      LLegTarget0 = {0.48, 0.18, 0.63};
-      action_duration = 1.0;
-    elseif is_moving==5 then
-      is_moving = 0;
-      return;
-    end
---]]
-
-
-
-  end
   ph = (t-action_start_time)/action_duration;
+
+--print("ph:",ph)
 
   trLArm[1] = (1-ph)*LArmTarget0[1] + ph*LArmTarget1[1];      
   trLArm[2] = (1-ph)*LArmTarget0[2] + ph*LArmTarget1[2];      
@@ -436,15 +462,17 @@ function auto_move_arms()
   LLeg[1] = (1-ph)*LLegTarget0[1] + ph*LLegTarget1[1];
   LLeg[2] = (1-ph)*LLegTarget0[2] + ph*LLegTarget1[2];
   LLeg[3] = (1-ph)*LLegTarget0[3] + ph*LLegTarget1[3];
+  LLeg[4] = (1-ph)*LLegTarget0[4] + ph*LLegTarget1[4];
 
   RLeg[1] = (1-ph)*RLegTarget0[1] + ph*RLegTarget1[1];
   RLeg[2] = (1-ph)*RLegTarget0[2] + ph*RLegTarget1[2];
   RLeg[3] = (1-ph)*RLegTarget0[3] + ph*RLegTarget1[3];
+  RLeg[4] = (1-ph)*RLegTarget0[4] + ph*RLegTarget1[4];
   
 
   pTorso = vector.new({supportX-footX, 0,bodyHeight,0,bodyTilt,0});
-  pLLeg = {LLeg[1], LLeg[2], LLeg[3],0,LLegPitch,0};
-  pRLeg = {RLeg[1], RLeg[2], RLeg[3],0,RLegPitch,0};
+  pLLeg = {LLeg[1], LLeg[2], LLeg[3],0,LLeg[4],0};
+  pRLeg = {RLeg[1], RLeg[2], RLeg[3],0,RLeg[4],0};
 
   motion_arms_ik();
 
@@ -452,7 +480,6 @@ function auto_move_arms()
 
   Body.set_body_hardness(1);
   Body.set_lleg_command(q);
-
 
 end
 
@@ -510,19 +537,21 @@ function motion_arms_ik()
 --    is_moving=0;
     print("STUCK!")
 
---[[
       trLArm[1],trLArm[2],trLArm[3],trLArm[4],trLArm[5],trLArm[6]=
       trLArmOld[1],trLArmOld[2],trLArmOld[3],trLArmOld[4],trLArmOld[5],trLArmOld[6];
 
       trRArm[1],trRArm[2],trRArm[3],trRArm[4],trRArm[5],trRArm[6]=
       trRArmOld[1],trRArmOld[2],trRArmOld[3],trRArmOld[4],trRArmOld[5],trRArmOld[6];
---]]
   end
 
 end
 
-
-
+function start_action(var)
+  if is_moving==0 then
+    is_moving = 1;
+    current_action = var;  
+  end
+end
 
 
 -- Process Key Inputs
@@ -584,43 +613,25 @@ function process_keyinput()
     trLArm[3]=trLArm[3]-0.01;
     update_arm = true;
 
-
-
   elseif byte==string.byte("1") then  
-    if is_moving==0 then
-      current_action = 1;
-      is_moving = 1;
-    end
+    start_action(action_mount_ladder);
   elseif byte==string.byte("2") then  
-    if is_moving==0 then
-      current_action = 2;
-      is_moving = 1;
-    end
+    start_action(action_legs_up);
 
   elseif byte==string.byte("3") then  
-    if is_moving==0 then
-      current_action = 3;
-      is_moving = 1;
-    end
+    start_action(action_llarm_up);
 
   elseif byte==string.byte("4") then  
-    if is_moving==0 then
-      current_action = 4;
-      is_moving = 1;
-    end
+    start_action(action_rlarm_up);
 
   elseif byte==string.byte("5") then  
-    if is_moving==0 then
-      current_action = 5;
-      is_moving = 1;
-    end
 
   elseif byte==string.byte("6") then  
-    if is_moving==0 then
-      current_action = 6;
-      is_moving = 1;
-    end
+  elseif byte==string.byte("7") then  
 
+  elseif byte==string.byte("8") then  
+  elseif byte==string.byte("9") then  
+  elseif byte==string.byte("0") then  
 
 
 

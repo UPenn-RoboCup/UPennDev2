@@ -14,7 +14,9 @@ shared.lidar = {};
 shared.lidar.counter = vector.zeros(1);
 shared.lidar.id = vector.zeros(1);
 
-shared.lidar.ranges = nReturns*4; -- 4 bytes per return (float is 4 bytes in 64bit)
+-- 4 bytes per return (float is 4 bytes in 64bit)
+-- We will use doubles, though (double is 8 bytes in 64bit)
+shared.lidar.ranges = nReturns*4;
 shared.lidar.timestamp = vector.zeros(1);
 
 --shared.lidar.intensities ;

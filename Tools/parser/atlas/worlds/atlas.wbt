@@ -1,0 +1,33 @@
+#VRML_SIM V6.0 utf8
+WorldInfo {
+  info [
+    "Simulation of the Robocup Standard Platform League"
+    "Authors: Olivier Michel, Yvan Bourquin, Fabien Rohrer"
+    "Webpage: http://www.robotstadium.org"
+  ]
+  title "Robotstadium"
+  basicTimeStep 15
+  displayRefresh 3
+}
+Viewpoint {
+  orientation 0.999525 -0.0247179 -0.0184002 5.00273
+  position -0.341077 11.7743 5.4063
+}
+Background {
+  skyColor [
+    0.678431 0.847059 0.901961
+  ]
+}
+DirectionalLight {
+  ambientIntensity 1.6
+  direction -0.5 -2 -0.5
+  intensity 0.3
+  castShadows TRUE
+}
+DirectionalLight {
+  ambientIntensity 1.6
+  direction 0.5 -0.5 0.5
+  intensity 0.5
+}
+atlas {
+}

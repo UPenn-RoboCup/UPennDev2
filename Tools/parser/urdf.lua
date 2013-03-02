@@ -24,14 +24,6 @@ if data ~= nil then
   end
 end
 
-function str2num(str, n)
-  local vals = string.gmatch(str, "%d+")
-  local num = {}
-  for i = 1, n do
-    print(vals())
-  end
-end
-
 print(robot.name)
 print('joints # '..#robot.joints)
 print('links # '..#robot.links)
@@ -52,9 +44,10 @@ for i = 1, #robot.joints do
     joint[joint[j]:tag()] = joint[j]
   end
   -- put joint in bodyNode
-  local jointTag = joint.child.link..'+'..joint.parent.link
+  local jointTag = joint.child.link..'_'..joint.parent.link
   if bodyNode[jointTag] == nil then
-    bodyNode[jointTag] = {['next']={}, ['prev']={}}
+    bodyNode[jointTag] = {['next']={}, ['prev']={}, 
+                          ['value'] = joint, ['type'] = 'joint'}
     bodyNode[jointTag].next[#bodyNode[jointTag].next + 1] = joint.child.link
     bodyNode[jointTag].prev[#bodyNode[jointTag].prev + 1] = joint.parent.link
   else
@@ -63,18 +56,28 @@ for i = 1, #robot.joints do
   -- put link in bodyNode
   local linkTag = joint.child.link
   if bodyNode[linkTag] == nil then
-    bodyNode[linkTag] = {['next']={}, ['prev']={}}
+    bodyNode[linkTag] = {['next']={}, ['prev']={}, 
+                          ['value'] = robot.links[linkTag], ['type'] = 'link'}
   end
   bodyNode[linkTag].prev[#bodyNode[linkTag].prev + 1] = jointTag
 --  print(joint.child.link)
   local linkTag = joint.parent.link
   if bodyNode[linkTag] == nil then
-    bodyNode[linkTag] = {['next']={}, ['prev']={}}
+    bodyNode[linkTag] = {['next']={}, ['prev']={}, 
+                          ['value'] = robot.links[linkTag], ['type'] = 'link'}
   end
   bodyNode[linkTag].next[#bodyNode[linkTag].next + 1] = jointTag
 --  print(joint.parent.link)
 
 end
+
+function bodyTraverse(rootNode, body, indent)
+  for i = 1, #body[rootNode].next do
+    print(indentSpace(indent)..body[rootNode].next[i])
+    bodyTraverse(body[rootNode].next[i], body, indent+1)
+  end
+end
+
 
 local root = {}
 for k, v in pairs(bodyNode) do
@@ -90,12 +93,40 @@ for k, v in pairs(bodyNode) do
 end
 
 assert(#root == 1)
+--bodyTraverse(root[1], bodyNode, 0)
 
-function bodyTraverse(rootNode, body, indent)
-  for i = 1, #body[rootNode].next do
-    print(indentSpace(indent)..body[rootNode].next[i])
-    bodyTraverse(body[rootNode].next[i], body, indent+1)
+--print(bodyNode[root[1]].value)
+--for k, v in ipairs(bodyNode[root[1]].value) do
+--  print(v)
+--end
+
+function generateBody(rootNode, body)
+  local node = createNode(rootNode, '')
+  if body[rootNode].type == 'joint' then
+    node.__nodeType = 'Servo'
+    node.__def = 1
   end
-end
 
-bodyTraverse(root[1], bodyNode, 0)
+  local children = createMultiField('children')
+  for i = 1, #bodyNode[rootNode].next do
+    children[i] = generateBody(bodyNode[rootNode].next[i], body)
+--    print(bodyNode[rootNode].next[i])
+  end
+  local translation = {0, 0, 0}
+  node[1] = createField('translation',translation)
+  node[2] = children
+  return node
+end
+local robot = createNode('Robot', '')
+local robotchildren = createMultiField('children')
+robotchildren[1] = generateBody(root[1], bodyNode)
+robot[1] = robotchildren
+
+local proto = createPROTO('atlas')
+proto[1] = robot
+
+local header = '#VRML V2.0 utf8'
+local model = createVRML(header)
+model[1] = proto
+
+saveVRML(model, 'atlas/protos/atlas1.proto')

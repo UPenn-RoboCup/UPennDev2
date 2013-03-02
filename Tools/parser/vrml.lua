@@ -21,6 +21,7 @@ function createNode(nodeName, nodeType)
   node.__name = nodeName
   node.__nodeType = nodeType
   node.__type = 'node'
+  node.__def = 0
 
   return node
 end
@@ -77,8 +78,11 @@ end
 
 function writenode(file, node, indent)
   if node.__name then
---    file:write(indentSpace(indent)..'DEF '..node.__name..' ')
-    file:write(indentSpace(indent)..node.__name..' ')
+    if node.__def == 1 then
+      file:write(indentSpace(indent)..'DEF '..node.__name..' ')
+    else
+      file:write(indentSpace(indent)..node.__name..' ')
+    end
     file:write(node.__nodeType..' {\n')
   else
     file:write(indentSpace(indent)..node.__nodeType..' {\n')

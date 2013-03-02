@@ -30,11 +30,14 @@ local tags = {} -- webots tags
 local time_step = nil
 
 local servoNames = { -- webots servo names
-  'l_hipyaw', 'l_hiproll', 'l_hippitch', 
-  'l_knee_pivot', 'l_ankle', 'l_ankle_p2',
-  'r_hipyaw', 'r_hiproll', 'r_hippitch', 
-  'r_knee_pivot', 'r_ankle', 'r_ankle_p2',
-}
+"Head","Neck",
+              "L_Shoulder_Pitch", "L_Shoulder_Roll", "L_Shoulder_Yaw","L_Elbow",
+              "L_Hip_Yaw", "L_Hip_Roll", "L_Hip_Pitch", "L_Knee_Pitch", "L_Ankle_Pitch", "L_Ankle_Roll",
+              "R_Hip_Yaw", "R_Hip_Roll", "R_Hip_Pitch", "R_Knee_Pitch", "R_Ankle_Pitch", "R_Ankle_Roll",
+              "R_Shoulder_Pitch", "R_Shoulder_Roll", "R_Shoulder_Yaw","R_Elbow",
+	      "Waist_Roll",
+             };
+
 
 -- Actuator / sensor interface 
 ----------------------------------------------------------------
@@ -46,9 +49,6 @@ local function initialize_devices()
   webots.wb_gyro_enable(tags.gyro, time_step)
   tags.accel = webots.wb_robot_get_device('accelerometer')
   webots.wb_accelerometer_enable(tags.accel, time_step)
-  tags.physics_receiver = webots.wb_robot_get_device('physics_receiver')
-  webots.wb_receiver_enable(tags.physics_receiver, time_step)
-  tags.physics_emitter = webots.wb_robot_get_device('physics_emitter')
 
   tags.servo = {}
   for i = 1,#joint.id do
@@ -56,8 +56,8 @@ local function initialize_devices()
     webots.wb_servo_enable_position(tags.servo[i], time_step)
     webots.wb_servo_enable_motor_force_feedback(tags.servo[i], time_step)
     webots.wb_servo_set_position(tags.servo[i], 1/0)
-    webots.wb_servo_set_velocity(tags.servo[i], 0)
-    webots.wb_servo_set_motor_force(tags.servo[i], 1e-15)
+    --webots.wb_servo_set_velocity(tags.servo[i], 0)
+    --webots.wb_servo_set_motor_force(tags.servo[i], 1e-15)
     webots.wb_servo_set_acceleration(tags.servo[i], max_acceleration)
   end
 end
@@ -118,16 +118,10 @@ local function update_actuators()
       motor_velocity = damper_velocity 
     end
     motor_velocity = math.max(math.min(motor_velocity, max_velocity), -max_velocity)
-    webots.wb_servo_set_motor_force(tags.servo[i], math.abs(joint_pd_force[i]))
-    webots.wb_servo_set_velocity(tags.servo[i], motor_velocity)
+    --webots.wb_servo_set_motor_force(tags.servo[i], math.abs(joint_pd_force[i]))
+    --webots.wb_servo_set_velocity(tags.servo[i], motor_velocity)
   end
 
-  -- update feedforward forces using physics plugin
-  local buffer = cbuffer.new(#joint.id*8)
-  for i = 1,#joint.id do
-    buffer:set('double', joint_ff_force[i], (i-1)*8)
-  end
-  webots.wb_emitter_send(tags.physics_emitter, tostring(buffer))
 end
 
 local function update_sensors()
@@ -145,23 +139,21 @@ local function update_sensors()
   end
   
   -- update imu readings
-  local t = {}
+  --[[
+	local t = {}
   local orientation = webots.wb_supervisor_node_get_orientation(tags.saffir)
   t[1] = vector.new({orientation[1], orientation[2], orientation[3], 0})
   t[2] = vector.new({orientation[4], orientation[5], orientation[6], 0})
   t[3] = vector.new({orientation[7], orientation[8], orientation[9], 0})
   t[4] = vector.new({0, 0, 0, 1});
   local euler_angles = Transform.getEuler(t)
+	dcm:set_ahrs(euler_angles, 'euler')
+	--]]
+	
   dcm:set_ahrs(webots.wb_gyro_get_values(tags.gyro), 'gyro')
   dcm:set_ahrs(webots.wb_accelerometer_get_values(tags.accel), 'accel')
-  dcm:set_ahrs(euler_angles, 'euler')
-
-  -- update force-torque readings and joint velocities using physics plugin
-  local buffer = cbuffer.new(webots.wb_receiver_get_data(tags.physics_receiver))
-  local joint_velocity = {}
-  for i = 1,#joint.id do
-    joint_velocity[i] = buffer:get('double', (i-1)*8)
-  end
+  
+	--[[
   dcm:set_joint_velocity_sensor(joint_velocity)
   local l_fts = {}
   local r_fts = {}
@@ -171,7 +163,8 @@ local function update_sensors()
   end
   dcm:set_force_torque(l_fts, 'l_ankle')
   dcm:set_force_torque(r_fts, 'r_ankle')
-  webots.wb_receiver_next_packet(tags.physics_receiver)
+	--]]
+	
 end
 
 -- User interface 

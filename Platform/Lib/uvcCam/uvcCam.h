@@ -8,7 +8,6 @@
 
 #include "timeScalar.h"
 #include "v4l2.h"
-#include <string.h>
 
 #define VIDEO_DEVICE "/dev/video0"
 

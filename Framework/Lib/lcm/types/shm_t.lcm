@@ -1,0 +1,11 @@
+package thor;
+
+struct shm_t
+{
+    int32_t  request_id;
+    int32_t  nbytes;
+    byte     eval_string[nbytes];
+    int32_t  position[3];
+    int32_t   id;
+    double  vel[2];
+}

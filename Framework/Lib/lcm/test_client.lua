@@ -16,14 +16,16 @@ end
 package.cpath = "./?."..csuffix..";"..package.cpath
 
 require('lcm')
-require('thor_rpc_request_t')
+require('thor_shm_t')
 
 local msg = {
-  client_id = "uuid",
   request_id = 456,
+  nbytes     = 20,
   eval_string = "walk.stop",
-  synchronous = true
+  id = 345,
+  position = {34,45, 32},
+  vel = {0.54, 54.33},
 }
 
 rpc_client = lcm.new()
-rpc_client:rpc_request_t_publish("EXAMPLE", msg)
+rpc_client:shm_t_publish("EXAMPLE", msg)

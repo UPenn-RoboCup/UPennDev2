@@ -70,5 +70,5 @@ CharLaser {
   translation 0 0.8 0.5
   rotation 0 1 0 -1.57
   controller "webots_controller"
-  controllerArgs "walk_tuner"
+  controllerArgs "slam_test"
 }

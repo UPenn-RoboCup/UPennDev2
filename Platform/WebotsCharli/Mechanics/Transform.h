@@ -2,6 +2,7 @@
 #define Transform_h_DEFINED
 
 #include <vector>
+#include <math.h>
 
 class Transform {
 public:

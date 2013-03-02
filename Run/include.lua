@@ -40,6 +40,7 @@ package.path = prefix.."/Framework/Motion/FSMs/?.lua;"..package.path
 package.path = prefix.."/Framework/Motion/States/?.lua;"..package.path
 package.path = prefix.."/Framework/Platform/?.lua;"..package.path
 package.path = prefix.."/Framework/Proprioception/?.lua;"..package.path
+package.path = prefix.."/Framework/Cognition/Slam/?.lua;"..package.path
 package.path = prefix.."/Framework/Util/?.lua;"..package.path
 
 -- set path for c modules 
@@ -47,4 +48,5 @@ package.cpath = prefix.."/Framework/Cognition/Slam/?."..csuffix..";"..package.cp
 package.cpath = prefix.."/Framework/Lib/?/?."..csuffix..";"..package.cpath
 package.cpath = prefix.."/Framework/Lib/lcm/?."..csuffix..";"..package.cpath
 package.cpath = prefix.."/Framework/Lib/unix/?."..csuffix..";"..package.cpath
+package.cpath = prefix.."/Framework/Cognition/Slam/?."..csuffix..";"..package.cpath
 package.cpath = prefix.."/Framework/Platform/?."..csuffix..";"..package.cpath

@@ -1,10 +1,17 @@
-local ffi = require( "ffi" )
-local zmq = require( "zmq" )
+-- Include the proper directories
+cwd = '.';
+package.path = cwd.."/../../Util/?.lua;"..package.path;
+
+-- Require the ffi modules
+local ffi = require 'ffi'
+local zmq = require 'ffi/zmq'
+
+-- Setup the millisecond sleep function
 ffi.cdef[[
 int poll(struct pollfd *fds, unsigned long nfds, int timeout);
 ]]
-function sleep(s)
-    ffi.C.poll(nil, 0, s*1000)
+local function msleep(ms)
+  ffi.C.poll(nil, 0, ms)
 end
 
 content = {}
@@ -26,8 +33,8 @@ local size, size1, size2 = ffi.sizeof(buf), ffi.sizeof(buf1), ffi.sizeof(buf2)
 local connection = { }
 
 local function zmq_error()
-   local errno = zmq.zmq_errno()
-   local strerror = ffi.string( zmq.zmq_strerror( errno ) )
+   local errno = zmq.errno()
+   local strerror = ffi.string( zmq.sterror( ernno ) )
    error( "ZMQ ERROR: " .. errno .. ": " .. strerror )
 end
 
@@ -51,47 +58,53 @@ function new_connection( handle )
    return c
 end
 
-local function bounce( sc )
-   local r1, r4
+local function bounce( sb, sc )
+   local r1, r2, r3, r4
    r1 = sc:send( buf,  size )
-	 print('Sending',buf[1])
+   r2 = sb:recv( buf1, size1 )
+   r3 = sb:send( buf1, size1 )
    r4 = sc:recv( buf2, size2 )
-	 print('Received',buf2[1])
    assert( r1 == size )
+   assert( r2 == size1 )
+   assert( r3 == size1 )
    assert( r4 == size2 )
 end
 
--- Init the context
 local ctx = zmq.zmq_init (1);
 assert (ctx);
 
--- Init the Socket type
-local sc = zmq.zmq_socket (ctx, zmq.ZMQ_REQ);
-assert (sc);
+local sb = zmq.zmq_socket (ctx, zmq.ZMQ_PAIR);
+assert (sb);
 
--- Bind to the socket at an address
-local rc = zmq.zmq_connect (sc, "ipc:///tmp/rpcserver" )
+local rc = zmq.zmq_bind (sb, "tcp://127.0.0.1:6666" );
+--local rc = zmq.zmq_bind (sb, "inproc://a" )
 assert (rc == 0);
 
-print('Bound to the Socket!')
+local sc = zmq.zmq_socket (ctx, zmq.ZMQ_PAIR);
+assert (sc);
 
--- Establish connection helpers...?
+local rc = zmq.zmq_connect (sc, "tcp://127.0.0.1:6666" );
+--local rc = zmq.zmq_connect (sc, "inproc://a" )
+assert (rc == 0);
+
+local sb = new_connection( sb )
 local sc = new_connection( sc )
+for i=0, 1024*60-1 do
+bounce( sb, sc )   
+end 
+local sb = sb.handle
+local sc = sc.handle
 
-for i=1,5 do
-	print('Sending msg...')
-	bounce(sc)
-  sleep(1)
-end
-
--- Debug
 print(1024*1024/64)
 
--- Close everything
---rc = zmq.zmq_close (sb);
---assert (rc == 0);
+local rc = zmq.zmq_close (sc);
+assert (rc == 0);
 
---rc = zmq.zmq_term (ctx);
---assert (rc == 0);
+rc = zmq.zmq_close (sb);
+assert (rc == 0);
+
+rc = zmq.zmq_term (ctx);
+assert (rc == 0);
 
 print("DONE")
+

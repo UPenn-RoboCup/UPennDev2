@@ -88,14 +88,14 @@ int lua_ScanMatch2D(lua_State *L) {
     const int size  = sizex * sizey;
 
     /* Grab the xs and ys from the last laser scan*/
-    THDoubleTensor * lxs_t = (THDoubleTensor *) luaT_checkudata(L, 3, "torch.DoubleTensor");
-    THDoubleTensor * lys_t = (THDoubleTensor *) luaT_checkudata(L, 4, "torch.DoubleTensor");
+    THFloatTensor * lxs_t = (THFloatTensor *) luaT_checkudata(L, 3, "torch.FloatTensor");
+    THFloatTensor * lys_t = (THFloatTensor *) luaT_checkudata(L, 4, "torch.FloatTensor");
     const int nps = lys_t->size[0]; // The number of laser points to match
 
     /* Grab the scanning values for theta, x, y */
-    THDoubleTensor * pxs_t = (THDoubleTensor *) luaT_checkudata(L, 5, "torch.DoubleTensor");
-    THDoubleTensor * pys_t = (THDoubleTensor *) luaT_checkudata(L, 6, "torch.DoubleTensor");
-    THDoubleTensor * pths_t = (THDoubleTensor *) luaT_checkudata(L, 7, "torch.DoubleTensor");
+    THFloatTensor * pxs_t = (THFloatTensor *) luaT_checkudata(L, 5, "torch.FloatTensor");
+    THFloatTensor * pys_t = (THFloatTensor *) luaT_checkudata(L, 6, "torch.FloatTensor");
+    THFloatTensor * pths_t = (THFloatTensor *) luaT_checkudata(L, 7, "torch.FloatTensor");
 	int npxs = pxs_t->size[0];
     int npys = pys_t->size[0];
 	int npths = pths_t->size[0];
@@ -185,7 +185,7 @@ int lua_ScanMatch2D(lua_State *L) {
         }
       }
     }
-	//luaT_pushudata(L, likelihoods_t, "torch.DoubleTensor");
+	//luaT_pushudata(L, likelihoods_t, "torch.FloatTensor");
 	//return 1;
 		lua_pushnumber(L,hmax);
 		lua_pushinteger(L,xmax);

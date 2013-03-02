@@ -221,7 +221,6 @@ enum {
   GLFW_INFINITY = 100000
 };
 ]]
--- Error is in the enum
 
 ffi.cdef[[
 typedef struct {

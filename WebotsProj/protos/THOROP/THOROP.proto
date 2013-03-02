@@ -394,7 +394,7 @@ Robot {
 		      rotation 0 1 0 -1.57
  		      children[
 			#ADDED FOR DEPTH SENSING
-			DEF kinect KinectWithoutFoot{}
+#			DEF kinect KinectWithoutFoot{}
 		      ]		      
 		    }
                   ]

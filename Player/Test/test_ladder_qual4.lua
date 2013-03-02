@@ -312,6 +312,54 @@ action_rlarm_up = {
   },
 }
 
+
+action_rlarm_evade_up = {
+  {
+   null, --Left arm not moving
+   {0.41,-0.50,-0.03,0};   --R arm retract, gripper open
+   null, null, 
+   0.2, --duration
+  },
+  {
+   null, --Left arm not moving
+   {0.41,-0.29,-0.03,0};   --R arm retract, gripper open
+   null, null, 
+   0.5, --duration
+  },
+  {
+   null, 
+   {0.41,-0.29,0.27,0};   --Raise Left arm 
+   null, null, 
+   0.5, --duration
+  },
+  {
+   null, 
+   {0.36,-0.29,0.27,0};   --Raise Left arm 
+   null, null, 
+   0.5, --duration
+  },
+  {
+   null, 
+   {0.36,-0.50,0.27,0};   --Raise Left arm 
+   null, null, 
+   0.5, --duration
+  },
+  {
+   null, 
+   {0.50,-0.50,0.27,0};   --Extend
+   null, null, 
+   0.7, --duration
+  },
+  {
+   null, 
+   {0.50,-0.50,0.27,1};   --Grip
+   null, null, 
+   0.1, --duration
+  },
+}
+
+
+
 action_legs_up = {
 
   {  --Pull body 2ocm higher
@@ -364,6 +412,106 @@ action_legs_up = {
   },
 }
 
+action_fin = {
+--Move body a little up
+
+  {  --Pull body 1ocm higher
+    {0.48, 0.50,0.17,1}, 
+    {0.48,-0.50,0.17,1},
+    {0.48, 0.39,0.23,-0.26}, --Wider stance
+    {0.48,-0.39,0.23,-0.26},
+    1.0,
+  },
+
+  --Put right foot on the surface
+  {  
+    null,null,    
+    null,
+    {0.0,-0.35,0.53,0},
+    1.0,
+  },
+  {  
+    null,null,    
+    null,
+    {0.0,-0.39,0.60,0},
+    0.5,
+  },
+  {  
+    null,null,    
+    null,
+    {0.0,-0.60,0.60,0},
+    1.0,
+  },
+  {  
+    null,null,    
+    null,
+    {0.0,-0.60,0.53,0},
+    1.0,
+  },
+
+--Release left grip
+
+  {
+   {0.38,0.50,0.27,0};   --Grip
+   null,null,null,
+   1.0, --duration
+  },
+
+  {  --Move body to the right
+    null,
+    {0.48,-0.50,0.17,1},
+    {0.48, 0.39,0.23,-0.26}, 
+    {0.0,-0.60,0.53,0},
+    2.0,
+  },
+
+  {  --Move body to the right
+    null,
+    {0.36,-0.40,0.17,1},
+    {0.48, 0.09,0.23,-0.26}, 
+    {0.0,-0.60,0.53,0},
+    1.0,
+  },
+
+  {  --Move body to the right
+    null,
+    {0.36,-0.30,0.17,1},
+    {0.48, 0.19,0.23,-0.26}, 
+    {0.0,-0.50,0.53,0},
+    1.0,
+  },
+
+
+--[[
+
+  {  --Move body to the right
+    null,
+    null,
+    null,
+    {0.48,-0.60,0.53,0},
+    1.0,
+  },
+--]]
+
+
+
+--Lift left foot 
+
+--[[
+  {  --Move body to the right again
+    null,
+    {0.36,-0.30,0.17,1},
+    {0.48, 0.19,0.23,-0.26}, 
+    {0.0,-0.50,0.53,0},
+    1.0,
+  },
+--]]
+
+
+
+}
+
+
 
 LLeg={0,footY,0,0};
 RLeg={0,-footY,0,0};
@@ -415,7 +563,7 @@ function auto_move_arms()
       if LArmTargetF[4]>0 then
         Body.set_l_gripper_command({0,0});--Grip
       else
-        Body.set_l_gripper_command({math.pi/4,-math.pi/4});--Release 
+        Body.set_l_gripper_command({math.pi/3,-math.pi/3});--Release 
       end
     else
       LArmTarget1 = LArmTarget0;
@@ -426,7 +574,7 @@ function auto_move_arms()
       if RArmTargetF[4]>0 then
         Body.set_r_gripper_command({0,0});--Grip
       else
-        Body.set_r_gripper_command({math.pi/4,-math.pi/4});--Release 
+        Body.set_r_gripper_command({math.pi/3,-math.pi/3});--Release 
       end
     else
       RArmTarget1 = RArmTarget0;
@@ -546,6 +694,36 @@ function motion_arms_ik()
 
 end
 
+is_auto = 0;
+auto_count = 0;
+auto_queue={
+  action_mount_ladder,
+  action_legs_up,
+  action_llarm_up,
+  action_rlarm_evade_up,
+
+  action_legs_up,
+  action_llarm_up,
+  action_rlarm_up,
+
+  action_legs_up,
+  action_llarm_up,
+  action_rlarm_up,
+
+}
+function auto_playback()
+  if is_auto==0 then return;end
+  if is_moving==0 then
+    auto_count = auto_count + 1;
+    if auto_count>#auto_queue then
+      is_auto = 0;
+      return;
+    end
+    start_action(auto_queue[auto_count]);
+  end
+end
+
+
 function start_action(var)
   if is_moving==0 then
     is_moving = 1;
@@ -614,7 +792,9 @@ function process_keyinput()
     update_arm = true;
 
   elseif byte==string.byte("1") then  
-    start_action(action_mount_ladder);
+
+    is_auto = 1;
+--    start_action(action_mount_ladder);
   elseif byte==string.byte("2") then  
     start_action(action_legs_up);
 
@@ -625,6 +805,26 @@ function process_keyinput()
     start_action(action_rlarm_up);
 
   elseif byte==string.byte("5") then  
+    start_action(action_rlarm_evade_up);
+
+  elseif byte==string.byte("6") then  
+    start_action(action_fin);
+
+
+
+
+--[[
+
+print("LArm pos:",
+    trLArm[1],trLArm[2],trLArm[3]);
+
+print("RArm joint angles:",
+  
+ unpack( vector.new(qRArmInv)*180/math.pi )
+
+)
+--]]
+
 
   elseif byte==string.byte("6") then  
   elseif byte==string.byte("7") then  
@@ -636,10 +836,19 @@ function process_keyinput()
 
 
   elseif byte==string.byte("e") then  --Open gripper
-    Body.set_l_gripper_command({math.pi/6,-math.pi/6});
+    Body.set_l_gripper_command({math.pi/2,-math.pi/2});
 
   elseif byte==string.byte("r") then  --Close gripper
     Body.set_l_gripper_command({0,0});
+
+  elseif byte==string.byte("t") then  --Open gripper
+    Body.set_r_gripper_command({math.pi/2,-math.pi/2});
+
+  elseif byte==string.byte("y") then  --Close gripper
+    Body.set_r_gripper_command({0,0});
+
+
+
 
   elseif byte==string.byte("i") then  
     trRArm[1]=trRArm[1]+0.01;
@@ -745,6 +954,7 @@ while (true) do
 
   update();
 
+  auto_playback();
   -- Debug Messages every 1 second
   t_diff = Body.get_time() - (t_last or 0);
   if(t_diff>1) then

@@ -120,12 +120,12 @@ void netft_node::update_data()
           m_torques[0] = *(int32_t *)(m_can_buffers[i].data + 4);
           break;
         case 2 : 
-          m_forces[1] = *(int32_t *)(m_can_buffers[i].data + 0);
-          m_torques[1] = *(int32_t *)(m_can_buffers[i].data + 4);
+          m_forces[1] = -*(int32_t *)(m_can_buffers[i].data + 0);
+          m_torques[1] = -*(int32_t *)(m_can_buffers[i].data + 4);
           break;
         case 3 : 
-          m_forces[2] = *(int32_t *)(m_can_buffers[i].data + 0);
-          m_torques[2] = *(int32_t *)(m_can_buffers[i].data + 4);
+          m_forces[2] = -*(int32_t *)(m_can_buffers[i].data + 0);
+          m_torques[2] = -*(int32_t *)(m_can_buffers[i].data + 4);
           break;
         case 4 : 
           m_status = *(int32_t *)(m_can_buffers[i].data + 0);
@@ -134,12 +134,12 @@ void netft_node::update_data()
         case 5 : 
           m_forces[0] = *(int16_t *)(m_can_buffers[i].data + 0);
           m_torques[0] = *(int16_t *)(m_can_buffers[i].data + 2);
-          m_forces[1] = *(int16_t *)(m_can_buffers[i].data + 4);
-          m_torques[1] = *(int16_t *)(m_can_buffers[i].data + 6);
+          m_forces[1] = -*(int16_t *)(m_can_buffers[i].data + 4);
+          m_torques[1] = -*(int16_t *)(m_can_buffers[i].data + 6);
           break;
         case 6 : 
-          m_forces[2] = *(int16_t *)(m_can_buffers[i].data + 0);
-          m_torques[2] = *(int16_t *)(m_can_buffers[i].data + 2);
+          m_forces[2] = -*(int16_t *)(m_can_buffers[i].data + 0);
+          m_torques[2] = -*(int16_t *)(m_can_buffers[i].data + 2);
           m_status = *(int16_t *)(m_can_buffers[i].data + 4);
           m_sample = *(int16_t *)(m_can_buffers[i].data + 6);
           break;

@@ -38,7 +38,7 @@ local test_socket = zmq.zmq_socket (context_handle, zmq.ZMQ_SUB);
 assert (test_socket);
 
 -- Connect to a message pipeline
-local rc = zmq.zmq_bind( test_socket, "ipc:///tmp/test_pubsub" )
+local rc = zmq.zmq_bind( test_socket, "ipc:///tmp/map_pubsub" )
 assert (rc == 0);
 zmq.zmq_setsockopt(test_socket, zmq.ZMQ_SUBSCRIBE, '', 0)
 

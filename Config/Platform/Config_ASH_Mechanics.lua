@@ -9,7 +9,7 @@ mechanics.l_foot = {
   sole_transform = Transform.pose{0.0213876, 0, 0},
   heel_transform = Transform.pose{-0.0936124, 0, 0},
   toe_transform = Transform.pose{0.1363876, 0, 0},
-  force_torque_transform = Transform.pose{0, 0, 0} -- FIXME
+  force_torque_transform = Transform.pose{0.0215, 0, 0.006} 
 }
 
 mechanics.r_foot = {
@@ -17,7 +17,7 @@ mechanics.r_foot = {
   sole_transform = Transform.pose{0.0213876, 0, 0},
   heel_transform = Transform.pose{-0.0936124, 0, 0},
   toe_transform = Transform.pose{0.1363876, 0, 0},
-  force_torque_transform = Transform.pose{0, 0, 0} -- FIXME
+  force_torque_transform = Transform.pose{0.0215, 0, 0.006} 
 }
 
 mechanics.l_hand = {

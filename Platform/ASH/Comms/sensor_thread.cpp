@@ -117,8 +117,8 @@ void sensor_thread::update()
     dcm.ahrs[3] = gyro[1];                               // x gyro
     dcm.ahrs[4] = gyro[0];                               // y gyro
     dcm.ahrs[5] = -gyro[2];                              // z gyro
-    dcm.ahrs[7] = -asin(orientation[2]);                 // x euler
-    dcm.ahrs[6] = atan(orientation[5]/orientation[8]);   // y euler
+    dcm.ahrs[6] = -asin(orientation[2]);                 // x euler
+    dcm.ahrs[7] = atan(orientation[5]/orientation[8]);   // y euler
     dcm.ahrs[8] = -atan2(orientation[1],orientation[0]); // z euler
 }
 

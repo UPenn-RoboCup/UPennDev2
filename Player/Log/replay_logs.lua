@@ -170,20 +170,21 @@ while true do
   -- Push this entry to SHM
   local t_diff = min_ts - (last_ts or min_ts);
   last_ts = min_ts;
-	--[[
+	--  print('Pushing',d_idx,dataTypes[d_idx], min_ts)
+	--  print('ts:',entry_timestamps[1],entry_timestamps[2]);
+
   if( min_ts<1361997212.4557 ) then
     realtime = false;
   else
     realtime = true;
   end
-	--]]
+
   -- If we wish to run in realtime, then sleep accordingly
   if realtime then
     unix.usleep( 1e6*t_diff );
+		pushers_tbl[d_idx]( latest_entry_tbls[d_idx] )
   end
---  print('Pushing',d_idx,dataTypes[d_idx], min_ts)
---  print('ts:',entry_timestamps[1],entry_timestamps[2]);
-  pushers_tbl[d_idx]( latest_entry_tbls[d_idx] )
+
   -- Empty the data structure
   latest_entry_tbls[d_idx]=nil
 end

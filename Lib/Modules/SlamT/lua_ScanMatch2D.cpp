@@ -72,62 +72,64 @@ int lua_ScanMatch2D(lua_State *L) {
 
   if (strcasecmp(command, "match") == 0) 
   {
-		// Initialize max finding
-			double hmax = 0;
-			double xmax = 1; // Lua index
-			double ymax = 1; // Lua index
-			double thmax = 11; // Lua index
-		
-	// TODO: Check for NULL pointers
-    //luaT_stackdump( L );
-	// Get the map, which is a ByteTensor
-	// TODO: ensure that the map is explored with the right dimensions
-    THByteTensor * map_t = (THByteTensor *) luaT_checkudata(L, 2, "torch.ByteTensor");
+    // Initialize max finding
+    double hmax = 0;
+    double xmax = 1; // Lua index
+    double ymax = 1; // Lua index
+    double thmax = 1; // Lua index
+
+    // luaT_stackdump( L );
+    // Get the map, which is a ByteTensor
+    // TODO: ensure that the map is explored with the right dimensions
+    const THByteTensor * map_t = (THByteTensor *) luaT_checkudata(L, 2, "torch.ByteTensor");
     const int sizex = map_t->size[0];
     const int sizey = map_t->size[1];
     const int size  = sizex * sizey;
 
     /* Grab the xs and ys from the last laser scan*/
-    THFloatTensor * lxs_t = (THFloatTensor *) luaT_checkudata(L, 3, "torch.FloatTensor");
-    THFloatTensor * lys_t = (THFloatTensor *) luaT_checkudata(L, 4, "torch.FloatTensor");
-    const int nps = lys_t->size[0]; // The number of laser points to match
+    const THFloatTensor * lY_t = (THFloatTensor *) luaT_checkudata(L, 3, "torch.FloatTensor");
+    const long nps = lY_t->size[1]; // The number of laser points to match
+    // fprintf(stdout,"Number of laser points: %ld\n", nps );
 
     /* Grab the scanning values for theta, x, y */
-    THFloatTensor * pxs_t = (THFloatTensor *) luaT_checkudata(L, 5, "torch.FloatTensor");
-    THFloatTensor * pys_t = (THFloatTensor *) luaT_checkudata(L, 6, "torch.FloatTensor");
-    THFloatTensor * pths_t = (THFloatTensor *) luaT_checkudata(L, 7, "torch.FloatTensor");
-	int npxs = pxs_t->size[0];
-    int npys = pys_t->size[0];
-	int npths = pths_t->size[0];
-	
-	/* Grab the output Tensor */
-	THDoubleTensor * likelihoods_t = (THDoubleTensor *) luaT_checkudata(L, 8, "torch.DoubleTensor");
-	// TODO: Check that the dimensions are correct
-	/*
-	fprintf( stdout, "Size of the likelihoods_t: (%d dim): %ld x %ld x %ld\n",
-		likelihoods_t->nDimension, 
-		likelihoods_t->size[0],likelihoods_t->size[1],likelihoods_t->size[2]
-	);
-	*/
+    const THFloatTensor * pxs_t = (THFloatTensor *) luaT_checkudata(L, 4, "torch.FloatTensor");
+    const THFloatTensor * pys_t = (THFloatTensor *) luaT_checkudata(L, 5, "torch.FloatTensor");
+    const THFloatTensor * pths_t = (THFloatTensor *) luaT_checkudata(L, 6, "torch.FloatTensor");
+    long npxs = pxs_t->size[0];
+    long npys = pys_t->size[0];
+    long npths = pths_t->size[0];
+    //fprintf(stdout, "Size of the search space: %ld x %ld x %ld\n",npxs,npys,npths);
+
+    /* Grab the output Tensor */
+    THDoubleTensor * likelihoods_t = (THDoubleTensor *) luaT_checkudata(L, 7, "torch.DoubleTensor");
+    /*
+       fprintf( stdout, "Size of the likelihoods_t: (%d dim): %ld x %ld x %ld\n",
+       likelihoods_t->nDimension, 
+       likelihoods_t->size[0],likelihoods_t->size[1],likelihoods_t->size[2]
+       );
+       */
+    if (likelihoods_t->size[0] != npxs || likelihoods_t->size[1]!=npys || likelihoods_t->size[2]!=npths)
+      return luaL_error(L, "Likelihood output wrong");
 
     // Divide the candidate pose xy by resolution, to save computations later
     // Subtract the min values too
-    for (int ii=0; ii<npxs; ii++)
-      THTensor_fastSet1d(pxs_t, ii, (THTensor_fastGet1d(pys_t,ii)-ymin)*invRes );
-    for (int ii=0; ii<npys; ii++)
-      THTensor_fastSet1d(pys_t, ii, (THTensor_fastGet1d(pys_t,ii)-ymin)*invRes );
+    /*
+       for (int ii=0; ii<npxs; ii++)
+       THTensor_fastSet1d(pxs_t, ii, (THTensor_fastGet1d(pxs_t,ii)-xmin)*invRes );
+       for (int ii=0; ii<npys; ii++)
+       THTensor_fastSet1d(pys_t, ii, (THTensor_fastGet1d(pys_t,ii)-ymin)*invRes );
+       for (int ii=0; ii<nps; ii++)
+       {
+       lxss[ii] = THTensor_fastGet2d( lY_t, 1, ii) * invRes;
+       lyss[ii] = THTensor_fastGet2d( lY_t, 2, ii) * invRes;
+       }
+       */
 
-    for (int ii=0; ii<nps; ii++)
-    {
-      lxss[ii] = THTensor_fastGet1d(lxs_t,ii) * invRes;
-      lyss[ii] = THTensor_fastGet1d(lys_t,ii) * invRes;
-    }
-
-    for (int pthi =0; pthi<npths; pthi++)   //iterate over all yaw values
+    for (int pthi=0; pthi<npths; pthi++)   //iterate over all yaw values
     {
       double costh = cos( THTensor_fastGet1d(pths_t,pthi) );
       double sinth = sin( THTensor_fastGet1d(pths_t,pthi) );
-	  //THTensor_fastGet3d( likelihoods_t, pthi, npxs, npys )
+      //THTensor_fastGet3d( likelihoods_t, pthi, npxs, npys )
       //double * likelihoodsXY = likelihoods + pthi*npxs*npys;
 
       // Sensor global offset due to robot's yaw and local offsets
@@ -141,13 +143,13 @@ int lua_ScanMatch2D(lua_State *L) {
         //double * tl = likelihoodsXY;
 
         // Convert the laser points to the map coordinates
-        double xd = THTensor_fastGet1d( lxs_t, pi )*costh - THTensor_fastGet1d( lys_t, pi )*sinth + offsetx;
-        double yd = THTensor_fastGet1d( lxs_t, pi )*sinth + THTensor_fastGet1d( lys_t, pi )*costh + offsety;
+        double xd = THTensor_fastGet2d( lY_t, 1, pi)*costh - THTensor_fastGet2d( lY_t, 2, pi)*sinth + offsetx;
+        double yd = THTensor_fastGet2d( lY_t, 1, pi)*sinth + THTensor_fastGet2d( lY_t, 2, pi)*costh + offsety;
 
         // Iterate over all pose ys
         for (int pyi=0; pyi<npys; pyi++) {
           // Use unsigned int - don't have to check < 0
-          unsigned int yi  = yd + THTensor_fastGet1d( pys_t, pyi );// + 0.0;
+          unsigned int yi  = yd + (THTensor_fastGet1d(pys_t,pyi)-ymin)*invRes;// + 0.0;
 
           if (yi >= sizey) {
             // Increment the pointer to likelyhoods by number of x poses
@@ -162,7 +164,7 @@ int lua_ScanMatch2D(lua_State *L) {
           for (int pxi=0; pxi<npxs; pxi++) {
             //use unsigned int - don't have to check < 0
             //unsigned int xi = xd + *tpxs++;
-			unsigned int xi = xd + THTensor_fastGet1d( pxs_t, pxi );
+            unsigned int xi = xd + (THTensor_fastGet1d(pxs_t,pxi)-xmin)*invRes;
             if (xi >= sizex)
             {
               //tl++;
@@ -170,36 +172,36 @@ int lua_ScanMatch2D(lua_State *L) {
             }
 
             //*tl++ += mapp[xi];
-			double newLikelihood = THTensor_fastGet3d(likelihoods_t,xi,yi,pthi) + (double)THTensor_fastGet2d(map_t,xi,yi);
-			// Find the maximum likelihood
-			if( newLikelihood > hmax ){
-				hmax = newLikelihood;
-				xmax = xi+1; // Lua index
-				ymax = yi+1; // Lua index
-				thmax = pthi+1; // Lua index
-			}
-			THTensor_fastSet3d(likelihoods_t,xi,yi,pthi,newLikelihood);
-//			fprintf(stdout,"Setting values...\n");
-			THTensor_fastSet3d(likelihoods_t,xi,yi,pthi,22);
+            double newLikelihood = THTensor_fastGet3d(likelihoods_t,xi,yi,pthi) + (double)THTensor_fastGet2d(map_t,xi,yi);
+            // Find the maximum likelihood
+            if( newLikelihood > hmax ){
+              hmax = newLikelihood;
+              xmax = xi+1; // Lua index
+              ymax = yi+1; // Lua index
+              thmax = pthi+1; // Lua index
+            }
+            THTensor_fastSet3d(likelihoods_t,xi,yi,pthi,newLikelihood);
+            //			fprintf(stdout,"Setting values...\n");
+            //THTensor_fastSet3d(likelihoods_t,xi,yi,pthi,22);
           }
         }
       }
     }
-	//luaT_pushudata(L, likelihoods_t, "torch.FloatTensor");
-	//return 1;
-		lua_pushnumber(L,hmax);
-		lua_pushinteger(L,xmax);
-		lua_pushinteger(L,ymax);
-		lua_pushinteger(L,thmax);
-		return 4;
-	//lua_pushlightuserdata(L, likelihoods);
+    //luaT_pushudata(L, likelihoods_t, "torch.FloatTensor");
+    //return 1;
+    lua_pushnumber(L,hmax);
+    lua_pushinteger(L,xmax);
+    lua_pushinteger(L,ymax);
+    lua_pushinteger(L,thmax);
+    return 4;
+    //lua_pushlightuserdata(L, likelihoods);
     //lua_pushstring(L, "double");
     //lua_pushinteger(L, npths*npxs*npys);
     //return 3;
   }
   else {
     luaL_error(L ,"unknown command");
-		return 0;
-	}
+    return 0;
+  }
 }
 

@@ -15,14 +15,15 @@ require 'cutil'
 -- Data Type specific
 local dataPath = '~/shadwell/day2_third/logs/';
 local dataStamp = '02.27.2013';
+local dataTypes = {'lidar','arduimu','uvc'}
 local dataTypes = {'lidar','arduimu'}
---local dataTypes = {'lidar'}
 local realtime = true;
 require 'rcm'
 if realtime then
   require 'unix'
 end
 
+-- Get the list of log files
 function get_log_file_list()
   local log_file_list_iter = {};
   for i=1,#dataTypes do
@@ -34,8 +35,8 @@ function get_log_file_list()
   return log_file_list_iter;
 end
 
-
 -- Parse the name from a lidar entry
+-- Lua log specific
 function parse_name(namestr)
   local name = {}
   name.str = namestr:sub(1,namestr:find("%p")-1);
@@ -49,6 +50,7 @@ function parse_name(namestr)
 end
 
 -- Parse the data
+-- Specific to each dataType
 local parsers_tbl = {}
 parsers_tbl[1] = function ( str )
   local lidar_data = serialization.deserialize( str );
@@ -71,11 +73,7 @@ parsers_tbl[1] = function ( str )
 end
 -- IMU Parser
 parsers_tbl[2] = function ( str )
-  local imu_data = serialization.deserialize( str );
-  local imu_tbl = {};
-  -- Store the timestamp of the data
-  imu_tbl.t = imu_data.t;
-  return imu_tbl;
+  return serialization.deserialize( str );
 end
 
 local pushers_tbl = {}
@@ -85,6 +83,10 @@ pushers_tbl[1] = function ( lidar_tbl )
   rcm.set_lidar_counter(lidar_tbl.counter);
 end
 pushers_tbl[2] = function ( imu_tbl )
+  rcm.set_imu_timestamp( imu_tbl.t );
+  rcm.set_imu_acc( {imu_tbl.Ax, imu_tbl.Ay, imu_tbl.Az} );
+  rcm.set_imu_gyro( {imu_tbl.Wx, imu_tbl.Wy, imu_tbl.Wz} );
+  rcm.set_imu_rpy( {imu_tbl.R, imu_tbl.P, imu_tbl.Y} );
 end
 
 function open_log_file( d )
@@ -164,6 +166,8 @@ while true do
   local t_diff = min_ts - (last_ts or min_ts);
   last_ts = min_ts;
 
+  -- Specific to day2_third
+  -- TODO: generalize with table
   if( min_ts<1361997212.4557 ) then
     realtime = false;
   else

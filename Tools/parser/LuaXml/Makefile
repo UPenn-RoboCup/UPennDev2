@@ -1,50 +1,33 @@
-# 2009-03-16 by gf
+# Makefile used to build libraries
+include ../../../Lib/Makefile.inc
 
-# generic compiler and linker settings:
-CC     = gcc
-INCDIR = -I../lua/src
-LIB    = 
-LIBDIR =  -L. -L../lua/src
-CFLAGS = -Os -Wall -c #-g
+TARGETS = all clean
+.PHONY: $(TARGETS)
 
-# generic platform specific rules:
-ARCH            = $(shell uname -s)
-ifeq ($(ARCH),Linux)
-  CFLAGS += -fPIC
-  LFLAGS =  -fPIC -shared
-  LIBS          = $(LIBDIR) $(LIB) -llua5.1 -ldl
-  EXESUFFIX =
-  SHLIBSUFFIX = .so
+all: LuaXML_lib
 
-else  
-  ifeq ($(ARCH),Darwin) # MacOSX
-    LFLAGS = -bundle 
-    LIBS          = $(LIBDIR) -L/usr/local/lib $(LIB) -llua
-    EXESUFFIX = .app
-    SHLIBSUFFIX = .so
-    
-  else  # windows, MinGW
-    LFLAGS =  -shared
-    LIBS          = $(LIBDIR) $(LIB) -llua51 -mconsole -s
-    EXESUFFIX = .exe
-    SHLIBSUFFIX = .dll
-
-  endif
+ifndef OSTYPE
+  OSTYPE = $(shell uname -s|awk '{print tolower($$0)}')
 endif
 
-# project specific targets:
-all:  LuaXML_lib$(SHLIBSUFFIX)
+ifeq ($(OSTYPE),darwin)
+LIB_DIR=-F/usr/local/lib -framework QtCore -framework QtXml \
+					-macosx_version_min 10.6 \
+					-lm
+else
+LIB_DIR=-lm
+endif
 
-# project specific link rules:
-LuaXML_lib$(SHLIBSUFFIX): LuaXML_lib.o
-	$(CC) -o $@ $(LFLAGS) $^ $(LIBS) 
 
-# project specific dependencies:
-LuaXML_lib.o:  LuaXML_lib.c
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) $(INCLUDE) -o $@ -c $<
+%.o: %.cc
+	$(CXX) $(CXXFLAGS) $(INCLUDE) -o $@ -c $<
+%.o: %.c
+	$(CC) $(CXXFLAGS) $(INCLUDE) -o $@ -c $<
 
-# generic rules and targets:
-.c.o:
-	$(CC) $(CFLAGS) $(INCDIR) -c $<
+LuaXML_lib: LuaXML_lib.o
+	$(LD) $(LDFLAGS) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ -lm
+
 clean:
-	rm -f *.o *~ LuaXML_lib.so LuaXML_lib.dll
-
+	rm -f *.$(SHLIBEXT) *.o

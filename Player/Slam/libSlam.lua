@@ -47,8 +47,20 @@ local SLAM = {}
 SLAM.xOdom = 0
 SLAM.yOdom = 0
 SLAM.yawOdom = 0
-SLAM.lidar0Cntr = 20;
+SLAM.lidar0Cntr = 0;
 libSlam.SLAM = SLAM;
+
+-- Set the resolution for our C program
+Slam.ScanMatch2D( 'setResolution', MAPS.res );
+Slam.ScanMatch2D( 'setBoundaries', OMAP.xmin, OMAP.ymin, OMAP.xmax, OMAP.ymax );
+
+-- xs, ys
+--xs = torch.FloatTensor(Sensors.LIDAR0.nRays)
+--ys = torch.FloatTensor(Sensors.LIDAR0.nRays)
+X = torch.FloatTensor(4,Sensors.LIDAR0.nRays):fill(0)
+Y = torch.FloatTensor(4,Sensors.LIDAR0.nRays):fill(0)
+W = torch.FloatTensor(4,Sensors.LIDAR0.nRays):fill(0)
+--print("Contiguous",xs:isContiguous(),ys:isContiguous())
 
 -- Number of yaw positions to check
 nyaw1 = 15;
@@ -72,6 +84,8 @@ yawRange1 = math.floor(nyaw1/2);
 xRange1   = math.floor(nxs1/2);
 yRange1   = math.floor(nys1/2);
 
+-- Instantiate to be big enough if all lidar hits are considered
+
 -- create the candidate locations in each dimension
 xCand1 = torch.range(-xRange1,xRange1)
 yCand1 = torch.range(-yRange1,yRange1)
@@ -82,15 +96,15 @@ hits = torch.DoubleTensor(
 
 -- Process lidar readings as the come in
 local function processL0()
+	SLAM.lidar0Cntr = SLAM.lidar0Cntr + 1
 	local ranges = Sensors.LIDAR0.ranges
   local nranges = Sensors.LIDAR0.nRays
-  -- Put lidar readings into relative cartesian coordinate
-  --print( 'Ranges sz:\t', ranges:size() )
-  --print( 'Cosines sz:\t', LIDAR0.cosines:size() )
-  xs = ranges:clone()
-	xs:cmul( Sensors.LIDAR0.cosines )
-  ys = ranges:clone()
-	ys:cmul( Sensors.LIDAR0.sines )
+	X:resize(4,nranges)
+	xs = X:select(1,1);
+	ys = X:select(1,2);
+	-- Put lidar readings into relative cartesian coordinate
+	xs:copy(ranges):cmul( Sensors.LIDAR0.cosines )
+	ys:copy(ranges):cmul( Sensors.LIDAR0.sines )
 
   -- Accept only ranges that are sufficiently far away
   --dranges = [0; diff(ranges)];
@@ -109,32 +123,27 @@ local function processL0()
 
   -- Resize to include just the good readings
   nranges = good_cnt;
-  --print('Good returns:',nranges)
-  xs:resize(nranges)
-  ys:resize(nranges)
+	-- No good returns!
+	if nranges==0 then
+		return
+	end
 
   -- Apply the transformation given current roll and pitch
-  T = torch.mm(libSlam.roty(Sensors.IMU.pitch),libSlam.rotx(Sensors.IMU.roll)):t();
+	-- TODO: check if transpose...
+  T = torch.mm(libSlam.roty(Sensors.IMU.pitch),libSlam.rotx(Sensors.IMU.roll));
   --T = torch.eye(4);
   --X = [xsg ysg zsg onesg];
-  -- TODO: for memory efficiency, this Tensor should be 
-  -- declared up top, and "views" should just be manipulated as
-  -- xs, ys, zs.  Look at the memory allocation, so it's 
-  -- just [<---xs---><---ys---><---zs--->]
-  X = torch.Tensor(nranges,4)
-  X:select(2,1):copy(xs)
-  X:select(2,2):copy(ys)
-  X:select(2,3):fill(0)
-  X:select(2,4):fill(1);
-  Y=torch.mm(X,T);  --reverse the order because of transpose
-	-- TODO: Don't make Y as a new memory place - do inplace 
-	-- multiply and store to X
-
+	X:resize(4,nranges)
+	Y:resize(4,nranges)
+  X:select(1,3):fill(0); -- z
+  X:select(1,4):fill(1); -- extra
+  Y:mm(T,X);  --reverse the order because of transpose
+	xs = Y:select(1,1);
+	ys = Y:select(1,2);
+	zs = Y:select(1,3);
+	
   -- Do not use the points that supposedly hit the ground (check!!)
   -- TODO: Make fast masking!
-  xs = Y:select(2,1);
-  ys = Y:select(2,2);
-  zs = Y:select(2,3);
   local good_cnt = 0;
   for i=1,nranges do
     if zs[i]>-0.3 then
@@ -145,16 +154,13 @@ local function processL0()
     end
   end
   nranges = good_cnt;
-  -- print('Good returns above floor:',nranges)
 	
-	-- TODO: This seems wrong!
-  Y:resize(nranges,4)
-  -- Reset the views
-  xs = Y:select(2,1);
-  ys = Y:select(2,2);
-  zs = Y:select(2,3);
-  --gnuplot.figure(2)
-  --gnuplot.plot('Ranges',xs,ys,'+')
+	-- Reset the views
+	X:resize(4,nranges)
+  Y:resize(4,nranges)
+	xs = Y:select(1,1);
+	ys = Y:select(1,2);
+	zs = Y:select(1,3);
 
   -- These are now the default cartesian points
   --LIDAR0.xs = xs;
@@ -172,11 +178,12 @@ local function processL0()
 
     -- Perform the scan matching
     -- TODO
-		libSlam.scanMatchOne( xs, ys );
+		local hmax = libSlam.scanMatchOne();
+		print( "hmax", hmax )
 --    slamScanMatchPass2();
 
     -- If no good fits, then use pure odometry readings
-    local hmax = 1000;
+    hmax = 1000;
     if hmax < 500 then
       SLAM.x = SLAM.xOdom;
       SLAM.y = SLAM.yOdom;
@@ -205,7 +212,7 @@ local function processL0()
   --]]
   -- Log some data
   --[[
-  if (POSES.log)
+  if (POSES.log) then
   POSES.cntr = POSES.cntr + 1;
   POSES.data(:,POSES.cntr) = [SLAM.x; SLAM.y; SLAM.z; IMU.data.roll; IMU.data.pitch; SLAM.yaw];
   POSES.ts(POSES.cntr) = LIDAR0.scan.startTime;
@@ -229,26 +236,18 @@ local function processL0()
     libSlam.trans( {SLAM.x, SLAM.y, SLAM.z} ),
     libSlam.rotz(SLAM.yaw) 
     )
+		-- TODO: determine transpose
   T = torch.mm( 
     tmp, 
     libSlam.trans( {Sensors.LIDAR0.offsetx, Sensors.LIDAR0.offsety, Sensors.LIDAR0.offsetz}) 
-  ):t()
+  )
   
-  -- X = [xsss ysss zsss onez];
-  -- TODO: for memory efficiency, this Tensor should be 
-  -- declared up top, and "views" should just be manipulated as
-  -- xs, ys, zs.  Look at the memory allocation, so it's 
-  -- just [<---xs---><---ys---><---zs--->]
-  X = torch.Tensor(nranges,4)
-  X:select(2,1):copy(xs)
-  X:select(2,2):copy(ys)
-  X:select(2,3):copy(zs)
-  X:select(2,4):fill(1);
-  Y=torch.mm(X,T);  --reverse the order because of transpose
-
+  -- W = [xsss ysss zsss onez];
+	W:resize(4,nranges)
+  W = torch.mm(T,Y);  --reverse the order because of transpose
   -- Separate cartesian coordinates
-  xs = Y:select(2,1);
-  ys = Y:select(2,2);
+  xs = W:select(1,1);
+  ys = W:select(1,2);
 
   -- Convert each cartesian point to a map index
   xis = (xs - OMAP.xmin) * OMAP.invRes;
@@ -265,17 +264,13 @@ local function processL0()
     inc=100;
   end
   --]]
---  gnuplot.figure(3)
---  gnuplot.imagesc( OMAP.data,'color')
+
   for i=1,nranges do
-    --print('Evaluating ',xis[i],yis[i])
     if xis[i]>1 and yis[i]>1 and xis[i]<OMAP.sizex and yis[i]<OMAP.sizey then
       OMAP.data[ xis[i] ][ yis[i] ] = OMAP.data[ xis[i] ][ yis[i] ] + inc;
     end
   end
 	OMAP.timestamp = unix.time();
-  --gnuplot.figure(4)
-  --gnuplot.imagesc( OMAP.data,'color')
 
   -- TODO
   -- Decay the map around the robot
@@ -351,25 +346,28 @@ local function processL0()
 end
 libSlam.processL0 = processL0
 
-local function scanMatchOne( xs, ys )
+local function scanMatchOne()
+	xs = Y:select(1,1);
+	ys = Y:select(1,2);
+	zs = Y:select(1,3);
   --tEncoders = ENCODERS.counts.t;
-  tLidar0   = Sensors.LIDAR0.startTime;
+  tLidar0 = Sensors.LIDAR0.startTime;
 	xCand1:range(-xRange1,xRange1):mul(dx1):add(SLAM.xOdom);
 	yCand1:range(-yRange1,yRange1):mul(dy1):add(SLAM.yOdom);
 	aCand1:range(-yawRange1,yawRange1):mul(dyaw1):add(SLAM.yawOdom); -- + IMU.data.wyaw*0.025;
   hits:zero()
-		
   local hmax, xmax, ymax, thmax = Slam.ScanMatch2D('match',
   OMAP.data,
-  xs, ys,
+  Y, -- Transformed points
   xCand1,yCand1,aCand1,
   hits
   );
+	--if true then return hmax end
 
   -- TODO: unfold to mean the 1:2:end syntax?
   -- NOTE: xs should be xsss(1:2:end) (same for ys)
 
-  if (SLAM.lidar0Cntr > 1) then
+  if SLAM.lidar0Cntr > 1 then
 
     -- Create a grid of distance-based costs from each cell to odometry pose
     --yGrid1, xGrid1 = meshgrid( yCand1, xCand1 );
@@ -379,15 +377,10 @@ local function scanMatchOne( xs, ys )
     minIndX, indx = torch.min( xCand1:add(-SLAM.xOdom):abs(), 1 );
     minIndY, indy = torch.min( yCand1:add(-SLAM.yOdom):abs(), 1 );
 		
---print( indx[1], minIndX[1], indy[1], minIndY[1] )
-
     -- How valuable is the odometry preidiction?
     -- Should make a gaussian depression around this point...
     -- Extract the 2D slice of xy poses at the best angle to be the cost map
     local costGrid1 = hits:select(3,thmax):mul(-1)
---	print( "costGrid:",costGrid1:nDimension(), costGrid1:size()[1], costGrid1:size()[2]  )
---	print(indx,indx)
-		
     costGrid1[indx[1]][indy[1]] = costGrid1[indx[1]][indy[1]] - 500; --  - 2e4;
     -- Find the minimum and save the new pose
     cmin, cimin = torch.min( costGrid1:resize( costGrid1:nElement() ) );
@@ -397,9 +390,9 @@ local function scanMatchOne( xs, ys )
     SLAM.x   = xCand1[cimin];
     SLAM.y   = yCand1[cimin];
   else
-    xStart, yStart, thStart = FindStartPose(SLAM.x, SLAM.y, SLAM.yaw, xsss,ysss);
+		-- TODO: add this function
+    --xStart, yStart, thStart = FindStartPose(SLAM.x, SLAM.y, SLAM.yaw, xsss,ysss);
 
-    --if not isempty(xStart) then
     if xStart then
       SLAM.x = xStart;
       SLAM.Y = yStart;
@@ -410,6 +403,7 @@ local function scanMatchOne( xs, ys )
     end
 
   end
+	return hmax
 end
 libSlam.scanMatchOne = scanMatchOne
 

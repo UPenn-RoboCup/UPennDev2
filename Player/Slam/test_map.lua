@@ -58,6 +58,7 @@ local t_last = t;
 local map_rate = 15; --15Hz
 local map_t = 1/(map_rate)
 local channel_timeout = 2*map_t*1e3; -- milliseconds, or just wait (-1)
+t_last_lidar = Sensors.LIDAR0.timestamp;
 while true do
 
   local nevents, event_ids = channel_poll:wait_on_any(channel_timeout)
@@ -67,12 +68,14 @@ while true do
 		for i=1,#event_ids do
 			wait_channels[ event_ids[i] ]:callback()
 		end
+		-- Process upon receiving data
+		if Sensors.LIDAR0.timestamp > t_last_lidar then
+			t_last_lidar = Sensors.LIDAR0.timestamp
+			libSlam.processL0()
+		end
   end
-
-  -- Process the first LIDAR
-  --libSlam.processL0()
 	
-  -- Send the map a few times per second
+  -- Send the map at set intervals
   t = unix.time()
   if t-t_last>map_t then
     t_last = t;

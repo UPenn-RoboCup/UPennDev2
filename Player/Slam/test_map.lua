@@ -58,7 +58,7 @@ local t_last = t;
 local map_rate = 15; --15Hz
 local map_t = 1/(map_rate)
 local channel_timeout = 2*map_t*1e3; -- milliseconds, or just wait (-1)
-t_last_lidar = Sensors.LIDAR0.timestamp;
+local t_last_lidar = Sensors.LIDAR0.timestamp;
 while true do
 
   local nevents, event_ids = channel_poll:wait_on_any(channel_timeout)

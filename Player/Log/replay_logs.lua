@@ -180,6 +180,7 @@ while true do
   end
 
   -- If we wish to run in realtime, then sleep accordingly
+		-- Only push data when running in realtime
   if realtime then
     unix.usleep( 1e6*t_diff );
 		pushers_tbl[d_idx]( latest_entry_tbls[d_idx] )

@@ -51,23 +51,20 @@ int lua_ScanMatch2D(lua_State *L) {
     xmax = luaL_checknumber(L, 4);
     ymax = luaL_checknumber(L, 5);
     fprintf(stdout,"ScanMatch2D: set the boundaries\n");
-    return 1;
+    return 0;
   }
 
   if (strcasecmp(command, "setSensorOffsets") == 0) 
   {
     if (lua_isnoneornil(L, 2))
       luaL_error(L, "please provide sensor xyz offsets as second argument");
+    
+    sensorOffsetX = luaL_checknumber(L, 2);
+    sensorOffsetY = luaL_checknumber(L, 3);
+    sensorOffsetZ = luaL_checknumber(L, 4);
 
-    double * offsets = (double *)lua_touserdata(L, 2);
-    if ((offsets == NULL) || !lua_islightuserdata(L, 2)) {
-      return luaL_error(L, "Input offsets not light user data");
-    }
-    sensorOffsetX = offsets[0];
-    sensorOffsetY = offsets[1];
-    sensorOffsetZ = offsets[2];
     fprintf(stdout,"ScanMatch2D: set sensor offsets\n");
-    return 1;
+    return 0;
   }
 
   if (strcasecmp(command, "match") == 0) 

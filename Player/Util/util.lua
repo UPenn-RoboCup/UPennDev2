@@ -1,6 +1,6 @@
 module(..., package.seeall);
 
-local vector = require('vector');
+vector = require('vector');
 
 function tablesize(table)
   local count = 0
@@ -18,7 +18,6 @@ function tablesize(table)
   for _ in pairs(table) do count = count + 1 end
   return count 
 end
-
 
 function mod_angle(a)
   if a==nil then return nil end
@@ -359,4 +358,3 @@ function LoadConfig(params, platform)
     loadconfig(file_name)
   end
 end
-

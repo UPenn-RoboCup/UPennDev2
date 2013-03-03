@@ -21,6 +21,7 @@ initDraw = function(self, state)
   end
 
   loadImageffi(fullfilename)
+--  loadIndexImg(fullfilename)
 --  loadImage(fullfilename)
   window.widget.pixmapitem:setPixmap(window.widget.pimage)
   self:fitInView(0, 0, 640, 480, Qt.IgnoreAspectRatio)
@@ -46,7 +47,8 @@ updateDraw = function(self, state)
     end
   end
 --  loadImage(currentFile)
-  loadImageffi(currentFile)
+--  loadImageffi(currentFile)
+  loadIndexImg(currentFile)
   window.widget.pixmapitem:setPixmap(window.widget.pimage)
 
   self:update(0,0,640,480)

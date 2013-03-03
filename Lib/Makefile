@@ -109,6 +109,11 @@ webots_thorop:
 	@cd $(WEBOTSTHOROPDIR) && make && cd $(CWD)
 	@echo "\n"
 
+webots_atlas:
+	@echo "Compiling Webots Atlas Lua/C++ Libraries...\n"
+	@cd $(WEBOTSATLASDIR) && make && cd $(CWD)
+	@echo "\n"
+
 visiontest:
 	@echo "Compiling Vision Test Lua/C++ Libraries...\n"
 	@cd $(VISIONTESTDIR) && make && cd $(CWD)
@@ -243,6 +248,14 @@ setup_webots_thorop: webots_thorop setup_util setup_image setup_webots
 	find $(WEBOTSTHOROPDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
 	rm -f $(PLAYERDIR)/Config/Config.lua
 	cd $(PLAYERDIR)/Config && ln -s Config_WebotsTHOROP.lua Config.lua && cd $(CWD)
+	@echo "\n"
+
+setup_webots_atlas: webots_atlas setup_util setup_image setup_webots
+	@echo "Setting up Webots Lua/C++ Libraries...\n"
+	mkdir -p $(INSTDIR)
+	find $(WEBOTSATLASDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
+	rm -f $(PLAYERDIR)/Config/Config.lua
+	cd $(PLAYERDIR)/Config && ln -s Config_WebotsAtlas.lua Config.lua && cd $(CWD)
 	@echo "\n"
 
 setup_visiontest: visiontest setup_util setup_image 

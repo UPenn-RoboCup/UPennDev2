@@ -6,15 +6,16 @@
 local vcglib = require 'vcglib'
 
 --local datapath = '/home/yida/drcsim/ros/atlas_description/gazebo/atlas/meshes/' 
-local datapath = 'powerplant/meshes/' 
---local filename = datapath..'head.stl' 
+--local datapath = 'powerplant/meshes/' 
+local datapath = '' 
+local filename = datapath..'head.stl' 
 --local filename = datapath..'model.sdf' 
-local filename = datapath..'powerplant.dae' 
+--local filename = datapath..'powerplant.stl' 
 
 local drcsimPath = '../../../drcsim'
 
---vcglib.stl2vrml(filename)
-vcglib.dae2vrml(filename)
+vcglib.stl2vrml(filename)
+--vcglib.dae2vrml(filename)
 --vcglib.sdf2vrml(filename)
 
 -- gazebo_model

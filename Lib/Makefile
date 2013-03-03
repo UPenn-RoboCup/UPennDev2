@@ -129,7 +129,7 @@ image:
 	@cd $(IMAGEDIR) && make && cd $(CWD)
 	@echo "\n"
 
-comm::
+comm:
 	@echo "Compiling Communication Lua/C++ Libraries...\n"
 	@cd $(COMMDIR) && make && cd $(CWD)
 	@echo "\n"
@@ -144,22 +144,22 @@ serial:
 	@cd $(SERIALDIR) && make && cd $(CWD)
 	@echo "\n"
 
-SlamT::
+SlamT:
 	@echo "Compiling Slam Torch/Lua/C++ Libraries...\n"
 	cd Modules/$@ && make && cd $(CWD)
 	@echo "\n"
 
-occmap::
+occmap:
 	@echo "Compiling OccupancyMap Lua/C++ Libraries...\n"
 	@cd $(OCCMAPDIR) && make && cd $(CWD)
 	@echo "\n"
 
-util::
+util:
 	@echo "Compiling Utility Lua/C++ Libraries...\n"
 	@cd $(UTILDIR) && make && cd $(CWD)
 	@echo "\n"
 
-velocity::
+velocity:
 	@echo "Compiling Velocity Code...\n"
 	@cd $(VELODIR) && make && cd $(CWD)
 	@echo "\n"
@@ -169,7 +169,7 @@ primesense:
 	@cd $(PRIMEDIR) && make && cd $(CWD)
 	@echo "\n"
 
-hands::
+hands:
 	@echo "Compiling Hands Code...\n"
 	@cd $(HANDSDIR) && make && cd $(CWD)
 	@echo "\n"

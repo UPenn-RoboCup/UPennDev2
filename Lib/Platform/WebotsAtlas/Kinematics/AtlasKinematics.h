@@ -43,12 +43,13 @@ const double hipOffsetZ = 0.050 + 0.265; //265mm offset to match THOR-OP
 const double thighLength = 0.374;
 const double tibiaLength = 0.422;
 const double footHeight = 0.080;//calculated from webots model
-const double kneeOffsetX = 0.0;
+const double kneeOffsetX1 = 0.050;
+const double kneeOffsetX2 = 0.0;
 
-const double dThigh = sqrt(thighLength*thighLength+kneeOffsetX*kneeOffsetX);
-const double aThigh = atan(kneeOffsetX/thighLength);
-const double dTibia = sqrt(tibiaLength*tibiaLength+kneeOffsetX*kneeOffsetX);
-const double aTibia = atan(kneeOffsetX/tibiaLength);
+const double dThigh = sqrt(thighLength*thighLength+kneeOffsetX1*kneeOffsetX1);
+const double aThigh = atan(kneeOffsetX1/thighLength);
+const double dTibia = sqrt(tibiaLength*tibiaLength+kneeOffsetX2*kneeOffsetX2);
+const double aTibia = atan(kneeOffsetX2/tibiaLength);
 
 const double dUpperArm = sqrt(upperArmLength*upperArmLength+elbowOffsetX*elbowOffsetX);
 const double dLowerArm = sqrt(lowerArmLength*lowerArmLength+elbowOffsetX*elbowOffsetX);

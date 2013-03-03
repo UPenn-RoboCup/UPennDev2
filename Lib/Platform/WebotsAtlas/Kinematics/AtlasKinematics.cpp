@@ -90,7 +90,7 @@ Atlas_kinematics_forward_r_arm(const double *q)
 Atlas_kinematics_forward_l_leg(const double *q)
 {
   Transform t;
-  t = t.translateY(hipOffsetY).translateZ(-hipOffsetZ)
+  t = t.translateX(-hipOffsetX).translateY(hipOffsetY).translateZ(-hipOffsetZ)
     .mDH(0, 0, PI/2+q[0], 0)
     .mDH(PI/2, 0, PI/2+q[1], 0)
     .mDH(PI/2, 0, aThigh+q[2], 0)
@@ -105,7 +105,7 @@ Atlas_kinematics_forward_l_leg(const double *q)
 Atlas_kinematics_forward_r_leg(const double *q)
 {
   Transform t;
-  t = t.translateY(-hipOffsetY).translateZ(-hipOffsetZ)
+  t = t.translateX(-hipOffsetX).translateY(-hipOffsetY).translateZ(-hipOffsetZ)
     .mDH(0, 0, PI/2+q[0], 0)
     .mDH(PI/2, 0, PI/2+q[1], 0)
     .mDH(PI/2, 0, aThigh+q[2], 0)

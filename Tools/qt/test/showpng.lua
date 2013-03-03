@@ -41,11 +41,15 @@ local new_window = function(...)
   piximage:convertFromImage(qimage, Qt.AutoColor)
   label:setPixmap(piximage)
 
+  rgb = {}
+  rgb['QVector<QRgb>'] = {0, 255, 0}
+  Q.udata(rgb)
+
   layout = QGridLayout.new()
   layout:addWidget(label, 1, 1)
   this:setLayout(layout)
 
-  libpng.save('image.png', img.w, img.h, img.data)
+--  libpng.save('image.png', img.w, img.h, img.data)
   
   return this
 end

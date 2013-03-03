@@ -49,10 +49,8 @@ end
 function rpc.client.new(endpoint, zmq_context)
   local o = {}
   o.request_id = 0
-  o.mode = 'strict'
   o.timeout = nil
   o.response = false
-  o.dictionary = {}
   o.return_values = {}
   o.return_status = false
   o.context = zmq_context
@@ -62,18 +60,6 @@ function rpc.client.new(endpoint, zmq_context)
   o.poller = zmq.ZMQ_Poller(1)
   o.poller:add(o.sock, zmq.POLLIN)
   return setmetatable(o, rpc.client)
-end
-
-function rpc.client.set_strict(o)
-  o.mode = 'strict'
-end 
-
-function rpc.client.set_lenient(o)
-  o.mode = 'lenient'
-end
-
-function rpc.client.set_lazy(o)
-  o.mode = 'lazy'
 end
 
 function rpc.client.set_timeout(o, seconds)
@@ -86,10 +72,6 @@ end
 
 function rpc.client.get_socket(o)
   return o.sock
-end
-
-function rpc.client.get_dictionary(o)
-  return o.dictionary
 end
 
 function rpc.client.get_request_id(o)
@@ -105,9 +87,7 @@ function rpc.client.connect(o, timeout)
     arguments = nil,
   }
   o.sock:send(cmsgpack.pack(rpc_request))
-  local return_status, dictionary = o:receive(timeout or o.timeout)
-  o.dictionary = return_status and dictionary or o.dictionary
-  return return_status
+  return o:receive(timeout or o.timeout)
 end
 
 function rpc.client.call(o, procedure_name, ...)
@@ -198,7 +178,7 @@ function rpc.server.generate_dictionary(o)
   o.dictionary = generate_dictionary()
 end
 
-function rpc.server.blacklist(o)
+function rpc.server.blacklist(o, regex)
   -- TODO purge blacklisted functions from dictionary
 end
 
@@ -212,6 +192,7 @@ function rpc.server.update(o)
 end
 
 function rpc.server.handle_rpc_request(o, msg)
+  -- TODO only allow calls to functions listed in dictionary
   local response
   local return_values
   local return_status
@@ -219,7 +200,7 @@ function rpc.server.handle_rpc_request(o, msg)
 
   if (success) then
     if (request.id == -1) then
-      return_values = {o:get_dictionary()}
+      return_values = {}
       return_status = true
     else
       local object = request.procedure:match('^([%a_%d%.]+):[%a_%d]+$')

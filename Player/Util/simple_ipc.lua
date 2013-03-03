@@ -109,7 +109,6 @@ end
 function simple_ipc.wait_on_channels( channels )
 	local poll_obj = {}
 	local poll_items = ffi.new('zmq_pollitem_t[?]',#channels)
-	--print(poll_items,#poll_items,ffi.sizeof(poll_items))
 	for i=1,#channels do
 		poll_items[i-1].socket = channels[i].socket_handle
 		poll_items[i-1].events = zmq.ZMQ_POLLIN;
@@ -118,7 +117,16 @@ function simple_ipc.wait_on_channels( channels )
 	poll_obj.nitems = #channels;
 	function poll_obj.wait_on_any( self, timeout )
 		local nevents = zmq.zmq_poll(self.poll_items, self.nitems, timeout);
-		return nevents
+		-- TODO: return which channels have been updated
+		event_ids = {}
+		if nevents>0 then
+			for i=1,self.nitems do
+				if poll_items[i-1].revents>0 then
+					table.insert(event_ids,i)
+				end
+			end
+		end
+		return nevents, event_ids
 	end
 	return poll_obj;
 end

@@ -1,5 +1,5 @@
 function monitor_cop
-  addpath(genpath('.'))
+  addpath(genpath('..'))
   startup
   pcm = shm('pcm');
   mcm = shm('mcm');

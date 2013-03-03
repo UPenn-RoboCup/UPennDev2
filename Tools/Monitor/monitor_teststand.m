@@ -1,4 +1,4 @@
-addpath(genpath('.'))
+addpath(genpath('..'))
 startup
 dcm = shm('dcm');
 

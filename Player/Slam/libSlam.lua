@@ -11,9 +11,11 @@ libSlam = {}
 
 -- Default SLAM Map values
 local MAPS = {}
+--MAPS.res        = .1;
 MAPS.res        = .05;
 MAPS.invRes     = 1/MAPS.res;
-MAPS.windowSize = 10; -- meters to see 
+--MAPS.windowSize = 10; -- meters to see 
+MAPS.windowSize = 15; -- meters to see 
 MAPS.edgeProx   = 2;
 MAPS.xmin       = 0 - MAPS.windowSize;
 MAPS.ymin       = 0 - MAPS.windowSize;

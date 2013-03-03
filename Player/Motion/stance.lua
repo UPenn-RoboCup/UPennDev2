@@ -133,10 +133,12 @@ function update()
   if (tol) then
     if tFinish==0 then
       tFinish=t;
+--[[
       Body.set_larm_command(qLArm);
       Body.set_rarm_command(qRArm);
       Body.set_larm_hardness(.1);
       Body.set_rarm_hardness(.1);
+--]]
     else
       if t-tFinish>tEndWait then
 	print("Stand done, time elapsed",t-tStart)

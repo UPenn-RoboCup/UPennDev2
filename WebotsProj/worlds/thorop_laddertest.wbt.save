@@ -1,0 +1,85 @@
+#VRML_SIM V6.0 utf8
+WorldInfo {
+  info [
+    "Qual-1 arena for DRC"
+  ]
+  title "Qual1"
+  basicTimeStep 15
+  displayRefresh 3
+}
+Viewpoint {
+  orientation -0.8 0.6 0 0.4
+  position 2 2 6
+}
+Background {
+  skyColor [
+    0.678431 0.847059 0.901961
+  ]
+}
+DirectionalLight {
+  ambientIntensity 1.6
+  direction -0.5 -2 -0.5
+  intensity 0.3
+  castShadows TRUE
+}
+DirectionalLight {
+  direction 0.5 -0.5 0.5
+  intensity 0.5
+}
+
+DEF FLOOR MetricFloor{
+  color 0.95 0.95 0.95
+  locked TRUE
+}
+
+THOROP {
+  translation 0 0.6 0
+  rotation -1 0 0 1.57
+  controller "darwin-op_team_0"
+  controllerArgs "0 26"
+}
+
+
+
+
+DEF GROUND Solid {
+  translation 0 1.0 1.5
+  children [
+    Shape {
+      appearance DEF GroundAppearance Appearance {
+        material Material {
+          diffuseColor 0.201961 0.201961 0.201961
+          emissiveColor 0.201961 0.201961 0.201961
+        }
+      }
+      geometry DEF GroundBox Box {size 4.0 0.1 2.0}
+    }
+  ]
+  boundingObject Transform {
+    translation 0 0 0
+    children [Box {size 4.0 0.1 2.0}]
+  }
+  locked TRUE
+}
+
+
+Solid {
+  children[
+    DEF UPRIGHT_SHAPE Shape {
+      appearance Appearance {
+        material Material {
+          ambientIntensity 0.4
+          diffuseColor 0.8 0.8 0.8
+          shininess 0.8
+          specularColor 1 1 1
+        }
+      }
+      geometry Cylinder {
+        radius 0.05
+        height 4.0
+      }
+
+
+
+}
+

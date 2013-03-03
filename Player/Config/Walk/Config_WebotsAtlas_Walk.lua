@@ -187,3 +187,31 @@ walk.velLimitY={-.20,.20};
 walk.velLimitA={-.3,.3};
 walk.velDelta={0.15,0.10,0.3} 
 walk.velXHigh = 0.30;
+
+
+
+--Atlas arm
+walk.qLArm = math.pi/180*vector.new({110, -40, 20, -40,0,0});
+walk.qRArm = math.pi/180*vector.new({110, 40, -20, -40,0,0});
+walk.supportX = 0.0;
+walk.footY = 0.10;
+walk.tZmp = 0.26;
+walk.supportY = 0.03;
+walk.supportX = 0.03;
+--walk.footX = 0.03;
+walk.torsoX = -walk.footX;
+
+
+--New atlas model (with correct masses)
+--Require finer timestep (heavier)
+	
+walk.tZmp = 0.31; 
+walk.supportY = 0.04;
+walk.supportX = 0.02;
+walk.velLimitX={-.10,.30};
+walk.stanceLimitX={-0.30 ,0.30};
+walk.velDelta={0.10,0.10,0.3} 
+walk.supportModYInitial=-0.05; 
+walk.supportY = 0.02;
+
+---------------------------------------

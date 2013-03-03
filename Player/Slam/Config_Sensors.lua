@@ -13,9 +13,9 @@ LIDAR0.angles  = torch.range(0,(LIDAR0.nRays-1)*LIDAR0.resd,LIDAR0.resd)
 LIDAR0.angles = (LIDAR0.angles - 135) * math.pi/180
 LIDAR0.cosines = torch.cos(LIDAR0.angles);
 LIDAR0.sines   = torch.sin(LIDAR0.angles);
-LIDAR0.offsetx = 0.137;
+LIDAR0.offsetx = 0;--0.137;
 LIDAR0.offsety = 0;
-LIDAR0.offsetz = 0.54;  --from the body origin (not floor)
+LIDAR0.offsetz = 0;--0.54;  --from the body origin (not floor)
 LIDAR0.mask    = torch.Tensor(LIDAR0.angles:size()):fill(1);
 -- Be very conservative to ensure no interpolated antenna obstacles
 --LIDAR0.mask(1:190) = 0;

@@ -101,9 +101,15 @@ stance.bodyHeightDive= 0.65;
 
 stance.bodyTiltStance=0*math.pi/180; --bodyInitial bodyTilt, 0 for webots
 stance.dpLimitStance = vector.new({.4, .3, .4, .05, .4, .1})*0.6;
-stance.dpLimitStance=vector.new({.04, .03, .07, .4, .4, .4});
-stance.dpLimitSit=vector.new({.1,.01,.06,.1,.3,.1})*2;
 stance.delay = 80; 
 
 
 walk.use_alternative_trajectory = 1;
+
+
+
+
+--For atlas
+stance.dpLimitStance= vector.new({.01, .01, .01, .4, .4, .4});
+stance.dpLimitSit=vector.new({.1,.01,.01,.1,.3,.1})*2;
+

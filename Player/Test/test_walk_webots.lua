@@ -212,13 +212,30 @@ function process_keyinput()
 
 end
 
+
+--ATLAS SPECIFIC ARM INITIALIZATION
+--Atlas prototype default arm 
+qLArmDefault = math.pi/180*vector.new({90,30,0,0,0,0});
+qRArmDefault = math.pi/180*vector.new({90,-30,0,0,0,0});
+arm_init_t0 = Body.get_time();
+arm_init_duration = 1.0;
+
+
 function update()
   Body.set_syncread_enable(0); --read from only head servos
-   
+
   -- Update the relevant engines
   Body.update();
 
-  Motion.update();
+  --Hack to initialize atlas arm
+  tPassed= Body.get_time() - arm_init_t0;
+  if tPassed < arm_init_duration and Config.platform.name=='WebotsAtlas' then
+    ph = tPassed / arm_init_duration;
+    Body.set_larm_command((1-ph)*qLArmDefault + Config.walk.qLArm*ph);
+    Body.set_rarm_command((1-ph)*qRArmDefault + Config.walk.qRArm*ph);    
+  else
+    Motion.update();
+  end
   
   -- Get a keypress
   process_keyinput();
@@ -228,34 +245,11 @@ local tDelay=0.002*1E6;
 local ncount = 100;
 local tUpdate = Body.get_time();
 
-
-
-
---ATLAS SPECIFIC ARM INITIALIZATION
---Atlas prototype default arm 
-qLArmDefault = math.pi/180*vector.new({90,0,0,0,0,0});
-qRArmDefault = math.pi/180*vector.new({90,0,0,0,0,0});
-arm_init_duration = 2.0;
-arm_init_t0 = Body.get_time();
-
-
-
-
-
 while 1 do
   count = count + 1;
-
-  --Hack to initialize atlas arm
-  tPassed= Body.get_time() - arm_init_t0;
-  if tPassed < arm_init_duration and Config.platform.name=='WebotsAtlas' then
-    ph = tPassed / arm_init_duration;
-    Body.set_larm_command((1-ph)*qLArmDefault + Config.walk.qLArm*ph);
-    Body.set_rarm_command((1-ph)*qRArmDefault + Config.walk.qRArm*ph);
-  end
   
   update();
   io.stdout:flush();
-
   -- Show FPS
 --[[
   local t = Body.get_time();
@@ -270,4 +264,3 @@ while 1 do
 --  unix.usleep(tDelay);
 
 end
-

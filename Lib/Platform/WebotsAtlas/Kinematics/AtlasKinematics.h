@@ -18,16 +18,29 @@ const double neckOffsetX = 0.165;
 const double neckOffsetZ = .090+.050+.289+.79 - .265;
 
 //From COM to 1st shoulder joint
-const double shoulderOffsetX = .024;
-const double shoulderOffsetY = .221;
-const double shoulderOffsetZ = .090+.050+.289 - .265;
-const double shoulderAngle = 30*PI/180;
+const double shoulderOffsetX1 = .024;
+const double shoulderOffsetY1 = .221;
+const double shoulderOffsetZ1 = .090+.050+.289 - .265;
+const double shoulderRollAngle = 60*PI/180;
 
 //From 1st shoulder joint to 2nd shoulder joint
 const double  scapulaOffsetY = .075;
 const double  scapulaOffsetZ = .036;
 
-const double upperArmLength = .306;
+//Projection point of the shoulder pitch joint
+const double shoulderOffsetX = shoulderOffsetX1;
+const double shoulderOffsetY = shoulderOffsetY1 + .03434;
+const double shoulderOffsetZ = shoulderOffsetZ1 + .05948;
+
+//Projected shoulder joint to shoulder Roll joint
+const double upperArmLength0 = .046951;
+
+//Actual length between shoulder Roll to elbow
+const double upperArmLength1 = .306;
+
+//Approximate upper arm (exact when shoulder Roll = 0)
+const double upperArmLength = upperArmLength1 + upperArmLength0;
+
 const double elbowOffsetX = .013;
 const double lowerArmLength = .246;
 

@@ -4,8 +4,8 @@ WorldInfo {
     "Qual-1 arena for DRC"
   ]
   title "Qual1"
-  basicTimeStep 15
-  displayRefresh 3
+  basicTimeStep 5
+  displayRefresh 8
 }
 Viewpoint {
   orientation -0.0706673 0.989579 0.125461 2.40813

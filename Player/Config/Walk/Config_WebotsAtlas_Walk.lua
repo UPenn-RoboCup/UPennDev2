@@ -35,6 +35,15 @@ kneel.armZ = 0.02;
 kneel.stepHeight = 0.20;
 kneel.armX = 0.21;
 
+
+--Atlas specific (longer limbs)
+kneel.armX = 0.40;
+kneel.legX = -0.445;
+
+
+
+
+
 kneel.torsoX = -(kneel.armX + kneel.legX)/2;
 
 --only used for kneel down 

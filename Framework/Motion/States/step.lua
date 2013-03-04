@@ -1,5 +1,5 @@
 require('Config')
 
-step = require(Config.platform.step)
+step = require(Config.motion.step.module)
 
 return step

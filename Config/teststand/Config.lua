@@ -9,12 +9,12 @@ function loadconfig(configName)
   end
 end
 
+loadconfig('Config_bias')
 loadconfig('Config_devices')
 loadconfig('Config_mechanics')
-loadconfig('Config_bias')
+loadconfig('Config_motion')
 
 Config.platform = {}
 Config.platform.name = 'teststand'
-Config.platform.keyframe_table = 'keyframe_table_teststand'
 
 return Config

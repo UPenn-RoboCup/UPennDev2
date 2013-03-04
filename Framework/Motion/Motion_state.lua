@@ -79,7 +79,7 @@ end
 
 function Motion_state:save_parameters(filepath)
   local f = assert(io.open(filepath,'w+'))
-  f:write('return '..serialization.serialize(self:get_parameters()))
+  f:write('return '..serialization.serialize(self:get_parameters(), 'pretty'))
   f:close()
 end
 

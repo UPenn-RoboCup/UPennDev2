@@ -1,5 +1,5 @@
 require('Config')
 
-walk = require(Config.platform.walk)
+walk = require(Config.motion.walk.module)
 
 return walk

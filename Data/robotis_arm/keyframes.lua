@@ -1,4 +1,4 @@
-keyframe_table = {}
+local keyframe_table = {}
 
 keyframe_table[1] = {
   name = "demo_start",

@@ -19,12 +19,6 @@ walk:set_joint_access(0, 'all')
 walk:set_joint_access(1, 'lowerbody')
 local dcm = walk.dcm
 
--- define velocity parameters
-walk.velocity              = vector.new{0, 0, 0}
-local velocity             = vector.new{0, 0, 0}
-local v_limits             = vector.new(Config.walk.v_limits or {1, 1, 1})
-local a_limits             = vector.new(Config.walk.a_limits or {1, 1, 1})
-
 -- define default parameters
 walk.parameters = {
   x_offset                 = 0.025, -- meters
@@ -48,8 +42,8 @@ walk.parameters = {
 }
 
 -- load config parameters
-for k,v in pairs(walk.parameters) do
-   walk.parameters[k] = Config.walk.parameters[k] or v
+if (Config.motion.walk and Config.motion.walk.parameters) then
+  walk:load_parameters(Config.motion.walk.parameters)
 end
 
 -- define local copies
@@ -80,7 +74,13 @@ local t0                   = Platform.get_time()
 local t                    = t0
 local q0                   = dcm:get_joint_position_sensor('legs')
 local gyro                 = vector.new{0, 0, 0}
-local gyro_limits          = vector.new(Config.walk.gyro_max or {5, 5, 5})
+local gyro_limits          = vector.new{5, 5, 5}
+
+-- define velocity parameters
+walk.velocity              = vector.new{0, 0, 0}
+local velocity             = vector.new{0, 0, 0}
+local v_limits             = vector.new{0.08, 0.08, 0.10}
+local a_limits             = vector.new{0.04, 0.04, 0.1}
 
 -- Private
 --------------------------------------------------------------------------

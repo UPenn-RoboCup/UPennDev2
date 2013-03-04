@@ -13,8 +13,11 @@ require('Config')
 require('keyframe')
 require('serialization')
 
-local keyframe_table_name = arg[1] or Config.platform.keyframe_table
-pcall(require, keyframe_table_name)
+local keyframe_file = arg[1] or Config.motion.keyframes
+local success, keyframe_table = pcall(dofile, keyframe_file)
+if (not success) then
+  keyframe_table = nil
+end
 
 local joint = Config.joint
 local page_no = 1
@@ -328,28 +331,11 @@ end
 
 function cmd_save(arg)
   local varg = parse_string_arguments(arg)
-  keyframe_table_name = varg[1] or keyframe_table_name 
-  local serialize = serialization.serialize
-  local f = assert(io.open('../Data/'..keyframe_table_name..'.lua','w+'))
-  f:write('keyframe_table = {}\n\n')
-  for i = 1,#keyframe_table do
-    local page = keyframe_table[i]
-    f:write(string.format('keyframe_table[%d] = {\n', i))
-    f:write(string.format('  name = "%s",\n', page.name))
-    f:write(string.format('  steps = {\n'))
-    for j = 1,#page.steps do
-      local step = page.steps[j]
-      f:write(string.format('    [%d] = {\n', j))
-      f:write(string.format('      joint_position = %s, \n',
-        serialize(step.joint_position)))
-      f:write(string.format('      duration = %f,\n', step.duration))
-      f:write(string.format('      pause = %f,\n', step.pause))
-      f:write(string.format('    },\n')) 
-    end
-    f:write(string.format('  }\n')) 
-    f:write(string.format('}\n\n')) 
+  if (varg[1]) then
+    keyframe_file = '../Data/'..Config.platform.name..'/'..varg[1]..'.lua'
   end
-  f:write('return keyframe_table')
+  local f = assert(io.open(keyframe_file, 'w+'))
+  f:write('return '..serialization.serialize(keyframe_table))
   f:close()
 end
 

@@ -28,7 +28,7 @@ local filewritevel=assert(io.open("write_filevel.txt","w"))
 local filewriteacc=assert(io.open("write_fileacc.txt","w"))
 local filewriteahrs=assert(io.open("write_fileahrs.txt","w"))
 
-if not string.match(Config.platform.name, 'Webots') then
+if not string.match(Config.platform.name, 'webots') then
   return
 end
 

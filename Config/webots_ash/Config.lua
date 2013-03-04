@@ -9,14 +9,14 @@ function loadconfig(configName)
   end
 end
 
-loadconfig('Config_WebotsASHLowerbody_Devices')
-loadconfig('Config_WebotsASHLowerbody_Mechanics')
-loadconfig('Config_WebotsASHLowerbody_Bias')
-loadconfig('Config_WebotsASHLowerbody_Walk')
+loadconfig('Config_devices')
+loadconfig('Config_mechanics')
+loadconfig('Config_bias')
+loadconfig('Config_walk')
 
 platform = {}
-platform.name = 'WebotsASHLowerbody'
-platform.keyframe_table = 'keyframe_table_ASH'
+platform.name = 'webots_ash'
+platform.keyframe_table = 'keyframe_table_ash'
 platform.walk = 'walk_osc'
 
 walk = getfenv()[platform.walk] or {}

@@ -9,14 +9,15 @@ function loadconfig(configName)
   end
 end
 
-loadconfig('Config_WebotsCharli_Devices')
-loadconfig('Config_WebotsCharli_Bias')
-loadconfig('Config_WebotsCharli_Walk')
+loadconfig('Config_devices')
+loadconfig('Config_mechanics')
+loadconfig('Config_bias')
+loadconfig('Config_walk')
 
 platform = {}
-platform.name = 'WebotsCharli'
-platform.keyframe_table = 'keyframe_table_Charli'
-platform.walk = 'walkZMP'
+platform.name = 'webots_ash_lowerbody'
+platform.keyframe_table = 'keyframe_table_webots_ash_lowerbody'
+platform.walk = 'walk_osc'
 
 walk = getfenv()[platform.walk] or {}
 walk.parameters = walk.parameters or {}

@@ -9,14 +9,14 @@ function loadconfig(configName)
   end
 end
 
-loadconfig('Config_ASH_Devices')
-loadconfig('Config_ASH_Mechanics')
-loadconfig('Config_ASH_Bias')
-loadconfig('Config_ASH_Walk')
+loadconfig('Config_devices')
+loadconfig('Config_mechanics')
+loadconfig('Config_bias')
+loadconfig('Config_walk')
 
 platform = {}
-platform.name = 'ASH'
-platform.keyframe_table = 'keyframe_table_ASH'
+platform.name = 'ash'
+platform.keyframe_table = 'keyframe_table_ash'
 platform.walk = 'walk_osc'
 
 walk = getfenv()[platform.walk] or {}

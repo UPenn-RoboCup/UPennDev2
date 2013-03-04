@@ -20,7 +20,7 @@ require('Proprioception')
 require('Platform')
 require('getch')
 
-if not string.match(Config.platform.name, 'Webots') then
+if not string.match(Config.platform.name, 'webots') then
   return
 end
 local joint = Config.joint

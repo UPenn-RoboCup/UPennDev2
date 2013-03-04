@@ -9,12 +9,12 @@ function loadconfig(configName)
   end
 end
 
-loadconfig('Config_Teststand_Devices')
-loadconfig('Config_Teststand_Mechanics')
-loadconfig('Config_Teststand_Bias')
+loadconfig('Config_devices')
+loadconfig('Config_mechanics')
+loadconfig('Config_bias')
 
 Config.platform = {}
-Config.platform.name = 'Teststand'
-Config.platform.keyframe_table = 'keyframe_table_Teststand'
+Config.platform.name = 'teststand'
+Config.platform.keyframe_table = 'keyframe_table_teststand'
 
 return Config

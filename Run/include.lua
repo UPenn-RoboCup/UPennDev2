@@ -29,8 +29,6 @@ local prefix = prefix or string.gsub(pwd, '/Run.*$', '')
 
 -- set path for lua modules 
 package.path = prefix.."/Config/?.lua;"..package.path
-package.path = prefix.."/Config/Motion/?.lua;"..package.path
-package.path = prefix.."/Config/Platform/?.lua;"..package.path
 package.path = prefix.."/Data/?.lua;"..package.path
 package.path = prefix.."/Framework/Comms/?.lua;"..package.path
 package.path = prefix.."/Framework/Cognition/Slam/?.lua;"..package.path

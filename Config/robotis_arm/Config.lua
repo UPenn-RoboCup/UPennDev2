@@ -9,13 +9,13 @@ function loadconfig(configName)
   end
 end
 
-loadconfig('Config_RobotisArm_Devices')
-loadconfig('Config_RobotisArm_Mechanics')
-loadconfig('Config_RobotisArm_Bias')
+loadconfig('Config_devices')
+loadconfig('Config_mechanics')
+loadconfig('Config_bias')
 
 platform = {}
-platform.name = 'RobotisArm'
-platform.keyframe_table = 'keyframe_table_RobotisArm'
+platform.name = 'robotis_arm'
+platform.keyframe_table = 'keyframe_table_robotis_arm'
 
 bias = bias or {}
 

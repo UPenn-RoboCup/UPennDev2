@@ -47,13 +47,22 @@ Atlas_kinematics_forward_head(const double *q)
     .rotateX(PI/2).rotateY(PI/2);
   return t;
 }
+
+
+
+//Approximate FK for 6-dof arm (pitch-roll-yaw-pitch-yaw-roll)
+//We assume that shoulder PRY joints are co-located
+//Atlas pitch joint is rotated by 60 degree
+
   Transform
 Atlas_kinematics_forward_l_arm(const double *q) 
 {
-//New FK for 6-dof arm (pitch-roll-yaw-pitch-yaw-roll)
   Transform t;
-  t = t.translateY(shoulderOffsetY)
+  t = t
+    .translateX(shoulderOffsetX)
+    .translateY(shoulderOffsetY)
     .translateZ(shoulderOffsetZ)
+    .rotateX(shoulderRollAngle) //Atlas specific
     .mDH(-PI/2, 0, q[0], 0)
     .mDH(PI/2, 0, PI/2+q[1], 0)
     .mDH(PI/2, 0, PI/2+q[2], upperArmLength)
@@ -66,13 +75,20 @@ Atlas_kinematics_forward_l_arm(const double *q)
   return t;
 }
 
+
+//Approximate FK for 6-dof arm (pitch-roll-yaw-pitch-yaw-roll)
+//We assume that shoulder PRY joints are co-located
+//Atlas pitch joint is rotated by 60 degree
+
   Transform
 Atlas_kinematics_forward_r_arm(const double *q) 
 {
-//New FK for 6-dof arm (pitch-roll-yaw-pitch-yaw-roll)
   Transform t;
-  t = t.translateY(-shoulderOffsetY)
+  t = t
+    .translateX(shoulderOffsetX)
+    .translateY(-shoulderOffsetY)
     .translateZ(shoulderOffsetZ)
+    .rotateX(-shoulderRollAngle) //Atlas specific
     .mDH(-PI/2, 0, q[0], 0)
     .mDH(PI/2, 0, PI/2+q[1], 0)
     .mDH(PI/2, 0, PI/2+q[2], upperArmLength)
@@ -150,16 +166,22 @@ Atlas_kinematics_inverse_arm(Transform trArm, int arm)
 
   //Getting rid of hand, shoulder offsets
   if (arm==ARM_LEFT){
-    t=t.translateZ(-shoulderOffsetZ)
+    t=t
+        .rotateX(-shoulderRollAngle) //Atlas specific
+	.translateZ(-shoulderOffsetZ)
 	.translateY(-shoulderOffsetY)
+	.translateX(-shoulderOffsetX)
 	*trArm
         .translateZ(-handOffsetZ)
         .translateY(handOffsetY)
 	.translateX(-handOffsetX);
   }else{
 
-    t=t.translateZ(-shoulderOffsetZ)
+    t=t
+        .rotateX(shoulderRollAngle) //Atlas specific
+	.translateZ(-shoulderOffsetZ)
 	.translateY(shoulderOffsetY)
+	.translateX(-shoulderOffsetX)
 	*trArm
         .translateZ(-handOffsetZ)
         .translateY(-handOffsetY)
@@ -430,7 +452,7 @@ Atlas_kinematics_inverse_arm(Transform trArm, int arm)
 
 
 
-//This function calcaulates IK for THOR-OP 6DOF arm
+//This function calcaulates IK for 6DOF arm
 //Given the wrist joint position and shoulder yaw angle
 //Main purpose:  quadruped locomotion
 
@@ -443,16 +465,20 @@ Atlas_kinematics_inverse_wrist(Transform trArm,
 
   //Getting rid of shoulder offsets
   if (arm==ARM_LEFT){
-    t=t.translateZ(-shoulderOffsetZ)
+    t=t
+        .rotateX(-shoulderRollAngle) //Atlas specific
+	.translateZ(-shoulderOffsetZ)
 	.translateY(-shoulderOffsetY)
+	.translateX(-shoulderOffsetX)
 	*trArm;
   }else{
-
-    t=t.translateZ(-shoulderOffsetZ)
+    t=t
+        .rotateX(shoulderRollAngle) //Atlas specific
+	.translateZ(-shoulderOffsetZ)
 	.translateY(shoulderOffsetY)
+	.translateX(-shoulderOffsetX)
 	*trArm;
   }
-
   double wPos[3]; 
   wPos[0]=t(0,3);
   wPos[1]=t(1,3);

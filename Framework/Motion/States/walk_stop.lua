@@ -1,4 +1,5 @@
 require('Motion_state')
+require('Config')
 
 --------------------------------------------------------------------------
 -- Walk Stop Controller
@@ -12,6 +13,11 @@ local dcm = walk_stop.dcm
 -- default parameters
 walk_stop.parameters = {
 }
+
+-- config parameters
+if (Config.motion.walk_stop and Config.motion.walk_stop.parameters) then
+  walk_stop:load_parameters(Config.motion.walk_stop.parameters)
+end
 
 function walk_stop:entry()
 end

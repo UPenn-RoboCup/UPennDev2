@@ -1,4 +1,5 @@
 require('Motion_state')
+require('Config')
 
 --------------------------------------------------------------------------
 -- Idle Controller
@@ -12,6 +13,11 @@ local dcm = idle.dcm
 -- default parameters
 idle.parameters = {
 }
+
+-- config parameters
+if (Config.motion.idle and Config.motion.idle.parameters) then
+  idle:load_parameters(Config.motion.idle.parameters)
+end
 
 function idle:entry()
 end

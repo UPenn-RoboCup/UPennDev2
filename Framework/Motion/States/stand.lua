@@ -1,4 +1,5 @@
 require('Motion_state')
+require('Config')
 
 --------------------------------------------------------------------------
 -- Stand Controller
@@ -12,6 +13,11 @@ local dcm = stand.dcm
 -- default parameters
 stand.parameters = {
 }
+
+-- config parameters
+if (Config.motion.stand and Config.motion.stand.parameters) then
+  stand:load_parameters(Config.motion.stand.parameters)
+end
 
 function stand:entry()
 end

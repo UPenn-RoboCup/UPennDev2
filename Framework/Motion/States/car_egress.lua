@@ -1,4 +1,5 @@
 require('Motion_state')
+require('Config')
 
 --------------------------------------------------------------------------
 -- Car Egress Controller
@@ -12,6 +13,11 @@ local dcm = car_egress.dcm
 -- default parameters
 car_egress.parameters = {
 }
+
+-- config parameters
+if (Config.motion.car_egress and Config.motion.car_egress.parameters) then
+  car_egress:load_parameters(Config.motion.car_egress.parameters)
+end
 
 function car_egress:entry()
 end

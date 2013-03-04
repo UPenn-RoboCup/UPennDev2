@@ -1,4 +1,5 @@
 require('Motion_state')
+require('Config')
 
 --------------------------------------------------------------------------
 -- Tele-Op Controller
@@ -12,6 +13,11 @@ local dcm = teleop.dcm
 -- default parameters
 teleop.parameters = {
 }
+
+-- config parameters
+if (Config.motion.teleop and Config.motion.teleop.parameters) then
+  teleop:load_parameters(Config.motion.teleop.parameters)
+end
 
 function teleop:entry()
 end

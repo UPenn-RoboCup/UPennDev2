@@ -1,4 +1,5 @@
 require('Motion_state')
+require('Config')
 
 --------------------------------------------------------------------------
 -- Get Up Controller
@@ -12,6 +13,11 @@ local dcm = get_up.dcm
 -- default parameters
 get_up.parameters = {
 }
+
+-- config parameters
+if (Config.motion.get_up and Config.motion.get_up.parameters) then
+  get_up:load_parameters(Config.motion.get_up.parameters)
+end
 
 function get_up:entry()
 end

@@ -1,4 +1,5 @@
 require('Motion_state')
+require('Config')
 
 --------------------------------------------------------------------------
 -- Locomotion Slave Controller
@@ -12,6 +13,11 @@ local dcm = locomotion_slave.dcm
 -- default parameters
 locomotion_slave.parameters = {
 }
+
+-- config parameters
+if (Config.motion.locomotion_slave and Config.motion.locomotion_slave.parameters) then
+  locomotion_slave:load_parameters(Config.motion.locomotion_slave.parameters)
+end
 
 function locomotion_slave:entry()
 end

@@ -1,4 +1,5 @@
 require('Motion_state')
+require('Config')
 
 --------------------------------------------------------------------------
 -- Look Controller
@@ -12,6 +13,11 @@ local dcm = look.dcm
 -- default parameters
 look.parameters = {
 }
+
+-- config parameters
+if (Config.motion.look and Config.motion.look.parameters) then
+  look:load_parameters(Config.motion.look.parameters)
+end
 
 function look:entry()
 end

@@ -1,4 +1,5 @@
 require('Motion_state')
+require('Config')
 
 --------------------------------------------------------------------------
 -- Climb On Controller
@@ -12,6 +13,11 @@ local dcm = climb_on.dcm
 -- default parameters
 climb_on.parameters = {
 }
+
+-- config parameters
+if (Config.motion.climb_on and Config.motion.climb_on.parameters) then
+  climb_on:load_parameters(Config.motion.climb_on.parameters)
+end
 
 function climb_on:entry()
 end

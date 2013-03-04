@@ -1,4 +1,5 @@
 require('Motion_state')
+require('Config')
 
 --------------------------------------------------------------------------
 -- Kneel Down Controller
@@ -12,6 +13,11 @@ local dcm = kneel_down.dcm
 -- default parameters
 kneel_down.parameters = {
 }
+
+-- config parameters
+if (Config.motion.kneel_down and Config.motion.kneel_down.parameters) then
+  kneel_down:load_parameters(Config.motion.kneel_down.parameters)
+end
 
 function kneel_down:entry()
 end

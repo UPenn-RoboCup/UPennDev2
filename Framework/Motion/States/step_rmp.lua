@@ -67,6 +67,11 @@ step.parameters = {
   nominal_rmp_state           = torso_rmp:get_state(),
 }
 
+-- config parameters
+if (Config.motion.step and Config.motion.step.parameters) then
+  step:load_parameters(Config.motion.step.parameters)
+end
+
 -- Private
 --------------------------------------------------------------------------------
 

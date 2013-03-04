@@ -1,4 +1,5 @@
 require('Motion_state')
+require('Config')
 
 --------------------------------------------------------------------------
 -- Stand Up Controller
@@ -12,6 +13,11 @@ local dcm = stand_up.dcm
 -- default parameters
 stand_up.parameters = {
 }
+
+-- config parameters
+if (Config.motion.stand_up and Config.motion.stand_up.parameters) then
+  stand_up:load_parameters(Config.motion.stand_up.parameters)
+end
 
 function stand_up:entry()
 end

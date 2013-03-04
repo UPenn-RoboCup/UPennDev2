@@ -1,4 +1,5 @@
 require('Motion_state')
+require('Config')
 
 --------------------------------------------------------------------------
 -- Step Recovery Controller
@@ -12,6 +13,11 @@ local dcm = step_recovery.dcm
 -- default parameters
 step_recovery.parameters = {
 }
+
+-- config parameters
+if (Config.motion.step_recovery and Config.motion.step_recovery.parameters) then
+  step_recovery:load_parameters(Config.motion.step_recovery.parameters)
+end
 
 function step_recovery:entry()
 end

@@ -1,7 +1,3 @@
-----------------------------------------------------------------------
--- ZMP Walking
-----------------------------------------------------------------------
-
 require('Platform')
 require('vector')
 require('Config')
@@ -9,13 +5,26 @@ require('Transform')
 require('Kinematics')
 require('Motion_state')
 
+----------------------------------------------------------------------
+-- ZMP Walking
+----------------------------------------------------------------------
+
 -- Setup 
 ----------------------------------------------------------------------
 walk = Motion_state.new('walk')
-local dcm = walk.dcm;
+walk:set_joint_access(0, 'all')
+walk:set_joint_access(1, 'lowerbody')
+local dcm = walk.dcm
 
+-- define default parameters
 walk.parameters = {
 }
+
+-- load config parameters
+if (Config.motion.walk and Config.motion.walk.parameters) then
+  walk:load_parameters(Config.motion.walk.parameters)
+end
+
 
 -- Gait Parameters
 ----------------------------------------------

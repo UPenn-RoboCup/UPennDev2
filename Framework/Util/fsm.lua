@@ -113,7 +113,7 @@ function set_state(self, nextState)
 end
 
 function get_state(self)
-  return self.currentState;
+  return self.currentState._NAME;
 end
 
 function get_current_state(self)
@@ -129,16 +129,12 @@ function entry(self)
 end
 
 function update(self)
-  local ret;
   local state = self.currentState;
 
   -- if no nextState update current state:
   if (not self.nextState) then
-    local ret = state:update();
     -- add ret from state to events:
-    if (ret) then
-      self.events[#self.events+1] = ret;
-    end
+    self.events[#self.events+1] = state:update();
 
     -- process events
     for i = 1,#self.events do
@@ -155,7 +151,9 @@ function update(self)
 
   -- check and enter next state
   if (self.nextState) then
-    state:exit();
+    self.events[#self.events+1] = state:exit();
+
+    local ret;
     if (self.nextAction) then
       ret = self.nextAction();
       self.nextAction = nil;
@@ -164,10 +162,9 @@ function update(self)
     self.previousState = self.currentState;
     self.currentState = self.nextState;
     self.nextState = nil;
-    self.currentState:entry();
+    self.events[#self.events+1] = self.currentState:entry();
+    return ret;
   end
-
-  return ret;
 end
 
 function exit(self)

@@ -12,6 +12,7 @@ require('Platform')
 require('curses')
 require('Config')
 require('Motion')
+require('Attention')
 require('Locomotion')
 require('Manipulation')
 require('Proprioception')
@@ -31,9 +32,10 @@ end
 Platform.entry()
 Proprioception.entry()
 Motion.entry()
+Motion.add_fsm(Attention)
 Motion.add_fsm(Locomotion)
 Motion.add_fsm(Manipulation)
-Locomotion:add_event('walk')
+Locomotion:add_event('stand')
 
 -- initialize screen
 curses.initscr()
@@ -59,7 +61,7 @@ while true do
 
   -- handle keystrokes
   local key = curses.getch()
-  if(key == string.byte('q')) then
+  if (key == string.byte('q')) then
     break
   end
 

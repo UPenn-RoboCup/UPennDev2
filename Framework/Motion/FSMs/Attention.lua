@@ -1,10 +1,13 @@
+require('look')
+require('Motion_fsm')
+
 ---------------------------------------------------------
 -- Attention State Machine 
 ---------------------------------------------------------
 
-require('null_state')
-require('Motion_fsm')
+Attention = Motion_fsm.new(look)
 
-Attention = Motion_fsm.new(null_state)
+Attention:set_joint_access(0, 'all')
+Attention:set_joint_access(1, 'head')
 
 return Attention

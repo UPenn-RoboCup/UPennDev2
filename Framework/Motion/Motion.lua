@@ -46,14 +46,12 @@ function Motion.check_joint_access()
 end
 
 function Motion.entry()
-  Motion.check_joint_access()
   for i,sm in ipairs(state_machines) do
     sm:entry()
   end
 end
 
 function Motion.update()
-  Motion.check_joint_access()
   for i,sm in ipairs(state_machines) do
     sm:update()
   end

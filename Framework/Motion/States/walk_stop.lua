@@ -1,5 +1,6 @@
 require('Motion_state')
 require('Config')
+require('walk')
 
 --------------------------------------------------------------------------
 -- Walk Stop Controller
@@ -20,12 +21,15 @@ if (Config.motion.walk_stop and Config.motion.walk_stop.parameters) then
 end
 
 function walk_stop:entry()
+  walk:stop()
 end
 
 function walk_stop:update()
+  return walk:update()
 end
 
 function walk_stop:exit()
+  walk:exit()
 end
 
 return walk_stop

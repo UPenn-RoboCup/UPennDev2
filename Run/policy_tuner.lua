@@ -1,28 +1,26 @@
 dofile('include.lua')
 
-----------------------------------------------------------------------
--- Walk Tuner
-----------------------------------------------------------------------
+--------------------------------------------------------------------------------
+-- Policy Tuner
+--------------------------------------------------------------------------------
 
+require('rpc')
 require('unix')
 require('util')
-require('Platform')
-require('walk')
 require('getch')
 require('curses')
-require('Config')
-require('Motion')
-require('Locomotion')
-require('Proprioception')
 
-local parameter_file = arg[1] or Config.motion.walk.parameters
+-- connect to motion manager
+local context = zmq.init()
+local motion_manager_endpoint = 'tcp://localhost:12000'
+local motion_manager = rpc.client.new(motion_manager_endpoint, context)
+print('Attempting to connect to motion_manager at '..motion_manager_endpoint)
+motion_manager:connect(nil)
+motion_manager:set_timeout(0.05)
 
+local state = 'stand'
 local parameter_keys = {}
-local parameter_increments = {}
-for k,v in pairs(walk.parameters) do
-  parameter_keys[#parameter_keys + 1] = k
-  parameter_increments[#parameter_increments + 1] = 0.001
-end
+local parameter_values = {}
 
 local TIMEOUT = 1
 local NCOLS = 1
@@ -38,7 +36,7 @@ local row = 1
 local col = 1
 
 -- Commands
-----------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
 function cmd_set_value(arg)
   local varg = parse_double_arguments(arg)
@@ -49,7 +47,7 @@ function cmd_set_value(arg)
 end
 
 function cmd_increment_value(scale)
-  val = get_value(row, col)
+  local val = get_value(row, col)
   if val then
     val = val + scale*get_increment(row, col)  
     set_value(val, row, col)
@@ -57,34 +55,21 @@ function cmd_increment_value(scale)
   draw_col(COL_PARAM)
 end
 
-function cmd_start_walking()
-  walk:set_velocity(0, 0, 0)
-  walk:start()
-  draw_command_row('Walk Mode: press <space> to stop...')
-end
-
-function cmd_stop_walking()
-  walk:set_velocity(0, 0, 0)
-  walk:stop()
-  draw_command_row('                                      ')
-end
-
-function cmd_set_velocity(vx, vy, va)
-  walk:set_velocity(vx, vy, va)
-  draw_stats()
-end
-
-function cmd_increment_velocity(dvx, dvy, dva)
-  walk:set_velocity(unpack(walk:get_velocity() + vector.new{dvx, dvy, dva}))
-  draw_stats()
+function cmd_set_state(arg)
+  -- FIXME check for valid motion states
+  local varg = parse_string_arguments(arg)
+  state = varg[1]
+  draw_screen()
 end
 
 function cmd_save(arg)
+  -- FIXME implement remote parameter saving
   local varg = parse_string_arguments(arg)
+  local parameter_file = nil
   if (varg[1]) then
     parameter_file = '../Data/'..Config.platform.name..'/'..varg[1]..'.lua'
   end
-  walk:save_parameters(parameter_file)
+  motion_manager:call(state..':save_parameters', parameter_file)
 end
 
 function cmd_quit()
@@ -96,21 +81,12 @@ function cmd_help()
   curses.timeout(-1)
   curses.clear()
   curses.move(0, 0)
-  curses.printw('------------------------------------------------ Navigation\n')
-  curses.printw('save                  write current parameter to file\n')
+  curses.printw('-----------------------------------------------------------\n')
+  curses.printw('edit [state]          select motion state to edit\n')
+  curses.printw('set [value]           set value under cursor\n')
+  curses.printw('save [filename]       write current parameters to file\n')
   curses.printw('q                     quit\n')
   curses.printw('h                     help\n')
-  curses.printw('------------------------------------------------ Editing\n')
-  curses.printw('set [value]           set value under cursor\n')
-  curses.printw('------------------------------------------------ Walking\n')
-  curses.printw('space                 start/stop walking\n')
-  curses.printw('i                     forward\n')
-  curses.printw(',                     back\n')
-  curses.printw('j                     turn left\n')
-  curses.printw('l                     turn right\n')
-  curses.printw('h                     side left\n')
-  curses.printw(';                     side right\n')
-  curses.printw('k                     zero velocity\n')
   curses.printw('press any key to continue...')
   curses.getch()
   curses.clear()
@@ -119,36 +95,53 @@ function cmd_help()
 end
 
 local commands = {
+  ['edit'] = cmd_set_state,
+  ['set'] = cmd_set_value,
   ['save'] = cmd_save,
   ['h'] = cmd_help,
   ['help'] = cmd_help,
   ['q'] = cmd_quit,
   ['quit'] = cmd_quit,
   ['exit'] = cmd_quit,
-  ['set'] = cmd_set_value,
 }
 
 -- Access
----------------------------------------------------------------------
+-------------------------------------------------------------------------------
+
+function update_parameters()
+  local accessor = state..':get_parameters'
+  while (not motion_manager:call(accessor)) do 
+  end
+  parameter_values = motion_manager:get_return_values()
+  parameter_keys = {}
+  for k,v in pairs(parameter_values) do
+    parameter_keys[#parameter_keys + 1] = k
+  end
+  NROWS = #parameter_keys
+  ROW_CMD = NROWS + 2
+end
 
 function get_value(r, c)
   if (c == COL_PARAM) then
-    return walk.parameters[parameter_keys[r]]
+    return parameter_values[parameter_keys[r]]
   end
 end
 
 function set_value(val, r, c)
   if (c == COL_PARAM) then
-    walk.parameters[parameter_keys[r]] = val
+    local accessor = state..':set_parameter'
+    while (not motion_manager:call(accessor, parameter_keys[r], val)) do
+    end
+    parameter_values[parameter_keys[r]] = val
   end
 end
 
 function get_increment(r, c)
-  return parameter_increments[r]
+  return 0.001 
 end
 
 -- Display
-----------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
 function draw_command_row(str)
   local cursory = get_cursor(ROW_CMD, 0)
@@ -173,21 +166,14 @@ function draw_col(c)
   curses.refresh()
 end
 
-function draw_stats()
-  local x, y = get_cursor(NROWS, COL_PARAM + 1)
-  curses.move(x, y)
-  curses.printw('velocity :%7.4f %7.4f %7.4f', unpack(walk:get_velocity()))
-  curses.move(get_cursor(row, col))
-  curses.refresh()
-end
-
 function draw_screen()
+  update_parameters()
   curses.clear()
   curses.move(0, 0)
-  curses.printw('                                Walk Tuner\n')
+  curses.printw('                                Policy Tuner\n')
   curses.printw('///////////////////////////////////////')
   curses.printw('//////////////////////////////////////\n')
-  curses.printw('%-28s %12s \n', 'parameter', 'value')
+  curses.printw(' %-16s %10s %12s \n', state, 'parameter', 'value')
   curses.printw('---------------------------------------')
   curses.printw('--------------------------------------\n')
   for i = 1,NROWS do
@@ -197,13 +183,12 @@ function draw_screen()
   for c = 1,NCOLS do
     draw_col(c)
   end
-  draw_stats()
   curses.refresh()
   curses.move(get_cursor(row, col))
 end
 
 -- Parsing
------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
 function parse_int_arguments(arg)
   local varg = {}
@@ -250,7 +235,7 @@ function read_command(key)
 end
 
 -- Navigation
-----------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
 function get_cursor(r, c)
   local y = ROW_OFFSET + (r-1)*ROW_WIDTH
@@ -279,7 +264,7 @@ function cursor_down()
 end
 
 -- Main
-------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
 function entry()
   -- setup curses environment
@@ -292,12 +277,6 @@ function entry()
   -- initialize shared memory
   unix.usleep(5e5)
   draw_screen()
-  -- initialize motion engine
-  Platform.entry()
-  Proprioception.entry()
-  Motion.entry()
-  Motion.add_fsm(Locomotion)
-  Locomotion:add_event('walk')
 end
 
 function update()
@@ -327,50 +306,20 @@ function update()
     cursor_left()
   elseif key == curses.KEY_RIGHT then
     cursor_right()
-  elseif key == string.byte(' ') then
-    if walk:is_active() then
-      cmd_stop_walking()
-    else
-      cmd_start_walking()
-    end
-  elseif key and not walk:is_active() then
+  elseif key then
     curses.ungetch(key)
     read_command()
-  elseif key == string.byte('k') then
-    cmd_set_velocity(0, 0, 0)
-  elseif key == string.byte('i') then
-    cmd_increment_velocity(0.005, 0, 0)
-  elseif key == string.byte(',') then
-    cmd_increment_velocity(-0.005, 0, 0)
-  elseif key == string.byte('j') then
-    cmd_increment_velocity(0, 0, 0.005)
-  elseif key == string.byte('l') then
-    cmd_increment_velocity(0, 0, -0.005)
-  elseif key == string.byte('h') then
-    cmd_increment_velocity(0, 0.005, 0)
-  elseif key == string.byte(';') then
-    cmd_increment_velocity(0, -0.005, 0)
   end
-  Platform.update()
-  Proprioception.update()
-  Motion.update()
 end
 
 function exit()
+  motion_manager:close()
+  context:term()
   curses.endwin()
-  Motion.exit()
-  Proprioception.exit()
-  Platform.exit()
 end
-
-local count = 0
 
 entry()
 while true do
   update()
-  count = count + 1
-  if (count % 5 == 0) then
-    draw_stats()
-  end
 end
 exit()

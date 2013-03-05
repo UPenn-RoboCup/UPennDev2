@@ -218,7 +218,7 @@ function rpc.server.handle_rpc_request(o, msg)
         table.insert(arguments, 1, object)
       end
       if (not success) then
-        return_values = procedure
+        return_values = {procedure}
         return_status = false
       else
         return_values = {pcall(procedure, unpack(arguments))}

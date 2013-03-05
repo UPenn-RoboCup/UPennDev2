@@ -5,10 +5,27 @@ local zmq = require 'ffi/zmq'
 local simple_ipc = {}
 -- Simple number of threads
 simple_ipc.n_zmq_threads = 1
+simple_ipc.local_prefix = 'ipc:///tmp/'
+--simple_ipc.network_prefix = 'tcp://*:'
+simple_ipc.network_prefix = 'epgm://158.130.110.60;239.192.1.1:'
 
-function simple_ipc.setup_publisher( channel )
-  local channel_obj = {}
-	channel_obj.name = "ipc:///tmp/"..channel;
+-- If channel is a number, then use tcp
+local function setup_publisher( channel )
+	local channel_obj = {}
+	local channel_type = type(channel)
+	if channel_type=="string" then
+		print('creating a local ipc socket...')
+--		channel_obj.name = "ipc:///tmp/"..channel;
+		channel_obj.name = simple_ipc.local_prefix..channel
+		print(channel_obj.name)
+	elseif channel_type=="number" then
+		print('creating a network socket...')
+--		channel_obj.name = "tcp://*:"..channel;
+		channel_obj.name = simple_ipc.network_prefix..channel
+		print(channel_obj.name)
+	else
+		return nil
+	end
   channel_obj.context_handle = zmq.zmq_init( simple_ipc.n_zmq_threads )
   assert( channel_obj.context_handle )
 
@@ -17,8 +34,9 @@ function simple_ipc.setup_publisher( channel )
   assert( channel_obj.socket_handle );
 
   -- Bind to a message pipeline
-  local rc = zmq.zmq_connect( channel_obj.socket_handle, channel_obj.name )
-  assert (rc == 0);
+--  local rc = zmq.zmq_connect( channel_obj.socket_handle, channel_obj.name )
+  local rc = zmq.zmq_bind( channel_obj.socket_handle, channel_obj.name )
+  assert (rc == 0, print(ffi.string( zmq.zmq_strerror( zmq.zmq_errno() ) )));
 
   -- Set up the sending object
   function channel_obj.send( self, msg_buf, msg_buf_sz, has_more )
@@ -60,10 +78,24 @@ function simple_ipc.setup_publisher( channel )
 
   return channel_obj;
 end
+simple_ipc.setup_publisher = setup_publisher
 
-function simple_ipc.setup_subscriber( channel )
-  local channel_obj = {}
-	channel_obj.name = "ipc:///tmp/"..channel;
+local function setup_subscriber( channel )
+	local channel_obj = {}
+	local channel_type = type(channel)
+	if channel_type=="string" then
+		print('creating a local ipc socket...')
+		--channel_obj.name = "ipc:///tmp/"..channel;
+		channel_obj.name = simple_ipc.local_prefix..channel
+		print(channel_obj.name)
+	elseif channel_type=="number" then
+		print('creating a network socket...')
+		--channel_obj.name = "tcp://localhost:"..channel;
+		channel_obj.name = simple_ipc.network_prefix..channel
+		print(channel_obj.name)
+	else
+		return nil
+	end
   channel_obj.context_handle = zmq.zmq_init( simple_ipc.n_zmq_threads )
   assert( channel_obj.context_handle )
 
@@ -72,8 +104,9 @@ function simple_ipc.setup_subscriber( channel )
   assert( channel_obj.socket_handle );
 
   -- Bind to a message pipeline
-  local rc = zmq.zmq_bind( channel_obj.socket_handle, channel_obj.name )
-  assert (rc == 0);
+--  local rc = zmq.zmq_bind( channel_obj.socket_handle, channel_obj.name )
+  local rc = zmq.zmq_connect( channel_obj.socket_handle, channel_obj.name )
+  assert (rc == 0, print(ffi.string( zmq.zmq_strerror( zmq.zmq_errno() ) )));
   zmq.zmq_setsockopt( channel_obj.socket_handle, zmq.ZMQ_SUBSCRIBE, '', 0 )
 
 	-- Set up receiving object
@@ -105,8 +138,9 @@ function simple_ipc.setup_subscriber( channel )
 
   return channel_obj;
 end
+simple_ipc.setup_subscriber = setup_subscriber
 
-function simple_ipc.wait_on_channels( channels )
+local function wait_on_channels( channels )
 	local poll_obj = {}
 	local poll_items = ffi.new('zmq_pollitem_t[?]',#channels)
 	for i=1,#channels do
@@ -130,5 +164,6 @@ function simple_ipc.wait_on_channels( channels )
 	end
 	return poll_obj;
 end
+simple_ipc.wait_on_channels = wait_on_channels
 
 return simple_ipc

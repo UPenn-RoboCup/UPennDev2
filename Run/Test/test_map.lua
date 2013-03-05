@@ -1,7 +1,4 @@
--- Add the required paths
-cwd = '.';
-package.cpath = cwd.."/../Lib/?.so;"..package.cpath;
-package.path = cwd.."/../Util/?.lua;"..package.path;
+dofile('../include.lua')
 
 -- Require the right modules
 local ffi = require 'ffi'

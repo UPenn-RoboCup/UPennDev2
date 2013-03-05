@@ -103,7 +103,7 @@ kneeShift = 0;
 hipShift = vector.new({0,0});
 armShift = vector.new({0, 0});
 
-active = true;
+active = false;
 started = false;
 iStep0 = -1;
 iStep = 0;

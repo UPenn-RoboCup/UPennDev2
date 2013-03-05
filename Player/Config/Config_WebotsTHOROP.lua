@@ -23,7 +23,8 @@ dev.team='TeamNull';
 
 dev.walk = 'HumbleWalk';
 dev.crawl = 'ScrambleCrawl';
-dev.largestep = 'ZMPStep';
+--dev.largestep = 'ZMPStep';
+dev.largestep = 'ZMPStepStair';
 
 --dev.walk = 'ZMPPreviewWalk';
 --dev.walk = 'zmpstep';

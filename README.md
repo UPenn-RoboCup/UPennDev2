@@ -33,7 +33,7 @@ Install zeromq 3.2 using:
     wget http://download.zeromq.org/zeromq-3.2.2.tar.gz
     tar xzf zeromq-3.2.2.tar.gz 
     cd zeromq-3.2.2
-    ./configure
+    ./configure --with-pgm
     make
     sudo make install
 

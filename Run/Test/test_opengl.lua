@@ -1,7 +1,4 @@
--- Include the relevant directories
-cwd = '.';
-package.path = cwd.."/../../Tools/?.lua;"..package.path;
-
+dofile('../include.lua')
 -- Require the right libraries
 -- The ffi libraty is with luajit
 local ffi  = require( "ffi" )

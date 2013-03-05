@@ -15,9 +15,7 @@ car_ingress.parameters = {
 }
 
 -- config parameters
-if (Config.motion.car_ingress and Config.motion.car_ingress.parameters) then
-  car_ingress:load_parameters(Config.motion.car_ingress.parameters)
-end
+car_ingress:load_parameters()
 
 function car_ingress:entry()
 end

@@ -16,9 +16,7 @@ teleop.parameters = {
 }
 
 -- config parameters
-if (Config.motion.teleop and Config.motion.teleop.parameters) then
-  teleop:load_parameters(Config.motion.teleop.parameters)
-end
+teleop:load_parameters()
 
 function teleop:entry()
 end

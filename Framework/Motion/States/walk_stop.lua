@@ -16,9 +16,7 @@ walk_stop.parameters = {
 }
 
 -- config parameters
-if (Config.motion.walk_stop and Config.motion.walk_stop.parameters) then
-  walk_stop:load_parameters(Config.motion.walk_stop.parameters)
-end
+walk_stop:load_parameters()
 
 function walk_stop:entry()
   walk:stop()

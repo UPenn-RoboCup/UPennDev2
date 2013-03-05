@@ -18,6 +18,9 @@ print('Attempting to connect to motion_manager at '..motion_manager_endpoint)
 motion_manager:connect(nil)
 motion_manager:set_timeout(0.05)
 
+while (not motion_manager:call('Motion:get_states')) do 
+end
+local states = motion_manager:get_return_values()
 local state = 'stand'
 local parameter_keys = {}
 local parameter_values = {}
@@ -56,20 +59,51 @@ function cmd_increment_value(scale)
 end
 
 function cmd_set_state(arg)
-  -- FIXME check for valid motion states
   local varg = parse_string_arguments(arg)
-  state = varg[1]
+  for i = 1, #states do
+     if (varg[1] == states[i]) then
+       state = states[i]
+       draw_screen()
+       return
+     end
+  end
+  draw_command_row(' Invalid state name!')
+end
+
+function cmd_next_state()
+  for i = 1, #states do
+    if (state == states[i]) then
+      state = states[i + 1] or states[1]
+      break
+    end
+  end
+  draw_screen()
+end
+
+function cmd_prev_state()
+  for i = 1, #states do
+    if (state == states[i]) then
+      state = states[i - 1] or states[#states]
+      break
+    end
+  end
   draw_screen()
 end
 
 function cmd_save(arg)
-  -- FIXME implement remote parameter saving
   local varg = parse_string_arguments(arg)
-  local parameter_file = nil
   if (varg[1]) then
-    parameter_file = '../Data/'..Config.platform.name..'/'..varg[1]..'.lua'
+    -- FIXME : use absolute path to project home
+    while (not motion_manager:call('Config.get_field', 'platform.name')) do 
+    end
+    local platform_name = motion_manager:get_return_values()
+    local parameter_file = '../Data/'..platform_name..'/'..varg[1]..'.lua'
+    while (not motion_manager:call(state..':save_parameters', parameter_file)) do
+    end
+  else
+    while (not motion_manager:call(state..':save_parameters')) do
+    end
   end
-  motion_manager:call(state..':save_parameters', parameter_file)
 end
 
 function cmd_quit()
@@ -77,14 +111,32 @@ function cmd_quit()
   os.exit()
 end
 
+function cmd_list_states()
+  curses.timeout(-1)
+  curses.clear()
+  curses.move(0, 0)
+  curses.printw('states\n')
+  curses.printw('-----------------------------------------------------------\n')
+  for i = 1,#states do
+    curses.printw('%2d %s\n', i, states[i])
+  end
+  curses.getch()
+  curses.clear()
+  draw_screen()
+  curses.timeout(TIMEOUT)
+end
+
 function cmd_help()
   curses.timeout(-1)
   curses.clear()
   curses.move(0, 0)
+  curses.printw('help\n')
   curses.printw('-----------------------------------------------------------\n')
-  curses.printw('edit [state]          select motion state to edit\n')
+  curses.printw('ls                    list states\n')
+  curses.printw('tune [state]          select motion state to tune\n')
   curses.printw('set [value]           set value under cursor\n')
-  curses.printw('save [filename]       write current parameters to file\n')
+  curses.printw('save [filename]       write parameters to file\n')
+  curses.printw('save                  write parameters to default file\n')
   curses.printw('q                     quit\n')
   curses.printw('h                     help\n')
   curses.printw('press any key to continue...')
@@ -95,9 +147,13 @@ function cmd_help()
 end
 
 local commands = {
-  ['edit'] = cmd_set_state,
+  ['ls']   = cmd_list_states,
+  ['list']   = cmd_list_states,
+  ['tune'] = cmd_set_state,
   ['set'] = cmd_set_value,
   ['save'] = cmd_save,
+  ['n'] = cmd_next_state,
+  ['p'] = cmd_prev_state,
   ['h'] = cmd_help,
   ['help'] = cmd_help,
   ['q'] = cmd_quit,
@@ -306,6 +362,8 @@ function update()
     cursor_left()
   elseif key == curses.KEY_RIGHT then
     cursor_right()
+  elseif key == string.byte('\t') then 
+     cmd_next_state()
   elseif key then
     curses.ungetch(key)
     read_command()

@@ -21,9 +21,7 @@ walk.parameters = {
 }
 
 -- load config parameters
-if (Config.motion.walk and Config.motion.walk.parameters) then
-  walk:load_parameters(Config.motion.walk.parameters)
-end
+walk:load_parameters()
 
 
 -- Gait Parameters

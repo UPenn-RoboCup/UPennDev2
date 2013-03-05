@@ -15,9 +15,7 @@ kneel_down.parameters = {
 }
 
 -- config parameters
-if (Config.motion.kneel_down and Config.motion.kneel_down.parameters) then
-  kneel_down:load_parameters(Config.motion.kneel_down.parameters)
-end
+kneel_down:load_parameters()
 
 function kneel_down:entry()
 end

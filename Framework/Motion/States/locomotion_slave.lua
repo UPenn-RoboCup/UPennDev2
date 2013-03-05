@@ -16,9 +16,7 @@ locomotion_slave.parameters = {
 }
 
 -- config parameters
-if (Config.motion.locomotion_slave and Config.motion.locomotion_slave.parameters) then
-  locomotion_slave:load_parameters(Config.motion.locomotion_slave.parameters)
-end
+locomotion_slave:load_parameters()
 
 function locomotion_slave:entry()
 end

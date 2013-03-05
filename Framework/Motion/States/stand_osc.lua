@@ -30,9 +30,7 @@ stand.parameters = {
 }
 
 -- config parameters
-if (Config.motion.stand and Config.motion.stand.parameters) then
-  stand:load_parameters(Config.motion.stand.parameters)
-end
+stand:load_parameters()
 
 -- define local copies
 local x_offset             = stand.parameters.x_offset

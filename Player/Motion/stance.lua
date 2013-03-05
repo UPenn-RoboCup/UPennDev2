@@ -145,7 +145,7 @@ function update()
 	vcm.set_camera_bodyHeight(Config.walk.bodyHeight);
 	vcm.set_camera_bodyTilt(Config.walk.bodyTilt);
 	walk.stance_reset();
-	walk.start();
+--	walk.start();
         return "done"
       end
     end

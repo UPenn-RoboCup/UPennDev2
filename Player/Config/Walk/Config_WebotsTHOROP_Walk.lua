@@ -64,6 +64,24 @@ zmpstep.stepHeight = 0.10;
 zmpstep.phSingle={0.1,0.9};
 zmpstep.hipRollCompensation = 3*math.pi/180;
 
+
+
+
+
+--zmpstep.bodyHeight = 1.10; 
+
+
+
+
+
+
+
+
+
+
+
+
+
 -----------------------------------------
 
 -- Walk Parameters

@@ -1,5 +1,5 @@
+dofile('../Run/include.lua')
 require 'torch'
---require 'ffi/torchffi'
 torch.Tensor = torch.FloatTensor
 
 local Config = {}

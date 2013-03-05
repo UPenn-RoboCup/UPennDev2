@@ -1,11 +1,11 @@
 dofile('../include.lua')
 
 -- Require the right modules
+local Sensors = require 'Config_Sensors'
+local simple_ipc = require 'simple_ipc'
 local ffi = require 'ffi'
 require 'ffi/torchffi'
-local simple_ipc = require 'simple_ipc'
 local libSlam = require 'libSlam'
-local Sensors = require 'Config_Sensors'
 local mp = require 'ffi/msgpack'
 require 'unix'
 

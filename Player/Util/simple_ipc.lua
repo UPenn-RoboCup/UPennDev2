@@ -1,31 +1,50 @@
 local ffi = require 'ffi'
-local zmq = require 'ffi/zmq'
+local zmq = require 'ffi/zmq' -- Based on ZMQ
+local simple_ipc = {} -- Our module
 
--- Based on ZMQ
-local simple_ipc = {}
+-- On the require, find the interfaces
+local f_ifconfig = io.popen( 'ifconfig -l' )
+local interface_list = f_ifconfig:read()
+f_ifconfig:close()
+for interface in string.gmatch(interface_list, "[%a|%d]+") do 
+	local f_ifconfig = io.popen( "ifconfig "..interface.." | grep 'inet ' | cut -d ' ' -f 2" )
+	local interface_ip = f_ifconfig:read()
+	if interface_ip then
+		local subnet_search = string.gmatch(interface_ip, "192.168.123.%d+")
+		local addr = subnet_search()
+		if addr then
+			simple_ipc.intercom_interface = interface
+			simple_ipc.intercom_interface_ip = interface_ip
+		end
+	end
+	f_ifconfig:close()
+end
+
 -- Simple number of threads
 simple_ipc.n_zmq_threads = 1
 simple_ipc.local_prefix = 'ipc:///tmp/'
---simple_ipc.network_prefix = 'tcp://*:'
-simple_ipc.network_prefix = 'epgm://158.130.110.60;239.192.1.1:'
+-- Set the intercomputer interface
+if simple_ipc.intercom_interface then
+	print( string.format('Selecting (%s) as the inter-pc interface\nUsing address (%s)',
+	simple_ipc.intercom_interface, simple_ipc.intercom_interface_ip) );
+	simple_ipc.intercom_prefix = 'epgm://'..simple_ipc.intercom_interface_ip..';239.192.1.1:'
+else
+	print( 'There is no inter-pc interface, using TCP' )
+	simple_ipc.intercom_prefix = 'tcp://*:'
+end
 
 -- If channel is a number, then use tcp
 local function setup_publisher( channel )
 	local channel_obj = {}
 	local channel_type = type(channel)
 	if channel_type=="string" then
-		print('creating a local ipc socket...')
---		channel_obj.name = "ipc:///tmp/"..channel;
 		channel_obj.name = simple_ipc.local_prefix..channel
-		print(channel_obj.name)
 	elseif channel_type=="number" then
-		print('creating a network socket...')
---		channel_obj.name = "tcp://*:"..channel;
-		channel_obj.name = simple_ipc.network_prefix..channel
-		print(channel_obj.name)
-	else
-		return nil
+		channel_obj.name = simple_ipc.intercom_prefix..channel
 	end
+	assert(channel_obj.name)
+	print('Publishing on',channel_obj.name)
+	
   channel_obj.context_handle = zmq.zmq_init( simple_ipc.n_zmq_threads )
   assert( channel_obj.context_handle )
 
@@ -84,18 +103,13 @@ local function setup_subscriber( channel )
 	local channel_obj = {}
 	local channel_type = type(channel)
 	if channel_type=="string" then
-		print('creating a local ipc socket...')
-		--channel_obj.name = "ipc:///tmp/"..channel;
 		channel_obj.name = simple_ipc.local_prefix..channel
-		print(channel_obj.name)
 	elseif channel_type=="number" then
-		print('creating a network socket...')
-		--channel_obj.name = "tcp://localhost:"..channel;
-		channel_obj.name = simple_ipc.network_prefix..channel
-		print(channel_obj.name)
-	else
-		return nil
+		channel_obj.name = simple_ipc.intercom_prefix..channel
 	end
+	assert(channel_obj.name)
+	print('Subscribing on',channel_obj.name)
+
   channel_obj.context_handle = zmq.zmq_init( simple_ipc.n_zmq_threads )
   assert( channel_obj.context_handle )
 

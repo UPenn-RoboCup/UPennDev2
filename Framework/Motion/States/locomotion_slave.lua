@@ -8,6 +8,7 @@ require('Config')
 locomotion_slave = Motion_state.new('locomotion_slave')
 locomotion_slave:set_joint_access(0, 'all')
 locomotion_slave:set_joint_access(1, 'upperbody')
+locomotion_slave:set_joint_access(0, 'head')
 local dcm = locomotion_slave.dcm
 
 -- default parameters

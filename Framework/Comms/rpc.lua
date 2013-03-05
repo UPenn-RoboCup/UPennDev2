@@ -78,6 +78,10 @@ function rpc.client.get_request_id(o)
   return o.request_id
 end
 
+function rpc.client.get_return_values(o)
+  return unpack(o.return_values)
+end
+
 function rpc.client.connect(o, timeout)
   -- get call dictionary from server 
   o.request_id = -1

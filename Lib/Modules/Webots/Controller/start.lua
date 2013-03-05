@@ -22,14 +22,20 @@ elseif teamID==22 then
   print('laser')
   dofile("Player/Test/test_laser.lua");
 elseif teamID==23 then
-  print('arms')
+  print('arms_ik')
   dofile("Player/Test/test_arms.lua");
+elseif teamID==24 then
+  print('arms_fk')
+  dofile("Player/Test/test_arms_fk.lua");
 elseif teamID==25 then
   print('wheeltest')
   dofile("Player/Test/test_wheel.lua");
 elseif teamID==26 then
   print('Ladder test')
   dofile("Player/Test/test_ladder.lua");
+elseif teamID==27 then
+  print('Stair test')
+  dofile("Player/Test/test_stair.lua");
 else
 	--Default
 --  dofile("Player/Test/test_joints_webots.lua");

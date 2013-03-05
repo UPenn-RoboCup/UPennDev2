@@ -1,15 +1,15 @@
 #VRML_SIM V6.0 utf8
 WorldInfo {
   info [
-    "Qual-1 arena for DRC"
+    "Handle operating test for DRC"
   ]
-  title "Qual1"
-  basicTimeStep 5
-  displayRefresh 8
+  title "handletest"
+  basicTimeStep 15
+  displayRefresh 3
 }
 Viewpoint {
-  orientation -0.0706673 0.989579 0.125461 2.40813
-  position 1.67775 1.69931 -2.31757
+  orientation -0.484978 0.830748 0.273228 1.16681
+  position 2.2 2.7 1.4
 }
 Background {
   skyColor [
@@ -26,12 +26,21 @@ DirectionalLight {
   direction 0.5 -0.5 0.5
   intensity 0.5
 }
-DEF FLOOR MetricFloor {
+DEF FLOOR MetricFloor{
   color 0.95 0.95 0.95
+  locked TRUE
 }
-ATLAS {
-  translation -0.0495526 0.93 0.00543427
+ATLAS1 {
+  translation 0 0.93 0
   rotation 1 0 0 -1.57
   controller "darwin-op_team_0"
-  controllerArgs "0 98"
+  controllerArgs "0 25"
+}
+Solid{
+  translation 0.3 1.4 0
+  children[
+    SteeringWheelSmall{}
+#    SteeringWheel{}
+  ]
+  locked TRUE
 }

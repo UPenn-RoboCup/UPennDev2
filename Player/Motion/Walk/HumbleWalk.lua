@@ -103,7 +103,7 @@ kneeShift = 0;
 hipShift = vector.new({0,0});
 armShift = vector.new({0, 0});
 
-active = true;
+active = false;
 started = false;
 iStep0 = -1;
 iStep = 0;
@@ -128,12 +128,11 @@ function entry()
   --Place arms in appropriate position at sides
 
   if upper_body_overridden==0 then
---[[
     Body.set_larm_command(qLArm0);
     Body.set_rarm_command(qRArm0);
---]]
-  Body.set_larm_hardness(hardnessArm);
-  Body.set_rarm_hardness(hardnessArm);
+    Body.set_larm_hardness(hardnessArm);
+    Body.set_rarm_hardness(hardnessArm);
+
 
   end
   Body.set_waist_command(0);

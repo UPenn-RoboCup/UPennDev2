@@ -32,16 +32,15 @@ require 'Transform'
 require 'Team' --To receive the GPS coordinates from objects
 require 'wcm'
 
+if (string.find(Config.platform.name,'THOROP')) then
+  thorop=true;
+else
+  thorop=false;
+end
+
+
 
 --Arm target transforms
-
---[[
-trLArmOld = vector.new({0.16, 0.24, -0.09, 0,0,0});
-trRArmOld = vector.new({0.16, -0.24, -0.09, 0,0,0});
-
-trLArmOld = vector.new({0.16, 0.24, -0.07, 0, 0, -math.pi/4});
-trRArmOld = vector.new({0.16, -0.24, -0.07, 0, 0, math.pi/4});
---]]
 
 --New position considering the hand offset
 trLArmOld = vector.new({0.28, 0.22, 0.05, 0, 0, -math.pi/2});
@@ -94,78 +93,115 @@ else
 end
 
 
-
-arm_initing = 1;
-arm_init_stage = 0;
-arm_init_t0 = 0;
-arm_stage_duration={2.0,1.0,1.0,1.0};
 is_moving = 0;
 
-function init_arms()
-  t = Body.get_time();
-  if arm_initing>0 then     
-    walk.upper_body_override_on();
-    current_duration = arm_stage_duration[arm_init_stage+1];
-    if arm_init_t0+current_duration< t then
-      arm_init_stage = arm_init_stage+1;
-      arm_init_t0 = t;
-    end
-    ph = (t-arm_init_t0) /current_duration;
-    if arm_init_stage==0 then
-      qLArm =  {math.pi/2, math.pi/2 * ph, 0, 0,0,0};
-      qRArm =  {math.pi/2, -math.pi/2 * ph, 0, 0,0,0};      
-    elseif arm_init_stage==1 then
+--THOR VALUES
+arm_init_motion_thorop={
+  {
+    vector.new({90,90,0,0,0,0})*math.pi/180,
+    vector.new({90,-90,0,0,0,0})*math.pi/180,
+    1.0,
+  },
+  {
+    vector.new({0,90,90,0,-90,0})*math.pi/180,
+    vector.new({0,-90,-90,0,90,0})*math.pi/180,
+    1.0,
+  },
+  {
+    vector.new({0,45,90,-90,-90,-45})*math.pi/180,
+    vector.new({0,-45,-90,-90,90,45})*math.pi/180,
+    1.0,
+  },
+}
 
-      qLArm =  {(1-ph)*math.pi/2, math.pi/2 , ph*math.pi/2,  
-			0,-math.pi/2*ph,0};
-      qRArm =  {(1-ph)*math.pi/2, -math.pi/2,  -ph*math.pi/2, 
-			0,math.pi/2*ph,0};      
 
-    elseif arm_init_stage==2 then
-      qLArm =  {0, math.pi/2-math.pi/9*ph , math.pi/2,
-		 (math.pi/9-math.pi/2)*ph, -math.pi/2,-math.pi/2*ph};
-      qRArm =  {0, -math.pi/2+ math.pi/9*ph , -math.pi/2,
-		  (math.pi/9-math.pi/2)*ph, math.pi/2,math.pi/2*ph};      
-    else
-      qLArm =  {0, math.pi/2 -math.pi/9 ,math.pi/2,
-		 (math.pi/9-math.pi/2), -math.pi/2,-math.pi/2};
-      qRArm =  {0, -math.pi/2+ math.pi/9 ,-math.pi/2,
-		  (math.pi/9-math.pi/2), math.pi/2, math.pi/2};      
+arm_init_motion_atlas={
+  {
+    vector.new({90,30,-90,0, -90,0})*math.pi/180,
+    vector.new({90,-30,90,0, -90,0})*math.pi/180,
+    0.2,
+  },
+  {
+    vector.new({90,30,0,0, -60,0})*math.pi/180,
+    vector.new({90,-30,0,0, -60,0})*math.pi/180,
+    1.0,
+  },
+--[[
+  {
+    vector.new({90,0,0,-90,-60,-90})*math.pi/180,
+    vector.new({90,0,0,-90,60,90})*math.pi/180,
+    1.0,
+  },
+--]]
 
-      arm_initing = 0;
-      trLArmOld = Kinematics.l_arm_torso(qLArm);
-      trRArmOld = Kinematics.r_arm_torso(qRArm);
+  --VERTICAL HAND POSTURE (WORKS BETTER)
+  {
+    vector.new({90,30,0,-90,0,-90})*math.pi/180,
+    vector.new({90,-30,0,-90,0,90})*math.pi/180,
+    1.0,
+  },
 
-      --Lower the hand a bit to avoid singularity
-      trLArmOld[3]=trLArmOld[3] - 0.02; 
-      trRArmOld[3]=trRArmOld[3] - 0.02;
 
-      trLArmOld[6]= - math.pi/2; 
-      trRArmOld[6]= math.pi/2;
+}
 
-      trLArm[1],trLArm[2],trLArm[3],trLArm[4],trLArm[5],trLArm[6]=
-	trLArmOld[1],trLArmOld[2],trLArmOld[3],trLArmOld[4],trLArmOld[5],trLArmOld[6];
 
-      trLArm0[1],trLArm0[2],trLArm0[3],trLArm0[4],trLArm0[5],trLArm0[6]=
-	trLArmOld[1],trLArmOld[2],trLArmOld[3],trLArmOld[4],trLArmOld[5],trLArmOld[6];
 
-      trRArm[1],trRArm[2],trRArm[3],trRArm[4],trRArm[5],trRArm[6]=
-	trRArmOld[1],trRArmOld[2],trRArmOld[3],trRArmOld[4],trRArmOld[5],trRArmOld[6];
 
-      trRArm0[1],trRArm0[2],trRArm0[3],trRArm0[4],trRArm0[5],trRArm0[6]=
-	trRArmOld[1],trRArmOld[2],trRArmOld[3],trRArmOld[4],trRArmOld[5],trRArmOld[6];
-
-    end   
-
-    Body.set_larm_command(qLArm);
-    Body.set_rarm_command(qRArm);
---    walk.upper_body_override(qLArm, qRArm, walk.bodyRot0);
-
-  end
-  Body.set_head_command({0,60*math.pi/180});
-
+if thorop then
+  arm_init_motion = arm_init_motion_thorop;
+else
+  arm_init_motion = arm_init_motion_atlas;
 end
 
+
+arm_init_count = 1; --start arm initing
+arm_init_t0 = Body.get_time();
+qLArm0=vector.new(Body.get_larm_position());
+qRArm0=vector.new(Body.get_rarm_position());
+
+
+function init_arms()
+  walk.upper_body_override_on();
+  Body.set_head_command({0,60*math.pi/180});
+
+  t = Body.get_time();
+  if arm_init_count==0 then return;
+  elseif arm_init_count>#arm_init_motion then
+
+    trLArmOld = Kinematics.l_arm_torso(qLArm);
+    trRArmOld = Kinematics.r_arm_torso(qRArm);
+
+    trLArm[1],trLArm[2],trLArm[3],trLArm[4],trLArm[5],trLArm[6]=
+        trLArmOld[1],trLArmOld[2],trLArmOld[3],trLArmOld[4],trLArmOld[5],trLArmOld[6];
+
+    trLArm0[1],trLArm0[2],trLArm0[3],trLArm0[4],trLArm0[5],trLArm0[6]=
+	trLArmOld[1],trLArmOld[2],trLArmOld[3],trLArmOld[4],trLArmOld[5],trLArmOld[6];
+
+    trRArm[1],trRArm[2],trRArm[3],trRArm[4],trRArm[5],trRArm[6]=
+	trRArmOld[1],trRArmOld[2],trRArmOld[3],trRArmOld[4],trRArmOld[5],trRArmOld[6];
+
+    trRArm0[1],trRArm0[2],trRArm0[3],trRArm0[4],trRArm0[5],trRArm0[6]=
+	trRArmOld[1],trRArmOld[2],trRArmOld[3],trRArmOld[4],trRArmOld[5],trRArmOld[6];
+    arm_init_count = 0;
+    return;
+  end
+
+  current_duration = arm_init_motion[arm_init_count][3];
+  if t>arm_init_t0+current_duration then
+    qLArm0 = arm_init_motion[arm_init_count][1];
+    qRArm0 = arm_init_motion[arm_init_count][2];
+    arm_init_t0 = arm_init_t0 + current_duration;
+    arm_init_count = arm_init_count+1;
+    return;
+  end
+
+  ph = (t-arm_init_t0) /current_duration;
+
+  qLArm = (1-ph) * qLArm0 + ph * arm_init_motion[arm_init_count][1];
+  qRArm = (1-ph) * qRArm0 + ph * arm_init_motion[arm_init_count][2];
+  Body.set_larm_command(qLArm);
+  Body.set_rarm_command(qRArm);
+end
 
 
 function update_cognition()
@@ -185,7 +221,6 @@ function update_cognition()
 
   trRelative = Transform.inv(trBody)*trEffector;
   pRelative = {trRelative[1][4],trRelative[2][4],trRelative[3][4]};
-
 
 --[[
   print("body abs pos:",unpack( body_pos )); --Check Body GPS 
@@ -222,6 +257,8 @@ function auto_move_arms()
 	pRelative[2]-trLArm[2],
 	pRelative[3]-trLArm[3]});
 
+
+if thorop then --THOR-OP setup
   if is_moving==1 then
     armDir[3] = armDir[3]+ 0.11; --Approach : aim higher
   elseif is_moving==2 then
@@ -236,6 +273,28 @@ function auto_move_arms()
     armDir[1],armDir[2]=0,0;
     armDir[3] = 0.05-trLArm[3];
   end
+else  --Atlas setup (lying can pickup)
+  if is_moving==1 then
+    armDir[3] = armDir[3]+ 0.11; --Approach : aim higher
+  elseif is_moving==2 then
+--    armDir[3] = armDir[3]+ 0.02; --pickup bit higherr
+    armDir[3] = armDir[3]+ 0.04; --pickup bit higherr
+  elseif is_moving==3 then --pick up
+    armDir[1],armDir[2]=0,0;
+    armDir[3] = 0.05-trLArm[3];
+  elseif is_moving==4 then --put down
+    armDir[1],armDir[2]=0,0;
+--    armDir[3] = -0.04-trLArm[3];
+    armDir[3] = -0.03-trLArm[3];
+
+  elseif is_moving==5 then --put down
+    armDir[1],armDir[2]=0,0;
+    armDir[3] = 0.05-trLArm[3];
+  end
+end
+
+
+
 
 
 --print("Target dir:",unpack(armDir))
@@ -299,7 +358,7 @@ end
 
 
 function motion_arms_ik()
-  if arm_initing>0 then return; end
+  if arm_init_count>0 then return; end
   qLArmInv, dist1 = check_ik(trLArm, 1);
   qRArmInv, dist2 = check_ik(trRArm, 0);
 
@@ -483,6 +542,7 @@ function update()
   Body.update();
   update_cognition();
   auto_move_arms();
+  Team.update();
 --[[	
 	-- Update the laser scanner
 	lidar_scan = WebotsLaser.get_scan()
@@ -528,8 +588,7 @@ local tDelay = 0.005 * 1E6; -- Loop every 5ms
 
 --calculate_arm_space();
 
-arm_initing = 1;
-arm_init_t0 = Body.get_time();
+
 
 
 while (true) do

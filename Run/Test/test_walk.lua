@@ -404,10 +404,10 @@ end
 
 function phase_trajectory(theta)
   local velocity = 0
-  if theta>0 then
+  if theta>0 then --before impact
     velocity = 0.2+theta
-  else
-    velocity = .25
+  else --after impact
+    velocity = .2
   end
   return velocity
 end
@@ -515,8 +515,8 @@ function find_stride_joint_angles(r, theta)
 end
 
 function stride_percent_joint_angles()
-
-end
+  
+end 
 
 ------------------------------------------------------------------------
 --State machine
@@ -596,24 +596,62 @@ function state_machine(t)
       print("begin stride", t)
       delta = qimp - joint_offset
     end
-  elseif (state == 9) then --begin walk
+  elseif (state == 9) then --begin walk @ second half of step
     walk = true
-    local percent = trajectory_percentage(1, 0.9, state_t) --need to time this to the stride
+    local percent = trajectory_percentage(1, 0.9, state_t)
     qt = percent*delta + joint_offset
-    if foot_state[11] == 1 then
+    if foot_state[11] == 1 then  --right foot impact
       print("recover attempt", t)
       state = 10
       state_t = 0
       test_foot_state[1] = 'r'
+      joint_offset = vector.copy(qt) 
+      qimp, qmid = find_stride_joint_angles(0.295, 0.25)
+      delta = qmid - joint_offset 
+      reset_states()
+    end
+  elseif (state == 10) then --first half of step
+    local percent = trajectory_percentage(1, 0.8, state_t)
+    qt = percent*delta + joint_offset
+    if percent >= 1 then
       joint_offset = vector.copy(qt) --prepares for move 
+      delta = qimp - joint_offset 
+      state = 11
+      state_t = 0
+    end
+  elseif (state == 11) then --second half of step
+    local percent = trajectory_percentage(1, 0.8, state_t) 
+    qt = percent*delta + joint_offset
+    if foot_state[5] == 1 then --left foot impact
+      state = 12
+      state_t = 0
+      test_foot_state[1] = 'l'
+      joint_offset = vector.copy(qt) --prepares for move 
+      qimp, qmid = find_stride_joint_angles(0.295, 0.25)
       delta = qmid - joint_offset --sets delta for move
       reset_states()
     end
-  elseif (state == 10) then 
-    local percent = trajectory_percentage(1, 0.9, state_t) --need to time this too
+  elseif (state == 12) then --first half of step
+    local percent = trajectory_percentage(1, 0.8, state_t)
     qt = percent*delta + joint_offset
-    if state_t>=1.5 then
+    if percent >= 1 then
+      joint_offset = vector.copy(qt) --prepares for move 
+      delta = qimp - joint_offset 
+      state = 13
+      state_t = 0
+    end
+  elseif (state == 13) then --second half of step
+    local percent = trajectory_percentage(1, 0.8, state_t) 
+    qt = percent*delta + joint_offset
+    if foot_state[11] == 1 then --left foot impact
       run = false
+      state = 12
+      state_t = 0
+      test_foot_state[1] = 'r'
+      joint_offset = vector.copy(qt) --prepares for move 
+      qimp, qmid = find_stride_joint_angles(0.295, 0.25)
+      delta = qmid - joint_offset --sets delta for move
+      reset_states()
     end
   end
 end

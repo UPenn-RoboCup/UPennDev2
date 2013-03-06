@@ -47,8 +47,8 @@ updateDraw = function(self, state)
     end
   end
 --  loadImage(currentFile)
---  loadImageffi(currentFile)
-  loadIndexImg(currentFile)
+  loadImageffi(currentFile)
+--  loadIndexImg(currentFile)
   window.widget.pixmapitem:setPixmap(window.widget.pimage)
 
   self:update(0,0,640,480)

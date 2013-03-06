@@ -15,9 +15,7 @@ get_up.parameters = {
 }
 
 -- config parameters
-if (Config.motion.get_up and Config.motion.get_up.parameters) then
-  get_up:load_parameters(Config.motion.get_up.parameters)
-end
+get_up:load_parameters()
 
 function get_up:entry()
 end

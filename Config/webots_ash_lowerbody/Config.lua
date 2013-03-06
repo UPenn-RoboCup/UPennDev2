@@ -1,18 +1,29 @@
 Config = {}
 
-function loadconfig(configName)
-  local localConfig = require(configName)
-  if (type(localConfig) == 'table') then
-    for k,v in pairs(localConfig) do
-      Config[k] = localConfig[k]
+function load_config(config_name)
+  local local_config = require(config_name)
+  if (type(local_config) == 'table') then
+    for k,v in pairs(local_config) do
+      Config[k] = local_config[k]
     end
   end
 end
 
-loadconfig('Config_bias')
-loadconfig('Config_devices')
-loadconfig('Config_mechanics')
-loadconfig('Config_motion')
+function Config.get_field(field)
+  local t = Config
+  for k in string.gmatch(field, '(%a[%a_%d]*)') do
+    if (type(t) ~= 'table') then
+      return nil
+    end
+    t = t[k]
+  end
+  return t
+end
+
+load_config('Config_bias')
+load_config('Config_devices')
+load_config('Config_mechanics')
+load_config('Config_motion')
 
 Config.platform = {}
 Config.platform.name = 'webots_ash_lowerbody'

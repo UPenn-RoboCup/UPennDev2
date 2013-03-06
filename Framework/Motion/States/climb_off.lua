@@ -15,9 +15,7 @@ climb_off.parameters = {
 }
 
 -- config parameters
-if (Config.motion.climb_off and Config.motion.climb_off.parameters) then
-  climb_off:load_parameters(Config.motion.climb_off.parameters)
-end
+climb_off:load_parameters()
 
 function climb_off:entry()
 end

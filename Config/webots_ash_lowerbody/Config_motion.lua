@@ -11,8 +11,9 @@ motion.walk.parameters =
   _HOME_..'/Data/webots_ash_lowerbody/parameters_walk_osc.lua'
 
 motion.stand = {}
-motion.stand.module = nil
-motion.stand.parameters = nil
+motion.stand.module = 'stand_osc'
+motion.stand.parameters = 
+  _HOME_..'/Data/webots_ash_lowerbody/parameters_stand_osc.lua'
 
 motion.step = {}
 motion.step.module = nil

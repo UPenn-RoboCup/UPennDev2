@@ -7,11 +7,10 @@ var zmq = require('zmq');
 var sock = zmq.socket('sub');
 
 app.listen(8080);
-
-sock.connect('tcp://localhost:5555');
+//sock.connect('tcp://localhost:5555');
+sock.connect('ipc:///tmp/imu');
 sock.subscribe('');
 console.log('Worker connected to test');
-
 
 function handler (req, res) {
   fs.readFile(__dirname + '/index.html',
@@ -25,15 +24,21 @@ function handler (req, res) {
       });
 }
 
+// Set up websockets
 io.sockets.on('connection', function (socket) {
-  socket.emit('news', 'hour');
+  // Send an initial packet
+  //socket.emit('news', 'hour');
+  
+  // Get data from the browser
+  /*
   socket.on('my other event', function (data) {
     console.log(data);
   });
-  // Listen
+  */
+  // Listen to zmq
   sock.on('message', function(msg){
-    var test_obj = mp.unpack(msg)
-    console.log('work: %s', test_obj.toString());
-  socket.emit('news', test_obj);
+    var imu = mp.unpack(msg)
+    console.log('imu: %s', imu.toString());
+    socket.emit('imu', imu);
   });
 });

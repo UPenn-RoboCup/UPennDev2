@@ -71,6 +71,7 @@ local walk = false
 local qmid = {}
 local qimp = {}
 local u1 = {}
+local data = {}
 
 ------------------------------------------------------------------
 --Control objects:
@@ -95,9 +96,9 @@ COGy_pid:set_d_corner_frequency(20)
 
 pgain, igain, dgain = 300, 40, 80
 local anklex_pid = pid.new(0.004, pgain, igain, dgain)
-COGx_pid:set_d_corner_frequency(40) 
+anklex_pid:set_d_corner_frequency(40) 
 local ankley_pid = pid.new(0.004, pgain, igain, dgain)
-COGy_pid:set_d_corner_frequency(40)
+ankley_pid:set_d_corner_frequency(40)
 
 local COG_vel_filter = {}
 COG_vel_filter[1] = filter.new_differentiator(0.004, 30, 0.5)
@@ -506,46 +507,30 @@ dcm:set_joint_enable(1, 'all')
 qt = vector.copy(set_values) 
 printdata = true
 
-local ident = "t5"
-local fw_bias = assert(io.open("Logs/fw_bias"..ident..".txt","w"))
-local fw_joint_pos = assert(io.open("Logs/fw_joint_pos"..ident..".txt","w"))
-local fw_grav_comp_torques = assert(io.open("Logs/fw_grav_comp_torques"..ident..".txt","w"))
-local fw_qt = assert(io.open("Logs/fw_qt"..ident..".txt","w"))
-local fw_qt_comp = assert(io.open("Logs/fw_qt_comp"..ident..".txt","w"))
-local fw_raw_pos = assert(io.open("Logs/fw_raw_pos"..ident..".txt","w"))
-local fw_joint_pos_sense = assert(io.open("Logs/fw_joint_pos_sense"..ident..".txt","w"))
-local fw_joint_torques_sense = assert(io.open("Logs/fw_joint_torques_sense"..ident..".txt","w"))
-local fw_joint_vel_raw = assert(io.open("Logs/fw_joint_vel_raw"..ident..".txt","w"))
-local fw_joint_vel = assert(io.open("Logs/fw_joint_vel"..ident..".txt","w"))
-local fw_joint_acc = assert(io.open("Logs/fw_joint_acc"..ident..".txt","w"))
-local fw_joint_torques = assert(io.open("Logs/fw_joint_torques"..ident..".txt","w"))
-local fw_ff_torques = assert(io.open("Logs/fw_ff_torques"..ident..".txt","w"))
-local fw_pid_torques = assert(io.open("Logs/fw_pid_torques"..ident..".txt","w"))
-local fw_joint_force = assert(io.open("Logs/fw_joint_force"..ident..".txt","w"))
-local fw_joint_force_sense = assert(io.open("Logs/fw_joint_force_sense"..ident..".txt","w"))
-local fw_COG = assert(io.open("Logs/fw_COG"..ident..".txt","w"))
-local fw_ft_filt = assert(io.open("Logs/fw_ft_filt"..ident..".txt","w"))
-local fw_ft = assert(io.open("Logs/fw_ft"..ident..".txt","w"))
-local fw_lr_cop_t = assert(io.open("Logs/fw_lr_cop_t"..ident..".txt","w"))
-local fw_COP_filt = assert(io.open("Logs/fw_COP_filt"..ident..".txt","w"))
-local fw_wrench = assert(io.open("Logs/fw_wrench"..ident..".txt","w"))
-local fw_ahrs_filt = assert(io.open("Logs/fw_ahrs_filt"..ident..".txt","w"))
-local fw_ahrs = assert(io.open("Logs/fw_ahrs"..ident..".txt","w"))
-local fw_lf = assert(io.open("Logs/fw_lf"..ident..".txt","w"))
-local fw_rf = assert(io.open("Logs/fw_rf"..ident..".txt","w"))
-local fw_pcm_cog = assert(io.open("Logs/fw_pcm_cog"..ident..".txt","w"))
-local fw_hip_offset = assert(io.open("Logs/fw_hip_offset"..ident..".txt","w"))
-local fw_foot_state = assert(io.open("Logs/fw_foot_state"..ident..".txt","w"))
-local fw_pid_terms = assert(io.open("Logs/fw_pid_terms"..ident..".txt","w"))
-local fw_state_est_k1 = assert(io.open("Logs/fw_state_est_k1"..ident..".txt","w"))
-local fw_state_act_k1 = assert(io.open("Logs/fw_state_act_k1"..ident..".txt","w"))
-local fw_u1 = assert(io.open("Logs/fw_u1"..ident..".txt","w"))
+local ident = "t6"
+local fw_log = assert(io.open("Logs/fw_log"..ident..".txt","w"))
+local fw_reg = assert(io.open("Logs/fw_reg"..ident..".txt","w"))
 
 function write_to_file(filename, data, test)
   for i = 1,#data do
     filename:write(data[i], ", ")
   end
   filename:write(t, "\n")
+end
+
+function write_to_file2(filename, data)
+  for i = 1, #data do
+    for i2 = 1, #data[i] do
+    	filename:write(data[i][i2], ", ")
+    end
+  end
+  filename:write(t, "\n")
+end
+
+function write_reg(data)
+  for i = 1, #data do
+    fw_reg:write(#data[i], ", ")
+  end
 end
 
 --------------------------------------------------------------------
@@ -578,45 +563,25 @@ while run do
   update_observer()
   joint_torques_sense = dcm:get_joint_force_sensor('legs')
 --implement actions
-  --dcm:set_joint_position(qt, 'legs')  
-  --dcm:set_joint_force(joint_torques, 'legs')  
-
+  dcm:set_joint_position(qt, 'legs')  
+  dcm:set_joint_force(joint_torques, 'legs')  
+  
   if (printdata) then -- mod_print == 0 and
-    write_to_file(fw_bias, bias)
-    write_to_file(fw_grav_comp_torques, grav_comp_torques)
-    write_to_file(fw_joint_pos, joint_pos)
-    write_to_file(fw_joint_pos_sense, joint_pos_sense)
-    write_to_file(fw_joint_torques_sense, joint_torques_sense)
-    write_to_file(fw_raw_pos, raw_pos)
-    write_to_file(fw_joint_vel_raw, joint_vel_raw)
-    write_to_file(fw_joint_vel, joint_vel)
-    write_to_file(fw_joint_acc, joint_acc)
-    write_to_file(fw_qt, qt)
-    write_to_file(fw_qt_comp, qt_comp)
-    write_to_file(fw_joint_torques, joint_torques)
-    write_to_file(fw_ff_torques, ff_torques)
-    write_to_file(fw_pid_torques, {pid_torques[1], pid_torques[2]})
-    write_to_file(fw_joint_force, dcm:get_joint_force())
-    write_to_file(fw_joint_force_sense, dcm:get_joint_force_sensor())
-    write_to_file(fw_COG, COG)
-    write_to_file(fw_ft_filt, ft_filt)
-    write_to_file(fw_ft, ft)
-    write_to_file(fw_lr_cop_t, {l_cop_t[1], l_cop_t[2], r_cop_t[1], r_cop_t[2]})
-    write_to_file(fw_COP_filt, COP_filt)
-    --write_to_file(fw_wrench, wrench)
-    write_to_file(fw_ahrs_filt, ahrs_filt)
-    write_to_file(fw_ahrs, ahrs)
-    write_to_file(fw_lf, lf)
-    write_to_file(fw_rf, rf)
-    write_to_file(fw_pcm_cog, pcm:get_cog())
-    write_to_file(fw_hip_offset, {hip_offset})
-    write_to_file(fw_state_est_k1, {state_est_k1[1][1],state_est_k1[1][2],state_est_k1[2][1],state_est_k1[2][2]})
-    write_to_file(fw_state_act_k1, {state_act_k1[1][1],state_act_k1[1][2],state_act_k1[2][1],state_act_k1[2][2]})
-    write_to_file(fw_u1,u1)
-    write_to_file(fw_foot_state, {foot_state[5],foot_state[11]})
-    --write_to_file(fw_pid_terms, {COGx_pid.p_term, COGx_pid.i_term, COGx_pid.d_term, COG_rate, t})
+    data[1] = COG
+    data[2] = {pid_torques[1], pid_torques[2]}
+    data[3] = joint_pos_sense
+    data[4] = joint_torques_sense
+    data[5] = raw_pos
+    data[6] = joint_vel_raw
+    data[7] = joint_torques
+    data[8] = ft_filt
+    data[9] = ft
+    data[10] = ahrs_filt
+    data[11] = ahrs
+    write_to_file2(fw_log, data)
   end
 end
+write_reg(data)
 Platform.exit()
 
 

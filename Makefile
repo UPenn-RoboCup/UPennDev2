@@ -67,17 +67,25 @@ vrep_ash:
 	cd Framework/Platform \
 	&& rm -f ./* \
 	&& ln -s ../../Platform/$@/Platform.lua Platform.lua \
-	&& ln -s ../../Platform/$@/VRepCommsManager.lua VRepCommsManager.lua \
+	&& ln -s ../../Platform/$@/Comms/vrep_child_script.lua vrep_child_script.lua \
 	&& ln -s ../../Platform/$@/Mechanics/Kinematics.$(SHLIBEXT) Kinematics.$(SHLIBEXT) \
 	&& ln -s ../../Platform/$@/Mechanics/Dynamics.$(SHLIBEXT) Dynamics.$(SHLIBEXT) \
 	&& cd $(CWD)
 	cd Config \
 	&& rm -f Config*.lua \
-	&& ln -s $@/* .\
+	&& ln -s ash/* .\
 	&& cd $(CWD)
 	cd Run \
 	&& rm -f init_robot \
 	&& rm -f comms_manager \
+	&& ln -s ../Platform/$@/Comms/comms_manager comms_manager \
+	&& cd $(CWD)
+
+sensors:
+	cd Framework/Lib && make && cd $(CWD)
+	cd Config \
+	&& rm -f Config*.lua \
+	&& ln -s $@/* .\
 	&& cd $(CWD)
 
 tools:

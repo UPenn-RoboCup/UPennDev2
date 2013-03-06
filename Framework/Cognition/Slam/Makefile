@@ -1,5 +1,5 @@
 # Makefile used to build libraries
-include ../../../Lib/Makefile.inc
+include ../../../Makefile.inc
 INCLUDES+=-I../../../Tools/torch/include/
 LIB_DIR+=-L../../../Tools/torch/
 

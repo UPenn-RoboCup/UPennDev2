@@ -1,5 +1,0 @@
-Run in one terminal:
-luajit test_zmq_subscriber.lua
-
-Run in another terminal:
-luajit test_zmq_publisher.lua

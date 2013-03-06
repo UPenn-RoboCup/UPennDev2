@@ -13,20 +13,12 @@ module(..., package.seeall);
   sm:exit();
 
   states are tables with member functions:
-  state:entry(), event = state:update(), state:exit(event) 
+  event = state:entry()
+  event = state:update()
+  event = state:exit() 
 
   events are strings: "timeout", "done", etc.
   actions are optional functions to be called
-
-  jordan:
-  added
-  statesNames - mapping state index to string name
-  statesHash - mapping state string name to state index
-  sm:set_state(state_string); -- sets the state by the string name
-
-  mike:
-  changed state.entry(), state.update(), state.exit() calls to 
-  state:entry(), state:update(), state:exit() for OO state support
 --]]-------
 
 mt = getfenv();
@@ -114,6 +106,10 @@ end
 
 function get_state(self)
   return self.currentState._NAME;
+end
+
+function get_states(self)
+  return self.statesNames
 end
 
 function get_current_state(self)

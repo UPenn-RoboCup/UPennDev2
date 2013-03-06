@@ -9,7 +9,6 @@ require('Motion_fsm')
 ---------------------------------------------------------
 
 Locomotion = Motion_fsm.new(idle)
-Locomotion:add_state(idle)
 Locomotion:add_state(stand)
 Locomotion:add_state(walk)
 Locomotion:add_state(walk_stop)

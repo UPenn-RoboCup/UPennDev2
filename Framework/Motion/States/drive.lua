@@ -15,9 +15,7 @@ drive.parameters = {
 }
 
 -- config parameters
-if (Config.motion.drive and Config.motion.drive.parameters) then
-  drive:load_parameters(Config.motion.drive.parameters)
-end
+drive:load_parameters()
 
 function drive:entry()
 end

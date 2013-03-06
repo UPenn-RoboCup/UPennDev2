@@ -15,9 +15,7 @@ stand_up.parameters = {
 }
 
 -- config parameters
-if (Config.motion.stand_up and Config.motion.stand_up.parameters) then
-  stand_up:load_parameters(Config.motion.stand_up.parameters)
-end
+stand_up:load_parameters()
 
 function stand_up:entry()
 end

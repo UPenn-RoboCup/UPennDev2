@@ -15,9 +15,7 @@ fall.parameters = {
 }
 
 -- config parameters
-if (Config.motion.fall and Config.motion.fall.parameters) then
-  fall:load_parameters(Config.motion.fall.parameters)
-end
+fall:load_parameters()
 
 function fall:entry()
 end

@@ -15,9 +15,7 @@ step_recovery.parameters = {
 }
 
 -- config parameters
-if (Config.motion.step_recovery and Config.motion.step_recovery.parameters) then
-  step_recovery:load_parameters(Config.motion.step_recovery.parameters)
-end
+step_recovery:load_parameters()
 
 function step_recovery:entry()
 end

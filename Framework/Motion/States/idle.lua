@@ -15,9 +15,7 @@ idle.parameters = {
 }
 
 -- config parameters
-if (Config.motion.idle and Config.motion.idle.parameters) then
-  idle:load_parameters(Config.motion.idle.parameters)
-end
+idle:load_parameters()
 
 function idle:entry()
 end

@@ -71,6 +71,11 @@ then
   echo Starting test_walk...
   cd Test
   exec xterm -fn 9x15 -hold -e $LUA test_walk.lua 
+elif [ "$1" = "test_robot_balance2" ]
+then
+  echo Starting test_robot_balance2...
+  cd Test
+  exec xterm -fn 9x15 -hold -e $LUA test_robot_balance2.lua 
 elif [ "$1" = "walk_tuner" ]
 then
   echo Starting walk_tuner...

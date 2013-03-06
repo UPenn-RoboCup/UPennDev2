@@ -75,10 +75,10 @@ end
 -- IMU Parser
 parsers_tbl[2] = function ( str )
   local imu_data = serialization.deserialize( str );
-	local imu_tbl = {};
+--	local imu_tbl = {};
 	-- Store the timestamp of the data
-	imu_tbl.t = imu_data.t;
-  return imu_tbl;
+--	imu_tbl.t = imu_data.t;
+  return imu_data;
 end
 
 local pushers_tbl = {}

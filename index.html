@@ -3,9 +3,14 @@
 
 <script>
   var socket = io.connect('http://localhost');
-  socket.on('news', function (data) {
-    document.write('hello')
+  socket.on('imu', function (data) {
+    //document.write('Gyro: {'+data.Wy+', '+data.Wy+', '+data.Wz+'}<br/>')
+    $('#gyro').text( data.t+': Gyro: {'+data.Wy+', '+data.Wy+', '+data.Wz+'}' );
     console.log(data);
-    socket.emit('my other event', { my: 'data' });
+    // Send a reply
+    //socket.emit('my other event', { my: 'data' });
   });
 </script>
+
+<div id="gyro">
+</div>

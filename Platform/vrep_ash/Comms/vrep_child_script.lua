@@ -5,7 +5,7 @@ require('vector')
 require('util')
 require('dcm')
 
-VRepCommsManager = {}
+vrep_child_script = {}
 
 local function limit(x, min, max)
   return math.min(math.max(x, min), max)
@@ -114,40 +114,40 @@ end
 -- User interface
 ---------------------------------------------------------------------------
 
-VRepCommsManager.get_time = simGetSimulationTime
+vrep_child_script.get_time = simGetSimulationTime
 
-function VRepCommsManager.set_time_step(t)
+function vrep_child_script.set_time_step(t)
   -- for compatibility
 end
 
-function VRepCommsManager.get_time_step()
+function vrep_child_script.get_time_step()
   return time_step_ms/1000
 end
 
-function VRepCommsManager.get_update_rate()
+function vrep_child_script.get_update_rate()
   return 1000/time_step_ms
 end
 
-function VRepCommsManager.reset_simulator()
+function vrep_child_script.reset_simulator()
   simStopSimulation()
   simStartSimulation()
 end
 
-function VRepCommsManager.reset_simulator_physics()
+function vrep_child_script.reset_simulator_physics()
   simResetDynamicObject(handles.robot)
 end
 
-function VRepCommsManager.set_simulator_torso_frame(frame)
+function vrep_child_script.set_simulator_torso_frame(frame)
   local pose = frame:get_pose()
   -- -1 means set absolute position/orientation
   simSetObjectPosition(handles.robot, -1, {pose[1], pose[2], pose[3]})
   simSetObjectOrientation(handles.robot, -1, {pose[4], pose[5], pose[6]})
 end
 
-function VRepCommsManager.set_simulator_torso_twist(twist)
+function vrep_child_script.set_simulator_torso_twist(twist)
 end
 
-function VRepCommsManager.entry()
+function vrep_child_script.entry()
   -- initialize vrep devices
   initialize_devices()
   time_step_ms = simGetSimulationTimeStep()
@@ -164,15 +164,15 @@ function VRepCommsManager.entry()
   dcm:set_joint_velocity_sensor(0, 'all')
 
   -- initialize sensor shared memory
-  VRepCommsManager.update()
+  vrep_child_script.update()
 end
 
-function VRepCommsManager.update()
+function vrep_child_script.update()
   update_actuators()
   update_sensors()
 end
 
-function VRepCommsManager.exit()
+function vrep_child_script.exit()
 end
 
-return VRepCommsManager
+return vrep_child_script

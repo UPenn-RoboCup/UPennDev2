@@ -21,10 +21,19 @@ local rpc_endpoint = 'tcp://lo:12000'
 
 local function draw_screen()
   curses.clear()
-  curses.printw('                              Motion Manager\n')
+  curses.printw('fps : %7.2f                   Motion Manager\n', 
+                 Platform.get_update_rate())
   curses.printw('///////////////////////////////////////')
   curses.printw('///////////////////////////////////////\n')
-  curses.printw('update rate : %.2f     \n', Platform.get_update_rate())
+  curses.printw('               %25s %25s\n', 'state', 'event')
+  curses.printw('---------------------------------------')
+  curses.printw('---------------------------------------\n')
+  curses.printw('Locomotion   : %25s %25s\n',
+                 Locomotion:get_state(), Locomotion:get_event() or '')
+  curses.printw('Manipulation : %25s %25s\n',
+                 Manipulation:get_state(), Manipulation:get_event() or '')
+  curses.printw('Attention    : %25s %25s\n',
+                 Attention:get_state(), Attention:get_event() or '')
   curses.refresh()
 end
 

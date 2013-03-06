@@ -64,6 +64,10 @@ local function update_stance_parameters()
   z_offset = stand.parameters.z_offset
   a_offset = stand.parameters.a_offset
   hip_pitch_offset = stand.parameters.hip_pitch_offset
+  hip_roll_fb = stand.parameters.hip_roll_fb
+  knee_pitch_fb = stand.parameters.knee_pitch_fb
+  ankle_roll_fb = stand.parameters.ankle_roll_fb
+  ankle_pitch_fb = stand.parameters.ankle_pitch_fb
 end
 
 local function update_gyro()

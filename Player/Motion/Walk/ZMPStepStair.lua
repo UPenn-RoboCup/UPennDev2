@@ -88,6 +88,7 @@ armShift = vector.new({0, 0});
 active = false;
 t0 = Body.get_time();
 t1 = Body.get_time();
+ph = 1;
 
 --ZMP preview parameters
 timeStep = 0.015; --15ms
@@ -138,20 +139,21 @@ function generate_step_queue(stepdef)
   local step_queue = {};
   local uLeft=vector.new({-supportX,footY,0});
   local uRight=vector.new({-supportX,-footY,0});
-  local zaLeft={0,0};
-  local zaRight={0,0};
+  local zaLeft=vector.new({0,0});
+  local zaRight=vector.new({0,0});
 
   for i=1, #stepdef do
     local supportLeg = stepdef[i][1];
     if supportLeg==0 then --LS
       uRight= uRight + vector.new(stepdef[i][2]);
-      zaRight = vector.new(stepdef[i][3]);
+      zaRight = zaRight + vector.new(stepdef[i][3]);
     elseif supportLeg==1 then
       uLeft= uLeft + vector.new(stepdef[i][2]);
-      zaLeft = vector.new(stepdef[i][3]);
-    elseif supportLeg ==2 then --DS
-      zaRight = zaRight + vector.new(stepdef[i][3]);
       zaLeft = zaLeft + vector.new(stepdef[i][3]);
+    elseif supportLeg ==2 then --DS
+      --Body height change
+      zaRight = zaRight - vector.new(stepdef[i][3]);
+      zaLeft = zaLeft - vector.new(stepdef[i][3]);
     end
     step_queue[i]={};
     step_queue[i][1]= {uLeft[1],uLeft[2],uLeft[3]};
@@ -160,8 +162,6 @@ function generate_step_queue(stepdef)
     step_queue[i][4]= stepdef[i][4]; --duration
     step_queue[i][5]= {zaLeft[1],zaLeft[2]};
     step_queue[i][6]= {zaRight[1],zaRight[2]};
-
-print("Queue :",i,"zaLeft:",zaLeft[1],zaRight[1]);
 
   end
   return step_queue;
@@ -224,55 +224,159 @@ stepdef2={
 stepHeight = Config.zmpstep.stepHeight;
 maxStepHeight = 0.30;
 
-maxStepHeight = 0.25; --for stair
-
-maxStepHeight = 0.20; --for gap cross
 maxStepHeight = 0.10; --for gap cross
 
 
 
---One step forward and up
-stepdef3={
+
+--Params for stair climbing
+maxStepHeight = 0.25; 
+bodyHeight1 = 1.10; 
+
+
+
+
+--First step 
+stepdef_qual3_1={
   {2, {0,0,0},{0,0},0.8},
-  {0, {0.40,0,0},{0.20,0},0.8}, --LS step
-  {2, {0,0,0},{0,0},0.8}, --Stop
-  {1, {0.40,0,0},{0.20,0},1.0}, --RS step
+  {0, {0.40,0,0},{0.20,0},0.8}, --LS step up
+  {2, {0,0,0},{0.0,0},0.8}, --DS, 
+  {1, {0.40,0,0},{0.20,0},1.0}, --RS step up
 
---  {2, {0,0,0},{0,0},1.5}, --Stop
-  {2, {0,0,0},{0,0},0.8}, --Stop
+  {2, {0,0,0},{0.20,0},0.8}, --Stop and raise bodyHeight 
+  {0, {0.20,0,0},{0.0,0},0.8}, --LS step
+  {1, {0.20,0,0},{0.0,0},0.8}, --RS step
+  {2, {0,0,0},{-0.20,0},0.8}, --Stop and lower bodyHeight 
 
-  {0, {0.30,0,0},{0.20,0},0.8}, --LS step
-  {1, {0.30,0,0},{0.20,0},0.8}, --LS step
-  {2, {0,0,0},{0,0},1.5}, --Stop
---  {2, {0,0,0},{0,0},0.8}, --Stop
-
-  {0, {0.50,0,0},{0,0},1.0}, --RS step down
-  {2, {0,0,0},{0,0},0.8}, --Stop
-  {1, {0.50,0,0},{0,0},0.8}, --LS step down
-
+  {2, {0,0,0},{0.0,0},0.8}, --Stop 
+  {0, {0.50,0,0},{-0.20,0},1.0}, --RS step down
+  {2, {0,0,0},{0,0},0.80}, --DS
+  {1, {0.50,0,0},{-0.20,0},0.8}, --LS step down
   {2, {0,0,0},{0,0},0.8}, --Stop
 }
 
 
---Toe tilting test 
+
+--Second step 
+stepdef_qual3_2={
+  {2, {0,0,0},{0,0},0.8},
+
+  {0, {0.40,0,0},{0.20,0},0.8}, --LS step up
+  {2, {0,0,0},{0.05,0},0.8}, --DS, raise bodyheight
+  {2, {0,0,0},{0.0,0},0.8}, --DS, 
+  {1, {0.40,0,0},{0.20,0},1.0}, --RS step up
+  {2, {0,0,0},{0.15,0},0.8}, --Stop and raise bodyHeight 
+
+
+  {2, {0,0,0},{0.0,0},1.5}, --Stop
+--  {0, {0.30,0,0},{0.20,0},0.8}, --LS step up
+  {0, {0.27,0,0},{0.20,0},0.8}, --LS step up
+
+  {2, {0,0,0},{0.05,0},0.8}, --DS, Raise bodyheight
+  {2, {0,0,0},{0.0,0},0.8}, --DS, 
+--  {1, {0.30,0,0},{0.20,0},1.0}, --RS step up
+  {1, {0.27,0,0},{0.20,0},1.0}, --RS step up
+  {2, {0,0,0},{0.0,0},0.8}, --DS
+  {2, {0,0,0},{0.15,0},0.8}, --Stop and raise bodyHeight 
+
+  {0, {0.30,0,0},{0.0,0},0.8}, --LS
+  {2, {0,0,0},{0.0,0},0.2}, --DS
+  {1, {0.30,0,0},{0.0,0},0.8}, --RS
+
+  {2, {0,0,0},{-0.20,0},0.8}, --Stop and decrease bodyHeight 
+
+
+  {2, {0,0,0},{0.0,0},1.5}, --Stop
+  {0, {0.27,0,0},{-0.20,0},1.0}, --LS step down
+  {2, {0,0,0},{0,0},0.8}, --Stop
+  {1, {0.27,-0.040,0},{-0.20,0},1.0}, --RS step down
+  {2, {0,0,0},{0,0},0.8}, --Stop
+
+  {2, {0,0,0},{-0.20,0},0.8}, --Stop and decrease bodyHeight 
+
+  {2, {0,0,0},{0.0,0},0.8}, --Stop and decrease bodyHeight 
+  {0, {0.40,0,0},{-0.20,0},1.0}, --LS step down
+  {2, {0,0,0},{0,0},0.8}, --Stop
+  {1, {0.40,0,0},{-0.20,0},1.0}, --RS step down
+  {2, {0,0,0},{0,0},0.8}, --Stop
+
+  {2, {0,0,0},{0,0},10}, --Stop
+}
+
+
+
+
+
+--Second step 
+stepdef_qual3_3={
+  {2, {0,0,0},{0,0},0.8},
+  {0, {0.40,0,0},{0.20,0},1.0}, --LS step up
+  {2, {0,0,0},{0.0,0},0.8}, --DS, 
+  {1, {0.40,0,0},{0.20,0},1.0}, --RS step up
+  {2, {0,0,0},{0.20,0},0.8}, --Stop and raise bodyHeight 
+
+  {0, {0.20,0,0},{0.0,0},0.8}, --LS step 
+
+
+  {1, {0.50,0,0},{0.20,0},1.0}, --RS step 
+  {2, {0,0,0},{0.0,0},0.8}, --DS, 
+  {0, {0.50,0,0},{0.20,0},1.0}, --LS step 
+  {2, {0,0,0},{0.20,0},0.8}, --Stop and raise bodyHeight 
+
+  {2, {0,0,0},{0.0,0},0.8}, --Stop and raise bodyHeight 
+  {1, {0.50,0,0},{0.20,0},1.0}, --RS step 
+  {2, {0,0,0},{0.0,0},0.8}, --DS, 
+  {0, {0.50,0,0},{0.20,0},1.0}, --LS step 
+  {2, {0,0,0},{0.20,0},0.8}, --Stop and raise bodyHeight 
+
+  {2, {0,0,0},{0.0,0},0.8}, --Stop and raise bodyHeight 
+  {1, {0.50,0,0},{0.20,0},1.0}, --RS step 
+  {2, {0,0,0},{0.0,0},0.8}, --DS, 
+  {0, {0.50,0,0},{0.20,0},1.0}, --LS step 
+  {2, {0,0,0},{0.20,0},0.8}, --Stop and raise bodyHeight 
+
+  {2, {0,0,0},{0.0,0},0.8}, --Stop and raise bodyHeight 
+  {1, {0.50,0,0},{0.20,0},1.0}, --RS step 
+  {2, {0,0,0},{0.0,0},0.8}, --DS, 
+  {0, {0.50,0,0},{0.20,0},1.0}, --LS step 
+  {2, {0,0,0},{0.20,0},0.8}, --Stop and raise bodyHeight 
+
+  {2, {0,0,0},{0.0,0},0.8}, --Stop and raise bodyHeight 
+  {1, {0.20,0,0},{0.0,0},1.0}, --RS step 
+
+
+
+
 --[[
-stepdef3={
-  {2, {0,0,0},{0,0},0.8},
-  {0, {0.40,0,0},{0.20,0},0.8}, --LS step
-  {2, {0,0,0},{0,0},0.8}, --Stop
-  {1, {0.40,0,0},{0.20,0},1.0}, --RS step
-  {2, {0,0,0},{0,0},0.8}, --Stop
-
-  {2, {0,0,0},{-0.20,0},5.0}, --Raise bodyHeight by 20cm
-
-  {2, {0,0,0},{0,0},0.8}, --Stop
-}
+  {0, {0.20,0,0},{0.0,0},0.8}, --LS step 
+  {1, {0.20,0,0},{0.0,0},0.8}, --RS step 
+  {0, {0.30,0,0},{0.20,0},1.0}, --LS step up
+  {2, {0,0,0},{0.0,0},0.8}, --DS, 
+  {1, {0.30,0,0},{0.20,0},1.0}, --RS step up
+  {2, {0,0,0},{0.20,0},0.8}, --Stop and raise bodyHeight 
 --]]
 
 
-step_queue = generate_step_queue(stepdef1);
-step_queue = generate_step_queue(stepdef2);
---step_queue = generate_step_queue(stepdef3);
+
+  {2, {0,0,0},{0.0,0},10}, --Stop and raise bodyHeight 
+
+}
+
+
+
+
+
+
+
+
+
+
+--step_queue = generate_step_queue(stepdef1);
+--step_queue = generate_step_queue(stepdef2);
+
+--step_queue = generate_step_queue(stepdef_qual3_1);
+--step_queue = generate_step_queue(stepdef_qual3_2);
+step_queue = generate_step_queue(stepdef_qual3_3);
 
 step_queue_count = 0;
 step_queue_t0 = 0;
@@ -312,6 +416,7 @@ end
 function stance_reset()
   --Quick hack: reset uTorso 
   --TODO: integrated odometry handling at Motion.lua
+
   uTorso = {0,0,0};
 
   --Clear current position variables
@@ -320,6 +425,7 @@ function stance_reset()
   uLeft1, uLeft2 = uLeft, uLeft;
   uRight1, uRight2 = uRight, uRight;
   zaLeft1,zaRight1 = {0,0},{0,0};
+  zaLeft0,zaRight0 = {0,0},{0,0};
   uSupport = uTorso;
 
   --Clear future trajectory variable
@@ -335,12 +441,15 @@ function stance_reset()
      supportLegs[i]=2; --double support
      uLeftTargets[i]={uLeft[1],uLeft[2],uLeft[3]};
      uRightTargets[i]={uRight[1],uRight[2],uRight[3]};
+     zaLefts[i]={0,0};
+     zaRights[i]={0,0};
      phs[i]= 0;
   end
 
   --reset step queue count
   step_queue_t0 = Body.get_time();
   step_queue_count = 0;
+  ph = 1;
 
   bodyHeight = bodyHeight0; --Start from walking body height
 end
@@ -398,7 +507,7 @@ function update_zmp_array()
   else
     phF = 0;
   end
-
+  
   table.remove(zmpx,1);
   table.remove(zmpy,1);
   table.remove(uLeftTargets,1);
@@ -416,8 +525,8 @@ function update_zmp_array()
   --Surface info update
   table.remove(zaLefts,1);
   table.remove(zaRights,1);
-  table.insert(zaLefts,zaLeftF);
-  table.insert(zaRights,zaRightF);
+  table.insert(zaLefts,{zaLeftF[1],zaLeftF[2]});
+  table.insert(zaRights,{zaRightF[1],zaRightF[2]});
 
 end
 
@@ -446,35 +555,42 @@ function update()
     return "done";
   end
 
-  if supportLeg ~= supportLegs[1] then --New step
+  if ph>phs[1] then --New step
     t1=t;
     uLeft = uLeft1;
     uRight = uRight1;
     uLeft0 = uLeft1;
     uRight0 = uRight1;
 
-    zaLeft0 = zaLeft1; 
-    zaRight0 = zaRight1;
+    zaLeft0[1],zaLeft0[2] = zaLeft1[1],zaLeft1[2]; 
+    zaRight0[1],zaRight0[2] = zaRight1[1],zaRight1[2];
 
     supportLeg = supportLegs[1];
 
-    if supportLeg==2 then 
-    else
-      uLeft1=uLeftTargets[1];
-      uRight1=uRightTargets[1];
-      zaLeft1 = zaLefts[1]; 
-      zaRight1 = zaRights[1];
-    end
-
+--[[
 if supportLeg==0 then print("LS")
 elseif supportLeg==1 then print ("RS")
 else print("DS")
 end
+--]]
 
-print("zL: ",zaLeft0[1],zaLeft1[1]);
-print("zR: ",zaRight0[1],zaRight1[1]);
+
+--[[
+print("zL: ",zaLeft0[1],zaLefts[1][1]);
+print("zR: ",zaRight0[1],zaRights[1][1]);
 print()
+--]]
 
+
+    if supportLeg==2 then 
+      zaLeft1 = zaLefts[1]; 
+      zaRight1 = zaRights[1];
+    else
+      uLeft1=uLeftTargets[1];
+      uRight1=uRightTargets[1];
+      zaLeft1[1],zaLeft1[2]=zaLefts[1][1],zaLefts[1][2];
+      zaRight1[1],zaRight1[2]=zaRights[1][1],zaRights[1][2];
+    end
 
     if supportLeg == 0 then --LS
         Body.set_lleg_hardness(hardnessSupport);
@@ -490,9 +606,18 @@ print()
 
 --  xFoot, zFoot = foot_phase(ph);  
 
+
+--[[
+print(string.format("ph:%.2f support:%d L:%.2f->%.2f R: %.2f->%.2f, C:%.2f %.2f",
+	ph,supportLeg, 
+zaLeft0[1],zaLeft1[1],zaRight0[1],zaRight1[1],
+zaLefts[1][1], zaRights[1][1]
+));
+--]]
+
+
   if not active then 
---    pLLeg[3] = 0;
---    pRLeg[3] = 0;
+
   elseif supportLeg == 0 then    -- Left support
 
     xFoot, zFoot, aFoot = foot_phase2(ph,zaRight0,zaRight1);
@@ -512,11 +637,13 @@ print()
     pRLeg[3]=zaRight0[1];
     pRLeg[5]=zaRight0[2];
   else --Double support
+
     pLLeg[3]=(1-phSingle)*zaLeft0[1] + phSingle*zaLeft1[1];
     pLLeg[5]=zaLeft0[2];
 
     pRLeg[3]=(1-phSingle)*zaRight0[1] + phSingle*zaRight1[1];
     pRLeg[5]=zaRight0[2];
+
   end
 
 --print("SLR:",supportLeg,pLLeg[3],pRLeg[3]);
@@ -727,6 +854,13 @@ end
 
 
 function foot_phase2(ph,za0, za1)
+  local maxZ;
+  if za0[1]==za1[1] then
+    maxZ = stepHeight;
+  else
+    maxZ = maxStepHeight;
+  end
+
   local xf,zf,af;
   --Square pattern
   local trajA1=0.3;
@@ -735,17 +869,17 @@ function foot_phase2(ph,za0, za1)
   if phFoot<trajA1 then 
      local phStep = phFoot/trajA1;
      xf = 0;
-     zf = (1-phStep)*za0[1] + phStep * maxStepHeight ;
+     zf = (1-phStep)*za0[1] + phStep * maxZ ;
      af = (1-phStep)*za0[2];
   elseif phFoot<trajA2 then
      local phStep = (phFoot-trajA1)/(trajA2-trajA1);
      xf = phStep;
-     zf = maxStepHeight;
+     zf = maxZ;
      af = 0;
   else
      local phStep = (phFoot-trajA2)/(1-trajA2);
      xf=1;
-     zf = (1-phStep)*maxStepHeight + phStep * za1[1];
+     zf = (1-phStep)*maxZ + phStep * za1[1];
      af = phStep*za1[2];
   end
 

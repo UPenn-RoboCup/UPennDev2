@@ -1,8 +1,11 @@
-require 'unix'
+package.path = "./../../Util/?.lua;"..package.path;
 local simple_ipc = require 'simple_ipc'
 --local test_channel = simple_ipc.setup_publisher('test'); --ipc
 local test_channel = simple_ipc.setup_publisher(5555); --tcp
+os.execute ('sleep .5')
+i = 0
 while true do
-	test_channel:send( unix.time() )
-	unix.usleep(1e6)
+  i = i+1
+	test_channel:send( i )
+  os.execute ('sleep .5')
 end

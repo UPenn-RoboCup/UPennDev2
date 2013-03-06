@@ -87,12 +87,11 @@ local function update_sensors()
   -- update VRep sensor values
   local joint_enable = dcm:get_joint_enable()
   for i = 1,N_JOINT do
-    if (joint_enable[i] == 0) then
-      dcm:set_joint_force_sensor(0, i)
-    else
-      dcm:set_joint_force_sensor(
-        simJointGetForce(handles.servo[i]), i)
-    end
+    f = simJointGetForce(handles.servo[i])
+    dcm:set_joint_force_sensor(f, i)
+    
+    ret_val, velocity = simGetObjectFloatParameter(handles.servo[i], 2012)
+    dcm:set_joint_velocity_sensor(velocity, i)
     
     dcm:set_joint_position_sensor(
         simGetJointPosition(handles.servo[i]), i)

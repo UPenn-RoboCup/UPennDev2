@@ -42,6 +42,9 @@ local function initialize_devices()
   handles.servo = {}
   for i = 1,N_JOINT do
     handles.servo[i] = simGetObjectHandle(servoNames[i])
+    if handles.servo[i] < 0 then
+      print('Could not get handle for '..servoNames[i])
+    end
     -- Make joint motion cyclic (unbounded). Third argument is ignored.
     simSetJointInterval(handles.servo[i], true, {0, 0})
     simSetJointTargetVelocity(handles.servo[i], 0)
@@ -65,8 +68,18 @@ local function update_actuators()
     local max_servo_force = math.abs(joint_force_desired[i])
     simSetJointForce(handles.servo[i], max_servo_force)
     simSetJointTargetVelocity(handles.servo[i], joint_velocity_desired[i])
+    
     -- Object attribute 2000 is whether the motor is enabled
     simSetObjectIntParameter(handles.servo[i], 2000, joint_enable[i])
+    
+    -- Object attribute 2001 is whether the motor is position-controlled
+    if joint_stiffness[i] then
+      simSetJointForce(handles.servo[i], 10000)
+      simSetObjectIntParameter(handles.servo[i], 2001, joint_stiffness[i])
+      simSetJointTargetPosition(handles.servo[i], joint_position_desired[i])
+      -- Object attributes 2002-2004 are PID values
+      simSetObjectFloatParameter(handles.servo[i], 2002, 20000)
+    end
   end
 end
 

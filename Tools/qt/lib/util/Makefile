@@ -1,5 +1,5 @@
 
-include Makefile.inc
+include ../../../../Lib/Makefile.inc
 
 SOURCES= \
 				 lua_rgbselect.cpp 

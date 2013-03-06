@@ -1,8 +1,3 @@
-require('Transform')
-require('cbuffer')
-require('Config')
-require('vector')
-require('util')
 require('dcm')
 
 vrep_child_script = {}

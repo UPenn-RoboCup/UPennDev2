@@ -73,7 +73,7 @@ vrep_ash:
 	&& cd $(CWD)
 	cd Config \
 	&& rm -f Config*.lua \
-	&& ln -s $@/* .\
+	&& ln -s ash/* .\
 	&& cd $(CWD)
 	cd Run \
 	&& rm -f init_robot \

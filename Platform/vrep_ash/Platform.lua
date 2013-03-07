@@ -38,12 +38,15 @@ end
 function Platform.update()
   local t = unix.time()
   local dt = t - t0
-  t0 = t
+
   -- regulate update rate
   if (dt < time_step) then
     unix.usleep((time_step - dt)*1e6)
-    dt = time_step
+    t = unix.time()
+    dt = t - t0
   end
+
+  t0 = t
   update_rate = 0.1*(1/dt) + 0.9*update_rate
 end
 

@@ -344,9 +344,6 @@ stepdef_qual3_3={
   {2, {0,0,0},{0.0,0},0.8}, --Stop and raise bodyHeight 
   {1, {0.20,0,0},{0.0,0},1.0}, --RS step 
 
-
-
-
 --[[
   {0, {0.20,0,0},{0.0,0},0.8}, --LS step 
   {1, {0.20,0,0},{0.0,0},0.8}, --RS step 
@@ -356,9 +353,164 @@ stepdef_qual3_3={
   {2, {0,0,0},{0.20,0},0.8}, --Stop and raise bodyHeight 
 --]]
 
-
-
   {2, {0,0,0},{0.0,0},10}, --Stop and raise bodyHeight 
+
+}
+
+
+
+
+lStep = 0.30;
+
+--First ramp, gradient 0.2
+stepdef_qual3_5={
+  {2, {0,0,0},{0,0},0.8},
+  {0, {0.35,0,0},{0.0,0},1.0}, --LS
+  {1, {0.35,0,0},{0.0,0},1.0}, --RS
+--  {2, {0,0,0},{0,0},0.8},
+
+
+  {2, {0,0,0},{-0.05,0},0.8}, --Lower body
+
+  --Step down on the ramp
+  {2, {0,0,0},{0.0,0},0.8}, --Lower body
+  {0, {0.40,-0.05,0},{-0.05 ,0.2},1.0}, --LS step, wider stance
+  {2, {0,0,0},{0.0,0},1.5}, --DS, 
+  {1, {0.40,0.05,0},{-0.05, 0.2},1.0}, --RS step
+
+  {2, {0,0,0},{-0.10,0},0.8}, --Lower body
+  {2, {0,0,0},{0.0,0},1.5}, --Lower body
+
+  {1, {lStep/2,0,0},{lStep/2*math.tan(0.2) ,0},1.0}, --RS step
+  {2, {0,0,0},{lStep/4*math.tan(0.2),0},0.8}, --Lower body
+  {2, {0,0,0},{0.0,0},0.8}, 
+
+  {0, {lStep,0,0},{lStep*math.tan(0.2) ,0},1.0}, --LS step
+  {2, {0,0,0},{0.0,0},0.4}, 
+  {2, {0,0,0},{lStep/2*math.tan(0.2),0},0.4}, --Lower body
+  {2, {0,0,0},{0.0,0},0.4}, 
+
+  {1, {lStep,0,0},{lStep*math.tan(0.2) ,0},1.0}, --RS step
+  {2, {0,0,0},{0.0,0},0.4}, 
+  {2, {0,0,0},{lStep/2*math.tan(0.2),0},0.8}, --Lower body
+  {2, {0,0,0},{0.0,0},0.4}, 
+
+  {0, {lStep,0,0},{lStep*math.tan(0.2) ,0},1.0}, --LS step
+  {2, {0,0,0},{0.0,0},0.4}, 
+  {2, {0,0,0},{lStep/2*math.tan(0.2),0},0.4}, --Lower body
+  {2, {0,0,0},{0.0,0},0.4}, 
+
+  {1, {lStep,0,0},{lStep*math.tan(0.2) ,0},1.0}, --RS step
+  {2, {0,0,0},{0.0,0},0.4}, 
+  {2, {0,0,0},{lStep/2*math.tan(0.2),0},0.4}, --Lower body
+  {2, {0,0,0},{0.0,0},0.4}, 
+
+  {0, {lStep,0,0},{lStep*math.tan(0.2) ,0},1.0}, --LS step
+  {2, {0,0,0},{0.0,0},0.4}, 
+  {2, {0,0,0},{lStep/2*math.tan(0.2),0},0.4}, --Lower body
+  {2, {0,0,0},{0.0,0},0.4}, 
+
+  {1, {lStep,0,0},{lStep*math.tan(0.2) ,0},1.0}, --RS step
+  {2, {0,0,0},{0.0,0},0.4}, 
+  {2, {0,0,0},{lStep/2*math.tan(0.2),0},0.4}, --Lower body
+  {2, {0,0,0},{0.0,0},0.4}, 
+
+  {0, {lStep,0,0},{lStep*math.tan(0.2) ,0},1.0}, --LS step
+  {2, {0,0,0},{0.0,0},0.4}, 
+  {2, {0,0,0},{lStep/2*math.tan(0.2),0},0.4}, --Lower body
+  {2, {0,0,0},{0.0,0},0.4}, 
+
+  {1, {lStep,0,0},{lStep*math.tan(0.2) ,0},1.0}, --RS step
+  {2, {0,0,0},{0.0,0},0.4}, 
+  {2, {0,0,0},{lStep/2*math.tan(0.2),0},0.4}, --Lower body
+  {2, {0,0,0},{0.0,0},0.4}, 
+
+  {0, {lStep,0,0},{lStep*math.tan(0.2) ,0},1.0}, --LS step
+  {2, {0,0,0},{0.0,0},0.4}, 
+  {2, {0,0,0},{lStep/2*math.tan(0.2),0},0.4}, --Lower body
+  {2, {0,0,0},{0.0,0},0.4}, 
+
+  --Final step
+  {1, {lStep/2,0,0},{lStep/2*math.tan(0.2) ,0},1.0}, --RS step
+  {2, {0,0,0},{0.0,0},0.4}, 
+  {2, {0,0,0},{lStep/4*math.tan(0.2),0},0.4}, --Lower body
+  {2, {0,0,0},{0.0,0},0.4}, 
+
+
+  --Dismount ramp
+  {0, {0.40, 0.04,0},{0.035 ,-0.2},1.0}, --LS step
+  {2, {0,0,0},{0.0,0},1.5}, 
+  {1, {0.40, -0.04,0},{0.035 ,-0.2},1.0}, --LS step
+  {2, {0,0,0},{0.0,0},0.8}, 
+
+  {2, {0,0,0},{0.20,0},10.0}, --Stop
+  {2, {0,0,0},{0.20,0},10.0}, --Stop
+}
+
+
+
+--Obstacle avoiding 
+stepdef_qual3_6={
+
+
+  {2, {0,0,0},{-0.10,0},0.8},
+
+
+  {2, {0,0,0},{0,0},0.8},
+  {0, {0.30,0,0},{0.0,0},0.8}, --LS
+  {2, {0,0,0},{0,0},0.4},
+  {1, {0.60,0,0},{0.0,0},0.8}, --RS
+  {2, {0,0,0},{0,0},0.4},
+  {0, {0.30,0,0},{0.0,0},0.8}, --LS
+  {2, {0,0,0},{0,0},0.4},
+
+  {2, {0,0,0},{0,0},1.5}, --Walk over the first obstacle
+  {0, {0.40,-0.02,0},{0.0,0},1.0}, --LS
+  {2, {0,0,0},{0,0},0.8}, 
+  {1, {0.40,0.025,0},{0.0,0},1.0}, --RS
+  {2, {0,0,0},{0.10,0},0.8},
+
+  --Move sideways a bit
+  {1, {0.0,0.15,0},{0.0,0},0.8}, --RS
+  {0, {0.0,0.15,0},{0.0,0},0.8}, --LS
+  {1, {0.05,0.15,0},{0.0,0},0.8}, --RS
+  {0, {0.05,0.15,0},{0.0,0},0.8}, --LS
+
+  {1, {0.10,0,0},{0.0,0},0.8}, --RS
+
+
+  --Clear high obstacle (rfoot only)
+  {2, {0,0,0},{0,0},1.5}, 
+  {0, {0.50,-0.025,0},{0.0,0},1.0}, --LS
+  {2, {0,0,0},{0,0},0.8}, 
+
+  {1, {0.40,0.050,0},{0.0,0},0.8}, --RS
+  {2, {0,0,0},{0,0},0.8}, 
+
+
+
+  {0, {0.0,-0.22,0},{0.0,0},1.0}, --LS
+  {2, {0,0,0},{0,0},0.8}, 
+  {1, {0.0,-0.32,0},{0.0,0},1.0}, --LS
+  {2, {0,0,0},{0,0},0.4}, 
+  {2, {0,0,0},{-0.10,0},0.4},
+  {2, {0,0,0},{0,0},0.4}, 
+
+
+  {0, {0.25,0,0},{0.0,0},0.8}, --LS
+  {2, {0,0,0},{0,0},0.4}, 
+  {1, {0.5,0.08,0},{0.0,0},0.8}, --RS
+  {2, {0,0,0},{0,0},0.4}, 
+  {0, {0.5,0.10,0},{0.0,0},0.8}, --RS
+  {2, {0,0,0},{0,0},0.4}, 
+  {1, {0.5,0.10,0},{0.0,0},0.8}, --RS
+  {2, {0,0,0},{0,0},0.4}, 
+  {0, {0.25,0.05,0},{0.0,0},0.8}, --RS
+  {2, {0,0,0},{0,0},0.4}, 
+
+
+  {2, {0,0,0},{0,0},10.0}, --Stop
+  {2, {0,0,0},{0,0},10.0}, --Stop
 
 }
 
@@ -371,12 +523,239 @@ stepdef_qual3_3={
 
 
 
---step_queue = generate_step_queue(stepdef1);
---step_queue = generate_step_queue(stepdef2);
+
+
+
+
+
+
+
+
+--Last ramp, gradient 0.244
+lStep2 = 0.30;
+
+stepdef_qual3_7={
+
+  {2, {0,0,0},{-0.10,0},0.8}, --Lower body
+  {2, {0,0,0},{-0.0,0},1.5},
+
+  --Step down on the ramp
+  {2, {0,0,0},{0.0,0},0.8}, --Lower body
+  {0, {0.40,-0.05,0},{-0.01 ,-0.24},1.0}, --LS step, wider stance
+  {2, {0,0,0},{0.0,0},1.5}, --DS, 
+  {1, {0.40,0.05,0},{-0.01, -0.24},1.0}, --RS step
+  {2, {0,0,0},{0.0,0},1.5}, --DS, 
+
+  --First step down
+  {0, {lStep2/2,0,0},{lStep2/2*math.tan(-0.24) ,0},1.0}, --RS step
+  {2, {0,0,0},{lStep2/4*math.tan(-0.24),0},0.8}, --Lower body
+  {2, {0,0,0},{0.0,0},0.8}, 
+
+
+
+  {1, {lStep2,0,0},{lStep*math.tan(-0.24) ,0},1.0}, --RS step
+  {2, {0,0,0},{0.0,0},0.4}, 
+  {2, {0,0,0},{lStep2/2*math.tan(-0.24),0},0.8}, --Lower body
+  {2, {0,0,0},{0.0,0},0.4}, 
+
+  {0, {lStep2,0,0},{lStep*math.tan(-0.24) ,0},1.0}, --RS step
+  {2, {0,0,0},{0.0,0},0.4}, 
+  {2, {0,0,0},{lStep2/2*math.tan(-0.24),0},0.8}, --Lower body
+  {2, {0,0,0},{0.0,0},0.4}, 
+
+
+
+  {1, {lStep2,0,0},{lStep*math.tan(-0.24) ,0},1.0}, --RS step
+  {2, {0,0,0},{0.0,0},0.4}, 
+  {2, {0,0,0},{lStep2/2*math.tan(-0.24),0},0.8}, --Lower body
+  {2, {0,0,0},{0.0,0},0.4}, 
+
+  {0, {lStep2,0,0},{lStep*math.tan(-0.24) ,0},1.0}, --RS step
+  {2, {0,0,0},{0.0,0},0.4}, 
+  {2, {0,0,0},{lStep2/2*math.tan(-0.24),0},0.8}, --Lower body
+  {2, {0,0,0},{0.0,0},0.4}, 
+
+
+  {1, {lStep2,0,0},{lStep*math.tan(-0.24) ,0},1.0}, --RS step
+  {2, {0,0,0},{0.0,0},0.4}, 
+  {2, {0,0,0},{lStep2/2*math.tan(-0.24),0},0.8}, --Lower body
+  {2, {0,0,0},{0.0,0},0.4}, 
+
+  {0, {lStep2,0,0},{lStep*math.tan(-0.24) ,0},1.0}, --RS step
+  {2, {0,0,0},{0.0,0},0.4}, 
+  {2, {0,0,0},{lStep2/2*math.tan(-0.24),0},0.8}, --Lower body
+  {2, {0,0,0},{0.0,0},0.4}, 
+
+
+  {1, {lStep2,0,0},{lStep*math.tan(-0.24) ,0},1.0}, --RS step
+  {2, {0,0,0},{0.0,0},0.4}, 
+  {2, {0,0,0},{lStep2/2*math.tan(-0.24),0},0.8}, --Lower body
+  {2, {0,0,0},{0.0,0},0.4}, 
+
+  {0, {lStep2,0,0},{lStep*math.tan(-0.24) ,0},1.0}, --RS step
+  {2, {0,0,0},{0.0,0},0.4}, 
+  {2, {0,0,0},{lStep2/2*math.tan(-0.24),0},0.8}, --Lower body
+  {2, {0,0,0},{0.0,0},0.4}, 
+
+
+
+  {1, {lStep2,0,0},{lStep*math.tan(-0.24) ,0},1.0}, --RS step
+  {2, {0,0,0},{0.0,0},0.4}, 
+  {2, {0,0,0},{lStep2/2*math.tan(-0.24),0},0.8}, --Lower body
+  {2, {0,0,0},{0.0,0},0.4}, 
+
+  {0, {lStep2,0,0},{lStep*math.tan(-0.24) ,0},1.0}, --RS step
+  {2, {0,0,0},{0.0,0},0.4}, 
+  {2, {0,0,0},{lStep2/2*math.tan(-0.24),0},0.8}, --Lower body
+  {2, {0,0,0},{0.0,0},0.4}, 
+
+
+  {1, {lStep2,0,0},{lStep*math.tan(-0.24) ,0},1.0}, --RS step
+  {2, {0,0,0},{0.0,0},0.4}, 
+  {2, {0,0,0},{lStep2/2*math.tan(-0.24),0},0.8}, --Lower body
+  {2, {0,0,0},{0.0,0},0.4}, 
+
+  {0, {lStep2,0,0},{lStep*math.tan(-0.24) ,0},1.0}, --RS step
+  {2, {0,0,0},{0.0,0},0.4}, 
+  {2, {0,0,0},{lStep2/2*math.tan(-0.24),0},0.8}, --Lower body
+  {2, {0,0,0},{0.0,0},0.4}, 
+
+
+  {1, {lStep2,0,0},{lStep*math.tan(-0.24) ,0},1.0}, --RS step
+  {2, {0,0,0},{0.0,0},0.4}, 
+  {2, {0,0,0},{lStep2/2*math.tan(-0.24),0},0.8}, --Lower body
+  {2, {0,0,0},{0.0,0},0.4}, 
+
+  {0, {lStep2,0,0},{lStep*math.tan(-0.24) ,0},1.0}, --RS step
+  {2, {0,0,0},{0.0,0},0.4}, 
+  {2, {0,0,0},{lStep2/2*math.tan(-0.24),0},0.8}, --Lower body
+  {2, {0,0,0},{0.0,0},0.4}, 
+
+
+
+  {1, {lStep2,0,0},{lStep*math.tan(-0.24) ,0},1.0}, --RS step
+  {2, {0,0,0},{0.0,0},0.4}, 
+  {2, {0,0,0},{lStep2/2*math.tan(-0.24),0},0.8}, --Lower body
+  {2, {0,0,0},{0.0,0},0.4}, 
+
+  {0, {lStep2,0,0},{lStep*math.tan(-0.24) ,0},1.0}, --RS step
+  {2, {0,0,0},{0.0,0},0.4}, 
+  {2, {0,0,0},{lStep2/2*math.tan(-0.24),0},0.8}, --Lower body
+  {2, {0,0,0},{0.0,0},0.4}, 
+
+
+  {1, {lStep2,0,0},{lStep*math.tan(-0.24) ,0},1.0}, --RS step
+  {2, {0,0,0},{0.0,0},0.4}, 
+  {2, {0,0,0},{lStep2/2*math.tan(-0.24),0},0.8}, --Lower body
+  {2, {0,0,0},{0.0,0},0.4}, 
+
+  {0, {lStep2,0,0},{lStep*math.tan(-0.24) ,0},1.0}, --RS step
+  {2, {0,0,0},{0.0,0},0.4}, 
+  {2, {0,0,0},{lStep2/2*math.tan(-0.24),0},0.8}, --Lower body
+  {2, {0,0,0},{0.0,0},0.4}, 
+
+
+  {1, {lStep2,0,0},{lStep*math.tan(-0.24) ,0},1.0}, --RS step
+  {2, {0,0,0},{0.0,0},0.4}, 
+  {2, {0,0,0},{lStep2/2*math.tan(-0.24),0},0.8}, --Lower body
+  {2, {0,0,0},{0.0,0},0.4}, 
+
+  {0, {lStep2,0,0},{lStep*math.tan(-0.24) ,0},1.0}, --RS step
+  {2, {0,0,0},{0.0,0},0.4}, 
+  {2, {0,0,0},{lStep2/2*math.tan(-0.24),0},0.8}, --Lower body
+  {2, {0,0,0},{0.0,0},0.4}, 
+
+
+  {1, {lStep2,0,0},{lStep*math.tan(-0.24) ,0},1.0}, --RS step
+  {2, {0,0,0},{0.0,0},0.4}, 
+  {2, {0,0,0},{lStep2/2*math.tan(-0.24),0},0.8}, --Lower body
+  {2, {0,0,0},{0.0,0},0.4}, 
+
+  {0, {lStep2,0,0},{lStep*math.tan(-0.24) ,0},1.0}, --RS step
+  {2, {0,0,0},{0.0,0},0.4}, 
+  {2, {0,0,0},{lStep2/2*math.tan(-0.24),0},0.8}, --Lower body
+  {2, {0,0,0},{0.0,0},0.4}, 
+
+
+  {1, {lStep2,0,0},{lStep*math.tan(-0.24) ,0},1.0}, --RS step
+  {2, {0,0,0},{0.0,0},0.4}, 
+  {2, {0,0,0},{lStep2/2*math.tan(-0.24),0},0.8}, --Lower body
+  {2, {0,0,0},{0.0,0},0.4}, 
+
+  {0, {lStep2,0,0},{lStep*math.tan(-0.24) ,0},1.0}, --RS step
+  {2, {0,0,0},{0.0,0},0.4}, 
+  {2, {0,0,0},{lStep2/2*math.tan(-0.24),0},0.8}, --Lower body
+  {2, {0,0,0},{0.0,0},0.4}, 
+
+
+  {1, {lStep2,0,0},{lStep*math.tan(-0.24) ,0},1.0}, --RS step
+  {2, {0,0,0},{0.0,0},0.4}, 
+  {2, {0,0,0},{lStep2/2*math.tan(-0.24),0},0.8}, --Lower body
+  {2, {0,0,0},{0.0,0},0.4}, 
+
+  {0, {lStep2,0,0},{lStep*math.tan(-0.24) ,0},1.0}, --RS step
+  {2, {0,0,0},{0.0,0},0.4}, 
+  {2, {0,0,0},{lStep2/2*math.tan(-0.24),0},0.8}, --Lower body
+  {2, {0,0,0},{0.0,0},0.4}, 
+
+  {1, {lStep2,0,0},{lStep*math.tan(-0.24) ,0},1.0}, --RS step
+  {2, {0,0,0},{0.0,0},0.4}, 
+  {2, {0,0,0},{lStep2/2*math.tan(-0.24),0},0.8}, --Lower body
+  {2, {0,0,0},{0.0,0},0.4}, 
+
+  {0, {lStep2,0,0},{lStep*math.tan(-0.24) ,0},1.0}, --RS step
+  {2, {0,0,0},{0.0,0},0.4}, 
+  {2, {0,0,0},{lStep2/2*math.tan(-0.24),0},0.8}, --Lower body
+  {2, {0,0,0},{0.0,0},0.4}, 
+
+
+  {1, {lStep2,0,0},{lStep*math.tan(-0.24) ,0},1.0}, --RS step
+  {2, {0,0,0},{0.0,0},0.4}, 
+  {2, {0,0,0},{lStep2/2*math.tan(-0.24),0},0.8}, --Lower body
+  {2, {0,0,0},{0.0,0},0.4}, 
+
+  {0, {lStep2,0,0},{lStep*math.tan(-0.24) ,0},1.0}, --RS step
+  {2, {0,0,0},{0.0,0},0.4}, 
+  {2, {0,0,0},{lStep2/2*math.tan(-0.24),0},0.8}, --Lower body
+  {2, {0,0,0},{0.0,0},0.4}, 
+
+
+  {1, {lStep2,0,0},{lStep*math.tan(-0.24) ,0},1.0}, --RS step
+  {2, {0,0,0},{0.0,0},0.4}, 
+  {2, {0,0,0},{lStep2/2*math.tan(-0.24),0},0.8}, --Lower body
+  {2, {0,0,0},{0.0,0},0.4}, 
+
+
+
+--Final step
+
+  {0, {lStep2/2,0,0},{lStep/2*math.tan(-0.24) ,0},1.0}, --RS step
+  {2, {0,0,0},{0.0,0},0.4}, 
+
+
+--Dismount ramp
+
+  {2, {0,0,0},{-0.15,0},0.8}, 
+  {2, {0,0,0},{0.0,0},0.8}, 
+
+  {1, {0.40,0,0},{-0.10 ,0.24},1.0}, --RS step
+  {2, {0,0,0},{0.0,0},0.8}, 
+  {0, {0.40,0,0},{-0.10 ,0.24},1.0}, --LS step
+  {2, {0,0,0},{0.0,0},0.8}, 
+
+  {2, {0,0,0},{0.20,0},10.0}, --Stop
+  {2, {0,0,0},{0.20,0},10.0}, --Stop
+}
+
 
 --step_queue = generate_step_queue(stepdef_qual3_1);
 --step_queue = generate_step_queue(stepdef_qual3_2);
-step_queue = generate_step_queue(stepdef_qual3_3);
+--step_queue = generate_step_queue(stepdef_qual3_3);
+--step_queue = generate_step_queue(stepdef_qual3_5);
+step_queue = generate_step_queue(stepdef_qual3_6);
+--step_queue = generate_step_queue(stepdef_qual3_7);
+
+
 
 step_queue_count = 0;
 step_queue_t0 = 0;
@@ -624,25 +1003,25 @@ zaLefts[1][1], zaRights[1][1]
     uRight = util.se2_interpolate(xFoot, uRight0, uRight1);
 
     pLLeg[3]=zaLeft0[1];
-    pLLeg[5]=zaLeft0[2];
+    pLLeg[5]=-zaLeft0[2];
     pRLeg[3]=zFoot;
-    pRLeg[5]=aFoot;
+    pRLeg[5]=-aFoot;
  
   elseif supportLeg==1 then    -- Right support
     xFoot, zFoot, aFoot = foot_phase2(ph,zaLeft0,zaLeft1);
     uLeft = util.se2_interpolate(xFoot, uLeft0, uLeft1);
 
     pLLeg[3]=zFoot;
-    pLLeg[5]=aFoot;
+    pLLeg[5]=-aFoot;
     pRLeg[3]=zaRight0[1];
-    pRLeg[5]=zaRight0[2];
+    pRLeg[5]=-zaRight0[2];
   else --Double support
 
     pLLeg[3]=(1-phSingle)*zaLeft0[1] + phSingle*zaLeft1[1];
-    pLLeg[5]=zaLeft0[2];
+    pLLeg[5]=-zaLeft0[2];
 
     pRLeg[3]=(1-phSingle)*zaRight0[1] + phSingle*zaRight1[1];
-    pRLeg[5]=zaRight0[2];
+    pRLeg[5]=-zaRight0[2];
 
   end
 
@@ -780,8 +1159,11 @@ end
 function motion_arms()
   qLArm[1],qLArm[2]=qLArm0[1]+armShift[1],qLArm0[2]+armShift[2];
   qRArm[1],qRArm[2]=qRArm0[1]+armShift[1],qRArm0[2]+armShift[2];
+
+--[[
   qLArm[2]=math.max(8*math.pi/180,qLArm[2])
   qRArm[2]=math.min(-8*math.pi/180,qRArm[2]);
+--]]
 
   Body.set_larm_command(qLArm);
   Body.set_rarm_command(qRArm);
@@ -860,6 +1242,9 @@ function foot_phase2(ph,za0, za1)
   else
     maxZ = maxStepHeight;
   end
+
+
+maxZ = maxStepHeight;
 
   local xf,zf,af;
   --Square pattern

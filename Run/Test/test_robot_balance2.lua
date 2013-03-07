@@ -23,7 +23,7 @@ local joint = Config.joint
 --------------------------------------------------------------------
 -- Parameters
 --------------------------------------------------------------------
-local t, dt = Platform.get_time(), 0
+local t, dt = 0, 0 --Platform.get_time(), 0
 local qt = vector.new{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0} --desired joint angles 
 local qt_comp = vector.new{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0} --desired joint angles 
 local joint_pos = vector.new{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0} --current joint positions
@@ -507,7 +507,7 @@ dcm:set_joint_enable(1, 'all')
 qt = vector.copy(set_values) 
 printdata = true
 
-local ident = "t6"
+local ident = "t8"
 local fw_log = assert(io.open("Logs/fw_log"..ident..".txt","w"))
 local fw_reg = assert(io.open("Logs/fw_reg"..ident..".txt","w"))
 
@@ -538,9 +538,14 @@ end
 --------------------------------------------------------------------
 while run do 
   Platform.update()
-  Proprioception.update()
-  dt = Platform.get_time() - t --
+  dt = Platform.get_time() - t
+  if dt< 0.004 then
+    unix.usleep((0.004-dt)*1000000)
+    dt = 0.004
+  end
+  --dt = Platform.get_time() - t 
   t = t + dt --simulation time
+  Proprioception.update()
   state_t = state_t + dt --time used in state machine
   step = step + 1  --step number
 --sensor updates
@@ -563,21 +568,21 @@ while run do
   update_observer()
   joint_torques_sense = dcm:get_joint_force_sensor('legs')
 --implement actions
-  dcm:set_joint_position(qt, 'legs')  
-  dcm:set_joint_force(joint_torques, 'legs')  
+  --dcm:set_joint_position(qt, 'legs')  
+  --dcm:set_joint_force(joint_torques, 'legs')  
   
   if (printdata) then -- mod_print == 0 and
     data[1] = COG
-    data[2] = {pid_torques[1], pid_torques[2]}
-    data[3] = joint_pos_sense
-    data[4] = joint_torques_sense
-    data[5] = raw_pos
-    data[6] = joint_vel_raw
-    data[7] = joint_torques
-    data[8] = ft_filt
-    data[9] = ft
-    data[10] = ahrs_filt
-    data[11] = ahrs
+    --data[2] = {pid_torques[1], pid_torques[2]}
+    --data[3] = joint_pos_sense
+    --data[4] = joint_torques_sense
+    --data[5] = raw_pos
+    --data[6] = joint_vel_raw
+    --data[7] = joint_torques
+    --data[8] = ft_filt
+    --data[9] = ft
+    --data[10] = ahrs_filt
+    --data[11] = ahrs
     write_to_file2(fw_log, data)
   end
 end

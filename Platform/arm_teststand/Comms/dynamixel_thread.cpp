@@ -128,87 +128,151 @@ void dynamixel_thread::update_actuator_settings()
   double ivalue;
   int i;
   
-  for(i=0; i<6; i++)
+  for(i=0; i<12; i++)
   {
     if(dcm.joint_enable_updated[i])
     {
       dcm.joint_enable_updated[i] = 0;
       //if(dcm.joint_enable)
-      Write(Port, i+1, 562, dcm.joint_enable[i], 1);
+      Write(Port, i+3, 562, dcm.joint_enable[i], 1);
     }
   }
   
-  for(i=6; i<9; i++)
+  for(i=12; i<19; i++)
   {
     if(dcm.joint_enable_updated[i])
     {
       dcm.joint_enable_updated[i] = 0;
       //if(dcm.joint_enable)
-      Write(Port, i+1, 24, dcm.joint_enable[i], 1);
+      Write(Port, i+3, 24, dcm.joint_enable[i], 1);
     }
   }
   
-  
+  //////////////////////////////////////////////
+  //  Left arm
+ 
   // Update from DCM
+  // 
   ivalue = dcm.joint_position[0] * 79592.0;
-  value = (unsigned int)ivalue;
-  //if(abs(value) > 100000)
-  //  value = 0;
-  Write(Port, 1, 596, (long long)value, 4);
-  
-  ivalue = dcm.joint_position[1] * 79592.0;
-  value = (unsigned int)ivalue;
-  //if(abs(value) > 100000)
-  //  value = 0;
-  Write(Port, 2, 596, (long long)value, 4);
-  
-  ivalue = dcm.joint_position[2] * 79592.0;
-  value = (unsigned int)ivalue;
-  //if(abs(value) > 100000)
-  //  value = 0;
-  Write(Port, 3, 596, (long long)value, 4);
-  
-  ivalue = dcm.joint_position[3] * 79592.0;
   value = (unsigned int)ivalue;
   //if(abs(value) > 100000)
   //  value = 0;
   Write(Port, 4, 596, (long long)value, 4);
   
-  ivalue = dcm.joint_position[4] * 79592.0;
-  value = (unsigned int)ivalue;
-  //if(abs(value) > 100000)
-  //  value = 0;
-  Write(Port, 5, 596, (long long)value, 4);
-  
-  ivalue = dcm.joint_position[5] * 79592.0;
+  ivalue = dcm.joint_position[1] * 79592.0;
   value = (unsigned int)ivalue;
   //if(abs(value) > 100000)
   //  value = 0;
   Write(Port, 6, 596, (long long)value, 4);
   
+  ivalue = dcm.joint_position[2] * 79592.0;
+  value = (unsigned int)ivalue;
+  //if(abs(value) > 100000)
+  //  value = 0;
+  Write(Port, 8, 596, (long long)value, 4);
+  
+  ivalue = dcm.joint_position[3] * 79592.0;
+  value = (unsigned int)ivalue;
+  //if(abs(value) > 100000)
+  //  value = 0;
+  Write(Port, 10, 596, (long long)value, 4);
+  
+  ivalue = dcm.joint_position[4] * 79592.0;
+  value = (unsigned int)ivalue;
+  //if(abs(value) > 100000)
+  //  value = 0;
+  Write(Port, 12, 596, (long long)value, 4);
+  
+  ivalue = dcm.joint_position[5] * 79592.0;
+  value = (unsigned int)ivalue;
+  //if(abs(value) > 100000)
+  //  value = 0;
+  Write(Port, 14, 596, (long long)value, 4);
+  
   
   ////////
   // Fingers
   
-  ivalue = dcm.joint_position[6] * 1129.0;
+  ivalue = dcm.joint_position[12] * 1129.0;
   value = (int)ivalue;
-  Write(Port, 7, 30, value, 2);    // low byte
+  Write(Port, 16, 30, value, 2);    // low byte
   
   //value = (int)ivalue;
   //Write(Port, 7, 31, value / 256, 1);   // high byte
   
-  ivalue = dcm.joint_position[7] * 1129.0;
+  ivalue = dcm.joint_position[13] * 1129.0;
   value = (int)ivalue;
-  Write(Port, 8, 30, value, 1);
+  Write(Port, 18, 30, value, 1);
   //value = (int)ivalue;
   //Write(Port, 8, 31, value / 256, 1);
   
-  ivalue = dcm.joint_position[8] * 1129.0;
+  ivalue = dcm.joint_position[14] * 1129.0;
   value = (int)ivalue;
-  Write(Port, 9, 30, value, 1);
+  Write(Port, 20, 30, value, 1);
   //value = (int)ivalue;
   //Write(Port, 9, 31, value / 256, 1);
+ 
+  // --------------------------- Other arm
+ 
+  // Update from DCM
+  ivalue = dcm.joint_position[6] * 79592.0;
+  value = (unsigned int)ivalue;
+  //if(abs(value) > 100000)
+  //  value = 0;
+  Write(Port, 3, 596, (long long)value, 4);
   
+  ivalue = dcm.joint_position[7] * 79592.0;
+  value = (unsigned int)ivalue;
+  //if(abs(value) > 100000)
+  //  value = 0;
+  Write(Port, 5, 596, (long long)value, 4);
+  
+  ivalue = dcm.joint_position[8] * 79592.0;
+  value = (unsigned int)ivalue;
+  //if(abs(value) > 100000)
+  //  value = 0;
+  Write(Port, 7, 596, (long long)value, 4);
+  
+  ivalue = dcm.joint_position[9] * 79592.0;
+  value = (unsigned int)ivalue;
+  //if(abs(value) > 100000)
+  //  value = 0;
+  Write(Port, 9, 596, (long long)value, 4);
+  
+  ivalue = dcm.joint_position[10] * 79592.0;
+  value = (unsigned int)ivalue;
+  //if(abs(value) > 100000)
+  //  value = 0;
+  Write(Port, 11, 596, (long long)value, 4);
+  
+  ivalue = dcm.joint_position[11] * 79592.0;
+  value = (unsigned int)ivalue;
+  //if(abs(value) > 100000)
+  //  value = 0;
+  Write(Port, 13, 596, (long long)value, 4);
+  
+  
+  ////////
+  // Fingers
+  
+  ivalue = dcm.joint_position[15] * 1129.0;
+  value = (int)ivalue;
+  Write(Port, 15, 30, value, 2);    // low byte
+  
+  //value = (int)ivalue;
+  //Write(Port, 7, 31, value / 256, 1);   // high byte
+  
+  ivalue = dcm.joint_position[16] * 1129.0;
+  value = (int)ivalue;
+  Write(Port, 17, 30, value, 1);
+  //value = (int)ivalue;
+  //Write(Port, 8, 31, value / 256, 1);
+  
+  ivalue = dcm.joint_position[17] * 1129.0;
+  value = (int)ivalue;
+  Write(Port, 19, 30, value, 1);
+  //value = (int)ivalue;
+  //Write(Port, 9, 31, value / 256, 1);
 }
 
 void dynamixel_thread::update_sensor_readings()
@@ -221,64 +285,129 @@ void dynamixel_thread::update_sensor_readings()
   double ivalue = 0;
  
   // Update in DCM
-  dxl_read_dword(Port, 1, 611, &value, &error);
+  // left shoulder pitch
+  dxl_read_dword(Port, 4, 611, &value, &error);
   ivalue = (int)value;
   //ivalue = ivalue/79592;
   dcm.joint_position_sensor[0] = (double)ivalue/79592.0;
   
-  dxl_read_dword(Port, 2, 611, &value, &error);
+  // left shoulder roll
+  dxl_read_dword(Port, 6, 611, &value, &error);
   ivalue = (int)value;
   //ivalue = ivalue/79592;
   dcm.joint_position_sensor[1] = (double)ivalue/79592.0;
   
-  dxl_read_dword(Port, 3, 611, &value, &error);
+  //left shoulder yaw
+  dxl_read_dword(Port, 8, 611, &value, &error);
   ivalue = (int)value;
   //ivalue = ivalue/79592;
   dcm.joint_position_sensor[2] = (double)ivalue/79592.0;
   
-  dxl_read_dword(Port, 4, 611, &value, &error);
+  // left elbow pitch
+  dxl_read_dword(Port, 10, 611, &value, &error);
   ivalue = (int)value;
   //ivalue = ivalue/79592;
   dcm.joint_position_sensor[3] = (double)ivalue/79592.0;
   
-  dxl_read_dword(Port, 5, 611, &value, &error);
+  // left wrist yaw
+  dxl_read_dword(Port, 12, 611, &value, &error);
   ivalue = (int)value;
   //ivalue = ivalue/79592;
   dcm.joint_position_sensor[4] = (double)ivalue/79592.0;
   
-  dxl_read_dword(Port, 6, 611, &value, &error);
+  // left wrist roll
+  dxl_read_dword(Port, 14, 611, &value, &error);
   ivalue = (int)value;
   //ivalue = ivalue/79592;
   dcm.joint_position_sensor[5] = (double)ivalue/79592.0;
   
+  // Right arm
+  // Right shoulder pitch
+  dxl_read_dword(Port, 3, 611, &value, &error);
+  ivalue = (int)value;
+  //ivalue = ivalue/79592;
+  dcm.joint_position_sensor[6] = (double)ivalue/79592.0;
+  
+  // Right shoulder roll 
+  dxl_read_dword(Port, 5, 611, &value, &error);
+  ivalue = (int)value;
+  //ivalue = ivalue/79592;
+  dcm.joint_position_sensor[7] = (double)ivalue/79592.0;
+  
+  // right shoulder yaw
+  dxl_read_dword(Port, 7, 611, &value, &error);
+  ivalue = (int)value;
+  //ivalue = ivalue/79592;
+  dcm.joint_position_sensor[8] = (double)ivalue/79592.0;
+  
+  // right elbow pitch
+  dxl_read_dword(Port, 9, 611, &value, &error);
+  ivalue = (int)value;
+  //ivalue = ivalue/79592;
+  dcm.joint_position_sensor[9] = (double)ivalue/79592.0;
+  
+  // right wrist yaw
+  dxl_read_dword(Port, 11, 611, &value, &error);
+  ivalue = (int)value;
+  //ivalue = ivalue/79592;
+  dcm.joint_position_sensor[10] = (double)ivalue/79592.0;
+  
+  // right wrist roll
+  dxl_read_dword(Port, 13, 611, &value, &error);
+  ivalue = (int)value;
+  //ivalue = ivalue/79592;
+  dcm.joint_position_sensor[11] = (double)ivalue/79592.0;
   
   ////////////////
   // Read MX fingers
   
-  // Thumb
-  dxl_read_word(Port, 7, 36, &low, &error);
+  // left thumb
+  dxl_read_word(Port, 16, 36, &low, &error);
   //dxl_read_byte(Port, 7, 37, &high, &error);
   //ivalue = (int)low + (int)high * 256;
   ivalue = (int)low;
   //ivalue = ivalue/79592;
-  dcm.joint_position_sensor[6] = (double)ivalue/1129.0;
+  dcm.joint_position_sensor[12] = (double)ivalue/1129.0;
   
-  // Finger 1
-  dxl_read_byte(Port, 8, 36, &low, &error);
+  // left finger 1
+  dxl_read_byte(Port, 18, 36, &low, &error);
   //dxl_read_byte(Port, 8, 37, &high, &error);
   //ivalue = (int)low + (int)high * 256;
   ivalue = (int)low;
   //ivalue = ivalue/79592;
-  dcm.joint_position_sensor[7] = (double)ivalue/1129.0;
+  dcm.joint_position_sensor[13] = (double)ivalue/1129.0;
   
-  // Finger 2
-  dxl_read_byte(Port, 9, 36, &low, &error);
+  // left finger 2
+  dxl_read_byte(Port, 20, 36, &low, &error);
   //dxl_read_byte(Port, 9, 37, &high, &error);
   //ivalue = (int)low + (int)high * 256;
   ivalue = (int)low;
   //ivalue = ivalue/79592;
-  dcm.joint_position_sensor[8] = (double)ivalue/1129.0;
+  dcm.joint_position_sensor[14] = (double)ivalue/1129.0;
   
+  // right thumb
+  dxl_read_word(Port, 15, 36, &low, &error);
+  //dxl_read_byte(Port, 7, 37, &high, &error);
+  //ivalue = (int)low + (int)high * 256;
+  ivalue = (int)low;
+  //ivalue = ivalue/79592;
+  dcm.joint_position_sensor[15] = (double)ivalue/1129.0;
+  
+  // right Finger 1
+  dxl_read_byte(Port, 17, 36, &low, &error);
+  //dxl_read_byte(Port, 8, 37, &high, &error);
+  //ivalue = (int)low + (int)high * 256;
+  ivalue = (int)low;
+  //ivalue = ivalue/79592;
+  dcm.joint_position_sensor[16] = (double)ivalue/1129.0;
+  
+  // right finger 2
+  dxl_read_byte(Port, 19, 36, &low, &error);
+  //dxl_read_byte(Port, 9, 37, &high, &error);
+  //ivalue = (int)low + (int)high * 256;
+  ivalue = (int)low;
+  //ivalue = ivalue/79592;
+  dcm.joint_position_sensor[17] = (double)ivalue/1129.0;
 }
 
 void dynamixel_thread::entry()
@@ -325,6 +454,16 @@ void dynamixel_thread::entry()
   dcm.joint_position[6] = dcm.joint_position_sensor[6];
   dcm.joint_position[7] = dcm.joint_position_sensor[7];
   dcm.joint_position[8] = dcm.joint_position_sensor[8];
+  dcm.joint_position[9] = dcm.joint_position_sensor[9];
+  dcm.joint_position[10] = dcm.joint_position_sensor[10];
+  dcm.joint_position[11] = dcm.joint_position_sensor[11];
+  dcm.joint_position[12] = dcm.joint_position_sensor[12];
+  dcm.joint_position[13] = dcm.joint_position_sensor[13];
+  dcm.joint_position[14] = dcm.joint_position_sensor[14];
+  dcm.joint_position[15] = dcm.joint_position_sensor[15];
+  dcm.joint_position[16] = dcm.joint_position_sensor[16];
+  dcm.joint_position[17] = dcm.joint_position_sensor[17];
+  dcm.joint_position[18] = dcm.joint_position_sensor[18];
   
   // Send each motor back to zero position
   //home_motor_controllers();
@@ -350,11 +489,20 @@ void dynamixel_thread::exit()
   Write(Port, 4, 562, 0, 1);
   Write(Port, 5, 562, 0, 1);
   Write(Port, 6, 562, 0, 1);
+  Write(Port, 7, 562, 0, 1);
+  Write(Port, 8, 562, 0, 1);
+  Write(Port, 9, 562, 0, 1);
+  Write(Port, 10, 562, 0, 1);
+  Write(Port, 11, 562, 0, 1);
+  Write(Port, 12, 562, 0, 1);
   
   // finger torque off
-  Write(Port, 7, 24, 0, 1);
-  Write(Port, 8, 24, 0, 1);
-  Write(Port, 9, 24, 0, 1);
+  Write(Port, 13, 24, 0, 1);
+  Write(Port, 14, 24, 0, 1);
+  Write(Port, 15, 24, 0, 1);
+  Write(Port, 16, 24, 0, 1);
+  Write(Port, 17, 24, 0, 1);
+  Write(Port, 18, 24, 0, 1);
 
   // Close serial port
   if(Port != NULL)

@@ -1,8 +1,3 @@
-require('Transform')
-require('cbuffer')
-require('Config')
-require('vector')
-require('util')
 require('dcm')
 
 vrep_child_script = {}
@@ -47,6 +42,9 @@ local function initialize_devices()
   handles.servo = {}
   for i = 1,N_JOINT do
     handles.servo[i] = simGetObjectHandle(servoNames[i])
+    if handles.servo[i] < 0 then
+      print('Could not get handle for '..servoNames[i])
+    end
     -- Make joint motion cyclic (unbounded). Third argument is ignored.
     simSetJointInterval(handles.servo[i], true, {0, 0})
     simSetJointTargetVelocity(handles.servo[i], 0)
@@ -70,8 +68,18 @@ local function update_actuators()
     local max_servo_force = math.abs(joint_force_desired[i])
     simSetJointForce(handles.servo[i], max_servo_force)
     simSetJointTargetVelocity(handles.servo[i], joint_velocity_desired[i])
+    
     -- Object attribute 2000 is whether the motor is enabled
     simSetObjectIntParameter(handles.servo[i], 2000, joint_enable[i])
+    
+    -- Object attribute 2001 is whether the motor is position-controlled
+    if joint_stiffness[i] then
+      simSetJointForce(handles.servo[i], 10000)
+      simSetObjectIntParameter(handles.servo[i], 2001, joint_stiffness[i])
+      simSetJointTargetPosition(handles.servo[i], joint_position_desired[i])
+      -- Object attributes 2002-2004 are PID values
+      simSetObjectFloatParameter(handles.servo[i], 2002, 20000)
+    end
   end
 end
 
@@ -79,12 +87,11 @@ local function update_sensors()
   -- update VRep sensor values
   local joint_enable = dcm:get_joint_enable()
   for i = 1,N_JOINT do
-    if (joint_enable[i] == 0) then
-      dcm:set_joint_force_sensor(0, i)
-    else
-      dcm:set_joint_force_sensor(
-        simJointGetForce(handles.servo[i]), i)
-    end
+    f = simJointGetForce(handles.servo[i])
+    dcm:set_joint_force_sensor(f, i)
+    
+    ret_val, velocity = simGetObjectFloatParameter(handles.servo[i], 2012)
+    dcm:set_joint_velocity_sensor(velocity, i)
     
     dcm:set_joint_position_sensor(
         simGetJointPosition(handles.servo[i]), i)

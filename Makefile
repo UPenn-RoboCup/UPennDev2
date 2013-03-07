@@ -12,11 +12,12 @@ all:
 	@echo " make vrep_ash"
 	@echo " make webots_ash"
 	@echo " make teststand"
+	@echo " make arm_teststand"
 	@echo " make robotis_arm"
 	@echo " make tools"
 	@echo " make clean"
 
-ash robotis_arm teststand:
+ash robotis_arm arm_teststand teststand:
 	cd Framework/Lib && make && cd $(CWD)
 	cd Platform/Lib && make && cd $(CWD)
 	cd Platform/$@ && make && cd $(CWD)
@@ -104,8 +105,9 @@ clean:
 	cd Platform/ash && make clean && cd $(CWD)
 	cd Platform/teststand && make clean && cd $(CWD)
 	cd Platform/robotis_arm && make clean && cd $(CWD)
+	cd Platform/arm_teststand && make clean && cd $(CWD)
 	cd Platform/vrep_ash && make clean && cd $(CWD)
 	cd Platform/webots_ash && make clean && cd $(CWD)
 	cd Platform/webots_ash_lowerbody && make clean && cd $(CWD)
 
-.PHONY: all ash teststand robotis_arm webots_ash webots_ash_lowerbody vrep_ash tools clean
+.PHONY: all ash teststand arm_teststand robotis_arm webots_ash webots_ash_lowerbody vrep_ash tools clean

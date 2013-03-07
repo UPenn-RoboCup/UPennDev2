@@ -1,4 +1,5 @@
 require('dcm')
+require('zmq')
 
 vrep_child_script = {}
 
@@ -22,6 +23,9 @@ end
 local N_JOINT = 12
 local handles = {} -- vrep handles
 local time_step_ms = nil
+
+local zmq_context
+local frame_update_socket
 
 local servoNames = { -- vrep servo names
   'l_hip_yaw', 'l_hip_roll', 'l_hip_pitch',
@@ -170,6 +174,11 @@ function vrep_child_script.entry()
   dcm:set_joint_position_sensor(0, 'all')
   dcm:set_joint_velocity_sensor(0, 'all')
 
+  -- initialize motion manager
+  zmq_context = zmq.init(1)
+  frame_update_socket = zmq_context:socket(zmq.PUB)
+  frame_update_socket:bind("tcp://127.0.0.1:12001")
+
   -- initialize sensor shared memory
   vrep_child_script.update()
 end
@@ -177,9 +186,13 @@ end
 function vrep_child_script.update()
   update_actuators()
   update_sensors()
+  local msg = "f"..simGetSimulationTime()
+  frame_update_socket:send(msg)
 end
 
 function vrep_child_script.exit()
+  frame_update_socket:close()
+  zmq_context:term()
 end
 
 return vrep_child_script

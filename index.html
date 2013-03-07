@@ -39,22 +39,17 @@
   */
   var client = new BinaryClient('ws://ese650.mooo.com:8080');
   client.on('stream', function(stream, meta){
-    parts = [];
     // Got new data
     stream.on('data', function(data){
-      parts.push(data);
-      //console.log( parts.toString() );
-      //console.log( parts.byteLength.toString() );
+      ranges = new Float32Array( data );
+      update_particles( ranges );
+      //console.log(ranges[0])
+      //console.log( ranges.toString() );
+      //console.log( data.byteLength.toString() );
     });
     stream.on('end', function(){
-      if ( parts.length==1 ){
-        ranges = new Float32Array( parts[0] );
-        update_particles( ranges );
-        // console.log( floaty[0] )
-      }
-      //console.log( 'Got: %s, %f, %f',parts.toString(), parts.byteLength, floaty[1] )
+      // Done streaming!
     });
-    // console.log('got stream')
   });
 </script>
 

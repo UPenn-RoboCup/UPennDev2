@@ -10,7 +10,7 @@ end
 
 -- initialize server
 local context = zmq.init()
-server = rpc.server.new('tcp://lo:5555', context)
+server = rpc.server.new('tcp://127.0.0.1:5555', context)
 server:set_timeout(0)
 
 -- handle rpc requests

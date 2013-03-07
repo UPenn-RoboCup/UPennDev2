@@ -76,16 +76,11 @@ local data = {}
 ------------------------------------------------------------------
 --Control objects:
 ------------------------------------------------------------------
-local filter_b = {0.013251, 0.026502, 0.013251} --10 break freq, ts=0.004, chsi=0.7
-local filter_a = {1, -1.6517, 0.70475}
 local COP_filters = {filter.new_second_order_low_pass(0.004, 20, 0.7), filter.new_second_order_low_pass(0.004, 20, 0.7)}
 
-local filter_b = {   0.1094,    0.1094,   -0.1094,   -0.1094} --5 freq, 3 order butter, 1 dt
-local filter_a = {  1.0000,   -2.7492,    2.5288,   -0.7779}
-local pgain, igain, dgain = 300, 0, 60  --need different gains in different joints
 local torque_filters = {}
 for i, index in pairs(joint.index['ankles']) do
-  torque_filters[index] = filter.new_second_order_low_pass(0.004, 40, 0.7) 
+  torque_filters[index] = filter.new_low_pass(0.004, 20)--filter.new_second_order_low_pass(0.004, 40, 0.7) 
 end
 
 pgain, igain, dgain = 200, 120, 40
@@ -96,9 +91,9 @@ COGy_pid:set_d_corner_frequency(20)
 
 pgain, igain, dgain = 200, 0, 20
 local anklex_pid = pid.new(0.004, pgain, igain, dgain)
-anklex_pid:set_d_corner_frequency(80) 
+anklex_pid:set_d_corner_frequency(20) 
 local ankley_pid = pid.new(0.004, pgain, igain, dgain)
-ankley_pid:set_d_corner_frequency(80)
+ankley_pid:set_d_corner_frequency(20)
 
 local COG_vel_filter = {}
 COG_vel_filter[1] = filter.new_differentiator(0.004, 30, 0.5)
@@ -130,11 +125,8 @@ for i, index in pairs(joint.index['legs']) do
   acc_filters[index] = filter.new(filter_b, filter_a)
 end
 
-local filter_b = {   0.1094,    0.1094,   -0.1094,   -0.1094} --5 freq, 3 order butter, 0 dt
-local filter_a = {  1.0000,   -2.7492,    2.5288,   -0.7779}
 local ft_filters = {}
 for i = 1, 12 do
-  --ft_filters[i] = filter.new(filter_b, filter_a)
   ft_filters[i] = filter.new_second_order_low_pass(0.004, 20, 0.7)
 end
 
@@ -276,7 +268,7 @@ function COG_controller()
   local torques = vector.new{0, 0}
   ankley_pid:set_setpoint(qt[5])
   torques[1] = 0
-  torques[2] = ankley_pid:update(joint_pos_sense[5])
+  torques[2] = ankley_pid:update(raw_pos[5])
   return torques
 end
 
@@ -522,13 +514,30 @@ function write_to_file(filename, data, test)
   filename:write(t, "\n")
 end
 
-function write_to_file2(filename, data)
-  for i = 1, #data do
-    for i2 = 1, #data[i] do
-    	filename:write(data[i][i2], ", ")
+local store = {}
+local ind = 1
+function store_data(local_data)
+  for i = 1, #local_data do
+    for i2 = 1, #local_data[i] do
+      --print(store_len, ind, 'are values')
+      store[ind] = local_data[i][i2]
+      ind = ind + 1
     end
   end
-  filename:write(t, "\n")
+end
+
+function write_to_file2(filename, local_data, template)
+  print('data length', #local_data)
+  local local_ind = 1
+  while local_ind < ind do
+    for i = 1, #template do
+      for i2 = 1, #template[i] do
+     	filename:write(local_data[local_ind], ", ")
+      end
+    end
+    filename:write(t, "\n")
+    local_ind = local_ind + 1
+  end
 end
 
 function write_reg(data)
@@ -536,7 +545,6 @@ function write_reg(data)
     fw_reg:write(#data[i], ", ")
   end
 end
-
 
 --------------------------------------------------------------------
 --Main
@@ -571,14 +579,14 @@ while run do
   joint_torques_sense = dcm:get_joint_force_sensor('legs')
 --implement actions
   dcm:set_joint_position(qt, 'legs')  
-  --dcm:set_joint_force(joint_torques, 'legs')  
+  dcm:set_joint_force(joint_torques, 'legs')  
   
   if (printdata) then -- mod_print == 0 and
     --data[1] = {dt, unix.time(), step}
     --data[1] = COG
     --data[1] = {pid_torques[1], pid_torques[2]}
-   -- data[2] = {joint_pos_sense[5], joint_pos_sense[6]}
     data[1] = {raw_pos[5], raw_pos[6]}
+    data[2] = {joint_pos_sense[5], joint_pos_sense[6]}
     ---data[3] = joint_torques_sense
     ---data[4] = raw_pos
     --data[6] = joint_vel_raw
@@ -587,12 +595,14 @@ while run do
     --data[9] = ft
     --data[10] = ahrs_filt
     --data[11] = ahrs
-    write_to_file2(fw_log, data)
+    store_data(data)
   end
 end
 --dcm:set_joint_force({0,0,0,0,0,0,0,0,0,0,0,0},'legs')
+print('time end', unix.time())
 write_reg(data)
-print('time end', t)
+write_to_file2(fw_log, store, data)
+print('time after write', unix.time())
 print('steps: ', step)
 Platform.exit()
 

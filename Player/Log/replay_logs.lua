@@ -17,10 +17,10 @@ local lidar_channel = simple_ipc.setup_publisher('lidar');
 local imu_channel = simple_ipc.setup_publisher('imu');
 
 -- Data Type specific
-local dataPath = '~/shadwell/day2_third/logs/';
+local dataPath = '~/shadwell/day2_third/';
 local dataStamp = '02.27.2013';
 --local dataTypes = {'lidar','arduimu'}
-local dataTypes = {'lidar','arduimu'}
+local dataTypes = {'flir'}
 local realtime = true;
 if realtime then
   require 'unix'
@@ -29,9 +29,12 @@ end
 function get_log_file_list()
   local log_file_list_iter = {};
   for i=1,#dataTypes do
-    local log_file = dataTypes[i]..dataStamp..'*'
+    local log_file = dataPath..'/logs/'..dataTypes[i]..dataStamp..'*'
+    if dataTypes[i]=='flir' then
+      log_file = dataPath..'log00_11_1c_01_07_79/fr_*';
+    end
     local tmp_file_list = 
-    assert(io.popen('/bin/ls '..dataPath..'/'..log_file, 'r'));
+    assert(io.popen('/bin/ls '..log_file, 'r'));
     log_file_list_iter[i] = tmp_file_list:lines();
   end
   return log_file_list_iter;
@@ -53,7 +56,7 @@ end
 
 -- Parse the data
 local parsers_tbl = {}
-parsers_tbl[1] = function ( str )
+parsers_tbl['lidar'] = function ( str )
   local lidar_data = serialization.deserialize( str );
   local lidar_tbl = {};
   if lidar_data.arr then
@@ -73,37 +76,64 @@ parsers_tbl[1] = function ( str )
   return lidar_tbl;
 end
 -- IMU Parser
-parsers_tbl[2] = function ( str )
+parsers_tbl['arduimu'] = function ( str )
   local imu_data = serialization.deserialize( str );
 --	local imu_tbl = {};
 	-- Store the timestamp of the data
 --	imu_tbl.t = imu_data.t;
   return imu_data;
 end
+-- FLIR Parser
+parsers_tbl['flir'] = function ( str )
+	local flir_tbl = {};
+	-- Store the timestamp of the data
+  local ts_iter = str[2]:gmatch('%d+[%p%d+]*')
+  flir_tbl.counter = tonumber(ts_iter())
+  flir_tbl.t = tonumber(ts_iter())
+  flir_tbl.data = str[1]
+  return flir_tbl;
+end
 
 local pushers_tbl = {}
-pushers_tbl[1] = function ( lidar_tbl )
+pushers_tbl['lidar'] = function ( lidar_tbl )
   --rcm.set_lidar_ranges( lidar_tbl.ranges );
 	--rcm.set_lidar_timestamp(lidar_tbl.t);
 	-- Push over ipc (Data and timestamp)
 	lidar_channel:send( lidar_tbl.ranges, 1081*4, true )--send more
 	lidar_channel:send( lidar_tbl.t )
+  --lidar_channel:send( lidar_tbl.ranges, 1081*4 ) -- no send more
 end
-pushers_tbl[2] = function ( imu_tbl )
+pushers_tbl['arduimu'] = function ( imu_tbl )
   local encoded_imu = mp.pack(imu_tbl)
 	imu_channel:send( encoded_imu, #encoded_imu )--send more
 end
+pushers_tbl['flir'] = function ( flir_tbl )
+end
 
 function open_log_file( d )
-  -- Use a Global variable.  Assume it is defined
   local log_file_name = log_file_iters[d]()
   if not log_file_name then
     return false
   end
-  local log_f_handle = assert(io.open(log_file_name, 'r+'));
+  local log_fr_handle = assert(io.open(log_file_name, 'r'));
+  local ts_file_name = log_file_name:gsub('fr_','ts_')
+  local log_ts_handle = assert(io.open(ts_file_name, 'r'));
   -- Update global variables
-  log_handles[d] = log_f_handle;
-  entry_iters[d] = log_f_handle:lines()
+  log_handles[d] = { log_fr_handle, log_ts_handle};
+  if dataTypes[d]=='flir' then
+    entry_iters[d] = function()
+      local blk_sz = 320*256*2
+      local block = log_handles[1][1]:read( blk_sz ) -- Assume flir is first for now
+      local ts = log_handles[1][2]:read( '*l' ) -- Assume flir is first for now
+      if not ts then return nil end
+      if ts:find('unixtime') then
+        ts = log_handles[1][2]:read( '*l' )
+      end
+      return {block,ts};
+    end
+  else
+    entry_iters[d] = log_f_handle:lines()
+  end
   return true;
 end
 
@@ -118,10 +148,10 @@ latest_entry_tbls = {};
 log_file_iters = get_log_file_list();
 
 -- Initial Opening
-for i=1,#log_file_iters do
-  print('Opening a new '..dataTypes[i]..' file...')
-  open_log_file( i );
-  latest_entry_tbls[i] = nil;
+for d=1,#log_file_iters do
+  print('Opening a new '..dataTypes[d]..' file...')
+  open_log_file( d );
+  latest_entry_tbls[d] = nil;
 end
 
 -- Loop until we say to stop
@@ -135,10 +165,15 @@ while true do
     if latest_entry_tbls[d]==nil then
       local entry_str = entry_iters[d]();
       if entry_str then
-        --print('Entry:',entry_str)
-        latest_entry_tbls[d] = parsers_tbl[d]( entry_str )
+        --print('Entry:', #entry_str, dataTypes[d])
+        latest_entry_tbls[d] = parsers_tbl[dataTypes[d]]( entry_str )
       else
-        log_handles[d]:close()
+        if dataTypes[d]=='flir' then
+          log_handles[d][1]:close()
+          log_handles[d][2]:close()
+        else
+          log_handles[d]:close()
+        end
         print('Opening a new '..dataTypes[d]..' file...')
         local file_status = open_log_file( d );
         if file_status==false then
@@ -151,10 +186,11 @@ while true do
           latest_entry_tbls[d] = {};
           latest_entry_tbls[d].t = nil;
         else
-          latest_entry_tbls[d] = parsers_tbl[d]( entry_str )
+          latest_entry_tbls[d] = parsers_tbl[ dataTypes[d] ]( entry_str )
         end
       end
       -- Store the timestamps, so we can search easily
+      --print(latest_entry_tbls[d].t)
       entry_timestamps[d] = latest_entry_tbls[d].t;
     end
   end
@@ -170,9 +206,8 @@ while true do
   -- Push this entry to SHM
   local t_diff = min_ts - (last_ts or min_ts);
   last_ts = min_ts;
-	--  print('Pushing',d_idx,dataTypes[d_idx], min_ts)
-	--  print('ts:',entry_timestamps[1],entry_timestamps[2]);
-
+  
+  -- For a particular logfile
   if( min_ts<1361997212.4557 ) then
     realtime = false;
   else
@@ -183,7 +218,7 @@ while true do
 		-- Only push data when running in realtime
   if realtime then
     unix.usleep( 1e6*t_diff );
-		pushers_tbl[d_idx]( latest_entry_tbls[d_idx] )
+		pushers_tbl[ dataTypes[d_idx] ]( latest_entry_tbls[d_idx] )
   end
 
   -- Empty the data structure

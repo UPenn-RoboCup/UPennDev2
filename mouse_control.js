@@ -5,7 +5,7 @@ var container, stats;
 var camera, controls, scene, renderer;
 
 var positions, colors;
-var particles = 320*240; // number of particles
+var particles = 1081; // # of ranges
 var color = new THREE.Color();
 var particleSystem
 var cross;
@@ -17,7 +17,7 @@ function init() {
 
   // Set up the camera
   camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 1, 1000 );
-  camera.position.z = 500;
+  camera.position.z = 10;
 
   // Set up the mouse controls
   controls = new THREE.TrackballControls( camera );
@@ -67,11 +67,11 @@ function init() {
   // Set the colors and positions
   positions = geometry.attributes.position.array;
   colors = geometry.attributes.color.array;
-  update_particles();
+  //update_particles();
   geometry.computeBoundingSphere();
 
   // Add the particle system to the scene
-  var material = new THREE.ParticleBasicMaterial( { size: 5, vertexColors: true } );
+  var material = new THREE.ParticleBasicMaterial( { size: .5, vertexColors: true } );
   particleSystem = new THREE.ParticleSystem( geometry, material );
   scene.add( particleSystem );
 
@@ -113,38 +113,30 @@ function render() {
   stats.update();
 }
 
-function update_particles() {
-
+function update_particles( ranges ) {
   
-  color.setRGB( Math.random(), Math.random(), Math.random() );
-
-  var n = 500, n2 = n / 2; // particles spread in the cube
+  //color.setRGB( Math.random(), Math.random(), Math.random() );
+  color.setRGB( .5,.5,.5 );
+  var range_id = 0;
   for ( var i = 0; i < positions.length; i += 3 ) {
 
     // positions
-    var x = Math.random() * n - n2;
-    var y = Math.random() * n - n2;
-    var z = Math.random() * n - n2;
+    var x = Math.cos( 3.14/180*(range_id/1081*270-135) ) * ranges[range_id];
+    var y = Math.sin( 3.14/180*(range_id/1081*270-135) ) * ranges[range_id];
+    range_id = range_id+1;
+    var z = 0;
     positions[ i ]     = x;
     positions[ i + 1 ] = y;
     positions[ i + 2 ] = z;
 
     // colors
- /*
-    var vx = ( x / n ) + 0.5;
-    var vy = ( y / n ) + 0.5;
-    var vz = ( z / n ) + 0.5;
-    color.setRGB( vx, vy, vz );
-*/
     colors[ i ]     = color.r;
     colors[ i + 1 ] = color.g;
     colors[ i + 2 ] = color.b;
   }
-  var up_rate = Math.random()*30;
-  if ( up_rate > 29) {
+
     particleSystem.geometry.verticesNeedUpdate = true;
     particleSystem.geometry.colorsNeedUpdate = true;
     animate();
     render();
-  }
 }

@@ -33,35 +33,14 @@ function handler (req, res) {
       });
 }
 
-/*
-// Set up websockets
-var io = require('socket.io').listen(app);
-io.sockets.on('connection', function (socket) {
-  // Send an initial packet
-  //socket.emit('news', 'hour');
-  
-  // Get data from the browser
-  //socket.on('my other event', function (data) {
-  //  console.log(data);
-  //});
-  // Listen to zmq
-  sock.on('message', function(msg){
-    var imu = mp.unpack(msg)
-    console.log('imu: %s', imu.toString());
-    socket.emit('imu', imu);
-  });
-  // Listen to zmq lidar
-  sock_lidar.on('message', function(msg){
-//    console.log('lidar: %s', msg.toString());
-//    socket.emit('lidar', msg);
-  });
-});
-*/
+var nconnections = 0;
+// Size of float times number of lidar returns
+//var lidar_msg = new Buffer(1081*4);
 bserver.on('connection', function(client){
+  var lidar_stream = client.createStream('lidar');
   sock_lidar.on('message', function(msg){
-    // Send the lidar data
-    client.send(msg)
-    //console.log('sending msg')
+    //console.log('Received '+msg.length+' lidar bytes. '+msg.readFloatLE(0))
+    lidar_stream.write(msg);
   });
-  console.log('hi binary!')
 });
+

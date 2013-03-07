@@ -18,16 +18,42 @@
 <script src="http://mrdoob.github.com/three.js/examples/js/Detector.js"></script>
 <script src="http://mrdoob.github.com/three.js/examples/js/libs/stats.min.js"></script>
 <script src="http://www.seas.upenn.edu/~smcgill3/mouse_control.js"></script>
+<script src="http://cdn.binaryjs.com/0/binary.js"></script>
+
+<!--
 <script src="/socket.io/socket.io.js"></script>
+-->
 
 <script>
+  var floaty;
+  var parts;
+  /*
   var socket = io.connect('http://ese650.mooo.com');
   socket.on('imu', function (data) {
     $('#gyro').text( data.t+': Gyro: {'+data.Wy+', '+data.Wy+', '+data.Wz+'}' );
-//    console.log(data);
+    // console.log(data);
     update_particles();
     // Send a reply
     //socket.emit('my other event', { my: 'data' });
+  });
+  */
+  var client = new BinaryClient('ws://ese650.mooo.com:8080');
+  client.on('stream', function(stream, meta){
+    parts = [];
+    // Got new data
+    stream.on('data', function(data){
+      parts.push(data);
+      //console.log( parts.toString() );
+      //console.log( parts.byteLength.toString() );
+    });
+    stream.on('end', function(){
+      if ( parts.length==1 ){
+        floaty = new Float32Array( parts[0] );
+        console.log( floaty[0] )
+      }
+      //console.log( 'Got: %s, %f, %f',parts.toString(), parts.byteLength, floaty[1] )
+    });
+    // console.log('got stream')
   });
 </script>
 

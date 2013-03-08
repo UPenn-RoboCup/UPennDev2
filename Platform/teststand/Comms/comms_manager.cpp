@@ -93,8 +93,7 @@ void draw_screen()
   printw("joint force              [ %10.3f ]\n", dcm.joint_force[0]);
   printw("joint position           [ %10.3f ]\n", dcm.joint_position[0]);
   printw("joint velocity           [ %10.3f ]\n", dcm.joint_velocity[0]);
-  printw("joint stiffness          [ %10.3f ]\n", dcm.joint_stiffness[0]);
-  printw("joint damping            [ %10.3f ]\n", dcm.joint_damping[0]);
+  printw("joint position_p_gain    [ %10.3f ]\n", dcm.joint_position_p_gain[0]);
 
   printw("joint force sensor       [ %10.3f ]\n", dcm.joint_force_sensor[0]);
   printw("joint position sensor    [ %10.3f ]\n", dcm.joint_position_sensor[0]);

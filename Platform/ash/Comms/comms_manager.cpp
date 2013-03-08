@@ -121,8 +121,8 @@ void draw_screen()
   
   printw("enable\n");
   print_joint_array(dcm.joint_enable);
-  printw("stiffness\n");
-  print_joint_array(dcm.joint_stiffness);
+  printw("position_p_gain\n");
+  print_joint_array(dcm.joint_position_p_gain);
   printw("force\n");
   print_joint_array(dcm.joint_force_sensor);
   printw("position\n");

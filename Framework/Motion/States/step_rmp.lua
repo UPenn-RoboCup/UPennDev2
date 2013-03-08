@@ -582,12 +582,14 @@ function step:initialize_simulator_state(duration)
 end
 
 function step:entry()
-  local q0 = dcm:get_joint_position_sensor('legs')
-  dcm:set_joint_force(0, 'legs')
-  dcm:set_joint_position(q0, 'legs')
-  dcm:set_joint_velocity(0, 'legs')
-  dcm:set_joint_stiffness(1, 'legs')
-  dcm:set_joint_damping(0, 'legs')
+  local q0 = dcm:get_joint_position_sensor('lowerbody')
+  dcm:set_joint_force(0, 'lowerbody')
+  dcm:set_joint_position(q0, 'lowerbody')
+  dcm:set_joint_velocity(0, 'lowerbody')
+  dcm:set_joint_position_p_gain(1, 'lowerbody')
+  dcm:set_joint_position_i_gain(0, 'lowerbody')
+  dcm:set_joint_position_d_gain(0, 'lowerbody')
+  dcm:set_joint_velocity_p_gain(0, 'lowerbody')
   update_parameters()
 end
 

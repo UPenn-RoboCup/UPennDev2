@@ -59,14 +59,14 @@ bool epos_thread::check_joint_settings()
     (dcm.joint_enable[6] == dcm.joint_enable[7] == 
      dcm.joint_enable[8]) &&
     (dcm.joint_enable[10] == dcm.joint_enable[11]);
-  bool joint_stiffness_valid = 
-    (dcm.joint_stiffness[0] == dcm.joint_stiffness[1] == 
-     dcm.joint_stiffness[2]) &&
-    (dcm.joint_stiffness[4] == dcm.joint_stiffness[5]) &&
-    (dcm.joint_stiffness[6] == dcm.joint_stiffness[7] ==
-     dcm.joint_stiffness[8]) &&
-    (dcm.joint_stiffness[10] == dcm.joint_stiffness[11]);
-  return joint_enable_valid && joint_stiffness_valid;
+  bool joint_position_p_gain_valid = 
+    (dcm.joint_position_p_gain[0] == dcm.joint_position_p_gain[1] == 
+     dcm.joint_position_p_gain[2]) &&
+    (dcm.joint_position_p_gain[4] == dcm.joint_position_p_gain[5]) &&
+    (dcm.joint_position_p_gain[6] == dcm.joint_position_p_gain[7] ==
+     dcm.joint_position_p_gain[8]) &&
+    (dcm.joint_position_p_gain[10] == dcm.joint_position_p_gain[11]);
+  return joint_enable_valid && joint_position_p_gain_valid;
 }
 
 void epos_thread::emcy_callback(int node_id, void *user_data)
@@ -256,19 +256,19 @@ void epos_thread::update_actuator_settings()
     m_epos[i]->set_value(TARGET_TORQUE, motor_force[motor_id]);
     m_epos[i]->set_controlbit_new_setpoint(1);
     m_epos[i]->set_controlbit_change_set_immediately(1);
-    if ((int)dcm.joint_stiffness[joint_id] == 0)
+    if ((int)dcm.joint_position_p_gain[joint_id] == 0)
       m_master.send_rpdo(node_id, 2);
     else
       m_master.send_rpdo(node_id, 1);
 
     // update controller mode
     int mode = m_epos[i]->get_value(MODES_OF_OPERATION_DISPLAY);
-    if ((dcm.joint_stiffness_updated[joint_id] == 1)
-    || (((int)dcm.joint_stiffness[joint_id] == 1) && (mode != -1))
-    || (((int)dcm.joint_stiffness[joint_id] == 0) && (mode != -32)))
+    if ((dcm.joint_position_p_gain_updated[joint_id] == 1)
+    || (((int)dcm.joint_position_p_gain[joint_id] == 1) && (mode != -1))
+    || (((int)dcm.joint_position_p_gain[joint_id] == 0) && (mode != -32)))
     {
-      dcm.joint_stiffness_updated[joint_id] = 0; 
-      switch ((int)dcm.joint_stiffness[joint_id])
+      dcm.joint_position_p_gain_updated[joint_id] = 0; 
+      switch ((int)dcm.joint_position_p_gain[joint_id])
       {
         case 1 :
           m_epos[i]->set_value(MODES_OF_OPERATION, -1);
@@ -380,8 +380,10 @@ void epos_thread::entry()
   {
     int joint_id = m_id[i];
     dcm.joint_enable[joint_id] = 1;
-    dcm.joint_stiffness[joint_id] = 1;
-    dcm.joint_damping[joint_id] = 0;
+    dcm.joint_position_p_gain[joint_id] = 1;
+    dcm.joint_position_i_gain[joint_id] = 0;
+    dcm.joint_position_d_gain[joint_id] = 0;
+    dcm.joint_velocity_p_gain[joint_id] = 0;
     dcm.joint_force[joint_id] = 0;
     dcm.joint_position[joint_id] = dcm.joint_position_sensor[joint_id];
     dcm.joint_velocity[joint_id] = 0; 

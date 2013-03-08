@@ -64,8 +64,10 @@ local function update_actuators()
   local joint_velocity_desired = dcm:get_joint_velocity()
   local joint_position_actual = dcm:get_joint_position_sensor()
   local joint_velocity_actual = dcm:get_joint_velocity_sensor()
-  local joint_stiffness = dcm:get_joint_stiffness()
-  local joint_damping = dcm:get_joint_damping()
+  local joint_position_p_gain = dcm:get_joint_position_p_gain()
+  local joint_position_i_gain = dcm:get_joint_position_i_gain()
+  local joint_position_d_gain = dcm:get_joint_position_d_gain()
+  local joint_velocity_p_gain = dcm:get_joint_velocity_p_gain()
 
   -- update spring force using motor velocity controller
   for i = 1,N_JOINT do
@@ -77,9 +79,9 @@ local function update_actuators()
     simSetObjectIntParameter(handles.servo[i], 2000, joint_enable[i])
     
     -- Object attribute 2001 is whether the motor is position-controlled
-    if joint_stiffness[i] then
+    if joint_position_p_gain[i] then
       simSetJointForce(handles.servo[i], 10000)
-      simSetObjectIntParameter(handles.servo[i], 2001, joint_stiffness[i])
+      simSetObjectIntParameter(handles.servo[i], 2001, joint_position_p_gain[i])
       simSetJointTargetPosition(handles.servo[i], joint_position_desired[i])
       -- Object attributes 2002-2004 are PID values
       simSetObjectFloatParameter(handles.servo[i], 2002, 20000)
@@ -165,8 +167,10 @@ function vrep_child_script.entry()
 
   -- initialize shared memory
   dcm:set_joint_enable(1, 'all')
-  dcm:set_joint_stiffness(1, 'all') -- position control
-  dcm:set_joint_damping(0, 'all')
+  dcm:set_joint_position_p_gain(1, 'all') -- position control
+  dcm:set_joint_position_i_gain(0, 'all') -- position control
+  dcm:set_joint_position_d_gain(0, 'all')
+  dcm:set_joint_velocity_p_gain(0, 'all')
   dcm:set_joint_force(0, 'all')
   dcm:set_joint_position(0, 'all')
   dcm:set_joint_velocity(0, 'all')

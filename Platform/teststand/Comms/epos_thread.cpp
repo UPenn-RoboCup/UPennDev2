@@ -235,19 +235,19 @@ void epos_thread::update_actuator_settings()
     m_epos[i]->set_value(TARGET_TORQUE, motor_force[motor_id]);
     m_epos[i]->set_controlbit_new_setpoint(1);
     m_epos[i]->set_controlbit_change_set_immediately(1);
-    if ((int)dcm.joint_stiffness[joint_id] == 0)
+    if ((int)dcm.joint_position_p_gain[joint_id] == 0)
       m_master.send_rpdo(node_id, 2);
     else
       m_master.send_rpdo(node_id, 1);
 
     // update controller mode
     int mode = m_epos[i]->get_value(MODES_OF_OPERATION_DISPLAY);
-    if ((dcm.joint_stiffness_updated[joint_id] == 1)
-    || (((int)dcm.joint_stiffness[joint_id] == 1) && (mode != -1))
-    || (((int)dcm.joint_stiffness[joint_id] == 0) && (mode != -32)))
+    if ((dcm.joint_position_p_gain_updated[joint_id] == 1)
+    || (((int)dcm.joint_position_p_gain[joint_id] == 1) && (mode != -1))
+    || (((int)dcm.joint_position_p_gain[joint_id] == 0) && (mode != -32)))
     {
-      dcm.joint_stiffness_updated[joint_id] = 0; 
-      switch ((int)dcm.joint_stiffness[joint_id])
+      dcm.joint_position_p_gain_updated[joint_id] = 0; 
+      switch ((int)dcm.joint_position_p_gain[joint_id])
       {
         case 1 :
           m_epos[i]->set_value(MODES_OF_OPERATION, -1);
@@ -358,8 +358,10 @@ void epos_thread::entry()
   {
     int joint_id = m_id[i];
     dcm.joint_enable[joint_id] = 1;
-    dcm.joint_stiffness[joint_id] = 1;
-    dcm.joint_damping[joint_id] = 0;
+    dcm.joint_position_p_gain[joint_id] = 1;
+    dcm.joint_position_i_gain[joint_id] = 0;
+    dcm.joint_position_d_gain[joint_id] = 0;
+    dcm.joint_velocity_p_gain[joint_id] = 1;
     dcm.joint_force[joint_id] = 0;
     dcm.joint_position[joint_id] = dcm.joint_position_sensor[joint_id];
     dcm.joint_velocity[joint_id] = 0; 

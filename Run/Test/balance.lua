@@ -392,13 +392,13 @@ function update_joint_data()
     joint_pos_sense[i] = filter_loop:update(raw_pos[i])--position filters
   end
   for i, filter_loop in pairs(vel_filters) do
-   -- joint_vel[i] = filter_loop:update(raw_pos[i])--velocity filters
+    joint_vel[i] = filter_loop:update(raw_pos[i])--velocity filters
   end    
   for i, filter_loop in pairs(vel_filters_raw) do
-   -- joint_vel_raw[i] = filter_loop:update(raw_pos[i])--velocity filters
+    joint_vel_raw[i] = filter_loop:update(raw_pos[i])--velocity filters
   end 
   for i, filter_loop in pairs(acc_filters) do
-   -- joint_acc[i] = filter_loop:update(qt[i])--velocity filters
+    joint_acc[i] = filter_loop:update(qt[i])--velocity filters
   end 
 end
 
@@ -406,14 +406,14 @@ function update_force_torque()
   --filters the force torque data for use --move
   local ft = dcm:get_force_torque() --debuggin
   for i = 1, 12 do
-   -- ft_filt[i] = ft_filters[i]:update(ft[i])
+    ft_filt[i] = ft_filters[i]:update(ft[i])
   end 
 end
 
 function ahrs_update() --move
   ahrs = dcm:get_ahrs()
   for i = 1, 9 do
-   -- ahrs_filt[i] = ahrs_filters[i]:update(ahrs[i])
+    ahrs_filt[i] = ahrs_filters[i]:update(ahrs[i])
   end 
 end
 
@@ -454,6 +454,7 @@ end
 function state_machine(t) 
   if (state == 0) then
     if state_t >= 2 then
+      print('state_t', state_t)
       l_leg_offset = lf
       torso = vector.new{0, 0, -0.05, 0, 0, 0} 
       --joint_offset = move_legs(torso)
@@ -488,7 +489,7 @@ end
 --------------------------------------------------------------------
 unix.usleep(5e5)
 Platform.entry()
-Platform.set_time_step(0.004)
+Platform.set_time_step(0.001)
 print('timestep', Platform.get_time_step())
 Proprioception.entry()
 print('after entry')
@@ -502,7 +503,7 @@ dcm:set_joint_enable(1, 'all')
 qt = vector.copy(set_values) 
 printdata = true
 
-local ident = "t8"
+local ident = "t1"
 print('ident', ident)
 local fw_log = assert(io.open("Logs/fw_log"..ident..".txt","w"))
 local fw_reg = assert(io.open("Logs/fw_reg"..ident..".txt","w"))
@@ -533,10 +534,10 @@ function write_to_file2(filename, local_data, template)
     for i = 1, #template do
       for i2 = 1, #template[i] do
      	filename:write(local_data[local_ind], ", ")
+        local_ind = local_ind + 1
       end
     end
-    filename:write(t, "\n")
-    local_ind = local_ind + 1
+    filename:write("\n")
   end
 end
 
@@ -550,7 +551,9 @@ end
 --Main
 --------------------------------------------------------------------
 --unix.usleep(1e6)
-print('time',unix.time())
+local t0 = unix.time()
+t = t0
+print('time',unix.time() - t0)
 while run do 
   Platform.update()
   dt = Platform.get_time() - t 
@@ -579,14 +582,16 @@ while run do
   joint_torques_sense = dcm:get_joint_force_sensor('legs')
 --implement actions
   dcm:set_joint_position(qt, 'legs')  
-  dcm:set_joint_force(joint_torques, 'legs')  
-  
+  --dcm:set_joint_force(joint_torques, 'legs')  
+  dcm:set_joint_force({0,0,0,0,0,0,0,0,0,0,0,0}, 'legs') 
+
   if (printdata) then -- mod_print == 0 and
     --data[1] = {dt, unix.time(), step}
     --data[1] = COG
     --data[1] = {pid_torques[1], pid_torques[2]}
     data[1] = {raw_pos[5], raw_pos[6]}
-    data[2] = {joint_pos_sense[5], joint_pos_sense[6]}
+    data[2] = {t}
+      -- {pid_torques[1], pid_torques[2]}
     ---data[3] = joint_torques_sense
     ---data[4] = raw_pos
     --data[6] = joint_vel_raw
@@ -598,12 +603,13 @@ while run do
     store_data(data)
   end
 end
---dcm:set_joint_force({0,0,0,0,0,0,0,0,0,0,0,0},'legs')
-print('time end', unix.time())
+dcm:set_joint_force({0,0,0,0,0,0,0,0,0,0,0,0},'legs')
+print('time end', unix.time() - t0)
 write_reg(data)
 write_to_file2(fw_log, store, data)
-print('time after write', unix.time())
+print('time after write', unix.time() - t0)
 print('steps: ', step)
+print(store[1], store[2], store[3], store[4])
 Platform.exit()
 
 

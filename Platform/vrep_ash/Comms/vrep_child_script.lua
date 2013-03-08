@@ -177,7 +177,7 @@ function vrep_child_script.entry()
   -- initialize motion manager
   zmq_context = zmq.init(1)
   frame_update_socket = zmq_context:socket(zmq.PUB)
-  frame_update_socket:bind("tcp://127.0.0.1:12001")
+  frame_update_socket:bind("tcp://127.0.0.1:12000")
 
   -- initialize sensor shared memory
   vrep_child_script.update()

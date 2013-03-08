@@ -17,7 +17,7 @@ require('Locomotion')
 require('Manipulation')
 require('Proprioception')
 
-local rpc_endpoint = 'tcp://127.0.0.1:12000'
+local rpc_endpoint = 'tcp://127.0.0.1:12001'
 
 local function draw_screen()
   curses.clear()

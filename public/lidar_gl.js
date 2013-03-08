@@ -49,7 +49,7 @@ function init() {
 */
 
   // Initialize the particles
-  var geometry = new THREE.BufferGeometry();
+  geometry = new THREE.BufferGeometry();
   geometry.attributes = {
     position: {
       itemSize: 3,
@@ -74,8 +74,12 @@ function init() {
   particleSystem = new THREE.ParticleSystem( geometry, material );
   var meshMaterial = new THREE.MeshBasicMaterial( { wireframe: true, vertexColors: true, color: 0xff0000 } );
   meshSystem = new THREE.Mesh( geometry, meshMaterial );
-  scene.add( particleSystem );
-  scene.add( meshSystem );
+  lineSystem = new THREE.Mesh( geometry );
+  
+  //scene.add( particleSystem );
+  //scene.add( meshSystem );
+  scene.add( lineSystem );
+
 
   // renderer
   renderer = new THREE.WebGLRenderer( { antialias: false, clearColor: 0x333333, clearAlpha: 1, alpha: false } );

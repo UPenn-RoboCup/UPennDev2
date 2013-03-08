@@ -36,18 +36,6 @@ function init() {
   //scene.fog = new THREE.FogExp2( 0xcccccc, 0.002 );
   scene.fog = new THREE.Fog( 0x050505, 2000, 3500 );
 
-  // Set up the lights
-/*
-  light = new THREE.DirectionalLight( 0xffffff );
-  light.position.set( 1, 1, 1 );
-  scene.add( light );
-  light = new THREE.DirectionalLight( 0x002288 );
-  light.position.set( -1, -1, -1 );
-  scene.add( light );
-  light = new THREE.AmbientLight( 0x222222 );
-  scene.add( light );
-*/
-
   // Initialize the particles
   geometry = new THREE.BufferGeometry();
   geometry.attributes = {
@@ -76,9 +64,9 @@ function init() {
   meshSystem = new THREE.Mesh( geometry, meshMaterial );
   lineSystem = new THREE.Mesh( geometry );
   
-  //scene.add( particleSystem );
+  scene.add( particleSystem );
   //scene.add( meshSystem );
-  scene.add( lineSystem );
+  //scene.add( lineSystem );
 
 
   // renderer

@@ -16,9 +16,9 @@ local mp = require 'ffi/msgpack'
 -- Data Type specific
 local dataPath = '~/shadwell/day2_third/';
 local dataStamp = '02.27.2013';
---local dataTypes = {'lidar','arduimu'}
+local dataTypes = {'lidar','arduimu'}
 --local dataTypes = {'flir'}
-local dataTypes = {'lidar'}
+--local dataTypes = {'lidar'}
 local realtime = true;
 if realtime then
   require 'unix'
@@ -110,7 +110,7 @@ pushers_tbl['lidar'] = function ( lidar_tbl )
 end
 pushers_tbl['arduimu'] = function ( imu_tbl )
   local encoded_imu = mp.pack(imu_tbl)
-	imu_channel:send( encoded_imu, #encoded_imu )--send more
+	ipc_channels['arduimu']:send( encoded_imu, #encoded_imu )--send more
 end
 pushers_tbl['flir'] = function ( flir_tbl )
 end

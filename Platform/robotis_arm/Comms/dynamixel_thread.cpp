@@ -199,13 +199,13 @@ void dynamixel_thread::update_actuator_settings()
   
   ivalue = dcm.joint_position[7] * 1129.0;
   value = (int)ivalue;
-  Write(Port, 8, 30, value, 1);
+  Write(Port, 8, 30, value, 2);
   //value = (int)ivalue;
   //Write(Port, 8, 31, value / 256, 1);
   
   ivalue = dcm.joint_position[8] * 1129.0;
   value = (int)ivalue;
-  Write(Port, 9, 30, value, 1);
+  Write(Port, 9, 30, value, 2);
   //value = (int)ivalue;
   //Write(Port, 9, 31, value / 256, 1);
   
@@ -264,7 +264,7 @@ void dynamixel_thread::update_sensor_readings()
   dcm.joint_position_sensor[6] = (double)ivalue/1129.0;
   
   // Finger 1
-  dxl_read_byte(Port, 8, 36, &low, &error);
+  dxl_read_word(Port, 8, 36, &low, &error);
   //dxl_read_byte(Port, 8, 37, &high, &error);
   //ivalue = (int)low + (int)high * 256;
   ivalue = (int)low;
@@ -272,7 +272,7 @@ void dynamixel_thread::update_sensor_readings()
   dcm.joint_position_sensor[7] = (double)ivalue/1129.0;
   
   // Finger 2
-  dxl_read_byte(Port, 9, 36, &low, &error);
+  dxl_read_word(Port, 9, 36, &low, &error);
   //dxl_read_byte(Port, 9, 37, &high, &error);
   //ivalue = (int)low + (int)high * 256;
   ivalue = (int)low;

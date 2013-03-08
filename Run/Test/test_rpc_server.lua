@@ -9,8 +9,7 @@ function my_remote_function(x)
 end
 
 -- initialize server
-local context = zmq.init()
-server = rpc.server.new('tcp://127.0.0.1:5555', context)
+server = rpc.server.new('tcp://127.0.0.1:5555')
 server:set_timeout(0)
 
 -- handle rpc requests
@@ -20,5 +19,4 @@ while true do
   server:update()
 end
 
-context:term()
-
+server:close()

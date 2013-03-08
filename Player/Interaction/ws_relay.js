@@ -9,21 +9,21 @@ var bserver = BinaryServer({port: 9000});
 
 // Listen to IPC sensor messages
 /*
-var sock_imu = zmq.socket('sub');
-sock_imu.connect('ipc:///tmp/arduimu');
-sock_imu.subscribe('');
-console.log('Worker connected to imu');
-*/
+   var sock_imu = zmq.socket('sub');
+   sock_imu.connect('ipc:///tmp/arduimu');
+   sock_imu.subscribe('');
+   console.log('Worker connected to imu');
+   */
 var sock_lidar = zmq.socket('sub');
 sock_lidar.connect('ipc:///tmp/lidar');
 sock_lidar.subscribe('');
 console.log('Worker connected to lidar');
 /*
-var sock_flir = zmq.socket('sub');
-sock_flir.connect('ipc:///tmp/flir');
-sock_flir.subscribe('');
-console.log('Worker connected to flir');
-*/
+   var sock_flir = zmq.socket('sub');
+   sock_flir.connect('ipc:///tmp/flir');
+   sock_flir.subscribe('');
+   console.log('Worker connected to flir');
+   */
 
 // Listen to binary websockets
 var lidar_streams = [];
@@ -49,44 +49,47 @@ var last_lidar_cntr = counter;
 sock_lidar.on('message', function(msg){
   if( counter>last_lidar_cntr ) {
     for(var s=0;s<lidar_streams.length;s++) {
-      var ret = lidar_streams[s].write( msg );
-      if(ret==false){
-        console.log(counter+' lidar:' +msg.readFloatLE(0));
+      var tmpstream = lidar_streams[s];
+      if(tmpstream.writable==true){
+        var ret = tmpstream.write( msg );
+        if(ret==false){
+          console.log(s+' | '+counter+' lidar:' +msg.readFloatLE(0));
+        }
       }
     }
     last_lidar_cntr = counter;
   }
 });
 /*
-var last_imu_cntr = counter;
-sock_imu.on('message', function(msg){
-  if( counter>last_imu_cntr ) {
-    var send_msg = mp.unpack(msg);
-    for(var s=0;s<imu_streams.length;s++) {
-      var ret = imu_streams[s].write( send_msg );
-      if(ret==false){
-        console.log(counter+' imu:', send_msg);
-      }
-    }
-    last_imu_cntr = counter;
-  }
-});
-*/
+   var last_imu_cntr = counter;
+   sock_imu.on('message', function(msg){
+   if( counter>last_imu_cntr ) {
+   var send_msg = mp.unpack(msg);
+   for(var s=0;s<imu_streams.length;s++) {
+   var ret = imu_streams[s].write( send_msg );
+   if(ret==false){
+   console.log(counter+' imu:', send_msg);
+   }
+   }
+   last_imu_cntr = counter;
+   }
+   });
+   */
 /*
-var last_flir_cntr = counter;
-sock_flir.on('message', function(msg){
-  var send_msg = mp.unpack( msg )
-  if( counter>last_flir_cntr ) {
-    for(var s=0;s<flir_streams.length;s++) {
-      var ret = flir_streams[s].write( send_msg );
-      if(ret==false){
-        console.log('flir: ' +send_msg.t );
-      }
-    }
-    last_flir_cntr = counter;
-  }
-});
-*/
+   var last_flir_cntr = counter;
+   sock_flir.on('message', function(msg){
+   var send_msg = mp.unpack( msg )
+   if( counter>last_flir_cntr ) {
+   for(var s=0;s<flir_streams.length;s++) {
+   var ret = flir_streams[s].write( send_msg );
+   if(ret==false){
+   console.log('flir: ' +send_msg.t );
+   }
+   }
+   last_flir_cntr = counter;
+   }
+   });
+   */
 // Send data to clients at a set interval
 // For now, this is 15fps
 var fps = 15;

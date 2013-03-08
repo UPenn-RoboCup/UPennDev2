@@ -24,7 +24,6 @@
     console.log('Subscribing to the '+meta+" stream.");
     if(meta=='lidar'){
       stream.on('data', function(data){
-        console.log('got data')
         ranges = new Float32Array( data );
         update_particles( ranges );
       });

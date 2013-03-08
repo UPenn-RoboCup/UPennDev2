@@ -70,10 +70,13 @@ sock_imu.on('message', function(msg){
 
 var last_flir_cntr = counter;
 sock_flir.on('message', function(msg){
-  console.log('flir:' +msg.readFloatLE(0));
+  var send_msg = mp.unpack( msg )
   if( counter>last_flir_cntr ) {
     for(var s=0;s<flir_streams.length;s++) {
-      var ret = flir_streams[s].write( msg );
+      var ret = flir_streams[s].write( send_msg );
+      if(ret==false){
+        console.log('flir: ' +send_msg.t );
+      }
     }
     last_flir_cntr = counter;
   }

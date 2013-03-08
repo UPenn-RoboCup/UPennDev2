@@ -12,6 +12,7 @@
 <div id="container">
 </div>
 
+
 <script src="http://zeptojs.com/zepto.min.js"></script>
 <script src="http://mrdoob.github.com/three.js/build/three.min.js"></script>
 <script src="http://mrdoob.github.com/three.js/examples/js/controls/TrackballControls.js"></script>
@@ -32,7 +33,7 @@
       });
     } else if(meta=='imu') {
       stream.on('data', function(data){
-        $('#gyro').text( 'Roll: '+data.R );
+        $('#gyro').text( 'Yaw: '+data.Y );
       });
     }
   });

@@ -12,18 +12,23 @@ local serialization = require 'serialization'
 local util = require 'util'
 require 'cutil'
 local mp = require 'ffi/msgpack'
-local simple_ipc = require 'simple_ipc'
-local lidar_channel = simple_ipc.setup_publisher('lidar');
-local imu_channel = simple_ipc.setup_publisher('imu');
 
 -- Data Type specific
 local dataPath = '~/shadwell/day2_third/';
 local dataStamp = '02.27.2013';
 --local dataTypes = {'lidar','arduimu'}
-local dataTypes = {'flir'}
+--local dataTypes = {'flir'}
+local dataTypes = {'lidar'}
 local realtime = true;
 if realtime then
   require 'unix'
+end
+
+-- Set up the channels
+local simple_ipc = require 'simple_ipc'
+ipc_channels = {}
+for d=1,#dataTypes do
+  ipc_channels[ dataTypes[d] ] = simple_ipc.setup_publisher( dataTypes[d] );
 end
 
 function get_log_file_list()
@@ -99,8 +104,8 @@ pushers_tbl['lidar'] = function ( lidar_tbl )
   --rcm.set_lidar_ranges( lidar_tbl.ranges );
 	--rcm.set_lidar_timestamp(lidar_tbl.t);
 	-- Push over ipc (Data and timestamp)
-	lidar_channel:send( lidar_tbl.ranges, 1081*4, true )--send more
-	lidar_channel:send( lidar_tbl.t )
+	ipc_channels['lidar']:send( lidar_tbl.ranges, 1081*4, true )--send more
+	ipc_channels['lidar']:send( lidar_tbl.t )
   --lidar_channel:send( lidar_tbl.ranges, 1081*4 ) -- no send more
 end
 pushers_tbl['arduimu'] = function ( imu_tbl )
@@ -115,12 +120,12 @@ function open_log_file( d )
   if not log_file_name then
     return false
   end
-  local log_fr_handle = assert(io.open(log_file_name, 'r'));
-  local ts_file_name = log_file_name:gsub('fr_','ts_')
-  local log_ts_handle = assert(io.open(ts_file_name, 'r'));
-  -- Update global variables
-  log_handles[d] = { log_fr_handle, log_ts_handle};
+  local log_f_handle = assert(io.open(log_file_name, 'r'));
   if dataTypes[d]=='flir' then
+    local ts_file_name = log_file_name:gsub('fr_','ts_')
+    local log_ts_handle = assert(io.open(ts_file_name, 'r'));
+    -- Update global variables
+    log_handles[d] = { log_f_handle, log_ts_handle};
     entry_iters[d] = function()
       local blk_sz = 320*256*2
       local block = log_handles[1][1]:read( blk_sz ) -- Assume flir is first for now
@@ -132,6 +137,7 @@ function open_log_file( d )
       return {block,ts};
     end
   else
+    log_handles[d] = log_f_handle;
     entry_iters[d] = log_f_handle:lines()
   end
   return true;

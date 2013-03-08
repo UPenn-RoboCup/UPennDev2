@@ -67,13 +67,15 @@ function init() {
   // Set the colors and positions
   positions = geometry.attributes.position.array;
   colors = geometry.attributes.color.array;
-  //update_particles();
   geometry.computeBoundingSphere();
 
   // Add the particle system to the scene
   var material = new THREE.ParticleBasicMaterial( { size: .5, vertexColors: true } );
   particleSystem = new THREE.ParticleSystem( geometry, material );
+  var meshMaterial = new THREE.MeshBasicMaterial( { wireframe: true, vertexColors: true, color: 0xff0000 } );
+  meshSystem = new THREE.Mesh( geometry, meshMaterial );
   scene.add( particleSystem );
+  scene.add( meshSystem );
 
   // renderer
   renderer = new THREE.WebGLRenderer( { antialias: false, clearColor: 0x333333, clearAlpha: 1, alpha: false } );

@@ -14,11 +14,10 @@ then
   Vrep_Command="/Applications/V-Rep/vrep.app/Contents/MacOS/vrep"
 else
   echo "On Linux!"
-  echo "Please fix Vrep_Home and Vrep_Command paths!"
-  exit
+  echo "Assume V-Rep installed in /usr/local/vrep"
   
   Vrep_Home=/usr/local/vrep
-  Vrep_Command=
+  Vrep_Command="/usr/local/vrep/vrep"
 fi
 
 # Copy the controller add-on to the vrep directory

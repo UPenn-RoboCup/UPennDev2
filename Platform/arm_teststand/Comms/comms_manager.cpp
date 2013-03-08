@@ -97,4 +97,8 @@ void print_joint_array(double *joint_array)
   for (int i = 0; i < 9; i++)
     printw("%7.3f ", joint_array[i]);
   printw("  ] \n");
+  printw("            [ ");
+  for (int i = 9; i < 18; i++)
+    printw("%7.3f ", joint_array[i]);
+  printw("  ] \n");
 }

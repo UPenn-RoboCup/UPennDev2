@@ -138,7 +138,7 @@ void dynamixel_thread::update_actuator_settings()
     }
   }
   
-  for(i=12; i<19; i++)
+  for(i=12; i<18; i++)
   {
     if(dcm.joint_enable_updated[i])
     {

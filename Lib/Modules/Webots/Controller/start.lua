@@ -39,6 +39,9 @@ elseif teamID==27 then
 elseif teamID==28 then
   print('Door test')
   dofile("Player/Test/test_door.lua");
+elseif teamID==29 then
+  print('Arm only test')
+  dofile("Player/Test/test_arm_only.lua");
 else
 	--Default
 --  dofile("Player/Test/test_joints_webots.lua");

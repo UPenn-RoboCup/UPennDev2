@@ -32,6 +32,10 @@ require 'Transform'
 require 'Team' --To receive the GPS coordinates from objects
 require 'wcm'
 
+require 'strokedef' --Arm trajectory for drawing demo!
+
+
+
 if (string.find(Config.platform.name,'THOROP')) then
   thorop=true;
 else
@@ -235,26 +239,6 @@ arm_demo_motion={
 --]]
 
 
-arm_demo_motion={
-   {0,0,0},
-
-   {0.15,-0.10,-0.10},
-   {-0.05,-0.10,-0.10},
-   {-0.05,0.10,-0.10},
-   {0.15,0.10,-0.10},
-   {0.15,-0.10,-0.10},
-
-   {0.15,-0.10,0.10},
-   {-0.05,-0.10,0.10},
-   {-0.05,0.10,0.10},
-   {0.15,0.10,0.10},
-   {0.15,-0.10,0.10},
-
-   {0,0,0},
-}
-
-
-
 
 
 arm_demo_count = 1;
@@ -265,33 +249,113 @@ function arm_demo()
   t = Body.get_time();
   if arm_init_count~=0 then return;end --Wait until init is over
   if arm_demo_done then return;end
-
   pTarget = vector.new(arm_demo_motion[arm_demo_count])
 	+vector.new({trRArm0[1], trRArm0[2], trRArm0[3]});
-  
   armDir = vector.new({
 	pTarget[1]-trRArm[1],
 	pTarget[2]-trRArm[2],
 	pTarget[3]-trRArm[3]});
-
   dRelative = math.sqrt(armDir[1]^2 + armDir[2]^2+armDir[3]^2);
-
 --  vel=0.0025;
   vel=0.005;
   if dRelative<vel*2 then --Approached the target
     arm_demo_count = arm_demo_count + 1;
     if arm_demo_count > #arm_demo_motion then
       arm_demo_done = true;
-
 --Hack here to reset the arm position...
       arm_init_motion = arm_end_motion_thorop;
       arm_init_count = 1; 
       arm_init_t0 = t;
 --      flush_jointangle_queue();
-
       return;
     end
   else
+    trRArm[1] = trRArm[1] + vel*armDir[1]/dRelative;
+    trRArm[2] = trRArm[2] + vel*armDir[2]/dRelative;
+    trRArm[3] = trRArm[3] + vel*armDir[3]/dRelative;
+    motion_arms_ik();  
+  end
+end
+
+
+drawing_status = 0;
+drawing_scale = .20; 
+seg_div =4;
+
+stroke_count = 1;
+seg_count = 1;
+seg_div_count = 1;
+
+function arm_demo2()
+  t = Body.get_time();
+  if arm_init_count~=0 then return;end --Wait until init is over
+  if arm_demo_done then return;end
+  if drawing_status==2 then --Drawing 
+    ph = seg_div_count / seg_div;    
+--print("stroke",stroke_count,"seg",seg_count,"ph",ph)
+
+
+    trRArm[1] = trRArm0[1]+0.15;
+    trRArm[2] = trRArm0[2]+
+	((1-ph)*strokedef[stroke_count][1][seg_count]+ 
+	ph*strokedef[stroke_count][1][seg_count+1])*drawing_scale; 
+    trRArm[3] = trRArm0[3]+
+	((1-ph)*strokedef[stroke_count][2][seg_count]+ 
+	ph*strokedef[stroke_count][2][seg_count+1])*drawing_scale; 
+    motion_arms_ik();  
+    seg_div_count = seg_div_count+1;
+    
+    if seg_div_count>seg_div then
+      seg_div_count = 1; 
+      seg_count = seg_count + 1;
+      if seg_count == #strokedef[stroke_count][1] then
+        drawing_status = 3;
+      end
+    end
+  else
+    if drawing_status==0 then --Move close to the drawing start pos
+      pTarget=vector.new({
+	trRArm0[1]+0.10, 
+	trRArm0[2]+strokedef[stroke_count][1][1]*drawing_scale, 
+	trRArm0[3]+strokedef[stroke_count][2][1]*drawing_scale, 
+	})
+    elseif drawing_status==1 then --Start drawing
+      pTarget=vector.new({
+	trRArm0[1]+0.15,trRArm[2],trRArm[3],
+	})
+    elseif drawing_status==3 then --Move away
+      if stroke_count==#strokedef then
+        pTarget=vector.new({
+  	  trRArm0[1],trRArm0[2],trRArm0[3],
+  	  }) 
+      else
+        pTarget=vector.new({
+  	  trRArm0[1]+0.10,trRArm[2],trRArm[3],
+  	  }) 
+      end
+    end
+    armDir = vector.new({
+      pTarget[1]-trRArm[1],pTarget[2]-trRArm[2],pTarget[3]-trRArm[3]});
+    dRelative = math.sqrt(armDir[1]^2 + armDir[2]^2+armDir[3]^2);
+    vel=0.005;
+    if dRelative<vel*2 then --Approached the target
+--      print("Target reached, ",drawing_status)
+      drawing_status = drawing_status + 1;
+      if drawing_status==4 then
+        drawing_status=0;
+        stroke_count = stroke_count + 1;
+	seg_count = 1;
+	if stroke_count > #strokedef then
+	  arm_demo_done = true;
+
+	  --Initiate end motion
+          arm_init_motion = arm_end_motion_thorop;
+          arm_init_count = 1; 
+          arm_init_t0 = t;
+
+	end
+      end
+    end
     trRArm[1] = trRArm[1] + vel*armDir[1]/dRelative;
     trRArm[2] = trRArm[2] + vel*armDir[2]/dRelative;
     trRArm[3] = trRArm[3] + vel*armDir[3]/dRelative;
@@ -687,27 +751,6 @@ function update()
   update_cognition();
   auto_move_arms();
   Team.update();
---[[	
-	-- Update the laser scanner
-	lidar_scan = WebotsLaser.get_scan()
-	-- Set the Range Comm Manager values
-	rcm.set_lidar_ranges( carray.pointer(lidar_scan) );
-	rcm.set_lidar_timestamp( Body.get_time() )
-	--print("Laser data:",unpack(rcm.get_lidar_ranges()))
-	
-	-- Show the odometry
-	odom, odom0 = mcm.get_odometry();
-	rcm.set_robot_odom( vector.new(odom) )
-	
-	-- Show IMU
-  imuAngle = Body.get_sensor_imuAngle();
-	rcm.set_robot_imu( vector.new(imuAngle) )
-	gyr = Body.get_sensor_imuGyrRPY();
-	rcm.set_robot_gyro( vector.new(gyr) );
---]]
-
-
---print("Roll", gyr[1], "Pitch",gyr[2]);
 
   -- Check if the last update completed without errors
   lcount = lcount + 1;
@@ -739,7 +782,8 @@ while (true) do
 	-- Run Updates
   process_keyinput();
 
-  arm_demo();
+--  arm_demo();
+  arm_demo2();
   Team.update();
   init_arms();
 

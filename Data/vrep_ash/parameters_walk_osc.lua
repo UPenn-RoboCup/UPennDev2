@@ -1,0 +1,15 @@
+return {
+  ankle_roll_fb_slope = 0.000000,
+  knee_pitch_fb = -0.000000,
+  ankle_pitch_fb = 0.080000,
+  hip_roll_fb = 0.000000,
+  ankle_roll_fb = 0.080000,
+  period_time = 1.360000,
+  ankle_pitch_fb_slope = 0.000000,
+  zmp_shift_ratio = 0.500000,
+  dsp_ratio = 0.250000,
+  y_offset_ratio = 0.300000,
+  y_swing_amplitude = 0.048000,
+  z_swing_amplitude = 0.002000,
+  step_amplitude = 0.034000,
+}

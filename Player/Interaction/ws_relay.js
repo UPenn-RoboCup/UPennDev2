@@ -8,18 +8,22 @@ var zmq = require('zmq');
 var bserver = BinaryServer({port: 9000});
 
 // Listen to IPC sensor messages
+/*
 var sock_imu = zmq.socket('sub');
 sock_imu.connect('ipc:///tmp/arduimu');
 sock_imu.subscribe('');
 console.log('Worker connected to imu');
+*/
 var sock_lidar = zmq.socket('sub');
 sock_lidar.connect('ipc:///tmp/lidar');
 sock_lidar.subscribe('');
 console.log('Worker connected to lidar');
+/*
 var sock_flir = zmq.socket('sub');
 sock_flir.connect('ipc:///tmp/flir');
 sock_flir.subscribe('');
 console.log('Worker connected to flir');
+*/
 
 // Listen to binary websockets
 var lidar_streams = [];
@@ -53,7 +57,7 @@ sock_lidar.on('message', function(msg){
     last_lidar_cntr = counter;
   }
 });
-
+/*
 var last_imu_cntr = counter;
 sock_imu.on('message', function(msg){
   if( counter>last_imu_cntr ) {
@@ -67,7 +71,8 @@ sock_imu.on('message', function(msg){
     last_imu_cntr = counter;
   }
 });
-
+*/
+/*
 var last_flir_cntr = counter;
 sock_flir.on('message', function(msg){
   var send_msg = mp.unpack( msg )
@@ -81,10 +86,10 @@ sock_flir.on('message', function(msg){
     last_flir_cntr = counter;
   }
 });
-
+*/
 // Send data to clients at a set interval
 // For now, this is 15fps
-var fps = 1;
+var fps = 15;
 setInterval(  function(){
   counter++;
 }, 1000/fps);

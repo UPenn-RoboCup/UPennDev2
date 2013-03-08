@@ -6,12 +6,8 @@
   }
 </style>
 
-<div id="gyro">
-</div>
-
 <div id="container">
 </div>
-
 
 <script src="http://zeptojs.com/zepto.min.js"></script>
 <script src="http://mrdoob.github.com/three.js/build/three.min.js"></script>
@@ -28,6 +24,7 @@
     console.log('Subscribing to the '+meta+" stream.");
     if(meta=='lidar'){
       stream.on('data', function(data){
+        console.log('got data')
         ranges = new Float32Array( data );
         update_particles( ranges );
       });

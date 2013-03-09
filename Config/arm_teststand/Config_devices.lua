@@ -14,6 +14,7 @@ devices = {
 joint = {}
 
 joint.id = { 
+
   -- device ids
   [1] = 'l_shoulder_pitch',
   [2] = 'l_shoulder_roll',

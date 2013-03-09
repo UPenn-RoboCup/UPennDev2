@@ -114,8 +114,12 @@ arm_init_motion_thorop={
     1.0,
   },
   {
-    vector.new({0,45,90,-90,-90,-45})*math.pi/180,
-    vector.new({0,-45,-90,-90,90,45})*math.pi/180,
+--    vector.new({0,45,90,-90,-90,-45})*math.pi/180,
+--    vector.new({0,-45,-90,-90,90,45})*math.pi/180,
+
+    vector.new({0,90,90,-90,-90,-90})*math.pi/180,
+    vector.new({0,-90,-90,-90,90,90})*math.pi/180,
+
     1.0,
   },
 }
@@ -202,9 +206,11 @@ radius = 0.2;
 
 function calculate_arm_position()
   --We assume that the wheel is centered at (0.3,0,1.2) and has radius 0.2
-
-   local handle_pos = {0.3,0,1.2};
-   local handle_pos = {0.3,0,1.4}; --for atlas
+   if thorop then
+     handle_pos = {0.3,0,1.2};
+   else
+     handle_pos = {0.3,0,1.4}; --for atlas
+   end
 
    trGripL = Transform.eye()
        * Transform.trans(handle_pos[1],handle_pos[2],handle_pos[3])
@@ -214,7 +220,7 @@ function calculate_arm_position()
 
    trGripR = Transform.eye()
        * Transform.trans(handle_pos[1],handle_pos[2],handle_pos[3])
-       * Transform.rotX(turnAngle*rotating_direction)
+       * Transform.rotX(-turnAngle*rotating_direction)
        * Transform.trans(0,-radius,0)
        * Transform.rotZ(math.pi/2);
 
@@ -302,9 +308,11 @@ function auto_move_arms()
   angle0 = 23*math.pi/180;
   angle1 = -23*math.pi/180;
 
-  nTurn = 8;
+  nTurn = 4;
 
   if is_moving == 2*nTurn+1 then --Finished rotating
+      Body.set_l_gripper_command({math.pi/4,-math.pi/4});
+      Body.set_r_gripper_command({math.pi/4,-math.pi/4});
     if radius < radius1 then radius = radius + velR; end    
     if turnAngle <0 then turnAngle = turnAngle + velATurn;end
     if radius>=radius1 and turnAngle>=0 then
@@ -316,7 +324,6 @@ function auto_move_arms()
   end
 
 
-
   if is_moving%2==1 then 
     if radius > radius0 then radius = radius - velR; 
     elseif turnAngle<angle0 then 
@@ -324,7 +331,7 @@ function auto_move_arms()
     else
       --Close gripper
       Body.set_l_gripper_command({0,0});
-      Body.set_r_gripper_command({0,0});
+      Body.set_r_gripper_command({math.pi/4,-math.pi/4});
       is_moving = is_moving + 1;
     end
   elseif is_moving%2==0 then
@@ -335,7 +342,8 @@ function auto_move_arms()
       is_moving = is_moving + 1;
       --Open gripper 
       Body.set_l_gripper_command({math.pi/4,-math.pi/4});
-      Body.set_r_gripper_command({math.pi/4,-math.pi/4});
+      Body.set_r_gripper_command({0,0});
+
     end
   end
 

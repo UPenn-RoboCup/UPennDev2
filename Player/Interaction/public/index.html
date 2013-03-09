@@ -4,14 +4,20 @@
     <style>
       #container {
         background: #000;
-        width: 400px;
-        height: 300px;
+        width: 640px;
+        height: 480px;
+      }
+      #webots {
+        background: #ccc;
+        width: 320px;
+        height: 190px;
       }
     </style>
   </head>
 
-  <img id="webots" />
-  
+  <canvas id="webots">
+  </canvas>
+
   <div id="container">
   </div>
 
@@ -42,8 +48,10 @@
     console.log('Connecting to '+host+' 8080')
     var ws_i = new WebSocket('ws://' + host + ':8080');
     ws_i.binaryType = "blob";
-    var jpeg_url_name = ""
-    var webots_img = $('#webots')[0];
+    var jpeg_url_name = "";
+    var img = new Image;
+    var myCanvas = document.getElementById('webots');
+    var ctx = myCanvas.getContext('2d');
     ws_i.onmessage = function (event) {
       // Revoke the previous
       window.URL.revokeObjectURL(jpeg_url_name);
@@ -51,8 +59,13 @@
       parts.push(event.data)
       var tmp = new Blob( parts, { "type" : "image\/jpeg" } )
       var jpeg_url_name = (window.URL || window.webkitURL).createObjectURL(tmp)
-      webots_img.src = jpeg_url_name;
-      //console.log( event.data );
+      img.src = jpeg_url_name;
+      img.onload = function(){
+        ctx.drawImage( img, 0, 0 ); // Or at whatever offset you like
+        var imgdata = ctx.getImageData(0, 0, 320, 190);
+        update_kinect( new Uint8Array(imgdata.data.buffer ) );
+        //console.log( imgdata );
+      };
     };
   </script>
 
@@ -60,4 +73,5 @@
   <!--
   <script src="lidar_gl.js"></script>
   -->
+  <script src="kinect_gl.js"></script>
 </html>

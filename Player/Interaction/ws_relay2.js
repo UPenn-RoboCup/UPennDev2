@@ -14,7 +14,17 @@ setInterval(  function(){
   counter++;
 }, 1000/fps);
 
-// Listen to IPC sensor messages
+//img
+
+var sock_img = zmq.socket('sub');
+sock_img.connect('ipc:///tmp/img');
+sock_img.subscribe('');
+console.log('IPC: img');
+sock_img.on('message', function(msg){
+  console.log('got img!');
+});
+
+  // Listen to IPC sensor messages
 var sock_lidar = zmq.socket('sub');
 sock_lidar.connect('ipc:///tmp/lidar');
 sock_lidar.subscribe('');

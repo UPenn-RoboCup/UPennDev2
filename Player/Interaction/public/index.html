@@ -36,13 +36,17 @@
   </script>
 
   <script>
-    console.log('Connecting to '+host+' 9001')
-    var ws_i = new WebSocket('ws://' + host + ':9001');
+    console.log('Connecting to '+host+' 8080')
+    var ws_i = new WebSocket('ws://' + host + ':8080');
     ws_i.binaryType = "blob";
     ws_i.onmessage = function (event) {
+      var parts = []
+      parts.push(event.data)
+      var tmp = new Blob( parts, { "type" : "image\/jpeg" } )
       var img = document.createElement("img");
       img.src = (window.URL || window.webkitURL).createObjectURL(
-      event.data);
+      tmp)
+      //event.data);
       document.body.appendChild(img);
       console.log( event.data );
     };

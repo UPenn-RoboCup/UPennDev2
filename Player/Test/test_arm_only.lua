@@ -129,13 +129,26 @@ arm_init_motion_thorop={
     vector.new({90,-60,-90,-120,90,30})*math.pi/180,
     1.0,
   },
+--[[
   {
     vector.new({0,60,90,-120,-90,-30})*math.pi/180,
     vector.new({0,-60,-90,-120,90,30})*math.pi/180,
     1.0,
   },
+--]]
+
+  {
+    vector.new({0,60,90,-120,-90,60})*math.pi/180,
+    vector.new({0,-60,-90,-120,90,-60})*math.pi/180,
+    1.0,
+  },
 
 }
+
+
+
+
+
 
 arm_end_motion_thorop={
   {
@@ -279,12 +292,17 @@ end
 
 
 drawing_status = 0;
-drawing_scale = .20; 
-seg_div =4;
-
 stroke_count = 1;
 seg_count = 1;
 seg_div_count = 1;
+
+draw_x1 = 0.15;
+draw_x2 = 0.12;
+drawing_scale = .20; 
+seg_div =2;
+velMove=0.005;
+
+
 
 function arm_demo2()
   t = Body.get_time();
@@ -295,7 +313,7 @@ function arm_demo2()
 --print("stroke",stroke_count,"seg",seg_count,"ph",ph)
 
 
-    trRArm[1] = trRArm0[1]+0.15;
+    trRArm[1] = trRArm0[1]+draw_x1;
     trRArm[2] = trRArm0[2]+
 	((1-ph)*strokedef[stroke_count][1][seg_count]+ 
 	ph*strokedef[stroke_count][1][seg_count+1])*drawing_scale; 
@@ -315,13 +333,13 @@ function arm_demo2()
   else
     if drawing_status==0 then --Move close to the drawing start pos
       pTarget=vector.new({
-	trRArm0[1]+0.10, 
+	trRArm0[1]+draw_x2, 
 	trRArm0[2]+strokedef[stroke_count][1][1]*drawing_scale, 
 	trRArm0[3]+strokedef[stroke_count][2][1]*drawing_scale, 
 	})
     elseif drawing_status==1 then --Start drawing
       pTarget=vector.new({
-	trRArm0[1]+0.15,trRArm[2],trRArm[3],
+	trRArm0[1]+draw_x1,trRArm[2],trRArm[3],
 	})
     elseif drawing_status==3 then --Move away
       if stroke_count==#strokedef then
@@ -330,15 +348,14 @@ function arm_demo2()
   	  }) 
       else
         pTarget=vector.new({
-  	  trRArm0[1]+0.10,trRArm[2],trRArm[3],
+  	  trRArm0[1]+draw_x2,trRArm[2],trRArm[3],
   	  }) 
       end
     end
     armDir = vector.new({
       pTarget[1]-trRArm[1],pTarget[2]-trRArm[2],pTarget[3]-trRArm[3]});
     dRelative = math.sqrt(armDir[1]^2 + armDir[2]^2+armDir[3]^2);
-    vel=0.005;
-    if dRelative<vel*2 then --Approached the target
+    if dRelative<velMove*2 then --Approached the target
 --      print("Target reached, ",drawing_status)
       drawing_status = drawing_status + 1;
       if drawing_status==4 then
@@ -356,9 +373,9 @@ function arm_demo2()
 	end
       end
     end
-    trRArm[1] = trRArm[1] + vel*armDir[1]/dRelative;
-    trRArm[2] = trRArm[2] + vel*armDir[2]/dRelative;
-    trRArm[3] = trRArm[3] + vel*armDir[3]/dRelative;
+    trRArm[1] = trRArm[1] + velMove*armDir[1]/dRelative;
+    trRArm[2] = trRArm[2] + velMove*armDir[2]/dRelative;
+    trRArm[3] = trRArm[3] + velMove*armDir[3]/dRelative;
     motion_arms_ik();  
   end
 end

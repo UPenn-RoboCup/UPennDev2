@@ -423,5 +423,5 @@ THOROP {
   translation 9.74922 3.9 6.71657
   rotation -0.580677 -0.582905 -0.568362 2.11121
   controller "darwin-op_team_0"
-  controllerArgs "0 98"
+  controllerArgs "0 31"
 }

@@ -107,22 +107,6 @@ zaRights={};
 phs={};
 
 ------------------------------------------------------
---Step queue information
-
-
-gap0={0,0}
-gap1={0.50,0}
-gap2={0.75,0.20}
-
-gap3={1.05,0.60};
-gap4={1.30,0.50};
-
-gap5={1.95,0.20};
-gap6={2.25,0.10};
-
-gap7={2.95,0.10};
-gap7={3.0,0.10};
-
 
 --Stepdef definition
 --{
@@ -167,14 +151,10 @@ function generate_step_queue(stepdef)
   return step_queue;
 end
 
---   {supportLeg, relStep, ZA, duration}
-stepdef1={
-  {2, {0,0,0},{0,0},0.8},
-  {0, {0.40,0,0},{0,0},0.8}, --LS step
-  {1, {0.40,0,0},{0,0},0.8}, --RS step
-  {2, {0,0,0},{0,0},0.8}, --Stop
-}
 
+
+
+--   {supportLeg, relStep, ZA, duration}
 gap1={0.50,0,0};
 gap2={0.25,0.20,0};
 gap3={0.30,0.30,0};
@@ -183,7 +163,7 @@ gap5={0.55,-0.40,0};
 gap6={0.25,-0.0,0};
 gap7={0.70,0.0,0};
 
-stepdef2={
+stepdef_qual1={
   --First cross
   {2, {0,0,0},{0,0},0.8},
   {0, gap1,{0,0},0.8}, --LS step
@@ -218,23 +198,6 @@ stepdef2={
 
 
 }
-
-
-
-stepHeight = Config.zmpstep.stepHeight;
-maxStepHeight = 0.30;
-
-maxStepHeight = 0.10; --for gap cross
-
-
-
-
---Params for stair climbing
-maxStepHeight = 0.25; 
-bodyHeight1 = 1.10; 
-
-
-
 
 --First step 
 stepdef_qual3_1={
@@ -339,7 +302,7 @@ stepdef_qual3_3={
   {1, {0.50,0,0},{0.20,0},1.0}, --RS step 
   {2, {0,0,0},{0.0,0},0.8}, --DS, 
   {0, {0.50,0,0},{0.20,0},1.0}, --LS step 
-  {2, {0,0,0},{0.20,0},0.8}, --Stop and raise bodyHeight 
+--  {2, {0,0,0},{0.20,0},0.8}, --Stop and raise bodyHeight 
 
   {2, {0,0,0},{0.0,0},0.8}, --Stop and raise bodyHeight 
   {1, {0.20,0,0},{0.0,0},1.0}, --RS step 
@@ -452,7 +415,6 @@ stepdef_qual3_5={
 --Obstacle avoiding 
 stepdef_qual3_6={
 
-
   {2, {0,0,0},{-0.10,0},0.8},
 
 
@@ -513,22 +475,6 @@ stepdef_qual3_6={
   {2, {0,0,0},{0,0},10.0}, --Stop
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 --Last ramp, gradient 0.244
@@ -725,8 +671,6 @@ stepdef_qual3_7={
   {2, {0,0,0},{lStep2/2*math.tan(-0.24),0},0.8}, --Lower body
   {2, {0,0,0},{0.0,0},0.4}, 
 
-
-
 --Final step
 
   {0, {lStep2/2,0,0},{lStep/2*math.tan(-0.24) ,0},1.0}, --RS step
@@ -747,15 +691,37 @@ stepdef_qual3_7={
   {2, {0,0,0},{0.20,0},10.0}, --Stop
 }
 
-
---step_queue = generate_step_queue(stepdef_qual3_1);
---step_queue = generate_step_queue(stepdef_qual3_2);
---step_queue = generate_step_queue(stepdef_qual3_3);
---step_queue = generate_step_queue(stepdef_qual3_5);
-step_queue = generate_step_queue(stepdef_qual3_6);
---step_queue = generate_step_queue(stepdef_qual3_7);
-
-
+function load_step_queue(steptype)
+  if steptype==1 then
+    stepHeight = Config.zmpstep.stepHeight;
+    maxStepHeight = 0.10; --for gap cross
+    step_queue = generate_step_queue(stepdef_qual1);
+  elseif steptype==2 then
+    maxStepHeight = 0.25; 
+    bodyHeight1 = 1.10; 
+    step_queue = generate_step_queue(stepdef_qual3_1);
+  elseif steptype==3 then
+    maxStepHeight = 0.25; 
+    bodyHeight1 = 1.10; 
+    step_queue = generate_step_queue(stepdef_qual3_2);
+  elseif steptype==4 then
+    maxStepHeight = 0.25; 
+    bodyHeight1 = 1.10; 
+    step_queue = generate_step_queue(stepdef_qual3_3);
+  elseif steptype==5 then
+    maxStepHeight = 0.25; 
+    bodyHeight1 = 1.10; 
+    step_queue = generate_step_queue(stepdef_qual3_5);
+  elseif steptype==6 then
+    maxStepHeight = 0.25; 
+    bodyHeight1 = 1.10; 
+    step_queue = generate_step_queue(stepdef_qual3_6);
+  elseif steptype==7 then
+    maxStepHeight = 0.25; 
+    bodyHeight1 = 1.10; 
+    step_queue = generate_step_queue(stepdef_qual3_7);
+  end
+end
 
 step_queue_count = 0;
 step_queue_t0 = 0;

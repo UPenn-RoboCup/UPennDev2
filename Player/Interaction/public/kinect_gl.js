@@ -21,7 +21,8 @@ animate();
 function init() {
 
   // Set up the camera
-  camera = new THREE.PerspectiveCamera( 60, width / height, 1, 1000 );
+  //camera = new THREE.PerspectiveCamera( 60, width / height, 1, 1000 );
+  camera = new THREE.PerspectiveCamera();
   camera.position.z = 500;
 
   // Set up the mouse controls

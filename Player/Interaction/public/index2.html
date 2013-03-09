@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      #container {
+        background: #000;
+        width: 400px;
+        height: 300px;
+      }
+    </style>
+  </head>
+
+  <div id="container">
+  </div>
+
+  <script src="http://zeptojs.com/zepto.min.js"></script>
+  <script src="http://mrdoob.github.com/three.js/build/three.min.js"></script>
+  <script src="http://mrdoob.github.com/three.js/examples/js/controls/TrackballControls.js"></script>
+  <script src="http://mrdoob.github.com/three.js/examples/js/Detector.js"></script>
+  <script src="http://mrdoob.github.com/three.js/examples/js/libs/stats.min.js"></script>
+
+  <script>
+    var ranges;
+    var host = window.document.location.host.replace(/:.*/, '');
+    console.log('Connecting to '+host)
+    var ws = new WebSocket('ws://' + host + ':9000');
+    ws.binaryType = "arraybuffer";
+    ws.onmessage = function (event) {
+      ranges = new Float32Array( event.data );
+      update_particles( ranges );
+      //console.log( event.data );
+    };
+  </script>
+
+  <!--WebGL stuff-->
+  <script src="lidar_gl.js"></script>
+
+</html>

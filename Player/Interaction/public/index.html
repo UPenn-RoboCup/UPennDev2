@@ -10,8 +10,11 @@
     </style>
   </head>
 
+  <img id="webots" />
+  
   <div id="container">
   </div>
+
 
   <script src="http://zeptojs.com/zepto.min.js"></script>
   <script src="http://mrdoob.github.com/three.js/build/three.min.js"></script>
@@ -39,16 +42,17 @@
     console.log('Connecting to '+host+' 8080')
     var ws_i = new WebSocket('ws://' + host + ':8080');
     ws_i.binaryType = "blob";
+    var jpeg_url_name = ""
+    var webots_img = $('#webots')[0];
     ws_i.onmessage = function (event) {
+      // Revoke the previous
+      window.URL.revokeObjectURL(jpeg_url_name);
       var parts = []
       parts.push(event.data)
       var tmp = new Blob( parts, { "type" : "image\/jpeg" } )
-      var img = document.createElement("img");
-      img.src = (window.URL || window.webkitURL).createObjectURL(
-      tmp)
-      //event.data);
-      document.body.appendChild(img);
-      console.log( event.data );
+      var jpeg_url_name = (window.URL || window.webkitURL).createObjectURL(tmp)
+      webots_img.src = jpeg_url_name;
+      //console.log( event.data );
     };
   </script>
 

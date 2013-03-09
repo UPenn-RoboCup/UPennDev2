@@ -46,14 +46,14 @@ end
 -- rpc client
 ----------------------------------------------------------------------
 
-function rpc.client.new(endpoint, zmq_context)
+function rpc.client.new(endpoint)
   local o = {}
   o.request_id = 0
   o.timeout = nil
   o.response = false
   o.return_values = {}
   o.return_status = false
-  o.context = zmq_context
+  o.context = zmq.init()
   o.endpoint = endpoint
   o.sock = o.context:socket(zmq.REQ)
   o.sock:connect(endpoint)
@@ -143,17 +143,18 @@ end
 
 function rpc.client.close(o)
   o.sock:close()
+  o.context:term()
 end
 
 -- rpc server methods
 ----------------------------------------------------------------------
 
-function rpc.server.new(endpoint, zmq_context)
+function rpc.server.new(endpoint)
   local o = {}
   o.timeout = nil
   o.blacklist = {}
   o.dictionary = generate_dictionary()
-  o.context = zmq_context
+  o.context = zmq.init() 
   o.endpoint = endpoint
   o.sock = o.context:socket(zmq.REP)
   o.sock:bind(endpoint)
@@ -242,6 +243,7 @@ end
 
 function rpc.server.close(o)
   o.sock:close()
+  o.context:term()
 end
 
 return rpc

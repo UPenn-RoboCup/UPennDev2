@@ -84,7 +84,7 @@ local function update_actuators()
       simSetObjectIntParameter(handles.servo[i], 2001, joint_position_p_gain[i])
       simSetJointTargetPosition(handles.servo[i], joint_position_desired[i])
       -- Object attributes 2002-2004 are PID values
-      simSetObjectFloatParameter(handles.servo[i], 2002, 20000)
+      -- simSetObjectFloatParameter(handles.servo[i], 2002, 100)
     end
   end
 end

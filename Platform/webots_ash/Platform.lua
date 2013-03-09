@@ -21,8 +21,8 @@ local simulator_iterations = 2
 
 -- servo controller parameters
 local max_force = 100
-local max_stiffness = 20000
-local max_damping = 0  -- damping disabled due to ODE instability
+local max_position_p_gain = 20000
+local max_position_d_gain = 0  -- damping disabled due to ODE instability
 local max_velocity = 7
 local max_acceleration = 70
 local velocity_p_gain = 0.25*vector.ones(N_JOINT)
@@ -82,8 +82,10 @@ local function update_actuators()
   local joint_velocity_desired = dcm:get_joint_velocity()
   local joint_position_actual = dcm:get_joint_position_sensor()
   local joint_velocity_actual = dcm:get_joint_velocity_sensor()
-  local joint_stiffness = dcm:get_joint_stiffness()
-  local joint_damping = dcm:get_joint_damping()
+  local joint_position_p_gain = dcm:get_joint_position_p_gain()
+  local joint_position_i_gain = dcm:get_joint_position_i_gain()
+  local joint_position_d_gain = dcm:get_joint_position_d_gain()
+  local joint_velocity_p_gain = dcm:get_joint_velocity_p_gain()
   local position_error = vector.zeros(N_JOINT)
   local velocity_error = vector.zeros(N_JOINT)
 
@@ -101,13 +103,13 @@ local function update_actuators()
       joint_ff_force[i] = limit(joint_ff_force[i], -max_force, max_force)
       -- calculate spring force 
       position_error[i] = joint_position_desired[i] - joint_position_actual[i]
-      joint_stiffness[i] = limit(joint_stiffness[i], 0, 1)
-      joint_p_force[i] = joint_stiffness[i]*max_stiffness*position_error[i]
+      joint_position_p_gain[i] = limit(joint_position_p_gain[i], 0, 1)
+      joint_p_force[i] = joint_position_p_gain[i]*max_position_p_gain*position_error[i]
       joint_p_force[i] = limit(joint_p_force[i], -max_force, max_force)
       -- calculate damping force
       velocity_error[i] = joint_velocity_desired[i] - joint_velocity_actual[i]
-      joint_damping[i] = limit(joint_damping[i], 0, 1)
-      joint_d_force[i] = joint_damping[i]*max_damping*velocity_error[i]
+      joint_position_d_gain[i] = limit(joint_position_d_gain[i], 0, 1)
+      joint_d_force[i] = joint_position_d_gain[i]*max_position_d_gain*velocity_error[i]
       joint_d_force[i] = limit(joint_d_force[i], -max_force, max_force)
     end
   end
@@ -230,8 +232,10 @@ function Platform.entry()
 
   -- initialize shared memory 
   dcm:set_joint_enable(1, 'all')
-  dcm:set_joint_stiffness(1, 'all') -- position control
-  dcm:set_joint_damping(0, 'all')
+  dcm:set_joint_position_p_gain(1, 'all') -- position control
+  dcm:set_joint_position_i_gain(0, 'all')
+  dcm:set_joint_position_d_gain(0, 'all')
+  dcm:set_joint_velocity_p_gain(0, 'all')
   dcm:set_joint_force(0, 'all')
   dcm:set_joint_position(0, 'all')
   dcm:set_joint_velocity(0, 'all')

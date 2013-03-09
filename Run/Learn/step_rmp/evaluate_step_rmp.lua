@@ -13,7 +13,6 @@ require('unix')
 -- Evaluate step_rmp
 --------------------------------------------------------------------------------
 
-local context = zmq.init()
 local rpc_endpoint = 'tcp://lo:12012'
 
 RESET_SIMULATOR = false
@@ -129,7 +128,7 @@ end
 -- start rpc server
 --------------------------------------------------------------------------------
 
-local pi2_server = rpc.server.new(rpc_endpoint, context)
+local pi2_server = rpc.server.new(rpc_endpoint)
 pi2_server:set_timeout(nil)
 
 function ping()
@@ -142,6 +141,7 @@ end
 step:save_parameters(parameter_save_file)
 
 step:exit()
+pi2_server:close()
 Proprioception.exit()
 Platform.exit()
 Platform.reset_simulator()

@@ -20,10 +20,14 @@ Dcm::Dcm()
   // create shared data objects
   joint_enable = 
     dcm_segment.construct<double>("joint_enable")[N_JOINT](0);
-  joint_stiffness = 
-    dcm_segment.construct<double>("joint_stiffness")[N_JOINT](0);
-  joint_damping = 
-    dcm_segment.construct<double>("joint_damping")[N_JOINT](0);
+  joint_position_p_gain = 
+    dcm_segment.construct<double>("joint_position_p_gain")[N_JOINT](0);
+  joint_position_i_gain = 
+    dcm_segment.construct<double>("joint_position_i_gain")[N_JOINT](0);
+  joint_position_d_gain = 
+    dcm_segment.construct<double>("joint_position_d_gain")[N_JOINT](0);
+  joint_velocity_p_gain = 
+    dcm_segment.construct<double>("joint_velocity_p_gain")[N_JOINT](0);
   joint_force = 
     dcm_segment.construct<double>("joint_force")[N_JOINT](0);
   joint_position = 
@@ -56,10 +60,14 @@ Dcm::Dcm()
   // create shared update flags
   joint_enable_updated = 
     dcm_segment.construct<double>("joint_enable_updated")[N_JOINT](0);
-  joint_stiffness_updated = 
-    dcm_segment.construct<double>("joint_stiffness_updated")[N_JOINT](0);
-  joint_damping_updated = 
-    dcm_segment.construct<double>("joint_damping_updated")[N_JOINT](0);
+  joint_position_p_gain_updated = 
+    dcm_segment.construct<double>("joint_position_p_gain_updated")[N_JOINT](0);
+  joint_position_i_gain_updated = 
+    dcm_segment.construct<double>("joint_position_i_gain_updated")[N_JOINT](0);
+  joint_position_d_gain_updated = 
+    dcm_segment.construct<double>("joint_position_d_gain_updated")[N_JOINT](0);
+  joint_velocity_p_gain_updated = 
+    dcm_segment.construct<double>("joint_velocity_p_gain_updated")[N_JOINT](0);
   joint_force_updated = 
     dcm_segment.construct<double>("joint_force_updated")[N_JOINT](0);
   joint_position_updated = 

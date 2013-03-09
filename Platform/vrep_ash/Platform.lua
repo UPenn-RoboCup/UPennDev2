@@ -41,7 +41,7 @@ end
 function Platform.entry()
   zmq_context = zmq.init(1)
   frame_update_socket = zmq_context:socket(zmq.SUB)
-  frame_update_socket:connect("tcp://127.0.0.1:12001")
+  frame_update_socket:connect("tcp://127.0.0.1:12000")
   frame_update_socket:setopt(zmq.SUBSCRIBE, "f")
 end
 

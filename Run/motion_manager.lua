@@ -17,7 +17,7 @@ require('Locomotion')
 require('Manipulation')
 require('Proprioception')
 
-local rpc_endpoint = 'tcp://127.0.0.1:12000'
+local rpc_endpoint = 'tcp://127.0.0.1:12001'
 
 local function draw_screen()
   curses.clear()
@@ -55,8 +55,7 @@ curses.timeout(1)
 draw_screen()
 
 local count = 0
-local context = zmq.init()
-local motion_rpc_server = rpc.server.new(rpc_endpoint, context)
+local motion_rpc_server = rpc.server.new(rpc_endpoint)
 motion_rpc_server:set_timeout(0)
 
 while true do
@@ -82,7 +81,6 @@ while true do
 end
 
 motion_rpc_server:close()
-context:term()
 curses.endwin()
 
 Motion.exit()

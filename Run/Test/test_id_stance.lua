@@ -20,8 +20,10 @@ Proprioception.entry()
 local q0 = {0, 0, -0.2, 0.4, -0.2, 0, 0, 0, -0.2, 0.4, -0.2, 0}
 dcm:set_joint_position(q0, 'legs')
 dcm:set_joint_velocity(0, 'all')
-dcm:set_joint_stiffness(1, 'all')
-dcm:set_joint_damping(0, 'all')
+dcm:set_joint_position_p_gain(1, 'all')
+dcm:set_joint_position_i_gain(0, 'all')
+dcm:set_joint_position_d_gain(0, 'all')
+dcm:set_joint_velocity_p_gain(0, 'all')
 
 local l_foot_wrench = pcm:get_l_foot_wrench()
 local r_foot_wrench = pcm:get_r_foot_wrench()
@@ -55,7 +57,7 @@ local tau, torso_accel = Dynamics.inverse(
 );
 
 dcm:set_joint_force(1*tau)
-dcm:set_joint_stiffness(0.005, 'all')
+dcm:set_joint_position_p_gain(0.005, 'all')
 
 while true do
   Platform.update()

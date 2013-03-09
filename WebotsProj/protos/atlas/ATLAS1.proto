@@ -776,11 +776,11 @@ Robot {
       ]
     }
     DEF zero GPS {
-       translation 0.0 0 0.265
+       translation -0.023 0 0.596
        name "zero"
     }
     Compass {
-       translation 0.0 0 0.265
+       translation -0.023 0 0.596
        name "compass"
     }
     Accelerometer {

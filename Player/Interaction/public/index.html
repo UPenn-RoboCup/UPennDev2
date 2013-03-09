@@ -19,7 +19,8 @@
 <script src="http://cdn.binaryjs.com/0/binary.js"></script>
 <script>
   var ranges;
-  var client = new BinaryClient('ws://ese650.mooo.com:9000');
+  //var client = new BinaryClient('ws://ese650.mooo.com:9000');
+  var client = new BinaryClient('ws://localhost:9000');
   client.on('stream', function(stream, meta){
     console.log('Subscribing to the '+meta+" stream.");
     if(meta=='lidar'){

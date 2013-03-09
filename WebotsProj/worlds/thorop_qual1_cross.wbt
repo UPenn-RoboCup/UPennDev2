@@ -126,12 +126,6 @@ DEF GROUND5 Solid {
   }
   locked TRUE
 }
-THOROP {
-  translation 9.88908 2.52062 -7.71388
-  rotation -0.999992 0.00278317 -0.00278612 1.57684
-  controller "darwin-op_team_0"
-  controllerArgs "0 98"
-}
 QualGate {
   translation -6 2 0
 }
@@ -212,4 +206,10 @@ DEF Wall5 Solid {
     }
   ]
   locked TRUE
+}
+THOROP {
+  translation 9.88908 2.52062 -7.71388
+  rotation -0.999992 0.00278317 -0.00278612 1.57684
+  controller "darwin-op_team_0"
+  controllerArgs "0 31" #STEP TEST
 }

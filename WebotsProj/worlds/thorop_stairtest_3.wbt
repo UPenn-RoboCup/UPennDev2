@@ -119,7 +119,7 @@ THOROP {
   translation 5.708 2.6 -0.00602899
   rotation -1 0 0 1.57
   controller "darwin-op_team_0"
-  controllerArgs "0 98"
+  controllerArgs "0 31"
 }
 QualGate {
   translation -6 2 0

@@ -7,20 +7,20 @@
         width: 640px;
         height: 480px;
       }
-      #webots {
+      #kinect {
         background: #ccc;
         width: 320px;
-        height: 190px;
+        height: 240px;
       }
     </style>
   </head>
 
-  <canvas id="webots">
+  <!--
+  <canvas id="kinect">
   </canvas>
-
+  -->
   <div id="container">
   </div>
-
 
   <script src="http://zeptojs.com/zepto.min.js"></script>
   <script src="http://mrdoob.github.com/three.js/build/three.min.js"></script>
@@ -29,13 +29,30 @@
   <script src="http://mrdoob.github.com/three.js/examples/js/libs/stats.min.js"></script>
 
   <script>
-    var ranges;
     var host = window.document.location.host.replace(/:.*/, '');
   </script>
 
+  <!--Receiving Depth Image-->
+  <script src="kinect_gl.js"></script>
+  <script>
+    var xyz;
+    console.log('Connecting to '+host+' 8080')
+    var ws = new WebSocket('ws://' + host + ':8080');
+    ws.binaryType = "arraybuffer";
+    ws.onmessage = function (event) {
+      xyz = new Uint8Array( event.data );
+      update_particles( xyz );
+//      console.log( depth );
+    };
+  </script>
+
+  <!--Receiving LIDAR-->
+  <!--
+  <script src="lidar_gl.js"></script>
   <script>
     console.log('Connecting to '+host+' 9000')
     var ws = new WebSocket('ws://' + host + ':9000');
+    var ranges;
     ws.binaryType = "arraybuffer";
     ws.onmessage = function (event) {
       ranges = new Float32Array( event.data );
@@ -43,14 +60,18 @@
       //console.log( event.data );
     };
   </script>
+  -->
 
+  <!--Receiving an image-->
+  <!--
+  <script src="kinect_gl.js"></script>
   <script>
     console.log('Connecting to '+host+' 8080')
     var ws_i = new WebSocket('ws://' + host + ':8080');
     ws_i.binaryType = "blob";
     var jpeg_url_name = "";
     var img = new Image;
-    var myCanvas = document.getElementById('webots');
+    var myCanvas = document.getElementById('kinect');
     var ctx = myCanvas.getContext('2d');
     ws_i.onmessage = function (event) {
       // Revoke the previous
@@ -68,10 +89,6 @@
       };
     };
   </script>
-
-  <!--WebGL stuff-->
-  <!--
-  <script src="lidar_gl.js"></script>
   -->
-  <script src="kinect_gl.js"></script>
+
 </html>

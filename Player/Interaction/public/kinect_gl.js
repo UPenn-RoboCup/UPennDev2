@@ -5,15 +5,11 @@ var container, stats;
 var camera, controls, scene, renderer;
 
 var positions, colors;
-var particles = 1081; // # of ranges
+//var particles = 1081; // # of ranges
+var particles = 320*240; // # of ranges
 var color = new THREE.Color();
 var particleSystem
 var cross;
-
-var plane_data;
-var init_texture;
-var width = 640;
-var height = 480;
 
 init();
 animate();
@@ -21,9 +17,10 @@ animate();
 function init() {
 
   // Set up the camera
-  //camera = new THREE.PerspectiveCamera( 60, width / height, 1, 1000 );
   camera = new THREE.PerspectiveCamera();
-  camera.position.z = 500;
+  camera.position.x = 160;
+  camera.position.y = 120;
+  camera.position.z = 1000;
 
   // Set up the mouse controls
   controls = new THREE.TrackballControls( camera );
@@ -39,41 +36,64 @@ function init() {
 
   // Set up the world
   scene = new THREE.Scene();
+  //scene.fog = new THREE.FogExp2( 0xcccccc, 0.002 );
+  scene.fog = new THREE.Fog( 0x050505, 2000, 3500 );
 
-  // grid
-  var image = new Uint8Array(320*190*4)
-  for (var i = 0;i<320*190; i=i+4) {
-    image[i] = 255;
-    image[i+1] = 0;
-    image[i+2] = 0;
-    image[i+3] = 255;
+  // Initialize the particles
+  geometry = new THREE.BufferGeometry();
+  geometry.attributes = {
+    position: {
+      itemSize: 3,
+      array: new Float32Array( particles * 3 ),
+      numItems: particles * 3
+    },
+    color: {
+      itemSize: 3,
+      array: new Float32Array( particles * 3 ),
+      numItems: particles * 3
+    }
   }
-  init_texture = new THREE.DataTexture( image, 320, 190);
+  geometry.dynamic = true;
 
-  plane_mat = new THREE.MeshBasicMaterial( { color: 0xffffff, wireframe: false,
-    transparent: false, opacity : 1,
-    map: init_texture  } );
-//  });
-  init_texture.needsUpdate = true;
-  plane_mat.needsUpdate = true;
-  console.log( plane_mat );
+  // Set the colors and positions
+  positions = geometry.attributes.position.array;
+  colors = geometry.attributes.color.array;
 
-  var plane = new THREE.Mesh( new THREE.PlaneGeometry(
-        1000, 1000, 20, 20 ), plane_mat );
-  //plane.rotation.x = - Math.PI / 2;
-  scene.add( plane );
+  color.setRGB( 0, 1, 0 );
+  var cnt = 0;
+  for( var j=0; j<240; j++ )
+    for( var i=0;i<320;i++ ){
+      positions[cnt] = i;
+      positions[cnt+1] = j;
+      positions[cnt+2] = 0;
+      cnt = cnt+3;
+    }
 
-  // Lights!
-  var ambientLight = new THREE.AmbientLight( 0xffffff );
-  scene.add( ambientLight );
+  for ( var i = 0; i < positions.length; i += 3 ) {
+    // colors
+    colors[ i ]     = color.r;
+    colors[ i + 1 ] = color.g;
+    colors[ i + 2 ] = color.b;
+  }
 
-  var directionalLight = new THREE.DirectionalLight( 0xffffff );
-  directionalLight.position.set( 1, 0.75, 0.5 ).normalize();
-  scene.add( directionalLight );
+
+  geometry.computeBoundingSphere();
+
+  // Add the particle system to the scene
+  var material = new THREE.ParticleBasicMaterial( { size: 1, vertexColors: true } );
+  particleSystem = new THREE.ParticleSystem( geometry, material );
+  scene.add( particleSystem );
+  //var meshMaterial = new THREE.MeshBasicMaterial( { wireframe: true, vertexColors: true, color: 0xff0000 } );
+  //meshSystem = new THREE.Mesh( geometry, meshMaterial );
+  //lineSystem = new THREE.Mesh( geometry );
+  //scene.add( meshSystem );
+  //scene.add( lineSystem );
+
 
   // renderer
-  renderer = new THREE.WebGLRenderer();
-  renderer.setSize( width, height );
+  renderer = new THREE.WebGLRenderer( { antialias: false, clearColor: 0x333333, clearAlpha: 1, alpha: false } );
+  renderer.setClearColor( scene.fog.color, 1 );
+  renderer.setSize( 640,480 );
 
   container = document.getElementById( 'container' );
   container.appendChild( renderer.domElement );
@@ -86,17 +106,16 @@ function init() {
 
 
   window.addEventListener( 'resize', onWindowResize, false );
-  console.log('set up...')
 
 }
 
 function onWindowResize() {
   /*
-     camera.aspect = window.innerWidth / window.innerHeight;
-     camera.updateProjectionMatrix();
-     renderer.setSize( window.innerWidth, window.innerHeight );
-     controls.handleResize();
-     */
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize( window.innerWidth, window.innerHeight );
+  controls.handleResize();
+  */
   render();
 }
 
@@ -110,14 +129,11 @@ function render() {
   stats.update();
 }
 
-function update_kinect( data_buffer ) {
-  var new_texture = new THREE.DataTexture( data_buffer, 320, 190);
-  plane_mat.map.image.data = data_buffer;
-  plane_mat.map.needsUpdate = true;
-  //plane_mat.map = new_texture;
-  //plane_mat.map.needsUpdate = true;
-  console.log( plane_mat );
-  //console.log( data_buffer );
+function update_particles( d ) {
+  for ( var i = 0; i < positions.length; i += 3 )
+    positions[ i + 2 ] = d[i];
+  //console.log( positions );
+  particleSystem.geometry.verticesNeedUpdate = true;
   animate();
   render();
 }

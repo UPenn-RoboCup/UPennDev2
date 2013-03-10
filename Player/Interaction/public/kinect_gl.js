@@ -11,6 +11,11 @@ var color = new THREE.Color();
 var particleSystem
 var cross;
 
+var plane;
+var init_texture;
+var width = 640;
+var height = 480;
+
 init();
 animate();
 
@@ -77,17 +82,22 @@ function init() {
   }
 
 
+  scene.add( plane );
   geometry.computeBoundingSphere();
 
   // Add the particle system to the scene
   var material = new THREE.ParticleBasicMaterial( { size: 1, vertexColors: true } );
   particleSystem = new THREE.ParticleSystem( geometry, material );
   scene.add( particleSystem );
-  //var meshMaterial = new THREE.MeshBasicMaterial( { wireframe: true, vertexColors: true, color: 0xff0000 } );
+  var meshMaterial = new THREE.MeshBasicMaterial( { wireframe: true, vertexColors: true, color: 0xff0000 } );
   //meshSystem = new THREE.Mesh( geometry, meshMaterial );
   //lineSystem = new THREE.Mesh( geometry );
   //scene.add( meshSystem );
   //scene.add( lineSystem );
+  plane = new THREE.Mesh(
+      new THREE.PlaneGeometry( 320, 190, 160, 95 ),
+      meshMaterial
+  );
 
 
   // renderer
@@ -127,6 +137,24 @@ function animate() {
 function render() {
   renderer.render( scene, camera );
   stats.update();
+}
+
+function update_kinect( data_buffer ) {
+  var vertices = plane.geometry.vertices;
+  for (var i = 0; i<vertices.length; i++ ) {
+    vertices[i].z = Math.floor( Math.random()*10 );
+//    vertices[i].z = 10/(1+(i-vertices.length/2)^2);
+  }
+  plane.geometry.verticesNeedUpdate = true;
+  var new_texture = new THREE.DataTexture( data_buffer, 320, 190);
+  plane_mat.map.image.data = data_buffer;
+  plane_mat.map.needsUpdate = true;
+  //plane_mat.map = new_texture;
+  //plane_mat.map.needsUpdate = true;
+//  console.log( plane_mat );
+  //console.log( data_buffer );
+  animate();
+  render();
 }
 
 function update_particles( d ) {

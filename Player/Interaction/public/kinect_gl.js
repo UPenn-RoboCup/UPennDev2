@@ -10,7 +10,7 @@ var color = new THREE.Color();
 var particleSystem
 var cross;
 
-var plane_data;
+var plane;
 var init_texture;
 var width = 640;
 var height = 480;
@@ -58,9 +58,10 @@ function init() {
   plane_mat.needsUpdate = true;
   console.log( plane_mat );
 
-  var plane = new THREE.Mesh( new THREE.PlaneGeometry(
-        1000, 1000, 20, 20 ), plane_mat );
-  //plane.rotation.x = - Math.PI / 2;
+  plane = new THREE.Mesh(
+      new THREE.PlaneGeometry( 320, 190, 160, 95 ),
+      plane_mat
+  );
   scene.add( plane );
 
   // Lights!
@@ -111,12 +112,18 @@ function render() {
 }
 
 function update_kinect( data_buffer ) {
+  var vertices = plane.geometry.vertices;
+  for (var i = 0; i<vertices.length; i++ ) {
+    vertices[i].z = Math.floor( Math.random()*10 );
+//    vertices[i].z = 10/(1+(i-vertices.length/2)^2);
+  }
+  plane.geometry.verticesNeedUpdate = true;
   var new_texture = new THREE.DataTexture( data_buffer, 320, 190);
   plane_mat.map.image.data = data_buffer;
   plane_mat.map.needsUpdate = true;
   //plane_mat.map = new_texture;
   //plane_mat.map.needsUpdate = true;
-  console.log( plane_mat );
+//  console.log( plane_mat );
   //console.log( data_buffer );
   animate();
   render();

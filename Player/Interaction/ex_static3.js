@@ -52,31 +52,3 @@ wss.on('connection', function(ws) {
   });
   wskts.push(ws)
 });
-
-// ZMQ image
-var zmq_img = zmq.socket('sub');
-zmq_img.connect('ipc:///tmp/img');
-zmq_img.subscribe('');
-console.log('IPC | Connected to img');
-// Process img
-var last_img_cntr = counter;
-zmq_img.on('message', function(msg){
-//  console.log('IPC | Got img message!')
-  if( counter>last_img_cntr ) { 
-    for(var s=0;s<wskts9.length;s++) {
-      wskts9[s].send(msg,{binary:true},function(){
-      }); 
-    }   
-    last_img_cntr = counter;
-  }
-});
-
-// Another Websocket port
-var wss = new WebSocketServer({port: 9000});
-wss.on('connection', function(ws) {
-  console.log('A client is Connnected!');
-  ws.on('message', function(message) {
-    console.log('Received: %s', message);
-  }); 
-  wskts9.push(ws)
-})

@@ -22,9 +22,10 @@ console.log('IPC | Connected to img');
 // Process lidar
 var last_img_cntr = counter;
 zmq_img.on('message', function(msg){
-  console.log('IPC | Got img message!')
+//  console.log('IPC | Got img message!')
   if( counter>last_img_cntr ) {
     for(var s=0;s<wskts.length;s++) {
+ //     console.log('sent!')
       wskts[s].send(msg,{binary:true},function(){
       });
     }
@@ -33,7 +34,7 @@ zmq_img.on('message', function(msg){
 });
 
 // Set up a Websocket server on 9001
-var wss = new WebSocketServer({port: 9001});
+var wss = new WebSocketServer({port: 9000});
 // Listen to binary websockets
 wss.on('connection', function(ws) {
   console.log('A client is Connnected!');

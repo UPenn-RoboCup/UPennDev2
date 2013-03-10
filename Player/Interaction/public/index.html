@@ -15,10 +15,8 @@
     </style>
   </head>
 
-  <!--
   <canvas id="kinect">
   </canvas>
-  -->
   <div id="container">
   </div>
 
@@ -63,17 +61,16 @@
   -->
 
   <!--Receiving an image-->
-  <!--
-  <script src="kinect_gl.js"></script>
   <script>
-    console.log('Connecting to '+host+' 8080')
-    var ws_i = new WebSocket('ws://' + host + ':8080');
+    console.log('Connecting to '+host+' 9000')
+    var ws_i = new WebSocket('ws://' + host + ':9000');
     ws_i.binaryType = "blob";
     var jpeg_url_name = "";
     var img = new Image;
     var myCanvas = document.getElementById('kinect');
     var ctx = myCanvas.getContext('2d');
     ws_i.onmessage = function (event) {
+      console.log( event );
       // Revoke the previous
       window.URL.revokeObjectURL(jpeg_url_name);
       var parts = []
@@ -84,11 +81,10 @@
       img.onload = function(){
         ctx.drawImage( img, 0, 0 ); // Or at whatever offset you like
         var imgdata = ctx.getImageData(0, 0, 320, 190);
-        update_kinect( new Uint8Array(imgdata.data.buffer ) );
-        //console.log( imgdata );
+        //update_kinect( new Uint8Array(imgdata.data.buffer ) );
+        console.log( imgdata );
       };
     };
   </script>
-  -->
 
 </html>

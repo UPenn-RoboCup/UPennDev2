@@ -30,7 +30,10 @@ console.log('IPC | Connected to img');
 // Process lidar
 var last_img_cntr = counter;
 zmq_img.on('message', function(msg){
-  //console.log('IPC | Got img message!')
+  console.log('IPC | Got img message!')
+  console.log( msg.readFloatLE(0) )
+  var more = zmq_img.getsockopt( zmq.ZMQ_RCVMORE );
+  console.log( more );
   if( counter>last_img_cntr ) {
     for(var s=0;s<wskts.length;s++) {
       wskts[s].send(msg,{binary:true},function(){

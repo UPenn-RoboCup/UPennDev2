@@ -1,18 +1,19 @@
+// Require the appropriate modules
+var mp = require('msgpack');
+var zmq = require('zmq');
+var WebSocketServer = require('ws').Server;
 var express = require('express');
 var app = express();
 var http = require('http')
 app.use(express.static(__dirname + '/public'));
 
+// HTTP static server
 var server = http.createServer(app);
 server.listen(8080);
 
-// Require the appropriate modules
-var mp = require('msgpack');
-var zmq = require('zmq');
-var WebSocketServer = require('ws').Server;
-
 // Globals
-var wskts = []
+var wskts   = [];
+var wskts9  = [];
 var counter = 0;
 
 // Send data to clients at a set interval
@@ -40,7 +41,7 @@ zmq_prime.on('message', function(msg){
   }
 });
 
-// Set up a Websocket server on 9001
+// Set up a Websocket server on the HTTP server
 var wss = new WebSocketServer({server: server});
 // Listen to binary websockets
 wss.on('connection', function(ws) {
@@ -50,7 +51,32 @@ wss.on('connection', function(ws) {
     console.log('received: %s', message);
   });
   wskts.push(ws)
-//  ws.send('something');
 });
 
+// ZMQ image
+var zmq_img = zmq.socket('sub');
+zmq_img.connect('ipc:///tmp/img');
+zmq_img.subscribe('');
+console.log('IPC | Connected to img');
+// Process img
+var last_img_cntr = counter;
+zmq_img.on('message', function(msg){
+//  console.log('IPC | Got img message!')
+  if( counter>last_img_cntr ) { 
+    for(var s=0;s<wskts9.length;s++) {
+      wskts9[s].send(msg,{binary:true},function(){
+      }); 
+    }   
+    last_img_cntr = counter;
+  }
+});
 
+// Another Websocket port
+var wss = new WebSocketServer({port: 9000});
+wss.on('connection', function(ws) {
+  console.log('A client is Connnected!');
+  ws.on('message', function(message) {
+    console.log('Received: %s', message);
+  }); 
+  wskts9.push(ws)
+})

@@ -1,7 +1,7 @@
 if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 
-var ctxwidth = 400;
-var ctxheight = 400;
+var ctxwidth = window.innerWidth;//400;
+var ctxheight = window.innerHeight;400;
 var kwidth = 320;
 var kheight = 240;
 var particles = kwidth*kheight;
@@ -22,6 +22,8 @@ function init() {
   camera.position.x = kwidth/2;
   camera.position.y = kheight/2;
   camera.position.z = 500;
+  camera.position.z = -500;
+camera.lookAt(0,0,0);
 
   // Set up the mouse controls
   controls = new THREE.TrackballControls( camera );
@@ -127,14 +129,22 @@ plane.geometry.dynamic = true;
   container.appendChild( renderer.domElement );
 
   // FPS Stats
-/*
+
   stats = new Stats();
   stats.domElement.style.position = 'absolute';
   stats.domElement.style.top = '0px';
   stats.domElement.style.zIndex = 100;
   container.appendChild( stats.domElement );
-*/
+window.addEventListener( 'resize', onWindowResize, false );
 
+}
+
+function onWindowResize() {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize( window.innerWidth, window.innerHeight );
+  controls.handleResize();
+  render();
 }
 
 function animate() {
@@ -144,7 +154,7 @@ function animate() {
 
 function render() {
   renderer.render( scene, camera );
-//  stats.update();
+  stats.update();
 }
 
 function update_kinect_image( data_buffer ) {
@@ -174,17 +184,26 @@ for(var j=0; j<240; j++ ){
   for (var i = 0; i<320; i++ ){
 fdx = j*320+i;
 ddx = j*320+i;
-
-    vertices[faces[fdx].a].z = 255-d[ddx];
-    vertices[faces[fdx].b].z = 255-d[ddx];
-    vertices[faces[fdx].c].z = 255-d[ddx];
-    vertices[faces[fdx].d].z = 255-d[ddx];
+if(d[ddx]>0) {
+    vertices[faces[fdx].a].z = d[ddx];
+    vertices[faces[fdx].b].z = d[ddx];
+    vertices[faces[fdx].c].z = d[ddx];
+    vertices[faces[fdx].d].z = d[ddx];
+} 
+/*
+else {
+    vertices[faces[fdx].a].z = 255;
+    vertices[faces[fdx].b].z = 255;
+    vertices[faces[fdx].c].z = 255;
+    vertices[faces[fdx].d].z = 255;
+}
+*/
   }
 }
   plane.geometry.verticesNeedUpdate = true;
 //plane.geometry.elementsNeedUpdate = true;
 //plane.geometry.uvsNeedUpdate = true;
-//plane.geometry.normalsNeedUpdate = true;
+plane.geometry.normalsNeedUpdate = true;
 plane.geometry.computeVertexNormals()
 plane.geometry.computeFaceNormals()
 

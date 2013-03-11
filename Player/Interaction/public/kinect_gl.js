@@ -19,10 +19,10 @@ function init() {
 
   // Set up the camera
   camera = new THREE.PerspectiveCamera();
-  camera.position.x = kwidth/2;
-  camera.position.y = kheight/2;
-  camera.position.z = 500;
-  camera.position.z = -500;
+  camera.position.x = 0;//kwidth/2;
+  camera.position.y = 0;// kheight/2;
+  camera.position.z = 750;
+  //camera.position.z = -500;
 camera.lookAt(0,0,0);
 
   // Set up the mouse controls
@@ -137,6 +137,41 @@ plane.geometry.dynamic = true;
   container.appendChild( stats.domElement );
 window.addEventListener( 'resize', onWindowResize, false );
 
+// Double click
+  container.ondblclick = function( event ){
+    var projector = new THREE.Projector();
+    var directionVector = new THREE.Vector3();
+    var SCREEN_HEIGHT = window.innerHeight;
+    var SCREEN_WIDTH = window.innerWidth;
+    // The following will translate the mouse coordinates into a number
+    // ranging from -1 to 1, where
+    //      x == -1 && y == -1 means top-left, and
+    //      x ==  1 && y ==  1 means bottom right
+    var x = ( event.clientX / SCREEN_WIDTH ) * 2 - 1;
+    var y = -( event.clientY / SCREEN_HEIGHT ) * 2 + 1;
+    directionVector.set(x, y, 1);
+    // Unproject the vector
+    projector.unprojectVector(directionVector, camera);
+    // Substract the vector representing the camera position
+    directionVector.sub(camera.position);
+    // Normalize the vector, to avoid large numbers from the
+    // projection and substraction
+    directionVector.normalize()
+//    directionVector.setZ( directionVector.z*-1) ;
+      
+    // Now our direction vector holds the right numbers!
+    var ray = new THREE.Raycaster(camera.position, directionVector);
+    var intersects = ray.intersectObjects(scene.children);
+    //console.log( intersects );
+    //console.log( ray );
+    if (intersects.length) {
+      // Ordered by distance
+      console.log( intersects[0] );
+    }
+    
+    console.log(event)
+  }
+
 }
 
 function onWindowResize() {
@@ -185,10 +220,10 @@ for(var j=0; j<240; j++ ){
 fdx = j*320+i;
 ddx = j*320+i;
 if(d[ddx]>0) {
-    vertices[faces[fdx].a].z = d[ddx];
-    vertices[faces[fdx].b].z = d[ddx];
-    vertices[faces[fdx].c].z = d[ddx];
-    vertices[faces[fdx].d].z = d[ddx];
+    vertices[faces[fdx].a].z = 255-d[ddx];
+    vertices[faces[fdx].b].z = 255-d[ddx];
+    vertices[faces[fdx].c].z = 255-d[ddx];
+    vertices[faces[fdx].d].z = 255-d[ddx];
 } 
 /*
 else {

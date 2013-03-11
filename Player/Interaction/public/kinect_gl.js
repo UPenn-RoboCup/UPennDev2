@@ -130,11 +130,10 @@ function render() {
 }
 
 function update_kinect_image( data_buffer ) {
-
   // Redo the RGB data for the texture
   plane_mat.map.image.data = data_buffer;
-  var new_texture = new THREE.DataTexture( data_buffer, kwidth, kheight);
-  plane_mat.map = new_texture;
+  //var new_texture = new THREE.DataTexture( data_buffer, kwidth, kheight);
+  //plane_mat.map = new_texture;
   plane_mat.map.needsUpdate = true;
 
   animate();

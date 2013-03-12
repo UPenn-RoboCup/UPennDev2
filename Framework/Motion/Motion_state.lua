@@ -40,11 +40,15 @@ end
 
 function Motion_state:load_parameters(filepath)
   -- load control parameters from file
-  local success, parameters = pcall(dofile, filepath)
-  if (not success) then
-    error(string.format('Could not load parameter file %s', filepath))
+  local filepath = filepath or Config.motion[self._NAME] and
+                               Config.motion[self._NAME].parameters
+  if (filepath) then
+    local success, parameters = pcall(dofile, filepath)
+    if (success) then
+      self:set_parameters(parameters)
+      return true
+    end
   end
-  self:set_parameters(parameters)
 end
 
 function Motion_state:set_joint_access(value, index)
@@ -78,9 +82,16 @@ function Motion_state:get_parameters()
 end
 
 function Motion_state:save_parameters(filepath)
-  local f = assert(io.open(filepath,'w+'))
-  f:write('return '..serialization.serialize(self:get_parameters(), 'pretty'))
-  f:close()
+  local filepath = filepath or Config.motion[self._NAME] and
+                               Config.motion[self._NAME].parameters
+  if (filepath) then
+    local f = io.open(filepath,'w+')
+    if (f) then
+      f:write('return '..serialization.serialize(self:get_parameters(), 'pretty'))
+      f:close()
+      return true
+    end
+  end
 end
 
 function Motion_state:get_joint_access(index)

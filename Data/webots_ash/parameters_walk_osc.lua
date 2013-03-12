@@ -1,7 +1,4 @@
 return {
-  y_offset = 0.100000,
-  z_offset = -0.760000,
-  x_offset = 0.031000,
   ankle_roll_fb_slope = 0.000000,
   knee_pitch_fb = -0.000000,
   ankle_pitch_fb = 0.080000,
@@ -9,8 +6,6 @@ return {
   ankle_roll_fb = 0.080000,
   period_time = 1.360000,
   ankle_pitch_fb_slope = 0.000000,
-  a_offset = 0.000000,
-  hip_pitch_offset = -0.000000,
   zmp_shift_ratio = 0.500000,
   dsp_ratio = 0.250000,
   y_offset_ratio = 0.300000,

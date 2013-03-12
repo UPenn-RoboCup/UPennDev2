@@ -80,6 +80,13 @@ vrep_ash:
 	&& rm -f comms_manager \
 	&& cd $(CWD)
 
+sensors:
+	cd Framework/Lib && make && cd $(CWD)
+	cd Config \
+	&& rm -f Config*.lua \
+	&& ln -s $@/* .\
+	&& cd $(CWD)
+
 tools:
 	cd Tools/Lib && make && cd $(CWD)
 

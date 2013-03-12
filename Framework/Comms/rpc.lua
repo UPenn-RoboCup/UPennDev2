@@ -78,6 +78,10 @@ function rpc.client.get_request_id(o)
   return o.request_id
 end
 
+function rpc.client.get_return_values(o)
+  return unpack(o.return_values)
+end
+
 function rpc.client.connect(o, timeout)
   -- get call dictionary from server 
   o.request_id = -1
@@ -214,7 +218,7 @@ function rpc.server.handle_rpc_request(o, msg)
         table.insert(arguments, 1, object)
       end
       if (not success) then
-        return_values = procedure
+        return_values = {procedure}
         return_status = false
       else
         return_values = {pcall(procedure, unpack(arguments))}

@@ -68,9 +68,7 @@ step.parameters = {
 }
 
 -- config parameters
-if (Config.motion.step and Config.motion.step.parameters) then
-  step:load_parameters(Config.motion.step.parameters)
-end
+step:load_parameters()
 
 -- Private
 --------------------------------------------------------------------------------

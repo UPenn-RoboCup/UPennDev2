@@ -1,4 +1,3 @@
-dofile('../Run/include.lua')
 require 'torch'
 torch.Tensor = torch.FloatTensor
 

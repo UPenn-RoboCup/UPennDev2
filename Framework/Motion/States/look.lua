@@ -15,9 +15,7 @@ look.parameters = {
 }
 
 -- config parameters
-if (Config.motion.look and Config.motion.look.parameters) then
-  look:load_parameters(Config.motion.look.parameters)
-end
+look:load_parameters()
 
 function look:entry()
 end

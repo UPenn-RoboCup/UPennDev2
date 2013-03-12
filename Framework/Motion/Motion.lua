@@ -36,24 +36,37 @@ end
 
 function Motion.check_joint_access()
   local joint_access = vector.zeros(#joint.id)
-  for i,sm in ipairs(state_machines) do
+  for i = 1,#state_machines do
+    local sm = state_machines[i]
     joint_access = joint_access + vector.new(sm:get_joint_access())
   end
   for i = 1,#joint_access do
-    assert(joint_access[i] <= 1, 
-      string.format('multiple motion states writing to joint.%s', joint.id[i]))
+    if (joint_access[i] > 1) then
+      return false
+    end
   end
+  return true
+end
+
+function Motion.get_states()
+  local states = {}
+  for i = 1,#state_machines do
+    local sm = state_machines[i]
+    local sm_states = sm:get_states()
+    for j = 1,#sm_states do
+      states[#states + 1] = sm_states[j]
+    end
+  end
+  return states
 end
 
 function Motion.entry()
-  Motion.check_joint_access()
   for i,sm in ipairs(state_machines) do
     sm:entry()
   end
 end
 
 function Motion.update()
-  Motion.check_joint_access()
   for i,sm in ipairs(state_machines) do
     sm:update()
   end

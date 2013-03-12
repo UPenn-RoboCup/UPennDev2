@@ -15,9 +15,7 @@ kneel.parameters = {
 }
 
 -- config parameters
-if (Config.motion.kneel and Config.motion.kneel.parameters) then
-  kneel:load_parameters(Config.motion.kneel.parameters)
-end
+kneel:load_parameters()
 
 function kneel:entry()
 end

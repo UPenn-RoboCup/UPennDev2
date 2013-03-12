@@ -61,6 +61,11 @@ then
   echo Starting test_pid...
   cd Test
   exec $LUA test_pid.lua
+elif [ "$1" = "test_id_stance" ]
+then
+  echo Starting test_id_stance
+  cd Test
+  exec $LUA test_id_stance.lua
 elif [ "$1" = "test_walk" ]
 then
   echo Starting test_walk...

@@ -6,9 +6,11 @@ require('waveform')
 require('Transform')
 require('Kinematics')
 require('Motion_state')
+require('stand')
+require('pcm')
 
 --------------------------------------------------------------------------
--- Oscillatory Walking
+-- Walk Controller (Oscillatory Walking)
 --------------------------------------------------------------------------
 
 -- Setup 
@@ -21,11 +23,6 @@ local dcm = walk.dcm
 
 -- define default parameters
 walk.parameters = {
-  x_offset                 = 0.025, -- meters
-  y_offset                 = 0.1,   -- meters
-  z_offset                 = -0.75, -- meters
-  a_offset                 = 0,     -- radians
-  hip_pitch_offset         = 0,     -- radians
   y_offset_ratio           = 0,     -- ratio
   zmp_shift_ratio          = 0.5,   -- ratio
   y_swing_amplitude        = 0,     -- meters
@@ -42,16 +39,9 @@ walk.parameters = {
 }
 
 -- load config parameters
-if (Config.motion.walk and Config.motion.walk.parameters) then
-  walk:load_parameters(Config.motion.walk.parameters)
-end
+walk:load_parameters()
 
--- define local copies
-local x_offset             = walk.parameters.x_offset
-local y_offset             = walk.parameters.y_offset
-local z_offset             = walk.parameters.z_offset
-local a_offset             = walk.parameters.a_offset
-local hip_pitch_offset     = walk.parameters.hip_pitch_offset
+-- define local parameters
 local y_offset_ratio       = walk.parameters.y_offset_ratio
 local zmp_shift_ratio      = walk.parameters.zmp_shift_ratio
 local y_swing_amplitude    = walk.parameters.y_swing_amplitude
@@ -66,10 +56,14 @@ local ankle_pitch_fb       = walk.parameters.ankle_pitch_fb
 local ankle_roll_fb_slope  = walk.parameters.ankle_roll_fb_slope
 local ankle_pitch_fb_slope = walk.parameters.ankle_pitch_fb_slope
 
+local x_offset             = stand.parameters.x_offset
+local y_offset             = stand.parameters.y_offset
+local z_offset             = stand.parameters.z_offset
+local a_offset             = stand.parameters.a_offset
+local hip_pitch_offset     = stand.parameters.hip_pitch_offset
+
 -- initialize control variables
-local active               = false
 local stop_request         = false
-local start_request        = false
 local t0                   = Platform.get_time()
 local t                    = t0
 local q0                   = dcm:get_joint_position_sensor('legs')
@@ -90,13 +84,8 @@ local function limit(value, threshold)
   return math.min(math.max(value, -threshold), threshold)
 end
 
-local function update_parameters()
+local function update_walk_parameters()
   -- update local gait parameters
-  x_offset = walk.parameters.x_offset
-  y_offset = walk.parameters.y_offset
-  z_offset = walk.parameters.z_offset
-  a_offset = walk.parameters.a_offset
-  hip_pitch_offset = walk.parameters.hip_pitch_offset
   y_offset_ratio = walk.parameters.y_offset_ratio
   zmp_shift_ratio = walk.parameters.zmp_shift_ratio
   y_swing_amplitude = walk.parameters.y_swing_amplitude
@@ -104,6 +93,15 @@ local function update_parameters()
   step_amplitude = walk.parameters.step_amplitude
   period_time = walk.parameters.period_time
   dsp_ratio = walk.parameters.dsp_ratio
+end
+
+local function update_stance_parameters()
+  -- update stand parameters
+  x_offset = stand.parameters.x_offset
+  y_offset = stand.parameters.y_offset
+  z_offset = stand.parameters.z_offset
+  a_offset = stand.parameters.a_offset
+  hip_pitch = stand.parameters.hip_pitch_offset
 end
 
 local function update_velocity(dt)
@@ -146,20 +144,10 @@ end
 -- Public
 --------------------------------------------------------------------------
 
-function walk:start()
-  -- issue start request
-  start_request = true
-end
-
 function walk:stop()
   -- issue stop request
   stop_request = true
   self:set_velocity(0, 0, 0)
-end
-
-function walk:is_active()
-  -- return true if gait is active
-  return active
 end
 
 function walk:set_velocity(vx, vy, va)
@@ -173,20 +161,36 @@ function walk:get_velocity()
 end
 
 function walk:entry()
-  active = false
-  update_parameters()
+  velocity = vector.new{0, 0, 0}
+  t  = Platform.get_time()
   t0 = Platform.get_time()
   q0 = dcm:get_joint_position_sensor('legs')
-  velocity = vector.new{0, 0, 0}
   dcm:set_joint_force(0, 'legs')
   dcm:set_joint_position(q0, 'legs')
   dcm:set_joint_velocity(0, 'legs')
   dcm:set_joint_stiffness(1, 'legs')
   dcm:set_joint_damping(0, 'legs')
+  update_walk_parameters()
+  update_stance_parameters()
+
+  local l_foot_pos = {x_offset, y_offset, z_offset, 0, 0, a_offset}
+  local r_foot_pos = {x_offset,-y_offset, z_offset, 0, 0, -a_offset}
+  local torso_pos = {0, 0, 0, 0, hip_pitch_offset, 0}
+  local p_l_foot = Transform.pose(l_foot_pos)
+  local p_r_foot = Transform.pose(r_foot_pos)
+  local p_torso = Transform.pose(torso_pos)
+  local q_stance = Kinematics.inverse_pos_legs(p_l_foot, p_r_foot, p_torso)
+  local q_stance_error = q0 - q_stance
+
+  -- is robot in an unsafe stance configuration?
+  for i = 1, #q_stance_error do
+    if (math.abs(q_stance_error[i]) > 3*math.pi/180) then
+      return 'unsafe'
+    end
+  end
 end
 
 function walk:update()
-
   -- update timing and sensor values
   ------------------------------------------------------------------------
   local dt = t - Platform.get_time()
@@ -194,130 +198,83 @@ function walk:update()
   update_feedback()
   update_gyro()
 
-  -- update joint positions in active gait mode
+  -- update joint positions
   ------------------------------------------------------------------------
-  if active then
    
-    -- update phase
-    local ph = 2*math.pi/period_time*(t - t0)
-    local step_sin = waveform.step_sin(ph, dsp_ratio)
-    local stride_cos = waveform.stride_cos(ph, dsp_ratio)
-    local y_stride_offset = math.abs(velocity[2])*y_offset_ratio
+  -- update phase
+  local ph = 2*math.pi/period_time*(t - t0)
+  local step_sin = waveform.step_sin(ph, dsp_ratio)
+  local stride_cos = waveform.stride_cos(ph, dsp_ratio)
+  local y_stride_offset = math.abs(velocity[2])*y_offset_ratio
 
-    -- calculate left foot trajectory
-    local l_foot_pos = vector.zeros(6)
-    l_foot_pos[1] = x_offset - velocity[1]*stride_cos
-    l_foot_pos[2] = y_offset - velocity[2]*stride_cos + y_stride_offset
-    l_foot_pos[6] = a_offset - velocity[3]*stride_cos
-    if (ph < math.pi) then
-      l_foot_pos[3] = z_offset + step_amplitude*step_sin
-    else
-      l_foot_pos[3] = z_offset
-    end
-
-    -- calculate right foot trajectory
-    local r_foot_pos = vector.zeros(6) 
-    r_foot_pos[1] = x_offset + velocity[1]*stride_cos
-    r_foot_pos[2] =-y_offset + velocity[2]*stride_cos - y_stride_offset
-    r_foot_pos[6] =-a_offset + velocity[3]*stride_cos
-    if (ph > math.pi) then
-      r_foot_pos[3] = z_offset - step_amplitude*step_sin
-    else
-      r_foot_pos[3] = z_offset
-    end
-
-    -- calculate torso trajectory
-    local torso_pos = vector.zeros(6) 
-    torso_pos[1] = velocity[1]*zmp_shift_ratio*math.sin(2*ph)
-    torso_pos[2] = velocity[2]*zmp_shift_ratio*math.sin(2*ph)
-                 - y_swing_amplitude*math.sin(ph)
-    torso_pos[3] = z_swing_amplitude*-math.cos(2*ph)
-    torso_pos[5] = hip_pitch_offset
-
-    -- calculate inverse kinematics and add hip roll swing
-    local p_l_foot = Transform.pose(l_foot_pos)
-    local p_r_foot = Transform.pose(r_foot_pos)
-    local p_torso = Transform.pose(torso_pos)
-    local q = Kinematics.inverse_pos_legs(p_l_foot, p_r_foot, p_torso)
-
-    -- add gyro feedback
-    q[2] = q[2] - hip_roll_fb*gyro[1]
-    q[4] = q[4] + knee_pitch_fb*gyro[2]
-    q[5] = q[5] + ankle_pitch_fb*gyro[2]
-    q[6] = q[6] + ankle_roll_fb*gyro[1]
-    q[8] = q[8] - hip_roll_fb*gyro[1]
-    q[10] = q[10] + knee_pitch_fb*gyro[2]
-    q[11] = q[11] + ankle_pitch_fb*gyro[2]
-    q[12] = q[12] + ankle_roll_fb*gyro[1]
-
-    -- write joint angles to shared memory 
-    dcm:set_joint_position(q, 'legs')
-
-    -- update velocity during SSP 
-    if (step_sin ~= 0) then
-      update_velocity(dt)
-    end
-
-    -- update gait parameters at the end of each cycle 
-    if (ph > 2*math.pi) then
-      update_parameters()
-      t0 = t
-    end
-
-    -- check for start and stop requests
-    if stop_request
-    and (velocity*velocity == 0)
-    and (math.abs(math.sin(ph)) < 0.025) then
-       active = false
-       stop_request = false
-       t0 = t
-       q0 = dcm:get_joint_position_sensor('legs')
-       velocity = vector.new{0, 0, 0}
-    elseif start_request then
-       start_request = false
-    end
-
-  -- update joint positions in inactive stance mode
-  ------------------------------------------------------------------------
+  -- calculate left foot trajectory
+  local l_foot_pos = vector.zeros(6)
+  l_foot_pos[1] = x_offset - velocity[1]*stride_cos
+  l_foot_pos[2] = y_offset - velocity[2]*stride_cos + y_stride_offset
+  l_foot_pos[6] = a_offset - velocity[3]*stride_cos
+  if (ph < math.pi) then
+    l_foot_pos[3] = z_offset + step_amplitude*step_sin
   else
+    l_foot_pos[3] = z_offset
+  end
 
-    -- calculate current walking stance
-    local l_foot_pos = {x_offset, y_offset, z_offset, 0, 0, a_offset}
-    local r_foot_pos = {x_offset,-y_offset, z_offset, 0, 0, -a_offset}
-    local torso_pos = {0, 0, 0, 0, hip_pitch_offset, 0}
-    local p_l_foot = Transform.pose(l_foot_pos)
-    local p_r_foot = Transform.pose(r_foot_pos)
-    local p_torso = Transform.pose(torso_pos)
-    local qstance = Kinematics.inverse_pos_legs(p_l_foot, p_r_foot, p_torso)
+  -- calculate right foot trajectory
+  local r_foot_pos = vector.zeros(6) 
+  r_foot_pos[1] = x_offset + velocity[1]*stride_cos
+  r_foot_pos[2] =-y_offset + velocity[2]*stride_cos - y_stride_offset
+  r_foot_pos[6] =-a_offset + velocity[3]*stride_cos
+  if (ph > math.pi) then
+    r_foot_pos[3] = z_offset - step_amplitude*step_sin
+  else
+    r_foot_pos[3] = z_offset
+  end
 
-    -- caclutate joint configuration
-    update_parameters()
-    local d = util.min{(t - t0)/2, 1}
-    local q = q0 + d*(vector.new(qstance) - vector.new(q0))
+  -- calculate torso trajectory
+  local torso_pos = vector.zeros(6) 
+  torso_pos[1] = velocity[1]*zmp_shift_ratio*math.sin(2*ph)
+  torso_pos[2] = velocity[2]*zmp_shift_ratio*math.sin(2*ph)
+	       - y_swing_amplitude*math.sin(ph)
+  torso_pos[3] = z_swing_amplitude*-math.cos(2*ph)
+  torso_pos[5] = hip_pitch_offset
 
-    -- add gyro feedback
-    q[2] = q[2] - hip_roll_fb*gyro[1]
-    q[4] = q[4] + knee_pitch_fb*gyro[2]
-    q[5] = q[5] + ankle_pitch_fb*gyro[2]
-    q[6] = q[6] + ankle_roll_fb*gyro[1]
-    q[8] = q[8] - hip_roll_fb*gyro[1]
-    q[10] = q[10] + knee_pitch_fb*gyro[2]
-    q[11] = q[11] + ankle_pitch_fb*gyro[2]
-    q[12] = q[12] + ankle_roll_fb*gyro[1]
+  -- calculate inverse kinematics and add hip roll swing
+  local p_l_foot = Transform.pose(l_foot_pos)
+  local p_r_foot = Transform.pose(r_foot_pos)
+  local p_torso = Transform.pose(torso_pos)
+  local q = Kinematics.inverse_pos_legs(p_l_foot, p_r_foot, p_torso)
 
-    -- write joint angles to shared memory 
-    dcm:set_joint_position(q, 'legs')
+  -- add gyro feedback
+  q[2] = q[2] - hip_roll_fb*gyro[1]
+  q[4] = q[4] + knee_pitch_fb*gyro[2]
+  q[5] = q[5] + ankle_pitch_fb*gyro[2]
+  q[6] = q[6] + ankle_roll_fb*gyro[1]
+  q[8] = q[8] - hip_roll_fb*gyro[1]
+  q[10] = q[10] + knee_pitch_fb*gyro[2]
+  q[11] = q[11] + ankle_pitch_fb*gyro[2]
+  q[12] = q[12] + ankle_roll_fb*gyro[1]
 
-    -- check for start and stop requests
-    if start_request and (t - t0 > 2) then
-      active = true
-      start_request = false
-      t0 = t
-      q0 = dcm:get_joint_position_sensor('legs')
-      velocity = vector.new{0, 0, 0}
-    elseif stop_request then
-      stop_request = false
-    end
+  -- write joint angles to shared memory 
+  dcm:set_joint_position(q, 'legs')
+
+  -- update velocity during SSP 
+  if (step_sin ~= 0) then
+    update_velocity(dt)
+  end
+
+  -- update gait parameters at the end of each cycle 
+  if (ph > 2*math.pi) then
+    update_walk_parameters()
+    t0 = t
+  end
+
+  -- check for stop requests
+  if stop_request
+  and (velocity*velocity == 0)
+  and (math.abs(math.sin(ph)) < 0.025) then
+     t0 = t
+     stop_request = false
+     velocity = vector.new{0, 0, 0}
+     return 'done'
   end
 end
 

@@ -48,8 +48,9 @@ Finally, install Lightweight Communications and Marshalling (LCM) and Kinematics
 - Webots from http://www.cyberbotics.com/
 - Homebrew from http://mxcl.github.com/homebrew/
 
-		brew install lua luajit luarocks boost gnuplot eigen swig fftw
-		luarocks install numlua
+		brew install lua luajit luarocks boost gnuplot eigen swig fftw zmq hdf5 glib wget
+		luarocks install numlua lua-cmsgpack
+		luarocks install https://raw.github.com/Neopallium/lua-zmq/master/rockspecs/lua-zmq-scm-1.rockspec
 
 Finally, install Lightweight Communications and Marshalling (LCM) and Kinematics and Dynamics Library (KDL) using the instructions below.
 

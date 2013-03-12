@@ -1,0 +1,383 @@
+#VRML_SIM V6.0 utf8
+WorldInfo {
+  info [
+    "Handle operating test for DRC"
+  ]
+  title "handletest"
+  basicTimeStep 15
+  displayRefresh 3
+}
+Viewpoint {
+  orientation 0.475334 0.768719 0.427936 4.53948
+  position -5.01766 7.8143 -0.475858
+}
+Background {
+  skyColor [
+    0.678431 0.847059 0.901961
+  ]
+}
+DirectionalLight {
+  ambientIntensity 1.6
+  direction -0.5 -2 -0.5
+  intensity 0.3
+  castShadows TRUE
+}
+DirectionalLight {
+  direction 0.5 -0.5 0.5
+  intensity 0.5
+}
+DEF FLOOR MetricFloor {
+  color 0.95 0.95 0.95
+}
+THOROP {
+  translation -1.89696 0.6 -0.439356
+  rotation -1 0 0 1.57
+  controller "darwin-op_team_0"
+  controllerArgs "0 23"
+}
+Solid {
+  children [
+    Transform {
+      translation 0 0.3 -0.9
+      rotation 0 0 1 1.57
+      children [
+        DEF WHEEL1 Shape {
+          geometry Cylinder {
+            height 0.1
+            radius 0.3
+          }
+        }
+      ]
+    }
+    Transform {
+      translation 0 0.3 0.87
+      rotation 0 0 1 1.57
+      children [
+        USE WHEEL1
+      ]
+    }
+    Transform {
+      translation 0 1.8 0.125
+      rotation 1 0 0 1.57
+      children [
+        DEF BAR1 Shape {
+          geometry Cylinder {
+            height 0.75
+            radius 0.03
+          }
+        }
+      ]
+    }
+    Transform {
+      translation 0 1.425 -0.435
+      rotation 1 0 0 0.4633
+      children [
+        DEF BAR2 Shape {
+          geometry Cylinder {
+            height 0.838395
+            radius 0.03
+          }
+        }
+      ]
+    }
+    Transform {
+      translation 0 1.33249 0.401751
+      rotation 1 0 0 0.2175
+      children [
+        DEF BAR3 Shape {
+          geometry Cylinder {
+            height 0.9575
+            radius 0.03
+          }
+        }
+      ]
+    }
+    Transform {
+      translation 0 1.0874 0.2704
+      rotation 1 0 0 1.287
+      children [
+        DEF BAR4 Shape {
+          geometry Cylinder {
+            height 0.262646
+            radius 0.03
+          }
+        }
+      ]
+    }
+    Transform {
+      translation 0 0.963035 0.118094
+      rotation 1 0 0 -2.8501
+      children [
+        DEF BAR5 Shape {
+          geometry Cylinder {
+            height 0.182808
+            radius 0.03
+          }
+        }
+      ]
+    }
+    Transform {
+      translation -1.6 0.3 -0.9
+      rotation 0 0 1 1.57
+      children [
+        USE WHEEL1
+      ]
+    }
+    Transform {
+      translation -1.6 0.3 0.87
+      rotation 0 0 1 1.57
+      children [
+        USE WHEEL1
+      ]
+    }
+    Transform {
+      translation -1.6 1.8 0.125
+      rotation 1 0 0 1.57
+      children [
+        USE BAR1
+      ]
+    }
+    Transform {
+      translation -1.6 1.425 -0.435
+      rotation 1 0 0 0.4633
+      children [
+        USE BAR2
+      ]
+    }
+    Transform {
+      translation -1.6 1.33249 0.401751
+      rotation 1 0 0 0.2175
+      children [
+        USE BAR3
+      ]
+    }
+    Transform {
+      translation -1.6 1.0874 0.2704
+      rotation 1 0 0 1.287
+      children [
+        USE BAR4
+      ]
+    }
+    Transform {
+      translation -1.6 0.963035 0.118094
+      rotation 1 0 0 -2.8501
+      children [
+        USE BAR5
+      ]
+    }
+    Transform {
+      translation -0.8 0.34 -0.296887
+      rotation 1 0 0 0
+      children [
+        DEF FLAT1 Shape {
+          geometry Box {
+            size 1.6 0.05 0.294164
+          }
+        }
+      ]
+    }
+    Transform {
+      translation -0.8 0.6058 -0.144552
+      rotation 1 0 0 0.02
+      children [
+        DEF FLAT2 Shape {
+          geometry Box {
+            size 1.6 0.518394 0.05
+          }
+        }
+      ]
+    }
+    Transform {
+      translation -0.8 0.864981 0.079572
+      rotation 1 0 0 0
+      children [
+        DEF FLAT3 Shape {
+          geometry Box {
+            size 1.6 0.05 0.437755
+          }
+        }
+      ]
+    }
+    Transform {
+      translation -0.8 0.698638 -0.53502
+      rotation 1 0 0 -0.2484
+      children [
+        DEF FLAT4 Shape {
+          geometry Box {
+            size 1.6 0.740635 0.05
+          }
+        }
+      ]
+    }
+    Transform {
+      translation -0.8 1.33249 0.401751
+      rotation 1 0 0 0.2175
+      children [
+        DEF FLAT5 Shape {
+          geometry Box {
+            size 1.2 0.957575 0.05
+          }
+        }
+      ]
+    }
+  ]
+  name "Polaris"
+  boundingObject Group {
+    children [
+      Transform {
+        translation 0 0.3 -0.9
+        rotation 0 0 1 1.57
+        children [
+          USE WHEEL1
+        ]
+      }
+      Transform {
+        translation 0 0.3 0.87
+        rotation 0 0 1 1.57
+        children [
+          USE WHEEL1
+        ]
+      }
+      Transform {
+        translation -1.6 0.3 -0.9
+        rotation 0 0 1 1.57
+        children [
+          USE WHEEL1
+        ]
+      }
+      Transform {
+        translation -1.6 0.3 0.87
+        rotation 0 0 1 1.57
+        children [
+          USE WHEEL1
+        ]
+      }
+      Transform {
+        translation 0 1.8 0.125
+        rotation 1 0 0 1.57
+        children [
+          USE BAR1
+        ]
+      }
+      Transform {
+        translation -1.6 1.8 0.125
+        rotation 1 0 0 1.57
+        children [
+          USE BAR1
+        ]
+      }
+      Transform {
+        translation 0 1.425 -0.435
+        rotation 1 0 0 0.4633
+        children [
+          USE BAR2
+        ]
+      }
+      Transform {
+        translation -1.6 1.425 -0.435
+        rotation 1 0 0 0.4633
+        children [
+          USE BAR2
+        ]
+      }
+      Transform {
+        translation 0 1.33249 0.401751
+        rotation 1 0 0 0.2175
+        children [
+          USE BAR3
+        ]
+      }
+      Transform {
+        translation -1.6 1.33249 0.401751
+        rotation 1 0 0 0.2175
+        children [
+          USE BAR3
+        ]
+      }
+      Transform {
+        translation 0 1.0874 0.2704
+        rotation 1 0 0 1.287
+        children [
+          USE BAR4
+        ]
+      }
+      Transform {
+        translation -1.6 1.0874 0.2704
+        rotation 1 0 0 1.287
+        children [
+          USE BAR4
+        ]
+      }
+      Transform {
+        translation 0 0.963035 0.118094
+        rotation 1 0 0 -2.8501
+        children [
+          USE BAR5
+        ]
+      }
+      Transform {
+        translation -1.6 0.963035 0.118094
+        rotation 1 0 0 -2.8501
+        children [
+          USE BAR5
+        ]
+      }
+      Transform {
+        translation -0.8 0.34 -0.296887
+        rotation 1 0 0 0
+        children [
+          USE FLAT1
+        ]
+      }
+      Transform {
+        translation -0.8 0.6058 -0.144552
+        rotation 1 0 0 0.02
+        children [
+          USE FLAT2
+        ]
+      }
+      Transform {
+        translation -0.8 0.864981 0.079572
+        rotation 1 0 0 0
+        children [
+          USE FLAT3
+        ]
+      }
+      Transform {
+        translation -0.8 0.698638 -0.53502
+        rotation 1 0 0 -0.2484
+        children [
+          USE FLAT4
+        ]
+      }
+      Transform {
+        translation -0.8 1.33249 0.401751
+        rotation 1 0 0 0.2175
+        children [
+          USE FLAT5
+        ]
+      }
+    ]
+  }
+
+#  physics Physics {
+#    density -1
+#    mass IS mass
+#  }
+  locked TRUE
+}
+
+
+Solid {
+  translation -1.2 1.16 -0.29
+  rotation 0 1 0 1.57
+  children [
+    Solid {
+      rotation 0 0 1 -0.78
+      children [
+        SteeringWheelSmall {}
+      ]
+    }
+  ]
+  locked TRUE
+}

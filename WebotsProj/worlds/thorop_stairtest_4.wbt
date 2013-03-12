@@ -8,8 +8,8 @@ WorldInfo {
   displayRefresh 3
 }
 Viewpoint {
-  orientation -0.854933 -0.501065 -0.134248 0.653955
-  position -2.8112 5.48354 4.12953
+  orientation -0.00158045 -0.997773 -0.0666856 3.19504
+  position 9.82616 5.08754 1.11961
 }
 Background {
   skyColor [
@@ -114,12 +114,6 @@ DEF Wall5 Solid {
     }
   ]
   locked TRUE
-}
-THOROP {
-  translation -2.26828 2.6 -0.0325858
-  rotation -1 0 0 1.57
-  controller "darwin-op_team_0"
-  controllerArgs "0 31" #STEPTEST
 }
 QualGate {
   translation -6 2 0
@@ -424,4 +418,10 @@ Solid {
 QualGate {
   translation 4 2 9.25
   rotation 0 1 0 3.14
+}
+THOROP {
+  translation 10 3.6 4
+  rotation -0.580677 -0.582905 -0.568362 2.11121
+  controller "darwin-op_team_0"
+  controllerArgs "0 31"
 }

@@ -5,6 +5,7 @@ cwd = cwd or os.getenv('PWD')
 package.path = cwd.."/?.lua;"..package.path;
 require('init')
 
+require 'carray'
 
 require('Config')
 require('Body')
@@ -17,26 +18,6 @@ require('vector')
 --print( "LIDAR Dim:", WebotsLaser.get_width(), WebotsLaser.get_height())
 --nlidar_readings = WebotsLaser.get_width() * WebotsLaser.get_height();
 
-package.path = cwd..'/Util/ffi/?.lua;'..package.path
-local ffi = require 'ffi'
-require 'carray'
-require 'cjpeg'
-require 'Camera'
-w = Camera.get_width();
-h = Camera.get_height();
-img = Camera.get_image()
-img_cdata = ffi.cast( 'uint8_t*', carray.pointer(img))
-img_str = ffi.string( img_cdata, w*h*3 );
---local jpg = cjpeg.compress( img_str, w, h );
-local jpg = cjpeg.compress( carray.pointer(img), w, h );
-f = io.open('/tmp/test.jpeg','w')
-n = f:write( jpg )
-f:close()
-print('wrote it!')
---local libpng = require 'ffi/libpng'
---libpng.save('/tmp/image_wb.png', Camera.get_width(), Camera.get_height(), img_cdata )
-local simple_ipc = require 'simple_ipc'
-img_channel = simple_ipc.setup_publisher('img')
 
 require 'rcm'
 --
@@ -50,6 +31,10 @@ require 'Transform'
 
 require 'Team' --To receive the GPS coordinates from objects
 require 'wcm'
+
+require 'strokedef' --Arm trajectory for drawing demo!
+
+
 
 if (string.find(Config.platform.name,'THOROP')) then
   thorop=true;
@@ -114,56 +99,78 @@ end
 
 is_moving = 0;
 
---THOR VALUES
+--THOR VALUES for hanging arm
 arm_init_motion_thorop={
+
+  --ARM INITIAL POSITION (LOOKING DOWN)
   {
-    vector.new({90,90,0,0,0,0})*math.pi/180,
-    vector.new({90,-90,0,0,0,0})*math.pi/180,
+    vector.new({90,0,0,0,-90,0})*math.pi/180,
+    vector.new({90,-0,-0,0,90,0})*math.pi/180,
+    1.0,
+  },
+
+  --[[
+  --ARM ZERO POSITION (arm spread)
+  {
+    vector.new({90,90,0,0,-90,0})*math.pi/180,
+    vector.new({90,-90,-0,0,90,0})*math.pi/180,
+    1.0,
+  },
+  --]]
+
+
+  {
+    vector.new({90,0,90,0,-90,0})*math.pi/180,
+    vector.new({90,-0,-90,0,90,0})*math.pi/180,
     1.0,
   },
   {
-    vector.new({0,90,90,0,-90,0})*math.pi/180,
-    vector.new({0,-90,-90,0,90,0})*math.pi/180,
+    vector.new({90,60,90,-120,-90,-30})*math.pi/180,
+    vector.new({90,-60,-90,-120,90,30})*math.pi/180,
+    1.0,
+  },
+--[[
+  {
+    vector.new({0,60,90,-120,-90,-30})*math.pi/180,
+    vector.new({0,-60,-90,-120,90,30})*math.pi/180,
+    1.0,
+  },
+--]]
+
+  {
+    vector.new({0,60,90,-120,-90,60})*math.pi/180,
+    vector.new({0,-60,-90,-120,90,-60})*math.pi/180,
+    1.0,
+  },
+
+}
+
+
+
+
+
+
+arm_end_motion_thorop={
+  {
+    vector.new({0,60,90,-120,-90,-30})*math.pi/180,
+    vector.new({0,-60,-90,-120,90,30})*math.pi/180,
     1.0,
   },
   {
-    vector.new({0,45,90,-90,-90,-45})*math.pi/180,
-    vector.new({0,-45,-90,-90,90,45})*math.pi/180,
+    vector.new({90,60,90,-120,-90,-30})*math.pi/180,
+    vector.new({90,-60,-90,-120,90,30})*math.pi/180,
+    1.0,
+  },
+  {
+    vector.new({90,0,0,0,-90,0})*math.pi/180,
+    vector.new({90,-0,-0,0,90,0})*math.pi/180,
     1.0,
   },
 }
 
 
 arm_init_motion_atlas={
-  {
-    vector.new({90,30,-90,0, -90,0})*math.pi/180,
-    vector.new({90,-30,90,0, -90,0})*math.pi/180,
-    0.2,
-  },
-  {
-    vector.new({90,30,0,0, -60,0})*math.pi/180,
-    vector.new({90,-30,0,0, -60,0})*math.pi/180,
-    1.0,
-  },
---[[
-  {
-    vector.new({90,0,0,-90,-60,-90})*math.pi/180,
-    vector.new({90,0,0,-90,60,90})*math.pi/180,
-    1.0,
-  },
---]]
-
-  --VERTICAL HAND POSTURE (WORKS BETTER)
-  {
-    vector.new({90,30,0,-90,0,-90})*math.pi/180,
-    vector.new({90,-30,0,-90,0,90})*math.pi/180,
-    1.0,
-  },
-
-
 }
-
-
 
 
 if thorop then
@@ -177,6 +184,9 @@ arm_init_count = 1; --start arm initing
 arm_init_t0 = Body.get_time();
 qLArm0=vector.new(Body.get_larm_position());
 qRArm0=vector.new(Body.get_rarm_position());
+
+arm_init_mode = 0; 
+
 
 
 function init_arms()
@@ -202,6 +212,8 @@ function init_arms()
     trRArm0[1],trRArm0[2],trRArm0[3],trRArm0[4],trRArm0[5],trRArm0[6]=
 	trRArmOld[1],trRArmOld[2],trRArmOld[3],trRArmOld[4],trRArmOld[5],trRArmOld[6];
     arm_init_count = 0;
+
+    flush_jointangle_queue();
     return;
   end
 
@@ -213,13 +225,202 @@ function init_arms()
     arm_init_count = arm_init_count+1;
     return;
   end
-
   ph = (t-arm_init_t0) /current_duration;
 
   qLArm = (1-ph) * qLArm0 + ph * arm_init_motion[arm_init_count][1];
   qRArm = (1-ph) * qRArm0 + ph * arm_init_motion[arm_init_count][2];
   Body.set_larm_command(qLArm);
   Body.set_rarm_command(qRArm);
+
+  if arm_init_count>1 then --Don't record 1st movement
+    add_jointangle_queue(qRArm)
+  end
+end
+
+--[[
+arm_demo_motion={
+   {0,0,0},
+   {0.15,0,0},
+   {0,0,0},
+   {0,0.15,0},
+   {0,-0.15,0},
+   {0,0,0},
+   {0,0,0.15},
+   {0,0,-0.15},
+   {0,0,0},
+}
+--]]
+
+
+
+
+arm_demo_count = 1;
+arm_demo_t0 = 0;
+arm_demo_done = false;
+
+function arm_demo()
+  t = Body.get_time();
+  if arm_init_count~=0 then return;end --Wait until init is over
+  if arm_demo_done then return;end
+  pTarget = vector.new(arm_demo_motion[arm_demo_count])
+	+vector.new({trRArm0[1], trRArm0[2], trRArm0[3]});
+  armDir = vector.new({
+	pTarget[1]-trRArm[1],
+	pTarget[2]-trRArm[2],
+	pTarget[3]-trRArm[3]});
+  dRelative = math.sqrt(armDir[1]^2 + armDir[2]^2+armDir[3]^2);
+--  vel=0.0025;
+  vel=0.005;
+  if dRelative<vel*2 then --Approached the target
+    arm_demo_count = arm_demo_count + 1;
+    if arm_demo_count > #arm_demo_motion then
+      arm_demo_done = true;
+--Hack here to reset the arm position...
+      arm_init_motion = arm_end_motion_thorop;
+      arm_init_count = 1; 
+      arm_init_t0 = t;
+--      flush_jointangle_queue();
+      return;
+    end
+  else
+    trRArm[1] = trRArm[1] + vel*armDir[1]/dRelative;
+    trRArm[2] = trRArm[2] + vel*armDir[2]/dRelative;
+    trRArm[3] = trRArm[3] + vel*armDir[3]/dRelative;
+    motion_arms_ik();  
+  end
+end
+
+
+drawing_status = 0;
+stroke_count = 1;
+seg_count = 1;
+seg_div_count = 1;
+
+draw_x1 = 0.15;
+draw_x2 = 0.12;
+drawing_scale = .20; 
+seg_div =2;
+velMove=0.005;
+
+
+
+function arm_demo2()
+  t = Body.get_time();
+  if arm_init_count~=0 then return;end --Wait until init is over
+  if arm_demo_done then return;end
+  if drawing_status==2 then --Drawing 
+    ph = seg_div_count / seg_div;    
+--print("stroke",stroke_count,"seg",seg_count,"ph",ph)
+
+
+    trRArm[1] = trRArm0[1]+draw_x1;
+    trRArm[2] = trRArm0[2]+
+	((1-ph)*strokedef[stroke_count][1][seg_count]+ 
+	ph*strokedef[stroke_count][1][seg_count+1])*drawing_scale; 
+    trRArm[3] = trRArm0[3]+
+	((1-ph)*strokedef[stroke_count][2][seg_count]+ 
+	ph*strokedef[stroke_count][2][seg_count+1])*drawing_scale; 
+    motion_arms_ik();  
+    seg_div_count = seg_div_count+1;
+    
+    if seg_div_count>seg_div then
+      seg_div_count = 1; 
+      seg_count = seg_count + 1;
+      if seg_count == #strokedef[stroke_count][1] then
+        drawing_status = 3;
+      end
+    end
+  else
+    if drawing_status==0 then --Move close to the drawing start pos
+      pTarget=vector.new({
+	trRArm0[1]+draw_x2, 
+	trRArm0[2]+strokedef[stroke_count][1][1]*drawing_scale, 
+	trRArm0[3]+strokedef[stroke_count][2][1]*drawing_scale, 
+	})
+    elseif drawing_status==1 then --Start drawing
+      pTarget=vector.new({
+	trRArm0[1]+draw_x1,trRArm[2],trRArm[3],
+	})
+    elseif drawing_status==3 then --Move away
+      if stroke_count==#strokedef then
+        pTarget=vector.new({
+  	  trRArm0[1],trRArm0[2],trRArm0[3],
+  	  }) 
+      else
+        pTarget=vector.new({
+  	  trRArm0[1]+draw_x2,trRArm[2],trRArm[3],
+  	  }) 
+      end
+    end
+    armDir = vector.new({
+      pTarget[1]-trRArm[1],pTarget[2]-trRArm[2],pTarget[3]-trRArm[3]});
+    dRelative = math.sqrt(armDir[1]^2 + armDir[2]^2+armDir[3]^2);
+    if dRelative<velMove*2 then --Approached the target
+--      print("Target reached, ",drawing_status)
+      drawing_status = drawing_status + 1;
+      if drawing_status==4 then
+        drawing_status=0;
+        stroke_count = stroke_count + 1;
+	seg_count = 1;
+	if stroke_count > #strokedef then
+	  arm_demo_done = true;
+
+	  --Initiate end motion
+          arm_init_motion = arm_end_motion_thorop;
+          arm_init_count = 1; 
+          arm_init_t0 = t;
+
+	end
+      end
+    end
+    trRArm[1] = trRArm[1] + velMove*armDir[1]/dRelative;
+    trRArm[2] = trRArm[2] + velMove*armDir[2]/dRelative;
+    trRArm[3] = trRArm[3] + velMove*armDir[3]/dRelative;
+    motion_arms_ik();  
+  end
+end
+
+
+
+
+
+
+
+
+
+
+
+jointangle_offset_r= vector.new({90,-90,-0,0,90,0})*math.pi/180;
+--125500 for 90 degree for 1,2,3,4
+--75500 for 90 degree for 5,6
+scale_1 = 125500/(math.pi/2);
+scale_2 = 75500/(math.pi/2);
+
+joint_scale=vector.new({scale_1,scale_1,scale_1,scale_1,scale_2,scale_2});
+joint_directions={-1,1,1,-1,1,1};
+arm_jointangle_queue_count = 1;
+arm_jointangle_queue={
+}
+
+function add_jointangle_queue(qArm)
+  arm_jointangle_queue[arm_jointangle_queue_count]={};
+  for i=1,6 do
+    arm_jointangle_queue[arm_jointangle_queue_count][i] = 
+	(qArm[i]-jointangle_offset_r[i])	
+	*joint_directions[i]
+	*joint_scale[i];
+  end
+  arm_jointangle_queue_count = arm_jointangle_queue_count + 1;
+end
+
+function flush_jointangle_queue()
+  outfile = assert(io.open("arm_keyframe.txt","wb"));
+  for i=1, arm_jointangle_queue_count-1 do
+    outfile:write(string.format("%d %d %d %d %d %d\n",
+	unpack(vector.new(arm_jointangle_queue[i]))));
+  end
+  outfile:flush();
+  outfile:close();
 end
 
 
@@ -396,6 +597,11 @@ function motion_arms_ik()
     Body.set_larm_command(qLArmInv);
     Body.set_rarm_command(qRArmInv);
 
+
+    add_jointangle_queue(qRArmInv);
+
+
+
       trLArmOld[1],trLArmOld[2],trLArmOld[3],trLArmOld[4],trLArmOld[5],trLArmOld[6]=
       trLArm[1],trLArm[2],trLArm[3],trLArm[4],trLArm[5],trLArm[6];
 
@@ -562,27 +768,6 @@ function update()
   update_cognition();
   auto_move_arms();
   Team.update();
---[[	
-	-- Update the laser scanner
-	lidar_scan = WebotsLaser.get_scan()
-	-- Set the Range Comm Manager values
-	rcm.set_lidar_ranges( carray.pointer(lidar_scan) );
-	rcm.set_lidar_timestamp( Body.get_time() )
-	--print("Laser data:",unpack(rcm.get_lidar_ranges()))
-	
-	-- Show the odometry
-	odom, odom0 = mcm.get_odometry();
-	rcm.set_robot_odom( vector.new(odom) )
-	
-	-- Show IMU
-  imuAngle = Body.get_sensor_imuAngle();
-	rcm.set_robot_imu( vector.new(imuAngle) )
-	gyr = Body.get_sensor_imuGyrRPY();
-	rcm.set_robot_gyro( vector.new(gyr) );
---]]
-
-
---print("Roll", gyr[1], "Pitch",gyr[2]);
 
   -- Check if the last update completed without errors
   lcount = lcount + 1;
@@ -615,6 +800,7 @@ while (true) do
   process_keyinput();
 
 --  arm_demo();
+  arm_demo2();
   Team.update();
   init_arms();
 
@@ -626,21 +812,6 @@ while (true) do
 		--print('qLArm',qLArm)
     t_last = Body.get_time();
   end
-
-img = Camera.get_image()
-img_cdata = ffi.cast( 'uint8_t*', carray.pointer(img))
-img_str = ffi.string( img_cdata, w*h*3 );
-w = Camera.get_width();
-h = Camera.get_height();
---local jpg = cjpeg.compress( img_str, w, h );
-local jpg, sz = cjpeg.compress( carray.pointer(img), w, h );
-img_channel:send( jpg )
---[[
-f = io.open('/tmp/test.jpeg','w')
-n = f:write( jpg )
-f:close()
---]]
-
 
   if(darwin) then
     unix.usleep(tDelay);

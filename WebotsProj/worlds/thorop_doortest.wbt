@@ -1,0 +1,41 @@
+#VRML_SIM V6.0 utf8
+WorldInfo {
+  info [
+    "Handle operating test for DRC"
+  ]
+  title "handletest"
+  basicTimeStep 15
+  displayRefresh 3
+}
+Viewpoint {
+  orientation -0.378116 -0.830106 -0.409819 1.85068
+  position -1.08339 3.32941 0.149679
+}
+Background {
+  skyColor [
+    0.678431 0.847059 0.901961
+  ]
+}
+DirectionalLight {
+  ambientIntensity 1.6
+  direction -0.5 -2 -0.5
+  intensity 0.3
+  castShadows TRUE
+}
+DirectionalLight {
+  direction 0.5 -0.5 0.5
+  intensity 0.5
+}
+DEF FLOOR MetricFloor {
+  color 0.95 0.95 0.95
+}
+THOROP {
+  translation 0 0.6 0
+  rotation -1 0 0 1.57
+  controller "darwin-op_team_0"
+  controllerArgs "0 28" # DOOR TEST
+}
+SingleDoorEntree {
+  translation 0.685298 0 0.6
+  rotation 0 1 0 1.57
+}

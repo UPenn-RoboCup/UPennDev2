@@ -406,18 +406,22 @@ function parsemxNUMERIC_CLASS(data)
   -- reorganize to torch 
   -- TODO general dimensions
 
-  local content = torch.Tensor(#nums, 1)
-  for i = 1, #nums do
-    content[i][1] = nums[i]
+  if type(nums) == 'number' then
+    return AN, nums
+  else
+    local content = torch.Tensor(#nums, 1)
+    for i = 1, #nums do
+      content[i][1] = nums[i]
+    end
+    if #Dim == 2 then
+      content:resize(Dim[2], Dim[1])
+    elseif #Dim == 3 then
+      content:resize(Dim[3], Dim[2], Dim[1])
+    end
+    content = content:t()
+    return AN, content
   end
-  if #Dim == 2 then
-    content:resize(Dim[2], Dim[1])
-  elseif #Dim == 3 then
-    content:resize(Dim[3], Dim[2], Dim[1])
-  end
-  content = content:t()
 
-  return AN, content
 end
 
 function parsemxSTRUCT_CLASS(data)
@@ -503,6 +507,63 @@ function parsemxOBJECT_CLASS(data)
 end
 
 function parsemxCHAR_CLASS(data)
+  local ptr = 0
+  local DimTag = data:sub( 1, tagSize) 
+  local DimType, DimSize, realTagSize = parseTag(DimTag)
+  ptr = ptr + realTagSize
+  local DimByteSize = typeByteSize(DimType)
+  local numberOfDims = DimSize / DimByteSize
+  if numberOfDims % 2 == 1 then numberOfDims = numberOfDims + 1 end
+  local DimBody = data:sub(ptr + 1, 
+                  ptr + numberOfDims * DimByteSize)
+  ptr = ptr + numberOfDims * DimByteSize
+  local Dim = _G['parse'..matType(DimType)](DimBody, numberOfDims)
+  -- array name
+  local ANTag = data:sub(ptr + 1, ptr + tagSize)
+  local ANDataT, ANDataSize, realTagSize = parseTag(ANTag)
+  ptr = ptr + realTagSize
+  local padding = 0
+  if (ptr + ANDataSize * typeByteSize(ANDataT)) % 8 ~= 0 then
+    -- padding
+    local roundint = math.ceil((ptr + ANDataSize * typeByteSize(ANDataT)) / 8)
+    padding = roundint * 8 - ptr - ANDataSize * typeByteSize(ANDataT)
+  end
+  local ANBody = data:sub(ptr + 1, ptr + ANDataSize * typeByteSize(ANDataT))
+  ptr = ptr + ANDataSize * typeByteSize(ANDataT) + padding
+  local AN = _G['parse'..matType(ANDataT)](ANBody, ANDataSize, 'string')
+  -- pr
+  local PrTag = data:sub(ptr + 1, ptr + tagSize)
+  local PrDataT, PrDataSize, realTagSize = parseTag(PrTag)
+  ptr = ptr + realTagSize
+  local padding = 0
+  if (ptr + PrDataSize * typeByteSize(PrDataT)) % 8 ~= 0 then
+    -- padding
+    local roundint = math.ceil((ptr + PrDataSize * typeByteSize(PrDataT)) / 8)
+    padding = roundint * 8 - ptr - PrDataSize * typeByteSize(PrDataT)
+  end
+  local PrBody = data:sub(ptr + 1, ptr + PrDataSize * typeByteSize(PrDataT))
+  if debug then  print('Pr data type:'..matType(PrDataT), 'data size:'..PrDataSize, 'data name:'..AN) end
+  local nums = _G['parse'..matType(PrDataT)](PrBody, PrDataSize / typeByteSize(PrDataT)) 
+  -- reorganize to torch 
+  -- TODO general dimensions
+  if type(nums) == 'string' then
+    print(nums)
+    return AN, nums
+  end
+
+--  local content = torch.Tensor(#nums, 1)
+--  for i = 1, #nums do
+--    content[i][1] = nums[i]
+--  end
+--  if #Dim == 2 then
+--    content:resize(Dim[2], Dim[1])
+--  elseif #Dim == 3 then
+--    content:resize(Dim[3], Dim[2], Dim[1])
+--  end
+--  content = content:t()
+
+  return AN, content
+
 end
 
 function parsemxSPARSE_CLASS(data)

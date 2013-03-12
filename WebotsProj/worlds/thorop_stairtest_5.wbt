@@ -1,0 +1,427 @@
+#VRML_SIM V6.0 utf8
+WorldInfo {
+  info [
+    "Qual-3 arena for DRC"
+  ]
+  title "Qual3"
+  basicTimeStep 15
+  displayRefresh 3
+}
+Viewpoint {
+  orientation -0.0660181 -0.94202 -0.329 2.78831
+  position 8.95358 7.33333 4.01607
+}
+Background {
+  skyColor [
+    0.678431 0.847059 0.901961
+  ]
+}
+DirectionalLight {
+  ambientIntensity 1.6
+  direction -0.5 -2 -0.5
+  intensity 0.3
+  castShadows TRUE
+}
+DirectionalLight {
+  direction 0.5 -0.5 0.5
+  intensity 0.5
+}
+DEF GROUND Solid {
+  translation 0 1 -0.5
+  children [
+    Shape {
+      appearance DEF GroundAppearance Appearance {
+        material Material {
+          diffuseColor 0.201961 0.201961 0.201961
+          emissiveColor 0.201961 0.201961 0.201961
+        }
+      }
+      geometry DEF GroundBox Box {
+        size 50 2 50
+      }
+    }
+  ]
+  boundingObject Transform {
+    children [
+      Box {
+        size 50 2 50
+      }
+    ]
+  }
+  locked TRUE
+}
+DEF Wall1 Solid {
+  translation -8 2.6 0
+  children [
+    Shape {
+      appearance DEF WallAppearance Appearance {
+        material Material {
+          diffuseColor 0.801961 0.801961 0.801961
+          emissiveColor 0.201961 0.201961 0.201961
+        }
+      }
+      geometry Box {
+        size 0.2 1.2 6
+      }
+    }
+  ]
+  locked TRUE
+}
+DEF Wall2 Solid {
+  translation -7 2.6 3
+  children [
+    Shape {
+      appearance USE WallAppearance
+      geometry Box {
+        size 2 1.2 0.2
+      }
+    }
+  ]
+  locked TRUE
+}
+DEF Wall3 Solid {
+  translation -7 2.6 -3
+  children [
+    Shape {
+      appearance USE WallAppearance
+      geometry Box {
+        size 2 1.2 0.2
+      }
+    }
+  ]
+  locked TRUE
+}
+DEF Wall4 Solid {
+  translation -6 2.6 -2
+  children [
+    Shape {
+      appearance USE WallAppearance
+      geometry Box {
+        size 0.2 1.2 2
+      }
+    }
+  ]
+  locked TRUE
+}
+DEF Wall5 Solid {
+  translation -6 2.6 2
+  children [
+    Shape {
+      appearance USE WallAppearance
+      geometry Box {
+        size 0.2 1.2 2
+      }
+    }
+  ]
+  locked TRUE
+}
+QualGate {
+  translation -6 2 0
+}
+QualGate {
+  translation -2 2 0
+}
+QualGate {
+  translation 2 2 0
+}
+QualGate {
+  translation 6 2 0
+}
+QualStep {
+  translation -1.75 2.1 0
+}
+QualStep {
+  translation 1.75 2.1 0
+}
+QualStep {
+  translation 2.25 2.1 0
+}
+QualStep {
+  translation 2 2.3 0
+}
+QualStep {
+  translation 6.25 2.1 0
+}
+QualStep {
+  translation 6.75 2.3 0
+}
+QualStep {
+  translation 7.25 2.5 0
+}
+QualStep {
+  translation 7.75 2.7 0
+}
+QualStep {
+  translation 8.25 2.9 0
+}
+Solid {
+  translation 9 2.9 0
+  children [
+    Shape {
+      appearance DEF PlatformAppearance Appearance {
+        material Material {
+          diffuseColor 0.5 0.5 1
+        }
+      }
+      geometry Box {
+        size 1 0.2 1
+      }
+    }
+  ]
+  boundingObject Transform {
+    children [
+      Box {
+        size 1 0.2 1
+      }
+    ]
+  }
+  locked TRUE
+}
+Solid {
+  translation 10 2.9 0.5
+  children [
+    Shape {
+      appearance USE PlatformAppearance
+      geometry Box {
+        size 1 0.2 2
+      }
+    }
+  ]
+  boundingObject Transform {
+    children [
+      Box {
+        size 1 0.2 2
+      }
+    ]
+  }
+  locked TRUE
+}
+Solid {
+  translation 9.6 2.9 2.5
+  children [
+    Shape {
+      appearance USE PlatformAppearance
+      geometry Box {
+        size 0.6 0.2 1.5
+      }
+    }
+  ]
+  boundingObject Transform {
+    children [
+      Box {
+        size 0.6 0.2 1.5
+      }
+    ]
+  }
+  locked TRUE
+}
+Solid {
+  translation 10.4 2.9 2.5
+  children [
+    Shape {
+      appearance USE PlatformAppearance
+      geometry Box {
+        size 0.6 0.2 2
+      }
+    }
+  ]
+  boundingObject Transform {
+    children [
+      Box {
+        size 0.6 0.2 2
+      }
+    ]
+  }
+  locked TRUE
+}
+Solid {
+  translation 10 2.9 4
+  children [
+    Shape {
+      appearance USE PlatformAppearance
+      geometry Box {
+        size 1 0.2 1
+      }
+    }
+  ]
+  boundingObject Transform {
+    children [
+      Box {
+        size 1 0.2 1
+      }
+    ]
+  }
+  locked TRUE
+}
+QualGate {
+  translation 10 2 4.5
+  rotation 0 1 0 -1.57
+}
+Solid {
+  translation 10 3 5.5
+  rotation 1 0 0 -0.2
+  children [
+    Shape {
+      appearance USE PlatformAppearance
+      geometry Box {
+        size 1 0.2 2
+      }
+    }
+  ]
+  boundingObject Transform {
+    children [
+      Box {
+        size 1 0.2 2
+      }
+    ]
+  }
+  locked TRUE
+}
+Solid {
+  translation 10 3.2 8
+  children [
+    Shape {
+      appearance USE PlatformAppearance
+      geometry Box {
+        size 1 0.2 3
+      }
+    }
+  ]
+  boundingObject Transform {
+    children [
+      Box {
+        size 1 0.2 3
+      }
+    ]
+  }
+  locked TRUE
+}
+Solid {
+  translation 10.25 3.35 7
+  children [
+    Shape {
+      appearance DEF ObstacleAppearance Appearance {
+        material Material {
+          diffuseColor 1 0.5 0.1
+        }
+      }
+      geometry Box {
+        size 0.5 0.1 0.1
+      }
+    }
+  ]
+  boundingObject Transform {
+    children [
+      Box {
+        size 0.5 0.1 0.1
+      }
+    ]
+  }
+  locked TRUE
+}
+Solid {
+  translation 9.75 3.35 7.5
+  children [
+    Shape {
+      appearance USE ObstacleAppearance
+      geometry Box {
+        size 0.5 0.1 0.1
+      }
+    }
+  ]
+  boundingObject Transform {
+    children [
+      Box {
+        size 0.5 0.1 0.1
+      }
+    ]
+  }
+  locked TRUE
+}
+Solid {
+  translation 9.75 3.4 8
+  children [
+    Shape {
+      appearance USE ObstacleAppearance
+      geometry Box {
+        size 0.5 0.2 0.1
+      }
+    }
+  ]
+  boundingObject Transform {
+    children [
+      Box {
+        size 0.5 0.2 0.1
+      }
+    ]
+  }
+  locked TRUE
+}
+Solid {
+  translation 9.95 3.35 8.5
+  children [
+    Shape {
+      appearance USE ObstacleAppearance
+      geometry Box {
+        size 0.1 0.1 0.5
+      }
+    }
+  ]
+  boundingObject Transform {
+    children [
+      Box {
+        size 0.1 0.1 0.5
+      }
+    ]
+  }
+  locked TRUE
+}
+Solid {
+  translation 10.6 4.2 8
+  children [
+    Shape {
+      appearance USE WallAppearance
+      geometry Box {
+        size 0.2 2 3
+      }
+    }
+  ]
+  boundingObject Transform {
+    children [
+      Box {
+        size 0.2 2 3
+      }
+    ]
+  }
+  locked TRUE
+}
+Solid {
+  translation 7 2.6 9.25
+  rotation 0 0 1 0.244
+  children [
+    Shape {
+      appearance USE PlatformAppearance
+      geometry Box {
+        size 5.2 0.2 0.5
+      }
+    }
+  ]
+  boundingObject Transform {
+    children [
+      Box {
+        size 5.2 0.2 0.5
+      }
+    ]
+  }
+  locked TRUE
+}
+QualGate {
+  translation 4 2 9.25
+  rotation 0 1 0 3.14
+}
+THOROP {
+  translation 9.74922 3.9 6.71657
+  rotation -0.580677 -0.582905 -0.568362 2.11121
+  controller "darwin-op_team_0"
+  controllerArgs "0 31"
+}

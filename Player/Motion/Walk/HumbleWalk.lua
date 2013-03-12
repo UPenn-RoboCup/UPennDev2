@@ -103,7 +103,7 @@ kneeShift = 0;
 hipShift = vector.new({0,0});
 armShift = vector.new({0, 0});
 
-active = true;
+active = false;
 started = false;
 iStep0 = -1;
 iStep = 0;
@@ -114,7 +114,7 @@ ph0=0;ph=0;phSingle = 0;
 stopRequest = 2;
 canWalkKick = 0; --Can we do walkkick with this walk code?
 initial_step=2;
-
+upper_body_overridden = 0;
 
 ----------------------------------------------------------
 -- End initialization 
@@ -132,6 +132,8 @@ function entry()
     Body.set_rarm_command(qRArm0);
     Body.set_larm_hardness(hardnessArm);
     Body.set_rarm_hardness(hardnessArm);
+
+
   end
   Body.set_waist_command(0);
   Body.set_waist_hardness(1.0);
@@ -536,7 +538,6 @@ function stance_reset() --standup/sitdown/falldown handling
   iStep = 0;
   current_step_type=0;
   motion_playing = 0;
-  upper_body_overridden=0;
   uLRFootOffset = vector.new({0,footY,0});
 end
 

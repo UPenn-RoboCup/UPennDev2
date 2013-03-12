@@ -24,6 +24,7 @@ local imu_buf = ffi.new('char[?]',imu_buf_sz)
 local omap = libSlam.OMAP.data
 local map_cdata = torch.data( omap )
 local map_cdata_sz = omap:storage():size() * ffi.sizeof('char')
+print('Map size:',libSlam.MAPS.sizex,libSlam.MAPS.sizey)
 
 -- Setup IPC
 local lidar_channel = simple_ipc.setup_subscriber('lidar');

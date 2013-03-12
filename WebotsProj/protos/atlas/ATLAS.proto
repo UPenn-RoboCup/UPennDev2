@@ -31,9 +31,22 @@ Robot {
 
   children [
     DEF chest_yaw Servo {
-      translation 0 0 0.14 # ATLAS
+      translation -0.0125 0 0.14 # ATLAS
       rotation 0 0 1 0
       children [
+        #Atlas has waist roll and pitch too, but we ignore it here
+	Transform{
+	  translation 0 0 -0.050
+          children[
+            mtorso{} 
+            Transform{
+              translation 0 0 -0.090
+              children[ ltorso{}]
+            }
+          ]
+        }
+
+
         DEF r_shoulder_pitch Servo {
           translation 0.024 -0.221 0.289
           rotation 0 0.5 -0.866025 0   #ATLAS
@@ -119,7 +132,10 @@ Robot {
                                   Box {size 0.096 0.096 0.096}
                                 ]
                               }
-                              physics Physics {}
+                              physics Physics {#r_hand
+				 mass 2.263
+				 centerOfMass 0 -0.093 0 
+			      }
                             }
                             DEF r_wrist_yaw Transform {
                               children [
@@ -134,7 +150,10 @@ Robot {
                               Box {size 0.096 0.096 0.096}
                             ]
                           }
-                          physics Physics {}
+                          physics Physics {
+			    mass 0.981
+			    centerOfMass 0 -0.041 0
+			  }
                           maxForce 10000
                         }
                         DEF r_elbow_pitch Transform {
@@ -150,7 +169,10 @@ Robot {
                           Box {size 0.096 0.096 0.096}
                         ]
                       }
-                      physics Physics {}
+                      physics Physics { #larm
+			mass 2.148
+	 		centerOfMass -0.003 -0.099 -0.014
+		      }
                       maxForce 10000
                     }
                     DEF r_shoulder_yaw Transform {
@@ -166,7 +188,10 @@ Robot {
                       Box {size 0.096 0.096 0.096}
                     ]
                   }
-                  physics Physics {}
+                  physics Physics { #uarm
+		    mass 1.881
+		    centerOfMass 0.007 -0.114 0.008
+	          }
                   maxForce 10000
                 }
                 DEF r_shoulder_roll Transform {
@@ -182,7 +207,10 @@ Robot {
                   Box {size 0.096 0.096 0.096}
                 ]
               }
-              physics Physics {}
+              physics Physics { #scap
+	        mass 2.767
+	        centerOfMass -0.002 0.108 0
+	      }
               maxForce 10000
             }
             DEF r_shoulder_pitch Transform {
@@ -199,7 +227,8 @@ Robot {
             ]
           }
           physics Physics {
-            centerOfMass 0 -0.027 0
+  	    mass 2.369
+	    centerOfMass 0.014 -0.058 0.029
           }
           maxForce 10000
 
@@ -288,7 +317,10 @@ Robot {
                                   Box {size 0.096 0.096 0.096}
                                 ]
                               }
-                              physics Physics {}
+                              physics Physics { #l_hand
+				 mass 2.263
+				 centerOfMass 0 0.093 0
+			      }
                               maxForce 10000
 
                             }
@@ -305,7 +337,10 @@ Robot {
                               Box {size 0.096 0.096 0.096}
                             ]
                           }
-                          physics Physics {}
+                          physics Physics { #l_farm
+			    mass 0.981
+			    centerOfMass 0 0.041 0
+			  }
                           maxForce 10000
 
                         }
@@ -322,13 +357,15 @@ Robot {
                           Box {size 0.096 0.096 0.096}
                         ]
                       }
-                      physics Physics {}
+                      physics Physics { #l_larm
+			 mass 2.148
+			 centerOfMass -0.003 0.099 -0.014
+		      }
                       maxForce 10000
                     }
                     DEF l_shoulder_yaw Transform {
                       children [
  	 	         l_uarm{}
-
                       ]
                     }
                   ]
@@ -339,7 +376,10 @@ Robot {
                       Box {size 0.096 0.096 0.096}
                     ]
                   }
-                  physics Physics {}
+                  physics Physics {	#l_uarm
+		    mass 1.881
+		    centerOfMass 0.007 0.114 0.008
+		  }
                   maxForce 10000
                 }
                 DEF l_shoulder_roll Transform {
@@ -355,7 +395,9 @@ Robot {
                   Box {size 0.096 0.096 0.096}
                 ]
               }
-              physics Physics {
+              physics Physics { #l_scap
+	        mass 2.767
+	        centerOfMass -0.002 0.108 0
               }
               maxForce 10000
 
@@ -371,12 +413,16 @@ Robot {
               Box {size 0.042 0.042 0.042}
             ]
           }
-          physics Physics {}
+          physics Physics { #l_clav
+	    mass 2.369
+	    centerOfMass 0.014 0.058 0.029
+	  }
           maxForce 10000
 
         }
         DEF neck_yaw Servo {
-          translation 0.16555 0 0.50823 # ATLAS
+#           translation 0.16555 0 0.50823 # ATLAS 
+          translation 0.01 0 0.43 # This puts head to the utorso
           rotation 0 0 1 0
           children [
             DEF head_pitch Servo {
@@ -403,10 +449,11 @@ Robot {
                 ]
               }
             }
+
             DEF neck_yaw Transform {
               rotation 1 0 0 1.57
               children [
-                NECK_YAW{}
+#               NECK_YAW{}
               ]
             }
           ]
@@ -416,6 +463,7 @@ Robot {
               Box {size 0.05 0.05 0.05}
             ]
           }
+
         }
 #       hokuyo_thor {}    
         DEF upper_torso_yaw Transform {
@@ -431,7 +479,10 @@ Robot {
           Box {size 0.06 0.276 0.171}
         ]
       }
-      physics Physics {}
+      physics Physics { #Utorso
+	mass 18.484
+	centerOfMass 0.02 -0.001 0.211 #ATLAS value
+      }
       maxForce 10000
 
     }
@@ -440,15 +491,14 @@ Robot {
       rotation 0 0 1 0
       children [
         DEF l_hip_roll Servo {
-          translation 0.0025 0 0
+          translation 0 0 0
           rotation 1 0 0 0
           children [
             DEF l_hip_pitch Servo {
-#              translation 0 -0.0015 0
               translation 0.05 0 -0.05
               children [
                 DEF l_knee_pitch Servo {
-                  translation 0 0 -0.374 #Atlas
+                  translation -0.05 0 -0.374 #Atlas
                   children [
                     DEF l_ankle_pitch Servo {
                       translation 0 0 -0.422 #Atlas
@@ -469,16 +519,16 @@ Robot {
                                Box {size 0.26 0.125 0.0686897}
                             ]
                           }
-                          physics Physics {
+                          physics Physics { #ATLAS l_foot
                             density -1
-                            mass 0.589
-                            centerOfMass 0.003 0 -0.029
+                            mass 1.634
+                            centerOfMass 0.027 0 -0.067
                           }
                           maxForce 10000
                         }
                         DEF l_ankle_pitch Transform {
                           children [
-                            ANKLE_PITCH{}
+                            l_talus{}
                           ]
                         }
                       ]
@@ -486,9 +536,10 @@ Robot {
                       boundingObject Box {
                         size 0.067 0.067 0.01
                       }
-                      physics Physics {
+                      physics Physics {#atlas l_talus
                         density -1
-                        mass 0.01
+                        mass 0.1
+			centerOfMass 0 0 0
                       }
                       maxForce 10000
                     }
@@ -505,15 +556,14 @@ Robot {
                       Box {size 0.045 0.055 0.42}
                     ]
                   }
-                  physics Physics {
+                  physics Physics { #ATLAS lleg
                     density -1
-                    mass 2.239
-                    centerOfMass -0.025 0 -0.126
+                    mass 4.367 
+                    centerOfMass 0.001 0 -0.187
                   }
                   maxForce 10000
                 }
                 DEF l_hip_pitch Transform {
-		  rotation 0 1 0 -0.15 #hack
                   children [
 		     l_uleg{}
                   ]
@@ -526,10 +576,10 @@ Robot {
                   Box {size 0.045 0.074 0.419}
                 ]
               }
-              physics Physics {
+              physics Physics { #atlas uleg
                 density -1
-                mass 2.214
-                centerOfMass -0.009 0.016 -0.159
+                mass 7.34 
+                centerOfMass 0 0 -0.21
               }
               maxForce 10000
             }
@@ -543,9 +593,10 @@ Robot {
           boundingObject Box {
             size 0.083 0.083 0.01
           }
-          physics Physics {
+          physics Physics { #atlas lglut
             density -1
-            mass 0.01
+            mass 0.69
+	    centerOfMass 0.0133341 0.0170484 -0.0312052
           }
           maxForce 10000
         }
@@ -559,9 +610,10 @@ Robot {
       boundingObject Box {
         size 0.05 0.05 0.05
       }
-      physics Physics {
+      physics Physics { #atlas uglut
         density -1
-        mass 0.01
+        mass 0.5166
+	centerOfMass 0.00529262 -0.00344732 0.00313
       }
       maxForce 10000
     }
@@ -570,14 +622,14 @@ Robot {
       rotation 0 0 1 0
       children [
         DEF r_hip_roll Servo {
-          translation 0.0025 0 0
+          translation 0 0 0
           rotation 1 0 0 0
           children [
             DEF r_hip_pitch Servo {
               translation 0.05 0 -0.05 #ATLAS
               children [
                 DEF r_knee_pitch Servo {
-                  translation 0 0 -0.374 #Atlas value
+                  translation -0.05 0 -0.374 #Atlas value
                   children [
                     DEF r_ankle_pitch Servo {
                       translation 0 0 -0.422 #Atlas value
@@ -598,25 +650,25 @@ Robot {
                                Box {size 0.26 0.125 0.0686897}
                             ]
                           }
-                          physics Physics {
-                            density -1
-                            mass 0.589
-                            centerOfMass 0.003 0 -0.029
+                          physics Physics {#ATLAS r_foot
+                            density -1 
+                            mass 1.634
+                            centerOfMass 0.027 0 -0.067
                           }
                           maxForce 10000
                         }
                         DEF r_ankle_pitch Transform {
-                          rotation 1 0 0 1.57
                           children [
-                            ANKLE_PITCH{}
+                            r_talus{}
                           ]
                         }
                       ]
                       name "r_ankle_pitch"
                       boundingObject Box {size 0.067 0.067 0.01}
-                      physics Physics {
+                      physics Physics {#ATLAS r_talus
                         density -1
-                        mass 0.01
+                        mass 0.1
+			centerOfMass 0 0 0
                       }
                       maxForce 10000
                     }
@@ -634,15 +686,16 @@ Robot {
                       Box {size 0.045 0.055 0.42}
                     ]
                   }
-                  physics Physics {
+               
+                 physics Physics { #ATLAS r_lleg
                     density -1
-                    mass 2.239
-                    centerOfMass -0.025 0 -0.126
+                    mass 4.367 
+                    centerOfMass 0.001 0 -0.187
                   }
                   maxForce 10000
+
                 }
                 DEF r_hip_pitch Transform {
-             	  rotation 0 1 0 -0.15 #hack
                   children [
 		     r_uleg{}
                   ]
@@ -655,10 +708,10 @@ Robot {
                   Box {size 0.045 0.074 0.419}
                 ]
               }
-              physics Physics {
+              physics Physics { #atlas r_uleg
                 density -1
-                mass 2.214
-                centerOfMass -0.009 -0.016 -0.159
+                mass 7.34
+                centerOfMass 0 0 -0.21
               }
               maxForce 10000
             }
@@ -670,9 +723,10 @@ Robot {
           ]
           name "r_hip_roll"
           boundingObject Box {size 0.083 0.083 0.01}
-          physics Physics {
+          physics Physics { #atlas lglut
             density -1
-            mass 0.01
+            mass 0.69
+	    centerOfMass 0.0133341 -0.0170484 -0.0312052
           }
           maxForce 10000
         }
@@ -686,9 +740,10 @@ Robot {
       boundingObject Box {
         size 0.05 0.05 0.05
       }
-      physics Physics {
+      physics Physics { #atlas uglut
         density -1
-        mass 0.01
+        mass 0.5166
+	centerOfMass 0.00529262 0.00344732 0.00313
       }
       maxForce 10000
     }
@@ -696,6 +751,12 @@ Robot {
       translation 0 0 0
       children [
 	 pelvis{}
+	 Transform {
+           translation -0.0125 0 0
+           children[
+              ltorso{}
+	   ]
+         }
       ]
     }
     DEF zero GPS {
@@ -755,10 +816,10 @@ Robot {
       }
     ]
   }
-  physics Physics {
+  physics Physics {#Pelvis 
     density -1
-    mass 9.846
-    centerOfMass -0.015 0 0.427
+    mass 14.2529
+    centerOfMass 0.0111 0 0.0271
   }
   controller "void"
 }

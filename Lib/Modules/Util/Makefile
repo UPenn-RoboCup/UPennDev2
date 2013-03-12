@@ -8,7 +8,7 @@ endif
 
 export CTCDIR
 
-all: carray cutil unix shm zlib
+all: carray cutil unix shm zlib jpeg
 
 carray::
 	cd CArray && make && cd $(CWD)
@@ -25,9 +25,13 @@ shm::
 zlib::
 	cd Z && make && cd $(CWD)
 
+jpeg::
+	cd Jpeg && make && cd $(CWD)
+
 clean::
 	cd CArray && make clean && cd $(CWD)
 	cd CUtil && make clean && cd $(CWD)
 	cd Unix && make clean && cd $(CWD)
 	cd Shm && make clean && cd $(CWD)
 	cd Z && make clean && cd $(CWD)
+	cd Jpeg && make clean && cd $(CWD)

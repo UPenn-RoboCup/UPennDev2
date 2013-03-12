@@ -108,8 +108,13 @@ walk.footX= 0.01;
 walk.footY = 0.09;
 walk.supportX = 0;
 walk.supportY = 0.0;
-walk.qLArm = math.pi/180*vector.new({110, 12, -0, -40,0,0});
-walk.qRArm = math.pi/180*vector.new({110, -12, 0, -40,0,0});
+--walk.qLArm = math.pi/180*vector.new({110, 12, -0, -40,0,0});
+--walk.qRArm = math.pi/180*vector.new({110, -12, 0, -40,0,0});
+
+walk.qLArm = math.pi/180*vector.new({110, 0, -0, -40,0,0});
+walk.qRArm = math.pi/180*vector.new({110, -0, 0, -40,0,0});
+
+
 walk.qLArmKick = math.pi/180*vector.new({110, 12, -0, -40,0,0});
 walk.qRArmKick = math.pi/180*vector.new({110, -12, 0, -40,0,0});
 

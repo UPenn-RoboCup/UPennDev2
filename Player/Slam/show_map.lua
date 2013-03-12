@@ -46,8 +46,10 @@ end
 window = createWindow()
 window:setWindowTitle("THOR SLAM Visualizer")
 window:setWindowIcon(QIcon("favicon.ico"));
-window.width = 640
-window.height = 480
+-- iphone 4s size
+-- http://en.wikipedia.org/wiki/List_of_common_resolutions
+window.width = 960
+window.height = 640
 centralizeWindow(window)
 window:show()
 app.exec()

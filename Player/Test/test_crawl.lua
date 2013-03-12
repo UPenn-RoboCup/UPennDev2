@@ -313,9 +313,6 @@ function motion_arms_ik()
       trRArmOld[1],trRArmOld[2],trRArmOld[3],trRArmOld[4],trRArmOld[5],trRArmOld[6]=
       trRArm[1],trRArm[2],trRArm[3],trRArm[4],trRArm[5],trRArm[6];
 
-
-
-
       pTorso = 
         Transform.transform6D(
 	  vector.new({walk.supportX,0,walk.bodyHeight,0,walk.bodyTilt,0})
@@ -324,15 +321,6 @@ function motion_arms_ik()
       LH_global = pTorso * Transform.transform6D(trLArm);
       RH_global = pTorso * Transform.transform6D(trRArm);
  
-
-
-
-
-
-
-
-
-
   else
 
     is_moving=0;

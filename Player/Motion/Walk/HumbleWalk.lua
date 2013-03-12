@@ -114,7 +114,7 @@ ph0=0;ph=0;phSingle = 0;
 stopRequest = 2;
 canWalkKick = 0; --Can we do walkkick with this walk code?
 initial_step=2;
-
+upper_body_overridden = 0;
 
 ----------------------------------------------------------
 -- End initialization 
@@ -538,7 +538,6 @@ function stance_reset() --standup/sitdown/falldown handling
   iStep = 0;
   current_step_type=0;
   motion_playing = 0;
-  upper_body_overridden=0;
   uLRFootOffset = vector.new({0,footY,0});
 end
 

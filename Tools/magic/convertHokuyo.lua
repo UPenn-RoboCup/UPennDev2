@@ -18,10 +18,14 @@ for i = 1, 1 do
   local fileName = filePath..'Hokuyo2'..i..'.mat'
   local content = mat.load(fileName, true)
 
-  for k, v in pairs(content[1].Hokuyo0) do
-    print(k, v)
-  end
   local Hokuyo = content[1].Hokuyo0
+  local    type = Hokuyo.type 
+  local    pose = Hokuyo.pose 
+  local     res = Hokuyo.res 
+  local  ranges = Hokuyo.ranges
+  local  angles = Hokuyo.angles
+  local      ts = Hokuyo.ts
+  local    info = Hokuyo.info 
 
 --  local counts = content[1].Hokuyos.counts['']
 --  local ts = content[1].Hokuyos.ts['']

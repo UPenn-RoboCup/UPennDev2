@@ -362,25 +362,11 @@ function parsemiSINGLE(data, num)
   if num == 1 then return n[1] else return n end
 end
 
-function parsemiMATRIX(data)
-  local matrix = {}
-  local tag = data:sub(1, tagSize)
-  local dataT, dataSize, realTagSize = parseTag(tag)
-  if debug then  print('Matrix data type:'..matType(dataT)..' data size:'..dataSize) end
-  local ptr = realTagSize
-  -- Array flags
-  local AFSize = 2 * sizeOfDataType
-  local AF = data:sub(ptr + 1, ptr+AFSize)
-  ptr = ptr + AFSize
-  local AFTag = AF:sub(1, tagSize)
-  local AFDataT, AFDataSize, realTagSize = parseTag(AFTag)
-  local AFBody = AF:sub(realTagSize + 1, realTagSize + AFDataSize)
---  print(AFBody:byte(1, #AFBody))
-  local ArrayClass = AFBody:byte(1)
-  if debug then  print('Matrix Class:'..matType(ArrayClass)) end
-  -- TODO parse flags for complex, global, logical
+function parsemxNUMERIC_CLASS(data)
+  -- generic parser
   -- Dimension array
-  local DimTag = data:sub(ptr + 1, ptr + tagSize) 
+  local ptr = 0
+  local DimTag = data:sub( 1, tagSize) 
   local DimType, DimSize, realTagSize = parseTag(DimTag)
   ptr = ptr + realTagSize
   local DimByteSize = typeByteSize(DimType)
@@ -415,12 +401,154 @@ function parsemiMATRIX(data)
   end
   local PrBody = data:sub(ptr + 1, ptr + PrDataSize * typeByteSize(PrDataT))
   if debug then  print('Pr data type:'..matType(PrDataT), 'data size:'..PrDataSize, 'data name:'..AN) end
-  matrix[AN] = _G['parse'..matType(PrDataT)](PrBody, PrDataSize / typeByteSize(PrDataT)) 
+  local content = _G['parse'..matType(PrDataT)](PrBody, PrDataSize / typeByteSize(PrDataT)) 
+  
+--  if type(matrix[AN]) == 'string' then print(matrix[AN])
+--  --  elseif type(matrix[AN]) == 'table' then util.ptable(matrix[AN])
+--  end
 
-  if type(matrix[AN]) == 'string' then print(matrix[AN])
---  elseif type(matrix[AN]) == 'table' then util.ptable(matrix[AN])
+  return AN, content
+end
+
+function parsemxSTRUCT_CLASS(data)
+  local ptr = 0
+  local DimTag = data:sub( 1, tagSize) 
+  local DimType, DimSize, realTagSize = parseTag(DimTag)
+  ptr = ptr + realTagSize
+  local DimByteSize = typeByteSize(DimType)
+  local numberOfDims = DimSize / DimByteSize
+  if numberOfDims % 2 == 1 then numberOfDims = numberOfDims + 1 end
+  local DimBody = data:sub(ptr + 1, 
+                  ptr + numberOfDims * DimByteSize)
+  ptr = ptr + numberOfDims * DimByteSize
+  local Dim = _G['parse'..matType(DimType)](DimBody, numberOfDims)
+  -- array name
+  local ANTag = data:sub(ptr + 1, ptr + tagSize)
+  local ANDataT, ANDataSize, realTagSize = parseTag(ANTag)
+  ptr = ptr + realTagSize
+  local padding = 0
+  if (ptr + ANDataSize * typeByteSize(ANDataT)) % 8 ~= 0 then
+    -- padding
+    local roundint = math.ceil((ptr + ANDataSize * typeByteSize(ANDataT)) / 8)
+    padding = roundint * 8 - ptr - ANDataSize * typeByteSize(ANDataT)
   end
+  local ANBody = data:sub(ptr + 1, ptr + ANDataSize * typeByteSize(ANDataT))
+  ptr = ptr + ANDataSize * typeByteSize(ANDataT) + padding
+  local AN = _G['parse'..matType(ANDataT)](ANBody, ANDataSize, 'string')
+  -- FieldNameLength 
+  local FieldNameLengthTag = data:sub(ptr + 1, ptr + tagSize)
+  local FieldNameLengthType, FieldNameLengthSize, realTagSize = parseTag(FieldNameLengthTag)
+  if debug then print(matType(FieldNameLengthType), FieldNameLengthSize, realTagSize) end
+  ptr = ptr + realTagSize
+  local FieldNameLengthBody = data:sub(ptr + 1, ptr + FieldNameLengthSize)
+  local FieldNameLength = _G['parse'..matType(FieldNameLengthType)](FieldNameLengthBody, 1)
+  ptr = ptr + FieldNameLengthSize
+  -- Field Name
+  local FieldNamesTag = data:sub(ptr + 1, ptr + tagSize)
+  local FieldNamesType, FieldNamesSize, realTagSize = parseTag(FieldNamesTag)
+  print(matType(FieldNamesType), FieldNamesSize, realTagSize)
+  ptr = ptr + realTagSize
 
+  if (ptr + FieldNamesSize * typeByteSize(FieldNamesType)) % 8 ~= 0 then
+    -- padding
+    local roundint = math.ceil((ptr + FieldNamesSize * typeByteSize(FieldNamesType)) / 8)
+    padding = roundint * 8 - ptr - FieldNamesSize * typeByteSize(FieldNamesType)
+  end
+  local FieldNamesBody = data:sub(ptr + 1, 
+                  ptr + FieldNamesSize * typeByteSize(FieldNamesType))
+  local nElements = FieldNamesSize / FieldNameLength
+  ptr = ptr + FieldNamesSize * typeByteSize(FieldNamesType) + padding
+  local FieldNames = {}
+  for i = 1, nElements do
+    FieldNames[i] = _G['parse'..matType(FieldNamesType)](FieldNamesBody:sub(1 + 
+            FieldNameLength * (i-1), FieldNameLength * i), FieldNameLength, 'string')
+  end
+  local padding = 0
+  if (ptr + FieldNamesSize * typeByteSize(FieldNamesType)) % 8 ~= 0 then
+    -- padding
+    local roundint = math.ceil((ptr + FieldNamesSize * typeByteSize(FieldNamesType)) / 8)
+    padding = roundint * 8 - ptr - FieldNamesSize * typeByteSize(FieldNamesType)
+  end
+--  ptr = ptr + FieldNamesSize * typeByteSize(FieldNamesType) + padding
+
+  local content = {}
+  for i = 1, nElements do
+    print(FieldNames[i])
+    local CellTag = data:sub(ptr + 1, ptr + tagSize) 
+    local CellType, CellSize, realTagSize = parseTag(CellTag)
+    content[FieldNames[i]] = _G['parse'..matType(CellType)](data:sub(ptr + 1, ptr + CellSize + realTagSize))
+    ptr = ptr + realTagSize
+    print(matType(CellType), CellSize, realTagSize)
+    ptr = ptr + CellSize
+  end
+ 
+
+  return AN, content
+end
+
+function parsemxCELL_CLASS(data)
+end
+
+function parsemxOBJECT_CLASS(data)
+end
+
+function parsemxCHAR_CLASS(data)
+end
+
+function parsemxSPARSE_CLASS(data)
+end
+
+function parsemxDOUBLE_CLASS(data)
+  return parsemxNUMERIC_CLASS(data)
+end
+
+function parsemxSINGLE_CLASS(data)
+  return parsemxNUMERIC_CLASS(data)
+end
+
+function parsemxINT8_CLASS(data)
+  return parsemxNUMERIC_CLASS(data)
+end
+
+function parsemxUINT8_CLASS(data)
+  return parsemxNUMERIC_CLASS(data)
+end
+
+function parsemxINT16_CLASS(data)
+  return parsemxNUMERIC_CLASS(data)
+end
+
+function parsemxUINT16_CLASS(data)
+  return parsemxNUMERIC_CLASS(data)
+end
+
+function parsemxINT32_CLASS(data)
+  return parsemxNUMERIC_CLASS(data)
+end
+
+function parsemxUINT32_CLASS(data)
+  return parsemxNUMERIC_CLASS(data)
+end
+
+function parsemiMATRIX(data)
+  local matrix = {}
+  local tag = data:sub(1, tagSize)
+  local dataT, dataSize, realTagSize = parseTag(tag)
+  if debug then  print('Matrix data type:'..matType(dataT)..' data size:'..dataSize) end
+  local ptr = realTagSize
+  -- Array flags
+  local AFSize = 2 * sizeOfDataType
+  local AF = data:sub(ptr + 1, ptr+AFSize)
+  ptr = ptr + AFSize
+  local AFTag = AF:sub(1, tagSize)
+  local AFDataT, AFDataSize, realTagSize = parseTag(AFTag)
+  local AFBody = AF:sub(realTagSize + 1, realTagSize + AFDataSize)
+--  print(AFBody:byte(1, #AFBody))
+  local ArrayClass = AFBody:byte(1)
+  if debug then  print('Matrix Class:'..matArrayType(ArrayClass)) end
+  -- TODO parse flags for complex, global, logical
+  name, content = _G['parse'..matArrayType(ArrayClass)](data:sub(ptr+1, #data))
+  matrix[name] = content
   return matrix
 end
 

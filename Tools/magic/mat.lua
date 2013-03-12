@@ -1,4 +1,5 @@
 require 'include'
+require 'torch-load'
 
 local ffi = require 'ffi'
 --local Z = require 'Z'
@@ -401,11 +402,20 @@ function parsemxNUMERIC_CLASS(data)
   end
   local PrBody = data:sub(ptr + 1, ptr + PrDataSize * typeByteSize(PrDataT))
   if debug then  print('Pr data type:'..matType(PrDataT), 'data size:'..PrDataSize, 'data name:'..AN) end
-  local content = _G['parse'..matType(PrDataT)](PrBody, PrDataSize / typeByteSize(PrDataT)) 
-  
---  if type(matrix[AN]) == 'string' then print(matrix[AN])
---  --  elseif type(matrix[AN]) == 'table' then util.ptable(matrix[AN])
---  end
+  local nums = _G['parse'..matType(PrDataT)](PrBody, PrDataSize / typeByteSize(PrDataT)) 
+  -- reorganize to torch 
+  -- TODO general dimensions
+
+  local content = torch.Tensor(#nums, 1)
+  for i = 1, #nums do
+    content[i][1] = nums[i]
+  end
+  if #Dim == 2 then
+    content:resize(Dim[2], Dim[1])
+  elseif #Dim == 3 then
+    content:resize(Dim[3], Dim[2], Dim[1])
+  end
+  content = content:t()
 
   return AN, content
 end
@@ -446,7 +456,7 @@ function parsemxSTRUCT_CLASS(data)
   -- Field Name
   local FieldNamesTag = data:sub(ptr + 1, ptr + tagSize)
   local FieldNamesType, FieldNamesSize, realTagSize = parseTag(FieldNamesTag)
-  print(matType(FieldNamesType), FieldNamesSize, realTagSize)
+  if debug then print(matType(FieldNamesType), FieldNamesSize, realTagSize) end
   ptr = ptr + realTagSize
 
   if (ptr + FieldNamesSize * typeByteSize(FieldNamesType)) % 8 ~= 0 then
@@ -473,12 +483,12 @@ function parsemxSTRUCT_CLASS(data)
 
   local content = {}
   for i = 1, nElements do
-    print(FieldNames[i])
+    if debug then print(FieldNames[i]) end
     local CellTag = data:sub(ptr + 1, ptr + tagSize) 
     local CellType, CellSize, realTagSize = parseTag(CellTag)
     content[FieldNames[i]] = _G['parse'..matType(CellType)](data:sub(ptr + 1, ptr + CellSize + realTagSize))
     ptr = ptr + realTagSize
-    print(matType(CellType), CellSize, realTagSize)
+    if debug then print(matType(CellType), CellSize, realTagSize) end
     ptr = ptr + CellSize
   end
  

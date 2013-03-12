@@ -182,7 +182,7 @@ setup_nao: nao setup_util setup_image setup_comm
 	rm -f $(NAODEPLUA51DIR)/*;
 	@echo "\n"
 
-setup_naov4: naov4 setup_util setup_image setup_comm
+setup_naov4: naov4 setup_util setup_image setup_comm naoqi
 	@echo "Setting up Nao V4 Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
 	find $(NAOV4DIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
@@ -190,6 +190,7 @@ setup_naov4: naov4 setup_util setup_image setup_comm
 	cd $(PLAYERDIR)/Config && ln -s Config_NaoV4.lua Config.lua && cd $(CWD)
 #	find $(UTILDIR) $(REGEX) -exec cp -v {} $(NAODEPLUA51DIR) \;
 	rm -f $(NAODEPLUA51DIR)/*;
+	#@cd $(NAOQIDIR) && make && cd $(CWD)
 	@echo "\n"
 
 setup_webots_nao: webots_nao setup_util setup_image setup_webots

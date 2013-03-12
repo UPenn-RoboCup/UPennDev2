@@ -15,7 +15,6 @@ extern "C"
 }
 #endif
 
-#include <unistd.h>
 #include <stdint.h>
 #include <vector>
 #include <string>
@@ -30,7 +29,7 @@ static void error_exit(j_common_ptr cinfo)
 }
 
 void init_destination(j_compress_ptr cinfo) {
-//  const unsigned int size = 65536;
+//  const unsigned int size = 65536; //UDP friendly size
   const unsigned int size = 2*65536;
   destBuf.resize(size);
   cinfo->dest->next_output_byte = &(destBuf[0]);
@@ -119,7 +118,6 @@ int CompressData(const uint8_t* prRGB, int width, int height) {
     const uint8_t *p = prRGB + ch*width*cinfo.next_scanline;
     int irow = 0;
     for (int i = 0; i < width; i++) {
-#define BGR
 #ifdef BGR
       row[irow++] = *(p+i*ch+2);
       row[irow++] = *(p+i*ch+1);

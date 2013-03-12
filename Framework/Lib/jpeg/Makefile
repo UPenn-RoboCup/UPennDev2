@@ -11,7 +11,7 @@ all: cjpeg
 	$(CC) $(CFLAGS) $(INCLUDES) -o $@ -c $<
 
 cjpeg: cjpeg.o
-	$(LD) $(LDFLAGS) -ljpeg -o cjpeg.$(SHLIBEXT) $(LIBOPTS) $^ $(LIB_DIR)
+	$(LD) $(LDFLAGS) -o cjpeg.$(SHLIBEXT) $(LIBOPTS) $^ $(LIB_DIR) -ljpeg 
 
 clean:
 	rm -f *.$(SHLIBEXT) *.o

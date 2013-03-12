@@ -47,8 +47,8 @@ function entry()
   Body.set_head_command({0,0});
   Body.set_head_hardness(.5);
 
-  Body.set_larm_command(qLArm);
-  Body.set_rarm_command(qRArm);
+--  Body.set_larm_command(qLArm);
+--  Body.set_rarm_command(qRArm);
 
 --  Body.set_larm_hardness(.1);
 --  Body.set_rarm_hardness(.1);

@@ -64,6 +64,24 @@ zmpstep.stepHeight = 0.10;
 zmpstep.phSingle={0.1,0.9};
 zmpstep.hipRollCompensation = 3*math.pi/180;
 
+
+
+
+
+--zmpstep.bodyHeight = 1.10; 
+
+
+
+
+
+
+
+
+
+
+
+
+
 -----------------------------------------
 
 -- Walk Parameters
@@ -90,8 +108,13 @@ walk.footX= 0.01;
 walk.footY = 0.09;
 walk.supportX = 0;
 walk.supportY = 0.0;
-walk.qLArm = math.pi/180*vector.new({110, 12, -0, -40,0,0});
-walk.qRArm = math.pi/180*vector.new({110, -12, 0, -40,0,0});
+--walk.qLArm = math.pi/180*vector.new({110, 12, -0, -40,0,0});
+--walk.qRArm = math.pi/180*vector.new({110, -12, 0, -40,0,0});
+
+walk.qLArm = math.pi/180*vector.new({110, 0, -0, -40,0,0});
+walk.qRArm = math.pi/180*vector.new({110, -0, 0, -40,0,0});
+
+
 walk.qLArmKick = math.pi/180*vector.new({110, 12, -0, -40,0,0});
 walk.qRArmKick = math.pi/180*vector.new({110, -12, 0, -40,0,0});
 
@@ -187,4 +210,3 @@ walk.velLimitY={-.20,.20};
 walk.velLimitA={-.3,.3};
 walk.velDelta={0.15,0.10,0.3} 
 walk.velXHigh = 0.30;
-

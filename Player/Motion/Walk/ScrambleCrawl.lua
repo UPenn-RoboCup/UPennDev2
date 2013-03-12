@@ -171,7 +171,11 @@ function update()
     uTorso1[2], uTorso2[2]);
 
   end
+
+
+
   xFoot,zFoot = foot_phase(ph);
+
   advance_limbs();
   advance_torso();
   motion_limbs();
@@ -317,6 +321,9 @@ function motion_limbs()
   qRArm = Kinematics.inverse_r_arm(pRArmTorso);
   qLegs = Kinematics.inverse_legs(pLLeg, pRLeg, pTorsoActual);
 
+  --Problem: hipPitch sometimes goes below -PI
+  if qLegs[3]>0 then qLegs[3] = qLegs[3] - 2*math.pi;end
+  if qLegs[9]>0 then qLegs[9] = qLegs[9] - 2*math.pi;end
 
 --Use wrist transform instead----------------------------------
   --TODO: arm NaN at kinematics 

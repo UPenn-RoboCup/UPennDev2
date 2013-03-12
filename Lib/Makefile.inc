@@ -75,6 +75,7 @@ WEBOTSHUBODIR= Platform/WebotsHubo
 WEBOTSCHARLIDIR= Platform/WebotsCharli
 WEBOTSSAFFIRDIR= Platform/WebotsSaffir
 WEBOTSTHOROPDIR= Platform/WebotsTHOROP
+WEBOTSATLASDIR= Platform/WebotsAtlas
 VISIONTESTDIR = Platform/VisionTest
 HPDIR= Platform/HP2
 OPDIR= Platform/OP

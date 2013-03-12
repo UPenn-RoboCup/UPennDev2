@@ -32,6 +32,12 @@ require 'Transform'
 require 'Team' --To receive the GPS coordinates from objects
 require 'wcm'
 
+if (string.find(Config.platform.name,'THOROP')) then
+  thorop=true;
+else
+  thorop=false;
+end
+
 
 --Arm target transforms
 
@@ -95,76 +101,103 @@ end
 
 
 
-arm_initing = 1;
-arm_init_stage = 0;
-arm_init_t0 = 0;
-arm_stage_duration={2.0,1.0,1.0,1.0};
-is_moving = 0;
+--THOR VALUES
+arm_init_motion_thorop={
+  {
+    vector.new({90,90,0,0,0,0})*math.pi/180,
+    vector.new({90,-90,0,0,0,0})*math.pi/180,
+    1.0,
+  },
+  {
+    vector.new({0,90,90,0,-90,0})*math.pi/180,
+    vector.new({0,-90,-90,0,90,0})*math.pi/180,
+    1.0,
+  },
+  {
+--    vector.new({0,45,90,-90,-90,-45})*math.pi/180,
+--    vector.new({0,-45,-90,-90,90,45})*math.pi/180,
+
+    vector.new({0,90,90,-90,-90,-90})*math.pi/180,
+    vector.new({0,-90,-90,-90,90,90})*math.pi/180,
+
+    1.0,
+  },
+}
+
+
+arm_init_motion_atlas={
+  {
+    vector.new({90,30,-90,0, -90,0})*math.pi/180,
+    vector.new({90,-30,90,0, -90,0})*math.pi/180,
+    0.2,
+  },
+  {
+    vector.new({90,30,0,0, -60,0})*math.pi/180,
+    vector.new({90,-30,0,0, -60,0})*math.pi/180,
+    1.0,
+  },
+  {
+    vector.new({90,0,0,-90,-60,-90})*math.pi/180,
+    vector.new({90,0,0,-90,60,90})*math.pi/180,
+    1.0,
+  },
+
+}
+
+if thorop then
+  arm_init_motion = arm_init_motion_thorop;
+else
+  arm_init_motion = arm_init_motion_atlas;
+end
+
+arm_init_count = 1; --start arm initing
+arm_init_t0 = Body.get_time();
+qLArm0=vector.new(Body.get_larm_position());
+qRArm0=vector.new(Body.get_rarm_position());
 
 function init_arms()
+  walk.upper_body_override_on();
+  Body.set_head_command({0,30*math.pi/180});
+
   t = Body.get_time();
-  if arm_initing>0 then     
-    walk.upper_body_override_on();
-    current_duration = arm_stage_duration[arm_init_stage+1];
-    if arm_init_t0+current_duration< t then
-      arm_init_stage = arm_init_stage+1;
-      arm_init_t0 = t;
-    end
-    ph = (t-arm_init_t0) /current_duration;
-    if arm_init_stage==0 then
-      qLArm =  {math.pi/2, math.pi/2 * ph, 0, 0,0,0};
-      qRArm =  {math.pi/2, -math.pi/2 * ph, 0, 0,0,0};      
-    elseif arm_init_stage==1 then
+  if arm_init_count==0 then return;
+  elseif arm_init_count>#arm_init_motion then
 
-      qLArm =  {(1-ph)*math.pi/2, math.pi/2 , ph*math.pi/2,  
-			0,-math.pi/2*ph,0};
-      qRArm =  {(1-ph)*math.pi/2, -math.pi/2,  -ph*math.pi/2, 
-			0,math.pi/2*ph,0};      
+    trLArmOld = Kinematics.l_arm_torso(qLArm);
+    trRArmOld = Kinematics.r_arm_torso(qRArm);
 
-    elseif arm_init_stage==2 then
-      qLArm =  {0, math.pi/2-math.pi/9*ph , math.pi/2,
-		 (math.pi/9-math.pi/2)*ph, -math.pi/2,-math.pi/2*ph};
-      qRArm =  {0, -math.pi/2+ math.pi/9*ph , -math.pi/2,
-		  (math.pi/9-math.pi/2)*ph, math.pi/2,math.pi/2*ph};      
-    else
-      qLArm =  {0, math.pi/2 -math.pi/9 ,math.pi/2,
-		 (math.pi/9-math.pi/2), -math.pi/2,-math.pi/2};
-      qRArm =  {0, -math.pi/2+ math.pi/9 ,-math.pi/2,
-		  (math.pi/9-math.pi/2), math.pi/2, math.pi/2};      
+    trLArm[1],trLArm[2],trLArm[3],trLArm[4],trLArm[5],trLArm[6]=
+        trLArmOld[1],trLArmOld[2],trLArmOld[3],trLArmOld[4],trLArmOld[5],trLArmOld[6];
 
-      arm_initing = 0;
-      trLArmOld = Kinematics.l_arm_torso(qLArm);
-      trRArmOld = Kinematics.r_arm_torso(qRArm);
-
-      --Lower the hand a bit to avoid singularity
-      trLArmOld[3]=trLArmOld[3] - 0.02; 
-      trRArmOld[3]=trRArmOld[3] - 0.02;
-
-      trLArmOld[6]= - math.pi/2; 
-      trRArmOld[6]= math.pi/2;
-
-      trLArm[1],trLArm[2],trLArm[3],trLArm[4],trLArm[5],trLArm[6]=
+    trLArm0[1],trLArm0[2],trLArm0[3],trLArm0[4],trLArm0[5],trLArm0[6]=
 	trLArmOld[1],trLArmOld[2],trLArmOld[3],trLArmOld[4],trLArmOld[5],trLArmOld[6];
 
-      trLArm0[1],trLArm0[2],trLArm0[3],trLArm0[4],trLArm0[5],trLArm0[6]=
-	trLArmOld[1],trLArmOld[2],trLArmOld[3],trLArmOld[4],trLArmOld[5],trLArmOld[6];
-
-      trRArm[1],trRArm[2],trRArm[3],trRArm[4],trRArm[5],trRArm[6]=
+    trRArm[1],trRArm[2],trRArm[3],trRArm[4],trRArm[5],trRArm[6]=
 	trRArmOld[1],trRArmOld[2],trRArmOld[3],trRArmOld[4],trRArmOld[5],trRArmOld[6];
 
-      trRArm0[1],trRArm0[2],trRArm0[3],trRArm0[4],trRArm0[5],trRArm0[6]=
+    trRArm0[1],trRArm0[2],trRArm0[3],trRArm0[4],trRArm0[5],trRArm0[6]=
 	trRArmOld[1],trRArmOld[2],trRArmOld[3],trRArmOld[4],trRArmOld[5],trRArmOld[6];
-
-    end   
-
-    Body.set_larm_command(qLArm);
-    Body.set_rarm_command(qRArm);
---    walk.upper_body_override(qLArm, qRArm, walk.bodyRot0);
-
+    arm_init_count = 0;
+    return;
   end
-  Body.set_head_command({0,60*math.pi/180});
 
+  current_duration = arm_init_motion[arm_init_count][3];
+  if t>arm_init_t0+current_duration then
+    qLArm0 = arm_init_motion[arm_init_count][1];
+    qRArm0 = arm_init_motion[arm_init_count][2];
+    arm_init_t0 = arm_init_t0 + current_duration;
+    arm_init_count = arm_init_count+1;
+    return;
+  end
+
+  ph = (t-arm_init_t0) /current_duration;
+
+  qLArm = (1-ph) * qLArm0 + ph * arm_init_motion[arm_init_count][1];
+  qRArm = (1-ph) * qRArm0 + ph * arm_init_motion[arm_init_count][2];
+  Body.set_larm_command(qLArm);
+  Body.set_rarm_command(qRArm);
 end
+
 
 
 turnAngle = 0;
@@ -173,8 +206,11 @@ radius = 0.2;
 
 function calculate_arm_position()
   --We assume that the wheel is centered at (0.3,0,1.2) and has radius 0.2
-
-   local handle_pos = {0.3,0,1.2};
+   if thorop then
+     handle_pos = {0.3,0,1.2};
+   else
+     handle_pos = {0.3,0,1.4}; --for atlas
+   end
 
    trGripL = Transform.eye()
        * Transform.trans(handle_pos[1],handle_pos[2],handle_pos[3])
@@ -184,7 +220,7 @@ function calculate_arm_position()
 
    trGripR = Transform.eye()
        * Transform.trans(handle_pos[1],handle_pos[2],handle_pos[3])
-       * Transform.rotX(turnAngle*rotating_direction)
+       * Transform.rotX(-turnAngle*rotating_direction)
        * Transform.trans(0,-radius,0)
        * Transform.rotZ(math.pi/2);
 
@@ -193,7 +229,6 @@ function calculate_arm_position()
 
    body_pos = {0.02,0,1.145};
    body_rpy = {0,0,0};
-
 
    trBody=Transform.eye()
    * Transform.trans(body_pos[1],body_pos[2],body_pos[3])
@@ -254,7 +289,7 @@ end
 
 
 rotating_direction = 1;
-
+is_moving = 0;
 
 function auto_move_arms()
   if is_moving==0 then return;
@@ -262,10 +297,6 @@ function auto_move_arms()
   
   velATurn = 1*math.pi/180;
   velR = 0.001;
-
-
-
-
 
 
   radius0 = 0.23; --Large wheel
@@ -277,9 +308,11 @@ function auto_move_arms()
   angle0 = 23*math.pi/180;
   angle1 = -23*math.pi/180;
 
-  nTurn = 8;
+  nTurn = 4;
 
   if is_moving == 2*nTurn+1 then --Finished rotating
+      Body.set_l_gripper_command({math.pi/4,-math.pi/4});
+      Body.set_r_gripper_command({math.pi/4,-math.pi/4});
     if radius < radius1 then radius = radius + velR; end    
     if turnAngle <0 then turnAngle = turnAngle + velATurn;end
     if radius>=radius1 and turnAngle>=0 then
@@ -291,7 +324,6 @@ function auto_move_arms()
   end
 
 
-
   if is_moving%2==1 then 
     if radius > radius0 then radius = radius - velR; 
     elseif turnAngle<angle0 then 
@@ -299,7 +331,7 @@ function auto_move_arms()
     else
       --Close gripper
       Body.set_l_gripper_command({0,0});
-      Body.set_r_gripper_command({0,0});
+      Body.set_r_gripper_command({math.pi/4,-math.pi/4});
       is_moving = is_moving + 1;
     end
   elseif is_moving%2==0 then
@@ -310,7 +342,8 @@ function auto_move_arms()
       is_moving = is_moving + 1;
       --Open gripper 
       Body.set_l_gripper_command({math.pi/4,-math.pi/4});
-      Body.set_r_gripper_command({math.pi/4,-math.pi/4});
+      Body.set_r_gripper_command({0,0});
+
     end
   end
 
@@ -344,7 +377,7 @@ end
 
 
 function motion_arms_ik()
-  if arm_initing>0 then return; end
+  if arm_init_count> 0 then return; end
   qLArmInv, dist1 = check_ik(trLArm, 1);
   qRArmInv, dist2 = check_ik(trRArm, 0);
 
@@ -539,8 +572,6 @@ local tDelay = 0.005 * 1E6; -- Loop every 5ms
 
 --calculate_arm_space();
 
-arm_initing = 1;
-arm_init_t0 = Body.get_time();
 
 
 while (true) do

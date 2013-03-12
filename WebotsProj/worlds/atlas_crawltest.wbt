@@ -8,8 +8,8 @@ WorldInfo {
   displayRefresh 3
 }
 Viewpoint {
-  orientation -0.8 0.6 0 0.4
-  position 2 2 6
+  orientation -0.18405 0.968503 0.167713 1.71497
+  position 3.02054 2.06913 -0.491292
 }
 Background {
   skyColor [
@@ -26,14 +26,10 @@ DirectionalLight {
   direction 0.5 -0.5 0.5
   intensity 0.5
 }
-
-DEF FLOOR MetricFloor{
+DEF FLOOR MetricFloor {
   color 0.95 0.95 0.95
-  locked TRUE
 }
-
 ATLAS {
-  translation 0 0.6 0
   rotation -1 0 0 1.57
   controller "darwin-op_team_0"
   controllerArgs "0 98"

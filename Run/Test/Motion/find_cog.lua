@@ -505,8 +505,11 @@ function state_machine(t)
       trial = trial + 1
       state_t = 0
       state = 4
-      if trial >= 11 then
-        run = false
+      if trial >= 1 then 
+        --run = false
+        print('exit trial')
+        state = 9
+        state_t = 0
       end
     end
   elseif (state == 4) then
@@ -535,6 +538,24 @@ function state_machine(t)
       state = 2
       state_t = 0
     end
+  elseif (state == 9) then
+    --go to original position
+    if state_t >=0.5 then
+      joint_offset = vector.copy(qt) 
+      q_goal = vector.zeros(12)
+      delta = q_goal - joint_offset 
+      print('state = 5')
+      state = 10
+      state_t = 0
+    end
+  elseif (state == 10) then
+    --move to final state
+    local percent = trajectory_percentage(1, 3, state_t)
+    qt = percent*delta + joint_offset
+    if (percent >= 1) then  
+      print('complete')
+      run = false
+    end
   end
 end
 
@@ -548,8 +569,8 @@ print('timestep', Platform.get_time_step())
 Proprioception.entry()
 dcm:set_joint_enable(0,'all')
 local set_values = dcm:get_joint_position('legs') --records original joint pos
-dcm:set_joint_stiffness(1, 'all') -- position control
---dcm:set_joint_stiffness(0, 'ankles')
+dcm:set_joint_position_p_gain(1, 'all') -- position control
+--dcm:set_joint_position_p_gain(0, 'ankles')
 --dcm:set_joint_damping(0, 'ankles')
 --dcm:set_joint_force({0, 0, 0, 0},'ankles')
 dcm:set_joint_enable(1, 'all')

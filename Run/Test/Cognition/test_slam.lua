@@ -20,9 +20,7 @@ local imu_buf = ffi.new('char[?]',imu_buf_sz)
 
 -- Initialize the map
 local omap = libSlam.OMAP.data
-omap:fill(127)
-local map_cdata = torch.data( omap )
-local map_cdata_sz = omap:storage():size() * ffi.sizeof('char')
+omap:fill(127) -- Uncertain
 print('Map size:',libSlam.MAPS.sizex,libSlam.MAPS.sizey)
 
 -- Setup IPC
@@ -86,6 +84,6 @@ while true do
 --    print('sending the map')
     local omap_s_ptr = omap:storage():pointer()
     local jomap = cjpeg.compress( omap_s_ptr, libSlam.MAPS.sizex, libSlam.MAPS.sizey,1 )
-omap_channel:send( jomap );
+    omap_channel:send( jomap );
   end
 end

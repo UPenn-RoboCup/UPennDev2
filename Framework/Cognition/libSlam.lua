@@ -1,8 +1,7 @@
 local ffi = require 'ffi'
 require('Slam');
-local Sensors = require 'Config_Sensors'
+local Sensors = require 'sensors/Config_Sensors'
 require 'torch'
-require 'tutil'
 require 'ffi/torchffi'
 torch.Tensor = torch.FloatTensor
 require 'unix'

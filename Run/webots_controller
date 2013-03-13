@@ -105,10 +105,11 @@ then
   echo Starting evaluate_step_rmp...
   cd Learn/step_rmp
   exec $LUA evaluate_step_rmp.lua
-elif [ "$1" = "slam_test" ]
+elif [ "$1" = "test_slam" ]
 then
-  echo Starting slam_test...
-  exec xterm -geometry 80x40 -fn 9x15 -hold -e $LUA slam_test.lua
+  echo Starting test_slam
+  cd Test/
+  exec xterm -geometry 80x40 -fn 9x15 -hold -e $LUA test_slam.lua
 else 
   echo Starting demo...
   exec xterm -fn 9x15 -hold -e $LUA demo.lua 

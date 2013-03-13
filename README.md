@@ -85,9 +85,6 @@ If you would like to test the ognition code, please install torch.
     make
     sudo make install
 
-When this is done, you have a "torch.so" module, which you can place in
-the Framework/Lib/torch directory.  Make this if it does not exist.
-
 Build Instructions
 ------------------
 

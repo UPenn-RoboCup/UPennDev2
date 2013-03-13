@@ -11,7 +11,7 @@ Dependencies
 
 #### For Ubuntu 12.04, install necessary dependencies using:
 
-    sudo apt-get install build-essential lua5.1 liblua5.1-0-dev luajit swig libboost1.46-dev mesa-common-dev gnuplot libpopt-dev libncurses5-dev luarocks libblas-dev liblapack-dev libfftw3-dev libhdf5-serial-dev
+    sudo apt-get install build-essential lua5.1 liblua5.1-0-dev luajit swig libboost1.46-dev mesa-common-dev gnuplot libpopt-dev libncurses5-dev luarocks libblas-dev liblapack-dev libfftw3-dev libhdf5-serial-dev libglfw-dev
 
     sudo luarocks install numlua lua-cmsgpack
 
@@ -77,8 +77,6 @@ Install Kinematics and Dynamics Library (KDL) using:
 #### Torch
 
 If you would like to test the ognition code, please install torch.
-
-    sudo apt-get install libblas-dev liblapack-dev
 
     git clone https://github.com/smcgill3/torch.git
     cd torch

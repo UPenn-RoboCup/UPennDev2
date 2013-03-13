@@ -1,7 +1,7 @@
 --------------------------------------------------------
 --One Legged Swing controller
 --------------------------------------------------------
-dofile('../include.lua')
+dofile('../../include.lua')
 
 require('dcm')
 require('pcm')

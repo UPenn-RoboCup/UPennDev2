@@ -1,4 +1,4 @@
-dofile('../include.lua')
+dofile('../../include.lua')
 local simple_ipc = require 'simple_ipc'
 require 'qtcore'
 require 'qtgui'

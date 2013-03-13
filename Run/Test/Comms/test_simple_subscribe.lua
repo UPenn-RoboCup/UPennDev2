@@ -1,4 +1,4 @@
-dofile('../include.lua')
+dofile('../../include.lua')
 local ffi = require 'ffi'
 local simple_ipc = require 'simple_ipc'
 inter_pc = true

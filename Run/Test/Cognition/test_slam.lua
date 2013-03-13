@@ -3,20 +3,19 @@ dofile('../../include.lua')
 -- Require the right modules
 local Sensors = require 'sensors/Config_Sensors'
 local simple_ipc = require 'simple_ipc'
-local ffi = require 'ffi'
-require 'ffi/torchffi'
 local libSlam = require 'libSlam'
-local mp = require 'ffi/msgpack'
+local mp = require 'MessagePack'
 require 'unix'
 require 'cjpeg'
+require 'cutil'
 
 -- Reference the sensors
 local ranges = Sensors.LIDAR0.ranges;
-local ranges_cdata = torch.data( ranges )
-local ranges_cdata_sz = ranges:storage():size() * ffi.sizeof('float')
-local timestamp_cdata = ffi.new('double[1]',0);
-local imu_buf_sz = 100;
-local imu_buf = ffi.new('char[?]',imu_buf_sz)
+--local ranges_cdata = torch.data( ranges )
+--local ranges_cdata_sz = ranges:storage():size() * ffi.sizeof('float')
+--local timestamp_cdata = ffi.new('double[1]',0);
+--local imu_buf_sz = 100;
+--local imu_buf = ffi.new('char[?]',imu_buf_sz)
 
 -- Initialize the map
 local omap = libSlam.OMAP.data
@@ -27,14 +26,11 @@ print('Map size:',libSlam.MAPS.sizex,libSlam.MAPS.sizey)
 local lidar_channel = simple_ipc.setup_subscriber('lidar');
 local lidar_callback = function()
   -- Receive ipc sensor payload
-  local nbytes, has_more = lidar_channel:receive(ranges_cdata, ranges_cdata_sz)
-  -- Receive sensor timestamp
-  if has_more then 
-    local nbytes, has_more = lidar_channel:receive(timestamp_cdata)
-    Sensors.LIDAR0.timestamp = timestamp_cdata[0]
-  else
-    print('No lidar timestamp received!')
-  end
+  local lidar_data, has_more = lidar_channel:receive()
+  local lidar_tbl = mp.unpack( lidar_data );
+  Sensors.LIDAR0.timestamp = lidar_tbl.t;
+  cutil.string2userdata( Sensors.LIDAR0.ranges:storage():pointer(), lidar_tbl.ranges)
+  print('laser 1',Sensors.LIDAR0.ranges[1])
 end
 lidar_channel.callback = lidar_callback
 
@@ -59,20 +55,15 @@ local channel_timeout = 2*map_t*1e3; -- milliseconds, or just wait (-1)
 local t_last_lidar = Sensors.LIDAR0.timestamp;
 while true do
 
-  local nevents, event_ids = channel_poll:wait_on_any(channel_timeout)
-  --print("Number of events updated",nevents, unpack(event_ids))
-
-  if nevents>0 then
-		for i=1,#event_ids do
-			wait_channels[ event_ids[i] ]:callback()
-		end
-		-- Process upon receiving data
-		if Sensors.LIDAR0.timestamp > t_last_lidar then
-			t_last_lidar = Sensors.LIDAR0.timestamp
-			libSlam.processL0()
-		end
+  --channel_poll:poll(channel_timeout)
+  channel_poll:start( )
+  print('update...?')
+  -- Process upon receiving data
+  if Sensors.LIDAR0.timestamp > t_last_lidar then
+    t_last_lidar = Sensors.LIDAR0.timestamp
+    libSlam.processL0()
   end
-	
+
   -- Send the map at set intervals
   t = unix.time()
   if t-t_last>map_t then

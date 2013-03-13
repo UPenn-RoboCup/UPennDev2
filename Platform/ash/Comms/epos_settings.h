@@ -12,8 +12,8 @@
 #define TORQUE_D_GAIN      100000 // 300000
 #define TORQUE_FF_CONSTANT 6493421
 
-#define POSITION_P_GAIN    23
-#define POSITION_I_GAIN    20
+#define POSITION_P_GAIN    30 // 23
+#define POSITION_I_GAIN    30 // 25
 #define POSITION_D_GAIN    145
 #define POSITION_VEL_FF    0
 #define POSITION_ACC_FF    0

@@ -80,11 +80,12 @@ while true do
   if t-t_last>map_t then
     t_last = t;
     -- Send the payload
-    omap_channel:send( map_cdata, map_cdata_sz, true );
+    --omap_channel:send( map_cdata, map_cdata_sz, true );
     -- Send the timestamp
-    omap_channel:send( libSlam.OMAP.timestamp )
-    print('sending the map')
+    --omap_channel:send( libSlam.OMAP.timestamp )
+--    print('sending the map')
     local omap_s_ptr = omap:storage():pointer()
     local jomap = cjpeg.compress( omap_s_ptr, libSlam.MAPS.sizex, libSlam.MAPS.sizey,1 )
+omap_channel:send( jomap );
   end
 end

@@ -1,10 +1,8 @@
-local ffi = require 'ffi'
 require('Slam');
+require 'unix'
 local Sensors = require 'sensors/Config_Sensors'
 require 'torch'
-require 'ffi/torchffi'
 torch.Tensor = torch.FloatTensor
-require 'unix'
 
 libSlam = {}
 
@@ -174,7 +172,7 @@ local function processL0()
   ----------------------
   -- if encoders are zero, don't move
   -- if(SLAM.odomChanged > 0)
-  if false then
+  if true then
     local hmax = libSlam.scanMatchOne();
     print( "hmax", hmax )
     -- TODO
@@ -334,10 +332,12 @@ local function scanMatchOne()
   hits:zero()
   local hmax, xmax, ymax, thmax = Slam.ScanMatch2D('match',
   OMAP.data,
-  Y, -- Transformed points
+--torch.ByteTensor(OMAP.sizex,OMAP.sizex),
+Y, -- Transformed points
   xCand1,yCand1,aCand1,
   hits
   );
+--  if true then return 0 end --hmax = 0
 
   -- Is this our first pass?
   if SLAM.lidar0Cntr <= 1 then

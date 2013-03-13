@@ -44,47 +44,47 @@ then
 elif [ "$1" = "test_webots" ]
 then
   echo Starting test_webots
-  cd Test
+  cd Test/Util
   exec xterm -fn 9x15 -hold -e $LUA test_webots.lua
 elif [ "$1" = "test_balance" ]
 then
   echo Starting test_balance...
-  cd Test
+  cd Test/Motion
   exec $LUA test_balance.lua
 elif [ "$1" = "test_swing" ]
 then
   echo Starting test_swing...
-  cd Test
+  cd Test/Motion
   exec $LUA test_swing.lua
 elif [ "$1" = "test_pid" ]
 then
   echo Starting test_pid...
-  cd Test
+  cd Test/Motion
   exec $LUA test_pid.lua
 elif [ "$1" = "test_id_stance" ]
 then
   echo Starting test_id_stance
-  cd Test
+  cd Test/Motion
   exec $LUA test_id_stance.lua
 elif [ "$1" = "test_walk" ]
 then
   echo Starting test_walk...
-  cd Test
+  cd Test/Motion
   exec xterm -fn 9x15 -hold -e $LUA test_walk.lua 
 elif [ "$1" = "test_robot_balance2" ]
 then
   echo Starting test_robot_balance2...
-  cd Test
+  cd Test/Motion
   exec xterm -fn 9x15 -hold -e $LUA test_robot_balance2.lua 
 elif [ "$1" = "balance" ]
 then
   echo Starting balance...
-  cd Test
+  cd Test/Motion
   exec xterm -fn 9x15 -hold -e $LUA balance.lua 
 elif [ "$1" = "find_cog" ]
 then
   echo Starting find_cog...
-  cd Test
+  cd Test/Motion
   exec xterm -fn 9x15 -hold -e $LUA find_cog.lua 
 elif [ "$1" = "walk_tuner" ]
 then
@@ -108,9 +108,9 @@ then
 elif [ "$1" = "test_slam" ]
 then
   echo Starting test_slam
-  cd Test/
+  cd Test/Cognition
   exec xterm -geometry 80x40 -fn 9x15 -hold -e $LUA test_slam.lua
 else 
-  echo Starting demo...
-  exec xterm -fn 9x15 -hold -e $LUA demo.lua 
+  echo Starting motion_manager...
+  exec xterm -fn 9x15 -hold -e $LUA motion_manager.lua
 fi

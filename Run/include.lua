@@ -38,7 +38,7 @@ package.path = _HOME_.."/Framework/Motion/FSMs/?.lua;"..package.path
 package.path = _HOME_.."/Framework/Motion/States/?.lua;"..package.path
 package.path = _HOME_.."/Framework/Platform/?.lua;"..package.path
 package.path = _HOME_.."/Framework/Proprioception/?.lua;"..package.path
-package.path = _HOME_.."/Framework/Cognition/Slam/?.lua;"..package.path
+package.path = _HOME_.."/Framework/Cognition/?.lua;"..package.path
 package.path = _HOME_.."/Framework/Util/?.lua;"..package.path
 
 -- set path for c modules 

@@ -1,7 +1,7 @@
 dofile('../include.lua')
 
 -- Require the right modules
-local Sensors = require 'Config_Sensors'
+local Sensors = require 'sensors/Config_Sensors'
 local simple_ipc = require 'simple_ipc'
 local ffi = require 'ffi'
 require 'ffi/torchffi'
@@ -81,6 +81,6 @@ while true do
     omap_channel:send( map_cdata, map_cdata_sz, true );
     -- Send the timestamp
     omap_channel:send( libSlam.OMAP.timestamp )
-    --print('sending the map')
+    print('sending the map')
   end
 end

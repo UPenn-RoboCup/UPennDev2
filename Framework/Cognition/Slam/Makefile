@@ -1,7 +1,6 @@
 # Makefile used to build libraries
 include ../../../Makefile.inc
-INCLUDES+=-I../../../Tools/torch/include/
-LIB_DIR+=-L../../../Tools/torch/
+INCLUDES+=-I/usr/local/include/torch
 
 all: Slam
 
@@ -14,7 +13,7 @@ all: Slam
 
 Slam: lua_Slam.o lua_binStats.o lua_getMapCellsFromRay.o lua_HoughTransform.o \
 				HoughTransform.o lua_ScanMatch2D.o lua_SubsambleDistance.o
-	$(LD) $(LDFLAGS) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ $(LIB_DIR) -lm -l$(TORCHLIB)
+	$(LD) $(LDFLAGS) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ $(LIB_DIR) -lm -ltorch
 
 clean:
 	rm -f *.$(SHLIBEXT) *.o

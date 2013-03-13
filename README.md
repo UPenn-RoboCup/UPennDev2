@@ -11,7 +11,7 @@ Dependencies
 
 #### For Ubuntu 12.04, install necessary dependencies using:
 
-    sudo apt-get install build-essential lua5.1 liblua5.1-0-dev luajit swig libboost1.46-dev mesa-common-dev gnuplot libpopt-dev libncurses5-dev luarocks libblas-dev liblapack-dev libfftw3-dev libhdf5-serial-dev
+    sudo apt-get install build-essential lua5.1 liblua5.1-0-dev luajit swig libboost1.46-dev mesa-common-dev gnuplot libpopt-dev libncurses5-dev luarocks libblas-dev liblapack-dev libfftw3-dev libhdf5-serial-dev libglfw-dev
 
     sudo luarocks install numlua lua-cmsgpack
 
@@ -33,7 +33,7 @@ Install zeromq 3.2 using:
     wget http://download.zeromq.org/zeromq-3.2.2.tar.gz
     tar xzf zeromq-3.2.2.tar.gz 
     cd zeromq-3.2.2
-    ./configure
+    ./configure --with-pgm
     make
     sudo make install
 
@@ -48,8 +48,9 @@ Finally, install Lightweight Communications and Marshalling (LCM) and Kinematics
 - Webots from http://www.cyberbotics.com/
 - Homebrew from http://mxcl.github.com/homebrew/
 
-		brew install lua luajit luarocks boost gnuplot eigen swig fftw
-		luarocks install numlua
+		brew install lua luajit luarocks boost gnuplot eigen swig fftw zmq hdf5 glib wget
+		luarocks install numlua lua-cmsgpack
+		luarocks install https://raw.github.com/Neopallium/lua-zmq/master/rockspecs/lua-zmq-scm-1.rockspec
 
 Finally, install Lightweight Communications and Marshalling (LCM) and Kinematics and Dynamics Library (KDL) using the instructions below.
 
@@ -72,6 +73,18 @@ Install Kinematics and Dynamics Library (KDL) using:
     cmake ..
     make
     sudo make install #(sudo may not be necessary)
+
+#### Torch
+
+If you would like to test the ognition code, please install torch.
+
+    git clone https://github.com/smcgill3/torch.git
+    cd torch
+    make
+    sudo make install
+
+When this is done, you have a "torch.so" module, which you can place in
+the Framework/Lib/torch directory.  Make this if it does not exist.
 
 Build Instructions
 ------------------

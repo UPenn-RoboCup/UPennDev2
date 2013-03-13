@@ -1,14 +1,52 @@
 local ffi = require 'ffi'
-local zmq = require 'ffi/zmq'
+local zmq = require 'ffi/zmq' -- Based on ZMQ
+local simple_ipc = {} -- Our module
 
--- Based on ZMQ
-local simple_ipc = {}
+--[[
+-- On the require, find the interfaces
+local f_ifconfig = io.popen( 'ifconfig -l' )
+local interface_list = f_ifconfig:read()
+f_ifconfig:close()
+for interface in string.gmatch(interface_list, "[%a|%d]+") do 
+	local f_ifconfig = io.popen( "ifconfig "..interface.." | grep 'inet ' | cut -d ' ' -f 2" )
+	local interface_ip = f_ifconfig:read()
+	if interface_ip then
+		local subnet_search = string.gmatch(interface_ip, "192.168.123.%d+")
+		local addr = subnet_search()
+		if addr then
+			simple_ipc.intercom_interface = interface
+			simple_ipc.intercom_interface_ip = interface_ip
+		end
+	end
+	f_ifconfig:close()
+end
+--]]
+
 -- Simple number of threads
 simple_ipc.n_zmq_threads = 1
+simple_ipc.local_prefix = 'ipc:///tmp/'
+-- Set the intercomputer interface
+if simple_ipc.intercom_interface then
+	print( string.format('Selecting (%s) as the inter-pc interface\nUsing address (%s)',
+	simple_ipc.intercom_interface, simple_ipc.intercom_interface_ip) );
+	simple_ipc.intercom_prefix = 'epgm://'..simple_ipc.intercom_interface_ip..';239.192.1.1:'
+else
+	print( 'There is no inter-pc interface, using TCP' )
+	simple_ipc.intercom_prefix = 'tcp://127.0.0.1:'
+end
 
-function simple_ipc.setup_publisher( channel )
-  local channel_obj = {}
-	channel_obj.name = "ipc:///tmp/"..channel;
+-- If channel is a number, then use tcp
+local function setup_publisher( channel )
+	local channel_obj = {}
+	local channel_type = type(channel)
+	if channel_type=="string" then
+		channel_obj.name = simple_ipc.local_prefix..channel
+	elseif channel_type=="number" then
+		channel_obj.name = simple_ipc.intercom_prefix..channel
+	end
+	assert(channel_obj.name)
+	print('Publishing on',channel_obj.name)
+	
   channel_obj.context_handle = zmq.zmq_init( simple_ipc.n_zmq_threads )
   assert( channel_obj.context_handle )
 
@@ -17,8 +55,9 @@ function simple_ipc.setup_publisher( channel )
   assert( channel_obj.socket_handle );
 
   -- Bind to a message pipeline
-  local rc = zmq.zmq_connect( channel_obj.socket_handle, channel_obj.name )
-  assert (rc == 0);
+	-- TODO: connect?
+  local rc = zmq.zmq_bind( channel_obj.socket_handle, channel_obj.name )
+  assert (rc == 0, print(ffi.string( zmq.zmq_strerror( zmq.zmq_errno() ) )));
 
   -- Set up the sending object
   function channel_obj.send( self, msg_buf, msg_buf_sz, has_more )
@@ -60,10 +99,19 @@ function simple_ipc.setup_publisher( channel )
 
   return channel_obj;
 end
+simple_ipc.setup_publisher = setup_publisher
 
-function simple_ipc.setup_subscriber( channel )
-  local channel_obj = {}
-	channel_obj.name = "ipc:///tmp/"..channel;
+local function setup_subscriber( channel )
+	local channel_obj = {}
+	local channel_type = type(channel)
+	if channel_type=="string" then
+		channel_obj.name = simple_ipc.local_prefix..channel
+	elseif channel_type=="number" then
+		channel_obj.name = simple_ipc.intercom_prefix..channel
+	end
+	assert(channel_obj.name)
+	print('Subscribing on',channel_obj.name)
+
   channel_obj.context_handle = zmq.zmq_init( simple_ipc.n_zmq_threads )
   assert( channel_obj.context_handle )
 
@@ -72,8 +120,9 @@ function simple_ipc.setup_subscriber( channel )
   assert( channel_obj.socket_handle );
 
   -- Bind to a message pipeline
-  local rc = zmq.zmq_bind( channel_obj.socket_handle, channel_obj.name )
-  assert (rc == 0);
+	-- Bind?
+  local rc = zmq.zmq_connect( channel_obj.socket_handle, channel_obj.name )
+  assert (rc == 0, print(ffi.string( zmq.zmq_strerror( zmq.zmq_errno() ) )));
   zmq.zmq_setsockopt( channel_obj.socket_handle, zmq.ZMQ_SUBSCRIBE, '', 0 )
 
 	-- Set up receiving object
@@ -105,8 +154,9 @@ function simple_ipc.setup_subscriber( channel )
 
   return channel_obj;
 end
+simple_ipc.setup_subscriber = setup_subscriber
 
-function simple_ipc.wait_on_channels( channels )
+local function wait_on_channels( channels )
 	local poll_obj = {}
 	local poll_items = ffi.new('zmq_pollitem_t[?]',#channels)
 	for i=1,#channels do
@@ -130,5 +180,6 @@ function simple_ipc.wait_on_channels( channels )
 	end
 	return poll_obj;
 end
+simple_ipc.wait_on_channels = wait_on_channels
 
 return simple_ipc

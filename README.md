@@ -74,6 +74,20 @@ Install Kinematics and Dynamics Library (KDL) using:
     make
     sudo make install #(sudo may not be necessary)
 
+#### Torch
+
+If you would like to test the ognition code, please install torch.
+
+    sudo apt-get install libblas-dev liblapack-dev
+
+    git clone https://github.com/smcgill3/torch.git
+    cd torch
+    make
+    sudo make install
+
+When this is done, you have a "torch.so" module, which you can place
+anywhere in the THOR tree.
+
 Build Instructions
 ------------------
 

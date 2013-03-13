@@ -12,7 +12,7 @@ local t0 = unix.time()
 local t  = unix.time()
 local delay = 3e3 -- microseconds
 local filename = arg[1] or 'forces.txt' 
-local f = assert(io.open('Logs/'..filename, 'w+'))
+local f = assert(io.open(_HOME_..'/logs/'..filename, 'w+'))
 
 curses.initscr()
 curses.cbreak()

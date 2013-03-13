@@ -2,7 +2,7 @@
 --runs balance but just outputs torques, does not send to joints
 --used to check COG position and 
 --------------------------------------------------------
-dofile('../include.lua')
+dofile('../../include.lua')
 require('dcm')
 require('pcm')
 require('pid')
@@ -23,7 +23,7 @@ local joint = Config.joint
 --------------------------------------------------------------------
 -- Parameters
 --------------------------------------------------------------------
-local t, dt = Platform.get_time(), 0
+local t, dt = 0, 0 --Platform.get_time(), 0
 local qt = vector.new{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0} --desired joint angles 
 local qt_comp = vector.new{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0} --desired joint angles 
 local joint_pos = vector.new{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0} --current joint positions
@@ -76,11 +76,16 @@ local data = {}
 ------------------------------------------------------------------
 --Control objects:
 ------------------------------------------------------------------
+local filter_b = {0.013251, 0.026502, 0.013251} --10 break freq, ts=0.004, chsi=0.7
+local filter_a = {1, -1.6517, 0.70475}
 local COP_filters = {filter.new_second_order_low_pass(0.004, 20, 0.7), filter.new_second_order_low_pass(0.004, 20, 0.7)}
 
+local filter_b = {   0.1094,    0.1094,   -0.1094,   -0.1094} --5 freq, 3 order butter, 1 dt
+local filter_a = {  1.0000,   -2.7492,    2.5288,   -0.7779}
+local pgain, igain, dgain = 300, 0, 60  --need different gains in different joints
 local torque_filters = {}
 for i, index in pairs(joint.index['ankles']) do
-  torque_filters[index] = filter.new_low_pass(0.004, 20)--filter.new_second_order_low_pass(0.004, 40, 0.7) 
+  torque_filters[index] = filter.new_second_order_low_pass(0.004, 40, 0.7) 
 end
 
 pgain, igain, dgain = 200, 120, 40
@@ -89,11 +94,11 @@ COGx_pid:set_d_corner_frequency(20)
 local COGy_pid = pid.new(0.004, pgain, igain, dgain)
 COGy_pid:set_d_corner_frequency(20)
 
-pgain, igain, dgain = 200, 0, 20
+pgain, igain, dgain = 300, 40, 80
 local anklex_pid = pid.new(0.004, pgain, igain, dgain)
-anklex_pid:set_d_corner_frequency(20) 
+anklex_pid:set_d_corner_frequency(40) 
 local ankley_pid = pid.new(0.004, pgain, igain, dgain)
-ankley_pid:set_d_corner_frequency(20)
+ankley_pid:set_d_corner_frequency(40)
 
 local COG_vel_filter = {}
 COG_vel_filter[1] = filter.new_differentiator(0.004, 30, 0.5)
@@ -101,7 +106,7 @@ COG_vel_filter[2] = filter.new_differentiator(0.004, 30, 0.5)
 
 local pos_filters = {}
 for i, index in pairs(joint.index['legs']) do
-  pos_filters[index] = filter.new_second_order_low_pass(0.004, 60, 0.5)
+  pos_filters[index] = filter.new_second_order_low_pass(0.004, 20, 0.5)
 end
 
 local bias_filters = {}
@@ -125,8 +130,11 @@ for i, index in pairs(joint.index['legs']) do
   acc_filters[index] = filter.new(filter_b, filter_a)
 end
 
+local filter_b = {   0.1094,    0.1094,   -0.1094,   -0.1094} --5 freq, 3 order butter, 0 dt
+local filter_a = {  1.0000,   -2.7492,    2.5288,   -0.7779}
 local ft_filters = {}
 for i = 1, 12 do
+  --ft_filters[i] = filter.new(filter_b, filter_a)
   ft_filters[i] = filter.new_second_order_low_pass(0.004, 20, 0.7)
 end
 
@@ -268,7 +276,7 @@ function COG_controller()
   local torques = vector.new{0, 0}
   ankley_pid:set_setpoint(qt[5])
   torques[1] = 0
-  torques[2] = ankley_pid:update(raw_pos[5])
+  torques[2] = ankley_pid:update(joint_pos_sense[5])
   return torques
 end
 
@@ -385,7 +393,6 @@ end
 
 function update_joint_data()  
   --compute filters of position, velocity, and acceleration 
-  --note: turned some filters off
   raw_pos = dcm:get_joint_position_sensor('legs') --actual position
   joint_pos = dcm:get_joint_position('legs') --commanded position
   for i, filter_loop in pairs(pos_filters) do
@@ -454,12 +461,11 @@ end
 function state_machine(t) 
   if (state == 0) then
     if state_t >= 2 then
-      print('state_t', state_t)
       l_leg_offset = lf
       torso = vector.new{0, 0, -0.05, 0, 0, 0} 
-      --joint_offset = move_legs(torso)
+      joint_offset = move_legs(torso)
       joint_offset = vector.new(joint_offset)
-      --util.ptable(joint_offset)
+      util.ptable(joint_offset)
       print("move to ready", t)
       state = 1
       state_t = 0
@@ -489,8 +495,6 @@ end
 --------------------------------------------------------------------
 unix.usleep(5e5)
 Platform.entry()
-Platform.set_time_step(0.001)
-print('timestep', Platform.get_time_step())
 Proprioception.entry()
 print('after entry')
 dcm:set_joint_enable(0,'all')
@@ -503,8 +507,7 @@ dcm:set_joint_enable(1, 'all')
 qt = vector.copy(set_values) 
 printdata = true
 
-local ident = "t2"
-print('ident', ident)
+local ident = "t8"
 local fw_log = assert(io.open("Logs/fw_log"..ident..".txt","w"))
 local fw_reg = assert(io.open("Logs/fw_reg"..ident..".txt","w"))
 
@@ -515,30 +518,13 @@ function write_to_file(filename, data, test)
   filename:write(t, "\n")
 end
 
-local store = {}
-local ind = 1
-function store_data(local_data)
-  for i = 1, #local_data do
-    for i2 = 1, #local_data[i] do
-      --print(store_len, ind, 'are values')
-      store[ind] = local_data[i][i2]
-      ind = ind + 1
+function write_to_file2(filename, data)
+  for i = 1, #data do
+    for i2 = 1, #data[i] do
+    	filename:write(data[i][i2], ", ")
     end
   end
-end
-
-function write_to_file2(filename, local_data, template)
-  print('data length', #local_data)
-  local local_ind = 1
-  while local_ind < ind do
-    for i = 1, #template do
-      for i2 = 1, #template[i] do
-     	filename:write(local_data[local_ind], ", ")
-        local_ind = local_ind + 1
-      end
-    end
-    filename:write("\n")
-  end
+  filename:write(t, "\n")
 end
 
 function write_reg(data)
@@ -550,13 +536,14 @@ end
 --------------------------------------------------------------------
 --Main
 --------------------------------------------------------------------
---unix.usleep(1e6)
-local t0 = unix.time()
-t = t0
-print('time',unix.time() - t0)
 while run do 
   Platform.update()
-  dt = Platform.get_time() - t 
+  dt = Platform.get_time() - t
+  if dt< 0.004 then
+    unix.usleep((0.004-dt)*1000000)
+    dt = 0.004
+  end
+  --dt = Platform.get_time() - t 
   t = t + dt --simulation time
   Proprioception.update()
   state_t = state_t + dt --time used in state machine
@@ -581,35 +568,25 @@ while run do
   update_observer()
   joint_torques_sense = dcm:get_joint_force_sensor('legs')
 --implement actions
-  dcm:set_joint_position(qt, 'legs')  
+  --dcm:set_joint_position(qt, 'legs')  
   --dcm:set_joint_force(joint_torques, 'legs')  
-  dcm:set_joint_force({0,0,0,0,0,0,0,0,0,0,0,0}, 'legs') 
-
+  
   if (printdata) then -- mod_print == 0 and
-    --data[1] = {dt, unix.time(), step}
-    --data[1] = COG
-    --data[1] = {pid_torques[1], pid_torques[2]}
-    data[1] = {raw_pos[5], raw_pos[6]}
-    data[2] = {t}
-      -- {pid_torques[1], pid_torques[2]}
-    ---data[3] = joint_torques_sense
-    ---data[4] = raw_pos
+    data[1] = COG
+    --data[2] = {pid_torques[1], pid_torques[2]}
+    --data[3] = joint_pos_sense
+    --data[4] = joint_torques_sense
+    --data[5] = raw_pos
     --data[6] = joint_vel_raw
-    ---data[5] = joint_torques
-    --data[6] = ft_filt
+    --data[7] = joint_torques
+    --data[8] = ft_filt
     --data[9] = ft
     --data[10] = ahrs_filt
     --data[11] = ahrs
-    store_data(data)
+    write_to_file2(fw_log, data)
   end
 end
-dcm:set_joint_force({0,0,0,0,0,0,0,0,0,0,0,0},'legs')
-print('time end', unix.time() - t0)
 write_reg(data)
-write_to_file2(fw_log, store, data)
-print('time after write', unix.time() - t0)
-print('steps: ', step)
-print(store[1], store[2], store[3], store[4])
 Platform.exit()
 
 

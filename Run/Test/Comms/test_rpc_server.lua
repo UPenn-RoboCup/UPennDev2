@@ -1,4 +1,4 @@
-dofile('../include.lua')
+dofile('../../include.lua')
 
 require('rpc')
 require('zmq')

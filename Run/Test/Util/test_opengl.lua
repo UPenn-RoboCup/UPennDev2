@@ -1,4 +1,4 @@
-dofile('../include.lua')
+dofile('../../include.lua')
 -- Require the right libraries
 -- The ffi libraty is with luajit
 local ffi  = require( "ffi" )

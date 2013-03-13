@@ -1,4 +1,4 @@
-dofile('../include.lua')
+dofile('../../include.lua')
 
 -- Require the right modules
 local Sensors = require 'sensors/Config_Sensors'

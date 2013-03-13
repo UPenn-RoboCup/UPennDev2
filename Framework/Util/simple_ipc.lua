@@ -2,6 +2,7 @@ local ffi = require 'ffi'
 local zmq = require 'ffi/zmq' -- Based on ZMQ
 local simple_ipc = {} -- Our module
 
+--[[
 -- On the require, find the interfaces
 local f_ifconfig = io.popen( 'ifconfig -l' )
 local interface_list = f_ifconfig:read()
@@ -19,6 +20,7 @@ for interface in string.gmatch(interface_list, "[%a|%d]+") do
 	end
 	f_ifconfig:close()
 end
+--]]
 
 -- Simple number of threads
 simple_ipc.n_zmq_threads = 1

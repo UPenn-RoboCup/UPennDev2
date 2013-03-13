@@ -11,10 +11,9 @@ require 'ffi/torchffi'
 local simple_ipc = require 'simple_ipc'
 
 -- Globally accessable QImage
-sz = {240,320}
-sz = {101,101}
-sz = {201,201}
-sz = {401,401}
+--sz = {201,201}
+--sz = {401,401}
+sz = {601,601}
 qimage = QImage(sz[2],sz[1],QImage.Format.Format_RGB32)
 
 omap_channel = simple_ipc.setup_subscriber('omap');

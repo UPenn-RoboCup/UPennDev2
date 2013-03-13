@@ -8,6 +8,7 @@ require 'ffi/torchffi'
 local libSlam = require 'libSlam'
 local mp = require 'ffi/msgpack'
 require 'unix'
+require 'cjpeg'
 
 -- Reference the sensors
 local ranges = Sensors.LIDAR0.ranges;
@@ -19,6 +20,7 @@ local imu_buf = ffi.new('char[?]',imu_buf_sz)
 
 -- Initialize the map
 local omap = libSlam.OMAP.data
+omap:fill(127)
 local map_cdata = torch.data( omap )
 local map_cdata_sz = omap:storage():size() * ffi.sizeof('char')
 print('Map size:',libSlam.MAPS.sizex,libSlam.MAPS.sizey)
@@ -82,5 +84,7 @@ while true do
     -- Send the timestamp
     omap_channel:send( libSlam.OMAP.timestamp )
     print('sending the map')
+    local omap_s_ptr = omap:storage():pointer()
+    local jomap = cjpeg.compress( omap_s_ptr, libSlam.MAPS.sizex, libSlam.MAPS.sizey,1 )
   end
 end

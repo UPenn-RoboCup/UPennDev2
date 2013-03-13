@@ -174,7 +174,7 @@ local function processL0()
   ----------------------
   -- if encoders are zero, don't move
   -- if(SLAM.odomChanged > 0)
-  if true then
+  if false then
     local hmax = libSlam.scanMatchOne();
     print( "hmax", hmax )
     -- TODO

@@ -25,6 +25,6 @@ Target_File=$Vrep_Home/vrepAddOnScript_ASH.lua
 echo "prefix='$(dirname `pwd`)'" > $Target_File
 cat ../Platform/vrep_ash/Comms/vrep_addon.lua >> $Target_File
 
-Scene_File="$PWD/../Platform/vrep_ash/Scenes/Ash-VREP.ttt"
+Scene_File="$PWD/../Platform/vrep_ash/Scenes/ash_lowerbody.ttt"
 
 exec $Vrep_Command $Scene_File &

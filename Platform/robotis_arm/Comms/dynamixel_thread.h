@@ -15,7 +15,6 @@ protected:
   SerialPort *Port;  
   std::vector<int> m_id;
   char m_interface[128];
-  void home_motor_controllers();
   void update_actuator_settings();
   void update_sensor_readings();
   virtual void entry();

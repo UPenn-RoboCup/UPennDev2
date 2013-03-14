@@ -105,7 +105,7 @@ local function setup_subscriber( channel )
   channel_obj.socket_handle:setopt( zmq.SUBSCRIBE, '', 0 )
 
 	-- Set up receiving object
-	function channel_obj.receive( self, msg_buf, msg_buf_sz )
+	function channel_obj.receive( self )
 	  local ret = self.socket_handle:recv();
 		local has_more = self.socket_handle:getopt(zmq.RCVMORE)
     return ret, has_more==1;

@@ -6,7 +6,7 @@ local simple_ipc = require 'simple_ipc'
 -- Data Type specific
 local dataPath = '~/shadwell/day2_third/';
 local dataStamp = '02.27.2013';
-local dataTypes = {'flir','lidar','arduimu'}
+--local dataTypes = {'flir','lidar','arduimu'}
 local dataTypes = {'lidar','arduimu'}
 local realtime = true;
 if realtime then

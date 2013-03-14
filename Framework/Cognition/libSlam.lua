@@ -101,6 +101,7 @@ xCand1:nElement(), yCand1:nElement(), aCand1:nElement()
 
 -- Process lidar readings as the come in
 local function processL0()
+  print('processing lidar...')
   -- Easier to read accessors
   local ranges = Sensors.LIDAR0.ranges
   local nranges = Sensors.LIDAR0.nRays

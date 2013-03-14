@@ -182,7 +182,8 @@ setup_nao: nao setup_util setup_image setup_comm
 	rm -f $(NAODEPLUA51DIR)/*;
 	@echo "\n"
 
-setup_naov4: naov4 setup_util setup_image setup_comm naoqi
+# Removed naoqi at the end to compile on laptop
+setup_naov4: naov4 setup_util setup_image setup_comm
 	@echo "Setting up Nao V4 Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
 	find $(NAOV4DIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;

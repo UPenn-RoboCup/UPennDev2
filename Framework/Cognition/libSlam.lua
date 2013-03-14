@@ -36,7 +36,7 @@ OMAP.zmin   = MAPS.zmin;
 OMAP.zmax   = MAPS.zmax;
 OMAP.sizex  = MAPS.sizex;
 OMAP.sizey  = MAPS.sizey;
-OMAP.data = torch.ByteTensor(OMAP.sizex,OMAP.sizex):fill(127) -- uncertain
+OMAP.data = torch.ByteTensor(OMAP.sizex,OMAP.sizex)--:fill(127) -- uncertain
 OMAP.timestamp = unix.time();
 libSlam.OMAP = OMAP;
 print('Map size:',libSlam.MAPS.sizex,libSlam.MAPS.sizey)
@@ -197,39 +197,33 @@ local function processL0()
     hmax = libSlam.scanMatchTwo();
     -- If no good fits, then use pure odometry readings
     if hmax < 500 then
+print('no update!',hmax)
       SLAM.x = SLAM.xOdom;
       SLAM.y = SLAM.yOdom;
       SLAM.yaw = SLAM.yawOdom;
     end
     -- TODO: it is negative...?
---    SLAM.yaw = -1*Sensors.IMU.data.Y*math.pi/180
+--[[
+SLAM.x = -1*SLAM.x;
+SLAM.y = -1*SLAM.y;
+--SLAM.yaw = -1*SLAM.yaw;
+SLAM.yaw = Sensors.IMU.data.Y*math.pi/180
+--]]
   else
     print('not moving');
   end
 
-  -- Save pose data from SLAM to the 
-  -- global POSE structure
-  -- TODO
-  --[[
-  POSE.data.x     = SLAM.x;
-  POSE.data.y     = SLAM.y;
-  POSE.data.z     = SLAM.z;
-  POSE.data.roll  = IMU.data.roll;
-  POSE.data.pitch = IMU.data.pitch;
-  POSE.data.yaw   = SLAM.yaw;
-  POSE.data.t     = unix.time();
-  POSE.t          = unix.time();
-  --]]
-  SLAM.xOdom      = SLAM.x;
-  SLAM.yOdom      = SLAM.y;
-  SLAM.yawOdom    = SLAM.yaw;
+  -- Update the SLAM odometry
+  SLAM.xOdom   = SLAM.x;
+  SLAM.yOdom   = SLAM.y;
+  SLAM.yawOdom = SLAM.yaw;
 
   ---------------------
   -- Update the map, since our pose was just updated
   ---------------------
   -- Take the laser scan points from the body frame and 
   -- put them in the world frame
-  --print('Current Slam:',SLAM.x, SLAM.y, SLAM.z, SLAM.yaw)
+  print('My x, y position is',SLAM.x, SLAM.y)
   local tmp = torch.mm( 
   libSlam.trans( {SLAM.x, SLAM.y, SLAM.z} ),
   libSlam.rotz( SLAM.yaw ) 

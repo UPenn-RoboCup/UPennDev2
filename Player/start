@@ -35,6 +35,20 @@ run_dcm_vcm(){
   sleep 3
 }
 
+run_nao_vcm(){
+  # echo "Starting Naoqi..."
+  # cd $PLAYER_DIR
+  # screen $SCREEN_FLAGS nao_qi /usr/bin/naoqi 
+  # Allow naoqi some time to start
+  # sleep 3
+  
+  echo "Starting Cognition..."
+  cd $PLAYER_DIR
+  screen $SCREEN_FLAGS cognition $LUA_COM run_cognition.lua
+  # Allow Cognition some time to start
+  sleep 3
+}
+
 run_player(){
   run_dcm_vcm
  
@@ -131,10 +145,19 @@ run_roletest(){
   echo "Rock and Roll!"
 }
 
+run_nao_vision(){
+  run_nao_vcm
+  echo "Starting Vision Testing..."
+  cd $PLAYER_DIR
+  screen -m -L -S player $LUA_COM test_vision.lua
+  
+  echo "Rock and Roll!"
+}
+
 case "$KERNEL" in
         *aldebaran*) 
                 PLAYER_DIR=/home/nao/Player 
-                LUA_COM=/usr/local/bin/lua;;
+                LUA_COM=/usr/local/bin/luajit;;
         *)
                 PLAYER_DIR=/home/darwin/current/Player        
                 LUA_COM=/usr/bin/luajit;;
@@ -168,6 +191,9 @@ case "$1" in
   'wbreset')
     echo "Reset White Balance"
     reset_wb;;
+  'nao_vision')
+    echo "Run Vision code for NaoV4"
+    run_nao_vision;;
   'help')
     echo "[No Argu](s)     -- Player Mode"
     echo "[obstacleplay](sob) -- Player Mode with Obstacle"
@@ -176,7 +202,9 @@ case "$1" in
     echo "[bias](sb)       -- Bias Setup Mode"
     echo "[roletest](sr)   -- Role Testing Mode"
     echo "[obstacle](so)   -- Role obstacle Mode"
-    echo "[wbreset](sw)   -- Reset WB Mode";;
+    echo "[wbreset](sw)   -- Reset WB Mode"
+    echo "[nao_vision](sn)   -- Test Vision for Nao";;
+        
   *)
     echo "Unknown Mode. use 'help ' to see Available Mode";;
 esac

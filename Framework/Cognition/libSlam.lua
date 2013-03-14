@@ -205,7 +205,7 @@ local function processL0()
   POSE.data.yaw   = SLAM.yaw;
   POSE.data.t     = unix.time();
   POSE.t          = unix.time();
-	--]]
+  --]]
   SLAM.xOdom      = SLAM.x;
   SLAM.yOdom      = SLAM.y;
   SLAM.yawOdom    = SLAM.yaw;
@@ -326,23 +326,9 @@ end
 libSlam.processL0 = processL0
 
 local function scanMatchOne()
-  --tEncoders = ENCODERS.counts.t;
-  tLidar0 = Sensors.LIDAR0.startTime;
-  xCand1:range(-xRange1,xRange1):mul(dx1):add(SLAM.xOdom);
-  yCand1:range(-yRange1,yRange1):mul(dy1):add(SLAM.yOdom);
-  -- TODO: determine how much to search over the yaw space based on 
-  -- the instantaneous angular velocity from the imu
-  aCand1:range(-yawRange1,yawRange1):mul(dyaw1):add(SLAM.yawOdom); -- + IMU.data.wyaw*0.025;
-  hits:zero()
-  if true then return 0 end --hmax = 0
-  local hmax, xmax, ymax, thmax = Slam.ScanMatch2D('match',
-  OMAP.data,
-  Y, -- Transformed points
-  xCand1,yCand1,aCand1,
-  hits
-  );
 
-  -- Is this our first pass?
+  -- The first pass sets up variables
+  -- and does not attempt to match scans
   if SLAM.lidar0Cntr <= 1 then
     -- TODO: add this function
     --xStart, yStart, thStart = FindStartPose(SLAM.x, SLAM.y, SLAM.yaw, xsss,ysss);
@@ -355,37 +341,59 @@ local function scanMatchOne()
       SLAM.yOdom = yStart;
       SLAM.yawOdom = thStart;
     end
+    return 0;
+  end
 
-  else
-    -- TODO: Create a better grid of distance-based costs
-    -- from each cell to the odometry pose
-    local minIndX, indx = torch.min( xCand1:add(-SLAM.xOdom):abs(), 1 );
-    local minIndY, indy = torch.min( yCand1:add(-SLAM.yOdom):abs(), 1 );
+  -- Update the timestamps
+  --tEncoders = ENCODERS.counts.t;
+  tLidar0 = Sensors.LIDAR0.startTime;
 
-    -- How valuable is the odometry preidiction?
-    -- Should make a gaussian depression around this point...
-    -- Extract the 2D slice of xy poses at the best angle to be the cost map
-    local costGrid1 = hits:select(3,thmax):mul(-1)
-    --print('2d slice:',costGrid1:size()[1],costGrid1:size()[2])
-    costGrid1[indx[1]][indy[1]] = costGrid1[indx[1]][indy[1]] - 500; --  - 2e4;
-    -- Find the minimum and save the new pose
-    local min_cost = costGrid1[1][1];
-    local mindex_x = 1;
-    local mindex_y = 1;
-    for ii=1,costGrid1:size()[1] do
-      for jj=1,costGrid1:size()[2] do
-        if costGrid1[ii][jj]<min_cost then
-          mindex_x = ii;
-          mindex_x = jj;
-          min_cost = costGrid1[ii][jj];
-        end
+  -- Reset the ranges based on the current odometry
+  -- TODO: determine how much to search over the yaw space based on 
+  -- the instantaneous angular velocity from the imu
+  xCand1:range(-xRange1,xRange1):mul(dx1):add(SLAM.xOdom);
+  yCand1:range(-yRange1,yRange1):mul(dy1):add(SLAM.yOdom);
+  aCand1:range(-yawRange1,yawRange1):mul(dyaw1):add(SLAM.yawOdom); -- + IMU.data.wyaw*0.025;
+  
+  -- Zero the hits, which will be accumulated in ScanMatch2D
+  hits:zero()
+  local hmax, xmax, ymax, thmax = Slam.ScanMatch2D('match',
+  OMAP.data,
+  Y, -- Transformed points
+  xCand1,yCand1,aCand1,
+  hits
+  );
+  if true then return hmax end --hmax = 0
+
+
+  -- TODO: Create a better grid of distance-based costs
+  -- from each cell to the odometry pose
+  local minIndX, indx = torch.min( xCand1:add(-SLAM.xOdom):abs(), 1 );
+  local minIndY, indy = torch.min( yCand1:add(-SLAM.yOdom):abs(), 1 );
+
+  -- How valuable is the odometry preidiction?
+  -- Should make a gaussian depression around this point...
+  -- Extract the 2D slice of xy poses at the best angle to be the cost map
+  local costGrid1 = hits:select(3,thmax):mul(-1)
+  --print('2d slice:',costGrid1:size()[1],costGrid1:size()[2])
+  costGrid1[indx[1]][indy[1]] = costGrid1[indx[1]][indy[1]] - 500; --  - 2e4;
+  -- Find the minimum and save the new pose
+  local min_cost = costGrid1[1][1];
+  local mindex_x = 1;
+  local mindex_y = 1;
+  for ii=1,costGrid1:size()[1] do
+    for jj=1,costGrid1:size()[2] do
+      if costGrid1[ii][jj]<min_cost then
+        mindex_x = ii;
+        mindex_x = jj;
+        min_cost = costGrid1[ii][jj];
       end
     end
-    -- Save the best pose
-    SLAM.yaw = aCand1[thmax];
-    SLAM.x   = xCand1[mindex_x];
-    SLAM.y   = yCand1[mindex_y];
   end
+  -- Save the best pose
+  SLAM.yaw = aCand1[thmax];
+  SLAM.x   = xCand1[mindex_x];
+  SLAM.y   = yCand1[mindex_y];
   return hmax
 end
 libSlam.scanMatchOne = scanMatchOne

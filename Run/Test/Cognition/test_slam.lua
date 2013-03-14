@@ -11,7 +11,6 @@ require 'cutil'
 
 -- Setup IPC
 local omap_channel = simple_ipc.setup_publisher('omap');
-
 local lidar_channel = simple_ipc.setup_subscriber('lidar');
 local lidar_callback = function()
   -- Receive ipc sensor payload
@@ -21,6 +20,8 @@ local lidar_callback = function()
   -- Place in the torch storage
   -- TODO: this assumes is it contiguous
   cutil.string2userdata( Sensors.LIDAR0.ranges:storage():pointer(), lidar_tbl.ranges)
+  --Sensors.LIDAR0.ranges:fill( math.random()*3 )
+  collectgarbage("stop")
   libSlam.processL0()
   --libSlam.OMAP.timestamp
   local omap_s_ptr = libSlam.OMAP.data:storage():pointer()
@@ -31,6 +32,7 @@ local lidar_callback = function()
   f:close()
   --]]
   omap_channel:send( jomap );
+  collectgarbage("start")
 end
 lidar_channel.callback = lidar_callback
 

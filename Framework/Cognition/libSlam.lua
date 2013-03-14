@@ -194,18 +194,15 @@ local function processL0()
   -- if(SLAM.odomChanged > 0)
   if true then
     local hmax = libSlam.scanMatchOne();
-    --hmax = libSlam.scanMatchTwo();
+    hmax = libSlam.scanMatchTwo();
     -- If no good fits, then use pure odometry readings
-    -- hmax = 1000;
     if hmax < 500 then
       SLAM.x = SLAM.xOdom;
       SLAM.y = SLAM.yOdom;
       SLAM.yaw = SLAM.yawOdom;
     end
-    -- TODO: it is negative...
-print('Found',SLAM.x,SLAM.y,SLAM.yaw)
-    SLAM.yaw = -1*Sensors.IMU.data.Y*math.pi/180
-print('Using',SLAM.x,SLAM.y,SLAM.yaw)
+    -- TODO: it is negative...?
+--    SLAM.yaw = -1*Sensors.IMU.data.Y*math.pi/180
   else
     print('not moving');
   end
@@ -389,13 +386,15 @@ local function scanMatchOne()
   -- Zero the hits, which will be accumulated in ScanMatch2D
   hits:zero()
   -- TODO: Every other Y on the first pass
-  local hmax, xmax, ymax, thmax = Slam.ScanMatch2D('match',
+  local hmax, ixmax, iymax, ithmax = Slam.ScanMatch2D('match',
   OMAP.data,
   Y, -- Transformed points
   xCand, yCand, aCand
+,hits
   );
 --print( 'Best indices', hmax, xmax, ymax, thmax )
 --print('Hit size',hits:size()[1],hits:size()[2],hits:size()[3])
+--print('Best position:', xCand[ixmax], yCand[iymax], aCand[ithmax] )
 
   -- TODO: Create a better grid of distance-based costs
   -- from each cell to the odometry pose
@@ -406,10 +405,9 @@ local function scanMatchOne()
   -- Should make a gaussian depression around this point...
   -- Extract the 2D slice of xy poses at the best angle to be the cost map
 
---  local costGrid1 = hits:select(3,thmax):mul(-1)
---  costGrid1[indx[1]][indy[1]] = costGrid1[indx[1]][indy[1]] - 500; --  - 2e4;
+  local costGrid1 = hits:select(3,ithmax):mul(-1)
+  costGrid1[indx[1]][indy[1]] = costGrid1[indx[1]][indy[1]] - 500; --  - 2e4;
   -- Find the minimum and save the new pose
---[[
   local min_cost = costGrid1[1][1];
   local mindex_x = 1;
   local mindex_y = 1;
@@ -422,17 +420,19 @@ local function scanMatchOne()
       end
     end
   end
---]]
+
   -- Save the best pose
-  SLAM.yaw = aCand[thmax];
-  SLAM.x   = xCand[xmax];
-  SLAM.y   = yCand[ymax];
---  SLAM.x   = xCand[mindex_x];
---  SLAM.y   = yCand[mindex_y];
+  SLAM.yaw = aCand[ithmax];
+  SLAM.x   = xCand[mindex_x];
+  SLAM.y   = yCand[mindex_y];
+--SLAM.x, SLAM.y, SLAM.yaw = xCand[ixmax], yCand[iymax], aCand[ithmax]
   return hmax
 end
 libSlam.scanMatchOne = scanMatchOne
 
+-----------------------------
+-------- ScanMatchTwo -------
+-----------------------------
 local function scanMatchTwo()
   -- Reset the ranges based on the current odometry
   -- TODO: determine how much to search over the yaw space based on 
@@ -452,12 +452,13 @@ local function scanMatchTwo()
   hits:zero()
 
   -- TODO: Every other Y on the first pass
-  local hmax, xmax, ymax, thmax = Slam.ScanMatch2D('match',
+  local hmax, ixmax, iymax, ithmax = Slam.ScanMatch2D('match',
   OMAP.data,
   Y, -- Transformed points
   xCand, yCand, aCand
+,hits
   );
-  SLAM.yaw = aCand[thmax];
+  SLAM.yaw = aCand[ithmax];
   return hmax;
 end
 libSlam.scanMatchTwo = scanMatchTwo

@@ -22,7 +22,7 @@ double sensorOffsetX = 0;
 double sensorOffsetY = 0;
 double sensorOffsetZ = 0;
 
-vector<double> hits;
+//vector<double> hits;
 
 int lua_ScanMatch2D(lua_State *L) {
   //  const int BUFLEN = 256;
@@ -96,12 +96,11 @@ int lua_ScanMatch2D(lua_State *L) {
     long npths = pths_t->size[0];
 
     /* Grab the output Tensor */
-/*
     THDoubleTensor * likelihoods_t = (THDoubleTensor *) luaT_toudata(L, 7, "torch.DoubleTensor");
     if (likelihoods_t->size[0] != npxs || likelihoods_t->size[1]!=npys || likelihoods_t->size[2]!=npths)
       return luaL_error(L, "Likelihood output wrong");
-*/
-    hits.resize( npxs*npys*npths );
+
+//    hits.resize( npxs*npys*npths );
 
     for (int pthi=0; pthi<npths; pthi++)   //iterate over all yaw values
     {
@@ -150,11 +149,10 @@ int lua_ScanMatch2D(lua_State *L) {
             }
 
             //*tl++ += mapp[xi];
-            //unsigned long idx = npth*( npx*yi+xi ) + pthi;
-            unsigned long idx = pthi*npxs*npys + npxs*yi + xi;
+            //nsigned long idx = pthi*npxs*npys + npxs*yi + xi;
             double newLikelihood = 
-              //THTensor_fastGet3d(likelihoods_t,xi,yi,pthi) + 
-              hits[ idx ] +
+              THTensor_fastGet3d(likelihoods_t,xi,yi,pthi) + 
+              //hits[ idx ] +
               (double)THTensor_fastGet2d(map_t,xi,yi);
             // Find the maximum likelihood
             if( newLikelihood > hmax ){
@@ -164,8 +162,8 @@ int lua_ScanMatch2D(lua_State *L) {
               ithmax = pthi+1; // Lua index
             }
 
-            //THTensor_fastSet3d(likelihoods_t,pxi,pyi,pthi,newLikelihood);
-            hits[ idx ] = newLikelihood;
+            THTensor_fastSet3d(likelihoods_t,pxi,pyi,pthi,newLikelihood);
+            //hits[ idx ] = newLikelihood;
             //fprintf(stdout,"Setting value (%d,%d,%d) to %lf\n",
             //    pxi,pyi,pthi,newLikelihood);
           }

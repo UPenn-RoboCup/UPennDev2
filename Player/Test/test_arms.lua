@@ -17,26 +17,6 @@ require('vector')
 --print( "LIDAR Dim:", WebotsLaser.get_width(), WebotsLaser.get_height())
 --nlidar_readings = WebotsLaser.get_width() * WebotsLaser.get_height();
 
-package.path = cwd..'/Util/ffi/?.lua;'..package.path
-local ffi = require 'ffi'
-require 'carray'
-require 'cjpeg'
-require 'Camera'
-w = Camera.get_width();
-h = Camera.get_height();
-img = Camera.get_image()
-img_cdata = ffi.cast( 'uint8_t*', carray.pointer(img))
-img_str = ffi.string( img_cdata, w*h*3 );
---local jpg = cjpeg.compress( img_str, w, h );
-local jpg = cjpeg.compress( carray.pointer(img), w, h );
-f = io.open('/tmp/test.jpeg','w')
-n = f:write( jpg )
-f:close()
-print('wrote it!')
---local libpng = require 'ffi/libpng'
---libpng.save('/tmp/image_wb.png', Camera.get_width(), Camera.get_height(), img_cdata )
-local simple_ipc = require 'simple_ipc'
-img_channel = simple_ipc.setup_publisher('img')
 
 require 'rcm'
 --
@@ -607,9 +587,6 @@ local tDelay = 0.005 * 1E6; -- Loop every 5ms
 
 --calculate_arm_space();
 
-
-
-
 while (true) do
 	-- Run Updates
   process_keyinput();
@@ -626,21 +603,6 @@ while (true) do
 		--print('qLArm',qLArm)
     t_last = Body.get_time();
   end
-
-img = Camera.get_image()
-img_cdata = ffi.cast( 'uint8_t*', carray.pointer(img))
-img_str = ffi.string( img_cdata, w*h*3 );
-w = Camera.get_width();
-h = Camera.get_height();
---local jpg = cjpeg.compress( img_str, w, h );
-local jpg, sz = cjpeg.compress( carray.pointer(img), w, h );
-img_channel:send( jpg )
---[[
-f = io.open('/tmp/test.jpeg','w')
-n = f:write( jpg )
-f:close()
---]]
-
 
   if(darwin) then
     unix.usleep(tDelay);

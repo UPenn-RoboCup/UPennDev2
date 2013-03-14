@@ -1,0 +1,518 @@
+# Extracted from:
+# https://bitbucket.org/osrf/drcsim/src/c69ecab26a55/ros/atlas_description/urdf/atlas_simple_shapes.urdf
+
+PROTO Atlas_fablen [
+  field SFVec3f translation 0 1 0
+  field SFRotation rotation  1 0 0 -1.5708
+  field SFString controller "void"
+  field SFString   controllerArgs ""
+]
+{
+Robot {
+  translation IS translation
+  rotation IS rotation
+  controllerArgs IS controllerArgs
+  children [
+    PelvisSolid {
+    }
+    DEF BackLbz Servo {
+      translation -0.0125 0 0
+      rotation 0 0 1 0
+      children [
+        LtorsoSolid {
+        }
+        DEF BackMby Servo {
+          translation 0 0 0.09
+          rotation 0 1 0 0
+          children [
+            MtorsoSolid {
+            }
+            DEF BackUbx Servo {
+              translation 0 0 0.05
+              rotation 1 0 0 0
+              children [
+                UtorsoSolid {
+                }
+                DEF LArmUsy Servo {
+                  translation 0.024 0.221 0.289
+                  rotation 0 0.5 0.866025 0
+                  children [
+                    LClavSolid {
+                    }
+                    DEF LArmShx Servo {
+                      translation 0 0.075 0.036
+                      rotation 1 0 0 0
+                      children [
+                        LScapSolid {
+                        }
+                        DEF LArmEly Servo {
+                          translation 0 0.185 0
+                          rotation 0 1 0 0
+                          children [
+                            LUarmSolid {
+                            }
+                            DEF LArmElx Servo {
+                              translation 0 0.121 0.013
+                              rotation 1 0 0 0
+                              children [
+                                LLarmSolid {
+                                }
+                                DEF LArmUwy Servo {
+                                  translation 0 0.188 -0.013
+                                  rotation 0 1 0 0
+                                  children [
+                                    LFarmSolid {
+                                    }
+                                    DEF LArmMwx Servo {
+                                      translation 0 0.058 0
+                                      rotation 1 0 0 0
+                                      children [
+                                        LHandSolid {
+                                        }
+                                      ]
+                                      name "LArmMwx"
+                                      maxForce 60
+                                      maxVelocity 12
+                                      minPosition -0.436
+                                      maxPosition 1.571
+                                      dampingConstant 0.1
+                                      physics Physics {
+                                      }
+                                    }
+                                  ]
+                                  name "LArmUwy"
+                                  maxForce 114
+                                  maxVelocity 12
+                                  minPosition -1.571
+                                  maxPosition 1.571
+                                  dampingConstant 0.1
+                                  physics Physics {
+                                  }
+                                }
+                              ]
+                              name "LArmElx"
+                              maxForce 114
+                              maxVelocity 12
+                              minPosition 0
+                              maxPosition 2.35619
+                              dampingConstant 0.1
+                              physics Physics {
+                              }
+                            }
+                          ]
+                          name "LArmEly"
+                          maxForce 114
+                          maxVelocity 12
+                          minPosition 0
+                          maxPosition 3.14159
+                          dampingConstant 0.1
+                          physics Physics {
+                          }
+                        }
+                      ]
+                      name "LArmShx"
+                      maxForce 170
+                      maxVelocity 12
+                      minPosition -1.39626
+                      maxPosition 1.74533
+                      dampingConstant 0.1
+                      physics Physics {
+                      }
+                    }
+                  ]
+                  name "LArmUsy"
+                  maxForce 212
+                  maxVelocity 12
+                  minPosition -1.9635
+                  maxPosition 1.9635
+                  dampingConstant 0.1
+                  physics Physics {
+                  }
+                }
+                DEF NeckAy Servo {
+                  translation 0.01 0 0.43
+                  rotation 0 1 0 0
+                  children [
+                    HeadMesh {
+                    }
+                  ]
+                  name "NeckAy"
+                  maxForce 5
+                  maxVelocity 12
+                  minPosition -0.610865238
+                  maxPosition 1.13446401
+                  dampingConstant 0.1
+                  physics Physics {
+                  }
+                }
+                DEF RArmUsy Servo {
+                  translation 0.024 -0.221 0.289
+                  rotation 0 0.5 -0.866025 0
+                  children [
+                    RClavSolid {
+                    }
+                    DEF RArmShx Servo {
+                      translation 0 -0.075 0.036
+                      rotation 1 0 0 0
+                      children [
+                        RScapSolid {
+                        }
+                        DEF RArmEly Servo {
+                          translation 0 -0.185 0
+                          rotation 0 1 0 0
+                          children [
+                            RUarmSolid {
+                            }
+                            DEF RArmElx Servo {
+                              translation 0 -0.121 0.013
+                              rotation 1 0 0 0
+                              children [
+                                RLarmSolid {
+                                }
+                                DEF RArmUwy Servo {
+                                  translation 0 -0.188 -0.013
+                                  rotation 0 1 0 0
+                                  children [
+                                    RFarmSolid {
+                                    }
+                                    DEF RArmMwx Servo {
+                                      translation 0 -0.058 0
+                                      rotation 1 0 0 0
+                                      children [
+                                        RHandSolid {
+                                        }
+                                      ]
+                                      name "RArmMwx"
+                                      maxForce 60
+                                      maxVelocity 12
+                                      minPosition -1.571
+                                      maxPosition 0.436
+                                      dampingConstant 0.1
+                                      physics Physics {
+                                      }
+                                    }
+                                  ]
+                                  name "RArmUwy"
+                                  maxForce 114
+                                  maxVelocity 12
+                                  minPosition -1.571
+                                  maxPosition 1.571
+                                  dampingConstant 0.1
+                                  physics Physics {
+                                  }
+                                }
+                              ]
+                              name "RArmElx"
+                              maxForce 114
+                              maxVelocity 12
+                              minPosition -2.35619
+                              maxPosition 0
+                              dampingConstant 0.1
+                              physics Physics {
+                              }
+                            }
+                          ]
+                          name "RArmEly"
+                          maxForce 114
+                          maxVelocity 12
+                          minPosition 0
+                          maxPosition 3.14159
+                          dampingConstant 0.1
+                          physics Physics {
+                          }
+                        }
+                      ]
+                      name "RArmShx"
+                      maxForce 170
+                      maxVelocity 12
+                      minPosition -1.74533
+                      maxPosition 1.39626
+                      dampingConstant 0.1
+                      physics Physics {
+                      }
+                    }
+                  ]
+                  name "RArmUsy"
+                  maxForce 212
+                  maxVelocity 12
+                  minPosition -1.9635
+                  maxPosition 1.9635
+                  dampingConstant 0.1
+                  physics Physics {
+                  }
+                }
+              ]
+              name "BackUbx"
+              maxForce 94.91
+              maxVelocity 12
+              minPosition -0.790809
+              maxPosition 0.790809
+              dampingConstant 0.1
+              physics Physics {
+              }
+            }
+          ]
+          name "BackMby"
+          maxForce 206.843
+          maxVelocity 12
+          minPosition -1.2
+          maxPosition 1.28
+          dampingConstant 0.1
+          physics Physics {
+          }
+        }
+      ]
+      name "BackLbz"
+      maxForce 124.016
+      maxVelocity 12
+      minPosition -0.610865
+      maxPosition 0.610865
+      dampingConstant 0.1
+      physics Physics {
+      }
+    }
+    DEF LLegUhz Servo {
+      translation 0 0.089 0
+      rotation 0 0 1 0
+      children [
+        LUglutSolid {
+        }
+        DEF LLegMhx Servo {
+          translation 0 0 0
+          rotation 1 0 0 0
+          children [
+            LLglutSolid {
+            }
+            DEF LLegLhy Servo {
+              translation 0.05 0 -0.05
+              rotation 0 1 0 0
+              children [
+                LUlegSolid {
+                }
+                DEF LLegKny Servo {
+                  translation -0.05 0 -0.374
+                  rotation 0 1 0 0
+                  children [
+                    LLlegSolid {
+                    }
+                    DEF LLegUay Servo {
+                      translation 0 0 -0.422
+                      rotation 0 1 0 0
+                      children [
+                        LTalusSolid {
+                        }
+                        DEF LLegLax Servo {
+                          translation 0 0 0
+                          rotation 1 0 0 0
+                          children [
+                            LFootSolid {
+                            }
+                          ]
+                          name "LLegLax"
+                          maxForce 90
+                          maxVelocity 12
+                          minPosition -0.436
+                          maxPosition 0.436
+                          dampingConstant 0.1
+                          physics Physics {
+                          }
+                        }
+                      ]
+                      name "LLegUay"
+                      maxForce 220
+                      maxVelocity 12
+                      minPosition -0.698
+                      maxPosition 0.698
+                      dampingConstant 0.1
+                      physics Physics {
+                      }
+                    }
+                  ]
+                  name "LLegKny"
+                  maxForce 220
+                  maxVelocity 12
+                  minPosition 0
+                  maxPosition 2.45
+                  dampingConstant 0.1
+                  physics Physics {
+                  }
+                }
+              ]
+              name "LLegLhy"
+              maxForce 260
+              maxVelocity 12
+              minPosition -1.75
+              maxPosition 0.524
+              dampingConstant 0.1
+              physics Physics {
+              }
+            }
+          ]
+          name "LLegMhx"
+          maxForce 180
+          maxVelocity 12
+          minPosition -0.47
+          maxPosition 0.495
+          dampingConstant 0.1
+          physics Physics {
+          }
+        }
+      ]
+      name "LLegUhz"
+      maxForce 110
+      maxVelocity 12
+      minPosition -0.32
+      maxPosition 1.14
+      dampingConstant 0.1
+      physics Physics {
+      }
+    }
+    DEF RLegUhz Servo {
+      translation 0 -0.089 0
+      rotation 0 0 1 0
+      children [
+        RUglutSolid {
+        }
+        DEF RLegMhx Servo {
+          translation 0 0 0
+          rotation 1 0 0 0
+          children [
+            RLglutSolid {
+            }
+            DEF RLegLhy Servo {
+              translation 0.05 0 -0.05
+              rotation 0 1 0 0
+              children [
+                RUlegSolid {
+                }
+                DEF RLegKny Servo {
+                  translation -0.05 0 -0.374
+                  rotation 0 1 0 0
+                  children [
+                    RLlegSolid {
+                    }
+                    DEF RLegUay Servo {
+                      translation 0 0 -0.422
+                      rotation 0 1 0 0
+                      children [
+                        RTalusSolid {
+                        }
+                        DEF RLegLax Servo {
+                          translation 0 0 0
+                          rotation 1 0 0 0
+                          children [
+                            RFootSolid {
+                            }
+                          ]
+                          name "RLegLax"
+                          maxForce 90
+                          maxVelocity 12
+                          minPosition -0.436
+                          maxPosition 0.436
+                          dampingConstant 0.1
+                          physics Physics {
+                          }
+                        }
+                      ]
+                      name "RLegUay"
+                      maxForce 220
+                      maxVelocity 12
+                      minPosition -0.698
+                      maxPosition 0.698
+                      dampingConstant 0.1
+                      physics Physics {
+                      }
+                    }
+                  ]
+                  name "RLegKny"
+                  maxForce 220
+                  maxVelocity 12
+                  minPosition 0
+                  maxPosition 2.45
+                  dampingConstant 0.1
+                  physics Physics {
+                  }
+                }
+              ]
+              name "RLegLhy"
+              maxForce 260
+              maxVelocity 12
+              minPosition -1.745
+              maxPosition 0.524
+              dampingConstant 0.1
+              physics Physics {
+              }
+            }
+          ]
+          name "RLegMhx"
+          maxForce 180
+          maxVelocity 12
+          minPosition -0.495
+          maxPosition 0.47
+          dampingConstant 0.1
+          physics Physics {
+          }
+        }
+      ]
+      name "RLegUhz"
+      maxForce 260
+      maxVelocity 12
+      minPosition -1.14
+      maxPosition 0.32
+      dampingConstant 0.1
+      physics Physics {
+      }
+    }
+
+
+
+
+    DEF zero GPS {
+       translation -0.023 0 0.596
+       name "zero"
+    }
+    Compass {
+       translation -0.023 0 0.596
+       name "compass"
+    }
+    Accelerometer {
+      translation 0.027711 0 0.23735
+#     rotation 1 0 0 1.5708
+      name "Accelerometer"
+      lookupTable [
+          -39.24 0 0
+           39.24 1024 0
+      ]
+    }
+    Gyro {
+      translation 0.027711 0 0.23735
+      name "Gyro"
+      lookupTable [
+        -27.925 0 0
+        27.925 1024 0
+      ]
+    }
+   #Those are for sending/receiving team messages for UPenn code
+    DEF RECEIVER Receiver {
+      name "receiver"
+      channel IS channel
+    }
+    DEF EMITTER Emitter {
+      name "emitter"
+      channel IS channel
+    }
+
+
+
+
+
+
+
+
+  ]
+  name "Atlas_fablen"
+  controller IS controller
+  physics Physics {
+  }
+}
+}

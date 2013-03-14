@@ -1,49 +1,37 @@
 require 'cjpeg'
-require 'carray'
-local ffi = require 'ffi'
 w = 320
 h = 240
-ch = 4;--rgba
-img = carray.new('c',w*h*ch)
-img_cd = ffi.cast('uint8_t*',carray.pointer(img))
-print(img,w*h*ch)
+ch = 3;
+nbytes = w*h*ch;
+if webots then
+  ch = 4;--bgra for webots
+end
+print('Filling a '..w..' by '..h..' image',ch..' channels.')
 
-for k=1,ch*w*h,ch do
-  img[k] = 255;
+if using_luajit then
+  ffi = require 'ffi'
+  img = ffi.new('uint8_t[?]', w*h*ch, 0)
+else
+  require 'carray'
+  img = carray.new('c',w*h*ch)
+end
+
+for k=1,nbytes,ch do
+  -- Blue up top
+  img[k] = 0;
   img[k+1] = 0;
-  img[k+2] = 0;
-  if k>3*w then
-    img[k] = 0;
+  img[k+2] = 255;
+  -- Green halfway through
+  if k>3*w*h/2 then
+    img[k] = 255;
     img[k+1] = 255;
     img[k+2] = 0;
   end
-  if k>3*w*h/2 then
-    img[k] = 0;
-    img[k+1] = 0;
-    img[k+2] = 255;
-  end
 end
 
-for hh=0,h-1 do
-for ww=0,w-1 do
-  img_cd[ch*ww+ch*w*hh] = 255*hh/(h-1)
-  img_cd[1+ch*ww+ch*w*hh] = 255*hh/(h-1)
-  img_cd[2+ch*ww+ch*w*hh] = 255*hh/(h-1)
-
-  if ww>w/2 then
-    img_cd[ch*ww+ch*w*hh] = 0
-    img_cd[2+ch*ww+ch*w*hh] = 0
-  end
-
-end
-end
-
-img_str = ffi.string(img_cd,w*h*ch)
-print('img sz:',#img_str)
-
-cmp = cjpeg.compress( carray.pointer(img), w, h )
-print('cmp sz:',#cmp)
+img_jpeg = cjpeg.compress( carray.pointer(img), w, h )
+print(type(img_jpeg),'Compression Ratio:', #img_jpeg, #img_jpeg/nbytes )
 
 f = io.open('img.jpeg','w')
-n = f:write( cmp )
+n = f:write( img_jpeg )
 f:close()

@@ -197,18 +197,12 @@ local function processL0()
     hmax = libSlam.scanMatchTwo();
     -- If no good fits, then use pure odometry readings
     if hmax < 500 then
-print('no update!',hmax)
+      print('No good laser correlations!',hmax)
       SLAM.x = SLAM.xOdom;
       SLAM.y = SLAM.yOdom;
       SLAM.yaw = SLAM.yawOdom;
     end
-    -- TODO: it is negative...?
---[[
-SLAM.x = -1*SLAM.x;
-SLAM.y = -1*SLAM.y;
---SLAM.yaw = -1*SLAM.yaw;
-SLAM.yaw = Sensors.IMU.data.Y*math.pi/180
---]]
+SLAM.yaw = Sensors.IMU.data.Y*math.pi/180*-1
   else
     print('not moving');
   end
@@ -223,7 +217,7 @@ SLAM.yaw = Sensors.IMU.data.Y*math.pi/180
   ---------------------
   -- Take the laser scan points from the body frame and 
   -- put them in the world frame
-  print('My x, y position is',SLAM.x, SLAM.y)
+  --print('My x, y. yaw position is',SLAM.x, SLAM.y, SLAM.yaw)
   local tmp = torch.mm( 
   libSlam.trans( {SLAM.x, SLAM.y, SLAM.z} ),
   libSlam.rotz( SLAM.yaw ) 
@@ -346,10 +340,10 @@ local function scanMatchOne()
     if xStart then
       SLAM.x = xStart;
       SLAM.Y = yStart;
-      SLAM.yaw = thStart;
+      SLAM.yaw = Sensors.IMU.data.Y*math.pi/180*-1;--thStart;
       SLAM.xOdom = xStart;
       SLAM.yOdom = yStart;
-      SLAM.yawOdom = thStart;
+      SLAM.yawOdom = Sensors.IMU.data.Y*math.pi/180*-1;--thStart;
     end
     return 0;
   end
@@ -370,12 +364,14 @@ local function scanMatchOne()
   local yCand = pass1.yCand;
   local aCand = pass1.aCand;
   local hits = pass1.hits;
-  xCand:range(-1*math.floor(pass1.nxs/2), math.floor(pass1.nxs/2) )
-  yCand:range(-1*math.floor(pass1.nys/2), math.floor(pass1.nys/2) )
-  aCand:range(-1*math.floor(pass1.nyaw/2),math.floor(pass1.nyaw/2))
-  xCand:mul(pass1.dx):add(SLAM.xOdom);
-  yCand:mul(pass1.dy):add(SLAM.yOdom);
-  aCand:mul(pass1.dyaw):add(SLAM.yawOdom):add( wyaw );
+  xCand:range(-1*math.floor(pass1.nxs/2), math.floor(pass1.nxs/2) ):mul(pass1.dx)
+  yCand:range(-1*math.floor(pass1.nys/2), math.floor(pass1.nys/2) ):mul(pass1.dy)
+  aCand:range(-1*math.floor(pass1.nyaw/2),math.floor(pass1.nyaw/2)):mul(pass1.dyaw)
+  xCand:add(SLAM.xOdom);
+  yCand:add(SLAM.yOdom);
+  aCand:add(SLAM.yawOdom):add( wyaw );
+
+print( string.format('\nMine pose is\t %.2f,%.2f, %.2f',SLAM.xOdom, SLAM.yOdom, SLAM.yawOdom) );
 
   -- Zero the hits, which will be accumulated in ScanMatch2D
   hits:zero()
@@ -386,9 +382,10 @@ local function scanMatchOne()
   xCand, yCand, aCand
 ,hits
   );
---print( 'Best indices', hmax, xmax, ymax, thmax )
+--print( 'Best indices', hmax, ixmax, iymax, ithmax )
 --print('Hit size',hits:size()[1],hits:size()[2],hits:size()[3])
---print('Best position:', xCand[ixmax], yCand[iymax], aCand[ithmax] )
+print( string.format('Best pose is\t %.2f,%.2f, %.2f',xCand[ixmax], yCand[iymax], aCand[ithmax]) );
+SLAM.x, SLAM.y, SLAM.yaw = xCand[ixmax], yCand[iymax], aCand[ithmax]
 
   -- TODO: Create a better grid of distance-based costs
   -- from each cell to the odometry pose
@@ -416,10 +413,9 @@ local function scanMatchOne()
   end
 
   -- Save the best pose
-  SLAM.yaw = aCand[ithmax];
-  SLAM.x   = xCand[mindex_x];
-  SLAM.y   = yCand[mindex_y];
---SLAM.x, SLAM.y, SLAM.yaw = xCand[ixmax], yCand[iymax], aCand[ithmax]
+--  SLAM.yaw = aCand[ithmax];
+--  SLAM.x   = xCand[mindex_x];
+--  SLAM.y   = yCand[mindex_y];
   return hmax
 end
 libSlam.scanMatchOne = scanMatchOne

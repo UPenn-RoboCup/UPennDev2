@@ -93,7 +93,7 @@ int lua_ScanMatch2D(lua_State *L) {
     long npths = pths_t->size[0];
 
     /* Grab the output Tensor */
-    THDoubleTensor * likelihoods_t = (THDoubleTensor *) luaT_toudata(L, 7, "torch.DoubleTensor");
+    THDoubleTensor * likelihoods_t = (THDoubleTensor *) luaT_checkudata(L, 7, "torch.DoubleTensor");
     if (likelihoods_t->size[0] != npxs || likelihoods_t->size[1]!=npys || likelihoods_t->size[2]!=npths)
       return luaL_error(L, "Likelihood output wrong");
 
@@ -105,12 +105,15 @@ int lua_ScanMatch2D(lua_State *L) {
       double offsetx = (sensorOffsetX*costh - sensorOffsetY*sinth)*invRes;
       double offsety = (sensorOffsetX*sinth + sensorOffsetY*costh)*invRes;
 
-      // Iterate over all points
+      // Iterate over all laser points
       for (int pi=0; pi<nps; pi++) {
 
         // Convert the laser points to the map coordinates
-        double xd = THTensor_fastGet2d( lY_t, 1, pi)*costh - THTensor_fastGet2d( lY_t, 2, pi)*sinth + offsetx;
-        double yd = THTensor_fastGet2d( lY_t, 1, pi)*sinth + THTensor_fastGet2d( lY_t, 2, pi)*costh + offsety;
+double lx = THTensor_fastGet2d( lY_t, 1, pi) * invRes;
+double ly = THTensor_fastGet2d( lY_t, 2, pi) * invRes;
+        double xd = lx*costh - ly*sinth + offsetx;
+        double yd = lx*sinth + ly*costh + offsety;
+//fprintf(stdout,"xd, yd: %lf, %lf\n",xd,yd);
 
         // Iterate over all pose ys
         for (int pyi=0; pyi<npys; pyi++) {
@@ -125,26 +128,28 @@ int lua_ScanMatch2D(lua_State *L) {
             unsigned int xi = xd + (THTensor_fastGet1d(pxs_t,pxi)-xmin)*invRes;
             if (xi >= sizex)
               continue;
-
+//fprintf(stdout,"xi, yi: %u %u\n",xi,yi);
 double currentLikelihood = THTensor_fastGet3d(likelihoods_t,pxi,pyi,pthi);
-            double mapLikelihood = THTensor_fastGet2d(map_t,xi,yi);
+uint8_t mapLikelihood = THTensor_fastGet2d(map_t,xi,yi);
 double newLikelihood = currentLikelihood+mapLikelihood;
 THTensor_fastSet3d(likelihoods_t,pxi,pyi,pthi,newLikelihood);
 
-fprintf(stdout,"New max? %.2lf+%.2lf vs %.2lf.\n",currentLikelihood,mapLikelihood,hmax);
-fflush( stdout );
+
+
             // Find the maximum likelihood
             if( newLikelihood > hmax ){
+//fprintf(stdout,"New max? %.2lf+%d vs %.2lf.\n",currentLikelihood,mapLikelihood,hmax);
+//fflush( stdout );
               hmax = newLikelihood;
               ixmax = pxi+1; // Lua index
               iymax = pyi+1; // Lua index
               ithmax = pthi+1; // Lua index
             }
             
-          }
-        }
-      }
-    }
+          } // For pose xs
+        } // For pose ys
+      } // for laser scan points
+    } // For yaw values
     lua_pushnumber(L,hmax);
     lua_pushinteger(L,ixmax);
     lua_pushinteger(L,iymax);

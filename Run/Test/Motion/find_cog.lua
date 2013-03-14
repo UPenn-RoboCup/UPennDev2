@@ -423,15 +423,15 @@ local tr = {-0.3, 0.3}
 trial = 1
 
 local poses = {{0.00, 0.00, 0.00, 0.00, 0.00, 0.00},
-               {0.00, 0.00, 0.00, 0.2, 0.00, 0.00},
-               {0.00, 0.00, 0.00, 0.00, 0.2, 0.00},
-               {0.00, 0.00, 0.00, -0.2, 0.00, 0.00},
-               {0.00, 0.00, 0.00, 0.00, -0.2, 0.00},
                {0.08, 0.00, 0.00, 0.00, 0.00, 0.00},
                {-0.06, 0.00, 0.00, 0.00, 0.00, 0.00},
                {0.00, 0.10, 0.00, 0.00, 0.00, 0.00},
                {0.08, 0.10, 0.00, 0.00, 0.00, 0.00},
-               {-0.06, 0.10, 0.00, 0.00, 0.00, 0.00}}
+               {-0.06, 0.10, 0.00, 0.00, 0.00, 0.00},
+               {0.00, 0.00, 0.00, 0.2, 0.00, 0.00},
+               {0.00, 0.00, 0.00, 0.00, 0.2, 0.00},
+               {0.00, 0.00, 0.00, -0.2, 0.00, 0.00},
+               {0.00, 0.00, 0.00, 0.00, -0.2, 0.00}}
 
 function generate_pose_angles(torso)
   local torso_pose = Transform.pose(torso)
@@ -479,10 +479,10 @@ function state_machine(t)
       print("move to ready", t)
       state = 1
       state_t = 0
-      trial = trial + 1
+      --trial = trial + 1
     end
   elseif (state == 1) then --move to ready position
-    local percent = trajectory_percentage(1, 2, state_t)
+    local percent = trajectory_percentage(1, 3, state_t)
     qt = joint_offset*percent
     if (percent >= 1) then 
       state = 2
@@ -493,7 +493,7 @@ function state_machine(t)
     end
   elseif (state == 2) then 
   --wait specified time
-    if (state_t > 1.5) then  
+    if (state_t > 2) then  
       state = 3
       state_t = 0
       print('state = 3')
@@ -503,9 +503,10 @@ function state_machine(t)
     record_data()
     if (state_t > .25) then 
       trial = trial + 1
+      --print('trial', trial)
       state_t = 0
       state = 4
-      if trial >= 1 then 
+      if trial >= 4 then 
         --run = false
         print('exit trial')
         state = 9
@@ -514,10 +515,10 @@ function state_machine(t)
     end
   elseif (state == 4) then
     --prime offsets and wait till stable
-    joint_offset = vector.copy(qt) 
-    q_goal = generate_pose_angles(poses[trial])
-    delta = q_goal - joint_offset 
     if state_t >=0.5 then
+      joint_offset = vector.copy(qt) 
+      q_goal = generate_pose_angles(poses[trial])
+      delta = q_goal - joint_offset 
       print('state = 5')
       state = 5
       state_t = 0
@@ -527,14 +528,14 @@ function state_machine(t)
     local percent = trajectory_percentage(1, 3, state_t)
     qt = percent*delta + joint_offset
     if (percent >= 1) then  
-      print('state = 6')
+      print('in pose', trial)
       state = 6
       state_t = 0
       trail = trial + 1
     end
   elseif (state == 6) then
     --wait specified time
-    if (state_t > 1) then  
+    if (state_t > 2) then  
       state = 2
       state_t = 0
     end
@@ -585,17 +586,17 @@ print('ident', ident)
 --local fw_log = assert(io.open("Logs/fw_log"..ident..".txt","w"))
 --local fw_reg = assert(io.open("Logs/fw_reg"..ident..".txt","w"))
 
-local fw_joint_pos = assert(io.open("Logs/fw_joint_pos"..ident..".txt","w"))
-local fw_qt = assert(io.open("Logs/fw_qt"..ident..".txt","w"))
-local fw_raw_pos = assert(io.open("Logs/fw_raw_pos"..ident..".txt","w"))
-local fw_joint_pos_sense = assert(io.open("Logs/fw_joint_pos_sense"..ident..".txt","w"))
-local fw_COG = assert(io.open("Logs/fw_COG"..ident..".txt","w"))
-local fw_ft_filt = assert(io.open("Logs/fw_ft_filt"..ident..".txt","w"))
-local fw_ft = assert(io.open("Logs/fw_ft"..ident..".txt","w"))
-local fw_lr_cop = assert(io.open("Logs/fw_lr_cop"..ident..".txt","w"))
-local fw_COP_filt = assert(io.open("Logs/fw_COP_filt"..ident..".txt","w"))
-local fw_ahrs_filt = assert(io.open("Logs/fw_ahrs_filt"..ident..".txt","w"))
-local fw_trial = assert(io.open("Logs/fw_trial"..ident..".txt","w"))
+local fw_joint_pos = assert(io.open("../Logs/fw_joint_pos"..ident..".txt","w"))
+local fw_qt = assert(io.open("../Logs/fw_qt"..ident..".txt","w"))
+local fw_raw_pos = assert(io.open("../Logs/fw_raw_pos"..ident..".txt","w"))
+local fw_joint_pos_sense = assert(io.open("../Logs/fw_joint_pos_sense"..ident..".txt","w"))
+local fw_COG = assert(io.open("../Logs/fw_COG"..ident..".txt","w"))
+local fw_ft_filt = assert(io.open("../Logs/fw_ft_filt"..ident..".txt","w"))
+local fw_ft = assert(io.open("../Logs/fw_ft"..ident..".txt","w"))
+local fw_lr_cop = assert(io.open("../Logs/fw_lr_cop"..ident..".txt","w"))
+local fw_COP_filt = assert(io.open("../Logs/fw_COP_filt"..ident..".txt","w"))
+local fw_ahrs_filt = assert(io.open("../Logs/fw_ahrs_filt"..ident..".txt","w"))
+local fw_trial = assert(io.open("../Logs/fw_trial"..ident..".txt","w"))
 
 function record_data()
     write_to_file(fw_joint_pos, joint_pos)

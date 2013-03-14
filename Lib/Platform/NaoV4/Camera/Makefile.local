@@ -13,7 +13,9 @@ all: NaoCam
 %.o: %.c
 	$(CC) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
 
-NaoCam: naoCam.o naoCamThread.o timeScalar.o
+# Changed the libraries based on the working NAO branch 
+#NaoCam: naoCam.o naoCamThread.o timeScalar.o
+NaoCam: nao_cam.o nao_cam_mmap_thread.o cam_util.o timeScalar.o
 	$(CXX) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ $(LIBRT)
 
 clean:

@@ -420,18 +420,18 @@ end
 
 local tp = {-0.3, 0.3}
 local tr = {-0.3, 0.3}
-trial = 1
+trial = 0
 
 local poses = {{0.00, 0.00, 0.00, 0.00, 0.00, 0.00},
-               {0.08, 0.00, 0.00, 0.00, 0.00, 0.00},
-               {-0.06, 0.00, 0.00, 0.00, 0.00, 0.00},
+               {0.05, 0.00, 0.00, 0.00, 0.00, 0.00},
+               {-0.11, 0.00, 0.00, 0.00, 0.00, 0.00},
                {0.00, 0.10, 0.00, 0.00, 0.00, 0.00},
-               {0.08, 0.10, 0.00, 0.00, 0.00, 0.00},
-               {-0.05, 0.10, 0.00, 0.00, 0.00, 0.00},
-               {0.00, 0.00, 0.00, 0.2, 0.00, 0.00},
-               {0.00, 0.00, 0.00, 0.00, 0.15, 0.00},
-               {0.00, 0.00, 0.00, -0.2, 0.00, 0.00},
-               {0.00, 0.00, 0.00, 0.00, -0.2, 0.00}}
+               {0.05, 0.10, 0.00, 0.00, 0.00, 0.00},
+               {-0.1, 0.10, 0.00, 0.00, 0.00, 0.00},
+               {0.00, 0.00, 0.00, 0.25, 0.00, 0.00},
+               {0.00, 0.00, 0.00, 0.00, 0.25, 0.00},
+               {0.00, 0.00, 0.00, -0.25, 0.00, 0.00},
+               {0.00, 0.00, 0.00, 0.00, -0.15, 0.00}}
 
 function generate_pose_angles(torso)
   local torso_pose = Transform.pose(torso)
@@ -450,7 +450,11 @@ function move_legs(torso)
   local y_offset = l_leg_offset[2]
   local z_offset = l_leg_offset[3]
   local l_foot_frame = Transform.pose({x_offset-torso[1], y_offset-torso[2], z_offset-torso[3], 0, 0, 0})
-  local r_foot_frame = Transform.pose({x_offset-torso[1],-y_offset-torso[2], z_offset-torso[3], 0, 0, 0})
+
+  local x_offset = r_leg_offset[1]
+  local y_offset = r_leg_offset[2]
+  local z_offset = r_leg_offset[3]
+  local r_foot_frame = Transform.pose({x_offset-torso[1],y_offset-torso[2], z_offset-torso[3], 0, 0,0})
   local torso_frame = Transform.pose({0, 0, 0, 0, 0, 0})
   local qStance = Kinematics.inverse_pos_legs(l_foot_frame, r_foot_frame, torso_frame)
   return qStance  
@@ -472,14 +476,20 @@ function state_machine(t)
     if state_t >= 1 then  
       print('state 1')
       l_leg_offset = lf
+      r_leg_offset = rf
       torso = vector.new{0, 0, -0.05, 0, 0, 0} 
       joint_offset = move_legs(torso)
       joint_offset = vector.new(joint_offset)
-      --util.ptable(joint_offset)
+--print('inital pose')      
+--util.ptable(pcm:get_l_foot_pose())
+--print('right foot')
+--util.ptable(pcm:get_r_foot_pose())
+--util.ptable(joint_offset)
       print("move to ready", t)
       state = 1
       state_t = 0
-      --trial = trial + 1
+  -- run = false
+      trial = trial + 1
     end
   elseif (state == 1) then --move to ready position
     local percent = trajectory_percentage(1, 3, state_t)
@@ -490,6 +500,13 @@ function state_machine(t)
       --print("wait for 0.5", t)
       l_foot_pose_ref = Transform.pose(pcm:get_l_foot_pose())
       r_foot_pose_ref = Transform.pose(pcm:get_r_foot_pose())
+      print('l foot')
+      util.ptable(pcm:get_l_foot_pose())
+      print('r foot')
+      util.ptable(pcm:get_r_foot_pose())
+      print('joint angles')
+      util.ptable(qt)
+     -- run = false
     end
   elseif (state == 2) then 
   --wait specified time
@@ -506,7 +523,7 @@ function state_machine(t)
       print('trial', trial)
       state_t = 0
       state = 4
-      if trial >= 10 then 
+      if trial >= 11 then --change here to edit number of runs
         --run = false
         print('exit trial')
         state = 9
@@ -516,7 +533,7 @@ function state_machine(t)
   elseif (state == 4) then
     --prime offsets and wait till stable
     if state_t >=0.5 then
-      joint_offset = vector.copy(qt) 
+      joint_offset = dcm:get_joint_position_sensor('legs') 
       q_goal = generate_pose_angles(poses[trial])
       delta = q_goal - joint_offset 
       print('check hip angle', trial, q_goal[3], q_goal[9])
@@ -543,7 +560,7 @@ function state_machine(t)
   elseif (state == 9) then
     --go to original position
     if state_t >=0.5 then
-      joint_offset = vector.copy(qt) 
+      joint_offset = dcm:get_joint_position_sensor('legs') 
       q_goal = vector.zeros(12)
       delta = q_goal - joint_offset 
       state = 10
@@ -565,15 +582,16 @@ end
 --------------------------------------------------------------------
 unix.usleep(5e5)
 Platform.entry()
-Platform.set_time_step(0.001)
+Platform.set_time_step(0.004)
 print('timestep', Platform.get_time_step())
 Proprioception.entry()
 dcm:set_joint_enable(0,'all')
-local set_values = dcm:get_joint_position('legs') --records original joint pos
+local set_values = dcm:get_joint_position_sensor('legs') 
 dcm:set_joint_position_p_gain(1, 'all') -- position control
 --dcm:set_joint_position_p_gain(0, 'ankles')
 --dcm:set_joint_damping(0, 'ankles')
 --dcm:set_joint_force({0, 0, 0, 0},'ankles')
+dcm:set_joint_position(set_values)
 dcm:set_joint_enable(1, 'all')
 qt = vector.copy(set_values) 
 printdata = true
@@ -581,7 +599,7 @@ printdata = true
 ------------------------------------------------------------------------
 --Data logging --
 ------------------------------------------------------------------------
-local ident = "t2"
+local ident = "t1"
 print('ident', ident)
 --local fw_log = assert(io.open("Logs/fw_log"..ident..".txt","w"))
 --local fw_reg = assert(io.open("Logs/fw_reg"..ident..".txt","w"))

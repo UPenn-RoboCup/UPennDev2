@@ -471,10 +471,10 @@ function state_machine(t)
     print("goto home")
     --go to original position
     if state_t >=0.5 then
-      joint_offset = vector.copy(qt) 
+      joint_offset = dcm:get_joint_position_sensor('legs') 
       q_goal = vector.zeros(12)
       delta = q_goal - joint_offset 
-      util.ptable(delta)
+      --util.ptable(delta)
       print('state = 5')
       state = 1
       state_t = 0
@@ -483,6 +483,7 @@ function state_machine(t)
     --move to final state
     local percent = trajectory_percentage(1, 3, state_t)
     qt = percent*delta + joint_offset
+    --print('r_ankle pitch', qt[11])
     if (percent >= 1) then  
       print('complete')
       run = false
@@ -495,15 +496,17 @@ end
 --------------------------------------------------------------------
 unix.usleep(5e5)
 Platform.entry()
-Platform.set_time_step(0.001)
+Platform.set_time_step(0.004)
 print('timestep', Platform.get_time_step())
 Proprioception.entry()
 dcm:set_joint_enable(0,'all')
-local set_values = dcm:get_joint_position('legs') --records original joint pos
+local set_values = dcm:get_joint_position_sensor('legs')
+util.ptable(set_values) 
 dcm:set_joint_position_p_gain(1, 'all') -- position control
 --dcm:set_joint_position_p_gain(0, 'ankles')
 --dcm:set_joint_damping(0, 'ankles')
 --dcm:set_joint_force({0, 0, 0, 0},'ankles')
+dcm:set_joint_position(set_values)
 dcm:set_joint_enable(1, 'all')
 qt = vector.copy(set_values) 
 printdata = false

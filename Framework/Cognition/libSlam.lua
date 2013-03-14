@@ -174,7 +174,7 @@ local function processL0()
   -- if(SLAM.odomChanged > 0)
   if true then
     local hmax = libSlam.scanMatchOne();
-    print( "hmax", hmax )
+    --print( "hmax", hmax )
     -- TODO
     -- slamScanMatchPass2();
 
@@ -332,12 +332,11 @@ local function scanMatchOne()
   hits:zero()
   local hmax, xmax, ymax, thmax = Slam.ScanMatch2D('match',
   OMAP.data,
---torch.ByteTensor(OMAP.sizex,OMAP.sizex),
-Y, -- Transformed points
+  Y, -- Transformed points
   xCand1,yCand1,aCand1,
   hits
   );
---  if true then return 0 end --hmax = 0
+  if true then return 0 end --hmax = 0
 
   -- Is this our first pass?
   if SLAM.lidar0Cntr <= 1 then

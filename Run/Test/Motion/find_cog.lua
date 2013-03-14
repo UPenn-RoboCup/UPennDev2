@@ -427,9 +427,9 @@ local poses = {{0.00, 0.00, 0.00, 0.00, 0.00, 0.00},
                {-0.06, 0.00, 0.00, 0.00, 0.00, 0.00},
                {0.00, 0.10, 0.00, 0.00, 0.00, 0.00},
                {0.08, 0.10, 0.00, 0.00, 0.00, 0.00},
-               {-0.06, 0.10, 0.00, 0.00, 0.00, 0.00},
+               {-0.05, 0.10, 0.00, 0.00, 0.00, 0.00},
                {0.00, 0.00, 0.00, 0.2, 0.00, 0.00},
-               {0.00, 0.00, 0.00, 0.00, 0.2, 0.00},
+               {0.00, 0.00, 0.00, 0.00, 0.15, 0.00},
                {0.00, 0.00, 0.00, -0.2, 0.00, 0.00},
                {0.00, 0.00, 0.00, 0.00, -0.2, 0.00}}
 
@@ -487,7 +487,7 @@ function state_machine(t)
     if (percent >= 1) then 
       state = 2
       state_t = 0
-      print("wait for 0.5", t)
+      --print("wait for 0.5", t)
       l_foot_pose_ref = Transform.pose(pcm:get_l_foot_pose())
       r_foot_pose_ref = Transform.pose(pcm:get_r_foot_pose())
     end
@@ -496,17 +496,17 @@ function state_machine(t)
     if (state_t > 2) then  
       state = 3
       state_t = 0
-      print('state = 3')
+      --print('state = 3')
     end
   elseif (state == 3) then 
     --record COP reading
     record_data()
     if (state_t > .25) then 
       trial = trial + 1
-      --print('trial', trial)
+      print('trial', trial)
       state_t = 0
       state = 4
-      if trial >= 4 then 
+      if trial >= 10 then 
         --run = false
         print('exit trial')
         state = 9
@@ -519,7 +519,8 @@ function state_machine(t)
       joint_offset = vector.copy(qt) 
       q_goal = generate_pose_angles(poses[trial])
       delta = q_goal - joint_offset 
-      print('state = 5')
+      print('check hip angle', trial, q_goal[3], q_goal[9])
+      --print('state = 5')
       state = 5
       state_t = 0
     end
@@ -545,7 +546,6 @@ function state_machine(t)
       joint_offset = vector.copy(qt) 
       q_goal = vector.zeros(12)
       delta = q_goal - joint_offset 
-      print('state = 5')
       state = 10
       state_t = 0
     end

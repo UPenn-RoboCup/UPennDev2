@@ -49,7 +49,7 @@ CXXFLAGS= -O2 -fpic
 
 MEXEXT=mexglx
 SHLIBEXT= so
-LIBOPTS= -shared -fpic -llua
+LIBOPTS= -shared -fpic
 LIBRT= -lrt
 
 #This does not work 

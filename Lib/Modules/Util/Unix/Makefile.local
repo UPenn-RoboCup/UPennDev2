@@ -12,7 +12,7 @@ all: unix stty getch
 	$(CC) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
 
 unix: luaunix.o
-	$(CC) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ -llua
+	$(CC) -o $@.$(SHLIBEXT) $(LIBOPTS) $^
 
 stty: luastty.o
 	$(CXX) -o $@.$(SHLIBEXT) $(LIBOPTS) $^

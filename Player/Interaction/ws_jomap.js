@@ -22,7 +22,7 @@ console.log('IPC | Connected to omap');
 // Process lidar
 var last_img_cntr = counter;
 zmq_img.on('message', function(msg){
-  //console.log('IPC | Got omap message!')
+//  console.log('IPC | Got omap message!')
   if( counter>last_img_cntr ) {
     for(var s=0;s<wskts.length;s++) {
       //console.log('sent!')

@@ -94,7 +94,7 @@ int lua_ScanMatch2D(lua_State *L) {
     long npths = pths_t->size[0];
 
     /* Grab the output Tensor */
-    THDoubleTensor * likelihoods_t = (THDoubleTensor *) luaT_checkudata(L, 7, "torch.DoubleTensor");
+    THDoubleTensor * likelihoods_t = (THDoubleTensor *) luaT_toudata(L, 7, "torch.DoubleTensor");
     if (likelihoods_t->size[0] != npxs || likelihoods_t->size[1]!=npys || likelihoods_t->size[2]!=npths)
       return luaL_error(L, "Likelihood output wrong");
 
@@ -166,7 +166,8 @@ int lua_ScanMatch2D(lua_State *L) {
     lua_pushinteger(L,xmax);
     lua_pushinteger(L,ymax);
     lua_pushinteger(L,thmax);
-    return 4;
+    luaT_pushudata(L, likelihoods_t, "torch.DoubleTensor");
+    return 5;
     //lua_pushlightuserdata(L, likelihoods);
     //lua_pushstring(L, "double");
     //lua_pushinteger(L, npths*npxs*npys);

@@ -30,6 +30,8 @@
     var img = new Image;
     // Create a canvas element
     var myCanvas = $('#container')[0];
+    myCanvas.width = 601;
+    myCanvas.height = 601;
     // Get the drawing context
     var ctx = myCanvas.getContext('2d');
     ws_i.onmessage = function (event) {
@@ -44,6 +46,7 @@
       img.onload = function(){
         ctx.drawImage( img, 0, 0 );
         //console.log( imgdata );
+        //document.body.appendChild(img);
       };
     };
   </script>

@@ -252,7 +252,7 @@ int main()
   m_streams[0] = &depth;
   m_streams[1] = &color;
   int changedIndex;
-  DepthPixel* pDepth;
+  uint16_t* pDepth;
   uint8_t* pColor;
   int lenPacked;
   while (!wasKeyboardHit())
@@ -271,9 +271,9 @@ int main()
       //        fflush(stdout);
       case 0:
         depth.readFrame(&frame);
-        pDepth = (DepthPixel*)frame.getData();
+        pDepth = (uint16_t*)frame.getData();
         for(cntr=0;cntr<NBYTES;cntr++)
-          d[cntr] = (uint8_t)( pDepth[cntr]/16 );
+          d[cntr] = (uint8_t)( pDepth[cntr]>>3 );
         zmq_send( socket, (void*)d, NBYTES, 0 );
         break;
       case 1:

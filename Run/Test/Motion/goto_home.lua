@@ -427,9 +427,9 @@ local poses = {{0.00, 0.00, 0.00, 0.00, 0.00, 0.00},
                {-0.06, 0.00, 0.00, 0.00, 0.00, 0.00},
                {0.00, 0.10, 0.00, 0.00, 0.00, 0.00},
                {0.08, 0.10, 0.00, 0.00, 0.00, 0.00},
-               {-0.05, 0.10, 0.00, 0.00, 0.00, 0.00},
+               {-0.06, 0.10, 0.00, 0.00, 0.00, 0.00},
                {0.00, 0.00, 0.00, 0.2, 0.00, 0.00},
-               {0.00, 0.00, 0.00, 0.00, 0.15, 0.00},
+               {0.00, 0.00, 0.00, 0.00, 0.2, 0.00},
                {0.00, 0.00, 0.00, -0.2, 0.00, 0.00},
                {0.00, 0.00, 0.00, 0.00, -0.2, 0.00}}
 
@@ -468,88 +468,18 @@ end
 ------------------------------------------------------------------------
 function state_machine(t) 
   if (state == 0) then
-    if state_t > 0.75 then record_data() end
-    if state_t >= 1 then  
-      print('state 1')
-      l_leg_offset = lf
-      torso = vector.new{0, 0, -0.05, 0, 0, 0} 
-      joint_offset = move_legs(torso)
-      joint_offset = vector.new(joint_offset)
-      --util.ptable(joint_offset)
-      print("move to ready", t)
-      state = 1
-      state_t = 0
-      --trial = trial + 1
-    end
-  elseif (state == 1) then --move to ready position
-    local percent = trajectory_percentage(1, 3, state_t)
-    qt = joint_offset*percent
-    if (percent >= 1) then 
-      state = 2
-      state_t = 0
-      --print("wait for 0.5", t)
-      l_foot_pose_ref = Transform.pose(pcm:get_l_foot_pose())
-      r_foot_pose_ref = Transform.pose(pcm:get_r_foot_pose())
-    end
-  elseif (state == 2) then 
-  --wait specified time
-    if (state_t > 2) then  
-      state = 3
-      state_t = 0
-      --print('state = 3')
-    end
-  elseif (state == 3) then 
-    --record COP reading
-    record_data()
-    if (state_t > .25) then 
-      trial = trial + 1
-      print('trial', trial)
-      state_t = 0
-      state = 4
-      if trial >= 10 then 
-        --run = false
-        print('exit trial')
-        state = 9
-        state_t = 0
-      end
-    end
-  elseif (state == 4) then
-    --prime offsets and wait till stable
-    if state_t >=0.5 then
-      joint_offset = vector.copy(qt) 
-      q_goal = generate_pose_angles(poses[trial])
-      delta = q_goal - joint_offset 
-      print('check hip angle', trial, q_goal[3], q_goal[9])
-      --print('state = 5')
-      state = 5
-      state_t = 0
-    end
-  elseif (state == 5) then
-    --move to new state
-    local percent = trajectory_percentage(1, 3, state_t)
-    qt = percent*delta + joint_offset
-    if (percent >= 1) then  
-      print('in pose', trial)
-      state = 6
-      state_t = 0
-      trail = trial + 1
-    end
-  elseif (state == 6) then
-    --wait specified time
-    if (state_t > 2) then  
-      state = 2
-      state_t = 0
-    end
-  elseif (state == 9) then
+    print("goto home")
     --go to original position
     if state_t >=0.5 then
       joint_offset = vector.copy(qt) 
       q_goal = vector.zeros(12)
       delta = q_goal - joint_offset 
-      state = 10
+      util.ptable(delta)
+      print('state = 5')
+      state = 1
       state_t = 0
     end
-  elseif (state == 10) then
+  elseif (state == 1) then
     --move to final state
     local percent = trajectory_percentage(1, 3, state_t)
     qt = percent*delta + joint_offset
@@ -576,80 +506,7 @@ dcm:set_joint_position_p_gain(1, 'all') -- position control
 --dcm:set_joint_force({0, 0, 0, 0},'ankles')
 dcm:set_joint_enable(1, 'all')
 qt = vector.copy(set_values) 
-printdata = true
-
-------------------------------------------------------------------------
---Data logging --
-------------------------------------------------------------------------
-local ident = "t2"
-print('ident', ident)
---local fw_log = assert(io.open("Logs/fw_log"..ident..".txt","w"))
---local fw_reg = assert(io.open("Logs/fw_reg"..ident..".txt","w"))
-
-local fw_joint_pos = assert(io.open("../Logs/fw_joint_pos"..ident..".txt","w"))
-local fw_qt = assert(io.open("../Logs/fw_qt"..ident..".txt","w"))
-local fw_raw_pos = assert(io.open("../Logs/fw_raw_pos"..ident..".txt","w"))
-local fw_joint_pos_sense = assert(io.open("../Logs/fw_joint_pos_sense"..ident..".txt","w"))
-local fw_COG = assert(io.open("../Logs/fw_COG"..ident..".txt","w"))
-local fw_ft_filt = assert(io.open("../Logs/fw_ft_filt"..ident..".txt","w"))
-local fw_ft = assert(io.open("../Logs/fw_ft"..ident..".txt","w"))
-local fw_lr_cop = assert(io.open("../Logs/fw_lr_cop"..ident..".txt","w"))
-local fw_COP_filt = assert(io.open("../Logs/fw_COP_filt"..ident..".txt","w"))
-local fw_ahrs_filt = assert(io.open("../Logs/fw_ahrs_filt"..ident..".txt","w"))
-local fw_trial = assert(io.open("../Logs/fw_trial"..ident..".txt","w"))
-
-function record_data()
-    write_to_file(fw_joint_pos, joint_pos)
-    write_to_file(fw_qt, qt)
-    write_to_file(fw_raw_pos, raw_pos)
-    write_to_file(fw_joint_pos_sense, joint_pos_sense)
-    write_to_file(fw_COG, COG)
-    write_to_file(fw_ft_filt, ft_filt)
-    write_to_file(fw_ft, ft)
-    write_to_file(fw_lr_cop, {l_cop[1], l_cop[2], r_cop[1], r_cop[2]})
-    write_to_file(fw_COP_filt, COP_filt)
-    write_to_file(fw_ahrs_filt, ahrs_filt)
-    write_to_file(fw_trial, {trial})
-end
-
-function write_to_file(filename, data, test)
-  for i = 1,#data do
-    filename:write(data[i], ", ")
-  end
-  filename:write(t, "\n")
-end
-
-local store = {}
-local ind = 1
-function store_data(local_data)
-  for i = 1, #local_data do
-    for i2 = 1, #local_data[i] do
-      --print(store_len, ind, 'are values')
-      store[ind] = local_data[i][i2]
-      ind = ind + 1
-    end
-  end
-end
-
-function write_to_file2(filename, local_data, template)
-  print('data length', #local_data)
-  local local_ind = 1
-  while local_ind < ind do
-    for i = 1, #template do
-      for i2 = 1, #template[i] do
-     	filename:write(local_data[local_ind], ", ")
-        local_ind = local_ind + 1
-      end
-    end
-    filename:write("\n")
-  end
-end
-
-function write_reg(data)
-  for i = 1, #data do
-    fw_reg:write(#data[i], ", ")
-  end
-end
+printdata = false
 
 --------------------------------------------------------------------
 --Main

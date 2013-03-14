@@ -22,6 +22,8 @@ double sensorOffsetX = 0;
 double sensorOffsetY = 0;
 double sensorOffsetZ = 0;
 
+vector<double> hits;
+
 int lua_ScanMatch2D(lua_State *L) {
   //  const int BUFLEN = 256;
   const char *command = luaL_checkstring(L, 1);
@@ -69,9 +71,9 @@ int lua_ScanMatch2D(lua_State *L) {
     /* Initialize max correlation value */
     double hmax = 0;
     /* Initialize the max correlation Lua indices */
-    double xmax = 1; // Lua index
-    double ymax = 1; // Lua index
-    double thmax = 1; // Lua index
+    unsigned long ixmax = 1; // Lua index
+    unsigned long iymax = 1; // Lua index
+    unsigned long ithmax = 1; // Lua index
 
     // luaT_stackdump( L );
     /* Get the map, which is a ByteTensor */
@@ -94,9 +96,12 @@ int lua_ScanMatch2D(lua_State *L) {
     long npths = pths_t->size[0];
 
     /* Grab the output Tensor */
+/*
     THDoubleTensor * likelihoods_t = (THDoubleTensor *) luaT_toudata(L, 7, "torch.DoubleTensor");
     if (likelihoods_t->size[0] != npxs || likelihoods_t->size[1]!=npys || likelihoods_t->size[2]!=npths)
       return luaL_error(L, "Likelihood output wrong");
+*/
+    hits.resize( npxs*npys*npths );
 
     for (int pthi=0; pthi<npths; pthi++)   //iterate over all yaw values
     {
@@ -145,33 +150,36 @@ int lua_ScanMatch2D(lua_State *L) {
             }
 
             //*tl++ += mapp[xi];
-            double newLikelihood = THTensor_fastGet3d(likelihoods_t,xi,yi,pthi) + (double)THTensor_fastGet2d(map_t,xi,yi);
+            //unsigned long idx = npth*( npx*yi+xi ) + pthi;
+            unsigned long idx = pthi*npxs*npys + npxs*yi + xi;
+            double newLikelihood = 
+              //THTensor_fastGet3d(likelihoods_t,xi,yi,pthi) + 
+              hits[ idx ] +
+              (double)THTensor_fastGet2d(map_t,xi,yi);
             // Find the maximum likelihood
             if( newLikelihood > hmax ){
               hmax = newLikelihood;
-              xmax = xi+1; // Lua index
-              ymax = yi+1; // Lua index
-              thmax = pthi+1; // Lua index
+              ixmax = pxi+1; // Lua index
+              iymax = pyi+1; // Lua index
+              ithmax = pthi+1; // Lua index
             }
-            THTensor_fastSet3d(likelihoods_t,xi,yi,pthi,newLikelihood);
-            //fprintf(stdout,"Setting values...\n");
-            //THTensor_fastSet3d(likelihoods_t,xi,yi,pthi,22);
+
+            //THTensor_fastSet3d(likelihoods_t,pxi,pyi,pthi,newLikelihood);
+            hits[ idx ] = newLikelihood;
+            //fprintf(stdout,"Setting value (%d,%d,%d) to %lf\n",
+            //    pxi,pyi,pthi,newLikelihood);
           }
         }
       }
     }
-    //luaT_pushudata(L, likelihoods_t, "torch.FloatTensor");
-    //return 1;
+//fprintf(stdout,"Scan Match: %f %ld %ld %ld\n",hmax, ixmax, iymax, ithmax );
     lua_pushnumber(L,hmax);
-    lua_pushinteger(L,xmax);
-    lua_pushinteger(L,ymax);
-    lua_pushinteger(L,thmax);
-    luaT_pushudata(L, likelihoods_t, "torch.DoubleTensor");
-    return 5;
+    lua_pushinteger(L,ixmax);
+    lua_pushinteger(L,iymax);
+    lua_pushinteger(L,ithmax);
+    return 4;
     //lua_pushlightuserdata(L, likelihoods);
     //lua_pushstring(L, "double");
-    //lua_pushinteger(L, npths*npxs*npys);
-    //return 3;
   }
   else {
     luaL_error(L ,"unknown command");

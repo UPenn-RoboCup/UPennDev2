@@ -11,6 +11,18 @@ var particleSystem, plane;
 var container, stats;
 var camera, controls, scene, renderer;
 var positions, colors, vertices, geometry, faces;
+//https://github.com/OpenNI/OpenNI2/blob/master/Source/Core/OniStream.cpp#L362
+var hlut = new Float32Array( kwidth  );
+var vlut = new Float32Array( kheight );
+var hFOV = 58;
+var vFOV = 45;
+
+for( var i=0;i<kwidth;i++ ){
+  hlut[i] = Math.tan(hFOV/2)*2*(i/kwidth -.5); // float?
+}
+for( var j=0;j<kheight;j++ ){
+  vlut[j] = Math.tan(vFOV/2)*2*(j/kheight-.5); // float math?
+}
 
 init();
 animate();
@@ -215,16 +227,29 @@ function update_kinect_particles( d ) {
     vertices[i].z = d[i]
   }
 */
+var tmp,fdx,ddx;
 for(var j=0; j<240; j++ ){
   for (var i = 0; i<320; i++ ){
 fdx = j*320+i;
 ddx = j*320+i;
-if(d[ddx]>0) {
-    vertices[faces[fdx].a].z = 255-d[ddx];
-    vertices[faces[fdx].b].z = 255-d[ddx];
-    vertices[faces[fdx].c].z = 255-d[ddx];
-    vertices[faces[fdx].d].z = 255-d[ddx];
-} 
+tmp = d[ddx];
+//if(tmp>0) {
+    vertices[faces[fdx].a].x = tmp*hlut[i];
+    vertices[faces[fdx].a].y = tmp*vlut[j];
+    vertices[faces[fdx].a].z = tmp;
+
+    vertices[faces[fdx].b].x = tmp*hlut[i];
+    vertices[faces[fdx].b].y = tmp*vlut[j];
+    vertices[faces[fdx].b].z = tmp;
+
+    vertices[faces[fdx].c].x = tmp*hlut[i];
+    vertices[faces[fdx].c].y = tmp*vlut[j];
+    vertices[faces[fdx].c].z = tmp;
+
+    vertices[faces[fdx].c].x = tmp*hlut[i];
+    vertices[faces[fdx].c].y = tmp*vlut[j];
+    vertices[faces[fdx].d].z = tmp;
+//} 
 /*
 else {
     vertices[faces[fdx].a].z = 255;

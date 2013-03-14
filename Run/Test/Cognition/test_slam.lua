@@ -9,12 +9,6 @@ require 'unix'
 require 'cjpeg'
 require 'cutil'
 
-
--- Initialize the map
-local omap = libSlam.OMAP.data
-omap:fill(127) -- Uncertain
-print('Map size:',libSlam.MAPS.sizex,libSlam.MAPS.sizey)
-
 -- Setup IPC
 local omap_channel = simple_ipc.setup_publisher('omap');
 
@@ -29,8 +23,13 @@ local lidar_callback = function()
   cutil.string2userdata( Sensors.LIDAR0.ranges:storage():pointer(), lidar_tbl.ranges)
   libSlam.processL0()
   --libSlam.OMAP.timestamp
-  local omap_s_ptr = omap:storage():pointer()
+  local omap_s_ptr = libSlam.OMAP.data:storage():pointer()
   local jomap = cjpeg.compress( omap_s_ptr, libSlam.MAPS.sizex, libSlam.MAPS.sizey,1 )
+  --[[
+  local f = io.open('tmp.jpg','w')
+  f:write( jomap )
+  f:close()
+  --]]
   omap_channel:send( jomap );
 end
 lidar_channel.callback = lidar_callback

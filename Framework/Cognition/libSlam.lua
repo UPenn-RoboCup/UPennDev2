@@ -26,20 +26,21 @@ libSlam.MAPS = MAPS;
 
 -- Occupancy Map
 local OMAP = {}
-OMAP.res        = MAPS.res;
-OMAP.invRes     = MAPS.invRes;
-OMAP.xmin       = MAPS.xmin;
-OMAP.ymin       = MAPS.ymin;
-OMAP.xmax       = MAPS.xmax;
-OMAP.ymax       = MAPS.ymax;
-OMAP.zmin       = MAPS.zmin;
-OMAP.zmax       = MAPS.zmax;
+OMAP.res    = MAPS.res;
+OMAP.invRes = MAPS.invRes;
+OMAP.xmin   = MAPS.xmin;
+OMAP.ymin   = MAPS.ymin;
+OMAP.xmax   = MAPS.xmax;
+OMAP.ymax   = MAPS.ymax;
+OMAP.zmin   = MAPS.zmin;
+OMAP.zmax   = MAPS.zmax;
 OMAP.sizex  = MAPS.sizex;
 OMAP.sizey  = MAPS.sizey;
---OMAP.data = torch.Tensor(OMAP.sizex,OMAP.sizex):zero()
-OMAP.data = torch.ByteTensor(OMAP.sizex,OMAP.sizex)
+OMAP.data = torch.ByteTensor(OMAP.sizex,OMAP.sizex):fill(127) -- uncertain
 OMAP.timestamp = unix.time();
 libSlam.OMAP = OMAP;
+print('Map size:',libSlam.MAPS.sizex,libSlam.MAPS.sizey)
+
 
 -- Setup SLAM thing
 local SLAM = {}
@@ -128,6 +129,7 @@ local function processL0()
   -- Resize to include just the good readings
   nranges = good_cnt;
   if nranges==0 then
+    print('No good readings after initial checks.')
     return
   end
 
@@ -157,6 +159,7 @@ local function processL0()
   end
   nranges = good_cnt;
   if nranges==0 then
+    print('No good readings after ground check.')
     return
   end
 
@@ -212,7 +215,7 @@ local function processL0()
   ---------------------
   -- Take the laser scan points from the body frame and 
   -- put them in the world frame
-  print('Current Slam:',SLAM.x, SLAM.y, SLAM.z, SLAM.yaw)
+  --print('Current Slam:',SLAM.x, SLAM.y, SLAM.z, SLAM.yaw)
   local tmp = torch.mm( 
   libSlam.trans( {SLAM.x, SLAM.y, SLAM.z} ),
   libSlam.rotz( SLAM.yaw ) 
@@ -248,6 +251,7 @@ local function processL0()
   for i=1,nranges do
     if xis[i]>1 and yis[i]>1 and xis[i]<OMAP.sizex and yis[i]<OMAP.sizey then
       OMAP.data[ xis[i] ][ yis[i] ] = OMAP.data[ xis[i] ][ yis[i] ] + inc;
+      --print(OMAP.data[ xis[i] ][ yis[i] ] ,xis[i], yis[i] )
     end
   end
   OMAP.timestamp = unix.time();
@@ -330,13 +334,13 @@ local function scanMatchOne()
   -- the instantaneous angular velocity from the imu
   aCand1:range(-yawRange1,yawRange1):mul(dyaw1):add(SLAM.yawOdom); -- + IMU.data.wyaw*0.025;
   hits:zero()
+  if true then return 0 end --hmax = 0
   local hmax, xmax, ymax, thmax = Slam.ScanMatch2D('match',
   OMAP.data,
   Y, -- Transformed points
   xCand1,yCand1,aCand1,
   hits
   );
-  if true then return 0 end --hmax = 0
 
   -- Is this our first pass?
   if SLAM.lidar0Cntr <= 1 then

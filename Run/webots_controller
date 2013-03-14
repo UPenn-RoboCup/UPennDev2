@@ -86,6 +86,11 @@ then
   echo Starting find_cog...
   cd Test/Motion
   exec xterm -fn 9x15 -hold -e $LUA find_cog.lua 
+elif [ "$1" = "goto_home" ]
+then
+  echo Starting goto_home...
+  cd Test/Motion
+  exec xterm -fn 9x15 -hold -e $LUA goto_home.lua 
 elif [ "$1" = "walk_tuner" ]
 then
   echo Starting walk_tuner...

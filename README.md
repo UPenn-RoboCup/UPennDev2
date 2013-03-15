@@ -17,17 +17,6 @@ Dependencies
 
     sudo ln -s /usr/bin/luajit* /usr/bin/luajit
 
-Install Eigen3 using:
-
-    wget http://bitbucket.org/eigen/eigen/get/3.1.2.tar.gz
-    tar xzf 3.1.2.tar.gz
-    cd eigen-eigen-5097c01bcdc4/
-    mkdir build
-    cd build
-    cmake ..
-    make
-    sudo make install
-
 Install zeromq 3.2 using:
 
     wget http://download.zeromq.org/zeromq-3.2.2.tar.gz
@@ -39,7 +28,18 @@ Install zeromq 3.2 using:
 
     sudo luarocks install https://raw.github.com/Neopallium/lua-zmq/master/rockspecs/lua-zmq-scm-1.rockspec
 
-Finally, install Lightweight Communications and Marshalling (LCM) and Kinematics and Dynamics Library (KDL) using the instructions below.
+Install Eigen3 using:
+
+    wget http://bitbucket.org/eigen/eigen/get/3.1.2.tar.gz
+    tar xzf 3.1.2.tar.gz
+    cd eigen-eigen-5097c01bcdc4/
+    mkdir build
+    cd build
+    cmake ..
+    make
+    sudo make install
+
+Finally, install KDL and Torch using the instructions below.
 
 #### For Mac OSX 10.8, install necessary dependencies using:
 
@@ -52,18 +52,9 @@ Finally, install Lightweight Communications and Marshalling (LCM) and Kinematics
 		luarocks install numlua lua-cmsgpack
 		luarocks install https://raw.github.com/Neopallium/lua-zmq/master/rockspecs/lua-zmq-scm-1.rockspec
 
-Finally, install Lightweight Communications and Marshalling (LCM) and Kinematics and Dynamics Library (KDL) using the instructions below.
+Finally, install KDL and Torch using the instructions below.
 
-#### LCM and KDL
-Install Lightweight Communications and Marshalling (LCM) using:
-
-    wget https://lcm.googlecode.com/files/lcm-0.9.2.tar.gz
-    tar xzf lcm-0.9.2.tar.gz
-    cd lcm-0.9.2
-    ./configure
-    make
-    sudo make install #(sudo may not be necessary)
-
+#### KDL
 Install Kinematics and Dynamics Library (KDL) using:
 
     git clone http://git.mech.kuleuven.be/robotics/orocos_kinematics_dynamics.git 
@@ -76,7 +67,7 @@ Install Kinematics and Dynamics Library (KDL) using:
 
 #### Torch
 
-If you would like to test the ognition code, please install torch.
+If you would like to test the cognition code, please install torch.
 
     git clone https://github.com/smcgill3/torch.git
     cd torch
@@ -88,8 +79,10 @@ Build Instructions
 
 To build the codebase, run 'make' with one of the following options:
 
-    make ash         # for operating the physical ASH robot
-    make webots_ash  # for running ASH simulations in webots
-    make teststand   # for operating the linear actuator teststand
-    make robotis_arm # for operating the robotis arm
-    make tools       # for run-time monitoring using Matlab
+    make ash           # for operating the physical ASH robot
+    make webots_ash    # for running ASH simulations in webots
+    make vrep_ash      # for running ASH simulations in vrep
+    make teststand     # for operating the linear actuator teststand
+    make robotis_arm   # for operating the robotis arm
+    make arm_teststand # for operating the two armed teststand 
+    make tools         # for run-time monitoring using Matlab

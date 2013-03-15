@@ -73,7 +73,9 @@ controlling_left_arm = true;
 arm_move_vel = 0.005;
 arm_rot_vel = 0.05;
 xyz_threshold = 50;
-rpy_threshold = 50;
+rpy_threshold = 150;
+
+arm_rot_vel = 0.02;
 
 
 function process_spacenav()
@@ -138,8 +140,8 @@ function process_spacenav()
     end
   end
 
---[[
   --SJ: flushes the event queue
+--[[
   flush_done = false;
   while not flush_done do
     tbl = Spacenav.get()
@@ -153,6 +155,11 @@ function process_spacenav()
     end
   end
 --]]
+  for i=1,10 do
+    tbl = Spacenav.get()
+  end
+
+
 end
 
 function close_spacenav()
@@ -160,39 +167,12 @@ function close_spacenav()
   signal.signal("SIGTERM", ShutDownFN);
 end
 
-
-
-
-
-
-
-
-
-
-
---Arm target transforms
-
---New position considering the hand offset
-trLArmOld = vector.new({0.28, 0.22, 0.05, 0, 0, -math.pi/2,0});
-trRArmOld = vector.new({0.28, -0.22,0.05, 0, 0, math.pi/2,0});
-
-
-trLArm=vector.new({0,0,0,0,0,0});
-trRArm=vector.new({0,0,0,0,0,0});
-trLArm0=vector.new({0,0,0,0,0,0});
-trRArm0=vector.new({0,0,0,0,0,0});
-
-trLArm[1],trLArm[2],trLArm[3],trLArm[4],trLArm[5],trLArm[6]=
-trLArmOld[1],trLArmOld[2],trLArmOld[3],trLArmOld[4],trLArmOld[5],trLArmOld[6];
-
-trLArm0[1],trLArm0[2],trLArm0[3],trLArm0[4],trLArm0[5],trLArm0[6]=
-trLArmOld[1],trLArmOld[2],trLArmOld[3],trLArmOld[4],trLArmOld[5],trLArmOld[6];
-
-trRArm[1],trRArm[2],trRArm[3],trRArm[4],trRArm[5],trRArm[6]=
-trRArmOld[1],trRArmOld[2],trRArmOld[3],trRArmOld[4],trRArmOld[5],trRArmOld[6];
-
-trRArm0[1],trRArm0[2],trRArm0[3],trRArm0[4],trRArm0[5],trRArm0[6]=
-trRArmOld[1],trRArmOld[2],trRArmOld[3],trRArmOld[4],trRArmOld[5],trRArmOld[6];
+qLArmOld = vector.new({0,0,0,0,0,0,0});
+qRArmOld = vector.new({0,0,0,0,0,0,0});
+qLArm0 = vector.new(Body.get_larm_position());
+qRArm0 = vector.new(Body.get_rarm_position());
+trLArm = {0,0,0,0,0,0};
+trRArm = {0,0,0,0,0,0};
 
 Body.set_l_gripper_command({0,0});
 Body.set_r_gripper_command({0,0});
@@ -292,8 +272,6 @@ arm_init_motion_atlas={
     vector.new({90,-30,0,-90,0,90})*math.pi/180,
     1.0,
   },
-
-
 }
 
 
@@ -305,12 +283,8 @@ else
   arm_init_motion = arm_init_motion_atlas;
 end
 
-
-
 arm_init_count = 1; --start arm initing
 arm_init_t0 = Body.get_time();
-qLArm0=vector.new(Body.get_larm_position());
-qRArm0=vector.new(Body.get_rarm_position());
 
 
 function init_arms()
@@ -325,6 +299,11 @@ function init_arms()
 
     qLShoulderYaw = qLArm0[3];
     qRShoulderYaw = qRArm0[3];
+
+    trLArm={}; trLArm0={};
+    trRArm={}; trRArm0={};
+    qLArmOld = qLArm0;
+    qRArmOld = qRArm0;
 
     trLArm[1],trLArm[2],trLArm[3],trLArm[4],trLArm[5],trLArm[6]=
         trLArmOld[1],trLArmOld[2],trLArmOld[3],trLArmOld[4],trLArmOld[5],trLArmOld[6];
@@ -502,6 +481,7 @@ function check_ik(tr, is_left)
 
     qInv = Kinematics.inverse_l_arm_7(tr, qLShoulderYaw );
     torso_arm_ik = Kinematics.l_arm_torso_7(qInv);
+    qInv[7] = util.mod_angle(qInv[7]);
 
 
 --[[
@@ -535,6 +515,9 @@ print(string.format(
   ));
 print("-------")
 
+print("Yaw2:",qInv[7]*180/math.pi);
+
+
 --]]
 
 
@@ -545,9 +528,7 @@ print("-------")
 
 
 
-    qInv[7] = util.mod_angle(qInv[7]);
 
-print("Yaw2:",qInv[7]*180/math.pi);
 
 
   else
@@ -578,28 +559,45 @@ function motion_arms_ik()
   qLArmInv, dist1 = check_ik(trLArm, 1);
   qRArmInv, dist2 = check_ik(trRArm, 0);
 
---  print("Error:",dist1)
+  qLArmInv[5] = util.mod_angle(qLArmInv[5]);
+  qRArmInv[5] = util.mod_angle(qRArmInv[5]);
+  qLArmInv[6] = util.mod_angle(qLArmInv[6]);
+  qRArmInv[6] = util.mod_angle(qRArmInv[6]);
+
+  if #qLArmInv ==6 then qLArmInv[7] = 0; end
+  if #qRArmInv ==6 then qRArmInv[7] = 0; end
+
+  qLArmInv[7] = util.mod_angle(qLArmInv[7]);
+  qRArmInv[7] = util.mod_angle(qRArmInv[7]);
+
+  local angle_dist_l = 0;
+  local angle_dist_r = 0;
+  for i=1,7 do
+    angle_dist_l = angle_dist_l + math.abs(qLArmOld[i]-qLArmInv[i]);
+    angle_dist_r = angle_dist_r + math.abs(qRArmOld[i]-qRArmInv[i]);
+  end
+
+--  print("angledist: ",angle_dist_l*180/math.pi, angle_dist_r*180/math.pi);
 
 
-  if dist1<0.01 and dist2<0.01 then
+  if dist1<0.01 and dist2<0.01 and 
+	angle_dist_l<math.pi/4 and angle_dist_r<math.pi/4 then
 --  if true then
 
-      walk.upper_body_override_on();
+     walk.upper_body_override_on();
 --      walk.upper_body_override(qLArmInv, qRArmInv, walk.bodyRot0);
 
-    qLArmInv[5] = util.mod_angle(qLArmInv[5]);
-    qRArmInv[5] = util.mod_angle(qRArmInv[5]);
-    qLArmInv[6] = util.mod_angle(qLArmInv[6]);
-    qRArmInv[6] = util.mod_angle(qRArmInv[6]);
+    qLArmOld = qLArmInv;    
+    qRArmOld = qRArmInv;    
 
     Body.set_larm_command(qLArmInv);
     Body.set_rarm_command(qRArmInv);
 
-      trLArmOld[1],trLArmOld[2],trLArmOld[3],trLArmOld[4],trLArmOld[5],trLArmOld[6]=
-      trLArm[1],trLArm[2],trLArm[3],trLArm[4],trLArm[5],trLArm[6];
+    trLArmOld[1],trLArmOld[2],trLArmOld[3],trLArmOld[4],trLArmOld[5],trLArmOld[6]=
+    trLArm[1],trLArm[2],trLArm[3],trLArm[4],trLArm[5],trLArm[6];
 
-      trRArmOld[1],trRArmOld[2],trRArmOld[3],trRArmOld[4],trRArmOld[5],trRArmOld[6]=
-      trRArm[1],trRArm[2],trRArm[3],trRArm[4],trRArm[5],trRArm[6];
+    trRArmOld[1],trRArmOld[2],trRArmOld[3],trRArmOld[4],trRArmOld[5],trRArmOld[6]=
+    trRArm[1],trRArm[2],trRArm[3],trRArm[4],trRArm[5],trRArm[6];
   else
 
     is_moving=0;

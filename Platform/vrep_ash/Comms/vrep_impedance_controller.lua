@@ -12,6 +12,7 @@ local MAX_VELOCITY = 100
 local POSITION_P_GAIN_FACTOR = 1000
 local POSITION_I_GAIN_FACTOR = 1000
 local POSITION_D_GAIN_FACTOR = 1000
+local VELOCITY_P_GAIN_FACTOR = 1000
 
 local function sign(x)
   if (x > 0) then return 1
@@ -43,9 +44,6 @@ function vrep_impedance_controller:update(...)
   hightLimit, targetVel, maxForceTorque, velUpperLimit = ...
 
   local _, currentVel = simGetObjectFloatParameter(jointHandle, 2012)
-  local _, position_p_gain = simGetObjectFloatParameter(jointHandle, 2002)
-  local _, position_i_gain = simGetObjectFloatParameter(jointHandle, 2003)
-  local _, position_d_gain = simGetObjectFloatParameter(jointHandle, 2004)
 
   -- Initialize position pid controller:
   ------------------------------------------------------------------------------
@@ -57,12 +55,20 @@ function vrep_impedance_controller:update(...)
 
   -- Update pid gains and position setpoint:
   ------------------------------------------------------------------------------
-  self.position_pid:set_gains(
-    POSITION_P_GAIN_FACTOR*position_p_gain,
-    POSITION_I_GAIN_FACTOR*position_i_gain,
-    POSITION_D_GAIN_FACTOR*position_d_gain
-  )
-  self.position_pid:set_setpoint(targetPos)
+  if (passCnt == 1) then
+    local gains = simGetObjectCustomData(jointHandle, 2050)
+    gains = simUnpackFloats(gains)
+    local position_p_gain = gains[1] 
+    local position_i_gain = gains[2]
+    local position_d_gain = gains[3]
+    local velocity_p_gain = gains[4]
+    self.position_pid:set_gains(
+      POSITION_P_GAIN_FACTOR*position_p_gain,
+      POSITION_I_GAIN_FACTOR*position_i_gain,
+      POSITION_D_GAIN_FACTOR*position_d_gain
+    )
+    self.position_pid:set_setpoint(targetPos)
+  end
 
   -- Get velocity setpoint (limit velocity to prevent overshoot):
   ------------------------------------------------------------------------------

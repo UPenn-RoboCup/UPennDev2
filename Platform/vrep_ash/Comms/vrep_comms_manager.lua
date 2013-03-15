@@ -2,32 +2,44 @@ require('dcm')
 require('zmq')
 require('cmsgpack')
 
-vrep_child_script = {}
+vrep_comms_manager = {}
 
 local context = nil
 local time_socket = nil
 local time_endpoint = 'tcp://127.0.0.1:12000'
+local handles = {}
 
-local handles = {} -- vrep handles
-local servoNames = { -- vrep servo names
+-- vrep joint names
+local joint_name = {
   'l_hip_yaw', 'l_hip_roll', 'l_hip_pitch',
   'l_knee_pitch', 'l_ankle_pitch', 'l_ankle_roll',
   'r_hip_yaw', 'r_hip_roll', 'r_hip_pitch',
   'r_knee_pitch', 'r_ankle_pitch', 'r_ankle_roll',
 }
 
+-- vrep joint controllers
+local joint_controller = {
+  1, 1, 1,
+  1, 1, 1,
+  1, 1, 1,
+  1, 1, 1,
+}
+-- 0 = impedance, 1 = position
+
 local function initialize_devices()
   -- intialize vrep devices
   handles.robot = simGetObjectHandle('torso')
-  handles.gyro = simTubeOpen(0, 'gyroData'..simGetNameSuffix(nil), 10)
-  handles.accel = simTubeOpen(0, 'accelerometerData'..simGetNameSuffix(nil), 10)
-  handles.servo = {}
-  for i = 1,#servoNames do
-    handles.servo[i] = simGetObjectHandle(servoNames[i])
-    if handles.servo[i] < 0 then
-      print('Could not get handle for '..servoNames[i])
+  handles.gyro = simTubeOpen(0, 'gyroData'..simGetNameSuffix(nil), 1)
+  handles.accel = simTubeOpen(0, 'accelerometerData'..simGetNameSuffix(nil), 1)
+  handles.joint = {}
+  for i = 1,#joint_name do
+    handles.joint[i] = simGetObjectHandle(joint_name[i])
+    if handles.joint[i] < 0 then
+      print('Could not get handle for '..joint_name[i])
     end
-    simSetJointInterval(handles.servo[i], true, {0, 0})
+    local controller = simPackFloats{joint_controller[i]}
+    simAddObjectCustomData(handles.joint[i], 2040, controller, #controller)
+    simSetJointInterval(handles.joint[i], true, {0, 0})
   end
 end
 
@@ -42,24 +54,27 @@ local function update_actuators()
   local joint_position_d_gain = dcm:get_joint_position_d_gain()
   local joint_velocity_p_gain = dcm:get_joint_velocity_p_gain()
 
-  for i = 1,#servoNames do
-    -- TODO : add joint_velocity_p_gain
-    simSetObjectIntParameter(handles.servo[i], 2000, joint_enable[i])
-    simSetObjectFloatParameter(handles.servo[i], 2002, joint_position_p_gain[i])
-    simSetObjectFloatParameter(handles.servo[i], 2003, joint_position_i_gain[i]) 
-    simSetObjectFloatParameter(handles.servo[i], 2004, joint_position_d_gain[i])
-    simSetJointForce(handles.servo[i], joint_force[i])
-    simSetJointTargetPosition(handles.servo[i], joint_position[i])
-    simSetJointTargetVelocity(handles.servo[i], joint_velocity[i])
+  for i = 1,#joint_name do
+    local gains = simPackFloats{
+      joint_position_p_gain[i],
+      joint_position_i_gain[i],
+      joint_position_d_gain[i],
+      joint_velocity_p_gain[i],
+    }
+    simAddObjectCustomData(handles.joint[i], 2050, gains, #gains)
+    simSetObjectIntParameter(handles.joint[i], 2000, joint_enable[i])
+    simSetJointForce(handles.joint[i], joint_force[i])
+    simSetJointTargetPosition(handles.joint[i], joint_position[i])
+    simSetJointTargetVelocity(handles.joint[i], joint_velocity[i])
   end
 end
 
 local function update_sensors()
   -- update joint sensors
-  for i = 1,#servoNames do
-    local force = simJointGetForce(handles.servo[i])
-    local position = simGetJointPosition(handles.servo[i])
-    local _, velocity = simGetObjectFloatParameter(handles.servo[i], 2012)
+  for i = 1,#joint_name do
+    local force = simJointGetForce(handles.joint[i])
+    local position = simGetJointPosition(handles.joint[i])
+    local _, velocity = simGetObjectFloatParameter(handles.joint[i], 2012)
     dcm:set_joint_force_sensor(force, i)
     dcm:set_joint_position_sensor(position, i)
     dcm:set_joint_velocity_sensor(velocity, i)
@@ -105,14 +120,14 @@ end
 local function set_simulator_torso_twist(twist)
 end
 
-function vrep_child_script.entry()
+function vrep_comms_manager.entry()
   -- initialize vrep devices
   initialize_devices()
 
   -- initialize shared memory
   dcm:set_joint_enable(1, 'all')
-  dcm:set_joint_position_p_gain(1, 'all') -- position control
-  dcm:set_joint_position_i_gain(0, 'all') -- position control
+  dcm:set_joint_position_p_gain(1, 'all')
+  dcm:set_joint_position_i_gain(0, 'all')
   dcm:set_joint_position_d_gain(0, 'all')
   dcm:set_joint_velocity_p_gain(0, 'all')
   dcm:set_joint_force(0, 'all')
@@ -128,19 +143,19 @@ function vrep_child_script.entry()
   time_socket:bind(time_endpoint)
 
   -- initialize sensor shared memory
-  vrep_child_script.update()
+  vrep_comms_manager.update()
 end
 
-function vrep_child_script.update()
+function vrep_comms_manager.update()
   update_actuators()
   update_sensors()
   local msg = cmsgpack.pack{simGetSimulationTime(), simGetSimulationTimeStep()}
   time_socket:send('time'..msg)
 end
 
-function vrep_child_script.exit()
+function vrep_comms_manager.exit()
   time_socket:close()
   context:term()
 end
 
-return vrep_child_script
+return vrep_comms_manager

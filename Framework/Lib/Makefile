@@ -6,7 +6,6 @@ all:
 	cd cutil && make && cd $(CWD)
 	cd cbuffer && make && cd $(CWD)
 	cd unix && make && cd $(CWD)
-#	cd lcm && make && cd $(CWD)
 	cd cjpeg && make && cd $(CWD)
 
 clean:
@@ -15,7 +14,6 @@ clean:
 	cd cutil && make clean && cd $(CWD)
 	cd cbuffer && make clean && cd $(CWD)
 	cd unix && make clean && cd $(CWD)
-#	cd lcm && make clean && cd $(CWD)
 	cd cjpeg && make clean && cd $(CWD)
 
 .PHONY: all clean

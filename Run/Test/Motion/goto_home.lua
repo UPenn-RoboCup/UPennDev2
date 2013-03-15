@@ -420,18 +420,18 @@ end
 
 local tp = {-0.3, 0.3}
 local tr = {-0.3, 0.3}
-trial = 0
+trial = 1
 
 local poses = {{0.00, 0.00, 0.00, 0.00, 0.00, 0.00},
-               {0.05, 0.00, 0.00, 0.00, 0.00, 0.00},
-               {-0.11, 0.00, 0.00, 0.00, 0.00, 0.00},
+               {0.08, 0.00, 0.00, 0.00, 0.00, 0.00},
+               {-0.06, 0.00, 0.00, 0.00, 0.00, 0.00},
                {0.00, 0.10, 0.00, 0.00, 0.00, 0.00},
-               {0.05, 0.10, 0.00, 0.00, 0.00, 0.00},
-               {-0.1, 0.10, 0.00, 0.00, 0.00, 0.00},
-               {0.00, 0.00, 0.00, 0.25, 0.00, 0.00},
-               {0.00, 0.00, 0.00, 0.00, 0.25, 0.00},
-               {0.00, 0.00, 0.00, -0.25, 0.00, 0.00},
-               {0.00, 0.00, 0.00, 0.00, -0.15, 0.00}}
+               {0.08, 0.10, 0.00, 0.00, 0.00, 0.00},
+               {-0.06, 0.10, 0.00, 0.00, 0.00, 0.00},
+               {0.00, 0.00, 0.00, 0.2, 0.00, 0.00},
+               {0.00, 0.00, 0.00, 0.00, 0.2, 0.00},
+               {0.00, 0.00, 0.00, -0.2, 0.00, 0.00},
+               {0.00, 0.00, 0.00, 0.00, -0.2, 0.00}}
 
 function generate_pose_angles(torso)
   local torso_pose = Transform.pose(torso)
@@ -450,11 +450,7 @@ function move_legs(torso)
   local y_offset = l_leg_offset[2]
   local z_offset = l_leg_offset[3]
   local l_foot_frame = Transform.pose({x_offset-torso[1], y_offset-torso[2], z_offset-torso[3], 0, 0, 0})
-
-  local x_offset = r_leg_offset[1]
-  local y_offset = r_leg_offset[2]
-  local z_offset = r_leg_offset[3]
-  local r_foot_frame = Transform.pose({x_offset-torso[1],y_offset-torso[2], z_offset-torso[3], 0, 0,0})
+  local r_foot_frame = Transform.pose({x_offset-torso[1],-y_offset-torso[2], z_offset-torso[3], 0, 0, 0})
   local torso_frame = Transform.pose({0, 0, 0, 0, 0, 0})
   local qStance = Kinematics.inverse_pos_legs(l_foot_frame, r_foot_frame, torso_frame)
   return qStance  
@@ -472,104 +468,22 @@ end
 ------------------------------------------------------------------------
 function state_machine(t) 
   if (state == 0) then
-    if state_t > 0.75 then record_data() end
-    if state_t >= 1 then  
-      print('state 1')
-      l_leg_offset = lf
-      r_leg_offset = rf
-      torso = vector.new{0, 0, -0.05, 0, 0, 0} 
-      joint_offset = move_legs(torso)
-      joint_offset = vector.new(joint_offset)
---print('inital pose')      
---util.ptable(pcm:get_l_foot_pose())
---print('right foot')
---util.ptable(pcm:get_r_foot_pose())
---util.ptable(joint_offset)
-      print("move to ready", t)
-      state = 1
-      state_t = 0
-  -- run = false
-      trial = trial + 1
-    end
-  elseif (state == 1) then --move to ready position
-    local percent = trajectory_percentage(1, 3, state_t)
-    qt = joint_offset*percent
-    if (percent >= 1) then 
-      state = 2
-      state_t = 0
-      --print("wait for 0.5", t)
-      l_foot_pose_ref = Transform.pose(pcm:get_l_foot_pose())
-      r_foot_pose_ref = Transform.pose(pcm:get_r_foot_pose())
-      print('l foot')
-      util.ptable(pcm:get_l_foot_pose())
-      print('r foot')
-      util.ptable(pcm:get_r_foot_pose())
-      print('joint angles')
-      util.ptable(qt)
-     -- run = false
-    end
-  elseif (state == 2) then 
-  --wait specified time
-    if (state_t > 2) then  
-      state = 3
-      state_t = 0
-      --print('state = 3')
-    end
-  elseif (state == 3) then 
-    --record COP reading
-    record_data()
-    if (state_t > .25) then 
-      trial = trial + 1
-      print('trial', trial)
-      state_t = 0
-      state = 4
-      if trial >= 11 then --change here to edit number of runs
-        --run = false
-        print('exit trial')
-        state = 9
-        state_t = 0
-      end
-    end
-  elseif (state == 4) then
-    --prime offsets and wait till stable
-    if state_t >=0.5 then
-      joint_offset = dcm:get_joint_position_sensor('legs') 
-      q_goal = generate_pose_angles(poses[trial])
-      delta = q_goal - joint_offset 
-      print('check hip angle', trial, q_goal[3], q_goal[9])
-      --print('state = 5')
-      state = 5
-      state_t = 0
-    end
-  elseif (state == 5) then
-    --move to new state
-    local percent = trajectory_percentage(1, 3, state_t)
-    qt = percent*delta + joint_offset
-    if (percent >= 1) then  
-      print('in pose', trial)
-      state = 6
-      state_t = 0
-      trail = trial + 1
-    end
-  elseif (state == 6) then
-    --wait specified time
-    if (state_t > 2) then  
-      state = 2
-      state_t = 0
-    end
-  elseif (state == 9) then
+    print("goto home")
     --go to original position
     if state_t >=0.5 then
       joint_offset = dcm:get_joint_position_sensor('legs') 
       q_goal = vector.zeros(12)
       delta = q_goal - joint_offset 
-      state = 10
+      --util.ptable(delta)
+      print('state = 5')
+      state = 1
       state_t = 0
     end
-  elseif (state == 10) then
+  elseif (state == 1) then
     --move to final state
     local percent = trajectory_percentage(1, 3, state_t)
     qt = percent*delta + joint_offset
+    --print('r_ankle pitch', qt[11])
     if (percent >= 1) then  
       print('complete')
       run = false
@@ -586,7 +500,8 @@ Platform.set_time_step(0.004)
 print('timestep', Platform.get_time_step())
 Proprioception.entry()
 dcm:set_joint_enable(0,'all')
-local set_values = dcm:get_joint_position_sensor('legs') 
+local set_values = dcm:get_joint_position_sensor('legs')
+util.ptable(set_values) 
 dcm:set_joint_position_p_gain(1, 'all') -- position control
 --dcm:set_joint_position_p_gain(0, 'ankles')
 --dcm:set_joint_damping(0, 'ankles')
@@ -594,80 +509,7 @@ dcm:set_joint_position_p_gain(1, 'all') -- position control
 dcm:set_joint_position(set_values)
 dcm:set_joint_enable(1, 'all')
 qt = vector.copy(set_values) 
-printdata = true
-
-------------------------------------------------------------------------
---Data logging --
-------------------------------------------------------------------------
-local ident = "t1"
-print('ident', ident)
---local fw_log = assert(io.open("Logs/fw_log"..ident..".txt","w"))
---local fw_reg = assert(io.open("Logs/fw_reg"..ident..".txt","w"))
-
-local fw_joint_pos = assert(io.open("../Logs/fw_joint_pos"..ident..".txt","w"))
-local fw_qt = assert(io.open("../Logs/fw_qt"..ident..".txt","w"))
-local fw_raw_pos = assert(io.open("../Logs/fw_raw_pos"..ident..".txt","w"))
-local fw_joint_pos_sense = assert(io.open("../Logs/fw_joint_pos_sense"..ident..".txt","w"))
-local fw_COG = assert(io.open("../Logs/fw_COG"..ident..".txt","w"))
-local fw_ft_filt = assert(io.open("../Logs/fw_ft_filt"..ident..".txt","w"))
-local fw_ft = assert(io.open("../Logs/fw_ft"..ident..".txt","w"))
-local fw_lr_cop = assert(io.open("../Logs/fw_lr_cop"..ident..".txt","w"))
-local fw_COP_filt = assert(io.open("../Logs/fw_COP_filt"..ident..".txt","w"))
-local fw_ahrs_filt = assert(io.open("../Logs/fw_ahrs_filt"..ident..".txt","w"))
-local fw_trial = assert(io.open("../Logs/fw_trial"..ident..".txt","w"))
-
-function record_data()
-    write_to_file(fw_joint_pos, joint_pos)
-    write_to_file(fw_qt, qt)
-    write_to_file(fw_raw_pos, raw_pos)
-    write_to_file(fw_joint_pos_sense, joint_pos_sense)
-    write_to_file(fw_COG, COG)
-    write_to_file(fw_ft_filt, ft_filt)
-    write_to_file(fw_ft, ft)
-    write_to_file(fw_lr_cop, {l_cop[1], l_cop[2], r_cop[1], r_cop[2]})
-    write_to_file(fw_COP_filt, COP_filt)
-    write_to_file(fw_ahrs_filt, ahrs_filt)
-    write_to_file(fw_trial, {trial})
-end
-
-function write_to_file(filename, data, test)
-  for i = 1,#data do
-    filename:write(data[i], ", ")
-  end
-  filename:write(t, "\n")
-end
-
-local store = {}
-local ind = 1
-function store_data(local_data)
-  for i = 1, #local_data do
-    for i2 = 1, #local_data[i] do
-      --print(store_len, ind, 'are values')
-      store[ind] = local_data[i][i2]
-      ind = ind + 1
-    end
-  end
-end
-
-function write_to_file2(filename, local_data, template)
-  print('data length', #local_data)
-  local local_ind = 1
-  while local_ind < ind do
-    for i = 1, #template do
-      for i2 = 1, #template[i] do
-     	filename:write(local_data[local_ind], ", ")
-        local_ind = local_ind + 1
-      end
-    end
-    filename:write("\n")
-  end
-end
-
-function write_reg(data)
-  for i = 1, #data do
-    fw_reg:write(#data[i], ", ")
-  end
-end
+printdata = false
 
 --------------------------------------------------------------------
 --Main

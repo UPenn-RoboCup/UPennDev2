@@ -18,13 +18,13 @@ for i = 1, 4 do
   local content = mat.load(fileName, false)
   local counts = content[1].Encoders.counts['']
   local ts = content[1].Encoders.ts['']
-  local Encorder = {}
+  local Encoder = {}
   for i = 1, counts:size(2) do
-    local encorder = {['num1'] = counts[1][i], ['num2'] = counts[2][i],
+    local encoder = {['num1'] = counts[1][i], ['num2'] = counts[2][i],
                       ['num3'] = counts[3][i], ['num4'] = counts[4][i],
                       ['timestamp'] = ts[1][i]}
-    Encorder[#Encorder + 1] = encorder
+    Encoder[#Encoder + 1] = encoder
   end
   
-  saveData(Encorder, 'Encoder2'..i, filePath)
+  saveData(Encoder, 'Encoder2'..i, filePath)
 end

@@ -31,11 +31,142 @@ require 'Transform'
 require 'Team' --To receive the GPS coordinates from objects
 require 'wcm'
 
+
+
+
+
+
+
+
+
+
+
 if (string.find(Config.platform.name,'THOROP')) then
   thorop=true;
 else
   thorop=false;
 end
+
+
+--Spacenav interface handling
+
+require('signal')
+require('Spacenav')
+Spacenav.open()
+
+
+function procfunc(val, threshold)
+  --Normalize input values
+  --Spacenav raw values: 0 to 350
+  local max_value = 350;
+  if val>threshold then val = val - threshold;
+  elseif val < -threshold then val = val + threshold;
+  else val = 0;
+  end
+  val = val / (max_value-threshold);
+  return val;
+end
+
+buttonarray = {0,0};
+controlling_left_arm = true;
+
+arm_move_vel = 0.005;
+arm_rot_vel = 0.05;
+xyz_threshold = 50;
+rpy_threshold = 50;
+
+
+function process_spacenav()
+  tbl = Spacenav.get()
+  if type(tbl) == 'table' then
+    if tbl.event == 'motion' then
+      --Remap connexion raw values to XYZ
+      local velXYZ = vector.new({
+	procfunc(tbl.z,xyz_threshold),
+	procfunc(-tbl.x,xyz_threshold),
+	procfunc(tbl.y,xyz_threshold),
+
+	procfunc(tbl.rz,rpy_threshold),
+	procfunc(-tbl.rx,rpy_threshold),
+	procfunc(tbl.ry,rpy_threshold),
+	});
+
+      local dXYZ = 
+	velXYZ[1]*velXYZ[1]+
+	velXYZ[2]*velXYZ[2]+
+	velXYZ[3]*velXYZ[3]+
+	velXYZ[4]*velXYZ[4]+
+	velXYZ[5]*velXYZ[5]+
+	velXYZ[6]*velXYZ[6];
+
+      if dXYZ>0 then
+--      print(tbl.x, tbl.y, tbl.z, tbl.rx, tbl.ry, tbl.rz)
+	if controlling_left_arm then
+          trLArm[1] = trLArm[1] + velXYZ[1]*arm_move_vel;
+          trLArm[2] = trLArm[2] + velXYZ[2]*arm_move_vel;
+          trLArm[3] = trLArm[3] + velXYZ[3]*arm_move_vel;
+
+          trLArm[4] = trLArm[4] + velXYZ[4]*arm_rot_vel;
+          trLArm[5] = trLArm[5] + velXYZ[5]*arm_rot_vel;
+          trLArm[6] = trLArm[6] + velXYZ[6]*arm_rot_vel;
+
+	else
+          trRArm[1] = trRArm[1] + velXYZ[1]*arm_move_vel;
+          trRArm[2] = trRArm[2] + velXYZ[2]*arm_move_vel;
+          trRArm[3] = trRArm[3] + velXYZ[3]*arm_move_vel;
+
+          trRArm[4] = trRArm[4] + velXYZ[4]*arm_rot_vel;
+          trRArm[5] = trRArm[5] + velXYZ[5]*arm_rot_vel;
+          trRArm[6] = trRArm[6] + velXYZ[6]*arm_rot_vel;
+        end
+
+        is_moving=0;
+        motion_arms_ik();  
+      end
+ 
+    elseif tbl.event == 'button' then
+      buttonarray[tbl.bnum+1] = tbl.bpress;--indexed from 0
+--      print("raw:",tbl.bnum, tbl.bpress)
+--      print("Button",unpack(buttonarray));
+
+      if buttonarray[1]==1 then
+	controlling_left_arm = true;
+      elseif buttonarray[2]==1 then
+	controlling_left_arm = false;
+      end
+
+    end
+  end
+
+--[[
+  --SJ: flushes the event queue
+  flush_done = false;
+  while not flush_done do
+    tbl = Spacenav.get()
+    flush_done = true;
+    if type(tbl) == 'table' then
+      if tbl.event == 'motion' then
+        flush_done = false;
+      elseif tbl.event == 'button' then 
+        flush_done = false;
+      end
+    end
+  end
+--]]
+end
+
+function close_spacenav()
+  signal.signal("SIGINT", ShutDownFN);
+  signal.signal("SIGTERM", ShutDownFN);
+end
+
+
+
+
+
+
+
+
 
 
 
@@ -113,10 +244,24 @@ arm_init_motion_thorop={
     1.0,
   },
 --]]
-
   {
     vector.new({0,45,90,-90,-90,45,0})*math.pi/180,
     vector.new({0,-45,-90,-90,90,-45,0})*math.pi/180,
+    1.0,
+  },
+
+
+
+--[[
+  {
+    vector.new({0,45,90,-90,-90,45,0})*math.pi/180,
+    vector.new({0,-45,-90,-90,90,-45,0})*math.pi/180,
+    1.0,
+  },
+
+  {
+    vector.new({0,60,90,-120,-90,60,0})*math.pi/180,
+    vector.new({0,-60,-90,-120,90,-60,0})*math.pi/180,
     1.0,
   },
 
@@ -125,10 +270,7 @@ arm_init_motion_thorop={
     vector.new({45,-0,-0,-90,90,45,0})*math.pi/180,
     1.0,
   },
-
-
-
-
+--]]
 }
 
 
@@ -362,6 +504,8 @@ function check_ik(tr, is_left)
     torso_arm_ik = Kinematics.l_arm_torso_7(qInv);
 
 
+--[[
+
 
 print("-------")
 print(string.format(
@@ -391,7 +535,7 @@ print(string.format(
   ));
 print("-------")
 
-
+--]]
 
 
 
@@ -712,6 +856,8 @@ while (true) do
 	-- Run Updates
   process_keyinput();
 
+  process_spacenav();
+
 --  arm_demo();
   Team.update();
   init_arms();
@@ -729,3 +875,5 @@ while (true) do
     unix.usleep(tDelay);
   end
 end
+
+close_spacenav()

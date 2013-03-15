@@ -3,7 +3,7 @@ module(..., package.seeall)
 motion = {}
 
 motion.keyframes =
-  _HOME_..'/Data/teststand/keyframes.lua'
+  THOR_HOME..'/Data/teststand/keyframes.lua'
 
 motion.walk = {}
 motion.walk.module = nil

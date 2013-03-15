@@ -22,9 +22,6 @@ double sensorOffsetX = 0;
 double sensorOffsetY = 0;
 double sensorOffsetZ = 0;
 
-double lxss[1081];
-double lyss[1081];
-
 int lua_ScanMatch2D(lua_State *L) {
   //  const int BUFLEN = 256;
   const char *command = luaL_checkstring(L, 1);
@@ -58,7 +55,7 @@ int lua_ScanMatch2D(lua_State *L) {
   {
     if (lua_isnoneornil(L, 2))
       luaL_error(L, "please provide sensor xyz offsets as second argument");
-    
+
     sensorOffsetX = luaL_checknumber(L, 2);
     sensorOffsetY = luaL_checknumber(L, 3);
     sensorOffsetZ = luaL_checknumber(L, 4);
@@ -69,14 +66,15 @@ int lua_ScanMatch2D(lua_State *L) {
 
   if (strcasecmp(command, "match") == 0) 
   {
-    // Initialize max finding
+    /* Initialize max correlation value */
     double hmax = 0;
+    /* Initialize the max correlation Lua indices */
     double xmax = 1; // Lua index
     double ymax = 1; // Lua index
     double thmax = 1; // Lua index
 
     // luaT_stackdump( L );
-    // Get the map, which is a ByteTensor
+    /* Get the map, which is a ByteTensor */
     // TODO: ensure that the map is explored with the right dimensions
     const THByteTensor * map_t = (THByteTensor *) luaT_checkudata(L, 2, "torch.ByteTensor");
     const int sizex = map_t->size[0];
@@ -85,9 +83,8 @@ int lua_ScanMatch2D(lua_State *L) {
 
     /* Grab the xs and ys from the last laser scan*/
     const THFloatTensor * lY_t = (THFloatTensor *) luaT_checkudata(L, 3, "torch.FloatTensor");
-    const long nps = lY_t->size[1]; // The number of laser points to match
-    // fprintf(stdout,"Number of laser points: %ld\n", nps );
-
+    /* The number of laser points to match */
+    const long nps = lY_t->size[1]; 
     /* Grab the scanning values for theta, x, y */
     const THFloatTensor * pxs_t = (THFloatTensor *) luaT_checkudata(L, 4, "torch.FloatTensor");
     const THFloatTensor * pys_t = (THFloatTensor *) luaT_checkudata(L, 5, "torch.FloatTensor");
@@ -95,32 +92,11 @@ int lua_ScanMatch2D(lua_State *L) {
     long npxs = pxs_t->size[0];
     long npys = pys_t->size[0];
     long npths = pths_t->size[0];
-    //fprintf(stdout, "Size of the search space: %ld x %ld x %ld\n",npxs,npys,npths);
 
     /* Grab the output Tensor */
     THDoubleTensor * likelihoods_t = (THDoubleTensor *) luaT_checkudata(L, 7, "torch.DoubleTensor");
-    /*
-       fprintf( stdout, "Size of the likelihoods_t: (%d dim): %ld x %ld x %ld\n",
-       likelihoods_t->nDimension, 
-       likelihoods_t->size[0],likelihoods_t->size[1],likelihoods_t->size[2]
-       );
-       */
     if (likelihoods_t->size[0] != npxs || likelihoods_t->size[1]!=npys || likelihoods_t->size[2]!=npths)
       return luaL_error(L, "Likelihood output wrong");
-
-    // Divide the candidate pose xy by resolution, to save computations later
-    // Subtract the min values too
-    /*
-       for (int ii=0; ii<npxs; ii++)
-       THTensor_fastSet1d(pxs_t, ii, (THTensor_fastGet1d(pxs_t,ii)-xmin)*invRes );
-       for (int ii=0; ii<npys; ii++)
-       THTensor_fastSet1d(pys_t, ii, (THTensor_fastGet1d(pys_t,ii)-ymin)*invRes );
-       for (int ii=0; ii<nps; ii++)
-       {
-       lxss[ii] = THTensor_fastGet2d( lY_t, 1, ii) * invRes;
-       lyss[ii] = THTensor_fastGet2d( lY_t, 2, ii) * invRes;
-       }
-       */
 
     for (int pthi=0; pthi<npths; pthi++)   //iterate over all yaw values
     {
@@ -178,7 +154,7 @@ int lua_ScanMatch2D(lua_State *L) {
               thmax = pthi+1; // Lua index
             }
             THTensor_fastSet3d(likelihoods_t,xi,yi,pthi,newLikelihood);
-            //			fprintf(stdout,"Setting values...\n");
+            //fprintf(stdout,"Setting values...\n");
             //THTensor_fastSet3d(likelihoods_t,xi,yi,pthi,22);
           }
         }

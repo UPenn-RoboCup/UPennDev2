@@ -1,10 +1,9 @@
 require('dcm')
 require('zmq')
+require('cmsgpack')
 
 vrep_child_script = {}
 
--- Setup
----------------------------------------------------------------------------
 local context = nil
 local time_socket = nil
 local time_endpoint = 'tcp://127.0.0.1:12000'
@@ -16,9 +15,6 @@ local servoNames = { -- vrep servo names
   'r_hip_yaw', 'r_hip_roll', 'r_hip_pitch',
   'r_knee_pitch', 'r_ankle_pitch', 'r_ankle_roll',
 }
-
--- Actuator / sensor interface
-----------------------------------------------------------------
 
 local function initialize_devices()
   -- intialize vrep devices
@@ -90,26 +86,23 @@ local function update_sensors()
   -- dcm:set_force_torque(r_fts, 'r_foot')
 end
 
--- User interface
----------------------------------------------------------------------------
-
-function vrep_child_script.reset_simulator()
+local function reset_simulator()
   simStopSimulation()
   simStartSimulation()
 end
 
-function vrep_child_script.reset_simulator_physics()
+local function reset_simulator_physics()
   simResetDynamicObject(handles.robot)
 end
 
-function vrep_child_script.set_simulator_torso_frame(frame)
+local function set_simulator_torso_frame(frame)
   local pose = frame:get_pose()
   -- -1 means set absolute position/orientation
   simSetObjectPosition(handles.robot, -1, {pose[1], pose[2], pose[3]})
   simSetObjectOrientation(handles.robot, -1, {pose[4], pose[5], pose[6]})
 end
 
-function vrep_child_script.set_simulator_torso_twist(twist)
+local function set_simulator_torso_twist(twist)
 end
 
 function vrep_child_script.entry()
@@ -141,8 +134,8 @@ end
 function vrep_child_script.update()
   update_actuators()
   update_sensors()
-  local msg = 'time'..simGetSimulationTime()
-  time_socket:send(msg)
+  local msg = cmsgpack.pack{simGetSimulationTime(), simGetSimulationTimeStep()}
+  time_socket:send('time'..msg)
 end
 
 function vrep_child_script.exit()

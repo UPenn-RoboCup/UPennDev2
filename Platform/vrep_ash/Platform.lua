@@ -1,14 +1,15 @@
-require('unix')
+require('zmq')
+require('cmsgpack')
 
 Platform = {}
 
 local context = nil
 local time_socket = nil
+local time_poller = nil 
 local time_endpoint = 'tcp://127.0.0.1:12000'
 
 local time = 0
-local t0 = unix.time()
-local time_step = 0.002
+local time_step = 0
 local update_rate = 0
 
 function Platform.get_time()
@@ -43,19 +44,24 @@ function Platform.entry()
   time_socket = context:socket(zmq.SUB)
   time_socket:connect(time_endpoint)
   time_socket:setopt(zmq.SUBSCRIBE, 'time')
+  time_poller = zmq.ZMQ_Poller(1)
+  time_poller:add(time_socket, zmq.POLLIN)
+  Platform.update()
 end
 
 function Platform.update()
-  local t = unix.time()
-  local dt = t - t0
-
-  local msg = time_socket:recv()
-  if msg ~= 0 then
-    time = tonumber(msg:sub(5))
+  local count = time_poller:poll(-1)
+  while (count > 0) do
+    local msg = time_socket:recv()
+    if msg then
+      local time_t = cmsgpack.unpack(msg:sub(5))
+      if (type(time_t) == 'table') then
+	time, time_step = unpack(time_t)
+      end
+    end
+    update_rate = 0.1*(1/time_step) + 0.9*update_rate
+    count = time_poller:poll(0)
   end
-
-  t0 = t
-  update_rate = 0.1*(1/dt) + 0.9*update_rate
 end
 
 function Platform.exit()

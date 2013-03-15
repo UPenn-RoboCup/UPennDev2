@@ -72,8 +72,8 @@ controlling_left_arm = true;
 
 arm_move_vel = 0.005;
 arm_rot_vel = 0.05;
-xyz_threshold = 50;
-rpy_threshold = 150;
+xyz_threshold = 10;
+rpy_threshold = 50;
 
 arm_rot_vel = 0.02;
 
@@ -107,16 +107,13 @@ function process_spacenav()
           trLArm[1] = trLArm[1] + velXYZ[1]*arm_move_vel;
           trLArm[2] = trLArm[2] + velXYZ[2]*arm_move_vel;
           trLArm[3] = trLArm[3] + velXYZ[3]*arm_move_vel;
-
           trLArm[4] = trLArm[4] + velXYZ[4]*arm_rot_vel;
           trLArm[5] = trLArm[5] + velXYZ[5]*arm_rot_vel;
           trLArm[6] = trLArm[6] + velXYZ[6]*arm_rot_vel;
-
 	else
           trRArm[1] = trRArm[1] + velXYZ[1]*arm_move_vel;
           trRArm[2] = trRArm[2] + velXYZ[2]*arm_move_vel;
           trRArm[3] = trRArm[3] + velXYZ[3]*arm_move_vel;
-
           trRArm[4] = trRArm[4] + velXYZ[4]*arm_rot_vel;
           trRArm[5] = trRArm[5] + velXYZ[5]*arm_rot_vel;
           trRArm[6] = trRArm[6] + velXYZ[6]*arm_rot_vel;
@@ -127,15 +124,103 @@ function process_spacenav()
       end
  
     elseif tbl.event == 'button' then
-      buttonarray[tbl.bnum+1] = tbl.bpress;--indexed from 0
+--      buttonarray[tbl.bnum+1] = tbl.bpress;--indexed from 0
 --      print("raw:",tbl.bnum, tbl.bpress)
 --      print("Button",unpack(buttonarray));
+-- Key bindings
+-- Menu: 0
+-- ALT: 23
+-- SHIFT: 24
+-- CTRL: 25
+-- ESC: 22
+-- 1: 12
+-- 2: 13
+-- 3: 14
+-- 4: 15
+-- F: 5
+-- R: 4
+-- YAW: 26
+-- SQ: 8
+-- T: 2
+-- FIT: 1
+      if tbl.bpress==1 then --Key pressed
+	if tbl.bnum ==0 then 
+  	  controlling_left_arm = true;
+	elseif tbl.bnum ==1 then 
+  	  controlling_left_arm = false;
 
+
+	elseif tbl.bnum ==12 then --Open left gripper
+	  Body.set_l_gripper_command({math.pi/6,-math.pi/6});
+
+	elseif tbl.bnum ==13 then --Close left gripper
+	  Body.set_l_gripper_command({0,0});
+
+	elseif tbl.bnum ==14 then --Open right gripper
+	  Body.set_r_gripper_command({math.pi/6,-math.pi/6});
+
+	elseif tbl.bnum ==15 then --Close right gripper
+	  Body.set_r_gripper_command({0,0});
+
+
+	elseif tbl.bnum ==24 then --Reset left arm
+
+
+    trLArm[1],trLArm[2],trLArm[3],trLArm[4],trLArm[5],trLArm[6]=
+    trLArm0[1],trLArm0[2],trLArm0[3],trLArm0[4],trLArm0[5],trLArm0[6];
+
+    trLArmOld[1],trLArmOld[2],trLArmOld[3],trLArmOld[4],trLArmOld[5],trLArmOld[6]=
+    trLArm[1],trLArm[2],trLArm[3],trLArm[4],trLArm[5],trLArm[6];
+
+    qLShoulderYaw = qLArm0[3];
+
+    qLArmOld = qLArm0;
+
+
+          motion_arms_ik();  
+
+
+
+
+
+
+
+	elseif tbl.bnum ==26 then --Reset right arm
+
+    trRArm[1],trRArm[2],trRArm[3],trRArm[4],trRArm[5],trRArm[6]=
+    trRArm0[1],trRArm0[2],trRArm0[3],trRArm0[4],trRArm0[5],trRArm0[6];
+
+    trRArmOld[1],trRArmOld[2],trRArmOld[3],trRArmOld[4],trRArmOld[5],trRArmOld[6]=
+    trRArm[1],trRArm[2],trRArm[3],trRArm[4],trRArm[5],trRArm[6];
+
+    qRShoulderYaw = qRArm0[3];
+    qRArmOld = qRArm0;
+
+          motion_arms_ik();  
+
+
+	elseif tbl.bnum ==22 then 
+          qLShoulderYaw = qLShoulderYaw - 1*math.pi/180;
+          motion_arms_ik();  
+
+	elseif tbl.bnum ==23 then 
+          qLShoulderYaw = qLShoulderYaw + 1*math.pi/180;
+          motion_arms_ik();  
+        end
+
+
+
+
+
+      end
+
+--[[
       if buttonarray[1]==1 then
 	controlling_left_arm = true;
       elseif buttonarray[2]==1 then
 	controlling_left_arm = false;
       end
+--]]
 
     end
   end

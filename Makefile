@@ -72,7 +72,7 @@ vrep_ash:
 	&& ln -s ../../Platform/$@/Mechanics/Dynamics.$(SHLIBEXT) Dynamics.$(SHLIBEXT) \
 	&& ln -s ../../Platform/$@/Comms/vrep_impedance_controller.lua vrep_impedance_controller.lua \
 	&& ln -s ../../Platform/$@/Comms/vrep_position_controller.lua vrep_position_controller.lua \
-	&& ln -s ../../Platform/$@/Comms/vrep_child_script.lua vrep_child_script.lua \
+	&& ln -s ../../Platform/$@/Comms/vrep_comms_manager.lua vrep_comms_manager.lua \
 	&& cd $(CWD)
 	cd Config \
 	&& rm -f Config*.lua \

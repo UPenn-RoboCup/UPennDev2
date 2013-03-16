@@ -223,14 +223,14 @@ end
 
 function calculate_bias() --move
   --gives the ratio of weight on either foot
-  --bias[1] = 0.25*bias[1] + 0.75*ft_filt[3]/(ft_filt[3] + ft_filt[9]) --left
-  --bias[2] = 0.25*bias[2] + 0.75*ft_filt[9]/(ft_filt[3] + ft_filt[9]) --right
-  --for i = 1,2 do
-    --bias[i] = math.min(bias[i], 1)
-    --bias[i] = bias_filters[i]:update(bias[i])
-  --end
-  bias[1] = 0.5 --reverse comments when force torques are working ------------
-  bias[2] = 0.5 --reverse comments when force torques are working ------------
+  bias[1] = 0.25*bias[1] + 0.75*ft_filt[3]/(ft_filt[3] + ft_filt[9]) --left
+  bias[2] = 0.25*bias[2] + 0.75*ft_filt[9]/(ft_filt[3] + ft_filt[9]) --right
+  for i = 1,2 do
+    bias[i] = math.min(bias[i], 1)
+    bias[i] = bias_filters[i]:update(bias[i])
+  end
+  --bias[1] = 0.5 --reverse comments when force torques are working ------------
+  --bias[2] = 0.5 --reverse comments when force torques are working ------------
 end
 
 function COG_controller_act(des_loc) --uses loc wrt foot
@@ -412,10 +412,34 @@ function ahrs_update() --move
 end
 
 function COG_update()
-  local COG_temp = pcm:get_cog()
-  for i = 1, 3 do
-    COG[i] = COG_filters[i]:update(COG_temp[i])
-  end
+  --returns location of COG wrt base frame
+  local COG_temp = pcm:get_cog()  --used to be COG_temp
+--  for i = 1, 3 do
+  --  COG[i] = COG_filters[i]:update(COG_temp[i])
+ -- end 
+  local pos = vector.copy(raw_pos)
+  local jnt_vec_x = vector.new{0, 0, 0, 1}
+  local jnt_vec_y = vector.new{0, 0, 1}
+--  local bsx = vector.new{-0.2484, -0.0554, -0.0196, 0.0080}
+--  local bsy = vector.new{0.2108, 0.0390, -0.0018}
+  local bsx = vector.new{-0.2649, -0.0608, -0.0210, 0.0050}
+  local bsy = vector.new{0.2285, 0.0460, -0.0007}
+  
+  local correction = {}
+
+  jnt_vec_x[1] = ahrs_filt[8]
+  jnt_vec_x[2] = pos[3] +  pos[9]
+  jnt_vec_x[3] = pos[4] + pos[10] 
+
+  jnt_vec_y[1] = ahrs_filt[7]
+  jnt_vec_y[2] = pos[2] + pos[8]
+  
+  correction[1] = jnt_vec_x*bsx
+  correction[2] = jnt_vec_y*bsy
+
+  COG[1] = COG_temp[1] + correction[1]
+  COG[2] = COG_temp[2] + correction[2]
+  COG[3] = COG_temp[3]
 end
 
 local tp = {-0.3, 0.3}
@@ -599,7 +623,7 @@ printdata = true
 ------------------------------------------------------------------------
 --Data logging --
 ------------------------------------------------------------------------
-local ident = "t1"
+local ident = "t3"
 print('ident', ident)
 --local fw_log = assert(io.open("Logs/fw_log"..ident..".txt","w"))
 --local fw_reg = assert(io.open("Logs/fw_reg"..ident..".txt","w"))
@@ -609,6 +633,7 @@ local fw_qt = assert(io.open("../Logs/fw_qt"..ident..".txt","w"))
 local fw_raw_pos = assert(io.open("../Logs/fw_raw_pos"..ident..".txt","w"))
 local fw_joint_pos_sense = assert(io.open("../Logs/fw_joint_pos_sense"..ident..".txt","w"))
 local fw_COG = assert(io.open("../Logs/fw_COG"..ident..".txt","w"))
+local fw_COG_raw = assert(io.open("../Logs/fw_COG_raw"..ident..".txt","w"))
 local fw_ft_filt = assert(io.open("../Logs/fw_ft_filt"..ident..".txt","w"))
 local fw_ft = assert(io.open("../Logs/fw_ft"..ident..".txt","w"))
 local fw_lr_cop = assert(io.open("../Logs/fw_lr_cop"..ident..".txt","w"))
@@ -622,6 +647,7 @@ function record_data()
     write_to_file(fw_raw_pos, raw_pos)
     write_to_file(fw_joint_pos_sense, joint_pos_sense)
     write_to_file(fw_COG, COG)
+    write_to_file(fw_COG_raw, pcm:get_cog())
     write_to_file(fw_ft_filt, ft_filt)
     write_to_file(fw_ft, ft)
     write_to_file(fw_lr_cop, {l_cop[1], l_cop[2], r_cop[1], r_cop[2]})

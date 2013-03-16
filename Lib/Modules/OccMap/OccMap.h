@@ -70,11 +70,14 @@ public:
   inline void range_check(double &num);
 
   int kmean_clustering(void);
-  obstacle& get_obstacle(int index);
+  void get_obstacle(int index, obstacle& obs_out);
   int get_nobstacle(void);
   
   inline double norm(int x1, int y1, int x2, int y2);
   inline double norm(double x1, double y1, double x2, double y2);
+
+  void velocity_generation(double attackBearing, double *velocity, 
+                double attractScale, double repulseScale);
 
 private:
   // Map size in grids

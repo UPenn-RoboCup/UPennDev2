@@ -23,7 +23,7 @@ reset_wb(){
 
 run_dcm_vcm(){
   echo "Starting DCM..."
-  cd $PLAYER_DIR/Lib
+  cd $PLAYER_DIR
   screen $SCREEN_FLAGS dcm $LUA_COM run_dcm.lua
   # Allow DCM some time to start
   sleep 1
@@ -35,6 +35,7 @@ run_dcm_vcm(){
   sleep 3
 }
 
+<<<<<<< HEAD
 run_nao_vcm(){
   # echo "Starting Naoqi..."
   # cd $PLAYER_DIR
@@ -47,6 +48,28 @@ run_nao_vcm(){
   screen $SCREEN_FLAGS cognition $LUA_COM run_cognition.lua
   # Allow Cognition some time to start
   sleep 3
+=======
+run_boxer(){
+  echo "Starting DCM..."
+  cd $PLAYER_DIR
+  screen $SCREEN_FLAGS dcm $LUA_COM run_dcm.lua
+  # Allow DCM some time to start
+  sleep 1
+  
+  echo "Starting NoCognition..."
+  cd $PLAYER_DIR
+  screen $SCREEN_FLAGS cognition $LUA_COM run_nocognition.lua
+  # Allow Cognition some time to start
+  sleep 3
+
+  echo "Starting Player..."
+  cd $PLAYER_DIR
+  screen $SCREEN_FLAGS player $LUA_COM run_main.lua
+  
+  echo "Rock and Roll!"
+  screen -ls
+
+>>>>>>> dev-master
 }
 
 run_player(){
@@ -77,7 +100,17 @@ run_obplay(){
 }
 
 run_demo(){
-  run_dcm_vcm
+  echo "Starting DCM..."
+  cd $PLAYER_DIR
+  screen $SCREEN_FLAGS dcm $LUA_COM run_dcm.lua
+  # Allow DCM some time to start
+  sleep 1
+  
+  echo "Starting Boxer Cognition..."
+  cd $PLAYER_DIR
+  screen $SCREEN_FLAGS cognition $LUA_COM run_cognition_boxer.lua
+  # Allow Cognition some time to start
+  sleep 3
  
   echo "Starting Player..."
   cd $PLAYER_DIR
@@ -90,7 +123,7 @@ run_visiontest(){
   run_dcm_vcm
   echo "Starting Test Vision..."
   cd $PLAYER_DIR
-  screen -m -L -S test $LUA_COM test_vision.lua
+  screen -m -L -S test $LUA_COM Test/test_vision.lua
   #
   echo "Rock and Roll!"
   screen -ls
@@ -106,7 +139,7 @@ run_obstacle(){
   #
   echo "Starting Test Vision..."
   cd $PLAYER_DIR
-  screen -m -L -S test $LUA_COM test_vision.lua
+  screen -m -L -S test $LUA_COM Test/test_vision.lua
   #
   echo "Rock and Roll!"
   screen -ls
@@ -114,7 +147,7 @@ run_obstacle(){
 
 run_bias(){
   echo "Starting DCM..."
-  cd $PLAYER_DIR/Lib
+  cd $PLAYER_DIR
   screen -dm -L -S dcm $LUA_COM run_dcm.lua
   # Allow DCM some time to start
   sleep 1
@@ -126,21 +159,21 @@ run_bias(){
 
 run_pushtest(){
   echo "Starting DCM..."
-  cd $PLAYER_DIR/Lib
+  cd $PLAYER_DIR
   screen -dm -L -S dcm $LUA_COM run_dcm.lua
   # Allow DCM some time to start
   sleep 1
   
   echo "Starting Push Test.."
   cd $PLAYER_DIR
-  screen -m -L -S bias $LUA_COM test_push.lua
+  screen -m -L -S bias $LUA_COM Test/test_push.lua
 }
 
 run_roletest(){
   run_dcm_vcm
   echo "Starting Role Testing..."
   cd $PLAYER_DIR
-  screen -m -L -S test $LUA_COM test_role.lua
+  screen -m -L -S test $LUA_COM Test/test_role.lua
   #
   echo "Rock and Roll!"
 }
@@ -194,17 +227,21 @@ case "$1" in
   'nao_vision')
     echo "Run Vision code for NaoV4"
     run_nao_vision;;
+  'boxer')
+    echo "Reset White Balance"
+    run_boxer;;
   'help')
     echo "[No Argu](s)     -- Player Mode"
     echo "[obstacleplay](sob) -- Player Mode with Obstacle"
     echo "[Demo](sd)       -- Demo Mode"
+    echo "[pushtest](sp)       -- Push Recovery Demo Mode"
     echo "[visiontest](sv) -- Vision Debug Mode"
     echo "[bias](sb)       -- Bias Setup Mode"
     echo "[roletest](sr)   -- Role Testing Mode"
     echo "[obstacle](so)   -- Role obstacle Mode"
     echo "[wbreset](sw)   -- Reset WB Mode"
-    echo "[nao_vision](sn)   -- Test Vision for Nao";;
-        
+    echo "[nao_vision](sn)   -- Test Vision for Nao"
+    echo "[boxer](sx)   -- Start Boxer/Mimic";;
   *)
     echo "Unknown Mode. use 'help ' to see Available Mode";;
 esac

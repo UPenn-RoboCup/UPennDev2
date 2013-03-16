@@ -1,7 +1,8 @@
-function [ r p y ] = show_rotation( do_plot )
+function [ r p y ] = show_rotation( playerID )
 %SHOW ROTATION Plot the rotation box based on the kinect data
 %   Return roll pitch yaw angles
-global jointNames positions
+global jointNames players
+positions = players{playerID}.positions;
 
 %iNeck = ismember(jointNames, 'Neck')==1;
 iNeck = ismember(jointNames, 'Head')==1;
@@ -40,10 +41,8 @@ rd = 180/pi * r;
 pd = 180/pi * p;
 yd = 180/pi * y;
 
-if( do_plot==1 )
 rotplot(R,[0;0;0],1);
 h_t = title( sprintf('Roll %.1f Pitch %.1f  Yaw %.1f',rd,pd,yd) );
 set(h_t,'FontSize',28);
-end
 
 end

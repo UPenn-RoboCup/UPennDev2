@@ -411,17 +411,20 @@ function ahrs_update() --move
   end 
 end
 
-function COG_update(pos)
+function COG_update()
   --returns location of COG wrt base frame
-  local COG_temp = pcm:get_cog()
-  for i = 1, 3 do
-    COG[i] = COG_filters[i]:update(COG_temp[i])
-  end 
-
+  local COG_temp = pcm:get_cog()  --used to be COG_temp
+--  for i = 1, 3 do
+  --  COG[i] = COG_filters[i]:update(COG_temp[i])
+ -- end 
+  local pos = vector.copy(raw_pos)
   local jnt_vec_x = vector.new{0, 0, 0, 1}
   local jnt_vec_y = vector.new{0, 0, 1}
-  local bsx = vector.new{-0.2484, -0.0554, -0.0196, 0.0080}
-  local bsy = vector.new{0.2108, 0.0390, -0.0018}
+--  local bsx = vector.new{-0.2484, -0.0554, -0.0196, 0.0080}
+--  local bsy = vector.new{0.2108, 0.0390, -0.0018}
+  local bsx = vector.new{-0.2649, -0.0608, -0.0210, 0.0050}
+  local bsy = vector.new{0.2285, 0.0460, -0.0007}
+  
   local correction = {}
 
   jnt_vec_x[1] = ahrs_filt[8]
@@ -431,11 +434,12 @@ function COG_update(pos)
   jnt_vec_y[1] = ahrs_filt[7]
   jnt_vec_y[2] = pos[2] + pos[8]
   
-  correction[1] = vector.mul(jnt_vec_x, bsx)
-  correction[2] = vector.mul(jnt_vec_y, bsy)
+  correction[1] = jnt_vec_x*bsx
+  correction[2] = jnt_vec_y*bsy
 
-  COG[1] = COG[1] + correction[1]
-  COG[2] = COG[2] + correction[2]
+  COG[1] = COG_temp[1] + correction[1]
+  COG[2] = COG_temp[2] + correction[2]
+  COG[3] = COG_temp[3]
 end
 
 local tp = {-0.3, 0.3}
@@ -619,7 +623,7 @@ printdata = true
 ------------------------------------------------------------------------
 --Data logging --
 ------------------------------------------------------------------------
-local ident = "t1"
+local ident = "t3"
 print('ident', ident)
 --local fw_log = assert(io.open("Logs/fw_log"..ident..".txt","w"))
 --local fw_reg = assert(io.open("Logs/fw_reg"..ident..".txt","w"))
@@ -629,6 +633,7 @@ local fw_qt = assert(io.open("../Logs/fw_qt"..ident..".txt","w"))
 local fw_raw_pos = assert(io.open("../Logs/fw_raw_pos"..ident..".txt","w"))
 local fw_joint_pos_sense = assert(io.open("../Logs/fw_joint_pos_sense"..ident..".txt","w"))
 local fw_COG = assert(io.open("../Logs/fw_COG"..ident..".txt","w"))
+local fw_COG_raw = assert(io.open("../Logs/fw_COG_raw"..ident..".txt","w"))
 local fw_ft_filt = assert(io.open("../Logs/fw_ft_filt"..ident..".txt","w"))
 local fw_ft = assert(io.open("../Logs/fw_ft"..ident..".txt","w"))
 local fw_lr_cop = assert(io.open("../Logs/fw_lr_cop"..ident..".txt","w"))
@@ -642,6 +647,7 @@ function record_data()
     write_to_file(fw_raw_pos, raw_pos)
     write_to_file(fw_joint_pos_sense, joint_pos_sense)
     write_to_file(fw_COG, COG)
+    write_to_file(fw_COG_raw, pcm:get_cog())
     write_to_file(fw_ft_filt, ft_filt)
     write_to_file(fw_ft, ft)
     write_to_file(fw_lr_cop, {l_cop[1], l_cop[2], r_cop[1], r_cop[2]})

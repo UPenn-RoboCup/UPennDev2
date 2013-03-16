@@ -12,6 +12,21 @@ require('OccMap');
 require('vector');
 require('walk');
 
+maxOb = 5;
+obs = {};
+obs.num = 0;
+obs.centroid_x = vector.zeros(maxOb);
+obs.centroid_y = vector.zeros(maxOb);
+obs.left_range = vector.zeros(maxOb);
+obs.right_range = vector.zeros(maxOb);
+obs.nearest_x = vector.zeros(maxOb);
+obs.nearest_y = vector.zeros(maxOb);
+obs.nearest_dist = vector.zeros(maxOb);
+obs.front = 0;
+obs.left = 0;
+obs.right = 0;
+obs.free = 0;
+ 
 uOdometry0 = vector.new({0, 0, 0});
 
 odomScale = Config.walk.odomScale or Config.world.odomScale;
@@ -23,6 +38,7 @@ else
   yawScale = 1;
 end
 lastTime = 0;
+
 
 function entry()
   lastTime = unix.time();
@@ -37,14 +53,18 @@ function entry()
 	ocm.set_occ_robot_pos(occdata.robot_pos);
 end 
 
+function reset_map()
+--  print('Reset Occupancy Map and Robot Odometry')
+  OccMap.reset();
+end
+
 function cur_odometry()
   if mcm.get_walk_isFallDown() == 1 then
-    print('FallDown and Reset Occupancy Map')
+ --   print('FallDown and Reset Occupancy Map')
     OccMap.reset();
   end
 
 	-- Odometry Update
-  odomScale = Config.walk.odomScale;
   uOdometry, uOdometry0 = mcm.get_odometry(uOdometry0);
 
   uOdometry[1] = odomScale[1]*uOdometry[1];
@@ -70,6 +90,9 @@ function odom_update()
 end
 
 function vision_update()
+  if vcm.get_camera_bodyHeight() < Config.walk.bodyHeight then
+    return
+  end
   vbound = vcm.get_freespace_vboundB();
   tbound = vcm.get_freespace_tboundB();
 
@@ -78,91 +101,193 @@ function vision_update()
 --  print("scanned freespace width "..nCol);
 end
 
-lastPos = vector.zeros(3); 
-function velocity_update()
-  curTime = unix.time();
-  uOdonmetry = cur_odometry();
---  print(curTime - lastTime);
-  vel = (uOdometry - lastPos); -- / (curTime - lastTime);
-  ocm.set_occ_vel(vel);
-
---  print(vel[1], vel[2], vel[3]);
-  lastPos = uOdometry; 
-  lastTime = curTime;
+-- Potential Field Based Velocity Generator
+function get_velocity()
+  attackBearing = wcm.get_attack_bearing();
+  vel = vector.zeros(3);
+  vel[1], vel[2], vel[3] = OccMap.get_velocity(attackBearing, 0.04, 0.12);
+--  print(vel[1], vel[2], vel[3])
+  ocm.set_occ_vel(0.5 * vel);
 end
 
-function obs_in_occ()
---  print('try find obstacle in occmap'); 
-  local maxOb = 5;
-  start = unix.time();
+function get_obstacle_info()
   obstacle = OccMap.get_obstacle();
-  local nOb = obstacle[1];
-  ocm.set_obstacle_num(nOb);
-  centroid = vector.zeros(maxOb * 2);
-  angle_range = vector.zeros(maxOb * 2);
-  nearest = vector.zeros(maxOb * 2);
---  print('Find ',nOb);
-  for i = 1 , nOb do
---    print('centroid')
---    util.ptable(obstacle[i].centroid);
-    centroid[(i-1)*2+1] = obstacle[i + 1].centroid[1];
-    centroid[(i-1)*2+2] = obstacle[i + 1].centroid[2];
---    print('angle_range')
---    print(obstacle[i].angle_range[1] * 180 / math.pi, 
---          obstacle[i].angle_range[2] * 180 / math.pi);
-    angle_range[(i-1)*2+1] = obstacle[i + 1].angle_range[1];
-    angle_range[(i-1)*2+2] = obstacle[i + 1].angle_range[2];
---    print('nearest')
---    util.ptable(obstacle[i].nearest);
-    nearest[(i-1)*3+1] = obstacle[i + 1].nearest[1];
-    nearest[(i-1)*3+2] = obstacle[i + 1].nearest[3];
+  obs.num = obstacle[1];
+  for i = 1 , obs.num do
+    obs.centroid_x[i] = obstacle[i + 1].centroid[1];
+    obs.centroid_y[i] = obstacle[i + 1].centroid[2];
+    obs.left_range[i] = obstacle[i + 1].angle_range[1];
+    obs.right_range[i] = obstacle[i + 1].angle_range[2];
+    obs.nearest_x[i] = obstacle[i + 1].nearest[1];
+    obs.nearest_y[i] = obstacle[i + 1].nearest[2];
+    obs.nearest_dist[i] = obstacle[i + 1].nearest[3];
   end
-  ocm.set_obstacle_centroid(centroid);
-  ocm.set_obstacle_angle_range(angle_range);
-  ocm.set_obstacle_nearest(nearest);
---  endd = unix.time();
---  print(endd - start);
+end
+
+function get_obstacle_dir()
+  min_front_angle = Config.occ.min_front_angle or -15*math.pi/180;
+  max_front_angle = Config.occ.max_front_angle or 15*math.pi/180;
+  min_left_angle = Config.occ.min_left_angle or 0*math.pi/180;
+  max_left_angle = Config.occ.max_left_angle or 70*math.pi/180;
+  min_right_angle = Config.occ.min_right_angle or 110*math.pi/180;
+  max_right_angle = Config.occ.max_right_angle or 180*math.pi/180;
+  min_obstacle_range = Config.occ.min_obstacle_range or 3*math.pi/180;
+  min_obstacle_distance = Config.occ.min_obstacle_distance or 0.2
+  min_side_obstacle_distance = Config.occ.min_side_obstacle_distance or 0.1
+
+  -- check front
+  front_angle = {min_front_angle, max_front_angle}
+  front_obs = false;
+
+  obs_range = {180*math.pi/180, 0*math.pi/180};
+  for cnt = 1 , obs.num do
+    flag = true; -- assume in cone 
+    -- check in front cone range
+    if (obs.left_range[cnt] > front_angle[2]) or 
+      (obs.right_range[cnt] < front_angle[1]) then
+      --print('range fail')
+      flag = flag and false;
+    end
+    -- check obstacle blob size in terms of angle range
+    --print((obs.right_range[cnt] - obs.left_range[cnt])*180/math.pi)
+    if (obs.right_range[cnt] - obs.left_range[cnt] < min_obstacle_range) then
+      --print('size fail')
+      flag = flag and false;
+    end
+    -- check distance for nearest poinpt of the blob
+    --print(obs.nearest_dist[cnt])
+    if (obs.nearest_dist[cnt] > min_obstacle_distance) then
+      --print('distance fail')
+      flag = flag and false;
+    end
+
+    if flag then
+      obs_range[1] = math.min(obs_range[1], obs.left_range[cnt]);
+      obs_range[2] = math.max(obs_range[2], obs.right_range[cnt]);
+    end
+
+    front_obs = front_obs or flag;
+  end
+
+  -- check left side obstacleleft_angle = {-45*math.pi/180, 45*math.pi/180}
+  left_angle = {min_left_angle, max_left_angle}
+  left_obs = false;
+  for cnt = 1, obs.num do
+    flag = true; -- assume in cone 
+    -- check in left cone range
+    --print(cnt, obs.left_range[cnt]*180/math.pi, obs.right_range[cnt]*180/math.pi)
+    if (obs.left_range[cnt] > left_angle[2]) or 
+      (obs.right_range[cnt] < left_angle[1]) then
+      --print('range fail')
+      flag = flag and false;
+    end
+    -- check obstacle blob size in terms of angle range
+    --print((obs.right_range[cnt] - obs.left_range[cnt])*180/math.pi)
+    if (obs.right_range[cnt] - obs.left_range[cnt] < min_obstacle_range) then
+      --print('size fail')
+      flag = flag and false;
+    end
+    -- check distance for nearest poinpt of the blob
+    --print(obs.nearest_dist[cnt])
+    if (obs.nearest_dist[cnt] > min_side_obstacle_distance) then
+      --print('distance fail')
+      flag = flag and false;
+    end
+    left_obs = left_obs or flag;
+  end
+  
+  -- check right side obstacle
+  right_angle = {min_right_angle, max_right_angle}
+  right_obs = false;
+  for cnt = 1, obs.num do
+    flag = true; -- assume in cone 
+    -- check in right cone range
+    if (obs.left_range[cnt] > right_angle[2]) or 
+      (obs.right_range[cnt] < right_angle[1]) then
+      flag = flag and false;
+    end
+    -- check obstacle blob size in terms of angle range
+    if (obs.right_range[cnt] - obs.left_range[cnt] < min_obstacle_range) then
+      flag = flag and false;
+    end
+    -- check distance for nearest poinpt of the blob
+    if (obs.nearest_dist[cnt] > min_side_obstacle_distance) then
+      flag = flag and false;
+    end
+    right_obs = right_obs or flag;
+  end
+
+  if front_obs then obs.front = 1; else obs.front = 0; end
+  if left_obs then obs.left = 1; else obs.left = 0; end
+  if right_obs then obs.right = 1; else obs.right = 0; end
+  -- General obstacle info
+  obs.free = obs.front + obs.left + obs.right;
+  if obs.free > 0 then obs.free = 1 end
+   
+  return obs;
+
 end
 
 counter = 0;
 function update()
   counter = counter + 1;
 --  velocity_update();
-
+  
+  if ocm.get_occ_reset() == 1 then
+    OccMap.reset();
+    ocm.set_occ_reset(0);
+    print('OccMap reset');
+  end
 
   -- Time decay
   local time = unix.time();
   OccMap.time_decay(time);
 
 	-- Vision Update
-  vision_update();
+  if ocm.get_vision_update() == 1 then
+    vision_update();
+  end
 
 	-- Odometry Update
   odom_update();
-	
-	-- shm Update
+
+  if counter == 25 then
+    get_obstacle_info();
+  
+    get_obstacle_dir();
+    counter = 0;
+  end
+
+  update_shm()
+
+  get_velocity();
+
+end
+
+function update_shm()
+	-- copy odometry to shm 
   odom = OccMap.retrieve_odometry();
   ocm.set_occ_odom(vector.new({odom.x, odom.y, odom.a}));
 --  print('odom from map',odom.x..' '..odom.y..' '..odom.a);
+
+  -- copy occmap to shm
 	occmap = OccMap.retrieve_map();
 	ocm.set_occ_map(occmap);		
 
-  local reset = ocm.get_occ_reset();
-  if reset == 1 then
-    OccMap.reset();
-    print('reset occmap in OccupancyMap');
-    ocm.set_occ_reset(0);
-  end
+  -- copy obstacle info to shm
+  ocm.set_obstacle_num(obs.num);
+  ocm.set_obstacle_cx(obs.centroid_x);
+  ocm.set_obstacle_cy(obs.centroid_y);
+  ocm.set_obstacle_la(obs.left_range);
+  ocm.set_obstacle_ra(obs.right_range);
+  ocm.set_obstacle_nx(obs.nearest_x);
+  ocm.set_obstacle_ny(obs.nearest_y);
+  ocm.set_obstacle_ndist(obs.nearest_dist);
 
-  local get_obstacle = ocm.get_occ_get_obstacle();
---  if get_obstacle == 1 then
-  if counter == 25 then
-    obs_in_occ();
-    counter = 0;
-  end
---    print("get obstacles from occmap");
---    ocm.set_occ_get_obstacle(0);
---  end
+  ocm.set_obstacle_front(obs.front);
+  ocm.set_obstacle_left(obs.left);
+  ocm.set_obstacle_right(obs.right);
+  ocm.set_obstacle_free(obs.free);
 
 end
 

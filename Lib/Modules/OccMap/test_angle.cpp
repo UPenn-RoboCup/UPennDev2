@@ -2,9 +2,10 @@
 #include <cmath>
 
 int main() {
-  double x = 0.2;
-  double y = 0.5;
-  double angle = atan2(x, y);
-  std::cout << angle * 180 /3.1415926<< std::endl;
+  double a = -1.02088;
+  double x = cos(a);
+  double y = sin(a);
+  double angle = atan2(0, 0);
+  std::cout << angle << std::endl;
   return 1;
 }

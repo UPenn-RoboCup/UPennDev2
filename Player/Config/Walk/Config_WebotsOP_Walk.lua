@@ -1,6 +1,21 @@
 module(..., package.seeall); require('vector')
--- Walk Parameters
 
+--Sit/stand stance parameters
+stance={};
+
+stance.bodyHeightSit = 0.20;
+stance.supportXSit = -0.010;
+stance.bodyHeightDive= 0.295;
+stance.bodyTiltDive = 0;
+stance.bodyTiltStance=0*math.pi/180; --bodyInitial bodyTilt, 0 for webots
+stance.dpLimitStance=vector.new({.04, .03, .07, .4, .4, .4});
+stance.dpLimitSit=vector.new({.1,.01,.06,.1,.3,.1});
+
+stance.dpLimitStance=vector.new({.04, .03, .07, .4, .9, .4});
+stance.dpLimitDive = vector.new({.04, .03, .07, .4, .9, .4});
+
+
+-- Walk Parameters
 walk = {};
 
 ----------------------------------------------
@@ -32,8 +47,10 @@ walk.footX= -0.0;
 walk.footY = 0.0375;
 walk.supportX = 0;
 walk.supportY = 0.025;
-walk.qLArm=math.pi/180*vector.new({90,2,-40});
-walk.qRArm=math.pi/180*vector.new({90,-2,-40});
+--walk.qLArm=math.pi/180*vector.new({90,2,-40});
+--walk.qRArm=math.pi/180*vector.new({90,-2,-40});
+walk.qLArm=math.pi/180*vector.new({110,2,-40});
+walk.qRArm=math.pi/180*vector.new({110,-2,-40});
 walk.qLArmKick=math.pi/180*vector.new({90,15,-40});
 walk.qRArmKick=math.pi/180*vector.new({90,-15,-40});
 
@@ -153,18 +170,29 @@ walk.walkKickDef["FrontRight"]={
 --New walking sidekick
 walk.walkKickDef["SideLeft"]={
   {0.60, 1, 1, 0.035 , {0,0}, 0.3, {0,0.04,10*math.pi/180} },
-  {0.90, 3, 0, 0.035 , {-0.01,0.01}, 0.5, {0.06,-0.05,-20*math.pi/180},
-	{0.09,0.01,0}},
- {walk.tStep, 1, 1, 0.035 , {0,0}, 0.5, {0,0,0} },}
+  {0.90, 3, 0, 0.035 , {-0.01,0.01}, 0.5, {0.06,-0.05,-20*math.pi/180}, {0.09,0.01,0}},
+  {walk.tStep, 1, 1, 0.035 , {0,0}, 0.5, {0,0,0} },
+ }
 
 walk.walkKickDef["SideRight"]={
   {0.60, 1, 0, 0.035 , {0,0}, 0.7, {0,-0.04,-10*math.pi/180} },
-  {0.90, 3, 1, 0.035 , {-0.01,-0.01},0.5, 
-	{0.06,0.05,20*math.pi/180},{0.09,-0.01,0}},
+  {0.90, 3, 1, 0.035 , {-0.01,-0.01},0.5, {0.06,0.05,20*math.pi/180},{0.09,-0.01,0}},
   {walk.tStep, 1, 0, 0.035 , {0,0},0.5,  {0,0,0} },
 }
 
-
+-- tStep stepType supportLeg stepHeight 
+-- SupportMod shiftFactor footPos1 footPos2
+-- Boxing walk kick
+walk.walkKickDef["PunchLeft"]={
+  {0.60, 1, 0, 0.035 , {0,0}, 0.7, {0,0,0} },
+  {0.60, 2, 1, 0.07 , {0.02,-0.02}, 0.5, {0,0,0}, {0,0,0} },
+  {walk.tStep, 1, 0, 0.035 , {0,0}, 0.5, {0,0,0} },
+}
+walk.walkKickDef["PunchRight"]={
+  {0.60, 1, 1, 0.035 , {0,0}, 0.3, {0,0,0} },
+  {0.60, 2, 0, 0.07 , {0.02,0.02}, 0.5,  {0,0,0}, {0,0,0} },
+  {walk.tStep, 1, 1, 0.035 , {0,0}, 0.5, {0,0,0} },
+}
 
 
 walk.walkKickPh=0.5;
@@ -196,123 +224,146 @@ walk.velLimitA={-.6,.6};
 -- tDuration qLArm qRArm bodyRot
 walk.motionDef={};
 
-walk.motionDef["hurray"]={
+walk.motionDef["hurray1"]={
  {1.0,{40*math.pi/180, 20*math.pi/180, -140*math.pi/180},
-	{40*math.pi/180,-20*math.pi/180,-140*math.pi/180}},
+        {40*math.pi/180,-20*math.pi/180,-140*math.pi/180}},
  {0.4,{-30*math.pi/180, 30*math.pi/180, -90*math.pi/180},
-	{-30*math.pi/180,-30*math.pi/180,-90*math.pi/180}},
+        {-30*math.pi/180,-30*math.pi/180,-90*math.pi/180}},
  {0.4,{40*math.pi/180, 20*math.pi/180, -140*math.pi/180},
-	{40*math.pi/180,-20*math.pi/180,-140*math.pi/180}},
+        {40*math.pi/180,-20*math.pi/180,-140*math.pi/180}},
  {0.4,{-30*math.pi/180, 30*math.pi/180, -90*math.pi/180},
-	{-30*math.pi/180,-30*math.pi/180,-90*math.pi/180}},
+        {-30*math.pi/180,-30*math.pi/180,-90*math.pi/180}},
  {0.4,{40*math.pi/180, 20*math.pi/180, -140*math.pi/180},
-	{40*math.pi/180,-20*math.pi/180,-140*math.pi/180}},
+        {40*math.pi/180,-20*math.pi/180,-140*math.pi/180}},
  {0.4,{-30*math.pi/180, 30*math.pi/180, -90*math.pi/180},
-	{-30*math.pi/180,-30*math.pi/180,-90*math.pi/180}},
+        {-30*math.pi/180,-30*math.pi/180,-90*math.pi/180}},
  {1.0,{90*math.pi/180, 8*math.pi/180,-40*math.pi/180},
-	{90*math.pi/180, -8*math.pi/180,-40*math.pi/180}}
+        {90*math.pi/180, -8*math.pi/180,-40*math.pi/180}}
 } 
 
 --pointing up
-walk.motionDef["hurray"]={
+walk.motionDef["point"]={
  {1.0,{-40*math.pi/180, 50*math.pi/180, 0*math.pi/180},
-	{160*math.pi/180,-60*math.pi/180,-90*math.pi/180},
-	{20*math.pi/180,20*math.pi/180,-20*math.pi/180}},
+        {160*math.pi/180,-60*math.pi/180,-90*math.pi/180},
+        {20*math.pi/180,0*math.pi/180,-20*math.pi/180}},
 
  {3.0,{-40*math.pi/180, 50*math.pi/180, 0*math.pi/180},
-	{160*math.pi/180,-60*math.pi/180,-90*math.pi/180},
-	{20*math.pi/180,20*math.pi/180,-20*math.pi/180}},
+        {160*math.pi/180,-60*math.pi/180,-90*math.pi/180},
+        {20*math.pi/180,0*math.pi/180,-20*math.pi/180}},
 
  {1.0,{90*math.pi/180, 8*math.pi/180,-40*math.pi/180},
-	{90*math.pi/180, -8*math.pi/180,-40*math.pi/180},
-	{0,20*math.pi/180,0}}
+        {90*math.pi/180, -8*math.pi/180,-40*math.pi/180},
+        {0,20*math.pi/180,0}}
 } 
 
 
 --Two arm punching up
-walk.motionDef["hurray"]={
+walk.motionDef["hurray2"]={
  {0.5,{40*math.pi/180, 20*math.pi/180, -140*math.pi/180},
-	{40*math.pi/180,-20*math.pi/180,-140*math.pi/180}},
+        {40*math.pi/180,-20*math.pi/180,-140*math.pi/180}},
 
  {0.2, {40*math.pi/180, 20*math.pi/180, -140*math.pi/180},
-	{-30*math.pi/180,-30*math.pi/180,-90*math.pi/180}},
+        {-30*math.pi/180,-30*math.pi/180,-90*math.pi/180}},
  {0.2,{40*math.pi/180, 20*math.pi/180, -140*math.pi/180},
-	{40*math.pi/180,-20*math.pi/180,-140*math.pi/180}},
+        {40*math.pi/180,-20*math.pi/180,-140*math.pi/180}},
  {0.2,{-30*math.pi/180, 30*math.pi/180, -90*math.pi/180},
-	{40*math.pi/180,-20*math.pi/180,-140*math.pi/180}},
+        {40*math.pi/180,-20*math.pi/180,-140*math.pi/180}},
  {0.2,{40*math.pi/180, 20*math.pi/180, -140*math.pi/180},
-	{40*math.pi/180,-20*math.pi/180,-140*math.pi/180}},
+        {40*math.pi/180,-20*math.pi/180,-140*math.pi/180}},
 
  {0.2, {40*math.pi/180, 20*math.pi/180, -140*math.pi/180},
-	{-30*math.pi/180,-30*math.pi/180,-90*math.pi/180}},
+        {-30*math.pi/180,-30*math.pi/180,-90*math.pi/180}},
  {0.2,{40*math.pi/180, 20*math.pi/180, -140*math.pi/180},
-	{40*math.pi/180,-20*math.pi/180,-140*math.pi/180}},
+        {40*math.pi/180,-20*math.pi/180,-140*math.pi/180}},
  {0.2,{-30*math.pi/180, 30*math.pi/180, -90*math.pi/180},
-	{40*math.pi/180,-20*math.pi/180,-140*math.pi/180}},
+        {40*math.pi/180,-20*math.pi/180,-140*math.pi/180}},
  {0.2,{40*math.pi/180, 20*math.pi/180, -140*math.pi/180},
-	{40*math.pi/180,-20*math.pi/180,-140*math.pi/180}},
+        {40*math.pi/180,-20*math.pi/180,-140*math.pi/180}},
 
  {0.5,{90*math.pi/180, 8*math.pi/180,-40*math.pi/180},
-	{90*math.pi/180, -8*math.pi/180,-40*math.pi/180}}
+        {90*math.pi/180, -8*math.pi/180,-40*math.pi/180}}
 } 
-
-
 
 
 --Two arm side swing
-walk.motionDef["hurray"]={
+walk.motionDef["swing"]={
  {0.5,{90*math.pi/180, 90*math.pi/180, -40*math.pi/180},
-	{90*math.pi/180,-90*math.pi/180,-40*math.pi/180},
-	{0*math.pi/180,20*math.pi/180,-20*math.pi/180}},
+        {90*math.pi/180,-90*math.pi/180,-40*math.pi/180},
+        {0*math.pi/180,20*math.pi/180,-20*math.pi/180}},
 
  {0.5,{90*math.pi/180, 90*math.pi/180, -40*math.pi/180},
-	{90*math.pi/180,-90*math.pi/180,-40*math.pi/180},
-	{0*math.pi/180,20*math.pi/180,20*math.pi/180}},
+        {90*math.pi/180,-90*math.pi/180,-40*math.pi/180},
+        {0*math.pi/180,20*math.pi/180,20*math.pi/180}},
 
  {0.5,{90*math.pi/180, 90*math.pi/180, -40*math.pi/180},
-	{90*math.pi/180,-90*math.pi/180,-40*math.pi/180},
-	{0*math.pi/180,20*math.pi/180,-20*math.pi/180}},
+        {90*math.pi/180,-90*math.pi/180,-40*math.pi/180},
+        {0*math.pi/180,20*math.pi/180,-20*math.pi/180}},
 
  {0.5,{90*math.pi/180, 8*math.pi/180,-40*math.pi/180},
-	{90*math.pi/180, -8*math.pi/180,-40*math.pi/180},
-	{0*math.pi/180,20*math.pi/180,0*math.pi/180}}
+        {90*math.pi/180, -8*math.pi/180,-40*math.pi/180},
+        {0*math.pi/180,20*math.pi/180,0*math.pi/180}}
 } 
-
-
 
 
 
 
 --One-Two Punching
-walk.motionDef["hurray"]={
+walk.motionDef["2punch"]={
  {0.2,{90*math.pi/180, 40*math.pi/180, -160*math.pi/180},
-	{90*math.pi/180,-40*math.pi/180,-160*math.pi/180},
-	{0*math.pi/180,20*math.pi/180,0*math.pi/180}},
+        {90*math.pi/180,-40*math.pi/180,-160*math.pi/180},
+        {0*math.pi/180,20*math.pi/180,0*math.pi/180}},
 
  {0.2,{90*math.pi/180, 30*math.pi/180, -160*math.pi/180},
-	{90*math.pi/180,-30*math.pi/180,-160*math.pi/180},
-	{0*math.pi/180,20*math.pi/180,20*math.pi/180}},
+        {90*math.pi/180,-30*math.pi/180,-160*math.pi/180},
+        {0*math.pi/180,20*math.pi/180,20*math.pi/180}},
  {0.2,{90*math.pi/180, 30*math.pi/180, -160*math.pi/180},
-	{90*math.pi/180,-30*math.pi/180,-160*math.pi/180},
-	{0*math.pi/180,20*math.pi/180,20*math.pi/180}},
+        {90*math.pi/180,-30*math.pi/180,-160*math.pi/180},
+        {0*math.pi/180,20*math.pi/180,20*math.pi/180}},
 
  --right jab
  {0.2,{90*math.pi/180, 30*math.pi/180, -160*math.pi/180},
-	{-20*math.pi/180,-30*math.pi/180,0*math.pi/180},
-	{0*math.pi/180,20*math.pi/180,20*math.pi/180}},
+        {-20*math.pi/180,-30*math.pi/180,0*math.pi/180},
+        {0*math.pi/180,20*math.pi/180,20*math.pi/180}},
 
 --left straignt
  {0.3,{-20*math.pi/180, 20*math.pi/180, 0*math.pi/180},
-	{90*math.pi/180,-40*math.pi/180,-160*math.pi/180},
-	{0*math.pi/180,20*math.pi/180,-30*math.pi/180}},
+        {90*math.pi/180,-40*math.pi/180,-160*math.pi/180},
+        {0*math.pi/180,20*math.pi/180,-30*math.pi/180}},
 
 --retract
  {0.2,{90*math.pi/180, 40*math.pi/180, -160*math.pi/180},
-	{90*math.pi/180,-40*math.pi/180,-160*math.pi/180},
-	{0*math.pi/180,20*math.pi/180,-30*math.pi/180}},
+        {90*math.pi/180,-40*math.pi/180,-160*math.pi/180},
+        {0*math.pi/180,20*math.pi/180,-30*math.pi/180}},
  {0.3,{90*math.pi/180, 8*math.pi/180,-40*math.pi/180},
-	{90*math.pi/180, -8*math.pi/180,-40*math.pi/180},
-	{0*math.pi/180,20*math.pi/180,0*math.pi/180}}
-} 
+        {90*math.pi/180, -8*math.pi/180,-40*math.pi/180},
+        {0*math.pi/180,20*math.pi/180,0*math.pi/180}}
+}
 
 
+walk.motionDef["jabright"]={
+  --right jab
+  {0.2,
+    {90*math.pi/180, 30*math.pi/180, -160*math.pi/180},
+    {-20*math.pi/180,-30*math.pi/180,0*math.pi/180},
+  },
+  --retract
+  {0.2,
+    {90*math.pi/180, 40*math.pi/180, -160*math.pi/180},
+    {90*math.pi/180,-40*math.pi/180,-160*math.pi/180},
+  },
+}
+
+walk.motionDef["jableft"]={
+  --right jab
+  {0.2,
+    {-20*math.pi/180, 30*math.pi/180, 0*math.pi/180},
+    {90*math.pi/180,-40*math.pi/180,-160*math.pi/180},
+  },
+  --retract
+  {0.2,
+    {90*math.pi/180, 40*math.pi/180, -160*math.pi/180},
+    {90*math.pi/180,-40*math.pi/180,-160*math.pi/180},
+  },
+}
+
+walk.walkKickSupportMod = {{0,0},{0,0}}

@@ -19,6 +19,7 @@ shared.walk.supportX = vector.zeros(1);
 shared.walk.supportY = vector.zeros(1);
 shared.walk.uLeft = vector.zeros(3);
 shared.walk.uRight = vector.zeros(3);
+shared.walk.vel = vector.zeros(3);
 
 --Robot specific calibration values
 shared.walk.footXComp = vector.zeros(1);

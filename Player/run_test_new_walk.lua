@@ -1,5 +1,5 @@
-module(... or "", package.seeall)
-
+cwd = os.getenv('PWD')
+require('init')
 require('unix');
 require('test_new_walk');
 

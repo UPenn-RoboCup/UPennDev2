@@ -229,14 +229,14 @@ end
 
 function calculate_bias() --move
   --gives the ratio of weight on either foot
-  --bias[1] = 0.25*bias[1] + 0.75*ft_filt[3]/(ft_filt[3] + ft_filt[9]) --left
-  --bias[2] = 0.25*bias[2] + 0.75*ft_filt[9]/(ft_filt[3] + ft_filt[9]) --right
-  --for i = 1,2 do
-    --bias[i] = math.min(bias[i], 1)
-    --bias[i] = bias_filters[i]:update(bias[i])
-  --end
-  bias[1] = 0.5 --reverse comments when force torques are working ------------
-  bias[2] = 0.5 --reverse comments when force torques are working ------------
+  bias[1] = 0.25*bias[1] + 0.75*ft_filt[3]/(ft_filt[3] + ft_filt[9]) --left
+  bias[2] = 0.25*bias[2] + 0.75*ft_filt[9]/(ft_filt[3] + ft_filt[9]) --right
+  for i = 1,2 do
+    bias[i] = math.min(bias[i], 1)
+    bias[i] = bias_filters[i]:update(bias[i])
+  end
+  --bias[1] = 0.5 --reverse comments when force torques are working ------------
+  --bias[2] = 0.5 --reverse comments when force torques are working ------------
 end
 
 function COG_controller_act(des_loc) --uses loc wrt foot
@@ -410,18 +410,38 @@ function update_force_torque()
   end 
 end
 
+function COG_update(pos)
+  --returns location of COG wrt base frame
+  local COG_temp = pcm:get_cog()
+  for i = 1, 3 do
+    COG[i] = COG_filters[i]:update(COG_temp[i])
+  end 
+
+  local jnt_vec_x = vector.new{0, 0, 0, 1}
+  local jnt_vec_y = vector.new{0, 0, 1}
+  local bsx = vector.new{-0.2484, -0.0554, -0.0196, 0.0080}
+  local bsy = vector.new{0.2108, 0.0390, -0.0018}
+  local correction = {}
+
+  jnt_vec_x[1] = ahrs_filt[8]
+  jnt_vec_x[2] = pos[3] +  pos[9]
+  jnt_vec_x[3] = pos[4] + pos[10] 
+
+  jnt_vec_y[1] = ahrs_filt[7]
+  jnt_vec_y[2] = pos[2] + pos[8]
+  
+  correction[1] = vector.mul(jnt_vec_x, bsx)
+  correction[2] = vector.mul(jnt_vec_y, bsy)
+
+  COG[1] = COG[1] + correction[1]
+  COG[2] = COG[2] + correction[2]
+end
+
 function ahrs_update() --move
   ahrs = dcm:get_ahrs()
   for i = 1, 9 do
     ahrs_filt[i] = ahrs_filters[i]:update(ahrs[i])
   end 
-end
-
-function COG_update()
-  local COG_temp = pcm:get_cog()
-  for i = 1, 3 do
-    COG[i] = COG_filters[i]:update(COG_temp[i])
-  end
 end
 
 --------------------------------------------------------------------
@@ -494,11 +514,12 @@ print('timestep', Platform.get_time_step())
 Proprioception.entry()
 print('after entry')
 dcm:set_joint_enable(0,'all')
-local set_values = dcm:get_joint_position('legs') --records original joint pos
+local set_values = dcm:get_joint_position_sensor('legs') 
 dcm:set_joint_stiffness(1, 'all') -- position control
 dcm:set_joint_stiffness(0, 'ankles')
 --dcm:set_joint_damping(0, 'ankles')
 dcm:set_joint_force({0, 0, 0, 0},'ankles')
+dcm:set_joint_position(set_values)
 dcm:set_joint_enable(1, 'all')
 qt = vector.copy(set_values) 
 printdata = true
@@ -515,7 +536,7 @@ function write_to_file(filename, data, test)
   filename:write(t, "\n")
 end
 
-local store = {}
+local store = vector.zeros{10000}
 local ind = 1
 function store_data(local_data)
   for i = 1, #local_data do
@@ -574,7 +595,7 @@ while run do
   --if walk == true then
     --pid_torques = COG_walk()
   --else 
-      pid_torques = COG_controller({0.0, 0})
+      pid_torques = COG_controller({0, 0})
   --end
   --if pid_override then  pid_torques[2] = 0 end --, pid_torques[1] = 0,
   joint_torques = update_joint_torques()

@@ -15,7 +15,7 @@ local motion_manager_endpoint = 'tcp://localhost:12001'
 local motion_manager = rpc.client.new(motion_manager_endpoint)
 print('Attempting to connect to motion_manager at '..motion_manager_endpoint)
 motion_manager:connect(nil)
-motion_manager:set_timeout(0.05)
+motion_manager:set_timeout(0.1)
 
 while (not motion_manager:call('Motion:get_states')) do 
 end

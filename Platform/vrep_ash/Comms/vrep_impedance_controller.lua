@@ -1,6 +1,7 @@
 require('pid')
 
 --[[
+-- DEBUG
 console = simAuxiliaryConsoleOpen("Aux Console", 500, 0x10)
 print = function(...)
   simAuxiliaryConsolePrint(console, ...)
@@ -12,8 +13,8 @@ local MAX_VELOCITY = 10
 local POSITION_P_GAIN_FACTOR = 1000
 local POSITION_I_GAIN_FACTOR = 1000
 local POSITION_D_GAIN_FACTOR = 1000
+local POSITION_D_CORNER_FREQUENCY = 250
 local VELOCITY_P_GAIN_FACTOR = 1000
-local POSITION_D_CORNER_FREQUENCY = 200
 
 vrep_impedance_controller = {}
 vrep_impedance_controller.__index = vrep_impedance_controller
@@ -50,6 +51,7 @@ function vrep_impedance_controller:update(...)
   end
 
 --[[
+  -- DEBUG
   if (not file1) then
     THOR_HOME = os.getenv('THOR_HOME')
     file1 = io.open(THOR_HOME..'/Data/logs/velocity'..self.joint_id..'.txt', 'w+')
@@ -65,31 +67,34 @@ function vrep_impedance_controller:update(...)
   -- Update pid gains and position setpoint:
   ------------------------------------------------------------------------------
   if (passCnt == 1) then
-    local gains = simGetObjectCustomData(jointHandle, 2050)
-    gains = simUnpackFloats(gains)
-    position_p_gain = POSITION_P_GAIN_FACTOR*gains[1] 
-    position_i_gain = POSITION_I_GAIN_FACTOR*gains[2]
-    position_d_gain = POSITION_D_GAIN_FACTOR*gains[3]
-    velocity_p_gain = VELOCITY_P_GAIN_FACTOR*gains[4]
+    local joint_param = simGetObjectCustomData(jointHandle, 2050)
+    joint_param = simUnpackFloats(joint_param)
+    force_setpoint = joint_param[1]
+    position_setpoint = joint_param[2]
+    velocity_setpoint = joint_param[3]
+    position_p_gain = POSITION_P_GAIN_FACTOR*joint_param[4]
+    position_i_gain = POSITION_I_GAIN_FACTOR*joint_param[5]
+    position_d_gain = POSITION_D_GAIN_FACTOR*joint_param[6]
+    velocity_p_gain = VELOCITY_P_GAIN_FACTOR*joint_param[7]
     self.position_pid:set_gains(
       position_p_gain,
       position_i_gain,
       position_d_gain
     )
-    self.position_pid:set_setpoint(targetPos)
+    self.position_pid:set_setpoint(position_setpoint)
   end
 
-  -- Get velocity setpoint (limit velocity to prevent overshoot):
+  -- Get force setpoint:
   ------------------------------------------------------------------------------
-  local force_setpoint = self.position_pid:update(currentPos)
-                       + velocity_p_gain*(targetVel - currentVel) 
-                       + targetForce
-  force_setpoint = math.min(force_setpoint, MAX_FORCE)
-  force_setpoint = math.max(force_setpoint,-MAX_FORCE)
-  if (force_setpoint > 0) then
-    return force_setpoint, MAX_VELOCITY
+  local force_command = self.position_pid:update(currentPos)
+                      + velocity_p_gain*(velocity_setpoint - currentVel) 
+                      + force_setpoint
+  force_command = math.min(force_command, MAX_FORCE)
+  force_command = math.max(force_command,-MAX_FORCE)
+  if (force_command > 0) then
+    return force_command, MAX_VELOCITY
   else
-    return -force_setpoint, -MAX_VELOCITY
+    return -force_command, -MAX_VELOCITY
   end
 end
 

@@ -12,6 +12,7 @@
 
 # compiled sources
 *.o
+*.a
 *.so
 *.dylib
 *.hex

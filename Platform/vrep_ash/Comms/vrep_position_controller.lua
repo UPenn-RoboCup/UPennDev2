@@ -1,6 +1,7 @@
 require('pid')
 
 --[[
+-- DEBUG
 console = simAuxiliaryConsoleOpen("Aux Console", 500, 0x10)
 print = function(...)
   simAuxiliaryConsolePrint(console, ...)
@@ -12,6 +13,7 @@ local MAX_VELOCITY = 10
 local POSITION_P_GAIN_FACTOR = 1000
 local POSITION_I_GAIN_FACTOR = 1000
 local POSITION_D_GAIN_FACTOR = 1000
+local POSITION_D_CORNER_FREQUENCY = 250
 local VELOCITY_P_GAIN_FACTOR = 1000
 
 vrep_position_controller = {}
@@ -37,39 +39,41 @@ function vrep_position_controller:update(...)
   currentPos, targetPos, errorValue, effort, dynStepSize, lowLimit,
   hightLimit, targetVel, targetForce, velUpperLimit = ...
 
-  local _, currentVel = simGetObjectFloatParameter(jointHandle, 2012)
-
   -- Initialize position pid controller:
   ------------------------------------------------------------------------------
   if (init) then
     self.position_pid:reset()
     self.position_pid:set_time_step(dynStepSize)
     self.position_pid:set_output_limits(-MAX_VELOCITY, MAX_VELOCITY)
+    self.position_pid:set_d_corner_frequency(POSITION_D_CORNER_FREQUENCY)
   end
 
   -- Update pid gains and position setpoint:
   ------------------------------------------------------------------------------
   if (passCnt == 1) then
-    local gains = simGetObjectCustomData(jointHandle, 2050)
-    gains = simUnpackFloats(gains)
-    position_p_gain = POSITION_P_GAIN_FACTOR*gains[1] 
-    position_i_gain = POSITION_I_GAIN_FACTOR*gains[2]
-    position_d_gain = POSITION_D_GAIN_FACTOR*gains[3]
-    velocity_p_gain = VELOCITY_P_GAIN_FACTOR*gains[4]
+    local joint_param = simGetObjectCustomData(jointHandle, 2050)
+    joint_param = simUnpackFloats(joint_param)
+    force_setpoint = joint_param[1]
+    position_setpoint = joint_param[2]
+    velocity_setpoint = joint_param[3]
+    position_p_gain = POSITION_P_GAIN_FACTOR*joint_param[4]
+    position_i_gain = POSITION_I_GAIN_FACTOR*joint_param[5]
+    position_d_gain = POSITION_D_GAIN_FACTOR*joint_param[6]
+    velocity_p_gain = VELOCITY_P_GAIN_FACTOR*joint_param[7]
     self.position_pid:set_gains(
       position_p_gain,
       position_i_gain,
       position_d_gain
     )
-    self.position_pid:set_setpoint(targetPos)
+    self.position_pid:set_setpoint(position_setpoint)
   end
  
   -- Get velocity setpoint (limit velocity to prevent overshoot):
   ------------------------------------------------------------------------------
-  local velocity_setpoint = self.position_pid:update(currentPos)
-  velocity_setpoint = math.min(velocity_setpoint, math.abs(errorValue/dynStepSize))
-  velocity_setpoint = math.max(velocity_setpoint,-math.abs(errorValue/dynStepSize))
-  return MAX_FORCE, velocity_setpoint
+  local velocity_command = self.position_pid:update(currentPos)
+  velocity_command = math.min(velocity_command, math.abs(errorValue/dynStepSize))
+  velocity_command = math.max(velocity_command,-math.abs(errorValue/dynStepSize))
+  return MAX_FORCE, velocity_command
 end
 
 return vrep_position_controller

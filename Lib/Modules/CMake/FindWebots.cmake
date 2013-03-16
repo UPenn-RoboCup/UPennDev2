@@ -173,13 +173,13 @@ endif(IS_ENV_WEBOTS_HOME)
 
 
 
-find_file(GL_HEADER_FOUND GL/gl.h)
-
-if(GL_HEADER_FOUND)
-    message(STATUS "Found OpenGL headers : ${GL_HEADER_FOUND}")
-else(GL_HEADER_FOUND)
-    message(STATUS "Did not found OpenGL headers, your installation of webots may not work properly.")
-endif(GL_HEADER_FOUND)
+#find_file(GL_HEADER_FOUND GL/gl.h)
+#
+#if(GL_HEADER_FOUND)
+#    message(STATUS "Found OpenGL headers : ${GL_HEADER_FOUND}")
+#else(GL_HEADER_FOUND)
+#    message(STATUS "Did not found OpenGL headers, your installation of webots may not work properly.")
+#endif(GL_HEADER_FOUND)
 
 
 

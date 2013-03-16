@@ -1,5 +1,5 @@
 module(..., package.seeall);
-
+require('util')
 require('parse_hostname')
 require('vector')
 require('os')
@@ -7,21 +7,11 @@ require('os')
 platform = {};
 platform.name = 'WebotsCharli'
 
-function loadconfig(configName)
-  local localConfig=require(configName);
-  for k,v in pairs(localConfig) do
-    Config[k]=localConfig[k];
-  end
-end
-
-loadconfig('Walk/Config_WebotsCharli_Walk')
-loadconfig('Kick/Config_WebotsCharli_Kick')
-loadconfig('World/Config_Charli_World')
-loadconfig('Vision/Config_WebotsCharli_Vision')
-
---Location Specific Camera Parameters--
-loadconfig('Vision/Config_WebotsOP_Camera')
---loadconfig('Vision/Config_WebotsCharli_Camera') --high-res
+-- Parameters Files
+params = {}
+params.name = {"Walk", "World", "Kick", "Vision", "FSM", "Camera"};
+params.World_Platform = "Charli"
+util.LoadConfig(params, platform)
 
 -- Device Interface Libraries
 dev = {};
@@ -47,8 +37,6 @@ game.role = game.playerID-1; -- 0 for goalie
 
 
 -- FSM Parameters
-fsm = {};
-loadconfig('FSM/Config_WebotsCharli_FSM')
 fsm.game = 'RoboCup';
 fsm.body = {'CharliPlayer'};
 fsm.head = {'GeneralPlayer'}; 

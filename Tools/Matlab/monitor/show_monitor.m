@@ -208,7 +208,9 @@ function h=show_monitor()
     % AUTO-SWITCH YUYV TYPE
     yuyv_type = r_mon.yuyv_type;
     if MONITOR.enable1
-      MONITOR.h1 = subplot(4,5,[1 2 6 7]);
+%      MONITOR.h1 = subplot(4,5,[1 2 6 7]);
+%      MONITOR.h1 = subplot(4,5,[11 12 16 17]);
+      MONITOR.h1 = subplot(4,5,[3 4 8 9]);
       if yuyv_type==1
         yuyv = robots{playerNumber,teamNumber}.get_yuyv();
 				plot_yuyv(yuyv);
@@ -250,34 +252,42 @@ function h=show_monitor()
     end
 
     if MONITOR.enable2==1
-      MONITOR.h2 = subplot(4,5,[3 4 8 9]);
+%      MONITOR.h2 = subplot(4,5,[3 4 8 9]);
+      MONITOR.h2 = subplot(4,5,[11 12 16 17]);
+%      MONITOR.h2 = subplot(4,5,[1 2 6 7]);
       labelA = robots{playerNumber,teamNumber}.get_labelA();
       plot_label(labelA);
       if MONITOR.enable0
         plot_overlay(r_mon,1,MONITOR.enable0);
       end
     elseif MONITOR.enable2==2
-      MONITOR.h2 = subplot(4,5,[3 4 8 9]);
+%     MONITOR.h2 = subplot(4,5,[3 4 8 9]);
+%      MONITOR.h2 = subplot(4,5,[1 2 6 7]);
+      MONITOR.h2 = subplot(4,5,[11 12 16 17]);
       labelB = robots{playerNumber,teamNumber}.get_labelB();
       plot_label(labelB);
       if MONITOR.enable0
         plot_overlay(r_mon,r_mon.camera.scaleB,MONITOR.enable0);
       end
     elseif (MONITOR.enable2==3) && (~isempty(MONITOR.lutname))
-      MONITOR.h2 = subplot(4,5,[3 4 8 9]);
+%     MONITOR.h2 = subplot(4,5,[3 4 8 9]);
+%      MONITOR.h2 = subplot(4,5,[1 2 6 7]);
+      MONITOR.h2 = subplot(4,5,[11 12 16 17]);
       yuyv = robots{playerNumber,teamNumber}.get_yuyv();
       label_lut=yuyv2label(yuyv,LUT);
       plot_label(label_lut);
     end
 
     if MONITOR.enable3
-      MONITOR.h3 = subplot(4,5,[11 12 16 17]);
+%      MONITOR.h3 = subplot(4,5,[3 4 8 9]);
+      MONITOR.h3 = subplot(4,5,[1 2 6 7]);
+%      MONITOR.h3 = subplot(4,5,[11 12 16 17]);
       cla(MONITOR.h3);
 
 
       if MONITOR.enable3==5 
         if isfield(r_mon, 'occ')
-          plot_occ(r_mon.occ);            
+          plot_occ(r_mon);            
 				end
 %        plot_field(MONITOR.h3,MONITOR.fieldtype);
 %        plot_robot( r_struct, r_mon,2,3 );

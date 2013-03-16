@@ -30,6 +30,7 @@ global MONITOR %for sending the webots check information
   h.wcmParticle  = shm(sprintf('wcmParticle%d%d%s',  h.teamNumber, h.playerID, h.user));
   %h.wcmKick
   h.mcmUs = shm(sprintf('mcmUs%d%d%s', h.teamNumber, h.playerID, h.user));
+  h.mcmWalk = shm(sprintf('mcmWalk%d%d%s', h.teamNumber, h.playerID, h.user));
 
 
   h.wcmTeamdata  = shm(sprintf('wcmTeamdata%d%d%s',  h.teamNumber, h.playerID, h.user));
@@ -40,6 +41,9 @@ global MONITOR %for sending the webots check information
   %Be careful this no longer crashes some machines...
 	h.ocmOcc = shm(sprintf('ocmOcc%d%d%s', h.teamNumber, h.playerID, h.user));
 	h.ocmObstacle = shm(sprintf('ocmObstacle%d%d%s', h.teamNumber, h.playerID, h.user));
+
+	h.matcmControl = shm(sprintf('matcmControl%d%d%s', h.teamNumber, h.playerID, h.user));
+
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -91,7 +95,7 @@ global MONITOR %for sending the webots check information
         
 
         ballx = h.wcmBall.get_x();
-	bally = h.wcmBall.get_y();
+	      bally = h.wcmBall.get_y();
         ballt = h.wcmBall.get_t();
         ballvelx = h.wcmBall.get_velx();
         ballvely = h.wcmBall.get_vely();
@@ -125,18 +129,27 @@ global MONITOR %for sending the webots check information
         r.time = h.wcmRobot.get_time();
         r.penalty = h.wcmRobot.get_penalty();
 
- 	gpspose = h.wcmRobot.get_gpspose();
+ 	      gpspose = h.wcmRobot.get_gpspose();
         r.gpspose = struct('x', gpspose(1), 'y', gpspose(2), 'a', gpspose(3));
- 	r.gps_attackbearing = h.wcmRobot.get_gps_attackbearing();
+ 	      r.gps_attackbearing = h.wcmRobot.get_gps_attackbearing();
 
-
+        free_detect = h.vcmFreespace.get_detect();
+        if free_detect == 1
+          r.obstacle = {};
+          r.obstacle.num = h.ocmObstacle.get_num();
+          r.obstacle.centroid_x = h.ocmObstacle.get_cx();
+          r.obstacle.centroid_y = h.ocmObstacle.get_cy();
+          r.obstacle.nearest_x = h.ocmObstacle.get_nx();
+          r.obstacle.nearest_y = h.ocmObstacle.get_ny();
+          r.obstacle.nearest_dist = h.ocmObstacle.get_ndist();
+        end
 
         r.tReceive = 0;
 %TODO: monitor timeout    
         if r.time>h.tLastUpdate 
-	  h.updated=1;
-	  h.tLastUpdate=r.time;
-	end
+    	    h.updated=1;
+	        h.tLastUpdate=r.time;
+	      end
  
     catch
     end
@@ -307,6 +320,8 @@ global MONITOR %for sending the webots check information
       pose = h.wcmRobot.get_pose();
       r.robot = {};
       r.robot.pose = struct('x', pose(1), 'y', pose(2), 'a', pose(3));
+      vel = h.mcmWalk.get_vel();
+      r.robot.vel = struct('vx', vel(1), 'vy', vel(2), 'va', vel(3));
 
     %Camera info
 
@@ -318,15 +333,16 @@ global MONITOR %for sending the webots check information
       bodyTilt=h.vcmCamera.get_bodyTilt();
       headAngles=h.vcmImage.get_headAngles();
       rollAngle=h.vcmCamera.get_rollAngle();
+      lutFileName = char(h.vcmCamera.get_lut_filename());
       r.camera = struct('select',select,'width',width,'height',height,'scaleB',scaleB,...
-	'bodyHeight',bodyHeight,'bodyTilt',bodyTilt,...
-	'headAngles',headAngles,'rollAngle',rollAngle);
+                      	'bodyHeight',bodyHeight,'bodyTilt',bodyTilt,...
+                      	'headAngles',headAngles,'rollAngle',rollAngle,...
+                        'lutFileName',lutFileName);
 
     %yuyv type info
       r.yuyv_type = h.vcmCamera.get_yuyvType();
  
     %Image FOV boundary
-          
       fovC=h.vcmImage.get_fovC();
       fovTL=h.vcmImage.get_fovTL();
       fovTR=h.vcmImage.get_fovTR();
@@ -476,7 +492,19 @@ global MONITOR %for sending the webots check information
   			r.occ.mapsize = mapsize;
   			r.occ.robot_pos = h.ocmOcc.get_robot_pos();
         r.occ.odom = h.ocmOcc.get_odom();
-        r.occ.vel = h.ocmOcc.get_vel();
+        r.occ.vel = h.mcmWalk.get_vel();
+        r.occ.pvel = h.ocmOcc.get_vel();
+        r.occ.attackBearing = h.wcmGoal.get_attack_bearing();
+      end
+
+      if r.free.detect == 1
+        r.obstacle = {};
+        r.obstacle.num = h.ocmObstacle.get_num();
+        r.obstacle.centroid_x = h.ocmObstacle.get_cx();
+        r.obstacle.centroid_y = h.ocmObstacle.get_cy();
+        r.obstacle.nearest_x = h.ocmObstacle.get_nx();
+        r.obstacle.nearest_y = h.ocmObstacle.get_ny();
+        r.obstacle.nearest_dist = h.ocmObstacle.get_ndist();
       end
       
       r.bd = {};

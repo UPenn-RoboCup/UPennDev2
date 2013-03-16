@@ -1,3 +1,5 @@
+cwd = '.'
+
 require ('init');
 require ('HeadTransform');
 require ('unix');

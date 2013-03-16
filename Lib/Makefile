@@ -1,6 +1,7 @@
 # Master Makefile to compile all Lua/C++ libraries
 
 CWD= $(shell pwd)
+PWD= $(subst /,\/,$(CWD)/../Player/Lib)
 include $(CWD)/Makefile.inc
 
 
@@ -72,7 +73,10 @@ naov4:
 
 naoqi:
 	@echo "Compiling Custom Naoqi Modules...\n"
-	@cd $(NAOQIDIR) && make && cd $(CWD)
+	@echo $(PWD)
+	sed -i -e 's/HOME/$(PWD)/g' $(NAOQIDIR)/src/dcmprocess.cpp
+	cd $(NAOQIDIR) && make && cd $(CWD)
+	sed -i -e 's/$(PWD)/HOME/g' $(NAOQIDIR)/src/dcmprocess.cpp
 	@echo "\n"
 
 hp:
@@ -358,7 +362,8 @@ setup_hands: hands setup_util
 setup_naoqi: naoqi setup_util
 	@echo "Setting up NaoQi module...\n"
 	mkdir -p $(INSTDIR)
-	rsync -avr --exclude=".*" $(NAOQIDIR)/build/sdk/lib/naoqi/* ../Install/naoqi/lib/naoqi/
+	find $(NAOQIDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
+	sed -i -e 's/HOME/$(PWD)/g' $(INSTDIR)/nao_init.lua
 	@echo "\n"
 
 setup_boxer: setup_op setup_hands setup_primesense

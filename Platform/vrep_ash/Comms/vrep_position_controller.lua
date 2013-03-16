@@ -8,7 +8,7 @@ end
 --]]
 
 local MAX_FORCE = 300
-local MAX_VELOCITY = 100
+local MAX_VELOCITY = 10
 local POSITION_P_GAIN_FACTOR = 1000
 local POSITION_I_GAIN_FACTOR = 1000
 local POSITION_D_GAIN_FACTOR = 1000
@@ -22,9 +22,10 @@ function vrep_position_controller.new(...)
   ------------------------------------------------------------------------------
   local init, revolute, cyclic, jointHandle, passCnt, totalPasses,
   currentPos, targetPos, errorValue, effort, dynStepSize, lowLimit,
-  hightLimit, targetVel, maxForceTorque, velUpperLimit = ...
+  hightLimit, targetVel, targetForce, velUpperLimit = ...
 
   local o = {}
+  o.joint_id = simUnpackFloats(simGetObjectCustomData(jointHandle, 2030))[1]
   o.position_pid = pid.new(dynStepSize)
   return setmetatable(o, vrep_position_controller)
 end
@@ -34,7 +35,7 @@ function vrep_position_controller:update(...)
   ------------------------------------------------------------------------------
   local init, revolute, cyclic, jointHandle, passCnt, totalPasses,
   currentPos, targetPos, errorValue, effort, dynStepSize, lowLimit,
-  hightLimit, targetVel, maxForceTorque, velUpperLimit = ...
+  hightLimit, targetVel, targetForce, velUpperLimit = ...
 
   local _, currentVel = simGetObjectFloatParameter(jointHandle, 2012)
 
@@ -51,14 +52,14 @@ function vrep_position_controller:update(...)
   if (passCnt == 1) then
     local gains = simGetObjectCustomData(jointHandle, 2050)
     gains = simUnpackFloats(gains)
-    local position_p_gain = gains[1] 
-    local position_i_gain = gains[2]
-    local position_d_gain = gains[3]
-    local velocity_p_gain = gains[4]
+    position_p_gain = POSITION_P_GAIN_FACTOR*gains[1] 
+    position_i_gain = POSITION_I_GAIN_FACTOR*gains[2]
+    position_d_gain = POSITION_D_GAIN_FACTOR*gains[3]
+    velocity_p_gain = VELOCITY_P_GAIN_FACTOR*gains[4]
     self.position_pid:set_gains(
-      POSITION_P_GAIN_FACTOR*position_p_gain,
-      POSITION_I_GAIN_FACTOR*position_i_gain,
-      POSITION_D_GAIN_FACTOR*position_d_gain
+      position_p_gain,
+      position_i_gain,
+      position_d_gain
     )
     self.position_pid:set_setpoint(targetPos)
   end

@@ -12,7 +12,7 @@ for i = 1, #arg do
     data[#data + 1] = tonumber(line)
   end
   gnuplot.figure()
-  gnuplot.plot(data, '~')
+  gnuplot.plot(data, '-')
   gnuplot.title(arg[i])
   gnuplot.grid(true)
 end

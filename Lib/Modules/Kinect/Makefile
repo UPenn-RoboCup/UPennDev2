@@ -16,8 +16,5 @@ all: kinect
 kinect: luaKinect.o 
 	$(LD) $(LDFLAGS) -o Kinect.$(SHLIBEXT) $(LIBOPTS) $^ $(LIB_DIR) -lm -lOpenNI2
 
-standalone:
-	$(CXX) $(INCLUDES) -c standalone.cpp -o run_kinect
-
 clean:
 	rm -f *.$(SHLIBEXT) *.o

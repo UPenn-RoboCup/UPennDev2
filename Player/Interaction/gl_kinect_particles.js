@@ -1,8 +1,7 @@
 if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 
-var particle_canvas = $('#kgl')[0];
-var ctxwidth = particle_canvas.width;
-var ctxheight = particle_canvas.height;
+var ctxwidth = 320;
+var ctxheight = 240;
 var kwidth = 320;
 var kheight = 240;
 var nparticles = kwidth*kheight;
@@ -28,6 +27,8 @@ for( var j=0;j<kheight;j++ ){
 }
 console.log("Done setting up the fov tables.")
 
+init();
+animate();
 
 function init() {
 
@@ -50,7 +51,6 @@ function init() {
   controls.dynamicDampingFactor = 0.3;
   controls.keys = [ 65, 83, 68 ];
   controls.addEventListener( 'change', render );
-
 
   // Initialize the particles
   // TODO: chunk it!
@@ -154,5 +154,3 @@ function update_kinect_depth( d_buffer ) {
   render();
 }
 
-init();
-animate();

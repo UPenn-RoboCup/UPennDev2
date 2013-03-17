@@ -79,6 +79,9 @@ ifeq ($(OSTYPE),linux)
 ifeq ($(USER),darwin)
   CXXFLAGS= -O3 -fomit-frame-pointer -mtune=native -march=native -pipe -funroll-loops
 endif
+ifeq ($(USER),nao)
+  CXXFLAGS= -O1 -fomit-frame-pointer -mtune=native -march=native -pipe -funroll-loops
+endif
 endif
 
 ifeq ($(OSTYPE),darwin)

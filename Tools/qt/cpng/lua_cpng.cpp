@@ -140,6 +140,63 @@ static int lua_read_png(lua_State *L) {
 }
 
 static int lua_write_png(lua_State *L) {
+  structPNG *ud = lua_checkcpng(L, 1);
+  const char* file_name = luaL_checkstring(L, 2);
+
+  /* create file */
+  FILE *fp = fopen(file_name, "wb");
+  if (!fp)
+          abort_("[write_png_file] File %s could not be opened for writing", file_name);
+
+
+  /* initialize stuff */
+  ud->png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+
+  if (!ud->png_ptr)
+          abort_("[write_png_file] png_create_write_struct failed");
+
+  ud->info_ptr = png_create_info_struct(ud->png_ptr);
+  if (!ud->info_ptr)
+          abort_("[write_png_file] png_create_info_struct failed");
+
+  if (setjmp(png_jmpbuf(ud->png_ptr)))
+          abort_("[write_png_file] Error during init_io");
+
+  png_init_io(ud->png_ptr, fp);
+
+
+  /* write header */
+  if (setjmp(png_jmpbuf(ud->png_ptr)))
+          abort_("[write_png_file] Error during writing header");
+
+  png_set_IHDR(ud->png_ptr, ud->info_ptr, ud->width, ud->height,
+               ud->bit_depth, ud->color_type, PNG_INTERLACE_NONE,
+               PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
+
+  png_write_info(ud->png_ptr, ud->info_ptr);
+
+
+  /* write bytes */
+  if (setjmp(png_jmpbuf(ud->png_ptr)))
+          abort_("[write_png_file] Error during writing bytes");
+
+  png_write_image(ud->png_ptr, ud->row_pointers);
+
+
+  /* end write */
+  if (setjmp(png_jmpbuf(ud->png_ptr)))
+          abort_("[write_png_file] Error during end of write");
+
+  png_write_end(ud->png_ptr, NULL);
+
+//  /* cleanup heap allocation */
+//  int y;
+//  for (y=0; y<ud->height; y++)
+//          free(ud->row_pointers[y]);
+//  free(row_pointers);
+
+  fclose(fp);
+
   return 1;
 }
 

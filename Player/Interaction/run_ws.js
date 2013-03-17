@@ -26,9 +26,12 @@ var depthData;
 
 // Send data to clients at a set interval
 // For now, this is 15fps
-var fps = 15;
+var fps = 5;
 setInterval(  function(){
   for(var s=0;s<wskts.length;s++) {
+    //console.log(wskts[s].readyState);
+    //console.log(wskts[s].OPEN);
+    if( wskts[s].readyState==1 ){ //1 is OPEN
     if( counter%2==0 ){
       //console.log("sending color");
       wskts[s].send(colorData,{binary:true});
@@ -37,6 +40,7 @@ setInterval(  function(){
       wskts[s].send(depthData,{binary:true});
     }
     //wskts[s].send( Buffer.concat( [type,raw]),{binary:true});
+  }
   }
   counter++;
 }, 1000/fps);

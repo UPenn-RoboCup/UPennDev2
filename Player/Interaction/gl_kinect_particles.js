@@ -1,7 +1,7 @@
 if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 
-var ctxwidth = 320;
-var ctxheight = 240;
+var ctxwidth = window.innerWidth;//320;
+var ctxheight = window.innerHeight;//240;
 var kwidth = 320;
 var kheight = 240;
 var nparticles = kwidth*kheight;
@@ -87,7 +87,7 @@ function init() {
   // TODO: is this necessary?
   geometry.computeBoundingSphere();
 
-  var material = new THREE.ParticleBasicMaterial( { size: 4, vertexColors: true } );
+  var material = new THREE.ParticleBasicMaterial( { size: 2, vertexColors: true } );
   particleSystem = new THREE.ParticleSystem( geometry, material );
 
   // Set up the world
@@ -101,6 +101,8 @@ function init() {
   container = $('#kgl')[0];
   container.appendChild( renderer.domElement );
 
+  window.addEventListener( 'resize', onWindowResize, false );
+
 }
 
 function animate() {
@@ -110,6 +112,14 @@ function animate() {
 
 function render() {
   renderer.render( scene, camera );
+}
+
+function onWindowResize() {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize( window.innerWidth, window.innerHeight );
+  controls.handleResize();
+  render();
 }
 
 function update_kinect_image( c_buffer ) {
@@ -141,9 +151,11 @@ function update_kinect_depth( d_buffer ) {
     for (var i = 0; i<kwidth; i++ ){
       tmp = d_buffer[d_idx]+d_buffer[d_idx+1]+d_buffer[d_idx+2];
       tmp = tmp / 3;
-      positions[ p_idx ]     = tmp*hlut[i];
-      positions[ p_idx + 1 ] = tmp*vlut[j];
-      positions[ p_idx + 2 ] = tmp;
+      if( tmp>2 ) {
+        positions[ p_idx ]     = tmp*hlut[i];
+        positions[ p_idx + 1 ] = tmp*vlut[j];
+        positions[ p_idx + 2 ] = tmp;
+      }
       p_idx+=3;
       d_idx+=4;
     }

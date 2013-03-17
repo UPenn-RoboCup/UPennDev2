@@ -7,7 +7,7 @@ var channels = [];
 // Publish someting
 process.argv.forEach(function (val, index, array) {
   if( index>1 ) {
-//    console.log(index + ': ' + val);
+    //    console.log(index + ': ' + val);
     console.log('Listening to ' + val);
     channels.push( val );
   }
@@ -21,34 +21,47 @@ var WebSocketServer = require('ws').Server;
 // Globals
 var wskts = []
 var counter = 0;
+var colorData;
+var depthData;
 
 // Send data to clients at a set interval
 // For now, this is 15fps
-var fps = 5;
+var fps = 15;
 setInterval(  function(){
+  for(var s=0;s<wskts.length;s++) {
+    if( counter%2==0 ){
+      //console.log("sending color");
+      wskts[s].send(colorData,{binary:true});
+    } else {
+      //console.log("sending depth");
+      wskts[s].send(depthData,{binary:true});
+    }
+    //wskts[s].send( Buffer.concat( [type,raw]),{binary:true});
+  }
   counter++;
 }, 1000/fps);
 
 // Listen to IPC sensor messages
-var zmq_img = zmq.socket('sub');
-zmq_img.connect('ipc:///tmp/'+channels[0]);
-zmq_img.subscribe('');
+var zmq_skt = zmq.socket('sub');
+zmq_skt.connect('ipc:///tmp/'+channels[0]);
+zmq_skt.subscribe('');
 console.log('ZeroMQ IPC | Connected to '+channels[0]);
-// Process lidar
-var last_cntr = counter;
-zmq_img.on('message', function(msg){
-  // console.log('ZeroMQ IPC | Got'+channels[0]+' message!')
-  if( counter>last_img_cntr ) {
-    for(var s=0;s<wskts.length;s++) {
-      wskts[s].send(msg,{binary:true},function(){
-      });
+zmq_skt.on('message', function(type,raw){
+  if(type=='c'){
+    //console.log('Color');
+    if( raw.length>15600 ){
+      colorData = raw;
     }
-    last_cntr = counter;
+  } else {
+    //console.log('Depth');
+    if(raw.length<=15600){
+      depthData = raw;
+    }
   }
 });
 
 // Set up a Websocket server on 9001
-var wss = new WebSocketServer({port: 9000});
+var wss = new WebSocketServer({port: 9002});
 // Listen to binary websockets
 wss.on('connection', function(ws) {
   console.log('A client is Connnected!');
@@ -57,6 +70,5 @@ wss.on('connection', function(ws) {
     console.log('received: %s', message);
   });
   wskts.push(ws)
-//  ws.send('something');
 });
 

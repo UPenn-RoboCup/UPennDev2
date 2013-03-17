@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      .kinect { 
+        background: #000; 
+        width: 320px; 
+        height: 240px; 
+      }   
+    </style>
+  </head>
+
+  <body>
+    <div id="status"></div>
+    <canvas id="kcolor" class="kinect"></canvas>
+    <canvas id="kdepth" class="kinect"></canvas>
+  </body>
+
+  <script src="extra/three.min.js"></script>
+  <script src="extra/leap.min.js"></script>
+  <script src="extra/jq.mobi.min.js"></script>
+
+  <script>
+    var host = window.document.location.host.replace(/:.*/, '');
+    if( host.length==0 ){
+      host = "localhost";
+    }
+    console.log("Connecting to "+host);
+  </script>
+
+  <!--Receiving an image-->
+  <script>
+    console.log('Connecting to '+host+' 9002')
+    var ws_i = new WebSocket('ws://' + host + ':9002');
+    ws_i.binaryType = "blob";
+    var jpeg_url_name = "";
+    var img = new Image;
+
+    // Create a canvas element
+    var cCanvas = $('#kcolor')[0];
+    cCanvas.width = 320;
+    cCanvas.height = 240;
+    var c_ctx = cCanvas.getContext('2d');
+
+    // Create a canvas element
+    var dCanvas = $('#kdepth')[0];
+    dCanvas.width = 320;
+    dCanvas.height = 240;
+    var d_ctx = dCanvas.getContext('2d');
+    myctx = d_ctx;
+    ws_i.onmessage = function (event) {
+      if( event.data.size>15600 ){
+        console.log(event.data.size);
+        myctx = c_ctx;
+      } else {
+        myctx = d_ctx;
+      }
+      // Revoke the previous
+      if( jpeg_url_name !== undefined ) {
+        window.URL.revokeObjectURL(jpeg_url_name);
+      }
+      event.data.type = "image\/jpeg";
+      var jpeg_url_name = window.URL.createObjectURL( event.data );
+      img.src = jpeg_url_name;
+      img.onload = function(){
+        myctx.drawImage( img, 0, 0 );
+        console.log('Done!');
+      };
+    };
+  </script>
+
+</html>

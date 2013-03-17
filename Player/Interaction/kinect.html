@@ -14,11 +14,15 @@
     <div id="status"></div>
     <canvas id="kcolor" class="kinect"></canvas>
     <canvas id="kdepth" class="kinect"></canvas>
+    <canvas id="kgl" class="kinect"></canvas>
   </body>
 
   <script src="extra/three.min.js"></script>
   <script src="extra/leap.min.js"></script>
   <script src="extra/jq.mobi.min.js"></script>
+  <script src="http://mrdoob.github.com/three.js/examples/js/controls/TrackballControls.js"></script>
+  <script src="http://mrdoob.github.com/three.js/examples/js/Detector.js"></script>
+  <script src="gl_kinect_particles.js"></script>
 
   <script>
     var host = window.document.location.host.replace(/:.*/, '');
@@ -34,7 +38,7 @@
     var ws_i = new WebSocket('ws://' + host + ':9002');
     ws_i.binaryType = "blob";
     var jpeg_url_name = "";
-    var img = new Image;
+    var myimg = new Image;
 
     // Create a canvas element
     var cCanvas = $('#kcolor')[0];
@@ -50,7 +54,7 @@
     myctx = d_ctx;
     ws_i.onmessage = function (event) {
       if( event.data.size>15600 ){
-        console.log(event.data.size);
+        //console.log(event.data.size);
         myctx = c_ctx;
       } else {
         myctx = d_ctx;
@@ -61,10 +65,15 @@
       }
       event.data.type = "image\/jpeg";
       var jpeg_url_name = window.URL.createObjectURL( event.data );
-      img.src = jpeg_url_name;
-      img.onload = function(){
-        myctx.drawImage( img, 0, 0 );
-        console.log('Done!');
+      myimg.src = jpeg_url_name;
+      myimg.onload = function(){
+        myctx.drawImage( myimg, 0, 0 );
+        var imgdata = myctx.getImageData(0, 0, 320, 240);
+        if( event.data.size>15600 ){ // color
+          update_kinect_image( new Uint8Array(imgdata.data.buffer ) );
+        } else {
+          update_kinect_depth( new Uint8Array(imgdata.data.buffer ) );
+        }
       };
     };
   </script>

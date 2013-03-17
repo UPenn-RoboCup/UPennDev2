@@ -41,7 +41,7 @@ void abort_(const char * s, ...)
 
 
 typedef struct {
-  int width, height;
+  int width, height, stride;
   png_byte color_type;
   png_byte bit_depth;
   
@@ -57,12 +57,54 @@ static structPNG * lua_checkcpng(lua_State *L, int narg) {
   return (structPNG *)ud;
 }
 
+static int lua_cpng_getValue(lua_State *L) {
+  structPNG *p = lua_checkcpng(L, 1);
+  int index = luaL_checkint(L, 2) - 1; // Convert lua 1-index to C 0-index
+
+  if ((index < 0) || (index >= p->height * p->stride)) {
+    lua_pushnil(L);
+    return 1;
+  }
+  
+  int r = index / p->stride;
+  int c = index - r * p->stride;
+  
+  lua_pushinteger(L, p->row_pointers[r][c]);
+
+  return 1;
+}
+
+static int lua_cpng_setValue(lua_State *L) {
+  structPNG *p = lua_checkcpng(L, 1);
+  int index = luaL_checkint(L, 2) - 1; // Convert lua 1-index to C 0-index
+
+  if ((index < 0) || (index >= p->height * p->stride)) {
+    lua_pushnil(L);
+    return 1;
+  }
+
+  int val = lua_tointeger(L, 3);
+  
+  int r = index / p->stride;
+  int c = index - r * p->stride;
+
+  p->row_pointers[r][c] = val;
+ 
+  return 1;
+}
+
+static int lua_cpng_len(lua_State *L) {
+  structPNG *p = lua_checkcpng(L, 1);
+  lua_pushinteger(L, p->height * p->stride);
+  return 1;
+}
+
 static int lua_cpng_index(lua_State *L) {
   structPNG *p = lua_checkcpng(L, 1);
-//  if ((lua_type(L, 2) == LUA_TNUMBER) && lua_tointeger(L, 2)) {
-//    // Numeric index:
-//    return lua_carray_getValue(L);
-//  }
+  if ((lua_type(L, 2) == LUA_TNUMBER) && lua_tointeger(L, 2)) {
+    // Numeric index:
+    return lua_cpng_getValue(L);
+  }
 
   // Get index through metatable:
   if (!lua_getmetatable(L, 1)) {lua_pop(L, 1); return 0;} // push metatable
@@ -73,7 +115,7 @@ static int lua_cpng_index(lua_State *L) {
 }
 
 
-static int lua_new_png(lua_State *L) {
+static int lua_cpng_new(lua_State *L) {
   structPNG *ud = (structPNG *)lua_newuserdata(L, sizeof(structPNG));
 
   const char* file_name = luaL_checkstring(L, 1);
@@ -122,6 +164,7 @@ static int lua_new_png(lua_State *L) {
   ud->row_pointers = (png_bytep*) malloc(sizeof(png_bytep) * ud->height);
 
   int x, y;
+  ud->stride = png_get_rowbytes(ud->png_ptr,ud->info_ptr);
   for (y=0; y<ud->height; y++)
     ud->row_pointers[y] = (png_byte*) malloc(png_get_rowbytes(ud->png_ptr,ud->info_ptr));
 
@@ -135,11 +178,11 @@ static int lua_new_png(lua_State *L) {
   return 1;
 }
 
-static int lua_read_png(lua_State *L) {
+static int lua_cpng_read(lua_State *L) {
   return 1;
 }
 
-static int lua_write_png(lua_State *L) {
+static int lua_cpng_write(lua_State *L) {
   structPNG *ud = lua_checkcpng(L, 1);
   const char* file_name = luaL_checkstring(L, 2);
 
@@ -200,11 +243,11 @@ static int lua_write_png(lua_State *L) {
   return 1;
 }
 
-static int lua_save_png(lua_State *L) {
+static int lua_cpng_save(lua_State *L) {
   return 1;
 }
 
-//static int lua_read_png(lua_State *L)
+//static int lua_cpng_read(lua_State *L)
 //{
 //  const char* file_name = luaL_checkstring(L, 1);
 //
@@ -259,7 +302,7 @@ static int lua_save_png(lua_State *L) {
 //  return 1;
 //}
 //
-//static int lua_write_png(lua_State *L)
+//static int lua_cpng_write(lua_State *L)
 //{
 //  const char* file_name = luaL_checkstring(L, 1);
 //
@@ -356,15 +399,61 @@ static int lua_save_png(lua_State *L) {
 //        return 0;
 //}
 
+static int lua_cpng_pointer(lua_State *L) {
+  structPNG *p = lua_checkcpng(L, 1);
+//  int offset = luaL_optint(L, 2, 0);
+
+//  lua_pushlightuserdata(L, ((char *)p->ptr + offset));
+  return 1;
+}
+
+static int lua_cpng_width(lua_State *L) {
+  structPNG *p = lua_checkcpng(L, 1);
+  lua_pushinteger(L, p->width);
+  return 1;
+}
+
+static int lua_cpng_height(lua_State *L) {
+  structPNG *p = lua_checkcpng(L, 1);
+  lua_pushinteger(L, p->height);
+  return 1;
+}
+
+static int lua_cpng_color_type(lua_State *L) {
+  structPNG *p = lua_checkcpng(L, 1);
+  lua_pushinteger(L, p->color_type);
+  return 1;
+}
+
+static int lua_cpng_bit_depth(lua_State *L) {
+  structPNG *p = lua_checkcpng(L, 1);
+  lua_pushinteger(L, p->bit_depth);
+  return 1;
+}
+
+static int lua_cpng_stride(lua_State *L) {
+  structPNG *p = lua_checkcpng(L, 1);
+  lua_pushinteger(L, p->stride);
+  return 1;
+}
+
 static const struct luaL_reg cpng_Functions [] = {
-  {"new", lua_new_png},
-  {"save", lua_save_png},
+  {"new", lua_cpng_new},
+  {"save", lua_cpng_save},
   {NULL, NULL}
 };
 
 static const struct luaL_reg cpng_Methods [] = {
-  {"read", lua_read_png},
-  {"write", lua_write_png},
+  {"pointer", lua_cpng_pointer},
+  {"read", lua_cpng_read},
+  {"write", lua_cpng_write},
+  {"width", lua_cpng_width},
+  {"height", lua_cpng_height},
+  {"stride", lua_cpng_stride},
+  {"color_type", lua_cpng_color_type},
+  {"bit_depth", lua_cpng_bit_depth},
+  {"__newindex", lua_cpng_setValue},
+  {"__len", lua_cpng_len},
   {NULL, NULL}
 };
 

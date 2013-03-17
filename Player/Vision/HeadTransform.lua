@@ -294,7 +294,10 @@ function getNeckOffset()
   return v;
 end
 
+---
 --Project 3d point to level plane with some height
+--@param targetheight The heigh of horizontal plane to project onto
+--@param v 3 dimensional point to project
 function projectGround(v,targetheight)
 
   targetheight=targetheight or 0;

@@ -18,7 +18,7 @@ OPDIR= Platform/OP
 XOSDIR= Platform/XOS
 CHARLIDIR = Platform/Charli
 MODULEDIR = Modules
-NAOQIDIR= $(NAODIR)/NaoQi
+NAOQIDIR= $(NAOV4DIR)/NaoQi
 WEBOTSDIR = $(MODULEDIR)/Webots
 IMAGEDIR= $(MODULEDIR)/ImageProc
 COMMDIR= $(MODULEDIR)/Comm
@@ -74,7 +74,7 @@ endif
 
 ifeq ($(OSTYPE),linux)
   SHLIBEXT= so
-  LIBOPTS= -shared -fpic
+  LIBOPTS= -shared -fpic -lluajit-5.1
   LIBRT= -lrt
 ifeq ($(USER),darwin)
   CXXFLAGS= -O3 -fomit-frame-pointer -mtune=native -march=native -pipe -funroll-loops

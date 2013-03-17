@@ -1,6 +1,7 @@
 # Master Makefile to compile all Lua/C++ libraries
 
 CWD= $(shell pwd)
+PWD= $(subst /,\/,$(CWD)/../Player/Lib)
 include $(CWD)/Makefile.inc
 
 
@@ -72,7 +73,10 @@ naov4:
 
 naoqi:
 	@echo "Compiling Custom Naoqi Modules...\n"
-	@cd $(NAOQIDIR) && make && cd $(CWD)
+	@echo $(PWD)
+	sed -i -e 's/HOME/$(PWD)/g' $(NAOQIDIR)/src/dcmprocess.cpp
+	cd $(NAOQIDIR) && make && cd $(CWD)
+	sed -i -e 's/$(PWD)/HOME/g' $(NAOQIDIR)/src/dcmprocess.cpp
 	@echo "\n"
 
 hp:
@@ -182,6 +186,7 @@ setup_nao: nao setup_util setup_image setup_comm
 	rm -f $(NAODEPLUA51DIR)/*;
 	@echo "\n"
 
+# Removed naoqi at the end to compile on laptop
 setup_naov4: naov4 setup_util setup_image setup_comm
 	@echo "Setting up Nao V4 Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
@@ -190,6 +195,7 @@ setup_naov4: naov4 setup_util setup_image setup_comm
 	cd $(PLAYERDIR)/Config && ln -s Config_NaoV4.lua Config.lua && cd $(CWD)
 #	find $(UTILDIR) $(REGEX) -exec cp -v {} $(NAODEPLUA51DIR) \;
 	rm -f $(NAODEPLUA51DIR)/*;
+	#@cd $(NAOQIDIR) && make && cd $(CWD)
 	@echo "\n"
 
 setup_webots_nao: webots_nao setup_util setup_image setup_webots
@@ -356,7 +362,8 @@ setup_hands: hands setup_util
 setup_naoqi: naoqi setup_util
 	@echo "Setting up NaoQi module...\n"
 	mkdir -p $(INSTDIR)
-	rsync -avr --exclude=".*" $(NAOQIDIR)/build/sdk/lib/naoqi/* ../Install/naoqi/lib/naoqi/
+	find $(NAOQIDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
+	sed -i -e 's/HOME/$(PWD)/g' $(INSTDIR)/nao_init.lua
 	@echo "\n"
 
 setup_boxer: setup_op setup_hands setup_primesense

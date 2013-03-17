@@ -2,7 +2,7 @@
 
 local init, revolute, cyclic, jointHandle, passCnt, totalPasses,
 currentPos, targetPos, errorValue, effort, dynStepSize, lowLimit,
-hightLimit, targetVel, maxForceTorque, velUpperLimit = ...
+hightLimit, targetVel, targetForce, velUpperLimit = ...
 
 if (init) then
   THOR_HOME = os.getenv('THOR_HOME')

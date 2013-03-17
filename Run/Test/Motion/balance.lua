@@ -272,7 +272,6 @@ function COG_controller()
   return torques
 end
 
-local COG_rate = 0
 function generate_act_state()
   local u = vector.new({0, 0})
   local lever = vector.new({0, 0})
@@ -284,8 +283,9 @@ function generate_act_state()
       foot_pos = vector.copy(rf) end
   for i = 1, 2 do
     u[i] = pid_torques[i] + ff_torques[i] + grav_comp_torques[i]
+    --consider using joint_torques here instead of u
     if i == 2 then
-      u[i] = math.max(math.min(u[i],20),-20)
+      u[i] = math.max(math.min(u[i],22),-15)
     else
       u[i] = -1*math.max(math.min(u[i],10),-10)
     end
@@ -410,17 +410,20 @@ function update_force_torque()
   end 
 end
 
-function COG_update(pos)
+function COG_update()
   --returns location of COG wrt base frame
-  local COG_temp = pcm:get_cog()
-  for i = 1, 3 do
-    COG[i] = COG_filters[i]:update(COG_temp[i])
-  end 
-
+  local COG_temp = pcm:get_cog()  --used to be COG_temp
+--  for i = 1, 3 do
+  --  COG[i] = COG_filters[i]:update(COG_temp[i])
+ -- end 
+  local pos = vector.copy(raw_pos)
   local jnt_vec_x = vector.new{0, 0, 0, 1}
   local jnt_vec_y = vector.new{0, 0, 1}
-  local bsx = vector.new{-0.2484, -0.0554, -0.0196, 0.0080}
-  local bsy = vector.new{0.2108, 0.0390, -0.0018}
+--  local bsx = vector.new{-0.2484, -0.0554, -0.0196, 0.0080}
+--  local bsy = vector.new{0.2108, 0.0390, -0.0018}
+  local bsx = vector.new{-0.2649, -0.0608, -0.0210, 0.0050}
+  local bsy = vector.new{0.2285, 0.0460, -0.0007}
+  
   local correction = {}
 
   jnt_vec_x[1] = ahrs_filt[8]
@@ -430,11 +433,12 @@ function COG_update(pos)
   jnt_vec_y[1] = ahrs_filt[7]
   jnt_vec_y[2] = pos[2] + pos[8]
   
-  correction[1] = vector.mul(jnt_vec_x, bsx)
-  correction[2] = vector.mul(jnt_vec_y, bsy)
+  correction[1] = jnt_vec_x*bsx
+  correction[2] = jnt_vec_y*bsy
 
-  COG[1] = COG[1] + correction[1]
-  COG[2] = COG[2] + correction[2]
+  COG[1] = COG_temp[1] + correction[1]
+  COG[2] = COG_temp[2] + correction[2]
+  COG[3] = COG_temp[3]
 end
 
 function ahrs_update() --move
@@ -455,7 +459,11 @@ function move_legs(torso)
   local y_offset = l_leg_offset[2]
   local z_offset = l_leg_offset[3]
   local l_foot_frame = Transform.pose({x_offset-torso[1], y_offset-torso[2], z_offset-torso[3], 0, 0, 0})
-  local r_foot_frame = Transform.pose({x_offset-torso[1],-y_offset-torso[2], z_offset-torso[3], 0, 0, 0})
+
+  local x_offset = r_leg_offset[1]
+  local y_offset = r_leg_offset[2]
+  local z_offset = r_leg_offset[3]
+  local r_foot_frame = Transform.pose({x_offset-torso[1],y_offset-torso[2], z_offset-torso[3], 0, 0,0})
   local torso_frame = Transform.pose({0, 0, 0, 0, 0, 0})
   local qStance = Kinematics.inverse_pos_legs(l_foot_frame, r_foot_frame, torso_frame)
   return qStance  
@@ -473,9 +481,10 @@ end
 ------------------------------------------------------------------------
 function state_machine(t) 
   if (state == 0) then
-    if state_t >= 2 then
+    if state_t >= 5 then
       print('state_t', state_t)
       l_leg_offset = lf
+      r_leg_offset = rf
       torso = vector.new{0, 0, -0.05, 0, 0, 0} 
       --joint_offset = move_legs(torso)
       joint_offset = vector.new(joint_offset)
@@ -509,10 +518,9 @@ end
 --------------------------------------------------------------------
 unix.usleep(5e5)
 Platform.entry()
-Platform.set_time_step(0.001)
+Platform.set_time_step(0.004)
 print('timestep', Platform.get_time_step())
 Proprioception.entry()
-print('after entry')
 dcm:set_joint_enable(0,'all')
 local set_values = dcm:get_joint_position_sensor('legs') 
 dcm:set_joint_stiffness(1, 'all') -- position control
@@ -524,7 +532,7 @@ dcm:set_joint_enable(1, 'all')
 qt = vector.copy(set_values) 
 printdata = true
 
-local ident = "t2"
+local ident = "t3"
 print('ident', ident)
 local fw_log = assert(io.open("Logs/fw_log"..ident..".txt","w"))
 local fw_reg = assert(io.open("Logs/fw_reg"..ident..".txt","w"))
@@ -606,13 +614,12 @@ while run do
   --dcm:set_joint_force(joint_torques, 'legs')  
   dcm:set_joint_force({0,0,0,0,0,0,0,0,0,0,0,0}, 'legs') 
 
-  if (printdata) then -- mod_print == 0 and
-    --data[1] = {dt, unix.time(), step}
-    --data[1] = COG
+  if (printdata) then 
+    data[1] = COG
+    data[2] = state_est_k1
+    data[3] = {t}
     --data[1] = {pid_torques[1], pid_torques[2]}
-    data[1] = {raw_pos[5], raw_pos[6]}
-    data[2] = {t}
-      -- {pid_torques[1], pid_torques[2]}
+    --data[1] = {raw_pos[5], raw_pos[6]}
     ---data[3] = joint_torques_sense
     ---data[4] = raw_pos
     --data[6] = joint_vel_raw
@@ -625,12 +632,9 @@ while run do
   end
 end
 dcm:set_joint_force({0,0,0,0,0,0,0,0,0,0,0,0},'legs')
-print('time end', unix.time() - t0)
 write_reg(data)
 write_to_file2(fw_log, store, data)
-print('time after write', unix.time() - t0)
 print('steps: ', step)
-print(store[1], store[2], store[3], store[4])
 Platform.exit()
 
 

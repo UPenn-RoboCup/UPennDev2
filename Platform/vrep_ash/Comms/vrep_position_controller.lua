@@ -10,11 +10,12 @@ end
 
 local MAX_FORCE = 300
 local MAX_VELOCITY = 10
-local POSITION_P_GAIN_FACTOR = 1000
-local POSITION_I_GAIN_FACTOR = 1000
-local POSITION_D_GAIN_FACTOR = 1000
-local POSITION_D_CORNER_FREQUENCY = 250
-local VELOCITY_P_GAIN_FACTOR = 1000
+local MAX_ACCELERATION = 1000
+local POSITION_P_GAIN_FACTOR = 500
+local POSITION_I_GAIN_FACTOR = 500
+local POSITION_D_GAIN_FACTOR = 0
+local POSITION_D_CORNER_FREQUENCY = 300
+local VELOCITY_P_GAIN_FACTOR = 0
 
 vrep_position_controller = {}
 vrep_position_controller.__index = vrep_position_controller
@@ -38,6 +39,8 @@ function vrep_position_controller:update(...)
   local init, revolute, cyclic, jointHandle, passCnt, totalPasses,
   currentPos, targetPos, errorValue, effort, dynStepSize, lowLimit,
   hightLimit, targetVel, targetForce, velUpperLimit = ...
+
+  local _, currentVel = simGetObjectFloatParameter(jointHandle, 2012)
 
   -- Initialize position pid controller:
   ------------------------------------------------------------------------------
@@ -70,9 +73,15 @@ function vrep_position_controller:update(...)
  
   -- Get velocity setpoint (limit velocity to prevent overshoot):
   ------------------------------------------------------------------------------
-  local velocity_command = self.position_pid:update(currentPos)
-  velocity_command = math.min(velocity_command, math.abs(errorValue/dynStepSize))
-  velocity_command = math.max(velocity_command,-math.abs(errorValue/dynStepSize))
+  velocity_command = self.position_pid:update(currentPos)
+  accel_command = velocity_command - currentVel
+  if (accel_command > 0) then
+    velocity_command = currentVel + math.min(accel_command, MAX_ACCELERATION)
+  else
+    velocity_command = currentVel + math.max(accel_command,-MAX_ACCELERATION)
+  end
+  velocity_command = math.max(velocity_command,-MAX_VELOCITY)
+  velocity_command = math.min(velocity_command, MAX_VELOCITY)
   return MAX_FORCE, velocity_command
 end
 

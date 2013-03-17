@@ -10,11 +10,12 @@ end
 
 local MAX_FORCE = 300
 local MAX_VELOCITY = 10
-local POSITION_P_GAIN_FACTOR = 1000
-local POSITION_I_GAIN_FACTOR = 1000
-local POSITION_D_GAIN_FACTOR = 1000
-local POSITION_D_CORNER_FREQUENCY = 250
-local VELOCITY_P_GAIN_FACTOR = 1000
+local MAX_ACCELERATION = 1000
+local POSITION_P_GAIN_FACTOR = 10000
+local POSITION_I_GAIN_FACTOR = 10000
+local POSITION_D_GAIN_FACTOR = 10000
+local POSITION_D_CORNER_FREQUENCY = 300
+local VELOCITY_P_GAIN_FACTOR = 10000
 
 vrep_impedance_controller = {}
 vrep_impedance_controller.__index = vrep_impedance_controller
@@ -86,16 +87,19 @@ function vrep_impedance_controller:update(...)
 
   -- Get force setpoint:
   ------------------------------------------------------------------------------
-  local force_command = self.position_pid:update(currentPos)
-                      + velocity_p_gain*(velocity_setpoint - currentVel) 
-                      + force_setpoint
-  force_command = math.min(force_command, MAX_FORCE)
-  force_command = math.max(force_command,-MAX_FORCE)
+  force_command = self.position_pid:update(currentPos)
+                + velocity_p_gain*(velocity_setpoint - currentVel) 
+                + force_setpoint
   if (force_command > 0) then
-    return force_command, MAX_VELOCITY
+    velocity_command = currentVel + MAX_ACCELERATION*dynStepSize
   else
-    return -force_command, -MAX_VELOCITY
+    velocity_command = currentVel - MAX_ACCELERATION*dynStepSize
   end
+  force_command = math.max(force_command,-MAX_FORCE)
+  force_command = math.min(force_command, MAX_FORCE)
+  velocity_command = math.max(velocity_command,-MAX_VELOCITY)
+  velocity_command = math.min(velocity_command, MAX_VELOCITY)
+  return math.abs(force_command), velocity_command
 end
 
 return vrep_impedance_controller

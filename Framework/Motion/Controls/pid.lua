@@ -50,27 +50,39 @@ function pid.set_time_step(o, Ts)
 end
 
 function pid.set_gains(o, p_gain, i_gain, d_gain)
-  o.p_gain = p_gain
-  o.i_gain = i_gain
-  o.d_gain = d_gain
-  o.p_term = 0
-  o.i_term = 0
-  o.d_term = 0
+  if (p_gain ~= o.p_gain) then
+    o.p_gain = p_gain
+    o.p_term = 0
+  end
+  if (i_gain ~= o.i_gain) then
+    o.i_gain = i_gain
+    o.i_term = 0
+  end
+  if (d_gain ~= o.d_gain) then
+    o.d_gain = d_gain
+    o.d_term = 0
+  end
 end
 
 function pid.set_p_gain(o, p_gain)
-  o.p_gain = p_gain
-  o.p_term = 0
+  if (p_gain ~= o.p_gain) then
+    o.p_gain = p_gain
+    o.p_term = 0
+  end
 end
 
 function pid.set_i_gain(o, i_gain)
-  o.i_gain = i_gain
-  o.i_term = 0
+  if (i_gain ~= o.i_gain) then
+    o.i_gain = i_gain
+    o.i_term = 0
+  end
 end
 
 function pid.set_d_gain(o, d_gain)
-  o.d_gain = d_gain
-  o.d_term = 0
+  if (d_gain ~= o.d_gain) then
+    o.d_gain = d_gain
+    o.d_term = 0
+  end
 end
 
 function pid.set_d_corner_frequency(o, d_corner_frequency)

@@ -1,5 +1,5 @@
 # Makefile used to build libraries
-include ../../Makefile.inc
+include ../../../Makefile.inc
 
 INCLUDES+=-I$(OPENNI2_INCLUDE)
 LIB_DIR+=-L$(OPENNI2_REDIST)

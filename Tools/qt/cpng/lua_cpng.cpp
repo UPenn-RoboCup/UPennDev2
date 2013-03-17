@@ -25,170 +25,266 @@ extern "C"
 #include <string.h>
 #include <stdarg.h>
 
+#define MT_NAME "cpng_mt"
 #define PNG_DEBUG 3
 #include <png.h>
 
 void abort_(const char * s, ...)
 {
-        va_list args;
-        va_start(args, s);
-        vfprintf(stderr, s, args);
-        fprintf(stderr, "\n");
-        va_end(args);
-        abort();
-}
-
-int x, y;
-
-int width, height;
-png_byte color_type;
-png_byte bit_depth;
-
-png_structp png_ptr;
-png_infop info_ptr;
-int number_of_passes;
-png_bytep * row_pointers;
-
-static int lua_read_png(lua_State *L)
-//void read_png_file(char* file_name)
-{
-        const char* file_name = luaL_checkstring(L, 1);
-
-        char header[8];    // 8 is the maximum size that can be checked
-
-        /* open file and test for it being a png */
-        FILE *fp = fopen(file_name, "rb");
-        if (!fp)
-                abort_("[read_png_file] File %s could not be opened for reading", file_name);
-        fread(header, 1, 8, fp);
-        if (png_sig_cmp((const png_byte*)header, 0, 8))
-                abort_("[read_png_file] File %s is not recognized as a PNG file", file_name);
-
-        /* initialize stuff */
-        png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-
-        if (!png_ptr)
-                abort_("[read_png_file] png_create_read_struct failed");
-
-        info_ptr = png_create_info_struct(png_ptr);
-        if (!info_ptr)
-                abort_("[read_png_file] png_create_info_struct failed");
-
-        if (setjmp(png_jmpbuf(png_ptr)))
-                abort_("[read_png_file] Error during init_io");
-
-        png_init_io(png_ptr, fp);
-        png_set_sig_bytes(png_ptr, 8);
-
-        png_read_info(png_ptr, info_ptr);
-
-        width = png_get_image_width(png_ptr, info_ptr);
-        height = png_get_image_height(png_ptr, info_ptr);
-        color_type = png_get_color_type(png_ptr, info_ptr);
-        bit_depth = png_get_bit_depth(png_ptr, info_ptr);
-
-        number_of_passes = png_set_interlace_handling(png_ptr);
-        png_read_update_info(png_ptr, info_ptr);
-
-
-        /* read file */
-        if (setjmp(png_jmpbuf(png_ptr)))
-                abort_("[read_png_file] Error during read_image");
-
-        row_pointers = (png_bytep*) malloc(sizeof(png_bytep) * height);
-        for (y=0; y<height; y++)
-                row_pointers[y] = (png_byte*) malloc(png_get_rowbytes(png_ptr,info_ptr));
-
-        png_read_image(png_ptr, row_pointers);
-
-        fclose(fp);
-        return 1;
-}
-
-static int lua_write_png(lua_State *L)
-//void write_png_file(char* file_name)
-{
-        const char* file_name = luaL_checkstring(L, 1);
-
-        /* create file */
-        FILE *fp = fopen(file_name, "wb");
-        if (!fp)
-                abort_("[write_png_file] File %s could not be opened for writing", file_name);
-
-
-        /* initialize stuff */
-        png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-
-        if (!png_ptr)
-                abort_("[write_png_file] png_create_write_struct failed");
-
-        info_ptr = png_create_info_struct(png_ptr);
-        if (!info_ptr)
-                abort_("[write_png_file] png_create_info_struct failed");
-
-        if (setjmp(png_jmpbuf(png_ptr)))
-                abort_("[write_png_file] Error during init_io");
-
-        png_init_io(png_ptr, fp);
-
-
-        /* write header */
-        if (setjmp(png_jmpbuf(png_ptr)))
-                abort_("[write_png_file] Error during writing header");
-
-        png_set_IHDR(png_ptr, info_ptr, width, height,
-                     bit_depth, color_type, PNG_INTERLACE_NONE,
-                     PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
-
-        png_write_info(png_ptr, info_ptr);
-
-
-        /* write bytes */
-        if (setjmp(png_jmpbuf(png_ptr)))
-                abort_("[write_png_file] Error during writing bytes");
-
-        png_write_image(png_ptr, row_pointers);
-
-
-        /* end write */
-        if (setjmp(png_jmpbuf(png_ptr)))
-                abort_("[write_png_file] Error during end of write");
-
-        png_write_end(png_ptr, NULL);
-
-        /* cleanup heap allocation */
-        for (y=0; y<height; y++)
-                free(row_pointers[y]);
-        free(row_pointers);
-
-        fclose(fp);
-        return 1;
+  va_list args;
+  va_start(args, s);
+  vfprintf(stderr, s, args);
+  fprintf(stderr, "\n");
+  va_end(args);
+  abort();
 }
 
 
-void process_file(void)
-{
-        if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_RGB)
-                abort_("[process_file] input file is PNG_COLOR_TYPE_RGB but must be PNG_COLOR_TYPE_RGBA "
-                       "(lacks the alpha channel)");
+typedef struct {
+  int width, height;
+  png_byte color_type;
+  png_byte bit_depth;
+  
+  png_structp png_ptr;
+  png_infop info_ptr;
+  int number_of_passes;
+  png_bytep * row_pointers;
+} structPNG;
 
-        if (png_get_color_type(png_ptr, info_ptr) != PNG_COLOR_TYPE_RGBA)
-                abort_("[process_file] color_type of input file must be PNG_COLOR_TYPE_RGBA (%d) (is %d)",
-                       PNG_COLOR_TYPE_RGBA, png_get_color_type(png_ptr, info_ptr));
-
-        for (y=0; y<height; y++) {
-                png_byte* row = row_pointers[y];
-                for (x=0; x<width; x++) {
-                        png_byte* ptr = &(row[x*4]);
-                        printf("Pixel at position [ %d - %d ] has RGBA values: %d - %d - %d - %d\n",
-                               x, y, ptr[0], ptr[1], ptr[2], ptr[3]);
-
-                        /* set red value to 0 and green value to the blue one */
-                        ptr[0] = 0;
-                        ptr[1] = ptr[2];
-                }
-        }
+static structPNG * lua_checkcpng(lua_State *L, int narg) {
+  void *ud = luaL_checkudata(L, narg, MT_NAME);
+  luaL_argcheck(L, *(structPNG **)ud != NULL, narg, "invalid png");
+  return (structPNG *)ud;
 }
+
+static int lua_cpng_index(lua_State *L) {
+  structPNG *p = lua_checkcpng(L, 1);
+//  if ((lua_type(L, 2) == LUA_TNUMBER) && lua_tointeger(L, 2)) {
+//    // Numeric index:
+//    return lua_carray_getValue(L);
+//  }
+
+  // Get index through metatable:
+  if (!lua_getmetatable(L, 1)) {lua_pop(L, 1); return 0;} // push metatable
+  lua_pushvalue(L, 2); // copy key
+  lua_rawget(L, -2); // get metatable function
+  lua_remove(L, -2); // delete metatable
+  return 1;
+}
+
+
+static int lua_new_png(lua_State *L) {
+  structPNG *ud = (structPNG *)lua_newuserdata(L, sizeof(structPNG));
+
+  const char* file_name = luaL_checkstring(L, 1);
+
+  char header[8];    // 8 is the maximum size that can be checked
+
+  /* open file and test for it being a png */
+  FILE *fp = fopen(file_name, "rb");
+  if (!fp)
+          abort_("[read_png_file] File %s could not be opened for reading", file_name);
+  fread(header, 1, 8, fp);
+  if (png_sig_cmp((const png_byte*)header, 0, 8))
+          abort_("[read_png_file] File %s is not recognized as a PNG file", file_name);
+
+  /* initialize stuff */
+  ud->png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+
+  if (!ud->png_ptr)
+          abort_("[read_png_file] png_create_read_struct failed");
+
+  ud->info_ptr = png_create_info_struct(ud->png_ptr);
+  if (!ud->info_ptr)
+          abort_("[read_png_file] png_create_info_struct failed");
+
+  if (setjmp(png_jmpbuf(ud->png_ptr)))
+          abort_("[read_png_file] Error during init_io");
+
+  png_init_io(ud->png_ptr, fp);
+  png_set_sig_bytes(ud->png_ptr, 8);
+
+  png_read_info(ud->png_ptr, ud->info_ptr);
+
+  ud->width = png_get_image_width(ud->png_ptr, ud->info_ptr);
+  ud->height = png_get_image_height(ud->png_ptr, ud->info_ptr);
+  ud->color_type = png_get_color_type(ud->png_ptr, ud->info_ptr);
+  ud->bit_depth = png_get_bit_depth(ud->png_ptr, ud->info_ptr);
+
+  ud->number_of_passes = png_set_interlace_handling(ud->png_ptr);
+  png_read_update_info(ud->png_ptr, ud->info_ptr);
+
+
+  /* read file */
+  if (setjmp(png_jmpbuf(ud->png_ptr)))
+          abort_("[read_png_file] Error during read_image");
+
+  ud->row_pointers = (png_bytep*) malloc(sizeof(png_bytep) * ud->height);
+
+  int x, y;
+  for (y=0; y<ud->height; y++)
+    ud->row_pointers[y] = (png_byte*) malloc(png_get_rowbytes(ud->png_ptr,ud->info_ptr));
+
+  png_read_image(ud->png_ptr, ud->row_pointers);
+
+  fclose(fp);
+
+
+  luaL_getmetatable(L, MT_NAME);
+  lua_setmetatable(L, -2);
+  return 1;
+}
+
+static int lua_read_png(lua_State *L) {
+  return 1;
+}
+
+static int lua_write_png(lua_State *L) {
+  return 1;
+}
+
+static int lua_save_png(lua_State *L) {
+  return 1;
+}
+
+//static int lua_read_png(lua_State *L)
+//{
+//  const char* file_name = luaL_checkstring(L, 1);
+//
+//  char header[8];    // 8 is the maximum size that can be checked
+//
+//  /* open file and test for it being a png */
+//  FILE *fp = fopen(file_name, "rb");
+//  if (!fp)
+//          abort_("[read_png_file] File %s could not be opened for reading", file_name);
+//  fread(header, 1, 8, fp);
+//  if (png_sig_cmp((const png_byte*)header, 0, 8))
+//          abort_("[read_png_file] File %s is not recognized as a PNG file", file_name);
+//
+//  /* initialize stuff */
+//  png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+//
+//  if (!png_ptr)
+//          abort_("[read_png_file] png_create_read_struct failed");
+//
+//  info_ptr = png_create_info_struct(png_ptr);
+//  if (!info_ptr)
+//          abort_("[read_png_file] png_create_info_struct failed");
+//
+//  if (setjmp(png_jmpbuf(png_ptr)))
+//          abort_("[read_png_file] Error during init_io");
+//
+//  png_init_io(png_ptr, fp);
+//  png_set_sig_bytes(png_ptr, 8);
+//
+//  png_read_info(png_ptr, info_ptr);
+//
+//  width = png_get_image_width(png_ptr, info_ptr);
+//  height = png_get_image_height(png_ptr, info_ptr);
+//  color_type = png_get_color_type(png_ptr, info_ptr);
+//  bit_depth = png_get_bit_depth(png_ptr, info_ptr);
+//
+//  number_of_passes = png_set_interlace_handling(png_ptr);
+//  png_read_update_info(png_ptr, info_ptr);
+//
+//
+//  /* read file */
+//  if (setjmp(png_jmpbuf(png_ptr)))
+//          abort_("[read_png_file] Error during read_image");
+//
+//  row_pointers = (png_bytep*) malloc(sizeof(png_bytep) * height);
+//  for (y=0; y<height; y++)
+//          row_pointers[y] = (png_byte*) malloc(png_get_rowbytes(png_ptr,info_ptr));
+//
+//  png_read_image(png_ptr, row_pointers);
+//
+//  fclose(fp);
+//  return 1;
+//}
+//
+//static int lua_write_png(lua_State *L)
+//{
+//  const char* file_name = luaL_checkstring(L, 1);
+//
+//  /* create file */
+//  FILE *fp = fopen(file_name, "wb");
+//  if (!fp)
+//          abort_("[write_png_file] File %s could not be opened for writing", file_name);
+//
+//
+//  /* initialize stuff */
+//  png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+//
+//  if (!png_ptr)
+//          abort_("[write_png_file] png_create_write_struct failed");
+//
+//  info_ptr = png_create_info_struct(png_ptr);
+//  if (!info_ptr)
+//          abort_("[write_png_file] png_create_info_struct failed");
+//
+//  if (setjmp(png_jmpbuf(png_ptr)))
+//          abort_("[write_png_file] Error during init_io");
+//
+//  png_init_io(png_ptr, fp);
+//
+//
+//  /* write header */
+//  if (setjmp(png_jmpbuf(png_ptr)))
+//          abort_("[write_png_file] Error during writing header");
+//
+//  png_set_IHDR(png_ptr, info_ptr, width, height,
+//               bit_depth, color_type, PNG_INTERLACE_NONE,
+//               PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
+//
+//  png_write_info(png_ptr, info_ptr);
+//
+//
+//  /* write bytes */
+//  if (setjmp(png_jmpbuf(png_ptr)))
+//          abort_("[write_png_file] Error during writing bytes");
+//
+//  png_write_image(png_ptr, row_pointers);
+//
+//
+//  /* end write */
+//  if (setjmp(png_jmpbuf(png_ptr)))
+//          abort_("[write_png_file] Error during end of write");
+//
+//  png_write_end(png_ptr, NULL);
+//
+//  /* cleanup heap allocation */
+//  for (y=0; y<height; y++)
+//          free(row_pointers[y]);
+//  free(row_pointers);
+//
+//  fclose(fp);
+//  return 1;
+//}
+
+
+//void process_file(void)
+//{
+//        if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_RGB)
+//                abort_("[process_file] input file is PNG_COLOR_TYPE_RGB but must be PNG_COLOR_TYPE_RGBA "
+//                       "(lacks the alpha channel)");
+//
+//        if (png_get_color_type(png_ptr, info_ptr) != PNG_COLOR_TYPE_RGBA)
+//                abort_("[process_file] color_type of input file must be PNG_COLOR_TYPE_RGBA (%d) (is %d)",
+//                       PNG_COLOR_TYPE_RGBA, png_get_color_type(png_ptr, info_ptr));
+//
+//        for (y=0; y<height; y++) {
+//                png_byte* row = row_pointers[y];
+//                for (x=0; x<width; x++) {
+//                        png_byte* ptr = &(row[x*4]);
+//                        printf("Pixel at position [ %d - %d ] has RGBA values: %d - %d - %d - %d\n",
+//                               x, y, ptr[0], ptr[1], ptr[2], ptr[3]);
+//
+//                        /* set red value to 0 and green value to the blue one */
+//                        ptr[0] = 0;
+//                        ptr[1] = ptr[2];
+//                }
+//        }
+//}
 
 
 //int main(int argc, char **argv)
@@ -203,7 +299,13 @@ void process_file(void)
 //        return 0;
 //}
 
-static const struct luaL_reg cpng_lib [] = {
+static const struct luaL_reg cpng_Functions [] = {
+  {"new", lua_new_png},
+  {"save", lua_save_png},
+  {NULL, NULL}
+};
+
+static const struct luaL_reg cpng_Methods [] = {
   {"read", lua_read_png},
   {"write", lua_write_png},
   {NULL, NULL}
@@ -213,6 +315,17 @@ static const struct luaL_reg cpng_lib [] = {
 extern "C"
 #endif
 int luaopen_cpng(lua_State *L) {
-  luaL_register(L, "cpng", cpng_lib);
+  luaL_newmetatable(L, MT_NAME);
+
+  // Implement index method:
+  lua_pushstring(L, "__index");
+  lua_pushcfunction(L, lua_cpng_index);
+  lua_settable(L, -3);
+
+  luaL_register(L, NULL, cpng_Methods);
+  luaL_register(L, "cpng", cpng_Functions);
+
+  luaL_register(L, NULL, cpng_Methods);
+  luaL_register(L, "cpng", cpng_Functions);
   return 1;
 }

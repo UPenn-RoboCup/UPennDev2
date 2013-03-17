@@ -1,15 +1,76 @@
-#ifndef sensor_process_h_DEFINED
-#define sensor_process_h_DEFINED
+#ifndef shmmap_h_DEFINED
+#define shmmap_h_DEFINED
 
-#include <stdlib.h>
-#include <alcore/alptr.h>
-#include <alcommon/albroker.h>
+static const char sensorShmName[] = "/dcmSensor";
+static const char actuatorShmName[] = "/dcmActuator";
 
-int sensor_process_init(AL::ALPtr<AL::ALBroker> pBroker);
-int sensor_process();
-int sensor_process_exit();
+int shmmap_open();
+int shmmap_close();
 
-static const char* sensorNamesPosition[] = {
+// Sensors read from DCM
+const int nJoint = 22;
+const int nImu = 8;
+const int nButton = 1;
+const int nBumper = 4;
+const int nFsr = 8;
+const int nUs = 8;
+const int nBattery = 2;
+
+// Led actuators
+const int nLedChest = 3;
+const int nLedFootLeft = 3;
+const int nLedFootRight = 3;
+const int nLedFoot = nLedFootLeft + nLedFootRight;
+const int nLedFaceLeft = 3*8;
+const int nLedFaceRight = 3*8;
+const int nLedFace = nLedFaceLeft + nLedFaceRight;
+const int nLedEarsLeft = 10;
+const int nLedEarsRight = 10;
+const int nLedEars = nLedEarsLeft + nLedEarsRight;
+const int nLedAll = nLedChest + nLedFoot + nLedFace + nLedEars;
+
+extern struct sensorStruct {
+  unsigned int count;
+  unsigned int pad;
+
+  double time;
+  // Values read from DCM:
+  double position[nJoint];
+  double current[nJoint];
+  double temperature[nJoint];
+  double imu[nImu];
+  double button[nButton];
+  double bumper[nBumper];
+  double fsr[nFsr];
+  double us[nUs];
+  double battery[nBattery];
+} *pSensor;
+
+extern struct actuatorStruct {
+  unsigned int count;
+  int mode;
+
+  double time;
+  double position[nJoint];
+  double hardness[nJoint];
+  double command[nJoint];
+  double velocity[nJoint];
+  double jointImuAngleX[nJoint];
+  double jointImuAngleY[nJoint];
+
+  double usActuator;
+  
+  double ledChest[nLedChest];
+  double ledFootLeft[nLedFootLeft];
+  double ledFootRight[nLedFootRight];
+  double ledFaceLeft[nLedFaceLeft];
+  double ledFaceRight[nLedFaceRight];
+  double ledEarsLeft[nLedEarsLeft];
+  double ledEarsRight[nLedEarsRight];
+} *pActuator;
+
+static const char* sensorNames[] = {
+  // Position[nJoint]
   "Device/SubDeviceList/HeadYaw/Position/Sensor/Value",
   "Device/SubDeviceList/HeadPitch/Position/Sensor/Value",
   "Device/SubDeviceList/LShoulderPitch/Position/Sensor/Value",
@@ -32,9 +93,8 @@ static const char* sensorNamesPosition[] = {
   "Device/SubDeviceList/RShoulderRoll/Position/Sensor/Value",
   "Device/SubDeviceList/RElbowYaw/Position/Sensor/Value",
   "Device/SubDeviceList/RElbowRoll/Position/Sensor/Value",
-};
   
-static const char* sensorNamesCurrent[] = {
+  // Current[nJoint]
   "Device/SubDeviceList/HeadYaw/ElectricCurrent/Sensor/Value",
   "Device/SubDeviceList/HeadPitch/ElectricCurrent/Sensor/Value",
   "Device/SubDeviceList/LShoulderPitch/ElectricCurrent/Sensor/Value",
@@ -57,9 +117,8 @@ static const char* sensorNamesCurrent[] = {
   "Device/SubDeviceList/RShoulderRoll/ElectricCurrent/Sensor/Value",
   "Device/SubDeviceList/RElbowYaw/ElectricCurrent/Sensor/Value",
   "Device/SubDeviceList/RElbowRoll/ElectricCurrent/Sensor/Value",
-};
 
-static const char* sensorNamesTemperature[] = {
+  // Temperature[nJoint]
   "Device/SubDeviceList/HeadYaw/Temperature/Sensor/Value",
   "Device/SubDeviceList/HeadPitch/Temperature/Sensor/Value",
   "Device/SubDeviceList/LShoulderPitch/Temperature/Sensor/Value",
@@ -82,85 +141,53 @@ static const char* sensorNamesTemperature[] = {
   "Device/SubDeviceList/RShoulderRoll/Temperature/Sensor/Value",
   "Device/SubDeviceList/RElbowYaw/Temperature/Sensor/Value",
   "Device/SubDeviceList/RElbowRoll/Temperature/Sensor/Value",
-};
 
-static const char* sensorNamesImuAngle[] = {
+  // Imu[nImu]
   "Device/SubDeviceList/InertialSensor/AngleX/Sensor/Value",
   "Device/SubDeviceList/InertialSensor/AngleY/Sensor/Value",
-};
-static const char* sensorNamesImuAcc[] = {
   "Device/SubDeviceList/InertialSensor/AccX/Sensor/Value",
   "Device/SubDeviceList/InertialSensor/AccY/Sensor/Value",
   "Device/SubDeviceList/InertialSensor/AccZ/Sensor/Value",
-};
-static const char* sensorNamesImuGyr[] = {
   "Device/SubDeviceList/InertialSensor/GyrX/Sensor/Value",
   "Device/SubDeviceList/InertialSensor/GyrY/Sensor/Value",
   "Device/SubDeviceList/InertialSensor/GyrRef/Sensor/Value",
-};
-
-static const char* sensorNamesButton[] = {
+  
+  // Button[nButton]
   "Device/SubDeviceList/ChestBoard/Button/Sensor/Value",
-};  
-
-static const char* sensorNamesBumperLeft[] = {
+  
+  // Bumper[nBumper]
   "Device/SubDeviceList/LFoot/Bumper/Left/Sensor/Value",
   "Device/SubDeviceList/LFoot/Bumper/Right/Sensor/Value",
-};
-static const char* sensorNamesBumperRight[] = {
   "Device/SubDeviceList/RFoot/Bumper/Left/Sensor/Value",
   "Device/SubDeviceList/RFoot/Bumper/Right/Sensor/Value",
-};
 
-static const char* sensorNamesFsrLeft[] = {
+  // Fsr[nFsr]
   "Device/SubDeviceList/LFoot/FSR/FrontLeft/Sensor/Value",
   "Device/SubDeviceList/LFoot/FSR/RearLeft/Sensor/Value",
   "Device/SubDeviceList/LFoot/FSR/FrontRight/Sensor/Value",
   "Device/SubDeviceList/LFoot/FSR/RearRight/Sensor/Value",
-};
-static const char* sensorNamesFsrRight[] = {
   "Device/SubDeviceList/RFoot/FSR/FrontLeft/Sensor/Value",
   "Device/SubDeviceList/RFoot/FSR/RearLeft/Sensor/Value",
   "Device/SubDeviceList/RFoot/FSR/FrontRight/Sensor/Value",
   "Device/SubDeviceList/RFoot/FSR/RearRight/Sensor/Value",
-};
 
-static const char* sensorNamesUsLeft[] = {
+  // Us[nUs]
   "Device/SubDeviceList/US/Left/Sensor/Value",
   "Device/SubDeviceList/US/Left/Sensor/Value1",
   "Device/SubDeviceList/US/Left/Sensor/Value2",
   "Device/SubDeviceList/US/Left/Sensor/Value3",
-  "Device/SubDeviceList/US/Left/Sensor/Value4",
-  "Device/SubDeviceList/US/Left/Sensor/Value5",
-  "Device/SubDeviceList/US/Left/Sensor/Value6",
-  "Device/SubDeviceList/US/Left/Sensor/Value7",
-  "Device/SubDeviceList/US/Left/Sensor/Value8",
-  "Device/SubDeviceList/US/Left/Sensor/Value9",
-};
-static const char* sensorNamesUsRight[] = {
   "Device/SubDeviceList/US/Right/Sensor/Value",
   "Device/SubDeviceList/US/Right/Sensor/Value1",
   "Device/SubDeviceList/US/Right/Sensor/Value2",
   "Device/SubDeviceList/US/Right/Sensor/Value3",
-  "Device/SubDeviceList/US/Right/Sensor/Value4",
-  "Device/SubDeviceList/US/Right/Sensor/Value5",
-  "Device/SubDeviceList/US/Right/Sensor/Value6",
-  "Device/SubDeviceList/US/Right/Sensor/Value7",
-  "Device/SubDeviceList/US/Right/Sensor/Value8",
-  "Device/SubDeviceList/US/Right/Sensor/Value9",
-};
-static const char* sensorNamesUsCommand[] = {
-  "Device/SubDeviceList/US/Actuator/Value",
-};
 
-static const char* sensorNamesBatteryCharge[] = {
+  // Battery[nBattery]
   "Device/SubDeviceList/Battery/Charge/Sensor/Value",
-};
-static const char* sensorNamesBatteryCurrent[] = {
   "Device/SubDeviceList/Battery/Current/Sensor/Value",
 };
+static const int nSensorNames = sizeof(sensorNames)/sizeof(const char *);
 
-static const char* sensorNamesCommand[] = {
+static const char* actuatorJointNames[] = {
   "Device/SubDeviceList/HeadYaw/Position/Actuator/Value",
   "Device/SubDeviceList/HeadPitch/Position/Actuator/Value",
   "Device/SubDeviceList/LShoulderPitch/Position/Actuator/Value",
@@ -183,9 +210,7 @@ static const char* sensorNamesCommand[] = {
   "Device/SubDeviceList/RShoulderRoll/Position/Actuator/Value",
   "Device/SubDeviceList/RElbowYaw/Position/Actuator/Value",
   "Device/SubDeviceList/RElbowRoll/Position/Actuator/Value",
-};
 
-static const char* sensorNamesHardness[] = {
   "Device/SubDeviceList/HeadYaw/Hardness/Actuator/Value",
   "Device/SubDeviceList/HeadPitch/Hardness/Actuator/Value",
   "Device/SubDeviceList/LShoulderPitch/Hardness/Actuator/Value",
@@ -209,39 +234,106 @@ static const char* sensorNamesHardness[] = {
   "Device/SubDeviceList/RElbowYaw/Hardness/Actuator/Value",
   "Device/SubDeviceList/RElbowRoll/Hardness/Actuator/Value",
 };
+static const int nActuatorJointNames = sizeof(actuatorJointNames)/sizeof(const char *);
 
-static struct structSensorKeys {
-  const char *key;
-  unsigned int size;
-  const char **names;
-} sensorKeys[] = {
-  {"time", 1, NULL},
-  {"count", 1, NULL},
-  {"position", sizeof(sensorNamesPosition)/sizeof(char *), sensorNamesPosition},
-  {"command", sizeof(sensorNamesCommand)/sizeof(char *), sensorNamesCommand},
-
-  {"imuAngle", sizeof(sensorNamesImuAngle)/sizeof(char *), sensorNamesImuAngle},
-  {"imuAcc", sizeof(sensorNamesImuAcc)/sizeof(char *), sensorNamesImuAcc},
-  {"imuGyr", sizeof(sensorNamesImuGyr)/sizeof(char *), sensorNamesImuGyr},
-
-  {"hardness", sizeof(sensorNamesHardness)/sizeof(char *), sensorNamesHardness},
-  {"current", sizeof(sensorNamesCurrent)/sizeof(char *), sensorNamesCurrent},
-  {"temperature", sizeof(sensorNamesTemperature)/sizeof(char *), sensorNamesTemperature},
-  {"button", sizeof(sensorNamesButton)/sizeof(char *), sensorNamesButton},
-  {"bumperLeft", sizeof(sensorNamesBumperLeft)/sizeof(char *),
-   sensorNamesBumperLeft},
-  {"bumperRight", sizeof(sensorNamesBumperRight)/sizeof(char *),
-   sensorNamesBumperRight},
-  {"fsrLeft", sizeof(sensorNamesFsrLeft)/sizeof(char *), sensorNamesFsrLeft},
-  {"fsrRight", sizeof(sensorNamesFsrRight)/sizeof(char *), sensorNamesFsrRight},
-  {"usLeft", sizeof(sensorNamesUsLeft)/sizeof(char *), sensorNamesUsLeft},
-  {"usRight", sizeof(sensorNamesUsRight)/sizeof(char *), sensorNamesUsRight},
-  {"usCommand", sizeof(sensorNamesUsCommand)/sizeof(char *), sensorNamesUsCommand},
-  {"batteryCharge", sizeof(sensorNamesBatteryCharge)/sizeof(char *),
-   sensorNamesBatteryCharge},
-  {"batteryCurrent", sizeof(sensorNamesBatteryCurrent)/sizeof(char *),
-   sensorNamesBatteryCurrent},
-  {NULL, 0, NULL}
+static const char* actuatorUsNames[] = {
+  // UltraSound
+  "Device/SubDeviceList/US/Actuator/Value",
 };
+static const int nActuatorUsNames = sizeof(actuatorUsNames)/sizeof(const char *);
+  
+static const char* actuatorLedNames[] = {
+  // ledChest[nLedChest]
+  "Device/SubDeviceList/ChestBoard/Led/Red/Actuator/Value",
+  "Device/SubDeviceList/ChestBoard/Led/Green/Actuator/Value",
+  "Device/SubDeviceList/ChestBoard/Led/Blue/Actuator/Value",
+  
+  // ledLeftFoot[nLedLeftFoot]
+  "Device/SubDeviceList/LFoot/Led/Red/Actuator/Value",
+  "Device/SubDeviceList/LFoot/Led/Green/Actuator/Value",
+  "Device/SubDeviceList/LFoot/Led/Blue/Actuator/Value",
+  
+  // ledRightFoot[nLedRightFoot]
+  "Device/SubDeviceList/RFoot/Led/Red/Actuator/Value",
+  "Device/SubDeviceList/RFoot/Led/Green/Actuator/Value",
+  "Device/SubDeviceList/RFoot/Led/Blue/Actuator/Value",
 
-#endif
+  // ledLeftFace[nLedLeftFace]
+  "Device/SubDeviceList/Face/Led/Red/Left/0Deg/Actuator/Value",
+  "Device/SubDeviceList/Face/Led/Red/Left/45Deg/Actuator/Value",
+  "Device/SubDeviceList/Face/Led/Red/Left/90Deg/Actuator/Value",
+  "Device/SubDeviceList/Face/Led/Red/Left/135Deg/Actuator/Value",
+  "Device/SubDeviceList/Face/Led/Red/Left/180Deg/Actuator/Value",
+  "Device/SubDeviceList/Face/Led/Red/Left/225Deg/Actuator/Value",
+  "Device/SubDeviceList/Face/Led/Red/Left/270Deg/Actuator/Value",
+  "Device/SubDeviceList/Face/Led/Red/Left/315Deg/Actuator/Value",
+  "Device/SubDeviceList/Face/Led/Green/Left/0Deg/Actuator/Value",
+  "Device/SubDeviceList/Face/Led/Green/Left/45Deg/Actuator/Value",
+  "Device/SubDeviceList/Face/Led/Green/Left/90Deg/Actuator/Value",
+  "Device/SubDeviceList/Face/Led/Green/Left/135Deg/Actuator/Value",
+  "Device/SubDeviceList/Face/Led/Green/Left/180Deg/Actuator/Value",
+  "Device/SubDeviceList/Face/Led/Green/Left/225Deg/Actuator/Value",
+  "Device/SubDeviceList/Face/Led/Green/Left/270Deg/Actuator/Value",
+  "Device/SubDeviceList/Face/Led/Green/Left/315Deg/Actuator/Value",
+  "Device/SubDeviceList/Face/Led/Blue/Left/0Deg/Actuator/Value",
+  "Device/SubDeviceList/Face/Led/Blue/Left/45Deg/Actuator/Value",
+  "Device/SubDeviceList/Face/Led/Blue/Left/90Deg/Actuator/Value",
+  "Device/SubDeviceList/Face/Led/Blue/Left/135Deg/Actuator/Value",
+  "Device/SubDeviceList/Face/Led/Blue/Left/180Deg/Actuator/Value",
+  "Device/SubDeviceList/Face/Led/Blue/Left/225Deg/Actuator/Value",
+  "Device/SubDeviceList/Face/Led/Blue/Left/270Deg/Actuator/Value",
+  "Device/SubDeviceList/Face/Led/Blue/Left/315Deg/Actuator/Value",
+
+  // ledRightFace[nLedRightFace]
+  "Device/SubDeviceList/Face/Led/Red/Right/0Deg/Actuator/Value",
+  "Device/SubDeviceList/Face/Led/Red/Right/45Deg/Actuator/Value",
+  "Device/SubDeviceList/Face/Led/Red/Right/90Deg/Actuator/Value",
+  "Device/SubDeviceList/Face/Led/Red/Right/135Deg/Actuator/Value",
+  "Device/SubDeviceList/Face/Led/Red/Right/180Deg/Actuator/Value",
+  "Device/SubDeviceList/Face/Led/Red/Right/225Deg/Actuator/Value",
+  "Device/SubDeviceList/Face/Led/Red/Right/270Deg/Actuator/Value",
+  "Device/SubDeviceList/Face/Led/Red/Right/315Deg/Actuator/Value",
+  "Device/SubDeviceList/Face/Led/Green/Right/0Deg/Actuator/Value",
+  "Device/SubDeviceList/Face/Led/Green/Right/45Deg/Actuator/Value",
+  "Device/SubDeviceList/Face/Led/Green/Right/90Deg/Actuator/Value",
+  "Device/SubDeviceList/Face/Led/Green/Right/135Deg/Actuator/Value",
+  "Device/SubDeviceList/Face/Led/Green/Right/180Deg/Actuator/Value",
+  "Device/SubDeviceList/Face/Led/Green/Right/225Deg/Actuator/Value",
+  "Device/SubDeviceList/Face/Led/Green/Right/270Deg/Actuator/Value",
+  "Device/SubDeviceList/Face/Led/Green/Right/315Deg/Actuator/Value",
+  "Device/SubDeviceList/Face/Led/Blue/Right/0Deg/Actuator/Value",
+  "Device/SubDeviceList/Face/Led/Blue/Right/45Deg/Actuator/Value",
+  "Device/SubDeviceList/Face/Led/Blue/Right/90Deg/Actuator/Value",
+  "Device/SubDeviceList/Face/Led/Blue/Right/135Deg/Actuator/Value",
+  "Device/SubDeviceList/Face/Led/Blue/Right/180Deg/Actuator/Value",
+  "Device/SubDeviceList/Face/Led/Blue/Right/225Deg/Actuator/Value",
+  "Device/SubDeviceList/Face/Led/Blue/Right/270Deg/Actuator/Value",
+  "Device/SubDeviceList/Face/Led/Blue/Right/315Deg/Actuator/Value",
+
+  // ledEarsLeft[nLedEarsLeft]
+  "Device/SubDeviceList/Ears/Led/Left/0Deg/Actuator/Value",
+  "Device/SubDeviceList/Ears/Led/Left/36Deg/Actuator/Value",
+  "Device/SubDeviceList/Ears/Led/Left/72Deg/Actuator/Value",
+  "Device/SubDeviceList/Ears/Led/Left/108Deg/Actuator/Value",
+  "Device/SubDeviceList/Ears/Led/Left/144Deg/Actuator/Value",
+  "Device/SubDeviceList/Ears/Led/Left/180Deg/Actuator/Value",
+  "Device/SubDeviceList/Ears/Led/Left/216Deg/Actuator/Value",
+  "Device/SubDeviceList/Ears/Led/Left/252Deg/Actuator/Value",
+  "Device/SubDeviceList/Ears/Led/Left/288Deg/Actuator/Value",
+  "Device/SubDeviceList/Ears/Led/Left/324Deg/Actuator/Value",
+
+  // ledEarsRight[nLedEarsRight]
+  "Device/SubDeviceList/Ears/Led/Right/0Deg/Actuator/Value",
+  "Device/SubDeviceList/Ears/Led/Right/36Deg/Actuator/Value",
+  "Device/SubDeviceList/Ears/Led/Right/72Deg/Actuator/Value",
+  "Device/SubDeviceList/Ears/Led/Right/108Deg/Actuator/Value",
+  "Device/SubDeviceList/Ears/Led/Right/144Deg/Actuator/Value",
+  "Device/SubDeviceList/Ears/Led/Right/180Deg/Actuator/Value",
+  "Device/SubDeviceList/Ears/Led/Right/216Deg/Actuator/Value",
+  "Device/SubDeviceList/Ears/Led/Right/252Deg/Actuator/Value",
+  "Device/SubDeviceList/Ears/Led/Right/288Deg/Actuator/Value",
+  "Device/SubDeviceList/Ears/Led/Right/324Deg/Actuator/Value",
+};
+static const int nActuatorLedNames = sizeof(actuatorLedNames)/sizeof(const char *);
+
+#endif // shmmap_h

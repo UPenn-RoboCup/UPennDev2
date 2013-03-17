@@ -25,6 +25,11 @@ check_for_ground = Config.vision.goal.check_for_ground or 0;
 --Min height of goalpost (to reject false positives at the ground)
 goal_height_min = Config.vision.goal.height_min or -0.5;
 
+---Detects a goal of a given color.
+--@param color The color to use for detection, represented by an int
+--@return Table containing whether a ball was detected
+--If a goal is detected, also contains additional stats about the goal
+--function detect(color)
 distanceFactorYellow = Config.vision.goal.distanceFactorYellow or 1.0;
 distanceFactorCyan = Config.vision.goal.distanceFactorCyan or 1.0;
 	

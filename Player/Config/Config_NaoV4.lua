@@ -31,7 +31,7 @@ param.world = 'World/Config_Nao_World'
 param.walk = 'Walk/Config_NaoV4_Walk_FastStable' 
 param.kick = 'Kick/Config_Nao_Kick'
 param.vision = 'Vision/Config_NaoV4_Vision'
-param.camera = 'Vision/Config_NaoV4_Camera_Levine512'
+param.camera = 'Camera/Config_NaoV4_Camera_Levine512'
 param.fsm = 'FSM/Config_NaoV4_FSM'
 
 loadconfig(param.world)
@@ -48,9 +48,10 @@ dev = {};
 dev.body = 'NaoBody'; 
 dev.camera = 'NaoCam';
 dev.kinematics = 'NaoKinematics';
-dev.ip_wired = '192.168.69.255';
---dev.ip_wireless = '192.168.69.255';
-dev.ip_wireless = '192.168.255.255';
+dev.ip_wired = '192.168.123.255';
+dev.ip_wired_port = 111111;
+dev.ip_wireless = '192.168.1.255';
+dev.ip_wireless = 54321
 dev.game_control = 'NaoGameControl';
 dev.team='TeamSPL';
 dev.walk = 'Walk/NaoV4Walk';

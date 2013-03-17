@@ -1,7 +1,7 @@
 if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 
-var ctxwidth = window.innerWidth;//400;
-var ctxheight = window.innerHeight;400;
+var ctxwidth = window.innerWidth;//320;
+var ctxheight = window.innerHeight;//240;
 var kwidth = 320;
 var kheight = 240;
 var nparticles = kwidth*kheight;
@@ -10,7 +10,7 @@ console.log("nchunks: "+nchunks);
 
 // Globals
 var particleSystem;
-var container, stats;
+var container;
 var camera, controls, scene, renderer;
 var positions, colors, geometry;
 //https://github.com/OpenNI/OpenNI2/blob/master/Source/Core/OniStream.cpp#L362
@@ -52,7 +52,6 @@ function init() {
   controls.keys = [ 65, 83, 68 ];
   controls.addEventListener( 'change', render );
 
-
   // Initialize the particles
   // TODO: chunk it!
   geometry = new THREE.BufferGeometry();
@@ -88,7 +87,7 @@ function init() {
   // TODO: is this necessary?
   geometry.computeBoundingSphere();
 
-  var material = new THREE.ParticleBasicMaterial( { size: 4, vertexColors: true } );
+  var material = new THREE.ParticleBasicMaterial( { size: 2, vertexColors: true } );
   particleSystem = new THREE.ParticleSystem( geometry, material );
 
   // Set up the world
@@ -99,17 +98,20 @@ function init() {
   //renderer = new THREE.WebGLRenderer( { antialias: false, clearColor: 0x333333, clearAlpha: 1, alpha: false } );
   renderer = new THREE.WebGLRenderer( { antialias: false, alpha: false } );
   renderer.setSize( ctxwidth, ctxheight );
-  container = document.getElementById( 'container' );
+  container = $('#kgl')[0];
   container.appendChild( renderer.domElement );
 
-  // FPS Stats
-  stats = new Stats();
-  stats.domElement.style.position = 'absolute';
-  stats.domElement.style.top = '0px';
-  stats.domElement.style.zIndex = 100;
-  container.appendChild( stats.domElement );
   window.addEventListener( 'resize', onWindowResize, false );
 
+}
+
+function animate() {
+  requestAnimationFrame( animate );
+  controls.update();
+}
+
+function render() {
+  renderer.render( scene, camera );
 }
 
 function onWindowResize() {
@@ -120,26 +122,16 @@ function onWindowResize() {
   render();
 }
 
-function animate() {
-  requestAnimationFrame( animate );
-  controls.update();
-}
-
-function render() {
-  renderer.render( scene, camera );
-  stats.update();
-}
-
-function update_kinect_image( data_buffer ) {
+function update_kinect_image( c_buffer ) {
 
   var d_idx = 0;
   var c_idx = 0;
   for(var j=0; j<kheight; j++ ){
     for (var i = 0; i<kwidth; i++ ){
       // TODO: div by 255 may be in int space, and not float space
-      colors[ c_idx ]     = data_buffer[d_idx] / 255;
-      colors[ c_idx + 1 ] = data_buffer[d_idx+1] / 255;
-      colors[ c_idx + 2 ] = data_buffer[d_idx+2] / 255;
+      colors[ c_idx ]     = c_buffer[d_idx] / 255;
+      colors[ c_idx + 1 ] = c_buffer[d_idx+1] / 255;
+      colors[ c_idx + 2 ] = c_buffer[d_idx+2] / 255;
       c_idx+=3;
       d_idx+=4; //RGBA
     }
@@ -150,21 +142,22 @@ function update_kinect_image( data_buffer ) {
   render();
 }
 
-function update_kinect_particles( d ) {
+function update_kinect_depth( d_buffer ) {
   var d_idx = 0;
   var p_idx = 0;
   var tmp = 0;
   // TODO: cache it good
   for(var j=0; j<kheight; j++ ){
     for (var i = 0; i<kwidth; i++ ){
-      tmp = d[d_idx];
-      //positions[ p_idx ]     = tmp*(tan(horizontalFov/2)*2*(i/kwidth -.5)); // float?
-      //positions[ p_idx + 1 ] = tmp*(tan( verticalFov/2 )*2*(j/kheight-.5)); // float math?
-      positions[ p_idx ]     = tmp*hlut[i];
-      positions[ p_idx + 1 ] = tmp*vlut[j];
-      positions[ p_idx + 2 ] = tmp;
+      tmp = d_buffer[d_idx]+d_buffer[d_idx+1]+d_buffer[d_idx+2];
+      tmp = tmp / 3;
+      if( tmp>2 ) {
+        positions[ p_idx ]     = tmp*hlut[i];
+        positions[ p_idx + 1 ] = tmp*vlut[j];
+        positions[ p_idx + 2 ] = tmp;
+      }
       p_idx+=3;
-      d_idx++;
+      d_idx+=4;
     }
   }
   particleSystem.geometry.verticesNeedUpdate = true;
@@ -172,3 +165,4 @@ function update_kinect_particles( d ) {
   animate();
   render();
 }
+

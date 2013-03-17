@@ -122,9 +122,9 @@ static int lua_kinect_update(lua_State *L) {
 static int lua_kinect_retrieve(lua_State *L) {
   int i = luaL_checkint( L, 1 );
   if(i==0)
-    lua_pushlightuserdata( L, &cframe );
-  else if(i==1)
     lua_pushlightuserdata( L, d );
+  else if(i==1)
+    lua_pushlightuserdata( L, pColor );
   else
     return 0;
   return 1;

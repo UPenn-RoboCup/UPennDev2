@@ -66,10 +66,10 @@ local function setup_publisher( channel )
     local nmessages = #messages;
     for i=1,nmessages do
       local msg = messages[i];
-      assert( type(msg)=="string", 
-        print( string.format("SimpleIPC (%s): Type (%s) not implemented",
-        self.name, type(msg) )
-        ));
+--      assert( type(msg)=="string", 
+--        print( string.format("SimpleIPC (%s): Type (%s) not implemented",
+--        self.name, type(msg) )
+--        ));
       if i==nmessages then
         return self.socket_handle:send( msg );
       else

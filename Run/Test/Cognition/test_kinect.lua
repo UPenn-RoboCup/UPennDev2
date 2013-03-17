@@ -17,12 +17,12 @@ while true do
   local z = nil;
   if s==0 then -- depth
     z = cjpeg.compress( d, 320, 240, 1 )
-    --print('Depth compression ratio: ', #z/(320*240))
-    kinect_channel:send( z );
+    --print('Depth:', #z, #z/(320*240))
+    kinect_channel:send( {'d', z} );
   elseif s==1 then --color
     z = cjpeg.compress( d, 320, 240 )
-    --print('Color compression ratio: ', #z/(320*240*3))
-    kinect_channel:send( z );
+    --print('Color: ', #z, #z/(320*240*3))
+    kinect_channel:send( {'c', z} );
   end
 end
 Kinect.shutdown()

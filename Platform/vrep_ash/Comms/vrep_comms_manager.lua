@@ -17,14 +17,21 @@ local joint_name = {
   'r_knee_pitch', 'r_ankle_pitch', 'r_ankle_roll',
 }
 
--- vrep joint controllers
+-- vrep joint controllers (0 = impedance, 1 = position)
+--[[
+local joint_controller = {
+  0, 0, 0,
+  0, 0, 0,
+  0, 0, 0,
+  0, 0, 0,
+}
+--]]
 local joint_controller = {
   1, 1, 1,
   1, 1, 1,
   1, 1, 1,
   1, 1, 1,
 }
--- 0 = impedance, 1 = position
 
 local function initialize_devices()
   -- intialize vrep devices
@@ -37,9 +44,11 @@ local function initialize_devices()
     if handles.joint[i] < 0 then
       print('Could not get handle for '..joint_name[i])
     end
-    local controller = simPackFloats{joint_controller[i]}
-    simAddObjectCustomData(handles.joint[i], 2040, controller, #controller)
     simSetJointInterval(handles.joint[i], true, {0, 0})
+    local joint_id = simPackFloats{i}
+    simAddObjectCustomData(handles.joint[i], 2030, joint_id, #joint_id)
+    local joint_ctrl = simPackFloats{joint_controller[i]}
+    simAddObjectCustomData(handles.joint[i], 2040, joint_ctrl, #joint_ctrl)
   end
 end
 
@@ -55,17 +64,17 @@ local function update_actuators()
   local joint_velocity_p_gain = dcm:get_joint_velocity_p_gain()
 
   for i = 1,#joint_name do
-    local gains = simPackFloats{
+    local joint_param = simPackFloats{
+      joint_force[i],
+      joint_position[i],
+      joint_velocity[i],
       joint_position_p_gain[i],
       joint_position_i_gain[i],
       joint_position_d_gain[i],
       joint_velocity_p_gain[i],
     }
-    simAddObjectCustomData(handles.joint[i], 2050, gains, #gains)
+    simAddObjectCustomData(handles.joint[i], 2050, joint_param, #joint_param)
     simSetObjectIntParameter(handles.joint[i], 2000, joint_enable[i])
-    simSetJointForce(handles.joint[i], joint_force[i])
-    simSetJointTargetPosition(handles.joint[i], joint_position[i])
-    simSetJointTargetVelocity(handles.joint[i], joint_velocity[i])
   end
 end
 
@@ -126,11 +135,11 @@ function vrep_comms_manager.entry()
 
   -- initialize shared memory
   dcm:set_joint_enable(1, 'all')
-  dcm:set_joint_position_p_gain(1, 'all')
-  dcm:set_joint_position_i_gain(0, 'all')
-  dcm:set_joint_position_d_gain(0, 'all')
+  dcm:set_joint_position_p_gain(1.0, 'all')
+  dcm:set_joint_position_i_gain(0.1, 'all')
+  dcm:set_joint_position_d_gain(0.05, 'all')
   dcm:set_joint_velocity_p_gain(0, 'all')
-  dcm:set_joint_force(0, 'all')
+  dcm:set_joint_force(100, 'all')
   dcm:set_joint_position(0, 'all')
   dcm:set_joint_velocity(0, 'all')
   dcm:set_joint_force_sensor(0, 'all')

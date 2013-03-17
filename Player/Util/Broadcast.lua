@@ -33,10 +33,10 @@ else
   PORT = Config.dev.ip_wired_port;
 end
 
-CommWired.init(IP,PORT);
---CommWired.init(Config.dev.ip_wired, Config.dev.ip_wired_port);
---print('Broadcast to',Config.dev.ip_wired..':'..Config.dev.ip_wired_port);
-print('Broadcast to',IP..':'..PORT);
+--CommWired.init(IP,PORT);
+CommWired.init(Config.dev.ip_wired, Config.dev.ip_wired_port);
+print('Broadcast to',Config.dev.ip_wired..':'..Config.dev.ip_wired_port);
+--print('Broadcast to',IP..':'..PORT);
 
 -- Add a little delay between packet sending
 -- pktDelay = 500; -- time in us
@@ -463,12 +463,12 @@ function update_img( enable, imagecount )
       sendImgSub2();
       sendA();
       sendB();
-      sendmap();
+--      sendmap();
     else
---      sendImg();
---      sendA();
---      sendB();
-      sendmap();
+      sendImg();
+      sendA();
+      sendB();
+--      sendmap();
     end
   elseif enable==3 then
     --3: Logging mode

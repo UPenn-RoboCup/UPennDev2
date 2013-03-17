@@ -8,7 +8,7 @@ var particles = kwidth*kheight;
 
 // Globals
 var particleSystem, plane;
-var container, stats;
+var container;
 var camera, controls, scene, renderer;
 var positions, colors, vertices, geometry, faces;
 //https://github.com/OpenNI/OpenNI2/blob/master/Source/Core/OniStream.cpp#L362
@@ -137,16 +137,9 @@ plane.geometry.dynamic = true;
   // Renderer
   renderer = new THREE.WebGLRenderer( { antialias: false, clearColor: 0x333333, clearAlpha: 1, alpha: false } );
   renderer.setSize( ctxwidth, ctxheight );
-  container = document.getElementById( 'container' );
+  container = document.getElementById( 'kgl' );
   container.appendChild( renderer.domElement );
 
-  // FPS Stats
-
-  stats = new Stats();
-  stats.domElement.style.position = 'absolute';
-  stats.domElement.style.top = '0px';
-  stats.domElement.style.zIndex = 100;
-  container.appendChild( stats.domElement );
 window.addEventListener( 'resize', onWindowResize, false );
 
 // Double click
@@ -201,7 +194,6 @@ function animate() {
 
 function render() {
   renderer.render( scene, camera );
-  stats.update();
 }
 
 function update_kinect_image( data_buffer ) {
@@ -215,25 +207,16 @@ function update_kinect_image( data_buffer ) {
   render();
 }
 
-function update_kinect_particles( d ) {
+function update_kinect_depth( d_buffer ) {
 
-/*
-  for ( var i = 0; i < positions.length; i += 3 )
-    positions[ i + 2 ] = d[i];
-  geometry.verticesNeedUpdate = true;
-*/
-/*
-  for (var i = 0; i<vertices.length; i++ ){
-    vertices[i].z = d[i]
-  }
-*/
 var tmp,fdx,ddx;
+ddx = 0;
 for(var j=0; j<240; j++ ){
   for (var i = 0; i<320; i++ ){
 fdx = j*320+i;
-ddx = j*320+i;
-tmp = d[ddx];
-//if(tmp>0) {
+tmp = ( d_buffer[ddx] + d_buffer[ddx+1] + d_buffer[ddx+2] )/3;
+ddx = ddx+4;
+if(tmp>0) {
     vertices[faces[fdx].a].x = tmp*hlut[i];
     vertices[faces[fdx].a].y = tmp*vlut[j];
     vertices[faces[fdx].a].z = tmp;
@@ -249,7 +232,7 @@ tmp = d[ddx];
     vertices[faces[fdx].c].x = tmp*hlut[i];
     vertices[faces[fdx].c].y = tmp*vlut[j];
     vertices[faces[fdx].d].z = tmp;
-//} 
+} 
 /*
 else {
     vertices[faces[fdx].a].z = 255;
@@ -258,6 +241,7 @@ else {
     vertices[faces[fdx].d].z = 255;
 }
 */
+
   }
 }
   plane.geometry.verticesNeedUpdate = true;

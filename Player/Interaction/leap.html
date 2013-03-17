@@ -13,11 +13,9 @@
   <div id="container">
   </div>
 
-  <script src="http://zeptojs.com/zepto.min.js"></script>
-  <script src="http://mrdoob.github.com/three.js/build/three.min.js"></script>
-  <script src="http://mrdoob.github.com/three.js/examples/js/controls/TrackballControls.js"></script>
-  <script src="http://mrdoob.github.com/three.js/examples/js/Detector.js"></script>
-  <script src="http://mrdoob.github.com/three.js/examples/js/libs/stats.min.js"></script>
+  <script src="extra/three.min.js"></script>
+  <script src="extra/leap.min.js"></script>
+  <script src="extra/jq.mobi.min.js"></script>
 
   <script>
     var host = window.document.location.host.replace(/:.*/, '');
@@ -33,7 +31,6 @@
     ws.onmessage = function (event) {
       d = new Uint8Array( event.data );
       update_kinect_particles( d );
-//      console.log( d );
     };
   </script>
 
@@ -53,9 +50,11 @@
     ws_i.onmessage = function (event) {
       // Revoke the previous
       window.URL.revokeObjectURL(jpeg_url_name);
+      // I think this is expensive...
       var parts = []
       parts.push(event.data)
       var tmp = new Blob( parts, { "type" : "image\/jpeg" } )
+      // end expensive...
       var jpeg_url_name = (window.URL || window.webkitURL).createObjectURL(tmp)
       img.src = jpeg_url_name;
       img.onload = function(){

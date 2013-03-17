@@ -60,7 +60,7 @@ void term_destination(j_compress_ptr cinfo) {
 
   destBuf.resize(len);
 }
-int CompressData(const uint8_t* prRGB, int width, int height) {
+int CompressData(const uint8_t* prRGB, int width, int height, int ch) {
 
   //fprintf(stdout,"compressing %dx%d\n",width, height);
 
@@ -85,6 +85,10 @@ int CompressData(const uint8_t* prRGB, int width, int height) {
   cinfo.image_height = height;
   cinfo.input_components = 3;
   cinfo.in_color_space = JCS_RGB;
+  if(ch==1){
+    cinfo.input_components = 1;
+    cinfo.in_color_space = JCS_GRAYSCALE;
+  }
   jpeg_set_defaults(&cinfo);
   jpeg_set_quality(&cinfo, quality, TRUE);
   cinfo.write_JFIF_header = true;//false;
@@ -104,29 +108,25 @@ int CompressData(const uint8_t* prRGB, int width, int height) {
         row_pointer[3],row_pointer[4],row_pointer[5]);
   }
   */
-  JSAMPLE row[3*width];
+  JSAMPLE row[ch*width];
   JSAMPROW row_pointer[1];
   *row_pointer = row;
-#ifdef WEBOTS
-#define BGR
-  const uint8_t ch = 4; //nchannels for RGBA space
-#else
-  const uint8_t ch = 3; //nchannels
-#endif
   while (cinfo.next_scanline < cinfo.image_height) {
     //fprintf(stdout,"cinfo.next_scanline = %d\n", cinfo.next_scanline);
     const uint8_t *p = prRGB + ch*width*cinfo.next_scanline;
     int irow = 0;
     for (int i = 0; i < width; i++) {
-#ifdef BGR
-      row[irow++] = *(p+i*ch+2);
-      row[irow++] = *(p+i*ch+1);
-      row[irow++] = *(p+i*ch);
-#else
-      row[irow++] = *(p+i*ch);
-      row[irow++] = *(p+i*ch+1);
-      row[irow++] = *(p+i*ch+2);
-#endif
+      if( ch==3 ){
+        row[irow++] = *(p+i*ch);
+        row[irow++] = *(p+i*ch+1);
+        row[irow++] = *(p+i*ch+2);
+      } else if( ch==4) {
+        row[irow++] = *(p+i*ch+2);
+        row[irow++] = *(p+i*ch+1);
+        row[irow++] = *(p+i*ch);
+      } else {
+        row[irow++] = *(p+i);
+      }
       //irow++;
   /*
       fprintf(stdout,"RGB: %d,%d,%d\t",
@@ -151,16 +151,10 @@ int CompressData(const uint8_t* prRGB, int width, int height) {
 
 static int lua_cjpeg(lua_State *L) {
   uint8_t * dataSrc = (uint8_t *) lua_touserdata(L, 1);
-  //fprintf( stdout, "Location: %x, %s\n", dataSrc, dataSrc );
-  /*
-  uint8_t * dataSrc = (uint8_t *) luaL_checkstring(L, 1);
-  if ((dataSrc == NULL) || !lua_isstring(L, 1)) {
-    return luaL_error(L, "cjpeg: First argument must be string");
-  }
-  */
   int width = luaL_checkint(L, 2);
   int height = luaL_checkint(L, 3);
-  int lenPacked = CompressData( dataSrc, width, height );
+  int byte_sized = luaL_optint(L, 4, 3);
+  int lenPacked = CompressData( dataSrc, width, height, byte_sized );
 
   if (lenPacked > 0)
     lua_pushlstring(L, (const char *)&(destBuf[0]), lenPacked);

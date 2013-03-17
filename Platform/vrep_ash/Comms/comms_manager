@@ -1,9 +1,10 @@
 #! /bin/bash
 
-#LUA=lua
 LUA=luajit
-
 COMPUTER=`uname`
+PLATFORM=vrep_ash
+export THOR_HOME=$(dirname `pwd`)
+
 if [ "$COMPUTER" = "Darwin" ]
 then
   echo "On OSX!"
@@ -20,11 +21,13 @@ else
   Vrep_Command="/usr/local/vrep/vrep"
 fi
 
-# Copy the controller add-on to the vrep directory
-Target_File=$Vrep_Home/vrepAddOnScript_ASH.lua
-echo "prefix='$(dirname `pwd`)'" > $Target_File
-cat ../Platform/vrep_ash/Comms/vrep_addon.lua >> $Target_File
-
-Scene_File="$PWD/../Platform/vrep_ash/Scenes/Ash-VREP.ttt"
+if [ "$1" ]
+then
+  Scene_File=$1
+else
+  Scene_File="default_unreal"
+fi
+Scene_File="$PWD/../Platform/$PLATFORM/Scenes/$Scene_File.ttt"
+echo "Opening $Scene_File"
 
 exec $Vrep_Command $Scene_File &

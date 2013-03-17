@@ -114,46 +114,43 @@ void dynamixel_thread::set_interface(const char *interface)
 
 void dynamixel_thread::update_actuator_settings()
 {
-  
-  
   unsigned int value = 0;
   int error = 0;
   double ivalue;
   int i;
  
-  //update torque values from DCM 
-  for(i=0; i<12; i++)
+  //update enable values from DCM 
+  for(i = 0; i < N_JOINT; i++)
   {
     if(dcm.joint_enable_updated[i])
     {
       dcm.joint_enable_updated[i] = 0;
-      Write(Port, dynamixel_id[i], 562, dcm.joint_enable[i], 1);
+      if(dynamixel_series[i] == NX_DXL)
+      {
+        Write(Port, dynamixel_id[i], nx_addr.enable, dcm.joint_enable[i], 1);
+      }
+      else
+      {
+        Write(Port, dynamixel_id[i], mx_addr.enable, dcm.joint_enable[i], 1);  
+      }
     }
   }
   
-  for(i=12; i<18; i++)
+  //update position values from DCM
+  for(i = 0; i < N_JOINT; i++)
   {
-    if(dcm.joint_enable_updated[i])
+    if(dynamixel_series[i] == NX_DXL)
     {
-      dcm.joint_enable_updated[i] = 0;
-      Write(Port, dynamixel_id[i], 24, dcm.joint_enable[i], 1);
+      ivalue = dcm.joint_position[i] * NX_CONV;
+      value = (unsigned int)ivalue+dynamixel_offset[i];
+      Write(Port, dynamixel_id[i], nx_addr.goal_pos, (long long)value, 4);
     }
-  }
-
-  //update arms from DCM
-  for(i=0; i<12; i++)
-  {
-    ivalue = dcm.joint_position[i] * 79592.0;
-    value = (unsigned int)ivalue;
-    Write(Port, dynamixel_id[i], 596, (long long)value, 4);
-  }
-
-  //update fingers from DCM
-  for(i=12; i<18; i++)
-  {
-    ivalue = dcm.joint_position[i] * 1129.0;
-    value = (int)ivalue;
-    Write(Port, dynamixel_id[i], 30, value, 2); 
+    else
+    {
+      ivalue = dcm.joint_position[i] * MX_CONV;
+      value = (int)ivalue+dynamixel_offset[i];
+      Write(Port, dynamixel_id[i], mx_addr.goal_pos, value, 2); 
+    }
   }
 }
 
@@ -167,20 +164,21 @@ void dynamixel_thread::update_sensor_readings()
   double ivalue = 0;
   int i;
  
-  // Update in DCM
-  for(i=0; i<12; i++)
+  // Update DCM position values
+  for(i = 0; i < N_JOINT; i++)
   {
-    dxl_read_dword(Port, dynamixel_id[i], 611, &value, &error);
-    ivalue = (int)value;
-    dcm.joint_position_sensor[i] = (double)ivalue/79592.0;
-  }
-
-  //update fingers from DCM
-  for(i=12; i<18; i++)
-  {
-   dxl_read_word(Port, dynamixel_id[i], 36, &low, &error);
-   ivalue = (int)low;
-   dcm.joint_position_sensor[i] = (double)ivalue/1129.0;
+    if(dynamixel_series[i] == NX_DXL)
+    {
+      dxl_read_dword(Port, dynamixel_id[i], nx_addr.cur_pos, &value, &error);
+      ivalue = (int)value-dynamixel_offset[i];
+      dcm.joint_position_sensor[i] = (double)ivalue/NX_CONV;
+    }
+    else
+    {
+      dxl_read_word(Port, dynamixel_id[i], mx_addr.cur_pos, &low, &error);
+      ivalue = (int)low-dynamixel_offset[i];
+      dcm.joint_position_sensor[i] = (double)ivalue/MX_CONV;
+    }
   }
 }
 
@@ -189,6 +187,7 @@ void dynamixel_thread::entry()
 
   Port = &sp;
   int port_num = 0, baudnum = 1;
+  int i;
   
   // Initialize serial interface
   if(dxl_initialize(Port, port_num, baudnum) == 0)
@@ -198,51 +197,28 @@ void dynamixel_thread::entry()
         return;
     }
     else
-        printf( "Succeed to open USB2Dynamixel!\n\n" );
+        printf( "Successfully opened USB2Dynamixel!\n\n" );
   
-  // Torque off motors
-  Write(Port, 3, 562, 0, 1);
-  Write(Port, 4, 562, 0, 1);
-  Write(Port, 5, 562, 0, 1);
-  Write(Port, 6, 562, 0, 1);
-  Write(Port, 7, 562, 0, 1);
-  Write(Port, 8, 562, 0, 1);
-  Write(Port, 9, 562, 0, 1);
-  Write(Port, 10, 562, 0, 1);
-  Write(Port, 11, 562, 0, 1);
-  Write(Port, 12, 562, 0, 1);
-  Write(Port, 13, 562, 0, 1);
-  Write(Port, 14, 562, 0, 1);
-  
-  // finger torque off
-  Write(Port, 15, 24, 0, 1);
-  Write(Port, 16, 24, 0, 1);
-  Write(Port, 17, 24, 0, 1);
-  Write(Port, 18, 24, 0, 1);
-  Write(Port, 19, 24, 0, 1);
-  Write(Port, 20, 24, 0, 1);
+  // Torque off motors on startup
+  for(i = 0; i < N_JOINT; i++)
+  {
+    if(dynamixel_series[i] == NX_DXL)
+    {
+      Write(Port, dynamixel_id[i], nx_addr.enable, 0, 1);
+    }
+    else
+    {
+      Write(Port, dynamixel_id[i], mx_addr.enable, 0, 1);
+    }
+  }
 
   update_sensor_readings();
  
-  dcm.joint_position[0] = dcm.joint_position_sensor[0];
-  dcm.joint_position[1] = dcm.joint_position_sensor[1];
-  dcm.joint_position[2] = dcm.joint_position_sensor[2];
-  dcm.joint_position[3] = dcm.joint_position_sensor[3];
-  dcm.joint_position[4] = dcm.joint_position_sensor[4];
-  dcm.joint_position[5] = dcm.joint_position_sensor[5];
-  dcm.joint_position[6] = dcm.joint_position_sensor[6];
-  dcm.joint_position[7] = dcm.joint_position_sensor[7];
-  dcm.joint_position[8] = dcm.joint_position_sensor[8];
-  dcm.joint_position[9] = dcm.joint_position_sensor[9];
-  dcm.joint_position[10] = dcm.joint_position_sensor[10];
-  dcm.joint_position[11] = dcm.joint_position_sensor[11];
-  dcm.joint_position[12] = dcm.joint_position_sensor[12];
-  dcm.joint_position[13] = dcm.joint_position_sensor[13];
-  dcm.joint_position[14] = dcm.joint_position_sensor[14];
-  dcm.joint_position[15] = dcm.joint_position_sensor[15];
-  dcm.joint_position[16] = dcm.joint_position_sensor[16];
-  dcm.joint_position[17] = dcm.joint_position_sensor[17];
-  dcm.joint_position[18] = dcm.joint_position_sensor[18];
+  // Ensure motors stay in their initial positions
+  for(i = 0; i < N_JOINT; i++)
+  {
+    dcm.joint_position[i] = dcm.joint_position_sensor[i];
+  }
 }
 
 void dynamixel_thread::update()
@@ -256,28 +232,20 @@ void dynamixel_thread::update()
 
 void dynamixel_thread::exit()
 {
+  int i;
 
-  // Torque off motor
-  Write(Port, 1, 562, 0, 1);
-  Write(Port, 2, 562, 0, 1);
-  Write(Port, 3, 562, 0, 1);
-  Write(Port, 4, 562, 0, 1);
-  Write(Port, 5, 562, 0, 1);
-  Write(Port, 6, 562, 0, 1);
-  Write(Port, 7, 562, 0, 1);
-  Write(Port, 8, 562, 0, 1);
-  Write(Port, 9, 562, 0, 1);
-  Write(Port, 10, 562, 0, 1);
-  Write(Port, 11, 562, 0, 1);
-  Write(Port, 12, 562, 0, 1);
-  
-  // finger torque off
-  Write(Port, 13, 24, 0, 1);
-  Write(Port, 14, 24, 0, 1);
-  Write(Port, 15, 24, 0, 1);
-  Write(Port, 16, 24, 0, 1);
-  Write(Port, 17, 24, 0, 1);
-  Write(Port, 18, 24, 0, 1);
+  // Torque off all motors
+  for(i = 0; i < N_JOINT; i++)
+  {
+    if(dynamixel_series[i] == NX_DXL)
+    {
+      Write(Port, dynamixel_id[i], nx_addr.enable, 0, 1);
+    }
+    else
+    {
+      Write(Port, dynamixel_id[i], mx_addr.enable, 0, 1);
+    }
+  }
 
   // Close serial port
   if(Port != NULL)

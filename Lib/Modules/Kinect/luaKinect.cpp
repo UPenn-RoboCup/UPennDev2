@@ -85,6 +85,9 @@ static int lua_kinect_open(lua_State *L) {
   m_streams[0] = &depth;
   m_streams[1] = &color;
 
+  printf("Done initializing the Kinect\n");
+  // Push a status
+  lua_pushinteger( L, 1 );
   return 1;
 } //open
 
@@ -92,7 +95,7 @@ static int lua_kinect_update(lua_State *L) {
   rc = OpenNI::waitForAnyStream(m_streams, 2, &changedIndex);
   if (rc != STATUS_OK) {
     printf("Wait failed\n");
-    return 1;
+    return 0;
   }
 
   // See which one got updated
@@ -136,9 +139,10 @@ static int lua_kinect_shutdown(lua_State *L) {
   device.close();
   OpenNI::shutdown();
 
+  printf("Done shutting down the kinect\n");
+
   return 0;
 }
-
 
 static const struct luaL_reg kinect_lib [] = {
   {"open", lua_kinect_open},

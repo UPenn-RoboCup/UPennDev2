@@ -1,3 +1,11 @@
 require 'Kinect'
-Kinect.open()
-Kinect.update()
+s = Kinect.open()
+print( "Kinect Status: ", s )
+
+for n=1,10 do
+  s = Kinect.update()
+  print( "Kinect Stream: ", s )
+  d = Kinect.retrieve( s )
+  print( "Kinect Data: ", d )
+end
+Kinect.shutdown()

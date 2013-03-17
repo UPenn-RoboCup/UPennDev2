@@ -74,6 +74,17 @@ static int lua_cpng_getValue(lua_State *L) {
   return 1;
 }
 
+static int lua_cpng_delete(lua_State *L) {
+  structPNG *p = lua_checkcpng(L, 1);
+  /* cleanup heap allocation */
+  int y;
+  for (y=0; y<p->height; y++)
+          free(p->row_pointers[y]);
+  free(p->row_pointers);
+
+  return 1;
+}
+
 static int lua_cpng_setValue(lua_State *L) {
   structPNG *p = lua_checkcpng(L, 1);
   int index = luaL_checkint(L, 2) - 1; // Convert lua 1-index to C 0-index
@@ -452,6 +463,7 @@ static const struct luaL_reg cpng_Methods [] = {
   {"stride", lua_cpng_stride},
   {"color_type", lua_cpng_color_type},
   {"bit_depth", lua_cpng_bit_depth},
+  {"__gc", lua_cpng_delete},
   {"__newindex", lua_cpng_setValue},
   {"__len", lua_cpng_len},
   {NULL, NULL}

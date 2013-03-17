@@ -16,6 +16,9 @@ print('color type  '..p:color_type())
 print('bit depth  '..p:bit_depth())
 print('data lenght  '..p:__len())
 
+for i = 1, p:__len(), 3 do
+  print(p[i], p[i+1], p[i+2])
+end
 print(p[1920]) -- start from 1
 print(p[1]) -- start from 1
 

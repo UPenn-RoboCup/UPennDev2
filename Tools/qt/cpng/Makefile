@@ -1,6 +1,6 @@
 OBJECTS  = 
 
-all: cpng lua_cpng
+all: lua_cpng
 
 include ../../../Lib/Makefile.inc
 

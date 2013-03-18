@@ -103,6 +103,9 @@ initial_step=2;
 -- End initialization 
 ----------------------------------------------------------
 
+---
+--Prepare the robot to begin walking; this is executed when the walking state
+--is entered.
 function entry()
   print ("walk entry")
   --SJ: now we always assume that we start walking with feet together
@@ -132,6 +135,10 @@ function entry()
 end
 
 
+---
+--Perform an iteration of the walk update (occurs at 100 Hz).
+--This includes the calculation of the ZMP, desired poses to carry out a step,
+--and the interpolation of different positions to carry out the step. 
 function update()
   if (not active) then  return;   end
 
@@ -246,22 +253,6 @@ function update()
         Body.set_rleg_hardness(hardnessSupport);
     end
 
-    --TODO:Velocity based support point modulation
---[[
-   if supportLeg == 0 then  -- Left support
-        local uLeftTorso=pose_relative(uLeft1,uTorso1);
-        local uTorsoModed=pose_global(vector.new({supportXMod,supportYMod,0}),uTorso);
-        local uLeftModed=pose_global(uLeftBody,uTorsoModed)
-        uSupport=pose_global({supportX,supportY,0},uLeftModed);
-    else  -- Right support
-        local uRightTorso=pose_relative(uRight1,uTorso1);
-        local uTorsoModed=pose_global(vector.new({supportXMod,supportYMod,0}),uTorso);
-        local uRightModed=pose_global(uRightTorso,uTorsoModed)
-        uSupport=pose_global({supportX,-supportY,0},uRightModed);
-    end
---]]
-
-
     uTorso2 = step_torso(uLeft2, uRight2);
 
     --Compute ZMP coefficients
@@ -324,7 +315,6 @@ function motion_legs(qLegs)
   gyro_pitch = gyro_pitch0*math.cos(yawAngle) 
     -gyro_roll0* math.sin(yawAngle);
 
---  print("Gyro RPY", unpack(imuGyr))
 
   ankleShiftX=util.procFunc(gyro_pitch*ankleImuParamX[2],ankleImuParamX[3],ankleImuParamX[4]);
   ankleShiftY=util.procFunc(gyro_roll*ankleImuParamY[2],ankleImuParamY[3],ankleImuParamY[4]);
@@ -363,14 +353,7 @@ function motion_legs(qLegs)
     qLegs[8] = qLegs[8] - hipRollCompensation*phComp;--Hip roll compensation
   end
 
---[[
-  local spread=(uLeft[3]-uRight[3])/2;
-  qLegs[5] = qLegs[5] + Config.walk.anklePitchComp[1]*math.cos(spread);
-  qLegs[11] = qLegs[11] + Config.walk.anklePitchComp[2]*math.cos(spread);
---]]
-
   Body.set_lleg_command(qLegs);
-  --HZDWalk.record_joint_angles( supportLeg, qLegs );
 end
 
 function motion_arms()

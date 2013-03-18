@@ -13,6 +13,36 @@ function ptable(t)
   for k,v in pairs(t) do print(k,v) end
 end
 
+function ptorch(data)
+  local torch = require 'torch'
+  local tp = type(data)
+  if tp == 'userdata' then
+    tp = torch.typename(data) or ''
+    local dim = data:dim()
+    local row = data:size(1)
+    local col = 1
+    if dim == 1 then
+      for i = 1, row do
+        print(data[i])
+      end
+      print('\n'..tp..' - size: '..row..'\n')
+    elseif dim == 2 then 
+      col = data:size(2) 
+      for r = 1, row do
+        for c = 1, col do
+          io.write(data[r][c]..' ')
+        end
+        io.write('\n')
+      end
+      print('\n'..tp..' - size: '..row..'x'..col..'\n')
+    else
+      print('Not Support Print torch object with more than 2 dimensions')
+    end
+  else print(data)
+  end
+end
+
+
 function tablesize(table)
   local count = 0
   for _ in pairs(table) do count = count + 1 end

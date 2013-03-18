@@ -1,5 +1,26 @@
+-- image_userdata = cpng.new(file_name)
+-- image_userdata:write(file_name)
+-- w = image_userdata:width()
+-- h = image_userdata:height()
+-- stride = image_userdata:stride()
+-- bit_depth = image_userdata:bit_depth()
+-- color_type = image_userdata:color_type()
+
+-- t = torch.ByteTensor(640 * 480 * 3):fill(0)
+-- cpng.load(file_name, lightuserdata)
+-- cpng.load(file_name, t:storage():pointer())
+-- t = carray.byte(640 * 480 * 3)
+-- cpng.load(file_name, t:pointer())
+--
+-- cpng.save(file_name, lightuserdata, h, stride, color_type)
+--   color_type = 0 - Gray
+--   color_type = 2 - RGB 
+--   color_type = 4 - Gray Alpha
+--   color_type = 6 - RGB Alpha
+--
+
 local pwd = os.getenv('PWD')
---package.cpath = pwd..'/../../../Player/Lib/?.so;'..package.cpath
+package.cpath = pwd..'/../../../Player/Lib/?.so;'..package.cpath
 --package.path = pwd..'/../../../Player/Util/ffi/?.lua;'..package.path
 
 require 'unix'
@@ -54,9 +75,10 @@ end
 --p:read((t:storage():pointer()))
 t = torch.ByteTensor(640 * 480 * 3):fill(0)
 cpng.load('small.png', t:storage():pointer())
-for i = 1, 640 * 480 * 3, 3 do
-  print(t[i], t[i+1], t[i+2])
-end
+--for i = 1, 640 * 480 * 3, 3 do
+--  print(t[i], t[i+1], t[i+2])
+--end
 --print(t[1], t[2], t[3])
 --print(img[1])
 
+cpng.save('ddd.png', t:storage():pointer(), 480, 640*3, 2)

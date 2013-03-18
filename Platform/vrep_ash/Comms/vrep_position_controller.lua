@@ -10,11 +10,11 @@ end
 
 local MAX_FORCE = 300
 local MAX_VELOCITY = 10
-local MAX_ACCELERATION = 1000
+local MAX_ACCEL = 1000
 local POSITION_P_GAIN_FACTOR = 500
 local POSITION_I_GAIN_FACTOR = 500
 local POSITION_D_GAIN_FACTOR = 0
-local POSITION_D_CORNER_FREQUENCY = 300
+local POSITION_D_CORNER_FREQUENCY = 40
 local VELOCITY_P_GAIN_FACTOR = 0
 
 vrep_position_controller = {}
@@ -40,8 +40,6 @@ function vrep_position_controller:update(...)
   currentPos, targetPos, errorValue, effort, dynStepSize, lowLimit,
   hightLimit, targetVel, targetForce, velUpperLimit = ...
 
-  local _, currentVel = simGetObjectFloatParameter(jointHandle, 2012)
-
   -- Initialize position pid controller:
   ------------------------------------------------------------------------------
   if (init) then
@@ -56,29 +54,30 @@ function vrep_position_controller:update(...)
   if (passCnt == 1) then
     local joint_param = simGetObjectCustomData(jointHandle, 2050)
     joint_param = simUnpackFloats(joint_param)
-    force_setpoint = joint_param[1]
-    position_setpoint = joint_param[2]
-    velocity_setpoint = joint_param[3]
-    position_p_gain = POSITION_P_GAIN_FACTOR*joint_param[4]
-    position_i_gain = POSITION_I_GAIN_FACTOR*joint_param[5]
-    position_d_gain = POSITION_D_GAIN_FACTOR*joint_param[6]
-    velocity_p_gain = VELOCITY_P_GAIN_FACTOR*joint_param[7]
+    self.force_setpoint = joint_param[1]
+    self.position_setpoint = joint_param[2]
+    self.velocity_setpoint = joint_param[3]
+    self.position_p_gain = POSITION_P_GAIN_FACTOR*joint_param[4]
+    self.position_i_gain = POSITION_I_GAIN_FACTOR*joint_param[5]
+    self.position_d_gain = POSITION_D_GAIN_FACTOR*joint_param[6]
+    self.velocity_p_gain = VELOCITY_P_GAIN_FACTOR*joint_param[7]
     self.position_pid:set_gains(
-      position_p_gain,
-      position_i_gain,
-      position_d_gain
+      self.position_p_gain,
+      self.position_i_gain,
+      self.position_d_gain
     )
-    self.position_pid:set_setpoint(position_setpoint)
+    self.position_pid:set_setpoint(self.position_setpoint)
   end
  
   -- Get velocity setpoint (limit velocity to prevent overshoot):
   ------------------------------------------------------------------------------
-  velocity_command = self.position_pid:update(currentPos)
-  accel_command = velocity_command - currentVel
+  local velocity_command = self.position_pid:update(currentPos)
+  local velocity_current = self.position_pid:get_derivative() 
+  local accel_command = velocity_command - velocity_current
   if (accel_command > 0) then
-    velocity_command = currentVel + math.min(accel_command, MAX_ACCELERATION)
+    velocity_command = velocity_current + math.min(accel_command, MAX_ACCEL)
   else
-    velocity_command = currentVel + math.max(accel_command,-MAX_ACCELERATION)
+    velocity_command = velocity_current + math.max(accel_command,-MAX_ACCEL)
   end
   velocity_command = math.max(velocity_command,-MAX_VELOCITY)
   velocity_command = math.min(velocity_command, MAX_VELOCITY)

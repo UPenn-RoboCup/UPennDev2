@@ -29,17 +29,6 @@ extern "C"
 #define PNG_DEBUG 3
 #include <png.h>
 
-void abort_(const char * s, ...)
-{
-  va_list args;
-  va_start(args, s);
-  vfprintf(stderr, s, args);
-  fprintf(stderr, "\n");
-  va_end(args);
-  abort();
-}
-
-
 typedef struct {
   int width, height, stride;
   png_byte color_type;
@@ -50,6 +39,16 @@ typedef struct {
   int number_of_passes;
   png_bytep * row_pointers;
 } structPNG;
+
+void abort_(const char * s, ...)
+{
+  va_list args;
+  va_start(args, s);
+  vfprintf(stderr, s, args);
+  fprintf(stderr, "\n");
+  va_end(args);
+  abort();
+}
 
 static structPNG * lua_checkcpng(lua_State *L, int narg) {
   void *ud = luaL_checkudata(L, narg, MT_NAME);
@@ -125,6 +124,70 @@ static int lua_cpng_index(lua_State *L) {
   return 1;
 }
 
+static int lua_cpng_load(lua_State *L) {
+  const char* file_name = luaL_checkstring(L, 1);
+  unsigned char* data = (unsigned char*) lua_touserdata(L, 2);
+  if ((data == NULL) || !lua_islightuserdata(L, 2) )
+    return luaL_error(L, "Input not light userdata");
+
+  char header[8];    // 8 is the maximum size that can be checked
+
+  /* open file and test for it being a png */
+  FILE *fp = fopen(file_name, "rb");
+  if (!fp)
+          abort_("[read_png_file] File %s could not be opened for reading", file_name);
+  fread(header, 1, 8, fp);
+  if (png_sig_cmp((const png_byte*)header, 0, 8))
+          abort_("[read_png_file] File %s is not recognized as a PNG file", file_name);
+
+  /* initialize stuff */
+  png_structp png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+
+  if (!png_ptr)
+          abort_("[read_png_file] png_create_read_struct failed");
+
+  png_infop info_ptr = png_create_info_struct(png_ptr);
+  if (!info_ptr)
+          abort_("[read_png_file] png_create_info_struct failed");
+
+  if (setjmp(png_jmpbuf(png_ptr)))
+          abort_("[read_png_file] Error during init_io");
+
+  png_init_io(png_ptr, fp);
+  png_set_sig_bytes(png_ptr, 8);
+
+  png_read_info(png_ptr, info_ptr);
+
+  int width = png_get_image_width(png_ptr, info_ptr);
+  int height = png_get_image_height(png_ptr, info_ptr);
+  png_byte color_type = png_get_color_type(png_ptr, info_ptr);
+  png_byte bit_depth = png_get_bit_depth(png_ptr, info_ptr);
+
+  int number_of_passes = png_set_interlace_handling(png_ptr);
+  png_read_update_info(png_ptr, info_ptr);
+
+  /* read file */
+  if (setjmp(png_jmpbuf(png_ptr)))
+          abort_("[read_png_file] Error during read_image");
+
+  int x, y, stride;
+  stride = png_get_rowbytes(png_ptr, info_ptr);
+  png_bytep * row_pointers = (png_bytep*) malloc(sizeof(png_bytep) * height);
+  for (y=0; y<height; y++)
+    row_pointers[y] = (png_byte*) malloc(png_get_rowbytes(png_ptr, info_ptr));
+
+  png_read_image(png_ptr, row_pointers);
+
+//  png_byte * ptr = data;
+  for (y=0; y<height; y++) {
+    memcpy(data, row_pointers[y], stride); 
+    data += stride;
+  }
+
+  fclose(fp);
+
+  return 1;
+}
 
 static int lua_cpng_new(lua_State *L) {
   structPNG *ud = (structPNG *)lua_newuserdata(L, sizeof(structPNG));
@@ -190,6 +253,14 @@ static int lua_cpng_new(lua_State *L) {
 }
 
 static int lua_cpng_read(lua_State *L) {
+  unsigned char* data = (unsigned char*) lua_touserdata(L, 2);
+  if ((data == NULL) || !lua_islightuserdata(L, 2) )
+    return luaL_error(L, "Input not light userdata");
+  
+  data[0] = 34;
+  for (int i = 0; i < 4; i++)
+    printf("data %d\n", data[i]);
+
   return 1;
 }
 
@@ -450,6 +521,7 @@ static int lua_cpng_stride(lua_State *L) {
 
 static const struct luaL_reg cpng_Functions [] = {
   {"new", lua_cpng_new},
+  {"load", lua_cpng_load},
   {"save", lua_cpng_save},
   {NULL, NULL}
 };

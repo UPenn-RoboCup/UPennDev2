@@ -78,6 +78,8 @@ print('height  '..img_2:height())
 print('stride  '..img_2:stride())
 --print('color type  '..img_2:color_type())
 --print('bit depth  '..img_2:bit_depth())
---print('data lenght  '..img_2:__len())
-
+print('data length  '..img_2:__len())
+for i = 1, img_2:stride() * img_2:height(), 3 do
+print(img_2[i], img_2[i+1],img_2[i+2])
+end
 

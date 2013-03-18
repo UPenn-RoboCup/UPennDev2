@@ -1,0 +1,5 @@
+1. make
+2. start spacenavd
+  cd spacenavd 
+  sudo ./spacenavd -d
+3. lua test_spacenav.lua

@@ -2,7 +2,7 @@ local pwd = os.getenv('PWD')
 package.cpath = pwd..'/lib/qt/?.so;'..package.cpath
 package.cpath = pwd..'/lib/util/?.so;'..package.cpath
 package.cpath = pwd..'/../../Player/Lib/?.so;'..package.cpath
-package.path = pwd..'/lib/ffi/?.lua;'..package.path
+package.path = pwd..'/../../Player/Util/ffi/?.lua;'..package.path
 
 require 'qtcore'
 require 'qtgui'

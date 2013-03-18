@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      .slam { 
+        background: #000;
+        width: 601px;
+        height: 601px;
+        display: none;
+        /*visibility: hidden;*/
+      }   
+    </style>
+  </head>
+
+  <body>
+    <div id="status"></div>
+    <canvas id="omap" class="slam"></canvas>
+    <div id="tgl">
+    </div>
+  </body>
+
+  <script src="extra/three.min.js"></script>
+  <script src="extra/leap.min.js"></script>
+  <script src="extra/jq.mobi.min.js"></script>
+  <script src="http://mrdoob.github.com/three.js/examples/js/controls/TrackballControls.js"></script>
+  <script src="http://mrdoob.github.com/three.js/examples/js/Detector.js"></script>
+  <!--
+  <script src="gl_image.js"></script>
+  -->
+  <script>
+    var host = window.document.location.host.replace(/:.*/, '');
+    if( host.length==0 ){
+      host = "localhost";
+    }
+    console.log("Connecting to "+host);
+  </script>
+
+  <!--Receiving an image-->
+  <script>
+    console.log('Connecting to '+host+' 9002')
+    var ws_i = new WebSocket('ws://' + host + ':9002');
+    ws_i.binaryType = "blob";
+    var jpeg_url_name = "";
+    var myimg = new Image;
+
+    // Create a canvas element
+    var oCanvas = $('#omap')[0];
+    oCanvas.width = 601;
+    oCanvas.height = 601;
+    var o_ctx = oCanvas.getContext('2d');
+    ws_i.onmessage = function (event) {
+      // Revoke the previous
+      if( jpeg_url_name !== undefined ) {
+        window.URL.revokeObjectURL(jpeg_url_name);
+      }
+      event.data.type = "image\/jpeg";
+      var jpeg_url_name = window.URL.createObjectURL( event.data );
+      myimg.src = jpeg_url_name;
+      myimg.onload = function(){
+        octx.drawImage( myimg, 0, 0 );
+        var imgdata = octx.getImageData(0, 0, 601, 601);
+      };
+    };
+  </script>
+
+</html>

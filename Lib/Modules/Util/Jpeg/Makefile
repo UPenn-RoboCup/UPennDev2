@@ -1,22 +1,17 @@
-CWD= $(shell pwd)
-CHAIN = $(CTCDIR)
+# Makefile used to build libraries
+include ../../../Makefile.inc
 
-all: naoqi 
+all: cjpeg
 
-naoqi:
-ifeq ($(CHAIN),)
-	@echo Cross compilitation tool not specified. \
-				Please download the ctc tool from \
-				the aldebaran website and follow the \
-				instructions to configure it for your system \
-        && make -f Makefile.local
-else
-	rm -rf build
-	mkdir build
-	cd build && cmake -DCMAKE_TOOLCHAIN_FILE="$(CHAIN)/toolchain-atom.cmake" .. \
-		&& make && cd $(CWD)
-endif
+%.o: %.cpp
+	g++ $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
+%.o: %.cc
+	g++ $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
+%.o: %.c
+	gcc $(CFLAGS) $(INCLUDES) -o $@ -c $<
+
+cjpeg: cjpeg.o
+	g++ $(LDFLAGS) -o cjpeg.$(SHLIBEXT) $(LIBOPTS) $^ $(LIB_DIR) -ljpeg 
 
 clean:
-	make -f Makefile.local clean	
-	rm -rf build
+	rm -f *.$(SHLIBEXT) *.o

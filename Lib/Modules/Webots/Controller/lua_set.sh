@@ -4,8 +4,8 @@
 ##### USER ADJUSTABLE SETTINGS
 ##############################
 EXT_TERM=0
-LUA=lua
-#LUA=luajit
+#LUA=lua
+LUA=luajit
 
 echo $OSTYPE
 echo `which xterm`

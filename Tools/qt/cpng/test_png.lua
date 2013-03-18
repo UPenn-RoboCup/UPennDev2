@@ -83,3 +83,31 @@ cpng.load('small.png', t:storage():pointer())
 
 cpng.save('ddd.png', t:storage():pointer(), 480, 640*3, 2)
 cpng.save('eee.png', img:pointer(), 240, 320*3, 2)
+
+
+-- gray
+ch = 1;
+nbytes = w*h*ch;
+print('Filling a '..w..' by '..h..' image',ch..' channels.')
+
+require 'carray'
+img = carray.byte(w*h*ch)
+
+for k=1,nbytes,ch do
+  if k>nbytes/2 then
+    img[k] = 255;
+  else
+    img[k] = 0;
+  end
+end
+
+cpng.load('small.png', t:storage():pointer())
+cpng.save('fff.png', img:pointer(), 240, 320*1, 0)
+
+--img_jpeg = cjpeg.compress( img:pointer(), w, h, 1 )--gray
+
+--print(type(img_jpeg),'Compression Ratio:', #img_jpeg, #img_jpeg/nbytes )
+
+--f = io.open('img_gray.jpeg','w')
+--n = f:write( img_jpeg )
+--f:close()

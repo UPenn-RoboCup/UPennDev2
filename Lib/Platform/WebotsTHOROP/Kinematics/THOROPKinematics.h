@@ -69,11 +69,18 @@ Transform THOROP_kinematics_forward_l_leg(const double *q);
 Transform THOROP_kinematics_forward_r_leg(const double *q);
 std::vector<double> THOROP_kinematics_forward_joints(const double *r);
 
-std::vector<double> THOROP_kinematics_inverse_r_arm(const Transform trArm);
-std::vector<double> THOROP_kinematics_inverse_l_arm(const Transform trArm);
+
+Transform THOROP_kinematics_forward_l_arm_7(const double *q);
+Transform THOROP_kinematics_forward_r_arm_7(const double *q);
+
+std::vector<double> THOROP_kinematics_inverse_r_arm(const Transform trArm, const double *qOrg);
+std::vector<double> THOROP_kinematics_inverse_l_arm(const Transform trArm, const double *qOrg);
 
 std::vector<double> THOROP_kinematics_inverse_r_wrist(const Transform trArm, double shoulderYaw);
 std::vector<double> THOROP_kinematics_inverse_l_wrist(const Transform trArm, double ShoulderYaw);
+
+std::vector<double> THOROP_kinematics_inverse_r_arm_7(const Transform trArm, double shoulderYaw);
+std::vector<double> THOROP_kinematics_inverse_l_arm_7(const Transform trArm,double shoulderYaw);
 
 
 std::vector<double> THOROP_kinematics_inverse_r_leg(const Transform trLeg);

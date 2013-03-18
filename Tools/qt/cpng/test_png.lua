@@ -1,3 +1,4 @@
+-- libpng APIs
 -- image_userdata = cpng.new(file_name)
 -- image_userdata:write(file_name)
 -- w = image_userdata:width()
@@ -21,7 +22,6 @@
 
 local pwd = os.getenv('PWD')
 package.cpath = pwd..'/../../../Player/Lib/?.so;'..package.cpath
---package.path = pwd..'/../../../Player/Util/ffi/?.lua;'..package.path
 
 require 'unix'
 require 'cpng'
@@ -82,3 +82,4 @@ cpng.load('small.png', t:storage():pointer())
 --print(img[1])
 
 cpng.save('ddd.png', t:storage():pointer(), 480, 640*3, 2)
+cpng.save('eee.png', img:pointer(), 240, 320*3, 2)

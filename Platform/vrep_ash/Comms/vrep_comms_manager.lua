@@ -18,20 +18,20 @@ local joint_name = {
 }
 
 -- vrep joint controllers (0 = impedance, 1 = position)
+local joint_controller = {
+  0, 0, 0,
+  0, 0, 0,
+  0, 0, 0,
+  0, 0, 0,
+}
 --[[
 local joint_controller = {
-  0, 0, 0,
-  0, 0, 0,
-  0, 0, 0,
-  0, 0, 0,
+  1, 1, 1,
+  1, 1, 1,
+  1, 1, 1,
+  1, 1, 1,
 }
 --]]
-local joint_controller = {
-  1, 1, 1,
-  1, 1, 1,
-  1, 1, 1,
-  1, 1, 1,
-}
 
 local function initialize_devices()
   -- intialize vrep devices
@@ -137,9 +137,9 @@ function vrep_comms_manager.entry()
   dcm:set_joint_enable(1, 'all')
   dcm:set_joint_position_p_gain(1.0, 'all')
   dcm:set_joint_position_i_gain(0.1, 'all')
-  dcm:set_joint_position_d_gain(0.05, 'all')
-  dcm:set_joint_velocity_p_gain(0, 'all')
-  dcm:set_joint_force(100, 'all')
+  dcm:set_joint_position_d_gain(0.01, 'all')
+  dcm:set_joint_velocity_p_gain(0.0, 'all')
+  dcm:set_joint_force(0, 'all')
   dcm:set_joint_position(0, 'all')
   dcm:set_joint_velocity(0, 'all')
   dcm:set_joint_force_sensor(0, 'all')

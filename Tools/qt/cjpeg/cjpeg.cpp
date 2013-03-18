@@ -26,8 +26,10 @@ extern "C"
 #define MT_NAME "cjpeg_mt"
 
 typedef struct {
-  JSAMPLE *row;
-  JSAMPROW row_pointer[1];  
+  int width;
+  int height;
+  int stride;
+  unsigned char *raw_image;
 } structJPEG;
 
 std::vector<unsigned char> destBuf;
@@ -272,12 +274,16 @@ static int lua_cjpeg_uncompress(lua_State *L) {
   if (!setjmp(jerr.setjmp_buffer)) {
     jpeg_read_header( &cinfo, TRUE );
 
-	  unsigned char * raw_image = (unsigned char*)malloc( cinfo.image_width*cinfo.image_height*cinfo.num_components );
+    ud->height = cinfo.image_height;
+    ud->width = cinfo.image_width;
+    ud->stride = cinfo.num_components;
 
-    printf("%d %d %d\n", cinfo.image_width, cinfo.image_height, cinfo.num_components);
+	  ud->raw_image = (unsigned char*)malloc( cinfo.image_width*cinfo.image_height*cinfo.num_components );
+
+//    printf("%d %d %d\n", cinfo.image_width, cinfo.image_height, cinfo.num_components);
     jpeg_start_decompress( &cinfo );
 
-    unsigned char* buffer = raw_image;
+    unsigned char* buffer = ud->raw_image;
     unsigned int dstStep = cinfo.output_width*cinfo.num_components;
 
     while (cinfo.output_scanline < cinfo.output_height) 
@@ -289,6 +295,8 @@ static int lua_cjpeg_uncompress(lua_State *L) {
     jpeg_finish_decompress(&cinfo);
     jpeg_destroy_decompress(&cinfo);
   }
+  luaL_getmetatable(L, MT_NAME);
+  lua_setmetatable(L, -2);
 
   return 1;
 }
@@ -308,13 +316,40 @@ static int lua_cjpeg_index(lua_State *L) {
   return 1;
 }
 
-static const struct luaL_reg cjpeg_Methods [] {
-  {NULL, NULL}
-};
+static int lua_cjpeg_width(lua_State *L) {
+  structJPEG *p = lua_checkcjpeg(L, 1);
+  lua_pushinteger(L, p->width);
+  return 1;
+}
+
+static int lua_cjpeg_height(lua_State *L) {
+  structJPEG *p = lua_checkcjpeg(L, 1);
+  lua_pushinteger(L, p->height);
+  return 1;
+}
+
+static int lua_cjpeg_stride(lua_State *L) {
+  structJPEG *p = lua_checkcjpeg(L, 1);
+  lua_pushinteger(L, p->stride);
+  return 1;
+}
 
 static const struct luaL_reg cjpeg_Functions [] = {
   {"compress", lua_cjpeg_compress},
   {"uncompress", lua_cjpeg_uncompress},
+  {NULL, NULL}
+};
+
+static const struct luaL_reg cjpeg_Methods [] {
+//  {"pointer", lua_cjpeg_pointer},
+//  {"read", lua_cjpeg_read},
+//  {"write", lua_cjpeg_write},
+  {"width", lua_cjpeg_width},
+  {"height", lua_cjpeg_height},
+  {"stride", lua_cjpeg_stride},
+//  {"__gc", lua_cjpeg_delete},
+//  {"__newindex", lua_cjpeg_setValue},
+//  {"__len", lua_cjpeg_len},
   {NULL, NULL}
 };
 

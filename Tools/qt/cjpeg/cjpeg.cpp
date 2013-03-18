@@ -301,11 +301,44 @@ static int lua_cjpeg_uncompress(lua_State *L) {
   return 1;
 }
 
+static int lua_cjpeg_getValue(lua_State *L) {
+  structJPEG *p = lua_checkcjpeg(L, 1);
+  int index = luaL_checkint(L, 2) - 1; // Convert lua 1-index to C 0-index
+  if ((index < 0) || (index >= p->height * p->stride)) {
+    lua_pushnil(L);
+    return 1;
+  }
+  lua_pushinteger(L, p->raw_image[index]);
+
+  return 1;
+}
+
+static int lua_cjpeg_delete(lua_State *L) {
+  structJPEG *p = lua_checkcjpeg(L, 1);
+  /* cleanup heap allocation */
+  free(p->raw_image);
+  return 1;
+}
+
+static int lua_cjpeg_setValue(lua_State *L) {
+  structJPEG *p = lua_checkcjpeg(L, 1);
+  int index = luaL_checkint(L, 2) - 1; // Convert lua 1-index to C 0-index
+  if ((index < 0) || (index >= p->height * p->stride)) {
+    lua_pushnil(L);
+    return 1;
+  }
+
+  int val = lua_tointeger(L, 3);
+  
+  p->raw_image[index] = val;
+  return 1;
+}
+
 static int lua_cjpeg_index(lua_State *L) {
   structJPEG *p = lua_checkcjpeg(L, 1);
   if ((lua_type(L, 2) == LUA_TNUMBER) && lua_tointeger(L, 2)) {
     // Numeric index:
-//    return lua_cjpeg_getValue(L);
+    return lua_cjpeg_getValue(L);
   }
 
   // Get index through metatable:
@@ -334,6 +367,12 @@ static int lua_cjpeg_stride(lua_State *L) {
   return 1;
 }
 
+static int lua_cjpeg_len(lua_State *L) {
+  structJPEG *p = lua_checkcjpeg(L, 1);
+  lua_pushinteger(L, p->height * p->stride);
+  return 1;
+}
+
 static const struct luaL_reg cjpeg_Functions [] = {
   {"compress", lua_cjpeg_compress},
   {"uncompress", lua_cjpeg_uncompress},
@@ -347,9 +386,9 @@ static const struct luaL_reg cjpeg_Methods [] {
   {"width", lua_cjpeg_width},
   {"height", lua_cjpeg_height},
   {"stride", lua_cjpeg_stride},
-//  {"__gc", lua_cjpeg_delete},
-//  {"__newindex", lua_cjpeg_setValue},
-//  {"__len", lua_cjpeg_len},
+  {"__gc", lua_cjpeg_delete},
+  {"__newindex", lua_cjpeg_setValue},
+  {"__len", lua_cjpeg_len},
   {NULL, NULL}
 };
 

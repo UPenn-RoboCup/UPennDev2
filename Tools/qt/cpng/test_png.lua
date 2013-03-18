@@ -19,6 +19,7 @@
 --   color_type = 4 - Gray Alpha
 --   color_type = 6 - RGB Alpha
 --
+-- file_str = cpng.compress(lightuserdata, h, stride, color_type)
 
 local pwd = os.getenv('PWD')
 package.cpath = pwd..'/../../../Player/Lib/?.so;'..package.cpath
@@ -101,8 +102,20 @@ for k=1,nbytes,ch do
   end
 end
 
+t0 = unix.time()
+file_str = cpng.compress(t:storage():pointer(), 240, 32*1, 0)
+f = io.open('img_gray.png','w')
+n = f:write( file_str )
+f:close()
+print(unix.time() - t0)
+
+print(#file_str)
+
 cpng.load('small.png', t:storage():pointer())
+
+t0 = unix.time()
 cpng.save('fff.png', img:pointer(), 240, 320*1, 0)
+print(unix.time() - t0)
 
 --img_jpeg = cjpeg.compress( img:pointer(), w, h, 1 )--gray
 

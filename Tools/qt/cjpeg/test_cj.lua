@@ -67,3 +67,8 @@ print(type(img_jpeg),'Compression Ratio:', #img_jpeg, #img_jpeg/nbytes )
 f = io.open('img_gray.jpeg','w')
 n = f:write( img_jpeg )
 f:close()
+
+ff = io.open('img.jpeg','r')
+file_str = ff:read('*a')
+print(#file_str)
+cjpeg.uncompress(file_str, #file_str)

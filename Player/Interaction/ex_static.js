@@ -1,9 +1,5 @@
+// Require the appropriate modules
 var express = require('express');
 var app = express();
-var http = require('http')
-app.use(express.static(__dirname + '/public'));
-
-var server = http.createServer(app);
-server.listen(8080);
-
-
+app.use(express.static(__dirname));
+app.listen(8080);

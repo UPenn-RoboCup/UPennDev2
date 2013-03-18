@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      #container {
+        background: #000;
+        width: 400px;
+        height: 400px;
+      }
+    </style>
+  </head>
+
+  <div id="container">
+  </div>
+
+  <script src="extra/three.min.js"></script>
+  <script src="extra/leap.min.js"></script>
+  <script src="extra/jq.mobi.min.js"></script>
+  <script src="http://mrdoob.github.com/three.js/examples/js/controls/TrackballControls.js"></script>
+  <script src="http://mrdoob.github.com/three.js/examples/js/Detector.js"></script>
+  <script src="http://mrdoob.github.com/three.js/examples/js/libs/stats.min.js"></script>
+
+  <script>
+    var host = window.document.location.host.replace(/:.*/, '');
+  </script>
+
+  <!--Receiving Depth Image-->
+  <script src="kinect_gl_particle.js"></script>
+  <script>
+    var d;
+    console.log('Connecting to '+host+' 8080')
+    var ws = new WebSocket('ws://' + host + ':8080');
+    ws.binaryType = "arraybuffer";
+    ws.onmessage = function (event) {
+      d = new Uint8Array( event.data );
+      update_kinect_particles( d );
+//      console.log( d );
+    };
+  </script>
+
+  <!--Receiving an image-->
+  <script>
+    console.log('Connecting to '+host+' 9000')
+    var ws_i = new WebSocket('ws://' + host + ':9000');
+    ws_i.binaryType = "blob";
+    var jpeg_url_name = "";
+    var img = new Image;
+    // Create a canvas element
+    var myCanvas = document.createElement('canvas');
+    myCanvas.width = 320;
+    myCanvas.height = 240;
+    // Get the drawing context
+    var ctx = myCanvas.getContext('2d');
+    ws_i.onmessage = function (event) {
+      // Revoke the previous
+      window.URL.revokeObjectURL(jpeg_url_name);
+      var parts = []
+      parts.push(event.data)
+      var tmp = new Blob( parts, { "type" : "image\/jpeg" } )
+      var jpeg_url_name = (window.URL || window.webkitURL).createObjectURL(tmp)
+      img.src = jpeg_url_name;
+      img.onload = function(){
+        ctx.drawImage( img, 0, 0 ); // Or at whatever offset you like
+        var imgdata = ctx.getImageData(0, 0, 320, 240);
+        update_kinect_image( new Uint8Array(imgdata.data.buffer ) );
+        //console.log( imgdata );
+      };
+    };
+  </script>
+
+  <!--Receiving LIDAR-->
+  <!--
+  <script src="lidar_gl.js"></script>
+  <script>
+    console.log('Connecting to '+host+' 9000')
+    var ws = new WebSocket('ws://' + host + ':9000');
+    var ranges;
+    ws.binaryType = "arraybuffer";
+    ws.onmessage = function (event) {
+      ranges = new Float32Array( event.data );
+      update_particles( ranges );
+      //console.log( event.data );
+    };
+  </script>
+  -->
+
+</html>

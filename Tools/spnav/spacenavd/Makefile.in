@@ -1,0 +1,47 @@
+src = $(wildcard src/*.c) $(wildcard src/serial/*.c) $(wildcard src/magellan/*.c)
+hdr = $(wildcard src/*.h) $(wildcard src/serial/*.h) $(wildcard src/magellan/*.h)
+obj = $(src:.c=.o)
+dep = $(obj:.o=.d)
+bin = spacenavd
+ctl = spnavd_ctl
+
+CC = gcc
+INSTALL = install
+CFLAGS = -pedantic -Wall $(dbg) $(opt) -fno-strict-aliasing -I$(srcdir)/src -I/usr/local/include $(add_cflags)
+LDFLAGS = -L/usr/local/lib $(xlib) $(add_ldflags)
+
+$(bin): $(obj)
+	$(CC) -o $@ $(obj) $(LDFLAGS)
+
+-include $(dep)
+
+tags: $(src) $(hdr)
+	ctags $(src) $(hdr)
+
+%.o: $(srcdir)/%.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+%.d: $(srcdir)/%.c
+	@$(CPP) $(CFLAGS) $< -MM -MT $(@:.d=.o) >$@
+
+.PHONY: clean
+clean:
+	rm -f $(obj) $(bin)
+
+.PHONY: install
+install: $(bin)
+	$(INSTALL) -d $(DESTDIR)$(PREFIX)/bin
+	$(INSTALL) -m 755 $(bin) $(DESTDIR)$(PREFIX)/bin/$(bin)
+	$(INSTALL) -m 755 $(srcdir)/$(ctl) $(DESTDIR)$(PREFIX)/bin/$(ctl)
+	cd $(srcdir) && ./setup_init --no-install
+
+#	[ -d /etc/hal/fdi/policy ] && \
+#		$(INSTALL) -m 644 spacenav.fdi $(DESTDIR)/etc/hal/fdi/policy/spacenav.fdi
+
+.PHONY: uninstall
+uninstall:
+	rm -f $(DESTDIR)$(PREFIX)/bin/$(bin)
+	rm -f $(DESTDIR)$(PREFIX)/bin/$(ctl)
+	rm -f $(DESTDIR)/etc/hal/fdi/policy/spacenav.fdi
+
+#	cd $(srcdir) && ./setup_init remove

@@ -432,10 +432,123 @@ static int lua_cpng_stride(lua_State *L) {
   return 1;
 }
 
+struct mem_encode {
+  char * buffer;
+  int size;
+};
+
+void lua_png_write_string(png_structp png_ptr, png_bytep data, png_size_t length) {
+//  printf("io string %ld\n", length);
+  struct mem_encode * p = (struct mem_encode*) png_get_io_ptr(png_ptr);
+  int nsize = p->size + length;
+
+  if (p->buffer)
+    p->buffer = (char *) realloc(p->buffer, nsize);
+  else
+    p->buffer = (char *) malloc(nsize);
+
+  if (!p->buffer)
+    png_error(png_ptr, "Init Buffer Error");
+
+  memcpy(p->buffer + p->size, data, length);
+  p->size += length;
+}
+
+static int lua_cpng_compress(lua_State *L) {
+  unsigned char* data = (unsigned char*) lua_touserdata(L, 1);
+  if ((data == NULL) || !lua_islightuserdata(L, 1) )
+    return luaL_error(L, "Input not light userdata");
+
+  int h = lua_tointeger(L, 2);
+  int stride = lua_tointeger(L, 3);
+  png_byte color_type = lua_tointeger(L, 4);
+  int bit_depth = 8;
+  int bytes_per_pixel = 3;
+  if (color_type == PNG_COLOR_TYPE_GRAY)
+    bytes_per_pixel = 1;
+  else if (color_type == PNG_COLOR_TYPE_RGB)
+    bytes_per_pixel = 3;
+  else if (color_type == PNG_COLOR_TYPE_RGB_ALPHA)
+    bytes_per_pixel = 4;
+  else if (color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
+    bytes_per_pixel = 2;
+  else
+    bytes_per_pixel = 0;
+
+  int w = stride / bytes_per_pixel;
+
+  struct mem_encode state;
+  state.buffer = NULL;
+  state.size = 0;
+
+  /* initialize stuff */
+  png_structp png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+
+  if (!png_ptr)
+          abort_("[write_png_file] png_create_write_struct failed");
+
+  png_set_write_fn(png_ptr, &state, lua_png_write_string, NULL);
+
+  png_infop info_ptr = png_create_info_struct(png_ptr);
+  if (!info_ptr)
+          abort_("[write_png_file] png_create_info_struct failed");
+
+  if (setjmp(png_jmpbuf(png_ptr)))
+          abort_("[write_png_file] Error during init_io");
+
+  /* write header */
+  if (setjmp(png_jmpbuf(png_ptr)))
+          abort_("[write_png_file] Error during writing header");
+
+  png_set_IHDR(png_ptr, info_ptr, w, h,
+               bit_depth, color_type, PNG_INTERLACE_NONE,
+               PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
+
+  png_write_info(png_ptr, info_ptr);
+
+  /* write bytes */
+  if (setjmp(png_jmpbuf(png_ptr)))
+          abort_("[write_png_file] Error during writing bytes");
+
+  png_bytep * row_pointers = (png_bytep*) malloc(sizeof(png_bytep) * h);
+  int x, y;
+  stride = png_get_rowbytes(png_ptr,info_ptr);
+  for (y=0; y<h; y++) {
+    row_pointers[y] = (png_byte*) malloc(stride);
+    memcpy(row_pointers[y], data, stride);
+    data += stride;
+  }
+
+  png_write_image(png_ptr, row_pointers);
+
+  /* end write */
+  if (setjmp(png_jmpbuf(png_ptr)))
+          abort_("[write_png_file] Error during end of write");
+
+  png_write_end(png_ptr, NULL);
+
+  if (state.size > 0)
+    lua_pushlstring(L, (const char*)state.buffer, state.size);
+  else
+    return luaL_error(L, "Compress Error");
+
+  if (state.buffer)
+    free(state.buffer);
+
+  return 1;
+}
+
+static int lua_cpng_uncompress(lua_State *L) {
+  const char* stream = luaL_checkstring(L, 1);
+  return 1;
+}
+
 static const struct luaL_reg cpng_Functions [] = {
   {"new", lua_cpng_new},
   {"load", lua_cpng_load},
   {"save", lua_cpng_save},
+  {"compress", lua_cpng_compress},
+  {"uncompress", lua_cpng_uncompress},
   {NULL, NULL}
 };
 

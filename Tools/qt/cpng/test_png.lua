@@ -114,9 +114,15 @@ f:close()
 print(unix.time() - t0)
 print(#file_str)
 
-t0 = unix.time()
-cpng.save('fff.png', img:pointer(), 240, 320*1, 0)
-print(unix.time() - t0)
+file = io.open('small.png', 'r')
+str = file:read('*a')
+print(#str)
+file:close()
+img_2 = cpng.uncompress( str )
+
+--t0 = unix.time()
+--cpng.save('fff.png', img:pointer(), 240, 320*1, 0)
+--print(unix.time() - t0)
 
 --img_jpeg = cjpeg.compress( img:pointer(), w, h, 1 )--gray
 

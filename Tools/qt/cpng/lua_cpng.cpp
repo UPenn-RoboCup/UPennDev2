@@ -512,7 +512,6 @@ static int lua_cpng_compress(lua_State *L) {
 
   png_bytep * row_pointers = (png_bytep*) malloc(sizeof(png_bytep) * h);
   int x, y;
-  stride = png_get_rowbytes(png_ptr,info_ptr);
   for (y=0; y<h; y++) {
     row_pointers[y] = (png_byte*) malloc(stride);
     memcpy(row_pointers[y], data, stride);

@@ -42,6 +42,11 @@ typedef struct {
   png_bytep * row_pointers;
 } structPNG;
 
+struct mem_encode {
+  char * buffer;
+  int size;
+};
+
 void abort_(const char * s, ...)
 {
   va_list args;
@@ -138,7 +143,7 @@ static int lua_cpng_load(lua_State *L) {
   FILE *fp = fopen(file_name, "rb");
   if (!fp)
           abort_("[read_png_file] File %s could not be opened for reading", file_name);
-  fread(header, 1, 8, fp);
+  int ret = fread(header, 1, 8, fp);
   if (png_sig_cmp((const png_byte*)header, 0, 8))
           abort_("[read_png_file] File %s is not recognized as a PNG file", file_name);
 
@@ -202,7 +207,7 @@ static int lua_cpng_new(lua_State *L) {
   FILE *fp = fopen(file_name, "rb");
   if (!fp)
           abort_("[read_png_file] File %s could not be opened for reading", file_name);
-  fread(header, 1, 8, fp);
+  int ret = fread(header, 1, 8, fp);
   if (png_sig_cmp((const png_byte*)header, 0, 8))
           abort_("[read_png_file] File %s is not recognized as a PNG file", file_name);
 
@@ -434,10 +439,6 @@ static int lua_cpng_stride(lua_State *L) {
   return 1;
 }
 
-struct mem_encode {
-  char * buffer;
-  int size;
-};
 
 void lua_png_write_string(png_structp png_ptr, png_bytep data, png_size_t length) {
 //  printf("io string %ld\n", length);
@@ -540,22 +541,23 @@ static int lua_cpng_compress(lua_State *L) {
 }
 
 void lua_png_read_string(png_structp png_ptr, png_bytep data, png_size_t length) {
-  printf("length %ld \n", length);
-  png_voidp a = png_get_io_ptr(png_ptr);
-  ((std::istream*)a)->read((char*)data, length);
+//  printf("length %d \n", length);
+  struct mem_encode* a = (struct mem_encode*) png_get_io_ptr(png_ptr);
+  memcpy(data, a->buffer, length);
+  a->buffer += length;
 }
 
 static int lua_cpng_uncompress(lua_State *L) {
-  const char* stream = luaL_checkstring(L, 1);
+  struct mem_encode state;
+  state.buffer = (char*)luaL_checkstring(L, 1);
+  state.size = 0;
+
   structPNG *ud = (structPNG *)lua_newuserdata(L, sizeof(structPNG));
 
   char header[8];    // 8 is the maximum size that can be checked
-  std::istringstream ss(stream);
-
-  ss.read(header, 8);
-  
-  if (!ss.good()) 
-    abort_("[read_png_file] stream could not be opened for reading");
+  memcpy(header, state.buffer, 8);
+  state.buffer += 8;
+  state.size += 8;
 
   if (png_sig_cmp((const png_byte*)header, 0, 8))
           abort_("[read_png_stream] stream is not recognized as a PNG file");
@@ -566,17 +568,18 @@ static int lua_cpng_uncompress(lua_State *L) {
   if (!ud->png_ptr)
     abort_("[read_png_file] png_create_read_struct failed");
 
-  png_set_read_fn(ud->png_ptr, (png_voidp)&ss, lua_png_read_string);
-
   ud->info_ptr = png_create_info_struct(ud->png_ptr);
   if (!ud->info_ptr)
     abort_("[read_png_file] png_create_info_struct failed");
+
+  png_set_read_fn(ud->png_ptr, &state, lua_png_read_string);
 
   if (setjmp(png_jmpbuf(ud->png_ptr)))
     abort_("[read_png_file] Error during init_io");
 
   png_set_sig_bytes(ud->png_ptr, 8);
   png_read_info(ud->png_ptr, ud->info_ptr);
+  png_set_keep_unknown_chunks(ud->png_ptr, 1, NULL, 0);
 
   ud->width = png_get_image_width(ud->png_ptr, ud->info_ptr);
   ud->height = png_get_image_height(ud->png_ptr, ud->info_ptr);
@@ -584,20 +587,20 @@ static int lua_cpng_uncompress(lua_State *L) {
   ud->bit_depth = png_get_bit_depth(ud->png_ptr, ud->info_ptr);
 
   ud->number_of_passes = png_set_interlace_handling(ud->png_ptr);
-//  png_read_update_info(ud->png_ptr, ud->info_ptr);
-//
-//  /* read file */
-//  if (setjmp(png_jmpbuf(ud->png_ptr)))
-//          abort_("[read_png_file] Error during read_image");
-//
-//  ud->row_pointers = (png_bytep*) malloc(sizeof(png_bytep) * ud->height);
-//
-//  int x, y;
-//  ud->stride = png_get_rowbytes(ud->png_ptr,ud->info_ptr);
-//  for (y=0; y<ud->height; y++)
-//    ud->row_pointers[y] = (png_byte*) malloc(png_get_rowbytes(ud->png_ptr,ud->info_ptr));
-//
-//  png_read_image(ud->png_ptr, ud->row_pointers);
+  png_read_update_info(ud->png_ptr, ud->info_ptr);
+
+  /* read file */
+  if (setjmp(png_jmpbuf(ud->png_ptr)))
+          abort_("[read_png_file] Error during read_image");
+
+  ud->row_pointers = (png_bytep*) malloc(sizeof(png_bytep) * ud->height);
+
+  int x, y;
+  ud->stride = png_get_rowbytes(ud->png_ptr,ud->info_ptr);
+  for (y=0; y<ud->height; y++)
+    ud->row_pointers[y] = (png_byte*) malloc(png_get_rowbytes(ud->png_ptr,ud->info_ptr));
+
+  png_read_image(ud->png_ptr, ud->row_pointers);
 
   luaL_getmetatable(L, MT_NAME);
   lua_setmetatable(L, -2);

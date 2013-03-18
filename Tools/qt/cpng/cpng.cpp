@@ -58,7 +58,11 @@ void read_png_file(char* file_name)
         if (!info_ptr)
                 abort_("[read_png_file] png_create_info_struct failed");
 
+#if (PNG_LIBPNG_VER < 10400 || PNG_LIBPNG_VER >= 10500)
         if (setjmp(png_jmpbuf(png_ptr)))
+#else
+        if (setjmp(png_ptr->jmpbuf))
+#endif
                 abort_("[read_png_file] Error during init_io");
 
         png_init_io(png_ptr, fp);
@@ -76,7 +80,11 @@ void read_png_file(char* file_name)
 
 
         /* read file */
+#if (PNG_LIBPNG_VER < 10400 || PNG_LIBPNG_VER >= 10500)
         if (setjmp(png_jmpbuf(png_ptr)))
+#else
+        if (setjmp(png_ptr->jmpbuf))
+#endif
                 abort_("[read_png_file] Error during read_image");
 
         row_pointers = (png_bytep*) malloc(sizeof(png_bytep) * height);
@@ -107,14 +115,22 @@ void write_png_file(char* file_name)
         if (!info_ptr)
                 abort_("[write_png_file] png_create_info_struct failed");
 
+#if (PNG_LIBPNG_VER < 10400 || PNG_LIBPNG_VER >= 10500)
         if (setjmp(png_jmpbuf(png_ptr)))
+#else
+        if (setjmp(png_ptr->jmpbuf))
+#endif
                 abort_("[write_png_file] Error during init_io");
 
         png_init_io(png_ptr, fp);
 
 
         /* write header */
+#if (PNG_LIBPNG_VER < 10400 || PNG_LIBPNG_VER >= 10500)
         if (setjmp(png_jmpbuf(png_ptr)))
+#else
+        if (setjmp(png_ptr->jmpbuf))
+#endif
                 abort_("[write_png_file] Error during writing header");
 
         png_set_IHDR(png_ptr, info_ptr, width, height,
@@ -125,14 +141,22 @@ void write_png_file(char* file_name)
 
 
         /* write bytes */
+#if (PNG_LIBPNG_VER < 10400 || PNG_LIBPNG_VER >= 10500)
         if (setjmp(png_jmpbuf(png_ptr)))
+#else
+        if (setjmp(png_ptr->jmpbuf))
+#endif
                 abort_("[write_png_file] Error during writing bytes");
 
         png_write_image(png_ptr, row_pointers);
 
 
         /* end write */
+#if (PNG_LIBPNG_VER < 10400 || PNG_LIBPNG_VER >= 10500)
         if (setjmp(png_jmpbuf(png_ptr)))
+#else
+        if (setjmp(png_ptr->jmpbuf))
+#endif
                 abort_("[write_png_file] Error during end of write");
 
         png_write_end(png_ptr, NULL);

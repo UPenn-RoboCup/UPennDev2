@@ -623,7 +623,7 @@ printdata = true
 ------------------------------------------------------------------------
 --Data logging --
 ------------------------------------------------------------------------
-local ident = "t3"
+local ident = "t1"
 print('ident', ident)
 --local fw_log = assert(io.open("Logs/fw_log"..ident..".txt","w"))
 --local fw_reg = assert(io.open("Logs/fw_reg"..ident..".txt","w"))

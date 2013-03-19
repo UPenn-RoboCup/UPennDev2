@@ -59,7 +59,7 @@ function entry()
   World.entry();
   Vision.entry();
   if enable_freespace_detection == 1 then
-    OccupancyMap.entry();
+    --OccupancyMap.entry();
   end
 end
 
@@ -131,7 +131,7 @@ function update()
       end
     end
     if enable_freespace_detection == 1 then
-      OccupancyMap.update();
+      --OccupancyMap.update();
     end
   end
  

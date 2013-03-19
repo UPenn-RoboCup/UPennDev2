@@ -1,20 +1,12 @@
 require('pid')
 
---[[
--- DEBUG
-console = simAuxiliaryConsoleOpen("Aux Console", 500, 0x10)
-print = function(...)
-  simAuxiliaryConsolePrint(console, ...)
-end
---]]
-
 local MAX_FORCE = 300
 local MAX_VELOCITY = 10
-local MAX_ACCEL = 1000
+local MAX_ACCEL = 600
 local POSITION_P_GAIN_FACTOR = 10000
 local POSITION_I_GAIN_FACTOR = 10000
 local POSITION_D_GAIN_FACTOR = 10000
-local POSITION_D_CORNER_FREQUENCY = 40
+local POSITION_D_CORNER_FREQUENCY = 30
 local VELOCITY_P_GAIN_FACTOR = 10000
 
 vrep_impedance_controller = {}
@@ -49,7 +41,7 @@ function vrep_impedance_controller:update(...)
     self.position_pid:set_d_corner_frequency(POSITION_D_CORNER_FREQUENCY)
   end
 
-  -- Update pid gains and position setpoint:
+  -- Update pid gains and setpoints:
   ------------------------------------------------------------------------------
   if (passCnt == 1) then
     local joint_param = simGetObjectCustomData(jointHandle, 2050)
@@ -86,6 +78,7 @@ function vrep_impedance_controller:update(...)
   velocity_command = math.max(velocity_command,-MAX_VELOCITY)
   velocity_command = math.min(velocity_command, MAX_VELOCITY)
 
+--[[
   -- DEBUG
   if (not file1) then
     THOR_HOME = os.getenv('THOR_HOME')
@@ -102,6 +95,7 @@ function vrep_impedance_controller:update(...)
     file4:write(force_command..'\n')
     file5:write(velocity_command..'\n')
   end
+--]]
 
   return force_command, velocity_command
 end

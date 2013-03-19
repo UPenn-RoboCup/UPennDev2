@@ -85,10 +85,12 @@ rgbselect = function(ptx, pty, threshold)
   local mask_ct = ffi.cast('uint8_t*',dd);
   for i=1,defaultW*defaultH do
     if mask_ct[i-1]>0 then
-      print('got one!')
+      -- Change the raw pixel
+      -- TODO: This is bad because the underlying RGB data is touched
+      -- so then the next rgbselect operates on bad data
       img[3*i] = 0;
-      img[3*i] = 255;
-      img[3*i] = 0;
+      img[3*i+1] = 255;
+      img[3*i+2] = 0;
     end
   end
   local qimage = QImage(img:pointer(), defaultW, defaultH, 

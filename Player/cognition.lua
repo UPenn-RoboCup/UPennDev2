@@ -11,7 +11,7 @@ require('Body')
 require('Vision')
 require('World')
 require('Detection') 
-require('OccupancyMap') 
+--require('OccupancyMap') 
 
 comm_inited = false;
 vcm.set_camera_teambroadcast(0);

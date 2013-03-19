@@ -1,11 +1,31 @@
 local ffi = require 'ffi'
-local libpng = require 'libpng'
+--local libpng = require 'libpng'
 local carray = require 'carray'
+local cpng = require 'cpng'
 rgb = require 'rgbselect'
 
 defaultW = 640
 defaultH = 480
 defaultThreshold = 14
+img = carray.byte(defaultW * defaultH * 3)
+
+loadImageCPNG = function(filename)
+  print(filename)
+  cpng.load(filename, img:pointer())
+
+  local qimage = QImage(img:pointer(), defaultW, defaultH, 
+                  defaultW * 3, QImage.Format.Format_RGB888)
+
+  window.widget.pimage:convertFromImage(qimage, Qt.AutoColor)
+--  if window.widget.pimage:height() ~= defaultH or 
+--    window.widget.pimage:width() ~= defaultW then
+--    print('scale image')
+--    window.widget.pimage = window.widget.pimage:scaled(defaultW, defaultH, 
+--                              Qt.KeepAspectRatio, Qt.FastTransformation)
+--  end
+
+
+end
 
 -- load img with libpng + ffi
 loadImageffi = function(filename)

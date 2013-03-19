@@ -20,7 +20,8 @@ initDraw = function(self, state)
     end
   end
 
-  loadImageffi(fullfilename)
+--  loadImageffi(fullfilename)
+  loadImageCPNG(fullfilename)
 --  loadIndexImg(fullfilename)
 --  loadImage(fullfilename)
   window.widget.pixmapitem:setPixmap(window.widget.pimage)
@@ -47,7 +48,8 @@ updateDraw = function(self, state)
     end
   end
 --  loadImage(currentFile)
-  loadImageffi(currentFile)
+--  loadImageffi(currentFile)
+  loadImageCPNG(currentFile)
 --  loadIndexImg(currentFile)
   window.widget.pixmapitem:setPixmap(window.widget.pimage)
 

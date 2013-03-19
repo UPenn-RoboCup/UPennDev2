@@ -7,7 +7,7 @@ all: lqt rgbselect
 
 lqt:: 
 	echo $(PWD)
-	cd ../lqt && mkdir bd && cd bd && cmake .. && make
+	cd ../lqt && mkdir -p bd && cd bd && cmake .. && make
 	cd ../lqt/bd/lib && cp *.so $(PWD)/lib/qt
 	cd $(PWD)
 

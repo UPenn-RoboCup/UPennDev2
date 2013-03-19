@@ -17,21 +17,13 @@ local joint_name = {
   'r_knee_pitch', 'r_ankle_pitch', 'r_ankle_roll',
 }
 
--- vrep joint controllers (0 = impedance, 1 = position)
+-- vrep joint controllers [0 = impedance, 1 = position, 2 = velocity]
 local joint_controller = {
   0, 0, 0,
   0, 0, 0,
   0, 0, 0,
   0, 0, 0,
 }
---[[
-local joint_controller = {
-  1, 1, 1,
-  1, 1, 1,
-  1, 1, 1,
-  1, 1, 1,
-}
---]]
 
 local function initialize_devices()
   -- intialize vrep devices

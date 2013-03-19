@@ -27,7 +27,9 @@ local joint_controller = {
 
 local function initialize_devices()
   -- intialize vrep devices
-  handles.robot = simGetObjectHandle('torso')
+  handles.torso = simGetObjectHandle('torso')
+  handles.l_foot = simGetObjectHandle('l_foot')
+  handles.r_foot = simGetObjectHandle('r_foot')
   handles.gyro = simTubeOpen(0, 'gyroData'..simGetNameSuffix(nil), 1)
   handles.accel = simTubeOpen(0, 'accelerometerData'..simGetNameSuffix(nil), 1)
   handles.joint = {}
@@ -45,7 +47,7 @@ local function initialize_devices()
 end
 
 local function update_actuators()
-  -- update joint parameters 
+  -- update joint parameters
   local joint_enable = dcm:get_joint_enable()
   local joint_force = dcm:get_joint_force()
   local joint_position = dcm:get_joint_position()
@@ -82,7 +84,7 @@ local function update_sensors()
   end
 
   -- update ahrs sensors
-  local euler_angles = simGetObjectOrientation(handles.robot, -1)
+  local euler_angles = simGetObjectOrientation(handles.torso, -1)
   dcm:set_ahrs(euler_angles, 'euler')
   
   local data = simTubeRead(handles.gyro)
@@ -97,9 +99,9 @@ local function update_sensors()
     dcm:set_ahrs(floats, 'accel')
   end
 
-  -- update force-torque readings
-  -- dcm:set_force_torque(l_fts, 'l_foot')
-  -- dcm:set_force_torque(r_fts, 'r_foot')
+  -- update force-torque values
+--dcm:set_force_torque(l_ft, 'l_foot')
+--dcm:set_force_torque(r_ft, 'r_foot')
 end
 
 local function reset_simulator()
@@ -108,14 +110,14 @@ local function reset_simulator()
 end
 
 local function reset_simulator_physics()
-  simResetDynamicObject(handles.robot)
+  simResetDynamicObject(handles.torso)
 end
 
 local function set_simulator_torso_frame(frame)
   local pose = frame:get_pose()
   -- -1 means set absolute position/orientation
-  simSetObjectPosition(handles.robot, -1, {pose[1], pose[2], pose[3]})
-  simSetObjectOrientation(handles.robot, -1, {pose[4], pose[5], pose[6]})
+  simSetObjectPosition(handles.torso, -1, {pose[1], pose[2], pose[3]})
+  simSetObjectOrientation(handles.torso, -1, {pose[4], pose[5], pose[6]})
 end
 
 local function set_simulator_torso_twist(twist)
@@ -128,7 +130,7 @@ function vrep_comms_manager.entry()
   -- initialize shared memory
   dcm:set_joint_enable(1, 'all')
   dcm:set_joint_position_p_gain(1.0, 'all')
-  dcm:set_joint_position_i_gain(0.1, 'all')
+  dcm:set_joint_position_i_gain(0.0, 'all')
   dcm:set_joint_position_d_gain(0.01, 'all')
   dcm:set_joint_velocity_p_gain(0.0, 'all')
   dcm:set_joint_force(0, 'all')

@@ -88,9 +88,10 @@ rgbselect = function(ptx, pty, threshold)
       -- Change the raw pixel
       -- TODO: This is bad because the underlying RGB data is touched
       -- so then the next rgbselect operates on bad data
-      img[3*i] = 0;
-      img[3*i+1] = 255;
-      img[3*i+2] = 0;
+      -- http://harmattan-dev.nokia.com/docs/library/html/qt4/qimage.html#image-formats
+      img[3*i+1] = 0;
+      img[3*i+2] = 255;
+      img[3*i+3] = 0;
     end
   end
   local qimage = QImage(img:pointer(), defaultW, defaultH, 

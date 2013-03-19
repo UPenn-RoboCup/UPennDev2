@@ -50,10 +50,9 @@ updateDraw = function(self, state)
   end
 --  loadImage(currentFile)
 --  loadImageffi(currentFile)
-  loadImageCPNG(currentFile)
 --  loadIndexImg(currentFile)
+  loadImageCPNG(currentFile)
   window.widget.pixmapitem:setPixmap(window.widget.pimage)
-
   self:update(0,0,640,480)
 end
 
@@ -77,16 +76,16 @@ updateFForward = function(self, state)
   updateDraw(self, 4)
 end
 
-selectPixel = function(o, e)
-  print(e:button(), e:pos():x(), e:pos():y())
+selectPixel = function(self, e)
+  print('You clicked on',e:button(), e:pos():x(), e:pos():y())
   local imageW = window.widget.pimage:size():width()
   local imageH = window.widget.pimage:size():height()
-  print(imageW, imageH)
-  if window.widget.imgload ~= nil then
+  --print(imageW, imageH)
+  print("Running imageproc?",window.widget.pimage)
+  if window.widget.pimage ~= nil then
     local threshold = window.widget.thresholdSlider:value()
-    rgbselect(window.widget.imgload.data, window.widget.imgload.w,
-              window.widget.imgload.h, e:pos():x(), e:pos():y(), threshold)
+    rgbselect( e:pos():x(), e:pos():y(), threshold );
+    window.widget.pixmapitem:setPixmap(window.widget.pimage)
+    self:update(0,0,640,480)
   end
 end
-
-

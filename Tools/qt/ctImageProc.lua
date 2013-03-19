@@ -2,7 +2,7 @@ local ffi = require 'ffi'
 --local libpng = require 'libpng'
 local carray = require 'carray'
 local cpng = require 'cpng'
---rgb = require 'rgbselect'
+rgb = require 'rgbselect'
 
 defaultW = 640
 defaultH = 480
@@ -79,10 +79,27 @@ loadImage = function(filename)
   end
 end
 
-rgbselect = function(data, w, h, ptx, pty, threshold)
---  print(data[0], data[1], data[2], ptx, pty, threshold)
---  dd = rgb.select(data, w, h, ptx, pty, threshold)
---  df = ffi.cast('uint8_t*', dd)
---  count = 0
---  print('dddddd', count)
+rgbselect = function(ptx, pty, threshold)
+  print('Running RGB select...', ptx, pty, threshold)
+  dd = rgb.select( img:pointer(), defaultW, defaultH, ptx, pty, threshold)
+  local mask_ct = ffi.cast('uint8_t*',dd);
+  for i=1,defaultW*defaultH do
+    if mask_ct[i-1]>0 then
+      print('got one!')
+      img[3*i] = 0;
+      img[3*i] = 255;
+      img[3*i] = 0;
+    end
+  end
+  local qimage = QImage(img:pointer(), defaultW, defaultH, 
+                  defaultW * 3, QImage.Format.Format_RGB888)
+  window.widget.pimage:convertFromImage(qimage, Qt.AutoColor)
+
+  --[[
+  local qimage = QImage( dd, 
+  defaultW, defaultH, 
+  defaultW, QImage.Format.Format_Indexed8)
+  window.widget.pimage:convertFromImage(qimage, Qt.AutoColor)
+  print('Loaded a new qimage...')
+  --]]
 end

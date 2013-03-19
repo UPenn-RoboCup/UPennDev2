@@ -6,7 +6,7 @@ splitPath = function(str)
   end
   path = str:sub(1, ptr - 1)
   filename = str:sub(ptr, #str)
-  print(path, filename)
+--  print(path, filename)
   return path, filename
 end
 

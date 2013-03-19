@@ -2,7 +2,7 @@ local ffi = require 'ffi'
 --local libpng = require 'libpng'
 local carray = require 'carray'
 local cpng = require 'cpng'
-rgb = require 'rgbselect'
+--rgb = require 'rgbselect'
 
 defaultW = 640
 defaultH = 480
@@ -10,7 +10,6 @@ defaultThreshold = 14
 img = carray.byte(defaultW * defaultH * 3)
 
 loadImageCPNG = function(filename)
-  print(filename)
   cpng.load(filename, img:pointer())
 
   local qimage = QImage(img:pointer(), defaultW, defaultH, 
@@ -81,9 +80,9 @@ loadImage = function(filename)
 end
 
 rgbselect = function(data, w, h, ptx, pty, threshold)
-  print(data[0], data[1], data[2], ptx, pty, threshold)
-  dd = rgb.select(data, w, h, ptx, pty, threshold)
-  df = ffi.cast('uint8_t*', dd)
-  count = 0
-  print('dddddd', count)
+--  print(data[0], data[1], data[2], ptx, pty, threshold)
+--  dd = rgb.select(data, w, h, ptx, pty, threshold)
+--  df = ffi.cast('uint8_t*', dd)
+--  count = 0
+--  print('dddddd', count)
 end

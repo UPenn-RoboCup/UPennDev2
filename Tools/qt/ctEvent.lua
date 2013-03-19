@@ -1,26 +1,27 @@
+require 'unix'
+
 fileList = {}
 currentFile = '' 
 currentFileIdx = 0
 
 initDraw = function(self, state)
   local fileDialog = QFileDialog()
-  local fileName = fileDialog:getOpenFileName(
-                          "Open File", "", "Log File (*.png)")
-  print(fileName:toUtf8())
+  local fileName = fileDialog:getOpenFileName( "Open File", "", "Log File (*.png)")
+--  print(fileName:toUtf8())
   local fullfilename = fileName:toUtf8()
   local path, filename = splitPath(fileName:toUtf8())
-  local listFile = assert(io.popen('/bin/ls '..path..'*.png', 'r'))
+  local listFile = unix.readdir(path)
   local listFileCount = 0
-  for file in listFile:lines() do
-    listFileCount = listFileCount + 1
-    fileList[listFileCount] = file
-    if fileList[listFileCount] == fullfilename then
-      currentFileIdx = listFileCount
-      currentFile = fullfilename
+  for k, v in pairs(listFile) do
+    if v:find('%.png') then
+      fileList[#fileList+1] = file
+      if fileList[#fileList] == fullfilename then
+        currentFileIdx = fileList
+        currentFile = fullfilename
+      end
     end
   end
 
---  loadImageffi(fullfilename)
   loadImageCPNG(fullfilename)
 --  loadIndexImg(fullfilename)
 --  loadImage(fullfilename)
@@ -82,12 +83,6 @@ selectPixel = function(o, e)
   local imageH = window.widget.pimage:size():height()
   print(imageW, imageH)
   if window.widget.imgload ~= nil then
---    print(window.widget.imgload)
---    for k, v in pairs(window.widget.imgload) do
---      print(k, v)
---    end
---    print(window.widget.imgload.data[0], 
---          window.widget.imgload.data[1], window.widget.imgload.data[2])
     local threshold = window.widget.thresholdSlider:value()
     rgbselect(window.widget.imgload.data, window.widget.imgload.w,
               window.widget.imgload.h, e:pos():x(), e:pos():y(), threshold)

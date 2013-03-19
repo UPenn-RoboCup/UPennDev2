@@ -2,7 +2,7 @@ OBJECTS  =
 
 all: lua_cpng
 
-include ../../../Lib/Makefile.inc
+include ../../Lib/Makefile.inc
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<

@@ -365,6 +365,7 @@ end
 
 
 function motion_legs(qLegs)
+  if not phSingle then phSingle = 0 end
   phComp = math.min(1, phSingle/.1, (1-phSingle)/.1);
 
   --Ankle stabilization using gyro feedback

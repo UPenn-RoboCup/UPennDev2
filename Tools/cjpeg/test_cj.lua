@@ -83,3 +83,4 @@ for i = 1, img_2:stride() * img_2:height(), 3 do
 print(img_2[i], img_2[i+1],img_2[i+2])
 end
 
+print(img_2:pointer())

@@ -373,14 +373,20 @@ static int lua_cjpeg_len(lua_State *L) {
   return 1;
 }
 
+static int lua_cjpeg_pointer(lua_State *L) {
+  structJPEG *p = lua_checkcjpeg(L, 1);
+  lua_pushlightuserdata(L, ((unsigned char*)p->raw_image));
+  return 1;
+}
+
 static const struct luaL_reg cjpeg_Functions [] = {
   {"compress", lua_cjpeg_compress},
   {"uncompress", lua_cjpeg_uncompress},
   {NULL, NULL}
 };
 
-static const struct luaL_reg cjpeg_Methods [] {
-//  {"pointer", lua_cjpeg_pointer},
+static const struct luaL_reg cjpeg_Methods [] = {
+  {"pointer", lua_cjpeg_pointer},
 //  {"read", lua_cjpeg_read},
 //  {"write", lua_cjpeg_write},
   {"width", lua_cjpeg_width},

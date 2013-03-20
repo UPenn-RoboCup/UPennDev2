@@ -11,23 +11,23 @@ then
   eval `/usr/libexec/path_helper -s`
   source ~/.bash_profile
   
-  Vrep_Home=/Applications/V-Rep/vrep.app/Contents/MacOS
-  Vrep_Command="/Applications/V-Rep/vrep.app/Contents/MacOS/vrep"
+  VREP_COMMAND="/Applications/V-Rep/vrep.app/Contents/MacOS/vrep"
 else
   echo "On Linux!"
   echo "Assume V-Rep installed in /usr/local/vrep"
   
-  Vrep_Home=/usr/local/vrep
-  Vrep_Command="/usr/local/vrep/vrep"
+  VREP_COMMAND="/usr/local/vrep/vrep"
+  LD_LIBRARY_PATH="/usr/local/vrep/."
+  export LD_LIBRARY_PATH
 fi
 
 if [ "$1" ]
 then
-  Scene_File=$1
+  SCENE_FILE=$1
 else
-  Scene_File="default_unreal"
+  SCENE_FILE="default_unreal"
 fi
-Scene_File="$PWD/../Platform/$PLATFORM/Scenes/$Scene_File.ttt"
-echo "Opening $Scene_File"
+SCENE_FILE="$PWD/../Platform/$PLATFORM/Scenes/$SCENE_FILE.ttt"
+echo "Opening $SCENE_FILE"
 
-exec $Vrep_Command $Scene_File &
+exec $VREP_COMMAND $SCENE_FILE &

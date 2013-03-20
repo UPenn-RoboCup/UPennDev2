@@ -6,7 +6,7 @@ require('Comm');
 require('Speak');
 require('vector');
 require('util')
-require('serialization');
+local serialization = require('serialization');
 
 require('wcm');
 require('gcm');

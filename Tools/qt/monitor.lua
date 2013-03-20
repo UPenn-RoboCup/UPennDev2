@@ -2,6 +2,8 @@ local pwd = os.getenv('PWD')
 package.cpath = pwd..'/lib/qt/?.so;'..package.cpath
 package.cpath = pwd..'/lib/util/?.so;'..package.cpath
 package.cpath = pwd..'/../../Player/Lib/?.so;'..package.cpath
+package.cpath = pwd..'/?.so;'..package.cpath
+package.path = pwd..'/../../Player/Util/?.lua;'..package.path
 package.path = pwd..'/../../Player/Util/ffi/?.lua;'..package.path
 
 require 'unix'
@@ -12,6 +14,18 @@ require ('mtLayout')
 require ('ctImageProc')
 require ('ctCommon')
 require ('ctEvent')
+
+-- Setup IPC
+-- -- -- -- --
+local simple_ipc = require 'simple_ipc'
+local img_channel = simple_ipc.setup_subscriber('img');
+img_channel.callback = function()
+  local img_data, has_more = img_channel:receive();
+  print('Have an image of size:',#img_data);
+end
+local wait_channels = { img_channel }
+local channel_poll = simple_ipc.wait_on_channels( wait_channels );
+-- -- -- -- --
 
 -- Initial Qt Application
 app = QApplication(1 + select('#', ...), {arg[0], ...})
@@ -60,8 +74,10 @@ centralizeWindow(window)
 window:show()
 
 --app.exec()
-
+--local channel_timeout = 1e3;
+local channel_timeout = 0;
 while 1 do
   app.processEvents()
-  print(unix.time())
+  channel_poll:poll(channel_timeout)
+  --print(unix.time())
 end

@@ -84,5 +84,6 @@ while 1 do
                   defaultW * 3, QImage.Format.Format_RGB888)
   window.widget.pimage:convertFromImage(qimage, Qt.AutoColor)
 
+  window.widget.view1:update()
   --print(unix.time())
 end

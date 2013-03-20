@@ -1,0 +1,48 @@
+Hip Yaw
+M      = 1
+Parent = Torso
+Axis   = Z
+
+LEFT
+Xcbar  = 0
+Ycbar  = 0
+Zcbar  = 0
+
+RIGHT
+Xcbar  = 0
+Ycbar  = 0
+Zcbar  = 0
+
+
+
+Hip Roll
+M      = 1
+Parent = Thigh
+Axis   = Y
+
+LEFT
+Xcbar  = 0
+Ycbar  = 0
+Zcbar  = 0
+
+RIGHT
+Xcbar  = 0
+Ycbar  = 0
+Zcbar  = 0
+
+
+
+Ankle Pitch
+M      = 1
+Parent = Shin
+Axis   = Y
+
+LEFT
+Xcbar  = 0
+Ycbar  = 0
+Zcbar  = 0
+
+RIGHT
+Xcbar  = 0
+Ycbar  = 0
+Zcbar  = 0

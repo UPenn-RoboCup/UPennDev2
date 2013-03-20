@@ -1,49 +1,61 @@
 Hip Yaw - Left
-M      = 1
 Parent = Torso
-Axis   = Z
-Xcbar  = 0
-Ycbar  = 0
-Zcbar  = 0
+M      = 1
+Axis   = z
+Radius = .01
+Height = .1
+xcbar  = -0.018
+ycbar  =  0.094
+zcbar  =  0.933
 
 Hip Yaw - Right
-M      = 1
 Parent = Torso
-Axis   = Z
-Xcbar  = 0
-Ycbar  = 0
-Zcbar  = 0
+M      = 1
+Axis   = z
+Radius = .01
+Height = .1
+xcbar  = -0.018
+ycbar  = -0.094
+zcbar  =  0.933
 
 
 Hip Roll - Left
-M      = 1
 Parent = Thigh - Left
-Axis   = Y
-Xcbar  = 0
-Ycbar  = 0
-Zcbar  = 0
+M      = .5
+Axis   = y
+Radius = .01
+Height = .1
+xcbar  = -0.018
+ycbar  =  0.094
+zcbar  =  0.808
 
 Hip Roll - Right
-M      = 1
 Parent = Thigh - Right
-Axis   = Y
-Xcbar  = 0
-Ycbar  = 0
-Zcbar  = 0
+M      = .5
+Axis   = y
+Radius = .01
+Height = .1
+xcbar  = -0.018
+ycbar  = -0.094
+zcbar  =  0.808
 
 
 Ankle Pitch - Left
-M      = 1
 Parent = Shin - Left
-Axis   = Y
-Xcbar  = 0
-Ycbar  = 0
-Zcbar  = 0
+M      = .2
+Axis   = y
+Radius = .01
+Height = .1
+xcbar  = -0.018
+ycbar  =  0.094
+zcbar  =  0.050
 
 Ankle Pitch - Right
-M      = 1
 Parent = Shin - Right
-Axis   = Y
-Xcbar  = 0
-Ycbar  = 0
-Zcbar  = 0
+M      = .2
+Axis   = y
+Radius = .01
+Height = .1
+xcbar  = -0.018
+ycbar  = -0.094
+zcbar  =  0.050

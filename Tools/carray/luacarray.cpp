@@ -332,6 +332,157 @@ static int lua_carray_len(lua_State *L) {
   return 1;
 }
 
+static int lua_carray_cast(lua_State *L) {
+  /*
+  // Check for lightuserdata carray
+  if (!lua_islightuserdata(L, 1)) {
+    lua_pushnil(L);
+    return 1;
+  }
+  */
+  const char *type = luaL_optstring(L, 2, "double");
+  int size = luaL_optinteger(L, 3, 1);
+  structCArray *ud = (structCArray *)lua_newuserdata(L, sizeof(structCArray));
+  ud->ptr = (void *)lua_topointer(L, 1);
+  ud->size = size;
+  ud->type = type[0];
+  ud->own = 0;
+
+  luaL_getmetatable(L, "carray_mt");
+  lua_setmetatable(L, -2);
+  return 1;
+}
+
+static int lua_carray_new(lua_State *L) {
+  const char *type = luaL_optstring(L, 1, "double");
+
+  int size;
+  bool istable = lua_istable(L, 2);
+  if (istable) {
+    size = lua_objlen(L, 2);
+  }
+  else {
+    size = luaL_optinteger(L, 2, 1);
+  }
+  structCArray *ud = (structCArray *)lua_newuserdata(L, sizeof(structCArray));
+
+  ud->size = size;
+  ud->type = type[0];
+  ud->own = 1;
+
+  int i;
+  unsigned char *p_uchar;
+  char *p_char;
+  short *p_short;
+  int *p_int;
+  unsigned int *p_uint;
+  float *p_float;
+  double *p_double;
+
+  switch (ud->type) {
+  case 'b':
+    p_uchar = new unsigned char[size];
+    ud->ptr = p_uchar;
+    if (istable) {
+      for (i = 0; i < size; i++) {
+	lua_pushinteger(L, i+1);
+	// Lua stack: table, userdata, index (top)
+	lua_gettable(L, -3);
+	p_uchar[i] = lua_tointeger(L, -1);
+	lua_pop(L, 1);
+      }
+    }
+    break;
+  case 'c':
+    p_char = new char[size];
+    ud->ptr = p_char;
+    if (istable) {
+      for (i = 0; i < size; i++) {
+	lua_pushinteger(L, i+1);
+	lua_gettable(L, -3);
+	p_char[i] = lua_tointeger(L, -2);
+	lua_pop(L, 1);
+      }
+    }
+    break;
+  case 's':
+    p_short = new short[size];
+    ud->ptr = p_short;
+    if (istable) {
+      for (i = 0; i < size; i++) {
+	lua_pushinteger(L, i+1);
+	lua_gettable(L, -3);
+	p_short[i] = lua_tointeger(L, -2);
+	lua_pop(L, 1);
+      }
+    }
+    break;
+  case 'i':
+    p_int = new int[size];
+    ud->ptr = p_int;
+    if (istable) {
+      for (i = 0; i < size; i++) {
+	lua_pushinteger(L, i+1);
+	lua_gettable(L, -3);
+	p_int[i] = lua_tointeger(L, -2);
+	lua_pop(L, 1);
+      }
+    }
+    break;
+  case 'u':
+    p_uint = new unsigned int[size];
+    ud->ptr = p_uint;
+    if (istable) {
+      for (i = 0; i < size; i++) {
+	lua_pushinteger(L, i+1);
+	lua_gettable(L, -3);
+	p_uint[i] = lua_tointeger(L, -2);
+	lua_pop(L, 1);
+      }
+    }
+    break;
+  case 'f':
+    p_float = new float[size];
+    ud->ptr = p_float;
+    if (istable) {
+      for (i = 0; i < size; i++) {
+	lua_pushinteger(L, i+1);
+	lua_gettable(L, -3);
+	p_float[i] = lua_tonumber(L, -1);
+	lua_pop(L, 1);
+      }
+    }
+    break;
+  case 'd':
+    p_double = new double[size];
+    ud->ptr = p_double;
+    if (istable) {
+      for (i = 0; i < size; i++) {
+	lua_pushinteger(L, i+1);
+	lua_gettable(L, -3);
+	p_double[i] = lua_tonumber(L, -1);
+	lua_pop(L, 1);
+      }
+    }
+    break;
+  default:
+    ud->ptr = new char[size];
+  }
+
+  luaL_getmetatable(L, "carray_mt");
+  lua_setmetatable(L, -2);
+  return 1;
+}
+
+static int lua_carray_fpointer(lua_State *L) {
+  structCArray *p = lua_checkcarray(L, 1);
+
+  lua_pushlightuserdata(L, (void *) p->ptr);
+  lua_pushlstring(L, &(p->type), 1);
+  lua_pushinteger(L, p->size);
+  return 3;
+}
+
 static const struct luaL_reg carray_functions[] = {
   {"null", lua_carray_null},
   {"byte", lua_carray_new<byte, 'b'>},
@@ -342,6 +493,9 @@ static const struct luaL_reg carray_functions[] = {
   {"int", lua_carray_new<int, 'i'>},
   {"float", lua_carray_new<float, 'f'>},
   {"double", lua_carray_new<double, 'd'>},
+  {"cast", lua_carray_cast},
+  {"new", lua_carray_new},
+  {"pointer", lua_carray_fpointer},
   {NULL, NULL}
 };
 

@@ -79,5 +79,10 @@ local channel_timeout = 0;
 while 1 do
   app.processEvents()
   channel_poll:poll(channel_timeout)
+
+  local qimage = QImage(img:pointer(), defaultW, defaultH, 
+                  defaultW * 3, QImage.Format.Format_RGB888)
+  window.widget.pimage:convertFromImage(qimage, Qt.AutoColor)
+
   --print(unix.time())
 end

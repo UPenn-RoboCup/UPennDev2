@@ -32,6 +32,10 @@
 				<ixy> 0.000446463</ixy>
 			</inertia>
 		</inertial>
+		<sensor name="imu_sensor" type="imu">
+			<visualize>1</visualize>
+			<topic>imu_sensor</topic>
+		</sensor>
 	</link>
 
 

@@ -1,5 +1,7 @@
 require 'Kinect'
-s = Kinect.open()
+--s = Kinect.open()
+s = Kinect.open('/tmp/nifile')
+--s = Kinect.open('/tmp/nifile','record')
 print( "Kinect Status: ", s )
 
 for n=1,10 do

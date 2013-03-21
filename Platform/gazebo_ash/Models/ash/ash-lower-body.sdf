@@ -39,18 +39,16 @@
 		<pose>-.021 .094 .618 0 0 0</pose>
 		<collision name="collision">
 			<geometry>
-				<cylinder>
-					<radius>.05</radius>
-					<length>.419</length>
-				</cylinder>
+				<box>
+					<size>.05 .05 .419</size>
+				</box>
 			</geometry>
 		</collision>
 		<visual name="visual">
 			<geometry>
-				<cylinder>
-					<radius>.05</radius>
-					<length>.419</length>
-				</cylinder>
+				<box>
+					<size>.05 .05 .419</size>
+				</box>
 			</geometry>
 		</visual>
 		<inertial>
@@ -72,18 +70,16 @@
 		<pose>-.021 -.094 .618 0 0 0</pose>
 		<collision name="collision">
 			<geometry>
-				<cylinder>
-					<radius>.05</radius>
-					<length>.419</length>
-				</cylinder>
+				<box>
+					<size>.05 .05 .419</size>
+				</box>
 			</geometry>
 		</collision>
 		<visual name="visual">
 			<geometry>
-				<cylinder>
-					<radius>.05</radius>
-					<length>.419</length>
-				</cylinder>
+				<box>
+					<size>.05 .05 .419</size>
+				</box>
 			</geometry>
 		</visual>
 		<inertial>
@@ -106,18 +102,16 @@
 		<pose>-.021 .094 .239 0 0 0</pose>
 		<collision name="collision">
 			<geometry>
-				<cylinder>
-					<radius>.044</radius>
-					<length>.42</length>
-				</cylinder>
+				<box>
+					<size>.044 .044 .42</size>
+				</box>
 			</geometry>
 		</collision>
 		<visual name="visual">
 			<geometry>
-				<cylinder>
-					<radius>.044</radius>
-					<length>.42</length>
-				</cylinder>
+				<box>
+					<size>.044 .044 .42</size>
+				</box>
 			</geometry>
 		</visual>
 		<inertial>
@@ -139,18 +133,16 @@
 		<pose>-.021 -.094 .239 0 0 0</pose>
 		<collision name="collision">
 			<geometry>
-				<cylinder>
-					<radius>.044</radius>
-					<length>.42</length>
-				</cylinder>
+				<box>
+					<size>.044 .044 .42</size>
+				</box>
 			</geometry>
 		</collision>
 		<visual name="visual">
 			<geometry>
-				<cylinder>
-					<radius>.044</radius>
-					<length>.42</length>
-				</cylinder>
+				<box>
+					<size>.044 .044 .42</size>
+				</box>
 			</geometry>
 		</visual>
 		<inertial>

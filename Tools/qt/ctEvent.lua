@@ -6,14 +6,14 @@ currentFileIdx = 0
 
 initDraw = function(self, state)
   local fileDialog = QFileDialog()
-  local fileName = fileDialog:getOpenFileName( "Open File", "", "Log File (*.png)")
+  local fileName = fileDialog:getOpenFileName( "Open File", "", "Log File (*.png *.jpg)")
 --  print(fileName:toUtf8())
   local fullfilename = fileName:toUtf8()
   local path, filename = splitPath(fileName:toUtf8())
   local listFile = unix.readdir(path)
   local listFileCount = 0
   for k, v in pairs(listFile) do
-    if v:find('%.png') then
+    if v:find('%.png') or v:find('%.jpg') then
       fileList[#fileList+1] = file
       if fileList[#fileList] == fullfilename then
         currentFileIdx = fileList
@@ -22,7 +22,8 @@ initDraw = function(self, state)
     end
   end
 
-  loadImageCPNG(fullfilename)
+  loadImageJPEG(fullfilename)
+--  loadImageCPNG(fullfilename)
 --  loadIndexImg(fullfilename)
 --  loadImage(fullfilename)
   window.widget.pixmapitem:setPixmap(window.widget.pimage)

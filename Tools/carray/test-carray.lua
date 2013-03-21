@@ -7,6 +7,7 @@ dd[5] = 342
 for i = 1, 5 do
   print(dd[i])
 end
+carray.cast()
 
-cdata = ffi.cast('double*', dd:pointer())
-print(cdata[1])
+--cdata = ffi.cast('double*', dd:pointer())
+--print(cdata[1])

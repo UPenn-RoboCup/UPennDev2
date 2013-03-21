@@ -32,6 +32,7 @@ VideoStream** m_streams;
 VideoStream depth, color;
 VideoFrameRef frame, cframe;
 Device device;
+Recorder recorder;
 Status rc;
 int changedIndex;
 uint16_t* pDepth;
@@ -39,6 +40,23 @@ uint8_t* pColor;
 int lenPacked;
 
 static int lua_kinect_open(lua_State *L) {
+  // Should we record? play back? Read from a device?
+  const char *file_uri = luaL_optstring(L, 1, NULL);
+  const char *logmode = luaL_optstring(L, 2, NULL); // TODO: Add time and date
+  if(file_uri==NULL){
+    // physical device
+    printf("Recording from a physical device...\n");
+  } else if( logmode==NULL ){
+    // Playback a file
+    printf("Playing back log file %s...\n",file_uri);
+    //printf("Validity: %d\n",recorder.isValid());
+  } else {
+    // Log physical device to a file
+    printf("Recording a physical device to the logfile %s\n",file_uri);
+    recorder.create( file_uri );
+    //printf("Validity: %d\n",recorder.isValid());
+  }
+
   // Initialize stream array
   rc = OpenNI::initialize();
   if (rc != STATUS_OK) {
@@ -46,7 +64,12 @@ static int lua_kinect_open(lua_State *L) {
     return 0;
   } // if
 
-  rc = device.open(ANY_DEVICE);
+  if( file_uri!=NULL && logmode==NULL ){
+    printf("Opening logfilei...\n");
+    rc = device.open( file_uri );
+  } else {
+    rc = device.open(ANY_DEVICE);
+  }
   if (rc != STATUS_OK) {
     printf("Couldn't open device\n%s\n", OpenNI::getExtendedError());
     return 0;
@@ -75,7 +98,7 @@ static int lua_kinect_open(lua_State *L) {
     }
     rc = color.start();
     if (rc != STATUS_OK) {   
-      printf("SimpleViewer: Couldn't start color stream:\n%s\n", openni::OpenNI::getExtendedError());
+      printf("SimpleViewer: Couldn't start color stream:\n%s\n", OpenNI::getExtendedError());
       color.destroy();
       return 0;
     }
@@ -86,6 +109,14 @@ static int lua_kinect_open(lua_State *L) {
   m_streams[1] = &color;
 
   printf("Done initializing the Kinect\n");
+
+  if( recorder.isValid()==1 ){
+    printf("Attaching the recorder... ");
+    recorder.attach( depth );
+    recorder.attach( color );
+    printf("Done! Now starting to record.\n");
+    recorder.start();
+  }
   // Push a status
   lua_pushinteger( L, 1 );
   return 1;
@@ -131,6 +162,10 @@ static int lua_kinect_retrieve(lua_State *L) {
 }
 
 static int lua_kinect_shutdown(lua_State *L) {
+  if( recorder.isValid()==1 ){
+    recorder.stop();
+    recorder.destroy();
+  }
 
   color.stop();
   color.destroy();

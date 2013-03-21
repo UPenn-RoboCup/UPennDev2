@@ -3,7 +3,7 @@
 <model name="ASH">
 	<pose>0 0 0 0 0 0</pose>
 	<static>false</static>
-	<link name="Torso">
+	<link name="torso">
 		<pose>-.01 0 .997 0 0 0</pose>
 		<collision name="collision">
 			<geometry>
@@ -35,7 +35,7 @@
 	</link>
 
 
-	<link name="Thigh - Left">
+	<link name="l_thigh">
 		<pose>-.021 .094 .618 0 0 0</pose>
 		<collision name="collision">
 			<geometry>
@@ -68,7 +68,7 @@
 		</inertial>
 	</link>
 
-	<link name="Thigh - Right">
+	<link name="r_thigh">
 		<pose>-.021 -.094 .618 0 0 0</pose>
 		<collision name="collision">
 			<geometry>
@@ -102,7 +102,7 @@
 	</link>
 
 
-	<link name="Shin - Left">
+	<link name="l_shin">
 		<pose>-.021 .094 .239 0 0 0</pose>
 		<collision name="collision">
 			<geometry>
@@ -135,7 +135,7 @@
 		</inertial>
 	</link>
 
-	<link name="Shin - Right">
+	<link name="r_shin">
 		<pose>-.021 -.094 .239 0 0 0</pose>
 		<collision name="collision">
 			<geometry>
@@ -169,7 +169,7 @@
 	</link>
 
 
-	<link name="Foot - Left">
+	<link name="l_foot">
 		<pose>0 .094 .003 0 0 0</pose>
 		<collision name="collision">
 			<geometry>
@@ -200,7 +200,7 @@
 		</inertial>
 	</link>
 
-	<link name="Foot - Right">
+	<link name="r_foot">
 		<pose>0 -.094 .003 0 0 0</pose>
 		<collision name="collision">
 			<geometry>

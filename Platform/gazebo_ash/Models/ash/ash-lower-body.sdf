@@ -230,14 +230,208 @@
 			</inertia>
 		</inertial>
 	</link>
+	
+	
+	<link name="l_hip_yaw_trunnion">
+		<!-- Axis = "z", -->
+		<pose>-.021 .094 .808 0 0 0</pose>
+		<collision name="collision">
+			<geometry>
+				<cylinder>
+					<radius>0.01</radius>
+					<length>0.1</length>
+				</cylinder>
+			</geometry>
+		</collision>
+		<visual name="visual">
+			<geometry>
+				<cylinder>
+					<radius>0.01</radius>
+					<length>0.1</length>
+				</cylinder>
+			</geometry>
+		</visual>
+		<inertial>
+			<mass>0.1</mass>
+			<inertia>
+				<ixx>8.5833333333333e-05</ixx>
+				<iyy>8.5833333333333e-05</iyy>
+				<izz>5e-06</izz>
+				<ixy>0</ixy>
+				<ixz>0</ixz>
+				<iyz>0</iyz>
+			</inertia>
+		</inertial>
+	</link>
+
+	<link name="r_hip_yaw_trunnion">
+		<!-- Axis = "z", -->
+		<pose>-.021 -.094 .808 0 0 0</pose>
+		<collision name="collision">
+			<geometry>
+				<cylinder>
+					<radius>0.01</radius>
+					<length>0.1</length>
+				</cylinder>
+			</geometry>
+		</collision>
+		<visual name="visual">
+			<geometry>
+				<cylinder>
+					<radius>0.01</radius>
+					<length>0.1</length>
+				</cylinder>
+			</geometry>
+		</visual>
+		<inertial>
+			<mass>0.1</mass>
+			<inertia>
+				<ixx>8.5833333333333e-05</ixx>
+				<iyy>8.5833333333333e-05</iyy>
+				<izz>5e-06</izz>
+				<ixy>0</ixy>
+				<ixz>0</ixz>
+				<iyz>0</iyz>
+			</inertia>
+		</inertial>
+	</link>
+
+
+	<link name="l_hip_pitch_trunnion">
+		<!-- Axis = "y", -->
+		<pose>-.021 .094 .808 0 0 0</pose>
+		<collision name="collision">
+			<pose>0 0 0 1.57079632679 0 0</pose>
+			<geometry>
+				<cylinder>
+					<radius>0.01</radius>
+					<length>0.1</length>
+				</cylinder>
+			</geometry>
+		</collision>
+		<visual name="visual">
+			<pose>0 0 0 1.57079632679 0 0</pose>
+			<geometry>
+				<cylinder>
+					<radius>0.01</radius>
+					<length>0.1</length>
+				</cylinder>
+			</geometry>
+		</visual>
+		<inertial>
+			<mass>0.1</mass>
+			<inertia>
+				<ixx>8.5833333333333e-05</ixx>
+				<iyy>5e-06</iyy>
+				<izz>8.5833333333333e-05</izz>
+				<ixy>0</ixy>
+				<ixz>0</ixz>
+				<iyz>0</iyz>
+			</inertia>
+		</inertial>
+	</link>
+
+	<link name="r_hip_pitch_trunnion">
+		<!-- Axis = "y", -->
+		<pose>-.021 -.094 .808 0 0 0</pose>
+		<collision name="collision">
+			<pose>0 0 0 1.57079632679 0 0</pose>
+			<geometry>
+				<cylinder>
+					<radius>0.01</radius>
+					<length>0.1</length>
+				</cylinder>
+			</geometry>
+		</collision>
+		<visual name="visual">
+			<pose>0 0 0 1.57079632679 0 0</pose>
+			<geometry>
+				<cylinder>
+					<radius>0.01</radius>
+					<length>0.1</length>
+				</cylinder>
+			</geometry>
+		</visual>
+		<inertial>
+			<mass>0.1</mass>
+			<inertia>
+				<ixx>8.5833333333333e-05</ixx>
+				<iyy>5e-06</iyy>
+				<izz>8.5833333333333e-05</izz>
+				<ixy>0</ixy>
+				<ixz>0</ixz>
+				<iyz>0</iyz>
+			</inertia>
+		</inertial>
+	</link>
+
+
+	<link name="l_ankle_pitch_trunnion">
+		<!-- Axis = "y", -->
+		<pose>-.021 .094 .049 0 0 0</pose>
+		<collision name="collision">
+			<pose>0 0 0 1.57079632679 0 0</pose>
+			<geometry>
+				<cylinder>
+					<radius>0.01</radius>
+					<length>0.1</length>
+				</cylinder>
+			</geometry>
+		</collision>
+		<visual name="visual">
+			<pose>0 0 0 1.57079632679 0 0</pose>
+			<geometry>
+				<cylinder>
+					<radius>0.01</radius>
+					<length>0.1</length>
+				</cylinder>
+			</geometry>
+		</visual>
+		<inertial>
+			<mass>0.1</mass>
+			<inertia>
+				<ixx>8.5833333333333e-05</ixx>
+				<iyy>5e-06</iyy>
+				<izz>8.5833333333333e-05</izz>
+				<ixy>0</ixy>
+				<ixz>0</ixz>
+				<iyz>0</iyz>
+			</inertia>
+		</inertial>
+	</link>
+
+	<link name="r_ankle_pitch_trunnion">
+		<!-- Axis = "y", -->
+		<pose>-.021 -.094 .049 0 0 0</pose>
+		<collision name="collision">
+			<pose>0 0 0 1.57079632679 0 0</pose>
+			<geometry>
+				<cylinder>
+					<radius>0.01</radius>
+					<length>0.1</length>
+				</cylinder>
+			</geometry>
+		</collision>
+		<visual name="visual">
+			<pose>0 0 0 1.57079632679 0 0</pose>
+			<geometry>
+				<cylinder>
+					<radius>0.01</radius>
+					<length>0.1</length>
+				</cylinder>
+			</geometry>
+		</visual>
+		<inertial>
+			<mass>0.1</mass>
+			<inertia>
+				<ixx>8.5833333333333e-05</ixx>
+				<iyy>5e-06</iyy>
+				<izz>8.5833333333333e-05</izz>
+				<ixy>0</ixy>
+				<ixz>0</ixz>
+				<iyz>0</iyz>
+			</inertia>
+		</inertial>
+	</link>
 </model>
 </sdf>
-
-
-<!--
-Ankle (left) centroid: -.021 .094 .049
-
-Knee (left) centroid: -.021 .094 .429
-
-Hip (left) centroid: -.021 .094 .808
- -->

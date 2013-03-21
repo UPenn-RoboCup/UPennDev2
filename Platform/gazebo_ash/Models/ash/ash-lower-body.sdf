@@ -20,8 +20,8 @@
 			</geometry>
 		</visual>
 		<inertial>
-			<!-- pose is wrong - needs to be relative to the centroid -->
-			<pose>-0.017635463 0.000532902 1.008170676 0 0 0</pose>
+			<!-- <pose>-0.017635463 0.000532902 1.008170676 0 0 0</pose> -->
+			<pose>-0.007635463 0.000532902 0.011170676 0 0 0</pose>
 			<mass>8.929601491</mass>
 			<inertia>
 				<ixx>0.160370285</ixx>
@@ -54,8 +54,8 @@
 			</geometry>
 		</visual>
 		<inertial>
-			<!-- pose is wrong - needs to be relative to the centroid -->
-			<pose>-0.032097569 0.112874678 0.650768668 0 0 0</pose>
+			<!-- <pose>-0.032097569 0.112874678 0.650768668 0 0 0</pose> -->
+			<pose>-0.011097569 0.018874678 0.032768668 0 0 0</pose>
 			<mass>2.298881991</mass>
 			<inertia>
 				<ixx>0.021768307</ixx>
@@ -87,8 +87,8 @@
 			</geometry>
 		</visual>
 		<inertial>
-			<!-- pose is wrong - needs to be relative to the centroid -->
-			<pose>-0.032097569-0.112874678 0.650768668 0 0 0</pose>
+			<!-- <pose>-0.032097569 -0.112874678 0.650768668 0 0 0</pose> -->
+			<pose>-0.011097569 0.018874678 0.032768668 0 0 0</pose>
 			<mass>2.298881991</mass>
 			<inertia>
 				<ixx>0.021768307</ixx>
@@ -121,8 +121,8 @@
 			</geometry>
 		</visual>
 		<inertial>
-			<!-- pose is wrong - needs to be relative to the centroid -->
-			<pose>-0.049153381 0.096475222 0.302721119 0 0 0</pose>
+			<!-- <pose>-0.049153381 0.096475222 0.302721119 0 0 0</pose> -->
+			<pose>-0.028153381 0.002475222 0.063721119 0 0 0</pose>
 			<mass>2.239063829</mass>
 			<inertia>
 				<ixx>0.021743467</ixx>
@@ -154,8 +154,8 @@
 			</geometry>
 		</visual>
 		<inertial>
-			<!-- pose is wrong - needs to be relative to the centroid -->
-			<pose>-0.049153381-0.096475222 0.302721119 0 0 0</pose>
+			<!-- <pose>-0.049153381 -0.096475222 0.302721119 0 0 0</pose> -->
+			<pose>-0.028153381 -0.002475222 0.063721119 0 0 0</pose>
 			<mass>2.239063829</mass>
 			<inertia>
 				<ixx>0.021743467</ixx>
@@ -186,8 +186,8 @@
 			</geometry>
 		</visual>
 		<inertial>
-			<!-- pose is wrong - needs to be relative to the centroid -->
-			<pose>-0.019883971 0.096275946 0.019387485 0 0 0</pose>
+			<!-- <pose>-0.019883971 0.096275946 0.019387485 0 0 0</pose> -->
+			<pose>-0.019883971 0.002275946 0.016387485 0 0 0</pose>
 			<mass>0.589284444</mass>
 			<inertia>
 				<ixx>0.000545429</ixx>
@@ -217,8 +217,8 @@
 			</geometry>
 		</visual>
 		<inertial>
-			<!-- pose is wrong - needs to be relative to the centroid -->
-			<pose>-0.019883971-0.096275946 0.019387485 0 0 0</pose>
+			<!-- <pose>-0.019883971 -0.096275946 0.019387485 0 0 0</pose> -->
+			<pose>-0.019883971 -0.002275946 0.016387485 0 0 0</pose>
 			<mass>0.589284444</mass>
 			<inertia>
 				<ixx>0.000545429</ixx>
@@ -234,7 +234,7 @@
 </sdf>
 
 
-<!-- 
+<!--
 Ankle (left) centroid: -.021 .094 .049
 
 Knee (left) centroid: -.021 .094 .429

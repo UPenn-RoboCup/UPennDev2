@@ -61,10 +61,11 @@ Widget = function(...)
   this.pimage = QPixmap.new(defaultW, defaultH)
   this.pimage:fill(Qt.white)
   -- Create GraphicsScene
-  this.scene = QGraphicsScene.new(0, 0, defaultW, defaultH)
+--  this.scene = QGraphicsScene.new(0, 0, defaultW, defaultH)
+  this.scene = QGraphicsScene.new()
   -- Create GraphicView, based on Graphic Scene, widget on GUI
   this.view1 = QGraphicsView.new(this.scene)
-    this.view1:fitInView(0, 0, defaultW, defaultH, Qt.IgnoreAspectRatio)
+--    this.view1:fitInView(0, 0, defaultW, defaultH, Qt.IgnoreAspectRatio)
     -- create empty image
     this.pixmapitem = QGraphicsPixmapItem.new(this.pimage)
     this.scene:addItem(this.pixmapitem)

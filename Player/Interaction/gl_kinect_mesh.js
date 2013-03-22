@@ -214,9 +214,10 @@ ddx = 0;
 for(var j=0; j<240; j++ ){
   for (var i = 0; i<320; i++ ){
 fdx = j*320+i;
-tmp = ( d_buffer[ddx] + d_buffer[ddx+1] + d_buffer[ddx+2] )/3;
+//tmp = ( d_buffer[ddx] + d_buffer[ddx+1] + d_buffer[ddx+2] )/3;
+tmp = d_buffer[ddx];
 ddx = ddx+4;
-if(tmp>0) {
+if(tmp>4 && tmp < 250) {
     vertices[faces[fdx].a].x = tmp*hlut[i];
     vertices[faces[fdx].a].y = tmp*vlut[j];
     vertices[faces[fdx].a].z = tmp;

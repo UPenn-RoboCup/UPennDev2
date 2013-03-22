@@ -89,7 +89,7 @@
 		</visual>
 		<inertial>
 			<!-- <pose>-0.032097569 -0.112874678 0.650768668 0 0 0</pose> -->
-			<pose>-0.011097569 0.018874678 0.032768668 0 0 0</pose>
+			<pose>-0.011097569 -0.018874678 0.032768668 0 0 0</pose>
 			<mass>2.298881991</mass>
 			<inertia>
 				<ixx>0.021768307</ixx>
@@ -174,6 +174,22 @@
 					<size>.23 .125 .006</size>
 				</box>
 			</geometry>
+			<!-- From atlas model -->
+			<surface>
+				<friction>
+					<ode>
+						<mu>0.9</mu>
+						<mu2>0.9</mu2>
+						<fdir1>1 0 0</fdir1>
+					</ode>
+				</friction>
+				<contact>
+					<ode>
+						<max_vel>1.0</max_vel>
+						<min_depth>0.003</min_depth>
+					</ode>
+				</contact>
+			</surface>
 		</collision>
 		<visual name="visual">
 			<geometry>
@@ -205,6 +221,22 @@
 					<size>.23 .125 .006</size>
 				</box>
 			</geometry>
+			<!-- From atlas model -->
+			<surface>
+				<friction>
+					<ode>
+						<mu>0.9</mu>
+						<mu2>0.9</mu2>
+						<fdir1>1 0 0</fdir1>
+					</ode>
+				</friction>
+				<contact>
+					<ode>
+						<max_vel>1.0</max_vel>
+						<min_depth>0.003</min_depth>
+					</ode>
+				</contact>
+			</surface>
 		</collision>
 		<visual name="visual">
 			<geometry>
@@ -442,7 +474,7 @@
 	<!-- 			<lower></lower>
 				<upper></upper> -->
 				<effort>300</effort>
-				<velocity>15</velocity>
+				<velocity>12</velocity>
 			</limit>
 		</axis>
 	</joint>
@@ -456,7 +488,7 @@
 	<!-- 			<lower></lower>
 				<upper></upper> -->
 				<effort>300</effort>
-				<velocity>15</velocity>
+				<velocity>12</velocity>
 			</limit>
 		</axis>
 	</joint>
@@ -470,7 +502,7 @@
 	<!-- 			<lower></lower>
 				<upper></upper> -->
 				<effort>300</effort>
-				<velocity>15</velocity>
+				<velocity>12</velocity>
 			</limit>
 		</axis>
 	</joint>
@@ -484,7 +516,7 @@
 	<!-- 			<lower></lower>
 				<upper></upper> -->
 				<effort>300</effort>
-				<velocity>15</velocity>
+				<velocity>12</velocity>
 			</limit>
 		</axis>
 	</joint>
@@ -501,7 +533,7 @@
 	<!-- 			<lower></lower>
 				<upper></upper> -->
 				<effort>300</effort>
-				<velocity>15</velocity>
+				<velocity>12</velocity>
 			</limit>
 		</axis>
 	</joint>
@@ -518,7 +550,7 @@
 	<!-- 			<lower></lower>
 				<upper></upper> -->
 				<effort>300</effort>
-				<velocity>15</velocity>
+				<velocity>12</velocity>
 			</limit>
 		</axis>
 	</joint>
@@ -535,7 +567,7 @@
 	<!-- 			<lower></lower>
 				<upper></upper> -->
 				<effort>300</effort>
-				<velocity>15</velocity>
+				<velocity>12</velocity>
 			</limit>
 		</axis>
 	</joint>
@@ -552,7 +584,7 @@
 	<!-- 			<lower></lower>
 				<upper></upper> -->
 				<effort>300</effort>
-				<velocity>15</velocity>
+				<velocity>12</velocity>
 			</limit>
 		</axis>
 	</joint>
@@ -566,7 +598,7 @@
 	<!-- 			<lower></lower>
 				<upper></upper> -->
 				<effort>300</effort>
-				<velocity>15</velocity>
+				<velocity>12</velocity>
 			</limit>
 		</axis>
 	</joint>
@@ -580,7 +612,7 @@
 	<!-- 			<lower></lower>
 				<upper></upper> -->
 				<effort>300</effort>
-				<velocity>15</velocity>
+				<velocity>12</velocity>
 			</limit>
 		</axis>
 	</joint>
@@ -597,7 +629,7 @@
 	<!-- 			<lower></lower>
 				<upper></upper> -->
 				<effort>300</effort>
-				<velocity>15</velocity>
+				<velocity>12</velocity>
 			</limit>
 		</axis>
 		<physics>
@@ -619,7 +651,7 @@
 	<!-- 			<lower></lower>
 				<upper></upper> -->
 				<effort>300</effort>
-				<velocity>15</velocity>
+				<velocity>12</velocity>
 			</limit>
 		</axis>
 		<physics>

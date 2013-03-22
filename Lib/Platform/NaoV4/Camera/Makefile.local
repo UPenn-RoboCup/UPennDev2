@@ -4,7 +4,15 @@ include ../../../Makefile.inc
 TARGETS = all clean
 .PHONY: $(TARGETS)
 
+LIBNAME=NaoCam
+
+ifeq ($(OSTYPE),darwin)
+all:
+endif
+
+ifeq ($(OSTYPE),linux)
 all: NaoCam
+endif
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<

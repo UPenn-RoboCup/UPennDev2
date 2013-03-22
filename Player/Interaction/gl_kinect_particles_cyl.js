@@ -34,11 +34,10 @@ function init() {
 
   // Set up the camera
   camera = new THREE.PerspectiveCamera();
-  camera.position.x = 0;//kwidth/2;
-  camera.position.y = 0;// kheight/2;
+  camera.position.x = 0;//ctxwidth/2;
+  camera.position.y = 0;//kheight/2;
   camera.position.z = 750;
-  //camera.position.z = -500;
-  camera.lookAt(0,0,0);
+  camera.lookAt( ctxwidth, 0, 0 );
 
   // Set up the mouse controls
   controls = new THREE.TrackballControls( camera );
@@ -74,8 +73,8 @@ function init() {
   var cnt = 0;
   for( var j=0; j<240; j++ ){
     for( var i=0; i<320; i++ ){
-      positions[cnt] = i;
-      positions[cnt+1] = j;
+      positions[cnt] = i - kwidth/2;
+      positions[cnt+1] = j - kheight/2;
       positions[cnt+2] = 0;
       colors[cnt] = 0;
       colors[cnt+1] = 255;

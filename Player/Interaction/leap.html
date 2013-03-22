@@ -53,11 +53,12 @@
     ws_leap.onmessage = function(event) {
       lobj = JSON.parse(event.data);
       var str = JSON.stringify(lobj, undefined, 2);
-	  //$('#ldebug').text(str);
-	  if(lobj.hands[0]!==undefined){
+	  
+	  if( lobj.pointables.length>=3 ){
+		  myobj = lobj;
 		  var thand = lobj.hands[0].t;
 		  transWorldMatrix = new THREE.Matrix4();
-		  cylMesh.position.x = thand[0] + 160;
+		  cylMesh.position.x = thand[0];
 		  cylMesh.position.y = thand[1];
 		  cylMesh.position.z = thand[2];
 		  
@@ -74,9 +75,16 @@
 		  rotWorldMatrix.elements[10] = rhand[2][2];
 		  cylMesh.matrix = rotWorldMatrix;
 		  cylMesh.rotation.setEulerFromRotationMatrix(cylMesh.matrix);
-		  
+
+		  var scaling = (lobj.hands[0].sphereRadius - 90)/10;
+		  scaling = Math.exp(scaling);
+cylMesh.scale.x = scaling;
+cylMesh.scale.y = scaling;
+cylMesh.scale.z = scaling;
+		  // Render the scene
 		  render();
-	  	$('#ldebug').text( JSON.stringify(thand, undefined, 2) );
+	  	$('#ldebug').text( scaling );
+		//console.log(lobj);
 	  }
 	  //$('#ldebug').text( JSON.stringify(lobj.hands[0].palmNormal, undefined, 2) );
       //console.log(str);

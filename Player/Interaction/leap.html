@@ -7,7 +7,6 @@
         width: 320px;
         height: 240px;
         display: none;
-        /*visibility: hidden;*/
       }   
     </style>
   </head>
@@ -23,8 +22,8 @@
   <script src="extra/three.min.js"></script>
   <script src="extra/leap.min.js"></script>
   <script src="extra/jq.mobi.min.js"></script>
-  <script src="http://mrdoob.github.com/three.js/examples/js/controls/TrackballControls.js"></script>
-  <script src="http://mrdoob.github.com/three.js/examples/js/Detector.js"></script>
+  <script src="extra/TrackballControls.js"></script>
+  <script src="extra/Detector.js"></script>
   <script src="gl_kinect_particles_cyl.js"></script>
 
   <script>
@@ -39,7 +38,10 @@
   <script>
     console.log('Connecting to '+host+' 6437');
     var ws_leap = new WebSocket('ws://' + host + ':6437');
-	var lobj;
+    var lobj;
+    var myscale = 1; var beta = .8;
+    var mytrans = [0,0,0];
+    var myrot = [0,0,0, 0,0,0, 0,0,0];
     ws_leap.onopen = function(event) {
       console.log("WebSocket connection open!");
     };
@@ -53,88 +55,102 @@
     ws_leap.onmessage = function(event) {
       lobj = JSON.parse(event.data);
       var str = JSON.stringify(lobj, undefined, 2);
-	  
-	  if( lobj.pointables.length>=3 ){
-		  myobj = lobj;
-		  var thand = lobj.hands[0].t;
-		  transWorldMatrix = new THREE.Matrix4();
-		  cylMesh.position.x = thand[0];
-		  cylMesh.position.y = thand[1];
-		  cylMesh.position.z = thand[2];
-		  
-		  var rhand = lobj.hands[0].r;
-		  rotWorldMatrix = new THREE.Matrix4();
-		  rotWorldMatrix.elements[0] = rhand[0][0];
-		  rotWorldMatrix.elements[1] = rhand[0][1];
-		  rotWorldMatrix.elements[2] = rhand[0][2];
-		  rotWorldMatrix.elements[4] = rhand[1][0];
-		  rotWorldMatrix.elements[5] = rhand[1][1];
-		  rotWorldMatrix.elements[6] = rhand[1][2];
-		  rotWorldMatrix.elements[8] = rhand[2][0];
-		  rotWorldMatrix.elements[9] = rhand[2][1];
-		  rotWorldMatrix.elements[10] = rhand[2][2];
-		  cylMesh.matrix = rotWorldMatrix;
-		  cylMesh.rotation.setEulerFromRotationMatrix(cylMesh.matrix);
 
-		  var scaling = (lobj.hands[0].sphereRadius - 90)/10;
-		  scaling = Math.exp(scaling);
-cylMesh.scale.x = scaling;
-cylMesh.scale.y = scaling;
-cylMesh.scale.z = scaling;
-		  // Render the scene
-		  render();
-	  	$('#ldebug').text( scaling );
-		//console.log(lobj);
-	  }
-	  //$('#ldebug').text( JSON.stringify(lobj.hands[0].palmNormal, undefined, 2) );
+      if( lobj.hands!==undefined && lobj.hands.length==1 && lobj.pointables.length>=3 ){
+        myobj = lobj;
+        
+        var scaling = Math.exp( (lobj.hands[0].sphereRadius - 90)/20 );
+        scaling = Math.max( Math.min( scaling, 10 ), .1 );
+        //scaling = Math.floor( 10*scaling )/10;
+        if(scaling>1.5 || scaling<.7){
+          myscale = myscale * beta + scaling*(1-beta);
+          myscale = 1;
+          cylMesh.scale.x = myscale;
+          cylMesh.scale.y = myscale;
+          cylMesh.scale.z = myscale;
+        }
+        
+        var thand = lobj.hands[0].t;
+        transWorldMatrix = new THREE.Matrix4();
+        cylMesh.position.x = thand[0];
+        cylMesh.position.y = thand[1];
+        cylMesh.position.z = thand[2];
+
+        var rhand = lobj.hands[0].r;
+        rotWorldMatrix = new THREE.Matrix4();
+        rotWorldMatrix.elements[0] = rhand[0][0];
+        rotWorldMatrix.elements[1] = rhand[0][1];
+        rotWorldMatrix.elements[2] = rhand[0][2];
+        rotWorldMatrix.elements[4] = rhand[1][0];
+        rotWorldMatrix.elements[5] = rhand[1][1];
+        rotWorldMatrix.elements[6] = rhand[1][2];
+        rotWorldMatrix.elements[8] = rhand[2][0];
+        rotWorldMatrix.elements[9] = rhand[2][1];
+        rotWorldMatrix.elements[10] = rhand[2][2];
+        cylMesh.matrix = rotWorldMatrix;
+        cylMesh.rotation.setEulerFromRotationMatrix(cylMesh.matrix);
+
+        // Render the scene
+        render();
+        //$('#ldebug').text( scaling );
+        //console.log(lobj);
+      }
+      //$('#ldebug').text( JSON.stringify(lobj.hands[0].palmNormal, undefined, 2) );
       //console.log(str);
-  	}
-    </script>
+    }
+  </script>
 
-    <!--Receiving an image-->
-    <script>
-      console.log('Connecting to '+host+' 9002')
-      var ws_i = new WebSocket('ws://' + host + ':9002');
-      ws_i.binaryType = "blob";
-      var jpeg_url_name = "";
-      var myimg = new Image;
+  <!--Receiving an image-->
+  <script>
+    console.log('Connecting to '+host+' 9002')
+    var ws_i = new WebSocket('ws://' + host + ':9002');
+    ws_i.binaryType = "blob";
+    var jpeg_url_name = "";
+    var myimg = new Image;
 
-      // Create a canvas element
-      var cCanvas = $('#kcolor')[0];
-      cCanvas.width = 320;
-      cCanvas.height = 240;
-      var c_ctx = cCanvas.getContext('2d');
+    // Create a canvas element
+    var cCanvas = $('#kcolor')[0];
+    cCanvas.width = 320;
+    cCanvas.height = 240;
+    var c_ctx = cCanvas.getContext('2d');
 
-      // Create a canvas element
-      var dCanvas = $('#kdepth')[0];
-      dCanvas.width = 320;
-      dCanvas.height = 240;
-      var d_ctx = dCanvas.getContext('2d');
-      myctx = d_ctx;
-      ws_i.onmessage = function (event) {
-        if( event.data.size>15600 ){
-          //console.log(event.data.size);
-          myctx = c_ctx;
-          } else {
-          myctx = d_ctx;
+    // Create a canvas element
+    var dCanvas = $('#kdepth')[0];
+    dCanvas.width = 320;
+    dCanvas.height = 240;
+    var d_ctx = dCanvas.getContext('2d');
+    myctx = d_ctx;
+    ws_i.onmessage = function (event) {
+      if( event.data.size>20000 ){
+        myctx = c_ctx;
+        myimg.alt="color"
+      } else {
+        myctx = d_ctx;
+        myimg.alt="depth"
+      }
+      
+      // Revoke the previous
+      if( jpeg_url_name !== undefined ) {
+        window.URL.revokeObjectURL(jpeg_url_name);
+      }
+      
+      event.data.type = "image\/jpeg";
+      var jpeg_url_name = window.URL.createObjectURL( event.data );
+      myimg.src = jpeg_url_name;
+      myimg.onload = function(){
+        
+        myctx.drawImage( myimg, 0, 0 );
+        var imgdata = myctx.getImageData(0, 0, 320, 240);
+        if( myimg.alt=="color" ){ // color
+          //console.log('redrawn image');
+          update_kinect_image( new Uint8Array(imgdata.data.buffer ) );
+        } else {
+          //console.log('redrawn depth');
+          update_kinect_depth( new Uint8Array(imgdata.data.buffer ) );
         }
-        // Revoke the previous
-        if( jpeg_url_name !== undefined ) {
-          window.URL.revokeObjectURL(jpeg_url_name);
-        }
-        event.data.type = "image\/jpeg";
-        var jpeg_url_name = window.URL.createObjectURL( event.data );
-        myimg.src = jpeg_url_name;
-        myimg.onload = function(){
-          myctx.drawImage( myimg, 0, 0 );
-          var imgdata = myctx.getImageData(0, 0, 320, 240);
-          if( event.data.size>15600 ){ // color
-            update_kinect_image( new Uint8Array(imgdata.data.buffer ) );
-            } else {
-            update_kinect_depth( new Uint8Array(imgdata.data.buffer ) );
-          }
-        };
+        //window.URL.revokeObjectURL(jpeg_url_name);
       };
-    </script>
+    };
+  </script>
 
-  </html>
+</html>

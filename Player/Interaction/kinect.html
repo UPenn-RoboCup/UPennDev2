@@ -25,11 +25,11 @@
   <script src="extra/jq.mobi.min.js"></script>
   <script src="http://mrdoob.github.com/three.js/examples/js/controls/TrackballControls.js"></script>
   <script src="http://mrdoob.github.com/three.js/examples/js/Detector.js"></script>
-  <!--
+  
   <script src="gl_kinect_mesh.js"></script>
-  -->
+  <!--
   <script src="gl_kinect_particles.js"></script>
-
+-->
   <script>
     var host = window.document.location.host.replace(/:.*/, '');
     if( host.length==0 ){
@@ -59,7 +59,7 @@
     var d_ctx = dCanvas.getContext('2d');
     myctx = d_ctx;
     ws_i.onmessage = function (event) {
-      if( event.data.size>15600 ){
+      if( event.data.size>20000 ){
         //console.log(event.data.size);
         myctx = c_ctx;
       } else {
@@ -75,7 +75,7 @@
       myimg.onload = function(){
         myctx.drawImage( myimg, 0, 0 );
         var imgdata = myctx.getImageData(0, 0, 320, 240);
-        if( event.data.size>15600 ){ // color
+        if( event.data.size>20000 ){ // color
           update_kinect_image( new Uint8Array(imgdata.data.buffer ) );
         } else {
           update_kinect_depth( new Uint8Array(imgdata.data.buffer ) );

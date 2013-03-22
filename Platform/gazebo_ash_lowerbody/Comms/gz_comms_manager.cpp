@@ -59,6 +59,13 @@ namespace gazebo
         gzerr << "Error: joint [" << this->joint_names[i] << "] not present\n";
         return;
       }
+
+      dcm.joint_position_p_gain[i] = POSITION_P_GAIN_INIT;
+      dcm.joint_position_i_gain[i] = POSITION_I_GAIN_INIT; 
+      dcm.joint_velocity_p_gain[i] = VELOCITY_P_GAIN_INIT; 
+      dcm.joint_position[i] = 0;
+      dcm.joint_velocity[i] = 0;
+      dcm.joint_force[i] = 0;
     }
 
     // initialize joint controllers

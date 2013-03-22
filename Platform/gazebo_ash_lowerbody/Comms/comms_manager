@@ -18,4 +18,4 @@ export GAZEBO_MODEL_PATH="$THOR_HOME/Platform/$PLATFORM/Models"
 export GAZEBO_PLUGIN_PATH="$THOR_HOME/Platform/$PLATFORM/Comms"
   
 echo "Opening $WORLD_FILE"
-exec gazebo $WORLD_FILE
+exec gazebo -u $WORLD_FILE

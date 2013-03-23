@@ -1,22 +1,23 @@
 # Makefile used to build Webots files
 include ../../../Makefile.inc
 
-TARGETS = all clean
-.PHONY: $(TARGETS)
-
 all: unix stty getch
 
 unix: luaunix.o
-	$(CC) -o $@.$(SHLIBEXT) $(LIBOPTS) $^
+	@echo "\t" LINK $@
+	@$(LD) $(LDFLAGS) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ $(LIB_DIR)
 
 stty: luastty.o
-	$(CXX) -o $@.$(SHLIBEXT) $(LIBOPTS) $^
+	@echo "\t" LINK $@
+	@$(LD) $(LDFLAGS) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ $(LIB_DIR)
 
 getch: getch.o
-	$(CXX) -o $@.$(SHLIBEXT) $(LIBOPTS) $^
+	@echo "\t" LINK $@
+	@$(LD) $(LDFLAGS) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ $(LIB_DIR)
 
 serial: luaserial.o
-	$(CC) -o $@.$(SHLIBEXT) $(LIBOPTS) $^
+	@echo "\t" LINK $@
+	@$(LD) $(LDFLAGS) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ $(LIB_DIR)
 
 clean:
 	rm -f *.o *.$(SHLIBEXT)

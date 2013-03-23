@@ -7,11 +7,21 @@ ZLIB = zlib-src
 TARGETS = all clean
 .PHONY: $(TARGETS)
 
+SOURCES=\
+		luaZ.c \
+		$(ZLIB)/deflate.c \
+		$(ZLIB)/inflate.c \
+		$(ZLIB)/inffast.c \
+		$(ZLIB)/inftrees.c \
+		$(ZLIB)/trees.c \
+		$(ZLIB)/adler32.c \
+		$(ZLIB)/crc32.c \
+		$(ZLIB)/zutil.c
+
+OBJECTS=$(SOURCES:.c=.o)
+
 #all: serialize deserialize zlibCompress zlibUncompress z
 all: z
-
-%.o: $(ZLIB)/%.c
-	$(CC) $(CXXFLAGS) $(INCLUDES) -I$(ZLIB) -o $@ -c $<
 
 serialize:
 	mex -O $@.c
@@ -25,8 +35,9 @@ zlibCompress: deflate.o adler32.o crc32.o trees.o zutil.o
 zlibUncompress: inflate.o inffast.o inftrees.o adler32.o crc32.o zutil.o
 	mex -O $@.cc $^ 
 
-z: luaZ.o deflate.o inflate.o inffast.o inftrees.o trees.o adler32.o crc32.o zutil.o
-	$(LD) $(LDFLAGS) -o Z.$(SHLIBEXT) $(LIBOPTS) $^ $(LIB_DIR)
+z: $(OBJECTS)
+	@echo "\t" LINK $@
+	@$(LD) $(LDFLAGS) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ $(LIB_DIR)
 
 clean:
 	rm -f *.$(MEXEXT) *.$(SHLIBEXT) *.o $(ZLIB)/*.o

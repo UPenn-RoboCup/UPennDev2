@@ -143,7 +143,6 @@ export CTCDIR
 	@$(CC) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
 
 
-
 # For Intel Atom Z530 on the Darwin-OP
 # http://jim-dev.blogspot.com/2010/04/gentoo-linux-on-dell-mini-1012.html
 #CFLAGS="-O2 -march=core2 -mtune=generic -mssse3 -mfpmath=sse -pipe -fomit-frame-pointer"

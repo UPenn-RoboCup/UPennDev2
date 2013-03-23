@@ -8,12 +8,8 @@ NAODIR= Platform/Nao
 NAOV4DIR = Platform/NaoV4
 WEBOTSNAODIR= Platform/WebotsNao
 WEBOTSOPDIR= Platform/WebotsOP
-WEBOTSGENERICDIR= Platform/WebotsGeneric
-WEBOTSHUBODIR= Platform/WebotsHubo
 WEBOTSCHARLIDIR= Platform/WebotsCharli
-WEBOTSSAFFIRDIR= Platform/WebotsSaffir
 VISIONTESTDIR = Platform/VisionTest
-HPDIR= Platform/HP2
 OPDIR= Platform/OP
 XOSDIR= Platform/XOS
 CHARLIDIR = Platform/Charli
@@ -29,7 +25,7 @@ COLORTABLEDIR= $(MATLABDIR)/Colortable
 VELODIR= $(MODULEDIR)/Velocity
 PRIMEDIR= $(MODULEDIR)/PrimeSense
 HANDSDIR= $(MODULEDIR)/Hands
-PLATFORMS = nao naov4 op xos webots_nao webots_op webots_generic webots_hubo visiontest
+PLATFORMS = nao naov4 op xos webots_nao webots_op visiontest
 INSTDIR= ../Player/Lib
 WEBOTSCONTDIR= ../WebotsController
 PLAYERDIR= ../Player
@@ -104,6 +100,39 @@ else
   MEXEXT=mexmaci
 endif
 endif
+
+LUAEXT= lua
+ifeq ($(OSTYPE),darwin)
+REGEX=\( -regex '.*.$(LUAEXT)' -or -regex '.*.$(SHLIBEXT)' -or -regex '.*.sh' \)
+else
+REGEX=-regex '.*\($(SHLIBEXT)\|$(LUAEXT)\|sh\)'
+endif
+
+ifeq ($(CROSS),true)
+  CTCDIR = $(NaoqiCTC)
+else
+  CTCDIR = 
+endif
+
+ifeq ($(CTCDIR),)
+  ifeq ($(OSTYPE),linux)
+    SHLIBEXT= so
+  endif
+
+  #ifeq ($(OSTYPE),darwin)
+  #  SHLIBEXT= dylib
+  #  REGEX=\( -regex '.*.$(LUAEXT)' -or -regex '.*.$(SHLIBEXT)' -or -regex '.*.sh' \)
+  #endif
+  else
+    SHLIBEXT= so
+  #ifeq ($(OSTYPE),darwin)
+  #  REGEX=\( -regex '.*.$(LUAEXT)' -or -regex '.*.$(SHLIBEXT)' -or -regex '.*.sh' \)
+  #endif
+endif
+
+export CTCDIR
+
+
 
 
 

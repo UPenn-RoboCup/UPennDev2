@@ -126,6 +126,7 @@
 
     // jpeg element
     var myjpeg;
+    var mypng;
     var jpeg_url_name;
     var c_imgdata;
     var d_imgdata;
@@ -146,7 +147,7 @@
     d_img.onload = function(){
       d_ctx.drawImage( d_img, 0, 0 );
       d_imgdata = d_ctx.getImageData(0, 0, 320, 240);
-      update_kinect_depth( new Uint8Array(d_imgdata.data.buffer) );
+      update_kinect_depth( new Uint8ClampedArray(d_imgdata.data.buffer) );
       // Revoke the Object URL
       if(window.webkitURL!==undefined) {
         window.webkitURL.revokeObjectURL( d_img.src );
@@ -169,8 +170,6 @@
       myjpeg = event.data;
       myjpeg.type = "image\/jpeg";
       */
-
-      myjpeg = new Blob( [event.data], { type: "image\/jpeg" } );
       mymeta = new Uint8Array(event.data, event.data.byteLength-2, 2 );
       //console.log(mymeta)
 
@@ -183,6 +182,7 @@
 
       // Act on color vs. depth data
       if( mymeta[0] == 13 ){
+        myjpeg = new Blob( [event.data], { type: "image\/jpeg" } );
         //console.log('paint color')
         c_img.alt="color"
         // Load the image
@@ -193,13 +193,14 @@
           c_img.src = window.URL.createObjectURL( myjpeg );
         }
       } else {
-        console.log('paint depth')
+        mypng = new Blob( [event.data], { type: "image\/jpeg" } );
+//        console.log('paint depth')
         d_img.alt="depth"
         // Load the image
         if(window.webkitURL!==undefined) {
-          d_img.src = window.webkitURL.createObjectURL( myjpeg );
+          d_img.src = window.webkitURL.createObjectURL( mypng );
         } else {
-          d_img.src = window.URL.createObjectURL( myjpeg );
+          d_img.src = window.URL.createObjectURL( mypng );
         }
       }
       

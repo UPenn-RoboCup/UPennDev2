@@ -26,7 +26,7 @@ var depthData;
 
 // Send data to clients at a set interval
 // For now, this is 15fps
-var fps = 5;
+var fps = 1;
 var c_id = Buffer([13,13]);
 var d_id = Buffer([15,12]);
 var s = 0;

@@ -1,28 +1,23 @@
-CWD= $(shell pwd)
-ifeq ($(CTCDIR),)
-  ifeq ($(CROSS),true)
-    CTCDIR= $(NaoqiCTC)
-  endif
+# Makefile used to build libraries
+include ../../../Makefile.inc
+
+TARGETS = all clean
+.PHONY: $(TARGETS)
+
+LIBNAME=NaoCam
+
+ifeq ($(OSTYPE),darwin)
+all:
 endif
-CHAIN= $(CTCDIR)
 
-all: naoqi 
-
-naoqi:
-ifeq ($(CHAIN),)
-#	@echo Cross compilitation tool not specified. \
-#				Please download the ctc tool from \
-#				the aldebaran website and follow the \
-#				instructions to configure it for your system
-
-	make -f Makefile.local
-else
-	rm -rf build
-	mkdir build
-	cd build && cmake -DCMAKE_TOOLCHAIN_FILE="$(CHAIN)/toolchain-atom.cmake" .. \
-		&& make && cd $(CWD)
+ifeq ($(OSTYPE),linux)
+all: NaoCam
 endif
+
+# Changed the libraries based on the working NAO branch 
+#NaoCam: naoCam.o naoCamThread.o timeScalar.o
+NaoCam: nao_cam.o nao_cam_mmap_thread.o cam_util.o timeScalar.o
+	$(CXX) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ $(LIBRT)
 
 clean:
-	make -f Makefile.local clean	
-	rm -rf build
+	rm -f *.$(SHLIBEXT) *.o

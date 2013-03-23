@@ -6,13 +6,6 @@ TARGETS = all clean
 
 all: carray
 
-%.o: %.cc
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
-%.o: %.cpp
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
-%.o: %.c
-	$(CC) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
-
 carray: luacarray.o
 	$(CXX) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ $(LIBRT)
 

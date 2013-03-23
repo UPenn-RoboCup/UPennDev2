@@ -4,19 +4,7 @@ include ../../../Makefile.inc
 TARGETS = all clean
 .PHONY: $(TARGETS)
 
-# Fix for Nao Boost/gcc? version
-#ifneq ($(USER),darwin)
-#  CXXFLAGS= -O1 -fpic
-#endif
-
 all: shm 
-
-%.o: %.cc
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -I/usr/local/include/boost -o $@ -c $<
-%.o: %.cpp
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -I/usr/local/include/boost -o $@ -c $<
-%.o: %.c
-	$(CC) $(CXXFLAGS) $(INCLUDES) -I/usr/local/include/boost -o $@ -c $<
 
 shm: luashm.o
 	$(CXX) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ $(LIBRT)

@@ -1,35 +1,13 @@
-CWD= $(shell pwd)
-ifeq ($(CTCDIR),)
-  ifeq ($(CROSS),true)
-    CTCDIR= $(NaoqiCTC)
-  endif
-endif
-CHAIN= $(CTCDIR)
+# Makefile used to build libraries
+include ../../../Makefile.inc
 
-all: naoqi 
+TARGETS = all clean
+.PHONY: $(TARGETS)
 
-naoqi:
-ifeq ($(CHAIN),)
-#	@echo Cross compilitation tool not specified. \
-#				Please download the ctc tool from \
-#				the aldebaran website and follow the \
-#				instructions to configure it for your system
+all: SoundComm
 
-	make -f Makefile.local
-else
-	rm -rf build
-	mkdir build
-	cd build && cmake -DCMAKE_TOOLCHAIN_FILE="$(CHAIN)/toolchain-atom.cmake" .. \
-		&& make && cd $(CWD)
-endif
-
-mex:
-	mex -O myfft.cc
-	mex -O mydtmf.cc dtmf.cc
-	mex -O mycrosscorr.cc dtmf.cc
-	mex -O find_first_max.cc dtmf.cc
+SoundComm: SoundComm.o sound_comm_thread.o alsa_util.o dtmf.o 
+	$(CXX) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ $(LIBRT) -lasound
 
 clean:
-	make -f Makefile.local clean	
-	rm -rf build
-	rm -f *mexglx *mexa64
+	rm -f *.$(SHLIBEXT) *.o

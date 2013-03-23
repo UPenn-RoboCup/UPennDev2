@@ -6,13 +6,6 @@ TARGETS = all clean
 
 all: ImageProc
 
-%.o: %.cpp
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
-%.o: %.cc
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
-%.o: %.c
-	$(CC) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
-
 ImageProc: lua_ImageProc.o \
 	color_count.o block_bitor.o \
 	ConnectRegions.o RegionProps.o RadonTransform.o\

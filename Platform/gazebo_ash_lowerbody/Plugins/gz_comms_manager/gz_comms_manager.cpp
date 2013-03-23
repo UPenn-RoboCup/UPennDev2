@@ -22,6 +22,7 @@ namespace gazebo
   gz_comms_manager::~gz_comms_manager()
   {
     event::Events::DisconnectWorldUpdateBegin(this->update_connection);
+    event::Events::DisconnectStop(this->reset_connection);
   }
 
   void gz_comms_manager::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf)
@@ -83,6 +84,8 @@ namespace gazebo
     // initialize callback functions
     this->update_connection = event::Events::Events::ConnectWorldUpdateBegin(
       boost::bind(&gz_comms_manager::update, this));
+    this->reset_connection = event::Events::Events::ConnectStop(
+      boost::bind(&gz_comms_manager::reset, this));
   }
 
   void gz_comms_manager::initialize_controllers()
@@ -115,6 +118,20 @@ namespace gazebo
       else
         this->joint_velocity_filters.push_back(velocity_filter);
     }
+  }
+
+  void gz_comms_manager::reset()
+  {
+    for (unsigned int i = 0; i < this->joints.size(); ++i)
+    { 
+      dcm.joint_position_p_gain[i] = POSITION_P_GAIN_INIT;
+      dcm.joint_position_i_gain[i] = POSITION_I_GAIN_INIT; 
+      dcm.joint_velocity_p_gain[i] = VELOCITY_P_GAIN_INIT; 
+      dcm.joint_position[i] = 0;
+      dcm.joint_velocity[i] = 0;
+      dcm.joint_force[i] = 0;
+    }
+    this->initialize_controllers();
   }
 
   void gz_comms_manager::update()

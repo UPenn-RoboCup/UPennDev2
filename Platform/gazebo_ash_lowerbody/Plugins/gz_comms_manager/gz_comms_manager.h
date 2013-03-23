@@ -35,11 +35,13 @@ namespace gazebo
     public: virtual ~gz_comms_manager();
     public: void Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf);
     private: void initialize_controllers();
+    private: void reset();
     private: void update();
 
     private: physics::ModelPtr model;
     private: physics::WorldPtr world;
     private: event::ConnectionPtr update_connection;
+    private: event::ConnectionPtr reset_connection;
     private: common::Time last_update_time;
     private: common::Time dynamics_time_step;
 

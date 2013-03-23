@@ -2,53 +2,16 @@
 
 CWD= $(shell pwd)
 PWD= $(subst /,\/,$(CWD)/../Player/Lib)
-include $(CWD)/Makefile.inc
-
-
-LUAEXT= lua
-ifeq ($(OSTYPE),darwin)
-REGEX=\( -regex '.*.$(LUAEXT)' -or -regex '.*.$(SHLIBEXT)' -or -regex '.*.sh' \)
-else
-REGEX=-regex '.*\($(SHLIBEXT)\|$(LUAEXT)\|sh\)'
-endif
-
-ifndef OSTYPE
-  OSTYPE = $(shell uname -s|awk '{print tolower($$0)}')
-endif
-
-ifndef ARCH
-  ARCH= $(shell uname -m)
-endif
-
-ifeq ($(CROSS),true)
-  CTCDIR = $(NaoqiCTC)
-else
-  CTCDIR = 
-endif
-
-ifeq ($(CTCDIR),)
-  ifeq ($(OSTYPE),linux)
-    SHLIBEXT= so
-  endif
-
-  #ifeq ($(OSTYPE),darwin)
-  #  SHLIBEXT= dylib
-  #  REGEX=\( -regex '.*.$(LUAEXT)' -or -regex '.*.$(SHLIBEXT)' -or -regex '.*.sh' \)
-  #endif
-  else
-    SHLIBEXT= so
-  #ifeq ($(OSTYPE),darwin)
-  #  REGEX=\( -regex '.*.$(LUAEXT)' -or -regex '.*.$(SHLIBEXT)' -or -regex '.*.sh' \)
-  #endif
-endif
-
-export CTCDIR
+include $(CWD)/Lib/Makefile.inc
 
 all none:
-	@echo "Please do:"
-	@echo "\tmake setup_PLATFORM"
-	@echo "where PLATFORM is one of following:"
-	@echo "\t$(PLATFORMS)"
+	@echo " Please select following target: "
+	@echo " make setup_op"
+	@echo " make setup_nao"
+	@echo " make setup_naov4"
+	@echo " make setup_xos"
+	@echo " make setup_webots_op"
+	@echo " make setup_webots_nao"
 
 colortable:
 	@echo "Compiling Colortable Mex Files...\n"
@@ -343,10 +306,8 @@ clean:
 	cd $(WEBOTSNAODIR) && make clean && cd $(CWD)
 	cd $(WEBOTSOPDIR) && make clean && cd $(CWD)
 	cd $(XOSDIR) && make clean && cd $(CWD)
-#	cd $(WEBOTSCONTDIR) && make clean && cd $(CWD)
 	rm -rf $(WEBOTSCONTDIR) 
 	cd $(WEBOTSCHARLIDIR) && make clean && cd $(CWD)
-#	cd $(HPDIR) && make clean && cd $(CWD)
 	cd $(OPDIR) && make clean && cd $(CWD)
 	cd $(PLAYERDIR)/Config && rm -f Config.lua && cd $(CWD)
 	cd $(PLAYERDIR) && rm -rf Lib && cd $(CWD)

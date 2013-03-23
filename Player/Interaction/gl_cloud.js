@@ -1,4 +1,6 @@
 // Global Variables
+var use_mesh = 0;
+var use_cloud = 1;
 var ctxwidth;
 var ctxheight;
 var kwidth = 320;
@@ -53,85 +55,86 @@ function init_gl_cloud() {
   controls.dynamicDampingFactor = 0.3;
   controls.keys = [ 65, 83, 68 ];
   controls.addEventListener( 'change', render );
-
-  /////////////////////
-  // Initialize the particles
-  // TODO: chunk it!
-  geometry = new THREE.BufferGeometry();
-  geometry.attributes = {
-    position: {
-      itemSize: 3,
-      array: new Float32Array( nparticles * 3 ),
-      numItems: nparticles * 3
-    },
-    color: {
-      itemSize: 3,
-      array: new Float32Array( nparticles * 3 ),
-      numItems: nparticles * 3
-    }
-  }
-  geometry.dynamic = true;
-  // Set the colors and positions
-  positions = geometry.attributes.position.array;
-  colors = geometry.attributes.color.array;
-  var cnt = 0;
-  for( var j=0; j<240; j++ ){
-    for( var i=0; i<320; i++ ){
-      positions[cnt] = i - kwidth/2;
-      positions[cnt+1] = j - kheight/2;
-      positions[cnt+2] = 0;
-      colors[cnt] = 0;
-      colors[cnt+1] = 255;
-      colors[cnt+2] = 0;
-      cnt = cnt+3;
-    }
-  }
-  //particleSystem.geometry.attributes[ "position" ].needsUpdate = true;
-  // TODO: is this necessary?
-  geometry.computeBoundingSphere();
-  var material = new THREE.ParticleBasicMaterial( { size: 3, vertexColors: true } );
-  particleSystem = new THREE.ParticleSystem( geometry, material );
   
-  /////////////////////
-  // Add the plane mesh
-//  var meshmap = THREE.ImageUtils.generateDataTexture( kwidth, kheight, meshcolor );
-	var size = kwidth * kheight;
-	var data = new Uint8Array( 4 * size );
-	for ( var i = 0; i < size; i ++ ) {
-		data[ i * 4 ] 	  = 255;
-		data[ i * 4 + 1 ] = 0;
-		data[ i * 4 + 2 ] = 0;
-		data[ i * 4 + 3 ] = 255;
-	}
-	var meshmap = new THREE.DataTexture( data, kwidth, kheight, THREE.RGBAFormat );
-	meshmap.needsUpdate = true;
-  //var plane_texture = new THREE.DataTexture( image, kwidth, kheight);
-  var plane_mat = new THREE.MeshBasicMaterial( {
-    wireframe: true,//false
-    map: meshmap
-  } );
-  plane = new THREE.Mesh(
-    new THREE.PlaneGeometry( kwidth, kheight, kwidth, kheight ),
-    plane_mat
-  );
-
-  /////////////////////
-  // Set up the cylinder to move around
-  var shadowMaterial = new THREE.MeshBasicMaterial( { color: 0xff0000 } );
-  //var cylGeo = new THREE.CylinderGeometry(20, 50, 50, 12, 5)
-  var cylGeo = new THREE.CubeGeometry(20, 20, 20, 1,1,1 );
-  cylMesh = new THREE.Mesh( cylGeo, shadowMaterial );
-
   /////////////////////
   // Set up the world
   scene = new THREE.Scene();
-  //scene.add( particleSystem );
-  //scene.add( cylMesh );
-  scene.add( plane );
   // Renderer
   renderer = new THREE.WebGLRenderer( { antialias: false, clearColor: 0x558855, clearAlpha: 1, alpha: false } );
   renderer.setSize( ctxwidth, ctxheight );
   container.appendChild( renderer.domElement );
+
+  /////////////////////
+  // Initialize the particles
+  // TODO: chunk it!
+  if( use_cloud==1 ){
+    geometry = new THREE.BufferGeometry();
+    geometry.attributes = {
+      position: {
+        itemSize: 3,
+        array: new Float32Array( nparticles * 3 ),
+        numItems: nparticles * 3
+      },
+      color: {
+        itemSize: 3,
+        array: new Float32Array( nparticles * 3 ),
+        numItems: nparticles * 3
+      }
+    }
+    geometry.dynamic = true;
+    // Set the colors and positions
+    positions = geometry.attributes.position.array;
+    colors = geometry.attributes.color.array;
+    var cnt = 0;
+    for( var j=0; j<240; j++ ){
+      for( var i=0; i<320; i++ ){
+        positions[cnt] = i - kwidth/2;
+        positions[cnt+1] = j - kheight/2;
+        positions[cnt+2] = 0;
+        colors[cnt] = 0;
+        colors[cnt+1] = 255;
+        colors[cnt+2] = 0;
+        cnt = cnt+3;
+      }
+    }
+    //particleSystem.geometry.attributes[ "position" ].needsUpdate = true;
+    // TODO: is this necessary?
+    geometry.computeBoundingSphere();
+    var material = new THREE.ParticleBasicMaterial( { size: 3, vertexColors: true } );
+    particleSystem = new THREE.ParticleSystem( geometry, material );
+    scene.add( particleSystem );
+  }
+  /////////////////////
+  // Add the plane mesh
+  if( use_mesh==1 ){
+    var size = kwidth * kheight;
+    var data = new Uint8Array( 4 * size );
+    for ( var i = 0; i < size; i ++ ) {
+      data[ i * 4 ] 	  = 255;
+      data[ i * 4 + 1 ] = 0;
+      data[ i * 4 + 2 ] = 0;
+      data[ i * 4 + 3 ] = 255;
+    }
+    var meshmap = new THREE.DataTexture( data, kwidth, kheight, THREE.RGBAFormat );
+    meshmap.needsUpdate = true;
+    //var plane_texture = new THREE.DataTexture( image, kwidth, kheight);
+    var plane_mat = new THREE.MeshBasicMaterial( {
+      map: meshmap,
+      wireframe: false
+    } );
+    plane = new THREE.Mesh(
+      new THREE.PlaneGeometry( kwidth, kheight, kwidth, kheight ),
+      plane_mat
+    );
+    scene.add( plane );
+  }
+
+  /////////////////////
+  // Set up the cylinder to move around
+  var cylGeo = new THREE.CubeGeometry(20, 20, 20, 1,1,1 );
+  cylMesh = new THREE.Mesh( cylGeo, new THREE.MeshBasicMaterial( { color: 0xff0000 } ) );
+  scene.add( cylMesh );
+
   // Draw
   animate();
   render();
@@ -221,7 +224,7 @@ function update_mesh_depth( d_buffer ) {
       // Range check
       //tmp = 255;
       if(d_buffer[ddx]>20) {
-        tmp = -1*d_buffer[ddx];
+        tmp = d_buffer[ddx];
       }
       tmpH = tmp*hlut[i];
       tmpV = tmp*vlut[j];
@@ -239,10 +242,10 @@ function update_mesh_depth( d_buffer ) {
       vertices[faces[fdx].d].z = tmp;
     }
   }
-  plane.geometry.verticesNeedUpdate = true;
+//  plane.geometry.computeVertexNormals()
+//  plane.geometry.computeFaceNormals()
   plane.geometry.normalsNeedUpdate = true;
-  plane.geometry.computeVertexNormals()
-  plane.geometry.computeFaceNormals()
+  plane.geometry.verticesNeedUpdate = true;
   animate();
   render();
 }

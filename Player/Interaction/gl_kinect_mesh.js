@@ -78,6 +78,7 @@ geometry.computeVertexNormals()
 */
 
   // Add the Image plane
+  /*
   var image = new Uint8Array(320*190*4)
   for (var i = 0;i<kwidth*kheight; i=i+4) {
     image[i] = 255; // R
@@ -85,17 +86,17 @@ geometry.computeVertexNormals()
     image[i+2] = 0; // B
     image[i+3] = 255; // A
   }
+  */
+  var meshcolor = new THREE.Color( 0x0000ff );
+  var meshmap = THREE.ImageUtils.generateDataTexture( kwidth, kheight, meshcolor );
   var plane_texture = new THREE.DataTexture( image, kwidth, kheight);
-  plane_mat = new THREE.MeshBasicMaterial( {
-    color: 0xffffff,
-    wireframe: true,
-    transparent: false,
-    opacity : 1,
-    map: plane_texture
+  var plane_mat = new THREE.MeshBasicMaterial( {
+//    wireframe: true,
+    wireframe: false,
+    map: meshmap
   } );
   plane = new THREE.Mesh(
     new THREE.PlaneGeometry( kwidth, kheight, kwidth, kheight ),
-    //geometry,
     plane_mat
   );
 

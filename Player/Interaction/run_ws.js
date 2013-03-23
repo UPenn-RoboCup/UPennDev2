@@ -27,21 +27,23 @@ var depthData;
 // Send data to clients at a set interval
 // For now, this is 15fps
 var fps = 5;
+var c_id = Buffer([13,13]);
+var d_id = Buffer([15,12]);
 setInterval(  function(){
   for(var s=0;s<wskts.length;s++) {
-    //console.log(wskts[s].readyState);
-    //console.log(wskts[s].OPEN);
     if( wskts[s].readyState==1 ){ //1 is OPEN
     if( counter%2==0 ){
-      if( colorData!==undefined && colorData.length>20000 ) {
+      //if( colorData!==undefined && colorData.length>20000 ) {
         //console.log("sending color "+colorData.length);
         wskts[s].send(colorData,{binary:true});
-      }
+        wskts[s].send( Buffer.concat([colorData,c_id]) ,{binary:true});
+        //}
     } else {
-      if( depthData!==undefined && depthData.length<20000 ) {
+      //if( depthData!==undefined && depthData.length<20000 ) {
         //console.log("sending depth "+depthData.length);
-        wskts[s].send(depthData,{binary:true});
-      }
+        //wskts[s].send(depthData,{binary:true});
+        //wskts[s].send( Buffer.concat([depthData,d_id]) ,{binary:true});
+        //}
     }
     //wskts[s].send( Buffer.concat( [type,raw]),{binary:true});
   }

@@ -29,9 +29,11 @@ var depthData;
 var fps = 5;
 var c_id = Buffer([13,13]);
 var d_id = Buffer([15,12]);
+var s = 0;
 setInterval(  function(){
-  for(var s=0;s<wskts.length;s++) {
+  for(s=0;s<wskts.length;s++) {
     if( wskts[s].readyState==1 ){ //1 is OPEN
+      /*
     if( counter%2==0 ){
       //if( colorData!==undefined && colorData.length>20000 ) {
         //console.log("sending color "+colorData.length);
@@ -44,6 +46,13 @@ setInterval(  function(){
         //wskts[s].send(depthData,{binary:true});
         wskts[s].send( Buffer.concat([depthData,d_id]) ,{binary:true});
         //}
+    }
+      */
+if( colorData!==undefined ){
+      wskts[s].send( Buffer.concat([colorData,c_id]), {binary:true} );
+    }
+if( depthData!==undefined ){    
+      wskts[s].send( Buffer.concat([depthData,d_id]) ,{binary:true} );
     }
     //wskts[s].send( Buffer.concat( [type,raw]),{binary:true});
   }

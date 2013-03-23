@@ -38,23 +38,19 @@ int changedIndex;
 uint16_t* pDepth;
 uint8_t* pColor;
 int lenPacked;
+uint8_t zoom = 3;// default zoom
 
 static int lua_kinect_open(lua_State *L) {
   // Should we record? play back? Read from a device?
   const char *file_uri = luaL_optstring(L, 1, NULL);
   const char *logmode = luaL_optstring(L, 2, NULL); // TODO: Add time and date
   if(file_uri==NULL){
-    // physical device
-    printf("Recording from a physical device...\n");
+    printf("Accessing a physical device...\n");
   } else if( logmode==NULL ){
-    // Playback a file
-    printf("Playing back log file %s...\n",file_uri);
-    //printf("Validity: %d\n",recorder.isValid());
+    printf("Accessing log file %s...\n",file_uri);
   } else {
-    // Log physical device to a file
-    printf("Recording a physical device to the logfile %s\n",file_uri);
+    printf("Recording a physical device to logfile %s\n",file_uri);
     recorder.create( file_uri );
-    //printf("Validity: %d\n",recorder.isValid());
   }
 
   // Initialize stream array
@@ -62,14 +58,13 @@ static int lua_kinect_open(lua_State *L) {
   if (rc != STATUS_OK) {
     printf("Initialize failed\n%s\n", OpenNI::getExtendedError());
     return 0;
-  } // if
-
-  if( file_uri!=NULL && logmode==NULL ){
-    printf("Opening logfilei...\n");
-    rc = device.open( file_uri );
-  } else {
-    rc = device.open(ANY_DEVICE);
   }
+
+  if( file_uri!=NULL && logmode==NULL )
+    rc = device.open( file_uri );
+  else
+    rc = device.open(ANY_DEVICE);
+  
   if (rc != STATUS_OK) {
     printf("Couldn't open device\n%s\n", OpenNI::getExtendedError());
     return 0;
@@ -108,7 +103,7 @@ static int lua_kinect_open(lua_State *L) {
   m_streams[0] = &depth;
   m_streams[1] = &color;
 
-  printf("Done initializing the Kinect\n");
+  printf("Done initializing the Kinect streams\n");
 
   if( recorder.isValid()==1 ){
     printf("Attaching the recorder... ");
@@ -122,6 +117,9 @@ static int lua_kinect_open(lua_State *L) {
   return 1;
 } //open
 
+//uint16_t* tmp16;
+//uint8_t* tmp8, *tmp8a;
+uint16_t tmp_d;
 static int lua_kinect_update(lua_State *L) {
   rc = OpenNI::waitForAnyStream(m_streams, 2, &changedIndex);
   if (rc != STATUS_OK) {
@@ -134,8 +132,22 @@ static int lua_kinect_update(lua_State *L) {
     case 0:
       depth.readFrame(&frame);
       pDepth = (uint16_t*)frame.getData();
-      for(cntr=0;cntr<NBYTES;cntr++)
-        d[cntr] = (uint8_t)( pDepth[cntr]>>3 );
+      for(cntr=0;cntr<NBYTES;cntr++){
+        tmp_d = pDepth[cntr]>>zoom;
+        if( tmp_d & 0xFF00 ) // Saturate
+          d[cntr] = 0xFF;
+        else
+          d[cntr] = tmp_d & 0xFF;
+
+//        tmp8 = (uint8_t*)&(pDepth[cntr]);
+//        tmp8a = tmp8+1;
+//        d[cntr] = ( (*tmp8a<<(8-zoom)) & (0xFF00>>zoom) ) | ( (*tmp8>>zoom)&(0x00FF>>zoom) );
+      }
+//      #define IDX 320*60+160
+//      tmp16 = &(pDepth[IDX]);
+//      tmp8 = (uint8_t*)tmp16;
+//      tmp8a = tmp8+1;
+//      printf("%u -> %u (%X) [ %u | %u ]\n",pDepth[IDX],d[IDX], *tmp16, *tmp8, *tmp8a );
       break;
     case 1:
       color.readFrame(&cframe);
@@ -161,6 +173,18 @@ static int lua_kinect_retrieve(lua_State *L) {
   return 1;
 }
 
+static int lua_set_digital_zoom(lua_State *L) {
+  uint8_t tmp = luaL_checkint( L, 1 );
+  // 2 through 5 are the best
+  if(tmp<2 || tmp>5) // Give the current zoom if out of range
+    lua_pushinteger(L, zoom);
+  else {
+    zoom = tmp;
+    lua_pushinteger(L, tmp);
+  }
+  return 1;
+}
+
 static int lua_kinect_shutdown(lua_State *L) {
   if( recorder.isValid()==1 ){
     recorder.stop();
@@ -174,7 +198,7 @@ static int lua_kinect_shutdown(lua_State *L) {
   device.close();
   OpenNI::shutdown();
 
-  printf("Done shutting down the kinect\n");
+  printf("Done shutting down the Kinect\n");
 
   return 0;
 }
@@ -182,6 +206,7 @@ static int lua_kinect_shutdown(lua_State *L) {
 static const struct luaL_reg kinect_lib [] = {
   {"open", lua_kinect_open},
   {"update", lua_kinect_update},
+  {"zoom", lua_set_digital_zoom},
   {"retrieve", lua_kinect_retrieve},
   {"shutdown", lua_kinect_shutdown},
   {NULL, NULL}

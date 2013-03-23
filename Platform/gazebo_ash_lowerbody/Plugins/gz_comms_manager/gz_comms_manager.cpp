@@ -119,55 +119,6 @@ namespace gazebo
 
   void gz_comms_manager::update()
   {
-    // reset joint controllers if time step is modified
-    if (this->dynamics_time_step != this->world->GetPhysicsEngine()->GetStepTime())
-      this->initialize_controllers();
-
-    // update joints
-    for (unsigned int i = 0; i < this->joints.size(); i++)
-    {
-      // update setpoints and sensor values
-      double position_p_gain = POSITION_P_GAIN_CONSTANT*dcm.joint_position_p_gain[i];
-      double position_i_gain = POSITION_I_GAIN_CONSTANT*dcm.joint_position_i_gain[i];
-      double velocity_p_gain = VELOCITY_P_GAIN_CONSTANT*dcm.joint_velocity_p_gain[i];
-
-      double force_setpoint = dcm.joint_force[i];
-      double position_setpoint = dcm.joint_position[i];
-      double velocity_setpoint = dcm.joint_velocity[i];
-      double position_actual = this->joints[i]->GetAngle(0).Radian();
-      double velocity_actual = this->joints[i]->GetVelocity(0);
-
-      // update feedforward force
-      double force_command = force_setpoint;
-
-      // update position controller
-      struct pid *position_pid = &joint_position_pids[i];
-      pid_set_setpoint(position_pid, position_setpoint);
-      pid_set_gains(position_pid,
-        position_p_gain,
-        position_i_gain,
-        0
-      );
-      force_command += pid_update(position_pid, position_actual);
-
-      // update velocity controller
-      struct filter *velocity_filter = &joint_velocity_filters[i];
-      double velocity_estimate = filter_update(velocity_filter, velocity_actual);
-      force_command += velocity_p_gain*(velocity_setpoint - velocity_estimate);
-       
-      // update joint force 
-      double max_force = this->joints[i]->GetEffortLimit(0);
-      force_command = math::clamp(force_command, -max_force, max_force);
-      this->joints[i]->SetForce(0, force_command);
-
-      // update joint sensors
-      dcm.joint_force_sensor[i] = force_command;
-      dcm.joint_position_sensor[i] = position_actual;
-      dcm.joint_velocity_sensor[i] = velocity_actual;
-
-    //gzerr << "force command " << force_command << "\n";
-    }
-
     // update force-torque sensors
     {
       physics::JointWrench l_ankle_wrench, r_ankle_wrench;
@@ -216,6 +167,55 @@ namespace gazebo
         dcm.ahrs[i+3] = accel[i];
         dcm.ahrs[i+6] = euler[i];
       }
+    }
+
+    // reset joint controllers if time step is modified
+    if (this->dynamics_time_step != this->world->GetPhysicsEngine()->GetStepTime())
+      this->initialize_controllers();
+
+    // update joints
+    for (unsigned int i = 0; i < this->joints.size(); i++)
+    {
+      // update setpoints and sensor values
+      double position_p_gain = POSITION_P_GAIN_CONSTANT*dcm.joint_position_p_gain[i];
+      double position_i_gain = POSITION_I_GAIN_CONSTANT*dcm.joint_position_i_gain[i];
+      double velocity_p_gain = VELOCITY_P_GAIN_CONSTANT*dcm.joint_velocity_p_gain[i];
+
+      double force_setpoint = dcm.joint_force[i];
+      double position_setpoint = dcm.joint_position[i];
+      double velocity_setpoint = dcm.joint_velocity[i];
+      double position_actual = this->joints[i]->GetAngle(0).Radian();
+      double velocity_actual = this->joints[i]->GetVelocity(0);
+
+      // update feedforward force
+      double force_command = force_setpoint;
+
+      // update position controller
+      struct pid *position_pid = &joint_position_pids[i];
+      pid_set_setpoint(position_pid, position_setpoint);
+      pid_set_gains(position_pid,
+        position_p_gain,
+        position_i_gain,
+        0
+      );
+      force_command += pid_update(position_pid, position_actual);
+
+      // update velocity controller
+      struct filter *velocity_filter = &joint_velocity_filters[i];
+      double velocity_estimate = filter_update(velocity_filter, velocity_actual);
+      force_command += velocity_p_gain*(velocity_setpoint - velocity_estimate);
+       
+      // update joint force 
+      double max_force = this->joints[i]->GetEffortLimit(0);
+      force_command = math::clamp(force_command, -max_force, max_force);
+      this->joints[i]->SetForce(0, force_command);
+
+      // update joint sensors
+      dcm.joint_force_sensor[i] = force_command;
+      dcm.joint_position_sensor[i] = position_actual;
+      dcm.joint_velocity_sensor[i] = velocity_actual;
+
+    //gzerr << "force command " << force_command << "\n";
     }
   }
 

@@ -6,7 +6,7 @@
         background: #000;
         width: 320px;
         height: 240px;
-        /*display: none;*/
+        display: none;
       }   
     </style>
   </head>
@@ -146,7 +146,7 @@
     d_img.onload = function(){
       d_ctx.drawImage( d_img, 0, 0 );
       d_imgdata = d_ctx.getImageData(0, 0, 320, 240);
-      update_kinect_image( new Uint8Array(d_imgdata.data.buffer) );
+      update_kinect_depth( new Uint8Array(d_imgdata.data.buffer) );
       // Revoke the Object URL
       if(window.webkitURL!==undefined) {
         window.webkitURL.revokeObjectURL( d_img.src );
@@ -193,7 +193,7 @@
           c_img.src = window.URL.createObjectURL( myjpeg );
         }
       } else {
-        //console.log('paint depth')
+        console.log('paint depth')
         d_img.alt="depth"
         // Load the image
         if(window.webkitURL!==undefined) {

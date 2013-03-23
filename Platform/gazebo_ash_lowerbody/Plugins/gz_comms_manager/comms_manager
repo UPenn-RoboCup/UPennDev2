@@ -15,10 +15,7 @@ else
 fi
 WORLD_FILE="$THOR_HOME/Platform/$PLATFORM/Worlds/$WORLD_FILE.world"
 export GAZEBO_MODEL_PATH="$THOR_HOME/Platform/$PLATFORM/Models"
-export GAZEBO_PLUGIN_PATH="$GAZEBO_PLUGIN_PATH:\
-$THOR_HOME/Platform/$PLATFORM/Plugins/gz_comms_manager:\
-$THOR_HOME/Platform/$PLATFORM/Plugins/gz_time_publisher:\
-"
+export GAZEBO_PLUGIN_PATH="$THOR_HOME/Platform/$PLATFORM/Comms"
   
 echo "Opening $WORLD_FILE"
 exec gazebo -u $WORLD_FILE

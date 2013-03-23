@@ -3,7 +3,7 @@
 
 #include <vector>
 
-// config : ash plugin parameters
+// config : gz_comms_manager parameters
 ///////////////////////////////////////////////////////////////////////////
 
 // define device array lengths

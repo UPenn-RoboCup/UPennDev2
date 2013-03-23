@@ -21,7 +21,7 @@ SOURCES=\
 OBJECTS=$(SOURCES:.c=.o)
 
 #all: serialize deserialize zlibCompress zlibUncompress z
-all: z
+all: Z
 
 serialize:
 	mex -O $@.c
@@ -35,7 +35,7 @@ zlibCompress: deflate.o adler32.o crc32.o trees.o zutil.o
 zlibUncompress: inflate.o inffast.o inftrees.o adler32.o crc32.o zutil.o
 	mex -O $@.cc $^ 
 
-z: $(OBJECTS)
+Z: $(OBJECTS)
 	@echo "\t" LINK $@
 	@$(LD) $(LDFLAGS) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ $(LIB_DIR)
 

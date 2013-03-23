@@ -21,4 +21,4 @@ $THOR_HOME/Platform/$PLATFORM/Plugins/gz_time_publisher:\
 "
   
 echo "Opening $WORLD_FILE"
-exec gazebo -u $WORLD_FILE
+exec gazebo $WORLD_FILE

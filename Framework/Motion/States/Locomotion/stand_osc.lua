@@ -91,9 +91,8 @@ function stand:entry()
   dcm:set_joint_position(q0, 'lowerbody')
   dcm:set_joint_velocity(0, 'lowerbody')
   dcm:set_joint_position_p_gain(1, 'lowerbody')
-  dcm:set_joint_position_i_gain(0, 'lowerbody')
-  dcm:set_joint_position_d_gain(0, 'lowerbody')
-  dcm:set_joint_velocity_p_gain(0, 'lowerbody')
+  dcm:set_joint_position_i_gain(0.1, 'lowerbody')
+  dcm:set_joint_velocity_p_gain(0.01, 'lowerbody')
   update_stance_parameters()
 end
 

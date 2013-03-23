@@ -156,8 +156,8 @@ function update_kinect_depth( d_buffer ) {
   for(var j=0; j<kheight; j++ ){
     for (var i = 0; i<kwidth; i++ ){
       tmp = d_buffer[d_idx];
-//      if( tmp>32 && tmp<247 ) {
-      if( tmp>1 && tmp<255 ) {
+      if( tmp>32 && tmp<247 ) {
+//      if( tmp>1 && tmp<255 ) {
         positions[ p_idx ]     = -1*tmp*hlut[i];
         positions[ p_idx + 1 ] = -1*tmp*vlut[j];
         positions[ p_idx + 2 ] = -1*tmp;

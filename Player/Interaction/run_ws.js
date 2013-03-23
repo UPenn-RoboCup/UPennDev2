@@ -35,14 +35,14 @@ setInterval(  function(){
     if( counter%2==0 ){
       //if( colorData!==undefined && colorData.length>20000 ) {
         //console.log("sending color "+colorData.length);
-        wskts[s].send(colorData,{binary:true});
+        //wskts[s].send(colorData,{binary:true});
         wskts[s].send( Buffer.concat([colorData,c_id]) ,{binary:true});
         //}
     } else {
       //if( depthData!==undefined && depthData.length<20000 ) {
         //console.log("sending depth "+depthData.length);
         //wskts[s].send(depthData,{binary:true});
-        //wskts[s].send( Buffer.concat([depthData,d_id]) ,{binary:true});
+        wskts[s].send( Buffer.concat([depthData,d_id]) ,{binary:true});
         //}
     }
     //wskts[s].send( Buffer.concat( [type,raw]),{binary:true});

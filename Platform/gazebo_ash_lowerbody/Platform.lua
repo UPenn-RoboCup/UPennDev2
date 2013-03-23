@@ -64,7 +64,7 @@ end
 
 function Platform.update()
   -- synchronize thread with simulator time publisher
-  while (time_current - time_past < time_step) do
+  while (time_current - time_past < (time_step - 1e-6)) do
     local count = time_poller:poll(-1)
     while (count > 0) do
       local msg = time_socket:recv()

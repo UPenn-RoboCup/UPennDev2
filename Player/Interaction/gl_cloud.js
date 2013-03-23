@@ -94,26 +94,25 @@ function init_gl_cloud() {
   
   /////////////////////
   // Add the plane mesh
-  var plane_image = new Uint8Array(kwidth*kheight*4);
-  for (var i = 0;i<kwidth*kheight; i=i+4) {
-    plane_image[i] = 255; // R
-    plane_image[i+1] = 0; // G
-    plane_image[i+2] = 0; // B
-    plane_image[i+3] = 255; // A
-  }
-  var plane_texture = new THREE.DataTexture( 
-    plane_image, kwidth, kheight
-  );
+//  var meshmap = THREE.ImageUtils.generateDataTexture( kwidth, kheight, meshcolor );
+	var size = kwidth * kheight;
+	var data = new Uint8Array( 4 * size );
+	for ( var i = 0; i < size; i ++ ) {
+		data[ i * 4 ] 	  = 255;
+		data[ i * 4 + 1 ] = 0;
+		data[ i * 4 + 2 ] = 0;
+		data[ i * 4 + 3 ] = 255;
+	}
+	var meshmap = new THREE.DataTexture( data, kwidth, kheight, THREE.RGBAFormat );
+	meshmap.needsUpdate = true;
+  //var plane_texture = new THREE.DataTexture( image, kwidth, kheight);
+  var plane_mat = new THREE.MeshBasicMaterial( {
+    wireframe: true,//false
+    map: meshmap
+  } );
   plane = new THREE.Mesh(
     new THREE.PlaneGeometry( kwidth, kheight, kwidth, kheight ),
-    new THREE.MeshBasicMaterial( {
-      color: 0xff0000,
-      wireframe: true,
-//      wireframe: false,
-      transparent: false,
-      opacity : 1,
-      map: plane_texture
-    } )
+    plane_mat
   );
 
   /////////////////////
@@ -126,8 +125,8 @@ function init_gl_cloud() {
   /////////////////////
   // Set up the world
   scene = new THREE.Scene();
-  scene.add( particleSystem );
-  scene.add( cylMesh );
+  //scene.add( particleSystem );
+  //scene.add( cylMesh );
   scene.add( plane );
   // Renderer
   renderer = new THREE.WebGLRenderer( { antialias: false, clearColor: 0x558855, clearAlpha: 1, alpha: false } );
@@ -205,6 +204,7 @@ var update_cloud_depth = function( d_buffer ) {
 function update_mesh_image( c_buffer ) {
   plane.material.map.image.data = c_buffer;
   plane.material.needsUpdate = true;
+  plane.material.map.needsUpdate = true;
   animate();
   render();
 }

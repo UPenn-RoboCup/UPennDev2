@@ -4,32 +4,32 @@ TARGETS = all clean
 
 ## Path Definition
 
-NAODIR= Platform/Nao
-NAOV4DIR = Platform/NaoV4
-WEBOTSNAODIR= Platform/WebotsNao
-WEBOTSOPDIR= Platform/WebotsOP
-WEBOTSCHARLIDIR= Platform/WebotsCharli
-VISIONTESTDIR = Platform/VisionTest
-OPDIR= Platform/OP
-XOSDIR= Platform/XOS
-CHARLIDIR = Platform/Charli
-MODULEDIR = Modules
+NAODIR= Platforms/Nao
+NAOV4DIR = Platforms/NaoV4
+WEBOTSNAODIR= Platforms/WebotsNao
+WEBOTSOPDIR= Platforms/WebotsOP
+WEBOTSCHARLIDIR= Platforms/WebotsCharli
+VISIONTESTDIR = Platforms/VisionTest
+OPDIR= Platforms/OP
+XOSDIR= Platforms/XOS
+CHARLIDIR = Platforms/Charli
+LIBSDIR = Libs
 NAOQIDIR= $(NAOV4DIR)/NaoQi
-WEBOTSDIR = $(MODULEDIR)/Webots
-IMAGEDIR= $(MODULEDIR)/ImageProc
-COMMDIR= $(MODULEDIR)/Comm
-OCCMAPDIR = $(MODULEDIR)/OccMap
-UTILDIR= $(MODULEDIR)/Util
-MATLABDIR= ../Tools/Matlab
+WEBOTSDIR = $(LIBSDIR)/Webots
+IMAGEDIR= $(LIBSDIR)/ImageProc
+COMMDIR= $(LIBSDIR)/Comm
+OCCMAPDIR = $(LIBSDIR)/OccMap
+UTILDIR= $(LIBSDIR)/Util
+MATLABDIR= Tools/Matlab
 COLORTABLEDIR= $(MATLABDIR)/Colortable
-VELODIR= $(MODULEDIR)/Velocity
-PRIMEDIR= $(MODULEDIR)/PrimeSense
-HANDSDIR= $(MODULEDIR)/Hands
+VELODIR= $(LIBSDIR)/Velocity
+PRIMEDIR= $(LIBSDIR)/PrimeSense
+HANDSDIR= $(LIBSDIR)/Hands
 PLATFORMS = nao naov4 op xos webots_nao webots_op visiontest
-INSTDIR= ../Player/Lib
-WEBOTSCONTDIR= ../WebotsController
-PLAYERDIR= ../Player
-NAODEPDIR= ../Install/dependencies
+INSTDIR= Player/Lib
+WEBOTSCONTDIR= WebotsController
+PLAYERDIR= Player
+NAODEPDIR= Install/dependencies
 NAODEPLUA51DIR= $(NAODEPDIR)/usr/local/lib/lua/5.1
 
 

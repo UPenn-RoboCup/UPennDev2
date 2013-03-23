@@ -38,6 +38,27 @@ ash robotis_arm arm_teststand teststand:
 	&& ln -s ../Platform/$@/Comms/comms_manager comms_manager \
 	&& cd $(CWD)
 
+gazebo_ash_lowerbody :
+	cd Framework/Lib && make && cd $(CWD)
+	cd Platform/Lib/KDL && make && cd $(CWD)
+	cd Platform/$@ && make && cd $(CWD)
+	cd Framework/Platform \
+	&& rm -f ./* \
+	&& ln -s ../../Platform/$@/Platform.lua Platform.lua \
+	&& ln -s ../../Platform/$@/Sensor.lua Sensor.lua \
+	&& ln -s ../../Platform/$@/Mechanics/Kinematics.$(SHLIBEXT) Kinematics.$(SHLIBEXT) \
+	&& ln -s ../../Platform/$@/Mechanics/Dynamics.$(SHLIBEXT) Dynamics.$(SHLIBEXT) \
+	&& cd $(CWD)
+	cd Config \
+	&& rm -f Config*.lua \
+	&& ln -s $@/* .\
+	&& cd $(CWD)
+	cd Run \
+	&& rm -f init_robot \
+	&& rm -f comms_manager \
+	&& ln -s ../Platform/$@/Comms/comms_manager comms_manager \
+	&& cd $(CWD)
+
 webots_ash webots_ash_lowerbody :
 	cd Framework/Lib && make && cd $(CWD)
 	cd Framework/Lib/webots && make && cd $(CWD)
@@ -112,5 +133,6 @@ clean:
 	cd Platform/vrep_ash && make clean && cd $(CWD)
 	cd Platform/webots_ash && make clean && cd $(CWD)
 	cd Platform/webots_ash_lowerbody && make clean && cd $(CWD)
+	cd Platform/gazebo_ash_lowerbody && make clean && cd $(CWD)
 
 .PHONY: all ash teststand arm_teststand robotis_arm webots_ash webots_ash_lowerbody vrep_ash tools clean

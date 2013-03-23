@@ -6,11 +6,6 @@ TARGETS = all clean
 
 all: unix stty getch
 
-%.o: %.cpp
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
-%.o: %.c
-	$(CC) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
-
 unix: luaunix.o
 	$(CC) -o $@.$(SHLIBEXT) $(LIBOPTS) $^
 

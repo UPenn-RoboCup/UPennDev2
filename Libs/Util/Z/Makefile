@@ -10,10 +10,6 @@ TARGETS = all clean
 #all: serialize deserialize zlibCompress zlibUncompress z
 all: z
 
-%.o: %.cpp
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -I$(ZLIB) -o $@ -c $<
-%.o: %.cc
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -I$(ZLIB) -o $@ -c $<
 %.o: $(ZLIB)/%.c
 	$(CC) $(CXXFLAGS) $(INCLUDES) -I$(ZLIB) -o $@ -c $<
 

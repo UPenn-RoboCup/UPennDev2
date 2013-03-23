@@ -1,28 +1,32 @@
-CWD= $(shell pwd)
-CTC= $(NaoqiCTC)
+# Makefile used to build libraries
+include ../../../Makefile.inc
 
-all: naoqi 
+TARGETS = all clean
+.PHONY: $(TARGETS)
 
-naoqi:
-ifeq ($(CTC),)
-	@echo Cross compilitation tool not specified. \
-				Please download the ctc tool from \
-				http://fling.seas.upenn.edu/~robocup/files/ctc.tar.bz2 \
-				and follow the instructions to configure it for your system.
-	make -f Makefile.local
-else
-	rm -rf ../Lua/src/build
-	mkdir ../Lua/src/build
-	cd ../Lua/src/build && cmake -DCMAKE_TOOLCHAIN_FILE="$(CTC)/toolchain-atom.cmake" .. && make && cd $(CWD)
-	rm -rf build
-	mkdir build
-	cd build && cmake -DCMAKE_TOOLCHAIN_FILE="$(CTC)/toolchain-atom.cmake" .. && make && cd $(CWD)
-endif
+NaoQiSDK=/usr
+NaoQi_INC=-I$(NaoQiSDK)/include
+NaoQi_LIB=-L$(NaoQiSDK)/lib -lalmemoryfastaccess
+
+INCLUDES=$(NaoQi_INC)
+
+SOURCES=\
+			src/actuator_process.c \
+			src/dcmprocess.c \
+			src/luadcm.c \
+			src/luafifo.c \
+			src/sensor_process.c \
+			src/shmmap.c \
+			src/shm_util.c
+
+OBJECTS=$(SOURCES:.c=.o)
+
+all: luadcm
+
+luadcm: $(OBJECTS)
+	$(LD) $(LDFLAGS) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ $(LIB_DIR) -lm -lluajit-5.1 $(NaoQi_LIB)
 
 clean:
-ifeq ($(CTC),)
-	make -f Makefile.local clean
-else
-	rm -rf build
-	rm -rf ../Lua/src/build
-endif
+	rm -f *.$(SHLIBEXT) *.o
+
+

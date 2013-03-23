@@ -132,7 +132,15 @@ endif
 
 export CTCDIR
 
-
+%.o: %.cpp
+	@echo "\t" CXX $@
+	@$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
+%.o: %.cc
+	@echo "\t" CXX $@
+	@$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
+%.o: %.c
+	@echo "\t" CC $@
+	@$(CC) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
 
 
 

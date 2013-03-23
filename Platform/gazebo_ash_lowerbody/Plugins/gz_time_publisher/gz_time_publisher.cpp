@@ -10,7 +10,7 @@ namespace gazebo
   gz_time_publisher::gz_time_publisher()
   {
     this->endpoint = "tcp://127.0.0.1:12000";
-    this->desired_update_rate = 500.0;
+    this->desired_update_rate = 1000.0001;
   }
 
   gz_time_publisher::~gz_time_publisher()
@@ -47,16 +47,11 @@ namespace gazebo
     // publish sim time message
     if (dt >= 1/this->desired_update_rate)
     {
-      // create time data vector
-      std::vector<double> time_data;
-      time_data.push_back(current_time);
-      time_data.push_back(dt);
- 
-      // serialize it
+      // serialize current sim time
       msgpack::sbuffer time_buffer;
-      msgpack::pack(time_buffer, time_data);
+      msgpack::pack(time_buffer, current_time);
   
-      // publish current sim time
+      // broadcast message on "time" channel
       zmq_msg_t time_msg;
       zmq_msg_init_size(&time_msg, time_buffer.size() + 4);
 

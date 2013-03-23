@@ -1,8 +1,8 @@
 # Master Makefile to compile all Lua/C++ libraries
 
 CWD= $(shell pwd)
-PWD= $(subst /,\/,$(CWD)/../Player/Lib)
-include $(CWD)/Lib/Makefile.inc
+PWD= $(subst /,\/,$(CWD)/Player/Lib)
+include $(CWD)/Makefile.inc
 
 all none:
 	@echo " Please select following target: "

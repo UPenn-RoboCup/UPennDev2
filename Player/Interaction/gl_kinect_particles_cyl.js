@@ -35,9 +35,9 @@ function init() {
   // Set up the camera
   camera = new THREE.PerspectiveCamera();
   camera.position.x = 0;
-  camera.position.y = 0;
-  camera.position.z = 400;
-  camera.lookAt( ctxwidth, 0, 0 );
+  camera.position.y = 300;
+  camera.position.z = 300;
+  camera.lookAt( 0, 0, -200 );
 
   // Set up the mouse controls
   controls = new THREE.TrackballControls( camera );
@@ -155,10 +155,9 @@ function update_kinect_depth( d_buffer ) {
   // TODO: cache it good
   for(var j=0; j<kheight; j++ ){
     for (var i = 0; i<kwidth; i++ ){
-      //tmp = d_buffer[d_idx]+d_buffer[d_idx+1]+d_buffer[d_idx+2];
-      //tmp = tmp / 3;
       tmp = d_buffer[d_idx];
-      if( tmp>32 && tmp<247 ) {
+//      if( tmp>32 && tmp<247 ) {
+      if( tmp>1 && tmp<255 ) {
         positions[ p_idx ]     = -1*tmp*hlut[i];
         positions[ p_idx + 1 ] = -1*tmp*vlut[j];
         positions[ p_idx + 2 ] = -1*tmp;
@@ -171,8 +170,6 @@ function update_kinect_depth( d_buffer ) {
       d_idx+=4;
     }
   }
-  //particleSystem.geometry.verticesNeedUpdate = true;
-  //particleSystem.geometry.__dirtyVertices = true;
   particleSystem.geometry.attributes[ "position" ].needsUpdate = true;
   animate();
   render();

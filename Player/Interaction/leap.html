@@ -6,7 +6,7 @@
         background: #000;
         width: 320px;
         height: 240px;
-        display: none;
+        /*display: none;*/
       }   
     </style>
   </head>
@@ -58,23 +58,23 @@
 
       if( lobj.hands!==undefined && lobj.hands.length==1 && lobj.pointables.length>=3 ){
         myobj = lobj;
-        
+
         var scaling = Math.exp( (lobj.hands[0].sphereRadius - 90)/20 );
         scaling = Math.max( Math.min( scaling, 10 ), .1 );
         //scaling = Math.floor( 10*scaling )/10;
-        if(scaling>1.5 || scaling<.7){
+        //if(scaling>1.5 || scaling<.7){
           myscale = myscale * beta + scaling*(1-beta);
           myscale = 1;
           cylMesh.scale.x = myscale;
           cylMesh.scale.y = myscale;
           cylMesh.scale.z = myscale;
-        }
-        
+          //}
+
         var thand = lobj.hands[0].t;
         transWorldMatrix = new THREE.Matrix4();
         cylMesh.position.x = thand[0];
         cylMesh.position.y = thand[1];
-        cylMesh.position.z = thand[2];
+        cylMesh.position.z = thand[2] - 200;
 
         var rhand = lobj.hands[0].r;
         rotWorldMatrix = new THREE.Matrix4();
@@ -102,54 +102,107 @@
 
   <!--Receiving an image-->
   <script>
+
+    // Set up the websocket
     console.log('Connecting to '+host+' 9002')
     var ws_i = new WebSocket('ws://' + host + ':9002');
-    ws_i.binaryType = "blob";
-    var jpeg_url_name = "";
-    var myimg = new Image;
+    //ws_i.binaryType = "blob";
+    ws_i.binaryType = "arraybuffer";
+    var myevent;  //just for debugging
+    var mydata;
+    var myid;
 
-    // Create a canvas element
+    // Access the color canvas element
     var cCanvas = $('#kcolor')[0];
     cCanvas.width = 320;
     cCanvas.height = 240;
     var c_ctx = cCanvas.getContext('2d');
 
-    // Create a canvas element
+    // Access the depth canvas element
     var dCanvas = $('#kdepth')[0];
     dCanvas.width = 320;
     dCanvas.height = 240;
     var d_ctx = dCanvas.getContext('2d');
-    myctx = d_ctx;
-    ws_i.onmessage = function (event) {
-      if( event.data.size>20000 ){
-        myctx = c_ctx;
-        myimg.alt="color"
+
+    // jpeg element
+    var myjpeg;
+    var jpeg_url_name;
+    var c_imgdata;
+    var d_imgdata;
+    var c_img = new Image;
+    var d_img = new Image;
+    c_img.onload = function(){
+      c_ctx.drawImage( c_img, 0, 0 );
+      c_imgdata = c_ctx.getImageData(0, 0, 320, 240);
+      update_kinect_image( new Uint8Array(c_imgdata.data.buffer) );
+      // Revoke the Object URL
+      if(window.webkitURL!==undefined) {
+        window.webkitURL.revokeObjectURL( c_img.src );
       } else {
-        myctx = d_ctx;
-        myimg.alt="depth"
+        window.URL.revokeObjectURL( c_img.src );
       }
-      
-      // Revoke the previous
-      if( jpeg_url_name !== undefined ) {
-        window.URL.revokeObjectURL(jpeg_url_name);
+    }; //c onload
+    
+    d_img.onload = function(){
+      d_ctx.drawImage( d_img, 0, 0 );
+      d_imgdata = d_ctx.getImageData(0, 0, 320, 240);
+      update_kinect_image( new Uint8Array(d_imgdata.data.buffer) );
+      // Revoke the Object URL
+      if(window.webkitURL!==undefined) {
+        window.webkitURL.revokeObjectURL( d_img.src );
+      } else {
+        window.URL.revokeObjectURL( d_img.src );
       }
-      
-      event.data.type = "image\/jpeg";
-      var jpeg_url_name = window.URL.createObjectURL( event.data );
-      myimg.src = jpeg_url_name;
-      myimg.onload = function(){
-        
-        myctx.drawImage( myimg, 0, 0 );
-        var imgdata = myctx.getImageData(0, 0, 320, 240);
-        if( myimg.alt=="color" ){ // color
-          //console.log('redrawn image');
-          update_kinect_image( new Uint8Array(imgdata.data.buffer ) );
+    }; //d onload
+
+    ws_i.onmessage = function (event) {
+      myevent = event;
+      // Parse out the jpeg data and the extra information
+      /*
+      if(event.data.webkitSlice!==undefined) {
+        myjpeg = event.data.webkitSlice(0,event.data.size,"image\/jpeg");
         } else {
-          //console.log('redrawn depth');
-          update_kinect_depth( new Uint8Array(imgdata.data.buffer ) );
+        myjpeg = event.data.slice(0,event.data.size,"image\/jpeg");
+      }
+      */
+      /*
+      myjpeg = event.data;
+      myjpeg.type = "image\/jpeg";
+      */
+
+      myjpeg = new Blob( [event.data], { type: "image\/jpeg" } );
+      mymeta = new Uint8Array(event.data, event.data.byteLength-2, 2 );
+      //console.log(mymeta)
+
+      //Uint8Array(ArrayBuffer buffer, optional unsigned long byteOffset, optional unsigned long length);
+      /*
+      mydata = new Uint8Array(myevent.data, 2, event.data.byteLength-2 );
+      myid = new Uint8Array(myevent.data, 0, 2 );
+      myjpeg = new Blob( [mydata], { type: "image\/jpeg" } );
+      */
+
+      // Act on color vs. depth data
+      if( mymeta[0] == 13 ){
+        //console.log('paint color')
+        c_img.alt="color"
+        // Load the image
+        // Generate a URL for the image blob
+        if(window.webkitURL!==undefined) {
+          c_img.src = window.webkitURL.createObjectURL( myjpeg );
+        } else {
+          c_img.src = window.URL.createObjectURL( myjpeg );
         }
-        //window.URL.revokeObjectURL(jpeg_url_name);
-      };
+      } else {
+        //console.log('paint depth')
+        d_img.alt="depth"
+        // Load the image
+        if(window.webkitURL!==undefined) {
+          d_img.src = window.webkitURL.createObjectURL( myjpeg );
+        } else {
+          d_img.src = window.URL.createObjectURL( myjpeg );
+        }
+      }
+      
     };
   </script>
 

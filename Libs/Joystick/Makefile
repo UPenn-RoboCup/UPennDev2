@@ -23,19 +23,6 @@ joystick: luajoystick.o
 xbox360: luaxbox360.o
 	$(CXX) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ $(LIBRT) -lusb-1.0
 
-cross:
-ifeq ($(CHAIN),)
-	@echo Cross compilitation tool not specified. \
-				Please download the ctc tool from \
-				the aldebaran website and follow the \
-				instructions to configure it for your system.
-else
-	rm -rf build
-	mkdir build
-	cd build && cmake -DCMAKE_TOOLCHAIN_FILE="$(CHAIN)/toolchain-atom.cmake" .. \
-		&& make && cd $(CWD)
-endif
-
 clean:
 	rm -rf build 
 	rm -f *.o *.$(SHLIBEXT) *.$(MEXEXT)

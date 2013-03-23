@@ -1,28 +1,27 @@
-CWD= $(shell pwd)
-ifeq ($(CTCDIR),)
-  ifeq ($(CROSS),true)
-    CTCDIR= $(NaoqiCTC)
-  endif
-endif
-CHAIN= $(CTCDIR)
+# Makefile used to build Webots files
+include ../../../Makefile.inc
 
-all: naoqi 
+TARGETS = all clean
+.PHONY: $(TARGETS)
 
-naoqi:
-ifeq ($(CHAIN),)
-#	@echo Cross compilitation tool not specified. \
-#				Please download the ctc tool from \
-#				the aldebaran website and follow the \
-#				instructions to configure it for your system \
+all: unix stty getch
 
-	make -f Makefile.local
-else
-	rm -rf build
-	mkdir build
-	cd build && cmake -DCMAKE_TOOLCHAIN_FILE="$(CHAIN)/toolchain-atom.cmake" .. \
-		&& make && cd $(CWD)
-endif
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
+%.o: %.c
+	$(CC) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
+
+unix: luaunix.o
+	$(CC) -o $@.$(SHLIBEXT) $(LIBOPTS) $^
+
+stty: luastty.o
+	$(CXX) -o $@.$(SHLIBEXT) $(LIBOPTS) $^
+
+getch: getch.o
+	$(CXX) -o $@.$(SHLIBEXT) $(LIBOPTS) $^
+
+serial: luaserial.o
+	$(CC) -o $@.$(SHLIBEXT) $(LIBOPTS) $^
 
 clean:
-	make -f Makefile.local clean	
-	rm -rf build
+	rm -f *.o *.$(SHLIBEXT)

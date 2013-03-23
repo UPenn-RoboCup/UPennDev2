@@ -1,28 +1,26 @@
-CWD= $(shell pwd)
-ifeq ($(CTCDIR),)
-  ifeq ($(CROSS),true)
-    CTCDIR= $(NaoqiCTC)
-  endif
-endif
-CHAIN= $(CTCDIR)
+# Makefile used to build libraries
+include ../../Makefile.inc
 
-all: naoqi 
+TARGETS = all clean
+.PHONY: $(TARGETS)
 
-naoqi:
-ifeq ($(CHAIN),)
-#	@echo Cross compilitation tool not specified. \
-#				Please download the ctc tool from \
-#				the aldebaran website and follow the \
-#				instructions to configure it for your system \
+all: ImageProc
 
-	make -f Makefile.local
-else
-	rm -rf build
-	mkdir build
-	cd build && cmake -DCMAKE_TOOLCHAIN_FILE="$(CHAIN)/toolchain-atom.cmake" .. \
-		&& make && cd $(CWD)
-endif
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
+%.o: %.cc
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
+%.o: %.c
+	$(CC) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
+
+ImageProc: lua_ImageProc.o \
+	color_count.o block_bitor.o \
+	ConnectRegions.o RegionProps.o RadonTransform.o\
+	lua_color_stats.o lua_color_count.o lua_colorlut_gen.o \
+	lua_connect_regions.o \
+	lua_goal_posts.o lua_robots.o\
+	lua_field_lines.o lua_field_spots.o lua_field_occupancy.o
+	$(LD) $(LDFLAGS) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ $(LIB_DIR) -lm
 
 clean:
-	make -f Makefile.local clean	
-	rm -rf build
+	rm -f *.$(SHLIBEXT) *.o

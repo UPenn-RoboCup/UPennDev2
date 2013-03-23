@@ -30,11 +30,8 @@ namespace gazebo
     this->model = _parent;
     this->world = this->model->GetWorld(); 
 
-    // initiation sim time
-    this->last_update_time = this->world->GetSimTime();
+    // initialize time step
     this->dynamics_time_step = this->world->GetPhysicsEngine()->GetStepTime();
-
-    // initialize sim time socket
 
     // initialize joints
     this->joint_names.push_back("l_hip_yaw");
@@ -125,11 +122,6 @@ namespace gazebo
     // reset joint controllers if time step is modified
     if (this->dynamics_time_step != this->world->GetPhysicsEngine()->GetStepTime())
       this->initialize_controllers();
-
-    // update sim time
-    common::Time current_time = this->world->GetSimTime();
-    double dt = current_time.Double() - this->last_update_time.Double();
-    this->last_update_time = current_time;
 
     // update joints
     for (unsigned int i = 0; i < this->joints.size(); i++)
@@ -225,7 +217,6 @@ namespace gazebo
         dcm.ahrs[i+6] = euler[i];
       }
     }
-
   }
 
   // Register this plugin with the simulator

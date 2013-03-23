@@ -1,9 +1,6 @@
 #ifndef _GZ_COMMS_MANAGER_H_
 #define _GZ_COMMS_MANAGER_H_
 
-#include <string>
-#include <vector>
-
 #include <gazebo/math/Vector3.hh>
 #include <gazebo/physics/physics.hh>
 #include <gazebo/physics/PhysicsTypes.hh>
@@ -17,8 +14,11 @@
 #include <gazebo/sensors/ImuSensor.hh>
 #include <gazebo/sensors/Sensor.hh>
 
+#include <string>
+#include <vector>
 #include "config.h"
 #include "dcm.h"
+
 extern "C" {
 #include "pid.h"
 #include "filter.h"
@@ -36,8 +36,6 @@ namespace gazebo
     public: void Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf);
     private: void initialize_controllers();
     private: void update();
-    private: void on_l_contact_update();
-    private: void on_r_contact_update();
 
     private: physics::ModelPtr model;
     private: physics::WorldPtr world;

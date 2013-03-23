@@ -15,71 +15,112 @@ colorCyan = 4;
 colorField = 8;
 colorWhite = 16;
 
-use_point_goal=Config.vision.use_point_goal;
-headInverted=Config.vision.headInverted;
+min_white_pixel = Config.vision.line.min_white_pixel or 200;
+min_green_pixel = Config.vision.line.min_green_pixel or 5000;
 
-headZ = Config.head.camOffsetZ;
+--min_width=Config.vision.line.min_width or 4;
+max_width=Config.vision.line.max_width or 8;
+connect_th=Config.vision.line.connect_th or 1.4;
+max_gap=Config.vision.line.max_gap or 1;
+min_length=Config.vision.line.min_length or 3;
 
----Detects a white line.
---Chooses the "best" line and returns only stats on that line.
---@return Table containing whether a line was detected
---If a line is detected, also contains additional stats about the line
 function detect()
   --TODO: test line detection
   line = {};
   line.detect = 0;
 
-  if (Vision.colorCount[colorWhite] < 200) then 
+  if (Vision.colorCount[colorWhite] < min_white_pixel) then 
     --print('under 200 white pixels');
     return line;
   end
-  if (Vision.colorCount[colorField] < 5000) then 
+  if (Vision.colorCount[colorField] < min_green_pixel) then 
     --print('under 5000 green pixels');
     return line; 
   end
 
-  --max width 8
-  linePropsB = ImageProc.field_lines(Vision.labelB.data, Vision.labelB.m, Vision.labelB.n, 8); 
-  if (not linePropsB) then 
+  linePropsB = ImageProc.field_lines(Vision.labelB.data, Vision.labelB.m,
+		 Vision.labelB.n, max_width,connect_th,max_gap,min_length);
+
+  if #linePropsB==0 then 
     --print('linePropsB nil')
     return line; 
   end
-  if (linePropsB.count < 15) then 
-    --print('linePropsB count under 15: '..linePropsB.count)
+
+  line.propsB=linePropsB;
+  nLines=0;
+
+  nLines=#line.propsB;
+  vcm.add_debug_message(string.format(
+    "Total %d lines detected\n" ,nLines));
+
+  if (nLines==0) then
     return line; 
   end
-  line.propsB = linePropsB;
 
-  local vendpoint = {};
-  vendpoint[1] = HeadTransform.coordinatesB(vector.new({linePropsB.endpoint[1], linePropsB.endpoint[3]}));
-  vendpoint[2] = HeadTransform.coordinatesB(vector.new({linePropsB.endpoint[2], linePropsB.endpoint[4]}));
+  line.v={};
+  line.endpoint={};
+  line.angle={};
+  line.length={}
 
-  -- height check
-  if (vendpoint[1][3] >= 0.3 or vendpoint[2][3] >= 0.3) then 
-    --print('failed head check');
-    return line; 
-  end 
-
-  if (vendpoint[1][3] < -headZ) then
-    vendpoint[1] = (-headZ/vendpoint[1][3])*vendpoint[1];
-  end
-  if (vendpoint[2][3] < -headZ) then
-    vendpoint[2] = (-headZ/vendpoint[2][3])*vendpoint[2];
+  for i = 1,6 do
+    line.endpoint[i] = vector.zeros(4);
+    line.v[i]={};
+    line.v[i][1]=vector.zeros(4);
+    line.v[i][2]=vector.zeros(4);
+    line.angle[i] = 0;
   end
 
-  line.angle = math.atan2(vendpoint[2][2] - vendpoint[1][2], vendpoint[2][1] - vendpoint[1][1]);
-  vcentroid = HeadTransform.coordinatesB(linePropsB.centroid, 1);
 
-  -- Project to ground plane
-  if (vcentroid[3] < -headZ) then
-    vcentroid = (-headZ/vcentroid[3])*vcentroid;
+  bestindex=1;
+  bestlength=0;
+  linecount=0;
+
+  for i=1,nLines do
+    local length = math.sqrt(
+	(line.propsB[i].endpoint[1]-line.propsB[i].endpoint[2])^2+
+	(line.propsB[i].endpoint[3]-line.propsB[i].endpoint[4])^2);
+
+      local vendpoint = {};
+      vendpoint[1] = HeadTransform.coordinatesB(vector.new(
+		{line.propsB[i].endpoint[1],line.propsB[i].endpoint[3]}),1);
+      vendpoint[2] = HeadTransform.coordinatesB(vector.new(
+		{line.propsB[i].endpoint[2],line.propsB[i].endpoint[4]}),1);
+
+      vHeight = 0.5*(vendpoint[1][3]+vendpoint[2][3]);
+
+      vHeightMax = 0.50;
+
+    if length>min_length and linecount<6 and vHeight<vHeightMax then
+      linecount=linecount+1;
+      line.length[linecount]=length;
+      line.endpoint[linecount]= line.propsB[i].endpoint;
+      vendpoint[1] = HeadTransform.projectGround(vendpoint[1],0);
+      vendpoint[2] = HeadTransform.projectGround(vendpoint[2],0);
+      line.v[linecount]={};
+      line.v[linecount][1]=vendpoint[1];
+      line.v[linecount][2]=vendpoint[2];
+      line.angle[linecount]=math.abs(math.atan2(vendpoint[1][2]-vendpoint[2][2],
+			    vendpoint[1][1]-vendpoint[2][1]));
+      vcm.add_debug_message(string.format(
+		"Line %d: length %d, angle %d\n",
+		linecount,line.length[linecount],
+		line.angle[linecount]*180/math.pi));
+    end
+  end
+  nLines = linecount;
+  line.nLines = nLines;
+
+  --TODO::::find distribution of v
+  sumx=0;
+  sumxx=0;
+  for i=1,nLines do 
+    --angle: -pi to pi
+    sumx=sumx+line.angle[i];
+    sumxx=sumxx+line.angle[i]*line.angle[i];
   end
 
-  line.v = vcentroid;
-  line.vcentroid = vcentroid;
-  line.vendpoint = vendpoint;
-  --print('detected line: '..line.v[1]..', '..line.v[2]);
-
-  line.detect = 1;
+  if nLines>0 then
+    line.detect = 1;
+  end
   return line;
 end

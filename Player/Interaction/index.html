@@ -1,87 +1,102 @@
 <!DOCTYPE html>
+<!--HTML5 doctype-->
 <html>
-  <head>
-    <style>
-      #container {
-        background: #000;
-        width: 400px;
-        height: 400px;
-      }
-    </style>
-  </head>
-
-  <div id="container">
-  </div>
-
+     
+<head>
+  <title>UI Starter</title>
+  <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <link rel="stylesheet" type="text/css" href="extra/icons.css" />
+  <link rel="stylesheet" type="text/css" href="extra/jq.ui.css" title="upenn" />
+  <script type="text/javascript" charset="utf-8" src="extra/jq.ui.min.js"></script>
+  <!-- include touch on desktop browsers only -->
+  <script>
+  if (!((window.DocumentTouch && document instanceof DocumentTouch) || 'ontouchstart' in window)) {
+    var script = document.createElement("script");
+    script.src = "extra/jq.web.min.js";
+    var tag = $("head").append(script);
+    $.os.android = true; //let's make it run like an android device
+    $.os.desktop = true;
+  }
+  </script>
+    
+  <script type="text/javascript">
+  var webRoot = "./";
+  $.ui.autoLaunch = false; //By default, it is set to true and you're app will run right away.  We set it to false to show a splashscreen
+  /* This function runs when the body is loaded.*/
+  var init = function () {
+    $.ui.backButtonText = "Back";// We override the back button text to always say "Back"
+    window.setTimeout(function () {
+      //alert('launch')
+      $.ui.launch(); 
+    }, 1500);//We wait 1.5 seconds to call $.ui.launch after DOMContentLoaded fires
+    init_gl_cloud();
+  };
+  document.addEventListener("DOMContentLoaded", init, false);
+  $.ui.ready(function () {
+    //This function will get executed when $.ui.launch has completed
+    //alert('Done loading content.'); // alert looks nice!
+  });
+  /* This code is used for native apps */
+  var onDeviceReady = function () {
+    AppMobi.device.setRotateOrientation("portrait");
+    AppMobi.device.setAutoRotate(false);
+    webRoot = AppMobi.webRoot + "/";
+    //hide splash screen
+    AppMobi.device.hideSplashScreen();
+ 
+  };
+  document.addEventListener("appMobi.device.ready", onDeviceReady, false);
+  </script>
+    
+  <!-- Application Specific JS -->
   <script src="extra/three.min.js"></script>
+  <script src="extra/Detector.js"></script>
+  <script type="text/javascript">
+  if ( ! Detector.webgl ){ Detector.addGetWebGLMessage(); }
+  </script>
+  <script src="extra/TrackballControls.js"></script>    
   <script src="extra/leap.min.js"></script>
-  <script src="extra/jq.mobi.min.js"></script>
-  <script src="http://mrdoob.github.com/three.js/examples/js/controls/TrackballControls.js"></script>
-  <script src="http://mrdoob.github.com/three.js/examples/js/Detector.js"></script>
-  <script src="http://mrdoob.github.com/three.js/examples/js/libs/stats.min.js"></script>
-
-  <script>
-    var host = window.document.location.host.replace(/:.*/, '');
-  </script>
-
-  <!--Receiving Depth Image-->
-  <script src="kinect_gl_particle.js"></script>
-  <script>
-    var d;
-    console.log('Connecting to '+host+' 8080')
-    var ws = new WebSocket('ws://' + host + ':8080');
-    ws.binaryType = "arraybuffer";
-    ws.onmessage = function (event) {
-      d = new Uint8Array( event.data );
-      update_kinect_particles( d );
-//      console.log( d );
-    };
-  </script>
-
-  <!--Receiving an image-->
-  <script>
-    console.log('Connecting to '+host+' 9000')
-    var ws_i = new WebSocket('ws://' + host + ':9000');
-    ws_i.binaryType = "blob";
-    var jpeg_url_name = "";
-    var img = new Image;
-    // Create a canvas element
-    var myCanvas = document.createElement('canvas');
-    myCanvas.width = 320;
-    myCanvas.height = 240;
-    // Get the drawing context
-    var ctx = myCanvas.getContext('2d');
-    ws_i.onmessage = function (event) {
-      // Revoke the previous
-      window.URL.revokeObjectURL(jpeg_url_name);
-      var parts = []
-      parts.push(event.data)
-      var tmp = new Blob( parts, { "type" : "image\/jpeg" } )
-      var jpeg_url_name = (window.URL || window.webkitURL).createObjectURL(tmp)
-      img.src = jpeg_url_name;
-      img.onload = function(){
-        ctx.drawImage( img, 0, 0 ); // Or at whatever offset you like
-        var imgdata = ctx.getImageData(0, 0, 320, 240);
-        update_kinect_image( new Uint8Array(imgdata.data.buffer ) );
-        //console.log( imgdata );
-      };
-    };
-  </script>
-
-  <!--Receiving LIDAR-->
-  <!--
-  <script src="lidar_gl.js"></script>
-  <script>
-    console.log('Connecting to '+host+' 9000')
-    var ws = new WebSocket('ws://' + host + ':9000');
-    var ranges;
-    ws.binaryType = "arraybuffer";
-    ws.onmessage = function (event) {
-      ranges = new Float32Array( event.data );
-      update_particles( ranges );
-      //console.log( event.data );
-    };
-  </script>
-  -->
-
+  <script src="listen_kinect.js"></script>
+  <script src="gl_cloud.js"></script>
+</head>
+     
+<body>
+  <div id="jQUi"> <!-- this is the main container div.  This way, you can have only part of your app use UI -->
+    <!-- this is the header div at the top -->
+    <div id="header">
+      <a href="javascript:$.ui.toggleSideMenu()" class="button" style="float:right">Toggle Nav</a>
+    </div>
+    
+    <div id="content">
+      <!-- here is where you can add your panels -->
+      <div title='Welcome' id="main" class="panel" selected="true">
+          <canvas id="kcolor"></canvas>
+          <canvas id="kdepth"></canvas>
+          <div id="kgl"></div>
+          <div id="ldebug">This is a basic skeleton UI sample</div>
+        </div>
+      </div>
+      
+      <!-- bottom navbar. Add additional tabs here -->
+      <div id="navbar">
+        <div class="horzRule"></div>
+        <a href="#main" id='navbar_home' class='icon home'>home</a>
+      </div>
+      
+      <!-- this is the default left side nav menu.  If you do not want any, do not include these -->
+      <nav>
+        <div class='title'>Home</div>
+        <ul>
+          <li class="icon home mini">
+            <a href="#main">Selectors</a>
+          </li>
+        </ul>
+      </nav>
+      
+    </div>
+    
+  </body>
+  
 </html>

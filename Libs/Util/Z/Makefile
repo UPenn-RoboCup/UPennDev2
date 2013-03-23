@@ -1,22 +1,37 @@
-CWD= $(shell pwd)
-CHAIN = $(CTCDIR)
+# Makefile used to build libraries
+include ../../../Makefile.inc
 
-all: naoqi 
+MEXEXT= $(shell mexext)
+ZLIB = zlib-src
 
-naoqi:
-ifeq ($(CHAIN),)
-	@echo Cross compilitation tool not specified. \
-				Please download the ctc tool from \
-				the aldebaran website and follow the \
-				instructions to configure it for your system \
-        && make -f Makefile.local
-else
-	rm -rf build
-	mkdir build
-	cd build && cmake -DCMAKE_TOOLCHAIN_FILE="$(CHAIN)/toolchain-atom.cmake" .. \
-		&& make && cd $(CWD)
-endif
+TARGETS = all clean
+.PHONY: $(TARGETS)
+
+#all: serialize deserialize zlibCompress zlibUncompress z
+all: z
+
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -I$(ZLIB) -o $@ -c $<
+%.o: %.cc
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -I$(ZLIB) -o $@ -c $<
+%.o: $(ZLIB)/%.c
+	$(CC) $(CXXFLAGS) $(INCLUDES) -I$(ZLIB) -o $@ -c $<
+
+serialize:
+	mex -O $@.c
+	
+deserialize:
+	mex -O $@.c 
+	
+zlibCompress: deflate.o adler32.o crc32.o trees.o zutil.o
+	mex -O $@.cc $^
+
+zlibUncompress: inflate.o inffast.o inftrees.o adler32.o crc32.o zutil.o
+	mex -O $@.cc $^ 
+
+z: luaZ.o deflate.o inflate.o inffast.o inftrees.o trees.o adler32.o crc32.o zutil.o
+	$(LD) $(LDFLAGS) -o Z.$(SHLIBEXT) $(LIBOPTS) $^ $(LIB_DIR)
 
 clean:
-	make -f Makefile.local clean	
-	rm -rf build
+	rm -f *.$(MEXEXT) *.$(SHLIBEXT) *.o $(ZLIB)/*.o
+

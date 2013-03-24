@@ -9,7 +9,7 @@ include Makefile.inc
 all:
 	@echo " Please choose one of the following targets:"
 	@echo " make ash"
-	@echo " make vrep_ash"
+	@echo " make gazebo_ash_lowerbody"
 	@echo " make webots_ash"
 	@echo " make teststand"
 	@echo " make arm_teststand"

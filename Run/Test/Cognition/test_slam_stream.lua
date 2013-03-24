@@ -10,7 +10,6 @@ require 'cjpeg'
 require 'cutil'
 
 -- Setup IPC
-local omap_channel = simple_ipc.setup_publisher('omap');
 local lidar_channel = simple_ipc.setup_subscriber('lidar');
 local imu_channel = simple_ipc.setup_subscriber('arduimu');
 
@@ -58,8 +57,11 @@ local t_last_lidar = Sensors.LIDAR0.timestamp;
 -- This loops itself
 -- This just does the callbacks
 --channel_poll:start()
+require 'Comm'
+Comm.init('192.168.123.255', 54321);
 
-while true do
+--while true do
+for i=1,15 do
   --this will go through the loop and send the callbacks
   --Have not tested this much...
   channel_poll:poll(channel_timeout) 
@@ -67,16 +69,10 @@ while true do
   -- Send the map at set intervals
   t = unix.time()
   if t-t_last>map_t then
-    --libSlam.OMAP.timestamp
     local omap_s_ptr = libSlam.OMAP.data:storage():pointer()
     local jomap = cjpeg.compress( omap_s_ptr, libSlam.MAPS.sizex, libSlam.MAPS.sizey,1 )
-    --[[
-    local f = io.open('tmp.jpg','w')
-    f:write( jomap )
-    f:close()
-    --]]
---    print('Sending map')
-    omap_channel:send( jomap );
+    print('Sending map',i)
+    Comm.send( jomap );
     t_last = t;
   end
 end

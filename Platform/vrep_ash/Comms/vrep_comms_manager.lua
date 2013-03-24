@@ -17,25 +17,19 @@ local joint_name = {
   'r_knee_pitch', 'r_ankle_pitch', 'r_ankle_roll',
 }
 
--- vrep joint controllers (0 = impedance, 1 = position)
---[[
+-- vrep joint controllers [0 = impedance, 1 = position, 2 = velocity]
 local joint_controller = {
   0, 0, 0,
   0, 0, 0,
   0, 0, 0,
   0, 0, 0,
-}
---]]
-local joint_controller = {
-  1, 1, 1,
-  1, 1, 1,
-  1, 1, 1,
-  1, 1, 1,
 }
 
 local function initialize_devices()
   -- intialize vrep devices
-  handles.robot = simGetObjectHandle('torso')
+  handles.torso = simGetObjectHandle('torso')
+  handles.l_foot = simGetObjectHandle('l_foot')
+  handles.r_foot = simGetObjectHandle('r_foot')
   handles.gyro = simTubeOpen(0, 'gyroData'..simGetNameSuffix(nil), 1)
   handles.accel = simTubeOpen(0, 'accelerometerData'..simGetNameSuffix(nil), 1)
   handles.joint = {}
@@ -53,25 +47,23 @@ local function initialize_devices()
 end
 
 local function update_actuators()
-  -- update joint parameters 
+  -- update joint parameters
   local joint_enable = dcm:get_joint_enable()
   local joint_force = dcm:get_joint_force()
   local joint_position = dcm:get_joint_position()
   local joint_velocity = dcm:get_joint_velocity()
-  local joint_position_p_gain = dcm:get_joint_position_p_gain()
-  local joint_position_i_gain = dcm:get_joint_position_i_gain()
-  local joint_position_d_gain = dcm:get_joint_position_d_gain()
-  local joint_velocity_p_gain = dcm:get_joint_velocity_p_gain()
+  local joint_p_gain = dcm:get_joint_p_gain()
+  local joint_i_gain = dcm:get_joint_i_gain()
+  local joint_d_gain = dcm:get_joint_d_gain()
 
   for i = 1,#joint_name do
     local joint_param = simPackFloats{
       joint_force[i],
       joint_position[i],
       joint_velocity[i],
-      joint_position_p_gain[i],
-      joint_position_i_gain[i],
-      joint_position_d_gain[i],
-      joint_velocity_p_gain[i],
+      joint_p_gain[i],
+      joint_i_gain[i],
+      joint_d_gain[i],
     }
     simAddObjectCustomData(handles.joint[i], 2050, joint_param, #joint_param)
     simSetObjectIntParameter(handles.joint[i], 2000, joint_enable[i])
@@ -90,7 +82,7 @@ local function update_sensors()
   end
 
   -- update ahrs sensors
-  local euler_angles = simGetObjectOrientation(handles.robot, -1)
+  local euler_angles = simGetObjectOrientation(handles.torso, -1)
   dcm:set_ahrs(euler_angles, 'euler')
   
   local data = simTubeRead(handles.gyro)
@@ -105,9 +97,9 @@ local function update_sensors()
     dcm:set_ahrs(floats, 'accel')
   end
 
-  -- update force-torque readings
-  -- dcm:set_force_torque(l_fts, 'l_foot')
-  -- dcm:set_force_torque(r_fts, 'r_foot')
+  -- update force-torque values
+--dcm:set_force_torque(l_ft, 'l_foot')
+--dcm:set_force_torque(r_ft, 'r_foot')
 end
 
 local function reset_simulator()
@@ -116,14 +108,14 @@ local function reset_simulator()
 end
 
 local function reset_simulator_physics()
-  simResetDynamicObject(handles.robot)
+  simResetDynamicObject(handles.torso)
 end
 
 local function set_simulator_torso_frame(frame)
   local pose = frame:get_pose()
   -- -1 means set absolute position/orientation
-  simSetObjectPosition(handles.robot, -1, {pose[1], pose[2], pose[3]})
-  simSetObjectOrientation(handles.robot, -1, {pose[4], pose[5], pose[6]})
+  simSetObjectPosition(handles.torso, -1, {pose[1], pose[2], pose[3]})
+  simSetObjectOrientation(handles.torso, -1, {pose[4], pose[5], pose[6]})
 end
 
 local function set_simulator_torso_twist(twist)
@@ -135,11 +127,10 @@ function vrep_comms_manager.entry()
 
   -- initialize shared memory
   dcm:set_joint_enable(1, 'all')
-  dcm:set_joint_position_p_gain(1.0, 'all')
-  dcm:set_joint_position_i_gain(0.1, 'all')
-  dcm:set_joint_position_d_gain(0.05, 'all')
-  dcm:set_joint_velocity_p_gain(0, 'all')
-  dcm:set_joint_force(100, 'all')
+  dcm:set_joint_p_gain(1.0, 'all')
+  dcm:set_joint_i_gain(0.0, 'all')
+  dcm:set_joint_d_gain(0.01, 'all')
+  dcm:set_joint_force(0, 'all')
   dcm:set_joint_position(0, 'all')
   dcm:set_joint_velocity(0, 'all')
   dcm:set_joint_force_sensor(0, 'all')
@@ -158,7 +149,7 @@ end
 function vrep_comms_manager.update()
   update_actuators()
   update_sensors()
-  local msg = cmsgpack.pack{simGetSimulationTime(), simGetSimulationTimeStep()}
+  local msg = cmsgpack.pack(simGetSimulationTime())
   time_socket:send('time'..msg)
 end
 

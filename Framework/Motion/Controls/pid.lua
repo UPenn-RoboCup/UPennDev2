@@ -8,8 +8,6 @@ pid = {}
 pid.__index = pid
 pid.__mtstring = 'pid'
 
-local Q = 0.5
-
 function pid.new(Ts, p_gain, i_gain, d_gain)
   local o = {}
   o.Ts = Ts or 1e-10
@@ -27,8 +25,7 @@ function pid.new(Ts, p_gain, i_gain, d_gain)
   o.i_term = 0
   o.d_term = 0
   o.d_corner_frequency = 1/(2*o.Ts)
-  o.d_filter = filter.new_second_order_differentiator(
-    o.Ts, o.d_corner_frequency, Q)
+  o.d_filter = filter.new_differentiator(o.Ts, o.d_corner_frequency)
   return setmetatable(o, pid)
 end
 
@@ -45,8 +42,7 @@ end
 function pid.set_time_step(o, Ts)
   o.Ts = Ts
   o.d_corner_frequency = math.min(o.d_corner_frequency, 1/(2*o.Ts))
-  o.d_filter = filter.new_second_order_differentiator(
-    o.Ts, o.d_corner_frequency, Q)
+  o.d_filter = filter.new_differentiator(o.Ts, o.d_corner_frequency)
 end
 
 function pid.set_gains(o, p_gain, i_gain, d_gain)
@@ -88,12 +84,23 @@ end
 function pid.set_d_corner_frequency(o, d_corner_frequency)
   o.d_corner_frequency = d_corner_frequency 
   o.d_corner_frequency = math.min(o.d_corner_frequency, 1/(2*o.Ts))
-  o.d_filter = filter.new_second_order_differentiator(
-    o.Ts, o.d_corner_frequency, Q)
+  o.d_filter = filter.new_differentiator(o.Ts, o.d_corner_frequency)
 end
 
 function pid.set_setpoint(o, setpoint)
   o.setpoint = math.max(math.min(setpoint, o.max_setpoint), o.min_setpoint)
+end
+
+function pid.get_setpoint(o)
+  return o.setpoint
+end
+
+function pid.get_process_value(o)
+  return o.d_filter.input[1] or 0
+end
+
+function pid.get_derivative(o)
+  return o.d_filter.output[1] or 0
 end
 
 function pid.reset(o)

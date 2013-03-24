@@ -15,21 +15,15 @@ end
 -- Setup
 ---------------------------------------------------------------------------
 
-local N_JOINT = 12
 local joint = Config.joint
 local simulator_iterations = 2
 
 -- servo controller parameters
 local max_force = 100
-local max_position_p_gain = 20000
-local max_position_d_gain = 0  -- damping disabled due to ODE instability
+local max_p_gain = 20000
+local max_d_gain = 0  -- damping disabled due to ODE instability
 local max_velocity = 7
 local max_acceleration = 70
-local velocity_p_gain = 0.25*vector.ones(N_JOINT)
-
-local joint_ff_force = vector.zeros(N_JOINT)
-local joint_p_force = vector.zeros(N_JOINT)
-local joint_d_force = vector.zeros(N_JOINT)
 
 local tags = {} -- webots tags
 local time_step = nil
@@ -42,6 +36,10 @@ local servoNames = { -- webots servo names
   'r_hip_yaw', 'r_hip_roll', 'r_hip_pitch', 
   'r_knee_pitch', 'r_ankle_pitch', 'r_ankle_roll',
 }
+
+local velocity_p_gain = 0.25*vector.ones(#servoNames)
+local joint_ff_force = vector.zeros(#servoNames)
+local joint_p_force = vector.zeros(#servoNames)
 
 -- Actuator / sensor interface 
 ----------------------------------------------------------------
@@ -62,7 +60,7 @@ local function initialize_devices()
   tags.physics_emitter = webots.wb_robot_get_device('physics_emitter')
 
   tags.servo = {}
-  for i = 1,N_JOINT do
+  for i = 1,#servoNames do
     tags.servo[i] = webots.wb_robot_get_device(servoNames[i])
     webots.wb_servo_enable_position(tags.servo[i], time_step)
     webots.wb_servo_enable_motor_force_feedback(tags.servo[i], time_step)
@@ -82,19 +80,16 @@ local function update_actuators()
   local joint_velocity_desired = dcm:get_joint_velocity()
   local joint_position_actual = dcm:get_joint_position_sensor()
   local joint_velocity_actual = dcm:get_joint_velocity_sensor()
-  local joint_position_p_gain = dcm:get_joint_position_p_gain()
-  local joint_position_i_gain = dcm:get_joint_position_i_gain()
-  local joint_position_d_gain = dcm:get_joint_position_d_gain()
-  local joint_velocity_p_gain = dcm:get_joint_velocity_p_gain()
-  local position_error = vector.zeros(N_JOINT)
-  local velocity_error = vector.zeros(N_JOINT)
+  local joint_p_gain = dcm:get_joint_p_gain()
+  local joint_i_gain = dcm:get_joint_i_gain()
+  local joint_d_gain = dcm:get_joint_d_gain()
+  local position_error = vector.zeros(#servoNames)
 
   -- calculate joint forces
-  for i = 1,N_JOINT do
+  for i = 1,#servoNames do
     if (joint_enable[i] == 0) then
       -- zero forces
       joint_ff_force[i] = 0 
-      joint_d_force[i] = 0
       joint_p_force[i] = 0
       webots.wb_servo_set_force(tags.servo[i], 0)
     else
@@ -103,19 +98,14 @@ local function update_actuators()
       joint_ff_force[i] = limit(joint_ff_force[i], -max_force, max_force)
       -- calculate spring force 
       position_error[i] = joint_position_desired[i] - joint_position_actual[i]
-      joint_position_p_gain[i] = limit(joint_position_p_gain[i], 0, 1)
-      joint_p_force[i] = joint_position_p_gain[i]*max_position_p_gain*position_error[i]
+      joint_p_gain[i] = limit(joint_p_gain[i], 0, 1)
+      joint_p_force[i] = joint_p_gain[i]*max_p_gain*position_error[i]
       joint_p_force[i] = limit(joint_p_force[i], -max_force, max_force)
-      -- calculate damping force
-      velocity_error[i] = joint_velocity_desired[i] - joint_velocity_actual[i]
-      joint_position_d_gain[i] = limit(joint_position_d_gain[i], 0, 1)
-      joint_d_force[i] = joint_position_d_gain[i]*max_position_d_gain*velocity_error[i]
-      joint_d_force[i] = limit(joint_d_force[i], -max_force, max_force)
     end
   end
 
   -- update spring force using motor velocity controller
-  for i = 1,N_JOINT do
+  for i = 1,#servoNames do
     local max_servo_force = math.abs(joint_p_force[i])
     local servo_velocity = velocity_p_gain[i]*position_error[i]*(1000/time_step)
     servo_velocity = limit(servo_velocity, -max_velocity, max_velocity)
@@ -123,19 +113,19 @@ local function update_actuators()
     webots.wb_servo_set_velocity(tags.servo[i], servo_velocity)
   end
 
-  local buffer = cbuffer.new((N_JOINT + 7)*8)
+  local buffer = cbuffer.new((12 + 7)*8)
 
-  -- update feedforward and damping forces using physics plugin
-  for i = 1,N_JOINT do
-    local servo_force = joint_ff_force[i] + joint_d_force[i]
+  -- update leg feedforward forces using physics plugin
+  for i = 1,12 do
+    local servo_force = joint_ff_force[i]
     servo_force =  limit(servo_force, -max_force, max_force)
     buffer:set('double', servo_force, (i-1)*8)
   end
 
   -- update torso twist using physics plugin
-  buffer:set('double', torso_twist_updated, (N_JOINT)*8)
+  buffer:set('double', torso_twist_updated, (12)*8)
   for i = 1,6 do
-    buffer:set('double', torso_twist[i], (N_JOINT + i)*8)
+    buffer:set('double', torso_twist[i], (12 + i)*8)
   end
   torso_twist_updated = 0
 
@@ -145,15 +135,14 @@ end
 local function update_sensors()
   -- update webots sensor values
   local joint_enable = dcm:get_joint_enable()
-  for i = 1,N_JOINT do
+  for i = 1,#servoNames do
     if (joint_enable[i] == 0) then
       dcm:set_joint_force_sensor(0, i)
     else
       dcm:set_joint_force_sensor(webots.wb_servo_get_motor_force_feedback(
           tags.servo[i]) + joint_ff_force[i], i)
     end
-    dcm:set_joint_position_sensor(
-        webots.wb_servo_get_position(tags.servo[i]), i)
+    dcm:set_joint_position_sensor(webots.wb_servo_get_position(tags.servo[i]), i)
   end
   
   -- update imu readings
@@ -171,15 +160,15 @@ local function update_sensors()
   -- update force-torque readings and joint velocities using physics plugin
   local buffer = cbuffer.new(webots.wb_receiver_get_data(tags.physics_receiver))
   local joint_velocity = {}
-  for i = 1,N_JOINT do
+  for i = 1,12 do
     joint_velocity[i] = buffer:get('double', (i-1)*8)
   end
   dcm:set_joint_velocity_sensor(joint_velocity)
   local l_fts = {}
   local r_fts = {}
   for i = 1,6 do
-    l_fts[i] = buffer:get('double', (i-1)*8 + N_JOINT*8)
-    r_fts[i] = buffer:get('double', (i-1)*8 + N_JOINT*8 + 48)
+    l_fts[i] = buffer:get('double', (i-1)*8 + 12*8)
+    r_fts[i] = buffer:get('double', (i-1)*8 + 12*8 + 48)
   end
   dcm:set_force_torque(l_fts, 'l_foot')
   dcm:set_force_torque(r_fts, 'r_foot')
@@ -197,6 +186,10 @@ end
 
 function Platform.get_time_step()
   return time_step*simulator_iterations/1000
+end
+
+function Platform.set_update_rate()
+  -- for compatibility
 end
 
 function Platform.get_update_rate()
@@ -232,10 +225,9 @@ function Platform.entry()
 
   -- initialize shared memory 
   dcm:set_joint_enable(1, 'all')
-  dcm:set_joint_position_p_gain(1, 'all') -- position control
-  dcm:set_joint_position_i_gain(0, 'all')
-  dcm:set_joint_position_d_gain(0, 'all')
-  dcm:set_joint_velocity_p_gain(0, 'all')
+  dcm:set_joint_p_gain(1, 'all') -- position control
+  dcm:set_joint_i_gain(0, 'all')
+  dcm:set_joint_d_gain(0, 'all')
   dcm:set_joint_force(0, 'all')
   dcm:set_joint_position(0, 'all')
   dcm:set_joint_velocity(0, 'all')

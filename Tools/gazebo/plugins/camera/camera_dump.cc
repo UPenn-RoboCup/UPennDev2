@@ -17,6 +17,9 @@
 #include "gazebo.hh"
 #include "plugins/CameraPlugin.hh"
 #include <stdio.h>
+#include <iostream>
+#include <iomanip>
+#include <sys/time.h>
 
 namespace gazebo
 {
@@ -38,14 +41,18 @@ namespace gazebo
       char tmp[1024];
 //      snprintf(tmp, sizeof(tmp), "/tmp/%s-%04d.jpg",
 //          this->parentSensor->GetCamera()->GetName().c_str(), this->saveCount);
-      printf("new camera image %d\n", this->saveCount);
+      struct timeval t;
+      gettimeofday(&t, NULL);
+
+      std::cout << "new camera image " << this->parentSensor->GetCamera()->GetImageHeight() << ' '; 
+      std::cout << this->parentSensor->GetCamera()->GetImageWidth() << ' ';
+      std::cout << std::setw(14) << std::setprecision(15)<< t.tv_sec + 1E-6*t.tv_usec << std::endl;
 
 //      if (this->saveCount < 100)
 //      {
 //        this->parentSensor->GetCamera()->SaveFrame(
 //            _image, _width, _height, _depth, _format, tmp);
-//        gzmsg << "Saving frame [" << this->saveCount
-//              << "] as [" << tmp << "]\n";
+//        gzmsg << "Saving frame [" << this->saveCount << "] as [" << tmp << "]\n";
         this->saveCount++;
 //      }
     }

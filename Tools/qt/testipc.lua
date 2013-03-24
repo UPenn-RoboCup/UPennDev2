@@ -5,7 +5,8 @@ package.path = pwd..'/../../Player/Util/?.lua;'..package.path
 
 local simple_ipc = require 'simple_ipc'
 local mp = require 'MessagePack'
-local imu_channel = simple_ipc.setup_subscriber('imu');
+local imu_channel = simple_ipc.setup_subscriber('img');
+local img_channel = simple_ipc.setup_publisher('img2');
 local util = require 'util'
 local unix = require 'unix'
 
@@ -28,9 +29,10 @@ local channel_poll = simple_ipc.wait_on_channels( wait_channels );
 local channel_timeout = 1e3;
 --channel_timeout = 0;
 while (1) do
-  channel_poll:poll(channel_timeout)
---  local imu_data, has_more = imu_channel:receive();
-----  print(imu_data..' '..unix.time())
+--  channel_poll:poll(channel_timeout)
+  local imu_data, has_more = imu_channel:receive();
+  img_channel:send('a'..imu_data);
+  print(#imu_data..' '..unix.time())
 --  print(mp.unpack(imu_data)..' '..unix.time())
 --  print(unix.time())
 end

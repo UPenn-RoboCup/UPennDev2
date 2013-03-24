@@ -3,11 +3,10 @@ require('pid')
 local MAX_FORCE = 300
 local MAX_VELOCITY = 10
 local MAX_ACCEL = 600
-local POSITION_P_GAIN_FACTOR = 10000
-local POSITION_I_GAIN_FACTOR = 10000
-local POSITION_D_GAIN_FACTOR = 10000
-local POSITION_D_CORNER_FREQUENCY = 30
-local VELOCITY_P_GAIN_FACTOR = 10000
+local P_GAIN_FACTOR = 10000
+local I_GAIN_FACTOR = 10000
+local D_GAIN_FACTOR = 10000
+local D_CORNER_FREQUENCY = 30
 
 vrep_impedance_controller = {}
 vrep_impedance_controller.__index = vrep_impedance_controller
@@ -49,14 +48,13 @@ function vrep_impedance_controller:update(...)
     self.force_setpoint = joint_param[1]
     self.position_setpoint = joint_param[2]
     self.velocity_setpoint = joint_param[3]
-    self.position_p_gain = POSITION_P_GAIN_FACTOR*joint_param[4]
-    self.position_i_gain = POSITION_I_GAIN_FACTOR*joint_param[5]
-    self.position_d_gain = POSITION_D_GAIN_FACTOR*joint_param[6]
-    self.velocity_p_gain = VELOCITY_P_GAIN_FACTOR*joint_param[7]
+    self.p_gain = P_GAIN_FACTOR*joint_param[4]
+    self.i_gain = I_GAIN_FACTOR*joint_param[5]
+    self.d_gain = D_GAIN_FACTOR*joint_param[6]
     self.position_pid:set_gains(
-      self.position_p_gain,
-      self.position_i_gain,
-      self.position_d_gain
+      self.p_gain,
+      self.i_gain,
+      0
     )
     self.position_pid:set_setpoint(self.position_setpoint)
   end
@@ -67,7 +65,7 @@ function vrep_impedance_controller:update(...)
   local velocity_current = self.position_pid:get_derivative() 
   local velocity_command = 0
   force_command = force_command
-                + self.velocity_p_gain*(self.velocity_setpoint - velocity_current)
+                + self.d_gain*(self.velocity_setpoint - velocity_current)
                 + self.force_setpoint
   if (force_command > 0) then
     velocity_command = velocity_current + MAX_ACCEL*dynStepSize

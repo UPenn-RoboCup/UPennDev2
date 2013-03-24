@@ -58,9 +58,9 @@ namespace gazebo
         return;
       }
 
-      dcm.joint_position_p_gain[i] = POSITION_P_GAIN_INIT;
-      dcm.joint_position_i_gain[i] = POSITION_I_GAIN_INIT; 
-      dcm.joint_velocity_p_gain[i] = VELOCITY_P_GAIN_INIT; 
+      dcm.joint_p_gain[i] = P_GAIN_DEFAULT;
+      dcm.joint_i_gain[i] = I_GAIN_DEFAULT;
+      dcm.joint_d_gain[i] = D_GAIN_DEFAULT;
       dcm.joint_position[i] = 0;
       dcm.joint_velocity[i] = 0;
       dcm.joint_force[i] = 0;
@@ -104,7 +104,7 @@ namespace gazebo
 
       // initialize velocity filter
       struct filter velocity_filter = 
-        new_low_pass(this->dynamics_time_step.Double(), VELOCITY_BREAK_FREQUENCY);
+        new_low_pass(this->dynamics_time_step.Double(), D_BREAK_FREQUENCY);
       filter_set_output_limits(&velocity_filter, -max_force, max_force);
 
       // update joint structs
@@ -124,9 +124,9 @@ namespace gazebo
   {
     for (unsigned int i = 0; i < this->joints.size(); ++i)
     { 
-      dcm.joint_position_p_gain[i] = POSITION_P_GAIN_INIT;
-      dcm.joint_position_i_gain[i] = POSITION_I_GAIN_INIT; 
-      dcm.joint_velocity_p_gain[i] = VELOCITY_P_GAIN_INIT; 
+      dcm.joint_p_gain[i] = P_GAIN_DEFAULT;
+      dcm.joint_i_gain[i] = I_GAIN_DEFAULT; 
+      dcm.joint_d_gain[i] = D_GAIN_DEFAULT; 
       dcm.joint_position[i] = 0;
       dcm.joint_velocity[i] = 0;
       dcm.joint_force[i] = 0;
@@ -194,9 +194,9 @@ namespace gazebo
     for (unsigned int i = 0; i < this->joints.size(); i++)
     {
       // update setpoints and sensor values
-      double position_p_gain = POSITION_P_GAIN_CONSTANT*dcm.joint_position_p_gain[i];
-      double position_i_gain = POSITION_I_GAIN_CONSTANT*dcm.joint_position_i_gain[i];
-      double velocity_p_gain = VELOCITY_P_GAIN_CONSTANT*dcm.joint_velocity_p_gain[i];
+      double p_gain = P_GAIN_CONSTANT*dcm.joint_p_gain[i];
+      double i_gain = I_GAIN_CONSTANT*dcm.joint_i_gain[i];
+      double d_gain = D_GAIN_CONSTANT*dcm.joint_d_gain[i];
 
       double force_setpoint = dcm.joint_force[i];
       double position_setpoint = dcm.joint_position[i];
@@ -211,8 +211,8 @@ namespace gazebo
       struct pid *position_pid = &joint_position_pids[i];
       pid_set_setpoint(position_pid, position_setpoint);
       pid_set_gains(position_pid,
-        position_p_gain,
-        position_i_gain,
+        p_gain,
+        i_gain,
         0
       );
       force_command += pid_update(position_pid, position_actual);
@@ -220,7 +220,7 @@ namespace gazebo
       // update velocity controller
       struct filter *velocity_filter = &joint_velocity_filters[i];
       double velocity_estimate = filter_update(velocity_filter, velocity_actual);
-      force_command += velocity_p_gain*(velocity_setpoint - velocity_estimate);
+      force_command += d_gain*(velocity_setpoint - velocity_estimate);
        
       // update joint force 
       double max_force = this->joints[i]->GetEffortLimit(0);

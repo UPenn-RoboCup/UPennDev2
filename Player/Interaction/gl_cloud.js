@@ -33,7 +33,7 @@ function set_ctx_dim(){
 }
 
 function init_gl_cloud() {
-  container = document.getElementById('main');
+  container = document.getElementById('pickr');
   $('#kcolor').hide()
   $('#kdepth').hide()
   set_ctx_dim();

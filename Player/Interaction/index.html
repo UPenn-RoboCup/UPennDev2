@@ -7,14 +7,14 @@
   <meta http-equiv="Content-type" content="text/html; charset=utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <link rel="stylesheet" type="text/css" href="extra/icons.css" />
-  <link rel="stylesheet" type="text/css" href="extra/jq.ui.css" title="upenn" />
-  <script type="text/javascript" charset="utf-8" src="extra/jq.ui.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="css/icons.css" />
+  <link rel="stylesheet" type="text/css" href="css/jq.ui.css" title="upenn" />
+  <script type="text/javascript" charset="utf-8" src="lib/jq.ui.min.js"></script>
   <!-- include touch on desktop browsers only -->
   <script>
   if (!((window.DocumentTouch && document instanceof DocumentTouch) || 'ontouchstart' in window)) {
     var script = document.createElement("script");
-    script.src = "extra/jq.web.min.js";
+    script.src = "lib/jq.web.min.js";
     var tag = $("head").append(script);
     $.os.android = true; //let's make it run like an android device
     $.os.desktop = true;
@@ -51,13 +51,13 @@
   </script>
     
   <!-- Application Specific JS -->
-  <script src="extra/three.min.js"></script>
-  <script src="extra/Detector.js"></script>
+  <script src="lib/three.min.js"></script>
+  <script src="lib/Detector.js"></script>
   <script type="text/javascript">
   if ( ! Detector.webgl ){ Detector.addGetWebGLMessage(); }
   </script>
-  <script src="extra/TrackballControls.js"></script>    
-  <script src="extra/leap.min.js"></script>
+  <script src="lib/TrackballControls.js"></script>    
+  <script src="lib/leap.min.js"></script>
   <script src="listen_kinect.js"></script>
   <script src="gl_cloud.js"></script>
 </head>
@@ -73,25 +73,36 @@
     
     <div id="content">
       <!-- here is where you can add your panels -->
-      <div title='Welcome' id="main" class="panel" selected="true" scrolling="no">
+      
+      <div title='THORque' id="thorque" class="panel" selected="true" scrolling="no">
+        Here is where we select things like:
+        <br/>
+        SLAM
+        <br/>
+        Pickr
+      </div>
+      
+      <div title='Pickr' id="pickr" class="panel" selected="false" scrolling="no">
         <canvas id="kcolor"></canvas>
         <canvas id="kdepth"></canvas>
-        This is a basic skeleton UI sample
+        This is the point cloud gui
       </div>
+
     </div>
       
     <!-- bottom navbar. Add additional tabs here -->
     <div id="navbar">
       <div class="horzRule"></div>
-      <a href="#main" id='navbar_home' class='icon home'>home</a>
+      <a href="#thorque" id='navbar_home' class='icon home'>THORque</a>
+      <a href="#pickr" id='navbar_settings' class='icon settings'>Pickr</a>
     </div>
       
     <!-- this is the default left side nav menu.  If you do not want any, do not include these -->
     <nav>
       <div class='title'>Home</div>
       <ul>
-        <li class="icon home mini">
-          <a href="#main">Selectors</a>
+        <li>
+          <a href="javascript:alert('hi')">Selectors</a>
         </li>
       </ul>
     </nav>

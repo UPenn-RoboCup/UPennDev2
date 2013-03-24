@@ -15,7 +15,8 @@ extern "C" {
 
 using namespace std;
 
-double xmin,ymin,zmin,xmax,ymax,zmax;
+double xmin,ymin,zmin;
+double xmax,ymax,zmax;
 double res = DEFAULT_RESOLUTION;
 double invRes = 1.0/res;
 double sensorOffsetX = 0;
@@ -23,7 +24,7 @@ double sensorOffsetY = 0;
 double sensorOffsetZ = 0;
 
 int lua_ScanMatch2D(lua_State *L) {
-  //  const int BUFLEN = 256;
+  // luaT_stackdump( L );
   const char *command = luaL_checkstring(L, 1);
 
   if (command == NULL)
@@ -69,13 +70,11 @@ int lua_ScanMatch2D(lua_State *L) {
     /* Initialize max correlation value */
     double hmax = 0;
     /* Initialize the max correlation Lua indices */
-    double xmax = 1; // Lua index
-    double ymax = 1; // Lua index
-    double thmax = 1; // Lua index
-
-    // luaT_stackdump( L );
+    unsigned long ixmax = 1; // Lua index
+    unsigned long iymax = 1; // Lua index
+    unsigned long ithmax = 1; // Lua index
+    
     /* Get the map, which is a ByteTensor */
-    // TODO: ensure that the map is explored with the right dimensions
     const THByteTensor * map_t = (THByteTensor *) luaT_checkudata(L, 2, "torch.ByteTensor");
     const int sizex = map_t->size[0];
     const int sizey = map_t->size[1];
@@ -102,75 +101,60 @@ int lua_ScanMatch2D(lua_State *L) {
     {
       double costh = cos( THTensor_fastGet1d(pths_t,pthi) );
       double sinth = sin( THTensor_fastGet1d(pths_t,pthi) );
-      //THTensor_fastGet3d( likelihoods_t, pthi, npxs, npys )
-      //double * likelihoodsXY = likelihoods + pthi*npxs*npys;
-
       // Sensor global offset due to robot's yaw and local offsets
       double offsetx = (sensorOffsetX*costh - sensorOffsetY*sinth)*invRes;
       double offsety = (sensorOffsetX*sinth + sensorOffsetY*costh)*invRes;
 
-      // Iterate over all points
-      for (int pi=0; pi<nps; pi++)
-      {
-        // Reset the pointer to the likelyhoods of the poses
-        //double * tl = likelihoodsXY;
+      // Iterate over all laser points
+      for (int pi=0; pi<nps; pi++) {
 
         // Convert the laser points to the map coordinates
-        double xd = THTensor_fastGet2d( lY_t, 1, pi)*costh - THTensor_fastGet2d( lY_t, 2, pi)*sinth + offsetx;
-        double yd = THTensor_fastGet2d( lY_t, 1, pi)*sinth + THTensor_fastGet2d( lY_t, 2, pi)*costh + offsety;
+double lx = THTensor_fastGet2d( lY_t, 1, pi) * invRes;
+double ly = THTensor_fastGet2d( lY_t, 2, pi) * invRes;
+        double xd = lx*costh - ly*sinth + offsetx;
+        double yd = lx*sinth + ly*costh + offsety;
+//fprintf(stdout,"xd, yd: %lf, %lf\n",xd,yd);
 
         // Iterate over all pose ys
         for (int pyi=0; pyi<npys; pyi++) {
           // Use unsigned int - don't have to check < 0
           unsigned int yi  = yd + (THTensor_fastGet1d(pys_t,pyi)-ymin)*invRes;// + 0.0;
-
-          if (yi >= sizey) {
-            // Increment the pointer to likelyhoods by number of x poses
-            //tl+=npxs;
+          if (yi >= sizey)
             continue;
-          }
-
-          //int tmi = yi*sizex;
-          //uint8_t * mapp = &(map[tmi]);
 
           // Iterate over all pose xs
           for (int pxi=0; pxi<npxs; pxi++) {
-            //use unsigned int - don't have to check < 0
-            //unsigned int xi = xd + *tpxs++;
+            // Use unsigned int - don't have to check < 0
             unsigned int xi = xd + (THTensor_fastGet1d(pxs_t,pxi)-xmin)*invRes;
             if (xi >= sizex)
-            {
-              //tl++;
               continue;
-            }
+//fprintf(stdout,"xi, yi: %u %u\n",xi,yi);
+double currentLikelihood = THTensor_fastGet3d(likelihoods_t,pxi,pyi,pthi);
+uint8_t mapLikelihood = THTensor_fastGet2d(map_t,xi,yi);
+double newLikelihood = currentLikelihood+mapLikelihood;
+THTensor_fastSet3d(likelihoods_t,pxi,pyi,pthi,newLikelihood);
 
-            //*tl++ += mapp[xi];
-            double newLikelihood = THTensor_fastGet3d(likelihoods_t,xi,yi,pthi) + (double)THTensor_fastGet2d(map_t,xi,yi);
+
+
             // Find the maximum likelihood
             if( newLikelihood > hmax ){
+//fprintf(stdout,"New max? %.2lf+%d vs %.2lf.\n",currentLikelihood,mapLikelihood,hmax);
+//fflush( stdout );
               hmax = newLikelihood;
-              xmax = xi+1; // Lua index
-              ymax = yi+1; // Lua index
-              thmax = pthi+1; // Lua index
+              ixmax = pxi+1; // Lua index
+              iymax = pyi+1; // Lua index
+              ithmax = pthi+1; // Lua index
             }
-            THTensor_fastSet3d(likelihoods_t,xi,yi,pthi,newLikelihood);
-            //fprintf(stdout,"Setting values...\n");
-            //THTensor_fastSet3d(likelihoods_t,xi,yi,pthi,22);
-          }
-        }
-      }
-    }
-    //luaT_pushudata(L, likelihoods_t, "torch.FloatTensor");
-    //return 1;
+            
+          } // For pose xs
+        } // For pose ys
+      } // for laser scan points
+    } // For yaw values
     lua_pushnumber(L,hmax);
-    lua_pushinteger(L,xmax);
-    lua_pushinteger(L,ymax);
-    lua_pushinteger(L,thmax);
+    lua_pushinteger(L,ixmax);
+    lua_pushinteger(L,iymax);
+    lua_pushinteger(L,ithmax);
     return 4;
-    //lua_pushlightuserdata(L, likelihoods);
-    //lua_pushstring(L, "double");
-    //lua_pushinteger(L, npths*npxs*npys);
-    //return 3;
   }
   else {
     luaL_error(L ,"unknown command");

@@ -91,7 +91,7 @@ int CompressData(const uint8_t* prRGB, int width, int height, int ch) {
   }
   jpeg_set_defaults(&cinfo);
   jpeg_set_quality(&cinfo, quality, TRUE);
-  cinfo.write_JFIF_header = true;//false;
+  cinfo.write_JFIF_header = false;
   cinfo.dct_method = JDCT_IFAST;
   //cinfo.dct_method = JDCT_FASTEST; // TurboJPEG
 

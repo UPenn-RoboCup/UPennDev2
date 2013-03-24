@@ -19,39 +19,39 @@ var d_img = new Image;
 c_img.onload = function(){
   c_ctx.drawImage( c_img, 0, 0 );
   c_imgdata = c_ctx.getImageData(0, 0, 320, 240);
-  update_cloud_image( new Uint8Array(c_imgdata.data.buffer) );
-  update_mesh_image( new Uint8Array(c_imgdata.data.buffer) );
+  if(use_cloud == 1){
+    update_cloud_image( new Uint8Array(c_imgdata.data.buffer) );
+  }
+  if(use_mesh == 1){
+    update_mesh_image( new Uint8Array(c_imgdata.data.buffer) );
+  }
   // Revoke the Object URL
   if(window.webkitURL!==undefined) {
-    window.webkitURL.revokeObjectURL( c_img.src );
+    window.webkitURL.revokeObjectURL( this.src );
   } else {
-    window.URL.revokeObjectURL( c_img.src );
+    window.URL.revokeObjectURL( this.src );
   }
 }; //c onload
 // Update the cloud depths    
-d_img.onload = function(){
+d_img.onload = function(e){
   d_ctx.drawImage( d_img, 0, 0 );
   d_imgdata = d_ctx.getImageData(0, 0, 320, 240);
-  update_cloud_depth( new Uint8ClampedArray(d_imgdata.data.buffer) );
-  update_mesh_depth( new Uint8ClampedArray(d_imgdata.data.buffer) );
+  if(use_cloud == 1){
+    update_cloud_depth( new Uint8ClampedArray(d_imgdata.data.buffer) );
+  }
+  if(use_mesh == 1){
+    update_mesh_depth( new Uint8ClampedArray(d_imgdata.data.buffer) );
+  }
   // Revoke the Object URL
   if(window.webkitURL!==undefined) {
-    window.webkitURL.revokeObjectURL( d_img.src );
+    window.webkitURL.revokeObjectURL( this.src );
   } else {
-    window.URL.revokeObjectURL( d_img.src );
+    window.URL.revokeObjectURL( this.src );
   }
 }; //d onload
 
 // Process Websocket messages
 var process_kmsg = function (event) {
-  if(window.webkitURL!==undefined) {
-    window.webkitURL.revokeObjectURL( mypng );
-    window.webkitURL.revokeObjectURL( myjpeg );
-  } else {
-    window.URL.revokeObjectURL( mypng );
-    window.URL.revokeObjectURL( myjpeg );
-  }
-  
   mymeta = new Uint8Array(event.data, event.data.byteLength-2, 2 );
   //var mydata = new Uint8Array(event.data, 2, event.data.byteLength-2 );
   // Act on color vs. depth data

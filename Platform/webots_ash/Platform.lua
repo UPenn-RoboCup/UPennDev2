@@ -20,8 +20,8 @@ local simulator_iterations = 2
 
 -- servo controller parameters
 local max_force = 100
-local max_position_p_gain = 20000
-local max_position_d_gain = 0  -- damping disabled due to ODE instability
+local max_p_gain = 20000
+local max_d_gain = 0  -- damping disabled due to ODE instability
 local max_velocity = 7
 local max_acceleration = 70
 
@@ -88,10 +88,9 @@ local function update_actuators()
   local joint_velocity_desired = dcm:get_joint_velocity()
   local joint_position_actual = dcm:get_joint_position_sensor()
   local joint_velocity_actual = dcm:get_joint_velocity_sensor()
-  local joint_position_p_gain = dcm:get_joint_position_p_gain()
-  local joint_position_i_gain = dcm:get_joint_position_i_gain()
-  local joint_position_d_gain = dcm:get_joint_position_d_gain()
-  local joint_velocity_p_gain = dcm:get_joint_velocity_p_gain()
+  local joint_p_gain = dcm:get_joint_p_gain()
+  local joint_i_gain = dcm:get_joint_i_gain()
+  local joint_d_gain = dcm:get_joint_d_gain()
   local position_error = vector.zeros(#servoNames)
 
   -- calculate joint forces
@@ -107,8 +106,8 @@ local function update_actuators()
       joint_ff_force[i] = limit(joint_ff_force[i], -max_force, max_force)
       -- calculate spring force 
       position_error[i] = joint_position_desired[i] - joint_position_actual[i]
-      joint_position_p_gain[i] = limit(joint_position_p_gain[i], 0, 1)
-      joint_p_force[i] = joint_position_p_gain[i]*max_position_p_gain*position_error[i]
+      joint_p_gain[i] = limit(joint_p_gain[i], 0, 1)
+      joint_p_force[i] = joint_p_gain[i]*max_p_gain*position_error[i]
       joint_p_force[i] = limit(joint_p_force[i], -max_force, max_force)
     end
   end
@@ -197,6 +196,10 @@ function Platform.get_time_step()
   return time_step*simulator_iterations/1000
 end
 
+function Platform.set_update_rate()
+  -- for compatibility
+end
+
 function Platform.get_update_rate()
   return 1000/(time_step*simulator_iterations)
 end
@@ -230,10 +233,9 @@ function Platform.entry()
 
   -- initialize shared memory 
   dcm:set_joint_enable(1, 'all')
-  dcm:set_joint_position_p_gain(1, 'all') -- position control
-  dcm:set_joint_position_i_gain(0, 'all')
-  dcm:set_joint_position_d_gain(0, 'all')
-  dcm:set_joint_velocity_p_gain(0, 'all')
+  dcm:set_joint_p_gain(1, 'all') -- position control
+  dcm:set_joint_i_gain(0, 'all')
+  dcm:set_joint_d_gain(0, 'all')
   dcm:set_joint_force(0, 'all')
   dcm:set_joint_position(0, 'all')
   dcm:set_joint_velocity(0, 'all')

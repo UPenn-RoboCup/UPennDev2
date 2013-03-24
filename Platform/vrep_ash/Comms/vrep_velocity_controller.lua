@@ -3,7 +3,7 @@ require('pid')
 local MAX_FORCE = 300
 local MAX_VELOCITY = 10
 local MAX_ACCEL = 600
-local POSITION_D_CORNER_FREQUENCY = 100
+local D_CORNER_FREQUENCY = 100
 
 vrep_velocity_controller = {}
 vrep_velocity_controller.__index = vrep_velocity_controller
@@ -31,7 +31,7 @@ function vrep_velocity_controller:update(...)
   ------------------------------------------------------------------------------
   if (init) then
     self.velocity_filter =
-      filter.new_differentiator(dynStepSize, POSITION_D_CORNER_FREQUENCY)
+      filter.new_differentiator(dynStepSize, D_CORNER_FREQUENCY)
   end
 
   -- Update pid gains and setpoints:

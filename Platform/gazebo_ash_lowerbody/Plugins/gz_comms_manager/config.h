@@ -14,14 +14,14 @@
 #define N_BATTERY 3
 
 // define impedance controller settings
-#define POSITION_P_GAIN_CONSTANT 1500
-#define POSITION_I_GAIN_CONSTANT 1500
-#define VELOCITY_P_GAIN_CONSTANT 1500
-#define VELOCITY_BREAK_FREQUENCY 50
+#define P_GAIN_CONSTANT 1500
+#define I_GAIN_CONSTANT 1500
+#define D_GAIN_CONSTANT 1500
+#define D_BREAK_FREQUENCY 50
 
 // define initial controller gains
-#define POSITION_P_GAIN_INIT 0.8
-#define POSITION_I_GAIN_INIT 0.0
-#define VELOCITY_P_GAIN_INIT 0.01
+#define P_GAIN_DEFAULT 0.8
+#define I_GAIN_DEFAULT 0.0
+#define D_GAIN_DEFAULT 0.01
 
 #endif

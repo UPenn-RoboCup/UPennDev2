@@ -8,22 +8,35 @@ local time_socket = nil
 local time_poller = nil 
 local time_endpoint = 'tcp://127.0.0.1:12000'
 
-local time = 0
-local time_step = 0
+local time_step = 0.002
+local time_past = 0
+local time_current = 0
 local update_rate = 0
 
 function Platform.get_time()
-  return time
+  -- get current time
+  return time_current
 end
 
 function Platform.set_time_step(t)
+  -- set desired time step
+  assert(t > 0, 'time_step must be positive')
+  time_step = t
 end
 
 function Platform.get_time_step()
+  -- get desired time step
   return time_step
 end
 
+function Platform.set_update_rate(f)
+  -- set desired update rate
+  assert(f > 0, 'update_rate must be positive')
+  time_step = 1/f
+end
+
 function Platform.get_update_rate()
+  -- get actual update rate
   return update_rate
 end
 
@@ -50,18 +63,22 @@ function Platform.entry()
 end
 
 function Platform.update()
-  local count = time_poller:poll(-1)
-  while (count > 0) do
-    local msg = time_socket:recv()
-    if msg then
-      local time_t = cmsgpack.unpack(msg:sub(5))
-      if (type(time_t) == 'table') then
-	time, time_step = unpack(time_t)
+  -- synchronize thread with simulator time publisher
+  while (time_current - time_past < (time_step - 1e-6)) do
+    local count = time_poller:poll(-1)
+    while (count > 0) do
+      local msg = time_socket:recv()
+      if msg then
+	local time_t = cmsgpack.unpack(msg:sub(5))
+	if (type(time_t) == 'number') then
+	  time_current = time_t
+        end
       end
+      count = time_poller:poll(0)
     end
-    update_rate = 0.1*(1/time_step) + 0.9*update_rate
-    count = time_poller:poll(0)
   end
+  update_rate = 0.1/(time_current - time_past) + 0.9*update_rate
+  time_past = time_current
 end
 
 function Platform.exit()

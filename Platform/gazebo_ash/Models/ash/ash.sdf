@@ -1308,5 +1308,137 @@
 			</inertia>
 		</inertial>
 	</link>
+	
+	
+	<joint name="l_gripper1" type="revolute">
+		<pose>0 .01 .05 0 0 0</pose>
+		<parent>l_palm</parent>
+		<child>l_gripper1_link</child>
+		<axis>
+			<xyz>1 0 0</xyz>
+			<limit>
+				<effort>300</effort>
+				<velocity>15</velocity>
+			</limit>
+		</axis>
+	</joint>
+	
+	<joint name="r_gripper1" type="revolute">
+		<pose>0 -.01 .05 0 0 0</pose>
+		<parent>r_palm</parent>
+		<child>r_gripper1_link</child>
+		<axis>
+			<xyz>1 0 0</xyz>
+			<limit>
+				<effort>300</effort>
+				<velocity>15</velocity>
+			</limit>
+		</axis>
+	</joint>
+	
+	
+	<link name="l_gripper1_link">
+		<!-- inside gripper -->
+		<pose>-.0155 0.250 0.7476 0 0 0</pose>
+		<collision name="collision">
+			<geometry>
+				<box>
+					<size>.02 .02 .1</size>
+				</box>
+			</geometry>
+		</collision>
+		<visual name="visual">
+			<geometry>
+				<box>
+					<size>.02 .02 .1</size>
+				</box>
+			</geometry>
+		</visual>
+	</link>
+	
+	<link name="r_gripper1_link">
+		<!-- inside gripper -->
+		<pose>-.0155 -0.250 0.7476 0 0 0</pose>
+		<collision name="collision">
+			<geometry>
+				<box>
+					<size>.02 .02 .1</size>
+				</box>
+			</geometry>
+		</collision>
+		<visual name="visual">
+			<geometry>
+				<box>
+					<size>.02 .02 .1</size>
+				</box>
+			</geometry>
+		</visual>
+	</link>
+	
+	
+	<joint name="l_gripper2" type="revolute">
+		<pose>0 .01 .05 0 0 0</pose>
+		<parent>l_palm</parent>
+		<child>l_gripper2_link</child>
+		<axis>
+			<xyz>1 0 0</xyz>
+			<limit>
+				<effort>300</effort>
+				<velocity>15</velocity>
+			</limit>
+		</axis>
+	</joint>
+	
+	<joint name="r_gripper2" type="revolute">
+		<pose>0 -.01 .05 0 0 0</pose>
+		<parent>r_palm</parent>
+		<child>r_gripper2_link</child>
+		<axis>
+			<xyz>1 0 0</xyz>
+			<limit>
+				<effort>300</effort>
+				<velocity>15</velocity>
+			</limit>
+		</axis>
+	</joint>
+	
+	
+	<link name="l_gripper2_link">
+		<!-- outside gripper -->
+		<pose>-.0155 0.188 0.7476 0 0 0</pose>
+		<collision name="collision">
+			<geometry>
+				<box>
+					<size>.02 .02 .1</size>
+				</box>
+			</geometry>
+		</collision>
+		<visual name="visual">
+			<geometry>
+				<box>
+					<size>.02 .02 .1</size>
+				</box>
+			</geometry>
+		</visual>
+	</link>
+	
+	<link name="r_gripper2_link">
+		<!-- outside gripper -->
+		<pose>-.0155 -0.188 0.7476 0 0 0</pose>
+		<collision name="collision">
+			<geometry>
+				<box>
+					<size>.02 .02 .1</size>
+				</box>
+			</geometry>
+		</collision>
+		<visual name="visual">
+			<geometry>
+				<box>
+					<size>.02 .02 .1</size>
+				</box>
+			</geometry>
+		</visual>
+	</link>
 </model>
 </sdf>

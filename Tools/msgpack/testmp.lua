@@ -22,8 +22,14 @@ end
 
 require 'cmsgpack'
 local str = mp.pack(tbl1)
+--local str = mp.pack('fdfdfd')
+--local str = mp.pack(-4324252)
 cmsgpack.new(str, #str)
 
+local file = io.open('msg', 'w')
+file:write(str)
+file:close()
+print(#str)
 
 --
 str = mp.pack(tbl)

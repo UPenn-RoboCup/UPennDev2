@@ -29,7 +29,7 @@ cmsgpack.new(str, #str)
 local file = io.open('msg', 'w')
 file:write(str)
 file:close()
-print(#str)
+print(str:byte(1, #str))
 
 --
 str = mp.pack(tbl)

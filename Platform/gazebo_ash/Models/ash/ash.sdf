@@ -1357,6 +1357,17 @@
 				</box>
 			</geometry>
 		</visual>
+		<inertial>
+			<mass>.1</mass>
+			<inertia>
+				<ixx>0.00008666666</ixx>
+				<iyy>0.00008666666</iyy>
+				<izz>0.00000666666</izz>
+				<iyz>0</iyz>
+				<ixz>0</ixz>
+				<ixy>0</ixy>
+			</inertia>
+		</inertial>
 	</link>
 	
 	<link name="r_gripper1_link">
@@ -1376,6 +1387,17 @@
 				</box>
 			</geometry>
 		</visual>
+		<inertial>
+			<mass>.1</mass>
+			<inertia>
+				<ixx>0.00008666666</ixx>
+				<iyy>0.00008666666</iyy>
+				<izz>0.00000666666</izz>
+				<iyz>0</iyz>
+				<ixz>0</ixz>
+				<ixy>0</ixy>
+			</inertia>
+		</inertial>
 	</link>
 	
 	
@@ -1423,6 +1445,17 @@
 				</box>
 			</geometry>
 		</visual>
+		<inertial>
+			<mass>.1</mass>
+			<inertia>
+				<ixx>0.00008666666</ixx>
+				<iyy>0.00008666666</iyy>
+				<izz>0.00000666666</izz>
+				<iyz>0</iyz>
+				<ixz>0</ixz>
+				<ixy>0</ixy>
+			</inertia>
+		</inertial>
 	</link>
 	
 	<link name="r_gripper2_link">
@@ -1442,6 +1475,17 @@
 				</box>
 			</geometry>
 		</visual>
+		<inertial>
+			<mass>.1</mass>
+			<inertia>
+				<ixx>0.00008666666</ixx>
+				<iyy>0.00008666666</iyy>
+				<izz>0.00000666666</izz>
+				<iyz>0</iyz>
+				<ixz>0</ixz>
+				<ixy>0</ixy>
+			</inertia>
+		</inertial>
 	</link>
 </model>
 </sdf>

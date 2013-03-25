@@ -13,8 +13,7 @@ include ../../Lib/Makefile.inc
 	$(CC) $(CFLAGS) $(INCLUDES) -o $@ -c $<
 
 msgpack:
-	mex -O $@.cc -lmsgpack
-
+	mex -O $@.cc -lmsgpack -I/usr/local/include -L/usr/local/lib
 
 cmsgpack: cmsgpack.o
 	$(CXX) $(LDFLAGS) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ $(LIB_DIR) $(LIB_DIRS) $(LIBS) -lmsgpack

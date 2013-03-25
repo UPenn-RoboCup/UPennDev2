@@ -693,7 +693,7 @@
 			</geometry>
 		</visual>
 		<inertial>
-			<mass>2.832</mass>
+			<mass>5.451191007</mass>
 		</inertial>
 	</link>
 	
@@ -727,7 +727,7 @@
 			</geometry>
 		</visual>
 		<inertial>
-			<mass>.374</mass>
+			<mass>0.322276395</mass>
 		</inertial>
 	</link>
 	
@@ -761,7 +761,7 @@
 			</geometry>
 		</visual>
 		<inertial>
-			<mass>.053</mass>
+			<mass>0.078283874</mass>
 		</inertial>
 	</link>
 	
@@ -950,7 +950,7 @@
 			</geometry>
 		</visual>
 		<inertial>
-			<mass>.63</mass>
+			<mass>2.546284964</mass>
 		</inertial>
 	</link>
 	
@@ -971,7 +971,7 @@
 			</geometry>
 		</visual>
 		<inertial>
-			<mass>.63</mass>
+			<mass>2.546284964</mass>
 		</inertial>
 	</link>
 	
@@ -1020,7 +1020,7 @@
 			</geometry>
 		</visual>
 		<inertial>
-			<mass>.314</mass>
+			<mass>0.954274172</mass>
 		</inertial>
 	</link>
 	
@@ -1041,7 +1041,7 @@
 			</geometry>
 		</visual>
 		<inertial>
-			<mass>.314</mass>
+			<mass>0.954274172</mass>
 		</inertial>
 	</link>
 	

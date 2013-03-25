@@ -25,7 +25,7 @@ s.send( msg.getBytes() );
 %}
 
 s = a.createSocket(2); %1-pub, 2-sub
-channel = 'ipc:///tmp/img';
+channel = 'ipc:///tmp/img2';
 s.connect( channel );
 mask=java.lang.String('a');
 s.subscribe( mask.getBytes() );
@@ -35,9 +35,9 @@ while 1
     q = s.recv();
     if(~isempty(q))
         disp('got img');
-        qq = reshape( q(2:end),[80 60]);
-        imagesc(qq);
-        %img = djpeg(q(2:end));
+%        qq = reshape( q(2:end),[640 480]);
+%        imagesc(qq);
+        img = djpeg(q(2:end));
         %imagesc( img );
     end
     %pause(.1);

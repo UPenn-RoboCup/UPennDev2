@@ -10,7 +10,7 @@
 
 using namespace std;
 
-bool debug = true;
+bool debug = false;
 std::string msgpack_type[8];
 
 mxArray* mex_unpack_boolean(msgpack_object obj);
@@ -22,8 +22,9 @@ mxArray* mex_unpack_nil(msgpack_object obj);
 mxArray* mex_unpack_map(msgpack_object obj);
 mxArray* mex_unpack_array(msgpack_object obj);
 
-
 static std::map<int, mxArray* (*)(msgpack_object obj)> unpackMap;
+static std::map<int, void (*)(msgpack_packer *pk, 
+                int nrhs, const mxArray *prhs)> packMap;
 
 mxArray* mex_unpack_boolean(msgpack_object obj) {
   return mxCreateLogicalScalar(obj.via.boolean);
@@ -51,10 +52,15 @@ mxArray* mex_unpack_double(msgpack_object obj) {
 }
 
 mxArray* mex_unpack_raw(msgpack_object obj) {
-  const char* field = (const char*)mxCalloc(obj.via.raw.size, sizeof(mxUINT8_CLASS));
-  memcpy((char*)field, obj.via.raw.ptr, obj.via.raw.size);
-  mxFree((void*)field);
-  return mxCreateString(field);
+  std::cout << obj.via.raw.size << std::endl;
+  for (int i = 0; i < obj.via.raw.size; i++)
+    std::cout << (int)obj.via.raw.ptr[i] << ' ';
+  std::cout << std::endl;
+  mwSize dims[] = {1, obj.via.raw.size/2};
+  mxArray* ret = mxCreateCharArray(2, dims);
+  char *ptr = (char*)mxGetPr(ret); 
+  memcpy(ptr, obj.via.raw.ptr, obj.via.raw.size * sizeof(uint8_t));
+  return ret;
 }
 
 mxArray* mex_unpack_nil(msgpack_object obj) {
@@ -67,7 +73,7 @@ mxArray* mex_unpack_map(msgpack_object obj) {
   for (uint32_t i = 0; i < nfields; i++) {
     struct msgpack_object_kv obj_kv = obj.via.map.ptr[i];
     if (obj_kv.key.type == MSGPACK_OBJECT_RAW) {
-      field_name[i] = (const char*)mxCalloc(obj_kv.key.via.raw.size, sizeof(mxUINT8_CLASS));
+      field_name[i] = (const char*)mxCalloc(obj_kv.key.via.raw.size, sizeof(uint8_t));
       memcpy((char*)field_name[i], obj_kv.key.via.raw.ptr, obj_kv.key.via.raw.size);
     }
   }
@@ -133,37 +139,64 @@ void mex_unpack(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 }
 
-void mex_pack(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) 
-{
-//  if ( debug ) std::cout << "pack "<< std::endl;
+void mex_pack_double(msgpack_packer *pk, int nrhs, const mxArray *prhs) {
+//  std::cout << "double " << std::endl;
+  size_t nElements = mxGetNumberOfElements(prhs);
+  double *data = mxGetPr(prhs);
+  if (nElements > 1) msgpack_pack_array(pk, nElements);
+  for (int i = 0; i < nElements; i++) {
+    msgpack_pack_double(pk, data[i]);
+  }
+}
+
+void mex_pack_char(msgpack_packer *pk, int nrhs, const mxArray *prhs) {
+  size_t nElements = mxGetNumberOfElements(prhs);
+  uint8_t *data = (uint8_t*)mxGetPr(prhs); 
+  // matlab char type is actually uint16 -> 2 * uint8
+  msgpack_pack_raw(pk, nElements * 2);
+  msgpack_pack_raw_body(pk, data, nElements * 2);
+}
+
+void mex_pack(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
   /* creates buffer and serializer instance. */
   msgpack_sbuffer* buffer = msgpack_sbuffer_new();
   msgpack_packer* pk = msgpack_packer_new(buffer, msgpack_sbuffer_write);
- 
-//  msgpack_pack_true(pk);
-//  /* serializes ["Hello", "MessagePack"]. */
-  msgpack_pack_array(pk, 2);
-  msgpack_pack_int(pk, 3455);
-  msgpack_pack_int(pk, 55);
-//  msgpack_pack_raw(pk, 5);
-//  msgpack_pack_raw_body(pk, "Hello", 5);
-//  msgpack_pack_raw(pk, 11);
-//  msgpack_pack_raw_body(pk, "MessagePack", 11);
 
+  for (int i = 0; i < nrhs; i ++) {
+    std::map<int, void (*)(msgpack_packer *pk, int nrhs, const mxArray *prhs)>::iterator
+       iPackMap = packMap.find(mxGetClassID(prhs[i]));
+
+   if (iPackMap == packMap.end())
+     mexErrMsgTxt("Unknown pack function argument");
+
+   (iPackMap->second)(pk, nrhs, prhs[i]);
+  }
+
+////  if ( debug ) std::cout << "pack "<< std::endl;
+// 
+////  msgpack_pack_true(pk);
+////  /* serializes ["Hello", "MessagePack"]. */
+//  msgpack_pack_array(pk, 2);
+//  msgpack_pack_int(pk, 3455);
+//  msgpack_pack_int(pk, 55);
+////  msgpack_pack_raw(pk, 5);
+////  msgpack_pack_raw_body(pk, "Hello", 5);
+////  msgpack_pack_raw(pk, 11);
+////  msgpack_pack_raw_body(pk, "MessagePack", 11);
+//
   plhs[0] = mxCreateNumericMatrix(1, buffer->size, mxUINT8_CLASS, mxREAL);
   memcpy(mxGetPr(plhs[0]), buffer->data, buffer->size * sizeof(uint8_t));
-
+//
   /* cleaning */
   msgpack_sbuffer_free(buffer);
   msgpack_packer_free(pk);
-
-  
 }
 
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
   // Init Method Map
-  static std::map<std::string, void (*)(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])> funcMap;
+  static std::map<std::string, void (*)(int nlhs, mxArray *plhs[], 
+      int nrhs, const mxArray *prhs[])> funcMap;
   funcMap["pack"] = mex_pack;
   funcMap["unpack"] = mex_unpack;
 
@@ -186,6 +219,24 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   unpackMap[MSGPACK_OBJECT_RAW] = mex_unpack_raw;
   unpackMap[MSGPACK_OBJECT_ARRAY] = mex_unpack_array;
   unpackMap[MSGPACK_OBJECT_MAP] = mex_unpack_map; 
+
+//  packMap[mxUNKNOWN_CLASS] =
+//  packMap[mxCELL_CLASS] =
+//  packMap[mxSTRUCT_CLASS] =
+//  packMap[mxLOGICAL_CLASS] =
+  packMap[mxCHAR_CLASS] = mex_pack_char;
+//  packMap[mxVOID_CLASS] =
+  packMap[mxDOUBLE_CLASS] = mex_pack_double;
+//  packMap[mxSINGLE_CLASS] =
+//  packMap[mxINT8_CLASS] =
+//  packMap[mxUINT8_CLASS] =
+//  packMap[mxINT16_CLASS] =
+//  packMap[mxUINT16_CLASS] =
+//  packMap[mxINT32_CLASS] =
+//  packMap[mxUINT32_CLASS] =
+//  packMap[mxINT64_CLASS] =
+//  packMap[mxUINT64_CLASS] =
+//  packMap[mxFUNCTION_CLASS] =
 
 
   if ((nrhs < 1) || (!mxIsChar(prhs[0])))

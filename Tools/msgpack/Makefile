@@ -1,3 +1,4 @@
+MEXEXT= $(shell mexext)
 OBJECTS  = 
 
 all: cmsgpack msgpack
@@ -19,4 +20,4 @@ cmsgpack: cmsgpack.o
 	$(CXX) $(LDFLAGS) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ $(LIB_DIR) $(LIB_DIRS) $(LIBS) -lmsgpack
 
 clean:
-	rm -f *.$(SHLIBEXT) *.o cpng
+	rm -f *.$(mexext) *.$(SHLIBEXT) *.o cpng

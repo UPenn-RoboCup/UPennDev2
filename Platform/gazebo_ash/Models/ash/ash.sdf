@@ -67,7 +67,10 @@
 					<height>480</height>
 					<format>R8G8B8</format>
 				</image>
-				<clip near="0.5" far="5" />
+				<clip>
+					<near>0.5</near>
+					<far>5</far>
+				</clip>
 			</camera>
 			<plugin name="camera_dump" filename="libgz_camera_dump.so" />
 			<always_on>1</always_on>

@@ -165,9 +165,9 @@ var update_cloud_image = function( c_buffer ) {
   for(var j=0; j<kheight; j++ ){
     for (var i = 0; i<kwidth; i++ ){
       // TODO: div by 255 may be in int space, and not float space
-      colors[ c_idx ]     = c_buffer[d_idx] / 255;
-      colors[ c_idx + 1 ] = c_buffer[d_idx+1] / 255;
-      colors[ c_idx + 2 ] = c_buffer[d_idx+2] / 255;
+      colors[ c_idx ]     = c_buffer.data[d_idx] / 255;
+      colors[ c_idx + 1 ] = c_buffer.data[d_idx+1] / 255;
+      colors[ c_idx + 2 ] = c_buffer.data[d_idx+2] / 255;
       c_idx+=3;
       d_idx+=4; //RGBA
     }
@@ -184,7 +184,7 @@ var update_cloud_depth = function( d_buffer ) {
   // TODO: cache it good
   for(var j=0; j<kheight; j++ ){
     for (var i = 0; i<kwidth; i++ ){
-      tmp = d_buffer[d_idx];
+      tmp = d_buffer.data[d_idx];
       if( tmp>32 ) {
         tmp = -1*tmp
         positions[ p_idx ]     = tmp*hlut[i];
@@ -205,7 +205,16 @@ var update_cloud_depth = function( d_buffer ) {
 }
 
 function update_mesh_image( c_buffer ) {
-  plane.material.map.image.data = c_buffer;
+  //plane.material.map.image.data = c_buffer;
+  var size = kwidth * kheight;
+  var tmp = 0;
+  for ( var i = 0; i < size; i++ ) {
+    tmp = i*4;
+    plane.material.map.image.data[ tmp ] 	  = c_buffer[ tmp ];
+    plane.material.map.image.data[ tmp+1 ] = c_buffer[ tmp+1 ];
+    plane.material.map.image.data[ tmp+2 ] = c_buffer[ tmp+2 ];
+//    plane.material.map.image.data[ tmp + 3 ] = 255;
+  }
   plane.material.needsUpdate = true;
   plane.material.map.needsUpdate = true;
   animate();

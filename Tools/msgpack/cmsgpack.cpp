@@ -31,6 +31,7 @@ static int lua_cmsgpack_new(lua_State *L) {
 
   msgpack::object obj = msg.get();
   std::cout << obj << std::endl;
+  std::cout << obj.type << std::endl;
 
   return 1;
 }

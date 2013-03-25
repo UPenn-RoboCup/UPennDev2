@@ -1,6 +1,6 @@
 OBJECTS  = 
 
-all: cmsgpack
+all: cmsgpack msgpack
 
 include ../../Lib/Makefile.inc
 
@@ -10,6 +10,9 @@ include ../../Lib/Makefile.inc
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
 %.o: %.c
 	$(CC) $(CFLAGS) $(INCLUDES) -o $@ -c $<
+
+msgpack:
+	mex -O $@.cc -lmsgpack
 
 
 cmsgpack: cmsgpack.o

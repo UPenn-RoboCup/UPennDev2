@@ -769,7 +769,7 @@
 	<joint name="l_shoulder_pitch" type="revolute">
 		<pose>-.0033 0.0645 .0003 0 0 0</pose>
 		<parent>chest</parent>
-		<child>l_shoulder_pitch_brkt</child>
+		<child>l_shoulder_pitch_trunnion</child>
 		<axis>
 			<xyz>0 1 0</xyz>
 			<limit>
@@ -782,7 +782,7 @@
 	<joint name="r_shoulder_pitch" type="revolute">
 		<pose>-.0033 -0.0645 .0003 0 0 0</pose>
 		<parent>chest</parent>
-		<child>r_shoulder_pitch_brkt</child>
+		<child>r_shoulder_pitch_trunnion</child>
 		<axis>
 			<xyz>0 1 0</xyz>
 			<limit>
@@ -793,7 +793,7 @@
 	</joint>
 	
 	
-	<link name="l_shoulder_pitch_brkt">
+	<link name="l_shoulder_pitch_trunnion">
 		<pose>-.0157 .1545 1.3247 0 0 0</pose>
 		<collision name="collision">
 			<geometry>
@@ -814,7 +814,7 @@
 		</inertial>
 	</link>
 	
-	<link name="r_shoulder_pitch_brkt">
+	<link name="r_shoulder_pitch_trunnion">
 		<pose>-.0157 -.1545 1.3247 0 0 0</pose>
 		<collision name="collision">
 			<geometry>
@@ -838,8 +838,8 @@
 	
 	<joint name="l_shoulder_roll" type="revolute">
 		<pose>-.0033 0 .0063 0 0 0</pose>
-		<parent>l_shoulder_pitch_brkt</parent>
-		<child>l_shoulder_roll_brkt</child>
+		<parent>l_shoulder_pitch_trunnion</parent>
+		<child>l_shoulder_roll_trunnion</child>
 		<axis>
 			<xyz>1 0 0</xyz>
 			<limit>
@@ -851,8 +851,8 @@
 	
 	<joint name="r_shoulder_roll" type="revolute">
 		<pose>-.0033 0 .0063 0 0 0</pose>
-		<parent>r_shoulder_pitch_brkt</parent>
-		<child>r_shoulder_roll_brkt</child>
+		<parent>r_shoulder_pitch_trunnion</parent>
+		<child>r_shoulder_roll_trunnion</child>
 		<axis>
 			<xyz>1 0 0</xyz>
 			<limit>
@@ -863,7 +863,7 @@
 	</joint>
 	
 	
-	<link name="l_shoulder_roll_brkt">
+	<link name="l_shoulder_roll_trunnion">
 		<pose>-.0157 .219 1.3187 0 0 0</pose>
 		<collision name="collision">
 			<geometry>
@@ -884,7 +884,7 @@
 		</inertial>
 	</link>
 	
-	<link name="r_shoulder_roll_brkt">
+	<link name="r_shoulder_roll_trunnion">
 		<pose>-.0157 -.219 1.3187 0 0 0</pose>
 		<collision name="collision">
 			<geometry>
@@ -908,7 +908,7 @@
 	
 	<joint name="l_shoulder_yaw" type="revolute">
 		<pose>-.0033 0 .1203 0 0 0</pose>
-		<parent>l_shoulder_roll_brkt</parent>
+		<parent>l_shoulder_roll_trunnion</parent>
 		<child>l_arm</child>
 		<axis>
 			<xyz>0 0 1</xyz>
@@ -921,7 +921,7 @@
 	
 	<joint name="r_shoulder_yaw" type="revolute">
 		<pose>-.0033 0 .1203 0 0 0</pose>
-		<parent>r_shoulder_roll_brkt</parent>
+		<parent>r_shoulder_roll_trunnion</parent>
 		<child>r_arm</child>
 		<axis>
 			<xyz>0 0 1</xyz>
@@ -1049,7 +1049,7 @@
 	<joint name="l_wrist_yaw" type="revolute">
 		<pose>-.0035 0 .0744 0 0 0</pose>
 		<parent>l_forearm</parent>
-		<child>l_wrist_yaw_brkt</child>
+		<child>l_wrist_yaw_trunnion</child>
 		<axis>
 			<xyz>0 0 1</xyz>
 			<limit>
@@ -1062,7 +1062,7 @@
 	<joint name="r_wrist_yaw" type="revolute">
 		<pose>-.0035 0 .0744 0 0 0</pose>
 		<parent>r_forearm</parent>
-		<child>r_wrist_yaw_brkt</child>
+		<child>r_wrist_yaw_trunnion</child>
 		<axis>
 			<xyz>0 0 1</xyz>
 			<limit>
@@ -1073,7 +1073,7 @@
 	</joint>
 	
 	
-	<link name="l_wrist_yaw_brkt">
+	<link name="l_wrist_yaw_trunnion">
 		<pose>-.0155 .219 .8366 0 0 0</pose>
 		<collision name="collision">
 			<geometry>
@@ -1094,7 +1094,7 @@
 		</inertial>
 	</link>
 	
-	<link name="r_wrist_yaw_brkt">
+	<link name="r_wrist_yaw_trunnion">
 		<pose>-.0155 -.219 .8366 0 0 0</pose>
 		<collision name="collision">
 			<geometry>
@@ -1118,8 +1118,8 @@
 	
 	<joint name="l_wrist_roll" type="revolute">
 		<pose>-.0035 0 .0369 0 0 0</pose>
-		<parent>l_wrist_yaw_brkt</parent>
-		<child>l_hand_mount</child>
+		<parent>l_wrist_yaw_trunnion</parent>
+		<child>l_palm</child>
 		<axis>
 			<xyz>1 0 0</xyz>
 			<limit>
@@ -1131,8 +1131,8 @@
 	
 	<joint name="r_wrist_roll" type="revolute">
 		<pose>-.0035 0 .0369 0 0 0</pose>
-		<parent>r_wrist_yaw_brkt</parent>
-		<child>r_hand_mount</child>
+		<parent>r_wrist_yaw_trunnion</parent>
+		<child>r_palm</child>
 		<axis>
 			<xyz>1 0 0</xyz>
 			<limit>
@@ -1143,7 +1143,7 @@
 	</joint>
 	
 	
-	<link name="l_hand_mount">
+	<link name="l_palm">
 		<pose>-.0155 .219 .7991 0 0 0</pose>
 		<collision name="collision">
 			<geometry>
@@ -1164,7 +1164,7 @@
 		</inertial>
 	</link>
 	
-	<link name="r_hand_mount">
+	<link name="r_palm">
 		<pose>-.0155 -.219 .7991 0 0 0</pose>
 		<collision name="collision">
 			<geometry>

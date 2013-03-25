@@ -4,7 +4,7 @@
 #include <vector>
 #include <stdio.h>
 
-#include <msgpack.hpp>
+#include <msgpack.h>
 
 #include "mex.h"
 

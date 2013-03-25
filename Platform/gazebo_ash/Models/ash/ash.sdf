@@ -677,7 +677,7 @@
 	</joint>
 	
 	<link name="chest">
-		<pose>-.0157 0 1.2662 0 0 0</pose>
+		<pose>-.022 0 1.266 0 0 0</pose>
 		<collision name="collision">
 			<geometry>
 				<box>
@@ -711,18 +711,18 @@
 	</joint>
 	
 	<link name="neck">
-		<pose>-.0157 0 1.4192 0 0 0</pose>
+		<pose>-.022 0 1.419 0 0 0</pose>
 		<collision name="collision">
 			<geometry>
 				<box>
-					<size>.042 .066 .135</size>
+					<size>.039 .039 .135</size>
 				</box>
 			</geometry>
 		</collision>
 		<visual name="visual">
 			<geometry>
 				<box>
-					<size>.042 .066 .135</size>
+					<size>.039 .039 .135</size>
 				</box>
 			</geometry>
 		</visual>
@@ -745,18 +745,18 @@
 	</joint>
 	
 	<link name="head">
-		<pose>.015 0 1.5167 0 0 0</pose>
+		<pose>.001 0 1.485 0 0 0</pose>
 		<collision name="collision">
 			<geometry>
 				<box>
-					<size>.0616 .1445 .006</size>
+					<size>.046 .144 .07</size>
 				</box>
 			</geometry>
 		</collision>
 		<visual name="visual">
 			<geometry>
 				<box>
-					<size>.0616 .1445 .006</size>
+					<size>.046 .144 .07</size>
 				</box>
 			</geometry>
 		</visual>
@@ -934,18 +934,18 @@
 	
 	
 	<link name="l_arm">
-		<pose>-.0157 .219 1.2047 0 0 0</pose>
+		<pose>-.022 .219 1.205 0 0 0</pose>
 		<collision name="collision">
 			<geometry>
 				<box>
-					<size>.058 .067 .162</size>
+					<size>.067 .058 .162</size>
 				</box>
 			</geometry>
 		</collision>
 		<visual name="visual">
 			<geometry>
 				<box>
-					<size>.058 .067 .162</size>
+					<size>.067 .058 .162</size>
 				</box>
 			</geometry>
 		</visual>
@@ -955,18 +955,18 @@
 	</link>
 	
 	<link name="r_arm">
-		<pose>-.0157 -.219 1.2047 0 0 0</pose>
+		<pose>-.022 -.219 1.205 0 0 0</pose>
 		<collision name="collision">
 			<geometry>
 				<box>
-					<size>.058 .067 .162</size>
+					<size>.067 .058 .162</size>
 				</box>
 			</geometry>
 		</collision>
 		<visual name="visual">
 			<geometry>
 				<box>
-					<size>.058 .067 .162</size>
+					<size>.067 .058 .162</size>
 				</box>
 			</geometry>
 		</visual>
@@ -1004,18 +1004,18 @@
 	
 	
 	<link name="l_forearm">
-		<pose>-.0155 .219 .9591 0 0 0</pose>
+		<pose>-.022 .219 .959 0 0 0</pose>
 		<collision name="collision">
 			<geometry>
 				<box>
-					<size>.045 .051 .137</size>
+					<size>.051 .045 .137</size>
 				</box>
 			</geometry>
 		</collision>
 		<visual name="visual">
 			<geometry>
 				<box>
-					<size>.045 .051 .137</size>
+					<size>.051 .045 .137</size>
 				</box>
 			</geometry>
 		</visual>
@@ -1025,18 +1025,18 @@
 	</link>
 	
 	<link name="r_forearm">
-		<pose>-.0155 -.219 .9591 0 0 0</pose>
+		<pose>-.022 -.219 .959 0 0 0</pose>
 		<collision name="collision">
 			<geometry>
 				<box>
-					<size>.045 .051 .137</size>
+					<size>.051 .045 .137</size>
 				</box>
 			</geometry>
 		</collision>
 		<visual name="visual">
 			<geometry>
 				<box>
-					<size>.045 .051 .137</size>
+					<size>.051 .045 .137</size>
 				</box>
 			</geometry>
 		</visual>

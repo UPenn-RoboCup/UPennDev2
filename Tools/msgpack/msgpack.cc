@@ -3,14 +3,10 @@
 #include <map>
 #include <vector>
 #include <stdio.h>
-
 #include <msgpack.hpp>
-
 #include "mex.h"
 
 using namespace std;
-
-
 
 void mex_unpack(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) 
 {

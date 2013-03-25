@@ -729,7 +729,17 @@
 			</geometry>
 		</visual>
 		<inertial>
+			<!-- -0.041417928 -0.002447367 1.301158538 -->
+			<pose>-0.019417928 -0.002447367 0.035158538 0 0 0</pose>
 			<mass>5.451191007</mass>
+			<inertia>
+				<ixx>0.047808951</ixx>
+				<iyy>0.023527273</iyy>
+				<izz>0.046595768</izz>
+				<iyz>-0.000065729</iyz>
+				<ixz>0.000927517</ixz>
+				<ixy>0.000607106</ixy>
+			</inertia>
 		</inertial>
 	</link>
 	
@@ -763,7 +773,17 @@
 			</geometry>
 		</visual>
 		<inertial>
+			<!-- -0.019937647 -0.001514090 1.485856504 -->
+			<pose>0.002062353 -0.001514090 0.066856504 0 0 0</pose>
 			<mass>0.322276395</mass>
+			<inertia>
+				<ixx>0.000216899</ixx>
+				<iyy>0.000157889</iyy>
+				<izz>0.000142469</izz>
+				<iyz>-0.000002022</iyz>
+				<ixz>0.000000187</ixz>
+				<ixy>-0.000000522</ixy>
+			</inertia>
 		</inertial>
 	</link>
 	
@@ -797,7 +817,17 @@
 			</geometry>
 		</visual>
 		<inertial>
+			<!-- 0.007972587 -0.000000037 1.531796053 -->
+			<pose>0.006972587 -0.000000037 0.046796053 0 0 0</pose>
 			<mass>0.078283874</mass>
+			<inertia>
+				<ixx>0.000133507</ixx>
+				<iyy>0.000048991</iyy>
+				<izz>0.000134033</izz>
+				<iyz>-0.000000004</iyz>
+				<ixz>0.000969485</ixz>
+				<ixy>-0.000000000</ixy>
+			</inertia>
 		</inertial>
 	</link>
 	
@@ -986,7 +1016,17 @@
 			</geometry>
 		</visual>
 		<inertial>
+			<!-- -0.013246817 0.218384425 1.217161618 -->
+			<pose>0.008753183 -0.000615575 0.012161618 0 0 0</pose>
 			<mass>2.546284964</mass>
+			<inertia>
+				<ixx>0.027298352</ixx>
+				<iyy>0.028397454</iyy>
+				<izz>0.003461075</izz>
+				<iyz>0.000216571</iyz>
+				<ixz>-0.003096603</ixz>
+				<ixy>-0.000036439</ixy>
+			</inertia>
 		</inertial>
 	</link>
 	
@@ -1007,7 +1047,17 @@
 			</geometry>
 		</visual>
 		<inertial>
+			<!-- -0.013246817 -0.218384425 1.217161618 -->
+			<pose>0.008753183 0.000615575 0.012161618 0 0 0</pose>
 			<mass>2.546284964</mass>
+			<inertia>
+				<ixx>0.027298352</ixx>
+				<iyy>0.028397454</iyy>
+				<izz>0.003461075</izz>
+				<iyz>0.000216571</iyz>
+				<ixz>-0.003096603</ixz>
+				<ixy>-0.000036439</ixy>
+			</inertia>
 		</inertial>
 	</link>
 	
@@ -1056,7 +1106,17 @@
 			</geometry>
 		</visual>
 		<inertial>
+			<!-- -0.020861109 0.219360798 0.930377121 -->
+			<pose>0.001138891 0.000360798 -0.028622879 0 0 0</pose>
 			<mass>0.954274172</mass>
+			<inertia>
+				<ixx>0.004522058</ixx>
+				<iyy>0.004457692</iyy>
+				<izz>0.000767547</izz>
+				<iyz>0.000046156</iyz>
+				<ixz>0.000082660</ixz>
+				<ixy>0.000005284</ixy>
+			</inertia>
 		</inertial>
 	</link>
 	
@@ -1077,7 +1137,17 @@
 			</geometry>
 		</visual>
 		<inertial>
+			<!-- -0.020861109 -0.219360798 0.930377121 -->
+			<pose>0.001138891 -0.000360798 -0.028622879 0 0 0</pose>
 			<mass>0.954274172</mass>
+			<inertia>
+				<ixx>0.004522058</ixx>
+				<iyy>0.004457692</iyy>
+				<izz>0.000767547</izz>
+				<iyz>0.000046156</iyz>
+				<ixz>0.000082660</ixz>
+				<ixy>0.000005284</ixy>
+			</inertia>
 		</inertial>
 	</link>
 	
@@ -1196,7 +1266,16 @@
 			</geometry>
 		</visual>
 		<inertial>
-			<mass>.012</mass>
+			<!-- These are the inertial properties of the hand, but we're storing them in the palm -->
+			<mass>1.806862292</mass>
+			<inertia>
+				<ixx>0.004066589</ixx>
+				<iyy>0.003641897</iyy>
+				<izz>0.001946432</izz>
+				<iyz>0.000595144</iyz>
+				<ixz>-0.000050170</ixz>
+				<ixy>0.000086968</ixy>
+			</inertia>
 		</inertial>
 	</link>
 	
@@ -1217,7 +1296,16 @@
 			</geometry>
 		</visual>
 		<inertial>
-			<mass>.012</mass>
+			<!-- These are the inertial properties of the hand, but we're storing them in the palm -->
+			<mass>1.806862292</mass>
+			<inertia>
+				<ixx>0.004066589</ixx>
+				<iyy>0.003641897</iyy>
+				<izz>0.001946432</izz>
+				<iyz>0.000595144</iyz>
+				<ixz>-0.000050170</ixz>
+				<ixy>0.000086968</ixy>
+			</inertia>
 		</inertial>
 	</link>
 </model>

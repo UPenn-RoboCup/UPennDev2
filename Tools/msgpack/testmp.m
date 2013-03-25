@@ -11,4 +11,4 @@ fclose(fid);
 %   fprintf('%u ', data(i));
 % end
 
-msgpack('unpack', data);
+msgpack('unpack', data)

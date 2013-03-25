@@ -10,7 +10,8 @@
 
 using namespace std;
 
-bool debug = false;
+bool debug = true;
+std::string msgpack_type[8];
 
 mxArray* mex_unpack_boolean(msgpack_object obj);
 mxArray* mex_unpack_positive_integer(msgpack_object obj);
@@ -20,6 +21,9 @@ mxArray* mex_unpack_raw(msgpack_object obj);
 mxArray* mex_unpack_nil(msgpack_object obj);
 mxArray* mex_unpack_map(msgpack_object obj);
 mxArray* mex_unpack_array(msgpack_object obj);
+
+
+static std::map<int, mxArray* (*)(msgpack_object obj)> unpackMap;
 
 mxArray* mex_unpack_boolean(msgpack_object obj) {
   return mxCreateLogicalScalar(obj.via.boolean);
@@ -72,36 +76,14 @@ mxArray* mex_unpack_map(msgpack_object obj) {
     int ifield = mxGetFieldNumber(ret, field_name[i]);
     msgpack_object ob = obj.via.map.ptr[i].val;
 
-    if (ob.type == MSGPACK_OBJECT_BOOLEAN) {
-      if ( debug ) std::cout << "MSGPACK_OBJECT_BOOLEAN" << std::endl;
-      mxSetFieldByNumber(ret, 0, ifield, mex_unpack_boolean(ob));
-    }
-    else if (ob.type == MSGPACK_OBJECT_POSITIVE_INTEGER) {
-      if ( debug ) std::cout << "MSGPACK_OBJECT_POSITIVE_INTEGER" << std::endl;
-      mxSetFieldByNumber(ret, 0, ifield, mex_unpack_positive_integer(ob));
-    }
-    else if (ob.type == MSGPACK_OBJECT_NEGATIVE_INTEGER) {
-      if ( debug ) std::cout << "MSGPACK_OBJECT_NEGATIVE_INTEGER" << std::endl;
-      mxSetFieldByNumber(ret, 0, ifield, mex_unpack_negative_integer(ob));
-    }
-    else if (ob.type == MSGPACK_OBJECT_DOUBLE) {
-      if ( debug ) std::cout << "MSGPACK_OBJECT_DOUBLE" << std::endl;
-      mxSetFieldByNumber(ret, 0, ifield, mex_unpack_double(ob));
-    }
-    else if (ob.type == MSGPACK_OBJECT_RAW) {
-      if ( debug ) std::cout << "MSGPACK_OBJECT_RAW" << std::endl;
-      mxSetFieldByNumber(ret, 0, ifield, mex_unpack_raw(ob));
-    }
-    else if (ob.type == MSGPACK_OBJECT_ARRAY) {
-      if ( debug ) std::cout << "MSGPACK_OBJECT_ARRAY" << std::endl;
-      mxSetFieldByNumber(ret, 0, ifield, mex_unpack_array(ob));
-    }
-    else if (ob.type == MSGPACK_OBJECT_MAP) {
-      if ( debug ) std::cout << "MSGPACK_OBJECT_MAP" << std::endl;
-      mxSetFieldByNumber(ret, 0, ifield, mex_unpack_map(ob));
-    }
-    else
-      mxSetFieldByNumber(ret, 0, ifield, mex_unpack_nil(ob));
+    std::map<int, mxArray* (*)(msgpack_object obj)>::iterator 
+        iUnpackMap = unpackMap.find(ob.type);
+  
+    if (iUnpackMap == unpackMap.end())
+      mexErrMsgTxt("Unknown unpack function argument");
+  
+    if ( debug ) std::cout << msgpack_type[ob.type] << std::endl;
+    mxSetFieldByNumber(ret, 0, ifield, (iUnpackMap->second)(ob));
   }
   for (uint32_t i = 0; i < nfields; i++)
     mxFree((void *)field_name[i]);
@@ -112,36 +94,15 @@ mxArray* mex_unpack_array(msgpack_object obj) {
   mxArray *ret = mxCreateCellMatrix(obj.via.array.size, 1);
   for (int i = 0; i < obj.via.array.size; i++) {
     msgpack_object ob = obj.via.array.ptr[i];
-    if (ob.type == MSGPACK_OBJECT_BOOLEAN) {
-      if ( debug ) std::cout << "MSGPACK_OBJECT_BOOLEAN" << std::endl;
-      mxSetCell(ret, i, mex_unpack_boolean(ob));
-    }
-    else if (ob.type == MSGPACK_OBJECT_POSITIVE_INTEGER) {
-      if ( debug ) std::cout << "MSGPACK_OBJECT_POSITIVE_INTEGER" << std::endl;
-      mxSetCell(ret, i, mex_unpack_positive_integer(ob));
-    }
-    else if (ob.type == MSGPACK_OBJECT_NEGATIVE_INTEGER) {
-      if ( debug ) std::cout << "MSGPACK_OBJECT_NEGATIVE_INTEGER" << std::endl;
-      mxSetCell(ret, i, mex_unpack_negative_integer(ob));
-    }
-    else if (ob.type == MSGPACK_OBJECT_DOUBLE) {
-      if ( debug ) std::cout << "MSGPACK_OBJECT_DOUBLE" << std::endl;
-      mxSetCell(ret, i, mex_unpack_double(ob));
-    }
-    else if (ob.type == MSGPACK_OBJECT_RAW) {
-      if ( debug ) std::cout << "MSGPACK_OBJECT_RAW" << std::endl;
-      mxSetCell(ret, i, mex_unpack_raw(ob));
-    }
-    else if (ob.type == MSGPACK_OBJECT_ARRAY) {
-      if ( debug ) std::cout << "MSGPACK_OBJECT_ARRAY" << std::endl;
-      mxSetCell(ret, i, mex_unpack_array(ob));
-    }
-    else if (ob.type == MSGPACK_OBJECT_MAP) {
-      if ( debug ) std::cout << "MSGPACK_OBJECT_MAP" << std::endl;
-      mxSetCell(ret, i, mex_unpack_map(ob));
-    }
-    else
-      mxSetCell(ret, i, mex_unpack_nil(ob));
+
+    std::map<int, mxArray* (*)(msgpack_object obj)>::iterator 
+        iUnpackMap = unpackMap.find(ob.type);
+  
+    if (iUnpackMap == unpackMap.end())
+      mexErrMsgTxt("Unknown unpack function argument");
+  
+    if ( debug ) std::cout << msgpack_type[ob.type] << std::endl;
+    mxSetCell(ret, i, (iUnpackMap->second)(ob));
   }
   return ret;
 }
@@ -161,37 +122,15 @@ void mex_unpack(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   /* prints the deserialized object. */
   msgpack_object obj = msg.data;
+  std::map<int, mxArray* (*)(msgpack_object obj)>::iterator 
+      iUnpackMap = unpackMap.find(obj.type);
 
-  if (obj.type == MSGPACK_OBJECT_BOOLEAN) {
-    if ( debug ) std::cout << "MSGPACK_OBJECT_BOOLEAN" << std::endl;
-    plhs[0] = mex_unpack_boolean(obj);
-  }
-  else if (obj.type == MSGPACK_OBJECT_POSITIVE_INTEGER) {
-    if ( debug ) std::cout << "MSGPACK_OBJECT_POSITIVE_INTEGER" << std::endl;
-    plhs[0] = mex_unpack_positive_integer(obj);
-  }
-  else if (obj.type == MSGPACK_OBJECT_NEGATIVE_INTEGER) {
-    if ( debug ) std::cout << "MSGPACK_OBJECT_NEGATIVE_INTEGER" << std::endl;
-    plhs[0] = mex_unpack_negative_integer(obj);
-  }
-  else if (obj.type == MSGPACK_OBJECT_DOUBLE) {
-    if ( debug ) std::cout << "MSGPACK_OBJECT_DOUBLE" << std::endl;
-    plhs[0] = mex_unpack_double(obj);
-  }
-  else if (obj.type == MSGPACK_OBJECT_RAW) {
-    if ( debug ) std::cout << "MSGPACK_OBJECT_RAW" << std::endl;
-    plhs[0] = mex_unpack_raw(obj);
-  }
-  else if (obj.type == MSGPACK_OBJECT_ARRAY) {
-    if ( debug ) std::cout << "MSGPACK_OBJECT_ARRAY" << std::endl;
-    plhs[0] = mex_unpack_array(obj);
-  }
-  else if (obj.type == MSGPACK_OBJECT_MAP) {
-    if ( debug ) std::cout << "MSGPACK_OBJECT_MAP" << std::endl;
-    plhs[0] = mex_unpack_map(obj);
-  }
-  else
-    plhs[0] = mex_unpack_nil(obj);    
+  if (iUnpackMap == unpackMap.end())
+    mexErrMsgTxt("Unknown unpack function argument");
+
+  if ( debug ) std::cout << msgpack_type[obj.type] << std::endl;
+  plhs[0] = (iUnpackMap->second)(obj);
+
 }
 
 void mex_pack(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) 
@@ -218,14 +157,36 @@ void mex_pack(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   msgpack_sbuffer_free(buffer);
   msgpack_packer_free(pk);
 
+  
 }
 
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
-  static std::map<std::string, void (*)(int nlhs, mxArray *plhs[],
-    int nrhs, const mxArray *prhs[])> funcMap;
+  // Init Method Map
+  static std::map<std::string, void (*)(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])> funcMap;
   funcMap["pack"] = mex_pack;
   funcMap["unpack"] = mex_unpack;
+
+  // Init msgpack type string
+  msgpack_type[MSGPACK_OBJECT_NIL] = "MSGPACK_OBJECT_NIL";
+  msgpack_type[MSGPACK_OBJECT_BOOLEAN] = "MSGPACK_OBJECT_BOOLEAN";
+  msgpack_type[MSGPACK_OBJECT_POSITIVE_INTEGER] = "MSGPACK_OBJECT_POSITIVE_INTEGER";
+  msgpack_type[MSGPACK_OBJECT_NEGATIVE_INTEGER] = "MSGPACK_OBJECT_NEGATIVE_INTEGER";
+  msgpack_type[MSGPACK_OBJECT_DOUBLE] = "MSGPACK_OBJECT_DOUBLE";
+  msgpack_type[MSGPACK_OBJECT_RAW] = "MSGPACK_OBJECT_RAW";
+  msgpack_type[MSGPACK_OBJECT_ARRAY] = "MSGPACK_OBJECT_ARRAY";
+  msgpack_type[MSGPACK_OBJECT_MAP] = "MSGPACK_OBJECT_MAP";
+
+  // Init unpack functions Map
+  unpackMap[MSGPACK_OBJECT_NIL] = mex_unpack_nil;
+  unpackMap[MSGPACK_OBJECT_BOOLEAN] = mex_unpack_boolean;
+  unpackMap[MSGPACK_OBJECT_POSITIVE_INTEGER] = mex_unpack_positive_integer;
+  unpackMap[MSGPACK_OBJECT_NEGATIVE_INTEGER] = mex_unpack_negative_integer;
+  unpackMap[MSGPACK_OBJECT_DOUBLE] = mex_unpack_double;
+  unpackMap[MSGPACK_OBJECT_RAW] = mex_unpack_raw;
+  unpackMap[MSGPACK_OBJECT_ARRAY] = mex_unpack_array;
+  unpackMap[MSGPACK_OBJECT_MAP] = mex_unpack_map; 
+
 
   if ((nrhs < 1) || (!mxIsChar(prhs[0])))
     mexErrMsgTxt("Need to input string argument");

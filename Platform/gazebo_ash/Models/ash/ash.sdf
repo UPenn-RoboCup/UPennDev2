@@ -41,7 +41,7 @@
 			<!-- Hokuyo UTM-30LX-EW -->
 			<always_on>1</always_on>
 			<update_rate>10</update_rate>
-			<pose>.0565 0 1.277</pose>
+			<pose>.0565 0 1.277 0 0 0</pose>
 			<ray>
 				<scan>
 					<horizontal>

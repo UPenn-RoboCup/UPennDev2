@@ -19,7 +19,7 @@
 
 #include "mex.h"
 
-bool debug = true;
+bool debug = false;
 std::string msgpack_type[8];
 
 mxArray* mex_unpack_boolean(msgpack_object obj);
@@ -111,9 +111,7 @@ mxArray* mex_unpack_array(msgpack_object obj) {
         (obj.via.array.ptr[i].type > 0) and (obj.via.array.ptr[i].type < 5))
       types.insert(obj.via.array.ptr[i].type);
   int unique_type = *types.begin();
-  std::cout << types.size() << unique_type << std::endl;
   if (types.size() == 1) {
-    std::cout << "output array" << std::endl;
     mxArray *ret = NULL;
     bool * ptrb = NULL;
     double * ptrd = NULL;
@@ -168,7 +166,6 @@ void mex_unpack(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 //  if ( debug ) std::cout << "unpack "<< std::endl;
   const char *str = (const char*)mxGetPr(prhs[0]);
   size_t size = mxGetM(prhs[0]) * mxGetN(prhs[0]);
-  std::cout << size << ' ' << strlen(str) << std::endl;
 
   /* deserializes it. */
   msgpack_unpacked msg;

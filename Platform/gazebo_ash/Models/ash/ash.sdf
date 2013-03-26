@@ -1423,6 +1423,7 @@
 	<link name="l_gripper1_link">
 		<!-- inside gripper -->
 		<pose>-.0155 0.198 0.7476 0 0 0</pose>
+		<self_collide>1</self_collide>
 		<collision name="collision">
 			<geometry>
 				<box>
@@ -1453,6 +1454,7 @@
 	<link name="r_gripper1_link">
 		<!-- inside gripper -->
 		<pose>-.0155 -0.198 0.7476 0 0 0</pose>
+		<self_collide>1</self_collide>
 		<collision name="collision">
 			<geometry>
 				<box>
@@ -1512,6 +1514,7 @@
 	<link name="l_gripper2_link">
 		<!-- outside gripper -->
 		<pose>-.0155 0.240 0.7476 0 0 0</pose>
+		<self_collide>1</self_collide>
 		<collision name="collision">
 			<geometry>
 				<box>
@@ -1542,6 +1545,7 @@
 	<link name="r_gripper2_link">
 		<!-- outside gripper -->
 		<pose>-.0155 -0.240 0.7476 0 0 0</pose>
+		<self_collide>1</self_collide>
 		<collision name="collision">
 			<geometry>
 				<box>

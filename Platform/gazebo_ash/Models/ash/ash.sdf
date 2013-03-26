@@ -1399,6 +1399,8 @@
 		<axis>
 			<xyz>1 0 0</xyz>
 			<limit>
+				<lower>-.78539816339</lower>
+				<upper>1.57079632679</upper>
 				<effort>300</effort>
 				<velocity>15</velocity>
 			</limit>
@@ -1413,6 +1415,8 @@
 			<!-- This gripper spins the opposite way so that a positive force will close the gripper -->
 			<xyz>-1 0 0</xyz>
 			<limit>
+				<lower>-.78539816339</lower>
+				<upper>1.57079632679</upper>
 				<effort>300</effort>
 				<velocity>15</velocity>
 			</limit>
@@ -1491,6 +1495,8 @@
 			<!-- This gripper spins the opposite way so that a positive force will close the gripper -->
 			<xyz>-1 0 0</xyz>
 			<limit>
+				<lower>-.78539816339</lower>
+				<upper>1.57079632679</upper>
 				<effort>300</effort>
 				<velocity>15</velocity>
 			</limit>
@@ -1504,6 +1510,8 @@
 		<axis>
 			<xyz>1 0 0</xyz>
 			<limit>
+				<lower>-.78539816339</lower>
+				<upper>1.57079632679</upper>
 				<effort>300</effort>
 				<velocity>15</velocity>
 			</limit>

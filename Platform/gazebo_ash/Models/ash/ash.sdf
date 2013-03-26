@@ -1404,7 +1404,8 @@
 			<xyz>1 0 0</xyz>
 			<limit>
 				<lower>-.78539816339</lower>
-				<upper>1.57079632679</upper>
+				<!-- Upper bound is pi/2 - arccos(.016/.1) -->
+				<upper>0.160690653</upper>
 				<effort>300</effort>
 				<velocity>12</velocity>
 			</limit>
@@ -1420,7 +1421,8 @@
 			<xyz>-1 0 0</xyz>
 			<limit>
 				<lower>-.78539816339</lower>
-				<upper>1.57079632679</upper>
+				<!-- Upper bound is pi/2 - arccos(.016/.1) -->
+				<upper>0.160690653</upper>
 				<effort>300</effort>
 				<velocity>12</velocity>
 			</limit>
@@ -1500,7 +1502,8 @@
 			<xyz>-1 0 0</xyz>
 			<limit>
 				<lower>-.78539816339</lower>
-				<upper>1.57079632679</upper>
+				<!-- Upper bound is pi/2 - arccos(.016/.1) -->
+				<upper>0.160690653</upper>
 				<effort>300</effort>
 				<velocity>12</velocity>
 			</limit>
@@ -1515,7 +1518,8 @@
 			<xyz>1 0 0</xyz>
 			<limit>
 				<lower>-.78539816339</lower>
-				<upper>1.57079632679</upper>
+				<!-- Upper bound is pi/2 - arccos(.016/.1) -->
+				<upper>0.160690653</upper>
 				<effort>300</effort>
 				<velocity>12</velocity>
 			</limit>

@@ -244,11 +244,9 @@ void mex_pack_char(msgpack_packer *pk, int nrhs, const mxArray *prhs) {
 
 void mex_pack_cell(msgpack_packer *pk, int nrhs, const mxArray *prhs) {
   size_t nElements = mxGetNumberOfElements(prhs);
-  std::cout << nElements << std::endl;
   if (nElements > 1) msgpack_pack_array(pk, nElements);
   for (int i = 0; i < nElements; i++) {
     mxArray* pm = mxGetCell(prhs, i);
-    std::cout << mxGetClassID(pm) << std::endl; 
     std::map<int, void (*)(msgpack_packer *pk, int nrhs, const mxArray *prhs)>::iterator
        iPackMap = packMap.find(mxGetClassID(pm));
 
@@ -256,6 +254,28 @@ void mex_pack_cell(msgpack_packer *pk, int nrhs, const mxArray *prhs) {
       mexErrMsgTxt("Unknown pack function argument");
 
     (iPackMap->second)(pk, nrhs, pm);
+  }
+}
+
+void mex_pack_struct(msgpack_packer *pk, int nrhs, const mxArray *prhs) {
+  size_t nField = mxGetNumberOfFields(prhs);
+  if (nField > 1) msgpack_pack_map(pk, nField);
+  for (int i = 0; i < nField; i++) {
+    const char* fname = mxGetFieldNameByNumber(prhs, i);
+    size_t fnameLen = strlen(fname);
+    msgpack_pack_raw(pk, fnameLen);
+    msgpack_pack_raw_body(pk, fname, fnameLen);
+    int ifield = mxGetFieldNumber(prhs, fname);
+    mxArray* pm = mxGetFieldByNumber(prhs, 0, ifield);
+
+    std::map<int, void (*)(msgpack_packer *pk, int nrhs, const mxArray *prhs)>::iterator
+       iPackMap = packMap.find(mxGetClassID(pm));
+
+    if (iPackMap == packMap.end())
+      mexErrMsgTxt("Unknown pack function argument");
+
+    (iPackMap->second)(pk, nrhs, pm);
+
   }
 }
 
@@ -274,21 +294,9 @@ void mex_pack(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     (iPackMap->second)(pk, nrhs, prhs[i]);
   }
 
-////  if ( debug ) std::cout << "pack "<< std::endl;
-// 
-////  msgpack_pack_true(pk);
-////  /* serializes ["Hello", "MessagePack"]. */
-//  msgpack_pack_array(pk, 2);
-//  msgpack_pack_int(pk, 3455);
-//  msgpack_pack_int(pk, 55);
-////  msgpack_pack_raw(pk, 5);
-////  msgpack_pack_raw_body(pk, "Hello", 5);
-////  msgpack_pack_raw(pk, 11);
-////  msgpack_pack_raw_body(pk, "MessagePack", 11);
-//
   plhs[0] = mxCreateNumericMatrix(1, buffer->size, mxUINT8_CLASS, mxREAL);
   memcpy(mxGetPr(plhs[0]), buffer->data, buffer->size * sizeof(uint8_t));
-//
+
   /* cleaning */
   msgpack_sbuffer_free(buffer);
   msgpack_packer_free(pk);
@@ -322,9 +330,9 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   unpackMap[MSGPACK_OBJECT_ARRAY] = mex_unpack_array;
   unpackMap[MSGPACK_OBJECT_MAP] = mex_unpack_map; 
 
-//  packMap[mxUNKNOWN_CLASS] =
+//  packMap[mxUNKNOWN_CLASS] = mex_pack_nil;
   packMap[mxCELL_CLASS] = mex_pack_cell;
-//  packMap[mxSTRUCT_CLASS] =
+  packMap[mxSTRUCT_CLASS] = mex_pack_struct;
   packMap[mxLOGICAL_CLASS] = mex_pack_logical;
   packMap[mxCHAR_CLASS] = mex_pack_char;
 //  packMap[mxVOID_CLASS] =

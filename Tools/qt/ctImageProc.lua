@@ -1,11 +1,35 @@
 local ffi = require 'ffi'
-local libpng = require 'libpng'
+--local libpng = require 'libpng'
 local carray = require 'carray'
+local cpng = require 'cpng'
+local cjpeg = require 'cjpeg'
 rgb = require 'rgbselect'
 
 defaultW = 640
 defaultH = 480
 defaultThreshold = 14
+--img = carray.byte(defaultW * defaultH * 3)
+
+loadImageJPEG = function(filename)
+--  cpng.load(filename, img:pointer())
+  local file = io.open('Image-1-10.jpg', 'r')
+  img_str = file:read('*a')
+  img = cjpeg.uncompress(img_str)
+
+  local qimage = QImage(img:pointer(), defaultW, defaultH, 
+                  defaultW * 3, QImage.Format.Format_RGB888)
+
+  window.widget.pimage:convertFromImage(qimage, Qt.AutoColor)
+end
+
+loadImageCPNG = function(filename)
+  cpng.load(filename, img:pointer())
+
+  local qimage = QImage(img:pointer(), defaultW, defaultH, 
+                  defaultW * 3, QImage.Format.Format_RGB888)
+
+  window.widget.pimage:convertFromImage(qimage, Qt.AutoColor)
+end
 
 -- load img with libpng + ffi
 loadImageffi = function(filename)
@@ -60,10 +84,30 @@ loadImage = function(filename)
   end
 end
 
-rgbselect = function(data, w, h, ptx, pty, threshold)
-  print(data[0], data[1], data[2], ptx, pty, threshold)
-  dd = rgb.select(data, w, h, ptx, pty, threshold)
-  df = ffi.cast('uint8_t*', dd)
-  count = 0
-  print('dddddd', count)
+rgbselect = function(ptx, pty, threshold)
+  print('Running RGB select...', ptx, pty, threshold)
+  dd = rgb.select( img:pointer(), defaultW, defaultH, ptx, pty, threshold)
+  local mask_ct = ffi.cast('uint8_t*',dd);
+  for i=1,defaultW*defaultH do
+    if mask_ct[i-1]>0 then
+      -- Change the raw pixel
+      -- TODO: This is bad because the underlying RGB data is touched
+      -- so then the next rgbselect operates on bad data
+      -- http://harmattan-dev.nokia.com/docs/library/html/qt4/qimage.html#image-formats
+      img[3*i+1] = 0;
+      img[3*i+2] = 255;
+      img[3*i+3] = 0;
+    end
+  end
+  local qimage = QImage(img:pointer(), defaultW, defaultH, 
+                  defaultW * 3, QImage.Format.Format_RGB888)
+  window.widget.pimage:convertFromImage(qimage, Qt.AutoColor)
+
+  --[[
+  local qimage = QImage( dd, 
+  defaultW, defaultH, 
+  defaultW, QImage.Format.Format_Indexed8)
+  window.widget.pimage:convertFromImage(qimage, Qt.AutoColor)
+  print('Loaded a new qimage...')
+  --]]
 end

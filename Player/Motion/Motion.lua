@@ -26,17 +26,11 @@ require('dive')
 -- Aux
 require 'grip'
 
-
-
-require 'crawl'  --Quadruped locomotion controller
-require 'largestep' --Special walk controller with footstep planning
-
-require 'stancetocrawl' -- Changes between standing, sitting, crawling state
-
-
-
-
-
+if Config.platform.name~="WebotsOP" then
+  require 'crawl'  --Quadruped locomotion controller
+  require 'largestep' --Special walk controller with footstep planning
+  require 'stancetocrawl' -- Changes between standing, sitting, crawling state
+end
 
 sit_disable = Config.sit_disable or 0;
 

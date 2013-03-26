@@ -43,11 +43,17 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
       mexErrMsgTxt("Cannot create any more sockets!");
     if (nrhs != 2)
       mexErrMsgTxt("Please provide a name for the ZMQ channel");
-    if ( mxIsChar(prhs[1]) != 1)
-      mexErrMsgTxt("Could not read string. (2nd argument)");
-    char* ch_name = mxArrayToString(prhs[1]);
-    sprintf(zmq_channel, "ipc:///tmp/%s", ch_name );
-    printf("Subscribing to %s.\n",zmq_channel);
+    if ( mxIsChar(prhs[1]) != 1){
+      if ( mxGetNumberOfElements( prhs[1] )!=1 )
+        mexErrMsgTxt("Please provide a valid handle");
+      double* channelid = (double*)mxGetData(prhs[1]);
+      unsigned int ch_id = (unsigned int)channelid[0];
+      sprintf(zmq_channel, "tcp://127.0.0.1:%u", ch_id );
+    } else {
+      char* ch_name = mxArrayToString(prhs[1]);
+      sprintf(zmq_channel, "ipc:///tmp/%s", ch_name );
+    }
+    printf("Publishing to %s\n",zmq_channel);
     sockets[socket_cnt] = zmq_socket (ctx, ZMQ_PUB);
     rc = zmq_bind( sockets[socket_cnt], zmq_channel );
     if(rc!=0)
@@ -65,10 +71,17 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
       mexErrMsgTxt("Cannot create any more sockets!");
     if (nrhs != 2)
       mexErrMsgTxt("Please provide a name for the ZMQ channel");
-    if ( mxIsChar(prhs[1]) != 1)
-      mexErrMsgTxt("Could not read string. (2nd argument)");
-    char* ch_name = mxArrayToString(prhs[1]);
-    sprintf(zmq_channel, "ipc:///tmp/%s", ch_name );
+    if ( mxIsChar(prhs[1]) != 1){
+      if ( mxGetNumberOfElements( prhs[1] )!=1 )
+        mexErrMsgTxt("Please provide a valid handle");
+      double* channelid = (double*)mxGetData(prhs[1]);
+      unsigned int ch_id = (unsigned int)channelid[0];
+      sprintf(zmq_channel, "tcp://127.0.0.1:%u", ch_id );
+    } else {
+      char* ch_name = mxArrayToString(prhs[1]);
+      sprintf(zmq_channel, "ipc:///tmp/%s", ch_name );
+    }
+    printf("Subscribing to %s\n",zmq_channel);
     sockets[socket_cnt] = zmq_socket (ctx, ZMQ_SUB);
     zmq_setsockopt( sockets[socket_cnt], ZMQ_SUBSCRIBE, "", 0 );
     rc = zmq_connect( sockets[socket_cnt], zmq_channel );

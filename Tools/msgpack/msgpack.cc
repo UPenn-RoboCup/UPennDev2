@@ -52,10 +52,6 @@ mxArray* mex_unpack_double(msgpack_object obj) {
 }
 
 mxArray* mex_unpack_raw(msgpack_object obj) {
-  std::cout << obj.via.raw.size << std::endl;
-  for (int i = 0; i < obj.via.raw.size; i++)
-    std::cout << (int)obj.via.raw.ptr[i] << ' ';
-  std::cout << std::endl;
   mwSize dims[] = {1, obj.via.raw.size/2};
   mxArray* ret = mxCreateCharArray(2, dims);
   char *ptr = (char*)mxGetPr(ret); 
@@ -139,8 +135,16 @@ void mex_unpack(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 }
 
+void mex_pack_single(msgpack_packer *pk, int nrhs, const mxArray *prhs) {
+  size_t nElements = mxGetNumberOfElements(prhs);
+  float *data = (float*)mxGetPr(prhs);
+  if (nElements > 1) msgpack_pack_array(pk, nElements);
+  for (int i = 0; i < nElements; i++) {
+    msgpack_pack_float(pk, data[i]);
+  }
+}
+
 void mex_pack_double(msgpack_packer *pk, int nrhs, const mxArray *prhs) {
-//  std::cout << "double " << std::endl;
   size_t nElements = mxGetNumberOfElements(prhs);
   double *data = mxGetPr(prhs);
   if (nElements > 1) msgpack_pack_array(pk, nElements);
@@ -149,12 +153,110 @@ void mex_pack_double(msgpack_packer *pk, int nrhs, const mxArray *prhs) {
   }
 }
 
+void mex_pack_int8(msgpack_packer *pk, int nrhs, const mxArray *prhs) {
+  size_t nElements = mxGetNumberOfElements(prhs);
+  int8_t *data = (int8_t*)mxGetPr(prhs);
+  if (nElements > 1) msgpack_pack_array(pk, nElements);
+  for (int i = 0; i < nElements; i++) {
+    msgpack_pack_int8(pk, data[i]);
+  }
+}
+
+void mex_pack_uint8(msgpack_packer *pk, int nrhs, const mxArray *prhs) {
+  size_t nElements = mxGetNumberOfElements(prhs);
+  uint8_t *data = (uint8_t*)mxGetPr(prhs);
+  if (nElements > 1) msgpack_pack_array(pk, nElements);
+  for (int i = 0; i < nElements; i++) {
+    msgpack_pack_uint8(pk, data[i]);
+  }
+}
+
+void mex_pack_int16(msgpack_packer *pk, int nrhs, const mxArray *prhs) {
+  size_t nElements = mxGetNumberOfElements(prhs);
+  int16_t *data = (int16_t*)mxGetPr(prhs);
+  if (nElements > 1) msgpack_pack_array(pk, nElements);
+  for (int i = 0; i < nElements; i++) {
+    msgpack_pack_int16(pk, data[i]);
+  }
+}
+
+void mex_pack_uint16(msgpack_packer *pk, int nrhs, const mxArray *prhs) {
+  size_t nElements = mxGetNumberOfElements(prhs);
+  uint16_t *data = (uint16_t*)mxGetPr(prhs);
+  if (nElements > 1) msgpack_pack_array(pk, nElements);
+  for (int i = 0; i < nElements; i++) {
+    msgpack_pack_uint16(pk, data[i]);
+  }
+}
+
+void mex_pack_int32(msgpack_packer *pk, int nrhs, const mxArray *prhs) {
+  size_t nElements = mxGetNumberOfElements(prhs);
+  int32_t *data = (int32_t*)mxGetPr(prhs);
+  if (nElements > 1) msgpack_pack_array(pk, nElements);
+  for (int i = 0; i < nElements; i++) {
+    msgpack_pack_int32(pk, data[i]);
+  }
+}
+
+void mex_pack_uint32(msgpack_packer *pk, int nrhs, const mxArray *prhs) {
+  size_t nElements = mxGetNumberOfElements(prhs);
+  uint32_t *data = (uint32_t*)mxGetPr(prhs);
+  if (nElements > 1) msgpack_pack_array(pk, nElements);
+  for (int i = 0; i < nElements; i++) {
+    msgpack_pack_uint32(pk, data[i]);
+  }
+}
+
+void mex_pack_int64(msgpack_packer *pk, int nrhs, const mxArray *prhs) {
+  size_t nElements = mxGetNumberOfElements(prhs);
+  int64_t *data = (int64_t*)mxGetPr(prhs);
+  if (nElements > 1) msgpack_pack_array(pk, nElements);
+  for (int i = 0; i < nElements; i++) {
+    msgpack_pack_int64(pk, data[i]);
+  }
+}
+
+void mex_pack_uint64(msgpack_packer *pk, int nrhs, const mxArray *prhs) {
+  size_t nElements = mxGetNumberOfElements(prhs);
+  uint64_t *data = (uint64_t*)mxGetPr(prhs);
+  if (nElements > 1) msgpack_pack_array(pk, nElements);
+  for (int i = 0; i < nElements; i++) {
+    msgpack_pack_uint64(pk, data[i]);
+  }
+}
+
+void mex_pack_logical(msgpack_packer *pk, int nrhs, const mxArray *prhs) {
+  size_t nElements = mxGetNumberOfElements(prhs);
+  bool *data = mxGetLogicals(prhs);
+  if (nElements > 1) msgpack_pack_array(pk, nElements);
+  for (int i = 0; i < nElements; i++)
+    if (data[i]) msgpack_pack_true(pk);
+    else msgpack_pack_false(pk);
+}
+
 void mex_pack_char(msgpack_packer *pk, int nrhs, const mxArray *prhs) {
   size_t nElements = mxGetNumberOfElements(prhs);
   uint8_t *data = (uint8_t*)mxGetPr(prhs); 
   // matlab char type is actually uint16 -> 2 * uint8
   msgpack_pack_raw(pk, nElements * 2);
   msgpack_pack_raw_body(pk, data, nElements * 2);
+}
+
+void mex_pack_cell(msgpack_packer *pk, int nrhs, const mxArray *prhs) {
+  size_t nElements = mxGetNumberOfElements(prhs);
+  std::cout << nElements << std::endl;
+  if (nElements > 1) msgpack_pack_array(pk, nElements);
+  for (int i = 0; i < nElements; i++) {
+    mxArray* pm = mxGetCell(prhs, i);
+    std::cout << mxGetClassID(pm) << std::endl; 
+    std::map<int, void (*)(msgpack_packer *pk, int nrhs, const mxArray *prhs)>::iterator
+       iPackMap = packMap.find(mxGetClassID(pm));
+
+    if (iPackMap == packMap.end())
+      mexErrMsgTxt("Unknown pack function argument");
+
+    (iPackMap->second)(pk, nrhs, pm);
+  }
 }
 
 void mex_pack(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
@@ -166,10 +268,10 @@ void mex_pack(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     std::map<int, void (*)(msgpack_packer *pk, int nrhs, const mxArray *prhs)>::iterator
        iPackMap = packMap.find(mxGetClassID(prhs[i]));
 
-   if (iPackMap == packMap.end())
-     mexErrMsgTxt("Unknown pack function argument");
+    if (iPackMap == packMap.end())
+      mexErrMsgTxt("Unknown pack function argument");
 
-   (iPackMap->second)(pk, nrhs, prhs[i]);
+    (iPackMap->second)(pk, nrhs, prhs[i]);
   }
 
 ////  if ( debug ) std::cout << "pack "<< std::endl;
@@ -221,21 +323,21 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   unpackMap[MSGPACK_OBJECT_MAP] = mex_unpack_map; 
 
 //  packMap[mxUNKNOWN_CLASS] =
-//  packMap[mxCELL_CLASS] =
+  packMap[mxCELL_CLASS] = mex_pack_cell;
 //  packMap[mxSTRUCT_CLASS] =
-//  packMap[mxLOGICAL_CLASS] =
+  packMap[mxLOGICAL_CLASS] = mex_pack_logical;
   packMap[mxCHAR_CLASS] = mex_pack_char;
 //  packMap[mxVOID_CLASS] =
   packMap[mxDOUBLE_CLASS] = mex_pack_double;
-//  packMap[mxSINGLE_CLASS] =
-//  packMap[mxINT8_CLASS] =
-//  packMap[mxUINT8_CLASS] =
-//  packMap[mxINT16_CLASS] =
-//  packMap[mxUINT16_CLASS] =
-//  packMap[mxINT32_CLASS] =
-//  packMap[mxUINT32_CLASS] =
-//  packMap[mxINT64_CLASS] =
-//  packMap[mxUINT64_CLASS] =
+  packMap[mxSINGLE_CLASS] = mex_pack_single;
+  packMap[mxINT8_CLASS] = mex_pack_int8;
+  packMap[mxUINT8_CLASS] = mex_pack_uint8;
+  packMap[mxINT16_CLASS] = mex_pack_int16;
+  packMap[mxUINT16_CLASS] = mex_pack_uint16;
+  packMap[mxINT32_CLASS] = mex_pack_int32;
+  packMap[mxUINT32_CLASS] = mex_pack_uint32;
+  packMap[mxINT64_CLASS] = mex_pack_int64;
+  packMap[mxUINT64_CLASS] = mex_pack_uint64;
 //  packMap[mxFUNCTION_CLASS] =
 
 

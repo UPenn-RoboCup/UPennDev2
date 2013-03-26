@@ -10,6 +10,7 @@ char* command;
 char zmq_channel[200];//name
 void *ctx;
 void * sockets[MAX_SOCKETS];
+zmq_pollitem_t poll_items [MAX_SOCKETS];
 uint8_t socket_cnt = 0;
 int result, rc;
 static int initialized = 0;
@@ -74,6 +75,9 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     rc = zmq_connect( sockets[socket_cnt], zmq_channel );
     if(rc!=0)
       mexErrMsgTxt("Could not connect!");
+    // Auto poll setup
+    poll_items[socket_cnt].socket = sockets[socket_cnt];
+    poll_items[socket_cnt].events = ZMQ_POLLIN;
     //printf("Creating Socket: %d, %u\n",socket_cnt,sockets[socket_cnt]);
     plhs[0] = mxCreateNumericArray(1,ret_sz,mxUINT8_CLASS,mxREAL);
     uint8_t* out = (uint8_t*)mxGetData(plhs[0]);
@@ -117,6 +121,36 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     void* start = mxGetData( plhs[0] );
     memcpy(start,recv_buffer,nbytes);
     printf("Received %d bytes\n",nbytes);
+  } else if (strcasecmp(command, "poll") == 0){
+    long mytimeout = -1;
+    if (nrhs > 1 && mxGetNumberOfElements(prhs[1])==1 ){
+      double* timeout_ptr = (double*)mxGetData(prhs[1]);
+      mytimeout = (long)(timeout_ptr[0]);
+      printf("Myt: %ld,\n",mytimeout);
+    }
+    //mytimeout = -1;
+    rc = zmq_poll (poll_items, socket_cnt, mytimeout);
+    /*
+       mwSize ret_sz[]={rc,0};
+       if(rc>0)
+       plhs[0] = mxCreateNumericArray(1,ret_sz,mxUINT8_CLASS,mxREAL);
+       else
+       return;
+       */
+    int r = 0;
+    for(int i=0;i<socket_cnt;i++) {
+      if(poll_items[i].revents){
+        int nbytes = zmq_recv(sockets[i], recv_buffer, BUFLEN, 0);
+        printf("Received %d on channel %d\n",nbytes,i);
+        fflush(stdout);
+        ret_sz[r] = nbytes;
+        plhs[0] = mxCreateNumericArray(1,ret_sz,mxUINT8_CLASS,mxREAL);
+        void* start = mxGetData( plhs[0] );
+        memcpy(start,recv_buffer,nbytes);
+        r++;
+        break; // TODO - make a cell of returned stuff
+      }
+    }
   } else
     mexErrMsgTxt("Unrecognized command");
 

@@ -1,9 +1,7 @@
 #include <string>
-#include <string.h>
 #include <stdio.h>
 #include <zmq.h>
 #include <unistd.h>
-#include <stdint.h>
 #include "mex.h"
 #define BUFLEN 1024
 #define MAX_SOCKETS 10
@@ -49,7 +47,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         mexErrMsgTxt("Please provide a valid handle");
       double* channelid = (double*)mxGetData(prhs[1]);
       unsigned int ch_id = (unsigned int)channelid[0];
-      sprintf(zmq_channel, "tcp://127.0.0.1:%u", ch_id );
+      sprintf(zmq_channel, "tcp://*:%u", ch_id );
     } else {
       char* ch_name = mxArrayToString(prhs[1]);
       sprintf(zmq_channel, "ipc:///tmp/%s", ch_name );
@@ -80,7 +78,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         mexErrMsgTxt("Please provide a valid handle");
       double* channelid = (double*)mxGetData(prhs[1]);
       unsigned int ch_id = (unsigned int)channelid[0];
-      sprintf(zmq_channel, "tcp://127.0.0.1:%u", ch_id );
+      sprintf(zmq_channel, "tcp://ese650.mooo.com:%u", ch_id );
     } else {
       char* ch_name = mxArrayToString(prhs[1]);
       sprintf(zmq_channel, "ipc:///tmp/%s", ch_name );

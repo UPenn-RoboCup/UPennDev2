@@ -302,6 +302,41 @@ void mex_pack(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
   msgpack_packer_free(pk);
 }
 
+void mex_unpacker(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
+  // Init deserialize using msgpack_unpacker
+  msgpack_unpacker pac;
+  msgpack_unpacker_init(&pac, MSGPACK_UNPACKER_INIT_BUFFER_SIZE);
+
+  const char *str = (const char*)mxGetPr(prhs[0]);
+  size_t size = mxGetM(prhs[0]) * mxGetN(prhs[0]);
+  
+  // feeds the buffer
+  msgpack_unpacker_reserve_buffer(&pac, size);
+  memcpy(msgpack_unpacker_buffer(&pac), str, size);
+  msgpack_unpacker_buffer_consumed(&pac, size);
+
+  // start streaming deserialization
+  std::vector<mxArray*> ret;
+  msgpack_unpacked msg;
+  msgpack_unpacked_init(&msg);
+  while (msgpack_unpacker_next(&pac, &msg)) {
+    /* prints the deserialized object. */
+    msgpack_object obj = msg.data;
+    std::map<int, mxArray* (*)(msgpack_object obj)>::iterator 
+        iUnpackMap = unpackMap.find(obj.type);
+
+    if (iUnpackMap == unpackMap.end())
+      mexErrMsgTxt("Unknown unpack function argument");
+
+    if ( debug ) std::cout << msgpack_type[obj.type] << std::endl;
+    ret.push_back((iUnpackMap->second)(obj));
+  }
+  // set cell for output
+  plhs[0] = mxCreateCellMatrix(ret.size(), 1);
+  for (int i = 0; i < ret.size(); i++)
+    mxSetCell((mxArray*)plhs[0], i, ret[i]);
+}
+
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
   // Init Method Map
@@ -309,6 +344,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       int nrhs, const mxArray *prhs[])> funcMap;
   funcMap["pack"] = mex_pack;
   funcMap["unpack"] = mex_unpack;
+  funcMap["unpacker"] = mex_unpacker;
 
   // Init msgpack type string
   msgpack_type[MSGPACK_OBJECT_NIL] = "MSGPACK_OBJECT_NIL";
@@ -331,11 +367,12 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   unpackMap[MSGPACK_OBJECT_MAP] = mex_unpack_map; 
 
 //  packMap[mxUNKNOWN_CLASS] = mex_pack_nil;
+//  packMap[mxVOID_CLASS] =
+//  packMap[mxFUNCTION_CLASS] =
   packMap[mxCELL_CLASS] = mex_pack_cell;
   packMap[mxSTRUCT_CLASS] = mex_pack_struct;
   packMap[mxLOGICAL_CLASS] = mex_pack_logical;
   packMap[mxCHAR_CLASS] = mex_pack_char;
-//  packMap[mxVOID_CLASS] =
   packMap[mxDOUBLE_CLASS] = mex_pack_double;
   packMap[mxSINGLE_CLASS] = mex_pack_single;
   packMap[mxINT8_CLASS] = mex_pack_int8;
@@ -346,8 +383,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   packMap[mxUINT32_CLASS] = mex_pack_uint32;
   packMap[mxINT64_CLASS] = mex_pack_int64;
   packMap[mxUINT64_CLASS] = mex_pack_uint64;
-//  packMap[mxFUNCTION_CLASS] =
-
 
   if ((nrhs < 1) || (!mxIsChar(prhs[0])))
     mexErrMsgTxt("Need to input string argument");

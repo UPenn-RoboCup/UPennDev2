@@ -26,10 +26,14 @@ local str = mp.pack(tbl1)
 --local str = mp.pack(-4324252)
 cmsgpack.new(str, #str)
 
-local file = io.open('msg', 'w')
-file:write(str)
+local file = io.open('msg1', 'rb')
+str = file:read('*a')
 file:close()
-print(str:byte(1, #str))
+print(#str)
+obj = mp.unpack(str)
+print(obj, #obj)
+--util.ptable(tbl)
+--print(str:byte(1, #str))
 
 --
 str = mp.pack(tbl)

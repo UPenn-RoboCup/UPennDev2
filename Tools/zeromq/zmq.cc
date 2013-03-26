@@ -126,14 +126,20 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     if (nrhs > 1 && mxGetNumberOfElements(prhs[1])==1 ){
       double* timeout_ptr = (double*)mxGetData(prhs[1]);
       mytimeout = (long)(timeout_ptr[0]);
-      printf("Myt: %ld,\n",mytimeout);
+      //printf("Myt: %ld,\n",mytimeout);
     }
     //mytimeout = -1;
     rc = zmq_poll (poll_items, socket_cnt, mytimeout);
+    if(rc<=0){
+      ret_sz[0] = 0;
+      plhs[0] = mxCreateNumericArray(1,ret_sz,mxUINT8_CLASS,mxREAL);
+      return;
+    }
+    //fprintf(stdout,"doneee %d\n",rc);
+    //fflush(stdout);
     /*
        mwSize ret_sz[]={rc,0};
        if(rc>0)
-       plhs[0] = mxCreateNumericArray(1,ret_sz,mxUINT8_CLASS,mxREAL);
        else
        return;
        */

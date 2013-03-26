@@ -1237,6 +1237,11 @@
 				<velocity>15</velocity>
 			</limit>
 		</axis>
+		<physics>
+			<ode>
+				<provide_feedback>1</provide_feedback>
+			</ode>
+		</physics>
 	</joint>
 	
 	<joint name="r_wrist_roll" type="revolute">
@@ -1250,6 +1255,11 @@
 				<velocity>15</velocity>
 			</limit>
 		</axis>
+		<physics>
+			<ode>
+				<provide_feedback>1</provide_feedback>
+			</ode>
+		</physics>
 	</joint>
 	
 	

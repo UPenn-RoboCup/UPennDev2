@@ -11,41 +11,6 @@ namespace gazebo
 {
   gz_comms_manager::gz_comms_manager()
   {
-    // initialize sensor id's
-    this->imu_link_name = "torso";
-    this->imu_sensor_name = "imu_sensor";
-
-    // load config parameters
-    Config config;
-    this->p_gain_constant = config.get_double("comms_manager.p_gain_constant");
-    this->i_gain_constant = config.get_double("comms_manager.i_gain_constant");
-    this->d_gain_constant = config.get_double("comms_manager.d_gain_constant");
-    this->d_break_freq = config.get_double("comms_manager.d_break_freq");
-    this->p_gain_default = config.get_double("comms_manager.p_gain_default");
-    this->i_gain_default = config.get_double("comms_manager.i_gain_default");
-    this->d_gain_default = config.get_double("comms_manager.d_gain_default");
-    this->joint_max = config.get_int("comms_manager.joint_max");
-
-    this->joint_id = config.get_string_vector("joint.id");
-    this->joint_id.resize(this->joint_max);
-
-    // initialize force-torque joints
-    this->l_ankle_index = -1;
-    this->r_ankle_index = -1;
-    this->l_wrist_index = -1;
-    this->r_wrist_index = -1;
-
-    for (int i = 0; i < this->joint_id.size(); i++)
-    {
-      if (joint_id[i] == "l_ankle_roll")
-        this->l_ankle_index = i; 
-      if (joint_id[i] == "r_ankle_roll")
-        this->r_ankle_index = i; 
-      if (joint_id[i] == "l_wrist_roll")
-        this->l_wrist_index = i; 
-      if (joint_id[i] == "r_wrist_roll")
-        this->r_wrist_index = i; 
-    }
   }
 
   gz_comms_manager::~gz_comms_manager()
@@ -63,7 +28,20 @@ namespace gazebo
     // initialize time step
     this->dynamics_time_step = this->world->GetPhysicsEngine()->GetStepTime();
 
+    // load config parameters
+    Config config;
+    this->p_gain_constant = config.get_double("comms_manager.p_gain_constant");
+    this->i_gain_constant = config.get_double("comms_manager.i_gain_constant");
+    this->d_gain_constant = config.get_double("comms_manager.d_gain_constant");
+    this->d_break_freq = config.get_double("comms_manager.d_break_freq");
+    this->p_gain_default = config.get_double("comms_manager.p_gain_default");
+    this->i_gain_default = config.get_double("comms_manager.i_gain_default");
+    this->d_gain_default = config.get_double("comms_manager.d_gain_default");
+    this->joint_max = config.get_int("comms_manager.joint_max");
+
     // initialize joints
+    this->joint_id = config.get_string_vector("joint.id");
+    this->joint_id.resize(this->joint_max);
     this->joints.resize(this->joint_id.size());
     for (unsigned int i = 0; i < this->joints.size(); ++i)
     { 
@@ -81,11 +59,28 @@ namespace gazebo
       dcm.joint_velocity[i] = 0;
       dcm.joint_force[i] = 0;
     }
-
-    // initialize joint controllers
     this->initialize_controllers();
 
-    // initialize sensors
+    // initialize force-torques
+    this->l_ankle_index = -1;
+    this->r_ankle_index = -1;
+    this->l_wrist_index = -1;
+    this->r_wrist_index = -1;
+    for (int i = 0; i < this->joint_id.size(); i++)
+    {
+      if (joint_id[i] == "l_ankle_roll")
+        this->l_ankle_index = i; 
+      if (joint_id[i] == "r_ankle_roll")
+        this->r_ankle_index = i; 
+      if (joint_id[i] == "l_wrist_roll")
+        this->l_wrist_index = i; 
+      if (joint_id[i] == "r_wrist_roll")
+        this->r_wrist_index = i; 
+    }
+
+    // initialize imu
+    this->imu_link_name = "torso";
+    this->imu_sensor_name = "imu_sensor";
     this->imu_sensor = boost::shared_dynamic_cast<sensors::ImuSensor>(
       sensors::SensorManager::Instance()->GetSensor(
         this->world->GetName()

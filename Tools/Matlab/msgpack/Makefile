@@ -3,7 +3,7 @@ OBJECTS  =
 
 all: msgpack
 
-include ../../Lib/Makefile.inc
+include ../../../Lib/Makefile.inc
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<

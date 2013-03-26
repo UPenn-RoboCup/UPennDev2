@@ -1416,7 +1416,8 @@
 		<parent>r_palm</parent>
 		<child>r_gripper1_link</child>
 		<axis>
-			<xyz>1 0 0</xyz>
+			<!-- This gripper spins the opposite way so that a positive force will close the gripper -->
+			<xyz>-1 0 0</xyz>
 			<limit>
 				<effort>300</effort>
 				<velocity>15</velocity>
@@ -1491,7 +1492,8 @@
 		<parent>l_palm</parent>
 		<child>l_gripper2_link</child>
 		<axis>
-			<xyz>1 0 0</xyz>
+			<!-- This gripper spins the opposite way so that a positive force will close the gripper -->
+			<xyz>-1 0 0</xyz>
 			<limit>
 				<effort>300</effort>
 				<velocity>15</velocity>

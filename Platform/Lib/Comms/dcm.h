@@ -1,11 +1,15 @@
 #ifndef _DCM_H_
 #define _DCM_H_
 
-#include "config.h"
-
 // dcm : global interface for sensor and actuator data
 // author : Mike Hopkins
 ///////////////////////////////////////////////////////////////////////////
+
+#define N_JOINT 31
+#define N_MOTOR 31
+#define N_AHRS 9
+#define N_FORCE_TORQUE 24
+#define N_BATTERY 3
 
 class Dcm {
 public:
@@ -47,6 +51,12 @@ public:
   double *force_torque_updated;
   double *ahrs_updated;
   double *battery_updated;
+  // data lengths
+  int n_joint;
+  int n_motor;
+  int n_force_torque;
+  int n_ahrs;
+  int n_battery;
   Dcm();
   ~Dcm();
 };

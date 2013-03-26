@@ -27,6 +27,6 @@ load_config('Config_mechanics')
 load_config('Config_motion')
 
 Config.platform = {}
-Config.platform.name = 'gazebo_ash_lowerbody'
+Config.platform.name = 'gazebo_ash'
 
 return Config

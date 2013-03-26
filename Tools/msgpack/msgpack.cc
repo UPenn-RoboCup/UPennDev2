@@ -1,14 +1,23 @@
+/* 
+ * MessagePack for Matlab
+ *
+ * mex -O msgpack.cc
+ *
+ * Yida Zhang, yida@seas.upenn.edu
+ *
+ * University of Pennsylvania
+ *
+ * */
+
 #include <iostream>
 #include <string>
 #include <map>
+#include <set>
 #include <vector>
-#include <stdio.h>
 #include <unistd.h>
 #include <msgpack.h>
 
 #include "mex.h"
-
-using namespace std;
 
 bool debug = false;
 std::string msgpack_type[8];
@@ -93,20 +102,63 @@ mxArray* mex_unpack_map(msgpack_object obj) {
 }
 
 mxArray* mex_unpack_array(msgpack_object obj) {
-  mxArray *ret = mxCreateCellMatrix(obj.via.array.size, 1);
-  for (int i = 0; i < obj.via.array.size; i++) {
-    msgpack_object ob = obj.via.array.ptr[i];
-
-    std::map<int, mxArray* (*)(msgpack_object obj)>::iterator 
-        iUnpackMap = unpackMap.find(ob.type);
-  
-    if (iUnpackMap == unpackMap.end())
-      mexErrMsgTxt("Unknown unpack function argument");
-  
-    if ( debug ) std::cout << msgpack_type[ob.type] << std::endl;
-    mxSetCell(ret, i, (iUnpackMap->second)(ob));
+  // validata array element type
+  std::set<int> types;
+  for (int i = 0; i < obj.via.array.size; i++)
+    if ((types.find(obj.via.array.ptr[i].type) == types.end()) && 
+        (obj.via.array.ptr[i].type > 0) and (obj.via.array.ptr[i].type < 5))
+      types.insert(obj.via.array.ptr[i].type);
+  int unique_type = *types.begin();
+  std::cout << types.size() << unique_type << std::endl;
+  if (types.size() == 1) {
+    std::cout << "output array" << std::endl;
+    mxArray *ret = NULL;
+    bool * ptrb = NULL;
+    double * ptrd = NULL;
+    int64_t * ptri = NULL;
+    uint64_t * ptru = NULL;
+    switch (unique_type) {
+      case 1:
+        ret = mxCreateLogicalMatrix(obj.via.array.size, 1);
+        ptrb = (bool*)mxGetPr(ret);
+        for (int i = 0; i < obj.via.array.size; i++) ptrb[i] = obj.via.array.ptr[i].via.boolean;
+        break;
+      case 2:
+        ret = mxCreateNumericMatrix(obj.via.array.size, 1, mxUINT64_CLASS, mxREAL);
+        ptru = (uint64_t*)mxGetPr(ret);
+        for (int i = 0; i < obj.via.array.size; i++) ptru[i] = obj.via.array.ptr[i].via.u64;
+        break;
+      case 3:
+        ret = mxCreateNumericMatrix(obj.via.array.size, 1, mxINT64_CLASS, mxREAL);
+        ptri = (int64_t*)mxGetPr(ret);
+        for (int i = 0; i < obj.via.array.size; i++) ptri[i] = obj.via.array.ptr[i].via.i64;
+        break;
+      case 4:
+        ret = mxCreateNumericMatrix(obj.via.array.size, 1, mxDOUBLE_CLASS, mxREAL);
+        ptrd = mxGetPr(ret);
+        for (int i = 0; i < obj.via.array.size; i++) ptrd[i] = obj.via.array.ptr[i].via.dec;
+        break;
+      default:
+        break;
+    }
+    return ret;
   }
-  return ret;
+  else {
+    mxArray *ret = mxCreateCellMatrix(obj.via.array.size, 1);
+    for (int i = 0; i < obj.via.array.size; i++) {
+      msgpack_object ob = obj.via.array.ptr[i];
+  
+      std::map<int, mxArray* (*)(msgpack_object obj)>::iterator 
+          iUnpackMap = unpackMap.find(ob.type);
+    
+      if (iUnpackMap == unpackMap.end())
+        mexErrMsgTxt("Unknown unpack function argument");
+    
+      if ( debug ) std::cout << msgpack_type[ob.type] << std::endl;
+      mxSetCell(ret, i, (iUnpackMap->second)(ob));
+    }
+    return ret;
+  }
 }
 
 void mex_unpack(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) 

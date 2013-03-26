@@ -1338,18 +1338,18 @@
 	
 	
 	<link name="l_palm">
-		<pose>-.0155 .219 .7991 0 0 0</pose>
+		<pose>-.0155 .219 .8176 0 0 0</pose>
 		<collision name="collision">
 			<geometry>
 				<box>
-					<size>.096 .042 .003</size>
+					<size>.032 .042 .04</size>
 				</box>
 			</geometry>
 		</collision>
 		<visual name="visual">
 			<geometry>
 				<box>
-					<size>.096 .042 .003</size>
+					<size>.032 .042 .04</size>
 				</box>
 			</geometry>
 		</visual>
@@ -1368,18 +1368,18 @@
 	</link>
 	
 	<link name="r_palm">
-		<pose>-.0155 -.219 .7991 0 0 0</pose>
+		<pose>-.0155 -.219 .8176 0 0 0</pose>
 		<collision name="collision">
 			<geometry>
 				<box>
-					<size>.096 .042 .003</size>
+					<size>.032 .042 .04</size>
 				</box>
 			</geometry>
 		</collision>
 		<visual name="visual">
 			<geometry>
 				<box>
-					<size>.096 .042 .003</size>
+					<size>.032 .042 .04</size>
 				</box>
 			</geometry>
 		</visual>

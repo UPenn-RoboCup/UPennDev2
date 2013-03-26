@@ -26,18 +26,33 @@ var depthData;
 
 // Send data to clients at a set interval
 // For now, this is 15fps
-var fps = 5;
+var fps = 1;
+var c_id = Buffer([13,13]);
+var d_id = Buffer([15,12]);
+var s = 0;
 setInterval(  function(){
-  for(var s=0;s<wskts.length;s++) {
-    //console.log(wskts[s].readyState);
-    //console.log(wskts[s].OPEN);
+  for(s=0;s<wskts.length;s++) {
     if( wskts[s].readyState==1 ){ //1 is OPEN
+      /*
     if( counter%2==0 ){
-      //console.log("sending color");
-      wskts[s].send(colorData,{binary:true});
+      //if( colorData!==undefined && colorData.length>20000 ) {
+        //console.log("sending color "+colorData.length);
+        //wskts[s].send(colorData,{binary:true});
+        wskts[s].send( Buffer.concat([colorData,c_id]) ,{binary:true});
+        //}
     } else {
-      //console.log("sending depth");
-      wskts[s].send(depthData,{binary:true});
+      //if( depthData!==undefined && depthData.length<20000 ) {
+        //console.log("sending depth "+depthData.length);
+        //wskts[s].send(depthData,{binary:true});
+        wskts[s].send( Buffer.concat([depthData,d_id]) ,{binary:true});
+        //}
+    }
+      */
+if( colorData!==undefined ){
+      wskts[s].send( Buffer.concat([colorData,c_id]), {binary:true} );
+    }
+if( depthData!==undefined ){    
+      wskts[s].send( Buffer.concat([depthData,d_id]) ,{binary:true} );
     }
     //wskts[s].send( Buffer.concat( [type,raw]),{binary:true});
   }
@@ -52,15 +67,11 @@ zmq_skt.subscribe('');
 console.log('ZeroMQ IPC | Connected to '+channels[0]);
 zmq_skt.on('message', function(type,raw){
   if(type=='c'){
-    //console.log('Color');
-    if( raw.length>15600 ){
-      colorData = raw;
-    }
+    //console.log('Color: '+raw.length+' bytes.');
+    colorData = raw;
   } else {
-    //console.log('Depth');
-    if(raw.length<=15600){
-      depthData = raw;
-    }
+    //console.log('Depth: '+raw.length+" bytes.");
+    depthData = raw;
   }
 });
 

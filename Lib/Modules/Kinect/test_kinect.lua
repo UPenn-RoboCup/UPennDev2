@@ -1,11 +1,18 @@
 require 'Kinect'
-s = Kinect.open()
-print( "Kinect Status: ", s )
+local k = Kinect.open()
+--s = Kinect.open('/tmp/nifile')
+--s = Kinect.open('/tmp/nifile','record')
+print( "Kinect Status: ", k )
+if not k then
+  return
+end
+print( "Current Zoom Level: ", Kinect.zoom(0) )
+print( "Setting Zoom Level: ", Kinect.zoom(4) )
 
 for n=1,10 do
-  s = Kinect.update()
+  local s = Kinect.update()
   print( "Kinect Stream: ", s )
-  d = Kinect.retrieve( s )
+  local d = Kinect.retrieve( s )
   print( "Kinect Data: ", d )
 end
 Kinect.shutdown()

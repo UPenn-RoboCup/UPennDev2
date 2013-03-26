@@ -16,7 +16,7 @@ all: tutil
 	$(CC) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
 
 tutil: luatutil.o
-	$(CXX) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ $(LIBRT) $(LIB_DIR) -l$(TORCHLIB)
+	$(CXX) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ $(LIBRT) $(LIB_DIR) -ltorch
 
 clean:
 	rm -f *.o *.$(SHLIBEXT)

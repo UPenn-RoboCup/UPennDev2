@@ -61,10 +61,12 @@ mxArray* mex_unpack_double(msgpack_object obj) {
 }
 
 mxArray* mex_unpack_raw(msgpack_object obj) {
-  mwSize dims[] = {1, obj.via.raw.size/2};
-  mxArray* ret = mxCreateCharArray(2, dims);
-  char *ptr = (char*)mxGetPr(ret); 
-  memcpy(ptr, obj.via.raw.ptr, obj.via.raw.size * sizeof(uint8_t));
+  mwSize dims[] = {obj.via.raw.size};
+  mxArray* ret = mxCreateCharArray(1, dims);
+  uint16_t *ptr = (uint16_t*)mxGetPr(ret); 
+  for (int i = 0; i < obj.via.raw.size; i++) {
+    ptr[i] = obj.via.raw.ptr[i];
+  }
   return ret;
 }
 
@@ -109,9 +111,7 @@ mxArray* mex_unpack_array(msgpack_object obj) {
         (obj.via.array.ptr[i].type > 0) and (obj.via.array.ptr[i].type < 5))
       types.insert(obj.via.array.ptr[i].type);
   int unique_type = *types.begin();
-  std::cout << types.size() << unique_type << std::endl;
   if (types.size() == 1) {
-    std::cout << "output array" << std::endl;
     mxArray *ret = NULL;
     bool * ptrb = NULL;
     double * ptrd = NULL;

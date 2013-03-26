@@ -32,7 +32,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     initialized = 1;
     mexAtExit(cleanup);
   }
-
   // Evaluate the command given
   if ( mxIsChar(prhs[0]) != 1)
     mexErrMsgTxt("Could not read string. (1st argument)");
@@ -78,7 +77,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     // Auto poll setup
     poll_items[socket_cnt].socket = sockets[socket_cnt];
     poll_items[socket_cnt].events = ZMQ_POLLIN;
-    //printf("Creating Socket: %d, %u\n",socket_cnt,sockets[socket_cnt]);
     plhs[0] = mxCreateNumericArray(1,ret_sz,mxUINT8_CLASS,mxREAL);
     uint8_t* out = (uint8_t*)mxGetData(plhs[0]);
     out[0] = socket_cnt;
@@ -109,7 +107,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
       mexErrMsgTxt("Please provide a valid handle");
     uint8_t* socketid = (uint8_t*)mxGetData(prhs[1]);
     int socket = socketid[0];
-    printf("Accessing socket %u, %u\n",socket, sockets[socket]);
     if( socket>socket_cnt)
       mexErrMsgTxt("Bad socket id!");
     int nbytes = zmq_recv(sockets[socket], recv_buffer, BUFLEN, 0);
@@ -120,29 +117,18 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     plhs[0] = mxCreateNumericArray(1,ret_sz,mxUINT8_CLASS,mxREAL);
     void* start = mxGetData( plhs[0] );
     memcpy(start,recv_buffer,nbytes);
-    printf("Received %d bytes\n",nbytes);
   } else if (strcasecmp(command, "poll") == 0){
     long mytimeout = -1;
     if (nrhs > 1 && mxGetNumberOfElements(prhs[1])==1 ){
       double* timeout_ptr = (double*)mxGetData(prhs[1]);
       mytimeout = (long)(timeout_ptr[0]);
-      //printf("Myt: %ld,\n",mytimeout);
     }
-    //mytimeout = -1;
     rc = zmq_poll (poll_items, socket_cnt, mytimeout);
     if(rc<=0){
       ret_sz[0] = 0;
       plhs[0] = mxCreateNumericArray(1,ret_sz,mxUINT8_CLASS,mxREAL);
       return;
     }
-    //fprintf(stdout,"doneee %d\n",rc);
-    //fflush(stdout);
-    /*
-       mwSize ret_sz[]={rc,0};
-       if(rc>0)
-       else
-       return;
-       */
     int r = 0;
     for(int i=0;i<socket_cnt;i++) {
       if(poll_items[i].revents){
@@ -159,5 +145,4 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     }
   } else
     mexErrMsgTxt("Unrecognized command");
-
 }

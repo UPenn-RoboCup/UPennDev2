@@ -150,7 +150,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         int nbytes = zmq_recv(sockets[i], recv_buffer, BUFLEN, 0);
         printf("Received %d bytes on channel %d\n",nbytes,i);
         fflush(stdout);
-        idx[r] = i;
+        idx[r] = i + 1;
         ret_sz[0] = nbytes;
         mxArray* tmp = mxCreateNumericArray(1,ret_sz,mxUINT8_CLASS,mxREAL);
         void* start = mxGetData( tmp );

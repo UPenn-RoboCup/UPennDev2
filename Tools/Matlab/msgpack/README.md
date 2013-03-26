@@ -1,4 +1,7 @@
-MessagePack for Matlab, based on msgpack-c
+msgpack-matlab
+==============
+
+MessagePack for Matlab based on msgpack-c (https://github.com/msgpack/msgpack-c)
 
 install: mex -O msgpack.cc
 

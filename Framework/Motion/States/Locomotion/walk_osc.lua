@@ -185,7 +185,7 @@ function walk:entry()
 
   -- is robot in an unsafe stance configuration?
   for i = 1, #q_stance_error do
-    if (math.abs(q_stance_error[i]) > 3*math.pi/180) then
+    if (math.abs(q_stance_error[i]) > 4*math.pi/180) then
       return 'unsafe'
     end
   end

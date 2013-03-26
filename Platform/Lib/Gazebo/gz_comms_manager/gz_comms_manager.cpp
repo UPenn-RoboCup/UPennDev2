@@ -11,12 +11,41 @@ namespace gazebo
 {
   gz_comms_manager::gz_comms_manager()
   {
-    this->l_ankle_index = 5;
-    this->r_ankle_index = 11;
-    this->l_wrist_index = -1;
-    this->r_wrist_index = -1;
+    // initialize sensor id's
     this->imu_link_name = "torso";
     this->imu_sensor_name = "imu_sensor";
+
+    // load config parameters
+    Config config;
+    this->p_gain_constant = config.get_double("comms_manager.p_gain_constant");
+    this->i_gain_constant = config.get_double("comms_manager.i_gain_constant");
+    this->d_gain_constant = config.get_double("comms_manager.d_gain_constant");
+    this->d_break_freq = config.get_double("comms_manager.d_break_freq");
+    this->p_gain_default = config.get_double("comms_manager.p_gain_default");
+    this->i_gain_default = config.get_double("comms_manager.i_gain_default");
+    this->d_gain_default = config.get_double("comms_manager.d_gain_default");
+    this->joint_max = config.get_int("comms_manager.joint_max");
+
+    this->joint_id = config.get_string_vector("joint.id");
+    this->joint_id.resize(this->joint_max);
+
+    // initialize force-torque joints
+    this->l_ankle_index = -1;
+    this->r_ankle_index = -1;
+    this->l_wrist_index = -1;
+    this->r_wrist_index = -1;
+
+    for (int i = 0; i < this->joint_id.size(); i++)
+    {
+      if (joint_id[i] == "l_ankle_roll")
+        this->l_ankle_index = i; 
+      if (joint_id[i] == "r_ankle_roll")
+        this->r_ankle_index = i; 
+      if (joint_id[i] == "l_wrist_roll")
+        this->l_wrist_index = i; 
+      if (joint_id[i] == "r_wrist_roll")
+        this->r_wrist_index = i; 
+    }
   }
 
   gz_comms_manager::~gz_comms_manager()
@@ -35,32 +64,19 @@ namespace gazebo
     this->dynamics_time_step = this->world->GetPhysicsEngine()->GetStepTime();
 
     // initialize joints
-    this->joint_names.push_back("l_hip_yaw");
-    this->joint_names.push_back("l_hip_roll");
-    this->joint_names.push_back("l_hip_pitch");
-    this->joint_names.push_back("l_knee_pitch");
-    this->joint_names.push_back("l_ankle_pitch");
-    this->joint_names.push_back("l_ankle_roll");
-    this->joint_names.push_back("r_hip_yaw");
-    this->joint_names.push_back("r_hip_roll");
-    this->joint_names.push_back("r_hip_pitch");
-    this->joint_names.push_back("r_knee_pitch");
-    this->joint_names.push_back("r_ankle_pitch");
-    this->joint_names.push_back("r_ankle_roll");
-
-    this->joints.resize(this->joint_names.size());
+    this->joints.resize(this->joint_id.size());
     for (unsigned int i = 0; i < this->joints.size(); ++i)
     { 
-      this->joints[i] = this->model->GetJoint(this->joint_names[i]);
+      this->joints[i] = this->model->GetJoint(this->joint_id[i]);
       if (!this->joints[i])
       { 
-        gzerr << "Error: joint [" << this->joint_names[i] << "] not present\n";
+        gzerr << "Error: joint [" << this->joint_id[i] << "] not present\n";
         return;
       }
 
-      dcm.joint_p_gain[i] = P_GAIN_DEFAULT;
-      dcm.joint_i_gain[i] = I_GAIN_DEFAULT;
-      dcm.joint_d_gain[i] = D_GAIN_DEFAULT;
+      dcm.joint_p_gain[i] = this->p_gain_default;
+      dcm.joint_i_gain[i] = this->i_gain_default;
+      dcm.joint_d_gain[i] = this->d_gain_default;
       dcm.joint_position[i] = 0;
       dcm.joint_velocity[i] = 0;
       dcm.joint_force[i] = 0;
@@ -104,7 +120,7 @@ namespace gazebo
 
       // initialize velocity filter
       struct filter velocity_filter = 
-        new_low_pass(this->dynamics_time_step.Double(), D_BREAK_FREQUENCY);
+        new_low_pass(this->dynamics_time_step.Double(), this->d_break_freq);
       filter_set_output_limits(&velocity_filter, -max_force, max_force);
 
       // update joint structs
@@ -124,9 +140,9 @@ namespace gazebo
   {
     for (unsigned int i = 0; i < this->joints.size(); ++i)
     { 
-      dcm.joint_p_gain[i] = P_GAIN_DEFAULT;
-      dcm.joint_i_gain[i] = I_GAIN_DEFAULT; 
-      dcm.joint_d_gain[i] = D_GAIN_DEFAULT; 
+      dcm.joint_p_gain[i] = this->p_gain_default;
+      dcm.joint_i_gain[i] = this->i_gain_default; 
+      dcm.joint_d_gain[i] = this->d_gain_default; 
       dcm.joint_position[i] = 0;
       dcm.joint_velocity[i] = 0;
       dcm.joint_force[i] = 0;
@@ -194,9 +210,9 @@ namespace gazebo
     for (unsigned int i = 0; i < this->joints.size(); i++)
     {
       // update setpoints and sensor values
-      double p_gain = P_GAIN_CONSTANT*dcm.joint_p_gain[i];
-      double i_gain = I_GAIN_CONSTANT*dcm.joint_i_gain[i];
-      double d_gain = D_GAIN_CONSTANT*dcm.joint_d_gain[i];
+      double p_gain = this->p_gain_constant*dcm.joint_p_gain[i];
+      double i_gain = this->i_gain_constant*dcm.joint_i_gain[i];
+      double d_gain = this->d_gain_constant*dcm.joint_d_gain[i];
 
       double force_setpoint = dcm.joint_force[i];
       double position_setpoint = dcm.joint_position[i];

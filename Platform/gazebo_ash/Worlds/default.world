@@ -34,7 +34,7 @@
 </include>
 
 <include>
-  <uri>model://ash_lowerbody_sensors</uri>
+  <uri>model://ash</uri>
 </include>
 
 </world>

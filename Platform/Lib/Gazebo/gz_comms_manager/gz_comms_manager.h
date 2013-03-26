@@ -47,7 +47,7 @@ namespace gazebo
 
     // Joints
     private: physics::Joint_V joints;
-    private: std::vector<std::string> joint_names;
+    private: std::vector<std::string> joint_id;
 
     // Controller structs
     private: std::vector<struct pid> joint_position_pids;
@@ -63,6 +63,16 @@ namespace gazebo
     private: boost::shared_ptr<sensors::ImuSensor> imu_sensor;
     private: std::string imu_link_name;
     private: std::string imu_sensor_name;
+
+    // Controller settings
+    private: int joint_max;
+    private: double p_gain_constant;
+    private: double i_gain_constant;
+    private: double d_gain_constant;
+    private: double d_break_freq;
+    private: double p_gain_default;
+    private: double i_gain_default;
+    private: double d_gain_default;
   };
 }
 

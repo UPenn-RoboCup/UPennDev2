@@ -711,7 +711,7 @@
 			<xyz>0 0 1</xyz>
 			<limit>
 				<effort>300</effort>
-				<velocity>15</velocity>
+				<velocity>12</velocity>
 			</limit>
 		</axis>
 	</joint>
@@ -755,7 +755,7 @@
 			<xyz>0 0 1</xyz>
 			<limit>
 				<effort>300</effort>
-				<velocity>15</velocity>
+				<velocity>12</velocity>
 			</limit>
 		</axis>
 	</joint>
@@ -799,7 +799,7 @@
 			<xyz>0 1 0</xyz>
 			<limit>
 				<effort>300</effort>
-				<velocity>15</velocity>
+				<velocity>12</velocity>
 			</limit>
 		</axis>
 	</joint>
@@ -843,7 +843,7 @@
 			<xyz>0 1 0</xyz>
 			<limit>
 				<effort>300</effort>
-				<velocity>15</velocity>
+				<velocity>12</velocity>
 			</limit>
 		</axis>
 	</joint>
@@ -855,7 +855,7 @@
 			<xyz>0 1 0</xyz>
 			<limit>
 				<effort>300</effort>
-				<velocity>15</velocity>
+				<velocity>12</velocity>
 			</limit>
 		</axis>
 	</joint>
@@ -937,7 +937,7 @@
 			<xyz>1 0 0</xyz>
 			<limit>
 				<effort>300</effort>
-				<velocity>15</velocity>
+				<velocity>12</velocity>
 			</limit>
 		</axis>
 	</joint>
@@ -949,7 +949,7 @@
 			<xyz>1 0 0</xyz>
 			<limit>
 				<effort>300</effort>
-				<velocity>15</velocity>
+				<velocity>12</velocity>
 			</limit>
 		</axis>
 	</joint>
@@ -1032,7 +1032,7 @@
 			<xyz>0 0 1</xyz>
 			<limit>
 				<effort>300</effort>
-				<velocity>15</velocity>
+				<velocity>12</velocity>
 			</limit>
 		</axis>
 	</joint>
@@ -1045,7 +1045,7 @@
 			<xyz>0 0 1</xyz>
 			<limit>
 				<effort>300</effort>
-				<velocity>15</velocity>
+				<velocity>12</velocity>
 			</limit>
 		</axis>
 	</joint>
@@ -1122,7 +1122,7 @@
 			<xyz>0 1 0</xyz>
 			<limit>
 				<effort>300</effort>
-				<velocity>15</velocity>
+				<velocity>12</velocity>
 			</limit>
 		</axis>
 	</joint>
@@ -1135,7 +1135,7 @@
 			<xyz>0 1 0</xyz>
 			<limit>
 				<effort>300</effort>
-				<velocity>15</velocity>
+				<velocity>12</velocity>
 			</limit>
 		</axis>
 	</joint>
@@ -1211,7 +1211,7 @@
 			<xyz>0 0 1</xyz>
 			<limit>
 				<effort>300</effort>
-				<velocity>15</velocity>
+				<velocity>12</velocity>
 			</limit>
 		</axis>
 	</joint>
@@ -1223,7 +1223,7 @@
 			<xyz>0 0 1</xyz>
 			<limit>
 				<effort>300</effort>
-				<velocity>15</velocity>
+				<velocity>12</velocity>
 			</limit>
 		</axis>
 	</joint>
@@ -1302,7 +1302,7 @@
 			<xyz>1 0 0</xyz>
 			<limit>
 				<effort>300</effort>
-				<velocity>15</velocity>
+				<velocity>12</velocity>
 			</limit>
 		</axis>
 		<physics>
@@ -1320,7 +1320,7 @@
 			<xyz>1 0 0</xyz>
 			<limit>
 				<effort>300</effort>
-				<velocity>15</velocity>
+				<velocity>12</velocity>
 			</limit>
 		</axis>
 		<physics>
@@ -1402,7 +1402,7 @@
 				<lower>-.78539816339</lower>
 				<upper>1.57079632679</upper>
 				<effort>300</effort>
-				<velocity>15</velocity>
+				<velocity>12</velocity>
 			</limit>
 		</axis>
 	</joint>
@@ -1418,7 +1418,7 @@
 				<lower>-.78539816339</lower>
 				<upper>1.57079632679</upper>
 				<effort>300</effort>
-				<velocity>15</velocity>
+				<velocity>12</velocity>
 			</limit>
 		</axis>
 	</joint>
@@ -1498,7 +1498,7 @@
 				<lower>-.78539816339</lower>
 				<upper>1.57079632679</upper>
 				<effort>300</effort>
-				<velocity>15</velocity>
+				<velocity>12</velocity>
 			</limit>
 		</axis>
 	</joint>
@@ -1513,7 +1513,7 @@
 				<lower>-.78539816339</lower>
 				<upper>1.57079632679</upper>
 				<effort>300</effort>
-				<velocity>15</velocity>
+				<velocity>12</velocity>
 			</limit>
 		</axis>
 	</joint>

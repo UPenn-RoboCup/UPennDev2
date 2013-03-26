@@ -302,8 +302,8 @@
 	
 	
 	<link name="l_hip_yaw_trunnion">
-		<!-- Axis = "z", -->
 		<pose>-.021 .094 .808 0 0 0</pose>
+		<!-- Axis = "z", -->
 		<collision name="collision">
 			<geometry>
 				<cylinder>
@@ -334,8 +334,8 @@
 	</link>
 
 	<link name="r_hip_yaw_trunnion">
-		<!-- Axis = "z", -->
 		<pose>-.021 -.094 .808 0 0 0</pose>
+		<!-- Axis = "z", -->
 		<collision name="collision">
 			<geometry>
 				<cylinder>
@@ -367,8 +367,8 @@
 
 
 	<link name="l_hip_pitch_trunnion">
-		<!-- Axis = "y", -->
 		<pose>-.021 .094 .808 0 0 0</pose>
+		<!-- Axis = "y", -->
 		<collision name="collision">
 			<pose>0 0 0 1.57079632679 0 0</pose>
 			<geometry>
@@ -401,8 +401,8 @@
 	</link>
 
 	<link name="r_hip_pitch_trunnion">
-		<!-- Axis = "y", -->
 		<pose>-.021 -.094 .808 0 0 0</pose>
+		<!-- Axis = "y", -->
 		<collision name="collision">
 			<pose>0 0 0 1.57079632679 0 0</pose>
 			<geometry>
@@ -436,8 +436,8 @@
 
 
 	<link name="l_ankle_pitch_trunnion">
-		<!-- Axis = "y", -->
 		<pose>-.021 .094 .049 0 0 0</pose>
+		<!-- Axis = "y", -->
 		<collision name="collision">
 			<pose>0 0 0 1.57079632679 0 0</pose>
 			<geometry>
@@ -470,8 +470,8 @@
 	</link>
 
 	<link name="r_ankle_pitch_trunnion">
-		<!-- Axis = "y", -->
 		<pose>-.021 -.094 .049 0 0 0</pose>
+		<!-- Axis = "y", -->
 		<collision name="collision">
 			<pose>0 0 0 1.57079632679 0 0</pose>
 			<geometry>

@@ -1314,7 +1314,7 @@
 	
 	
 	<joint name="l_gripper1" type="revolute">
-		<pose>0 .01 .05 0 0 0</pose>
+		<pose>0 0 .05 0 0 0</pose>
 		<parent>l_palm</parent>
 		<child>l_gripper1_link</child>
 		<axis>
@@ -1327,7 +1327,7 @@
 	</joint>
 	
 	<joint name="r_gripper1" type="revolute">
-		<pose>0 -.01 .05 0 0 0</pose>
+		<pose>0 0 .05 0 0 0</pose>
 		<parent>r_palm</parent>
 		<child>r_gripper1_link</child>
 		<axis>
@@ -1342,7 +1342,7 @@
 	
 	<link name="l_gripper1_link">
 		<!-- inside gripper -->
-		<pose>-.0155 0.250 0.7476 0 0 0</pose>
+		<pose>-.0155 0.198 0.7476 0 0 0</pose>
 		<collision name="collision">
 			<geometry>
 				<box>
@@ -1372,7 +1372,7 @@
 	
 	<link name="r_gripper1_link">
 		<!-- inside gripper -->
-		<pose>-.0155 -0.250 0.7476 0 0 0</pose>
+		<pose>-.0155 -0.198 0.7476 0 0 0</pose>
 		<collision name="collision">
 			<geometry>
 				<box>
@@ -1402,7 +1402,7 @@
 	
 	
 	<joint name="l_gripper2" type="revolute">
-		<pose>0 .01 .05 0 0 0</pose>
+		<pose>0 0 .05 0 0 0</pose>
 		<parent>l_palm</parent>
 		<child>l_gripper2_link</child>
 		<axis>
@@ -1415,7 +1415,7 @@
 	</joint>
 	
 	<joint name="r_gripper2" type="revolute">
-		<pose>0 -.01 .05 0 0 0</pose>
+		<pose>0 0 .05 0 0 0</pose>
 		<parent>r_palm</parent>
 		<child>r_gripper2_link</child>
 		<axis>
@@ -1430,7 +1430,7 @@
 	
 	<link name="l_gripper2_link">
 		<!-- outside gripper -->
-		<pose>-.0155 0.188 0.7476 0 0 0</pose>
+		<pose>-.0155 0.240 0.7476 0 0 0</pose>
 		<collision name="collision">
 			<geometry>
 				<box>
@@ -1460,7 +1460,7 @@
 	
 	<link name="r_gripper2_link">
 		<!-- outside gripper -->
-		<pose>-.0155 -0.188 0.7476 0 0 0</pose>
+		<pose>-.0155 -0.240 0.7476 0 0 0</pose>
 		<collision name="collision">
 			<geometry>
 				<box>

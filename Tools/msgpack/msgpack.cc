@@ -19,7 +19,7 @@
 
 #include "mex.h"
 
-bool debug = false;
+bool debug = true;
 std::string msgpack_type[8];
 
 mxArray* mex_unpack_boolean(msgpack_object obj);
@@ -61,10 +61,12 @@ mxArray* mex_unpack_double(msgpack_object obj) {
 }
 
 mxArray* mex_unpack_raw(msgpack_object obj) {
-  mwSize dims[] = {1, obj.via.raw.size/2};
-  mxArray* ret = mxCreateCharArray(2, dims);
-  char *ptr = (char*)mxGetPr(ret); 
-  memcpy(ptr, obj.via.raw.ptr, obj.via.raw.size * sizeof(uint8_t));
+  mwSize dims[] = {obj.via.raw.size};
+  mxArray* ret = mxCreateCharArray(1, dims);
+  uint16_t *ptr = (uint16_t*)mxGetPr(ret); 
+  for (int i = 0; i < obj.via.raw.size; i++) {
+    ptr[i] = obj.via.raw.ptr[i];
+  }
   return ret;
 }
 
@@ -166,6 +168,7 @@ void mex_unpack(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 //  if ( debug ) std::cout << "unpack "<< std::endl;
   const char *str = (const char*)mxGetPr(prhs[0]);
   size_t size = mxGetM(prhs[0]) * mxGetN(prhs[0]);
+  std::cout << size << ' ' << strlen(str) << std::endl;
 
   /* deserializes it. */
   msgpack_unpacked msg;

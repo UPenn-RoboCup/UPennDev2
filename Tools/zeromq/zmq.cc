@@ -52,6 +52,10 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     rc = zmq_bind( sockets[socket_cnt], zmq_channel );
     if(rc!=0)
       mexErrMsgTxt("Could not bind!");
+    // Auto poll setup
+    poll_items[socket_cnt].socket = sockets[socket_cnt];
+    //poll_items[socket_cnt].events = ZMQ_POLLOUT;
+    // Set the output
     printf("Creating Socket: %d, %u\n",socket_cnt,sockets[socket_cnt]);
     ret_sz[0] = 1;
     plhs[0] = mxCreateNumericArray(1,ret_sz,mxUINT8_CLASS,mxREAL);
@@ -126,23 +130,36 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     rc = zmq_poll (poll_items, socket_cnt, mytimeout);
     if(rc<=0){
       ret_sz[0] = 0;
-      plhs[0] = mxCreateNumericArray(1,ret_sz,mxUINT8_CLASS,mxREAL);
+      plhs[0] = mxCreateCellMatrix(0,1);
+      plhs[1] = mxCreateNumericArray(1,ret_sz,mxUINT8_CLASS,mxREAL);
       return;
     }
+
+    // Create a cell mxArray to hold the poll elements
+    //fprintf(stdout,"SETTING CELL ARRAY! %d\n",rc);
+    //fflush( stdout );
+    ret_sz[0] = rc;
+    mxArray* idx_array_ptr = mxCreateNumericArray(1,ret_sz,mxUINT8_CLASS,mxREAL);
+    uint8_t* idx = (uint8_t*)mxGetData(idx_array_ptr);
+    mxArray* cell_array_ptr = mxCreateCellMatrix((mwSize)rc,1);
     int r = 0;
     for(int i=0;i<socket_cnt;i++) {
       if(poll_items[i].revents){
         int nbytes = zmq_recv(sockets[i], recv_buffer, BUFLEN, 0);
-        printf("Received %d on channel %d\n",nbytes,i);
+        printf("Received %d bytes on channel %d\n",nbytes,i);
         fflush(stdout);
-        ret_sz[r] = nbytes;
-        plhs[0] = mxCreateNumericArray(1,ret_sz,mxUINT8_CLASS,mxREAL);
-        void* start = mxGetData( plhs[0] );
-        memcpy(start,recv_buffer,nbytes);
+        idx[r] = i;
+        ret_sz[0] = nbytes;
+        mxArray* tmp = mxCreateNumericArray(1,ret_sz,mxUINT8_CLASS,mxREAL);
+        void* start = mxGetData( tmp );
+        memcpy(start, recv_buffer, nbytes);
+        mxSetCell(cell_array_ptr, r, tmp );
         r++;
-        break; // TODO - make a cell of returned stuff
+        //break; // TODO - make a cell of returned stuff
       }
     }
+    plhs[0] = cell_array_ptr;
+    plhs[1] = idx_array_ptr;
   } else
     mexErrMsgTxt("Unrecognized command");
 }

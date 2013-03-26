@@ -15,3 +15,6 @@ msgpack('unpack', msg)
 %fid = fopen(filename, 'w');
 %data = fwrite(fid, msg, '*uint8');
 %fclose(fid);
+
+msg = msgpack('pack', int16(-32));
+class(msgpack('unpack', msg))

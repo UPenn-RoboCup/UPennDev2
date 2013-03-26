@@ -865,43 +865,69 @@
 	
 	<link name="l_shoulder_pitch_trunnion">
 		<pose>-.0157 .1545 1.3247 0 0 0</pose>
+		<!-- Axis = "y", -->
 		<collision name="collision">
+			<pose>0 0 0 1.57079632679 0 0</pose>
 			<geometry>
-				<box>
-					<size>.144 .033 .054</size>
-				</box>
+				<cylinder>
+					<radius>0.01</radius>
+					<length>0.1</length>
+				</cylinder>
 			</geometry>
 		</collision>
 		<visual name="visual">
+			<pose>0 0 0 1.57079632679 0 0</pose>
 			<geometry>
-				<box>
-					<size>.144 .033 .054</size>
-				</box>
+				<cylinder>
+					<radius>0.01</radius>
+					<length>0.1</length>
+				</cylinder>
 			</geometry>
 		</visual>
 		<inertial>
-			<mass>.257</mass>
+			<mass>0.1</mass>
+			<inertia>
+				<ixx>8.5833333333333e-05</ixx>
+				<iyy>5e-06</iyy>
+				<izz>8.5833333333333e-05</izz>
+				<ixy>0</ixy>
+				<ixz>0</ixz>
+				<iyz>0</iyz>
+			</inertia>
 		</inertial>
 	</link>
 	
 	<link name="r_shoulder_pitch_trunnion">
 		<pose>-.0157 -.1545 1.3247 0 0 0</pose>
+		<!-- Axis = "y", -->
 		<collision name="collision">
+			<pose>0 0 0 1.57079632679 0 0</pose>
 			<geometry>
-				<box>
-					<size>.144 .033 .054</size>
-				</box>
+				<cylinder>
+					<radius>0.01</radius>
+					<length>0.1</length>
+				</cylinder>
 			</geometry>
 		</collision>
 		<visual name="visual">
+			<pose>0 0 0 1.57079632679 0 0</pose>
 			<geometry>
-				<box>
-					<size>.144 .033 .054</size>
-				</box>
+				<cylinder>
+					<radius>0.01</radius>
+					<length>0.1</length>
+				</cylinder>
 			</geometry>
 		</visual>
 		<inertial>
-			<mass>.257</mass>
+			<mass>0.1</mass>
+			<inertia>
+				<ixx>8.5833333333333e-05</ixx>
+				<iyy>5e-06</iyy>
+				<izz>8.5833333333333e-05</izz>
+				<ixy>0</ixy>
+				<ixz>0</ixz>
+				<iyz>0</iyz>
+			</inertia>
 		</inertial>
 	</link>
 	
@@ -935,43 +961,69 @@
 	
 	<link name="l_shoulder_roll_trunnion">
 		<pose>-.0157 .219 1.3187 0 0 0</pose>
+		<!-- Axis = "x", -->
 		<collision name="collision">
+			<pose>0 0 0 0 1.57079632679 0</pose>
 			<geometry>
-				<box>
-					<size>.138 .054 .066</size>
-				</box>
+				<cylinder>
+					<radius>0.01</radius>
+					<length>0.1</length>
+				</cylinder>
 			</geometry>
 		</collision>
 		<visual name="visual">
+			<pose>0 0 0 0 1.57079632679 0</pose>
 			<geometry>
-				<box>
-					<size>.138 .054 .066</size>
-				</box>
+				<cylinder>
+					<radius>0.01</radius>
+					<length>0.1</length>
+				</cylinder>
 			</geometry>
 		</visual>
 		<inertial>
-			<mass>.492</mass>
+			<mass>0.1</mass>
+			<inertia>
+				<ixx>5e-06</ixx>
+				<iyy>8.5833333333333e-05</iyy>
+				<izz>8.5833333333333e-05</izz>
+				<ixy>0</ixy>
+				<ixz>0</ixz>
+				<iyz>0</iyz>
+			</inertia>
 		</inertial>
 	</link>
 	
 	<link name="r_shoulder_roll_trunnion">
 		<pose>-.0157 -.219 1.3187 0 0 0</pose>
+		<!-- Axis = "x", -->
 		<collision name="collision">
+			<pose>0 0 0 0 1.57079632679 0</pose>
 			<geometry>
-				<box>
-					<size>.138 .054 .066</size>
-				</box>
+				<cylinder>
+					<radius>0.01</radius>
+					<length>0.1</length>
+				</cylinder>
 			</geometry>
 		</collision>
 		<visual name="visual">
+			<pose>0 0 0 0 1.57079632679 0</pose>
 			<geometry>
-				<box>
-					<size>.138 .054 .066</size>
-				</box>
+				<cylinder>
+					<radius>0.01</radius>
+					<length>0.1</length>
+				</cylinder>
 			</geometry>
 		</visual>
 		<inertial>
-			<mass>.492</mass>
+			<mass>0.1</mass>
+			<inertia>
+				<ixx>5e-06</ixx>
+				<iyy>8.5833333333333e-05</iyy>
+				<izz>8.5833333333333e-05</izz>
+				<ixy>0</ixy>
+				<ixz>0</ixz>
+				<iyz>0</iyz>
+			</inertia>
 		</inertial>
 	</link>
 	
@@ -1185,43 +1237,65 @@
 	
 	<link name="l_wrist_yaw_trunnion">
 		<pose>-.0155 .219 .8366 0 0 0</pose>
+		<!-- Axis = "z", -->
 		<collision name="collision">
 			<geometry>
-				<box>
-					<size>.09 .042 .042</size>
-				</box>
+				<cylinder>
+					<radius>0.01</radius>
+					<length>0.1</length>
+				</cylinder>
 			</geometry>
 		</collision>
 		<visual name="visual">
 			<geometry>
-				<box>
-					<size>.09 .042 .042</size>
-				</box>
+				<cylinder>
+					<radius>0.01</radius>
+					<length>0.1</length>
+				</cylinder>
 			</geometry>
 		</visual>
 		<inertial>
-			<mass>.159</mass>
+			<mass>0.1</mass>
+			<inertia>
+				<ixx>8.5833333333333e-05</ixx>
+				<iyy>8.5833333333333e-05</iyy>
+				<izz>5e-06</izz>
+				<ixy>0</ixy>
+				<ixz>0</ixz>
+				<iyz>0</iyz>
+			</inertia>
 		</inertial>
 	</link>
 	
 	<link name="r_wrist_yaw_trunnion">
 		<pose>-.0155 -.219 .8366 0 0 0</pose>
+		<!-- Axis = "z", -->
 		<collision name="collision">
 			<geometry>
-				<box>
-					<size>.09 .042 .042</size>
-				</box>
+				<cylinder>
+					<radius>0.01</radius>
+					<length>0.1</length>
+				</cylinder>
 			</geometry>
 		</collision>
 		<visual name="visual">
 			<geometry>
-				<box>
-					<size>.09 .042 .042</size>
-				</box>
+				<cylinder>
+					<radius>0.01</radius>
+					<length>0.1</length>
+				</cylinder>
 			</geometry>
 		</visual>
 		<inertial>
-			<mass>.159</mass>
+			<mass>0.1</mass>
+			<inertia>
+				<ixx>8.5833333333333e-05</ixx>
+				<iyy>8.5833333333333e-05</iyy>
+				<izz>5e-06</izz>
+				<ixy>0</ixy>
+				<ixz>0</ixz>
+				<iyz>0</iyz>
+			</inertia>
 		</inertial>
 	</link>
 	

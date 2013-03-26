@@ -1,7 +1,7 @@
 MEXEXT= $(shell mexext)
 OBJECTS  = 
 
-all: cmsgpack msgpack
+all: msgpack
 
 include ../../Lib/Makefile.inc
 
@@ -14,9 +14,6 @@ include ../../Lib/Makefile.inc
 
 msgpack:
 	mex -O $@.cc -lmsgpack -I/usr/local/include -L/usr/local/lib
-
-cmsgpack: cmsgpack.o
-	$(CXX) $(LDFLAGS) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ $(LIB_DIR) $(LIB_DIRS) $(LIBS) -lmsgpack
 
 clean:
 	rm -f *.$(mexext) *.$(SHLIBEXT) *.o cpng

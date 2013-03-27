@@ -37,46 +37,6 @@
 			<visualize>1</visualize>
 			<topic>imu_sensor</topic>
 		</sensor>
-		<sensor name="lidar_sensor1" type="ray">
-			<!-- Hokuyo UTM-30LX-EW -->
-			<always_on>1</always_on>
-			<update_rate>10</update_rate>
-			<pose>.0565 0 1.277 0 0 0</pose>
-			<ray>
-				<scan>
-					<horizontal>
-						<samples>1080</samples>
-						<resolution>1</resolution>
-						<min_angle>-2.35619449</min_angle>
-						<max_angle>2.35619449</max_angle>
-					</horizontal>
-				</scan>
-				<range>
-					<min>.1</min>
-					<max>60</max>
-					<resolution>.05</resolution>
-				</range>
-			</ray>
-			<plugin name="gz_lidar_dump" filename="libgz_lidar_dump.so" />
-		</sensor>
-		<sensor name="camera_sensor1" type="camera">
-			<pose>0 0 0.5 0 0 1.57</pose>
-			<camera>
-				<horizontal_fov>1.57</horizontal_fov>
-				<image>
-					<width>640</width>
-					<height>480</height>
-					<format>R8G8B8</format>
-				</image>
-				<clip>
-					<near>0.5</near>
-					<far>5</far>
-				</clip>
-			</camera>
-			<plugin name="gz_camera_dump" filename="libgz_camera_dump.so" />
-			<always_on>1</always_on>
-			<update_rate>10</update_rate>
-		</sensor>
 	</link>
 
 
@@ -747,6 +707,46 @@
 				<ixy>0.000607106</ixy>
 			</inertia>
 		</inertial>
+		<sensor name="lidar_sensor1" type="ray">
+			<!-- Hokuyo UTM-30LX-EW -->
+			<always_on>1</always_on>
+			<update_rate>10</update_rate>
+			<pose>.0565 0 1.277 0 0 0</pose>
+			<ray>
+				<scan>
+					<horizontal>
+						<samples>1080</samples>
+						<resolution>1</resolution>
+						<min_angle>-2.35619449</min_angle>
+						<max_angle>2.35619449</max_angle>
+					</horizontal>
+				</scan>
+				<range>
+					<min>.1</min>
+					<max>60</max>
+					<resolution>.05</resolution>
+				</range>
+			</ray>
+			<plugin name="gz_lidar_dump" filename="libgz_lidar_dump.so" />
+		</sensor>
+		<sensor name="camera_sensor1" type="camera">
+			<pose>0 0 0.5 0 0 1.57</pose>
+			<camera>
+				<horizontal_fov>1.57</horizontal_fov>
+				<image>
+					<width>640</width>
+					<height>480</height>
+					<format>R8G8B8</format>
+				</image>
+				<clip>
+					<near>0.5</near>
+					<far>5</far>
+				</clip>
+			</camera>
+			<plugin name="gz_camera_dump" filename="libgz_camera_dump.so" />
+			<always_on>1</always_on>
+			<update_rate>10</update_rate>
+		</sensor>
 	</link>
 	
 	<joint name="head_yaw" type="revolute">

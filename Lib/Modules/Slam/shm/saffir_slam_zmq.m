@@ -93,9 +93,6 @@ if isempty(initSlam)
 end
 
 %% Run the update
-t_start = tic;
-is_rec = 1;
-
 while 1
     %% Grab the data, and massage is for API compliance
     %myranges = LIDAR.get_ranges();
@@ -104,16 +101,16 @@ while 1
         if idx(i)==s_laser
             newscan = msgpack('unpack', data{i});
             LIDAR0.scan.ranges = typecast( uint8(newscan.ranges), 'single' );
-            LIDAR0.scan.startTime = newscan.startTime;
+            LIDAR0.scan.startTime = double(newscan.startTime);
             shm_slam_process_lidar0();
         else
             imu = msgpack('unpack', data{i});
-            IMU.data.roll = 0;%double(imu.R)*pi/180;
-            IMU.data.pitch = 0;%double(imu.P)*pi/180;
+            IMU.data.roll = double(imu.R)*pi/180;
+            IMU.data.pitch = double(imu.P)*pi/180;
             IMU.data.yaw = double(imu.Y)*pi/180;
-            IMU.data.wyaw = double(imu.Wz);
-            IMU.data.t = imu.t;
-            IMU.tLastArrival = imu.t;
+            IMU.data.wyaw = -1*(double(imu.Wz)-370)*(pi/180.0/3.45);%double(imu.Wz);
+            IMU.data.t = double( imu.t );
+            IMU.tLastArrival = double(IMU.data.t);
             shm_slam_process_odometry();
         end
     end
@@ -132,8 +129,8 @@ while 1
     % Define how to plot the robot's pose
     xi = (POSE.data.x-OMAP.xmin)*OMAP.invRes; % x image coord
     yi = (POSE.data.y-OMAP.ymin)*OMAP.invRes; % y image coord
-    xd = 25*cos(POSE.data.yaw);
-    yd = 25*sin(POSE.data.yaw);
+    xd = 25*cos( double(POSE.data.yaw) );
+    yd = 25*sin( double(POSE.data.yaw) );
     if isempty(hOrientation) || isempty(hPose)
         hPose = plot(xi,yi,'g.','MarkerSize',20);
         hOrientation = quiver(xi,yi,xd,yd,'g');
@@ -146,7 +143,6 @@ while 1
     hTitle = title(sprintf('x:%f, y:%f, yaw: %f', ...
         POSE.data.x,POSE.data.y,POSE.data.yaw*180/pi), ...
         'FontSize',12);
-    t_stop = toc( t_start );
     
     %     subplot(2,1,2);
     %     cla;

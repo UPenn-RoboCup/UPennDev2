@@ -46,16 +46,20 @@ else
 end
 
 % if too still, then dont change the yaw
-wdt = 0;
+%wdt = 0;
 if (stopCntr < 40)
-    %wdt = IMU.data.wyaw * 0.025; %(GetUnixTime()-tLastUpdate);
-    wdt = IMU.data.wyaw * (IMU.data.t-tLastUpdate);
+    wdt = IMU.data.wyaw * 0.025; %(GetUnixTime()-tLastUpdate);
+    %wdt = IMU.data.wyaw * (IMU.data.t-tLastUpdate);
+    if abs(wdt)>1
+        wdt = 0;
+    end
     %wdt = 0;
 else
-    %wdt = 0;
+    wdt = 0;
     %fprintf(1,'not moving\n');
 end
 %fprintf(1,'wdt: %f\n', wdt);
+
 
 tLastUpdate = IMU.data.t;
 %dt = counts.t - ODOMETRY.tLast;
@@ -72,8 +76,8 @@ dTrans = rotz(SLAM.yaw)*roty(IMU.data.pitch)*rotx(IMU.data.roll)*rotz(SLAM.yaw)'
 
 SLAM.xOdom   = xPrev   + dTrans(1);
 SLAM.yOdom   = yPrev   + dTrans(2);
-SLAM.yawOdom = yawPrev + dpose(3); % This is good
-%SLAM.yawOdom = yawPrev + wdt;
+%SLAM.yawOdom = yawPrev + dpose(3); % This is good
+SLAM.yawOdom = yawPrev + wdt;
 %SLAM.yawOdom = -1*IMU.data.yaw;
 
 %% For using dead reckoning

@@ -32,7 +32,7 @@ end
 ranges = double(LIDAR0.scan.ranges); %convert from float to double
 %dranges = [0; diff(ranges)];
 %indGood = ranges >0.25 & LIDAR0.mask; % & (abs(dranges) <0.1);
-indGood = ranges >0.25 & LIDAR0.mask & ranges<5;
+indGood = ranges >0.5 & LIDAR0.mask & ranges<7.5;
 
 xs = ranges.*LIDAR0.cosines;
 ys = ranges.*LIDAR0.sines;
@@ -76,9 +76,11 @@ if (1)
   slamScanMatchPass2;
   
   if (hmax < 500)
-    SLAM.x = SLAM.xOdom;
-    SLAM.y = SLAM.yOdom;
-    SLAM.yaw = SLAM.yawOdom;
+    %SLAM.x = SLAM.xOdom;
+    %SLAM.y = SLAM.yOdom;
+    %SLAM.yaw = SLAM.yawOdom;
+  else
+      %fprintf(1,'not moving\n');
   end
  
 else

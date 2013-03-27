@@ -24,7 +24,8 @@ params.Kick = "Slow"
 --params.Camera = "Grasp"
 --params.Camera = "Grasp_obs"
 --params.Camera = "L512"
-params.Camera = "L512_2130"
+--params.Camera = "L512_2130"
+params.Camera = "L512_1930"
 --params.Camera = "L512_Day"
 
 util.LoadConfig(params, platform)

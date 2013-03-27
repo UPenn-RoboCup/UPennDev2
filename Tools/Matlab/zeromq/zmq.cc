@@ -2,8 +2,10 @@
 #include <stdio.h>
 #include <zmq.h>
 #include <unistd.h>
+#include <stdint.h>
+#include <string.h>
 #include "mex.h"
-#define BUFLEN 1024
+#define BUFLEN 8192
 #define MAX_SOCKETS 10
 
 char* command;

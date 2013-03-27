@@ -38,7 +38,7 @@ namespace gazebo
     this->d_gain_default = config.get_double("comms_manager.d_gain_default");
 
     // initialize joints
-    private: std::vector<std::string> joint_id;
+    std::vector<std::string> joint_id;
     joint_id = config.get_string_vector("joint.id");
     joint_id.resize(this->joint_max);
     this->joints.resize(joint_id.size());

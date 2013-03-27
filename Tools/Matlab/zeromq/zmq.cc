@@ -2,8 +2,10 @@
 #include <stdio.h>
 #include <zmq.h>
 #include <unistd.h>
+#include <stdint.h>
+#include <string.h>
 #include "mex.h"
-#define BUFLEN 1024
+#define BUFLEN 8192
 #define MAX_SOCKETS 10
 
 char* command;
@@ -25,16 +27,15 @@ void cleanup( void ){
 }
 
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
-  // Create a two threaded context
   if (!initialized) {
     mexPrintf("ZMQMEX: creating a 2 thread ZMQ context.\n");
     ctx = zmq_init(2);
     initialized = 1;
     mexAtExit(cleanup);
   }
-  // Evaluate the command given
+
   if ( mxIsChar(prhs[0]) != 1)
-    mexErrMsgTxt("Could not read string. (1st argument)");
+    mexErrMsgTxt("Could not read command string. (1st argument)");
   command = mxArrayToString(prhs[0]);
 
   // Setup a publisher
@@ -43,16 +44,25 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
       mexErrMsgTxt("Cannot create any more sockets!");
     if (nrhs != 2)
       mexErrMsgTxt("Please provide a name for the ZMQ channel");
-    if ( mxIsChar(prhs[1]) != 1)
-      mexErrMsgTxt("Could not read string. (2nd argument)");
-    char* ch_name = mxArrayToString(prhs[1]);
-    sprintf(zmq_channel, "ipc:///tmp/%s", ch_name );
-    printf("Subscribing to %s.\n",zmq_channel);
+    if ( mxIsChar(prhs[1]) != 1){
+      if ( mxGetNumberOfElements( prhs[1] )!=1 )
+        mexErrMsgTxt("Please provide a valid handle");
+      double* channelid = (double*)mxGetData(prhs[1]);
+      unsigned int ch_id = (unsigned int)channelid[0];
+      sprintf(zmq_channel, "tcp://*:%u", ch_id );
+    } else {
+      char* ch_name = mxArrayToString(prhs[1]);
+      sprintf(zmq_channel, "ipc:///tmp/%s", ch_name );
+    }
+    printf("Publishing to %s\n",zmq_channel);
     sockets[socket_cnt] = zmq_socket (ctx, ZMQ_PUB);
     rc = zmq_bind( sockets[socket_cnt], zmq_channel );
     if(rc!=0)
       mexErrMsgTxt("Could not bind!");
-    printf("Creating Socket: %d, %u\n",socket_cnt,sockets[socket_cnt]);
+    // Auto poll setup
+    poll_items[socket_cnt].socket = sockets[socket_cnt];
+    //poll_items[socket_cnt].events = ZMQ_POLLOUT; // TODO
+    // Set the output to be our internal id
     ret_sz[0] = 1;
     plhs[0] = mxCreateNumericArray(1,ret_sz,mxUINT8_CLASS,mxREAL);
     uint8_t* out = (uint8_t*)mxGetData(plhs[0]);
@@ -65,10 +75,17 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
       mexErrMsgTxt("Cannot create any more sockets!");
     if (nrhs != 2)
       mexErrMsgTxt("Please provide a name for the ZMQ channel");
-    if ( mxIsChar(prhs[1]) != 1)
-      mexErrMsgTxt("Could not read string. (2nd argument)");
-    char* ch_name = mxArrayToString(prhs[1]);
-    sprintf(zmq_channel, "ipc:///tmp/%s", ch_name );
+    if ( mxIsChar(prhs[1]) != 1){
+      if ( mxGetNumberOfElements( prhs[1] )!=1 )
+        mexErrMsgTxt("Please provide a valid handle");
+      double* channelid = (double*)mxGetData(prhs[1]);
+      unsigned int ch_id = (unsigned int)channelid[0];
+      sprintf(zmq_channel, "tcp://ese650.mooo.com:%u", ch_id );
+    } else {
+      char* ch_name = mxArrayToString(prhs[1]);
+      sprintf(zmq_channel, "ipc:///tmp/%s", ch_name );
+    }
+    printf("Subscribing to %s\n",zmq_channel);
     sockets[socket_cnt] = zmq_socket (ctx, ZMQ_SUB);
     zmq_setsockopt( sockets[socket_cnt], ZMQ_SUBSCRIBE, "", 0 );
     rc = zmq_connect( sockets[socket_cnt], zmq_channel );
@@ -84,7 +101,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
   }
   // Send data over a socket
   else if (strcasecmp(command, "send") == 0){
-    if (nrhs != 3)
+    if( nrhs != 3 )
       mexErrMsgTxt("Please provide a socket id and a string message to send");
     if ( !mxIsClass(prhs[1],"uint8") || mxGetNumberOfElements(prhs[1])!=1 )
       mexErrMsgTxt("Please provide a valid handle");
@@ -124,25 +141,33 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
       mytimeout = (long)(timeout_ptr[0]);
     }
     rc = zmq_poll (poll_items, socket_cnt, mytimeout);
-    if(rc<=0){
-      ret_sz[0] = 0;
-      plhs[0] = mxCreateNumericArray(1,ret_sz,mxUINT8_CLASS,mxREAL);
-      return;
-    }
+
+    // If not data, or error
+    if(rc<0)
+      mexErrMsgTxt("Poll error!");
+
+    // Create a cell mxArray to hold the poll elements, and have an
+    // index array to know which channel received data
+    ret_sz[0] = rc;
+    mxArray* idx_array_ptr = mxCreateNumericArray(1,ret_sz,mxUINT8_CLASS,mxREAL);
+    uint8_t* idx = (uint8_t*)mxGetData(idx_array_ptr);
+    mxArray* cell_array_ptr = mxCreateCellMatrix((mwSize)rc,1);
     int r = 0;
-    for(int i=0;i<socket_cnt;i++) {
+    for(int i=0;i<socket_cnt;i++)
       if(poll_items[i].revents){
         int nbytes = zmq_recv(sockets[i], recv_buffer, BUFLEN, 0);
-        printf("Received %d on channel %d\n",nbytes,i);
-        fflush(stdout);
-        ret_sz[r] = nbytes;
-        plhs[0] = mxCreateNumericArray(1,ret_sz,mxUINT8_CLASS,mxREAL);
-        void* start = mxGetData( plhs[0] );
-        memcpy(start,recv_buffer,nbytes);
+        idx[r] = i;
+        ret_sz[0] = nbytes;
+        mxArray* tmp = mxCreateNumericArray(1,ret_sz,mxUINT8_CLASS,mxREAL);
+        void* start = mxGetData( tmp );
+        memcpy(start, recv_buffer, nbytes);
+        mxSetCell(cell_array_ptr, r, tmp );
         r++;
-        break; // TODO - make a cell of returned stuff
-      }
-    }
+      }// if an event
+    // Push the output
+    plhs[0] = cell_array_ptr;
+    plhs[1] = idx_array_ptr;
+    return;
   } else
-    mexErrMsgTxt("Unrecognized command");
+    mexErrMsgTxt("Unrecognized command.");
 }

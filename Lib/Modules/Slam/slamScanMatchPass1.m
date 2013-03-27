@@ -1,6 +1,6 @@
 
-nyaw1 = 15;
-dyaw1 = 1.0/180.0*pi;
+nyaw1 = 25;
+dyaw1 = .5/180.0*pi;
 
 
 %resolution of the candidate poses
@@ -10,8 +10,8 @@ dyaw1 = 1.0/180.0*pi;
 tLidar0   = LIDAR0.scan.startTime;
 
 %if abs(tLidar0-tEncoders) < 0.1
-  nxs1  = 5;
-  nys1  = 5;
+  nxs1  = 21;
+  nys1  = 21;
   dx1   = 0.02;
   dy1   = 0.02;
 %else

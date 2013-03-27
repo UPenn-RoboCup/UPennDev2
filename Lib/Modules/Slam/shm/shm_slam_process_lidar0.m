@@ -2,31 +2,8 @@
 % Lidar0 message handler (horizontal lidar)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function shm_slam_process_lidar0(data,name)
+function shm_slam_process_lidar0(name)
 global SLAM LIDAR0 OMAP EMAP POSE IMU CMAP DHMAP MAPS DVMAP GPS POSES
-global LIDAR0_TS
-
-if isempty(LIDAR0_TS)
-    LIDAR0_TS.ts  = zeros(1,1000);
-    LIDAR0_TS.dts = zeros(1,1000);
-    LIDAR0_TS.cntr = 1;
-end
-
-if ~isempty(data)
-  LIDAR0.scan = data;
-else
-  return;
-end
-
-if (LIDAR0_TS.cntr > 1)
-  tnow = LIDAR0.scan.startTime;%GetUnixTime();
-  tl   = LIDAR0.scan.startTime;
-  dtt= tnow-tl;
-  tmod = mod(LIDAR0_TS.cntr-1,1000)+1;
-  LIDAR0_TS.ts(tmod) = tl;
-  LIDAR0_TS.dts(tmod) = dtt; %tl - LIDAR0_TS.ts(LIDAR0_TS.cntr-1);%dtt;
-end
-LIDAR0_TS.cntr = LIDAR0_TS.cntr + 1;
 
 if ~CheckImu()
     disp('ignoring lidar0 because imu data is invalid');
@@ -52,9 +29,10 @@ if (mod(SLAM.lidar0Cntr,40) == 0)
   %toc,tic
 end
   
-ranges = double(LIDAR0.scan.ranges)'; %convert from float to double
+ranges = double(LIDAR0.scan.ranges); %convert from float to double
 %dranges = [0; diff(ranges)];
-indGood = ranges >0.25 & LIDAR0.mask; % & (abs(dranges) <0.1);
+%indGood = ranges >0.25 & LIDAR0.mask; % & (abs(dranges) <0.1);
+indGood = ranges >0.25 & LIDAR0.mask & ranges<5;
 
 xs = ranges.*LIDAR0.cosines;
 ys = ranges.*LIDAR0.sines;
@@ -104,7 +82,7 @@ if (1)
   end
  
 else
-  %fprintf(1,'not moving\n');
+  fprintf(1,'not moving\n');
 end
   
 POSE.data.x     = SLAM.x;

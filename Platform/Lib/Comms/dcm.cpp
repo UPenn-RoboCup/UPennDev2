@@ -1,24 +1,14 @@
-#include <boost/interprocess/managed_shared_memory.hpp>
-#include <boost/interprocess/allocators/allocator.hpp>
-#include <vector>
-#include <string>
-#include "config.h"
 #include "dcm.h"
 
 // dcm : global interface for actuator and sensor data
 // author : Mike Hopkins
 ///////////////////////////////////////////////////////////////////////////
 
-// create global dcm instance
-Dcm dcm;
-
 Dcm::Dcm()
 {
   // create shared memory segment for actuator and sensor data
-  using namespace boost::interprocess;
-
   shared_memory_object::remove("dcm");
-  static managed_shared_memory dcm_segment(create_only, "dcm", 65536);
+  dcm_segment = managed_shared_memory(create_only, "dcm", 65536);
 
   // get array lengths from config file
   Config config;
@@ -117,7 +107,5 @@ Dcm::Dcm()
 
 Dcm::~Dcm()
 {
-  // destroy shared memory segment
-  using namespace boost::interprocess;
   shared_memory_object::remove("dcm");
 }

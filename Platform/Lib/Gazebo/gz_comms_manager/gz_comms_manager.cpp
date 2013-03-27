@@ -5,8 +5,6 @@
 
 // Mike Hopkins 3/20/13
 
-extern Dcm dcm;
-
 namespace gazebo
 {
   gz_comms_manager::gz_comms_manager()
@@ -30,6 +28,7 @@ namespace gazebo
 
     // load config parameters
     Config config;
+    this->joint_max = config.get_int("comms_manager.joint_max");
     this->p_gain_constant = config.get_double("comms_manager.p_gain_constant");
     this->i_gain_constant = config.get_double("comms_manager.i_gain_constant");
     this->d_gain_constant = config.get_double("comms_manager.d_gain_constant");
@@ -37,46 +36,77 @@ namespace gazebo
     this->p_gain_default = config.get_double("comms_manager.p_gain_default");
     this->i_gain_default = config.get_double("comms_manager.i_gain_default");
     this->d_gain_default = config.get_double("comms_manager.d_gain_default");
-    this->joint_max = config.get_int("comms_manager.joint_max");
 
     // initialize joints
-    this->joint_id = config.get_string_vector("joint.id");
-    this->joint_id.resize(this->joint_max);
-    this->joints.resize(this->joint_id.size());
-    for (unsigned int i = 0; i < this->joints.size(); ++i)
+    private: std::vector<std::string> joint_id;
+    joint_id = config.get_string_vector("joint.id");
+    joint_id.resize(this->joint_max);
+    this->joints.resize(joint_id.size());
+    for (int i = 0; i < this->joints.size(); i++)
     { 
-      this->joints[i] = this->model->GetJoint(this->joint_id[i]);
+      this->joint_index.push_back(i);
+      this->joints[i] = this->model->GetJoint(joint_id[i]);
       if (!this->joints[i])
       { 
-        gzerr << "Error: joint [" << this->joint_id[i] << "] not present\n";
-        return;
+	gzerr << "Error: joint [" << joint_id[i] << "] not present\n";
+	return;
       }
 
-      dcm.joint_p_gain[i] = this->p_gain_default;
-      dcm.joint_i_gain[i] = this->i_gain_default;
-      dcm.joint_d_gain[i] = this->d_gain_default;
-      dcm.joint_position[i] = 0;
-      dcm.joint_velocity[i] = 0;
-      dcm.joint_force[i] = 0;
+      this->dcm.joint_p_gain[i] = this->p_gain_default;
+      this->dcm.joint_i_gain[i] = this->i_gain_default;
+      this->dcm.joint_d_gain[i] = this->d_gain_default;
+      this->dcm.joint_position[i] = 0;
+      this->dcm.joint_velocity[i] = 0;
+      this->dcm.joint_force[i] = 0;
     }
-    this->initialize_controllers();
 
-    // initialize force-torques
+    // initialize joint indexes
     this->l_ankle_index = -1;
     this->r_ankle_index = -1;
     this->l_wrist_index = -1;
     this->r_wrist_index = -1;
-    for (int i = 0; i < this->joint_id.size(); i++)
+    this->l_gripper_index = -1;
+    this->r_gripper_index = -1;
+    for (int i = 0; i < joint_id.size(); i++)
     {
       if (joint_id[i] == "l_ankle_roll")
         this->l_ankle_index = i; 
-      if (joint_id[i] == "r_ankle_roll")
+      else if (joint_id[i] == "r_ankle_roll")
         this->r_ankle_index = i; 
-      if (joint_id[i] == "l_wrist_roll")
+      else if (joint_id[i] == "l_wrist_roll")
         this->l_wrist_index = i; 
-      if (joint_id[i] == "r_wrist_roll")
+      else if (joint_id[i] == "r_wrist_roll")
         this->r_wrist_index = i; 
+      else if (joint_id[i] == "l_gripper")
+        this->l_gripper_index = i;
+      else if (joint_id[i] == "r_gripper")
+        this->r_gripper_index = i;
     }
+
+    // initialize gripper slave joints
+    if (l_gripper_index > -1) 
+    {
+      this->joint_index.push_back(l_gripper_index);
+      this->joints.push_back(this->model->GetJoint("l_gripper_slave"));
+      if (!this->joints[this->joints.size() - 1])
+      { 
+	gzerr << "Error: l_gripper_slave joint not present\n";
+	return;
+      }
+    }
+    if (r_gripper_index > -1) 
+    {
+      this->joint_index.push_back(r_gripper_index);
+      this->joints.push_back(this->model->GetJoint("r_gripper_slave"));
+      if (!this->joints[this->joints.size() - 1])
+      { 
+	gzerr << "Error: r_gripper_slave joint not present\n";
+	return;
+      }
+    }
+
+    // intialize controllers
+    this->initialize_controllers();
 
     // initialize imu
     this->imu_link_name = "torso";
@@ -101,7 +131,8 @@ namespace gazebo
 
   void gz_comms_manager::initialize_controllers()
   {
-    for (unsigned int i = 0; i < this->joints.size(); ++i)
+    // initialize dcm joint controllers
+    for (int i = 0; i < this->joints.size(); i++)
     { 
       // get joint limits
       double max_force = this->joints[i]->GetEffortLimit(0);
@@ -114,8 +145,10 @@ namespace gazebo
       pid_set_output_limits(&position_pid, -max_force, max_force);
 
       // initialize velocity filter
-      struct filter velocity_filter = 
-        new_low_pass(this->dynamics_time_step.Double(), this->d_break_freq);
+      struct filter velocity_filter = new_low_pass(
+        this->dynamics_time_step.Double(),
+        this->d_break_freq
+      );
       filter_set_output_limits(&velocity_filter, -max_force, max_force);
 
       // update joint structs
@@ -133,14 +166,15 @@ namespace gazebo
 
   void gz_comms_manager::reset()
   {
-    for (unsigned int i = 0; i < this->joints.size(); ++i)
+    for (int i = 0; i < this->joints.size(); i++)
     { 
-      dcm.joint_p_gain[i] = this->p_gain_default;
-      dcm.joint_i_gain[i] = this->i_gain_default; 
-      dcm.joint_d_gain[i] = this->d_gain_default; 
-      dcm.joint_position[i] = 0;
-      dcm.joint_velocity[i] = 0;
-      dcm.joint_force[i] = 0;
+      int index = this->joint_index[i];
+      this->dcm.joint_p_gain[index] = this->p_gain_default;
+      this->dcm.joint_i_gain[index] = this->i_gain_default; 
+      this->dcm.joint_d_gain[index] = this->d_gain_default; 
+      this->dcm.joint_position[index] = 0;
+      this->dcm.joint_velocity[index] = 0;
+      this->dcm.joint_force[index] = 0;
     }
     this->initialize_controllers();
   }
@@ -173,14 +207,14 @@ namespace gazebo
 
       for (int i = 0; i < 3; i++)
       {
-        dcm.force_torque[i] = l_ankle_force[i];
-        dcm.force_torque[i+3] = l_ankle_torque[i];
-        dcm.force_torque[i+6] = r_ankle_force[i];
-        dcm.force_torque[i+9] = r_ankle_torque[i];
-        dcm.force_torque[i+12] = l_wrist_force[i];
-        dcm.force_torque[i+15] = l_wrist_torque[i];
-        dcm.force_torque[i+18] = r_wrist_force[i];
-        dcm.force_torque[i+21] = r_wrist_torque[i];
+        this->dcm.force_torque[i] = l_ankle_force[i];
+        this->dcm.force_torque[i+3] = l_ankle_torque[i];
+        this->dcm.force_torque[i+6] = r_ankle_force[i];
+        this->dcm.force_torque[i+9] = r_ankle_torque[i];
+        this->dcm.force_torque[i+12] = l_wrist_force[i];
+        this->dcm.force_torque[i+15] = l_wrist_torque[i];
+        this->dcm.force_torque[i+18] = r_wrist_force[i];
+        this->dcm.force_torque[i+21] = r_wrist_torque[i];
       }
     }
 
@@ -191,9 +225,9 @@ namespace gazebo
       math::Vector3 euler = this->imu_sensor->GetOrientation().GetAsEuler();
       for (int i = 0; i < 3; i++)
       {
-        dcm.ahrs[i] = gyro[i];
-        dcm.ahrs[i+3] = accel[i];
-        dcm.ahrs[i+6] = euler[i];
+        this->dcm.ahrs[i] = gyro[i];
+        this->dcm.ahrs[i+3] = accel[i];
+        this->dcm.ahrs[i+6] = euler[i];
       }
     }
 
@@ -202,16 +236,18 @@ namespace gazebo
       this->initialize_controllers();
 
     // update joints
-    for (unsigned int i = 0; i < this->joints.size(); i++)
+    for (int i = 0; i < this->joints.size(); i++)
     {
-      // update setpoints and sensor values
-      double p_gain = this->p_gain_constant*dcm.joint_p_gain[i];
-      double i_gain = this->i_gain_constant*dcm.joint_i_gain[i];
-      double d_gain = this->d_gain_constant*dcm.joint_d_gain[i];
+      int index = this->joint_index[i];
 
-      double force_setpoint = dcm.joint_force[i];
-      double position_setpoint = dcm.joint_position[i];
-      double velocity_setpoint = dcm.joint_velocity[i];
+      // update setpoints and sensor values
+      double p_gain = this->p_gain_constant*this->dcm.joint_p_gain[index];
+      double i_gain = this->i_gain_constant*this->dcm.joint_i_gain[index];
+      double d_gain = this->d_gain_constant*this->dcm.joint_d_gain[index];
+
+      double force_setpoint = this->dcm.joint_force[index];
+      double position_setpoint = this->dcm.joint_position[index];
+      double velocity_setpoint = this->dcm.joint_velocity[index];
       double position_actual = this->joints[i]->GetAngle(0).Radian();
       double velocity_actual = this->joints[i]->GetVelocity(0);
 
@@ -239,9 +275,9 @@ namespace gazebo
       this->joints[i]->SetForce(0, force_command);
 
       // update joint sensors
-      dcm.joint_force_sensor[i] = force_command;
-      dcm.joint_position_sensor[i] = position_actual;
-      dcm.joint_velocity_sensor[i] = velocity_actual;
+      this->dcm.joint_force_sensor[index] = force_command;
+      this->dcm.joint_position_sensor[index] = position_actual;
+      this->dcm.joint_velocity_sensor[index] = velocity_actual;
 
     //gzerr << "force command " << force_command << "\n";
     }

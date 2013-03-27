@@ -18,6 +18,8 @@ export GAZEBO_MODEL_PATH="$THOR_HOME/Platform/$PLATFORM/Models"
 export GAZEBO_PLUGIN_PATH="$GAZEBO_PLUGIN_PATH:\
 $THOR_HOME/Platform/Lib/Gazebo/gz_comms_manager:\
 $THOR_HOME/Platform/Lib/Gazebo/gz_time_publisher:\
+$THOR_HOME/Platform/Lib/Gazebo/gz_camera_dump:\
+$THOR_HOME/Platform/Lib/Gazebo/gz_lidar_dump:\
 "
   
 echo "Opening $WORLD_FILE"

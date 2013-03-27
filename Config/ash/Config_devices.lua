@@ -43,8 +43,8 @@ joint.id = {
   [26] = 'head_yaw',
   [27] = 'head_pitch',
   [28] = 'l_gripper',
-  [29] = 'l_finger',
-  [30] = 'r_gripper',
+  [29] = 'r_gripper',
+  [30] = 'l_finger',
   [31] = 'r_finger',
 
   -- group ids
@@ -163,8 +163,8 @@ joint.id = {
   },
   hands = {
     'l_gripper',
-    'l_finger',
     'r_gripper',
+    'l_finger',
     'r_finger'
   },
   head = {
@@ -202,8 +202,8 @@ joint.id = {
     'head_yaw',
     'head_pitch',
     'l_gripper',
-    'l_finger',
     'r_gripper',
+    'l_finger',
     'r_finger',
   },
 }
@@ -243,8 +243,8 @@ motor.id = {
   [26] = 'head_yaw',
   [27] = 'head_pitch',
   [28] = 'l_gripper',
-  [29] = 'l_finger',
-  [30] = 'r_gripper',
+  [29] = 'r_gripper',
+  [30] = 'l_finger',
   [31] = 'r_finger',
 
   -- group ids
@@ -363,8 +363,8 @@ motor.id = {
   },
   hands = {
     'l_gripper',
-    'l_finger',
     'r_gripper',
+    'l_finger',
     'r_finger',
   },
   head = {
@@ -402,8 +402,8 @@ motor.id = {
     'head_yaw',
     'head_pitch',
     'l_gripper',
-    'l_finger',
     'r_gripper',
+    'l_finger',
     'r_finger',
   },
 }

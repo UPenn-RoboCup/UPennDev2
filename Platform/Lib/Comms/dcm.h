@@ -1,15 +1,18 @@
 #ifndef _DCM_H_
 #define _DCM_H_
 
+#include <boost/interprocess/managed_shared_memory.hpp>
+#include <boost/interprocess/allocators/allocator.hpp>
+#include <boost/interprocess/exceptions.hpp>
+#include <vector>
+#include <string>
+#include "config.h"
+
 // dcm : global interface for sensor and actuator data
 // author : Mike Hopkins
 ///////////////////////////////////////////////////////////////////////////
 
-#define N_JOINT 31
-#define N_MOTOR 31
-#define N_AHRS 9
-#define N_FORCE_TORQUE 24
-#define N_BATTERY 3
+using namespace boost::interprocess;
 
 class Dcm {
 public:
@@ -59,6 +62,8 @@ public:
   int n_battery;
   Dcm();
   ~Dcm();
+private:
+  managed_shared_memory dcm_segment;
 };
 
 #endif

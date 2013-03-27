@@ -45,19 +45,24 @@ namespace gazebo
     private: common::Time last_update_time;
     private: common::Time dynamics_time_step;
 
+    // Device Comms Manager
+    private: Dcm dcm;
+
     // Joints
     private: physics::Joint_V joints;
-    private: std::vector<std::string> joint_id;
-
-    // Controller structs
+    private: std::vector<int> joint_index;
     private: std::vector<struct pid> joint_position_pids;
     private: std::vector<struct filter> joint_velocity_filters;
 
+    // Gripper joints
+    private: int l_gripper_index;
+    private: int r_gripper_index;
+
     // Force torque joints
-    private: unsigned int l_ankle_index;
-    private: unsigned int r_ankle_index;
-    private: unsigned int l_wrist_index;
-    private: unsigned int r_wrist_index;
+    private: int l_ankle_index;
+    private: int r_ankle_index;
+    private: int l_wrist_index;
+    private: int r_wrist_index;
 
     // Imu
     private: boost::shared_ptr<sensors::ImuSensor> imu_sensor;

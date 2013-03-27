@@ -35,7 +35,6 @@ run_dcm_vcm(){
   sleep 3
 }
 
-<<<<<<< HEAD
 run_nao_vcm(){
   # echo "Starting Naoqi..."
   # cd $PLAYER_DIR
@@ -48,7 +47,7 @@ run_nao_vcm(){
   screen $SCREEN_FLAGS cognition $LUA_COM run_cognition.lua
   # Allow Cognition some time to start
   sleep 3
-=======
+}
 run_boxer(){
   echo "Starting DCM..."
   cd $PLAYER_DIR
@@ -69,7 +68,6 @@ run_boxer(){
   echo "Rock and Roll!"
   screen -ls
 
->>>>>>> dev-master
 }
 
 run_player(){

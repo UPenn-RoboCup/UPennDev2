@@ -11,14 +11,17 @@ package.path = cwd.."/../Vision/?.lua;"..package.path;
 local serialization = require 'serialization'
 local util = require 'util'
 require 'cutil'
-local mp = require 'ffi/msgpack'
-
+--local mp = require 'ffi/msgpack'
+local mp = require 'MessagePack'
+require 'Z'
+require 'carray'
 -- Data Type specific
 local dataPath = '~/shadwell/day2_third/';
 local dataStamp = '02.27.2013';
-local dataTypes = {'flir','lidar','arduimu'}
+--local dataTypes = {'flir','lidar','arduimu'}
 --local dataTypes = {'flir'}
---local dataTypes = {'lidar'}
+local dataTypes = {'lidar','arduimu'}
+local dataChannels = {5555,5556}
 local realtime = true;
 if realtime then
   require 'unix'
@@ -28,7 +31,7 @@ end
 local simple_ipc = require 'simple_ipc'
 ipc_channels = {}
 for d=1,#dataTypes do
-  ipc_channels[ dataTypes[d] ] = simple_ipc.setup_publisher( dataTypes[d] );
+  ipc_channels[ dataTypes[d] ] = simple_ipc.setup_publisher( dataChannels[d] );
 end
 
 function get_log_file_list()
@@ -72,7 +75,10 @@ parsers_tbl['lidar'] = function ( str )
     -- TODO: FFI this
     local lidar_ranges = cutil.test_array();
     cutil.string2userdata(lidar_ranges, lidar_data.arr.data);
-    lidar_tbl.ranges = lidar_ranges;
+    --lidar_tbl.ranges = Z.compress( lidar_ranges );
+    --lidar_tbl.ranges = lidar_data.arr.data;
+    local tmp = carray.float(lidar_ranges,1081);
+    lidar_tbl.ranges = tmp:string()
     -- Store the timestamp of the data
     lidar_tbl.t = lidar_data.t;
   else
@@ -104,9 +110,15 @@ pushers_tbl['lidar'] = function ( lidar_tbl )
   --rcm.set_lidar_ranges( lidar_tbl.ranges );
 	--rcm.set_lidar_timestamp(lidar_tbl.t);
 	-- Push over ipc (Data and timestamp)
-	ipc_channels['lidar']:send( lidar_tbl.ranges, 1081*4, true )--send more
-	ipc_channels['lidar']:send( lidar_tbl.t )
-  --lidar_channel:send( lidar_tbl.ranges, 1081*4 ) -- no send more
+	--ipc_channels['lidar']:send( {lidar_tbl.ranges, lidar_tbl.t} )
+	--ipc_channels['lidar']:send( {mp.pack(lidar_tbl.t)} )
+	--ipc_channels['lidar']:send( mp.pack({lidar_tbl.t,lidar_tbl.ranges}) )
+  local to_send = {};
+  to_send.startTime = lidar_tbl.t;
+  to_send.ranges = lidar_tbl.ranges;
+	ipc_channels['lidar']:send( mp.pack(to_send) )
+  --ipc_channels['lidar']:send( lidar_tbl.t..lidar_tbl.ranges );
+  --ipc_channels['lidar']:send( lidar_tbl.ranges );
 end
 pushers_tbl['arduimu'] = function ( imu_tbl )
   local encoded_imu = mp.pack(imu_tbl)

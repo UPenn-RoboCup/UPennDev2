@@ -32,7 +32,7 @@ if simple_ipc.intercom_interface then
 	simple_ipc.intercom_prefix = 'epgm://'..simple_ipc.intercom_interface_ip..';239.192.1.1:'
 else
 	print( 'There is no inter-pc interface, using TCP' )
-	simple_ipc.intercom_prefix = 'tcp://127.0.0.1:'
+	simple_ipc.intercom_prefix = 'tcp://*:'
 end
 
 -- If channel is a number, then use tcp

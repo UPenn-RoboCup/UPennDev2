@@ -19,9 +19,11 @@ require('Proprioception')
 
 local rpc_endpoint = 'tcp://127.0.0.1:12001'
 
+Platform.set_update_rate(500)
+
 local function draw_screen()
   curses.clear()
-  curses.printw('fps : %7.2f                   Motion Manager\n', 
+  curses.printw('rate : %7.2f                  Motion Manager\n', 
                  Platform.get_update_rate())
   curses.printw('///////////////////////////////////////')
   curses.printw('///////////////////////////////////////\n')

@@ -44,5 +44,6 @@ for i = 1, #csuffix do
   package.cpath = THOR_HOME.."/Framework/Lib/?/?."..csuffix[i]..";"..package.cpath
   package.cpath = THOR_HOME.."/Framework/Lib/lcm/?."..csuffix[i]..";"..package.cpath
   package.cpath = THOR_HOME.."/Framework/Lib/unix/?."..csuffix[i]..";"..package.cpath
+  package.cpath = THOR_HOME.."/Framework/Lib/manip/?."..csuffix[i]..";"..package.cpath
   package.cpath = THOR_HOME.."/Framework/Platform/?."..csuffix[i]..";"..package.cpath
 end

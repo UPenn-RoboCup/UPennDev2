@@ -1,0 +1,1622 @@
+<?xml version='1.0'?>
+<sdf version="1.3">
+<model name="ash">
+	<plugin name="gz_comms_manager" filename="libgz_comms_manager.so" />
+	<pose>0 0 0 0 0 0</pose>
+	<static>false</static>
+	<link name="torso">
+		<pose>-.01 0 .997 0 0 0</pose>
+		<collision name="collision">
+			<geometry>
+				<box>
+					<size>.143 .114 .367</size>
+				</box>
+			</geometry>
+		</collision>
+		<visual name="visual">
+			<geometry>
+				<box>
+					<size>.143 .114 .367</size>
+				</box>
+			</geometry>
+		</visual>
+		<inertial>
+			<!-- <pose>-0.017635463 0.000532902 1.008170676 0 0 0</pose> -->
+			<pose>-0.007635463 0.000532902 0.011170676 0 0 0</pose>
+			<mass>8.929601491</mass>
+			<inertia>
+				<ixx>0.160370285</ixx>
+				<iyy>0.112425821</iyy>
+				<izz>0.106598912</izz>
+				<iyz>0.000392533</iyz>
+				<ixz>-0.002028322</ixz>
+				<ixy>0.000446463</ixy>
+			</inertia>
+		</inertial>
+		<sensor name="imu_sensor" type="imu">
+			<visualize>1</visualize>
+			<topic>imu_sensor</topic>
+		</sensor>
+	</link>
+
+
+	<link name="l_thigh">
+		<pose>-.021 .094 .618 0 0 0</pose>
+		<collision name="collision">
+			<geometry>
+				<box>
+					<size>.05 .05 .419</size>
+				</box>
+			</geometry>
+		</collision>
+		<visual name="visual">
+			<geometry>
+				<box>
+					<size>.05 .05 .419</size>
+				</box>
+			</geometry>
+		</visual>
+		<inertial>
+			<!-- <pose>-0.032097569 0.112874678 0.650768668 0 0 0</pose> -->
+			<pose>-0.011097569 0.018874678 0.032768668 0 0 0</pose>
+			<mass>2.298881991</mass>
+			<inertia>
+				<ixx>0.021768307</ixx>
+				<iyy>0.024906869</iyy>
+				<izz>0.008717440</izz>
+				<iyz>-0.001607937</iyz>
+				<ixz>-0.001277535</ixz>
+				<ixy>-0.002003306</ixy>
+			</inertia>
+		</inertial>
+	</link>
+
+	<link name="r_thigh">
+		<pose>-.021 -.094 .618 0 0 0</pose>
+		<collision name="collision">
+			<geometry>
+				<box>
+					<size>.05 .05 .419</size>
+				</box>
+			</geometry>
+		</collision>
+		<visual name="visual">
+			<geometry>
+				<box>
+					<size>.05 .05 .419</size>
+				</box>
+			</geometry>
+		</visual>
+		<inertial>
+			<!-- <pose>-0.032097569 -0.112874678 0.650768668 0 0 0</pose> -->
+			<pose>-0.011097569 -0.018874678 0.032768668 0 0 0</pose>
+			<mass>2.298881991</mass>
+			<inertia>
+				<ixx>0.021768307</ixx>
+				<iyy>0.024906869</iyy>
+				<izz>0.008717440</izz>
+				<iyz>0.001607937</iyz>
+				<ixz>-0.001277535</ixz>
+				<ixy>0.002003306</ixy>
+			</inertia>
+		</inertial>
+	</link>
+
+
+	<link name="l_shin">
+		<pose>-.021 .094 .239 0 0 0</pose>
+		<collision name="collision">
+			<geometry>
+				<box>
+					<size>.044 .044 .42</size>
+				</box>
+			</geometry>
+		</collision>
+		<visual name="visual">
+			<geometry>
+				<box>
+					<size>.044 .044 .42</size>
+				</box>
+			</geometry>
+		</visual>
+		<inertial>
+			<!-- <pose>-0.049153381 0.096475222 0.302721119 0 0 0</pose> -->
+			<pose>-0.028153381 0.002475222 0.063721119 0 0 0</pose>
+			<mass>2.239063829</mass>
+			<inertia>
+				<ixx>0.021743467</ixx>
+				<iyy>0.027022394</iyy>
+				<izz>0.010582813</izz>
+				<iyz>-0.000035631</iyz>
+				<ixz>0.004888637</ixz>
+				<ixy>0.000055998</ixy>
+			</inertia>
+		</inertial>
+	</link>
+
+	<link name="r_shin">
+		<pose>-.021 -.094 .239 0 0 0</pose>
+		<collision name="collision">
+			<geometry>
+				<box>
+					<size>.044 .044 .42</size>
+				</box>
+			</geometry>
+		</collision>
+		<visual name="visual">
+			<geometry>
+				<box>
+					<size>.044 .044 .42</size>
+				</box>
+			</geometry>
+		</visual>
+		<inertial>
+			<!-- <pose>-0.049153381 -0.096475222 0.302721119 0 0 0</pose> -->
+			<pose>-0.028153381 -0.002475222 0.063721119 0 0 0</pose>
+			<mass>2.239063829</mass>
+			<inertia>
+				<ixx>0.021743467</ixx>
+				<iyy>0.027022394</iyy>
+				<izz>0.010582813</izz>
+				<iyz>-0.000035631</iyz>
+				<ixz>0.004888637</ixz>
+				<ixy>0.000055998</ixy>
+			</inertia>
+		</inertial>
+	</link>
+
+
+	<link name="l_foot">
+		<pose>0 .094 .003 0 0 0</pose>
+		<collision name="collision">
+			<geometry>
+				<box>
+					<size>.23 .125 .006</size>
+				</box>
+			</geometry>
+			<!-- From atlas model -->
+			<surface>
+				<friction>
+					<ode>
+						<mu>0.9</mu>
+						<mu2>0.9</mu2>
+						<fdir1>1 0 0</fdir1>
+					</ode>
+				</friction>
+				<contact>
+					<ode>
+						<max_vel>1.0</max_vel>
+						<min_depth>0.003</min_depth>
+					</ode>
+				</contact>
+			</surface>
+		</collision>
+		<visual name="visual">
+			<geometry>
+				<box>
+					<size>.23 .125 .006</size>
+				</box>
+			</geometry>
+		</visual>
+		<inertial>
+			<!-- <pose>-0.019883971 0.096275946 0.019387485 0 0 0</pose> -->
+			<pose>-0.019883971 0.002275946 0.016387485 0 0 0</pose>
+			<mass>0.589284444</mass>
+			<inertia>
+				<ixx>0.000545429</ixx>
+				<iyy>0.001825441</iyy>
+				<izz>0.002054387</izz>
+				<iyz>-0.000001187</iyz>
+				<ixz>-0.000179602</ixz>
+				<ixy>0.000004512</ixy>
+			</inertia>
+		</inertial>
+	</link>
+
+	<link name="r_foot">
+		<pose>0 -.094 .003 0 0 0</pose>
+		<collision name="collision">
+			<geometry>
+				<box>
+					<size>.23 .125 .006</size>
+				</box>
+			</geometry>
+			<!-- From atlas model -->
+			<surface>
+				<friction>
+					<ode>
+						<mu>0.9</mu>
+						<mu2>0.9</mu2>
+						<fdir1>1 0 0</fdir1>
+					</ode>
+				</friction>
+				<contact>
+					<ode>
+						<max_vel>1.0</max_vel>
+						<min_depth>0.003</min_depth>
+					</ode>
+				</contact>
+			</surface>
+		</collision>
+		<visual name="visual">
+			<geometry>
+				<box>
+					<size>.23 .125 .006</size>
+				</box>
+			</geometry>
+		</visual>
+		<inertial>
+			<!-- <pose>-0.019883971 -0.096275946 0.019387485 0 0 0</pose> -->
+			<pose>-0.019883971 -0.002275946 0.016387485 0 0 0</pose>
+			<mass>0.589284444</mass>
+			<inertia>
+				<ixx>0.000545429</ixx>
+				<iyy>0.001825441</iyy>
+				<izz>0.002054387</izz>
+				<iyz>-0.000001187</iyz>
+				<ixz>-0.000179602</ixz>
+				<ixy>0.000004512</ixy>
+			</inertia>
+		</inertial>
+	</link>
+	
+	
+	<link name="l_hip_yaw_trunnion">
+		<pose>-.021 .094 .808 0 0 0</pose>
+		<!-- Axis = "z", -->
+		<collision name="collision">
+			<geometry>
+				<cylinder>
+					<radius>0.01</radius>
+					<length>0.1</length>
+				</cylinder>
+			</geometry>
+		</collision>
+		<visual name="visual">
+			<geometry>
+				<cylinder>
+					<radius>0.01</radius>
+					<length>0.1</length>
+				</cylinder>
+			</geometry>
+		</visual>
+		<inertial>
+			<mass>0.1</mass>
+			<inertia>
+				<ixx>8.5833333333333e-05</ixx>
+				<iyy>8.5833333333333e-05</iyy>
+				<izz>5e-06</izz>
+				<ixy>0</ixy>
+				<ixz>0</ixz>
+				<iyz>0</iyz>
+			</inertia>
+		</inertial>
+	</link>
+
+	<link name="r_hip_yaw_trunnion">
+		<pose>-.021 -.094 .808 0 0 0</pose>
+		<!-- Axis = "z", -->
+		<collision name="collision">
+			<geometry>
+				<cylinder>
+					<radius>0.01</radius>
+					<length>0.1</length>
+				</cylinder>
+			</geometry>
+		</collision>
+		<visual name="visual">
+			<geometry>
+				<cylinder>
+					<radius>0.01</radius>
+					<length>0.1</length>
+				</cylinder>
+			</geometry>
+		</visual>
+		<inertial>
+			<mass>0.1</mass>
+			<inertia>
+				<ixx>8.5833333333333e-05</ixx>
+				<iyy>8.5833333333333e-05</iyy>
+				<izz>5e-06</izz>
+				<ixy>0</ixy>
+				<ixz>0</ixz>
+				<iyz>0</iyz>
+			</inertia>
+		</inertial>
+	</link>
+
+
+	<link name="l_hip_pitch_trunnion">
+		<pose>-.021 .094 .808 0 0 0</pose>
+		<!-- Axis = "y", -->
+		<collision name="collision">
+			<pose>0 0 0 1.57079632679 0 0</pose>
+			<geometry>
+				<cylinder>
+					<radius>0.01</radius>
+					<length>0.1</length>
+				</cylinder>
+			</geometry>
+		</collision>
+		<visual name="visual">
+			<pose>0 0 0 1.57079632679 0 0</pose>
+			<geometry>
+				<cylinder>
+					<radius>0.01</radius>
+					<length>0.1</length>
+				</cylinder>
+			</geometry>
+		</visual>
+		<inertial>
+			<mass>0.1</mass>
+			<inertia>
+				<ixx>8.5833333333333e-05</ixx>
+				<iyy>5e-06</iyy>
+				<izz>8.5833333333333e-05</izz>
+				<ixy>0</ixy>
+				<ixz>0</ixz>
+				<iyz>0</iyz>
+			</inertia>
+		</inertial>
+	</link>
+
+	<link name="r_hip_pitch_trunnion">
+		<pose>-.021 -.094 .808 0 0 0</pose>
+		<!-- Axis = "y", -->
+		<collision name="collision">
+			<pose>0 0 0 1.57079632679 0 0</pose>
+			<geometry>
+				<cylinder>
+					<radius>0.01</radius>
+					<length>0.1</length>
+				</cylinder>
+			</geometry>
+		</collision>
+		<visual name="visual">
+			<pose>0 0 0 1.57079632679 0 0</pose>
+			<geometry>
+				<cylinder>
+					<radius>0.01</radius>
+					<length>0.1</length>
+				</cylinder>
+			</geometry>
+		</visual>
+		<inertial>
+			<mass>0.1</mass>
+			<inertia>
+				<ixx>8.5833333333333e-05</ixx>
+				<iyy>5e-06</iyy>
+				<izz>8.5833333333333e-05</izz>
+				<ixy>0</ixy>
+				<ixz>0</ixz>
+				<iyz>0</iyz>
+			</inertia>
+		</inertial>
+	</link>
+
+
+	<link name="l_ankle_pitch_trunnion">
+		<pose>-.021 .094 .049 0 0 0</pose>
+		<!-- Axis = "y", -->
+		<collision name="collision">
+			<pose>0 0 0 1.57079632679 0 0</pose>
+			<geometry>
+				<cylinder>
+					<radius>0.01</radius>
+					<length>0.1</length>
+				</cylinder>
+			</geometry>
+		</collision>
+		<visual name="visual">
+			<pose>0 0 0 1.57079632679 0 0</pose>
+			<geometry>
+				<cylinder>
+					<radius>0.01</radius>
+					<length>0.1</length>
+				</cylinder>
+			</geometry>
+		</visual>
+		<inertial>
+			<mass>0.1</mass>
+			<inertia>
+				<ixx>8.5833333333333e-05</ixx>
+				<iyy>5e-06</iyy>
+				<izz>8.5833333333333e-05</izz>
+				<ixy>0</ixy>
+				<ixz>0</ixz>
+				<iyz>0</iyz>
+			</inertia>
+		</inertial>
+	</link>
+
+	<link name="r_ankle_pitch_trunnion">
+		<pose>-.021 -.094 .049 0 0 0</pose>
+		<!-- Axis = "y", -->
+		<collision name="collision">
+			<pose>0 0 0 1.57079632679 0 0</pose>
+			<geometry>
+				<cylinder>
+					<radius>0.01</radius>
+					<length>0.1</length>
+				</cylinder>
+			</geometry>
+		</collision>
+		<visual name="visual">
+			<pose>0 0 0 1.57079632679 0 0</pose>
+			<geometry>
+				<cylinder>
+					<radius>0.01</radius>
+					<length>0.1</length>
+				</cylinder>
+			</geometry>
+		</visual>
+		<inertial>
+			<mass>0.1</mass>
+			<inertia>
+				<ixx>8.5833333333333e-05</ixx>
+				<iyy>5e-06</iyy>
+				<izz>8.5833333333333e-05</izz>
+				<ixy>0</ixy>
+				<ixz>0</ixz>
+				<iyz>0</iyz>
+			</inertia>
+		</inertial>
+	</link>
+	
+	
+	
+	<joint name="l_hip_yaw" type="revolute">
+		<parent>torso</parent>
+		<child>l_hip_yaw_trunnion</child>
+		<axis>
+			<xyz>0 0 1</xyz>
+			<limit>
+				<lower>-0.436332313</lower>
+				<upper>0.1745329252</upper>
+				<effort>300</effort>
+				<velocity>12</velocity>
+			</limit>
+		</axis>
+	</joint>
+	
+	<joint name="r_hip_yaw" type="revolute">
+		<parent>torso</parent>
+		<child>r_hip_yaw_trunnion</child>
+		<axis>
+			<xyz>0 0 1</xyz>
+			<limit>
+				<lower>-0.436332313</lower>
+				<upper>0.1745329252</upper>
+				<effort>300</effort>
+				<velocity>12</velocity>
+			</limit>
+		</axis>
+	</joint>
+	
+	<joint name="l_hip_roll" type="revolute">
+		<parent>l_hip_yaw_trunnion</parent>
+		<child>l_hip_pitch_trunnion</child>
+		<axis>
+			<xyz>1 0 0</xyz>
+			<limit>
+				<lower>-0.401425728</lower>
+				<upper>0.401425728</upper>
+				<effort>300</effort>
+				<velocity>12</velocity>
+			</limit>
+		</axis>
+	</joint>
+	
+	<joint name="r_hip_roll" type="revolute">
+		<parent>r_hip_yaw_trunnion</parent>
+		<child>r_hip_pitch_trunnion</child>
+		<axis>
+			<xyz>1 0 0</xyz>
+			<limit>
+				<lower>-0.401425728</lower>
+				<upper>0.401425728</upper>
+				<effort>300</effort>
+				<velocity>12</velocity>
+			</limit>
+		</axis>
+	</joint>
+	
+	<joint name="l_hip_pitch" type="revolute">
+		<!-- thigh pose: -.021 .094 .618 0 0 0 -->
+		<!-- desired pose: -.021 .094 .808 0 0 0 -->
+		<pose>0 0 .19 0 0 0</pose>
+		<parent>l_hip_pitch_trunnion</parent>
+		<child>l_thigh</child>
+		<axis>
+			<xyz>0 1 0</xyz>
+			<limit>
+				<lower>-0.7853981634</lower>
+				<upper>0.7853981634</upper>
+				<effort>300</effort>
+				<velocity>12</velocity>
+			</limit>
+		</axis>
+	</joint>
+	
+	<joint name="r_hip_pitch" type="revolute">
+		<!-- thigh pose: -.021 -.094 .618 0 0 0 -->
+		<!-- desired pose: -.021 -.094 .808 0 0 0 -->
+		<pose>0 0 .19 0 0 0</pose>
+		<parent>r_hip_pitch_trunnion</parent>
+		<child>r_thigh</child>
+		<axis>
+			<xyz>0 1 0</xyz>
+			<limit>
+				<lower>-0.7853981634</lower>
+				<upper>0.7853981634</upper>
+				<effort>300</effort>
+				<velocity>12</velocity>
+			</limit>
+		</axis>
+	</joint>
+	
+	<joint name="l_knee_pitch" type="revolute">
+		<!-- shin pose: -.021 .094 .239 0 0 0 -->
+		<!-- desired pose: -.021 .094 .429 0 0 0 -->
+		<pose>0 0 .19 0 0 0</pose>
+		<parent>l_thigh</parent>
+		<child>l_shin</child>
+		<axis>
+			<xyz>0 1 0</xyz>
+			<limit>
+				<lower>0</lower>
+				<upper>1.5707963268</upper>
+				<effort>300</effort>
+				<velocity>12</velocity>
+			</limit>
+		</axis>
+	</joint>
+	
+	<joint name="r_knee_pitch" type="revolute">
+		<!-- shin pose: -.021 -.094 .239 0 0 0 -->
+		<!-- desired pose: -.021 -.094 .429 0 0 0 -->
+		<pose>0 0 .19 0 0 0</pose>
+		<parent>r_thigh</parent>
+		<child>r_shin</child>
+		<axis>
+			<xyz>0 1 0</xyz>
+			<limit>
+				<lower>0</lower>
+				<upper>1.5707963268</upper>
+				<effort>300</effort>
+				<velocity>12</velocity>
+			</limit>
+		</axis>
+	</joint>
+	
+	<joint name="l_ankle_pitch" type="revolute">
+		<parent>l_shin</parent>
+		<child>l_ankle_pitch_trunnion</child>
+		<axis>
+			<xyz>0 1 0</xyz>
+			<limit>
+				<lower>-0.6981317008</lower>
+				<upper>0.872664626</upper>
+				<effort>300</effort>
+				<velocity>12</velocity>
+			</limit>
+		</axis>
+	</joint>
+	
+	<joint name="r_ankle_pitch" type="revolute">
+		<parent>r_shin</parent>
+		<child>r_ankle_pitch_trunnion</child>
+		<axis>
+			<xyz>0 1 0</xyz>
+			<limit>
+				<lower>-0.6981317008</lower>
+				<upper>0.872664626</upper>
+				<effort>300</effort>
+				<velocity>12</velocity>
+			</limit>
+		</axis>
+	</joint>
+	
+	<joint name="l_ankle_roll" type="revolute">
+		<!-- ankle pose: 0 .094 .003 0 0 0 -->
+		<!-- desired pose: -.021 .094 .049 0 0 0 -->
+		<pose>-.021 0 .046 0 0 0</pose>
+		<parent>l_ankle_pitch_trunnion</parent>
+		<child>l_foot</child>
+		<axis>
+			<xyz>1 0 0</xyz>
+			<limit>
+				<lower>-0.3490658504</lower>
+				<upper>0.3490658504</upper>
+				<effort>300</effort>
+				<velocity>12</velocity>
+			</limit>
+		</axis>
+		<physics>
+			<ode>
+				<provide_feedback>1</provide_feedback>
+			</ode>
+		</physics>
+	</joint>
+	
+	<joint name="r_ankle_roll" type="revolute">
+		<!-- ankle pose: 0 -.094 .003 0 0 0 -->
+		<!-- desired pose: -.021 -.094 .049 0 0 0 -->
+		<pose>-.021 0 .046 0 0 0</pose>
+		<parent>r_ankle_pitch_trunnion</parent>
+		<child>r_foot</child>
+		<axis>
+			<xyz>1 0 0</xyz>
+			<limit>
+				<lower>-0.3490658504</lower>
+				<upper>0.3490658504</upper>
+				<effort>300</effort>
+				<velocity>12</velocity>
+			</limit>
+		</axis>
+		<physics>
+			<ode>
+				<provide_feedback>1</provide_feedback>
+			</ode>
+		</physics>
+	</joint>
+
+
+	
+	<joint name="waist_yaw" type="revolute">
+		<pose>-.0033 0 -.0862 0 0 0</pose>
+		<parent>torso</parent>
+		<child>chest</child>
+		<axis>
+			<xyz>0 0 1</xyz>
+			<limit>
+				<lower>-1.5707963268</lower>
+				<upper>1.5707963268</upper>
+				<effort>300</effort>
+				<velocity>12</velocity>
+			</limit>
+		</axis>
+	</joint>
+	
+	<link name="chest">
+		<pose>-.022 0 1.266 0 0 0</pose>
+		<collision name="collision">
+			<geometry>
+				<box>
+					<size>.06 .276 .171</size>
+				</box>
+			</geometry>
+		</collision>
+		<visual name="visual">
+			<geometry>
+				<box>
+					<size>.06 .276 .171</size>
+				</box>
+			</geometry>
+		</visual>
+		<inertial>
+			<!-- -0.041417928 -0.002447367 1.301158538 -->
+			<pose>-0.019417928 -0.002447367 0.035158538 0 0 0</pose>
+			<mass>5.451191007</mass>
+			<inertia>
+				<ixx>0.047808951</ixx>
+				<iyy>0.023527273</iyy>
+				<izz>0.046595768</izz>
+				<iyz>-0.000065729</iyz>
+				<ixz>0.000927517</ixz>
+				<ixy>0.000607106</ixy>
+			</inertia>
+		</inertial>
+		<sensor name="lidar_sensor1" type="ray">
+			<!-- Hokuyo UTM-30LX-EW -->
+			<always_on>1</always_on>
+			<update_rate>10</update_rate>
+			<pose>.0565 0 1.277 0 0 0</pose>
+			<ray>
+				<scan>
+					<horizontal>
+						<samples>1080</samples>
+						<resolution>1</resolution>
+						<min_angle>-2.35619449</min_angle>
+						<max_angle>2.35619449</max_angle>
+					</horizontal>
+				</scan>
+				<range>
+					<min>.1</min>
+					<max>60</max>
+					<resolution>.05</resolution>
+				</range>
+			</ray>
+			<plugin name="gz_lidar_dump" filename="libgz_lidar_dump.so" />
+		</sensor>
+		<sensor name="camera_sensor1" type="camera">
+			<pose>0 0 0.5 0 0 1.57</pose>
+			<camera>
+				<horizontal_fov>1.57</horizontal_fov>
+				<image>
+					<width>640</width>
+					<height>480</height>
+					<format>R8G8B8</format>
+				</image>
+				<clip>
+					<near>0.5</near>
+					<far>5</far>
+				</clip>
+			</camera>
+			<plugin name="gz_camera_dump" filename="libgz_camera_dump.so" />
+			<always_on>1</always_on>
+			<update_rate>10</update_rate>
+		</sensor>
+	</link>
+	
+	<joint name="head_yaw" type="revolute">
+		<pose>-.0033 0 -.0672 0 0 0</pose>
+		<parent>chest</parent>
+		<child>neck</child>
+		<axis>
+			<xyz>0 0 1</xyz>
+			<limit>
+				<lower>-1.5707963268</lower>
+				<upper>1.5707963268</upper>
+				<effort>300</effort>
+				<velocity>12</velocity>
+			</limit>
+		</axis>
+	</joint>
+	
+	<link name="neck">
+		<pose>-.022 0 1.419 0 0 0</pose>
+		<collision name="collision">
+			<geometry>
+				<box>
+					<size>.039 .039 .135</size>
+				</box>
+			</geometry>
+		</collision>
+		<visual name="visual">
+			<geometry>
+				<box>
+					<size>.039 .039 .135</size>
+				</box>
+			</geometry>
+		</visual>
+		<inertial>
+			<!-- -0.019937647 -0.001514090 1.485856504 -->
+			<pose>0.002062353 -0.001514090 0.066856504 0 0 0</pose>
+			<mass>0.322276395</mass>
+			<inertia>
+				<ixx>0.000216899</ixx>
+				<iyy>0.000157889</iyy>
+				<izz>0.000142469</izz>
+				<iyz>-0.000002022</iyz>
+				<ixz>0.000000187</ixz>
+				<ixy>-0.000000522</ixy>
+			</inertia>
+		</inertial>
+	</link>
+	
+	<joint name="head_pitch" type="revolute">
+		<pose>-.034 0 -0.0567 0 0 0</pose>
+		<parent>neck</parent>
+		<child>head</child>
+		<axis>
+			<xyz>0 1 0</xyz>
+			<limit>
+				<lower>-1.0471975512</lower>
+				<upper>1.0471975512</upper>
+				<effort>300</effort>
+				<velocity>12</velocity>
+			</limit>
+		</axis>
+	</joint>
+	
+	<link name="head">
+		<pose>.001 0 1.485 0 0 0</pose>
+		<collision name="collision">
+			<geometry>
+				<box>
+					<size>.046 .144 .07</size>
+				</box>
+			</geometry>
+		</collision>
+		<visual name="visual">
+			<geometry>
+				<box>
+					<size>.046 .144 .07</size>
+				</box>
+			</geometry>
+		</visual>
+		<inertial>
+			<!-- 0.007972587 -0.000000037 1.531796053 -->
+			<pose>0.006972587 -0.000000037 0.046796053 0 0 0</pose>
+			<mass>0.078283874</mass>
+			<inertia>
+				<ixx>0.000133507</ixx>
+				<iyy>0.000048991</iyy>
+				<izz>0.000134033</izz>
+				<iyz>0.000000000</iyz>
+				<ixz>0.000013453</ixz>
+				<ixy>0.000000000</ixy>
+			</inertia>
+		</inertial>
+	</link>
+	
+	
+	<joint name="l_shoulder_pitch" type="revolute">
+		<parent>chest</parent>
+		<child>l_shoulder_pitch_trunnion</child>
+		<axis>
+			<xyz>0 1 0</xyz>
+			<limit>
+				<lower>-3.1415926536</lower>
+				<upper>3.1415926536</upper>
+				<effort>300</effort>
+				<velocity>12</velocity>
+			</limit>
+		</axis>
+	</joint>
+	
+	<joint name="r_shoulder_pitch" type="revolute">
+		<parent>chest</parent>
+		<child>r_shoulder_pitch_trunnion</child>
+		<axis>
+			<xyz>0 1 0</xyz>
+			<limit>
+				<lower>-3.1415926536</lower>
+				<upper>3.1415926536</upper>
+				<effort>300</effort>
+				<velocity>12</velocity>
+			</limit>
+		</axis>
+	</joint>
+	
+	
+	<link name="l_shoulder_pitch_trunnion">
+		<pose>-.019 .219 1.325 0 0 0</pose>
+		<!-- Axis = "y", -->
+		<collision name="collision">
+			<pose>0 0 0 1.57079632679 0 0</pose>
+			<geometry>
+				<cylinder>
+					<radius>0.01</radius>
+					<length>0.1</length>
+				</cylinder>
+			</geometry>
+		</collision>
+		<visual name="visual">
+			<pose>0 0 0 1.57079632679 0 0</pose>
+			<geometry>
+				<cylinder>
+					<radius>0.01</radius>
+					<length>0.1</length>
+				</cylinder>
+			</geometry>
+		</visual>
+		<inertial>
+			<mass>0.1</mass>
+			<inertia>
+				<ixx>8.5833333333333e-05</ixx>
+				<iyy>5e-06</iyy>
+				<izz>8.5833333333333e-05</izz>
+				<ixy>0</ixy>
+				<ixz>0</ixz>
+				<iyz>0</iyz>
+			</inertia>
+		</inertial>
+	</link>
+	
+	<link name="r_shoulder_pitch_trunnion">
+		<pose>-.019 -.219 1.325 0 0 0</pose>
+		<!-- Axis = "y", -->
+		<collision name="collision">
+			<pose>0 0 0 1.57079632679 0 0</pose>
+			<geometry>
+				<cylinder>
+					<radius>0.01</radius>
+					<length>0.1</length>
+				</cylinder>
+			</geometry>
+		</collision>
+		<visual name="visual">
+			<pose>0 0 0 1.57079632679 0 0</pose>
+			<geometry>
+				<cylinder>
+					<radius>0.01</radius>
+					<length>0.1</length>
+				</cylinder>
+			</geometry>
+		</visual>
+		<inertial>
+			<mass>0.1</mass>
+			<inertia>
+				<ixx>8.5833333333333e-05</ixx>
+				<iyy>5e-06</iyy>
+				<izz>8.5833333333333e-05</izz>
+				<ixy>0</ixy>
+				<ixz>0</ixz>
+				<iyz>0</iyz>
+			</inertia>
+		</inertial>
+	</link>
+	
+	
+	<joint name="l_shoulder_roll" type="revolute">
+		<parent>l_shoulder_pitch_trunnion</parent>
+		<child>l_shoulder_roll_trunnion</child>
+		<axis>
+			<xyz>1 0 0</xyz>
+			<limit>
+				<lower>0</lower>
+				<upper>3.1415926536</upper>
+				<effort>300</effort>
+				<velocity>12</velocity>
+			</limit>
+		</axis>
+	</joint>
+	
+	<joint name="r_shoulder_roll" type="revolute">
+		<parent>r_shoulder_pitch_trunnion</parent>
+		<child>r_shoulder_roll_trunnion</child>
+		<axis>
+			<xyz>1 0 0</xyz>
+			<limit>
+				<lower>0</lower>
+				<upper>3.1415926536</upper>
+				<effort>300</effort>
+				<velocity>12</velocity>
+			</limit>
+		</axis>
+	</joint>
+	
+	
+	<link name="l_shoulder_roll_trunnion">
+		<pose>-.019 .219 1.325 0 0 0</pose>
+		<!-- Axis = "x", -->
+		<collision name="collision">
+			<pose>0 0 0 0 1.57079632679 0</pose>
+			<geometry>
+				<cylinder>
+					<radius>0.01</radius>
+					<length>0.1</length>
+				</cylinder>
+			</geometry>
+		</collision>
+		<visual name="visual">
+			<pose>0 0 0 0 1.57079632679 0</pose>
+			<geometry>
+				<cylinder>
+					<radius>0.01</radius>
+					<length>0.1</length>
+				</cylinder>
+			</geometry>
+		</visual>
+		<inertial>
+			<mass>0.1</mass>
+			<inertia>
+				<ixx>5e-06</ixx>
+				<iyy>8.5833333333333e-05</iyy>
+				<izz>8.5833333333333e-05</izz>
+				<ixy>0</ixy>
+				<ixz>0</ixz>
+				<iyz>0</iyz>
+			</inertia>
+		</inertial>
+	</link>
+	
+	<link name="r_shoulder_roll_trunnion">
+		<pose>-.019 -.219 1.325 0 0 0</pose>
+		<!-- Axis = "x", -->
+		<collision name="collision">
+			<pose>0 0 0 0 1.57079632679 0</pose>
+			<geometry>
+				<cylinder>
+					<radius>0.01</radius>
+					<length>0.1</length>
+				</cylinder>
+			</geometry>
+		</collision>
+		<visual name="visual">
+			<pose>0 0 0 0 1.57079632679 0</pose>
+			<geometry>
+				<cylinder>
+					<radius>0.01</radius>
+					<length>0.1</length>
+				</cylinder>
+			</geometry>
+		</visual>
+		<inertial>
+			<mass>0.1</mass>
+			<inertia>
+				<ixx>5e-06</ixx>
+				<iyy>8.5833333333333e-05</iyy>
+				<izz>8.5833333333333e-05</izz>
+				<ixy>0</ixy>
+				<ixz>0</ixz>
+				<iyz>0</iyz>
+			</inertia>
+		</inertial>
+	</link>
+	
+	
+	<joint name="l_shoulder_yaw" type="revolute">
+		<pose>-.0033 0 .1203 0 0 0</pose>
+		<parent>l_shoulder_roll_trunnion</parent>
+		<child>l_arm</child>
+		<axis>
+			<xyz>0 0 1</xyz>
+			<limit>
+				<lower>-3.1415926536</lower>
+				<upper>3.1415926536</upper>
+				<effort>300</effort>
+				<velocity>12</velocity>
+			</limit>
+		</axis>
+	</joint>
+	
+	<joint name="r_shoulder_yaw" type="revolute">
+		<pose>-.0033 0 .1203 0 0 0</pose>
+		<parent>r_shoulder_roll_trunnion</parent>
+		<child>r_arm</child>
+		<axis>
+			<xyz>0 0 1</xyz>
+			<limit>
+				<lower>-3.1415926536</lower>
+				<upper>3.1415926536</upper>
+				<effort>300</effort>
+				<velocity>12</velocity>
+			</limit>
+		</axis>
+	</joint>
+	
+	
+	<link name="l_arm">
+		<pose>-.022 .219 1.205 0 0 0</pose>
+		<collision name="collision">
+			<geometry>
+				<box>
+					<size>.067 .058 .162</size>
+				</box>
+			</geometry>
+		</collision>
+		<visual name="visual">
+			<geometry>
+				<box>
+					<size>.067 .058 .162</size>
+				</box>
+			</geometry>
+		</visual>
+		<inertial>
+			<!-- -0.013246817 0.218384425 1.217161618 -->
+			<pose>0.008753183 -0.000615575 0.012161618 0 0 0</pose>
+			<mass>2.546284964</mass>
+			<inertia>
+				<ixx>0.027298352</ixx>
+				<iyy>0.028397454</iyy>
+				<izz>0.003461075</izz>
+				<iyz>0.000216571</iyz>
+				<ixz>-0.003096603</ixz>
+				<ixy>-0.000036439</ixy>
+			</inertia>
+		</inertial>
+	</link>
+	
+	<link name="r_arm">
+		<pose>-.022 -.219 1.205 0 0 0</pose>
+		<collision name="collision">
+			<geometry>
+				<box>
+					<size>.067 .058 .162</size>
+				</box>
+			</geometry>
+		</collision>
+		<visual name="visual">
+			<geometry>
+				<box>
+					<size>.067 .058 .162</size>
+				</box>
+			</geometry>
+		</visual>
+		<inertial>
+			<!-- -0.013246817 -0.218384425 1.217161618 -->
+			<pose>0.008753183 0.000615575 0.012161618 0 0 0</pose>
+			<mass>2.546284964</mass>
+			<inertia>
+				<ixx>0.027298352</ixx>
+				<iyy>0.028397454</iyy>
+				<izz>0.003461075</izz>
+				<iyz>0.000216571</iyz>
+				<ixz>-0.003096603</ixz>
+				<ixy>-0.000036439</ixy>
+			</inertia>
+		</inertial>
+	</link>
+	
+	
+	<joint name="l_elbow_pitch" type="revolute">
+		<pose>.0265 0 .1189 0 0 0</pose>
+		<parent>l_arm</parent>
+		<child>l_forearm</child>
+		<axis>
+			<xyz>0 1 0</xyz>
+			<limit>
+				<lower>-2.7925268032</lower>
+				<upper>0.7853981634</upper>
+				<effort>300</effort>
+				<velocity>12</velocity>
+			</limit>
+		</axis>
+	</joint>
+	
+	<joint name="r_elbow_pitch" type="revolute">
+		<pose>.0265 0 .1189 0 0 0</pose>
+		<parent>r_arm</parent>
+		<child>r_forearm</child>
+		<axis>
+			<xyz>0 1 0</xyz>
+			<limit>
+				<lower>-2.7925268032</lower>
+				<upper>0.7853981634</upper>
+				<effort>300</effort>
+				<velocity>12</velocity>
+			</limit>
+		</axis>
+	</joint>
+	
+	
+	<link name="l_forearm">
+		<pose>-.022 .219 .959 0 0 0</pose>
+		<collision name="collision">
+			<geometry>
+				<box>
+					<size>.051 .045 .137</size>
+				</box>
+			</geometry>
+		</collision>
+		<visual name="visual">
+			<geometry>
+				<box>
+					<size>.051 .045 .137</size>
+				</box>
+			</geometry>
+		</visual>
+		<inertial>
+			<!-- -0.020861109 0.219360798 0.930377121 -->
+			<pose>0.001138891 0.000360798 -0.028622879 0 0 0</pose>
+			<mass>0.954274172</mass>
+			<inertia>
+				<ixx>0.004522058</ixx>
+				<iyy>0.004457692</iyy>
+				<izz>0.000767547</izz>
+				<iyz>0.000046156</iyz>
+				<ixz>0.000082660</ixz>
+				<ixy>0.000005284</ixy>
+			</inertia>
+		</inertial>
+	</link>
+	
+	<link name="r_forearm">
+		<pose>-.022 -.219 .959 0 0 0</pose>
+		<collision name="collision">
+			<geometry>
+				<box>
+					<size>.051 .045 .137</size>
+				</box>
+			</geometry>
+		</collision>
+		<visual name="visual">
+			<geometry>
+				<box>
+					<size>.051 .045 .137</size>
+				</box>
+			</geometry>
+		</visual>
+		<inertial>
+			<!-- -0.020861109 -0.219360798 0.930377121 -->
+			<pose>0.001138891 -0.000360798 -0.028622879 0 0 0</pose>
+			<mass>0.954274172</mass>
+			<inertia>
+				<ixx>0.004522058</ixx>
+				<iyy>0.004457692</iyy>
+				<izz>0.000767547</izz>
+				<iyz>0.000046156</iyz>
+				<ixz>0.000082660</ixz>
+				<ixy>0.000005284</ixy>
+			</inertia>
+		</inertial>
+	</link>
+	
+	
+	<joint name="l_wrist_yaw" type="revolute">
+		<parent>l_forearm</parent>
+		<child>l_wrist_yaw_trunnion</child>
+		<axis>
+			<xyz>0 0 1</xyz>
+			<limit>
+				<lower>-3.1415926536</lower>
+				<upper>3.1415926536</upper>
+				<effort>300</effort>
+				<velocity>12</velocity>
+			</limit>
+		</axis>
+	</joint>
+	
+	<joint name="r_wrist_yaw" type="revolute">
+		<parent>r_forearm</parent>
+		<child>r_wrist_yaw_trunnion</child>
+		<axis>
+			<xyz>0 0 1</xyz>
+			<limit>
+				<lower>-3.1415926536</lower>
+				<upper>3.1415926536</upper>
+				<effort>300</effort>
+				<velocity>12</velocity>
+			</limit>
+		</axis>
+	</joint>
+	
+	
+	<link name="l_wrist_yaw_trunnion">
+		<pose>-.019 .219 .911 0 0 0</pose>
+		<!-- Axis = "z", -->
+		<collision name="collision">
+			<geometry>
+				<cylinder>
+					<radius>0.01</radius>
+					<length>0.1</length>
+				</cylinder>
+			</geometry>
+		</collision>
+		<visual name="visual">
+			<geometry>
+				<cylinder>
+					<radius>0.01</radius>
+					<length>0.1</length>
+				</cylinder>
+			</geometry>
+		</visual>
+		<inertial>
+			<mass>0.1</mass>
+			<inertia>
+				<ixx>8.5833333333333e-05</ixx>
+				<iyy>8.5833333333333e-05</iyy>
+				<izz>5e-06</izz>
+				<ixy>0</ixy>
+				<ixz>0</ixz>
+				<iyz>0</iyz>
+			</inertia>
+		</inertial>
+	</link>
+	
+	<link name="r_wrist_yaw_trunnion">
+		<pose>-.019 -.219 .911 0 0 0</pose>
+		<!-- Axis = "z", -->
+		<collision name="collision">
+			<geometry>
+				<cylinder>
+					<radius>0.01</radius>
+					<length>0.1</length>
+				</cylinder>
+			</geometry>
+		</collision>
+		<visual name="visual">
+			<geometry>
+				<cylinder>
+					<radius>0.01</radius>
+					<length>0.1</length>
+				</cylinder>
+			</geometry>
+		</visual>
+		<inertial>
+			<mass>0.1</mass>
+			<inertia>
+				<ixx>8.5833333333333e-05</ixx>
+				<iyy>8.5833333333333e-05</iyy>
+				<izz>5e-06</izz>
+				<ixy>0</ixy>
+				<ixz>0</ixz>
+				<iyz>0</iyz>
+			</inertia>
+		</inertial>
+	</link>
+	
+	
+	<joint name="l_wrist_roll" type="revolute">
+		<pose>-.0035 0 .0369 0 0 0</pose>
+		<parent>l_wrist_yaw_trunnion</parent>
+		<child>l_palm</child>
+		<axis>
+			<xyz>1 0 0</xyz>
+			<limit>
+				<lower>-1.5707963268</lower>
+				<upper>1.5707963268</upper>
+				<effort>300</effort>
+				<velocity>12</velocity>
+			</limit>
+		</axis>
+		<physics>
+			<ode>
+				<provide_feedback>1</provide_feedback>
+			</ode>
+		</physics>
+	</joint>
+	
+	<joint name="r_wrist_roll" type="revolute">
+		<pose>-.0035 0 .0369 0 0 0</pose>
+		<parent>r_wrist_yaw_trunnion</parent>
+		<child>r_palm</child>
+		<axis>
+			<xyz>1 0 0</xyz>
+			<limit>
+				<lower>-1.5707963268</lower>
+				<upper>1.5707963268</upper>
+				<effort>300</effort>
+				<velocity>12</velocity>
+			</limit>
+		</axis>
+		<physics>
+			<ode>
+				<provide_feedback>1</provide_feedback>
+			</ode>
+		</physics>
+	</joint>
+	
+	
+	<link name="l_palm">
+		<pose>-.0155 .219 .8176 0 0 0</pose>
+		<collision name="collision">
+			<geometry>
+				<box>
+					<size>.032 .042 .04</size>
+				</box>
+			</geometry>
+		</collision>
+		<visual name="visual">
+			<geometry>
+				<box>
+					<size>.032 .042 .04</size>
+				</box>
+			</geometry>
+		</visual>
+		<inertial>
+			<!-- These are the inertial properties of the hand, but we're storing them in the palm -->
+			<!-- <pose>-0.017559450 0.210679296 0.740362188 0 0 0</pose> -->
+			<pose>-0.00205945 -0.008320704 -0.077237812 0 0 0</pose>
+			<mass>1.806862292</mass>
+			<inertia>
+				<ixx>0.004066589</ixx>
+				<iyy>0.003641897</iyy>
+				<izz>0.001946432</izz>
+				<iyz>0.000595144</iyz>
+				<ixz>-0.000050170</ixz>
+				<ixy>0.000086968</ixy>
+			</inertia>
+		</inertial>
+	</link>
+	
+	<link name="r_palm">
+		<pose>-.0155 -.219 .8176 0 0 0</pose>
+		<collision name="collision">
+			<geometry>
+				<box>
+					<size>.032 .042 .04</size>
+				</box>
+			</geometry>
+		</collision>
+		<visual name="visual">
+			<geometry>
+				<box>
+					<size>.032 .042 .04</size>
+				</box>
+			</geometry>
+		</visual>
+		<inertial>
+			<!-- These are the inertial properties of the hand, but we're storing them in the palm -->
+			<!-- <pose>-0.017559450 0.210679296 0.740362188 0 0 0</pose> -->
+			<pose>-0.00205945 0.008320704 -0.077237812 0 0 0</pose>
+			<mass>1.806862292</mass>
+			<inertia>
+				<ixx>0.004066589</ixx>
+				<iyy>0.003641897</iyy>
+				<izz>0.001946432</izz>
+				<iyz>0.000595144</iyz>
+				<ixz>-0.000050170</ixz>
+				<ixy>0.000086968</ixy>
+			</inertia>
+		</inertial>
+	</link>
+	
+	
+	<joint name="l_gripper" type="revolute">
+		<pose>0 0 .05 0 0 0</pose>
+		<parent>l_palm</parent>
+		<child>l_gripper_link</child>
+		<axis>
+			<xyz>1 0 0</xyz>
+			<limit>
+				<lower>-.78539816339</lower>
+				<!-- Upper bound is pi/2 - arccos(.016/.1) -->
+				<upper>0.160690653</upper>
+				<effort>300</effort>
+				<velocity>12</velocity>
+			</limit>
+		</axis>
+	</joint>
+	
+	<joint name="r_gripper" type="revolute">
+		<pose>0 0 .05 0 0 0</pose>
+		<parent>r_palm</parent>
+		<child>r_gripper_link</child>
+		<axis>
+			<!-- This gripper spins the opposite way so that a positive force will close the gripper -->
+			<xyz>-1 0 0</xyz>
+			<limit>
+				<lower>-.78539816339</lower>
+				<!-- Upper bound is pi/2 - arccos(.016/.1) -->
+				<upper>0.160690653</upper>
+				<effort>300</effort>
+				<velocity>12</velocity>
+			</limit>
+		</axis>
+	</joint>
+	
+	
+	<link name="l_gripper_link">
+		<!-- inside gripper -->
+		<pose>-.0155 0.198 0.7476 0 0 0</pose>
+		<self_collide>1</self_collide>
+		<collision name="collision">
+			<geometry>
+				<box>
+					<size>.02 .02 .1</size>
+				</box>
+			</geometry>
+		</collision>
+		<visual name="visual">
+			<geometry>
+				<box>
+					<size>.02 .02 .1</size>
+				</box>
+			</geometry>
+		</visual>
+		<inertial>
+			<mass>.1</mass>
+			<inertia>
+				<ixx>0.00008666666</ixx>
+				<iyy>0.00008666666</iyy>
+				<izz>0.00000666666</izz>
+				<iyz>0</iyz>
+				<ixz>0</ixz>
+				<ixy>0</ixy>
+			</inertia>
+		</inertial>
+	</link>
+	
+	<link name="r_gripper_link">
+		<!-- inside gripper -->
+		<pose>-.0155 -0.198 0.7476 0 0 0</pose>
+		<self_collide>1</self_collide>
+		<collision name="collision">
+			<geometry>
+				<box>
+					<size>.02 .02 .1</size>
+				</box>
+			</geometry>
+		</collision>
+		<visual name="visual">
+			<geometry>
+				<box>
+					<size>.02 .02 .1</size>
+				</box>
+			</geometry>
+		</visual>
+		<inertial>
+			<mass>.1</mass>
+			<inertia>
+				<ixx>0.00008666666</ixx>
+				<iyy>0.00008666666</iyy>
+				<izz>0.00000666666</izz>
+				<iyz>0</iyz>
+				<ixz>0</ixz>
+				<ixy>0</ixy>
+			</inertia>
+		</inertial>
+	</link>
+	
+	
+	<joint name="l_gripper_slave" type="revolute">
+		<pose>0 0 .05 0 0 0</pose>
+		<parent>l_palm</parent>
+		<child>l_gripper_slave_link</child>
+		<axis>
+			<!-- This gripper spins the opposite way so that a positive force will close the gripper -->
+			<xyz>-1 0 0</xyz>
+			<limit>
+				<lower>-.78539816339</lower>
+				<!-- Upper bound is pi/2 - arccos(.016/.1) -->
+				<upper>0.160690653</upper>
+				<effort>300</effort>
+				<velocity>12</velocity>
+			</limit>
+		</axis>
+	</joint>
+	
+	<joint name="r_gripper_slave" type="revolute">
+		<pose>0 0 .05 0 0 0</pose>
+		<parent>r_palm</parent>
+		<child>r_gripper_slave_link</child>
+		<axis>
+			<xyz>1 0 0</xyz>
+			<limit>
+				<lower>-.78539816339</lower>
+				<!-- Upper bound is pi/2 - arccos(.016/.1) -->
+				<upper>0.160690653</upper>
+				<effort>300</effort>
+				<velocity>12</velocity>
+			</limit>
+		</axis>
+	</joint>
+	
+	
+	<link name="l_gripper_slave_link">
+		<!-- outside gripper -->
+		<pose>-.0155 0.240 0.7476 0 0 0</pose>
+		<self_collide>1</self_collide>
+		<collision name="collision">
+			<geometry>
+				<box>
+					<size>.02 .02 .1</size>
+				</box>
+			</geometry>
+		</collision>
+		<visual name="visual">
+			<geometry>
+				<box>
+					<size>.02 .02 .1</size>
+				</box>
+			</geometry>
+		</visual>
+		<inertial>
+			<mass>.1</mass>
+			<inertia>
+				<ixx>0.00008666666</ixx>
+				<iyy>0.00008666666</iyy>
+				<izz>0.00000666666</izz>
+				<iyz>0</iyz>
+				<ixz>0</ixz>
+				<ixy>0</ixy>
+			</inertia>
+		</inertial>
+	</link>
+	
+	<link name="r_gripper_slave_link">
+		<!-- outside gripper -->
+		<pose>-.0155 -0.240 0.7476 0 0 0</pose>
+		<self_collide>1</self_collide>
+		<collision name="collision">
+			<geometry>
+				<box>
+					<size>.02 .02 .1</size>
+				</box>
+			</geometry>
+		</collision>
+		<visual name="visual">
+			<geometry>
+				<box>
+					<size>.02 .02 .1</size>
+				</box>
+			</geometry>
+		</visual>
+		<inertial>
+			<mass>.1</mass>
+			<inertia>
+				<ixx>0.00008666666</ixx>
+				<iyy>0.00008666666</iyy>
+				<izz>0.00000666666</izz>
+				<iyz>0</iyz>
+				<ixz>0</ixz>
+				<ixy>0</ixy>
+			</inertia>
+		</inertial>
+	</link>
+</model>
+</sdf>

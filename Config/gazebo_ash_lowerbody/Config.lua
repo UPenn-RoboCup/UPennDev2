@@ -21,6 +21,7 @@ function Config.get_field(field)
 end
 
 load_config('Config_bias')
+load_config('Config_platform')
 load_config('Config_devices')
 load_config('Config_mechanics')
 load_config('Config_motion')

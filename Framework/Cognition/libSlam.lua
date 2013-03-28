@@ -4,7 +4,7 @@ local Sensors = require 'sensors/Config_Sensors'
 require 'torch'
 torch.Tensor = torch.FloatTensor
 
-libSlam = {}
+local libSlam = {}
 
 -- Default SLAM Map values
 local MAPS = {}
@@ -36,13 +36,12 @@ OMAP.zmin   = MAPS.zmin;
 OMAP.zmax   = MAPS.zmax;
 OMAP.sizex  = MAPS.sizex;
 OMAP.sizey  = MAPS.sizey;
-OMAP.data = torch.ByteTensor(OMAP.sizex,OMAP.sizex):fill(127) -- uncertain
+OMAP.data = torch.ByteTensor(OMAP.sizex,OMAP.sizex)--:fill(127) -- uncertain
 OMAP.timestamp = unix.time();
 libSlam.OMAP = OMAP;
 print('Map size:',libSlam.MAPS.sizex,libSlam.MAPS.sizey)
 
-
--- Setup SLAM thing
+-- Setup SLAM values
 local SLAM = {}
 SLAM.x = 0;
 SLAM.y = 0;
@@ -64,44 +63,58 @@ Sensors.LIDAR0.offsetx, Sensors.LIDAR0.offsety, Sensors.LIDAR0.offsetz
 -- Instantiate to be big enough if all lidar hits are considered
 -- These tensors hold (x,y,z,t) points for each lidar point
 -- Each undergoes some different type of transformation
-X = torch.FloatTensor(4,Sensors.LIDAR0.nRays):fill(0)
-Y = torch.FloatTensor(4,Sensors.LIDAR0.nRays):fill(0)
-W = torch.FloatTensor(4,Sensors.LIDAR0.nRays):fill(0)
+local X = torch.FloatTensor(4,Sensors.LIDAR0.nRays):fill(0)
+local Y = torch.FloatTensor(4,Sensors.LIDAR0.nRays):fill(0)
+local W = torch.FloatTensor(4,Sensors.LIDAR0.nRays):fill(0)
 --print("Contiguous",xs:isContiguous(),ys:isContiguous())
 
+local scan_match_tune = {}
+local pass1 = {};
 -- Number of yaw positions to check
-nyaw1 = 15;
-dyaw1 = 1.0 * math.pi/180.0;
+pass1.nyaw = 15;
+pass1.dyaw = 1.0 * math.pi/180.0;
 -- At this resolution
 -- TODO: make this dependent on angular velocity / motion speed
 --if abs(tLidar0-tEncoders) < 0.1
-nxs1  = 5;
-nys1  = 5;
+pass1.nxs  = 5;
+pass1.nys  = 5;
 -- resolution of the candidate poses
-dx1   = 0.02;
-dy1   = 0.02;
+pass1.dx  = 0.02;
+pass1.dy  = 0.02;
 --else
 --  nxs1  = 11;
 --  nys1  = 11;
 --  dx1   = 0.05;
 --  dy1   = 0.05;
 --end
-
-yawRange1 = math.floor(nyaw1/2);
-xRange1   = math.floor(nxs1/2);
-yRange1   = math.floor(nys1/2);
-
 -- create the candidate locations in each dimension
-xCand1 = torch.range(-xRange1,xRange1)
-yCand1 = torch.range(-yRange1,yRange1)
-aCand1 = torch.range(-yawRange1,yawRange1)
-hits = torch.DoubleTensor( 
-xCand1:nElement(), yCand1:nElement(), aCand1:nElement()
+pass1.xCand = torch.range(-1*math.floor(pass1.nxs/2), math.floor(pass1.nxs/2) )
+pass1.yCand = torch.range(-1*math.floor(pass1.nys/2), math.floor(pass1.nys/2) )
+pass1.aCand = torch.range(-1*math.floor(pass1.nyaw/2),math.floor(pass1.nyaw/2))
+-- TODO: This is the garage collected object, I believe!
+pass1.hits = torch.DoubleTensor( 
+pass1.xCand:nElement(), pass1.yCand:nElement(), pass1.aCand:nElement()
 )
+scan_match_tune[1] = pass1;
+
+local pass2 = {};
+pass2.nyaw = 21;
+pass2.dyaw = 0.1 * math.pi/180.0;
+pass2.nxs  = 1;
+pass2.nys  = 1;
+pass2.dx   = 0.01;
+pass2.dy   = 0.01;
+pass2.xCand = torch.range(-1*math.floor(pass2.nxs/2), math.floor(pass2.nxs/2) )
+pass2.yCand = torch.range(-1*math.floor(pass2.nys/2), math.floor(pass2.nys/2) )
+pass2.aCand = torch.range(-1*math.floor(pass2.nyaw/2),math.floor(pass2.nyaw/2))
+pass2.hits = torch.DoubleTensor( 
+pass2.xCand:nElement(), pass2.yCand:nElement(), pass2.aCand:nElement()
+)
+scan_match_tune[2] = pass2;
 
 -- Process lidar readings as the come in
 local function processL0()
-  print('processing lidar...')
+  --print('processing lidar...')
   -- Easier to read accessors
   local ranges = Sensors.LIDAR0.ranges
   local nranges = Sensors.LIDAR0.nRays
@@ -136,8 +149,11 @@ local function processL0()
 
   -- Apply the transformation given current roll and pitch
   -- TODO: check if transpose...
-  T = torch.mm(libSlam.roty(Sensors.IMU.pitch),libSlam.rotx(Sensors.IMU.roll));
-  --T = torch.eye(4);
+  -- TODO: this is unstable!
+--  T = torch.mm(
+--  libSlam.roty(Sensors.IMU.data.P*math.pi/180),libSlam.rotx(Sensors.IMU.data.R*math.pi/180)
+--  );
+  T = torch.eye(4);
   X:resize(4,nranges)
   Y:resize(4,nranges)
   X:select(1,3):fill(0); -- z
@@ -178,54 +194,39 @@ local function processL0()
   -- if(SLAM.odomChanged > 0)
   if true then
     local hmax = libSlam.scanMatchOne();
-    --print( "hmax", hmax )
-    -- TODO
-    -- slamScanMatchPass2();
-
+    hmax = libSlam.scanMatchTwo();
     -- If no good fits, then use pure odometry readings
-    -- hmax = 1000;
     if hmax < 500 then
+      print('No good laser correlations!',hmax)
       SLAM.x = SLAM.xOdom;
       SLAM.y = SLAM.yOdom;
       SLAM.yaw = SLAM.yawOdom;
     end
-
+SLAM.yaw = Sensors.IMU.data.Y*math.pi/180*-1
   else
     print('not moving');
   end
 
-  -- Save pose data from SLAM to the 
-  -- global POSE structure
-  -- TODO
-  --[[
-  POSE.data.x     = SLAM.x;
-  POSE.data.y     = SLAM.y;
-  POSE.data.z     = SLAM.z;
-  POSE.data.roll  = IMU.data.roll;
-  POSE.data.pitch = IMU.data.pitch;
-  POSE.data.yaw   = SLAM.yaw;
-  POSE.data.t     = unix.time();
-  POSE.t          = unix.time();
-  --]]
-  SLAM.xOdom      = SLAM.x;
-  SLAM.yOdom      = SLAM.y;
-  SLAM.yawOdom    = SLAM.yaw;
+  -- Update the SLAM odometry
+  SLAM.xOdom   = SLAM.x;
+  SLAM.yOdom   = SLAM.y;
+  SLAM.yawOdom = SLAM.yaw;
 
   ---------------------
   -- Update the map, since our pose was just updated
   ---------------------
   -- Take the laser scan points from the body frame and 
   -- put them in the world frame
-  --print('Current Slam:',SLAM.x, SLAM.y, SLAM.z, SLAM.yaw)
+  --print('My x, y. yaw position is',SLAM.x, SLAM.y, SLAM.yaw)
   local tmp = torch.mm( 
   libSlam.trans( {SLAM.x, SLAM.y, SLAM.z} ),
   libSlam.rotz( SLAM.yaw ) 
   )
   -- TODO: determine if transpose or not
   local T = torch.mm( 
-  tmp, 
-  libSlam.trans( {Sensors.LIDAR0.offsetx, Sensors.LIDAR0.offsety, Sensors.LIDAR0.offsetz}) 
-  )
+  tmp, libSlam.trans( 
+  {Sensors.LIDAR0.offsetx, Sensors.LIDAR0.offsety, Sensors.LIDAR0.offsetz}
+  ))
 
   -- Put the points into the slam frame
   W:resize(4,nranges)
@@ -249,9 +250,11 @@ local function processL0()
   ---------------
   -- Perform the map update
   ---------------
+  --OMAP.data:fill(0);
   for i=1,nranges do
     if xis[i]>1 and yis[i]>1 and xis[i]<OMAP.sizex and yis[i]<OMAP.sizey then
       OMAP.data[ xis[i] ][ yis[i] ] = OMAP.data[ xis[i] ][ yis[i] ] + inc;
+      --OMAP.data[ xis[i] ][ yis[i] ] = 255;
       --print(OMAP.data[ xis[i] ][ yis[i] ] ,xis[i], yis[i] )
     end
   end
@@ -337,10 +340,10 @@ local function scanMatchOne()
     if xStart then
       SLAM.x = xStart;
       SLAM.Y = yStart;
-      SLAM.yaw = thStart;
+      SLAM.yaw = Sensors.IMU.data.Y*math.pi/180*-1;--thStart;
       SLAM.xOdom = xStart;
       SLAM.yOdom = yStart;
-      SLAM.yawOdom = thStart;
+      SLAM.yawOdom = Sensors.IMU.data.Y*math.pi/180*-1;--thStart;
     end
     return 0;
   end
@@ -348,35 +351,52 @@ local function scanMatchOne()
   -- Update the timestamps
   --tEncoders = ENCODERS.counts.t;
   tLidar0 = Sensors.LIDAR0.startTime;
+  local wyaw = Sensors.IMU.data.Y - (Sensors.LIDAR0.last_imu_yaw or Sensors.IMU.data.Y);
+  Sensors.LIDAR0.last_imu_yaw = Sensors.IMU.data.Y;
+  -- TODO: it is negative
+  wyaw = -1*wyaw*math.pi/180;
+  --print('wyaw:',wyaw)
 
   -- Reset the ranges based on the current odometry
   -- TODO: determine how much to search over the yaw space based on 
   -- the instantaneous angular velocity from the imu
-  xCand1:range(-xRange1,xRange1):mul(dx1):add(SLAM.xOdom);
-  yCand1:range(-yRange1,yRange1):mul(dy1):add(SLAM.yOdom);
-  aCand1:range(-yawRange1,yawRange1):mul(dyaw1):add(SLAM.yawOdom); -- + IMU.data.wyaw*0.025;
-  
+  local xCand = pass1.xCand;
+  local yCand = pass1.yCand;
+  local aCand = pass1.aCand;
+  local hits = pass1.hits;
+  xCand:range(-1*math.floor(pass1.nxs/2), math.floor(pass1.nxs/2) ):mul(pass1.dx)
+  yCand:range(-1*math.floor(pass1.nys/2), math.floor(pass1.nys/2) ):mul(pass1.dy)
+  aCand:range(-1*math.floor(pass1.nyaw/2),math.floor(pass1.nyaw/2)):mul(pass1.dyaw)
+  xCand:add(SLAM.xOdom);
+  yCand:add(SLAM.yOdom);
+  aCand:add(SLAM.yawOdom):add( wyaw );
+
+print( string.format('\nMine pose is\t %.2f,%.2f, %.2f',SLAM.xOdom, SLAM.yOdom, SLAM.yawOdom) );
+
   -- Zero the hits, which will be accumulated in ScanMatch2D
   hits:zero()
-  local hmax, xmax, ymax, thmax = Slam.ScanMatch2D('match',
+  -- TODO: Every other Y on the first pass
+  local hmax, ixmax, iymax, ithmax = Slam.ScanMatch2D('match',
   OMAP.data,
   Y, -- Transformed points
-  xCand1,yCand1,aCand1,
-  hits
+  xCand, yCand, aCand
+,hits
   );
-  if true then return hmax end --hmax = 0
-
+--print( 'Best indices', hmax, ixmax, iymax, ithmax )
+--print('Hit size',hits:size()[1],hits:size()[2],hits:size()[3])
+print( string.format('Best pose is\t %.2f,%.2f, %.2f',xCand[ixmax], yCand[iymax], aCand[ithmax]) );
+SLAM.x, SLAM.y, SLAM.yaw = xCand[ixmax], yCand[iymax], aCand[ithmax]
 
   -- TODO: Create a better grid of distance-based costs
   -- from each cell to the odometry pose
-  local minIndX, indx = torch.min( xCand1:add(-SLAM.xOdom):abs(), 1 );
-  local minIndY, indy = torch.min( yCand1:add(-SLAM.yOdom):abs(), 1 );
+  local minIndX, indx = torch.min( xCand:add(-SLAM.xOdom):abs(), 1 );
+  local minIndY, indy = torch.min( yCand:add(-SLAM.yOdom):abs(), 1 );
 
   -- How valuable is the odometry preidiction?
   -- Should make a gaussian depression around this point...
   -- Extract the 2D slice of xy poses at the best angle to be the cost map
-  local costGrid1 = hits:select(3,thmax):mul(-1)
-  --print('2d slice:',costGrid1:size()[1],costGrid1:size()[2])
+
+  local costGrid1 = hits:select(3,ithmax):mul(-1)
   costGrid1[indx[1]][indy[1]] = costGrid1[indx[1]][indy[1]] - 500; --  - 2e4;
   -- Find the minimum and save the new pose
   local min_cost = costGrid1[1][1];
@@ -391,13 +411,66 @@ local function scanMatchOne()
       end
     end
   end
+
   -- Save the best pose
-  SLAM.yaw = aCand1[thmax];
-  SLAM.x   = xCand1[mindex_x];
-  SLAM.y   = yCand1[mindex_y];
+--  SLAM.yaw = aCand[ithmax];
+--  SLAM.x   = xCand[mindex_x];
+--  SLAM.y   = yCand[mindex_y];
   return hmax
 end
 libSlam.scanMatchOne = scanMatchOne
+
+-----------------------------
+-------- ScanMatchTwo -------
+-----------------------------
+local function scanMatchTwo()
+  -- Reset the ranges based on the current odometry
+  -- TODO: determine how much to search over the yaw space based on 
+  -- the instantaneous angular velocity from the imu
+  local xCand = pass2.xCand;
+  local yCand = pass2.yCand;
+  local aCand = pass2.aCand;
+  local hits = pass2.hits;
+  xCand:range(-1*math.floor(pass2.nxs/2), math.floor(pass2.nxs/2) )
+  yCand:range(-1*math.floor(pass2.nys/2), math.floor(pass2.nys/2) )
+  aCand:range(-1*math.floor(pass2.nyaw/2),math.floor(pass2.nyaw/2))
+  xCand:mul(pass2.dx):add(SLAM.x);
+  yCand:mul(pass2.dy):add(SLAM.y);
+  aCand:mul(pass2.dyaw):add(SLAM.yaw);
+  
+  -- Zero the hits, which will be accumulated in ScanMatch2D
+  hits:zero()
+
+  -- TODO: Every other Y on the first pass
+  local hmax, ixmax, iymax, ithmax = Slam.ScanMatch2D('match',
+  OMAP.data,
+  Y, -- Transformed points
+  xCand, yCand, aCand
+,hits
+  );
+  SLAM.yaw = aCand[ithmax];
+  return hmax;
+end
+libSlam.scanMatchTwo = scanMatchTwo
+
+-- Process the IMU data
+local function processIMU( imu_tbl )
+  --[[
+  for i,v in pairs(imu_tbl) do
+    print(i,v)
+  end
+  --]]
+  Sensors.IMU.data = imu_tbl;
+  --[[
+  Sensors.IMU.dyaw = imu_tbl.data.Y - Sensors.IMU.lastY;
+  Sensors.IMU.lastY = imu_tbl.data.Y;
+  --]]
+end
+libSlam.processIMU = processIMU;
+
+local function processOdometry()
+end
+libSlam.processOdometry = processOdometry;
 
 -- mapShift(myMap,x,y)
 -- myMap: Map table to be copied.

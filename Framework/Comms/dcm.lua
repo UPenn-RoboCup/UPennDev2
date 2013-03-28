@@ -16,11 +16,12 @@ dcm = {}
 local devices = {
   joint = {
     'joint_enable',
-    'joint_stiffness',
-    'joint_damping',
     'joint_force',
     'joint_position',
     'joint_velocity',
+    'joint_p_gain',
+    'joint_i_gain',
+    'joint_d_gain',
     'joint_force_sensor',
     'joint_position_sensor',
     'joint_velocity_sensor',

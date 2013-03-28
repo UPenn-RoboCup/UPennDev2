@@ -11,7 +11,7 @@
 # ignore all symbolic links
 
 Webots
-Config/Config.lua
+Config/Config*.lua
 Framework/Platform/*
 Run/comms_manager
 Run/init_robot

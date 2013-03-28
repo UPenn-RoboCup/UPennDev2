@@ -13,38 +13,36 @@ local function shell(command)
   return result
 end
 
--- get dynamic lib suffix
-local uname = shell('uname') 
-if string.match(uname, 'Darwin') then
-  csuffix = 'dylib'
-else
-  csuffix = 'so'
-end
-
--- Get absolute path prefix for code directory.
+-- Get absolute path for THOR repository
 -- If the script calling this one is not in a subdirectory,
--- it must supply the prefix itself.
+-- then the THOR_HOME env variable must be set.
+
 local pwd = shell('pwd')
-local prefix = prefix or string.gsub(pwd, '/Run.*$', '')
+THOR_HOME = os.getenv('THOR_HOME') or string.gsub(pwd, '/Run.*$', '')
 
 -- set path for lua modules 
-package.path = prefix.."/Config/?.lua;"..package.path
-package.path = prefix.."/Config/Motion/?.lua;"..package.path
-package.path = prefix.."/Config/Platform/?.lua;"..package.path
-package.path = prefix.."/Data/?.lua;"..package.path
-package.path = prefix.."/Framework/Comms/?.lua;"..package.path
-package.path = prefix.."/Framework/Cognition/Slam/?.lua;"..package.path
-package.path = prefix.."/Framework/Motion/?.lua;"..package.path
-package.path = prefix.."/Framework/Motion/Controls/?.lua;"..package.path
-package.path = prefix.."/Framework/Motion/FSMs/?.lua;"..package.path
-package.path = prefix.."/Framework/Motion/States/?.lua;"..package.path
-package.path = prefix.."/Framework/Platform/?.lua;"..package.path
-package.path = prefix.."/Framework/Proprioception/?.lua;"..package.path
-package.path = prefix.."/Framework/Util/?.lua;"..package.path
+package.path = THOR_HOME.."/Config/?.lua;"..package.path
+package.path = THOR_HOME.."/Data/?.lua;"..package.path
+package.path = THOR_HOME.."/Framework/Comms/?.lua;"..package.path
+package.path = THOR_HOME.."/Framework/Cognition/Slam/?.lua;"..package.path
+package.path = THOR_HOME.."/Framework/Motion/?.lua;"..package.path
+package.path = THOR_HOME.."/Framework/Motion/Controls/?.lua;"..package.path
+package.path = THOR_HOME.."/Framework/Motion/FSMs/?.lua;"..package.path
+package.path = THOR_HOME.."/Framework/Motion/States/?.lua;"..package.path
+package.path = THOR_HOME.."/Framework/Motion/States/Locomotion/?.lua;"..package.path
+package.path = THOR_HOME.."/Framework/Motion/States/Manipulation/?.lua;"..package.path
+package.path = THOR_HOME.."/Framework/Motion/States/Attention/?.lua;"..package.path
+package.path = THOR_HOME.."/Framework/Platform/?.lua;"..package.path
+package.path = THOR_HOME.."/Framework/Proprioception/?.lua;"..package.path
+package.path = THOR_HOME.."/Framework/Cognition/?.lua;"..package.path
+package.path = THOR_HOME.."/Framework/Util/?.lua;"..package.path
 
--- set path for c modules 
-package.cpath = prefix.."/Framework/Cognition/Slam/?."..csuffix..";"..package.cpath
-package.cpath = prefix.."/Framework/Lib/?/?."..csuffix..";"..package.cpath
-package.cpath = prefix.."/Framework/Lib/lcm/?."..csuffix..";"..package.cpath
-package.cpath = prefix.."/Framework/Lib/unix/?."..csuffix..";"..package.cpath
-package.cpath = prefix.."/Framework/Platform/?."..csuffix..";"..package.cpath
+-- set path for c modules
+csuffix = {'dylib', 'so'}
+for i = 1, #csuffix do
+  package.cpath = THOR_HOME.."/Framework/Cognition/Slam/?."..csuffix[i]..";"..package.cpath
+  package.cpath = THOR_HOME.."/Framework/Lib/?/?."..csuffix[i]..";"..package.cpath
+  package.cpath = THOR_HOME.."/Framework/Lib/lcm/?."..csuffix[i]..";"..package.cpath
+  package.cpath = THOR_HOME.."/Framework/Lib/unix/?."..csuffix[i]..";"..package.cpath
+  package.cpath = THOR_HOME.."/Framework/Platform/?."..csuffix[i]..";"..package.cpath
+end

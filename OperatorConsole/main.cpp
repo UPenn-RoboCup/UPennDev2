@@ -40,10 +40,10 @@ int main(int argc, char *argv[])
 
     // Create right window
     RightWindow rightWindow;
-    rightWindow.move(QPoint(monitor2.x(), monitor2.y()));
+    rightWindow.move(QPoint(monitor3.x(), monitor3.y()));
     rightWindow.window()->showFullScreen();
     rightWindow.show();
-    leftWindow.setFocus();
+    rightWindow.setFocus();
 
     // Create left window
     LeftWindow leftWindow;

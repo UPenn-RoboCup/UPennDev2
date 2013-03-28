@@ -32,6 +32,13 @@ lidar_channel.callback = lidar_callback
 local imu_callback = function()
   local imu_data, has_more = imu_channel:receive()
   local imu_tbl = mp.unpack( imu_data )
+  --[[
+  for i,v in pairs(imu_tbl) do
+    print(i,v)
+  end
+  --]]
+--  Sensors.IMU.data = imu_tbl;
+  libSlam.processIMU( imu_tbl )
 end
 imu_channel.callback = imu_callback
 
@@ -68,7 +75,7 @@ while true do
     f:write( jomap )
     f:close()
     --]]
-    print('Sending map')
+--    print('Sending map')
     omap_channel:send( jomap );
     t_last = t;
   end

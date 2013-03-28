@@ -212,7 +212,8 @@ while true do
   last_ts = min_ts;
 
   -- For a particular logfile
-  if( min_ts<1361997212.4557 ) then
+  --if( min_ts<1361997212.4557 ) then
+  if( min_ts<1361997220 ) then
     realtime = false;
   else
     realtime = true;

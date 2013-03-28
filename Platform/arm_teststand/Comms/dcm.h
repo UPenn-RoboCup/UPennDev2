@@ -11,10 +11,9 @@ class Dcm {
 public:
   // shared data
   double *joint_enable;
-  double *joint_position_p_gain;
-  double *joint_position_i_gain;
-  double *joint_position_d_gain;
-  double *joint_velocity_p_gain;
+  double *joint_p_gain;
+  double *joint_i_gain;
+  double *joint_d_gain;
   double *joint_force;
   double *joint_position;
   double *joint_velocity;
@@ -31,10 +30,9 @@ public:
   double *battery;
   // update flags
   double *joint_enable_updated;
-  double *joint_position_p_gain_updated;
-  double *joint_position_i_gain_updated;
-  double *joint_position_d_gain_updated;
-  double *joint_velocity_p_gain_updated;
+  double *joint_p_gain_updated;
+  double *joint_i_gain_updated;
+  double *joint_d_gain_updated;
   double *joint_force_updated;
   double *joint_position_updated;
   double *joint_velocity_updated;

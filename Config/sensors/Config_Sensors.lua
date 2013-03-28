@@ -31,9 +31,7 @@ Config.LIDAR0 = LIDAR0;
 local IMU = {}
 -- Static configurations
 -- Dynamic Configurations (per process)
-IMU.roll = 0;
-IMU.pitch = 0;
-IMU.yaw = 0;
+IMU.data = {};
 Config.IMU = IMU;
 
 return Config;

@@ -168,10 +168,9 @@ function walk:entry()
   dcm:set_joint_force(0, 'lowerbody')
   dcm:set_joint_position(q0, 'lowerbody')
   dcm:set_joint_velocity(0, 'lowerbody')
-  dcm:set_joint_position_p_gain(1, 'lowerbody')
-  dcm:set_joint_position_i_gain(0, 'lowerbody')
-  dcm:set_joint_position_d_gain(0, 'lowerbody')
-  dcm:set_joint_velocity_p_gain(0, 'lowerbody')
+  dcm:set_joint_p_gain(1, 'lowerbody')
+  dcm:set_joint_i_gain(0.1, 'lowerbody')
+  dcm:set_joint_d_gain(0.01, 'lowerbody')
   update_walk_parameters()
   update_stance_parameters()
 
@@ -186,7 +185,7 @@ function walk:entry()
 
   -- is robot in an unsafe stance configuration?
   for i = 1, #q_stance_error do
-    if (math.abs(q_stance_error[i]) > 3*math.pi/180) then
+    if (math.abs(q_stance_error[i]) > 4*math.pi/180) then
       return 'unsafe'
     end
   end

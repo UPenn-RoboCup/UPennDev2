@@ -42,12 +42,10 @@ joint.id = {
   [25] = 'r_wrist_roll',
   [26] = 'head_yaw',
   [27] = 'head_pitch',
-  [28] = 'l_thumb',
-  [29] = 'l_finger1',
-  [30] = 'l_finger2',
-  [31] = 'r_thumb',
-  [32] = 'r_finger1',
-  [33] = 'r_finger2',
+  [28] = 'l_gripper',
+  [29] = 'r_gripper',
+  [30] = 'l_finger',
+  [31] = 'r_finger',
 
   -- group ids
   l_hip = {
@@ -156,22 +154,18 @@ joint.id = {
     'r_wrist_roll',
   },
   l_hand = {
-    'l_thumb',
-    'l_finger1',
-    'l_finger2',
+    'l_gripper',
+    'l_finger'
   },
   r_hand = {
-    'r_thumb',
-    'r_finger1',
-    'r_finger2',
+    'r_gripper',
+    'r_finger'
   },
   hands = {
-    'l_thumb',
-    'l_finger1',
-    'l_finger2',
-    'r_thumb',
-    'r_finger1',
-    'r_finger2',
+    'l_gripper',
+    'r_gripper',
+    'l_finger',
+    'r_finger'
   },
   head = {
     'head_yaw',
@@ -207,12 +201,10 @@ joint.id = {
     'r_wrist_roll',
     'head_yaw',
     'head_pitch',
-    'l_thumb',
-    'l_finger1',
-    'l_finger2',
-    'r_thumb',
-    'r_finger1',
-    'r_finger2',
+    'l_gripper',
+    'r_gripper',
+    'l_finger',
+    'r_finger',
   },
 }
 
@@ -250,12 +242,10 @@ motor.id = {
   [25] = 'r_wrist_roll',
   [26] = 'head_yaw',
   [27] = 'head_pitch',
-  [28] = 'l_thumb',
-  [29] = 'l_finger1',
-  [30] = 'l_finger2',
-  [31] = 'r_thumb',
-  [32] = 'r_finger1',
-  [33] = 'r_finger2',
+  [28] = 'l_gripper',
+  [29] = 'r_gripper',
+  [30] = 'l_finger',
+  [31] = 'r_finger',
 
   -- group ids
   l_hip = {
@@ -364,22 +354,18 @@ motor.id = {
     'r_wrist_roll',
   },
   l_hand = {
-    'l_thumb',
-    'l_finger1',
-    'l_finger2',
+    'l_gripper',
+    'l_finger',
   },
   r_hand = {
-    'r_thumb',
-    'r_finger1',
-    'r_finger2',
+    'r_gripper',
+    'r_finger',
   },
   hands = {
-    'l_thumb',
-    'l_finger1',
-    'l_finger2',
-    'r_thumb',
-    'r_finger1',
-    'r_finger2',
+    'l_gripper',
+    'r_gripper',
+    'l_finger',
+    'r_finger',
   },
   head = {
     'head_yaw',
@@ -415,12 +401,10 @@ motor.id = {
     'r_wrist_roll',
     'head_yaw',
     'head_pitch',
-    'l_thumb',
-    'l_finger1',
-    'l_finger2',
-    'r_thumb',
-    'r_finger1',
-    'r_finger2',
+    'l_gripper',
+    'r_gripper',
+    'l_finger',
+    'r_finger',
   },
 }
 

@@ -6,5 +6,5 @@ ExampleCodeClass::ExampleCodeClass()
 
 void ExampleCodeClass::PrintThis(const std::string &str)
 {
-    printf(str.c_str());
+    //printf(str.c_str());
 }

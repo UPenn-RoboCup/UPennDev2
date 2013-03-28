@@ -5,7 +5,29 @@ if pcall(require, 'numlua') then
   numlua_support = true
 end
 
-function serialization.serialize(o)
+local function serialize_table(o)
+  local entries = {}
+  for k,v in pairs(o) do
+    entries[#entries + 1] = string.format('[%s]=%s',
+      serialization.serialize(k),
+      serialization.serialize(v)
+    )
+  end
+  return '{'..table.concat(entries, ',')..'}'
+end
+
+local function serialize_table_pretty(o)
+  local entries = {}
+  for k,v in pairs(o) do
+    entries[#entries + 1] = string.format('[%s] = %s',
+      serialization.serialize(k, true),
+      serialization.serialize(v, true)
+    )
+  end
+  return '{\n  '..table.concat(entries, ',\n  ')..'\n}'
+end
+
+function serialization.serialize(o, pretty)
   local str = 'nil'
 
   -- serialize object
@@ -19,16 +41,13 @@ function serialization.serialize(o)
       str = '-math.huge'
     end
   elseif (type(o) == 'string') then
-    str = string.format('%q',o)
+    str = string.format('%q', o)
   elseif (type(o) == 'table') then
-    local entries = {}
-    for k,v in pairs(o) do
-      entries[#entries + 1] = string.format('[%s]=%s',
-        serialization.serialize(k),
-        serialization.serialize(v)
-      )
+    if (pretty) then
+      str = serialize_table_pretty(o)
+    else
+      str = serialize_table(o)
     end
-    str = '{'..table.concat(entries, ',')..'}'
   elseif (type(o) == 'userdata') then
     if numlua_support and (numlua.type(o) == 'matrix') then
       str = string.format('matrix.fromtable(%s)',

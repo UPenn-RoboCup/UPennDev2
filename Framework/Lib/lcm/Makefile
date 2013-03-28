@@ -3,7 +3,7 @@ include ../../../Makefile.inc
 CWD = $(shell pwd)
 NAME = lcm
 
-TYPE_TARGETS=thor_rpc_request_t thor_rpc_response_t
+TYPE_TARGETS=thor_rpc_request_t thor_rpc_response_t thor_shm_t
 
 all:: lcmgen lcm $(TYPE_TARGETS)
 

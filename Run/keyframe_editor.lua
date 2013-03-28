@@ -13,8 +13,11 @@ require('Config')
 require('keyframe')
 require('serialization')
 
-local keyframe_table_name = arg[1] or Config.platform.keyframe_table
-pcall(require, keyframe_table_name)
+local keyframe_file = arg[1] or Config.motion.keyframes
+local success, keyframe_table = pcall(dofile, keyframe_file)
+if (not success) then
+  keyframe_table = nil
+end
 
 local joint = Config.joint
 local page_no = 1
@@ -43,14 +46,10 @@ local col = 1
 -- Data
 ----------------------------------------------------------------------
 
-function new_page()
-  return {name = '', steps = {}}
-end
-
 function create_keyframe_table()
   local pages = {}
   for i = 1,99 do
-    pages[i] = new_page()
+    pages[i] = keyframe.new_page()
   end
   return pages
 end
@@ -186,7 +185,7 @@ function cmd_name_page(arg)
 end
 
 function cmd_clear_page()
-  keyframe_table[page_no] = new_page()
+  keyframe_table[page_no] = keyframe.new_page()
   draw_screen()
 end
 
@@ -233,114 +232,110 @@ function cmd_goto(arg)
   local varg = parse_int_arguments(arg)
   local step = varg[1] and keyframe_table[page_no].steps[varg[1]]
   if step then
-    local page = new_page()
+    local page = keyframe.new_page()
     page.steps[1] = {
       joint_position = step.joint_position,
       duration = 3,
       pause = 0,
     }
-    keyframe:stop()
-    keyframe:play(page)
-    keyframe:entry()
+    local key_motion = keyframe.new(page)
+    key_motion:initialize(dcm:get_joint_position_sensor())
+
     draw_command_row('going...')
-    while true do
-      if curses.getch() or (keyframe:update() == 'done') then
-        keyframe:stop()
+    local t0 = Platform.get_time()
+    local t = 0
+    while (t < key_motion:get_duration()) do
+      if curses.getch() then
         break
       end
+      t = Platform.get_time() - t0
+      local q = key_motion:evaluate(t)
+      dcm:set_joint_position(q)
       Platform.update()
       draw_col(COL_CMD)
     end
-    keyframe:exit()
     draw_command_row('done')
   end
 end
 
 function cmd_zero()
-  local page = new_page()
+  local page = keyframe.new_page()
   page.steps[1] = {
     joint_position = vector.zeros(#joint.id),
     duration = 3,
     pause = 0,
   }
-  keyframe:stop()
-  keyframe:play(page)
-  keyframe:entry()
+  local key_motion = keyframe.new(page)
+  key_motion:initialize(dcm:get_joint_position_sensor())
+
   draw_command_row('going...')
-  while true do
-    if curses.getch() or (keyframe:update() == 'done') then
-      keyframe:stop()
+  local t0 = Platform.get_time()
+  local t = 0
+  while (t < key_motion:get_duration()) do
+    if curses.getch() then
       break
     end
+    t = Platform.get_time() - t0
+    local q = key_motion:evaluate(t)
+    dcm:set_joint_position(q)
     Platform.update()
     draw_col(COL_CMD)
   end
-  keyframe:exit()
   draw_command_row('done')
 end
 
 function cmd_play()
-  keyframe:load_keyframe_table(keyframe_table)
-  keyframe:stop()
-  keyframe:play(page_no)
-  keyframe:entry()
+  local key_motion = keyframe.new(keyframe_table[page_no])
+  key_motion:initialize(dcm:get_joint_position_sensor())
+
   draw_command_row('playing...')
-  while true do
-    if curses.getch() or (keyframe:update() == 'done') then
-      keyframe:stop()
+  local t0 = Platform.get_time()
+  local t = 0
+  while (t < key_motion:get_duration()) do
+    if curses.getch() then
       break
     end
+    t = Platform.get_time() - t0
+    local q = key_motion:evaluate(t)
+    dcm:set_joint_position(q)
     Platform.update()
     draw_col(COL_CMD)
   end
-  keyframe:exit()
   draw_command_row('done')
 end
 
 function cmd_loop(arg)
   local count = parse_int_arguments(arg)[1] or 0
-  keyframe:load_keyframe_table(keyframe_table)
-  for i = 1,count do
-    keyframe:play(page_no)
-  end
-  keyframe:entry()
+  local key_motion = keyframe.new(keyframe_table[page_no])
+  key_motion:initialize(dcm:get_joint_position_sensor())
+
   draw_command_row('playing...')
-  while true do
-    if curses.getch() or (keyframe:update() == 'done') then
-      keyframe:stop()
-      break
+  while (count > 0) do
+    local t0 = Platform.get_time()
+    local t = 0
+    while (t < key_motion:get_duration()) do
+      if curses.getch() then
+        count = 0
+	break
+      end
+      t = Platform.get_time() - t0
+      local q = key_motion:evaluate(t)
+      dcm:set_joint_position(q)
+      Platform.update()
+      draw_col(COL_CMD)
     end
-    Platform.update()
-    draw_col(COL_CMD)
+    count = count - 1
   end
-  keyframe:exit()
   draw_command_row('done')
 end
 
 function cmd_save(arg)
   local varg = parse_string_arguments(arg)
-  keyframe_table_name = varg[1] or keyframe_table_name 
-  local serialize = serialization.serialize
-  local f = assert(io.open('../Data/'..keyframe_table_name..'.lua','w+'))
-  f:write('keyframe_table = {}\n\n')
-  for i = 1,#keyframe_table do
-    local page = keyframe_table[i]
-    f:write(string.format('keyframe_table[%d] = {\n', i))
-    f:write(string.format('  name = "%s",\n', page.name))
-    f:write(string.format('  steps = {\n'))
-    for j = 1,#page.steps do
-      local step = page.steps[j]
-      f:write(string.format('    [%d] = {\n', j))
-      f:write(string.format('      joint_position = %s, \n',
-        serialize(step.joint_position)))
-      f:write(string.format('      duration = %f,\n', step.duration))
-      f:write(string.format('      pause = %f,\n', step.pause))
-      f:write(string.format('    },\n')) 
-    end
-    f:write(string.format('  }\n')) 
-    f:write(string.format('}\n\n')) 
+  if (varg[1]) then
+    keyframe_file = '../Data/'..Config.platform.name..'/'..varg[1]..'.lua'
   end
-  f:write('return keyframe_table')
+  local f = assert(io.open(keyframe_file, 'w+'))
+  f:write('return '..serialization.serialize(keyframe_table))
   f:close()
 end
 
@@ -652,8 +647,9 @@ function entry()
   -- initialize shared memory
   Platform.entry()
   unix.usleep(5e5)
-  dcm:set_joint_stiffness(1, 'all')
-  dcm:set_joint_damping(0, 'all')
+  dcm:set_joint_p_gain(1, 'all')
+  dcm:set_joint_i_gain(0.1, 'all')
+  dcm:set_joint_d_gain(0.01, 'all')
   dcm:set_joint_position(dcm:get_joint_position_sensor())
   dcm:set_joint_force(0, 'all')
   dcm:set_joint_velocity(0, 'all')

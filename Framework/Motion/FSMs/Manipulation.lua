@@ -1,11 +1,14 @@
+require('locomotion_slave')
+require('Motion_fsm')
+
 ---------------------------------------------------------
 -- Manipulation State Machine 
 ---------------------------------------------------------
 
-require('null_state')
-require('MotionFSM')
+Manipulation = Motion_fsm.new(locomotion_slave)
 
-Manipulation = MotionFSM.new(null_state)
+Manipulation:set_joint_access(0, 'all')
+Manipulation:set_joint_access(1, 'upperbody')
+Manipulation:set_joint_access(0, 'head')
 
-Manipulation:set_joint_access(0, 'legs')
 return Manipulation

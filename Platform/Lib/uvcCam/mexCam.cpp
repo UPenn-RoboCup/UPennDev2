@@ -7,7 +7,6 @@
   Author: Daniel D. Lee <ddlee@seas.upenn.edu>, 05/10
 */
 
-#include <string>
 #include "v4l2.h"
 #include "mex.h"
 
@@ -109,7 +108,8 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     CheckConnection();
     int ibuf = v4l2_read_frame();
     if (ibuf >= 0) {
-      mxSetData(bufArray, v4l2_get_buffer(ibuf, NULL));
+      //mxSetData(bufArray, v4l2_get_buffer(ibuf, NULL));
+			memcpy( mxGetPr(bufArray), v4l2_get_buffer(ibuf, NULL),4*width*height);
       plhs[0] = bufArray;
       return;
     }

@@ -946,7 +946,7 @@
 		<axis>
 			<xyz>1 0 0</xyz>
 			<limit>
-				<lower>0</lower>
+				<lower>-3.1415926536</lower>
 				<upper>3.1415926536</upper>
 				<effort>300</effort>
 				<velocity>12</velocity>
@@ -960,7 +960,7 @@
 		<axis>
 			<xyz>1 0 0</xyz>
 			<limit>
-				<lower>0</lower>
+				<lower>-3.1415926536</lower>
 				<upper>3.1415926536</upper>
 				<effort>300</effort>
 				<velocity>12</velocity>

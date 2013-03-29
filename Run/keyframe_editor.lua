@@ -13,6 +13,8 @@ require('Config')
 require('keyframe')
 require('serialization')
 
+Platform.set_update_rate(500)
+
 local keyframe_file = arg[1] or Config.motion.keyframes
 local success, keyframe_table = pcall(dofile, keyframe_file)
 if (not success) then
@@ -512,7 +514,8 @@ end
 
 function draw_screen()
   curses.move(0, 0)
-  curses.printw('                               Keyframe Editor\n')
+  curses.printw('rate : %7.2f                Keyframe Editor\n',
+                 Platform.get_update_rate())
   curses.printw('///////////////////////////////////////')
   curses.printw('///////////////////////////////////////\n')
   curses.printw('%2d %16s     cmd   ', page_no, keyframe_table[page_no].name)

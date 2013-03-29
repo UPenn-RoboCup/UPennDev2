@@ -90,6 +90,9 @@ COGx_pid:set_d_corner_frequency(20)
 pgain, igain, dgain = 120, 30, 30
 local COGy_pid = pid.new(0.004, pgain, igain, dgain)
 COGy_pid:set_d_corner_frequency(20)
+pgain, igain, dgain = 120, 30, 30
+local COGd_pid = pid.new(0.004, pgain, igain, dgain)
+COGd_pid:set_d_corner_frequency(20)
 
 local COG_vel_filter = {}
 COG_vel_filter[1] = filter.new_differentiator(0.004, 30, 0.5)
@@ -257,8 +260,10 @@ function COG_controller(des_loc) --uses loc wrt foot
     torques[2] = COGx_pid.p_gain*(state_est_k1[1][1] - des_loc[1]) 
     torques[2] = torques[2] + COGx_pid.d_gain*state_est_k1[1][2] - COGx_pid.i_term 
   elseif feet_on_gnd == 2 then
+    COGd_pid:set_setpoint(0)
+    COGd_pid:update(state_est_d1[1])
     local sum_torque = COGx_pid.p_gain*state_est_d1[1] 
-    sum_torque =  sum_torque + COGx_pid.d_gain*state_est_d1[2] 
+    sum_torque =  sum_torque + COGx_pid.d_gain*state_est_d1[2] - COGd_pid.i_term 
     torques = axis*sum_torque
   end
   return torques
@@ -581,8 +586,9 @@ local storemove = {0,0,0,0}
 local storemove2 = {0,0,0,0}
 function state_machine(t) 
   if (state == 0) then
+--  print('statet', state_t)
    printdata = true
-    if state_t >= 2 then
+    if state_t >=  5 then
       print('state_t', state_t)
       l_leg_offset = vector.copy(lf)
       r_leg_offset = vector.copy(rf)
@@ -590,7 +596,7 @@ function state_machine(t)
       joint_offset = vector.new(joint_offset)
       state = 1
       state_t = 0
-      --run = false
+      run = false
     end
   elseif (state == 1) then --move to ready position
     local percent = trajectory_percentage(1, 3, state_t)
@@ -724,14 +730,14 @@ print('timestep', Platform.get_time_step())
 Proprioception.entry()
 dcm:set_joint_enable(0,'all')
 local set_values = dcm:get_joint_position_sensor('legs') 
-dcm:set_joint_position_p_gain(1, 'all') -- position control
-dcm:set_joint_position_p_gain(0, 'ankles')
+dcm:set_joint_p_gain(1, 'all') -- position control
+dcm:set_joint_p_gain(0, 'ankles')
 dcm:set_joint_force({0, 0, 0, 0},'ankles')
 dcm:set_joint_position(set_values)
 dcm:set_joint_enable(1, 'all')
 qt = vector.copy(set_values) 
 
-local ident = "t2"
+local ident = "t1"
 print('ident', ident)
 local fw_log = assert(io.open("../Logs/fw_log"..ident..".txt","w"))
 local fw_reg = assert(io.open("../Logs/fw_reg"..ident..".txt","w"))
@@ -746,11 +752,12 @@ end
 local store = {}--vector.zeros(10000)
 local ind = 1
 local log_var_names = {}
-function store_data(filename, local_data)
+function store_data(local_data)
   for i = 1, #local_data do
     for i2 = 1, #local_data[i] do
       --print(store_len, ind, 'are values')
       store[ind] = local_data[i][i2]
+      ind = ind + 1
     end
   end
 end
@@ -792,8 +799,8 @@ end
 --------------------------------------------------------------------
 --Main
 --------------------------------------------------------------------
---unix.usleep(1e6)
-local t0 = 0 --unix.time()
+unix.usleep(1e6)
+local t0 = unix.time()
 t = t0
 while run do 
   Platform.update()
@@ -823,8 +830,8 @@ while run do
   joint_torques_sense = dcm:get_joint_force_sensor('legs')
 --implement actions
   dcm:set_joint_position(qt, 'legs')  
-  dcm:set_joint_force(joint_torques, 'legs')  
-  --dcm:set_joint_force({0,0,0,0,0,0,0,0,0,0,0,0}, 'legs') 
+  --dcm:set_joint_force(joint_torques, 'legs')  
+  dcm:set_joint_force({0,0,0,0,0,0,0,0,0,0,0,0}, 'legs') 
 
   if (printdata)  then 
     data[1] = {joint_torques[5], joint_torques[6], joint_torques[11]}
@@ -834,7 +841,7 @@ while run do
     data[3] = grav_comp_torques
     data[4] = pid_torques
     data[5] = rf
-    data[6] = {ds_lever}
+    data[6] = state_est_d1
     data[7] = state_est_k1[1]
     data[8] = state_est_k1[2]
     data[9] = {t} --robot only
@@ -850,7 +857,7 @@ while run do
     --data[18] = storemove2
     --
     log_var_names = {'jnt_torq', 'ft_filt', 'grav_trq', 'pid_trq', 'bias'}
-    log_var_names[6] = 'ds_lever'
+    log_var_names[6] = 'state_est_d1'
     log_var_names[7] = 'state_estx'
     log_var_names[8] = 'state_esty'
     log_var_names[9] = 't'
@@ -870,6 +877,7 @@ while run do
 end
 dcm:set_joint_force({0,0,0,0,0,0,0,0,0,0,0,0},'legs')
 write_reg(data)
+print('length data', #store)
 write_to_file2(fw_log, store, data)  --robot only
 print('steps: ', step)
 Platform.exit()

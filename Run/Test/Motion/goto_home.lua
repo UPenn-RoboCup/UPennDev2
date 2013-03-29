@@ -502,7 +502,7 @@ Proprioception.entry()
 dcm:set_joint_enable(0,'all')
 local set_values = dcm:get_joint_position_sensor('legs')
 util.ptable(set_values) 
-dcm:set_joint_position_p_gain(1, 'all') -- position control
+dcm:set_joint_p_gain(1, 'all') -- position control
 --dcm:set_joint_position_p_gain(0, 'ankles')
 --dcm:set_joint_damping(0, 'ankles')
 --dcm:set_joint_force({0, 0, 0, 0},'ankles')

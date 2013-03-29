@@ -1,8 +1,8 @@
 require('Config')
 require('carray')
 require('vector')
-require('util')
 require('shm')
+require('shm_util')
 
 ---------------------------------------------------------------------------
 -- dcm : device communications manager
@@ -73,7 +73,7 @@ end
 
 -- initialize shared memory segment
 dcm.shm = shm.new('dcm')
-util.init_shm_keys(dcm.shm, shared_data)
+shm_util.init_shm_keys(dcm.shm, shared_data)
 
 -- get array access to shared data 
 local data = {}
@@ -95,7 +95,7 @@ function dcm:set_key(key, value, index)
     index = device_index[index]
   end
   local key_updated = key..'_updated'
-  local settings = util.settings_table(value, index)
+  local settings = shm_util.settings_table(value, index)
   for i,v in pairs(settings) do
     if (device_write_access[i] == 1) then
       data[key][i] = v
@@ -141,7 +141,7 @@ function dcm:set_write_access(key, value, index)
   if (type(index) == 'string') then
     index = device_index[index]
   end
-  local settings = util.settings_table(value, index)
+  local settings = shm_util.settings_table(value, index)
   for i,v in pairs(settings) do
     device_write_access[i] = v
   end

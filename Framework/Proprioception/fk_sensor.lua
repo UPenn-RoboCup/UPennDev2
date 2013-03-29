@@ -19,8 +19,8 @@ function fk_sensor.update()
   local q_legs = dcm:get_joint_position_sensor('legs')
   local qdot_legs = dcm:get_joint_velocity_sensor('legs')
 
-  local torso_frame = Transform.rotation(pcm:get_torso_rotation())
-  local torso_twist = twist.new(pcm:get_torso_twist())
+  local torso_frame = pcm:get_torso_rotation()
+  local torso_twist = pcm:get_torso_twist()
 
   local l_foot_frame, r_foot_frame, l_foot_twist, r_foot_twist =
     Kinematics.forward_vel_legs(q_legs, qdot_legs, torso_frame, torso_twist)

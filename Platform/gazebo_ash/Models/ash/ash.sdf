@@ -476,7 +476,16 @@
 				<effort>300</effort>
 				<velocity>12</velocity>
 			</limit>
+			<dynamics>
+				<damping>1.0</damping>
+				<friction>0</friction>
+			</dynamics>
 		</axis>
+		<physics>
+			<ode>
+				<cfm_damping>1</cfm_damping>
+			</ode>
+		</physics>
 	</joint>
 	
 	<joint name="r_hip_yaw" type="revolute">
@@ -490,7 +499,16 @@
 				<effort>300</effort>
 				<velocity>12</velocity>
 			</limit>
+			<dynamics>
+				<damping>1.0</damping>
+				<friction>0</friction>
+			</dynamics>
 		</axis>
+		<physics>
+			<ode>
+				<cfm_damping>1</cfm_damping>
+			</ode>
+		</physics>
 	</joint>
 	
 	<joint name="l_hip_roll" type="revolute">
@@ -504,7 +522,16 @@
 				<effort>300</effort>
 				<velocity>12</velocity>
 			</limit>
+			<dynamics>
+				<damping>1.0</damping>
+				<friction>0</friction>
+			</dynamics>
 		</axis>
+		<physics>
+			<ode>
+				<cfm_damping>1</cfm_damping>
+			</ode>
+		</physics>
 	</joint>
 	
 	<joint name="r_hip_roll" type="revolute">
@@ -518,7 +545,16 @@
 				<effort>300</effort>
 				<velocity>12</velocity>
 			</limit>
+			<dynamics>
+				<damping>1.0</damping>
+				<friction>0</friction>
+			</dynamics>
 		</axis>
+		<physics>
+			<ode>
+				<cfm_damping>1</cfm_damping>
+			</ode>
+		</physics>
 	</joint>
 	
 	<joint name="l_hip_pitch" type="revolute">
@@ -535,7 +571,16 @@
 				<effort>300</effort>
 				<velocity>12</velocity>
 			</limit>
+			<dynamics>
+				<damping>1.0</damping>
+				<friction>0</friction>
+			</dynamics>
 		</axis>
+		<physics>
+			<ode>
+				<cfm_damping>1</cfm_damping>
+			</ode>
+		</physics>
 	</joint>
 	
 	<joint name="r_hip_pitch" type="revolute">
@@ -552,7 +597,16 @@
 				<effort>300</effort>
 				<velocity>12</velocity>
 			</limit>
+			<dynamics>
+				<damping>1.0</damping>
+				<friction>0</friction>
+			</dynamics>
 		</axis>
+		<physics>
+			<ode>
+				<cfm_damping>1</cfm_damping>
+			</ode>
+		</physics>
 	</joint>
 	
 	<joint name="l_knee_pitch" type="revolute">
@@ -569,7 +623,16 @@
 				<effort>300</effort>
 				<velocity>12</velocity>
 			</limit>
+			<dynamics>
+				<damping>1.0</damping>
+				<friction>0</friction>
+			</dynamics>
 		</axis>
+		<physics>
+			<ode>
+				<cfm_damping>1</cfm_damping>
+			</ode>
+		</physics>
 	</joint>
 	
 	<joint name="r_knee_pitch" type="revolute">
@@ -586,7 +649,16 @@
 				<effort>300</effort>
 				<velocity>12</velocity>
 			</limit>
+			<dynamics>
+				<damping>1.0</damping>
+				<friction>0</friction>
+			</dynamics>
 		</axis>
+		<physics>
+			<ode>
+				<cfm_damping>1</cfm_damping>
+			</ode>
+		</physics>
 	</joint>
 	
 	<joint name="l_ankle_pitch" type="revolute">
@@ -600,7 +672,16 @@
 				<effort>300</effort>
 				<velocity>12</velocity>
 			</limit>
+			<dynamics>
+				<damping>1.0</damping>
+				<friction>0</friction>
+			</dynamics>
 		</axis>
+		<physics>
+			<ode>
+				<cfm_damping>1</cfm_damping>
+			</ode>
+		</physics>
 	</joint>
 	
 	<joint name="r_ankle_pitch" type="revolute">
@@ -614,7 +695,16 @@
 				<effort>300</effort>
 				<velocity>12</velocity>
 			</limit>
+			<dynamics>
+				<damping>1.0</damping>
+				<friction>0</friction>
+			</dynamics>
 		</axis>
+		<physics>
+			<ode>
+				<cfm_damping>1</cfm_damping>
+			</ode>
+		</physics>
 	</joint>
 	
 	<joint name="l_ankle_roll" type="revolute">
@@ -631,9 +721,14 @@
 				<effort>300</effort>
 				<velocity>12</velocity>
 			</limit>
+			<dynamics>
+				<damping>1.0</damping>
+				<friction>0</friction>
+			</dynamics>
 		</axis>
 		<physics>
 			<ode>
+				<cfm_damping>1</cfm_damping>
 				<provide_feedback>1</provide_feedback>
 			</ode>
 		</physics>
@@ -653,9 +748,14 @@
 				<effort>300</effort>
 				<velocity>12</velocity>
 			</limit>
+			<dynamics>
+				<damping>1.0</damping>
+				<friction>0</friction>
+			</dynamics>
 		</axis>
 		<physics>
 			<ode>
+				<cfm_damping>1</cfm_damping>
 				<provide_feedback>1</provide_feedback>
 			</ode>
 		</physics>
@@ -675,7 +775,16 @@
 				<effort>300</effort>
 				<velocity>12</velocity>
 			</limit>
+			<dynamics>
+				<damping>1.0</damping>
+				<friction>0</friction>
+			</dynamics>
 		</axis>
+		<physics>
+			<ode>
+				<cfm_damping>1</cfm_damping>
+			</ode>
+		</physics>
 	</joint>
 	
 	<link name="chest">
@@ -761,7 +870,16 @@
 				<effort>300</effort>
 				<velocity>12</velocity>
 			</limit>
+			<dynamics>
+				<damping>1.0</damping>
+				<friction>0</friction>
+			</dynamics>
 		</axis>
+		<physics>
+			<ode>
+				<cfm_damping>1</cfm_damping>
+			</ode>
+		</physics>
 	</joint>
 	
 	<link name="neck">
@@ -807,7 +925,16 @@
 				<effort>300</effort>
 				<velocity>12</velocity>
 			</limit>
+			<dynamics>
+				<damping>1.0</damping>
+				<friction>0</friction>
+			</dynamics>
 		</axis>
+		<physics>
+			<ode>
+				<cfm_damping>1</cfm_damping>
+			</ode>
+		</physics>
 	</joint>
 	
 	<link name="head">
@@ -853,7 +980,16 @@
 				<effort>300</effort>
 				<velocity>12</velocity>
 			</limit>
+			<dynamics>
+				<damping>1.0</damping>
+				<friction>0</friction>
+			</dynamics>
 		</axis>
+		<physics>
+			<ode>
+				<cfm_damping>1</cfm_damping>
+			</ode>
+		</physics>
 	</joint>
 	
 	<joint name="r_shoulder_pitch" type="revolute">
@@ -867,7 +1003,16 @@
 				<effort>300</effort>
 				<velocity>12</velocity>
 			</limit>
+			<dynamics>
+				<damping>1.0</damping>
+				<friction>0</friction>
+			</dynamics>
 		</axis>
+		<physics>
+			<ode>
+				<cfm_damping>1</cfm_damping>
+			</ode>
+		</physics>
 	</joint>
 	
 	
@@ -951,7 +1096,16 @@
 				<effort>300</effort>
 				<velocity>12</velocity>
 			</limit>
+			<dynamics>
+				<damping>1.0</damping>
+				<friction>0</friction>
+			</dynamics>
 		</axis>
+		<physics>
+			<ode>
+				<cfm_damping>1</cfm_damping>
+			</ode>
+		</physics>
 	</joint>
 	
 	<joint name="r_shoulder_roll" type="revolute">
@@ -965,7 +1119,16 @@
 				<effort>300</effort>
 				<velocity>12</velocity>
 			</limit>
+			<dynamics>
+				<damping>1.0</damping>
+				<friction>0</friction>
+			</dynamics>
 		</axis>
+		<physics>
+			<ode>
+				<cfm_damping>1</cfm_damping>
+			</ode>
+		</physics>
 	</joint>
 	
 	
@@ -1050,7 +1213,16 @@
 				<effort>300</effort>
 				<velocity>12</velocity>
 			</limit>
+			<dynamics>
+				<damping>1.0</damping>
+				<friction>0</friction>
+			</dynamics>
 		</axis>
+		<physics>
+			<ode>
+				<cfm_damping>1</cfm_damping>
+			</ode>
+		</physics>
 	</joint>
 	
 	<joint name="r_shoulder_yaw" type="revolute">
@@ -1065,7 +1237,16 @@
 				<effort>300</effort>
 				<velocity>12</velocity>
 			</limit>
+			<dynamics>
+				<damping>1.0</damping>
+				<friction>0</friction>
+			</dynamics>
 		</axis>
+		<physics>
+			<ode>
+				<cfm_damping>1</cfm_damping>
+			</ode>
+		</physics>
 	</joint>
 	
 	
@@ -1144,7 +1325,16 @@
 				<effort>300</effort>
 				<velocity>12</velocity>
 			</limit>
+			<dynamics>
+				<damping>1.0</damping>
+				<friction>0</friction>
+			</dynamics>
 		</axis>
+		<physics>
+			<ode>
+				<cfm_damping>1</cfm_damping>
+			</ode>
+		</physics>
 	</joint>
 	
 	<joint name="r_elbow_pitch" type="revolute">
@@ -1159,7 +1349,16 @@
 				<effort>300</effort>
 				<velocity>12</velocity>
 			</limit>
+			<dynamics>
+				<damping>1.0</damping>
+				<friction>0</friction>
+			</dynamics>
 		</axis>
+		<physics>
+			<ode>
+				<cfm_damping>1</cfm_damping>
+			</ode>
+		</physics>
 	</joint>
 	
 	
@@ -1237,7 +1436,16 @@
 				<effort>300</effort>
 				<velocity>12</velocity>
 			</limit>
+			<dynamics>
+				<damping>1.0</damping>
+				<friction>0</friction>
+			</dynamics>
 		</axis>
+		<physics>
+			<ode>
+				<cfm_damping>1</cfm_damping>
+			</ode>
+		</physics>
 	</joint>
 	
 	<joint name="r_wrist_yaw" type="revolute">
@@ -1251,7 +1459,16 @@
 				<effort>300</effort>
 				<velocity>12</velocity>
 			</limit>
+			<dynamics>
+				<damping>1.0</damping>
+				<friction>0</friction>
+			</dynamics>
 		</axis>
+		<physics>
+			<ode>
+				<cfm_damping>1</cfm_damping>
+			</ode>
+		</physics>
 	</joint>
 	
 	
@@ -1332,9 +1549,14 @@
 				<effort>300</effort>
 				<velocity>12</velocity>
 			</limit>
+			<dynamics>
+				<damping>1.0</damping>
+				<friction>0</friction>
+			</dynamics>
 		</axis>
 		<physics>
 			<ode>
+				<cfm_damping>1</cfm_damping>
 				<provide_feedback>1</provide_feedback>
 			</ode>
 		</physics>
@@ -1352,9 +1574,14 @@
 				<effort>300</effort>
 				<velocity>12</velocity>
 			</limit>
+			<dynamics>
+				<damping>1.0</damping>
+				<friction>0</friction>
+			</dynamics>
 		</axis>
 		<physics>
 			<ode>
+				<cfm_damping>1</cfm_damping>
 				<provide_feedback>1</provide_feedback>
 			</ode>
 		</physics>
@@ -1439,7 +1666,16 @@
 				<effort>300</effort>
 				<velocity>12</velocity>
 			</limit>
+			<dynamics>
+				<damping>1.0</damping>
+				<friction>0</friction>
+			</dynamics>
 		</axis>
+		<physics>
+			<ode>
+				<cfm_damping>1</cfm_damping>
+			</ode>
+		</physics>
 	</joint>
 	
 	<joint name="r_gripper" type="revolute">
@@ -1456,7 +1692,16 @@
 				<effort>300</effort>
 				<velocity>12</velocity>
 			</limit>
+			<dynamics>
+				<damping>1.0</damping>
+				<friction>0</friction>
+			</dynamics>
 		</axis>
+		<physics>
+			<ode>
+				<cfm_damping>1</cfm_damping>
+			</ode>
+		</physics>
 	</joint>
 	
 	
@@ -1537,7 +1782,16 @@
 				<effort>300</effort>
 				<velocity>12</velocity>
 			</limit>
+			<dynamics>
+				<damping>1.0</damping>
+				<friction>0</friction>
+			</dynamics>
 		</axis>
+		<physics>
+			<ode>
+				<cfm_damping>1</cfm_damping>
+			</ode>
+		</physics>
 	</joint>
 	
 	<joint name="r_gripper_slave" type="revolute">
@@ -1553,7 +1807,16 @@
 				<effort>300</effort>
 				<velocity>12</velocity>
 			</limit>
+			<dynamics>
+				<damping>1.0</damping>
+				<friction>0</friction>
+			</dynamics>
 		</axis>
+		<physics>
+			<ode>
+				<cfm_damping>1</cfm_damping>
+			</ode>
+		</physics>
 	</joint>
 	
 	

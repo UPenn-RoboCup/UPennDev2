@@ -9,9 +9,9 @@ comms_manager = {
   p_gain_constant = 1600,
   i_gain_constant = 1600,
   d_gain_constant = 1600,
-  d_break_freq = 30,
+  d_break_freq = 100,
   -- initial controller gains
-  p_gain_default = 0.5,
-  i_gain_default = 0.1,
+  p_gain_default = 0.8,
+  i_gain_default = 0.3,
   d_gain_default = 0.005,
 }

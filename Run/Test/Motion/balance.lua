@@ -90,7 +90,7 @@ COGx_pid:set_d_corner_frequency(20)
 pgain, igain, dgain = 120, 30, 30
 local COGy_pid = pid.new(0.004, pgain, igain, dgain)
 COGy_pid:set_d_corner_frequency(20)
-pgain, igain, dgain = 120, 30, 30
+pgain, igain, dgain = 100, 30, 30
 local COGd_pid = pid.new(0.004, pgain, igain, dgain)
 COGd_pid:set_d_corner_frequency(20)
 
@@ -332,7 +332,7 @@ function generate_act_state_double_support()
     if i == 2 then u[i] = math.max(math.min(u[i],22),-15)
     else u[i] = -1*math.max(math.min(u[i],10),-10) end
   end
-  u = 0--axis*u
+  u = axis*u
   local A = axis[1]/axis[2]
   local C = lf[1] - A*lf[2]
   ds_lever = -1*(A*COG[2] - 1*COG[1] + C)/math.sqrt(A*A + 1)
@@ -584,11 +584,12 @@ end
 ------------------------------------------------------------------------
 local storemove = {0,0,0,0}
 local storemove2 = {0,0,0,0}
+local qt_test = vector.zeros(12)
+local ratio = 1
 function state_machine(t) 
   if (state == 0) then
---  print('statet', state_t)
-   printdata = true
-    if state_t >=  5 then
+    printdata = true
+    if state_t >=  1 then
       print('state_t', state_t)
       l_leg_offset = vector.copy(lf)
       r_leg_offset = vector.copy(rf)
@@ -596,47 +597,55 @@ function state_machine(t)
       joint_offset = vector.new(joint_offset)
       state = 1
       state_t = 0
-      run = false
+      --run = false
     end
   elseif (state == 1) then --move to ready position
-    local percent = trajectory_percentage(1, 3, state_t)
+    local percent = trajectory_percentage(1, 1.5, state_t)
     qt = joint_offset*percent
+    if state_t < 1.3 then
+      ff_torques = vector.new{0,-5}
+      COGd_pid.d_gain = 10
+    else
+      ff_torques = vector.new{0, 0}
+      COGd_pid.d_gain = 30
+    end
     if (percent >= 1) then 
+      ff_torques = vector.new{0, 0}
       state = 2
       state_t = 0
       print("wait for 0.5", t)
       --run = false
     end
   elseif (state == 2) then --wait 
-    if (state_t > 1) then  
+    if (state_t > 2) then  
       print(t)
       state = 3
       state_t = 0
+      --run = false
       l_leg_offset = vector.copy(lf)
       r_leg_offset = vector.copy(rf)
-      delta = vector.new{0,0,0,ahrs[7],ahrs[8],ahrs[9]}
-      goal = 1*(lf[2] - COG[2]) - 0.02
+      trav_offset = lf[2] - COG[2]
+      delta = vector.new{0,0,0,ahrs_filt[7], ahrs_filt[8],0}
+      goal = (lf[2] - COG[2]) - 0.03
       hip_state = {0,0,0}
     end
   elseif (state == 3) then  --move COG
-    local ratio = 1
-    local tau = 1.5 - state_t --remaining time
-    if state_t > 0.35 then 
-      ratio = (0.097-(lf[2] - COG[2])) / (l_leg_offset[2] - lf[2])
-      goal = 0.087 / ratio
+    local tau = 2 - state_t --remaining time
+    if state_t > 0.4 then 
+      ratio = (trav_offset - (lf[2] - COG[2]))/(l_leg_offset[2] - lf[2])
+      goal = 0.085 / ratio
     end
-    if state_t > 1 then ff_torques[1] = -5 end
-    --storemove = {(0.097-(lf[2] - COG[2])), (l_leg_offset[2] - lf[2]), ratio, goal}
+    if state_t > 1.5 then ff_torques[1] = -4 end
     local x,xd,xdd = trajectory.minimum_jerk_step(hip_state, {goal, 0, 0}, tau, 0.004)
     hip_state = vector.new{x, xd, xdd} 
     delta[2] = hip_state[1]
     qt = move_legs(delta)
-    if (state_t >1.5) then  -- true then --
+    if (state_t >2) then  -- true then --
       --run = false
       ff_torques[1] = 0
       state = 4
       state_t = 0
-      qimp, qmid = find_stride_joint_angles(0.25, 0.1)
+      qimp, qmid = find_stride_joint_angles(0.25, 0.15)
       joint_offset = vector.copy(qt)
       delta = qmid - joint_offset
     end
@@ -650,6 +659,10 @@ function state_machine(t)
       state_t = 0
       joint_offset = vector.copy(qt)
       delta = qimp - joint_offset
+    end
+  elseif (state == 5) then
+    if (state_t > 2) then
+      run = false
     end
   elseif (state == 5) then --take step
     local percent = trajectory_percentage(1, 1.5, state_t)
@@ -672,10 +685,10 @@ function state_machine(t)
       delta = vector.new{0,0,0,ahrs[7],ahrs[8],ahrs[9]}
       goal = vector.copy(trav_offset)
       COG_des = goal + vector.new{-0.08, 0.025}
-print('cog des')      
-util.ptable(COG_des)
-print('goal')
-util.ptable(goal)
+      print('cog des')      
+      util.ptable(COG_des)
+      print('goal')
+      util.ptable(goal)
     end
   elseif (state == 6) then --move COG
     local ratio = {1, 1}
@@ -749,7 +762,7 @@ function write_to_file(filename, data, test)
   filename:write(t, "\n")
 end
 
-local store = {}--vector.zeros(10000)
+local store = vector.zeros(120000)
 local ind = 1
 local log_var_names = {}
 function store_data(local_data)
@@ -818,11 +831,8 @@ while run do
   compute_foot_state()
   COG_update() 
   state_machine(t)
-  --if state >= 1 then orient_torso(0) end--modify qt's to upright torso
-  --if walk == true then
-    --pid_torques = COG_walk()
-  --else 
-      pid_torques = COG_controller(COG_des)
+  --if state >= 1 then orient_torso(0) end--modify qt's to upright torso 
+  pid_torques = COG_controller(COG_des)
   --end
   joint_torques = update_joint_torques()
   update_observer()
@@ -830,22 +840,24 @@ while run do
   joint_torques_sense = dcm:get_joint_force_sensor('legs')
 --implement actions
   dcm:set_joint_position(qt, 'legs')  
-  --dcm:set_joint_force(joint_torques, 'legs')  
-  dcm:set_joint_force({0,0,0,0,0,0,0,0,0,0,0,0}, 'legs') 
+  dcm:set_joint_force(joint_torques, 'legs')  
+  --dcm:set_joint_force({0,0,0,0,0,0,0,0,0,0,0,0}, 'legs') 
 
   if (printdata)  then 
     data[1] = {joint_torques[5], joint_torques[6], joint_torques[11]}
     data[1][4] = joint_torques[12]
-    data[2] = {ft_filt[3], ft_filt[5], ft_filt[6], ft_filt[9], ft_filt[11]}
-    data[2][6] = ft_filt[12]
+   -- data[2] = {ft_filt[3], ft_filt[5], ft_filt[6], ft_filt[9], ft_filt[11]}
+   -- data[2][6] = ft_filt[12]
+    data[2] = lf
     data[3] = grav_comp_torques
     data[4] = pid_torques
-    data[5] = rf
+    data[5] = ahrs_filt
     data[6] = state_est_d1
-    data[7] = state_est_k1[1]
-    data[8] = state_est_k1[2]
-    data[9] = {t} --robot only
-    --data[9] = qt
+    data[7] = {bias[1], foot_state[5], foot_state[11]}
+    data[8] = ff_torques
+    data[9] = COG
+    data[10] = state_est_k1[1]
+    data[11] = state_est_k1[2]
     --data[10] = lf
     --data[11] = COG
     --data[12] = joint_pos_sense
@@ -855,12 +867,16 @@ while run do
     --data[16] = {foot_state[5], foot_state[11]}
     --data[17] = storemove
     --data[18] = storemove2
+    data[12] = {t} --robot only
     --
-    log_var_names = {'jnt_torq', 'ft_filt', 'grav_trq', 'pid_trq', 'bias'}
+    log_var_names = {'jnt_torq', 'lf', 'grav_trq', 'pid_trq', 'bias'}
     log_var_names[6] = 'state_est_d1'
-    log_var_names[7] = 'state_estx'
-    log_var_names[8] = 'state_esty'
-    log_var_names[9] = 't'
+    log_var_names[7] = 'ratio_etc'
+    log_var_names[8] = 'fftorques'
+    log_var_names[9] = 'COG'
+    log_var_names[10] = 'qt'
+    log_var_names[11] = 'qt_test'
+    log_var_names[12] = 't'
     --log_var_names[10] = 'lf'
     --log_var_names[11] = 'COG'
     --log_var_names[12] = 'joint_pos_sense'

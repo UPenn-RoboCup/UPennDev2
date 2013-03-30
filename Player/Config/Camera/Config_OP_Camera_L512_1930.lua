@@ -65,7 +65,8 @@ camera.param[7] = {key='exposure (absolute)',      val={800}};
 --]]
 --
 --camera.lut_file = 'lut_low_contrast_pink_n_green.raw';
-camera.lut_file = 'levine512_feb8_9p.raw';
+camera.lut_file = 'L512_1930_r.raw';
+--camera.lut_file = 'levine512_feb8_9p.raw';
 --camera.lut_file = 'lut_Grasp_Greenonly.raw';
 --camera.lut_file = 'lut_OP_Grasp_GreenOnly.raw';
 --camera.lut_file = '0427_grasp.raw'; --Red ball, not orange 

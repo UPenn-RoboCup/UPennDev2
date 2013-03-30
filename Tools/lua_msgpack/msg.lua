@@ -7,12 +7,16 @@ local mp = require 'MessagePack'
 
 str = msgpack.pack(a)
 strmp = mp.pack(a)
-msgpack.unpack(strmp)
+print(msgpack.unpack(strmp))
 print(#str)
 
 str = msgpack.pack(432.543)
 strmp = mp.pack(432.543)
-msgpack.unpack(strmp)
+print(msgpack.unpack(strmp))
+
+strmp = mp.pack(-432)
+print(msgpack.unpack(strmp))
+
 print(#str)
 str = msgpack.pack(true)
 strmp = mp.pack(true)
@@ -20,7 +24,7 @@ msgpack.unpack(strmp)
 print(#str)
 str = msgpack.pack('hellp world')
 strmp = mp.pack('hellp world')
-msgpack.unpack(strmp)
+print(msgpack.unpack(strmp))
 print(#str)
 
 local t = {}

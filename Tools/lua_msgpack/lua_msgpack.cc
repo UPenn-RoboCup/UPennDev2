@@ -35,20 +35,6 @@ extern "C"
 
 #define MT_NAME "msgpack_mt"
 
-//mxArray* mex_unpack_boolean(msgpack_object obj);
-//mxArray* mex_unpack_positive_integer(msgpack_object obj);
-//mxArray* mex_unpack_negative_integer(msgpack_object obj);
-//mxArray* mex_unpack_double(msgpack_object obj);
-//mxArray* mex_unpack_raw(msgpack_object obj);
-//mxArray* mex_unpack_nil(msgpack_object obj);
-//mxArray* mex_unpack_map(msgpack_object obj);
-//mxArray* mex_unpack_array(msgpack_object obj);
-//
-//void (*PackMap[17]) (msgpack_packer *pk, int nrhs, const mxArray *prhs);
-//mxArray* (*unPackMap[8]) (msgpack_object obj);
-//
-//int i = 0;
-//
 //mxArray* mex_unpack_boolean(msgpack_object obj) {
 //  return mxCreateLogicalScalar(obj.via.boolean);
 //}
@@ -359,36 +345,46 @@ static int lua_msgpack_unpack_nil(lua_State *L, msgpack_object obj) {
 #ifdef DEBUG
   printf("unpack nil\n");
 #endif
+  lua_pushnil(L);
   return 1;
 }
+
 static int lua_msgpack_unpack_boolean(lua_State *L, msgpack_object obj) {
 #ifdef DEBUG
   printf("unpack boolean\n");
 #endif
+  lua_pushboolean(L, obj.via.boolean);
   return 1;
 }
+
 static int lua_msgpack_unpack_positive_integer(lua_State *L, msgpack_object obj) {
 #ifdef DEBUG
-  printf("unpack integer\n");
+  printf("unpack positive integer\n");
 #endif
+  lua_pushinteger(L, obj.via.u64);
   return 1;
 }
+
 static int lua_msgpack_unpack_negative_integer(lua_State *L, msgpack_object obj) {
 #ifdef DEBUG
-  printf("unpack integer\n");
+  printf("unpack negative integer\n");
 #endif
+  lua_pushinteger(L, obj.via.i64);
   return 1;
 }
+
 static int lua_msgpack_unpack_double(lua_State *L, msgpack_object obj) {
 #ifdef DEBUG
   printf("unpack double\n");
 #endif
+  lua_pushnumber(L, obj.via.dec);
   return 1;
 }
 static int lua_msgpack_unpack_raw(lua_State *L, msgpack_object obj) {
 #ifdef DEBUG
   printf("unpack raw\n");
 #endif
+  lua_pushlstring(L, obj.via.raw.ptr, obj.via.raw.size);
   return 1;
 }
 static int lua_msgpack_unpack_array(lua_State *L, msgpack_object obj) {

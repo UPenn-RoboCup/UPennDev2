@@ -35,364 +35,40 @@ extern "C"
 
 #define MT_NAME "msgpack_mt"
 
-//mxArray* mex_unpack_boolean(msgpack_object obj) {
-//  return mxCreateLogicalScalar(obj.via.boolean);
-//}
-//
-//mxArray* mex_unpack_positive_integer(msgpack_object obj) {
-//  mxArray *ret = mxCreateNumericMatrix(1,1, mxUINT64_CLASS, mxREAL);
-//  uint64_t *ptr = (uint64_t *)mxGetPr(ret);
-//  *ptr = obj.via.u64;
-//  return ret;
-//}
-//
-//mxArray* mex_unpack_negative_integer(msgpack_object obj) {
-//  mxArray *ret = mxCreateNumericMatrix(1,1, mxINT64_CLASS, mxREAL);
-//  int64_t *ptr = (int64_t *)mxGetPr(ret);
-//  *ptr = obj.via.i64;
-//  return ret;
-//}
-//
-//mxArray* mex_unpack_double(msgpack_object obj) {
-//  mxArray* ret = mxCreateDoubleMatrix(1,1, mxREAL);
-//  double *ptr = (double *)mxGetPr(ret);
-//  *ptr = obj.via.dec;
-//  return ret;
-//}
-//
-//mxArray* mex_unpack_raw(msgpack_object obj) {
-//  mwSize dims[] = {obj.via.raw.size};
-//  mxArray* ret = mxCreateCharArray(1, dims);
-//  uint16_t *ptr = (uint16_t*)mxGetPr(ret); 
-//  for (int i = 0; i < obj.via.raw.size; i++) {
-//    ptr[i] = obj.via.raw.ptr[i];
-//  }
-//  return ret;
-//}
-//
-//mxArray* mex_unpack_nil(msgpack_object obj) {
-//  return mxCreateCellArray(0,0);
-//}
-//
-//mxArray* mex_unpack_map(msgpack_object obj) {
-//  uint32_t nfields = obj.via.map.size;
-//  const char *field_name[nfields];
-//  for (i = 0; i < nfields; i++) {
-//    struct msgpack_object_kv obj_kv = obj.via.map.ptr[i];
-//    if (obj_kv.key.type == MSGPACK_OBJECT_RAW) {
-//      field_name[i] = (const char*)mxCalloc(obj_kv.key.via.raw.size, sizeof(uint8_t));
-//      memcpy((char*)field_name[i], obj_kv.key.via.raw.ptr, obj_kv.key.via.raw.size);
-//    }
-//  }
-//  mxArray *ret = mxCreateStructMatrix(1, 1, obj.via.map.size, field_name);
-//  for (i = 0; i < nfields; i++) {
-//    int ifield = mxGetFieldNumber(ret, field_name[i]);
-//    msgpack_object ob = obj.via.map.ptr[i].val;
-//    mxSetFieldByNumber(ret, 0, ifield, (*unPackMap[ob.type])(ob));
-//  }
-//  for (i = 0; i < nfields; i++)
-//    mxFree((void *)field_name[i]);
-//  return ret;
-//}
-//
-//mxArray* mex_unpack_array(msgpack_object obj) {
-//  // validata array element type
-//  std::set<int> types;
-//  for (i = 0; i < obj.via.array.size; i++)
-//    if ((types.find(obj.via.array.ptr[i].type) == types.end()) && 
-//        (obj.via.array.ptr[i].type > 0) and (obj.via.array.ptr[i].type < 5))
-//      types.insert(obj.via.array.ptr[i].type);
-//  int unique_type = *types.begin();
-//  if (types.size() == 1) {
-//    mxArray *ret = NULL;
-//    bool * ptrb = NULL;
-//    double * ptrd = NULL;
-//    int64_t * ptri = NULL;
-//    uint64_t * ptru = NULL;
-//    switch (unique_type) {
-//      case 1:
-//        ret = mxCreateLogicalMatrix(obj.via.array.size, 1);
-//        ptrb = (bool*)mxGetPr(ret);
-//        for (i = 0; i < obj.via.array.size; i++) ptrb[i] = obj.via.array.ptr[i].via.boolean;
-//        break;
-//      case 2:
-//        ret = mxCreateNumericMatrix(obj.via.array.size, 1, mxUINT64_CLASS, mxREAL);
-//        ptru = (uint64_t*)mxGetPr(ret);
-//        for (i = 0; i < obj.via.array.size; i++) ptru[i] = obj.via.array.ptr[i].via.u64;
-//        break;
-//      case 3:
-//        ret = mxCreateNumericMatrix(obj.via.array.size, 1, mxINT64_CLASS, mxREAL);
-//        ptri = (int64_t*)mxGetPr(ret);
-//        for (i = 0; i < obj.via.array.size; i++) ptri[i] = obj.via.array.ptr[i].via.i64;
-//        break;
-//      case 4:
-//        ret = mxCreateNumericMatrix(obj.via.array.size, 1, mxDOUBLE_CLASS, mxREAL);
-//        ptrd = mxGetPr(ret);
-//        for (i = 0; i < obj.via.array.size; i++) ptrd[i] = obj.via.array.ptr[i].via.dec;
-//        break;
-//      default:
-//        break;
-//    }
-//    return ret;
-//  }
-//  else {
-//    mxArray *ret = mxCreateCellMatrix(obj.via.array.size, 1);
-//    for (i = 0; i < obj.via.array.size; i++) {
-//      msgpack_object ob = obj.via.array.ptr[i];
-//      mxSetCell(ret, i, (*unPackMap[ob.type])(ob));
-//    }
-//    return ret;
-//  }
-//}
-//
-//void mex_unpack(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) 
-//{
-//  const char *str = (const char*)mxGetPr(prhs[0]);
-//  int size = mxGetM(prhs[0]) * mxGetN(prhs[0]);
-//
-//  /* deserializes it. */
-//  msgpack_unpacked msg;
-//  msgpack_unpacked_init(&msg);
-//  if (!msgpack_unpack_next(&msg, str, size, NULL)) 
-//    mexErrMsgTxt("unpack error");
-//
-//  /* prints the deserialized object. */
-//  msgpack_object obj = msg.data;
-//  plhs[0] = (*unPackMap[obj.type])(obj);
-//}
-//
-//void mex_pack_single(msgpack_packer *pk, int nrhs, const mxArray *prhs) {
-//  int nElements = mxGetNumberOfElements(prhs);
-//  float *data = (float*)mxGetPr(prhs);
-//  if (nElements > 1) msgpack_pack_array(pk, nElements);
-//  for (i = 0; i < nElements; i++) {
-//    msgpack_pack_float(pk, data[i]);
-//  }
-//}
-//
-//void mex_pack_double(msgpack_packer *pk, int nrhs, const mxArray *prhs) {
-//  int nElements = mxGetNumberOfElements(prhs);
-//  double *data = mxGetPr(prhs);
-//  if (nElements > 1) msgpack_pack_array(pk, nElements);
-//  for (i = 0; i < nElements; i++) {
-//    msgpack_pack_double(pk, data[i]);
-//  }
-//}
-//
-//void mex_pack_int8(msgpack_packer *pk, int nrhs, const mxArray *prhs) {
-//  int nElements = mxGetNumberOfElements(prhs);
-//  int8_t *data = (int8_t*)mxGetPr(prhs);
-//  if (nElements > 1) msgpack_pack_array(pk, nElements);
-//  for (i = 0; i < nElements; i++) {
-//    msgpack_pack_int8(pk, data[i]);
-//  }
-//}
-//
-//void mex_pack_uint8(msgpack_packer *pk, int nrhs, const mxArray *prhs) {
-//  int nElements = mxGetNumberOfElements(prhs);
-//  uint8_t *data = (uint8_t*)mxGetPr(prhs);
-//  if (nElements > 1) msgpack_pack_array(pk, nElements);
-//  for (i = 0; i < nElements; i++) {
-//    msgpack_pack_uint8(pk, data[i]);
-//  }
-//}
-//
-//void mex_pack_int16(msgpack_packer *pk, int nrhs, const mxArray *prhs) {
-//  int nElements = mxGetNumberOfElements(prhs);
-//  int16_t *data = (int16_t*)mxGetPr(prhs);
-//  if (nElements > 1) msgpack_pack_array(pk, nElements);
-//  for (i = 0; i < nElements; i++) {
-//    msgpack_pack_int16(pk, data[i]);
-//  }
-//}
-//
-//void mex_pack_uint16(msgpack_packer *pk, int nrhs, const mxArray *prhs) {
-//  int nElements = mxGetNumberOfElements(prhs);
-//  uint16_t *data = (uint16_t*)mxGetPr(prhs);
-//  if (nElements > 1) msgpack_pack_array(pk, nElements);
-//  for (i = 0; i < nElements; i++) {
-//    msgpack_pack_uint16(pk, data[i]);
-//  }
-//}
-//
-//void mex_pack_int32(msgpack_packer *pk, int nrhs, const mxArray *prhs) {
-//  int nElements = mxGetNumberOfElements(prhs);
-//  int32_t *data = (int32_t*)mxGetPr(prhs);
-//  if (nElements > 1) msgpack_pack_array(pk, nElements);
-//  for (i = 0; i < nElements; i++) {
-//    msgpack_pack_int32(pk, data[i]);
-//  }
-//}
-//
-//void mex_pack_uint32(msgpack_packer *pk, int nrhs, const mxArray *prhs) {
-//  int nElements = mxGetNumberOfElements(prhs);
-//  uint32_t *data = (uint32_t*)mxGetPr(prhs);
-//  if (nElements > 1) msgpack_pack_array(pk, nElements);
-//  for (i = 0; i < nElements; i++) {
-//    msgpack_pack_uint32(pk, data[i]);
-//  }
-//}
-//
-//void mex_pack_int64(msgpack_packer *pk, int nrhs, const mxArray *prhs) {
-//  int nElements = mxGetNumberOfElements(prhs);
-//  int64_t *data = (int64_t*)mxGetPr(prhs);
-//  if (nElements > 1) msgpack_pack_array(pk, nElements);
-//  for (i = 0; i < nElements; i++) {
-//    msgpack_pack_int64(pk, data[i]);
-//  }
-//}
-//
-//void mex_pack_uint64(msgpack_packer *pk, int nrhs, const mxArray *prhs) {
-//  int nElements = mxGetNumberOfElements(prhs);
-//  uint64_t *data = (uint64_t*)mxGetPr(prhs);
-//  if (nElements > 1) msgpack_pack_array(pk, nElements);
-//  for (i = 0; i < nElements; i++) {
-//    msgpack_pack_uint64(pk, data[i]);
-//  }
-//}
-//
-//void mex_pack_logical(msgpack_packer *pk, int nrhs, const mxArray *prhs) {
-//  int nElements = mxGetNumberOfElements(prhs);
-//  bool *data = mxGetLogicals(prhs);
-//  if (nElements > 1) msgpack_pack_array(pk, nElements);
-//  for (i = 0; i < nElements; i++)
-//    (data[i])? msgpack_pack_true(pk) : msgpack_pack_false(pk);
-//}
-//
-//void mex_pack_char(msgpack_packer *pk, int nrhs, const mxArray *prhs) {
-//  int nElements = mxGetNumberOfElements(prhs);
-//  uint8_t *data = (uint8_t*)mxGetPr(prhs); 
-//  // matlab char type is actually uint16 -> 2 * uint8
-//  msgpack_pack_raw(pk, nElements * 2);
-//  msgpack_pack_raw_body(pk, data, nElements * 2);
-//}
-//
-//void mex_pack_cell(msgpack_packer *pk, int nrhs, const mxArray *prhs) {
-//  int nElements = mxGetNumberOfElements(prhs);
-//  if (nElements > 1) msgpack_pack_array(pk, nElements);
-//  for (i = 0; i < nElements; i++) {
-//    mxArray * pm = mxGetCell(prhs, i);
-//    (*PackMap[mxGetClassID(pm)])(pk, nrhs, pm);
-//  }
-//}
-//
-//void mex_pack_struct(msgpack_packer *pk, int nrhs, const mxArray *prhs) {
-//  int nField = mxGetNumberOfFields(prhs);
-//  if (nField > 1) msgpack_pack_map(pk, nField);
-//  const char* fname = NULL;
-//  int fnameLen = 0;
-//  int ifield = 0;
-//  for (i = 0; i < nField; i++) {
-//    fname = mxGetFieldNameByNumber(prhs, i);
-//    fnameLen = strlen(fname);
-//    msgpack_pack_raw(pk, fnameLen);
-//    msgpack_pack_raw_body(pk, fname, fnameLen);
-//    ifield = mxGetFieldNumber(prhs, fname);
-//    mxArray* pm = mxGetFieldByNumber(prhs, 0, ifield);
-//    (*PackMap[mxGetClassID(pm)])(pk, nrhs, pm);
-//  }
-//}
-//
-//void mex_pack(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
-//  /* creates buffer and serializer instance. */
-//  msgpack_sbuffer* buffer = msgpack_sbuffer_new();
-//  msgpack_packer* pk = msgpack_packer_new(buffer, msgpack_sbuffer_write);
-//
-//  for (i = 0; i < nrhs; i ++)
-//    (*PackMap[mxGetClassID(prhs[i])])(pk, nrhs, prhs[i]);
-//
-//  plhs[0] = mxCreateNumericMatrix(1, buffer->size, mxUINT8_CLASS, mxREAL);
-//  memcpy(mxGetPr(plhs[0]), buffer->data, buffer->size * sizeof(uint8_t));
-//
-//  /* cleaning */
-//  msgpack_sbuffer_free(buffer);
-//  msgpack_packer_free(pk);
-//}
-//
-//void mex_unpacker(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
-//  /* Init deserialize using msgpack_unpacker */
-//  msgpack_unpacker pac;
-//  msgpack_unpacker_init(&pac, MSGPACK_UNPACKER_INIT_BUFFER_SIZE);
-//
-//  const char *str = (const char*)mxGetPr(prhs[0]);
-//  int size = mxGetM(prhs[0]) * mxGetN(prhs[0]);
-//  if (size) {
-//    /* feeds the buffer */
-//    msgpack_unpacker_reserve_buffer(&pac, size);
-//    memcpy(msgpack_unpacker_buffer(&pac), str, size);
-//    msgpack_unpacker_buffer_consumed(&pac, size);
-//  
-//    /* start streaming deserialization */
-//    std::vector<mxArray*> ret;
-//    msgpack_unpacked msg;
-//    msgpack_unpacked_init(&msg);
-//    while (msgpack_unpacker_next(&pac, &msg)) {
-//      /* prints the deserialized object. */
-//      msgpack_object obj = msg.data;
-//      ret.push_back((*unPackMap[obj.type])(obj));
-//    }
-//    /* set cell for output */
-//    plhs[0] = mxCreateCellMatrix(ret.size(), 1);
-//    for (i = 0; i < ret.size(); i++)
-//      mxSetCell((mxArray*)plhs[0], i, ret[i]);
-//  }
-//}
-//
 int (*PackMap[9]) (lua_State *L, int index, msgpack_packer *pk);
 int (*unPackMap[8]) (lua_State *L, msgpack_object obj);
 
 static int lua_msgpack_unpack_nil(lua_State *L, msgpack_object obj) {
-#ifdef DEBUG
-  printf("unpack nil\n");
-#endif
   lua_pushnil(L);
   return 1;
 }
 
 static int lua_msgpack_unpack_boolean(lua_State *L, msgpack_object obj) {
-#ifdef DEBUG
-  printf("unpack boolean\n");
-#endif
   lua_pushboolean(L, obj.via.boolean);
   return 1;
 }
 
 static int lua_msgpack_unpack_positive_integer(lua_State *L, msgpack_object obj) {
-#ifdef DEBUG
-  printf("unpack positive integer\n");
-#endif
   lua_pushinteger(L, obj.via.u64);
   return 1;
 }
 
 static int lua_msgpack_unpack_negative_integer(lua_State *L, msgpack_object obj) {
-#ifdef DEBUG
-  printf("unpack negative integer\n");
-#endif
   lua_pushinteger(L, obj.via.i64);
   return 1;
 }
 
 static int lua_msgpack_unpack_double(lua_State *L, msgpack_object obj) {
-#ifdef DEBUG
-  printf("unpack double\n");
-#endif
   lua_pushnumber(L, obj.via.dec);
   return 1;
 }
 
 static int lua_msgpack_unpack_raw(lua_State *L, msgpack_object obj) {
-#ifdef DEBUG
-  printf("unpack raw\n");
-#endif
   lua_pushlstring(L, obj.via.raw.ptr, obj.via.raw.size);
   return 1;
 }
 
 static int lua_msgpack_unpack_array(lua_State *L, msgpack_object obj) {
-#ifdef DEBUG
-  printf("unpack array\n");
-#endif
   int i, ret;
   lua_createtable(L, obj.via.array.size, 0);
   for (i = 0; i < obj.via.array.size; i++) {
@@ -404,9 +80,6 @@ static int lua_msgpack_unpack_array(lua_State *L, msgpack_object obj) {
 }
 
 static int lua_msgpack_unpack_map(lua_State *L, msgpack_object obj) {
-#ifdef DEBUG
-  printf("unpack map\n");
-#endif
   int i, ret;
   lua_createtable(L, 0, obj.via.map.size);
   for (i = 0; i < obj.via.map.size; i++) {
@@ -420,43 +93,28 @@ static int lua_msgpack_unpack_map(lua_State *L, msgpack_object obj) {
 }
 
 static int lua_msgpack_pack_nil(lua_State *L, int index, msgpack_packer *pk) {
-#ifdef DEBUG
-  printf("nil input\n");
-#endif
   msgpack_pack_nil(pk);
   return 1;
 }
 
 static int lua_msgpack_pack_boolean(lua_State *L, int index, msgpack_packer *pk) {
-#ifdef DEBUG
-  printf("boolean input\n");
-#endif
   int value = lua_toboolean(L, index);
   (value == 0)? msgpack_pack_true(pk) : msgpack_pack_false(pk);
   return 1;
 }
 
 static int lua_msgpack_pack_lightuserdata(lua_State *L, int index, msgpack_packer *pk) {
-#ifdef DEBUG
-  printf("lightuserdata input\n");
-#endif
   msgpack_pack_nil(pk);
   return 1;
 }
 
 static int lua_msgpack_pack_number(lua_State *L, int index, msgpack_packer *pk) {
-#ifdef DEBUG
-  printf("number input\n");
-#endif
   double num = lua_tonumber(L, index);
   msgpack_pack_double(pk, num);
   return 1;
 }
 
 static int lua_msgpack_pack_string(lua_State *L, int index, msgpack_packer *pk) {
-#ifdef DEBUG
-  printf("string input\n");
-#endif
   size_t size;
   const char *str = lua_tolstring(L, index, &size);
   int ret = msgpack_pack_raw(pk, size);
@@ -465,34 +123,21 @@ static int lua_msgpack_pack_string(lua_State *L, int index, msgpack_packer *pk) 
 }
 
 static int lua_msgpack_pack_table(lua_State *L, int index, msgpack_packer *pk) {
-#ifdef DEBUG
-  printf("table input\n");
-#endif
-//  printf("%d\n", lua_gettop(L)); 
   msgpack_pack_nil(pk);
   return 1;
 }
 
 static int lua_msgpack_pack_function(lua_State *L, int index, msgpack_packer *pk) {
-#ifdef DEBUG
-  printf("function input\n");
-#endif
   msgpack_pack_nil(pk);
   return 1;
 }
 
 static int lua_msgpack_pack_userdata(lua_State *L, int index, msgpack_packer *pk) {
-#ifdef DEBUG
-  printf("userdata input\n");
-#endif
   msgpack_pack_nil(pk);
   return 1;
 }
 
 static int lua_msgpack_pack_thread(lua_State *L, int index, msgpack_packer *pk) {
-#ifdef DEBUG
-  printf("thread input\n");
-#endif
   msgpack_pack_nil(pk);
   return 1;
 }

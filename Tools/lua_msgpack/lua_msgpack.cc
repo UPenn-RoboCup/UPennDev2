@@ -29,6 +29,8 @@ extern "C"
 }
 #endif
 
+#include <vector>
+#include <stdint.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <msgpack.h>
@@ -146,6 +148,25 @@ static int lua_msgpack_pack_string(lua_State *L, int index, msgpack_packer *pk) 
 }
 
 static int lua_msgpack_pack_table(lua_State *L, int index, msgpack_packer *pk) {
+  std::vector<struct msgpack_packer*> objs;
+  luaL_checktype(L, index, LUA_TTABLE);
+  lua_pushvalue(L, lua_upvalueindex(1));
+  lua_pushvalue(L, 1);
+  lua_pushnil(L);
+
+  lua_settop(L, 2);
+  while (lua_next(L, 1)) {
+    printf("val %d\n", lua_type(L, -1));
+    printf("key %d\n", lua_type(L, -2));
+    lua_settop(L, 2);
+  }
+
+//  for (i = 0; i < tsize; i++) {
+//    lua_pushinteger(L, i+1);
+//    lua_gettable(L, index);
+//    printf("%d\n", lua_type(L, -1));
+//    lua_pop(L, 1);
+//  }
   msgpack_pack_nil(pk);
   return 1;
 }

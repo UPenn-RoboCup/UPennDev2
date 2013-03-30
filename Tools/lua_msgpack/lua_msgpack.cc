@@ -35,8 +35,6 @@ extern "C"
 
 #define MT_NAME "msgpack_mt"
 
-//bool debug = false;
-//
 //mxArray* mex_unpack_boolean(msgpack_object obj);
 //mxArray* mex_unpack_positive_integer(msgpack_object obj);
 //mxArray* mex_unpack_negative_integer(msgpack_object obj);
@@ -354,93 +352,133 @@ extern "C"
 //  }
 //}
 //
-//void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
-//{
-//  /* Init unpack functions Map */
-//  unPackMap[MSGPACK_OBJECT_NIL] = mex_unpack_nil;
-//  unPackMap[MSGPACK_OBJECT_BOOLEAN] = mex_unpack_boolean;
-//  unPackMap[MSGPACK_OBJECT_POSITIVE_INTEGER] = mex_unpack_positive_integer;
-//  unPackMap[MSGPACK_OBJECT_NEGATIVE_INTEGER] = mex_unpack_negative_integer;
-//  unPackMap[MSGPACK_OBJECT_DOUBLE] = mex_unpack_double;
-//  unPackMap[MSGPACK_OBJECT_RAW] = mex_unpack_raw;
-//  unPackMap[MSGPACK_OBJECT_ARRAY] = mex_unpack_array;
-//  unPackMap[MSGPACK_OBJECT_MAP] = mex_unpack_map; 
-//
-//  packmap[mxunknown_class] = null;
-//  packmap[mxvoid_class] = null;
-//  packmap[mxfunction_class] = null;
-//  packmap[mxcell_class] = mex_pack_cell;
-//  packmap[mxstruct_class] = mex_pack_struct;
-//  packmap[mxlogical_class] = mex_pack_logical;
-//  packmap[mxchar_class] = mex_pack_char;
-//  packmap[mxdouble_class] = mex_pack_double;
-//  packmap[mxsingle_class] = mex_pack_single;
-//  packmap[mxint8_class] = mex_pack_int8;
-//  packmap[mxuint8_class] = mex_pack_uint8;
-//  packmap[mxint16_class] = mex_pack_int16;
-//  packmap[mxuint16_class] = mex_pack_uint16;
-//  packmap[mxint32_class] = mex_pack_int32;
-//  packmap[mxuint32_class] = mex_pack_uint32;
-//  packmap[mxint64_class] = mex_pack_int64;
-//  packmap[mxuint64_class] = mex_pack_uint64;
-//
-//  if ((nrhs < 1) || (!mxIsChar(prhs[0])))
-//    mexErrMsgTxt("Need to input string argument");
-//  char *fname = mxArrayToString(prhs[0]);
-//  if (strcmp(fname, "pack") == 0)
-//    mex_pack(nlhs, plhs, nrhs-1, prhs+1);
-//  else if (strcmp(fname, "unpack") == 0)
-//    mex_unpack(nlhs, plhs, nrhs-1, prhs+1);
-//  else if (strcmp(fname, "unpacker") == 0)
-//    mex_unpacker(nlhs, plhs, nrhs-1, prhs+1);
-//  else
-//    mexErrMsgTxt("Unknown function argument");
-//}
+int (*PackMap[9]) (lua_State *L, int index, msgpack_packer *pk);
+int (*unPackMap[8]) (lua_State *L, msgpack_object obj);
 
-int (*PackMap[9]) (lua_State *L, msgpack_packer *pk);
+static int lua_msgpack_unpack_nil(lua_State *L, msgpack_object obj) {
+#ifdef DEBUG
+  printf("unpack nil\n");
+#endif
+  return 1;
+}
+static int lua_msgpack_unpack_boolean(lua_State *L, msgpack_object obj) {
+#ifdef DEBUG
+  printf("unpack boolean\n");
+#endif
+  return 1;
+}
+static int lua_msgpack_unpack_positive_integer(lua_State *L, msgpack_object obj) {
+#ifdef DEBUG
+  printf("unpack integer\n");
+#endif
+  return 1;
+}
+static int lua_msgpack_unpack_negative_integer(lua_State *L, msgpack_object obj) {
+#ifdef DEBUG
+  printf("unpack integer\n");
+#endif
+  return 1;
+}
+static int lua_msgpack_unpack_double(lua_State *L, msgpack_object obj) {
+#ifdef DEBUG
+  printf("unpack double\n");
+#endif
+  return 1;
+}
+static int lua_msgpack_unpack_raw(lua_State *L, msgpack_object obj) {
+#ifdef DEBUG
+  printf("unpack raw\n");
+#endif
+  return 1;
+}
+static int lua_msgpack_unpack_array(lua_State *L, msgpack_object obj) {
+#ifdef DEBUG
+  printf("unpack array\n");
+#endif
+  return 1;
+}
+static int lua_msgpack_unpack_map(lua_State *L, msgpack_object obj) {
+#ifdef DEBUG
+  printf("unpack map\n");
+#endif
+  return 1;
+}
 
-static int lua_msgpack_pack_nil(lua_State *L, msgpack_packer *pk) {
+static int lua_msgpack_pack_nil(lua_State *L, int index, msgpack_packer *pk) {
+#ifdef DEBUG
   printf("nil input\n");
+#endif
+  msgpack_pack_nil(pk);
   return 1;
 }
 
-static int lua_msgpack_pack_boolean(lua_State *L, msgpack_packer *pk) {
+static int lua_msgpack_pack_boolean(lua_State *L, int index, msgpack_packer *pk) {
+#ifdef DEBUG
   printf("boolean input\n");
+#endif
+  int value = lua_toboolean(L, index);
+  (value == 0)? msgpack_pack_true(pk) : msgpack_pack_false(pk);
   return 1;
 }
 
-static int lua_msgpack_pack_lightuserdata(lua_State *L, msgpack_packer *pk) {
+static int lua_msgpack_pack_lightuserdata(lua_State *L, int index, msgpack_packer *pk) {
+#ifdef DEBUG
   printf("lightuserdata input\n");
+#endif
+  msgpack_pack_nil(pk);
   return 1;
 }
 
-static int lua_msgpack_pack_number(lua_State *L, msgpack_packer *pk) {
+static int lua_msgpack_pack_number(lua_State *L, int index, msgpack_packer *pk) {
+#ifdef DEBUG
   printf("number input\n");
+#endif
+  double num = lua_tonumber(L, index);
+  msgpack_pack_double(pk, num);
   return 1;
 }
 
-static int lua_msgpack_pack_string(lua_State *L, msgpack_packer *pk) {
+static int lua_msgpack_pack_string(lua_State *L, int index, msgpack_packer *pk) {
+#ifdef DEBUG
   printf("string input\n");
-  return 1;
+#endif
+  size_t size;
+  const char *str = lua_tolstring(L, index, &size);
+  int ret = msgpack_pack_raw(pk, size);
+  ret = msgpack_pack_raw_body(pk, str, size);
+  return ret;
 }
 
-static int lua_msgpack_pack_table(lua_State *L, msgpack_packer *pk) {
+static int lua_msgpack_pack_table(lua_State *L, int index, msgpack_packer *pk) {
+#ifdef DEBUG
   printf("table input\n");
+#endif
+//  printf("%d\n", lua_gettop(L)); 
+  msgpack_pack_nil(pk);
   return 1;
 }
 
-static int lua_msgpack_pack_function(lua_State *L, msgpack_packer *pk) {
+static int lua_msgpack_pack_function(lua_State *L, int index, msgpack_packer *pk) {
+#ifdef DEBUG
   printf("function input\n");
+#endif
+  msgpack_pack_nil(pk);
   return 1;
 }
 
-static int lua_msgpack_pack_userdata(lua_State *L, msgpack_packer *pk) {
+static int lua_msgpack_pack_userdata(lua_State *L, int index, msgpack_packer *pk) {
+#ifdef DEBUG
   printf("userdata input\n");
+#endif
+  msgpack_pack_nil(pk);
   return 1;
 }
 
-static int lua_msgpack_pack_thread(lua_State *L, msgpack_packer *pk) {
+static int lua_msgpack_pack_thread(lua_State *L, int index, msgpack_packer *pk) {
+#ifdef DEBUG
   printf("thread input\n");
+#endif
+  msgpack_pack_nil(pk);
   return 1;
 }
 
@@ -449,15 +487,10 @@ static int lua_msgpack_pack(lua_State *L) {
   msgpack_sbuffer* buffer = msgpack_sbuffer_new();
   msgpack_packer* pk = msgpack_packer_new(buffer, msgpack_sbuffer_write);
 
-  int i, type, ret;
-  int top = lua_gettop(L);
-  for (i = 1; i <= top; i++) {
-    type = lua_type(L, i);
-    ret = (*PackMap[type])(L, pk);
-  }
-//  plhs[0] = mxCreateNumericMatrix(1, buffer->size, mxUINT8_CLASS, mxREAL);
-//  memcpy(mxGetPr(plhs[0]), buffer->data, buffer->size * sizeof(uint8_t));
-//
+  int type = lua_type(L, 1);
+  int ret = (*PackMap[type])(L, 1, pk);
+  /* output packed string */
+  lua_pushstring(L, buffer->data);
   /* cleaning */
   msgpack_sbuffer_free(buffer);
   msgpack_packer_free(pk);
@@ -465,6 +498,18 @@ static int lua_msgpack_pack(lua_State *L) {
 }
 
 static int lua_msgpack_unpack(lua_State *L) {
+  size_t size;
+  const char *str = lua_tolstring(L, 1, &size);
+
+  /* deserializes it. */
+  msgpack_unpacked msg;
+  msgpack_unpacked_init(&msg);
+  if (!msgpack_unpack_next(&msg, str, size, NULL)) 
+    luaL_error(L, "unpack error");
+
+  /* prints the deserialized object. */
+  msgpack_object obj = msg.data;
+  return (*unPackMap[obj.type])(L, obj);
   return 1;
 }
 
@@ -490,6 +535,7 @@ int luaopen_msgpack(lua_State *L) {
   luaL_register(L, NULL, msgpack_Methods);
   luaL_register(L, "msgpack", msgpack_Functions);
 
+  /* Init pack functions map */
   PackMap[LUA_TNIL] = lua_msgpack_pack_nil;
   PackMap[LUA_TBOOLEAN] = lua_msgpack_pack_boolean;
   PackMap[LUA_TLIGHTUSERDATA] = lua_msgpack_pack_lightuserdata;
@@ -500,6 +546,15 @@ int luaopen_msgpack(lua_State *L) {
   PackMap[LUA_TUSERDATA] = lua_msgpack_pack_userdata;
   PackMap[LUA_TTHREAD] = lua_msgpack_pack_thread;
  
+  /* Init unpack functions Map */
+  unPackMap[MSGPACK_OBJECT_NIL] = lua_msgpack_unpack_nil;
+  unPackMap[MSGPACK_OBJECT_BOOLEAN] = lua_msgpack_unpack_boolean;
+  unPackMap[MSGPACK_OBJECT_POSITIVE_INTEGER] = lua_msgpack_unpack_positive_integer;
+  unPackMap[MSGPACK_OBJECT_NEGATIVE_INTEGER] = lua_msgpack_unpack_negative_integer;
+  unPackMap[MSGPACK_OBJECT_DOUBLE] = lua_msgpack_unpack_double;
+  unPackMap[MSGPACK_OBJECT_RAW] = lua_msgpack_unpack_raw;
+  unPackMap[MSGPACK_OBJECT_ARRAY] = lua_msgpack_unpack_array;
+  unPackMap[MSGPACK_OBJECT_MAP] = lua_msgpack_unpack_map; 
 
   return 1;
 }

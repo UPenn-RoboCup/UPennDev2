@@ -34,15 +34,19 @@ strmp = mp.pack({4,5,6,7})
 util.ptable(msgpack.unpack(strmp))
 --msgpack.unpack(strmp)
 
-
 local t = {}
 t.ast = 'fsfa'
 t.brg = 32423
 t[1] = 3445
+t[3] = 34
 str = msgpack.pack(t)
 strmp = mp.pack(t)
-msgpack.unpack(strmp)
+util.ptable(msgpack.unpack(strmp))
 print(#str)
+
+str = msgpack.pack({4,5,6,t})
+strmp = mp.pack({4,5,6,t})
+util.ptable(msgpack.unpack(strmp))
 
 --local udata = carray.byte('this is a test')
 --str = msgpack.pack(udata)

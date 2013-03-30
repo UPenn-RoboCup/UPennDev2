@@ -393,12 +393,11 @@ static int lua_msgpack_unpack_array(lua_State *L, msgpack_object obj) {
 #ifdef DEBUG
   printf("unpack array\n");
 #endif
-  int i;
-  printf("array item types\n");
+  int i, ret;
   lua_createtable(L, obj.via.array.size, 0);
   for (i = 0; i < obj.via.array.size; i++) {
     msgpack_object ob = obj.via.array.ptr[i];
-    int ret = (*unPackMap[ob.type])(L, ob);
+    ret = (*unPackMap[ob.type])(L, ob);
     lua_rawseti(L, -2, i + 1);
   }
   return 1;
@@ -408,6 +407,15 @@ static int lua_msgpack_unpack_map(lua_State *L, msgpack_object obj) {
 #ifdef DEBUG
   printf("unpack map\n");
 #endif
+  int i, ret;
+  lua_createtable(L, 0, obj.via.map.size);
+  for (i = 0; i < obj.via.map.size; i++) {
+    msgpack_object key = obj.via.map.ptr[i].key;
+    ret = (*unPackMap[key.type])(L, key);
+    msgpack_object val = obj.via.map.ptr[i].val;
+    ret = (*unPackMap[val.type])(L, val);
+    lua_settable(L, -3);
+  }
   return 1;
 }
 

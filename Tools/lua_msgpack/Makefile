@@ -5,6 +5,8 @@ all: lua_msgpack
 
 include ../../Lib/Makefile.inc
 
+CXXFLAGS+=-DDEBUG
+
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
 %.o: %.cc

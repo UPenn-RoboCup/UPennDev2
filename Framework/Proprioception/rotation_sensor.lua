@@ -1,21 +1,18 @@
 require('dcm')
 require('pcm')
 require('vector')
-require('Config')
-require('Platform')
 require('Transform')
 
 --------------------------------------------------------------------------------
--- reference_sensor : estimates floating base torso pose and twist from AHRS
+-- rotation_sensor : estimates floating base torso pose and twist from AHRS
 --------------------------------------------------------------------------------
 
-reference_sensor = {}
+rotation_sensor = {}
 
-function reference_sensor.entry()
+function rotation_sensor.entry()
 end
 
-function reference_sensor.update()
-  local dt = Platform.get_time_step()
+function rotation_sensor.update()
   local euler = dcm:get_ahrs('euler')
   local gyro = dcm:get_ahrs('gyro')
 
@@ -30,7 +27,7 @@ function reference_sensor.update()
   pcm:set_torso_rotation(torso_rotation)
 end
 
-function reference_sensor.exit()
+function rotation_sensor.exit()
 end
 
-return reference_sensor
+return rotation_sensor

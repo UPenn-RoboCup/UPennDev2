@@ -380,6 +380,7 @@ static int lua_msgpack_unpack_double(lua_State *L, msgpack_object obj) {
   lua_pushnumber(L, obj.via.dec);
   return 1;
 }
+
 static int lua_msgpack_unpack_raw(lua_State *L, msgpack_object obj) {
 #ifdef DEBUG
   printf("unpack raw\n");
@@ -387,12 +388,22 @@ static int lua_msgpack_unpack_raw(lua_State *L, msgpack_object obj) {
   lua_pushlstring(L, obj.via.raw.ptr, obj.via.raw.size);
   return 1;
 }
+
 static int lua_msgpack_unpack_array(lua_State *L, msgpack_object obj) {
 #ifdef DEBUG
   printf("unpack array\n");
 #endif
+  int i;
+  printf("array item types\n");
+  lua_createtable(L, obj.via.array.size, 0);
+  for (i = 0; i < obj.via.array.size; i++) {
+    msgpack_object ob = obj.via.array.ptr[i];
+    int ret = (*unPackMap[ob.type])(L, ob);
+    lua_rawseti(L, -2, i + 1);
+  }
   return 1;
 }
+
 static int lua_msgpack_unpack_map(lua_State *L, msgpack_object obj) {
 #ifdef DEBUG
   printf("unpack map\n");
@@ -496,7 +507,6 @@ static int lua_msgpack_pack(lua_State *L) {
 static int lua_msgpack_unpack(lua_State *L) {
   size_t size;
   const char *str = lua_tolstring(L, 1, &size);
-
   /* deserializes it. */
   msgpack_unpacked msg;
   msgpack_unpacked_init(&msg);
@@ -505,7 +515,7 @@ static int lua_msgpack_unpack(lua_State *L) {
 
   /* prints the deserialized object. */
   msgpack_object obj = msg.data;
-  return (*unPackMap[obj.type])(L, obj);
+  int ret = (*unPackMap[obj.type])(L, obj);
   return 1;
 }
 

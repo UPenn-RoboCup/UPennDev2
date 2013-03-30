@@ -4,6 +4,7 @@ package.path = '../../Player/Util/?.lua;'..package.path
 require 'msgpack'
 require 'carray'
 local mp = require 'MessagePack'
+local util = require 'util'
 
 str = msgpack.pack(a)
 strmp = mp.pack(a)
@@ -26,6 +27,13 @@ str = msgpack.pack('hellp world')
 strmp = mp.pack('hellp world')
 print(msgpack.unpack(strmp))
 print(#str)
+
+print('test array')
+str = msgpack.pack({4,5,6,7})
+strmp = mp.pack({4,5,6,7})
+util.ptable(msgpack.unpack(strmp))
+--msgpack.unpack(strmp)
+
 
 local t = {}
 t.ast = 'fsfa'

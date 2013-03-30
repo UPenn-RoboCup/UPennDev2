@@ -35,8 +35,31 @@ extern "C"
 
 #define MT_NAME "msgpack_mt"
 
+typedef struct {
+  const char *str;
+  size_t size;
+  msgpack_unpacker pac;
+  msgpack_unpacked msg;
+} structUnpacker;
+
 int (*PackMap[9]) (lua_State *L, int index, msgpack_packer *pk);
 int (*unPackMap[8]) (lua_State *L, msgpack_object obj);
+
+static structUnpacker * lua_checkunpacker(lua_State *L, int narg) {
+  void *ud = luaL_checkudata(L, narg, MT_NAME);
+  luaL_argcheck(L, *(structUnpacker **)ud != NULL, narg, "invalid unpacker");
+  return (structUnpacker *)ud;
+}
+
+static int lua_msgpack_index(lua_State *L) {
+  structUnpacker *p = lua_checkunpacker(L, 1);
+  // Get index through metatable:
+  if (!lua_getmetatable(L, 1)) {lua_pop(L, 1); return 0;} // push metatable
+  lua_pushvalue(L, 2); // copy key
+  lua_rawget(L, -2); // get metatable function
+  lua_remove(L, -2); // delete metatable
+  return 1;
+}
 
 static int lua_msgpack_unpack_nil(lua_State *L, msgpack_object obj) {
   lua_pushnil(L);
@@ -172,13 +195,44 @@ static int lua_msgpack_unpack(lua_State *L) {
   return 1;
 }
 
+static int lua_msgpack_newunpacker(lua_State *L) {
+  structUnpacker *ud = (structUnpacker *)lua_newuserdata(L, sizeof(structUnpacker));
+  ud->str = lua_tolstring(L, 1, &ud->size);
+
+  /* Init deserialize using msgpack_unpacker */
+  msgpack_unpacker_init(&ud->pac, MSGPACK_UNPACKER_INIT_BUFFER_SIZE);
+  /* feeds the buffer */
+  msgpack_unpacker_reserve_buffer(&ud->pac, ud->size);
+  memcpy(msgpack_unpacker_buffer(&ud->pac), ud->str, ud->size);
+  msgpack_unpacker_buffer_consumed(&ud->pac, ud->size);
+  /* start streaming deserialization */
+  msgpack_unpacked_init(&ud->msg);
+
+  luaL_getmetatable(L, MT_NAME);
+  lua_setmetatable(L, -2);
+  return 1;
+}
+
+static int lua_msgpack_unpacker(lua_State *L) {
+  int re;
+  structUnpacker *ud = lua_checkunpacker(L, 1);
+  bool ret = msgpack_unpacker_next(&ud->pac, &ud->msg);
+  if (ret) {
+    msgpack_object obj = ud->msg.data;
+    re = (*unPackMap[obj.type])(L, obj);
+  } else lua_pushnil(L);
+  return 1;
+}
+
 static const struct luaL_reg msgpack_Functions [] = {
   {"pack", lua_msgpack_pack},
   {"unpack", lua_msgpack_unpack},
+  {"unpacker", lua_msgpack_newunpacker},
   {NULL, NULL}
 };
 
 static const struct luaL_reg msgpack_Methods [] = {
+  {"unpack", lua_msgpack_unpacker},
   {NULL, NULL}
 };
 
@@ -187,6 +241,11 @@ extern "C"
 #endif
 int luaopen_msgpack(lua_State *L) {
   luaL_newmetatable(L, MT_NAME);
+
+  // Implement index method:
+  lua_pushstring(L, "__index");
+  lua_pushcfunction(L, lua_msgpack_index);
+  lua_settable(L, -3);
 
   luaL_register(L, NULL, msgpack_Methods);
   luaL_register(L, "msgpack", msgpack_Functions);

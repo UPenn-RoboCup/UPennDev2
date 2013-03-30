@@ -15,3 +15,9 @@ msgpack.pack(t)
 local udata = carray.byte('this is a test')
 msgpack.pack(udata)
 msgpack.pack(udata:pointer())
+
+print('all together\n')
+
+msgpack.pack(432.543,true,'hellp world',t,udata, udata:pointer())
+
+

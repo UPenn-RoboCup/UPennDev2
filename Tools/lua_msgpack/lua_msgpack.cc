@@ -366,23 +366,23 @@ extern "C"
 //  unPackMap[MSGPACK_OBJECT_ARRAY] = mex_unpack_array;
 //  unPackMap[MSGPACK_OBJECT_MAP] = mex_unpack_map; 
 //
-//  PackMap[mxUNKNOWN_CLASS] = NULL;
-//  PackMap[mxVOID_CLASS] = NULL;
-//  PackMap[mxFUNCTION_CLASS] = NULL;
-//  PackMap[mxCELL_CLASS] = mex_pack_cell;
-//  PackMap[mxSTRUCT_CLASS] = mex_pack_struct;
-//  PackMap[mxLOGICAL_CLASS] = mex_pack_logical;
-//  PackMap[mxCHAR_CLASS] = mex_pack_char;
-//  PackMap[mxDOUBLE_CLASS] = mex_pack_double;
-//  PackMap[mxSINGLE_CLASS] = mex_pack_single;
-//  PackMap[mxINT8_CLASS] = mex_pack_int8;
-//  PackMap[mxUINT8_CLASS] = mex_pack_uint8;
-//  PackMap[mxINT16_CLASS] = mex_pack_int16;
-//  PackMap[mxUINT16_CLASS] = mex_pack_uint16;
-//  PackMap[mxINT32_CLASS] = mex_pack_int32;
-//  PackMap[mxUINT32_CLASS] = mex_pack_uint32;
-//  PackMap[mxINT64_CLASS] = mex_pack_int64;
-//  PackMap[mxUINT64_CLASS] = mex_pack_uint64;
+//  packmap[mxunknown_class] = null;
+//  packmap[mxvoid_class] = null;
+//  packmap[mxfunction_class] = null;
+//  packmap[mxcell_class] = mex_pack_cell;
+//  packmap[mxstruct_class] = mex_pack_struct;
+//  packmap[mxlogical_class] = mex_pack_logical;
+//  packmap[mxchar_class] = mex_pack_char;
+//  packmap[mxdouble_class] = mex_pack_double;
+//  packmap[mxsingle_class] = mex_pack_single;
+//  packmap[mxint8_class] = mex_pack_int8;
+//  packmap[mxuint8_class] = mex_pack_uint8;
+//  packmap[mxint16_class] = mex_pack_int16;
+//  packmap[mxuint16_class] = mex_pack_uint16;
+//  packmap[mxint32_class] = mex_pack_int32;
+//  packmap[mxuint32_class] = mex_pack_uint32;
+//  packmap[mxint64_class] = mex_pack_int64;
+//  packmap[mxuint64_class] = mex_pack_uint64;
 //
 //  if ((nrhs < 1) || (!mxIsChar(prhs[0])))
 //    mexErrMsgTxt("Need to input string argument");
@@ -397,54 +397,70 @@ extern "C"
 //    mexErrMsgTxt("Unknown function argument");
 //}
 
+int (*PackMap[9]) (lua_State *L, msgpack_packer *pk);
+
+static int lua_msgpack_pack_nil(lua_State *L, msgpack_packer *pk) {
+  printf("nil input\n");
+  return 1;
+}
+
+static int lua_msgpack_pack_boolean(lua_State *L, msgpack_packer *pk) {
+  printf("boolean input\n");
+  return 1;
+}
+
+static int lua_msgpack_pack_lightuserdata(lua_State *L, msgpack_packer *pk) {
+  printf("lightuserdata input\n");
+  return 1;
+}
+
+static int lua_msgpack_pack_number(lua_State *L, msgpack_packer *pk) {
+  printf("number input\n");
+  return 1;
+}
+
+static int lua_msgpack_pack_string(lua_State *L, msgpack_packer *pk) {
+  printf("string input\n");
+  return 1;
+}
+
+static int lua_msgpack_pack_table(lua_State *L, msgpack_packer *pk) {
+  printf("table input\n");
+  return 1;
+}
+
+static int lua_msgpack_pack_function(lua_State *L, msgpack_packer *pk) {
+  printf("function input\n");
+  return 1;
+}
+
+static int lua_msgpack_pack_userdata(lua_State *L, msgpack_packer *pk) {
+  printf("userdata input\n");
+  return 1;
+}
+
+static int lua_msgpack_pack_thread(lua_State *L, msgpack_packer *pk) {
+  printf("thread input\n");
+  return 1;
+}
+
 static int lua_msgpack_pack(lua_State *L) {
-  int i, type;
+  /* creates buffer and serializer instance. */
+  msgpack_sbuffer* buffer = msgpack_sbuffer_new();
+  msgpack_packer* pk = msgpack_packer_new(buffer, msgpack_sbuffer_write);
+
+  int i, type, ret;
   int top = lua_gettop(L);
   for (i = 1; i <= top; i++) {
     type = lua_type(L, i);
-    switch(type) {
-      case LUA_TNIL: {
-        printf("nil input\n");
-        break;
-                      }
-      case LUA_TBOOLEAN:{
-        printf("boolean input\n");
-        break;
-                        }
-      case LUA_TLIGHTUSERDATA: {
-        printf("lightuserdata input\n");
-        break;
-                               }
-      case LUA_TNUMBER: {
-        printf("number input\n");
-        break;
-                        }
-      case LUA_TSTRING: {
-        printf("string input\n");
-        break;
-                        }
-      case LUA_TTABLE: {
-        printf("table inpit\n");
-        break;
-                       }
-      case LUA_TFUNCTION: {
-        printf("function input\n");
-        break;
-                          }
-      case LUA_TUSERDATA: {
-        printf("userdata input\n");
-        break;
-                          }
-      case LUA_TTHREAD: {
-        printf("thread input\n");
-        break;
-                        }
-      default: {
-        printf("unknown input type\n");
-        break;
-               }
-    }
+    ret = (*PackMap[type])(L, pk);
   }
+//  plhs[0] = mxCreateNumericMatrix(1, buffer->size, mxUINT8_CLASS, mxREAL);
+//  memcpy(mxGetPr(plhs[0]), buffer->data, buffer->size * sizeof(uint8_t));
+//
+  /* cleaning */
+  msgpack_sbuffer_free(buffer);
+  msgpack_packer_free(pk);
   return 1;
 }
 
@@ -473,5 +489,17 @@ int luaopen_msgpack(lua_State *L) {
 
   luaL_register(L, NULL, msgpack_Methods);
   luaL_register(L, "msgpack", msgpack_Functions);
+
+  PackMap[LUA_TNIL] = lua_msgpack_pack_nil;
+  PackMap[LUA_TBOOLEAN] = lua_msgpack_pack_boolean;
+  PackMap[LUA_TLIGHTUSERDATA] = lua_msgpack_pack_lightuserdata;
+  PackMap[LUA_TNUMBER] = lua_msgpack_pack_number;
+  PackMap[LUA_TSTRING] = lua_msgpack_pack_string;
+  PackMap[LUA_TTABLE] = lua_msgpack_pack_table;
+  PackMap[LUA_TFUNCTION] = lua_msgpack_pack_function;
+  PackMap[LUA_TUSERDATA] = lua_msgpack_pack_userdata;
+  PackMap[LUA_TTHREAD] = lua_msgpack_pack_thread;
+ 
+
   return 1;
 }

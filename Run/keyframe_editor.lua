@@ -27,7 +27,7 @@ local step_no = 1
 local command_duration = 1 
 local command_pause = 0
 
-local TIMEOUT = 5
+local TIMEOUT = 1
 local NCOLS = 6 
 local NROWS = #joint.id + 3
 local ROW_WIDTH = 1
@@ -650,8 +650,8 @@ function entry()
   -- initialize shared memory
   Platform.entry()
   unix.usleep(5e5)
-  dcm:set_joint_p_gain(1, 'all')
-  dcm:set_joint_i_gain(0.1, 'all')
+  dcm:set_joint_p_gain(1.0, 'all')
+  dcm:set_joint_i_gain(0.0, 'all')
   dcm:set_joint_d_gain(0.01, 'all')
   dcm:set_joint_position(dcm:get_joint_position_sensor())
   dcm:set_joint_force(0, 'all')

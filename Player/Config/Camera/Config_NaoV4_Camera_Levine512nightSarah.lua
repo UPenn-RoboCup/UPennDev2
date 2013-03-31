@@ -41,5 +41,5 @@ camera.param[8] = {key='Vertical Flip'  , val={1  , 0}};
 -- brightness has to be set seperately from other parameters, and it can only be set to multiple of 4
 camera.brightness = 200;
 
-camera.lut_file = 'lut_TatendaLevine512night.raw';
+camera.lut_file = 'lut_L512night.mat.raw';
 

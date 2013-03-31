@@ -32,7 +32,10 @@ print('test array')
 str = msgpack.pack({4,5,6,7})
 strmp = mp.pack({4,5,6,7})
 --util.ptable(msgpack.unpack(strmp))
-----msgpack.unpack(strmp)
+print(#str)
+tbl = msgpack.unpack(str)
+
+print(tbl)
 --
 print('test array')
 local t = {}
@@ -40,7 +43,9 @@ t.ast = 'fsfa'
 t.brg = 32423
 t[1] = 3445
 t[3] = 34
-str = msgpack.pack(t)
+--str = msgpack.pack(t)
+--tbl = msgpack.unpack(str)
+--print(tbl)
 
 --strmp = mp.pack(t)
 --util.ptable(msgpack.unpack(strmp))

@@ -73,7 +73,7 @@ local l_foot_pose_ref = {}
 local COP_filters = {filter.new_second_order_low_pass(0.004, 20, 0.7), filter.new_second_order_low_pass(0.004, 20, 0.7)}
 
 local torque_filters = {}
-for i, index in pairs(joint.index['ankles']) do
+for i, index in pairs(joint.ankles) do
   torque_filters[index] = filter.new_low_pass(0.004, 20)--filter.new_second_order_low_pass(0.004, 40, 0.7) 
 end
 
@@ -94,7 +94,7 @@ COG_vel_filter[1] = filter.new_differentiator(0.004, 30, 0.5)
 COG_vel_filter[2] = filter.new_differentiator(0.004, 30, 0.5)
 
 local pos_filters = {}
-for i, index in pairs(joint.index['legs']) do
+for i, index in pairs(joint.legs) do
   pos_filters[index] = filter.new_second_order_low_pass(0.004, 60, 0.5)
 end
 
@@ -107,7 +107,7 @@ local vel_filters = {}
 local vel_filters_raw = {}
 local filter_b = {   0.1094,    0.1094,   -0.1094,   -0.1094} --5 freq, 3 order butter, 1 dt
 local filter_a = {  1.0000,   -2.7492,    2.5288,   -0.7779}
-for i, index in pairs(joint.index['legs']) do
+for i, index in pairs(joint.legs) do
   vel_filters[index] = filter.new(filter_b, filter_a)
   vel_filters_raw[index] =  filter.new_differentiator(0.004, 5) --unfiltered
 end
@@ -115,7 +115,7 @@ end
 local acc_filters = {}
 local filter_b = {6403,   -6403,   -6403,    6403} --30 freq, 3 order butter, 2 dt
 local filter_a = { 1.0000,   -1.5819,    1.0147,   -0.2279}
-for i, index in pairs(joint.index['legs']) do
+for i, index in pairs(joint.legs) do
   acc_filters[index] = filter.new(filter_b, filter_a)
 end
 

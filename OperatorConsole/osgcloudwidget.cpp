@@ -1,6 +1,6 @@
 
 #include "osgcloudwidget.h"
 
-OsgCloudWidget::OsgCloudWidget()
+OsgCloudWidget::OsgCloudWidget(osg::Node *node, osgViewer::ViewerBase::ThreadingModel threadingModel) : OsgWidget(node, threadingModel)
 {
 }

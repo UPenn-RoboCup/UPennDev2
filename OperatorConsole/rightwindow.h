@@ -11,22 +11,30 @@
 #ifndef RIGHTWINDOW_H
 #define RIGHTWINDOW_H
 
-#include <QMainWindow>
+#include <QWidget>
+#include <QKeyEvent>
+
+#include <QtCore/QTimer>
+#include <QtGui/QApplication>
+#include <QtGui/QGridLayout>
+
+#include <osgDB/ReadFile>
 
 namespace Ui {
 class RightWindow;
 }
 
-class RightWindow : public QMainWindow
+class RightWindow : public QWidget
 {
     Q_OBJECT
-    
+
 public:
-    explicit RightWindow(QWidget *parent = 0);
+    explicit RightWindow();
     ~RightWindow();
-    
+
 private:
-    Ui::RightWindow *ui;
+    void keyPressEvent(QKeyEvent *key);
+
 };
 
 #endif // RIGHTWINDOW_H

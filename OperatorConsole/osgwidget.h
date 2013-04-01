@@ -16,20 +16,41 @@
 #include <QWidget>
 #include "osgcamera.h"
 
-class OsgWidget : public QWidget
+#include <QtCore/QTimer>
+#include <QtGui/QApplication>
+#include <QtGui/QGridLayout>
+
+#include <osgViewer/ViewerEventHandlers>
+
+#include <osgGA/TrackballManipulator>
+
+#include <osgDB/ReadFile>
+
+#include <osgQt/GraphicsWindowQt>
+
+#include <iostream>
+
+
+class OsgWidget : public QWidget, public osgViewer::Viewer
 {
     Q_OBJECT
 public:
-    explicit OsgWidget(QWidget *parent = 0);
-    
+    explicit OsgWidget(osg::Node *node, osgViewer::ViewerBase::ThreadingModel threadingModel=osgViewer::Viewer::SingleThreaded);
+    QWidget* addViewWidget( OsgCamera camera, osg::Node* scene );
+    virtual void paintEvent( QPaintEvent* event ) { frame(); }
+
 signals:
-    
+
 public slots:
+
+protected:
+
+    QTimer _timer;
 
 private:
     OsgCamera _camera;
 
-    
+
 };
 
 #endif // OSGWIDGET_H

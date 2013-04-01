@@ -4,7 +4,10 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT += core gui
+QT += phonon
+QT += opengl
+QT += osg
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -66,3 +69,4 @@ FORMS    += centerwindow.ui \
 OTHER_FILES += \
     doxyfile.config
 
+LIBS += -lqwt -lOpenThreads -losg -losgDB -losgUtil -losgViewer -losgGA -losgQt

@@ -1,5 +1,5 @@
 /* 
- * MessagePack for Matlab
+ * MessagePack for Lua
  *
  * Copyright [2013] [ Yida Zhang <yida@seas.upenn.edu> ]
  *              University of Pennsylvania
@@ -331,9 +331,6 @@ int luaopen_msgpack(lua_State *L) {
   lua_pushstring(L, "__index");
   lua_pushcfunction(L, lua_msgpack_index);
   lua_settable(L, -3);
-
-  luaL_register(L, NULL, msgpack_Methods);
-  luaL_register(L, "msgpack", msgpack_Functions);
 
   luaL_register(L, NULL, msgpack_Methods);
   luaL_register(L, "msgpack", msgpack_Functions);

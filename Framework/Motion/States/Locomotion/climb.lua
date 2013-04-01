@@ -6,9 +6,12 @@ require('Config')
 --------------------------------------------------------------------------
 
 climb = Motion_state.new('climb')
-climb:set_joint_access(0, 'all')
-climb:set_joint_access(1, 'lowerbody')
+
 local dcm = climb.dcm
+local ahrs = Config.ahrs
+local joint = Config.joint
+climb:set_joint_access(0, joint.all)
+climb:set_joint_access(1, joint.lowerbody)
 
 -- default parameters
 climb.parameters = {

@@ -6,9 +6,12 @@ require('Config')
 --------------------------------------------------------------------------
 
 car_ingress = Motion_state.new('car_ingress')
-car_ingress:set_joint_access(0, 'all')
-car_ingress:set_joint_access(1, 'lowerbody')
+
 local dcm = car_ingress.dcm
+local ahrs = Config.ahrs
+local joint = Config.joint
+car_ingress:set_joint_access(0, joint.all)
+car_ingress:set_joint_access(1, joint.lowerbody)
 
 -- default parameters
 car_ingress.parameters = {

@@ -6,9 +6,12 @@ require('Config')
 --------------------------------------------------------------------------
 
 fall = Motion_state.new('fall')
-fall:set_joint_access(0, 'all')
-fall:set_joint_access(1, 'lowerbody')
+
 local dcm = fall.dcm
+local ahrs = Config.ahrs
+local joint = Config.joint
+fall:set_joint_access(0, joint.all)
+fall:set_joint_access(1, joint.lowerbody)
 
 -- default parameters
 fall.parameters = {

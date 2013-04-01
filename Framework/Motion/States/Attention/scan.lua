@@ -6,9 +6,11 @@ require('Config')
 --------------------------------------------------------------------------
 
 scan = Motion_state.new('scan')
-scan:set_joint_access(0, 'all')
-scan:set_joint_access(1, 'head')
+
 local dcm = scan.dcm
+local joint = Config.joint
+scan:set_joint_access(0, joint.all)
+scan:set_joint_access(1, joint.head)
 
 -- default parameters
 scan.parameters = {

@@ -6,9 +6,11 @@ require('Config')
 --------------------------------------------------------------------------
 
 track = Motion_state.new('track')
-track:set_joint_access(0, 'all')
-track:set_joint_access(1, 'head')
+
 local dcm = track.dcm
+local joint = Config.joint
+track:set_joint_access(0, joint.all)
+track:set_joint_access(1, joint.head)
 
 -- default parameters
 track.parameters = {

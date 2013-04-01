@@ -6,10 +6,12 @@ require('Config')
 --------------------------------------------------------------------------
 
 open_door = Motion_state.new('open_door')
-open_door:set_joint_access(0, 'all')
-open_door:set_joint_access(1, 'upperbody')
-open_door:set_joint_access(0, 'head')
+
 local dcm = open_door.dcm
+local joint = Config.joint
+open_door:set_joint_access(0, joint.all)
+open_door:set_joint_access(1, joint.upperbody)
+open_door:set_joint_access(0, joint.head)
 
 -- default parameters
 open_door.parameters = {

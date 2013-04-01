@@ -29,7 +29,6 @@ extern "C"
 }
 #endif
 
-#include <vector>
 #include <stdint.h>
 #include <unistd.h>
 #include <float.h>
@@ -138,24 +137,51 @@ static int lua_msgpack_pack_lightuserdata(lua_State *L, int index, msgpack_packe
 
 static int lua_msgpack_pack_number(lua_State *L, int index, msgpack_packer *pk) {
   double num = lua_tonumber(L, index);
+  (round(num) == num)? msgpack_pack_int(pk, num) : msgpack_pack_double(pk, num);
 /*
- * (round(num) == num)? msgpack_pack_int(pk, num) : msgpack_pack_double(pk, num);
- */
   if (round(num) == num) {
     if (num < 0) {
-      if (num >= SCHAR_MIN) msgpack_pack_int8(pk, num);
-      else if (num >= SHRT_MIN) msgpack_pack_int16(pk, num);
-      else if (num >= LONG_MIN) msgpack_pack_int32(pk, num);
-      else if (num >= LLONG_MIN) msgpack_pack_int64(pk, num);
-      else
+      if (num >= SCHAR_MIN) {
+        printf("int8\n");
+        msgpack_pack_fix_int8(pk, num);
+      }
+      else if (num >= SHRT_MIN) {
+        msgpack_pack_fix_int16(pk, num);
+        printf("int16\n");
+      }
+      else if (num >= LONG_MIN) {
+        msgpack_pack_fix_int32(pk, num);
+        printf("int32\n");
+      }
+      else if (num >= LLONG_MIN) {
+        msgpack_pack_fix_int64(pk, num);
+        printf("int64\n");
+      }
+      else {
+        printf("int\n");
         msgpack_pack_int(pk, num);
+      }
     } else {
-      if (num <= UCHAR_MAX) msgpack_pack_uint8(pk, num);
-      else if (num <= USHRT_MAX) msgpack_pack_uint16(pk, num);
-      else if (num <= ULONG_MAX) msgpack_pack_uint32(pk, num);
-      else if (num <= ULLONG_MAX) msgpack_pack_uint64(pk, num);
-      else
+      if (num <= UCHAR_MAX) {
+        msgpack_pack_fix_uint8(pk, num);
+        printf("uint8\n");
+      }
+      else if (num <= USHRT_MAX) {
+        msgpack_pack_fix_uint16(pk, num);
+        printf("uint16\n");
+      }
+      else if (num <= ULONG_MAX) {
+        msgpack_pack_fix_uint32(pk, num);
+        printf("uint32\n");
+      }
+      else if (num <= ULLONG_MAX) {
+        msgpack_pack_fix_uint64(pk, num);
+        printf("uint64\n");
+      }
+      else {
         msgpack_pack_unsigned_int(pk, num);
+        printf("unsigned int\n");
+      }
     }
   } else {
     if ((num >= FLT_MIN) & (num <= FLT_MAX)) 
@@ -163,6 +189,7 @@ static int lua_msgpack_pack_number(lua_State *L, int index, msgpack_packer *pk) 
     else
       msgpack_pack_double(pk, num);
   }
+*/
   return 1;
 }
 

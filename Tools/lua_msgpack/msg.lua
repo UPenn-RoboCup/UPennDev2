@@ -3,7 +3,7 @@ package.path = '../../Player/Util/?.lua;'..package.path
 
 require 'msgpack'
 require 'carray'
-local mp = require 'MessagePack'
+local mp = require 'cmsgpack'
 local util = require 'util'
 require 'unix'
 
@@ -37,7 +37,7 @@ t0 = unix.time()
 strmp = mp.pack({4,5,6,7})
 print(unix.time() - t0);
 --util.ptable(msgpack.unpack(strmp))
-print('size'..#str, #strmp)
+print('size '..#str, #strmp)
 tbl = msgpack.unpack(str)
 
 util.ptable(tbl)
@@ -54,7 +54,7 @@ print(unix.time() - t0);
 t0 = unix.time()
 strmp = mp.pack(t)
 print(unix.time() - t0);
-print('size'..#str, #strmp)
+print('size '..#str, #strmp)
 tbl = msgpack.unpack(str)
 util.ptable(tbl)
 

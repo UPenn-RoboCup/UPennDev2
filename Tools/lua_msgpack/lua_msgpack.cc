@@ -32,6 +32,8 @@ extern "C"
 #include <vector>
 #include <stdint.h>
 #include <unistd.h>
+#include <float.h>
+#include <limits.h>
 #include <stdio.h>
 #include <math.h>
 #include <msgpack.h>
@@ -136,7 +138,31 @@ static int lua_msgpack_pack_lightuserdata(lua_State *L, int index, msgpack_packe
 
 static int lua_msgpack_pack_number(lua_State *L, int index, msgpack_packer *pk) {
   double num = lua_tonumber(L, index);
-  (round(num) == num)? msgpack_pack_int(pk, num) : msgpack_pack_double(pk, num);
+/*
+ * (round(num) == num)? msgpack_pack_int(pk, num) : msgpack_pack_double(pk, num);
+ */
+  if (round(num) == num) {
+    if (num < 0) {
+      if (num >= SCHAR_MIN) msgpack_pack_int8(pk, num);
+      else if (num >= SHRT_MIN) msgpack_pack_int16(pk, num);
+      else if (num >= LONG_MIN) msgpack_pack_int32(pk, num);
+      else if (num >= LLONG_MIN) msgpack_pack_int64(pk, num);
+      else
+        msgpack_pack_int(pk, num);
+    } else {
+      if (num <= UCHAR_MAX) msgpack_pack_uint8(pk, num);
+      else if (num <= USHRT_MAX) msgpack_pack_uint16(pk, num);
+      else if (num <= ULONG_MAX) msgpack_pack_uint32(pk, num);
+      else if (num <= ULLONG_MAX) msgpack_pack_uint64(pk, num);
+      else
+        msgpack_pack_unsigned_int(pk, num);
+    }
+  } else {
+    if ((num >= FLT_MIN) & (num <= FLT_MAX)) 
+      msgpack_pack_float(pk, num);
+    else
+      msgpack_pack_double(pk, num);
+  }
   return 1;
 }
 
@@ -149,6 +175,8 @@ static int lua_msgpack_pack_string(lua_State *L, int index, msgpack_packer *pk) 
 }
 
 static int lua_msgpack_pack_table(lua_State *L, int index, msgpack_packer *pk) {
+  int valtype, keytype, ret;
+  int allnumeric = 0;
   luaL_checktype(L, index, LUA_TTABLE);
   lua_pushvalue(L, lua_upvalueindex(1));
   lua_pushvalue(L, 1);
@@ -157,19 +185,21 @@ static int lua_msgpack_pack_table(lua_State *L, int index, msgpack_packer *pk) {
   lua_settop(L, 2);
   while (lua_next(L, 1)) {
     nfield ++;
+    if (lua_type(L, -2) != LUA_TNUMBER) allnumeric++;
     lua_settop(L, 2);
   }
-  msgpack_pack_map(pk, nfield);
 
   lua_pushvalue(L, lua_upvalueindex(1));
   lua_pushvalue(L, 1);
   lua_pushnil(L);
 
+  (allnumeric == 0)? msgpack_pack_array(pk, nfield) : msgpack_pack_map(pk, nfield);
   lua_settop(L, 2);
-  int valtype, keytype, ret;
   while (lua_next(L, 1)) {
-    keytype = lua_type(L, -2);
-    ret = (*PackMap[keytype])(L, -2, pk);
+    if (allnumeric > 0) {
+      keytype = lua_type(L, -2);
+      ret = (*PackMap[keytype])(L, -2, pk);
+    }
   
     valtype = lua_type(L, -1);
     ret = (*PackMap[valtype])(L, -1, pk);

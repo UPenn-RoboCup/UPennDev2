@@ -5,6 +5,8 @@ comms_manager = {}
 comms_manager = {
   -- # joints controlled by comms_manager
   joint_max = 29,
+  -- # joint cfm damping
+  joint_damping = 1,
   -- impedance controller settings
   p_gain_constant = 1600,
   i_gain_constant = 1600,

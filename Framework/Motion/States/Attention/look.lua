@@ -6,9 +6,11 @@ require('Config')
 --------------------------------------------------------------------------
 
 look = Motion_state.new('look')
-look:set_joint_access(0, 'all')
-look:set_joint_access(1, 'head')
+
 local dcm = look.dcm
+local joint = Config.joint
+look:set_joint_access(0, joint.all)
+look:set_joint_access(1, joint.head)
 
 -- default parameters
 look.parameters = {

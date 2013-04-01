@@ -62,8 +62,8 @@ end
 function cmd_on(arg)
   local joints = {}
   local id = parse_string_arguments(arg)[1]
-  if (id and joint.index[id]) then
-    joints = joint.index[id]
+  if (id and joint[id]) then
+    joints = joint[id]
   else
     for i,index in pairs(parse_int_arguments(arg)) do
       if (index > 0) and (index <= #joint.id) then
@@ -79,8 +79,8 @@ end
 function cmd_off(arg)
   local joints = {}
   local id = parse_string_arguments(arg)[1]
-  if (id and joint.index[id]) then
-    joints = joint.index[id]
+  if (id and joint[id]) then
+    joints = joint[id]
   else
     for i,index in pairs(parse_int_arguments(arg)) do
       if (index > 0) and (index <= #joint.id) then

@@ -6,10 +6,12 @@ require('Config')
 --------------------------------------------------------------------------
 
 wield_tool = Motion_state.new('wield_tool')
-wield_tool:set_joint_access(0, 'all')
-wield_tool:set_joint_access(1, 'upperbody')
-wield_tool:set_joint_access(0, 'head')
+
 local dcm = wield_tool.dcm
+local joint = Config.joint
+wield_tool:set_joint_access(0, joint.all)
+wield_tool:set_joint_access(1, joint.upperbody)
+wield_tool:set_joint_access(0, joint.head)
 
 -- default parameters
 wield_tool.parameters = {

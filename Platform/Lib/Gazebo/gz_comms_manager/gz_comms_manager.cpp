@@ -29,6 +29,7 @@ namespace gazebo
     // load config parameters
     Config config;
     this->joint_max = config.get_int("comms_manager.joint_max");
+    this->joint_damping = config.get_double("comms_manager.joint_damping");
     this->p_gain_constant = config.get_double("comms_manager.p_gain_constant");
     this->i_gain_constant = config.get_double("comms_manager.i_gain_constant");
     this->d_gain_constant = config.get_double("comms_manager.d_gain_constant");
@@ -134,6 +135,9 @@ namespace gazebo
     // initialize dcm joint controllers
     for (int i = 0; i < this->joints.size(); i++)
     { 
+      // set joint damping
+      this->joints[i]->SetDamping(0, this->joint_damping);
+
       // get joint limits
       double max_force = this->joints[i]->GetEffortLimit(0);
       double min_position = this->joints[i]->GetLowStop(0).Radian();

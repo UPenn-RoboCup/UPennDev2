@@ -10,10 +10,17 @@
 #ifndef DATAMANAGER_H
 #define DATAMANAGER_H
 
-class DataManager
+#include <QThread>
+
+class DataManager : public QThread
 {
+
 public:
     DataManager();
+
+protected:
+    void run();
+
 };
 
 #endif // DATAMANAGER_H

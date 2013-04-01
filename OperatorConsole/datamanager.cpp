@@ -3,3 +3,8 @@
 DataManager::DataManager()
 {
 }
+
+void DataManager::run()
+{
+
+}

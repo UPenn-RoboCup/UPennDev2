@@ -36,7 +36,8 @@ SOURCES += main.cpp\
     walkstatemachine.cpp \
     osgcamera.cpp \
     commsinterface.cpp \
-    examplecodeclass.cpp
+    examplecodeclass.cpp \
+    manager.cpp
 
 HEADERS  += centerwindow.h \
     rightwindow.h \
@@ -58,7 +59,8 @@ HEADERS  += centerwindow.h \
     walkstatemachine.h \
     osgcamera.h \
     commsinterface.h \
-    examplecodeclass.h
+    examplecodeclass.h \
+    manager.h
 
 FORMS    += centerwindow.ui \
     rightwindow.ui \
@@ -67,6 +69,7 @@ FORMS    += centerwindow.ui \
     engineeringcontrolwidget.ui
 
 OTHER_FILES += \
-    doxyfile.config
+    doxyfile.config \
+    INSTALL.txt
 
 LIBS += -lqwt -lOpenThreads -losg -losgDB -losgUtil -losgViewer -losgGA -losgQt

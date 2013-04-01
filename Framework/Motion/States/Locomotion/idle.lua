@@ -6,9 +6,12 @@ require('Config')
 --------------------------------------------------------------------------
 
 idle = Motion_state.new('idle')
-idle:set_joint_access(0, 'all')
-idle:set_joint_access(1, 'lowerbody')
+
 local dcm = idle.dcm
+local ahrs = Config.ahrs
+local joint = Config.joint
+idle:set_joint_access(0, joint.all)
+idle:set_joint_access(1, joint.lowerbody)
 
 -- default parameters
 idle.parameters = {

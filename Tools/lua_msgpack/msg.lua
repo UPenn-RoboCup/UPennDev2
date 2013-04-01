@@ -81,16 +81,18 @@ util.ptable(tbl)
 ----str = msgpack.pack(432.543,true,'hellp world',t,udata, udata:pointer())
 ----print(#str)
 --
---filename = '../../../bus/data/stateMP-03.29.2013.13.58.27-0'
---file = io.open(filename, 'r+')
---str = file:read('*a')
---print(#str)
---up = msgpack.unpacker(str)
---ret = up:unpack()
---local c = 0
---while ret do
-----  util.ptable(ret)
---  c = c + 1
---  ret = up:unpack()
---end
---print(c)
+filename = '../../../bus/data/stateMP-03.29.2013.13.58.27-0'
+file = io.open(filename, 'r+')
+str = file:read('*a')
+print(#str)
+t0 = unix.time()
+up = msgpack.unpacker(str)
+ret = up:unpack()
+local c = 0
+while ret do
+--  util.ptable(ret)
+  c = c + 1
+  ret = up:unpack()
+end
+print(unix.time() - t0)
+print(c)

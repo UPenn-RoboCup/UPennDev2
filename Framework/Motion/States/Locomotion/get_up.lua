@@ -6,9 +6,12 @@ require('Config')
 --------------------------------------------------------------------------
 
 get_up = Motion_state.new('get_up')
-get_up:set_joint_access(0, 'all')
-get_up:set_joint_access(1, 'lowerbody')
+
 local dcm = get_up.dcm
+local ahrs = Config.ahrs
+local joint = Config.joint
+get_up:set_joint_access(0, joint.all)
+get_up:set_joint_access(1, joint.lowerbody)
 
 -- default parameters
 get_up.parameters = {

@@ -6,10 +6,12 @@ require('Config')
 --------------------------------------------------------------------------
 
 turn_wheel = Motion_state.new('turn_wheel')
-turn_wheel:set_joint_access(0, 'all')
-turn_wheel:set_joint_access(1, 'upperbody')
-turn_wheel:set_joint_access(0, 'head')
+
 local dcm = turn_wheel.dcm
+local joint = Config.joint
+turn_wheel:set_joint_access(0, joint.all)
+turn_wheel:set_joint_access(1, joint.upperbody)
+turn_wheel:set_joint_access(0, joint.head)
 
 -- default parameters
 turn_wheel.parameters = {

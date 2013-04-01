@@ -6,10 +6,12 @@ require('Config')
 --------------------------------------------------------------------------
 
 place_down = Motion_state.new('place_down')
-place_down:set_joint_access(0, 'all')
-place_down:set_joint_access(1, 'upperbody')
-place_down:set_joint_access(0, 'head')
+
 local dcm = place_down.dcm
+local joint = Config.joint
+place_down:set_joint_access(0, joint.all)
+place_down:set_joint_access(1, joint.upperbody)
+place_down:set_joint_access(0, joint.head)
 
 -- default parameters
 place_down.parameters = {

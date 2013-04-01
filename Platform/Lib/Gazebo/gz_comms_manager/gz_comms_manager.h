@@ -71,6 +71,7 @@ namespace gazebo
 
     // Controller settings
     private: int joint_max;
+    private: double joint_damping;
     private: double p_gain_constant;
     private: double i_gain_constant;
     private: double d_gain_constant;

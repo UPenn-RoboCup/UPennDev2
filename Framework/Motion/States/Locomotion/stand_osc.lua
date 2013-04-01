@@ -12,9 +12,12 @@ require('Motion_state')
 --------------------------------------------------------------------------
 
 stand = Motion_state.new('stand')
-stand:set_joint_access(0, 'all')
-stand:set_joint_access(1, 'lowerbody')
+
 local dcm = stand.dcm
+local ahrs = Config.ahrs
+local joint = Config.joint
+stand:set_joint_access(0, joint.all)
+stand:set_joint_access(1, joint.lowerbody)
 
 -- default parameters
 stand.parameters = {
@@ -48,7 +51,7 @@ local ankle_pitch_fb       = stand.parameters.ankle_pitch_fb
 
 local gyro                 = vector.new{0, 0, 0}
 local gyro_limits          = vector.new{5, 5, 5}
-local q0                   = dcm:get_joint_position_sensor('legs')
+local q0                   = dcm:get_joint_position_sensor(joint.legs)
 local t0                   = Platform.get_time()
 local t                    = t0
 
@@ -73,7 +76,7 @@ end
 local function update_gyro()
   -- update low pass filter for local gyro estimate 
   local beta = 0.02
-  local raw_gyro = dcm:get_ahrs('gyro')
+  local raw_gyro = dcm:get_ahrs(ahrs.gyro)
   gyro = (1 - beta)*gyro + beta*raw_gyro
   gyro[1] = limit(gyro[1], gyro_limits[1])
   gyro[2] = limit(gyro[2], gyro_limits[2])
@@ -86,13 +89,13 @@ end
 function stand:entry()
   t  = Platform.get_time()
   t0 = Platform.get_time()
-  q0 = dcm:get_joint_position_sensor('lowerbody')
-  dcm:set_joint_force(0, 'lowerbody')
-  dcm:set_joint_position(q0, 'lowerbody')
-  dcm:set_joint_velocity(0, 'lowerbody')
-  dcm:set_joint_p_gain(1, 'lowerbody')
-  dcm:set_joint_i_gain(0.1, 'lowerbody')
-  dcm:set_joint_d_gain(0.01, 'lowerbody')
+  q0 = dcm:get_joint_position_sensor(joint.lowerbody)
+  dcm:set_joint_force(0, joint.lowerbody)
+  dcm:set_joint_position(q0, joint.lowerbody)
+  dcm:set_joint_velocity(0, joint.lowerbody)
+  dcm:set_joint_p_gain(1, joint.lowerbody)
+  dcm:set_joint_i_gain(0.1, joint.lowerbody)
+  dcm:set_joint_d_gain(0.01, joint.lowerbody)
   update_stance_parameters()
 end
 
@@ -126,7 +129,7 @@ function stand:update()
   q[12] = q[12] + ankle_roll_fb*gyro[1]
 
   -- write joint angles to shared memory 
-  dcm:set_joint_position(q, 'legs')
+  dcm:set_joint_position(q, joint.legs)
 end
 
 function stand:exit()

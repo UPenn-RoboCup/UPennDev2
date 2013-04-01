@@ -1,4 +1,5 @@
 require('vector')
+require('Config')
 require('shm_util')
 
 ---------------------------------------------------------------------------
@@ -30,6 +31,9 @@ shared_data.r_hand_wrench = wrench.zeros()
 shared_data.torso_pose = vector.zeros(6)
 shared_data.torso_twist = twist.zeros()
 shared_data.torso_rotation = Transform.eye()
+shared_data.joint_force = vector.zeros(#Config.joint.id)
+shared_data.joint_position = vector.zeros(#Config.joint.id)
+shared_data.joint_velocity = vector.zeros(#Config.joint.id)
 shared_data.contact_status = vector.zeros(4)
 shared_data.tipping_status = vector.zeros(1)
 shared_data.falling_status = vector.zeros(1)

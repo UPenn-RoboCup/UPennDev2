@@ -16,9 +16,12 @@ require('rmp')
 --------------------------------------------------------------------------------
 
 step = Motion_state.new(...)
-step:set_joint_access(0, 'all')
-step:set_joint_access(1, 'lowerbody')
+
 local dcm = step.dcm
+local ahrs = Config.ahrs
+local joint = Config.joint
+step:set_joint_access(0, joint.all)
+step:set_joint_access(1, joint.lowerbody)
 
 local torso_rmp = rmp.new(
   3,                                       -- number of rmp dimensions
@@ -571,7 +574,7 @@ function step:initialize_simulator_state(duration)
       r_foot_frame = Transform.pose(swing_foot_state[1])
     end
     local q = Kinematics.inverse_pos_legs(l_foot_frame, r_foot_frame, torso_frame)
-    dcm:set_joint_position(q, 'legs')
+    dcm:set_joint_position(q, joint.legs)
     Platform.update()
   end
 
@@ -582,13 +585,13 @@ function step:initialize_simulator_state(duration)
 end
 
 function step:entry()
-  local q0 = dcm:get_joint_position_sensor('lowerbody')
-  dcm:set_joint_force(0, 'lowerbody')
-  dcm:set_joint_position(q0, 'lowerbody')
-  dcm:set_joint_velocity(0, 'lowerbody')
-  dcm:set_joint_p_gain(1, 'lowerbody')
-  dcm:set_joint_i_gain(0.1, 'lowerbody')
-  dcm:set_joint_d_gain(0.01, 'lowerbody')
+  local q0 = dcm:get_joint_position_sensor(joint.lowerbody)
+  dcm:set_joint_force(0, joint.lowerbody)
+  dcm:set_joint_position(q0, joint.lowerbody)
+  dcm:set_joint_velocity(0, joint.lowerbody)
+  dcm:set_joint_p_gain(1, joint.lowerbody)
+  dcm:set_joint_i_gain(0.1, joint.lowerbody)
+  dcm:set_joint_d_gain(0.01, joint.lowerbody)
   update_parameters()
 end
 
@@ -604,7 +607,7 @@ function step:update()
 
     -- update actuators
     local q = self:get_configuration()
-    dcm:set_joint_position(q, 'legs')
+    dcm:set_joint_position(q, joint.legs)
 
     if (t >= step_duration) then
       active = false 

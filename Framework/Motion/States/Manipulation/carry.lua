@@ -6,10 +6,12 @@ require('Config')
 --------------------------------------------------------------------------
 
 carry = Motion_state.new('carry')
-carry:set_joint_access(0, 'all')
-carry:set_joint_access(1, 'upperbody')
-carry:set_joint_access(0, 'head')
+
 local dcm = carry.dcm
+local joint = Config.joint
+carry:set_joint_access(0, joint.all)
+carry:set_joint_access(1, joint.upperbody)
+carry:set_joint_access(0, joint.head)
 
 -- default parameters
 carry.parameters = {

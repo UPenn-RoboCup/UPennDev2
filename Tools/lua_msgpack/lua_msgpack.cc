@@ -33,6 +33,7 @@ extern "C"
 #include <stdint.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <math.h>
 #include <msgpack.h>
 
 #define MT_NAME "msgpack_mt"
@@ -135,7 +136,7 @@ static int lua_msgpack_pack_lightuserdata(lua_State *L, int index, msgpack_packe
 
 static int lua_msgpack_pack_number(lua_State *L, int index, msgpack_packer *pk) {
   double num = lua_tonumber(L, index);
-  msgpack_pack_double(pk, num);
+  (round(num) == num)? msgpack_pack_int(pk, num) : msgpack_pack_double(pk, num);
   return 1;
 }
 
@@ -169,12 +170,9 @@ static int lua_msgpack_pack_table(lua_State *L, int index, msgpack_packer *pk) {
   while (lua_next(L, 1)) {
     keytype = lua_type(L, -2);
     ret = (*PackMap[keytype])(L, -2, pk);
-    printf("key %d\n", lua_type(L, -2));
-
+  
     valtype = lua_type(L, -1);
     ret = (*PackMap[valtype])(L, -1, pk);
-    printf("val %d\n", lua_type(L, -1));
-
     lua_settop(L, 2);
   }
   return 1;

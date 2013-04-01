@@ -5,6 +5,7 @@ require 'msgpack'
 require 'carray'
 local mp = require 'MessagePack'
 local util = require 'util'
+require 'unix'
 
 str = msgpack.pack(a)
 strmp = mp.pack(a)
@@ -29,13 +30,17 @@ print(msgpack.unpack(strmp))
 print(#str)
 
 print('test array')
+t0 = unix.time()
 str = msgpack.pack({4,5,6,7})
+print(unix.time() - t0);
+t0 = unix.time()
 strmp = mp.pack({4,5,6,7})
+print(unix.time() - t0);
 --util.ptable(msgpack.unpack(strmp))
-print(#str)
+print('size'..#str, #strmp)
 tbl = msgpack.unpack(str)
 
-print(tbl)
+util.ptable(tbl)
 --
 print('test array')
 local t = {}
@@ -43,9 +48,15 @@ t.ast = 'fsfa'
 t.brg = 32423
 t[1] = 3445
 t[3] = 34
---str = msgpack.pack(t)
---tbl = msgpack.unpack(str)
---print(tbl)
+t0 = unix.time()
+str = msgpack.pack(t)
+print(unix.time() - t0);
+t0 = unix.time()
+strmp = mp.pack(t)
+print(unix.time() - t0);
+print('size'..#str, #strmp)
+tbl = msgpack.unpack(str)
+util.ptable(tbl)
 
 --strmp = mp.pack(t)
 --util.ptable(msgpack.unpack(strmp))

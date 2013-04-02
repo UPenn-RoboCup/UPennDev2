@@ -16,8 +16,6 @@ if isempty(IMU.data)
   return
 end
 
-
-
 SLAM.lidar0Cntr = SLAM.lidar0Cntr+1;
 if isempty(LIDAR0.lastTime)
   LIDAR0.lastTime = LIDAR0.scan.startTime;
@@ -31,8 +29,8 @@ end
   
 ranges = double(LIDAR0.scan.ranges); %convert from float to double
 %dranges = [0; diff(ranges)];
-%indGood = ranges >0.25 & LIDAR0.mask; % & (abs(dranges) <0.1);
-indGood = ranges >0.5 & LIDAR0.mask & ranges<7.5;
+indGood = ranges >0.25 & LIDAR0.mask; % & (abs(dranges) <0.1);
+%indGood = ranges >0.5 & LIDAR0.mask & ranges<7.5;
 
 xs = ranges.*LIDAR0.cosines;
 ys = ranges.*LIDAR0.sines;

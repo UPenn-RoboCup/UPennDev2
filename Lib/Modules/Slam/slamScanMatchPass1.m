@@ -10,15 +10,15 @@ dyaw1 = .1/180.0*pi;
 tLidar0   = LIDAR0.scan.startTime;
 
 %if abs(tLidar0-tEncoders) < 0.1
-%  nxs1  = 21;
-%  nys1  = 21;
-%  dx1   = 0.01;
-%  dy1   = 0.01;
+  nxs1  = 21;
+  nys1  = 21;
+  dx1   = 0.01;
+  dy1   = 0.01;
 %else
-  nxs1  = 11;
-  nys1  = 11;
-  dx1   = 0.05;
-  dy1   = 0.05;
+%  nxs1  = 11;
+%  nys1  = 11;
+%  dx1   = 0.05;
+%  dy1   = 0.05;
 %end
 
 yawRange1 = floor(nyaw1/2);

@@ -10,7 +10,7 @@ s_imu = zmq('subscribe',5556);
 figure(1);
 clf(gcf);
 colormap(hot)
-%subplot(2,1,1);
+subplot(1,2,1);
 hold on;
 hMap = [];
 hPose = [];
@@ -83,12 +83,14 @@ if isempty(initSlam)
     % Initialize data structures
     imuInit;
     lidar0Init;
+    LIDAR0.scan.startTime = 0;
     odometryInit;
     
     %initialize scan matching function
     ScanMatch2D('setBoundaries',OMAP.xmin,OMAP.ymin,OMAP.xmax,OMAP.ymax);
     ScanMatch2D('setResolution',OMAP.res);
-    ScanMatch2D('setSensorOffsets',[LIDAR0.offsetx LIDAR0.offsety LIDAR0.offsetz]);
+    ScanMatch2D('setSensorOffsets',...
+        [LIDAR0.offsetx LIDAR0.offsety LIDAR0.offsetz]);
     
 end
 
@@ -99,25 +101,28 @@ while 1
     [data,idx] = zmq('poll');
     for i=1:numel(idx)
         if idx(i)==s_laser
+            %return;
+            
             newscan = msgpack('unpack', data{i});
-            LIDAR0.scan.ranges = typecast( uint8(newscan.ranges), 'single' );
+            LIDAR0.scan.ranges = typecast(uint8(newscan.ranges),'single')';
             LIDAR0.scan.startTime = double(newscan.startTime);
+            %{
+            LIDAR0.scan.ranges = typecast(data{1},'single');
+            LIDAR0.scan.startTime = LIDAR0.scan.startTime + 1/40;
+            %}
             shm_slam_process_lidar0();
         else
             imu = msgpack('unpack', data{i});
             IMU.data.roll = double(imu.R)*pi/180;
             IMU.data.pitch = double(imu.P)*pi/180;
             IMU.data.yaw = double(imu.Y)*pi/180;
-            IMU.data.wyaw = -1*(double(imu.Wz)-370)*(pi/180.0/3.45);%double(imu.Wz);
+            IMU.data.wyaw = -1*(double(imu.Wz)-370)*(pi/180.0/3.45);...
+                %double(imu.Wz);
             IMU.data.t = double( imu.t );
             IMU.tLastArrival = double(IMU.data.t);
             shm_slam_process_odometry();
         end
     end
-    
-    
-    %% Run SLAM Update processes
-    
     
     %% Simple plotting
     if isempty(hMap)
@@ -144,13 +149,13 @@ while 1
         POSE.data.x,POSE.data.y,POSE.data.yaw*180/pi), ...
         'FontSize',12);
     
-    %     subplot(2,1,2);
-    %     cla;
-    %     polar( LIDAR0.angles(:),data.ranges(:), 'r.' );
-    %     hold on;
-    %     xd = max(data.ranges)*cos(IMU.data.yaw);
-    %     yd = max(data.ranges)*sin(IMU.data.yaw);
-    %     compass(xd,yd);
+         subplot(1,2,2);
+         cla;
+         polar( LIDAR0.angles(:), LIDAR0.scan.ranges(:), 'r.' );
+         hold on;
+         xd = max(LIDAR0.scan.ranges(:))*cos(IMU.data.yaw);
+         yd = max(LIDAR0.scan.ranges(:))*sin(IMU.data.yaw);
+         compass(xd,yd);
     
     drawnow;
 end

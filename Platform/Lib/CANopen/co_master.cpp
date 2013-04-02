@@ -98,10 +98,12 @@ bool co_master::configure_pdo_settings(uint8_t node_id, double timeout)
     /* configure pdo parameters */
     success = sdo_download(node_id, parameter_index[i], 0x01, timeout) && success;
     success = sdo_download(node_id, parameter_index[i], 0x02, timeout) && success;
-    if(!sdo_download(node_id, parameter_index[i], 0x03, timeout))
-      success &= (m_slave[node_id]->get_sdo_connection().abort_code == 0x06090011);
-    if(!sdo_download(node_id, parameter_index[i], 0x05, timeout))
-      success &= (m_slave[node_id]->get_sdo_connection().abort_code == 0x06090011);
+    if (parameter_index[i] >= 0x1800) {
+      if(!sdo_download(node_id, parameter_index[i], 0x03, timeout))
+	success &= (m_slave[node_id]->get_sdo_connection().abort_code == 0x06090011);
+      if(!sdo_download(node_id, parameter_index[i], 0x05, timeout))
+	success &= (m_slave[node_id]->get_sdo_connection().abort_code == 0x06090011);
+    }
     /* configure pdo mappings */
     uint8_t n_entries = m_slave[node_id]->get_value(mapping_index[i], 0x00);
     m_slave[node_id]->set_value(mapping_index[i], 0x00, 0);

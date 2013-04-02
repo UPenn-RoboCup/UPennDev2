@@ -25,11 +25,11 @@ WebotsProj/controllers/ballGPS/ballGPS
 *.log
 
 # Player copy of the compiled libraries
-Player/Lib/*
+Run/Lib/*
 
 #player.lua link in Player
-Player/player.lua
-Player/Player
+Run/player.lua
+Run/Run
 
 # Config link file
 Config.lua
@@ -72,7 +72,7 @@ naoqi/
 remotes/
 
 # ball logs
-Player/Data/*.txt
+Run/Data/*.txt
 
 # screen log
 *screenlog*

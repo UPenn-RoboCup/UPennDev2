@@ -26,9 +26,9 @@ VELODIR= $(FRAMEWORKSDIR)/Velocity
 PRIMEDIR= $(FRAMEWORKSDIR)/PrimeSense
 HANDSDIR= $(FRAMEWORKSDIR)/Hands
 PLATFORMS = nao naov4 op xos webots_nao webots_op visiontest
-INSTDIR= Player/Lib
+INSTDIR= Run/Lib
 WEBOTSCONTDIR= WebotsController
-PLAYERDIR= Player
+PLAYERDIR= Run
 NAODEPDIR= Install/dependencies
 NAODEPLUA51DIR= $(NAODEPDIR)/usr/local/lib/lua/5.1
 

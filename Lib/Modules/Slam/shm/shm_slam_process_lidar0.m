@@ -6,13 +6,13 @@ function shm_slam_process_lidar0(name)
 global SLAM LIDAR0 OMAP EMAP POSE IMU CMAP DHMAP MAPS DVMAP GPS POSES
 
 if ~CheckImu()
-    disp('ignoring lidar0 because imu data is invalid');
+    %disp('ignoring lidar0 because imu data is invalid');
     return;
 end
 
 %wait for an initial imu message
 if isempty(IMU.data)
-  disp('waiting for initial imu message');
+  %disp('waiting for initial imu message');
   return
 end
 
@@ -74,9 +74,9 @@ if (1)
   slamScanMatchPass2;
   
   if (hmax < 500)
-    %SLAM.x = SLAM.xOdom;
-    %SLAM.y = SLAM.yOdom;
-    %SLAM.yaw = SLAM.yawOdom;
+    SLAM.x = SLAM.xOdom;
+    SLAM.y = SLAM.yOdom;
+    SLAM.yaw = SLAM.yawOdom;
   else
       %fprintf(1,'not moving\n');
   end
@@ -105,11 +105,9 @@ if (POSES.log)
 end
 %}
 
-
-T = (trans([SLAM.x SLAM.y SLAM.z])*rotz(SLAM.yaw)*trans([LIDAR0.offsetx LIDAR0.offsety LIDAR0.offsetz]));
-
 %update the map
-T = (trans([SLAM.x SLAM.y SLAM.z])*rotz(SLAM.yaw)*trans([LIDAR0.offsetx LIDAR0.offsety LIDAR0.offsetz]))';
+T = (trans([SLAM.x SLAM.y SLAM.z])*rotz(SLAM.yaw)*...
+    trans([LIDAR0.offsetx LIDAR0.offsety LIDAR0.offsetz]))';
 X = [xsss ysss zsss onez];
 Y=X*T;  %reverse the order because of transpose
 

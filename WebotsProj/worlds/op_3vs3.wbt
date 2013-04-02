@@ -7,6 +7,7 @@ WorldInfo {
   ]
   title "Robotstadium"
   basicTimeStep 40
+  displayRefresh 8
 }
 Viewpoint {
   orientation -1 0 0 0.8
@@ -52,7 +53,7 @@ DEF BLUE_LANDMARK Landmark {
   postColor1 0.152941 0.505882 0.733333
   postColor2 0.992157 0.854902 0.219608
 }
-DEF BALL Ball {
+DEF BALL BallGPS {
   translation 0 0.0323921 0
 }
 
@@ -65,11 +66,9 @@ DEF PLAYER_0_0 DARwInOPGPS {
   cameraWindowPosition 0.125 1
   waistBand TRUE
   waistBandColor 0.5 0 0.5
-  cameraWidth 320
-  cameraHeight 240
 }
 DEF PLAYER_1_0 DARwInOPGPS {
-  translation -1.5 0.3 2
+  translation -0.8 0.3 2
   rotation 0 1 0 3.14
   controller "darwin-op_team_0"
   controllerArgs "1 0"
@@ -77,11 +76,9 @@ DEF PLAYER_1_0 DARwInOPGPS {
   cameraWindowPosition 0.375 1
   waistBand TRUE
   waistBandColor 0.5 0 0.5
-  cameraWidth 320
-  cameraHeight 240
 }
 DEF PLAYER_2_0 DARwInOPGPS {
-  translation -0.8 0.3 2
+  translation -1.5 0.3 2
   rotation 0 1 0 3.14
   controller "darwin-op_team_0"
   controllerArgs "2 0"
@@ -89,9 +86,10 @@ DEF PLAYER_2_0 DARwInOPGPS {
   cameraWindowPosition 0.625 1
   waistBand TRUE
   waistBandColor 0.5 0 0.5
-  cameraWidth 320
-  cameraHeight 240
 }
+
+
+
 
 DEF PLAYER_0_1 DARwInOPGPS {
   translation 2.2 0.3 2
@@ -102,8 +100,6 @@ DEF PLAYER_0_1 DARwInOPGPS {
   cameraWindowPosition 0.125 0
   waistBand TRUE
   waistBandColor 1 0 0
-  cameraWidth 320
-  cameraHeight 240
 }
 DEF PLAYER_1_1 DARwInOPGPS {
   translation 1.5 0.3 2
@@ -114,8 +110,6 @@ DEF PLAYER_1_1 DARwInOPGPS {
   cameraWindowPosition 0.375 0
   waistBand TRUE
   waistBandColor 1 0 0
-  cameraWidth 320
-  cameraHeight 240
 }
 DEF PLAYER_2_1 DARwInOPGPS {
   translation 0.8 0.3 2
@@ -126,8 +120,6 @@ DEF PLAYER_2_1 DARwInOPGPS {
   cameraWindowPosition 0.625 0
   waistBand TRUE
   waistBandColor 1 0 0
-  cameraWidth 320
-  cameraHeight 240
 }
 
 

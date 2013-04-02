@@ -36,6 +36,27 @@ vision.subsampling = 1;
 -- use this to substitute goal check with blue/yellow ball check
 vision.use_point_goal = 0;
 
+--vision.enable_robot_detection = 1;
+vision.enable_robot_detection = 0;
+
+-- testing goalpost detection only
+
+--[[
+vision.enable_line_detection = 0;
+vision.enable_midfield_landmark_detection = 0;
+--]]
+-- use this to enable freespace detection and occupancy map
+vision.enable_freespace_detection = 1;
+
+----------------------------
+--OP specific
+----------------------------
+-- Use tilted bounding box?
+vision.use_tilted_bbox = 1;
+-- Store and send subsampled image?
+vision.subsampling = 1;
+
+
 --Vision parameter values
 --For 320*240 labelA
 vision.ball={};
@@ -71,6 +92,20 @@ vision.goal.th_min_area_unknown_post = 40;
 vision.goal.use_centerpost = 1;
 vision.goal.check_for_ground = 1;
 
+vision.goal.far_goal_threshold= 4.0; --The range we triangulate
+vision.goal.distanceFactorCyan = 1.1;
+vision.goal.distanceFactorYellow = 1.1;
+
+vision.landmark = {};
+vision.landmark.min_areaA = 6;
+vision.landmark.min_fill_extent = 0.35;
+vision.landmark.th_centroid = 20;
+vision.landmark.th_arearatio = 4;
+vision.landmark.th_distratio = 2;
+vision.landmark.th_angle = 45*math.pi/180;
+
+vision.landmark.distanceFactorCyan = 1;
+vision.landmark.distanceFactorYellow = 1;
 
 
 vision.line={};

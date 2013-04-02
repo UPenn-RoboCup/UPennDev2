@@ -8,12 +8,8 @@ uname = io.popen('uname -s')
 system = uname:read()
 
 computer = os.getenv('COMPUTER') or system;
-if (string.find(computer, "Darwin")) then
-   -- MacOS X uses .dylib:                                                      
-   package.cpath = cwd.."/Lib/?.dylib;"..package.cpath;
-else
-   package.cpath = cwd.."/Lib/?.so;"..package.cpath;
-end
+package.cpath = cwd.."/Lib/?.so;"..package.cpath;
+
 package.path = cwd.."/Util/?.lua;"..package.path;
 package.path = cwd.."/Config/?.lua;"..package.path;
 package.path = cwd.."/Lib/?.lua;"..package.path;
@@ -22,7 +18,7 @@ package.path = cwd.."/World/?.lua;"..package.path;
 package.path = cwd.."/Vision/?.lua;"..package.path;
 package.path = cwd.."/Motion/?.lua;"..package.path; 
 
-
+require 'unix'
 require ('Config')
 --Copy data to shm 1-1
 Config.game.teamNumber = 1;
@@ -54,9 +50,8 @@ require ('util')
 require ('wcm')
 require ('gcm')
 require ('vcm')
-require 'unix'
 
-Comm.init(Config.dev.ip_wireless,54321);
+Comm.init(Config.dev.ip_wireless,Config.dev.ip_wireless_port);
 print('Receiving Team Message From',Config.dev.ip_wireless);
 
 function push_labelB(obj,teamOffset)
@@ -100,9 +95,13 @@ function push_team_struct(obj,teamOffset)
   states.posex=wcm.get_teamdata_posex();
   states.posey=wcm.get_teamdata_posey();
   states.posea=wcm.get_teamdata_posea();
+
   states.ballx=wcm.get_teamdata_ballx();
   states.bally=wcm.get_teamdata_bally();
+  states.ballvx=wcm.get_teamdata_ballx();
+  states.ballvy=wcm.get_teamdata_bally();
   states.ballt=wcm.get_teamdata_ballt();
+
   states.attackBearing=wcm.get_teamdata_attackBearing();
   states.fall=wcm.get_teamdata_fall();
   states.penalty=wcm.get_teamdata_penalty();
@@ -148,6 +147,9 @@ function push_team_struct(obj,teamOffset)
   states.ballx[id]=obj.ball.x;
   states.bally[id]=obj.ball.y;
   states.ballt[id]=obj.ball.t;
+  states.ballvx[id]=obj.ball.velx;
+  states.ballvy[id]=obj.ball.vely;
+
   states.attackBearing[id]=obj.attackBearing;
   states.fall[id]=obj.fall;
   states.penalty[id]=obj.penalty;
@@ -177,6 +179,30 @@ function push_team_struct(obj,teamOffset)
   states.landmarkv1[id]=obj.landmarkv[1];
   states.landmarkv2[id]=obj.landmarkv[2];
 
+  if id==1 then  
+    wcm.set_robotNames_n1(obj.robotName);
+  elseif id==2 then  
+    wcm.set_robotNames_n2(obj.robotName);
+  elseif id==3 then  
+    wcm.set_robotNames_n3(obj.robotName);
+  elseif id==4 then  
+    wcm.set_robotNames_n4(obj.robotName);
+  elseif id==5 then  
+    wcm.set_robotNames_n5(obj.robotName);
+  elseif id==6 then  
+    wcm.set_robotNames_n6(obj.robotName);
+  elseif id==7 then  
+    wcm.set_robotNames_n7(obj.robotName);
+  elseif id==8 then  
+    wcm.set_robotNames_n8(obj.robotName);
+  elseif id==9 then  
+    wcm.set_robotNames_n9(obj.robotName);
+  elseif id==10 then  
+    wcm.set_robotNames_n10(obj.robotName);
+  end
+
+
+
 --print("Ballx:",obj.ball.x);
 
 --print("robotID:",unpack(states.robotId))
@@ -189,9 +215,13 @@ function push_team_struct(obj,teamOffset)
   wcm.set_teamdata_posex(states.posex)
   wcm.set_teamdata_posey(states.posey)
   wcm.set_teamdata_posea(states.posea)
+
   wcm.set_teamdata_ballx(states.ballx)
   wcm.set_teamdata_bally(states.bally)
   wcm.set_teamdata_ballt(states.ballt)
+  wcm.set_teamdata_ballx(states.ballvx)
+  wcm.set_teamdata_bally(states.ballvy)
+
   wcm.set_teamdata_attackBearing(states.attackBearing)
   wcm.set_teamdata_fall(states.fall)
   wcm.set_teamdata_penalty(states.penalty)
@@ -226,6 +256,7 @@ tStart=unix.time();
 while( true ) do
   while (Comm.size() > 0) do
     msg=Comm.receive();
+
     t = serialization.deserialize(msg);
     if t and (t.teamNumber) then
       t.tReceive = unix.time();

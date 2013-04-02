@@ -68,6 +68,8 @@ vision.ball.th_min_green2 = 40;
 
 vision.ball.check_for_ground = 1;
 
+vision.ball.check_for_field = 1;
+vision.ball.field_margin = 2.0;
 
 --Vision check values
 --For 320*240 labelA 
@@ -90,8 +92,8 @@ vision.goal.use_centerpost = 1;
 vision.goal.check_for_ground = 1;
 
 vision.goal.far_goal_threshold= 4.0; --The range we triangulate
-vision.goal.distanceFactorCyan = 1; 
-vision.goal.distanceFactorYellow = 1; 
+vision.goal.distanceFactorCyan = 1.1; 
+vision.goal.distanceFactorYellow = 1.1; 
 
 	
 

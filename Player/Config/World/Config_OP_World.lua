@@ -27,9 +27,7 @@ world.landmarkYellow = {0.0, 2.4};
 world.cResample = 10; --Resampling interval
 
 
---They are SPL values
---[[
---Field edge
+--SJ: Now kidsize is using SPL field 
 
 world.Lcorner={};
 world.Lcorner[1]={3.0,2.0};
@@ -52,8 +50,8 @@ world.Lcorner[14]={-3.0,-1.1};
 --Center circle junction
 world.Lcorner[15]={0,0.6};
 world.Lcorner[16]={0,-0.6};
---]]
 
+--[[
 --Kidsize values
 world.Lcorner={};
 --Field edge
@@ -77,7 +75,9 @@ world.Lcorner[14]={-3.0,-1.1};
 --Center circle junction
 world.Lcorner[15]={0,0.6};
 world.Lcorner[16]={0,-0.6};
+--]]
 
+--[[
 --SJ: NSL penalty box is very wide 
 --And sometimes they can be falsely detected as T edges
 --Penalty box T edge #2 
@@ -85,7 +85,7 @@ world.Lcorner[17]={2.4,2};
 world.Lcorner[18]={2.4,-2};
 world.Lcorner[19]={-2.4,2};
 world.Lcorner[20]={-2.4,-2};
-
+--]]
 
 
 --SJ: OP does not use yaw odometry data (only use gyro)
@@ -97,7 +97,7 @@ world.imuYaw = 1;
 
 -- default positions for our kickoff
 world.initPosition1={
-  {2.5,0},   --Goalie
+  {2.8,0},   --Goalie
   {0.5,0}, --Attacker
   {1.5,-1.25}, --Defender
   {0.5,1.0}, --Supporter
@@ -105,16 +105,23 @@ world.initPosition1={
 -- default positions for opponents' kickoff
 -- Center circle radius: 0.6
 world.initPosition2={
-  {2.5,0},   --Goalie
-  {0.8,0}, --Attacker
-  {1.5,0.5}, --Defender
-  {1.75,-1.0}, --Supporter
+  {2.8,0},   --Goalie
+--Old position
+--  {0.8,0}, --Attacker
+--  {1.5,-0.5}, --Defender
+
+--Now bit back
+
+  {1.0,0}, --Attacker
+  {1.8,-0.5}, --Defender
+
+  {1.75,1.0}, --Supporter
 }
 
 -- default positions for dropball
 -- Center circle radius: 0.6
 world.initPosition3={
-  {2.7,0},   --Goalie
+  {2.8,0},   --Goalie
   {0.5,0}, --Attacker
   {1.5,-1.5}, --Defender
   {0.5,1.0}, --Supporter
@@ -125,25 +132,33 @@ world.rGoalFilter = 0.02;
 world.aGoalFilter = 0.05;
 world.rPostFilter = 0.02;
 world.aPostFilter = 0.10;
-
 world.rLandmarkFilter = 0.05;
 world.aLandmarkFilter = 0.10;
-
+--SJ: Corner shouldn't turn angle too much (may cause flipping)
 world.rCornerFilter = 0.01;
-world.aCornerFilter = 0.04;
-
+world.aCornerFilter = 0.03;
 world.aLineFilter = 0.02;
+
+world.rKnownGoalFilter = 0.02;
+world.aKnownGoalFilter = 0.20; --from Nao, normally 0.05
+world.rKnownPostFilter = 0.02;
+world.aKnownPostFilter = 0.10;
+world.rUnknownGoalFilter = 0.02;
+world.aUnknownGoalFilter = 0.05;
+world.rUnknownPostFilter = 0.02;
+world.aUnKnownPostFilter = 0.05;
 
 --New two-goalpost localization
 world.use_new_goalposts=1;
+--For NAO
+world.use_same_colored_goal = 0;
 
 -- Occupancy Map parameters
 occ = {};
 occ.mapsize = 50;
-occ.centroid = {occ.mapsize / 2, occ.mapsize * 4 / 5};
+occ.robot_pos = {occ.mapsize / 2, occ.mapsize * 4 / 5};
 
 
-world.use_same_colored_goal = 1;
 
 --Use line information to fix angle
 world.use_line_angles = 1;

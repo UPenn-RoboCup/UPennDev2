@@ -28,6 +28,7 @@ patch(xp(1,iback), xp(2,iback), xp(3,iback), 'r');
 hold off;
 
 %axis([-2 2 -2 2 -2 2]);
+axis([-1.5 1.5 -1.5 1.5 -1.5 1.5]);
 %drawnow
 
 end

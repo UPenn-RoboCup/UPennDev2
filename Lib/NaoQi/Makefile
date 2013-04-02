@@ -9,12 +9,20 @@ ifeq ($(CTC),)
 				Please download the ctc tool from \
 				http://fling.seas.upenn.edu/~robocup/files/ctc.tar.bz2 \
 				and follow the instructions to configure it for your system.
+	make -f Makefile.local
 else
+	rm -rf ../Lua/src/build
+	mkdir ../Lua/src/build
+	cd ../Lua/src/build && cmake -DCMAKE_TOOLCHAIN_FILE="$(CTC)/toolchain-atom.cmake" .. && make && cd $(CWD)
 	rm -rf build
 	mkdir build
-	cd build && cmake -DCMAKE_TOOLCHAIN_FILE="$(CTC)/toolchain-geode.cmake" .. \
-		&& make && cd $(CWD)
+	cd build && cmake -DCMAKE_TOOLCHAIN_FILE="$(CTC)/toolchain-atom.cmake" .. && make && cd $(CWD)
 endif
 
 clean:
+ifeq ($(CTC),)
+	make -f Makefile.local clean
+else
 	rm -rf build
+	rm -rf ../Lua/src/build
+endif

@@ -53,14 +53,14 @@ DEF BLUE_LANDMARK Landmark {
   postColor1 0.152941 0.505882 0.733333
   postColor2 0.992157 0.854902 0.219608
 }
-DEF BALL Ball {
+DEF BALL BallGPS {
   translation 0 0.0323921 0
 }
-DEF PLAYER_0_1 DARwInOP {
+DEF PLAYER_1_1 DARwInOP {
   translation 1.5 0.3 0.8
   rotation 0 1 0 -1.56
   controller "darwin-op_team_0"
-  controllerArgs "0 1"
+  controllerArgs "1 1"
   plasticColor 1 0 0
   cameraWindowPosition 0.125 0
   waistBand TRUE

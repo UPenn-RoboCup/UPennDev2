@@ -145,7 +145,7 @@ function process_keyinput()
 	elseif byte==string.byte("d") then
 	        dive.set_dive("diveRight");
 		Motion.event("dive");
-
+--[[
 	elseif byte==string.byte("z") then
 		grip.throw=0;
 		Motion.event("pickup");
@@ -153,6 +153,35 @@ function process_keyinput()
 	elseif byte==string.byte("x") then
 		grip.throw=1;
 		Motion.event("throw");
+--]]
+	elseif byte==string.byte("z") then
+--[[
+	    walk.upper_body_override(
+		vector.new({0,8,0})*math.pi/180,
+		vector.new({0,-8,0})*math.pi/180,
+		vector.new({0,20,0})*math.pi/180);
+--]]
+
+	    walk.upper_body_override(
+		vector.new({0,8,0})*math.pi/180,
+		vector.new({0,-90,0})*math.pi/180,
+		vector.new({0,20,0})*math.pi/180);
+
+
+	elseif byte==string.byte("x") then
+	    walk.upper_body_override_off();
+	elseif byte==string.byte("c") then
+	    walk.upper_body_override(
+--		vector.new({150,8,0})*math.pi/180,
+--		vector.new({150,-8,0})*math.pi/180,
+		vector.new({0,90,0})*math.pi/180,
+		vector.new({0,-8,0})*math.pi/180,
+		vector.new({0,20,0})*math.pi/180);
+
+	elseif byte==string.byte("v") then
+	    walk.startMotion("hurray");
+
+
 
 	elseif byte==string.byte(";") then	targetvel[2]=targetvel[2]-0.02;
 
@@ -173,8 +202,9 @@ function process_keyinput()
 		Motion.event("walk");
 		walk.start();
 	end
-        print("Target vel:",unpack(targetvel))
 	walk.set_velocity(unpack(targetvel));
+        print("Command velocity:",unpack(walk.velCommand))
+
   end
 
 end

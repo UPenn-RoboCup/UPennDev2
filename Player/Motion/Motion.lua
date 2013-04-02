@@ -29,7 +29,7 @@ require 'grip'
 sit_disable = Config.sit_disable or 0;
 
 if sit_disable==0 then --For smaller robots
-  fallAngle = Config.walk.fallAngle or 30*math.pi/180;
+  fallAngle = Config.fallAngle or 30*math.pi/180;
 
   sm = fsm.new(relax);
   sm:add_state(stance);
@@ -48,6 +48,7 @@ if sit_disable==0 then --For smaller robots
   sm:set_transition(sit, 'done', relax);
   sm:set_transition(sit, 'standup', stance);
   sm:set_transition(relax, 'standup', stance);
+  sm:set_transition(relax, 'diveready', divewait);
 
   sm:set_transition(stance, 'done', walk);
   sm:set_transition(stance, 'sit', sit);
@@ -70,6 +71,7 @@ if sit_disable==0 then --For smaller robots
   sm:set_transition(divewait, 'dive', dive);
   sm:set_transition(divewait, 'walk', stance);
   sm:set_transition(divewait, 'standup', stance);
+  sm:set_transition(divewait, 'sit', sit);
 
   sm:set_transition(dive, 'done', stance);
   sm:set_transition(dive, 'divedone', falling);

@@ -5,10 +5,9 @@ And automatically appends it to calibration file
 --]]
 module(... or "", package.seeall)
 
-require('unix')
 webots = false;
 darwin = true;
-local cwd = unix.getcwd();
+local cwd = '.';
 -- the webots sim is run from the WebotsController dir (not Player)
 if string.find(cwd, "WebotsController") then
   webots = true;
@@ -46,6 +45,7 @@ require('Kinematics');
 require('Motion')
 require('mcm')
 require('Broadcast')
+require('unix')
 
 -- initialize state machines
 
@@ -56,9 +56,13 @@ hardness=vector.new({0,0,0,0,0,0});
 if(Config.platform.name == 'OP') then
   darwin = true;
   --SJ: OP specific initialization posing (to prevent twisting)
-end
-unix.usleep(1E6*1.0);
-Body.set_body_hardness(0);
+  Body.set_body_hardness(0.3);
+  Body.set_actuator_command(Config.stance.initangle)
+  unix.usleep(1E6*0.5);
+  Body.set_body_hardness(0);
+  Body.set_lleg_hardness({0.2,0.6,0,0,0,0});
+  Body.set_rleg_hardness({0.2,0.6,0,0,0,0});
+end 
 getch.enableblock(1);
 
 -- main loop
@@ -222,6 +226,12 @@ function process_keyinput_test_walk(byte)
     walk.doWalkKickLeft();
   elseif byte==string.byte("6") then
     walk.doWalkKickRight();
+
+  elseif byte==string.byte("e") then
+    walk.doWalkKickLeft2();
+  elseif byte==string.byte("r") then
+    walk.doWalkKickRight2();
+
   elseif byte==string.byte("t") then
     walk.doSideKickLeft();
   elseif byte==string.byte("y") then

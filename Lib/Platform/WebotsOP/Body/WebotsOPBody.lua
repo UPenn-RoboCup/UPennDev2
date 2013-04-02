@@ -278,7 +278,7 @@ function update_IMU()
   tTrans= tTrans * Transform.rotY(imuAngle[2]);
   tTrans= tTrans * Transform.rotX(imuAngle[1]);
 
-  gyrFactor = 0.7;--heuristic value
+  gyrFactor = 0.6;--heuristic value
   gyrDelta = vector.new(gyr)*math.pi/180*tDelta*gyrFactor;
 
   local tTransDelta = Transform.rotZ(gyrDelta[3]);
@@ -391,7 +391,7 @@ function set_indicator_goal(color)
 end
 
 function get_battery_level()
-  return 10;
+  return 120;
 end
 
 function get_change_state()
@@ -463,4 +463,14 @@ function get_sensor_gps( )
   gps={gps[1],-gps[3],-angle};
 --  print("Current gps pose:",gps[1],gps[2],gps[3]*180/math.pi)
   return gps;
+end
+
+function get_sensor_fsrRight()
+  fsr = {0};
+  return fsr
+end
+
+function get_sensor_fsrLeft()
+  fsr = {0};
+  return fsr
 end

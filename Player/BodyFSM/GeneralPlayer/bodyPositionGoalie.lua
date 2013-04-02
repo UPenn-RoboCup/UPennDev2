@@ -8,6 +8,7 @@ require('Config')
 require('wcm')
 require('gcm')
 require('UltraSound')
+require('position')
 
 t0 = 0;
 
@@ -19,20 +20,31 @@ rClose = Config.fsm.bodyChase.rClose;
 --]]
 
 timeout = 20.0;
-maxStep = 0.04;
+maxStep = 0.06;
 maxPosition = 0.55;
-ballNear = 0.85;
 tLost = 6.0;
 
-rClose = Config.fsm.bodyAnticipate.rClose or 1.0;
+rClose = Config.fsm.bodyAnticipate.rClose;
+rCloseX = Config.fsm.bodyAnticipate.rCloseX;
 thClose = Config.fsm.bodyGoaliePosition.thClose;
+goalie_type = Config.fsm.goalie_type;
 
 function entry()
   print(_NAME.." entry");
   t0 = Body.get_time();
+  if goalie_type>2 then
+    HeadFSM.sm:set_state('headSweep');
+  else
+--    HeadFSM.sm:set_state('headTrack');
+  end
 end
 
 function update()
+  role = gcm.get_team_role();
+  if role~=0 then
+    return "player";
+  end
+
   local t = Body.get_time();
 
   ball = wcm.get_ball();
@@ -40,59 +52,61 @@ function update()
   ballGlobal = util.pose_global({ball.x, ball.y, 0}, {pose.x, pose.y, pose.a});
   tBall = Body.get_time() - ball.t;
 
-  homePosition=getGoalieHomePosition();
+  if goalie_type<3 then 
+    --moving goalie
+    homePose=position.getGoalieHomePose();
 
-  homeRelative = util.pose_relative(homePosition, {pose.x, pose.y, pose.a});
-  rHomeRelative = math.sqrt(homeRelative[1]^2 + homeRelative[2]^2);
-
-  vx = maxStep*homeRelative[1]/rHomeRelative;
-  vy = maxStep*homeRelative[2]/rHomeRelative;
-
-  if (tBall > 8) then
-    --When ball is lost, face opponents' goal
-    va = .35*wcm.get_attack_bearing();
   else
-    --Face the ball
-    va = math.atan2(ball.y, ball.x);
+    --diving goalie
+--    homePose=position.getGoalieHomePose2();
+    homePose=position.getGoalieHomePose();
+
   end
+
+  vx,vy,va=position.setGoalieVelocity0(homePose);
+
+--    vx,vy,va=position.setDefenderVelocity(homePose);
+
 
   walk.set_velocity(vx, vy, va);
-  ballR = math.sqrt(ball.x^2 + ball.y^2);
-  if ((tBall < 1.0) and (ballR < rClose)) then
-    return "ballClose";
+
+  goal_defend=wcm.get_goal_defend();
+  ballxy=vector.new( {ball.x,ball.y,0} );
+  posexya=vector.new( {pose.x, pose.y, pose.a} );
+  ballGlobal=util.pose_global(ballxy,posexya);
+  ballR_defend = math.sqrt(
+	(ballGlobal[1]-goal_defend[1])^2+
+	(ballGlobal[2]-goal_defend[2])^2);
+  ballX_defend = math.abs(ballGlobal[1]-goal_defend[1]);
+
+  rCloseX2 = 0.8;
+  eta_kickaway = 3.0;
+  attacker_eta = wcm.get_team_attacker_eta();
+
+  if tBall<1.0 then
+    if ballX_defend < rCloseX2 or
+--       ((ballR_defend<rClose or ballX_defend<rCloseX) 
+       (ballR_defend<rClose  
+         and attacker_eta > eta_kickaway) then
+      return "ballClose";
+    end
   end
 
-  local tThreshClose = math.sqrt(thClose[1]^2+thClose[2]^2);
-  if rHomeRelative<tThreshClose and math.abs(va)<thClose[3] then
+  uPose=vector.new({pose.x,pose.y,pose.a})
+  homeRelative = util.pose_relative(homePose, uPose);  
+  --Should we stop?
+  if goalie_type>1 and  
+     math.abs(homeRelative[1])<thClose[1] and
+     math.abs(homeRelative[2])<thClose[2] and
+     math.abs(homeRelative[3])<thClose[3] then
     return "ready";
   end
 
-  if ((t - t0 > 5.0) and (t - ball.t > tLost)) then
-    return "ballLost";
-  end
-  if (t - t0 > timeout) then
-    return "timeout";
-  end
-
-end
-
-
-function getGoalieHomePosition()
-  -- define home goalie position (in front of goal and facing the ball)
-  --homePosition = 1.0*vector.new(wcm.get_goal_defend());
-  homePosition = 0.98*vector.new(wcm.get_goal_defend());
-
-  vBallHome = math.exp(-math.max(tBall-3.0, 0)/4.0)*(ballGlobal - homePosition);
-  rBallHome = math.sqrt(vBallHome[1]^2 + vBallHome[2]^2);
-
-  if (rBallHome > maxPosition) then
-    scale = maxPosition/rBallHome;
-    vBallHome = scale*vBallHome;
-  end
-  homePosition = homePosition + vBallHome;
-  return homePosition;
 end
 
 function exit()
+  if goalie_type>2 then
+    HeadFSM.sm:set_state('headTrack');
+  end
 end
 

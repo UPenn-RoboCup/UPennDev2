@@ -6,6 +6,7 @@ require('vector')
 require('Config')
 require('wcm')
 require('gcm')
+require('UltraSound')
 
 t0 = 0;
 timeout = 10.0;
@@ -70,6 +71,16 @@ function update()
   walk.set_velocity(vx, vy, va);
 
   ballR = math.sqrt(ball.x^2 + ball.y^2);
+
+  if Config.fsm.enable_obstacle_detection > 0 then
+    us = UltraSound.check_obstacle();
+  else
+    us = vector.zeros(2)
+  end
+  if ((t - t0 > 2.0) and (us[1] > 5 or us[2] > 5)) then
+    return 'obstacle'; 
+  end
+
   if (tBall < 1.0) then
     return 'ballFound';
   end

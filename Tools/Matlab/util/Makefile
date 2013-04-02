@@ -27,22 +27,22 @@ ifeq ($(ARCH),x86_64)
 else
   MEXEXT=mexmaci
 endif
-  INCLUDES=-I/usr/include
+  INCLUDES=-I/usr/include -I/usr/local/include
 endif
 
 all: time mexshm getch udpcomm
 
 time: time.cc timeScalar.cc
-	mex -O $^ $(BOOST_INCLUDE_DIRS) $(LIBRT)
+	mex -O $^ $(BOOST_INCLUDE_DIRS) $(INCLUDES) $(LIBRT)
 
 mexshm: mexshm.cpp
-	mex -O $^ $(BOOST_INCLUDE_DIRS) $(LIBRT)
+	mex -O $^ $(BOOST_INCLUDE_DIRS) $(INCLUDES) $(LIBRT)
 
 getch: getch.c
-	mex -O $^ $(BOOST_INCLUDE_DIRS) $(LIBRT)
+	mex -O $^ $(BOOST_INCLUDE_DIRS) $(INCLUDES) $(LIBRT)
 
 udpcomm: UDPComm.cc
-	mex -O $^ $(BOOST_INCLUDE_DIRS) $(LIBRT)
+	mex -O $^ $(BOOST_INCLUDE_DIRS) $(INCLUDES) $(LIBRT)
 
 
 clean:

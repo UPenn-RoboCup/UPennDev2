@@ -60,6 +60,7 @@ darwinop_kinematics_inverse_legs(
 			    int legSupport=0);
 
 std::vector<double> darwinop_kinematics_inverse_arm(
-			    const double *dArm
+			    const double *dArm,
+			    const double *elbow
 			    );
 #endif

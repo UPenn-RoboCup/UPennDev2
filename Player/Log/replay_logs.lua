@@ -18,10 +18,10 @@ require 'carray'
 -- Data Type specific
 local dataPath = '~/shadwell/day2_third/';
 local dataStamp = '02.27.2013';
---local dataTypes = {'flir','lidar','arduimu'}
+local dataTypes = {'flir','lidar','arduimu'}
 --local dataTypes = {'flir'}
-local dataTypes = {'lidar','arduimu'}
-local dataChannels = {5555,5556}
+--local dataTypes = {'lidar','arduimu'}
+local dataChannels = {5555,5556,5557}
 local realtime = true;
 if realtime then
   require 'unix'
@@ -125,8 +125,10 @@ pushers_tbl['arduimu'] = function ( imu_tbl )
 	ipc_channels['arduimu']:send( encoded_imu, #encoded_imu )--send more
 end
 pushers_tbl['flir'] = function ( flir_tbl )
-  local encoded_flir = mp.pack(flir_tbl)
-	ipc_channels['flir']:send( encoded_flir, #encoded_flir )--send more
+  if flir_tbl.counter%60==0 then
+    local encoded_flir = mp.pack(flir_tbl)
+    ipc_channels['flir']:send( encoded_flir, #encoded_flir )--send more
+  end
 end
 
 function open_log_file( d )
@@ -237,7 +239,7 @@ while true do
   -- If we wish to run in realtime, then sleep accordingly
 		-- Only push data when running in realtime
   if realtime then
-    unix.usleep( 1e6*t_diff );
+    unix.usleep( 1e6*t_diff*3 );
 		pushers_tbl[ dataTypes[d_idx] ]( latest_entry_tbls[d_idx] )
   end
 

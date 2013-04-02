@@ -100,4 +100,8 @@ util.ptable(tbl)
 
 str = 'this is a good day'
 udata = carray.byte(str)
-msgpack.pack(udata:pointer())
+st = msgpack.pack(udata:pointer(), #udata)
+print(#st)
+dt = msgpack.unpack(st)
+print(dt)
+--msgpack.pack(udata:pointer())

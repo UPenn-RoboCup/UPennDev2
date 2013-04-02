@@ -1,21 +1,24 @@
 clear all;
 %% Set up variables
 global SLAM OMAP POSE LIDAR0 REF_MAP START_POSITION ROBOT LIDAR MAPS IMU
-s_laser = zmq('subscribe',5555);
-s_imu = zmq('subscribe',5556);
+s_flir = zmq('subscribe',5555);
+flimg = zeros(320,256);
+s_laser = zmq('subscribe',5556);
+s_imu = zmq('subscribe',5557);
 
 %vidObj = VideoWriter('slam.avi');
 %open(vidObj);
 
 figure(1);
 clf(gcf);
-colormap(hot)
-subplot(1,2,1);
+subplot(2,2,1);
+colormap(hot);
 hold on;
 hMap = [];
 hPose = [];
 hOrientation = [];
 initSlam = [];
+hFlir = [];
 %{
 hTitle = title(sprintf('x:%f, y:%f, yaw: %f', ...
         POSE.data.x,POSE.data.y,POSE.data.yaw*180/pi), ...
@@ -102,7 +105,7 @@ while 1
     for i=1:numel(idx)
         if idx(i)==s_laser
             %return;
-            
+            %disp('laser')
             newscan = msgpack('unpack', data{i});
             LIDAR0.scan.ranges = typecast(uint8(newscan.ranges),'single')';
             LIDAR0.scan.startTime = double(newscan.startTime);
@@ -111,7 +114,8 @@ while 1
             LIDAR0.scan.startTime = LIDAR0.scan.startTime + 1/40;
             %}
             shm_slam_process_lidar0();
-        else
+        elseif idx(i)==s_imu
+            %disp('imu')
             imu = msgpack('unpack', data{i});
             IMU.data.roll = double(imu.R)*pi/180;
             IMU.data.pitch = double(imu.P)*pi/180;
@@ -121,6 +125,11 @@ while 1
             IMU.data.t = double( imu.t );
             IMU.tLastArrival = double(IMU.data.t);
             shm_slam_process_odometry();
+        else
+            %disp('flir')
+            flir = msgpack('unpack', data{i});
+            flimg = reshape(typecast(flir.data,'uint16'),[320,256]);
+            %return;
         end
     end
     
@@ -149,13 +158,25 @@ while 1
         POSE.data.x,POSE.data.y,POSE.data.yaw*180/pi), ...
         'FontSize',12);
     
-         subplot(1,2,2);
-         cla;
-         polar( LIDAR0.angles(:), LIDAR0.scan.ranges(:), 'r.' );
-         hold on;
-         xd = max(LIDAR0.scan.ranges(:))*cos(IMU.data.yaw);
-         yd = max(LIDAR0.scan.ranges(:))*sin(IMU.data.yaw);
-         compass(xd,yd);
+    subplot(2,2,2);
+    if isfield(LIDAR0.scan,'ranges') && ~isempty( IMU.data )
+        cla;
+        polar( LIDAR0.angles(:), LIDAR0.scan.ranges(:), 'r.' );
+        hold on;
+        xd = 10*cos(IMU.data.yaw);
+        yd = 10*sin(IMU.data.yaw);
+        compass(xd,yd);
+    end
+    
+    if isempty(hFlir)
+        subplot(2,2,3);
+        colormap(hot);
+        hFlir = imagesc( flimg' );
+    else
+        set(hFlir,'cdata', flimg');
+    end
+    
+    
     
     drawnow;
 end

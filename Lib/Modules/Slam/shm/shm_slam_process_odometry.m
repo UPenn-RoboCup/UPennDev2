@@ -48,8 +48,8 @@ end
 % if too still, then dont change the yaw
 %wdt = 0;
 if (stopCntr < 40)
-    wdt = IMU.data.wyaw * 0.025; %(GetUnixTime()-tLastUpdate);
-    %wdt = IMU.data.wyaw * (IMU.data.t-tLastUpdate);
+    %wdt = IMU.data.wyaw * 0.025; %(GetUnixTime()-tLastUpdate);
+    wdt = IMU.data.wyaw * (IMU.data.t-tLastUpdate);
     if abs(wdt)>1
         wdt = 0;
     end

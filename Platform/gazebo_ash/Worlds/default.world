@@ -2,7 +2,7 @@
 <sdf version="1.3">
 <world name="default">
 
-<plugin name="gz_time_publisher" filename="libgz_time_publisher.so" />
+<plugin name="gz_world_manager" filename="libgz_world_manager.so" />
 
 <physics type="ode">
 	<gravity>0 0 -9.81</gravity>

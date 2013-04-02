@@ -43,7 +43,7 @@ namespace gazebo
     private: event::ConnectionPtr update_connection;
     private: event::ConnectionPtr reset_connection;
     private: common::Time last_update_time;
-    private: common::Time dynamics_time_step;
+    private: double physics_time_step;
 
     // Device Comms Manager
     private: Dcm dcm;
@@ -71,6 +71,7 @@ namespace gazebo
 
     // Controller settings
     private: int joint_max;
+    private: double joint_damping;
     private: double p_gain_constant;
     private: double i_gain_constant;
     private: double d_gain_constant;

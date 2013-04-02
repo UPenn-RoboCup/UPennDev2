@@ -3,8 +3,9 @@ package.path = '../../Player/Util/?.lua;'..package.path
 
 require 'msgpack'
 require 'carray'
-local mp = require 'MessagePack'
+local mp = require 'cmsgpack'
 local util = require 'util'
+require 'unix'
 
 str = msgpack.pack(a)
 strmp = mp.pack(a)
@@ -29,13 +30,17 @@ print(msgpack.unpack(strmp))
 print(#str)
 
 print('test array')
+t0 = unix.time()
 str = msgpack.pack({4,5,6,7})
+print(unix.time() - t0);
+t0 = unix.time()
 strmp = mp.pack({4,5,6,7})
+print(unix.time() - t0);
 --util.ptable(msgpack.unpack(strmp))
-print(#str)
+print('size '..#str, #strmp)
 tbl = msgpack.unpack(str)
 
-print(tbl)
+util.ptable(tbl)
 --
 print('test array')
 local t = {}
@@ -43,9 +48,15 @@ t.ast = 'fsfa'
 t.brg = 32423
 t[1] = 3445
 t[3] = 34
---str = msgpack.pack(t)
---tbl = msgpack.unpack(str)
---print(tbl)
+t0 = unix.time()
+str = msgpack.pack(t)
+print(unix.time() - t0);
+t0 = unix.time()
+strmp = mp.pack(t)
+print(unix.time() - t0);
+print('size '..#str, #strmp)
+tbl = msgpack.unpack(str)
+util.ptable(tbl)
 
 --strmp = mp.pack(t)
 --util.ptable(msgpack.unpack(strmp))
@@ -70,16 +81,18 @@ t[3] = 34
 ----str = msgpack.pack(432.543,true,'hellp world',t,udata, udata:pointer())
 ----print(#str)
 --
---filename = '../../../bus/data/stateMP-03.29.2013.13.58.27-0'
---file = io.open(filename, 'r+')
---str = file:read('*a')
---print(#str)
---up = msgpack.unpacker(str)
---ret = up:unpack()
---local c = 0
---while ret do
-----  util.ptable(ret)
---  c = c + 1
---  ret = up:unpack()
---end
---print(c)
+filename = '../../../bus/data/stateMP-03.29.2013.13.58.27-0'
+file = io.open(filename, 'r+')
+str = file:read('*a')
+print(#str)
+t0 = unix.time()
+up = msgpack.unpacker(str)
+ret = up:unpack()
+local c = 0
+while ret do
+--  util.ptable(ret)
+  c = c + 1
+  ret = up:unpack()
+end
+print(unix.time() - t0)
+print(c)

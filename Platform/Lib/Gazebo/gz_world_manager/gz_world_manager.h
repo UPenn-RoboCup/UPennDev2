@@ -1,5 +1,5 @@
-#ifndef _GZ_TIME_PUBLISHER_H_
-#define _GZ_TIME_PUBLISHER_H_
+#ifndef _GZ_WORLD_MANAGER_H_
+#define _GZ_WORLD_MANAGER_H_
 
 #include <gazebo/math/Vector3.hh>
 #include <gazebo/physics/physics.hh>
@@ -11,32 +11,33 @@
 #include <string>
 #include <vector>
 #include <msgpack.hpp>
+#include "config.h"
 
 extern "C" {
 #include <zmq.h>
 }
 
-// gz_time_publisher.so : gazebo plugin for publishing simulation time
+// gz_world_manager.so : gazebo plugin for publishing simulation time
 ////////////////////////////////////////////////////////////////////////////////
 
 namespace gazebo
 {
-  class gz_time_publisher : public WorldPlugin
+  class gz_world_manager : public WorldPlugin
   {
-    public: gz_time_publisher();
-    public: virtual ~gz_time_publisher();
+    public: gz_world_manager();
+    public: virtual ~gz_world_manager();
     public: void Load(physics::WorldPtr _world, sdf::ElementPtr _sdf);
     private: void update();
 
     private: physics::WorldPtr world;
     private: event::ConnectionPtr update_connection;
+    private: double physics_time_step;
 
     private: void *context;
-    private: void *socket;
-    private: std::string endpoint;
-
+    private: void *time_socket;
+    private: std::string time_channel_endpoint;
+    private: double time_channel_rate;
     private: double last_update_time;
-    private: double desired_update_rate;
   };
 }
 

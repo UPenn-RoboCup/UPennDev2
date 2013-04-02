@@ -5,7 +5,7 @@ require('Config')
 -- Locomotion Slave Controller
 --------------------------------------------------------------------------
 
-locomotion_slave = Motion_state.new('locomotion_slave')
+locomotion_slave = manipulation_state.new('locomotion_slave')
 
 local dcm = locomotion_slave.dcm
 local joint = Config.joint

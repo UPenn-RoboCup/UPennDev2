@@ -113,14 +113,21 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     int socket = socketid[0];
     if( socket>socket_cnt)
       mexErrMsgTxt("Bad socket id!");
-    if ( !mxIsChar(prhs[2]) )
-      mexErrMsgTxt("Could not read string. (3rd argument)");
+    //if ( !mxIsChar(prhs[2]) )
+    //  mexErrMsgTxt("Could not read string. (3rd argument)");
     size_t msglen = (mxGetM(prhs[2]) * mxGetN(prhs[2])) + 1;
-    char* msg = mxArrayToString(prhs[2]);
-    int nbytes = zmq_send( sockets[ socket ], (void*)msg, msglen, 0 );
-    printf("Sent %d bytes: %s\n",nbytes,msg);
+    //char* msg = mxArrayToString(prhs[2]);
+    void* msg = (void*)mxGetData(prhs[2]);
+    int nbytes = zmq_send( sockets[ socket ], msg, msglen, 0 );
+    //printf("Sent %d bytes: %s\n",nbytes,msg);
     if(nbytes!=msglen)
       mexErrMsgTxt("Did not send correct number of bytes.");
+    if(nlhs>0) {
+      ret_sz[0] = 1;
+      plhs[0] = mxCreateNumericArray(1,ret_sz,mxINT32_CLASS,mxREAL);
+      int* out = (int*)mxGetData(plhs[0]);
+      out[0] = nbytes;
+    }
   } else if (strcasecmp(command, "receive") == 0){
     if (nrhs != 2)
       mexErrMsgTxt("Please provide a socket id.");

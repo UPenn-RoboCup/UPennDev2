@@ -188,10 +188,10 @@ run_nao_vision(){
 
 case "$KERNEL" in
         *aldebaran*) 
-                PLAYER_DIR=/home/nao/Player 
+                PLAYER_DIR=/home/nao/UPennDev/Run
                 LUA_COM=/usr/local/bin/luajit;;
         *)
-                PLAYER_DIR=/home/darwin/current/Player        
+                PLAYER_DIR=/home/darwin/UPennDev/Run
                 LUA_COM=/usr/bin/luajit;;
 esac
 

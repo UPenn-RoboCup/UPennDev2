@@ -1,40 +1,15 @@
 # Master Makefile to compile all Lua/C++ libraries
 
 CWD= $(shell pwd)
-#MODE= $(shell getconf LONG_BIT)
+include $(CWD)/Makefile.inc
 
-NAODIR= Platform/Nao
-NAOV4DIR = Platform/NaoV4
-NAOQIDIR= NaoQi
-WEBOTSNAODIR= Platform/WebotsNao
-WEBOTSOPDIR= Platform/WebotsOP
-WEBOTSGENERICDIR= Platform/WebotsGeneric
-WEBOTSHUBODIR= Platform/WebotsHubo
-WEBOTSCHARLIDIR= Platform/WebotsCharli
-WEBOTSSAFFIRDIR= Platform/WebotsSaffir
-VISIONTESTDIR = Platform/VisionTest
-HPDIR= Platform/HP2
-OPDIR= Platform/OP
-XOSDIR= Platform/XOS
-CHARLIDIR = Platform/Charli
-WEBOTSDIR = Webots
-IMAGEDIR= ImageProc
-COMMDIR= Comm
-OCCMAPDIR = OccMap
-UTILDIR= Util
-MATLABDIR= ../Tools/Matlab
-COLORTABLEDIR= $(MATLABDIR)/Colortable
-VELODIR= Velocity
-PRIMEDIR= Util/PrimeSense
-PLATFORMS = nao naov4 op xos webots_nao webots_op webots_generic webots_hubo visiontest
-INSTDIR= ../Player/Lib
-WEBOTSCONTDIR= ../WebotsController
-PLAYERDIR= ../Player
-NAODEPDIR= ../Install/dependencies
-NAODEPLUA51DIR= $(NAODEPDIR)/usr/local/lib/lua/5.1
 
 LUAEXT= lua
+ifeq ($(OSTYPE),darwin)
+REGEX=\( -regex '.*.$(LUAEXT)' -or -regex '.*.$(SHLIBEXT)' -or -regex '.*.sh' \)
+else
 REGEX=-regex '.*\($(SHLIBEXT)\|$(LUAEXT)\|sh\)'
+endif
 
 ifndef OSTYPE
   OSTYPE = $(shell uname -s|awk '{print tolower($$0)}')
@@ -44,20 +19,29 @@ ifndef ARCH
   ARCH= $(shell uname -m)
 endif
 
-ifeq ($(NaoqiCTC),)
-ifeq ($(OSTYPE),linux)
-  SHLIBEXT= so
-endif
-ifeq ($(OSTYPE),darwin)
-  SHLIBEXT= dylib
-  REGEX=\( -regex '.*.$(LUAEXT)' -or -regex '.*.$(SHLIBEXT)' -or -regex '.*.sh' \)
-endif
+ifeq ($(CROSS),true)
+  CTCDIR = $(NaoqiCTC)
 else
-  SHLIBEXT= so
-ifeq ($(OSTYPE),darwin)
-  REGEX=\( -regex '.*.$(LUAEXT)' -or -regex '.*.$(SHLIBEXT)' -or -regex '.*.sh' \)
+  CTCDIR = 
 endif
+
+ifeq ($(CTCDIR),)
+  ifeq ($(OSTYPE),linux)
+    SHLIBEXT= so
+  endif
+
+  #ifeq ($(OSTYPE),darwin)
+  #  SHLIBEXT= dylib
+  #  REGEX=\( -regex '.*.$(LUAEXT)' -or -regex '.*.$(SHLIBEXT)' -or -regex '.*.sh' \)
+  #endif
+  else
+    SHLIBEXT= so
+  #ifeq ($(OSTYPE),darwin)
+  #  REGEX=\( -regex '.*.$(LUAEXT)' -or -regex '.*.$(SHLIBEXT)' -or -regex '.*.sh' \)
+  #endif
 endif
+
+export CTCDIR
 
 all none:
 	@echo "Please do:"
@@ -81,6 +65,7 @@ nao:
 	@echo "\n"
 
 naov4:
+	@echo $(CTCDIR)
 	@echo "Compiling Nao V4 Lua/C++ Libraries...\n"
 	@cd $(NAOV4DIR) && make && cd $(CWD)
 	@echo "\n"
@@ -181,6 +166,11 @@ primesense:
 	@echo "Compiling PrimeSense Code...\n"
 	@cd $(PRIMEDIR) && make && cd $(CWD)
 	@echo "\n"
+
+hands::
+	@echo "Compiling Hands Code...\n"
+	@cd $(HANDSDIR) && make && cd $(CWD)
+	@echo "\n"
 	
 setup_nao: nao setup_util setup_image setup_comm
 	@echo "Setting up Nao Lua/C++ Libraries...\n"
@@ -192,7 +182,7 @@ setup_nao: nao setup_util setup_image setup_comm
 	rm -f $(NAODEPLUA51DIR)/*;
 	@echo "\n"
 
-setup_naov4: naov4 setup_util setup_image setup_comm
+setup_naov4: naov4 setup_util setup_image setup_comm naoqi
 	@echo "Setting up Nao V4 Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
 	find $(NAOV4DIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
@@ -200,9 +190,11 @@ setup_naov4: naov4 setup_util setup_image setup_comm
 	cd $(PLAYERDIR)/Config && ln -s Config_NaoV4.lua Config.lua && cd $(CWD)
 #	find $(UTILDIR) $(REGEX) -exec cp -v {} $(NAODEPLUA51DIR) \;
 	rm -f $(NAODEPLUA51DIR)/*;
+	#@cd $(NAOQIDIR) && make && cd $(CWD)
 	@echo "\n"
 
 setup_webots_nao: webots_nao setup_util setup_image setup_webots
+setup_webots_nao: webots_nao setup_util setup_image setup_webots setup_occmap
 	@echo "Setting up Webots Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
 	find $(WEBOTSNAODIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
@@ -271,7 +263,8 @@ setup_hp: hp setup_util setup_image setup_comm
 	@echo "\n"
 
 #setup_op: op setup_util setup_image setup_velocity
-setup_op: op setup_util setup_image setup_comm
+setup_op: op setup_util setup_image setup_comm setup_occmap
+#setup_op: op setup_util setup_image setup_comm
 	@echo "Setting up Darwin OP Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
 	find $(OPDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
@@ -351,7 +344,14 @@ setup_primesense: primesense setup_util
 	mkdir -p $(INSTDIR)
 	find $(PRIMEDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
 	cp $(PRIMEDIR)/SamplesConfig.xml $(INSTDIR)
+	rm -f $(PLAYERDIR)/Config/Config.lua
 	cd $(PLAYERDIR)/Config && ln -s Config_WebotsOP.lua Config.lua && cd $(CWD)	
+	@echo "\n"
+
+setup_hands: hands setup_util
+	@echo "Setting up Hands Lua/C++ Libraries...\n"
+	mkdir -p $(INSTDIR)
+	find $(HANDSDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
 	@echo "\n"
 
 setup_naoqi: naoqi setup_util
@@ -360,10 +360,15 @@ setup_naoqi: naoqi setup_util
 	rsync -avr --exclude=".*" $(NAOQIDIR)/build/sdk/lib/naoqi/* ../Install/naoqi/lib/naoqi/
 	@echo "\n"
 
+setup_boxer: setup_op setup_hands setup_primesense
+
+setup_webots_boxer: setup_webots_op setup_hands setup_primesense
+
 clean:
 	cd $(IMAGEDIR) && make clean && cd $(CWD)
 	cd $(COMMDIR) && make clean && cd $(CWD)
 	cd $(UTILDIR) && make clean && cd $(CWD)
+	cd $(PRIMEDIR) && make clean && cd $(CWD)
 	cd $(WEBOTSDIR) && make clean && cd $(CWD)
 #	cd $(VELODIR) && make clean && cd $(CWD)
 	cd $(NAODIR) && make clean && cd $(CWD)

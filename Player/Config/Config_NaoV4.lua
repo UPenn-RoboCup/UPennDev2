@@ -31,7 +31,7 @@ param.world = 'World/Config_Nao_World'
 param.walk = 'Walk/Config_NaoV4_Walk_FastStable' 
 param.kick = 'Kick/Config_Nao_Kick'
 param.vision = 'Vision/Config_NaoV4_Vision'
-param.camera = 'Vision/Config_NaoV4_Camera_Mexico621_fieldC'
+param.camera = 'Vision/Config_NaoV4_Camera_Levine512'
 param.fsm = 'FSM/Config_NaoV4_FSM'
 
 loadconfig(param.world)
@@ -57,7 +57,7 @@ dev.walk = 'Walk/NaoV4Walk';
 dev.kick = 'NewKick';
 
 --Speak enable
-speakenable = true;
+speakenable = 0;
 
 
 -- FSM Parameters
@@ -81,7 +81,6 @@ team.nonAttackerPenalty = 6.0; -- eta sec
 team.nonDefenderPenalty = 0.5; -- dist from goal
 team.twoDefenders = 0;
 
---Head Parameters
 
 head = {};
 head.camOffsetZ = 0.41;

@@ -5,7 +5,7 @@ require('vector');
 require('Config');
 -- Enable Webots specific
 if (string.find(Config.platform.name,'Webots')) then
-  webots = true;
+  webots = 1;
 end
 --Added for webots fast simulation
 use_gps_only = Config.use_gps_only or 0;
@@ -16,6 +16,10 @@ require('HeadTransform');
 require('vcm');
 require('mcm');
 require('Body')
+
+obs_challenge_enable = Config.obs_challenge or 0;
+enable_lut_for_obstacle = Config.vision.enable_lut_for_obstacle or 0;
+
 
 if use_gps_only==0 then
   require('Camera');
@@ -46,7 +50,7 @@ if use_gps_only==0 then
   labelA.m = camera.width/2;
   labelA.n = camera.height/2;
   labelA.npixel = labelA.m*labelA.n;
-  if( webots ) then
+  if  webots == 1 then
     labelA.m = camera.width;
     labelA.n = camera.height;
     labelA.npixel = labelA.m*labelA.n;
@@ -111,11 +115,26 @@ function entry()
   camera.lut = carray.new('c', 262144);
   load_lut(Config.camera.lut_file);
 
+  --ADDED to prevent crashing with old camera config
+  if Config.camera.lut_file_obs == null then
+    Config.camera.lut_file_obs = Config.camera.lut_file;
+  end
+
+  -- Load the obstacle LUT as well
+  if enable_lut_for_obstacle == 1 then
+    print('loading obs lut: '..Config.camera.lut_file_obs);
+    camera.lut_obs = carray.new('c', 262144);
+    load_lut_obs(Config.camera.lut_file_obs);
+  end
+
   if Config.platform.name=="NaoV4" then
     camera_init_naov4();
   else
     camera_init();
   end 
+
+  -- in default, use prelearned colortable
+  vcm.set_image_learn_lut(0);
 end
 
 function camera_init()
@@ -194,10 +213,13 @@ function update()
     exit()
   end
 
+
+
   -- perform the initial labeling
-  if(webots) then
+  if webots == 1 then
     labelA.data = Camera.get_labelA( carray.pointer(camera.lut) );
   else
+
     labelA.data  = ImageProc.yuyv_to_label(vcm.get_image_yuyv(),
                                           carray.pointer(camera.lut),
                                           camera.width/2,
@@ -207,10 +229,49 @@ function update()
   -- determine total number of pixels of each color/label
   colorCount = ImageProc.color_count(labelA.data, labelA.npixel);
 
+
   -- bit-or the segmented image
   labelB.data = ImageProc.block_bitor(labelA.data, labelA.m, labelA.n, scaleB, scaleB);
 
+  -- perform label process for obstacle specific lut
+  if enable_lut_for_obstacle == 1 then
+    -- label A
+    if webots == 1 then
+      labelA.data_obs = Camera.get_labelA_obs( carray.pointer(camera.lut_obs) );
+    else
+      labelA.data_obs  = ImageProc.yuyv_to_label_obs(vcm.get_image_yuyv(),
+                                    carray.pointer(camera.lut_obs), camera.width/2, camera.height);
+    end
+    -- count color pixels
+    colorCount_obs = ImageProc.color_count_obs(labelA.data_obs, labelA.npixel);
+    -- label B
+    labelB.data_obs = ImageProc.block_bitor_obs(labelA.data_obs, labelA.m, labelA.n, scaleB, scaleB);
+  end
+
   update_shm(status, headAngles)
+
+  -- Learn ball color from mask and rebuild colortable
+  if obs_challenge_enable == 1 then
+--    print('enable obs challenge')
+    if vcm.get_image_learn_lut() == 1 then
+      print("learn new colortable for random ball from mask");
+      vcm.set_image_learn_lut(0);
+      mask = ImageProc.label_to_mask(labelA.data_obs, labelA.m, labelA.n);
+      if webots == 1 then
+        print("learn in webots")
+        lut_update = Camera.get_lut_update(mask, carray.pointer(camera.lut_obs));
+--        lut_update = Camera.get_lut_update(mask, carray.pointer(camera.lut));
+      else
+        print("learn in op")
+        lut_update = ImageProc.yuyv_mask_to_lut(vcm.get_image_yuyv(), mask, camera.lut, 
+                                                labelA.m, labelA.n);
+      end
+      print(type(mask),type(labelB.data))
+    end
+  end
+
+  vcm.refresh_debug_message();
+
   Detection.update();
   vcm.refresh_debug_message();
 
@@ -227,7 +288,7 @@ function update()
       print('WARNING: attempting to switch to unkown camera select = '..cmd);
     end
   end
-    --Camera.set_param ('Exposure', 255);
+
   return true;
 end
 
@@ -303,10 +364,12 @@ function update_shm(status, headAngles)
         or ((goalCyan.detect == 1 or goalYellow.detect == 1) 
             and vcm.get_debug_store_goal_detections() == 1)) then
 
-	if webots then
+	if webots == 1  then
           vcm.set_camera_yuyvType(1);
           vcm.set_image_labelA(labelA.data);
           vcm.set_image_labelB(labelB.data);
+--          vcm.set_image_labelA_obs(labelA.data_obs);
+--          vcm.set_image_labelB_obs(labelB.data_obs);
 	end
         if vcm.get_camera_broadcast() > 0 then --Wired monitor broadcasting
 	  if vcm.get_camera_broadcast() == 1 then
@@ -421,6 +484,19 @@ function load_lut(fname)
   end
 end
 
+function load_lut_obs(fname)
+  local cwd = unix.getcwd();
+  if string.find(cwd, "WebotsController") then
+    cwd = cwd.."/Player";
+  end
+  cwd = cwd.."/Data/";
+  local f = io.open(cwd..fname, "r");
+  assert(f, "Could not open lut file");
+  local s = f:read("*a");
+  for i = 1,string.len(s) do
+    camera.lut_obs[i] = string.byte(s,i,i);
+  end
+end
 
 function save_rgb(rgb)
   saveCount = saveCount + 1;
@@ -436,5 +512,3 @@ function save_rgb(rgb)
   end
   f:close();
 end
-
-

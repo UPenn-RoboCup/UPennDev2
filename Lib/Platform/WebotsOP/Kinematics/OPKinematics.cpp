@@ -186,29 +186,63 @@ darwinop_kinematics_inverse_legs(
 }
 
 std::vector<double> darwinop_kinematics_inverse_arm(
-			    const double *dArm
-			    )
+			    const double *dArm,
+			    const double *elbow
+          )
 {
 
   std::vector<double> qArm(3,-999); // Init the 3 angles with value 0
   // Law of cosines to find end effector distance from shoulder
   double c_sq = pow(dArm[0],2)+pow(dArm[1],2)+pow(dArm[2],2);
   double c = sqrt( c_sq );
+  double a_l = lowerArmLength;
+  double a_u = upperArmLength;
+  /*
   if( c>lowerArmLength+upperArmLength )
     return qArm;
+  */
+double y = dArm[1];
+
+//  printf("y: %.2lf, c: %.2lf\n",y,c);
   double tmp = (pow(upperArmLength,2)+pow(lowerArmLength,2)-c_sq) / (2*upperArmLength*lowerArmLength);
-  if( tmp>1 ) // Impossible configuration
+  tmp = tmp>1?1:tmp;
+  tmp = tmp<-1?-1:tmp;
+
+  if( dArm[3]>PI || dArm[3] < -PI )
     return qArm;
-  qArm[2] = acos( tmp );
+
+  /*
+  ////////////
+  // New Stuff
+  qArm[2] = PI - elbow[0];
+  double stuff = y /(upperArmLength+lowerArmLength*cos( qArm[2] ));
+  stuff = stuff>1?1:stuff;
+  stuff = stuff<-1?-1:stuff;
+  qArm[1] = asin( stuff );
+  double z_0 = (a_u+a_l*cos(qArm[2]))*cos(qArm[1]);
+  double x_0 = a_l*sin(qArm[2]);
+  qArm[0] = atan2(dArm[2],dArm[0]) - atan2(z_0,x_0);
+
+  //qArm[2] = -1*qArm[2];
+  //qArm[1] = -1*qArm[1];
+  qArm[0] = qArm[0] - PI/2;
+  ////////////
+*/
+
+  ////////////
+  // Old Stuff
+  qArm[2] = acos( tmp ); // Inconsequential
+  
   // Angle of desired point with the y-axis
   qArm[1] = acos( dArm[1] / c );
   // How much rotation about the y-axis (in the xz plane
-  qArm[0] = atan2( dArm[2], dArm[0] ) - qArm[2];
+  qArm[0] = atan2( dArm[2], dArm[0] );// - qArm[2];
 
   // Condition for OP default joint position
-  qArm[2] = qArm[2] - PI;
+  qArm[2] = qArm[2] - PI;//Inconsequential
   qArm[1] = qArm[1] - PI/2;
-  qArm[0] = qArm[0] + PI;
+  qArm[0] = qArm[0];// + PI; // Do not apply yet
+  /////////////
 
   return qArm;
 

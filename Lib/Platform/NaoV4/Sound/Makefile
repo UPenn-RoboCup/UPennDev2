@@ -1,18 +1,25 @@
 CWD= $(shell pwd)
-CTC= $(NaoqiCTC)
+ifeq ($(CTCDIR),)
+  ifeq ($(CROSS),true)
+    CTCDIR= $(NaoqiCTC)
+  endif
+endif
+CHAIN= $(CTCDIR)
 
 all: naoqi 
 
 naoqi:
-ifeq ($(CTC),)
-	@echo Cross compilitation tool not specified. \
-				Please download the ctc tool from \
-				the aldebaran website and follow the \
-				instructions to configure it for your system
+ifeq ($(CHAIN),)
+#	@echo Cross compilitation tool not specified. \
+#				Please download the ctc tool from \
+#				the aldebaran website and follow the \
+#				instructions to configure it for your system
+
+	make -f Makefile.local
 else
 	rm -rf build
 	mkdir build
-	cd build && cmake -DCMAKE_TOOLCHAIN_FILE="$(CTC)/toolchain-atom.cmake" .. \
+	cd build && cmake -DCMAKE_TOOLCHAIN_FILE="$(CHAIN)/toolchain-atom.cmake" .. \
 		&& make && cd $(CWD)
 endif
 
@@ -23,9 +30,6 @@ mex:
 	mex -O find_first_max.cc dtmf.cc
 
 clean:
-ifeq ($(CTC),)
 	make -f Makefile.local clean	
-else
 	rm -rf build
-endif
 	rm -f *mexglx *mexa64

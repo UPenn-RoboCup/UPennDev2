@@ -61,6 +61,11 @@ util.init_shm_segment(getfenv(), _NAME, shared, shsize);
 
 -- helper functions
 
+---
+--Get the distance moved in one step
+--@param u0 The previous position
+--@return The Distance moved with the current walk plan
+--@return The global position of the planned step
 function get_odometry(u0)
   if (not u0) then
     u0 = vector.new({0, 0, 0});

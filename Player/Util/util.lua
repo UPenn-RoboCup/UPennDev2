@@ -107,8 +107,10 @@ function pose_relative(pGlobal, pose)
   return vector.new{ca*px + sa*py, -sa*px + ca*py, mod_angle(pa)};
 end
 
+---table of uniform distributed random numbers
+--@param n length of table to return
+--@return table of n uniformly distributed random numbers
 function randu(n)
-  --table of uniform distributed random numbers
   local t = {};
   for i = 1,n do
     t[i] = math.random();
@@ -116,8 +118,10 @@ function randu(n)
   return t;
 end
 
+---Table of normal distributed random numbers.
+--@param n length of table to return
+--@return table of n normally distributed random numbers
 function randn(n)
-  -- table of normal distributed random numbers
   local t = {};
   for i = 1,n do
     --Inefficient implementation:
@@ -312,3 +316,8 @@ function bezier( alpha, s )
   return value;
   end
 
+function get_wireless_ip()
+  ifconfig = io.popen('/sbin/ifconfig wlan0 | grep "inet " | cut -d" " -f10-11');
+  ip = ifconfig:read();
+  return ip;
+end

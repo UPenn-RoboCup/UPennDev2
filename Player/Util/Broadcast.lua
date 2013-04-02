@@ -11,13 +11,15 @@ CommWired=require('Comm');
 require('vcm')
 require('gcm')
 require('wcm')
+require('ocm')
+require('mcm')
 require('serialization');
 require('ImageProc')
 require('Config');
 
 --sendShm = {'wcm','vcm','gcm'}
-sendShm = { wcmshm=wcm, gcmshm=gcm, vcmshm=vcm }
-itemReject = 'yuyv,labelA,labelB,yuyv2,yuyv3'
+sendShm = { wcmshm=wcm, gcmshm=gcm, vcmshm=vcm, ocmshm=ocm, mcmshm=mcm }
+itemReject = 'yuyv, labelA, labelB, yuyv2, yuyv3, map'
 
 -- Initiate Sending Address
 CommWired.init(Config.dev.ip_wired,111111);
@@ -180,7 +182,45 @@ function sendA()
   end
 end
 
+function sendmap()
+  -- occmap --
+  occmap = ocm.get_occ_map();
+  width = Config.occ.mapsize; 
+  height = Config.occ.mapsize;
+  count = vcm.get_image_count();
 
+  array = serialization.serialize_array2(
+	occmap, width, height, 'int32', 'occmap',count);
+  
+  sendoccmap = {};
+  sendoccmap.team = {};
+  sendoccmap.team.number = gcm.get_team_number();
+  sendoccmap.team.player_id = gcm.get_team_player_id();
+
+  local tSerialize=0;
+  local tSend=0;  
+  local totalSize=0;
+  for i=1,#array do
+    sendoccmap.arr = array[i];
+    t0 = unix.time();
+    senddata=serialization.serialize(sendoccmap);     
+    t1 = unix.time();
+    tSerialize= tSerialize + t1-t0;
+    CommWired.send(senddata);
+    t2 = unix.time();
+    tSend=tSend+t2-t1;
+    totalSize=totalSize+#senddata;
+
+    -- Need to sleep in order to stop drinking out of firehose
+    unix.usleep(pktDelay);
+  end
+  if debug>0 then
+    print("Image info array num:",#array,"Total size",totalSize);
+    print("Total Serialize time:",#array,"Total",tSerialize);
+    print("Total Send time:",tSend);
+  end
+
+end
 
 function sendImg()
   -- yuyv --
@@ -354,10 +394,12 @@ function update_img( enable, imagecount )
       sendImgSub2();
       sendA();
       sendB();
+      sendmap();
     else
       sendImg();
       sendA();
       sendB();
+      sendmap();
     end
   elseif enable==3 then
     --3: Logging mode

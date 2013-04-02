@@ -5,8 +5,15 @@ require('os')
 require('unix');
 require('Config')
 
-local volume = 25;
-enable = Config.speakenable or 0
+local volume = 55;
+local lang = 'en-us';
+local gender = Config.dev.gender or 1;
+if gender == 1 then
+  girl = '';
+else
+  girl = '+f1';
+end
+enable = Config.speakenable or 1
 
 -- define speak queue file
 fifo = '/tmp/speakFIFO'..(os.getenv('USER') or '');
@@ -29,13 +36,13 @@ if not fid then
 end
 
 -- start espeak background process
-if (unix.system('(/usr/bin/env espeak --stdout -s 130 -a '..volume..' < '..fifo..' | aplay) > /dev/null 2>&1 &') ~= 0) then
+if (unix.system('(/usr/bin/env espeak --stdout -v '..lang..girl..' -s 130 -a '..volume..' < '..fifo..' | aplay) > /dev/null 2>&1 &') ~= 0) then
   error('Could not run speak process');
 end
 
 
 function talk(text)
-  if enable or enable==nil then
+  if enable==1 then
     print('Speak: '..text);
     fid:write(text..'\n');
     fid:flush()

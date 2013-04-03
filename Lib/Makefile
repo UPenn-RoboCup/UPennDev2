@@ -93,7 +93,6 @@ webots_charli:
 	@cd $(WEBOTSCHARLIDIR) && make && cd $(CWD)
 	@echo "\n"
 
-<<<<<<< HEAD
 webots_saffir:
 	@echo "Compiling Webots SAFFIR Lua/C++ Libraries...\n"
 	@cd $(WEBOTSSAFFIRDIR) && make && cd $(CWD)
@@ -109,8 +108,6 @@ webots_atlas:
 	@cd $(WEBOTSATLASDIR) && make && cd $(CWD)
 	@echo "\n"
 
-=======
->>>>>>> dev-master
 visiontest:
 	@echo "Compiling Vision Test Lua/C++ Libraries...\n"
 	@cd $(VISIONTESTDIR) && make && cd $(CWD)
@@ -217,7 +214,6 @@ setup_webots_charli: webots_charli setup_util setup_image setup_webots setup_occ
 	cd $(PLAYERDIR)/Config && ln -s Config_WebotsCharli.lua Config.lua && cd $(CWD)
 	@echo "\n"
 
-<<<<<<< HEAD
 setup_webots_saffir: webots_saffir setup_util setup_image setup_webots
 	@echo "Setting up Webots Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
@@ -228,10 +224,9 @@ setup_webots_saffir: webots_saffir setup_util setup_image setup_webots
 
 setup_webots_thorop: webots_thorop setup_util setup_image setup_webots
 	@echo "Setting up Webots Lua/C++ Libraries...\n"
-=======
+
 setup_visiontest: visiontest setup_util setup_image 
 	@echo "Setting up Darwin OP Lua/C++ Libraries...\n"
->>>>>>> dev-master
 	mkdir -p $(INSTDIR)
 	find $(WEBOTSTHOROPDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
 	rm -f $(PLAYERDIR)/Config/Config.lua

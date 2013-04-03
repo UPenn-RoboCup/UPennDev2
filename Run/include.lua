@@ -14,11 +14,7 @@ package.cpath = HOME..'Frameworks/Comm/?.so;'..package.cpath
 package.cpath = HOME..'Frameworks/ImageProc/?.so;'..package.cpath
 package.cpath = HOME..'Frameworks/OccMap/?.so;'..package.cpath
 
-local unix = require 'unix'
-
 -- include modules to path
-package.path = HOME..'Run/?.lua;'..package.path
-
 package.path = HOME..'Run/?.lua;'..package.path
 package.path = HOME..'Run/GameFSM/?.lua;'..package.path
 package.path = HOME..'Run/Lib/?.lua;'..package.path
@@ -34,3 +30,13 @@ package.path = HOME..'Run/BodyFSM/?.lua;'..package.path
 package.path = HOME..'Run/Util/?.lua;'..package.path
 package.path = HOME..'Run/Motion/?.lua;'..package.path
 package.path = HOME..'Run/Config/?.lua;'..package.path
+
+-- include platform specific modules
+local Config = require 'Config'
+local Platform = dofile(HOME..'Platforms/'..Config.platform.name..'/Platform.lua')
+for i = 1, #Platform.path do
+  package.path = HOME..'Platforms/'..Config.platform.name..Platform.path[i]..package.path
+end
+for i = 1, #Platform.cpath do
+  package.cpath = HOME..'Platforms/'..Config.platform.name..Platform.cpath[i]..package.cpath
+end

@@ -15,4 +15,4 @@ zmq:
 	mex -O $@.cc -lzmq -L/usr/local/lib -I/usr/local/include
 
 clean:
-	rm -f *.$(mexext) *.$(SHLIBEXT) *.o
+	rm -f *.$(MEXEXT) *.$(SHLIBEXT) *.o

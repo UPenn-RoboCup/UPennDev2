@@ -9,6 +9,8 @@ require('Config')
 
 contact_sensor = {}
 
+local force_torque = Config.force_torque
+
 local l_foot = Config.mechanics.l_foot
 local r_foot = Config.mechanics.r_foot
 local l_hand = Config.mechanics.l_hand
@@ -22,10 +24,10 @@ function contact_sensor.entry()
 end
 
 function contact_sensor.update()
-  local l_foot_wrench = wrench.new(dcm:get_force_torque('l_foot'))
-  local r_foot_wrench = wrench.new(dcm:get_force_torque('r_foot'))
-  local l_hand_wrench = wrench.new(dcm:get_force_torque('l_hand'))
-  local r_hand_wrench = wrench.new(dcm:get_force_torque('r_hand'))
+  local l_foot_wrench = wrench.new(dcm:get_force_torque(force_torque.l_foot))
+  local r_foot_wrench = wrench.new(dcm:get_force_torque(force_torque.r_foot))
+  local l_hand_wrench = wrench.new(dcm:get_force_torque(force_torque.l_hand))
+  local r_hand_wrench = wrench.new(dcm:get_force_torque(force_torque.r_hand))
 
   -- update pcm
   pcm:set_l_foot_wrench(l_foot_wrench:translate(l_foot_wrench_offset))

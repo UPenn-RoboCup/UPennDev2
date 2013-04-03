@@ -1,6 +1,6 @@
 
 nyaw1 = 15;
-dyaw1 = 1.0/180.0*pi;
+dyaw1 = .1/180.0*pi;
 
 
 %resolution of the candidate poses
@@ -10,10 +10,10 @@ dyaw1 = 1.0/180.0*pi;
 tLidar0   = LIDAR0.scan.startTime;
 
 %if abs(tLidar0-tEncoders) < 0.1
-  nxs1  = 5;
-  nys1  = 5;
-  dx1   = 0.02;
-  dy1   = 0.02;
+  nxs1  = 21;
+  nys1  = 21;
+  dx1   = 0.01;
+  dy1   = 0.01;
 %else
 %  nxs1  = 11;
 %  nys1  = 11;
@@ -26,7 +26,7 @@ xRange1   = floor(nxs1/2);
 yRange1   = floor(nys1/2);
 
 %create the candidate locations in each dimension
-aCand1 = (-yawRange1:yawRange1)*dyaw1+SLAM.yawOdom; % + IMU.data.wyaw*0.025;
+aCand1 = (-yawRange1:yawRange1)*dyaw1+double(SLAM.yawOdom); % + IMU.data.wyaw*0.025;
 xCand1 = (-xRange1:xRange1)*dx1+SLAM.xOdom;
 yCand1 = (-yRange1:yRange1)*dy1+SLAM.yOdom;
 

@@ -214,6 +214,7 @@ int start_stream(int fd) {
     return -1;
   }
   printf("done\n");
+  return 0;
 }
 
 // gets the next frame from the camera if one is available

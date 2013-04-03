@@ -1,6 +1,6 @@
 module(..., package.seeall);
 
-require('Body')
+local Body = require('Body')
 require('Kinematics')
 require('Config');
 require('vector')

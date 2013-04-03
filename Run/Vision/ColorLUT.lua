@@ -43,7 +43,7 @@ function load_lutfile(fname, lut)
   end
   local cwd = unix.getcwd();
   if string.find(cwd, "WebotsController") then
-    cwd = cwd.."/Player";
+    cwd = cwd.."/Run";
   end
   cwd = cwd.."/Data/";
   local f = io.open(cwd..fname, "r");

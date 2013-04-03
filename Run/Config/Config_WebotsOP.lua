@@ -17,6 +17,7 @@ dev.body = 'WebotsOPBody';
 dev.camera = 'WebotsOPCam';
 dev.kinematics = 'OPKinematics';
 dev.game_control='WebotsGameControl';
+dev.comm = 'WebotsComm'
 dev.team='TeamNSL';
 dev.ip_wired = '192.168.123.255';
 dev.ip_wired_port = 54321;

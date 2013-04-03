@@ -1,3 +1,5 @@
+dofile('Run/include.lua')
+
 cwd = cwd or os.getenv('PWD')
 package.path = cwd.."/?.lua;"..package.path;
 require('init')
@@ -10,7 +12,7 @@ package.path = cwd..'/HeadFSM/'..Config.fsm.head[smindex+1]..'/?.lua;'..package.
 package.path = cwd..'/GameFSM/'..Config.fsm.game..'/?.lua;'..package.path;
 
 require('shm')
-require('Body')
+local Body = require('Body')
 require('vector')
 
 require('BodyFSM');

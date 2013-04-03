@@ -4,7 +4,7 @@
 
 module(..., package.seeall);
 
-require('Body')
+local Body = require('Body')
 require('wcm')
 require('mcm')
 

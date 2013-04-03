@@ -1,7 +1,7 @@
 module(... or "", package.seeall);
 
 require('Config');	
-require('Body')
+local Body = require('Body')
 require('shm');
 require('vcm');
 require('unix'); -- Get Time

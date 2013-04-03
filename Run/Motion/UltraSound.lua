@@ -2,7 +2,7 @@ module(..., package.seeall);
 
 -- TODO: use auto UltraSound from naoqi? switching modes takes as long as 1.0sec
 
-require('Body');
+local Body = require('Body');
 require('vector');
 require('math');
 

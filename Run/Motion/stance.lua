@@ -1,7 +1,7 @@
 module(..., package.seeall);
 
 require('Config')
-require('Body')
+local Body = require('Body')
 require('Kinematics')
 require('walk')
 require('vector')

@@ -4,7 +4,7 @@ name = ...;
 require('Config')
 require('vector')
 require('Kinematics')
-require('Body')
+local Body = require('Body')
 require('walk')
 require('mcm')
 

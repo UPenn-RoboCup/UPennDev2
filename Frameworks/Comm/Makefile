@@ -7,7 +7,7 @@ TARGETS = all clean
 all: comm 
 
 comm: luaComm.o 
-	$(LD) $(LDFLAGS) -o Comm.$(SHLIBEXT) $(LIBOPTS) $^ $(LIB_DIR) -lm
+	$(LD) $(LDFLAGS) -o UDPComm.$(SHLIBEXT) $(LIBOPTS) $^ $(LIB_DIR) -lm
 
 clean:
 	rm -f *.$(SHLIBEXT) *.o

@@ -31,11 +31,11 @@ export PLATFORM
 if [ "$EXT_TERM" -gt "0" ]
 then
   # In separate xterms
-  exec $TERM -l -e "$LUA start.lua"
+  exec $TERM -l -e "$LUA ../Run/run_simulation.lua"
   #exec luajit -l controller start.lua
 else
   # In webots console
-  exec $LUA start.lua
+  exec $LUA ../Run/run_simulation.lua
 fi
 
 

@@ -1,4 +1,4 @@
-require('Config');
+local Config = require('Config')
 
-Body = require(Config.dev.body)
+return require(Config.dev.body)
 

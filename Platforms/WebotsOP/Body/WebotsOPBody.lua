@@ -1,6 +1,7 @@
-module(..., package.seeall);
-require('controller');
-require('Transform');
+local controller = require('controller');
+local Transform = require('Transform');
+
+local Body = {}
 
 controller.wb_robot_init();
 timeStep = controller.wb_robot_get_basic_time_step();
@@ -88,7 +89,7 @@ controller.wb_touch_sensor_enable(tags.bumpR, timeStep);
 
 controller.wb_robot_step(timeStep);
 
-actuator = {};
+local actuator = {};
 actuator.command = {};
 actuator.velocity = {};
 actuator.position = {};
@@ -111,7 +112,7 @@ function set_actuator_command(a, index)
   end
 end
 
-get_time = controller.wb_robot_get_time;
+Body.get_time = controller.wb_robot_get_time;
 
 function set_actuator_velocity(a, index)
   index = index or 1;
@@ -479,3 +480,5 @@ function get_sensor_fsrLeft()
   fsr = {0};
   return fsr
 end
+
+return Body

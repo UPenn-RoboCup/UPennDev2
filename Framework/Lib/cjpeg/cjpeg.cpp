@@ -15,7 +15,7 @@ extern "C"
 }
 #endif
 
-#include <stdint.h>
+//#include <stdint.h>
 #include <vector>
 #include <string>
 #include <jpeglib.h>
@@ -60,7 +60,7 @@ void term_destination(j_compress_ptr cinfo) {
 
   destBuf.resize(len);
 }
-int CompressData(const uint8_t* prRGB, int width, int height, int ch) {
+int CompressData(const char* prRGB, int width, int height, int ch) {
 
   //fprintf(stdout,"compressing %dx%d\n",width, height);
 
@@ -113,7 +113,7 @@ int CompressData(const uint8_t* prRGB, int width, int height, int ch) {
   *row_pointer = row;
   while (cinfo.next_scanline < cinfo.image_height) {
     //fprintf(stdout,"cinfo.next_scanline = %d\n", cinfo.next_scanline);
-    const uint8_t *p = prRGB + ch*width*cinfo.next_scanline;
+    const char *p = prRGB + ch*width*cinfo.next_scanline;
     int irow = 0;
     for (int i = 0; i < width; i++) {
       if( ch==3 ){
@@ -150,9 +150,20 @@ int CompressData(const uint8_t* prRGB, int width, int height, int ch) {
 }
 
 static int lua_cjpeg(lua_State *L) {
-  uint8_t * dataSrc = (uint8_t *) lua_touserdata(L, 1);
   int width = luaL_checkint(L, 2);
   int height = luaL_checkint(L, 3);
+  char * dataSrc;
+  if( lua_isstring(L,1) ){ //+1 is the null terminator
+    size_t sz = width*height+1;
+    dataSrc = (char *) lua_tolstring(L, 1, &sz);
+  } else if( lua_islightuserdata(L,1) )
+    dataSrc = (char *) lua_touserdata(L, 1);
+  else {
+    lua_pushnil(L);
+    return 1;
+  }
+
+  // How many channels? 3, 1, 4?
   int byte_sized = luaL_optint(L, 4, 3);
   int lenPacked = CompressData( dataSrc, width, height, byte_sized );
 

@@ -5,55 +5,55 @@ require('Transform')
 -- Manipulation Controller
 --------------------------------------------------------------------------
 
-manipulation_state = Motion_state.new('manipulation_state')
+Manipulation_state = Motion_state.new('Manipulation_state')
 local joint = Config.joint
 
-manipulation_state:set_joint_access(0, 'all')
-manipulation_state:set_joint_access(1, 'upperbody')
-manipulation_state:set_joint_access(0, 'head')
+Manipulation_state:set_joint_access(0, 'all')
+Manipulation_state:set_joint_access(1, 'upperbody')
+Manipulation_state:set_joint_access(0, 'head')
 
-local dcm = manipulation_state.dcm
-local mcm = manipulation_state.mcm
+local dcm = Manipulation_state.dcm
+local mcm = Manipulation_state.mcm
 local t = Platform.get_time()
 
-function manipulation_state.new(name)
+function Manipulation_state.new(name)
   local o = {_NAME = name}
-  return setmetatable(o, manipulation_state)
+  return setmetatable(o, Manipulation_state)
 end
 
 -- default parameters
-manipulation_state.parameters = {
+Manipulation_state.parameters = {
 }
 
 -- config parameters
-manipulation_state:load_parameters()
+Manipulation_state:load_parameters()
 
-function manipulation_state:set_joint_goal_enabled(enabled)
+function Manipulation_state:set_joint_goal_enabled(enabled)
 	manipulation_controller.THOR_MC_U.JointSpaceGoalEnabled = enabled
 end
 
-function manipulation_state:set_joint_goal_type(is_position_else_velocity)
+function Manipulation_state:set_joint_goal_type(is_position_else_velocity)
 	manipulation_controller.THOR_MC_U.JointSpaceGoalType = is_position_else_velocity
 end
 
-function manipulation_state:set_task_goal_enabled(enabled)
+function Manipulation_state:set_task_goal_enabled(enabled)
 	manipulation_controller.THOR_MC_U.TaskSpaceGoalEnabled = enabled
 end
 
-function manipulation_state:set_task_goal_type(is_right_position_else_velocity,  is_left_position_else_velocity)
+function Manipulation_state:set_task_goal_type(is_right_position_else_velocity,  is_left_position_else_velocity)
 	manipulation_controller.THOR_MC_U.TaskSpaceGoalType = { is_right_position_else_velocity , is_left_position_else_velocity }
 end
 
 --add modifiers for lineartolerance, angulartolerance, gripperpositioncommand, relativeMotionMode,
 --jointspacemotionlocks, taskspacemotionlocks, inequalityconstraintsenabled,  obstableshellposition
 
-function manipulation_state:entry()
+function Manipulation_state:entry()
 end
 
-function manipulation_state:update()
+function Manipulation_state:update()
 	--
 	
-	local dt = t - Platform.get_time()
+	local dt = Platform.get_time() - t
   	t = Platform.get_time()
 	
 	manipulation_controller.THOR_MC_U.JointSpaceVelocityGoal = { 0, mcm:desired_joint_velocity({ joint.waist, 
@@ -74,7 +74,6 @@ function manipulation_state:update()
 
 	-- add manipulation step with time
 	
-
 	manipulation_controller.THOR_MC_U.TimeStep = dt
 	
 	manipulation_controller.THOR_MC_step()
@@ -95,14 +94,14 @@ function manipulation_state:update()
 											    joint.r_arm,
 											    joint.l_arm } )
 											    
-	local step_delta = t-Platform.get_time()
+	local step_delta = Platform.get_time()-t
 	print("manipulation state step "..step_delta)	
 
 end
 
 
 
-function manipulation_state:exit()
+function Manipulation_state:exit()
 end
 
-return manipulation_state
+return Manipulation_state

@@ -1,6 +1,6 @@
 module(..., package.seeall);
 
-require('Body')
+local Body = require('Body')
 require('UltraSound')
 require('fsm')
 require('vector')

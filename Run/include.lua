@@ -1,6 +1,11 @@
 local cwd = os.getenv('PWD')
 
-local HOME = cwd:gsub('WebotsController.*$','')
+local Webots = false
+local HOME = cwd:gsub('Run.*$','')
+if HOME:find("Webots") ~= nil then
+  HOME = HOME:gsub('WebotsController.*$','')
+  Webots = true
+end
 
 -- include modules to cpath
 package.cpath = HOME..'Frameworks/?/?.so;'..package.cpath
@@ -15,6 +20,9 @@ package.cpath = HOME..'Frameworks/ImageProc/?.so;'..package.cpath
 package.cpath = HOME..'Frameworks/OccMap/?.so;'..package.cpath
 
 package.cpath = HOME..'Tools/lua-msgpack/?.so;'..package.cpath
+package.cpath = HOME..'Tools/cjpeg/?.so;'..package.cpath
+
+
 
 -- include modules to path
 package.path = HOME..'Run/?.lua;'..package.path
@@ -31,7 +39,18 @@ package.path = HOME..'Run/Dev/?.lua;'..package.path
 package.path = HOME..'Run/BodyFSM/?.lua;'..package.path
 package.path = HOME..'Run/Util/?.lua;'..package.path
 package.path = HOME..'Run/Motion/?.lua;'..package.path
+package.path = HOME..'Run/Motion/keyframes/?.lua;'..package.path
+package.path = HOME..'Run/Motion/Walk/?.lua;'..package.path
+package.path = HOME..'Run/Motion/Arms/?.lua;'..package.path
 package.path = HOME..'Run/Config/?.lua;'..package.path
+
+-- include webots stuff
+if Webots then
+  package.cpath = HOME..'Frameworks/Webots/Controller/?.so;'..package.cpath
+  package.cpath = HOME..'Frameworks/Webots/Comm/?.so;'..package.cpath
+  package.path = HOME..'Frameworks/Webots/Comm/?.lua;'..package.path
+  package.path = HOME..'Frameworks/Webots/GameControl/?.lua;'..package.path
+end
 
 -- include platform specific modules
 local Config = require 'Config'

@@ -101,7 +101,7 @@ for i = 1,nJoint do
   actuator.hardness[i] = 0;
 end
 
-function set_actuator_command(a, index)
+function Body.set_actuator_command(a, index)
   index = index or 1;
   if (type(a) == "number") then
     actuator.command[index] = moveDir[index]*(a+jointBias[index]);
@@ -114,7 +114,7 @@ end
 
 Body.get_time = controller.wb_robot_get_time;
 
-function set_actuator_velocity(a, index)
+function Body.set_actuator_velocity(a, index)
   index = index or 1;
   if (type(a) == "number") then
     actuator.velocity[index] = a;
@@ -136,7 +136,7 @@ function set_actuator_hardness(a, index)
   end
 end
 
-function get_sensor_position(index)
+function Body.get_sensor_position(index)
   if (index) then
     return moveDir[index]*controller.wb_servo_get_position(tags.joints[index])-jointBias[index];
   else
@@ -148,7 +148,7 @@ function get_sensor_position(index)
   end
 end
 
-function get_sensor_imuAngle(index)
+function Body.get_sensor_imuAngle(index)
   if (not index) then
     return imuAngle;
   else
@@ -157,84 +157,84 @@ function get_sensor_imuAngle(index)
 end
 
 -- Two buttons in the array
-function get_sensor_button(index)
+function Body.get_sensor_button(index)
   return {0,0};
 end
 
-function get_head_position()
-  local q = get_sensor_position();
+function Body.get_head_position()
+  local q = Body.get_sensor_position();
   return {unpack(q, indexHead, indexHead+nJointHead-1)};
 end
-function get_larm_position()
-  local q = get_sensor_position();
+function Body.get_larm_position()
+  local q = Body.get_sensor_position();
   return {unpack(q, indexLArm, indexLArm+nJointLArm-1)};
 end
-function get_rarm_position()
-  local q = get_sensor_position();
+function Body.get_rarm_position()
+  local q = Body.get_sensor_position();
   return {unpack(q, indexRArm, indexRArm+nJointRArm-1)};
 end
-function get_lleg_position()
-  local q = get_sensor_position();
+function Body.get_lleg_position()
+  local q = Body.get_sensor_position();
   return {unpack(q, indexLLeg, indexLLeg+nJointLLeg-1)};
 end
-function get_rleg_position()
-  local q = get_sensor_position();
+function Body.get_rleg_position()
+  local q = Body.get_sensor_position();
   return {unpack(q, indexRLeg, indexRLeg+nJointRLeg-1)};
 end
 
-function set_body_hardness(val)
+function Body.set_body_hardness(val)
   if (type(val) == "number") then
     val = val*vector.ones(nJoint);
   end
   set_actuator_hardness(val);
 end
-function set_head_hardness(val)
+function Body.set_head_hardness(val)
   if (type(val) == "number") then
     val = val*vector.ones(nJointHead);
   end
   set_actuator_hardness(val, indexHead);
 end
-function set_larm_hardness(val)
+function Body.set_larm_hardness(val)
   if (type(val) == "number") then
     val = val*vector.ones(nJointLArm);
   end
   set_actuator_hardness(val, indexLArm);
 end
-function set_rarm_hardness(val)
+function Body.set_rarm_hardness(val)
   if (type(val) == "number") then
     val = val*vector.ones(nJointRArm);
   end
   set_actuator_hardness(val, indexRArm);
 end
-function set_lleg_hardness(val)
+function Body.set_lleg_hardness(val)
   if (type(val) == "number") then
     val = val*vector.ones(nJointLLeg);
   end
   set_actuator_hardness(val, indexLLeg);
 end
-function set_rleg_hardness(val)
+function Body.set_rleg_hardness(val)
   if (type(val) == "number") then
     val = val*vector.ones(nJointRLeg);
   end
   set_actuator_hardness(val, indexRLeg);
 end
-function set_head_command(val)
-  set_actuator_command(val, indexHead);
+function Body.set_head_command(val)
+  Body.set_actuator_command(val, indexHead);
 end
-function set_lleg_command(val)
-  set_actuator_command(val, indexLLeg);
+function Body.set_lleg_command(val)
+  Body.set_actuator_command(val, indexLLeg);
 end
-function set_rleg_command(val)
-  set_actuator_command(val, indexRLeg);
+function Body.set_rleg_command(val)
+  Body.set_actuator_command(val, indexRLeg);
 end
-function set_larm_command(val)
-  set_actuator_command(val, indexLArm);
+function Body.set_larm_command(val)
+  Body.set_actuator_command(val, indexLArm);
 end
-function set_rarm_command(val)
-  set_actuator_command(val, indexRArm);
+function Body.set_rarm_command(val)
+  Body.set_actuator_command(val, indexRArm);
 end
 
-function update()
+function Body.update()
 
 if( gps_enable>0 ) then 
   get_sensor_gps()
@@ -278,7 +278,7 @@ end
 function update_IMU()
     
   acc=get_sensor_imuAcc();
-  gyr=get_sensor_imuGyrRPY();
+  gyr=Body.get_sensor_imuGyrRPY();
 
   local tTrans = Transform.rotZ(imuAngle[3]);
   tTrans= tTrans * Transform.rotY(imuAngle[2]);
@@ -306,34 +306,34 @@ function update_IMU()
 end
 
 -- Extra for compatibility
-function set_syncread_enable(val)
+function Body.set_syncread_enable(val)
 end
 
-function set_actuator_eyeled( val )
+function Body.set_actuator_eyeled( val )
 end
 
-function set_waist_hardness( val )
+function Body.set_waist_hardness( val )
 end
 
-function set_waist_command( val )
+function Body.set_waist_command( val )
 end
 
-function set_aux_hardness( val )
+function Body.set_aux_hardness( val )
 end
 
-function set_aux_command( val )
+function Body.set_aux_command( val )
 end
 
-function get_sensor_imuGyr0()
+function Body.get_sensor_imuGyr0()
   return vector.zeros(3)
 end
 
-function get_sensor_imuGyr( )
-  return get_sensor_imuGyrRPY();
+function Body.get_sensor_imuGyr( )
+  return Body.get_sensor_imuGyrRPY();
 end
 
 --Roll, Pitch Yaw angles in degree per seconds unit 
-function get_sensor_imuGyrRPY( )
+function Body.get_sensor_imuGyrRPY( )
   gyro = controller.wb_gyro_get_values(tags.gyro);
   --Checked with webots OP model
   gyro_proc={-(gyro[1]-512)/0.273, -(gyro[2]-512)/0.273,(gyro[3]-512)/0.273};
@@ -347,99 +347,99 @@ function get_sensor_imuAcc( )
   return {-(accel[2]-512)/128,-(accel[1]-512)/128,(accel[3]-512)/128};
 end
 
-function set_actuator_eyeled(color)
+function Body.set_actuator_eyeled(color)
   --input color is 0 to 31, so multiply by 8 to make 0-255
   code= color[1] * 0x80000 + color[2] * 0x800 + color[3]*8;
   controller.wb_led_set(tags.eyeled,code)
 end
 
-function set_actuator_headled(color)
+function Body.set_actuator_headled(color)
   --input color is 0 to 31, so multiply by 8 to make 0-255
   code= color[1] * 0x80000 + color[2] * 0x800 + color[3]*8;
   controller.wb_led_set(tags.headled,code)
 end
 
 -- Set API compliance functions
-function set_indicator_state(color)
+function Body.set_indicator_state(color)
 end
 
-function set_indicator_team(teamColor)
+function Body.set_indicator_team(teamColor)
 end
 
-function set_indicator_kickoff(kickoff)
+function Body.set_indicator_kickoff(kickoff)
 end
 
-function set_indicator_batteryLevel(level)
+function Body.set_indicator_batteryLevel(level)
 end
 
-function set_indicator_role(role)
+function Body.set_indicator_role(role)
 end
 
-function set_indicator_ball(color)
+function Body.set_indicator_ball(color)
   -- color is a 3 element vector
   -- convention is all zero indicates no detection
   if( color[1]==0 and color[2]==0 and color[3]==0 ) then
-    set_actuator_eyeled({15,15,15});
+    Body.set_actuator_eyeled({15,15,15});
   else
-    set_actuator_eyeled({31*color[1],31*color[2],31*color[3]});
+    Body.set_actuator_eyeled({31*color[1],31*color[2],31*color[3]});
   end
 end
 
-function set_indicator_goal(color)
+function Body.set_indicator_goal(color)
   -- color is a 3 element vector
   -- convention is all zero indicates no detection
   if( color[1]==0 and color[2]==0 and color[3]==0 ) then
-    set_actuator_headled({15,15,15});
+    Body.set_actuator_headled({15,15,15});
   else
-    set_actuator_headled({31*color[1],31*color[2],31*color[3]});
+    Body.set_actuator_headled({31*color[1],31*color[2],31*color[3]});
   end
 
 end
 
-function get_battery_level()
+function Body.get_battery_level()
   return 120;
 end
 
-function get_change_state()
+function Body.get_change_state()
   return 0;
 end
 
-function get_change_enable()
+function Body.get_change_enable()
   return 0;
 end
 
-function get_change_team()
+function Body.get_change_team()
   return 0;
 end
 
-function get_change_role()
+function Body.get_change_role()
   return 0;
 end
 
-function get_change_kickoff()
+function Body.get_change_kickoff()
   return 0;
 end
 
 -- OP does not have the UltraSound device
-function set_actuator_us()
+function Body.set_actuator_us()
 end
 
-function get_sensor_usLeft()
+function Body.get_sensor_usLeft()
   return vector.zeros(10);
 end
 
-function get_sensor_usRight()
+function Body.get_sensor_usRight()
   return vector.zeros(10);
 end
 
-function set_lleg_slope(val)
+function Body.set_lleg_slope(val)
   if (type(val) == "number") then
     val = val*vector.ones(nJointLLeg);
   end
   set_actuator_slope(val, indexLLeg);
   set_actuator_slopeChanged(1,1);
 end
-function set_rleg_slope(val)
+function Body.set_rleg_slope(val)
   if (type(val) == "number") then
     val = val*vector.ones(nJointRLeg);
   end
@@ -449,19 +449,19 @@ end
 
 
 -- Kick method API compliance for NSLKick
-function set_lleg_slope(val)
+function Body.set_lleg_slope(val)
 end
-function set_rleg_slope(val)
+function Body.set_rleg_slope(val)
 end
 
 -- Gripper method needed
-function set_gripper_hardness(val)
+function Body.set_gripper_hardness(val)
 end
-function set_gripper_command(val)
+function Body.set_gripper_command(val)
 end
 
 
-function get_sensor_gps( )
+function Body.get_sensor_gps( )
   --For DARwInOPGPS prototype 
   gps = controller.wb_gps_get_values(tags.gps);
   compass = controller.wb_compass_get_values(tags.compass);
@@ -471,12 +471,12 @@ function get_sensor_gps( )
   return gps;
 end
 
-function get_sensor_fsrRight()
+function Body.get_sensor_fsrRight()
   fsr = {0};
   return fsr
 end
 
-function get_sensor_fsrLeft()
+function Body.get_sensor_fsrLeft()
   fsr = {0};
   return fsr
 end

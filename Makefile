@@ -279,7 +279,7 @@ setup_webots_cont: webot
 	@echo "Setting up WebotsController Lua/C++ Libraries...\n"
 	mkdir -p $(WEBOTSCONTDIR)
 	find $(WEBOTSDIR)/Controller $(REGEX) -exec cp -v {} $(WEBOTSCONTDIR) \;
-	cd $(WEBOTSCONTDIR) && ln -sf ../$(PLAYERDIR) Player && cd $(CWD)
+	cd $(WEBOTSCONTDIR) && ln -sf ../$(PLAYERDIR) Run && cd $(CWD)
 	cd $(WEBOTSCONTDIR) && ln -sf lua_set.sh nao_team_0 && cd $(CWD)
 	cd $(WEBOTSCONTDIR) && ln -sf lua_set.sh nao_team_1 && cd $(CWD)
 	cd $(WEBOTSCONTDIR) && ln -sf lua_set.sh darwin-op_team_0 && cd $(CWD)

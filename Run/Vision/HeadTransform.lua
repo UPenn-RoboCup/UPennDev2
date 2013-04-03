@@ -9,6 +9,7 @@ require('Transform');
 require('vector');
 require('vcm');
 require('mcm');
+local Body = require'Body'
 
 tHead = Transform.eye();
 tNeck = Transform.eye();

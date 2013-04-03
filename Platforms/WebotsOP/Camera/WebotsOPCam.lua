@@ -3,7 +3,9 @@ require('controller');
 require('carray');
 require('ImageProc');
 require('unix')
-require('Body')
+local Body = require('Body')
+
+local Camera = {}
 
 controller.wb_robot_init();
 timeStep = controller.wb_robot_get_basic_time_step();
@@ -25,33 +27,33 @@ image = carray.cast(controller.wb_camera_get_image(tags.camera),
 
 mycount = 0;
 
-function set_param()
+function Camera.set_param()
 end
 
-function get_param()
+function Camera.get_param()
   return 0;
 end
 
-function get_height()
+function Camera.get_height()
   return height;
 end
 
-function get_width()
+function Camera.get_width()
   return width;
 end
 
-function get_image()
+function Camera.get_image()
   mycount = mycount + 1;
   --rgb2yuyv
   return ImageProc.rgb_to_yuyv(carray.pointer(image), width, height);
 end
 
-function get_labelA( lut )
+function Camera.get_labelA( lut )
   --rgb2label
   return ImageProc.rgb_to_label(carray.pointer(image), lut, width, height);
 end
 
-function get_labelA_obs( lut )
+function Camera.get_labelA_obs( lut )
   --rgb2label
   return ImageProc.rgb_to_label_obs(carray.pointer(image), lut, width, height);
 end
@@ -60,7 +62,7 @@ function get_lut_update(mask, lut)
   return ImageProc.rgb_mask_to_lut(carray.pointer(image), mask, lut, width, height);
 end
 
-function get_camera_status()
+function Camera.get_camera_status()
   status = {};
   status.select = 0;
   status.count = mycount;
@@ -77,10 +79,11 @@ function get_camera_position()
 --  return controller.wb_servo_get_position(tags.cameraSelect);
 end
 
-function select_camera()
+function Camera.select_camera()
 end
 
 function get_select()
   return 0;
 end
 
+return Camera

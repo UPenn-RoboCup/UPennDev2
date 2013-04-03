@@ -4,7 +4,7 @@ require('Config');      -- For Ball and Goal Size
 require('ImageProc');
 require('HeadTransform');       -- For Projection
 require('Vision');
-require('Body');
+local Body = require('Body');
 require('shm');
 require('vcm');
 require('mcm');

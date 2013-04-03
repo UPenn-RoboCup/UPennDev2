@@ -1,5 +1,5 @@
 # Makefile used to build libraries
-include ../../Lib/Makefile.inc
+include ../../Makefile.inc
 
 all: cjpeg
 

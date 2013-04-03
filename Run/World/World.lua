@@ -2,7 +2,7 @@ module(..., package.seeall);
 
 require('PoseFilter');
 require('Filter2D');
-require('Body');
+local Body = require('Body');
 require('vector');
 require('util');
 require('wcm')

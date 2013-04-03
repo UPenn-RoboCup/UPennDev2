@@ -1,8 +1,8 @@
 module(..., package.seeall);
 
 require('Config');
-require('Body');
-require('Comm');
+local Body = require('Body');
+local Comm = require('Comm');
 require('Speak');
 require('vector');
 require('util')

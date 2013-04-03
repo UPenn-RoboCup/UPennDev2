@@ -9,7 +9,7 @@ require('wcm')
 
 local cwd = unix.getcwd();
 if string.find(cwd, "WebotsController") then
-  cwd = cwd.."/Player";
+  cwd = cwd.."/Run";
 end
 cwd = cwd.."/Motion/keyframes"
 

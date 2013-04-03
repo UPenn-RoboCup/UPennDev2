@@ -1,6 +1,6 @@
 module(..., package.seeall);
 
-require('Body')
+local Body = require('Body')
 
 t0 = 0;
 timeout = 1.0;

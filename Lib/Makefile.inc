@@ -123,5 +123,3 @@ ifeq ($(OSTYPE),darwin)
   CXX=c++
   LD=ld
 endif
-
-

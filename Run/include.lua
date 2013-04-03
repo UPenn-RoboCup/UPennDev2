@@ -14,6 +14,8 @@ package.cpath = HOME..'Frameworks/Comm/?.so;'..package.cpath
 package.cpath = HOME..'Frameworks/ImageProc/?.so;'..package.cpath
 package.cpath = HOME..'Frameworks/OccMap/?.so;'..package.cpath
 
+package.cpath = HOME..'Tools/lua-msgpack/?.so;'..package.cpath
+
 -- include modules to path
 package.path = HOME..'Run/?.lua;'..package.path
 package.path = HOME..'Run/GameFSM/?.lua;'..package.path

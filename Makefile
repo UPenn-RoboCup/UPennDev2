@@ -202,8 +202,8 @@ setup_webots_nao: webots_nao setup_util setup_image setup_webots setup_occmap
 
 setup_webots_op: webots_op setup_util setup_image setup_webots setup_occmap
 	@echo "Setting up Webots Lua/C++ Libraries...\n"
-	mkdir -p $(INSTDIR)
-	find $(WEBOTSOPDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
+#	mkdir -p $(INSTDIR)
+#	find $(WEBOTSOPDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
 	rm -f $(PLAYERDIR)/Config/Config.lua
 	cd $(PLAYERDIR)/Config && ln -s Config_WebotsOP.lua Config.lua && cd $(CWD)
 	@echo "\n"
@@ -288,38 +288,38 @@ setup_webots_cont: webot
 
 setup_webots: setup_webots_cont
 	@echo "Setting up Webots Lua/C++ Libraries...\n"
-	mkdir -p $(INSTDIR)
-	find $(WEBOTSDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
+#	mkdir -p $(INSTDIR)
+#	find $(WEBOTSDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
 	@echo "\n"
 
 setup_image: image
 	@echo "Setting up Image Processing Lua/C++ Libraries...\n"
-	mkdir -p $(INSTDIR)
-	find $(IMAGEDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
+#	mkdir -p $(INSTDIR)
+#	find $(IMAGEDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
 	@echo "\n"
 
 setup_util: util
 	@echo "Setting up Utility Lua/C++ Libraries...\n"
-	mkdir -p $(INSTDIR)
-	find $(UTILDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
+#	mkdir -p $(INSTDIR)
+#	find $(UTILDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
 	@echo "\n"
 
 setup_comm: comm
 	@echo "Setting up Communication Lua/C++ Libraries...\n"
-	mkdir -p $(INSTDIR)
-	find $(COMMDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
+#	mkdir -p $(INSTDIR)
+#	find $(COMMDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
 	@echo "\n"
 
 setup_serial: serial
 	@echo "Setting up Serial Lua/C++ Libraries...\n"
-	mkdir -p $(INSTDIR)
-	find $(SERIALDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
+#	mkdir -p $(INSTDIR)
+#	find $(SERIALDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
 	@echo "\n"
 
 setup_hokuyo: hokuyo
 	@echo "Setting up Hokuyo Lua/C++ Libraries...\n"
-	mkdir -p $(INSTDIR)
-	find $(HOKUYODIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
+#	mkdir -p $(INSTDIR)
+#	find $(HOKUYODIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
 	@echo "\n"
 
 setup_slamT: torch SlamT
@@ -330,15 +330,15 @@ setup_slamT: torch SlamT
 
 setup_occmap: occmap
 	@echo "Setting up Occupancy Map Lua/C++ Libraries...\n"
-	mkdir -p $(INSTDIR)
-	find $(OCCMAPDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
+#	mkdir -p $(INSTDIR)
+#	find $(OCCMAPDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
 	@echo "\n"
 
 setup_velocity: velocity
 	@echo "Setting up Velocity Lua/C++ Libraries...\n"
-	mkdir -p $(INSTDIR)
-	find $(VELODIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
-	find $(VELODIR) $(REGEX) -exec cp -v {} $(WEBOTSCONTDIR) \;
+#	mkdir -p $(INSTDIR)
+#	find $(VELODIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
+#	find $(VELODIR) $(REGEX) -exec cp -v {} $(WEBOTSCONTDIR) \;
 	@echo "\n"
 
 setup_primesense: primesense setup_util

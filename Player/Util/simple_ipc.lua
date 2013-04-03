@@ -23,7 +23,11 @@ end
 --]]
 
 -- Simple number of threads
+<<<<<<< HEAD
 simple_ipc.n_zmq_threads = 1
+=======
+simple_ipc.n_zmq_threads = 2
+>>>>>>> dev-master
 simple_ipc.local_prefix = 'ipc:///tmp/'
 -- Set the intercomputer interface
 if simple_ipc.intercom_interface then
@@ -32,7 +36,11 @@ if simple_ipc.intercom_interface then
 	simple_ipc.intercom_prefix = 'epgm://'..simple_ipc.intercom_interface_ip..';239.192.1.1:'
 else
 	print( 'There is no inter-pc interface, using TCP' )
+<<<<<<< HEAD
 	simple_ipc.intercom_prefix = 'tcp://*:'
+=======
+	simple_ipc.intercom_prefix = 'tcp://'
+>>>>>>> dev-master
 end
 
 -- If channel is a number, then use tcp
@@ -42,7 +50,14 @@ local function setup_publisher( channel )
 	if channel_type=="string" then
 		channel_obj.name = simple_ipc.local_prefix..channel
 	elseif channel_type=="number" then
+<<<<<<< HEAD
 		channel_obj.name = simple_ipc.intercom_prefix..channel
+=======
+    if simple_ipc.intercom_interface then
+    else -- port
+      channel_obj.name = simple_ipc.intercom_prefix..'*:'..channel
+    end
+>>>>>>> dev-master
 	end
 	assert(channel_obj.name)
 	print('Publishing on',channel_obj.name)
@@ -88,6 +103,11 @@ local function setup_subscriber( channel )
 		channel_obj.name = simple_ipc.local_prefix..channel
 	elseif channel_type=="number" then
 		channel_obj.name = simple_ipc.intercom_prefix..channel
+<<<<<<< HEAD
+=======
+  else
+		channel_obj.name = simple_ipc.intercom_prefix..channel[1]..":"..channel[2]
+>>>>>>> dev-master
 	end
 	assert(channel_obj.name)
 	print('Subscribing on',channel_obj.name)

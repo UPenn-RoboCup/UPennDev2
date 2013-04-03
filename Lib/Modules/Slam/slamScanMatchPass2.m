@@ -1,7 +1,7 @@
 
 
-nyaw2 = 21;
-dyaw2 = 0.1/180*pi;
+nyaw2 = 11;
+dyaw2 = 0.05/180*pi;
 nxs2  = 1;
 nys2  = 1;
 dx2   = 0.01;
@@ -26,6 +26,3 @@ hits = ScanMatch2D('match',OMAP.map.data,xsss,ysss, ...
 [kmax mmax jmax] = ind2sub([nxs2,nys2,nyaw2],imax);
 
 SLAM.yaw = aCand2(jmax);
-
-
-

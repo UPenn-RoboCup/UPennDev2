@@ -4,6 +4,46 @@ TOP := $(dir $(lastword $(MAKEFILE_LIST)))
 TARGETS = all clean
 .PHONY: $(TARGETS)
 
+## Path Definition
+
+NAODIR= Platform/Nao
+NAOV4DIR = Platform/NaoV4
+WEBOTSNAODIR= Platform/WebotsNao
+WEBOTSOPDIR= Platform/WebotsOP
+WEBOTSGENERICDIR= Platform/WebotsGeneric
+WEBOTSHUBODIR= Platform/WebotsHubo
+WEBOTSCHARLIDIR= Platform/WebotsCharli
+WEBOTSSAFFIRDIR= Platform/WebotsSaffir
+VISIONTESTDIR = Platform/VisionTest
+HPDIR= Platform/HP2
+OPDIR= Platform/OP
+XOSDIR= Platform/XOS
+CHARLIDIR = Platform/Charli
+MODULEDIR = Modules
+NAOQIDIR= $(NAOV4DIR)/NaoQi
+WEBOTSDIR = $(MODULEDIR)/Webots
+IMAGEDIR= $(MODULEDIR)/ImageProc
+COMMDIR= $(MODULEDIR)/Comm
+OCCMAPDIR = $(MODULEDIR)/OccMap
+UTILDIR= $(MODULEDIR)/Util
+MATLABDIR= ../Tools/Matlab
+COLORTABLEDIR= $(MATLABDIR)/Colortable
+VELODIR= $(MODULEDIR)/Velocity
+PRIMEDIR= $(MODULEDIR)/PrimeSense
+HANDSDIR= $(MODULEDIR)/Hands
+PLATFORMS = nao naov4 op xos webots_nao webots_op webots_generic webots_hubo visiontest
+INSTDIR= ../Player/Lib
+WEBOTSCONTDIR= ../WebotsController
+PLAYERDIR= ../Player
+NAODEPDIR= ../Install/dependencies
+NAODEPLUA51DIR= $(NAODEPDIR)/usr/local/lib/lua/5.1
+
+WEBOTSTHOROPDIR= Platform/WebotsTHOROP
+WEBOTSATLASDIR= Platform/WebotsAtlas
+HOKUYODIR= $(MODULEDIR)/Hokuyo
+TORCHDIR= ../Tools/torch
+SERIALDIR=$(MODULEDIR)/Serial
+
 ## Compiler Definition
 CXX=g++
 CC=gcc
@@ -34,6 +74,13 @@ else
 endif
 endif
 
+#This does not work 
+LUA_INC=-I/usr/include/lua -I/usr/local/include/lua
+LUA_VERSION_SPECIFIC=-I/usr/include/lua5.1 -I/usr/local/include/lua5.1 -I/usr/local/include/luajit-2.0 -I/usr/include/luajit-2.0
+INCLUDES= -I/usr/local/include -I/usr/include $(LUA_INC) $(LUA_VERSION_SPECIFIC)
+#INCLUDES= -I/usr/local/include -I/usr/include $(LUA_INC)
+LIB_DIR= -L/usr/local/lib -L/usr/lib
+
 INCLUDES= -I$(TOP)/Common -I/usr/local/include -I/usr/include $(LUA_INC) $(LUAJIT_INC)
 LIB_DIR= -L/usr/local/lib -L/usr/lib
 
@@ -53,6 +100,18 @@ ifeq ($(USER),darwin)
   CXXFLAGS= -O3 -fomit-frame-pointer -mtune=native -march=native -pipe -funroll-loops
 endif
 
+ifeq ($(OSTYPE),linux)
+  SHLIBEXT= so
+  LIBOPTS= -shared -fpic -lluajit-5.1
+  LIBRT= -lrt
+ifeq ($(USER),darwin)
+  CXXFLAGS= -O3 -fomit-frame-pointer -mtune=native -march=native -pipe -funroll-loops
+endif
+ifeq ($(USER),nao)
+  CXXFLAGS= -O2 -fomit-frame-pointer -mtune=native -march=native -pipe -funroll-loops
+endif
+endif
+
 ifeq ($(OSTYPE),darwin)
 #  SHLIBEXT= dylib
   SHLIBEXT= so
@@ -64,41 +123,3 @@ ifeq ($(OSTYPE),darwin)
   CXX=c++
   LD=ld
 endif
-
-## Path Definition
-NAODIR= Platform/Nao
-NAOV4DIR = Platform/NaoV4
-WEBOTSNAODIR= Platform/WebotsNao
-WEBOTSOPDIR= Platform/WebotsOP
-WEBOTSGENERICDIR= Platform/WebotsGeneric
-WEBOTSHUBODIR= Platform/WebotsHubo
-WEBOTSCHARLIDIR= Platform/WebotsCharli
-WEBOTSSAFFIRDIR= Platform/WebotsSaffir
-WEBOTSTHOROPDIR= Platform/WebotsTHOROP
-WEBOTSATLASDIR= Platform/WebotsAtlas
-VISIONTESTDIR = Platform/VisionTest
-HPDIR= Platform/HP2
-OPDIR= Platform/OP
-XOSDIR= Platform/XOS
-CHARLIDIR = Platform/Charli
-MODULEDIR = Modules
-NAOQIDIR= $(NAODIR)/NaoQi
-WEBOTSDIR = $(MODULEDIR)/Webots
-IMAGEDIR= $(MODULEDIR)/ImageProc
-COMMDIR= $(MODULEDIR)/Comm
-HOKUYODIR= $(MODULEDIR)/Hokuyo
-OCCMAPDIR = $(MODULEDIR)/OccMap
-UTILDIR= $(MODULEDIR)/Util
-MATLABDIR= ../Tools/Matlab
-COLORTABLEDIR= $(MATLABDIR)/Colortable
-VELODIR= $(MODULEDIR)/Velocity
-PRIMEDIR= $(MODULEDIR)/PrimeSense
-HANDSDIR= $(MODULEDIR)/Hands
-PLATFORMS = nao naov4 op xos webots_nao webots_op webots_generic webots_hubo visiontest
-INSTDIR= ../Player/Lib
-WEBOTSCONTDIR= ../WebotsController
-PLAYERDIR= ../Player
-NAODEPDIR= ../Install/dependencies
-NAODEPLUA51DIR= $(NAODEPDIR)/usr/local/lib/lua/5.1
-TORCHDIR= ../Tools/torch
-SERIALDIR=$(MODULEDIR)/Serial

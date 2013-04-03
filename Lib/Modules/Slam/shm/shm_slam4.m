@@ -1,6 +1,9 @@
 %global LIDAR IMU OMAP MAPS POSE
 global SLAM OMAP POSE LIDAR0 REF_MAP START_POSITION ROBOT LIDAR MAPS IMU
 
+%vidObj = VideoWriter('slam.avi');
+%open(vidObj);
+
 figure(1);
 clf(gcf);
 colormap(hot)
@@ -20,11 +23,11 @@ if isempty(initSlam)
     %% Initialize shared memory segment
     disp('Initializing robot shm...')
     if isempty(ROBOT)
-        ROBOT = shm_robot(1,1);
+        ROBOT = shm_robot(0,1);
     end
     disp('Initializing lidar shm...')
     if isempty(LIDAR)
-        LIDAR = shm_lidar(1,1);
+        LIDAR = shm_lidar(0,1);
     end
     disp('Loading the Config file')
     loadConfig();
@@ -81,18 +84,21 @@ if isempty(initSlam)
 end
 
 %% Run the update
+%t_start = tic;
+%is_rec = 1;
 while 1
     %% Grab the data, and massage is for API compliance
     myranges = LIDAR.get_ranges();
     data = {};
     data.ranges = myranges.ranges;
+    
     data.startTime = myranges.t;
     data.odometry = myranges.odom;
     myranges.odom(2) = myranges.odom(2)* -1; % -1 raw data from webots to MATLAB
     myranges.odom(3) = myranges.odom(3)* -1; % -1 raw data from webots to MATLAB
     IMU.data.roll = 0;
     IMU.data.pitch = 0;
-    IMU.data.yaw = myranges.imu(3);%0;
+    IMU.data.yaw = myranges.rpy(3);%0;
     IMU.data.wyaw = myranges.gyro(3) * -1; % -1 raw data from webots to MATLAB
     IMU.data.t = myranges.t;
     IMU.tLastArrival = myranges.t;
@@ -122,10 +128,14 @@ while 1
         set( hOrientation, 'udata',xd, 'vdata',yd );
     end
     
+    %{
     hTitle = title(sprintf('x:%f, y:%f, yaw: %f', ...
         POSE.data.x,POSE.data.y,POSE.data.yaw*180/pi), ...
         'FontSize',12);
+    %}
     
+    %% Timing
+    %t_stop = toc( t_start )
     %{
     subplot(2,1,2);
     cla;
@@ -134,7 +144,23 @@ while 1
     xd = max(myranges.ranges)*cos(IMU.data.yaw);
     yd = max(myranges.ranges)*sin(IMU.data.yaw);
     compass(xd,yd);
-        %}
-        drawnow;
-        pause(.04);
+    %}
+    
+    
+    %{
+    if( t_stop > 125 )
+        if( is_rec==1 )
+            disp('Done Recording!')
+            is_rec = 0;
+            close(vidObj)
+        end
+    else
+        currFrame = getframe;
+        writeVideo(vidObj,currFrame)
+    end
+    %}
+    
+    % Timiing
+    drawnow;
+    %pause(.02);
 end

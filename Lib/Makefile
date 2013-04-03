@@ -1,6 +1,7 @@
 # Master Makefile to compile all Lua/C++ libraries
 
-CWD=$(shell pwd)
+CWD= $(shell pwd)
+PWD= $(subst /,\/,$(CWD)/../Player/Lib)
 include $(CWD)/Makefile.inc
 CROSS=false
 
@@ -55,7 +56,10 @@ naov4:
 
 naoqi:
 	@echo "Compiling Custom Naoqi Modules...\n"
-	@cd $(NAOQIDIR) && make && cd $(CWD)
+	@echo $(PWD)
+	sed -i -e 's/HOME/$(PWD)/g' $(NAOQIDIR)/src/dcmprocess.cpp
+	cd $(NAOQIDIR) && make && cd $(CWD)
+	sed -i -e 's/$(PWD)/HOME/g' $(NAOQIDIR)/src/dcmprocess.cpp
 	@echo "\n"
 
 xos:
@@ -82,16 +86,6 @@ webots_nao:
 webots_op:
 	@echo "Compiling Webots OP Lua/C++ Libraries...\n"
 	@cd $(WEBOTSOPDIR) && make && cd $(CWD)
-	@echo "\n"
-
-webots_hubo:
-	@echo "Compiling Webots HUBO Lua/C++ Libraries...\n"
-	@cd $(WEBOTSHUBODIR) && make && cd $(CWD)
-	@echo "\n"
-
-webots_generic:
-	@echo "Compiling Webots Generic Lua/C++ Libraries...\n"
-	@cd $(WEBOTSGENERICDIR) && make && cd $(CWD)
 	@echo "\n"
 
 webots_charli:
@@ -184,6 +178,7 @@ setup_nao: nao setup_util setup_image setup_comm
 	rm -f $(NAODEPLUA51DIR)/*;
 	@echo "\n"
 
+# Removed naoqi at the end to compile on laptop
 setup_naov4: naov4 setup_util setup_image setup_comm
 	@echo "Setting up Nao V4 Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
@@ -192,6 +187,7 @@ setup_naov4: naov4 setup_util setup_image setup_comm
 	cd $(PLAYERDIR)/Config && ln -s Config_NaoV4.lua Config.lua && cd $(CWD)
 #	find $(UTILDIR) $(REGEX) -exec cp -v {} $(NAODEPLUA51DIR) \;
 	rm -f $(NAODEPLUA51DIR)/*;
+	#@cd $(NAOQIDIR) && make && cd $(CWD)
 	@echo "\n"
 
 setup_webots_nao: webots_nao setup_util setup_image setup_webots setup_occmap
@@ -208,22 +204,6 @@ setup_webots_op: webots_op setup_util setup_image setup_webots setup_occmap
 	find $(WEBOTSOPDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
 	rm -f $(PLAYERDIR)/Config/Config.lua
 	cd $(PLAYERDIR)/Config && ln -s Config_WebotsOP.lua Config.lua && cd $(CWD)
-	@echo "\n"
-
-setup_webots_hubo: webots_hubo setup_util setup_image setup_webots
-	@echo "Setting up Webots Lua/C++ Libraries...\n"
-	mkdir -p $(INSTDIR)
-	find $(WEBOTSHUBODIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
-	rm -f $(PLAYERDIR)/Config/Config.lua
-	cd $(PLAYERDIR)/Config && ln -s Config_WebotsHubo.lua Config.lua && cd $(CWD)
-	@echo "\n"
-
-setup_webots_generic: webots_generic setup_util setup_image  setup_webots
-	@echo "Setting up Webots Lua/C++ Libraries...\n"
-	mkdir -p $(INSTDIR)
-	find $(WEBOTSGENERICDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
-	rm -f $(PLAYERDIR)/Config/Config.lua
-	cd $(PLAYERDIR)/Config && ln -s Config_WebotsGeneric.lua Config.lua && cd $(CWD)
 	@echo "\n"
 
 setup_webots_charli: webots_charli setup_util setup_image setup_webots setup_occmap
@@ -244,6 +224,9 @@ setup_webots_saffir: webots_saffir setup_util setup_image setup_webots
 
 setup_webots_thorop: webots_thorop setup_util setup_image setup_webots
 	@echo "Setting up Webots Lua/C++ Libraries...\n"
+
+setup_visiontest: visiontest setup_util setup_image 
+	@echo "Setting up Darwin OP Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
 	find $(WEBOTSTHOROPDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
 	rm -f $(PLAYERDIR)/Config/Config.lua
@@ -374,7 +357,8 @@ setup_hands: hands setup_util
 setup_naoqi: naoqi setup_util
 	@echo "Setting up NaoQi module...\n"
 	mkdir -p $(INSTDIR)
-	rsync -avr --exclude=".*" $(NAOQIDIR)/build/sdk/lib/naoqi/* ../Install/naoqi/lib/naoqi/
+	find $(NAOQIDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
+	sed -i -e 's/HOME/$(PWD)/g' $(INSTDIR)/nao_init.lua
 	@echo "\n"
 
 setup_boxer: setup_op setup_hands setup_primesense
@@ -398,10 +382,11 @@ clean:
 	cd $(WEBOTSOPDIR) && make clean && cd $(CWD)
 	cd $(XOSDIR) && make clean && cd $(CWD)
 	cd $(WEBOTSGENERICDIR) && make clean && cd $(CWD)
-	rm -rf $(WEBOTSCONTDIR) 
-	cd $(WEBOTSCHARLIDIR) && make clean && cd $(CWD)
 	cd $(WEBOTSSAFFIRDIR) && make clean && cd $(CWD) 	
 	cd $(WEBOTSTHOROPDIR) && make clean && cd $(CWD)
+	rm -rf $(WEBOTSCONTDIR) 
+	cd $(WEBOTSCHARLIDIR) && make clean && cd $(CWD)
 	cd $(OPDIR) && make clean && cd $(CWD)
+	cd $(OCCMAPDIR) && make clean && cd $(CWD)
 	cd $(PLAYERDIR)/Config && rm -f Config.lua && cd $(CWD)
 	cd $(PLAYERDIR) && rm -rf Lib && cd $(CWD)

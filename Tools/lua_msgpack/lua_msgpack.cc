@@ -131,7 +131,12 @@ static int lua_msgpack_pack_boolean(lua_State *L, int index, msgpack_packer *pk)
 }
 
 static int lua_msgpack_pack_lightuserdata(lua_State *L, int index, msgpack_packer *pk) {
-  msgpack_pack_nil(pk);
+  uint8_t *data = (uint8_t *)lua_touserdata(L, index);
+  if ((data == NULL) || !lua_islightuserdata(L, index)) 
+    return luaL_error(L, "Input not light user data");
+  int size = luaL_optint(L, index+1, 0);
+  int ret = msgpack_pack_raw(pk, size);
+  ret = msgpack_pack_raw_body(pk, data, size);
   return 1;
 }
 

@@ -18,16 +18,14 @@
  *
  * */
 
-#include <set>
-#include <vector>
 #include <unistd.h>
-#include <stdio.h>
+#include <stdint.h>
 #include <msgpack.h>
 
 #include "mex.h"
 #include "matrix.h"
 
-bool debug = false;
+#define MAX_PACK 1000000
 
 mxArray* mex_unpack_boolean(msgpack_object obj);
 mxArray* mex_unpack_positive_integer(msgpack_object obj);
@@ -71,8 +69,7 @@ mxArray* mex_unpack_double(msgpack_object obj) {
 mxArray* mex_unpack_raw(msgpack_object obj) {
   mxArray* ret = mxCreateNumericMatrix(1,obj.via.raw.size, mxUINT8_CLASS, mxREAL);
   uint8_t *ptr = (uint8_t*)mxGetPr(ret); 
-  for (int i = 0; i < obj.via.raw.size; i++)
-    ptr[i] = obj.via.raw.ptr[i];
+  memcpy(ptr, obj.via.raw.ptr, obj.via.raw.size * sizeof(uint8_t));
   return ret;
 }
 
@@ -103,13 +100,15 @@ mxArray* mex_unpack_map(msgpack_object obj) {
 
 mxArray* mex_unpack_array(msgpack_object obj) {
   // validata array element type
-  std::set<int> types;
+  int types = 0;
+  int unique_type = -1;
   for (i = 0; i < obj.via.array.size; i++)
-    if ((types.find(obj.via.array.ptr[i].type) == types.end()) && 
-        (obj.via.array.ptr[i].type > 0) and (obj.via.array.ptr[i].type < 5))
-      types.insert(obj.via.array.ptr[i].type);
-  int unique_type = *types.begin();
-  if (types.size() == 1) {
+    if ((obj.via.array.ptr[i].type > 0) && (obj.via.array.ptr[i].type < 5) &&
+        (obj.via.array.ptr[i].type != unique_type)) {
+      unique_type = obj.via.array.ptr[i].type;
+      types ++;
+    }
+  if (types == 1) {
     mxArray *ret = NULL;
     bool * ptrb = NULL;
     double * ptrd = NULL;
@@ -315,7 +314,30 @@ void mex_pack(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
   msgpack_packer_free(pk);
 }
 
+void mex_pack_raw(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
+  /* creates buffer and serializer instance. */
+  msgpack_sbuffer* buffer = msgpack_sbuffer_new();
+  msgpack_packer* pk = msgpack_packer_new(buffer, msgpack_sbuffer_write);
+
+  for (i = 0; i < nrhs; i ++) {
+    size_t nElements = mxGetNumberOfElements(prhs[i]);
+    size_t sElements = mxGetElementSize(prhs[i]);
+    uint8_t *data = (uint8_t*)mxGetPr(prhs[i]);
+    msgpack_pack_raw(pk, nElements * sElements);
+    msgpack_pack_raw_body(pk, data, nElements * sElements);
+  }
+
+  plhs[0] = mxCreateNumericMatrix(1, buffer->size, mxUINT8_CLASS, mxREAL);
+  memcpy(mxGetPr(plhs[0]), buffer->data, buffer->size * sizeof(uint8_t));
+
+  /* cleaning */
+  msgpack_sbuffer_free(buffer);
+  msgpack_packer_free(pk);
+}
+
 void mex_unpacker(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
+  mxArray * ret[MAX_PACK];
+  int npack = 0;
   /* Init deserialize using msgpack_unpacker */
   msgpack_unpacker pac;
   msgpack_unpacker_init(&pac, MSGPACK_UNPACKER_INIT_BUFFER_SIZE);
@@ -329,17 +351,18 @@ void mex_unpacker(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     msgpack_unpacker_buffer_consumed(&pac, size);
   
     /* start streaming deserialization */
-    std::vector<mxArray*> ret;
     msgpack_unpacked msg;
     msgpack_unpacked_init(&msg);
     while (msgpack_unpacker_next(&pac, &msg)) {
       /* prints the deserialized object. */
       msgpack_object obj = msg.data;
-      ret.push_back((*unPackMap[obj.type])(obj));
+      if (npack >= MAX_PACK)
+        mexErrMsgTxt("Too many packs");
+      ret[npack++] = (*unPackMap[obj.type])(obj);
     }
     /* set cell for output */
-    plhs[0] = mxCreateCellMatrix(ret.size(), 1);
-    for (i = 0; i < ret.size(); i++)
+    plhs[0] = mxCreateCellMatrix(npack, 1);
+    for (i = 0; i < npack; i++)
       mxSetCell((mxArray*)plhs[0], i, ret[i]);
   }
 }
@@ -377,8 +400,15 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   if ((nrhs < 1) || (!mxIsChar(prhs[0])))
     mexErrMsgTxt("Need to input string argument");
   char *fname = mxArrayToString(prhs[0]);
-  if (strcmp(fname, "pack") == 0)
-    mex_pack(nlhs, plhs, nrhs-1, prhs+1);
+  char *flag = new char[10];
+  if (strcmp(fname, "pack") == 0) {
+    if (mxIsChar(prhs[nrhs-1])) flag = mxArrayToString(prhs[nrhs-1]);
+    if (strcmp(flag, "raw") == 0)
+      mex_pack_raw(nlhs, plhs, nrhs-2, prhs+1);
+    else
+      mex_pack(nlhs, plhs, nrhs-1, prhs+1);
+
+  }
   else if (strcmp(fname, "unpack") == 0)
     mex_unpack(nlhs, plhs, nrhs-1, prhs+1);
   else if (strcmp(fname, "unpacker") == 0)

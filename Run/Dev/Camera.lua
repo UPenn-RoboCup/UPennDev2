@@ -1,4 +1,4 @@
-require('Config');
+local Config = require('Config')
 
-Camera = require(Config.dev.camera)
+return require(Config.dev.camera)
 

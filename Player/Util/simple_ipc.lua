@@ -33,6 +33,7 @@ if simple_ipc.intercom_interface then
 else
 	print( 'There is no inter-pc interface, using TCP' )
 	simple_ipc.intercom_prefix = 'tcp://'
+--	simple_ipc.intercom_prefix = 'tcp://*:'
 end
 
 -- If channel is a number, then use tcp

@@ -1,26 +1,35 @@
-%global LIDAR IMU OMAP MAPS POSE
+clear all;
+%% Set up variables
 global SLAM OMAP POSE LIDAR0 REF_MAP START_POSITION ROBOT LIDAR MAPS IMU
+s_flir = zmq('subscribe',5555);
+flimg = zeros(320,256);
+s_laser = zmq('subscribe',5556);
+s_imu = zmq('subscribe',5557);
 
 %vidObj = VideoWriter('slam.avi');
 %open(vidObj);
 
 figure(1);
 clf(gcf);
-colormap(hot)
-%subplot(2,1,1);
+subplot(2,2,1);
+colormap(hot);
 hold on;
 hMap = [];
 hPose = [];
 hOrientation = [];
 initSlam = [];
+hFlir = [];
 %{
 hTitle = title(sprintf('x:%f, y:%f, yaw: %f', ...
         POSE.data.x,POSE.data.y,POSE.data.yaw*180/pi), ...
         'FontSize',12);
 %}
+
+%% Initialize structures
 if isempty(initSlam)
     
     %% Initialize shared memory segment
+    %{
     disp('Initializing robot shm...')
     if isempty(ROBOT)
         ROBOT = shm_robot(0,1);
@@ -29,16 +38,19 @@ if isempty(initSlam)
     if isempty(LIDAR)
         LIDAR = shm_lidar(0,1);
     end
+    %}
     disp('Loading the Config file')
     loadConfig();
     
     SLAM.updateExplorationMap    = 0;
     SLAM.explorationUpdatePeriod = 5;
     SLAM.plannerUpdatePeriod     = 2;
-    myranges = LIDAR.get_ranges();
+    %myranges = LIDAR.get_ranges();
+    myranges = {};
+    myranges.t = 0;
     
-    SLAM.explorationUpdateTime   = myranges.t;
-    SLAM.plannerUpdateTime       = myranges.t;
+    SLAM.explorationUpdateTime   = 0;
+    SLAM.plannerUpdateTime       = 0;
     poseInit();
     
     SLAM.x            = POSE.xInit;
@@ -74,38 +86,52 @@ if isempty(initSlam)
     % Initialize data structures
     imuInit;
     lidar0Init;
+    LIDAR0.scan.startTime = 0;
     odometryInit;
     
     %initialize scan matching function
     ScanMatch2D('setBoundaries',OMAP.xmin,OMAP.ymin,OMAP.xmax,OMAP.ymax);
     ScanMatch2D('setResolution',OMAP.res);
-    ScanMatch2D('setSensorOffsets',[LIDAR0.offsetx LIDAR0.offsety LIDAR0.offsetz]);
+    ScanMatch2D('setSensorOffsets',...
+        [LIDAR0.offsetx LIDAR0.offsety LIDAR0.offsetz]);
     
 end
 
 %% Run the update
-%t_start = tic;
-%is_rec = 1;
 while 1
     %% Grab the data, and massage is for API compliance
-    myranges = LIDAR.get_ranges();
-    data = {};
-    data.ranges = myranges.ranges;
-    
-    data.startTime = myranges.t;
-    data.odometry = myranges.odom;
-    myranges.odom(2) = myranges.odom(2)* -1; % -1 raw data from webots to MATLAB
-    myranges.odom(3) = myranges.odom(3)* -1; % -1 raw data from webots to MATLAB
-    IMU.data.roll = 0;
-    IMU.data.pitch = 0;
-    IMU.data.yaw = myranges.rpy(3);%0;
-    IMU.data.wyaw = myranges.gyro(3) * -1; % -1 raw data from webots to MATLAB
-    IMU.data.t = myranges.t;
-    IMU.tLastArrival = myranges.t;
-    
-    %% Run SLAM Update processes
-    shm_slam_process_odometry(data);
-    shm_slam_process_lidar0(data);
+    %myranges = LIDAR.get_ranges();
+    [data,idx] = zmq('poll');
+    for i=1:numel(idx)
+        if idx(i)==s_laser
+            %return;
+            %disp('laser')
+            newscan = msgpack('unpack', data{i});
+            LIDAR0.scan.ranges = typecast(uint8(newscan.ranges),'single')';
+            LIDAR0.scan.startTime = double(newscan.startTime);
+            %{
+            LIDAR0.scan.ranges = typecast(data{1},'single');
+            LIDAR0.scan.startTime = LIDAR0.scan.startTime + 1/40;
+            %}
+            shm_slam_process_lidar0();
+        elseif idx(i)==s_imu
+            %disp('imu')
+            imu = msgpack('unpack', data{i});
+            IMU.data.roll = double(imu.R)*pi/180;
+            IMU.data.pitch = double(imu.P)*pi/180;
+            IMU.data.yaw = double(imu.Y)*pi/180;
+            IMU.data.wyaw = -1*(double(imu.Wz)-370)*(pi/180.0/3.45);...
+                %double(imu.Wz);
+            IMU.data.t = double( imu.t );
+            IMU.tLastArrival = double(IMU.data.t);
+            shm_slam_process_odometry();
+        else
+            %disp('flir')
+            flir = msgpack('unpack', data{i});
+            flimg = reshape(typecast(flir.data,'uint16'),[320,256]);
+            %return;
+        end
+    end
     
     %% Simple plotting
     if isempty(hMap)
@@ -117,8 +143,8 @@ while 1
     % Define how to plot the robot's pose
     xi = (POSE.data.x-OMAP.xmin)*OMAP.invRes; % x image coord
     yi = (POSE.data.y-OMAP.ymin)*OMAP.invRes; % y image coord
-    xd = 25*cos(POSE.data.yaw);
-    yd = 25*sin(POSE.data.yaw);
+    xd = 25*cos( double(POSE.data.yaw) );
+    yd = 25*sin( double(POSE.data.yaw) );
     if isempty(hOrientation) || isempty(hPose)
         hPose = plot(xi,yi,'g.','MarkerSize',20);
         hOrientation = quiver(xi,yi,xd,yd,'g');
@@ -128,39 +154,29 @@ while 1
         set( hOrientation, 'udata',xd, 'vdata',yd );
     end
     
-    %{
     hTitle = title(sprintf('x:%f, y:%f, yaw: %f', ...
         POSE.data.x,POSE.data.y,POSE.data.yaw*180/pi), ...
         'FontSize',12);
-    %}
     
-    %% Timing
-    %t_stop = toc( t_start )
-    %{
-    subplot(2,1,2);
-    cla;
-    polar( LIDAR0.angles(:),myranges.ranges(:), 'r.' );
-    hold on;
-    xd = max(myranges.ranges)*cos(IMU.data.yaw);
-    yd = max(myranges.ranges)*sin(IMU.data.yaw);
-    compass(xd,yd);
-    %}
-    
-    
-    %{
-    if( t_stop > 125 )
-        if( is_rec==1 )
-            disp('Done Recording!')
-            is_rec = 0;
-            close(vidObj)
-        end
-    else
-        currFrame = getframe;
-        writeVideo(vidObj,currFrame)
+    subplot(2,2,2);
+    if isfield(LIDAR0.scan,'ranges') && ~isempty( IMU.data )
+        cla;
+        polar( LIDAR0.angles(:), LIDAR0.scan.ranges(:), 'r.' );
+        hold on;
+        xd = 10*cos(IMU.data.yaw);
+        yd = 10*sin(IMU.data.yaw);
+        compass(xd,yd);
     end
-    %}
     
-    % Timiing
+    if isempty(hFlir)
+        subplot(2,2,3);
+        colormap(hot);
+        hFlir = imagesc( flimg' );
+    else
+        set(hFlir,'cdata', flimg');
+    end
+    
+    
+    
     drawnow;
-    %pause(.02);
 end

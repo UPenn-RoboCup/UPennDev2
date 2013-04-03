@@ -27,10 +27,15 @@ shared.lidar.startTime = vector.zeros(1);  -- seconds
 shared.lidar.stopTime = vector.zeros(1);   -- seconds
 
 -- Robot state
-shared.robot = {};
-shared.robot.odom = vector.zeros(3);
-shared.robot.imu = vector.zeros(3);
-shared.robot.gyro = vector.zeros(3); -- Just to give the rate
+shared.imu = {};
+shared.imu.timestamp = vector.zeros(3);
+shared.imu.acc = vector.zeros(3);
+shared.imu.gyro = vector.zeros(3); -- Just to give the rate
+shared.imu.rpy = vector.zeros(3); -- Independent RPY from UKF
+
+-- Odometry
+shared.odom = {};
+shared.odom.traveled = vector.zeros(3);
 
 -- Generated Map
 --mapSize = 400;

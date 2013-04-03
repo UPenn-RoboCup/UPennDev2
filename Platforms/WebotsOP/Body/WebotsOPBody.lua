@@ -2,6 +2,7 @@ local controller = require('controller');
 local Transform = require('Transform');
 
 local Body = {}
+print('load Body')
 
 controller.wb_robot_init();
 timeStep = controller.wb_robot_get_basic_time_step();

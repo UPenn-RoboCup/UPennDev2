@@ -382,7 +382,6 @@ clean:
 	rm -rf $(WEBOTSCONTDIR) 
 	cd $(WEBOTSCHARLIDIR) && make clean && cd $(CWD)
 	cd $(WEBOTSSAFFIRDIR) && make clean && cd $(CWD)
-#	cd $(HPDIR) && make clean && cd $(CWD)
 	cd $(OPDIR) && make clean && cd $(CWD)
 	cd $(OCCMAPDIR) && make clean && cd $(CWD)
 	cd $(PLAYERDIR)/Config && rm -f Config.lua && cd $(CWD)

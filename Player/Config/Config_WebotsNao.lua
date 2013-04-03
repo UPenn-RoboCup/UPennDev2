@@ -16,6 +16,21 @@ params = {}
 params.name = {"Walk", "World", "Kick", "Vision", "FSM", "Camera"};
 util.LoadConfig(params, platform)
 
+param.world = 'World/Config_WebotsNao_World'
+param.walk = 'Walk/Config_WebotsNao_Walk' 
+param.kick = 'Kick/Config_WebotsNao_Kick'
+param.vision = 'Vision/Config_WebotsNao_Vision'
+param.camera = 'Vision/Config_WebotsNao_Camera'
+param.fsm = 'FSM/Config_WebotsNao_FSM'
+
+loadconfig(param.world)
+loadconfig(param.walk)
+loadconfig(param.kick)
+loadconfig(param.vision)
+
+--Location Specific Camera Parameters--
+loadconfig(param.camera)
+
 -- Device Interface Libraries
 dev = {};
 dev.body = 'NaoWebotsBody'; 

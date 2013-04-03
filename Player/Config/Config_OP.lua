@@ -21,9 +21,11 @@ params.Kick = "Slow"
 
 ---Location Specific Camera Parameters--
 --params.Camera = "VT"
-params.Camera = "Grasp"
+--params.Camera = "Grasp"
 --params.Camera = "Grasp_obs"
 --params.Camera = "L512"
+--params.Camera = "L512_2130"
+params.Camera = "L512_1930"
 --params.Camera = "L512_Day"
 
 util.LoadConfig(params, platform)
@@ -49,7 +51,7 @@ speak.enable = false;
 
 -- Game Parameters
 game = {};
-game.teamNumber = 18;   --17 at RC12
+game.teamNumber = 1;   --17 at RC12
 --game.teamNumber = 26;
 
 --Default role: 0 for goalie, 1 for attacker, 2 for defender

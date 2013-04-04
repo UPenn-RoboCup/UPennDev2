@@ -73,6 +73,10 @@ while true do
   
   -- update screen
   if (key or (count % 20 == 0)) then
+    if key == curses.KEY_RESIZE then
+      local y, x = curses.getmaxyx()
+      curses.resizeterm(y, x)
+    end
     draw_screen()
   end
   count = count + 1

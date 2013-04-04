@@ -3,7 +3,7 @@ OBJECTS  =
 
 all: lua_msgpack
 
-include ../../Lib/Makefile.inc
+include ../../Makefile.inc
 
 CXXFLAGS+=
 

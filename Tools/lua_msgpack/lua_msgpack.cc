@@ -39,6 +39,7 @@ extern "C"
 
 #define MT_NAME "msgpack_mt"
 
+
 typedef struct {
   const char *str;
   size_t size;

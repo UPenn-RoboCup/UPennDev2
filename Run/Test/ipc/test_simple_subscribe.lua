@@ -1,3 +1,4 @@
+package.path = '../../Util/?.lua;'..package.path
 local ffi = require 'ffi'
 local simple_ipc = require 'simple_ipc'
 --local test_channel = simple_ipc.setup_subscriber('test');

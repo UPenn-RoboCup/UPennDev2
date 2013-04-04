@@ -31,7 +31,7 @@ end
 local simple_ipc = require 'simple_ipc'
 ipc_channels = {}
 for d=1,#dataTypes do
-  ipc_channels[ dataTypes[d] ] = simple_ipc.setup_publisher( dataChannels[d] );
+  ipc_channels[ dataTypes[d] ] = simple_ipc.new_publisher( dataChannels[d] );
 end
 
 function get_log_file_list()

@@ -1,22 +1,47 @@
 #include "leftwindow.h"
 #include "ui_leftwindow.h"
-
 #include "osgwidget.h"
+
 #include <QLabel>
+#include <QPushButton>
+#include <QGridLayout>
+
+#include <osgDB/ReadFile>
 
 LeftWindow::LeftWindow() :
     QWidget()
 {
-    osg::Node *glider = osgDB::readNodeFile("glider.osgt");
+
+}
+
+LeftWindow::~LeftWindow()
+{
+
+}
+
+void LeftWindow::initialize()
+{
+    // Load models
+    osg::Node *glider = osgDB::readNodeFile("/home/afalendy/Downloads/OpenSceneGraph-Data-3.0.0/glider.osgt");
     osg::Node *cow = osgDB::readNodeFile("/home/afalendy/Downloads/OpenSceneGraph-Data-3.0.0/cow.osgt");
     osg::Node *truck = osgDB::readNodeFile("/home/afalendy/Downloads/OpenSceneGraph-Data-3.0.0/dumptruck.osgt");
-    OsgWidget *main3DView = new OsgWidget(glider);
-    OsgWidget *model3DView = new OsgWidget(cow);
-    OsgWidget *godsEye3DView = new OsgWidget(truck);
 
+    // Create and initialize widgets
+    OsgWidget *main3DView = new OsgWidget();
+    main3DView->initialize();
+    main3DView->setSceneData(glider);
+    OsgWidget *model3DView = new OsgWidget();
+    model3DView->initialize();
+    model3DView->setSceneData(cow);
+    OsgWidget *godsEye3DView = new OsgWidget();
+    godsEye3DView->initialize();
+    godsEye3DView->setSceneData(truck);
+
+    // Create dummy label to fill telemetry space
     QLabel *label = new QLabel("Model information and telemetry");
     label->setAlignment(Qt::AlignCenter);
 
+    // Perform layout
     QGridLayout *layout = new QGridLayout();
     layout->setSpacing(0);
     layout->setMargin(2);
@@ -25,15 +50,4 @@ LeftWindow::LeftWindow() :
     layout->addWidget( main3DView,    0, 1, 4, 2 );
     layout->addWidget( label,         4, 0, 1, 3 );
     setLayout( layout );
-}
-
-LeftWindow::~LeftWindow()
-{
-
-}
-
-void LeftWindow::keyPressEvent(QKeyEvent *key)
-{
-    if(key->key() == Qt::Key_Escape)
-        QApplication::exit();
 }

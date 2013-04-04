@@ -1,25 +1,48 @@
 #include "osgwidget.h"
+#include <osgViewer/ViewerEventHandlers>
 
-OsgWidget::OsgWidget(osg::Node *node, osgViewer::ViewerBase::ThreadingModel threadingModel)
+#include <QtGui/QGridLayout>
+
+#include <osgGA/TrackballManipulator>
+
+#include <osgDB/ReadFile>
+
+#include <osgQt/GraphicsWindowQt>
+
+OsgWidget::OsgWidget()
 {
-    setThreadingModel(threadingModel);
+
+}
+
+void OsgWidget::initialize()
+{
+    // Set up OpenSceneGraph
+    setRunFrameScheme( osgViewer::ViewerBase::ON_DEMAND );
+    setThreadingModel(osgViewer::ViewerBase::CullDrawThreadPerContext);
+
     setBaseSize(100,100);
     setMinimumSize(100,100);
 
-    addEventHandler( new osgViewer::StatsHandler );
-    setCameraManipulator( new osgGA::TrackballManipulator );
-
+    // Attach a camera
     OsgCamera *camera = new OsgCamera;
     setCamera(camera->get());
 
+    // add the stats handler
+    addEventHandler(new osgViewer::StatsHandler);
+    setCameraManipulator( new osgGA::TrackballManipulator );
+
     osgQt::GraphicsWindowQt* gw = dynamic_cast<osgQt::GraphicsWindowQt*>( camera->get()->getGraphicsContext() );
 
-    setSceneData( node );
-
+    // Construct the layout
     QVBoxLayout *layout = new QVBoxLayout();
     layout->addWidget(gw->getGLWidget());
     setLayout(layout);
 
-    connect( &_timer, SIGNAL(timeout()), this, SLOT(update()) );
-    _timer.start( 10 );
+    connect( &_timer, SIGNAL(timeout()), this, SLOT(drawFrame()) );
+    _timer.start( 0 );
+}
+
+void OsgWidget::drawFrame()
+{
+    frame();
 }

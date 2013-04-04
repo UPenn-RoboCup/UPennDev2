@@ -28,7 +28,7 @@ enable_lut_for_obstacle = Config.vision.enable_lut_for_obstacle or 0;
   ffi = require 'ffi'
   require 'cjpeg'
   simple_ipc = require 'simple_ipc'
-  img_channel = simple_ipc.setup_publisher('img');
+  img_channel = simple_ipc.new_publisher('img');
 --end
 
 if use_gps_only==0 then

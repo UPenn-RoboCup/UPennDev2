@@ -6,7 +6,7 @@ package.path = pwd..'/../../Player/Util/?.lua;'..package.path
 local simple_ipc = require 'simple_ipc'
 local mp = require 'MessagePack'
 local imu_channel = simple_ipc.setup_subscriber('img');
-local img_channel = simple_ipc.setup_publisher('img2');
+local img_channel = simple_ipc.new_publisher('img2');
 local util = require 'util'
 local unix = require 'unix'
 

@@ -2,6 +2,7 @@ local cwd = os.getenv('PWD')
 
 local Webots = false
 local HOME = cwd:gsub('Run.*$','')
+local HOME = HOME:gsub('Tools.*$','')
 if HOME:find("Webots") ~= nil then
   HOME = HOME:gsub('WebotsController.*$','')
   Webots = true

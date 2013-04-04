@@ -1,11 +1,14 @@
 require('Motion_state')
+require('Manipulation_state')
 require('Config')
+require('create_class')
 
 --------------------------------------------------------------------------
 -- Locomotion Slave Controller
 --------------------------------------------------------------------------
 
-locomotion_slave = manipulation_state.new('locomotion_slave')
+locomotion_slave = createClass(Motion_state, Manipulation_state)
+locomotion_slave._NAME = 'locomotion_slave'
 
 local dcm = locomotion_slave.dcm
 local joint = Config.joint
@@ -24,6 +27,7 @@ function locomotion_slave:entry()
 end
 
 function locomotion_slave:update()
+
 end
 
 function locomotion_slave:exit()

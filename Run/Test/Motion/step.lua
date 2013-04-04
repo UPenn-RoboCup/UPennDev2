@@ -67,6 +67,7 @@ local qmid = {}
 local qimp = {}
 local data = {}
 local double_support = false
+local single_support = false
 local axis = vector.new{0, 0}
 local ds_lever = 0
 local hip_state = {0,0,0,0}
@@ -80,17 +81,17 @@ local state_step = 0
 local COP_filters = {filter.new_second_order_low_pass(0.004, 20, 0.7), filter.new_second_order_low_pass(0.004, 20, 0.7)}
 
 local torque_filters = {}
-for i, index in pairs(joint.index['ankles']) do
+for i, index in pairs(joint.ankles) do
   torque_filters[index] = filter.new_low_pass(0.004,30) 
 end
 
-pgain, igain, dgain = 150, 80, 45
+pgain, igain, dgain = 150, 30, 45
 local COGx_pid = pid.new(0.004, pgain, igain, dgain)
 COGx_pid:set_d_corner_frequency(20) 
-pgain, igain, dgain = 150, 80, 45
+pgain, igain, dgain = 150, 30, 45
 local COGy_pid = pid.new(0.004, pgain, igain, dgain)
 COGy_pid:set_d_corner_frequency(20)
-pgain, igain, dgain = 120, 100, 30
+pgain, igain, dgain = 120, 30, 30
 local COGd_pid = pid.new(0.004, pgain, igain, dgain)
 COGd_pid:set_d_corner_frequency(20)
 
@@ -100,7 +101,7 @@ COG_vel_filter[2] = filter.new_differentiator(0.004, 30, 0.5)
 COG_vel_filter_d = filter.new_differentiator(0.004, 30, 0.5)
 
 local pos_filters = {}
-for i, index in pairs(joint.index['legs']) do
+for i, index in pairs(joint.legs) do
   pos_filters[index] = filter.new_second_order_low_pass(0.004, 60, 0.5)
 end
 
@@ -113,7 +114,7 @@ local vel_filters = {}
 local vel_filters_raw = {}
 local filter_b = {   0.1094,    0.1094,   -0.1094,   -0.1094} --5 freq, 3 order butter, 1 dt
 local filter_a = {  1.0000,   -2.7492,    2.5288,   -0.7779}
-for i, index in pairs(joint.index['legs']) do
+for i, index in pairs(joint.legs) do
   vel_filters[index] = filter.new(filter_b, filter_a)
   vel_filters_raw[index] =  filter.new_differentiator(0.004, 5) --unfiltered
 end
@@ -121,7 +122,7 @@ end
 local acc_filters = {}
 local filter_b = {6403,   -6403,   -6403,    6403} --30 freq, 3 order butter, 2 dt
 local filter_a = { 1.0000,   -1.5819,    1.0147,   -0.2279}
-for i, index in pairs(joint.index['legs']) do
+for i, index in pairs(joint.legs) do
   acc_filters[index] = filter.new(filter_b, filter_a)
 end
 
@@ -244,6 +245,7 @@ function COG_controller(des_loc) --uses loc wrt foot
   local foot_pos = {0, 0}
   local feet_on_gnd = foot_state[5] + foot_state[11]
   if double_support == true then feet_on_gnd = 2 end
+  if single_support == true then feet_on_gnd = 1 end
   if test_foot_state[1] == 'l' then --use left foot as reference
     foot_pos = vector.copy(lf)
   else  -- use right foot as reference
@@ -254,7 +256,6 @@ function COG_controller(des_loc) --uses loc wrt foot
     COGx_pid:update(state_est_k1[1][1])
     COGy_pid:set_setpoint(des_loc[2])
     COGy_pid:update(state_est_k1[2][1])
-
     torques[1] = -1*COGy_pid.p_gain*(state_est_k1[2][1] - des_loc[2]) 
     torques[1] = torques[1] - COGy_pid.d_gain*state_est_k1[2][2] + COGy_pid.i_term
     torques[2] = COGx_pid.p_gain*(state_est_k1[1][1] - des_loc[1]) 
@@ -471,6 +472,7 @@ function COG_update()
   COG[1] = COG_temp[1] + correction[1]
   COG[2] = COG_temp[2] + correction[2]
   COG[3] = COG_temp[3]
+  
   --COG = pcm:get_cog()  ------ webots only
 end
 
@@ -485,34 +487,50 @@ function reset_states()
   local foot_pose = {}
   if test_foot_state[1] == 'r' then
     foot_pose = pcm:get_r_foot_pose()
-    state_est_k1[1][1] = math.asin((COG[1]-rf[1])/0.66)
+    state_est_k1[1][1] = math.asin((COG[1]-foot_pose[1])/0.66)
+    state_est_k1[2][1] = math.asin((COG[2]-foot_pose[2])/0.66)
   else
     foot_pose = pcm:get_l_foot_pose()
-    state_est_k1[1][1] = math.asin((COG[1]-rf[1])/0.66)
+    state_est_k1[1][1] = math.asin((COG[1]-foot_pose[1])/0.66)
+    state_est_k1[2][1] = math.asin((COG[2]-foot_pose[2])/0.66)
   end
-    state_est_k1[1][2] = 0.1;
+    state_est_k1[1][2] = 0
+    state_est_k1[2][2] = -0.06
     COG_vel_filter[1]:reset()
-    COG_vel_filter[1].output[1] = 0.1
+    COG_vel_filter[1].output[1] = 0
+    COG_vel_filter[2]:reset()
+    COG_vel_filter[2].output[1] = 0
 end
 
 --------------------------------------------------------------------
 --Motion Functions:
 --------------------------------------------------------------------
-function move_legs(torso)
+function move_legs(torso, l_leg, r_leg)
 --returns joint angle required to move the torso origin to given location
-  local l_foot_frame = Transform.pose(l_leg_offset)
-  local r_foot_frame = Transform.pose(r_leg_offset)
+  if r_leg == nil then r_leg = vector.copy(r_leg_offset) end
+  if l_leg == nil then l_leg = vector.copy(l_leg_offset) end
+  local l_foot_frame = Transform.pose(l_leg)
+  local r_foot_frame = Transform.pose(r_leg)
   local torso_frame = Transform.pose(torso)
   local qStance = Kinematics.inverse_pos_legs(l_foot_frame, r_foot_frame, torso_frame)
   return qStance  
 end
 
-function find_stride_joint_angles(r, y)
+function find_stride_joint_angles(r, y, torso_offset)
   local qimpact = {}
   local qmidstride = {}
   local stance = Transform.pose({0, 0, 0, 0, 0, 0})
   local swing = {}
   local torso_pos = {}
+  if test_foot_state[1] == 'l' then 
+    swing = Transform.pose({0, -y, 0.05, 0, 0, 0})
+    torso_pos = Transform.pose({0, torso_offset, 0.756, 0, 0, 0})
+    qmidstride = Kinematics.inverse_pos_legs(stance, swing, torso_pos)
+  else 
+    swing = Transform.pose({0, y, 0.05, 0, 0, 0})
+    torso_pos = Transform.pose({0, -torso_offset, 0.756, 0, 0, 0})
+    qmidstride = Kinematics.inverse_pos_legs(swing, stance, torso_pos)
+  end
   if test_foot_state[1] == 'l' then 
     swing = Transform.pose({r, -y, 0, 0, 0, 0} )
     torso_pos = Transform.pose({r/4, -y/2, 0.746, 0, 0, 0})
@@ -521,15 +539,6 @@ function find_stride_joint_angles(r, y)
     swing = Transform.pose({r, y, 0, 0, 0, 0} )
     torso_pos = Transform.pose({r/4, y/2, 0.746, 0, 0, 0})
     qimpact = Kinematics.inverse_pos_legs(swing, stance, torso_pos)
-  end
-  if test_foot_state[1] == 'l' then 
-    swing = Transform.pose({0, -y, 0.05, 0, 0, 0})
-    torso_pos = Transform.pose({0, 0, 0.756, 0, 0, 0})
-    qmidstride = Kinematics.inverse_pos_legs(stance, swing, torso_pos)
-  else 
-    swing = Transform.pose({0, y, 0.05, 0, 0, 0})
-    torso_pos = Transform.pose({0, 0, 0.756, 0, 0, 0})
-    qmidstride = Kinematics.inverse_pos_legs(swing, stance, torso_pos)
   end
   return qimpact, qmidstride
 end
@@ -556,6 +565,7 @@ function gravity_comp()
   local tx, ty = 0, 0
   local feet_on_gnd = foot_state[5] + foot_state[11]
   if double_support == true then feet_on_gnd = 2 end
+  if single_support == true then feet_on_gnd = 1 end
   if test_foot_state[1] == 'l' then
     foot_pos = pcm:get_l_foot_pose()
   else
@@ -585,6 +595,7 @@ end
 local storemove = {0,0,0,0}
 local storemove2 = {0,0,0,0}
 local qt_test = vector.zeros(12)
+local move_foot = {0, 0, 0}
 local ratio = 1
 function state_machine(t) 
   if (state == 0) then
@@ -593,7 +604,7 @@ function state_machine(t)
       print('state_t', state_t)
       l_leg_offset = vector.copy(lf)
       r_leg_offset = vector.copy(rf)
-      joint_offset = move_legs(vector.new{0, 0, -0.05, 0, 0, 0})
+      joint_offset = move_legs(vector.new{0, 0, -0.05, 0, 0.07, 0})
       joint_offset = vector.new(joint_offset)
       state = 1
       state_t = 0
@@ -614,6 +625,7 @@ function state_machine(t)
       state = 2
       state_t = 0
       print("wait for 0.5", t-t0)
+      print("ahrs", ahrs_filt[8])
       --run = false
     end
   elseif (state == 2) then --wait 
@@ -626,7 +638,7 @@ function state_machine(t)
       trav_offset = lf[2] - COG[2]
       print('trav offset', trav_offset)
       print("begin cog move", t-t0)
-      delta = vector.new{0,0,0,ahrs_filt[7], ahrs_filt[8],0}
+      delta = vector.new{0,0,0,ahrs_filt[7], ahrs_filt[8], 0}
       goal = (lf[2] - COG[2]) - 0.03
       hip_state = {0,0,0}
     end
@@ -634,111 +646,112 @@ function state_machine(t)
     local tau = 2 - state_t --remaining time
     if state_t > 0.4 then 
       ratio = (trav_offset - (lf[2] - COG[2]))/(l_leg_offset[2] - lf[2])
-      goal = (trav_offset - 0.02) / ratio
+      goal = (trav_offset - 0.00) / ratio
     end
-    if state_t > 1 then ff_torques[1] = -6 end
+    --if state_t > 1 then ff_torques[1] = -6 end
     local x,xd,xdd = trajectory.minimum_jerk_step(hip_state, {goal, 0, 0}, tau, 0.004)
     hip_state = vector.new{x, xd, xdd} 
     delta[2] = hip_state[1]
     qt = move_legs(delta)
-    if (state_t >2) then  -- true then --
-      --run = false
+    if (state_t >1.0) then  -- true then --
+      run = false
+      print('single_support', t)
       ff_torques[1] = 0
+      single_support = true
       state = 4
       state_t = 0
-      qimp, qmid = find_stride_joint_angles(0.25, 0.17)
+      qimp, qmid = find_stride_joint_angles(0.25, 0.17, 0.030)
       joint_offset = vector.copy(qt)
-      delta = qmid - joint_offset
+      move_foot = {0, 0, 0}
     end
-  elseif (state == 4) then
-    if (state_t > 4) then
+  elseif (state == 4) then --lift leg
+    local tau = 2 - state_t 
+    local x,xd,xdd = trajectory.minimum_jerk_step(hip_state, {goal, 0, 0}, tau, 0.004)
+    hip_state = vector.new{x, xd, xdd} 
+    delta[2] = hip_state[1]
+    x,xd,xdd = trajectory.minimum_jerk_step(move_foot, {1, 0, 0}, tau, 0.004)
+    move_foot = vector.new{x, xd, xdd} 
+    local r_leg_delta = r_leg_offset + move_foot[1]*vector.new{0, 0.0, 0.05, 0, 0, 0}
+    qt = move_legs(delta, nil, r_leg_delta)
+    if state_t >= 2 then --percent >= 1
       run = false
-      state_t = 0
-      state = 5
-    end
-  elseif (state == 5) then --lift leg
-    local percent = trajectory_percentage(1, 2, state_t)
-    qt = delta*percent + joint_offset
-    if state_t < 2 then ff_torques[1] = -4
-    else ff_torques[1] = 0 end
-    if percent>=1 then
-      --run = false
-      --print('take step', t)
+      print('take step', t)
+      single_support = false
       ff_torques = vector.new{0, 0}
       state = 5
       state_t = 0
-      joint_offset = vector.copy(qt)
-      delta = qimp - joint_offset
     end
-  elseif (state == 5) then
-    if (state_t > 4) then
-      run = false
-    end
-  elseif (state == 5) then --take step
-    local percent = trajectory_percentage(1, 1.5, state_t)
-    qt = delta*percent + joint_offset
-    COG_des[1] = 0.16*state_t/1.6
-    COG_des[2] = -0.06*state_t/1.6
-    if foot_state[11] == 1 then  --right foot impact
-      print("impact t cog s_t", t, COG_des[1], COG_des[2], state_t)
+  elseif (state == 5) then --wait
+    if (state_t > 2) then
       --run = false
-      double_support = true
-      state = 6
       state_t = 0
+      state = 6
+      print('initate step', t)
+      print('hip_State', hip_state[1])
+    end
+  elseif (state == 6) then --initate step, lower foot
+    local x,xd,xdd = trajectory.minimum_jerk_step(hip_state, {-0.131, 0, 0}, 4-state_t, 0.004)
+    hip_state = vector.new{x, xd, xdd} 
+    delta[2] = hip_state[1]
+    if (1-state_t) > 0 then
+      x,xd,xdd = trajectory.minimum_jerk_step(move_foot, {0, 0, 0}, 1-state_t, 0.004)
+      move_foot = vector.new{x, xd, xdd} 
+    end
+    local r_leg_delta = r_leg_offset + move_foot[1]*vector.new{0, 0.0, 0.05, 0, 0, 0}
+--above line will need to change when step length not equal 0
+--or could make it use a new set of offsets
+    qt = move_legs(delta, nil, r_leg_delta)
+    if foot_state[11] == 1 and state_t < 2 then
       test_foot_state[1] = 'r'
       reset_states()
-      hip_state[1] = {0, state_est_k1[1][2]*0.66, 0}
-      hip_state[2] = {0, state_est_k1[2][2]*0.66, 0}
-      l_leg_offset = vector.copy(lf)
-      r_leg_offset = vector.copy(rf)
-      trav_offset = {(rf[1] - COG[1]), (rf[2] - COG[2])}
-      delta = vector.new{0,0,0,ahrs[7],ahrs[8],ahrs[9]}
-      goal = vector.copy(trav_offset)
-      COG_des = goal + vector.new{-0.08, 0.025}
-      print('cog des')      
-      util.ptable(COG_des)
-      print('goal')
-      util.ptable(goal)
+      --print('just reset', state_t, t)
     end
-  elseif (state == 6) then --move COG
-    local ratio = {1, 1}
-    local tau = 2 - state_t --remaining time
-    if state_t > 0.35 then 
-      ratio[1] = (trav_offset[1]-(rf[1] - COG[1])) / (r_leg_offset[1] - rf[1])
-      ratio[2] = (trav_offset[2]-(rf[2] - COG[2])) / (r_leg_offset[2] - rf[2])
-      goal = {COG_des[1]/ratio[1], COG_des[2]/ratio[2]}
+    if state_t < 1 then 
+      COG_des = {0, -(.131-hip_state[1])*ratio} 
+    else 
+      COG_des = {0, -(.131-hip_state[1])*ratio*2} 
+      ff_torques = vector.new{-4, 0}
     end
-    local x,xd,xdd = trajectory.minimum_jerk_step(hip_state[1], {goal[1],0,0}, tau, 0.004)
-    local y,yd,ydd = trajectory.minimum_jerk_step(hip_state[2], {goal[2],0,0}, tau, 0.004)
-    hip_state[1] = vector.new{x, xd, xdd} 
-    hip_state[2] = vector.new{y, yd, ydd}
-    delta[1] = hip_state[1][1]
-    delta[2] = hip_state[2][1] 
-    --print('ratio', ratio[1], ratio[2])
-    storemove = {ratio[1], goal[1], (trav_offset[1]-(rf[1] - COG[1])), (r_leg_offset[1] - rf[1])}
-    storemove2 = {ratio[2], goal[2], (trav_offset[2]-(rf[2] - COG[2])), (r_leg_offset[2] - rf[2])}
-    --print('trav_offset')
-    --util.ptable(trav_offset)
-    --print('goal')
-    --util.ptable(goal)
-    --print('hip_state_x')
-    --util.ptable(hip_state[1])
-     --print('hip_state_y')
-    --util.ptable(hip_state[2])
-    qt = move_legs(delta)
-    if state_t >= 2 then  -- true then 
-      print("begin single support", t)
-      util.ptable(delta)
-      --print('qt')
-      --util.ptable(qt)
-      --util.ptable(joint_pos_sense)
-      run = false
-      state = 7
+    if foot_state[11] == 1 then
+      double_support = true
+    end
+    if state_t > 2.5 then
+      --run = false
+      double_support = false
+      single_support = true
+      ff_torques = vector.new{0, 0}
+      print('begin single support', t)
       state_t = 0
-      joint_offset = vector.copy(qt) 
-      qimp, qmid = find_stride_joint_angles(0.295, 0.25)
-      delta = qmid - joint_offset 
-      reset_states()
+      state = 7
+      --print('test reset', state_est_k1[2][1], state_est_k1[2][2])
+      move_foot = {0, 0, 0}
+      COG_des = {0, 0}
+    end
+  elseif (state == 7) then --lift leg
+    local tau = 2 - state_t 
+    local x,xd,xdd = trajectory.minimum_jerk_step(hip_state, {-0.131, 0, 0}, tau, 0.004)
+    hip_state = vector.new{x, xd, xdd} 
+    delta[2] = hip_state[1]
+    x,xd,xdd = trajectory.minimum_jerk_step(move_foot, {1, 0, 0}, tau, 0.004)
+    move_foot = vector.new{x, xd, xdd} 
+    local l_leg_delta = l_leg_offset + move_foot[1]*vector.new{0, 0.0, 0.05, 0, 0, 0}
+    --print('delta, l_leg', delta[2], l_leg_delta[3])
+    qt = move_legs(delta, l_leg_delta)
+    ff_torques[1] = 20*hip_state[3]
+    if state_t >= 2 then --percent >= 1
+      run = false
+      ff_torques = 0
+      print('take step', t)
+      single_support = true
+      ff_torques = vector.new{0, 0}
+      state = 9
+      state_t = 0
+    end
+  elseif (state == 9) then --wait
+    if (state_t > .2) then
+      run = false
+      state_t = 0
+      state = 10
     end
   end
 end
@@ -760,7 +773,7 @@ dcm:set_joint_position(set_values)
 dcm:set_joint_enable(1, 'all')
 qt = vector.copy(set_values) 
 
-local ident = "t9"
+local ident = "t1"
 print('ident', ident)
 local fw_log = assert(io.open("../Logs/fw_log"..ident..".txt","w"))
 local fw_reg = assert(io.open("../Logs/fw_reg"..ident..".txt","w"))
@@ -823,15 +836,15 @@ end
 --Main
 --------------------------------------------------------------------
 unix.usleep(1e6)
-t0 = unix.time()
+t0 = unix.time()  --robot only
 t = t0
 while run do 
   Platform.update()
   dt = Platform.get_time() - t 
-  t = t + dt --simulation time
+  t = t + dt 
   Proprioception.update()
-  state_t = state_t + dt --time used in state machine
-  step = step + 1  --step number
+  state_t = state_t + dt 
+  step = step + 1  
 --sensor updates
   update_joint_data()
   ahrs_update()
@@ -843,7 +856,6 @@ while run do
   state_machine(t)
   --if state >= 1 then orient_torso(0) end--modify qt's to upright torso 
   pid_torques = COG_controller(COG_des)
-  --end
   joint_torques = update_joint_torques()
   update_observer()
   update_observer_double_support()
@@ -867,13 +879,11 @@ while run do
     data[10] = state_est_k1[1]
     data[11] = state_est_k1[2]
     data[12] = lf
-    data[13] = {hip_state[1], goal, ratio}
-    --data[14] = state_est_d1
-    --data[15] =  bias
-    --data[16] = {foot_state[5], foot_state[11]}
-    --data[17] = storemove
-    --data[18] = storemove2
-    data[14] = {t} --robot only
+    --data[13] = delta
+    --data[14] = qt
+    --data[15] = rf
+    --data[16] = hip_state
+    data[13] = {t} --robot only
     --
     log_var_names = {'jnt_torq', 'ft_filt', 'grav_trq', 'pid_trq', 'bias'}
     log_var_names[6] = 'state_est_d1'
@@ -883,10 +893,9 @@ while run do
     log_var_names[10] = 'qt'
     log_var_names[11] = 'qt_test'
     log_var_names[12] = 'lf'
-    log_var_names[13] = 'cog move'
-    log_var_names[14] = 't'
-    --log_var_names[15] = 'bias'
-    --log_var_names[16] = 'foot_state'
+    --log_var_names[13] = 'cog move'
+    --log_var_names[14] = 'qt'
+    --log_var_names[15] = 'rf'
     --log_var_names[17] = 'delta'
     --log_var_names[18] = 'delta2'
     store_data(data)  --robot only

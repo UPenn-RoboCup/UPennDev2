@@ -287,40 +287,40 @@ setup_webots_cont: webot
 	@echo "\n"
 
 setup_webots: setup_webots_cont
-	@echo "Setting up Webots Lua/C++ Libraries...\n"
+#	@echo "Setting up Webots Lua/C++ Libraries...\n"
 #	mkdir -p $(INSTDIR)
 #	find $(WEBOTSDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
-	@echo "\n"
+#	@echo "\n"
 
 setup_image: image
-	@echo "Setting up Image Processing Lua/C++ Libraries...\n"
+#	@echo "Setting up Image Processing Lua/C++ Libraries...\n"
 #	mkdir -p $(INSTDIR)
 #	find $(IMAGEDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
-	@echo "\n"
+#	@echo "\n"
 
 setup_util: util
-	@echo "Setting up Utility Lua/C++ Libraries...\n"
+#	@echo "Setting up Utility Lua/C++ Libraries...\n"
 #	mkdir -p $(INSTDIR)
 #	find $(UTILDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
-	@echo "\n"
+#	@echo "\n"
 
 setup_comm: comm
-	@echo "Setting up Communication Lua/C++ Libraries...\n"
+#	@echo "Setting up Communication Lua/C++ Libraries...\n"
 #	mkdir -p $(INSTDIR)
 #	find $(COMMDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
-	@echo "\n"
+#	@echo "\n"
 
 setup_serial: serial
-	@echo "Setting up Serial Lua/C++ Libraries...\n"
+#	@echo "Setting up Serial Lua/C++ Libraries...\n"
 #	mkdir -p $(INSTDIR)
 #	find $(SERIALDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
-	@echo "\n"
+#	@echo "\n"
 
 setup_hokuyo: hokuyo
-	@echo "Setting up Hokuyo Lua/C++ Libraries...\n"
+#	@echo "Setting up Hokuyo Lua/C++ Libraries...\n"
 #	mkdir -p $(INSTDIR)
 #	find $(HOKUYODIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
-	@echo "\n"
+#	@echo "\n"
 
 setup_slamT: torch SlamT
 	@echo "Setting up Slam Torch/Lua/C++ Libraries...\n"
@@ -329,17 +329,17 @@ setup_slamT: torch SlamT
 	@echo "\n"
 
 setup_occmap: occmap
-	@echo "Setting up Occupancy Map Lua/C++ Libraries...\n"
+#	@echo "Setting up Occupancy Map Lua/C++ Libraries...\n"
 #	mkdir -p $(INSTDIR)
 #	find $(OCCMAPDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
-	@echo "\n"
+#	@echo "\n"
 
 setup_velocity: velocity
-	@echo "Setting up Velocity Lua/C++ Libraries...\n"
+#	@echo "Setting up Velocity Lua/C++ Libraries...\n"
 #	mkdir -p $(INSTDIR)
 #	find $(VELODIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
 #	find $(VELODIR) $(REGEX) -exec cp -v {} $(WEBOTSCONTDIR) \;
-	@echo "\n"
+#	@echo "\n"
 
 setup_primesense: primesense setup_util
 	@echo "Setting up PrimeSense Lua/C++ Libraries...\n"

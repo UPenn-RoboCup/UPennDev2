@@ -49,10 +49,10 @@ else
 	--Default
 --  dofile("Run/Test/test_joints_webots.lua");
 --  dofile("Run/Test/test_walk_webots.lua");
-  dofile("Run/Test/test_vision_webots.lua");
+--  dofile("Run/Test/test_vision_webots.lua");
 --	dofile("Run/Test/test_main_webots.lua");
 --  dofile("Run/main.lua");
---  dofile("Run/main.lua");
+  dofile("Run/wbcontroller.lua");
 --  dofile("Run/Test/test_box.lua");
 end
 

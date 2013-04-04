@@ -60,7 +60,7 @@ DEF PLAYER_1_99 DARwInOPGPS {
   translation -2.99092 0.340872 0.00331587
   rotation 0.000227446 1 -0.000302089 1.4389
   controller "darwin-op_team_0"
-  controllerArgs "1 99"
+  controllerArgs "1 100"
   plasticColor 0.2 0.2 0.2
   cameraWindowPosition 0.125 0
   waistBand TRUE

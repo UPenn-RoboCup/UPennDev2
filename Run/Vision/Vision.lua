@@ -28,8 +28,8 @@ if Config.game.playerID==1 and Config.game.teamNumber==1 then
   ffi = require 'ffi'
   require 'cjpeg'
   simple_ipc = require 'simple_ipc'
-  img_channel = simple_ipc.setup_publisher('img');
-end
+  img_channel = simple_ipc.new_publisher('img');
+--end
 
 local Camera = nil
 if use_gps_only==0 then

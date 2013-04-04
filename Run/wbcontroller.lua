@@ -8,9 +8,9 @@ local cjpeg = require 'cjpeg'
 local carray = require 'carray'
 local msgpack = require 'msgpack'
 
---local simple_ipc = require 'simple_ipc'
+local simple_ipc = require 'simple_ipc'
 
---local camera_channel = simple_ipc.setup_publisher('camera')
+local camera_channel = simple_ipc.setup_publisher('camera')
 
 print('load')
 local t_last = Body.get_time()
@@ -24,11 +24,12 @@ while true do
     t_last = t
   end
 
-    local image = carray.byte(Camera.get_image(), Camera.get_width() * Camera.get_height() * 3)
+    local image = carray.byte( Camera.get_image(), Camera.get_width() * Camera.get_height() * 3 )
     --local img_str = tostring(image)
     print( type(Camera.get_image()), type(image), type(img_str) )
     print(Camera.get_width(), Camera.get_height() )
---    camera_channel:send('hello')
+    local res = camera_channel:send('hello')
+    print(res)
 --    local img_str = msgpack.pack(image, Camera.get_width() * Camera.get_height() * 3)
   Body.update()
 end

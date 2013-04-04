@@ -17,39 +17,44 @@
 #include "osgcamera.h"
 
 #include <QtCore/QTimer>
-#include <QtGui/QApplication>
-#include <QtGui/QGridLayout>
+#include <osgViewer/Viewer>
 
-#include <osgViewer/ViewerEventHandlers>
-
-#include <osgGA/TrackballManipulator>
-
-#include <osgDB/ReadFile>
-
-#include <osgQt/GraphicsWindowQt>
-
-#include <iostream>
-
+/*!
+ * \brief The OsgWidget class
+ */
 
 class OsgWidget : public QWidget, public osgViewer::Viewer
 {
     Q_OBJECT
 public:
-    explicit OsgWidget(osg::Node *node, osgViewer::ViewerBase::ThreadingModel threadingModel=osgViewer::Viewer::SingleThreaded);
-    QWidget* addViewWidget( OsgCamera camera, osg::Node* scene );
-    virtual void paintEvent( QPaintEvent* event ) { frame(); }
+    explicit OsgWidget();
+
+    /*!
+     * \brief Creates the OSG context and lays out the widget.
+     */
+    void initialize();
+
+private:
 
 signals:
 
 public slots:
+    /*!
+     * \brief Requests OSG to render a frame
+     */
+    void drawFrame();
 
 protected:
-
+    /*!
+     * \brief Timer for rendering frames (Will be removed!)
+     */
     QTimer _timer;
 
 private:
+    /*!
+     * \brief The camera used for this viewport
+     */
     OsgCamera _camera;
-
 
 };
 

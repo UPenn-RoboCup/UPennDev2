@@ -1,21 +1,38 @@
 #include "rightwindow.h"
 #include "ui_rightwindow.h"
-
 #include "osgwidget.h"
+
 #include <QLabel>
+#include <QGridLayout>
+
+#include <osgDB/ReadFile>
 
 RightWindow::RightWindow() :
     QWidget()
 {
-    osg::Node *ashModel = osgDB::readNodeFile("/home/afalendy/Models/ASH_Model_STL/SAFFiR_Simple.stl");
-    OsgWidget *robot3DView = new OsgWidget(ashModel);
 
+}
+
+RightWindow::~RightWindow()
+{
+
+}
+
+void RightWindow::initialize() {
+    // Load models
+    osg::Node *ashModel = osgDB::readNodeFile("/home/afalendy/Models/ASH_Model_STL/SAFFiR_Simple.stl");
+    OsgWidget *robot3DView = new OsgWidget();
+    robot3DView->initialize();
+    robot3DView->setSceneData(ashModel);
+
+    // Create Widgets
     QLabel *labelLeft = new QLabel("Mode-specific Telemetry");
     labelLeft->setAlignment(Qt::AlignCenter);
 
     QLabel *labelRight = new QLabel("Modeul-specific Telemetry");
     labelRight->setAlignment(Qt::AlignCenter);
 
+    // Perform layout
     QGridLayout *layout = new QGridLayout();
     layout->setSpacing(0);
     layout->setMargin(2);
@@ -28,12 +45,3 @@ RightWindow::RightWindow() :
     setLayout( layout );
 }
 
-RightWindow::~RightWindow()
-{
-}
-
-void RightWindow::keyPressEvent(QKeyEvent *key)
-{
-    if(key->key() == Qt::Key_Escape)
-        QApplication::exit();
-}

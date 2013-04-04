@@ -4,7 +4,11 @@
  */
 #include "centerwindow.h"
 #include "ui_centerwindow.h"
+
 #include <QLabel>
+#include <QGridLayout>
+
+#include <phonon/MediaSource>
 
 /**
  *
@@ -12,6 +16,16 @@
  */
 CenterWindow::CenterWindow(QWidget *parent) :
     QWidget(parent)
+{
+
+}
+
+CenterWindow::~CenterWindow()
+{
+
+}
+
+void CenterWindow::initialize()
 {
     myVideoWidget = new Phonon::VideoWidget();
     myVideoPlayer = new Phonon::MediaObject(myVideoWidget);
@@ -33,16 +47,4 @@ CenterWindow::CenterWindow(QWidget *parent) :
     myVideoPlayer->setCurrentSource(*src);
 
     myVideoPlayer->play();
-
-}
-
-CenterWindow::~CenterWindow()
-{
-
-}
-
-void CenterWindow::keyPressEvent(QKeyEvent *key)
-{
-    if(key->key() == Qt::Key_Escape)
-        QApplication::exit();
 }

@@ -36,7 +36,8 @@ SOURCES += main.cpp\
     walkstatemachine.cpp \
     osgcamera.cpp \
     commsinterface.cpp \
-    examplecodeclass.cpp
+    examplecodeclass.cpp \
+    keyboardeventfilter.cpp
 
 HEADERS  += centerwindow.h \
     rightwindow.h \
@@ -58,7 +59,8 @@ HEADERS  += centerwindow.h \
     walkstatemachine.h \
     osgcamera.h \
     commsinterface.h \
-    examplecodeclass.h
+    examplecodeclass.h \
+    keyboardeventfilter.h
 
 FORMS    += centerwindow.ui \
     rightwindow.ui \

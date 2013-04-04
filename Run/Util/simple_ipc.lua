@@ -36,7 +36,7 @@ else
 end
 
 -- If channel is a number, then use tcp
-local function setup_publisher( channel )
+local function new_publisher( channel )
 	local channel_obj = {}
 	local channel_type = type(channel)
 	if channel_type=="string" then
@@ -84,9 +84,9 @@ local function setup_publisher( channel )
   end
   return channel_obj;
 end
-simple_ipc.setup_publisher = setup_publisher
+simple_ipc.new_publisher = new_publisher
 
-local function setup_subscriber( channel )
+local function new_subscriber( channel )
 	local channel_obj = {}
 	local channel_type = type(channel)
 	if channel_type=="string" then
@@ -120,7 +120,7 @@ local function setup_subscriber( channel )
 
   return channel_obj;
 end
-simple_ipc.setup_subscriber = setup_subscriber
+simple_ipc.new_subscriber = new_subscriber
 
 local function wait_on_channels( channels )
   local poll_obj = poller.new( #channels )

@@ -16,7 +16,7 @@ local simple_ipc = require 'simple_ipc'
 sz = {601,601}
 qimage = QImage(sz[2],sz[1],QImage.Format.Format_RGB32)
 
-omap_channel = simple_ipc.setup_subscriber('omap');
+omap_channel = simple_ipc.new_subscriber('omap');
 slam_map = torch.ByteTensor():ones(sz[1],sz[2])*128
 slam_map_cdata = torch.data( slam_map )
 timestamp_cdata = ffi.new('double[1]',0);

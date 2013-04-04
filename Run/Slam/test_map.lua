@@ -27,7 +27,7 @@ local map_cdata_sz = omap:storage():size() * ffi.sizeof('char')
 print('Map size:',libSlam.MAPS.sizex,libSlam.MAPS.sizey)
 
 -- Setup IPC
-local lidar_channel = simple_ipc.setup_subscriber('lidar');
+local lidar_channel = simple_ipc.new_subscriber('lidar');
 local lidar_callback = function()
   -- Receive ipc sensor payload
   local nbytes, has_more = lidar_channel:receive(ranges_cdata, ranges_cdata_sz)
@@ -41,14 +41,14 @@ local lidar_callback = function()
 end
 lidar_channel.callback = lidar_callback
 
-local imu_channel = simple_ipc.setup_subscriber('imu');
+local imu_channel = simple_ipc.new_subscriber('imu');
 imu_channel.callback = function()
 	local nbytes, has_more = imu_channel:receive(imu_buf, imu_buf_sz)
 	local offset, decoded = mp.unpack( ffi.string(imu_buf,nbytes) )
 	--print(decoded.t)
 end
 
-local omap_channel = simple_ipc.setup_publisher('omap');
+local omap_channel = simple_ipc.new_publisher('omap');
 -- Poll multiple sockets
 local wait_channels = {lidar_channel, imu_channel}
 local channel_poll = simple_ipc.wait_on_channels( wait_channels );

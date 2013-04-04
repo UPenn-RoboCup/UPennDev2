@@ -1,6 +1,6 @@
 require('dcm')
 require('pcm')
-require('vector')
+require('Config')
 require('Transform')
 
 --------------------------------------------------------------------------------
@@ -9,12 +9,14 @@ require('Transform')
 
 rotation_sensor = {}
 
+local ahrs = Config.ahrs
+
 function rotation_sensor.entry()
 end
 
 function rotation_sensor.update()
-  local euler = dcm:get_ahrs('euler')
-  local gyro = dcm:get_ahrs('gyro')
+  local euler = dcm:get_ahrs(ahrs.euler)
+  local gyro = dcm:get_ahrs(ahrs.gyro)
 
   -- TODO use AHRS orientation data instead of euler angles
   local torso_pose = {0, 0, 0, euler[1], euler[2], 0}

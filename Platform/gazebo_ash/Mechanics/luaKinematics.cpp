@@ -87,6 +87,13 @@ static int lua_forward_pos_head(lua_State *L)
   Frame p_head;
   JntArray q_head = lua_checkJntArray(L, 1);
   assert(!Mechanics.head_fk_pos_solver->JntToCart(q_head, p_head));
+
+  if (lua_istable(L, 2))
+  {
+    Frame p_chest_offset = lua_checkFrame(L, 2);
+    p_head = p_chest_offset*p_head;
+  }
+
   lua_pushFrame(L, p_head);
   return 1;
 }
@@ -117,6 +124,13 @@ static int lua_forward_pos_waist(lua_State *L)
   Frame p_chest;
   JntArray q_waist = lua_checkJntArray(L, 1);
   assert(!Mechanics.waist_fk_pos_solver->JntToCart(q_waist, p_chest));
+
+  if (lua_istable(L, 2))
+  {
+    Frame p_torso_offset = lua_checkFrame(L, 2);
+    p_chest = p_torso_offset*p_chest;
+  }
+
   lua_pushFrame(L, p_chest);
   return 1;
 }
@@ -204,6 +218,18 @@ static int lua_forward_vel_head(lua_State *L)
   FrameVel pv_head;
   JntArrayVel qv_head(lua_checkJntArray(L, 1), lua_checkJntArray(L, 2));
   assert(!Mechanics.head_fk_vel_solver->JntToCart(qv_head, pv_head));
+
+  if (lua_istable(L, 3))
+  {
+    Twist v_chest_offset;
+    Frame p_chest_offset = lua_checkFrame(L, 3);
+    if (lua_istable(L, 4))
+      v_chest_offset = lua_checkTwist(L, 4);
+
+    FrameVel pv_chest_offset = FrameVel(p_chest_offset, v_chest_offset);
+    pv_head = pv_chest_offset*pv_head;
+  }
+
   lua_pushFrame(L, pv_head.GetFrame());
   lua_pushTwist(L, pv_head.GetTwist());
   return 2;
@@ -234,10 +260,20 @@ static int lua_forward_vel_r_arm(lua_State *L)
 static int lua_forward_vel_waist(lua_State *L)
 {
   // returns chest frame and velocity relative to torso frame
-
   FrameVel pv_chest;
   JntArrayVel qv_waist(lua_checkJntArray(L, 1), lua_checkJntArray(L, 2));
   assert(!Mechanics.waist_fk_vel_solver->JntToCart(qv_waist, pv_chest));
+
+  if (lua_istable(L, 3))
+  {
+    Twist v_torso_offset;
+    Frame p_torso_offset = lua_checkFrame(L, 3);
+    if (lua_istable(L, 4))
+      v_torso_offset = lua_checkTwist(L, 4);
+
+    FrameVel pv_torso_offset = FrameVel(p_torso_offset, v_torso_offset);
+    pv_chest = pv_torso_offset*pv_chest;
+  }
   lua_pushFrame(L, pv_chest.GetFrame());
   lua_pushTwist(L, pv_chest.GetTwist());
   return 2;
@@ -284,7 +320,6 @@ static int lua_forward_vel_arms(lua_State *L)
   assert(!Mechanics.l_arm_fk_vel_solver->JntToCart(qv_l_arm, pv_l_hand));
   assert(!Mechanics.r_arm_fk_vel_solver->JntToCart(qv_r_arm, pv_r_hand));
 
-  // optional chest frame / velocity offset
   if (lua_istable(L, 3))
   {
     Twist v_chest_offset;

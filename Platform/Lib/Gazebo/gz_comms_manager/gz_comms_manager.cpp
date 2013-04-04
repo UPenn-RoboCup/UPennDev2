@@ -23,9 +23,6 @@ namespace gazebo
     this->model = _parent;
     this->world = this->model->GetWorld(); 
 
-    // initialize time step
-    this->dynamics_time_step = this->world->GetPhysicsEngine()->GetStepTime();
-
     // load config parameters
     Config config;
     this->joint_max = config.get_int("comms_manager.joint_max");
@@ -37,6 +34,7 @@ namespace gazebo
     this->p_gain_default = config.get_double("comms_manager.p_gain_default");
     this->i_gain_default = config.get_double("comms_manager.i_gain_default");
     this->d_gain_default = config.get_double("comms_manager.d_gain_default");
+    this->physics_time_step = config.get_double("world_manager.physics_time_step");
 
     // initialize joints
     std::vector<std::string> joint_id;
@@ -144,13 +142,13 @@ namespace gazebo
       double max_position = this->joints[i]->GetHighStop(0).Radian();
 
       // initialize position pid controller
-      struct pid position_pid = new_pid(this->dynamics_time_step.Double());
+      struct pid position_pid = new_pid(this->physics_time_step);
       pid_set_setpoint_limits(&position_pid, min_position, max_position);
       pid_set_output_limits(&position_pid, -max_force, max_force);
 
       // initialize velocity filter
       struct filter velocity_filter = new_low_pass(
-        this->dynamics_time_step.Double(),
+        this->physics_time_step,
         this->d_break_freq
       );
       filter_set_output_limits(&velocity_filter, -max_force, max_force);
@@ -234,10 +232,6 @@ namespace gazebo
         this->dcm.ahrs[i+6] = euler[i];
       }
     }
-
-    // reset joint controllers if time step is modified
-    if (this->dynamics_time_step != this->world->GetPhysicsEngine()->GetStepTime())
-      this->initialize_controllers();
 
     // update joints
     for (int i = 0; i < this->joints.size(); i++)

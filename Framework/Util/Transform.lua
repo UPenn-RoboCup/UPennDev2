@@ -153,6 +153,16 @@ function Transform.euler(w)
   return Transform.pose({0, 0, 0, w[1], w[2], w[3]});
 end
 
+function Transform.array(v)
+  -- get transform from row major array
+  local t = {};
+  t[1] = vector.new({v[1],  v[2],  v[3],  v[4]});
+  t[2] = vector.new({v[5],  v[6],  v[7],  v[8]});
+  t[3] = vector.new({v[9],  v[10], v[11], v[12]});
+  t[4] = vector.new({v[13], v[14], v[15], v[16]});
+  return setmetatable(t, Transform);
+end
+
 -- Methods
 --------------------------------------------------------------------------
 
@@ -219,6 +229,28 @@ function Transform.get_euler(t)
     w[3] = math.atan2(-t[1][2]/math.cos(w[2]), t[1][1]/math.cos(w[2]));
   end
   return w;
+end
+
+function Transform.get_array(t)
+  -- get row major array from transform
+  local v = vector.new();
+  v[1] = t[1][1];
+  v[2] = t[1][2];
+  v[3] = t[1][3];
+  v[4] = t[1][4];
+  v[5] = t[2][1];
+  v[6] = t[2][2];
+  v[7] = t[2][3];
+  v[8] = t[2][4];
+  v[9] = t[3][1];
+  v[10] = t[3][2];
+  v[11] = t[3][3];
+  v[12] = t[3][4];
+  v[13] = t[4][1];
+  v[14] = t[4][2];
+  v[15] = t[4][3];
+  v[16] = t[4][4];
+  return v;
 end
 
 function Transform.__tostring(t)

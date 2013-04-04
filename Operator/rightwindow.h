@@ -11,22 +11,21 @@
 #ifndef RIGHTWINDOW_H
 #define RIGHTWINDOW_H
 
-#include <QMainWindow>
+#include <QWidget>
 
 namespace Ui {
 class RightWindow;
 }
 
-class RightWindow : public QMainWindow
+class RightWindow : public QWidget
 {
     Q_OBJECT
-    
+
 public:
-    explicit RightWindow(QWidget *parent = 0);
+    explicit RightWindow();
     ~RightWindow();
-    
-private:
-    Ui::RightWindow *ui;
+    void initialize();
+
 };
 
 #endif // RIGHTWINDOW_H

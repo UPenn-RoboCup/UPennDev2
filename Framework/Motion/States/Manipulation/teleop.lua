@@ -6,10 +6,12 @@ require('Config')
 --------------------------------------------------------------------------
 
 teleop = Motion_state.new('teleop')
-teleop:set_joint_access(0, 'all')
-teleop:set_joint_access(1, 'upperbody')
-teleop:set_joint_access(0, 'head')
+
 local dcm = teleop.dcm
+local joint = Config.joint
+teleop:set_joint_access(0, joint.all)
+teleop:set_joint_access(1, joint.upperbody)
+teleop:set_joint_access(0, joint.head)
 
 -- default parameters
 teleop.parameters = {

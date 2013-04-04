@@ -13,10 +13,20 @@
 #ifndef OSGCAMERA_H
 #define OSGCAMERA_H
 
+#include <osg/Camera>
+#include <osg/DisplaySettings>
+#include <osgQt/GraphicsWindowQt>
+
 class OsgCamera
 {
 public:
     OsgCamera();
+    ~OsgCamera();
+
+    osg::Camera* get();
+
+private:
+    osg::ref_ptr<osg::Camera> _camera;
 };
 
 #endif // OSGCAMERA_H

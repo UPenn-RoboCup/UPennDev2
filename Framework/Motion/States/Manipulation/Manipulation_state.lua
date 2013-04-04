@@ -99,6 +99,8 @@ function Manipulation_state:update()
 	--handle faults and pass manipulation_controller.THOR_MC_Y.ErrorCode
 	end
 	
+	--the following functions work in test lua but not in motion_manager
+	
 	--dcm:set_joint_velocity(real_T_array_to_table(mc_outputs.JointVelocityCmds,1,1), joint.waist)
 	--dcm:set_joint_velocity(real_T_array_to_table(mc_outputs.JointVelocityCmds,2,7), joint.r_arm)
 	--dcm:set_joint_velocity(real_T_array_to_table(mc_outputs.JointVelocityCmds,2,7), joint.j_arm)

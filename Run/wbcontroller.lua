@@ -1,7 +1,7 @@
 local cwd = os.getenv('PWD')
 dofile('Run/include.lua')
 
-local unix = require 'unix'
+--local unix = require 'unix'
 local Body = require 'Body'
 local Camera = require 'Camera'
 local cjpeg = require 'cjpeg'
@@ -12,27 +12,24 @@ local msgpack = require 'msgpack'
 
 --local camera_channel = simple_ipc.setup_publisher('camera')
 
-local last_update = Body.get_time()
-local update_interval = 0.01
-local last_vision_update = Body.get_time()
-local vision_update_interval = 0.04; --25fps update
-
 print('load')
-
+local t_last = Body.get_time()
+local debug_fps = 4
+local inv_debug_fps = 1/debug_fps
 while true do
-  if (unix.time() - last_update) > update_interval then
---    print(unix.time())
-    last_update = Body.get_time()
+  local t = Body.get_time()
+  local t_diff = t - t_last;
+  if (t-t_last)>inv_debug_fps then
+    print(t,t_last)
+    t_last = t
   end
 
-  if (unix.time() - last_vision_update) > vision_update_interval then
     local image = carray.byte(Camera.get_image(), Camera.get_width() * Camera.get_height() * 3)
-    local img_str = tostring(image)
-    print(Camera.get_width(), Camera.get_height(), #img_str)
+    --local img_str = tostring(image)
+    print( type(Camera.get_image()), type(image), type(img_str) )
+    print(Camera.get_width(), Camera.get_height() )
 --    camera_channel:send('hello')
---    unix.usleep(1e6)
 --    local img_str = msgpack.pack(image, Camera.get_width() * Camera.get_height() * 3)
-    last_vision_update = Body.get_time()
-  end
+  Body.update()
 end
 

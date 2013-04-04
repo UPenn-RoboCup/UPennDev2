@@ -7,7 +7,7 @@ require 'cjpeg'
 require 'cutil'
 
 -- Setup IPC
-local omap_channel = simple_ipc.setup_subscriber('omap');
+local omap_channel = simple_ipc.new_subscriber('omap');
 
 local omap_callback = function()
   -- Receive ipc sensor payload

@@ -1,8 +1,8 @@
 require('Config')
 require('carray')
 require('vector')
-require('util')
 require('shm')
+require('shm_util')
 
 ---------------------------------------------------------------------------
 -- dcm : device communications manager
@@ -45,9 +45,7 @@ local devices = {
 }
 
 local key_device = {}
-dcm.device_id = {}
-dcm.device_index = {}
-dcm.device_write_access = {}
+dcm.write_access = {}
 
 for device in pairs(devices) do
   for _,key in pairs(devices[device]) do
@@ -56,9 +54,7 @@ for device in pairs(devices) do
 end
 
 for device in pairs(devices) do
-  dcm.device_id[device] = Config[device] and Config[device].id
-  dcm.device_index[device] = Config[device] and Config[device].index
-  dcm.device_write_access[device] = vector.ones(#dcm.device_id[device])
+  dcm.write_access[device] = vector.ones(#Config[device].id)
 end
 
 -- configure shared memory
@@ -67,13 +63,13 @@ end
 -- define shared data fields and update flags 
 local shared_data = {}
 for key,device in pairs(key_device) do
-  shared_data[key] = vector.zeros(#dcm.device_id[device])
-  shared_data[key..'_updated'] = vector.zeros(#dcm.device_id[device])
+  shared_data[key] = vector.zeros(#Config[device].id)
+  shared_data[key..'_updated'] = vector.zeros(#Config[device].id)
 end
 
 -- initialize shared memory segment
 dcm.shm = shm.new('dcm')
-util.init_shm_keys(dcm.shm, shared_data)
+shm_util.init_shm_keys(dcm.shm, shared_data)
 
 -- get array access to shared data 
 local data = {}
@@ -89,15 +85,14 @@ function dcm:set_key(key, value, index)
   if (not device) then
     return false
   end
-  local device_index = self.device_index[device]
-  local device_write_access = self.device_write_access[device]
+  local write_access = self.write_access[device]
   if (type(index) == 'string') then
-    index = device_index[index]
+    index = Config[device][index]
   end
   local key_updated = key..'_updated'
-  local settings = util.settings_table(value, index)
+  local settings = shm_util.settings_table(value, index)
   for i,v in pairs(settings) do
-    if (device_write_access[i] == 1) then
+    if (write_access[i] == 1) then
       data[key][i] = v
       data[key_updated][i] = 1
     end
@@ -110,9 +105,8 @@ function dcm:get_key(key, index)
   if (not device) then
     return nil
   end
-  local device_index = self.device_index[device]
   if (type(index) == 'string') then
-    index = device_index[index]
+    index = Config[device][index]
   end
   if (type(index) == 'number') then
     return data[key][index]
@@ -136,14 +130,13 @@ function dcm:set_write_access(key, value, index)
   if (not device) then
     return false
   end
-  local device_index = self.device_index[device]
-  local device_write_access = self.device_write_access[device]
+  local write_access = self.write_access[device]
   if (type(index) == 'string') then
-    index = device_index[index]
+    index = Config[device][index]
   end
-  local settings = util.settings_table(value, index)
+  local settings = shm_util.settings_table(value, index)
   for i,v in pairs(settings) do
-    device_write_access[i] = v
+    write_access[i] = v
   end
   return true
 end
@@ -153,24 +146,23 @@ function dcm:get_write_access(key, value, index)
   if (not device) then
     return nil
   end
-  local device_index = self.device_index[device]
-  local device_write_access = self.device_write_access[device]
+  local write_access = self.write_access[device]
   if (type(index) == 'string') then
-    index = device_index[index]
+    index = Config[device][index]
   end
 
   if (type(index) == 'number') then
-    return device_write_access[index]
+    return write_access[index]
   elseif (type(index) == 'table') then
     local t = vector.new()
     for i = 1,#index do
-      t[i] = device_write_access[index[i]]
+      t[i] = write_access[index[i]]
     end
     return t
   elseif (type(index) == 'nil') then
     local t = vector.new()
-    for i = 1,#device_write_access do
-      t[i] = device_write_access[i]
+    for i = 1,#write_access do
+      t[i] = write_access[i]
     end
     return t
   end
@@ -219,9 +211,9 @@ end
 
 function dcm.new_access_point()
   local o = {}
-  o.device_write_access = {}
-  for k,v in pairs(dcm.device_write_access) do
-    o.device_write_access[k] = vector.ones(#v) -- access enabled by default
+  o.write_access = {}
+  for k,v in pairs(dcm.write_access) do
+    o.write_access[k] = vector.ones(#v) -- access enabled by default
   end
   return setmetatable(o, {__index = dcm})
 end

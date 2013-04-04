@@ -12,24 +12,27 @@
 #ifndef CENTERWINDOW_H
 #define CENTERWINDOW_H
 
-#include <QMainWindow>
-
+#include <phonon/VideoWidget>
+#include <phonon/MediaObject>
 
 namespace Ui {
 
 class CenterWindow;
 }
 
-class CenterWindow : public QMainWindow
+class CenterWindow : public QWidget
 {
     Q_OBJECT
-    
+
 public:
     explicit CenterWindow(QWidget *parent = 0);
     ~CenterWindow();
-    
+    void initialize();
+
 private:
-    Ui::CenterWindow *ui;
+    Phonon::VideoWidget *myVideoWidget;
+    Phonon::MediaObject *myVideoPlayer;
+
 };
 
 #endif // CENTERWINDOW_H

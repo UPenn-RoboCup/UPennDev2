@@ -12,17 +12,19 @@ require('Proprioception')
 require('Dynamics')
 require('Transform')
 
+
 -- initialize state
 Platform.entry()
 Proprioception.entry()
+local joint = Config.joint
 
 -- set position control
 local q0 = {0, 0, -0.2, 0.4, -0.2, 0, 0, 0, -0.2, 0.4, -0.2, 0}
-dcm:set_joint_position(q0, 'legs')
-dcm:set_joint_velocity(0, 'all')
-dcm:set_joint_p_gain(1, 'all')
-dcm:set_joint_i_gain(0, 'all')
-dcm:set_joint_d_gain(0, 'all')
+dcm:set_joint_position(q0, joint.legs)
+dcm:set_joint_velocity(0, joint.all)
+dcm:set_joint_p_gain(1, joint.all)
+dcm:set_joint_i_gain(0, joint.all)
+dcm:set_joint_d_gain(0, joint.all)
 
 local l_foot_wrench = pcm:get_l_foot_wrench()
 local r_foot_wrench = pcm:get_r_foot_wrench()
@@ -56,7 +58,7 @@ local tau, torso_accel = Dynamics.inverse(
 );
 
 dcm:set_joint_force(1*tau)
-dcm:set_joint_p_gain(0.005, 'all')
+dcm:set_joint_p_gain(0.005, joint.all)
 
 while true do
   Platform.update()

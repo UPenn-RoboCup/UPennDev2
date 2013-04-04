@@ -4,7 +4,10 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT += core gui
+QT += phonon
+QT += opengl
+QT += osg
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -33,7 +36,12 @@ SOURCES += main.cpp\
     walkstatemachine.cpp \
     osgcamera.cpp \
     commsinterface.cpp \
-    examplecodeclass.cpp
+    examplecodeclass.cpp \
+<<<<<<< HEAD:OperatorConsole/OperatorConsole.pro
+    keyboardeventfilter.cpp
+=======
+    manager.cpp
+>>>>>>> 76f70d7dee9d2ca2a2e1c59243de5b883e0a97f5:Operator/OperatorConsole.pro
 
 HEADERS  += centerwindow.h \
     rightwindow.h \
@@ -55,7 +63,12 @@ HEADERS  += centerwindow.h \
     walkstatemachine.h \
     osgcamera.h \
     commsinterface.h \
-    examplecodeclass.h
+    examplecodeclass.h \
+<<<<<<< HEAD:OperatorConsole/OperatorConsole.pro
+    keyboardeventfilter.h
+=======
+    manager.h
+>>>>>>> 76f70d7dee9d2ca2a2e1c59243de5b883e0a97f5:Operator/OperatorConsole.pro
 
 FORMS    += centerwindow.ui \
     rightwindow.ui \
@@ -64,5 +77,7 @@ FORMS    += centerwindow.ui \
     engineeringcontrolwidget.ui
 
 OTHER_FILES += \
-    doxyfile.config
+    doxyfile.config \
+    INSTALL.txt
 
+LIBS += -lqwt -lOpenThreads -losg -losgDB -losgUtil -losgViewer -losgGA -losgQt

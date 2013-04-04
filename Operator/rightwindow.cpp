@@ -20,7 +20,7 @@ RightWindow::~RightWindow()
 
 void RightWindow::initialize() {
     // Load models
-    osg::Node *ashModel = osgDB::readNodeFile("/home/afalendy/Models/ASH_Model_STL/SAFFiR_Simple.stl");
+    osg::Node *ashModel = osgDB::readNodeFile("../Operator/assets/ash/SAFFiR_Simple.stl");
     OsgWidget *robot3DView = new OsgWidget();
     robot3DView->initialize();
     robot3DView->setSceneData(ashModel);

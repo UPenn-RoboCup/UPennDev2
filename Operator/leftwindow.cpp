@@ -22,9 +22,9 @@ LeftWindow::~LeftWindow()
 void LeftWindow::initialize()
 {
     // Load models
-    osg::Node *glider = osgDB::readNodeFile("/home/afalendy/Downloads/OpenSceneGraph-Data-3.0.0/glider.osgt");
-    osg::Node *cow = osgDB::readNodeFile("/home/afalendy/Downloads/OpenSceneGraph-Data-3.0.0/cow.osgt");
-    osg::Node *truck = osgDB::readNodeFile("/home/afalendy/Downloads/OpenSceneGraph-Data-3.0.0/dumptruck.osgt");
+    osg::Node *glider = osgDB::readNodeFile("../Operator/assets/test/spaceship.osgt");
+    osg::Node *cow = osgDB::readNodeFile("../Operator/assets/test/cow.osgt");
+    osg::Node *truck = osgDB::readNodeFile("../Operator/assets/test/dumptruck.osg");
 
     // Create and initialize widgets
     OsgWidget *main3DView = new OsgWidget();

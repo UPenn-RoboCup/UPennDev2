@@ -32,7 +32,7 @@ if simple_ipc.intercom_interface then
 	simple_ipc.intercom_prefix = 'epgm://'..simple_ipc.intercom_interface_ip..';239.192.1.1:'
 else
 	print( 'There is no inter-pc interface, using TCP' )
-	simple_ipc.intercom_prefix = 'tcp://*:'
+	simple_ipc.intercom_prefix = 'tcp://'
 end
 
 -- If channel is a number, then use tcp
@@ -40,10 +40,12 @@ local function setup_publisher( channel )
 	local channel_obj = {}
 	local channel_type = type(channel)
 	if channel_type=="string" then
+    print('IPC initiate publisher')
 		channel_obj.name = simple_ipc.local_prefix..channel
 	elseif channel_type=="number" then
     if simple_ipc.intercom_interface then
     else -- port
+      print("TCP initiate publisher")
       channel_obj.name = simple_ipc.intercom_prefix..'*:'..channel
     end
 	end
@@ -88,8 +90,10 @@ local function setup_subscriber( channel )
 	local channel_obj = {}
 	local channel_type = type(channel)
 	if channel_type=="string" then
+    print("IPC subscribe")
 		channel_obj.name = simple_ipc.local_prefix..channel
 	elseif channel_type=="number" then
+    print("TCP subscribe is BROKEN!!!")
 		channel_obj.name = simple_ipc.intercom_prefix..channel
 	end
 	assert(channel_obj.name)

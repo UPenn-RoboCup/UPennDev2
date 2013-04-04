@@ -28,8 +28,8 @@ local simple_ipc = require'simple_ipc'
 local state_channels = {};
 local action_channels = {};
 for i=1,Config.game.nPlayers do
-  state_channels[i] = simple_ipc.setup_subscriber('state'..i)
-  action_channels[i] = simple_ipc.setup_publisher('action'..i)
+  state_channels[i] = simple_ipc.new_subscriber('state'..i)
+  action_channels[i] = simple_ipc.new_publisher('action'..i)
   state_channels[i].callback = function()
     local state, has_more = state_channels[i]:receive()
     print('Player '..i..' state',state)

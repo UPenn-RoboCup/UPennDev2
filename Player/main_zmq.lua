@@ -46,8 +46,8 @@ local simple_ipc = require'simple_ipc'
 local state_ch_name = 'state'..Config.game.playerID;
 local action_ch_name = 'action'..Config.game.playerID;
 print('Channels',state_channel,action_channel)
-local state_channel = simple_ipc.setup_publisher(state_ch_name)
-local action_channel = simple_ipc.setup_subscriber(action_ch_name)
+local state_channel = simple_ipc.new_publisher(state_ch_name)
+local action_channel = simple_ipc.new_subscriber(action_ch_name)
 --------------
 gcm.say_id();
 

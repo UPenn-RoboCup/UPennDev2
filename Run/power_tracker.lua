@@ -1,7 +1,7 @@
 dofile('include.lua')
 
 ----------------------------------------------------------------------
--- Motion Manager
+-- Power Tracking
 ----------------------------------------------------------------------
 
 require('curses')
@@ -9,13 +9,13 @@ require('Platform')
 require('dcm')
 require('Config_devices')
 
-local rpc_endpoint = 'tcp://127.0.0.1:12001'
-
 local power = {}
 local peak_power = {}
+local total_power = 0
 local peak_total_power = 0
-local function update_power()
-  local total_power = 0
+local total_energy = 0
+local function update_power(dt)
+  total_power = 0
   for i,joint in ipairs(Config_devices.joint.id) do
     local v = dcm:get_joint_velocity_sensor(joint)
     local f = dcm:get_joint_force_sensor(joint)
@@ -25,13 +25,15 @@ local function update_power()
       peak_power[i] = power[i]
     end
   end
+  
   if total_power > peak_total_power then
     peak_total_power = total_power
   end
+  
+  total_energy = total_energy + total_power*dt
 end
 
 local function draw_screen()
-  local total_power = 0
   curses.clear()
   curses.printw('rate : %7.2f                  Power Tracker\n', 
                  Platform.get_update_rate())
@@ -47,6 +49,7 @@ local function draw_screen()
   curses.printw('---------------------------------------')
   curses.printw('---------------------------------------\n')
   curses.printw('                         %20f %20f\n', total_power, peak_total_power)
+  curses.printw('%16s            %38f\n', 'energy (J)', total_energy)
   curses.refresh()
 end
 
@@ -57,19 +60,30 @@ curses.noecho()
 curses.keypad(1)
 curses.timeout(1)
 
--- initialize peak_power
+Platform.set_update_rate(500)
+Platform.entry()
+
+-- initialize power
 for i,v in ipairs(Config_devices.joint.id) do
+  power[i] = 0
   peak_power[i] = 0
 end
 
 local count = 0
+local last_time = Platform.get_time()
 while true do
   local key = curses.getch()
   if (key == string.byte('q')) then
     break
   end
   
-  update_power()
+  local time = Platform.get_time()
+  if time > last_time then
+    update_power(time - last_time)
+  end
+  last_time = time
+  
+  Platform.update()
   
   -- update screen
   if (key or (count % 20 == 0)) then
@@ -82,4 +96,5 @@ while true do
   count = count + 1
 end
 
+Platform.exit()
 curses.endwin()

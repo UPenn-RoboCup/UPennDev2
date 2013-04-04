@@ -17,9 +17,12 @@ require('pcm')
 --------------------------------------------------------------------------
 
 walk = Motion_state.new('walk')
-walk:set_joint_access(0, 'all')
-walk:set_joint_access(1, 'lowerbody')
+
 local dcm = walk.dcm
+local ahrs = Config.ahrs
+local joint = Config.joint
+walk:set_joint_access(0, joint.all)
+walk:set_joint_access(1, joint.lowerbody)
 
 -- define default parameters
 walk.parameters = {
@@ -66,7 +69,7 @@ local hip_pitch_offset     = stand.parameters.hip_pitch_offset
 local stop_request         = false
 local t0                   = Platform.get_time()
 local t                    = t0
-local q0                   = dcm:get_joint_position_sensor('legs')
+local q0                   = dcm:get_joint_position_sensor(joint.legs)
 local gyro                 = vector.new{0, 0, 0}
 local gyro_limits          = vector.new{5, 5, 5}
 
@@ -120,7 +123,7 @@ end
 local function update_gyro()
   -- update low pass filter for local gyro estimate 
   local beta = 0.02
-  local raw_gyro = dcm:get_ahrs('gyro')
+  local raw_gyro = dcm:get_ahrs(ahrs.gyro)
   gyro = (1 - beta)*gyro + beta*raw_gyro
   gyro[1] = limit(gyro[1], gyro_limits[1])
   gyro[2] = limit(gyro[2], gyro_limits[2])
@@ -164,13 +167,13 @@ function walk:entry()
   velocity = vector.new{0, 0, 0}
   t  = Platform.get_time()
   t0 = Platform.get_time()
-  q0 = dcm:get_joint_position_sensor('lowerbody')
-  dcm:set_joint_force(0, 'lowerbody')
-  dcm:set_joint_position(q0, 'lowerbody')
-  dcm:set_joint_velocity(0, 'lowerbody')
-  dcm:set_joint_p_gain(1, 'lowerbody')
-  dcm:set_joint_i_gain(0.1, 'lowerbody')
-  dcm:set_joint_d_gain(0.01, 'lowerbody')
+  q0 = dcm:get_joint_position_sensor(joint.lowerbody)
+  dcm:set_joint_force(0, joint.lowerbody)
+  dcm:set_joint_position(q0, joint.lowerbody)
+  dcm:set_joint_velocity(0, joint.lowerbody)
+  dcm:set_joint_p_gain(1, joint.lowerbody)
+  dcm:set_joint_i_gain(0.1, joint.lowerbody)
+  dcm:set_joint_d_gain(0.01, joint.lowerbody)
   update_walk_parameters()
   update_stance_parameters()
 
@@ -255,7 +258,7 @@ function walk:update()
   q[12] = q[12] + ankle_roll_fb*gyro[1]
 
   -- write joint angles to shared memory 
-  dcm:set_joint_position(q, 'legs')
+  dcm:set_joint_position(q, joint.legs)
 
   -- update velocity during SSP 
   if (step_sin ~= 0) then

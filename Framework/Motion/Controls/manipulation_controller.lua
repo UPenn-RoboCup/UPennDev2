@@ -1,7 +1,5 @@
+manipulation_controller = require('Manipulation_Controller')
 
-init=package.loadlib("../../Lib/manip/libmanipulation_controller.so","luaopen_Manipulation_Controller")
+manipulation_controller.THOR_MC_initialize()
 
-assert(init())
-
-Manipulation_Controller.THOR_MC_initialize()
-
+return manipulation_controller

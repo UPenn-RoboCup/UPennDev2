@@ -6,9 +6,12 @@ require('Config')
 --------------------------------------------------------------------------
 
 step_recovery = Motion_state.new('step_recovery')
-step_recovery:set_joint_access(0, 'all')
-step_recovery:set_joint_access(1, 'lowerbody')
+
 local dcm = step_recovery.dcm
+local ahrs = Config.ahrs
+local joint = Config.joint
+step_recovery:set_joint_access(0, joint.all)
+step_recovery:set_joint_access(1, joint.lowerbody)
 
 -- default parameters
 step_recovery.parameters = {

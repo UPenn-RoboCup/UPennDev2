@@ -83,7 +83,7 @@ filter_a = {-1.0275, 0.3679}
 local pgain, igain, dgain = 300, 0, 50  --need to change eventually for different gains in different joints
 local position_pids = {}
 local torque_filters = {}
-for i, index in pairs(joint.index['ankles']) do
+for i, index in pairs(joint.ankles) do
   position_pids[index] = pid.new(pgain, igain, dgain)
   position_pids[index]:set_filter_constant(0.05)
   torque_filters[index] = filter_2order.new(filter_b, filter_a)
@@ -92,21 +92,21 @@ end
 local pos_filters = {}
 local filter_b = { 0.0179,    0.0715,    0.1072,    0.0715,    0.0179} --40 break freq, 4 order butter
 local filter_a = {1.0000,   -1.5980,    1.3040,   -0.4987,    0.0787}
-for i, index in pairs(joint.index['all']) do
+for i, index in pairs(joint.all) do
   pos_filters[index] = butter_filter.new(filter_b, filter_a)
 end
 
 local vel_filters = {}
 local filter_b = { 1.0402,    2.0804,         0,   -2.0804,   -1.0402} --20 break freq, 4 order butter, 1 derivative
 local filter_a = {1.0000,   -2.7189,    2.9160,   -1.4357,    0.2719}
-for i, index in pairs(joint.index['all']) do
+for i, index in pairs(joint.all) do
   vel_filters[index] = butter_filter.new(filter_b, filter_a)
 end
 
 local acc_filters = {}
 local filter_b = { 15.4240,         0,  -30.8480,         0,   15.4240} --7.5 break freq,  4 order butter, 2 derivative
 local filter_a = {1.0000,   -3.5092,    4.6446,   -2.7458,    0.6114}
-for i, index in pairs(joint.index['all']) do
+for i, index in pairs(joint.all) do
   acc_filters[index] = butter_filter.new(filter_b, filter_a)
 end
 
@@ -117,7 +117,7 @@ local acc_filter2 = filter_2order.new(filter_b, filter_a)]]
 --[[local vel_filters2 = {}
 local filter_b = {0.0001832, 0.0007328, 0.001099, 0.0007328, 0.0001832} --10 break freq, ts=0.004, chsi=0.7
 local filter_a = {1, -3.34406, 4.23886, -2.40934, 0.51747}
-for i, index in pairs(joint.index['all']) do
+for i, index in pairs(joint.all) do
   vel_filters2[index] = butter_filter.new(filter_b, filter_a)
 end]]
 

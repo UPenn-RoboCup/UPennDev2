@@ -7,9 +7,12 @@ require('walk')
 --------------------------------------------------------------------------
 
 walk_stop = Motion_state.new('walk_stop')
-walk_stop:set_joint_access(0, 'all')
-walk_stop:set_joint_access(1, 'lowerbody')
+
 local dcm = walk_stop.dcm
+local ahrs = Config.ahrs
+local joint = Config.joint
+walk_stop:set_joint_access(0, joint.all)
+walk_stop:set_joint_access(1, joint.lowerbody)
 
 -- default parameters
 walk_stop.parameters = {

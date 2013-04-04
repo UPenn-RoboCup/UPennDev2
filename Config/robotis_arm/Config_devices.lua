@@ -238,19 +238,17 @@ battery.id = {
 ----------------------------------------------------------------------------
 
 function create_device_index(device)
-  device.index = {}
-  device.index.all = {}
-  -- create device indices
+  -- create device string index
+  device.all = {}
   for i = 1,#device.id do
-    device.index[device.id[i]] = i 
-    device.index.all[i] = i
+    device[device.id[i]] = i
+    device.all[i] = i
   end
-  -- create group indices
   for k,v in pairs(device.id) do
     if (type(k) == 'string') then
-      device.index[k] = {}
+      device[k] = {}
       for i,id in pairs(v) do
-         device.index[k][i] = device.index[id]
+         device[k][i] = device[id]
       end
     end
   end

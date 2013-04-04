@@ -6,9 +6,12 @@ require('Config')
 --------------------------------------------------------------------------
 
 drive = Motion_state.new('drive')
-drive:set_joint_access(0, 'all')
-drive:set_joint_access(1, 'lowerbody')
+
 local dcm = drive.dcm
+local ahrs = Config.ahrs
+local joint = Config.joint
+drive:set_joint_access(0, joint.all)
+drive:set_joint_access(1, joint.lowerbody)
 
 -- default parameters
 drive.parameters = {

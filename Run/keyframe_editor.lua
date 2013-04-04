@@ -13,6 +13,8 @@ require('Config')
 require('keyframe')
 require('serialization')
 
+Platform.set_update_rate(500)
+
 local keyframe_file = arg[1] or Config.motion.keyframes
 local success, keyframe_table = pcall(dofile, keyframe_file)
 if (not success) then
@@ -25,7 +27,7 @@ local step_no = 1
 local command_duration = 1 
 local command_pause = 0
 
-local TIMEOUT = 5
+local TIMEOUT = 1
 local NCOLS = 6 
 local NROWS = #joint.id + 3
 local ROW_WIDTH = 1
@@ -60,8 +62,8 @@ end
 function cmd_on(arg)
   local joints = {}
   local id = parse_string_arguments(arg)[1]
-  if (id and joint.index[id]) then
-    joints = joint.index[id]
+  if (id and joint[id]) then
+    joints = joint[id]
   else
     for i,index in pairs(parse_int_arguments(arg)) do
       if (index > 0) and (index <= #joint.id) then
@@ -77,8 +79,8 @@ end
 function cmd_off(arg)
   local joints = {}
   local id = parse_string_arguments(arg)[1]
-  if (id and joint.index[id]) then
-    joints = joint.index[id]
+  if (id and joint[id]) then
+    joints = joint[id]
   else
     for i,index in pairs(parse_int_arguments(arg)) do
       if (index > 0) and (index <= #joint.id) then
@@ -512,7 +514,8 @@ end
 
 function draw_screen()
   curses.move(0, 0)
-  curses.printw('                               Keyframe Editor\n')
+  curses.printw('rate : %7.2f                Keyframe Editor\n',
+                 Platform.get_update_rate())
   curses.printw('///////////////////////////////////////')
   curses.printw('///////////////////////////////////////\n')
   curses.printw('%2d %16s     cmd   ', page_no, keyframe_table[page_no].name)
@@ -647,8 +650,8 @@ function entry()
   -- initialize shared memory
   Platform.entry()
   unix.usleep(5e5)
-  dcm:set_joint_p_gain(1, 'all')
-  dcm:set_joint_i_gain(0.1, 'all')
+  dcm:set_joint_p_gain(1.0, 'all')
+  dcm:set_joint_i_gain(0.0, 'all')
   dcm:set_joint_d_gain(0.01, 'all')
   dcm:set_joint_position(dcm:get_joint_position_sensor())
   dcm:set_joint_force(0, 'all')

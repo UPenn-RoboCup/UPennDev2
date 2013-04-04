@@ -6,9 +6,12 @@ require('Config')
 --------------------------------------------------------------------------
 
 stand_up = Motion_state.new('stand_up')
-stand_up:set_joint_access(0, 'all')
-stand_up:set_joint_access(1, 'lowerbody')
+
 local dcm = stand_up.dcm
+local ahrs = Config.ahrs
+local joint = Config.joint
+stand_up:set_joint_access(0, joint.all)
+stand_up:set_joint_access(1, joint.lowerbody)
 
 -- default parameters
 stand_up.parameters = {

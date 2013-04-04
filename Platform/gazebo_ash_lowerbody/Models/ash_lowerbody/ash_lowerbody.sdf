@@ -1,7 +1,7 @@
 <?xml version='1.0'?>
 <sdf version="1.3">
 <model name="ash_lowerbody">
-        <plugin name="gz_comms_manager" filename="libgz_comms_manager.so" />
+	<plugin name="gz_comms_manager" filename="libgz_comms_manager.so" />
 	<pose>0 0 0 0 0 0</pose>
 	<static>false</static>
 	<link name="torso">
@@ -28,9 +28,9 @@
 				<ixx>0.160370285</ixx>
 				<iyy>0.112425821</iyy>
 				<izz>0.106598912</izz>
-				<iyz> 0.000392533</iyz>
+				<iyz>0.000392533</iyz>
 				<ixz>-0.002028322</ixz>
-				<ixy> 0.000446463</ixy>
+				<ixy>0.000446463</ixy>
 			</inertia>
 		</inertial>
 		<sensor name="imu_sensor" type="imu">
@@ -95,9 +95,9 @@
 				<ixx>0.021768307</ixx>
 				<iyy>0.024906869</iyy>
 				<izz>0.008717440</izz>
-				<iyz> 0.001607937</iyz>
+				<iyz>0.001607937</iyz>
 				<ixz>-0.001277535</ixz>
-				<ixy>-0.002003306</ixy>
+				<ixy>0.002003306</ixy>
 			</inertia>
 		</inertial>
 	</link>
@@ -128,8 +128,8 @@
 				<iyy>0.027022394</iyy>
 				<izz>0.010582813</izz>
 				<iyz>-0.000035631</iyz>
-				<ixz> 0.004888637</ixz>
-				<ixy> 0.000055998</ixy>
+				<ixz>0.004888637</ixz>
+				<ixy>0.000055998</ixy>
 			</inertia>
 		</inertial>
 	</link>
@@ -208,7 +208,7 @@
 				<izz>0.002054387</izz>
 				<iyz>-0.000001187</iyz>
 				<ixz>-0.000179602</ixz>
-				<ixy> 0.000004512</ixy>
+				<ixy>0.000004512</ixy>
 			</inertia>
 		</inertial>
 	</link>
@@ -262,8 +262,8 @@
 	
 	
 	<link name="l_hip_yaw_trunnion">
-		<!-- Axis = "z", -->
 		<pose>-.021 .094 .808 0 0 0</pose>
+		<!-- Axis = "z", -->
 		<collision name="collision">
 			<geometry>
 				<cylinder>
@@ -294,8 +294,8 @@
 	</link>
 
 	<link name="r_hip_yaw_trunnion">
-		<!-- Axis = "z", -->
 		<pose>-.021 -.094 .808 0 0 0</pose>
+		<!-- Axis = "z", -->
 		<collision name="collision">
 			<geometry>
 				<cylinder>
@@ -327,8 +327,8 @@
 
 
 	<link name="l_hip_pitch_trunnion">
-		<!-- Axis = "y", -->
 		<pose>-.021 .094 .808 0 0 0</pose>
+		<!-- Axis = "y", -->
 		<collision name="collision">
 			<pose>0 0 0 1.57079632679 0 0</pose>
 			<geometry>
@@ -361,8 +361,8 @@
 	</link>
 
 	<link name="r_hip_pitch_trunnion">
-		<!-- Axis = "y", -->
 		<pose>-.021 -.094 .808 0 0 0</pose>
+		<!-- Axis = "y", -->
 		<collision name="collision">
 			<pose>0 0 0 1.57079632679 0 0</pose>
 			<geometry>
@@ -396,8 +396,8 @@
 
 
 	<link name="l_ankle_pitch_trunnion">
-		<!-- Axis = "y", -->
 		<pose>-.021 .094 .049 0 0 0</pose>
+		<!-- Axis = "y", -->
 		<collision name="collision">
 			<pose>0 0 0 1.57079632679 0 0</pose>
 			<geometry>
@@ -430,8 +430,8 @@
 	</link>
 
 	<link name="r_ankle_pitch_trunnion">
-		<!-- Axis = "y", -->
 		<pose>-.021 -.094 .049 0 0 0</pose>
+		<!-- Axis = "y", -->
 		<collision name="collision">
 			<pose>0 0 0 1.57079632679 0 0</pose>
 			<geometry>
@@ -471,12 +471,21 @@
 		<axis>
 			<xyz>0 0 1</xyz>
 			<limit>
-	<!-- 			<lower></lower>
-				<upper></upper> -->
+				<lower>-0.436332313</lower>
+				<upper>0.1745329252</upper>
 				<effort>300</effort>
 				<velocity>12</velocity>
 			</limit>
+			<dynamics>
+				<damping>1.0</damping>
+				<friction>0</friction>
+			</dynamics>
 		</axis>
+		<physics>
+			<ode>
+				<cfm_damping>1</cfm_damping>
+			</ode>
+		</physics>
 	</joint>
 	
 	<joint name="r_hip_yaw" type="revolute">
@@ -485,12 +494,21 @@
 		<axis>
 			<xyz>0 0 1</xyz>
 			<limit>
-	<!-- 			<lower></lower>
-				<upper></upper> -->
+				<lower>-0.436332313</lower>
+				<upper>0.1745329252</upper>
 				<effort>300</effort>
 				<velocity>12</velocity>
 			</limit>
+			<dynamics>
+				<damping>1.0</damping>
+				<friction>0</friction>
+			</dynamics>
 		</axis>
+		<physics>
+			<ode>
+				<cfm_damping>1</cfm_damping>
+			</ode>
+		</physics>
 	</joint>
 	
 	<joint name="l_hip_roll" type="revolute">
@@ -499,12 +517,21 @@
 		<axis>
 			<xyz>1 0 0</xyz>
 			<limit>
-	<!-- 			<lower></lower>
-				<upper></upper> -->
+				<lower>-0.401425728</lower>
+				<upper>0.401425728</upper>
 				<effort>300</effort>
 				<velocity>12</velocity>
 			</limit>
+			<dynamics>
+				<damping>1.0</damping>
+				<friction>0</friction>
+			</dynamics>
 		</axis>
+		<physics>
+			<ode>
+				<cfm_damping>1</cfm_damping>
+			</ode>
+		</physics>
 	</joint>
 	
 	<joint name="r_hip_roll" type="revolute">
@@ -513,12 +540,21 @@
 		<axis>
 			<xyz>1 0 0</xyz>
 			<limit>
-	<!-- 			<lower></lower>
-				<upper></upper> -->
+				<lower>-0.401425728</lower>
+				<upper>0.401425728</upper>
 				<effort>300</effort>
 				<velocity>12</velocity>
 			</limit>
+			<dynamics>
+				<damping>1.0</damping>
+				<friction>0</friction>
+			</dynamics>
 		</axis>
+		<physics>
+			<ode>
+				<cfm_damping>1</cfm_damping>
+			</ode>
+		</physics>
 	</joint>
 	
 	<joint name="l_hip_pitch" type="revolute">
@@ -530,12 +566,21 @@
 		<axis>
 			<xyz>0 1 0</xyz>
 			<limit>
-	<!-- 			<lower></lower>
-				<upper></upper> -->
+				<lower>-0.7853981634</lower>
+				<upper>0.7853981634</upper>
 				<effort>300</effort>
 				<velocity>12</velocity>
 			</limit>
+			<dynamics>
+				<damping>1.0</damping>
+				<friction>0</friction>
+			</dynamics>
 		</axis>
+		<physics>
+			<ode>
+				<cfm_damping>1</cfm_damping>
+			</ode>
+		</physics>
 	</joint>
 	
 	<joint name="r_hip_pitch" type="revolute">
@@ -547,12 +592,21 @@
 		<axis>
 			<xyz>0 1 0</xyz>
 			<limit>
-	<!-- 			<lower></lower>
-				<upper></upper> -->
+				<lower>-0.7853981634</lower>
+				<upper>0.7853981634</upper>
 				<effort>300</effort>
 				<velocity>12</velocity>
 			</limit>
+			<dynamics>
+				<damping>1.0</damping>
+				<friction>0</friction>
+			</dynamics>
 		</axis>
+		<physics>
+			<ode>
+				<cfm_damping>1</cfm_damping>
+			</ode>
+		</physics>
 	</joint>
 	
 	<joint name="l_knee_pitch" type="revolute">
@@ -564,12 +618,21 @@
 		<axis>
 			<xyz>0 1 0</xyz>
 			<limit>
-	<!-- 			<lower></lower>
-				<upper></upper> -->
+				<lower>0</lower>
+				<upper>1.5707963268</upper>
 				<effort>300</effort>
 				<velocity>12</velocity>
 			</limit>
+			<dynamics>
+				<damping>1.0</damping>
+				<friction>0</friction>
+			</dynamics>
 		</axis>
+		<physics>
+			<ode>
+				<cfm_damping>1</cfm_damping>
+			</ode>
+		</physics>
 	</joint>
 	
 	<joint name="r_knee_pitch" type="revolute">
@@ -581,12 +644,21 @@
 		<axis>
 			<xyz>0 1 0</xyz>
 			<limit>
-	<!-- 			<lower></lower>
-				<upper></upper> -->
+				<lower>0</lower>
+				<upper>1.5707963268</upper>
 				<effort>300</effort>
 				<velocity>12</velocity>
 			</limit>
+			<dynamics>
+				<damping>1.0</damping>
+				<friction>0</friction>
+			</dynamics>
 		</axis>
+		<physics>
+			<ode>
+				<cfm_damping>1</cfm_damping>
+			</ode>
+		</physics>
 	</joint>
 	
 	<joint name="l_ankle_pitch" type="revolute">
@@ -595,12 +667,21 @@
 		<axis>
 			<xyz>0 1 0</xyz>
 			<limit>
-	<!-- 			<lower></lower>
-				<upper></upper> -->
+				<lower>-0.6981317008</lower>
+				<upper>0.872664626</upper>
 				<effort>300</effort>
 				<velocity>12</velocity>
 			</limit>
+			<dynamics>
+				<damping>1.0</damping>
+				<friction>0</friction>
+			</dynamics>
 		</axis>
+		<physics>
+			<ode>
+				<cfm_damping>1</cfm_damping>
+			</ode>
+		</physics>
 	</joint>
 	
 	<joint name="r_ankle_pitch" type="revolute">
@@ -609,12 +690,21 @@
 		<axis>
 			<xyz>0 1 0</xyz>
 			<limit>
-	<!-- 			<lower></lower>
-				<upper></upper> -->
+				<lower>-0.6981317008</lower>
+				<upper>0.872664626</upper>
 				<effort>300</effort>
 				<velocity>12</velocity>
 			</limit>
+			<dynamics>
+				<damping>1.0</damping>
+				<friction>0</friction>
+			</dynamics>
 		</axis>
+		<physics>
+			<ode>
+				<cfm_damping>1</cfm_damping>
+			</ode>
+		</physics>
 	</joint>
 	
 	<joint name="l_ankle_roll" type="revolute">
@@ -626,14 +716,19 @@
 		<axis>
 			<xyz>1 0 0</xyz>
 			<limit>
-	<!-- 			<lower></lower>
-				<upper></upper> -->
+				<lower>-0.3490658504</lower>
+				<upper>0.3490658504</upper>
 				<effort>300</effort>
 				<velocity>12</velocity>
 			</limit>
+			<dynamics>
+				<damping>1.0</damping>
+				<friction>0</friction>
+			</dynamics>
 		</axis>
 		<physics>
 			<ode>
+				<cfm_damping>1</cfm_damping>
 				<provide_feedback>1</provide_feedback>
 			</ode>
 		</physics>
@@ -648,14 +743,19 @@
 		<axis>
 			<xyz>1 0 0</xyz>
 			<limit>
-	<!-- 			<lower></lower>
-				<upper></upper> -->
+				<lower>-0.3490658504</lower>
+				<upper>0.3490658504</upper>
 				<effort>300</effort>
 				<velocity>12</velocity>
 			</limit>
+			<dynamics>
+				<damping>1.0</damping>
+				<friction>0</friction>
+			</dynamics>
 		</axis>
 		<physics>
 			<ode>
+				<cfm_damping>1</cfm_damping>
 				<provide_feedback>1</provide_feedback>
 			</ode>
 		</physics>

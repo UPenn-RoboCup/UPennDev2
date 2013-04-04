@@ -6,10 +6,12 @@ require('Config')
 --------------------------------------------------------------------------
 
 pick_up = Motion_state.new('pick_up')
-pick_up:set_joint_access(0, 'all')
-pick_up:set_joint_access(1, 'upperbody')
-pick_up:set_joint_access(0, 'head')
+
 local dcm = pick_up.dcm
+local joint = Config.joint
+pick_up:set_joint_access(0, joint.all)
+pick_up:set_joint_access(1, joint.upperbody)
+pick_up:set_joint_access(0, joint.head)
 
 -- default parameters
 pick_up.parameters = {

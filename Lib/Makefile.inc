@@ -105,7 +105,7 @@ ifeq ($(OSTYPE),linux)
   LIBOPTS= -shared -fpic -lluajit-5.1
   LIBRT= -lrt
 ifeq ($(USER),darwin)
-  CXXFLAGS= -O3 -fomit-frame-pointer -mtune=native -march=native -pipe -funroll-loops
+  CXXFLAGS= -O3 -fpic -fomit-frame-pointer -mtune=native -march=native -pipe -funroll-loops
 endif
 ifeq ($(USER),nao)
   CXXFLAGS= -O2 -fomit-frame-pointer -mtune=native -march=native -pipe -funroll-loops

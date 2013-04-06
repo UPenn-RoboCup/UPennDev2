@@ -12,14 +12,15 @@ end
 
 imu_channel.callback = function()
   local res = imu_channel:receive()
-  tbl = msgpack.unpack(res)
---  print(tbl[1], tbl[2], tbl[3], tbl[4], tbl[5], tbl[6])
+  local imu_tbl = msgpack.unpack(res)
+  print('IMU:', unpack(imu_tbl) )
+  --print(tbl[1], tbl[2], tbl[3], tbl[4], tbl[5], tbl[6])
 end
 
 actuator_channel.callback = function()
   local res = actuator_channel:receive()
-  local act = msgpack.unpack(res)
-  print(#act)
+  local act_tbl = msgpack.unpack(res)
+  print("Actuators:", unpack(act_tbl))
 end
 
 local wait_channels = {imu_channel, camera_channel, actuator_channel}

@@ -2,16 +2,17 @@
 #include <webots/camera.h>
 #include <webots/servo.h>
 #include <webots/gyro.h>
+#include <webots/led.h>
 #include <webots/accelerometer.h>
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <assert.h>
-#include <string.h>
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
+#include <cassert>
+#include <string>
+#include <cstring>
 
 #include <zmq.h>
 
-void *ctx, *csocket;
 
 /* DarwinOP names in webots */
 const int nJoint = 20;
@@ -78,8 +79,8 @@ int main() {
   double timeStep = wb_robot_get_basic_time_step();
 
   /* init actuator */
-  tags.joints = malloc(nJoint * sizeof(WbDeviceTag));  
-  double *actuator_position = malloc(nJoint * sizeof(double));
+  tags.joints = new WbDeviceTag[nJoint];  
+  double *actuator_position = new double[nJoint];
 
   int i = 0;
   for (i = 0; i < nJoint; i++) {
@@ -111,12 +112,26 @@ int main() {
   wb_led_set(tags.headled,0x00ff00);
 
   /* init zmq */
-  ctx = zmq_init(1);
-  assert(ctx);
-  csocket = zmq_socket(ctx, ZMQ_PUB);
-  assert(csocket);
-  int rc2 = zmq_bind(csocket, "ipc:///tmp/test");
-  assert(rc2==0);
+  void *camera_tx = zmq_init(1);
+  assert(camera_tx);
+  void *camera_socket = zmq_socket(camera_tx, ZMQ_PUB);
+  assert(camera_socket);
+  int rc = zmq_bind(camera_socket, "ipc:///tmp/camera");
+  assert(rc==0);
+
+  void *imu_tx = zmq_init(1);
+  assert(imu_tx);
+  void *imu_socket = zmq_socket(imu_tx, ZMQ_PUB);
+  assert(imu_socket);
+  int rc = zmq_bind(imu_socket, "ipc:///tmp/imu");
+  assert(rc==0);
+
+  void *actuator_tx = zmq_init(1);
+  assert(actuator_tx);
+  void *actuator_socket = zmq_socket(actuator_tx, ZMQ_PUB);
+  assert(actuator_socket);
+  int rc = zmq_bind(actuator_socket, "ipc:///tmp/actuator");
+  assert(rc==0);
 
   wb_robot_step(timeStep);
   int x, y, r, g, b;
@@ -139,11 +154,11 @@ int main() {
     raw_img = wb_camera_get_image(tags.camera);
     get_image(raw_img, rgb_img, width, height);
     printf("%d %d %d\n", rgb_img[0], rgb_img[1], rgb_img[2]);
-    zmq_send(csocket, (void *)rgb_img, width*height*3, 0);
+    zmq_send(camera_socket, (void *)rgb_img, width*height*3, 0);
 
     wb_robot_step(timeStep);
   }
-  free(tags.joints);
-  free(actuator_position);
+  delete tags.joints;
+  delete actuator_position;
   return 0;
 }

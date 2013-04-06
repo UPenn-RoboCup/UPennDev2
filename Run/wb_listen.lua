@@ -7,7 +7,7 @@ local actuator_channel = simple_ipc.new_subscriber('actuator')
 local actuator_pub_channel = simple_ipc.new_publisher('actuator_cmd')
 camera_channel.callback = function()
   local res = camera_channel:receive()
---  print('camera chanel ', #res)
+  print('camera chanel ', #res)
 end
 
 imu_channel.callback = function()

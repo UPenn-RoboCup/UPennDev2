@@ -17,11 +17,12 @@ static int lua_add_scan( lua_State *L ) {
 
   cout << "generating Hokuyo scan at " << origin << " ..." << endl;
   // Hokuyo is -145 to 145
-  for (int i=-145; i<145; i++) {
+  double res = 270.0/1081;
+  for (int i=0; i<1081; i++) {
 
     // Make a temporary rotated point
     point3d rotated = point_on_surface;
-    rotated.rotate_IP(0, DEG2RAD(i), 0 );
+    rotated.rotate_IP(0, DEG2RAD(i*res-145), 0 );
 
     // Ray cast to make free space
     if (!tree.insertRay(origin, origin+rotated)) {

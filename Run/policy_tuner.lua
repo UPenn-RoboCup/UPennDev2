@@ -363,6 +363,9 @@ function update()
     cursor_right()
   elseif key == string.byte('\t') then 
      cmd_next_state()
+  elseif key == curses.KEY_RESIZE then
+    local y, x = curses.getmaxyx()
+    curses.resizeterm(y, x)
   elseif key then
     curses.ungetch(key)
     read_command()

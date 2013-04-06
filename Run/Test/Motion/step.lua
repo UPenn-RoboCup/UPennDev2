@@ -456,11 +456,26 @@ function update_force_torque()
 end
 
 function COG_update2()
-  local pos = vector.copy(raw_pos)
-  local jnt_vec_x = vector.new{0,0,0,1}
-  local jnt_vec_y = vector.new{0,0,0,1}
-  local bsx = vector.new{}
-  local bsy = vector.new{}  
+  local jnt_vec_x = vector.new{0, 0, 0, 1}
+  local jnt_vec_y = vector.new{0, 0, 0, 1}  
+  local bsx_1 = vector.new{0.0683, -0.0871, -0.0399, 0.0005}
+  local bsy_1 = vector.new{-0.0752, 0.1143, 0.1075, -0.0004}
+  local COG_l = {}
+  --local pos = joint_pos_sense
+  --need to check on ahrs orientation
+  jnt_vec_x[1] = math.sin(ahrs_filt[8])
+  jnt_vec_x[2] = math.sin(ahrs_filt[8] + pos[3]) + math.sin(ahrs_filt[8] + pos[9]) 
+  jnt_vec_x[3] = math.sin(ahrs_filt[8] + pos[3] + pos[4]) 
+  jnt_vec_x[3] = jnt_vec_x[3] +  math.sin(ahrs_filt[8] + pos[9] + pos[10]) 
+
+  jnt_vec_y[1] = math.sin(ahrs_filt[7])
+  jnt_vec_y[2] = math.sin(ahrs_filt[7] + pos[2]) + math.sin(ahrs_filt[7] + pos[8])
+  jnt_vec_y[3] = math.sin(ahrs_filt[7] + pos[2])*pos[3]*pos[4]
+  jnt_vec_y[3] = jnt_vec_y[3] + math.sin(ahrs_filt[7] + pos[8])*pos[9]*pos[10]
+
+  COG_l[1] = vector.mul(jnt_vec_x, bsx)
+  COG_l[2] = vector.mul(jnt_vec_y, bsy)
+  return COG_l
 end
 
 function COG_update()
@@ -478,7 +493,6 @@ function COG_update()
 --  local bsy = vector.new{0.2285, 0.0460, -0.0007}  
   local bsx = vector.new{-0.2726, -0.0676, -0.0255, 0.0065}
   local bsy = vector.new{0.2172, 0.0424, -0.0010}  
-
   local correction = {}
   jnt_vec_x[1] = ahrs_filt[8]
   jnt_vec_x[2] = pos[3] +  pos[9]
@@ -490,7 +504,6 @@ function COG_update()
   COG[1] = COG_temp[1] + correction[1]
   COG[2] = COG_temp[2] + correction[2]
   COG[3] = COG_temp[3]
-  
   --COG = pcm:get_cog()  ------ webots only
 end
 
@@ -913,7 +926,7 @@ while run do
     data[16][2] = -1* COGy_pid.d_gain*state_est_k1[2][2] 
     data[16][3] =  COGy_pid.i_term
     data[17] = joint_pos_sense
-    data[18] = pcm:get_cog()
+    data[18] = COG_update2()
     data[19] = {t} --robot only
     --
     log_var_names = {'jnt_torq', 'ft_filt', 'grav_trq', 'pid_trq', 'bias'}

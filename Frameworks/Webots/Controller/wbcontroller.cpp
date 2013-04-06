@@ -9,11 +9,15 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
+#include <vector>    
+#include <iostream>    
 
 #include <zmq.h>
-#include <msgpack.h>
+#include <msgpack.hpp>
 
 #define BUFLEN 8192
+
+using namespace std;
 
 
 /* DarwinOP names in webots */
@@ -58,7 +62,7 @@ struct wb_devices {
   WbDeviceTag compass;
   WbDeviceTag eyeled;
   WbDeviceTag headled;
-  WbDeviceTag* joints;
+  vector<WbDeviceTag> joints;
 };
 
 const double vision_update_interval = 0.04; // 25fps
@@ -99,13 +103,11 @@ int main() {
   double timeStep = wb_robot_get_basic_time_step();
 
   /* init actuator */
-  tags.joints = new WbDeviceTag[nJoint];  
-  double *actuator_position = new double[nJoint];
-
-  int i = 0;
-  for (i = 0; i < nJoint; i++) {
-    tags.joints[i] = wb_robot_get_device(jointNames[i]);
+  vector<double> actuator_position;
+  for (int i = 0; i < nJoint; i++) {
+    tags.joints.push_back(wb_robot_get_device(jointNames[i]));
     wb_servo_enable_position(tags.joints[i], timeStep);
+    actuator_position.push_back(0);
     printf("init Joint %s\n", jointNames[i]);
   }
 
@@ -171,14 +173,12 @@ int main() {
   double motor_command_buf[BUFLEN];
 
   // init msgpack
-  msgpack_sbuffer *buffer = msgpack_sbuffer_new();
-  msgpack_packer *pk = msgpack_packer_new(buffer, msgpack_sbuffer_write);
+  msgpack::sbuffer sbuf;
 
   wb_robot_step(timeStep);
   int x, y, r, g, b;
-  double imu[6];
-  double accel[3];
-  double gyro[3];
+  vector<double> imu;
+  imu.resize(6);
   double last_vision_update_time = wb_robot_get_time();
   while(1) {
     int nBytes = zmq_recv(actuator_sub_socket, motor_command_buf, BUFLEN, 
@@ -195,26 +195,21 @@ int main() {
 
     double t = wb_robot_get_time();
     /* Actuator update */
-    for (i = 0; i < nJoint; i++)
+    for (int i = 0; i < nJoint; i++)
       actuator_position[i] = moveDir[i] * wb_servo_get_position(tags.joints[i])-jointBias[i];
-    printf("joints %f %f %f\n", actuator_position[0], actuator_position[1], actuator_position[3]);
-    
     // Pack actuators
-    msgpack_sbuffer_clear(buffer);
-    msgpack_pack_array(pk, nJoint);
-    for (i = 0; i < nJoint; i++)
-      msgpack_pack_double(pk, actuator_position[i]);
-    rc = zmq_send(actuator_pub_socket, (void *)buffer->data, buffer->size, 0);
+    sbuf.clear();
+    msgpack::pack(sbuf, actuator_position);
+    rc = zmq_send(actuator_pub_socket, (void *)sbuf.data(), sbuf.size(), 0);
 
     /* IMU update */
-//    memcpy(accel, wb_accelerometer_get_values(tags.accelerometer), 3 * sizeof(double));
-    memcpy(imu, wb_accelerometer_get_values(tags.accelerometer), 3 * sizeof(double));
-//    memcpy(gyro, wb_gyro_get_values(tags.gyro), 3 * sizeof(double));
-    memcpy(imu+3, wb_gyro_get_values(tags.gyro), 3 * sizeof(double));
-//    printf("acc %f %f %f, gyro %f %f %f\n", accel[0], accel[1], accel[2], gyro[0], gyro[1], gyro[2]);
-    msgpack_sbuffer_clear(buffer);
-    pack_array<double, 'd'>(pk, (void *)imu, 6);
-    rc = zmq_send(imu_socket, (void *)buffer->data, buffer->size, 0);
+    const double * accel = wb_accelerometer_get_values(tags.accelerometer);
+    copy(accel, accel + 3, imu.begin());
+    const double * gyro = wb_gyro_get_values(tags.gyro);
+    copy(gyro, gyro + 3, imu.begin()+3);
+    sbuf.clear();
+    msgpack::pack(sbuf, imu);
+    rc = zmq_send(imu_socket, (void *)sbuf.data(), sbuf.size(), 0);
 
     /* image update */
     if ((t - last_vision_update_time) >= vision_update_interval) {
@@ -229,8 +224,5 @@ int main() {
     fflush(stdout);
   }
 
-  //delete buf;
-  delete tags.joints;
-  delete actuator_position;
   return 0;
 }

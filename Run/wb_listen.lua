@@ -4,8 +4,7 @@ local msgpack = require 'msgpack'
 local camera_channel = simple_ipc.new_subscriber('camera')
 local imu_channel = simple_ipc.new_subscriber('imu')
 local actuator_channel = simple_ipc.new_subscriber('actuator')
---local actuator_pub_channel = simple_ipc.new_publisher('actuator')
-
+local actuator_pub_channel = simple_ipc.new_publisher('actuator_cmd')
 camera_channel.callback = function()
   local res = camera_channel:receive()
 --  print('camera chanel ', #res)
@@ -30,6 +29,5 @@ local channel_poll = simple_ipc.wait_on_channels( wait_channels )
 local channel_timeout = 30
 while true do
   channel_poll:poll(channel_timeout)
---  actuator_pub_channel:send(unix.time())
-  print(unix.time())
+  actuator_pub_channel:send( "hello" )
 end

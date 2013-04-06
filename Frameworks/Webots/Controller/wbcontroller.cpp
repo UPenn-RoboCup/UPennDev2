@@ -117,39 +117,42 @@ int main() {
   wb_led_set(tags.headled,0x00ff00);
 
   /* init zmq */
-  void *camera_tx = zmq_init(1);
-  assert(camera_tx);
-  void *camera_socket = zmq_socket(camera_tx, ZMQ_PUB);
+  void* ctx = zmq_init(4);
+  assert(ctx);
+
+  // Polling (for now, just on actuator commands)
+  zmq_pollitem_t poll_items[1];
+
+  // Camera
+  void *camera_socket = zmq_socket(ctx, ZMQ_PUB);
   assert(camera_socket);
   int rc = zmq_bind(camera_socket, "ipc:///tmp/camera");
   assert(rc==0);
 
-  void *imu_tx = zmq_init(1);
-  assert(imu_tx);
-  void *imu_socket = zmq_socket(imu_tx, ZMQ_PUB);
+  void *imu_socket = zmq_socket(ctx, ZMQ_PUB);
   assert(imu_socket);
   rc = zmq_bind(imu_socket, "ipc:///tmp/imu");
   assert(rc==0);
 
-  void *actuator_pub_tx = zmq_init(2);
-  assert(actuator_pub_tx);
-  void *actuator_pub_socket = zmq_socket(actuator_pub_tx, ZMQ_PUB);
+  void *actuator_pub_socket = zmq_socket(ctx, ZMQ_PUB);
   assert(actuator_pub_socket);
   rc = zmq_bind(actuator_pub_socket, "ipc:///tmp/actuator");
   // when publishing, should always add "get" so that the filter works
   assert(rc==0);
 
-  void *actuator_sub_tx = zmq_init(2);
-  assert(actuator_sub_tx);
-  void *actuator_sub_socket = zmq_socket(actuator_sub_tx, ZMQ_SUB);
+  void *actuator_sub_socket = zmq_socket(ctx, ZMQ_SUB);
+  // Listen to everything...
   zmq_setsockopt( actuator_sub_socket, ZMQ_SUBSCRIBE, "", 0 );
   // Should listen with a filter...
   //zmq_setsockopt( actuator_sub_socket, ZMQ_SUBSCRIBE, "set", 0 );
   assert(actuator_sub_socket);
-  rc = zmq_connect(actuator_sub_socket, "ipc:///tmp/actuator");
+  rc = zmq_connect(actuator_sub_socket, "ipc:///tmp/actuator_cmd");
   assert(rc==0);
-
-  char *buf = new char[BUFLEN];
+  // Poll object
+  poll_items[0].socket = actuator_sub_socket;
+  poll_items[0].events = ZMQ_POLLIN;
+  // Receiving buffer
+  double motor_command_buf[BUFLEN];
 
   // init msgpack
   msgpack_sbuffer *buffer = msgpack_sbuffer_new();
@@ -161,23 +164,32 @@ int main() {
   double gyro[3];
   double last_vision_update_time = wb_robot_get_time();
   while(1) {
+    int nBytes = zmq_recv(actuator_sub_socket, motor_command_buf, BUFLEN, 
+        //0);
+        ZMQ_DONTWAIT);
+    printf("receive msg length %d\n", nBytes);
+    if( nBytes>0 ){
+      //printf("Msg: %f\n",motor_command_buf[0]);
+      printf("Msg: %s\n", (char*)motor_command_buf);
+    }
 
-//    int nBytes = zmq_recv(actuator_sub_socket, buf, BUFLEN, 0);
-//    printf("receive msg length %d\n", nBytes);
+    //rc = zmq_poll( poll_items, 1, 10 );
+    //printf("%d events\n",rc);
 
     double t = wb_robot_get_time();
-    /* atuator update */
+    /* Actuator update */
     for (i = 0; i < nJoint; i++)
       actuator_position[i] = moveDir[i] * wb_servo_get_position(tags.joints[i])-jointBias[i];
-//    printf("joints %f %f %f\n", actuator_position[0], actuator_position[1], actuator_position[3]);
-    // pack actuator
+    printf("joints %f %f %f\n", actuator_position[0], actuator_position[1], actuator_position[3]);
+    
+    // Pack actuators
     msgpack_sbuffer_clear(buffer);
     msgpack_pack_array(pk, nJoint);
     for (i = 0; i < nJoint; i++)
       msgpack_pack_double(pk, actuator_position[i]);
-    zmq_send(actuator_pub_socket, (void *)buffer->data, buffer->size, 0);
+    rc = zmq_send(actuator_pub_socket, (void *)buffer->data, buffer->size, 0);
 
-    /* imu update */
+    /* IMU update */
     memcpy(accel, wb_accelerometer_get_values(tags.accelerometer), 3 * sizeof(double));
     memcpy(gyro, wb_gyro_get_values(tags.gyro), 3 * sizeof(double));
 //    printf("acc %f %f %f, gyro %f %f %f\n", accel[0], accel[1], accel[2], gyro[0], gyro[1], gyro[2]);
@@ -189,14 +201,14 @@ int main() {
     msgpack_pack_double(pk, gyro[0]);
     msgpack_pack_double(pk, gyro[1]);
     msgpack_pack_double(pk, gyro[2]);
-    zmq_send(imu_socket, (void *)buffer->data, buffer->size, 0);
+    rc = zmq_send(imu_socket, (void *)buffer->data, buffer->size, 0);
 
     /* image update */
     if ((t - last_vision_update_time) >= vision_update_interval) {
       last_vision_update_time = t;
       get_image(raw_img, rgb_img, width, height);
 //      printf("%d %d %d\n", rgb_img[0], rgb_img[1], rgb_img[2]);
-      zmq_send(camera_socket, (void *)rgb_img, width*height*3, 0);
+      rc = zmq_send(camera_socket, (void *)rgb_img, width*height*3, 0);
     }
 
     if (wb_robot_step(timeStep) < 0)
@@ -204,7 +216,7 @@ int main() {
     fflush(stdout);
   }
 
-  delete buf;
+  //delete buf;
   delete tags.joints;
   delete actuator_position;
   return 0;

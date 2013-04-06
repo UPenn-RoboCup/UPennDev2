@@ -2,7 +2,7 @@ MEXEXT= $(shell mexext)
 
 all: zmq
 
-include ../../../Lib/Makefile.inc
+include ../../../Makefile.inc
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<

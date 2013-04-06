@@ -5,7 +5,6 @@ dofile('include.lua')
 --------------------------------------------------------------------------------
 
 require('rpc')
-require('curses')
 require('vector')
 
 -- connect to motion manager

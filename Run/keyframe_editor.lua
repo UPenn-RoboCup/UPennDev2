@@ -686,6 +686,9 @@ function update()
     cursor_left()
   elseif key == curses.KEY_RIGHT then
     cursor_right()
+  elseif key == curses.KEY_RESIZE then
+    local y, x = curses.getmaxyx()
+    curses.resizeterm(y, x)
   elseif key then
     curses.ungetch(key)
     read_command()

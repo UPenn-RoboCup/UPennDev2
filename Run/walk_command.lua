@@ -91,6 +91,9 @@ while (true) do
       desired_velocity = desired_velocity + vector.new{0, 0.005, 0}
     elseif (key == string.byte(';')) then
       desired_velocity = desired_velocity + vector.new{0,-0.005, 0}
+    elseif (key == curses.KEY_RESIZE) then
+      local y, x = curses.getmaxyx()
+      curses.resizeterm(y, x)
     end
     motion_manager:call('walk:set_velocity', unpack(desired_velocity))
     update_display()

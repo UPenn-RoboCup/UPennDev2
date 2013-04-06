@@ -128,11 +128,18 @@ int main() {
   rc = zmq_bind(imu_socket, "ipc:///tmp/imu");
   assert(rc==0);
 
-  void *actuator_tx = zmq_init(1);
-  assert(actuator_tx);
-  void *actuator_socket = zmq_socket(actuator_tx, ZMQ_PUB);
-  assert(actuator_socket);
-  rc = zmq_bind(actuator_socket, "ipc:///tmp/actuator");
+  void *actuator_pub_tx = zmq_init(2);
+  assert(actuator_pub_tx);
+  void *actuator_pub_socket = zmq_socket(actuator_pub_tx, ZMQ_PUB);
+  assert(actuator_pub_socket);
+  rc = zmq_bind(actuator_pub_socket, "ipc:///tmp/actuator");
+  assert(rc==0);
+
+  void *actuator_sub_tx = zmq_init(2);
+  assert(actuator_sub_tx);
+  void *actuator_sub_socket = zmq_socket(actuator_sub_tx, ZMQ_SUB);
+  assert(actuator_sub_socket);
+  rc = zmq_bind(actuator_sub_socket, "ipc:///tmp/actuator");
   assert(rc==0);
 
   // init msgpack
@@ -149,13 +156,13 @@ int main() {
     /* atuator update */
     for (i = 0; i < nJoint; i++)
       actuator_position[i] = moveDir[i] * wb_servo_get_position(tags.joints[i])-jointBias[i];
-//    printf("joints %f %f %f\n", actuator_position[0], actuator_position[1], actuator_position[3]);
+    printf("joints %f %f %f\n", actuator_position[0], actuator_position[1], actuator_position[3]);
     // pack actuator
     msgpack_sbuffer_clear(buffer);
     msgpack_pack_array(pk, nJoint);
     for (i = 0; i < nJoint; i++)
       msgpack_pack_double(pk, actuator_position[i]);
-    zmq_send(actuator_socket, (void *)buffer->data, buffer->size, 0);
+    zmq_send(actuator_pub_socket, (void *)buffer->data, buffer->size, 0);
 
     /* imu update */
     memcpy(accel, wb_accelerometer_get_values(tags.accelerometer), 3 * sizeof(double));
@@ -182,6 +189,7 @@ int main() {
 
     if (wb_robot_step(timeStep) < 0)
       exit(0);
+    fflush(stdout);
   }
 
   delete tags.joints;

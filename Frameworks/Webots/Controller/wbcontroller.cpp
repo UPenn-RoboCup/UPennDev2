@@ -13,6 +13,8 @@
 #include <zmq.h>
 #include <msgpack.h>
 
+#define BUFLEN 8192
+
 
 /* DarwinOP names in webots */
 const int nJoint = 20;
@@ -98,7 +100,8 @@ int main() {
   int height = wb_camera_get_height(tags.camera);
   int width = wb_camera_get_width(tags.camera);
   printf("Camera width: %d height: %d\n", width, height);
-  const unsigned char * raw_img = NULL;
+  const unsigned char * raw_img = wb_camera_get_image(tags.camera);
+
   unsigned char rgb_img[width * height * 3];
 
   /* init acc and gyro */
@@ -146,6 +149,8 @@ int main() {
   rc = zmq_connect(actuator_sub_socket, "ipc:///tmp/actuator");
   assert(rc==0);
 
+  char *buf = new char[BUFLEN];
+
   // init msgpack
   msgpack_sbuffer *buffer = msgpack_sbuffer_new();
   msgpack_packer *pk = msgpack_packer_new(buffer, msgpack_sbuffer_write);
@@ -156,11 +161,15 @@ int main() {
   double gyro[3];
   double last_vision_update_time = wb_robot_get_time();
   while(1) {
+
+//    int nBytes = zmq_recv(actuator_sub_socket, buf, BUFLEN, 0);
+//    printf("receive msg length %d\n", nBytes);
+
     double t = wb_robot_get_time();
     /* atuator update */
     for (i = 0; i < nJoint; i++)
       actuator_position[i] = moveDir[i] * wb_servo_get_position(tags.joints[i])-jointBias[i];
-    printf("joints %f %f %f\n", actuator_position[0], actuator_position[1], actuator_position[3]);
+//    printf("joints %f %f %f\n", actuator_position[0], actuator_position[1], actuator_position[3]);
     // pack actuator
     msgpack_sbuffer_clear(buffer);
     msgpack_pack_array(pk, nJoint);
@@ -183,9 +192,8 @@ int main() {
     zmq_send(imu_socket, (void *)buffer->data, buffer->size, 0);
 
     /* image update */
-    if ((t - last_vision_update_time) > vision_update_interval) {
+    if ((t - last_vision_update_time) >= vision_update_interval) {
       last_vision_update_time = t;
-      raw_img = wb_camera_get_image(tags.camera);
       get_image(raw_img, rgb_img, width, height);
 //      printf("%d %d %d\n", rgb_img[0], rgb_img[1], rgb_img[2]);
       zmq_send(camera_socket, (void *)rgb_img, width*height*3, 0);
@@ -196,6 +204,7 @@ int main() {
     fflush(stdout);
   }
 
+  delete buf;
   delete tags.joints;
   delete actuator_position;
   return 0;

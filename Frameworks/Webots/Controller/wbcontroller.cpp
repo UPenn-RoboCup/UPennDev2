@@ -63,6 +63,22 @@ struct wb_devices {
 
 const double vision_update_interval = 0.04; // 25fps
 
+template<typename T, char name>
+int pack_array(msgpack_packer *pk, void * raw_data, int size) {
+  T * data = (T *) raw_data;
+  msgpack_pack_array(pk, size);
+  for (int i = 0; i < size; i++) {
+    switch (name) {
+      case 'd':
+        msgpack_pack_double(pk, data[i]);
+        break;
+      default:
+        break;
+    }
+  }
+  return 0;
+}
+
 int get_image(const unsigned char * raw, unsigned char *rgb,
                 int width, int height) {
   int x, y, r, g, b, rgb_index = 0;
@@ -160,6 +176,7 @@ int main() {
 
   wb_robot_step(timeStep);
   int x, y, r, g, b;
+  double imu[6];
   double accel[3];
   double gyro[3];
   double last_vision_update_time = wb_robot_get_time();
@@ -190,17 +207,13 @@ int main() {
     rc = zmq_send(actuator_pub_socket, (void *)buffer->data, buffer->size, 0);
 
     /* IMU update */
-    memcpy(accel, wb_accelerometer_get_values(tags.accelerometer), 3 * sizeof(double));
-    memcpy(gyro, wb_gyro_get_values(tags.gyro), 3 * sizeof(double));
+//    memcpy(accel, wb_accelerometer_get_values(tags.accelerometer), 3 * sizeof(double));
+    memcpy(imu, wb_accelerometer_get_values(tags.accelerometer), 3 * sizeof(double));
+//    memcpy(gyro, wb_gyro_get_values(tags.gyro), 3 * sizeof(double));
+    memcpy(imu+3, wb_gyro_get_values(tags.gyro), 3 * sizeof(double));
 //    printf("acc %f %f %f, gyro %f %f %f\n", accel[0], accel[1], accel[2], gyro[0], gyro[1], gyro[2]);
     msgpack_sbuffer_clear(buffer);
-    msgpack_pack_array(pk, 6);
-    msgpack_pack_double(pk, accel[0]);
-    msgpack_pack_double(pk, accel[1]);
-    msgpack_pack_double(pk, accel[2]);
-    msgpack_pack_double(pk, gyro[0]);
-    msgpack_pack_double(pk, gyro[1]);
-    msgpack_pack_double(pk, gyro[2]);
+    pack_array<double, 'd'>(pk, (void *)imu, 6);
     rc = zmq_send(imu_socket, (void *)buffer->data, buffer->size, 0);
 
     /* image update */

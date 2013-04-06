@@ -133,13 +133,17 @@ int main() {
   void *actuator_pub_socket = zmq_socket(actuator_pub_tx, ZMQ_PUB);
   assert(actuator_pub_socket);
   rc = zmq_bind(actuator_pub_socket, "ipc:///tmp/actuator");
+  // when publishing, should always add "get" so that the filter works
   assert(rc==0);
 
   void *actuator_sub_tx = zmq_init(2);
   assert(actuator_sub_tx);
   void *actuator_sub_socket = zmq_socket(actuator_sub_tx, ZMQ_SUB);
+  zmq_setsockopt( actuator_sub_socket, ZMQ_SUBSCRIBE, "", 0 );
+  // Should listen with a filter...
+  //zmq_setsockopt( actuator_sub_socket, ZMQ_SUBSCRIBE, "set", 0 );
   assert(actuator_sub_socket);
-  rc = zmq_bind(actuator_sub_socket, "ipc:///tmp/actuator");
+  rc = zmq_connect(actuator_sub_socket, "ipc:///tmp/actuator");
   assert(rc==0);
 
   // init msgpack

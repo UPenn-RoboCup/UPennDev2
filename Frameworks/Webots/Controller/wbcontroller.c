@@ -1,11 +1,13 @@
 #include <webots/robot.h>
 #include <webots/camera.h>
+#include <webots/servo.h>
 #include <webots/gyro.h>
 #include <webots/accelerometer.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <string.h>
 
 #include <zmq.h>
 
@@ -43,6 +45,8 @@ const int nJointRLeg = 6;
 const int indexRArm = 18; 		/* RArm: 18 19 20 */
 const int nJointRArm = 3;
 
+//double actuator_position[20];
+
 struct wb_devices {
   WbDeviceTag camera;
   WbDeviceTag accelerometer;
@@ -75,6 +79,8 @@ int main() {
 
   /* init actuator */
   tags.joints = malloc(nJoint * sizeof(WbDeviceTag));  
+  double *actuator_position = malloc(nJoint * sizeof(double));
+
   int i = 0;
   for (i = 0; i < nJoint; i++) {
     tags.joints[i] = wb_robot_get_device(jointNames[i]);
@@ -114,26 +120,30 @@ int main() {
 
   wb_robot_step(timeStep);
   int x, y, r, g, b;
+  double accel[3];
+  double gyro[3];
   while(1) {
     /* atuator update */
     double t;
     for (i = 0; i < nJoint; i++) {
-      t = moveDir[i] * wb_servo_get_position(tags.joints[i])-jointBias[i];
+      actuator_position[i] = moveDir[i] * wb_servo_get_position(tags.joints[i])-jointBias[i];
     }
+    printf("joints %f %f %f\n", actuator_position[0], actuator_position[1], actuator_position[3]);
 
     /* imu update */
-    const double *accel = wb_accelerometer_get_values(tags.accelerometer);
-    const double *gyro = wb_gyro_get_values(tags.gyro);
+    memcpy(accel, wb_accelerometer_get_values(tags.accelerometer), 3 * sizeof(double));
+    memcpy(gyro, wb_gyro_get_values(tags.gyro), 3 * sizeof(double));
     printf("acc %f %f %f, gyro %f %f %f\n", accel[0], accel[1], accel[2], gyro[0], gyro[1], gyro[2]);
 
     /* image update */
     raw_img = wb_camera_get_image(tags.camera);
     get_image(raw_img, rgb_img, width, height);
-//    printf("%d %d %d\n", rgb_img[0], rgb_img[1], rgb_img[2]);
+    printf("%d %d %d\n", rgb_img[0], rgb_img[1], rgb_img[2]);
     zmq_send(csocket, (void *)rgb_img, width*height*3, 0);
 
     wb_robot_step(timeStep);
   }
   free(tags.joints);
+  free(actuator_position);
   return 0;
 }

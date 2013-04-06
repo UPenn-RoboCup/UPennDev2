@@ -19,6 +19,7 @@ package.cpath = HOME..'Frameworks/Util/Z/?.so;'..package.cpath
 package.cpath = HOME..'Frameworks/Comm/?.so;'..package.cpath
 package.cpath = HOME..'Frameworks/ImageProc/?.so;'..package.cpath
 package.cpath = HOME..'Frameworks/OccMap/?.so;'..package.cpath
+package.cpath = HOME..'Frameworks/Hokuyo/?.so;'..package.cpath
 
 package.cpath = HOME..'Tools/lua_msgpack/?.so;'..package.cpath
 package.cpath = HOME..'Tools/cjpeg/?.so;'..package.cpath

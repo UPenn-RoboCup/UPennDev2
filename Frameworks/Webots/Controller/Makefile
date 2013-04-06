@@ -15,13 +15,16 @@ WEBOTS_LIB_DIR = $(WEBOTS_HOME)/lib
 
 INCLUDES+= -I$(WEBOTS_INCLUDE_DIR)/controller/c
 
-all: controller
+all: controller wbcontroller
 
 controller_wrap.c: controller.i
 	swig -lua -I$(WEBOTS_HOME)/include/controller/c controller.i
 
 controller: controller_wrap.o
 	$(LD) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ -L$(WEBOTS_LIB_DIR) -lController 
+
+wbcontroller: wbcontroller.c
+	$(CC) -o wbcontroller $^ -I$(WEBOTS_HOME)/include/controller/c -L$(WEBOTS_LIB_DIR) -lController -lzmq
 	
 openrave:
 	swig -lua -I/usr/local/include/openrave-0.9 $(INCLUDES) openrave.i

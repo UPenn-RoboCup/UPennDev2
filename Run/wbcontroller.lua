@@ -26,14 +26,14 @@ while true do
 --  -- Grab the image and send it away for processing...
   local image = carray.byte( Camera.get_image(), Camera.get_width() * Camera.get_height() * 3 )
 --  local jimage = cjpeg.compress( Camera.get_image(), Camera.get_width(), Camera.get_height(), 3)
---  local img_str = tostring(image)
+  local img_str = tostring(image)
 --  --local img_str = msgpack.pack(image, Camera.get_width() * Camera.get_height() * 3)
-  print(type(Camera.get_image()), type(image), type(img_str) )
+  print(type(Camera.get_image()), type(image), #img_str )
   -- print(Camera.get_width(), Camera.get_height() )
 
   -- Send data on IPC
-  -- camera_channel:send('hello')
-  -- local res = camera_channel:send(img_str)
+  camera_channel:send('hello')
+--  local res = camera_channel:send(tostring(image))
   -- Update the Webots timestamp and motor commands
   Body.update()
   io.stdout:flush();

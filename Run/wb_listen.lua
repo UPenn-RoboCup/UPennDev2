@@ -7,13 +7,13 @@ local actuator_channel = simple_ipc.new_subscriber('actuator')
 
 camera_channel.callback = function()
   local res = camera_channel:receive()
-  print('camera chanel ', #res)
+--  print('camera chanel ', #res)
 end
 
 imu_channel.callback = function()
   local res = imu_channel:receive()
   tbl = msgpack.unpack(res)
-  print(tbl[1], tbl[2], tbl[3], tbl[4], tbl[5], tbl[6])
+--  print(tbl[1], tbl[2], tbl[3], tbl[4], tbl[5], tbl[6])
 end
 
 actuator_channel.callback = function()

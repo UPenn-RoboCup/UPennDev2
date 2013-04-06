@@ -170,13 +170,12 @@ int main() {
   poll_items[0].socket = actuator_sub_socket;
   poll_items[0].events = ZMQ_POLLIN;
   // Receiving buffer
-  double motor_command_buf[BUFLEN];
+  char motor_command_buf[BUFLEN];
 
   // init msgpack
   msgpack::sbuffer sbuf;
 
   wb_robot_step(timeStep);
-  int x, y, r, g, b;
   vector<double> imu;
   imu.resize(6);
   double last_vision_update_time = wb_robot_get_time();
@@ -186,8 +185,14 @@ int main() {
         ZMQ_DONTWAIT);
     printf("receive msg length %d\n", nBytes);
     if( nBytes>0 ){
-      //printf("Msg: %f\n",motor_command_buf[0]);
-      printf("Msg: %s\n", (char*)motor_command_buf);
+      msgpack::unpacked msg;
+      msgpack::unpack(&msg, motor_command_buf, nBytes);
+      vector<double> new_actuator;
+      new_actuator.resize(20);
+      msg.get() >> new_actuator;
+      for (int i = 0; i < 20; i++)
+        cout << new_actuator[i] << ' ';
+      cout << endl;
     }
 
     //rc = zmq_poll( poll_items, 1, 10 );

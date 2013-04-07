@@ -151,7 +151,7 @@ world.aUnKnownPostFilter = 0.05;
 --New two-goalpost localization
 world.use_new_goalposts=1;
 --For NAO
-world.use_same_colored_goal = 0;
+world.use_same_colored_goal = 1;
 
 -- Occupancy Map parameters
 occ = {};

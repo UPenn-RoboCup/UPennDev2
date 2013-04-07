@@ -128,7 +128,8 @@ function update()
   if (math.mod(count, 1) == 0) then
     -- use old serialization for team monitor so the 
     --  old matlab team monitor can be used
-    Comm.send(serialization.serialize_orig(state));
+    local msg = serialization.serialize_orig(state) 
+    Comm.send(msg, #msg);
     --Copy of message sent out to other players
     state.tReceive = Body.get_time();
     states[playerID] = state;

@@ -464,52 +464,17 @@ function COG_update()
   local jnt_vec_y = vector.new{0, 0, 0, 1}  
   local bsx = vector.new{0.0683, -0.0871, -0.0399, 0.0005}
   local bsy = vector.new{-0.0752, 0.1143, 0.1075, -0.0004}
-  local COG_l = {}
   local pos = joint_pos_sense
- 
   jnt_vec_x[1] = math.sin(ahrs_filt[8])
   jnt_vec_x[2] = math.sin(ahrs_filt[8] + pos[3]) + math.sin(ahrs_filt[8] + pos[9]) 
   jnt_vec_x[3] = math.sin(ahrs_filt[8] + pos[3] + pos[4]) 
   jnt_vec_x[3] = jnt_vec_x[3] +  math.sin(ahrs_filt[8] + pos[9] + pos[10]) 
-
   jnt_vec_y[1] = math.sin(ahrs_filt[7])
   jnt_vec_y[2] = math.sin(ahrs_filt[7] + pos[2]) + math.sin(ahrs_filt[7] + pos[8])
   jnt_vec_y[3] = math.sin(ahrs_filt[7] + pos[2])*pos[3]*pos[4]
   jnt_vec_y[3] = jnt_vec_y[3] + math.sin(ahrs_filt[7] + pos[8])*pos[9]*pos[10]
-
-  COG_l[1] = jnt_vec_x*bsx
-  COG_l[2] = jnt_vec_y*bsy
-   
-  COG[1] = COG_l[1]
-  COG[2] = COG_l[2]
-  COG[3] = COG_temp[3]
-end
-
-function COG_update_old()
-  --returns location of COG wrt base frame
-  local COG_temp = pcm:get_cog()  --used to be COG_temp
---  for i = 1, 3 do
-  --  COG[i] = COG_filters[i]:update(COG_temp[i])
- -- end 
-  local pos = vector.copy(raw_pos)
-  local jnt_vec_x = vector.new{0, 0, 0, 1}
-  local jnt_vec_y = vector.new{0, 0, 1}
---  local bsx = vector.new{-0.2484, -0.0554, -0.0196, 0.0080}
---  local bsy = vector.new{0.2108, 0.0390, -0.0018}
---  local bsx = vector.new{-0.2649, -0.0608, -0.0210, 0.0050}
---  local bsy = vector.new{0.2285, 0.0460, -0.0007}  
-  local bsx = vector.new{-0.2726, -0.0676, -0.0255, 0.0065}
-  local bsy = vector.new{0.2172, 0.0424, -0.0010}  
-  local correction = {}
-  jnt_vec_x[1] = ahrs_filt[8]
-  jnt_vec_x[2] = pos[3] +  pos[9]
-  jnt_vec_x[3] = pos[4] + pos[10] 
-  jnt_vec_y[1] = ahrs_filt[7]
-  jnt_vec_y[2] = pos[2] + pos[8]
-  correction[1] = jnt_vec_x*bsx
-  correction[2] = jnt_vec_y*bsy
-  COG[1] = COG_temp[1] + correction[1]
-  COG[2] = COG_temp[2] + correction[2]
+  COG[1] = jnt_vec_x*bsx
+  COG[2] = jnt_vec_y*bsy
   COG[3] = COG_temp[3]
   --COG = pcm:get_cog()  ------ webots only
 end
@@ -732,14 +697,14 @@ function state_machine(t)
     end
   elseif (state == 5) then --wait
     if (state_t > 1) then
-      run = false
+      --run = false
       state_t = 0
       state = 6
       print('initate step', t)
       print('ss error', state_est_k1[2][1])
     end
   elseif (state == 6) then --initate step, lower foot
-    local x,xd,xdd = trajectory.minimum_jerk_step(hip_state, {-0.05, 0, 0}, 4-state_t, 0.005)
+    local x,xd,xdd = trajectory.minimum_jerk_step(hip_state, {0, 0, 0}, 3-state_t, 0.005)
     hip_state = vector.new{x, xd, xdd} 
     delta[2] = hip_state[1]
     if (1-state_t) > 0 then
@@ -748,14 +713,12 @@ function state_machine(t)
     end
     local r_leg_delta = r_leg_offset + move_foot[1]*vector.new{0, 0.0, 0.02, 0, 0, 0}
     qt = move_legs(delta, nil, r_leg_delta)
-    if state_t < 1 then 
-      COG_des = {0, -(.11-hip_state[1])*ratio*0.8}
-      COG_vel = {0, hip_state[2]}
-      deccel_torque = 30*hip_state[3] 
-    else  
-      COG_des = {0, -(.11-hip_state[1])*ratio}
-      COG_vel = {0, hip_state[2]} 
-      deccel_torque = 30*hip_state[3] - 4
+    COG_des = {0, -(.11-hip_state[1])*0.044/0.02}
+    COG_vel = {0, hip_state[2]} --this will be negative
+    if state_t < 1 then
+      deccel_torque = 10*hip_state[3] 
+    else
+      deccel_torque = 10*hip_state[3] - 2
     end
     if foot_state[11] == 1 then 
       --reset_states()
@@ -766,15 +729,13 @@ function state_machine(t)
       COG_des = {0, 0}
       COG_vel = {0, 0}
       decel_torque = 0
-      print('qt'0
-      util.ptable(qt)
     end
   elseif (state == 7) then
-    local x,xd,xdd = trajectory.minimum_jerk_step(hip_state, {-0.05, 0, 0}, 4-state_t, 0.005)
+    local x,xd,xdd = trajectory.minimum_jerk_step(hip_state, {0, 0, 0}, 3-state_t, 0.005)
     hip_state = vector.new{x, xd, xdd} 
     delta[2] = hip_state[1]
     qt = move_legs(delta, nil, r_leg_delta)    
-    if true then -- state_t > 4 then
+    if state_t > 3 then
       run = false
       util.ptable(qt)
       double_support = false

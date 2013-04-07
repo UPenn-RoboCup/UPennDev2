@@ -179,6 +179,7 @@ int main() {
 
   double last_vision_update_time = wb_robot_get_time();
   double last_lidar_t = wb_robot_get_time();
+  char ts_buf[100];
   while(1) {
     int nBytes = zmq_recv(actuator_sub_socket, motor_command_buf, BUFLEN, ZMQ_DONTWAIT);
 //    printf("receive msg length %d\n", nBytes);
@@ -224,8 +225,11 @@ int main() {
 
     /* lidar update */
     if( lidar_dt>0 && (t-last_lidar_t)>lidar_dt/1000 ){
+      sprintf(ts_buf,"%lf",t);
+      rc = zmq_send(lidar_pub_socket, ts_buf, strlen(ts_buf), ZMQ_SNDMORE);
+      //cout << rc << " lidar ts bytes sent: " << ts_buf << endl;
       rc = zmq_send(lidar_pub_socket, (void *)raw_lidar, lwidth*lheight*sizeof(float), 0);
-//      cout << rc << " lidar bytes sent!" << endl;
+      //cout << rc << " lidar bytes sent!" << endl;
     }
 
     fflush(stdout);

@@ -43,6 +43,9 @@ for i=1,#Params.jointNames do Params.moveDir[i]=1; end
 for i=1,#Params.jointReverse do Params.moveDir[Params.jointReverse[i]]=-1; end
 
 Params.vision = { 
-  update_interval = 0.04 
+  camera_interval = 1/30; -- 30Hz
+  -- Set lidar_interval to 0 to disable its use
+  --lidar_interval  = 1/40; -- 40Hz
+  lidar_interval  = 0; -- Disable
 }
 

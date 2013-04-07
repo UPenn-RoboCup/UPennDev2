@@ -11,13 +11,14 @@ aImuFilter = 1 - math.exp(-tDelta/0.5);
 tags = {};
 
 -- Minihubo joint names in webots
-jointNames = {"Head","Neck",
-              "L_Shoulder_Pitch", "L_Shoulder_Roll", "L_Shoulder_Yaw","L_Elbow",
-              "L_Hip_Yaw", "L_Hip_Roll", "L_Hip_Pitch", "L_Knee_Pitch", "L_Ankle_Pitch", "L_Ankle_Roll",
-              "R_Hip_Yaw", "R_Hip_Roll", "R_Hip_Pitch", "R_Knee_Pitch", "R_Ankle_Pitch", "R_Ankle_Roll",
-              "R_Shoulder_Pitch", "R_Shoulder_Roll", "R_Shoulder_Yaw","R_Elbow",
-	      "Waist_Roll",
-             };
+jointNames = {
+  "Head","Neck",
+  "L_Shoulder_Pitch", "L_Shoulder_Roll", "L_Shoulder_Yaw","L_Elbow",
+  "L_Hip_Yaw", "L_Hip_Roll", "L_Hip_Pitch", "L_Knee_Pitch", "L_Ankle_Pitch", "L_Ankle_Roll",
+  "R_Hip_Yaw", "R_Hip_Roll", "R_Hip_Pitch", "R_Knee_Pitch", "R_Ankle_Pitch", "R_Ankle_Roll",
+  "R_Shoulder_Pitch", "R_Shoulder_Roll", "R_Shoulder_Yaw","R_Elbow",
+  "Waist_Roll",
+};
 
 nJoint = #jointNames;
 indexHead = 1;			
@@ -34,20 +35,20 @@ indexWaist = 23;
 nJointWaist = 1;
 
 jointReverse={
-	 3,4,5,6,--LArm:  3 4 5 6
-         --LLeg: 7 8 9 10 11 12
-	 --RLeg: 13 14 15 16 17 18
-	 22,--RArm: 19 20 21 22
-	 --Waist: 23
+  3,4,5,6,--LArm:  3 4 5 6
+  --LLeg: 7 8 9 10 11 12
+  --RLeg: 13 14 15 16 17 18
+  22,--RArm: 19 20 21 22
+  --Waist: 23
 }
 
 jointBias={
-        0,0,
-	-90*math.pi/180,0,0,0,
-	0,0,0,0,0,0,
-	0,0,0,0,0,0,
-	-90*math.pi/180,0,0,0,
-	0,
+  0,0,
+  -90*math.pi/180,0,0,0,
+  0,0,0,0,0,0,
+  0,0,0,0,0,0,
+  -90*math.pi/180,0,0,0,
+  0,
 }
 
 moveDir={};
@@ -151,8 +152,8 @@ function get_sensor_button(index)
 end
 
 function get_head_position()
-    local q = get_sensor_position();
-    return {unpack(q, indexHead, indexHead+nJointHead-1)};
+  local q = get_sensor_position();
+  return {unpack(q, indexHead, indexHead+nJointHead-1)};
 end
 function get_larm_position()
   local q = get_sensor_position();
@@ -244,10 +245,10 @@ function update()
         end
         actuator.position[i] = actuator.position[i]+delta;
       else
-	    actuator.position[i] = actuator.command[i];
+        actuator.position[i] = actuator.command[i];
       end
       controller.wb_servo_set_position(tags.joints[i],
-                                        actuator.position[i]);
+      actuator.position[i]);
     end
   end
   update_IMU();
@@ -258,7 +259,7 @@ function update()
 end
 
 function update_IMU()
-    
+
   acc=get_sensor_imuAcc();
   gyr=get_sensor_imuGyrRPY();
 
@@ -284,7 +285,7 @@ function update_IMU()
     imuAngle[2] = imuAngle[2] + aImuFilter*(angP - imuAngle[2]);
   end
 
---  print("RPY:",unpack(imuAngle*180/math.pi))
+  --  print("RPY:",unpack(imuAngle*180/math.pi))
 end
 
 
@@ -322,13 +323,13 @@ function get_sensor_gps()
 end
 
 function set_actuator_eyeled(color)
---input color is 0 to 31, so multiply by 8 to make 0-255
+  --input color is 0 to 31, so multiply by 8 to make 0-255
   code= color[1] * 0x80000 + color[2] * 0x800 + color[3]*8;
   controller.wb_led_set(tags.eyeled,code)
 end
 
 function set_actuator_headled(color)
- --input color is 0 to 31, so multiply by 8 to make 0-255
+  --input color is 0 to 31, so multiply by 8 to make 0-255
   code= color[1] * 0x80000 + color[2] * 0x800 + color[3]*8;
   controller.wb_led_set(tags.headled,code)
 end

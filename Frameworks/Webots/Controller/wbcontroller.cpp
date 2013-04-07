@@ -44,16 +44,21 @@ int get_image(const unsigned char * raw, unsigned char *rgb,
 }
 
 int main() {
+
+  cout << "Loading the configuration..." << endl;
   // Load config
   Config config;
+  std::cout << "Done loading!" << endl;
 
   vector<string> jointNames = config.get_string_vector("jointNames");
   int nJoint = jointNames.size();
   vector<double> jointBias = config.get_double_vector("jointBias");
   vector<int> moveDir = config.get_int_vector("moveDir");
   double vision_update_interval = 0.04;
+  string platformName = config.get_string("platformName");
+  cout << "Running " << platformName << endl;
+  cout << "Got " << nJoint << " joints!" << endl;
 
-  std::cout << "load Done " << endl;
   struct wb_devices tags;
   /* init webots robot */
   wb_robot_init();

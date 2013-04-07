@@ -6,9 +6,10 @@ local msgpack = require 'msgpack'
 local carray = require 'carray'
 
 -- Global vars
-local actuator = {}
-for i = 1, 20 do
-  actuator[i] = i * math.pi
+require 'Params'
+actuators = {}
+for i = 1,#Params.jointNames do
+  actuators[i] = i * math.pi
 end
 
 -- IPC channels
@@ -19,7 +20,7 @@ local actuator_channel = simple_ipc.new_subscriber('actuator')
 local actuator_pub_channel = simple_ipc.new_publisher('actuator_cmd')
 camera_channel.callback = function()
   local res = camera_channel:receive()
---  print('camera chanel ', #res)
+  --  print('camera chanel ', #res)
 end
 
 imu_channel.callback = function()
@@ -31,7 +32,7 @@ end
 actuator_channel.callback = function()
   local res = actuator_channel:receive()
   local act_tbl = msgpack.unpack(res)
---  print("Actuators:", unpack(act_tbl))
+  --  print("Actuators:", unpack(act_tbl))
 end
 
 local lidar_channel = simple_ipc.new_subscriber('lidar')
@@ -53,7 +54,8 @@ local channel_poll = simple_ipc.wait_on_channels( wait_channels )
 local channel_timeout = 30
 while true do
   channel_poll:poll(channel_timeout)
-  --local str = msgpack.pack(actuator)
-  --print(#str)
-  --actuator_pub_channel:send( msgpack.pack(actuator) )
+  local str = msgpack.pack( actuators )
+  print("Actuators/Msgpacked",#actuators,#str)
+  print( string.format("(%s)",str) )
+  --actuator_pub_channel:send( str )
 end

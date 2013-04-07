@@ -312,9 +312,9 @@ function update()
     --    print("Team message size:",string.len(msg))
     --    msg2=pack_msg(state);
     --    print("Packed team message size:",string.len(msg2))
-    --    Comm.send(serialization.serialize(state));
+    --    Comm.send(serialization.serialize(state), #serialization.serialze(state));
     --    msg=pack_msg(state);
-    Comm.send(msg);
+    Comm.send(msg, #msg);
 
     --Copy of message sent out to other players
     state.tReceive = Body.get_time();

@@ -104,14 +104,6 @@ function send_body( forPlayer )
   state.rpy = bcm.get_body_rpy();
 
   -- Burst mode
-  --[[
-  local ser = serialization.serialize(state)
-  local ret = Comm.send( ser );
-  ret = Comm.send( ser );
-  ret = Comm.send( ser );
-  ret = Comm.send( ser );
-  --]]
-
   local ser = serialization.serialize(state)
   local ret = Comm.send( ser, #ser );
   ret = Comm.send( ser, #ser );

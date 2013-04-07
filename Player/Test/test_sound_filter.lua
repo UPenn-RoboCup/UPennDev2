@@ -17,7 +17,7 @@ while (1) do
 
    if (count % 10 == 0) then
       s = serialization.serialize_orig(state);
-      Comm.send(s);
+      Comm.send(s, #s);
    end
 
    if (count % 100 == 0) then

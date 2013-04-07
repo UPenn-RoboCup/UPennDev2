@@ -46,32 +46,29 @@ int get_image(const unsigned char * raw, unsigned char *rgb,
 
 int main() {
 
-  cout << "Loading the configuration..." << endl;
   // Load config
   Config config;
-  std::cout << "Done loading!" << endl;
   string platformName = config.get_string("platformName");
   cout << "Running " << platformName << endl;
 
   vector<string> jointNames = config.get_string_vector("jointNames");
   int nJoint = jointNames.size();
-  cout << "Got " << nJoint << " joints!" << endl;
+  //cout << "Got " << nJoint << " joints!" << endl;
   vector<double> jointBias = config.get_double_vector("jointBias");
   vector<int> moveDir = config.get_int_vector("moveDir");
   double vision_update_interval = 0.04;
   double lidar_update_interval = config.get_double("vision.lidar_interval");
-  if (lidar_update_interval>0)
-    cout << "lidar interval"<<lidar_update_interval<<endl;
-  else
+  /*
+  if (lidar_update_interval<=0)
     cout << "No lidar available!" << endl;
-
+    */
   struct wb_devices tags;
   /* init webots robot */
   wb_robot_init();
   /* get basic time step */
   double timeStep = wb_robot_get_basic_time_step();
-  cout << "Running timestep: " << timeStep << "ms" << endl;
-  cout << "Effective FPS: " << 1000/timeStep << endl;
+  cout << "Running simulation at " << timeStep << "ms" << endl;
+//  cout << "Effective FPS: " << 1000/timeStep << endl;
 
   /* init actuator */
   vector<double> actuator_position;
@@ -79,22 +76,24 @@ int main() {
     tags.joints.push_back(wb_robot_get_device(jointNames[i].c_str()));
     wb_servo_enable_position(tags.joints[i], timeStep);
     actuator_position.push_back(0);
-    cout << "init Joint" << jointNames[i] << endl;
+//    cout << "init Joint" << jointNames[i] << endl;
   }
 
   /* init camera */
+  int camera_dt = 0;
   tags.camera = wb_robot_get_device("Camera");
-  cout << "Camera timestep: " << vision_update_interval << endl;
+//  cout << "Camera timestep: " << vision_update_interval << endl;
   int cameraTimeStep = (int)(vision_update_interval*1000);
-  cout << "Camera timestep: " << cameraTimeStep << "ms" << endl;
-  cout << "Camera FPS: " << 1/vision_update_interval << endl;
+//  cout << "Camera timestep: " << cameraTimeStep << "ms" << endl;
+//  cout << "Camera FPS: " << 1/vision_update_interval << endl;
   wb_camera_enable( tags.camera, cameraTimeStep );
+  camera_dt = wb_camera_get_sampling_period( tags.camera );
+  cout << "Initialized the camera to sample at " << camera_dt << "ms" << endl;
 
   int height = wb_camera_get_height(tags.camera);
   int width = wb_camera_get_width(tags.camera);
   printf("Camera width: %d height: %d\n", width, height);
   const unsigned char * raw_img = wb_camera_get_image(tags.camera);
-
   unsigned char rgb_img[width * height * 3];
 
   /* init acc and gyro */
@@ -110,15 +109,22 @@ int main() {
   wb_led_set(tags.headled,0x00ff00);
 
   /* init lidar */
+  int lidar_dt=0, lheight=0, lwidth=0;
+  const float * raw_lidar = NULL;
   if( lidar_update_interval>0 ){
-    cout << "Lidar timestep: " << lidar_update_interval << endl;
+    //cout << "Lidar timestep: " << lidar_update_interval << endl;
     int lidarTimeStep = (int)(lidar_update_interval*1000);
-    cout << "Lidar timestep: " << lidarTimeStep << "ms" << endl;
-    cout << "Lidar FPS: " << 1/lidar_update_interval << endl;
+    //cout << "Lidar timestep: " << lidarTimeStep << "ms" << endl;
+    //cout << "Lidar FPS: " << 1/lidar_update_interval << endl;
     tags.lidar = wb_robot_get_device("UTM-30LX");
     wb_camera_enable(tags.lidar, timeStep);
-    int lidar_dt = wb_camera_get_sampling_period( tags.lidar );
+    lidar_dt = wb_camera_get_sampling_period( tags.lidar );
     cout << "Initialized the lidar to sample at " << lidar_dt << "ms" << endl;
+    lheight = wb_camera_get_height(tags.lidar);
+    lwidth = wb_camera_get_width(tags.lidar);
+    printf("Lidar width: %d height: %d\n", lwidth, lheight);
+    raw_lidar = wb_camera_get_range_image(tags.lidar);
+    //unsigned char rgb_img[width * height * 3];
   }
 
   /* init zmq */
@@ -157,6 +163,12 @@ int main() {
   poll_items[0].events = ZMQ_POLLIN;
   // Receiving buffer
   char motor_command_buf[BUFLEN];
+  
+  // Lidar publishing
+  void* lidar_pub_socket = zmq_socket(ctx, ZMQ_PUB);
+  assert( lidar_pub_socket );
+  rc = zmq_bind(lidar_pub_socket, "ipc:///tmp/lidar");
+  assert(rc==0);
 
   // init msgpack
   msgpack::sbuffer sbuf;
@@ -166,9 +178,10 @@ int main() {
   imu.resize(6);
 
   double last_vision_update_time = wb_robot_get_time();
+  double last_lidar_t = wb_robot_get_time();
   while(1) {
     int nBytes = zmq_recv(actuator_sub_socket, motor_command_buf, BUFLEN, ZMQ_DONTWAIT);
-    printf("receive msg length %d\n", nBytes);
+//    printf("receive msg length %d\n", nBytes);
     if( nBytes>0 ){
       msgpack::unpacked msg;
       msgpack::unpack(&msg, motor_command_buf, nBytes);
@@ -206,15 +219,18 @@ int main() {
       last_vision_update_time = t;
       get_image(raw_img, rgb_img, width, height);
       rc = zmq_send(camera_socket, (void *)rgb_img, width*height*3, 0);
+//      cout << rc << " camera bytes sent!" << endl;
     }
 
     /* lidar update */
-    if( lidar_update_interval>0 ){
+    if( lidar_dt>0 && (t-last_lidar_t)>lidar_dt/1000 ){
+      rc = zmq_send(lidar_pub_socket, (void *)raw_lidar, lwidth*lheight*sizeof(float), 0);
+//      cout << rc << " lidar bytes sent!" << endl;
     }
 
+    fflush(stdout);
     if (wb_robot_step(timeStep) < 0)
       exit(0);
-    fflush(stdout);
   }
 
   return 0;

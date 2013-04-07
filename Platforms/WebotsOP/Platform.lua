@@ -1,3 +1,4 @@
+
 local Platform = {}
 Platform.path = {}
 Platform.path[#Platform.path+1] = '/?.lua;'

@@ -8,51 +8,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include <string.h>
+#include <string>
 #include <vector>    
 #include <iostream>    
 
+#include "config.h"
 #include <zmq.h>
 #include <msgpack.hpp>
 
 #define BUFLEN 8192
 
 using namespace std;
-
-
-/* DarwinOP names in webots */
-const int nJoint = 20;
-const char *jointNames[] = {"Neck", "Head",
-              "ShoulderL", "ArmUpperL", "ArmLowerL",
-              "PelvYL", "PelvL", "LegUpperL", "LegLowerL", "AnkleL", "FootL", 
-              "PelvYR", "PelvR", "LegUpperR", "LegLowerR", "AnkleR", "FootR",
-              "ShoulderR", "ArmUpperR", "ArmLowerR"};
-
-const double jointBias[] = {	0,0,
-            	M_PI/2,0,M_PI/2,
-            	0,0,0,0,0,0,
-            	0,0,0,0,0,0,
-            	M_PI/2,0,M_PI/2,
-};
-
-const int moveDir[] = {-1, 1, 
-                    1, 1, 1,
-                    1, -1, -1, -1, 1, 1,
-                    1, 1, 1, 1, -1, 1,
-                    -1, 1, -1};
-
-const int indexHead = 1;			/* Head: 1 2 */
-const int nJointHead = 2;
-const int indexLArm = 3;			/* LArm: 3 4 5 */
-const int nJointLArm = 3; 		
-const int indexLLeg = 6;			/* LLeg:6 7 8 9 10 11 */
-const int nJointLLeg = 6;
-const int indexRLeg = 12; 		/* RLeg: 12 13 14 15 16 17 */
-const int nJointRLeg = 6;
-const int indexRArm = 18; 		/* RArm: 18 19 20 */
-const int nJointRArm = 3;
-
-//double actuator_position[20];
 
 struct wb_devices {
   WbDeviceTag camera;
@@ -64,24 +30,6 @@ struct wb_devices {
   WbDeviceTag headled;
   vector<WbDeviceTag> joints;
 };
-
-const double vision_update_interval = 0.04; // 25fps
-
-template<typename T, char name>
-int pack_array(msgpack_packer *pk, void * raw_data, int size) {
-  T * data = (T *) raw_data;
-  msgpack_pack_array(pk, size);
-  for (int i = 0; i < size; i++) {
-    switch (name) {
-      case 'd':
-        msgpack_pack_double(pk, data[i]);
-        break;
-      default:
-        break;
-    }
-  }
-  return 0;
-}
 
 int get_image(const unsigned char * raw, unsigned char *rgb,
                 int width, int height) {
@@ -96,6 +44,16 @@ int get_image(const unsigned char * raw, unsigned char *rgb,
 }
 
 int main() {
+  // Load config
+  Config config;
+
+  vector<string> jointNames = config.get_string_vector("jointNames");
+  int nJoint = jointNames.size();
+  vector<double> jointBias = config.get_double_vector("jointBias");
+  vector<int> moveDir = config.get_int_vector("moveDir");
+  double vision_update_interval = 0.04;
+
+  std::cout << "load Done " << endl;
   struct wb_devices tags;
   /* init webots robot */
   wb_robot_init();
@@ -105,10 +63,10 @@ int main() {
   /* init actuator */
   vector<double> actuator_position;
   for (int i = 0; i < nJoint; i++) {
-    tags.joints.push_back(wb_robot_get_device(jointNames[i]));
+    tags.joints.push_back(wb_robot_get_device(jointNames[i].c_str()));
     wb_servo_enable_position(tags.joints[i], timeStep);
     actuator_position.push_back(0);
-    printf("init Joint %s\n", jointNames[i]);
+    cout << "init Joint" << jointNames[i] << endl;
   }
 
   /* init camera */
@@ -141,7 +99,6 @@ int main() {
   // Polling (for now, just on actuator commands)
   zmq_pollitem_t poll_items[1];
 
-  // Camera
   void *camera_socket = zmq_socket(ctx, ZMQ_PUB);
   assert(camera_socket);
   int rc = zmq_bind(camera_socket, "ipc:///tmp/camera");
@@ -178,11 +135,10 @@ int main() {
   wb_robot_step(timeStep);
   vector<double> imu;
   imu.resize(6);
+
   double last_vision_update_time = wb_robot_get_time();
   while(1) {
-    int nBytes = zmq_recv(actuator_sub_socket, motor_command_buf, BUFLEN, 
-        //0);
-        ZMQ_DONTWAIT);
+    int nBytes = zmq_recv(actuator_sub_socket, motor_command_buf, BUFLEN, ZMQ_DONTWAIT);
     printf("receive msg length %d\n", nBytes);
     if( nBytes>0 ){
       msgpack::unpacked msg;
@@ -220,7 +176,6 @@ int main() {
     if ((t - last_vision_update_time) >= vision_update_interval) {
       last_vision_update_time = t;
       get_image(raw_img, rgb_img, width, height);
-//      printf("%d %d %d\n", rgb_img[0], rgb_img[1], rgb_img[2]);
       rc = zmq_send(camera_socket, (void *)rgb_img, width*height*3, 0);
     }
 

@@ -32,4 +32,4 @@ openrave:
 	$(LD) -o $@.$(SHLIBEXT) $(LIBOPTS) openrave_wrap.o -lopenrave0.9-core -lopenrave0.9
 
 clean:
-	rm -f controller.$(SHLIBEXT) *.o *.so controller_wrap.c
+	rm -f controller.$(SHLIBEXT) *.o *.so controller_wrap.c wbcontroller

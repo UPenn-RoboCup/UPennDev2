@@ -14,26 +14,30 @@ Config::Config()
   // load config values from Config.lua module
   L = luaL_newstate();
   luaL_openlibs(L);
-  if (luaL_loadfile(L, "Run//include.lua") || lua_pcall(L, 0, 0, 0))
+  if (luaL_loadfile(L, "Run/include.lua") || lua_pcall(L, 0, 0, 0))
   {
-    fprintf(stderr, "%s", lua_tostring(L, -1));
+    fprintf(stderr, "(%s)\n", lua_tostring(L, -1));
+    fflush( stderr );
     exit(EXIT_FAILURE);
   }
   if (luaL_loadstring(L, "require('Params')") || lua_pcall(L, 0, 0, 0))
   {
-    fprintf(stderr, "%s", lua_tostring(L, -1));
+    fprintf(stderr, "(%s)", lua_tostring(L, -1));
+    fflush( stderr );
     exit(EXIT_FAILURE);
   }
   lua_getglobal(L, "Params");
   if (!lua_istable(L, -1))
   {
-    fprintf(stderr, "unable to load Config table from Config.lua");
+    fprintf(stderr, "Unable to load Config table from Params.lua!\n");
+    fflush( stderr );
     exit(EXIT_FAILURE);
   }
   lua_getfield(L, -1, "get_field");
   if (!lua_isfunction(L, -1))
   {
     fprintf(stderr, "unable to load Config.get_field() method");
+    fflush( stderr );
     exit(EXIT_FAILURE);
   }
   lua_pop(L, 2);
@@ -108,7 +112,7 @@ std::vector<std::string> Config::get_string_vector(std::string field)
 
 void Config::push_field(std::string field)
 {
-  lua_getglobal(L, "Config");
+  lua_getglobal(L, "Params");
   lua_getfield(L, -1, "get_field");
   if (lua_isfunction(L, -1))
   {
@@ -185,8 +189,11 @@ std::vector<std::string> lua_get_string_vector(lua_State *L, int index)
 {
   // get double vector from lua stack
   std::vector<std::string> vec(0);
-  if (!lua_istable(L, index))
+  if (!lua_istable(L, index)){
+    fprintf(stdout,"Not a table!\n");
+    fflush(stdout);
     return vec;
+  }
   size_t len = lua_objlen(L, index);
   vec.resize(len);
   if (index < 0)

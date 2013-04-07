@@ -85,7 +85,6 @@ for i, index in pairs(joint.ankles) do
   torque_filters[index] = filter.new_low_pass(0.004,30) 
 end
 
-local ident = "t4"
 pgain, igain, dgain = 125, 5, 20
 local COGx_pid = pid.new(0.004, pgain, igain, dgain)
 COGx_pid:set_d_corner_frequency(20) 
@@ -392,10 +391,6 @@ function update_foot_axis()
   axis = axis/mag
 end
 
-function add_ff_torques()
-  
-end
-
 function update_joint_torques()
   --computes gravity torque, applies bias, applies wrt ankles
   --regulates to max and min, filters, and returns result
@@ -406,6 +401,7 @@ function update_joint_torques()
   t_x_y = torque_components_wrt_feet_on_gnd(t_x_y)--apply across foot axis
   torques[5] = t_x_y[2]*bias[1] 
   torques[6] = t_x_y[1]*bias[1] + deccel_torque
+  --if (deccel_torque < -1) then print('proper torque', torques[6]) end
   torques[11] = t_x_y[2]*bias[2] 
   torques[12] = t_x_y[1]*bias[2]
   torques = regulate_ankle_torques(torques) --max min
@@ -600,6 +596,8 @@ local storemove2 = {0,0,0,0}
 local qt_test = vector.zeros(12)
 local move_foot = {0, 0, 0}
 local ratio = 1
+local rem_state_t = 0
+local trigger = -0.06
 function state_machine(t) 
   if (state == 0) then
     printdata = true
@@ -652,8 +650,8 @@ function state_machine(t)
       print('final value', state_est_d1[1])
     end
   elseif (state == 3) then  --move COG
-    local tau = 3 - state_t --remaining time
-    if state_t > 0.4 then 
+    local tau = 1.5 - state_t --remaining time
+    if state_t > 0.3 then 
       ratio = (trav_offset - (lf[2] - COG[2]))/(l_leg_offset[2] - lf[2])
       goal = (trav_offset - 0.00) / ratio
     end
@@ -662,18 +660,20 @@ function state_machine(t)
     hip_state = vector.new{x, xd, xdd} 
     delta[2] = hip_state[1]
     qt = move_legs(delta)
+    trigger = -0.16
     --if state_t > 1.5 then deccel_torque = 50*hip_state[3] end
-    if (state_t > 2) then  -- true then --
+    if (state_est_k1[2][1] > trigger) then  
       --run = false
-      print('single_support, goal', t, goal)
-      --deccel_torque = 0
+      print('single_support', state_t, t)
       single_support = true
       double_support = false
       state = 4
+      switch_t = state_t
+      deccel_torque = -10
       move_foot = {0, 0, 0}
     end
   elseif (state == 4) then --lift leg
-    local tau = 3 - state_t 
+    local tau = 1.5 - state_t 
     local x,xd,xdd = trajectory.minimum_jerk_step(hip_state, {0.11, 0, 0}, tau, 0.005)
     hip_state = vector.new{x, xd, xdd} 
     delta[2] = hip_state[1]
@@ -682,14 +682,15 @@ function state_machine(t)
     local r_leg_delta = r_leg_offset + move_foot[1]*vector.new{0, 0.0, 0.02, 0, 0, 0}
     qt = move_legs(delta, nil, r_leg_delta)
    -- deccel_torque = 50*hip_state[3]
-    COG_des[2] = -0.056 + 0.056*(state_t - 2)
-    COG_vel[2] = 0.056
-    if state_t >= 3 then 
+    COG_des[2] = trigger - trigger*(state_t - switch_t)/(1.5 - switch_t)
+    COG_vel[2] = -trigger/(1.5 - switch_t)
+    if state_t > 1 then deccel_torque = 0 end
+    if state_t >= 1.5 then 
       --run = false
       COG_des[2] = 0
       COG_vel[2] = 0
       deccel_torque = 0
-      print('take step', t)
+      print('finish step', t)
       single_support = false
       ff_torques = vector.new{0, 0}
       state = 5
@@ -795,6 +796,7 @@ dcm:set_joint_position(set_values)
 dcm:set_joint_enable(1, 'all')
 qt = vector.copy(set_values) 
 
+local ident = "t8"
 print('ident', ident)
 local fw_log = assert(io.open("../Logs/fw_log"..ident..".txt","w"))
 local fw_reg = assert(io.open("../Logs/fw_reg"..ident..".txt","w"))

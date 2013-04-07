@@ -12,20 +12,19 @@ static std::vector<std::string> lua_get_string_vector(lua_State *L, int index);
 Config::Config()
 {
   // load config values from Config.lua module
-
   L = luaL_newstate();
   luaL_openlibs(L);
-  if (luaL_loadfile(L, "include.lua") || lua_pcall(L, 0, 0, 0))
+  if (luaL_loadfile(L, "Run//include.lua") || lua_pcall(L, 0, 0, 0))
   {
     fprintf(stderr, "%s", lua_tostring(L, -1));
     exit(EXIT_FAILURE);
   }
-  if (luaL_loadstring(L, "require('Config')") || lua_pcall(L, 0, 0, 0))
+  if (luaL_loadstring(L, "require('Params')") || lua_pcall(L, 0, 0, 0))
   {
     fprintf(stderr, "%s", lua_tostring(L, -1));
     exit(EXIT_FAILURE);
   }
-  lua_getglobal(L, "Config");
+  lua_getglobal(L, "Params");
   if (!lua_istable(L, -1))
   {
     fprintf(stderr, "unable to load Config table from Config.lua");

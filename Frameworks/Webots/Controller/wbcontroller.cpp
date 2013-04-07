@@ -53,7 +53,11 @@ int main() {
 
   vector<string> jointNames = config.get_string_vector("jointNames");
   int nJoint = jointNames.size();
+  double motor_command_buf[nJoint];
+  // Receiving buffer
+  //double* motor_command_buf = (double*)malloc( nJoint*sizeof(double) );
   //cout << "Got " << nJoint << " joints!" << endl;
+
   vector<double> jointBias = config.get_double_vector("jointBias");
   vector<int> moveDir = config.get_int_vector("moveDir");
   double vision_update_interval = 0.04;
@@ -161,8 +165,6 @@ int main() {
   // Poll object
   poll_items[0].socket = actuator_sub_socket;
   poll_items[0].events = ZMQ_POLLIN;
-  // Receiving buffer
-  char motor_command_buf[BUFLEN];
   
   // Lidar publishing
   void* lidar_pub_socket = zmq_socket(ctx, ZMQ_PUB);
@@ -181,9 +183,15 @@ int main() {
   double last_lidar_t = wb_robot_get_time();
   char ts_buf[100];
   while(1) {
-    int nBytes = zmq_recv(actuator_sub_socket, motor_command_buf, BUFLEN, ZMQ_DONTWAIT);
-//    printf("receive msg length %d\n", nBytes);
+    int nBytes = zmq_recv(actuator_sub_socket, motor_command_buf, sizeof(motor_command_buf) , ZMQ_DONTWAIT);
     if( nBytes>0 ){
+      printf("receive msg length %d/%ld\n", nBytes, (unsigned long int)sizeof(motor_command_buf));
+      for(int j=0;j<nJoint;j++){
+        cout << motor_command_buf[j] << endl;
+        wb_servo_set_position(tags.joints[j], motor_command_buf[j] );
+      }
+      cout << endl;
+      /*
       msgpack::unpacked msg;
       msgpack::unpack(&msg, motor_command_buf, nBytes);
       vector<double> new_actuator;
@@ -192,6 +200,7 @@ int main() {
       for (int i = 0; i < 20; i++)
         cout << new_actuator[i] << ' ';
       cout << endl;
+      */
     }
 
     //rc = zmq_poll( poll_items, 1, 10 );

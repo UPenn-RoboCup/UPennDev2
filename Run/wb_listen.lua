@@ -6,10 +6,12 @@ local msgpack = require 'msgpack'
 local carray = require 'carray'
 
 -- Global vars
+require 'unix'
 require 'Params'
 actuators = {}
+local actuators = carray.double(#Params.jointNames);
 for i = 1,#Params.jointNames do
-  actuators[i] = i * math.pi
+  actuators[i] = math.pi
 end
 
 -- IPC channels
@@ -45,17 +47,27 @@ lidar_channel.callback = function()
   local ranges, has_more = lidar_channel:receive();
   lidar_ts = tonumber(ts);
   lidar_ranges = carray.float( ranges );
-  print(lidar_ts," Lidar: ", #lidar_ranges)
+  --print(lidar_ts," Lidar: ", #lidar_ranges)
 end
 
 local wait_channels = {imu_channel, camera_channel, actuator_channel, lidar_channel}
 local channel_poll = simple_ipc.wait_on_channels( wait_channels )
 
-local channel_timeout = 30
+--local channel_timeout = 30
+local channel_timeout = -1
+local t0 = unix.time()
 while true do
-  channel_poll:poll(channel_timeout)
-  local str = msgpack.pack( actuators )
-  print("Actuators/Msgpacked",#actuators,#str)
-  print( string.format("(%s)",str) )
-  --actuator_pub_channel:send( str )
+  local n_poll = channel_poll:poll(channel_timeout)
+  --print( string.format("(%s)",tostring(actuators)) )
+  local ret = actuator_pub_channel:send( tostring(actuators) )
+  if ret then
+    local t = unix.time()
+    local fps = 1/(t-t0)
+    t0 = t;
+    local debug_msg = string.format(
+    "Updating at %.3f FPS",
+    fps
+    )
+    print( debug_msg )
+  end
 end

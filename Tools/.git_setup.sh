@@ -27,13 +27,13 @@ HOST=$(hostname)
 git config --global --unset user.name
 git config --global --unset user.email
 
-if [ $NAME == "unknown" ]; then
-  echo "Please Name Yourself For Git:"
-  echo "  git config --global user.name Your Name"
-  echo "  git config --global user.email your email"
-else
-  echo "Welcome $NAME"
-  echo "GIT user and email has been set for you"
-  git config --global user.name "$NAME@$HOST"
-  git config --global user.email "$EMAIL"
-fi
+#if [ $NAME == "unknown" ]; then
+#  echo "Please Name Yourself For Git:"
+#  echo "  git config --global user.name Your Name"
+#  echo "  git config --global user.email your email"
+#else
+#  echo "Welcome $NAME"
+#  echo "GIT user and email has been set for you"
+#  git config --global user.name "$NAME@$HOST"
+#  git config --global user.email "$EMAIL"
+#fi

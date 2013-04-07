@@ -1,6 +1,7 @@
 #include "manager.h"
 
-Manager::Manager()
+Manager::Manager(const std::string& identifier)
+    : QThread(), _identifier(identifier)
 {
 
 }

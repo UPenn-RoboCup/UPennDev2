@@ -22,6 +22,7 @@ using namespace std;
 
 struct wb_devices {
   WbDeviceTag camera;
+  WbDeviceTag lidar;
   WbDeviceTag accelerometer;
   WbDeviceTag gyro;
   WbDeviceTag gps;
@@ -49,21 +50,28 @@ int main() {
   // Load config
   Config config;
   std::cout << "Done loading!" << endl;
+  string platformName = config.get_string("platformName");
+  cout << "Running " << platformName << endl;
 
   vector<string> jointNames = config.get_string_vector("jointNames");
   int nJoint = jointNames.size();
+  cout << "Got " << nJoint << " joints!" << endl;
   vector<double> jointBias = config.get_double_vector("jointBias");
   vector<int> moveDir = config.get_int_vector("moveDir");
   double vision_update_interval = 0.04;
-  string platformName = config.get_string("platformName");
-  cout << "Running " << platformName << endl;
-  cout << "Got " << nJoint << " joints!" << endl;
+  double lidar_update_interval = config.get_double("vision.lidar_interval");
+  if (lidar_update_interval>0)
+    cout << "lidar interval"<<lidar_update_interval<<endl;
+  else
+    cout << "No lidar available!" << endl;
 
   struct wb_devices tags;
   /* init webots robot */
   wb_robot_init();
   /* get basic time step */
   double timeStep = wb_robot_get_basic_time_step();
+  cout << "Running timestep: " << timeStep << "ms" << endl;
+  cout << "Effective FPS: " << 1000/timeStep << endl;
 
   /* init actuator */
   vector<double> actuator_position;
@@ -76,7 +84,11 @@ int main() {
 
   /* init camera */
   tags.camera = wb_robot_get_device("Camera");
-  wb_camera_enable(tags.camera, timeStep);
+  cout << "Camera timestep: " << vision_update_interval << endl;
+  int cameraTimeStep = (int)(vision_update_interval*1000);
+  cout << "Camera timestep: " << cameraTimeStep << "ms" << endl;
+  cout << "Camera FPS: " << 1/vision_update_interval << endl;
+  wb_camera_enable( tags.camera, cameraTimeStep );
 
   int height = wb_camera_get_height(tags.camera);
   int width = wb_camera_get_width(tags.camera);
@@ -96,6 +108,18 @@ int main() {
   wb_led_set(tags.eyeled,0xffffff);
   tags.headled = wb_robot_get_device("HeadLed");
   wb_led_set(tags.headled,0x00ff00);
+
+  /* init lidar */
+  if( lidar_update_interval>0 ){
+    cout << "Lidar timestep: " << lidar_update_interval << endl;
+    int lidarTimeStep = (int)(lidar_update_interval*1000);
+    cout << "Lidar timestep: " << lidarTimeStep << "ms" << endl;
+    cout << "Lidar FPS: " << 1/lidar_update_interval << endl;
+    tags.lidar = wb_robot_get_device("UTM-30LX");
+    wb_camera_enable(tags.lidar, timeStep);
+    int lidar_dt = wb_camera_get_sampling_period( tags.lidar );
+    cout << "Initialized the lidar to sample at " << lidar_dt << "ms" << endl;
+  }
 
   /* init zmq */
   void* ctx = zmq_init(4);
@@ -182,6 +206,10 @@ int main() {
       last_vision_update_time = t;
       get_image(raw_img, rgb_img, width, height);
       rc = zmq_send(camera_socket, (void *)rgb_img, width*height*3, 0);
+    }
+
+    /* lidar update */
+    if( lidar_update_interval>0 ){
     }
 
     if (wb_robot_step(timeStep) < 0)

@@ -97,7 +97,13 @@ from http://octomap.github.io/
 		luarocks install numlua lua-cmsgpack
 		luarocks install https://raw.github.com/Neopallium/lua-zmq/master/rockspecs/lua-zmq-scm-1.rockspec
 
-#### Install KDL and Torch using the instructions above.
+#### Install KDL and Torch using the instructions above.  Additionally:
+
+For KDL, use:
+cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local/Cellar/kdl/1.0
+make
+make install
+brew link kdl
 
 Build Instructions
 ------------------

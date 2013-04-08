@@ -1,4 +1,4 @@
-#include "camera_dump.h"
+#include "lidar_dump.h"
 
 #include <zmq.h>
 #include <vector>

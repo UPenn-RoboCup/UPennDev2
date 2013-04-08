@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 
+set(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}")
+
 find_package(Boost COMPONENTS system REQUIRED)
 include (FindPkgConfig)
 if (PKG_CONFIG_FOUND)
@@ -36,4 +38,9 @@ target_link_libraries(
   ${GAZEBO_LIBRARIES}
   ${LUA_LIBRARIES}
   ${Boost_LIBRARIES}
+)
+
+INSTALL(
+  TARGETS gz_comms_manager
+  DESTINATION "."
 )

@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 
+set(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}")
+
+find_package(Boost COMPONENTS system REQUIRED)
+
 include (FindPkgConfig)
 if (PKG_CONFIG_FOUND)
   pkg_check_modules(GAZEBO gazebo)
@@ -9,7 +13,12 @@ link_directories(${GAZEBO_LIBRARY_DIRS})
 link_directories("/usr/local/lib")
 
 add_library(gz_camera_dump SHARED camera_dump.cc)
-target_link_libraries(gz_camera_dump ${GAZEBO_libraries} CameraPlugin zmq jpeg)
+target_link_libraries(gz_camera_dump ${GAZEBO_libraries} 
+  CameraPlugin zmq jpeg
+  ${Boost_LIBRARIES}
+)
 
-add_library(gz_camera_move SHARED camera_move.cc)
-target_link_libraries(gz_camera_move ${GAZEBO_libraries})
+INSTALL(
+  TARGETS gz_camera_dump
+  DESTINATION "."
+)

@@ -1,5 +1,7 @@
-local cwd = os.getenv('PWD')
-
+local handle = io.popen('pwd')
+local cwd = handle:read("*a")
+handle:close()
+print("Working in ",cwd)
 local Webots = false
 local HOME = cwd:gsub('Run.*$','')
 local HOME = HOME:gsub('Tools.*$','')

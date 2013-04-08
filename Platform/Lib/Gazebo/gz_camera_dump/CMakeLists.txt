@@ -8,8 +8,8 @@ include_directories(${GAZEBO_INCLUDE_DIRS})
 link_directories(${GAZEBO_LIBRARY_DIRS})
 link_directories("/usr/local/lib")
 
-add_library(camera_dump SHARED camera_dump.cc)
-target_link_libraries(camera_dump ${GAZEBO_libraries} CameraPlugin zmq jpeg)
+add_library(gz_camera_dump SHARED camera_dump.cc)
+target_link_libraries(gz_camera_dump ${GAZEBO_libraries} CameraPlugin zmq jpeg)
 
-add_library(camera_move SHARED camera_move.cc)
-target_link_libraries(camera_move ${GAZEBO_libraries})
+add_library(gz_camera_move SHARED camera_move.cc)
+target_link_libraries(gz_camera_move ${GAZEBO_libraries})

@@ -13,7 +13,14 @@ Config::Config()
 {
   // load config values from Config.lua module
   L = luaL_newstate();
+  if(L==NULL){
+    fprintf(stderr, "Cannot load Lua for Config file reading!\n");
+    fflush( stderr );
+    exit(EXIT_FAILURE);
+  }
+  
   luaL_openlibs(L);
+  
   if (luaL_loadfile(L, "Run/include.lua") || lua_pcall(L, 0, 0, 0))
   {
     fprintf(stderr, "(%s)\n", lua_tostring(L, -1));

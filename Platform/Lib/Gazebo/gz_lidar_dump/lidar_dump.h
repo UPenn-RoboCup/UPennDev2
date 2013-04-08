@@ -15,7 +15,7 @@
  *
 */
 #include "gazebo.hh"
-#include "plugins/CameraPlugin.hh"
+#include "plugins/RayPlugin.hh"
 #include <stdio.h>
 #include <iostream>
 #include <iomanip>
@@ -25,20 +25,20 @@ using namespace std;
 
 namespace gazebo
 {
-  class CameraDump : public CameraPlugin
+  class LidarDump : public RayPlugin
   {
-    public: CameraDump() : CameraPlugin(), saveCount(0) {}
+    public: LidarDump() : RayPlugin() {}
 
     public: void Load(sensors::SensorPtr _parent, sdf::ElementPtr _sdf);
 
     // Update the controller
-    public: void OnNewFrame(const unsigned char *_image,
-        unsigned int _width, unsigned int _height, unsigned int _depth,
-        const std::string &_format);
+    public: void OnNewLaserScans();
 
-    private: int saveCount;
+    private: sensors::SensorPtr parent_sensor_;
+    private: sensors::RaySensorPtr parent_ray_sensor_;
   };
 
+
   // Register this plugin with the simulator
-  GZ_REGISTER_SENSOR_PLUGIN(CameraDump)
+  GZ_REGISTER_SENSOR_PLUGIN(LidarDump)
 }

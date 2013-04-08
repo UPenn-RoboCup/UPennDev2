@@ -128,16 +128,22 @@ lidar_channel.callback = function()
     print("Bad lidar ts!")
     return
   end
-  local ranges, has_more = lidar_channel:receive();
+  local ranges_str, has_more = lidar_channel:receive();
   local lidar_ts = tonumber(ts);
-  local lidar_ranges = carray.float( ranges );
-  local ranges_s = torch.FloatStorage( 1081, lidar_ranges:pointer() )
-  local ranges_t = torch.FloatTensor( ranges_s );
-  print( lidar_ranges:pointer() )
-  print( lidar_ranges[500], ranges_t[1], ranges_s[1] );
-  --print( ranges_s, ranges_t );
-  --print( #lidar_ranges, #ranges_s, (#ranges_t)[1], #(#ranges_t) )
-  ranges2xyz(ranges_t,pitch,roll)
+  local ranges_f = carray.float( ranges_str );
+
+  -- Use a silly element-by-element copy
+  local ranges = torch.Tensor( #ranges_f )
+  for i=1,#ranges_f do
+    ranges[i] = ranges_f[i]
+  end
+  -- Use pointers for "efficiency"
+--[[
+  local ranges_s = torch.FloatStorage( 1081, ranges_t:pointer() )
+  local ranges = torch.FloatTensor( ranges_s );
+  print( ranges_f[500], ranges[500], ranges_s[500] );
+--]]
+  ranges2xyz(ranges,pitch,roll)
 
   --print(lidar_ts," Lidar: ", #lidar_ranges)
   -- Change the lidar head to scan

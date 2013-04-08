@@ -41,7 +41,8 @@ SOURCES += main.cpp\
     keyboardeventfilter.cpp \
     modelmanipulator.cpp \
     videofeed.cpp \
-    luaengine.cpp
+    luaengine.cpp \
+    commsmanager.cpp
 
 
 HEADERS  += centerwindow.h \
@@ -68,7 +69,8 @@ HEADERS  += centerwindow.h \
     keyboardeventfilter.h \
     modelmanipulator.h \
     videofeed.h \
-    luaengine.h
+    luaengine.h \
+    commsmanager.h
 
 
 FORMS    += centerwindow.ui \
@@ -81,6 +83,6 @@ OTHER_FILES += \
     doxyfile.config \
     INSTALL.txt
 
-LIBS += -lqwt -lOpenThreads -losg -losgDB -losgUtil -losgViewer -losgGA -losgQt -llualib
+LIBS += -lqwt -lOpenThreads -losg -losgDB -losgUtil -losgViewer -losgGA -losgQt
 
 INCLUDEPATH +=  /usr/include/lua5.1

@@ -21,6 +21,9 @@ class VideoFeed;
 class VideoManager : public Manager
 {
 public:
+    static VideoManager* _instance;
+    static VideoManager* Instance();
+
     VideoManager();
 
     void run();

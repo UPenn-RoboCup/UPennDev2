@@ -69,13 +69,15 @@ function Manipulation_state:update()
 	local dt = Platform.get_time() - t
   	t = Platform.get_time()
 	
+	--set_joint_goal_enabled(true)
+	
 	set_real_T_array_from_table(mc_inputs.JointSpaceVelocityGoal, 1, mcm:get_desired_joint_velocity(joint.waist))
 	set_real_T_array_from_table(mc_inputs.JointSpaceVelocityGoal, 2, mcm:get_desired_joint_velocity(joint.r_arm))
 	set_real_T_array_from_table(mc_inputs.JointSpaceVelocityGoal, 8, mcm:get_desired_joint_velocity(joint.l_arm))
 	
-	--[[set_real_T_array_from_table(mc_inputs.JointSpacePositionGoal, 1, mcm:get_desired_joint_position(joint.waist))
-	set_real_T_array_from_table(mc_inputs.JointSpacePositionGoal, 2, mcm:get_desired_joint_position(joint.r_arm))
-	set_real_T_array_from_table(mc_inputs.JointSpacePositionGoal, 8, mcm:get_desired_joint_position(joint.l_arm))]]
+	--set_real_T_array_from_table(mc_inputs.JointSpacePositionGoal, 1, mcm:get_desired_joint_position(joint.waist))
+	--set_real_T_array_from_table(mc_inputs.JointSpacePositionGoal, 2, mcm:get_desired_joint_position(joint.r_arm))
+	--set_real_T_array_from_table(mc_inputs.JointSpacePositionGoal, 8, mcm:get_desired_joint_position(joint.l_arm))
 	
 	set_real_T_array_from_table(mc_inputs.TaskSpaceVelocityGoal, 0, mcm:get_desired_r_hand_twist())
 	set_real_T_array_from_table(mc_inputs.TaskSpaceVelocityGoal, 6, mcm:get_desired_l_hand_twist())

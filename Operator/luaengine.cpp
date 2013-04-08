@@ -12,7 +12,7 @@ LuaEngine::LuaEngine(QObject *parent) :
 {
 }
 
-int my_function(lua_State *L)
+/*int my_function(lua_State *L)
 {
   int argc = lua_gettop(L);
 
@@ -64,4 +64,4 @@ int LuaEngine::runLua(const std::string& filename)
     std::cerr << std::endl;
   return 0;
 
-}
+}*/

@@ -4,6 +4,17 @@
 
 #include "videofeed.h"
 
+VideoManager* VideoManager::_instance = 0;
+
+VideoManager* VideoManager::Instance()
+{
+    if (_instance == 0)
+    {
+        _instance = new VideoManager();
+    }
+    return _instance;
+}
+
 VideoManager::VideoManager()
     : Manager("VideoManager")
 {

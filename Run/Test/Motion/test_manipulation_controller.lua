@@ -60,6 +60,9 @@ while (true) do
     elseif (key == string.byte('l')) then
     elseif (key == string.byte('h')) then
     elseif (key == string.byte(';')) then
+    elseif (key == curses.KEY_RESIZE) then
+      local y, x = curses.getmaxyx()
+      curses.resizeterm(y, x)
     end
   end
 

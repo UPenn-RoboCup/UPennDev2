@@ -66,7 +66,7 @@ int main(int argc, char **argv)
   initscr();
   cbreak();
   noecho();
-  timeout(50);
+  timeout(200);
   while ('q' != (key = getch()))
   {
     clear();

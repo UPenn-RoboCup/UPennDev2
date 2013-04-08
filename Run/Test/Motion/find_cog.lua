@@ -9,7 +9,6 @@ require('pid')
 require('unix')
 require('util')
 require('Platform')
-require('curses')
 require('Config')
 require('vector')
 require('Kinematics')
@@ -422,9 +421,11 @@ function COG_update()
   local jnt_vec_y = vector.new{0, 0, 1}
 --  local bsx = vector.new{-0.2484, -0.0554, -0.0196, 0.0080}
 --  local bsy = vector.new{0.2108, 0.0390, -0.0018}
-  local bsx = vector.new{-0.2649, -0.0608, -0.0210, 0.0050}
-  local bsy = vector.new{0.2285, 0.0460, -0.0007}
-  
+--  local bsx = vector.new{-0.2649, -0.0608, -0.0210, 0.0050}
+--  local bsy = vector.new{0.2285, 0.0460, -0.0007}
+  local bsx = vector.new{-0.2726, -0.0676, -0.0255, 0.0065}
+  local bsy = vector.new{0.2172, 0.0424, -0.0010}
+
   local correction = {}
 
   jnt_vec_x[1] = ahrs_filt[8]
@@ -451,6 +452,8 @@ local poses = {{0.00, 0.00, 0.00, 0.00, 0.00, 0.00},
                {-0.11, 0.00, 0.00, 0.00, 0.00, 0.00},
                {0.00, 0.10, 0.00, 0.00, 0.00, 0.00},
                {0.05, 0.10, 0.00, 0.00, 0.00, 0.00},
+               {0.00, -0.10, 0.00, 0.00, 0.00, 0.00},
+               {0.05, -0.10, 0.00, 0.00, 0.00, 0.00},
                {-0.1, 0.10, 0.00, 0.00, 0.00, 0.00},
                {0.00, 0.00, 0.00, 0.25, 0.00, 0.00},
                {0.00, 0.00, 0.00, 0.00, 0.25, 0.00},
@@ -501,7 +504,7 @@ function state_machine(t)
       print('state 1')
       l_leg_offset = lf
       r_leg_offset = rf
-      torso = vector.new{0, 0, -0.05, 0, 0, 0} 
+      torso = vector.new{0, 0, -0.025, 0, 0, 0} 
       joint_offset = move_legs(torso)
       joint_offset = vector.new(joint_offset)
 --print('inital pose')      
@@ -547,7 +550,7 @@ function state_machine(t)
       print('trial', trial)
       state_t = 0
       state = 4
-      if trial >= 11 then --change here to edit number of runs
+      if trial >= 13 then --change here to edit number of runs
         --run = false
         print('exit trial')
         state = 9
@@ -611,7 +614,7 @@ print('timestep', Platform.get_time_step())
 Proprioception.entry()
 dcm:set_joint_enable(0,'all')
 local set_values = dcm:get_joint_position_sensor('legs') 
-dcm:set_joint_position_p_gain(1, 'all') -- position control
+dcm:set_joint_p_gain(1, 'all') -- position control
 --dcm:set_joint_position_p_gain(0, 'ankles')
 --dcm:set_joint_damping(0, 'ankles')
 --dcm:set_joint_force({0, 0, 0, 0},'ankles')
@@ -623,7 +626,7 @@ printdata = true
 ------------------------------------------------------------------------
 --Data logging --
 ------------------------------------------------------------------------
-local ident = "t1"
+local ident = "t5"
 print('ident', ident)
 --local fw_log = assert(io.open("Logs/fw_log"..ident..".txt","w"))
 --local fw_reg = assert(io.open("Logs/fw_reg"..ident..".txt","w"))
@@ -640,6 +643,7 @@ local fw_lr_cop = assert(io.open("../Logs/fw_lr_cop"..ident..".txt","w"))
 local fw_COP_filt = assert(io.open("../Logs/fw_COP_filt"..ident..".txt","w"))
 local fw_ahrs_filt = assert(io.open("../Logs/fw_ahrs_filt"..ident..".txt","w"))
 local fw_trial = assert(io.open("../Logs/fw_trial"..ident..".txt","w"))
+local fw_lf = assert(io.open("../Logs/fw_lf"..ident..".txt","w"))
 
 function record_data()
     write_to_file(fw_joint_pos, joint_pos)
@@ -654,6 +658,7 @@ function record_data()
     write_to_file(fw_COP_filt, COP_filt)
     write_to_file(fw_ahrs_filt, ahrs_filt)
     write_to_file(fw_trial, {trial})
+    write_to_file(fw_lf, lf)
 end
 
 function write_to_file(filename, data, test)
@@ -698,8 +703,8 @@ end
 --------------------------------------------------------------------
 --Main
 --------------------------------------------------------------------
---local t0 = unix.time()
---t = t0
+local t0 = unix.time()
+t = t0
 print('begin')
 while run do 
   Platform.update()

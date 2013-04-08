@@ -1,18 +1,25 @@
 #ifndef MANAGER_H
 #define MANAGER_H
 
-#include <QObject>
+#include <QThread>
 
 class DataManager;
 class VideoManager;
+class CommsInterface;
 
-class Manager : public QObject
+class Manager : public QThread
 {
 
 public:
-    Manager();
+    Manager(const std::string& _identifier);
 
-    void InitManagers();
+    static void InitManagers();
+
+    static VideoManager* _videoManager;
+    static DataManager* _dataManager;
+    static CommsInterface* _commsInterface;
+
+    std::string _identifier;
 
 };
 

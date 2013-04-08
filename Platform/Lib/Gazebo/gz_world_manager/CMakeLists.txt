@@ -1,11 +1,18 @@
 cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 
+set(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}")
+
+find_package(Boost COMPONENTS system REQUIRED)
 include (FindPkgConfig)
 if (PKG_CONFIG_FOUND)
   pkg_check_modules(GAZEBO gazebo)
   pkg_check_modules(ZMQ libzmq>=3.2 REQUIRED)
   pkg_check_modules(MSGPACK libmsgpack-dev)
-  pkg_check_modules(LUA lua5.1)
+  if (APPLE)
+    pkg_check_modules(LUA lua)
+  else()
+    pkg_check_modules(LUA lua5.1)
+  endif()
 endif()
 
 include_directories(
@@ -35,4 +42,10 @@ target_link_libraries(
   ${ZMQ_LIBRARIES}
   ${MSGPACK_LIBRARIES}
   ${LUA_LIBRARIES}
+  ${Boost_LIBRARIES}
+)
+
+INSTALL(
+  TARGETS gz_world_manager
+  DESTINATION "."
 )

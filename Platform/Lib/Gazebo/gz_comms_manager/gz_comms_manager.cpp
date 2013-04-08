@@ -110,7 +110,7 @@ namespace gazebo
     // initialize imu
     this->imu_link_name = "torso";
     this->imu_sensor_name = "imu_sensor";
-    this->imu_sensor = boost::shared_dynamic_cast<sensors::ImuSensor>(
+    this->imu_sensor = boost::dynamic_pointer_cast<sensors::ImuSensor>(
       sensors::SensorManager::Instance()->GetSensor(
         this->world->GetName()
         + "::" + this->model->GetScopedName()
@@ -275,7 +275,7 @@ namespace gazebo
       // update joint sensors
       this->dcm.joint_force_sensor[index] = force_command;
       this->dcm.joint_position_sensor[index] = position_actual;
-      this->dcm.joint_velocity_sensor[index] = velocity_actual;
+      this->dcm.joint_velocity_sensor[index] = velocity_estimate;
 
     //gzerr << "force command " << force_command << "\n";
     }

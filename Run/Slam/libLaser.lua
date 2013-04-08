@@ -17,11 +17,9 @@ libLaser.sines   = torch.sin(libLaser.angles);
 
 -- Start with a mask of all ones to allow ALL points
 libLaser.mask = torch.Tensor(libLaser.nRays):fill(1)
---[[
 for i=1,libLaser.nRays do
   libLaser.mask[i] = i%2
 end
---]]
 libLaser.minRange = 0.25;
 
 -- TODO: Make sure the helper functions are working properly!

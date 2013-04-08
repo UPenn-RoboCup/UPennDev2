@@ -13,7 +13,7 @@ class Manager : public QThread
 public:
     Manager(const std::string& _identifier);
 
-    void InitManagers();
+    static void InitManagers();
 
     static VideoManager* _videoManager;
     static DataManager* _dataManager;

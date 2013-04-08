@@ -4,7 +4,7 @@ all: libgz_camera_dump.so
 
 libgz_camera_dump.so:
 	rm -rf build
-	mkdir build && cd build && cmake .. && make && cp $@ .. && cd $(CWD)
+	mkdir build && cd build && cmake .. && make && make install && cd $(CWD)
 
 clean:
 	rm -rf build

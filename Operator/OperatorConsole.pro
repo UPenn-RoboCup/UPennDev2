@@ -8,6 +8,7 @@ QT += core gui
 QT += phonon
 QT += opengl
 QT += osg
+QT += network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -36,9 +37,13 @@ SOURCES += main.cpp\
     walkstatemachine.cpp \
     osgcamera.cpp \
     commsinterface.cpp \
-    keyboardeventfilter.cpp \
     osgrenderthread.cpp \
-    osgmousemanipulator.cpp
+    osgmousemanipulator.cpp \
+    manager.cpp \
+    keyboardeventfilter.cpp \
+    modelmanipulator.cpp \
+    videofeed.cpp \
+    luaengine.cpp
 
 HEADERS  += centerwindow.h \
     rightwindow.h \
@@ -60,9 +65,13 @@ HEADERS  += centerwindow.h \
     walkstatemachine.h \
     osgcamera.h \
     commsinterface.h \
-    keyboardeventfilter.h \
     osgrenderthread.h \
-    osgmousemanipulator.h
+    osgmousemanipulator.h\
+    manager.h \
+    keyboardeventfilter.h \
+    modelmanipulator.h \
+    videofeed.h \
+    luaengine.h
 
 FORMS    += centerwindow.ui \
     rightwindow.ui \
@@ -74,4 +83,6 @@ OTHER_FILES += \
     doxyfile.config \
     INSTALL.txt
 
-LIBS += -lqwt -lOpenThreads -losg -losgDB -losgUtil -losgViewer -losgGA -losgQt
+LIBS += -lqwt -lOpenThreads -losg -losgDB -losgUtil -losgViewer -losgGA -losgQt -llualib
+
+INCLUDEPATH +=  /usr/include/lua5.1

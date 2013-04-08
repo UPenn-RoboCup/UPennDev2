@@ -1,7 +1,7 @@
 dofile('../../include.lua')
 require 'cjpeg'
 local simple_ipc = require 'simple_ipc'
-local kinect_channel = simple_ipc.setup_publisher('kinect');
+local kinect_channel = simple_ipc.new_publisher('kinect');
 
 require 'Kinect'
 local k = Kinect.open()

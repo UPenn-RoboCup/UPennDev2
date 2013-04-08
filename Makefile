@@ -39,7 +39,7 @@ ash robotis_arm arm_teststand teststand:
 	&& ln -s ../Platform/$@/Comms/comms_manager comms_manager \
 	&& cd $(CWD)
 
-gazebo_ash gazebo_ash_lowerbody :
+gazebo_ash gazebo_thor_op gazebo_ash_lowerbody :
 	cd Framework/Lib && make && cd $(CWD)
 	cd Platform/Lib/KDL && make && cd $(CWD)
 	cd Platform/Lib/Gazebo && make && cd $(CWD)

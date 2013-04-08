@@ -11,22 +11,25 @@ point3d origin (0.0f, 0.0f, 0.0f);
 
 static int lua_add_scan( lua_State *L ) {
 
-    /* Grab the points from the last laser scan*/
-    const THFloatTensor * points_t = (THFloatTensor *) luaT_checkudata(L, 1, "torch.FloatTensor");
-    const long nps = points_t->size[1]; // The number of laser points to match
-    //fprintf(stdout,"Number of laser points: %ld\n", nps );
-    //fflush(stdout);
+  /* Grab the points from the last laser scan*/
+  const THFloatTensor * points_t = (THFloatTensor *) luaT_checkudata(L, 1, "torch.FloatTensor");
+  const long nps = points_t->size[1]; // The number of laser points to match
+  //fprintf(stdout,"Number of laser points: %ld\n", nps );
+  //fflush(stdout);
 
   Pointcloud cloud;
-    float x = THTensor_fastGet2d( points_t, 0, 500);
-    float y = THTensor_fastGet2d( points_t, 1, 500);
-    float z = THTensor_fastGet2d( points_t, 2, 500);
-//fprintf(stdout,"Inserting %f %f %f\n",x,y,z);
+  float x,y,z;
+  /*
+  x = THTensor_fastGet2d( points_t, 0, 500);
+  y = THTensor_fastGet2d( points_t, 1, 500);
+  z = THTensor_fastGet2d( points_t, 2, 500);
+  fprintf(stdout,"Inserting %f %f %f\n",x,y,z);
+  */
   for (long p=0; p<nps; p++) {
-    x = THTensor_fastGet2d( points_t, 1, p);
-    y = THTensor_fastGet2d( points_t, 2, p);
-    z = THTensor_fastGet2d( points_t, 3, p);
-    point3d observed_point ( x, y, z);
+    x = THTensor_fastGet2d( points_t, 0, p);
+    y = THTensor_fastGet2d( points_t, 1, p);
+    z = THTensor_fastGet2d( points_t, 2, p);
+    point3d observed_point ( x, y, z );
     // Ray cast to make free space
     if (!tree.insertRay(origin, origin+observed_point)) {
       // Lua_error?

@@ -12,10 +12,26 @@
 #ifndef VIDEOMANAGER_H
 #define VIDEOMANAGER_H
 
-class VideoManager
+#include "manager.h"
+#include <map>
+
+class QImage;
+class VideoFeed;
+
+class VideoManager : public Manager
 {
 public:
     VideoManager();
+
+    void run();
+
+public slots:
+    void updateFeed(const std::string& identifier, const char* data, uint offset, uint len);
+
+private:
+    typedef std::map<std::string,VideoFeed*> VideoMap;
+    VideoMap _videoFeeds;
+
 };
 
 #endif // VIDEOMANAGER_H

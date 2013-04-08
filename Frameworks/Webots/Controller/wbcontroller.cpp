@@ -45,7 +45,7 @@ int get_image(const unsigned char * raw, unsigned char *rgb,
 }
 
 int main() {
-
+  cout << "Welcome to wbcontroller!" << endl;
   // Load config
   Config config;
   string platformName = config.get_string("platformName");

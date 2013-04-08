@@ -16,7 +16,10 @@ libLaser.cosines = torch.cos(libLaser.angles);
 libLaser.sines   = torch.sin(libLaser.angles);
 
 -- Start with a mask of all ones to allow ALL points
-libLaser.mask = torch.Tensor(libLaser.angles:size()):fill(1)
+libLaser.mask = torch.Tensor(libLaser.nRays):fill(1)
+for i=1,libLaser.nRays do
+  libLaser.mask[i] = i%2
+end
 libLaser.minRange = 0.25;
 
 -- TODO: Make sure the helper functions are working properly!
@@ -124,6 +127,7 @@ local function ranges2xyz(ranges,roll,pitch,yaw)
   xs = Y:select(1,1);
   ys = Y:select(1,2);
   local zs = Y:select(1,3);
+--print(pitch,xs[500],ys[500],zs[500],"insert")
 
   -- Return the data
   --print("Contiguous?",xs:isContiguous(),ys:isContiguous(),xs:isContiguous())

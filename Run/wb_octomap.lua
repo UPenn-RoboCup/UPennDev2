@@ -68,8 +68,7 @@ lidar_channel.callback = function()
   libLaser.ranges2xyz(ranges,0,actuator_positions[2],0)
   -- TODO: send over to MATLAB for plotting/slam?
   -- TODO: put into OctoMap for viewing
-print( 'Checking ranges...',ranges_f[500], ranges[500] );
-  print("500: ",libLaser.points[3][500])
+--print( 'Checking ranges...',ranges_f[500], ranges[500] );
   Octomap.add_scan( libLaser.points_xyz )
   
   -- Change the lidar head to scan
@@ -96,7 +95,7 @@ while true do
   fps
   )
   print( debug_msg )
-  if(t-t0>15) then
+  if(t-t0>60) then
     print('Writing!')
     Octomap.save_tree()
     return

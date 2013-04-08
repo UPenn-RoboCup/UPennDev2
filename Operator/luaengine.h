@@ -9,7 +9,7 @@ class LuaEngine : public QObject
 public:
     explicit LuaEngine(QObject *parent = 0);
     
-    int runLua(const std::string& filename);
+   // int runLua(const std::string& filename);
 signals:
     
 public slots:

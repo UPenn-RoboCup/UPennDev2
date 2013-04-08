@@ -13,7 +13,7 @@ endif
 WEBOTS_INCLUDE_DIR = $(WEBOTS_HOME)/include
 WEBOTS_LIB_DIR = $(WEBOTS_HOME)/lib
 
-INCLUDES+= -I$(WEBOTS_INCLUDE_DIR)/controller/c
+INCLUDES+=-I$(WEBOTS_INCLUDE_DIR)/controller/c
 
 all: controller wbcontroller
 
@@ -24,7 +24,7 @@ controller: controller_wrap.o
 	$(LD) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ -L$(WEBOTS_LIB_DIR) -lController 
 
 wbcontroller: wbcontroller.o config.o
-	$(CXX) -o wbcontroller $^ -I$(WEBOTS_HOME)/include/controller/c -L$(WEBOTS_LIB_DIR) -lController -lzmq -lmsgpack `pkg-config luajit --libs --cflags`
+	$(CXX) -o wbcontroller $^ -I$(WEBOTS_HOME)/include/controller/c -L$(WEBOTS_LIB_DIR) -lController -lzmq -lmsgpack $(LUA_INC) $(LUA_LIB)
 	
 openrave:
 	swig -lua -I/usr/local/include/openrave-0.9 $(INCLUDES) openrave.i

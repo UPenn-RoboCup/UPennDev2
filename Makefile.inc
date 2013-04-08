@@ -42,7 +42,19 @@ HOKUYODIR= $(FRAMEWORKSDIR)/Hokuyo
 TORCHDIR= ../Tools/torch
 SERIALDIR=$(FRAMEWORKSDIR)/Serial
 
+# Independent useful options
+ifndef OSTYPE
+  OSTYPE=$(shell uname -s|awk '{print tolower($$0)}')
+endif
+ifndef ARCH
+  ARCH=$(shell uname -m)
+endif
+ifndef USER
+  USER=$(shell whoami)
+endif
+
 ## Compiler Definition
+# Defaults to Linux
 CXX=g++
 CC=gcc
 #LD=ld
@@ -50,69 +62,52 @@ LD=g++
 LDFLAGS=
 STRIP=strip
 CFLAGS=-O2 -fpic
-CXXFLAGS= -O2 -fpic
-
+CXXFLAGS=-O2 -fpic
+LIBOPTS=-shared -fpic
+LIBRT=-lrt
+SHLIBEXT=so
 MEXEXT=$(shell mexext)
-SHLIBEXT= so
-LIBOPTS= -shared -fpic
-LIBRT= -lrt
 
-# Library and Include Paths
-TORCHLIB=torch_jit
-ifeq ($(shell pkg-config --exists luajit && echo 0),0)
-  LUAJIT_INC=`pkg-config luajit --cflags`
-else 
-# No LuaJIT found, falling back to regular Lua
-ifeq ($(shell pkg-config --exists lua5.1 && echo 0),0)
-  LUA_INC=`pkg-config lua5.1 --cflags`
-  TORCHLIB=torch
-else
-  LUA_INC=`pkg-config lua --cflags`
-  TORCHLIB=torch
-endif
-endif
-
-#This does not work 
-LUA_INC=-I/usr/include/lua -I/usr/local/include/lua
-LUA_VERSION_SPECIFIC=-I/usr/include/lua5.1 -I/usr/local/include/lua5.1 -I/usr/local/include/luajit-2.0 -I/usr/include/luajit-2.0
-INCLUDES= -I/usr/local/include -I/usr/include $(LUA_INC) $(LUA_VERSION_SPECIFIC)
-#INCLUDES= -I/usr/local/include -I/usr/include $(LUA_INC)
-LIB_DIR= -L/usr/local/lib -L/usr/lib
-
-INCLUDES= -I$(TOP)/$(FRAMEWORKSDIR)/Common -I/usr/local/include -I/usr/include $(LUA_INC) $(LUAJIT_INC)
-LIB_DIR= -L/usr/local/lib -L/usr/lib
-
-ifndef OSTYPE
-  OSTYPE = $(shell uname -s|awk '{print tolower($$0)}')
-endif
-
-ifndef ARCH
-  ARCH= $(shell uname -m)
-endif
-
-ifndef USER
-  USER=$(shell whoami)
-endif
-
+# If we are on OP/Nao
 ifeq ($(USER),darwin)
   CXXFLAGS= -O3 -fomit-frame-pointer -mtune=native -march=native -pipe -funroll-loops
-endif
-
-ifeq ($(OSTYPE),linux)
-  SHLIBEXT= so
-  LIBOPTS= -shared -fpic -lluajit-5.1
-  LIBRT= -lrt
-ifeq ($(USER),darwin)
-  CXXFLAGS= -O3 -fpic -fomit-frame-pointer -mtune=native -march=native -pipe -funroll-loops
 endif
 ifeq ($(USER),nao)
   CXXFLAGS= -O2 -fomit-frame-pointer -mtune=native -march=native -pipe -funroll-loops
 endif
+
+# Includes and library directories
+INCLUDES=-I$(TOP)/$(FRAMEWORKSDIR)/Common -I/usr/local/include -I/usr/include
+LIB_DIR=-L/usr/local/lib -L/usr/lib
+
+# Find both Lua and LuaJit
+ifeq ($(shell pkg-config --exists luajit && echo 0),0)
+  LUAJIT_INC=`pkg-config luajit --cflags`
+  LUAJIT_LIB=`pkg-config luajit --libs`
+endif
+ifeq ($(shell pkg-config --exists lua5.1 && echo 0),0)
+  LUA_INC=`pkg-config lua5.1 --cflags`
+  LUA_LIB=`pkg-config lua5.1 --libs`
+else
+  LUA_INC=`pkg-config lua --cflags`
+  LUA_LIB=`pkg-config lua --libs`
 endif
 
+ifdef LUAJIT_INC
+INCLUDES+=$(LUAJIT_INC)
+LIBOPTS+=$(LUAJIT_LIB)
+else
+ifdef LUAJIT_INC
+INCLUDES+=$(LUA_INC)
+LIBOPTS+=$(LUA_LIB)
+else
+#BAD
+endif
+endif
+
+# OS Specific overrides
 ifeq ($(OSTYPE),darwin)
 #  SHLIBEXT= dylib
-  SHLIBEXT= so
   LIBOPTS= -bundle -undefined dynamic_lookup
   CXXFLAGS= -O2 -fomit-frame-pointer -mtune=native
   LIBRT=
@@ -122,19 +117,31 @@ ifeq ($(OSTYPE),darwin)
   LD=ld
 endif
 
-LUAEXT= lua
+# Default compiling
+%.o: %.cpp
+	@echo "\t" CXX $@
+	@$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
+%.o: %.cc
+	@echo "\t" CXX $@
+	@$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
+%.o: %.c
+	@echo "\t" CC $@
+	@$(CC) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
+
+# REGEX to find lua files
+LUAEXT=lua
 ifeq ($(OSTYPE),darwin)
 REGEX=\( -regex '.*.$(LUAEXT)' -or -regex '.*.$(SHLIBEXT)' -or -regex '.*.sh' \)
 else
 REGEX=-regex '.*\($(SHLIBEXT)\|$(LUAEXT)\|sh\)'
 endif
 
+# Cross compiling
 ifeq ($(CROSS),true)
-  CTCDIR = $(NaoqiCTC)
+  CTCDIR=$(NaoqiCTC)
 else
-  CTCDIR = 
+  CTCDIR= 
 endif
-
 ifeq ($(CTCDIR),)
   ifeq ($(OSTYPE),linux)
     SHLIBEXT= so
@@ -150,18 +157,7 @@ ifeq ($(CTCDIR),)
   #  REGEX=\( -regex '.*.$(LUAEXT)' -or -regex '.*.$(SHLIBEXT)' -or -regex '.*.sh' \)
   #endif
 endif
-
 export CTCDIR
-
-%.o: %.cpp
-	@echo "\t" CXX $@
-	@$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
-%.o: %.cc
-	@echo "\t" CXX $@
-	@$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
-%.o: %.c
-	@echo "\t" CC $@
-	@$(CC) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
 
 
 # For Intel Atom Z530 on the Darwin-OP

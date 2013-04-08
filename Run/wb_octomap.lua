@@ -4,7 +4,7 @@ dofile('include.lua')
 local simple_ipc = require 'simple_ipc'
 local msgpack = require 'msgpack'
 local carray = require 'carray'
---local Octomap = require'Octomap'
+local Octomap = require'Octomap'
 local torch = require'torch'
 torch.Tensor = torch.FloatTensor
 local libLaser = require 'libLaser'
@@ -63,12 +63,14 @@ lidar_channel.callback = function()
 --[[
   local ranges_s = torch.FloatStorage( 1081, ranges_f:pointer() )
   local ranges = torch.FloatTensor( ranges_s );
-  print( 'Checking ranges...',ranges_f[500], ranges[500] );
 --]]
   
-  local x,y,z = libLaser.ranges2xyz(ranges,0,actuator_positions[1],0)
+  libLaser.ranges2xyz(ranges,0,actuator_positions[2],0)
   -- TODO: send over to MATLAB for plotting/slam?
   -- TODO: put into OctoMap for viewing
+print( 'Checking ranges...',ranges_f[500], ranges[500] );
+  print("500: ",libLaser.points[3][500])
+  Octomap.add_scan( libLaser.points_xyz )
   
   -- Change the lidar head to scan
   local pitch = 10*math.cos( ts ) + 20
@@ -81,16 +83,22 @@ local channel_poll = simple_ipc.wait_on_channels( wait_channels )
 --local channel_timeout = 30
 local channel_timeout = -1
 local t0 = unix.time()
+local t_last = t0;
 while true do
   local n_poll = channel_poll:poll(channel_timeout)
   -- Send actuator commands after each update?
   local ret = actuator_pub_channel:send( tostring(actuator_commands) )
   local t = unix.time()
-  local fps = 1/(t-t0)
-  t0 = t;
+  local fps = 1/(t-t_last)
+  t_last = t;
   local debug_msg = string.format(
   "Updating at %.3f FPS",
   fps
   )
   print( debug_msg )
+  if(t-t0>15) then
+    print('Writing!')
+    Octomap.save_tree()
+    return
+  end
 end

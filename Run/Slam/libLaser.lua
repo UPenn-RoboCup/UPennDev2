@@ -5,6 +5,7 @@ local libLaser = {}
 -- Buffers created ONCE for performance
 libLaser.nRays  = 1081
 libLaser.points = torch.Tensor(4,libLaser.nRays):zero()
+libLaser.points_xyz = torch.Tensor(4,libLaser.nRays):zero()
 libLaser.FOV    = 270; -- This many degrees
 libLaser.resd   = 0.25; -- Kinda rounded, but FOV may not be truly 270
 libLaser.res    = libLaser.resd/180*math.pi;
@@ -117,15 +118,17 @@ local function ranges2xyz(ranges,roll,pitch,yaw)
   );
   --T = torch.eye(4);
   -- TODO: Verify that Y:mm(T,X) is not needed
-  X:mm(T,X);  --reverse the order because of transpose
-  xs = X:select(1,1);
-  ys = X:select(1,2);
-  local zs = X:select(1,3);
+  local Y = libLaser.points_xyz
+  Y:resize(4,nranges)
+  Y:mm(T,X);  --reverse the order because of transpose
+  xs = Y:select(1,1);
+  ys = Y:select(1,2);
+  local zs = Y:select(1,3);
 
   -- Return the data
   --print("Contiguous?",xs:isContiguous(),ys:isContiguous(),xs:isContiguous())
-  -- NOTE: Can also access via libLaser.points
-  return xs,ys,zs;
+  -- NOTE: Can also access via libLaser.points_xyz
+  --return xs,ys,zs;
 end
 libLaser.ranges2xyz = ranges2xyz
 

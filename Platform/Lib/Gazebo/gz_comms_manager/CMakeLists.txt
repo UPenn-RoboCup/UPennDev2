@@ -1,9 +1,14 @@
 cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 
+find_package(Boost COMPONENTS system REQUIRED)
 include (FindPkgConfig)
 if (PKG_CONFIG_FOUND)
   pkg_check_modules(GAZEBO gazebo)
-  pkg_check_modules(LUA lua5.1)
+  if (APPLE)
+    pkg_check_modules(LUA lua)
+  else()
+    pkg_check_modules(LUA lua5.1)
+  endif()
 endif()
 
 include_directories(
@@ -30,4 +35,5 @@ target_link_libraries(
   gz_comms_manager
   ${GAZEBO_LIBRARIES}
   ${LUA_LIBRARIES}
+  ${Boost_LIBRARIES}
 )

@@ -18,10 +18,10 @@ static int lua_add_scan( lua_State *L ) {
     //fflush(stdout);
 
   Pointcloud cloud;
-    float x = THTensor_fastGet2d( points_t, 1, 500);
-    float y = THTensor_fastGet2d( points_t, 2, 500);
-    float z = THTensor_fastGet2d( points_t, 3, 500);
-fprintf(stdout,"Inserting %f %f %f\n",x,y,z);
+    float x = THTensor_fastGet2d( points_t, 0, 500);
+    float y = THTensor_fastGet2d( points_t, 1, 500);
+    float z = THTensor_fastGet2d( points_t, 2, 500);
+//fprintf(stdout,"Inserting %f %f %f\n",x,y,z);
   for (long p=0; p<nps; p++) {
     x = THTensor_fastGet2d( points_t, 1, p);
     y = THTensor_fastGet2d( points_t, 2, p);

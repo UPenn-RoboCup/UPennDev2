@@ -69,7 +69,7 @@ function Manipulation_state:update()
 	local dt = Platform.get_time() - t
   	t = Platform.get_time()
 	
-	--set_joint_goal_enabled(true)
+	set_joint_goal_enabled(true)
 	
 	set_real_T_array_from_table(mc_inputs.JointSpaceVelocityGoal, 1, mcm:get_desired_joint_velocity(joint.waist))
 	set_real_T_array_from_table(mc_inputs.JointSpaceVelocityGoal, 2, mcm:get_desired_joint_velocity(joint.r_arm))

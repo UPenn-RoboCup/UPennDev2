@@ -10,8 +10,8 @@ require 'cjpeg'
 require 'cutil'
 
 -- Setup IPC
-local lidar_channel = simple_ipc.setup_subscriber('lidar');
-local imu_channel = simple_ipc.setup_subscriber('arduimu');
+local lidar_channel = simple_ipc.new_subscriber('lidar');
+local imu_channel = simple_ipc.new_subscriber('arduimu');
 
 local lidar_callback = function()
   -- Receive ipc sensor payload

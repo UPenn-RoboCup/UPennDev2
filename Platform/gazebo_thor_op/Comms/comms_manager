@@ -1,0 +1,26 @@
+#! /bin/bash
+
+COMPUTER=`uname`
+PLATFORM=gazebo_thor_op
+export THOR_HOME=$(dirname `pwd`)
+
+echo "On Linux!"
+echo "Assume default gazebo installation"
+
+if [ "$1" ]
+then
+  WORLD_FILE=$1
+else
+  WORLD_FILE="default"
+fi
+WORLD_FILE="$THOR_HOME/Platform/$PLATFORM/Worlds/$WORLD_FILE.world"
+export GAZEBO_MODEL_PATH="$THOR_HOME/Platform/$PLATFORM/Models"
+export GAZEBO_PLUGIN_PATH="$GAZEBO_PLUGIN_PATH:\
+$THOR_HOME/Platform/Lib/Gazebo/gz_comms_manager:\
+$THOR_HOME/Platform/Lib/Gazebo/gz_world_manager:\
+$THOR_HOME/Platform/Lib/Gazebo/gz_camera_dump:\
+$THOR_HOME/Platform/Lib/Gazebo/gz_lidar_dump:\
+"
+  
+echo "Opening $WORLD_FILE"
+exec gazebo $WORLD_FILE

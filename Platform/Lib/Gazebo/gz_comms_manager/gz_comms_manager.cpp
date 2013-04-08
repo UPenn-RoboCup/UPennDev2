@@ -110,7 +110,7 @@ namespace gazebo
     // initialize imu
     this->imu_link_name = "torso";
     this->imu_sensor_name = "imu_sensor";
-    this->imu_sensor = boost::shared_dynamic_cast<sensors::ImuSensor>(
+    this->imu_sensor = boost::dynamic_pointer_cast<sensors::ImuSensor>(
       sensors::SensorManager::Instance()->GetSensor(
         this->world->GetName()
         + "::" + this->model->GetScopedName()

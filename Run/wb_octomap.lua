@@ -65,10 +65,8 @@ lidar_channel.callback = function()
   local ranges = torch.FloatTensor( ranges_s );
 --]]
   
+  -- TODO: Use for slam as well
   libLaser.ranges2xyz(ranges,0,actuator_positions[2],0)
-  -- TODO: send over to MATLAB for plotting/slam?
-  -- TODO: put into OctoMap for viewing
---print( 'Checking ranges...',ranges_f[500], ranges[500] );
   Octomap.add_scan( libLaser.points_xyz )
   
   -- Change the lidar head to scan

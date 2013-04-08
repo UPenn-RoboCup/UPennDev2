@@ -1,5 +1,3 @@
-#include <octomap/octomap.h>
-#include <octomap/math/Utils.h>
 #include "lua_octomap.hh"
 
 using namespace std;
@@ -8,36 +6,38 @@ using namespace octomap;
 // Initialize the tree
 OcTree tree (0.05);  
 // Set the origin
-point3d origin (0.01f, 0.01f, 0.02f);
-// Dummy point?
-point3d point_on_surface (4.01f, 0.01f, 0.01f);
+//point3d origin (0.01f, 0.01f, 0.02f);
+point3d origin (0.0f, 0.0f, 0.0f);
 
 static int lua_add_scan( lua_State *L ) {
+
+    /* Grab the points from the last laser scan*/
+    const THFloatTensor * points_t = (THFloatTensor *) luaT_checkudata(L, 1, "torch.FloatTensor");
+    const long nps = points_t->size[1]; // The number of laser points to match
+    //fprintf(stdout,"Number of laser points: %ld\n", nps );
+    //fflush(stdout);
+
   Pointcloud cloud;
-
-  cout << "generating Hokuyo scan at " << origin << " ..." << endl;
-  // Hokuyo is -145 to 145
-  double res = 270.0/1081;
-  for (int i=0; i<1081; i++) {
-
-    // Make a temporary rotated point
-    point3d rotated = point_on_surface;
-    rotated.rotate_IP(0, DEG2RAD(i*res-145), 0 );
-
+    float x = THTensor_fastGet2d( points_t, 1, 500);
+    float y = THTensor_fastGet2d( points_t, 2, 500);
+    float z = THTensor_fastGet2d( points_t, 3, 500);
+fprintf(stdout,"Inserting %f %f %f\n",x,y,z);
+  for (long p=0; p<nps; p++) {
+    x = THTensor_fastGet2d( points_t, 1, p);
+    y = THTensor_fastGet2d( points_t, 2, p);
+    z = THTensor_fastGet2d( points_t, 3, p);
+    point3d observed_point ( x, y, z);
     // Ray cast to make free space
-    if (!tree.insertRay(origin, origin+rotated)) {
+    if (!tree.insertRay(origin, origin+observed_point)) {
       // Lua_error?
-      cout << "ERROR while inserting ray from " << origin << " to " << point_on_surface << endl;
+      cout << "ERROR while inserting ray from " << origin << " to " << observed_point << endl;
     }
-
     // Add point to the cloud which is inserted.
     // Is this the most efficient way?
-    cloud.push_back(rotated);
+    cloud.push_back(observed_point);
   }  
   // insert in global coordinates:
   tree.insertPointCloud(cloud, origin);
-
-  cout << "done." << endl;
   return 0;
 }
 

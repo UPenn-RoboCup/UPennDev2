@@ -52,6 +52,7 @@ lidar_channel.callback = function()
   local ranges_str, has_more = lidar_channel:receive();
   local lidar_ts = tonumber(ts);
   local ranges_f = carray.float( ranges_str );
+  --print(lidar_ts," Lidar: ", #lidar_ranges)
 
   -- Use a silly element-by-element copy
   local ranges = torch.Tensor( #ranges_f )
@@ -65,11 +66,10 @@ lidar_channel.callback = function()
   print( 'Checking ranges...',ranges_f[500], ranges[500] );
 --]]
   
-  local x,y,z = libLaser.ranges2xyz(ranges,actuator_positions[1],0,0)
-  -- TODO: send over to MATLAB for plotting?
+  local x,y,z = libLaser.ranges2xyz(ranges,0,actuator_positions[1],0)
+  -- TODO: send over to MATLAB for plotting/slam?
   -- TODO: put into OctoMap for viewing
-
-  --print(lidar_ts," Lidar: ", #lidar_ranges)
+  
   -- Change the lidar head to scan
   local pitch = 10*math.cos( ts ) + 20
   actuator_commands[2] = pitch*math.pi/180

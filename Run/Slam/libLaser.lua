@@ -16,6 +16,7 @@ libLaser.sines   = torch.sin(libLaser.angles);
 
 -- Start with a mask of all ones to allow ALL points
 libLaser.mask = torch.Tensor(libLaser.angles:size()):fill(1)
+libLaser.minRange = 0.25;
 
 -- TODO: Make sure the helper functions are working properly!
 local function rotx(t)
@@ -69,10 +70,7 @@ local function trans(v)
 end
 libLaser.trans = trans
 
-local function ranges2xyz(ranges,pitch,roll,yaw)
-  pitch = pitch or 0;
-  roll = roll or 0;
-  yaw = yaw or 0;
+local function ranges2xyz(ranges,roll,pitch,yaw)
   local nranges = (#ranges)[1]
   if nranges~=libLaser.nRays then
     print("BAD RANGE INPUT",nranges,libLaser.nRays)
@@ -92,7 +90,7 @@ local function ranges2xyz(ranges,pitch,roll,yaw)
   -- TODO: Make fast masking!
   local good_cnt = 0;
   for i=1,nranges do
-    if ranges[i]>0.25 and libLaser.mask[i]==1 then
+    if ranges[i]>libLaser.minRange and libLaser.mask[i]==1 then
       good_cnt = good_cnt+1;
       xs[good_cnt] = xs[i];
       ys[good_cnt] = ys[i];
@@ -111,7 +109,10 @@ local function ranges2xyz(ranges,pitch,roll,yaw)
   X:select(1,4):fill(1); -- extra
 
   -- Apply the transformation given current roll and pitch
-  T = torch.mm(
+  pitch = pitch or 0;
+  roll  = roll or 0;
+  yaw   = yaw or 0;
+  local T = torch.mm(
   libLaser.roty(pitch),libLaser.rotx(roll)
   );
   --T = torch.eye(4);
@@ -120,12 +121,6 @@ local function ranges2xyz(ranges,pitch,roll,yaw)
   xs = X:select(1,1);
   ys = X:select(1,2);
   local zs = X:select(1,3);
-
-  -- Reset the views
-  X:resize(4,nranges)
-  xs = X:select(1,1);
-  ys = X:select(1,2);
-  zs = X:select(1,3);
 
   -- Return the data
   --print("Contiguous?",xs:isContiguous(),ys:isContiguous(),xs:isContiguous())

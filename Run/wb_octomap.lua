@@ -95,7 +95,7 @@ while true do
   fps
   )
   print( debug_msg )
-  if(t-t0>1) then
+  if(t-t0>30) then
     print('Writing!')
     Octomap.save_tree()
     return

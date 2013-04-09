@@ -264,7 +264,7 @@ static int lua_msgpack_pack(lua_State *L) {
   int type = lua_type(L, 1);
   int ret = (*PackMap[type])(L, 1, pk);
   /* output packed string */
-  lua_pushstring(L, buffer->data);
+  lua_pushlstring(L, buffer->data, buffer->size);
   /* cleaning */
   msgpack_sbuffer_free(buffer);
   msgpack_packer_free(pk);

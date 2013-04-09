@@ -275,7 +275,7 @@ namespace gazebo
       // update joint sensors
       this->dcm.joint_force_sensor[index] = force_command;
       this->dcm.joint_position_sensor[index] = position_actual;
-      this->dcm.joint_velocity_sensor[index] = velocity_actual;
+      this->dcm.joint_velocity_sensor[index] = velocity_estimate;
 
     //gzerr << "force command " << force_command << "\n";
     }

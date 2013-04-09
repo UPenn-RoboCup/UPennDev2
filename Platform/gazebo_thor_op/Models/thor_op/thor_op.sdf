@@ -192,6 +192,7 @@
           </geometry>
         </visual>
 	<sensor name="imu_sensor" type="imu">
+		<always_on>1</always_on>
 		<visualize>1</visualize>
 		<topic>imu_sensor</topic>
 	</sensor>

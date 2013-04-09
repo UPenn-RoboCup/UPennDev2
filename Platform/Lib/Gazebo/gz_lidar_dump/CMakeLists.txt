@@ -10,10 +10,9 @@ if (PKG_CONFIG_FOUND)
 endif()
 include_directories(${GAZEBO_INCLUDE_DIRS})
 link_directories(${GAZEBO_LIBRARY_DIRS})
-link_directories("/usr/local/lib")
 
 add_library(gz_lidar_dump SHARED lidar_dump.cc)
-target_link_libraries(gz_lidar_dump ${GAZEBO_libraries} 
+target_link_libraries(gz_lidar_dump ${GAZEBO_LIBRARIES} 
   ${Boost_LIBRARIES}
   RayPlugin zmq jpeg
 )

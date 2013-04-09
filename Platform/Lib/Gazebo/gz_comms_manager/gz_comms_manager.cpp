@@ -198,14 +198,14 @@ namespace gazebo
       if (r_wrist_index != -1)
         r_wrist_wrench = this->joints[r_wrist_index]->GetForceTorque(index0);
 
-      math::Vector3 l_ankle_force = l_ankle_wrench.body1Force;
-      math::Vector3 l_ankle_torque = l_ankle_wrench.body1Torque;
-      math::Vector3 r_ankle_force = r_ankle_wrench.body1Force;
-      math::Vector3 r_ankle_torque = r_ankle_wrench.body1Torque;
-      math::Vector3 l_wrist_force = l_wrist_wrench.body1Force;
-      math::Vector3 l_wrist_torque = l_wrist_wrench.body1Torque;
-      math::Vector3 r_wrist_force = r_wrist_wrench.body1Force;
-      math::Vector3 r_wrist_torque = r_wrist_wrench.body1Torque;
+      math::Vector3 l_ankle_force = l_ankle_wrench.body2Force;
+      math::Vector3 l_ankle_torque = l_ankle_wrench.body2Torque;
+      math::Vector3 r_ankle_force = r_ankle_wrench.body2Force;
+      math::Vector3 r_ankle_torque = r_ankle_wrench.body2Torque;
+      math::Vector3 l_wrist_force = l_wrist_wrench.body2Force;
+      math::Vector3 l_wrist_torque = l_wrist_wrench.body2Torque;
+      math::Vector3 r_wrist_force = r_wrist_wrench.body2Force;
+      math::Vector3 r_wrist_torque = r_wrist_wrench.body2Torque;
 
       for (int i = 0; i < 3; i++)
       {
@@ -222,13 +222,13 @@ namespace gazebo
 
     // update imu sensor
     {
-      math::Vector3 gyro = this->imu_sensor->GetAngularVelocity();
       math::Vector3 accel = this->imu_sensor->GetLinearAcceleration();
+      math::Vector3 gyro = this->imu_sensor->GetAngularVelocity();
       math::Vector3 euler = this->imu_sensor->GetOrientation().GetAsEuler();
       for (int i = 0; i < 3; i++)
       {
-        this->dcm.ahrs[i] = gyro[i];
-        this->dcm.ahrs[i+3] = accel[i];
+        this->dcm.ahrs[i] = accel[i];
+        this->dcm.ahrs[i+3] = gyro[i];
         this->dcm.ahrs[i+6] = euler[i];
       }
     }

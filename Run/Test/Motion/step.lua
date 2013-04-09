@@ -285,10 +285,10 @@ function generate_act_state()
   local state_act_k = {vector.new({0, 0}),vector.new({0, 0})}
   if test_foot_state[1] == 'l' then 
       foot_pos = vector.copy(lf)
-      z_force = pcm:get_r_foot_cop_pressure()
+      z_force = ft_filt[9]
   else 
       foot_pos = vector.copy(rf) 
-      z_force = pcm:get_l_foot_cop_pressure()
+      z_force = ft_filt[3]
   end
   for i = 1, 2 do
     u[i] = pid_torques[i] + ff_torques[i] + grav_comp_torques[i]
@@ -298,8 +298,8 @@ function generate_act_state()
     else
       u[i] = -1*math.max(math.min(u[i],10),-10)
     end
-   -- u[i] = u[i] + inter_foot_lever_arm[i]*z_force
-  --  if i==1 then print('act_lever', lever) end
+    --print('i, u[i]', i, u[i], z_force * inter_foot_lever_arm[i])
+    u[i] = u[i] + -1*inter_foot_lever_arm[3-i]*z_force
     local lever = (COG[i] - foot_pos[i])
     COG_rate = COG_vel_filter[i]:update(lever)
     local theta = math.asin(lever/0.66) --state variable 1
@@ -332,6 +332,7 @@ function update_observer()
     state_est_k1[i][1] = akc_row_1*state_est_k[i] + kc_row_1*state_act_k[i] - b[1]*u[3-i]
     state_est_k1[i][2] = akc_row_2*state_est_k[i] + kc_row_2*state_act_k[i] - b[2]*u[3-i]
   end
+  --print('state y', state_est_k1[2][1], state_est_k1[2][2])
 end
 
 function generate_act_state_double_support()
@@ -484,7 +485,8 @@ function COG_update()
   COG[1] = jnt_vec_x*bsx
   COG[2] = jnt_vec_y*bsy
   COG[3] = COG_temp[3]
-  if not(plat == 'robot') then COG = pcm:get_cog() end -- gazebo only
+  --if not(plat == 'robot') then COG = pcm:get_cog() end -- gazebo only
+  COG = pcm:get_cog()
 end
 
 function ahrs_update() --move
@@ -615,7 +617,7 @@ function state_machine(t)
       print('state_t', state_t)
       l_leg_offset = vector.copy(lf)
       r_leg_offset = vector.copy(rf)
-      joint_offset = move_legs(vector.new{0, 0, -0.05, 0, 0.07, 0})
+      joint_offset = move_legs(vector.new{0.025, 0, -0.05, 0, 0.07, 0})
       joint_offset = vector.new(joint_offset)
       state = 1
       state_t = 0
@@ -679,6 +681,7 @@ function state_machine(t)
       double_support = false
       state = 4
       move_foot = {0, 0, 0}
+      COG_traj = {state_est_k1[2][1], state_est_k1[2][2], hip_state[3]}
     end
   elseif (state == 4) then --lift leg
     local tau = 3 - state_t 
@@ -688,10 +691,15 @@ function state_machine(t)
     x,xd,xdd = trajectory.minimum_jerk_step(move_foot, {1, 0, 0}, tau, 0.005)
     move_foot = vector.new{x, xd, xdd} 
     local r_leg_delta = r_leg_offset + move_foot[1]*vector.new{0, 0.0, 0.02, 0, 0, 0}
+    local x,xd,xdd = trajectory.minimum_jerk_step(, {0, 0, 0}, tau, 0.005)
+    COG_traj = vector.new{x, xd, xdd}
+    COG_des[2] = x
+    COG_vel[2] = xd
+    deccel_torque = 50*xdd
     qt = move_legs(delta, nil, r_leg_delta)
    -- deccel_torque = 50*hip_state[3]
-    COG_des[2] = -0.056 + 0.056*(state_t - 2)
-    COG_vel[2] = 0.056
+    --COG_des[2] = -0.056 + 0.056*(state_t - 2)
+    --COG_vel[2] = 0.056
     if state_t >= 3 then 
       --run = false
       COG_des[2] = 0
@@ -796,9 +804,13 @@ print('timestep', Platform.get_time_step())
 Proprioception.entry()
 dcm:set_joint_enable(0,'all')
 local set_values = dcm:get_joint_position_sensor('legs') 
-dcm:set_joint_p_gain(1, 'all') -- position control
+dcm:set_joint_p_gain(0.8, 'all') -- position control
+dcm:set_joint_i_gain(0.1, 'all') -- position control
+dcm:set_joint_d_gain(0.005, 'all') -- position control
 --dcm:set_joint_p_gain(0, 'ankles')
---dcm:set_joint_force({0, 0, 0, 0},'ankles')
+--dcm:set_joint_i_gain(0, 'ankles')
+--dcm:set_joint_d_gain(0, 'ankels')
+dcm:set_joint_force({0, 0, 0, 0},'ankles')
 dcm:set_joint_position(set_values)
 dcm:set_joint_enable(1, 'all')
 qt = vector.copy(set_values) 
@@ -864,7 +876,7 @@ end
 --------------------------------------------------------------------
 --Main
 --------------------------------------------------------------------
-unix.usleep(1e6)
+--unix.usleep(1e6)
 if plat == 'robot' then t0 = unix.time() 
 else t0 = Platform.get_time() end --robot only
 t = t0
@@ -886,15 +898,16 @@ while run do
   state_machine(t)
   --if state >= 1 then orient_torso(0) end--modify qt's to upright torso 
   pid_torques = COG_controller(COG_des, COG_vel)
-  joint_torques = update_joint_torques()
+  --joint_torques = update_joint_torques()
+  joint_torques = vector.zeros(12)
   update_observer()
   update_observer_double_support()
   joint_torques_sense = dcm:get_joint_force_sensor('legs')
 --implement actions
 
   dcm:set_joint_position(qt, 'legs')  
-  dcm:set_joint_force(joint_torques, 'legs')  
-  --dcm:set_joint_force({0,0,0,0,0,0,0,0,0,0,0,0}, 'legs') 
+  --dcm:set_joint_force(joint_torques, 'legs')  
+  dcm:set_joint_force({0,0,0,0,0,0,0,0,0,0,0,0}, 'legs') 
 
   if (printdata)  then 
     data[1] = {joint_torques[5], joint_torques[6], joint_torques[11]}
@@ -911,7 +924,7 @@ while run do
     data[11] = state_est_k1[2]
     data[12] = lf
     data[13] = hip_state
-    data[14] = COP_filt
+    data[14] = pcm:get_cop()
     data[15] = COG_des
    -- data[16] ={ 1*COGd_pid.p_gain*(state_est_d1[1] - COG_des[1]) }
    -- data[16][2] = 1* COGd_pid.d_gain*state_est_d1[2] 
@@ -919,9 +932,9 @@ while run do
     data[16] = {-1*COGy_pid.p_gain*(state_est_k1[2][1] - COG_des[2])}
     data[16][2] = -1*COGy_pid.d_gain*(state_est_k1[2][2] - COG_vel[2])
     data[16][3] = COGy_pid.i_term
-    data[17] = joint_pos_sense
-    data[18] = pcm:get_l_foot_wrench()
-    data[19] = pcm:get_r_foot_wrench()
+    data[17] = joint_torques_sense
+    data[18] = pcm:get_l_foot_cop()
+    data[19] = pcm:get_r_foot_cop()
     if plat == 'robot' then data[18] = {t} end--robot only
     --
     log_var_names = {'jnt_torq', 'ft_filt', 'grav_trq', 'pid_trq', 'bias'}
@@ -936,7 +949,7 @@ while run do
     log_var_names[14] = 'COP_filt'
     log_var_names[15] = 'COG_Des'
     log_var_names[16] = 'control torques'
-    log_var_names[17] = 'joint_pos_sense'
+    log_var_names[17] = 'joint_torque_sense'
     log_var_names[18] = 'l_foot_wrench'
     log_var_names[20] = 'r_foot_wrench'
     if plat == 'robot' then store_data(data)  --robot only

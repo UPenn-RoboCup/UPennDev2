@@ -36,7 +36,7 @@ namespace gazebo
       config.get_double("world_manager.time_channel_rate");
 
     // initialize sim physics time step
-    this->world->GetPhysicsEngine()->SetStepTime(this->physics_time_step);
+    this->world->GetPhysicsEngine()->SetMaxStepSize(this->physics_time_step);
 
     // initialize sim time
     this->last_update_time = this->world->GetSimTime().Double();

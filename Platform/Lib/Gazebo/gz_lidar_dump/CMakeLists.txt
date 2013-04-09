@@ -15,7 +15,7 @@ link_directories("/usr/local/lib")
 add_library(gz_lidar_dump SHARED lidar_dump.cc)
 target_link_libraries(gz_lidar_dump ${GAZEBO_libraries} 
   ${Boost_LIBRARIES}
-  CameraPlugin zmq jpeg
+  RayPlugin zmq jpeg
 )
 
 INSTALL(

@@ -10,7 +10,7 @@ This is the development repository for team THOR.
 
 #### Install necessary dependencies:
 
-    sudo apt-get install build-essential lua5.1 liblua5.1-0-dev luajit swig libboost1.46-dev mesa-common-dev gnuplot libpopt-dev libncurses5-dev luarocks libblas-dev liblapack-dev libfftw3-dev libhdf5-serial-dev libglfw-dev cmake libmsgpack-dev
+    sudo apt-get install build-essential lua5.1 liblua5.1-0-dev luajit swig libboost1.46-dev mesa-common-dev gnuplot libpopt-dev libncurses5-dev luarocks libblas-dev liblapack-dev libfftw3-dev libhdf5-serial-dev libglfw-dev cmake libmsgpack-dev libtbb-dev
 
     sudo luarocks install numlua
     sudo luarocks install lua-cmsgpack
@@ -27,6 +27,7 @@ This is the development repository for team THOR.
     sudo make install
 
     sudo luarocks install https://raw.github.com/Neopallium/lua-zmq/master/rockspecs/lua-zmq-scm-1.rockspec
+    sudo ldconfig
 
 #### Install Eigen3:
 
@@ -38,6 +39,7 @@ This is the development repository for team THOR.
     cmake ..
     make
     sudo make install
+    sudo ldconfig
 
 #### Install Gazebo:
 
@@ -66,6 +68,7 @@ Install Kinematics and Dynamics Library (KDL) using:
     cmake ..
     make
     sudo make install #(sudo may not be necessary)
+    sudo ldconfig
 
 #### Install Torch:
 
@@ -90,7 +93,13 @@ If you would like to test the cognition code, please install torch.
 		luarocks install numlua lua-cmsgpack
 		luarocks install https://raw.github.com/Neopallium/lua-zmq/master/rockspecs/lua-zmq-scm-1.rockspec
 
-#### Install KDL and Torch using the instructions above.
+#### Install KDL and Torch using the instructions above.  Additionally:
+
+For KDL, use:
+cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local/Cellar/kdl/1.0
+make
+make install
+brew link kdl
 
 Build Instructions
 ------------------

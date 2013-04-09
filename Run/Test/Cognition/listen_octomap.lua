@@ -8,7 +8,7 @@ dofile('../../include.lua')
 
 -- Libraries
 local simple_ipc = require 'simple_ipc'
-local msgpack = require 'msgpack'
+local msgpack = require 'MessagePack'
 local carray = require 'carray'
 local Octomap = require'Octomap'
 local torch = require'torch'
@@ -17,14 +17,6 @@ local libLaser = require 'libLaser'
 
 -- Global vars
 require 'unix'
-require 'Params'
-local actuator_positions = {};
-local actuator_commands = {}
-actuator_commands = carray.double(#Params.jointNames);
-for i = 1,#Params.jointNames do
-  actuator_commands[i] = 0;
-  actuator_positions[i] = 0;
-end
 
 -- IPC channels
 local camera_channel = simple_ipc.new_subscriber('camera')
@@ -62,9 +54,6 @@ lidar_channel.callback = function()
   libLaser.ranges2xyz(ranges,0,0,0)
   Octomap.add_scan( libLaser.points_xyz )
   
-  -- Change the lidar head to scan
-  local pitch = 10*math.cos( ts ) + 20
-  actuator_commands[2] = pitch*math.pi/180
 end
 
 local wait_channels = {camera_channel, lidar_channel}
@@ -76,8 +65,6 @@ local t0 = unix.time()
 local t_last = t0;
 while true do
   local n_poll = channel_poll:poll(channel_timeout)
-  -- Send actuator commands after each update?
-  --local ret = actuator_pub_channel:send( tostring(actuator_commands) )
   local t = unix.time()
   local fps = 1/(t-t_last)
   t_last = t;

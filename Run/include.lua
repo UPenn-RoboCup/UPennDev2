@@ -41,6 +41,7 @@ package.path = THOR_HOME.."/Framework/Util/?.lua;"..package.path
 csuffix = {'dylib', 'so'}
 for i = 1, #csuffix do
   package.cpath = THOR_HOME.."/Framework/Cognition/Slam/?."..csuffix[i]..";"..package.cpath
+  package.cpath = THOR_HOME.."/Framework/Cognition/Octomap/?."..csuffix[i]..";"..package.cpath
   package.cpath = THOR_HOME.."/Framework/Lib/?/?."..csuffix[i]..";"..package.cpath
   package.cpath = THOR_HOME.."/Framework/Lib/lcm/?."..csuffix[i]..";"..package.cpath
   package.cpath = THOR_HOME.."/Framework/Lib/unix/?."..csuffix[i]..";"..package.cpath

@@ -75,6 +75,7 @@ local t0 = 0
 local goal = 0
 local state_step = 0
 local deccel_torque = 0
+local plat = 'gazebo'
 ------------------------------------------------------------------
 --Control objects:
 ------------------------------------------------------------------
@@ -279,10 +280,16 @@ function generate_act_state()
   local lever = vector.new({0, 0})
   local COG_rate = 0
   local foot_pos = {}
+  local z_force = 0
+  local inter_foot_lever_arm = {(lf[1] - rf[1]), (rf[2] - lf[2])}
   local state_act_k = {vector.new({0, 0}),vector.new({0, 0})}
   if test_foot_state[1] == 'l' then 
-      foot_pos = vector.copy(lf) else 
-      foot_pos = vector.copy(rf) end
+      foot_pos = vector.copy(lf)
+      z_force = pcm:get_r_foot_cop_pressure()
+  else 
+      foot_pos = vector.copy(rf) 
+      z_force = pcm:get_l_foot_cop_pressure()
+  end
   for i = 1, 2 do
     u[i] = pid_torques[i] + ff_torques[i] + grav_comp_torques[i]
     --consider using joint_torques here instead of u
@@ -291,6 +298,7 @@ function generate_act_state()
     else
       u[i] = -1*math.max(math.min(u[i],10),-10)
     end
+   -- u[i] = u[i] + inter_foot_lever_arm[i]*z_force
   --  if i==1 then print('act_lever', lever) end
     local lever = (COG[i] - foot_pos[i])
     COG_rate = COG_vel_filter[i]:update(lever)
@@ -476,7 +484,7 @@ function COG_update()
   COG[1] = jnt_vec_x*bsx
   COG[2] = jnt_vec_y*bsy
   COG[3] = COG_temp[3]
-  --COG = pcm:get_cog()  ------ webots only
+  if not(plat == 'robot') then COG = pcm:get_cog() end -- gazebo only
 end
 
 function ahrs_update() --move
@@ -603,7 +611,7 @@ local ratio = 1
 function state_machine(t) 
   if (state == 0) then
     printdata = true
-    if state_t >=  1 then
+    if state_t >=  2 then
       print('state_t', state_t)
       l_leg_offset = vector.copy(lf)
       r_leg_offset = vector.copy(rf)
@@ -611,13 +619,13 @@ function state_machine(t)
       joint_offset = vector.new(joint_offset)
       state = 1
       state_t = 0
-      --run = false
+      run = false
     end
   elseif (state == 1) then --move to ready position
     local percent = trajectory_percentage(1, 1.5, state_t)
     qt = joint_offset*percent
     if state_t < 1.5 then
-      ff_torques = vector.new{0,-4}
+      --ff_torques = vector.new{0,-4}
       --COGd_pid.d_gain = dgain_red
     else
       ff_torques = vector.new{0, 0}
@@ -635,7 +643,7 @@ function state_machine(t)
     if (state_t > 2) then  
       state = 3
       state_t = 0
-      --run = false
+      run = false
       l_leg_offset = vector.copy(lf)
       r_leg_offset = vector.copy(rf)
       trav_offset = lf[2] - COG[2]
@@ -789,8 +797,8 @@ Proprioception.entry()
 dcm:set_joint_enable(0,'all')
 local set_values = dcm:get_joint_position_sensor('legs') 
 dcm:set_joint_p_gain(1, 'all') -- position control
-dcm:set_joint_p_gain(0, 'ankles')
-dcm:set_joint_force({0, 0, 0, 0},'ankles')
+--dcm:set_joint_p_gain(0, 'ankles')
+--dcm:set_joint_force({0, 0, 0, 0},'ankles')
 dcm:set_joint_position(set_values)
 dcm:set_joint_enable(1, 'all')
 qt = vector.copy(set_values) 
@@ -857,7 +865,8 @@ end
 --Main
 --------------------------------------------------------------------
 unix.usleep(1e6)
-t0 = unix.time()  --robot only
+if plat == 'robot' then t0 = unix.time() 
+else t0 = Platform.get_time() end --robot only
 t = t0
 while run do 
   Platform.update()
@@ -911,7 +920,9 @@ while run do
     data[16][2] = -1*COGy_pid.d_gain*(state_est_k1[2][2] - COG_vel[2])
     data[16][3] = COGy_pid.i_term
     data[17] = joint_pos_sense
-    data[18] = {t} --robot only
+    data[18] = pcm:get_l_foot_wrench()
+    data[19] = pcm:get_r_foot_wrench()
+    if plat == 'robot' then data[18] = {t} end--robot only
     --
     log_var_names = {'jnt_torq', 'ft_filt', 'grav_trq', 'pid_trq', 'bias'}
     log_var_names[6] = 'state_est_d1'
@@ -926,17 +937,17 @@ while run do
     log_var_names[15] = 'COG_Des'
     log_var_names[16] = 'control torques'
     log_var_names[17] = 'joint_pos_sense'
-    --log_var_names[18] = 'COG_raw'
-
-    store_data(data)  --robot only
-    --store_data2(fw_log, data)  --webots only
+    log_var_names[18] = 'l_foot_wrench'
+    log_var_names[20] = 'r_foot_wrench'
+    if plat == 'robot' then store_data(data)  --robot only
+    else store_data2(fw_log, data) end --webots only
   end
 
 end
 dcm:set_joint_force({0,0,0,0,0,0,0,0,0,0,0,0},'legs')
 write_reg(data)
 print('length data', #store)
-write_to_file2(fw_log, store, data)  --robot only
+if plat == 'robot' then write_to_file2(fw_log, store, data) end--robot only
 print('steps: ', step)
 Platform.exit()
 

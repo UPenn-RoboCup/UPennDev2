@@ -64,7 +64,7 @@ local state_est_k1 = {vector.new({-0.002, 0}), vector.new({-0.146, 0})}
 local state_act_k1 = {vector.new({0, 0}), vector.new({0, 0})}
 local r_foot_pose_ref = {}
 local l_foot_pose_ref = {}
-
+local plat = 'gazebo'
 
 ------------------------------------------------------------------
 --Control objects:
@@ -449,12 +449,12 @@ trial = 0
 
 local poses = {{0.00, 0.00, 0.00, 0.00, 0.00, 0.00},
                {0.05, 0.00, 0.00, 0.00, 0.00, 0.00},
-               {-0.11, 0.00, 0.00, 0.00, 0.00, 0.00},
-               {0.00, 0.10, 0.00, 0.00, 0.00, 0.00},
+               {-0.09, 0.00, 0.00, 0.00, 0.00, 0.00},
+               {0.00, 0.13, 0.00, 0.00, 0.00, 0.00},
                {0.05, 0.10, 0.00, 0.00, 0.00, 0.00},
-               {0.00, -0.10, 0.00, 0.00, 0.00, 0.00},
+               {0.00, -0.13, 0.00, 0.00, 0.00, 0.00},
                {0.05, -0.10, 0.00, 0.00, 0.00, 0.00},
-               {-0.1, 0.10, 0.00, 0.00, 0.00, 0.00},
+               {-0.09, 0.10, 0.00, 0.00, 0.00, 0.00},
                {0.00, 0.00, 0.00, 0.25, 0.00, 0.00},
                {0.00, 0.00, 0.00, 0.00, 0.25, 0.00},
                {0.00, 0.00, 0.00, -0.25, 0.00, 0.00},
@@ -504,7 +504,7 @@ function state_machine(t)
       print('state 1')
       l_leg_offset = lf
       r_leg_offset = rf
-      torso = vector.new{0, 0, -0.025, 0, 0, 0} 
+      torso = vector.new{0, 0, -0.05, 0, 0, 0} 
       joint_offset = move_legs(torso)
       joint_offset = vector.new(joint_offset)
 --print('inital pose')      
@@ -626,7 +626,7 @@ printdata = true
 ------------------------------------------------------------------------
 --Data logging --
 ------------------------------------------------------------------------
-local ident = "t5"
+local ident = "t1"
 print('ident', ident)
 --local fw_log = assert(io.open("Logs/fw_log"..ident..".txt","w"))
 --local fw_reg = assert(io.open("Logs/fw_reg"..ident..".txt","w"))
@@ -703,7 +703,8 @@ end
 --------------------------------------------------------------------
 --Main
 --------------------------------------------------------------------
-local t0 = unix.time()
+if plat == 'robot' then t0 = unix.time() 
+else t0 = Platform.get_time() end --robot only
 t = t0
 print('begin')
 while run do 

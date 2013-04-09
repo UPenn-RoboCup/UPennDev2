@@ -79,6 +79,10 @@ If you would like to test the cognition code, please install torch.
     make
     sudo make install
 
+#### Install OctoMap:
+
+If you would like to test the cognition code, please install OctoMap
+from http://octomap.github.io/
 
 ### For Mac OSX 10.8:
 

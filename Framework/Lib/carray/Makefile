@@ -6,9 +6,15 @@ TARGETS = all clean
 
 all: carray
 
+%.o: %.cpp
+	g++ $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
+%.o: %.cc
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
+%.o: %.c
+	$(CC) $(CFLAGS) $(INCLUDES) -o $@ -c $<
+
 carray: luacarray.o
-	$(CXX) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ $(LIBRT)
+	$(CXX) -o $@.$(SHLIBEXT) $^ $(LIBOPTS) $(LIBRT)
 
 clean:
 	rm -f *.o *.$(SHLIBEXT) *.$(MEXEXT)
-

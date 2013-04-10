@@ -8,6 +8,7 @@ require('curses')
 require('Platform')
 require('dcm')
 require('Config_devices')
+require('filter')
 
 local function create_joint_data_ssv(filename)
   local file = io.open(filename, 'w')
@@ -21,6 +22,14 @@ end
 local function write_joint_data_ssv(ssv_file, table)
   for i,joint in ipairs(Config_devices.joint.id) do
     ssv_file:write(table[i]..' ')
+  end
+  ssv_file:write('\n')
+end
+
+local filters = {}
+local function write_filtered_joint_data_ssv(ssv_file, table)
+  for i,joint in ipairs(Config_devices.joint.id) do
+    ssv_file:write(filters[i]:update(table[i])..' ')
   end
   ssv_file:write('\n')
 end
@@ -81,10 +90,13 @@ Platform.entry()
 
 -- initialize power
 for i,v in ipairs(Config_devices.joint.id) do
+  local walking_frequency = .8
+  filters[i] = filter.new_low_pass(1/Platform.get_update_rate(), walking_frequency)
   power[i] = 0
   peak_power[i] = 0
 end
 
+local power_filtered_ssv = create_joint_data_ssv('joint_power_filtered.ssv')
 local power_ssv = create_joint_data_ssv('joint_power.ssv')
 
 local count = 0
@@ -98,6 +110,7 @@ while true do
   local time = Platform.get_time()
   if time > last_time then
     update_power(time - last_time)
+    write_filtered_joint_data_ssv(power_filtered_ssv, power)
     write_joint_data_ssv(power_ssv, power)
   end
   last_time = time
@@ -115,6 +128,7 @@ while true do
   count = count + 1
 end
 
+power_filtered_ssv:close()
 power_ssv:close()
 Platform.exit()
 curses.endwin()

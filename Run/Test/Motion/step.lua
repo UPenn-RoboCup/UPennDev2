@@ -86,7 +86,7 @@ for i, index in pairs(joint.ankles) do
   torque_filters[index] = filter.new_low_pass(0.004,30) 
 end
 
-local ident = "t4"
+local ident = "t5"
 pgain, igain, dgain = 125, 5, 20
 local COGx_pid = pid.new(0.004, pgain, igain, dgain)
 COGx_pid:set_d_corner_frequency(20) 
@@ -691,7 +691,7 @@ function state_machine(t)
     x,xd,xdd = trajectory.minimum_jerk_step(move_foot, {1, 0, 0}, tau, 0.005)
     move_foot = vector.new{x, xd, xdd} 
     local r_leg_delta = r_leg_offset + move_foot[1]*vector.new{0, 0.0, 0.02, 0, 0, 0}
-    local x,xd,xdd = trajectory.minimum_jerk_step(, {0, 0, 0}, tau, 0.005)
+    local x,xd,xdd = trajectory.minimum_jerk_step(COG_traj, {0, 0, 0}, tau, 0.005)
     COG_traj = vector.new{x, xd, xdd}
     COG_des[2] = x
     COG_vel[2] = xd

@@ -97,13 +97,15 @@ from http://octomap.github.io/
 		luarocks install numlua lua-cmsgpack
 		luarocks install https://raw.github.com/Neopallium/lua-zmq/master/rockspecs/lua-zmq-scm-1.rockspec
 
-#### Install KDL and Torch using the instructions above.  Additionally:
+#### Install KDL
+    brew install https://gist.github.com/adzenith/5354833/raw/4de0e150a002d607134e2b5ad25f2a3e5f83cb7f/orocos_kdl.rb
 
-For KDL, use:
-cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local/Cellar/kdl/1.0
-make
-make install
-brew link kdl
+#### Install Torch using the instructions above
+
+#### Install Gazebo:
+
+    brew tap ros/groovy
+    brew install https://raw.github.com/scpeters/homebrew-gazebo/master/gazebo.rb
 
 Build Instructions
 ------------------

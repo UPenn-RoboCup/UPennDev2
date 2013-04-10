@@ -9,6 +9,22 @@ require('Platform')
 require('dcm')
 require('Config_devices')
 
+local function create_joint_data_ssv(filename)
+  local file = io.open(filename, 'w')
+  for i,joint in ipairs(Config_devices.joint.id) do
+    file:write(joint..' ')
+  end
+  file:write('\n')
+  return file
+end
+
+local function write_joint_data_ssv(ssv_file, table)
+  for i,joint in ipairs(Config_devices.joint.id) do
+    ssv_file:write(table[i]..' ')
+  end
+  ssv_file:write('\n')
+end
+
 local power = {}
 local peak_power = {}
 local total_power = 0
@@ -69,6 +85,8 @@ for i,v in ipairs(Config_devices.joint.id) do
   peak_power[i] = 0
 end
 
+local power_ssv = create_joint_data_ssv('joint_power.ssv')
+
 local count = 0
 local last_time = Platform.get_time()
 while true do
@@ -80,6 +98,7 @@ while true do
   local time = Platform.get_time()
   if time > last_time then
     update_power(time - last_time)
+    write_joint_data_ssv(power_ssv, power)
   end
   last_time = time
   
@@ -96,5 +115,6 @@ while true do
   count = count + 1
 end
 
+power_ssv:close()
 Platform.exit()
 curses.endwin()

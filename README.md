@@ -98,7 +98,7 @@ from http://octomap.github.io/
 		luarocks install https://raw.github.com/Neopallium/lua-zmq/master/rockspecs/lua-zmq-scm-1.rockspec
 
 #### Install KDL
-    brew install https://gist.github.com/adzenith/5354833/raw/4de0e150a002d607134e2b5ad25f2a3e5f83cb7f/orocos_kdl.rb
+    brew install https://gist.github.com/adzenith/5354833/raw/70b96cfd1d6218a175a9924809643275de052af9/orocos_kdl.rb
 
 #### Install Torch using the instructions above
 

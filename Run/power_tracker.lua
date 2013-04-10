@@ -4,6 +4,16 @@ dofile('include.lua')
 -- Power Tracking
 ----------------------------------------------------------------------
 
+-- Bryce says that the ball screw is ~95% efficient
+--                 the belt is       ~90% efficient
+-- Maxon says their motors are        87% max efficency (part #309758)
+-- Total: .95 *.90 *.87 = 0.74385 = ~74% efficiency at the end of the piston
+
+-- The non-knee motors are allegedly Maxon 309758's in the 2008 catalog;
+-- the knee motors are likewise 305015's.
+local maxon309758 = {torque_constant_Nm_per_A=9580, resistance=.836, efficiency=.87}
+local maxon305015 = {torque_constant_Nm_per_A=27600, resistance=.386, efficiency=.89}
+
 require('curses')
 require('Platform')
 require('dcm')
@@ -34,7 +44,9 @@ local function write_filtered_joint_data_ssv(ssv_file, table)
   ssv_file:write('\n')
 end
 
+local torque = {}
 local output_power = {}
+local peak_input_power = {}
 local peak_output_power = {}
 local total_output_power = 0
 local peak_total_output_power = 0
@@ -44,6 +56,7 @@ local function update_output_power(dt)
   for i,joint in ipairs(Config_devices.joint.id) do
     local v = dcm:get_joint_velocity_sensor(joint)
     local f = dcm:get_joint_force_sensor(joint)
+    torque[i] = f
     output_power[i] = v*f
     total_output_power = total_output_power + math.abs(output_power[i])
     if math.abs(output_power[i]) > math.abs(peak_output_power[i]) then
@@ -58,22 +71,30 @@ local function update_output_power(dt)
   total_energy = total_energy + total_output_power*dt
 end
 
+local function motor_power(motor, torque)
+  return torque^2/motor.torque_constant_Nm_per_A^2*motor.resistance
+end
+
 local function draw_screen()
   curses.clear()
   curses.printw('rate : %7.2f                  Power Tracker\n', 
                  Platform.get_update_rate())
   curses.printw('///////////////////////////////////////')
   curses.printw('///////////////////////////////////////\n')
-  curses.printw('                         %20s %20s\n', 'power', 'peak power')
+  curses.printw('                   %13s %13s %13s %13s\n', 'input', 'peak input', 'output', 'peak output')
   curses.printw('---------------------------------------')
   curses.printw('---------------------------------------\n')
   for i,joint in ipairs(Config_devices.joint.id) do
-    curses.printw('%16s         %20f %20f\n', joint, output_power[i], peak_output_power[i])
+    local input_power = output_power[i] + motor_power(maxon309758, torque[i])
+    if math.abs(input_power) > math.abs(peak_input_power[i]) then
+      peak_input_power[i] = input_power
+    end
+    curses.printw('%16s   %13f %13f %13f %13f\n', joint, input_power, peak_input_power[i], output_power[i], peak_output_power[i])
     total_output_power = total_output_power + output_power[i]
   end
   curses.printw('---------------------------------------')
   curses.printw('---------------------------------------\n')
-  curses.printw('                         %20f %20f\n', total_output_power, peak_total_output_power)
+  curses.printw('                   %13f %13f %13f %13f\n', total_output_power, peak_total_output_power)
   curses.printw('%16s            %38f\n', 'energy (J)', total_energy)
   curses.refresh()
 end
@@ -92,7 +113,9 @@ Platform.entry()
 for i,v in ipairs(Config_devices.joint.id) do
   local walking_frequency = .8
   filters[i] = filter.new_low_pass(1/Platform.get_update_rate(), walking_frequency)
+  torque[i] = 0
   output_power[i] = 0
+  peak_input_power[i] = 0
   peak_output_power[i] = 0
 end
 

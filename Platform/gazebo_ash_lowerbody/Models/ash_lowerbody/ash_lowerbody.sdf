@@ -1,5 +1,5 @@
-<?xml version='1.0'?>
-<sdf version="1.3">
+<?xml version="1.0" ?>
+<sdf version="1.4">
 <model name="ash_lowerbody">
 	<plugin name="gz_comms_manager" filename="libgz_comms_manager.so" />
 	<pose>0 0 0 0 0 0</pose>
@@ -467,8 +467,12 @@
 	
 	
 	<joint name="l_hip_yaw" type="revolute">
-		<parent>torso</parent>
-		<child>l_hip_yaw_trunnion</child>
+		<parent>
+			<link_name>torso</link_name>
+		</parent>
+		<child>
+			<link_name>l_hip_yaw_trunnion</link_name>
+		</child>
 		<axis>
 			<xyz>0 0 1</xyz>
 			<limit>
@@ -490,8 +494,12 @@
 	</joint>
 	
 	<joint name="r_hip_yaw" type="revolute">
-		<parent>torso</parent>
-		<child>r_hip_yaw_trunnion</child>
+		<parent>
+			<link_name>torso</link_name>
+		</parent>
+		<child>
+			<link_name>r_hip_yaw_trunnion</link_name>
+		</child>
 		<axis>
 			<xyz>0 0 1</xyz>
 			<limit>
@@ -513,8 +521,12 @@
 	</joint>
 	
 	<joint name="l_hip_roll" type="revolute">
-		<parent>l_hip_yaw_trunnion</parent>
-		<child>l_hip_pitch_trunnion</child>
+		<parent>
+			<link_name>l_hip_yaw_trunnion</link_name>
+		</parent>
+		<child>
+			<link_name>l_hip_pitch_trunnion</link_name>
+		</child>
 		<axis>
 			<xyz>1 0 0</xyz>
 			<limit>
@@ -536,8 +548,12 @@
 	</joint>
 	
 	<joint name="r_hip_roll" type="revolute">
-		<parent>r_hip_yaw_trunnion</parent>
-		<child>r_hip_pitch_trunnion</child>
+		<parent>
+			<link_name>r_hip_yaw_trunnion</link_name>
+		</parent>
+		<child>
+			<link_name>r_hip_pitch_trunnion</link_name>
+		</child>
 		<axis>
 			<xyz>1 0 0</xyz>
 			<limit>
@@ -562,8 +578,12 @@
 		<!-- thigh pose: -.021 .094 .618 0 0 0 -->
 		<!-- desired pose: -.021 .094 .808 0 0 0 -->
 		<pose>0 0 .19 0 0 0</pose>
-		<parent>l_hip_pitch_trunnion</parent>
-		<child>l_thigh</child>
+		<parent>
+			<link_name>l_hip_pitch_trunnion</link_name>
+		</parent>
+		<child>
+			<link_name>l_thigh</link_name>
+		</child>
 		<axis>
 			<xyz>0 1 0</xyz>
 			<limit>
@@ -588,8 +608,12 @@
 		<!-- thigh pose: -.021 -.094 .618 0 0 0 -->
 		<!-- desired pose: -.021 -.094 .808 0 0 0 -->
 		<pose>0 0 .19 0 0 0</pose>
-		<parent>r_hip_pitch_trunnion</parent>
-		<child>r_thigh</child>
+		<parent>
+			<link_name>r_hip_pitch_trunnion</link_name>
+		</parent>
+		<child>
+			<link_name>r_thigh</link_name>
+		</child>
 		<axis>
 			<xyz>0 1 0</xyz>
 			<limit>
@@ -614,8 +638,12 @@
 		<!-- shin pose: -.021 .094 .239 0 0 0 -->
 		<!-- desired pose: -.021 .094 .429 0 0 0 -->
 		<pose>0 0 .19 0 0 0</pose>
-		<parent>l_thigh</parent>
-		<child>l_shin</child>
+		<parent>
+			<link_name>l_thigh</link_name>
+		</parent>
+		<child>
+			<link_name>l_shin</link_name>
+		</child>
 		<axis>
 			<xyz>0 1 0</xyz>
 			<limit>
@@ -640,8 +668,12 @@
 		<!-- shin pose: -.021 -.094 .239 0 0 0 -->
 		<!-- desired pose: -.021 -.094 .429 0 0 0 -->
 		<pose>0 0 .19 0 0 0</pose>
-		<parent>r_thigh</parent>
-		<child>r_shin</child>
+		<parent>
+			<link_name>r_thigh</link_name>
+		</parent>
+		<child>
+			<link_name>r_shin</link_name>
+		</child>
 		<axis>
 			<xyz>0 1 0</xyz>
 			<limit>
@@ -663,8 +695,12 @@
 	</joint>
 	
 	<joint name="l_ankle_pitch" type="revolute">
-		<parent>l_shin</parent>
-		<child>l_ankle_pitch_trunnion</child>
+		<parent>
+			<link_name>l_shin</link_name>
+		</parent>
+		<child>
+			<link_name>l_ankle_pitch_trunnion</link_name>
+		</child>
 		<axis>
 			<xyz>0 1 0</xyz>
 			<limit>
@@ -686,8 +722,12 @@
 	</joint>
 	
 	<joint name="r_ankle_pitch" type="revolute">
-		<parent>r_shin</parent>
-		<child>r_ankle_pitch_trunnion</child>
+		<parent>
+			<link_name>r_shin</link_name>
+		</parent>
+		<child>
+			<link_name>r_ankle_pitch_trunnion</link_name>
+		</child>
 		<axis>
 			<xyz>0 1 0</xyz>
 			<limit>
@@ -712,8 +752,12 @@
 		<!-- ankle pose: 0 .094 .003 0 0 0 -->
 		<!-- desired pose: -.021 .094 .049 0 0 0 -->
 		<pose>-.021 0 .046 0 0 0</pose>
-		<parent>l_ankle_pitch_trunnion</parent>
-		<child>l_foot</child>
+		<parent>
+			<link_name>l_ankle_pitch_trunnion</link_name>
+		</parent>
+		<child>
+			<link_name>l_foot</link_name>
+		</child>
 		<axis>
 			<xyz>1 0 0</xyz>
 			<limit>
@@ -739,8 +783,12 @@
 		<!-- ankle pose: 0 -.094 .003 0 0 0 -->
 		<!-- desired pose: -.021 -.094 .049 0 0 0 -->
 		<pose>-.021 0 .046 0 0 0</pose>
-		<parent>r_ankle_pitch_trunnion</parent>
-		<child>r_foot</child>
+		<parent>
+			<link_name>r_ankle_pitch_trunnion</link_name>
+		</parent>
+		<child>
+			<link_name>r_foot</link_name>
+		</child>
 		<axis>
 			<xyz>1 0 0</xyz>
 			<limit>

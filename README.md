@@ -93,7 +93,7 @@ from http://octomap.github.io/
 - Webots from http://www.cyberbotics.com/
 - Homebrew from http://mxcl.github.com/homebrew/
 
-		brew install lua luajit luarocks boost gnuplot eigen swig fftw zmq hdf5 glib wget
+		brew install lua luajit luarocks boost gnuplot eigen swig fftw zmq hdf5 glib wget msgpack
 		luarocks install numlua lua-cmsgpack
 		luarocks install https://raw.github.com/Neopallium/lua-zmq/master/rockspecs/lua-zmq-scm-1.rockspec
 

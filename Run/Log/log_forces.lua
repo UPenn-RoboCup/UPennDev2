@@ -41,6 +41,10 @@ while (key ~= string.byte('q')) do
   curses.move(0, 0)
   curses.printw('%-7.4f seconds ', t - t0)
   key = curses.getch()
+  if key == curses.KEY_RESIZE then
+    local y, x = curses.getmaxyx()
+    curses.resizeterm(y, x)
+  end
 end
 
 curses.endwin()

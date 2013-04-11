@@ -64,7 +64,7 @@ static const co_sdo_setting epos_custom_settings[N_MOTOR][20] = {
   },
   { // motor 1 : l_hip_inner
     {DSP402_SOFTWARE_POSITION_LIMIT, 0x01, -150000},
-    {DSP402_SOFTWARE_POSITION_LIMIT, 0x02, 150000},
+    {DSP402_SOFTWARE_POSITION_LIMIT, 0x02, 220000},
     {DSP402_HOMING_METHOD, 0x00, 23},
     {DSP402_HOME_OFFSET, 0x00, -45669},
     {DSP402_HOMING_SPEEDS, 0x01, 60},
@@ -82,7 +82,7 @@ static const co_sdo_setting epos_custom_settings[N_MOTOR][20] = {
   },
   { // motor 2 : l_hip_outer
     {DSP402_SOFTWARE_POSITION_LIMIT, 0x01, -150000},
-    {DSP402_SOFTWARE_POSITION_LIMIT, 0x02, 150000},
+    {DSP402_SOFTWARE_POSITION_LIMIT, 0x02, 220000},
     {DSP402_HOMING_METHOD, 0x00, 23},
     {DSP402_HOME_OFFSET, 0x00, -23325},
     {DSP402_HOMING_SPEEDS, 0x01, 60},
@@ -170,7 +170,7 @@ static const co_sdo_setting epos_custom_settings[N_MOTOR][20] = {
   },
   { // motor 7 : r_hip_inner
     {DSP402_SOFTWARE_POSITION_LIMIT, 0x01, -150000},
-    {DSP402_SOFTWARE_POSITION_LIMIT, 0x02, 150000},
+    {DSP402_SOFTWARE_POSITION_LIMIT, 0x02, 220000},
     {DSP402_HOMING_METHOD, 0x00, 23},
     {DSP402_HOME_OFFSET, 0x00, -45669},
     {DSP402_HOMING_SPEEDS, 0x01, 60},
@@ -188,7 +188,7 @@ static const co_sdo_setting epos_custom_settings[N_MOTOR][20] = {
   },
   { // motor 8 : r_hip_outer
     {DSP402_SOFTWARE_POSITION_LIMIT, 0x01, -150000},
-    {DSP402_SOFTWARE_POSITION_LIMIT, 0x02, 150000},
+    {DSP402_SOFTWARE_POSITION_LIMIT, 0x02, 220000},
     {DSP402_HOMING_METHOD, 0x00, 23},
     {DSP402_HOME_OFFSET, 0x00, -23325},
     {DSP402_HOMING_SPEEDS, 0x01, 60},

@@ -63,9 +63,9 @@ function cop_sensor.update()
   pcm:set_cop(cop)
   pcm:set_cop_pressure(pressure)
   pcm:set_l_foot_cop(l_foot_cop)
-  pcm:set_l_foot_cop_pressure(l_foot_cop_pressure)
+  pcm:set_l_foot_cop_pressure(l_foot_pressure)
   pcm:set_r_foot_cop(r_foot_cop)
-  pcm:set_r_foot_cop_pressure(r_foot_cop_pressure)
+  pcm:set_r_foot_cop_pressure(r_foot_pressure)
 end
 
 function cop_sensor.exit()

@@ -15,8 +15,8 @@
 
 #include <QWidget>
 #include "osgcamera.h"
+#include "osgrenderthread.h"
 
-#include <QtCore/QTimer>
 #include <osgViewer/Viewer>
 
 /*!
@@ -29,6 +29,8 @@ class OsgWidget : public QWidget, public osgViewer::Viewer
 public:
     explicit OsgWidget();
 
+    virtual ~OsgWidget();
+
     /*!
      * \brief Creates the OSG context and lays out the widget.
      */
@@ -39,16 +41,12 @@ private:
 signals:
 
 public slots:
-    /*!
-     * \brief Requests OSG to render a frame
-     */
-    void drawFrame();
 
 protected:
     /*!
-     * \brief Timer for rendering frames (Will be removed!)
+     * \brief Rendering thread for rendering OpenGL content
      */
-    QTimer _timer;
+    OsgRenderThread* m_RenderThread;
 
 private:
     /*!

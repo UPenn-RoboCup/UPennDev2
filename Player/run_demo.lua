@@ -172,7 +172,7 @@ function update()
 	elseif demo_mode == 1 then -- Push demo
 	  walk.enable_ankle_pr = true;
 	  walk.enable_hip_pr = true; --Enable hip strategy
-	  Motion.fallAngle = 240*math.pi/180;--Disable falldown check
+--	  Motion.fallAngle = 240*math.pi/180;--Disable falldown check
           Speak.talk('Push Demo');
           if walk.active then walk.stop(); end
 	  Motion.event("standup");

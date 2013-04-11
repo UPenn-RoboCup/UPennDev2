@@ -23,12 +23,10 @@ namespace gazebo
     this->model = _parent;
     this->world = this->model->GetWorld(); 
 
-    // initialize time step
-    this->dynamics_time_step = this->world->GetPhysicsEngine()->GetStepTime();
-
     // load config parameters
     Config config;
     this->joint_max = config.get_int("comms_manager.joint_max");
+    this->joint_damping = config.get_double("comms_manager.joint_damping");
     this->p_gain_constant = config.get_double("comms_manager.p_gain_constant");
     this->i_gain_constant = config.get_double("comms_manager.i_gain_constant");
     this->d_gain_constant = config.get_double("comms_manager.d_gain_constant");
@@ -36,6 +34,7 @@ namespace gazebo
     this->p_gain_default = config.get_double("comms_manager.p_gain_default");
     this->i_gain_default = config.get_double("comms_manager.i_gain_default");
     this->d_gain_default = config.get_double("comms_manager.d_gain_default");
+    this->physics_time_step = config.get_double("world_manager.physics_time_step");
 
     // initialize joints
     std::vector<std::string> joint_id;
@@ -111,7 +110,7 @@ namespace gazebo
     // initialize imu
     this->imu_link_name = "torso";
     this->imu_sensor_name = "imu_sensor";
-    this->imu_sensor = boost::shared_dynamic_cast<sensors::ImuSensor>(
+    this->imu_sensor = boost::dynamic_pointer_cast<sensors::ImuSensor>(
       sensors::SensorManager::Instance()->GetSensor(
         this->world->GetName()
         + "::" + this->model->GetScopedName()
@@ -134,19 +133,22 @@ namespace gazebo
     // initialize dcm joint controllers
     for (int i = 0; i < this->joints.size(); i++)
     { 
+      // set joint damping
+      this->joints[i]->SetDamping(0, this->joint_damping);
+
       // get joint limits
       double max_force = this->joints[i]->GetEffortLimit(0);
       double min_position = this->joints[i]->GetLowStop(0).Radian();
       double max_position = this->joints[i]->GetHighStop(0).Radian();
 
       // initialize position pid controller
-      struct pid position_pid = new_pid(this->dynamics_time_step.Double());
+      struct pid position_pid = new_pid(this->physics_time_step);
       pid_set_setpoint_limits(&position_pid, min_position, max_position);
       pid_set_output_limits(&position_pid, -max_force, max_force);
 
       // initialize velocity filter
       struct filter velocity_filter = new_low_pass(
-        this->dynamics_time_step.Double(),
+        this->physics_time_step,
         this->d_break_freq
       );
       filter_set_output_limits(&velocity_filter, -max_force, max_force);
@@ -196,14 +198,14 @@ namespace gazebo
       if (r_wrist_index != -1)
         r_wrist_wrench = this->joints[r_wrist_index]->GetForceTorque(index0);
 
-      math::Vector3 l_ankle_force = l_ankle_wrench.body1Force;
-      math::Vector3 l_ankle_torque = l_ankle_wrench.body1Torque;
-      math::Vector3 r_ankle_force = r_ankle_wrench.body1Force;
-      math::Vector3 r_ankle_torque = r_ankle_wrench.body1Torque;
-      math::Vector3 l_wrist_force = l_wrist_wrench.body1Force;
-      math::Vector3 l_wrist_torque = l_wrist_wrench.body1Torque;
-      math::Vector3 r_wrist_force = r_wrist_wrench.body1Force;
-      math::Vector3 r_wrist_torque = r_wrist_wrench.body1Torque;
+      math::Vector3 l_ankle_force = l_ankle_wrench.body2Force;
+      math::Vector3 l_ankle_torque = l_ankle_wrench.body2Torque;
+      math::Vector3 r_ankle_force = r_ankle_wrench.body2Force;
+      math::Vector3 r_ankle_torque = r_ankle_wrench.body2Torque;
+      math::Vector3 l_wrist_force = l_wrist_wrench.body2Force;
+      math::Vector3 l_wrist_torque = l_wrist_wrench.body2Torque;
+      math::Vector3 r_wrist_force = r_wrist_wrench.body2Force;
+      math::Vector3 r_wrist_torque = r_wrist_wrench.body2Torque;
 
       for (int i = 0; i < 3; i++)
       {
@@ -220,20 +222,16 @@ namespace gazebo
 
     // update imu sensor
     {
-      math::Vector3 gyro = this->imu_sensor->GetAngularVelocity();
       math::Vector3 accel = this->imu_sensor->GetLinearAcceleration();
+      math::Vector3 gyro = this->imu_sensor->GetAngularVelocity();
       math::Vector3 euler = this->imu_sensor->GetOrientation().GetAsEuler();
       for (int i = 0; i < 3; i++)
       {
-        this->dcm.ahrs[i] = gyro[i];
-        this->dcm.ahrs[i+3] = accel[i];
+        this->dcm.ahrs[i] = accel[i];
+        this->dcm.ahrs[i+3] = gyro[i];
         this->dcm.ahrs[i+6] = euler[i];
       }
     }
-
-    // reset joint controllers if time step is modified
-    if (this->dynamics_time_step != this->world->GetPhysicsEngine()->GetStepTime())
-      this->initialize_controllers();
 
     // update joints
     for (int i = 0; i < this->joints.size(); i++)
@@ -277,7 +275,7 @@ namespace gazebo
       // update joint sensors
       this->dcm.joint_force_sensor[index] = force_command;
       this->dcm.joint_position_sensor[index] = position_actual;
-      this->dcm.joint_velocity_sensor[index] = velocity_actual;
+      this->dcm.joint_velocity_sensor[index] = velocity_estimate;
 
     //gzerr << "force command " << force_command << "\n";
     }

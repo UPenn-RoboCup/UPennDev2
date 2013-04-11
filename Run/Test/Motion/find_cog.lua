@@ -9,7 +9,6 @@ require('pid')
 require('unix')
 require('util')
 require('Platform')
-require('curses')
 require('Config')
 require('vector')
 require('Kinematics')
@@ -65,7 +64,7 @@ local state_est_k1 = {vector.new({-0.002, 0}), vector.new({-0.146, 0})}
 local state_act_k1 = {vector.new({0, 0}), vector.new({0, 0})}
 local r_foot_pose_ref = {}
 local l_foot_pose_ref = {}
-
+local plat = 'gazebo'
 
 ------------------------------------------------------------------
 --Control objects:
@@ -411,7 +410,7 @@ function ahrs_update() --move
   end 
 end
 
-function COG_update()
+function COG_update2()
   --returns location of COG wrt base frame
   local COG_temp = pcm:get_cog()  --used to be COG_temp
 --  for i = 1, 3 do
@@ -422,9 +421,11 @@ function COG_update()
   local jnt_vec_y = vector.new{0, 0, 1}
 --  local bsx = vector.new{-0.2484, -0.0554, -0.0196, 0.0080}
 --  local bsy = vector.new{0.2108, 0.0390, -0.0018}
-  local bsx = vector.new{-0.2649, -0.0608, -0.0210, 0.0050}
-  local bsy = vector.new{0.2285, 0.0460, -0.0007}
-  
+--  local bsx = vector.new{-0.2649, -0.0608, -0.0210, 0.0050}
+--  local bsy = vector.new{0.2285, 0.0460, -0.0007}
+  local bsx = vector.new{-0.2726, -0.0676, -0.0255, 0.0065}
+  local bsy = vector.new{0.2172, 0.0424, -0.0010}
+
   local correction = {}
 
   jnt_vec_x[1] = ahrs_filt[8]
@@ -442,20 +443,43 @@ function COG_update()
   COG[3] = COG_temp[3]
 end
 
+function COG_update()
+  local COG_temp = pcm:get_cog()  --used to be COG_temp
+  local jnt_vec_x = vector.new{0, 0, 0, 1}
+  local jnt_vec_y = vector.new{0, 0, 0, 1}  
+  local bsx = vector.new{0.0683, -0.0871, -0.0399, 0.0005}
+  local bsy = vector.new{-0.0752, 0.1143, 0.1075, -0.0004}
+  local pos = joint_pos_sense
+  jnt_vec_x[1] = math.sin(ahrs_filt[8])
+  jnt_vec_x[2] = math.sin(ahrs_filt[8] + pos[3]) + math.sin(ahrs_filt[8] + pos[9]) 
+  jnt_vec_x[3] = math.sin(ahrs_filt[8] + pos[3] + pos[4]) 
+  jnt_vec_x[3] = jnt_vec_x[3] +  math.sin(ahrs_filt[8] + pos[9] + pos[10]) 
+  jnt_vec_y[1] = math.sin(ahrs_filt[7])
+  jnt_vec_y[2] = math.sin(ahrs_filt[7] + pos[2]) + math.sin(ahrs_filt[7] + pos[8])
+  jnt_vec_y[3] = math.sin(ahrs_filt[7] + pos[2])*pos[3]*pos[4]
+  jnt_vec_y[3] = jnt_vec_y[3] + math.sin(ahrs_filt[7] + pos[8])*pos[9]*pos[10]
+  COG[1] = jnt_vec_x*bsx
+  COG[2] = jnt_vec_y*bsy
+  COG[3] = COG_temp[3]
+  --if not(plat == 'robot') then COG = pcm:get_cog() end -- gazebo only
+end
+
 local tp = {-0.3, 0.3}
 local tr = {-0.3, 0.3}
 trial = 0
 
 local poses = {{0.00, 0.00, 0.00, 0.00, 0.00, 0.00},
-               {0.05, 0.00, 0.00, 0.00, 0.00, 0.00},
-               {-0.11, 0.00, 0.00, 0.00, 0.00, 0.00},
-               {0.00, 0.10, 0.00, 0.00, 0.00, 0.00},
-               {0.05, 0.10, 0.00, 0.00, 0.00, 0.00},
-               {-0.1, 0.10, 0.00, 0.00, 0.00, 0.00},
-               {0.00, 0.00, 0.00, 0.25, 0.00, 0.00},
-               {0.00, 0.00, 0.00, 0.00, 0.25, 0.00},
-               {0.00, 0.00, 0.00, -0.25, 0.00, 0.00},
-               {0.00, 0.00, 0.00, 0.00, -0.15, 0.00}}
+               --{0.05, 0.00, 0.00, 0.00, 0.00, 0.00},
+               --{-0.09, 0.00, 0.00, 0.00, 0.00, 0.00},
+               --{0.00, -0.13, 0.00, 0.00, 0.00, 0.00},
+               --{0.05, 0.10, 0.00, 0.00, 0.00, 0.00},
+               {0.00, -0.13, 0.00, 0.00, 0.00, 0.00},
+               --{0.05, -0.10, 0.00, 0.00, 0.00, 0.00},
+               --{-0.09, 0.10, 0.00, 0.00, 0.00, 0.00},
+               {0.00, 0.00, 0.00, 0.35, 0.00, 0.00},
+               --{0.00, 0.00, 0.00, 0.00, 0.25, 0.00},
+               {0.00, 0.00, 0.00, -0.35, 0.00, 0.00}}
+               --{0.00, 0.00, 0.00, 0.00, -0.15, 0.00}}
 
 function generate_pose_angles(torso)
   local torso_pose = Transform.pose(torso)
@@ -504,7 +528,7 @@ function state_machine(t)
       torso = vector.new{0, 0, -0.05, 0, 0, 0} 
       joint_offset = move_legs(torso)
       joint_offset = vector.new(joint_offset)
---print('inital pose')      
+--print('inital pose')
 --util.ptable(pcm:get_l_foot_pose())
 --print('right foot')
 --util.ptable(pcm:get_r_foot_pose())
@@ -547,7 +571,7 @@ function state_machine(t)
       print('trial', trial)
       state_t = 0
       state = 4
-      if trial >= 11 then --change here to edit number of runs
+      if trial >= 5 then --change here to edit number of runs
         --run = false
         print('exit trial')
         state = 9
@@ -611,10 +635,15 @@ print('timestep', Platform.get_time_step())
 Proprioception.entry()
 dcm:set_joint_enable(0,'all')
 local set_values = dcm:get_joint_position_sensor('legs') 
-dcm:set_joint_position_p_gain(1, 'all') -- position control
---dcm:set_joint_position_p_gain(0, 'ankles')
---dcm:set_joint_damping(0, 'ankles')
---dcm:set_joint_force({0, 0, 0, 0},'ankles')
+dcm:set_joint_p_gain(0.3, 'all') -- position control
+dcm:set_joint_i_gain(0.01, 'all') -- position control
+dcm:set_joint_d_gain(0.005, 'all') -- position control
+
+--dcm:set_joint_p_gain(0, joint.l_hip_roll)
+--dcm:set_joint_d_gain(0, joint.l_hip_roll)
+--dcm:set_joint_i_gain(0, joint.l_hip_roll)
+
+dcm:set_joint_force(0, joint.l_hip_roll)
 dcm:set_joint_position(set_values)
 dcm:set_joint_enable(1, 'all')
 qt = vector.copy(set_values) 
@@ -623,7 +652,7 @@ printdata = true
 ------------------------------------------------------------------------
 --Data logging --
 ------------------------------------------------------------------------
-local ident = "t1"
+local ident = "t16"
 print('ident', ident)
 --local fw_log = assert(io.open("Logs/fw_log"..ident..".txt","w"))
 --local fw_reg = assert(io.open("Logs/fw_reg"..ident..".txt","w"))
@@ -632,6 +661,7 @@ local fw_joint_pos = assert(io.open("../Logs/fw_joint_pos"..ident..".txt","w"))
 local fw_qt = assert(io.open("../Logs/fw_qt"..ident..".txt","w"))
 local fw_raw_pos = assert(io.open("../Logs/fw_raw_pos"..ident..".txt","w"))
 local fw_joint_pos_sense = assert(io.open("../Logs/fw_joint_pos_sense"..ident..".txt","w"))
+local fw_joint_torques_sense = assert(io.open("../Logs/fw_joint_torques_sense"..ident..".txt","w"))
 local fw_COG = assert(io.open("../Logs/fw_COG"..ident..".txt","w"))
 local fw_COG_raw = assert(io.open("../Logs/fw_COG_raw"..ident..".txt","w"))
 local fw_ft_filt = assert(io.open("../Logs/fw_ft_filt"..ident..".txt","w"))
@@ -640,12 +670,20 @@ local fw_lr_cop = assert(io.open("../Logs/fw_lr_cop"..ident..".txt","w"))
 local fw_COP_filt = assert(io.open("../Logs/fw_COP_filt"..ident..".txt","w"))
 local fw_ahrs_filt = assert(io.open("../Logs/fw_ahrs_filt"..ident..".txt","w"))
 local fw_trial = assert(io.open("../Logs/fw_trial"..ident..".txt","w"))
+local fw_lf = assert(io.open("../Logs/fw_lf"..ident..".txt","w"))
+
+local fw_torso_pose = assert(io.open("../Logs/fw_torso_pose"..ident..".txt","w"))
+local fw_torso_twist = assert(io.open("../Logs/fw_torso_twist"..ident..".txt","w"))
+local fw_torso_rotation = assert(io.open("../Logs/fw_torso_rotation"..ident..".txt","w"))
+
+
 
 function record_data()
     write_to_file(fw_joint_pos, joint_pos)
     write_to_file(fw_qt, qt)
     write_to_file(fw_raw_pos, raw_pos)
     write_to_file(fw_joint_pos_sense, joint_pos_sense)
+    write_to_file(fw_joint_torques_sense, joint_torques_sense)
     write_to_file(fw_COG, COG)
     write_to_file(fw_COG_raw, pcm:get_cog())
     write_to_file(fw_ft_filt, ft_filt)
@@ -654,6 +692,10 @@ function record_data()
     write_to_file(fw_COP_filt, COP_filt)
     write_to_file(fw_ahrs_filt, ahrs_filt)
     write_to_file(fw_trial, {trial})
+    write_to_file(fw_lf, lf)
+    write_to_file(fw_torso_pose, pcm:get_torso_pose())
+    write_to_file(fw_torso_twist, pcm:get_torso_twist())
+    write_to_file(fw_torso_rotation, pcm:get_torso_rotation():get_array())
 end
 
 function write_to_file(filename, data, test)
@@ -698,8 +740,9 @@ end
 --------------------------------------------------------------------
 --Main
 --------------------------------------------------------------------
---local t0 = unix.time()
---t = t0
+if plat == 'robot' then t0 = unix.time() 
+else t0 = Platform.get_time() end --robot only
+t = t0
 print('begin')
 while run do 
   Platform.update()

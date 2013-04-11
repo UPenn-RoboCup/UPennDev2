@@ -10,7 +10,7 @@ This is the development repository for team THOR.
 
 #### Install necessary dependencies:
 
-    sudo apt-get install build-essential lua5.1 liblua5.1-0-dev luajit swig libboost1.46-dev mesa-common-dev gnuplot libpopt-dev libncurses5-dev luarocks libblas-dev liblapack-dev libfftw3-dev libhdf5-serial-dev libglfw-dev cmake libmsgpack-dev
+    sudo apt-get install build-essential lua5.1 liblua5.1-0-dev luajit swig libboost1.46-dev mesa-common-dev gnuplot libpopt-dev libncurses5-dev luarocks libblas-dev liblapack-dev libfftw3-dev libhdf5-serial-dev libglfw-dev cmake libmsgpack-dev libtbb-dev
 
     sudo luarocks install numlua
     sudo luarocks install lua-cmsgpack
@@ -27,6 +27,7 @@ This is the development repository for team THOR.
     sudo make install
 
     sudo luarocks install https://raw.github.com/Neopallium/lua-zmq/master/rockspecs/lua-zmq-scm-1.rockspec
+    sudo ldconfig
 
 #### Install Eigen3:
 
@@ -38,6 +39,7 @@ This is the development repository for team THOR.
     cmake ..
     make
     sudo make install
+    sudo ldconfig
 
 #### Install Gazebo:
 
@@ -66,6 +68,7 @@ Install Kinematics and Dynamics Library (KDL) using:
     cmake ..
     make
     sudo make install #(sudo may not be necessary)
+    sudo ldconfig
 
 #### Install Torch:
 
@@ -76,6 +79,10 @@ If you would like to test the cognition code, please install torch.
     make
     sudo make install
 
+#### Install OctoMap:
+
+If you would like to test the cognition code, please install OctoMap
+from http://octomap.github.io/
 
 ### For Mac OSX 10.8:
 
@@ -86,11 +93,20 @@ If you would like to test the cognition code, please install torch.
 - Webots from http://www.cyberbotics.com/
 - Homebrew from http://mxcl.github.com/homebrew/
 
-		brew install lua luajit luarocks boost gnuplot eigen swig fftw zmq hdf5 glib wget
+		brew install lua luajit luarocks boost gnuplot eigen swig fftw zmq hdf5 glib wget msgpack
 		luarocks install numlua lua-cmsgpack
 		luarocks install https://raw.github.com/Neopallium/lua-zmq/master/rockspecs/lua-zmq-scm-1.rockspec
 
-#### Install KDL and Torch using the instructions above.
+#### Install KDL
+    brew install https://gist.github.com/adzenith/5354833/raw/70b96cfd1d6218a175a9924809643275de052af9/orocos_kdl.rb
+
+#### Install Torch using the instructions above
+
+#### Install Gazebo:
+
+    brew tap ros/groovy
+    brew install https://raw.github.com/scpeters/homebrew-gazebo/master/gazebo.rb
+    echo "source /usr/local/share/gazebo/setup.sh" >> ~/.bash_profile
 
 Build Instructions
 ------------------

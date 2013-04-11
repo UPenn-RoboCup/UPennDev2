@@ -30,7 +30,7 @@ end
 -- Set up the channels
 ipc_channels = {}
 for d=1,#dataTypes do
-  ipc_channels[ dataTypes[d] ] = simple_ipc.setup_publisher( dataTypes[d] );
+  ipc_channels[ dataTypes[d] ] = simple_ipc.new_publisher( dataTypes[d] );
 end
 
 function get_log_file_list()

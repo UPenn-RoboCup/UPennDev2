@@ -138,20 +138,23 @@ namespace gazebo
 
       // get joint limits
       double max_force = this->joints[i]->GetEffortLimit(0);
-      double min_position = this->joints[i]->GetLowStop(0).Radian();
-      double max_position = this->joints[i]->GetHighStop(0).Radian();
+      double min_position = this->joints[i]->GetLowerLimit(0).Radian();
+      double max_position = this->joints[i]->GetUpperLimit(0).Radian();
+      double max_velocity = this->joints[i]->GetVelocityLimit(0);
 
       // initialize position pid controller
       struct pid position_pid = new_pid(this->physics_time_step);
       pid_set_setpoint_limits(&position_pid, min_position, max_position);
-      pid_set_output_limits(&position_pid, -max_force, max_force);
+      if (max_force >= 0)
+        pid_set_output_limits(&position_pid, -max_force, max_force);
 
       // initialize velocity filter
       struct filter velocity_filter = new_low_pass(
         this->physics_time_step,
         this->d_break_freq
       );
-      filter_set_output_limits(&velocity_filter, -max_force, max_force);
+      if (max_velocity >= 0)
+        filter_set_output_limits(&velocity_filter, -max_velocity, max_velocity);
 
       // update joint structs
       if (i < joint_position_pids.size())
@@ -248,6 +251,7 @@ namespace gazebo
       double velocity_setpoint = this->dcm.joint_velocity[index];
       double position_actual = this->joints[i]->GetAngle(0).Radian();
       double velocity_actual = this->joints[i]->GetVelocity(0);
+      double max_force = this->joints[i]->GetEffortLimit(0);
 
       // update feedforward force
       double force_command = force_setpoint;
@@ -268,8 +272,8 @@ namespace gazebo
       force_command += d_gain*(velocity_setpoint - velocity_estimate);
        
       // update joint force 
-      double max_force = this->joints[i]->GetEffortLimit(0);
-      force_command = math::clamp(force_command, -max_force, max_force);
+      if (max_force >= 0)
+        force_command = math::clamp(force_command, -max_force, max_force);
       this->joints[i]->SetForce(0, force_command);
 
       // update joint sensors

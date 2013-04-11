@@ -1,17 +1,26 @@
 #include "osgwidget.h"
+#include "osgmousemanipulator.h"
 #include <osgViewer/ViewerEventHandlers>
 
 #include <QtGui/QGridLayout>
-
-#include <osgGA/TrackballManipulator>
 
 #include <osgDB/ReadFile>
 
 #include <osgQt/GraphicsWindowQt>
 
-OsgWidget::OsgWidget()
+OsgWidget::OsgWidget() :
+    m_RenderThread(0)
 {
 
+}
+
+OsgWidget::~OsgWidget()
+{
+    if(m_RenderThread != 0)
+    {
+        delete m_RenderThread;
+        m_RenderThread = 0;
+    }
 }
 
 void OsgWidget::initialize()
@@ -29,7 +38,7 @@ void OsgWidget::initialize()
 
     // add the stats handler
     addEventHandler(new osgViewer::StatsHandler);
-    setCameraManipulator( new osgGA::TrackballManipulator );
+    setCameraManipulator( new OsgMouseManipulator );
 
     osgQt::GraphicsWindowQt* gw = dynamic_cast<osgQt::GraphicsWindowQt*>( camera->get()->getGraphicsContext() );
 
@@ -38,11 +47,7 @@ void OsgWidget::initialize()
     layout->addWidget(gw->getGLWidget());
     setLayout(layout);
 
-    connect( &_timer, SIGNAL(timeout()), this, SLOT(drawFrame()) );
-    _timer.start( 0 );
-}
-
-void OsgWidget::drawFrame()
-{
-    frame();
+    m_RenderThread = new OsgRenderThread(this);
+    m_RenderThread->setViewer(this);
+    m_RenderThread->start();
 }

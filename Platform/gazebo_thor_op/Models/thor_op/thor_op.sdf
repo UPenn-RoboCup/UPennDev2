@@ -1,6 +1,6 @@
-<?xml version='1.0'?>
+<?xml version="1.0" ?>
 <!-- THOR-OP model script -->
-<sdf version="1.3">
+<sdf version="1.4">
     <model name="thor_op">
         <plugin name="gz_comms_manager" filename="libgz_comms_manager.so" />
         
@@ -11,7 +11,12 @@
             <inertial>
                 <mass>0.1</mass>
                 <inertia>
-                    <ixx>1.0</ixx><ixy>0.0</ixy><ixz>0.0</ixz><iyy>1.0</iyy><iyz>0.0</iyz><izz>1.0</izz>
+                    <ixx>1.0</ixx>
+                    <ixy>0.0</ixy>
+                    <ixz>0.0</ixz>
+                    <iyy>1.0</iyy>
+                    <iyz>0.0</iyz>
+                    <izz>1.0</izz>
                 </inertia>
             </inertial>
             <collision name="collision">
@@ -41,7 +46,12 @@
             <inertial>
                 <mass>0.1</mass>
                 <inertia>
-                    <ixx>1.0</ixx><ixy>0.0</ixy><ixz>0.0</ixz><iyy>1.0</iyy><iyz>0.0</iyz><izz>1.0</izz>
+                    <ixx>1.0</ixx>
+                    <ixy>0.0</ixy>
+                    <ixz>0.0</ixz>
+                    <iyy>1.0</iyy>
+                    <iyz>0.0</iyz>
+                    <izz>1.0</izz>
                 </inertia>
             </inertial>
             <collision name="collision">
@@ -71,7 +81,12 @@
             <inertial>
                 <mass>.1</mass>
                 <inertia>
-                    <ixx>1.0</ixx><ixy>0.0</ixy><ixz>0.0</ixz><iyy>1.0</iyy><iyz>0.0</iyz><izz>1.0</izz>
+                    <ixx>1.0</ixx>
+                    <ixy>0.0</ixy>
+                    <ixz>0.0</ixz>
+                    <iyy>1.0</iyy>
+                    <iyz>0.0</iyz>
+                    <izz>1.0</izz>
                 </inertia>
             </inertial>
             <collision name="collision">
@@ -140,7 +155,12 @@
             <inertial>
                 <mass>.1</mass>
                 <inertia>
-                    <ixx>1.0</ixx><ixy>0.0</ixy><ixz>0.0</ixz><iyy>1.0</iyy><iyz>0.0</iyz><izz>1.0</izz>
+                    <ixx>1.0</ixx>
+                    <ixy>0.0</ixy>
+                    <ixz>0.0</ixz>
+                    <iyy>1.0</iyy>
+                    <iyz>0.0</iyz>
+                    <izz>1.0</izz>
                 </inertia>
             </inertial>
             <collision name="collision">
@@ -170,7 +190,12 @@
             <inertial>
                 <mass>.2</mass>
                 <inertia>
-                    <ixx>1.0</ixx><ixy>0.0</ixy><ixz>0.0</ixz><iyy>1.0</iyy><iyz>0.0</iyz><izz>1.0</izz>
+                    <ixx>1.0</ixx>
+                    <ixy>0.0</ixy>
+                    <ixz>0.0</ixz>
+                    <iyy>1.0</iyy>
+                    <iyz>0.0</iyz>
+                    <izz>1.0</izz>
                 </inertia>
             </inertial>
             <collision name="collision">
@@ -205,7 +230,12 @@
             <inertial>
                 <mass>.1</mass>
                 <inertia>
-                    <ixx>1.0</ixx><ixy>0.0</ixy><ixz>0.0</ixz><iyy>1.0</iyy><iyz>0.0</iyz><izz>1.0</izz>
+                    <ixx>1.0</ixx>
+                    <ixy>0.0</ixy>
+                    <ixz>0.0</ixz>
+                    <iyy>1.0</iyy>
+                    <iyz>0.0</iyz>
+                    <izz>1.0</izz>
                 </inertia>
             </inertial>
             <collision name="collision">
@@ -235,7 +265,12 @@
             <inertial>
                 <mass>.1</mass>
                 <inertia>
-                    <ixx>1.0</ixx><ixy>0.0</ixy><ixz>0.0</ixz><iyy>1.0</iyy><iyz>0.0</iyz><izz>1.0</izz>
+                    <ixx>1.0</ixx>
+                    <ixy>0.0</ixy>
+                    <ixz>0.0</ixz>
+                    <iyy>1.0</iyy>
+                    <iyz>0.0</iyz>
+                    <izz>1.0</izz>
                 </inertia>
             </inertial>
             <collision name="collision">
@@ -265,7 +300,12 @@
             <inertial>
                 <mass>.1</mass>
                 <inertia>
-                    <ixx>1.0</ixx><ixy>0.0</ixy><ixz>0.0</ixz><iyy>1.0</iyy><iyz>0.0</iyz><izz>1.0</izz>
+                    <ixx>1.0</ixx>
+                    <ixy>0.0</ixy>
+                    <ixz>0.0</ixz>
+                    <iyy>1.0</iyy>
+                    <iyz>0.0</iyz>
+                    <izz>1.0</izz>
                 </inertia>
             </inertial>
             <collision name="collision">
@@ -295,7 +335,12 @@
             <inertial>
                 <mass>.1</mass>
                 <inertia>
-                    <ixx>1.0</ixx><ixy>0.0</ixy><ixz>0.0</ixz><iyy>1.0</iyy><iyz>0.0</iyz><izz>1.0</izz>
+                    <ixx>1.0</ixx>
+                    <ixy>0.0</ixy>
+                    <ixz>0.0</ixz>
+                    <iyy>1.0</iyy>
+                    <iyz>0.0</iyz>
+                    <izz>1.0</izz>
                 </inertia>
             </inertial>
             <collision name="collision">
@@ -325,7 +370,12 @@
             <inertial>
                 <mass>.1</mass>
                 <inertia>
-                    <ixx>1.0</ixx><ixy>0.0</ixy><ixz>0.0</ixz><iyy>1.0</iyy><iyz>0.0</iyz><izz>1.0</izz>
+                    <ixx>1.0</ixx>
+                    <ixy>0.0</ixy>
+                    <ixz>0.0</ixz>
+                    <iyy>1.0</iyy>
+                    <iyz>0.0</iyz>
+                    <izz>1.0</izz>
                 </inertia>
             </inertial>
             <collision name="collision">
@@ -355,7 +405,12 @@
             <inertial>
                 <mass>.1</mass>
                 <inertia>
-                    <ixx>1.0</ixx><ixy>0.0</ixy><ixz>0.0</ixz><iyy>1.0</iyy><iyz>0.0</iyz><izz>1.0</izz>
+                    <ixx>1.0</ixx>
+                    <ixy>0.0</ixy>
+                    <ixz>0.0</ixz>
+                    <iyy>1.0</iyy>
+                    <iyz>0.0</iyz>
+                    <izz>1.0</izz>
                 </inertia>
             </inertial>
             <collision name="collision">
@@ -385,7 +440,12 @@
             <inertial>
                 <mass>.1</mass>
                 <inertia>
-                    <ixx>1.0</ixx><ixy>0.0</ixy><ixz>0.0</ixz><iyy>1.0</iyy><iyz>0.0</iyz><izz>1.0</izz>
+                    <ixx>1.0</ixx>
+                    <ixy>0.0</ixy>
+                    <ixz>0.0</ixz>
+                    <iyy>1.0</iyy>
+                    <iyz>0.0</iyz>
+                    <izz>1.0</izz>
                 </inertia>
             </inertial>
             <collision name="collision">
@@ -415,7 +475,12 @@
             <inertial>
                 <mass>.1</mass>
                 <inertia>
-                    <ixx>1.0</ixx><ixy>0.0</ixy><ixz>0.0</ixz><iyy>1.0</iyy><iyz>0.0</iyz><izz>1.0</izz>
+                    <ixx>1.0</ixx>
+                    <ixy>0.0</ixy>
+                    <ixz>0.0</ixz>
+                    <iyy>1.0</iyy>
+                    <iyz>0.0</iyz>
+                    <izz>1.0</izz>
                 </inertia>
             </inertial>
             <collision name="collision">
@@ -445,7 +510,12 @@
             <inertial>
                 <mass>.1</mass>
                 <inertia>
-                    <ixx>1.0</ixx><ixy>0.0</ixy><ixz>0.0</ixz><iyy>1.0</iyy><iyz>0.0</iyz><izz>1.0</izz>
+                    <ixx>1.0</ixx>
+                    <ixy>0.0</ixy>
+                    <ixz>0.0</ixz>
+                    <iyy>1.0</iyy>
+                    <iyz>0.0</iyz>
+                    <izz>1.0</izz>
                 </inertia>
             </inertial>
             <collision name="collision">
@@ -475,7 +545,12 @@
             <inertial>
                 <mass>.1</mass>
                 <inertia>
-                    <ixx>1.0</ixx><ixy>0.0</ixy><ixz>0.0</ixz><iyy>1.0</iyy><iyz>0.0</iyz><izz>1.0</izz>
+                    <ixx>1.0</ixx>
+                    <ixy>0.0</ixy>
+                    <ixz>0.0</ixz>
+                    <iyy>1.0</iyy>
+                    <iyz>0.0</iyz>
+                    <izz>1.0</izz>
                 </inertia>
             </inertial>
             <collision name="collision">
@@ -505,7 +580,12 @@
             <inertial>
                 <mass>.1</mass>
                 <inertia>
-                    <ixx>1.0</ixx><ixy>0.0</ixy><ixz>0.0</ixz><iyy>1.0</iyy><iyz>0.0</iyz><izz>1.0</izz>
+                    <ixx>1.0</ixx>
+                    <ixy>0.0</ixy>
+                    <ixz>0.0</ixz>
+                    <iyy>1.0</iyy>
+                    <iyz>0.0</iyz>
+                    <izz>1.0</izz>
                 </inertia>
             </inertial>
             <collision name="collision">
@@ -535,7 +615,12 @@
             <inertial>
                 <mass>.1</mass>
                 <inertia>
-                    <ixx>1.0</ixx><ixy>0.0</ixy><ixz>0.0</ixz><iyy>1.0</iyy><iyz>0.0</iyz><izz>1.0</izz>
+                    <ixx>1.0</ixx>
+                    <ixy>0.0</ixy>
+                    <ixz>0.0</ixz>
+                    <iyy>1.0</iyy>
+                    <iyz>0.0</iyz>
+                    <izz>1.0</izz>
                 </inertia>
             </inertial>
             <collision name="collision">
@@ -565,7 +650,12 @@
             <inertial>
                 <mass>.1</mass>
                 <inertia>
-                    <ixx>1.0</ixx><ixy>0.0</ixy><ixz>0.0</ixz><iyy>1.0</iyy><iyz>0.0</iyz><izz>1.0</izz>
+                    <ixx>1.0</ixx>
+                    <ixy>0.0</ixy>
+                    <ixz>0.0</ixz>
+                    <iyy>1.0</iyy>
+                    <iyz>0.0</iyz>
+                    <izz>1.0</izz>
                 </inertia>
             </inertial>
             <collision name="collision">
@@ -595,7 +685,12 @@
             <inertial>
                 <mass>.1</mass>
                 <inertia>
-                    <ixx>1.0</ixx><ixy>0.0</ixy><ixz>0.0</ixz><iyy>1.0</iyy><iyz>0.0</iyz><izz>1.0</izz>
+                    <ixx>1.0</ixx>
+                    <ixy>0.0</ixy>
+                    <ixz>0.0</ixz>
+                    <iyy>1.0</iyy>
+                    <iyz>0.0</iyz>
+                    <izz>1.0</izz>
                 </inertia>
             </inertial>
             <collision name="collision">
@@ -625,7 +720,12 @@
             <inertial>
                 <mass>.6</mass>
                 <inertia>
-                    <ixx>1.0</ixx><ixy>0.0</ixy><ixz>0.0</ixz><iyy>1.0</iyy><iyz>0.0</iyz><izz>1.0</izz>
+                    <ixx>1.0</ixx>
+                    <ixy>0.0</ixy>
+                    <ixz>0.0</ixz>
+                    <iyy>1.0</iyy>
+                    <iyz>0.0</iyz>
+                    <izz>1.0</izz>
                 </inertia>
             </inertial>
             <collision name="collision">
@@ -655,7 +755,12 @@
             <inertial>
                 <mass>.6</mass>
                 <inertia>
-                    <ixx>1.0</ixx><ixy>0.0</ixy><ixz>0.0</ixz><iyy>1.0</iyy><iyz>0.0</iyz><izz>1.0</izz>
+                    <ixx>1.0</ixx>
+                    <ixy>0.0</ixy>
+                    <ixz>0.0</ixz>
+                    <iyy>1.0</iyy>
+                    <iyz>0.0</iyz>
+                    <izz>1.0</izz>
                 </inertia>
             </inertial>
             <collision name="collision">
@@ -685,7 +790,12 @@
             <inertial>
                 <mass>1.0</mass>
                 <inertia>
-                    <ixx>1.0</ixx><ixy>0.0</ixy><ixz>0.0</ixz><iyy>1.0</iyy><iyz>0.0</iyz><izz>1.0</izz>
+                    <ixx>1.0</ixx>
+                    <ixy>0.0</ixy>
+                    <ixz>0.0</ixz>
+                    <iyy>1.0</iyy>
+                    <iyz>0.0</iyz>
+                    <izz>1.0</izz>
                 </inertia>
             </inertial>
             <collision name="collision">
@@ -715,7 +825,12 @@
             <inertial>
                 <mass>1.0</mass>
                 <inertia>
-                    <ixx>1.0</ixx><ixy>0.0</ixy><ixz>0.0</ixz><iyy>1.0</iyy><iyz>0.0</iyz><izz>1.0</izz>
+                    <ixx>1.0</ixx>
+                    <ixy>0.0</ixy>
+                    <ixz>0.0</ixz>
+                    <iyy>1.0</iyy>
+                    <iyz>0.0</iyz>
+                    <izz>1.0</izz>
                 </inertia>
             </inertial>
             <collision name="collision">
@@ -745,7 +860,12 @@
             <inertial>
                 <mass>.2</mass>
                 <inertia>
-                    <ixx>1.0</ixx><ixy>0.0</ixy><ixz>0.0</ixz><iyy>1.0</iyy><iyz>0.0</iyz><izz>1.0</izz>
+                    <ixx>1.0</ixx>
+                    <ixy>0.0</ixy>
+                    <ixz>0.0</ixz>
+                    <iyy>1.0</iyy>
+                    <iyz>0.0</iyz>
+                    <izz>1.0</izz>
                 </inertia>
             </inertial>
             <collision name="collision">
@@ -775,7 +895,12 @@
             <inertial>
                 <mass>.2</mass>
                 <inertia>
-                    <ixx>1.0</ixx><ixy>0.0</ixy><ixz>0.0</ixz><iyy>1.0</iyy><iyz>0.0</iyz><izz>1.0</izz>
+                    <ixx>1.0</ixx>
+                    <ixy>0.0</ixy>
+                    <ixz>0.0</ixz>
+                    <iyy>1.0</iyy>
+                    <iyz>0.0</iyz>
+                    <izz>1.0</izz>
                 </inertia>
             </inertial>
             <collision name="collision">
@@ -805,7 +930,12 @@
             <inertial>
                 <mass>1.5</mass>
                 <inertia>
-                    <ixx>1.0</ixx><ixy>0.0</ixy><ixz>0.0</ixz><iyy>1.0</iyy><iyz>0.0</iyz><izz>1.0</izz>
+                    <ixx>1.0</ixx>
+                    <ixy>0.0</ixy>
+                    <ixz>0.0</ixz>
+                    <iyy>1.0</iyy>
+                    <iyz>0.0</iyz>
+                    <izz>1.0</izz>
                 </inertia>
             </inertial>
             <collision name="collision">
@@ -851,7 +981,12 @@
             <inertial>
                 <mass>1.5</mass>
                 <inertia>
-                    <ixx>1.0</ixx><ixy>0.0</ixy><ixz>0.0</ixz><iyy>1.0</iyy><iyz>0.0</iyz><izz>1.0</izz>
+                    <ixx>1.0</ixx>
+                    <ixy>0.0</ixy>
+                    <ixz>0.0</ixz>
+                    <iyy>1.0</iyy>
+                    <iyz>0.0</iyz>
+                    <izz>1.0</izz>
                 </inertia>
             </inertial>
             <collision name="collision">
@@ -892,213 +1027,687 @@
         
         <joint name="head_yaw" type="revolute">
             <pose>0 0 0 0 0 0</pose>
-            <axis><xyz>0 0 1</xyz><limit><effort>40</effort></limit><dynamics><damping>1.0</damping><friction>0</friction></dynamics></axis>
-            <physics><ode><cfm_damping>1</cfm_damping></ode></physics>
-            <parent>main_case</parent>
-            <child>neck</child>
+            <axis>
+                <xyz>0 0 1</xyz>
+                <limit>
+                    <effort>40</effort>
+                </limit>
+                <dynamics>
+                    <damping>1.0</damping>
+                    <friction>0</friction>
+                </dynamics>
+            </axis>
+            <physics>
+                <ode>
+                    <cfm_damping>1</cfm_damping>
+                </ode>
+            </physics>
+            <parent>
+                <link_name>main_case</link_name>
+            </parent>
+            <child>
+                <link_name>neck</link_name>
+            </child>
         </joint>
         <joint name="head_pitch" type="revolute">
             <pose>0 0 0 0 0 0</pose>
-            <axis><xyz>0 1 0</xyz><limit><effort>40</effort></limit><dynamics><damping>1.0</damping><friction>0</friction></dynamics></axis>
-            <physics><ode><cfm_damping>1</cfm_damping></ode></physics>
-            <parent>neck</parent>
-            <child>head</child>
+            <axis>
+                <xyz>0 1 0</xyz>
+                <limit>
+                    <effort>40</effort>
+                </limit>
+                <dynamics>
+                    <damping>1.0</damping>
+                    <friction>0</friction>
+                </dynamics>
+            </axis>
+            <physics>
+                <ode>
+                    <cfm_damping>1</cfm_damping>
+                </ode>
+            </physics>
+            <parent>
+                <link_name>neck</link_name>
+            </parent>
+            <child>
+                <link_name>head</link_name>
+            </child>
         </joint>
         <joint name="waist_pitch" type="revolute">
             <pose>0 0 0 0 0 0</pose>
             <!--<axis><xyz>0 1 0</xyz><limit><effort>200</effort><upper>1.57</upper><lower>0.0</lower></limit></axis>-->
-            <axis><xyz>0 1 0</xyz><limit><effort>200</effort></limit><dynamics><damping>1.0</damping><friction>0</friction></dynamics></axis>
-            <physics><ode><cfm_damping>1</cfm_damping></ode></physics>
-            <parent>main_case</parent>
-            <child>torso_pitch_servo</child>
+            <axis>
+                <xyz>0 1 0</xyz>
+                <limit>
+                    <effort>200</effort>
+                </limit>
+                <dynamics>
+                    <damping>1.0</damping>
+                    <friction>0</friction>
+                </dynamics>
+            </axis>
+            <physics>
+                <ode>
+                    <cfm_damping>1</cfm_damping>
+                </ode>
+            </physics>
+            <parent>
+                <link_name>main_case</link_name>
+            </parent>
+            <child>
+                <link_name>torso_pitch_servo</link_name>
+            </child>
         </joint>
         <joint name="waist_yaw" type="revolute">
             <!--<pose>0 0 0 0 0 0</pose>-->
             <pose>0 0 0 0 0 0</pose>
-            <axis><xyz>0 0 1</xyz><limit><effort>200</effort></limit><dynamics><damping>1.0</damping><friction>0</friction></dynamics></axis>
-            <physics><ode><cfm_damping>1</cfm_damping></ode></physics>
-            <parent>torso_pitch_servo</parent>
-            <child>torso</child>
+            <axis>
+                <xyz>0 0 1</xyz>
+                <limit>
+                    <effort>200</effort>
+                </limit>
+                <dynamics>
+                    <damping>1.0</damping>
+                    <friction>0</friction>
+                </dynamics>
+            </axis>
+            <physics>
+                <ode>
+                    <cfm_damping>1</cfm_damping>
+                </ode>
+            </physics>
+            <parent>
+                <link_name>torso_pitch_servo</link_name>
+            </parent>
+            <child>
+                <link_name>torso</link_name>
+            </child>
         </joint>
         <joint name="l_shoulder_pitch" type="revolute">
             <pose>0 0 0 0 0 0</pose>
-            <axis><xyz>0 1 0</xyz><limit><effort>100</effort></limit><dynamics><damping>1.0</damping><friction>0</friction></dynamics></axis>
-            <physics><ode><cfm_damping>1</cfm_damping></ode></physics>
-            <parent>main_case</parent>
-            <child>left_shoulder_pitch</child>
+            <axis>
+                <xyz>0 1 0</xyz>
+                <limit>
+                    <effort>100</effort>
+                </limit>
+                <dynamics>
+                    <damping>1.0</damping>
+                    <friction>0</friction>
+                </dynamics>
+            </axis>
+            <physics>
+                <ode>
+                    <cfm_damping>1</cfm_damping>
+                </ode>
+            </physics>
+            <parent>
+                <link_name>main_case</link_name>
+            </parent>
+            <child>
+                <link_name>left_shoulder_pitch</link_name>
+            </child>
         </joint>
         <joint name="r_shoulder_pitch" type="revolute">
             <pose>0 0 0 0 0 0</pose>
-            <axis><xyz>0 1 0</xyz><limit><effort>100</effort></limit><dynamics><damping>1.0</damping><friction>0</friction></dynamics></axis>
-            <physics><ode><cfm_damping>1</cfm_damping></ode></physics>
-            <parent>main_case</parent>
-            <child>right_shoulder_pitch</child>
+            <axis>
+                <xyz>0 1 0</xyz>
+                <limit>
+                    <effort>100</effort>
+                </limit>
+                <dynamics>
+                    <damping>1.0</damping>
+                    <friction>0</friction>
+                </dynamics>
+            </axis>
+            <physics>
+                <ode>
+                    <cfm_damping>1</cfm_damping>
+                </ode>
+            </physics>
+            <parent>
+                <link_name>main_case</link_name>
+            </parent>
+            <child>
+                <link_name>right_shoulder_pitch</link_name>
+            </child>
         </joint>
         <joint name="l_shoulder_roll" type="revolute">
             <pose>0 0 0 0 0 0</pose>
-            <axis><xyz>1 0 0</xyz><limit><effort>100</effort></limit><dynamics><damping>1.0</damping><friction>0</friction></dynamics></axis>
-            <physics><ode><cfm_damping>1</cfm_damping></ode></physics>
-            <parent>left_shoulder_pitch</parent>
-            <child>left_shoulder_roll</child>
+            <axis>
+                <xyz>1 0 0</xyz>
+                <limit>
+                    <effort>100</effort>
+                </limit>
+                <dynamics>
+                    <damping>1.0</damping>
+                    <friction>0</friction>
+                </dynamics>
+            </axis>
+            <physics>
+                <ode>
+                    <cfm_damping>1</cfm_damping>
+                </ode>
+            </physics>
+            <parent>
+                <link_name>left_shoulder_pitch</link_name>
+            </parent>
+            <child>
+                <link_name>left_shoulder_roll</link_name>
+            </child>
         </joint>
         <joint name="r_shoulder_roll" type="revolute">
             <pose>0 0 0 0 0 0</pose>
-            <axis><xyz>1 0 0</xyz><limit><effort>100</effort></limit><dynamics><damping>1.0</damping><friction>0</friction></dynamics></axis>
-            <physics><ode><cfm_damping>1</cfm_damping></ode></physics>
-            <parent>right_shoulder_pitch</parent>
-            <child>right_shoulder_roll</child>
+            <axis>
+                <xyz>1 0 0</xyz>
+                <limit>
+                    <effort>100</effort>
+                </limit>
+                <dynamics>
+                    <damping>1.0</damping>
+                    <friction>0</friction>
+                </dynamics>
+            </axis>
+            <physics>
+                <ode>
+                    <cfm_damping>1</cfm_damping>
+                </ode>
+            </physics>
+            <parent>
+                <link_name>right_shoulder_pitch</link_name>
+            </parent>
+            <child>
+                <link_name>right_shoulder_roll</link_name>
+            </child>
         </joint>
         <joint name="l_shoulder_yaw" type="revolute">
             <pose>0 0 0 0 0 0</pose>
-            <axis><xyz>0 0 1</xyz><limit><effort>100</effort></limit><dynamics><damping>1.0</damping><friction>0</friction></dynamics></axis>
-            <physics><ode><cfm_damping>1</cfm_damping></ode></physics>
-            <parent>left_shoulder_roll</parent>
-            <child>left_upper_arm</child>
+            <axis>
+                <xyz>0 0 1</xyz>
+                <limit>
+                    <effort>100</effort>
+                </limit>
+                <dynamics>
+                    <damping>1.0</damping>
+                    <friction>0</friction>
+                </dynamics>
+            </axis>
+            <physics>
+                <ode>
+                    <cfm_damping>1</cfm_damping>
+                </ode>
+            </physics>
+            <parent>
+                <link_name>left_shoulder_roll</link_name>
+            </parent>
+            <child>
+                <link_name>left_upper_arm</link_name>
+            </child>
         </joint>
         <joint name="r_shoulder_yaw" type="revolute">
             <pose>0 0 0 0 0 0</pose>
-            <axis><xyz>0 0 1</xyz><limit><effort>100</effort></limit><dynamics><damping>1.0</damping><friction>0</friction></dynamics></axis>
-            <physics><ode><cfm_damping>1</cfm_damping></ode></physics>
-            <parent>right_shoulder_roll</parent>
-            <child>right_upper_arm</child>
+            <axis>
+                <xyz>0 0 1</xyz>
+                <limit>
+                    <effort>100</effort>
+                </limit>
+                <dynamics>
+                    <damping>1.0</damping>
+                    <friction>0</friction>
+                </dynamics>
+            </axis>
+            <physics>
+                <ode>
+                    <cfm_damping>1</cfm_damping>
+                </ode>
+            </physics>
+            <parent>
+                <link_name>right_shoulder_roll</link_name>
+            </parent>
+            <child>
+                <link_name>right_upper_arm</link_name>
+            </child>
         </joint>
         <joint name="l_elbow_pitch" type="revolute">
             <pose>.030 0 0 0 0 0</pose>
-            <axis><xyz>0 1 0</xyz><limit><effort>100</effort></limit><dynamics><damping>1.0</damping><friction>0</friction></dynamics></axis>
-            <physics><ode><cfm_damping>1</cfm_damping></ode></physics>
-            <parent>left_upper_arm</parent>
-            <child>left_lower_arm</child>
+            <axis>
+                <xyz>0 1 0</xyz>
+                <limit>
+                    <effort>100</effort>
+                </limit>
+                <dynamics>
+                    <damping>1.0</damping>
+                    <friction>0</friction>
+                </dynamics>
+            </axis>
+            <physics>
+                <ode>
+                    <cfm_damping>1</cfm_damping>
+                </ode>
+            </physics>
+            <parent>
+                <link_name>left_upper_arm</link_name>
+            </parent>
+            <child>
+                <link_name>left_lower_arm</link_name>
+            </child>
         </joint>
         <joint name="r_elbow_pitch" type="revolute">
             <pose>.030 0 0 0 0 0</pose>
-            <axis><xyz>0 1 0</xyz><limit><effort>100</effort></limit><dynamics><damping>1.0</damping><friction>0</friction></dynamics></axis>
-            <physics><ode><cfm_damping>1</cfm_damping></ode></physics>
-            <parent>right_upper_arm</parent>
-            <child>right_lower_arm</child>
+            <axis>
+                <xyz>0 1 0</xyz>
+                <limit>
+                    <effort>100</effort>
+                </limit>
+                <dynamics>
+                    <damping>1.0</damping>
+                    <friction>0</friction>
+                </dynamics>
+            </axis>
+            <physics>
+                <ode>
+                    <cfm_damping>1</cfm_damping>
+                </ode>
+            </physics>
+            <parent>
+                <link_name>right_upper_arm</link_name>
+            </parent>
+            <child>
+                <link_name>right_lower_arm</link_name>
+            </child>
         </joint>
         <joint name="l_wrist_yaw" type="revolute">
             <pose>0 0 0 0 0 0</pose>
-            <axis><xyz>0 0 1</xyz><limit><effort>40</effort></limit><dynamics><damping>1.0</damping><friction>0</friction></dynamics></axis>
-            <physics><ode><cfm_damping>1</cfm_damping></ode></physics>
-            <parent>left_lower_arm</parent>
-            <child>left_wrist</child>
+            <axis>
+                <xyz>0 0 1</xyz>
+                <limit>
+                    <effort>40</effort>
+                </limit>
+                <dynamics>
+                    <damping>1.0</damping>
+                    <friction>0</friction>
+                </dynamics>
+            </axis>
+            <physics>
+                <ode>
+                    <cfm_damping>1</cfm_damping>
+                </ode>
+            </physics>
+            <parent>
+                <link_name>left_lower_arm</link_name>
+            </parent>
+            <child>
+                <link_name>left_wrist</link_name>
+            </child>
         </joint>
         <joint name="r_wrist_yaw" type="revolute">
             <pose>0 0 0 0 0 0</pose>
-            <axis><xyz>0 0 1</xyz><limit><effort>40</effort></limit><dynamics><damping>1.0</damping><friction>0</friction></dynamics></axis>
-            <physics><ode><cfm_damping>1</cfm_damping></ode></physics>
-            <parent>right_lower_arm</parent>
-            <child>right_wrist</child>
+            <axis>
+                <xyz>0 0 1</xyz>
+                <limit>
+                    <effort>40</effort>
+                </limit>
+                <dynamics>
+                    <damping>1.0</damping>
+                    <friction>0</friction>
+                </dynamics>
+            </axis>
+            <physics>
+                <ode>
+                    <cfm_damping>1</cfm_damping>
+                </ode>
+            </physics>
+            <parent>
+                <link_name>right_lower_arm</link_name>
+            </parent>
+            <child>
+                <link_name>right_wrist</link_name>
+            </child>
         </joint>
         <joint name="l_wrist_roll" type="revolute">
             <pose>0 0 0 0 0 0</pose>
-            <axis><xyz>1 0 0</xyz><limit><effort>40</effort></limit><dynamics><damping>1.0</damping><friction>0</friction></dynamics></axis>
-            <physics><ode><provide_feedback>1</provide_feedback><cfm_damping>1</cfm_damping></ode></physics>
-            <parent>left_wrist</parent>
-            <child>left_gripper</child>
+            <axis>
+                <xyz>1 0 0</xyz>
+                <limit>
+                    <effort>40</effort>
+                </limit>
+                <dynamics>
+                    <damping>1.0</damping>
+                    <friction>0</friction>
+                </dynamics>
+            </axis>
+            <physics>
+                <ode>
+                    <provide_feedback>1</provide_feedback>
+                    <cfm_damping>1</cfm_damping>
+                </ode>
+            </physics>
+            <parent>
+                <link_name>left_wrist</link_name>
+            </parent>
+            <child>
+                <link_name>left_gripper</link_name>
+            </child>
         </joint>
         <joint name="r_wrist_roll" type="revolute">
             <pose>0 0 0 0 0 0</pose>
-            <axis><xyz>1 0 0</xyz><limit><effort>40</effort></limit><dynamics><damping>1.0</damping><friction>0</friction></dynamics></axis>
-            <physics><ode><provide_feedback>1</provide_feedback><cfm_damping>1</cfm_damping></ode></physics>
-            <parent>right_wrist</parent>
-            <child>right_gripper</child>
+            <axis>
+                <xyz>1 0 0</xyz>
+                <limit>
+                    <effort>40</effort>
+                </limit>
+                <dynamics>
+                    <damping>1.0</damping>
+                    <friction>0</friction>
+                </dynamics>
+            </axis>
+            <physics>
+                <ode>
+                    <provide_feedback>1</provide_feedback>
+                    <cfm_damping>1</cfm_damping>
+                </ode>
+            </physics>
+            <parent>
+                <link_name>right_wrist</link_name>
+            </parent>
+            <child>
+                <link_name>right_gripper</link_name>
+            </child>
         </joint>
         <joint name="l_hip_yaw" type="revolute">
             <pose>0 0 0 0 0 0</pose>
-            <axis><xyz>0 0 1</xyz><limit><effort>100</effort></limit><dynamics><damping>1.0</damping><friction>0</friction></dynamics></axis>
-            <physics><ode><cfm_damping>1</cfm_damping></ode></physics>
-            <parent>torso</parent>
-            <child>left_hip</child>
+            <axis>
+                <xyz>0 0 1</xyz>
+                <limit>
+                    <effort>100</effort>
+                </limit>
+                <dynamics>
+                    <damping>1.0</damping>
+                    <friction>0</friction>
+                </dynamics>
+            </axis>
+            <physics>
+                <ode>
+                    <cfm_damping>1</cfm_damping>
+                </ode>
+            </physics>
+            <parent>
+                <link_name>torso</link_name>
+            </parent>
+            <child>
+                <link_name>left_hip</link_name>
+            </child>
         </joint>
         <joint name="r_hip_yaw" type="revolute">
             <pose>0 0 0 0 0 0</pose>
-            <axis><xyz>0 0 1</xyz><limit><effort>100</effort></limit><dynamics><damping>1.0</damping><friction>0</friction></dynamics></axis>
-            <physics><ode><cfm_damping>1</cfm_damping></ode></physics>
-            <parent>torso</parent>
-            <child>right_hip</child>
+            <axis>
+                <xyz>0 0 1</xyz>
+                <limit>
+                    <effort>100</effort>
+                </limit>
+                <dynamics>
+                    <damping>1.0</damping>
+                    <friction>0</friction>
+                </dynamics>
+            </axis>
+            <physics>
+                <ode>
+                    <cfm_damping>1</cfm_damping>
+                </ode>
+            </physics>
+            <parent>
+                <link_name>torso</link_name>
+            </parent>
+            <child>
+                <link_name>right_hip</link_name>
+            </child>
         </joint>
         <joint name="l_hip_roll" type="revolute">
             <pose>0 0 0 0 0 0</pose>
-            <axis><xyz>1 0 0</xyz><limit><effort>100</effort></limit><dynamics><damping>1.0</damping><friction>0</friction></dynamics></axis>
-            <physics><ode><cfm_damping>1</cfm_damping></ode></physics>
-            <parent>torso</parent>
-            <child>left_hip</child>
+            <axis>
+                <xyz>1 0 0</xyz>
+                <limit>
+                    <effort>100</effort>
+                </limit>
+                <dynamics>
+                    <damping>1.0</damping>
+                    <friction>0</friction>
+                </dynamics>
+            </axis>
+            <physics>
+                <ode>
+                    <cfm_damping>1</cfm_damping>
+                </ode>
+            </physics>
+            <parent>
+                <link_name>torso</link_name>
+            </parent>
+            <child>
+                <link_name>left_hip</link_name>
+            </child>
         </joint>
         <joint name="r_hip_roll" type="revolute">
             <pose>0 0 0 0 0 0</pose>
-            <axis><xyz>1 0 0</xyz><limit><effort>100</effort></limit><dynamics><damping>1.0</damping><friction>0</friction></dynamics></axis>
-            <physics><ode><cfm_damping>1</cfm_damping></ode></physics>
-            <parent>torso</parent>
-            <child>right_hip</child>
+            <axis>
+                <xyz>1 0 0</xyz>
+                <limit>
+                    <effort>100</effort>
+                </limit>
+                <dynamics>
+                    <damping>1.0</damping>
+                    <friction>0</friction>
+                </dynamics>
+            </axis>
+            <physics>
+                <ode>
+                    <cfm_damping>1</cfm_damping>
+                </ode>
+            </physics>
+            <parent>
+                <link_name>torso</link_name>
+            </parent>
+            <child>
+                <link_name>right_hip</link_name>
+            </child>
         </joint>
         <joint name="l_hip_pitch" type="revolute">
             <pose>0 0 0 0 0 0</pose>
-            <axis><xyz>0 1 0</xyz>
-                <limit><effort>200</effort></limit>
+            <axis>
+                <xyz>0 1 0</xyz>
+                <limit>
+                    <effort>200</effort>
+                </limit>
                 <!--<limit><effort>200</effort><upper>0.0</upper><lower>0.0</lower></limit>-->
-                <dynamics><damping>1.0</damping><friction>0</friction></dynamics>
+                <dynamics>
+                    <damping>1.0</damping>
+                    <friction>0</friction>
+                </dynamics>
             </axis>
-            <physics><ode><cfm_damping>1</cfm_damping></ode></physics>
-            <parent>left_hip</parent>
-            <child>left_thigh</child>
+            <physics>
+                <ode>
+                    <cfm_damping>1</cfm_damping>
+                </ode>
+            </physics>
+            <parent>
+                <link_name>left_hip</link_name>
+            </parent>
+            <child>
+                <link_name>left_thigh</link_name>
+            </child>
         </joint>
         <joint name="r_hip_pitch" type="revolute">
             <pose>0 0 0 0 0 0</pose>
-            <axis><xyz>0 1 0</xyz>
-                <limit><effort>200</effort></limit>
+            <axis>
+                <xyz>0 1 0</xyz>
+                <limit>
+                    <effort>200</effort>
+                </limit>
                 <!--<limit><effort>200</effort><upper>0.0</upper><lower>0.0</lower></limit>-->
-                <dynamics><damping>1.0</damping><friction>0</friction></dynamics>
+                <dynamics>
+                    <damping>1.0</damping>
+                    <friction>0</friction>
+                </dynamics>
             </axis>
-            <physics><ode><cfm_damping>1</cfm_damping></ode></physics>
-            <parent>right_hip</parent>
-            <child>right_thigh</child>
+            <physics>
+                <ode>
+                    <cfm_damping>1</cfm_damping>
+                </ode>
+            </physics>
+            <parent>
+                <link_name>right_hip</link_name>
+            </parent>
+            <child>
+                <link_name>right_thigh</link_name>
+            </child>
         </joint>
         <joint name="l_knee_pitch" type="revolute">
             <pose>-.030 0 0 0 0 0</pose>
-            <axis><xyz>0 1 0</xyz><limit><effort>200</effort></limit><dynamics><damping>1.0</damping><friction>0</friction></dynamics></axis>
+            <axis>
+                <xyz>0 1 0</xyz>
+                <limit>
+                    <effort>200</effort>
+                </limit>
+                <dynamics>
+                    <damping>1.0</damping>
+                    <friction>0</friction>
+                </dynamics>
+            </axis>
             <!--<axis><xyz>0 1 0</xyz><limit><effort>200</effort><upper>0.0</upper><lower>0.0</lower></limit></axis>-->
-            <physics><ode><cfm_damping>1</cfm_damping></ode></physics>
-            <parent>left_thigh</parent>
-            <child>left_leg</child>
+            <physics>
+                <ode>
+                    <cfm_damping>1</cfm_damping>
+                </ode>
+            </physics>
+            <parent>
+                <link_name>left_thigh</link_name>
+            </parent>
+            <child>
+                <link_name>left_leg</link_name>
+            </child>
         </joint>
         <joint name="r_knee_pitch" type="revolute">
             <pose>-.030 0 0 0 0 0</pose>
-            <axis><xyz>0 1 0</xyz><limit><effort>200</effort></limit><dynamics><damping>1.0</damping><friction>0</friction></dynamics></axis>
+            <axis>
+                <xyz>0 1 0</xyz>
+                <limit>
+                    <effort>200</effort>
+                </limit>
+                <dynamics>
+                    <damping>1.0</damping>
+                    <friction>0</friction>
+                </dynamics>
+            </axis>
             <!--<axis><xyz>0 1 0</xyz><limit><effort>200</effort><upper>0.0</upper><lower>0.0</lower></limit></axis>-->
-            <physics><ode><cfm_damping>1</cfm_damping></ode></physics>
-            <parent>right_thigh</parent>
-            <child>right_leg</child>
+            <physics>
+                <ode>
+                    <cfm_damping>1</cfm_damping>
+                </ode>
+            </physics>
+            <parent>
+                <link_name>right_thigh</link_name>
+            </parent>
+            <child>
+                <link_name>right_leg</link_name>
+            </child>
         </joint>
         <joint name="l_ankle_pitch" type="revolute">
             <pose>0 0 0 0 0 0</pose>
-            <axis><xyz>0 1 0</xyz><limit><effort>200</effort></limit><dynamics><damping>1.0</damping><friction>0</friction></dynamics></axis>
+            <axis>
+                <xyz>0 1 0</xyz>
+                <limit>
+                    <effort>200</effort>
+                </limit>
+                <dynamics>
+                    <damping>1.0</damping>
+                    <friction>0</friction>
+                </dynamics>
+            </axis>
             <!--<axis><xyz>0 1 0</xyz><limit><effort>200</effort><upper>0.0</upper><lower>0.0</lower></limit></axis>-->
-            <physics><ode><cfm_damping>1</cfm_damping></ode></physics>
-            <parent>left_leg</parent>
-            <child>left_ankle</child>
+            <physics>
+                <ode>
+                    <cfm_damping>1</cfm_damping>
+                </ode>
+            </physics>
+            <parent>
+                <link_name>left_leg</link_name>
+            </parent>
+            <child>
+                <link_name>left_ankle</link_name>
+            </child>
         </joint>
         <joint name="r_ankle_pitch" type="revolute">
             <pose>0 0 0 0 0 0</pose>
-            <axis><xyz>0 1 0</xyz><limit><effort>200</effort></limit><dynamics><damping>1.0</damping><friction>0</friction></dynamics></axis>
+            <axis>
+                <xyz>0 1 0</xyz>
+                <limit>
+                    <effort>200</effort>
+                </limit>
+                <dynamics>
+                    <damping>1.0</damping>
+                    <friction>0</friction>
+                </dynamics>
+            </axis>
             <!--<axis><xyz>0 1 0</xyz><limit><effort>200</effort><upper>0.0</upper><lower>0.0</lower></limit></axis>-->
-            <physics><ode><cfm_damping>1</cfm_damping></ode></physics>
-            <parent>right_leg</parent>
-            <child>right_ankle</child>
+            <physics>
+                <ode>
+                    <cfm_damping>1</cfm_damping>
+                </ode>
+            </physics>
+            <parent>
+                <link_name>right_leg</link_name>
+            </parent>
+            <child>
+                <link_name>right_ankle</link_name>
+            </child>
         </joint>
         <joint name="l_ankle_roll" type="revolute">
             <pose>0 0 0 0 0 0</pose>
-            <axis><xyz>1 0 0</xyz><limit><effort>100</effort></limit><dynamics><damping>1.0</damping><friction>0</friction></dynamics></axis>
-            <physics><ode><provide_feedback>1</provide_feedback><cfm_damping>1</cfm_damping></ode></physics>
-            <parent>left_ankle</parent>
-            <child>left_foot</child>
+            <axis>
+                <xyz>1 0 0</xyz>
+                <limit>
+                    <effort>100</effort>
+                </limit>
+                <dynamics>
+                    <damping>1.0</damping>
+                    <friction>0</friction>
+                </dynamics>
+            </axis>
+            <physics>
+                <ode>
+                    <provide_feedback>1</provide_feedback>
+                    <cfm_damping>1</cfm_damping>
+                </ode>
+            </physics>
+            <parent>
+                <link_name>left_ankle</link_name>
+            </parent>
+            <child>
+                <link_name>left_foot</link_name>
+            </child>
         </joint>
         <joint name="r_ankle_roll" type="revolute">
             <pose>0 0 0 0 0 0</pose>
-            <axis><xyz>1 0 0</xyz><limit><effort>100</effort></limit><dynamics><damping>1.0</damping><friction>0</friction></dynamics></axis>
-            <physics><ode><provide_feedback>1</provide_feedback><cfm_damping>1</cfm_damping></ode></physics>
-            <parent>right_ankle</parent>
-            <child>right_foot</child>
+            <axis>
+                <xyz>1 0 0</xyz>
+                <limit>
+                    <effort>100</effort>
+                </limit>
+                <dynamics>
+                    <damping>1.0</damping>
+                    <friction>0</friction>
+                </dynamics>
+            </axis>
+            <physics>
+                <ode>
+                    <provide_feedback>1</provide_feedback>
+                    <cfm_damping>1</cfm_damping>
+                </ode>
+            </physics>
+            <parent>
+                <link_name>right_ankle</link_name>
+            </parent>
+            <child>
+                <link_name>right_foot</link_name>
+            </child>
         </joint>
         
     </model>

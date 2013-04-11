@@ -16,8 +16,6 @@ Manipulation_state.__index = Manipulation_state
 Manipulation_state.__mtstring = 'Manipulation_state'
 setmetatable(Manipulation_state, Motion_state)
 
-
-
 local joint = Config.joint
 
 local mc_inputs = manipulation_controller.THOR_MC_U
@@ -49,7 +47,7 @@ end
 --add modifiers for lineartolerance, angulartolerance, gripperpositioncommand, relativeMotionMode,
 --jointspacemotionlocks, taskspacemotionlocks, inequalityconstraintsenabled,  obstableshellposition
 
--local function set_real_T_array_from_table(real_T_array, array_offset, number_array)
+local function set_real_T_array_from_table(real_T_array, array_offset, number_array)
 	for count=1, #number_array 
 		do manipulation_controller.real_T_setitem(real_T_array,array_offset-1+count,number_array[count])
 	end
@@ -62,7 +60,7 @@ local function real_T_array_to_table(real_T_array, array_first, array_last)
 			local val = manipulation_controller.real_T_getitem(real_T_array,index)
 			n = index-array_first+1
 			v[n] = val
-			printindex..' = '..val)
+			print(index..' = '..val)
 				
 	end
 	return v
@@ -118,7 +116,7 @@ function Manipulation_state:update()
 	print("faulted")
 	end
 	
-	--the following functions work in test lua but not in motion_manager
+	--this long print statement allows the print to work even when curses is running, don't ask me why
 	print("                                                                                                                                                       set joint vels")
 	real_T_array_to_table(manipulation_controller.THOR_MC_Y.JointVelocityCmds,0,13)
 	--self.dcm:set_joint_velocity(real_T_array_to_table(mc_outputs.JointVelocityCmds,1,1), joint.waist)

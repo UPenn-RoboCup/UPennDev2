@@ -7,12 +7,6 @@ t = require('Transform')
 
 joint = Config.joint
 
-anipulation_state = {}
-
-Manipulation_state.__index = Manipulation_state
-Manipulation_state.__mtstring = 'Manipulation_state'
-setmetatable(Manipulation_state, Motion_state)
-
 manipulation_controller = require('manipulation_controller')
 --manipulation_controller.THOR_MC_initialize()
 
@@ -40,7 +34,7 @@ inputs = manipulation_controller.THOR_MC_U
 outputs = manipulation_controller.THOR_MC_Y
 step =0
 
-function Manipulation_state:update()
+
 
 while true do
 step=step+1
@@ -52,7 +46,7 @@ print(inputs.TimeStep)
 
 inputs.JointSpaceGoalEnabled = true
 
-print("JSG enabled "..inputs.JointSpaceGoalEnabled)
+print("JSVG enabled "..inputs.JointSpaceGoalEnabled)
 
 set_real_T_array_from_table(inputs.JointSpaceVelocityGoal,0,{0.1,0.2,0.3,0.4,0.5,0.6})
 
@@ -69,6 +63,6 @@ end
 print("end")
 
 manipulation_controller.THOR_MC_terminate()
-end
 
-Manipulation_state.update()
+
+

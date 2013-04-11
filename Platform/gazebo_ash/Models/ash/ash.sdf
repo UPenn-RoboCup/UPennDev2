@@ -6,14 +6,14 @@
 	<static>false</static>
 	<link name="torso">
 		<pose>-.01 0 .997 0 0 0</pose>
-		<collision name="collision">
+		<collision name="torso_collision">
 			<geometry>
 				<box>
 					<size>.143 .114 .367</size>
 				</box>
 			</geometry>
 		</collision>
-		<visual name="visual">
+		<visual name="torso_visual">
 			<geometry>
 				<box>
 					<size>.143 .114 .367</size>
@@ -43,14 +43,14 @@
 
 	<link name="l_thigh">
 		<pose>-.021 .094 .618 0 0 0</pose>
-		<collision name="collision">
+		<collision name="l_thigh_collision">
 			<geometry>
 				<box>
 					<size>.05 .05 .419</size>
 				</box>
 			</geometry>
 		</collision>
-		<visual name="visual">
+		<visual name="l_thigh_visual">
 			<geometry>
 				<box>
 					<size>.05 .05 .419</size>
@@ -74,14 +74,14 @@
 
 	<link name="r_thigh">
 		<pose>-.021 -.094 .618 0 0 0</pose>
-		<collision name="collision">
+		<collision name="r_thigh_collision">
 			<geometry>
 				<box>
 					<size>.05 .05 .419</size>
 				</box>
 			</geometry>
 		</collision>
-		<visual name="visual">
+		<visual name="r_thigh_visual">
 			<geometry>
 				<box>
 					<size>.05 .05 .419</size>
@@ -106,14 +106,14 @@
 
 	<link name="l_shin">
 		<pose>-.021 .094 .239 0 0 0</pose>
-		<collision name="collision">
+		<collision name="l_shin_collision">
 			<geometry>
 				<box>
 					<size>.044 .044 .42</size>
 				</box>
 			</geometry>
 		</collision>
-		<visual name="visual">
+		<visual name="l_shin_visual">
 			<geometry>
 				<box>
 					<size>.044 .044 .42</size>
@@ -137,14 +137,14 @@
 
 	<link name="r_shin">
 		<pose>-.021 -.094 .239 0 0 0</pose>
-		<collision name="collision">
+		<collision name="r_shin_collision">
 			<geometry>
 				<box>
 					<size>.044 .044 .42</size>
 				</box>
 			</geometry>
 		</collision>
-		<visual name="visual">
+		<visual name="r_shin_visual">
 			<geometry>
 				<box>
 					<size>.044 .044 .42</size>
@@ -169,7 +169,7 @@
 
 	<link name="l_foot">
 		<pose>0 .094 .003 0 0 0</pose>
-		<collision name="collision">
+		<collision name="l_foot_collision">
 			<geometry>
 				<box>
 					<size>.23 .125 .006</size>
@@ -192,7 +192,7 @@
 				</contact>
 			</surface>
 		</collision>
-		<visual name="visual">
+		<visual name="l_foot_visual">
 			<geometry>
 				<box>
 					<size>.23 .125 .006</size>
@@ -216,7 +216,7 @@
 
 	<link name="r_foot">
 		<pose>0 -.094 .003 0 0 0</pose>
-		<collision name="collision">
+		<collision name="r_foot_collision">
 			<geometry>
 				<box>
 					<size>.23 .125 .006</size>
@@ -239,7 +239,7 @@
 				</contact>
 			</surface>
 		</collision>
-		<visual name="visual">
+		<visual name="r_foot_visual">
 			<geometry>
 				<box>
 					<size>.23 .125 .006</size>
@@ -265,7 +265,7 @@
 	<link name="l_hip_yaw_trunnion">
 		<pose>-.021 .094 .808 0 0 0</pose>
 		<!-- Axis = "z", -->
-		<collision name="collision">
+		<collision name="l_hip_yaw_trunnion_collision">
 			<geometry>
 				<cylinder>
 					<radius>0.01</radius>
@@ -273,7 +273,7 @@
 				</cylinder>
 			</geometry>
 		</collision>
-		<visual name="visual">
+		<visual name="l_hip_yaw_trunnion_visual">
 			<geometry>
 				<cylinder>
 					<radius>0.01</radius>
@@ -297,7 +297,7 @@
 	<link name="r_hip_yaw_trunnion">
 		<pose>-.021 -.094 .808 0 0 0</pose>
 		<!-- Axis = "z", -->
-		<collision name="collision">
+		<collision name="r_hip_yaw_trunnion_collision">
 			<geometry>
 				<cylinder>
 					<radius>0.01</radius>
@@ -305,7 +305,7 @@
 				</cylinder>
 			</geometry>
 		</collision>
-		<visual name="visual">
+		<visual name="r_hip_yaw_trunnion_visual">
 			<geometry>
 				<cylinder>
 					<radius>0.01</radius>
@@ -330,7 +330,7 @@
 	<link name="l_hip_pitch_trunnion">
 		<pose>-.021 .094 .808 0 0 0</pose>
 		<!-- Axis = "y", -->
-		<collision name="collision">
+		<collision name="l_hip_pitch_trunnion_collision">
 			<pose>0 0 0 1.57079632679 0 0</pose>
 			<geometry>
 				<cylinder>
@@ -339,7 +339,7 @@
 				</cylinder>
 			</geometry>
 		</collision>
-		<visual name="visual">
+		<visual name="l_hip_pitch_trunnion_visual">
 			<pose>0 0 0 1.57079632679 0 0</pose>
 			<geometry>
 				<cylinder>
@@ -364,7 +364,7 @@
 	<link name="r_hip_pitch_trunnion">
 		<pose>-.021 -.094 .808 0 0 0</pose>
 		<!-- Axis = "y", -->
-		<collision name="collision">
+		<collision name="r_hip_pitch_trunnion_collision">
 			<pose>0 0 0 1.57079632679 0 0</pose>
 			<geometry>
 				<cylinder>
@@ -373,7 +373,7 @@
 				</cylinder>
 			</geometry>
 		</collision>
-		<visual name="visual">
+		<visual name="r_hip_pitch_trunnion_visual">
 			<pose>0 0 0 1.57079632679 0 0</pose>
 			<geometry>
 				<cylinder>
@@ -399,7 +399,7 @@
 	<link name="l_ankle_pitch_trunnion">
 		<pose>-.021 .094 .049 0 0 0</pose>
 		<!-- Axis = "y", -->
-		<collision name="collision">
+		<collision name="l_ankle_pitch_trunnion_collision">
 			<pose>0 0 0 1.57079632679 0 0</pose>
 			<geometry>
 				<cylinder>
@@ -408,7 +408,7 @@
 				</cylinder>
 			</geometry>
 		</collision>
-		<visual name="visual">
+		<visual name="l_ankle_pitch_trunnion_visual">
 			<pose>0 0 0 1.57079632679 0 0</pose>
 			<geometry>
 				<cylinder>
@@ -433,7 +433,7 @@
 	<link name="r_ankle_pitch_trunnion">
 		<pose>-.021 -.094 .049 0 0 0</pose>
 		<!-- Axis = "y", -->
-		<collision name="collision">
+		<collision name="r_ankle_pitch_trunnion_collision">
 			<pose>0 0 0 1.57079632679 0 0</pose>
 			<geometry>
 				<cylinder>
@@ -442,7 +442,7 @@
 				</cylinder>
 			</geometry>
 		</collision>
-		<visual name="visual">
+		<visual name="r_ankle_pitch_trunnion_visual">
 			<pose>0 0 0 1.57079632679 0 0</pose>
 			<geometry>
 				<cylinder>
@@ -842,14 +842,14 @@
 	
 	<link name="chest">
 		<pose>-.022 0 1.266 0 0 0</pose>
-		<collision name="collision">
+		<collision name="chest_collision">
 			<geometry>
 				<box>
 					<size>.06 .276 .171</size>
 				</box>
 			</geometry>
 		</collision>
-		<visual name="visual">
+		<visual name="chest_visual">
 			<geometry>
 				<box>
 					<size>.06 .276 .171</size>
@@ -941,14 +941,14 @@
 	
 	<link name="neck">
 		<pose>-.022 0 1.419 0 0 0</pose>
-		<collision name="collision">
+		<collision name="neck_collision">
 			<geometry>
 				<box>
 					<size>.039 .039 .135</size>
 				</box>
 			</geometry>
 		</collision>
-		<visual name="visual">
+		<visual name="neck_visual">
 			<geometry>
 				<box>
 					<size>.039 .039 .135</size>
@@ -1000,14 +1000,14 @@
 	
 	<link name="head">
 		<pose>.001 0 1.485 0 0 0</pose>
-		<collision name="collision">
+		<collision name="head_collision">
 			<geometry>
 				<box>
 					<size>.046 .144 .07</size>
 				</box>
 			</geometry>
 		</collision>
-		<visual name="visual">
+		<visual name="head_visual">
 			<geometry>
 				<box>
 					<size>.046 .144 .07</size>
@@ -1088,7 +1088,7 @@
 	<link name="l_shoulder_pitch_trunnion">
 		<pose>-.019 .219 1.325 0 0 0</pose>
 		<!-- Axis = "y", -->
-		<collision name="collision">
+		<collision name="l_shoulder_pitch_trunnion_collision">
 			<pose>0 0 0 1.57079632679 0 0</pose>
 			<geometry>
 				<cylinder>
@@ -1097,7 +1097,7 @@
 				</cylinder>
 			</geometry>
 		</collision>
-		<visual name="visual">
+		<visual name="l_shoulder_pitch_trunnion_visual">
 			<pose>0 0 0 1.57079632679 0 0</pose>
 			<geometry>
 				<cylinder>
@@ -1122,7 +1122,7 @@
 	<link name="r_shoulder_pitch_trunnion">
 		<pose>-.019 -.219 1.325 0 0 0</pose>
 		<!-- Axis = "y", -->
-		<collision name="collision">
+		<collision name="r_shoulder_pitch_trunnion_collision">
 			<pose>0 0 0 1.57079632679 0 0</pose>
 			<geometry>
 				<cylinder>
@@ -1131,7 +1131,7 @@
 				</cylinder>
 			</geometry>
 		</collision>
-		<visual name="visual">
+		<visual name="r_shoulder_pitch_trunnion_visual">
 			<pose>0 0 0 1.57079632679 0 0</pose>
 			<geometry>
 				<cylinder>
@@ -1212,7 +1212,7 @@
 	<link name="l_shoulder_roll_trunnion">
 		<pose>-.019 .219 1.325 0 0 0</pose>
 		<!-- Axis = "x", -->
-		<collision name="collision">
+		<collision name="l_shoulder_roll_trunnion_collision">
 			<pose>0 0 0 0 1.57079632679 0</pose>
 			<geometry>
 				<cylinder>
@@ -1221,7 +1221,7 @@
 				</cylinder>
 			</geometry>
 		</collision>
-		<visual name="visual">
+		<visual name="l_shoulder_roll_trunnion_visual">
 			<pose>0 0 0 0 1.57079632679 0</pose>
 			<geometry>
 				<cylinder>
@@ -1246,7 +1246,7 @@
 	<link name="r_shoulder_roll_trunnion">
 		<pose>-.019 -.219 1.325 0 0 0</pose>
 		<!-- Axis = "x", -->
-		<collision name="collision">
+		<collision name="r_shoulder_roll_trunnion_collision">
 			<pose>0 0 0 0 1.57079632679 0</pose>
 			<geometry>
 				<cylinder>
@@ -1255,7 +1255,7 @@
 				</cylinder>
 			</geometry>
 		</collision>
-		<visual name="visual">
+		<visual name="r_shoulder_roll_trunnion_visual">
 			<pose>0 0 0 0 1.57079632679 0</pose>
 			<geometry>
 				<cylinder>
@@ -1337,14 +1337,14 @@
 	
 	<link name="l_arm">
 		<pose>-.022 .219 1.205 0 0 0</pose>
-		<collision name="collision">
+		<collision name="l_arm_collision">
 			<geometry>
 				<box>
 					<size>.067 .058 .162</size>
 				</box>
 			</geometry>
 		</collision>
-		<visual name="visual">
+		<visual name="l_arm_visual">
 			<geometry>
 				<box>
 					<size>.067 .058 .162</size>
@@ -1368,14 +1368,14 @@
 	
 	<link name="r_arm">
 		<pose>-.022 -.219 1.205 0 0 0</pose>
-		<collision name="collision">
+		<collision name="r_arm_collision">
 			<geometry>
 				<box>
 					<size>.067 .058 .162</size>
 				</box>
 			</geometry>
 		</collision>
-		<visual name="visual">
+		<visual name="r_arm_visual">
 			<geometry>
 				<box>
 					<size>.067 .058 .162</size>
@@ -1457,14 +1457,14 @@
 	
 	<link name="l_forearm">
 		<pose>-.022 .219 .959 0 0 0</pose>
-		<collision name="collision">
+		<collision name="l_forearm_collision">
 			<geometry>
 				<box>
 					<size>.051 .045 .137</size>
 				</box>
 			</geometry>
 		</collision>
-		<visual name="visual">
+		<visual name="l_forearm_visual">
 			<geometry>
 				<box>
 					<size>.051 .045 .137</size>
@@ -1488,14 +1488,14 @@
 	
 	<link name="r_forearm">
 		<pose>-.022 -.219 .959 0 0 0</pose>
-		<collision name="collision">
+		<collision name="r_forearm_collision">
 			<geometry>
 				<box>
 					<size>.051 .045 .137</size>
 				</box>
 			</geometry>
 		</collision>
-		<visual name="visual">
+		<visual name="r_forearm_visual">
 			<geometry>
 				<box>
 					<size>.051 .045 .137</size>
@@ -1576,7 +1576,7 @@
 	<link name="l_wrist_yaw_trunnion">
 		<pose>-.019 .219 .911 0 0 0</pose>
 		<!-- Axis = "z", -->
-		<collision name="collision">
+		<collision name="l_wrist_yaw_trunnion_collision">
 			<geometry>
 				<cylinder>
 					<radius>0.01</radius>
@@ -1584,7 +1584,7 @@
 				</cylinder>
 			</geometry>
 		</collision>
-		<visual name="visual">
+		<visual name="l_wrist_yaw_trunnion_visual">
 			<geometry>
 				<cylinder>
 					<radius>0.01</radius>
@@ -1608,7 +1608,7 @@
 	<link name="r_wrist_yaw_trunnion">
 		<pose>-.019 -.219 .911 0 0 0</pose>
 		<!-- Axis = "z", -->
-		<collision name="collision">
+		<collision name="r_wrist_yaw_trunnion_collision">
 			<geometry>
 				<cylinder>
 					<radius>0.01</radius>
@@ -1616,7 +1616,7 @@
 				</cylinder>
 			</geometry>
 		</collision>
-		<visual name="visual">
+		<visual name="r_wrist_yaw_trunnion_visual">
 			<geometry>
 				<cylinder>
 					<radius>0.01</radius>
@@ -1699,14 +1699,14 @@
 	
 	<link name="l_palm">
 		<pose>-.0155 .219 .8176 0 0 0</pose>
-		<collision name="collision">
+		<collision name="l_palm_collision">
 			<geometry>
 				<box>
 					<size>.032 .042 .04</size>
 				</box>
 			</geometry>
 		</collision>
-		<visual name="visual">
+		<visual name="l_palm_visual">
 			<geometry>
 				<box>
 					<size>.032 .042 .04</size>
@@ -1731,14 +1731,14 @@
 	
 	<link name="r_palm">
 		<pose>-.0155 -.219 .8176 0 0 0</pose>
-		<collision name="collision">
+		<collision name="r_palm_collision">
 			<geometry>
 				<box>
 					<size>.032 .042 .04</size>
 				</box>
 			</geometry>
 		</collision>
-		<visual name="visual">
+		<visual name="r_palm_visual">
 			<geometry>
 				<box>
 					<size>.032 .042 .04</size>
@@ -1826,14 +1826,14 @@
 		<!-- inside gripper -->
 		<pose>-.0155 0.198 0.7476 0 0 0</pose>
 		<self_collide>1</self_collide>
-		<collision name="collision">
+		<collision name="l_gripper_link_collision">
 			<geometry>
 				<box>
 					<size>.02 .02 .1</size>
 				</box>
 			</geometry>
 		</collision>
-		<visual name="visual">
+		<visual name="l_gripper_link_visual">
 			<geometry>
 				<box>
 					<size>.02 .02 .1</size>
@@ -1857,14 +1857,14 @@
 		<!-- inside gripper -->
 		<pose>-.0155 -0.198 0.7476 0 0 0</pose>
 		<self_collide>1</self_collide>
-		<collision name="collision">
+		<collision name="r_gripper_link_collision">
 			<geometry>
 				<box>
 					<size>.02 .02 .1</size>
 				</box>
 			</geometry>
 		</collision>
-		<visual name="visual">
+		<visual name="r_gripper_link_visual">
 			<geometry>
 				<box>
 					<size>.02 .02 .1</size>
@@ -1949,14 +1949,14 @@
 		<!-- outside gripper -->
 		<pose>-.0155 0.240 0.7476 0 0 0</pose>
 		<self_collide>1</self_collide>
-		<collision name="collision">
+		<collision name="l_gripper_slave_link_collision">
 			<geometry>
 				<box>
 					<size>.02 .02 .1</size>
 				</box>
 			</geometry>
 		</collision>
-		<visual name="visual">
+		<visual name="l_gripper_slave_link_visual">
 			<geometry>
 				<box>
 					<size>.02 .02 .1</size>
@@ -1980,14 +1980,14 @@
 		<!-- outside gripper -->
 		<pose>-.0155 -0.240 0.7476 0 0 0</pose>
 		<self_collide>1</self_collide>
-		<collision name="collision">
+		<collision name="r_gripper_slave_link_collision">
 			<geometry>
 				<box>
 					<size>.02 .02 .1</size>
 				</box>
 			</geometry>
 		</collision>
-		<visual name="visual">
+		<visual name="r_gripper_slave_link_visual">
 			<geometry>
 				<box>
 					<size>.02 .02 .1</size>

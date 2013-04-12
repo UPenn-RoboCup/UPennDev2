@@ -24,7 +24,11 @@ static int lua_get_width(lua_State *L) {
 }
 
 static int lua_get_image(lua_State *L) {
-  uint32* image = nao_cam_thread_get_image();
+  uint32 *image = NULL;
+  if (lua_isnoneornil(L, 1) == 0) 
+    image = nao_cam_thread_get_image(lua_tointeger(L, 1));
+  else
+    image = nao_cam_thread_get_images();
   //write_yuyv(image, 640*480*4/2);
   lua_pushlightuserdata(L, image);
   return 1;

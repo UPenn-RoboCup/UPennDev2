@@ -166,9 +166,14 @@ void nao_cam_thread_cleanup() {
   */
 }
 
-uint32 *nao_cam_thread_get_image() {
+uint32 *nao_cam_thread_get_images() {
   // TODO: mutex
   return imbuffers[selectCurrent][currBufIndex[selectCurrent]];
+}
+
+uint32 *nao_cam_thread_get_image(int select) {
+  // TODO: mutex
+  return imbuffers[select][currBufIndex[select]];
 }
 
 void nao_cam_thread_camera_select(int bottom) {

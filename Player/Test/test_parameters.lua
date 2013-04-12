@@ -1,5 +1,7 @@
 module(... or "", package.seeall)
 
+require('init') --Set paths for test files
+
 require('unix')
 webots = false;
 darwin = false;

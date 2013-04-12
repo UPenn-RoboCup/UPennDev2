@@ -20,6 +20,7 @@ include_directories(
 )
 
 link_directories(
+  /usr/local/lib
   ${GAZEBO_LIBRARY_DIRS}
   ${LUA_LIBRARY_DIRS}
 )
@@ -38,6 +39,7 @@ target_link_libraries(
   ${GAZEBO_LIBRARIES}
   ${LUA_LIBRARIES}
   ${Boost_LIBRARIES}
+  protobuf
 )
 
 # Gazebo is looking for a .so file, so make sure that all shared

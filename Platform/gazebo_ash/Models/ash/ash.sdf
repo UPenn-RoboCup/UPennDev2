@@ -212,6 +212,12 @@
 				<ixy>0.000004512</ixy>
 			</inertia>
 		</inertial>
+		<sensor name="l_foot_contact_sensor" type="contact">
+			<always_on>1</always_on>
+			<contact>
+				<collision>l_foot_collision</collision>
+			</contact>
+		</sensor>
 	</link>
 
 	<link name="r_foot">
@@ -259,6 +265,12 @@
 				<ixy>0.000004512</ixy>
 			</inertia>
 		</inertial>
+		<sensor name="r_foot_contact_sensor" type="contact">
+			<always_on>1</always_on>
+			<contact>
+				<collision>r_foot_collision</collision>
+			</contact>
+		</sensor>
 	</link>
 	
 	

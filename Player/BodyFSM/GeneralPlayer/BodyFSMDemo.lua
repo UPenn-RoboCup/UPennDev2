@@ -39,6 +39,8 @@ sm:add_state(bodyDribble);
 -- Demo FSM (No orbit)
 ------------------------------------------------------
 
+sm:set_transition(bodyReady, 'done', bodyReady);
+
 sm:set_transition(bodyStart, 'done', bodyPosition);
 
 sm:set_transition(bodyPosition, 'timeout', bodyPosition);

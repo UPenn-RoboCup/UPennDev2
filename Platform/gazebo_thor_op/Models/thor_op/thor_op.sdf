@@ -924,7 +924,7 @@
         </link>
         
         <!-- left foot -->
-        <link name="left_foot">
+        <link name="l_foot">
             <pose>0 0.060 0.118 0 0 0</pose>
             <!--<gravity>true</gravity>-->
             <inertial>
@@ -938,7 +938,7 @@
                     <izz>1.0</izz>
                 </inertia>
             </inertial>
-            <collision name="left_foot_collision">
+            <collision name="l_foot_collision">
                 <pose>0 0 0 1.57 0 1.57</pose>
                 <geometry>
                     <mesh>
@@ -963,7 +963,7 @@
                     </contact>
                 </surface>
             </collision>
-            <visual name="left_foot_visual">
+            <visual name="l_foot_visual">
                 <pose>0 0 0 1.57 0 1.57</pose>
                 <geometry>
                     <mesh>
@@ -972,10 +972,16 @@
                     </mesh>
                 </geometry>
             </visual>
+            <sensor name="l_foot_contact_sensor" type="contact">
+                <always_on>1</always_on>
+                <contact>
+                    <collision>l_foot_collision</collision>
+                </contact>
+            </sensor>
         </link>
         
         <!-- right foot -->
-        <link name="right_foot">
+        <link name="r_foot">
             <pose>0 -0.060 0.118 0 0 0</pose>
             <!--<gravity>true</gravity>-->
             <inertial>
@@ -989,7 +995,7 @@
                     <izz>1.0</izz>
                 </inertia>
             </inertial>
-            <collision name="right_foot_collision">
+            <collision name="r_foot_collision">
                 <pose>0 0 0 1.57 0 -1.57</pose>
                 <geometry>
                     <mesh>
@@ -1014,7 +1020,7 @@
                     </contact>
                 </surface>
             </collision>
-            <visual name="right_foot_visual">
+            <visual name="r_foot_visual">
                 <pose>0 0 0 1.57 0 -1.57</pose>
                 <geometry>
                     <mesh>
@@ -1023,6 +1029,12 @@
                     </mesh>
                 </geometry>
             </visual>
+            <sensor name="r_foot_contact_sensor" type="contact">
+                <always_on>1</always_on>
+                <contact>
+                    <collision>r_foot_collision</collision>
+                </contact>
+            </sensor>
         </link>
         
         <joint name="head_yaw" type="revolute">
@@ -1681,7 +1693,7 @@
                 <link_name>left_ankle</link_name>
             </parent>
             <child>
-                <link_name>left_foot</link_name>
+                <link_name>l_foot</link_name>
             </child>
         </joint>
         <joint name="r_ankle_roll" type="revolute">
@@ -1706,7 +1718,7 @@
                 <link_name>right_ankle</link_name>
             </parent>
             <child>
-                <link_name>right_foot</link_name>
+                <link_name>r_foot</link_name>
             </child>
         </joint>
         

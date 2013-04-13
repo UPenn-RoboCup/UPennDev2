@@ -20,12 +20,12 @@ print('Using filter {',filter,'}')
 if inter_pc then
   test_channel = simple_ipc.new_publisher(5555,filter);
   if filter then
-    test_channel2 = simple_ipc.new_publisher(5555,'bl');
+    test_channel2 = simple_ipc.new_publisher(test_channel,'bl');
   end
 else
   test_channel = simple_ipc.new_publisher('test',filter);
   if filter then
-    test_channel2 = simple_ipc.new_publisher('test','bl');
+    test_channel2 = simple_ipc.new_publisher(test_channel,'bl');
   end
 end
 
@@ -35,7 +35,7 @@ while true do
   if use_multipart then
     ret = test_channel:send( {'hello','world'} )
   else
-    ret = test_channel:send('hello')
+    ret = test_channel:send( 'hello' )
   end
   if filter then
     ret = test_channel2:send('thorn in my side')

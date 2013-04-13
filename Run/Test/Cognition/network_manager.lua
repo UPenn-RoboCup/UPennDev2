@@ -3,9 +3,8 @@ dofile('../../include.lua')
 -- Set the Debugging mode
 local debug = true;
 
--- Require the right modules
+-- Libraries
 local simple_ipc = require 'simple_ipc'
-local mp = require 'MessagePack'
 require 'unix'
 require 'cjpeg'
 
@@ -20,17 +19,19 @@ local oct_channel    = simple_ipc.new_subscriber('oct');
 
 -- Send the Occupmancy Map
 -- JPEG compressed
-local omap_callback = function()
+omap_channel.callback = function()
   local omap_data, has_more = omap_channel:receive()
+  --[[
   local jimg = cjpeg.compress( omap_data );
   local nsent = Comm.send( jimg );
+  --]]
+  local nsent = Comm.send( omap_data, #omap_data );
   print("OMAP | Sent ", nsent )
 end
-omap_channel.callback = omap_callback
 
 -- Send image over UDP
 -- JPEG compress it
-local camera_callback = function()
+camera_channel.callback = function()
   local camera_ts, has_more = camera_channel:receive()
   -- TODO: Get timestamp
   --[[
@@ -48,15 +49,13 @@ local camera_callback = function()
   local nsent = Comm.send( camera_ts, #camera_ts );
   print("Camera | Sent ", nsent )
 end
-camera_channel.callback = camera_callback
 
 -- Send the Oct Tree data over UDP
-local oct_callback = function()
+oct_channel.callback = function()
   local oct_data, has_more = oct_channel:receive()
   local nsent = Comm.send( oct_data );
   print("Oct | Sent ", nsent )
 end
-oct_channel.callback = oct_callback
 
 -- Poll multiple sockets
 local wait_channels = {omap_channel, camera_channel, oct_channel}
@@ -76,8 +75,8 @@ end
 
 local cnt = 0;
 while true do
-  channel_poll:poll(channel_timeout) 
-  t = unix.time()
+  local npoll = channel_poll:poll(channel_timeout)
+  local t = unix.time()
   cnt = cnt+1;
   if t-t_last>t_debug then
     local msg = string.format("%.2f FPS", cnt/t_debug);

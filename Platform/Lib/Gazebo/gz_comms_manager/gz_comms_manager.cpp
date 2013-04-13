@@ -107,21 +107,61 @@ namespace gazebo
     // intialize controllers
     this->initialize_controllers();
 
+    // initialize contact sensors
+    this->l_foot_link_name = "l_foot";
+    this->l_foot_contact_sensor_name = "l_foot_contact_sensor";
+    this->l_foot_contact_sensor = 
+      boost::dynamic_pointer_cast<sensors::ContactSensor>(
+        sensors::SensorManager::Instance()->GetSensor(
+          this->world->GetName()
+          + "::" + this->model->GetScopedName()
+          + "::" + this->l_foot_link_name
+          + "::" + this->l_foot_contact_sensor_name
+        )
+      );
+    if (!this->l_foot_contact_sensor)
+      gzerr << "l_foot_contact_sensor not found\n" << "\n";
+
+    this->r_foot_link_name = "r_foot";
+    this->r_foot_contact_sensor_name = "r_foot_contact_sensor";
+    this->r_foot_contact_sensor = 
+      boost::dynamic_pointer_cast<sensors::ContactSensor>(
+        sensors::SensorManager::Instance()->GetSensor(
+          this->world->GetName()
+          + "::" + this->model->GetScopedName()
+          + "::" + this->r_foot_link_name
+          + "::" + this->r_foot_contact_sensor_name
+        )
+      );
+    if (!this->r_foot_contact_sensor)
+      gzerr << "r_foot_contact_sensor not found\n" << "\n";
+
     // initialize imu
     this->imu_link_name = "torso";
     this->imu_sensor_name = "imu_sensor";
-    this->imu_sensor = boost::dynamic_pointer_cast<sensors::ImuSensor>(
-      sensors::SensorManager::Instance()->GetSensor(
-        this->world->GetName()
-        + "::" + this->model->GetScopedName()
-        + "::" + this->imu_link_name
-        + "::" + this->imu_sensor_name
-      )
-    );
+    this->imu_sensor = 
+      boost::dynamic_pointer_cast<sensors::ImuSensor>(
+        sensors::SensorManager::Instance()->GetSensor(
+          this->world->GetName()
+          + "::" + this->model->GetScopedName()
+          + "::" + this->imu_link_name
+          + "::" + this->imu_sensor_name
+        )
+      );
     if (!this->imu_sensor)
       gzerr << "imu_sensor not found\n";
 
     // initialize callback functions
+    if (this->l_foot_contact_sensor)
+    {
+      this->l_foot_contact_connection = this->l_foot_contact_sensor->ConnectUpdated(
+        boost::bind(&gz_comms_manager::on_l_foot_contact, this));
+    }
+    if (this->r_foot_contact_sensor)
+    {
+      this->r_foot_contact_connection = this->r_foot_contact_sensor->ConnectUpdated(
+        boost::bind(&gz_comms_manager::on_r_foot_contact, this));
+    }
     this->update_connection = event::Events::Events::ConnectWorldUpdateBegin(
       boost::bind(&gz_comms_manager::update, this));
     this->reset_connection = event::Events::Events::ConnectStop(
@@ -138,20 +178,23 @@ namespace gazebo
 
       // get joint limits
       double max_force = this->joints[i]->GetEffortLimit(0);
-      double min_position = this->joints[i]->GetLowStop(0).Radian();
-      double max_position = this->joints[i]->GetHighStop(0).Radian();
+      double min_position = this->joints[i]->GetLowerLimit(0).Radian();
+      double max_position = this->joints[i]->GetUpperLimit(0).Radian();
+      double max_velocity = this->joints[i]->GetVelocityLimit(0);
 
       // initialize position pid controller
       struct pid position_pid = new_pid(this->physics_time_step);
       pid_set_setpoint_limits(&position_pid, min_position, max_position);
-      pid_set_output_limits(&position_pid, -max_force, max_force);
+      if (max_force >= 0)
+        pid_set_output_limits(&position_pid, -max_force, max_force);
 
       // initialize velocity filter
       struct filter velocity_filter = new_low_pass(
         this->physics_time_step,
         this->d_break_freq
       );
-      filter_set_output_limits(&velocity_filter, -max_force, max_force);
+      if (max_velocity >= 0)
+        filter_set_output_limits(&velocity_filter, -max_velocity, max_velocity);
 
       // update joint structs
       if (i < joint_position_pids.size())
@@ -185,23 +228,14 @@ namespace gazebo
   {
     // update force-torque sensors
     {
-      physics::JointWrench l_ankle_wrench, r_ankle_wrench;
       physics::JointWrench l_wrist_wrench, r_wrist_wrench;
 
       unsigned int index0 = 0;
-      if (l_ankle_index != -1)
-        l_ankle_wrench = this->joints[l_ankle_index]->GetForceTorque(index0);
-      if (r_ankle_index != -1)
-        r_ankle_wrench = this->joints[r_ankle_index]->GetForceTorque(index0);
       if (l_wrist_index != -1)
         l_wrist_wrench = this->joints[l_wrist_index]->GetForceTorque(index0);
       if (r_wrist_index != -1)
         r_wrist_wrench = this->joints[r_wrist_index]->GetForceTorque(index0);
 
-      math::Vector3 l_ankle_force = l_ankle_wrench.body2Force;
-      math::Vector3 l_ankle_torque = l_ankle_wrench.body2Torque;
-      math::Vector3 r_ankle_force = r_ankle_wrench.body2Force;
-      math::Vector3 r_ankle_torque = r_ankle_wrench.body2Torque;
       math::Vector3 l_wrist_force = l_wrist_wrench.body2Force;
       math::Vector3 l_wrist_torque = l_wrist_wrench.body2Torque;
       math::Vector3 r_wrist_force = r_wrist_wrench.body2Force;
@@ -209,10 +243,6 @@ namespace gazebo
 
       for (int i = 0; i < 3; i++)
       {
-        this->dcm.force_torque[i] = l_ankle_force[i];
-        this->dcm.force_torque[i+3] = l_ankle_torque[i];
-        this->dcm.force_torque[i+6] = r_ankle_force[i];
-        this->dcm.force_torque[i+9] = r_ankle_torque[i];
         this->dcm.force_torque[i+12] = l_wrist_force[i];
         this->dcm.force_torque[i+15] = l_wrist_torque[i];
         this->dcm.force_torque[i+18] = r_wrist_force[i];
@@ -221,6 +251,7 @@ namespace gazebo
     }
 
     // update imu sensor
+    if (this->imu_sensor)
     {
       math::Vector3 accel = this->imu_sensor->GetLinearAcceleration();
       math::Vector3 gyro = this->imu_sensor->GetAngularVelocity();
@@ -248,6 +279,7 @@ namespace gazebo
       double velocity_setpoint = this->dcm.joint_velocity[index];
       double position_actual = this->joints[i]->GetAngle(0).Radian();
       double velocity_actual = this->joints[i]->GetVelocity(0);
+      double max_force = this->joints[i]->GetEffortLimit(0);
 
       // update feedforward force
       double force_command = force_setpoint;
@@ -268,8 +300,8 @@ namespace gazebo
       force_command += d_gain*(velocity_setpoint - velocity_estimate);
        
       // update joint force 
-      double max_force = this->joints[i]->GetEffortLimit(0);
-      force_command = math::clamp(force_command, -max_force, max_force);
+      if (max_force >= 0)
+        force_command = math::clamp(force_command, -max_force, max_force);
       this->joints[i]->SetForce(0, force_command);
 
       // update joint sensors
@@ -278,6 +310,110 @@ namespace gazebo
       this->dcm.joint_velocity_sensor[index] = velocity_estimate;
 
     //gzerr << "force command " << force_command << "\n";
+    }
+  }
+
+  void gz_comms_manager::on_l_foot_contact()
+  {
+    //update l_foot force-torque estimate
+    msgs::Contacts contacts;
+    contacts = this->l_foot_contact_sensor->GetContacts();
+    int n_contacts = contacts.contact_size();
+    int n_samples = n_contacts > 2 ? 2 : n_contacts;
+
+    math::Vector3 l_foot_force;
+    math::Vector3 l_foot_torque;
+    l_foot_force.Set(0, 0, 0);
+    l_foot_torque.Set(0, 0, 0);
+
+    for (int i = n_contacts - n_samples; i < n_contacts; i++)
+    {
+      for (int j = 0; j < contacts.contact(i).wrench_size(); ++j)
+      {
+        // gzerr << j << "  Position:"
+        //       << contacts.contact(n_contacts - 1).position(j).x() << " "
+        //       << contacts.contact(n_contacts - 1).position(j).y() << " "
+        //       << contacts.contact(n_contacts - 1).position(j).z() << "\n";
+        // gzerr << "   Normal:"
+        //       << contacts.contact(n_contacts - 1).normal(j).x() << " "
+        //       << contacts.contact(n_contacts - 1).normal(j).y() << " "
+        //       << contacts.contact(n_contacts - 1).normal(j).z() << "\n";
+        // gzerr << "   Depth:" << contacts.contact(n_contacts - 1).depth(j) << "\n";
+        l_foot_force += math::Vector3(
+          contacts.contact(i).wrench(j).body_1_force().x(),
+          contacts.contact(i).wrench(j).body_1_force().y(),
+          contacts.contact(i).wrench(j).body_1_force().z());
+        l_foot_torque += math::Vector3(
+          contacts.contact(i).wrench(j).body_1_torque().x(),
+          contacts.contact(i).wrench(j).body_1_torque().y(),
+          contacts.contact(i).wrench(j).body_1_torque().z());
+      }
+    }
+
+    if (n_samples > 0)
+    {
+      l_foot_force = l_foot_force/n_samples;
+      l_foot_torque = l_foot_torque/n_samples;
+    }
+
+    // TODO rotate forces and torques from inertial to link coordinates
+
+    for (int i = 0; i < 3; i++)
+    {
+      this->dcm.force_torque[i] = l_foot_force[i];
+      this->dcm.force_torque[i+3] = l_foot_torque[i];
+    }
+  }
+
+  void gz_comms_manager::on_r_foot_contact()
+  {
+    //update r_foot force-torque estimate
+    msgs::Contacts contacts;
+    contacts = this->r_foot_contact_sensor->GetContacts();
+    int n_contacts = contacts.contact_size();
+    int n_samples = n_contacts > 2 ? 2 : n_contacts;
+
+    math::Vector3 r_foot_force;
+    math::Vector3 r_foot_torque;
+    r_foot_force.Set(0, 0, 0);
+    r_foot_torque.Set(0, 0, 0);
+
+    for (int i = n_contacts - n_samples; i < n_contacts; i++)
+    {
+      for (int j = 0; j < contacts.contact(i).wrench_size(); ++j)
+      {
+        // gzerr << j << "  Position:"
+        //       << contacts.contact(n_contacts - 1).position(j).x() << " "
+        //       << contacts.contact(n_contacts - 1).position(j).y() << " "
+        //       << contacts.contact(n_contacts - 1).position(j).z() << "\n";
+        // gzerr << "   Normal:"
+        //       << contacts.contact(n_contacts - 1).normal(j).x() << " "
+        //       << contacts.contact(n_contacts - 1).normal(j).y() << " "
+        //       << contacts.contact(n_contacts - 1).normal(j).z() << "\n";
+        // gzerr << "   Depth:" << contacts.contact(n_contacts - 1).depth(j) << "\n";
+        r_foot_force += math::Vector3(
+          contacts.contact(i).wrench(j).body_1_force().x(),
+          contacts.contact(i).wrench(j).body_1_force().y(),
+          contacts.contact(i).wrench(j).body_1_force().z());
+        r_foot_torque += math::Vector3(
+          contacts.contact(i).wrench(j).body_1_torque().x(),
+          contacts.contact(i).wrench(j).body_1_torque().y(),
+          contacts.contact(i).wrench(j).body_1_torque().z());
+      }
+    }
+
+    if (n_samples > 0)
+    {
+      r_foot_force = r_foot_force/n_samples;
+      r_foot_torque = r_foot_torque/n_samples;
+    }
+
+    // TODO rotate forces and torques from inertial to link coordinates
+
+    for (int i = 0; i < 3; i++)
+    {
+      this->dcm.force_torque[i+6] = r_foot_force[i];
+      this->dcm.force_torque[i+9] = r_foot_torque[i];
     }
   }
 

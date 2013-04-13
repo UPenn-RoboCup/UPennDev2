@@ -1,1106 +1,1727 @@
-<?xml version='1.0'?>
+<?xml version="1.0" ?>
 <!-- THOR-OP model script -->
-<sdf version="1.3">
+<sdf version="1.4">
     <model name="thor_op">
-	<plugin name="gz_comms_manager" filename="libgz_comms_manager.so" />
-	  
-	  <!-- head -->
-	  <link name="head">
-        <pose>0 0 1.419 0 0 0</pose>
-		<!--<gravity>true</gravity>-->
-		<inertial>
-          <mass>0.1</mass>
-          <inertia>
-            <ixx>1.0</ixx><ixy>0.0</ixy><ixz>0.0</ixz><iyy>1.0</iyy><iyz>0.0</iyz><izz>1.0</izz>
-          </inertia>
-        </inertial>
-        <collision name="collision">
-		  <pose>0 0 0 1.57 0 -1.57</pose>
-          <geometry>
-		    <mesh>
-			  <uri>model://thor_op/meshes/head.stl</uri>
-			  <scale>0.001 0.001 0.001</scale>
-			</mesh>
-          </geometry>
-        </collision>
-        <visual name="visual">
-		  <pose>0 0 0 1.57 0 -1.57</pose>
-          <geometry>
-            <mesh>
-			  <uri>model://thor_op/meshes/head.stl</uri>
-			  <scale>0.001 0.001 0.001</scale>
-			</mesh>
-          </geometry>
-        </visual>
-      </link>
-	  
-	  <!-- neck -->
-	  <link name="neck">
-		<pose>0 0 1.419 0 0 0</pose>
-		<!--<gravity>true</gravity>-->
-		<inertial>
-          <mass>0.1</mass>
-          <inertia>
-            <ixx>1.0</ixx><ixy>0.0</ixy><ixz>0.0</ixz><iyy>1.0</iyy><iyz>0.0</iyz><izz>1.0</izz>
-          </inertia>
-        </inertial>
-        <collision name="collision">
-		  <pose>0 0 -0.020 -1.57 0 0</pose>
-          <geometry>
-			<mesh>
-			  <uri>model://thor_op/meshes/neck.stl</uri>
-			  <scale>0.001 0.001 0.001</scale>
-			</mesh>
-          </geometry>
-        </collision>
-        <visual name="visual">
-		  <pose>0 0 -0.020 -1.57 0 0</pose>
-          <geometry>
-            <mesh>
-			  <uri>model://thor_op/meshes/neck.stl</uri>
-			  <scale>0.001 0.001 0.001</scale>
-			</mesh>
-          </geometry>
-        </visual>
-      </link>
-	  
-	  <!-- main case -->
-	  <link name="main_case">
-		<pose>0 0 1.222 0 0 0</pose>
-		<!--<gravity>true</gravity>-->
-		<inertial>
-          <mass>.1</mass>
-          <inertia>
-            <ixx>1.0</ixx><ixy>0.0</ixy><ixz>0.0</ixz><iyy>1.0</iyy><iyz>0.0</iyz><izz>1.0</izz>
-          </inertia>
-        </inertial>
-        <collision name="collision">
-		  <pose>0 0 0 1.57 0 1.57</pose>
-          <geometry>
-			<mesh>
-			  <uri>model://thor_op/meshes/chest.stl</uri>
-			  <scale>0.001 0.001 0.001</scale>
-			</mesh>
-          </geometry>
-        </collision>
-        <visual name="visual">
-		  <pose>0 0 0 1.57 0 1.57</pose>
-          <geometry>
-            <mesh>
-			  <uri>model://thor_op/meshes/chest.stl</uri>
-			  <scale>0.001 0.001 0.001</scale>
-			</mesh>
-          </geometry>
-        </visual>
-	<sensor name="lidar_sensor1" type="ray">
-		<!-- Hokuyo UTM-30LX-EW -->
-		<always_on>1</always_on>
-		<update_rate>10</update_rate>
-		<pose>.0565 0 1.277 0 0 0</pose>
-		<ray>
-			<scan>
-				<horizontal>
-					<samples>1081</samples>
-					<resolution>1</resolution>
-					<min_angle>-2.35619449</min_angle>
-					<max_angle>2.35619449</max_angle>
-				</horizontal>
-			</scan>
-			<range>
-				<min>.1</min>
-				<max>30</max>
-				<resolution>.05</resolution>
-			</range>
-		</ray>
-		<plugin name="gz_lidar_dump" filename="libgz_lidar_dump.so" />
-	</sensor>
-	<sensor name="camera_sensor1" type="camera">
-		<pose>0 0 0.5 0 0 1.57</pose>
-		<camera>
-			<horizontal_fov>1.57</horizontal_fov>
-			<image>
-				<width>640</width>
-				<height>480</height>
-				<format>R8G8B8</format>
-			</image>
-			<clip>
-				<near>0.5</near>
-				<far>5</far>
-			</clip>
-		</camera>
-		<plugin name="gz_camera_dump" filename="libgz_camera_dump.so" />
-		<always_on>1</always_on>
-		<update_rate>10</update_rate>
-	</sensor>
-      </link>
-	  
-	  <!-- torso pitch servo -->
-	  <link name="torso_pitch_servo">
-		<pose>0 0 1.060 0 0 0</pose>
-		<inertial>
-          <mass>.1</mass>
-          <inertia>
-            <ixx>1.0</ixx><ixy>0.0</ixy><ixz>0.0</ixz><iyy>1.0</iyy><iyz>0.0</iyz><izz>1.0</izz>
-          </inertia>
-        </inertial>
-        <collision name="collision">
-		  <pose>0 0 -0.038 -1.57 0 1.57</pose>
-          <geometry>
-			<mesh>
-			  <uri>model://thor_op/meshes/torso_pitch_servo.stl</uri>
-			  <scale>0.001 0.001 0.001</scale>
-			</mesh>
-          </geometry>
-        </collision>
-        <visual name="visual">
-		  <pose>0 0 -0.038 1.57 0 1.57</pose>
-          <geometry>
-            <mesh>
-			  <uri>model://thor_op/meshes/torso_pitch_servo.stl</uri>
-			  <scale>0.001 0.001 0.001</scale>
-			</mesh>
-          </geometry>
-        </visual>
-      </link>
-	  
-	  <!-- torso -->
-	  <link name="torso">
-		<pose>0 0 1.022 0 0 0</pose>
-		<!--<gravity>true</gravity>-->
-		<inertial>
-          <mass>.2</mass>
-          <inertia>
-            <ixx>1.0</ixx><ixy>0.0</ixy><ixz>0.0</ixz><iyy>1.0</iyy><iyz>0.0</iyz><izz>1.0</izz>
-          </inertia>
-        </inertial>
-        <collision name="collision">
-		  <pose>0 0 -0.086 1.57 0 1.57</pose>
-          <geometry>
-			<mesh>
-			  <uri>model://thor_op/meshes/pelvis.stl</uri>
-			  <scale>0.001 0.001 0.001</scale>
-			</mesh>
-          </geometry>
-        </collision>
-        <visual name="pelvis_visual">
-          <pose>0 0 -0.086 1.57 0 1.57</pose>
-		  <geometry>
-            <mesh>
-			  <uri>model://thor_op/meshes/pelvis.stl</uri>
-			  <scale>0.001 0.001 0.001</scale>
-			</mesh>
-          </geometry>
-        </visual>
-	<sensor name="imu_sensor" type="imu">
-		<always_on>1</always_on>
-		<visualize>1</visualize>
-		<topic>imu_sensor</topic>
-	</sensor>
-      </link>
-	  
-	  <!-- left shoulder pitch -->
-	  <link name="left_shoulder_pitch">
-        <pose>0 .216 1.222 0 0 0</pose>
-		<!--<gravity>true</gravity>-->
-		<inertial>
-          <mass>.1</mass>
-          <inertia>
-            <ixx>1.0</ixx><ixy>0.0</ixy><ixz>0.0</ixz><iyy>1.0</iyy><iyz>0.0</iyz><izz>1.0</izz>
-          </inertia>
-        </inertial>
-        <collision name="collision">
-          <pose>0 -0.055 0 3.14 -1.57 0</pose>
-		  <geometry>
-            <mesh>
-			  <uri>model://thor_op/meshes/left_shoulder_pitch.stl</uri>
-			  <scale>0.001 0.001 0.001</scale>
-			</mesh>
-          </geometry>
-        </collision>
-        <visual name="visual">
-          <pose>0 -0.055 0 3.14 -1.57 0</pose>
-		  <geometry>
-            <mesh>
-			  <uri>model://thor_op/meshes/left_shoulder_pitch.stl</uri>
-			  <scale>0.001 0.001 0.001</scale>
-			</mesh>
-          </geometry>
-        </visual>
-      </link>
-	  
-	  <!-- right shoulder pitch -->
-	  <link name="right_shoulder_pitch">
-        <pose>0 -.216 1.222 0 0 0</pose>
-		<!--<gravity>true</gravity>-->
-		<inertial>
-          <mass>.1</mass>
-          <inertia>
-            <ixx>1.0</ixx><ixy>0.0</ixy><ixz>0.0</ixz><iyy>1.0</iyy><iyz>0.0</iyz><izz>1.0</izz>
-          </inertia>
-        </inertial>
-        <collision name="collision">
-          <pose>0 0.055 0 3.14 -1.57 3.14</pose>
-		  <geometry>
-            <mesh>
-			  <uri>model://thor_op/meshes/right_shoulder_pitch.stl</uri>
-			  <scale>0.001 0.001 0.001</scale>
-			</mesh>
-          </geometry>
-        </collision>
-        <visual name="visual">
-          <pose>0 0.055 0 3.14 -1.57 3.14</pose>
-		  <geometry>
-            <mesh>
-			  <uri>model://thor_op/meshes/right_shoulder_pitch.stl</uri>
-			  <scale>0.001 0.001 0.001</scale>
-			</mesh>
-          </geometry>
-        </visual>
-      </link>
-	  
-	  <!-- left shoulder roll -->
-	  <link name="left_shoulder_roll">
-        <pose>0 .216 1.222 0 0 0</pose>
-		<!--<gravity>true</gravity>-->
-		<inertial>
-          <mass>.1</mass>
-          <inertia>
-            <ixx>1.0</ixx><ixy>0.0</ixy><ixz>0.0</ixz><iyy>1.0</iyy><iyz>0.0</iyz><izz>1.0</izz>
-          </inertia>
-        </inertial>
-        <collision name="collision">
-          <pose>0.030 0 0 1.57 0 1.57</pose>
-		  <geometry>
-            <mesh>
-			  <uri>model://thor_op/meshes/left_shoulder_roll.stl</uri>
-			  <scale>0.001 0.001 0.001</scale>
-			</mesh>
-          </geometry>
-        </collision>
-        <visual name="visual">
-          <pose>0.030 0 0 1.57 0 1.57</pose>
-		  <geometry>
-            <mesh>
-			  <uri>model://thor_op/meshes/left_shoulder_roll.dae</uri>
-			  <scale>0.001 0.001 0.001</scale>
-			</mesh>
-          </geometry>
-        </visual>
-      </link>
-	  
-	  <!-- right shoulder roll -->
-	  <link name="right_shoulder_roll">
-        <pose>0 -.216 1.222 0 0 0</pose>
-		<!--<gravity>true</gravity>-->
-		<inertial>
-          <mass>.1</mass>
-          <inertia>
-            <ixx>1.0</ixx><ixy>0.0</ixy><ixz>0.0</ixz><iyy>1.0</iyy><iyz>0.0</iyz><izz>1.0</izz>
-          </inertia>
-        </inertial>
-        <collision name="collision">
-          <pose>0.030 0 0 1.57 0 -1.57</pose>
-		  <geometry>
-            <mesh>
-			  <uri>model://thor_op/meshes/right_shoulder_roll.stl</uri>
-			  <scale>0.001 0.001 0.001</scale>
-			</mesh>
-          </geometry>
-        </collision>
-        <visual name="visual">
-          <pose>0.030 0 0 1.57 0 -1.57</pose>
-		  <geometry>
-            <mesh>
-			  <uri>model://thor_op/meshes/right_shoulder_roll.stl</uri>
-			  <scale>0.001 0.001 0.001</scale>
-			</mesh>
-          </geometry>
-        </visual>
-      </link>
-	  
-	  <!-- left upper arm -->
-	  <link name="left_upper_arm">
-        <pose>0 .216 1.222 0 0 0</pose>
-		<!--<gravity>true</gravity>-->
-		<inertial>
-          <mass>.1</mass>
-          <inertia>
-            <ixx>1.0</ixx><ixy>0.0</ixy><ixz>0.0</ixz><iyy>1.0</iyy><iyz>0.0</iyz><izz>1.0</izz>
-          </inertia>
-        </inertial>
-        <collision name="collision">
-          <pose>0 0 -.025 1.57 0 1.57</pose>
-		  <geometry>
-            <mesh>
-			  <uri>model://thor_op/meshes/left_shoulder_yaw.stl</uri>
-			  <scale>0.001 0.001 0.001</scale>
-			</mesh>
-          </geometry>
-        </collision>
-        <visual name="visual">
-          <pose>0 0 -.025 1.57 0 1.57</pose>
-		  <geometry>
-		    <mesh>
-			  <uri>model://thor_op/meshes/left_shoulder_yaw.stl</uri>
-			  <scale>0.001 0.001 0.001</scale>
-			</mesh>
-          </geometry>
-        </visual>
-      </link>
-	  
-	  <!-- right upper arm -->
-	  <link name="right_upper_arm">
-        <pose>0 -.216 1.222 0 0 0</pose>
-		<!--<gravity>true</gravity>-->
-		<inertial>
-          <mass>.1</mass>
-          <inertia>
-            <ixx>1.0</ixx><ixy>0.0</ixy><ixz>0.0</ixz><iyy>1.0</iyy><iyz>0.0</iyz><izz>1.0</izz>
-          </inertia>
-        </inertial>
-        <collision name="collision">
-          <pose>0 0 -.025 1.57 0 -1.57</pose>
-		  <geometry>
-            <mesh>
-			  <uri>model://thor_op/meshes/right_shoulder_yaw.stl</uri>
-			  <scale>0.001 0.001 0.001</scale>
-			</mesh>
-          </geometry>
-        </collision>
-        <visual name="visual">
-          <pose>0 0 -.025 1.57 0 -1.57</pose>
-		  <geometry>
-		    <mesh>
-			  <uri>model://thor_op/meshes/right_shoulder_yaw.stl</uri>
-			  <scale>0.001 0.001 0.001</scale>
-			</mesh>
-          </geometry>
-        </visual>
-      </link>
-	  
-	  <!-- left lower arm -->
-	  <link name="left_lower_arm">
-        <pose>0 .216 .976 0 0 0</pose>
-		<!--<gravity>true</gravity>-->
-		<inertial>
-          <mass>.1</mass>
-          <inertia>
-            <ixx>1.0</ixx><ixy>0.0</ixy><ixz>0.0</ixz><iyy>1.0</iyy><iyz>0.0</iyz><izz>1.0</izz>
-          </inertia>
-        </inertial>
-        <collision name="collision">
-          <pose>0 0 0 1.57 0 1.57</pose>
-		  <geometry>
-            <mesh>
-			  <uri>model://thor_op/meshes/left_arm_elbow.stl</uri>
-			  <scale>0.001 0.001 0.001</scale>
-			</mesh>
-          </geometry>
-        </collision>
-        <visual name="visual">
-          <pose>0 0 0 1.57 0 1.57</pose>
-		  <geometry>
-		    <mesh>
-			  <uri>model://thor_op/meshes/left_arm_elbow.stl</uri>
-			  <scale>0.001 0.001 0.001</scale>
-			</mesh>
-          </geometry>
-        </visual>
-      </link>
-	  
-	  <!-- right lower arm -->
-	  <link name="right_lower_arm">
-        <pose>0 -.216 .976 0 0 0</pose>
-		<!--<gravity>true</gravity>-->
-		<inertial>
-          <mass>.1</mass>
-          <inertia>
-            <ixx>1.0</ixx><ixy>0.0</ixy><ixz>0.0</ixz><iyy>1.0</iyy><iyz>0.0</iyz><izz>1.0</izz>
-          </inertia>
-        </inertial>
-        <collision name="collision">
-          <pose>0 0 0 1.57 0 -1.57</pose>
-		  <geometry>
-            <mesh>
-			  <uri>model://thor_op/meshes/right_arm_elb_mir.stl</uri>
-			  <scale>0.001 0.001 0.001</scale>
-			</mesh>
-          </geometry>
-        </collision>
-        <visual name="visual">
-          <pose>0 0 0 1.57 0 -1.57</pose>
-		  <geometry>
-		    <mesh>
-			  <uri>model://thor_op/meshes/right_arm_elb_mir.stl</uri>
-			  <scale>0.001 0.001 0.001</scale>
-			</mesh>
-          </geometry>
-        </visual>
-      </link>
-	  
-	  <!-- left wrist -->
-	  <link name="left_wrist">
-        <pose>0 .216 .760 0 0 0</pose>
-		<!--<gravity>true</gravity>-->
-		<inertial>
-          <mass>.1</mass>
-          <inertia>
-            <ixx>1.0</ixx><ixy>0.0</ixy><ixz>0.0</ixz><iyy>1.0</iyy><iyz>0.0</iyz><izz>1.0</izz>
-          </inertia>
-        </inertial>
-        <collision name="collision">
-          <pose>0 0 0 1.57 0 1.57</pose>
-		  <geometry>
-			<mesh>
-			  <uri>model://thor_op/meshes/left_wrist_yaw.stl</uri>
-			  <scale>0.001 0.001 0.001</scale>
-			</mesh>
-          </geometry>
-        </collision>
-        <visual name="visual">
-          <pose>0 0 0 1.57 0 1.57</pose>
-		  <geometry>
-		    <mesh>
-			  <uri>model://thor_op/meshes/left_wrist_yaw.stl</uri>
-			  <scale>0.001 0.001 0.001</scale>
-			</mesh>
-          </geometry>
-        </visual>
-      </link>
-	  
-	  <!-- right wrist -->
-	  <link name="right_wrist">
-        <pose>0 -.216 .760 0 0 0</pose>
-		<!--<gravity>true</gravity>-->
-		<inertial>
-          <mass>.1</mass>
-          <inertia>
-            <ixx>1.0</ixx><ixy>0.0</ixy><ixz>0.0</ixz><iyy>1.0</iyy><iyz>0.0</iyz><izz>1.0</izz>
-          </inertia>
-        </inertial>
-        <collision name="collision">
-          <pose>0 0 0 1.57 0 -1.57</pose>
-		  <geometry>
-			<mesh>
-			  <uri>model://thor_op/meshes/right_wrist_yaw.stl</uri>
-			  <scale>0.001 0.001 0.001</scale>
-			</mesh>
-          </geometry>
-        </collision>
-        <visual name="visual">
-          <pose>0 0 0 1.57 0 -1.57</pose>
-		  <geometry>
-            <mesh>
-			  <uri>model://thor_op/meshes/right_wrist_yaw.stl</uri>
-			  <scale>0.001 0.001 0.001</scale>
-			</mesh>
-          </geometry>
-        </visual>
-      </link>
-	  
-	  <!--left gripper-->
-	  <link name="left_gripper">
-        <pose>0 .216 .760 0 0 0</pose>
-		<!--<gravity>true</gravity>-->
-		<inertial>
-          <mass>.1</mass>
-          <inertia>
-            <ixx>1.0</ixx><ixy>0.0</ixy><ixz>0.0</ixz><iyy>1.0</iyy><iyz>0.0</iyz><izz>1.0</izz>
-          </inertia>
-        </inertial>
-        <collision name="collision">
-          <pose>0 0 0 1.57 0 1.57</pose>
-		  <geometry>
-			<mesh>
-			  <uri>model://thor_op/meshes/left_wrist_roll.stl</uri>
-			  <scale>0.001 0.001 0.001</scale>
-			</mesh>
-          </geometry>
-        </collision>
-        <visual name="visual">
-          <pose>0 0 0 1.57 0 1.57</pose>
-		  <geometry>
-		    <mesh>
-			  <uri>model://thor_op/meshes/left_wrist_roll.stl</uri>
-			  <scale>0.001 0.001 0.001</scale>
-			</mesh>
-          </geometry>
-        </visual>
-      </link>
-	  
-	  <!--right gripper-->
-	  <link name="right_gripper">
-        <pose>0 -.216 .760 0 0 0</pose>
-		<!--<gravity>true</gravity>-->
-		<inertial>
-          <mass>.1</mass>
-          <inertia>
-            <ixx>1.0</ixx><ixy>0.0</ixy><ixz>0.0</ixz><iyy>1.0</iyy><iyz>0.0</iyz><izz>1.0</izz>
-          </inertia>
-        </inertial>
-        <collision name="collision">
-          <pose>0 0 0 1.57 0 -1.57</pose>
-		  <geometry>
-			<mesh>
-			  <uri>model://thor_op/meshes/right_wrist_roll.stl</uri>
-			  <scale>0.001 0.001 0.001</scale>
-			</mesh>
-          </geometry>
-        </collision>
-        <visual name="visual">
-          <pose>0 0 0 1.57 0 -1.57</pose>
-		  <geometry>
-            <mesh>
-			  <uri>model://thor_op/meshes/right_wrist_roll.stl</uri>
-			  <scale>0.001 0.001 0.001</scale>
-			</mesh>
-          </geometry>
-        </visual>
-      </link>
-	  
-	  <!-- left hip -->
-	  <link name="left_hip">
-		<pose>0 .060 .790 0 0 0</pose>
-		<!--<gravity>true</gravity>-->
-		<inertial>
-          <mass>.1</mass>
-          <inertia>
-            <ixx>1.0</ixx><ixy>0.0</ixy><ixz>0.0</ixz><iyy>1.0</iyy><iyz>0.0</iyz><izz>1.0</izz>
-          </inertia>
-        </inertial>
-        <collision name="collision">
-		  <pose>0 0 0.065 1.57 0 1.57</pose>
-          <geometry>
-			<mesh>
-			  <uri>model://thor_op/meshes/leg_hip_yaw.dae</uri>
-			  <scale>0.001 0.001 0.001</scale>
-			</mesh>
-          </geometry>
-        </collision>
-        <visual name="visual">
-          <pose>0 0 0.065 1.57 0 1.57</pose>
-		  <geometry>
-            <mesh>
-			  <uri>model://thor_op/meshes/leg_hip_yaw.dae</uri>
-			  <scale>0.001 0.001 0.001</scale>
-			</mesh>
-          </geometry>
-        </visual>
-      </link>
-	  
-	  <!-- right hip -->
-	  <link name="right_hip">
-		<pose>0 -.060 .790 0 0 0</pose>
-		<!--<gravity>true</gravity>-->
-		<inertial>
-          <mass>.1</mass>
-          <inertia>
-            <ixx>1.0</ixx><ixy>0.0</ixy><ixz>0.0</ixz><iyy>1.0</iyy><iyz>0.0</iyz><izz>1.0</izz>
-          </inertia>
-        </inertial>
-        <collision name="collision">
-		  <pose>0 0 0.065 1.57 0 -1.57</pose>
-          <geometry>
-			<mesh>
-			  <uri>model://thor_op/meshes/hip_yaw_mir.stl</uri>
-			  <scale>0.001 0.001 0.001</scale>
-			</mesh>
-          </geometry>
-        </collision>
-        <visual name="visual">
-		  <pose>0 0 0.065 1.57 0 -1.57</pose>
-          <geometry>
-            <mesh>
-			  <uri>model://thor_op/meshes/hip_yaw_mir.stl</uri>
-			  <scale>0.001 0.001 0.001</scale>
-			</mesh>
-          </geometry>
-        </visual>
-      </link>
-	  
-	  <!-- left thigh -->
-	  <link name="left_thigh">
-		<pose>0 0.060 0.790 0 0 0</pose>
-		<!--<gravity>true</gravity>-->
-		<inertial>
-          <mass>.6</mass>
-          <inertia>
-            <ixx>1.0</ixx><ixy>0.0</ixy><ixz>0.0</ixz><iyy>1.0</iyy><iyz>0.0</iyz><izz>1.0</izz>
-          </inertia>
-        </inertial>
-        <collision name="collision">
-		  <pose>0 0 0 1.57 0 1.57</pose>
-          <geometry>
-			<mesh>
-			  <uri>model://thor_op/meshes/left_leg_thigh.stl</uri>
-			  <scale>0.001 0.001 0.001</scale>
-			</mesh>
-          </geometry>
-        </collision>
-        <visual name="visual">
-          <pose>0 0 0 1.57 0 1.57</pose>
-		  <geometry>
-            <mesh>
-			  <uri>model://thor_op/meshes/left_leg_thigh.stl</uri>
-			  <scale>0.001 0.001 0.001</scale>
-			</mesh>
-          </geometry>
-        </visual>
-      </link>
-	  
-	  <!-- right thigh -->
-	  <link name="right_thigh">
-		<pose>0 -0.060 0.790 0 0 0</pose>
-		<!--<gravity>true</gravity>-->
-		<inertial>
-          <mass>.6</mass>
-          <inertia>
-            <ixx>1.0</ixx><ixy>0.0</ixy><ixz>0.0</ixz><iyy>1.0</iyy><iyz>0.0</iyz><izz>1.0</izz>
-          </inertia>
-        </inertial>
-        <collision name="collision">
-		  <pose>0 0 0 1.57 0 -1.57</pose>
-          <geometry>
-			<mesh>
-			  <uri>model://thor_op/meshes/right_leg_thigh.stl</uri>
-			  <scale>0.001 0.001 0.001</scale>
-			</mesh>
-          </geometry>
-        </collision>
-        <visual name="visual">
-          <pose>0 0 0 1.57 0 -1.57</pose>
-		  <geometry>
-            <mesh>
-			  <uri>model://thor_op/meshes/right_leg_thigh.stl</uri>
-			  <scale>0.001 0.001 0.001</scale>
-			</mesh>
-          </geometry>
-        </visual>
-      </link>
-	  
-	  <!-- left leg -->
-	  <link name="left_leg">
-		<pose>0 0.060 .454 0 0 0</pose>
-		<!--<gravity>true</gravity>-->
-		<inertial>
-          <mass>1.0</mass>
-          <inertia>
-            <ixx>1.0</ixx><ixy>0.0</ixy><ixz>0.0</ixz><iyy>1.0</iyy><iyz>0.0</iyz><izz>1.0</izz>
-          </inertia>
-        </inertial>
-        <collision name="collision">
-		  <pose>0 0 0 1.57 0 1.57</pose>
-          <geometry>
-			<mesh>
-			  <uri>model://thor_op/meshes/left_leg_shin.stl</uri>
-			  <scale>0.001 0.001 0.001</scale>
-			</mesh>
-          </geometry>
-        </collision>
-        <visual name="visual">
-		  <pose>0 0 0 1.57 0 1.57</pose>
-		  <geometry>
-            <mesh>
-			  <uri>model://thor_op/meshes/left_leg_shin.stl</uri>
-			  <scale>0.001 0.001 0.001</scale>
-			</mesh>
-          </geometry>
-        </visual>
-      </link>
-	  
-	  <!-- right leg -->
-	  <link name="right_leg">
-		<pose>0 -0.060 .454 0 0 0</pose>
-		<!--<gravity>true</gravity>-->
-		<inertial>
-          <mass>1.0</mass>
-          <inertia>
-            <ixx>1.0</ixx><ixy>0.0</ixy><ixz>0.0</ixz><iyy>1.0</iyy><iyz>0.0</iyz><izz>1.0</izz>
-          </inertia>
-        </inertial>
-        <collision name="collision">
-          <pose>0 0 0 1.57 0 -1.57</pose>
-		  <geometry>
-			<mesh>
-			  <uri>model://thor_op/meshes/right_leg_shin.stl</uri>
-			  <scale>0.001 0.001 0.001</scale>
-			</mesh>
-          </geometry>
-        </collision>
-        <visual name="visual">
-		  <pose>0 0 0 1.57 0 -1.57</pose>
-		  <geometry>
-            <mesh>
-			  <uri>model://thor_op/meshes/right_leg_shin.stl</uri>
-			  <scale>0.001 0.001 0.001</scale>
-			</mesh>
-          </geometry>
-        </visual>
-      </link>
-	  
-	  <!-- left ankle -->
-	  <link name="left_ankle">
-        <pose>0 0.060 0.118 0 0 0</pose>
-		<!--<gravity>true</gravity>-->
-		<inertial>
-          <mass>.2</mass>
-          <inertia>
-            <ixx>1.0</ixx><ixy>0.0</ixy><ixz>0.0</ixz><iyy>1.0</iyy><iyz>0.0</iyz><izz>1.0</izz>
-          </inertia>
-        </inertial>
-        <collision name="collision">
-          <pose>0 0 0 0 1.57 0</pose>
-		  <geometry>
-			<mesh>
-			  <uri>model://thor_op/meshes/leg_ank_roll.stl</uri>
-			  <scale>0.001 0.001 0.001</scale>
-			</mesh>
-          </geometry>
-        </collision>
-        <visual name="visual">
-          <pose>0 0 0 0 1.57 0</pose>
-		  <geometry>
-            <mesh>
-			  <uri>model://thor_op/meshes/leg_ank_roll.stl</uri>
-			  <scale>0.001 0.001 0.001</scale>
-			</mesh>
-          </geometry>
-        </visual>
-      </link>
-	  
-	  <!-- right ankle -->
-	  <link name="right_ankle">
-        <pose>0 -0.060 0.118 0 0 0</pose>
-		<!--<gravity>true</gravity>-->
-		<inertial>
-          <mass>.2</mass>
-          <inertia>
-            <ixx>1.0</ixx><ixy>0.0</ixy><ixz>0.0</ixz><iyy>1.0</iyy><iyz>0.0</iyz><izz>1.0</izz>
-          </inertia>
-        </inertial>
-        <collision name="collision">
-          <pose>0 0 0 0 1.57 0</pose>
-		  <geometry>
-		    <mesh>
-			  <uri>model://thor_op/meshes/leg_ank_roll.stl</uri>
-			  <scale>0.001 0.001 0.001</scale>
-			</mesh>
-          </geometry>
-        </collision>
-        <visual name="visual">
-          <pose>0 0 0 0 1.57 0</pose>
-		  <geometry>
-            <mesh>
-			  <uri>model://thor_op/meshes/leg_ank_roll.stl</uri>
-			  <scale>0.001 0.001 0.001</scale>
-			</mesh>
-          </geometry>
-        </visual>
-      </link>
-	  
-	  <!-- left foot -->
-	  <link name="left_foot">
-        <pose>0 0.060 0.118 0 0 0</pose>
-		<!--<gravity>true</gravity>-->
-		<inertial>
-          <mass>1.5</mass>
-          <inertia>
-            <ixx>1.0</ixx><ixy>0.0</ixy><ixz>0.0</ixz><iyy>1.0</iyy><iyz>0.0</iyz><izz>1.0</izz>
-          </inertia>
-        </inertial>
-        <collision name="collision">
-          <pose>0 0 0 1.57 0 1.57</pose>
-		  <geometry>
-            <mesh>
-			  <uri>model://thor_op/meshes/left_leg_foot.stl</uri>
-			  <scale>0.001 0.001 0.001</scale>
-			</mesh>
-          </geometry>
-	  <!-- From atlas model -->
-	  <surface>
-		  <friction>
-			  <ode>
-				  <mu>0.9</mu>
-				  <mu2>0.9</mu2>
-				  <fdir1>1 0 0</fdir1>
-			  </ode>
-		  </friction>
-		  <contact>
-			  <ode>
-				  <max_vel>1.0</max_vel>
-				  <min_depth>0.003</min_depth>
-			  </ode>
-		  </contact>
-	  </surface>
-        </collision>
-        <visual name="visual">
-          <pose>0 0 0 1.57 0 1.57</pose>
-		  <geometry>
-            <mesh>
-			  <uri>model://thor_op/meshes/left_leg_foot.stl</uri>
-			  <scale>0.001 0.001 0.001</scale>
-			</mesh>
-          </geometry>
-        </visual>
-      </link>
-	  
-	  <!-- right foot -->
-	  <link name="right_foot">
-        <pose>0 -0.060 0.118 0 0 0</pose>
-		<!--<gravity>true</gravity>-->
-		<inertial>
-          <mass>1.5</mass>
-          <inertia>
-            <ixx>1.0</ixx><ixy>0.0</ixy><ixz>0.0</ixz><iyy>1.0</iyy><iyz>0.0</iyz><izz>1.0</izz>
-          </inertia>
-        </inertial>
-        <collision name="collision">
-		  <pose>0 0 0 1.57 0 -1.57</pose>
-          <geometry>
-            <mesh>
-			  <uri>model://thor_op/meshes/right_leg_foot.stl</uri>
-			  <scale>0.001 0.001 0.001</scale>
-			</mesh>
-          </geometry>
-	  <!-- From atlas model -->
-	  <surface>
-		  <friction>
-			  <ode>
-				  <mu>0.9</mu>
-				  <mu2>0.9</mu2>
-				  <fdir1>1 0 0</fdir1>
-			  </ode>
-		  </friction>
-		  <contact>
-			  <ode>
-				  <max_vel>1.0</max_vel>
-				  <min_depth>0.003</min_depth>
-			  </ode>
-		  </contact>
-	  </surface>
-        </collision>
-        <visual name="visual">
-          <pose>0 0 0 1.57 0 -1.57</pose>
-		  <geometry>
-            <mesh>
-			  <uri>model://thor_op/meshes/right_leg_foot.stl</uri>
-			  <scale>0.001 0.001 0.001</scale>
-			</mesh>
-          </geometry>
-        </visual>
-      </link>
-	  
-	  <joint name="head_yaw" type="revolute">
-		<pose>0 0 0 0 0 0</pose>
-		<axis><xyz>0 0 1</xyz><limit><effort>40</effort></limit><dynamics><damping>1.0</damping><friction>0</friction></dynamics></axis>
-		<physics><ode><cfm_damping>1</cfm_damping></ode></physics>
-		<parent>main_case</parent>
-		<child>neck</child>
-	  </joint>
-	  <joint name="head_pitch" type="revolute">
-		<pose>0 0 0 0 0 0</pose>
-		<axis><xyz>0 1 0</xyz><limit><effort>40</effort></limit><dynamics><damping>1.0</damping><friction>0</friction></dynamics></axis>
-		<physics><ode><cfm_damping>1</cfm_damping></ode></physics>
-		<parent>neck</parent>
-		<child>head</child>
-	  </joint>
-	  <joint name="waist_pitch" type="revolute">
-		<pose>0 0 0 0 0 0</pose>
-		<!--<axis><xyz>0 1 0</xyz><limit><effort>200</effort><upper>1.57</upper><lower>0.0</lower></limit></axis>-->
-		<axis><xyz>0 1 0</xyz><limit><effort>200</effort></limit><dynamics><damping>1.0</damping><friction>0</friction></dynamics></axis>
-		<physics><ode><cfm_damping>1</cfm_damping></ode></physics>
-		<parent>main_case</parent>
-		<child>torso_pitch_servo</child>
-	  </joint>
-	  <joint name="waist_yaw" type="revolute">
-		<!--<pose>0 0 0 0 0 0</pose>-->
-		<pose>0 0 0 0 0 0</pose>
-		<axis><xyz>0 0 1</xyz><limit><effort>200</effort></limit><dynamics><damping>1.0</damping><friction>0</friction></dynamics></axis>
-		<physics><ode><cfm_damping>1</cfm_damping></ode></physics>
-		<parent>torso_pitch_servo</parent>
-		<child>torso</child>
-	  </joint>
-	  <joint name="l_shoulder_pitch" type="revolute">
-		<pose>0 0 0 0 0 0</pose>
-		<axis><xyz>0 1 0</xyz><limit><effort>100</effort></limit><dynamics><damping>1.0</damping><friction>0</friction></dynamics></axis>
-		<physics><ode><cfm_damping>1</cfm_damping></ode></physics>
-		<parent>main_case</parent>
-		<child>left_shoulder_pitch</child>
-	  </joint>
-	  <joint name="r_shoulder_pitch" type="revolute">
-		<pose>0 0 0 0 0 0</pose>
-		<axis><xyz>0 1 0</xyz><limit><effort>100</effort></limit><dynamics><damping>1.0</damping><friction>0</friction></dynamics></axis>
-		<physics><ode><cfm_damping>1</cfm_damping></ode></physics>
-		<parent>main_case</parent>
-		<child>right_shoulder_pitch</child>
-	  </joint>
-	  <joint name="l_shoulder_roll" type="revolute">
-		<pose>0 0 0 0 0 0</pose>
-		<axis><xyz>1 0 0</xyz><limit><effort>100</effort></limit><dynamics><damping>1.0</damping><friction>0</friction></dynamics></axis>
-		<physics><ode><cfm_damping>1</cfm_damping></ode></physics>
-		<parent>left_shoulder_pitch</parent>
-		<child>left_shoulder_roll</child>
-	  </joint>
-	  <joint name="r_shoulder_roll" type="revolute">
-		<pose>0 0 0 0 0 0</pose>
-		<axis><xyz>1 0 0</xyz><limit><effort>100</effort></limit><dynamics><damping>1.0</damping><friction>0</friction></dynamics></axis>
-		<physics><ode><cfm_damping>1</cfm_damping></ode></physics>
-		<parent>right_shoulder_pitch</parent>
-		<child>right_shoulder_roll</child>
-	  </joint>
-	  <joint name="l_shoulder_yaw" type="revolute">
-		<pose>0 0 0 0 0 0</pose>
-		<axis><xyz>0 0 1</xyz><limit><effort>100</effort></limit><dynamics><damping>1.0</damping><friction>0</friction></dynamics></axis>
-		<physics><ode><cfm_damping>1</cfm_damping></ode></physics>
-		<parent>left_shoulder_roll</parent>
-		<child>left_upper_arm</child>
-	  </joint>
-	  <joint name="r_shoulder_yaw" type="revolute">
-		<pose>0 0 0 0 0 0</pose>
-		<axis><xyz>0 0 1</xyz><limit><effort>100</effort></limit><dynamics><damping>1.0</damping><friction>0</friction></dynamics></axis>
-		<physics><ode><cfm_damping>1</cfm_damping></ode></physics>
-		<parent>right_shoulder_roll</parent>
-		<child>right_upper_arm</child>
-	  </joint>
-	  <joint name="l_elbow_pitch" type="revolute">
-		<pose>.030 0 0 0 0 0</pose>
-		<axis><xyz>0 1 0</xyz><limit><effort>100</effort></limit><dynamics><damping>1.0</damping><friction>0</friction></dynamics></axis>
-		<physics><ode><cfm_damping>1</cfm_damping></ode></physics>
-		<parent>left_upper_arm</parent>
-		<child>left_lower_arm</child>
-	  </joint>
-	  <joint name="r_elbow_pitch" type="revolute">
-		<pose>.030 0 0 0 0 0</pose>
-		<axis><xyz>0 1 0</xyz><limit><effort>100</effort></limit><dynamics><damping>1.0</damping><friction>0</friction></dynamics></axis>
-		<physics><ode><cfm_damping>1</cfm_damping></ode></physics>
-		<parent>right_upper_arm</parent>
-		<child>right_lower_arm</child>
-	  </joint>
-	  <joint name="l_wrist_yaw" type="revolute">
-		<pose>0 0 0 0 0 0</pose>
-		<axis><xyz>0 0 1</xyz><limit><effort>40</effort></limit><dynamics><damping>1.0</damping><friction>0</friction></dynamics></axis>
-		<physics><ode><cfm_damping>1</cfm_damping></ode></physics>
-		<parent>left_lower_arm</parent>
-		<child>left_wrist</child>
-	  </joint>
-	  <joint name="r_wrist_yaw" type="revolute">
-		<pose>0 0 0 0 0 0</pose>
-		<axis><xyz>0 0 1</xyz><limit><effort>40</effort></limit><dynamics><damping>1.0</damping><friction>0</friction></dynamics></axis>
-		<physics><ode><cfm_damping>1</cfm_damping></ode></physics>
-		<parent>right_lower_arm</parent>
-		<child>right_wrist</child>
-	  </joint>
-	  <joint name="l_wrist_roll" type="revolute">
-		<pose>0 0 0 0 0 0</pose>
-		<axis><xyz>1 0 0</xyz><limit><effort>40</effort></limit><dynamics><damping>1.0</damping><friction>0</friction></dynamics></axis>
-		<physics><ode><provide_feedback>1</provide_feedback><cfm_damping>1</cfm_damping></ode></physics>
-		<parent>left_wrist</parent>
-		<child>left_gripper</child>
-	  </joint>
-	  <joint name="r_wrist_roll" type="revolute">
-		<pose>0 0 0 0 0 0</pose>
-		<axis><xyz>1 0 0</xyz><limit><effort>40</effort></limit><dynamics><damping>1.0</damping><friction>0</friction></dynamics></axis>
-		<physics><ode><provide_feedback>1</provide_feedback><cfm_damping>1</cfm_damping></ode></physics>
-		<parent>right_wrist</parent>
-		<child>right_gripper</child>
-	  </joint>
-	  <joint name="l_hip_yaw" type="revolute">
-		<pose>0 0 0 0 0 0</pose>
-		<axis><xyz>0 0 1</xyz><limit><effort>100</effort></limit><dynamics><damping>1.0</damping><friction>0</friction></dynamics></axis>
-		<physics><ode><cfm_damping>1</cfm_damping></ode></physics>
-		<parent>torso</parent>
-		<child>left_hip</child>
-	  </joint>
-	  <joint name="r_hip_yaw" type="revolute">
-		<pose>0 0 0 0 0 0</pose>
-		<axis><xyz>0 0 1</xyz><limit><effort>100</effort></limit><dynamics><damping>1.0</damping><friction>0</friction></dynamics></axis>
-		<physics><ode><cfm_damping>1</cfm_damping></ode></physics>
-		<parent>torso</parent>
-		<child>right_hip</child>
-	  </joint>
-	  <joint name="l_hip_roll" type="revolute">
-		<pose>0 0 0 0 0 0</pose>
-		<axis><xyz>1 0 0</xyz><limit><effort>100</effort></limit><dynamics><damping>1.0</damping><friction>0</friction></dynamics></axis>
-		<physics><ode><cfm_damping>1</cfm_damping></ode></physics>
-		<parent>torso</parent>
-		<child>left_hip</child>
-	  </joint>
-	  <joint name="r_hip_roll" type="revolute">
-		<pose>0 0 0 0 0 0</pose>
-		<axis><xyz>1 0 0</xyz><limit><effort>100</effort></limit><dynamics><damping>1.0</damping><friction>0</friction></dynamics></axis>
-		<physics><ode><cfm_damping>1</cfm_damping></ode></physics>
-		<parent>torso</parent>
-		<child>right_hip</child>
-	  </joint>
-	  <joint name="l_hip_pitch" type="revolute">
-		<pose>0 0 0 0 0 0</pose>
-		<axis><xyz>0 1 0</xyz>
-		  <limit><effort>200</effort></limit>
-		  <!--<limit><effort>200</effort><upper>0.0</upper><lower>0.0</lower></limit>-->
-		  <dynamics><damping>1.0</damping><friction>0</friction></dynamics>
-		</axis>
-		<physics><ode><cfm_damping>1</cfm_damping></ode></physics>
-		<parent>left_hip</parent>
-		<child>left_thigh</child>
-	  </joint>
-	  <joint name="r_hip_pitch" type="revolute">
-		<pose>0 0 0 0 0 0</pose>
-		<axis><xyz>0 1 0</xyz>
-		  <limit><effort>200</effort></limit>
-		  <!--<limit><effort>200</effort><upper>0.0</upper><lower>0.0</lower></limit>-->
-		  <dynamics><damping>1.0</damping><friction>0</friction></dynamics>
-		</axis>
-		<physics><ode><cfm_damping>1</cfm_damping></ode></physics>
-		<parent>right_hip</parent>
-		<child>right_thigh</child>
-	  </joint>
-	  <joint name="l_knee_pitch" type="revolute">
-		<pose>-.030 0 0 0 0 0</pose>
-		<axis><xyz>0 1 0</xyz><limit><effort>200</effort></limit><dynamics><damping>1.0</damping><friction>0</friction></dynamics></axis>
-		<!--<axis><xyz>0 1 0</xyz><limit><effort>200</effort><upper>0.0</upper><lower>0.0</lower></limit></axis>-->
-		<physics><ode><cfm_damping>1</cfm_damping></ode></physics>
-		<parent>left_thigh</parent>
-		<child>left_leg</child>
-	  </joint>
-	  <joint name="r_knee_pitch" type="revolute">
-		<pose>-.030 0 0 0 0 0</pose>
-		<axis><xyz>0 1 0</xyz><limit><effort>200</effort></limit><dynamics><damping>1.0</damping><friction>0</friction></dynamics></axis>
-		<!--<axis><xyz>0 1 0</xyz><limit><effort>200</effort><upper>0.0</upper><lower>0.0</lower></limit></axis>-->
-		<physics><ode><cfm_damping>1</cfm_damping></ode></physics>
-		<parent>right_thigh</parent>
-		<child>right_leg</child>
-	  </joint>
-	  <joint name="l_ankle_pitch" type="revolute">
-		<pose>0 0 0 0 0 0</pose>
-		<axis><xyz>0 1 0</xyz><limit><effort>200</effort></limit><dynamics><damping>1.0</damping><friction>0</friction></dynamics></axis>
-		<!--<axis><xyz>0 1 0</xyz><limit><effort>200</effort><upper>0.0</upper><lower>0.0</lower></limit></axis>-->
-		<physics><ode><cfm_damping>1</cfm_damping></ode></physics>
-		<parent>left_leg</parent>
-		<child>left_ankle</child>
-	  </joint>
-	  <joint name="r_ankle_pitch" type="revolute">
-		<pose>0 0 0 0 0 0</pose>
-		<axis><xyz>0 1 0</xyz><limit><effort>200</effort></limit><dynamics><damping>1.0</damping><friction>0</friction></dynamics></axis>
-		<!--<axis><xyz>0 1 0</xyz><limit><effort>200</effort><upper>0.0</upper><lower>0.0</lower></limit></axis>-->
-		<physics><ode><cfm_damping>1</cfm_damping></ode></physics>
-		<parent>right_leg</parent>
-		<child>right_ankle</child>
-	  </joint>
-	  <joint name="l_ankle_roll" type="revolute">
-		<pose>0 0 0 0 0 0</pose>
-		<axis><xyz>1 0 0</xyz><limit><effort>100</effort></limit><dynamics><damping>1.0</damping><friction>0</friction></dynamics></axis>
-		<physics><ode><provide_feedback>1</provide_feedback><cfm_damping>1</cfm_damping></ode></physics>
-		<parent>left_ankle</parent>
-		<child>left_foot</child>
-	  </joint>
-	  <joint name="r_ankle_roll" type="revolute">
-		<pose>0 0 0 0 0 0</pose>
-		<axis><xyz>1 0 0</xyz><limit><effort>100</effort></limit><dynamics><damping>1.0</damping><friction>0</friction></dynamics></axis>
-		<physics><ode><provide_feedback>1</provide_feedback><cfm_damping>1</cfm_damping></ode></physics>
-		<parent>right_ankle</parent>
-		<child>right_foot</child>
-	  </joint>
-	  
-	</model>
+        <plugin name="gz_comms_manager" filename="libgz_comms_manager.so" />
+        
+        <!-- head -->
+        <link name="head">
+            <pose>0 0 1.419 0 0 0</pose>
+            <!--<gravity>true</gravity>-->
+            <inertial>
+                <mass>0.1</mass>
+                <inertia>
+                    <ixx>1.0</ixx>
+                    <ixy>0.0</ixy>
+                    <ixz>0.0</ixz>
+                    <iyy>1.0</iyy>
+                    <iyz>0.0</iyz>
+                    <izz>1.0</izz>
+                </inertia>
+            </inertial>
+            <collision name="head_collision">
+                <pose>0 0 0 1.57 0 -1.57</pose>
+                <geometry>
+                    <mesh>
+                        <uri>model://thor_op/meshes/head.stl</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </collision>
+            <visual name="head_visual">
+                <pose>0 0 0 1.57 0 -1.57</pose>
+                <geometry>
+                    <mesh>
+                        <uri>model://thor_op/meshes/head.stl</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </visual>
+        </link>
+        
+        <!-- neck -->
+        <link name="neck">
+            <pose>0 0 1.419 0 0 0</pose>
+            <!--<gravity>true</gravity>-->
+            <inertial>
+                <mass>0.1</mass>
+                <inertia>
+                    <ixx>1.0</ixx>
+                    <ixy>0.0</ixy>
+                    <ixz>0.0</ixz>
+                    <iyy>1.0</iyy>
+                    <iyz>0.0</iyz>
+                    <izz>1.0</izz>
+                </inertia>
+            </inertial>
+            <collision name="neck_collision">
+                <pose>0 0 -0.020 -1.57 0 0</pose>
+                <geometry>
+                    <mesh>
+                        <uri>model://thor_op/meshes/neck.stl</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </collision>
+            <visual name="neck_visual">
+                <pose>0 0 -0.020 -1.57 0 0</pose>
+                <geometry>
+                    <mesh>
+                        <uri>model://thor_op/meshes/neck.stl</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </visual>
+        </link>
+        
+        <!-- main case -->
+        <link name="main_case">
+            <pose>0 0 1.222 0 0 0</pose>
+            <!--<gravity>true</gravity>-->
+            <inertial>
+                <mass>.1</mass>
+                <inertia>
+                    <ixx>1.0</ixx>
+                    <ixy>0.0</ixy>
+                    <ixz>0.0</ixz>
+                    <iyy>1.0</iyy>
+                    <iyz>0.0</iyz>
+                    <izz>1.0</izz>
+                </inertia>
+            </inertial>
+            <collision name="main_case_collision">
+                <pose>0 0 0 1.57 0 1.57</pose>
+                <geometry>
+                    <mesh>
+                        <uri>model://thor_op/meshes/chest.stl</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </collision>
+            <visual name="main_case_visual">
+                <pose>0 0 0 1.57 0 1.57</pose>
+                <geometry>
+                    <mesh>
+                        <uri>model://thor_op/meshes/chest.stl</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </visual>
+            <sensor name="lidar_sensor1" type="ray">
+                <!-- Hokuyo UTM-30LX-EW -->
+                <always_on>1</always_on>
+                <update_rate>10</update_rate>
+                <pose>.0565 0 1.277 0 0 0</pose>
+                <ray>
+                    <scan>
+                        <horizontal>
+                            <samples>1081</samples>
+                            <resolution>1</resolution>
+                            <min_angle>-2.35619449</min_angle>
+                            <max_angle>2.35619449</max_angle>
+                        </horizontal>
+                    </scan>
+                    <range>
+                        <min>.1</min>
+                        <max>30</max>
+                        <resolution>.05</resolution>
+                    </range>
+                </ray>
+                <plugin name="gz_lidar_dump" filename="libgz_lidar_dump.so" />
+            </sensor>
+            <sensor name="camera_sensor1" type="camera">
+                <pose>0 0 0.5 0 0 1.57</pose>
+                <camera>
+                    <horizontal_fov>1.57</horizontal_fov>
+                    <image>
+                        <width>640</width>
+                        <height>480</height>
+                        <format>R8G8B8</format>
+                    </image>
+                    <clip>
+                        <near>0.5</near>
+                        <far>5</far>
+                    </clip>
+                </camera>
+                <plugin name="gz_camera_dump" filename="libgz_camera_dump.so" />
+                <always_on>1</always_on>
+                <update_rate>10</update_rate>
+            </sensor>
+        </link>
+        
+        <!-- torso pitch servo -->
+        <link name="torso_pitch_servo">
+            <pose>0 0 1.060 0 0 0</pose>
+            <inertial>
+                <mass>.1</mass>
+                <inertia>
+                    <ixx>1.0</ixx>
+                    <ixy>0.0</ixy>
+                    <ixz>0.0</ixz>
+                    <iyy>1.0</iyy>
+                    <iyz>0.0</iyz>
+                    <izz>1.0</izz>
+                </inertia>
+            </inertial>
+            <collision name="torso_pitch_servo_collision">
+                <pose>0 0 -0.038 -1.57 0 1.57</pose>
+                <geometry>
+                    <mesh>
+                        <uri>model://thor_op/meshes/torso_pitch_servo.stl</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </collision>
+            <visual name="torso_pitch_servo_visual">
+                <pose>0 0 -0.038 1.57 0 1.57</pose>
+                <geometry>
+                    <mesh>
+                        <uri>model://thor_op/meshes/torso_pitch_servo.stl</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </visual>
+        </link>
+        
+        <!-- torso -->
+        <link name="torso">
+            <pose>0 0 1.022 0 0 0</pose>
+            <!--<gravity>true</gravity>-->
+            <inertial>
+                <mass>.2</mass>
+                <inertia>
+                    <ixx>1.0</ixx>
+                    <ixy>0.0</ixy>
+                    <ixz>0.0</ixz>
+                    <iyy>1.0</iyy>
+                    <iyz>0.0</iyz>
+                    <izz>1.0</izz>
+                </inertia>
+            </inertial>
+            <collision name="torso_collision">
+                <pose>0 0 -0.086 1.57 0 1.57</pose>
+                <geometry>
+                    <mesh>
+                        <uri>model://thor_op/meshes/pelvis.stl</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </collision>
+            <visual name="torso_pelvis_visual">
+                <pose>0 0 -0.086 1.57 0 1.57</pose>
+                <geometry>
+                    <mesh>
+                        <uri>model://thor_op/meshes/pelvis.stl</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </visual>
+            <sensor name="imu_sensor" type="imu">
+                <always_on>1</always_on>
+                <visualize>1</visualize>
+                <topic>imu_sensor</topic>
+            </sensor>
+        </link>
+        
+        <!-- left shoulder pitch -->
+        <link name="left_shoulder_pitch">
+            <pose>0 .216 1.222 0 0 0</pose>
+            <!--<gravity>true</gravity>-->
+            <inertial>
+                <mass>.1</mass>
+                <inertia>
+                    <ixx>1.0</ixx>
+                    <ixy>0.0</ixy>
+                    <ixz>0.0</ixz>
+                    <iyy>1.0</iyy>
+                    <iyz>0.0</iyz>
+                    <izz>1.0</izz>
+                </inertia>
+            </inertial>
+            <collision name="left_shoulder_pitch_collision">
+                <pose>0 -0.055 0 3.14 -1.57 0</pose>
+                <geometry>
+                    <mesh>
+                        <uri>model://thor_op/meshes/left_shoulder_pitch.stl</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </collision>
+            <visual name="left_shoulder_pitch_visual">
+                <pose>0 -0.055 0 3.14 -1.57 0</pose>
+                <geometry>
+                    <mesh>
+                        <uri>model://thor_op/meshes/left_shoulder_pitch.stl</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </visual>
+        </link>
+        
+        <!-- right shoulder pitch -->
+        <link name="right_shoulder_pitch">
+            <pose>0 -.216 1.222 0 0 0</pose>
+            <!--<gravity>true</gravity>-->
+            <inertial>
+                <mass>.1</mass>
+                <inertia>
+                    <ixx>1.0</ixx>
+                    <ixy>0.0</ixy>
+                    <ixz>0.0</ixz>
+                    <iyy>1.0</iyy>
+                    <iyz>0.0</iyz>
+                    <izz>1.0</izz>
+                </inertia>
+            </inertial>
+            <collision name="right_shoulder_pitch_collision">
+                <pose>0 0.055 0 3.14 -1.57 3.14</pose>
+                <geometry>
+                    <mesh>
+                        <uri>model://thor_op/meshes/right_shoulder_pitch.stl</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </collision>
+            <visual name="right_shoulder_pitch_visual">
+                <pose>0 0.055 0 3.14 -1.57 3.14</pose>
+                <geometry>
+                    <mesh>
+                        <uri>model://thor_op/meshes/right_shoulder_pitch.stl</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </visual>
+        </link>
+        
+        <!-- left shoulder roll -->
+        <link name="left_shoulder_roll">
+            <pose>0 .216 1.222 0 0 0</pose>
+            <!--<gravity>true</gravity>-->
+            <inertial>
+                <mass>.1</mass>
+                <inertia>
+                    <ixx>1.0</ixx>
+                    <ixy>0.0</ixy>
+                    <ixz>0.0</ixz>
+                    <iyy>1.0</iyy>
+                    <iyz>0.0</iyz>
+                    <izz>1.0</izz>
+                </inertia>
+            </inertial>
+            <collision name="left_shoulder_roll_collision">
+                <pose>0.030 0 0 1.57 0 1.57</pose>
+                <geometry>
+                    <mesh>
+                        <uri>model://thor_op/meshes/left_shoulder_roll.stl</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </collision>
+            <visual name="left_shoulder_roll_visual">
+                <pose>0.030 0 0 1.57 0 1.57</pose>
+                <geometry>
+                    <mesh>
+                        <uri>model://thor_op/meshes/left_shoulder_roll.dae</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </visual>
+        </link>
+        
+        <!-- right shoulder roll -->
+        <link name="right_shoulder_roll">
+            <pose>0 -.216 1.222 0 0 0</pose>
+            <!--<gravity>true</gravity>-->
+            <inertial>
+                <mass>.1</mass>
+                <inertia>
+                    <ixx>1.0</ixx>
+                    <ixy>0.0</ixy>
+                    <ixz>0.0</ixz>
+                    <iyy>1.0</iyy>
+                    <iyz>0.0</iyz>
+                    <izz>1.0</izz>
+                </inertia>
+            </inertial>
+            <collision name="right_shoulder_roll_collision">
+                <pose>0.030 0 0 1.57 0 -1.57</pose>
+                <geometry>
+                    <mesh>
+                        <uri>model://thor_op/meshes/right_shoulder_roll.stl</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </collision>
+            <visual name="right_shoulder_roll_visual">
+                <pose>0.030 0 0 1.57 0 -1.57</pose>
+                <geometry>
+                    <mesh>
+                        <uri>model://thor_op/meshes/right_shoulder_roll.stl</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </visual>
+        </link>
+        
+        <!-- left upper arm -->
+        <link name="left_upper_arm">
+            <pose>0 .216 1.222 0 0 0</pose>
+            <!--<gravity>true</gravity>-->
+            <inertial>
+                <mass>.1</mass>
+                <inertia>
+                    <ixx>1.0</ixx>
+                    <ixy>0.0</ixy>
+                    <ixz>0.0</ixz>
+                    <iyy>1.0</iyy>
+                    <iyz>0.0</iyz>
+                    <izz>1.0</izz>
+                </inertia>
+            </inertial>
+            <collision name="left_upper_arm_collision">
+                <pose>0 0 -.025 1.57 0 1.57</pose>
+                <geometry>
+                    <mesh>
+                        <uri>model://thor_op/meshes/left_shoulder_yaw.stl</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </collision>
+            <visual name="left_upper_arm_visual">
+                <pose>0 0 -.025 1.57 0 1.57</pose>
+                <geometry>
+                    <mesh>
+                        <uri>model://thor_op/meshes/left_shoulder_yaw.stl</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </visual>
+        </link>
+        
+        <!-- right upper arm -->
+        <link name="right_upper_arm">
+            <pose>0 -.216 1.222 0 0 0</pose>
+            <!--<gravity>true</gravity>-->
+            <inertial>
+                <mass>.1</mass>
+                <inertia>
+                    <ixx>1.0</ixx>
+                    <ixy>0.0</ixy>
+                    <ixz>0.0</ixz>
+                    <iyy>1.0</iyy>
+                    <iyz>0.0</iyz>
+                    <izz>1.0</izz>
+                </inertia>
+            </inertial>
+            <collision name="right_upper_arm_collision">
+                <pose>0 0 -.025 1.57 0 -1.57</pose>
+                <geometry>
+                    <mesh>
+                        <uri>model://thor_op/meshes/right_shoulder_yaw.stl</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </collision>
+            <visual name="right_upper_arm_visual">
+                <pose>0 0 -.025 1.57 0 -1.57</pose>
+                <geometry>
+                    <mesh>
+                        <uri>model://thor_op/meshes/right_shoulder_yaw.stl</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </visual>
+        </link>
+        
+        <!-- left lower arm -->
+        <link name="left_lower_arm">
+            <pose>0 .216 .976 0 0 0</pose>
+            <!--<gravity>true</gravity>-->
+            <inertial>
+                <mass>.1</mass>
+                <inertia>
+                    <ixx>1.0</ixx>
+                    <ixy>0.0</ixy>
+                    <ixz>0.0</ixz>
+                    <iyy>1.0</iyy>
+                    <iyz>0.0</iyz>
+                    <izz>1.0</izz>
+                </inertia>
+            </inertial>
+            <collision name="left_lower_arm_collision">
+                <pose>0 0 0 1.57 0 1.57</pose>
+                <geometry>
+                    <mesh>
+                        <uri>model://thor_op/meshes/left_arm_elbow.stl</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </collision>
+            <visual name="left_lower_arm_visual">
+                <pose>0 0 0 1.57 0 1.57</pose>
+                <geometry>
+                    <mesh>
+                        <uri>model://thor_op/meshes/left_arm_elbow.stl</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </visual>
+        </link>
+        
+        <!-- right lower arm -->
+        <link name="right_lower_arm">
+            <pose>0 -.216 .976 0 0 0</pose>
+            <!--<gravity>true</gravity>-->
+            <inertial>
+                <mass>.1</mass>
+                <inertia>
+                    <ixx>1.0</ixx>
+                    <ixy>0.0</ixy>
+                    <ixz>0.0</ixz>
+                    <iyy>1.0</iyy>
+                    <iyz>0.0</iyz>
+                    <izz>1.0</izz>
+                </inertia>
+            </inertial>
+            <collision name="right_lower_arm_collision">
+                <pose>0 0 0 1.57 0 -1.57</pose>
+                <geometry>
+                    <mesh>
+                        <uri>model://thor_op/meshes/right_arm_elb_mir.stl</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </collision>
+            <visual name="right_lower_arm_visual">
+                <pose>0 0 0 1.57 0 -1.57</pose>
+                <geometry>
+                    <mesh>
+                        <uri>model://thor_op/meshes/right_arm_elb_mir.stl</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </visual>
+        </link>
+        
+        <!-- left wrist -->
+        <link name="left_wrist">
+            <pose>0 .216 .760 0 0 0</pose>
+            <!--<gravity>true</gravity>-->
+            <inertial>
+                <mass>.1</mass>
+                <inertia>
+                    <ixx>1.0</ixx>
+                    <ixy>0.0</ixy>
+                    <ixz>0.0</ixz>
+                    <iyy>1.0</iyy>
+                    <iyz>0.0</iyz>
+                    <izz>1.0</izz>
+                </inertia>
+            </inertial>
+            <collision name="left_wrist_collision">
+                <pose>0 0 0 1.57 0 1.57</pose>
+                <geometry>
+                    <mesh>
+                        <uri>model://thor_op/meshes/left_wrist_yaw.stl</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </collision>
+            <visual name="left_wrist_visual">
+                <pose>0 0 0 1.57 0 1.57</pose>
+                <geometry>
+                    <mesh>
+                        <uri>model://thor_op/meshes/left_wrist_yaw.stl</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </visual>
+        </link>
+        
+        <!-- right wrist -->
+        <link name="right_wrist">
+            <pose>0 -.216 .760 0 0 0</pose>
+            <!--<gravity>true</gravity>-->
+            <inertial>
+                <mass>.1</mass>
+                <inertia>
+                    <ixx>1.0</ixx>
+                    <ixy>0.0</ixy>
+                    <ixz>0.0</ixz>
+                    <iyy>1.0</iyy>
+                    <iyz>0.0</iyz>
+                    <izz>1.0</izz>
+                </inertia>
+            </inertial>
+            <collision name="right_wrist_collision">
+                <pose>0 0 0 1.57 0 -1.57</pose>
+                <geometry>
+                    <mesh>
+                        <uri>model://thor_op/meshes/right_wrist_yaw.stl</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </collision>
+            <visual name="right_wrist_visual">
+                <pose>0 0 0 1.57 0 -1.57</pose>
+                <geometry>
+                    <mesh>
+                        <uri>model://thor_op/meshes/right_wrist_yaw.stl</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </visual>
+        </link>
+        
+        <!--left gripper-->
+        <link name="left_gripper">
+            <pose>0 .216 .760 0 0 0</pose>
+            <!--<gravity>true</gravity>-->
+            <inertial>
+                <mass>.1</mass>
+                <inertia>
+                    <ixx>1.0</ixx>
+                    <ixy>0.0</ixy>
+                    <ixz>0.0</ixz>
+                    <iyy>1.0</iyy>
+                    <iyz>0.0</iyz>
+                    <izz>1.0</izz>
+                </inertia>
+            </inertial>
+            <collision name="left_gripper_collision">
+                <pose>0 0 0 1.57 0 1.57</pose>
+                <geometry>
+                    <mesh>
+                        <uri>model://thor_op/meshes/left_wrist_roll.stl</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </collision>
+            <visual name="left_gripper_visual">
+                <pose>0 0 0 1.57 0 1.57</pose>
+                <geometry>
+                    <mesh>
+                        <uri>model://thor_op/meshes/left_wrist_roll.stl</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </visual>
+        </link>
+        
+        <!--right gripper-->
+        <link name="right_gripper">
+            <pose>0 -.216 .760 0 0 0</pose>
+            <!--<gravity>true</gravity>-->
+            <inertial>
+                <mass>.1</mass>
+                <inertia>
+                    <ixx>1.0</ixx>
+                    <ixy>0.0</ixy>
+                    <ixz>0.0</ixz>
+                    <iyy>1.0</iyy>
+                    <iyz>0.0</iyz>
+                    <izz>1.0</izz>
+                </inertia>
+            </inertial>
+            <collision name="right_gripper_collision">
+                <pose>0 0 0 1.57 0 -1.57</pose>
+                <geometry>
+                    <mesh>
+                        <uri>model://thor_op/meshes/right_wrist_roll.stl</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </collision>
+            <visual name="right_gripper_visual">
+                <pose>0 0 0 1.57 0 -1.57</pose>
+                <geometry>
+                    <mesh>
+                        <uri>model://thor_op/meshes/right_wrist_roll.stl</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </visual>
+        </link>
+        
+        <!-- left hip -->
+        <link name="left_hip">
+            <pose>0 .060 .790 0 0 0</pose>
+            <!--<gravity>true</gravity>-->
+            <inertial>
+                <mass>.1</mass>
+                <inertia>
+                    <ixx>1.0</ixx>
+                    <ixy>0.0</ixy>
+                    <ixz>0.0</ixz>
+                    <iyy>1.0</iyy>
+                    <iyz>0.0</iyz>
+                    <izz>1.0</izz>
+                </inertia>
+            </inertial>
+            <collision name="left_hip_collision">
+                <pose>0 0 0.065 1.57 0 1.57</pose>
+                <geometry>
+                    <mesh>
+                        <uri>model://thor_op/meshes/leg_hip_yaw.dae</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </collision>
+            <visual name="left_hip_visual">
+                <pose>0 0 0.065 1.57 0 1.57</pose>
+                <geometry>
+                    <mesh>
+                        <uri>model://thor_op/meshes/leg_hip_yaw.dae</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </visual>
+        </link>
+        
+        <!-- right hip -->
+        <link name="right_hip">
+            <pose>0 -.060 .790 0 0 0</pose>
+            <!--<gravity>true</gravity>-->
+            <inertial>
+                <mass>.1</mass>
+                <inertia>
+                    <ixx>1.0</ixx>
+                    <ixy>0.0</ixy>
+                    <ixz>0.0</ixz>
+                    <iyy>1.0</iyy>
+                    <iyz>0.0</iyz>
+                    <izz>1.0</izz>
+                </inertia>
+            </inertial>
+            <collision name="right_hip_collision">
+                <pose>0 0 0.065 1.57 0 -1.57</pose>
+                <geometry>
+                    <mesh>
+                        <uri>model://thor_op/meshes/hip_yaw_mir.stl</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </collision>
+            <visual name="right_hip_visual">
+                <pose>0 0 0.065 1.57 0 -1.57</pose>
+                <geometry>
+                    <mesh>
+                        <uri>model://thor_op/meshes/hip_yaw_mir.stl</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </visual>
+        </link>
+        
+        <!-- left thigh -->
+        <link name="left_thigh">
+            <pose>0 0.060 0.790 0 0 0</pose>
+            <!--<gravity>true</gravity>-->
+            <inertial>
+                <mass>.6</mass>
+                <inertia>
+                    <ixx>1.0</ixx>
+                    <ixy>0.0</ixy>
+                    <ixz>0.0</ixz>
+                    <iyy>1.0</iyy>
+                    <iyz>0.0</iyz>
+                    <izz>1.0</izz>
+                </inertia>
+            </inertial>
+            <collision name="left_thigh_collision">
+                <pose>0 0 0 1.57 0 1.57</pose>
+                <geometry>
+                    <mesh>
+                        <uri>model://thor_op/meshes/left_leg_thigh.stl</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </collision>
+            <visual name="left_thigh_visual">
+                <pose>0 0 0 1.57 0 1.57</pose>
+                <geometry>
+                    <mesh>
+                        <uri>model://thor_op/meshes/left_leg_thigh.stl</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </visual>
+        </link>
+        
+        <!-- right thigh -->
+        <link name="right_thigh">
+            <pose>0 -0.060 0.790 0 0 0</pose>
+            <!--<gravity>true</gravity>-->
+            <inertial>
+                <mass>.6</mass>
+                <inertia>
+                    <ixx>1.0</ixx>
+                    <ixy>0.0</ixy>
+                    <ixz>0.0</ixz>
+                    <iyy>1.0</iyy>
+                    <iyz>0.0</iyz>
+                    <izz>1.0</izz>
+                </inertia>
+            </inertial>
+            <collision name="right_thigh_collision">
+                <pose>0 0 0 1.57 0 -1.57</pose>
+                <geometry>
+                    <mesh>
+                        <uri>model://thor_op/meshes/right_leg_thigh.stl</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </collision>
+            <visual name="right_thigh_visual">
+                <pose>0 0 0 1.57 0 -1.57</pose>
+                <geometry>
+                    <mesh>
+                        <uri>model://thor_op/meshes/right_leg_thigh.stl</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </visual>
+        </link>
+        
+        <!-- left leg -->
+        <link name="left_leg">
+            <pose>0 0.060 .454 0 0 0</pose>
+            <!--<gravity>true</gravity>-->
+            <inertial>
+                <mass>1.0</mass>
+                <inertia>
+                    <ixx>1.0</ixx>
+                    <ixy>0.0</ixy>
+                    <ixz>0.0</ixz>
+                    <iyy>1.0</iyy>
+                    <iyz>0.0</iyz>
+                    <izz>1.0</izz>
+                </inertia>
+            </inertial>
+            <collision name="left_leg_collision">
+                <pose>0 0 0 1.57 0 1.57</pose>
+                <geometry>
+                    <mesh>
+                        <uri>model://thor_op/meshes/left_leg_shin.stl</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </collision>
+            <visual name="left_leg_visual">
+                <pose>0 0 0 1.57 0 1.57</pose>
+                <geometry>
+                    <mesh>
+                        <uri>model://thor_op/meshes/left_leg_shin.stl</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </visual>
+        </link>
+        
+        <!-- right leg -->
+        <link name="right_leg">
+            <pose>0 -0.060 .454 0 0 0</pose>
+            <!--<gravity>true</gravity>-->
+            <inertial>
+                <mass>1.0</mass>
+                <inertia>
+                    <ixx>1.0</ixx>
+                    <ixy>0.0</ixy>
+                    <ixz>0.0</ixz>
+                    <iyy>1.0</iyy>
+                    <iyz>0.0</iyz>
+                    <izz>1.0</izz>
+                </inertia>
+            </inertial>
+            <collision name="right_leg_collision">
+                <pose>0 0 0 1.57 0 -1.57</pose>
+                <geometry>
+                    <mesh>
+                        <uri>model://thor_op/meshes/right_leg_shin.stl</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </collision>
+            <visual name="right_leg_visual">
+                <pose>0 0 0 1.57 0 -1.57</pose>
+                <geometry>
+                    <mesh>
+                        <uri>model://thor_op/meshes/right_leg_shin.stl</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </visual>
+        </link>
+        
+        <!-- left ankle -->
+        <link name="left_ankle">
+            <pose>0 0.060 0.118 0 0 0</pose>
+            <!--<gravity>true</gravity>-->
+            <inertial>
+                <mass>.2</mass>
+                <inertia>
+                    <ixx>1.0</ixx>
+                    <ixy>0.0</ixy>
+                    <ixz>0.0</ixz>
+                    <iyy>1.0</iyy>
+                    <iyz>0.0</iyz>
+                    <izz>1.0</izz>
+                </inertia>
+            </inertial>
+            <collision name="left_ankle_collision">
+                <pose>0 0 0 0 1.57 0</pose>
+                <geometry>
+                    <mesh>
+                        <uri>model://thor_op/meshes/leg_ank_roll.stl</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </collision>
+            <visual name="left_ankle_visual">
+                <pose>0 0 0 0 1.57 0</pose>
+                <geometry>
+                    <mesh>
+                        <uri>model://thor_op/meshes/leg_ank_roll.stl</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </visual>
+        </link>
+        
+        <!-- right ankle -->
+        <link name="right_ankle">
+            <pose>0 -0.060 0.118 0 0 0</pose>
+            <!--<gravity>true</gravity>-->
+            <inertial>
+                <mass>.2</mass>
+                <inertia>
+                    <ixx>1.0</ixx>
+                    <ixy>0.0</ixy>
+                    <ixz>0.0</ixz>
+                    <iyy>1.0</iyy>
+                    <iyz>0.0</iyz>
+                    <izz>1.0</izz>
+                </inertia>
+            </inertial>
+            <collision name="right_ankle_collision">
+                <pose>0 0 0 0 1.57 0</pose>
+                <geometry>
+                    <mesh>
+                        <uri>model://thor_op/meshes/leg_ank_roll.stl</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </collision>
+            <visual name="right_ankle_visual">
+                <pose>0 0 0 0 1.57 0</pose>
+                <geometry>
+                    <mesh>
+                        <uri>model://thor_op/meshes/leg_ank_roll.stl</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </visual>
+        </link>
+        
+        <!-- left foot -->
+        <link name="l_foot">
+            <pose>0 0.060 0.118 0 0 0</pose>
+            <!--<gravity>true</gravity>-->
+            <inertial>
+                <mass>1.5</mass>
+                <inertia>
+                    <ixx>1.0</ixx>
+                    <ixy>0.0</ixy>
+                    <ixz>0.0</ixz>
+                    <iyy>1.0</iyy>
+                    <iyz>0.0</iyz>
+                    <izz>1.0</izz>
+                </inertia>
+            </inertial>
+            <collision name="l_foot_collision">
+                <pose>0 0 0 1.57 0 1.57</pose>
+                <geometry>
+                    <mesh>
+                        <uri>model://thor_op/meshes/left_leg_foot.stl</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+                <!-- From atlas model -->
+                <surface>
+                    <friction>
+                        <ode>
+                            <mu>0.9</mu>
+                            <mu2>0.9</mu2>
+                            <fdir1>1 0 0</fdir1>
+                        </ode>
+                    </friction>
+                    <contact>
+                        <ode>
+                            <max_vel>1.0</max_vel>
+                            <min_depth>0.003</min_depth>
+                        </ode>
+                    </contact>
+                </surface>
+            </collision>
+            <visual name="l_foot_visual">
+                <pose>0 0 0 1.57 0 1.57</pose>
+                <geometry>
+                    <mesh>
+                        <uri>model://thor_op/meshes/left_leg_foot.stl</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </visual>
+            <sensor name="l_foot_contact_sensor" type="contact">
+                <always_on>1</always_on>
+                <contact>
+                    <collision>l_foot_collision</collision>
+                </contact>
+            </sensor>
+        </link>
+        
+        <!-- right foot -->
+        <link name="r_foot">
+            <pose>0 -0.060 0.118 0 0 0</pose>
+            <!--<gravity>true</gravity>-->
+            <inertial>
+                <mass>1.5</mass>
+                <inertia>
+                    <ixx>1.0</ixx>
+                    <ixy>0.0</ixy>
+                    <ixz>0.0</ixz>
+                    <iyy>1.0</iyy>
+                    <iyz>0.0</iyz>
+                    <izz>1.0</izz>
+                </inertia>
+            </inertial>
+            <collision name="r_foot_collision">
+                <pose>0 0 0 1.57 0 -1.57</pose>
+                <geometry>
+                    <mesh>
+                        <uri>model://thor_op/meshes/right_leg_foot.stl</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+                <!-- From atlas model -->
+                <surface>
+                    <friction>
+                        <ode>
+                            <mu>0.9</mu>
+                            <mu2>0.9</mu2>
+                            <fdir1>1 0 0</fdir1>
+                        </ode>
+                    </friction>
+                    <contact>
+                        <ode>
+                            <max_vel>1.0</max_vel>
+                            <min_depth>0.003</min_depth>
+                        </ode>
+                    </contact>
+                </surface>
+            </collision>
+            <visual name="r_foot_visual">
+                <pose>0 0 0 1.57 0 -1.57</pose>
+                <geometry>
+                    <mesh>
+                        <uri>model://thor_op/meshes/right_leg_foot.stl</uri>
+                        <scale>0.001 0.001 0.001</scale>
+                    </mesh>
+                </geometry>
+            </visual>
+            <sensor name="r_foot_contact_sensor" type="contact">
+                <always_on>1</always_on>
+                <contact>
+                    <collision>r_foot_collision</collision>
+                </contact>
+            </sensor>
+        </link>
+        
+        <joint name="head_yaw" type="revolute">
+            <pose>0 0 0 0 0 0</pose>
+            <axis>
+                <xyz>0 0 1</xyz>
+                <limit>
+                    <effort>40</effort>
+                </limit>
+                <dynamics>
+                    <damping>1.0</damping>
+                    <friction>0</friction>
+                </dynamics>
+            </axis>
+            <physics>
+                <ode>
+                    <cfm_damping>1</cfm_damping>
+                </ode>
+            </physics>
+            <parent>
+                <link_name>main_case</link_name>
+            </parent>
+            <child>
+                <link_name>neck</link_name>
+            </child>
+        </joint>
+        <joint name="head_pitch" type="revolute">
+            <pose>0 0 0 0 0 0</pose>
+            <axis>
+                <xyz>0 1 0</xyz>
+                <limit>
+                    <effort>40</effort>
+                </limit>
+                <dynamics>
+                    <damping>1.0</damping>
+                    <friction>0</friction>
+                </dynamics>
+            </axis>
+            <physics>
+                <ode>
+                    <cfm_damping>1</cfm_damping>
+                </ode>
+            </physics>
+            <parent>
+                <link_name>neck</link_name>
+            </parent>
+            <child>
+                <link_name>head</link_name>
+            </child>
+        </joint>
+        <joint name="waist_pitch" type="revolute">
+            <pose>0 0 0 0 0 0</pose>
+            <!--<axis><xyz>0 1 0</xyz><limit><effort>200</effort><upper>1.57</upper><lower>0.0</lower></limit></axis>-->
+            <axis>
+                <xyz>0 1 0</xyz>
+                <limit>
+                    <effort>200</effort>
+                </limit>
+                <dynamics>
+                    <damping>1.0</damping>
+                    <friction>0</friction>
+                </dynamics>
+            </axis>
+            <physics>
+                <ode>
+                    <cfm_damping>1</cfm_damping>
+                </ode>
+            </physics>
+            <parent>
+                <link_name>main_case</link_name>
+            </parent>
+            <child>
+                <link_name>torso_pitch_servo</link_name>
+            </child>
+        </joint>
+        <joint name="waist_yaw" type="revolute">
+            <!--<pose>0 0 0 0 0 0</pose>-->
+            <pose>0 0 0 0 0 0</pose>
+            <axis>
+                <xyz>0 0 1</xyz>
+                <limit>
+                    <effort>200</effort>
+                </limit>
+                <dynamics>
+                    <damping>1.0</damping>
+                    <friction>0</friction>
+                </dynamics>
+            </axis>
+            <physics>
+                <ode>
+                    <cfm_damping>1</cfm_damping>
+                </ode>
+            </physics>
+            <parent>
+                <link_name>torso_pitch_servo</link_name>
+            </parent>
+            <child>
+                <link_name>torso</link_name>
+            </child>
+        </joint>
+        <joint name="l_shoulder_pitch" type="revolute">
+            <pose>0 0 0 0 0 0</pose>
+            <axis>
+                <xyz>0 1 0</xyz>
+                <limit>
+                    <effort>100</effort>
+                </limit>
+                <dynamics>
+                    <damping>1.0</damping>
+                    <friction>0</friction>
+                </dynamics>
+            </axis>
+            <physics>
+                <ode>
+                    <cfm_damping>1</cfm_damping>
+                </ode>
+            </physics>
+            <parent>
+                <link_name>main_case</link_name>
+            </parent>
+            <child>
+                <link_name>left_shoulder_pitch</link_name>
+            </child>
+        </joint>
+        <joint name="r_shoulder_pitch" type="revolute">
+            <pose>0 0 0 0 0 0</pose>
+            <axis>
+                <xyz>0 1 0</xyz>
+                <limit>
+                    <effort>100</effort>
+                </limit>
+                <dynamics>
+                    <damping>1.0</damping>
+                    <friction>0</friction>
+                </dynamics>
+            </axis>
+            <physics>
+                <ode>
+                    <cfm_damping>1</cfm_damping>
+                </ode>
+            </physics>
+            <parent>
+                <link_name>main_case</link_name>
+            </parent>
+            <child>
+                <link_name>right_shoulder_pitch</link_name>
+            </child>
+        </joint>
+        <joint name="l_shoulder_roll" type="revolute">
+            <pose>0 0 0 0 0 0</pose>
+            <axis>
+                <xyz>1 0 0</xyz>
+                <limit>
+                    <effort>100</effort>
+                </limit>
+                <dynamics>
+                    <damping>1.0</damping>
+                    <friction>0</friction>
+                </dynamics>
+            </axis>
+            <physics>
+                <ode>
+                    <cfm_damping>1</cfm_damping>
+                </ode>
+            </physics>
+            <parent>
+                <link_name>left_shoulder_pitch</link_name>
+            </parent>
+            <child>
+                <link_name>left_shoulder_roll</link_name>
+            </child>
+        </joint>
+        <joint name="r_shoulder_roll" type="revolute">
+            <pose>0 0 0 0 0 0</pose>
+            <axis>
+                <xyz>1 0 0</xyz>
+                <limit>
+                    <effort>100</effort>
+                </limit>
+                <dynamics>
+                    <damping>1.0</damping>
+                    <friction>0</friction>
+                </dynamics>
+            </axis>
+            <physics>
+                <ode>
+                    <cfm_damping>1</cfm_damping>
+                </ode>
+            </physics>
+            <parent>
+                <link_name>right_shoulder_pitch</link_name>
+            </parent>
+            <child>
+                <link_name>right_shoulder_roll</link_name>
+            </child>
+        </joint>
+        <joint name="l_shoulder_yaw" type="revolute">
+            <pose>0 0 0 0 0 0</pose>
+            <axis>
+                <xyz>0 0 1</xyz>
+                <limit>
+                    <effort>100</effort>
+                </limit>
+                <dynamics>
+                    <damping>1.0</damping>
+                    <friction>0</friction>
+                </dynamics>
+            </axis>
+            <physics>
+                <ode>
+                    <cfm_damping>1</cfm_damping>
+                </ode>
+            </physics>
+            <parent>
+                <link_name>left_shoulder_roll</link_name>
+            </parent>
+            <child>
+                <link_name>left_upper_arm</link_name>
+            </child>
+        </joint>
+        <joint name="r_shoulder_yaw" type="revolute">
+            <pose>0 0 0 0 0 0</pose>
+            <axis>
+                <xyz>0 0 1</xyz>
+                <limit>
+                    <effort>100</effort>
+                </limit>
+                <dynamics>
+                    <damping>1.0</damping>
+                    <friction>0</friction>
+                </dynamics>
+            </axis>
+            <physics>
+                <ode>
+                    <cfm_damping>1</cfm_damping>
+                </ode>
+            </physics>
+            <parent>
+                <link_name>right_shoulder_roll</link_name>
+            </parent>
+            <child>
+                <link_name>right_upper_arm</link_name>
+            </child>
+        </joint>
+        <joint name="l_elbow_pitch" type="revolute">
+            <pose>.030 0 0 0 0 0</pose>
+            <axis>
+                <xyz>0 1 0</xyz>
+                <limit>
+                    <effort>100</effort>
+                </limit>
+                <dynamics>
+                    <damping>1.0</damping>
+                    <friction>0</friction>
+                </dynamics>
+            </axis>
+            <physics>
+                <ode>
+                    <cfm_damping>1</cfm_damping>
+                </ode>
+            </physics>
+            <parent>
+                <link_name>left_upper_arm</link_name>
+            </parent>
+            <child>
+                <link_name>left_lower_arm</link_name>
+            </child>
+        </joint>
+        <joint name="r_elbow_pitch" type="revolute">
+            <pose>.030 0 0 0 0 0</pose>
+            <axis>
+                <xyz>0 1 0</xyz>
+                <limit>
+                    <effort>100</effort>
+                </limit>
+                <dynamics>
+                    <damping>1.0</damping>
+                    <friction>0</friction>
+                </dynamics>
+            </axis>
+            <physics>
+                <ode>
+                    <cfm_damping>1</cfm_damping>
+                </ode>
+            </physics>
+            <parent>
+                <link_name>right_upper_arm</link_name>
+            </parent>
+            <child>
+                <link_name>right_lower_arm</link_name>
+            </child>
+        </joint>
+        <joint name="l_wrist_yaw" type="revolute">
+            <pose>0 0 0 0 0 0</pose>
+            <axis>
+                <xyz>0 0 1</xyz>
+                <limit>
+                    <effort>40</effort>
+                </limit>
+                <dynamics>
+                    <damping>1.0</damping>
+                    <friction>0</friction>
+                </dynamics>
+            </axis>
+            <physics>
+                <ode>
+                    <cfm_damping>1</cfm_damping>
+                </ode>
+            </physics>
+            <parent>
+                <link_name>left_lower_arm</link_name>
+            </parent>
+            <child>
+                <link_name>left_wrist</link_name>
+            </child>
+        </joint>
+        <joint name="r_wrist_yaw" type="revolute">
+            <pose>0 0 0 0 0 0</pose>
+            <axis>
+                <xyz>0 0 1</xyz>
+                <limit>
+                    <effort>40</effort>
+                </limit>
+                <dynamics>
+                    <damping>1.0</damping>
+                    <friction>0</friction>
+                </dynamics>
+            </axis>
+            <physics>
+                <ode>
+                    <cfm_damping>1</cfm_damping>
+                </ode>
+            </physics>
+            <parent>
+                <link_name>right_lower_arm</link_name>
+            </parent>
+            <child>
+                <link_name>right_wrist</link_name>
+            </child>
+        </joint>
+        <joint name="l_wrist_roll" type="revolute">
+            <pose>0 0 0 0 0 0</pose>
+            <axis>
+                <xyz>1 0 0</xyz>
+                <limit>
+                    <effort>40</effort>
+                </limit>
+                <dynamics>
+                    <damping>1.0</damping>
+                    <friction>0</friction>
+                </dynamics>
+            </axis>
+            <physics>
+                <ode>
+                    <provide_feedback>1</provide_feedback>
+                    <cfm_damping>1</cfm_damping>
+                </ode>
+            </physics>
+            <parent>
+                <link_name>left_wrist</link_name>
+            </parent>
+            <child>
+                <link_name>left_gripper</link_name>
+            </child>
+        </joint>
+        <joint name="r_wrist_roll" type="revolute">
+            <pose>0 0 0 0 0 0</pose>
+            <axis>
+                <xyz>1 0 0</xyz>
+                <limit>
+                    <effort>40</effort>
+                </limit>
+                <dynamics>
+                    <damping>1.0</damping>
+                    <friction>0</friction>
+                </dynamics>
+            </axis>
+            <physics>
+                <ode>
+                    <provide_feedback>1</provide_feedback>
+                    <cfm_damping>1</cfm_damping>
+                </ode>
+            </physics>
+            <parent>
+                <link_name>right_wrist</link_name>
+            </parent>
+            <child>
+                <link_name>right_gripper</link_name>
+            </child>
+        </joint>
+        <joint name="l_hip_yaw" type="revolute">
+            <pose>0 0 0 0 0 0</pose>
+            <axis>
+                <xyz>0 0 1</xyz>
+                <limit>
+                    <effort>100</effort>
+                </limit>
+                <dynamics>
+                    <damping>1.0</damping>
+                    <friction>0</friction>
+                </dynamics>
+            </axis>
+            <physics>
+                <ode>
+                    <cfm_damping>1</cfm_damping>
+                </ode>
+            </physics>
+            <parent>
+                <link_name>torso</link_name>
+            </parent>
+            <child>
+                <link_name>left_hip</link_name>
+            </child>
+        </joint>
+        <joint name="r_hip_yaw" type="revolute">
+            <pose>0 0 0 0 0 0</pose>
+            <axis>
+                <xyz>0 0 1</xyz>
+                <limit>
+                    <effort>100</effort>
+                </limit>
+                <dynamics>
+                    <damping>1.0</damping>
+                    <friction>0</friction>
+                </dynamics>
+            </axis>
+            <physics>
+                <ode>
+                    <cfm_damping>1</cfm_damping>
+                </ode>
+            </physics>
+            <parent>
+                <link_name>torso</link_name>
+            </parent>
+            <child>
+                <link_name>right_hip</link_name>
+            </child>
+        </joint>
+        <joint name="l_hip_roll" type="revolute">
+            <pose>0 0 0 0 0 0</pose>
+            <axis>
+                <xyz>1 0 0</xyz>
+                <limit>
+                    <effort>100</effort>
+                </limit>
+                <dynamics>
+                    <damping>1.0</damping>
+                    <friction>0</friction>
+                </dynamics>
+            </axis>
+            <physics>
+                <ode>
+                    <cfm_damping>1</cfm_damping>
+                </ode>
+            </physics>
+            <parent>
+                <link_name>torso</link_name>
+            </parent>
+            <child>
+                <link_name>left_hip</link_name>
+            </child>
+        </joint>
+        <joint name="r_hip_roll" type="revolute">
+            <pose>0 0 0 0 0 0</pose>
+            <axis>
+                <xyz>1 0 0</xyz>
+                <limit>
+                    <effort>100</effort>
+                </limit>
+                <dynamics>
+                    <damping>1.0</damping>
+                    <friction>0</friction>
+                </dynamics>
+            </axis>
+            <physics>
+                <ode>
+                    <cfm_damping>1</cfm_damping>
+                </ode>
+            </physics>
+            <parent>
+                <link_name>torso</link_name>
+            </parent>
+            <child>
+                <link_name>right_hip</link_name>
+            </child>
+        </joint>
+        <joint name="l_hip_pitch" type="revolute">
+            <pose>0 0 0 0 0 0</pose>
+            <axis>
+                <xyz>0 1 0</xyz>
+                <limit>
+                    <effort>200</effort>
+                </limit>
+                <!--<limit><effort>200</effort><upper>0.0</upper><lower>0.0</lower></limit>-->
+                <dynamics>
+                    <damping>1.0</damping>
+                    <friction>0</friction>
+                </dynamics>
+            </axis>
+            <physics>
+                <ode>
+                    <cfm_damping>1</cfm_damping>
+                </ode>
+            </physics>
+            <parent>
+                <link_name>left_hip</link_name>
+            </parent>
+            <child>
+                <link_name>left_thigh</link_name>
+            </child>
+        </joint>
+        <joint name="r_hip_pitch" type="revolute">
+            <pose>0 0 0 0 0 0</pose>
+            <axis>
+                <xyz>0 1 0</xyz>
+                <limit>
+                    <effort>200</effort>
+                </limit>
+                <!--<limit><effort>200</effort><upper>0.0</upper><lower>0.0</lower></limit>-->
+                <dynamics>
+                    <damping>1.0</damping>
+                    <friction>0</friction>
+                </dynamics>
+            </axis>
+            <physics>
+                <ode>
+                    <cfm_damping>1</cfm_damping>
+                </ode>
+            </physics>
+            <parent>
+                <link_name>right_hip</link_name>
+            </parent>
+            <child>
+                <link_name>right_thigh</link_name>
+            </child>
+        </joint>
+        <joint name="l_knee_pitch" type="revolute">
+            <pose>-.030 0 0 0 0 0</pose>
+            <axis>
+                <xyz>0 1 0</xyz>
+                <limit>
+                    <effort>200</effort>
+                </limit>
+                <dynamics>
+                    <damping>1.0</damping>
+                    <friction>0</friction>
+                </dynamics>
+            </axis>
+            <!--<axis><xyz>0 1 0</xyz><limit><effort>200</effort><upper>0.0</upper><lower>0.0</lower></limit></axis>-->
+            <physics>
+                <ode>
+                    <cfm_damping>1</cfm_damping>
+                </ode>
+            </physics>
+            <parent>
+                <link_name>left_thigh</link_name>
+            </parent>
+            <child>
+                <link_name>left_leg</link_name>
+            </child>
+        </joint>
+        <joint name="r_knee_pitch" type="revolute">
+            <pose>-.030 0 0 0 0 0</pose>
+            <axis>
+                <xyz>0 1 0</xyz>
+                <limit>
+                    <effort>200</effort>
+                </limit>
+                <dynamics>
+                    <damping>1.0</damping>
+                    <friction>0</friction>
+                </dynamics>
+            </axis>
+            <!--<axis><xyz>0 1 0</xyz><limit><effort>200</effort><upper>0.0</upper><lower>0.0</lower></limit></axis>-->
+            <physics>
+                <ode>
+                    <cfm_damping>1</cfm_damping>
+                </ode>
+            </physics>
+            <parent>
+                <link_name>right_thigh</link_name>
+            </parent>
+            <child>
+                <link_name>right_leg</link_name>
+            </child>
+        </joint>
+        <joint name="l_ankle_pitch" type="revolute">
+            <pose>0 0 0 0 0 0</pose>
+            <axis>
+                <xyz>0 1 0</xyz>
+                <limit>
+                    <effort>200</effort>
+                </limit>
+                <dynamics>
+                    <damping>1.0</damping>
+                    <friction>0</friction>
+                </dynamics>
+            </axis>
+            <!--<axis><xyz>0 1 0</xyz><limit><effort>200</effort><upper>0.0</upper><lower>0.0</lower></limit></axis>-->
+            <physics>
+                <ode>
+                    <cfm_damping>1</cfm_damping>
+                </ode>
+            </physics>
+            <parent>
+                <link_name>left_leg</link_name>
+            </parent>
+            <child>
+                <link_name>left_ankle</link_name>
+            </child>
+        </joint>
+        <joint name="r_ankle_pitch" type="revolute">
+            <pose>0 0 0 0 0 0</pose>
+            <axis>
+                <xyz>0 1 0</xyz>
+                <limit>
+                    <effort>200</effort>
+                </limit>
+                <dynamics>
+                    <damping>1.0</damping>
+                    <friction>0</friction>
+                </dynamics>
+            </axis>
+            <!--<axis><xyz>0 1 0</xyz><limit><effort>200</effort><upper>0.0</upper><lower>0.0</lower></limit></axis>-->
+            <physics>
+                <ode>
+                    <cfm_damping>1</cfm_damping>
+                </ode>
+            </physics>
+            <parent>
+                <link_name>right_leg</link_name>
+            </parent>
+            <child>
+                <link_name>right_ankle</link_name>
+            </child>
+        </joint>
+        <joint name="l_ankle_roll" type="revolute">
+            <pose>0 0 0 0 0 0</pose>
+            <axis>
+                <xyz>1 0 0</xyz>
+                <limit>
+                    <effort>100</effort>
+                </limit>
+                <dynamics>
+                    <damping>1.0</damping>
+                    <friction>0</friction>
+                </dynamics>
+            </axis>
+            <physics>
+                <ode>
+                    <provide_feedback>1</provide_feedback>
+                    <cfm_damping>1</cfm_damping>
+                </ode>
+            </physics>
+            <parent>
+                <link_name>left_ankle</link_name>
+            </parent>
+            <child>
+                <link_name>l_foot</link_name>
+            </child>
+        </joint>
+        <joint name="r_ankle_roll" type="revolute">
+            <pose>0 0 0 0 0 0</pose>
+            <axis>
+                <xyz>1 0 0</xyz>
+                <limit>
+                    <effort>100</effort>
+                </limit>
+                <dynamics>
+                    <damping>1.0</damping>
+                    <friction>0</friction>
+                </dynamics>
+            </axis>
+            <physics>
+                <ode>
+                    <provide_feedback>1</provide_feedback>
+                    <cfm_damping>1</cfm_damping>
+                </ode>
+            </physics>
+            <parent>
+                <link_name>right_ankle</link_name>
+            </parent>
+            <child>
+                <link_name>r_foot</link_name>
+            </child>
+        </joint>
+        
+    </model>
 
 </sdf>

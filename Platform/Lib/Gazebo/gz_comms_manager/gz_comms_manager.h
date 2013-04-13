@@ -35,6 +35,8 @@ namespace gazebo
     public: virtual ~gz_comms_manager();
     public: void Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf);
     private: void initialize_controllers();
+    private: void on_l_foot_contact();
+    private: void on_r_foot_contact();
     private: void reset();
     private: void update();
 
@@ -42,6 +44,8 @@ namespace gazebo
     private: physics::WorldPtr world;
     private: event::ConnectionPtr update_connection;
     private: event::ConnectionPtr reset_connection;
+    private: event::ConnectionPtr l_foot_contact_connection;
+    private: event::ConnectionPtr r_foot_contact_connection;
     private: common::Time last_update_time;
     private: double physics_time_step;
 
@@ -63,6 +67,15 @@ namespace gazebo
     private: int r_ankle_index;
     private: int l_wrist_index;
     private: int r_wrist_index;
+
+    // Contact sensors
+    private: sensors::ContactSensorPtr l_foot_contact_sensor; 
+    private: sensors::ContactSensorPtr r_foot_contact_sensor;
+    private: std::string l_foot_link_name;
+    private: std::string l_foot_contact_sensor_name;
+    private: std::string r_foot_link_name;
+    private: std::string r_foot_contact_sensor_name;
+    
 
     // Imu
     private: boost::shared_ptr<sensors::ImuSensor> imu_sensor;

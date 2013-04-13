@@ -1,14 +1,41 @@
+-- Library paths
 dofile('../../include.lua')
-local simple_ipc = require 'simple_ipc'
 
-inter_pc = true
-if inter_pc then
-  test_channel = simple_ipc.new_publisher(5555); --tcp
-else
-  test_channel = simple_ipc.new_publisher('test'); --ipc
+-- Libraries
+local simple_ipc = require 'simple_ipc'
+require 'unix'
+
+-- Test setting
+local inter_pc = false
+local use_multipart = true;
+local use_filter = true;
+
+-- Test the filter capability
+if use_filter then
+  filter = 'ing'
 end
-for i=1,10 do
-  print('Sending payload:',i)
-	test_channel:send( i )
-  os.execute ('sleep .5')
+print('Using filter {',filter,'}')
+
+-- Set up the subscriber
+if inter_pc then
+  test_channel = simple_ipc.new_publisher(5555,filter);
+else
+  test_channel = simple_ipc.new_publisher('test',filter);
+end
+
+-- Begin to receive messages
+local ret = false;
+while true do
+  if use_multipart then
+    ret = test_channel:send( {'hello','world'} )
+  else
+    ret = test_channel:send('hello')
+  end
+  if not ret then
+    print("Failed to send message!")
+  else
+    print('Sent message.')
+  end
+  -- Send a message once per second
+  unix.usleep(1e6)
 end

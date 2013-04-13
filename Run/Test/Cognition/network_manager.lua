@@ -47,7 +47,7 @@ camera_channel.callback = function()
   -- In the current form, gazebo does the compression for us
   -- This is probably not the best way to pipeline things at present..
   local nsent = Comm.send( camera_ts, #camera_ts );
-  print("Camera | Sent ", nsent )
+  print("Camera | Sent", nsent )
 end
 
 -- Send the Oct Tree data over UDP

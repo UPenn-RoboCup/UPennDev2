@@ -35,99 +35,112 @@ extern "C"
 #define MAX_LENGTH 160000 //Size for sending 640*480 yuyv data without resampling
 
 const int maxQueueSize = 12;
+static std::deque<std::string> recvQueue;
+
+// TODO: Make more file descriptors, which are saved in the Lua metatable
+static bool init = false;
+static int send_fd, recv_fd;
 static std::string IP;
 static int PORT = 0;
 
-static std::deque<std::string> recvQueue;
-static int send_fd, recv_fd;
-
+// TODO: Close file descriptors
 /*
-void mexExit(void)
-{
-  if (send_fd > 0)
-    close(send_fd);
-  if (recv_fd > 0)
-    close(recv_fd);
-}
-*/
+   void mexExit(void)
+   {
+   if (send_fd > 0)
+   close(send_fd);
+   if (recv_fd > 0)
+   close(recv_fd);
+   }
+   */
 
 static int lua_comm_init(lua_State *L) {
-	const char *ip = luaL_checkstring(L, 1);
-	int port = luaL_checkint(L,2);
-	IP = ip;
-	PORT = port;
- 	return 1;
+
+  if( init ){
+    printf("Already initialized!\n");
+    lua_pushnil(L);
+    return 1;
+  }
+
+  const char *ip = luaL_checkstring(L, 1);
+  int port = luaL_checkint(L,2);
+  IP = ip;
+  PORT = port;
+
+  struct hostent *hostptr = gethostbyname(IP.c_str());
+  if (hostptr == NULL) {
+    printf("Could not get hostname\n");
+    lua_pushnil(L);
+    return 1;
+  }
+
+  send_fd = socket(AF_INET, SOCK_DGRAM, 0);
+  if (send_fd < 0) {
+    printf("Could not open datagram send socket\n");
+    lua_pushnil(L);
+    return 1;
+  }
+
+  int i = 1;
+  if (setsockopt(send_fd, SOL_SOCKET, SO_BROADCAST, (const char *) &i, sizeof(i)) < 0) {
+    printf("Could not set broadcast option\n");
+    lua_pushnil(L);
+    return 1;
+  }
+
+  struct sockaddr_in dest_addr;
+  bzero((char *) &dest_addr, sizeof(dest_addr));
+  dest_addr.sin_family = AF_INET;
+  bcopy(hostptr->h_addr, (char *) &dest_addr.sin_addr, hostptr->h_length);
+  dest_addr.sin_port = htons(PORT);
+
+  if (connect(send_fd, (struct sockaddr *) &dest_addr, sizeof(dest_addr)) < 0) {
+    printf("Could not connect to destination address\n");
+    lua_pushnil(L);
+    return 1;
+  }
+
+  recv_fd = socket(AF_INET, SOCK_DGRAM, 0);
+  if (recv_fd < 0) {
+    printf("Could not open datagram recv socket\n");
+    lua_pushnil(L);
+    return 1;
+  }
+
+  struct sockaddr_in local_addr;
+  bzero((char *) &local_addr, sizeof(local_addr));
+  local_addr.sin_family = AF_INET;
+  local_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+  local_addr.sin_port = htons(PORT);
+  if (bind(recv_fd, (struct sockaddr *) &local_addr, sizeof(local_addr)) < 0) {
+    printf("Could not bind to port\n");
+    lua_pushnil(L);
+    return 1;
+  }
+
+  // Nonblocking receive:
+  int flags  = fcntl(recv_fd, F_GETFL, 0);
+  if (flags == -1) 
+    flags = 0;
+  if (fcntl(recv_fd, F_SETFL, flags | O_NONBLOCK) < 0) {
+    printf("Could not set nonblocking mode\n");
+    lua_pushnil(L);
+    return 1;
+  }
+
+  // TODO: set at exit
+  init = true;
+  lua_pushinteger(L, 1);
+  return 1;
 }
 
 static int lua_comm_update(lua_State *L) {
   static sockaddr_in source_addr;
   static char data[MAX_LENGTH];
 
-	// Check whether initiated
-  assert(IP.empty()!=1);	
-
-	// Check port
-	assert(PORT!=0);
-
-  static bool init = false;
-  if (!init) {
-    struct hostent *hostptr = gethostbyname(IP.c_str());
-    if (hostptr == NULL) {
-      printf("Could not get hostname\n");
-      return -1;
-    }
-
-    send_fd = socket(AF_INET, SOCK_DGRAM, 0);
-    if (send_fd < 0) {
-      printf("Could not open datagram send socket\n");
-      return -1;
-    }
-
-    int i = 1;
-    if (setsockopt(send_fd, SOL_SOCKET, SO_BROADCAST, (const char *) &i, sizeof(i)) < 0) {
-      printf("Could not set broadcast option\n");
-      return -1;
-    }
-      
-    struct sockaddr_in dest_addr;
-    bzero((char *) &dest_addr, sizeof(dest_addr));
-    dest_addr.sin_family = AF_INET;
-    bcopy(hostptr->h_addr, (char *) &dest_addr.sin_addr, hostptr->h_length);
-    dest_addr.sin_port = htons(PORT);
-
-    if (connect(send_fd, (struct sockaddr *) &dest_addr, sizeof(dest_addr)) < 0) {
-      printf("Could not connect to destination address\n");
-      return -1;
-    }
-
-    recv_fd = socket(AF_INET, SOCK_DGRAM, 0);
-    if (recv_fd < 0) {
-      printf("Could not open datagram recv socket\n");
-      return -1;
-    }
-
-    struct sockaddr_in local_addr;
-    bzero((char *) &local_addr, sizeof(local_addr));
-    local_addr.sin_family = AF_INET;
-    local_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-    local_addr.sin_port = htons(PORT);
-    if (bind(recv_fd, (struct sockaddr *) &local_addr, sizeof(local_addr)) < 0) {
-      printf("Could not bind to port\n");
-      return -1;
-    }
-
-    // Nonblocking receive:
-    int flags  = fcntl(recv_fd, F_GETFL, 0);
-    if (flags == -1) 
-      flags = 0;
-    if (fcntl(recv_fd, F_SETFL, flags | O_NONBLOCK) < 0) {
-      printf("Could not set nonblocking mode\n");
-      return -1;
-    }
-
-    // TODO: set at exit
-    init = true;
-  }
+  // Check whether initiated
+  // TODO: associate checks with the metatable
+  assert(init);
 
   // Process incoming messages:
   socklen_t source_addr_len = sizeof(source_addr);
@@ -135,69 +148,60 @@ static int lua_comm_update(lua_State *L) {
   while (len > 0) {
     std::string msg((const char *) data, len);
     recvQueue.push_back(msg);
-//    std::cout << len << ' ' << recvQueue.back().size() << std::endl;
     len = recvfrom(recv_fd, data, MAX_LENGTH, 0, (struct sockaddr *) &source_addr, &source_addr_len);
   }
 
-  // Remove older messages:
-  while (recvQueue.size() > maxQueueSize) {
+  // Remove older messages
+  while (recvQueue.size() > maxQueueSize)
     recvQueue.pop_front();
-  }
 
   return 1;
 }
 
 static int lua_comm_size(lua_State *L) {
   int updateRet = lua_comm_update(L);
-
   lua_pushinteger(L, recvQueue.size());
   return 1;
 }
 
 static int lua_comm_receive(lua_State *L) {
+  // Perform an update to receive data
   int updateRet = lua_comm_update(L);
 
+  // If empty, then return nil
   if (recvQueue.empty()) {
     lua_pushnil(L);
     return 1;
   }
 
-  // TODO: is this enough or do i need to pass an array with the bytes 
+  // Push a light string with the incoming data from the queue
   lua_pushlstring(L, recvQueue.front().c_str(), recvQueue.front().size());
-  recvQueue.pop_front();
 
-  /*
-  int n = recvQueue.front().size();
-  mwSize dims[2];
-  dims[0] = 1;
-  dims[1] = n;
-  plhs[0] = mxCreateNumericArray(2, dims, mxUINT8_CLASS, mxREAL);
-  memcpy(mxGetData(plhs[0]), recvQueue.front().c_str(), n);
+  // Remove this object from the receiving buffer queue
   recvQueue.pop_front();
-  */
 
   return 1;
 }
 
 
 static int lua_comm_send(lua_State *L) {
-  int updateRet = lua_comm_update(L);
-
+  // Grab the arguments
   const char *data = luaL_checkstring(L, 1);
   int size = luaL_optint(L, 2, 0);
-
-	std::string header;
-  std::string dataStr;
-//	std::string contents(data);
-	std::string contents(data, size);
-//  header.push_back(11);
-//	dataStr = header + contents;
-	dataStr = contents;
-//  std::cout << dataStr.size() << std::endl;
-  int ret = send(send_fd, dataStr.c_str(), dataStr.size(), 0);
-    
+  if(size==0)
+    size = strlen(data);
+  else if(size<0) {
+    // Cannot send a negative number of bytes
+    // TODO: add a mximum limit
+    lua_pushnil(L);
+    return 1;
+  }
+  // Process the update
+  int updateRet = lua_comm_update(L);
+  // Send the data
+  int ret = send(send_fd, data, size, 0);
+  // Push the return value
   lua_pushinteger(L, ret);
-
   return 1;
 }
 
@@ -220,4 +224,3 @@ int luaopen_udp (lua_State *L) {
 #endif  
   return 1;
 }
-

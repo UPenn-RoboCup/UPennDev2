@@ -1,22 +1,35 @@
-local two_port = true
-local udp1 = require 'udp'
-local msg1 = 'hello';
-udp1.init('127.0.0.255',54321)
+-- TODO: Support multiple udps
+local two_port = false
+
+local msg = 'hello';
+local udp = require 'udp'
+local udp_ok = udp.init('127.0.0.1',54321)
+assert(udp_ok,"Bad udp setup!")
+
 if two_port then
+  msg2 = 'world';
+  print('Setting up udp2')
   udp2 = require 'udp'
-  msg2 = 'world!'
-  udp2.init('127.0.0.255',54322)
+  udp2_ok = udp2.init('127.0.0.1',54322)
+  assert(udp2_ok,"Bad udp2 setup!")
 end
+--for k,v in pairs(getmetatable(udp)) do print(k,v) end
+
 for i=1,4 do
-  local ret1 = udp1.send(msg1,#msg1)
-  print('1 Sent',ret1,'bytes')
-  if two_port then  
-    local ret2 = udp2.send(msg2,#msg2)
-    print('2 Sent',ret2,'bytes')
-  end
-  local data1 = udp1.receive()
-  print('1 received',data)
-  local data2 = udp2.receive()
-  print('2 received',data2)
   print()
+  local ret = udp.send(msg)
+  print('1 Sent',ret,'bytes of',#msg)
+  while udp.size()>0 do
+    local data = udp.receive()
+    print('1 received',data)
+  end
+  
+  if two_port and udp2_ok then
+    ret = udp.send(msg2,#msg2)
+    print('2 Sent',ret,'bytes')
+    while udp2.size()>0 do
+      local data = udp2.receive()
+      print('2 received',data)
+    end
+  end
 end

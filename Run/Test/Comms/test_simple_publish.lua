@@ -19,8 +19,14 @@ print('Using filter {',filter,'}')
 -- Set up the subscriber
 if inter_pc then
   test_channel = simple_ipc.new_publisher(5555,filter);
+  if filter then
+    test_channel2 = simple_ipc.new_publisher(5555,'bl');
+  end
 else
   test_channel = simple_ipc.new_publisher('test',filter);
+  if filter then
+    test_channel2 = simple_ipc.new_publisher('test','bl');
+  end
 end
 
 -- Begin to receive messages
@@ -30,6 +36,9 @@ while true do
     ret = test_channel:send( {'hello','world'} )
   else
     ret = test_channel:send('hello')
+  end
+  if filter then
+    ret = test_channel2:send('thorn in my side')
   end
   if not ret then
     print("Failed to send message!")

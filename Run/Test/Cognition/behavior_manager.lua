@@ -8,10 +8,6 @@ local simple_ipc = require 'simple_ipc'
 require 'unix'
 require 'cjpeg'
 
--- Set up the UDP channel for broadcasting
-require 'Comm'
-Comm.init('192.168.123.255', 54321);
-
 -- Setup IPC Channels
 local omap_channel   = simple_ipc.new_subscriber('omap');
 local oct_channel    = simple_ipc.new_subscriber('oct');

@@ -201,7 +201,7 @@ static int lua_comm_send(lua_State *L) {
   return 1;
 }
 
-static const struct luaL_reg Comm_lib [] = {
+static const struct luaL_reg udp [] = {
   {"init", lua_comm_init},
   {"size", lua_comm_size},
   {"receive", lua_comm_receive},
@@ -212,8 +212,12 @@ static const struct luaL_reg Comm_lib [] = {
 #ifdef __cplusplus
 extern "C"
 #endif
-int luaopen_Udp (lua_State *L) {
-  luaL_register(L, "Udp", Comm_lib);
+int luaopen_udp (lua_State *L) {
+#if LUA_VERSION_NUM == 502
+  luaL_newlib(L, udp);
+#else
+  luaL_register(L, "udp", udp);
+#endif  
   return 1;
 }
 

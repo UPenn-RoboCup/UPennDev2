@@ -2,7 +2,6 @@ dofile('../../include.lua')
 
 -- Require the right modules
 local simple_ipc = require 'simple_ipc'
---local mp = require 'MessagePack'
 require 'unix'
 require 'cjpeg'
 require 'cutil'

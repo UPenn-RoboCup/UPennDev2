@@ -9,8 +9,9 @@ require 'unix'
 require 'cjpeg'
 
 -- Set up the UDP channel for broadcasting
-require 'Comm'
-Comm.init('192.168.123.255', 54321);
+local udp = require 'udp'
+local udp_ok = udp.init('127.0.0.1', 54321);
+assert(udp_ok,"Bad udp setup!")
 
 -- Setup IPC Channels
 -- Publishers
@@ -29,8 +30,8 @@ omap_channel.callback = function()
   local jimg = cjpeg.compress( omap_data );
   local nsent = Comm.send( jimg );
   --]]
-  local nsent = Comm.send( omap_data, #omap_data );
-  print("OMAP | Sent ", nsent )
+  local nsent = udp.send( omap_data, #omap_data );
+  print("OMAP | Sent ", nsent, #omap_data )
 end
 
 -- Send image over UDP
@@ -50,14 +51,14 @@ camera_channel.callback = function()
 
   -- In the current form, gazebo does the compression for us
   -- This is probably not the best way to pipeline things at present..
-  local nsent = Comm.send( camera_ts, #camera_ts );
-  print("Camera | Sent", nsent )
+  local nsent = udp.send( camera_ts, #camera_ts );
+  print("Camera | Sent", nsent, #camera_ts )
 end
 
 -- Send the Oct Tree data over UDP
 oct_channel.callback = function()
   local oct_data, has_more = oct_channel:receive()
-  local nsent = Comm.send( oct_data );
+  local nsent = udp.send( oct_data );
   print("Oct | Sent ", nsent )
 end
 

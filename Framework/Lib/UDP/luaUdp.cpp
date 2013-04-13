@@ -212,9 +212,8 @@ static const struct luaL_reg Comm_lib [] = {
 #ifdef __cplusplus
 extern "C"
 #endif
-int luaopen_Comm (lua_State *L) {
-  luaL_register(L, "Comm", Comm_lib);
-
+int luaopen_Udp (lua_State *L) {
+  luaL_register(L, "Udp", Comm_lib);
   return 1;
 }
 

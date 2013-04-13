@@ -93,17 +93,20 @@ from http://octomap.github.io/
 - Webots from http://www.cyberbotics.com/
 - Homebrew from http://mxcl.github.com/homebrew/
 
-		brew install lua luajit luarocks boost gnuplot eigen swig fftw zmq hdf5 glib wget
+		brew install lua luajit luarocks boost gnuplot eigen swig fftw zmq hdf5 glib wget msgpack
 		luarocks install numlua lua-cmsgpack
 		luarocks install https://raw.github.com/Neopallium/lua-zmq/master/rockspecs/lua-zmq-scm-1.rockspec
 
-#### Install KDL and Torch using the instructions above.  Additionally:
+#### Install KDL
+    brew install https://gist.github.com/adzenith/5354833/raw/70b96cfd1d6218a175a9924809643275de052af9/orocos_kdl.rb
 
-For KDL, use:
-cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local/Cellar/kdl/1.0
-make
-make install
-brew link kdl
+#### Install Torch using the instructions above
+
+#### Install Gazebo:
+
+    brew tap ros/groovy
+    brew install https://raw.github.com/scpeters/homebrew-gazebo/master/gazebo.rb
+    echo "source /usr/local/share/gazebo/setup.sh" >> ~/.bash_profile
 
 Build Instructions
 ------------------

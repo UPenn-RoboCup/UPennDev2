@@ -18,6 +18,13 @@ target_link_libraries(gz_camera_dump ${GAZEBO_libraries}
   ${Boost_LIBRARIES}
 )
 
+# Gazebo is looking for a .so file, so make sure that all shared
+# libraries end in .so even if they wouldn't normally on some platforms.
+set_target_properties(
+  gz_camera_dump
+  PROPERTIES SUFFIX .so
+)
+
 INSTALL(
   TARGETS gz_camera_dump
   DESTINATION "."

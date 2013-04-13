@@ -13,6 +13,10 @@ require 'Comm'
 Comm.init('192.168.123.255', 54321);
 
 -- Setup IPC Channels
+-- Publishers
+-- TODO: How to receive HMI commands over the network?
+local hmi_channel    = simple_ipc.new_publisher('hmi');
+-- Subscribers
 local omap_channel   = simple_ipc.new_subscriber('omap');
 local camera_channel = simple_ipc.new_subscriber('img');
 local oct_channel    = simple_ipc.new_subscriber('oct');
@@ -80,7 +84,7 @@ while true do
   cnt = cnt+1;
   if t-t_last>t_debug then
     local msg = string.format("%.2f FPS", cnt/t_debug);
-    print("Perception Network Manager | "..msg)
+    print("Network Manager | "..msg)
     t_last = t;
     cnt = 0;
   end

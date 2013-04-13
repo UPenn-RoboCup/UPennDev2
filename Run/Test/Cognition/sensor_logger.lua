@@ -67,7 +67,7 @@ while true do
   cnt = cnt+1;
   if t-t_last>t_debug then
     local msg = string.format("%.2f FPS", cnt/t_debug);
-    print(npoll,"Perception Logger | "..msg)
+    print(npoll,"Sensor Logger | "..msg)
     t_last = t;
     cnt = 0;
   end

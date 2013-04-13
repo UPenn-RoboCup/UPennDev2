@@ -11,8 +11,16 @@ dofile('include.lua')
 
 -- The non-knee motors are allegedly Maxon 309758's in the 2008 catalog;
 -- the knee motors are likewise 305015's.
-local maxon309758 = {torque_constant_Nm_per_A=9580, resistance=.836, efficiency=.87}
-local maxon305015 = {torque_constant_Nm_per_A=27600, resistance=.386, efficiency=.89}
+local maxon309758 = {
+                      torque_constant_Nm_per_A=9580,
+                      resistance=.836,
+                      efficiency=.87,
+                    }
+local maxon305015 = {
+                      torque_constant_Nm_per_A=27600,
+                      resistance=.386,
+                      efficiency=.89,
+                    }
 
 require('curses')
 require('Platform')
@@ -45,12 +53,16 @@ local function write_filtered_joint_data_ssv(ssv_file, table)
 end
 
 local torque = {}
+local input_power = {}
 local output_power = {}
 local peak_input_power = {}
 local peak_output_power = {}
+local total_input_power = 0
 local total_output_power = 0
+local peak_total_input_power = 0
 local peak_total_output_power = 0
-local total_energy = 0
+local total_input_energy = 0
+local total_output_energy = 0
 local function update_output_power(dt)
   total_output_power = 0
   for i,joint in ipairs(Config_devices.joint.id) do
@@ -68,11 +80,31 @@ local function update_output_power(dt)
     peak_total_output_power = total_output_power
   end
   
-  total_energy = total_energy + total_output_power*dt
+  total_output_energy = total_output_energy + total_output_power*dt
 end
 
 local function motor_power(motor, torque)
   return torque^2/motor.torque_constant_Nm_per_A^2*motor.resistance
+end
+
+local function update_input_power(dt)
+  total_input_power = 0
+  for i,joint in ipairs(Config_devices.joint.id) do
+    input_power[i] = motor_power(maxon309758, torque[i])
+    -- only add the output power if it's positive
+    if output_power[i] > 0 then
+      input_power[i] = input_power[i] + output_power[i]
+    end
+    if math.abs(input_power[i]) > math.abs(peak_input_power[i]) then
+      peak_input_power[i] = input_power[i]
+    end
+    total_input_power = total_input_power + input_power[i]
+  end
+  if total_input_power > peak_total_input_power then
+    peak_total_input_power = total_input_power
+  end
+  
+  total_input_energy = total_input_energy + total_input_power*dt
 end
 
 local function draw_screen()
@@ -85,17 +117,12 @@ local function draw_screen()
   curses.printw('---------------------------------------')
   curses.printw('---------------------------------------\n')
   for i,joint in ipairs(Config_devices.joint.id) do
-    local input_power = output_power[i] + motor_power(maxon309758, torque[i])
-    if math.abs(input_power) > math.abs(peak_input_power[i]) then
-      peak_input_power[i] = input_power
-    end
-    curses.printw('%16s   %13f %13f %13f %13f\n', joint, input_power, peak_input_power[i], output_power[i], peak_output_power[i])
-    total_output_power = total_output_power + output_power[i]
+    curses.printw('%16s   %13f %13f %13f %13f\n', joint, input_power[i], peak_input_power[i], output_power[i], peak_output_power[i])
   end
   curses.printw('---------------------------------------')
   curses.printw('---------------------------------------\n')
-  curses.printw('                   %13f %13f %13f %13f\n', total_output_power, peak_total_output_power)
-  curses.printw('%16s            %38f\n', 'energy (J)', total_energy)
+  curses.printw('                   %13f %13f %13f %13f\n', total_input_power, peak_total_input_power, total_output_power, peak_total_output_power)
+  curses.printw('%16s   %13s %13f %13s %13f\n', 'energy (J)', '', total_input_energy, '', total_output_energy)
   curses.refresh()
 end
 
@@ -114,6 +141,7 @@ for i,v in ipairs(Config_devices.joint.id) do
   local walking_frequency = .8
   filters[i] = filter.new_low_pass(1/Platform.get_update_rate(), walking_frequency)
   torque[i] = 0
+  input_power[i] = 0
   output_power[i] = 0
   peak_input_power[i] = 0
   peak_output_power[i] = 0
@@ -133,6 +161,7 @@ while true do
   local time = Platform.get_time()
   if time > last_time then
     update_output_power(time - last_time)
+    update_input_power(time - last_time)
     write_filtered_joint_data_ssv(output_power_filtered_ssv, output_power)
     write_joint_data_ssv(output_power_ssv, output_power)
   end

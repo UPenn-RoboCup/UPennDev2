@@ -44,6 +44,18 @@ simple_ipc.new_publisher = function( channel, filter )
 		channel_obj.name = simple_ipc.local_prefix..channel
 	elseif channel_type=="number" then
 		channel_obj.name = simple_ipc.intercom_prefix..channel
+  elseif channel_type=="table" and channel.name then
+    print('Copying '..channel.name..'!' )
+    -- Copy and apply a different filter
+    -- In this way, we do not rebind :)
+    channel_obj.socket_handle = channel.socket_handle
+    channel_obj.send = channel.send;
+    channel_obj.name = channel.name;
+    channel_obj.filter = filter;
+    return channel_obj;
+  else
+    print('Bad input to new_publisher!')
+    return
 	end
 	assert(channel_obj.name)
 	print('Publishing on',channel_obj.name,'with filter',filter)

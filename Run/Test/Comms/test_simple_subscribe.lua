@@ -48,7 +48,7 @@ if use_poll then
   else
     channel_poll = simple_ipc.wait_on_channels( {test_channel} )
   end
-  channel_timeout = 500; -- 100ms timeout
+  channel_timeout = 100; -- 100ms timeout
 end
 
 -- Begin to receive messages

@@ -4,7 +4,7 @@ dofile('../../include.lua')
 local Sensors = require 'sensors/Config_Sensors'
 local simple_ipc = require 'simple_ipc'
 local libSlam = require 'libSlam'
-local mp = require 'MessagePack'
+local mp = require 'cmsgpack'
 require 'unix'
 require 'cjpeg'
 require 'cutil'

@@ -5,7 +5,6 @@ local debug = true;
 
 -- Libraries
 local simple_ipc = require 'simple_ipc'
-local msgpack = require 'MessagePack'
 local carray = require 'carray'
 local Octomap = require'Octomap'
 local torch = require'torch'

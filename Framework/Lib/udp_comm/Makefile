@@ -4,7 +4,7 @@ include ../../../Makefile.inc
 TARGETS = all clean
 .PHONY: $(TARGETS)
 
-all: Udp
+all: udp
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
@@ -13,8 +13,8 @@ all: Udp
 %.o: %.c
 	$(CC) $(CFLAGS) $(INCLUDES) -o $@ -c $<
 
-Udp: luaUdp.o 
-	$(LD) $(LDFLAGS) -o Udp.$(SHLIBEXT) $^ $(LIBOPTS) $(LIB_DIR) -lm -lstdc++
+udp: lua_udp.o 
+	$(LD) $(LDFLAGS) -o udp.$(SHLIBEXT) $^ $(LIBOPTS) $(LIB_DIR) -lm -lstdc++
 
 clean:
 	rm -f *.$(SHLIBEXT) *.o

@@ -192,7 +192,7 @@ static int lua_comm_send(lua_State *L) {
     size = strlen(data);
   else if(size<0) {
     // Cannot send a negative number of bytes
-    // TODO: add a mximum limit
+    // TODO: add a maximum limit
     lua_pushnil(L);
     return 1;
   }

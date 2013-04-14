@@ -5,12 +5,12 @@ include ../../../Makefile.inc
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
 %.o: %.c
-	$(CC) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
+	$(CC) $(CFLAGS) $(INCLUDES) -o $@ -c $<
 
 all: cbuffer 
 
 cbuffer: luacbuffer.o
-	$(CC) -o $@.$(SHLIBEXT) $^ $(LIB_DIR) $(LIBOPTS)
+	$(LD) $(LDFLAGS) -o $@.$(SHLIBEXT) $^ $(LIB_DIR) $(LIBOPTS)
 
 clean:
 	rm -f *.o *.$(SHLIBEXT)

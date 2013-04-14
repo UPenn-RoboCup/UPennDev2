@@ -1,5 +1,4 @@
 require 'carray'
-local ffi = require 'ffi'
 
 dd = carray.double(5)
 dd[2] = 4
@@ -9,5 +8,7 @@ for i = 1, 5 do
 end
 carray.cast()
 
---cdata = ffi.cast('double*', dd:pointer())
---print(cdata[1])
+print("LuaJIT testing...")
+local ffi = require 'ffi'
+cdata = ffi.cast('double*', dd:pointer())
+print(cdata[1])

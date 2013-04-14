@@ -7,9 +7,9 @@ CXX=g++
 CC=gcc
 #LD=ld
 LD=g++
-LDFLAGS=
+LDFLAGS=-lstdc++
 CFLAGS=-O2 -fpic
-CXXFLAGS=-O2 -fpic
+CXXFLAGS=$(CFLAGS)
 SHLIBEXT=so
 LIBOPTS=-shared -fpic
 LIBRT=-lrt
@@ -32,7 +32,7 @@ else
 endif
 endif
 
-INCLUDES=-I/usr/local/include -I/usr/include $(LUA_INC) $(LUAJIT_INC)
+INCLUDES=-I/usr/local/include $(LUA_INC) $(LUAJIT_INC)
 LIB_DIR=-L/usr/local/lib -L/usr/lib -L/usr/lib/x86_64-linux-gnu/
 
 ifndef OSTYPE
@@ -56,6 +56,10 @@ ifeq ($(OSTYPE),darwin)
   CC=cc
   CXX=c++
   LD=ld
+	
+	CFLAGS=-Os -fpic -march=native
+	CXXFLAGS=$(CFLAGS)
+	LDFLAGS+=-macosx_version_min 10.7
 	
   SHLIBEXT=dylib
   LIBOPTS= -bundle -undefined dynamic_lookup

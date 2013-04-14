@@ -9,17 +9,12 @@ include ../../../Makefile.inc
 
 all: unix stty getch curses
 
-unix: luaunix.o
-	$(CC) -o $@.$(SHLIBEXT) $(LIBOPTS) $^
-
-stty: luastty.o
-	$(CXX) -o $@.$(SHLIBEXT) $(LIBOPTS) $^
-
-getch: luagetch.o
-	$(CXX) -o $@.$(SHLIBEXT) $(LIBOPTS) $^
+%: lua%.o
+	$(LD) $(LDFLAGS) -o $@.$(SHLIBEXT) $(LIBOPTS) $^
+	rm lua$@.o
 
 curses: luacurses.o
-	$(CC) -o $@.$(SHLIBEXT) $^ $(LIBOPTS) $(LIB_DIRS) -lncurses
+	$(LD) $(LDFLAGS) -o $@.$(SHLIBEXT) $^ $(LIBOPTS) $(LIB_DIRS) -lncurses
 
 clean:
 	rm -f *.o *.$(SHLIBEXT)

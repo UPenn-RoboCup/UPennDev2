@@ -14,7 +14,7 @@ all: udp
 	$(CC) $(CFLAGS) $(INCLUDES) -o $@ -c $<
 
 udp: lua_udp.o 
-	$(LD) $(LDFLAGS) -o udp.$(SHLIBEXT) $^ $(LIBOPTS) $(LIB_DIR) -lm -lstdc++
+	$(LD) $(LDFLAGS) -o udp.$(SHLIBEXT) $^ $(LIBOPTS) $(LIB_DIR)
 
 clean:
 	rm -f *.$(SHLIBEXT) *.o

@@ -9,7 +9,7 @@ speedFactor = 1.0;
 fsm={};
 
 --Should we consider obstacle?
-if Config.game.robotID == 2 then --no obstacle on rufio
+if Config.game.robotID == 2 then --no obstacle on rufio (Attacker)
   fsm.enable_obstacle_detection = 1;
 else
   fsm.enable_obstacle_detection = 1;
@@ -27,7 +27,7 @@ fsm.wait_kickoff = 0; --initial wait at opponent's kickoff
 --BodyReady : make robot move to initial position
 --------------------------------------------------
 fsm.bodyReady={};
-fsm.bodyReady.maxStep = 0.06;
+fsm.bodyReady.maxStep = 0.06; --Max walk velocity
 fsm.bodyReady.thClose = {0.20,10*math.pi/180} --r and theta
 fsm.bodyReady.tStart = 5.0;  --initial localization time
 
@@ -42,8 +42,8 @@ fsm.bodySearch.timeout = 10.0*speedFactor;
 --BodyChase : move the robot directly towards the ball
 --------------------------------------------------
 fsm.bodyChase={};
-fsm.bodyChase.maxStep = 0.06;
-fsm.bodyChase.rClose = 0.35;
+fsm.bodyChase.maxStep = 0.06; --Max walk-velocity
+fsm.bodyChase.rClose = 0.35; --Distance to ball
 fsm.bodyChase.timeout = 20.0*speedFactor;
 fsm.bodyChase.tLost = 3.0*speedFactor;
 
@@ -58,9 +58,9 @@ fsm.bodyChase.rFar = 1.2;
 --BodyOrbit : make the robot orbit around the ball
 --------------------------------------------------
 fsm.bodyOrbit={};
-fsm.bodyOrbit.maxStep = 0.06;
-fsm.bodyOrbit.rOrbit = 0.30;
-fsm.bodyOrbit.rFar = 0.45;
+fsm.bodyOrbit.maxStep = 0.06; --Max walk velocity
+fsm.bodyOrbit.rOrbit = 0.30; 
+fsm.bodyOrbit.rFar = 0.45; --Distance from ball
 fsm.bodyOrbit.thAlign = 10*math.pi/180;
 fsm.bodyOrbit.timeout = 30.0 * speedFactor;
 fsm.bodyOrbit.tLost = 3.0*speedFactor;
@@ -71,13 +71,13 @@ fsm.bodyOrbit.walkParam = 'Walk/Config_NaoV4_Walk_FastStable_Sidestep'
 --------------------------------------------------
 fsm.bodyPosition = {};
 --Trajectory parameters
-fsm.bodyPosition.rTurn = 0.25;
-fsm.bodyPosition.rDist1 = 0.40;
-fsm.bodyPosition.rDist2 = 0.20;
-fsm.bodyPosition.rTurn2 = 0.08;
+fsm.bodyPosition.rTurn = 0.25; --Turn Radius 1
+fsm.bodyPosition.rDist1 = 0.40; --Distance from ball for Turn Radius 1
+fsm.bodyPosition.rDist2 = 0.20; --Distance from ball for Turn Radius 2
+fsm.bodyPosition.rTurn2 = 0.08; --Turn radius 2
 fsm.bodyPosition.rOrbit = 0.60;
 
-fsm.bodyPosition.rClose = 0.35;
+fsm.bodyPosition.rClose = 0.35; --Distance to ball
 fsm.bodyPosition.thClose = {0.15,0.15,10*math.pi/180};
 
 fsm.bodyPosition.tLost =  5.0*speedFactor;
@@ -86,18 +86,18 @@ fsm.bodyPosition.timeout = 30*speedFactor;
 --Velocity generation parameters
 
 --Slow speed
-fsm.bodyPosition.maxStep1 = 0.05; --Max t-step
+fsm.bodyPosition.maxStep1 = 0.05; --Max walk velocity
 
 --Medium speed
-fsm.bodyPosition.maxStep2 = 0.06; --Max t-step
-fsm.bodyPosition.rVel2 = 0.5; --Forward/backwards/sidestep velocity
+fsm.bodyPosition.maxStep2 = 0.06; --Max walk velocity
+fsm.bodyPosition.rVel2 = 0.5; --Velocity of ball
 fsm.bodyPosition.aVel2 = 45*math.pi/180; --Angular/turning velocity (radians)
 fsm.bodyPosition.maxA2 = 0.2; --Maximum Forwards/Backwards/Sidestep velocity
 fsm.bodyPosition.maxY2 = 0.02; --Maximum turning velocity
 
 --Full speed front dash
-fsm.bodyPosition.maxStep3 = 0.08; --Max t-step
-fsm.bodyPosition.rVel3 = 0.8; --Forward/backwards/sidestep velocity
+fsm.bodyPosition.maxStep3 = 0.08; --Max walk velocity
+fsm.bodyPosition.rVel3 = 0.8; --Velocity of ball
 fsm.bodyPosition.aVel3 = 20*math.pi/180; --Angular/turning velocity (radians)
 fsm.bodyPosition.maxA3 = 0.0; --Maximum Forwards/Backwards/Sidestep velocity
 fsm.bodyPosition.maxY3 = 0.0; --Maximum turning velocity
@@ -185,7 +185,7 @@ fsm.headTrack.fixTh={0.20,0.08}; --Fix yaw axis if ball is within this box
 fsm.headReady={}
 fsm.headReady.dist = 3.0; 
 fsm.headReady.height = 0.5; 
-fsm.headReady.tScan= 2.5*speedFactor; 
+fsm.headReady.tScan= 2.5*speedFactor; --Speed of head scan
 
 --------------------------------------------------
 --HeadReadyLookGoal : Look Goal during bodyReady

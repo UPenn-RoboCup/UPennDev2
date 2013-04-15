@@ -11,7 +11,7 @@ require('wcm');
 require('gcm');
 
 --Makes error with webots
-Comm.init(Config.dev.ip_wireless,12500);
+Comm.init(Config.dev.ip_wireless,Config.dev.ip_wireless_port);
 print('Receiving Team Message From',Config.dev.ip_wireless);
 
 playerID = gcm.get_team_player_id();
@@ -130,6 +130,7 @@ function update()
     --  old matlab team monitor can be used
     local msg = serialization.serialize_orig(state) 
     Comm.send(msg, #msg);
+    print(#msg)
     --Copy of message sent out to other players
     state.tReceive = Body.get_time();
     states[playerID] = state;

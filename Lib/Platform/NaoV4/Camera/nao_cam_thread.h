@@ -53,7 +53,8 @@ void nao_cam_thread_camera_select(int bottom);
 int nao_cam_thread_set_control(const char *name, int val);
 int nao_cam_thread_get_control(const char *name);
 
-uint32 *nao_cam_thread_get_image();
+uint32 *nao_cam_thread_get_images();
+uint32 *nao_cam_thread_get_image(int select);
 int nao_cam_thread_get_height();
 int nao_cam_thread_get_width();
 int nao_cam_thread_get_selected_camera();

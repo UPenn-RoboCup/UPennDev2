@@ -55,6 +55,7 @@ function update()
     if phase==0 then 
       phase = 1;
       t0 = Body.get_time();
+      print(role)
       if role==0 then --goalie
         walk.startMotion("hurray2");
       elseif role==1 then --attacker

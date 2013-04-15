@@ -51,7 +51,7 @@ speak.enable = false;
 
 -- Game Parameters
 game = {};
-game.teamNumber = 1;   --17 at RC12
+game.teamNumber = 17;   --17 at RC12
 --game.teamNumber = 26;
 
 --Default role: 0 for goalie, 1 for attacker, 2 for defender

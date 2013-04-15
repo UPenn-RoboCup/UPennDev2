@@ -8,6 +8,7 @@ QT += core gui
 QT += phonon
 QT += opengl
 QT += osg
+QT += network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -36,8 +37,14 @@ SOURCES += main.cpp\
     walkstatemachine.cpp \
     osgcamera.cpp \
     commsinterface.cpp \
-    examplecodeclass.cpp \
-    manager.cpp
+    osgrenderthread.cpp \
+    osgmousemanipulator.cpp \
+    manager.cpp \
+    keyboardeventfilter.cpp \
+    modelmanipulator.cpp \
+    videofeed.cpp \
+    luaengine.cpp \
+    commsmanager.cpp
 
 HEADERS  += centerwindow.h \
     rightwindow.h \
@@ -59,8 +66,14 @@ HEADERS  += centerwindow.h \
     walkstatemachine.h \
     osgcamera.h \
     commsinterface.h \
-    examplecodeclass.h \
-    manager.h
+    osgrenderthread.h \
+    osgmousemanipulator.h\
+    manager.h \
+    keyboardeventfilter.h \
+    modelmanipulator.h \
+    videofeed.h \
+    luaengine.h \
+    commsmanager.h
 
 FORMS    += centerwindow.ui \
     rightwindow.ui \
@@ -73,3 +86,5 @@ OTHER_FILES += \
     INSTALL.txt
 
 LIBS += -lqwt -lOpenThreads -losg -losgDB -losgUtil -losgViewer -losgGA -losgQt
+
+INCLUDEPATH +=  /usr/include/lua5.1

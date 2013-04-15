@@ -61,9 +61,7 @@ local total_input_power = 0
 local total_output_power = 0
 local peak_total_input_power = 0
 local peak_total_output_power = 0
-local total_input_energy = 0
-local total_output_energy = 0
-local function update_output_power(dt)
+local function update_output_power()
   total_output_power = 0
   for i,joint in ipairs(Config_devices.joint.id) do
     local v = dcm:get_joint_velocity_sensor(joint)
@@ -79,15 +77,13 @@ local function update_output_power(dt)
   if total_output_power > peak_total_output_power then
     peak_total_output_power = total_output_power
   end
-  
-  total_output_energy = total_output_energy + total_output_power*dt
 end
 
 local function motor_power(motor, torque)
   return torque^2/motor.torque_constant_Nm_per_A^2*motor.resistance
 end
 
-local function update_input_power(dt)
+local function update_input_power()
   total_input_power = 0
   for i,joint in ipairs(Config_devices.joint.id) do
     input_power[i] = motor_power(maxon309758, torque[i])
@@ -103,9 +99,21 @@ local function update_input_power(dt)
   if total_input_power > peak_total_input_power then
     peak_total_input_power = total_input_power
   end
-  
-  total_input_energy = total_input_energy + total_input_power*dt
 end
+
+local elapsed_time = 0
+local total_input_energy = 0
+local average_input_power = 0
+local total_output_energy = 0
+local average_output_power = 0
+local function update_totals(dt)
+  elapsed_time = elapsed_time + dt
+  total_input_energy = total_input_energy + total_input_power*dt
+  average_input_power = total_input_energy / elapsed_time
+  total_output_energy = total_output_energy + total_output_power*dt
+  average_output_power = total_output_energy / elapsed_time
+end
+
 
 local function draw_screen()
   curses.clear()
@@ -121,7 +129,8 @@ local function draw_screen()
   end
   curses.printw('---------------------------------------')
   curses.printw('---------------------------------------\n')
-  curses.printw('                   %13f %13f %13f %13f\n', total_input_power, peak_total_input_power, total_output_power, peak_total_output_power)
+  curses.printw('%16s   %13f %13f %13f %13f\n', 'total (W)', total_input_power, peak_total_input_power, total_output_power, peak_total_output_power)
+  curses.printw('%16s   %13s %13f %13s %13f\n', 'average (W)', '', average_input_power, '', average_output_power)
   curses.printw('%16s   %13s %13f %13s %13f\n', 'energy (J)', '', total_input_energy, '', total_output_energy)
   curses.refresh()
 end
@@ -160,8 +169,9 @@ while true do
   
   local time = Platform.get_time()
   if time > last_time then
-    update_output_power(time - last_time)
-    update_input_power(time - last_time)
+    update_output_power()
+    update_input_power()
+    update_totals(time - last_time)
     write_filtered_joint_data_ssv(output_power_filtered_ssv, output_power)
     write_joint_data_ssv(output_power_ssv, output_power)
   end

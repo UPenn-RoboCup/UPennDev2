@@ -12,11 +12,6 @@
 #ifndef CENTERWINDOW_H
 #define CENTERWINDOW_H
 
-#include <QMainWindow>
-#include <QGridLayout>
-#include <QKeyEvent>
-
-#include <phonon/MediaSource>
 #include <phonon/VideoWidget>
 #include <phonon/MediaObject>
 
@@ -32,12 +27,12 @@ class CenterWindow : public QWidget
 public:
     explicit CenterWindow(QWidget *parent = 0);
     ~CenterWindow();
-
-    void keyPressEvent(QKeyEvent *key);
+    void initialize();
 
 private:
     Phonon::VideoWidget *myVideoWidget;
     Phonon::MediaObject *myVideoPlayer;
+
 };
 
 #endif // CENTERWINDOW_H

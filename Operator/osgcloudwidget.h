@@ -16,7 +16,7 @@
 class OsgCloudWidget : public OsgWidget
 {
 public:
-    OsgCloudWidget(osg::Node *node, osgViewer::ViewerBase::ThreadingModel threadingModel=osgViewer::Viewer::SingleThreaded);
+    OsgCloudWidget();
 };
 
 #endif // OSGCLOUDWIDGET_H

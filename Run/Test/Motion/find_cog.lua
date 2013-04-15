@@ -635,8 +635,8 @@ print('timestep', Platform.get_time_step())
 Proprioception.entry()
 dcm:set_joint_enable(0,'all')
 local set_values = dcm:get_joint_position_sensor('legs') 
-dcm:set_joint_p_gain(0.3, 'all') -- position control
-dcm:set_joint_i_gain(0.01, 'all') -- position control
+dcm:set_joint_p_gain(0.6, 'all') -- position control
+dcm:set_joint_i_gain(0.00, 'all') -- position control
 dcm:set_joint_d_gain(0.005, 'all') -- position control
 
 --dcm:set_joint_p_gain(0, joint.l_hip_roll)
@@ -652,7 +652,7 @@ printdata = true
 ------------------------------------------------------------------------
 --Data logging --
 ------------------------------------------------------------------------
-local ident = "t16"
+local ident = "t1"
 print('ident', ident)
 --local fw_log = assert(io.open("Logs/fw_log"..ident..".txt","w"))
 --local fw_reg = assert(io.open("Logs/fw_reg"..ident..".txt","w"))

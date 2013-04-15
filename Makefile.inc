@@ -33,7 +33,7 @@ endif
 endif
 
 INCLUDES=-I/usr/local/include $(LUA_INC) $(LUAJIT_INC)
-LIB_DIR=-L/usr/local/lib -L/usr/lib -L/usr/lib/x86_64-linux-gnu/
+LIB_DIR=-L/usr/local/lib -L/usr/lib/x86_64-linux-gnu/
 
 ifndef OSTYPE
   OSTYPE = $(shell uname -s|awk '{print tolower($$0)}')

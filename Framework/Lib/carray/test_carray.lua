@@ -8,7 +8,10 @@ for i = 1, 5 do
 end
 carray.cast()
 
+--[[
 print("LuaJIT testing...")
 local ffi = require 'ffi'
 cdata = ffi.cast('double*', dd:pointer())
 print(cdata[1])
+assert( cdata[1]==dd[2] )
+--]]

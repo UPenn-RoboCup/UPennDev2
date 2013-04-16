@@ -1,10 +1,11 @@
+os.execute('rm -f *.jpeg')
 require 'cjpeg'
 w = 320
 h = 240
 ch = 3;
 nbytes = w*h*ch;
-if webots then
-  ch = 4;--bgra for webots
+if bgra then --webots uses this
+  ch = 4;--bgra
 end
 print('Filling a '..w..' by '..h..' image',ch..' channels.')
 
@@ -64,3 +65,5 @@ print(type(img_jpeg),'Compression Ratio:', #img_jpeg, #img_jpeg/nbytes )
 f = io.open('img_gray.jpeg','w')
 n = f:write( img_jpeg )
 f:close()
+
+os.execute('rm -f *.jpeg')

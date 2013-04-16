@@ -4,18 +4,8 @@
  * University of Pennsylvania
  * */
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-#include "lua.h"
-#include "lualib.h"
-#include "lauxlib.h"
-#ifdef __cplusplus
-}
-#endif
 
-//#include <stdint.h>
+#include <lua.hpp>
 #include <vector>
 #include <string>
 #include <jpeglib.h>
@@ -176,9 +166,8 @@ static int lua_cjpeg(lua_State *L) {
 }
 
 
-static const struct luaL_reg cjpeg_lib [] = {
+static const struct luaL_reg cjpeg [] = {
   {"compress", lua_cjpeg},
-  //      {"uncompress", lua_z_uncompress},
   {NULL, NULL}
 };
 
@@ -186,6 +175,10 @@ static const struct luaL_reg cjpeg_lib [] = {
 extern "C"
 #endif
 int luaopen_cjpeg (lua_State *L) {
-  luaL_register(L, "cjpeg", cjpeg_lib);
-  return 1;
+#if LUA_VERSION_NUM == 502
+	luaL_newlib(L, cjpeg);
+#else
+	luaL_register(L, "cjpeg", cjpeg);
+#endif
+	return 1;
 }

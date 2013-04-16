@@ -5,7 +5,7 @@
 
 #include <stdint.h>
 #include <string.h>
-#include "luacbuffer.h"
+#include "lua_cbuffer.h"
 
 #define STR2(a, b) (((a) << 8) + (b))
 

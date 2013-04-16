@@ -7,9 +7,6 @@
 */
 
 #include "HokuyoCircularHardware.hh"
-
-#include "ErrorMessage.hh"
-
 using namespace Upenn;
 
 ///////////////////////////////////////////////////////////////////
@@ -41,23 +38,15 @@ int HokuyoCircularHardware::Connect(string dev, int baudRate)
     return 0;
 
   //create instance of the Hokuyo driver
-  if (!this->hokuyo)
-  {
+  if (!this->hokuyo) {
     this->hokuyo = new Hokuyo();
-
     if (!this->hokuyo)
-    {
-      PRINT_ERROR( "Unable to create instance of Hokuyo!!!\n" );
       return -1;
-    }
   }
 
   //connect using Hokuyo driver
   if (this->hokuyo->Connect(dev.c_str(),baudRate))
-  {
-    PRINT_ERROR( "Unable to initialize Hokuyo!!!\n" );
     return -1;
-  }
 
   this->connected=true; 
 
@@ -69,11 +58,8 @@ int HokuyoCircularHardware::Connect(string dev, int baudRate)
 // Disconnect from device
 int HokuyoCircularHardware::Disconnect()
 { 
-  if (this->connected)
-  {
-    PRINT_INFO("Disconnecting from device...");
+  if (this->connected) {
     this->hokuyo->Disconnect();
-    PRINT_INFO(" done\n"); 
     this->connected=false;
   }
   return 0;
@@ -136,22 +122,15 @@ int HokuyoCircularHardware::GetData(char * writePtr, int maxLength,
   if (this->needToStopLaser)
   {
     if (this->hokuyo->LaserOff() == 0)
-    {
-      PRINT_ERROR("Laser has been shut off\n");
       this->needToStopLaser=false;
-    }
-      
-    else 
-    {
-      PRINT_ERROR("Wasn't able to shut off the laser\n");
-    }
+    else
+			printf("Wasn't able to shut off the laser\n");
   }
     
   this->scanSettingsChanged=false;
   this->SettingsCondSignal();
   this->UnlockSettingsMutex();
-    
-  //PRINT_ERROR("reader: settings locked");
+
   if (this->connected && this->active)
   {
     int numData;
@@ -167,13 +146,12 @@ int HokuyoCircularHardware::GetData(char * writePtr, int maxLength,
     else //didn't get a scan
     {
       dataLength = 0;
-      PRINT_ERROR( "Could not read a scan from the sensor\n" );
+      printf( "Could not read a scan from the sensor\n" );
 
-      //something happened - got out of sync? resynchronize.
+      // Something happened - got out of sync? resynchronize.
       if ( this->hokuyo->FindPacketStart() == 0 )
-      {
-        PRINT_WARNING( "Resynchronized with the stream.\n" );
-      }
+        printf( "Resynchronized with the stream.\n" );
+      
     }
   }
     
@@ -181,7 +159,7 @@ int HokuyoCircularHardware::GetData(char * writePtr, int maxLength,
   {
     if (!this->connected)
     {
-      PRINT_ERROR( "not connected\n" );
+      printf( "not connected\n" );
       return -1;
     }
   }
@@ -213,9 +191,7 @@ int HokuyoCircularHardware::SetScanParams(char * scanTypeNameNew,int scanStartNe
   timeval timeStart,timeStop;
   gettimeofday(&timeStart,NULL);
   gettimeofday(&timeStop,NULL);
-  double waitedTime=(timeStop.tv_sec+timeStop.tv_usec*0.000001)-(timeStart.tv_sec+timeStart.tv_usec*0.000001);
-
-  //PRINT_INFO("set the settings.. waiting for the next scan read before returning\n" );
+  double waitedTime = (timeStop.tv_sec+timeStop.tv_usec*0.000001) - (timeStart.tv_sec+timeStart.tv_usec*0.000001);
 
   //this loop makes sure that timedwait does not return before the time expires - recommended in manual for this function..
   while ( (waitedTime*1000 < HOKUYO_CIRCULAR_SENSOR_SET_SCAN_PARAMS_TIMEOUT) && (this->scanSettingsChanged) )
@@ -223,30 +199,22 @@ int HokuyoCircularHardware::SetScanParams(char * scanTypeNameNew,int scanStartNe
     //int ret=SettingsCondWait(&maxWaitTime);    
     int ret=SettingsCondWait(HOKUYO_CIRCULAR_SENSOR_SET_SCAN_PARAMS_TIMEOUT);
     if (ret==ETIMEDOUT)
-    {
-      PRINT_ERROR("timeout!!!!\n");
-    }
+      printf("timeout!!!!\n");
 
     gettimeofday(&timeStop,NULL);
     waitedTime=(timeStop.tv_sec+timeStop.tv_usec*0.000001)-(timeStart.tv_sec+timeStart.tv_usec*0.000001);
     if ( (waitedTime*1000 < HOKUYO_CIRCULAR_SENSOR_SET_SCAN_PARAMS_TIMEOUT) && (this->scanSettingsChanged) )
-    {      
       usleep(1000);
-    }
   }
   
   //need to make sure that the settings changed
   if (this->scanSettingsChanged)
   {
-    PRINT_ERROR( "could not set the parameters!! Waited time="<<waitedTime<<"\n" );
+    cout<< "could not set the parameters!! Waited time="<<waitedTime<<endl;
     UnlockSettingsMutex();
     return -1;
   }
-
   UnlockSettingsMutex();
-  //PRINT_INFO("waited time="<< waitedTime<<"\n");
-  //PRINT_INFO("settings unlocked\n");
-  
   return 0;
 }
 
@@ -265,7 +233,7 @@ int HokuyoCircularHardware::GetSensorType()
 {
   if (!this->hokuyo)
   {
-    PRINT_ERROR("hokuyo is not initialized\n");
+    printf("Hokuyo is not initialized\n");
     return -1;
   }
   return this->hokuyo->GetSensorType();
@@ -277,7 +245,7 @@ std::string HokuyoCircularHardware::GetSerial()
 {
   if (!this->hokuyo)
   {
-    PRINT_ERROR("hokuyo is not initialized\n");
+    printf("Hokuyo is not initialized\n");
     return string();
   }
   return string(this->hokuyo->GetSerial());
@@ -289,10 +257,8 @@ std::string HokuyoCircularHardware::GetFirmware()
 {
   if (!this->hokuyo)
   {
-    PRINT_ERROR("hokuyo is not initialized\n");
+    printf("Hokuyo is not initialized\n");
     return string();
   }
   return string(this->hokuyo->GetFirmware());
 }
-
-

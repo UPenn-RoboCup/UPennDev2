@@ -35,7 +35,6 @@
 #include "Hokuyo.hh"
 #include <cstdio>
 
-
 // Constructor
 
 //connect using serial or USB connection

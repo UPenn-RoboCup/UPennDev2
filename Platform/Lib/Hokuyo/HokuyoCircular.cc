@@ -7,7 +7,6 @@
 */
 
 #include "HokuyoCircular.hh"
-#include "ErrorMessage.hh"
 using namespace Upenn;
 
 ///////////////////////////////////////////////////////////////////
@@ -31,15 +30,15 @@ HokuyoCircular::~HokuyoCircular()
 // Pause the sensor operation
 int HokuyoCircular::PauseSensor()
 {
-  PRINT_INFO("entered SetScanParams... waiting to lock the mutex");
+  printf("entered SetScanParams... waiting to lock the mutex");
   LockSettingsMutex();
-  PRINT_INFO("settings locked");
+  printf("settings locked");
   
   this->active          = false;
   this->needToStopLaser = true;
   
   UnlockSettingsMutex();
-  PRINT_INFO("settings unlocked");
+  printf("settings unlocked");
   return 0;
 }
 
@@ -47,14 +46,14 @@ int HokuyoCircular::PauseSensor()
 // Resume sensor operation
 int HokuyoCircular::ResumeSensor()
 {
-  PRINT_INFO("entered SetScanParams... waiting to lock the mutex");
+  printf("entered SetScanParams... waiting to lock the mutex");
   LockSettingsMutex();
-  PRINT_INFO("settings locked");
+  printf("settings locked");
   
   this->active = true;
   
   UnlockSettingsMutex();
-  PRINT_INFO("settings unlocked");
+  printf("settings unlocked");
   return 0;
 }
 
@@ -64,7 +63,7 @@ int HokuyoCircular::SetScanParams(char * scanTypeNameNew,int scanStartNewNew,
                                   int scanEndNewNew, int scanSkipNewNew, 
                                   int encodingNewNew, int scanTypeNewNew)
 {
-  PRINT_WARNING("function is not implemented!!");
+  printf("function is not implemented!!");
   return 0;
 }
 
@@ -76,7 +75,7 @@ int HokuyoCircular::GetValues(vector< vector<unsigned int> > & values,
 {
   if (!this->IsThreadRunning())
   {
-    PRINT_ERROR("main thread is not running.\n");
+    printf("main thread is not running.\n");
     return -1;
   } 
 
@@ -98,7 +97,7 @@ int HokuyoCircular::GetValues(vector< vector<unsigned int> > & values,
     {
       if ( (data_length <= 0) || (data_length % sizeof(unsigned int) != 0) )
       {      
-        PRINT_ERROR("bad packet length: "<<data_length<<" chars\n");
+        cout << "bad packet length: " << data_length << " chars" <<endl;
         this->DoneReading();
         return -1;
       }
@@ -120,7 +119,7 @@ int HokuyoCircular::GetValues(vector< vector<unsigned int> > & values,
 
     else
     {
-      PRINT_ERROR("could not get a pointer to the packet\n");
+      printf("could not get a pointer to the packet\n");
       return -1;
     }
   }

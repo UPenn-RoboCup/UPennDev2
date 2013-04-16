@@ -1,6 +1,7 @@
-include Makefile.mexlib
-BOOST_INCLUDE_DIR=-I/usr/local/include/boost
+MATLAB=matlab -nosplash -nodesktop -nojvm -nodisplay
+MEX=mex -O -I/usr/local/include -L/usr/local/lib
 MEXEXT=$(shell mexext)
+
 TARGETS=time shm getch udp cjpeg djpeg msgpack zmq
 
 all: $(TARGETS)
@@ -9,7 +10,7 @@ time: time.cc timeScalar.cc
 	$(MEX) $^
 
 shm:
-	$(MEX) $(BOOST_INCLUDE_DIR) $@.cc
+	$(MEX) $@.cc
 
 getch:
 	$(MEX) $@.c
@@ -33,8 +34,9 @@ msgpack:
 	$(MEX) $@.cc -lmsgpack
 	
 test:
-	@cd tests
 	@echo "Testing matlab scripts!"
+	$(MATLAB) -r "run_tests"
+	@echo "Done!"
 
 clean:
 	rm -f *.o *.$(SHLIBEXT) *.$(MEXEXT)

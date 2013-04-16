@@ -7,24 +7,13 @@
 #include <boost/interprocess/allocators/allocator.hpp>
 #include <vector>
 #include <string>
-
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-  #include "lua.h"
-  #include "lualib.h"
-  #include "lauxlib.h"
-#ifdef __cplusplus
-}
-#endif
+#include <lua.hpp>
 
 using namespace boost::interprocess;
 
 // Typedefs of allocators and containers
 typedef double value_t;
 //typedef boost::variant<double, std::string> value_t;
-
 
 static managed_shared_memory * lua_checkshm(lua_State *L, int narg) {
   void *ud = luaL_checkudata(L, narg, "shm_mt");

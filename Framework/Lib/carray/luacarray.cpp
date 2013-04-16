@@ -3,22 +3,11 @@
 */
 
 #include <string.h>
-
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-  #include "lua.h"
-  #include "lualib.h"
-  #include "lauxlib.h"
-#ifdef __cplusplus
-}
-#endif
+#include <iostream>
+#include <lua.hpp>
 
 #define MT_NAME "carray_mt"
 #define LUA_TCDATA 10
-
-#include <iostream>
 
 typedef unsigned char byte;
 typedef unsigned int uint;
@@ -508,6 +497,7 @@ static const struct luaL_reg carray_methods[] = {
   {"__newindex", lua_carray_setValue},
   {"__tostring", lua_carray_tostring},
   {"__len", lua_carray_len},
+	{"__index", lua_carray_index},
 
   {NULL, NULL}
 };
@@ -516,15 +506,24 @@ static const struct luaL_reg carray_methods[] = {
 extern "C"
 #endif
 int luaopen_carray (lua_State *L) {
+	// Make the metatable for this carray
   luaL_newmetatable(L, MT_NAME);
 
+#if LUA_VERSION_NUM == 502
+	// TODO: why 0 for nup? Any use for nup?
+	luaL_setfuncs( L, carray_methods, 0 );
+	luaL_newlib( L, carray_functions );
+#else
+	/*
+	 * I put this into the methods array
   // Implement index method:
   lua_pushstring(L, "__index");
   lua_pushcfunction(L, lua_carray_index);
   lua_settable(L, -3);
-
-  luaL_register(L, NULL, carray_methods);
-  luaL_register(L, "carray", carray_functions);
+	*/
+	luaL_register(L, NULL, carray_methods);
+	luaL_register(L, "carray", carray_functions);
+#endif
 
   return 1;
 }

@@ -1,0 +1,25 @@
+# Makefile used to build Webots files
+LIBNAME?=badlibname
+include ../../../Makefile.inc
+LUA ?= lua
+
+all: $(LIBNAME)
+
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
+%.o: %.cc
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
+%.o: %.c
+	$(CC) $(CFLAGS) $(INCLUDES) -o $@ -c $<
+
+$(LIBNAME): lua_$(LIBNAME).o
+	$(LD) $(LDFLAGS) -o $@.$(SHLIBEXT) $^ $(LIBOPTS) $(LIBRT)
+	rm $^
+
+test: $(LIBNAME)
+	mv $^.$(SHLIBEXT) $^.so
+	$(LUA) test_$^.lua
+	mv $^.so $^.$(SHLIBEXT)
+
+clean:
+	rm -f *.o *.$(SHLIBEXT) *.$(MEXEXT)

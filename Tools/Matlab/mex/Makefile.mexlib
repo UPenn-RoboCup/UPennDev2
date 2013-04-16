@@ -1,0 +1,11 @@
+include ../../../Makefile.inc
+MATLAB=matlab -nosplash -nodesktop
+MEX=mex -O $(INCLUDES)
+#MEXEXT=$(shell mexext)
+
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
+%.o: %.cc
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
+%.o: %.c
+	$(CC) $(CFLAGS) $(INCLUDES) -o $@ -c $<

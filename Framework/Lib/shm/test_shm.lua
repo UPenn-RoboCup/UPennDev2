@@ -1,4 +1,4 @@
-require('shm')
+local shm = require('shm')
 t = shm.new('test')
 print('New...', t)
 

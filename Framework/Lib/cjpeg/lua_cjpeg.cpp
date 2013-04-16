@@ -4,11 +4,10 @@
  * University of Pennsylvania
  * */
 
-
-#include <lua.hpp>
 #include <vector>
 #include <string>
 #include <jpeglib.h>
+#include <lua.hpp>
 
 std::vector<unsigned char> destBuf;
 
@@ -166,7 +165,7 @@ static int lua_cjpeg(lua_State *L) {
 }
 
 
-static const struct luaL_reg cjpeg [] = {
+static const struct luaL_Reg cjpeg [] = {
   {"compress", lua_cjpeg},
   {NULL, NULL}
 };

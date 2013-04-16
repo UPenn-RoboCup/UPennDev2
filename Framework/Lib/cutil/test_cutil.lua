@@ -1,4 +1,4 @@
-require('cutil')
+local cutil = require('cutil')
 t = cutil.test_array();
 s = cutil.array2string(t, 10, 1, 'int32','myname');
 for k,v in pairs(s) do print(k,v) end

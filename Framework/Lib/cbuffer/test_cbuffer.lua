@@ -1,4 +1,4 @@
-require('cbuffer')
+local cbuffer = require('cbuffer')
 
 x = cbuffer.new('raw', 4)
 x:set('int16', 1000, 0)

@@ -64,7 +64,12 @@ static int lua_carray_new(lua_State *L) {
     memcpy(p, str, len);
   }
   else if (lua_type(L, 1) == LUA_TTABLE) { // Initialize with Lua table
+
+#if LUA_VERSION_NUM == 502
+    ud->size = lua_rawlen(L, 1);
+#else
     ud->size = lua_objlen(L, 1);
+#endif
     ud->own = 1;
     T *p = new T[ud->size];
     ud->ptr = p;
@@ -348,7 +353,11 @@ static int lua_carray_new(lua_State *L) {
   int size;
   bool istable = lua_istable(L, 2);
   if (istable) {
+#if LUA_VERSION_NUM == 502
+    size = lua_rawlen(L, 2);
+#else
     size = lua_objlen(L, 2);
+#endif
   }
   else {
     size = luaL_optinteger(L, 2, 1);
@@ -472,7 +481,7 @@ static int lua_carray_fpointer(lua_State *L) {
   return 3;
 }
 
-static const struct luaL_reg carray_functions[] = {
+static const struct luaL_Reg carray_functions[] = {
   {"null", lua_carray_null},
   {"byte", lua_carray_new<byte, 'b'>},
   {"char", lua_carray_new<char, 'c'>},
@@ -488,7 +497,7 @@ static const struct luaL_reg carray_functions[] = {
   {NULL, NULL}
 };
 
-static const struct luaL_reg carray_methods[] = {
+static const struct luaL_Reg carray_methods[] = {
   {"pointer", lua_carray_pointer},
   {"typename", lua_carray_typename},
   {"table", lua_carray_totable},

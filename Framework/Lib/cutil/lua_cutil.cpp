@@ -240,7 +240,7 @@ static int lua_bitget(lua_State *L) {
 	return 1;
 }
 
-static const struct luaL_reg cutil [] = {
+static const struct luaL_Reg cutil [] = {
 	{"array2string", lua_array2string},
 	{"string2userdata", lua_string2userdata},
 	{"ptr_add", lua_ptradd},

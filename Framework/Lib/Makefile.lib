@@ -13,13 +13,13 @@ all: $(LIBNAME)
 	$(CC) $(CFLAGS) $(INCLUDES) -o $@ -c $<
 
 $(LIBNAME): lua_$(LIBNAME).o
-	$(LD) $(LDFLAGS) -o $@.$(SHLIBEXT) $^ $(LIBOPTS)
+	$(LD) $(LDFLAGS) -o $@.$(SHLIBEXT) $^ $(LIB_DIR) $(LIBOPTS)
 	rm $^
 
 test: $(LIBNAME)
 	@test ! -f $^.so && mv $^.$(SHLIBEXT) $^.so ; echo "Testing..."
-	$(LUA) test_$^.lua
-	@test ! -f $^.$(SHLIBEXT) && mv $^.so $^.$(SHLIBEXT) ; echo "Done the test!"
+	$(LUA) test_$^.lua ; echo "done test"
+	@test ! -f $^.$(SHLIBEXT) && mv $^.so $^.$(SHLIBEXT) ; echo "move back"
 
 clean:
 	rm -f *.o *.$(SHLIBEXT) *.$(MEXEXT) *.so

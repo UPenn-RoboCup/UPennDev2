@@ -7,7 +7,7 @@ University of Pennsylvania
 #include "DeviceInterface.hh"
 #include "ErrorMessage.hh"
 //#include "DataLoggerQueueDB.hh"
-#include "PointerQueueBuffer.hh"
+//#include "PointerQueueBuffer.hh"
 #include <signal.h>
 #include <unistd.h>
 

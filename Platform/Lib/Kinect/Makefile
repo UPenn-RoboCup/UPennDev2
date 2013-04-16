@@ -1,20 +1,5 @@
-# Makefile used to build libraries
-include ../../../Makefile.inc
-
+LIBNAME=kinect
+include ../../../Framework/Lib/Makefile.lib
 INCLUDES+=-I$(OPENNI2_INCLUDE)
+LIBOPTS+=-lm -lOpenNI2
 LIB_DIR+=-L$(OPENNI2_REDIST)
-
-all: kinect
-
-%.o: %.cpp
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
-%.o: %.cc
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
-%.o: %.c
-	$(CC)  $(CFLAGS)   $(INCLUDES) -o $@ -c $<
-
-kinect: luaKinect.o 
-	$(LD) $(LDFLAGS) -o Kinect.$(SHLIBEXT) $(LIBOPTS) $^ $(LIB_DIR) -lm -lOpenNI2
-
-clean:
-	rm -f *.$(SHLIBEXT) *.o

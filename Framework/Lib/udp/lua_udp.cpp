@@ -195,7 +195,7 @@ static int lua_comm_send(lua_State *L) {
   return 1;
 }
 
-static const struct luaL_reg udp [] = {
+static const struct luaL_Reg udp [] = {
   {"init", lua_comm_init},
   {"size", lua_comm_size},
   {"receive", lua_comm_receive},

@@ -107,7 +107,11 @@ static int lua_shm_set(lua_State *L) {
     nval = 1;
     val[0] = lua_tonumber(L, 3);
   } else if (lua_istable(L, 3)) {
+#if LUA_VERSION_NUM == 502
+    nval = lua_rawlen(L, 3);
+#else
     nval = lua_objlen(L, 3);
+#endif
     val.resize(nval);
     for (int i = 0; i < nval; i++) {
       lua_rawgeti(L, 3, i+1);
@@ -264,14 +268,14 @@ static int lua_shm_tostring(lua_State *L) {
   return 1;
 }
 
-static const struct luaL_reg shm_functions[] = {
+static const struct luaL_Reg shm_functions[] = {
   {"new", lua_shm_create},
   {"open", lua_shm_open},
   {"destroy", lua_shm_destroy},
   {NULL, NULL}
 };
 
-static const struct luaL_reg shm_methods[] = {
+static const struct luaL_Reg shm_methods[] = {
   {"empty", lua_shm_create_empty_variable},
   {"set", lua_shm_set},
   {"get", lua_shm_get},
@@ -303,8 +307,21 @@ int luaopen_shm (lua_State *L) {
   lua_settable(L, -3);
   */
 
+#if LUA_VERSION_NUM == 502
+  // TODO: why 0 for nup? Any use for nup?
+  luaL_setfuncs( L, shm_methods, 0 );
+  luaL_newlib( L, shm_functions );
+#else
+  /*
+   * I put this into the methods array
+  // Implement index method:
+  lua_pushstring(L, "__index");
+  lua_pushcfunction(L, lua_carray_index);
+  lua_settable(L, -3);
+  */
   luaL_register(L, NULL, shm_methods);
   luaL_register(L, "shm", shm_functions);
+#endif
 
   return 1;
 }

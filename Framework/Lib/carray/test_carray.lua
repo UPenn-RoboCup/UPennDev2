@@ -1,4 +1,4 @@
-require 'carray'
+local carray = require 'carray'
 
 dd = carray.double(5)
 dd[2] = 4

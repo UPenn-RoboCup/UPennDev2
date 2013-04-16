@@ -5,7 +5,12 @@
 
 #include <stdint.h>
 #include <string.h>
-#include "lua_cbuffer.h"
+#include <lua.h>
+#include <lualib.h>
+#include <lauxlib.h>
+
+#define lua_checkcbuffer(L, narg) \
+	  (cbuffer *)luaL_checkudata(L, narg, "cbuffer_mt")
 
 #define STR2(a, b) (((a) << 8) + (b))
 
@@ -235,7 +240,16 @@ int luaopen_cbuffer(lua_State *L)
   luaL_newmetatable(L, "cbuffer_mt");
   lua_pushvalue(L, -1);
   lua_setfield(L, -2, "__index");
+
+#if LUA_VERSION_NUM == 502
+  // TODO: why 0 for nup? Any use for nup?
+  luaL_setfuncs( L, cbuffer_methods, 0 );
+  luaL_newlib( L, cbuffer_functions );
+#else
   luaL_register(L, NULL, cbuffer_methods);
   luaL_register(L, "cbuffer", cbuffer_functions);
+#endif
+
+
   return 1;
 }

@@ -12,7 +12,7 @@ all: $(LIBNAME)
 %.o: %.c
 	$(CC) $(CFLAGS) $(INCLUDES) -o $@ -c $<
 
-$(LIBNAME): lua_$(LIBNAME).o
+$(LIBNAME): lua_$(LIBNAME).o $(EXTRA_OBJ)
 	$(LD) $(LDFLAGS) -o $@.$(SHLIBEXT) $^ $(LIB_DIR) $(LIBOPTS)
 	rm $^
 

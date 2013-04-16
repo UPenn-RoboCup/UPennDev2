@@ -1,9 +1,11 @@
 MATLAB=matlab -nosplash -nodesktop -nojvm -nodisplay
 MEX=mex -O -I/usr/local/include -L/usr/local/lib
 MEXEXT=$(shell mexext)
+PWD=$(shell pwd)
 
-TARGETS=time shm getch udp cjpeg djpeg msgpack zmq
-
+TARGETS=time shm getch udp cjpeg djpeg msgpack zmq ImageProc tcpopen
+.PHONY: all clean $(TARGETS)
+	
 all: $(TARGETS)
 
 time: time.cc timeScalar.cc
@@ -17,9 +19,6 @@ getch:
 
 udp:
 	$(MEX) $@.cc
-
-uvc:
-	$(MEX) $@.cc
 	
 cjpeg:
 	$(MEX) $@.cc -ljpeg
@@ -30,8 +29,21 @@ djpeg:
 zmq:	
 	$(MEX) $@.cc -lzmq
 	
+ImageProc:
+	@echo "Building ImageProc"
+	cd ImageProc && make && cd $(PWD)
+	
 msgpack:
 	$(MEX) $@.cc -lmsgpack
+	
+tcpopen:
+	$(MEX) $@.c
+	
+# Platform dependent modules
+serialopen:
+	$(MEX) $@.c	
+uvc:
+	$(MEX) $@.cc
 	
 test:
 	@echo "Testing matlab scripts!"
@@ -39,4 +51,5 @@ test:
 	@echo "Done!"
 
 clean:
-	rm -f *.o *.$(SHLIBEXT) *.$(MEXEXT)
+	rm -f *.$(MEXEXT) *.o
+	@cd ImageProc && make clean && cd $(PWD)

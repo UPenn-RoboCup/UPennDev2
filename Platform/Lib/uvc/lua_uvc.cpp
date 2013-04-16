@@ -7,7 +7,7 @@
 
 #include <lua.hpp>
 #include <stdint.h>
-#include "timeScalar.h"
+//#include "timeScalar.h"
 #include "v4l2.h"
 #define VIDEO_DEVICE "/dev/video0"
 int init = 0;
@@ -28,7 +28,7 @@ static int lua_get_image(lua_State *L) {
     lua_pushnumber(L,buf_num);
     return 1;
   }
-  uint32_t* image = (uint32*)v4l2_get_buffer(buf_num, NULL);
+  uint32_t* image = (uint32_t*)v4l2_get_buffer(buf_num, NULL);
 
 	// TODO: Record time when the buffer was acutally taken
 	// May need to do this in v4l2.h
@@ -38,12 +38,17 @@ static int lua_get_image(lua_State *L) {
 }
 
 static int lua_init(lua_State *L){
-  v4l2_init();
+  if (!init) {
+    if ( v4l2_open(VIDEO_DEVICE) == 0){
+      init = 1;
+      v4l2_init();
+      v4l2_stream_on();
+    }
+  }
   return 1;
 }
 
 static int lua_stop(lua_State *L){
-  free( cameraStatus );
   v4l2_close();
   return 1;
 }
@@ -98,7 +103,6 @@ static const struct luaL_Reg camera_lib [] = {
   {"stream_off", lua_stream_off},
   {"get_height", lua_get_height},
   {"get_width", lua_get_width},
-  {"get_select", lua_get_select},
   {"set_param", lua_set_param},
   {"get_param", lua_get_param},
   {"set_param_id", lua_set_param_id},
@@ -112,12 +116,5 @@ int luaopen_uvc (lua_State *L) {
 #else
   luaL_register(L, "uvc", camera_lib);
 #endif
-  if (!init) {
-    if ( v4l2_open(VIDEO_DEVICE) == 0){
-      init = 1;
-      v4l2_init();
-      v4l2_stream_on();
-    }
-  }
   return 1;
 }

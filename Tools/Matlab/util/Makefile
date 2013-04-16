@@ -33,7 +33,8 @@ getch: getch.c
 udpcomm: UDPComm.cc
 	mex -O $^ $(BOOST_INCLUDE_DIRS) $(INCLUDES) $(LIBRT)
 
+uvc: uvc.cc
+	mex -O $^ $(INCLUDES) $(LIBRT)
 
 clean:
 	rm -f *.o *.$(SHLIBEXT) *.$(MEXEXT)
-

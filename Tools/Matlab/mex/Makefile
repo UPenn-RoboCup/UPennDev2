@@ -7,23 +7,26 @@ all: time shm getch udp cjpeg djpeg
 time: time.cc timeScalar.cc
 	$(MEX) $^
 
-shm: shm.cc
-	$(MEX) $^ $(BOOST_INCLUDE_DIR)
+shm:
+	$(MEX) $(BOOST_INCLUDE_DIR) $@.cc
 
-getch: getch.c
-	$(MEX) $^
+getch:
+	$(MEX) $@.c
 
-udp: udp.cc
-	$(MEX) $^
+udp:
+	$(MEX) $@.cc
 
-uvc: uvc.cc
-	$(MEX) $^
+uvc:
+	$(MEX) $@.cc
 	
-cjpeg: cjpeg.cc
-	$(MEX) $^ -ljpeg -L/usr/local/lib
+cjpeg:
+	$(MEX) $@.cc -ljpeg
 
-djpeg: djpeg.cc
-	$(MEX) $^ -ljpeg -L/usr/local/lib
-	
+djpeg:
+	$(MEX) $@.cc -ljpeg
+
+zmq:	
+	$(MEX) $@.cc -lzmq
+
 clean:
 	rm -f *.o *.$(SHLIBEXT) *.$(MEXEXT)

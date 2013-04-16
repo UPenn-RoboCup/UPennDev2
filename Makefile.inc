@@ -66,7 +66,6 @@ CXXFLAGS=-O2 -fpic
 LIBOPTS=-shared -fpic
 LIBRT=-lrt
 SHLIBEXT=so
-MEXEXT=$(shell mexext)
 
 # If we are on OP/Nao
 ifeq ($(USER),darwin)

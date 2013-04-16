@@ -1,4 +1,18 @@
 clear all;
+p1 = zmq( 'publish',   'matlab' );
+s1 = zmq( 'subscribe', 'matlab' );
+zmq( 'send', p1, 'hello world!' );
+[data,idx] = zmq('poll',1000);
+if idx==s1
+	char( data{1}' );
+	disp('ZMQ test passed!');
+else
+	disp('Bad idx!');
+end
+
+%{
+%% TCP tests
+clear all;
 s_laser = zmq('subscribe',5555);
 s_imu = zmq('subscribe',5556);
 t_last_laser = 0;
@@ -20,3 +34,4 @@ while 1
         end
     end
 end
+%}

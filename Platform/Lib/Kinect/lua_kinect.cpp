@@ -18,10 +18,12 @@
  *  limitations under the License.                                            *
  *                                                                            *
  *****************************************************************************/
+// LUA WRAPPER (c) Stephen McGill 2013
+// 
 #include <stdio.h>
 #include <vector>
 #include <string>
-#include <OpenNI.h>
+#include <OpenNI2/OpenNI.h>
 #include <lua.hpp>
 
 using namespace openni;
@@ -216,6 +218,9 @@ static const struct luaL_Reg kinect_lib [] = {
 	{NULL, NULL}
 };
 
+#ifdef __cplusplus
+extern "C"
+#endif
 int luaopen_kinect(lua_State *L) {
 #if LUA_VERSION_NUM == 502
 	luaL_newlib( L, kinect_lib );

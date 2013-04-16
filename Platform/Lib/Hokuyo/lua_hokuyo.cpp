@@ -48,9 +48,9 @@ static int lua_hokuyo_shutdown(lua_State *L) {
 	if (dev)
 	{ 
 		if (dev->StopThread())
-			luaL_error(L, "could not stop thread\n");
+			luaL_error(L, "Could not stop thread\n");
 		if (dev->StopDevice())
-			luaL_error(L, "could not stop device\n");
+			luaL_error(L, "Could not stop device\n");
 		dev->Disconnect();
 		delete dev;
 	}
@@ -314,12 +314,14 @@ static const struct luaL_Reg hokuyo_lib [] = {
 	{NULL, NULL}
 };
 
-int luaopen_Hokuyo(lua_State *L) {
+#ifdef __cplusplus
+extern "C"
+#endif
+int luaopen_hokuyo(lua_State *L) {
 #if LUA_VERSION_NUM == 502
 	luaL_setfuncs( L, hokuyo_lib, 0 );
 #else
-	luaL_register(L, "Hokuyo", hokuyo_lib);
+	luaL_register(L, "hokuyo", hokuyo_lib);
 #endif
 	return 1;
 }
-

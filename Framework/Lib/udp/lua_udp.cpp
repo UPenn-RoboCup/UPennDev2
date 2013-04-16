@@ -12,27 +12,17 @@
 #include <netdb.h>
 #include <stdio.h>
 #include <assert.h>
-
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-#include "lua.h"
-#include "lualib.h"
-#include "lauxlib.h"
-#ifdef __cplusplus
-}
-#endif
-
-//#include <common.h>
-
 #include <vector>
 #include <algorithm>
 #include <stdint.h>
 
+// C++ include
+#include "lua.hpp"
+
 #define MDELAY 2
 #define TTL 16
-#define MAX_LENGTH 160000 //Size for sending 640*480 yuyv data without resampling
+//Size for sending 640*480 yuyv data without resampling
+#define MAX_LENGTH 160000
 
 const int maxQueueSize = 12;
 static std::deque<std::string> recvQueue;

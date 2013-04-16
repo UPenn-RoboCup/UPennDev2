@@ -1,9 +1,6 @@
 # Makefile used to build libraries
 include ../../../Makefile.inc
 
-TARGETS = all clean
-.PHONY: $(TARGETS)
-
 all: udp
 
 %.o: %.cpp

@@ -1,7 +1,7 @@
 include ../../../Makefile.inc
 MATLAB=matlab -nosplash -nodesktop
-MEX=mex -O $(INCLUDES)
-#MEXEXT=$(shell mexext)
+#MEX=mex -O $(INCLUDES)
+MEX=mex -O -I/usr/local/include -L/usr/local/lib
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<

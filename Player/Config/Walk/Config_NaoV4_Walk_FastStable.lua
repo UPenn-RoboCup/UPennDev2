@@ -16,7 +16,7 @@ walk.stanceLimitA={-0*math.pi/180,40*math.pi/180};
 walk.velLimitX={-.05,.06};
 --Max left/right speed
 walk.velLimitY={-.02,.02};
---Max get up/sit down speed
+--Max angular rotation speed
 walk.velLimitA={-.4,.4};
 walk.velDelta={0.15,0.01,0.15} 
 

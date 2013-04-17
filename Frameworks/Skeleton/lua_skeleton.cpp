@@ -39,7 +39,7 @@ std::vector<uint8_t> user_updates;
 // Keep track of the skeletons
 bool g_visibleUsers[MAX_USERS] = {false};
 nite::SkeletonState g_skeletonStates[MAX_USERS] = {nite::SKELETON_NONE};
-nite::SkeletonJoint g_skeletonJoints[MAX_USERS];
+nite::SkeletonJoint g_skeletonJoints[MAX_USERS][NITE_JOINT_COUNT];
 
 // User tracker variables
 nite::UserTracker userTracker;
@@ -85,7 +85,10 @@ void updateUserState(const nite::UserData& user, unsigned long long ts)
 	int user_id = user.getId();
 	g_visibleUsers[user_id] = user.isVisible();
 	g_skeletonStates[user_id] = user.getSkeleton().getState();
-	g_skeletonJoints[user_id] = user.getSkeleton().getJoint(nite::JOINT_HEAD);
+	for(int jj=0;jj<NITE_JOINT_COUNT;jj++){
+		nite::JointType myj = (nite::JointType)jj;
+		g_skeletonJoints[user_id][jj] = user.getSkeleton().getJoint(myj);
+	}
 }
 
 static int lua_skeleton_open(lua_State *L) {
@@ -155,13 +158,13 @@ static int lua_retrieve_joint(lua_State *L) {
 	int user_id  = luaL_checkint( L, 1 );
 	int joint_id = luaL_checkint( L, 2 );
 	
-	if( joint_id>=NITE_JOINT_COUNT && user_id>=MAX_USERS ){
-		printf("Out of range! user %d, joint %d",user_id,joint_id);
+	if( joint_id>NITE_JOINT_COUNT || user_id>MAX_USERS ){
+		printf("Out of range! user %d, joint %d\n",user_id,joint_id);
 		lua_pushnil(L);
 		return 1;
 	}
 	
-	nite::SkeletonJoint j = g_skeletonJoints[user_id-1];
+	nite::SkeletonJoint j = g_skeletonJoints[user_id-1][joint_id-1];
 	lua_newtable(L);
 	lua_pushstring(L, "x");   /* Push the table index */
 	lua_pushnumber(L,j.getPosition().x); /* Push the cell value */

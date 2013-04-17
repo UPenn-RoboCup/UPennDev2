@@ -40,6 +40,7 @@ std::vector<uint8_t> user_updates;
 bool g_visibleUsers[MAX_USERS] = {false};
 nite::SkeletonState g_skeletonStates[MAX_USERS] = {nite::SKELETON_NONE};
 nite::SkeletonJoint g_skeletonJoints[MAX_USERS][NITE_JOINT_COUNT];
+unsigned long long g_skeletonTime[MAX_USERS];
 
 // User tracker variables
 nite::UserTracker userTracker;
@@ -85,10 +86,12 @@ void updateUserState(const nite::UserData& user, unsigned long long ts)
 	int user_id = user.getId();
 	g_visibleUsers[user_id] = user.isVisible();
 	g_skeletonStates[user_id] = user.getSkeleton().getState();
+	g_skeletonTime[user_id] = ts;
 	for(int jj=0;jj<NITE_JOINT_COUNT;jj++){
 		nite::JointType myj = (nite::JointType)jj;
 		g_skeletonJoints[user_id][jj] = user.getSkeleton().getJoint(myj);
 	}
+	//printf("Time: %llu, %ld, %ld\n",ts,sizeof(ts),sizeof(long));
 }
 
 static int lua_skeleton_open(lua_State *L) {
@@ -163,9 +166,15 @@ static int lua_retrieve_joint(lua_State *L) {
 		lua_pushnil(L);
 		return 1;
 	}
-	
+
+	// Get the joint
 	nite::SkeletonJoint j = g_skeletonJoints[user_id-1][joint_id-1];
+
+	// Position
 	lua_newtable(L);
+	lua_pushstring(L, "confidence");
+	lua_pushnumber(L,j.getPositionConfidence());
+	lua_rawset(L, -3);
 	lua_pushstring(L, "x");   /* Push the table index */
 	lua_pushnumber(L,j.getPosition().x); /* Push the cell value */
 	lua_rawset(L, -3);      /* Stores the pair in the table */
@@ -175,13 +184,11 @@ static int lua_retrieve_joint(lua_State *L) {
 	lua_pushstring(L, "z");
 	lua_pushnumber(L,j.getPosition().z);
 	lua_rawset(L, -3);
-	lua_pushstring(L, "pc");
-	lua_pushnumber(L,j.getPositionConfidence());
-	lua_rawset(L, -3);
+	
 	// Orientation
+	lua_newtable(L);
 	lua_pushnumber(L, j.getOrientationConfidence());
-	lua_setfield(L, -2, "oc");
-
+	lua_setfield(L, -2, "confidence");
 	nite::Quaternion q = j.getOrientation();
 	lua_pushstring(L, "quaternion");
 	lua_createtable(L, 4, 0);
@@ -193,9 +200,14 @@ static int lua_retrieve_joint(lua_State *L) {
 	lua_rawseti(L, -2, 3);
 	lua_pushnumber(L, q.w);
 	lua_rawseti(L, -2, 4);
-	
 	lua_settable(L, -3);
-	return 1;
+	
+	// Timestamp needed?
+	//http://www.lua.org/pil/2.3.html
+	lua_pushnumber(L,g_skeletonTime[user_id-1]);
+	
+	// Returning the Position, Orientation, Timestamp
+	return 3;
 }
 
 static int lua_skeleton_shutdown(lua_State *L) {

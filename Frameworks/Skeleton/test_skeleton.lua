@@ -30,15 +30,26 @@ while true do
 	if visible and type(visible)=="table" and #visible==n_users then
 		for u,v in pairs(visible) do
 			if v then
-				local joint = skeleton.joint(u,test_joint);
-				if joint then
-					for j,stats in pairs(joint)do
+				local pos,orient,ts = skeleton.joint(u,test_joint);
+				if pos and orient and ts then
+					print('==Position==')
+					for j,stats in pairs(pos)do
 						if type(stats)=="table" then
 							print( j, unpack(stats) )
 						else
 							print( j, stats )
 						end
 					end
+					print('==Orientation==')
+					for j,stats in pairs(orient)do
+						if type(stats)=="table" then
+							print( j, unpack(stats) )
+						else
+							print( j, stats )
+						end
+					end
+					print('==Timestamp==')
+					print('ts',ts)
 					print()
 				else
 					print("Bad joint!")

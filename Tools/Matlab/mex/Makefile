@@ -3,7 +3,7 @@ MEX=mex -O -I/usr/local/include -L/usr/local/lib
 MEXEXT=$(shell mexext)
 PWD=$(shell pwd)
 
-TARGETS=time shm getch udp_penn cjpeg djpeg msgpack zmq ImageProc tcpopen
+TARGETS=time shm getch udp_recv udp_send cjpeg djpeg msgpack zmq ImageProc tcpopen
 .PHONY: all clean $(TARGETS)
 	
 all: $(TARGETS)
@@ -17,7 +17,9 @@ shm:
 getch:
 	$(MEX) $@.c
 
-udp_penn:
+udp_send:
+	$(MEX) $@.cc
+udp_recv:
 	$(MEX) $@.cc
 	
 cjpeg:

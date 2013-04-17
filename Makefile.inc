@@ -114,6 +114,7 @@ ifeq ($(OSTYPE),darwin)
   CC=cc
   CXX=c++
   LD=ld
+LDFLAGS=-lstdc++
 endif
 
 # Default compiling

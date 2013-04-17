@@ -30,7 +30,7 @@ function ptorch(data)
       col = data:size(2) 
       for r = 1, row do
         for c = 1, col do
-          io.write(data[r][c]..' ')
+          io.write(string.format("%5.10f",data[r][c])..' ')
         end
         io.write('\n')
       end

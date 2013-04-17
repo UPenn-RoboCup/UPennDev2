@@ -18,8 +18,6 @@ Daniel D. Lee, 6/09 <ddlee@seas.upenn.edu>
 #include <netdb.h>
 #include "mex.h"
 
-//#define IP "192.168.255.255"
-#define IP "255.255.255.255"
 #define PORT 54321
 #define MDELAY 2
 #define TTL 16
@@ -28,12 +26,10 @@ Daniel D. Lee, 6/09 <ddlee@seas.upenn.edu>
 
 const int maxQueueSize = 16;
 static std::deque<std::string> recvQueue;
-static int send_fd, recv_fd;
+static int recv_fd;
 
 void mexExit(void)
 {
-	if (send_fd > 0)
-		close(send_fd);
 	if (recv_fd > 0)
 		close(recv_fd);
 }
@@ -45,34 +41,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 	static bool init = false;
 	if (!init) {
-		struct hostent *hostptr = gethostbyname(IP);
-		if (hostptr == NULL)
-			mexErrMsgTxt("Could not get hostname");
-
-		send_fd = socket(AF_INET, SOCK_DGRAM, 0);
-		if (send_fd < 0)
-			mexErrMsgTxt("Could not open datagram send socket");
-
-		int i = 1;
-		if (setsockopt(send_fd, SOL_SOCKET, SO_BROADCAST,
-		(const char *) &i, sizeof(i)) < 0)
-			mexErrMsgTxt("Could not set broadcast option");
-
-		i = 1;
-		if (setsockopt(send_fd, SOL_SOCKET, SO_REUSEADDR,
-		(const char *) &i, sizeof(i)) < 0)
-			mexErrMsgTxt("Could not set reuse option");
-    
-		struct sockaddr_in dest_addr;
-		bzero((char *) &dest_addr, sizeof(dest_addr));
-		dest_addr.sin_family = AF_INET;
-		bcopy(hostptr->h_addr, (char *) &dest_addr.sin_addr, hostptr->h_length);
-		dest_addr.sin_port = htons(PORT);
-		if (connect(send_fd, (struct sockaddr *) &dest_addr,
-		sizeof(dest_addr)) < 0)
-			mexErrMsgTxt("Could not connect to destination address");
-
-/*
 		recv_fd = socket(AF_INET, SOCK_DGRAM, 0);
 		if (recv_fd < 0)
 			mexErrMsgTxt("Could not open datagram recv socket");
@@ -91,8 +59,8 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 		if (flags == -1) flags = 0;
 		if (fcntl(recv_fd, F_SETFL, flags | O_NONBLOCK) < 0)
 			mexErrMsgTxt("Could not set nonblocking mode");
-		*/
-		printf("Setting up udp on: %s\n", IP);
+		
+		printf("Setting up udp_recv on port: %d\n", PORT);
 
 		mexAtExit(mexExit);
 		init = true;
@@ -135,18 +103,5 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 		plhs[0] = mxCreateNumericArray(2, dims, mxUINT8_CLASS, mxREAL);
 		memcpy(mxGetData(plhs[0]), recvQueue.front().c_str(), n);
 		recvQueue.pop_front();
-	}
-	else if (str == "send") {
-		if (nrhs < 2)
-			mexErrMsgTxt("No input argument");
-		int n = mxGetNumberOfElements(prhs[1])*mxGetElementSize(prhs[1]);
-		int ret = send(send_fd, mxGetData(prhs[1]), n, 0);
-		plhs[0] = mxCreateDoubleScalar(ret);
-
-		// Put it in receive queue as well:
-		/*
-		std::string msg((const char *) mxGetData(prhs[1]), n);
-		recvQueue.push_back(msg);
-		*/
 	}
 }

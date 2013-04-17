@@ -165,7 +165,7 @@ void CameraDump::OnNewFrame(const unsigned char *_image,
   int lenPacked = CompressData(pColor, _width, _height);
   zmq_send(csocket, (void *)&(destBuf[0]), lenPacked, 0);
 
-  std::cout << "new camera image " << ' ' << lenPacked << ' ' <<  _height << ' ' << _width << ' ' << _depth << ' ' << _format << ' ';
-  std::cout << std::setw(14) << std::setprecision(15)<< t.tv_sec + 1E-6*t.tv_usec << std::endl;
+//  std::cout << "new camera image " << ' ' << lenPacked << ' ' <<  _height << ' ' << _width << ' ' << _depth << ' ' << _format << ' ';
+//  std::cout << std::setw(14) << std::setprecision(15)<< t.tv_sec + 1E-6*t.tv_usec << std::endl;
 }
 

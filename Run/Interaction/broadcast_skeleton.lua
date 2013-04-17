@@ -15,7 +15,6 @@ NITE_JOINT_RIGHT_KNEE,
 NITE_JOINT_LEFT_FOOT,
 NITE_JOINT_RIGHT_FOOT = 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15
 
-
 local skeleton = require 'skeleton'
 -- Get the number of users being tracked
 local n_users = skeleton.open()
@@ -28,8 +27,10 @@ end
 local unix = require'unix'
 local mp = require 'messagepack'
 local simple_ipc = require 'simple_ipc'
-local sk_pub = simple_ipc.new_publisher('skeleton','position')
+--local sk_pub = simple_ipc.new_publisher('skeleton','position')
+local sk_pub = simple_ipc.new_publisher('skeleton')
 local t0 = unix.time()
+local count = 0;
 while true do
 	local visible = skeleton.update()
 	
@@ -38,20 +39,22 @@ while true do
 		id = 2;
 	end
 	if visible[id] then
-		local js = ""
+		local jp = "";
 		for j=1,15 do
-			local position, orientation = skeleton.joint(id,j)
-			js = js..mp.pack(joint)
+			local pos = skeleton.joint(id,j)
+			jp = jp..mp.pack(pos)
 		end
-		local nb = sk_pub:send( js )
+		local nb = sk_pub:send( jp )
 	end
 	
 	-- Debug
 	local t = unix.time()
-	local t_diff = t-t0;
-	t0 = t
-	if debug then
-		print(string.format("%2.2f FPS",1/t_diff))
+	local t_diff = t-t0
+	count=count+1
+	if t_diff>1 then
+		print(string.format("%2.2f FPS",count/t_diff))
+		count = 0
+		t0 = t
 	end
 	
 end

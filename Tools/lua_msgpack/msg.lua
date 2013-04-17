@@ -1,5 +1,4 @@
-package.cpath = '../../Player/Lib/?.so;'..package.cpath
-package.path = '../../Player/Util/?.lua;'..package.path
+dofile('../../Run/include.lua')
 
 require 'msgpack'
 require 'carray'

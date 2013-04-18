@@ -82,6 +82,8 @@ tUpdate = unix.time();
 gcm.set_game_paused(1);
 role = 1; --Attacker
 waiting = 1;
+goal = 5
+team_role = 0
 
 button_role,button_state = 0,0;
 tButtonRole = 0;
@@ -157,39 +159,48 @@ function update()
     button_role=1;
     if (t-tButtonRole>1.0) then --Button pressed for 1 sec
       waiting = 1-waiting;
-      if waiting==0 then
-	--Start up and start demo
+      if waiting==0 then --Start up and start demo
 
-	if demo_mode == 0 then --Soccer demo 
-	  walk.enable_ankle_pr = true;
-	  walk.enable_hip_pr = false; --Disable hip strategy
-	  Motion.fallAngle = Config.fallAngle; --Enable falldown check
+      	if demo_mode == 0 then --Soccer demo 
+      	  walk.enable_ankle_pr = true;
+      	  walk.enable_hip_pr = false; --Disable hip strategy
+      	  Motion.fallAngle = Config.fallAngle; --Enable falldown check
           Speak.talk('Soccer Demo');
           BodyFSM.sm:set_state('bodySearch');   
           HeadFSM.sm:set_state('headScan');
           Motion.event("standup");
           kick_cycle_t0 = unix.time();
-	elseif demo_mode == 1 then -- Push demo
-	  walk.enable_ankle_pr = true;
-	  walk.enable_hip_pr = true; --Enable hip strategy
-	  Motion.fallAngle = 240*math.pi/180;--Disable falldown check
+      	elseif demo_mode == 1 then -- Push demo
+      	  walk.enable_ankle_pr = true;
+      	  walk.enable_hip_pr = true; --Enable hip strategy
+      --	  Motion.fallAngle = 240*math.pi/180;--Disable falldown check
+      	  Motion.fallAngle = Config.fallAngle; --Enable falldown check
           Speak.talk('Push Demo');
           if walk.active then walk.stop(); end
-	  Motion.event("standup");
-	else -- Mimic demo
-	  walk.enable_ankle_pr = true;
-	  walk.enable_hip_pr = false; --Enable hip strategy
-	  Motion.fallAngle = 240*math.pi/180;--Disable falldown check
+      	  Motion.event("standup");
+      	elseif demo_mode == 2 then -- Mimic demo
+      	  walk.enable_ankle_pr = true;
+      	  walk.enable_hip_pr = false; --Enable hip strategy
+      	  Motion.fallAngle = 240*math.pi/180;--Disable falldown check
           Speak.talk('Mimic Demo');
           if walk.active then walk.stop(); end
-	  Motion.event("standup");
+	        Motion.event("standup");
           walk.upper_body_override_on();
+        else 
+      	  walk.enable_ankle_pr = true;
+      	  walk.enable_hip_pr = false; -- disable hip strategy
+          if walk.active then walk.stop(); end
+      	  Motion.fallAngle = Config.fallAngle; --Enable falldown check
+          Speak.talk('Pose Demo');
+          BodyFSM.sm:set_state('bodyReady');
+      	  Motion.event("standup");
         end
+
       else
-	--Sit down and rest
-	batlevel = string.format("Battery Level %.1f",
-		Body.get_battery_level());
-	Speak.talk(batlevel)
+      	--Sit down and rest
+      	batlevel = string.format("Battery Level %.1f",
+      	Body.get_battery_level());
+      	Speak.talk(batlevel)
         Motion.event("sit");
         walk.upper_body_override_off()
       end
@@ -200,7 +211,6 @@ function update()
     tButtonRole = t;
   end
 
-
   --Check center button press
   if (Body.get_change_role() == 1) then
     button_state=1;
@@ -209,13 +219,15 @@ function update()
 --      behavior.cycle_behavior();
       button_state=0;
       if waiting > 0 then --Cycle demo mode while in waiting
-        demo_mode = (demo_mode + 1 )%3; --Cycle demo mode
+        demo_mode = (demo_mode + 1 )%4; --Cycle demo mode
         if demo_mode == 0 then
           Speak.talk('Soccer');
         elseif demo_mode ==1 then
           Speak.talk('Push Recovery');
-        else
+        elseif demo_mode == 2 then
           Speak.talk('Mimic');
+        else
+          Speak.talk('Pose');
         end
       end
     end
@@ -226,8 +238,10 @@ function update()
       Body.set_indicator_ball({0,1,0}); --Green eye LED for soccer demo
     elseif demo_mode == 1 then --Push demo 
       Body.set_indicator_ball({0,0,1}); --Blue eye LED for push demo
-    else -- Mimic mode
+    elseif demo_mode == 2 then -- Mimic mode
       Body.set_indicator_ball({1,1,0}); --Yellow eye LED for mimic demo
+    else
+      Body.set_indicator_ball({1,0,1}); --Yellow eye LED for mimic demo
     end
     Motion.update();
     Body.update();
@@ -245,6 +259,15 @@ function update()
       end
     elseif demo_mode == 2 then -- Mimic mode
       do_mimic();
+    elseif demo_mode == 3 then
+      if walk.active then walk.stop(); end
+      goal = goal + 1
+      team_role = (gcm.get_team_role() + 1)%3
+      gcm.set_team_role(team_role)
+      gcm.set_game_opponent_score(0)
+      gcm.set_game_our_score(goal)
+      gcm.set_game_paused(0);
+      BodyFSM.update();
     end
 
     Motion.update(); -- Other modes just requires motion

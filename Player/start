@@ -4,14 +4,14 @@ KERNEL=`uname -r`
 
 
 # Kill all processes to reset player
-killall -q naoqi-bin naoqi espeak lua luajit luajit2 screen
+killall -q naoqi-bin naoqi hal espeak lua luajit luajit2 screen
 #
 
 # kill all screen log
 rm -f screenlog*
 rm -f /dev/shm/*
 
-SCREEN_FLAGS="-dm -L -S"
+SCREEN_FLAGS="-dm -L -s /bin/bash -S"
 
 reset_wb(){
   uvcdynctrl -d video0 -s 'White Balance Temperature, Auto' -- 1
@@ -117,6 +117,20 @@ run_demo(){
   echo "Rock and Roll!"
 }
 
+run_demo_nao(){
+  cd $PLAYER_DIR
+  screen $SCREEN_FLAGS naohal /usr/bin/hal
+  sleep 2
+  screen $SCREEN_FLAGS naoqi /usr/bin/naoqi
+  sleep 2
+
+  echo "Starting Nao Cognition..."
+  cd $PLAYER_DIR
+  screen $SCREEN_FLAGS cognition $LUA_COM run_cognition.lua
+  # Allow Cognition some time to start
+  sleep 3
+}
+
 run_visiontest(){
   run_dcm_vcm
   echo "Starting Test Vision..."
@@ -187,10 +201,10 @@ run_nao_vision(){
 
 case "$KERNEL" in
         *aldebaran*) 
-                PLAYER_DIR=/home/nao/Player 
+                PLAYER_DIR=/home/nao/UPennDev/Player
                 LUA_COM=/usr/local/bin/luajit;;
         *)
-                PLAYER_DIR=/home/darwin/current/Player        
+                PLAYER_DIR=/home/darwin/current/Player
                 LUA_COM=/usr/bin/luajit;;
 esac
 
@@ -198,6 +212,9 @@ case "$1" in
   '')
     echo "Start Player Mode"
     run_player;;
+  'nao')
+    echo "start nao"
+    run_demo_nao;;
   'demo')
     echo "Start Demo Mode"
     run_demo;;

@@ -3,8 +3,12 @@ local two_port = false
 
 local msg = 'hello';
 local udp = require 'udp'
-local udp_ok = udp.init('127.0.0.1',54321)
-assert(udp_ok,"Bad udp setup!")
+local udp_sender = udp.new_sender('127.0.0.1',54321)
+assert(udp_sender>0,"Bad udp sender!")
+local udp_receiver = udp.new_receiver(54321)
+assert(udp_receiver>0,"Bad udp receiver!")
+
+print(string.format("send_fd(%d), recv_fd(%d)",udp_sender,udp_receiver) )
 
 if two_port then
   msg2 = 'world';

@@ -58,7 +58,7 @@ dev.walk = 'Walk/NaoV4Walk';
 dev.kick = 'NewKick';
 
 --Speak enable
-speakenable = 0;
+speakenable = 1;
 
 
 -- FSM Parameters

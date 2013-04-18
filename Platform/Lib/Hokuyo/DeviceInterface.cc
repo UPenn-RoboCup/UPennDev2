@@ -7,6 +7,7 @@ University of Pennsylvania
 #include "DeviceInterface.hh"
 #include <signal.h>
 #include <unistd.h>
+#include <stdio.h>
 
 using namespace Upenn;
 

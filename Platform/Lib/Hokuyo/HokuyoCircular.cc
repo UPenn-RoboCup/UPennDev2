@@ -7,6 +7,7 @@
 */
 
 #include "HokuyoCircular.hh"
+#include <stdio.h>
 using namespace Upenn;
 
 ///////////////////////////////////////////////////////////////////

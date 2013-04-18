@@ -7,6 +7,9 @@ University of Pennsylvania
 
 #include "CircularBuffer.hh"
 #include "Timer.hh"
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 
 using namespace std;
 using namespace Upenn;

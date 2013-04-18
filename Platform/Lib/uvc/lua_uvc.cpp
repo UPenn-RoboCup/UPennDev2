@@ -7,7 +7,6 @@
 
 #include <lua.hpp>
 #include <stdint.h>
-//#include "timeScalar.h"
 #include "v4l2.h"
 #define VIDEO_DEVICE "/dev/video0"
 int init = 0;
@@ -29,10 +28,6 @@ static int lua_get_image(lua_State *L) {
     return 1;
   }
   uint32_t* image = (uint32_t*)v4l2_get_buffer(buf_num, NULL);
-
-	// TODO: Record time when the buffer was acutally taken
-	// May need to do this in v4l2.h
-  //cameraStatus->time = time_scalar();
   lua_pushlightuserdata(L, image);
   return 1;
 }
@@ -112,7 +107,7 @@ static const struct luaL_Reg camera_lib [] = {
 extern "C"
 int luaopen_uvc (lua_State *L) {
 #if LUA_VERSION_NUM == 502
-	luaL_setfuncs( L, camera_lib, 0 );
+	luaL_newlib( L, camera_lib );
 #else
   luaL_register(L, "uvc", camera_lib);
 #endif

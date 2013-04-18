@@ -319,7 +319,7 @@ extern "C"
 #endif
 int luaopen_hokuyo(lua_State *L) {
 #if LUA_VERSION_NUM == 502
-	luaL_setfuncs( L, hokuyo_lib, 0 );
+	luaL_newlib( L, hokuyo_lib );
 #else
 	luaL_register(L, "hokuyo", hokuyo_lib);
 #endif

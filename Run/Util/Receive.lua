@@ -5,7 +5,7 @@ CommWired=require('Comm');
 require('vcm')
 require('serialization');
 require('Config');
-require('Z');
+local Z = require('Z');
 
 -- Initiate Sending Address
 --enable_online_learning = Config.vision.enable_online_colortable_learning or 0;

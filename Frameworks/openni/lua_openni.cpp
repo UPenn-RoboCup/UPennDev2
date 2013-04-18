@@ -25,13 +25,14 @@
 #include <lua.hpp>
 #define MAX_USERS 2 //10 was used before...
 
+char init = 0;
+
 // Use the right namespace
 using namespace openni;
 
 /* User Tracking information */
-nite::UserTracker userTracker;
+nite::UserTracker *userTracker;
 nite::Status niteRc;
-nite::UserTrackerFrameRef userTrackerFrame;
 // Keep track of the skeletons
 bool g_visibleUsers[MAX_USERS] = {false};
 nite::SkeletonState g_skeletonStates[MAX_USERS] = {nite::SKELETON_NONE};
@@ -39,21 +40,20 @@ nite::SkeletonJoint g_skeletonJoints[MAX_USERS][NITE_JOINT_COUNT];
 unsigned long long g_skeletonTime[MAX_USERS];
 
 /* Cloud information */
-VideoStream** m_streams;
-VideoStream depth, color;
-VideoFrameRef frame, cframe;
+// Establish the streams
+VideoStream* m_streams;
+VideoStream* depth;
+VideoStream* color;
+
+VideoFrameRef* dframe;
+VideoFrameRef* cframe;
+
 Device device;
 Recorder recorder;
 Status rc;
 int changedIndex;
 uint16_t* pDepth;
 uint8_t* pColor;
-// Depth buffer
-#define NBYTES 76800
-uint8_t d[NBYTES];
-uint16_t tmp_d;
-uint8_t zoom = 3;// default zoom
-uint32_t cntr;
 
 // Skeleton Updating function
 void updateUserState(const nite::UserData& user, unsigned long long ts) {
@@ -67,6 +67,9 @@ void updateUserState(const nite::UserData& user, unsigned long long ts) {
 }
 
 static int lua_startup(lua_State *L) {
+	
+	if(init==1)
+		return luaL_error(L, "Two OpenNI devices not supported yet.\n" );
 	
 	/* Initialize the device*/
 	// Should we record? play back? Read from a device?
@@ -93,57 +96,59 @@ static int lua_startup(lua_State *L) {
 	if (rc != STATUS_OK)
 		return luaL_error(L,"Device failed\n%s\n",OpenNI::getExtendedError());
 
+	m_streams = new VideoStream[2];
+	depth = &m_streams[0];
+	color = &m_streams[1];
+	dframe = new VideoFrameRef;
+	cframe = new VideoFrameRef;
 	// Setup depth
 	if (device.getSensorInfo(SENSOR_DEPTH) == NULL)
 		return luaL_error(L,"No depth sensor\n%s\n", OpenNI::getExtendedError());
-	rc = depth.create(device, SENSOR_DEPTH);
+	rc = depth->create(device, SENSOR_DEPTH);
 	if (rc != STATUS_OK)
 		return luaL_error(L,"Depth create\n%s\n", OpenNI::getExtendedError());
-	rc = depth.start();
+	rc = depth->start();
 	if (rc != STATUS_OK){
-		depth.destroy();
+		depth->destroy();
 		return luaL_error(L,"Depth start\n%s\n", OpenNI::getExtendedError());
 	}
 
 	// Setup color
 	if (device.getSensorInfo(SENSOR_COLOR) == NULL)
 		return luaL_error(L,"No color sensor\n%s\n", OpenNI::getExtendedError());
-	rc = color.create(device, SENSOR_COLOR);
+	rc = color->create(device, SENSOR_COLOR);
 	if (rc != STATUS_OK)
 		return luaL_error(L,"Depth create\n%s\n", OpenNI::getExtendedError());
-	rc = color.start();
+	rc = color->start();
 	if (rc != STATUS_OK) {
-		color.destroy();
+		color->destroy();
 		return luaL_error(L,"Color start\n%s\n", OpenNI::getExtendedError());
 	}
-
-	// Establish the variables
-	m_streams = new VideoStream*[2];
-	m_streams[0] = &depth;
-	m_streams[1] = &color;
 	
 	// Begin recording
 	if(file_uri!=NULL && logmode!=NULL )
 		recorder.create( file_uri );
 	if( recorder.isValid() ){
-		recorder.attach( depth );
-		recorder.attach( color );
+		recorder.attach( *depth );
+		recorder.attach( *color );
 		recorder.start();
 	}
 	
 	/* Initialize the Skeleton Tracking system */
 	nite::NiTE::initialize();
-	niteRc = userTracker.create(&device);
+	userTracker = new nite::UserTracker;
+	niteRc = userTracker->create(&device);
 	if (niteRc != nite::STATUS_OK)
 		return luaL_error(L, "Couldn't create user tracker!\n" );
 	
 	// Push the number of users to be tracked
+	init = 1;
 	lua_pushinteger( L, MAX_USERS );
 	return 1;
 }
 
 static int lua_update_cloud(lua_State *L) {
-	rc = OpenNI::waitForAnyStream(m_streams, 2, &changedIndex);
+	rc = OpenNI::waitForAnyStream( &m_streams, 2, &changedIndex);
 	if (rc != STATUS_OK)
 		return luaL_error(L, "Wait failed!\n" );
 
@@ -151,20 +156,15 @@ static int lua_update_cloud(lua_State *L) {
 	switch (changedIndex) {
 		// Depth
 		case 0:
-		depth.readFrame(&frame);
-		pDepth = (uint16_t*)frame.getData();
-		for(cntr=0;cntr<NBYTES;cntr++){
-			tmp_d = pDepth[cntr]>>zoom;
-			// Saturate
-			tmp_d&0xFF00 ? d[cntr] = 0xFF : tmp_d & 0xFF;
-		}
+		depth->readFrame( dframe );
+		pDepth = (uint16_t*)dframe->getData();
 		lua_pushnumber( L, 0 );
 		lua_pushstring( L, "d" );
 		break;
 		// Color
 		case 1:
-		color.readFrame(&cframe);
-		pColor = (uint8_t*)cframe.getData();
+		color->readFrame( cframe );
+		pColor = (uint8_t*)cframe->getData();
 		lua_pushnumber( L, 1 );
 		lua_pushstring( L, "c" );
 		break;
@@ -178,7 +178,8 @@ static int lua_update_cloud(lua_State *L) {
 }
 
 static int lua_update_skeleton(lua_State *L) {
-	niteRc = userTracker.readFrame(&userTrackerFrame);
+	nite::UserTrackerFrameRef userTrackerFrame;
+	niteRc = userTracker->readFrame(&userTrackerFrame);
 	if (niteRc != nite::STATUS_OK)
 		return luaL_error(L, "NiTE readFrame failed!\n" );
 
@@ -189,7 +190,7 @@ static int lua_update_skeleton(lua_State *L) {
 		updateUserState(user,userTrackerFrame.getTimestamp());
 		if (user.isNew())
 		{
-			userTracker.startSkeletonTracking(user.getId());
+			userTracker->startSkeletonTracking(user.getId());
 		}
 		else if (user.getSkeleton().getState() == nite::SKELETON_TRACKED)
 		{
@@ -271,7 +272,7 @@ static int lua_retrieve_joint(lua_State *L) {
 static int lua_retrieve_cloud(lua_State *L) {
 	int i = luaL_checkint( L, 1 );
 	if(i==0)
-		lua_pushlightuserdata( L, d );
+		lua_pushlightuserdata( L, pDepth );
 	else if(i==1)
 		lua_pushlightuserdata( L, pColor );
 	else
@@ -281,6 +282,9 @@ static int lua_retrieve_cloud(lua_State *L) {
 
 static int lua_skeleton_shutdown(lua_State *L) {
 	
+	if(init==0)
+		return luaL_error(L, "Cannot shutdown an uninitialized object!\n" );
+	
 	// Kill the recorder if being used
 	if( recorder.isValid()==1 ){
 		recorder.stop();
@@ -288,10 +292,10 @@ static int lua_skeleton_shutdown(lua_State *L) {
 	}
 
 	// Shutoff the streams
-	color.stop();
-	color.destroy();
-	depth.stop();
-	depth.destroy();
+	color->stop();
+	color->destroy();
+	depth->stop();
+	depth->destroy();
 	device.close();
 	
 	// Shutdown the NiTE and OpenNI systems
@@ -300,17 +304,8 @@ static int lua_skeleton_shutdown(lua_State *L) {
 #ifdef DEBUG
 	printf("Done shutting down NiTE and OpenNI\n");
 #endif
+	init = 0;
 	lua_pushboolean(L,1);
-	return 1;
-}
-
-static int lua_set_digital_zoom(lua_State *L) {
-	uint8_t tmp = luaL_optint( L, 1, 0 );
-	// 2 through 5 are allowable
-	if(tmp>=2 && tmp<=5) 
-		zoom = tmp;
-	// Return the current zoom
-	lua_pushinteger(L, zoom);
 	return 1;
 }
 
@@ -319,7 +314,6 @@ static const struct luaL_Reg openni_lib [] = {
 	{"update_skeleton", lua_update_skeleton},
 	{"update_cloud", lua_update_cloud},
 	{"joint", lua_retrieve_joint},
-	{"zoom", lua_set_digital_zoom},
 	{"cloud", lua_retrieve_cloud},
 	{"shutdown", lua_skeleton_shutdown},
 	{NULL, NULL}

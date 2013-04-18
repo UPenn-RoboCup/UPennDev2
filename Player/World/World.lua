@@ -38,7 +38,7 @@ team_ball_threshold = Config.team.team_ball_threshold or 0;
 
 
 --For NSL, eye LED is not allowed during match
-led_on = Config.led_on or 1; --Default is ON
+led_on = 1; --Default is ON
 
 ballFilter = Filter2D.new();
 ball = {};
@@ -279,7 +279,7 @@ function update_vision()
     ballFilter:observation_xy(v[1], v[2], dr, da);
     --Green insted of red for indicating
     --As OP tend to detect red eye as balls
-    ball_led={0,1,0}; 
+    ball_led={1,0,0}; 
 
     -- Update the velocity
 --    Velocity.update(v[1],v[2]);
@@ -327,7 +327,8 @@ function update_vision()
             PoseFilter.goal_cyan(v);
           end
           -- indicator
-          Body.set_indicator_goal({0,0,1});
+          goal_led={0,0,1};
+          --Body.set_indicator_goal({0,0,1});
         else
           -- we are the blue team, shooting on yellow goal
           if (goalType == 0) then
@@ -340,7 +341,8 @@ function update_vision()
             PoseFilter.goal_yellow(v);
           end
           -- indicator
-          Body.set_indicator_goal({1,1,0});
+          goal_led={1,1,0}
+          --Body.set_indicator_goal({1,1,0});
         end
       
       elseif (attackingOrDefending == -1) then
@@ -369,23 +371,28 @@ function update_vision()
             PoseFilter.goal_cyan(v);
           end
           -- indicator
-          Body.set_indicator_goal({0,0,1});
+          goal_led = {0,0,1}
+          --Body.set_indicator_goal({0,0,1});
         end
 
       else
         -- we dont know which goal it is
         if (goalType == 0) then
           PoseFilter.post_unified_unknown(v);
-          Body.set_indicator_goal({1,1,0});
+          goal_led = {1,1,0}
+          --Body.set_indicator_goal({1,1,0});
         elseif(goalType == 1) then
           PoseFilter.post_unified_left(v);
-          Body.set_indicator_goal({1,1,0});
+          goal_led = {1,1,0}
+          --Body.set_indicator_goal({1,1,0});
         elseif(goalType == 2) then
           PoseFilter.post_unified_right(v);
-          Body.set_indicator_goal({1,1,0});
+          goal_led = {1,1,0}
+          --Body.set_indicator_goal({1,1,0});
         elseif(goalType == 3) then
           PoseFilter.goal_unified(v);
-          Body.set_indicator_goal({0,0,1});
+          goal_led = {0,0,1}
+          --Body.set_indicator_goal({0,0,1});
         end
       end
 
@@ -438,7 +445,7 @@ function update_vision()
     local v = vcm.get_landmark_v();
     if color == Config.color.yellow then
         PoseFilter.landmark_yellow(v);
-	goal_led={1,1,0.5};
+	      goal_led={1,1,0.5};
     else
         PoseFilter.landmark_cyan(v);
 	goal_led={0,1,1};

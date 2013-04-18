@@ -31,7 +31,7 @@ param.world = 'World/Config_Nao_World'
 param.walk = 'Walk/Config_NaoV4_Walk_FastStable' 
 param.kick = 'Kick/Config_Nao_Kick'
 param.vision = 'Vision/Config_NaoV4_Vision'
-param.camera = 'Camera/Config_NaoV4_Camera_Grasp'
+param.camera = 'Camera/Config_NaoV4_Camera_Levine512night'
 param.fsm = 'FSM/Config_NaoV4_FSM'
 
 loadconfig(param.world)
@@ -58,7 +58,7 @@ dev.walk = 'Walk/NaoV4Walk';
 dev.kick = 'NewKick';
 
 --Speak enable
-speakenable = 0;
+speakenable = 1;
 
 
 -- FSM Parameters

@@ -66,7 +66,6 @@ CXXFLAGS=-O2 -fpic
 LIBOPTS=-shared -fpic
 LIBRT=-lrt
 SHLIBEXT=so
-MEXEXT=$(shell mexext)
 
 # If we are on OP/Nao
 ifeq ($(USER),darwin)
@@ -97,7 +96,7 @@ ifdef LUAJIT_INC
 INCLUDES+=$(LUAJIT_INC)
 LIBOPTS+=$(LUAJIT_LIB)
 else
-ifdef LUAJIT_INC
+ifdef LUA_INC
 INCLUDES+=$(LUA_INC)
 LIBOPTS+=$(LUA_LIB)
 else
@@ -115,6 +114,7 @@ ifeq ($(OSTYPE),darwin)
   CC=cc
   CXX=c++
   LD=ld
+LDFLAGS=-lstdc++
 endif
 
 # Default compiling

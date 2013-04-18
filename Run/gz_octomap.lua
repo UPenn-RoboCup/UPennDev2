@@ -54,7 +54,7 @@ lidar_channel.callback = function()
   
   -- TODO: Use for slam as well
   libLaser.ranges2xyz(ranges,0,0,0)
-  --Octomap.add_scan( libLaser.points_xyz )
+  Octomap.add_scan( libLaser.points_xyz )
   
   -- Change the lidar head to scan
   local pitch = 10*math.cos( ts ) + 20
@@ -80,4 +80,9 @@ while true do
   fps
   )
   print( debug_msg )
+  if(t-t0>10) then
+    print('Writing!')
+    Octomap.save_tree()
+    return
+  end
 end

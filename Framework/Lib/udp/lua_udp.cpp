@@ -1,3 +1,8 @@
+/*
+Lua file to send and receive UDP messages.
+Daniel D. Lee copyright 2009 <ddlee@seas.upenn.edu>
+Stephen G. McGill copyright 2013 <smcgill3@seas.upenn.edu>
+*/
 #include <iostream>
 #include <string>
 #include <deque>
@@ -24,24 +29,35 @@
 //Size for sending 640*480 yuyv data without resampling
 #define MAX_LENGTH 160000
 
+// TODO: Make more recv file descriptors, 
+// which are saved in the Lua metatable
+static bool init_recv = false;
+static int recv_fd;
 const int maxQueueSize = 12;
 static std::deque<std::string> recvQueue;
 static int comm_update();
 
-// TODO: Make more file descriptors, which are saved in the Lua metatable
-static bool init_send = false, init_recv = false;
-static int send_fd, recv_fd;
-
-// TODO: Close file descriptors
-/*
-void mexExit(void)
-{
-if (send_fd > 0)
-close(send_fd);
-if (recv_fd > 0)
-close(recv_fd);
+// TODO: Close send descriptors as well
+static int lua_comm_close(lua_State *L) {
+	const int fd = luaL_checkint(L,1);
+	if (fd == recv_fd){
+		if( recv_fd > 0 && init_recv ){
+			close(recv_fd);
+			init_recv = false;
+			recvQueue.clear();
+			lua_pushboolean(L,1);
+			return 1;
+		}
+	}
+	else if(fd>2 && fd!=recv_fd){
+		close(fd);
+		lua_pushboolean(L,1);
+		return 1;
+	}
+	
+	lua_pushboolean(L,0);
+	return 1;
 }
-*/
 
 static int lua_comm_init_recv(lua_State *L) {
 
@@ -77,10 +93,8 @@ static int lua_comm_init_recv(lua_State *L) {
 }
 
 static int lua_comm_init_send(lua_State *L) {
-
-	if( init_send )
-		return luaL_error(L,"Already initialized sender!\n");
-
+	
+	// TODO: check if already assigned an ip/port combo?
 	const char* SEND_IP = luaL_checkstring(L, 1);//std::string
 	const int SEND_PORT = luaL_checkint(L,2);
 
@@ -89,7 +103,7 @@ static int lua_comm_init_send(lua_State *L) {
 	if (hostptr == NULL)
 		return luaL_error(L,"Could not get hostname\n");
 
-	send_fd = socket(AF_INET, SOCK_DGRAM, 0);
+	const int send_fd = socket(AF_INET, SOCK_DGRAM, 0);
 	if (send_fd < 0)
 		return luaL_error(L,"Could not open datagram send socket\n");
 
@@ -112,7 +126,6 @@ static int lua_comm_init_send(lua_State *L) {
 		return luaL_error(L,"Could not connect to destination address\n");
 
 	// Return the file descriptor
-	init_send = true;
 	lua_pushinteger(L, send_fd);
 	return 1;
 }
@@ -168,17 +181,19 @@ static int lua_comm_receive(lua_State *L) {
 
 
 static int lua_comm_send(lua_State *L) {
-	// Grab the arguments
-	const char *data = luaL_checkstring(L, 1);
-	int size = luaL_optint(L, 2, 0);
-	// TODO: add a maximum limit
-	if(size==0)
-		size = strlen(data);
-	else if(size<0)
+	// Grab the file descriptor
+	const int send_fd = luaL_checkint(L, 1);
+	// Grab the data
+	const char *data = luaL_checkstring(L, 2);
+	// Grab the size of the data, if given
+	const int size = luaL_optint(L, 3, strlen(data));
+	
+	if( send_fd==recv_fd || send_fd<3 )
+		return luaL_error(L,"Bad file descriptor (%d)!\n", send_fd);
+	
+	// TODO: add a maximum send limit
+	if(size<0)
 		return luaL_error(L,"Negative number of bytes to send!\n");
-
-	// Process the update: why??? removing...
-	//int updateRet = comm_update();
 
 	// Send the data
 	int ret = send(send_fd, data, size, 0);
@@ -193,6 +208,7 @@ static const struct luaL_Reg udp [] = {
 	{"size", lua_comm_size},
 	{"receive", lua_comm_receive},
 	{"send", lua_comm_send},
+	{"close", lua_comm_close},
 	{NULL, NULL}
 };
 

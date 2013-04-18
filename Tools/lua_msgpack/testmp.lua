@@ -1,4 +1,4 @@
-require 'include'
+dofile '../../Run/include.lua'
 --require 'common'
 
 local util = require 'util'
@@ -20,11 +20,11 @@ for i,v in pairs(tbl1) do
   print(i,v)
 end
 
-require 'cmsgpack'
-local str = mp.pack(tbl1)
+--require 'cmsgpack'
+--local str = mp.pack(tbl1)
 --local str = mp.pack('fdfdfd')
 --local str = mp.pack(-4324252)
-cmsgpack.new(str, #str)
+--cmsgpack.new(str, #str)
 
 local file = io.open('msg1', 'rb')
 str = file:read('*a')

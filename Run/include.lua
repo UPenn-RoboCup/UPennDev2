@@ -23,6 +23,7 @@ package.cpath = HOME..'Frameworks/ImageProc/?.so;'..package.cpath
 package.cpath = HOME..'Frameworks/OccMap/?.so;'..package.cpath
 package.cpath = HOME..'Frameworks/OctoMap/?.so;'..package.cpath
 package.cpath = HOME..'Frameworks/Hokuyo/?.so;'..package.cpath
+package.cpath = HOME..'Frameworks/Skeleton/?.so;'..package.cpath
 
 package.cpath = HOME..'Tools/lua_msgpack/?.so;'..package.cpath
 package.cpath = HOME..'Tools/cjpeg/?.so;'..package.cpath

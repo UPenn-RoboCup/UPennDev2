@@ -1,7 +1,7 @@
 local test_cloud = true
-local test_skeleton = false
+local test_skeleton = true
 local show_position = true
-local show_orientation = false
+local show_orientation = true
 
 local	NITE_JOINT_HEAD,
 NITE_JOINT_NECK,
@@ -29,7 +29,7 @@ local n_users = openni.startup()
 print( "Number of Skeletons:", n_users )
 
 -- Assume 30FPS, run for 10 seconds
-local nframes = 300
+local nframes = 150;--300
 for fr=1,nframes do
 	print( string.format("\n======== Frame %d ========",fr) )
 	if test_cloud then
@@ -78,5 +78,16 @@ for fr=1,nframes do
 		end -- visible
 end
 -- Shutdown the skeleton
+print("Shutting down the openni device...")
+local shutdown_status = openni.shutdown()
+print("Shutdown",shutdown_status)
+
+--[[
+local n_users = openni.startup()
+print( "Number of Skeletons:", n_users )
+local cloud_id, cloud_type = openni.update_cloud()
+local visible = openni.update_skeleton()
+--]]
+print("Shutting down the openni device...")
 local shutdown_status = openni.shutdown()
 print("Shutdown",shutdown_status)

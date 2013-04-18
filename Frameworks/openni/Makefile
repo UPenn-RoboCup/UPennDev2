@@ -7,7 +7,7 @@ PWD=`pwd`
 BASE=$(shell basename `pwd`)
 
 ifdef DEBUG
-CXXFLAGS+=-g -Wall
+CXXFLAGS+=-g -Wall -Wunused-variable
 endif
 
 all: $(BASE)

@@ -1,5 +1,5 @@
 module(... or "",package.seeall)
-require 'unix'
+local unix = require 'unix'
 matrix = require 'matrix'
 require('vector');
 

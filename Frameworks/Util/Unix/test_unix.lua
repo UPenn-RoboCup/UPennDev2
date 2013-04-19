@@ -1,4 +1,4 @@
-require 'unix'
+local unix = require 'unix'
 
 print(unix.time())
 

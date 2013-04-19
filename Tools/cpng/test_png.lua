@@ -25,9 +25,9 @@
 local pwd = os.getenv('PWD')
 package.cpath = pwd..'/../../../Player/Lib/?.so;'..package.cpath
 
-require 'unix'
-require 'cpng'
-require 'torch'
+local unxi = require 'unix'
+local cpng = require 'cpng'
+local torch = require 'torch'
 
 t0 = unix.time()
 local p = cpng.new('small.png')

@@ -1,5 +1,5 @@
 module(... or "",package.seeall)
-require 'unix'
+local unix = require 'unix'
 require 'xbox360'
 require 'Config'
 require 'util'

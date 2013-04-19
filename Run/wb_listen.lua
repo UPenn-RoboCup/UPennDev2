@@ -6,7 +6,7 @@ local msgpack = require 'msgpack'
 local carray = require 'carray'
 
 -- Global vars
-require 'unix'
+local unix = require 'unix'
 require 'Params'
 local actuator_positions = {};
 local actuator_commands = {}

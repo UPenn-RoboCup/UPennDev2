@@ -370,7 +370,7 @@ static int l_kill(lua_State *L)
 
 #endif
 
-static const struct luaL_Reg lsignal_lib[] = {
+static const luaL_Reg lsignal_lib[] = {
   {"signal", l_signal},
   {"raise", l_raise},
 #if defined(__unix__) || defined(__APPLE__)
@@ -384,7 +384,11 @@ int luaopen_signal(lua_State *L)
   int i = 0;
 
   /* add the library */
+#if LUA_VERSION_NUM == 502
+  luaL_newlib(L, lsignal_lib);
+#else
   luaL_register(L, "signal", lsignal_lib);
+#endif
 
   /* push lua_signals table into the registry */
   /* put the signals inside the library table too,

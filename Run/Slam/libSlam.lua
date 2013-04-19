@@ -1,7 +1,7 @@
 require('Slam');
-require 'unix'
+local unix = require 'unix'
 local Sensors = require 'sensors/Config_Sensors'
-require 'torch'
+local torch = require 'torch'
 torch.Tensor = torch.FloatTensor
 
 local libSlam = {}

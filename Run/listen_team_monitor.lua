@@ -1,7 +1,7 @@
 cwd = os.getenv('PWD')
 require('init')
 
-require 'unix'
+local unix = require 'unix'
 require ('Config')
 --Copy data to shm 1-1
 Config.game.teamNumber = 1;

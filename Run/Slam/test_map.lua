@@ -10,7 +10,7 @@ local simple_ipc = require 'simple_ipc'
 local libSlam = require 'libSlam'
 local Sensors = require 'Config_Sensors'
 local mp = require 'ffi/msgpack'
-require 'unix'
+local unix = require 'unix'
 
 -- Reference the sensors
 local ranges = Sensors.LIDAR0.ranges;

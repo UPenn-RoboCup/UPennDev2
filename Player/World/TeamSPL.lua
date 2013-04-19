@@ -26,6 +26,7 @@ role = -1;
 count = 0;
 
 state = {};
+state.robotName = Config.game.robotName;
 state.teamNumber = gcm.get_team_number();
 state.id = playerID;
 state.teamColor = gcm.get_team_color();

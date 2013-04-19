@@ -21,6 +21,9 @@ Stephen G. McGill copyright 2013 <smcgill3@seas.upenn.edu>
 #include <algorithm>
 #include <stdint.h>
 
+// Error printing
+#include <errno.h>
+
 // C++ include
 #include "lua.hpp"
 
@@ -197,6 +200,11 @@ static int lua_comm_send(lua_State *L) {
 
 	// Send the data
 	int ret = send(send_fd, data, size, 0);
+	// Debugging message
+	if(ret==-1){
+		printf("\n\tUDP send fail:\n\t%s\n\n", strerror(errno));
+		fflush(stdout);
+	}
 	// Push the return value
 	lua_pushinteger(L, ret);
 	return 1;

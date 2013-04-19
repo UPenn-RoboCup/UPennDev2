@@ -8,6 +8,7 @@
 using namespace gazebo;
 
 void *ctx, *csocket;
+static char ts_buf[100];
 
 std::vector<unsigned char> destBuf;
 
@@ -161,11 +162,22 @@ void CameraDump::OnNewFrame(const unsigned char *_image,
 {
   struct timeval t;
   gettimeofday(&t, NULL);
+	double ts = t.tv_sec+(t.tv_usec*0.000001);
+	sprintf(ts_buf,"%lf",ts);
   const unsigned char * pColor = this->parentSensor->GetCamera()->GetImageData();
-  int lenPacked = CompressData(pColor, _width, _height);
+	/*
+	int lenPacked = CompressData(pColor, _width, _height);
   zmq_send(csocket, (void *)&(destBuf[0]), lenPacked, 0);
+	*/
+	zmq_send(csocket, ts_buf, strlen(ts_buf), ZMQ_SNDMORE);
+	zmq_send(csocket, (void *)pColor, 3*_width*_height, 0);
 
-//  std::cout << "new camera image " << ' ' << lenPacked << ' ' <<  _height << ' ' << _width << ' ' << _depth << ' ' << _format << ' ';
+	/*
+  std::cout << "new camera image " << ' ' 
+		<<  _height << ' ' << _width << ' ' 
+			<< _depth << ' ' << _format << ' ' << endl;
+	fflush(stdout);
+	*/
 //  std::cout << std::setw(14) << std::setprecision(15)<< t.tv_sec + 1E-6*t.tv_usec << std::endl;
 }
 

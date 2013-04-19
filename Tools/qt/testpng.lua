@@ -4,7 +4,7 @@ package.path = pwd..'/lib/ffi/?.lua;'..package.path
 
 local ffi = require 'ffi'
 local libpng = require 'libpng'
-require 'carray'
+local carray = require 'carray'
 
 fname = 'Image-1-10.png'
 imgload = libpng.load({path = fname})

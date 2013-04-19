@@ -1,13 +1,13 @@
 module(..., package.seeall);
 
-require('Config')
-require('Body')
-require('Kinematics')
-require('walk')
-require('vector')
-require('Transform')
-require('vcm')
-require('mcm')
+local Config = require('Config')
+local Body = require('Body')
+local Kinematics = require('Kinematics')
+local walk = require('walk')
+local vector = require('vector')
+local Transform = require('Transform')
+local vcm = require('vcm')
+local mcm = require('mcm')
 
 active = true;
 t0 = 0;

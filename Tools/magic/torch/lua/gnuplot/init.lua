@@ -1,4 +1,4 @@
-require 'torch'
+local torch = require 'torch'
 
 gnuplot = {}
 include('gnuplot/gnuplot.lua')

@@ -1,9 +1,9 @@
 icwd = os.getenv('PWD')
-require('init')
+local init = require('init')
 
-require('unix');
---require('main');
-require('main_op');
+local unix = require('unix');
+--local main = require('main');
+local main_op = require('main_op');
 
 while 1 do 
   tDelay = 0.005*1E6;

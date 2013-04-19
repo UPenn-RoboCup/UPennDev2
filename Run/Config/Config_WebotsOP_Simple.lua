@@ -1,6 +1,6 @@
 module(..., package.seeall);
-require('util')
-require('vector')
+local util = require('util')
+local vector = require('vector')
 
 -- Name Platform
 platform = {}; 

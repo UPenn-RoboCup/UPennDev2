@@ -1,16 +1,16 @@
 cwd = os.getenv('PWD')
-require('init')
+local init = require('init')
 
-require('unix')
-require('Config')
-require('shm')
-require('vector')
-require('mcm')
-require('Speak')
-require('getch')
-require('Body')
+local unix = require('unix')
+local Config = require('Config')
+local shm = require('shm')
+local vector = require('vector')
+local mcm = require('mcm')
+local Speak = require('Speak')
+local getch = require('getch')
+local Body = require('Body')
 
-require 'Comm'
+local Comm = require 'Comm'
 wired = true
 -- Initialization
 if( wired ) then

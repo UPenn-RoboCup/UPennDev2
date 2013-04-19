@@ -1,5 +1,5 @@
-require('unix')
-require('serial')
+local unix = require('unix')
+local serial = require('serial')
 
 firmwareFilename = arg[1];
 print("Loading firmware:", firmwareFilename);

@@ -235,9 +235,9 @@ function loaddefaultlibs(loadwithimport)
    if loadwithimport == nil then loadwithimport = false end
    if not loadwithimport then
       -- preload basic libraries
-      require 'torch'
-      require 'gnuplot'
---      require 'dok'
+      local torch = require 'torch'
+      local gnuplot = require 'gnuplot'
+--      local dok = require 'dok'
    else
       import 'torch'
       import 'gnuplot'

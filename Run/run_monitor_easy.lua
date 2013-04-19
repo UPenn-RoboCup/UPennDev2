@@ -1,11 +1,11 @@
 cwd = os.getenv('PWD')
-require('init')
+local init = require('init')
 --
---require 'Config'
-require('unix')
-require('getch')
-require('Broadcast')
-require('vcm')
+--local Config = require 'Config'
+local unix = require('unix')
+local getch = require('getch')
+local Broadcast = require('Broadcast')
+local vcm = require('vcm')
 
 -- Do not wait for a carriage return
 getch.enableblock(1);

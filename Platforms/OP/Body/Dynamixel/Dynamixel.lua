@@ -1,7 +1,7 @@
 module(..., package.seeall);
-require('DynamixelPacket');
-require('unix');
-require('stty');
+local DynamixelPacket = require('DynamixelPacket');
+local unix = require('unix');
+local stty = require('stty');
 
 fd = -1;
 baudDefault = 1000000;

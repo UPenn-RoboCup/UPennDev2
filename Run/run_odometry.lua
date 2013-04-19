@@ -1,6 +1,6 @@
 module(... or "", package.seeall)
 
-require('odometry')
+local odometry = require('odometry')
 
 maxFPS = Config.vision.maxFPS;
 tperiod = 1.0/maxFPS;

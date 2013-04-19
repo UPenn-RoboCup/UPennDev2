@@ -1,10 +1,10 @@
 module(..., package.seeall);
 
-require('Body')
-require('wcm')
-require('walk')
-require('vector')
-require('behavior')
+local Body = require('Body')
+local wcm = require('wcm')
+local walk = require('walk')
+local vector = require('vector')
+local behavior = require('behavior')
 
 t0 = 0;
 timeout = Config.fsm.bodyChase.timeout;

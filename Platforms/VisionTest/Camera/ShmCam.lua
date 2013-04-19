@@ -1,10 +1,10 @@
 module(..., package.seeall);
-require('controller');
-require('carray');
-require('ImageProc');
-require('unix')
-require('Body')
-require('vcm')
+local controller = require('controller');
+local carray = require('carray');
+local ImageProc = require('ImageProc');
+local unix = require('unix')
+local Body = require('Body')
+local vcm = require('vcm')
 
 
 

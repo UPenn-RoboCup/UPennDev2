@@ -1,5 +1,5 @@
 module(..., package.seeall);
-require('vector')
+local vector = require('vector')
 
 sit_disable = 1;
 
@@ -49,7 +49,7 @@ servo.dirReverse={
 servo.armBias = vector.new( {-90,0,0,45,    -90,0,0,45} )*math.pi/180; --in radians
 servo.pid =1;  --Default new firmware
 local robotName = unix.gethostname();
-require('calibration');
+local calibration = require('calibration');
 if calibration.cal and calibration.cal[robotName] then
 print('READING FROM CALIBRATION!!!')
   if calibration.cal[robotName].pid then

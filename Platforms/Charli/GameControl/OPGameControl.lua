@@ -1,9 +1,9 @@
 module(... or "", package.seeall)
 
-require('Config')
-require('util')
-require('gcm')
-require('Speak')
+local Config = require('Config')
+local util = require('util')
+local gcm = require('gcm')
+local Speak = require('Speak')
 receiver = require('OPGameControlReceiver')
 
 teamNumber = Config.game.teamNumber;

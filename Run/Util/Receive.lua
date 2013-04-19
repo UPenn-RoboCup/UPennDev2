@@ -2,9 +2,9 @@ module(..., package.seeall);
 
 CommWired=require('Comm');
 -- Only send items from shared memory
-require('vcm')
-require('serialization');
-require('Config');
+local vcm = require('vcm')
+local serialization = require('serialization');
+local Config = require('Config');
 local Z = require('Z');
 
 -- Initiate Sending Address

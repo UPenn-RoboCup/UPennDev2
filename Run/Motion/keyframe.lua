@@ -4,9 +4,9 @@
 module(..., package.seeall);
 name = ...;
 
-require('Body')
-require('vector')
-require('walk')
+local Body = require('Body')
+local vector = require('vector')
+local walk = require('walk')
 
 --Upperbody only keyframe?
 is_upper=false;

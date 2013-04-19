@@ -7,16 +7,16 @@ module(..., package.seeall);
 
 CommWired=require('Comm');
 -- Only send items from shared memory
-require('vcm')
-require('gcm')
-require('wcm')
-require('ocm')
-require('mcm')
-require('rcm')
-require('matcm')
-require('serialization');
-require('ImageProc')
-require('Config');
+local vcm = require('vcm')
+local gcm = require('gcm')
+local wcm = require('wcm')
+local ocm = require('ocm')
+local mcm = require('mcm')
+local rcm = require('rcm')
+local matcm = require('matcm')
+local serialization = require('serialization');
+local ImageProc = require('ImageProc')
+local Config = require('Config');
 
 --sendShm = {'wcm','vcm','gcm'}
 --sendShm = { wcmshm=wcm, gcmshm=gcm, vcmshm=vcm, ocmshm=ocm, mcmshm=mcm }

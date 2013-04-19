@@ -1,19 +1,19 @@
 module(..., package.seeall);
 
-require('carray');
-require('vector');
-require('Config');
+local carray = require('carray');
+local vector = require('vector');
+local Config = require('Config');
 -- Enable Webots specific
 if (string.find(Config.platform.name,'Webots')) then
   webots = 1;
 end
 
-require('ColorLUT');
-require('ImageProc');
-require('HeadTransform');
+local ColorLUT = require('ColorLUT');
+local ImageProc = require('ImageProc');
+local HeadTransform = require('HeadTransform');
 
-require('vcm');
-require('mcm');
+local vcm = require('vcm');
+local mcm = require('mcm');
 local Body = require('Body')
 
 --Added for webots fast simulation
@@ -26,7 +26,7 @@ enable_lut_for_obstacle = Config.vision.enable_lut_for_obstacle or 0;
 
 if Config.game.playerID==1 and Config.game.teamNumber==1 then
   ffi = require 'ffi'
-  require 'cjpeg'
+  local cjpeg = require 'cjpeg'
   simple_ipc = require 'simple_ipc'
   img_channel = simple_ipc.new_publisher('img');
 --end
@@ -34,7 +34,7 @@ if Config.game.playerID==1 and Config.game.teamNumber==1 then
 local Camera = nil
 if use_gps_only==0 then
   Camera = require('Camera');
-  require('Detection');
+  local Detection = require('Detection');
   
   if (Config.camera.width ~= Camera.get_width()
       or Config.camera.height ~= Camera.get_height()) then
@@ -75,7 +75,7 @@ if use_gps_only==0 then
   print('Vision LabelA size: ('..labelA.m..', '..labelA.n..')');
   print('Vision LabelB size: ('..labelB.m..', '..labelB.n..')');
 else
-  require('GPSVision');
+  local GPSVision = require('GPSVision');
 end
 
 colorOrange = Config.color.orange;

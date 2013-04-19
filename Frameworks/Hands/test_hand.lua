@@ -1,4 +1,4 @@
-require 'handfilter'
+local handfilter = require 'handfilter'
 
 --[[
 x, y, vx, vy, ep, evp = ballfilter.ballme( ball.v[1], ball.v[2], obs_cnt );

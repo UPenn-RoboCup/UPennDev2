@@ -35,25 +35,25 @@ package.path = cwd .. '/Motion/keyframes/?.lua;' .. package.path;
 package.path = cwd .. '/Vision/?.lua;' .. package.path;
 package.path = cwd .. '/World/?.lua;' .. package.path;
 
-require('Config');
+local Config = require('Config');
 smindex = 0;
 
 package.path = cwd..'/BodyFSM/'..Config.fsm.body[smindex+1]..'/?.lua;'..package.path;
 package.path = cwd..'/HeadFSM/'..Config.fsm.head[smindex+1]..'/?.lua;'..package.path;
 package.path = cwd..'/GameFSM/'..Config.fsm.game..'/?.lua;'..package.path;
 
-require('shm')
-require('Body')
-require('vector')
+local shm = require('shm')
+local Body = require('Body')
+local vector = require('vector')
 
 BodyFSM=require('BodyFSM');
 HeadFSM=require('HeadFSM');
-require('Motion');
-require('walk');
-require('Speak')
-require('util')
-require 'World'
-require 'Team'
+local Motion = require('Motion');
+local walk = require('walk');
+local Speak = require('Speak')
+local util = require('util')
+local World = require 'World'
+local Team = require 'Team'
 
 
 darwin = false;
@@ -73,7 +73,7 @@ end
 if( webots ) then
   controller.wb_robot_keyboard_enable(100);
 else
-  require('getch')
+  local getch = require('getch')
   getch.enableblock(1);
 end
 

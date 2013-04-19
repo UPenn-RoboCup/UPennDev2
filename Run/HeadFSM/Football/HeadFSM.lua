@@ -1,11 +1,11 @@
 module(..., package.seeall);
-require('Body')
-require('fsm')
-require('gcm')
+local Body = require('Body')
+local fsm = require('fsm')
+local gcm = require('gcm')
 
-require('headIdle')
-require('headStart')
-require('headReady')
+local headIdle = require('headIdle')
+local headStart = require('headStart')
+local headReady = require('headReady')
 
 sm = fsm.new(headIdle);
 sm:add_state(headStart);

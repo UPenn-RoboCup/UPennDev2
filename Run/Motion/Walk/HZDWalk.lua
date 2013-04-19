@@ -1,11 +1,11 @@
 module(..., package.seeall);
 
-require('Body')
-require('Kinematics')
-require('Config');
-require('Config_OP_HZD')
-require('vector')
-require 'util'
+local Body = require('Body')
+local Kinematics = require('Kinematics')
+local Config = require('Config');
+local Config_OP_HZD = require('Config_OP_HZD')
+local vector = require('vector')
+local util = require 'util'
 
 t0 = Body.get_time();
 

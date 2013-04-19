@@ -1,15 +1,15 @@
 cwd = os.getenv('PWD');
 
-require('init')
-require('Config')
+local init = require('init')
+local Config = require('Config')
 Config.dev.camera = 'SimCam';
 Config.dev.body = 'SimBody';
 
-require('unix')
-require('vcm')
-require('getch')
-require ('Broadcast')
-require('Vision')
+local unix = require('unix')
+local vcm = require('vcm')
+local getch = require('getch')
+local Broadcast = require ('Broadcast')
+local Vision = require('Vision')
 
 Vision.entry();
 

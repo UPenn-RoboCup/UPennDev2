@@ -9,7 +9,7 @@ function require_fix(filename)
         local second_quota = line:find('\'', first_quota + 1)
         local module_name = line:sub(first_quota+1, second_quota-1)
         local first_module_name = line:find(module_name)
-        if first_module_name == (first_quota + 1) then
+        if first_module_name == (first_quota + 1) and line:find('=') == nil then
           print('need fix')
           local new_line = line:gsub('require', 'local '..module_name..' = require') 
           line = new_line

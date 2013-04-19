@@ -3,7 +3,7 @@ module(..., package.seeall);
 require("shm");
 require("util");
 require("vector");
-require('Config');
+local Config = require('Config');
 -- Enable Webots specific
 if (string.find(Config.platform.name,'Webots')) then
   webots = true;

@@ -1,6 +1,6 @@
-require 'include'
-require 'LuaXml'
-require 'vrml'
+local include = require 'include'
+local LuaXml = require 'LuaXml'
+local vrml = require 'vrml'
 local util = require 'util'
 
 local datapath = ''

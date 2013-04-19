@@ -1,10 +1,10 @@
 module(..., package.seeall);
-require('Config');
-require 'Kinematics'
-require('Transform');
-require('vector');
-require('vcm');
-require 'util'
+local Config = require('Config');
+local Kinematics = require 'Kinematics'
+local Transform = require('Transform');
+local vector = require('vector');
+local vcm = require('vcm');
+local util = require 'util'
 
 -- Enable Webots specific
 if (string.find(Config.platform.name,'Webots')) then

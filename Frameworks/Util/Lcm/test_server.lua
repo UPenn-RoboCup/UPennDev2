@@ -1,5 +1,5 @@
-require('lcm')
-require('lcm_rpc_request_t')
+local lcm = require('lcm')
+local lcm_rpc_request_t = require('lcm_rpc_request_t')
 
 local userdata = "useful_userdata"
 

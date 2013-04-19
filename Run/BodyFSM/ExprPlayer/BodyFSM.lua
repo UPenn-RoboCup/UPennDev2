@@ -1,4 +1,4 @@
-require('gcm')
+local gcm = require('gcm')
 
 --if Config.game.role==0 then
 if gcm.get_team_role()==0 then

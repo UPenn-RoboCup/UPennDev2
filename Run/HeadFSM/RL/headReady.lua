@@ -1,7 +1,7 @@
 module(..., package.seeall);
 --SJ: camera IK based constant sweeping
 
-require('Body')
+local Body = require('Body')
 
 t0 = 0;
 tscan = 5.0*Config.speedFactor;

@@ -1,7 +1,7 @@
 module(..., package.seeall);
-require('util')
-require('vector')
-require('parse_hostname')
+local util = require('util')
+local vector = require('vector')
+local parse_hostname = require('parse_hostname')
 
 platform = {}; 
 platform.name = 'Charli'

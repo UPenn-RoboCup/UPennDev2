@@ -1,10 +1,10 @@
 module(..., package.seeall);
 
-require('Body')
-require('walk')
-require('gcm')
-require('wcm')
-require('Speak')
+local Body = require('Body')
+local walk = require('walk')
+local gcm = require('gcm')
+local wcm = require('wcm')
+local Speak = require('Speak')
 
 t0=0;
 tLastCount=0;

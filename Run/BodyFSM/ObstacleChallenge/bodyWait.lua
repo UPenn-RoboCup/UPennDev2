@@ -1,8 +1,8 @@
 module(..., package.seeall);
 
-require('Body')
-require('Motion')
-require('vcm')
+local Body = require('Body')
+local Motion = require('Motion')
+local vcm = require('vcm')
 
 t0 = 0
 timeout = 60.0;

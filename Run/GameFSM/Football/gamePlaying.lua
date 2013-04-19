@@ -1,9 +1,9 @@
 module(..., package.seeall);
 
-require('Body')
-require('BodyFSM')
-require('HeadFSM')
-require('Speak')
+local Body = require('Body')
+local BodyFSM = require('BodyFSM')
+local HeadFSM = require('HeadFSM')
+local Speak = require('Speak')
 
 t0 = 0;
 

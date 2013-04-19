@@ -1,14 +1,14 @@
 module(..., package.seeall);
 
-require('Body')
-require('walk')
-require('vector')
-require('util')
-require('Config')
-require('wcm')
-require('gcm')
-require('UltraSound')
-require('postDist')
+local Body = require('Body')
+local walk = require('walk')
+local vector = require('vector')
+local util = require('util')
+local Config = require('Config')
+local wcm = require('wcm')
+local gcm = require('gcm')
+local UltraSound = require('UltraSound')
+local postDist = require('postDist')
 
 t0 = 0;
 timeout = 20.0;

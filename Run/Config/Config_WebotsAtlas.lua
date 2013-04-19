@@ -1,8 +1,8 @@
 module(..., package.seeall);
-require('util')
-require('parse_hostname')
-require('vector')
-require('os')
+local util = require('util')
+local parse_hostname = require('parse_hostname')
+local vector = require('vector')
+local os = require('os')
 
 platform = {};
 platform.name = 'WebotsAtlas'

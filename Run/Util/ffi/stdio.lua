@@ -1,5 +1,5 @@
 local ffi = require'ffi'
-require'stdio_h'
+local stdio_h = require'stdio_h'
 local M = {C = ffi.C}
 
 function M.readfile(file, format)

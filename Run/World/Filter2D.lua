@@ -1,7 +1,7 @@
 module(..., package.seeall);
 
-require('vector');
-require('util')
+local vector = require('vector');
+local util = require('util')
 
 enableVelocity = Config.vision.enable_velocity_detection or 0;
 --SJ: We can use the ball model (x,y,dx,dy) 

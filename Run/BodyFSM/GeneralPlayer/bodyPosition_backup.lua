@@ -1,15 +1,15 @@
 module(..., package.seeall);
 
-require('Body')
-require('World')
-require('walk')
-require('vector')
-require('wcm')
-require('Config')
-require('Team')
-require('util')
-require('walk')
-require('behavior')
+local Body = require('Body')
+local World = require('World')
+local walk = require('walk')
+local vector = require('vector')
+local wcm = require('wcm')
+local Config = require('Config')
+local Team = require('Team')
+local util = require('util')
+local walk = require('walk')
+local behavior = require('behavior')
 
 t0 = 0;
 maxStep1 = Config.fsm.bodyPosition.maxStep1;

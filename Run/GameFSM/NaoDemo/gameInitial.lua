@@ -1,16 +1,16 @@
 module(..., package.seeall);
 
-require('Config')
-require('Body');
-require('walk')
-require('BodyFSM')
-require('HeadFSM')
-require('Speak')
-require('vector')
-require('unix')
-require('gcm')
-require('BodyFSM')
-require('HeadFSM')
+local Config = require('Config')
+local Body = require('Body');
+local walk = require('walk')
+local BodyFSM = require('BodyFSM')
+local HeadFSM = require('HeadFSM')
+local Speak = require('Speak')
+local vector = require('vector')
+local unix = require('unix')
+local gcm = require('gcm')
+local BodyFSM = require('BodyFSM')
+local HeadFSM = require('HeadFSM')
 
 
 t0 = 0;

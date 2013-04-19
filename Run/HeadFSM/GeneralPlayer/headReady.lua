@@ -1,7 +1,7 @@
 module(..., package.seeall);
 --SJ: camera IK based constant sweeping
 
-require('Body')
+local Body = require('Body')
 
 t0 = 0;
 dist = Config.fsm.headReady.dist;

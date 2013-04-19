@@ -1,7 +1,7 @@
 module(..., package.seeall);
 
-require 'vector'
-require 'Kinematics'
+local vector = require 'vector'
+local Kinematics = require 'Kinematics'
 
 playerID = Config.game.playerID;
 --nPlayers = Config.game.nPlayers;

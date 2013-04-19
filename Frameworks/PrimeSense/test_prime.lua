@@ -1,4 +1,4 @@
-require 'primesense'
+local primesense = require 'primesense'
 
 while( true ) do
   ret = primesense.update_joints();

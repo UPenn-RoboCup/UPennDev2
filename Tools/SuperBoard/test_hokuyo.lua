@@ -11,10 +11,10 @@ package.cpath = cwd.."/../../../Player/Lib/?.so;"..package.cpath;
 package.path = cwd.."/../../../Player/Util/?.lua;"..package.path;
 package.path = cwd.."/../../../Player/Config/?.lua;"..package.path;
 
-require('Hokuyo')
-require('signal')
-require('unix')
-require('hcm')
+local Hokuyo = require('Hokuyo')
+local signal = require('signal')
+local unix = require('unix')
+local hcm = require('hcm')
 
 function ShutDownFN()
   print("Proper shutdown")

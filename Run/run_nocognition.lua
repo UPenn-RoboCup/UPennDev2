@@ -1,6 +1,6 @@
 module(... or "", package.seeall)
 
-require('nocognition')
+local nocognition = require('nocognition')
 
 maxFPS = 60;
 tperiod = 1.0/maxFPS;

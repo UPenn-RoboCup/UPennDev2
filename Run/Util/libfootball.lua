@@ -1,8 +1,8 @@
 module(..., package.seeall);
 
-require 'wcm'
-require 'gcm'
-require 'util'
+local wcm = require 'wcm'
+local gcm = require 'gcm'
+local util = require 'util'
 playerID = gcm.get_team_player_id();
 log_filename = "football_loss.log"
 

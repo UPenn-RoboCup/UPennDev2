@@ -315,7 +315,7 @@ local function convert_best(src, accept, opt)
 	return convert(src, fmt, opt)
 end
 
-if not ... then require'bmpconv_test' end
+if not ... then local bmpconv_test = require'bmpconv_test' end
 
 return {
 	pad_stride = pad_stride,

@@ -1,7 +1,7 @@
 module(... or "", package.seeall)
 
-require('camnition')
-require('getch')
+local camnition = require('camnition')
+local getch = require('getch')
 getch.enableblock(1);
 
 maxFPS = Config.vision.maxFPS;

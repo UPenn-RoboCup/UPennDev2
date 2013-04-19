@@ -3,8 +3,8 @@ local ffi = require'ffi'
 local bit = require'bit'
 local glue = require'glue'
 local bmpconv = require'bmpconv'
-require'libpng_h'
-require'stdio_h'
+local libpng_h = require'libpng_h'
+local stdio_h = require'stdio_h'
 local C = ffi.load'png'
 
 local PNG_LIBPNG_VER_STRING = '1.5.10'
@@ -386,7 +386,7 @@ local function load(src, opt)
 	end)
 end
 
-if not ... then require'libpng_test' end
+if not ... then local libpng_test = require'libpng_test' end
 
 return {
 	load = load,

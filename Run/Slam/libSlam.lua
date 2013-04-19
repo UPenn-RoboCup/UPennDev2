@@ -1,4 +1,4 @@
-require('Slam');
+local Slam = require('Slam');
 local unix = require 'unix'
 local Sensors = require 'sensors/Config_Sensors'
 local torch = require 'torch'

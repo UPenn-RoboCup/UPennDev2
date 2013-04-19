@@ -1,13 +1,13 @@
 module(..., package.seeall);
 
-require('Body')
-require('walk')
-require('util')
-require('vector')
-require('Config')
-require('wcm')
-require('gcm')
-require('Team')
+local Body = require('Body')
+local walk = require('walk')
+local util = require('util')
+local vector = require('vector')
+local Config = require('Config')
+local wcm = require('wcm')
+local gcm = require('gcm')
+local Team = require('Team')
 
 t0 = 0;
 last_score = 0;

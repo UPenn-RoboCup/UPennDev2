@@ -1,12 +1,12 @@
 module(..., package.seeall);
 
-require('Body')
-require('walk')
-require('vector')
-require('UltraSound')
+local Body = require('Body')
+local walk = require('walk')
+local vector = require('vector')
+local UltraSound = require('UltraSound')
 
-require('wcm')
-require('gcm')
+local wcm = require('wcm')
+local gcm = require('gcm')
 
 t0 = 0;
 timeout = 5.0;

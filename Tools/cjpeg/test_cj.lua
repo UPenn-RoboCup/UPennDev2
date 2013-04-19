@@ -1,7 +1,7 @@
 local pwd = os.getenv('PWD')
 package.cpath = pwd..'/../../../Player/Lib/?.so;'..package.cpath
 
-require 'cjpeg'
+local cjpeg = require 'cjpeg'
 w = 320
 h = 240
 ch = 3;
@@ -15,7 +15,7 @@ print('Filling a '..w..' by '..h..' image',ch..' channels.')
 --  ffi = require 'ffi'
 --  img = ffi.new('uint8_t[?]', w*h*ch, 0)
 --else
-  require 'carray'
+  local carray = require 'carray'
   img = carray.byte(w*h*ch)
 --end
 
@@ -49,7 +49,7 @@ print('Filling a '..w..' by '..h..' image',ch..' channels.')
 --  ffi = require 'ffi'
 --  img = ffi.new('uint8_t[?]', w*h*ch, 0)
 --else
-  require 'carray'
+  local carray = require 'carray'
   img = carray.byte(w*h*ch)
 --end
 

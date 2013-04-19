@@ -1,20 +1,20 @@
 cwd = os.getenv('PWD')
-require('init')
+local init = require('init')
 
-require('unix')
-require('Config')
+local unix = require('unix')
+local Config = require('Config')
 Config.dev.walk='PRWalk'; --Push Recovery Walk Demonstration
 Config.walk.fallAngle = 180*math.pi/180; --Don't do fall check
 
-require('shm')
-require('vector')
-require('mcm')
-require('Speak')
-require('getch')
-require('Body')
-require('Motion')
-require('dive')
-require('walk')
+local shm = require('shm')
+local vector = require('vector')
+local mcm = require('mcm')
+local Speak = require('Speak')
+local getch = require('getch')
+local Body = require('Body')
+local Motion = require('Motion')
+local dive = require('dive')
+local walk = require('walk')
 
 Motion.entry();
 darwin = false;

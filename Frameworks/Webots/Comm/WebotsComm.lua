@@ -1,7 +1,7 @@
 module(..., package.seeall);
 
-require('controller')
-require('GameControlPacket')
+local controller = require('controller')
+local GameControlPacket = require('GameControlPacket')
 
 timeStep = controller.wb_robot_get_basic_time_step();
 channel = 13;

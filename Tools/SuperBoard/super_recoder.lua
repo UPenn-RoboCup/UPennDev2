@@ -1,4 +1,4 @@
-require 'include'
+local include = require 'include'
 
 local ffi = require 'ffi'
 local serialization = require('serialization');

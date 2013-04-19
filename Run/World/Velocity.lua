@@ -1,7 +1,7 @@
 module(..., package.seeall);
 
-require('Config');
-require('vector');
+local Config = require('Config');
+local vector = require('vector');
 local Body = require('Body');
 
 ball_log_index=1;

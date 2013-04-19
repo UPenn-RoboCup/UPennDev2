@@ -1,15 +1,15 @@
 module(..., package.seeall);
 
-require('Body')
-require('wcm')
-require('walk')
-require 'Kinematics'
-require 'vector'
+local Body = require('Body')
+local wcm = require('wcm')
+local walk = require('walk')
+local Kinematics = require 'Kinematics'
+local vector = require 'vector'
 ps = false;
 
 if( Config.stretcher.primesense and Config.game.playerID==1 ) then
   print('Using the PrimeSense for control!')  
-  require 'primecm'    
+  local primecm = require 'primecm'    
   ps = true;
 end
 

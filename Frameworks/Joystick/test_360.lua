@@ -1,5 +1,5 @@
-require 'xbox360'
-require 'unix'
+local xbox360 = require 'xbox360'
+local unix = require 'unix'
 
 xbox360.open()
 

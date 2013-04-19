@@ -17,11 +17,11 @@ package.path = cwd.."/Test/?.lua;"..package.path;
 package.path = cwd.."/?.lua;"..package.path;
 
 
-require('serialization')
-require('string')
-require('vector')
-require('getch')
-require('util')
-require('unix')
-require('cutil')
-require('shm')
+local serialization = require('serialization')
+local string = require('string')
+local vector = require('vector')
+local getch = require('getch')
+local util = require('util')
+local unix = require('unix')
+local cutil = require('cutil')
+local shm = require('shm')

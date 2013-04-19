@@ -1,7 +1,7 @@
 module(..., package.seeall);
-require('util')
-require('vector')
-require('unix')
+local util = require('util')
+local vector = require('vector')
+local unix = require('unix')
 
 --Robot CFG should be loaded first to set PID values
 local robotName=unix.gethostname();

@@ -1,5 +1,5 @@
-require('unix')
-require('serial')
+local unix = require('unix')
+local serial = require('serial')
 
 ttys = unix.readdir("/dev");
 ttyname = nil;

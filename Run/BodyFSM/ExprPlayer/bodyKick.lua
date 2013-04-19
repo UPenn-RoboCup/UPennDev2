@@ -1,13 +1,13 @@
 module(..., package.seeall);
 
-require('Body')
-require('vector')
-require('Motion');
-require('kick');
-require('HeadFSM')
-require('Config')
-require('wcm')
-require('walk');
+local Body = require('Body')
+local vector = require('vector')
+local Motion = require('Motion');
+local kick = require('kick');
+local HeadFSM = require('HeadFSM')
+local Config = require('Config')
+local wcm = require('wcm')
+local walk = require('walk');
 
 --initial wait 
 tStartWait = Config.fsm.bodyKick.tStartWait or 0.5;

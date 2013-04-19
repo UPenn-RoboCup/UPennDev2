@@ -1,16 +1,16 @@
 module(..., package.seeall);
-require('fsm')
+local fsm = require('fsm')
 
-require('headIdle')
-require('headLearnLUT')
-require('headStart')
-require('headTrack')
-require('headSweep')
-require('headLookGoal')
-require('headScan')
-require('headKick')
-require('headScanObs')
-require('headBack')
+local headIdle = require('headIdle')
+local headLearnLUT = require('headLearnLUT')
+local headStart = require('headStart')
+local headTrack = require('headTrack')
+local headSweep = require('headSweep')
+local headLookGoal = require('headLookGoal')
+local headScan = require('headScan')
+local headKick = require('headKick')
+local headScanObs = require('headScanObs')
+local headBack = require('headBack')
 
 
 sm = fsm.new(headIdle);

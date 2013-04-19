@@ -1,11 +1,11 @@
 module(..., package.seeall);
 
-require 'fsm'
-require 'util'
-require 'side'
-require 'fore'
-require 'up'
-require 'libboxer'
+local fsm = require 'fsm'
+local util = require 'util'
+local side = require 'side'
+local fore = require 'fore'
+local up = require 'up'
+local libboxer = require 'libboxer'
 
 nPlayers = Config.game.nPlayers;
 nPlayers = 2

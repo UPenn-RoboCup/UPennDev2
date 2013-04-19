@@ -1,19 +1,19 @@
 cwd = os.getenv('PWD')
-require('init')
+local init = require('init')
 
-require('Config')
-require('unix')
-require('getch')
-require('shm')
-require('vector')
-require('mcm')
-require('vcm')
-require('wcm')
-require('Speak')
-require('Body')
-require('Motion')
-require('gcm')
-require('ocm')
+local Config = require('Config')
+local unix = require('unix')
+local getch = require('getch')
+local shm = require('shm')
+local vector = require('vector')
+local mcm = require('mcm')
+local vcm = require('vcm')
+local wcm = require('wcm')
+local Speak = require('Speak')
+local Body = require('Body')
+local Motion = require('Motion')
+local gcm = require('gcm')
+local ocm = require('ocm')
 
 gcm.say_id()
 
@@ -282,7 +282,7 @@ function process_keyinput()
     elseif byte==string.byte("0") then	
       Motion.event("diveready");
     elseif byte==string.byte('p') then
-      require('ColorLUT')
+      local ColorLUT = require('ColorLUT')
       ColorLUT.learn_lut_from_mask();
     end
 
@@ -317,8 +317,8 @@ function update()
       -- initialize state machines
       package.path = cwd..'/BodyFSM/'..Config.fsm.body[smindex+1]..'/?.lua;'..package.path;
       package.path = cwd..'/HeadFSM/'..Config.fsm.head[smindex+1]..'/?.lua;'..package.path;
-      require('BodyFSM')
-      require('HeadFSM')
+      local BodyFSM = require('BodyFSM')
+      local HeadFSM = require('HeadFSM')
 
       BodyFSM.entry();
       HeadFSM.entry();

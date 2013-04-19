@@ -53,7 +53,7 @@ p:write('iii.png')
 --print(unix.time() - t0)
 --print(p)
 
-require 'carray'
+local carray = require 'carray'
 w = 320
 h = 240
 ch = 3;
@@ -92,7 +92,7 @@ ch = 1;
 nbytes = w*h*ch;
 print('Filling a '..w..' by '..h..' image',ch..' channels.')
 
-require 'carray'
+local carray = require 'carray'
 img = carray.byte(w*h*ch)
 
 for k=1,nbytes,ch do

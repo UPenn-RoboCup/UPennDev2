@@ -4,10 +4,10 @@
 
 module(..., package.seeall);
 
-require('Body')
-require('wcm')
-require('mcm')
-require('HeadTransform')
+local Body = require('Body')
+local wcm = require('wcm')
+local mcm = require('mcm')
+local HeadTransform = require('HeadTransform')
 
 t0 = 0;
 

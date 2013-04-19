@@ -1,6 +1,6 @@
 K = require 'OPKinematics'
 T = require 'Transform'
-require 'vector'
+local vector = require 'vector'
 
 -- Forward kine
 	qLArm = math.pi/180*vector.new({0,0,0}) -- Out in front

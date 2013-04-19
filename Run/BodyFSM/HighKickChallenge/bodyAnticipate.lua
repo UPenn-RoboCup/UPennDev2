@@ -1,15 +1,15 @@
 module(..., package.seeall);
 
-require('Body')
-require('vector')
-require('Motion');
-require('kick');
-require('HeadFSM')
-require('Config')
-require('wcm')
+local Body = require('Body')
+local vector = require('vector')
+local Motion = require('Motion');
+local kick = require('kick');
+local HeadFSM = require('HeadFSM')
+local Config = require('Config')
+local wcm = require('wcm')
 
-require('walk');
-require('dive')
+local walk = require('walk');
+local dive = require('dive')
 
 t0 = 0;
 tStart = 0;

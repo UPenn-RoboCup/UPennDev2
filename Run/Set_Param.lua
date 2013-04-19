@@ -1,17 +1,17 @@
 cwd = '.'
 
-require ('init');
-require ('HeadTransform');
-require ('unix');
-require ('getch');
-require ('Broadcast');
-require ('Config');
-require ('Camera');
-require ('vcm');
-require ('vector');
-require ('carray');
-require ('ImageProc');
-require ('io');
+local init = require ('init');
+local HeadTransform = require ('HeadTransform');
+local unix = require ('unix');
+local getch = require ('getch');
+local Broadcast = require ('Broadcast');
+local Config = require ('Config');
+local Camera = require ('Camera');
+local vcm = require ('vcm');
+local vector = require ('vector');
+local carray = require ('carray');
+local ImageProc = require ('ImageProc');
+local io = require ('io');
 
 
 function Entry() 

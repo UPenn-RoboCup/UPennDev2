@@ -7,13 +7,13 @@ package.path = pwd..'/../../Player/Util/?.lua;'..package.path
 package.path = pwd..'/../../Player/Util/ffi/?.lua;'..package.path
 
 local unix = require 'unix'
-require 'qtcore'
-require 'qtgui'
+local qtcore = require 'qtcore'
+local qtgui = require 'qtgui'
 
-require ('mtLayout')
-require ('ctImageProc')
-require ('ctCommon')
-require ('ctEvent')
+local mtLayout = require ('mtLayout')
+local ctImageProc = require ('ctImageProc')
+local ctCommon = require ('ctCommon')
+local ctEvent = require ('ctEvent')
 
 -- Setup IPC
 -- -- -- -- --

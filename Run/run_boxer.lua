@@ -1,6 +1,6 @@
 cwd = os.getenv('PWD')
-require('init')
-require 'Config'
+local init = require('init')
+local Config = require 'Config'
 
 --SJ: Config values are directly overriden here 
 --So that we don't need to modify config variables every time
@@ -9,9 +9,9 @@ Config.game.gcTimeout = 2;
 Config.team.msgTimeout = 1.0;
 Config.game.playerID = 1
 
-require 'skeleton'
-require 'Boxer'
-require('getch')
+local skeleton = require 'skeleton'
+local Boxer = require 'Boxer'
+local getch = require('getch')
 getch.enableblock(1);
 
 teamID   = Config.game.teamNumber;
@@ -42,7 +42,7 @@ function entry()
 		Boxer.entry(pl);
 	end
 	if( net ) then
-		require 'Team'
+		local Team = require 'Team'
 		Team.entry(true) -- true means we have the primesense
 	end
 

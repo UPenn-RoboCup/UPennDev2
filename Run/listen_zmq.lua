@@ -22,7 +22,7 @@ package.path = cwd .. '/Motion/keyframes/?.lua;' .. package.path;
 package.path = cwd .. '/Motion/Walk/?.lua;' .. package.path;
 package.path = cwd .. '/Vision/?.lua;' .. package.path;
 package.path = cwd .. '/World/?.lua;' .. package.path;
-require 'Config'
+local Config = require 'Config'
 local simple_ipc = require'simple_ipc'
 
 local state_channels = {};

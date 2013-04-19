@@ -1,11 +1,11 @@
-require('unix');
-require('shm');
+local unix = require('unix');
+local shm = require('shm');
 
 local cwd = unix.getcwd();
 package.path = cwd.."/../Util/?.lua;"..package.path; --For Transform
 package.path = cwd.."/../Vision/?.lua;"..package.path; --For vcm
 
-require('vector')
+local vector = require('vector')
 
 --local log = io.open('Logs/pgain_02_squat_4s_imu.txt', 'w+')
 

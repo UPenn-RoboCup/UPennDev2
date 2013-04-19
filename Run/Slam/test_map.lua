@@ -5,7 +5,7 @@ package.path = cwd.."/../Util/?.lua;"..package.path;
 
 -- Require the right modules
 local ffi = require 'ffi'
-require 'ffi/torchffi'
+local ffi/torchffi = require 'ffi/torchffi'
 local simple_ipc = require 'simple_ipc'
 local libSlam = require 'libSlam'
 local Sensors = require 'Config_Sensors'

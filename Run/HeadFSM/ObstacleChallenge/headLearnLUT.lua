@@ -1,9 +1,9 @@
 module(..., package.seeall);
 
-require('Body')
-require('vcm')
-require('mcm')
-require('ColorLUT')
+local Body = require('Body')
+local vcm = require('vcm')
+local mcm = require('mcm')
+local ColorLUT = require('ColorLUT')
 
 t0 = 0;
 timeout = 6.0;

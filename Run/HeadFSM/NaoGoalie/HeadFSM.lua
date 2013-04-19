@@ -1,18 +1,18 @@
 module(..., package.seeall);
-require('Body')
-require('fsm')
-require('gcm')
+local Body = require('Body')
+local fsm = require('fsm')
+local gcm = require('gcm')
 
-require('headIdle')
-require('headStart')
-require('headReady')
-require('headReadyLookGoal')
-require('headScan')
-require('headTrack')
-require('headLookGoal')
-require('headSweep')
-require('headKick')
-require('headKickFollow')
+local headIdle = require('headIdle')
+local headStart = require('headStart')
+local headReady = require('headReady')
+local headReadyLookGoal = require('headReadyLookGoal')
+local headScan = require('headScan')
+local headTrack = require('headTrack')
+local headLookGoal = require('headLookGoal')
+local headSweep = require('headSweep')
+local headKick = require('headKick')
+local headKickFollow = require('headKickFollow')
 
 sm = fsm.new(headIdle);
 sm:add_state(headStart);

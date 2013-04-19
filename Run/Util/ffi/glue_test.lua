@@ -1,5 +1,5 @@
 local glue = require'glue'
-require'unit'
+local unit = require'unit'
 
 test(select(2,pcall(glue.assert,false,'bad %s','dog')), 'bad dog')
 test(select(2,pcall(glue.assert,false,'bad dog %s')), 'bad dog %s')

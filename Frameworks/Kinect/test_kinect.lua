@@ -1,4 +1,4 @@
-require 'Kinect'
+local Kinect = require 'Kinect'
 local k = Kinect.open()
 --s = Kinect.open('/tmp/nifile')
 --s = Kinect.open('/tmp/nifile','record')

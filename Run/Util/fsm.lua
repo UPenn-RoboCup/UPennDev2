@@ -1,6 +1,6 @@
 module(..., package.seeall);
 
-require('util');
+local util = require('util');
 
 --[[-------
   Lua finite state machine implementation

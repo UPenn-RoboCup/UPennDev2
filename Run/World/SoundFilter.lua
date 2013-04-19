@@ -1,14 +1,14 @@
 module(..., package.seeall);
 
-require('Config');
-require('vector');
-require('unix');
-require('util');
-require('wcm');
-require('gcm');
+local Config = require('Config');
+local vector = require('vector');
+local unix = require('unix');
+local util = require('util');
+local wcm = require('wcm');
+local gcm = require('gcm');
 
-require('SoundComm');
-require('Body');
+local SoundComm = require('SoundComm');
+local Body = require('Body');
 
 -- set signal tone, ie. only use one tone and filter on that tone
 --    '\0' to accept all signals (tx and accept random tone)

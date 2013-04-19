@@ -1,5 +1,5 @@
 module(..., package.seeall);
-require('controller');
+local controller = require('controller');
 
 controller.wb_robot_init();
 timeStep = controller.wb_robot_get_basic_time_step();

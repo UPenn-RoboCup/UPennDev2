@@ -1,9 +1,9 @@
 cwd = os.getenv('PWD') 
 package.path = cwd..'/../../Player/?.lua;'..package.path
 cwd = cwd ..'/../../Player'
-require('init')
-require('util')
-require('vector')
+local init = require('init')
+local util = require('util')
+local vector = require('vector')
 
 io.write("Enter Triangle Grid Density and Fillrate: ");
 io.flush();

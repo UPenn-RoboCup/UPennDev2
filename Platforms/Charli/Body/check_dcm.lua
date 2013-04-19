@@ -1,5 +1,5 @@
-require('unix');
-require('shm');
+local unix = require('unix');
+local shm = require('shm');
 
 local cwd = unix.getcwd();
 package.path = cwd.."/../Util/?.lua;"..package.path; --For Transform
@@ -14,7 +14,7 @@ dcm.entry()
 sensorShm = shm.open('dcmSensor');
 actuatorShm = shm.open('dcmActuator');
 
-require('vcm') --Shared memory is created here, and ready for access
+local vcm = require('vcm') --Shared memory is created here, and ready for access
 
 local imu = require('microstrain')
 imu.open('/dev/ttyACM0')

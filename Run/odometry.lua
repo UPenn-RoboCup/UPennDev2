@@ -13,15 +13,15 @@ package.path = cwd.."/World/?.lua;"..package.path;
 package.path = cwd.."/Vision/?.lua;"..package.path;
 package.path = cwd.."/Motion/?.lua;"..package.path; 
 
-require('unix')
-require('vcm')
-require('gcm')
-require('wcm')
-require('mcm')
-require('Body')
-require('Vision')
-require('World')
-require('Detection') 
+local unix = require('unix')
+local vcm = require('vcm')
+local gcm = require('gcm')
+local wcm = require('wcm')
+local mcm = require('mcm')
+local Body = require('Body')
+local Vision = require('Vision')
+local World = require('World')
+local Detection = require('Detection') 
 comm_inited = false;
 vcm.set_camera_teambroadcast(0);
 vcm.set_camera_broadcast(0);
@@ -94,13 +94,13 @@ function update()
     (vcm.get_camera_broadcast()>0 or
      vcm.get_camera_teambroadcast()>0) then
     if vcm.get_camera_teambroadcast()>0 then 
-      require('Team');
-      require('GameControl');
+      local Team = require('Team');
+      local GameControl = require('GameControl');
       Team.entry();
       GameControl.entry();
       print("Starting to send wireless team message..");
     else
-      require('Broadcast');
+      local Broadcast = require('Broadcast');
       print("Starting to send wired monitor message..");
     end
     comm_inited = true;

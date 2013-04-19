@@ -3,12 +3,12 @@
 
 module(..., package.seeall);
 
-require('Body')
-require('keyframe')
-require('walk')
-require('vector')
-require('Config')
-require 'util'
+local Body = require('Body')
+local keyframe = require('keyframe')
+local walk = require('walk')
+local vector = require('vector')
+local Config = require('Config')
+local util = require 'util'
 
 -- These should be Config variables...
 footX = Config.walk.footX;

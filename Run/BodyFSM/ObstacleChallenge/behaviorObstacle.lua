@@ -1,6 +1,6 @@
 module(..., package.seeall);
 
-require('ocm')
+local ocm = require('ocm')
 
 function check_obstacle(vStep)
 end

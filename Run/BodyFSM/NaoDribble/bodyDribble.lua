@@ -1,12 +1,12 @@
 module(..., package.seeall);
 
-require('Body')
-require('walk')
-require('vector')
-require('util')
-require('Config')
-require('wcm')
-require('Speak')
+local Body = require('Body')
+local walk = require('walk')
+local vector = require('vector')
+local util = require('util')
+local Config = require('Config')
+local wcm = require('wcm')
+local Speak = require('Speak')
 
 t0 = 0;
 

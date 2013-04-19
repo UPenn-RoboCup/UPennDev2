@@ -10,7 +10,7 @@ package.path = cwd.."/../Vision/?.lua;"..package.path;
 
 local serialization = require 'serialization'
 local util = require 'util'
-require 'cutil'
+local cutil = require 'cutil'
 
 -- Data Type specific
 local dataPath = '~/shadwell/day2_third/logs/';
@@ -18,7 +18,7 @@ local dataStamp = '02.27.2013';
 local dataTypes = {'lidar','arduimu','uvc'}
 local dataTypes = {'lidar','arduimu'}
 local realtime = true;
-require 'rcm'
+local rcm = require 'rcm'
 local unix = require 'unix'
 
 -- Get the list of log files

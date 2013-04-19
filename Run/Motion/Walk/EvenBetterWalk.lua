@@ -1,12 +1,12 @@
 module(..., package.seeall);
 
 local Body = require('Body')
-require('Kinematics')
-require('Config');
-require('vector')
-require('mcm')
-require('unix')
-require('util')
+local Kinematics = require('Kinematics')
+local Config = require('Config');
+local vector = require('vector')
+local mcm = require('mcm')
+local unix = require('unix')
+local util = require('util')
 
 -- No stabilization by default
 no_stabilize = false;

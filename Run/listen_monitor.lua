@@ -1,24 +1,24 @@
 cwd = os.getenv('PWD')
-require('init')
+local init = require('init')
 
-require ('Config')
+local Config = require ('Config')
 --We always store data from robot to shm (1,1) 
 Config.game.teamNumber = 1; 
 Config.game.playerID = 1; 
 
 local cutil = require ('cutil')
-require ('vector')
-require ('serialization')
+local vector = require ('vector')
+local serialization = require ('serialization')
 CommWired = require ('Comm')
-require ('util')
+local util = require ('util')
 
-require ('wcm')
-require ('gcm')
-require ('vcm')
-require ('ocm')
-require ('mcm')
-require 'rcm'
-require ('matcm')
+local wcm = require ('wcm')
+local gcm = require ('gcm')
+local vcm = require ('vcm')
+local ocm = require ('ocm')
+local mcm = require ('mcm')
+local rcm = require 'rcm'
+local matcm = require ('matcm')
 
 local unix = require 'unix'
 local Z = require 'Z'

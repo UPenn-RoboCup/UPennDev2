@@ -1,6 +1,6 @@
 module(..., package.seeall);
-require('controller');
-require('util');
+local controller = require('controller');
+local util = require('util');
 
 -- ALways need to initialize a controller
 controller.wb_robot_init();

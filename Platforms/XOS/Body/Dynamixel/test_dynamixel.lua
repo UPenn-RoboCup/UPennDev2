@@ -1,4 +1,4 @@
-require('Dynamixel');
+local Dynamixel = require('Dynamixel');
 
 twait = 0.020;
 

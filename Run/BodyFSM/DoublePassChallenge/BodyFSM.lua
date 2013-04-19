@@ -1,20 +1,20 @@
 module(..., package.seeall);
 
-require('fsm')
-require('bodyIdle')
-require('bodyStart')
-require('bodyStop')
-require('bodyReady')
+local fsm = require('fsm')
+local bodyIdle = require('bodyIdle')
+local bodyStart = require('bodyStart')
+local bodyStop = require('bodyStop')
+local bodyReady = require('bodyReady')
 
-require('bodySearch')
-require('bodyGetPosition')
-require('bodyChase')
-require('bodyOrbit')
-require('bodyApproach')
-require('bodyDribble')
-require('bodyPass')
-require('bodyPassCheck')
-require('bodyTask')
+local bodySearch = require('bodySearch')
+local bodyGetPosition = require('bodyGetPosition')
+local bodyChase = require('bodyChase')
+local bodyOrbit = require('bodyOrbit')
+local bodyApproach = require('bodyApproach')
+local bodyDribble = require('bodyDribble')
+local bodyPass = require('bodyPass')
+local bodyPassCheck = require('bodyPassCheck')
+local bodyTask = require('bodyTask')
 
 sm = fsm.new(bodyIdle);
 sm:add_state(bodyStart);

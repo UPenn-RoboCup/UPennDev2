@@ -1,34 +1,34 @@
 module(..., package.seeall);
 
-require('Config');	-- For Ball and Goal Size
-require('ImageProc');
-require('HeadTransform');	-- For Projection
-require('Vision');
-require('Body');
-require('vcm');
-require('unix');
+local Config = require('Config');	-- For Ball and Goal Size
+local ImageProc = require('ImageProc');
+local HeadTransform = require('HeadTransform');	-- For Projection
+local Vision = require('Vision');
+local Body = require('Body');
+local vcm = require('vcm');
+local unix = require('unix');
 
 -- Dependency
-require('detectBall');
-require('detectGoal');
-require('detectLine');
-require('detectCorner');
+local detectBall = require('detectBall');
+local detectGoal = require('detectGoal');
+local detectLine = require('detectLine');
+local detectCorner = require('detectCorner');
 if not string.find(Config.platform.name,'Nao') then
-  require('detectLandmarks'); -- for NSL
-  require('detectLandmarks2'); -- for NSL
+  local detectLandmarks = require('detectLandmarks'); -- for NSL
+  local detectLandmarks2 = require('detectLandmarks2'); -- for NSL
 end
-require('detectSpot');
-require('detectFreespace');
-require('detectBoundary');
+local detectSpot = require('detectSpot');
+local detectFreespace = require('detectFreespace');
+local detectBoundary = require('detectBoundary');
 --[[
-require('detectObstacles');
-require('detectEyes');
-require('detectStretcher');
+local detectObstacles = require('detectObstacles');
+local detectEyes = require('detectEyes');
+local detectStretcher = require('detectStretcher');
 --]]
 
 
 --for quick test
-require('detectRobot');
+local detectRobot = require('detectRobot');
 
 
 -- Define Color

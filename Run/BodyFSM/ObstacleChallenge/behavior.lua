@@ -1,12 +1,12 @@
 module(..., package.seeall);
 
-require('Body')
-require('walk')
-require('vector')
-require('Config')
-require('wcm')
-require('gcm')
-require('position')
+local Body = require('Body')
+local walk = require('walk')
+local vector = require('vector')
+local Config = require('Config')
+local wcm = require('wcm')
+local gcm = require('gcm')
+local position = require('position')
 
 function cycle_behavior()
   demo_behavior = demo_behavior%4 + 1;

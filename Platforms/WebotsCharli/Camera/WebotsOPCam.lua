@@ -1,9 +1,9 @@
 module(..., package.seeall);
-require('controller');
-require('carray');
-require('ImageProc');
-require('unix')
-require('Body')
+local controller = require('controller');
+local carray = require('carray');
+local ImageProc = require('ImageProc');
+local unix = require('unix')
+local Body = require('Body')
 
 controller.wb_robot_init();
 timeStep = controller.wb_robot_get_basic_time_step();

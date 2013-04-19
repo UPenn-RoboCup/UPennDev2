@@ -11,8 +11,8 @@ else
 end
 package.path = cwd.."/../Util/?.lua;"..package.path; --For Transform
 package.path = cwd.."/../Vision/?.lua;"..package.path; --For vcm
-require('unix');
-require('shm');
+local unix = require('unix');
+local shm = require('shm');
 
 dcm = require('XOSCommManager');
 print('Starting device comm manager...');
@@ -23,7 +23,7 @@ dcm.entry()
 sensorShm = shm.open('dcmSensor');
 actuatorShm = shm.open('dcmActuator');
 
-require('vcm') --Shared memory is created here, and ready for access
+local vcm = require('vcm') --Shared memory is created here, and ready for access
 
 
 

@@ -1,9 +1,9 @@
 dofile('init.lua')
-require('unix')
-require('vector')
-require('Body')
-require('SoundComm')
-require('getch');
+local unix = require('unix')
+local vector = require('vector')
+local Body = require('Body')
+local SoundComm = require('SoundComm')
+local getch = require('getch');
 getch.enableblock(1);
 
 headAngleMap = vector.new({0, 15, 30, 45, 60, 75, 90, 105}) * math.pi/180;

@@ -1,6 +1,6 @@
 module(..., package.seeall);
-require('vector')
-require('unix')
+local vector = require('vector')
+local unix = require('unix')
 
 --Sit/stand stance parameters
 stance={};
@@ -94,7 +94,7 @@ servo.dirReverse={
 servo.armBias = {0,0,0,0,0,0}; --in degree
 servo.pid =1;  --Default new firmware
 local robotName = unix.gethostname();
-require('calibration');
+local calibration = require('calibration');
 if calibration.cal and calibration.cal[robotName] then
   if calibration.cal[robotName].pid then
     servo.pid = calibration.cal[robotName].pid;

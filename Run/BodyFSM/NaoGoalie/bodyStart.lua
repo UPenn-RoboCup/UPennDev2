@@ -1,7 +1,7 @@
 module(..., package.seeall);
 
-require('Body')
-require('walk')
+local Body = require('Body')
+local walk = require('walk')
 
 function entry()
   print(_NAME..' entry');

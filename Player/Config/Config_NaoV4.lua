@@ -56,7 +56,7 @@ speakenable = 1;
 
 -- FSM Parameters
 fsm = {};
-loadconfig(param.fsm)
+util.LoadConfig(params.fsm)
 fsm.game = 'RoboCup';
 if game.role == 0 then
   fsm.body = {'NaoGoalie'}

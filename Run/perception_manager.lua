@@ -11,10 +11,9 @@ local debug = true;
 -- Libraries
 local simple_ipc = require 'simple_ipc'
 local carray = require 'carray'
-local Octomap = require'Octomap'
-local torch = require'torch'
-torch.Tensor = torch.DoubleTensor
+--local Octomap = require'Octomap'
 local libLaser = require 'libLaser'
+--local libSlam = require 'libSlam'
 
 -- Global vars
 require 'unix'
@@ -32,31 +31,29 @@ lidar_channel.callback = function()
 	end
 	local ranges_str, has_more = lidar_channel:receive();
 	local lidar_ts = tonumber(ts);
-	local ranges_f = carray.double( ranges_str );
-
-	-- TODO: Do not use a silly element-by-element copy
-	local ranges = torch.Tensor( 1081 )
-	for i=1,#ranges_f do
-		ranges[i] = ranges_f[i]
-	end
+	local ranges_f = carray.float( ranges_str );
 
 	-- TODO: Use for slam as well
-	libLaser.ranges2xyz(ranges,0,0,0)
-	--Octomap.add_scan( libLaser.points_xyz )
+	libLaser.ranges2xyz(ranges_f,0,0,0)
+	--libSlam.processL0( libLaser.points_xyz )
 	local ret = omap_channel:send("done laser")
+	local debug_msg = string.format('LIDAR (%.2f) | ', lidar_ts)
 	if ret then
-		print("LIDAR | OMAP update", unix.time() )
+		print(debug_msg.."OMAP update")
 	else
-		print("Bad omap channel!")
+		print(debug_msg.."Bad omap channel!")
 	end
 
+	--[[
+	Octomap.add_scan( libLaser.points_xyz )
 	ret = oct_channel:send("done oct")
 	if ret then
-		print("LIDAR | Oct Tree update", unix.time() )
+		print(debug_msg.."Oct Tree update")
 	else
-		print("Bad oct channel!")
+		print(debug_msg.."Bad oct channel!")
 	end
-
+	--]]
+	
 end
 
 -- Poll multiple sockets
@@ -81,8 +78,10 @@ while true do
 	local t = unix.time()
 	cnt = cnt+1;
 	if t-t_last>t_debug then
-		local msg = string.format("%.2f FPS", cnt/t_debug);
-		print(npoll,"Perception Manager | "..msg)
+		local msg = string.format(
+		"Perception Manager (%.2f) | %.2f FPS", t, cnt/t_debug
+		);
+		print(msg)
 		t_last = t;
 		cnt = 0;
 	end

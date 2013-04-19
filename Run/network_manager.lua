@@ -51,13 +51,14 @@ end
 -- Send image over UDP
 -- JPEG compress it
 camera_channel.callback = function()
-  local camera_ts, has_more = camera_channel:receive()
+  local ts, has_more = camera_channel:receive()
   -- TODO: Get timestamp
 	if not has_more then
 		print( 'Bad Camera | ', type(camera_ts), type(has_more) )
 		return;
 	end
   local camera_data, has_more = camera_channel:receive()
+	local camera_ts = tonumber(ts);
   local jimg = cjpeg.compress( camera_data, 640, 480 );
   local nsent = udp.send( hmi_udp_img_snd, jimg, #jimg );
 	

@@ -20,8 +20,8 @@ vision.scaleB = 4;
 
 if Config.game.role == 0 then
   -- line and corner detection for goalie only
-  vision.enable_line_detection = 1;
-  vision.enable_corner_detection = 1;
+  vision.enable_line_detection = 0;
+  vision.enable_corner_detection = 0;
 else
   vision.enable_line_detection = 0;
   vision.enable_corner_detection = 0;

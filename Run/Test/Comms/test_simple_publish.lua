@@ -1,3 +1,9 @@
+---------------------------------
+-- Test code for Simple ZeroMQ Wrapper
+-- for Team THOR
+-- (c) Stephen McGill, 2013
+---------------------------------
+
 -- Library paths
 dofile('../../include.lua')
 

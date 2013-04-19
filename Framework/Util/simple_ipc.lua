@@ -1,3 +1,9 @@
+---------------------------------
+-- Simple Interface to Lua's 
+-- ZeroMQ wrapper for Team THOR
+-- (c) Stephen McGill, 2013
+---------------------------------
+
 local zmq = require 'zmq' -- Based on ZMQ
 local poller = require 'zmq/poller'
 local simple_ipc = {} -- Our module
@@ -23,13 +29,16 @@ end
 --]]
 
 -- Simple number of threads
-simple_ipc.n_zmq_threads = 1
+simple_ipc.n_zmq_threads = 2
 simple_ipc.local_prefix = 'ipc:///tmp/'
 -- Set the intercomputer interface
 if simple_ipc.intercom_interface then
-  print( string.format('Selecting (%s) as the inter-pc interface\nUsing address (%s)',
-  simple_ipc.intercom_interface, simple_ipc.intercom_interface_ip) );
-  simple_ipc.intercom_prefix = 'epgm://'..simple_ipc.intercom_interface_ip..';239.192.1.1:'
+  print( string.format(
+	'Selecting (%s) as the inter-pc interface\nUsing address (%s)',
+  simple_ipc.intercom_interface, simple_ipc.intercom_interface_ip)
+	);
+  simple_ipc.intercom_prefix = 
+	'epgm://'..simple_ipc.intercom_interface_ip..';239.192.1.1:'
 else
   print( 'There is no inter-pc interface, using TCP' )
   simple_ipc.intercom_prefix = 'tcp://127.0.0.1:'

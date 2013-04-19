@@ -1,3 +1,8 @@
+---------------------------------
+-- Behavior manager for Team THOR
+-- (c) Stephen McGill, 2013
+---------------------------------
+
 -- Set the path for the libraries
 dofile('include.lua')
 -- Set the Debugging mode

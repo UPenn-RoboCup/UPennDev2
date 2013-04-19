@@ -1,5 +1,5 @@
-module(..., package.seeall); require('vector')
-require 'unix'
+module(..., package.seeall); local vector = require('vector')
+local unix = require 'unix'
 -- Walk Parameters
 
 walk = {};

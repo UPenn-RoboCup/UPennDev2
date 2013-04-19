@@ -19,9 +19,7 @@ local dataTypes = {'lidar','arduimu','uvc'}
 local dataTypes = {'lidar','arduimu'}
 local realtime = true;
 require 'rcm'
-if realtime then
-  require 'unix'
-end
+local unix = require 'unix'
 
 -- Get the list of log files
 function get_log_file_list()

@@ -3,7 +3,7 @@ require('Comm');
 
 require('gcm');
 require 'serialization'
-require 'unix'
+local unix = require 'unix'
 wired = true;
 ps = false;
 

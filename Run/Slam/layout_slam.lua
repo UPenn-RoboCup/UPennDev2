@@ -1,9 +1,9 @@
 pwd = '.'
 -- Require the relavent libraries
-require 'torch'
+local torch = require 'torch'
 torch.Tensor = torch.ByteTensor
-require 'unix'
-require 'tutil'
+local unix = require 'unix'
+local tutil = require 'tutil'
 
 package.path = pwd..'/../Util/?.lua;'..package.path
 local ffi = require 'ffi'

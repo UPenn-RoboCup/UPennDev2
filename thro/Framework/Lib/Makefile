@@ -1,3 +1,4 @@
+.PHONY: all clean
 CWD = $(shell pwd)
 
 all:
@@ -18,4 +19,3 @@ clean:
 	cd udp && make clean && cd $(CWD)
 	cd unix && make clean && cd $(CWD)
 
-.PHONY: all clean

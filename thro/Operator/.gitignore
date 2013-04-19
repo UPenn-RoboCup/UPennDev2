@@ -11,3 +11,13 @@
 *.lai
 *.la
 *.a
+
+# Generated docs
+docs/*
+
+# Generated files
+moc_*
+ui_*.h
+
+# Mac
+*.app

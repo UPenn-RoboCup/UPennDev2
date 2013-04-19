@@ -1,10 +1,10 @@
 module(..., package.seeall);
 
-require('shm');
-require('carray');
-require('cutil');
-require('vector');
-require('Config');
+local shm = require('shm');
+local carray = require('carray');
+local cutil = require('cutil');
+local vector = require('vector');
+local Config = require('Config');
 
 -- intialize debug shm handle
 debugShmHandle = shm.new('luarDebug'..Config.game.teamNumber..Config.game.playerID..(os.getenv('USER') or ''));

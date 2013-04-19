@@ -1,7 +1,7 @@
 module(..., package.seeall);
 
-require('Body')
-require('Motion')
+local Body = require('Body')
+local Motion = require('Motion')
 
 t0 = 0;
 

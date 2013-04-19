@@ -1,7 +1,7 @@
 module(..., package.seeall);
 
-require('Body')
-require('vcm')
+local Body = require('Body')
+local vcm = require('vcm')
 
 t0 = 0;
 timeout = 1.0;

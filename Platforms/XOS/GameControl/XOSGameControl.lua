@@ -12,10 +12,10 @@ package.path = cwd.."/World/?.lua;"..package.path;
 
 
 
-require('Config')
-require('util')
-require('gcm')
-require('Speak')
+local Config = require('Config')
+local util = require('util')
+local gcm = require('gcm')
+local Speak = require('Speak')
 receiver = require('XOSGameControlReceiver')
 
 teamNumber = Config.game.teamNumber;

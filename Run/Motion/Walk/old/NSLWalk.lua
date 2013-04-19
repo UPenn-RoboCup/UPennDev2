@@ -4,11 +4,11 @@
 
 module(..., package.seeall);
 
-require('Body')
-require('Kinematics')
-require('Config');
-require('vector')
-require('util')
+local Body = require('Body')
+local Kinematics = require('Kinematics')
+local Config = require('Config');
+local vector = require('vector')
+local util = require('util')
 step=require('NSLStep')
 
 mod_angle = util.mod_angle

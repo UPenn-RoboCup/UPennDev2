@@ -1,6 +1,6 @@
 #!/usr/bin/lua
 
-require'qtcore'
+local qtcore = require'qtcore'
 
 qapp = QCoreApplication(1+select("#", ...), {arg[0], ...})
 

@@ -1,6 +1,6 @@
 module(..., package.seeall);
 
-require('vector');
+local vector = require('vector');
 
 mt = {};
 

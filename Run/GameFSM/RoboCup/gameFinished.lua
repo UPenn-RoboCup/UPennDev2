@@ -1,12 +1,12 @@
 module(..., package.seeall);
 
-require('BodyFSM')
-require('HeadFSM')
-require('Speak')
-require('vector')
-require('gcm')
-require('BodyFSM')
-require('HeadFSM')
+local BodyFSM = require('BodyFSM')
+local HeadFSM = require('HeadFSM')
+local Speak = require('Speak')
+local vector = require('vector')
+local gcm = require('gcm')
+local BodyFSM = require('BodyFSM')
+local HeadFSM = require('HeadFSM')
 
 function entry()
   print(_NAME..' entry');

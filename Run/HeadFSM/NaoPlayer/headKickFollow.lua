@@ -4,9 +4,9 @@
 
 module(..., package.seeall);
 
-require('Body')
-require('wcm')
-require('mcm')
+local Body = require('Body')
+local wcm = require('wcm')
+local mcm = require('mcm')
 
 t0 = 0;
 

@@ -1,10 +1,10 @@
 module(..., package.seeall);
 
-require('Body')
-require('wcm')
-require('ocm')
-require('walk')
-require('vector')
+local Body = require('Body')
+local wcm = require('wcm')
+local ocm = require('ocm')
+local walk = require('walk')
+local vector = require('vector')
 
 t0 = 0;
 

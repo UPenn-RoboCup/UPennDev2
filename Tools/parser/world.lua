@@ -1,8 +1,8 @@
-require 'include'
-require 'LuaXml'
+local include = require 'include'
+local LuaXml = require 'LuaXml'
 local util = require 'util'
 
-require 'vrml'
+local vrml = require 'vrml'
 
 header = '#VRML_SIM V6.0 utf8'
 local world = createVRML(header)

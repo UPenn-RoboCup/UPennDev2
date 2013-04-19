@@ -1,7 +1,7 @@
 --result of cpp stdio.h from mingw
 local ffi = require'ffi'
-require'stdio_h_types'
-require'systypes_h'
+local stdio_h_types = require'stdio_h_types'
+local systypes_h = require'systypes_h'
 
 ffi.cdef[[
 typedef enum {

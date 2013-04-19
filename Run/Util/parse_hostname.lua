@@ -1,8 +1,8 @@
 module(..., package.seeall);
 
-require('io')
-require('unix');
-require('string');
+local io = require('io')
+local unix = require('unix');
+local string = require('string');
 
 playerID = 2;
 teamColor = 0;

@@ -1,34 +1,34 @@
 module(..., package.seeall);
 
-require('Body')
-require('fsm')
-require('gcm')
-require('Config')
+local Body = require('Body')
+local fsm = require('fsm')
+local gcm = require('gcm')
+local Config = require('Config')
 
-require('bodyIdle')
-require('bodyStart')
-require('bodyStop')
-require('bodyReady')
-require('bodySearch')
-require('bodyApproach')
-require('bodyDribble')
-require('bodyKick')
-require('bodyWalkKick')
-require('bodyOrbit')
-require('bodyGotoCenter')
-require('bodyPosition')
-require('bodyObstacle')
-require('bodyObstacleAvoid')
-require('bodyDribble')
+local bodyIdle = require('bodyIdle')
+local bodyStart = require('bodyStart')
+local bodyStop = require('bodyStop')
+local bodyReady = require('bodyReady')
+local bodySearch = require('bodySearch')
+local bodyApproach = require('bodyApproach')
+local bodyDribble = require('bodyDribble')
+local bodyKick = require('bodyKick')
+local bodyWalkKick = require('bodyWalkKick')
+local bodyOrbit = require('bodyOrbit')
+local bodyGotoCenter = require('bodyGotoCenter')
+local bodyPosition = require('bodyPosition')
+local bodyObstacle = require('bodyObstacle')
+local bodyObstacleAvoid = require('bodyObstacleAvoid')
+local bodyDribble = require('bodyDribble')
 
-require('bodyPositionGoalie')
-require('bodyAnticipate')
-require('bodyChase')
-require('bodyDive')
+local bodyPositionGoalie = require('bodyPositionGoalie')
+local bodyAnticipate = require('bodyAnticipate')
+local bodyChase = require('bodyChase')
+local bodyDive = require('bodyDive')
 
 
 
-require('bodyReadyMove')
+local bodyReadyMove = require('bodyReadyMove')
 
 
 

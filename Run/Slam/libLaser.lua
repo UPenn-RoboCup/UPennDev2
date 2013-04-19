@@ -1,4 +1,4 @@
-require 'torch'
+local torch = require 'torch'
 torch.Tensor = torch.FloatTensor
 
 local libLaser = {}

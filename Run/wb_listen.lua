@@ -7,7 +7,7 @@ local carray = require 'carray'
 
 -- Global vars
 local unix = require 'unix'
-require 'Params'
+local Params = require 'Params'
 local actuator_positions = {};
 local actuator_commands = {}
 actuator_commands = carray.double(#Params.jointNames);

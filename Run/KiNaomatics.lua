@@ -1,16 +1,16 @@
 cwd = os.getenv('PWD')
-require('init')
+local init = require('init')
 
-require('Config')
-require('shm')
-require('vector')
-require('Motion')
-require('walk')
-require('Body')
+local Config = require('Config')
+local shm = require('shm')
+local vector = require('vector')
+local Motion = require('Motion')
+local walk = require('walk')
+local Body = require('Body')
 require("getch")
-require('kick')
-require('Speak')
-require('Comm')
+local kick = require('kick')
+local Speak = require('Speak')
+local Comm = require('Comm')
 
 webots = false;
 darwin = false;

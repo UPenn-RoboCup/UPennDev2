@@ -1,1 +1,1 @@
-require 'NaoCam'
+local NaoCam = require 'NaoCam'

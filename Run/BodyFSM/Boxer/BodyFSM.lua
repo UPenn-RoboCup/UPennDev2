@@ -1,13 +1,13 @@
 module(..., package.seeall);
 
-require('fsm')
-require('bodyIdle')
-require('bodyStart')
-require('bodyBox')
-require('bodyMimic')
-require('bodyMimicWalk')
-require('bodyReady')
-require('bodyStop')
+local fsm = require('fsm')
+local bodyIdle = require('bodyIdle')
+local bodyStart = require('bodyStart')
+local bodyBox = require('bodyBox')
+local bodyMimic = require('bodyMimic')
+local bodyMimicWalk = require('bodyMimicWalk')
+local bodyReady = require('bodyReady')
+local bodyStop = require('bodyStop')
 
 sm = fsm.new(bodyIdle);
 sm:add_state(bodyStart);

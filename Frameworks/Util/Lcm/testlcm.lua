@@ -1,5 +1,5 @@
-require('lcm')
---require('lcm_rpc_t')
+local lcm = require('lcm')
+--local lcm_rpc_t = require('lcm_rpc_t')
 
 --[[
 local rpc_request = {

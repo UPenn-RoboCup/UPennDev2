@@ -1,7 +1,7 @@
 module(... or "",package.seeall)
 local unix = require 'unix'
 matrix = require 'matrix'
-require('vector');
+local vector = require('vector');
 
 function entry( mylogs )
 
@@ -14,7 +14,7 @@ function entry( mylogs )
     timestamp = timestamp0
     t_update = unix.time()
   else
-    require 'primesense'
+    local primesense = require 'primesense'
     nPlayers = 1
     timestamp0 = unix.time();
   end

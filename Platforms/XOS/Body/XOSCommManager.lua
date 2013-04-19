@@ -5,14 +5,14 @@ module(..., package.seeall);
 local cwd = unix.getcwd();
 package.path = cwd.."/../Config/?.lua;"..package.path;
 
-require('DynamixelPacket');
-require('Dynamixel');
-require('unix');
-require('shm');
-require('carray');
-require('vector');
-require('Config');
-require('Transform')
+local DynamixelPacket = require('DynamixelPacket');
+local Dynamixel = require('Dynamixel');
+local unix = require('unix');
+local shm = require('shm');
+local carray = require('carray');
+local vector = require('vector');
+local Config = require('Config');
+local Transform = require('Transform')
 
 print("Robot ID:",Config.game.robotID);
 

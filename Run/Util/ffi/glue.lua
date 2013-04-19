@@ -311,7 +311,7 @@ function glue.fcall(f,...)
 	return assert(glue.fpcall(f,...))
 end
 
-if not ... then require'glue_test' end
+if not ... then local glue_test = require'glue_test' end
 
 return glue
 

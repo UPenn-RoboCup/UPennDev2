@@ -1,6 +1,6 @@
 module(..., package.seeall);
-require('controller');
-require('Kinematics');
+local controller = require('controller');
+local Kinematics = require('Kinematics');
 
 controller.wb_robot_init();
 timeStep = controller.wb_robot_get_basic_time_step();

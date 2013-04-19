@@ -1,6 +1,6 @@
 module(..., package.seeall);
-require('vector')
-require 'unix'
+local vector = require('vector')
+local unix = require 'unix'
 
 -- Get the robot name for custom parameters
 local robotName = unix.gethostname();
@@ -141,7 +141,7 @@ end
 -- NEW --------------------
 -- Use fancy calibration
 local robotName = unix.gethostname();
-require('calibration');
+local calibration = require('calibration');
 if calibration.cal and calibration.cal[robotName] then
   --[[
   if calibration.cal[robotName].pid then

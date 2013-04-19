@@ -1,7 +1,7 @@
---require 'common'
-require 'include'
+--local common = require 'common'
+local include = require 'include'
 
-require 'LuaXml'
+local LuaXml = require 'LuaXml'
 local util = require 'util'
 
 --local datapath = '/home/yida/drcsim/ros/atlas_description/gazebo/atlas/meshes/' 

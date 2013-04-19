@@ -1,14 +1,14 @@
 module(..., package.seeall);
 
-require('Config');
-require('Body');
-require('Comm');
-require('Speak');
-require('vector');
-require('serialization');
+local Config = require('Config');
+local Body = require('Body');
+local Comm = require('Comm');
+local Speak = require('Speak');
+local vector = require('vector');
+local serialization = require('serialization');
 
-require('wcm');
-require('gcm');
+local wcm = require('wcm');
+local gcm = require('gcm');
 
 Comm.init(Config.dev.ip_wireless,54321);
 print('Receiving Team Message From',Config.dev.ip_wireless);

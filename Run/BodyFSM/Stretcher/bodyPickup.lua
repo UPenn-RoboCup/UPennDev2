@@ -1,12 +1,12 @@
 module(..., package.seeall);
 
-require('Body')
-require('World')
-require('vector')
-require('Motion');
-require('grip');
-require('walk');
-require('wcm');
+local Body = require('Body')
+local World = require('World')
+local vector = require('vector')
+local Motion = require('Motion');
+local grip = require('grip');
+local walk = require('walk');
+local wcm = require('wcm');
 
 t0 = 0;
 timeout = 20.0;

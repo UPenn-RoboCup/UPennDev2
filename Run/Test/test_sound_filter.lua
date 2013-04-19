@@ -1,7 +1,7 @@
 cwd = '.'
 dofile('init.lua')
-require('SoundFilter');
-require('Comm')
+local SoundFilter = require('SoundFilter');
+local Comm = require('Comm')
 --Comm.init('192.168.0.255', 54321);
 Comm.init('192.168.1.255', 54321);
 unix.usleep(1000000);

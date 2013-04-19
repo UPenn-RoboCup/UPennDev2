@@ -4,7 +4,7 @@ package.cpath = cwd.."/../Lib/?.so;"..package.cpath;
 package.path = cwd.."/../Util/?.lua;"..package.path;
 package.path = cwd..'/../Util/ffi/?.lua;'..package.path
 
---require 'include'
+--local include = require 'include'
 local ffi = require 'ffi'
 local Serial = require('Serial');
 local unix = require('unix');

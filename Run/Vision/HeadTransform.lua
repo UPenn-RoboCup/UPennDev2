@@ -1,14 +1,14 @@
 module(..., package.seeall);
-require('Config');
+local Config = require('Config');
 -- Enable Webots specific
 if (string.find(Config.platform.name,'Webots')) then
   webots = true;
 end
 
-require('Transform');
-require('vector');
-require('vcm');
-require('mcm');
+local Transform = require('Transform');
+local vector = require('vector');
+local vcm = require('vcm');
+local mcm = require('mcm');
 local Body = require'Body'
 
 tHead = Transform.eye();

@@ -1,8 +1,8 @@
 cwd = os.getenv('PWD')
-require('init')
+local init = require('init')
 
 local unix = require 'unix'
-require ('Config')
+local Config = require ('Config')
 --Copy data to shm 1-1
 Config.game.teamNumber = 1;
 Config.game.playerID = 1;
@@ -25,14 +25,14 @@ end
 
 --Push to (team,1) shm
 
-require ('cutil')
-require ('vector')
-require ('serialization')
-require ('Comm')
-require ('util')
-require ('wcm')
-require ('gcm')
-require ('vcm')
+local cutil = require ('cutil')
+local vector = require ('vector')
+local serialization = require ('serialization')
+local Comm = require ('Comm')
+local util = require ('util')
+local wcm = require ('wcm')
+local gcm = require ('gcm')
+local vcm = require ('vcm')
 
 Comm.init(Config.dev.ip_wireless,Config.dev.ip_wireless_port);
 print('Receiving Team Message From',Config.dev.ip_wireless);

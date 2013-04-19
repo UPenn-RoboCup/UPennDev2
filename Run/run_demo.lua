@@ -1,24 +1,24 @@
 cwd = os.getenv('PWD')
-require('init')
+local init = require('init')
 
-require('unix')
-require('Config')
+local unix = require('unix')
+local Config = require('Config')
 Config.fsm.playMode = 1; --Force demo
 Config.fsm.forcePlayer = 1; --Force attacker
 Config.dev.team = 'TeamBox'; --For mimicing
 
-require('shm')
-require('vector')
-require('vcm')
-require('gcm')
-require('wcm')
-require('mcm')
-require('Speak')
-require('getch')
-require('Body')
-require('Motion')
+local shm = require('shm')
+local vector = require('vector')
+local vcm = require('vcm')
+local gcm = require('gcm')
+local wcm = require('wcm')
+local mcm = require('mcm')
+local Speak = require('Speak')
+local getch = require('getch')
+local Body = require('Body')
+local Motion = require('Motion')
 
-require('boxercm') --For mimicing
+local boxercm = require('boxercm') --For mimicing
 
 gcm.say_id();
 
@@ -65,9 +65,9 @@ initToggle = true;
 --SJ: Now we use a SINGLE state machine for goalie and attacker
 package.path = cwd..'/BodyFSM/'..Config.fsm.body[smindex+1]..'/?.lua;'..package.path;
 package.path = cwd..'/HeadFSM/'..Config.fsm.head[smindex+1]..'/?.lua;'..package.path;
-require('BodyFSM')
-require('HeadFSM')
-require('behavior')
+local BodyFSM = require('BodyFSM')
+local HeadFSM = require('HeadFSM')
+local behavior = require('behavior')
 
 
 BodyFSM.entry();
@@ -264,7 +264,7 @@ end
 
 -- if using Webots simulator just run update
 if (webots) then
-  require('cognition');
+  local cognition = require('cognition');
   cognition.entry();
 
   -- set game state to Playing

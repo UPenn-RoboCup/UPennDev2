@@ -11,8 +11,8 @@ else
 	package.cpath = cwd .. './Lib/?.so;' .. package.cpath;
 end
 
-require('unix')
-require('os')
+local unix = require('unix')
+local os = require('os')
 
 ----------------------------
 -- mv up to Player directory
@@ -56,11 +56,11 @@ package.path = cwd.."/World/?.lua;"..package.path;
 package.path = cwd.."/BodyFSM/?.lua;"..package.path;
 package.path = cwd.."/HeadFSM/?.lua;"..package.path;
 
-require('unix')
-require('vector')
-require('Body')
-require('keyframe')
-require('getch')
+local unix = require('unix')
+local vector = require('vector')
+local Body = require('Body')
+local keyframe = require('keyframe')
+local getch = require('getch')
 
 
 keyframe.load_motion_file(filename, 'test_keyframe');

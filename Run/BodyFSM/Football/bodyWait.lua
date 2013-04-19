@@ -1,9 +1,9 @@
 module(..., package.seeall);
 
-require('Body')
-require('vector')
-require('walk');
-require('wcm');
+local Body = require('Body')
+local vector = require('vector')
+local walk = require('walk');
+local wcm = require('wcm');
 
 t0 = 0;
 timeout = 15.0;

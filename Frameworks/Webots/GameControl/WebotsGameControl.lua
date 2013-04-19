@@ -1,13 +1,13 @@
 module(..., package.seeall);
 
-require('controller')
-require('GameControlPacket')
-require('Config')
-require('vector')
-require('util')
-require('gcm')
-require('Speak')
-require('Comm')
+local controller = require('controller')
+local GameControlPacket = require('GameControlPacket')
+local Config = require('Config')
+local vector = require('vector')
+local util = require('util')
+local gcm = require('gcm')
+local Speak = require('Speak')
+local Comm = require('Comm')
 
 
 teamNumber = Config.game.teamNumber;

@@ -1,8 +1,8 @@
 cwd = os.getenv('PWD')
-require('init')
+local init = require('init')
 
-require('Config')
-require('OccupancyMap')
+local Config = require('Config')
+local OccupancyMap = require('OccupancyMap')
 
 maxFPS = 15;
 tperiod = 1.0/maxFPS;

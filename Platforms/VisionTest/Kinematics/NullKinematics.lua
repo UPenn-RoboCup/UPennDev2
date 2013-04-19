@@ -1,4 +1,4 @@
-require('vector')
+local vector = require('vector')
 function forward_head()
   return vector.zeros(6);
 end

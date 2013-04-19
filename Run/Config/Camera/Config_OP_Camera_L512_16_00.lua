@@ -1,6 +1,6 @@
 module(..., package.seeall);
-require('vector')
---require('vcm')
+local vector = require('vector')
+--local vcm = require('vcm')
 
 -- Camera Parameters
 

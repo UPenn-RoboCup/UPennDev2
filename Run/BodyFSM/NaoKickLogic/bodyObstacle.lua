@@ -1,11 +1,11 @@
 module(..., package.seeall);
 
-require('Body')
-require('walk')
-require('vector')
+local Body = require('Body')
+local walk = require('walk')
+local vector = require('vector')
 
-require('wcm')
-require('gcm')
+local wcm = require('wcm')
+local gcm = require('gcm')
 
 t0 = 0;
 timeout = 2.0;

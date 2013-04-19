@@ -7,7 +7,7 @@ local tutil = require 'tutil'
 
 package.path = pwd..'/../Util/?.lua;'..package.path
 local ffi = require 'ffi'
-require 'ffi/torchffi'
+local ffi/torchffi = require 'ffi/torchffi'
 local simple_ipc = require 'simple_ipc'
 
 -- Globally accessable QImage

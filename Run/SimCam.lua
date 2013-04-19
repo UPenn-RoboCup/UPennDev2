@@ -1,7 +1,7 @@
 module(..., package.seeall);
 
-require('vcm');
-require('vector');
+local vcm = require('vcm');
+local vector = require('vector');
 
 function set_param()
 end

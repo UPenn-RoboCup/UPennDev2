@@ -1,11 +1,11 @@
 module(..., package.seeall);
 
-require('Body')
-require('Config')
-require('Motion')
-require('walk')
-require('wcm')
-require 'grip' -- Grip and Throw engine
+local Body = require('Body')
+local Config = require('Config')
+local Motion = require('Motion')
+local walk = require('walk')
+local wcm = require('wcm')
+local grip = require 'grip' -- Grip and Throw engine
 
 t0 = 0;
 timeout = 20.0;

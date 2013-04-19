@@ -1,7 +1,7 @@
 module(..., package.seeall);
 controller = require('dcm');
-require('vector');
-require('unix');
+local vector = require('vector');
+local unix = require('unix');
 
 host = "dcm";
 

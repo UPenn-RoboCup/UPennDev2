@@ -1,5 +1,5 @@
-require('ImageProc');
-require('carray');
+local ImageProc = require('ImageProc');
+local carray = require('carray');
 
 cdt = carray.new('c', 262144);
 pcdt = carray.pointer(cdt);

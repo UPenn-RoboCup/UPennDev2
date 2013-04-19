@@ -1,10 +1,10 @@
 module(..., package.seeall);
 
-require 'Config'
-require('Body')
-require('boxercm')
-require('walk')
-require('vector')
+local Config = require 'Config'
+local Body = require('Body')
+local boxercm = require('boxercm')
+local walk = require('walk')
+local vector = require('vector')
 
 t0 = 0;
 timeout = 5;

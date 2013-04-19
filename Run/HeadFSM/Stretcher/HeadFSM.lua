@@ -1,14 +1,14 @@
 module(..., package.seeall);
-require('Body')
-require('fsm')
-require('gcm')
+local Body = require('Body')
+local fsm = require('fsm')
+local gcm = require('gcm')
 
-require('headIdle')
-require('headStart')
-require('headReady')
-require('headScan')
-require('headTrack')
-require('headSweep')
+local headIdle = require('headIdle')
+local headStart = require('headStart')
+local headReady = require('headReady')
+local headScan = require('headScan')
+local headTrack = require('headTrack')
+local headSweep = require('headSweep')
 
 sm = fsm.new(headIdle);
 sm:add_state(headStart);

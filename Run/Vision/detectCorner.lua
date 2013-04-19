@@ -1,7 +1,7 @@
 module(..., package.seeall);
 
-require('Config');	-- For Ball and Goal Size
-require ('wcm')
+local Config = require('Config');	-- For Ball and Goal Size
+local wcm = require ('wcm')
 T_thr = 0.15;
 dist_threshold = Config.vision.corner.dist_threshold or 30;
 length_threshold = Config.vision.corner.min_length or 6;

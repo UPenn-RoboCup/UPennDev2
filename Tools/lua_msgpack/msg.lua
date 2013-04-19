@@ -1,6 +1,6 @@
 dofile('../../Run/include.lua')
 
-require 'msgpack'
+local msgpack = require 'msgpack'
 local mp = require 'cmsgpack'
 local util = require 'util'
 local unix = require 'unix'

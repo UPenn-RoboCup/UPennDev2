@@ -1,7 +1,7 @@
 module(..., package.seeall);
 
-require('vector')
-require('parse_hostname')
+local vector = require('vector')
+local parse_hostname = require('parse_hostname')
 
 platform = {};
 platform.name = 'NaoV4'

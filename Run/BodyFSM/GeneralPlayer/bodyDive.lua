@@ -1,9 +1,9 @@
 module(..., package.seeall);
 
-require('Body')
-require('vector')
-require('Motion');
-require('Config')
+local Body = require('Body')
+local vector = require('vector')
+local Motion = require('Motion');
+local Config = require('Config')
 
 -- This is a dummy state that just recovers from a dive
 -- and catches the case when it never ends up falling...

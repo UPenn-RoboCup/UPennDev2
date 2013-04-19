@@ -1,5 +1,5 @@
-require 'include'
-require 'LuaXml'
+local include = require 'include'
+local LuaXml = require 'LuaXml'
 local util = require 'util'
 
 local datapath = 'powerplant/'

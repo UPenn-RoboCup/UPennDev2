@@ -1,5 +1,5 @@
-require 'torch'
---require 'ffi/torchffi'
+local torch = require 'torch'
+--local ffi/torchffi = require 'ffi/torchffi'
 torch.Tensor = torch.FloatTensor
 
 local Config = {}

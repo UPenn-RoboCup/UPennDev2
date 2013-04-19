@@ -1,10 +1,10 @@
-require 'include'
-require 'common'
+local include = require 'include'
+local common = require 'common'
 
 local ffi = require 'ffi'
 local Z = require 'Z'
 local util = require 'util'
-require 'zlib'
+local zlib = require 'zlib'
 
 
 local sizeOfDataType = 8

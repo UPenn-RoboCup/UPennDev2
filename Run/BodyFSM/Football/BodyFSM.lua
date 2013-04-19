@@ -1,11 +1,11 @@
 module(..., package.seeall);
 
-require('fsm')
-require('bodyIdle')
-require('bodyChase')
---require('bodyApproach')
-require('bodyStartingPos');
-require('bodyWait');
+local fsm = require('fsm')
+local bodyIdle = require('bodyIdle')
+local bodyChase = require('bodyChase')
+--local bodyApproach = require('bodyApproach')
+local bodyStartingPos = require('bodyStartingPos');
+local bodyWait = require('bodyWait');
 
 sm = fsm.new(bodyIdle);
 sm:add_state(bodyChase);

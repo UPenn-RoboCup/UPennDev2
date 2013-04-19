@@ -4,10 +4,10 @@
 
 module(..., package.seeall);
 
-require('Body')
-require('wcm')
-require('mcm')
-require('ocm')
+local Body = require('Body')
+local wcm = require('wcm')
+local mcm = require('mcm')
+local ocm = require('ocm')
 
 pitch0 = 43*math.pi/180;
 pitchMag = 15.5*math.pi/180;

@@ -1,15 +1,15 @@
 module(..., package.seeall);
 
-require('Config')
-require('carray')
-require('ImageProc')
-require('vcm')
+local Config = require('Config')
+local carray = require('carray')
+local ImageProc = require('ImageProc')
+local vcm = require('vcm')
 
 LUT = {};
 
 -- Enable Webots specific
 if (string.find(Config.platform.name,'Webots')) then
-  require('Camera')
+  local Camera = require('Camera')
   webots = 1;
 end
 

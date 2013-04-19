@@ -1,26 +1,26 @@
 cwd = cwd or os.getenv('PWD')
 package.path = cwd.."/?.lua;"..package.path;
-require('init')
+local init = require('init')
 
-require('Config');
+local Config = require('Config');
 smindex = 0;
 package.path = cwd..'/BodyFSM/'..Config.fsm.body[smindex+1]..'/?.lua;'..package.path;
 package.path = cwd..'/HeadFSM/'..Config.fsm.head[smindex+1]..'/?.lua;'..package.path;
 
-require('shm')
-require('Body')
-require('vector')
-require('getch')
-require('Motion');
-require('walk');
-require('dive');
-require('Speak')
-require('util')
+local shm = require('shm')
+local Body = require('Body')
+local vector = require('vector')
+local getch = require('getch')
+local Motion = require('Motion');
+local walk = require('walk');
+local dive = require('dive');
+local Speak = require('Speak')
+local util = require('util')
 darwin = false;
 webots = false;
 
-require('grip')
-require('crawl')
+local grip = require('grip')
+local crawl = require('crawl')
 
 
 -- Enable OP specific 

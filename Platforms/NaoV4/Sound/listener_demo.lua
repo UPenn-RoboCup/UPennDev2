@@ -1,7 +1,7 @@
 dofile('init.lua')
-require('unix')
-require('Body')
-require('SoundComm')
+local unix = require('unix')
+local Body = require('Body')
+local SoundComm = require('SoundComm')
 
 -- enable head movement
 Body.set_head_command(Body.get_head_position())

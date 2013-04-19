@@ -3,33 +3,33 @@ print('Testing ARMS')
 
 cwd = cwd or os.getenv('PWD')
 package.path = cwd.."/?.lua;"..package.path;
-require('init')
+local init = require('init')
 
 
-require('Config')
-require('Body')
-require('Speak')
-require('Motion')
-require('vector')
+local Config = require('Config')
+local Body = require('Body')
+local Speak = require('Speak')
+local Motion = require('Motion')
+local vector = require('vector')
 
 -- Laser getting
---require 'WebotsLaser'
+--local WebotsLaser = require 'WebotsLaser'
 --print( "LIDAR Dim:", WebotsLaser.get_width(), WebotsLaser.get_height())
 --nlidar_readings = WebotsLaser.get_width() * WebotsLaser.get_height();
 
 
-require 'rcm'
+local rcm = require 'rcm'
 --
-require 'mcm'
+local mcm = require 'mcm'
 
 -- Arms
-require 'pickercm'
-require ('Kinematics')
-require 'Transform'
+local pickercm = require 'pickercm'
+local Kinematics = require ('Kinematics')
+local Transform = require 'Transform'
 
 
-require 'Team' --To receive the GPS coordinates from objects
-require 'wcm'
+local Team = require 'Team' --To receive the GPS coordinates from objects
+local wcm = require 'wcm'
 
 
 
@@ -50,8 +50,8 @@ end
 
 --Spacenav interface handling
 
-require('signal')
-require('Spacenav')
+local signal = require('signal')
+local Spacenav = require('Spacenav')
 Spacenav.open()
 
 
@@ -283,7 +283,7 @@ Team.entry();
 if( webots ) then
   controller.wb_robot_keyboard_enable( 100 );
 else
-  require 'getch'
+  local getch = require 'getch'
   getch.enableblock(1);
 end
 

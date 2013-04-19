@@ -1,9 +1,9 @@
 module(..., package.seeall);
 
-require('Body')
-require('HeadTransform')
-require('Config')
-require('wcm')
+local Body = require('Body')
+local HeadTransform = require('HeadTransform')
+local Config = require('Config')
+local wcm = require('wcm')
 
 t0 = 0;
 

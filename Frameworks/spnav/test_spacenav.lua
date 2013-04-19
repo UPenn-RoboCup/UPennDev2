@@ -11,11 +11,11 @@ package.cpath = cwd.."/../../Player/Lib/?.so;"..package.cpath;
 package.path = cwd.."/../../Player/Util/?.lua;"..package.path;
 package.path = cwd.."/../../Player/Config/?.lua;"..package.path;
 
-require('signal')
-require('unix')
+local signal = require('signal')
+local unix = require('unix')
 local util = require 'util'
 
-require('Spacenav')
+local Spacenav = require('Spacenav')
 
 function ShutDownFN()
   print("Proper shutdown")

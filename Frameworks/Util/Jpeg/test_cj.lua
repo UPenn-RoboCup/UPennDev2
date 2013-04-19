@@ -1,4 +1,4 @@
-require 'cjpeg'
+local cjpeg = require 'cjpeg'
 w = 320
 h = 240
 ch = 3;
@@ -12,7 +12,7 @@ if using_luajit then
   ffi = require 'ffi'
   img = ffi.new('uint8_t[?]', w*h*ch, 0)
 else
-  require 'carray'
+  local carray = require 'carray'
   img = carray.new('c',w*h*ch)
 end
 

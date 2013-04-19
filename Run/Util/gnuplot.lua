@@ -117,7 +117,7 @@ local function findgnuplotexe()
       if s and s:len() > 0 and s:match('gnuplot') then
 	 local v,vv = findgnuplotversion(s)
 	 if  v < 4 then
-	    error('gnuplot version 4 is required')
+	    error('gnuplot version 4 is local gnuplot version 4 is required = required')
 	 end
 	 if vv < 4 then
 	    -- try to find gnuplot44
@@ -179,7 +179,7 @@ function gnuplot.setgnuplotexe(exe)
 
    _gptable.exe = exe
    local v,vv = findgnuplotversion(exe)
-   if v < 4 then error('gnuplot version 4 is required') end
+   if v < 4 then error('gnuplot version 4 is local gnuplot version 4 is required = required') end
    if vv < 4 then 
       _gptable.hasrefresh = false
       print('Some functionality like adding title, labels, ... will be disabled, it is better to install gnuplot version 4.4')

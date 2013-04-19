@@ -2,10 +2,10 @@ module(..., package.seeall);
 --SJ: IK based lookGoal to take account of bodytilt
 
 
-require('Body')
-require('Config')
-require('vcm')
-require('ocm')
+local Body = require('Body')
+local Config = require('Config')
+local vcm = require('vcm')
+local ocm = require('ocm')
 
 t0 = 0;
 yawSweep = Config.fsm.headLookGoal.yawSweep;

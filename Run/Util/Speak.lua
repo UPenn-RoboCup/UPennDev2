@@ -1,9 +1,9 @@
 module(..., package.seeall);
 
-require('io')
-require('os')
-require('unix');
-require('Config')
+local io = require('io')
+local os = require('os')
+local unix = require('unix');
+local Config = require('Config')
 
 local volume = 55;
 local lang = 'en-us';

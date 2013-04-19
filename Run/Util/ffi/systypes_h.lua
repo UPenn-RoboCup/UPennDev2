@@ -1,6 +1,6 @@
 --result of cpp sys/types.h from mingw
 local ffi = require'ffi'
-require'stddef'
+local stddef = require'stddef'
 ffi.cdef[[
 typedef long __time32_t;
 typedef long long __time64_t;

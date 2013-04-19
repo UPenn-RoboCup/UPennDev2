@@ -1,15 +1,15 @@
 module(..., package.seeall);
 
-require('Body')
-require('vector')
-require('Motion');
-require('kick');
-require('HeadFSM')
-require('Config')
-require('wcm')
-require('Speak')
+local Body = require('Body')
+local vector = require('vector')
+local Motion = require('Motion');
+local kick = require('kick');
+local HeadFSM = require('HeadFSM')
+local Config = require('Config')
+local wcm = require('wcm')
+local Speak = require('Speak')
 
-require('walk');
+local walk = require('walk');
 
 t0 = 0;
 timeout = 20.0;

@@ -1,6 +1,6 @@
 module(... or "", package.seeall)
 
-require('unix')
+local unix = require('unix')
 
 -- mv up to Player directory
 unix.chdir('..');
@@ -20,7 +20,7 @@ package.path = cwd.."/BodyFSM/?.lua;"..package.path;
 package.path = cwd.."/HeadFSM/?.lua;"..package.path;
 package.path = cwd.."/GameFSM/?.lua;"..package.path;
 
-require('mcm');
+local mcm = require('mcm');
 us = require('UltraSound');
 
 --Body.set_actuator_us(68);

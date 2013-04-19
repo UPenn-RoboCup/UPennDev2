@@ -1,9 +1,9 @@
 cwd = '.'
 dofile('init.lua')
-require('unix')
-require('Body')
-require('SoundComm')
-require('getch');
+local unix = require('unix')
+local Body = require('Body')
+local SoundComm = require('SoundComm')
+local getch = require('getch');
 getch.enableblock(1);
 
 SoundComm.set_transmitter_volume(100)

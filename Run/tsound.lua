@@ -1,6 +1,6 @@
 cwd = '.'
 dofile('init.lua')
-require('SoundComm');
+local SoundComm = require('SoundComm');
 SoundComm.set_receiver_volume(75);
 
 function write_out_pcm(x, filename)

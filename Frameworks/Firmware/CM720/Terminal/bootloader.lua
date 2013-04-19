@@ -1,5 +1,5 @@
-require('unix')
-require('stty')
+local unix = require('unix')
+local stty = require('stty')
 
 firmwareFilename = arg[1];
 print("Loading firmware:", firmwareFilename);

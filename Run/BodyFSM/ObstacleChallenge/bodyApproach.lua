@@ -1,12 +1,12 @@
 module(..., package.seeall);
 
-require('Body')
-require('wcm')
-require('ocm')
-require('walk')
-require('vector')
-require('walk')
-require('position')
+local Body = require('Body')
+local wcm = require('wcm')
+local ocm = require('ocm')
+local walk = require('walk')
+local vector = require('vector')
+local walk = require('walk')
+local position = require('position')
 
 t0 = 0;
 timeout = Config.fsm.bodyApproach.timeout;

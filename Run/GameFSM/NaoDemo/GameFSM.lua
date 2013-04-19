@@ -1,11 +1,11 @@
 module(..., package.seeall);
 
-require('fsm')
-require('gcm')
+local fsm = require('fsm')
+local gcm = require('gcm')
 
-require('gameInitial')
-require('gamePlaying')
-require('gamePenalized')
+local gameInitial = require('gameInitial')
+local gamePlaying = require('gamePlaying')
+local gamePenalized = require('gamePenalized')
 
 sm = fsm.new(gameInitial);
 sm:add_state(gamePlaying);

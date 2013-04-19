@@ -1,13 +1,13 @@
 module(..., package.seeall);
 
-require('Body')
-require('wcm')
-require('walk')
-require 'vector'
+local Body = require('Body')
+local wcm = require('wcm')
+local walk = require('walk')
+local vector = require 'vector'
 
-require 'mcm'
-require 'rlcm' -- Contains current state info and learning rates, etc.
-require 'librl'
+local mcm = require 'mcm'
+local rlcm = require 'rlcm' -- Contains current state info and learning rates, etc.
+local librl = require 'librl'
 
 t0 = 0;
 timeout = 10.0; -- Ten second trial!

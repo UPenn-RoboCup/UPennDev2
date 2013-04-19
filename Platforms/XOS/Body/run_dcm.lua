@@ -12,8 +12,8 @@ else
   package.cpath = cwd .. '/Lib/?.so;' .. package.cpath;
 end
 
-require('unix');
-require('shm');
+local unix = require('unix');
+local shm = require('shm');
 --local cwd = unix.getcwd();
 cwd = '.';
 
@@ -30,7 +30,7 @@ dcm.entry()
 sensorShm = shm.open('dcmSensor');
 actuatorShm = shm.open('dcmActuator');
 
-require('vcm') --Shared memory is created here, and ready for access
+local vcm = require('vcm') --Shared memory is created here, and ready for access
 
 print('Running controller');
 loop = true;

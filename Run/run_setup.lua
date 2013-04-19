@@ -4,21 +4,21 @@ Can setup all robot-specific calibration parameters
 And automatically appends it to calibration file
 --]]
 cwd = os.getenv('PWD')
-require('init')
+local init = require('init')
 webots = false;
 darwin = true;
 
-require('Config');
+local Config = require('Config');
 --This FIXES monitor issue with test_vision trying to send team message
 Config.dev.team = 'TeamNull'; 
-require('Body')
-require('vector')
+local Body = require('Body')
+local vector = require('vector')
 require("getch")
-require('Kinematics');
-require('Motion')
-require('mcm')
-require('Broadcast')
-require('unix')
+local Kinematics = require('Kinematics');
+local Motion = require('Motion')
+local mcm = require('mcm')
+local Broadcast = require('Broadcast')
+local unix = require('unix')
 
 -- initialize state machines
 

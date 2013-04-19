@@ -1,12 +1,12 @@
 module(..., package.seeall);
 
-require('fsm')
-require('bodyIdle')
-require('bodyChase')
-require('bodySearch')
-require('bodyApproach')
-require('bodyPickup')
---require('bodyFaceOff');
+local fsm = require('fsm')
+local bodyIdle = require('bodyIdle')
+local bodyChase = require('bodyChase')
+local bodySearch = require('bodySearch')
+local bodyApproach = require('bodyApproach')
+local bodyPickup = require('bodyPickup')
+--local bodyFaceOff = require('bodyFaceOff');
 
 sm = fsm.new(bodyIdle);
 sm:add_state(bodyChase);

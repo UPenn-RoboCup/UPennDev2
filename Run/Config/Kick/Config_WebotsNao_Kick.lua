@@ -1,5 +1,5 @@
 module(..., package.seeall);
-require('vector')
+local vector = require('vector')
 
 --New kick parameters for NewKick
 

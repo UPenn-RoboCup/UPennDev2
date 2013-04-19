@@ -1,7 +1,7 @@
 module(..., package.seeall);
 
-require('Body')
-require('walk')
+local Body = require('Body')
+local walk = require('walk')
 
 t0 = 0;
 timeout = Config.falling_timeout or 0.3;

@@ -1,8 +1,8 @@
 module(..., package.seeall);
-require('dcm');
-require('vector');
-require('unix');
-require('util');
+local dcm = require('dcm');
+local vector = require('vector');
+local unix = require('unix');
+local util = require('util');
 
 host = "dcm";
 

@@ -1,10 +1,10 @@
-require 'include'
+local include = require 'include'
 require 'torch-load'
 
 local ffi = require 'ffi'
 --local Z = require 'Z'
 local util = require 'util'
-require 'zlib'
+local zlib = require 'zlib'
 
 local debug = false
 

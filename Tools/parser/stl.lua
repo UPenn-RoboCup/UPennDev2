@@ -1,6 +1,6 @@
-require 'common'
-require 'include'
-require 'vrml'
+local common = require 'common'
+local include = require 'include'
+local vrml = require 'vrml'
 
 function parseBinarySTL(filename)
   local stlfile = assert(io.open(filename, 'rb'))

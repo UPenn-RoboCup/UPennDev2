@@ -3,7 +3,7 @@ local ffi = require'ffi'
 local bmpconv = require'bmpconv'
 local pp = require'pp'.pp
 local readfile = glue.readfile
-require'unit'
+local unit = require'unit'
 local libpng = require'libpng'
 
 for _,filename in ipairs(dir('media/png/good/*.png')) do

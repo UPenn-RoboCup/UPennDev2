@@ -1,8 +1,8 @@
 cwd = os.getenv('PWD')
-require('init')
+local init = require('init')
 
-require('unix');
-require('shm');
+local unix = require('unix');
+local shm = require('shm');
 dcm = require('OPCommManager');
 print('Starting device comm manager...');
 dcm.entry()
@@ -12,7 +12,7 @@ dcm.entry()
 sensorShm = shm.open('dcmSensor');
 actuatorShm = shm.open('dcmActuator');
 
-require('vcm') --Shared memory is created here, and ready for access
+local vcm = require('vcm') --Shared memory is created here, and ready for access
 
 print('Running controller');
 loop = true;

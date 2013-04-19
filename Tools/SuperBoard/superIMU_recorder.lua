@@ -12,12 +12,12 @@ package.path = cwd.."/../../Player/Util/?.lua;"..package.path;
 package.path = cwd.."/../../Player/Config/?.lua;"..package.path;
 package.path = cwd.."/../../Player/Vision/?.lua;"..package.path;
 
-require('serialization');
-require('signal')
-require('Serial');
-require('kBPacket');
-require('unix');
-require('rcm');
+local serialization = require('serialization');
+local signal = require('signal')
+local Serial = require('Serial');
+local kBPacket = require('kBPacket');
+local unix = require('unix');
+local rcm = require('rcm');
 
 dev = '/dev/ttyUSB0';
 baud = 230400;

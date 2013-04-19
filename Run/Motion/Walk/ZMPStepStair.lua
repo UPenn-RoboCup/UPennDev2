@@ -6,13 +6,13 @@ module(..., package.seeall);
 -- 2013/2 SJ
 ------------------------------------------------
 
-require('Body')
-require('Kinematics')
-require('Config');
-require('vector')
-require('mcm')
-require('unix')
-require('util')
+local Body = require('Body')
+local Kinematics = require('Kinematics')
+local Config = require('Config');
+local vector = require('vector')
+local mcm = require('mcm')
+local unix = require('unix')
+local util = require('util')
 
 local matrix = require('matrix_zmp')
 

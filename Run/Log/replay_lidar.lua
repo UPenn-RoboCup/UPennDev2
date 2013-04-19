@@ -9,14 +9,14 @@ package.path = cwd.."/../Util/?.lua;"..package.path;
 package.path = cwd.."/../Vision/?.lua;"..package.path;
 
 local serialization = require 'serialization'
-require 'cutil'
+local cutil = require 'cutil'
 
 -- Data Type specific
 local dataPath = '~/shadwell/day2_third/logs/'
 local dataStamp = '02.27.2013';
 local dataType = 'lidar'
 local realtime = true;
-require 'rcm'
+local rcm = require 'rcm'
 loal unix = require 'unix'
 
 function get_log_file_list()

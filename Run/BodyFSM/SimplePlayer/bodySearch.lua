@@ -1,11 +1,11 @@
 module(..., package.seeall);
 
-require('Body')
-require('walk')
-require('vector')
-require('Config')
-require('wcm')
-require('mcm')
+local Body = require('Body')
+local walk = require('walk')
+local vector = require('vector')
+local Config = require('Config')
+local wcm = require('wcm')
+local mcm = require('mcm')
 
 t0 = 0;
 direction = 1;

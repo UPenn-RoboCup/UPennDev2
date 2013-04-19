@@ -1,5 +1,5 @@
-require('unix')
-require('stty')
+local unix = require('unix')
+local stty = require('stty')
 
 if (arg[1]) then
    ttyname = arg[1]

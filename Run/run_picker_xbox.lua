@@ -1,9 +1,9 @@
 cwd = os.getenv('PWD')
-require('init')
-require 'Config'
-require 'xbox'
-require 'pickercm'
-require('getch')
+local init = require('init')
+local Config = require 'Config'
+local xbox = require 'xbox'
+local pickercm = require 'pickercm'
+local getch = require('getch')
 getch.enableblock(1);
 
 teamID   = Config.game.teamNumber;
@@ -23,7 +23,7 @@ function entry()
   pickercm.set_desired_dpRArm( {0,0,0} )
 
   if( net ) then
-    require 'Team'
+    local Team = require 'Team'
     Team.entry(true) -- true means we have the primesense
   end
 

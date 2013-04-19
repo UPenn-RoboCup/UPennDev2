@@ -1,13 +1,13 @@
 module(..., package.seeall);
 
-require('Body')
-require('Motion')
-require 'walk'
-require 'Speak'
-require 'gcm'
+local Body = require('Body')
+local Motion = require('Motion')
+local walk = require 'walk'
+local Speak = require 'Speak'
+local gcm = require 'gcm'
 
 -- To change modes
-require 'bodyStart'
+local bodyStart = require 'bodyStart'
 
 t0 = 0;
 

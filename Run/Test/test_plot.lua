@@ -1,7 +1,7 @@
-require('init')
-require('gnuplot')
-require('matrix')
-require('vector')
+local init = require('init')
+local gnuplot = require('gnuplot')
+local matrix = require('matrix')
+local vector = require('vector')
 
 local N = 50
 

@@ -1,17 +1,17 @@
 cwd = os.getenv('PWD')
-require('init')
+local init = require('init')
 
-require('Config')
-require('carray')
-require('ImageProc')
-require('vcm')
-require('util')
+local Config = require('Config')
+local carray = require('carray')
+local ImageProc = require('ImageProc')
+local vcm = require('vcm')
+local util = require('util')
 
 -- Enable Webots specific
 --[[
 if (string.find(Config.platform.name,'Webots')) then
   webots = 1;
-  require('Camera')
+  local Camera = require('Camera')
 end
 --]]
 

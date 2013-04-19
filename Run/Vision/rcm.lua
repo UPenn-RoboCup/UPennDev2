@@ -1,8 +1,8 @@
 module(..., package.seeall);
 
-require('shm');
+local shm = require('shm');
 local util = require('util');
-require('vector');
+local vector = require('vector');
 
 -- shared properties
 shared = {};

@@ -1,5 +1,5 @@
 --http://wiki.garrysmod.com/?title=Patterns
-require 'velocityfilter'
+local velocityfilter = require 'velocityfilter'
 ballfilter.loadModel();
 
 -- 0 1:1.013398 2:0.022444 3:1.013647 4:0.034000 5:0.006371 6:0.007038 7:1.016584 8:0.025963 9:1.016915 10:4.868166 11:38.901387

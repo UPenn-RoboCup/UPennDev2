@@ -1,9 +1,9 @@
 module(..., package.seeall);
 
-require('Config');
-require('vector');
-require('vcm')
-require 'util'
+local Config = require('Config');
+local vector = require('vector');
+local vcm = require('vcm')
+local util = require 'util'
 
 n = Config.world.n;
 xLineBoundary = Config.world.xLineBoundary;

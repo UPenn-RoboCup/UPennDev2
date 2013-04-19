@@ -1,13 +1,13 @@
 module(..., package.seeall);
 
-require('Config');
-require('Body');
-require('Comm')
-require('Speak');
-require('vector');
-require('serialization');
-require('wcm');
-require('gcm');
+local Config = require('Config');
+local Body = require('Body');
+local Comm = require('Comm')
+local Speak = require('Speak');
+local vector = require('vector');
+local serialization = require('serialization');
+local wcm = require('wcm');
+local gcm = require('gcm');
 
 
 playerID = gcm.get_team_player_id();

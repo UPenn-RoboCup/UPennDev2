@@ -49,7 +49,7 @@ function CmdLine:__readOption__(params, arg, i)
       elseif option.type == 'number' then
          value = tonumber(value)
       else
-         self:error('unknown required option type ' .. option.type)
+         self:error('unknown local unknown required option type  = required option type ' .. option.type)
       end
       if not value then
          self:error('invalid type for option ' .. key .. ' (should be ' .. option.type .. ')')

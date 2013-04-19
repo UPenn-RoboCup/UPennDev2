@@ -1,10 +1,10 @@
 module(..., package.seeall);
 
-require('Body')
-require('wcm')
-require('walk')
-require('vector')
-require 'libfootball'
+local Body = require('Body')
+local wcm = require('wcm')
+local walk = require('walk')
+local vector = require('vector')
+local libfootball = require 'libfootball'
 
 t0 = 0;
 timeout = 20.0;

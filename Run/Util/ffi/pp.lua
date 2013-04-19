@@ -72,7 +72,7 @@ local function pp(...)
 	return ...
 end
 
-if not ... then require'pp_test' end
+if not ... then local pp_test = require'pp_test' end
 
 return {
 	pformat = pformat,

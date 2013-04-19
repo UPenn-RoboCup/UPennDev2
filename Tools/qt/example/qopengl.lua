@@ -1,9 +1,9 @@
 local pwd = os.getenv('PWD')
 package.cpath = pwd..'/../lib/qt/?.so;'..package.cpath
 
-require 'qtcore'
-require 'qtgui'
-require 'qtopengl'
+local qtcore = require 'qtcore'
+local qtgui = require 'qtgui'
+local qtopengl = require 'qtopengl'
 
 app = QApplication(1 + select('#', ...), {arg[0], ...})
 app.__gc = app.delete -- take ownership of object

@@ -1,19 +1,19 @@
 module(..., package.seeall);
 
-require('PoseFilter');
-require('Filter2D');
+local PoseFilter = require('PoseFilter');
+local Filter2D = require('Filter2D');
 local Body = require('Body');
-require('vector');
-require('util');
-require('wcm')
-require('vcm');
-require('gcm');
-require('mcm');
+local vector = require('vector');
+local util = require('util');
+local wcm = require('wcm')
+local vcm = require('vcm');
+local gcm = require('gcm');
+local mcm = require('mcm');
 
 -- intialize sound localization if needed
 useSoundLocalization = Config.world.enable_sound_localization or 0;
 if (useSoundLocalization > 0) then
-  require('SoundFilter');
+  local SoundFilter = require('SoundFilter');
 end
 
 --SJ: Velocity filter is always on
@@ -22,7 +22,7 @@ end
 
 mod_angle = util.mod_angle;
 
-require('Velocity');	
+local Velocity = require('Velocity');	
 
 --Are we using same colored goals?
 use_same_colored_goal = Config.world.use_same_colored_goal or 0;

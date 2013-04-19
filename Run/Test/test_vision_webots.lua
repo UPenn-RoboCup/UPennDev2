@@ -2,35 +2,35 @@ dofile('Run/include.lua')
 
 cwd = cwd or os.getenv('PWD')
 package.path = cwd.."/?.lua;"..package.path;
-require('init')
+local init = require('init')
 
-require('Config');
+local Config = require('Config');
 smindex = 0;
 
 package.path = cwd..'/BodyFSM/'..Config.fsm.body[smindex+1]..'/?.lua;'..package.path;
 package.path = cwd..'/HeadFSM/'..Config.fsm.head[smindex+1]..'/?.lua;'..package.path;
 package.path = cwd..'/GameFSM/'..Config.fsm.game..'/?.lua;'..package.path;
 
-require('shm')
+local shm = require('shm')
 local Body = require('Body')
-require('vector')
+local vector = require('vector')
 
-require('BodyFSM');
-require('HeadFSM');
-require('Motion');
-require('walk');
-require('HeadTransform')
-require('Speak')
-require('vcm')
-require('Vision')
-require('World')
-require('Team')
-require('util')
-require('wcm')
-require('gcm')
-require('ocm')
-require('matcm')
---require('behaviorObstacle')
+local BodyFSM = require('BodyFSM');
+local HeadFSM = require('HeadFSM');
+local Motion = require('Motion');
+local walk = require('walk');
+local HeadTransform = require('HeadTransform')
+local Speak = require('Speak')
+local vcm = require('vcm')
+local Vision = require('Vision')
+local World = require('World')
+local Team = require('Team')
+local util = require('util')
+local wcm = require('wcm')
+local gcm = require('gcm')
+local ocm = require('ocm')
+local matcm = require('matcm')
+--local behaviorObstacle = require('behaviorObstacle')
 
 darwin = false;
 webots = false;
@@ -46,7 +46,7 @@ if (string.find(Config.platform.name,'Webots')) then
 end
 
 if Config.vision.enable_freespace_detection == 1 then 
-  require('OccupancyMap')
+  local OccupancyMap = require('OccupancyMap')
   OccupancyMap.entry();
 end
 
@@ -212,7 +212,7 @@ function process_keyinput()
       vcm.set_camera_learned_new_lut(1)
      HeadFSM.sm:set_state('headLearnLUT');
      BodyFSM.sm:set_state('bodyWait');
---     require('ColorLUT')
+--     local ColorLUT = require('ColorLUT')
 --     ColorLUT.learn_lut_from_mask();
    end
 

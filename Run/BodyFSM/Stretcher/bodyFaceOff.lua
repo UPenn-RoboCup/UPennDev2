@@ -1,11 +1,11 @@
 module(..., package.seeall);
 
-require('Body')
-require('World')
-require('walk')
-require('vector')
-require('vcm')
-require('Config')
+local Body = require('Body')
+local World = require('World')
+local walk = require('walk')
+local vector = require('vector')
+local vcm = require('vcm')
+local Config = require('Config')
 Team = require('Team_SyncStep')
 -- 2 is master
 t0 = 0;

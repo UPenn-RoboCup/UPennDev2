@@ -1,18 +1,18 @@
 module(..., package.seeall);
 
-require('Body')
-require('World')
-require('walk')
-require('vector')
-require('wcm')
-require('ocm')
-require('Config')
-require('Team')
-require('util')
-require('walk')
+local Body = require('Body')
+local World = require('World')
+local walk = require('walk')
+local vector = require('vector')
+local wcm = require('wcm')
+local ocm = require('ocm')
+local Config = require('Config')
+local Team = require('Team')
+local util = require('util')
+local walk = require('walk')
 
-require('behavior')
-require('position')
+local behavior = require('behavior')
+local position = require('position')
 
 t0 = 0;
 

@@ -1,6 +1,6 @@
 module(... or "", package.seeall)
 
-require('cognition')
+local cognition = require('cognition')
 
 maxFPS = Config.vision.maxFPS;
 tperiod = 1.0/maxFPS;

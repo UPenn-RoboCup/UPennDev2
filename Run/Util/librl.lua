@@ -1,8 +1,8 @@
 module(..., package.seeall);
 
-require('carray');
-require('vector');
-require('rlcm')
+local carray = require('carray');
+local vector = require('vector');
+local rlcm = require('rlcm')
 
 -- For logging
 saveCount = 0;

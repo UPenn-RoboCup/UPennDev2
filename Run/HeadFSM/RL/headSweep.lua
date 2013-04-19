@@ -2,7 +2,7 @@
 
 module(..., package.seeall);
 
-require('Body')
+local Body = require('Body')
 
 t0 = 0;
 tScan = 1.0;

@@ -1,8 +1,8 @@
 module(... or "",package.seeall)
 local unix = require 'unix'
-require 'xbox360'
-require 'Config'
-require 'util'
+local xbox360 = require 'xbox360'
+local Config = require 'Config'
+local util = require 'util'
 
 fps = 60; -- Same sampling as the primesense
 

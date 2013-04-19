@@ -1,14 +1,14 @@
 module(..., package.seeall);
 
-require('Body')
-require('walk')
-require('vector')
-require('util')
-require('Config')
-require('wcm')
-require('gcm')
-require('UltraSound')
-require('position')
+local Body = require('Body')
+local walk = require('walk')
+local vector = require('vector')
+local util = require('util')
+local Config = require('Config')
+local wcm = require('wcm')
+local gcm = require('gcm')
+local UltraSound = require('UltraSound')
+local position = require('position')
 
 t0 = 0;
 

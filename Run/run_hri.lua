@@ -1,12 +1,12 @@
 cwd = os.getenv('PWD')
-require('init')
-require 'Config'
-require 'skeleton'
-require 'primecm'
-require 'libpicker'
-require 'pickercm'
-require('getch')
-require 'xbox'
+local init = require('init')
+local Config = require 'Config'
+local skeleton = require 'skeleton'
+local primecm = require 'primecm'
+local libpicker = require 'libpicker'
+local pickercm = require 'pickercm'
+local getch = require('getch')
+local xbox = require 'xbox'
 
 getch.enableblock(1);
 
@@ -35,7 +35,7 @@ function entry()
   -- Initialize FSMs
   skeleton.entry(inp_logs)
   if( net ) then
-    require 'Team'
+    local Team = require 'Team'
     Team.entry(true) -- true means we have the primesense
   end
 

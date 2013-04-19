@@ -1,5 +1,5 @@
 
-require 'include'
+local include = require 'include'
 local serialization = require 'serialization'
 
 

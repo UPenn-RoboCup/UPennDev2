@@ -5,8 +5,7 @@
 #include <stdint.h>
 #include <string.h>
 #include "mex.h"
-#define BUFLEN1 8192
-#define BUFLEN2 164000
+#define BUFLEN 164000
 #define MAX_SOCKETS 10
 
 char* command;
@@ -18,7 +17,6 @@ uint8_t socket_cnt = 0;
 int result, rc;
 static int initialized = 0;
 mwSize ret_sz[]={1};
-//char recv_buffer[BUFLEN1];
 char* recv_buffer;
 
 void cleanup( void ){
@@ -32,7 +30,7 @@ void cleanup( void ){
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
   if (!initialized) {
     mexPrintf("ZMQMEX: creating a 2 thread ZMQ context.\n");
-    recv_buffer = (char*) malloc( BUFLEN2 );
+    recv_buffer = (char*) malloc( BUFLEN );
     ctx = zmq_init(2);
     initialized = 1;
     mexAtExit(cleanup);
@@ -98,6 +96,8 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     // Auto poll setup
     poll_items[socket_cnt].socket = sockets[socket_cnt];
     poll_items[socket_cnt].events = ZMQ_POLLIN;
+    // Set the output to be our internal id
+    ret_sz[0] = 1;
     plhs[0] = mxCreateNumericArray(1,ret_sz,mxUINT8_CLASS,mxREAL);
     uint8_t* out = (uint8_t*)mxGetData(plhs[0]);
     out[0] = socket_cnt;
@@ -137,7 +137,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     int socket = socketid[0];
     if( socket>socket_cnt)
       mexErrMsgTxt("Bad socket id!");
-    int nbytes = zmq_recv(sockets[socket], recv_buffer, BUFLEN2, 0);
+    int nbytes = zmq_recv(sockets[socket], recv_buffer, BUFLEN, 0);
     //int nbytes = zmq_recv(sockets[socket], recv_buffer, BUFLEN1, 0);
     //int nbytes = zmq_recv(sockets[socket], recv_buffer, BUFLEN, ZMQ_DONTWAIT);
     if(nbytes==-1)
@@ -146,7 +146,9 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     plhs[0] = mxCreateNumericArray(1,ret_sz,mxUINT8_CLASS,mxREAL);
     void* start = mxGetData( plhs[0] );
     memcpy(start,recv_buffer,nbytes);
-  } else if (strcasecmp(command, "poll") == 0){
+  }
+	// Poll functionality
+	else if (strcasecmp(command, "poll") == 0){
     long mytimeout = -1;
     if (nrhs > 1 && mxGetNumberOfElements(prhs[1])==1 ){
       double* timeout_ptr = (double*)mxGetData(prhs[1]);
@@ -167,9 +169,12 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     int r = 0;
     for(int i=0;i<socket_cnt;i++)
       if(poll_items[i].revents){
-        //int nbytes = zmq_recv(sockets[i], recv_buffer, BUFLEN1, 0);
-        int nbytes = zmq_recv(sockets[i], recv_buffer, BUFLEN2, 0);
-        idx[r] = i;
+				int nbytes = -1;
+				if( poll_items[i].socket == NULL )
+					nbytes = 0;
+				else
+					nbytes = zmq_recv(sockets[i], recv_buffer, BUFLEN, 0);
+				idx[r] = i;
         ret_sz[0] = nbytes;
         mxArray* tmp = mxCreateNumericArray(1,ret_sz,mxUINT8_CLASS,mxREAL);
         void* start = mxGetData( tmp );
@@ -181,6 +186,28 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     plhs[0] = cell_array_ptr;
     plhs[1] = idx_array_ptr;
     return;
-  } else
+  }
+	// Add a file descriptor to the polling list (typically udp)
+	else if(strcasecmp(command, "fd") == 0){
+    if( socket_cnt==MAX_SOCKETS )
+      mexErrMsgTxt("Cannot create any more poll items!");
+    if (nrhs != 2)
+      mexErrMsgTxt("Please provide a file descriptor.");
+    if ( !mxIsClass(prhs[1],"uint32") || mxGetNumberOfElements( prhs[1] )!=1 )
+      mexErrMsgTxt("Please provide a valid file descriptor.");
+    uint32_t fd = *( (uint32_t*)mxGetData(prhs[1]) );
+    if( fd<3 )
+      mexErrMsgTxt("Bad file descriptor!");
+    // Auto poll setup
+		poll_items[socket_cnt].socket = NULL;
+    poll_items[socket_cnt].fd = fd;
+    poll_items[socket_cnt].events = ZMQ_POLLIN;
+    ret_sz[0] = 1;
+    plhs[0] = mxCreateNumericArray(1,ret_sz,mxUINT8_CLASS,mxREAL);
+    uint8_t* out = (uint8_t*)mxGetData(plhs[0]);
+    out[0] = socket_cnt;
+    socket_cnt++;
+	}
+	else
     mexErrMsgTxt("Unrecognized command.");
 }

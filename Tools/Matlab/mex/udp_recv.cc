@@ -27,6 +27,7 @@ Daniel D. Lee, 6/09 <ddlee@seas.upenn.edu>
 const int maxQueueSize = 16;
 static std::deque<std::string> recvQueue;
 static int recv_fd;
+static mwSize ret_sz[]={1};
 
 void mexExit(void)
 {
@@ -61,9 +62,15 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 			mexErrMsgTxt("Could not set nonblocking mode");
 		
 		printf("Setting up udp_recv on port: %d\n", PORT);
-
 		mexAtExit(mexExit);
 		init = true;
+
+		ret_sz[0] = 1;
+		plhs[0] = mxCreateNumericArray(1,ret_sz,mxUINT32_CLASS,mxREAL);
+		uint32_t* out = (uint32_t*)mxGetData(plhs[0]);
+		out[0] = recv_fd;
+		return;
+
 	}
 
 	// Process incoming messages:

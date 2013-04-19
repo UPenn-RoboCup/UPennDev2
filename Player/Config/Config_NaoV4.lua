@@ -27,7 +27,7 @@ game.nPlayers = 4;
 
 
 param = {}
-param.world = 'World/Config_Nao_World'
+param.world = 'World/Config_Nao_SPL13_World'
 param.walk = 'Walk/Config_NaoV4_Steady' 
 param.kick = 'Kick/Config_Nao_Kick'
 param.vision = 'Vision/Config_NaoV4_Vision'

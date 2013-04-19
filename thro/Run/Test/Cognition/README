@@ -1,0 +1,29 @@
+To Run the Cognition Framework:
+* In one terminal:
+lua perception_manager.lua
+
+* In another terminal:
+lua behavior_manager.lua
+
+* In another terminal:
+lua network_manager.lua
+
+* In another terminal:
+lua sensor_logger.lua
+
+* In another terminal:
+./comms_manager
+
+Each file is INDEPENDENT and INTERDEPENDENT at the same time.  Thus, you may run these commands in ANY order you desired.  If gazebo is already running, you may leave it running.
+No process requires another to run.
+Events in these process are triggered by receiving messages on a channel
+The channels are described in the cognition icd
+The processes also send messages (except the sensor_logger)
+
+NOTE:
+* No logs will be made yet
+* No HMI commands will be parsed
+* No maps will be made
+* These files show the FLOW of data
+* Functionality will be added incrementally
+* These files MUST be run on the same machine, as the ipc:// sockets are used

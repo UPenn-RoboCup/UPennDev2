@@ -1,0 +1,9 @@
+package thor;
+
+struct rpc_request_t
+{
+    string   client_id;
+    int16_t  request_id;
+    string   eval_string;
+    boolean  synchronous;
+}

@@ -50,7 +50,7 @@ function h = plot_field(handle,type)
     penaltyY = [-1.10 -1.10 1.10 1.10];
     spotX=2.7;
     circleR = .6;
-    fieldB=[-5 5 3.5 3.5];
+    fieldB=[-5 5 -3.5 3.5];
   
   elseif type==2 % Teensize
     fieldX = [-4.50  4.50 4.50 -4.50 -4.50];

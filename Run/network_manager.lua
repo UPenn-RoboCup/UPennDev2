@@ -55,10 +55,12 @@ camera_channel.callback = function()
   local camera_data, has_more = camera_channel:receive()
   local jimg = cjpeg.compress( camera_data, 640, 480 );
   local nsent = udp.send( hmi_udp_img_snd, jimg, #jimg );
+	
+	local debug_msg = string.format('Camera (%.2f) | ',camera_ts)
 	if nsent==#jimg then
-  	print("Camera | Sent image!")
+  	print(debug_msg.."Sent image!",camera_ts)
 	else
-		print("!!! Camera | Error sending image")
+		print(debug_msg.."Error sending image!")
 	end
 end
 

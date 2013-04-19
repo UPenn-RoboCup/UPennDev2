@@ -1,0 +1,19 @@
+# ignore standard build files
+
+*.o
+*.a
+*.so
+*.dylib
+*~
+*.mexmaci64
+*.mexa64
+.DS_Store
+
+# ignore all symbolic links
+
+Webots
+Config/Config*.lua
+Framework/Platform/*
+Run/comms_manager
+Run/init_robot
+Operator_build

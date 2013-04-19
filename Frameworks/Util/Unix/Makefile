@@ -11,7 +11,7 @@ stty: luastty.o
 	@echo "\t" LINK $@
 	@$(LD) $(LDFLAGS) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ $(LIB_DIR)
 
-getch: getch.o
+getch: lua_getch.o
 	@echo "\t" LINK $@
 	@$(LD) $(LDFLAGS) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ $(LIB_DIR)
 

@@ -1,7 +1,7 @@
 module(..., package.seeall);
-require('util')
-require('vector')
-require 'unix'
+local util = require('util')
+local vector = require('vector')
+local unix = require 'unix'
 local robotName=unix.gethostname();
 
 platform = {}; 

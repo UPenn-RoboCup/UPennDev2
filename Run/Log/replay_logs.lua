@@ -23,9 +23,7 @@ local dataTypes = {'flir','lidar','arduimu'}
 --local dataTypes = {'lidar','arduimu'}
 local dataChannels = {5555,5556,5557}
 local realtime = true;
-if realtime then
-  require 'unix'
-end
+local unix = require 'unix'
 
 -- Set up the channels
 local simple_ipc = require 'simple_ipc'

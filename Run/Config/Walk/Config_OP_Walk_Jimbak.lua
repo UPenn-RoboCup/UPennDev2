@@ -1,5 +1,5 @@
-module(..., package.seeall); require('vector')
-require 'unix'
+module(..., package.seeall); local vector = require('vector')
+local unix = require 'unix'
 -- Walk Parameters
 
 walk = {};
@@ -150,7 +150,7 @@ local robotName = unix.gethostname();
 local robotID = 0;
 
 --Load robot specific calibration value
-require('calibration');
+local calibration = require('calibration');
 if calibration.cal and calibration.cal[robotName] then
   walk.servoBias = calibration.cal[robotName].servoBias;
   walk.footXComp = calibration.cal[robotName].footXComp;

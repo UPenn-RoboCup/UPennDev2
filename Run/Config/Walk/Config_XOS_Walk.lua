@@ -1,6 +1,6 @@
 module(..., package.seeall);
-require('vector')
-require 'unix'
+local vector = require('vector')
+local unix = require 'unix'
 -- Walk Parameters
 
 walk = {};
@@ -267,7 +267,7 @@ local robotName = unix.gethostname();
 local robotID = 23;
 
 --Load robot specific calibration value
-require('calibration');
+local calibration = require('calibration');
 if calibration.cal and calibration.cal[robotName] then
   walk.servoBias = calibration.cal[robotName].servoBias;
 print("Servo Bias: ",unpack(walk.servoBias))

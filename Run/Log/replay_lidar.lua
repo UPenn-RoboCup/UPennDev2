@@ -17,9 +17,7 @@ local dataStamp = '02.27.2013';
 local dataType = 'lidar'
 local realtime = true;
 require 'rcm'
-if realtime then
-  require 'unix'
-end
+loal unix = require 'unix'
 
 function get_log_file_list()
   -- TODO: use a Lua directory call

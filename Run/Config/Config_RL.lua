@@ -1,6 +1,6 @@
 module(..., package.seeall);
-require('vector')
-require 'unix'
+local vector = require('vector')
+local unix = require 'unix'
 -- Stretcher Parameters
 -- Sample Step size
 rl = {}

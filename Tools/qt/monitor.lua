@@ -6,7 +6,7 @@ package.cpath = pwd..'/?.so;'..package.cpath
 package.path = pwd..'/../../Player/Util/?.lua;'..package.path
 package.path = pwd..'/../../Player/Util/ffi/?.lua;'..package.path
 
-require 'unix'
+local unix = require 'unix'
 require 'qtcore'
 require 'qtgui'
 

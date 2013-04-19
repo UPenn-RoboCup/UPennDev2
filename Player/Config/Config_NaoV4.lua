@@ -31,7 +31,7 @@ param.world = 'World/Config_Nao_World'
 param.walk = 'Walk/Config_NaoV4_Steady' 
 param.kick = 'Kick/Config_Nao_Kick'
 param.vision = 'Vision/Config_NaoV4_Vision'
-param.camera = 'Camera/Config_NaoV4_Camera_GRASPSarah'
+param.camera = 'Camera/Config_NaoV4_Camera_USOpen'
 --param.camera = 'Camera/Config_NaoV4_Camera_Levine307'
 param.fsm = 'FSM/Config_NaoV4_FSM'
 

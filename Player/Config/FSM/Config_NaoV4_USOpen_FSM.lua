@@ -86,17 +86,17 @@ fsm.bodyPosition.timeout = 30*speedFactor;
 --Velocity generation parameters
 
 --Slow speed
-fsm.bodyPosition.maxStep1 = 0.05; --Max walk velocity
+fsm.bodyPosition.maxStep1 = 0.07; --Max walk velocity; old 0.07
 
 --Medium speed
-fsm.bodyPosition.maxStep2 = 0.06; --Max walk velocity
+fsm.bodyPosition.maxStep2 = 0.10; --Max walk velocity; old 0.08
 fsm.bodyPosition.rVel2 = 0.5; --Velocity of ball
 fsm.bodyPosition.aVel2 = 45*math.pi/180; --Angular/turning velocity (radians)
 fsm.bodyPosition.maxA2 = 0.2; --Maximum Forwards/Backwards/Sidestep velocity
 fsm.bodyPosition.maxY2 = 0.02; --Maximum turning velocity
 
 --Full speed front dash
-fsm.bodyPosition.maxStep3 = 0.08; --Max walk velocity
+fsm.bodyPosition.maxStep3 = 0.12; --Max walk velocity; old 0.10
 fsm.bodyPosition.rVel3 = 0.8; --Velocity of ball
 fsm.bodyPosition.aVel3 = 20*math.pi/180; --Angular/turning velocity (radians)
 fsm.bodyPosition.maxA3 = 0.0; --Maximum Forwards/Backwards/Sidestep velocity

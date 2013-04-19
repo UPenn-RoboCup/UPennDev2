@@ -106,7 +106,7 @@ fsm.bodyPosition.maxY3 = 0.0; --Maximum turning velocity
 --BodyApproach :  Align the robot for kick
 --------------------------------------------------
 fsm.bodyApproach={};
-fsm.bodyApproach.maxStep = 0.02; --Max walk velocity
+fsm.bodyApproach.maxStep = 0.03; --Max walk velocity
 fsm.bodyApproach.timeout = 10.0*speedFactor;
 fsm.bodyApproach.rFar = 0.45; --Max ball distance
 fsm.bodyApproach.tLost = 3.0*speedFactor;--ball detection timeout

@@ -48,20 +48,23 @@ void LidarDump::OnNewLaserScans()
 
   vector<float> ranges;
   ranges.resize(rangeCount);
-//  this->parent_ray_sensor_->GetRanges(ranges);
-  for (int i = 0; i < rangeCount; i++) {
-    ranges[i] = static_cast<float>(this->parent_ray_sensor_->GetRange(i));     
+  vector<double> dranges;
+  this->parent_ray_sensor_->GetRanges(dranges);
+  if (dranges.size() == rangeCount) {
+//    std::cout << dranges.size() << std::endl;
+    for (int i = 0; i < rangeCount; i++) {
+      ranges[i] = static_cast<float>(dranges[i]);     
+    }
+  
+  //  std::cout << "Lidar Count: " << rangeCount << ' ' << ranges.size() << endl;
+  
+    ostringstream ts_buf;
+    ts_buf << std::setw(14) << std::setprecision(15)<< t.tv_sec + 1E-6*t.tv_usec;
+    zmq_send(csocket, ts_buf.str().c_str(), ts_buf.str().length(), ZMQ_SNDMORE);
+  //  std::cout << ts_buf.str() << " lidar ts bytes sent: " << ts_buf.str().length() << std::endl;
+    zmq_send(csocket, (void *)&(ranges[0]), ranges.size()*sizeof(float), 0); 
+  //  std::cout << " lidar bytes sent!" << std::endl;
   }
-
-//  std::cout << "Lidar Count: " << rangeCount << ' ' << ranges.size() << endl;
-
-  ostringstream ts_buf;
-  ts_buf << std::setw(14) << std::setprecision(15)<< t.tv_sec + 1E-6*t.tv_usec;
-  zmq_send(csocket, ts_buf.str().c_str(), ts_buf.str().length(), ZMQ_SNDMORE);
-//  std::cout << ts_buf.str() << " lidar ts bytes sent: " << ts_buf.str().length() << std::endl;
-  zmq_send(csocket, (void *)&(ranges[0]), ranges.size()*sizeof(float), 0); 
-//  std::cout << " lidar bytes sent!" << std::endl;
-
   this->parent_ray_sensor_->SetActive(true);
 }
 

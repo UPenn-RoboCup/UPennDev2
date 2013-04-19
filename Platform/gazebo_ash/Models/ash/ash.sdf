@@ -480,10 +480,10 @@
 	
 	<joint name="l_hip_yaw" type="revolute">
 		<parent>
-			<link_name>torso</link_name>
+			torso
 		</parent>
 		<child>
-			<link_name>l_hip_yaw_trunnion</link_name>
+			l_hip_yaw_trunnion
 		</child>
 		<axis>
 			<xyz>0 0 1</xyz>
@@ -507,10 +507,10 @@
 	
 	<joint name="r_hip_yaw" type="revolute">
 		<parent>
-			<link_name>torso</link_name>
+			torso
 		</parent>
 		<child>
-			<link_name>r_hip_yaw_trunnion</link_name>
+			r_hip_yaw_trunnion
 		</child>
 		<axis>
 			<xyz>0 0 1</xyz>
@@ -534,10 +534,10 @@
 	
 	<joint name="l_hip_roll" type="revolute">
 		<parent>
-			<link_name>l_hip_yaw_trunnion</link_name>
+			l_hip_yaw_trunnion
 		</parent>
 		<child>
-			<link_name>l_hip_pitch_trunnion</link_name>
+			l_hip_pitch_trunnion
 		</child>
 		<axis>
 			<xyz>1 0 0</xyz>
@@ -561,10 +561,10 @@
 	
 	<joint name="r_hip_roll" type="revolute">
 		<parent>
-			<link_name>r_hip_yaw_trunnion</link_name>
+			r_hip_yaw_trunnion
 		</parent>
 		<child>
-			<link_name>r_hip_pitch_trunnion</link_name>
+			r_hip_pitch_trunnion
 		</child>
 		<axis>
 			<xyz>1 0 0</xyz>
@@ -591,10 +591,10 @@
 		<!-- desired pose: -.021 .094 .808 0 0 0 -->
 		<pose>0 0 .19 0 0 0</pose>
 		<parent>
-			<link_name>l_hip_pitch_trunnion</link_name>
+			l_hip_pitch_trunnion
 		</parent>
 		<child>
-			<link_name>l_thigh</link_name>
+			l_thigh
 		</child>
 		<axis>
 			<xyz>0 1 0</xyz>
@@ -621,10 +621,10 @@
 		<!-- desired pose: -.021 -.094 .808 0 0 0 -->
 		<pose>0 0 .19 0 0 0</pose>
 		<parent>
-			<link_name>r_hip_pitch_trunnion</link_name>
+			r_hip_pitch_trunnion
 		</parent>
 		<child>
-			<link_name>r_thigh</link_name>
+			r_thigh
 		</child>
 		<axis>
 			<xyz>0 1 0</xyz>
@@ -651,10 +651,10 @@
 		<!-- desired pose: -.021 .094 .429 0 0 0 -->
 		<pose>0 0 .19 0 0 0</pose>
 		<parent>
-			<link_name>l_thigh</link_name>
+			l_thigh
 		</parent>
 		<child>
-			<link_name>l_shin</link_name>
+			l_shin
 		</child>
 		<axis>
 			<xyz>0 1 0</xyz>
@@ -681,10 +681,10 @@
 		<!-- desired pose: -.021 -.094 .429 0 0 0 -->
 		<pose>0 0 .19 0 0 0</pose>
 		<parent>
-			<link_name>r_thigh</link_name>
+			r_thigh
 		</parent>
 		<child>
-			<link_name>r_shin</link_name>
+			r_shin
 		</child>
 		<axis>
 			<xyz>0 1 0</xyz>
@@ -708,10 +708,10 @@
 	
 	<joint name="l_ankle_pitch" type="revolute">
 		<parent>
-			<link_name>l_shin</link_name>
+			l_shin
 		</parent>
 		<child>
-			<link_name>l_ankle_pitch_trunnion</link_name>
+			l_ankle_pitch_trunnion
 		</child>
 		<axis>
 			<xyz>0 1 0</xyz>
@@ -735,10 +735,10 @@
 	
 	<joint name="r_ankle_pitch" type="revolute">
 		<parent>
-			<link_name>r_shin</link_name>
+			r_shin
 		</parent>
 		<child>
-			<link_name>r_ankle_pitch_trunnion</link_name>
+			r_ankle_pitch_trunnion
 		</child>
 		<axis>
 			<xyz>0 1 0</xyz>
@@ -765,10 +765,10 @@
 		<!-- desired pose: -.021 .094 .049 0 0 0 -->
 		<pose>-.021 0 .046 0 0 0</pose>
 		<parent>
-			<link_name>l_ankle_pitch_trunnion</link_name>
+			l_ankle_pitch_trunnion
 		</parent>
 		<child>
-			<link_name>l_foot</link_name>
+			l_foot
 		</child>
 		<axis>
 			<xyz>1 0 0</xyz>
@@ -796,10 +796,10 @@
 		<!-- desired pose: -.021 -.094 .049 0 0 0 -->
 		<pose>-.021 0 .046 0 0 0</pose>
 		<parent>
-			<link_name>r_ankle_pitch_trunnion</link_name>
+			r_ankle_pitch_trunnion
 		</parent>
 		<child>
-			<link_name>r_foot</link_name>
+			r_foot
 		</child>
 		<axis>
 			<xyz>1 0 0</xyz>
@@ -827,10 +827,10 @@
 	<joint name="waist_yaw" type="revolute">
 		<pose>-.0033 0 -.0862 0 0 0</pose>
 		<parent>
-			<link_name>torso</link_name>
+			torso
 		</parent>
 		<child>
-			<link_name>chest</link_name>
+			chest
 		</child>
 		<axis>
 			<xyz>0 0 1</xyz>
@@ -926,10 +926,10 @@
 	<joint name="head_yaw" type="revolute">
 		<pose>-.0033 0 -.0672 0 0 0</pose>
 		<parent>
-			<link_name>chest</link_name>
+			chest
 		</parent>
 		<child>
-			<link_name>neck</link_name>
+			neck
 		</child>
 		<axis>
 			<xyz>0 0 1</xyz>
@@ -985,10 +985,10 @@
 	<joint name="head_pitch" type="revolute">
 		<pose>-.034 0 -0.0567 0 0 0</pose>
 		<parent>
-			<link_name>neck</link_name>
+			neck
 		</parent>
 		<child>
-			<link_name>head</link_name>
+			head
 		</child>
 		<axis>
 			<xyz>0 1 0</xyz>
@@ -1044,10 +1044,10 @@
 	
 	<joint name="l_shoulder_pitch" type="revolute">
 		<parent>
-			<link_name>chest</link_name>
+			chest
 		</parent>
 		<child>
-			<link_name>l_shoulder_pitch_trunnion</link_name>
+			l_shoulder_pitch_trunnion
 		</child>
 		<axis>
 			<xyz>0 1 0</xyz>
@@ -1071,10 +1071,10 @@
 	
 	<joint name="r_shoulder_pitch" type="revolute">
 		<parent>
-			<link_name>chest</link_name>
+			chest
 		</parent>
 		<child>
-			<link_name>r_shoulder_pitch_trunnion</link_name>
+			r_shoulder_pitch_trunnion
 		</child>
 		<axis>
 			<xyz>0 1 0</xyz>
@@ -1168,10 +1168,10 @@
 	
 	<joint name="l_shoulder_roll" type="revolute">
 		<parent>
-			<link_name>l_shoulder_pitch_trunnion</link_name>
+			l_shoulder_pitch_trunnion
 		</parent>
 		<child>
-			<link_name>l_shoulder_roll_trunnion</link_name>
+			l_shoulder_roll_trunnion
 		</child>
 		<axis>
 			<xyz>1 0 0</xyz>
@@ -1195,10 +1195,10 @@
 	
 	<joint name="r_shoulder_roll" type="revolute">
 		<parent>
-			<link_name>r_shoulder_pitch_trunnion</link_name>
+			r_shoulder_pitch_trunnion
 		</parent>
 		<child>
-			<link_name>r_shoulder_roll_trunnion</link_name>
+			r_shoulder_roll_trunnion
 		</child>
 		<axis>
 			<xyz>1 0 0</xyz>
@@ -1293,10 +1293,10 @@
 	<joint name="l_shoulder_yaw" type="revolute">
 		<pose>-.0033 0 .1203 0 0 0</pose>
 		<parent>
-			<link_name>l_shoulder_roll_trunnion</link_name>
+			l_shoulder_roll_trunnion
 		</parent>
 		<child>
-			<link_name>l_arm</link_name>
+			l_arm
 		</child>
 		<axis>
 			<xyz>0 0 1</xyz>
@@ -1321,10 +1321,10 @@
 	<joint name="r_shoulder_yaw" type="revolute">
 		<pose>-.0033 0 .1203 0 0 0</pose>
 		<parent>
-			<link_name>r_shoulder_roll_trunnion</link_name>
+			r_shoulder_roll_trunnion
 		</parent>
 		<child>
-			<link_name>r_arm</link_name>
+			r_arm
 		</child>
 		<axis>
 			<xyz>0 0 1</xyz>
@@ -1413,10 +1413,10 @@
 	<joint name="l_elbow_pitch" type="revolute">
 		<pose>.0265 0 .1189 0 0 0</pose>
 		<parent>
-			<link_name>l_arm</link_name>
+			l_arm
 		</parent>
 		<child>
-			<link_name>l_forearm</link_name>
+			l_forearm
 		</child>
 		<axis>
 			<xyz>0 1 0</xyz>
@@ -1441,10 +1441,10 @@
 	<joint name="r_elbow_pitch" type="revolute">
 		<pose>.0265 0 .1189 0 0 0</pose>
 		<parent>
-			<link_name>r_arm</link_name>
+			r_arm
 		</parent>
 		<child>
-			<link_name>r_forearm</link_name>
+			r_forearm
 		</child>
 		<axis>
 			<xyz>0 1 0</xyz>
@@ -1532,10 +1532,10 @@
 	
 	<joint name="l_wrist_yaw" type="revolute">
 		<parent>
-			<link_name>l_forearm</link_name>
+			l_forearm
 		</parent>
 		<child>
-			<link_name>l_wrist_yaw_trunnion</link_name>
+			l_wrist_yaw_trunnion
 		</child>
 		<axis>
 			<xyz>0 0 1</xyz>
@@ -1559,10 +1559,10 @@
 	
 	<joint name="r_wrist_yaw" type="revolute">
 		<parent>
-			<link_name>r_forearm</link_name>
+			r_forearm
 		</parent>
 		<child>
-			<link_name>r_wrist_yaw_trunnion</link_name>
+			r_wrist_yaw_trunnion
 		</child>
 		<axis>
 			<xyz>0 0 1</xyz>
@@ -1653,10 +1653,10 @@
 	<joint name="l_wrist_roll" type="revolute">
 		<pose>-.0035 0 .0369 0 0 0</pose>
 		<parent>
-			<link_name>l_wrist_yaw_trunnion</link_name>
+			l_wrist_yaw_trunnion
 		</parent>
 		<child>
-			<link_name>l_palm</link_name>
+			l_palm
 		</child>
 		<axis>
 			<xyz>1 0 0</xyz>
@@ -1682,10 +1682,10 @@
 	<joint name="r_wrist_roll" type="revolute">
 		<pose>-.0035 0 .0369 0 0 0</pose>
 		<parent>
-			<link_name>r_wrist_yaw_trunnion</link_name>
+			r_wrist_yaw_trunnion
 		</parent>
 		<child>
-			<link_name>r_palm</link_name>
+			r_palm
 		</child>
 		<axis>
 			<xyz>1 0 0</xyz>
@@ -1777,10 +1777,10 @@
 	<joint name="l_gripper" type="revolute">
 		<pose>0 0 .05 0 0 0</pose>
 		<parent>
-			<link_name>l_palm</link_name>
+			l_palm
 		</parent>
 		<child>
-			<link_name>l_gripper_link</link_name>
+			l_gripper_link
 		</child>
 		<axis>
 			<xyz>1 0 0</xyz>
@@ -1806,10 +1806,10 @@
 	<joint name="r_gripper" type="revolute">
 		<pose>0 0 .05 0 0 0</pose>
 		<parent>
-			<link_name>r_palm</link_name>
+			r_palm
 		</parent>
 		<child>
-			<link_name>r_gripper_link</link_name>
+			r_gripper_link
 		</child>
 		<axis>
 			<!-- This gripper spins the opposite way so that a positive force will close the gripper -->
@@ -1900,10 +1900,10 @@
 	<joint name="l_gripper_slave" type="revolute">
 		<pose>0 0 .05 0 0 0</pose>
 		<parent>
-			<link_name>l_palm</link_name>
+			l_palm
 		</parent>
 		<child>
-			<link_name>l_gripper_slave_link</link_name>
+			l_gripper_slave_link
 		</child>
 		<axis>
 			<!-- This gripper spins the opposite way so that a positive force will close the gripper -->
@@ -1930,10 +1930,10 @@
 	<joint name="r_gripper_slave" type="revolute">
 		<pose>0 0 .05 0 0 0</pose>
 		<parent>
-			<link_name>r_palm</link_name>
+			r_palm
 		</parent>
 		<child>
-			<link_name>r_gripper_slave_link</link_name>
+			r_gripper_slave_link
 		</child>
 		<axis>
 			<xyz>1 0 0</xyz>

@@ -29,6 +29,7 @@ function h = plot_field(handle,type)
 
 
   elseif type==1 %SPL
+    %{
     fieldX = [-3.00  3.00 3.00 -3.00 -3.00];
     fieldY = [-2.00 -2.00 2.00  2.00 -2.00];
     goalX = [3.00 (3.00+0.50) (3.00+0.50) 3.00];
@@ -38,6 +39,19 @@ function h = plot_field(handle,type)
     spotX=1.2;
     circleR = .6;
     fieldB=[-3.5 3.5 -2.5 2.5];
+    %}
+
+    
+    fieldX = [-4.50  4.50 4.50 -4.50 -4.50];
+    fieldY = [-3.00 -3.00 3.00  3.00 -3.00];
+    goalX = [4.50 (4.50+0.50) (4.50+0.50) 4.50];
+    goalY = [-0.80 -0.80 0.80 0.80];
+    penaltyX = [3.90 (3.90-0.60) (3.90-0.60) 3.90];
+    penaltyY = [-1.10 -1.10 1.10 1.10];
+    spotX=2.7;
+    circleR = .6;
+    fieldB=[-5 5 -3.5 3.5];
+  
   elseif type==2 % Teensize
     fieldX = [-4.50  4.50 4.50 -4.50 -4.50];
     fieldY = [-3.00 -3.00 3.00  3.00 -3.00];

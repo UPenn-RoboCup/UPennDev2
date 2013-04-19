@@ -16,37 +16,39 @@
 #define SLUG_STATUS_CODE                                  0x2004
 #define SLUG_ERROR_CODE                                   0x2005
 
-#define SLUG_JOINT_FORCE_MAX                              0x2100
-#define SLUG_JOINT_POSITION_MAX                           0x2101
-#define SLUG_JOINT_POSITION_MIN                           0x2102
-#define SLUG_JOINT_VELOCITY_MAX                           0x2103
-#define SLUG_JOINT_FORCE_SETPOINT                         0x2104
-#define SLUG_JOINT_POSITION_SETPOINT                      0x2105
-#define SLUG_JOINT_VELOCITY_SETPOINT                      0x2106
-#define SLUG_JOINT_FORCE_ESTIMATE                         0x2107
-#define SLUG_JOINT_POSITION_ESTIMATE                      0x2108
-#define SLUG_JOINT_VELOCITY_ESTIMATE                      0x2109
-#define SLUG_JOINT_POSITION_P_GAIN                        0x2110
-#define SLUG_JOINT_POSITION_I_GAIN                        0x2111
-#define SLUG_JOINT_POSITION_D_GAIN                        0x2112
-#define SLUG_JOINT_POSITION_D_BREAK_FREQUENCY             0x2113
-#define SLUG_JOINT_POSITION_SENSOR_BIAS                   0x2114
-#define SLUG_JOINT_POSITION_SENSOR_GAIN                   0x2115
-#define SLUG_JOINT_FORCE_DEMAND                           0x2116
+#define SLUG_JOINT_FORCE_CONSTANT                         0x2100
+#define SLUG_JOINT_POSITION_CONSTANT                      0x2101
+#define SLUG_JOINT_VELOCITY_CONSTANT                      0x2102
+#define SLUG_JOINT_PID_GAIN_CONSTANT                      0x2103
+#define SLUG_JOINT_FORCE_MAX                              0x2104
+#define SLUG_JOINT_POSITION_MAX                           0x2105
+#define SLUG_JOINT_POSITION_MIN                           0x2106
+#define SLUG_JOINT_VELOCITY_MAX                           0x2107
+#define SLUG_JOINT_FORCE_SETPOINT                         0x2108
+#define SLUG_JOINT_POSITION_SETPOINT                      0x2109
+#define SLUG_JOINT_VELOCITY_SETPOINT                      0x210a
+#define SLUG_JOINT_FORCE_ESTIMATE                         0x210b
+#define SLUG_JOINT_POSITION_ESTIMATE                      0x210c
+#define SLUG_JOINT_VELOCITY_ESTIMATE                      0x210d
+#define SLUG_JOINT_POSITION_SENSOR_BIAS                   0x210e
+#define SLUG_JOINT_POSITION_P_GAIN                        0x210f
+#define SLUG_JOINT_POSITION_I_GAIN                        0x2110
+#define SLUG_JOINT_POSITION_D_GAIN                        0x2111
+#define SLUG_JOINT_POSITION_D_BREAK_FREQUENCY             0x2112
+#define SLUG_JOINT_FORCE_DEMAND                           0x2113
 
 #define SLUG_MOTOR_FORCE_MAX                              0x2200
 #define SLUG_MOTOR_CURRENT_MAX                            0x2201
 #define SLUG_MOTOR_FORCE_SETPOINT                         0x2202
 #define SLUG_MOTOR_FORCE_ESTIMATE                         0x2203
 #define SLUG_MOTOR_CURRENT_ESTIMATE                       0x2204
-#define SLUG_MOTOR_FORCE_FF_CONSTANT                      0x2205
-#define SLUG_MOTOR_FORCE_P_GAIN                           0x2206
-#define SLUG_MOTOR_FORCE_I_GAIN                           0x2207
-#define SLUG_MOTOR_FORCE_D_GAIN                           0x2208
-#define SLUG_MOTOR_FORCE_D_BREAK_FREQUENCY                0x2209
-#define SLUG_MOTOR_FORCE_SENSOR_BIAS                      0x2210
-#define SLUG_MOTOR_FORCE_SENSOR_GAIN                      0x2211
-#define SLUG_MOTOR_CURRENT_DEMAND                         0x2212
+#define SLUG_MOTOR_FORCE_SENSOR_BIAS                      0x2205
+#define SLUG_MOTOR_FORCE_FF_CONSTANT                      0x2206
+#define SLUG_MOTOR_FORCE_P_GAIN                           0x2207
+#define SLUG_MOTOR_FORCE_I_GAIN                           0x2208
+#define SLUG_MOTOR_FORCE_D_GAIN                           0x2209
+#define SLUG_MOTOR_FORCE_D_BREAK_FREQUENCY                0x220a
+#define SLUG_MOTOR_CURRENT_DEMAND                         0x220b
 
 class slug_slave : public co_slave {
 public:

@@ -10,6 +10,9 @@ platform = {};
 platform.name = 'NaoV4'
 
 listen_monitor=1
+-- Game Parameters
+-- init game table first since fsm need it
+game = {};
 
 -- Parameters Files
 params = {}
@@ -23,9 +26,6 @@ params.FSM = "USOpen"
 
 util.LoadConfig(params, platform)
 
--- Game Parameters
-
-game = {};
 game.teamNumber = 25;
 game.robotName = robotName;
 game.playerID = parse_hostname.get_player_id();

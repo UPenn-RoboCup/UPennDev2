@@ -116,7 +116,7 @@ from http://octomap.github.io/
 #### Install Gazebo:
 
     brew tap ros/groovy
-    brew install https://raw.github.com/scpeters/homebrew-gazebo/master/gazebo.rb
+    brew install https://raw.github.com/yida/homebrew-gazebo/master/gazebo.rb
     echo "source /usr/local/share/gazebo/setup.sh" >> ~/.bash_profile
 
 Build Instructions

@@ -1,5 +1,5 @@
 -- Set the path for the libraries
-dofile('../../include.lua')
+dofile('include.lua')
 -- Set the Debugging mode
 local debug = true;
 

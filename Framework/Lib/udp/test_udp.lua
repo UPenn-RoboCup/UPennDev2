@@ -1,6 +1,6 @@
 print('\n\t== UDP Test ==')
 -- Send data to MATLAB
-local two_port = false
+local two_port = true
 
 local msg = 'hello';
 local udp = require 'udp'
@@ -15,7 +15,7 @@ string.format("LOCAL |  send_fd(%d), recv_fd(%d)",udp_sender,udp_receiver)
 if two_port then
 	msg2 = 'world';
 	print('Setting up MATLAB udp...')
-	udp_sender_matlab = udp.new_sender('127.0.0.1',12345)
+	udp_sender_matlab = udp.new_sender('127.0.0.1',54320)
 	assert(udp_sender_matlab>0,"Bad matlab udp setup!")
 	print(string.format("MATLAB | send_fd(%d)",udp_sender_matlab) )
 end

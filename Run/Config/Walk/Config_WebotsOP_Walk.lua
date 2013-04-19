@@ -1,4 +1,4 @@
-module(..., package.seeall); require('vector')
+module(..., package.seeall); local vector = require('vector')
 
 --Sit/stand stance parameters
 stance={};

@@ -10,11 +10,11 @@ package.path = cwd.."/../Vision/?.lua;"..package.path;
 
 local serialization = require 'serialization'
 local util = require 'util'
-require 'cutil'
+local cutil = require 'cutil'
 --local mp = require 'ffi/msgpack'
 local mp = require 'MessagePack'
-require 'Z'
-require 'carray'
+local Z = require 'Z'
+local carray = require 'carray'
 -- Data Type specific
 local dataPath = '~/shadwell/day2_third/';
 local dataStamp = '02.27.2013';
@@ -23,9 +23,7 @@ local dataTypes = {'flir','lidar','arduimu'}
 --local dataTypes = {'lidar','arduimu'}
 local dataChannels = {5555,5556,5557}
 local realtime = true;
-if realtime then
-  require 'unix'
-end
+local unix = require 'unix'
 
 -- Set up the channels
 local simple_ipc = require 'simple_ipc'

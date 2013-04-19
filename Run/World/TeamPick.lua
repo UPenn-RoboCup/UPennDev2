@@ -3,9 +3,9 @@ require('Comm');
 
 require('gcm');
 require 'vcm'
-require 'Z'
+local Z = require 'Z'
 require 'serialization'
-require 'unix'
+local unix = require 'unix'
 require 'util'
 require 'pickercm'
 

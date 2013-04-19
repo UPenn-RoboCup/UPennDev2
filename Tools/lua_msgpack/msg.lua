@@ -1,11 +1,10 @@
 dofile('../../Run/include.lua')
 
 require 'msgpack'
-require 'carray'
 local mp = require 'cmsgpack'
 local util = require 'util'
-require 'unix'
-require 'carray'
+local unix = require 'unix'
+local carray = require 'carray'
 
 str = msgpack.pack(a)
 strmp = mp.pack(a)

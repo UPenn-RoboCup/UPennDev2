@@ -141,7 +141,7 @@ static int lua_z_uncompress(lua_State *L) {
   return 1;
 }
 
-static const struct luaL_reg Z_lib [] = {
+static const luaL_Reg Z_lib [] = {
   {"compress", lua_z_compress},
   {"uncompress", lua_z_uncompress},
   {NULL, NULL}
@@ -151,7 +151,11 @@ static const struct luaL_reg Z_lib [] = {
 extern "C"
 #endif
 int luaopen_Z (lua_State *L) {
+#if LUA_VERSION_NUM == 502
+  luaL_newlib(L, Z_lib);
+#else
   luaL_register(L, "Z", Z_lib);
+#endif
 
   return 1;
 }

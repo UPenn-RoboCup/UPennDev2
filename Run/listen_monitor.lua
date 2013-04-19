@@ -6,7 +6,7 @@ require ('Config')
 Config.game.teamNumber = 1; 
 Config.game.playerID = 1; 
 
-require ('cutil')
+local cutil = require ('cutil')
 require ('vector')
 require ('serialization')
 CommWired = require ('Comm')
@@ -20,8 +20,8 @@ require ('mcm')
 require 'rcm'
 require ('matcm')
 
-require 'unix'
-require 'Z'
+local unix = require 'unix'
+local Z = require 'Z'
 
 yuyv_all = {}
 yuyv_flag = {}

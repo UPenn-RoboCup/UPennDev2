@@ -23,7 +23,7 @@ function h=show_monitor()
   h.lutname=0;
   h.is_webots=0;
 
-  h.fieldtype=0; %0,1,2 for SPL/Kid/Teen
+  h.fieldtype=1; %0,1,2 for SPL/Kid/Teen
 
   h.count = 0; %To kill non-responding players from view
  

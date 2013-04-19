@@ -42,7 +42,7 @@ fsm.bodySearch.timeout = 10.0*speedFactor;
 --BodyChase : move the robot directly towards the ball
 --------------------------------------------------
 fsm.bodyChase={};
-fsm.bodyChase.maxStep = 0.06; --Max walk-velocity
+fsm.bodyChase.maxStep = 0.10; --Max walk-velocity
 fsm.bodyChase.rClose = 0.35; --Distance to ball
 fsm.bodyChase.timeout = 20.0*speedFactor;
 fsm.bodyChase.tLost = 3.0*speedFactor;
@@ -59,7 +59,7 @@ fsm.bodyChase.rFar = 1.2;
 --------------------------------------------------
 fsm.bodyOrbit={};
 fsm.bodyOrbit.maxStep = 0.08; --Max walk velocity
-fsm.bodyOrbit.rOrbit = 0.30; 
+fsm.bodyOrbit.rOrbit = 0.60; --Old 0.030 
 fsm.bodyOrbit.rFar = 0.45; --Distance from ball
 fsm.bodyOrbit.thAlign = 10*math.pi/180;
 fsm.bodyOrbit.timeout = 30.0 * speedFactor;
@@ -106,7 +106,7 @@ fsm.bodyPosition.maxY3 = 0.0; --Maximum turning velocity
 --BodyApproach :  Align the robot for kick
 --------------------------------------------------
 fsm.bodyApproach={};
-fsm.bodyApproach.maxStep = 0.03; --Max walk velocity
+fsm.bodyApproach.maxStep = 0.10; --Max walk velocity; Old: 0.03
 fsm.bodyApproach.timeout = 10.0*speedFactor;
 fsm.bodyApproach.rFar = 0.45; --Max ball distance
 fsm.bodyApproach.tLost = 3.0*speedFactor;--ball detection timeout

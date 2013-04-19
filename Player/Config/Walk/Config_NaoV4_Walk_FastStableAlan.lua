@@ -33,7 +33,7 @@ walk.bodyHeight = 0.315;
 walk.bodyTilt=0*math.pi/180; 
 walk.footX= 0.0; 
 --Width of the stance; meters
-walk.footY = 0.0450; 
+walk.footY = 0.0500; --Old 0.0450 
 --How far behind the torso the ankle joints are positioned
 walk.supportX = 0.023; 
 walk.qLArm = math.pi/180*vector.new({105, 12, -85, -30});
@@ -52,9 +52,9 @@ walk.tStep = 0.29;
 --Natural frequency of the inverted pendulum, determined experimentally (based on sqrt(g/L)
 walk.tZmp = 0.17; 
 --How far from the center of the foot the center of mass is positioned during step
-walk.supportY = -0.007; 
+walk.supportY = -0.005; 
 --Larger height, higher step; height given in meters
-walk.stepHeight = 0.015; 
+walk.stepHeight = 0.017; 
 walk.phSingle={0.02,0.98};
 
 --------------------------------------------

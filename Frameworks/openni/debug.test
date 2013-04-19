@@ -1,0 +1,7 @@
+DEBUG=1 make
+gdb lua
+run test_openni.lua
+
+or
+
+valgrind lua test_openni.lua

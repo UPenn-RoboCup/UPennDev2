@@ -308,6 +308,11 @@ function update_vision()
       --  0 - unknown
       -- -1 - defending
       -- +1 - attacking
+      
+      -- Setting Goal LED and ball Led color
+      goal_led = {1,1,0};
+      ball_led = {0,1,1};
+
       local attackingOrDefending = 0;
       if (useSoundLocalization > 0) then
         attackingOrDefending = SoundFilter.resolve_goal_detection(goalType, v); 

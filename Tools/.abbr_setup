@@ -10,4 +10,4 @@ alias sob='start obstacleplay'
 alias sx='start boxer'
 alias c='connectop'
 
-bash ~/UPennDev/Tools/.git_setup.sh
+/bin/bash /home/darwin/UPennDev/Tools/.git_setup.sh

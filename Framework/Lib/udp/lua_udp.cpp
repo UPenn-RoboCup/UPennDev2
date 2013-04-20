@@ -5,6 +5,7 @@ Stephen G. McGill copyright 2013 <smcgill3@seas.upenn.edu>
 */
 
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <deque>
 #include "string.h"
@@ -38,8 +39,11 @@ Stephen G. McGill copyright 2013 <smcgill3@seas.upenn.edu>
 typedef struct {
   bool init_recv;
   int recv_fd;
+  int recv_port;
   bool init_send;
   int send_fd;
+  int send_port;
+  const char * send_ip;
   std::deque<std::string> *recvQueue;
 } structUdp;
 
@@ -84,7 +88,7 @@ static int lua_udp_init_recv(lua_State *L) {
 		return luaL_error(L,"Already initialized receiver!\n");
 
 	// Grab port to listen on (all interfaces)
-	const int RECV_PORT = luaL_checkint(L,1);
+	ud->recv_port = luaL_checkint(L,1);
 
 	ud->recv_fd = socket(AF_INET, SOCK_DGRAM, 0);
 	if (ud->recv_fd < 0)
@@ -95,7 +99,7 @@ static int lua_udp_init_recv(lua_State *L) {
 	bzero((char *) &local_addr, sizeof(local_addr));
 	local_addr.sin_family = AF_INET;
 	local_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-	local_addr.sin_port = htons(RECV_PORT);
+	local_addr.sin_port = htons(ud->recv_port);
 	if (bind(ud->recv_fd, (struct sockaddr *) &local_addr, sizeof(local_addr)) < 0)
 		return luaL_error(L,"Could not bind to port\n");
 
@@ -124,11 +128,11 @@ static int lua_udp_init_send(lua_State *L) {
 		return luaL_error(L,"Already initialized sender!\n");
 	
 	// TODO: check if already assigned an ip/port combo?
-	const char* SEND_IP = luaL_checkstring(L, 1);//std::string
-	const int SEND_PORT = luaL_checkint(L,2);
+	ud->send_ip = luaL_checkstring(L, 1);//std::string
+	ud->send_port = luaL_checkint(L,2);
 
 	// Where to send the data
-	struct hostent *hostptr = gethostbyname( SEND_IP );
+	struct hostent *hostptr = gethostbyname( ud->send_ip );
 	if (hostptr == NULL)
 		return luaL_error(L,"Could not get hostname\n");
 
@@ -151,7 +155,7 @@ static int lua_udp_init_send(lua_State *L) {
 	bzero((char *) &dest_addr, sizeof(dest_addr));
 	dest_addr.sin_family = AF_INET;
 	bcopy(hostptr->h_addr, (char *) &dest_addr.sin_addr, hostptr->h_length);
-	dest_addr.sin_port = htons(SEND_PORT);
+	dest_addr.sin_port = htons(ud->send_port);
 
 	if (connect(ud->send_fd, (struct sockaddr *) &dest_addr, sizeof(dest_addr)) < 0)
 		return luaL_error(L,"Could not connect to destination address\n");
@@ -255,17 +259,17 @@ static int lua_udp_index(lua_State *L) {
 
 static int lua_udp_string(lua_State *L) {
   structUdp *p = lua_checkudp(L, 1);
-  char buf[10];
+  std::stringstream ss; 
   if (p->init_send) {
-    std::cout << "file des" << p->send_fd << std::endl;
-    sprintf(buf, "%d", p->send_fd);
+    ss << "Sender file descripter " << p->send_fd << ' ';
+    ss << "IP: " << p->send_ip << " PORT: " << p->send_port << std::endl;
   } else if (p->init_recv) {
-    std::cout << "file des" << p->recv_fd << std::endl;
-    sprintf(buf, "%d", p->recv_fd);
+    ss << "Receiver file descripter " << p->recv_fd << 
+      " at port " << p->recv_port << std::endl;
   } else {
     luaL_error(L, "not init");
   }
-  lua_pushstring(L, buf);
+  lua_pushstring(L, ss.str().c_str());
   return 1;
 }
 

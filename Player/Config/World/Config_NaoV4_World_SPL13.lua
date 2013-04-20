@@ -87,9 +87,9 @@ world.initPosition1={
 -- Penalty mark : {1.2,0}
 world.initPosition2={
   {4.2,0},   --Goalie
-  {1.3, 0}, --Attacker
-  {1.3, -1}, --Defender
-  {1.3,1}, --Supporter
+  {2.0, 0}, --Attacker
+  {2.5, -1}, --Defender
+  {2.5,1}, --Supporter
 }
 
 -- use sound localization

@@ -273,6 +273,19 @@ static int lua_udp_string(lua_State *L) {
   return 1;
 }
 
+static int lua_udp_fd(lua_State *L) {
+
+  structUdp *p = lua_checkudp(L, 1);
+  if (p->init_recv) {
+    lua_pushinteger(L, p->recv_fd);
+  } else if (p->init_send) {
+    lua_pushinteger(L, p->send_fd);
+  } else {
+    luaL_error(L, "udp not init");
+  }
+  return 1;
+}
+
 static const struct luaL_Reg udp_function [] = {
 	{"new_receiver", lua_udp_init_recv},
 	{"new_sender", lua_udp_init_send},
@@ -283,6 +296,7 @@ static const luaL_Reg udp_methods[] = {
   {"send", lua_udp_send},
   {"receive", lua_udp_receive},
 	{"size", lua_udp_size},
+  {"descriptor", lua_udp_fd},
   {"__tostring", lua_udp_string},
   {"__gc", lua_udp_close},
   {"__index", lua_udp_index},

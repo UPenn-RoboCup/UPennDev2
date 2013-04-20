@@ -4,22 +4,33 @@ local two_port = true
 
 local msg = 'hello';
 local udp = require 'udp'
-local udp_sender = udp.new_sender('192.168.123.200',54321)
-assert(udp_sender>0,"Bad udp sender!")
+local udp_sender = udp.new_sender('192.168.123.255',54321)
+print(udp_sender)
+--assert(udp_sender>0,"Bad udp sender!")
 local udp_receiver = udp.new_receiver(54321)
-assert(udp_receiver>0,"Bad udp receiver!")
-print(
-string.format("LOCAL |  send_fd(%d), recv_fd(%d)",udp_sender,udp_receiver)
-)
---[[
+print(udp_receiver)
+--assert(udp_receiver>0,"Bad udp receiver!")
+--print(
+--string.format("LOCAL |  send_fd(%d), recv_fd(%d)",udp_sender,udp_receiver)
+--)
+
+--local ret = udp_sender:send(msg, #msg)
+--if(ret==#msg) then
+--	print('LOCAL |  Sent '..ret..' bytes out of '..#msg)
+--else
+--	print('!!! LOCAL |  Sent '..ret..' bytes out of '..#msg..' !!!')
+--end
+
+--udp_receiver:size()
+
 while true do
-  while udp.size()>0 do
-    local data = udp.receive()
+  while udp_receiver:size()>0 do
+    local data = udp_receiver:receive()
     print('\tLOCAL | Received',data)
   end
 end
---]]
 
+--[[
 for i = 1, 10 do
   local msgg = msg..i
 	local ret = udp.send(udp_sender,msgg)
@@ -29,6 +40,7 @@ for i = 1, 10 do
 		print('!!! LOCAL |  Sent '..ret..' bytes out of '..#msg..' !!!')
 	end
 end
+--]]
 
 --[[
 if two_port then
@@ -63,8 +75,8 @@ for i=1,4 do
 	end
 end
 --]]
-udp.close(udp_sender)
-udp.close(udp_receiver)
-if udp_sender_matlab then
-	udp.close(udp_sender_matlab)
-end
+--udp.close(udp_sender)
+--udp.close(udp_receiver)
+--if udp_sender_matlab then
+--	udp.close(udp_sender_matlab)
+--end

@@ -4,19 +4,30 @@ local two_port = true
 
 local msg = 'hello';
 local udp = require 'udp'
-local udp_sender = udp.new_sender('192.168.123.210',54321)
+local udp_sender = udp.new_sender('192.168.123.200',54321)
 assert(udp_sender>0,"Bad udp sender!")
 local udp_receiver = udp.new_receiver(54321)
 assert(udp_receiver>0,"Bad udp receiver!")
 print(
 string.format("LOCAL |  send_fd(%d), recv_fd(%d)",udp_sender,udp_receiver)
 )
-
+--[[
 while true do
   while udp.size()>0 do
     local data = udp.receive()
     print('\tLOCAL | Received',data)
   end
+end
+--]]
+
+for i = 1, 10 do
+  local msgg = msg..i
+	local ret = udp.send(udp_sender,msgg)
+	if(ret==#msgg) then
+		print('LOCAL |  Sent '..ret..' bytes out of '..#msgg)
+	else
+		print('!!! LOCAL |  Sent '..ret..' bytes out of '..#msg..' !!!')
+	end
 end
 
 --[[

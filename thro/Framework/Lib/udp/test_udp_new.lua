@@ -1,12 +1,14 @@
 print('\n\t== UDP Test ==')
 -- Send data to MATLAB
-local two_port = true
+local two_port = false
 
 local msg = 'hello';
 local udp = require 'udp'
+print('setting sender...')
 local udp_sender = udp.new_sender('127.0.0.1',54321)
 print(udp_sender)
---assert(udp_sender>0,"Bad udp sender!")
+
+print('setting receiver...')
 local udp_receiver = udp.new_receiver(54321)
 print(udp_receiver)
 
@@ -33,7 +35,7 @@ for i=1,4 do
 		print('\tLOCAL | Received',data)
 	end
 
-	while udp_receiver_matlab:size()>0 do
+	while udp_receiver_matlab and udp_receiver_matlab:size()>0 do
 		local data = udp_receiver_matlab:receive()
 		print('\tLOCAL Matlab | Received',data)
 	end
@@ -48,3 +50,5 @@ for i=1,4 do
 		end
 	end
 end
+
+print(udp_sender:descriptor())

@@ -21,10 +21,10 @@ local hmi_udp_oct_snd = udp.new_sender('127.0.0.1',54323)
 -- UDP receiver with file descriptor
 local hmi_udp_recv = udp.new_receiver(54320)
 local hmi_udp_recv_poll = {}
-hmi_udp_recv_poll.socket_handle = hmi_udp_recv
+hmi_udp_recv_poll.socket_handle = hmi_udp_recv:descriptor()
 hmi_udp_recv_poll.callback = function()
 	while udp.size()>0 do
-		local hmi_data = udp.receive()
+		local hmi_data = hmi_udp_recv:receive()
 		print('\tLOCAL | Received',data)
 	end
 	print('HMI RECV DATA!!!!')
@@ -44,7 +44,7 @@ local oct_channel    = simple_ipc.new_subscriber('oct');
 omap_channel.callback = function()
   local omap_data, has_more = omap_channel:receive()
   local jimg = cjpeg.compress( omap_data );
-  local nsent = udp.send( hmi_udp_sender, omap_data, #omap_data );
+  local nsent = hmi_udp_sender:send( omap_data, #omap_data );
   print("OMAP | Sent ", nsent, #omap_data )
 end
 
@@ -60,7 +60,7 @@ camera_channel.callback = function()
   local camera_data, has_more = camera_channel:receive()
 	local camera_ts = tonumber(ts);
   local jimg = cjpeg.compress( camera_data, 640, 480 );
-  local nsent = udp.send( hmi_udp_img_snd, jimg, #jimg );
+  local nsent = hmi_udp_img_snd:send( jimg, #jimg );
 	
 	local debug_msg = string.format('Camera (%.2f) | ',camera_ts)
 	if nsent==#jimg then
@@ -73,7 +73,7 @@ end
 -- Send the Oct Tree data over UDP
 oct_channel.callback = function()
   local oct_data, has_more = oct_channel:receive()
-  local nsent = udp.send( hmi_udp_oct_snd, oct_data, #oct_data );
+  local nsent = hmi_udp_oct_snd:send( oct_data, #oct_data );
   print("Oct | Sent ", nsent )
 end
 

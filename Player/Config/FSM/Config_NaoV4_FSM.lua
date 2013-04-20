@@ -8,12 +8,7 @@ speedFactor = 1.0;
 
 fsm={};
 
---Should we consider obstacle?
-if Config.game.robotID == 2 then --no obstacle on rufio (Attacker)
-  fsm.enable_obstacle_detection = 1;
-else
-  fsm.enable_obstacle_detection = 1;
-end
+fsm.enable_obstacle_detection = 1;
 
 --fsm.playMode = 1; --For Demo without orbit
 fsm.playMode = 2; --Simple Behavior with orbit

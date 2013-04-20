@@ -84,9 +84,6 @@ static int lua_udp_init_recv(lua_State *L) {
   ud->init_recv = false;
   ud->init_send = false;
 
-	if( ud->init_recv )
-		return luaL_error(L,"Already initialized receiver!\n");
-
 	// Grab port to listen on (all interfaces)
 	ud->recv_port = luaL_checkint(L,1);
 
@@ -172,6 +169,8 @@ static int comm_update(structUdp *p) {
 
 	// Check whether initiated
 	// TODO: associate checks with the metatable
+	//fprintf(stdout,"init recv: %d (%d)\n",p->init_recv,p->recv_fd);
+	//fflush(stdout);
 	assert( p->init_recv );
 	// Process incoming messages:
 	socklen_t source_addr_len = sizeof(source_addr);
@@ -193,6 +192,15 @@ static int comm_update(structUdp *p) {
 
 static int lua_udp_size(lua_State *L) {
   structUdp *p = lua_checkudp(L, 1);
+	if( !p->init_recv ){
+		/*
+		lua_pushinteger( L, 0 );
+		return 1;
+		*/
+		return luaL_error(L,"Did not initialize the UDP as a receiver!\n");
+	}
+	fprintf(stdout,"udp size: %d (%d)\n",p->init_recv,p->recv_fd);
+	fflush(stdout);
 	int updateRet = comm_update(p);
 	lua_pushinteger( L, updateRet );
 	return 1;
@@ -203,6 +211,8 @@ static int lua_udp_receive(lua_State *L) {
   structUdp *p = lua_checkudp(L, 1);
 
 	// Perform an update to receive data
+	//fprintf(stdout,"udp size: %d (%d)\n",p->init_recv,p->recv_fd);
+	//fflush(stdout);
 	int updateRet = comm_update(p);
 
 	// If empty, then return nil
@@ -261,10 +271,10 @@ static int lua_udp_string(lua_State *L) {
   structUdp *p = lua_checkudp(L, 1);
   std::stringstream ss; 
   if (p->init_send) {
-    ss << "Sender file descripter " << p->send_fd << ' ';
+    ss << "Sender file descriptor " << p->send_fd << ' ';
     ss << "IP: " << p->send_ip << " PORT: " << p->send_port << std::endl;
   } else if (p->init_recv) {
-    ss << "Receiver file descripter " << p->recv_fd << 
+    ss << "Receiver file descriptor " << p->recv_fd << 
       " at port " << p->recv_port << std::endl;
   } else {
     luaL_error(L, "not init");
@@ -296,13 +306,17 @@ int luaopen_udp (lua_State *L) {
   luaL_newmetatable(L, MT_NAME);
 
 #if LUA_VERSION_NUM == 502
-	luaL_newlib(L, udp_function);
+	/*
   int i = 0;
   lua_pushvalue(L, -1);
   while (udp_methods[i].name) {
     lua_setfield(L, -2, udp_methods[i].name);
     lua_pushcfunction(L, udp_methods[i].func);
+		i++;
   }
+	*/
+	luaL_setfuncs( L, udp_methods, 0 );
+	luaL_newlib(L, udp_function);
 #else
   luaL_register(L, NULL, udp_methods);
 	luaL_register(L, "udp", udp_function);

@@ -120,15 +120,15 @@ run_demo(){
 run_demo_nao(){
   cd $PLAYER_DIR
   screen $SCREEN_FLAGS naohal /usr/bin/hal
-  sleep 2
+  sleep 3
   screen $SCREEN_FLAGS naoqi /usr/bin/naoqi
-  sleep 2
+  sleep 4
 
   echo "Starting Nao Cognition..."
   cd $PLAYER_DIR
   screen $SCREEN_FLAGS cognition $LUA_COM run_cognition.lua
   # Allow Cognition some time to start
-  sleep 3
+  sleep 4
 }
 
 run_visiontest(){

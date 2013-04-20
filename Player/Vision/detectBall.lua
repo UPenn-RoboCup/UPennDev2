@@ -121,8 +121,9 @@ function detect(color)
         vcm.add_debug_message("Height check fail\n");
         check_passed = false;
 
-      elseif check_for_ground>0 and
-        headAngle[2] < th_headAngle then
+      elseif check_for_ground>0  then
+-- COMMENT HEAD ANGLE OUT TO CHECK ON NAOS - ASSUMING ITS AN OP PARAM
+--        headAngle[2] < th_headAngle then
         -- ground check
         -- is ball cut off at the bottom of the image?
         local vmargin=Vision.labelA.n-ballCentroid[2];

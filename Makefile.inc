@@ -61,4 +61,5 @@ ifeq ($(OSTYPE),darwin)
   LIBOPTS= -bundle -undefined dynamic_lookup
   LIBRT=
   MODE=$(shell getconf LONG_BIT)
+  LIB_DIR=-L/usr/local/lib -L/usr/lib
 endif

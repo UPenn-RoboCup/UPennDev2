@@ -12,7 +12,8 @@
 
 namespace co_packet {
   struct can_frame nmt(uint8_t node_id, uint8_t cs);
-  struct can_frame sync(uint8_t counter = 0);
+  struct can_frame sync(void);
+  struct can_frame sync(uint8_t counter);
   struct can_frame time(uint32_t ms, uint16_t days);
   struct can_frame emcy(uint8_t node_id, uint16_t error_code, 
     uint8_t error_register, const char *data = NULL, size_t len = 0);

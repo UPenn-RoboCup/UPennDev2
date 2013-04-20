@@ -12,13 +12,6 @@
 #define LEFTWINDOW_H
 
 #include <QWidget>
-#include <QKeyEvent>
-
-#include <QtCore/QTimer>
-#include <QtGui/QApplication>
-#include <QtGui/QGridLayout>
-
-#include <osgDB/ReadFile>
 
 namespace Ui {
 class LeftWindow;
@@ -31,8 +24,6 @@ class LeftWindow : public QWidget
 public:
     explicit LeftWindow();
     ~LeftWindow();
-
-    void keyPressEvent(QKeyEvent *key);
-
+    void initialize();
 };
 #endif // LEFTWINDOW_H

@@ -2,6 +2,8 @@ module(..., package.seeall)
 
 motion = {}
 
+motion.fsms = {}
+
 motion.keyframes =
   THOR_HOME..'/Data/teststand/keyframes.lua'
 

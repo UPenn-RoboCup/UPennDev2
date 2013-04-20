@@ -2,6 +2,8 @@ module(..., package.seeall)
 
 motion = {}
 
+motion.fsms = {'Locomotion'}
+
 motion.keyframes =
   THOR_HOME..'/Data/gazebo_ash_lowerbody/keyframes.lua'
 

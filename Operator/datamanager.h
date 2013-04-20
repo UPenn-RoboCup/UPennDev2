@@ -16,6 +16,9 @@ class DataManager : public QThread
 {
 
 public:
+    static DataManager* _instance;
+    static DataManager* Instance();
+
     DataManager();
 
 protected:

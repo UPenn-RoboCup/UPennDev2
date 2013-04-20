@@ -181,6 +181,13 @@ int co_master::send_nmt(uint8_t node_id, uint8_t cs)
 /* SYNC
  ************************************************************************/
 
+int co_master::send_sync(void)
+{
+  /* send SYNC message */
+  struct can_frame frame = co_packet::sync();
+  return m_can_channel->send(&frame);
+}
+
 int co_master::send_sync(uint8_t counter)
 {
   /* send SYNC message */

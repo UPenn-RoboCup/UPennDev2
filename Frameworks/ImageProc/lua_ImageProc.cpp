@@ -17,8 +17,6 @@ extern "C" {
 }
 #endif
 
-#include <common.h>
-
 #include <stdint.h>
 #include <math.h>
 #include <vector>

@@ -13,8 +13,6 @@ extern "C"
 }
 #endif
 
-#include <common.h>
-
 #include "string.h"
 #include "RoboCupGameControlData.h"
 

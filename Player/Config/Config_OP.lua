@@ -67,7 +67,7 @@ game.role = 1; --Default attacker
 ball_shift={0,0};
 game.playerID = 1;
 if (robotName=='scarface') then
-  game.playerID = 4; 
+  game.playerID = 7; 
 elseif (robotName=='linus') then
   game.playerID = 2; 
 elseif (robotName=='betty') then
@@ -75,11 +75,13 @@ elseif (robotName=='betty') then
 elseif (robotName=='lucy') then
   game.playerID = 1; 
 elseif (robotName=='felix') then
-  game.playerID = 2; 
+  game.playerID = 7; 
+elseif (robotName=='annie') then
+  game.playerID = 4; 
 elseif (robotName=='jiminy') then
-  game.playerID = 5; 
+  game.playerID = 7; 
 elseif (robotName=='hokie') then
-  game.playerID = 3; 
+  game.playerID = 7; 
   game.role = 0; --Default goalie
 elseif (robotName=='sally') then
   game.playerID = 5; 

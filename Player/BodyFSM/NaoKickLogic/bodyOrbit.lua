@@ -114,6 +114,7 @@ end
 
 function exit()
   --Load default walk parameters
-  Config.loadconfig(Config.param.walk)
+  --Config.loadconfig(Config.dev.walk)
+  --util.loadconfig(Config.params.Walk)
 end
 

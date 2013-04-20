@@ -21,10 +21,10 @@ local hmi_udp_oct_snd = udp.new_sender('127.0.0.1',54323)
 -- UDP receiver with file descriptor
 local hmi_udp_recv = udp.new_receiver(54320)
 local hmi_udp_recv_poll = {}
-hmi_udp_recv_poll.socket_handle = hmi_udp_recv
+hmi_udp_recv_poll.socket_handle = hmi_udp_recv:descriptor()
 hmi_udp_recv_poll.callback = function()
 	while udp.size()>0 do
-		local hmi_data = udp.receive()
+		local hmi_data = hmi_udp_recv:receive()
 		print('\tLOCAL | Received',data)
 	end
 	print('HMI RECV DATA!!!!')

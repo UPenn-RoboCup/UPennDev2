@@ -92,7 +92,7 @@ function update()
   --]]
 
   -- If ball is close, abandon goal to chase it down --
-  if ((tBall < 3.0) and (ballR < ballNear)) then
+  if ((tBall < 10.0) and (ballR < ballNear)) then
     return "ballClose";
   end
   -- lost ball

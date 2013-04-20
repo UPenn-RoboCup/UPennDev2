@@ -13,7 +13,7 @@ all: $(LIBNAME)
 	$(CC) $(CFLAGS) $(INCLUDES) -o $@ -c $<
 
 $(LIBNAME): lua_$(LIBNAME).o $(EXTRA_OBJ)
-	$(LD) $(LDFLAGS) -o $@.$(SHLIBEXT) $^ $(LIB_DIR) $(LIBOPTS)
+	$(LD) $(LDFLAGS) -o $@.so $^ $(LIB_DIR) $(LIBOPTS)
 	rm $^
 
 test: $(LIBNAME)

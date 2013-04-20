@@ -295,12 +295,17 @@ extern "C"
 int luaopen_udp (lua_State *L) {
   luaL_newmetatable(L, MT_NAME);
 
-//#if LUA_VERSION_NUM == 502
-//	luaL_newlib(L, udp_function);
-//#else
+#if LUA_VERSION_NUM == 502
+	luaL_newlib(L, udp_function);
+  int i = 0;
+  lua_pushvalue(L, -1);
+  while (udp_methods[i].name) {
+    lua_setfield(L, -2, udp_methods[i].name);
+    lua_pushcfunction(L, udp_methods[i].func);
+  }
+#else
   luaL_register(L, NULL, udp_methods);
 	luaL_register(L, "udp", udp_function);
-  
-//#endif  
+#endif  
 	return 1;
 }

@@ -8,19 +8,36 @@ require('zmq')
 require('rpc')
 require('unix')
 require('util')
-require('Platform')
 require('curses')
 require('Config')
 require('Motion')
-require('Attention')
-require('Locomotion')
-require('Manipulation')
+require('Platform')
 require('Proprioception')
 
 local rpc_endpoint = 'tcp://127.0.0.1:12001'
 
 Platform.set_update_rate(500)
 
+Platform.entry()
+Proprioception.entry()
+Motion.entry()
+
+-- initialize motion state machines
+local motion_fsm_names = Config.motion.fsms or
+{
+  'Locomotion', 'Manipulation', 'Attention'
+}
+
+local motion_fsms = {}
+for i = 1,#motion_fsm_names do
+  motion_fsms[i] = require(motion_fsm_names[i])
+end
+
+for i = 1,#motion_fsms do
+  Motion.add_fsm(motion_fsms[i])
+end
+
+-- initialize screen
 local function draw_screen()
   curses.clear()
   curses.printw('rate : %7.2f                  Motion Manager\n', 
@@ -30,25 +47,13 @@ local function draw_screen()
   curses.printw('               %25s %25s\n', 'state', 'event')
   curses.printw('---------------------------------------')
   curses.printw('---------------------------------------\n')
-  curses.printw('Locomotion   : %25s %25s\n',
-                 Locomotion:get_state(), Locomotion:get_event() or '')
-  curses.printw('Manipulation : %25s %25s\n',
-                 Manipulation:get_state(), Manipulation:get_event() or '')
-  curses.printw('Attention    : %25s %25s\n',
-                 Attention:get_state(), Attention:get_event() or '')
+  for i = 1,#motion_fsms do
+    curses.printw('%-12s : %25s %25s\n', motion_fsm_names[i],
+      motion_fsms[i]:get_state(), motion_fsms[i]:get_event() or '')
+  end
   curses.refresh()
 end
 
--- initialize motion state machines
-Platform.entry()
-Proprioception.entry()
-Motion.entry()
-Motion.add_fsm(Attention)
-Motion.add_fsm(Locomotion)
-Motion.add_fsm(Manipulation)
-Locomotion:add_event('stand')
-
--- initialize screen
 curses.initscr()
 curses.cbreak()
 curses.noecho()

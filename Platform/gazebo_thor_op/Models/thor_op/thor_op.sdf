@@ -1054,12 +1054,8 @@
                     <cfm_damping>1</cfm_damping>
                 </ode>
             </physics>
-            <parent>
-                <link_name>main_case</link_name>
-            </parent>
-            <child>
-                <link_name>neck</link_name>
-            </child>
+            <parent>main_case</parent>
+            <child>neck</child>
         </joint>
         <joint name="head_pitch" type="revolute">
             <pose>0 0 0 0 0 0</pose>
@@ -1078,12 +1074,8 @@
                     <cfm_damping>1</cfm_damping>
                 </ode>
             </physics>
-            <parent>
-                <link_name>neck</link_name>
-            </parent>
-            <child>
-                <link_name>head</link_name>
-            </child>
+            <parent>neck</parent>
+            <child>head</child>
         </joint>
         <joint name="waist_pitch" type="revolute">
             <pose>0 0 0 0 0 0</pose>
@@ -1103,12 +1095,8 @@
                     <cfm_damping>1</cfm_damping>
                 </ode>
             </physics>
-            <parent>
-                <link_name>main_case</link_name>
-            </parent>
-            <child>
-                <link_name>torso_pitch_servo</link_name>
-            </child>
+            <parent>main_case</parent>
+            <child>torso_pitch_servo</child>
         </joint>
         <joint name="waist_yaw" type="revolute">
             <!--<pose>0 0 0 0 0 0</pose>-->
@@ -1129,10 +1117,10 @@
                 </ode>
             </physics>
             <parent>
-                <link_name>torso_pitch_servo</link_name>
+                torso_pitch_servo
             </parent>
             <child>
-                <link_name>torso</link_name>
+                torso
             </child>
         </joint>
         <joint name="l_shoulder_pitch" type="revolute">
@@ -1153,10 +1141,10 @@
                 </ode>
             </physics>
             <parent>
-                <link_name>main_case</link_name>
+                main_case
             </parent>
             <child>
-                <link_name>left_shoulder_pitch</link_name>
+                left_shoulder_pitch
             </child>
         </joint>
         <joint name="r_shoulder_pitch" type="revolute">
@@ -1177,10 +1165,10 @@
                 </ode>
             </physics>
             <parent>
-                <link_name>main_case</link_name>
+                main_case
             </parent>
             <child>
-                <link_name>right_shoulder_pitch</link_name>
+                right_shoulder_pitch
             </child>
         </joint>
         <joint name="l_shoulder_roll" type="revolute">
@@ -1201,10 +1189,10 @@
                 </ode>
             </physics>
             <parent>
-                <link_name>left_shoulder_pitch</link_name>
+                left_shoulder_pitch
             </parent>
             <child>
-                <link_name>left_shoulder_roll</link_name>
+                left_shoulder_roll
             </child>
         </joint>
         <joint name="r_shoulder_roll" type="revolute">
@@ -1225,10 +1213,10 @@
                 </ode>
             </physics>
             <parent>
-                <link_name>right_shoulder_pitch</link_name>
+                right_shoulder_pitch
             </parent>
             <child>
-                <link_name>right_shoulder_roll</link_name>
+                right_shoulder_roll
             </child>
         </joint>
         <joint name="l_shoulder_yaw" type="revolute">
@@ -1249,10 +1237,10 @@
                 </ode>
             </physics>
             <parent>
-                <link_name>left_shoulder_roll</link_name>
+                left_shoulder_roll
             </parent>
             <child>
-                <link_name>left_upper_arm</link_name>
+                left_upper_arm
             </child>
         </joint>
         <joint name="r_shoulder_yaw" type="revolute">
@@ -1273,10 +1261,10 @@
                 </ode>
             </physics>
             <parent>
-                <link_name>right_shoulder_roll</link_name>
+                right_shoulder_roll
             </parent>
             <child>
-                <link_name>right_upper_arm</link_name>
+                right_upper_arm
             </child>
         </joint>
         <joint name="l_elbow_pitch" type="revolute">
@@ -1297,10 +1285,10 @@
                 </ode>
             </physics>
             <parent>
-                <link_name>left_upper_arm</link_name>
+                left_upper_arm
             </parent>
             <child>
-                <link_name>left_lower_arm</link_name>
+                left_lower_arm
             </child>
         </joint>
         <joint name="r_elbow_pitch" type="revolute">
@@ -1321,10 +1309,10 @@
                 </ode>
             </physics>
             <parent>
-                <link_name>right_upper_arm</link_name>
+                right_upper_arm
             </parent>
             <child>
-                <link_name>right_lower_arm</link_name>
+                right_lower_arm
             </child>
         </joint>
         <joint name="l_wrist_yaw" type="revolute">
@@ -1345,10 +1333,10 @@
                 </ode>
             </physics>
             <parent>
-                <link_name>left_lower_arm</link_name>
+                left_lower_arm
             </parent>
             <child>
-                <link_name>left_wrist</link_name>
+                left_wrist
             </child>
         </joint>
         <joint name="r_wrist_yaw" type="revolute">
@@ -1369,10 +1357,10 @@
                 </ode>
             </physics>
             <parent>
-                <link_name>right_lower_arm</link_name>
+                right_lower_arm
             </parent>
             <child>
-                <link_name>right_wrist</link_name>
+                right_wrist
             </child>
         </joint>
         <joint name="l_wrist_roll" type="revolute">
@@ -1394,10 +1382,10 @@
                 </ode>
             </physics>
             <parent>
-                <link_name>left_wrist</link_name>
+                left_wrist
             </parent>
             <child>
-                <link_name>left_gripper</link_name>
+                left_gripper
             </child>
         </joint>
         <joint name="r_wrist_roll" type="revolute">
@@ -1419,10 +1407,10 @@
                 </ode>
             </physics>
             <parent>
-                <link_name>right_wrist</link_name>
+                right_wrist
             </parent>
             <child>
-                <link_name>right_gripper</link_name>
+                right_gripper
             </child>
         </joint>
         <joint name="l_hip_yaw" type="revolute">
@@ -1443,10 +1431,10 @@
                 </ode>
             </physics>
             <parent>
-                <link_name>torso</link_name>
+                torso
             </parent>
             <child>
-                <link_name>left_hip</link_name>
+                left_hip
             </child>
         </joint>
         <joint name="r_hip_yaw" type="revolute">
@@ -1467,10 +1455,10 @@
                 </ode>
             </physics>
             <parent>
-                <link_name>torso</link_name>
+                torso
             </parent>
             <child>
-                <link_name>right_hip</link_name>
+                right_hip
             </child>
         </joint>
         <joint name="l_hip_roll" type="revolute">
@@ -1491,10 +1479,10 @@
                 </ode>
             </physics>
             <parent>
-                <link_name>torso</link_name>
+                torso
             </parent>
             <child>
-                <link_name>left_hip</link_name>
+                left_hip
             </child>
         </joint>
         <joint name="r_hip_roll" type="revolute">
@@ -1515,10 +1503,10 @@
                 </ode>
             </physics>
             <parent>
-                <link_name>torso</link_name>
+                torso
             </parent>
             <child>
-                <link_name>right_hip</link_name>
+                right_hip
             </child>
         </joint>
         <joint name="l_hip_pitch" type="revolute">
@@ -1540,10 +1528,10 @@
                 </ode>
             </physics>
             <parent>
-                <link_name>left_hip</link_name>
+                left_hip
             </parent>
             <child>
-                <link_name>left_thigh</link_name>
+                left_thigh
             </child>
         </joint>
         <joint name="r_hip_pitch" type="revolute">
@@ -1565,10 +1553,10 @@
                 </ode>
             </physics>
             <parent>
-                <link_name>right_hip</link_name>
+                right_hip
             </parent>
             <child>
-                <link_name>right_thigh</link_name>
+                right_thigh
             </child>
         </joint>
         <joint name="l_knee_pitch" type="revolute">
@@ -1590,10 +1578,10 @@
                 </ode>
             </physics>
             <parent>
-                <link_name>left_thigh</link_name>
+                left_thigh
             </parent>
             <child>
-                <link_name>left_leg</link_name>
+                left_leg
             </child>
         </joint>
         <joint name="r_knee_pitch" type="revolute">
@@ -1615,10 +1603,10 @@
                 </ode>
             </physics>
             <parent>
-                <link_name>right_thigh</link_name>
+                right_thigh
             </parent>
             <child>
-                <link_name>right_leg</link_name>
+                right_leg
             </child>
         </joint>
         <joint name="l_ankle_pitch" type="revolute">
@@ -1640,10 +1628,10 @@
                 </ode>
             </physics>
             <parent>
-                <link_name>left_leg</link_name>
+                left_leg
             </parent>
             <child>
-                <link_name>left_ankle</link_name>
+                left_ankle
             </child>
         </joint>
         <joint name="r_ankle_pitch" type="revolute">
@@ -1665,10 +1653,10 @@
                 </ode>
             </physics>
             <parent>
-                <link_name>right_leg</link_name>
+                right_leg
             </parent>
             <child>
-                <link_name>right_ankle</link_name>
+                right_ankle
             </child>
         </joint>
         <joint name="l_ankle_roll" type="revolute">
@@ -1690,10 +1678,10 @@
                 </ode>
             </physics>
             <parent>
-                <link_name>left_ankle</link_name>
+                left_ankle
             </parent>
             <child>
-                <link_name>l_foot</link_name>
+                l_foot
             </child>
         </joint>
         <joint name="r_ankle_roll" type="revolute">
@@ -1715,10 +1703,10 @@
                 </ode>
             </physics>
             <parent>
-                <link_name>right_ankle</link_name>
+                right_ankle
             </parent>
             <child>
-                <link_name>r_foot</link_name>
+                r_foot
             </child>
         </joint>
         

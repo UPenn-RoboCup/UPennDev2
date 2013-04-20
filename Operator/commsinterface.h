@@ -9,10 +9,24 @@
 #ifndef COMMSINTERFACE_H
 #define COMMSINTERFACE_H
 
-class CommsInterface
+#include <QObject>
+#include <QtNetwork/QUdpSocket>
+
+#include "manager.h"
+
+class CommsInterface : public QObject
 {
 public:
     CommsInterface();
+
+    void Initialize();
+
+private slots:
+    void readPendingDatagrams();
+
+private:
+    QUdpSocket* _udpSocket;
+
 };
 
 #endif // COMMSINTERFACE_H

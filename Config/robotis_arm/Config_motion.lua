@@ -2,6 +2,8 @@ module(..., package.seeall)
 
 motion = {}
 
+motion.fsms = {'Manipulation'}
+
 motion.keyframes =
   THOR_HOME..'/Data/robotis_arm/keyframes.lua'
 

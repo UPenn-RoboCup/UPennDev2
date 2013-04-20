@@ -16,7 +16,7 @@
 class OsgModelWidget : public OsgWidget
 {
 public:
-    OsgModelWidget(osg::Node *node, osgViewer::ViewerBase::ThreadingModel threadingModel=osgViewer::Viewer::SingleThreaded);
+    OsgModelWidget();
 };
 
 #endif // OSGMODELWIDGET_H

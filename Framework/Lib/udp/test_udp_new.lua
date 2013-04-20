@@ -50,3 +50,5 @@ for i=1,4 do
 		end
 	end
 end
+
+print(udp_sender:descriptor())

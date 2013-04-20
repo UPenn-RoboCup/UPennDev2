@@ -12,12 +12,6 @@ else
 REGEX=-regex '.*\($(SHLIBEXT)\|$(LUAEXT)\|sh\)'
 endif
 
-CTCDIR=
-ifeq ($(CROSS),true)
-  CTCDIR = $(NaoqiCTC)
-endif
-export CTCDIR
-
 all none:
 	@echo " Please select following target: "
 	@echo " make setup_op"

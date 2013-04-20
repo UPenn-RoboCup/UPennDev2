@@ -19,8 +19,6 @@ extern "C"
 }
 #endif
 
-#include <common.h>
-
 using namespace boost::interprocess;
 
 // Typedefs of allocators and containers

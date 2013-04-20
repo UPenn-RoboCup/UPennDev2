@@ -76,7 +76,7 @@ ifeq ($(USER),nao)
 endif
 
 # Includes and library directories
-INCLUDES=-I$(TOP)/$(FRAMEWORKSDIR)/Common -I/usr/local/include -I/usr/include
+INCLUDES=-I/usr/local/include -I/usr/include
 LIB_DIR=-L/usr/local/lib -L/usr/lib
 
 # Find both Lua and LuaJit

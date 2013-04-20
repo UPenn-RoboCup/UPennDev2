@@ -15,6 +15,5 @@ extern "C" {
 
 #include <stdlib.h>
 #include <stdint.h>
-#include <common.h>
 
 #endif

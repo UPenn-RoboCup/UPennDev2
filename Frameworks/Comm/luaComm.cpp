@@ -24,8 +24,6 @@ extern "C"
 }
 #endif
 
-#include <common.h>
-
 #include <vector>
 #include <algorithm>
 #include <stdint.h>

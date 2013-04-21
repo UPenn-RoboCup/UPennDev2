@@ -5,16 +5,22 @@ LUA ?= lua
 
 all: $(LIBNAME)
 
+# Default compiling
 %.o: %.cpp
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
+	@echo "\t" CXX $@
+	@$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
 %.o: %.cc
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
+	@echo "\t" CXX $@
+	@$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
 %.o: %.c
-	$(CC) $(CFLAGS) $(INCLUDES) -o $@ -c $<
+	@echo "\t" CC $@
+	@$(CC) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
+
 
 $(LIBNAME): lua_$(LIBNAME).o $(EXTRA_OBJ)
-	$(LD) $(LDFLAGS) -o $@.$(SHLIBEXT) $^ $(LIB_DIR) $(LIBOPTS)
-	rm $^
+	@echo "\t" LINK $@
+	@$(LD) $(LDFLAGS) -o $@.$(SHLIBEXT) $^ $(LIB_DIR) $(LIBOPTS)
+	@rm $^
 
 test: $(LIBNAME)
 	@test ! -f $^.so && mv $^.$(SHLIBEXT) $^.so ; echo "Testing..."

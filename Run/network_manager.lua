@@ -43,8 +43,8 @@ local oct_channel    = simple_ipc.new_subscriber('oct');
 -- JPEG compressed
 omap_channel.callback = function()
   local omap_data, has_more = omap_channel:receive()
-  local jimg = cjpeg.compress( omap_data );
-  local nsent = hmi_udp_sender:send( omap_data, #omap_data );
+  --local jomap = cjpeg.compress( omap_data );
+  local nsent = hmi_udp_omap_snd:send( omap_data, #omap_data );
   print("OMAP | Sent ", nsent, #omap_data )
 end
 

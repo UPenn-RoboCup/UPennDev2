@@ -13,7 +13,8 @@ local simple_ipc = require 'simple_ipc'
 local carray = require 'carray'
 --local Octomap = require'Octomap'
 local libLaser = require 'libLaser'
---local libSlam = require 'libSlam'
+local libSlam = require 'libSlam'
+local cjpeg = require'cjpeg'
 
 -- Global vars
 require 'unix'
@@ -36,7 +37,9 @@ lidar_channel.callback = function()
 	-- TODO: Use for slam as well
 	libLaser.ranges2xyz(ranges_f,0,0,0)
 	--libSlam.processL0( libLaser.points_xyz )
-	local ret = omap_channel:send("done laser")
+	local map_ptr = libSlam.OMAP.data:storage():pointer()
+	local jomap = cjpeg.compress( map_ptr, libSlam.OMAP.sizex, libSlam.OMAP.sizex, 1 )
+	local ret = omap_channel:send( jomap )
 	local debug_msg = string.format('LIDAR (%.2f) | ', lidar_ts)
 	if ret then
 		print(debug_msg.."OMAP update")

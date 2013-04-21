@@ -4,16 +4,7 @@
 
 #include "dynamixel.h"
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-  #include "lua.h"
-  #include "lualib.h"
-  #include "lauxlib.h"
-#ifdef __cplusplus
-}
-#endif
+#include <lua.hpp>
 
 static int lua_pushpacket(lua_State *L, DynamixelPacket *p) {
   if (p != NULL) {

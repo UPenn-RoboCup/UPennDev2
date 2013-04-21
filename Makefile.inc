@@ -148,6 +148,30 @@ ifeq ($(CTCDIR),)
 endif
 export CTCDIR
 
+# Default compiling
+%.o: %.cpp
+	@echo "\t" CXX $@
+	@$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
+%.o: %.cc
+	@echo "\t" CXX $@
+	@$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
+%.o: %.c
+	@echo "\t" CC $@
+	@$(CC) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
+
+  #LIBNAME?=badlibname
+#LUA?=lua
+
+$(LIBNAME): lua_$(LIBNAME).o $(EXTRA_OBJ)
+	@echo "\t" LINK $@
+	@$(LD) $(LDFLAGS) -o $@.$(SHLIBEXT) $^ $(LIB_DIR) $(LIBOPTS)
+	@rm $^
+
+  #test: $(LIBNAME)
+  #	@test ! -f $^.so && mv $^.$(SHLIBEXT) $^.so ; echo "Testing..."
+  #	$(LUA) test_$^.lua ; echo "done test"
+  #	@test ! -f $^.$(SHLIBEXT) && mv $^.so $^.$(SHLIBEXT) ; echo "move back"
+
 
 # For Intel Atom Z530 on the Darwin-OP
 # http://jim-dev.blogspot.com/2010/04/gentoo-linux-on-dell-mini-1012.html

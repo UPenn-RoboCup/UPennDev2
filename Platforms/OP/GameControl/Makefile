@@ -1,15 +1,4 @@
-# Makefile used to build libraries
+LIBNAME = OPGameControlReceiver
 include ../../../Makefile.inc
-
-TARGETS = all clean
-.PHONY: $(TARGETS)
-
-LIBNAME= OPGameControlReceiver
-
-all: game_control_receiver
-
-game_control_receiver: luaOPGameControlReceiver.o timeScalar.o
-	$(LD) $(LDFLAGS) -o $(LIBNAME).$(SHLIBEXT) $(LIBOPTS) $^ $(LIB_DIR) -lm
-
-clean:
-	rm -f *.$(SHLIBEXT) *.o
+EXTRA_OBJ=timeScalar.o
+LIBOPTS+=-lm

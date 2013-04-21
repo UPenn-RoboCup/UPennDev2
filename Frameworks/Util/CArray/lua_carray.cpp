@@ -3,22 +3,11 @@
 */
 
 #include <string.h>
-
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-  #include "lua.h"
-  #include "lualib.h"
-  #include "lauxlib.h"
-#ifdef __cplusplus
-}
-#endif
+#include <iostream>
+#include <lua.hpp>
 
 #define MT_NAME "carray_mt"
 #define LUA_TCDATA 10
-
-#include <iostream>
 
 typedef unsigned char byte;
 typedef unsigned int uint;
@@ -75,7 +64,12 @@ static int lua_carray_new(lua_State *L) {
     memcpy(p, str, len);
   }
   else if (lua_type(L, 1) == LUA_TTABLE) { // Initialize with Lua table
+
+#if LUA_VERSION_NUM == 502
+    ud->size = lua_rawlen(L, 1);
+#else
     ud->size = lua_objlen(L, 1);
+#endif
     ud->own = 1;
     T *p = new T[ud->size];
     ud->ptr = p;
@@ -359,7 +353,11 @@ static int lua_carray_new(lua_State *L) {
   int size;
   bool istable = lua_istable(L, 2);
   if (istable) {
+#if LUA_VERSION_NUM == 502
+    size = lua_rawlen(L, 2);
+#else
     size = lua_objlen(L, 2);
+#endif
   }
   else {
     size = luaL_optinteger(L, 2, 1);
@@ -483,7 +481,7 @@ static int lua_carray_fpointer(lua_State *L) {
   return 3;
 }
 
-static const struct luaL_reg carray_functions[] = {
+static const struct luaL_Reg carray_functions[] = {
   {"null", lua_carray_null},
   {"byte", lua_carray_new<byte, 'b'>},
   {"char", lua_carray_new<char, 'c'>},
@@ -499,7 +497,7 @@ static const struct luaL_reg carray_functions[] = {
   {NULL, NULL}
 };
 
-static const struct luaL_reg carray_methods[] = {
+static const struct luaL_Reg carray_methods[] = {
   {"pointer", lua_carray_pointer},
   {"typename", lua_carray_typename},
   {"table", lua_carray_totable},
@@ -508,6 +506,7 @@ static const struct luaL_reg carray_methods[] = {
   {"__newindex", lua_carray_setValue},
   {"__tostring", lua_carray_tostring},
   {"__len", lua_carray_len},
+	{"__index", lua_carray_index},
 
   {NULL, NULL}
 };
@@ -516,15 +515,17 @@ static const struct luaL_reg carray_methods[] = {
 extern "C"
 #endif
 int luaopen_carray (lua_State *L) {
+	// Make the metatable for this carray
   luaL_newmetatable(L, MT_NAME);
 
-  // Implement index method:
-  lua_pushstring(L, "__index");
-  lua_pushcfunction(L, lua_carray_index);
-  lua_settable(L, -3);
-
-  luaL_register(L, NULL, carray_methods);
-  luaL_register(L, "carray", carray_functions);
+#if LUA_VERSION_NUM == 502
+	// TODO: why 0 for nup? Any use for nup?
+	luaL_setfuncs( L, carray_methods, 0 );
+	luaL_newlib( L, carray_functions );
+#else
+	luaL_register(L, NULL, carray_methods);
+	luaL_register(L, "carray", carray_functions);
+#endif
 
   return 1;
 }

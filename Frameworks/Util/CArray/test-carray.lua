@@ -1,5 +1,5 @@
 local carray = require 'carray'
-local ffi = require 'ffi'
+--local ffi = require 'ffi'
 
 dd = carray.double(5)
 dd[2] = 4

@@ -6,7 +6,7 @@ TARGETS = all clean
 
 all: carray
 
-carray: luacarray.o
+carray: lua_carray.o
 	$(CXX) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ $(LIBRT)
 
 clean:

@@ -7,7 +7,7 @@ torch=true
 ifeq ($(torch),true)
   CXXFLAGS+=-DTORCH=1
   INCLUDES+=-I/usr/local/include/torch
-  LIBOPTS+=-ltorch
+  LIBS+=-ltorch
 endif
 #CXXFLAGS+=-DDEBUG=1
 

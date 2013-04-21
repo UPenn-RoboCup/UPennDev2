@@ -37,6 +37,6 @@ t0 = unix.time()
 local ctg = dijkstra.matrix(costs, goal[1], goal[2])
 t1 = unix.time() - t0
 print(ctg)
-util.ptorch(ctg)
+--util.ptorch(ctg)
 
 print(t1)

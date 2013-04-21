@@ -21,6 +21,8 @@ extern "C"
 #endif
 
 #include <iostream>
+#include <vector>
+#include <utility>
 #include <set>
 #include <math.h>
 
@@ -296,6 +298,10 @@ static int lua_dijkstra_nonholonomic(lua_State *L) {
       for (int c = 0; c < dp->size[1]; c++)
         THTensor_fastSet3d(dp, r, c, s, D[s * dp->size[1] * dp->size[0] + r * dp->size[1] + c]);
   luaT_pushudata(L, dp, "torch.DoubleTensor");
+#endif
+
+#ifdef DEBUG
+  std::cout << "Dijkstra: nNode = " << nNode << ", queue = " << Q.size() << std::endl;
 #endif
 
   free(A);

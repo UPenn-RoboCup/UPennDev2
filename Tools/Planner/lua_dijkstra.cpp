@@ -73,13 +73,15 @@ static int lua_dijkstra_matrix(lua_State *L) {
 #ifdef TORCH
   const char *tname = luaT_typename(L, 1);
   THDoubleTensor *costp = (THDoubleTensor *) luaT_checkudata(L, 1, tname);
-
+#ifdef DEBUG
   std::cout << "Type Name " << tname << std::endl;
   std::cout << "Torch Dimension " << costp->nDimension << std::endl;
+#endif
   if (costp->nDimension != 2)
     luaL_error(L, "Input must be 2 dimensions");
   int size = costp->size[0] * costp->size[1];
   A = (double *)malloc(size * sizeof(double));
+  // Get torchTensor data
   for (int r = 0; r < costp->size[0]; r++)
     for (int c = 0; c < costp->size[1]; c++)
       A[r * costp->size[1] + c] = (THTensor_fastGet2d(costp, r, c));
@@ -140,7 +142,11 @@ static int lua_dijkstra_matrix(lua_State *L) {
     }
   }
 
-#ifdef TORCH
+#ifdef TORCH 
+  for (int r = 0; r < costp->size[0]; r++)
+    for (int c = 0; c < costp->size[1]; c++)
+      THTensor_fastSet2d(costp, r, c, D[r * costp->size[1] + c]);
+  luaT_pushudata(L, costp, "torch.DoubleTensor");
 #endif
 
   free(A);

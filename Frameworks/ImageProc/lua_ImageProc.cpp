@@ -1,6 +1,8 @@
 /* 
    Lua interface to Image Processing utilities
 
+   (c) 2009 - 2013 Dan Lee, Stephen McGill, Yida Zhang
+   <ddlee, smcgill3, yida @ seas.upenn.edu>
  */
 
 #include <lua.hpp>

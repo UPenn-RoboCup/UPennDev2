@@ -649,7 +649,7 @@ static int lua_bitnot(lua_State *L) {
   return 1;
 }
 
-static const struct luaL_reg cutil_lib [] = {
+static const luaL_Reg cutil_lib [] = {
   {"array2string", lua_array2string},
   {"string2userdata", lua_string2userdata},
   {"array2string2", lua_array2string2},
@@ -675,8 +675,11 @@ static const struct luaL_reg cutil_lib [] = {
 extern "C"
 #endif
 int luaopen_cutil (lua_State *L) {
+#if LUA_VERSION_NUM == 502
+	luaL_newlib(L, cutil_lib);
+#else
   luaL_register(L, "cutil", cutil_lib);
-
+#endif
   init_dataTypeMap();
   
   return 1;

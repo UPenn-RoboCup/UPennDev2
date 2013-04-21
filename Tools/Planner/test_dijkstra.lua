@@ -28,8 +28,8 @@ function gen_costs(N, M, Sparsity)
 end
 
 local torch = require 'torch'
---costs = gen_costs(100, 100, .05)
-local costs = torch.DoubleTensor({{1,2,3}, {4,5,6}, {7,8,9}})
-util.ptorch(costs)
+costs = gen_costs(100, 100, .05)
+--local costs = torch.DoubleTensor({{1,2,3, 11}, {4,5,6,12}, {7,8,9,15}})
+--util.ptorch(costs)
 dijkstra.matrix(costs)
 --util.ptorch(costs)

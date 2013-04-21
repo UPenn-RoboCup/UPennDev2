@@ -6,7 +6,7 @@ TARGETS = all clean
 
 all: shm 
 
-shm: luashm.o
+shm: lua_shm.o
 	$(CXX) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ $(LIBRT)
 
 clean:

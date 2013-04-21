@@ -2,6 +2,7 @@ dofile('../../Run/include.lua')
 
 local util = require 'util'
 local dijkstra = require 'dijkstra'
+local unix = require 'unix'
 
 function gen_costs(N, M, Sparsity)
   local torch = require 'torch'
@@ -31,5 +32,11 @@ local torch = require 'torch'
 costs = gen_costs(100, 100, .05)
 --local costs = torch.DoubleTensor({{1,2,3, 11}, {4,5,6,12}, {7,8,9,15}})
 --util.ptorch(costs)
-dijkstra.matrix(costs)
---util.ptorch(costs)
+local goal = {60, 60}
+t0 = unix.time()
+local ctg = dijkstra.matrix(costs, goal[1], goal[2])
+t1 = unix.time() - t0
+print(ctg)
+util.ptorch(ctg)
+
+print(t1)

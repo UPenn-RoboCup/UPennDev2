@@ -5,10 +5,10 @@
   	: Stephen McGill 10/10
 */
 
+#include <lua.hpp>
 #include "timeScalar.h"
 #include <string.h>
 #include "v4l2.h"
-#include "OPCam.h"
 
 typedef struct {
   int count;

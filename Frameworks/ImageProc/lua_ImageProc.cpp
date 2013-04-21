@@ -1,21 +1,9 @@
 /* 
    Lua interface to Image Processing utilities
 
-   To compile on Mac OS X:
-   g++ -arch i386 -o luaImageUtil.dylib -bundle -undefined dynamic_lookup luaImageUtil.cpp -lm
  */
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#include "lua.h"
-#include "lualib.h"
-#include "lauxlib.h"
-
-#ifdef __cplusplus
-}
-#endif
+#include <lua.hpp>
 
 #include <stdint.h>
 #include <math.h>
@@ -158,30 +146,41 @@ static int lua_rgb_to_yuyv(lua_State *L) {
   if ((rgb == NULL) || !lua_islightuserdata(L, 1)) {
     return luaL_error(L, "Input RGB not light user data");
   }
-  int m = luaL_checkint(L, 2);
-  int n = luaL_checkint(L, 3);
 
-  yuyv.resize(m*n/2);
+  int m = luaL_checkint(L, 2); // rgb width: 640
+  int n = luaL_checkint(L, 3); // rgb height: 480
+
+  yuyv.resize(m*n/2); // CORRECT
 
   int count=0;
-  for (int i = 0; i < n; i++){
-    for (int j = 0; j < m; j++) {
-      uint8_t r = *rgb++;
-      uint8_t g = *rgb++;
-      uint8_t b = *rgb++;
-
-      uint8_t y = g;
-      uint8_t u = 128 + (b-g)/2;
-      uint8_t v = 128 + (r-g)/2;
-
-      // Construct Y6U6V6 index
-      //SJ: only convert every other pixels (to make m/2 by n yuyv matrix)
-      if (j%2==0)
-        yuyv[count++] = (v << 24) | (y << 16) | (u << 8) | y;
-    }
-  }
-  lua_pushlightuserdata(L, &yuyv[0]);
-  return 1;
+  // Loop over RGB image: CORRECT
+  // Compress 2 RGB pixels into one YUYV superpixel
+    for (int i = 0; i < n; i++){ 
+  // TODO: ensure that m is an EVEN number
+      for (int j = 0; j < m; j+=2) { // two elements per row
+        uint8_t r1 = *rgb++;
+        uint8_t g1 = *rgb++;
+        uint8_t b1 = *rgb++;
+        uint8_t r2 = *rgb++;
+        uint8_t g2 = *rgb++;
+        uint8_t b2 = *rgb++;
+  
+        uint8_t r = (r1+r2)/2;
+        //uint8_t g = *rgb++;
+        uint8_t b = (b1+b2)>>1;
+        uint8_t g = (g1+g2)/2;
+  // MAKE TWO Ys: lose information!
+        uint8_t y1 = g;
+        uint8_t u = 128 + (b-g)/2;
+        uint8_t y2 = g2;
+        uint8_t v = 128 + (r-g)/2;
+  
+        // Construct Y6U6V6 index
+        yuyv[count++] = (v << 24) | (y2 << 16) | (u << 8) | y1;
+     }
+   }
+   lua_pushlightuserdata(L, &yuyv[0]);
+   return 1;
 }
 
 // Only labels every other pixel
@@ -439,7 +438,7 @@ static int lua_tilted_block_bitor(lua_State *L) {
   return 1;
 }
 
-static const struct luaL_reg imageProc_lib [] = {
+static const luaL_Reg imageProc_lib [] = {
   {"label_to_mask", lua_label_to_mask},
   {"yuyv_mask_to_lut", lua_yuyv_mask_to_lut},
   {"rgb_mask_to_lut", lua_rgb_mask_to_lut},
@@ -478,7 +477,11 @@ static const struct luaL_reg imageProc_lib [] = {
 
 extern "C"
 int luaopen_ImageProc (lua_State *L) {
+#if LUA_VERSION_NUM == 502
+  luaL_newlib(L, imageProc_lib);
+#else
   luaL_register(L, "ImageProc", imageProc_lib);
+#endif
 
   return 1;
 }

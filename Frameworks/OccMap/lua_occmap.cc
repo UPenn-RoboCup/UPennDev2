@@ -233,7 +233,7 @@ static int lua_occmap_pvelocity(lua_State *L) {
   return 3;
 }
 
-static const struct luaL_reg OccMap_lib [] = {
+static const luaL_Reg OccMap_lib [] = {
   {"init", lua_occmap_init_map},
   {"reset", lua_occmap_reset},
   {"time_decay", lua_occmap_time_decay},
@@ -252,6 +252,11 @@ static const struct luaL_reg OccMap_lib [] = {
 
 extern "C"
 int luaopen_OccMap (lua_State *L) {
+#if LUA_VERSION_NUM == 502
+  luaL_newlib(L, OccMap_lib);
+#else
   luaL_register(L, "OccMap", OccMap_lib);
+#endif
+
   return 1;
 }

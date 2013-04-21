@@ -18,6 +18,10 @@
 *  limitations under the License.                                            *
 *                                                                            *
 *****************************************************************************/
+/*
+	Lua Wrapper for some OpenNI2 functionality
+	(c) Stephen McGill 2013
+*/
 #include <stdio.h>
 #include <string>
 #include <OpenNI.h>

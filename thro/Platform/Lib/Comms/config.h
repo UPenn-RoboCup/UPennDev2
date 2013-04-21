@@ -5,11 +5,7 @@
 #include <string>
 #include <stdlib.h>
 
-extern "C" {
-#include "lua.h"
-#include "lualib.h"
-#include "lauxlib.h"
-}
+#include <lua.hpp>
 
 // config : global interface for config data
 // author : Mike Hopkins

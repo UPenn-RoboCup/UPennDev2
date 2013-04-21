@@ -16,7 +16,7 @@ fsm.playMode = 2; --Simple Behavior with orbit
 
 fsm.enable_walkkick = 0;
 
-fsm.wait_kickoff = 0; --initial wait at opponent's kickoff
+fsm.wait_kickoff = 1; --initial wait at opponent's kickoff
 
 --------------------------------------------------
 --BodyReady : make robot move to initial position

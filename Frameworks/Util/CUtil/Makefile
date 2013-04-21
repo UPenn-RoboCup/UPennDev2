@@ -1,15 +1,2 @@
-# Makefile used to build Webots files
-
+LIBNAME = cutil
 include ../../../Makefile.inc
-
-TARGETS = all clean
-.PHONY: $(TARGETS)
-
-all: cutil
-
-cutil: lua_cutil.o
-	$(CXX) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ $(LIBRT)
-
-clean:
-	rm -f *.o *.$(SHLIBEXT) *.$(MEXEXT)
-

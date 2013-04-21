@@ -8,7 +8,7 @@ TARGETS = all clean
 .PHONY: $(TARGETS)
 
 SOURCES=\
-		luaZ.c \
+		lua_z.c \
 		$(ZLIB)/deflate.c \
 		$(ZLIB)/inflate.c \
 		$(ZLIB)/inffast.c \

@@ -3,7 +3,7 @@ MEX=mex -O -I/usr/local/include -L/usr/local/lib
 MEXEXT=$(shell mexext)
 PWD=$(shell pwd)
 
-TARGETS=time shm getch udp_recv udp_send cjpeg djpeg msgpack zmq ImageProc tcpopen
+TARGETS=time shm getch udp_recv udp_send cjpeg djpeg msgpack zmq ImageProc Planner tcpopen
 .PHONY: all clean $(TARGETS)
 	
 all: $(TARGETS)
@@ -34,6 +34,10 @@ zmq:
 ImageProc:
 	@echo "Building ImageProc"
 	cd ImageProc && make && cd $(PWD)
+
+Planner:
+	@echo "Building Planner"
+	cd Planner && make && cd $(PWD)
 	
 msgpack:
 	$(MEX) $@.cc -lmsgpack
@@ -55,3 +59,4 @@ test:
 clean:
 	rm -f *.$(MEXEXT) *.o
 	@cd ImageProc && make clean && cd $(PWD)
+	@cd Planner && make clean && cd $(PWD)

@@ -13,7 +13,9 @@ function ptable(t)
   for k,v in pairs(t) do print(k,v) end
 end
 
-function ptorch(data)
+function ptorch(data, W, Precision)
+  local w = W or 5
+  local precision = Precision or 10
   local torch = require 'torch'
   local tp = type(data)
   if tp == 'userdata' then
@@ -30,7 +32,7 @@ function ptorch(data)
       col = data:size(2) 
       for r = 1, row do
         for c = 1, col do
-          io.write(string.format("%5.10f",data[r][c])..' ')
+          io.write(string.format("%"..w.."."..precision.."f",data[r][c])..' ')
         end
         io.write('\n')
       end

@@ -4,6 +4,8 @@ include ../../Makefile.inc
 TARGETS = all clean
 .PHONY: $(TARGETS)
 
+CXXFLAGS+=-g
+
 all: ImageProc
 
 ImageProc: lua_ImageProc.o \

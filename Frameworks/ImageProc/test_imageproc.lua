@@ -1,17 +1,14 @@
 local ImageProc = require('ImageProc');
 local carray = require('carray');
 
-cdt = carray.new('c', 262144);
-pcdt = carray.pointer(cdt);
+cdt = carray.byte(262144);
 
 width = 320;
 height = 240;
 
-rgb = carray.new('c', 3*width*height);
-prgb = carray.pointer(rgb);
+rgb = carray.byte(3*width*height);
 
-pyuyv = ImageProc.rgb_to_yuyv(prgb, width, height);
-yuyv = carray.cast(pyuyv, 'i', width*height);
+yuyv = ImageProc.rgb_to_yuyv(rgb:pointer(), width, height);
+--print(#yuyv)
 
-plabel = ImageProc.yuyv_to_label(pyuyv, pcdt, width, height);
-label = carray.cast(plabel, 'c', width*height);
+label = ImageProc.yuyv_to_label(yuyv, cdt:pointer(), width, height / 2);

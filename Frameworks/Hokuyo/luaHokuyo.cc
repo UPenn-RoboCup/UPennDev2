@@ -305,7 +305,7 @@ static int lua_hokuyo_retrieve(lua_State *L) {
   return 1;
 }
 
-static const struct luaL_reg hokuyo_lib [] = {
+static const luaL_Reg hokuyo_lib [] = {
   {"open", lua_hokuyo_open},
   {"update", lua_hokuyo_update},
   {"retrieve", lua_hokuyo_retrieve},
@@ -314,7 +314,11 @@ static const struct luaL_reg hokuyo_lib [] = {
 };
 
 int luaopen_Hokuyo(lua_State *L) {
+#if LUA_VERSION_NUM == 502
+  luaL_newlib(L, hokuyo_lib);
+#else
   luaL_register(L, "Hokuyo", hokuyo_lib);
+#endif
 
   return 1;
 }

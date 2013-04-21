@@ -7,7 +7,7 @@ TARGETS = all clean
 
 all: cutil
 
-cutil: luacutil.o
+cutil: lua_cutil.o
 	$(CXX) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ $(LIBRT)
 
 clean:

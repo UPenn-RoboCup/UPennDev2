@@ -5,14 +5,6 @@ all: luaHokuyo
 
 include ../../Makefile.inc
 
-%.o: %.cpp
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
-%.o: %.cc
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
-%.o: %.c
-	$(CC) $(CFLAGS) $(INCLUDES) -o $@ -c $<
-
-
 runHokuyo: runHokuyo.cc $(OBJECTS)
 	$(CXX) $(INCLUDES) $(LIB_DIRS) $(CPP_FLAGS) -o $@ $^ $(LIBS)
 

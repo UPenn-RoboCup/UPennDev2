@@ -1,2 +1,2 @@
 LIBNAME=udp
-include ../Makefile.lib
+include ../../Makefile.inc

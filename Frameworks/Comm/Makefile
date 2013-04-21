@@ -1,2 +1,2 @@
 LIBNAME=UDPComm
-include ../Makefile.lib
+include ../../Makefile.inc

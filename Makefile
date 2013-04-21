@@ -244,8 +244,8 @@ setup_visiontest: visiontest setup_util setup_image
 
 setup_op: op setup_util setup_image setup_comm setup_occmap
 	@echo "Setting up Darwin OP Lua/C++ Libraries...\n"
-	mkdir -p $(INSTDIR)
-	find $(OPDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
+#	mkdir -p $(INSTDIR)
+#	find $(OPDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
 	rm -f $(PLAYERDIR)/Config/Config.lua
 	cd $(PLAYERDIR)/Config && ln -s Config_OP.lua Config.lua && cd $(CWD)
 	@echo "\n"

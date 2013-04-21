@@ -481,7 +481,7 @@ static int lua_carray_fpointer(lua_State *L) {
   return 3;
 }
 
-static const struct luaL_Reg carray_functions[] = {
+static const luaL_Reg carray_functions[] = {
   {"null", lua_carray_null},
   {"byte", lua_carray_new<byte, 'b'>},
   {"char", lua_carray_new<char, 'c'>},
@@ -497,7 +497,7 @@ static const struct luaL_Reg carray_functions[] = {
   {NULL, NULL}
 };
 
-static const struct luaL_Reg carray_methods[] = {
+static const luaL_Reg carray_methods[] = {
   {"pointer", lua_carray_pointer},
   {"typename", lua_carray_typename},
   {"table", lua_carray_totable},

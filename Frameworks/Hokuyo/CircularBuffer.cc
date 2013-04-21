@@ -1,7 +1,15 @@
+/* 
+(c) 2013 Dan Lee, Alex Kushlyev, Steve McGill, Yida Zhang
+ddlee@seas.upenn.edu, smcgill3@seas.upenn.edu
+University of Pennsylvania
+*/
+
 
 #include "CircularBuffer.hh"
-#include "ErrorMessage.hh"
 #include "Timer.hh"
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 
 using namespace std;
 using namespace Upenn;
@@ -11,15 +19,15 @@ CircularBuffer::CircularBuffer(int newMaxBufferLength, int newNumBuffers)
   //error checking
   if (newMaxBufferLength > CIRCULAR_BUFFER_MAX_LENGTH)
   {
-    PRINT_ERROR("maximum buffer length exceeds allowed value\n");
-    PRINT_ERROR("Requested="<<newMaxBufferLength<<", allowed="<<CIRCULAR_BUFFER_MAX_LENGTH<<"\n");
+    printf("maximum buffer length exceeds allowed value\n");
+    cout<<"Requested="<<newMaxBufferLength<<", allowed="<<CIRCULAR_BUFFER_MAX_LENGTH<<endl;
     exit(1);
   }
 
   if (newNumBuffers > CIRCULAR_BUFFER_MAX_NUM_BUFFERS)
   {
-    PRINT_ERROR("maximum number of buffers exceeds allowed value\n");
-    PRINT_ERROR("Requested="<<newNumBuffers<<", allowed="<<CIRCULAR_BUFFER_MAX_NUM_BUFFERS<<"\n");
+    printf("maximum number of buffers exceeds allowed value\n");
+    cout<<"Requested="<<newNumBuffers<<", allowed="<<CIRCULAR_BUFFER_MAX_NUM_BUFFERS<<endl;
     exit(1);
   }
 
@@ -48,7 +56,7 @@ CircularBuffer::CircularBuffer(int newMaxBufferLength, int newNumBuffers)
        (this->dataBufferFresh   == NULL) ||
        (this->timeStamps        == NULL) )
   {
-    PRINT_ERROR("unable to allocate memory"<<endl);
+    printf("unable to allocate memory\n");
     exit(1);
   }
 
@@ -111,7 +119,7 @@ int CircularBuffer::GetWritePtr(char ** dataPtrPtr)
   if ( this->writing )
   {
 #ifdef CIRCULAR_BUFFER_DEBUG
-    PRINT_ERROR("already requested a write pointer\n");
+    printf("already requested a write pointer\n");
 #endif
     this->UnlockDataMutex();
     return -1;
@@ -124,7 +132,7 @@ int CircularBuffer::GetWritePtr(char ** dataPtrPtr)
     {		
 			this->writeCntr = (this->writeCntr + 1) % this->numBuffers;
 #ifdef CIRCULAR_BUFFER_DEBUG
-			PRINT_WARNING("write cntr jumped over read cntr\n");
+			printf("write cntr jumped over read cntr\n");
 #endif
 		}	
 	}
@@ -150,8 +158,8 @@ int CircularBuffer::DoneWriting(int dataLength, double timeStamp)
     if ( dataLength > this->maxBufferLength )
     {
 #ifdef CIRCULAR_BUFFER_DEBUG
-      PRINT_ERROR("wrote too much data: wrote "<<
-                 dataLength<<", maxBufferLength="<<this->maxBufferLength<<"\n");
+      cout<<"wrote too much data: wrote "<<
+                 dataLength<<", maxBufferLength="<<this->maxBufferLength<<endl;
 #endif
       this->UnlockDataMutex();
       return -1;
@@ -183,7 +191,7 @@ int CircularBuffer::DoneWriting(int dataLength, double timeStamp)
       if (ret)
       {
 #ifdef CIRCULAR_BUFFER_DEBUG
-        PRINT_ERROR("pthread_cond_signal returned unexpected error: "<<ret<<endl);
+        cout<<"pthread_cond_signal returned unexpected error: "<<ret<<endl;
 #endif
         this->UnlockDataMutex();
         return -1;
@@ -198,7 +206,7 @@ int CircularBuffer::DoneWriting(int dataLength, double timeStamp)
   else
   {
 #ifdef CIRCULAR_BUFFER_DEBUG
-    PRINT_ERROR("not actually writing!!\n");
+    printf("not actually writing!!\n");
 #endif
     this->UnlockDataMutex();
     exit(1);
@@ -213,7 +221,7 @@ int CircularBuffer::DataCondWait(double timeoutSec)
   if (timeoutSec < 0)
   {
 #ifdef CIRCULAR_BUFFER_DEBUG
-    PRINT_ERROR("timeout must be non-negative\n");
+    printf("timeout must be non-negative\n");
 #endif
     return -1;
   }
@@ -244,7 +252,7 @@ int CircularBuffer::GetReadPtr(const char ** dataPtrPtr, int & dataLength, doubl
   if (this->reading)
   {
 #ifdef CIRCULAR_BUFFER_DEBUG
-    PRINT_ERROR("already requested a read pointer\n");
+    printf("already requested a read pointer\n");
 #endif
     this->UnlockDataMutex();
     return -1;
@@ -264,13 +272,13 @@ int CircularBuffer::GetReadPtr(const char ** dataPtrPtr, int & dataLength, doubl
       if (ret==ETIMEDOUT)
       {
 #ifdef CIRCULAR_BUFFER_DEBUG
-        PRINT_WARNING("timeout!\n");
+        printf("timeout!\n");
 #endif
       }
       else
       {
 #ifdef CIRCULAR_BUFFER_DEBUG
-        PRINT_WARNING("unknown error!\n");
+        printf("unknown error!\n");
 #endif
       }
 
@@ -282,7 +290,7 @@ int CircularBuffer::GetReadPtr(const char ** dataPtrPtr, int & dataLength, doubl
     if (this->readCntr == this->writeCntr)
     {
 #ifdef CIRCULAR_BUFFER_DEBUG
-      PRINT_ERROR("this->readCntr=this->writeCntr\n");
+      printf("this->readCntr=this->writeCntr\n");
 #endif
 			this->UnlockDataMutex();
 			return -1;
@@ -291,7 +299,7 @@ int CircularBuffer::GetReadPtr(const char ** dataPtrPtr, int & dataLength, doubl
     if (this->dataBufferFresh[this->readCntr] == 0)
     {
 #ifdef CIRCULAR_BUFFER_DEBUG
-      PRINT_ERROR("this->dataBufferFresh[this->readCntr] = 0\n");
+      printf("this->dataBufferFresh[this->readCntr] = 0\n");
 #endif
 			this->UnlockDataMutex();
 			return -1;
@@ -325,7 +333,7 @@ int CircularBuffer::GetReadPtrLatest(const char ** dataPtrPtr, int & dataLength,
   if ( this->reading )
   {
 #ifdef CIRCULAR_BUFFER_DEBUG
-    PRINT_ERROR("already requested a read pointer\n");
+    printf("already requested a read pointer\n");
 #endif
     this->UnlockDataMutex();
     return -1;
@@ -342,13 +350,13 @@ int CircularBuffer::GetReadPtrLatest(const char ** dataPtrPtr, int & dataLength,
       if ( ret == ETIMEDOUT )
       {
 #ifdef CIRCULAR_BUFFER_DEBUG
-        PRINT_WARNING("timeout!\n");
+        printf("timeout!\n");
 #endif
       }
       else
       {
 #ifdef CIRCULAR_BUFFER_DEBUG
-        PRINT_WARNING("unknown error in cond wait!\n");
+        printf("unknown error in cond wait!\n");
 #endif
       }
 
@@ -359,7 +367,7 @@ int CircularBuffer::GetReadPtrLatest(const char ** dataPtrPtr, int & dataLength,
     if ( (this->latestCntr < 0) || (this->dataBufferFresh[this->latestCntr] == 0) )
     {
 #ifdef CIRCULAR_BUFFER_DEBUG
-      PRINT_ERROR("timeout (2) !\n");
+      printf("timeout (2) !\n");
 #endif
 			this->UnlockDataMutex();
 			return -1;
@@ -429,7 +437,7 @@ int CircularBuffer::DoneReading(int * numPacketsRemaining)
   else
   {
 #ifdef CIRCULAR_BUFFER_DEBUG
-    PRINT_ERROR("not actually reading!!\n");
+    printf("not actually reading!!\n");
 #endif
     this->UnlockDataMutex();
     return -1;

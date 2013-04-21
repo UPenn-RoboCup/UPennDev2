@@ -3,6 +3,13 @@ include ../../Makefile.inc
 
 all: dijkstra astar
 
+torch=true
+ifeq ($(torch),true)
+  CXXFLAGS+=-DTORCH=1
+  INCLUDES+=-I/usr/local/include/torch
+  LIBOPTS+=-ltorch
+endif
+
 dijkstra: lua_dijkstra.o
 	$(CXX) $(LDFLAGS) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ $(LIB_DIR) $(LIB_DIRS) $(LIBS) -ljpeg
 

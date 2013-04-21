@@ -15,8 +15,6 @@ extern "C"
 }
 #endif
 
-#include <common.h>
-
 static int lua_pushpacket(lua_State *L, DynamixelPacket *p) {
   if (p != NULL) {
     int nlen = p->length + 4;

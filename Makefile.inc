@@ -117,17 +117,6 @@ ifeq ($(OSTYPE),darwin)
 LDFLAGS=-lstdc++
 endif
 
-# Default compiling
-%.o: %.cpp
-	@echo "\t" CXX $@
-	@$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
-%.o: %.cc
-	@echo "\t" CXX $@
-	@$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
-%.o: %.c
-	@echo "\t" CC $@
-	@$(CC) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
-
 # REGEX to find lua files
 LUAEXT=lua
 ifeq ($(OSTYPE),darwin)

@@ -1,5 +1,9 @@
 /*
   Lua module to provide efficient access to C arrays
+
+  Daniel D. Lee <ddlee@seas.upenn.edu>
+  Stephen McGill <smcgill3@seas.upenn.edu>
+  Yida Zhang <yida@seas.upenn.edu>
 */
 
 #include <string.h>

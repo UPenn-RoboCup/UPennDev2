@@ -14,6 +14,7 @@ extern "C"
 #endif
 #include <luaT.h>
 #include <TH/TH.h>
+#include <TH/THGeneral.h>
 #ifdef __cplusplus
 }
 #endif
@@ -38,36 +39,6 @@ NeighborStruct neighbors[] = {
 };
 int nNeighbors = sizeof(neighbors)/sizeof(NeighborStruct);
 
-// dimensions, sizes
-//template<>
-//{
-//  switch (costp->nDimension) {
-//    case 1:
-//      for (int i = 0; i < costp->size[0]; i++)
-//        data.push_back(THTensor_fastGet1d(costp, i));
-//      break;
-//    case 2:
-//      for (int i = 0; i < costp->size[0]; i++)
-//        for (int j = 0; j < costp->size[1]; j++)
-//          data.push_back(THTensor_fastGet2d(costp, i, j));
-//      break;
-//    case 3:
-//      for (int i = 0; i < costp->size[0]; i++)
-//        for (int j = 0; j < costp->size[1]; j++)
-//          for (int k = 0; k < costp->size[2]; k++)
-//            data.push_back(THTensor_fastGet3d(costp, i, j, k));
-//      break;
-//    case 4:
-//      for (int i = 0; i < costp->size[0]; i++)
-//        for (int j = 0; j < costp->size[1]; j++)
-//          for (int k = 0; k < costp->size[2]; k++)
-//            for (int l = 0; l < costp->size[3]; l++)
-//              data.push_back(THTensor_fastGet4d(costp, i, j, k, l));
-//      break;
-//    default:
-//      break;
-//  }
-
 static int lua_dijkstra_matrix(lua_State *L) {
   double *A = NULL;
 #ifdef TORCH
@@ -77,8 +48,7 @@ static int lua_dijkstra_matrix(lua_State *L) {
   std::cout << "Type Name " << tname << std::endl;
   std::cout << "Torch Dimension " << costp->nDimension << std::endl;
 #endif
-  if (costp->nDimension != 2)
-    luaL_error(L, "Input must be 2 dimensions");
+  THArgCheck(costp->nDimension == 2, 1, "tensor must have two dimensions");
   int size = costp->size[0] * costp->size[1];
   A = (double *)malloc(size * sizeof(double));
   // Get torchTensor data
@@ -89,20 +59,23 @@ static int lua_dijkstra_matrix(lua_State *L) {
   int n = costp->size[1]; // number of cols;
 
   int iGoal = luaL_optint(L, 2, 0) - 1; // 0-indexed nodes
-  if (iGoal < 0) iGoal = 0;
-  if (iGoal >= m-1) iGoal = m-1;
   int jGoal = luaL_optint(L, 3, 0) - 1; // 0-indexed nodes
-  if (jGoal < 0) iGoal = 0;
-  if (jGoal >= n-1) iGoal = n-1;
-
-  int indGoal = iGoal + m * jGoal; // linear index
 #endif
+
 #ifdef DEBUG
   std::cout << size << std::endl;
   for (int i = 0; i < size; i++)
     std::cout << A[i] << " ";
   std::cout << std::endl;
 #endif
+
+  if (iGoal < 0) iGoal = 0;
+  if (iGoal >= m-1) iGoal = m-1;
+
+  if (jGoal < 0) iGoal = 0;
+  if (jGoal >= n-1) iGoal = n-1;
+
+  int indGoal = iGoal + m * jGoal; // linear index
 
   // Cost to go values
   double *D = (double *)malloc(m * n * sizeof(double));
@@ -143,10 +116,11 @@ static int lua_dijkstra_matrix(lua_State *L) {
   }
 
 #ifdef TORCH 
-  for (int r = 0; r < costp->size[0]; r++)
-    for (int c = 0; c < costp->size[1]; c++)
-      THTensor_fastSet2d(costp, r, c, D[r * costp->size[1] + c]);
-  luaT_pushudata(L, costp, "torch.DoubleTensor");
+  THDoubleTensor *dp = THDoubleTensor_newWithSize2d(n, m);
+  for (int r = 0; r < dp->size[0]; r++)
+    for (int c = 0; c < dp->size[1]; c++)
+      THTensor_fastSet2d(dp, r, c, D[r * dp->size[1] + c]);
+  luaT_pushudata(L, dp, "torch.DoubleTensor");
 #endif
 
   free(A);

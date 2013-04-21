@@ -29,10 +29,10 @@ while 1
         if idx(s)==s_udp
             while udp_recv('getQueueSize') > 0
                 udp_data = udp_recv('receive');
-                udp_img = djpeg(udp_data);
-                set(hc,'Cdata',udp_img);
-                dirty = 1;
             end
+            udp_img = djpeg(udp_data);
+            set(hc,'Cdata',udp_img);
+            dirty = 1;
         end
     end
     % Control the drawing

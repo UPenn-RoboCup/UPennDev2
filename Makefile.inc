@@ -113,8 +113,8 @@ ifeq ($(OSTYPE),darwin)
   # 64 bit only for OSX using clang
   CC=cc
   CXX=c++
-  LD=ld
-LDFLAGS=-lstdc++ -macosx_version_min 10.7
+  LD=ld -macosx_version_min 10.7
+  LDFLAGS=-lstdc++ 
 endif
 
 # REGEX to find lua files
@@ -159,12 +159,12 @@ export CTCDIR
 	@echo "\t" CC $@
 	@$(CC) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
 
-  #LIBNAME?=badlibname
+#LIBNAME?=badlibname
 #LUA?=lua
 
 $(LIBNAME): lua_$(LIBNAME).o $(EXTRA_OBJ)
 	@echo "\t" LINK $@
-	$(LD) $(LDFLAGS) -o $@.$(SHLIBEXT) $^ $(LIB_DIR) $(LIBOPTS)
+	@$(LD) $(LDFLAGS) -o $@.$(SHLIBEXT) $^ $(LIB_DIR) $(LIBOPTS)
 	@rm $^
 
   #test: $(LIBNAME)

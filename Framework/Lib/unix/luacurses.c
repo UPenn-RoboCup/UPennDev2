@@ -221,7 +221,7 @@ static int luacurses_attroff(lua_State *L) {
   return 1;
 }
 
-static const struct luaL_reg curses_lib [] = {
+static const struct luaL_Reg curses_lib [] = {
   {"initscr", luacurses_initscr},
   {"endwin", luacurses_endwin},
   {"timeout", luacurses_timeout},
@@ -358,7 +358,11 @@ static const const_info curses_constants[] = {
 };
 
 int luaopen_curses (lua_State *L) {
+#if LUA_VERSION_NUM == 502
+	  luaL_newlib(L, curses_lib);
+#else
   luaL_register(L, "curses", curses_lib);
-  lua_install_constants(L, curses_constants);
+#endif
+	lua_install_constants(L, curses_constants);
   return 1;
 }

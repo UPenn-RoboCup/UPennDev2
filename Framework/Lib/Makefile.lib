@@ -1,0 +1,25 @@
+# Makefile used to build lua c modules 
+LIBNAME?=badlibname
+include ../../../Makefile.inc
+LUA ?= lua
+
+all: $(LIBNAME)
+
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
+%.o: %.cc
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
+%.o: %.c
+	$(CC) $(CFLAGS) $(INCLUDES) -o $@ -c $<
+
+$(LIBNAME): lua_$(LIBNAME).o $(EXTRA_OBJ)
+	$(LD) $(LDFLAGS) -o $@.so $^ $(LIB_DIR) $(LIBOPTS)
+	rm $^
+
+test: $(LIBNAME)
+	@test ! -f $^.so && mv $^.$(SHLIBEXT) $^.so ; echo "Testing..."
+	$(LUA) test_$^.lua ; echo "done test"
+	@test ! -f $^.$(SHLIBEXT) && mv $^.so $^.$(SHLIBEXT) ; echo "move back"
+
+clean:
+	rm -f *.o *.$(SHLIBEXT) *.$(MEXEXT) *.so

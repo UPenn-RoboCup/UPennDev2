@@ -13,7 +13,6 @@ game_control::
 
 clean::
 	cd Controller && make clean && cd $(CWD)
-	cd Comm && make clean && cd $(CWD)
-#	cd GameControl && make clean && cd$(CWD)
+	cd GameControl && make clean && cd $(CWD)
 
 

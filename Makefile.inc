@@ -164,7 +164,7 @@ export CTCDIR
 
 $(LIBNAME): lua_$(LIBNAME).o $(EXTRA_OBJ)
 	@echo "\t" LINK $@
-	@$(LD) $(LDFLAGS) -o $@.$(SHLIBEXT) $^ $(LIB_DIR) $(LIBOPTS)
+	$(LD) $(LDFLAGS) -o $@.$(SHLIBEXT) $^ $(LIB_DIR) $(LIBOPTS)
 	@rm $^
 
   #test: $(LIBNAME)

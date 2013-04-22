@@ -7,8 +7,8 @@ end
 
 local Transform = require('Transform');
 local vector = require('vector');
-local vcm = require('vcm');
-local mcm = require('mcm');
+require('vcm');
+require('mcm');
 local Body = require'Body'
 
 tHead = Transform.eye();

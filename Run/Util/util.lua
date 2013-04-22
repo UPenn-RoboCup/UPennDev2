@@ -1,19 +1,19 @@
-module(..., package.seeall);
+local vector = require('vector');
 
-vector = require('vector');
+local util = {}
 
-function tablesize(table)
+function util.tablesize(table)
   local count = 0
   for _ in pairs(table) do count = count + 1 end
   return count 
 end
 
-function ptable(t)
+function util.ptable(t)
   -- print a table key, value pairs
   for k,v in pairs(t) do print(k,v) end
 end
 
-function ptorch(data, W, Precision)
+function util.ptorch(data, W, Precision)
   local w = W or 5
   local precision = Precision or 10
   local torch = require 'torch'
@@ -44,14 +44,7 @@ function ptorch(data, W, Precision)
   end
 end
 
-
-function tablesize(table)
-  local count = 0
-  for _ in pairs(table) do count = count + 1 end
-  return count 
-end
-
-function mod_angle(a)
+function util.mod_angle(a)
   if a==nil then return nil end
   -- Reduce angle to [-pi, pi)
   a = a % (2*math.pi);
@@ -61,7 +54,7 @@ function mod_angle(a)
   return a;
 end
 
-function sign(x)
+function util.sign(x)
   -- return sign of the number (-1, 0, 1)
   if (x > 0) then return 1;
   elseif (x < 0) then return -1;
@@ -69,7 +62,7 @@ function sign(x)
   end
 end
 
-function min(t)
+function util.min(t)
   -- find the minimum element in the array table
   -- returns the min value and its index
   local imin = 0;
@@ -83,7 +76,7 @@ function min(t)
   return tmin, imin;
 end
 
-function max(t)
+function util.max(t)
   -- find the maximum element in the array table
   -- returns the min value and its index
   local imax = 0;
@@ -97,31 +90,31 @@ function max(t)
   return tmax, imax;
 end
 
-function se2_interpolate(t, u1, u2)
+function util.se2_interpolate(t, u1, u2)
   -- helps smooth out the motions using a weighted average
   return vector.new{u1[1]+t*(u2[1]-u1[1]),
                     u1[2]+t*(u2[2]-u1[2]),
-                    u1[3]+t*mod_angle(u2[3]-u1[3])};
+                    u1[3]+t*util.mod_angle(u2[3]-u1[3])};
 end
 
-function se3_interpolate(t, u1, u2, u3)
+function util.se3_interpolate(t, u1, u2, u3)
   --Interpolation between 3 xya values
   if t<0.5 then
     tt=t*2;
     return vector.new{u1[1]+tt*(u2[1]-u1[1]),
                     u1[2]+tt*(u2[2]-u1[2]),
-                    u1[3]+tt*mod_angle(u2[3]-u1[3])};
+                    u1[3]+tt*util.mod_angle(u2[3]-u1[3])};
   else
     tt=t*2-1;
     return vector.new{u2[1]+tt*(u3[1]-u2[1]),
                     u2[2]+tt*(u3[2]-u2[2]),
-                    u2[3]+tt*mod_angle(u3[3]-u2[3])};
+                    u2[3]+tt*util.mod_angle(u3[3]-u2[3])};
   end
 end
 
 
 
-function procFunc(a,deadband,maxvalue)
+function util.procFunc(a,deadband,maxvalue)
   --Piecewise linear function for IMU feedback
   if a>0 then
         b=math.min( math.max(0,math.abs(a)-deadband), maxvalue);
@@ -131,7 +124,7 @@ function procFunc(a,deadband,maxvalue)
   return b;
 end
 
-function pose_global(pRelative, pose)
+function util.pose_global(pRelative, pose)
   local ca = math.cos(pose[3]);
   local sa = math.sin(pose[3]);
   return vector.new{pose[1] + ca*pRelative[1] - sa*pRelative[2],
@@ -139,19 +132,19 @@ function pose_global(pRelative, pose)
                     pose[3] + pRelative[3]};
 end
 
-function pose_relative(pGlobal, pose)
+function util.pose_relative(pGlobal, pose)
   local ca = math.cos(pose[3]);
   local sa = math.sin(pose[3]);
   local px = pGlobal[1]-pose[1];
   local py = pGlobal[2]-pose[2];
   local pa = pGlobal[3]-pose[3];
-  return vector.new{ca*px + sa*py, -sa*px + ca*py, mod_angle(pa)};
+  return vector.new{ca*px + sa*py, -sa*px + ca*py, util.mod_angle(pa)};
 end
 
 ---table of uniform distributed random numbers
 --@param n length of table to return
 --@return table of n uniformly distributed random numbers
-function randu(n)
+function util.randu(n)
   local t = {};
   for i = 1,n do
     t[i] = math.random();
@@ -162,7 +155,7 @@ end
 ---Table of normal distributed random numbers.
 --@param n length of table to return
 --@return table of n normally distributed random numbers
-function randn(n)
+function util.randn(n)
   local t = {};
   for i = 1,n do
     --Inefficient implementation:
@@ -173,12 +166,18 @@ function randn(n)
 end
 
 
-function init_shm_segment(fenv, name, shared, shsize, tid, pid)
+function util.init_shm_segment(name, shared, shsize, tid, pid)
   local shm = require('shm');
   local carray = require('carray');
 
-  tid = tid or 0; --Config.game.teamNumber;
-  pid = pid or 1; --Config.game.playerID;
+  local fenv = _G[name]
+  if fenv == nil then
+    _G[name] = {}
+    fenv = _G[name]
+  end
+
+  local tid = tid or 0; --Config.game.teamNumber;
+  local pid = pid or 1; --Config.game.playerID;
   -- initialize shm segments from the *cm format
   for shtable, shval in pairs(shared) do
     -- create shared memory segment
@@ -193,7 +192,7 @@ function init_shm_segment(fenv, name, shared, shsize, tid, pid)
     local shmHandle = fenv[shmHandleName];
 
     -- intialize shared memory
-    init_shm_keys(shmHandle, shared[shtable]);
+    util.init_shm_keys(shmHandle, shared[shtable]);
 
     -- generate accessors and pointers
     local shmPointerName = shtable..'Ptr';
@@ -255,27 +254,27 @@ function init_shm_segment(fenv, name, shared, shsize, tid, pid)
   end
 end
 
-function init_shm_keys(shmHandle, shmTable)
+function util.init_shm_keys(shmHandle, shmTable)
   -- initialize a shared memory block (creating the entries if needed)
   for k,v in pairs(shmTable) do 
     -- create the key if needed
     if (type(v) == 'string') then
-      if (not shm_key_exists(shmHandle, k)) then
+      if (not util.shm_key_exists(shmHandle, k)) then
         shmHandle:set(k, {string.byte(v, 1, string.len(v))});
       end
     elseif (type(v) == 'number') then 
-      if (not shm_key_exists(shmHandle, k) or shmHandle:size(k) ~= v) then
+      if (not util.shm_key_exists(shmHandle, k) or shmHandle:size(k) ~= v) then
         shmHandle:empty(k, v);
       end
     elseif (type(v) == 'table') then
-      if (not shm_key_exists(shmHandle, k, #v)) then
+      if (not util.shm_key_exists(shmHandle, k, #v)) then
         shmHandle[k] = v;
       end
     end
   end
 end
 
-function shm_key_exists(shmHandle, k, nvals)
+function util.shm_key_exists(shmHandle, k, nvals)
   -- checks the shm segment for the given key
   -- returns true if the key exists and is of the correct length nvals (if provided)
   local carray = require('carray');
@@ -305,7 +304,7 @@ grid on ; xlabel('% gait') ; ylabel('deg') ; title('Left stance Knee') ;
 --]]
 
   -- wikipedia
-function factorial(n)
+function util.factorial(n)
   if n == 0 then
   return 1
   else
@@ -319,7 +318,7 @@ return n * factorial(n - 1)
   %         s - s parameter. Range [0 1]
   % Outputs: b = sum(k=0 to m)[ alpha_k * M!/(k!(M-k)!) s^k (1-s)^(M-k)]
   --]]
-function polyval_bz(alpha, s)
+function util.polyval_bz(alpha, s)
   b = 0;
   M = #alpha-1 ;  -- length(alpha) = M+1
   for k =0,M do
@@ -328,7 +327,7 @@ function polyval_bz(alpha, s)
   return b;
   end
 
-function bezier( alpha, s )
+function util.bezier( alpha, s )
 --  [n, m] = size(alpha);
   n = #alpha;
   m = #alpha[1];
@@ -362,24 +361,24 @@ function bezier( alpha, s )
   return value;
   end
 
-function get_wireless_ip()
+function util.get_wireless_ip()
   ifconfig = io.popen('/sbin/ifconfig wlan0 | grep "inet " | cut -d" " -f10-11');
   ip = ifconfig:read();
   return ip;
 end
 
-function loadconfig(configName)
-  local localConfig=require(configName);
-  for k,v in pairs(localConfig) do
-    Config[k]=localConfig[k];
+local loadconfig = function(configName)
+  local local_config=require(configName);
+  for k,v in pairs(local_config) do
+    Config[k]=local_config[k];
   end
 end
 
-function LoadConfig(params, platform)
-  file_header = "Config_"..platform.name;
+function util.LoadConfig(params, platform)
+  local file_header = "Config_"..platform.name;
   for k, v in pairs(params.name) do
-    file_name = params[v] or "";
-    overload_platform = params[v..'_Platform'] or "";
+    local file_name = params[v] or "";
+    local overload_platform = params[v..'_Platform'] or "";
     if string.len(overload_platform) ~= 0 then 
       file_header = "Config_"..overload_platform;
     else
@@ -390,3 +389,5 @@ function LoadConfig(params, platform)
     loadconfig(file_name)
   end
 end
+
+return util

@@ -4,39 +4,37 @@ local Transform = require('Transform');
 local Body = {}
 
 controller.wb_robot_init();
-timeStep = controller.wb_robot_get_basic_time_step();
-tDelta = .001*timeStep;
-imuAngle = {0, 0, 0};
-aImuFilter = 1 - math.exp(-tDelta/0.5);
+local timeStep = controller.wb_robot_get_basic_time_step();
+local tDelta = .001*timeStep;
+local imuAngle = {0, 0, 0};
+local aImuFilter = 1 - math.exp(-tDelta/0.5);
 
-
-gps_enable = 0;
-
+local gps_enable = 0;
 
 -- Get webots tags:
-tags = {};
+local tags = {};
 
 -- DarwinOP names in webots
-jointNames = {"Neck", "Head",
+local jointNames = {"Neck", "Head",
               "ShoulderL", "ArmUpperL", "ArmLowerL",
               "PelvYL", "PelvL", "LegUpperL", "LegLowerL", "AnkleL", "FootL", 
               "PelvYR", "PelvR", "LegUpperR", "LegLowerR", "AnkleR", "FootR",
               "ShoulderR", "ArmUpperR", "ArmLowerR",
              };
 
-nJoint = #jointNames;
-indexHead = 1;			--Head: 1 2
-nJointHead = 2;
-indexLArm = 3;			--LArm: 3 4 5 
-nJointLArm = 3; 		
-indexLLeg = 6;			--LLeg:6 7 8 9 10 11
-nJointLLeg = 6;
-indexRLeg = 12; 		--RLeg: 12 13 14 15 16 17
-nJointRLeg = 6;
-indexRArm = 18; 		--RArm: 18 19 20
-nJointRArm = 3;
+local nJoint = #jointNames;
+local indexHead = 1;			--Head: 1 2
+local nJointHead = 2;
+local indexLArm = 3;			--LArm: 3 4 5 
+local nJointLArm = 3; 		
+local indexLLeg = 6;			--LLeg:6 7 8 9 10 11
+local nJointLLeg = 6;
+local indexRLeg = 12; 		--RLeg: 12 13 14 15 16 17
+local nJointRLeg = 6;
+local indexRArm = 18; 		--RArm: 18 19 20
+local nJointRArm = 3;
 
-jointReverse={
+local jointReverse={
 	1,--Head: 1,2
 	--LArm: 3,4,5
 	7,8,9,--LLeg: 6,7,8,9,10,11,
@@ -44,7 +42,7 @@ jointReverse={
 	18,20--RArm: 18,19,20
 }
 
-jointBias={
+local jointBias={
 	0,0,
 	-math.pi/2,0,math.pi/2,
 	0,0,0,0,0,0,
@@ -52,7 +50,7 @@ jointBias={
 	-math.pi/2,0,math.pi/2,
 }
 
-moveDir={};
+local moveDir={};
 for i=1,nJoint do moveDir[i]=1; end
 for i=1,#jointReverse do moveDir[jointReverse[i]]=-1; end
 
@@ -125,7 +123,7 @@ function Body.set_actuator_velocity(a, index)
   end
 end
 
-function set_actuator_hardness(a, index)
+function Body.set_actuator_hardness(a, index)
   index = index or 1;
   if (type(a) == "number") then
     actuator.hardness[index] = a;
@@ -186,37 +184,37 @@ function Body.set_body_hardness(val)
   if (type(val) == "number") then
     val = val*vector.ones(nJoint);
   end
-  set_actuator_hardness(val);
+  Body.set_actuator_hardness(val);
 end
 function Body.set_head_hardness(val)
   if (type(val) == "number") then
     val = val*vector.ones(nJointHead);
   end
-  set_actuator_hardness(val, indexHead);
+  Body.set_actuator_hardness(val, indexHead);
 end
 function Body.set_larm_hardness(val)
   if (type(val) == "number") then
     val = val*vector.ones(nJointLArm);
   end
-  set_actuator_hardness(val, indexLArm);
+  Body.set_actuator_hardness(val, indexLArm);
 end
 function Body.set_rarm_hardness(val)
   if (type(val) == "number") then
     val = val*vector.ones(nJointRArm);
   end
-  set_actuator_hardness(val, indexRArm);
+  Body.set_actuator_hardness(val, indexRArm);
 end
 function Body.set_lleg_hardness(val)
   if (type(val) == "number") then
     val = val*vector.ones(nJointLLeg);
   end
-  set_actuator_hardness(val, indexLLeg);
+  Body.set_actuator_hardness(val, indexLLeg);
 end
 function Body.set_rleg_hardness(val)
   if (type(val) == "number") then
     val = val*vector.ones(nJointRLeg);
   end
-  set_actuator_hardness(val, indexRLeg);
+  Body.set_actuator_hardness(val, indexRLeg);
 end
 function Body.set_head_command(val)
   Body.set_actuator_command(val, indexHead);
@@ -265,7 +263,7 @@ end
   end
 
   -- Process sensors
-  update_IMU();
+  Body.update_IMU();
 
 --[[
   -- Bumper Touch Sensor
@@ -275,9 +273,9 @@ end
 
 end
 
-function update_IMU()
+function Body.update_IMU()
     
-  acc=get_sensor_imuAcc();
+  acc=Body.get_sensor_imuAcc();
   gyr=Body.get_sensor_imuGyrRPY();
 
   local tTrans = Transform.rotZ(imuAngle[3]);
@@ -341,7 +339,7 @@ function Body.get_sensor_imuGyrRPY( )
 end
 
 --Acceleration in X,Y,Z axis in g unit
-function get_sensor_imuAcc( )
+function Body.get_sensor_imuAcc( )
   accel = controller.wb_accelerometer_get_values(tags.accelerometer);
   --Checked with webots OP model
   return {-(accel[2]-512)/128,-(accel[1]-512)/128,(accel[3]-512)/128};

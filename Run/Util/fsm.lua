@@ -93,9 +93,11 @@ function add_state(self, newState)
   self.transitions[newState] = {};
   self.actions[newState] = {};
 end
+
 function add_event(self, event)
   self.events[#self.events+1] = event;
 end
+
 function set_state(self, nextState)
   if self.statesHash[nextState] == nil then
     error('unkown state '..nextState);

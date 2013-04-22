@@ -5,6 +5,7 @@ local carray = require('carray');
 local cutil = require('cutil');
 local vector = require('vector');
 local Config = require('Config');
+local util = require('util');
 
 -- intialize debug shm handle
 debugShmHandle = shm.new('luarDebug'..Config.game.teamNumber..Config.game.playerID..(os.getenv('USER') or ''));

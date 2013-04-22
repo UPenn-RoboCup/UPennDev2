@@ -2,7 +2,7 @@ module(..., package.seeall);
 
 local Body = require('Body')
 local fsm = require('fsm')
-local gcm = require('gcm')
+require('gcm')
 local Config = require('Config')
 
 local bodyIdle = require('bodyIdle')
@@ -26,11 +26,7 @@ local bodyAnticipate = require('bodyAnticipate')
 local bodyChase = require('bodyChase')
 local bodyDive = require('bodyDive')
 
-
-
 local bodyReadyMove = require('bodyReadyMove')
-
-
 
 sm = fsm.new(bodyIdle);
 sm:add_state(bodyStart);
@@ -161,8 +157,6 @@ sm:set_transition(bodyChase, 'fall', bodyPositionGoalie);
 sm:set_transition(bodyKick, 'fall', bodyPositionGoalie);
 -- Chase the ball after a fall, since this could have been caused by a dive
 sm:set_transition(bodyDive, 'fall', bodyChase);
-
-
 
 -- set state debug handle to shared memory settor
 sm:set_state_debug_handle(gcm.set_fsm_body_state);

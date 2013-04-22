@@ -6,10 +6,9 @@ local HeadTransform = require('HeadTransform');       -- For Projection
 local Vision = require('Vision');
 local Body = require('Body');
 local shm = require('shm');
-local vcm = require('vcm');
-local mcm = require('mcm');
+require('vcm');
+require('mcm');
 local Detection = require('Detection');
-local Debug = require('Debug');
 
 -- Define Color
 colorOrange = Config.color.orange;
@@ -229,4 +228,3 @@ function detect(color)
 --]]
   return ball;
 end
-

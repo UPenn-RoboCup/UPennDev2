@@ -5,8 +5,8 @@
 module(..., package.seeall);
 
 local Body = require('Body')
-local wcm = require('wcm')
-local mcm = require('mcm')
+require('wcm')
+require('mcm')
 
 pitch0=Config.fsm.headScan.pitch0;
 pitchMag=Config.fsm.headScan.pitchMag;

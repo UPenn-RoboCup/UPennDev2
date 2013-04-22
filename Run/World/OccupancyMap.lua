@@ -3,11 +3,11 @@ module(... or "", package.seeall);
 local Config = require('Config');	
 local Body = require('Body')
 local shm = require('shm');
-local vcm = require('vcm');
+require('vcm');
 local unix = require('unix'); -- Get Time
-local wcm = require('wcm');
-local mcm = require('mcm');
-local ocm = require('ocm');
+require('wcm');
+require('mcm');
+require('ocm');
 local OccMap = require('OccMap');
 local vector = require('vector');
 local walk = require('walk');

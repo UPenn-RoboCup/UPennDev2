@@ -6,7 +6,7 @@ local vector = require('vector')
 local Kinematics = require('Kinematics')
 local Body = require('Body')
 local walk = require('walk')
-local mcm = require('mcm')
+require('mcm')
 
 active = true;
 t0 = 0;

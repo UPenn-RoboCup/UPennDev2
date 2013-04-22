@@ -6,7 +6,7 @@ local walk = require('walk')
 local vector = require('vector')
 local Config = require('Config')
 local util = require('util')
-local mcm = require('mcm')
+require('mcm')
 
 local cwd = unix.getcwd();
 if string.find(cwd, "WebotsController") then

@@ -1,14 +1,12 @@
-module(... or '', package.seeall)
+local Config = require("Config")
+local vector = require("vector")
+local util = require("util")
+local shm = require("shm")
 
-require("Config")
-require("vector")
-require("util")
-require("shm")
+local mapsize = Config.occ.mapsize;
 
-mapsize = Config.occ.mapsize;
-
-shared = {}
-shsize = {}
+local shared = {}
+local shsize = {}
 
 shared.occ = {};
 shared.occ.map = 4 * mapsize * mapsize;
@@ -44,7 +42,7 @@ shared.occ.robot_pos = vector.zeros(2);
 
 shsize.occ = shared.occ.map + 2^16;
 
-util.init_shm_segment(getfenv(), _NAME, shared, shsize);
+util.init_shm_segment(..., shared, shsize);
 
 function get_obstacle_x()
   obst = get_obstacle_nearest();

@@ -12,8 +12,8 @@ local ColorLUT = require('ColorLUT');
 local ImageProc = require('ImageProc');
 local HeadTransform = require('HeadTransform');
 
-local vcm = require('vcm');
-local mcm = require('mcm');
+require('vcm');
+require('mcm');
 local Body = require('Body')
 
 --Added for webots fast simulation

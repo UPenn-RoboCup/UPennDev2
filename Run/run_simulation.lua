@@ -4,8 +4,8 @@
 
 cwd = os.getenv('PWD')
 cwd = cwd ..'/Run'
-playerID = os.getenv('PLAYER_ID') + 0;
-teamID = os.getenv('TEAM_ID') + 0;
+local playerID = os.getenv('PLAYER_ID') + 0;
+local teamID = os.getenv('TEAM_ID') + 0;
 
 print("\nStarting Webots Lua controller...");
 print("CWD:",cwd)

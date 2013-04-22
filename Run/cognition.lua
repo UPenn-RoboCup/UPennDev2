@@ -1,12 +1,11 @@
-module(... or "",package.seeall)
 cwd = os.getenv('PWD')
 local init = require('init')
 
 local unix = require('unix')
-local vcm = require('vcm')
-local gcm = require('gcm')
-local wcm = require('wcm')
-local mcm = require('mcm')
+require('vcm')
+require('gcm')
+require('wcm')
+require('mcm')
 local Body = require('Body')
 local Vision = require('Vision')
 local World = require('World')
@@ -23,15 +22,15 @@ count = 0;
 nProcessedImages = 0;
 tUpdate = unix.time();
 
-enable_online_colortable_learning = Config.vision.enable_online_colortable_learning or 0;
-enable_freespace_detection = Config.vision.enable_freespace_detection or 0;
+local enable_online_colortable_learning = Config.vision.enable_online_colortable_learning or 0;
+local enable_freespace_detection = Config.vision.enable_freespace_detection or 0;
 
 if (string.find(Config.platform.name,'Webots')) then
   webots = true;
 end
 
 function broadcast()
-  broadcast_enable = vcm.get_camera_broadcast();
+  local broadcast_enable = vcm.get_camera_broadcast();
   if broadcast_enable>0 then
     if broadcast_enable==1 then 
       --Mode 1, send 1/4 resolution, labeB, all info

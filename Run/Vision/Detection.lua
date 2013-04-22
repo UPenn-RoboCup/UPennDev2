@@ -5,7 +5,7 @@ local ImageProc = require('ImageProc');
 local HeadTransform = require('HeadTransform');	-- For Projection
 local Vision = require('Vision');
 local Body = require('Body');
-local vcm = require('vcm');
+require('vcm');
 local unix = require('unix');
 
 -- Dependency

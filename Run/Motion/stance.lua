@@ -1,39 +1,40 @@
-module(..., package.seeall);
-
 local Config = require('Config')
 local Body = require('Body')
 local Kinematics = require('Kinematics')
 local walk = require('walk')
 local vector = require('vector')
 local Transform = require('Transform')
-local vcm = require('vcm')
-local mcm = require('mcm')
+require('vcm')
+require('mcm')
 
-active = true;
-t0 = 0;
+local stance = {}
+stance._NAME = ...
 
-footX = Config.walk.footX or 0;
-footY = Config.walk.footY;
-supportX = Config.walk.supportX;
-bodyHeight = Config.walk.bodyHeight;
-bodyTilt=Config.walk.bodyTilt;
-qLArm = Config.walk.qLArm;
-qRArm = Config.walk.qRArm;
+local active = true;
+local t0 = 0;
+ 
+local footX = Config.walk.footX or 0;
+local footY = Config.walk.footY;
+local supportX = Config.walk.supportX;
+local bodyHeight = Config.walk.bodyHeight;
+local bodyTilt=Config.walk.bodyTilt;
+local qLArm = Config.walk.qLArm;
+local qRArm = Config.walk.qRArm;
 
 -- Max change in position6D to reach stance:
-dpLimit = Config.stance.dpLimitStance or vector.new({.04, .03, .07, .4, .4, .4});
+local dpLimit = Config.stance.dpLimitStance or vector.new({.04, .03, .07, .4, .4, .4});
+ 
+local tFinish=0;
+local tStartWait=0.2;
+ 
+local tEndWait=Config.stance.delay or 0;
+local tEndWait=tEndWait/100;
+local tStart=0;
+ 
+local hardnessLeg = Config.stance.hardnessLeg or 1;
 
-tFinish=0;
-tStartWait=0.2;
-
-tEndWait=Config.stance.delay or 0;
-tEndWait=tEndWait/100;
-tStart=0;
-
-hardnessLeg = Config.stance.hardnessLeg or 1;
-
-function entry()
-  print("Motion SM:".._NAME.." entry");
+function stance.entry()
+  print("Motion SM:"..stance._NAME.." entry");
 
   -- Final stance foot position6D
   pTorsoTarget = vector.new({-mcm.get_footX(), 0, bodyHeight, 
@@ -57,7 +58,7 @@ function entry()
   walk.active=false;
 end
 
-function update()
+function stance.update()
   local t = Body.get_time();
 
   --For OP, wait a bit to read joint readings
@@ -153,5 +154,7 @@ function update()
 
 end
 
-function exit()
+function stance.exit()
 end
+
+return stance

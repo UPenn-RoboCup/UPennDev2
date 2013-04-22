@@ -1,4 +1,4 @@
 LIBNAME= OPKinematics
-include ../../../Makefile.inc
 EXTRA_OBJ = OPKinematics.o Transform.o
+include ../../../Makefile.inc
 LIBOPTS += -lm

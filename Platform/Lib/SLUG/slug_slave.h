@@ -8,7 +8,7 @@
 
 #include "co_slave.h"
 
-/* defines standard epos object dictionary entries */
+/* define standard motor slug object dictionary entries */
 #define SLUG_NODE_ID                                      0x2000
 #define SLUG_CAN_BIT_RATE                                 0x2001
 #define SLUG_OPERATING_MODE                               0x2002
@@ -49,6 +49,11 @@
 #define SLUG_MOTOR_FORCE_D_GAIN                           0x2209
 #define SLUG_MOTOR_FORCE_D_BREAK_FREQUENCY                0x220a
 #define SLUG_MOTOR_CURRENT_DEMAND                         0x220b
+
+/* define standard motor slug operating modes */
+#define SLUG_OP_MODE_IDLE                                 0
+#define SLUG_OP_MODE_JOINT_IMPEDANCE                      1
+#define SLUG_OP_MODE_MOTOR_FORCE                          2
 
 class slug_slave : public co_slave {
 public:

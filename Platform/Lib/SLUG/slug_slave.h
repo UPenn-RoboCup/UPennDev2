@@ -53,6 +53,80 @@
 class slug_slave : public co_slave {
 public:
   slug_slave(uint8_t node_id = 1);
+
+  void set_node_id(int can_node_id);
+  void set_can_bit_rate(int can_bit_rate);
+  void set_operating_mode(int operating_mode);
+  void set_operating_mode_display(int operating_mode_display);
+  void set_status_code(int status_code);
+  void set_error_code(int error_code);
+
+  void set_joint_force_max(double joint_force_max, int id);
+  void set_joint_position_max(double joint_position_max, int id);
+  void set_joint_position_min(double joint_position_min, int id);
+  void set_joint_velocity_max(double joint_velocity_max, int id);
+  void set_joint_force_setpoint(double joint_force_setpoint, int id);
+  void set_joint_position_setpoint(double joint_position_setpoint, int id);
+  void set_joint_velocity_setpoint(double joint_velocity_setpoint, int id);
+  void set_joint_force_estimate(double joint_force_estimate, int id);
+  void set_joint_position_estimate(double joint_position_estimate, int id);
+  void set_joint_velocity_estimate(double joint_velocity_estimate, int id);
+  void set_joint_position_sensor_bias(double joint_position_sensor_bias, int id);
+  void set_joint_position_p_gain(double joint_position_p_gain, int id);
+  void set_joint_position_i_gain(double joint_position_i_gain, int id);
+  void set_joint_position_d_gain(double joint_position_d_gain, int id);
+  void set_joint_position_d_break_frequency(double joint_position_d_break_frequency, int id);
+  void set_joint_force_demand(double joint_force_demand, int id);
+
+  void set_motor_force_max(double motor_force_max, int id);
+  void set_motor_current_max(double motor_current_max, int id);
+  void set_motor_force_setpoint(double motor_force_setpoint, int id);
+  void set_motor_force_estimate(double motor_force_estimate, int id);
+  void set_motor_current_estimate(double motor_current_estimate, int id);
+  void set_motor_force_sensor_bias(double motor_force_sensor_bias, int id);
+  void set_motor_force_ff_constant(double motor_force_ff_constant, int id);
+  void set_motor_force_p_gain(double motor_force_p_gain, int id);
+  void set_motor_force_i_gain(double motor_force_i_gain, int id);
+  void set_motor_force_d_gain(double motor_force_d_gain, int id);
+  void set_motor_force_d_break_frequency(double motor_force_d_break_frequency, int id);
+  void set_motor_current_demand(double motor_current_demand, int id);
+  
+  int get_node_id(void);
+  int get_can_bit_rate(void);
+  int get_operating_mode(void);
+  int get_operating_mode_display(void);
+  int get_status_code(void);
+  int get_error_code(void);
+
+  double get_joint_force_max(int id);
+  double get_joint_position_max(int id);
+  double get_joint_position_min(int id);
+  double get_joint_velocity_max(int id);
+  double get_joint_force_setpoint(int id);
+  double get_joint_position_setpoint(int id);
+  double get_joint_velocity_setpoint(int id);
+  double get_joint_force_estimate(int id);
+  double get_joint_position_estimate(int id);
+  double get_joint_velocity_estimate(int id);
+  double get_joint_position_sensor_bias(int id);
+  double get_joint_position_p_gain(int id);
+  double get_joint_position_i_gain(int id);
+  double get_joint_position_d_gain(int id);
+  double get_joint_position_d_break_frequency(int id);
+  double get_joint_force_demand(int id);
+
+  double get_motor_force_max(int id);
+  double get_motor_current_max(int id);
+  double get_motor_force_setpoint(int id);
+  double get_motor_force_estimate(int id);
+  double get_motor_current_estimate(int id);
+  double get_motor_force_ff_constant(int id);
+  double get_motor_force_p_gain(int id);
+  double get_motor_force_i_gain(int id);
+  double get_motor_force_d_gain(int id);
+  double get_motor_force_d_break_frequency(int id);
+  double get_motor_force_sensor_bias(int id);
+  double get_motor_current_demand(int id);
 };
 
 #endif

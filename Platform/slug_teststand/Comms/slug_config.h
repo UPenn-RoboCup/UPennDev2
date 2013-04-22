@@ -1,9 +1,9 @@
-#ifndef _CONFIG_SLUG_H_
-#define _CONFIG_SLUG_H_
+#ifndef _SLUG_CONFIG_H_
+#define _SLUG_CONFIG_H_
 
 #include "slug_slave.h"
 
-// config_slug : sdo and pdo configuration settings for motor slugs
+// slug_config : sdo and pdo configuration settings for motor slugs
 // author : Mike Hopkins
 ///////////////////////////////////////////////////////////////////////////
 
@@ -40,9 +40,15 @@
 #define MOTOR_FORCE_D_GAIN                   0.00
 #define MOTOR_FORCE_D_BREAK_FREQUENCY      100.00
 
-static const int slug_node_id[N_SLUGS] = { 1 };
+static const int slug_config_node_ids[N_SLUGS] = {
+  1
+};
 
-static const co_sdo_setting slug_custom_settings[N_SLUGS][20] = {
+static const int slug_config_joint_ids[N_SLUGS][2] = {
+  {0, -1}
+};
+
+static const co_sdo_setting slug_config_custom_settings[N_SLUGS][20] = {
   { // SLUG 1
     {SLUG_JOINT_POSITION_MAX, 0x01, 0.8 * JOINT_POSITION_CONSTANT},
     {SLUG_JOINT_POSITION_MIN, 0x01,-0.8 * JOINT_POSITION_CONSTANT},
@@ -52,7 +58,7 @@ static const co_sdo_setting slug_custom_settings[N_SLUGS][20] = {
   },
 };
 
-static const co_sdo_setting slug_default_settings[] = {
+static const co_sdo_setting slug_config_default_settings[] = {
   {SLUG_NODE_ID, 0x00, NODE_ID},
   {SLUG_CAN_BIT_RATE, 0x00, CAN_BIT_RATE},
   {SLUG_OPERATING_MODE, 0x00, OPERATING_MODE},
@@ -107,7 +113,7 @@ static const co_sdo_setting slug_default_settings[] = {
   {CO_SENTINEL}
 };
 
-static const co_pdo_parameter slug_pdo_parameters[] = {
+static const co_pdo_parameter slug_config_pdo_parameters[] = {
   {CO_RPDO1, CO_SYNCHRONOUS + 1, 0, 0},
   {CO_RPDO2, CO_SYNCHRONOUS + 1, 0, 0},
   {CO_RPDO3, CO_SYNCHRONOUS + 1, 0, 0},
@@ -119,7 +125,7 @@ static const co_pdo_parameter slug_pdo_parameters[] = {
   {CO_SENTINEL}
 };
 
-static const co_pdo_mapping slug_pdo_mappings[] = {
+static const co_pdo_mapping slug_config_pdo_mappings[] = {
   {CO_RPDO1, 3, {
       CO_ENTRY(SLUG_JOINT_FORCE_SETPOINT, 0x01),
       CO_ENTRY(SLUG_JOINT_POSITION_SETPOINT, 0x01),

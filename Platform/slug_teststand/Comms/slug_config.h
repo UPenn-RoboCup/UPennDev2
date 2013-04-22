@@ -120,8 +120,8 @@ static const co_pdo_parameter slug_config_pdo_parameters[] = {
   {CO_RPDO4, CO_SYNCHRONOUS + 1, 0, 0},
   {CO_TPDO1, CO_SYNCHRONOUS + 1, 0, 0},
   {CO_TPDO2, CO_SYNCHRONOUS + 1, 0, 0},
-  {CO_TPDO3, CO_ASYNCHRONOUS, 1000, 0},
-  {CO_TPDO4, CO_ASYNCHRONOUS, 1000, 0},
+  {CO_TPDO3, CO_ASYNCHRONOUS, 500, 0},
+  {CO_TPDO4, CO_ASYNCHRONOUS, 0, 0},
   {CO_SENTINEL}
 };
 
@@ -162,12 +162,13 @@ static const co_pdo_mapping slug_config_pdo_mappings[] = {
       CO_ENTRY(SLUG_JOINT_VELOCITY_ESTIMATE, 0x02)
     }
   },
-  {CO_TPDO3, 1, {
+  {CO_TPDO3, 2, {
       CO_ENTRY(SLUG_MOTOR_FORCE_ESTIMATE, 0x01),
+      CO_ENTRY(SLUG_MOTOR_FORCE_ESTIMATE, 0x02)
     }
   },
   {CO_TPDO4, 1, {
-      CO_ENTRY(SLUG_MOTOR_FORCE_ESTIMATE, 0x02),
+      CO_ENTRY(SLUG_OPERATING_MODE_DISPLAY, 0x00)
     }
   },
   {CO_SENTINEL}

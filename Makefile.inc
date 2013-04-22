@@ -114,7 +114,7 @@ ifeq ($(OSTYPE),darwin)
   CC=cc
   CXX=c++
   LD=ld
-LDFLAGS=-lstdc++
+LDFLAGS=-lstdc++ -macosx_version_min 10.7
 endif
 
 # REGEX to find lua files

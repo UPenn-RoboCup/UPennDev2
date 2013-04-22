@@ -8,17 +8,7 @@
  * University of Pennsylvania
  */
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-#include "lua.h"
-#include "lualib.h"
-#include "lauxlib.h"
-#ifdef __cplusplus
-}
-#endif
-
+#include <lua.hpp>
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -27,8 +17,7 @@ extern "C"
 #include <sstream>
 #include <istream>
 
-#define MT_NAME "cpng_mt"
-#define PNG_DEBUG 3
+#define MT_NAME "png_mt"
 #include <png.h>
 
 typedef struct {
@@ -57,14 +46,14 @@ void abort_(const char * s, ...)
   abort();
 }
 
-static structPNG * lua_checkcpng(lua_State *L, int narg) {
+static structPNG * lua_checkpng(lua_State *L, int narg) {
   void *ud = luaL_checkudata(L, narg, MT_NAME);
   luaL_argcheck(L, *(structPNG **)ud != NULL, narg, "invalid png");
   return (structPNG *)ud;
 }
 
-static int lua_cpng_getValue(lua_State *L) {
-  structPNG *p = lua_checkcpng(L, 1);
+static int lua_png_getValue(lua_State *L) {
+  structPNG *p = lua_checkpng(L, 1);
   int index = luaL_checkint(L, 2) - 1; // Convert lua 1-index to C 0-index
 
   if ((index < 0) || (index >= p->height * p->stride)) {
@@ -80,8 +69,8 @@ static int lua_cpng_getValue(lua_State *L) {
   return 1;
 }
 
-static int lua_cpng_delete(lua_State *L) {
-  structPNG *p = lua_checkcpng(L, 1);
+static int lua_png_delete(lua_State *L) {
+  structPNG *p = lua_checkpng(L, 1);
   /* cleanup heap allocation */
   int y;
   for (y=0; y<p->height; y++)
@@ -91,8 +80,8 @@ static int lua_cpng_delete(lua_State *L) {
   return 1;
 }
 
-static int lua_cpng_setValue(lua_State *L) {
-  structPNG *p = lua_checkcpng(L, 1);
+static int lua_png_setValue(lua_State *L) {
+  structPNG *p = lua_checkpng(L, 1);
   int index = luaL_checkint(L, 2) - 1; // Convert lua 1-index to C 0-index
 
   if ((index < 0) || (index >= p->height * p->stride)) {
@@ -110,17 +99,17 @@ static int lua_cpng_setValue(lua_State *L) {
   return 1;
 }
 
-static int lua_cpng_len(lua_State *L) {
-  structPNG *p = lua_checkcpng(L, 1);
+static int lua_png_len(lua_State *L) {
+  structPNG *p = lua_checkpng(L, 1);
   lua_pushinteger(L, p->height * p->stride);
   return 1;
 }
 
-static int lua_cpng_index(lua_State *L) {
-  structPNG *p = lua_checkcpng(L, 1);
+static int lua_png_index(lua_State *L) {
+  structPNG *p = lua_checkpng(L, 1);
   if ((lua_type(L, 2) == LUA_TNUMBER) && lua_tointeger(L, 2)) {
     // Numeric index:
-    return lua_cpng_getValue(L);
+    return lua_png_getValue(L);
   }
 
   // Get index through metatable:
@@ -131,7 +120,7 @@ static int lua_cpng_index(lua_State *L) {
   return 1;
 }
 
-static int lua_cpng_load(lua_State *L) {
+static int lua_png_load(lua_State *L) {
   const char* file_name = luaL_checkstring(L, 1);
   unsigned char* data = (unsigned char*) lua_touserdata(L, 2);
   if ((data == NULL) || !lua_islightuserdata(L, 2) )
@@ -196,7 +185,7 @@ static int lua_cpng_load(lua_State *L) {
   return 1;
 }
 
-static int lua_cpng_new(lua_State *L) {
+static int lua_png_new(lua_State *L) {
   structPNG *ud = (structPNG *)lua_newuserdata(L, sizeof(structPNG));
 
   const char* file_name = luaL_checkstring(L, 1);
@@ -259,7 +248,7 @@ static int lua_cpng_new(lua_State *L) {
   return 1;
 }
 
-static int lua_cpng_read(lua_State *L) {
+static int lua_png_read(lua_State *L) {
   unsigned char* data = (unsigned char*) lua_touserdata(L, 2);
   if ((data == NULL) || !lua_islightuserdata(L, 2) )
     return luaL_error(L, "Input not light userdata");
@@ -271,8 +260,8 @@ static int lua_cpng_read(lua_State *L) {
   return 1;
 }
 
-static int lua_cpng_write(lua_State *L) {
-  structPNG *ud = lua_checkcpng(L, 1);
+static int lua_png_write(lua_State *L) {
+  structPNG *ud = lua_checkpng(L, 1);
   const char* file_name = luaL_checkstring(L, 2);
 
   /* create file */
@@ -325,7 +314,7 @@ static int lua_cpng_write(lua_State *L) {
   return 1;
 }
 
-static int lua_cpng_save(lua_State *L) {
+static int lua_png_save(lua_State *L) {
   const char* file_name = luaL_checkstring(L, 1);
   unsigned char* data = (unsigned char*) lua_touserdata(L, 2);
   if ((data == NULL) || !lua_islightuserdata(L, 2) )
@@ -404,37 +393,37 @@ static int lua_cpng_save(lua_State *L) {
   return 1;
 }
 
-static int lua_cpng_pointer(lua_State *L) {
-  structPNG *p = lua_checkcpng(L, 1);
+static int lua_png_pointer(lua_State *L) {
+  structPNG *p = lua_checkpng(L, 1);
   return 1;
 }
 
-static int lua_cpng_width(lua_State *L) {
-  structPNG *p = lua_checkcpng(L, 1);
+static int lua_png_width(lua_State *L) {
+  structPNG *p = lua_checkpng(L, 1);
   lua_pushinteger(L, p->width);
   return 1;
 }
 
-static int lua_cpng_height(lua_State *L) {
-  structPNG *p = lua_checkcpng(L, 1);
+static int lua_png_height(lua_State *L) {
+  structPNG *p = lua_checkpng(L, 1);
   lua_pushinteger(L, p->height);
   return 1;
 }
 
-static int lua_cpng_color_type(lua_State *L) {
-  structPNG *p = lua_checkcpng(L, 1);
+static int lua_png_color_type(lua_State *L) {
+  structPNG *p = lua_checkpng(L, 1);
   lua_pushinteger(L, p->color_type);
   return 1;
 }
 
-static int lua_cpng_bit_depth(lua_State *L) {
-  structPNG *p = lua_checkcpng(L, 1);
+static int lua_png_bit_depth(lua_State *L) {
+  structPNG *p = lua_checkpng(L, 1);
   lua_pushinteger(L, p->bit_depth);
   return 1;
 }
 
-static int lua_cpng_stride(lua_State *L) {
-  structPNG *p = lua_checkcpng(L, 1);
+static int lua_png_stride(lua_State *L) {
+  structPNG *p = lua_checkpng(L, 1);
   lua_pushinteger(L, p->stride);
   return 1;
 }
@@ -457,7 +446,7 @@ void lua_png_write_string(png_structp png_ptr, png_bytep data, png_size_t length
   p->size += length;
 }
 
-static int lua_cpng_compress(lua_State *L) {
+static int lua_png_compress(lua_State *L) {
   unsigned char* data = (unsigned char*) lua_touserdata(L, 1);
   if ((data == NULL) || !lua_islightuserdata(L, 1) )
     return luaL_error(L, "Input not light userdata");
@@ -547,7 +536,7 @@ void lua_png_read_string(png_structp png_ptr, png_bytep data, png_size_t length)
   a->buffer += length;
 }
 
-static int lua_cpng_uncompress(lua_State *L) {
+static int lua_png_uncompress(lua_State *L) {
   struct mem_encode state;
   state.buffer = (char*)luaL_checkstring(L, 1);
   state.size = 0;
@@ -607,45 +596,43 @@ static int lua_cpng_uncompress(lua_State *L) {
   return 1;
 }
 
-static const struct luaL_reg cpng_Functions [] = {
-  {"new", lua_cpng_new},
-  {"load", lua_cpng_load},
-  {"save", lua_cpng_save},
-  {"compress", lua_cpng_compress},
-  {"uncompress", lua_cpng_uncompress},
+static const struct luaL_reg png_Functions [] = {
+  {"new", lua_png_new},
+  {"load", lua_png_load},
+  {"save", lua_png_save},
+  {"compress", lua_png_compress},
+  {"uncompress", lua_png_uncompress},
   {NULL, NULL}
 };
 
-static const struct luaL_reg cpng_Methods [] = {
-  {"pointer", lua_cpng_pointer},
-  {"read", lua_cpng_read},
-  {"write", lua_cpng_write},
-  {"width", lua_cpng_width},
-  {"height", lua_cpng_height},
-  {"stride", lua_cpng_stride},
-  {"color_type", lua_cpng_color_type},
-  {"bit_depth", lua_cpng_bit_depth},
-  {"__gc", lua_cpng_delete},
-  {"__newindex", lua_cpng_setValue},
-  {"__len", lua_cpng_len},
+static const struct luaL_reg png_Methods [] = {
+  {"pointer", lua_png_pointer},
+  {"read", lua_png_read},
+  {"write", lua_png_write},
+  {"width", lua_png_width},
+  {"height", lua_png_height},
+  {"stride", lua_png_stride},
+  {"color_type", lua_png_color_type},
+  {"bit_depth", lua_png_bit_depth},
+  {"__gc", lua_png_delete},
+  {"__newindex", lua_png_setValue},
+  {"__len", lua_png_len},
   {NULL, NULL}
 };
 
 #ifdef __cplusplus
 extern "C"
 #endif
-int luaopen_cpng(lua_State *L) {
+int luaopen_png(lua_State *L) {
   luaL_newmetatable(L, MT_NAME);
 
   // Implement index method:
   lua_pushstring(L, "__index");
-  lua_pushcfunction(L, lua_cpng_index);
+  lua_pushcfunction(L, lua_png_index);
   lua_settable(L, -3);
 
-  luaL_register(L, NULL, cpng_Methods);
-  luaL_register(L, "cpng", cpng_Functions);
+  luaL_register(L, NULL, png_Methods);
+  luaL_register(L, "png", png_Functions);
 
-  luaL_register(L, NULL, cpng_Methods);
-  luaL_register(L, "cpng", cpng_Functions);
   return 1;
 }

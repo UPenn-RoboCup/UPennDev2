@@ -57,9 +57,8 @@ endif
 # Defaults to Linux
 CXX=g++
 CC=gcc
-#LD=ld
 LD=g++
-LDFLAGS=
+LDFLAGS=-shared -fpic
 STRIP=strip
 CFLAGS=-O2 -fpic
 CXXFLAGS=-O2 -fpic
@@ -106,15 +105,14 @@ endif
 
 # OS Specific overrides
 ifeq ($(OSTYPE),darwin)
-#  SHLIBEXT= dylib
-  LIBOPTS= -bundle -undefined dynamic_lookup
+  LIBOPTS= 
   CXXFLAGS= -O2 -fomit-frame-pointer -mtune=native
   LIBRT=
   # 64 bit only for OSX using clang
   CC=cc
   CXX=c++
   LD=ld -macosx_version_min 10.7
-  LDFLAGS=-lstdc++ 
+  LDFLAGS=-lstdc++ -bundle -undefined dynamic_lookup
 endif
 
 # REGEX to find lua files
@@ -124,29 +122,6 @@ REGEX=\( -regex '.*.$(LUAEXT)' -or -regex '.*.$(SHLIBEXT)' -or -regex '.*.sh' \)
 else
 REGEX=-regex '.*\($(SHLIBEXT)\|$(LUAEXT)\|sh\)'
 endif
-
-# Cross compiling
-ifeq ($(CROSS),true)
-  CTCDIR=$(NaoqiCTC)
-else
-  CTCDIR= 
-endif
-ifeq ($(CTCDIR),)
-  ifeq ($(OSTYPE),linux)
-    SHLIBEXT= so
-  endif
-
-  #ifeq ($(OSTYPE),darwin)
-  #  SHLIBEXT= dylib
-  #  REGEX=\( -regex '.*.$(LUAEXT)' -or -regex '.*.$(SHLIBEXT)' -or -regex '.*.sh' \)
-  #endif
-  else
-    SHLIBEXT= so
-  #ifeq ($(OSTYPE),darwin)
-  #  REGEX=\( -regex '.*.$(LUAEXT)' -or -regex '.*.$(SHLIBEXT)' -or -regex '.*.sh' \)
-  #endif
-endif
-export CTCDIR
 
 # Default compiling
 %.o: %.cpp
@@ -171,23 +146,3 @@ $(LIBNAME): lua_$(LIBNAME).o $(EXTRA_OBJ)
   #	@test ! -f $^.so && mv $^.$(SHLIBEXT) $^.so ; echo "Testing..."
   #	$(LUA) test_$^.lua ; echo "done test"
   #	@test ! -f $^.$(SHLIBEXT) && mv $^.so $^.$(SHLIBEXT) ; echo "move back"
-
-
-# For Intel Atom Z530 on the Darwin-OP
-# http://jim-dev.blogspot.com/2010/04/gentoo-linux-on-dell-mini-1012.html
-#CFLAGS="-O2 -march=core2 -mtune=generic -mssse3 -mfpmath=sse -pipe -fomit-frame-pointer"
-#CXXFLAGS="${CFLAGS}"
-# From Gentoo wiki (http://en.gentoo-wiki.com/wiki/Intel_D945GCLF2)
-#CHOST="i686-pc-linux-gnu"
-#CFLAGS="-O2 -march=core2 -mtune=generic -fomit-frame-pointer -pipe -mssse3 -mfpmath=sse"
-# Possible?
-#CXXFLAGS= -O3 -funroll-loops -fpic
-#-mtune=atom
-# ANother guide: http://linuxreviews.org/howtos/compiling/#toc1
-# -march=native could help...?
-#  Look at the warning here: http://en.gentoo-wiki.com/wiki/Safe_Cflags/Intel
-#  http://tombarta.wordpress.com/2008/05/25/gcc-flags/
-#  Should be using arch...? http://www.implbits.com/About/Blog/tabid/78/post/building-with-gcc-4-6-on-osx/Default.aspx
-# http://stackoverflow.com/questions/1754460/apples-gcc-whats-the-difference-between-arch-i386-and-m32
-#  Really, should use native unless on the Nao
-# OSX Specific: http://programmers.stackexchange.com/questions/51670/why-do-programmers-use-or-recommend-mac-os-x

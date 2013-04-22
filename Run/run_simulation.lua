@@ -1,6 +1,6 @@
 -- Get Computer for Lib suffix
-package.cpath = './?.so;' .. package.cpath;
-local controller = require('controller');
+--package.cpath = './?.so;' .. package.cpath;
+--local controller = require('controller');
 
 cwd = os.getenv('PWD')
 cwd = cwd ..'/Run'

@@ -1,5 +1,5 @@
 local include = require 'include'
-require 'torch-load'
+local torch = require 'torch'
 
 local ffi = require 'ffi'
 --local Z = require 'Z'
@@ -409,7 +409,7 @@ function parsemxNUMERIC_CLASS(data)
   if type(nums) == 'number' then
     return AN, nums
   else
-    local content = torch.Tensor(#nums, 1)
+    local content = torch.DoubleTensor(#nums, 1)
     for i = 1, #nums do
       content[i][1] = nums[i]
     end
@@ -551,7 +551,7 @@ function parsemxCHAR_CLASS(data)
     return AN, nums
   end
 
---  local content = torch.Tensor(#nums, 1)
+--  local content = torch.DoubleTensor(#nums, 1)
 --  for i = 1, #nums do
 --    content[i][1] = nums[i]
 --  end

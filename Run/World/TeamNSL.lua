@@ -8,9 +8,9 @@ local vector = require('vector');
 local util = require('util')
 local serialization = require('serialization');
 
-local wcm = require('wcm');
-local gcm = require('gcm');
-local ocm = require('ocm');
+require('wcm');
+require('gcm');
+require('ocm');
 
 Comm.init(Config.dev.ip_wireless,Config.dev.ip_wireless_port);
 print('Receiving Team Message From',Config.dev.ip_wireless);

@@ -8,7 +8,6 @@ local Body = require('Body');
 local shm = require('shm');
 local vcm = require('vcm');
 local Detection = require('Detection');
-local Debug = require('Debug');
 
 -- Define Color
 colorOrange = Config.color.orange;

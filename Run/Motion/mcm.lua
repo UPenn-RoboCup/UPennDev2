@@ -1,13 +1,11 @@
-module(..., package.seeall);
-
 local shm = require('shm');
 local util = require('util');
 local vector = require('vector');
 local Config = require('Config');
 
 -- shared properties
-shared = {};
-shsize = {};
+local shared = {}
+local shsize = {}
 
 shared.walk = {};
 shared.walk.bipedal = vector.zeros(1); --are we on foot or on four?
@@ -27,7 +25,6 @@ shared.walk.vel = vector.zeros(3);
 shared.walk.footXComp = vector.zeros(1);
 shared.walk.kickXComp = vector.zeros(1);
 shared.walk.headPitchBiasComp = vector.zeros(1);
-
 
 -- How long have we been still for?
 shared.walk.stillTime = vector.zeros(1);
@@ -53,14 +50,11 @@ shared.us.free = vector.zeros(2);
 shared.us.dSum = vector.zeros(2);
 shared.us.distance = vector.zeros(2);
 
-
 shared.motion = {};
 --Should we perform fall check
 shared.motion.fall_check = vector.zeros(1);
 
-
-util.init_shm_segment(getfenv(), _NAME, shared, shsize);
-
+util.init_shm_segment(..., shared, shsize);
 
 -- helper functions
 
@@ -69,34 +63,36 @@ util.init_shm_segment(getfenv(), _NAME, shared, shsize);
 --@param u0 The previous position
 --@return The Distance moved with the current walk plan
 --@return The global position of the planned step
-function get_odometry(u0)
+function mcm.get_odometry(u0)
   if (not u0) then
     u0 = vector.new({0, 0, 0});
   end
-  local uFoot = util.se2_interpolate(.5, get_walk_uLeft(), get_walk_uRight());
+
+  local uFoot = util.se2_interpolate(.5, mcm.get_walk_uLeft(), mcm.get_walk_uRight());
   return util.pose_relative(uFoot, u0), uFoot;
 end
 
 --Now those parameters are dynamically adjustable
-footX = Config.walk.footX or 0;
-kickX = Config.walk.kickX or 0;
-footXComp = Config.walk.footXComp or 0;
-kickXComp = Config.walk.kickXComp or 0;
-headPitchBias= Config.walk.headPitchBias or 0;
-headPitchBiasComp= Config.walk.headPitchBiasComp or 0;
+local footX = Config.walk.footX or 0;
+local kickX = Config.walk.kickX or 0;
+local footXComp = Config.walk.footXComp or 0;
+local kickXComp = Config.walk.kickXComp or 0;
+local headPitchBias = Config.walk.headPitchBias or 0;
+local headPitchBiasComp = Config.walk.headPitchBiasComp or 0;
 
-set_walk_footXComp(footXComp);
-set_walk_kickXComp(kickXComp);
-set_walk_headPitchBiasComp(headPitchBiasComp);
+mcm.set_walk_footXComp(footXComp);
+mcm.set_walk_kickXComp(kickXComp);
+mcm.set_walk_headPitchBiasComp(headPitchBiasComp);
 
-function get_footX()
-  return get_walk_footXComp() + footX;
+function mcm.get_footX()
+  return mcm.get_walk_footXComp() + footX;
 end
 
-function get_kickX()
-  return get_walk_kickXComp();
+function mcm.get_kickX()
+  return mcm.get_walk_kickXComp();
 end
 
-function get_headPitchBias()
-  return get_walk_headPitchBiasComp()+headPitchBias;
+function mcm.get_headPitchBias()
+  return mcm.get_walk_headPitchBiasComp()+headPitchBias;
 end
+

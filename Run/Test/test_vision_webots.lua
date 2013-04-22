@@ -5,7 +5,7 @@ package.path = cwd.."/?.lua;"..package.path;
 local init = require('init')
 
 local Config = require('Config');
-smindex = 0;
+local smindex = 0;
 
 package.path = cwd..'/BodyFSM/'..Config.fsm.body[smindex+1]..'/?.lua;'..package.path;
 package.path = cwd..'/HeadFSM/'..Config.fsm.head[smindex+1]..'/?.lua;'..package.path;
@@ -21,19 +21,19 @@ local Motion = require('Motion');
 local walk = require('walk');
 local HeadTransform = require('HeadTransform')
 local Speak = require('Speak')
-local vcm = require('vcm')
 local Vision = require('Vision')
 local World = require('World')
 local Team = require('Team')
 local util = require('util')
-local wcm = require('wcm')
-local gcm = require('gcm')
-local ocm = require('ocm')
-local matcm = require('matcm')
+require('vcm')
+require('wcm')
+require('gcm')
+require('ocm')
+require('matcm')
 --local behaviorObstacle = require('behaviorObstacle')
 
-darwin = false;
-webots = false;
+local darwin = false;
+local webots = false;
 
 -- Enable OP specific 
 if(Config.platform.name == 'OP') then
@@ -60,19 +60,16 @@ Body.set_head_hardness({0.4,0.4});
 controller.wb_robot_keyboard_enable(100);
 
 -- main loop
-headsm_running=0;
-bodysm_running=0;
+local headsm_running=0;
+local bodysm_running=0;
 
-count = 0;
+local count = 0;
 t0=Body.get_time();
-last_update_time=t0;
-last_vision_update_time=t0;
+local last_vision_update_time=t0;
 
 headangle=vector.new({0,10*math.pi/180});
 targetvel=vector.zeros(3);
 vision_update_interval = 0.04; --25fps update
-
-camera_select = 1;
 
 -- set game state to ready to stop particle filter initiation
 gcm.set_game_state(1);

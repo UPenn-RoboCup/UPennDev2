@@ -1,7 +1,7 @@
 module(..., package.seeall);
 local Body = require('Body')
 local fsm = require('fsm')
-local gcm = require('gcm')
+require('gcm')
 
 local headIdle = require('headIdle')
 local headStart = require('headStart')

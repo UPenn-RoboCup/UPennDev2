@@ -1,14 +1,14 @@
-module(..., package.seeall);
-
 local PoseFilter = require('PoseFilter');
 local Filter2D = require('Filter2D');
 local Body = require('Body');
 local vector = require('vector');
 local util = require('util');
-local wcm = require('wcm')
-local vcm = require('vcm');
-local gcm = require('gcm');
-local mcm = require('mcm');
+require('wcm')
+require('vcm');
+require('gcm');
+require('mcm');
+
+local world = {}
 
 -- intialize sound localization if needed
 local useSoundLocalization = Config.world.enable_sound_localization or 0;
@@ -71,9 +71,9 @@ yaw0 =0;
 --Track gcm state
 gameState = 0;
 
-function init_particles()
+function world.init_particles()
   if use_same_colored_goal>0 then
-    goalDefend=get_goal_defend();
+    goalDefend= world.get_goal_defend();
     PoseFilter.initialize_unified(
       vector.new({goalDefend[1]/2, -2,  math.pi/2}),
       vector.new({goalDefend[1]/2,  2, -math.pi/2}));
@@ -85,16 +85,16 @@ function init_particles()
   end
 end
 
-function entry()
+function world.entry()
   count = 0;
-  init_particles();
+  world.init_particles();
   Velocity.entry();
 end
 
-function init_particles_manual_placement()
+function world.init_particles_manual_placement()
   if gcm.get_team_role() == 0 then
   -- goalie initialized to different place
-    goalDefend=get_goal_defend();
+    goalDefend= world.get_goal_defend();
     util.ptable(goalDefend);
     dp = vector.new({0.04,0.04,math.pi/8});
     if goalDefend[1] > 0 then
@@ -110,7 +110,7 @@ function init_particles_manual_placement()
   end
 end
 
-function allLessThanTenth(table)
+function world.allLessThanTenth(table)
   for k,v in pairs(table) do
     if v >= .1 then
       return false
@@ -119,7 +119,7 @@ function allLessThanTenth(table)
   return true
 end
 
-function allZeros(table)
+function world.allZeros(table)
   for k,v in pairs(table) do
     if v~=0 then
       return false
@@ -129,7 +129,7 @@ function allZeros(table)
 end
 
 
-function update_odometry()
+function world.update_odometry()
 
   odomScale = wcm.get_robot_odomScale();
   count = count + 1;
@@ -156,7 +156,7 @@ function update_odometry()
 end
 
 
-function update_pos()
+function world.update_pos()
   -- update localization without vision (for odometry testing)
   if count % cResample == 0 then
     PoseFilter.resample();
@@ -167,7 +167,7 @@ function update_pos()
 end
 
 
-function update_vision()
+function world.update_vision()
 
   --update ground truth
 	if gps_enable>0 then
@@ -180,13 +180,13 @@ function update_vision()
     gps_pose_xya.x=gps_pose[1];
     gps_pose_xya.y=gps_pose[2];
     gps_pose_xya.a=gps_pose[3];
-    gps_attackBearing = get_attack_bearing_pose(gps_pose_xya);
+    gps_attackBearing = world.get_attack_bearing_pose(gps_pose_xya);
 
     wcm.set_robot_gpspose(gps_pose);
     wcm.set_robot_gps_attackbearing(gps_attackBearing);
   else
     wcm.set_robot_gpspose({pose.x,pose.y,pose.a});
-    wcm.set_robot_gps_attackbearing(get_attack_bearing());
+    wcm.set_robot_gps_attackbearing(world.get_attack_bearing());
   end
 
   --We may use ground truth data only (for behavior testing)
@@ -471,11 +471,11 @@ function update_vision()
 --print("TEAMBALL")
   end
   
-  update_led();
-  update_shm();
+  world.update_led();
+  world.update_shm();
 end
 
-function update_led()
+function world.update_led()
   --Turn on the eye light according to team color
   --If gamecontroller is down
   if gcm.get_game_state()~=3 and
@@ -502,7 +502,7 @@ function update_led()
   end
 end
 
-function update_shm()
+function world.update_shm()
   -- update shm values
 
   --print(string.format( 
@@ -517,14 +517,14 @@ function update_shm()
   wcm.set_ball_p(ball.p);
 
   wcm.set_goal_t(pose.tGoal);
-  wcm.set_goal_attack(get_goal_attack());
-  wcm.set_goal_defend(get_goal_defend());
-  wcm.set_goal_attack_bearing(get_attack_bearing());
-  wcm.set_goal_attack_angle(get_attack_angle());
-  wcm.set_goal_defend_angle(get_defend_angle());
+  wcm.set_goal_attack(world.get_goal_attack());
+  wcm.set_goal_defend(world.get_goal_defend());
+  wcm.set_goal_attack_bearing(world.get_attack_bearing());
+  wcm.set_goal_attack_angle(world.get_attack_angle());
+  wcm.set_goal_defend_angle(world.get_defend_angle());
 
-  wcm.set_goal_attack_post1(get_attack_posts()[1]);
-  wcm.set_goal_attack_post2(get_attack_posts()[2]);
+  wcm.set_goal_attack_post1(world.get_attack_posts()[1]);
+  wcm.set_goal_attack_post2(world.get_attack_posts()[2]);
 
   wcm.set_robot_is_fall_down(mcm.get_walk_isFallDown());
   --Particle information
@@ -535,28 +535,28 @@ function update_shm()
 
 end
 
-function exit()
+function world.exit()
 end
 
 
-function get_ball()
+function world.get_ball()
   return ball;
 end
 
-function get_pose()
+function world.get_pose()
   return pose;
 end
 
-function zero_pose()
+function world.zero_pose()
   PoseFilter.zero_pose();
 end
 
-function get_attack_bearing()
-  return get_attack_bearing_pose(pose);
+function world.get_attack_bearing()
+  return world.get_attack_bearing_pose(pose);
 end
 
 --Get attack bearing from pose0
-function get_attack_bearing_pose(pose0)
+function world.get_attack_bearing_pose(pose0)
   if gcm.get_team_color() == 1 then
     -- red attacks cyan goal
     postAttack = PoseFilter.postCyan;
@@ -578,7 +578,7 @@ function get_attack_bearing_pose(pose0)
   return attackBearing, daPost;
 end
 
-function get_goal_attack()
+function world.get_goal_attack()
   if gcm.get_team_color() == 1 then
     -- red attacks cyan goal
     return {PoseFilter.postCyan[1][1], 0, 0};
@@ -588,7 +588,7 @@ function get_goal_attack()
   end
 end
 
-function get_goal_defend()
+function world.get_goal_defend()
   if gcm.get_team_color() == 1 then
     -- red defends yellow goal
     return {PoseFilter.postYellow[1][1], 0, 0};
@@ -598,7 +598,7 @@ function get_goal_defend()
   end
 end
 
-function get_attack_posts()
+function world.get_attack_posts()
   if gcm.get_team_color() == 1 then
     return Config.world.postCyan;
   else
@@ -606,41 +606,24 @@ function get_attack_posts()
   end
 end
 
-function get_attack_angle()
-  goalAttack = get_goal_attack();
+function world.get_attack_angle()
+  goalAttack = world.get_goal_attack();
 
   dx = goalAttack[1] - pose.x;
   dy = goalAttack[2] - pose.y;
   return mod_angle(math.atan2(dy, dx) - pose.a);
 end
 
-function get_defend_angle()
-  goalDefend = get_goal_defend();
+function world.get_defend_angle()
+  goalDefend = world.get_goal_defend();
 
   dx = goalDefend[1] - pose.x;
   dy = goalDefend[2] - pose.y;
   return mod_angle(math.atan2(dy, dx) - pose.a);
 end
 
-function get_team_color()
+function world.get_team_color()
   return gcm.get_team_color();
 end
 
-function pose_global(pRelative, pose)
-  local ca = math.cos(pose[3]);
-  local sa = math.sin(pose[3]);
-  return vector.new{pose[1] + ca*pRelative[1] - sa*pRelative[2],
-                    pose[2] + sa*pRelative[1] + ca*pRelative[2],
-                    pose[3] + pRelative[3]};
-end
-
-function pose_relative(pGlobal, pose)
-  local ca = math.cos(pose[3]);
-  local sa = math.sin(pose[3]);
-  local px = pGlobal[1]-pose[1];
-  local py = pGlobal[2]-pose[2];
-  local pa = pGlobal[3]-pose[3];
-  return vector.new{ca*px + sa*py, -sa*px + ca*py, mod_angle(pa)};
-end
-
-
+return world

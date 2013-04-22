@@ -3,7 +3,7 @@ module(..., package.seeall);
 local Config = require('Config')
 local carray = require('carray')
 local ImageProc = require('ImageProc')
-local vcm = require('vcm')
+require('vcm')
 
 LUT = {};
 

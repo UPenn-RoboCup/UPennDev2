@@ -2,7 +2,7 @@ local Body = require('Body')
 local Kinematics = require('Kinematics')
 local Config = require('Config');
 local vector = require('vector')
-local mcm = require('mcm')
+require('mcm')
 local unix = require('unix')
 local util = require('util')
 
@@ -108,17 +108,17 @@ use_alternative_trajectory = Config.walk.use_alternative_trajectory or 0;
 -- Walk state variables
 ----------------------------------------------------------
 
-uTorso = vector.new({supportX, 0, 0});
-uLeft = vector.new({0, footY, 0});
-uRight = vector.new({0, -footY, 0});
+local uTorso = vector.new({supportX, 0, 0});
+local uLeft = vector.new({0, footY, 0});
+local uRight = vector.new({0, -footY, 0});
+ 
+local pLLeg = vector.new({0, footY, 0, 0,0,0});
+local pRLeg = vector.new({0, -footY, 0, 0,0,0});
+local pTorso = vector.new({supportX, 0, bodyHeight, 0,bodyTilt,0});
 
-pLLeg = vector.new({0, footY, 0, 0,0,0});
-pRLeg = vector.new({0, -footY, 0, 0,0,0});
-pTorso = vector.new({supportX, 0, bodyHeight, 0,bodyTilt,0});
-
-velCurrent = vector.new({0, 0, 0});
-velCommand = vector.new({0, 0, 0});
-velDiff = vector.new({0, 0, 0});
+local velCurrent = vector.new({0, 0, 0});
+local velCommand = vector.new({0, 0, 0});
+local velDiff = vector.new({0, 0, 0});
 
 --ZMP exponential coefficients:
 aXP, aXN, aYP, aYN = 0, 0, 0, 0;
@@ -420,7 +420,7 @@ function walk.update()
     velDelta = Config.walk.velDelta or {.03,.015,.15};
   end
 
-  advanceMotion();
+  walk.advanceMotion();
   footX = mcm.get_footX();
 
   t = Body.get_time();
@@ -433,8 +433,8 @@ function walk.update()
   if enable_hip_pr then active= false; end
 
   if (not active) then 
-    check_push_recovery();
-    update_still();
+    walk.check_push_recovery();
+    walk.update_still();
     return; 
   end
 
@@ -461,7 +461,7 @@ function walk.update()
 
   -- New step
   if (iStep > iStep0) then
-    update_velocity();
+    walk.update_velocity();
     iStep0 = iStep;
     supportLeg = iStep % 2; -- 0 for left support, 1 for right support
     uLeft1 = uLeft2;
@@ -471,7 +471,7 @@ function walk.update()
     supportMod = {0,0}; --Support Point modulation for walkkick
     shiftFactor = 0.5; --How much should we shift final Torso pose?
 
-    check_walkkick(); 
+    walk.check_walkkick(); 
 
     if walkKickRequest==0 then
       if (stopRequest==1) then  --Final step
@@ -486,9 +486,9 @@ function walk.update()
       else --Normal walk, advance steps
         tStep=tStep0; 
         if supportLeg == 0 then-- Left support
-          uRight2 = step_right_destination(velCurrent, uLeft1, uRight1);
+          uRight2 = walk.step_right_destination(velCurrent, uLeft1, uRight1);
         else  -- Right support
-          uLeft2 = step_left_destination(velCurrent, uLeft1, uRight1);
+          uLeft2 = walk.step_left_destination(velCurrent, uLeft1, uRight1);
         end
         --Velocity-based support point modulation
         toeTipCompensation = 0;
@@ -513,7 +513,7 @@ function walk.update()
       end
     end
 
-    uTorso2 = step_torso(uLeft2, uRight2,shiftFactor);
+    uTorso2 = walk.step_torso(uLeft2, uRight2,shiftFactor);
 
     --Adjustable initial step body swing
     if initial_step>0 then 
@@ -550,9 +550,9 @@ function walk.update()
     m2X = (uTorso2[1]-uSupport[1])/(tStep*(1-ph2Zmp));
     m1Y = (uSupport[2]-uTorso1[2])/(tStep*ph1Zmp);
     m2Y = (uTorso2[2]-uSupport[2])/(tStep*(1-ph2Zmp));
-    aXP, aXN = zmp_solve(uSupport[1], uTorso1[1], uTorso2[1],
+    aXP, aXN = walk.zmp_solve(uSupport[1], uTorso1[1], uTorso2[1],
     uTorso1[1], uTorso2[1]);
-    aYP, aYN = zmp_solve(uSupport[2], uTorso1[2], uTorso2[2],
+    aYP, aYN = walk.zmp_solve(uSupport[2], uTorso1[2], uTorso2[2],
     uTorso1[2], uTorso2[2]);
 
     --Compute maximum COM speed
@@ -563,7 +563,7 @@ function walk.update()
 
   end --End new step
 
-  xFoot, zFoot = foot_phase(ph);  
+  xFoot, zFoot = walk.foot_phase(ph);  
   if initial_step>0 then zFoot=0;  end --Don't lift foot at initial step
   pLLeg[3], pRLeg[3] = 0;
   if supportLeg == 0 then    -- Left support
@@ -588,7 +588,7 @@ function walk.update()
   end
   uTorsoOld=uTorso;
 
-  uTorso = zmp_com(ph);
+  uTorso = walk.zmp_com(ph);
 
   --Turning
   local turnCompX=0;
@@ -650,8 +650,8 @@ function walk.update()
   pRLeg[1], pRLeg[2], pRLeg[6] = uRight[1], uRight[2], uRight[3];
 
   qLegs = Kinematics.inverse_legs(pLLeg, pRLeg, pTorso, supportLeg);
-  motion_legs(qLegs);
-  motion_arms();
+  walk.motion_legs(qLegs);
+  walk.motion_arms();
   -- end motion_body
 end
 
@@ -730,7 +730,7 @@ end
 
 
 function walk.update_still()
-  uTorso = step_torso(uLeft, uRight,0.5);
+  uTorso = walk.step_torso(uLeft, uRight,0.5);
 
   --Arm movement compensation
   if upper_body_overridden>0 or motion_playing>0 then
@@ -770,8 +770,8 @@ function walk.update_still()
   pRLeg[1], pRLeg[2], pRLeg[6] = uRight[1], uRight[2], uRight[3];
   
   qLegs = Kinematics.inverse_legs(pLLeg, pRLeg, pTorso, supportLeg);
-  motion_legs(qLegs);
-  motion_arms();
+  walk.motion_legs(qLegs);
+  walk.motion_arms();
 end
 
 
@@ -1305,4 +1305,6 @@ end
 
 walk.entry();
 
+walk.uLeft = uLeft
+walk.uRight = uRight
 return walk

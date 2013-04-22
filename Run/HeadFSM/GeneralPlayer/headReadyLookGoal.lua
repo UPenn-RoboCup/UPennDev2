@@ -2,7 +2,7 @@ module(..., package.seeall);
 
 local Body = require('Body')
 local Config = require('Config')
-local vcm = require('vcm')
+require('vcm')
 
 t0 = 0;
 

@@ -4,8 +4,8 @@ local Body = require('Body')
 local UltraSound = require('UltraSound')
 local fsm = require('fsm')
 local vector = require('vector')
-local mcm = require('mcm')
-local gcm = require('gcm')
+require('mcm')
+require('gcm')
 
 local relax = require('relax')
 local stance = require('stance')
@@ -32,7 +32,7 @@ if Config.platform.name~="WebotsOP" then
   local stancetocrawl = require 'stancetocrawl' -- Changes between standing, sitting, crawling state
 end
 
-sit_disable = Config.sit_disable or 0;
+local sit_disable = Config.sit_disable or 0;
 
 if sit_disable==0 then --For smaller robots
   fallAngle = Config.fallAngle or 30*math.pi/180;

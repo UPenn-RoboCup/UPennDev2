@@ -1,21 +1,19 @@
-module(..., package.seeall);
-
-require("shm");
-require("util");
-require("vector");
+local shm = require("shm");
+local util = require("util");
+local vector = require("vector");
 local Config = require('Config');
 -- Enable Webots specific
 if (string.find(Config.platform.name,'Webots')) then
   webots = true;
 end
 
-enable_lut_for_obstacle = Config.vision.enable_lut_for_obstacle or 0;
-enable_robot_detection = Config.vision.enable_robot_detection or 0;
-enable_freespace_detection = Config.vision.enable_freespace_detection or 0;
+local enable_lut_for_obstacle = Config.vision.enable_lut_for_obstacle or 0;
+local enable_robot_detection = Config.vision.enable_robot_detection or 0;
+local enable_freespace_detection = Config.vision.enable_freespace_detection or 0;
 
 -- shared properties
-shared = {};
-shsize = {};
+local shared = {};
+local shsize = {};
 
 processed_img_width = Config.camera.width;
 processed_img_height = Config.camera.height;
@@ -208,22 +206,22 @@ shared.debug.store_ball_detections = vector.zeros(1);
 shared.debug.store_all_images = vector.zeros(1);
 shared.debug.message='';
 
-util.init_shm_segment(getfenv(), _NAME, shared, shsize);
+util.init_shm_segment(..., shared, shsize);
 
 debug_message='';
 
 --For vision debugging
-function refresh_debug_message()
+function vcm.refresh_debug_message()
   if string.len(debug_message)==0 then
     --it is not updated for whatever reason
     --just keep the latest message
   else
     --Update SHM
-    set_debug_message(debug_message);
+    vcm.set_debug_message(debug_message);
     debug_message='';
   end
 end
-function add_debug_message(message)
+function vcm.add_debug_message(message)
   if string.len(debug_message)>1000 then
     --something is wrong, just reset it 
     debug_message='';

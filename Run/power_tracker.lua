@@ -28,6 +28,8 @@ local maxon305015 = {
                       efficiency=.89,
                     }
 
+-- all other joints are assumed to be using 309758's.
+local joints_using_305015 = {l_knee_pitch=1, r_knee_pitch=1}
 
 local function create_joint_data_ssv(filename)
   local file = io.open(filename, 'w')
@@ -89,7 +91,12 @@ end
 local function update_input_power()
   total_input_power = 0
   for i,joint in ipairs(Config_devices.joint.id) do
-    input_power[i] = motor_power(maxon309758, torque[i])
+    local motor = maxon309758
+    if joints_using_305015[joint] ~= nil then
+      motor = maxon305015
+    end
+    
+    input_power[i] = motor_power(motor, torque[i])
     -- only add the output power if it's positive
     if output_power[i] > 0 then
       local efficiency = (drivetrain_efficiency * motor.efficiency)

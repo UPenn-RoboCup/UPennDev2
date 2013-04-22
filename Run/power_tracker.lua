@@ -12,12 +12,12 @@ dofile('include.lua')
 -- The non-knee motors are allegedly Maxon 309758's in the 2008 catalog;
 -- the knee motors are likewise 305015's.
 local maxon309758 = {
-                      torque_constant_Nm_per_A=9580,
+                      torque_constant_Nm_per_A=9.58 / 1000,
                       resistance=.836,
                       efficiency=.87,
                     }
 local maxon305015 = {
-                      torque_constant_Nm_per_A=27600,
+                      torque_constant_Nm_per_A=27.6 / 1000,
                       resistance=.386,
                       efficiency=.89,
                     }

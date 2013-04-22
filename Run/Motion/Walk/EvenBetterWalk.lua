@@ -1,5 +1,3 @@
-module(..., package.seeall);
-
 local Body = require('Body')
 local Kinematics = require('Kinematics')
 local Config = require('Config');
@@ -8,45 +6,46 @@ local mcm = require('mcm')
 local unix = require('unix')
 local util = require('util')
 
+local walk = {}
+walk._NAME = ...
+
 -- No stabilization by default
-no_stabilize = false;
+local no_stabilize = false;
 
 -- Walk Parameters
 -- Stance and velocity limit values
-stanceLimitX=Config.walk.stanceLimitX or {-0.10 , 0.10};
-stanceLimitY=Config.walk.stanceLimitY or {0.09 , 0.20};
-stanceLimitA=Config.walk.stanceLimitA or {-0*math.pi/180, 40*math.pi/180};
-velLimitX = Config.walk.velLimitX or {-.06, .08};
-velLimitY = Config.walk.velLimitY or {-.06, .06};
-velLimitA = Config.walk.velLimitA or {-.4, .4};
-velDelta = Config.walk.velDelta or {.03,.015,.15};
-vaFactor = Config.walk.vaFactor or 0.6;
-
-
-velXHigh = Config.walk.velXHigh or 0.06;
-velDeltaXHigh = Config.walk.velDeltaXHigh or 0.01;
-
+local stanceLimitX = Config.walk.stanceLimitX or {-0.10 , 0.10};
+local stanceLimitY = Config.walk.stanceLimitY or {0.09 , 0.20};
+local stanceLimitA = Config.walk.stanceLimitA or {-0*math.pi/180, 40*math.pi/180};
+local velLimitX = Config.walk.velLimitX or {-.06, .08};
+local velLimitY = Config.walk.velLimitY or {-.06, .06};
+local velLimitA = Config.walk.velLimitA or {-.4, .4};
+local velDelta = Config.walk.velDelta or {.03,.015,.15};
+local vaFactor = Config.walk.vaFactor or 0.6;
+ 
+local velXHigh = Config.walk.velXHigh or 0.06;
+local velDeltaXHigh = Config.walk.velDeltaXHigh or 0.01;
 
 --Toe/heel overlap checking values
-footSizeX = Config.walk.footSizeX or {-0.05,0.05};
-stanceLimitMarginY = Config.walk.stanceLimitMarginY or 0.015;
-stanceLimitY2= 2* Config.walk.footY-stanceLimitMarginY;
+local footSizeX = Config.walk.footSizeX or {-0.05,0.05};
+local stanceLimitMarginY = Config.walk.stanceLimitMarginY or 0.015;
+local stanceLimitY2= 2* Config.walk.footY-stanceLimitMarginY;
 
 --OP default stance width: 0.0375*2 = 0.075
 --Heel overlap At radian 0.15 at each foot = 0.05*sin(0.15)*2=0.015
 --Heel overlap At radian 0.30 at each foot = 0.05*sin(0.15)*2=0.030
 
 --Stance parameters
-bodyHeight = Config.walk.bodyHeight;
-bodyTilt=Config.walk.bodyTilt or 0;
-footX = mcm.get_footX();
-footY = Config.walk.footY;
-supportX = Config.walk.supportX;
-supportY = Config.walk.supportY;
-qLArm0=Config.walk.qLArm;
-qRArm0=Config.walk.qRArm;
-qLArmKick0=Config.walk.qLArmKick;
-qRArmKick0=Config.walk.qRArmKick;
+local bodyHeight = Config.walk.bodyHeight;
+local bodyTilt=Config.walk.bodyTilt or 0;
+local footX = mcm.get_footX();
+local footY = Config.walk.footY;
+local supportX = Config.walk.supportX;
+local supportY = Config.walk.supportY;
+local qLArm0 = Config.walk.qLArm;
+local qRArm0 = Config.walk.qRArm;
+local qLArmKick0 = Config.walk.qLArmKick;
+local qRArmKick0 = Config.walk.qRArmKick;
 
 --Hardness parameters
 hardnessSupport = Config.walk.hardnessSupport or 0.7;
@@ -232,7 +231,7 @@ tStance0,tStance1 = 0,0;
 --Push Recovery Check
 
 angleTiltOld = 0;
-function check_push_recovery()
+function walk.check_push_recovery()
   if not enable_hip_pr then return; end
 
   imuGyr = Body.get_sensor_imuGyr();
@@ -318,7 +317,7 @@ end
 
 
 --Direct control of upper body
-function upper_body_override(qL, qR, bR)
+function walk.upper_body_override(qL, qR, bR)
   upper_body_overridden = 1;
   qLArmOR0 = qL;
   qRArmOR0 = qR;
@@ -364,21 +363,21 @@ function upper_body_override(qL, qR, bR)
 end
 
 
-function upper_body_override_on()
+function walk.upper_body_override_on()
   upper_body_overridden = 1;
   hardnessArm = 1;
 end
 
-function upper_body_override_off()
+function walk.upper_body_override_off()
   upper_body_overridden = 0;
   hardnessArm = hardnessArm0;
 end
 
-function entry()
+function walk.entry()
   print ("Motion: Walk entry")
   --SJ: now we always assume that we start walking with feet together
   --Because joint readings are not always available with darwins
-  stance_reset();
+  walk.stance_reset();
 
   --Place arms in appropriate position at sides
   Body.set_larm_command(qLArm0);
@@ -395,7 +394,7 @@ function entry()
 end
 
 
-function update()
+function walk.update()
 
   if testing then
     --Stance parameters
@@ -656,7 +655,7 @@ function update()
   -- end motion_body
 end
 
-function check_walkkick()
+function walk.check_walkkick()
   --Walkkick def: 
   --tStep stepType supportFoot stepHeight bodyPosMod footPos1 footPos2
   if walkKickRequest==0 then return; end
@@ -730,7 +729,7 @@ function check_walkkick()
 end
 
 
-function update_still()
+function walk.update_still()
   uTorso = step_torso(uLeft, uRight,0.5);
 
   --Arm movement compensation
@@ -776,7 +775,7 @@ function update_still()
 end
 
 
-function motion_legs(qLegs)
+function walk.motion_legs(qLegs)
   phComp = math.min(1, phSingle/.1, (1-phSingle)/.1);
 
   --Ankle stabilization using gyro feedback
@@ -861,7 +860,7 @@ function motion_legs(qLegs)
   Body.set_lleg_command(qLegs);
 end
 
-function motion_arms()
+function walk.motion_arms()
   local qLArmActual={};   
   local qRArmActual={};   
 
@@ -920,10 +919,10 @@ function motion_arms()
 
 end
 
-function exit()
+function walk.exit()
 end
 
-function step_left_destination(vel, uLeft, uRight)
+function walk.step_left_destination(vel, uLeft, uRight)
   local u0 = util.se2_interpolate(.5, uLeft, uRight);
   -- Determine nominal midpoint position 1.5 steps in future
   local u1 = util.pose_global(vel, u0);
@@ -947,7 +946,7 @@ function step_left_destination(vel, uLeft, uRight)
   return util.pose_global(uLeftRight, uRight);
 end
 
-function step_right_destination(vel, uLeft, uRight)
+function walk.step_right_destination(vel, uLeft, uRight)
   local u0 = util.se2_interpolate(.5, uLeft, uRight);
   -- Determine nominal midpoint position 1.5 steps in future
   local u1 = util.pose_global(vel, u0);
@@ -971,14 +970,14 @@ function step_right_destination(vel, uLeft, uRight)
   return util.pose_global(uRightLeft, uLeft);
 end
 
-function step_torso(uLeft, uRight,shiftFactor)
+function walk.step_torso(uLeft, uRight,shiftFactor)
   local u0 = util.se2_interpolate(.5, uLeft, uRight);
   local uLeftSupport = util.pose_global({supportX, supportY, 0}, uLeft);
   local uRightSupport = util.pose_global({supportX, -supportY, 0}, uRight);
   return util.se2_interpolate(shiftFactor, uLeftSupport, uRightSupport);
 end
 
-function set_velocity(vx, vy, va)
+function walk.set_velocity(vx, vy, va)
   --Filter the commanded speed
   vx= math.min(math.max(vx,velLimitX[1]),velLimitX[2]);
   vy= math.min(math.max(vy,velLimitY[1]),velLimitY[2]);
@@ -1000,7 +999,7 @@ function set_velocity(vx, vy, va)
 
 end
 
-function update_velocity()
+function walk.update_velocity()
   if velCurrent[1]>velXHigh then
     --Slower accelleration at high speed 
     velDiff[1]= math.min(math.max(velCommand[1]-velCurrent[1],
@@ -1027,11 +1026,11 @@ function update_velocity()
 
 end
 
-function get_velocity()
+function walk.get_velocity()
   return velCurrent;
 end
 
-function start()
+function walk.start()
   stopRequest = 0;
   if (not active) then
     active = true;
@@ -1043,52 +1042,52 @@ function start()
   end
 end
 
-function stop()
+function walk.stop()
   --Always stops with feet together (which helps kicking)
   stopRequest = math.max(1,stopRequest);
   --  stopRequest = 2; --Stop w/o feet together
 end
 
-function stopAlign() --Depreciated, we always stop with feet together 
+function walk.stopAlign() --Depreciated, we always stop with feet together 
   stop()
 end
 
-function doWalkKickLeft()
+function walk.doWalkKickLeft()
   if walkKickRequest==0 then
     walkKickRequest = 1; 
     walkKick = walkKickDef["FrontLeft"];
   end
 end
 
-function doWalkKickRight()
+function walk.doWalkKickRight()
   if walkKickRequest==0 then
     walkKickRequest = 1; 
     walkKick = walkKickDef["FrontRight"];
   end
 end
 
-function doWalkKickLeft2()
+function walk.doWalkKickLeft2()
   if walkKickRequest==0 then
     walkKickRequest = 1; 
     walkKick = walkKickDef["FrontLeft2"];
   end
 end
 
-function doWalkKickRight2()
+function walk.doWalkKickRight2()
   if walkKickRequest==0 then
     walkKickRequest = 1; 
     walkKick = walkKickDef["FrontRight2"];
   end
 end
 
-function doSideKickLeft()
+function walk.doSideKickLeft()
   if walkKickRequest==0 then
     walkKickRequest = 1; 
     walkKick = walkKickDef["SideLeft"];
   end
 end
 
-function doSideKickRight()
+function walk.doSideKickRight()
   if walkKickRequest==0 then
     walkKickRequest = 1; 
     walkKick = walkKickDef["SideRight"];
@@ -1098,10 +1097,10 @@ end
 
 
 --dummy function for NSL kick, depreciated
-function zero_velocity()
+function walk.zero_velocity()
 end
 
-function doPunch(punchtype)
+function walk.doPunch(punchtype)
   if(punchtype=='left') then
     if walkKickRequest==0 then
       walkKickRequest = 1;
@@ -1115,7 +1114,7 @@ function doPunch(punchtype)
   end
 end
 
-function startMotion(motionname)
+function walk.startMotion(motionname)
   if motion_playing==0 then
     motion_playing = 1;
     current_motion = Config.walk.motionDef[motionname];
@@ -1138,7 +1137,7 @@ function startMotion(motionname)
   end
 end
 
-function advanceMotion()
+function walk.advanceMotion()
   if motion_playing==0 then
     return;
   end
@@ -1184,7 +1183,7 @@ function advanceMotion()
 end
 
 
-function stance_reset() --standup/sitdown/falldown handling
+function walk.stance_reset() --standup/sitdown/falldown handling
   print("Stance Resetted")
   uLeft = util.pose_global(vector.new({-supportX, footY, 0}),uTorso);
   uRight = util.pose_global(vector.new({-supportX, -footY, 0}),uTorso);
@@ -1202,10 +1201,10 @@ function stance_reset() --standup/sitdown/falldown handling
   uLRFootOffset = vector.new({0,footY,0});
 end
 
-function switch_stance(stance)
+function walk.switch_stance(stance)
 end
 
-function get_odometry(u0)
+function walk.get_odometry(u0)
   if (not u0) then
     u0 = vector.new({0, 0, 0});
   end
@@ -1213,12 +1212,12 @@ function get_odometry(u0)
   return util.pose_relative(uFoot, u0), uFoot;
 end
 
-function get_body_offset()
+function walk.get_body_offset()
   local uFoot = util.se2_interpolate(.5, uLeft, uRight);
   return util.pose_relative(uTorso, uFoot);
 end
 
-function zmp_solve(zs, z1, z2, x1, x2)
+function walk.zmp_solve(zs, z1, z2, x1, x2)
   --[[
   Solves ZMP equation:
   x(t) = z(t) + aP*exp(t/tZmp) + aN*exp(-t/tZmp) - tZmp*mi*sinh((t-Ti)/tZmp)
@@ -1239,7 +1238,7 @@ function zmp_solve(zs, z1, z2, x1, x2)
 end
 
 --Finds the necessary COM for stability and returns it
-function zmp_com(ph)
+function walk.zmp_com(ph)
   local com = vector.new({0, 0, 0});
   expT = math.exp(tStep*ph/tZmp);
   com[1] = uSupport[1] + aXP*expT + aXN/expT;
@@ -1261,7 +1260,7 @@ function zmp_com(ph)
   return com;
 end
 
-function foot_phase(ph)
+function walk.foot_phase(ph)
   -- Computes relative x,z motion of foot during single support phase
   -- phSingle = 0: x=0, z=0, phSingle = 1: x=1,z=0
   phSingle = math.min(math.max(ph-ph1Single, 0)/(ph2Single-ph1Single),1);
@@ -1304,4 +1303,6 @@ function foot_phase(ph)
   return xf, zf;
 end
 
-entry();
+walk.entry();
+
+return walk

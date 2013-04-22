@@ -1,4 +1,4 @@
 local Config = require('Config');
 
-walk = require(Config.dev.walk)
+return require(Config.dev.walk)
 

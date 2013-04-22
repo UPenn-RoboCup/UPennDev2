@@ -1,4 +1,4 @@
 local Config = require('Config');
 
-crawl = require(Config.dev.crawl)
+return require(Config.dev.crawl)
 

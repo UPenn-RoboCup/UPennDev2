@@ -11,7 +11,7 @@ local gcm = require('gcm');
 local mcm = require('mcm');
 
 -- intialize sound localization if needed
-useSoundLocalization = Config.world.enable_sound_localization or 0;
+local useSoundLocalization = Config.world.enable_sound_localization or 0;
 if (useSoundLocalization > 0) then
   local SoundFilter = require('SoundFilter');
 end

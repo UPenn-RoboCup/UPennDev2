@@ -1,6 +1,7 @@
-TARGETS = all clean
+TARGETS = all clean CANopen SLUG
 .PHONY: $(TARGETS)
 
+CWD=$(shell pwd)
 CXX=g++
 CC=gcc
 AR=ar
@@ -45,7 +46,7 @@ OBJECTS  = comms_manager.o slug_thread.o \
            ../../Lib/Comms/config.o \
            ../../Lib/Comms/dcm.o \
 
-all: comms_manager
+all: CANopen SLUG comms_manager
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
@@ -54,6 +55,12 @@ all: comms_manager
 
 comms_manager: $(OBJECTS)
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIB_DIRS) $(LIBS)
+
+CANopen:
+	cd ../../Lib/CANopen && make && cd $(CWD)
+
+SLUG:
+	cd ../../Lib/SLUG && make && cd $(CWD)
 
 clean:
 	rm -f *.o *.$(SHLIBEXT) comms_manager

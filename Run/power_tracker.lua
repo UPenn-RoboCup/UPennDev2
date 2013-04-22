@@ -71,7 +71,9 @@ local function update_output_power()
     local f = dcm:get_joint_force_sensor(joint)
     torque[i] = f
     output_power[i] = v*f
-    total_output_power = total_output_power + math.abs(output_power[i])
+    if output_power[i] > 0 then
+      total_output_power = total_output_power + output_power[i]
+    end
     if math.abs(output_power[i]) > math.abs(peak_output_power[i]) then
       peak_output_power[i] = output_power[i]
     end

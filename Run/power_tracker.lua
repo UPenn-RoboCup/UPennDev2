@@ -1,4 +1,9 @@
 dofile('include.lua')
+require('curses')
+require('Platform')
+require('dcm')
+require('Config_devices')
+require('filter')
 
 ----------------------------------------------------------------------
 -- Power Tracking
@@ -6,8 +11,9 @@ dofile('include.lua')
 
 -- Bryce says that the ball screw is ~95% efficient
 --                 the belt is       ~90% efficient
--- Maxon says their motors are        87% max efficency (part #309758)
--- Total: .95 *.90 *.87 = 0.74385 = ~74% efficiency at the end of the piston
+local drivetrain_efficiency = .95 * .90
+local maxon_epos2_50_5_efficiency = .94 --max
+local gearbox_ratio = 200
 
 -- The non-knee motors are allegedly Maxon 309758's in the 2008 catalog;
 -- the knee motors are likewise 305015's.
@@ -22,11 +28,6 @@ local maxon305015 = {
                       efficiency=.89,
                     }
 
-require('curses')
-require('Platform')
-require('dcm')
-require('Config_devices')
-require('filter')
 
 local function create_joint_data_ssv(filename)
   local file = io.open(filename, 'w')
@@ -80,7 +81,9 @@ local function update_output_power()
 end
 
 local function motor_power(motor, torque)
-  return torque^2/motor.torque_constant_Nm_per_A^2*motor.resistance
+  local in_torque = torque / gearbox_ratio
+  local out_power = motor.resistance * in_torque^2/motor.torque_constant_Nm_per_A^2
+  return out_power / maxon_epos2_50_5_efficiency
 end
 
 local function update_input_power()
@@ -89,7 +92,8 @@ local function update_input_power()
     input_power[i] = motor_power(maxon309758, torque[i])
     -- only add the output power if it's positive
     if output_power[i] > 0 then
-      input_power[i] = input_power[i] + output_power[i]
+      local efficiency = (drivetrain_efficiency * motor.efficiency)
+      input_power[i] = input_power[i] + (output_power[i] / efficiency)
     end
     if math.abs(input_power[i]) > math.abs(peak_input_power[i]) then
       peak_input_power[i] = input_power[i]

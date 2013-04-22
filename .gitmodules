@@ -1,6 +1,0 @@
-[submodule "Tools/torch"]
-	path = Tools/torch
-	url = git://github.com/smcgill3/torch.git
-[submodule "Tools/zmq"]
-	path = Tools/zmq
-	url = git@github.com:Neopallium/lua-zmq.git

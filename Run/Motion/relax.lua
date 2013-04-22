@@ -1,6 +1,7 @@
 module(..., package.seeall);
 
 local Body = require('Body')
+local Kinematics = require 'Kinematics'
 
 t0 = 0;
 timeout = 1.0;

@@ -53,7 +53,7 @@ package.path = HOME..'Run/Config/?.lua;'..package.path
 -- include webots stuff
 if Webots then
   package.cpath = HOME..'Frameworks/Webots/Controller/?.so;'..package.cpath
-  package.cpath = HOME..'Frameworks/Webots/Comm/?.so;'..package.cpath
+  package.cpath = HOME..'Frameworks/Webots/GameControl/?.so;'..package.cpath
   package.path = HOME..'Frameworks/Webots/Comm/?.lua;'..package.path
   package.path = HOME..'Frameworks/Webots/GameControl/?.lua;'..package.path
 end

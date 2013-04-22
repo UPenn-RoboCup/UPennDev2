@@ -1,7 +1,7 @@
 if Config.fsm.playMode==1 then 
   print("Demo HeadFSM loaded")
-  HeadFSM=require('HeadFSMDemo');
+  return require('HeadFSMDemo');
 else 
   print("Player HeadFSM loaded")
-  HeadFSM=require('HeadFSMDefault');
+  return require('HeadFSMDefault');
 end

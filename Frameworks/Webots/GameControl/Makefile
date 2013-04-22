@@ -1,3 +1,2 @@
-all:
-
-clean:
+LIBNAME=GameControlPacket
+include ../../../Makefile.inc

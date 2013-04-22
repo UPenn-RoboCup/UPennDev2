@@ -92,6 +92,9 @@ sensors:
 	&& ln -s $@/* .\
 	&& cd $(CWD)
 
+cognition:
+	cd Framework/Cognition && make && cd $(CWD)
+
 tools:
 	cd Tools/Lib && make && cd $(CWD)
 
@@ -103,6 +106,7 @@ clean:
 	rm -f Run/comms_manager
 	cd Framework/Lib && make clean && cd $(CWD)
 	cd Framework/Lib/webots && make clean && cd $(CWD)
+	cd Framework/Cognition && make clean && cd $(CWD)
 	cd Platform/Lib && make clean && cd $(CWD)
 	cd Tools/Lib && make clean && cd $(CWD)
 	cd Platform/ash && make clean && cd $(CWD)
@@ -115,3 +119,4 @@ clean:
 	cd Platform/webots_ash_lowerbody && make clean && cd $(CWD)
 
 .PHONY: all ash teststand arm_teststand robotis_arm gazebo_ash gazebo_ash_lowerbody webots_ash_lowerbody tools clean
+

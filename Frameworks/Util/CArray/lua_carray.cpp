@@ -231,10 +231,44 @@ static int lua_carray_index(lua_State *L) {
 
 static int lua_carray_pointer(lua_State *L) {
   structCArray *p = lua_checkcarray(L, 1);
-  int offset = luaL_optint(L, 2, 0);
+//  int offset = luaL_optint(L, 2, 0);
 
-  lua_pushlightuserdata(L, ((char *)p->ptr + offset));
-  return 1;
+  size_t len;
+  switch (p->type) {
+  case 'b':
+    len = p->size*sizeof(unsigned char);
+    break;
+  case 'c':
+    len = p->size*sizeof(char);
+    break;
+  case 's':
+    len = p->size*sizeof(short);
+    break;
+  case 'l':
+    len = p->size*sizeof(long);
+    break;
+  case 'i':
+    len = p->size*sizeof(int);
+    break;
+  case 'u':
+    len = p->size*sizeof(unsigned int);
+    break;
+  case 'f':
+    len = p->size*sizeof(float);
+    break;
+  case 'd':
+    len = p->size*sizeof(double);
+    break;
+  default:
+    len = p->size;
+  }
+  
+  lua_pushlightuserdata(L, p->ptr);
+
+  lua_pushinteger(L, len);
+
+//  lua_pushlightuserdata(L, ((char *)p->ptr + offset));
+  return 2;
 }
 
 static int lua_carray_typename(lua_State *L) {
@@ -485,6 +519,82 @@ static int lua_carray_fpointer(lua_State *L) {
   return 3;
 }
 
+static int lua_carray_equality(lua_State *L) {
+  structCArray *p1 = lua_checkcarray(L, 1);
+  structCArray *p2 = lua_checkcarray(L, 2);
+  void * ptr1 = p1->ptr;
+  void * ptr2 = p2->ptr;
+
+  if (p1->type != p2->type) {
+    lua_pushboolean(L, 0);
+    return 1;
+  }
+  if (p1->size != p2->size) {
+    lua_pushboolean(L, 0);
+    return 1;
+  }
+  for (int i = 0; i < p1->size; i++) {
+    switch (p1->type) {
+    case 'b':
+      if (((unsigned char *)ptr1)[i] != ((unsigned char *)ptr2)[i]) {
+        lua_pushboolean(L, 0);
+        return 1;
+      }
+      break;
+    case 'c':
+      if (((char *)ptr1)[i] != ((char *)ptr2)[i]) {
+        lua_pushboolean(L, 0);
+        return 1;
+      }
+      break;
+    case 's':
+      if (((short *)ptr1)[i] != ((short *)ptr2)[i]) {
+        lua_pushboolean(L, 0);
+        return 1;
+      }
+      break;
+    case 'l':
+      if (((long *)ptr1)[i] != ((long *)ptr2)[i]) {
+        lua_pushboolean(L, 0);
+        return 1;
+      }
+      break;
+    case 'i':
+      if (((int *)ptr1)[i] != ((int *)ptr2)[i]) {
+        lua_pushboolean(L, 0);
+        return 1;
+      }
+      break;
+    case 'u':
+      if (((unsigned int *)ptr1)[i] != ((unsigned int *)ptr2)[i]) {
+        lua_pushboolean(L, 0);
+        return 1;
+      }
+      break;
+    case 'f':
+      if (((float *)ptr1)[i] != ((float *)ptr2)[i]) {
+        lua_pushboolean(L, 0);
+        return 1;
+      }
+      break;
+    case 'd':
+      if (((double *)ptr1)[i] != ((double *)ptr2)[i]) {
+        lua_pushboolean(L, 0);
+        return 1;
+      }
+      break;
+    default:
+      if (((char *)ptr1)[i] != ((char *)ptr2)[i]) {
+        lua_pushboolean(L, 0);
+        return 1;
+      }
+    }
+  }
+
+  lua_pushboolean(L, 1);
+  return 1;
+}
+
 static const luaL_Reg carray_functions[] = {
   {"null", lua_carray_null},
   {"byte", lua_carray_new<byte, 'b'>},
@@ -511,7 +621,7 @@ static const luaL_Reg carray_methods[] = {
   {"__tostring", lua_carray_tostring},
   {"__len", lua_carray_len},
 	{"__index", lua_carray_index},
-
+  {"__eq", lua_carray_equality},
   {NULL, NULL}
 };
 

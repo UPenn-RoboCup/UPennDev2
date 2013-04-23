@@ -27,6 +27,9 @@ spine_idx = [1,2,9];
 
 %% Store the values in meters
 pos = zeros(15,3);
+nlogs = 300;
+pos_log = zeros(nlogs,15,3);
+log_num = 1;
 offsets = [];
 
 %% Setup the plot
@@ -56,6 +59,10 @@ while 1
             pos(i,2) = positions{i}.x/1000;
             pos(i,3) = positions{i}.y/1000;
         end
+        
+        %% Record logs
+        pos_log(log_num,:,:) = pos;
+        log_num = log_num+1;
         
         % Send UDP data of the end effector offsets
         %offset_r = ...

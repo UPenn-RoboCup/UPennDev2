@@ -84,8 +84,6 @@ for i = 1, #dataset do
   len = len + #pack_str
 end
 print("pack "..#dataset.." tables takes "..(unix.time() - t0).."with pack length "..len)
---]]
-
 
 print("\n================= Test Msgpack for lightuserdata ==================")
 package.cpath = '../Util/CArray/?.so;'..package.cpath
@@ -101,4 +99,12 @@ local pack_str = msgpack.pack(ud:pointer())
 local dp = carray.float(msgpack.unpack(pack_str))
 print("test case ", ud == dp)
 
-msgpack.pack(dp)
+
+local torch = require 'torch'
+aa = torch.DoubleTensor(5):fill(1)
+local pack_str = msgpack.pack(aa)
+tbl = msgpack.unpack(pack_str)
+for k ,v in pairs(tbl) do
+  print(k, v)
+end
+print(#pack_str)

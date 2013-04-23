@@ -25,9 +25,9 @@
 #include <float.h>
 #include <limits.h>
 #include <stdio.h>
-#include <iostream>
 #include <math.h>
 #include <msgpack.h>
+#include <iostream>
 
 #define MT_NAME "msgpack_mt"
 
@@ -152,36 +152,59 @@ static int lua_msgpack_pack_string(lua_State *L, int index, msgpack_packer *pk) 
 }
 
 static int lua_msgpack_pack_table(lua_State *L, int index, msgpack_packer *pk) {
-  int valtype, keytype, ret;
-  int allnumeric = 0;
-  luaL_checktype(L, index, LUA_TTABLE);
-  lua_pushvalue(L, lua_upvalueindex(1));
-  lua_pushvalue(L, 1);
-  lua_pushnil(L);
+  int valtype, keytype, ret, allnumeric = 0;
   int nfield = 0;
-  lua_settop(L, 2);
-  while (lua_next(L, 1)) {
+  /* 
+   * Use lua_next to read table
+   *
+   * lua_next(L, index) do three steps
+   *    1. pop one key from top of stack (-1)
+   *    2. get one key-value pair from stack position index and
+   *       first push key into stack and then push value into stack
+   *       so key at -2 and value at -1
+   *    3. return 0 if step 2 succeed
+   */
+  /* first iterate table to get actual key-value pair numbers */
+  lua_pushnil(L); /* push nil key as dummy starting point for lua_next */
+  while (lua_next(L, index)) {
     nfield ++;
     if (lua_type(L, -2) != LUA_TNUMBER) allnumeric++;
-    lua_settop(L, 2);
+
+    /* only pop value and leave key on stack for next lua_next operation */
+    lua_pop(L, 1);
   }
 
-  lua_pushvalue(L, lua_upvalueindex(1));
-  lua_pushvalue(L, 1);
-  lua_pushnil(L);
+  /* if all numeric array, use array type, otherwise use map type */
+  if (!allnumeric) 
+    msgpack_pack_array(pk, nfield);
+  else
+    msgpack_pack_map(pk, nfield);
 
-  (allnumeric == 0)? msgpack_pack_array(pk, nfield) : msgpack_pack_map(pk, nfield);
-  lua_settop(L, 2);
-  while (lua_next(L, 1)) {
+  lua_pushnil(L);
+  while (lua_next(L, index)) {
+#ifdef DEBUG
+    keytype = lua_type(L, -2);
+    std::cout << "keytype " << keytype << std::endl;
+ 
+    valtype = lua_type(L, -1);
+    std::cout << "valtype " << valtype << std::endl;
+#endif
+    /* if all numeric array, no need to get key */
     if (allnumeric > 0) {
       keytype = lua_type(L, -2);
-      ret = (*PackMap[keytype])(L, -2, pk);
+      /* since key is first push to stack, the absolute key position
+       * on stack should be index + 1 */
+      ret = (*PackMap[keytype])(L, index + 1, pk);
     }
-  
+
     valtype = lua_type(L, -1);
-    ret = (*PackMap[valtype])(L, -1, pk);
-    lua_settop(L, 2);
+    /* since value is second push to stack, the absolute position
+     * on stack should be index + 2 */
+    ret = (*PackMap[valtype])(L, index + 2, pk);
+
+    lua_pop(L, 1);
   }
+
   return 1;
 }
 

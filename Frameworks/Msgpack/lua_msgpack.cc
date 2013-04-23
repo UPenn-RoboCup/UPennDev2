@@ -62,11 +62,11 @@ static structUnpacker * lua_checkunpacker(lua_State *L, int narg) {
 
 static int lua_msgpack_index(lua_State *L) {
   structUnpacker *p = lua_checkunpacker(L, 1);
-  // Get index through metatable:
-  if (!lua_getmetatable(L, 1)) {lua_pop(L, 1); return 0;} // push metatable
-  lua_pushvalue(L, 2); // copy key
-  lua_rawget(L, -2); // get metatable function
-  lua_remove(L, -2); // delete metatable
+  /* Get index through metatable: */
+  if (!lua_getmetatable(L, 1)) {lua_pop(L, 1); return 0;} /* push metatable */
+  lua_pushvalue(L, 2); /* copy key */
+  lua_rawget(L, -2); /* get metatable function */
+  lua_remove(L, -2); /* delete metatable */
   return 1;
 }
 
@@ -418,7 +418,75 @@ static int lua_msgpack_unpack(lua_State *L) {
 
   /* prints the deserialized object. */
   msgpack_object obj = msg.data;
+
+#ifdef TORCH
+  int nStack = lua_gettop(L);
+  const char * opt = NULL;
+  size_t optlen;
+  if (nStack > 1) {
+    opt = lua_tolstring(L, 2, &optlen);
+#ifdef DEBUG
+    std::cout << opt << ' ' << optlen << std::endl;
+#endif
+    if (!strcmp(opt, "torch")) {
+      switch (obj.type) {
+        case MSGPACK_OBJECT_DOUBLE: {
+          THDoubleTensor *dp = THDoubleTensor_newWithSize1d(1);
+          THTensor_fastSet1d(dp, 0, obj.via.dec);
+          luaT_pushudata(L, dp, "torch.DoubleTensor");
+          break;
+                                    }
+        case MSGPACK_OBJECT_POSITIVE_INTEGER: {
+          THLongTensor *up = THLongTensor_newWithSize1d(1);
+          THTensor_fastSet1d(up, 0, obj.via.u64);
+          luaT_pushudata(L, up, "torch.LongTensor");
+          break;
+                                              }
+        case MSGPACK_OBJECT_NEGATIVE_INTEGER: {
+          THLongTensor *lp = THLongTensor_newWithSize1d(1);
+          THTensor_fastSet1d(lp, 0, obj.via.i64);
+          luaT_pushudata(L, lp, "torch.LongTensor");
+          break;
+                                              }
+        case MSGPACK_OBJECT_ARRAY: {
+          THDoubleTensor *adp = THDoubleTensor_newWithSize1d(obj.via.array.size);
+#ifdef DEBUG
+          std::cout << "unpack torch array" << std::endl;
+#endif
+          for (int i = 0; i < obj.via.array.size; i++) {
+            msgpack_object ob = obj.via.array.ptr[i];
+            switch(ob.type) {
+              case MSGPACK_OBJECT_DOUBLE: {
+                THTensor_fastSet1d(adp, i, ob.via.dec);
+                break;
+                                          }
+              case MSGPACK_OBJECT_POSITIVE_INTEGER: {
+                THTensor_fastSet1d(adp, i, ob.via.u64);
+                break;
+                                                    }
+              case MSGPACK_OBJECT_NEGATIVE_INTEGER: {
+                THTensor_fastSet1d(adp, i, ob.via.i64);
+                break;
+                                                    }
+              default: {
+                break;
+                       }
+            }
+          }
+          luaT_pushudata(L, adp, "torch.DoubleTensor");
+          break;
+                                   }
+        default: {
+          break;
+                 }
+      }
+    }  
+  } else {
+    int ret = (*unPackMap[obj.type])(L, obj);
+  }
+#else
   int ret = (*unPackMap[obj.type])(L, obj);
+#endif
   return 1;
 }
 

@@ -117,3 +117,23 @@ aa = torch.IntTensor(3,3):fill(1)
 TEST_TORCH(aa)
 aa = torch.DoubleTensor(3,3,3):rand(3,3,3)
 TEST_TORCH(aa)
+
+package.path = '../../Run/Util/?.lua;'..package.path
+local torch = require 'torch'
+local util = require 'util'
+
+local aa = torch.DoubleTensor({{3.0, 4.0, 5.24, 6.123, 7.90}, {1,2,3,4,5}})
+local pack_str = msgpack.pack(aa)
+local tbl = msgpack.unpack(pack_str)
+util.ptable(tbl)
+
+local ttbl = msgpack.unpack(pack_str, 'torch')
+print("\n Print Torch")
+util.ptorch(ttbl)
+
+local aa = 12
+local pack_str = msgpack.pack(aa)
+local na = msgpack.unpack(pack_str, 'torch')
+print("\n Print Torch")
+util.ptorch(na)
+

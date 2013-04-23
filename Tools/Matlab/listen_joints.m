@@ -18,12 +18,12 @@ spine_idx = [1,2,23];
 
 %% Store the values in meters
 js = zeros(23);
-nlogs = 300;
+nlogs = 100;
 js_log = zeros(nlogs,23);
 log_num = 1;
 offsets = [];
 
-while 1
+while log_num<=nlogs
     [data,idx] = zmq('poll',100);
     if numel(data)==1
         %% Record logs
@@ -33,5 +33,9 @@ while 1
 end
 
 %% Plot data
-figure(2);
-plot( js_log(:,L_Shoulder_Roll), js_log(:,L_Elbow), 'r*');
+figure(3);
+clf;
+plot( js_log(:,L_Shoulder_Roll), js_log(:,L_Elbow), 'g*-');
+figure(4);
+clf;
+plot( js_log(:,R_Shoulder_Roll), js_log(:,R_Elbow), 'b*-');

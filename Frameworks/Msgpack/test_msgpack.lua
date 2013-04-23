@@ -101,7 +101,7 @@ print("test case ", ud == dp)
 
 
 local torch = require 'torch'
-aa = torch.DoubleTensor(5):fill(1)
+aa = torch.DoubleTensor({3,4,5,6,7})
 local pack_str = msgpack.pack(aa)
 tbl = msgpack.unpack(pack_str)
 for k ,v in pairs(tbl) do

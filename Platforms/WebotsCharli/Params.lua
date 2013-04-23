@@ -20,6 +20,12 @@ Params.jointNames = {
   "R_Shoulder_Pitch", "R_Shoulder_Roll", "R_Shoulder_Yaw","R_Elbow",
   "Waist_Roll",
 };
+local i = 0
+Params.jointID = {}
+for _,v in ipairs(Params.jointNames) do
+	i = i+1
+	Params.jointID[v] = i
+end
 
 Params.jointReverse={
   3,4,5,6,--LArm:  3 4 5 6

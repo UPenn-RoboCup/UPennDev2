@@ -7,5 +7,3 @@ ifeq ($(torch),true)
   INCLUDES+=-I/usr/local/include/torch
   LIBOPTS+=-ltorch
 endif
-
-CXXFLAGS+=-g

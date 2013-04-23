@@ -243,20 +243,20 @@ static int lua_msgpack_pack_torch(lua_State *L, TT* tensorp, msgpack_packer *pk)
   switch (tensorp->nDimension) {
     case 1:
       for (int x0 = 0; x0 < tensorp->size[0]; x0++)
-        ((T *)ptr)[x0] = THTensor_fastGet1d(tensorp, x0);
+        ((T *)ptr)[x0] = (T)THTensor_fastGet1d(tensorp, x0);
       break;
     case 2:
       for (int x1 = 0; x1 < tensorp->size[1]; x1++)
         for (int x0 = 0; x0 < tensorp->size[0]; x0++)
           ((T *)ptr)[x1 * tensorp->size[0] + x0] = 
-            (THTensor_fastGet2d(tensorp, x0, x1));
+            (T)THTensor_fastGet2d(tensorp, x0, x1);
       break;
     case 3:
       for (int x2 = 0; x2 < tensorp->size[2]; x2++)
         for (int x1 = 0; x1 < tensorp->size[1]; x1++)
           for (int x0 = 0; x0 < tensorp->size[0]; x0++)
             ((T *)ptr)[x2 * tensorp->size[1] * tensorp->size[0] + x1 * tensorp->size[0] + x0] = 
-              (THTensor_fastGet3d(tensorp, x0, x1, x2));
+              (T)THTensor_fastGet3d(tensorp, x0, x1, x2);
       break;
     case 4:
       for (int x3 = 0; x3 < tensorp->size[3]; x3++)
@@ -265,7 +265,7 @@ static int lua_msgpack_pack_torch(lua_State *L, TT* tensorp, msgpack_packer *pk)
             for (int x0 = 0; x0 < tensorp->size[0]; x0++)
               ((T *)ptr)[x3 * tensorp->size[2] * tensorp->size[1] * tensorp->size[2] + 
                 x2 * tensorp->size[1] * tensorp->size[0] + x1 * tensorp->size[0] + x0] = 
-                (THTensor_fastGet4d(tensorp, x0, x1, x2, x3));
+                (T)THTensor_fastGet4d(tensorp, x0, x1, x2, x3);
       break;
     default:
       break;
@@ -314,31 +314,31 @@ static int lua_msgpack_pack_userdata(lua_State *L, int index, msgpack_packer *pk
   const char *torch_name = luaT_typename(L, index);
   void *tensorp = NULL;
   if (strcmp(torch_name, "torch.DoubleTensor")) {
-    printf("%s\n", torch_name);
+//    printf("%s\n", torch_name);
     tensorp = luaT_checkudata(L, index, torch_name);
     lua_msgpack_pack_torch<double, THDoubleTensor, 'd'>(L, (THDoubleTensor *)tensorp, pk); 
   } else if (strcmp(torch_name, "torch.FloatTensor")) {
-    printf("%s\n", torch_name);
+//    printf("%s\n", torch_name);
     tensorp = luaT_checkudata(L, index, torch_name);
     lua_msgpack_pack_torch<float, THFloatTensor, 'f'>(L, (THFloatTensor *)tensorp, pk); 
   } else if (strcmp(torch_name, "torch.ByteTensor")) {
-    printf("%s\n", torch_name);
+//    printf("%s\n", torch_name);
     tensorp = luaT_checkudata(L, index, torch_name);
     lua_msgpack_pack_torch<unsigned char, THByteTensor, 'u'>(L, (THByteTensor *)tensorp, pk); 
   } else if (strcmp(torch_name, "torch.CharTensor")) {
-    printf("%s\n", torch_name);
+//    printf("%s\n", torch_name);
     tensorp = luaT_checkudata(L, index, torch_name);
     lua_msgpack_pack_torch<char, THCharTensor, 'c'>(L, (THCharTensor *)tensorp, pk); 
   } else if (strcmp(torch_name, "torch.ShortTensor")) {
-    printf("%s\n", torch_name);
+//    printf("%s\n", torch_name);
     tensorp = luaT_checkudata(L, index, torch_name);
     lua_msgpack_pack_torch<short, THShortTensor, 's'>(L, (THShortTensor *)tensorp, pk); 
   } else if (strcmp(torch_name, "torch.IntTensor")) {
-    printf("%s\n", torch_name);
+//    printf("%s\n", torch_name);
     tensorp = luaT_checkudata(L, index, torch_name);
     lua_msgpack_pack_torch<int, THIntTensor, 'i'>(L, (THIntTensor *)tensorp, pk); 
   } else if (strcmp(torch_name, "torch.LongTensor")) {
-    printf("%s\n", torch_name);
+//    printf("%s\n", torch_name);
     tensorp = luaT_checkudata(L, index, torch_name);
     lua_msgpack_pack_torch<long, THLongTensor, 'l'>(L, (THLongTensor *)tensorp, pk); 
   } else {

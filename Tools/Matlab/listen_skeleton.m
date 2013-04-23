@@ -27,13 +27,12 @@ spine_idx = [1,2,9];
 
 %% Store the values in meters
 pos = zeros(15,3);
-nlogs = 300;
+nlogs = 100;
 pos_log = zeros(nlogs,15,3);
 log_num = 1;
 offsets = [];
 
 %% Setup the plot
-%p = plot3(pos(:,1),pos(:,2),pos(:,3),'r.');
 figure(1);
 clf;
 hold on;
@@ -49,7 +48,7 @@ ylabel('y');
 zlabel('z');
 axis([ 1.8, 2.5, -1,1, -1.2, 1.5]);
 
-while 1
+while log_num<=nlogs
     [data,idx] = zmq('poll',100);
     if numel(data)==1
         positions = msgpack('unpacker', data{1});
@@ -64,19 +63,7 @@ while 1
         pos_log(log_num,:,:) = pos;
         log_num = log_num+1;
         
-        % Send UDP data of the end effector offsets
-        %offset_r = ...
-        %    pos(NITE_JOINT_RIGHT_HAND,:)-pos(NITE_JOINT_RIGHT_SHOULDER,:);
-        %offset_l = ...
-        %    pos(NITE_JOINT_LEFT_HAND,:)-pos(NITE_JOINT_LEFT_SHOULDER,:);
-        %zmq( 'send', actuator_p, offset_r )
-        
         %% Update the plot
-        %{
-        set(p, 'XData', pos(:,1));
-        set(p, 'YData', pos(:,2));
-        set(p, 'ZData', pos(:,3));
-        %}
         set(p_arm_l, 'XData', pos(arm_idx_l,1));
         set(p_arm_l, 'YData', pos(arm_idx_l,2));
         set(p_arm_l, 'ZData', pos(arm_idx_l,3));
@@ -100,3 +87,15 @@ while 1
         drawnow;
     end
 end
+
+%% Plot data
+% Hand difference in location
+hand_diff=reshape(...
+    pos_log(:,NITE_JOINT_LEFT_HAND,:)-...
+    pos_log(:,NITE_JOINT_RIGHT_HAND,:)...
+    ,[nlogs,3]);
+hand_diff_mag = sum( hand_diff.^2, 2);
+% Plot this difference
+figure(3);
+clf;
+plot( hand_diff_mag, 'g*-');

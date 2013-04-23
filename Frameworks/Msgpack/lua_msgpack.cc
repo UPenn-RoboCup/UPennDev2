@@ -27,7 +27,6 @@ extern "C"
 #endif
 #include <luaT.h>
 #include <TH/TH.h>
-#include <TH/THGeneral.h>
 #ifdef __cplusplus
 }
 #endif
@@ -148,6 +147,8 @@ static int lua_msgpack_pack_lightuserdata(lua_State *L, int index, msgpack_packe
 }
 
 static int lua_msgpack_pack_number(lua_State *L, int index, msgpack_packer *pk) {
+  /* magic number : when input larger then this number
+   * msgpack_pack_int64 not working as expected */
 #define LIMIT 4294967296
   double num = lua_tonumber(L, index);
   double intpart;

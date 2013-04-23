@@ -18,33 +18,24 @@
  *
  * */
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-#include "lua.h"
-#include "lualib.h"
-#include "lauxlib.h"
-#ifdef __cplusplus
-}
-#endif
+#include <lua.hpp>
 
 #include <stdint.h>
 #include <unistd.h>
 #include <float.h>
 #include <limits.h>
 #include <stdio.h>
+#include <iostream>
 #include <math.h>
 #include <msgpack.h>
 
 #define MT_NAME "msgpack_mt"
 
-
 typedef struct {
   const char *str;
   size_t size;
-  msgpack_unpacker pac;
-  msgpack_unpacked msg;
+  msgpack_unpacker *pac;
+  msgpack_unpacked *msg;
 } structUnpacker;
 
 int (*PackMap[9]) (lua_State *L, int index, msgpack_packer *pk);
@@ -52,7 +43,7 @@ int (*unPackMap[8]) (lua_State *L, msgpack_object obj);
 
 static structUnpacker * lua_checkunpacker(lua_State *L, int narg) {
   void *ud = luaL_checkudata(L, narg, MT_NAME);
-  luaL_argcheck(L, *(structUnpacker **)ud != NULL, narg, "invalid unpacker");
+  luaL_argcheck(L, ud != NULL, narg, "invalid unpacker");
   return (structUnpacker *)ud;
 }
 
@@ -77,12 +68,12 @@ static int lua_msgpack_unpack_boolean(lua_State *L, msgpack_object obj) {
 }
 
 static int lua_msgpack_unpack_positive_integer(lua_State *L, msgpack_object obj) {
-  lua_pushinteger(L, obj.via.u64);
+  lua_pushnumber(L, obj.via.u64);
   return 1;
 }
 
 static int lua_msgpack_unpack_negative_integer(lua_State *L, msgpack_object obj) {
-  lua_pushinteger(L, obj.via.i64);
+  lua_pushnumber(L, obj.via.i64);
   return 1;
 }
 
@@ -142,60 +133,13 @@ static int lua_msgpack_pack_lightuserdata(lua_State *L, int index, msgpack_packe
 }
 
 static int lua_msgpack_pack_number(lua_State *L, int index, msgpack_packer *pk) {
+#define LIMIT 4294967296
   double num = lua_tonumber(L, index);
-  (round(num) == num)? msgpack_pack_int(pk, num) : msgpack_pack_double(pk, num);
-/*
-  if (round(num) == num) {
-    if (num < 0) {
-      if (num >= SCHAR_MIN) {
-        printf("int8\n");
-        msgpack_pack_fix_int8(pk, num);
-      }
-      else if (num >= SHRT_MIN) {
-        msgpack_pack_fix_int16(pk, num);
-        printf("int16\n");
-      }
-      else if (num >= LONG_MIN) {
-        msgpack_pack_fix_int32(pk, num);
-        printf("int32\n");
-      }
-      else if (num >= LLONG_MIN) {
-        msgpack_pack_fix_int64(pk, num);
-        printf("int64\n");
-      }
-      else {
-        printf("int\n");
-        msgpack_pack_int(pk, num);
-      }
-    } else {
-      if (num <= UCHAR_MAX) {
-        msgpack_pack_fix_uint8(pk, num);
-        printf("uint8\n");
-      }
-      else if (num <= USHRT_MAX) {
-        msgpack_pack_fix_uint16(pk, num);
-        printf("uint16\n");
-      }
-      else if (num <= ULONG_MAX) {
-        msgpack_pack_fix_uint32(pk, num);
-        printf("uint32\n");
-      }
-      else if (num <= ULLONG_MAX) {
-        msgpack_pack_fix_uint64(pk, num);
-        printf("uint64\n");
-      }
-      else {
-        msgpack_pack_unsigned_int(pk, num);
-        printf("unsigned int\n");
-      }
-    }
-  } else {
-    if ((num >= FLT_MIN) & (num <= FLT_MAX)) 
-      msgpack_pack_float(pk, num);
-    else
-      msgpack_pack_double(pk, num);
-  }
-*/
+  double intpart;
+  if (modf(num, &intpart) == 0.0) {
+    (intpart > LIMIT || intpart < -LIMIT)? msgpack_pack_double(pk, intpart) : msgpack_pack_int64(pk, intpart);
+  } else
+    msgpack_pack_double(pk, num);
   return 1;
 }
 
@@ -288,16 +232,21 @@ static int lua_msgpack_unpack(lua_State *L) {
 
 static int lua_msgpack_newunpacker(lua_State *L) {
   structUnpacker *ud = (structUnpacker *)lua_newuserdata(L, sizeof(structUnpacker));
+
   ud->str = lua_tolstring(L, 1, &ud->size);
 
   /* Init deserialize using msgpack_unpacker */
-  msgpack_unpacker_init(&ud->pac, MSGPACK_UNPACKER_INIT_BUFFER_SIZE);
+  ud->pac = (msgpack_unpacker *)malloc(sizeof(msgpack_unpacker));
+  msgpack_unpacker_init(ud->pac, MSGPACK_UNPACKER_INIT_BUFFER_SIZE);
+
   /* feeds the buffer */
-  msgpack_unpacker_reserve_buffer(&ud->pac, ud->size);
-  memcpy(msgpack_unpacker_buffer(&ud->pac), ud->str, ud->size);
-  msgpack_unpacker_buffer_consumed(&ud->pac, ud->size);
+  msgpack_unpacker_reserve_buffer(ud->pac, ud->size);
+  memcpy(msgpack_unpacker_buffer(ud->pac), ud->str, ud->size);
+  msgpack_unpacker_buffer_consumed(ud->pac, ud->size);
+
   /* start streaming deserialization */
-  msgpack_unpacked_init(&ud->msg);
+  ud->msg = (msgpack_unpacked *)malloc(sizeof(msgpack_unpacked));
+  msgpack_unpacked_init(ud->msg);
 
   luaL_getmetatable(L, MT_NAME);
   lua_setmetatable(L, -2);
@@ -305,13 +254,21 @@ static int lua_msgpack_newunpacker(lua_State *L) {
 }
 
 static int lua_msgpack_unpacker(lua_State *L) {
-  int re;
+  int re = 0;
   structUnpacker *ud = lua_checkunpacker(L, 1);
-  bool ret = msgpack_unpacker_next(&ud->pac, &ud->msg);
+  bool ret = msgpack_unpacker_next(ud->pac, ud->msg);
   if (ret) {
-    msgpack_object obj = ud->msg.data;
+    msgpack_object obj = ud->msg->data;
     re = (*unPackMap[obj.type])(L, obj);
   } else lua_pushnil(L);
+  return 1;
+}
+
+static int lua_msgpack_delete(lua_State *L) {
+  structUnpacker *ud = lua_checkunpacker(L, 1);
+  if (!ud->pac) free(ud->pac);
+  if (!ud->msg) free(ud->msg);
+
   return 1;
 }
 
@@ -324,6 +281,7 @@ static const struct luaL_reg msgpack_Functions [] = {
 
 static const struct luaL_reg msgpack_Methods [] = {
   {"unpack", lua_msgpack_unpacker},
+  {"__gc", lua_msgpack_delete},
   {NULL, NULL}
 };
 

@@ -100,3 +100,5 @@ end
 local pack_str = msgpack.pack(ud:pointer())
 local dp = carray.float(msgpack.unpack(pack_str))
 print("test case ", ud == dp)
+
+msgpack.pack(dp)

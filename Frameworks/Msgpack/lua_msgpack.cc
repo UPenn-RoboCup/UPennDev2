@@ -197,13 +197,13 @@ static int lua_msgpack_pack_table(lua_State *L, int index, msgpack_packer *pk) {
 
   lua_pushnil(L);
   while (lua_next(L, index)) {
-//#ifdef DEBUG
-//    keytype = lua_type(L, -2);
-//    std::cout << "keytype " << keytype << std::endl;
-// 
-//    valtype = lua_type(L, -1);
-//    std::cout << "valtype " << valtype << std::endl;
-//#endif
+#ifdef DEBUG
+    keytype = lua_type(L, -2);
+    std::cout << "keytype " << keytype << std::endl;
+ 
+    valtype = lua_type(L, -1);
+    std::cout << "valtype " << valtype << std::endl;
+#endif
     /* if all numeric array, no need to get key */
     if (allnumeric > 0) {
       keytype = lua_type(L, -2);
@@ -232,48 +232,90 @@ static int lua_msgpack_pack_function(lua_State *L, int index, msgpack_packer *pk
 #ifdef TORCH
 template<typename T, typename TT, char name>
 static int lua_msgpack_pack_torch(lua_State *L, TT* tensorp, msgpack_packer *pk) {
+#ifdef DEBUG
   printf("type %c \n", name);
   printf("Torch Dimension %d\n", tensorp->nDimension);
+#endif
   THArgCheck(tensorp->nDimension <= 4, 1, "Tensor must have less then four dimensions");
   void * ptr = NULL;
-  int size = 0, cnt = 0;
-  for (int cnt = 0; cnt < tensorp->nDimension; cnt++)
-    size += tensorp->size[cnt];
+  int size = 1, cnt = 0;
+  for (cnt = 0; cnt < tensorp->nDimension; cnt++) {
+#ifdef DEBUG
+    std::cout << "dim " << cnt << ' ' <<  tensorp->size[cnt] << std::endl;
+#endif
+    size *= tensorp->size[cnt];
+  }
+#ifdef DEBUG
+  std::cout << "item size:" << size << std::endl;
+#endif
 
   ptr = (T *)malloc(size * sizeof(T));
   switch (tensorp->nDimension) {
     case 1:
-      for (int x0 = 0; x0 < tensorp->size[0]; x0++)
-        ((T *)ptr)[x0] = (T)THTensor_fastGet1d(tensorp, x0);
+#ifdef DEBUG
+      printf("1 dimensions\n");
+#endif
+      for (int x0 = 0; x0 < tensorp->size[0]; x0++) {
+#ifdef DEBUG
+        std::cout << "item " << x0;
+        std::cout << ' ' << THTensor_fastGet1d(tensorp, x0) << std::endl;
+#endif
+        ((T *)ptr)[x0] = THTensor_fastGet1d(tensorp, x0);
+      }
       break;
     case 2:
+#ifdef DEBUG
+      printf("2 dimensions\n");
+#endif
       for (int x1 = 0; x1 < tensorp->size[1]; x1++)
-        for (int x0 = 0; x0 < tensorp->size[0]; x0++)
-          ((T *)ptr)[x1 * tensorp->size[0] + x0] = 
-            (T)THTensor_fastGet2d(tensorp, x0, x1);
+        for (int x0 = 0; x0 < tensorp->size[0]; x0++) {
+#ifdef DEBUG
+          std::cout << "item " << x1 * tensorp->size[0] + x0;
+          std::cout << ' ' << THTensor_fastGet2d(tensorp, x0, x1) << std::endl;
+#endif
+          ((T *)ptr)[x1 * tensorp->size[0] + x0] = THTensor_fastGet2d(tensorp, x0, x1);
+        }
       break;
     case 3:
+#ifdef DEBUG
+      printf("3 dimensions\n");
+#endif
       for (int x2 = 0; x2 < tensorp->size[2]; x2++)
         for (int x1 = 0; x1 < tensorp->size[1]; x1++)
-          for (int x0 = 0; x0 < tensorp->size[0]; x0++)
+          for (int x0 = 0; x0 < tensorp->size[0]; x0++) {
+#ifdef DEBUG
+            std::cout << "item " << x2 * tensorp->size[1] * tensorp->size[0] + x1 * tensorp->size[0] + x0;
+            std::cout << ' ' << THTensor_fastGet3d(tensorp, x0, x1, x2) << std::endl;
+#endif
             ((T *)ptr)[x2 * tensorp->size[1] * tensorp->size[0] + x1 * tensorp->size[0] + x0] = 
-              (T)THTensor_fastGet3d(tensorp, x0, x1, x2);
+              THTensor_fastGet3d(tensorp, x0, x1, x2);
+          }
       break;
     case 4:
+#ifdef DEBUG
+      printf("4 dimensions\n");
+#endif
       for (int x3 = 0; x3 < tensorp->size[3]; x3++)
         for (int x2 = 0; x2 < tensorp->size[2]; x2++)
           for (int x1 = 0; x1 < tensorp->size[1]; x1++)
-            for (int x0 = 0; x0 < tensorp->size[0]; x0++)
+            for (int x0 = 0; x0 < tensorp->size[0]; x0++) {
+#ifdef DEBUG
+              std::cout << "item " << x3 * tensorp->size[2] * tensorp->size[1] * tensorp->size[2] + 
+                x2 * tensorp->size[1] * tensorp->size[0] + x1 * tensorp->size[0] + x0;
+              std::cout << ' ' << THTensor_fastGet4d(tensorp, x0, x1, x2, x3) << std::endl;
+#endif
               ((T *)ptr)[x3 * tensorp->size[2] * tensorp->size[1] * tensorp->size[2] + 
                 x2 * tensorp->size[1] * tensorp->size[0] + x1 * tensorp->size[0] + x0] = 
-                (T)THTensor_fastGet4d(tensorp, x0, x1, x2, x3);
+                THTensor_fastGet4d(tensorp, x0, x1, x2, x3);
+            }
       break;
     default:
       break;
   }
- 
-//  for (int i = 0; i < size; i++)
-//    std::cout << ((T *)ptr)[i] << std::endl;
+#ifdef DEBUG
+  for (int i = 0; i < size; i++)
+    std::cout << "pushed item " << i << ' ' << ((T *)ptr)[i] << std::endl;
+#endif
   msgpack_pack_array(pk, size);
 
   for (int cnt = 0; cnt < size; cnt++) {
@@ -303,7 +345,7 @@ static int lua_msgpack_pack_torch(lua_State *L, TT* tensorp, msgpack_packer *pk)
         break;
     }
   }
-
+  free((T *)ptr);
   return 1;
 }
 #endif

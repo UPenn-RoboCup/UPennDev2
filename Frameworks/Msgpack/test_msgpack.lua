@@ -99,12 +99,19 @@ local pack_str = msgpack.pack(ud:pointer())
 local dp = carray.float(msgpack.unpack(pack_str))
 print("test case ", ud == dp)
 
-
-local torch = require 'torch'
-aa = torch.DoubleTensor({3,4,5,6,7})
-local pack_str = msgpack.pack(aa)
-tbl = msgpack.unpack(pack_str)
-for k ,v in pairs(tbl) do
-  print(k, v)
+function TEST_TORCH(aa)
+  local pack_str = msgpack.pack(aa)
+  local tbl = msgpack.unpack(pack_str)
+  for k ,v in pairs(tbl) do
+    print('Key:', k, 'Value:', v)
+  end
+  print('pack size:',#pack_str)
 end
-print(#pack_str)
+print("\n================= Test Msgpack for Torch ==================")
+local torch = require 'torch'
+aa = torch.DoubleTensor({{3.0, 4.0, 5.24, 6.123, 7.90}, {1,2,3,4,5}})
+TEST_TORCH(aa)
+aa = torch.CharTensor({{-1,4,-6},{7,8,9},{-10, -30, -40}})
+TEST_TORCH(aa)
+aa = torch.IntTensor(3,3):fill(1)
+TEST_TORCH(aa)

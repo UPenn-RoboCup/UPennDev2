@@ -43,7 +43,7 @@ local wbJoints = carray.double( nJoint )
 
 -- logs have 300 frames
 local nframes = 300;
-local fr_a,fr_b=120,260
+local fr_a,fr_b=120,220
 local cloud_id, cloud_type, visible = nil,nil,nil;
 
 function run()

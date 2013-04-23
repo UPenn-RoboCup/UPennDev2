@@ -49,7 +49,8 @@ public:
   int reset_node(uint8_t node_id);
   int reset_communication(uint8_t node_id);
   int send_nmt(uint8_t node_id, uint8_t cs);
-  int send_sync(uint8_t counter = 0);
+  int send_sync(void);
+  int send_sync(uint8_t counter);
   int send_time(uint32_t ms, uint16_t days);
   int send_emcy(uint8_t node_id, uint16_t error_code, uint8_t error_register,
     const char *data = NULL, size_t len = 0);

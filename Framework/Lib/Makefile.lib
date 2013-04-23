@@ -1,4 +1,4 @@
-# Makefile used to build Webots files
+# Makefile used to build lua c modules 
 LIBNAME?=badlibname
 include ../../../Makefile.inc
 LUA ?= lua

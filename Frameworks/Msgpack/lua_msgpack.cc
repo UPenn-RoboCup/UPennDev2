@@ -27,7 +27,6 @@
 #include <stdio.h>
 #include <math.h>
 #include <msgpack.h>
-#include <iostream>
 
 #define MT_NAME "msgpack_mt"
 
@@ -211,16 +210,19 @@ static int lua_msgpack_pack_table(lua_State *L, int index, msgpack_packer *pk) {
 }
 
 static int lua_msgpack_pack_function(lua_State *L, int index, msgpack_packer *pk) {
+  printf("lua function type packing not implemented, return nil\n");
   msgpack_pack_nil(pk);
   return 1;
 }
 
 static int lua_msgpack_pack_userdata(lua_State *L, int index, msgpack_packer *pk) {
+  printf("lua userdata type packing not implemented, return nil\n");
   msgpack_pack_nil(pk);
   return 1;
 }
 
 static int lua_msgpack_pack_thread(lua_State *L, int index, msgpack_packer *pk) {
+  printf("lua thread type packing not implemented, return nil\n");
   msgpack_pack_nil(pk);
   return 1;
 }

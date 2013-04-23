@@ -1,44 +1,44 @@
-dofile '../../Run/include.lua'
---local common = require 'common'
-
-local util = require 'util'
-
---local mp = require'luajit-msgpack-pure'
---local mp = require'luajit-msgpack'
-local mp = require'MessagePack'
---local mpc = require 'cmsgpack'
-
-a = {1,2,3,4,5,6,7,8,9}
-tbl = {['a'] = 45, ['rt']='4444'}
-print('packing 1:')
-for i,v in pairs(tbl) do
-  print(i,v)
-end
-tbl1 = {['b'] = 45, ['t']='4444', ['arr'] = a}
-print('\npacking 2:')
-for i,v in pairs(tbl1) do
-  print(i,v)
-end
-
---local cmsgpack = require 'cmsgpack'
---local str = mp.pack(tbl1)
---local str = mp.pack('fdfdfd')
---local str = mp.pack(-4324252)
---cmsgpack.new(str, #str)
-
-local file = io.open('msg1', 'rb')
-str = file:read('*a')
-file:close()
-print(#str)
-obj = mp.unpack(str)
-print(obj, #obj)
---util.ptable(tbl)
---print(str:byte(1, #str))
+--dofile '../../Run/include.lua'
+----local common = require 'common'
+--
+--local util = require 'util'
+--
+----local mp = require'luajit-msgpack-pure'
+----local mp = require'luajit-msgpack'
+--local mp = require'msgpack'
+----local mpc = require 'cmsgpack'
+--
+--a = {1,2,3,4,5,6,7,8,9}
+--tbl = {['a'] = 45, ['rt']='4444'}
+--print('packing 1:')
+--for i,v in pairs(tbl) do
+--  print(i,v)
+--end
+--tbl1 = {['b'] = 45, ['t']='4444', ['arr'] = a}
+--print('\npacking 2:')
+--for i,v in pairs(tbl1) do
+--  print(i,v)
+--end
+--
+----local cmsgpack = require 'cmsgpack'
+----local str = mp.pack(tbl1)
+----local str = mp.pack('fdfdfd')
+----local str = mp.pack(-4324252)
+----cmsgpack.new(str, #str)
+--
+--local file = io.open('msg1', 'rb')
+--str = file:read('*a')
+--file:close()
+--print(#str)
+--obj = mp.unpack(str)
+--print(obj, #obj)
+----util.ptable(tbl)
+----print(str:byte(1, #str))
 
 --
-str = mp.pack(tbl)
-str1 = mp.pack(tbl1)
-st = str..str1
+--str = mp.pack(tbl)
+--str1 = mp.pack(tbl1)
+--st = str..str1
 --offset, decoded = mp.unpack(st)
 --t0 = utime()
 --print(offset, decoded)
@@ -82,4 +82,28 @@ st = str..str1
 --util.ptable(t)
 --util.ptable(b)
 --
+
+local msgpack = require'msgpack'
+a = {['num'] = 3234, ['table'] = {1,2,3,4}}
+b = {['table'] = {1,2,3,4}, ['tbl'] = {3.4,2,4,'helo'}}
+b.a = a
+for k, v in pairs(b) do
+--  print(k, v)
+  if type(v) == 'table' then
+    for i ,j in pairs(v) do
+      print(i, j)
+    end
+  end
+end
+str = msgpack.pack(b)
+tbl = msgpack.unpack(str)
+print("     output table ")
+for k, v in pairs(tbl) do
+--  print(k, v)
+  if type(v) == 'table' then
+    for i ,j in pairs(v) do
+      print(i, j)
+    end
+  end
+end
 

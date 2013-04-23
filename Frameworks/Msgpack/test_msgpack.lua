@@ -40,8 +40,13 @@ end
 print("\n================= Test msgpack on Table ==================")
 a = {1,2,3,4,5,'hello', ['num'] = 3234}
 TEST_TABLE(a)
---b = {['num'] = 3234, ['table'] = {1,2,3,4}}
---TEST_TABLE(b)
+b = {['num'] = 3234, ['table'] = {1,2,3,4}}
+TEST_TABLE(b)
+a = {['num'] = 3234, ['table'] = {1,2,3,4}}
+b = {['table'] = {1,2,3,4}, ['tbl'] = {3.4,2,4,'helo'}}
+b.a = a
+TEST_TABLE(b)
+
 
 function TEST_STRING(str_in)
   local pack_str = msgpack.pack(str_in)
@@ -56,7 +61,7 @@ TEST_STRING('hello')
 TEST_STRING('')
 
 -- unpacker
---[[
+
 print("\n================= Test unpacker ==================")
 local file = io.open('testMP', 'r');
 local file_str = file:read('*a')
@@ -79,4 +84,4 @@ for i = 1, #dataset do
   len = len + #pack_str
 end
 print("pack "..#dataset.." tables takes "..(unix.time() - t0).."with pack length "..len)
---]]
+

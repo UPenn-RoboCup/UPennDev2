@@ -49,7 +49,6 @@ int main() {
   // Load config
   Config config;
   string platformName = config.get_string("platformName");
-  cout << "Running " << platformName << endl;
 
   vector<string> jointNames = config.get_string_vector("jointNames");
   int nJoint = jointNames.size();
@@ -62,6 +61,9 @@ int main() {
   vector<int> moveDir = config.get_int_vector("moveDir");
   double vision_update_interval = 0.04;
   double lidar_update_interval = config.get_double("vision.lidar_interval");
+
+  cout << "Running " << platformName << " with " << nJoint << " joints!" <<endl;
+	
   /*
      if (lidar_update_interval<=0)
      cout << "No lidar available!" << endl;
@@ -185,8 +187,9 @@ int main() {
   int nBytes;
   while(1) {
     while( (nBytes = zmq_recv(actuator_sub_socket, motor_command_buf, sizeof(motor_command_buf) , ZMQ_DONTWAIT))>0 ){
-      if( nBytes<(int)sizeof(motor_command_buf) ){
-        printf("Bad receive! Msg length %d/%ld\n", nBytes, (unsigned long int)sizeof(motor_command_buf));
+      if( nBytes!=(int)sizeof(motor_command_buf) ){
+        fprintf(stdout,"Bad receive! Msg length %d/%ld\n", nBytes, (unsigned long int)sizeof(motor_command_buf));
+				fflush(stdout);
         break;
       }
       for(int j=0;j<nJoint;j++){

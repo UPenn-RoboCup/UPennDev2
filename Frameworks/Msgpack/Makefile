@@ -8,3 +8,4 @@ ifeq ($(torch),true)
   LIBOPTS+=-ltorch
 endif
 
+CXXFLAGS+=-g

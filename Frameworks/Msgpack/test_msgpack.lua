@@ -84,4 +84,19 @@ for i = 1, #dataset do
   len = len + #pack_str
 end
 print("pack "..#dataset.." tables takes "..(unix.time() - t0).."with pack length "..len)
+--]]
 
+
+print("\n================= Test Msgpack for lightuserdata ==================")
+package.cpath = '../Util/CArray/?.so;'..package.cpath
+local carray = require 'carray'
+
+local ud = carray.float(1081)
+for i = 1, 1081 do
+  ud[i] = math.pi * i
+end
+
+-- lightuserdata, len = ud:pointer()
+local pack_str = msgpack.pack(ud:pointer())
+local dp = carray.float(msgpack.unpack(pack_str))
+print("test case ", ud == dp)

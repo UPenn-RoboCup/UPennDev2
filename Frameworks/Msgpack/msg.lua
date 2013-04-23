@@ -1,3 +1,4 @@
+--[[
 dofile('../../Run/include.lua')
 
 local msgpack = require 'msgpack'
@@ -56,7 +57,7 @@ print(unix.time() - t0);
 print('size '..#str, #strmp)
 tbl = msgpack.unpack(str)
 util.ptable(tbl)
-
+--]]
 --strmp = mp.pack(t)
 --util.ptable(msgpack.unpack(strmp))
 --print(#str)
@@ -96,6 +97,7 @@ util.ptable(tbl)
 --print(unix.time() - t0)
 --print(c)
 
+--[[
 str = 'this is a good day'
 udata = carray.byte(str)
 st = msgpack.pack(udata:pointer(), #udata)
@@ -103,3 +105,9 @@ print(#st)
 dt = msgpack.unpack(st)
 print(dt)
 --msgpack.pack(udata:pointer())
+--]]
+package.cpath = './Util/CArray/?.so;'..package.cpath
+local msgpack = require 'msgpack'
+local carray = require 'carray'
+
+

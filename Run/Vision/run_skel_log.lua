@@ -57,8 +57,8 @@ function run()
 				for j=1,15 do
 					local pos,orientation,ts = openni.joint( u, j );
 					--local pos2 = vector.new({pos.x,pos.y,pos.z})
-					local pos2 = vector.new({pos.z,pos.x,pos.y})
-					--local pos2 = vector.new({pos.z,-1*pos.x,pos.y})
+					--local pos2 = vector.new({pos.z,pos.x,pos.y})
+					local pos2 = vector.new({pos.z,-1*pos.x,pos.y})
 					pos_tbl[j] = pos2
 					local mp_pos = mp.pack(pos)
 					mp_sk = mp_sk..mp_pos;
@@ -81,6 +81,7 @@ function ik( sk_pos )
 		sk_pos[j] = (sk_pos[j]-sk_pos[NITE_JOINT_TORSO])/1000
 	end
 	
+	-- Foot offset
 	local offground_l = sk_pos[NITE_JOINT_LEFT_FOOT][3]+.75;
 	local offground_r = sk_pos[NITE_JOINT_RIGHT_FOOT][3]+.75;
 	local base_z = 0;
@@ -91,7 +92,6 @@ function ik( sk_pos )
 	else
 		base_z = offground_l
 	end
-
 
 	-- Vector differences
 	local s2eL = sk_pos[NITE_JOINT_LEFT_SHOULDER] - sk_pos[NITE_JOINT_LEFT_ELBOW]
@@ -108,7 +108,6 @@ function ik( sk_pos )
 	-- Elbow
 	local elbow_l = math.acos( s2eL*e2hL / (vector.norm(s2eL)*vector.norm(e2hL)) )
 	local elbow_r = math.acos( s2eR*e2hR / (vector.norm(s2eR)*vector.norm(e2hR)) )
-
 	
 	-- Solve IK for shoulders
 	-- Pitch
@@ -123,32 +122,36 @@ function ik( sk_pos )
 	local zeroTrans1 = Transform.rotY(shoulder_pitch_l)
 	s2eL[4] = 1;
 	local pLArm1 = zeroTrans1 * s2eL;
-	local zeroTrans2 = Transform.rotZ(-1*shoulder_roll_l)
+	local zeroTrans2 = Transform.rotZ( -1 * shoulder_roll_l )
 	local pLArm2 = zeroTrans2 * pLArm1;
 	e2hL[4] = 1;
 	local yawdL = zeroTrans2 * zeroTrans1 * e2hL;
-	local yawL = math.atan2(yawdL[2],-1*yawdL[3]);
+	local yawL  = math.atan2( yawdL[2], -1 * yawdL[3]);
 	--
 	zeroTrans1 = Transform.rotY(shoulder_pitch_r)
 	s2eR[4] = 1;
 	local pRArm1 = zeroTrans1 * s2eR;
-	local zeroTrans2 = Transform.rotZ( -1 * shoulder_roll_r )
+	zeroTrans2 = Transform.rotZ( -1 * shoulder_roll_r )
 	local pRArm2 = zeroTrans2 * pRArm1;
 	e2hR[4] = 1;
 	local yawdR = zeroTrans2 * zeroTrans1 * e2hR;
-	local yawR = -1*math.atan2(yawdR[2],-1*yawdR[3]);
+	local yawR  = math.atan2( yawdR[2], -1 * yawdR[3]);
 	
 	-- Send to webots
-	wbJoints[ Params.jointID["L_Elbow"] ] = elbow_l
-	wbJoints[ Params.jointID["L_Shoulder_Pitch"] ] = shoulder_pitch_l
+	wbJoints[ Params.jointID["L_Elbow"] ]          = elbow_l
+	wbJoints[ Params.jointID["L_Shoulder_Pitch"] ] = 
+		-1*(shoulder_pitch_l-math.pi/2)
 	wbJoints[ Params.jointID["L_Shoulder_Roll"] ]  = -1 * shoulder_roll_l
-	wbJoints[ Params.jointID["L_Shoulder_Yaw"] ]   = yawL
+	wbJoints[ Params.jointID["L_Shoulder_Yaw"] ]   = -1*yawL
 	--
 	----[[
-	wbJoints[ Params.jointID["R_Elbow"] ] = -1*elbow_r	
-	wbJoints[ Params.jointID["R_Shoulder_Pitch"] ] = shoulder_pitch_r
+	wbJoints[ Params.jointID["R_Elbow"] ]          = -1 * elbow_r	
+
+	wbJoints[ Params.jointID["R_Shoulder_Pitch"] ] = 
+		-1 * (shoulder_pitch_r - math.pi/2)
+		
 	wbJoints[ Params.jointID["R_Shoulder_Roll"] ]  = -1 * shoulder_roll_r
-	wbJoints[ Params.jointID["R_Shoulder_Yaw"] ]   = -1 * yawR
+	wbJoints[ Params.jointID["R_Shoulder_Yaw"] ]   = yawR
 	--]]
 	
 	-- Inverse legs
@@ -159,21 +162,23 @@ function ik( sk_pos )
 	*.85/.92
 	local h = (height_l+height_r)/2
 	
+	local df_l = sk_pos[NITE_JOINT_TORSO] - sk_pos[NITE_JOINT_LEFT_FOOT]
+	local df_r = sk_pos[NITE_JOINT_TORSO] - sk_pos[NITE_JOINT_RIGHT_FOOT]
+	
+	local pTorso = vector.new( {0, 0,       h[3],  0,0,0} );
+	local pLeg_l = vector.new( {0, df_l[2], 0,     0,0,0} );
+	local pLeg_r = vector.new( {0, df_r[2], 0,     0,0,0} );
+	
 	if base_foot==0 and math.abs(offground_r)>.05 then
 		--print("left foot",offground_r)
 	elseif base_foot==1 and math.abs(offground_l)>.05 then
 		print("right foot",offground_l)
+		pLeg_l = vector.new({0, df_l[2], offground_l,   0,0,0});
 	end
 	
-	local df_l = sk_pos[NITE_JOINT_TORSO] - sk_pos[NITE_JOINT_LEFT_FOOT]
-	local df_r = sk_pos[NITE_JOINT_TORSO] - sk_pos[NITE_JOINT_RIGHT_FOOT]
-	
-	local pTorso = vector.new({0, 0, h[3],   0,0,0});
-	local pLeg_l = vector.new({0, df_l[2], offground_l,   0,0,0});
-	local pLeg_r = vector.new({0, df_r[2],   0, 0,0,0});
 	local ik_legs = K.inverse_legs( pLeg_l, pLeg_r,	pTorso, base_foot );
 	local jj = 1;
-	local use_torso = true;
+	local use_torso = false;
 	if use_torso then
 		for j=Params.jointID["L_Hip_Yaw"],Params.jointID["R_Ankle_Roll"] do
 			wbJoints[j] = ik_legs[jj]

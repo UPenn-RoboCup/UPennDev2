@@ -24,6 +24,15 @@ struct can_frame co_packet::nmt(uint8_t node_id, uint8_t cs)
   return frame;
 }
 
+struct can_frame co_packet::sync(void)
+{
+  struct can_frame frame;
+  frame.can_id = CO_SYNC;
+  frame.can_dlc = 0;
+  memset((char *)(frame.data), 0, 8);
+  return frame;
+}
+
 struct can_frame co_packet::sync(uint8_t counter)
 {
   struct can_frame frame;

@@ -27,7 +27,7 @@ spine_idx = [1,2,9];
 
 %% Store the values in meters
 pos = zeros(15,3);
-nlogs = 100;
+nlogs = 190;
 pos_log = zeros(nlogs,15,3);
 log_num = 1;
 offsets = [];
@@ -35,18 +35,30 @@ offsets = [];
 %% Setup the plot
 figure(1);
 clf;
+
+% Views
+xlabel('x');
+ylabel('y');
+zlabel('z');
+%axis([ 1, 3, -1,1, -1, 1.5]);
+axis([ 1, 3, -1,1, -.75, 1.25]);
+%[az,el] = view
+view([-70,12])
+
+% Make floor
+[X,Y] = meshgrid(-1:.05:1);
+%X = X/2 + 2;
+X = X + 2;
+Z = X * 0 - .75;
+
 hold on;
 p_arm_l = plot3(pos(arm_idx_l,1),pos(arm_idx_l,2),pos(arm_idx_l,3),'r.-');
 p_arm_r = plot3(pos(arm_idx_r,1),pos(arm_idx_r,2),pos(arm_idx_r,3),'b.-');
 p_leg_l = plot3(pos(leg_idx_l,1),pos(leg_idx_l,2),pos(leg_idx_l,3),'r*-');
 p_leg_r = plot3(pos(leg_idx_r,1),pos(leg_idx_r,2),pos(leg_idx_r,3),'b*-');
 p_spine = plot3(pos(spine_idx,1),pos(spine_idx,2),pos(spine_idx,3),'ko-');
+p_floor = mesh(X,Y,Z);
 hold off;
-
-xlabel('x');
-ylabel('y');
-zlabel('z');
-axis([ 1.8, 2.5, -1,1, -1.2, 1.5]);
 
 while log_num<=nlogs
     [data,idx] = zmq('poll',100);

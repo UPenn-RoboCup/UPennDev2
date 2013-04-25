@@ -134,7 +134,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 	/* Create output arguments */
 	plhs[0] = mxCreateDoubleMatrix(1,1,mxREAL);
-	// mxGetPr(plhs[0])[0] = fiFdopen(sock_fd, "w+", "native");
+	/* mxGetPr(plhs[0])[0] = fiFdopen(sock_fd, "w+", "native"); */
 	mxGetPr(plhs[0])[0] = fiFdopen(sock_fd, "a+", "ieee-le");
 
 }

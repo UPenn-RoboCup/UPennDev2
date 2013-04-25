@@ -15,7 +15,7 @@
 
 #include "mex.h"
 #include <vector>
-#include <string>
+#include <cstring>
 #include <jpeglib.h>
 
 std::vector<unsigned char> destBuf;

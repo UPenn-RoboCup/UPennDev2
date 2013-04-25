@@ -6,6 +6,8 @@ INCLUDES += -I/usr/include/ -I../CANopen
 TARGETS = all clean
 .PHONY: $(TARGETS)
 
+OBJECTS = slug_slave.o
+
 all: libslug.a
 
 %.o: %.cpp

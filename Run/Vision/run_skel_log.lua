@@ -31,6 +31,9 @@ local simple_ipc = require 'simple_ipc'
 local sk_ch = simple_ipc.new_publisher('skeleton')
 local ac_ch = simple_ipc.new_publisher('actuator_cmd')
 
+-- Save image
+local cjpeg = require 'cjpeg'
+
 -- CHARLI
 require 'Params'
 local Transform = require 'Transform'
@@ -148,7 +151,7 @@ function ik( sk_pos )
 	wbJoints[ Params.jointID["R_Elbow"] ]          = -1 * elbow_r	
 
 	wbJoints[ Params.jointID["R_Shoulder_Pitch"] ] = 
-		-1 * (shoulder_pitch_r - math.pi/2)
+		(shoulder_pitch_r - math.pi/2)
 		
 	wbJoints[ Params.jointID["R_Shoulder_Roll"] ]  = -1 * shoulder_roll_r
 	wbJoints[ Params.jointID["R_Shoulder_Yaw"] ]   = yawR
@@ -166,8 +169,8 @@ function ik( sk_pos )
 	local df_r = sk_pos[NITE_JOINT_TORSO] - sk_pos[NITE_JOINT_RIGHT_FOOT]
 	
 	local pTorso = vector.new( {0, 0,       h[3],  0,0,0} );
-	local pLeg_l = vector.new( {0, df_l[2], 0,     0,0,0} );
-	local pLeg_r = vector.new( {0, df_r[2], 0,     0,0,0} );
+	local pLeg_l = vector.new( {0, -1*df_l[2], 0,     0,0,0} );
+	local pLeg_r = vector.new( {0, -1*df_r[2], 0,     0,0,0} );
 	
 	if base_foot==0 and math.abs(offground_r)>.05 then
 		--print("left foot",offground_r)
@@ -178,7 +181,7 @@ function ik( sk_pos )
 	
 	local ik_legs = K.inverse_legs( pLeg_l, pLeg_r,	pTorso, base_foot );
 	local jj = 1;
-	local use_torso = false;
+	local use_torso = true;
 	if use_torso then
 		for j=Params.jointID["L_Hip_Yaw"],Params.jointID["R_Ankle_Roll"] do
 			wbJoints[j] = ik_legs[jj]

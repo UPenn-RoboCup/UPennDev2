@@ -211,6 +211,6 @@ int luaopen_udp (lua_State *L) {
   luaL_newlib(L, udp);
 #else
   luaL_register(L, "udp", udp);
-#endif  
+#endif
   return 1;
 }

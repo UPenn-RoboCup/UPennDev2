@@ -35,7 +35,19 @@ end
 %% Plot data
 figure(3);
 clf;
-plot( js_log(:,L_Shoulder_Roll), js_log(:,L_Elbow), 'g*-');
+hold on;
+plot( js_log(1:35,L_Shoulder_Roll), js_log(1:35,L_Elbow), 'r*-');
+plot( js_log(36:74,L_Shoulder_Roll), js_log(36:74,L_Elbow), 'g*-');
+plot( js_log(75:end,L_Shoulder_Roll), js_log(75:end,L_Elbow), 'b*-');
+hold off;
+xlabel('L\_Shoulder\_Roll','FontSize',14);
+ylabel('L\_Elbow','FontSize',14);
 figure(4);
 clf;
-plot( js_log(:,R_Shoulder_Roll), js_log(:,R_Elbow), 'b*-');
+hold on;
+plot( js_log(1:35,R_Shoulder_Roll), js_log(1:35,R_Elbow), 'r*-');
+plot( js_log(36:74,R_Shoulder_Roll), js_log(36:74,R_Elbow), 'g*-');
+plot( js_log(75:end,R_Shoulder_Roll), js_log(75:end,R_Elbow), 'b*-');
+hold off;
+xlabel('R\_Shoulder\_Roll','FontSize',14);
+ylabel('R\_Elbow','FontSize',14);

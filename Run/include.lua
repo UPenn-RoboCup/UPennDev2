@@ -25,10 +25,6 @@ package.cpath = HOME..'Frameworks/OctoMap/?.so;'..package.cpath
 package.cpath = HOME..'Frameworks/Hokuyo/?.so;'..package.cpath
 package.cpath = HOME..'Frameworks/Skeleton/?.so;'..package.cpath
 
-package.cpath = HOME..'Tools/lua_msgpack/?.so;'..package.cpath
-package.cpath = HOME..'Tools/cjpeg/?.so;'..package.cpath
-
-
 
 -- include modules to path
 package.path = HOME..'Run/?.lua;'..package.path

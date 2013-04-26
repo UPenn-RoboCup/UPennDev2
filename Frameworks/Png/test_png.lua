@@ -133,7 +133,7 @@ img_2:write('hhh.png')
 --cpng.save('fff.png', img:pointer(), 240, 320*1, 0)
 --print(unix.time() - t0)
 
---img_jpeg = cjpeg.compress( img:pointer(), w, h, 1 )--gray
+--img_jpeg = jpeg.compress( img:pointer(), w, h, 1 )--gray
 
 --print(type(img_jpeg),'Compression Ratio:', #img_jpeg, #img_jpeg/nbytes )
 

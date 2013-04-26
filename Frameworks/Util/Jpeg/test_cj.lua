@@ -1,7 +1,7 @@
 local pwd = os.getenv('PWD')
 package.cpath = pwd..'/../../../Player/Lib/?.so;'..package.cpath
 
-local cjpeg = require 'cjpeg'
+local jpeg = require 'jpeg'
 w = 320
 h = 240
 ch = 3;
@@ -32,7 +32,7 @@ for k=1,nbytes,ch do
   end
 end
 
-img_jpeg = cjpeg.compress( img:pointer(), w, h )
+img_jpeg = jpeg.compress( img:pointer(), w, h )
 print(type(img_jpeg),'Compression Ratio:', #img_jpeg, #img_jpeg/nbytes )
 
 f = io.open('img.jpeg','w')
@@ -61,7 +61,7 @@ for k=1,nbytes,ch do
   end
 end
 
-img_jpeg = cjpeg.compress( img:pointer(), w, h, 1 )--gray
+img_jpeg = jpeg.compress( img:pointer(), w, h, 1 )--gray
 print(type(img_jpeg),'Compression Ratio:', #img_jpeg, #img_jpeg/nbytes )
 
 f = io.open('img_gray.jpeg','w')
@@ -71,7 +71,7 @@ f:close()
 ff = io.open('img.jpeg','r')
 file_str = ff:read('*a')
 print(#file_str)
-img_2 = cjpeg.uncompress(file_str, #file_str)
+img_2 = jpeg.uncompress(file_str, #file_str)
 print(img_2)
 print('width  '..img_2:width())
 print('height  '..img_2:height())

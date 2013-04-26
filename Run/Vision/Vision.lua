@@ -26,7 +26,7 @@ enable_lut_for_obstacle = Config.vision.enable_lut_for_obstacle or 0;
 
 --if Config.game.playerID==1 and Config.game.teamNumber==1 then
 --  ffi = require 'ffi'
---  local cjpeg = require 'cjpeg'
+--  local jpeg = require 'jpeg'
 --  simple_ipc = require 'simple_ipc'
 --  img_channel = simple_ipc.new_publisher('img');
 --end
@@ -241,7 +241,7 @@ function update()
   end
 
 --  if Config.game.playerID==1 and Config.game.teamNumber==1 then
---    local comp_img = cjpeg.compress(
+--    local comp_img = jpeg.compress(
 --    carray.pointer(Camera.image), 
 --    camera.width, camera.height, 3);
 --    img_channel:send( 'i'..comp_img );

@@ -33,7 +33,7 @@ log_num = 1;
 offsets = [];
 
 %% Setup the plot
-figure(1);
+h = figure(1);
 clf;
 
 % Views
@@ -60,6 +60,9 @@ p_spine = plot3(pos(spine_idx,1),pos(spine_idx,2),pos(spine_idx,3),'ko-');
 p_floor = mesh(X,Y,Z);
 hold off;
 
+%% Video
+%videoFReader = vision.VideoFileReader('viplanedeparture.avi');
+
 while log_num<=nlogs
     [data,idx] = zmq('poll',100);
     if numel(data)==1
@@ -70,10 +73,6 @@ while log_num<=nlogs
             pos(i,2) = positions{i}.x/1000;
             pos(i,3) = positions{i}.y/1000;
         end
-        
-        %% Record logs
-        pos_log(log_num,:,:) = pos;
-        log_num = log_num+1;
         
         %% Update the plot
         set(p_arm_l, 'XData', pos(arm_idx_l,1));
@@ -97,8 +96,15 @@ while log_num<=nlogs
         set(p_spine, 'ZData', pos(spine_idx,3));
         %% Draw
         drawnow;
+        
+        F(log_num) = getframe(h);
+        %% Record logs
+        pos_log(log_num,:,:) = pos;
+        log_num = log_num+1;
     end
 end
+
+movie(F,20)
 
 %% Plot data
 % Hand difference in location

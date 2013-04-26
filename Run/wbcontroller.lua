@@ -1,7 +1,7 @@
 dofile('Run/include.lua')
 local Body = require 'Body'
 local Camera = require 'Camera'
-local cjpeg = require 'cjpeg'
+local jpeg = require 'jpeg'
 local carray = require 'carray'
 local msgpack = require 'msgpack'
 local simple_ipc = require 'simple_ipc'
@@ -25,7 +25,7 @@ while true do
 --
 --  -- Grab the image and send it away for processing...
   local image = carray.byte( Camera.get_image(), Camera.get_width() * Camera.get_height() * 3 )
---  local jimage = cjpeg.compress( Camera.get_image(), Camera.get_width(), Camera.get_height(), 3)
+--  local jimage = jpeg.compress( Camera.get_image(), Camera.get_width(), Camera.get_height(), 3)
   local img_str = tostring(image)
 --  --local img_str = msgpack.pack(image, Camera.get_width() * Camera.get_height() * 3)
   print(type(Camera.get_image()), type(image), #img_str )

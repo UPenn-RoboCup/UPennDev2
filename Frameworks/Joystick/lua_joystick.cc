@@ -1,8 +1,23 @@
 /**
  * Lua module for usb joystick interface
  */
+#include <lua.hpp>
 
-#include "luajoystick.h"
+#include <usb.h>
+#include <stdio.h>
+#include <errno.h>
+#include <string.h>
+#include <unistd.h>
+#include <signal.h>
+#include <fcntl.h>
+#include <pthread.h>
+
+#include <sys/time.h>
+#include <sys/types.h>
+
+// TODO: switch for mac driver
+#include <linux/joystick.h>
+
 
 // initialized flag
 int init = 0;

@@ -123,23 +123,30 @@ else
 REGEX=-regex '.*\($(SHLIBEXT)\|$(LUAEXT)\|sh\)'
 endif
 
+# Verbose mode
+VERBOSE=no
+V=@
+ifeq ($(VERBOSE),yes)
+V=
+endif
+
 # Default compiling
 %.o: %.cpp
-	@echo "\t" CXX $@
-	@$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
+	$(V)echo "\t" CXX $@
+	$(V)$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
 %.o: %.cc
-	@echo "\t" CXX $@
-	@$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
+	$(V)echo "\t" CXX $@
+	$(V)$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
 %.o: %.c
-	@echo "\t" CC $@
-	@$(CC) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
+	$(V)echo "\t" CC $@
+	$(V)$(CC) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
 
 #LIBNAME?=badlibname
 #LUA?=lua
 
 $(LIBNAME): lua_$(LIBNAME).o $(EXTRA_OBJ)
 	@echo "\t" LINK $@
-	@$(LD) $(LDFLAGS) -o $@.$(SHLIBEXT) $^ $(LIB_DIR) $(LIBOPTS)
+	$(V)$(LD) $(LDFLAGS) -o $@.$(SHLIBEXT) $^ $(LIB_DIR) $(LIBOPTS)
 	@rm $^
 
   #test: $(LIBNAME)

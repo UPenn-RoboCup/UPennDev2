@@ -1,6 +1,7 @@
 #include "dinast_grabber.h"
 #include <boost/circular_buffer.hpp>
 #include <iostream>
+#include <stdio.h>
 
 // From http://libusb.sourceforge.net/api-1.0/structlibusb__control__setup.html#a39b148c231d675492ccd2383196926bf
 // In: device-to-host.

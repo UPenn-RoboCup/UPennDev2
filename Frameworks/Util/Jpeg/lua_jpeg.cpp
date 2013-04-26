@@ -4,16 +4,7 @@
  * University of Pennsylvania
  * */
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-#include "lua.h"
-#include "lualib.h"
-#include "lauxlib.h"
-#ifdef __cplusplus
-}
-#endif
+#include <lua.hpp>
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -23,7 +14,7 @@ extern "C"
 #include <setjmp.h>
 #include <stdio.h>
 
-#define MT_NAME "cjpeg_mt"
+#define MT_NAME "jpeg_mt"
 
 typedef struct {
   int width;
@@ -34,7 +25,7 @@ typedef struct {
 
 std::vector<unsigned char> destBuf;
 
-static structJPEG * lua_checkcjpeg(lua_State *L, int narg) {
+static structJPEG * lua_checkjpeg(lua_State *L, int narg) {
   void *ud = luaL_checkudata(L, narg, MT_NAME);
   luaL_argcheck(L, *(structJPEG **)ud != NULL, narg, "invalid jpeg");
   return (structJPEG *)ud;
@@ -166,7 +157,7 @@ int CompressData(const uint8_t* prRGB, int width, int height, int ch) {
   return destBufSize;		
 }
 
-static int lua_cjpeg_compress(lua_State *L) {
+static int lua_jpeg_compress(lua_State *L) {
   uint8_t * dataSrc = (uint8_t *) lua_touserdata(L, 1);
   int width = luaL_checkint(L, 2);
   int height = luaL_checkint(L, 3);
@@ -255,7 +246,7 @@ mem_jpeg_source_mgr::mem_jpeg_source_mgr( char* data, unsigned int length )
   term_source = jpeg_term_source;
 }
 
-static int lua_cjpeg_uncompress(lua_State *L) {
+static int lua_jpeg_uncompress(lua_State *L) {
   char* file_str = (char*)luaL_checkstring(L, 1);
   int size = lua_tointeger(L, 2);
 
@@ -301,8 +292,8 @@ static int lua_cjpeg_uncompress(lua_State *L) {
   return 1;
 }
 
-static int lua_cjpeg_getValue(lua_State *L) {
-  structJPEG *p = lua_checkcjpeg(L, 1);
+static int lua_jpeg_getValue(lua_State *L) {
+  structJPEG *p = lua_checkjpeg(L, 1);
   int index = luaL_checkint(L, 2) - 1; // Convert lua 1-index to C 0-index
   if ((index < 0) || (index >= p->height * p->stride)) {
     lua_pushnil(L);
@@ -313,15 +304,15 @@ static int lua_cjpeg_getValue(lua_State *L) {
   return 1;
 }
 
-static int lua_cjpeg_delete(lua_State *L) {
-  structJPEG *p = lua_checkcjpeg(L, 1);
+static int lua_jpeg_delete(lua_State *L) {
+  structJPEG *p = lua_checkjpeg(L, 1);
   /* cleanup heap allocation */
   free(p->raw_image);
   return 1;
 }
 
-static int lua_cjpeg_setValue(lua_State *L) {
-  structJPEG *p = lua_checkcjpeg(L, 1);
+static int lua_jpeg_setValue(lua_State *L) {
+  structJPEG *p = lua_checkjpeg(L, 1);
   int index = luaL_checkint(L, 2) - 1; // Convert lua 1-index to C 0-index
   if ((index < 0) || (index >= p->height * p->stride)) {
     lua_pushnil(L);
@@ -334,11 +325,11 @@ static int lua_cjpeg_setValue(lua_State *L) {
   return 1;
 }
 
-static int lua_cjpeg_index(lua_State *L) {
-  structJPEG *p = lua_checkcjpeg(L, 1);
+static int lua_jpeg_index(lua_State *L) {
+  structJPEG *p = lua_checkjpeg(L, 1);
   if ((lua_type(L, 2) == LUA_TNUMBER) && lua_tointeger(L, 2)) {
     // Numeric index:
-    return lua_cjpeg_getValue(L);
+    return lua_jpeg_getValue(L);
   }
 
   // Get index through metatable:
@@ -349,70 +340,68 @@ static int lua_cjpeg_index(lua_State *L) {
   return 1;
 }
 
-static int lua_cjpeg_width(lua_State *L) {
-  structJPEG *p = lua_checkcjpeg(L, 1);
+static int lua_jpeg_width(lua_State *L) {
+  structJPEG *p = lua_checkjpeg(L, 1);
   lua_pushinteger(L, p->width);
   return 1;
 }
 
-static int lua_cjpeg_height(lua_State *L) {
-  structJPEG *p = lua_checkcjpeg(L, 1);
+static int lua_jpeg_height(lua_State *L) {
+  structJPEG *p = lua_checkjpeg(L, 1);
   lua_pushinteger(L, p->height);
   return 1;
 }
 
-static int lua_cjpeg_stride(lua_State *L) {
-  structJPEG *p = lua_checkcjpeg(L, 1);
+static int lua_jpeg_stride(lua_State *L) {
+  structJPEG *p = lua_checkjpeg(L, 1);
   lua_pushinteger(L, p->stride);
   return 1;
 }
 
-static int lua_cjpeg_len(lua_State *L) {
-  structJPEG *p = lua_checkcjpeg(L, 1);
+static int lua_jpeg_len(lua_State *L) {
+  structJPEG *p = lua_checkjpeg(L, 1);
   lua_pushinteger(L, p->height * p->stride);
   return 1;
 }
 
-static int lua_cjpeg_pointer(lua_State *L) {
-  structJPEG *p = lua_checkcjpeg(L, 1);
+static int lua_jpeg_pointer(lua_State *L) {
+  structJPEG *p = lua_checkjpeg(L, 1);
   lua_pushlightuserdata(L, ((unsigned char*)p->raw_image));
   return 1;
 }
 
-static const struct luaL_reg cjpeg_Functions [] = {
-  {"compress", lua_cjpeg_compress},
-  {"uncompress", lua_cjpeg_uncompress},
+static const struct luaL_reg jpeg_Functions [] = {
+  {"compress", lua_jpeg_compress},
+  {"uncompress", lua_jpeg_uncompress},
   {NULL, NULL}
 };
 
-static const struct luaL_reg cjpeg_Methods [] = {
-  {"pointer", lua_cjpeg_pointer},
-//  {"read", lua_cjpeg_read},
-//  {"write", lua_cjpeg_write},
-  {"width", lua_cjpeg_width},
-  {"height", lua_cjpeg_height},
-  {"stride", lua_cjpeg_stride},
-  {"__gc", lua_cjpeg_delete},
-  {"__newindex", lua_cjpeg_setValue},
-  {"__len", lua_cjpeg_len},
+static const struct luaL_reg jpeg_Methods [] = {
+  {"pointer", lua_jpeg_pointer},
+//  {"read", lua_jpeg_read},
+//  {"write", lua_jpeg_write},
+  {"width", lua_jpeg_width},
+  {"height", lua_jpeg_height},
+  {"stride", lua_jpeg_stride},
+  {"__gc", lua_jpeg_delete},
+  {"__newindex", lua_jpeg_setValue},
+  {"__len", lua_jpeg_len},
   {NULL, NULL}
 };
 
 #ifdef __cplusplus
 extern "C"
 #endif
-int luaopen_cjpeg (lua_State *L) {
+int luaopen_jpeg (lua_State *L) {
   luaL_newmetatable(L, MT_NAME);
 
   // Implement index method:
   lua_pushstring(L, "__index");
-  lua_pushcfunction(L, lua_cjpeg_index);
+  lua_pushcfunction(L, lua_jpeg_index);
   lua_settable(L, -3);
 
-  luaL_register(L, NULL, cjpeg_Methods);
-  luaL_register(L, "cjpeg", cjpeg_Functions);
+  luaL_register(L, NULL, jpeg_Methods);
+  luaL_register(L, "jpeg", jpeg_Functions);
 
-  luaL_register(L, NULL, cjpeg_Methods);
-  luaL_register(L, "cjpeg", cjpeg_Functions);
   return 1;
 }

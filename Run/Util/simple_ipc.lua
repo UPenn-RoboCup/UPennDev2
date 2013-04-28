@@ -114,7 +114,8 @@ simple_ipc.new_subscriber = function( channel, filter, addr )
   if channel_type=="string" then
     channel_obj.name = simple_ipc.local_prefix..channel
   elseif channel_type=="number" then
-    channel_obj.name = simple_ipc.intercom_prefix:gsub('*',addr or '*')..channel
+    channel_obj.name = 
+			simple_ipc.intercom_prefix:gsub('*',addr or 'localhost')..channel
   else
     print('Bad input to new_subscriber!',channel,filter)
     return

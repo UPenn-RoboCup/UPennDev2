@@ -1,3 +1,9 @@
+---------------------------------
+-- Simple Interface to Lua's 
+-- ZeroMQ wrapper for Team THOR
+-- (c) Stephen McGill, 2013
+---------------------------------
+
 local zmq = require 'zmq' -- Based on ZMQ
 local poller = require 'zmq/poller'
 local simple_ipc = {} -- Our module
@@ -23,16 +29,19 @@ end
 --]]
 
 -- Simple number of threads
-simple_ipc.n_zmq_threads = 1
+simple_ipc.n_zmq_threads = 2
 simple_ipc.local_prefix = 'ipc:///tmp/'
 -- Set the intercomputer interface
 if simple_ipc.intercom_interface then
-  print( string.format('Selecting (%s) as the inter-pc interface\nUsing address (%s)',
-  simple_ipc.intercom_interface, simple_ipc.intercom_interface_ip) );
-  simple_ipc.intercom_prefix = 'epgm://'..simple_ipc.intercom_interface_ip..';239.192.1.1:'
+  print( string.format(
+	'Selecting (%s) as the inter-pc interface\nUsing address (%s)',
+  simple_ipc.intercom_interface, simple_ipc.intercom_interface_ip)
+	);
+  simple_ipc.intercom_prefix = 
+	'epgm://'..simple_ipc.intercom_interface_ip..';239.192.1.1:'
 else
   print( 'There is no inter-pc interface, using TCP' )
-  simple_ipc.intercom_prefix = 'tcp://127.0.0.1:'
+  simple_ipc.intercom_prefix = 'tcp://*:'
 end
 
 -- Make a new publisher
@@ -99,13 +108,13 @@ simple_ipc.new_publisher = function( channel, filter )
 end
 
 -- Make a new subscriber
-simple_ipc.new_subscriber = function( channel, filter )
+simple_ipc.new_subscriber = function( channel, filter, addr )
   local channel_obj = {}
   local channel_type = type(channel)
   if channel_type=="string" then
     channel_obj.name = simple_ipc.local_prefix..channel
   elseif channel_type=="number" then
-    channel_obj.name = simple_ipc.intercom_prefix..channel
+    channel_obj.name = simple_ipc.intercom_prefix:gsub('*',addr or '*')..channel
   else
     print('Bad input to new_subscriber!',channel,filter)
     return

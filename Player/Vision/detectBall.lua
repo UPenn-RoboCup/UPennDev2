@@ -35,12 +35,7 @@ th_headAngle = Config.vision.ball.th_headAngle or -10*math.pi/180;
 
 --function detect(color)
 
---  enable_obs_challenge = Config.obs_challenge or 0;
---  if enable_obs_challenge == 1 then
---    colorCount = Vision.colorCount_obs;
---  else
---    colorCount = Vision.colorCount;
---  end
+enable_obs_challenge = Config.obs_challenge or 0;
 
 ---Detects a ball of a given color.
 --@param color The color to use for detection, represented by an int
@@ -229,4 +224,3 @@ function detect(color)
 --]]
   return ball;
 end
-

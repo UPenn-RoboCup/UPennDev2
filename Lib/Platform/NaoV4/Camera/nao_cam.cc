@@ -1,5 +1,5 @@
-#include "naoCam.h"
-#include "nao_cam_thread.h"
+#include "nao_cam.h"
+#include "nao_cam_mmap_thread.h"
 
 #include <string>
 

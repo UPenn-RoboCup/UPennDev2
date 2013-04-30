@@ -1,25 +1,14 @@
-#include <stdio.h>
-#include <errno.h>
-#include <string>
-#include <string.h>
-#include <stdlib.h>
-#include <signal.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <pthread.h>
+#ifndef luaNaoCam_h_DEFINED
+#define luaNaoCam_H_DEFINED
 
-#include <map>
-#include <string>
-#include <vector>
+extern "C"
+{
+#include "lua.h"
+#include "lualib.h"
+#include "lauxlib.h"
+}
 
-#include <sys/ioctl.h>
-#include <sys/types.h>
-#include <sys/mman.h> 
+extern "C"
+int luaopen_NaoCam(lua_State *L);
 
-#include <linux/i2c.h>
-#include <linux/i2c-dev.h>
-#include <linux/videodev2.h>
-
-typedef unsigned char uint8;
-typedef unsigned int uint32;
-
+#endif

@@ -331,7 +331,7 @@ function update()
 --print("====PLAYERID:",playerID);
   for id = 1,5 do 
 
-    if not states[id] then
+    if not states[id] or not states[id].ball.x then
       -- no message from player have been received
       eta[id] = math.huge;
       ddefend[id] = math.huge;

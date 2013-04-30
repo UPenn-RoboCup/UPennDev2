@@ -11,11 +11,11 @@ function get_param()
 end
 
 function get_height()
-  return vcm.get_image_height();
+  return 480;
 end
 
 function get_width()
-  return vcm.get_image_width();
+  return 640;
 end
 
 function get_image()

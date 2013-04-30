@@ -8,4 +8,4 @@ alias so='start obstacle'
 alias sob='start obstacleplay'
 alias c='connectop'
 
-sh /home/darwin/UPennDev/Tools/.git_setup.sh
+/bin/bash /home/darwin/UPennDev/Tools/.git_setup.sh

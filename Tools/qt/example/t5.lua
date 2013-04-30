@@ -1,7 +1,7 @@
 #!/usr/bin/lua
 
-require'qtcore'
-require'qtgui'
+local qtcore = require'qtcore'
+local qtgui = require'qtgui'
 
 local new_MyWidget = function(...)
 	local this = QWidget.new(...)

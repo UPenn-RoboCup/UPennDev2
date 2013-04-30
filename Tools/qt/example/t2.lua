@@ -2,8 +2,8 @@
 
 local arg = {n = select('#', ...), [0] = arg[0], ...}
 
-require'qtcore'
-require'qtgui'
+local qtcore = require'qtcore'
+local qtgui = require'qtgui'
 
 app = QApplication(1 + arg.n, arg)
 

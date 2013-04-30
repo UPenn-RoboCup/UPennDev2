@@ -2,7 +2,7 @@ local glue = require'glue'
 local ffi = require'ffi'
 local bmpconv = require'bmpconv'
 local readfile = glue.readfile
-require'unit'
+local unit = require'unit'
 local libpng = require'libpng'
 
 

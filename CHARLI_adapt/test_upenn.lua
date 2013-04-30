@@ -1,20 +1,20 @@
 dofile('include.lua');
 package.path = "./upenn/?.lua;"..package.path;
-require 'rcm'
-require 'Sensor'
+local rcm = require 'rcm'
+local Sensor = require 'Sensor'
 odom = vector.zeros(3)
 
 
-require('Config');
-require('Robot');
-require('Head');
-require('Walk');
-require('Action');
-require('vcm')
-require('unix')
-require('vector')
-require('getch')
-require('Speak2')
+local Config = require('Config');
+local Robot = require('Robot');
+local Head = require('Head');
+local Walk = require('Walk');
+local Action = require('Action');
+local vcm = require('vcm')
+local unix = require('unix')
+local vector = require('vector')
+local getch = require('getch')
+local Speak2 = require('Speak2')
 
 getch.enableblock(1);
 

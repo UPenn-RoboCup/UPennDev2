@@ -2,14 +2,14 @@ local pwd = os.getenv('PWD')
 package.cpath = pwd..'/../lib/qt/?.so;'..package.cpath
 package.path = pwd..'/../lib/ffi/?.lua;'..package.path
 
-require 'qtcore'
-require 'qtgui'
+local qtcore = require 'qtcore'
+local qtgui = require 'qtgui'
 
 local glue = require'glue'
 local ffi = require'ffi'
 local bmpconv = require'bmpconv'
 local readfile = glue.readfile
-require'unit'
+local unit = require'unit'
 local libpng = require'libpng'
 local Q = require 'Q'
 

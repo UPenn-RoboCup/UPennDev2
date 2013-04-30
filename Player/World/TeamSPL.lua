@@ -27,6 +27,7 @@ role = -1;
 count = 0;
 
 state = {};
+state.robotName = Config.game.robotName;
 state.teamNumber = gcm.get_team_number();
 state.id = playerID;
 state.teamColor = gcm.get_team_color();
@@ -80,6 +81,16 @@ end
 function entry()
 end
 
+function pack_labelB()
+  labelB = vcm.get_image_labelB();
+  width = vcm.get_image_width()/8;
+  height = vcm.get_image_height()/8;
+  count = vcm.get_image_count();
+  array = serialization.serialize_label_rle(
+  labelB, width, height, 'uint8', 'labelB',count);
+  state.labelB = array;
+end
+
 function update()
   count = count + 1;
 
@@ -130,11 +141,15 @@ function update()
     state.landmark = 1; 
     state.landmarkv[1],state.landmarkv[2] = v[1],v[2];
   end
+  
+  pack_labelB();
 
   if (math.mod(count, 1) == 0) then
     -- use old serialization for team monitor so the 
     --  old matlab team monitor can be used
-    local msg = serialization.serialize_orig(state) 
+    --local msg = serialization.serialize_orig(state) 
+    -- CHANGED BASED ON NSL CODE
+    msg = serialization.serialize(state) 
     Comm.send(msg, #msg);
     print(#msg)
     --Copy of message sent out to other players

@@ -18,14 +18,8 @@ vision.maxFPS = 30;
 vision.scaleB = 4;
 
 
-if Config.game.role == 0 then
-  -- line and corner detection for goalie only
-  vision.enable_line_detection = 1;
-  vision.enable_corner_detection = 1;
-else
-  vision.enable_line_detection = 0;
-  vision.enable_corner_detection = 0;
-end
+vision.enable_line_detection = 0;
+vision.enable_corner_detection = 0;
 -- use this to enable spot detection
 vision.enable_spot_detection = 0;
 -- use this to enable midfield landmark detection
@@ -60,7 +54,7 @@ vision.subsampling2 = 0; --1/4 sized image
 vision.ball={};
 vision.ball.diameter = 0.065;
 vision.ball.th_min_color = 6;
-vision.ball.th_min_color2 = 6;
+vision.ball.th_min_color2 = 4;
 vision.ball.th_min_fill_rate = 0.35;
 vision.ball.th_height_max  = 0.20;
 vision.ball.th_ground_boundingbox = {-30,30,0,20};

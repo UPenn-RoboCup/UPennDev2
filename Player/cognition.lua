@@ -14,7 +14,7 @@ require('Detection')
 --require('OccupancyMap') 
 
 comm_inited = false;
-vcm.set_camera_teambroadcast(0);
+vcm.set_camera_teambroadcast(1);
 vcm.set_camera_broadcast(0);
 --Now vcm.get_camera_teambroadcast() determines 
 --Whether we use wired monitoring comm or wireless team comm

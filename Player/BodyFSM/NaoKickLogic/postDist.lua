@@ -1,9 +1,9 @@
 module(..., package.seeall);
 
 -- goalpost distance threshold
-pNear = Config.fsm.bodyApproach.pNear or 0.3;
-pRight = Config.fsm.bodyApproach.pRight or 1.2;
-pFar = Config.fsm.bodyApproach.pFar or 3.0;
+pNear = Config.fsm.bodyApproach.pNear or 0.9;
+pRight = Config.fsm.bodyApproach.pRight or 2.0;
+pFar = Config.fsm.bodyApproach.pFar or 4.5;
 
 function kick()
   -- get attack goalpost positions and goal angle

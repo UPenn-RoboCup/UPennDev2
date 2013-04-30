@@ -71,7 +71,7 @@ function update()
       if role==1 then 
 	 tKickOff=10.0; 
       else
-	 tKickOff=7.0; 
+	 tKickOff=10.0; 
       end
 
       tRemaining = tKickOff-(t-t0);

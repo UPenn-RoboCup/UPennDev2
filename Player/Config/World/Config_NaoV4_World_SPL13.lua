@@ -21,8 +21,8 @@ world.postCyan = {};
 world.postCyan[1] = {-4.5, -0.80};
 world.postCyan[2] = {-4.5, 0.80};
 world.spot = {};
-world.spot[1] = {-1.50, 0};
-world.spot[2] = {1.50, 0};
+world.spot[1] = {-2.70, 0};
+world.spot[2] = {2.70, 0};
 world.landmarkCyan = {0.0, -2.4};
 world.landmarkYellow = {0.0, 2.4};
 world.cResample = 10; --Resampling interval
@@ -87,9 +87,9 @@ world.initPosition1={
 -- Penalty mark : {1.2,0}
 world.initPosition2={
   {4.2,0},   --Goalie
-  {1.3, 0}, --Attacker
-  {1.3, -1}, --Defender
-  {1.3,1}, --Supporter
+  {2.0, 0}, --Attacker
+  {2.5, -1}, --Defender
+  {2.5,1}, --Supporter
 }
 
 -- use sound localization

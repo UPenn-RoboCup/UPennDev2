@@ -6,6 +6,7 @@ require('vector')
 require('Config')
 require('wcm')
 require('postDist')
+local util = require 'util'
 
 t0 = 0;
 timeout = 30.0;
@@ -37,6 +38,10 @@ function entry()
     direction = -1;
   end
 
+  --If walk parameters are defined for bodyOrbit, then load them
+  if Config.fsm.bodyOrbit.walkParam then
+    util.loadconfig(Config.fsm.bodyOrbit.walkParam)
+  end
   walk.set_velocity(0,0,0)
 
   toKick = postDist.kick()

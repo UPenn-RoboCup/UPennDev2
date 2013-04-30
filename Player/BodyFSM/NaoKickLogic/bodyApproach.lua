@@ -116,9 +116,11 @@ function update()
       if ((us[1] > 8 or us[2] > 8)) then
         return "walkKick";
       else
+			-- If the closest post is GREATER THAN the near threshold AND is less than the right post threshold, execute a standing kick.
         return "kick"
       end
     else
+			-- Otherwise perform a walk kick.
       return "walkKick"
     end  
   end

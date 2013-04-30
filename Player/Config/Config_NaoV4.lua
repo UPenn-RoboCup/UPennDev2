@@ -1,46 +1,38 @@
 module(..., package.seeall);
-
+local unix = require 'unix'
 require('vector')
 require('parse_hostname')
+
+--Robot CFG should be loaded first to set PID values
+local robotName=unix.gethostname();
 
 platform = {};
 platform.name = 'NaoV4'
 
 listen_monitor=1
-
-function loadconfig(configName)
-  local localConfig=require(configName);
-  for k,v in pairs(localConfig) do
-    Config[k]=localConfig[k];
-  end
-end
-  
 -- Game Parameters
-
+-- init game table first since fsm need it
 game = {};
+
+-- Parameters Files
+params = {}
+params.name = {"Walk", "World", "Kick", "Vision", "FSM", "Camera"};
+
+---Location Specific Camera Parameters--
+params.Camera = "USOpen"
+params.Walk = "FastStableAlan"
+params.World = "SPL13"
+params.FSM = "USOpen"
+
+util.LoadConfig(params, platform)
+
 game.teamNumber = 25;
+game.robotName = robotName;
 game.playerID = parse_hostname.get_player_id();
 game.robotID = game.playerID;
 game.teamColor = parse_hostname.get_team_color();
 game.role = game.playerID-1; -- 0 for goalie
 game.nPlayers = 4;
-
-
-param = {}
-param.world = 'World/Config_Nao_World'
-param.walk = 'Walk/Config_NaoV4_Walk_FastStable' 
-param.kick = 'Kick/Config_Nao_Kick'
-param.vision = 'Vision/Config_NaoV4_Vision'
-param.camera = 'Camera/Config_NaoV4_Camera_Levine307'
-param.fsm = 'FSM/Config_NaoV4_FSM'
-
-loadconfig(param.world)
-loadconfig(param.kick)
-loadconfig(param.vision)
-loadconfig(param.walk)
-
---Location Specific Camera Parameters--
-loadconfig(param.camera)
 
 
 -- Devive Interface Libraries
@@ -50,7 +42,8 @@ dev.camera = 'NaoCam';
 dev.kinematics = 'NaoKinematics';
 dev.ip_wired = '192.168.123.255';
 dev.ip_wired_port = 111111;
-dev.ip_wireless = '192.168.1.255';
+--dev.ip_wireless = '192.168.1.255';
+dev.ip_wireless = '139.140.218.255';
 dev.ip_wireless_port = 54321
 dev.game_control = 'NaoGameControl';
 dev.team='TeamSPL';
@@ -58,12 +51,10 @@ dev.walk = 'Walk/NaoV4Walk';
 dev.kick = 'NewKick';
 
 --Speak enable
-speakenable = 0;
+speakenable = 1;
 
 
 -- FSM Parameters
-fsm = {};
-loadconfig(param.fsm)
 fsm.game = 'RoboCup';
 if game.role == 0 then
   fsm.body = {'NaoGoalie'}

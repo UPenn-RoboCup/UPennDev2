@@ -98,7 +98,7 @@ function update()
   thAlign = 10.0*math.pi/180.0;
   thAlignWalkKick = 30*math.pi/180.0;
   -- If ball is close, abandon goal to chase it down --
-  if ((tBall < 3.0) and (ballR < ballNear)) then
+  if ((tBall < 10.0) and (ballR < ballNear)) then
     return "ballClose";
   end
   -- lost ball

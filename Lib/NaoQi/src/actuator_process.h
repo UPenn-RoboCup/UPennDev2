@@ -2,6 +2,7 @@
 #define actuator_process_h_DEFINED
 
 #include <stdlib.h>
+#include <alcore/alptr.h>
 #include <alcommon/albroker.h>
 
 int actuator_process_init(AL::ALPtr<AL::ALBroker> pBroker);

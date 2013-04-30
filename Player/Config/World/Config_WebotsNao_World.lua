@@ -54,7 +54,7 @@ world.Lcorner[17]={0.6,0};
 world.Lcorner[18]={-0.6,0};
 
 --same-colored goalposts
-world.use_same_colored_goal=1;
+world.use_same_colored_goal=0;
 
 --should we use new triangulation?
 world.use_new_goalposts=0;
@@ -93,7 +93,7 @@ world.initPosition2={
 }
 
 -- use sound localization
-world.enable_sound_localization = 0;
+world.enable_sound_localization = 1;
 
 -- Occupancy Map parameters
 occ = {};

@@ -49,7 +49,7 @@ CXXFLAGS= -O2 -fpic
 
 MEXEXT=mexglx
 SHLIBEXT= so
-LIBOPTS= -shared -fpic
+LIBOPTS= -shared -fpic -llua
 LIBRT= -lrt
 
 #This does not work 
@@ -72,7 +72,7 @@ endif
 
 ifeq ($(OSTYPE),linux)
   SHLIBEXT= so
-  LIBOPTS= -shared -fpic
+  LIBOPTS= -shared -fpic -lluajit-5.1
   LIBRT= -lrt
 ifeq ($(USER),darwin)
   CXXFLAGS= -O3 -fomit-frame-pointer -mtune=native -march=native -pipe -funroll-loops

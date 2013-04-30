@@ -5,24 +5,24 @@ require('vector')
 
 world={};
 world.n = 200;
-world.xLineBoundary = 3.0;
-world.yLineBoundary = 2.0;
-world.xMax = 3.2;
-world.yMax = 2.2;
-world.goalWidth = 1.40;
-world.goalHeight= 0.80;
+world.xLineBoundary = 4.5;
+world.yLineBoundary = 3.0;
+world.xMax = 4.7;
+world.yMax = 3.2;
+world.goalWidth = 1.60;
+world.goalHeight= 0.91;
 world.goalDiameter=0.10; -- diameter of a post
 world.ballYellow= {{3.0,0.0}};
 world.ballCyan= {{-3.0,0.0}};
 world.postYellow = {};
-world.postYellow[1] = {3.0, 0.70};
-world.postYellow[2] = {3.0, -0.70};
+world.postYellow[1] = {4.5, 0.80};
+world.postYellow[2] = {4.5, -0.80};
 world.postCyan = {};
-world.postCyan[1] = {-3.0, -0.70};
-world.postCyan[2] = {-3.0, 0.70};
+world.postCyan[1] = {-4.5, -0.80};
+world.postCyan[2] = {-4.5, 0.80};
 world.spot = {};
-world.spot[1] = {-1.20, 0};
-world.spot[2] = {1.20, 0};
+world.spot[1] = {-1.50, 0};
+world.spot[2] = {1.50, 0};
 world.landmarkCyan = {0.0, -2.4};
 world.landmarkYellow = {0.0, 2.4};
 world.cResample = 10; --Resampling interval
@@ -30,23 +30,23 @@ world.cResample = 10; --Resampling interval
 --They are SPL values
 world.Lcorner={};
 --Field edge
-world.Lcorner[1]={3.0,2.0};
-world.Lcorner[2]={3.0,-2.0};
-world.Lcorner[3]={-3.0,2.0};
-world.Lcorner[4]={-3.0,-2.0};
+world.Lcorner[1]={4.5,3.0};
+world.Lcorner[2]={4.5,-3.0};
+world.Lcorner[3]={-4.5,3.0};
+world.Lcorner[4]={-4.5,-3.0};
 --Center T edge
-world.Lcorner[5]={0,2.0};
-world.Lcorner[6]={0,-2.0};
+world.Lcorner[5]={0,3.0};
+world.Lcorner[6]={0,-3.0};
 --Penalty box edge
-world.Lcorner[7]={-2.4,1.1};
-world.Lcorner[8]={-2.4,-1.1};
-world.Lcorner[9]={2.4,1.1};
-world.Lcorner[10]={2.4,-1.1};
+world.Lcorner[7]={-3.9,1.1};
+world.Lcorner[8]={-3.9,-1.1};
+world.Lcorner[9]={3.9,1.1};
+world.Lcorner[10]={3.9,-1.1};
 --Penalty box T edge
-world.Lcorner[11]={3.0,1.1};
-world.Lcorner[12]={3.0,-1.1};
-world.Lcorner[13]={-3.0,1.1};
-world.Lcorner[14]={-3.0,-1.1};
+world.Lcorner[11]={4.5,1.1};
+world.Lcorner[12]={4.5,-1.1};
+world.Lcorner[13]={-4.5,1.1};
+world.Lcorner[14]={-4.5,-1.1};
 --Center circle junction
 world.Lcorner[15]={0,0.6};
 world.Lcorner[16]={0,-0.6};
@@ -78,7 +78,7 @@ world.aCornerFilter = 0.05;
 
 -- default positions for our kickoff
 world.initPosition1={
-  {2.7,0},   --Goalie
+  {4.2,0},   --Goalie
   {0.5, 0}, --Attacker
   {1.2,-1}, --Defender
   {1.2, 1}, --Supporter
@@ -86,7 +86,7 @@ world.initPosition1={
 -- default positions for opponents' kickoff
 -- Penalty mark : {1.2,0}
 world.initPosition2={
-  {2.7,0},   --Goalie
+  {4.2,0},   --Goalie
   {1.3, 0}, --Attacker
   {1.3, -1}, --Defender
   {1.3,1}, --Supporter

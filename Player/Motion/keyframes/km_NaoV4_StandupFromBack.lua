@@ -1,1 +1,1 @@
-km_NaoV4_StandupFromBack_Fast.lua
+km_NaoV4_StandupFromBack_Slow.lua

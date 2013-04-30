@@ -40,20 +40,10 @@ function update()
   ballGlobal = util.pose_global({ball.x, ball.y, 0}, {pose.x, pose.y, pose.a});
   tBall = Body.get_time() - ball.t;
 
-  strat = gcm.get_team_strat();
-  strategy = strat[Config.game.playerID - 1]
-
   role = gcm.get_team_role();
+
   ballxy=vector.new( {ball.x,ball.y,0} );
   posexya=vector.new( {pose.x, pose.y, pose.a} );
-
-  if strategy == 2 then
-    role = 1
-  elseif strategy == 3 then
-    role = 2
-  elseif strategy == 4 then
-    role = 4
-  end
 
   ballGlobal=util.pose_global(ballxy,posexya);
   goalGlobal=wcm.get_goal_attack();
@@ -72,54 +62,111 @@ function update()
   if (role == 2) then
     -- defend
     goalDefend = wcm.get_goal_defend();
-    homePosition = goalDefend - 0.5*(goalDefend - ballGlobal);
+    targetPosition = goalDefend - 0.5*(goalDefend - ballGlobal);
   
     --homePosition = .6 * ballGlobal;
     --homePosition[1] = homePosition[1] - 0.50*util.sign(homePosition[1]);
-    homePosition[2] = homePosition[2] - 0.80*util.sign(homePosition[2]);
+    targetPosition[2] = targetPosition[2] - 0.80*util.sign(targetPosition[2]);
+
+    ballRepulsion = 2; 
+    targetAttraction = 1;
+    ballExtent = 1.5;
 
   elseif (role == 3) then
     -- support
     attackGoalPosition = vector.new(wcm.get_goal_attack());
 
-    --[[
-    homePosition = ballGlobal;
-    homePosition[1] = homePosition[1] + 0.75*util.sign(homePosition[1]);
-    homePosition[1] = util.sign(homePosition[1])*math.min(2.0, math.abs(homePosition[1]));
-    homePosition[2] = 
-    --]]
-
     -- move near attacking goal
-    homePosition = attackGoalPosition;
+    targetPosition = attackGoalPosition;
     -- stay in the field (.75 m from end line)
-    homePosition[1] = homePosition[1] - util.sign(homePosition[1]) * 1.0;
+    targetPosition[1] = targetPosition[1] - util.sign(targetPosition[1]) * 1.0;
     -- go to far post (.75 m from center)
-    homePosition[2] = -1*util.sign(ballGlobal[2]) * .75;
+    if math.abs(ballGlobal[2]) < 0.5 then
+      targetPosition[2] = util.sign(pose.y) * .75;
+    else  
+      targetPosition[2] = -1*util.sign(ballGlobal[2]) * .75;
+    end
 
     -- face ball 
-    homePosition[3] = ballGlobal[3];
+    targetPosition[3] = ballGlobal[3];
+
+    ballRepulsion = -8; 
+    targetAttraction = 0;
+    ballExtent = 8;--1.5;
+
+
   else
     -- attack
     if math.abs(angle1)<math.pi/2 then
       rDist=math.min(rDist1,math.max(rDist2,ballR-rTurn2));
-      homePosition={
+      targetPosition={
         ballGlobal[1]-math.cos(aGoal)*rDist,
         ballGlobal[2]-math.sin(aGoal)*rDist,
         aGoal};
     elseif angle1>0 then
-      homePosition={
+      targetPosition={
         ballGlobal[1]+math.cos(-aBall+math.pi/2)*rOrbit,
         ballGlobal[2]-math.sin(-aBall+math.pi/2)*rOrbit,
         aBall};
 
     else
-      homePosition={
+      targetPosition={
         ballGlobal[1]+math.cos(-aBall-math.pi/2)*rOrbit,
         ballGlobal[2]-math.sin(-aBall-math.pi/2)*rOrbit,
         aBall};
     end  
+
+    ballRepulsion = 0; -- \leq 0 
+    targetAttraction = 1;
+    ballExtent = 8;
+
   end
 
+
+  -- ++++++++++++++++++++++++++++++++++++++++++++++++++
+    -- Potential Field
+    --print(targetPosition);
+
+    -- sink at targetPosition
+    targetPositionR = math.sqrt((pose.x - targetPosition[1])^2 + (pose.y - targetPosition[2])^2);
+    aTargetPosition = math.atan2 ( targetPosition[2] - pose.y, targetPosition[1] - pose.x ) ;
+
+    targetPositionRelative = util.pose_relative(targetPosition, {pose.x, pose.y, pose.a});
+    targetPosition = targetPositionRelative;
+
+    targetPositionR = math.sqrt(targetPosition[1]^2 + targetPosition[2]^2);
+    aTargetPosition = math.atan2 (targetPosition[2],targetPosition[1]);
+
+    --print(targetPosition);
+  
+    A = vector.zeros(2);
+    A[1] = targetAttraction * targetPositionR * math.cos(aTargetPosition);
+    A[2] = targetAttraction * targetPositionR * math.sin(aTargetPosition);
+
+    --util.ptable(A);
+
+    -- source or sink at ball
+    R = vector.zeros(2);
+    R[1] = ballRepulsion * (-1) * math.max ( ballExtent-ballR, 0 ) * math.cos (aBall);
+    R[2] = ballRepulsion * (-1) * math.max ( ballExtent-ballR, 0 ) * math.sin (aBall);
+
+    util.ptable(R);
+
+    S = vector.zeros(2);
+    S = A + R; -- relative velocity
+
+    --util.ptable(S);
+
+ --[[
+    homePosition = vector.zeros(3);  
+    homePosition[1] = S[1];
+    homePosition[2] = S[2];
+    homePosition[3] = targetPosition[3];
+
+    
+    -- ++++++++++++++++++++++++++++++++++++++++++++++++++
+
+ 
   -- do not go into own penalty box
   if (gcm.get_team_color() == 1) then
     -- red
@@ -128,25 +175,31 @@ function update()
     -- blue
     homePosition[1] = math.max(homePosition[1], -2.2);
   end
+--]]
+  --homeRelative = util.pose_relative(homePosition, {pose.x, pose.y, pose.a});
+  --rHomeRelative = math.sqrt(homeRelative[1]^2 + homeRelative[2]^2);
+  rS = math.sqrt(S[1]^2 + S[2]^2);
 
-  homeRelative = util.pose_relative(homePosition, {pose.x, pose.y, pose.a});
-  rHomeRelative = math.sqrt(homeRelative[1]^2 + homeRelative[2]^2);
-
-  vx = maxStep*homeRelative[1]/(rHomeRelative + 0.1);
-  vy = maxStep*homeRelative[2]/(rHomeRelative + 0.1);
+  --vx = maxStep*homeRelative[1]/(rHomeRelative + 0.1);
+  --vy = maxStep*homeRelative[2]/(rHomeRelative + 0.1);
+  vx = maxStep*S[1]/(rS + 0.1);
+  vy = maxStep*S[2]/(rS + 0.1);
   va = .5*math.atan2(ball.y, math.max(ball.x + 0.05,0.05));
+  
+  --print(vx..' , '..vy);
+
+  -- 
 
   walk.set_velocity(vx, vy, va);
   ballR = math.sqrt(ball.x^2 + ball.y^2);
   if ((tBall < 1.0) and (ballR < rClose)) then
     if postDist.kick() then
-      return "approach"; --Does not having approach in position make faster?
+      return "ballAlign";
     else
       return "approach";
     end
   end
 
-  --[[
   -- TODO: add obstacle detection
   --us = UltraSound.checkObstacle();
   if Config.fsm.enable_obstacle_detection > 0 then
@@ -154,12 +207,9 @@ function update()
   else
     us = vector.zeros(2)
   end
-  if ((t - t0 > 2.5) and (us[1] > 5 or us[2] > 5)) then
-    if role~=1 then 
-      return 'obstacle'; 
-    end
+  if ((t - t0 > 2.5) and (us[1] > 5 or us[2] > 5) and role~=1) then
+    return 'obstacle'; 
   end
-  ]]--
 
   if ((t - t0 > 5.0) and (t - ball.t > tLost)) then
     return "ballLost";

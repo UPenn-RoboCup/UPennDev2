@@ -15,7 +15,7 @@ timeout = 20.0;
 
 maxStep = 0.05;
 
-rClose = 0.28;
+rClose = 0.35;
 
 tLost = 3.0;
 
@@ -44,9 +44,10 @@ function update()
   strategy = strat[Config.game.playerID - 1]
 
   role = gcm.get_team_role();
+
   ballxy=vector.new( {ball.x,ball.y,0} );
   posexya=vector.new( {pose.x, pose.y, pose.a} );
-
+  
   if strategy == 2 then
     role = 1
   elseif strategy == 3 then
@@ -71,11 +72,8 @@ function update()
 
   if (role == 2) then
     -- defend
-    goalDefend = wcm.get_goal_defend();
-    homePosition = goalDefend - 0.5*(goalDefend - ballGlobal);
-  
-    --homePosition = .6 * ballGlobal;
-    --homePosition[1] = homePosition[1] - 0.50*util.sign(homePosition[1]);
+    homePosition = .6 * ballGlobal;
+    homePosition[1] = homePosition[1] - 0.50*util.sign(homePosition[1]);
     homePosition[2] = homePosition[2] - 0.80*util.sign(homePosition[2]);
 
   elseif (role == 3) then
@@ -98,25 +96,27 @@ function update()
 
     -- face ball 
     homePosition[3] = ballGlobal[3];
+  elseif role==4 then
+    --Do nothing
   else
     -- attack
     if math.abs(angle1)<math.pi/2 then
-      rDist=math.min(rDist1,math.max(rDist2,ballR-rTurn2));
-      homePosition={
-        ballGlobal[1]-math.cos(aGoal)*rDist,
-        ballGlobal[2]-math.sin(aGoal)*rDist,
-        aGoal};
+    rDist=math.min(rDist1,math.max(rDist2,ballR-rTurn2));
+    homePosition={
+    ballGlobal[1]-math.cos(aGoal)*rDist,
+    ballGlobal[2]-math.sin(aGoal)*rDist,
+    aGoal};
     elseif angle1>0 then
       homePosition={
-        ballGlobal[1]+math.cos(-aBall+math.pi/2)*rOrbit,
-        ballGlobal[2]-math.sin(-aBall+math.pi/2)*rOrbit,
-        aBall};
+    ballGlobal[1]+math.cos(-aBall+math.pi/2)*rOrbit,
+    ballGlobal[2]-math.sin(-aBall+math.pi/2)*rOrbit,
+    aBall};
 
     else
       homePosition={
-        ballGlobal[1]+math.cos(-aBall-math.pi/2)*rOrbit,
-        ballGlobal[2]-math.sin(-aBall-math.pi/2)*rOrbit,
-        aBall};
+    ballGlobal[1]+math.cos(-aBall-math.pi/2)*rOrbit,
+    ballGlobal[2]-math.sin(-aBall-math.pi/2)*rOrbit,
+    aBall};
     end  
   end
 
@@ -140,7 +140,7 @@ function update()
   ballR = math.sqrt(ball.x^2 + ball.y^2);
   if ((tBall < 1.0) and (ballR < rClose)) then
     if postDist.kick() then
-      return "approach"; --Does not having approach in position make faster?
+      return "ballAlign";
     else
       return "approach";
     end
@@ -149,15 +149,9 @@ function update()
   --[[
   -- TODO: add obstacle detection
   --us = UltraSound.checkObstacle();
-  if Config.fsm.enable_obstacle_detection > 0 then
-    us = UltraSound.check_obstacle();
-  else
-    us = vector.zeros(2)
-  end
-  if ((t - t0 > 2.5) and (us[1] > 5 or us[2] > 5)) then
-    if role~=1 then 
-      return 'obstacle'; 
-    end
+  us = UltraSound.check_obstacle();
+  if ((t - t0 > 3.0) and (us[1] > 8 or us[2] > 8)) then
+    return 'obstacle'; 
   end
   ]]--
 

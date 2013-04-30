@@ -32,6 +32,7 @@ shared.team.number = vector.zeros(1);
 shared.team.player_id = vector.zeros(1);
 shared.team.color = vector.zeros(1);
 shared.team.role = vector.zeros(1);
+shared.team.strat = vector.zeros(2)
 
 shared.team.forced_role = vector.zeros(1); --for role testing
 

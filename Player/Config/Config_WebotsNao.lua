@@ -57,13 +57,8 @@ else game.teamColor = 1; --Red team
 end
 
 fsm.game = 'RoboCup';
-if (game.playerID == 1) then
-  fsm.body = {'NaoGoalie'};
-  fsm.head = {'NaoGoalie'};
-else
-  fsm.body = {'NaoKickLogic'};
-  fsm.head = {'NaoPlayer'};
-end
+fsm.body = {'NaoKickLogic'};
+fsm.head = {'NaoPlayer'};
 
 -- Team Parameters
 team = {};

@@ -11,7 +11,7 @@ require('wcm');
 require('gcm');
 
 --Makes error with webots
-Comm.init(Config.dev.ip_wireless,Config.dev.ip_wireless_port);
+Comm.init(Config.dev.ip_wireless,12500);
 print('Receiving Team Message From',Config.dev.ip_wireless);
 
 playerID = gcm.get_team_player_id(); strategy = 0
@@ -20,7 +20,6 @@ msgTimeout = Config.team.msgTimeout;
 nonAttackerPenalty = Config.team.nonAttackerPenalty;
 nonDefenderPenalty = Config.team.nonDefenderPenalty;
 time_to_stand = Config.km.time_to_stand;
-twoDefenders = Config.team.twoDefenders;
 
 role = -1;
 
@@ -59,7 +58,6 @@ states[playerID] = state;
 
 strat = {}
 
----Receives messages from teammates
 tLastReceived = 0
 
 
@@ -134,9 +132,7 @@ function update()
   if (math.mod(count, 1) == 0) then
     -- use old serialization for team monitor so the 
     --  old matlab team monitor can be used
-    local msg = serialization.serialize_orig(state) 
-    Comm.send(msg, #msg);
-    print(#msg)
+    Comm.send(serialization.serialize_orig(state));
     --Copy of message sent out to other players
     state.tReceive = Body.get_time();
     states[playerID] = state;
@@ -151,7 +147,7 @@ function update()
   t = Body.get_time();
   for id = 1,4 do
 
-    if not states[id] or not states[id].ball.x then
+    if not states[id] then
       -- no message from player have been received
       eta[id] = math.huge;
       ddefend[id] = math.huge;
@@ -166,12 +162,7 @@ function update()
       -- distance to goal
       dgoalPosition = vector.new(wcm.get_goal_defend());
       pose = wcm.get_pose();
-    
-      if twoDefenders == 1 then
-        ddefend[id] = (-1) * util.sign ( dgoalPosition[1] ) * pose.y; -- use defender who is on the right
-      else
-        ddefend[id] = math.sqrt((pose.x - dgoalPosition[1])^2 + (pose.y - dgoalPosition[2])^2);
-      end
+      ddefend[id] = math.sqrt((pose.x - dgoalPosition[1])^2 + (pose.y - dgoalPosition[2])^2);
 
       if (states[id].role ~= 1) then
         -- Non attacker penalty:
@@ -183,11 +174,7 @@ function update()
 
       if (states[id].role ~= 2) then
         -- Non defender penalty:
-        if twoDefenders == 1 then
-          ddefend[id] = ddefend[id] + 0.2;
-        else
-          ddefend[id] = ddefend[id] + 0.3;
-        end
+        ddefend[id] = ddefend[id] + 0.3;
       end
       if (states[id].penalty > 0) or (t - states[id].tReceive > msgTimeout) then
         ddefend[id] = math.huge;
@@ -241,18 +228,12 @@ function update()
           end
         end
 
-    minETA, minEtaID = min(eta);
-    if minEtaID == playerID then
-      -- attack
-      set_role(1);
-    else
-      -- furthest player back (or to the right, if using two defenders) is defender
-      minDDefID = 0;
-      minDDef = math.huge;
-      for id = 2,4 do
-        if id ~= minEtaID and ddefend[id] <= minDDef then
-          minDDefID = id;
-          minDDef = ddefend[id];
+        if minDDefID == playerID then
+          -- defense 
+          set_role(2);
+        else
+          -- support
+          set_role(3);
         end
       end
     end
@@ -276,6 +257,7 @@ function update()
       end
     end
   end
+
   -- update shm
   update_shm() 
 end
@@ -290,14 +272,10 @@ end
 function exit()
 end
 
----Returns current role
---@return int role, 1=attacker, 2=defender, 3=supporter, 0=goalie
 function get_role()
   return role;
 end
 
----Sets role
---@param r Role 
 function set_role(r)
   if role ~= r then 
     role = r;

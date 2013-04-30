@@ -6,6 +6,7 @@ require('unix');
 require('util');
 require('wcm');
 require('gcm');
+require('Speak');
 
 require('SoundComm');
 require('Body');
@@ -105,9 +106,9 @@ function update()
 
    -- if we are the goalie, periodically send out the audio signal
    if (gcm.get_team_player_id() == 1) then
-      -- only in ready and playing state
+      -- only playing state
       local gameState = gcm.get_game_state();
-      if (gameState == 1 or gameState == 3) then
+      if (gameState == 3) then
          -- only transmit the sequence when we are in our own goal
          local pose = wcm.get_robot_pose();
          local goalPos = wcm.get_goal_defend();
@@ -263,9 +264,28 @@ end
 function get_sound_direction()
    -- return the filter index corresponding to the goalie
    --    -1 for unkown
-   -- TODO: interpolate between bins?
+   local mv, mind = util.max(detFilter);
+   if (mv < confidenceThres) then 
+      return -1;
+   end
 
-   -- TODO: better determination of the sound direction
+   -- check non-adjacent directions
+   local secondMax = 0;
+   for inc = 2,ndiv-1 do
+      local ind = mind + inc;
+      if (ind > ndiv) then
+         ind = ind - ndiv;
+      end
+      secondMax = math.max(detFilter[ind], secondMax);
+   end
+   -- check the magnitude of the second max and ensure it is not large
+   if (secondMax > .75 * mv) then
+      return -1;
+   else
+      return mind;
+   end
+
+   --[[
    local mv, mind = util.max(detFilter);
    if (mv < confidenceThres) then
       return -1;
@@ -300,6 +320,7 @@ function get_sound_direction()
    end
 
    return mind;
+   --]]
 end
 
 function resolve_goal_detection(gtype, vgoal)
@@ -346,7 +367,8 @@ function resolve_goal_detection(gtype, vgoal)
       local goalBeliefFromPose = which_goal_based_on_current_pose(agoal);
       -- if we think it is the attacking goal return defending (to update pose faster)
       if (goalBeliefFromPose == 1) then
-         return -1;
+        Speak.talk('Flipping'); 
+        return -1;
       else
          -- otherwise use normal pose filter updates
          print('------------------ already have correct direction ------------------');
@@ -362,7 +384,9 @@ function resolve_goal_detection(gtype, vgoal)
       local goalBeliefFromPose = which_goal_based_on_current_pose(agoal);
       -- if we think it is the attacking goal return defending (to update pose faster)
       if (goalBeliefFromPose == -1) then
-         return 1;
+        --return 1;
+        -- don't try to predict attacing goal
+        return 0;
       else
          -- otherwise use normal pose filter updates
          print('++++++++++++++++++ already have correct direction ++++++++++++++++++');

@@ -12,13 +12,13 @@ package.path = cwd.."/../../../UPennDev/Player/Util/?.lua;"..package.path;
 package.path = cwd.."/../../../UPennDev/Player/Config/?.lua;"..package.path;
 package.path = cwd.."/../../../UPennDev/Player/Vision/?.lua;"..package.path;
 
-require('serialization');
-require('Hokuyo')
-require('signal')
-require('Serial');
-require('kBPacket');
-require('unix');
-require('rcm');
+local serialization = require('serialization');
+local Hokuyo = require('Hokuyo')
+local signal = require('signal')
+local Serial = require('Serial');
+local kBPacket = require('kBPacket');
+local unix = require('unix');
+local rcm = require('rcm');
 
 hokuyo = {}
 hokuyo.serial = "00805676"

@@ -12,13 +12,13 @@ package.path = cwd.."/../../Player/Util/?.lua;"..package.path;
 package.path = cwd.."/../../Player/Config/?.lua;"..package.path;
 package.path = cwd.."/../../Player/Vision/?.lua;"..package.path;
 
-require('serialization');
-require('util');
-require('unix');
-require('cutil');
-require('Serial');
-require('rcm');
-require('vector');
+local serialization = require('serialization');
+local util = require('util');
+local unix = require('unix');
+local cutil = require('cutil');
+local Serial = require('Serial');
+local rcm = require('rcm');
+local vector = require('vector');
 
 function parse_name(namestr)
   name = {}

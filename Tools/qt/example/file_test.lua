@@ -1,4 +1,4 @@
-require'qtcore'
+local qtcore = require'qtcore'
 
 local s = tostring{}
 

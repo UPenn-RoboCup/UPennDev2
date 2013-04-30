@@ -1,6 +1,6 @@
 #!/usr/bin/lua
 
-require'qtcore'
+local qtcore = require'qtcore'
 
 qa = QCoreApplication.new(1, {'virt_test'})
 

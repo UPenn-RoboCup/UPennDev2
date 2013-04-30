@@ -1,8 +1,8 @@
 #!/usr/bin/lua
 
-require'qtcore'
-require'qtgui'
-require'qtwebkit'
+local qtcore = require'qtcore'
+local qtgui = require'qtgui'
+local qtwebkit = require'qtwebkit'
 
 local app = QApplication(1 + select('#', ...), {arg[0], ...})
 

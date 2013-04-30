@@ -1,5 +1,5 @@
-require 'qtcore'
-require 'qtsql'
+local qtcore = require 'qtcore'
+local qtsql = require 'qtsql'
 
 local db = QSqlDatabase.addDatabase("QSQLITE", "conn1")
 db:setDatabaseName("numbers.db")

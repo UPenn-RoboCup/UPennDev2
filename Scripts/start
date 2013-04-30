@@ -1,0 +1,246 @@
+#!/bin/bash
+
+KERNEL=`uname -r`
+
+
+# Kill all processes to reset player
+killall -q naoqi-bin naoqi espeak lua luajit luajit2 screen
+#
+
+# kill all screen log
+rm -f screenlog*
+rm -f /dev/shm/*
+
+SCREEN_FLAGS="-dm -L -S"
+
+reset_wb(){
+  uvcdynctrl -d video0 -s 'White Balance Temperature, Auto' -- 1
+  echo "Reset WB. Make Sure Robot Facing Field"
+  sleep 2;
+  uvcdynctrl -d video0 -s 'White Balance Temperature, Auto' -- 0
+  sleep 1;
+}
+
+run_dcm_vcm(){
+  echo "Starting DCM..."
+  cd $PLAYER_DIR
+  screen $SCREEN_FLAGS dcm $LUA_COM run_dcm.lua
+  # Allow DCM some time to start
+  sleep 1
+  
+  echo "Starting Cognition..."
+  cd $PLAYER_DIR
+  screen $SCREEN_FLAGS cognition $LUA_COM run_cognition.lua
+  # Allow Cognition some time to start
+  sleep 3
+}
+
+run_nao_vcm(){
+  # echo "Starting Naoqi..."
+  # cd $PLAYER_DIR
+  # screen $SCREEN_FLAGS nao_qi /usr/bin/naoqi 
+  # Allow naoqi some time to start
+  # sleep 3
+  
+  echo "Starting Cognition..."
+  cd $PLAYER_DIR
+  screen $SCREEN_FLAGS cognition $LUA_COM run_cognition.lua
+  # Allow Cognition some time to start
+  sleep 3
+}
+
+run_boxer(){
+  echo "Starting DCM..."
+  cd $PLAYER_DIR
+  screen $SCREEN_FLAGS dcm $LUA_COM run_dcm.lua
+  # Allow DCM some time to start
+  sleep 1
+  
+  echo "Starting NoCognition..."
+  cd $PLAYER_DIR
+  screen $SCREEN_FLAGS cognition $LUA_COM run_nocognition.lua
+  # Allow Cognition some time to start
+  sleep 3
+
+  echo "Starting Player..."
+  cd $PLAYER_DIR
+  screen $SCREEN_FLAGS player $LUA_COM run_main.lua
+  
+  echo "Rock and Roll!"
+  screen -ls
+
+}
+
+run_player(){
+  run_dcm_vcm
+ 
+  echo "Starting Player..."
+  cd $PLAYER_DIR
+  screen $SCREEN_FLAGS player $LUA_COM run_main_op.lua
+  
+  echo "Rock and Roll!"
+  screen -ls
+}
+
+run_obplay(){
+  run_dcm_vcm
+ 
+  echo "Starting Ob Map"
+  cd $PLAYER_DIR
+  screen $SCREEN_FLAGS occ $LUA_COM run_occmap.lua
+  sleep 1
+
+  echo "Starting Player..."
+  cd $PLAYER_DIR
+  screen $SCREEN_FLAGS player $LUA_COM run_main_op.lua
+  
+  echo "Rock and Roll!"
+  screen -ls
+}
+
+run_demo(){
+  echo "Starting DCM..."
+  cd $PLAYER_DIR
+  screen $SCREEN_FLAGS dcm $LUA_COM run_dcm.lua
+  # Allow DCM some time to start
+  sleep 1
+  
+  echo "Starting Boxer Cognition..."
+  cd $PLAYER_DIR
+  screen $SCREEN_FLAGS cognition $LUA_COM run_cognition_boxer.lua
+  # Allow Cognition some time to start
+  sleep 3
+ 
+  echo "Starting Player..."
+  cd $PLAYER_DIR
+  screen $SCREEN_FLAGS player $LUA_COM run_demo.lua
+  
+  echo "Rock and Roll!"
+}
+
+run_visiontest(){
+  run_dcm_vcm
+  echo "Starting Test Vision..."
+  cd $PLAYER_DIR
+  screen -m -L -S test $LUA_COM Test/test_vision.lua
+  #
+  echo "Rock and Roll!"
+  screen -ls
+}
+
+run_obstacle(){
+  run_dcm_vcm
+  echo "Starting OccMap Proc..."
+  cd $PLAYER_DIR
+  screen $SCREEN_FLAGS occ $LUA_COM run_occmap.lua
+  ## Allow Cognition some time to start
+  sleep 1
+  #
+  echo "Starting Test Vision..."
+  cd $PLAYER_DIR
+  screen -m -L -S test $LUA_COM Test/test_vision.lua
+  #
+  echo "Rock and Roll!"
+  screen -ls
+}
+
+run_bias(){
+  echo "Starting DCM..."
+  cd $PLAYER_DIR
+  screen -dm -L -S dcm $LUA_COM run_dcm.lua
+  # Allow DCM some time to start
+  sleep 1
+  
+  echo "Starting Setup..."
+  cd $PLAYER_DIR
+  screen -m -L -S bias $LUA_COM run_setup.lua
+}
+
+run_pushtest(){
+  echo "Starting DCM..."
+  cd $PLAYER_DIR
+  screen -dm -L -S dcm $LUA_COM run_dcm.lua
+  # Allow DCM some time to start
+  sleep 1
+  
+  echo "Starting Push Test.."
+  cd $PLAYER_DIR
+  screen -m -L -S bias $LUA_COM Test/test_push.lua
+}
+
+run_roletest(){
+  run_dcm_vcm
+  echo "Starting Role Testing..."
+  cd $PLAYER_DIR
+  screen -m -L -S test $LUA_COM Test/test_role.lua
+  #
+  echo "Rock and Roll!"
+}
+
+run_nao_vision(){
+  run_nao_vcm
+  echo "Starting Vision Testing..."
+  cd $PLAYER_DIR
+  screen -m -L -S player $LUA_COM test_vision.lua
+  
+  echo "Rock and Roll!"
+}
+
+case "$KERNEL" in
+        *aldebaran*) 
+                PLAYER_DIR=/home/nao/UPennDev/Run
+                LUA_COM=/usr/local/bin/luajit;;
+        *)
+                PLAYER_DIR=/home/darwin/UPennDev/Run
+                LUA_COM=/usr/bin/luajit;;
+esac
+
+case "$1" in
+  '')
+    echo "Start Player Mode"
+    run_player;;
+  'demo')
+    echo "Start Demo Mode"
+    run_demo;;
+  'visiontest')
+    echo "Start Vision Test Mode"
+    run_visiontest;;
+  'pushtest')
+    echo "Start Push Test Mode"
+    run_pushtest;;
+  'bias')
+    echo "Start Bias Setup Mode"
+    run_bias;;
+  'roletest')
+    echo "Start Role Testing Mode"
+    run_roletest;;
+  'obstacle')
+    echo "Start Obstacle Testing Mode"
+    run_obstacle;;
+  'obstacleplay')
+    echo "Start Player with Obstacle"
+    run_obplay;;
+  'wbreset')
+    echo "Reset White Balance"
+    reset_wb;;
+  'nao_vision')
+    echo "Run Vision code for NaoV4"
+    run_nao_vision;;
+  'boxer')
+    echo "Reset White Balance"
+    run_boxer;;
+  'help')
+    echo "[No Argu](s)     -- Player Mode"
+    echo "[obstacleplay](sob) -- Player Mode with Obstacle"
+    echo "[Demo](sd)       -- Demo Mode"
+    echo "[pushtest](sp)       -- Push Recovery Demo Mode"
+    echo "[visiontest](sv) -- Vision Debug Mode"
+    echo "[bias](sb)       -- Bias Setup Mode"
+    echo "[roletest](sr)   -- Role Testing Mode"
+    echo "[obstacle](so)   -- Role obstacle Mode"
+    echo "[wbreset](sw)   -- Reset WB Mode"
+    echo "[nao_vision](sn)   -- Test Vision for Nao"
+    echo "[boxer](sx)   -- Start Boxer/Mimic";;
+  *)
+    echo "Unknown Mode. use 'help ' to see Available Mode";;
+esac

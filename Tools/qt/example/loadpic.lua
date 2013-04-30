@@ -1,9 +1,9 @@
 local pwd = os.getenv('PWD')
 package.cpath = pwd..'/../lib/qt/?.so;'..package.cpath
 
-require 'qtcore'
-require 'qtgui'
---require 'tch'
+local qtcore = require 'qtcore'
+local qtgui = require 'qtgui'
+--local tch = require 'tch'
 
 app = QApplication(1 + select('#', ...), {arg[0], ...})
 

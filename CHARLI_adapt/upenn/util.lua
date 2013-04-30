@@ -1,9 +1,9 @@
 module(..., package.seeall);
 
-require('shm');
-require('carray');
-require('vector');
-require('unix')
+local shm = require('shm');
+local carray = require('carray');
+local vector = require('vector');
+local unix = require('unix')
 
 function ptable(t)
   -- print a table key, value pairs

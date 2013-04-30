@@ -6,7 +6,6 @@ require('vector')
 require('Config')
 require('wcm')
 require('gcm')
-require('UltraSound')
 
 t0 = 0;
 timeout = 10.0;
@@ -32,8 +31,19 @@ function update()
   ballGlobal = util.pose_global({ball.x, ball.y, 0}, {pose.x, pose.y, pose.a});
   tBall = Body.get_time() - ball.t;
 
+  strat = gcm.get_team_strat();
+  strategy = strat[Config.game.playerID - 1]
+
   id = gcm.get_team_player_id();
   role = gcm.get_team_role();
+  
+  if strategy == 2 then
+    role = 1
+  elseif strategy == 3 then
+    role = 2
+  elseif strategy == 4 then
+    role  = 4
+  end
 
   if id == 1 then
     -- goalie
@@ -52,6 +62,8 @@ function update()
     elseif (role == 3) then
       -- support
       centerPosition = vector.zeros(3);
+    elseif role == 4 then
+      centerPosition = pose
     else
       -- attack
       centerPosition = vector.new(wcm.get_goal_attack())/2.0;
@@ -71,16 +83,6 @@ function update()
   walk.set_velocity(vx, vy, va);
 
   ballR = math.sqrt(ball.x^2 + ball.y^2);
-
-  if Config.fsm.enable_obstacle_detection > 0 then
-    us = UltraSound.check_obstacle();
-  else
-    us = vector.zeros(2)
-  end
-  if ((t - t0 > 2.0) and (us[1] > 5 or us[2] > 5)) then
-    return 'obstacle'; 
-  end
-
   if (tBall < 1.0) then
     return 'ballFound';
   end

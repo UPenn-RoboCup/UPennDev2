@@ -11,16 +11,15 @@ require('wcm');
 require('gcm');
 
 --Makes error with webots
-Comm.init(Config.dev.ip_wireless,12500);
+Comm.init(Config.dev.ip_wireless,54321);
 print('Receiving Team Message From',Config.dev.ip_wireless);
 
-playerID = gcm.get_team_player_id(); strategy = 0
+playerID = gcm.get_team_player_id();
 
 msgTimeout = Config.team.msgTimeout;
 nonAttackerPenalty = Config.team.nonAttackerPenalty;
 nonDefenderPenalty = Config.team.nonDefenderPenalty;
 time_to_stand = Config.km.time_to_stand;
-twoDefenders = Config.team.twoDefenders;
 
 role = -1;
 
@@ -40,14 +39,6 @@ state.tReceive = Body.get_time();
 state.battery_level = wcm.get_robot_battery_level();
 state.fall=0;
 
-state.soundFilter = wcm.get_sound_detFilter();
-state.soundDetection = wcm.get_sound_detection();
-soundOdomPose = wcm.get_sound_odomPose();
-state.soundOdomPose = {x=soundOdomPose[1], y=soundOdomPose[2], a=soundOdomPose[3]};
---state.xp = wcm.get_particle_x();
---state.yp = wcm.get_particle_y();
---state.ap = wcm.get_particle_a();
-
 --Added key vision infos
 state.goal=0;  --0 for non-detect, 1 for unknown, 2/3 for L/R, 4 for both
 state.goalv1={0,0};
@@ -59,16 +50,11 @@ states[playerID] = state;
 
 strat = {}
 
----Receives messages from teammates
-tLastReceived = 0
-
-
 function recv_msgs()
   while (Comm.size() > 0) do 
     t = serialization.deserialize(Comm.receive());
     if (t and (t.teamNumber) and (t.teamNumber == state.teamNumber) and (t.id) and (t.id ~= playerID)) then
       t.tReceive = Body.get_time();
-      tLastReceived = Body.get_time();
       states[t.id] = t;
     elseif (t and (t.strat)) then
       t.tReceive = Body.get_time();
@@ -103,14 +89,6 @@ function update()
     state.penalty = 0;
   end
 
-  state.soundFilter = wcm.get_sound_detFilter();
-  state.soundDetection = wcm.get_sound_detection();
-  soundOdomPose = wcm.get_sound_odomPose();
-  state.soundOdomPose = {x=soundOdomPose[1], y=soundOdomPose[2], a=soundOdomPose[3]};
-  --state.xp = wcm.get_particle_x();
-  --state.yp = wcm.get_particle_y();
-  --state.ap = wcm.get_particle_a();
-
   --Added Vision Info 
   state.goal=0;
   if vcm.get_goal_detect()>0 then
@@ -132,9 +110,7 @@ function update()
   end
 
   if (math.mod(count, 1) == 0) then
-    -- use old serialization for team monitor so the 
-    --  old matlab team monitor can be used
-    Comm.send(serialization.serialize_orig(state));
+    Comm.send(serialization.serialize(state));
     --Copy of message sent out to other players
     state.tReceive = Body.get_time();
     states[playerID] = state;
@@ -149,7 +125,7 @@ function update()
   t = Body.get_time();
   for id = 1,4 do
 
-    if not states[id] or not states[id].ball.x then
+    if not states[id] then
       -- no message from player have been received
       eta[id] = math.huge;
       ddefend[id] = math.huge;
@@ -164,12 +140,7 @@ function update()
       -- distance to goal
       dgoalPosition = vector.new(wcm.get_goal_defend());
       pose = wcm.get_pose();
-    
-      if twoDefenders == 1 then
-        ddefend[id] = (-1) * util.sign ( dgoalPosition[1] ) * pose.y; -- use defender who is on the right
-      else
-        ddefend[id] = math.sqrt((pose.x - dgoalPosition[1])^2 + (pose.y - dgoalPosition[2])^2);
-      end
+      ddefend[id] = math.sqrt((pose.x - dgoalPosition[1])^2 + (pose.y - dgoalPosition[2])^2);
 
       if (states[id].role ~= 1) then
         -- Non attacker penalty:
@@ -181,11 +152,7 @@ function update()
 
       if (states[id].role ~= 2) then
         -- Non defender penalty:
-        if twoDefenders == 1 then
-          ddefend[id] = ddefend[id] + 0.2;
-        else
-          ddefend[id] = ddefend[id] + 0.3;
-        end
+        ddefend[id] = ddefend[id] + 0.3;
       end
       if (states[id].penalty > 0) or (t - states[id].tReceive > msgTimeout) then
         ddefend[id] = math.huge;
@@ -220,31 +187,15 @@ function update()
   end
   -- goalie never changes role
   if playerID ~= 1 then
-    if strategy <= 0 then
-      eta[1] = math.huge;
-      ddefend[1] = math.huge;
-
-      minETA, minEtaID = min(eta);
-      if minEtaID == playerID then
-        -- attack
-        set_role(1);
-      else
-        -- furthest player back is defender
-        minDDefID = 0;
-        minDDef = math.huge;
-        for id = 2,4 do
-          if id ~= minEtaID and ddefend[id] <= minDDef then
-            minDDefID = id;
-            minDDef = ddefend[id];
-          end
-        end
+    eta[1] = math.huge;
+    ddefend[1] = math.huge;
 
     minETA, minEtaID = min(eta);
     if minEtaID == playerID then
       -- attack
       set_role(1);
     else
-      -- furthest player back (or to the right, if using two defenders) is defender
+      -- furthest player back is defender
       minDDefID = 0;
       minDDef = math.huge;
       for id = 2,4 do
@@ -253,27 +204,17 @@ function update()
           minDDef = ddefend[id];
         end
       end
-    end
 
-
-    gcmstrat = gcm.get_team_strat();
-    stratRole = nil
-    if gcmstrat and (playerID == 2 or playerID == 3) then
-      strategy = gcmstrat[Config.game.playerID - 1]
-      print(strategy, role)
-
-      if strategy == 2 then
-        stratRole = 1
-      elseif strategy == 3 then
-        stratRole = 2
-      elseif strategy == 4 then
-        stratRole = 3
-      end
-      if stratRole then
-        set_role(stratRole)
+      if minDDefID == playerID then
+        -- defense 
+        set_role(2);
+      else
+        -- support
+        set_role(3);
       end
     end
   end
+
   -- update shm
   update_shm() 
 end
@@ -281,29 +222,19 @@ end
 function update_shm() 
   -- update the shm values
   gcm.set_team_role(role);
-  
- -- gcm.set_team_strat(strat.strat)
 end
 
 function exit()
 end
 
----Returns current role
---@return int role, 1=attacker, 2=defender, 3=supporter, 0=goalie
 function get_role()
   return role;
 end
 
----Sets role
---@param r Role 
 function set_role(r)
   if role ~= r then 
     role = r;
-    wireless = (Body.get_time()-tLastReceived) < 1;
-    if wireless then
-      Speak.talk('Received packet')
-    end
-    Body.set_indicator_role(role, wireless);
+    Body.set_indicator_role(role);
     if role == 1 then
       -- attack
       Speak.talk('Attack');

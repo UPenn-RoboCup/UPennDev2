@@ -1,8 +1,0 @@
-manipulation_controller = require('Manipulation_Controller')
-
-manipulation_controller.THOR_MC_initialize()
-
-manipulation_controller_inputs = manipulation_controller.THOR_MC_U
-manipulation_controller_outputs = manipulation_controller.THOR_MC_Y
-
-return manipulation_controller

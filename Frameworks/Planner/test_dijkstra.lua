@@ -36,6 +36,8 @@ local ctg = dijkstra.matrix(costs, goal[1], goal[2])
 t1 = unix.time() - t0
 print(t1)
 
---ip1, jp1 = dijkstra.path(ctg, costs, 1, 1);
-ip2, jp2 = dijkstra.path2(ctg, costs, 1, 1);
+ip1, jp1 = dijkstra.path(ctg, costs, 1, 1);
+--ip2, jp2 = dijkstra.path2(ctg, costs, 1, 1);
 
+util.ptorch(ip1)
+util.ptorch(jp1)

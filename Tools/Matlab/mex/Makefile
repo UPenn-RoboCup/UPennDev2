@@ -2,6 +2,7 @@ MATLAB=matlab -nosplash -nodesktop -nojvm -nodisplay
 MEX=mex -O -I/usr/local/include -L/usr/local/lib
 MEXEXT=$(shell mexext)
 PWD=$(shell pwd)
+LIBRT= $(shell [ `uname` != "Darwin" ] && echo "-lrt")
 
 TARGETS=time mexshm getch udp_recv udp_send cjpeg djpeg msgpack zmq ImageProc Planner tcpopen
 .PHONY: all clean $(TARGETS)
@@ -12,7 +13,7 @@ time: time.cc timeScalar.cc
 	$(MEX) $^
 
 mexshm:
-	$(MEX) $@.cc -lrt
+	$(MEX) $@.cc $(LIBRT)
 
 getch:
 	$(MEX) $@.c

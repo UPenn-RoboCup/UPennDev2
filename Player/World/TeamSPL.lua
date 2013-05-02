@@ -151,7 +151,6 @@ function update()
     -- CHANGED BASED ON NSL CODE
     msg = serialization.serialize(state) 
     Comm.send(msg, #msg);
-    print(#msg)
     --Copy of message sent out to other players
     state.tReceive = Body.get_time();
     states[playerID] = state;
@@ -255,6 +254,8 @@ function update()
             minDDef = ddefend[id];
           end
         end
+			end
+		end
 
     minETA, minEtaID = min(eta);
     if minEtaID == playerID then

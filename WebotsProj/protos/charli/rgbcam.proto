@@ -6,8 +6,8 @@ PROTO rgbcam [
 #  field SFFloat noise 0.0
   field SFVec2f    cameraWindowPosition 0 0
   field SFFloat    cameraPixelSize 1.0
-  field SFInt32    cameraWidth 160
-  field SFInt32    cameraHeight 120
+  field SFInt32    cameraWidth 640
+  field SFInt32    cameraHeight 480
 ]
 {
 Camera {

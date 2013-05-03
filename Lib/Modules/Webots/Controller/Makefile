@@ -16,9 +16,9 @@ WEBOTS_LIB_DIR = $(WEBOTS_HOME)/lib
 all: controller
 
 %.o: %.cc
-	$(CXX) $(CXXFLAGS) $(LUAINCLUDE) $(INCLUDES) -I$(WEBOTS_INCLUDE_DIR) -o $@ -c $<
+	$(CXX) -fpic $(CXXFLAGS) $(LUAINCLUDE) $(INCLUDES) -I$(WEBOTS_INCLUDE_DIR) -o $@ -c $<
 %.o: %.c
-	$(CC) $(CFLAGS) $(LUAINCLUDE) $(INCLUDES) -I$(WEBOTS_INCLUDE_DIR) -I$(WEBOTS_INCLUDE_DIR)/controller/c -o $@ -c $<
+	$(CC) -fpic $(CXXFLAGS) $(LUAINCLUDE) $(INCLUDES) -I$(WEBOTS_INCLUDE_DIR) -I$(WEBOTS_INCLUDE_DIR)/controller/c -o $@ -c $<
 
 controller_wrap.c: controller.i
 	swig -lua -I$(WEBOTS_HOME)/include/controller/c controller.i

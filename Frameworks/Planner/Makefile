@@ -9,7 +9,7 @@ ifeq ($(torch),true)
   INCLUDES+=-I/usr/local/include/torch
   LIBS+=-ltorch
 endif
-#CXXFLAGS+=-DDEBUG=1
+CXXFLAGS+=-g
 
 dijkstra: lua_dijkstra.o
 	$(CXX) $(LDFLAGS) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ $(LIB_DIR) $(LIB_DIRS) $(LIBS) -ljpeg

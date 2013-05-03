@@ -22,6 +22,7 @@ extern "C" {
 #include <vector>
 #include <string>
 #include <algorithm>
+#include <iostream>
 
 #include "block_bitor.h"
 #include "ConnectRegions.h"
@@ -154,32 +155,42 @@ static int lua_rgb_to_index(lua_State *L) {
 static int lua_rgb_to_yuyv(lua_State *L) {
   static std::vector<uint32_t> yuyv;
 
+	/* Get the RGB Image */
   uint8_t *rgb = (uint8_t *) lua_touserdata(L, 1);
-  if ((rgb == NULL) || !lua_islightuserdata(L, 1)) {
+  if ((rgb == NULL) || !lua_islightuserdata(L, 1))
     return luaL_error(L, "Input RGB not light user data");
-  }
+	
+	/* Get the width and height */
   int m = luaL_checkint(L, 2);
   int n = luaL_checkint(L, 3);
 
+	/* YUYV is 2px per pixel */
   yuyv.resize(m*n/2);
 
   int count=0;
+	uint8_t r,g,b,y1,u,y2,v;
   for (int i = 0; i < n; i++){
-    for (int j = 0; j < m; j++) {
-      uint8_t r = *rgb++;
-      uint8_t g = *rgb++;
-      uint8_t b = *rgb++;
+		/* Every other RGB Pixel for YUYV */
+    for (int j = 0; j < m; j+=2) {
+      r = *rgb++;
+      g = *rgb++;
+      b = *rgb++;
+			
+			// Formulate YUV
+      y1 = g;
+      u = 128 + (b-g)/2;
+      v = 128 + (r-g)/2;
 
-      uint8_t y = g;
-      uint8_t u = 128 + (b-g)/2;
-      uint8_t v = 128 + (r-g)/2;
-
+      r = *rgb++;
+      g = *rgb++;
+      b = *rgb++;
+			// Add the other Y
+			y2 = g;
       // Construct Y6U6V6 index
-      //SJ: only convert every other pixels (to make m/2 by n yuyv matrix)
-      if (j%2==0)
-        yuyv[count++] = (v << 24) | (y << 16) | (u << 8) | y;
-    }
+      yuyv[count++] = (v << 24) | (y2 << 16) | (u << 8) | y1;
+		}
   }
+		
   lua_pushlightuserdata(L, &yuyv[0]);
   return 1;
 }
@@ -207,26 +218,35 @@ static int lua_yuyv_to_label(lua_State *L) {
   int n = luaL_checkint(L, 4);
 
   // Label will be half the height and half the width of the original image
-  label.resize(m*n/2);
+  label.resize(m*n);
+/*
+  for (int j = 0; j < n; j++){
+    for (int i = 0; i < m/2; i++) {
+*/
   int label_ind = 0;
+  while(label_ind<m*n){
+    // Construct Y6U6V6 index
+    uint32_t index1 = ((*yuyv & 0xfc000000) >> 26)  
+      | ((*yuyv & 0x0000fc00) >> 4)
+      | ((*yuyv & 0x000000fc) << 10);
 
-  for (int j = 0; j < n/2; j++){
-    for (int i = 0; i < m; i++) {
+    uint32_t index2 = ((*yuyv & 0xfc000000) >> 26)  
+      | ((*yuyv & 0x0000fc00) >> 4)
+      | ((*yuyv & 0x00fc0000) >> 6);
+    yuyv++;
 
-      // Construct Y6U6V6 index
-      uint32_t index = ((*yuyv & 0xFC000000) >> 26)  
-        | ((*yuyv & 0x0000FC00) >> 4)
-        | ((*yuyv & 0x000000FC) << 10);
-
-      // Put labeled pixel into label vector
-      label[label_ind] = cdt[index];
-
-      yuyv++;
-      label_ind++;
+    // Put labeled pixel into label vector
+    label[label_ind++] = cdt[index1];
+    label[label_ind++] = cdt[index2];
+    //std::cout << label_ind << std::endl;
+    //fflush(stdout);
+  }
+/*
     }
     // Skip every other line (to maintain image ratio)
-    yuyv += m;
+//    yuyv += m;
   }
+  */
   // Pushing light data
   lua_pushlightuserdata(L, &label[0]);
   return 1;

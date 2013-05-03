@@ -261,21 +261,6 @@ end
   -- bit-or the segmented image
   labelB.data = ImageProc.block_bitor(labelA.data, labelA.m, labelA.n, scaleB, scaleB);
 
-  -- perform label process for obstacle specific lut
-  if enable_lut_for_obstacle == 1 then
-    -- label A
-    if webots == 1 then
-      labelA.data_obs = Camera.get_labelA_obs( carray.pointer(ColorLUT.LUT.Obstacle) );
-    else
-      labelA.data_obs  = ImageProc.yuyv_to_label_obs(vcm.get_image_yuyv(),
-                                    carray.pointer(ColorLUT.LUT.Obstacle), camera.width/2, camera.height);
-    end
-    -- count color pixels
-    colorCount_obs = ImageProc.color_count_obs(labelA.data_obs, labelA.npixel);
-    -- label B
-    labelB.data_obs = ImageProc.block_bitor_obs(labelA.data_obs, labelA.m, labelA.n, scaleB, scaleB);
-  end
-
   update_shm(status, headAngles)
 
 

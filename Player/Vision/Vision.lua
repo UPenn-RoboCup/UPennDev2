@@ -18,20 +18,6 @@ require('Body')
 --Added for webots fast simulation
 use_gps_only = Config.use_gps_only or 0;
 
-enable_lut_for_obstacle = Config.vision.enable_lut_for_obstacle or 0;
-
-obs_challenge_enable = Config.obs_challenge or 0;
-enable_lut_for_obstacle = Config.vision.enable_lut_for_obstacle or 0;
-
-if false then
-  if Config.game.playerID==1 and Config.game.teamNumber==1 then
-    ffi = require 'ffi'
-    require 'cjpeg'
-    simple_ipc = require 'simple_ipc'
-    img_channel = simple_ipc.setup_publisher('img');
-  end
-end
-
 if use_gps_only==0 then
   require('ColorLUT'); --This will turn on camera and slow things down!
   require('Camera');
@@ -235,26 +221,13 @@ function update()
                                           camera.height);
   end
 
-  if false then
-  if Config.game.playerID==1 and Config.game.teamNumber==1 then
-    local comp_img = cjpeg.compress(
-    carray.pointer(Camera.image), 
-    camera.width, camera.height, 3);
-    img_channel:send( 'i'..comp_img );
-    print('sending msg...',#comp_img)
-    local la = ffi.string(labelA.data,labelA.npixel);
-    img_channel:send( 'a'..la );    
-  end
-end
   -- determine total number of pixels of each color/label
   colorCount = ImageProc.color_count(labelA.data, labelA.npixel);
-
 
   -- bit-or the segmented image
   labelB.data = ImageProc.block_bitor(labelA.data, labelA.m, labelA.n, scaleB, scaleB);
 
   update_shm(status, headAngles)
-
 
   vcm.refresh_debug_message();
 
@@ -312,10 +285,6 @@ function update_shm(status, headAngles)
         vcm.set_camera_yuyvType(1);
         vcm.set_image_labelA(labelA.data);
         vcm.set_image_labelB(labelB.data);
---        if enable_lut_for_obstacle == 1 then
---          vcm.set_image_labelA_obs(labelA.data_obs);
---          vcm.set_image_labelB_obs(labelB.data_obs);
---        end
 	    end
       if vcm.get_camera_broadcast() > 0 then --Wired monitor broadcasting
 	      if vcm.get_camera_broadcast() == 1 then
@@ -329,10 +298,6 @@ function update_shm(status, headAngles)
   	                                            camera.width/2, camera.height,2));
           vcm.set_image_labelA(labelA.data);
           vcm.set_image_labelB(labelB.data);
---          if enable_lut_for_obstacle == 1 then
---            vcm.set_image_labelA_obs(labelA.data_obs);
---            vcm.set_image_labelB_obs(labelB.data_obs);
---          end
 	      else
 	        --Level 3: 1/2 yuyv
           vcm.set_image_yuyv2(ImageProc.subsample_yuyv2yuyv(

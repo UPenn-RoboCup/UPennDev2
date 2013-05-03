@@ -4250,7 +4250,9 @@ static int _wrap_wb_robot_get_license(lua_State* L) {
   int result;
   
   SWIG_check_num_args("wb_robot_get_license",0,0)
-  result = (int)wb_robot_get_license();
+//  result = (int)wb_robot_get_license();
+result = 0;
+
   lua_pushnumber(L, (lua_Number) result); SWIG_arg++;
   return SWIG_arg;
   
@@ -4909,7 +4911,7 @@ static int _wrap_wb_supervisor_start_animation(lua_State* L) {
   SWIG_check_num_args("wb_supervisor_start_animation",1,1)
   if(!lua_isstring(L,1)) SWIG_fail_arg("wb_supervisor_start_animation",1,"char const *");
   arg1 = (char *)lua_tostring(L, 1);
-  wb_supervisor_start_animation((char const *)arg1);
+//  wb_supervisor_start_animation((char const *)arg1);
   
   return SWIG_arg;
   
@@ -4925,7 +4927,7 @@ static int _wrap_wb_supervisor_stop_animation(lua_State* L) {
   int SWIG_arg = 0;
   
   SWIG_check_num_args("wb_supervisor_stop_animation",0,0)
-  wb_supervisor_stop_animation();
+//  wb_supervisor_stop_animation();
   
   return SWIG_arg;
   

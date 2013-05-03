@@ -142,7 +142,8 @@ int main() {
 
   void *camera_socket = zmq_socket(ctx, ZMQ_PUB);
   assert(camera_socket);
-  int rc = zmq_bind(camera_socket, "ipc:///tmp/camera");
+  //int rc = zmq_bind(camera_socket, "ipc:///tmp/camera");
+  int rc = zmq_bind(camera_socket, "ipc:///tmp/img");
   assert(rc==0);
 
   void *imu_socket = zmq_socket(ctx, ZMQ_PUB);
@@ -211,8 +212,11 @@ int main() {
     //rc = zmq_poll( poll_items, 1, 10 );
     //printf("%d events\n",rc);
 
+		/* Have access to the time for ZMQ sending */
     double t = wb_robot_get_time();
-    /* Actuator update */
+		sprintf(ts_buf,"%lf",t);
+
+		/* Actuator update */
     for (int i = 0; i < nJoint; i++)
       actuator_position[i] = moveDir[i] * wb_servo_get_position(tags.joints[i])-jointBias[i];
     // Pack actuators
@@ -233,13 +237,13 @@ int main() {
     if ((t - last_vision_update_time) >= vision_update_interval) {
       last_vision_update_time = t;
       get_image(raw_img, rgb_img, width, height);
+      rc = zmq_send(camera_socket, ts_buf, strlen(ts_buf), ZMQ_SNDMORE);
       rc = zmq_send(camera_socket, (void *)rgb_img, width*height*3, 0);
       //      cout << rc << " camera bytes sent!" << endl;
     }
 
     /* lidar update */
     if( lidar_dt>0 && (t-last_lidar_t)>lidar_dt/1000 ){
-      sprintf(ts_buf,"%lf",t);
       rc = zmq_send(lidar_pub_socket, ts_buf, strlen(ts_buf), ZMQ_SNDMORE);
       //cout << rc << " lidar ts bytes sent: " << ts_buf << endl;
       rc = zmq_send(lidar_pub_socket, (void *)raw_lidar, lwidth*lheight*sizeof(float), 0);

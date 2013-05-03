@@ -15,7 +15,7 @@ WEBOTS_LIB_DIR = $(WEBOTS_HOME)/lib
 
 INCLUDES+=-I$(WEBOTS_INCLUDE_DIR)/controller/c
 
-all: controller wbcontroller
+all: wbcontroller
 
 controller_wrap.c: controller.i
 	swig -lua -I$(WEBOTS_HOME)/include/controller/c controller.i

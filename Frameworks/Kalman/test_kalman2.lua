@@ -42,11 +42,25 @@ for i=1,5 do
 		end
 	end
 	-- End Debug of gain
+	-- Debug of A
+	local a_str = ''
+	if show_kalman_gain then
+		a_str = 'A\n'
+		local A = kalman1.A;
+		for i=1,A:size(1) do
+			for j=1,A:size(2) do
+				a_str = a_str..string.format('   %.2f',A[i][j])
+			end
+			a_str = a_str..'\n'
+		end
+	end
+	-- End Debug of gain
 	
 	print('Observation',i)
 	print(prior_str)
 	print(observation_str)
 	print(state_str)
+	print(a_str)
 	print(kgain_str)
 	
 end

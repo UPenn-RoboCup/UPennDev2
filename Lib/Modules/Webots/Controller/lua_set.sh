@@ -3,11 +3,6 @@ EXT_TERM=0
 LUA=lua
 #LUA=luajit
 COMPUTER=`uname`
-if [ "$COMPUTER" == "Darwin" ]
-	then
-	echo "Mac Specific path helper"
-eval `/usr/libexec/path_helper -s`
-fi
 
 # Is "export" needed?
 TERM=`which xterm`

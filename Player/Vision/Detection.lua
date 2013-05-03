@@ -22,7 +22,6 @@ require('detectRobot');
 -- Define Color
 colorOrange = Config.color.orange;
 colorYellow = Config.color.yellow;
-colorCyan = Config.color.cyan;
 colorField = Config.color.field;
 colorWhite = Config.color.white;
 
@@ -42,7 +41,6 @@ enable_timeprinting = Config.vision.print_time;
 tstart = unix.time();
 Tball = 0;
 TgoalYellow = 0;
-TgoalCyan = 0;
 Tline = 0;
 Tcorner = 0;
 Trobot = 0;
@@ -57,14 +55,8 @@ function entry()
   ballYellow={};
   ballYellow.detect=0;
 	
-  ballCyan={};
-  ballCyan.detect=0;
-
   goalYellow = {};
   goalYellow.detect = 0;
-
-  goalCyan = {};
-  goalCyan.detect = 0;
 
   line = {};
   line.detect = 0;
@@ -106,19 +98,12 @@ function update()
   
   if use_point_goal == 1 then
     ballYellow = detectBall.detect(colorYellow);
-    ballCyan = detectBall.detect(colorCyan);
   else
     goalYellow.detect=0;
-    goalCyan.detect=0;
     tstart = unix.time();
-    goalYellow = detectGoal.detect(colorYellow,colorCyan);
+    goalYellow = detectGoal.detect(colorYellow);
     TgoalYellow = unix.time() - tstart;
 
-    if yellowGoals == 0 then
-      tstart = unix.time();
-      goalCyan = detectGoal.detect(colorCyan,colorYellow);
-      TgoalCyan = unix.time() - tstart;
-    end
   end
 
   -- line detection
@@ -159,13 +144,8 @@ function update_shm()
     vcm.set_ball_da(ball.da);
   end
 
-  vcm.set_goal_detect(math.max(goalCyan.detect, goalYellow.detect));
-  if (goalCyan.detect == 1) then
-    vcm.set_goal_color(colorCyan);
-    vcm.set_goal_type(goalCyan.type);
-    vcm.set_goal_v1(goalCyan.v[1]);
-    vcm.set_goal_v2(goalCyan.v[2]);
-  elseif (goalYellow.detect == 1) then
+  vcm.set_goal_detect(goalYellow.detect);
+  if (goalYellow.detect == 1) then
     vcm.set_goal_color(colorYellow);
     vcm.set_goal_type(goalYellow.type);
     vcm.set_goal_v1(goalYellow.v[1]);

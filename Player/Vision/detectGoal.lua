@@ -12,7 +12,6 @@ require('Detection');
 -- Define Color
 colorOrange = Config.color.orange;
 colorYellow = Config.color.yellow;
-colorCyan = Config.color.cyan;
 colorField = Config.color.field;
 colorWhite = Config.color.white;
 
@@ -30,7 +29,6 @@ goal_height_min = Config.vision.goal.height_min or -0.5;
 --@return Table containing whether a ball was detected
 --If a goal is detected, also contains additional stats about the goal
 distanceFactorYellow = Config.vision.goal.distanceFactorYellow or 1.0;
-distanceFactorCyan = Config.vision.goal.distanceFactorCyan or 1.0;
 	
 --Post dimension
 postDiameter = Config.world.postDiameter or 0.10;
@@ -52,13 +50,11 @@ th_edge_margin = Config.vision.goal.th_edge_margin;
 th_bottom_boundingbox = Config.vision.goal.th_bottom_boundingbox;
 th_ground_boundingbox = Config.vision.goal.th_ground_boundingbox;
 th_min_green_ratio = Config.vision.goal.th_min_green_ratio;
-th_min_bad_color_ratio = Config.vision.goal.th_min_bad_color_ratio;
 th_goal_separation = Config.vision.goal.th_goal_separation;
 th_min_area_unknown_post = Config.vision.goal.th_min_area_unknown_post;
 
-function detect(color,color2)
-  if color==colorYellow then vcm.add_debug_message("\nGoal: Yellow post check\n")
-  else vcm.add_debug_message("\nGoal: Blue post check\n"); end
+function detect(color)
+  vcm.add_debug_message("\nGoal: Yellow post check\n")
   local goal = {};
   goal.detect = 0;
 
@@ -258,20 +254,6 @@ function detect(color,color2)
     end
 
     if valid then
-      --bad color check (to check landmarks out)
-      local badColorStats=Vision.bboxStats(color2,postB[i].boundingBox,tiltAngle);
-      local extent2= badColorStats.area /
-          (postStats.axisMajor * postStats.axisMinor);
-      vcm.add_debug_message(string.format(
-	"Bad color check: %.2f\n", extent2/extent));
-
-      if extent2/extent>th_min_bad_color_ratio then
-         vcm.add_debug_message("Bad color check fail\n");
-         valid = false; 
-      end
-    end
-
-    if valid then
     --Height Check
       scale = math.sqrt(postStats.area / (postDiameter*postHeight) );
       v = HeadTransform.coordinatesA(postStats.centroid, scale);
@@ -337,14 +319,8 @@ function detect(color,color2)
 
     goal.v[i] = HeadTransform.coordinatesA(postA[i].centroid, scale);
 
-    if color == colorYellow then
-      goal.v[i][1]=goal.v[i][1]*distanceFactorYellow;
-      goal.v[i][2]=goal.v[i][2]*distanceFactorYellow;
-    else
-      goal.v[i][1]=goal.v[i][1]*distanceFactorCyan;
-      goal.v[i][2]=goal.v[i][2]*distanceFactorCyan;
-    end
-
+    goal.v[i][1]=goal.v[i][1]*distanceFactorYellow;
+    goal.v[i][2]=goal.v[i][2]*distanceFactorYellow;
 
     vcm.add_debug_message(string.format("post[%d] = %.2f %.2f %.2f\n",
 	 i, goal.v[i][1], goal.v[i][2], goal.v[i][3]));

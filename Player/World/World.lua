@@ -24,8 +24,6 @@ mod_angle = util.mod_angle;
 
 require('Velocity');	
 
---Are we using same colored goals?
-use_same_colored_goal = Config.world.use_same_colored_goal or 0;
 --Use ground truth pose and ball information for webots?
 use_gps_only = Config.use_gps_only or 0;
 gps_enable = Body.gps_enable or 0;
@@ -72,17 +70,15 @@ yaw0 =0;
 gameState = 0;
 
 function init_particles()
-  if use_same_colored_goal>0 then
-    goalDefend=get_goal_defend();
-    PoseFilter.initialize_unified(
-      vector.new({goalDefend[1]/2, -2,  math.pi/2}),
-      vector.new({goalDefend[1]/2,  2, -math.pi/2}));
-    if (useSoundLocalization > 0) then
-      SoundFilter.reset();
-    end
-  else
-    PoseFilter.initialize(nil, nil);  
-  end
+  --Now we ALWAYS use the same colored goalposts
+  --Init particles to our side
+  goalDefend=get_goal_defend();
+  PoseFilter.initialize_unified(
+    vector.new({goalDefend[1]/2, -2,  math.pi/2}),
+    vector.new({goalDefend[1]/2,  2, -math.pi/2}));
+--  if (useSoundLocalization > 0) then
+--    SoundFilter.reset();
+--  end
 end
 
 function entry()
@@ -168,10 +164,12 @@ end
 
 
 function update_vision()
-
+--print("UPD_VIS_CALLED")
   --update ground truth
-	if gps_enable>0 then
+  if gps_enable>0 then
     gps_pose0=Body.get_sensor_gps();
+
+--print("gpspose:",unpack(gps_pose0))
     --GPS is attached at torso, so we should discount body offset
     uBodyOffset = mcm.get_walk_bodyOffset();
     gps_pose = util.pose_global(-uBodyOffset,gps_pose0);
@@ -185,6 +183,7 @@ function update_vision()
     wcm.set_robot_gpspose(gps_pose);
     wcm.set_robot_gps_attackbearing(gps_attackBearing);
   else
+    gps_pose = {pose.x,pose.y,pose.a};
     wcm.set_robot_gpspose({pose.x,pose.y,pose.a});
     wcm.set_robot_gps_attackbearing(get_attack_bearing());
   end
@@ -303,105 +302,26 @@ function update_vision()
     local v2 = vcm.get_goal_v2();
     local v = {v1, v2};
 
-    if (use_same_colored_goal > 0) then
-      -- resolve attacking/defending goal using the goalie sound localization
-      --  0 - unknown
-      -- -1 - defending
-      -- +1 - attacking
-      
-      -- Setting Goal LED and ball Led color
-      goal_led = {1,1,0};
-      ball_led = {0,1,1};
+    if (goalType == 0) then
+      PoseFilter.post_unified_unknown(v);
+      goal_led = {1,1,0}
+      --Body.set_indicator_goal({1,1,0});
+    elseif(goalType == 1) then
+      PoseFilter.post_unified_left(v);
+      goal_led = {1,1,0}
+      --Body.set_indicator_goal({1,1,0});
+    elseif(goalType == 2) then
+      PoseFilter.post_unified_right(v);
+      goal_led = {1,1,0}
+      --Body.set_indicator_goal({1,1,0});
+    elseif(goalType == 3) then
+      PoseFilter.goal_unified(v);
+      goal_led = {0,0,1}
+      --Body.set_indicator_goal({0,0,1});
+    end
 
-      local attackingOrDefending = 0;
-      if (useSoundLocalization > 0) then
-        attackingOrDefending = SoundFilter.resolve_goal_detection(goalType, v); 
-      end
-      
-      if (attackingOrDefending == 1) then
-        -- attacking goal
-        if (gcm.get_team_color() == 1) then
-          -- we are the red team, shooting on cyan goal
-          if (goalType == 0) then
-            PoseFilter.post_cyan_unknown(v);
-          elseif(goalType == 1) then
-            PoseFilter.post_cyan_left(v);
-          elseif(goalType == 2) then
-            PoseFilter.post_cyan_right(v);
-          elseif(goalType == 3) then
-            PoseFilter.goal_cyan(v);
-          end
-          -- indicator
-          goal_led={0,0,1};
-          --Body.set_indicator_goal({0,0,1});
-        else
-          -- we are the blue team, shooting on yellow goal
-          if (goalType == 0) then
-            PoseFilter.post_yellow_unknown(v);
-          elseif(goalType == 1) then
-            PoseFilter.post_yellow_left(v);
-          elseif(goalType == 2) then
-            PoseFilter.post_yellow_right(v);
-          elseif(goalType == 3) then
-            PoseFilter.goal_yellow(v);
-          end
-          -- indicator
-          goal_led={1,1,0}
-          --Body.set_indicator_goal({1,1,0});
-        end
-      
-      elseif (attackingOrDefending == -1) then
-        -- defending goal
-        if (gcm.get_team_color() == 1) then
-          -- we are the red team, defending the yellow goal
-          if (goalType == 0) then
-            PoseFilter.post_yellow_unknown(v);
-          elseif(goalType == 1) then
-            PoseFilter.post_yellow_left(v);
-          elseif(goalType == 2) then
-            PoseFilter.post_yellow_right(v);
-          elseif(goalType == 3) then
-            PoseFilter.goal_yellow(v);
-          end
-          -- indicator
-          Body.set_indicator_goal({1,1,0});
-        else
-          if (goalType == 0) then
-            PoseFilter.post_cyan_unknown(v);
-          elseif(goalType == 1) then
-            PoseFilter.post_cyan_left(v);
-          elseif(goalType == 2) then
-            PoseFilter.post_cyan_right(v);
-          elseif(goalType == 3) then
-            PoseFilter.goal_cyan(v);
-          end
-          -- indicator
-          goal_led = {0,0,1}
-          --Body.set_indicator_goal({0,0,1});
-        end
-
-      else
-        -- we dont know which goal it is
-        if (goalType == 0) then
-          PoseFilter.post_unified_unknown(v);
-          goal_led = {1,1,0}
-          --Body.set_indicator_goal({1,1,0});
-        elseif(goalType == 1) then
-          PoseFilter.post_unified_left(v);
-          goal_led = {1,1,0}
-          --Body.set_indicator_goal({1,1,0});
-        elseif(goalType == 2) then
-          PoseFilter.post_unified_right(v);
-          goal_led = {1,1,0}
-          --Body.set_indicator_goal({1,1,0});
-        elseif(goalType == 3) then
-          PoseFilter.goal_unified(v);
-          goal_led = {0,0,1}
-          --Body.set_indicator_goal({0,0,1});
-        end
-      end
-
-    else
+    --Old colored goalpost observation
+    --[[
       --Goal observation with colors
       if color == Config.color.yellow then
         if (goalType == 0) then
@@ -428,8 +348,7 @@ function update_vision()
         -- indicator
 	goal_led={0,0,1};
       end
-    end
-  else
+    --]]
   end
 
   -- line update

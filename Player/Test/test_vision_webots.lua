@@ -45,6 +45,7 @@ HeadFSM.entry();
 Motion.entry();
 World.entry();
 Vision.entry();
+Team.entry(); --For receiving ball GPS
 
 Body.set_head_hardness({0.4,0.4});
 controller.wb_robot_keyboard_enable(100);
@@ -228,6 +229,7 @@ function update()
   -- Update the relevant engines
   Body.update();
   Motion.update();
+  Team.update();
 
   -- Update the HeadFSM if it is running
   if( headsm_running==1 ) then

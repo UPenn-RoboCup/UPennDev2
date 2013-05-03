@@ -69,8 +69,8 @@ unsigned char * to_rgb( int tag ) {
 	//#define TO_RGB_MAX_BUF 921600
 	static unsigned char rgb[921600];
 	
-	int width = wb_camera_get_width(tag);
-	int height = wb_camera_get_height(tag);
+	const int width  = wb_camera_get_width(tag);
+	const int height = wb_camera_get_height(tag);
 	const unsigned char * raw = wb_camera_get_image( tag );
 	
   int x, y, r, g, b, rgb_index = 0;

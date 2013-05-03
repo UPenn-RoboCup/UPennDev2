@@ -10,10 +10,10 @@ world.yLineBoundary = 3.0;
 world.xMax = 4.7;
 world.yMax = 3.2;
 world.goalWidth = 1.60;
-world.goalHeight= 0.91;
+world.goalHeight= 0.85;
 world.goalDiameter=0.10; -- diameter of a post
-world.ballYellow= {{3.0,0.0}};
-world.ballCyan= {{-3.0,0.0}};
+world.ballYellow= {{4.5,0.0}};
+world.ballCyan= {{-4.6,0.0}};
 world.postYellow = {};
 world.postYellow[1] = {4.5, 0.80};
 world.postYellow[2] = {4.5, -0.80};
@@ -23,11 +23,9 @@ world.postCyan[2] = {-4.5, 0.80};
 world.spot = {};
 world.spot[1] = {-2.70, 0};
 world.spot[2] = {2.70, 0};
-world.landmarkCyan = {0.0, -2.4};
-world.landmarkYellow = {0.0, 2.4};
 world.cResample = 10; --Resampling interval
 
---They are SPL values
+--They are SPL 2013 values
 world.Lcorner={};
 --Field edge
 world.Lcorner[1]={4.5,3.0};
@@ -94,10 +92,5 @@ world.initPosition2={
 
 -- use sound localization
 world.enable_sound_localization = 0;
-
--- Occupancy Map parameters
-occ = {};
-occ.mapsize = 50;
-occ.robot_pos = {occ.mapsize / 2, occ.mapsize * 4 / 5};
 
 

@@ -22,7 +22,6 @@ PROTO KidGoal [
   field SFRotation rotation 0 1 0 0
   field SFFloat postRadius 0.05
   field SFColor postColor 1 1 1
-#  field SFColor netColor 1 1 1
   field SFColor supportColor 1 1 1
   field SFBool locked TRUE
 ]

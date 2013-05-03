@@ -26,9 +26,6 @@ require('Team')
 require('util')
 require('wcm')
 require('gcm')
-require('ocm')
-require('matcm')
---require('behaviorObstacle')
 
 darwin = false;
 webots = false;
@@ -41,11 +38,6 @@ end
 -- Enable Webots specific
 if (string.find(Config.platform.name,'Webots')) then
   webots = true;
-end
-
-if Config.vision.enable_freespace_detection == 1 then 
-  require('OccupancyMap')
-  OccupancyMap.entry();
 end
 
 -- initialize state machines
@@ -126,13 +118,6 @@ function process_keyinput()
     elseif byte==string.byte(";") then	targetvel[2]=targetvel[2]-0.02;
 
     -- reset OccMap
-  elseif byte == string.byte("/") then
-    OccupancyMap.reset_map();
-  elseif byte == string.byte(".") then
-    print("get obstacle");
-    OccupancyMap.get_velocity();
---    ocm.set_occ_get_obstacle(1);
-
 
    elseif byte==string.byte("-") then
       vcm.set_camera_command(1);
@@ -197,21 +182,13 @@ function process_keyinput()
    elseif byte==string.byte("9") then	
      Motion.event("walk");
      walk.start();
-   elseif byte==string.byte('o') then
-     ocm.set_occ_reset(1);
-     headangle[2]=50*math.pi/180;
    elseif byte==string.byte('p') then
      -- Change min color for ball
 --     if walk.active then walk.stop();end
 --     Motion.event('standup')
      headsm_running = 1;
      bodysm_running = 1;
---     HeadFSM.sm:set_state('headLearnLUT');
-      vcm.set_camera_learned_new_lut(1)
-     HeadFSM.sm:set_state('headLearnLUT');
      BodyFSM.sm:set_state('bodyWait');
---     require('ColorLUT')
---     ColorLUT.learn_lut_from_mask();
    end
 
 
@@ -248,11 +225,6 @@ function update()
     vcm.refresh_debug_message();
   end
 
-	-- Update Occupancy Map
-  if Config.vision.enable_freespace_detection == 1 then
-    OccupancyMap.update();
-  end
-   
   -- Update the relevant engines
   Body.update();
   Motion.update();
@@ -270,47 +242,6 @@ function update()
   -- Get a keypress
   process_keyinput();
 
-  --[[
-  attackBearing = wcm.get_attack_bearing();
-  vStep = {0.02, 0, 0.2 * attackBearing}
-
-  obs = behaviorObstacle.check_obstacle(vStep)
- if (obs.front) then
-    print('obstacle in front found')
-  elseif (obs.leftside) then
-    print('obstacle on left found')
-  elseif (obs.rightside) then
-    print('obstacle on right found')
-  end  
-  
-  if obs.left and obs.right then
-    freeDir = 1 -- both size occupied, need slow down and backstep
-  elseif obs.left then
-    freeDir = 2 -- right side free
-  elseif obs.right then
-    freeDir = 3 -- left side free
-  else
-    freeDir = 0 -- both size free
-  end
-
-  if freeDir == 1 then
-    vStep[1] = vStep[1] - 0.01
-  elseif freeDir == 2 then
-    vStep[3] = vStep[3] - 0.02
-  elseif freeDir == 3 then
-    vStep[3] = vStep[3] + 0.02
-  else
-    if angle > 10 * math.pi / 180 then
-      vStep = {0, 0, 0.2}
-    elseif angle < -10 * math.pi / 180 then
-      vStep = {0, 0, -0.2}
-    else
-      vStep = {0, 0, 0}
-    end
-  end
-
-  walk.set_velocity(vStep[1], vStep[2], vStep[3])
-  --]]
 end
 
 while 1 do

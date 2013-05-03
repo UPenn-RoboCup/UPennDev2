@@ -93,14 +93,6 @@ use_gps_only = 0;
 -- Game-type Specific Configurations
 ------------------------------------
 
--- Play Football
---[[
-fsm.game = 'Football';
-fsm.head = {'Football'};
-fsm.body = {'Football'};
-dev.team = 'TeamFootball'
---]]
-
 --[[
 --Enable these for penalty-kick
 dev.team='TeamNull'; --Turn off teamplay for challenges
@@ -122,18 +114,3 @@ fsm.headTrack.tLost = 1.5 * speedFactor;
 fsm.headTrack.minDist = 0.15; --Default value 0.30,If ball is closer than this, don't look up
 --]]
 
--- Obstacle Avoidance Challenge
---[[
-fsm.head = {'ObstacleChallenge'};
-fsm.body = {'ObstacleChallenge'};
-fsm.avoidance_mode = 1 -- ball dribble
-fsm.avoidance_mode = 0 -- walk towards goal, no ball 
-fsm.avoidance_mode = 2 -- Potential Field based navigation
---fsm.avoidance_mode = 3 -- Potential Field based Dribble
-obs_challenge = 1;
-obs_challenge = 0;
-fsm.enable_sidekick = 1;
-fsm.thSideKick1 = 30*math.pi/180;
-fsm.thSideKick2 = 135*math.pi/180;
-fsm.thDistSideKick = 1.0;
---]]

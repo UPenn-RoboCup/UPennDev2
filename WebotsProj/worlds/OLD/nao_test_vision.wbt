@@ -9,8 +9,8 @@ WorldInfo {
   basicTimeStep 40
 }
 Viewpoint {
-  orientation -0.998164 -0.052807 0.0296619 0.873105
-  position -0.644447 8.30312 7.48074
+  orientation -0.483622 0.854639 0.188947 0.761485
+  position 3.06411 2.00783 4.41698
 }
 Background {
   skyColor [
@@ -21,6 +21,7 @@ DirectionalLight {
   ambientIntensity 1.6
   direction -0.5 -2 -0.5
   intensity 0.3
+  castShadows TRUE
 }
 DirectionalLight {
   ambientIntensity 1.6
@@ -31,29 +32,29 @@ SoccerField {
 }
 Walls {
 }
-DEF YELLOW_GOAL KidGoal {
+DEF YELLOW_GOAL Goal {
   translation 3 0 0
   postColor 0.992157 0.854902 0.219608
-  supportColor 0.7 0 0
 }
-DEF BLUE_GOAL KidGoal {
+DEF BLUE_GOAL Goal {
   translation -3 0 0
   rotation 0 1 0 3.14159
-  postColor 0.992157 0.854902 0.219608
-  supportColor 0.152941 0.505882 0.733333
+  postColor 0.152941 0.505882 0.733333
 }
-DEF BALL BallGPS {
+DEF BALL Ball {
   translation 0 0.0323921 0
+  mass 2.0
+  centerOfMass 0 -0.0001 0
+  linearDamping 0.17
+  angularDamping 0.33
 }
-DEF PLAYER_1_1 DARwInOP {
-  translation 1.5 0.3 0.8
-  rotation 0 1 0 -1.56
-  controller "darwin-op_team_0"
-  controllerArgs "0 0"
-  plasticColor 1 0 0
-  cameraWindowPosition 0.125 0
-  cameraWidth 320
-  cameraHeight 240
+DEF PLAYER_1_99 NaoV3RGPS {
+  translation -1.5 0.35 2
+  rotation 0 1 0 -3.14
+  controller "nao_team_0"
+  controllerArgs "1 99"
+  synchronization FALSE
+  cameraWindowPosition 0.375 0
   waistBand TRUE
-  waistBandColor 1 0 0
+#  waistBandColor 0.9 0.5 0.5
 }

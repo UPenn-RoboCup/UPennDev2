@@ -67,20 +67,21 @@ unsigned char * to_rgb( int tag );
 unsigned char * to_rgb( int tag ) {
 	// Images no greater than 640*480*3 !
 	//#define TO_RGB_MAX_BUF 921600
-	static unsigned char rgb[921600];
+	static unsigned char rgb[230400];
 	
 	const int width  = wb_camera_get_width(tag);
 	const int height = wb_camera_get_height(tag);
 	const unsigned char * raw = wb_camera_get_image( tag );
 	
-  int x, y, r, g, b, rgb_index = 0;
-  for (x = 0; x < width; x++)
+    int x, y, r, g, b, rgb_index = 0;
     for (y = 0; y < height; y++) {
-      rgb[rgb_index++] = wb_camera_image_get_red   (raw, width, x, y);
-      rgb[rgb_index++] = wb_camera_image_get_green (raw, width, x, y);
-      rgb[rgb_index++] = wb_camera_image_get_blue  (raw, width, x, y);
+        for (x = 0; x < width; x++) {
+            rgb[rgb_index++] = wb_camera_image_get_red   (raw, width, x, y);
+            rgb[rgb_index++] = wb_camera_image_get_green (raw, width, x, y);
+            rgb[rgb_index++] = wb_camera_image_get_blue  (raw, width, x, y);
+        }
     }
-  return (unsigned char *)(&rgb[0]);
+    return (unsigned char *)(&rgb[0]);
 }
 %}
 

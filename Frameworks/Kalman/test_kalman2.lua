@@ -1,50 +1,52 @@
 local torch = require 'torch'
 torch.Tensor = torch.DoubleTensor
 local kalman1 = require 'libKalman'
-
-local test_two = false
-local show_kalman_gain = false
-
-if test_two then
-	kalman2 = require 'libKalman'
-end
+local show_kalman_gain = true
 
 -- 2 dimensional kalman filter
 local myDim = 2;
 local x,P = kalman1:init_position_filter( myDim )
---local x,P = kalman1:initialize( myDim )
-print('Initial:',x[1],x[2])
+local str = ''
+for d=1,x:size(1) do
+	str = str..' '..x[d]
+end
+print('Initial:',str)
 
-for i=1,10 do
+for i=1,5 do
 	-- One Kalman
 	x,P = kalman1:predict()
-	print('Prior:', x[1],x[2] )
-	x,P,K = kalman1:correct( torch.Tensor(myDim):fill(1) )
-	print('State:', x[1],x[2] )
+	local prior_str = 'Prior:\t'
+	for d=1,x:size(1) do
+		prior_str = prior_str..string.format(' %f',x[d])
+	end
+	local obs = torch.Tensor(myDim):zero()
+	obs[1] = (i-1)/30
+	local observation_str = 'Observe:\t'
+	for d=1,obs:size(1) do
+		observation_str = observation_str..string.format(' %f',obs[d])
+	end
+	x,P,K = kalman1:correct( obs )
+	local state_str = 'State:\t'
+	for d=1,x:size(1) do
+		state_str = state_str..string.format(' %f',x[d])
+	end
+	-- Debug the Gain
+	local kgain_str = ''
 	if show_kalman_gain then
-		print('Kalman')
-		local str = ''
-		for i=1,myDim do
-			for j=1,myDim do
-				str = str..' '..K[i][j]
+		kgain_str = 'Kalman gain\n'
+		for i=1,K:size(1) do
+			for j=1,K:size(2) do
+				kgain_str = kgain_str..string.format('   %.2f',K[i][j])
 			end
-			str = str..'\n'
+			kgain_str = kgain_str..'\n'
 		end
-		print(str)
 	end
-end
-
-if test_two then
-	-- 3 dimensional kalman filter
-	myDim = 3;
-	x,P = kalman2:initialize( myDim )
-	print('Initial:',x[1],x[2])
-
-	for i=1,10 do
-		-- One Kalman
-		x,P = kalman2:predict()
-		print('Prior:',x[1],x[2],x[3])
-		x,P,K = kalman2:correct( torch.Tensor(myDim):fill(2) )
-		print('State:',x[1],x[2],x[3])
-	end
+	-- End Debug of gain
+	
+	print('Observation',i)
+	print(prior_str)
+	print(observation_str)
+	print(state_str)
+	print(kgain_str)
+	
 end

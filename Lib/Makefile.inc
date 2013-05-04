@@ -54,9 +54,9 @@ CC=gcc
 LD=ld
 LDFLAGS=-lstdc++ -shared -fpic
 STRIP=strip
-#CXXFLAGS=-O2 -fpic
+#CXXFLAGS=-O2 -fPIC
 # Hard core optimizations
-CXXFLAGS= -O3 -fomit-frame-pointer -mtune=native -march=native -pipe -funroll-loops
+CXXFLAGS=-fPIC -O3 -mtune=native -march=native
 CFLAGS=$(CXXFLAGS)
 LIBOPTS=
 LIBRT=-lrt

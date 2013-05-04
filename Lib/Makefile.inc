@@ -55,10 +55,9 @@ PLAYERDIR= ../Player
 NAODEPDIR= ../Install/dependencies
 NAODEPLUA51DIR= $(NAODEPDIR)/usr/local/lib/lua/5.1
 
-
-######################
-## Path Definitions ##
-######################
+##########################
+## Compiler Definitions ##
+##########################
 # Defaults to Linux
 CXX=g++
 CC=gcc
@@ -112,3 +111,27 @@ else
 	#BAD
 endif
 endif
+
+# Verbose mode
+VERBOSE=no
+V=@
+ifeq ($(VERBOSE),yes)
+V=
+endif
+
+##########################
+## Makefile Definitions ##
+##########################
+%.o: %.cpp
+	$(V)echo "\t" CXX $@
+	$(V)$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
+%.o: %.cc
+	$(V)echo "\t" CXX $@
+	$(V)$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
+%.o: %.c
+	$(V)echo "\t" CC $@
+	$(V)$(CC) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
+$(LIBNAME): lua_$(LIBNAME).o $(EXTRA_OBJ)
+	@echo "\t" LINK $@
+	$(V)$(LD) $(LDFLAGS) -o $@.$(SHLIBEXT) $^ $(LIB_DIR) $(LIBOPTS)
+	@rm $^

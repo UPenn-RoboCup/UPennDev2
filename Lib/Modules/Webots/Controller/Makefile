@@ -2,8 +2,13 @@
 
 TARGETS = all clean
 .PHONY: $(TARGETS)
-
+EXTRA_OBJ=lua_controller.o
+LIBNAME=controller
 include ../../../Makefile.inc
+
+lua_controller.c: lua_controller.i
+	@echo "\t" SWIG $@
+	$(V)swig -lua -o $@ -I$(WEBOTS_HOME)/include/controller/c lua_controller.i
 
 ifeq ($(OSTYPE),darwin)
 WEBOTS_HOME = /Applications/Webots
@@ -13,18 +18,13 @@ endif
 WEBOTS_INCLUDE_DIR = $(WEBOTS_HOME)/include
 WEBOTS_LIB_DIR = $(WEBOTS_HOME)/lib
 
-all: controller
+INCLUDES+=-I$(WEBOTS_INCLUDE_DIR)/controller/c
+LIB_DIR+=-L$(WEBOTS_LIB_DIR)
+LIBOPTS+=-lController
 
-%.o: %.cc
-	$(CXX) -fpic $(CXXFLAGS) $(LUAINCLUDE) $(INCLUDES) -I$(WEBOTS_INCLUDE_DIR) -o $@ -c $<
-%.o: %.c
-	$(CC) -fpic $(CXXFLAGS) $(LUAINCLUDE) $(INCLUDES) -I$(WEBOTS_INCLUDE_DIR) -I$(WEBOTS_INCLUDE_DIR)/controller/c -o $@ -c $<
-
-controller_wrap.c: controller.i
-	swig -lua -I$(WEBOTS_HOME)/include/controller/c controller.i
-
-controller: controller_wrap.o
-	$(LD) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ -L$(WEBOTS_LIB_DIR) -lController 
+#all: lua_controller
+#lua_controller: lua_controller_wrap.o
+#	$(LD) $(LDFLAGS) -o $@.$(SHLIBEXT) $(LIB_DIR) $(LIBOPTS) $^
 
 clean:
-	rm -f controller.$(SHLIBEXT) *.o *.so controller_wrap.c
+	rm -f $(LIBNAME).$(SHLIBEXT) *.o *.so lua_controller.c

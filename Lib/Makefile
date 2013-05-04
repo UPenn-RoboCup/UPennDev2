@@ -154,11 +154,6 @@ primesense:
 	@echo "Compiling PrimeSense Code...\n"
 	@cd $(PRIMEDIR) && make && cd $(CWD)
 	@echo "\n"
-
-hands::
-	@echo "Compiling Hands Code...\n"
-	@cd $(HANDSDIR) && make && cd $(CWD)
-	@echo "\n"
 	
 setup_nao: nao setup_util setup_image setup_comm
 	@echo "Setting up Nao Lua/C++ Libraries...\n"
@@ -301,7 +296,6 @@ setup_velocity: velocity
 	mkdir -p $(INSTDIR)
 	find $(VELODIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
 	find $(VELODIR) $(REGEX) -exec cp -v {} $(WEBOTSCONTDIR) \;
-#	cp $(VELODIR)/testmodel.xml $(INSTDIR)/../Vision/
 	@echo "\n"
 
 setup_primesense: primesense setup_util
@@ -313,12 +307,6 @@ setup_primesense: primesense setup_util
 	cd $(PLAYERDIR)/Config && ln -s Config_WebotsOP.lua Config.lua && cd $(CWD)	
 	@echo "\n"
 
-setup_hands: hands setup_util
-	@echo "Setting up Hands Lua/C++ Libraries...\n"
-	mkdir -p $(INSTDIR)
-	find $(HANDSDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
-	@echo "\n"
-
 setup_naoqi: naoqi setup_util
 	@echo "Setting up NaoQi module...\n"
 	mkdir -p $(INSTDIR)
@@ -326,24 +314,18 @@ setup_naoqi: naoqi setup_util
 	sed -i -e 's/HOME/$(PWD)/g' $(INSTDIR)/nao_init.lua
 	@echo "\n"
 
-setup_boxer: setup_op setup_hands setup_primesense
-
-setup_webots_boxer: setup_webots_op setup_hands setup_primesense
-
 clean:
 	cd $(IMAGEDIR) && make clean && cd $(CWD)
 	cd $(COMMDIR) && make clean && cd $(CWD)
 	cd $(UTILDIR) && make clean && cd $(CWD)
 	cd $(PRIMEDIR) && make clean && cd $(CWD)
 	cd $(WEBOTSDIR) && make clean && cd $(CWD)
-#	cd $(VELODIR) && make clean && cd $(CWD)
 	cd $(NAODIR) && make clean && cd $(CWD)
 	cd $(NAOV4DIR) && make clean && cd $(CWD)
 	cd $(NAOQIDIR) && make clean && cd $(CWD)
 	cd $(WEBOTSNAODIR) && make clean && cd $(CWD)
 	cd $(WEBOTSOPDIR) && make clean && cd $(CWD)
 	cd $(XOSDIR) && make clean && cd $(CWD)
-#	cd $(WEBOTSCONTDIR) && make clean && cd $(CWD)
 	rm -rf $(WEBOTSCONTDIR) 
 	cd $(WEBOTSCHARLIDIR) && make clean && cd $(CWD)
 	cd $(OPDIR) && make clean && cd $(CWD)

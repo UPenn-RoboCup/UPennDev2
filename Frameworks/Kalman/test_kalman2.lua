@@ -4,7 +4,7 @@ local kalman1 = require 'libKalman'
 local show_kalman_gain = true
 
 -- 2 dimensional kalman filter
-local myDim = 2;
+local myDim = 1;
 local x,P = kalman1:init_position_filter( myDim )
 local str = ''
 for d=1,x:size(1) do

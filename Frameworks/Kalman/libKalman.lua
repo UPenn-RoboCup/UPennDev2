@@ -43,18 +43,21 @@ filter.init_position_filter = function( self, nDim )
 	-- External input model...
 	self.B = torch.eye(2*nDim)
 	self.u_k = torch.Tensor( 2*nDim ):zero()
-	-- Additive Uncertainty
+	-- Additive Motion Uncertainty
 	self.Q = torch.eye(2*nDim)
 	-- Measurement
-	self.R = torch.eye( nDim )*.1
+	self.R = torch.eye( nDim )
+	self.R[1][1] = 0.01
 	self.H = torch.Tensor( nDim, 2*nDim ):zero()
-	self.H:sub(1,nDim,1,nDim):eye(nDim):mul(.1)
+	self.H:sub(1,nDim,1,nDim):eye(nDim)
 	-- Prior
-	self.P_k_minus = torch.eye( 2*nDim ) -- initial confidence
+	self.P_k_minus = torch.eye( 2*nDim )
+	self.P_k_minus[1][1] = 0.01
+	self.P_k_minus[2][2] = 0.1
 	self.x_k_minus = torch.Tensor( 2*nDim ):zero()
 	-- State
-	self.P_k = torch.eye( 2*nDim ) * .1 -- initial confidence
-	self.x_k = torch.Tensor( 2*nDim ):zero()
+	self.P_k = torch.eye( 2*nDim ):copy( self.P_k_minus )
+	self.x_k = torch.Tensor( 2*nDim ):copy( self.x_k_minus )
 	-- Kalman Gain
 	self.K_k = torch.mm(self.P_k_minus, self.H:t()):zero()
 	-- Temporary Variables for memory savings
@@ -111,7 +114,8 @@ filter.correct = function( self, z_k )
 	self.x_k = self.x_k_minus + K_k * (z_k - self.H * self.x_k_minus)
 	--]]
 	-- Prior becomes the corrected state
-	self.x_k_minus, self.P_k_minus = self.x_k, self.P_k
+	self.x_k_minus:copy(self.x_k)
+	self.P_k_minus:copy(self.P_k)
 	return self.x_k, self.P_k, self.K_k
 end
 

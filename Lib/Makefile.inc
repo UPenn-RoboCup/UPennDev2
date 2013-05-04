@@ -113,7 +113,7 @@ endif
 endif
 
 # Verbose mode
-VERBOSE=no
+VERBOSE?=no
 V=@
 ifeq ($(VERBOSE),yes)
 V=
@@ -123,13 +123,13 @@ endif
 ## Makefile Definitions ##
 ##########################
 %.o: %.cpp
-	$(V)echo "\t" CXX $@
+	@echo "\t" CXX $@
 	$(V)$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
 %.o: %.cc
-	$(V)echo "\t" CXX $@
+	@echo "\t" CXX $@
 	$(V)$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
 %.o: %.c
-	$(V)echo "\t" CC $@
+	@echo "\t" CC $@
 	$(V)$(CC) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
 $(LIBNAME): lua_$(LIBNAME).o $(EXTRA_OBJ)
 	@echo "\t" LINK $@

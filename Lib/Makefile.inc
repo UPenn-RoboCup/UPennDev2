@@ -54,18 +54,17 @@ CC=gcc
 LD=ld
 LDFLAGS=-lstdc++ -shared -fpic
 STRIP=strip
-CXXFLAGS=-O2 -fpic
+#CXXFLAGS=-O2 -fpic
 # Hard core optimizations
-#CXXFLAGS= -O3 -fomit-frame-pointer -mtune=native -march=native -pipe -funroll-loops
+CXXFLAGS= -O3 -fomit-frame-pointer -mtune=native -march=native -pipe -funroll-loops
 CFLAGS=$(CXXFLAGS)
-LIBOPTS=-shared -fpic
+LIBOPTS=
 LIBRT=-lrt
 SHLIBEXT=so
-INCLUDES=-I/usr/local/include -I/usr/include
-LIB_DIR=-L/usr/local/lib -L/usr/lib
+INCLUDES=
+LIB_DIR=
 # OS Specific overrides
 ifeq ($(OSTYPE),darwin)
-  LIBOPTS=
   LIBRT=
   CC=cc
   CXX=c++
@@ -120,7 +119,7 @@ endif
 	$(V)$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
 %.o: %.c
 	@echo "\t" CC $@
-	$(V)$(CC) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
+	$(V)$(CC) $(CFLAGS) $(INCLUDES) -o $@ -c $<
 $(LIBNAME): lua_$(LIBNAME).o $(EXTRA_OBJ)
 	@echo "\t" LINK $@
 	$(V)$(LD) $(LDFLAGS) -o $@.$(SHLIBEXT) $^ $(LIB_DIR) $(LIBOPTS)

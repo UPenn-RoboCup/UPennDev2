@@ -13,10 +13,10 @@ platform.name = 'OP'
 params = {}
 params.name = {"Robot", "Walk", "World", "Kick", "Vision", "FSM", "Camera"};
 if (robotName == 'sally') then 
---  params.Robot = "Gripper_Robot" 
   params.Robot = "Sally_Robot" 
 end
 params.Kick = "Slow"
+
 --params.Kick = "3"
 
 ---Location Specific Camera Parameters--
@@ -48,7 +48,7 @@ dev.game_control='OPGameControl';
 dev.team='TeamNSL';
 --dev.walk='BetterWalk'
 dev.walk='EvenBetterWalk'
-dev.kick = 'NewNewKick'
+dev.kick = 'PunchKick'
 dev.gender = 1; -- 1 for boy and 0 for girl 
 
 speak = {}
@@ -353,19 +353,6 @@ batt_max = 120; --12.0V rollback getup thershold
 --If ball is closer than this don't look up
 fsm.headTrack.minDist = 0.30;
 
-------------------------------------------------------------------
--- Boxer
---[[
-fsm.game = 'RoboCup';
-fsm.head = {'Boxer'};
-fsm.body = {'Boxer'};
-dev.team = 'TeamPick'
-game.gcTimeout = 2;
-team.msgTimeout = 1.0;
-game.playerID = 1
-use_rollback_getup = 0;
---]]
---
 -----------------------------------------------------------------
 -- avoider
 --[[

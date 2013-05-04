@@ -30,7 +30,7 @@ dev.camera = 'NaoWebotsCam';
 dev.kinematics = 'NaoWebotsKinematics';
 dev.game_control='WebotsGameControl';
 dev.team= 'TeamSPL';
-dev.kick = 'NewKick';
+dev.kick = 'BasicKick';
 dev.walk = 'Walk/NaoV4Walk';
 
 -- Game Parameters
@@ -51,6 +51,8 @@ end
 fsm.game = 'RoboCup';
 fsm.body = {'NaoKickLogic'};
 fsm.head = {'NaoPlayer'};
+
+
 
 -- Team Parameters
 team = {};
@@ -98,3 +100,10 @@ stance.bodyHeightDive= 0.25;
 stance.bodyTiltStance=0*math.pi/180; --bodyInitial bodyTilt, 0 for webots
 stance.dpLimitStance = vector.new({.04, .03, .04, .05, .4, .1});
 stance.delay = 80; --amount of time to stand still after standing to regain balance.
+
+
+
+
+
+goalie_dive = 2; --1 for arm only, 2 for actual diving
+goalie_dive_waittime = 6.0; --How long does goalie lie down?

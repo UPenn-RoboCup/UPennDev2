@@ -278,7 +278,8 @@ function update()
     stratRole = nil
     if gcmstrat and (playerID == 2 or playerID == 3) then
       strategy = gcmstrat[Config.game.playerID - 1]
-      print(strategy, role)
+-- What are these?
+--      print(strategy, role)
 
       if strategy == 2 then
         stratRole = 1

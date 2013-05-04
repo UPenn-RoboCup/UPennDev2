@@ -1,3 +1,5 @@
+--Basic walk engine with hard-coded frontal walkkick
+
 module(..., package.seeall);
 
 require('Body')

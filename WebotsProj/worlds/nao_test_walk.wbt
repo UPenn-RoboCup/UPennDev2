@@ -46,13 +46,13 @@ DEF BLUE_GOAL KidGoal {
 DEF BALL Ball {
   translation 0 0.0323921 0
 }
-DEF PLAYER_1_99 NaoV3RGPS {
-  translation 0.675 0.35 0
-  rotation 0 1 0 -1.5708
+
+DEF PLAYER_1_1 Nao_H21_V40 {
+  translation 1.5 0.35 3
+  rotation -0.57735 0.57735 0.57735 2.08
   controller "nao_team_0"
   controllerArgs "1 98"
-  synchronization FALSE
-  cameraWindowPosition 0.375 0
+  bottomCameraWindowPosition 0 0.2
   waistBand TRUE
   waistBandColor 0.9 0.5 0.5
 }

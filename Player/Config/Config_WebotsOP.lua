@@ -23,7 +23,7 @@ dev.ip_wired_port = 54321;
 dev.ip_wireless = '192.168.1.255'; --Our Router
 dev.ip_wireless_port = 54321;
 dev.walk='BetterWalk'; --Walk with generalized walkkick definitions
-dev.kick='NewNewKick'; --Extended kick that supports upper body motion
+dev.kick='PunchKick'; --Extended kick that supports upper body motion
 
 -- disable speak for webots which causes lua crash with error if espeak not installed
 speakenable = 0

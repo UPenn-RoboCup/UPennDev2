@@ -13,6 +13,7 @@ world.goalWidth = 1.60;
 world.goalHeight= 0.85;
 world.ballYellow= {{3.0,0.0}};
 world.ballCyan= {{-3.0,0.0}};
+
 world.postYellow = {};
 world.postYellow[1] = {3.0, 0.80};
 world.postYellow[2] = {3.0, -0.80};
@@ -22,69 +23,38 @@ world.postCyan[2] = {-3.0, 0.80};
 world.spot = {};
 world.spot[1] = {-1.20, 0};
 world.spot[2] = {1.20, 0};
-world.landmarkCyan = {0.0, -2.4};
-world.landmarkYellow = {0.0, 2.4};
 world.cResample = 10; --Resampling interval
 
-
---They are SPL values
 --Field edge
+--SJ: rule change in 2013 (penalty box width 2.2m)
 
 world.Lcorner={};
 world.Lcorner[1]={3.0,2.0};
 world.Lcorner[2]={3.0,-2.0};
 world.Lcorner[3]={-3.0,2.0};
 world.Lcorner[4]={-3.0,-2.0};
+
 --Center T edge
 world.Lcorner[5]={0,2.0};
 world.Lcorner[6]={0,-2.0};
+
 --Penalty box edge
 world.Lcorner[7]={-2.4,1.1};
 world.Lcorner[8]={-2.4,-1.1};
 world.Lcorner[9]={2.4,1.1};
 world.Lcorner[10]={2.4,-1.1};
+
 --Penalty box T edge
 world.Lcorner[11]={3.0,1.1};
 world.Lcorner[12]={3.0,-1.1};
 world.Lcorner[13]={-3.0,1.1};
 world.Lcorner[14]={-3.0,-1.1};
+
 --Center circle junction
 world.Lcorner[15]={0,0.6};
 world.Lcorner[16]={0,-0.6};
 
---[[
---Kidsize values
-world.Lcorner={};
---Field edge
-world.Lcorner[1]={3.0,2.0};
-world.Lcorner[2]={3.0,-2.0};
-world.Lcorner[3]={-3.0,2.0};
-world.Lcorner[4]={-3.0,-2.0};
---Center T edge
-world.Lcorner[5]={0,2.0};
-world.Lcorner[6]={0,-2.0};
---Penalty box edge
-world.Lcorner[7]={-2.4,1.5};
-world.Lcorner[8]={-2.4,-1.5};
-world.Lcorner[9]={2.4,1.5};
-world.Lcorner[10]={2.4,-1.5};
---Penalty box T edge
-world.Lcorner[11]={3.0,1.5};
-world.Lcorner[12]={3.0,-1.5};
-world.Lcorner[13]={-3.0,1.5};
-world.Lcorner[14]={-3.0,-1.1};
---Center circle junction
-world.Lcorner[15]={0,0.6};
-world.Lcorner[16]={0,-0.6};
 
---SJ: NSL penalty box is very wide 
---And sometimes they can be falsely detected as T edges
---Penalty box T edge #2 
-world.Lcorner[17]={2.4,2};
-world.Lcorner[18]={2.4,-2};
-world.Lcorner[19]={-2.4,2};
-world.Lcorner[20]={-2.4,-2};
---]]
 
 
 --SJ: OP does not use yaw odometry data (only use gyro)
@@ -136,25 +106,11 @@ world.aLineFilter = 0.02;
 
 --New two-goalpost localization
 world.use_new_goalposts=0;
+--SJ: Corner shouldn't turn angle too much (may cause flipping)
+world.rCornerFilter = 0.01;
+world.aCornerFilter = 0.03;
 
--- Occupancy Map parameters
-occ = {};
-occ.mapsize = 50;
-occ.robot_pos = {occ.mapsize / 2, occ.mapsize * 4 / 5};
- 
--- in which range do we say front
-occ.min_front_angle = 75*math.pi/180;
-occ.max_front_angle = 105*math.pi/180;
--- in which range do we say left
-occ.min_left_angle = 0*math.pi/180;
-occ.max_left_angle = 60*math.pi/180;
--- in which range do we say right
-occ.min_right_angle = 120*math.pi/180;
-occ.max_right_angle = 180*math.pi/180;
-occ.min_obstacle_range = 3*math.pi/180;
---occ.min_obstacle_distance = 0.3;
-occ.min_obstacle_distance = 0.18;
-occ.min_side_obstacle_distance = 0.14;
+world.aLineFilter = 0.02;
 
 world.use_same_colored_goal = 0;
 

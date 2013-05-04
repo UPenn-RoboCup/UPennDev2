@@ -90,12 +90,9 @@ function process_keyinput()
 	elseif byte==string.byte(";") then	targetvel[2]=targetvel[2]-0.02;
 
 	elseif byte==string.byte("1") then	
---		kick.set_kick("kickForwardLeft");
---		Motion.event("kick");
-
-
-
-		Motion.event("align");
+		kick.set_kick("kickForwardLeft");
+		Motion.event("kick");
+--		Motion.event("align");
 
 	elseif byte==string.byte("2") then	
 		kick.set_kick("kickForwardRight");

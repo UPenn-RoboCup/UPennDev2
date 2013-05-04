@@ -23,9 +23,6 @@ landmarkYellow = Config.world.landmarkYellow;
 landmarkCyan = Config.world.landmarkCyan;
 Lcorner = Config.world.Lcorner;
 
---Are we using same colored goals?
-use_same_colored_goal=Config.world.use_same_colored_goal or 0;
-
 --Triangulation method selection
 use_new_goalposts= Config.world.use_new_goalposts or 0;
 

@@ -48,7 +48,7 @@ dev.ip_wireless_port = 54321
 dev.game_control = 'NaoGameControl';
 dev.team='TeamSPL';
 dev.walk = 'Walk/NaoV4Walk';
-dev.kick = 'NewKick';
+dev.kick = 'walk/BasicKick';
 
 --Speak enable
 speakenable = 1;

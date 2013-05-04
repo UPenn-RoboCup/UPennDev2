@@ -13,19 +13,7 @@ require('detectBall');
 require('detectGoal');
 require('detectLine');
 require('detectCorner');
-if not string.find(Config.platform.name,'Nao') then
-  require('detectLandmarks'); -- for NSL
-  require('detectLandmarks2'); -- for NSL
-end
 require('detectSpot');
-require('detectFreespace');
-require('detectBoundary');
---[[
-require('detectObstacles');
-require('detectEyes');
-require('detectStretcher');
---]]
-
 
 --for quick test
 require('detectRobot');
@@ -34,18 +22,15 @@ require('detectRobot');
 -- Define Color
 colorOrange = Config.color.orange;
 colorYellow = Config.color.yellow;
-colorCyan = Config.color.cyan;
 colorField = Config.color.field;
 colorWhite = Config.color.white;
 
 use_point_goal=Config.vision.use_point_goal;
-use_multi_landmark = Config.vision.use_multi_landmark or 0;
 
 
 enableLine = Config.vision.enable_line_detection;
 enableCorner = Config.vision.enable_corner_detection;
 enableSpot = Config.vision.enable_spot_detection;
-enableMidfieldLandmark = Config.vision.enable_midfield_landmark_detection;
 enable_freespace_detection = Config.vision.enable_freespace_detection or 0;
 enableBoundary = Config.vision.enable_visible_boundary or 0;
 enableRobot = Config.vision.enable_robot_detection or 0;
@@ -56,11 +41,8 @@ enable_timeprinting = Config.vision.print_time;
 tstart = unix.time();
 Tball = 0;
 TgoalYellow = 0;
-TgoalCyan = 0;
 Tline = 0;
 Tcorner = 0;
-TlandmarkCyan = 0;
-TlandmarkYellow = 0;
 Trobot = 0;
 Tfreespace = 0;
 Tboundary = 0;
@@ -73,20 +55,8 @@ function entry()
   ballYellow={};
   ballYellow.detect=0;
 	
-  ballCyan={};
-  ballCyan.detect=0;
-
   goalYellow = {};
   goalYellow.detect = 0;
-
-  goalCyan = {};
-  goalCyan.detect = 0;
-
-  landmarkYellow = {};
-  landmarkYellow.detect = 0;
-
-  landmarkCyan = {};
-  landmarkCyan.detect = 0;
 
   line = {};
   line.detect = 0;
@@ -128,19 +98,12 @@ function update()
   
   if use_point_goal == 1 then
     ballYellow = detectBall.detect(colorYellow);
-    ballCyan = detectBall.detect(colorCyan);
   else
     goalYellow.detect=0;
-    goalCyan.detect=0;
     tstart = unix.time();
-    goalYellow = detectGoal.detect(colorYellow,colorCyan);
+    goalYellow = detectGoal.detect(colorYellow);
     TgoalYellow = unix.time() - tstart;
 
-    if yellowGoals == 0 then
-      tstart = unix.time();
-      goalCyan = detectGoal.detect(colorCyan,colorYellow);
-      TgoalCyan = unix.time() - tstart;
-    end
   end
 
   -- line detection
@@ -158,29 +121,6 @@ function update()
   -- spot detection
   if enableSpot == 1 then
 --    spot = detectSpot.detect();
-  end
-
-  -- midfield landmark detection
-  if not string.find(Config.platform.name,'Nao') then
-   landmarkCyan = 0;
-   landmarkYellow = 0;
-   if enableMidfieldLandmark == 1 then
-     if use_multi_landmark == 1 then
-       landmarkCyan = detectLandmarks2.detect(colorCyan,colorYellow);
-       landmarkYellow = detectLandmarks2.detect(colorYellow,colorCyan);
-     else
-       landmarkCyan = detectLandmarks.detect(colorCyan,colorYellow);
-       landmarkYellow = detectLandmarks.detect(colorYellow,colorCyan);
-     end
-   end
-  end
-
-  if enable_freespace_detection ==1 then
-    tstart = unix.time();
-    freespace = detectFreespace.detect(colorField);
-    Tfreespace = unix.time() - tstart;
-    boundary = detectBoundary.detect();
-    Tboundary = unix.time() - Tfreespace - tstart;
   end
 
   -- Global robot detection
@@ -204,33 +144,12 @@ function update_shm()
     vcm.set_ball_da(ball.da);
   end
 
-  vcm.set_goal_detect(math.max(goalCyan.detect, goalYellow.detect));
-  if (goalCyan.detect == 1) then
-    vcm.set_goal_color(colorCyan);
-    vcm.set_goal_type(goalCyan.type);
-    vcm.set_goal_v1(goalCyan.v[1]);
-    vcm.set_goal_v2(goalCyan.v[2]);
-  elseif (goalYellow.detect == 1) then
+  vcm.set_goal_detect(goalYellow.detect);
+  if (goalYellow.detect == 1) then
     vcm.set_goal_color(colorYellow);
     vcm.set_goal_type(goalYellow.type);
     vcm.set_goal_v1(goalYellow.v[1]);
     vcm.set_goal_v2(goalYellow.v[2]);
-  end
-
-  -- midfield landmark detection
-  vcm.set_landmark_detect(0);
-  if not string.find(Config.platform.name,'Nao') then
-    if enableMidfieldLandmark == 1 then
-      if landmarkYellow.detect==1 then
-         vcm.set_landmark_detect(1);
-         vcm.set_landmark_color(colorYellow);
-         vcm.set_landmark_v(landmarkYellow.v);
-      elseif landmarkCyan.detect==1 then
-         vcm.set_landmark_detect(1);
-         vcm.set_landmark_color(colorCyan);
-         vcm.set_landmark_v(landmarkCyan.v);
-      end
-    end
   end
 
 
@@ -335,17 +254,7 @@ function print_time()
         print ('corner detected')
       end
       print ('corner detecting time:          '..Tcorner..'\n')
-    end
-    if (enableMidfieldLandmark == 1) then
-      if (landmarkCyan.detect == 1) then
-        print ('landmarkCyan detected')
-      end
-      print ('cyan landmark detecting time:   '..TlandmarkCyan) 
-      if (landmarkYellow.detect == 1) then
-        print ('landmarkYellow detected')
-      end  
-      print ('yellow landmark detecting time: '..TlandmarkYellow..'\n')
-    end
+   end
    if (enable_freespace_detection == 1) then
       if (freespace.detect == 1) then
         print ('freespace detected')

@@ -1,49 +1,41 @@
 #!/bin/sh
-
-# For Mac systems!
-echo $OSTYPE
-if [[ ${OSTYPE} == *darwin* ]]; then
-  #export OSTYPE = $(shell uname -s|awk '{print tolower($$0)}')
-	eval `/usr/libexec/path_helper -s`
-	source ~/.bash_profile
-fi
-
 EXT_TERM=0
 LUA=lua
 #LUA=luajit
-
-# On Linux, need to verify that xterm is not setgid
-# Otherwise, LD_LIBRARY_PATH gets unset in xterm
-
 COMPUTER=`uname`
-export COMPUTER
+if [ "$COMPUTER" == "Darwin" ]
+  then
+  echo "Mac Specific path helper"
+	eval `/usr/libexec/path_helper -s`
+fi
 
+# Is "export" needed?
+TERM=`which xterm`
+PLATFORM=webots
+
+# Need to export
 export PLAYER_ID=$1
 export TEAM_ID=$2
 
-PLATFORM=webots
-export PLATFORM
-
-echo `which xterm`
-echo $PATH
-
-TERM=xterm
-if [ "$COMPUTER" = "Darwin" ]
-then
-  TERM=/opt/X11/bin/xterm
-fi
+echo "===Environment Variables==="
+echo Path: $PATH
+echo Terminal: $TERM
+echo Computer: $COMPUTER
+echo Player: $PLAYER_ID
+echo Team: $TEAM_ID
+echo Platform: $PLATFORM
+echo "==========================="
 
 if [ "$EXT_TERM" -gt "0" ]
-then
-  # In separate xterms
-  exec $TERM -l -e "$LUA start.lua"
-  #exec luajit -l controller start.lua
+	then
+	# In separate xterms
+	exec $TERM -l -e "$LUA start.lua"
+	#exec luajit -l controller start.lua
 else
-  # In webots console
-  exec $LUA start.lua
+	# In webots console
+	exec $LUA start.lua
 fi
 
-
+# Debugging tools
 #exec xterm -l -e "/usr/bin/gdb --args lua start.lua"
 #exec xterm -l -e "valgrind --tool=memcheck --leak-check=yes --dsymutil=yes luajit start.lua"
-#exec xterm -l -e "/Users/yida/Downloads/lua-5.2.1/src/lua start.lua"

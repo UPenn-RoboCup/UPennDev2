@@ -5,88 +5,58 @@ require('vector')
 
 world={};
 world.n = 100;
-world.xLineBoundary = 4.5;
-world.yLineBoundary = 3.0;
-world.xMax = 4.7;
-world.yMax = 3.2;
+world.xLineBoundary = 3.0;
+world.yLineBoundary = 2.0;
+world.xMax = 3.2;
+world.yMax = 2.2;
 world.goalWidth = 1.60;
-world.goalHeight= 0.81;
-world.ballYellow= {{4.5,0.0}};
-world.ballCyan= {{-4.5,0.0}};
+world.goalHeight= 0.85;
+world.ballYellow= {{3.0,0.0}};
+world.ballCyan= {{-3.0,0.0}};
+
 world.postYellow = {};
-world.postYellow[1] = {4.5, 0.80};
-world.postYellow[2] = {4.5, -0.80};
+world.postYellow[1] = {3.0, 0.80};
+world.postYellow[2] = {3.0, -0.80};
 world.postCyan = {};
-world.postCyan[1] = {-4.5, -0.80};
-world.postCyan[2] = {-4.5, 0.80};
+world.postCyan[1] = {-3.0, -0.80};
+world.postCyan[2] = {-3.0, 0.80};
 world.spot = {};
-world.spot[1] = {-1.95, 0};
-world.spot[2] = {1.95, 0};
-world.landmarkCyan = {0.0, -2.4};
-world.landmarkYellow = {0.0, 2.4};
+world.spot[1] = {-1.20, 0};
+world.spot[2] = {1.20, 0};
 world.cResample = 10; --Resampling interval
 
-
---SJ: Now kidsize is using SPL field 
---Units: metres
-
-world.Lcorner={};
-world.Lcorner[1]={4.5,3.0};
-world.Lcorner[2]={4.5,-3.0};
-world.Lcorner[3]={-4.5,3.0};
-world.Lcorner[4]={-4.5,-3.0};
---Center T edge
-world.Lcorner[5]={0,3.0};
-world.Lcorner[6]={0,-3.0};
---Penalty box edge
-world.Lcorner[7]={-3.9,1.1};
-world.Lcorner[8]={-3.9,-1.1};
-world.Lcorner[9]={3.9,1.1};
-world.Lcorner[10]={3.9,-1.1};
---Penalty box T edge
-world.Lcorner[11]={4.5,1.1};
-world.Lcorner[12]={4.5,-1.1};
-world.Lcorner[13]={-4.5,1.1};
-world.Lcorner[14]={-4.5,-1.1};
---Center circle junction
-world.Lcorner[15]={0,0.75};
-world.Lcorner[16]={0,-0.75};
-
---[[
---Kidsize values
-world.Lcorner={};
 --Field edge
+--SJ: rule change in 2013 (penalty box width 2.2m)
+
+world.Lcorner={};
 world.Lcorner[1]={3.0,2.0};
 world.Lcorner[2]={3.0,-2.0};
 world.Lcorner[3]={-3.0,2.0};
 world.Lcorner[4]={-3.0,-2.0};
+
 --Center T edge
 world.Lcorner[5]={0,2.0};
 world.Lcorner[6]={0,-2.0};
+
 --Penalty box edge
-world.Lcorner[7]={-2.4,1.5};
-world.Lcorner[8]={-2.4,-1.5};
-world.Lcorner[9]={2.4,1.5};
-world.Lcorner[10]={2.4,-1.5};
+world.Lcorner[7]={-2.4,1.1};
+world.Lcorner[8]={-2.4,-1.1};
+world.Lcorner[9]={2.4,1.1};
+world.Lcorner[10]={2.4,-1.1};
+
 --Penalty box T edge
-world.Lcorner[11]={3.0,1.5};
-world.Lcorner[12]={3.0,-1.5};
-world.Lcorner[13]={-3.0,1.5};
+world.Lcorner[11]={3.0,1.1};
+world.Lcorner[12]={3.0,-1.1};
+world.Lcorner[13]={-3.0,1.1};
 world.Lcorner[14]={-3.0,-1.1};
+
 --Center circle junction
 world.Lcorner[15]={0,0.6};
 world.Lcorner[16]={0,-0.6};
---]]
 
---[[
---SJ: NSL penalty box is very wide 
---And sometimes they can be falsely detected as T edges
---Penalty box T edge #2 
-world.Lcorner[17]={2.4,2};
-world.Lcorner[18]={2.4,-2};
-world.Lcorner[19]={-2.4,2};
-world.Lcorner[20]={-2.4,-2};
---]]
+
+
+
 
 
 --SJ: OP does not use yaw odometry data (only use gyro)
@@ -98,24 +68,17 @@ world.imuYaw = 1;
 
 -- default positions for our kickoff
 world.initPosition1={
-  {4.3,0},   --Goalie
+  {2.8,0},   --Goalie
   {0.5,0}, --Attacker
-  {2.25,-1.5}, --Defender
+  {1.5,-1.25}, --Defender
   {0.5,1.0}, --Supporter
 }
 -- default positions for opponents' kickoff
 -- Center circle radius: 0.6
 world.initPosition2={
-  {4.5,0},   --Goalie
---Old position
---  {0.8,0}, --Attacker
---  {1.5,-0.5}, --Defender
-
---Now bit back
-
-  {1.0,0}, --Attacker
-  {1.8,-0.5}, --Defender
-
+  {2.8,0},   --Goalie
+  {0.8,0}, --Attacker
+  {1.5,-0.5}, --Defender
   {1.75,1.0}, --Supporter
 }
 
@@ -151,27 +114,7 @@ world.aUnKnownPostFilter = 0.05;
 
 --New two-goalpost localization
 world.use_new_goalposts=1;
---For NAO
 world.use_same_colored_goal = 1;
-
--- Occupancy Map parameters
-occ = {};
-occ.mapsize = 50;
-occ.robot_pos = {occ.mapsize / 2, occ.mapsize * 4 / 5};
-
--- in which range do we say front
-occ.min_front_angle = 75*math.pi/180;
-occ.max_front_angle = 105*math.pi/180;
--- in which range do we say left
-occ.min_left_angle = 0*math.pi/180;
-occ.max_left_angle = 45*math.pi/180;
--- in which range do we say right
-occ.min_right_angle = 135*math.pi/180;
-occ.max_right_angle = 180*math.pi/180;
-occ.min_obstacle_range = 3*math.pi/180;
-occ.min_obstacle_distance = 0.30;
-occ.min_side_obstacle_distance = 0.25
-
 
 --Use line information to fix angle
 world.use_line_angles = 1;

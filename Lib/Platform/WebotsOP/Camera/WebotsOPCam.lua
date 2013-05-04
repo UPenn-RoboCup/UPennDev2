@@ -20,8 +20,10 @@ controller.wb_robot_step(timeStep);
 
 height = controller.wb_camera_get_height(tags.camera);
 width = controller.wb_camera_get_width(tags.camera);
+--[[
 image = carray.cast(controller.wb_camera_get_image(tags.camera),
 		    'c', 3*height*width);
+--]]
 
 mycount = 0;
 
@@ -43,21 +45,21 @@ end
 function get_image()
   mycount = mycount + 1;
   --rgb2yuyv
-  return ImageProc.rgb_to_yuyv(carray.pointer(image), width, height);
+  --return ImageProc.rgb_to_yuyv(carray.pointer(image), width, height);
+	local image = controller.to_rgb( tags.camera )
+	return ImageProc.rgb_to_yuyv( image, width, height);
 end
 
 function get_labelA( lut )
   --rgb2label
-  return ImageProc.rgb_to_label(carray.pointer(image), lut, width, height);
-end
-
-function get_labelA_obs( lut )
-  --rgb2label
-  return ImageProc.rgb_to_label_obs(carray.pointer(image), lut, width, height);
+  --return ImageProc.rgb_to_label(carray.pointer(image), lut, width, height);
+	local image = controller.to_rgb( tags.camera )
+	return ImageProc.rgb_to_label( image, lut, width, height );
 end
 
 function get_lut_update(mask, lut)
-  return ImageProc.rgb_mask_to_lut(carray.pointer(image), mask, lut, width, height);
+	local image = controller.to_rgb( tags.camera )
+  return ImageProc.rgb_mask_to_lut( image, mask, lut, width, height);
 end
 
 function get_camera_status()
@@ -83,4 +85,3 @@ end
 function get_select()
   return 0;
 end
-

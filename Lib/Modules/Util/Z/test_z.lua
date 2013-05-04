@@ -1,4 +1,4 @@
-require('Z')
+local Z = require('Z')
 
 src = "lua c api: how to push a string with                                                                                               a null character in the middle?";
 print(src);

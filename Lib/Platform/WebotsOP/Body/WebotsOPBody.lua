@@ -9,7 +9,7 @@ imuAngle = {0, 0, 0};
 aImuFilter = 1 - math.exp(-tDelta/0.5);
 
 
-gps_enable = 0;
+gps_enable = 1;
 
 
 -- Get webots tags:

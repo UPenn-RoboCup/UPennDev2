@@ -16,20 +16,12 @@ params = {}
 params.name = {"Walk", "World", "Kick", "Vision", "FSM", "Camera"};
 util.LoadConfig(params, platform)
 
-param.world = 'World/Config_WebotsNao_World'
-param.walk = 'Walk/Config_WebotsNao_Walk' 
-param.kick = 'Kick/Config_WebotsNao_Kick'
-param.vision = 'Vision/Config_WebotsNao_Vision'
-param.camera = 'Vision/Config_WebotsNao_Camera'
-param.fsm = 'FSM/Config_WebotsNao_FSM'
-
-loadconfig(param.world)
-loadconfig(param.walk)
-loadconfig(param.kick)
-loadconfig(param.vision)
-
---Location Specific Camera Parameters--
-loadconfig(param.camera)
+params.world = 'World/Config_WebotsNao_World'
+params.walk = 'Walk/Config_WebotsNao_Walk' 
+params.kick = 'Kick/Config_WebotsNao_Kick'
+params.vision = 'Vision/Config_WebotsNao_Vision'
+params.camera = 'Vision/Config_WebotsNao_Camera'
+params.fsm = 'FSM/Config_WebotsNao_FSM'
 
 -- Device Interface Libraries
 dev = {};
@@ -38,7 +30,7 @@ dev.camera = 'NaoWebotsCam';
 dev.kinematics = 'NaoWebotsKinematics';
 dev.game_control='WebotsGameControl';
 dev.team= 'TeamSPL';
-dev.kick = 'NewKick';
+dev.kick = 'BasicKick';
 dev.walk = 'Walk/NaoV4Walk';
 
 -- Game Parameters
@@ -59,6 +51,8 @@ end
 fsm.game = 'RoboCup';
 fsm.body = {'NaoKickLogic'};
 fsm.head = {'NaoPlayer'};
+
+
 
 -- Team Parameters
 team = {};
@@ -106,3 +100,10 @@ stance.bodyHeightDive= 0.25;
 stance.bodyTiltStance=0*math.pi/180; --bodyInitial bodyTilt, 0 for webots
 stance.dpLimitStance = vector.new({.04, .03, .04, .05, .4, .1});
 stance.delay = 80; --amount of time to stand still after standing to regain balance.
+
+
+
+
+
+goalie_dive = 2; --1 for arm only, 2 for actual diving
+goalie_dive_waittime = 6.0; --How long does goalie lie down?

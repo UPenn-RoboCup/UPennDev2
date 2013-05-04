@@ -7,11 +7,10 @@ WorldInfo {
   ]
   title "Robotstadium"
   basicTimeStep 40
-  runRealTime TRUE
 }
 Viewpoint {
-  orientation -0.483622 0.854639 0.188947 0.761485
-  position 3.06411 2.00783 4.41698
+  orientation -0.999808 -0.0155052 0.0120088 0.948228
+  position -0.472048 10.8094 8.99855
 }
 Background {
   skyColor [
@@ -29,29 +28,31 @@ DirectionalLight {
   direction 0.5 -0.5 0.5
   intensity 0.5
 }
-SoccerField {
+TeenSoccerField {
 }
-Walls {
+TeenWalls {
 }
-DEF YELLOW_GOAL Goal {
-  translation 3 0 0
+DEF YELLOW_GOAL KidGoal {
+  translation 4.5 0 0
   postColor 0.992157 0.854902 0.219608
+  supportColor 0.7 0 0
 }
-DEF BLUE_GOAL Goal {
-  translation -3 0 0
+DEF BLUE_GOAL KidGoal {
+  translation -4.5 0 0
   rotation 0 1 0 3.14159
-  postColor 0.152941 0.505882 0.733333
+  postColor 0.992157 0.854902 0.219608
+  supportColor 0.152941 0.505882 0.733333
 }
 DEF BALL Ball {
   translation 0 0.0323921 0
 }
-DEF PLAYER_1_99 NaoV3R {
-  translation 0.675 0.35 0
-  rotation 0 1 0 -1.5708
+
+DEF PLAYER_1_1 Nao_H21_V40 {
+  translation 1.5 0.35 3
+  rotation -0.57735 0.57735 0.57735 2.08
   controller "nao_team_0"
   controllerArgs "1 98"
-  synchronization FALSE
-  cameraWindowPosition 0.375 0
+  bottomCameraWindowPosition 0 0.2
   waistBand TRUE
   waistBandColor 0.9 0.5 0.5
 }

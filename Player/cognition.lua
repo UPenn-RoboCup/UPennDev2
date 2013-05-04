@@ -11,7 +11,6 @@ require('Body')
 require('Vision')
 require('World')
 require('Detection') 
---require('OccupancyMap') 
 
 comm_inited = false;
 vcm.set_camera_teambroadcast(1);
@@ -97,6 +96,58 @@ function update_box()
     GameControl.update();
   end
 end
+
+function update()
+  count = count + 1;
+  tstart = unix.time();
+
+  -- update vision 
+  imageProcessed = Vision.update();
+
+  World.update_odometry();
+
+  -- update localization
+  if imageProcessed then
+    nProcessedImages = nProcessedImages + 1;
+    World.update_vision();
+
+    if (nProcessedImages % 500 == 0) then
+      if not webots then
+        print('fps: '..(500 / (unix.time() - tUpdate)));
+        tUpdate = unix.time();
+      end
+    end
+  end
+ 
+  if not comm_inited and 
+    (vcm.get_camera_broadcast()>0 or
+     vcm.get_camera_teambroadcast()>0) then
+    if vcm.get_camera_teambroadcast()>0 then 
+      require('Team');
+      require('GameControl');
+      Team.entry();
+      GameControl.entry();
+      print("Starting to send wireless team message..");
+    else
+      require('Broadcast');
+      print("Starting to send wired monitor message..");
+    end
+    comm_inited = true;
+  end
+
+  if comm_inited and imageProcessed then
+    if vcm.get_camera_teambroadcast()>0 then 
+      GameControl.update();
+      if nProcessedImages % 3 ==0 then
+        --10 fps team update
+        Team.update();
+      end
+    else
+      broadcast();
+    end
+  end
+end
+
 
 
 

@@ -8,7 +8,6 @@ if (string.find(Config.platform.name,'Webots')) then
   webots = 1;
 end
 
-require('ColorLUT');
 require('ImageProc');
 require('HeadTransform');
 
@@ -19,23 +18,8 @@ require('Body')
 --Added for webots fast simulation
 use_gps_only = Config.use_gps_only or 0;
 
-enable_lut_for_obstacle = Config.vision.enable_lut_for_obstacle or 0;
-
-obs_challenge_enable = Config.obs_challenge or 0;
-enable_lut_for_obstacle = Config.vision.enable_lut_for_obstacle or 0;
-
-if false then
-
-if Config.game.playerID==1 and Config.game.teamNumber==1 then
-  ffi = require 'ffi'
-  require 'cjpeg'
-  simple_ipc = require 'simple_ipc'
-  img_channel = simple_ipc.setup_publisher('img');
-end
-
-end
-
 if use_gps_only==0 then
+  require('ColorLUT'); --This will turn on camera and slow things down!
   require('Camera');
   require('Detection');
   
@@ -77,8 +61,6 @@ if use_gps_only==0 then
   vcm.set_image_scaleB(Config.vision.scaleB);
   print('Vision LabelA size: ('..labelA.m..', '..labelA.n..')');
   print('Vision LabelB size: ('..labelB.m..', '..labelB.n..')');
-else
-  require('GPSVision');
 end
 
 colorOrange = Config.color.orange;
@@ -189,17 +171,17 @@ function update()
 --    lut_updated = vcm.get_image_lut_updated();
 --  end
 
+  --If we are only using gps info, skip whole vision update 	
+  if use_gps_only>0 then
+    update_gps_only();
+    return true;
+  end
+
   -- reload color lut
   if (vcm.get_camera_reload_LUT() == 1) then
     print('reload color LUT')
     camera = ColorLUT.load_LUT(camera);
     vcm.set_camera_reload_LUT(0);
-  end
-
-  --If we are only using gps info, skip whole vision update 	
-  if use_gps_only>0 then
-    update_gps_only();
-    return true;
   end
 
   tstart = unix.time();
@@ -231,53 +213,21 @@ function update()
 
   -- perform the initial labeling
   if webots == 1 then
---    labelA.data = Camera.get_labelA( carray.pointer( ColorLUT.LUT.Detection )
-    labelA.data = Camera.get_labelA( vcm.get_image_lut() 
-    );
+    labelA.data = Camera.get_labelA( vcm.get_image_lut() );
   else
-
     labelA.data  = ImageProc.yuyv_to_label(vcm.get_image_yuyv(),
---                                          carray.pointer( ColorLUT.LUT.Detection ),
                                           vcm.get_image_lut(),
                                           camera.width/2,
                                           camera.height);
   end
 
-  if false then
-  if Config.game.playerID==1 and Config.game.teamNumber==1 then
-    local comp_img = cjpeg.compress(
-    carray.pointer(Camera.image), 
-    camera.width, camera.height, 3);
-    img_channel:send( 'i'..comp_img );
-    print('sending msg...',#comp_img)
-    local la = ffi.string(labelA.data,labelA.npixel);
-    img_channel:send( 'a'..la );    
-  end
-end
   -- determine total number of pixels of each color/label
   colorCount = ImageProc.color_count(labelA.data, labelA.npixel);
-
 
   -- bit-or the segmented image
   labelB.data = ImageProc.block_bitor(labelA.data, labelA.m, labelA.n, scaleB, scaleB);
 
-  -- perform label process for obstacle specific lut
-  if enable_lut_for_obstacle == 1 then
-    -- label A
-    if webots == 1 then
-      labelA.data_obs = Camera.get_labelA_obs( carray.pointer(ColorLUT.LUT.Obstacle) );
-    else
-      labelA.data_obs  = ImageProc.yuyv_to_label_obs(vcm.get_image_yuyv(),
-                                    carray.pointer(ColorLUT.LUT.Obstacle), camera.width/2, camera.height);
-    end
-    -- count color pixels
-    colorCount_obs = ImageProc.color_count_obs(labelA.data_obs, labelA.npixel);
-    -- label B
-    labelB.data_obs = ImageProc.block_bitor_obs(labelA.data_obs, labelA.m, labelA.n, scaleB, scaleB);
-  end
-
   update_shm(status, headAngles)
-
 
   vcm.refresh_debug_message();
 
@@ -335,10 +285,6 @@ function update_shm(status, headAngles)
         vcm.set_camera_yuyvType(1);
         vcm.set_image_labelA(labelA.data);
         vcm.set_image_labelB(labelB.data);
---        if enable_lut_for_obstacle == 1 then
---          vcm.set_image_labelA_obs(labelA.data_obs);
---          vcm.set_image_labelB_obs(labelB.data_obs);
---        end
 	    end
       if vcm.get_camera_broadcast() > 0 then --Wired monitor broadcasting
 	      if vcm.get_camera_broadcast() == 1 then
@@ -352,10 +298,6 @@ function update_shm(status, headAngles)
   	                                            camera.width/2, camera.height,2));
           vcm.set_image_labelA(labelA.data);
           vcm.set_image_labelB(labelB.data);
---          if enable_lut_for_obstacle == 1 then
---            vcm.set_image_labelA_obs(labelA.data_obs);
---            vcm.set_image_labelB_obs(labelB.data_obs);
---          end
 	      else
 	        --Level 3: 1/2 yuyv
           vcm.set_image_yuyv2(ImageProc.subsample_yuyv2yuyv(
@@ -417,3 +359,72 @@ end
 function bboxArea(bbox)
   return (bbox[2] - bbox[1] + 1) * (bbox[4] - bbox[3] + 1);
 end
+
+
+
+
+--Update relative ball position based on absolute position
+
+function update_gps_only()
+  --We are now using ground truth robot and ball pose data
+  headAngles = Body.get_head_position();
+  --TODO: camera select
+--  HeadTransform.update(status.select, headAngles);
+  HeadTransform.update(0, headAngles);
+  
+  --update FOV
+  update_shm_fov()
+
+  --Get GPS coordinate of robot and ball
+  gps_pose = wcm.get_robot_gpspose();
+  ballGlobal=wcm.get_robot_gps_ball();  
+  
+--print("BallGPS:",unpack(ballGlobal))
+
+
+
+  --Check whether ball is inside FOV
+  ballLocal = util.pose_relative(ballGlobal,gps_pose);
+ 
+  --Get the coordinates of FOV boundary
+  local v_TL = vcm.get_image_fovTL();
+  local v_TR = vcm.get_image_fovTR();
+  local v_BL = vcm.get_image_fovBL();
+  local v_BR = vcm.get_image_fovBR();
+
+--[[
+print("BallLocal:",unpack(ballLocal))
+print("V_TL:",unpack(v_TL))
+print("V_TR:",unpack(v_TR))
+print("V_BL:",unpack(v_BL))
+print("V_BR:",unpack(v_BR))
+print("Check 1:",
+   check_side(v_TL, ballLocal, v_TR));
+print("Check 2:",
+     check_side(v_TL, v_BL, ballLocal) );
+print("Check 3:",
+     check_side(v_BR, v_TR, ballLocal) );
+print("Check 4:",
+     check_side(v_BL, v_BR, ballLocal) );
+--]]
+
+ --Check whether ball is within FOV boundary 
+  if check_side(v_TR, v_TL, ballLocal) < 0 and
+     check_side(v_TL, v_BL, ballLocal) < 0 and
+     check_side(v_BR, v_TR, ballLocal) < 0 and
+     check_side(v_BL, v_BR, ballLocal) < 0 then
+    vcm.set_ball_detect(1);
+  else
+    vcm.set_ball_detect(0);
+  end
+end
+
+function check_side(v,v1,v2)
+  --find the angle from the vector v-v1 to vector v-v2
+  local vel1 = {v1[1]-v[1],v1[2]-v[2]};
+  local vel2 = {v2[1]-v[1],v2[2]-v[2]};
+  angle1 = math.atan2(vel1[2],vel1[1]);
+  angle2 = math.atan2(vel2[2],vel2[1]);
+  return util.mod_angle(angle1-angle2);
+end
+

@@ -5,7 +5,7 @@ local filter = {}
 
 filter.initialize = function( self, nDim )
 	-- Utility
-	self.I = torch.eye( nDim )
+	self.I = torch.eye(nDim)
 	-- Process
 	self.A = torch.eye(nDim) -- State process w/o input
 	self.B = torch.eye(nDim) -- Control input to state effect
@@ -15,10 +15,10 @@ filter.initialize = function( self, nDim )
 	self.H = torch.eye(nDim) 
 	-- Prior
 	self.P_k_minus = torch.eye(nDim)
-	self.x_k_minus = torch.Tensor( nDim ):zero()
+	self.x_k_minus = torch.Tensor(nDim):zero()
 	-- State
-	self.P_k = torch.eye(nDim)
-	self.x_k = torch.Tensor( nDim ):zero()
+	self.P_k = torch.Tensor( nDim, nDim ):copy( self.P_k_minus )
+	self.x_k = torch.Tensor(nDim):copy( self.x_k_minus )
 	-- Temporaty variables
 	self:init_temporary_variables()
 	return self.x_k, self.P_k
@@ -28,56 +28,61 @@ end
 -- Yields velocity as well
 -- http://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=5298809
 filter.init_position_filter = function( self, nDim )
+	
+	-- Default initialization
+	self:initialize(2*nDim)
+	
+	-----------------
 	-- Ball tracking Parameters
+	-----------------
 	self.decay = .95
 	self.dt = 1 -- How many frames have evolved?
-	-- Utility
-	self.I = torch.eye( 2*nDim )
-	-- Process
-	-- State stays the same by default
-	self.A = torch.eye(2*nDim)
+	
+	-----------------
+	-- Modify the Dynamics update
+	-----------------
 	-- Position stays the same
 	self.A:sub(1,nDim,  1,nDim):eye(nDim)
 	-- Predict next position by velocity
 	self.A:sub(1,nDim, nDim+1,2*nDim):eye(nDim):mul(self.dt)
 	-- Velocity Decay
 	self.A:sub(nDim+1,2*nDim, nDim+1,2*nDim):eye(nDim):mul(self.decay)
-	-- External input model...
-	self.B = torch.eye(2*nDim)
-	-- Additive Motion Uncertainty
-	self.Q = torch.eye(2*nDim)
-	-- Measurement
+
+	-----------------
+	-- Modify the Measurement update
+	-----------------
+	-- We only measure the state positions, not velocities
 	self.R = torch.eye( nDim )
 	self.R[1][1] = 0.01
 	self.H = torch.Tensor( nDim, 2*nDim ):zero()
 	self.H:sub(1,nDim,1,nDim):eye(nDim)
-	-- Prior
-	self.P_k_minus = torch.eye( 2*nDim )
-	self.P_k_minus[1][1] = 0.01
-	self.P_k_minus[2][2] = 0.1
-	self.x_k_minus = torch.Tensor( 2*nDim ):zero()
-	-- State
-	self.P_k = torch.eye( 2*nDim ):copy( self.P_k_minus )
-	self.x_k = torch.Tensor( 2*nDim ):copy( self.x_k_minus )
-	-- Temporary vars
+
+	-----------------
+	-- Modify the initial state prior
+	-----------------
+	self.P_k_minus[1][1] = 0.01 -- Trust position
+	self.P_k_minus[2][2] = 0.1  -- Do not trust velocity much
+	-- Duplicate for current state...
+	self.P_k[1][1] = 0.01 -- Trust position
+	self.P_k[2][2] = 0.1  -- Do not trust velocity much
+
+	-- Redo the temporary vars
 	self:init_temporary_variables()
 	return self.x_k, self.P_k
 end
 
 filter.init_temporary_variables = function(self)
-	-- Temporary Variables for memory savings
-	self.tmp_input = torch.Tensor( self.B:size(2) )
-	--torch.mv( self.B, self.u_k ):zero()
-	
-	self.tmp_state = torch.mv( self.A, self.x_k_minus ):zero()
-	self.tmp_covar = torch.mm( self.A, self.P_k_minus ):zero()
-	self.tmp_pcor1 = torch.mm( self.H, self.P_k_minus ):zero()
-	self.tmp_pcor2 = torch.mm( self.tmp_pcor1, self.H:t() ):zero()
-	self.tmp_pcor3 = torch.mm( self.tmp_pcor1, self.H:t() ):zero()
-	self.tmp_pcor4 = torch.mm( self.P_k_minus, self.H:t()):zero()
-	self.K_k = torch.mm(self.P_k_minus, self.H:t()):zero()
-	self.K_update  = torch.mm( self.K_k, self.H ):zero()
-	self.tmp_scor  = torch.mv( self.H, self.x_k_minus ):zero()
+	-- Temporary Variables for memory savings (do not need to be zero'd)
+	self.tmp_input = torch.Tensor( self.B:size(1) )
+	self.tmp_state = torch.Tensor( self.A:size(1) )
+	self.tmp_covar = torch.Tensor( self.A:size(1), self.P_k_minus:size(2) )
+	self.tmp_pcor1 = torch.Tensor( self.H:size(1), self.P_k_minus:size(2) )
+	self.tmp_pcor2 = torch.Tensor( self.tmp_pcor1:size(1), self.H:size(1) )
+	self.tmp_pcor3 = torch.Tensor( self.tmp_pcor1:size(1), self.H:size(1) )
+	self.tmp_pcor4 = torch.Tensor( self.P_k_minus:size(1), self.H:size(1) )
+	self.K_k = torch.Tensor( self.P_k_minus:size(1), self.H:size(1) )
+	self.K_update = torch.Tensor( self.K_k:size(1), self.H:size(2) )
+	self.tmp_scor  = torch.Tensor( self.H:size(1) )
 end
 
 -- Form a state estimate prior based on the process and input

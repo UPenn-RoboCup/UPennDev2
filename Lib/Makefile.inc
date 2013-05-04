@@ -26,12 +26,6 @@ NAODIR= Platform/Nao
 NAOV4DIR = Platform/NaoV4
 WEBOTSNAODIR= Platform/WebotsNao
 WEBOTSOPDIR= Platform/WebotsOP
-WEBOTSGENERICDIR= Platform/WebotsGeneric
-WEBOTSHUBODIR= Platform/WebotsHubo
-WEBOTSCHARLIDIR= Platform/WebotsCharli
-WEBOTSSAFFIRDIR= Platform/WebotsSaffir
-VISIONTESTDIR = Platform/VisionTest
-HPDIR= Platform/HP2
 OPDIR= Platform/OP
 XOSDIR= Platform/XOS
 CHARLIDIR = Platform/Charli
@@ -58,12 +52,12 @@ NAODEPLUA51DIR= $(NAODEPDIR)/usr/local/lib/lua/5.1
 CXX=g++
 CC=gcc
 LD=ld
-LDFLAGS=-shared -fpic
+LDFLAGS=-lstdc++ -shared -fpic
 STRIP=strip
-CFLAGS=-O2 -fpic
 CXXFLAGS=-O2 -fpic
 # Hard core optimizations
 #CXXFLAGS= -O3 -fomit-frame-pointer -mtune=native -march=native -pipe -funroll-loops
+CFLAGS=$(CXXFLAGS)
 LIBOPTS=-shared -fpic
 LIBRT=-lrt
 SHLIBEXT=so
@@ -71,8 +65,7 @@ INCLUDES=-I/usr/local/include -I/usr/include
 LIB_DIR=-L/usr/local/lib -L/usr/lib
 # OS Specific overrides
 ifeq ($(OSTYPE),darwin)
-  LIBOPTS= 
-  CXXFLAGS=-O2 -fomit-frame-pointer -mtune=native
+  LIBOPTS=
   LIBRT=
   CC=cc
   CXX=c++

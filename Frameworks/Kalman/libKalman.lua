@@ -15,14 +15,17 @@ end
 -- Form a state estimate prior based on the process and input
 local function predict(self, u_k)
 	-- Complicated (i.e. fast in-memory) way
+	
 	self.tmp_input:mv( self.B, u_k )
 	self.tmp_state:mv( self.A, self.x_k_minus )
 	self.x_k_minus:copy( self.tmp_state ):add( self.tmp_input )
 	self.tmp_covar:mm( self.A, self.P_k_minus )
 	self.P_k_minus:mm( self.tmp_covar, self.A:t() ):add( self.Q )
+	--]]
+	
 	--[[
 	-- Simple (i.e. mallocing memory each time) way
-	self.x_k_minus = self.A * self.x_k_minus + self.B * self.u_k
+	self.x_k_minus = self.A * self.x_k_minus + self.B * u_k
 	self.P_k_minus = self.A * self.P_k_minus * self.A:t() + self.Q
 	--]]
 end
@@ -30,6 +33,7 @@ end
 -- Correct the state estimate based on a measurement
 local function correct( self, z_k )
 	-- Complicated (i.e. fast in-memory) way
+
 	self.tmp_pcor1:mm( self.H, self.P_k_minus )
 	self.tmp_pcor2:mm( self.tmp_pcor1, self.H:t() ):add(self.R)
 	torch.inverse( self.tmp_pcor3, self.tmp_pcor2 )
@@ -39,7 +43,8 @@ local function correct( self, z_k )
 	self.P_k:mm( self.K_update, self.P_k_minus )
 	self.tmp_scor:mv( self.H, self.x_k_minus ):mul(-1):add(z_k)
 	self.x_k:mv( self.K_k, self.tmp_scor ):add(self.x_k_minus)
-
+	--]]
+	
 	--[[
 	-- Simple (i.e. mallocing memory each time) way
 	local tmp1 = self.H * self.P_k_minus * self.H:t()
@@ -103,7 +108,7 @@ end
 -- http://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=5298809
 local function initialize_position_filter ( filter, nDim )
 	-- Generic filter to start
-	initialize_filter( filter, 2*nDim )
+	filter = initialize_filter( filter, 2*nDim )
 	-----------------
 	-- Ball tracking Parameters
 	-----------------

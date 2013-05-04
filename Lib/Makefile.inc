@@ -52,7 +52,7 @@ NAODEPLUA51DIR= $(NAODEPDIR)/usr/local/lib/lua/5.1
 CXX=g++
 CC=gcc
 LD=ld
-LDFLAGS=-lstdc++ -shared -fpic
+LDFLAGS= -shared -fpic
 STRIP=strip
 CXXFLAGS=-O2 -fpic
 # Hard core optimizations

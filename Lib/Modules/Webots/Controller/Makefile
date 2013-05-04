@@ -1,30 +1,23 @@
 # Makefile used to build Webots files
-
-TARGETS = all clean
-.PHONY: $(TARGETS)
-
+EXTRA_OBJ=lua_controller.o
+LIBNAME=controller
 include ../../../Makefile.inc
 
+lua_controller.c: lua_controller.i
+	@echo "\t" SWIG $@
+	$(V)swig -lua -o $@ -I$(WEBOTS_HOME)/include/controller/c lua_controller.i
+
+WEBOTS_HOME=/usr/local/webots
 ifeq ($(OSTYPE),darwin)
-WEBOTS_HOME = /Applications/Webots
-else
-WEBOTS_HOME = /usr/local/webots
+WEBOTS_HOME=/Applications/Webots
 endif
-WEBOTS_INCLUDE_DIR = $(WEBOTS_HOME)/include
-WEBOTS_LIB_DIR = $(WEBOTS_HOME)/lib
-
-all: controller
-
-%.o: %.cc
-	$(CXX) -fpic $(CXXFLAGS) $(LUAINCLUDE) $(INCLUDES) -I$(WEBOTS_INCLUDE_DIR) -o $@ -c $<
-%.o: %.c
-	$(CC) -fpic $(CXXFLAGS) $(LUAINCLUDE) $(INCLUDES) -I$(WEBOTS_INCLUDE_DIR) -I$(WEBOTS_INCLUDE_DIR)/controller/c -o $@ -c $<
-
-controller_wrap.c: controller.i
-	swig -lua -I$(WEBOTS_HOME)/include/controller/c controller.i
-
-controller: controller_wrap.o
-	$(LD) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ -L$(WEBOTS_LIB_DIR) -lController 
+INCLUDES+=-I$(WEBOTS_HOME)/include/controller/c
+LIB_DIR+=-L$(WEBOTS_HOME)/lib
+LIBOPTS+=-lController
+ifeq ($(VERBOSE),no)
+CXXFLAGS+=-Wno-deprecated-declarations
+CFLAGS+=-Wno-deprecated-declarations
+endif
 
 clean:
-	rm -f controller.$(SHLIBEXT) *.o *.so controller_wrap.c
+	rm -f $(LIBNAME).$(SHLIBEXT) *.o *.so lua_controller.c

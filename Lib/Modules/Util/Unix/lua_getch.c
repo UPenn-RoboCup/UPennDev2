@@ -37,7 +37,7 @@ static int lua_nonblock(lua_State *L){
 }
 
 
-static const struct luaL_reg getch_lib [] = {
+static const luaL_Reg getch_lib [] = {
   {"get", lua_getch},
   {"enableblock", lua_nonblock},
   {NULL, NULL}
@@ -45,6 +45,11 @@ static const struct luaL_reg getch_lib [] = {
 
 
 int luaopen_getch (lua_State *L) {
+#if LUA_VERSION_NUM == 502
+  luaL_newlib(L, getch_lib);
+#else
   luaL_register(L, "getch", getch_lib);
+#endif
+
   return 1;
 }

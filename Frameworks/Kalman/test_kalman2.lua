@@ -3,8 +3,7 @@
 
 local torch = require 'torch'
 torch.Tensor = torch.DoubleTensor
-local kalman1 = require 'libKalman'
-local kalman2 = require 'libKalman'
+local libKalman = require 'libKalman'
 
 -- Debugging options
 local show_kalman_gain = false
@@ -12,14 +11,17 @@ local debug_each_state = false
 
 -- 3 dimensional kalman filter
 local myDim = 10;
-local nIter = 1000;
+local nIter = 5000;
 -- Do not control input
 local u_k_input = torch.Tensor( 2*myDim ):zero()
 -- Set the observations
-local obs = torch.Tensor(myDim):zero()
+local obs1 = torch.Tensor(myDim):zero()
+local obs2 = torch.Tensor(myDim):zero()
 
 -- Initialize the filter
-local x,P = kalman1:init_position_filter( myDim )
+local kalman1 = libKalman.new_position_filter(myDim)
+local x,P = kalman1:get_state()
+local kalman2 = libKalman.new_position_filter(myDim)
 
 -- Print the initial state
 local initial_str = 'Initial State:\n'
@@ -31,15 +33,28 @@ print(initial_str)
 -- Begin the test loop
 for i=1,nIter do
 
-	-- Perform prediction
-	local x_pred, P_pred = kalman1:predict( u_k_input )
 	-- Make an observation
-	obs[1] = i + .2*(math.random()-.5)
-	for p=2,obs:size(1)-1 do
-		obs[p] = i/p + 1/(5*p)*(math.random()-.5)
+	obs1[1] = i + .2*(math.random()-.5)
+	for p=2,obs1:size(1)-1 do
+		obs1[p] = i/p + 1/(5*p)*(math.random()-.5)
 	end
+
+	-- Perform prediction
+	kalman1:predict( u_k_input )
+	local x_pred, P_pred = kalman1:get_prior()
 	-- Perform correction
-	x,P,K = kalman1:correct( obs )
+	kalman1:correct( obs1 )
+	x,P = kalman1:get_state()
+	
+	--[[
+	-- Make an observation
+	obs2[1] = 2*i + .2*(math.random()-.5)
+	for p=2,obs2:size(1)-1 do
+		obs2[p] = 2*i/p + 1/(2*p)*(math.random()-.5)
+	end
+	kalman2:predict( u_k_input )
+	kalman2:correct( obs2 )
+	--]]
 
 	-- Print debugging information
 	if debug_each_state then
@@ -53,7 +68,7 @@ for i=1,nIter do
 		-- Save observation string
 		local observation_str = 'Observe:\t'
 		for d=1,obs:size(1) do
-			observation_str = observation_str..string.format(' %f',obs[d])
+			observation_str = observation_str..string.format(' %f',obs1[d])
 		end
 		
 		-- Save corrected state string
@@ -69,6 +84,7 @@ for i=1,nIter do
 		if show_kalman_gain then
 			-- Save the Kalman gain and A strings
 			local kgain_str = 'Kalman gain\n'
+			local K = kalman1.K_k;
 			for i=1,K:size(1) do
 				for j=1,K:size(2) do
 					kgain_str = kgain_str..string.format('   %f',K[i][j])
@@ -90,6 +106,7 @@ for i=1,nIter do
 	
 end
 
+x,P = kalman1:get_state()
 local final_str = 'Final State:\n'
 for d=1,x:size(1) do
 	final_str = final_str..string.format(' %.3f',x[d])

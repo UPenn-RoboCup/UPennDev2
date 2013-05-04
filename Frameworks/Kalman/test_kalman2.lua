@@ -36,7 +36,7 @@ for i=1,5 do
 		kgain_str = 'Kalman gain\n'
 		for i=1,K:size(1) do
 			for j=1,K:size(2) do
-				kgain_str = kgain_str..string.format('   %.2f',K[i][j])
+				kgain_str = kgain_str..string.format('   %f',K[i][j])
 			end
 			kgain_str = kgain_str..'\n'
 		end
@@ -49,7 +49,7 @@ for i=1,5 do
 		local A = kalman1.A;
 		for i=1,A:size(1) do
 			for j=1,A:size(2) do
-				a_str = a_str..string.format('   %.2f',A[i][j])
+				a_str = a_str..string.format('   %.3f',A[i][j])
 			end
 			a_str = a_str..'\n'
 		end

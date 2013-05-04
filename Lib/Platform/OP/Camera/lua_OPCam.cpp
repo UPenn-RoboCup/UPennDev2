@@ -8,6 +8,7 @@
 #include <string.h>
 #include "timeScalar.h"
 #include "v4l2.h"
+#include <lua.hpp>
 
 typedef struct {
   int count;

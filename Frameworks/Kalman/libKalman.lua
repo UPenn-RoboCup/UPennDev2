@@ -7,19 +7,20 @@ filter.initialize = function( self, nDim )
 	-- Utility
 	self.I = torch.eye( nDim )
 	-- Process
-	self.A = torch.eye(nDim)
-	self.B = torch.eye(nDim)
-	self.u_k = torch.Tensor( nDim ):zero()
-	self.Q = torch.eye(nDim)
+	self.A = torch.eye(nDim) -- State process w/o input
+	self.B = torch.eye(nDim) -- Control input to state effect
+	self.Q = torch.eye(nDim) -- Additive uncertainty
 	-- Measurement
-	self.R = torch.eye(nDim)
-	self.H = torch.eye(nDim)
+	self.R = torch.eye(nDim) -- Measurement uncertainty
+	self.H = torch.eye(nDim) 
 	-- Prior
 	self.P_k_minus = torch.eye(nDim)
 	self.x_k_minus = torch.Tensor( nDim ):zero()
 	-- State
 	self.P_k = torch.eye(nDim)
 	self.x_k = torch.Tensor( nDim ):zero()
+	-- Temporaty variables
+	self:init_temporary_variables()
 	return self.x_k, self.P_k
 end
 
@@ -43,7 +44,6 @@ filter.init_position_filter = function( self, nDim )
 	self.A:sub(nDim+1,2*nDim, nDim+1,2*nDim):eye(nDim):mul(self.decay)
 	-- External input model...
 	self.B = torch.eye(2*nDim)
-	self.u_k = torch.Tensor( 2*nDim ):zero()
 	-- Additive Motion Uncertainty
 	self.Q = torch.eye(2*nDim)
 	-- Measurement
@@ -59,35 +59,35 @@ filter.init_position_filter = function( self, nDim )
 	-- State
 	self.P_k = torch.eye( 2*nDim ):copy( self.P_k_minus )
 	self.x_k = torch.Tensor( 2*nDim ):copy( self.x_k_minus )
-	-- Kalman Gain
-	self.K_k = torch.mm(self.P_k_minus, self.H:t()):zero()
+	-- Temporary vars
+	self:init_temporary_variables()
+	return self.x_k, self.P_k
+end
+
+filter.init_temporary_variables = function(self)
 	-- Temporary Variables for memory savings
-	self.tmp_input = torch.mv( self.B, self.u_k ):zero()
+	self.tmp_input = torch.Tensor( self.B:size(2) )
+	--torch.mv( self.B, self.u_k ):zero()
+	
 	self.tmp_state = torch.mv( self.A, self.x_k_minus ):zero()
 	self.tmp_covar = torch.mm( self.A, self.P_k_minus ):zero()
 	self.tmp_pcor1 = torch.mm( self.H, self.P_k_minus ):zero()
 	self.tmp_pcor2 = torch.mm( self.tmp_pcor1, self.H:t() ):zero()
 	self.tmp_pcor3 = torch.mm( self.tmp_pcor1, self.H:t() ):zero()
 	self.tmp_pcor4 = torch.mm( self.P_k_minus, self.H:t()):zero()
-	self.K_update  = torch.eye( 2*nDim ):zero()
-	self.tmp_scor  = torch.mv( self.H, self.x_k_minus )
-	return self.x_k, self.P_k
+	self.K_k = torch.mm(self.P_k_minus, self.H:t()):zero()
+	self.K_update  = torch.mm( self.K_k, self.H ):zero()
+	self.tmp_scor  = torch.mv( self.H, self.x_k_minus ):zero()
 end
 
 -- Form a state estimate prior based on the process and input
--- This seems to be working just fine
 filter.predict = function(self, u_k)
-	-- There may be many predictions before a measurement
-	if u_k then
-		self.u_k = u_k
-	end
-	
 	-- Complicated (i.e. fast in-memory) way
-	self.tmp_input:mv(self.B,self.u_k)
-	self.tmp_state:mv(self.A,self.x_k_minus)
-	self.x_k_minus:copy( self.tmp_state ):add(self.tmp_input)
+	self.tmp_input:mv( self.B, u_k )
+	self.tmp_state:mv( self.A, self.x_k_minus )
+	self.x_k_minus:copy( self.tmp_state ):add( self.tmp_input )
 	self.tmp_covar:mm( self.A, self.P_k_minus )
-	self.P_k_minus:mm( self.tmp_covar,self.A:t() ):add(self.Q)
+	self.P_k_minus:mm( self.tmp_covar, self.A:t() ):add( self.Q )
 	
 	--[[
 	-- Simple (i.e. mallocing memory each time) way

@@ -14,13 +14,18 @@ for d=1,x:size(1) do
 end
 print(initial_str)
 
+-- Do not control input
+local u_k_input = torch.Tensor( 2*myDim ):zero()
+
 for i=1,nIter do
 	-- One Kalman
-	x,P = kalman1:predict()
+	x,P = kalman1:predict( u_k_input )
 	local prior_str = 'Prior:\t'
 	for d=1,x:size(1) do
 		prior_str = prior_str..string.format(' %f',x[d])
 	end
+	
+	-- Add Observations
 	local obs = torch.Tensor(myDim):zero()
 	obs[1] = i + .2*(math.random()-.5)
 	for p=2,obs:size(1)-1 do

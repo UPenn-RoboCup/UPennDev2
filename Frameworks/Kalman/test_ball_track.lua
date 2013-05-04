@@ -3,7 +3,7 @@
 
 local torch = require 'torch'
 torch.Tensor = torch.DoubleTensor
-local libKalman = require 'libKalman'
+local libBallTrack = require 'libBallTrack'
 -- set the seed
 math.randomseed(1234)
 
@@ -13,21 +13,13 @@ local debug_each_state = false
 local test_two = true
 
 -- 3 dimensional kalman filter
-local myDim = 10;
+local myDim = 3;
 local nIter = 5000;
--- Control input
-local u_k_input = torch.Tensor( myDim ):zero()
--- Set the observations
-local obs1 = torch.Tensor( myDim ):zero()
-
 -- Initialize the filter
-local kalman1 = libKalman.new_filter(myDim)
+local kalman1 = libBallTrack.new_position_filter(myDim)
+-- Set the observations
+local obs1 = torch.Tensor(myDim):zero()
 local x,P = kalman1:get_state()
-
-if test_two then
-  kalman2 = libKalman.new_filter(myDim)
-  obs2 = torch.Tensor(myDim):zero()
-end
 
 -- Print the initial state
 local initial_str = 'Initial State:\n'
@@ -46,19 +38,11 @@ for i=1,nIter do
 	end
 
 	-- Perform prediction
-	kalman1:predict( u_k_input )
+	kalman1:predict()
 	local x_pred, P_pred = kalman1:get_prior()
 	-- Perform correction
 	kalman1:correct( obs1 )
 	x,P = kalman1:get_state()
-	
-if test_two then
-	for p=1,obs2:size(1) do
-		obs2[p] = 1/obs1[p]
-	end
-	kalman2:predict( u_k_input )
-	kalman2:correct( obs2 )
-end
 
 	-- Print debugging information
 	if debug_each_state then

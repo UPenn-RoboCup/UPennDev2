@@ -1,18 +1,20 @@
 local torch = require 'torch'
 torch.Tensor = torch.DoubleTensor
 local kalman1 = require 'libKalman'
-local show_kalman_gain = true
+local show_kalman_gain = false
+local debug_each_state = false
 
--- 2 dimensional kalman filter
-local myDim = 1;
+-- 3 dimensional kalman filter
+local myDim = 10;
+local nIter = 1000;
 local x,P = kalman1:init_position_filter( myDim )
-local str = ''
+local initial_str = 'Initial State:\n'
 for d=1,x:size(1) do
-	str = str..' '..x[d]
+	initial_str = initial_str..string.format(' %.3f',x[d])
 end
-print('Initial:',str)
+print(initial_str)
 
-for i=1,5 do
+for i=1,nIter do
 	-- One Kalman
 	x,P = kalman1:predict()
 	local prior_str = 'Prior:\t'
@@ -20,7 +22,11 @@ for i=1,5 do
 		prior_str = prior_str..string.format(' %f',x[d])
 	end
 	local obs = torch.Tensor(myDim):zero()
-	obs[1] = (i-1)/30
+	obs[1] = i + .2*(math.random()-.5)
+	for p=2,obs:size(1)-1 do
+		obs[p] = i/p + 1/(5*p)*(math.random()-.5)
+	end
+	
 	local observation_str = 'Observe:\t'
 	for d=1,obs:size(1) do
 		observation_str = observation_str..string.format(' %f',obs[d])
@@ -56,11 +62,19 @@ for i=1,5 do
 	end
 	-- End Debug of gain
 	
-	print('Observation',i)
-	print(prior_str)
-	print(observation_str)
-	print(state_str)
-	print(a_str)
-	print(kgain_str)
+	if debug_each_state then
+		print('Observation',i)
+		print(prior_str)
+		print(observation_str)
+		print(state_str)
+		print(a_str)
+		print(kgain_str)
+	end
 	
 end
+
+local final_str = 'Final State:\n'
+for d=1,x:size(1) do
+	final_str = final_str..string.format(' %.3f',x[d])
+end
+print(final_str)

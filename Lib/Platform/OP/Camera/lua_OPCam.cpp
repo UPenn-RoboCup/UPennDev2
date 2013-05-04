@@ -5,10 +5,9 @@
   	: Stephen McGill 10/10
 */
 
-#include "timeScalar.h"
 #include <string.h>
+#include "timeScalar.h"
 #include "v4l2.h"
-#include "OPCam.h"
 
 typedef struct {
   int count;
@@ -179,9 +178,8 @@ static int lua_selected_camera(lua_State *L) {
   return 1;
 }
 
-
 /* Lua Wrapper Requirements */
-static const struct luaL_reg camera_lib [] = {
+static const struct luaL_Reg camera_lib [] = {
   {"get_image", lua_get_image},
   {"init", lua_init},
   {"stop",lua_stop},
@@ -214,11 +212,10 @@ int luaopen_OPCam (lua_State *L) {
       init = 1;
       v4l2_init( res );
       v4l2_stream_on();
-      cameraStatus = (CAMERA_STATUS *)malloc(sizeof(CAMERA_STATUS));// Allocate our camera statu
+			// Allocate our camera status
+      cameraStatus = (CAMERA_STATUS *)malloc(sizeof(CAMERA_STATUS));
       /// TODO: free this
     }
   }
-
   return 1;
 }
-

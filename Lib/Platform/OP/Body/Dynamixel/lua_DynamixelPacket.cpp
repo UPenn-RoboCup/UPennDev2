@@ -3,17 +3,7 @@
 */
 
 #include "dynamixel.h"
-
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-  #include "lua.h"
-  #include "lualib.h"
-  #include "lauxlib.h"
-#ifdef __cplusplus
-}
-#endif
+#include <lua.hpp>
 
 static int lua_pushpacket(lua_State *L, DynamixelPacket *p) {
   if (p != NULL) {
@@ -138,7 +128,7 @@ static int lua_dynamixel_word_to_byte(lua_State *L) {
   return ret;
 }
 
-static const struct luaL_reg dynamixelpacket_functions[] = {
+static const struct luaL_Reg dynamixelpacket_functions[] = {
   {"input", lua_dynamixel_input},
   {"ping", lua_dynamixel_instruction_ping},
   {"write_data", lua_dynamixel_instruction_write_data},
@@ -152,7 +142,7 @@ static const struct luaL_reg dynamixelpacket_functions[] = {
   {NULL, NULL}
 };
 
-static const struct luaL_reg dynamixelpacket_methods[] = {
+static const struct luaL_Reg dynamixelpacket_methods[] = {
   {NULL, NULL}
 };
 

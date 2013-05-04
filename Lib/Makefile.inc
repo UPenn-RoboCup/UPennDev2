@@ -6,10 +6,10 @@ TARGETS = all clean
 
 # Find the Operating system
 ifndef OSTYPE
-  OSTYPE = $(shell uname -s|awk '{print tolower($$0)}')
+  OSTYPE=$(shell uname -s|awk '{print tolower($$0)}')
 endif
 ifndef ARCH
-  ARCH= $(shell uname -m)
+  ARCH=$(shell uname -m)
 endif
 # Cross compiling
 ifeq ($(CROSS),true)

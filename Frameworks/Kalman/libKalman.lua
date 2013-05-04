@@ -2,8 +2,8 @@ local torch = require 'torch'
 torch.Tensor = torch.DoubleTensor
 
 local filter = {}
-filter.decay = .9
-filter.dt = 1/30; -- 30FPS
+filter.decay = .95
+filter.dt = 1 -- 30FPS ?
 
 filter.initialize = function( self, nDim )
 	-- Utility
@@ -80,21 +80,27 @@ filter.predict = function(self, u_k)
 	if u_k then
 		self.u_k = u_k
 	end
+	
+	--[[
+	-- Complicated (i.e. fast in-memory) way
 	self.tmp_input:mv(self.B,self.u_k)
 	self.tmp_state:mv(self.A,self.x_k_minus)
 	self.x_k_minus:copy( self.tmp_state ):add(self.tmp_input)
 	self.tmp_covar:mm( self.A, self.P_k_minus )
 	self.P_k_minus:mm( self.tmp_covar,self.A:t() ):add(self.Q)
-	--[[
-	-- Simple (i.e. bad memory) way
+	--]]
+
+	-- Simple (i.e. mallocing memory each time) way
 	self.x_k_minus = self.A * self.x_k_minus + self.B * self.u_k
 	self.P_k_minus = self.A * self.P_k_minus * self.A:t() + self.Q
-	--]]
+	
 	return self.x_k_minus, self.P_k_minus
 end
 
 -- Correct the state estimate based on the state estimate prior and measurement
 filter.correct = function( self, z_k )
+	--[[
+	-- Complicated (i.e. fast in-memory) way
 	self.tmp_pcor1:mm( self.H, self.P_k_minus )
 	self.tmp_pcor2:mm( self.tmp_pcor1, self.H:t() ):add(self.R)
 	torch.inverse( self.tmp_pcor3, self.tmp_pcor2 )
@@ -105,15 +111,16 @@ filter.correct = function( self, z_k )
 	-- Update state
 	self.tmp_scor:mv( self.H, self.x_k_minus ):mul(-1):add(z_k)
 	self.x_k:mv( self.K_k, self.tmp_scor ):add(self.x_k_minus)
-	--[[
-	-- Simple (i.e. bad memory) way
+	--]]
+	
+	-- Simple (i.e. mallocing memory each time) way
 	local tmp1 = self.H * self.P_k_minus * self.H:t()
 	local tmp = tmp1 + self.R
-	local K_k = self.P_k_minus * self.H:t() * torch.inverse(tmp)
-	self.P_k = (self.I - K_k * self.H) * self.P_k_minus
-	self.x_k = self.x_k_minus + K_k * (z_k - self.H * self.x_k_minus)
-	--]]
-	-- Prior becomes the corrected state
+	self.K_k = self.P_k_minus * self.H:t() * torch.inverse(tmp)
+	self.P_k = (self.I - self.K_k * self.H) * self.P_k_minus
+	self.x_k = self.x_k_minus + self.K_k * (z_k - self.H * self.x_k_minus)
+
+	-- Duplicate Values
 	self.x_k_minus:copy(self.x_k)
 	self.P_k_minus:copy(self.P_k)
 	return self.x_k, self.P_k, self.K_k

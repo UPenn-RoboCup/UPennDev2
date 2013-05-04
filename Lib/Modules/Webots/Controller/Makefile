@@ -14,6 +14,10 @@ endif
 INCLUDES+=-I$(WEBOTS_HOME)/include/controller/c
 LIB_DIR+=-L$(WEBOTS_HOME)/lib
 LIBOPTS+=-lController
+ifeq ($(VERBOSE),no)
+CXXFLAGS+=-Wno-deprecated-declarations
+CFLAGS+=-Wno-deprecated-declarations
+endif
 
 clean:
 	rm -f $(LIBNAME).$(SHLIBEXT) *.o *.so lua_controller.c

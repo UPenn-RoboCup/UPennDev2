@@ -4,18 +4,14 @@ TOP := $(dir $(lastword $(MAKEFILE_LIST)))
 TARGETS = all clean
 .PHONY: $(TARGETS)
 
-LUAEXT=lua
-ifeq ($(OSTYPE),darwin)
-REGEX=\( -regex '.*.$(LUAEXT)' -or -regex '.*.$(SHLIBEXT)' -or -regex '.*.sh' \)
-else
-REGEX=-regex '.*\($(SHLIBEXT)\|$(LUAEXT)\|sh\)'
-endif
+# Find the Operating system
 ifndef OSTYPE
   OSTYPE = $(shell uname -s|awk '{print tolower($$0)}')
 endif
 ifndef ARCH
   ARCH= $(shell uname -m)
 endif
+# Cross compiling
 ifeq ($(CROSS),true)
   CTCDIR = $(NaoqiCTC)
 else
@@ -100,6 +96,7 @@ else
 	LUA_LIB=`pkg-config lua --libs`
 endif
 
+# Add Lua to the includes
 ifdef USE_LUAJIT
 	INCLUDES+=$(LUAJIT_INC)
 	LIBOPTS+=$(LUAJIT_LIB)
@@ -112,16 +109,16 @@ else
 endif
 endif
 
+##########################
+## Makefile Definitions ##
+##########################
 # Verbose mode
 VERBOSE?=no
 V=@
 ifeq ($(VERBOSE),yes)
 V=
 endif
-
-##########################
-## Makefile Definitions ##
-##########################
+# General Targets
 %.o: %.cpp
 	@echo "\t" CXX $@
 	$(V)$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
@@ -135,3 +132,13 @@ $(LIBNAME): lua_$(LIBNAME).o $(EXTRA_OBJ)
 	@echo "\t" LINK $@
 	$(V)$(LD) $(LDFLAGS) -o $@.$(SHLIBEXT) $^ $(LIB_DIR) $(LIBOPTS)
 	@rm $^
+	
+###################
+## Installation  ##
+###################
+LUAEXT=lua
+ifeq ($(OSTYPE),darwin)
+REGEX=\( -regex '.*.$(LUAEXT)' -or -regex '.*.$(SHLIBEXT)' -or -regex '.*.sh' \)
+else
+REGEX=-regex '.*\($(SHLIBEXT)\|$(LUAEXT)\|sh\)'
+endif

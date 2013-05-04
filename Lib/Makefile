@@ -98,19 +98,9 @@ util::
 	@echo "Compiling Utility Lua/C++ Libraries...\n"
 	@cd $(UTILDIR) && make && cd $(CWD)
 	@echo "\n"
-
-velocity::
-	@echo "Compiling Velocity Code...\n"
-	@cd $(VELODIR) && make && cd $(CWD)
-	@echo "\n"
-
-primesense:
-	@echo "Compiling PrimeSense Code...\n"
-	@cd $(PRIMEDIR) && make && cd $(CWD)
-	@echo "\n"
 	
 setup_nao: nao setup_util setup_image setup_comm
-	@echo "Setting up Nao Lua/C++ Libraries...\n"
+	@echo "Setting up Nao V3 Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
 	find $(NAODIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
 	rm -f $(PLAYERDIR)/Config/Config.lua
@@ -126,12 +116,9 @@ setup_naov4: naov4 setup_util setup_image setup_comm
 	find $(NAOV4DIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
 	rm -f $(PLAYERDIR)/Config/Config.lua
 	cd $(PLAYERDIR)/Config && ln -s Config_NaoV4.lua Config.lua && cd $(CWD)
-#	find $(UTILDIR) $(REGEX) -exec cp -v {} $(NAODEPLUA51DIR) \;
 	rm -f $(NAODEPLUA51DIR)/*;
-	#@cd $(NAOQIDIR) && make && cd $(CWD)
 	@echo "\n"
 
-setup_webots_nao: webots_nao setup_util setup_image setup_webots
 setup_webots_nao: webots_nao setup_util setup_image setup_webots setup_occmap
 	@echo "Setting up Webots Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
@@ -141,8 +128,7 @@ setup_webots_nao: webots_nao setup_util setup_image setup_webots setup_occmap
 	@echo "\n"
 
 setup_webots_op: webots_op setup_util setup_image setup_webots setup_occmap
-#setup_webots_op: webots_op setup_util setup_image setup_webots
-	@echo "Setting up Webots Lua/C++ Libraries...\n"
+	@echo "Setting up Webots OP Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
 	find $(WEBOTSOPDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
 	rm -f $(PLAYERDIR)/Config/Config.lua
@@ -150,7 +136,7 @@ setup_webots_op: webots_op setup_util setup_image setup_webots setup_occmap
 	@echo "\n"
 
 setup_webots_charli: webots_charli setup_util setup_image setup_webots setup_occmap
-	@echo "Setting up Webots Lua/C++ Libraries...\n"
+	@echo "Setting up Webots Charli Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
 	find $(WEBOTSCHARLIDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
 	rm -f $(PLAYERDIR)/Config/Config.lua
@@ -158,7 +144,7 @@ setup_webots_charli: webots_charli setup_util setup_image setup_webots setup_occ
 	@echo "\n"
 
 setup_visiontest: visiontest setup_util setup_image 
-	@echo "Setting up Darwin OP Lua/C++ Libraries...\n"
+	@echo "Setting up Vision test Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
 	find $(VISIONTESTDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
 	rm -f $(PLAYERDIR)/Config/Config.lua
@@ -166,7 +152,6 @@ setup_visiontest: visiontest setup_util setup_image
 	@echo "\n"
 
 setup_op: op setup_util setup_image setup_comm setup_occmap
-#setup_op: op setup_util setup_image setup_comm
 	@echo "Setting up Darwin OP Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
 	find $(OPDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
@@ -176,10 +161,10 @@ setup_op: op setup_util setup_image setup_comm setup_occmap
 
 setup_xos: xos setup_util setup_image setup_comm
 	@echo "Setting up Darwin XOS Lua/C++ Libraries...\n"
-	mkdir -p $(INSTDIR)
-	find $(XOSDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
-	rm -f $(PLAYERDIR)/Config/Config.lua
-	cd $(PLAYERDIR)/Config && ln -s Config_XOS.lua Config.lua && cd $(CWD)
+	$(V)mkdir -p $(INSTDIR)
+	$(V)find $(XOSDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
+	$(V)rm -f $(PLAYERDIR)/Config/Config.lua
+	$(V)cd $(PLAYERDIR)/Config && ln -s Config_XOS.lua Config.lua && cd $(CWD)
 	@echo "\n"
 
 setup_charli: charli setup_util setup_image setup_comm
@@ -231,22 +216,6 @@ setup_occmap: occmap
 	find $(OCCMAPDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
 	@echo "\n"
 
-setup_velocity: velocity
-	@echo "Setting up Velocity Lua/C++ Libraries...\n"
-	mkdir -p $(INSTDIR)
-	find $(VELODIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
-	find $(VELODIR) $(REGEX) -exec cp -v {} $(WEBOTSCONTDIR) \;
-	@echo "\n"
-
-setup_primesense: primesense setup_util
-	@echo "Setting up PrimeSense Lua/C++ Libraries...\n"
-	mkdir -p $(INSTDIR)
-	find $(PRIMEDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
-	cp $(PRIMEDIR)/SamplesConfig.xml $(INSTDIR)
-	rm -f $(PLAYERDIR)/Config/Config.lua
-	cd $(PLAYERDIR)/Config && ln -s Config_WebotsOP.lua Config.lua && cd $(CWD)	
-	@echo "\n"
-
 setup_naoqi: naoqi setup_util
 	@echo "Setting up NaoQi module...\n"
 	mkdir -p $(INSTDIR)
@@ -264,10 +233,10 @@ clean:
 	cd $(NAOQIDIR) && make clean && cd $(CWD)
 	cd $(WEBOTSNAODIR) && make clean && cd $(CWD)
 	cd $(WEBOTSOPDIR) && make clean && cd $(CWD)
-	cd $(XOSDIR) && make clean && cd $(CWD)
-	rm -rf $(WEBOTSCONTDIR) 
+	cd $(XOSDIR) && make clean && cd $(CWD) 
 	cd $(WEBOTSCHARLIDIR) && make clean && cd $(CWD)
 	cd $(OPDIR) && make clean && cd $(CWD)
 	cd $(OCCMAPDIR) && make clean && cd $(CWD)
 	cd $(PLAYERDIR)/Config && rm -f Config.lua && cd $(CWD)
 	cd $(PLAYERDIR) && rm -rf Lib && cd $(CWD)
+	rm -rf $(WEBOTSCONTDIR)

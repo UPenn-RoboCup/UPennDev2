@@ -1,23 +1,8 @@
 /* 
   Lua interface to OP Kinematics
-
-  To compile on Mac OS X:
-  g++ -arch i386 -o OPKinematics.dylib -bundle -undefined dynamic_lookup luaOPKinematics.pp OPKinematics.cc Transform.cc -lm
 */
-
+#include <lua.hpp>
 #include "OPKinematics.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#include "lua.h"
-#include "lualib.h"
-#include "lauxlib.h"
-
-#ifdef __cplusplus
-}
-#endif
 
 static void lua_pushvector(lua_State *L, std::vector<double> v) {
   int n = v.size();
@@ -186,7 +171,10 @@ static const struct luaL_reg kinematics_lib [] = {
 
 extern "C"
 int luaopen_OPKinematics (lua_State *L) {
+#if LUA_VERSION_NUM == 502
+  luaL_newlib(L, kinematics_lib);
+#else
   luaL_register(L, "OPKinematics", kinematics_lib);
-  
+#endif
   return 1;
 }

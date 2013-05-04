@@ -5,17 +5,7 @@
    g++ -arch i386 -o luaImageUtil.dylib -bundle -undefined dynamic_lookup luaImageUtil.cpp -lm
  */
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#include "lua.h"
-#include "lualib.h"
-#include "lauxlib.h"
-
-#ifdef __cplusplus
-}
-#endif
+#include <lua.hpp>
 
 #include <stdint.h>
 #include <math.h>
@@ -36,8 +26,6 @@ extern "C" {
 #include "lua_field_spots.h"
 #include "lua_field_occupancy.h"
 #include "lua_robots.h"
-
-#include <iostream>
 
 //Downsample camera YUYV image for monitor
 
@@ -346,7 +334,7 @@ static int lua_tilted_block_bitor(lua_State *L) {
   return 1;
 }
 
-static const struct luaL_reg imageProc_lib [] = {
+static const struct luaL_Reg imageProc_lib [] = {
   {"label_to_mask", lua_label_to_mask},
   {"yuyv_mask_to_lut", lua_yuyv_mask_to_lut},
   {"rgb_mask_to_lut", lua_rgb_mask_to_lut},
@@ -374,7 +362,10 @@ static const struct luaL_reg imageProc_lib [] = {
 
 extern "C"
 int luaopen_ImageProc (lua_State *L) {
+#if LUA_VERSION_NUM == 502
+  luaL_newlib(L, imageProc_lib);
+#else
   luaL_register(L, "ImageProc", imageProc_lib);
-
+#endif
   return 1;
 }

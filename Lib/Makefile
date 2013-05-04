@@ -129,10 +129,10 @@ setup_webots_nao: webots_nao setup_util setup_image setup_webots setup_occmap
 
 setup_webots_op: webots_op setup_util setup_image setup_webots setup_occmap
 	@echo "Setting up Webots OP Lua/C++ Libraries...\n"
-	mkdir -p $(INSTDIR)
-	find $(WEBOTSOPDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
-	rm -f $(PLAYERDIR)/Config/Config.lua
-	cd $(PLAYERDIR)/Config && ln -s Config_WebotsOP.lua Config.lua && cd $(CWD)
+	$(V)mkdir -p $(INSTDIR)
+	$(V)find $(WEBOTSOPDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
+	$(V)rm -f $(PLAYERDIR)/Config/Config.lua
+	$(V)cd $(PLAYERDIR)/Config && ln -s Config_WebotsOP.lua Config.lua && cd $(CWD)
 	@echo "\n"
 
 setup_webots_charli: webots_charli setup_util setup_image setup_webots setup_occmap
@@ -153,10 +153,10 @@ setup_visiontest: visiontest setup_util setup_image
 
 setup_op: op setup_util setup_image setup_comm setup_occmap
 	@echo "Setting up Darwin OP Lua/C++ Libraries...\n"
-	mkdir -p $(INSTDIR)
-	find $(OPDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
-	rm -f $(PLAYERDIR)/Config/Config.lua
-	cd $(PLAYERDIR)/Config && ln -s Config_OP.lua Config.lua && cd $(CWD)
+	$(V)mkdir -p $(INSTDIR)
+	$(V)find $(OPDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
+	$(V)rm -f $(PLAYERDIR)/Config/Config.lua
+	$(V)cd $(PLAYERDIR)/Config && ln -s Config_OP.lua Config.lua && cd $(CWD)
 	@echo "\n"
 
 setup_xos: xos setup_util setup_image setup_comm
@@ -177,50 +177,50 @@ setup_charli: charli setup_util setup_image setup_comm
 
 setup_webots_cont: webot
 	@echo "Setting up WebotsController Lua/C++ Libraries...\n"
-	mkdir -p $(WEBOTSCONTDIR)
-	find $(WEBOTSDIR)/Controller $(REGEX) -exec cp -v {} $(WEBOTSCONTDIR) \;
-	cd $(WEBOTSCONTDIR) && ln -sf $(PLAYERDIR) Player && cd $(CWD)
-	cd $(WEBOTSCONTDIR) && ln -sf lua_set.sh nao_team_0 && cd $(CWD)
-	cd $(WEBOTSCONTDIR) && ln -sf lua_set.sh nao_team_1 && cd $(CWD)
-	cd $(WEBOTSCONTDIR) && ln -sf lua_set.sh darwin-op_team_0 && cd $(CWD)
-	cd $(WEBOTSCONTDIR) && ln -sf lua_set.sh darwin-op_team_1 && cd $(CWD)
+	$(V)mkdir -p $(WEBOTSCONTDIR)
+	$(V)find $(WEBOTSDIR)/Controller $(REGEX) -exec cp -v {} $(WEBOTSCONTDIR) \;
+	$(V)cd $(WEBOTSCONTDIR) && ln -sf $(PLAYERDIR) Player && cd $(CWD)
+	$(V)cd $(WEBOTSCONTDIR) && ln -sf lua_set.sh nao_team_0 && cd $(CWD)
+	$(V)cd $(WEBOTSCONTDIR) && ln -sf lua_set.sh nao_team_1 && cd $(CWD)
+	$(V)cd $(WEBOTSCONTDIR) && ln -sf lua_set.sh darwin-op_team_0 && cd $(CWD)
+	$(V)cd $(WEBOTSCONTDIR) && ln -sf lua_set.sh darwin-op_team_1 && cd $(CWD)
 	@echo "\n"
 
 setup_webots: setup_webots_cont
 	@echo "Setting up Webots Lua/C++ Libraries...\n"
-	mkdir -p $(INSTDIR)
-	find $(WEBOTSDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
+	$(V)mkdir -p $(INSTDIR)
+	$(V)find $(WEBOTSDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
 	@echo "\n"
 
 setup_image: image
 	@echo "Setting up Image Processing Lua/C++ Libraries...\n"
-	mkdir -p $(INSTDIR)
-	find $(IMAGEDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
+	$(V)mkdir -p $(INSTDIR)
+	$(V)find $(IMAGEDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
 	@echo "\n"
 
 setup_util: util
 	@echo "Setting up Utility Lua/C++ Libraries...\n"
-	mkdir -p $(INSTDIR)
-	find $(UTILDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
+	$(V)mkdir -p $(INSTDIR)
+	$(V)find $(UTILDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
 	@echo "\n"
 
 setup_comm: comm
 	@echo "Setting up Communication Lua/C++ Libraries...\n"
-	mkdir -p $(INSTDIR)
-	find $(COMMDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
+	$(V)mkdir -p $(INSTDIR)
+	$(V)find $(COMMDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
 	@echo "\n"
 
 setup_occmap: occmap
 	@echo "Setting up Occupancy Map Lua/C++ Libraries...\n"
-	mkdir -p $(INSTDIR)
-	find $(OCCMAPDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
+	$(V)mkdir -p $(INSTDIR)
+	$(V)find $(OCCMAPDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
 	@echo "\n"
 
 setup_naoqi: naoqi setup_util
 	@echo "Setting up NaoQi module...\n"
-	mkdir -p $(INSTDIR)
-	find $(NAOQIDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
-	sed -i -e 's/HOME/$(PWD)/g' $(INSTDIR)/nao_init.lua
+	$(V)mkdir -p $(INSTDIR)
+	$(V)find $(NAOQIDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
+	$(V)sed -i -e 's/HOME/$(PWD)/g' $(INSTDIR)/nao_init.lua
 	@echo "\n"
 
 clean:

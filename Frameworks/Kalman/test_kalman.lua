@@ -4,10 +4,13 @@
 local torch = require 'torch'
 torch.Tensor = torch.DoubleTensor
 local libKalman = require 'libKalman'
+-- set the seed
+math.randomseed(1234)
 
 -- Debugging options
 local show_kalman_gain = false
 local debug_each_state = false
+local test_two = true
 
 -- 3 dimensional kalman filter
 local myDim = 10;
@@ -16,12 +19,15 @@ local nIter = 5000;
 local u_k_input = torch.Tensor( 2*myDim ):zero()
 -- Set the observations
 local obs1 = torch.Tensor(myDim):zero()
-local obs2 = torch.Tensor(myDim):zero()
 
 -- Initialize the filter
 local kalman1 = libKalman.new_position_filter(myDim)
 local x,P = kalman1:get_state()
-local kalman2 = libKalman.new_position_filter(myDim)
+
+if test_two then
+  kalman2 = libKalman.new_position_filter(myDim)
+  obs2 = torch.Tensor(myDim):zero()
+end
 
 -- Print the initial state
 local initial_str = 'Initial State:\n'
@@ -46,15 +52,14 @@ for i=1,nIter do
 	kalman1:correct( obs1 )
 	x,P = kalman1:get_state()
 	
-	--[[
-	-- Make an observation
-	obs2[1] = 2*i + .2*(math.random()-.5)
-	for p=2,obs2:size(1)-1 do
-		obs2[p] = 2*i/p + 1/(2*p)*(math.random()-.5)
+
+if test_two then
+	for p=1,obs2:size(1) do
+		obs2[p] = 1/obs1[p]
 	end
 	kalman2:predict( u_k_input )
 	kalman2:correct( obs2 )
-	--]]
+end
 
 	-- Print debugging information
 	if debug_each_state then

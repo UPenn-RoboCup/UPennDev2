@@ -81,3 +81,5 @@ Player/Data/*.txt
 *_new.raw
 *_auto.*
 Tools/Matlab/*.raw
+
+Lib/Modules/Webots/Controller/lua_controller.c

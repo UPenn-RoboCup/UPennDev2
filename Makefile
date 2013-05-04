@@ -4,13 +4,6 @@ CWD= $(shell pwd)
 PWD= $(subst /,\/,$(CWD)/Player/Lib)
 include $(CWD)/Makefile.inc
 
-LUAEXT=lua
-ifeq ($(OSTYPE),darwin)
-REGEX=\( -regex '.*.$(LUAEXT)' -or -regex '.*.$(SHLIBEXT)' -or -regex '.*.sh' \)
-else
-REGEX=-regex '.*\($(SHLIBEXT)\|$(LUAEXT)\|sh\)'
-endif
-
 all none:
 	@echo " Please select following target: "
 	@echo " make setup_op"

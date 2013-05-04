@@ -6,5 +6,5 @@ EXTRA_OBJ=color_count.o block_bitor.o \
 	lua_goal_posts.o lua_robots.o\
 	lua_field_lines.o lua_field_spots.o lua_field_occupancy.o \
 	lua_fast_12.o fast_12.o
-LIBOPTS+=-lm
 include ../../Makefile.inc
+LIBOPTS+=-lm

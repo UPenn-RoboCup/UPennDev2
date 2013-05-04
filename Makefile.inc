@@ -60,59 +60,50 @@ CC=gcc
 LD=g++
 LDFLAGS=-shared -fpic
 STRIP=strip
-CFLAGS=-O2 -fpic
-CXXFLAGS=-O2 -fpic
-LIBOPTS=-shared -fpic
+CXXFLAGS=-O3 -mtune=native -march=native
+CFLAGS=$(CXXFLAGS)
+LIBOPTS=
 LIBRT=-lrt
 SHLIBEXT=so
-
-# If we are on OP/Nao
-ifeq ($(USER),darwin)
-  CXXFLAGS= -O3 -fomit-frame-pointer -mtune=native -march=native -pipe -funroll-loops
-endif
-ifeq ($(USER),nao)
-  CXXFLAGS= -O2 -fomit-frame-pointer -mtune=native -march=native -pipe -funroll-loops
-endif
-
-# Includes and library directories
-INCLUDES=-I/usr/local/include -I/usr/include
-LIB_DIR=-L/usr/local/lib -L/usr/lib
-
-# Find both Lua and LuaJit
-ifeq ($(shell pkg-config --exists luajit && echo 0),0)
-  LUAJIT_INC=`pkg-config luajit --cflags`
-  LUAJIT_LIB=`pkg-config luajit --libs`
-endif
-ifeq ($(shell pkg-config --exists lua5.1 && echo 0),0)
-  LUA_INC=`pkg-config lua5.1 --cflags`
-  LUA_LIB=`pkg-config lua5.1 --libs`
-else
-  LUA_INC=`pkg-config lua --cflags`
-  LUA_LIB=`pkg-config lua --libs`
-endif
-
-ifdef LUAJIT_INC
-INCLUDES+=$(LUAJIT_INC)
-LIBOPTS+=$(LUAJIT_LIB)
-else
-ifdef LUA_INC
-INCLUDES+=$(LUA_INC)
-LIBOPTS+=$(LUA_LIB)
-else
-#BAD
-endif
-endif
-
 # OS Specific overrides
 ifeq ($(OSTYPE),darwin)
-  LIBOPTS= 
-  CXXFLAGS= -O2 -fomit-frame-pointer -mtune=native
   LIBRT=
-  # 64 bit only for OSX using clang
   CC=cc
   CXX=c++
   LD=ld -macosx_version_min 10.7
   LDFLAGS=-lstdc++ -bundle -undefined dynamic_lookup
+endif
+
+# Includes and library directories
+INCLUDES=
+LIB_DIR=
+
+# Find LuaJIT
+ifeq ($(shell pkg-config --exists luajit && echo 0),0)
+	LUAJIT_INC=`pkg-config luajit --cflags`
+	LUAJIT_LIB=`pkg-config luajit --libs`
+	#USE_LUAJIT=yes
+endif
+# Find Pure Lua
+LUA_VERSION=5.1
+ifeq ($(shell pkg-config --exists lua$(LUA_VERSION) && echo 0),0)
+	LUA_INC=`pkg-config lua$(LUA_VERSION) --cflags`
+	LUA_LIB=`pkg-config lua$(LUA_VERSION) --libs`
+else
+	LUA_INC=`pkg-config lua --cflags`
+	LUA_LIB=`pkg-config lua --libs`
+endif
+
+ifdef USE_LUAJIT
+	INCLUDES+=$(LUAJIT_INC)
+	LIBOPTS+=$(LUAJIT_LIB)
+else
+ifdef LUA_INC
+	INCLUDES+=$(LUA_INC)
+	LIBOPTS+=$(LUA_LIB)
+else
+	#BAD
+endif
 endif
 
 # REGEX to find lua files
@@ -124,7 +115,7 @@ REGEX=-regex '.*\($(SHLIBEXT)\|$(LUAEXT)\|sh\)'
 endif
 
 # Verbose mode
-VERBOSE=no
+VERBOSE?=no
 V=@
 ifeq ($(VERBOSE),yes)
 V=
@@ -140,16 +131,7 @@ endif
 %.o: %.c
 	$(V)echo "\t" CC $@
 	$(V)$(CC) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
-
-#LIBNAME?=badlibname
-#LUA?=lua
-
 $(LIBNAME): lua_$(LIBNAME).o $(EXTRA_OBJ)
 	@echo "\t" LINK $@
 	$(V)$(LD) $(LDFLAGS) -o $@.$(SHLIBEXT) $^ $(LIB_DIR) $(LIBOPTS)
 	@rm $^
-
-  #test: $(LIBNAME)
-  #	@test ! -f $^.so && mv $^.$(SHLIBEXT) $^.so ; echo "Testing..."
-  #	$(LUA) test_$^.lua ; echo "done test"
-  #	@test ! -f $^.$(SHLIBEXT) && mv $^.so $^.$(SHLIBEXT) ; echo "move back"

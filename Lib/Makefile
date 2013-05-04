@@ -1,48 +1,7 @@
 # Master Makefile to compile all Lua/C++ libraries
-
 CWD= $(shell pwd)
 PWD= $(subst /,\/,$(CWD)/../Player/Lib)
 include $(CWD)/Makefile.inc
-
-
-LUAEXT= lua
-ifeq ($(OSTYPE),darwin)
-REGEX=\( -regex '.*.$(LUAEXT)' -or -regex '.*.$(SHLIBEXT)' -or -regex '.*.sh' \)
-else
-REGEX=-regex '.*\($(SHLIBEXT)\|$(LUAEXT)\|sh\)'
-endif
-
-ifndef OSTYPE
-  OSTYPE = $(shell uname -s|awk '{print tolower($$0)}')
-endif
-
-ifndef ARCH
-  ARCH= $(shell uname -m)
-endif
-
-ifeq ($(CROSS),true)
-  CTCDIR = $(NaoqiCTC)
-else
-  CTCDIR = 
-endif
-
-ifeq ($(CTCDIR),)
-  ifeq ($(OSTYPE),linux)
-    SHLIBEXT= so
-  endif
-
-  #ifeq ($(OSTYPE),darwin)
-  #  SHLIBEXT= dylib
-  #  REGEX=\( -regex '.*.$(LUAEXT)' -or -regex '.*.$(SHLIBEXT)' -or -regex '.*.sh' \)
-  #endif
-  else
-    SHLIBEXT= so
-  #ifeq ($(OSTYPE),darwin)
-  #  REGEX=\( -regex '.*.$(LUAEXT)' -or -regex '.*.$(SHLIBEXT)' -or -regex '.*.sh' \)
-  #endif
-endif
-
-export CTCDIR
 
 all none:
 	@echo "Please do:"
@@ -77,11 +36,6 @@ naoqi:
 	sed -i -e 's/HOME/$(PWD)/g' $(NAOQIDIR)/src/dcmprocess.cpp
 	cd $(NAOQIDIR) && make && cd $(CWD)
 	sed -i -e 's/$(PWD)/HOME/g' $(NAOQIDIR)/src/dcmprocess.cpp
-	@echo "\n"
-
-hp:
-	@echo "Compiling HP Lua/C++ Libraries...\n"
-	@cd $(HPDIR) && make && cd $(CWD)
 	@echo "\n"
 
 xos:
@@ -186,7 +140,6 @@ setup_webots_nao: webots_nao setup_util setup_image setup_webots setup_occmap
 	cd $(PLAYERDIR)/Config && ln -s Config_WebotsNao.lua Config.lua && cd $(CWD)
 	@echo "\n"
 
-#setup_webots_op: webots_op setup_util setup_image setup_velocity setup_webots
 setup_webots_op: webots_op setup_util setup_image setup_webots setup_occmap
 #setup_webots_op: webots_op setup_util setup_image setup_webots
 	@echo "Setting up Webots Lua/C++ Libraries...\n"
@@ -212,17 +165,6 @@ setup_visiontest: visiontest setup_util setup_image
 	cd $(PLAYERDIR)/Config && ln -s Config_VisionTest.lua Config.lua && cd $(CWD)
 	@echo "\n"
 
-
-setup_hp: hp setup_util setup_image setup_comm
-	@echo "Setting up HP Lua/C++ Libraries...\n"
-	mkdir -p $(INSTDIR)
-	find $(HPDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
-	touch $(PLAYERDIR)/Config/Config.lua
-	cd $(PLAYERDIR)/Config && ln -s Config_HP.lua Config.lua && cd $(CWD)
-	cp $(INSTDIR)/unix.$(SHLIBEXT) $(PLAYERDIR)/
-	@echo "\n"
-
-#setup_op: op setup_util setup_image setup_velocity
 setup_op: op setup_util setup_image setup_comm setup_occmap
 #setup_op: op setup_util setup_image setup_comm
 	@echo "Setting up Darwin OP Lua/C++ Libraries...\n"
@@ -236,7 +178,6 @@ setup_xos: xos setup_util setup_image setup_comm
 	@echo "Setting up Darwin XOS Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
 	find $(XOSDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
-#	touch $(PLAYERDIR)/Config/Config.lua
 	rm -f $(PLAYERDIR)/Config/Config.lua
 	cd $(PLAYERDIR)/Config && ln -s Config_XOS.lua Config.lua && cd $(CWD)
 	@echo "\n"
@@ -276,7 +217,6 @@ setup_util: util
 	@echo "Setting up Utility Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
 	find $(UTILDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
-
 	@echo "\n"
 
 setup_comm: comm

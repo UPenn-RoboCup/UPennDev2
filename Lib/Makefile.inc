@@ -1,9 +1,31 @@
-# Makefile Includes (http://owen.sj.ca.us/~rk/howto/slides/make/slides/makerecurs.html)
+# Makefile Includes
+# http://owen.sj.ca.us/~rk/howto/slides/make/slides/makerecurs.html
+TOP := $(dir $(lastword $(MAKEFILE_LIST)))
 TARGETS = all clean
 .PHONY: $(TARGETS)
 
-## Path Definition
+LUAEXT=lua
+ifeq ($(OSTYPE),darwin)
+REGEX=\( -regex '.*.$(LUAEXT)' -or -regex '.*.$(SHLIBEXT)' -or -regex '.*.sh' \)
+else
+REGEX=-regex '.*\($(SHLIBEXT)\|$(LUAEXT)\|sh\)'
+endif
+ifndef OSTYPE
+  OSTYPE = $(shell uname -s|awk '{print tolower($$0)}')
+endif
+ifndef ARCH
+  ARCH= $(shell uname -m)
+endif
+ifeq ($(CROSS),true)
+  CTCDIR = $(NaoqiCTC)
+else
+  CTCDIR = 
+endif
+export CTCDIR
 
+######################
+## Path Definitions ##
+######################
 NAODIR= Platform/Nao
 NAOV4DIR = Platform/NaoV4
 WEBOTSNAODIR= Platform/WebotsNao
@@ -34,63 +56,59 @@ NAODEPDIR= ../Install/dependencies
 NAODEPLUA51DIR= $(NAODEPDIR)/usr/local/lib/lua/5.1
 
 
-## Compiler Definition
-MODE=$(shell getconf LONG_BIT)
+######################
+## Path Definitions ##
+######################
+# Defaults to Linux
 CXX=g++
 CC=gcc
-#LD=ld
-LD=g++
-LDFLAGS=
+LD=ld
+LDFLAGS=-lstdc++ -shared -fpic
 STRIP=strip
-CXXFLAGS= -O2 -fpic
-
-MEXEXT=mexglx
-SHLIBEXT= so
-LIBOPTS= -shared -fpic
-LIBRT= -lrt
-
-#This does not work 
-LUA_INC=-I/usr/include/lua -I/usr/local/include/lua
-LUA_VERSION_SPECIFIC=-I/usr/include/lua5.1 -I/usr/local/include/lua5.1 -I/usr/local/include/luajit-2.0 -I/usr/include/luajit-2.0
-INCLUDES= -I/usr/local/include -I/usr/include $(LUA_INC) $(LUA_VERSION_SPECIFIC)
-#INCLUDES= -I/usr/local/include -I/usr/include $(LUA_INC)
-LIB_DIR= -L/usr/local/lib -L/usr/lib
-
-
-ifndef OSTYPE
-  OSTYPE = $(shell uname -s|awk '{print tolower($$0)}')
-endif
-
-ifndef ARCH
-  ARCH= $(shell uname -m)
-endif
-
-ifndef USER
-  USER=$(shell whoami)
-endif
-
-ifeq ($(OSTYPE),linux)
-  SHLIBEXT= so
-  LIBOPTS= -shared -fpic -lluajit-5.1
-  LIBRT= -lrt
-ifeq ($(USER),darwin)
-  CXXFLAGS= -O3 -fomit-frame-pointer -mtune=native -march=native -pipe -funroll-loops
-endif
-ifeq ($(USER),nao)
-  CXXFLAGS= -O2 -fomit-frame-pointer -mtune=native -march=native -pipe -funroll-loops
-endif
-endif
-
-
+CFLAGS=-O2 -fpic
+CXXFLAGS=-O2 -fpic
+# Hard core optimizations
+#CXXFLAGS= -O3 -fomit-frame-pointer -mtune=native -march=native -pipe -funroll-loops
+LIBOPTS=-shared -fpic
+LIBRT=-lrt
+SHLIBEXT=so
+INCLUDES=-I/usr/local/include -I/usr/include
+LIB_DIR=-L/usr/local/lib -L/usr/lib
 # OS Specific overrides
 ifeq ($(OSTYPE),darwin)
-  LIBOPTS=-bundle -undefined dynamic_lookup
+  LIBOPTS= 
   CXXFLAGS=-O2 -fomit-frame-pointer -mtune=native
   LIBRT=
-  # 64 bit only for OSX using clang
   CC=cc
   CXX=c++
   LD=ld -macosx_version_min 10.7
   LDFLAGS=-lstdc++ -bundle -undefined dynamic_lookup
-  MEXEXT=mexmaci64
+endif
+
+# Find LuaJIT
+ifeq ($(shell pkg-config --exists luajit && echo 0),0)
+	LUAJIT_INC=`pkg-config luajit --cflags`
+	LUAJIT_LIB=`pkg-config luajit --libs`
+	#USE_LUAJIT=yes
+endif
+# Find Pure Lua
+LUA_VERSION=5.1
+ifeq ($(shell pkg-config --exists lua$(LUA_VERSION) && echo 0),0)
+	LUA_INC=`pkg-config lua$(LUA_VERSION) --cflags`
+	LUA_LIB=`pkg-config lua$(LUA_VERSION) --libs`
+else
+	LUA_INC=`pkg-config lua --cflags`
+	LUA_LIB=`pkg-config lua --libs`
+endif
+
+ifdef USE_LUAJIT
+	INCLUDES+=$(LUAJIT_INC)
+	LIBOPTS+=$(LUAJIT_LIB)
+else
+ifdef LUA_INC
+	INCLUDES+=$(LUA_INC)
+	LIBOPTS+=$(LUA_LIB)
+else
+	#BAD
+endif
 endif

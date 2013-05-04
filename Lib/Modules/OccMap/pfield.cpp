@@ -28,12 +28,10 @@ void OccMap::velocity_generation(double attackBearing, double *velocity,
   double attractAngle = 0, repulseAngle = 0, ballAngle = 0;
   attractAngle = attackBearing;
   
-  if (nrepulsion > 0) {
-    repulseAngle = atan2(repulsion[1], repulsion[2]) - odom_a;
-  }
-  else {
+  if (nrepulsion > 0)
+    repulseAngle = atan2(repulsion[0], repulsion[1]) - odom_a;
+  else
     repulseScale = 0;
-  }
 
   velocity[0] = attractScale * cos(attractAngle) - repulseScale * cos(repulseAngle);
   velocity[1] = attractScale * sin(attractAngle) - repulseScale * sin(repulseAngle);

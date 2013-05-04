@@ -52,7 +52,7 @@ NAODEPLUA51DIR= $(NAODEPDIR)/usr/local/lib/lua/5.1
 CXX=g++
 CC=gcc
 LD=g++
-LDFLAGS=-lstdc++ -shared -fpic
+LDFLAGS=-shared -fpic
 STRIP=strip
 #CXXFLAGS=-fPIC -O2
 CXXFLAGS=-fPIC -O3 -mtune=native -march=native

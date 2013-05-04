@@ -1,3 +1,6 @@
+-- Torch/Lua Kalman Filter test script
+-- (c) 2013 Stephen McGill
+
 local torch = require 'torch'
 torch.Tensor = torch.DoubleTensor
 local kalman1 = require 'libKalman'

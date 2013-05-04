@@ -1,3 +1,6 @@
+-- Torch/Lua Kalman Filter
+-- (c) 2013 Stephen McGill
+
 local torch = require 'torch'
 torch.Tensor = torch.DoubleTensor
 
@@ -71,6 +74,7 @@ filter.init_position_filter = function( self, nDim )
 	return self.x_k, self.P_k
 end
 
+-- Temporary Variables for complicated fast memory approach
 filter.init_temporary_variables = function(self)
 	-- Temporary Variables for memory savings (do not need to be zero'd)
 	self.tmp_input = torch.Tensor( self.B:size(1) )

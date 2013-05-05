@@ -10,9 +10,9 @@ local tmp_rotatation = torch.Tensor(2,2)
 local DEFAULT_VAR = 100*100
 local EPS = .1/(DEFAULT_VAR*DEFAULT_VAR);
 -- TODO: Tune these values...
-local MIN_ERROR_DISTANCE = 0.1 * 100; -- 10cm
+local MIN_ERROR_DISTANCE = 0.05 * 100; -- 5cm
 local ERROR_DEPTH_FACTOR = .15
-local ERROR_ANGLE_FACTOR = 5*math.pi/180
+local ERROR_ANGLE_FACTOR = 3*math.pi/180
 local DECAY = 1
 
 local function check_uncertainty(cxx,cyy,cxy)
@@ -112,8 +112,8 @@ local function update( filter, positions, reset )
 			filter.x_k_minus[4] = 0
 			filter.x_k:copy( filter.x_k_minus )
 			filter.P_k_minus:eye(4)
-			filter.P_k_minus:sub(1,2,1,2):eye(4):mul(5)
-			filter.P_k_minus:sub(3,4,3,4):eye(4):mul(10)
+			filter.P_k_minus:sub(1,2,1,2):eye(4):mul(10)
+			filter.P_k_minus:sub(3,4,3,4):eye(4):mul(20)
 			filter.P_k:copy(filter.P_k_minus)
 		end
 		

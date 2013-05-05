@@ -82,8 +82,9 @@ for i=2,nIter do
 	--print(observation_str)
 	--print(true_pos_str,true_vel_str)
 	--print(position_str,velocity_str)
-	print(pos_error_str,vel_error_str)
+	--print(pos_error_str,vel_error_str)
 	--print(tolerance_str)
 	--print(pos_confidence_str)
-	print()
+	--print()
+	print(position_str,true_pos_str,velocity_str,true_vel_str)
 end

@@ -8,9 +8,9 @@ local libBallTrack = require 'libBallTrack'
 math.randomseed(1234)
 torch.manualSeed(1234)
 local nIter = 30;
-local add_noise = false
-local add_roll = false
-local pos_noise = 0.05
+local add_noise = true
+local add_roll = true
+local pos_noise = 0.025
 
 -- Initialize the tracker
 local tracker = libBallTrack.new_tracker()
@@ -86,5 +86,8 @@ for i=2,nIter do
 	--print(tolerance_str)
 	--print(pos_confidence_str)
 	--print()
+	if add_roll and i/nIter>.75 and (i-1)/nIter<=.75 then
+		print()
+	end
 	print(position_str,true_pos_str,velocity_str,true_vel_str)
 end

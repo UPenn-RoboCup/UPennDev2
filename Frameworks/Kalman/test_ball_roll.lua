@@ -10,15 +10,17 @@ local nIter = 30;
 
 -- Initialize the tracker
 local tracker = libBallTrack.new_tracker()
--- Set the observations memory segment
-local true_positions = torch.Tensor(nIter,2):zero()
-local x,P = tracker:get_state()
+-- Set the observations (linear movement)
+local x1,x2 = 1,.5
+local y1,y2 = -.5,.5
+local true_x = torch.range(x1,x2,(x2-x1)/nIter):resize(nIter)
+local true_y = torch.range(y1,y2,(y2-y1)/nIter):resize(nIter)
 
 -- Begin the test loop
 for i=1,nIter do
 
 	-- Update the tracker
-	local observation = true_positions:select(1,i)
+	local observation = {true_x[i],true_y[i]}
 	-- TODO: Add noise to the observation
 	-- Remove observations of the ball to ensure the velocity
 	-- updates the state, and that the velocity decays over time
@@ -27,23 +29,22 @@ for i=1,nIter do
 	end
 	local position, velocity, confidence = tracker:update(observation)
 
-	-- Print debugging information
-	x,P = tracker:get_state()
 	-- Print the observation of the ball
 	if observation then
-		observation_str = 'Observe:\t'
-		for d=1,observation:size(1) do
-			observation_str = observation_str..string.format(' %f',observation[d])
-		end
+		observation_str = string.format('Observe %d:\t%f %f',i,unpack(observation))
 	else
-		observation_str = 'Cannot see ball!'
+		observation_str = string.format('Observe %d:\tCannot see ball!', i )
 	end
 	-- Print our estimation of the state
-	state_str = 'State:\t'
-	for d=1,x:size(1) do
-		state_str = state_str..string.format(' %f',x[d])
-	end
-	print('Iteration',i)
+	position_str = string.format('Position:\t%f %f', unpack(position) )
+	velocity_str = string.format('Velocity:\t%f %f', unpack(velocity) )
+	-- Show the true position of the ball
+	true_str = string.format('True Value:\t%f %f', true_x[i], true_y[i] )
+	-- Do the printing
 	print(observation_str)
-	print(state_str)
+	print(true_str)
+	--print('\t============')
+	print(position_str)
+	--print(velocity_str)
+	print()
 end

@@ -98,7 +98,7 @@ local function update( filter, positions )
 	filter:predict()
 	-- Update process confidence based on ball velocity
 	--filter.Q
-	
+	local state, uncertainty = filter:get_prior()
 	-- Next, correct prediction, if positions available
 	if positions then
 		-- Update measurement confidence
@@ -114,7 +114,10 @@ local function update( filter, positions )
 		-- Tables will be used in regular lua files
 		-- We wish to support non-torch programs
 		filter:correct( torch.Tensor(positions) )
+		state, uncertainty = filter:get_state()
 	end
+	-- Return position, velocity, uncertainty
+	return {state[1],state[2]}, {state[3],state[4]}, uncertainty
 end
 
 -- FOR NOW - ONLY USE 2 DIMENSIONS

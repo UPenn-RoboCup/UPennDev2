@@ -6,50 +6,53 @@ torch.Tensor = torch.DoubleTensor
 
 local libBallTrack = {}
 local tmp_rotatation = torch.Tensor(2,2)
-local MIN_ERROR_DISTANCE = 0.05; -- 5cm
+local DEFAULT_VAR = 100*100
+local EPS = .1/(DEFAULT_VAR*DEFAULT_VAR);
 -- TODO: Tune these values...
-local ERROR_DEPTH_FACTOR = 0.08;
-local ERROR_ANGLE_FACTOR = 3*math.pi/180;
---[[
--- From old BallModel
-const double MIN_ERROR_DISTANCE = 50;
-const double ERROR_DEPTH_FACTOR = 0.08;
-const double ERROR_ANGLE = 3*PI/180;
-  static BallModel bm; // Keep the model of the ball static
+local MIN_ERROR_DISTANCE = 0.1 * 100; -- 10cm
+local ERROR_DEPTH_FACTOR = .15
+local ERROR_ANGLE_FACTOR = 5*math.pi/180
+local cov_debug = false
 
-  double xObject = lua_tonumber(L, 1);
-  double yObject = lua_tonumber(L, 2);
-  double uncertainty = lua_tonumber(L, 3);
-
-  double distance = sqrt(xObject*xObject+yObject*yObject);
-  double angle = atan2(-xObject, yObject);
-
-  double errorDepth = ERROR_DEPTH_FACTOR*(distance+MIN_ERROR_DISTANCE);
-  double errorAzimuthal = ERROR_ANGLE*(distance+MIN_ERROR_DISTANCE);
-
-  Gaussian2d objGaussian;
-  objGaussian.setMean(xObject, yObject);
-  objGaussian.setCovarianceAxis(errorAzimuthal, errorDepth, angle);
-
-  bm.BallObservation(objGaussian, (int)(uncertainty));
---]]
-
-local function rotate_uncertainty( uncertainty, theta )
-  -- Homogeneous transformation representing a rotation of theta
-  -- about the Z axis.
-  local ct = math.cos(theta);
-  local st = math.sin(theta);
-  local r = torch.eye(2);
-  r[1][1] = ct;
-  r[2][2] = ct;
-  r[1][2] = -1*st;
-  r[2][1] = st;
+local function check_uncertainty(cxx,cyy,cxy)
+	if ((cxx <= 0) or
+	(cxx > DEFAULT_VAR) or
+	(cyy <= 0) or
+	(cyy > DEFAULT_VAR)) then
+		cxx = DEFAULT_VAR;
+		cyy = DEFAULT_VAR;
+		cxy = 0;
+	end
 	
-	-- Rotate
-	tmp_rotatation:mm(r,uncertainty)
-	uncertainty:copy(tmp_rotatation)
+	local cDet = cxx*cyy-cxy*cxy;
+	if (cDet < EPS) then
+		local t = (1-cDet)/(cxx+cyy)
+		cxx = cxx + t
+		cyy = cyy + t
+		cDet = cxx*cyy-cxy*cxy
+	end
+--	print('Det',cDet)
+	return cxx,cyy,cxy
+end
+
+local function set_uncertainty( unc, s1, s2, alpha )
+	s1 = s1*s1;
+	s2 = s2*s2;
+
+	local cosa = math.cos(alpha);
+	local sina = math.sin(alpha);
+	local cxx = s1*cosa*cosa+s2*sina*sina;
+	local cyy = s1*sina*sina+s2*cosa*cosa;
+	local cxy = (s1-s2)*cosa*sina;
 	
-  return uncertainty
+	cxx,cyy,cxy = check_uncertainty(cxx,cyy,cxy)
+	
+	unc[1][1] = cxx;
+	unc[2][2] = cyy;
+	unc[1][2] = cxy;
+	unc[2][1] = cxy;
+	return unc
+  
 end
 
 -- Position filter
@@ -59,7 +62,7 @@ local function customize_filter( filter, nDim )
 	-----------------
 	-- Ball tracking Parameters
 	-----------------
-	filter.decay = .95
+	filter.decay = .98
 	filter.dt = 1 -- How many frames have evolved?
 
 	-----------------
@@ -80,7 +83,6 @@ local function customize_filter( filter, nDim )
 	-----------------
 	-- We only measure the state positions, not velocities
 	filter.R = torch.eye( nDim )
-	filter.R[1][1] = 0.01
 	filter.H = torch.Tensor( nDim, 2*nDim ):zero()
 	filter.H:sub(1,nDim,1,nDim):eye(nDim)
 
@@ -93,7 +95,8 @@ end
 -- we missed an observation during that camera frame
 -- Arguments
 -- positions: torch.Tensor(2) or {x,y}
-local function update( filter, positions )
+local function update( filter, positions, reset )
+	
 	-- First, perform prediction
 	filter:predict()
 	-- Update process confidence based on ball velocity
@@ -102,22 +105,49 @@ local function update( filter, positions )
 	-- Next, correct prediction, if positions available
 	if positions then
 		-- Update measurement confidence
-		local x = positions[1]
-		local y = positions[2]
+		-- Convert to centimeters
+		local x = positions[1] * 100
+		local y = positions[2] * 100
+		
+		if reset then
+			filter.x_k_minus[1] = x
+			filter.x_k_minus[2] = y
+			filter.x_k_minus[3] = 0
+			filter.x_k_minus[4] = 0
+			filter.x_k:copy( filter.x_k_minus )
+		end
+		
 		local r = math.sqrt( x^2 + y^2 )
-		local theta = math.atan2(-x,y)
-		filter.R:eye(2)
-		filter.R[1][1] = ERROR_DEPTH_FACTOR*(r+MIN_ERROR_DISTANCE)
-		filter.R[2][2] = ERROR_ANGLE_FACTOR*(r+MIN_ERROR_DISTANCE)
-		filter.R = rotate_uncertainty( filter.R, theta )
+		local theta = math.atan2(-y,x)
+		local rho_unc = ERROR_DEPTH_FACTOR*(r+MIN_ERROR_DISTANCE)
+		local azi_unc = ERROR_ANGLE_FACTOR*(r+MIN_ERROR_DISTANCE)
+		filter.R = set_uncertainty( filter.R, rho_unc, azi_unc, theta )
 		-- This Tensor instantiation is to support tables or tensors
 		-- Tables will be used in regular lua files
 		-- We wish to support non-torch programs
-		filter:correct( torch.Tensor(positions) )
+		filter:correct( torch.Tensor({x,y}) )
 		state, uncertainty = filter:get_state()
+		
+		if cov_debug then
+			print('x,y',x,y)
+			print('theta',theta*180/math.pi)
+			print('unc', rho_unc, azi_unc)
+			print()
+		end
+		
 	end
+	
 	-- Return position, velocity, uncertainty
-	return {state[1],state[2]}, {state[3],state[4]}, uncertainty
+	if cov_debug then
+		print('Rj',filter.R[1][1],filter.R[2][2])
+		print('Rn',filter.R[1][2],filter.R[2][1])
+		print()
+		print('uj',uncertainty[1][1],uncertainty[2][2])
+		print('un',uncertainty[1][2],uncertainty[2][1])
+		print()
+	end
+	return {state[1]/100,state[2]/100}, {state[3]/100,state[4]/100}, uncertainty
+	--return {state[1],state[2]}, {state[3],state[4]}, uncertainty
 end
 
 -- FOR NOW - ONLY USE 2 DIMENSIONS

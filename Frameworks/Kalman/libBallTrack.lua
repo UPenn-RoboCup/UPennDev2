@@ -3,6 +3,7 @@
 local libKalman = require'libKalman'
 local torch = require 'torch'
 torch.Tensor = torch.DoubleTensor
+local cov_debug = false
 
 local libBallTrack = {}
 local tmp_rotatation = torch.Tensor(2,2)
@@ -12,7 +13,7 @@ local EPS = .1/(DEFAULT_VAR*DEFAULT_VAR);
 local MIN_ERROR_DISTANCE = 0.1 * 100; -- 10cm
 local ERROR_DEPTH_FACTOR = .15
 local ERROR_ANGLE_FACTOR = 5*math.pi/180
-local cov_debug = false
+local DECAY = 1
 
 local function check_uncertainty(cxx,cyy,cxy)
 	if ((cxx <= 0) or
@@ -59,11 +60,6 @@ end
 -- Yields velocity as well
 -- http://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=5298809
 local function customize_filter( filter, nDim )
-	-----------------
-	-- Ball tracking Parameters
-	-----------------
-	filter.decay = .98
-	filter.dt = 1 -- How many frames have evolved?
 
 	-----------------
 	-- Modify the Dynamics update
@@ -73,10 +69,10 @@ local function customize_filter( filter, nDim )
 	filter.A:sub(1,nDim,  1,nDim):eye(nDim)
 	-- TODO: blocks of the matrix may be mixed up...
 	-- Predict next position by velocity
-	filter.A:sub(1,nDim, nDim+1,2*nDim):eye(nDim):mul(filter.dt)
+	filter.A:sub(1,nDim, nDim+1,2*nDim):eye(nDim)
 	--filter.A:sub(nDim+1,2*nDim, 1,nDim):eye(nDim):mul(filter.dt)
 	-- Velocity Decay
-	filter.A:sub(nDim+1,2*nDim, nDim+1,2*nDim):eye(nDim):mul(filter.decay)
+	filter.A:sub(nDim+1,2*nDim, nDim+1,2*nDim):eye(nDim):mul(DECAY)
 
 	-----------------
 	-- Modify the Measurement update
@@ -115,6 +111,10 @@ local function update( filter, positions, reset )
 			filter.x_k_minus[3] = 0
 			filter.x_k_minus[4] = 0
 			filter.x_k:copy( filter.x_k_minus )
+			filter.P_k_minus:eye(4)
+			filter.P_k_minus:sub(1,2,1,2):eye(4):mul(5)
+			filter.P_k_minus:sub(3,4,3,4):eye(4):mul(10)
+			filter.P_k:copy(filter.P_k_minus)
 		end
 		
 		local r = math.sqrt( x^2 + y^2 )

@@ -52,7 +52,7 @@ local function correct( self, z_k )
 	--]]
 	
 	--[[
-	-- Simple (i.e. mallocing memory each time) way
+	-- Simple (i.e. malloc'ing memory each time) way
 	local tmp1 = self.H * self.P_k_minus * self.H:t()
 	local tmp = tmp1 + self.R
 	self.K_k = self.P_k_minus * self.H:t() * torch.inverse(tmp)

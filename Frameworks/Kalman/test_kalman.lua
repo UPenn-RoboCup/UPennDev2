@@ -1,4 +1,4 @@
--- Torch/Lua Kalman Filter test script
+-- Torch/Lua Kalman Filter based Ball tracker test script
 -- (c) 2013 Stephen McGill
 
 local torch = require 'torch'
@@ -71,7 +71,7 @@ end
 		
 		-- Save observation string
 		local observation_str = 'Observe:\t'
-		for d=1,obs:size(1) do
+		for d=1,obs1:size(1) do
 			observation_str = observation_str..string.format(' %f',obs1[d])
 		end
 		

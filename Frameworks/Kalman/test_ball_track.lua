@@ -55,7 +55,7 @@ for i=1,nIter do
 		
 		-- Save observation string
 		local observation_str = 'Observe:\t'
-		for d=1,obs:size(1) do
+		for d=1,obs1:size(1) do
 			observation_str = observation_str..string.format(' %f',obs1[d])
 		end
 		

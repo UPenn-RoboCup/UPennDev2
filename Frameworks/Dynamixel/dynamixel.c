@@ -99,14 +99,18 @@ DynamixelPacket *dynamixel_instruction(uint8_t id,
 	pkt.stuffing = DYNAMIXEL_PACKET_STUFFING;
   pkt.id = id; //
   pkt.length = nparameter + 3; // 2 checksum + 1 instruction byte
+	pkt.len[0] = DXL_LOBYTE(pkt.length);
+	pkt.len[1] = DXL_HIBYTE(pkt.length);
   pkt.instruction = inst;
-  for (i = 0; i < nparameter; i++)
-    pkt.parameter[i] = parameter[i];
+	for (i = 0; i < nparameter; i++)
+		pkt.parameter[i] = parameter[i];
+	
 	const unsigned char* tmp = (const unsigned char*)(&pkt);
-//	for(int jj=0;jj<14;jj++)
-//		printf("\t%d",tmp[jj]);
-//	printf("\npacket len: %d, nparam: %d\n",pkt.length,nparameter);
-  pkt.checksum = dynamixel_crc(0, tmp, pkt.length+6 );
+	for(int jj=0;jj<14;jj++)
+		printf("\t%d",tmp[jj]);
+	printf("\npacket len: %d, nparam: %d\n",pkt.length,nparameter);
+	
+  pkt.checksum = dynamixel_crc(0, (const unsigned char*)(&pkt), pkt.length+5 );
   // Place checksum after parameters:
   pkt.parameter[nparameter]   = DXL_LOBYTE(pkt.checksum);
 	pkt.parameter[nparameter+1] = DXL_HIBYTE(pkt.checksum);

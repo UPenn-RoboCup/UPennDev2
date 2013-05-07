@@ -3,23 +3,22 @@ local DynamixelPacket = require('DynamixelPacket');
 
 local unix = {}
 unix.write = function(fd,msg)
-	io.write('\n')
-	io.write( type(msg) )
-	io.write(' fd: (')
-	io.write( fd )
-	io.write(') (Size: ')
-	io.write( #msg )
-	io.write(') Message: ')
+	local str = string.format('\n%s fd:(%d) sz:(%d)',type(msg),fd,#msg)
+	local str2 = '\n'
 	for i=1,#msg do
-		io.write(msg:byte(i)..' ')
+		str2 = str2..msg:byte(i)..' '
 	end
-	io.write('\n')
+	local str3 = '\n'
+	for i=1,#msg do
+		str3 = str3..string.format('%X ', msg:byte(i))..' '
+	end
+	print(str,str2,str3,'\n')
 	return #msg
 end
 unix.time = function()
 	return os.clock()
 end
-unix.read = function()
+unix.read = function(fd)
 	return nil
 end
 unix.usleep = function(n_usec)
@@ -131,7 +130,7 @@ libDynamixel.ping_probe = function(fd, twait)
 	end
 end
 
-function set_delay(id, value)
+libDynamixel.set_delay = function(fd, id, value)
 	local addr = 5;  -- Return Delay address
 	local inst = DynamixelPacket.write_byte(id, addr, value);
 	return unix.write(fd, inst);

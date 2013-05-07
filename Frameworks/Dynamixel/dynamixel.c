@@ -1,5 +1,6 @@
 #include "dynamixel.h"
 #include <stdlib.h>
+#include <stdio.h>
 
 static uint16_t crc_table[256] = {0x0000,
 	0x8005, 0x800F, 0x000A, 0x801B, 0x001E, 0x0014, 0x8011,
@@ -40,7 +41,7 @@ static uint16_t crc_table[256] = {0x0000,
 	0x0234, 0x8231, 0x8213, 0x0216, 0x021C, 0x8219, 0x0208,
 	0x820D, 0x8207, 0x0202 };
 
-uint16_t update_crc( uint16_t crc_accum, const unsigned char *data_blk_ptr, uint16_t data_blk_size ){
+uint16_t dynamixel_crc( uint16_t crc_accum, const unsigned char *data_blk_ptr, uint16_t data_blk_size ){
 //	register unsigned short i, j;
 	uint16_t i, j;
 	for(j=0; j<data_blk_size; j++) {
@@ -97,13 +98,18 @@ DynamixelPacket *dynamixel_instruction(uint8_t id,
 	pkt.header3 = DYNAMIXEL_PACKET_HEADER_3;
 	pkt.stuffing = DYNAMIXEL_PACKET_STUFFING;
   pkt.id = id; //
-  pkt.length = nparameter + 3;
+  pkt.length = nparameter + 3; // 2 checksum + 1 instruction byte
   pkt.instruction = inst;
   for (i = 0; i < nparameter; i++)
     pkt.parameter[i] = parameter[i];
-  pkt.checksum = update_crc(0, (const unsigned char*)(&pkt), pkt.length+7 );
+	const unsigned char* tmp = (const unsigned char*)(&pkt);
+//	for(int jj=0;jj<14;jj++)
+//		printf("\t%d",tmp[jj]);
+//	printf("\npacket len: %d, nparam: %d\n",pkt.length,nparameter);
+  pkt.checksum = dynamixel_crc(0, tmp, pkt.length+6 );
   // Place checksum after parameters:
-  pkt.parameter[nparameter] = pkt.checksum;
+  pkt.parameter[nparameter]   = DXL_LOBYTE(pkt.checksum);
+	pkt.parameter[nparameter+1] = DXL_HIBYTE(pkt.checksum);
   return &pkt;
 }
 

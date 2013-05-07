@@ -17,8 +17,10 @@ if use_real_device then
 	dev_name = 'nil'
 end
 
+local DynamixelPacket = require('DynamixelPacket');
 local Dynamixel = libDynamixel.open(dev_name)
-
+h,l=DynamixelPacket.crc16( string.char(255,255,253,0,7,6,0,3,24,0,0) )
+print(string.format('crc: %x %x',l,h) )
 --[[
 for k,v in pairs(Dynamixel) do
 	print(k,v)

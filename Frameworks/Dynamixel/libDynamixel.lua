@@ -58,7 +58,7 @@ libDynamixel.open = function( ttyname, ttybaud )
 	-- Setup serial port parameters
 	stty.raw(fd);
 	stty.serial(fd);
-	stty.speed(fd, self.baud);
+	stty.speed(fd, baud);
 	-------------------------------
 
 	return fd, ttyname;

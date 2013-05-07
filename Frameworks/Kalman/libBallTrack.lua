@@ -4,6 +4,7 @@ local libKalman = require'libKalman'
 local torch = require 'torch'
 torch.Tensor = torch.DoubleTensor
 local cov_debug = false
+local prior_debug = false
 
 local libBallTrack = {}
 local tmp_rotatation = torch.Tensor(2,2)
@@ -86,36 +87,52 @@ local function customize_filter( filter, nDim )
 
 end
 
+local function reset( filter )
+	filter.needs_reset = true
+end
+
 -- Update the Ball Tracker based on an observation
 -- If no positions are given, it is assumed that 
 -- we missed an observation during that camera frame
 -- Arguments
 -- positions: torch.Tensor(2) or {x,y}
-local function update( filter, positions, reset )
+local function update( filter, positions )
 	
-	-- First, perform prediction
-	filter:predict()
+	-- Reset if needed
+	if filter.needs_reset and positions then
+		local x = positions[1] * 100
+		local y = positions[2] * 100
+		filter.x_k_minus[1] = x
+		filter.x_k_minus[2] = y
+		filter.x_k_minus[3] = 0
+		filter.x_k_minus[4] = 0
+		filter.x_k:copy( filter.x_k_minus )
+		filter.P_k_minus:eye(4)
+		-- Gotta really trust the position upon a reset!
+		filter.P_k_minus:sub(1,2,1,2):eye(4):mul(2)
+		-- Very uncertain in vel upon reset
+		filter.P_k_minus:sub(3,4,3,4):eye(4):mul(1e6)
+		filter.P_k:copy(filter.P_k_minus)
+		state, uncertainty = filter:get_state()
+		filter.needs_reset = false
+		return {state[1]/100,state[2]/100}, {state[3]/100,state[4]/100}, uncertainty
+	end
+	
 	-- Update process confidence based on ball velocity
 	--filter.Q
+	-- Perform prediction with this process covariance
+	filter:predict()
+	
 	local state, uncertainty = filter:get_prior()
+	if prior_debug then
+		print('Prior',state[1]/100,state[2]/100,state[3]/100,state[4]/100)
+	end
 	-- Next, correct prediction, if positions available
 	if positions then
 		-- Update measurement confidence
 		-- Convert to centimeters
 		local x = positions[1] * 100
 		local y = positions[2] * 100
-		
-		if reset then
-			filter.x_k_minus[1] = x
-			filter.x_k_minus[2] = y
-			filter.x_k_minus[3] = 0
-			filter.x_k_minus[4] = 0
-			filter.x_k:copy( filter.x_k_minus )
-			filter.P_k_minus:eye(4)
-			filter.P_k_minus:sub(1,2,1,2):eye(4):mul(10)
-			filter.P_k_minus:sub(3,4,3,4):eye(4):mul(20)
-			filter.P_k:copy(filter.P_k_minus)
-		end
 		
 		local r = math.sqrt( x^2 + y^2 )
 		local theta = math.atan2(-y,x)
@@ -158,6 +175,8 @@ libBallTrack.new_tracker = function()
 	f = libKalman.initialize_filter( f, 4 )
 	f = customize_filter( f, 2 )
 	f.update = update
+	f.reset = reset
+	f:reset()
 	f = libKalman.initialize_temporary_variables( f )
 	return f
 end

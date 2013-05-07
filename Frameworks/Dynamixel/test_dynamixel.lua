@@ -3,7 +3,8 @@ local twait = 0.010;
 
 local use_real_device = false
 local test_probe = false
-local test_torque = true
+local test_torque = false
+local test_position = false
 
 --[[
 for k,v in pairs(libDynamixel) do
@@ -17,11 +18,14 @@ if use_real_device then
 	dev_name = 'nil'
 end
 
+--[[
 local DynamixelPacket = require('DynamixelPacket');
 local Dynamixel = libDynamixel.open(dev_name)
 local pkt = string.char(255,255,253,0,7,6,0,3,24,0,0)
 h,l=DynamixelPacket.crc16( pkt )
 print(string.format('crc: %x %x %d',l,h, #pkt) )
+--]]
+
 --[[
 for k,v in pairs(Dynamixel) do
 	print(k,v)

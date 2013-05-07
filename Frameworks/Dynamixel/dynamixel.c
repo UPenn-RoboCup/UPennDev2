@@ -1,6 +1,5 @@
 #include "dynamixel.h"
 #include <stdlib.h>
-#include <stdio.h>
 
 static uint16_t crc_table[256] = {0x0000,
 	0x8005, 0x800F, 0x000A, 0x801B, 0x001E, 0x0014, 0x8011,
@@ -104,12 +103,6 @@ DynamixelPacket *dynamixel_instruction(uint8_t id,
   pkt.instruction = inst;
 	for (i = 0; i < nparameter; i++)
 		pkt.parameter[i] = parameter[i];
-	
-	const unsigned char* tmp = (const unsigned char*)(&pkt);
-	for(int jj=0;jj<14;jj++)
-		printf("\t%d",tmp[jj]);
-	printf("\npacket len: %d, nparam: %d\n",pkt.length,nparameter);
-	
   pkt.checksum = dynamixel_crc(0, (const unsigned char*)(&pkt), pkt.length+5 );
   // Place checksum after parameters:
   pkt.parameter[nparameter]   = DXL_LOBYTE(pkt.checksum);

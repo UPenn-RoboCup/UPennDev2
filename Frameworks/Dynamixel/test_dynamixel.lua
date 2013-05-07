@@ -1,6 +1,6 @@
-local Dynamixel = require('Dynamixel');
+local Dynamixel = require('libDynamixel');
 
-twait = 0.010;
+local twait = 0.010;
 
-Dynamixel.open();
-Dynamixel.ping_probe();
+--Dynamixel.open();
+Dynamixel.ping_probe(twait);

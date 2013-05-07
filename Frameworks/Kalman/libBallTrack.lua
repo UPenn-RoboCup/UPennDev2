@@ -11,8 +11,8 @@ local tmp_rotatation = torch.Tensor(2,2)
 local DEFAULT_VAR = 100*100
 local EPS = .1/(DEFAULT_VAR*DEFAULT_VAR);
 -- TODO: Tune these values...
-local MIN_ERROR_DISTANCE = 0.05 * 100; -- 5cm
-local ERROR_DEPTH_FACTOR = .15
+local MIN_ERROR_DISTANCE = 5 -- 5cm
+local ERROR_DEPTH_FACTOR = .2
 local ERROR_ANGLE_FACTOR = 3*math.pi/180
 local DECAY = 1
 

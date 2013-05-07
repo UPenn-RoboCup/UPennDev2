@@ -8,9 +8,11 @@ local libBallTrack = require 'libBallTrack'
 math.randomseed(1234)
 torch.manualSeed(1234)
 local nIter = 30;
-local add_noise = true
+local fps = 30;
+local dt_frame = 1/fps;
+local add_noise = false
 local add_roll = true
-local pos_noise = 0.025
+local pos_noise = 0.02
 
 -- Initialize the tracker
 local tracker = libBallTrack.new_tracker()
@@ -21,8 +23,8 @@ local y1,y2 = -.5,.5
 local true_x = torch.range(x1,x2,(x2-x1)/nIter):resize(nIter)
 local true_y = torch.range(y1,y2,(y2-y1)/nIter):resize(nIter)
 local true_dist = torch.sqrt( torch.pow(true_x,2):add(torch.pow(true_y,2)) )
-local noise_x = torch.randn(nIter):mul( pos_noise/2 )
-local noise_y = torch.randn(nIter):mul( pos_noise/2 )
+local noise_x = torch.randn(nIter):mul( pos_noise/1.5 )
+local noise_y = torch.randn(nIter):mul( pos_noise/4 )
 local pos_tolerance = torch.Tensor(nIter):copy(true_dist):div(20)
 local vel_tolerance = torch.Tensor(nIter):copy(true_dist):div(5)
 
@@ -31,6 +33,7 @@ for i=2,nIter do
 
 	-- Grab the ground truth estimate
 	local true_vel = { true_x[i]-true_x[i-1], true_y[i]-true_y[i-1]}
+	true_vel[1],true_vel[2] = fps*true_vel[1], fps*true_vel[2]
 	-- Make the observation
 	local observation = {true_x[i],true_y[i]}
 	-- Add noise to the observation
@@ -44,8 +47,8 @@ for i=2,nIter do
 		observation = nil;
 	end
 	-- Update the tracker
-	local position, velocity, confidence = tracker:update(observation,reset)
-	reset = false
+	local position, velocity, confidence = tracker:update(observation)
+	velocity[1],velocity[2] = fps*velocity[1], fps*velocity[2]
 	local pos_error = {true_x[i]-position[1],true_y[i]-position[2]}
 	local vel_error = {true_vel[1]-velocity[1],true_vel[2]-velocity[2]}
 	-- Make into percentages
@@ -80,14 +83,14 @@ for i=2,nIter do
 	
 	-- Do the printing
 	--print(observation_str)
-	--print(true_pos_str,true_vel_str)
-	--print(position_str,velocity_str)
-	--print(pos_error_str,vel_error_str)
+	print(true_pos_str,true_vel_str)
+	print(position_str,velocity_str)
+	print(pos_error_str,vel_error_str)
 	--print(tolerance_str)
 	--print(pos_confidence_str)
 	--print()
 	if add_roll and i/nIter>.75 and (i-1)/nIter<=.75 then
-		print()
+		print('\t=============')
 	end
-	print(position_str,true_pos_str,velocity_str,true_vel_str)
+	--print(position_str,true_pos_str,velocity_str,true_vel_str)
 end

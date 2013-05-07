@@ -1,3 +1,7 @@
+-- Dynamixel Library
+-- (c) 2013 Stephen McGill
+-- (c) 2013 Daniel D. Lee
+
 local libDynamixel = {}
 local DynamixelPacket = require('DynamixelPacket');
 

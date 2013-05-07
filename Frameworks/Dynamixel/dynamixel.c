@@ -1,3 +1,11 @@
+/*
+C Dynamixel Packet Formation Library
+Daniel D. Lee copyright 2010 <ddlee@seas.upenn.edu>
+Stephen G. McGill copyright 2013 <smcgill3@seas.upenn.edu>
+Yida Zhang copyright 2013 <yida@seas.upenn.edu>
+CODE FROM ROBOTIS IS USED IN SELECT PORTIONS
+*/
+
 #include "dynamixel.h"
 #include <stdlib.h>
 

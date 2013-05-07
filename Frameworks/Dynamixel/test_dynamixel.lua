@@ -26,6 +26,7 @@ end
 --]]
 
 if test_torque then
+	print('Testing torque enable with MX motors')
 local val = 0
 for id=7,9 do
 	io.write(string.format('ID %d\n', id) )

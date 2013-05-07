@@ -16,7 +16,7 @@ static int lua_crc16(lua_State *L) {
 
 static int lua_pushpacket(lua_State *L, DynamixelPacket *p) {
 	if (p != NULL) {
-		int nlen = p->length + 4;
+		int nlen = p->length + 8;
 		lua_pushlstring(L, (char *)p, nlen);
 		return 1;
 	}
@@ -26,8 +26,6 @@ static int lua_pushpacket(lua_State *L, DynamixelPacket *p) {
 static int lua_dynamixel_instruction_ping(lua_State *L) {
 	int id = luaL_checkint(L, 1);
 	DynamixelPacket *p = dynamixel_instruction_ping(id);
-	lua_pushpacket(L, p);
-	lua_pushpacket(L, p);
 	return lua_pushpacket(L, p);
 }
 
@@ -54,32 +52,50 @@ static int lua_dynamixel_instruction_bulk_read_data(lua_State *L) {
 
 static int lua_dynamixel_instruction_write_data(lua_State *L) {
 	uint8_t id = luaL_checkint(L, 1);
-	uint8_t addr = luaL_checkint(L, 2);
+	size_t naddr;
+	const char *addr = luaL_checklstring(L, 2, &naddr);
 	size_t nstr;
 	const char *str = luaL_checklstring(L, 3, &nstr);
 	DynamixelPacket *p = dynamixel_instruction_write_data
-		(id, addr, (uint8_t *)str, nstr);
+		(id, addr[0], addr[1], (uint8_t *)str, nstr);
 	return lua_pushpacket(L, p);
 }
 
 static int lua_dynamixel_instruction_write_byte(lua_State *L) {
 	uint8_t id = luaL_checkint(L, 1);
-	uint8_t addr = luaL_checkint(L, 2);
+	size_t naddr;
+	const char *addr = luaL_checklstring(L, 2, &naddr);
 	uint8_t byte = luaL_checkint(L, 3);
 	DynamixelPacket *p = dynamixel_instruction_write_data
-		(id, addr, &byte, 1);
+		(id, addr[0], addr[1], &byte, 1); //TODO: endianness?????
 	return lua_pushpacket(L, p);
 }
 
 static int lua_dynamixel_instruction_write_word(lua_State *L) {
 	uint8_t id = luaL_checkint(L, 1);
-	uint8_t addr = luaL_checkint(L, 2);
+	size_t naddr;
+	const char *addr = luaL_checklstring(L, 2, &naddr);
 	unsigned short word = luaL_checkint(L, 3);
 	uint8_t byte[2];
 	byte[0] = (word & 0x00FF);
 	byte[1] = (word & 0xFF00) >> 8;
 	DynamixelPacket *p = dynamixel_instruction_write_data
-		(id, addr, byte, 2);
+		(id, addr[0], addr[1], byte, 2);
+	return lua_pushpacket(L, p);
+}
+
+static int lua_dynamixel_instruction_write_dword(lua_State *L) {
+	uint8_t id = luaL_checkint(L, 1);
+	size_t naddr;
+	const char *addr = luaL_checklstring(L, 2, &naddr);
+	unsigned short word = luaL_checkint(L, 3);
+	uint8_t byte[4];
+	byte[0] = (word & 0x00FF);
+	byte[1] = (word & 0xFF00) >> 8;
+	byte[2] = (word & 0xFF0000)>>16;
+	byte[3] = (word & 0xFF000000)>>24;
+	DynamixelPacket *p = dynamixel_instruction_write_data
+		(id, addr[0], addr[1], byte, 4);
 	return lua_pushpacket(L, p);
 }
 
@@ -144,6 +160,7 @@ static const struct luaL_reg dynamixelpacket_functions[] = {
 	{"write_data", lua_dynamixel_instruction_write_data},
 	{"write_byte", lua_dynamixel_instruction_write_byte},
 	{"write_word", lua_dynamixel_instruction_write_word},
+	{"write_dword", lua_dynamixel_instruction_write_dword},
 	{"sync_write", lua_dynamixel_instruction_sync_write},
 	{"read_data", lua_dynamixel_instruction_read_data},
 	{"bulk_read_data", lua_dynamixel_instruction_bulk_read_data},

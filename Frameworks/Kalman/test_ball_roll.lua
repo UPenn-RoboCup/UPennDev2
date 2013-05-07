@@ -10,9 +10,9 @@ torch.manualSeed(1234)
 local nIter = 30;
 local fps = 30;
 local dt_frame = 1/fps;
-local add_noise = false
+local add_noise = true
 local add_roll = true
-local pos_noise = 0.02
+local pos_noise = 0.0254 -- 2.54cm noise (1inch)
 
 -- Initialize the tracker
 local tracker = libBallTrack.new_tracker()
@@ -23,10 +23,10 @@ local y1,y2 = -.5,.5
 local true_x = torch.range(x1,x2,(x2-x1)/nIter):resize(nIter)
 local true_y = torch.range(y1,y2,(y2-y1)/nIter):resize(nIter)
 local true_dist = torch.sqrt( torch.pow(true_x,2):add(torch.pow(true_y,2)) )
-local noise_x = torch.randn(nIter):mul( pos_noise/1.5 )
-local noise_y = torch.randn(nIter):mul( pos_noise/4 )
-local pos_tolerance = torch.Tensor(nIter):copy(true_dist):div(20)
-local vel_tolerance = torch.Tensor(nIter):copy(true_dist):div(5)
+local noise_x = torch.randn(nIter):mul( pos_noise )
+local noise_y = torch.randn(nIter):mul( pos_noise/2 )
+local pos_tolerance = torch.Tensor(nIter):copy(true_dist):div(5)
+local vel_tolerance = torch.Tensor(nIter):copy(true_dist):div(20)
 
 -- Begin the test loop
 for i=2,nIter do

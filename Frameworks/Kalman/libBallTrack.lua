@@ -109,7 +109,7 @@ local function update( filter, positions )
 		filter.x_k:copy( filter.x_k_minus )
 		filter.P_k_minus:eye(4)
 		-- Gotta really trust the position upon a reset!
-		filter.P_k_minus:sub(1,2,1,2):eye(4):mul(2)
+		filter.P_k_minus:sub(1,2,1,2):eye(4):mul(10)
 		-- Very uncertain in vel upon reset
 		filter.P_k_minus:sub(3,4,3,4):eye(4):mul(1e6)
 		filter.P_k:copy(filter.P_k_minus)

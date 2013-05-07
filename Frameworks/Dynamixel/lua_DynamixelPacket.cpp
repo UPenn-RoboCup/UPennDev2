@@ -8,7 +8,7 @@ Lua module to provide process dynamixel packets
 static int lua_crc16(lua_State *L) {
 	size_t nstr;
 	const unsigned char *str = (unsigned char *)luaL_checklstring(L, 1, &nstr);
-	unsigned short crc = update_crc(0, str, nstr);
+	uint16_t crc = update_crc(0, str, nstr);
 	lua_pushnumber( L, DXL_LOBYTE(crc) );
 	lua_pushnumber( L, DXL_HIBYTE(crc) );
 	return 2;

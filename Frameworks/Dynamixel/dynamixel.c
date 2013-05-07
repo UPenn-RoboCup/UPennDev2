@@ -94,8 +94,8 @@ DynamixelPacket *dynamixel_instruction(uint8_t id,
   int i;
   pkt.header1 = DYNAMIXEL_PACKET_HEADER;
   pkt.header2 = DYNAMIXEL_PACKET_HEADER_2;
-	pkt.header3 = DYNAMIXEL_PACKET_HEADER_3;
-	pkt.stuffing = DYNAMIXEL_PACKET_STUFFING;
+	//pkt.header3 = DYNAMIXEL_PACKET_HEADER_3;
+	//pkt.stuffing = DYNAMIXEL_PACKET_STUFFING;
   pkt.id = id;
   pkt.length = nparameter + 2;
   pkt.instruction = inst;

@@ -4,7 +4,7 @@ local DynamixelPacket = require('DynamixelPacket');
 -- Add a poor man's unix library
 local unix = {}
 unix.write = function(fd,msg)
-	local str = string.format('\n%s fd:(%d) sz:(%d)',type(msg),fd,#msg)
+	local str = string.format('%s fd:(%d) sz:(%d)',type(msg),fd or -1,#msg)
 	local str2 = '\n'
 	local str3 = '\n'
 	for i=1,#msg do
@@ -147,7 +147,7 @@ libDynamixel.set_led = function(fd, id, value)
 	return unix.write(fd, inst);
 end
 
-libDynamixel.set_torque_enable = function(fd, id, value)
+function libDynamixel.set_torque_enable(fd, id, value)
 	local addr = 24;  -- Torque enable address
 	local inst = DynamixelPacket.write_byte(id, addr, value);
 	return unix.write(fd, inst);
@@ -159,7 +159,7 @@ libDynamixel.set_velocity = function(fd, id, value)
 	return unix.write(fd, inst);
 end
 
-libDynamixel.set_hardness = function(fd, id, value)
+function libDynamixel.set_hardness (fd, id, value)
 	local addr = 34;  -- Torque limit address
 	local inst = DynamixelPacket.write_word(id, addr, value);
 	return unix.write(fd, inst)
@@ -338,10 +338,11 @@ libDynamixel.sync_write_word = function( fd, ids, addr, data )
 end
 
 -- Convert the message type
+--[[
 libDynamixel.normal2pro() = function end
 libDynamixel.pro2normal() = function end
 libDynamixel.normal2hybrid() = function end
 libDynamixel.hybrid2normal() = function end
-
+--]]
 
 return libDynamixel

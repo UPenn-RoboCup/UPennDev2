@@ -40,10 +40,11 @@ typedef struct DynamixelPacket {
 	uint8_t header3;
 	uint8_t stuffing;
   uint8_t id;
-  uint16_t length; // length does not include first 7 bytes
+  uint8_t len[2]; // length does not include first 7 bytes
   uint8_t instruction; // or error for status packets
   uint8_t parameter[DYNAMIXEL_PARAMETER_MAX]; // reserve for maximum packet size
   uint16_t checksum; // Needs to be copied at end of parameters
+	uint16_t length; // Needs to be copied at end of parameters
 } DynamixelPacket;
 
   DynamixelPacket *dynamixel_instruction(uint8_t id,

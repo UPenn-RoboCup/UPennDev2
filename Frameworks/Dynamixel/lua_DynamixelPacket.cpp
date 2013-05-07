@@ -16,7 +16,7 @@ static int lua_crc16(lua_State *L) {
 
 static int lua_pushpacket(lua_State *L, DynamixelPacket *p) {
 	if (p != NULL) {
-		int nlen = p->length + 8;
+		int nlen = p->length + 7;
 		lua_pushlstring(L, (char *)p, nlen);
 		return 1;
 	}

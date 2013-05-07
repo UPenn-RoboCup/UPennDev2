@@ -64,6 +64,9 @@ typedef struct DynamixelPacket {
   
 
   int dynamixel_input(DynamixelPacket *pkt, uchar c, int n);
+
+// Add for Version 2.0 checksum	
+//static unsigned short update_crc( unsigned short crc_accum, const unsigned char *data_blk_ptr, unsigned short data_blk_size );
   
 #ifdef __cplusplus
 }

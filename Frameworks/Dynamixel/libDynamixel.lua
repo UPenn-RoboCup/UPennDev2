@@ -1,17 +1,51 @@
 local libDynamixel = {}
 local DynamixelPacket = require('DynamixelPacket');
 
+local function convert_hybrid(msg)
+	-- Header
+	local msg2 = string.char(255,255,253)
+	-- Stuffing
+	--msg2 = msg2..string.char(253)
+	msg2 = msg2..string.char(0)
+	-- Set servo id
+	local servo_id = msg:byte(3)
+	msg2 = msg2..string.char(servo_id)
+	-- Set length
+	local msg_len = #msg-2
+	local len_hi = math.floor(msg_len/256)
+	local len_lo = msg_len%256
+	msg2 = msg2..string.char(len_lo,len_hi)
+	-- Copy message
+	-- TODO: THIS IS HACKY
+	for pp=5,#msg-1 do
+		local old_b = msg:byte(pp)
+		msg2 = msg2..string.char(old_b)
+	end
+	msg2 = msg2..string.char(0)
+	-- Add crc
+	local lo,hi = DynamixelPacket.crc16(msg2)
+	msg2 = msg2..string.char(lo,hi)
+	return msg2
+end
+
 -- Add a poor man's unix library
 local unix = {}
 unix.write = function(fd,msg)
 	local str = string.format('%s fd:(%d) sz:(%d)',type(msg),fd,#msg)
-	local str2 = '\n'
-	local str3 = '\n'
+	local msg2 = convert_hybrid(msg)
+	local str2 = 'Dec:\t'
+	local str3 = 'Hex:\t'
+	local str4 = 'HybD:\t'
+	local str5 = 'HybH:\t'
 	for i=1,#msg do
 		str2 = str2..string.format('%3d ', msg:byte(i))
 		str3 = str3..string.format(' %.2X ', msg:byte(i))
 	end
-	print(str,str2,str3,'\n')
+	for i=1,#msg2 do
+		str4 = str4..string.format('%3d ', msg2:byte(i))
+		str5 = str5..string.format(' %.2X ', msg2:byte(i))
+	end
+	io.write(str,'\n',str2,'\n',str3,'\n',str4,'\n',str5,'\n')
 	return #msg
 end
 unix.time = function()
@@ -21,7 +55,7 @@ unix.read = function(fd)
 	return nil
 end
 unix.usleep = function(n_usec)
-	os.execute('sleep '..n_usec/1e6)
+	--os.execute('sleep '..n_usec/1e6)
 end
 
 local ram_table = {
@@ -122,7 +156,7 @@ end
 libDynamixel.ping_probe = function(fd, twait)
 	twait = twait or 0.010;
 	for id = 0,253 do
-		io.write("Ping: Dynamixel ID ",id)
+		io.write( string.format("Ping: Dynamixel ID %d\n",id) )
 		libDynamixel.send_ping(fd, id);
 		local status = libDynamixel.get_status(fd, twait);
 		if status then

@@ -89,20 +89,19 @@ int dynamixel_input(DynamixelPacket *pkt, uint8_t c, int n) {
 DynamixelPacket *dynamixel_instruction(uint8_t id,
 				       uint8_t inst,
 				       uint8_t *parameter,
-				       uint8_t nparameter) {
+				       uint8_t nparameter ) {
   static DynamixelPacket pkt;
   int i;
   pkt.header1 = DYNAMIXEL_PACKET_HEADER;
   pkt.header2 = DYNAMIXEL_PACKET_HEADER_2;
-	//pkt.header3 = DYNAMIXEL_PACKET_HEADER_3;
-	//pkt.stuffing = DYNAMIXEL_PACKET_STUFFING;
-  pkt.id = id;
-  pkt.length = nparameter + 2;
+	pkt.header3 = DYNAMIXEL_PACKET_HEADER_3;
+	pkt.stuffing = DYNAMIXEL_PACKET_STUFFING;
+  pkt.id = id; //
+  pkt.length = nparameter + 3;
   pkt.instruction = inst;
-  for (i = 0; i < nparameter; i++) {
+  for (i = 0; i < nparameter; i++)
     pkt.parameter[i] = parameter[i];
-  }
-  pkt.checksum = dynamixel_checksum(&pkt);
+  pkt.checksum = update_crc(0, (const unsigned char*)(&pkt), pkt.length+7 );
   // Place checksum after parameters:
   pkt.parameter[nparameter] = pkt.checksum;
   return &pkt;
@@ -119,16 +118,16 @@ DynamixelPacket *dynamixel_instruction_read_data(uint8_t id,
 }
 
 DynamixelPacket *dynamixel_instruction_write_data(uint8_t id,
-						  uint8_t address,
+						  uint8_t address_l, uint8_t address_h,
 						  uint8_t data[], uint8_t n) {
   uint8_t inst = INST_WRITE;
-  uint8_t nparameter = n+1;
+  uint8_t nparameter = n+2; // 2 is number of bytes in teh checksum
   uint8_t parameter[nparameter];
   int i;
-  parameter[0] = address;
-  for (i = 0; i < n; i++) {
-    parameter[i+1] = data[i];
-  }
+  parameter[0] = address_l;
+	parameter[1] = address_h;
+  for (i = 0; i < n; i++)
+    parameter[i+2] = data[i];
   return dynamixel_instruction(id, inst, parameter, nparameter);
 }
 

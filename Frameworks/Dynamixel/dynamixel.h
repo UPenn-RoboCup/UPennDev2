@@ -37,11 +37,13 @@ extern "C" {
 typedef struct DynamixelPacket {
   uint8_t header1;
   uint8_t header2;
+	uint8_t header3;
+	uint8_t stuffing;
   uint8_t id;
-  uint8_t length; // length does not include first 4 bytes
+  uint16_t length; // length does not include first 7 bytes
   uint8_t instruction; // or error for status packets
   uint8_t parameter[DYNAMIXEL_PARAMETER_MAX]; // reserve for maximum packet size
-  uint8_t checksum; // Needs to be copied at end of parameters
+  uint16_t checksum; // Needs to be copied at end of parameters
 } DynamixelPacket;
 
   DynamixelPacket *dynamixel_instruction(uint8_t id,
@@ -51,7 +53,7 @@ typedef struct DynamixelPacket {
   DynamixelPacket *dynamixel_instruction_read_data(uint8_t id,
 						   uint8_t address, uint8_t n);
   DynamixelPacket *dynamixel_instruction_write_data(uint8_t id,
-						    uint8_t address,
+								uint8_t address_h, uint8_t address_l,
 						    uint8_t data[], uint8_t n);
   DynamixelPacket *dynamixel_instruction_reg_write(uint8_t id,
 						   uint8_t address,

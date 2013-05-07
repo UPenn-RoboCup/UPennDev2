@@ -1,51 +1,17 @@
 local libDynamixel = {}
 local DynamixelPacket = require('DynamixelPacket');
 
-local function convert_hybrid(msg)
-	-- Header
-	local msg2 = string.char(255,255,253)
-	-- Stuffing
-	--msg2 = msg2..string.char(253)
-	msg2 = msg2..string.char(0)
-	-- Set servo id
-	local servo_id = msg:byte(3)
-	msg2 = msg2..string.char(servo_id)
-	-- Set length
-	local msg_len = #msg-2
-	local len_hi = math.floor(msg_len/256)
-	local len_lo = msg_len%256
-	msg2 = msg2..string.char(len_lo,len_hi)
-	-- Copy message
-	-- TODO: THIS IS HACKY
-	for pp=5,#msg-1 do
-		local old_b = msg:byte(pp)
-		msg2 = msg2..string.char(old_b)
-	end
-	msg2 = msg2..string.char(0)
-	-- Add crc
-	local lo,hi = DynamixelPacket.crc16(msg2)
-	msg2 = msg2..string.char(lo,hi)
-	return msg2
-end
-
 -- Add a poor man's unix library
 local unix = {}
 unix.write = function(fd,msg)
 	local str = string.format('%s fd:(%d) sz:(%d)',type(msg),fd,#msg)
-	local msg2 = convert_hybrid(msg)
 	local str2 = 'Dec:\t'
 	local str3 = 'Hex:\t'
-	local str4 = 'HybD:\t'
-	local str5 = 'HybH:\t'
 	for i=1,#msg do
 		str2 = str2..string.format('%3d ', msg:byte(i))
 		str3 = str3..string.format(' %.2X ', msg:byte(i))
 	end
-	for i=1,#msg2 do
-		str4 = str4..string.format('%3d ', msg2:byte(i))
-		str5 = str5..string.format(' %.2X ', msg2:byte(i))
-	end
-	io.write(str,'\n',str2,'\n',str3,'\n',str4,'\n',str5,'\n')
+	io.write(str,'\n',str2,'\n',str3,'\n')
 	return #msg
 end
 unix.time = function()
@@ -58,21 +24,71 @@ unix.usleep = function(n_usec)
 	--os.execute('sleep '..n_usec/1e6)
 end
 
-local ram_table = {
+-- MX
+local mx_ram_addr = {
 	--['id'] = 3,
-	['delay'] = 5, -- Return Delay address
-	['led'] = 25,
-	['torque_enable'] = 24,
-	['battery'] = 42, -- cannot write
-	['temperature'] = 43, -- cannot write
-	['hardness'] = 34,
-	['velocity'] = 32,
-	['command'] = 30,
-	['position'] = 36, -- cannot write
+	['delay'] = string.char(5,0), -- Return Delay address
+	['led'] = string.char(25,0),
+	['torque_enable'] = string.char(24,0),
+	['battery'] = string.char(42,0), -- cannot write
+	['temperature'] = string.char(43,0), -- cannot write
+	--['hardness'] = string.char(34,0),  -- BAD FOR for MX anyway!
+	['velocity'] = string.char(32,0),
+	['command'] = string.char(30,0),
+	['position'] = string.char(36,0), -- cannot write
 }
 
-function libDynamixel.set_ram(fd,id,addr,value)
-	local inst = DynamixelPacket.write_byte(id, addr, value);
+-- PRO
+local nx_ram_addr = {
+	['led'] = string.char(0x33,0x02),
+	['torque_enable'] = string.char(0x32,0x02), -- low, high
+	['battery'] = string.char(0x6F,0x02), -- low, high
+	['temperature'] = string.char(0x71,0x02), -- low, high
+	['velocity'] = string.char(0x67,0x02), -- low, high
+	['command'] = string.char(0x54,0x02), -- low, high
+	['position'] = string.char(0x32,0x02), -- low, high
+	-- New 
+	['command_velocity'] = string.char(0x58,0x02), -- low, high
+	['led_green'] = string.char(0x34,0x02),
+	['led_blue'] = string.char(0x35,0x02),
+}
+
+local mx_ram_sz = {
+	['led'] = 1, --write byte
+	['torque_enable'] = 1,
+	['battery'] = 2,
+	['temperature'] = 1,
+	['velocity'] = 2,
+	['command'] = 2, --write word
+	['position'] = 2,
+}
+
+local nx_ram_sz = {
+	['led'] = 1,
+	['torque_enable'] = 1,
+	['battery'] = 2,
+	['temperature'] = 1,
+	['velocity'] = 4, --write dword
+	['command'] = 4,
+	['position'] = 4,
+	-- New 
+	['command_velocity'] = 4,
+	['led_green'] = 1,
+	['led_blue'] = 1,
+}
+
+function libDynamixel.set_ram(fd,id,addr,value,sz)
+	local inst = nil
+	if sz==1 then
+		inst = DynamixelPacket.write_byte(id, addr, value);
+	elseif sz==2 then
+		inst = DynamixelPacket.write_word(id, addr, value);
+	elseif sz==4 then
+		inst = DynamixelPacket.write_dword(id, addr, value);
+	else
+		print('BAD SZ OF WRITING')
+		return nil
+	end
 	return unix.write(fd, inst);
 end
 
@@ -89,12 +105,13 @@ function libDynamixel.get_ram(fd,id,addr)
 end
 
 function init_device_handle(obj)
-	for key,addr in pairs(ram_table) do
+	for key,addr in pairs(mx_ram_addr) do
+		--print('associate',key,addr:byte(1),addr:byte(2))
 		obj['set_'..key] = function(self,id,val)
-			return libDynamixel.set_ram(self.fd,id,addr,val)
+			return libDynamixel.set_ram(self.fd, id, addr, val, mx_ram_sz[key])
 		end
 		obj['get_'..key] = function(self,id)
-			return libDynamixel.get_ram(self.fd,id,val,addr)
+			return libDynamixel.get_ram(self.fd,id,val,add)
 		end
 	end
 	return obj

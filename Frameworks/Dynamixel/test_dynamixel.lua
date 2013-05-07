@@ -1,8 +1,9 @@
 local libDynamixel = require('libDynamixel');
 local twait = 0.010;
 
-local use_real_device = false;
-local test_probe = false;
+local use_real_device = false
+local test_probe = false
+local test_torque = true
 
 --[[
 for k,v in pairs(libDynamixel) do
@@ -24,10 +25,14 @@ for k,v in pairs(Dynamixel) do
 end
 --]]
 
-local val = 1024
-for id=1,6 do
+if test_torque then
+local val = 0
+for id=7,9 do
+	io.write(string.format('ID %d\n', id) )
 	local ret = Dynamixel:set_torque_enable(id,val)
-	io.write('ID ',id,' | Sent ',ret,' bytes\n')
+	io.write( string.format('Sent %d bytes.\n',ret) )
+	print()
+end
 end
 
 if test_probe then

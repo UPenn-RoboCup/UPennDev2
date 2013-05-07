@@ -1,16 +1,15 @@
 local libDynamixel = {}
 local DynamixelPacket = require('DynamixelPacket');
 
+-- Add a poor man's unix library
 local unix = {}
 unix.write = function(fd,msg)
 	local str = string.format('\n%s fd:(%d) sz:(%d)',type(msg),fd,#msg)
 	local str2 = '\n'
-	for i=1,#msg do
-		str2 = str2..msg:byte(i)..' '
-	end
 	local str3 = '\n'
 	for i=1,#msg do
-		str3 = str3..string.format('%X ', msg:byte(i))..' '
+		str2 = str2..string.format('%3d ', msg:byte(i))
+		str3 = str3..string.format(' %.2X ', msg:byte(i))
 	end
 	print(str,str2,str3,'\n')
 	return #msg
@@ -23,14 +22,14 @@ unix.read = function(fd)
 end
 unix.usleep = function(n_usec)
 	--print('sleeping!!',n_usec/1e6)
-	--os.execute('sleep '..n_usec/1e6)
+	os.execute('sleep '..n_usec/1e6)
 end
 
 libDynamixel.open = function( ttyname, ttybaud )
 	-------------------------------
 	-- Perform require upon an open
-	local unix = require('unix');
-	local stty = require('stty');
+	unix = require('unix');
+	stty = require('stty');
 	local baud = ttybaud or 1000000;
 	local fd = -1
 	-------------------------------
@@ -136,176 +135,177 @@ libDynamixel.set_delay = function(fd, id, value)
 	return unix.write(fd, inst);
 end
 
-function set_id(idOld, idNew)
+libDynamixel.set_id = function(idOld, idNew)
 	local addr = 3;  -- ID
 	local inst = DynamixelPacket.write_byte(idOld, addr, idNew);
 	return unix.write(fd, inst);
 end
 
-function set_led(id, value)
+libDynamixel.set_led = function(fd, id, value)
 	local addr = 25;  -- Led
 	local inst = DynamixelPacket.write_byte(id, addr, value);
 	return unix.write(fd, inst);
 end
 
-function set_torque_enable(id, value)
+libDynamixel.set_torque_enable = function(fd, id, value)
 	local addr = 24;  -- Torque enable address
 	local inst = DynamixelPacket.write_byte(id, addr, value);
 	return unix.write(fd, inst);
 end
 
-function set_velocity(id, value)
+libDynamixel.set_velocity = function(fd, id, value)
 	local addr = 32; -- Moving speed address
 	local inst = DynamixelPacket.write_word(id, addr, value);
 	return unix.write(fd, inst);
 end
 
-function set_hardness(id, value)
+libDynamixel.set_hardness = function(fd, id, value)
 	local addr = 34;  -- Torque limit address
 	local inst = DynamixelPacket.write_word(id, addr, value);
 	return unix.write(fd, inst)
 end
 
-function set_command(id, value)
+libDynamixel.set_command = function(fd, id, value)
 	local addr = 30;  -- Goal position address
 	local inst = DynamixelPacket.write_word(id, addr, value);
 	return unix.write(fd, inst)
 end
 
-function get_led(id)
+libDynamixel.get_led = function(fd, id, value)
 	local twait = 0.100;
 	local addr = 25;  -- Led address
 	local inst = DynamixelPacket.read_data(id, addr, 1);
 	unix.read(fd); -- clear old status packets
 	unix.write(fd, inst)
-	local status = get_status(twait);
+	local status = libDynamixel.get_status(fd, twait);
 	if (status) then
 		return status.parameter[1];
 	end
 end
 
-function get_delay(id)
+libDynamixel.get_delay = function(fd, id, value)
 	local twait = 0.100;
 	local addr = 5;  -- Return delay address
 	local inst = DynamixelPacket.read_data(id, addr, 1);
 	unix.read(fd); -- clear old status packets
 	unix.write(fd, inst)
-	local status = get_status(twait);
+	local status = libDynamixel.get_status(fd, twait);
 	if (status) then
 		return status.parameter[1];
 	end
 end
 
-function get_torque_enable(id)
+libDynamixel.get_torque_enable = function(fd, id, value)
 	local twait = 0.100;
 	local addr = 24;  -- Torque enable address
 	local inst = DynamixelPacket.read_data(id, addr, 1);
 	unix.read(fd); -- clear old status packets
 	unix.write(fd, inst)
-	local status = get_status(twait);
+	local status = libDynamixel.get_status(fd, twait);
 	if (status) then
 		return status.parameter[1];
 	end
 end
 
-function get_position(id)
+libDynamixel.get_position = function(fd, id, value)
 	local twait = 0.100;
 	local addr = 36;  -- Present position address
 	local inst = DynamixelPacket.read_data(id, addr, 2);
 	unix.read(fd); -- clear old status packets
 	unix.write(fd, inst)
-	local status = get_status(twait);
+	local status = libDynamixel.get_status(fd, twait);
 	if (status) then
 		return DynamixelPacket.byte_to_word(unpack(status.parameter,1,2));
 	end
 end
 
-function get_command(id)
+libDynamixel.get_command = function(fd, id, value)
 	local twait = 0.100;
 	local addr = 30;  -- Goal position address
 	local inst = DynamixelPacket.read_data(id, addr, 2);
 	unix.read(fd); -- clear old status packets
 	unix.write(fd, inst)
-	local status = get_status(twait);
+	local status = libDynamixel.get_status(fd, twait);
 	if (status) then
 		return DynamixelPacket.byte_to_word(unpack(status.parameter,1,2));
 	end
 end
 
-function get_velocity(id)
+libDynamixel.get_velocity = function(fd, id, value)
 	local twait = 0.100;
 	local addr = 32; -- Moving speed address
 	local inst = DynamixelPacket.read_data(id, addr, 2);
 	unix.read(fd); -- clear old status packets
 	unix.write(fd, inst)
-	local status = get_status(twait);
+	local status = libDynamixel.get_status(fd, twait);
 	if (status) then
 		return DynamixelPacket.byte_to_word(unpack(status.parameter,1,2));
 	end
 end
 
-function get_hardness(id)
+libDynamixel.get_hardness = function(fd, id, value)
 	local twait = 0.100;
 	local addr = 34;  -- Torque limit address
 	local inst = DynamixelPacket.read_data(id, addr, 2);
 	unix.read(fd); -- clear old status packets
 	unix.write(fd, inst)
-	local status = get_status(twait);
+	local status = libDynamixel.get_status(fd, twait);
 	if (status) then
 		return DynamixelPacket.byte_to_word(unpack(status.parameter,1,2));
 	end
 end
 
-function get_battery(id)
+libDynamixel.get_battery = function(fd, id, value)
 	local twait = 0.100;
 	local addr = 42;  -- Present voltage address
 	local inst = DynamixelPacket.read_data(id, addr, 1);
 	unix.read(fd); -- clear old status packets
 	unix.write(fd, inst)
-	local status = get_status(twait);
+	local status = libDynamixel.get_status(fd, twait);
 	if (status) then
 		return status.parameter[1];
 	end
 end
 
-function get_temperature(id)
+libDynamixel.get_temperature = function(fd, id, value)
 	local twait = 0.100;
 	local addr = 43;  -- Present Temperature
 	local inst = DynamixelPacket.read_data(id, addr, 1);
 	unix.read(fd); -- clear old status packets
 	unix.write(fd, inst)
-	local status = get_status(twait);
+	local status = libDynamixel.get_status(fd, twait);
 	if (status) then
 		return status.parameter[1];
 	end
 end
 
-function read_data(id, addr, len, twait)
+libDynamixel.read_data = function(fd, addr, len, twait)
 	twait = twait or 0.100;
 	len  = len or 2;
 	local inst = DynamixelPacket.read_data(id, addr, len);
 	unix.read(fd); -- clear old status packets
 	unix.write(fd, inst)
-	local status = get_status(twait);
+	local status = libDynamixel.get_status(fd, twait);
 	if (status) then
 		return status.parameter;
 	end
 end
 
-function bulk_read_data(id_cm730, ids, addr, len, twait)
+-- TODO: not supported yet...?
+libDynamixel.bulk_read_data = function(fd, id_cm730, ids, addr, len, twait)
 	twait = twait or 0.100;
 	len  = len or 2;
 	local inst = DynamixelPacket.bulk_read_data(
 	id_cm730,string.char(unpack(ids)), addr, len, #ids);
 	unix.read(fd); -- clear old status packets
 	unix.write(fd, inst)
-	local status = get_status(twait);
+	local status = libDynamixel.get_status(fd, twait);
 	if (status) then
 		return status.parameter;
 	end
 end
 
-function sync_write_byte(ids, addr, data)
+libDynamixel.sync_write_byte = function(fd, ids, addr, data)
 	local nid = #ids;
 	local len = 1;
 
@@ -321,7 +321,7 @@ function sync_write_byte(ids, addr, data)
 	unix.write(fd, inst);
 end
 
-libDynamixel.sync_write_word = function ( ids, addr, data )
+libDynamixel.sync_write_word = function( fd, ids, addr, data )
 	local nid = #ids;
 	local len = 2;
 

@@ -102,7 +102,7 @@ libDynamixel.get_status = function( fd, timeout )
 			str = str..s;
 			pkt = DynamixelPacket.input(str);
 			if (pkt) then
-				local status = parse_status_packet(pkt);
+				local status = libDynamixel.parse_status_packet(pkt);
 				--	    print(string.format("Status: id=%d error=%d",status.id,status.error));
 				return status;
 			end
@@ -123,7 +123,7 @@ libDynamixel.ping_probe = function(fd, twait)
 		io.write("Ping: Dynamixel ID ",id)
 		libDynamixel.send_ping(fd, id);
 		local status = libDynamixel.get_status(fd, twait);
-		if (status) then
+		if status then
 			io.write(status.id)
 		end
 	end
@@ -336,5 +336,12 @@ libDynamixel.sync_write_word = function( fd, ids, addr, data )
 	string.char(unpack(t)));
 	unix.write(fd, inst);
 end
+
+-- Convert the message type
+libDynamixel.normal2pro() = function end
+libDynamixel.pro2normal() = function end
+libDynamixel.normal2hybrid() = function end
+libDynamixel.hybrid2normal() = function end
+
 
 return libDynamixel

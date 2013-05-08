@@ -1,8 +1,7 @@
 local libDynamixel = require('libDynamixel');
-local twait = 0.010;
 
 local use_real_device = false
-local test_probe = false
+local test_probe = true
 local test_torque = true
 local test_position = false
 local show_pairs = false
@@ -31,6 +30,11 @@ if show_pairs then
 	end
 end
 
+if test_probe then
+	local twait = 0.010
+	Dynamixel:ping_probe(twait);
+end
+
 if test_torque then
 	print('Testing torque enable with MX motors')
 	local val = 0
@@ -52,10 +56,6 @@ if test_position then
 		io.write( string.format('Sent %d bytes.\n',ret) )
 		print()
 	end
-end
-
-if test_probe then
-	libDynamixel.ping_probe(Dynamixel.fd,twait);
 end
 
 -- Close at the end of the script

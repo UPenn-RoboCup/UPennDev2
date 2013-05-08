@@ -263,7 +263,7 @@ function libDynamixel.parse_status_packet(pkt)
 	return t;
 end
 
-libDynamixel.get_status = function( self, timeout )
+libDynamixel.get_status = function( fd, timeout )
 	-- TODO: Is this the best default timeout for the new PRO series?
 	timeout = timeout or 0.010;
 	local t0 = unix.time();
@@ -284,17 +284,17 @@ libDynamixel.get_status = function( self, timeout )
 	return nil;
 end
 
-libDynamixel.send_ping = function( fd, id )
+libDynamixel.send_ping = function( self, id )
 	local inst = DynamixelPacket.ping(id);
-	return unix.write(fd, inst);
+	return unix.write(self.fd, inst);
 end
 
-libDynamixel.ping_probe = function(fd, twait)
+libDynamixel.ping_probe = function(self, twait)
 	twait = twait or 0.010;
 	for id = 0,253 do
 		io.write( string.format("Ping: Dynamixel ID %d\n",id) )
-		libDynamixel.send_ping(fd, id);
-		local status = libDynamixel.get_status(fd, twait);
+		self:send_ping( id );
+		local status = libDynamixel.get_status(self.fd, twait);
 		if status then
 			io.write(status.id)
 		end
@@ -424,6 +424,8 @@ function libDynamixel.open( ttyname, ttybaud )
 	obj = init_device_handle(obj)
 	obj.close = libDynamixel.close
 	obj.reset = libDynamixel.reset
+	obj.send_ping = libDynamixel.send_ping
+	obj.ping_probe = libDynamixel.ping_probe
 	return obj;
 end
 

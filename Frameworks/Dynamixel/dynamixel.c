@@ -70,24 +70,27 @@ uint16_t dynamixel_checksum(DynamixelPacket *pkt) {
 // and return next index in packet (-1 if complete and well-formed)
 int dynamixel_input(DynamixelPacket *pkt, uint8_t c, int n) {
   if (n < 0){
-		printf("Finish old packet...\n");
+		//printf("Finish old packet...\n");
 		n = 0;
 	}
   ((uint8_t *)pkt)[n] = c;
-	printf("Processing, %.2X\n",c);
+	/*
+	printf("\nProcessing %d | %.2X.  Len: %u [%u|%u]\n",
+	n, c, pkt->length, pkt->len[1], pkt->len[0]);
+	*/
   // Check header
   if ((n == 0) && (c != DYNAMIXEL_PACKET_HEADER)){
-		printf("BAD HEADER1, %.2X\n",c);
+		//printf("BAD HEADER1, %.2X\n",c);
     return 0;
 	}
 	// Check header (duplicate)
   else if ((n == 1) && (c != DYNAMIXEL_PACKET_HEADER_2)){
-		printf("BAD HEADER2, %.2X\n",c);
+		//printf("BAD HEADER2, %.2X\n",c);
     return 0;
 	}
 	// Check extended header
   else if ((n == 2) && (c != DYNAMIXEL_PACKET_HEADER_3)) {
-		printf("BAD HEADER3, %.2X\n",c);
+		//printf("BAD HEADER3, %.2X\n",c);
     return 0;
 	}
 #ifdef CHECK_STUFFING
@@ -95,7 +98,16 @@ int dynamixel_input(DynamixelPacket *pkt, uint8_t c, int n) {
   else if ((n == 3) && (c != DYNAMIXEL_PACKET_STUFFING))
     return 0;
 #endif
-  else if (n == pkt->length+3) {
+  else if (n<6)
+		return n+1;
+  else if (n==6){
+		//printf("SETTING LENGTH!\n");
+		// TODO: properly get 16 bit length
+		pkt->length = pkt->len[0];// + (pkt->len[1]<<8) & 0xFF00;
+		//printf("pkt->length = %u\n\n",pkt->length);
+		return n+1;
+	}
+  else if (n == pkt->length+6) {
 		uint16_t crc16 = dynamixel_checksum(pkt);
 		// High and Low checks
 	  uint8_t hi_crc = (crc16>>8) & 0x00FF;
@@ -114,9 +126,8 @@ int dynamixel_input(DynamixelPacket *pkt, uint8_t c, int n) {
       return 0;
 		}
   }
-  else if (n > pkt->length+3)
+  else if (n > pkt->length+6)
     return 0;
-  printf("pkt len %d\n",pkt->length);
   // Default is to increment index
   return n+1;
 }

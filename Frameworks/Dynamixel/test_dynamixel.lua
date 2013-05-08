@@ -6,8 +6,8 @@ local test_torque = false
 local test_position = false
 local show_pairs = false
 local test_crc = false
-local test_led = false
-local test_read_led = true
+local test_led = true
+local test_read_position = true
 local test_sync_led = false
 
 -- Fake device for testing?
@@ -40,17 +40,25 @@ if test_probe then
 end
 
 if test_led then
+	local val = 1
+	if val==0 then
+		print('Sync LEDs OFF')
+	else
+		print('Sync LEDs ON')
+	end
 	for j=14,18,2 do
 		print('LED ',j)
-		Dynamixel:set_mx_led( j, 1 )
+		Dynamixel:set_mx_led( j, val )
 		os.execute('sleep 0.01')
 	end
 end
 
-if test_read_led then
+if test_read_position then
 	local id = 16
-	local res = Dynamixel:get_mx_led( id )
-	print('Reading LED',id,res)
+	os.execute('sleep 0.01')
+	print('\nReading Position of ID',id)
+	local res = Dynamixel:get_mx_position( id )
+	print('Result',res)
 end
 
 if test_sync_led then

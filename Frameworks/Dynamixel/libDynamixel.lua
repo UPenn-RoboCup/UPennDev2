@@ -284,7 +284,7 @@ end
 
 libDynamixel.get_status = function( fd, timeout )
 	-- TODO: Is this the best default timeout for the new PRO series?
-	timeout = timeout or 0.020;
+	timeout = timeout or 0.05;
 	local t0 = unix.time();
 	local str = "";
 	while unix.time()-t0 < timeout do

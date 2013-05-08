@@ -103,8 +103,8 @@ static int lua_dynamixel_instruction_write_dword(lua_State *L) {
 }
 
 static int lua_dynamixel_instruction_sync_write(lua_State *L) {
-	uint8_t addr = luaL_checkint(L, 1);
-	uint8_t len = luaL_checkint(L, 2);
+	uint16_t addr = luaL_checkint(L, 1);
+	uint16_t len  = luaL_checkint(L, 2);
 	size_t nstr;
 	const char *str = luaL_checklstring(L, 3, &nstr);
 	DynamixelPacket *p = dynamixel_instruction_sync_write

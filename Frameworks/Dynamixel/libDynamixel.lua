@@ -201,27 +201,41 @@ end
 
 function libDynamixel.set_ram(fd,id,addr,value,sz)
 	local inst = nil
-	if sz==1 then
-		inst = DynamixelPacket.write_byte(id, addr, value);
-	elseif sz==2 then
-		inst = DynamixelPacket.write_word(id, addr, value);
-	elseif sz==4 then
-		inst = DynamixelPacket.write_dword(id, addr, value);
-	else
-		print('BAD SZ OF WRITING')
-		return nil
+	if type(id) == 'number' then
+		if sz==1 then
+			inst = DynamixelPacket.write_byte(id, addr, value)
+		elseif sz==2 then
+			inst = DynamixelPacket.write_word(id, addr, value)
+		elseif sz==4 then
+			inst = DynamixelPacket.write_dword(id, addr, value)
+		else
+			io.write('BAD SZ OF WRITING')
+		end
+		return unix.write(fd, inst);
+	elseif type(id)=='table' then
+		-- TODO: ensure table is NOT key value
+		-- Sync write
+		if sz==1 then
+			libDynamixel.sync_write_byte(fd, id, addr, value)
+		elseif sz==2 then
+			libDynamixel.sync_write_word(fd, id, addr, value)
+		elseif sz==4 then
+			libDynamixel.sync_write_dword(fd, id, addr, value)
+		else
+			io.write('BAD SZ OF WRITING')
+		end
 	end
-	return unix.write(fd, inst);
 end
 
 -- Get a single element
 -- TODO: Grab neighboring RAM segments of different meaningful data
-function libDynamixel.get_ram(fd,id,addr,sz)
+function libDynamixel.get_ram(fd, id, addr, sz)
 	local inst = DynamixelPacket.read_data(id, addr, sz);
 	-- TODO: Can we eliminate the read? flush?
-	unix.read(fd); -- clear old status packets
-	unix.write(fd, inst)
+	local clear = unix.read(fd); -- clear old status packets
+	local ret = unix.write(fd, inst)
 	local status = libDynamixel.get_status(fd);
+	print('ret/clear/status',ret,clear,status)
 	if status then
 		if sz==1 then
 			return status.parameter[1];
@@ -238,19 +252,19 @@ end
 function init_device_handle(obj)
 	-- MX Series Calls
 	for key,addr in pairs(mx_ram_addr) do
-		obj['set_mx_'..key] = function(self,id,val,kind)
+		obj['set_mx_'..key] = function(self,id,val)
 			return libDynamixel.set_ram(self.fd, id, addr, val, mx_ram_sz[key])
 		end
-		obj['get_mx_'..key] = function(self,id,kind)
-			return libDynamixel.get_ram(self.fd,id,val,addr, mx_ram_sz[key])
+		obj['get_mx_'..key] = function(self,id)
+			return libDynamixel.get_ram(self.fd, id, addr, mx_ram_sz[key])
 		end
 	end
 	-- NX Series Calls
 	for key,addr in pairs(nx_ram_addr) do
-		obj['set_nx_'..key] = function(self,id,val,kind)
+		obj['set_nx_'..key] = function(self,id,val)
 			return libDynamixel.set_ram(self.fd, id, addr, val, nx_ram_sz[key])
 		end
-		obj['get_nx_'..key] = function(self,id,kind)
+		obj['get_nx_'..key] = function(self,id)
 			return libDynamixel.get_ram(self.fd,id,val,addr, nx_ram_sz[key])
 		end
 	end
@@ -270,12 +284,13 @@ end
 
 libDynamixel.get_status = function( fd, timeout )
 	-- TODO: Is this the best default timeout for the new PRO series?
-	timeout = timeout or 0.010;
+	timeout = timeout or 0.020;
 	local t0 = unix.time();
 	local str = "";
 	while unix.time()-t0 < timeout do
 		local s = unix.read(fd);
-		if (type(s) == "string") then
+		if type(s) == "string" then
+			print('Got',#s)
 			str = str..s;
 			pkt = DynamixelPacket.input(str);
 			if (pkt) then
@@ -326,12 +341,17 @@ end
 libDynamixel.sync_write_byte = function(fd, ids, addr, data)
 	local nid = #ids;
 	local len = 1;
+	
+	if type(data)=='number' then
+		-- All get the same value
+		all_data = data
+	end
 
 	local t = {};
 	local n = 1;
 	for i = 1,nid do
 		t[n] = ids[i];
-		t[n+1] =  data[i];
+		t[n+1] = all_data or data[i];
 		n = n + len + 1;
 	end
 	local inst = DynamixelPacket.sync_write(addr, len,
@@ -342,12 +362,17 @@ end
 libDynamixel.sync_write_word = function(fd, ids, addr, data)
 	local nid = #ids;
 	local len = 2;
+	
+	if type(data)=='number' then
+		-- All get the same value
+		all_data = data
+	end
 
 	local t = {};
 	local n = 1;
 	for i = 1,nid do
 		t[n] = ids[i];
-		t[n+1],t[n+2] = DynamixelPacket.word_to_byte(data[i]);
+		t[n+1],t[n+2] = DynamixelPacket.word_to_byte(all_data or data[i])
 		n = n + len + 1;
 	end
 	local inst = DynamixelPacket.sync_write(addr, len,
@@ -359,11 +384,17 @@ libDynamixel.sync_write_dword = function(fd, ids, addr, data)
 	local nid = #ids;
 	local len = 4;
 
+	if type(data)=='number' then
+		-- All get the same value
+		all_data = data
+	end
+
 	local t = {};
 	local n = 1;
 	for i = 1,nid do
 		t[n] = ids[i];
-		t[n+1],t[n+2],t[n+3],t[n+4] = DynamixelPacket.dword_to_byte(data[i]);
+		t[n+1],t[n+2],t[n+3],t[n+4] = 
+			DynamixelPacket.dword_to_byte(all_data or data[i])
 		n = n + len + 1;
 	end
 	local inst = DynamixelPacket.sync_write(addr, len,

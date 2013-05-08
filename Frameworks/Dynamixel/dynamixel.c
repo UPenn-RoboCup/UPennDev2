@@ -135,12 +135,15 @@ DynamixelPacket *dynamixel_instruction(uint8_t id,
 }
 
 DynamixelPacket *dynamixel_instruction_read_data(uint8_t id,
-						 uint8_t address, uint8_t n) {
+						 uint8_t address_l, uint8_t address_h,
+						 uint8_t n) {
   uint8_t inst = INST_READ;
-  uint8_t nparameter = 2;
+  uint8_t nparameter = 4;
   uint8_t parameter[nparameter];
-  parameter[0] = address;
-  parameter[1] = n;
+  parameter[0] = address_l;
+	parameter[1] = address_h;
+  parameter[2] = n; // Just low byte for now
+	parameter[3] = 0; // TODO: add high byte
   return dynamixel_instruction(id, inst, parameter, nparameter);
 }
 
@@ -193,18 +196,18 @@ DynamixelPacket *dynamixel_instruction_reset(int id) {
 }
 
 DynamixelPacket *dynamixel_instruction_sync_write(
-	uint16_t address,
+	uint8_t address_l, uint8_t address_h,
 	uint16_t len,
 	uint8_t data[], 
 	uint8_t n) {
 		
-	uint8_t id = DYNAMIXEL_BROADCAST_ID;
+	uint8_t id   = DYNAMIXEL_BROADCAST_ID;
 	uint8_t inst = INST_SYNC_WRITE;
 	uint8_t nparameter = n+4; // addr_h addr_l data_len_l data_len_h
 	uint8_t parameter[nparameter];
 	int i;
-	parameter[0] = address & 0x00FF; //low
-	parameter[1] = (address>>8) & 0x00FF;//high
+	parameter[0] = address_l;
+	parameter[1] = address_h;
 	parameter[2] = len & 0x00FF;
 	parameter[3] = (len>>8) & 0x00FF;
 	for (i = 0; i < n; i++)

@@ -67,10 +67,12 @@ extern "C" {
 	uint8_t *parameter,
 	uint8_t nparameter);
 	DynamixelPacket *dynamixel_instruction_read_data(uint8_t id,
-	uint8_t address, uint8_t n);
+	uint8_t address_h, uint8_t address_l,
+	uint8_t n);
 	DynamixelPacket *dynamixel_instruction_write_data(uint8_t id,
 	uint8_t address_h, uint8_t address_l,
-	uint8_t data[], uint8_t n);
+	uint8_t data[], 
+	uint8_t n);
 	/*
 	DynamixelPacket *dynamixel_instruction_reg_write(uint8_t id,
 	uint8_t address,
@@ -81,8 +83,9 @@ extern "C" {
 	*/
 	DynamixelPacket *dynamixel_instruction_ping(int id);
 	DynamixelPacket *dynamixel_instruction_reset(int id);
-	DynamixelPacket *dynamixel_instruction_sync_write(uint8_t address,
-	uint8_t len,
+	DynamixelPacket *dynamixel_instruction_sync_write(
+		uint8_t address_h, uint8_t address_l,
+	uint16_t len,
 	uint8_t data[], uint8_t n);
 
 	//added for bulk read

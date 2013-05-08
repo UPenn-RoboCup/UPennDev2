@@ -222,17 +222,8 @@ function libDynamixel.get_ram(fd,id,addr,sz)
 end
 
 function init_device_handle(obj)
-	-- MX (default)
+	-- MX Series Calls
 	for key,addr in pairs(mx_ram_addr) do
-		--[[
-		obj['set_'..key] = function(self,id,val,kind)
-			return libDynamixel.set_ram(self.fd, id, addr, val, mx_ram_sz[key])
-		end
-		obj['get_'..key] = function(self,id,kind)
-			return libDynamixel.get_ram(self.fd,id,val,addr, mx_ram_sz[key])
-		end
-		--]]
-		-- MX Call
 		obj['set_mx_'..key] = function(self,id,val,kind)
 			return libDynamixel.set_ram(self.fd, id, addr, val, mx_ram_sz[key])
 		end
@@ -240,7 +231,7 @@ function init_device_handle(obj)
 			return libDynamixel.get_ram(self.fd,id,val,addr, mx_ram_sz[key])
 		end
 	end
-	-- NX
+	-- NX Series Calls
 	for key,addr in pairs(nx_ram_addr) do
 		obj['set_nx_'..key] = function(self,id,val,kind)
 			return libDynamixel.set_ram(self.fd, id, addr, val, nx_ram_sz[key])

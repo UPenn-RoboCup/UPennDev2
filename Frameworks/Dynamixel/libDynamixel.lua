@@ -236,8 +236,13 @@ function libDynamixel.get_ram(fd, id, addr, sz)
 	local clear = unix.read(fd); -- clear old status packets
 	local ret = unix.write(fd, inst)
 	local status = libDynamixel.get_status(fd);
-	print('ret/clear/status',ret,clear,status)
+	--print('ret/clear/status',ret,clear,status)
 	if status then
+		print('\n===========')
+		for k,v in pairs(status) do
+			print(k,v)
+		end
+		print('===========')
 		if sz==1 then
 			return status.parameter[1];
 		elseif sz==2 then
@@ -275,11 +280,11 @@ end
 -- TODO: Is the status packet the same in Dynamixel 2.0?
 function libDynamixel.parse_status_packet(pkt)
 	local t = {};
-	t.id = pkt:byte(3);
-	t.length = pkt:byte(4);
-	t.error = pkt:byte(5);
-	t.parameter = {pkt:byte(6,t.length+3)};
-	t.checksum = pkt:byte(t.length+4);
+	t.id = pkt:byte(5);
+	t.length = pkt:byte(6)+2^8*pkt:byte(7);
+	t.error = pkt:byte(8); -- TODO: fix
+	t.parameter = {pkt:byte(7,t.length+6)};
+	t.checksum = string.char( pkt:byte(t.length+7), pkt:byte(t.length+8) );
 	return t;
 end
 

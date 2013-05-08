@@ -118,6 +118,7 @@ static int lua_dynamixel_input(lua_State *L) {
 	size_t nstr;
 	const char *str = luaL_checklstring(L, 1, &nstr);
 	int nPacket = luaL_optinteger(L, 2, 1)-1;
+	// TODO: This pkt variable should be part of a metatable, not the *.so
 	DynamixelPacket pkt;
 	int ret = 0;
 	if (str) {
@@ -125,10 +126,9 @@ static int lua_dynamixel_input(lua_State *L) {
 			nPacket = dynamixel_input(&pkt, str[i], nPacket);
 			if (nPacket < 0)
 				ret += lua_pushpacket(L, &pkt);
-			else
-				printf("push pkt status: %d %d\n",nPacket, ret);
+			//printf("push pkt status: nPacket %d, ret %d\n",nPacket, ret);
 		}
-	} else{
+	} else {
 		printf("BAD STRING INPUT\n");
 	}
 	return ret;

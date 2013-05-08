@@ -174,8 +174,8 @@ local nx_ram_sz = {
 }
 
 -- Add a poor man's unix library
-local unix = {}
-unix.write = function(fd,msg)
+local unix2 = {}
+unix2.write = function(fd,msg)
 	local str = string.format('%s fd:(%d) sz:(%d)',type(msg),fd,#msg)
 	local str2 = 'Dec:\t'
 	local str3 = 'Hex:\t'
@@ -186,18 +186,19 @@ unix.write = function(fd,msg)
 	io.write(str,'\n',str2,'\n',str3,'\n')
 	return #msg
 end
-unix.time = function()
+unix2.time = function()
 	return os.clock()
 end
-unix.read = function(fd)
+unix2.read = function(fd)
 	return nil
 end
-unix.usleep = function(n_usec)
+unix2.usleep = function(n_usec)
 	--os.execute('sleep '..n_usec/1e6)
 end
-unix.close = function( fd )
+unix2.close = function( fd )
 	io.write('Closed fd ',fd)
 end
+local unix = unix2
 
 function libDynamixel.set_ram(fd,id,addr,value,sz)
 	local inst = nil
@@ -284,18 +285,20 @@ end
 
 libDynamixel.get_status = function( fd, timeout )
 	-- TODO: Is this the best default timeout for the new PRO series?
-	timeout = timeout or 0.05;
+	timeout = timeout or 0.01;
 	local t0 = unix.time();
 	local str = "";
 	while unix.time()-t0 < timeout do
 		local s = unix.read(fd);
 		if type(s) == "string" then
 			print('Got',#s)
+			unix2.write(fd,s)
 			str = str..s;
 			pkt = DynamixelPacket.input(str);
-			if (pkt) then
+			if pkt then
 				local status = libDynamixel.parse_status_packet(pkt);
-				--	    print(string.format("Status: id=%d error=%d",status.id,status.error));
+				print(string.format("Status: id=%d error=%d",
+				status.id,status.error));
 				return status;
 			end
 		end

@@ -8,6 +8,7 @@ CODE FROM ROBOTIS IS USED IN SELECT PORTIONS
 
 #include "dynamixel.h"
 #include <stdlib.h>
+#include <stdio.h>
 
 // Modified ever so slightly from Robotis' code
 static uint16_t crc_table[256] = {0x0000,
@@ -68,18 +69,27 @@ uint16_t dynamixel_checksum(DynamixelPacket *pkt) {
 // Process incoming character using finite state machine
 // and return next index in packet (-1 if complete and well-formed)
 int dynamixel_input(DynamixelPacket *pkt, uint8_t c, int n) {
-  if (n < 0) n = 0;
+  if (n < 0){
+		printf("Finish old packet...\n");
+		n = 0;
+	}
   ((uint8_t *)pkt)[n] = c;
-
+	printf("Processing, %.2X\n",c);
   // Check header
-  if ((n == 0) && (c != DYNAMIXEL_PACKET_HEADER))
+  if ((n == 0) && (c != DYNAMIXEL_PACKET_HEADER)){
+		printf("BAD HEADER1, %.2X\n",c);
     return 0;
+	}
 	// Check header (duplicate)
-  else if ((n == 1) && (c != DYNAMIXEL_PACKET_HEADER_2))
+  else if ((n == 1) && (c != DYNAMIXEL_PACKET_HEADER_2)){
+		printf("BAD HEADER2, %.2X\n",c);
     return 0;
+	}
 	// Check extended header
-  else if ((n == 2) && (c != DYNAMIXEL_PACKET_HEADER_3))
+  else if ((n == 2) && (c != DYNAMIXEL_PACKET_HEADER_3)) {
+		printf("BAD HEADER3, %.2X\n",c);
     return 0;
+	}
 #ifdef CHECK_STUFFING
 	// Check extended header
   else if ((n == 3) && (c != DYNAMIXEL_PACKET_STUFFING))

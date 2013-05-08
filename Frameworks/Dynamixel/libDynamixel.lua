@@ -243,38 +243,46 @@ end
 
 -- MX
 local mx_ram_addr = {
-	--['id'] = 3,
-	['delay'] = string.char(5,0), -- Return Delay address
+	['id'] = 3,
 	['led'] = string.char(25,0),
-	['torque_enable'] = string.char(24,0),
 	['battery'] = string.char(42,0), -- cannot write
-	['temperature'] = string.char(43,0), -- cannot write
-	--['hardness'] = string.char(34,0),  -- BAD FOR for MX anyway!
-	['velocity'] = string.char(32,0),
 	['command'] = string.char(30,0),
+	['temperature'] = string.char(43,0), -- cannot write
+	['delay'] = string.char(5,0), -- Return Delay address
+	['hardness'] = string.char(34,0),  -- BAD FOR for MX anyway!
+	['velocity'] = string.char(32,0),
 	['position'] = string.char(36,0), -- cannot write
+	['torque_enable'] = string.char(24,0),
 }
-
 local mx_ram_sz = {
-	['led'] = 1, --write byte
-	['torque_enable'] = 1,
+	['id'] = 1,
+	['led'] = 1,
 	['battery'] = 2,
+	['command'] = 2,
 	['temperature'] = 1,
+	['delay'] = 1,
+	['hardness'] = 1, --correct?
 	['velocity'] = 2,
-	['command'] = 2, --write word
 	['position'] = 2,
+	['torque_enable'] = 1,
 }
 
--- PRO
+-- Dynamixel PRO
+-- English to Hex Addresses of various commands/information
+-- Convention: string.char( LOW_BYTE, HIGH_BYTE )
 local nx_ram_addr = {
+	
 	-- Legacy API Convention --
+	-- Comments adjacent gives the corresponding New API key
 	['led'] = string.char(0x33,0x02), -- Red Led
-	['torque_enable'] = string.char(0x32,0x02), -- low, high
-	['battery'] = string.char(0x6F,0x02), -- low, high
-	['temperature'] = string.char(0x71,0x02), -- low, high
-	['velocity'] = string.char(0x67,0x02), -- low, high
-	['command'] = string.char(0x54,0x02), -- low, high
-	['position'] = string.char(0x32,0x02), -- low, high
+	['battery'] = string.char(0x6F,0x02), -- Voltage
+	['command'] = string.char(0x54,0x02), -- command_position
+	-- Present velocity/position
+	['velocity'] = string.char(0x67,0x02), -- Same in new API
+	['position'] = string.char(0x32,0x02), -- Same in new API
+	['temperature'] = string.char(0x71,0x02), -- Same in new API
+	['torque_enable'] = string.char(0x32,0x02), -- Same in new API
+	
 	-- New API --
 	-- ENTER EEPROM AREA
 	-- Operation Mode
@@ -290,14 +298,22 @@ local nx_ram_addr = {
 	['id'] =   string.char(0x07,0x00),
 	['baud'] = string.char(0x08,0x00),	
 	-- Limits
-	['max_voltage'] = string.char(0x08,0x01),
-	['max_voltage'] = string.char(0x08,0x01),
+	['max_temperature'] = string.char(0x15,0x00),
+	['max_voltage'] = string.char(0x16,0x00),
+	['min_voltage'] = string.char(0x18,0x00),
+	['max_acceleration'] = string.char(0x1A,0x00),
+	['max_torque'] = string.char(0x1E,0x00),
+	['max_velocity'] = string.char(0x20,0x00),
+	['max_position'] = string.char(0x24,0x00),
+	['min_position'] = string.char(0x28,0x00),
+	['shutdown'] = string.char(0x30,0x00),
+	
 	-- ENTER RAM AREA
-	-- Position Commands
+	-- Position Options --
+	-- Position Commands (position control mode)
+	['command_position'] = string.char(0x54,0x02),
 	['command_velocity'] = string.char(0x58,0x02),
-	['command_acceleration'] = string.char(0x58,0x02),
-	-- Commanded Torque (torque control mode)
-	['command_torque'] = string.char(0x5C,0x02),
+	['command_acceleration'] = string.char(0x5E,0x02),
 	-- Position PID Gains (position control mode)
 	['position_p'] = string.char(0x52,0x02),
 	['position_i'] = string.char(0x50,0x02),
@@ -306,29 +322,57 @@ local nx_ram_addr = {
 	['velocity_p'] = string.char(0x46,0x02),
 	['velocity_i'] = string.char(0x4A,0x02),
 	['velocity_d'] = string.char(0x4C,0x02),
-	-- Current PI Gains (torque control mode)
-	['current_p'] = 2,
-	['current_i'] = 2,
-	-- Readings from the motor
-	['led_red'] = string.char(0x33,0x02), -- Duplicate on purpose
+	-- Low Pass Fitler settings
+	['position_lpf'] = string.char(0x42,0x02),
+	['velocity_lpf'] = string.char(0x46,0x02),
+	-- Feed Forward mechanism
+	['acceleration_ff'] = string.char(0x3A,0x02),
+	['velocity_ff'] = string.char(0x3E,0x02),
+	
+	-- Torque options --
+	-- Commanded Torque (torque control mode)
+	['command_torque'] = string.char(0x5C,0x02),
+	-- Current (V=iR) PI Gains (torque control mode)
+	['current_p'] = string.char(0x38,0x02),
+	['current_i'] = string.char(0x36,0x02),
+
+	-- LED lighting
+	['led_red'] = string.char(0x33,0x02),
 	['led_green'] = string.char(0x34,0x02),
 	['led_blue'] = string.char(0x35,0x02),
+	
+	-- Present information
 	['current'] = string.char(0x6D,0x02),
 	['load'] = string.char(0x6B,0x02),
+	['voltage'] = string.char(0x6F,0x02),
 }
 
+-- Size on RAM/EEPROM in bytes
 local nx_ram_sz = {
+	-- Legacy API --
 	['led'] = 1,
-	['torque_enable'] = 1,
 	['battery'] = 2,
-	['temperature'] = 1,
-	['velocity'] = 4, --write dword
 	['command'] = 4,
+	-- Same in legacy and new
+	['velocity'] = 4,
 	['position'] = 4,
-	-- New 
+	['temperature'] = 1,
+	['torque_enable'] = 1,
+	-- New API --
+	-- Limits
+	['max_temperature'] = 1,
+	['max_voltage'] = 2,
+	['min_voltage'] = 2,
+	['max_acceleration'] = 4,
+	['max_torque'] = 2,
+	['max_velocity'] = 4,
+	['max_position'] = 4,
+	['min_position'] = 4,
+	['shutdown'] = 1,
+	-- Position Control
+	['command_position'] = 4
 	['command_velocity'] = 4,
 	['command_acceleration'] = 4,
-	['command_torque'] = 4,
 	-- Position PID Gains
 	['position_p'] = 2,
 	['position_i'] = 2,
@@ -337,6 +381,8 @@ local nx_ram_sz = {
 	['velocity_p'] = 2,
 	['velocity_i'] = 2,
 	['velocity_d'] = 2,
+	-- Torque Control
+	['command_torque'] = 4,
 	-- Current PI Gains
 	['current_p'] = 2,
 	['current_i'] = 2,

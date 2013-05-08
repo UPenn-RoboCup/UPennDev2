@@ -125,6 +125,8 @@ static int lua_dynamixel_input(lua_State *L) {
 			nPacket = dynamixel_input(&pkt, str[i], nPacket);
 			if (nPacket < 0)
 				ret += lua_pushpacket(L, &pkt);
+			else
+				printf("push pkt status: %d %d\n",nPacket, ret);
 		}
 	} else{
 		printf("BAD STRING INPUT\n");

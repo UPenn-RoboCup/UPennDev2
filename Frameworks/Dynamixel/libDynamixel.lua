@@ -294,6 +294,7 @@ libDynamixel.get_status = function( fd, timeout )
 			print('Got',#s)
 			unix2.write(fd,s)
 			str = str..s;
+			print('sz',#str)
 			pkt = DynamixelPacket.input(str);
 			if pkt then
 				local status = libDynamixel.parse_status_packet(pkt);

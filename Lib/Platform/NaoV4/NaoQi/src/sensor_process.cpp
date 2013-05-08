@@ -98,7 +98,7 @@ int sensor_process() {
     nButton++;
     if (nButton == nButtonShutdown) {
       std::cout << "DCM sensor: system shutting down..." << std::endl;
-      system(shutdownCommand);
+      int ret = system(shutdownCommand);
     }
   }
   else {

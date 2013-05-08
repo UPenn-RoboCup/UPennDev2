@@ -5,6 +5,164 @@
 local libDynamixel = {}
 local DynamixelPacket = require('DynamixelPacket');
 
+-- MX
+local mx_ram_addr = {
+	['id'] = 3,
+	['led'] = string.char(25,0),
+	['battery'] = string.char(42,0),
+	['command'] = string.char(30,0),
+	['temperature'] = string.char(43,0),
+	['delay'] = string.char(5,0),
+	['hardness'] = string.char(34,0), -- in PID verion of the product?
+	['velocity'] = string.char(32,0),
+	['position'] = string.char(36,0),
+	['torque_enable'] = string.char(24,0),
+}
+local mx_ram_sz = {
+	['id'] = 1,
+	['led'] = 1,
+	['battery'] = 2,
+	['command'] = 2,
+	['temperature'] = 1,
+	['delay'] = 1,
+	['hardness'] = 2,
+	['velocity'] = 2,
+	['position'] = 2,
+	['torque_enable'] = 1,
+}
+
+-- Dynamixel PRO
+-- English to Hex Addresses of various commands/information
+-- Convention: string.char( LOW_BYTE, HIGH_BYTE )
+local nx_ram_addr = {
+	
+	-- Legacy API Convention --
+	-- Comments adjacent gives the corresponding New API key
+	['led'] = string.char(0x33,0x02), -- Red Led
+	['battery'] = string.char(0x6F,0x02), -- Voltage
+	['command'] = string.char(0x54,0x02), -- command_position
+	-- Present velocity/position
+	['velocity'] = string.char(0x67,0x02), -- Same in new API
+	['position'] = string.char(0x32,0x02), -- Same in new API
+	['temperature'] = string.char(0x71,0x02), -- Same in new API
+	['torque_enable'] = string.char(0x32,0x02), -- Same in new API
+	
+	-- New API --
+	-- ENTER EEPROM AREA
+	-- Operation Mode
+	-- Mode 0: Torque Control
+	-- Mode 1: Velocity Control
+	-- Mode 2: Position Control
+	-- Mode 3: position-Velocity Control
+	['mode'] = string.char(0x0B,0x00),
+	-- General Operation information
+	['model_num']  = string.char(0x00,0x00),
+	['model_info'] = string.char(0x02,0x00),
+	['firmware'] =   string.char(0x06,0x00),
+	['id'] =   string.char(0x07,0x00),
+	['baud'] = string.char(0x08,0x00),	
+	-- Limits
+	['max_temperature'] = string.char(0x15,0x00),
+	['max_voltage'] = string.char(0x16,0x00),
+	['min_voltage'] = string.char(0x18,0x00),
+	['max_acceleration'] = string.char(0x1A,0x00),
+	['max_torque'] = string.char(0x1E,0x00),
+	['max_velocity'] = string.char(0x20,0x00),
+	['max_position'] = string.char(0x24,0x00),
+	['min_position'] = string.char(0x28,0x00),
+	['shutdown'] = string.char(0x30,0x00),
+	
+	-- ENTER RAM AREA
+	-- Position Options --
+	-- Position Commands (position control mode)
+	['command_position'] = string.char(0x54,0x02),
+	['command_velocity'] = string.char(0x58,0x02),
+	['command_acceleration'] = string.char(0x5E,0x02),
+	-- Position PID Gains (position control mode)
+	['position_p'] = string.char(0x52,0x02),
+	['position_i'] = string.char(0x50,0x02),
+	['position_d'] = string.char(0x4E,0x02),
+	-- Velocity PID Gains (position control mode)
+	['velocity_p'] = string.char(0x46,0x02),
+	['velocity_i'] = string.char(0x4A,0x02),
+	['velocity_d'] = string.char(0x4C,0x02),
+	-- Low Pass Fitler settings
+	['position_lpf'] = string.char(0x42,0x02),
+	['velocity_lpf'] = string.char(0x46,0x02),
+	-- Feed Forward mechanism
+	['acceleration_ff'] = string.char(0x3A,0x02),
+	['velocity_ff'] = string.char(0x3E,0x02),
+	
+	-- Torque options --
+	-- Commanded Torque (torque control mode)
+	['command_torque'] = string.char(0x5C,0x02),
+	-- Current (V=iR) PI Gains (torque control mode)
+	['current_p'] = string.char(0x38,0x02),
+	['current_i'] = string.char(0x36,0x02),
+
+	-- LED lighting
+	['led_red'] = string.char(0x33,0x02),
+	['led_green'] = string.char(0x34,0x02),
+	['led_blue'] = string.char(0x35,0x02),
+	
+	-- Present information
+	['current'] = string.char(0x6D,0x02),
+	['load'] = string.char(0x6B,0x02),
+	['voltage'] = string.char(0x6F,0x02),
+}
+-- Size on RAM/EEPROM in bytes
+local nx_ram_sz = {
+	-- Legacy API --
+	['led'] = 1,
+	['battery'] = 2,
+	['command'] = 4,
+	-- Same in legacy and new
+	['velocity'] = 4,
+	['position'] = 4,
+	['temperature'] = 1,
+	['torque_enable'] = 1,
+	-- New API --
+	-- Limits
+	['max_temperature'] = 1,
+	['max_voltage'] = 2,
+	['min_voltage'] = 2,
+	['max_acceleration'] = 4,
+	['max_torque'] = 2,
+	['max_velocity'] = 4,
+	['max_position'] = 4,
+	['min_position'] = 4,
+	['shutdown'] = 1,
+	-- Position Control
+	['command_position'] = 4,
+	['command_velocity'] = 4,
+	['command_acceleration'] = 4,
+	-- Gains
+	['position_p'] = 2,
+	['position_i'] = 2,
+	['position_d'] = 2,
+	['velocity_p'] = 2,
+	['velocity_i'] = 2,
+	['velocity_d'] = 2,
+	-- Advanced Position Control
+	['position_lpf'] = 4,
+	['velocity_lpf'] = 4,
+	['acceleration_ff'] = 4,
+	['velocity_ff'] = 4,
+	-- Torque Control
+	['command_torque'] = 4,
+	-- Current PI Gains
+	['current_p'] = 2,
+	['current_i'] = 2,
+	-- Indicators
+	['led_red'] = 1,
+	['led_green'] = 1,
+	['led_blue'] = 1,
+	-- Present information
+	['current'] = 2,
+	['load'] = 2,
+	['voltage'] = 2,
+}
+
 -- Add a poor man's unix library
 local unix = {}
 unix.write = function(fd,msg)
@@ -56,13 +214,31 @@ function libDynamixel.get_ram(fd,id,addr)
 end
 
 function init_device_handle(obj)
+	-- MX (default)
 	for key,addr in pairs(mx_ram_addr) do
-		--print('associate',key,addr:byte(1),addr:byte(2))
-		obj['set_'..key] = function(self,id,val)
+		--[[
+		obj['set_'..key] = function(self,id,val,kind)
 			return libDynamixel.set_ram(self.fd, id, addr, val, mx_ram_sz[key])
 		end
-		obj['get_'..key] = function(self,id)
-			return libDynamixel.get_ram(self.fd,id,val,add)
+		obj['get_'..key] = function(self,id,kind)
+			return libDynamixel.get_ram(self.fd,id,val,addr)
+		end
+		--]]
+		-- MX Call
+		obj['set_mx_'..key] = function(self,id,val,kind)
+			return libDynamixel.set_ram(self.fd, id, addr, val, mx_ram_sz[key])
+		end
+		obj['get_mx_'..key] = function(self,id,kind)
+			return libDynamixel.get_ram(self.fd,id,val,addr)
+		end
+	end
+	-- NX
+	for key,addr in pairs(nx_ram_addr) do
+		obj['set_nx_'..key] = function(self,id,val,kind)
+			return libDynamixel.set_ram(self.fd, id, addr, val, nx_ram_sz[key])
+		end
+		obj['get_nx_'..key] = function(self,id,kind)
+			return libDynamixel.get_ram(self.fd,id,val,addr)
 		end
 	end
 	return obj
@@ -240,157 +416,5 @@ function libDynamixel.open( ttyname, ttybaud )
 	obj = init_device_handle(obj)
 	return obj;
 end
-
--- MX
-local mx_ram_addr = {
-	['id'] = 3,
-	['led'] = string.char(25,0),
-	['battery'] = string.char(42,0), -- cannot write
-	['command'] = string.char(30,0),
-	['temperature'] = string.char(43,0), -- cannot write
-	['delay'] = string.char(5,0), -- Return Delay address
-	['hardness'] = string.char(34,0),  -- BAD FOR for MX anyway!
-	['velocity'] = string.char(32,0),
-	['position'] = string.char(36,0), -- cannot write
-	['torque_enable'] = string.char(24,0),
-}
-local mx_ram_sz = {
-	['id'] = 1,
-	['led'] = 1,
-	['battery'] = 2,
-	['command'] = 2,
-	['temperature'] = 1,
-	['delay'] = 1,
-	['hardness'] = 1, --correct?
-	['velocity'] = 2,
-	['position'] = 2,
-	['torque_enable'] = 1,
-}
-
--- Dynamixel PRO
--- English to Hex Addresses of various commands/information
--- Convention: string.char( LOW_BYTE, HIGH_BYTE )
-local nx_ram_addr = {
-	
-	-- Legacy API Convention --
-	-- Comments adjacent gives the corresponding New API key
-	['led'] = string.char(0x33,0x02), -- Red Led
-	['battery'] = string.char(0x6F,0x02), -- Voltage
-	['command'] = string.char(0x54,0x02), -- command_position
-	-- Present velocity/position
-	['velocity'] = string.char(0x67,0x02), -- Same in new API
-	['position'] = string.char(0x32,0x02), -- Same in new API
-	['temperature'] = string.char(0x71,0x02), -- Same in new API
-	['torque_enable'] = string.char(0x32,0x02), -- Same in new API
-	
-	-- New API --
-	-- ENTER EEPROM AREA
-	-- Operation Mode
-	-- Mode 0: Torque Control
-	-- Mode 1: Velocity Control
-	-- Mode 2: Position Control
-	-- Mode 3: position-Velocity Control
-	['mode'] = string.char(0x0B,0x00),
-	-- General Operation information
-	['model_num']  = string.char(0x00,0x00),
-	['model_info'] = string.char(0x02,0x00),
-	['firmware'] =   string.char(0x06,0x00),
-	['id'] =   string.char(0x07,0x00),
-	['baud'] = string.char(0x08,0x00),	
-	-- Limits
-	['max_temperature'] = string.char(0x15,0x00),
-	['max_voltage'] = string.char(0x16,0x00),
-	['min_voltage'] = string.char(0x18,0x00),
-	['max_acceleration'] = string.char(0x1A,0x00),
-	['max_torque'] = string.char(0x1E,0x00),
-	['max_velocity'] = string.char(0x20,0x00),
-	['max_position'] = string.char(0x24,0x00),
-	['min_position'] = string.char(0x28,0x00),
-	['shutdown'] = string.char(0x30,0x00),
-	
-	-- ENTER RAM AREA
-	-- Position Options --
-	-- Position Commands (position control mode)
-	['command_position'] = string.char(0x54,0x02),
-	['command_velocity'] = string.char(0x58,0x02),
-	['command_acceleration'] = string.char(0x5E,0x02),
-	-- Position PID Gains (position control mode)
-	['position_p'] = string.char(0x52,0x02),
-	['position_i'] = string.char(0x50,0x02),
-	['position_d'] = string.char(0x4E,0x02),
-	-- Velocity PID Gains (position control mode)
-	['velocity_p'] = string.char(0x46,0x02),
-	['velocity_i'] = string.char(0x4A,0x02),
-	['velocity_d'] = string.char(0x4C,0x02),
-	-- Low Pass Fitler settings
-	['position_lpf'] = string.char(0x42,0x02),
-	['velocity_lpf'] = string.char(0x46,0x02),
-	-- Feed Forward mechanism
-	['acceleration_ff'] = string.char(0x3A,0x02),
-	['velocity_ff'] = string.char(0x3E,0x02),
-	
-	-- Torque options --
-	-- Commanded Torque (torque control mode)
-	['command_torque'] = string.char(0x5C,0x02),
-	-- Current (V=iR) PI Gains (torque control mode)
-	['current_p'] = string.char(0x38,0x02),
-	['current_i'] = string.char(0x36,0x02),
-
-	-- LED lighting
-	['led_red'] = string.char(0x33,0x02),
-	['led_green'] = string.char(0x34,0x02),
-	['led_blue'] = string.char(0x35,0x02),
-	
-	-- Present information
-	['current'] = string.char(0x6D,0x02),
-	['load'] = string.char(0x6B,0x02),
-	['voltage'] = string.char(0x6F,0x02),
-}
-
--- Size on RAM/EEPROM in bytes
-local nx_ram_sz = {
-	-- Legacy API --
-	['led'] = 1,
-	['battery'] = 2,
-	['command'] = 4,
-	-- Same in legacy and new
-	['velocity'] = 4,
-	['position'] = 4,
-	['temperature'] = 1,
-	['torque_enable'] = 1,
-	-- New API --
-	-- Limits
-	['max_temperature'] = 1,
-	['max_voltage'] = 2,
-	['min_voltage'] = 2,
-	['max_acceleration'] = 4,
-	['max_torque'] = 2,
-	['max_velocity'] = 4,
-	['max_position'] = 4,
-	['min_position'] = 4,
-	['shutdown'] = 1,
-	-- Position Control
-	['command_position'] = 4
-	['command_velocity'] = 4,
-	['command_acceleration'] = 4,
-	-- Position PID Gains
-	['position_p'] = 2,
-	['position_i'] = 2,
-	['position_d'] = 2,
-	-- Velocity PID Gains
-	['velocity_p'] = 2,
-	['velocity_i'] = 2,
-	['velocity_d'] = 2,
-	-- Torque Control
-	['command_torque'] = 4,
-	-- Current PI Gains
-	['current_p'] = 2,
-	['current_i'] = 2,
-	
-	['led_green'] = 1,
-	['led_blue'] = 1,
-	['current'] = 2,
-	['load'] = 2,
-}
 
 return libDynamixel

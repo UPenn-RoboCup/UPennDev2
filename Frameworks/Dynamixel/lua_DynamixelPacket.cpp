@@ -75,7 +75,7 @@ static int lua_dynamixel_instruction_write_word(lua_State *L) {
 	uint8_t id = luaL_checkint(L, 1);
 	size_t naddr;
 	const char *addr = luaL_checklstring(L, 2, &naddr);
-	unsigned short word = luaL_checkint(L, 3);
+	uint16_t word = luaL_checkint(L, 3);
 	uint8_t byte[2];
 	byte[0] = (word & 0x00FF);
 	byte[1] = (word & 0xFF00) >> 8;
@@ -88,12 +88,12 @@ static int lua_dynamixel_instruction_write_dword(lua_State *L) {
 	uint8_t id = luaL_checkint(L, 1);
 	size_t naddr;
 	const char *addr = luaL_checklstring(L, 2, &naddr);
-	unsigned short word = luaL_checkint(L, 3);
+	uint32_t dword = luaL_checkint(L, 3);
 	uint8_t byte[4];
-	byte[0] = (word & 0x00FF);
-	byte[1] = (word & 0xFF00) >> 8;
-	byte[2] = (word & 0xFF0000)>>16;
-	byte[3] = (word & 0xFF000000)>>24;
+	byte[0] = (dword & 0x00FF);
+	byte[1] = (dword & 0xFF00)>>8;
+	byte[2] = (dword & 0xFF0000)>>16;
+	byte[3] = (dword & 0xFF000000)>>24;
 	DynamixelPacket *p = dynamixel_instruction_write_data
 		(id, addr[0], addr[1], byte, 4);
 	return lua_pushpacket(L, p);

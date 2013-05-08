@@ -88,8 +88,6 @@ count = 0;
 lastImageCount = {0,0};
 t0 = unix.time()
 
-lut_updated = 0;
-
 function entry()
   --Temporary value.. updated at body FSM at next frame
   vcm.set_camera_bodyHeight(Config.walk.bodyHeight);
@@ -98,8 +96,6 @@ function entry()
 	vcm.set_camera_ncamera(Config.camera.ncamera);
   vcm.set_camera_reload_LUT(0);
   vcm.set_camera_lut_filename(Config.camera.lut_file);
-
---  vcm.set_image_lut_updated(0);
 
   -- Start the HeadTransform machine
   HeadTransform.entry();
@@ -166,10 +162,6 @@ end
 
 
 function update()
---  if vcm.get_image_lut_updated() ~= lut_updated then
---    print('lut updated');
---    lut_updated = vcm.get_image_lut_updated();
---  end
 
   --If we are only using gps info, skip whole vision update 	
   if use_gps_only>0 then
@@ -212,14 +204,10 @@ function update()
   end
 
   -- perform the initial labeling
-  if webots == 1 then
-    labelA.data = Camera.get_labelA( vcm.get_image_lut() );
-  else
-    labelA.data  = ImageProc.yuyv_to_label(vcm.get_image_yuyv(),
+  labelA.data  = ImageProc.yuyv_to_label(vcm.get_image_yuyv(),
                                           vcm.get_image_lut(),
-                                          camera.width/2,
+                                          camera.width,
                                           camera.height);
-  end
 
   -- determine total number of pixels of each color/label
   colorCount = ImageProc.color_count(labelA.data, labelA.npixel);

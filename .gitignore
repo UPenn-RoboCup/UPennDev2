@@ -83,3 +83,4 @@ Player/Data/*.txt
 Tools/Matlab/*.raw
 
 Lib/Modules/Webots/Controller/lua_controller.c
+Lib/Modules/Webots/Controller/controller_wrap.c

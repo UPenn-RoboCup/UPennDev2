@@ -3,9 +3,9 @@ local twait = 0.010;
 
 local use_real_device = false
 local test_probe = false
-local test_torque = false
-local test_position = true
-local show_pairs = true
+local test_torque = true
+local test_position = false
+local show_pairs = false
 local test_crc = false
 
 -- Fake device for testing?

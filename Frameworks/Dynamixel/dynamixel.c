@@ -9,6 +9,7 @@ CODE FROM ROBOTIS IS USED IN SELECT PORTIONS
 #include "dynamixel.h"
 #include <stdlib.h>
 
+// Modified ever so slightly from Robotis' code
 static uint16_t crc_table[256] = {0x0000,
 	0x8005, 0x800F, 0x000A, 0x801B, 0x001E, 0x0014, 0x8011,
 	0x8033, 0x0036, 0x003C, 0x8039, 0x0028, 0x802D, 0x8027,
@@ -46,10 +47,11 @@ static uint16_t crc_table[256] = {0x0000,
 	0x0270, 0x8275, 0x827F, 0x027A, 0x826B, 0x026E, 0x0264,
 	0x8261, 0x0220, 0x8225, 0x822F, 0x022A, 0x823B, 0x023E,
 	0x0234, 0x8231, 0x8213, 0x0216, 0x021C, 0x8219, 0x0208,
-	0x820D, 0x8207, 0x0202 };
+	0x820D, 0x8207, 0x0202
+};
 
+// Modified ever so slightly from Robotis' code
 uint16_t dynamixel_crc( uint16_t crc_accum, const unsigned char *data_blk_ptr, uint16_t data_blk_size ){
-//	register unsigned short i, j;
 	uint16_t i, j;
 	for(j=0; j<data_blk_size; j++) {
 		i = ((uint16_t)(crc_accum >> 8) ^ *data_blk_ptr++) & 0xff;
@@ -58,15 +60,9 @@ uint16_t dynamixel_crc( uint16_t crc_accum, const unsigned char *data_blk_ptr, u
 	return crc_accum;
 }
 
-uint8_t dynamixel_checksum(DynamixelPacket *pkt) {
-  uint8_t checksum = 0;
-  uint8_t *byte = (uint8_t *) pkt;
-  int i;
-  for (i = 2; i < pkt->length+3; i++) {
-    checksum += byte[i];
-  }
-  checksum ^= 0xFF; // xor
-  return checksum;
+// Checksum wrapper
+uint16_t dynamixel_checksum(DynamixelPacket *pkt) {
+  return dynamixel_crc( 0, (const unsigned char*)pkt, pkt->length + 5 );
 }
 
 // Process incoming character using finite state machine
@@ -76,10 +72,30 @@ int dynamixel_input(DynamixelPacket *pkt, uint8_t c, int n) {
   ((uint8_t *)pkt)[n] = c;
 
   // Check header
-  if ((n <= 1) && (c != DYNAMIXEL_PACKET_HEADER))
+  if ((n == 0) && (c != DYNAMIXEL_PACKET_HEADER))
     return 0;
+	// Check header (duplicate)
+  else if ((n == 1) && (c != DYNAMIXEL_PACKET_HEADER_2))
+    return 0;
+	// Check extended header
+  else if ((n == 2) && (c != DYNAMIXEL_PACKET_HEADER_3))
+    return 0;
+#ifdef CHECK_STUFFING
+	// Check extended header
+  else if ((n == 3) && (c != DYNAMIXEL_PACKET_STUFFING))
+    return 0;
+#endif
   else if (n == pkt->length+3) {
-    if (c == dynamixel_checksum(pkt))
+		uint16_t crc16 = dynamixel_checksum(pkt);
+		// High and Low checks
+	  uint8_t hi_crc = (crc16>>8) & 0x00FF;
+#ifdef CHECK_LOW_CRC
+		// TODO: use both checks or only one for speed?
+		uint8_t lo_crc = crc16 & 0x00FF;
+    if (c == hi_crc && ((uint8_t *)pkt)[n-1]==lo_crc)
+#else
+		if (c == hi_crc)
+#endif
       // Complete packet
       return -1;
     else
@@ -103,18 +119,18 @@ DynamixelPacket *dynamixel_instruction(uint8_t id,
   pkt.header1 = DYNAMIXEL_PACKET_HEADER;
   pkt.header2 = DYNAMIXEL_PACKET_HEADER_2;
 	pkt.header3 = DYNAMIXEL_PACKET_HEADER_3;
-	pkt.stuffing = DYNAMIXEL_PACKET_STUFFING;
-  pkt.id = id; //
+	pkt.stuffing = DYNAMIXEL_PACKET_STUFFING; // TODO: understand this more
+  pkt.id = id;
   pkt.length = nparameter + 3; // 2 checksum + 1 instruction byte
-	pkt.len[0] = DXL_LOBYTE(pkt.length);
-	pkt.len[1] = DXL_HIBYTE(pkt.length);
+	pkt.len[0] = pkt.length & 0x00FF; // low btye
+	pkt.len[1] = (pkt.length>>8) & 0x00FF; // high byte
   pkt.instruction = inst;
 	for (i = 0; i < nparameter; i++)
 		pkt.parameter[i] = parameter[i];
-  pkt.checksum = dynamixel_crc(0, (const unsigned char*)(&pkt), pkt.length+5 );
+  pkt.checksum = dynamixel_checksum( &pkt );
   // Place checksum after parameters:
-  pkt.parameter[nparameter]   = DXL_LOBYTE(pkt.checksum);
-	pkt.parameter[nparameter+1] = DXL_HIBYTE(pkt.checksum);
+  pkt.parameter[nparameter]   = pkt.checksum & 0x00FF;
+	pkt.parameter[nparameter+1] = (pkt.checksum>>8) & 0x00FF;
   return &pkt;
 }
 
@@ -132,7 +148,7 @@ DynamixelPacket *dynamixel_instruction_write_data(uint8_t id,
 						  uint8_t address_l, uint8_t address_h,
 						  uint8_t data[], uint8_t n) {
   uint8_t inst = INST_WRITE;
-  uint8_t nparameter = n+2; // 2 is number of bytes in teh checksum
+  uint8_t nparameter = n+2; // 2 is number of bytes in the checksum
   uint8_t parameter[nparameter];
   int i;
   parameter[0] = address_l;

@@ -28,59 +28,6 @@ unix.usleep = function(n_usec)
 	--os.execute('sleep '..n_usec/1e6)
 end
 
--- MX
-local mx_ram_addr = {
-	--['id'] = 3,
-	['delay'] = string.char(5,0), -- Return Delay address
-	['led'] = string.char(25,0),
-	['torque_enable'] = string.char(24,0),
-	['battery'] = string.char(42,0), -- cannot write
-	['temperature'] = string.char(43,0), -- cannot write
-	--['hardness'] = string.char(34,0),  -- BAD FOR for MX anyway!
-	['velocity'] = string.char(32,0),
-	['command'] = string.char(30,0),
-	['position'] = string.char(36,0), -- cannot write
-}
-
--- PRO
-local nx_ram_addr = {
-	['led'] = string.char(0x33,0x02),
-	['torque_enable'] = string.char(0x32,0x02), -- low, high
-	['battery'] = string.char(0x6F,0x02), -- low, high
-	['temperature'] = string.char(0x71,0x02), -- low, high
-	['velocity'] = string.char(0x67,0x02), -- low, high
-	['command'] = string.char(0x54,0x02), -- low, high
-	['position'] = string.char(0x32,0x02), -- low, high
-	-- New 
-	['command_velocity'] = string.char(0x58,0x02), -- low, high
-	['led_green'] = string.char(0x34,0x02),
-	['led_blue'] = string.char(0x35,0x02),
-}
-
-local mx_ram_sz = {
-	['led'] = 1, --write byte
-	['torque_enable'] = 1,
-	['battery'] = 2,
-	['temperature'] = 1,
-	['velocity'] = 2,
-	['command'] = 2, --write word
-	['position'] = 2,
-}
-
-local nx_ram_sz = {
-	['led'] = 1,
-	['torque_enable'] = 1,
-	['battery'] = 2,
-	['temperature'] = 1,
-	['velocity'] = 4, --write dword
-	['command'] = 4,
-	['position'] = 4,
-	-- New 
-	['command_velocity'] = 4,
-	['led_green'] = 1,
-	['led_blue'] = 1,
-}
-
 function libDynamixel.set_ram(fd,id,addr,value,sz)
 	local inst = nil
 	if sz==1 then
@@ -293,5 +240,111 @@ function libDynamixel.open( ttyname, ttybaud )
 	obj = init_device_handle(obj)
 	return obj;
 end
+
+-- MX
+local mx_ram_addr = {
+	--['id'] = 3,
+	['delay'] = string.char(5,0), -- Return Delay address
+	['led'] = string.char(25,0),
+	['torque_enable'] = string.char(24,0),
+	['battery'] = string.char(42,0), -- cannot write
+	['temperature'] = string.char(43,0), -- cannot write
+	--['hardness'] = string.char(34,0),  -- BAD FOR for MX anyway!
+	['velocity'] = string.char(32,0),
+	['command'] = string.char(30,0),
+	['position'] = string.char(36,0), -- cannot write
+}
+
+local mx_ram_sz = {
+	['led'] = 1, --write byte
+	['torque_enable'] = 1,
+	['battery'] = 2,
+	['temperature'] = 1,
+	['velocity'] = 2,
+	['command'] = 2, --write word
+	['position'] = 2,
+}
+
+-- PRO
+local nx_ram_addr = {
+	-- Legacy API Convention --
+	['led'] = string.char(0x33,0x02), -- Red Led
+	['torque_enable'] = string.char(0x32,0x02), -- low, high
+	['battery'] = string.char(0x6F,0x02), -- low, high
+	['temperature'] = string.char(0x71,0x02), -- low, high
+	['velocity'] = string.char(0x67,0x02), -- low, high
+	['command'] = string.char(0x54,0x02), -- low, high
+	['position'] = string.char(0x32,0x02), -- low, high
+	-- New API --
+	-- ENTER EEPROM AREA
+	-- Operation Mode
+	-- Mode 0: Torque Control
+	-- Mode 1: Velocity Control
+	-- Mode 2: Position Control
+	-- Mode 3: position-Velocity Control
+	['mode'] = string.char(0x0B,0x00),
+	-- General Operation information
+	['model_num']  = string.char(0x00,0x00),
+	['model_info'] = string.char(0x02,0x00),
+	['firmware'] =   string.char(0x06,0x00),
+	['id'] =   string.char(0x07,0x00),
+	['baud'] = string.char(0x08,0x00),	
+	-- Limits
+	['max_voltage'] = string.char(0x08,0x01),
+	['max_voltage'] = string.char(0x08,0x01),
+	-- ENTER RAM AREA
+	-- Position Commands
+	['command_velocity'] = string.char(0x58,0x02),
+	['command_acceleration'] = string.char(0x58,0x02),
+	-- Commanded Torque (torque control mode)
+	['command_torque'] = string.char(0x5C,0x02),
+	-- Position PID Gains (position control mode)
+	['position_p'] = string.char(0x52,0x02),
+	['position_i'] = string.char(0x50,0x02),
+	['position_d'] = string.char(0x4E,0x02),
+	-- Velocity PID Gains (position control mode)
+	['velocity_p'] = string.char(0x46,0x02),
+	['velocity_i'] = string.char(0x4A,0x02),
+	['velocity_d'] = string.char(0x4C,0x02),
+	-- Current PI Gains (torque control mode)
+	['current_p'] = 2,
+	['current_i'] = 2,
+	-- Readings from the motor
+	['led_red'] = string.char(0x33,0x02), -- Duplicate on purpose
+	['led_green'] = string.char(0x34,0x02),
+	['led_blue'] = string.char(0x35,0x02),
+	['current'] = string.char(0x6D,0x02),
+	['load'] = string.char(0x6B,0x02),
+}
+
+local nx_ram_sz = {
+	['led'] = 1,
+	['torque_enable'] = 1,
+	['battery'] = 2,
+	['temperature'] = 1,
+	['velocity'] = 4, --write dword
+	['command'] = 4,
+	['position'] = 4,
+	-- New 
+	['command_velocity'] = 4,
+	['command_acceleration'] = 4,
+	['command_torque'] = 4,
+	-- Position PID Gains
+	['position_p'] = 2,
+	['position_i'] = 2,
+	['position_d'] = 2,
+	-- Velocity PID Gains
+	['velocity_p'] = 2,
+	['velocity_i'] = 2,
+	['velocity_d'] = 2,
+	-- Current PI Gains
+	['current_p'] = 2,
+	['current_i'] = 2,
+	
+	['led_green'] = 1,
+	['led_blue'] = 1,
+	['current'] = 2,
+	['load'] = 2,
+}
 
 return libDynamixel

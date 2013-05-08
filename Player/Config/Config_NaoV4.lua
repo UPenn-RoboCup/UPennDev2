@@ -19,10 +19,9 @@ params = {}
 params.name = {"Walk", "World", "Kick", "Vision", "FSM", "Camera"};
 
 ---Location Specific Camera Parameters--
-params.Camera = "USOpen"
+params.Camera = "Grasp"
 params.Walk = "FastStableAlan"
 params.World = "SPL13"
-params.FSM = "USOpen"
 
 util.LoadConfig(params, platform)
 

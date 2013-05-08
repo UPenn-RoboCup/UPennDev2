@@ -1,24 +1,10 @@
-CWD= $(shell pwd)
-CTC= $(NaoqiCTC)
-
-all: naoqi 
-
-naoqi:
-ifeq ($(CTC),)
-	@echo Cross compilitation tool not specified. \
-				Please download the ctc tool from \
-				the aldebaran website and follow the \
-				instructions to configure it for your system
+ifeq ($(shell uname),Darwin)
+all:
 else
-	rm -rf build
-	mkdir build
-	cd build && cmake -DCMAKE_TOOLCHAIN_FILE="$(CTC)/toolchain-atom.cmake" .. \
-		&& make && cd $(CWD)
+LIBNAME=NaoCam
+EXTRA_OBJ=timeScalar.o nao_cam_mmap_thread.o cam_util.o
+include ../../../Makefile.inc
+LIBOPTS+=-lm $(LIBRT)
 endif
-
 clean:
-ifeq ($(CTC),)
-	make -f Makefile.local clean	
-else
-	rm -rf build
-endif
+	rm -f *.$(SHLIBEXT) *.o

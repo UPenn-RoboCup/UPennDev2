@@ -253,6 +253,7 @@ function init_device_handle(obj)
 	return obj
 end
 
+-- TODO: Is the status packet the same in Dynamixel 2.0?
 function libDynamixel.parse_status_packet(pkt)
 	local t = {};
 	t.id = pkt:byte(3);

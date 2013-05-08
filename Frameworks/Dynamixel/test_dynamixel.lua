@@ -1,24 +1,25 @@
 local libDynamixel = require('libDynamixel');
 
-local use_real_device = false
+local use_real_device = true
 local test_probe = true
-local test_torque = true
+local test_torque = false
 local test_position = false
 local show_pairs = false
 local test_crc = false
+local test_led = true
 
 -- Fake device for testing?
 local dev_name = 'fake'
 if use_real_device then
-	dev_name = 'nil'
+	dev_name = nil
 end
-local Dynamixel = libDynamixel.open(dev_name)
+local Dynamixel = libDynamixel.open( dev_name )
 
 if test_crc then
-local DynamixelPacket = require('DynamixelPacket');
-local pkt = string.char(255,255,253,0,7,6,0,3,24,0,0)
-h,l=DynamixelPacket.crc16( pkt )
-print(string.format('crc: %x %x %d',l,h, #pkt) )
+	local DynamixelPacket = require('DynamixelPacket');
+	local pkt = string.char(255,255,253,0,7,6,0,3,24,0,0)
+	h,l=DynamixelPacket.crc16( pkt )
+	print(string.format('crc: %x %x %d',l,h, #pkt) )
 end
 
 if show_pairs then
@@ -31,8 +32,15 @@ if show_pairs then
 end
 
 if test_probe then
-	local twait = 0.010
+--	local twait = 0.010
+	local twait = 0.020
 	Dynamixel:ping_probe(twait);
+end
+
+if test_led then
+	for id=1,20 do
+		Dynamixel:set_mx_led( id, 0 )
+	end
 end
 
 if test_torque then

@@ -60,7 +60,11 @@ local nx_ram_addr = {
 	['model_info'] = string.char(0x02,0x00),
 	['firmware'] =   string.char(0x06,0x00),
 	['id'] =   string.char(0x07,0x00),
-	['baud'] = string.char(0x08,0x00),	
+	['baud'] = string.char(0x08,0x00),
+	--[[
+	0: 2400 ,1: 57600, 2: 115200, 3: 1Mbps, 4: 2Mbps
+	5: 3Mbps, 6: 4Mbps, 7: 4.5Mbps, 8: 10.5Mbps
+	--]]
 	-- Limits
 	['max_temperature'] = string.char(0x15,0x00),
 	['max_voltage'] = string.char(0x16,0x00),
@@ -292,7 +296,8 @@ end
 
 libDynamixel.ping_probe = function(self, twait)
 	twait = twait or 0.010;
-	for id = 0,253 do
+--	for id = 0,253 do
+	for id = 0,20 do
 		io.write( string.format("Ping: Dynamixel ID %d\n",id) )
 		self:send_ping( id );
 		local status = libDynamixel.get_status(self.fd, twait);
@@ -393,6 +398,7 @@ function libDynamixel.open( ttyname, ttybaud )
 		unix = require('unix');
 		stty = require('stty');
 	end
+	
 	-------------------------------	
 	if not ttyname then
 		local ttys = unix.readdir("/dev");
@@ -409,7 +415,7 @@ function libDynamixel.open( ttyname, ttybaud )
 	-------------------
 	if fd~=-2 then
 		fd = unix.open(ttyname, unix.O_RDWR+unix.O_NOCTTY+unix.O_NONBLOCK);
-		assert(fd > 2, "Could not open port");
+		assert(fd > 2, string.format("Could not open port %s, (%d)", ttyname, fd) );
 		-- Setup serial port parameters
 		stty.raw(fd);
 		stty.serial(fd);

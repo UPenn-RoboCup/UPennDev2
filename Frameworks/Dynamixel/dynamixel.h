@@ -40,9 +40,6 @@ extern "C" {
 #define ERRBIT_OVERLOAD         (32)
 #define ERRBIT_INSTRUCTION      (64)
 
-#define DXL_LOBYTE(w) ((uint8_t)(((uint16_t)(w)) & 0xff))
-#define DXL_HIBYTE(w) ((uint8_t)((((uint16_t)(w)) >> 8) & 0xff))
-
 typedef struct DynamixelPacket {
   uint8_t header1;
   uint8_t header2;

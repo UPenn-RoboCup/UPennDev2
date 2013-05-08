@@ -158,6 +158,7 @@ DynamixelPacket *dynamixel_instruction_write_data(uint8_t id,
   return dynamixel_instruction(id, inst, parameter, nparameter);
 }
 
+/*
 DynamixelPacket *dynamixel_instruction_reg_write(uint8_t id,
 						 uint8_t address,
 						 uint8_t data[], uint8_t n) {
@@ -171,12 +172,15 @@ DynamixelPacket *dynamixel_instruction_reg_write(uint8_t id,
   }
   return dynamixel_instruction(id, inst, parameter, nparameter);
 }
+*/
 
+/*
 DynamixelPacket *dynamixel_instruction_action() {
   uint8_t id = DYNAMIXEL_BROADCAST_ID;
   uint8_t inst = INST_ACTION;
   return dynamixel_instruction(id, inst, NULL, 0);
 }
+*/
 
 DynamixelPacket *dynamixel_instruction_ping(int id) {
   uint8_t inst = INST_PING;

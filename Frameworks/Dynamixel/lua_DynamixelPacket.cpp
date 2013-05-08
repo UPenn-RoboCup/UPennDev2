@@ -90,6 +90,7 @@ static int lua_dynamixel_instruction_write_dword(lua_State *L) {
 	uint8_t id = luaL_checkint(L, 1);
 	size_t naddr;
 	const char *addr = luaL_checklstring(L, 2, &naddr);
+	// TODO: Check that the addr is always of length 2
 	uint32_t dword = luaL_checkint(L, 3);
 	uint8_t byte[4];
 	byte[0] = (dword & 0x000000FF);

@@ -57,3 +57,6 @@ end
 if test_probe then
 	libDynamixel.ping_probe(Dynamixel.fd,twait);
 end
+
+-- Close at the end of the script
+Dynamixel:close()

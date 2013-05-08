@@ -122,6 +122,12 @@ local nx_ram_sz = {
 	['temperature'] = 1,
 	['torque_enable'] = 1,
 	-- New API --
+	['model_num']  = 2,
+	['model_info'] = 4,
+	['firmware'] = 1,
+	['id'] = 1,
+	['baud'] = 1,
+	['mode'] = 1,
 	-- Limits
 	['max_temperature'] = 1,
 	['max_voltage'] = 2,
@@ -185,6 +191,9 @@ end
 unix.usleep = function(n_usec)
 	--os.execute('sleep '..n_usec/1e6)
 end
+unix.close = function( fd )
+	io.write('Closed fd ',fd)
+end
 
 function libDynamixel.set_ram(fd,id,addr,value,sz)
 	local inst = nil
@@ -201,13 +210,14 @@ function libDynamixel.set_ram(fd,id,addr,value,sz)
 	return unix.write(fd, inst);
 end
 
+-- Get a single element
+-- TODO: Grab neighboring RAM segments of different meaningful data
 function libDynamixel.get_ram(fd,id,addr,sz)
-	local twait = 0.100;
-	local inst = DynamixelPacket.read_data(id, addr, 1);
+	local inst = DynamixelPacket.read_data(id, addr, sz);
 	-- TODO: Can we eliminate the read? flush?
 	unix.read(fd); -- clear old status packets
 	unix.write(fd, inst)
-	local status = libDynamixel.get_status(fd, twait);
+	local status = libDynamixel.get_status(fd);
 	if status then
 		if sz==1 then
 			return status.parameter[1];
@@ -253,25 +263,8 @@ function libDynamixel.parse_status_packet(pkt)
 	return t;
 end
 
-function libDynamixel.close(self)
-	-- fd of 0,1,2 are stdin, stdout, sterr respectively
-	if fd < 3 then
-		return false
-	end
-	-- TODO: is there a return value here for errors/success?
-	unix.close( fd );
-	return true
-end
-
-libDynamixel.reset = function(self)
-	--print("Reseting Dynamixel tty!");
-	libDynamixel.close( self.fd );
-	unix.usleep( 100000) ;
-	libDynamixel.open(  self.fd, self.ttyname  );
-	return true
-end
-
 libDynamixel.get_status = function( self, timeout )
+	-- TODO: Is this the best default timeout for the new PRO series?
 	timeout = timeout or 0.010;
 	local t0 = unix.time();
 	local str = "";
@@ -308,25 +301,8 @@ libDynamixel.ping_probe = function(fd, twait)
 	end
 end
 
-libDynamixel.set_id = function(fd, idOld, idNew)
-	local addr = 3;  -- ID
-	local inst = DynamixelPacket.write_byte(idOld, addr, idNew);
-	return unix.write(fd, inst);
-end
-
-libDynamixel.read_data = function(fd, addr, len, twait)
-	twait = twait or 0.100;
-	len  = len or 2;
-	local inst = DynamixelPacket.read_data(id, addr, len);
-	unix.read(fd); -- clear old status packets
-	unix.write(fd, inst)
-	local status = libDynamixel.get_status(fd, twait);
-	if (status) then
-		return status.parameter;
-	end
-end
-
--- TODO: not supported yet...?
+--[[
+-- Please do not read from CM730 (for now)
 libDynamixel.bulk_read_data = function(fd, id_cm730, ids, addr, len, twait)
 	twait = twait or 0.100;
 	len  = len or 2;
@@ -339,6 +315,7 @@ libDynamixel.bulk_read_data = function(fd, id_cm730, ids, addr, len, twait)
 		return status.parameter;
 	end
 end
+--]]
 
 libDynamixel.sync_write_byte = function(fd, ids, addr, data)
 	local nid = #ids;
@@ -370,6 +347,38 @@ libDynamixel.sync_write_word = function(fd, ids, addr, data)
 	local inst = DynamixelPacket.sync_write(addr, len,
 	string.char(unpack(t)));
 	unix.write(fd, inst);
+end
+
+libDynamixel.sync_write_dword = function(fd, ids, addr, data)
+	local nid = #ids;
+	local len = 4;
+
+	local t = {};
+	local n = 1;
+	for i = 1,nid do
+		t[n] = ids[i];
+		t[n+1],t[n+2],t[n+3],t[n+4] = DynamixelPacket.dword_to_byte(data[i]);
+		n = n + len + 1;
+	end
+	local inst = DynamixelPacket.sync_write(addr, len,
+	string.char(unpack(t)));
+	unix.write(fd, inst);
+end
+
+function libDynamixel.close(self)
+	-- fd of 0,1,2 are stdin, stdout, sterr respectively
+	if self.fd < 3 then
+		return false
+	end
+	-- TODO: is there a return value here for errors/success?
+	unix.close( self.fd );
+	return true
+end
+
+libDynamixel.reset = function(self)
+	libDynamixel.close( self.fd )
+	unix.usleep( 1e5 )
+	self.fd = libDynamixel.open( self.ttyname )
 end
 
 function libDynamixel.open( ttyname, ttybaud )
@@ -413,6 +422,8 @@ function libDynamixel.open( ttyname, ttybaud )
 	obj.ttyname = ttyname
 	obj.baud = baud
 	obj = init_device_handle(obj)
+	obj.close = libDynamixel.close
+	obj.reset = libDynamixel.reset
 	return obj;
 end
 

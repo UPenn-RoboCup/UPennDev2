@@ -108,13 +108,15 @@ int dynamixel_input(DynamixelPacket *pkt, uint8_t c, int n) {
 #endif
       // Complete packet
       return -1;
-    else
+    else{
+			printf("BAD CHECKSUM!!\n");
       // Bad checksum
       return 0;
+		}
   }
   else if (n > pkt->length+3)
     return 0;
-  
+  printf("pkt len %d\n",pkt->length);
   // Default is to increment index
   return n+1;
 }

@@ -283,7 +283,7 @@ function libDynamixel.parse_status_packet(pkt)
 	t.id = pkt:byte(5);
 	t.length = pkt:byte(6)+2^8*pkt:byte(7);
 	t.error = pkt:byte(8); -- TODO: fix
-	t.parameter = {pkt:byte(7,t.length+6)};
+	t.parameter = {pkt:byte(10,t.length+10-4)};
 	t.checksum = string.char( pkt:byte(t.length+7), pkt:byte(t.length+8) );
 	return t;
 end

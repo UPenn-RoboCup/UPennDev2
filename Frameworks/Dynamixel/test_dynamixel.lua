@@ -2,8 +2,8 @@ local libDynamixel = require('libDynamixel');
 
 local use_real_device = true
 local test_probe = false
-local test_torque = false
-local test_position = false
+local test_torque = true
+local test_position = true
 local show_pairs = false
 local test_crc = false
 local test_led = true
@@ -40,7 +40,7 @@ if test_probe then
 end
 
 if test_led then
-	local val = 1
+	local val = 0
 	if val==0 then
 		print('Sync LEDs OFF')
 	else
@@ -74,21 +74,23 @@ end
 
 if test_torque then
 	print('Testing torque enable with MX motors')
-	local val = 0
-	for id=14,14 do
+	local val = 1
+	for id=14,18,2 do
 		io.write(string.format('ID %d\n', id) )
 		local ret = Dynamixel:set_mx_torque_enable(id,val)
 		io.write( string.format('Sent %d bytes.\n',ret) )
+		os.execute('sleep 0.01')
 		print()
 	end
 end
 
-if test_position and false then
-	local goal = 72000 --4096
+if test_position and true then
+	local goal = 2048
 	print('Testing position with MX motors. Goal:',goal)
-	for id=7,9 do
-		io.write(string.format('ID %d\n', id) )
-		local ret = Dynamixel:set_nx_command_position(id,goal)
+	os.execute('sleep 0.01')
+	for id=16,16 do
+		io.write(string.format('Position ID %d\n', id,goal) )
+		local ret = Dynamixel:set_mx_command(id,goal)
 		io.write( string.format('Sent %d bytes.\n',ret) )
 		print()
 	end

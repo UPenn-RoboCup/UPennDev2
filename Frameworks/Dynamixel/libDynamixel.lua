@@ -201,7 +201,7 @@ function libDynamixel.set_ram(fd,id,addr,value,sz)
 	return unix.write(fd, inst);
 end
 
-function libDynamixel.get_ram(fd,id,addr)
+function libDynamixel.get_ram(fd,id,addr,sz)
 	local twait = 0.100;
 	local inst = DynamixelPacket.read_data(id, addr, 1);
 	-- TODO: Can we eliminate the read? flush?
@@ -209,7 +209,15 @@ function libDynamixel.get_ram(fd,id,addr)
 	unix.write(fd, inst)
 	local status = libDynamixel.get_status(fd, twait);
 	if status then
-		return status.parameter[1];
+		if sz==1 then
+			return status.parameter[1];
+		elseif sz==2 then
+			return DynamixelPacket.byte_to_word(unpack(status.parameter,1,2));
+		elseif sz==4 then
+			return DynamixelPacket.byte_to_dword(unpack(status.parameter,1,4));
+		else
+			print('BAD SZ TO GET_RAM!')
+		end
 	end
 end
 
@@ -221,7 +229,7 @@ function init_device_handle(obj)
 			return libDynamixel.set_ram(self.fd, id, addr, val, mx_ram_sz[key])
 		end
 		obj['get_'..key] = function(self,id,kind)
-			return libDynamixel.get_ram(self.fd,id,val,addr)
+			return libDynamixel.get_ram(self.fd,id,val,addr, mx_ram_sz[key])
 		end
 		--]]
 		-- MX Call
@@ -229,7 +237,7 @@ function init_device_handle(obj)
 			return libDynamixel.set_ram(self.fd, id, addr, val, mx_ram_sz[key])
 		end
 		obj['get_mx_'..key] = function(self,id,kind)
-			return libDynamixel.get_ram(self.fd,id,val,addr)
+			return libDynamixel.get_ram(self.fd,id,val,addr, mx_ram_sz[key])
 		end
 	end
 	-- NX
@@ -238,7 +246,7 @@ function init_device_handle(obj)
 			return libDynamixel.set_ram(self.fd, id, addr, val, nx_ram_sz[key])
 		end
 		obj['get_nx_'..key] = function(self,id,kind)
-			return libDynamixel.get_ram(self.fd,id,val,addr)
+			return libDynamixel.get_ram(self.fd,id,val,addr, nx_ram_sz[key])
 		end
 	end
 	return obj

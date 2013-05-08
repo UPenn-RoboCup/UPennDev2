@@ -8,6 +8,7 @@
 #include <string>
 #include <unistd.h>
 #include <stdlib.h>
+#include <signal.h>
 #include <sys/time.h>
 
 using namespace AL;
@@ -99,6 +100,8 @@ int sensor_process() {
     if (nButton == nButtonShutdown) {
       std::cout << "DCM sensor: system shutting down..." << std::endl;
       int ret = system(shutdownCommand);
+      if (WIFSIGNALED(ret) && (WTERMSIG(ret) == SIGINT || WTERMSIG(ret) == SIGQUIT))
+        return 0;
     }
   }
   else {

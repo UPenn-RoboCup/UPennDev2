@@ -7,8 +7,8 @@ local test_position = false
 local show_pairs = false
 local test_crc = false
 local test_led = false
-local test_read_position = false
-local test_sync_led = true
+local test_sync_led = false
+local test_read_position = true
 local test_sync_read_position = true
 
 -- Fake device for testing?
@@ -16,7 +16,7 @@ local dev_name = 'fake'
 if use_real_device then
 	dev_name = nil
 end
-local Dynamixel = libDynamixel.open( dev_name )
+local Dynamixel = libDynamixel.new_bus( dev_name )
 
 if test_crc then
 	local DynamixelPacket = require('DynamixelPacket');
@@ -73,6 +73,10 @@ if test_sync_led then
 end
 
 if test_sync_read_position then
+	local ids = {14,16,18}
+	os.execute('sleep 0.01')
+	print('\nSync Reading Position of IDs', unpack(ids) )
+	local res = Dynamixel:get_mx_position( ids )
 end
 
 if test_torque then

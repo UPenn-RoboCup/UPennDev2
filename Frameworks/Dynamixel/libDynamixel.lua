@@ -244,7 +244,6 @@ function libDynamixel.set_ram(fd,id,addr,value,sz)
 		end
 		return unix.write(fd, inst);
 	elseif type(id)=='table' then
-		-- TODO: ensure table is NOT key value
 		-- Sync write
 		if sz==1 then
 			libDynamixel.sync_write_byte(fd, id, addr, value)
@@ -252,8 +251,6 @@ function libDynamixel.set_ram(fd,id,addr,value,sz)
 			libDynamixel.sync_write_word(fd, id, addr, value)
 		elseif sz==4 then
 			libDynamixel.sync_write_dword(fd, id, addr, value)
-		else
-			io.write('BAD SZ OF WRITING')
 		end
 	end
 end
@@ -261,26 +258,24 @@ end
 -- Get a single element
 -- TODO: Grab neighboring RAM segments of different meaningful data
 function libDynamixel.get_ram(fd, id, addr, sz)
-	local inst = DynamixelPacket.read_data(id, addr, sz);
+	local inst = nil
+	if type(id) == 'number' then
+		inst = DynamixelPacket.read_data(id, addr, sz);
+	elseif type(id)=='table' then
+		inst = DynamixelPacket.sync_read(string.char(unpack(id)), addr, sz)
+	end
 	-- TODO: Can we eliminate the read? flush?
 	local clear = unix.read(fd); -- clear old status packets
 	local ret = unix.write(fd, inst)
 	local status = libDynamixel.get_status(fd);
-	--print('ret/clear/status',ret,clear,status)
+	print('ret/clear/status',ret,clear,status)
 	if status then
-		print('\n===========')
-		for k,v in pairs(status) do
-			print(k,v)
-		end
-		print('===========')
 		if sz==1 then
 			return status.parameter[1];
 		elseif sz==2 then
 			return DynamixelPacket.byte_to_word(unpack(status.parameter,1,2));
 		elseif sz==4 then
 			return DynamixelPacket.byte_to_dword(unpack(status.parameter,1,4));
-		else
-			print('BAD SZ TO GET_RAM!')
 		end
 	end
 end
@@ -361,22 +356,20 @@ libDynamixel.ping_probe = function(self, twait)
 	end
 end
 
---[[
--- Please do not read from CM730 (for now)
-libDynamixel.bulk_read_data = function(fd, id_cm730, ids, addr, len, twait)
+libDynamixel.sync_read = function(fd, ids, addr, len, twait)
 	twait = twait or 0.100;
 	len  = len or 2;
-	local inst = DynamixelPacket.bulk_read_data(
-	id_cm730,string.char(unpack(ids)), addr, len, #ids);
+	local inst = DynamixelPacket.sync_read( addr, len,
+	string.char(unpack(ids)) );
 	unix.read(fd); -- clear old status packets
 	unix.write(fd, inst)
 	local status = libDynamixel.get_status(fd, twait);
-	if (status) then
+	if status then
 		return status.parameter;
 	end
 end
---]]
 
+-- TODO: Reorganize the sync_write commands
 libDynamixel.sync_write_byte = function(fd, ids, addr, data)
 	local nid = #ids;
 	local len = 1;
@@ -441,23 +434,7 @@ libDynamixel.sync_write_dword = function(fd, ids, addr, data)
 	unix.write(fd, inst);
 end
 
-function libDynamixel.close(self)
-	-- fd of 0,1,2 are stdin, stdout, sterr respectively
-	if self.fd < 3 then
-		return false
-	end
-	-- TODO: is there a return value here for errors/success?
-	unix.close( self.fd );
-	return true
-end
-
-libDynamixel.reset = function(self)
-	libDynamixel.close( self.fd )
-	unix.usleep( 1e5 )
-	self.fd = libDynamixel.open( self.ttyname )
-end
-
-function libDynamixel.open( ttyname, ttybaud )
+function libDynamixel.new_bus( ttyname, ttybaud )
 	-------------------------------
 	-- Perform require upon an open
 	local baud = ttybaud or 1000000;
@@ -468,7 +445,6 @@ function libDynamixel.open( ttyname, ttybaud )
 		unix = require('unix');
 		stty = require('stty');
 	end
-	
 	-------------------------------	
 	if not ttyname then
 		local ttys = unix.readdir("/dev");
@@ -499,8 +475,20 @@ function libDynamixel.open( ttyname, ttybaud )
 	obj.ttyname = ttyname
 	obj.baud = baud
 	obj = init_device_handle(obj)
-	obj.close = libDynamixel.close
-	obj.reset = libDynamixel.reset
+	-- Close out the device
+	obj.close = function (self)
+		if self.fd < 3 then
+			return false
+		end
+		return unix.close( self.fd )==0
+	end
+	-- Reset the device
+	obj.reset = function(self)
+		self:close()
+		unix.usleep( 1e5 )
+		self.fd = libDynamixel.open( self.ttyname )
+	end
+	
 	obj.send_ping = libDynamixel.send_ping
 	obj.ping_probe = libDynamixel.ping_probe
 	return obj;

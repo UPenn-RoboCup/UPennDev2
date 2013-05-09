@@ -14,3 +14,4 @@ sudo nano /etc/sysctl.conf
 By writing to this file, upon reboot, the settings will stay permanent.  By default, on a 10.8 system, the defaults are:
 net.inet.udp.recvspace=196724
 net.inet.udp.maxdgram=9216
+

@@ -34,7 +34,6 @@ if show_pairs then
 end
 
 if test_probe then
---	local twait = 0.010
 	local twait = 0.020
 	Dynamixel:ping_probe(twait);
 end
@@ -84,7 +83,7 @@ if test_torque then
 	end
 end
 
-if test_position and true then
+if test_position and false then
 	local goal = 2048
 	print('Testing position with MX motors. Goal:',goal)
 	os.execute('sleep 0.01')

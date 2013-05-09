@@ -1,6 +1,6 @@
 print('\n\t== UDP Test ==')
 -- Send data to MATLAB
-local two_port = false
+local two_port = true
 
 local msg = 'hello';
 local udp = require 'udp'
@@ -22,7 +22,7 @@ end
 
 for i=1,4 do
 	local ret = udp_sender:send( msg )
-	if(ret==#msg) then
+	if ret==#msg then
 		print('LOCAL |  Sent '..ret..' bytes out of '..#msg)
 	else
 		print('!!! LOCAL |  Sent '..ret..' bytes out of '..#msg..' !!!')
@@ -34,11 +34,12 @@ for i=1,4 do
 
 	if udp_sender_matlab then
 		print()
-		local ret2 = udp.send(udp_sender_matlab, msg2, #msg2)
-		if(ret2==#msg2) then
+		local ret2,error_msg2 = udp_sender_matlab:send( msg2, #msg2 )
+		if ret2==#msg2 then
 			print('MATLAB | Sent '..ret2..' bytes out of '..#msg2)
 		else
-			print('!!! MATLAB | Sent '..ret2..' bytes out of '..#msg2..' !!!')
+			print('!!! MATLAB | Sent '..ret2..' bytes out of '..#msg2..' !!!',error_msg2)
+
 		end
 	end
 end

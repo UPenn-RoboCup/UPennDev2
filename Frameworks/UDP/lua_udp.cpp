@@ -249,10 +249,7 @@ static int lua_udp_send(lua_State *L) {
 	lua_pushinteger(L, ret);
 	if(ret==-1){
 		lua_pushstring( L, strerror(errno) );
-		/*
-		printf("\n\tUDP send fail:\n\t%s\n\n", strerror(errno));
-		fflush(stdout);
-		*/
+		return 2;
 	}
 	return 1;
 }

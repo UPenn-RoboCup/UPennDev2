@@ -7,8 +7,8 @@ local test_position = false
 local show_pairs = false
 local test_crc = false
 local test_led = false
-local test_sync_led = false
-local test_read_position = true
+local test_sync_led = true
+local test_read_position = false
 local test_sync_read_position = true
 
 -- Fake device for testing?

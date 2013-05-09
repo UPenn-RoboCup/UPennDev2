@@ -129,8 +129,11 @@ static int lua_dynamixel_input(lua_State *L) {
 			nPacket = dynamixel_input(&pkt, str[i], nPacket);
 			if (nPacket < 0)
 				ret += lua_pushpacket(L, &pkt);
-		}
-	}
+		} //for
+	} //if str
+	// TODO: push the state (nPacket)
+	// This is important for a polling mechanism to discern 
+	// When to clear the read buffer
 	return ret;
 }
 

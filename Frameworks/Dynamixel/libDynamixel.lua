@@ -306,11 +306,12 @@ end
 
 -- TODO: Is the status packet the same in Dynamixel 2.0?
 function libDynamixel.parse_status_packet(pkt)
-	local t = {};
-	t.id = pkt:byte(5);
-	t.length = pkt:byte(6)+2^8*pkt:byte(7);
-	t.error = pkt:byte(8); -- TODO: fix
-	t.parameter = {pkt:byte(10,t.length+10-4)};
+	local t = {}
+	t.id = pkt:byte(5)
+	t.length = pkt:byte(6)+2^8*pkt:byte(7)
+	t.instruction = pkt:byte(8)
+	t.error = pkt:byte(9)
+	t.parameter = {pkt:byte(10,t.length+6)}
 	t.checksum = string.char( pkt:byte(t.length+7), pkt:byte(t.length+8) );
 	return t;
 end
@@ -328,12 +329,7 @@ libDynamixel.get_status = function( fd, npkt, timeout )
 			unix2.write(fd,s)
 			str = str..s;
 			local pkt, done = DynamixelPacket.input(str);
-			if done and #pkt==npkt then
-				--[[
-				if npkt==1 then
-					return libDynamixel.parse_status_packet(pkt[1])
-				end
-				--]]
+			if done and #pkt>=npkt then
 				local statuses = {}
 				for pp=1,#pkt do
 					local status = libDynamixel.parse_status_packet(pkt[pp]);
@@ -388,9 +384,9 @@ libDynamixel.ping_probe = function(self, twait)
 	for id = 0,253 do
 		io.write( string.format("Ping: Dynamixel ID %d\n",id) )
 		self:send_ping( id );
-		local status = libDynamixel.get_status(self.fd,1,twait);
-		if status then
-			io.write(status.id)
+		local statuses = libDynamixel.get_status(self.fd,1,twait);
+		if statuses and #statuses==1 then
+			io.write(statuses[1].id)
 		end
 	end
 end
@@ -427,7 +423,6 @@ libDynamixel.sync_write_byte = function(fd, ids, addr, data)
 	string.char(unpack(t)));
 	unix.write(fd, inst);
 end
-
 libDynamixel.sync_write_word = function(fd, ids, addr, data)
 	local nid = #ids;
 	local len = 2;
@@ -446,7 +441,6 @@ libDynamixel.sync_write_word = function(fd, ids, addr, data)
 	string.char(unpack(t)));
 	unix.write(fd, inst);
 end
-
 libDynamixel.sync_write_dword = function(fd, ids, addr, data)
 	local nid = #ids;
 	local len = 4;
@@ -521,8 +515,7 @@ function libDynamixel.new_bus( ttyname, ttybaud )
 		unix.usleep( 1e5 )
 		self.fd = libDynamixel.open( self.ttyname )
 	end
-	
-	obj.send_ping = libDynamixel.send_ping
+	obj.ping = libDynamixel.send_ping
 	obj.ping_probe = libDynamixel.ping_probe
 	return obj;
 end

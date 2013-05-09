@@ -282,7 +282,6 @@ function libDynamixel.get_ram(fd, id, addr, sz)
 			table.insert(status_return,
 			DynamixelPacket.byte_to_word(unpack(status.parameter,1,2)) )
 		elseif sz==4 then
-			print('dec 4',unpack(status.parameter,1,4))
 			table.insert(status_return,
 			DynamixelPacket.byte_to_dword(unpack(status.parameter,1,4)) )
 		end
@@ -320,7 +319,6 @@ function libDynamixel.parse_status_packet(pkt)
 	t.instruction = pkt:byte(8)
 	t.error = pkt:byte(9)
 	t.parameter = {pkt:byte(10,t.length+5)}
-	print('Params',unpack(t.parameter))
 	t.checksum = string.char( pkt:byte(t.length+6), pkt:byte(t.length+7) );
 	return t;
 end

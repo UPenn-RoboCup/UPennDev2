@@ -1,14 +1,14 @@
 local libDynamixel = require('libDynamixel');
 
-local use_real_device = false
+local use_real_device = true
 local test_probe = false
 local test_torque = false
 local test_position = false
 local show_pairs = false
 local test_crc = false
 local test_led = false
-local test_sync_led = true
-local test_read_position = false
+local test_sync_led = false
+local test_read_position = true
 local test_sync_read_position = true
 
 -- Fake device for testing?
@@ -40,21 +40,22 @@ if test_probe then
 end
 
 if test_led then
-	local val = 0
+	os.execute('sleep 0.01')
+	local val = 255
 	if val==0 then
 		print('Sync LEDs OFF')
 	else
 		print('Sync LEDs ON')
 	end
-	for j=14,18,2 do
+	for j=1,12 do
 		print('LED ',j)
-		Dynamixel:set_mx_led( j, val )
+		Dynamixel:set_nx_led_red( j, val )
 		os.execute('sleep 0.01')
 	end
 end
 
 if test_read_position then
-	local id = 16
+	local id = 15
 	os.execute('sleep 0.01')
 	print('\nReading Position of ID',id)
 	local res = Dynamixel:get_mx_position( id )
@@ -62,7 +63,7 @@ if test_read_position then
 end
 
 if test_sync_led then
-	local ids = {14,16,18}
+	local ids = {13,14,15,16,17,18}
 	local val = 0
 	if val==0 then
 		print('Sync LEDs OFF',unpack(ids))
@@ -73,10 +74,12 @@ if test_sync_led then
 end
 
 if test_sync_read_position then
-	local ids = {14,16,18}
+	local ids = {13,15,17}
+--	local ids = {14,16,18}
 	os.execute('sleep 0.01')
 	print('\nSync Reading Position of IDs', unpack(ids) )
 	local res = Dynamixel:get_mx_position( ids )
+	print('Result',res)
 end
 
 if test_torque then

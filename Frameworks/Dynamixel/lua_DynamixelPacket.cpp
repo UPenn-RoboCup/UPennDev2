@@ -124,17 +124,20 @@ static int lua_dynamixel_input(lua_State *L) {
 	// TODO: This pkt variable should be part of a metatable, not the *.so
 	DynamixelPacket pkt;
 	int ret = 0;
+	int pkt_cnt = 0;
+	// Packet Table
+	lua_newtable(L);
 	if (str) {
 		for (int i = 0; i < nstr; i++) {
 			nPacket = dynamixel_input(&pkt, str[i], nPacket);
-			if (nPacket < 0)
+			if (nPacket < 0){
 				ret += lua_pushpacket(L, &pkt);
+				lua_rawseti(L, -2, ++pkt_cnt);
+			}
 		} //for
 	} //if str
-	// TODO: push the state (nPacket)
-	// This is important for a polling mechanism to discern 
-	// When to clear the read buffer
-	return ret;
+	lua_pushboolean(L, nPacket==-1);
+	return 2;
 }
 
 static int lua_dynamixel_byte_to_word(lua_State *L) {

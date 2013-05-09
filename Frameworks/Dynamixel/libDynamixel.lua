@@ -67,15 +67,11 @@ local mx_ram_sz = {
 local nx_ram_addr = {
 	
 	-- Legacy API Convention --
+	-- TODO: Manually write legacy functions
 	-- Comments adjacent gives the corresponding New API key
-	['led'] = string.char(0x33,0x02), -- Red Led
-	['battery'] = string.char(0x6F,0x02), -- Voltage
-	['command'] = string.char(0x54,0x02), -- command_position
-	-- Present velocity/position
-	['velocity'] = string.char(0x67,0x02), -- Same in new API
-	['position'] = string.char(0x32,0x02), -- Same in new API
-	['temperature'] = string.char(0x71,0x02), -- Same in new API
-	['torque_enable'] = string.char(0x32,0x02), -- Same in new API
+	--['led'] = string.char(0x33,0x02), -- Red Led
+	--['battery'] = string.char(0x6F,0x02), -- Voltage
+	--['command'] = string.char(0x54,0x02), -- command_position
 	
 	-- New API --
 	-- ENTER EEPROM AREA
@@ -105,6 +101,7 @@ local nx_ram_addr = {
 	['max_position'] = string.char(0x24,0x00),
 	['min_position'] = string.char(0x28,0x00),
 	['shutdown'] = string.char(0x30,0x00),
+	['torque_enable'] = string.char(0x32,0x02), -- Same in new API
 	
 	-- ENTER RAM AREA
 	-- Position Options --
@@ -140,9 +137,12 @@ local nx_ram_addr = {
 	['led_blue'] = string.char(0x35,0x02),
 	
 	-- Present information
+	['position'] = string.char(0x63,0x02), -- Same in new API
+	['velocity'] = string.char(0x67,0x02), -- Same in new API
 	['current'] = string.char(0x6D,0x02),
 	['load'] = string.char(0x6B,0x02),
 	['voltage'] = string.char(0x6F,0x02),
+	['temperature'] = string.char(0x71,0x02), -- Same in new API
 }
 -- Size on RAM/EEPROM in bytes
 local nx_ram_sz = {
@@ -257,17 +257,21 @@ end
 -- TODO: Grab neighboring RAM segments of different meaningful data
 function libDynamixel.get_ram(fd, id, addr, sz)
 	local inst = nil
+	local nids = 1
 	if type(id) == 'number' then
 		inst = DynamixelPacket.read_data(id, addr, sz);
 	elseif type(id)=='table' then
 		inst = DynamixelPacket.sync_read(string.char(unpack(id)), addr, sz)
+		nids = #ids
 	end
-	-- TODO: Can we eliminate the read? flush?
 	local clear = unix.read(fd); -- clear old status packets
 	local ret = unix.write(fd, inst)
-	local status = libDynamixel.get_status(fd);
-	print('clear/write/status',clear,ret,status)
-	if status then
+	local statuses = libDynamixel.get_status(fd,nids);
+	if not statuses then
+		return nil
+	end
+	for s,status in pairs(statuses) do
+		print('unpacking',s,status)
 		if sz==1 then
 			return status.parameter[1];
 		elseif sz==2 then
@@ -312,24 +316,32 @@ function libDynamixel.parse_status_packet(pkt)
 end
 
 -- Old get status method
-libDynamixel.get_status = function( fd, timeout )
+libDynamixel.get_status = function( fd, npkt, timeout )
 	-- TODO: Is this the best default timeout for the new PRO series?
-	timeout = timeout or 0.01;
+	timeout = timeout or 0.1;
 	local t0 = unix.time();
 	local str = "";
+	local pkt_cnt = 0;
 	while unix.time()-t0 < timeout do
 		local s = unix.read(fd);
 		if type(s) == "string" then
-			print('Got',#s)
 			unix2.write(fd,s)
 			str = str..s;
-			print('sz',#str)
-			pkt = DynamixelPacket.input(str);
-			if pkt then
-				local status = libDynamixel.parse_status_packet(pkt);
-				print(string.format("Status: id=%d error=%d",
-				status.id,status.error));
-				return status;
+			local pkt, done = DynamixelPacket.input(str);
+			if done and #pkt==npkt then
+				--[[
+				if npkt==1 then
+					return libDynamixel.parse_status_packet(pkt[1])
+				end
+				--]]
+				local statuses = {}
+				for pp=1,#pkt do
+					local status = libDynamixel.parse_status_packet(pkt[pp]);
+					table.insert(statuses,status)
+					print(string.format("Status: id=%d error=%d",
+					status.id,status.error));
+				end
+				return statuses;
 			end
 		end
 		unix.usleep(100);
@@ -373,11 +385,10 @@ end
 
 libDynamixel.ping_probe = function(self, twait)
 	twait = twait or 0.010;
---	for id = 0,253 do
-	for id = 0,20 do
+	for id = 0,253 do
 		io.write( string.format("Ping: Dynamixel ID %d\n",id) )
 		self:send_ping( id );
-		local status = libDynamixel.get_status(self.fd, twait);
+		local status = libDynamixel.get_status(self.fd,1,twait);
 		if status then
 			io.write(status.id)
 		end
@@ -391,7 +402,7 @@ libDynamixel.sync_read = function(fd, ids, addr, len, twait)
 	string.char(unpack(ids)) );
 	unix.read(fd); -- clear old status packets
 	unix.write(fd, inst)
-	local status = libDynamixel.get_status(fd, twait);
+	local status = libDynamixel.get_status(fd, #ids);
 	if status then
 		return status.parameter;
 	end

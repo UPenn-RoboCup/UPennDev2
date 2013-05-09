@@ -91,11 +91,7 @@ int dynamixel_input(DynamixelPacket *pkt, uint8_t c, int n) {
 		return n+1;
 	}
 	else if (n==N_PACKET_HEADERS){
-		// TODO: properly get 16 bit length
-		pkt->length = pkt->len[0];
-		uint16_t sum = pkt->len[0] + (pkt->len[1]<<8) & 0xFF00;
-		printf("pkt->len = %u | %u \n",pkt->len[0],pkt->len[1]);
-		printf("pkt->length = %u, sum = %u\n\n", pkt->length, sum);
+		pkt->length = pkt->len[0] + ((pkt->len[1]<<8) & 0xFF00);
 		return n+1;
 	}
 	else if (n == pkt->length+N_PACKET_HEADERS) {

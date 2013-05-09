@@ -1,5 +1,4 @@
 #include "Transform.h"
-#include <math.h>
 
 Transform::Transform() {
   clear();

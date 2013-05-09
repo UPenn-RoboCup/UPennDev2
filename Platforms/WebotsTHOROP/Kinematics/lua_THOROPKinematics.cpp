@@ -1,25 +1,9 @@
 /* 
-  Lua interface to THOROP Kinematics
-
-  To compile on Mac OS X:
-  g++ -arch i386 -o THOROPKinematics.dylib -bundle -undefined dynamic_lookup luaTHOROPKinematics.pp THOROPKinematics.cc Transform.cc -lm
+(c) 2013 Seung Joon Yi
 */
 
 #include "THOROPKinematics.h"
-#include "luaTHOROPKinematics.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#include "lua.h"
-#include "lualib.h"
-#include "lauxlib.h"
-
-#ifdef __cplusplus
-}
-#endif
-
+#include <lua.hpp>
 
 static void lua_pushvector(lua_State *L, std::vector<double> v) {
   int n = v.size();
@@ -62,7 +46,6 @@ static int forward_joints(lua_State *L)
   std::vector<double> q = THOROP_kinematics_forward_joints(&r[0]);
   lua_pushvector(L, q);
   return 1;
-
 }
 
 static int forward_head(lua_State *L) {
@@ -85,7 +68,6 @@ static int forward_r_arm(lua_State *L) {
   lua_pushtransform(L, t);
   return 1;
 }
-
 
 static int forward_l_leg(lua_State *L) {
   std::vector<double> q = lua_checkvector(L, 1);
@@ -142,8 +124,6 @@ static int r_arm_torso_7(lua_State *L) {
   lua_pushvector(L, position6D(t));
   return 1;
 }
-
-
 
 static int l_leg_torso(lua_State *L) {
   std::vector<double> q = lua_checkvector(L, 1);
@@ -221,9 +201,6 @@ static int inverse_r_arm_7(lua_State *L) {
   lua_pushvector(L, qArm);
   return 1;
 }
-
-
-
 
 static int inverse_arms(lua_State *L) {
   std::vector<double> qLArm(12), qRArm;
@@ -349,6 +326,5 @@ static const struct luaL_reg kinematics_lib [] = {
 extern "C"
 int luaopen_THOROPKinematics (lua_State *L) {
   luaL_register(L, "THOROPKinematics", kinematics_lib);
-  
   return 1;
 }

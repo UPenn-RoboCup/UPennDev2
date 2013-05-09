@@ -5,6 +5,36 @@
 local libDynamixel = {}
 local DynamixelPacket = require('DynamixelPacket');
 
+-- Legacy support so this code can work with CHARLI/DARwIn-OP
+--[[
+local DynamixelPacketLegacy = require('DynamixelPacketLegacy');
+-- Legacy
+local legacy_ram_addr = {
+	['id'] = 3,
+	['led'] = string.char(25,0),
+	['battery'] = string.char(42,0),
+	['command'] = string.char(30,0),
+	['temperature'] = string.char(43,0),
+	['delay'] = string.char(5,0),
+	['hardness'] = string.char(34,0), -- in PID verion of the product?
+	['velocity'] = string.char(32,0),
+	['position'] = string.char(36,0),
+	['torque_enable'] = string.char(24,0),
+}
+local legacy_ram_sz = {
+	['id'] = 1,
+	['led'] = 1,
+	['battery'] = 2,
+	['command'] = 2,
+	['temperature'] = 1,
+	['delay'] = 1,
+	['hardness'] = 2,
+	['velocity'] = 2,
+	['position'] = 2,
+	['torque_enable'] = 1,
+}
+--]]
+
 -- MX
 local mx_ram_addr = {
 	['id'] = 3,

@@ -1,205 +1,310 @@
-#include <iostream>
+/*
+Lua file to send and receive UDP messages.
+Daniel D. Lee copyright 2009 <ddlee@seas.upenn.edu>
+Stephen G. McGill copyright 2013 <smcgill3@seas.upenn.edu>
+Yida Zhang copyright 2013 <yida@seas.upenn.edu>
+*/
+
 #include <string>
 #include <deque>
-#include "string.h"
+#include <vector>
+#include <algorithm>
+
 #include <stdlib.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <stdint.h>
+#include <errno.h>
+
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
-#include <stdio.h>
 #include <assert.h>
-#include <vector>
-#include <algorithm>
-#include <stdint.h>
 
-// C++ include
-#include "lua.hpp"
+#include <lua.hpp>
 
 #define MDELAY 2
 #define TTL 16
 //Size for sending 640*480 yuyv data without resampling
 #define MAX_LENGTH 160000
 
+#define MT_NAME "udp_mt"
+
+typedef struct {
+  bool init_recv;
+  int recv_fd;
+  int recv_port;
+  bool init_send;
+  int send_fd;
+  int send_port;
+  const char * send_ip;
+  std::deque<std::string> *recvQueue;
+} structUdp;
+
 const int maxQueueSize = 12;
-static std::deque<std::string> recvQueue;
 
-// TODO: Make more file descriptors, which are saved in the Lua metatable
-static bool init = false;
-static int send_fd, recv_fd;
-static std::string IP;
-static int PORT = 0;
+static structUdp * lua_checkudp(lua_State *L, int narg) {
+  void *ud = luaL_checkudata(L, narg, MT_NAME);
+  luaL_argcheck(L, ud != NULL, narg, "invalid Udp udata");
+  return (structUdp *)ud;
+}
 
-// TODO: Close file descriptors
-/*
-   void mexExit(void)
-   {
-   if (send_fd > 0)
-   close(send_fd);
-   if (recv_fd > 0)
-   close(recv_fd);
-   }
-   */
+static int lua_udp_close(lua_State *L) {
+  structUdp *p = lua_checkudp(L, 1);
 
-static int lua_comm_init(lua_State *L) {
-
-  if( init ){
-    printf("Already initialized!\n");
-    lua_pushnil(L);
+  if (p->recv_fd > 0 && p->init_recv) {
+    close(p->recv_fd);
+    p->init_recv = false;
+    p->recvQueue->clear();
+    delete p->recvQueue;
+    lua_pushboolean(L, 1);
     return 1;
   }
 
-  const char *ip = luaL_checkstring(L, 1);
-  int port = luaL_checkint(L,2);
-  IP = ip;
-  PORT = port;
-
-  struct hostent *hostptr = gethostbyname(IP.c_str());
-  if (hostptr == NULL) {
-    printf("Could not get hostname\n");
-    lua_pushnil(L);
+  if (p->send_fd > 0 && p->init_send) {
+    close(p->send_fd);
+    p->init_send = false;
+    lua_pushboolean(L, 1);
     return 1;
   }
 
-  send_fd = socket(AF_INET, SOCK_DGRAM, 0);
-  if (send_fd < 0) {
-    printf("Could not open datagram send socket\n");
-    lua_pushnil(L);
-    return 1;
-  }
+	lua_pushboolean(L,0);
+	return 1;
+}
 
-  int i = 1;
-  if (setsockopt(send_fd, SOL_SOCKET, SO_BROADCAST, (const char *) &i, sizeof(i)) < 0) {
-    printf("Could not set broadcast option\n");
-    lua_pushnil(L);
-    return 1;
-  }
+static int lua_udp_init_recv(lua_State *L) {
 
-  struct sockaddr_in dest_addr;
-  bzero((char *) &dest_addr, sizeof(dest_addr));
-  dest_addr.sin_family = AF_INET;
-  bcopy(hostptr->h_addr, (char *) &dest_addr.sin_addr, hostptr->h_length);
-  dest_addr.sin_port = htons(PORT);
+  structUdp *ud = (structUdp *)lua_newuserdata(L, sizeof(structUdp)); 
+  ud->init_recv = false;
+  ud->init_send = false;
 
-  if (connect(send_fd, (struct sockaddr *) &dest_addr, sizeof(dest_addr)) < 0) {
-    printf("Could not connect to destination address\n");
-    lua_pushnil(L);
-    return 1;
-  }
+	// Grab port to listen on (all interfaces)
+	ud->recv_port = luaL_checkint(L,1);
 
-  recv_fd = socket(AF_INET, SOCK_DGRAM, 0);
-  if (recv_fd < 0) {
-    printf("Could not open datagram recv socket\n");
-    lua_pushnil(L);
-    return 1;
-  }
+	ud->recv_fd = socket(AF_INET, SOCK_DGRAM, 0);
+	if (ud->recv_fd < 0)
+		return luaL_error(L,"Could not open datagram recv socket!\n");
+  ud->recvQueue = new std::deque<std::string>;
 
-  struct sockaddr_in local_addr;
-  bzero((char *) &local_addr, sizeof(local_addr));
-  local_addr.sin_family = AF_INET;
-  local_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-  local_addr.sin_port = htons(PORT);
-  if (bind(recv_fd, (struct sockaddr *) &local_addr, sizeof(local_addr)) < 0) {
-    printf("Could not bind to port\n");
-    lua_pushnil(L);
-    return 1;
-  }
+	struct sockaddr_in local_addr;
+	bzero((char *) &local_addr, sizeof(local_addr));
+	local_addr.sin_family = AF_INET;
+	local_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+	local_addr.sin_port = htons(ud->recv_port);
+	if (bind(ud->recv_fd, (struct sockaddr *) &local_addr, sizeof(local_addr)) < 0)
+		return luaL_error(L,"Could not bind to port\n");
 
-  // Nonblocking receive:
-  int flags  = fcntl(recv_fd, F_GETFL, 0);
-  if (flags == -1) 
-    flags = 0;
-  if (fcntl(recv_fd, F_SETFL, flags | O_NONBLOCK) < 0) {
-    printf("Could not set nonblocking mode\n");
-    lua_pushnil(L);
-    return 1;
-  }
+	// Nonblocking receive
+	int flags  = fcntl(ud->recv_fd, F_GETFL, 0);
+	if (flags == -1) 
+		flags = 0;
+	if ( fcntl(ud->recv_fd, F_SETFL, flags|O_NONBLOCK)<0 )
+		return luaL_error(L,"Could not set nonblocking mode\n");
 
-  // TODO: set at exit
-  init = true;
-  lua_pushinteger(L, 1);
+	// TODO: Store in an array, so we can have multiple ports
+	ud->init_recv = true;
+
+  luaL_getmetatable(L, MT_NAME);
+  lua_setmetatable(L, -2);
+	return 1;
+}
+
+static int lua_udp_init_send(lua_State *L) {
+
+  structUdp *ud = (structUdp *)lua_newuserdata(L, sizeof(structUdp)); 
+  ud->init_send = false;
+  ud->init_recv = false;
+
+	if (ud->init_send)
+		return luaL_error(L,"Already initialized sender!\n");
+	
+	// TODO: check if already assigned an ip/port combo?
+	ud->send_ip = luaL_checkstring(L, 1);//std::string
+	ud->send_port = luaL_checkint(L,2);
+
+	// Where to send the data
+	struct hostent *hostptr = gethostbyname( ud->send_ip );
+	if (hostptr == NULL)
+		return luaL_error(L,"Could not get hostname\n");
+
+	ud->send_fd = socket(AF_INET, SOCK_DGRAM, 0);
+	if (ud->send_fd < 0)
+		return luaL_error(L,"Could not open datagram send socket\n");
+  else
+    ud->init_send = true;
+
+	int i = 1;
+	if (setsockopt(ud->send_fd, SOL_SOCKET, SO_BROADCAST, 
+	(const char *) &i, sizeof(i)) < 0)
+		return luaL_error(L,"Could not set broadcast option\n");
+	i = 1;
+	if (setsockopt(ud->send_fd, SOL_SOCKET, SO_REUSEADDR,
+	(const char *) &i, sizeof(i)) < 0)
+		return luaL_error(L,"Could not set reuse option");
+
+	struct sockaddr_in dest_addr;
+	bzero((char *) &dest_addr, sizeof(dest_addr));
+	dest_addr.sin_family = AF_INET;
+	bcopy(hostptr->h_addr, (char *) &dest_addr.sin_addr, hostptr->h_length);
+	dest_addr.sin_port = htons(ud->send_port);
+
+	if (connect(ud->send_fd, (struct sockaddr *) &dest_addr, sizeof(dest_addr)) < 0)
+		return luaL_error(L,"Could not connect to destination address\n");
+
+  luaL_getmetatable(L, MT_NAME);
+  lua_setmetatable(L, -2);
+	return 1;
+}
+
+static int comm_update(structUdp *p) {
+
+	static sockaddr_in source_addr;
+	static char data[MAX_LENGTH];
+
+	// Check whether initiated
+	// TODO: associate checks with the metatable
+	//fprintf(stdout,"init recv: %d (%d)\n",p->init_recv,p->recv_fd);
+	//fflush(stdout);
+	assert( p->init_recv );
+	// Process incoming messages:
+	socklen_t source_addr_len = sizeof(source_addr);
+	int len = 
+		recvfrom(p->recv_fd, data, MAX_LENGTH, 0, (struct sockaddr *) &source_addr, &source_addr_len);
+	while (len > 0) {
+		std::string msg((const char *) data, len);
+		p->recvQueue->push_back(msg);
+		len = recvfrom(p->recv_fd, data, MAX_LENGTH, 0, (struct sockaddr *) &source_addr, &source_addr_len);
+	}
+
+	// Remove older messages
+	while (p->recvQueue->size() > maxQueueSize)
+    p->recvQueue->pop_front();
+
+	return p->recvQueue->size();
+}
+
+static int lua_udp_size(lua_State *L) {
+  structUdp *p = lua_checkudp(L, 1);
+	if( !p->init_recv ){
+		/*
+		lua_pushinteger( L, 0 );
+		return 1;
+		*/
+		return luaL_error(L,"Did not initialize the UDP as a receiver!\n");
+	}
+	/*
+	fprintf(stdout,"udp size: %d (%d)\n",p->init_recv,p->recv_fd);
+	fflush(stdout);
+	*/
+	int updateRet = comm_update(p);
+	lua_pushinteger( L, updateRet );
+	return 1;
+}
+
+static int lua_udp_receive(lua_State *L) {
+
+  structUdp *p = lua_checkudp(L, 1);
+
+	// Perform an update to receive data
+	//fprintf(stdout,"udp size: %d (%d)\n",p->init_recv,p->recv_fd);
+	//fflush(stdout);
+	int updateRet = comm_update(p);
+
+	// If empty, then return nil
+	if (p->recvQueue->empty()) {
+		lua_pushnil(L);
+		return 1;
+	}
+
+	// Push a light string with the incoming data from the queue
+	lua_pushlstring(L, p->recvQueue->front().c_str(), p->recvQueue->front().size());
+	// Remove this object from the receiving buffer queue
+	p->recvQueue->pop_front();
+
+	return 1;
+}
+
+static int lua_udp_send(lua_State *L) {
+
+  structUdp *p = lua_checkudp(L, 1);
+
+	// Grab the data
+	const char *data = luaL_checkstring(L, 2);
+	// Grab the size of the data, if given
+	const int size = luaL_optint(L, 3, strlen(data));
+	
+	if( p->send_fd == p->recv_fd || p->send_fd<3 )
+		return luaL_error(L,"Bad file descriptor (%d)!\n", p->send_fd);
+	
+	// TODO: add a maximum send limit
+	if(size<0)
+		return luaL_error(L,"Negative number of bytes to send!\n");
+
+	// Send the data
+	int ret = send(p->send_fd, data, size, 0);
+	// Debugging message
+	// Push the return value
+	lua_pushinteger(L, ret);
+	if(ret==-1){
+		lua_pushstring( L, strerror(errno) );
+		return 2;
+	}
+	return 1;
+}
+
+static int lua_udp_index(lua_State *L) {
+  structUdp *p = lua_checkudp(L, 1);
+  // Get index through metatable:
+  if (!lua_getmetatable(L, 1)) {lua_pop(L, 1); return 0;} // push metatable
+  lua_pushvalue(L, 2); // copy key
+  lua_rawget(L, -2); // get metatable function
+  lua_remove(L, -2); // delete metatable
   return 1;
 }
 
-static int lua_comm_update(lua_State *L) {
-  static sockaddr_in source_addr;
-  static char data[MAX_LENGTH];
+static int lua_udp_string(lua_State *L) {
+	structUdp *p = lua_checkudp(L, 1);
+	char msg_buf[255];
+  if (p->init_send)
+		sprintf(msg_buf,"UDP Sender <%s:%d>",p->send_ip,p->send_port);
+  else if (p->init_recv)
+		sprintf(msg_buf,"UDP Receiver <%d>",p->recv_port);
+  else
+		sprintf(msg_buf,"UDP Uninitialized");
+  lua_pushstring(L, msg_buf);
+  return 1;
+}
 
-  // Check whether initiated
-  // TODO: associate checks with the metatable
-  assert(init);
+static int lua_udp_fd(lua_State *L) {
 
-  // Process incoming messages:
-  socklen_t source_addr_len = sizeof(source_addr);
-  int len = recvfrom(recv_fd, data, MAX_LENGTH, 0, (struct sockaddr *) &source_addr, &source_addr_len);
-  while (len > 0) {
-    std::string msg((const char *) data, len);
-    recvQueue.push_back(msg);
-    len = recvfrom(recv_fd, data, MAX_LENGTH, 0, (struct sockaddr *) &source_addr, &source_addr_len);
+  structUdp *p = lua_checkudp(L, 1);
+  if (p->init_recv) {
+    lua_pushinteger(L, p->recv_fd);
+  } else if (p->init_send) {
+    lua_pushinteger(L, p->send_fd);
+  } else {
+    luaL_error(L, "udp not init");
   }
-
-  // Remove older messages
-  while (recvQueue.size() > maxQueueSize)
-    recvQueue.pop_front();
-
   return 1;
 }
 
-static int lua_comm_size(lua_State *L) {
-  int updateRet = lua_comm_update(L);
-  lua_pushinteger(L, recvQueue.size());
-  return 1;
-}
+static const struct luaL_Reg udp_function [] = {
+	{"new_receiver", lua_udp_init_recv},
+	{"new_sender", lua_udp_init_send},
+	{NULL, NULL}
+};
 
-static int lua_comm_receive(lua_State *L) {
-  // Perform an update to receive data
-  int updateRet = lua_comm_update(L);
-
-  // If empty, then return nil
-  if (recvQueue.empty()) {
-    lua_pushnil(L);
-    return 1;
-  }
-
-  // Push a light string with the incoming data from the queue
-  lua_pushlstring(L, recvQueue.front().c_str(), recvQueue.front().size());
-
-  // Remove this object from the receiving buffer queue
-  recvQueue.pop_front();
-
-  return 1;
-}
-
-
-static int lua_comm_send(lua_State *L) {
-  // Grab the arguments
-  const char *data = luaL_checkstring(L, 1);
-  int size = luaL_optint(L, 2, 0);
-  if(size==0)
-    size = strlen(data);
-  else if(size<0) {
-    // Cannot send a negative number of bytes
-    // TODO: add a maximum limit
-    lua_pushnil(L);
-    return 1;
-  }
-  // Process the update
-  int updateRet = lua_comm_update(L);
-  // Send the data
-  int ret = send(send_fd, data, size, 0);
-  // Push the return value
-  lua_pushinteger(L, ret);
-  return 1;
-}
-
-static const struct luaL_Reg udp [] = {
-  {"init", lua_comm_init},
-  {"size", lua_comm_size},
-  {"receive", lua_comm_receive},
-  {"send", lua_comm_send},
+static const luaL_Reg udp_methods[] = {
+  {"send", lua_udp_send},
+  {"receive", lua_udp_receive},
+	{"size", lua_udp_size},
+  {"descriptor", lua_udp_fd},
+  {"close", lua_udp_close},
+  {"__tostring", lua_udp_string},
+  {"__gc", lua_udp_close},
+  {"__index", lua_udp_index},
   {NULL, NULL}
 };
 
@@ -207,10 +312,23 @@ static const struct luaL_Reg udp [] = {
 extern "C"
 #endif
 int luaopen_udp (lua_State *L) {
+  luaL_newmetatable(L, MT_NAME);
+
 #if LUA_VERSION_NUM == 502
-  luaL_newlib(L, udp);
+	/*
+  int i = 0;
+  lua_pushvalue(L, -1);
+  while (udp_methods[i].name) {
+    lua_setfield(L, -2, udp_methods[i].name);
+    lua_pushcfunction(L, udp_methods[i].func);
+		i++;
+  }
+	*/
+	luaL_setfuncs( L, udp_methods, 0 );
+	luaL_newlib(L, udp_function);
 #else
-  luaL_register(L, "udp", udp);
-#endif
-  return 1;
+  luaL_register(L, NULL, udp_methods);
+	luaL_register(L, "udp", udp_function);
+#endif  
+	return 1;
 }

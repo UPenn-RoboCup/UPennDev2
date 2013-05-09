@@ -1,35 +1,51 @@
--- TODO: Support multiple udps
-local two_port = false
+print('\n\t== UDP Test ==')
+-- Send data to MATLAB
+local two_port = true
 
 local msg = 'hello';
 local udp = require 'udp'
-local udp_ok = udp.init('127.0.0.1',54321)
-assert(udp_ok,"Bad udp setup!")
+local udp_sender = udp.new_sender('127.0.0.1',54321)
+assert(udp_sender,"Bad udp sender!")
+local udp_receiver = udp.new_receiver(54321)
+assert(udp_receiver,"Bad udp receiver!")
+print(
+string.format("LOCAL | \nsend_fd:\n\t%s\nrecv_fd\n\t%s\n",tostring(udp_sender),tostring(udp_receiver) )
+)
 
 if two_port then
-  msg2 = 'world';
-  print('Setting up udp2')
-  udp2 = require 'udp'
-  udp2_ok = udp2.init('127.0.0.1',54322)
-  assert(udp2_ok,"Bad udp2 setup!")
+	msg2 = 'world';
+	print('Setting up MATLAB udp...')
+	udp_sender_matlab = udp.new_sender('127.0.0.1',54320)
+	assert(udp_sender_matlab,"Bad matlab udp setup!")
+	print(string.format("MATLAB | send_fd:\n\t%s\n", tostring(udp_sender_matlab)) )
 end
---for k,v in pairs(getmetatable(udp)) do print(k,v) end
 
 for i=1,4 do
-  print()
-  local ret = udp.send(msg)
-  print('1 Sent',ret,'bytes of',#msg)
-  while udp.size()>0 do
-    local data = udp.receive()
-    print('1 received',data)
-  end
-  
-  if two_port and udp2_ok then
-    ret = udp.send(msg2,#msg2)
-    print('2 Sent',ret,'bytes')
-    while udp2.size()>0 do
-      local data = udp2.receive()
-      print('2 received',data)
-    end
-  end
+	local ret = udp_sender:send( msg )
+	if ret==#msg then
+		print('LOCAL |  Sent '..ret..' bytes out of '..#msg)
+	else
+		print('!!! LOCAL |  Sent '..ret..' bytes out of '..#msg..' !!!')
+	end
+	while udp_receiver:size()>0 do
+		local data = udp_receiver:receive()
+		print(string.format('\tLOCAL | Received %d bytes:',#data),data )
+	end
+
+	if udp_sender_matlab then
+		print()
+		local ret2,error_msg2 = udp_sender_matlab:send( msg2, #msg2 )
+		if ret2==#msg2 then
+			print('MATLAB | Sent '..ret2..' bytes out of '..#msg2)
+		else
+			print('!!! MATLAB | Sent '..ret2..' bytes out of '..#msg2..' !!!',error_msg2)
+
+		end
+	end
+end
+
+udp_sender:close()
+udp_receiver:close()
+if udp_sender_matlab then
+	udp_sender_matlab:close()
 end

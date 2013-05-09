@@ -31,28 +31,6 @@ static int lua_dynamixel_instruction_ping(lua_State *L) {
 	return lua_pushpacket(L, p);
 }
 
-static int lua_dynamixel_instruction_read_data(lua_State *L) {
-	int id = luaL_checkint(L, 1);
-	size_t naddr;
-	const char *addr = luaL_checklstring(L, 2, &naddr);
-	unsigned char len = luaL_optinteger(L, 3, 1);
-	DynamixelPacket *p = dynamixel_instruction_read_data
-		(id, addr[0], addr[1], len);
-	return lua_pushpacket(L, p);
-}
-
-//ADDED for bulk read
-static int lua_dynamixel_instruction_bulk_read_data(lua_State *L) {
-	uint8_t id_cm730 = luaL_checkint(L, 1);
-	size_t nstr;
-	const char *str = luaL_checklstring(L, 2, &nstr);
-	uint8_t addr = luaL_checkint(L, 3);
-	uint8_t len = luaL_checkint(L, 4);
-	DynamixelPacket *p = dynamixel_instruction_bulk_read_data
-		(id_cm730, (uint8_t *) str, addr, len, nstr);
-	return lua_pushpacket(L, p);
-}
-
 static int lua_dynamixel_instruction_write_data(lua_State *L) {
 	uint8_t id = luaL_checkint(L, 1);
 	size_t naddr;
@@ -114,6 +92,31 @@ static int lua_dynamixel_instruction_sync_write(lua_State *L) {
 	return lua_pushpacket(L, p);
 }
 
+static int lua_dynamixel_instruction_read_data(lua_State *L) {
+	int id = luaL_checkint(L, 1);
+	size_t naddr;
+	const char *addr = luaL_checklstring(L, 2, &naddr);
+	unsigned char len = luaL_optinteger(L, 3, 1);
+	DynamixelPacket *p = dynamixel_instruction_read_data
+		(id, addr[0], addr[1], len);
+	return lua_pushpacket(L, p);
+}
+
+static int lua_dynamixel_instruction_sync_read(lua_State *L) {
+	// TODO: Verify naddr=2 for 2-byte address
+	size_t naddr;
+	const char *addr = luaL_checklstring(L, 1, &naddr);
+	// How many bytes to read
+	uint16_t len = luaL_checkint(L, 2);
+	// How many IDs to read from
+	size_t nids;
+	// Which ids to read from
+	const char *ids = luaL_checklstring(L, 3, &nids);
+	DynamixelPacket *p = dynamixel_instruction_sync_read
+		(addr[0], addr[1], len, (uint8_t *)ids, (uint8_t)nids);
+	return lua_pushpacket(L, p);
+}
+
 static int lua_dynamixel_input(lua_State *L) {
 	size_t nstr;
 	const char *str = luaL_checklstring(L, 1, &nstr);
@@ -126,10 +129,7 @@ static int lua_dynamixel_input(lua_State *L) {
 			nPacket = dynamixel_input(&pkt, str[i], nPacket);
 			if (nPacket < 0)
 				ret += lua_pushpacket(L, &pkt);
-			//printf("push pkt status: nPacket %d, ret %d\n",nPacket, ret);
 		}
-	} else {
-		printf("BAD STRING INPUT\n");
 	}
 	return ret;
 }
@@ -209,9 +209,9 @@ static const struct luaL_reg dynamixelpacket_functions[] = {
 	{"write_byte", lua_dynamixel_instruction_write_byte},
 	{"write_word", lua_dynamixel_instruction_write_word},
 	{"write_dword", lua_dynamixel_instruction_write_dword},
-	{"sync_write", lua_dynamixel_instruction_sync_write},
 	{"read_data", lua_dynamixel_instruction_read_data},
-	{"bulk_read_data", lua_dynamixel_instruction_bulk_read_data},
+	{"sync_write", lua_dynamixel_instruction_sync_write},
+	{"sync_read",  lua_dynamixel_instruction_sync_read},
 	{"word_to_byte", lua_dynamixel_word_to_byte},
 	{"dword_to_byte", lua_dynamixel_dword_to_byte},
 	{"byte_to_word", lua_dynamixel_byte_to_word},

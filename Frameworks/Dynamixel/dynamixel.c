@@ -196,11 +196,11 @@ uint8_t address_l, uint8_t address_h, uint16_t len,
 	uint8_t parameter[nparameter];
 	int i;
 	for (i = 0; i < nids; i++) {
-		parameter[4*i+0] = ids[i];
-		parameter[4*i+1] = address_l;
-		parameter[4*i+2] = address_h;
-		parameter[4*i+3] = len & 0x00FF;
-		parameter[4*i+4] = (len>>8) & 0x00FF;
+		parameter[5*i+0] = ids[i];
+		parameter[5*i+1] = address_l;
+		parameter[5*i+2] = address_h;
+		parameter[5*i+3] = len & 0x00FF;
+		parameter[5*i+4] = (len>>8) & 0x00FF;
 	}
 
 	return dynamixel_instruction(id, inst, parameter, nparameter);

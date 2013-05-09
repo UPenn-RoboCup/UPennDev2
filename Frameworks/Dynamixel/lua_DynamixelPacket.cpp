@@ -103,15 +103,15 @@ static int lua_dynamixel_instruction_read_data(lua_State *L) {
 }
 
 static int lua_dynamixel_instruction_sync_read(lua_State *L) {
-	// TODO: Verify naddr=2 for 2-byte address
-	size_t naddr;
-	const char *addr = luaL_checklstring(L, 1, &naddr);
-	// How many bytes to read
-	uint16_t len = luaL_checkint(L, 2);
 	// How many IDs to read from
 	size_t nids;
 	// Which ids to read from
-	const char *ids = luaL_checklstring(L, 3, &nids);
+	const char *ids = luaL_checklstring(L, 1, &nids);
+	// TODO: Verify naddr=2 for 2-byte address
+	size_t naddr;
+	const char *addr = luaL_checklstring(L, 2, &naddr);
+	// How many bytes to read
+	uint16_t len = luaL_checkint(L, 3);
 	DynamixelPacket *p = dynamixel_instruction_sync_read
 		(addr[0], addr[1], len, (uint8_t *)ids, (uint8_t)nids);
 	return lua_pushpacket(L, p);

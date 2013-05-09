@@ -173,20 +173,6 @@ static int lua_dynamixel_input(lua_State *L) {
 	return 2;
 }
 
-static int lua_dynamixel_byte_to_word(lua_State *L) {
-	int n = lua_gettop(L);
-	int ret = 0;
-	uint16_t word, byteLow, byteHigh;
-	for (int i = 1; i < n; i += 2) {
-		byteLow = luaL_checkint(L, i);
-		byteHigh = luaL_checkint(L, i+1);
-		word = (byteHigh << 8) + byteLow;
-		lua_pushnumber(L, word);
-		ret++;
-	}
-	return ret;
-}
-
 static int lua_dynamixel_word_to_byte(lua_State *L) {
 	int n = lua_gettop(L);
 	int ret = 0;
@@ -198,26 +184,6 @@ static int lua_dynamixel_word_to_byte(lua_State *L) {
 		lua_pushnumber(L, byteLow);
 		lua_pushnumber(L, byteHigh);
 		ret+=2;
-	}
-	return ret;
-}
-
-static int lua_dynamixel_byte_to_dword(lua_State *L) {
-	int n = lua_gettop(L);
-	int ret = 0;
-	uint32_t dword, byteLow, byteHigh, byteHigher, byteHighest;
-	for (int i = 1; i < n; i += 4) {
-		byteLow = luaL_checkint(L, i);
-		byteHigh = luaL_checkint(L, i+1);
-		byteHigher = luaL_checkint(L, i+2);
-		byteHighest = luaL_checkint(L, i+3);
-		dword = ((byteHigh << 24) & 0xFF000000)
-					+ ((byteHigh << 16) & 0x00FF0000)
-					+ ((byteHigh << 8)  & 0x0000FF00)
-					+ byteLow;
-		/* Push to stack and keep track of how much we pushed (ret) */
-		lua_pushnumber(L, (int32_t)dword);
-		ret++;
 	}
 	return ret;
 }
@@ -237,6 +203,42 @@ static int lua_dynamixel_dword_to_byte(lua_State *L) {
 		lua_pushnumber(L, byteHigher);
 		lua_pushnumber(L, byteHighest);
 		ret+=4;
+	}
+	return ret;
+}
+
+static int lua_dynamixel_byte_to_word(lua_State *L) {
+	int n = lua_gettop(L);
+	int ret = 0;
+	uint16_t word, byteLow, byteHigh;
+	for (int i = 1; i < n; i += 2) {
+		byteLow = luaL_checkint(L, i);
+		byteHigh = luaL_checkint(L, i+1);
+		word = ((byteHigh<<8)&0xFF00) + byteLow;
+		// All 2 byte registers are signed numbers
+		lua_pushnumber(L, (int16_t)word);
+		ret++;
+	}
+	return ret;
+}
+
+static int lua_dynamixel_byte_to_dword(lua_State *L) {
+	int n = lua_gettop(L);
+	int ret = 0;
+	uint32_t dword, byteLow, byteHigh, byteHigher, byteHighest;
+	for (int i = 1; i < n; i += 4) {
+		byteLow = luaL_checkint(L, i);
+		byteHigh = luaL_checkint(L, i+1);
+		byteHigher = luaL_checkint(L, i+2);
+		byteHighest = luaL_checkint(L, i+3);
+		dword = ((byteHigh << 24) & 0xFF000000)
+					+ ((byteHigh << 16) & 0x00FF0000)
+					+ ((byteHigh << 8)  & 0x0000FF00)
+					+ byteLow;
+		/* Push to stack and keep track of how much we pushed (ret) */
+		// All 4 byte registers are signed numbers
+		lua_pushnumber(L, (int32_t)dword);
+		ret++;
 	}
 	return ret;
 }

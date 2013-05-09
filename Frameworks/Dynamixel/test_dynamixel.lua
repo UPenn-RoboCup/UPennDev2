@@ -1,16 +1,38 @@
 local libDynamixel = require('libDynamixel');
 
-local use_real_device = false
+local use_real_device = true
 local test_probe = false
 local test_torque = false
-local test_position = false
 local show_pairs = false
 local test_crc = false
 local test_led = false
-local test_sync_led = false
-local test_read_position = true
-local test_sync_read_position = false
-local test_error = true
+local test_sync_led = true
+local test_read_position = false
+local test_sync_read_position = true
+local test_command_position = false
+local test_error = false
+local arm_side = 'left' -- Even numbers
+--local arm_side = 'right' -- Odd numbers
+
+-- Populate the IDs
+local right_nx_ids = {}
+local right_mx_ids = {}
+local right_all_ids = {}
+local left_nx_ids = {}
+local left_mx_ids = {}
+local left_all_ids = {}
+
+for i=1,18,2 do
+	if i<12 then
+		table.insert(right_nx_ids,i)
+		table.insert(left_nx_ids,i+1)
+	else
+		table.insert(right_mx_ids,i)
+		table.insert(left_mx_ids,i+1)
+	end
+	table.insert(right_all_ids,i)
+	table.insert(left_all_ids,i+1)
+end
 
 -- Fake device for testing?
 local dev_name = 'fake'
@@ -64,29 +86,32 @@ if test_read_position then
 end
 
 if test_sync_led then
-	local ids = {13,14,15,16,17,18}
-	local val = 0
+	local ids = left_nx_ids
+	local val = 255
 	if val==0 then
 		print('Sync LEDs OFF',unpack(ids))
 	else
 		print('Sync LEDs ON',unpack(ids))
 	end
-	Dynamixel:set_mx_led( ids, val )
+	Dynamixel:set_nx_led_red( ids, val )
 end
 
 if test_sync_read_position then
-	local ids = {13,15,17}
---	local ids = {14,16,18}
+	local my_ids = left_nx_ids
+--	my_ids = {2}
 	os.execute('sleep 0.01')
-	print('\nSync Reading Position of IDs', unpack(ids) )
-	local res = Dynamixel:get_mx_position( ids )
-	print('Result',res)
+	print('\nSync Reading Position of IDs', unpack(my_ids) )
+	local res = Dynamixel:get_nx_position( my_ids )
+	for idx,res2 in ipairs(res) do
+		io.write( string.format('ID %2d: %d\n',my_ids[idx], res2 ) )
+	end
 end
 
 if test_torque then
 	print('Testing torque enable with MX motors')
 	local val = 1
-	for id=14,18,2 do
+	local my_ids = left_nx_ids
+	for idx,id in ipairs(my_ids) do
 		io.write(string.format('ID %d\n', id) )
 		local ret = Dynamixel:set_mx_torque_enable(id,val)
 		io.write( string.format('Sent %d bytes.\n',ret) )
@@ -95,11 +120,12 @@ if test_torque then
 	end
 end
 
-if test_position and false then
+if test_command_position and false then
 	local goal = 2048
 	print('Testing position with MX motors. Goal:',goal)
+	local my_ids = left_all_ids
 	os.execute('sleep 0.01')
-	for id=16,16 do
+	for idx,id in ipairs(my_ids) do
 		io.write(string.format('Position ID %d\n', id,goal) )
 		local ret = Dynamixel:set_mx_command(id,goal)
 		io.write( string.format('Sent %d bytes.\n',ret) )

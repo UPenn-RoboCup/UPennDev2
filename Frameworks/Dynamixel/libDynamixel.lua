@@ -262,7 +262,7 @@ function libDynamixel.get_ram(fd, id, addr, sz)
 		inst = DynamixelPacket.read_data(id, addr, sz);
 	elseif type(id)=='table' then
 		inst = DynamixelPacket.sync_read(string.char(unpack(id)), addr, sz)
-		nids = #ids
+		nids = #id
 	end
 	local clear = unix.read(fd); -- clear old status packets
 	local ret = unix.write(fd, inst)
@@ -270,16 +270,24 @@ function libDynamixel.get_ram(fd, id, addr, sz)
 	if not statuses then
 		return nil
 	end
+	
+	-- Make a return table
+	local status_return = {}
 	for s,status in ipairs(statuses) do
-		print('unpacking',s,status)
+		--print('unpacking',s,status)
+		--print('Got param:',unpack(status.parameter))
 		if sz==1 then
-			return status.parameter[1];
+			table.insert(status_return,status.parameter[1])
 		elseif sz==2 then
-			return DynamixelPacket.byte_to_word(unpack(status.parameter,1,2));
+			table.insert(status_return,
+			DynamixelPacket.byte_to_word(unpack(status.parameter,1,2)) )
 		elseif sz==4 then
-			return DynamixelPacket.byte_to_dword(unpack(status.parameter,1,4));
+			print('dec 4',unpack(status.parameter,1,4))
+			table.insert(status_return,
+			DynamixelPacket.byte_to_dword(unpack(status.parameter,1,4)) )
 		end
 	end
+	return status_return
 end
 
 function init_device_handle(obj)
@@ -298,7 +306,7 @@ function init_device_handle(obj)
 			return libDynamixel.set_ram(self.fd, id, addr, val, nx_ram_sz[key])
 		end
 		obj['get_nx_'..key] = function(self,id)
-			return libDynamixel.get_ram(self.fd,id,val,addr, nx_ram_sz[key])
+			return libDynamixel.get_ram(self.fd, id, addr, nx_ram_sz[key])
 		end
 	end
 	return obj
@@ -311,8 +319,9 @@ function libDynamixel.parse_status_packet(pkt)
 	t.length = pkt:byte(6)+2^8*pkt:byte(7)
 	t.instruction = pkt:byte(8)
 	t.error = pkt:byte(9)
-	t.parameter = {pkt:byte(10,t.length+6)}
-	t.checksum = string.char( pkt:byte(t.length+7), pkt:byte(t.length+8) );
+	t.parameter = {pkt:byte(10,t.length+5)}
+	print('Params',unpack(t.parameter))
+	t.checksum = string.char( pkt:byte(t.length+6), pkt:byte(t.length+7) );
 	return t;
 end
 
@@ -326,7 +335,8 @@ libDynamixel.get_status = function( fd, npkt, timeout )
 	while unix.time()-t0 < timeout do
 		local s = unix.read(fd);
 		if type(s) == "string" then
-			unix2.write(fd,s)
+			-- Debugging write
+			--unix2.write(fd,s)
 			str = str..s;
 			local pkt, done = DynamixelPacket.input(str);
 			if done and #pkt>=npkt then
@@ -334,8 +344,7 @@ libDynamixel.get_status = function( fd, npkt, timeout )
 				for pp=1,#pkt do
 					local status = libDynamixel.parse_status_packet(pkt[pp]);
 					table.insert(statuses,status)
-					print(string.format("Status: id=%d error=%d",
-					status.id,status.error));
+--print(string.format("Status: id=%d error=%d", status.id, status.error))
 				end
 				return statuses;
 			end

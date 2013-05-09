@@ -211,12 +211,12 @@ static int lua_dynamixel_byte_to_dword(lua_State *L) {
 		byteHigh = luaL_checkint(L, i+1);
 		byteHigher = luaL_checkint(L, i+2);
 		byteHighest = luaL_checkint(L, i+3);
-		dword = (byteHigh << 24) & 0xFF000000
-					+ (byteHigh << 16) & 0x00FF0000
-					+ (byteHigh << 8)  & 0x0000FF00
+		dword = ((byteHigh << 24) & 0xFF000000)
+					+ ((byteHigh << 16) & 0x00FF0000)
+					+ ((byteHigh << 8)  & 0x0000FF00)
 					+ byteLow;
 		/* Push to stack and keep track of how much we pushed (ret) */
-		lua_pushnumber(L, dword);
+		lua_pushnumber(L, (int32_t)dword);
 		ret++;
 	}
 	return ret;

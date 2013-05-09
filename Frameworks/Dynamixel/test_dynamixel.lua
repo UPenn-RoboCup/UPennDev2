@@ -1,14 +1,15 @@
 local libDynamixel = require('libDynamixel');
 
-local use_real_device = true
+local use_real_device = false
 local test_probe = false
-local test_torque = true
-local test_position = true
+local test_torque = false
+local test_position = false
 local show_pairs = false
 local test_crc = false
-local test_led = true
-local test_read_position = true
-local test_sync_led = false
+local test_led = false
+local test_read_position = false
+local test_sync_led = true
+local test_sync_read_position = true
 
 -- Fake device for testing?
 local dev_name = 'fake'
@@ -69,6 +70,9 @@ if test_sync_led then
 		print('Sync LEDs ON',unpack(ids))
 	end
 	Dynamixel:set_mx_led( ids, val )
+end
+
+if test_sync_read_position then
 end
 
 if test_torque then

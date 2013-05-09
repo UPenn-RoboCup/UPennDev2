@@ -7,8 +7,6 @@ CODE FROM ROBOTIS IS USED IN SELECT PORTIONS
 */
 
 #include "dynamixel.h"
-#include <stdlib.h>
-#include <stdio.h>
 
 // Modified ever so slightly from Robotis' code
 static uint16_t crc_table[256] = {0x0000,
@@ -63,166 +61,101 @@ uint16_t dynamixel_crc( uint16_t crc_accum, const unsigned char *data_blk_ptr, u
 
 // Checksum wrapper
 uint16_t dynamixel_checksum(DynamixelPacket *pkt) {
-  return dynamixel_crc( 0, (const unsigned char*)pkt, pkt->length + 5 );
+	return dynamixel_crc( 0, (const unsigned char*)pkt, pkt->length + 5 );
 }
 
 // Process incoming character using finite state machine
 // and return next index in packet (-1 if complete and well-formed)
 int dynamixel_input(DynamixelPacket *pkt, uint8_t c, int n) {
-  if (n < 0){
-		//printf("Finish old packet...\n");
+	// Restart the packet if the last one was successful
+	if (n < 0)
 		n = 0;
-	}
-  ((uint8_t *)pkt)[n] = c;
-	/*
-	printf("\nProcessing %d | %.2X.  Len: %u [%u|%u]\n",
-	n, c, pkt->length, pkt->len[1], pkt->len[0]);
-	*/
-  // Check header
-  if ((n == 0) && (c != DYNAMIXEL_PACKET_HEADER)){
-		//printf("BAD HEADER1, %.2X\n",c);
-    return 0;
-	}
-	// Check header (duplicate)
-  else if ((n == 1) && (c != DYNAMIXEL_PACKET_HEADER_2)){
-		//printf("BAD HEADER2, %.2X\n",c);
-    return 0;
-	}
-	// Check extended header
-  else if ((n == 2) && (c != DYNAMIXEL_PACKET_HEADER_3)) {
-		//printf("BAD HEADER3, %.2X\n",c);
-    return 0;
-	}
+	
+	// Populate the packet
+	((uint8_t *)pkt)[n] = c;
+	
+	// Process the Header and identifier materials
+	if( n < N_PACKET_HEADERS ) {
+		// Check headers
+		if ((n == 0) && (c != DYNAMIXEL_PACKET_HEADER))
+			return 0;
+		else if ((n == 1) && (c != DYNAMIXEL_PACKET_HEADER_2))
+			return 0;
+		else if ((n == 2) && (c != DYNAMIXEL_PACKET_HEADER_3))
+			return 0;
 #ifdef CHECK_STUFFING
-	// Check extended header
-  else if ((n == 3) && (c != DYNAMIXEL_PACKET_STUFFING))
-    return 0;
+		else if ((n == 3) && (c != DYNAMIXEL_PACKET_STUFFING))
+			return 0;
 #endif
-  else if (n<6)
-		return n+1;
-  else if (n==6){
-		//printf("SETTING LENGTH!\n");
-		// TODO: properly get 16 bit length
-		pkt->length = pkt->len[0];// + (pkt->len[1]<<8) & 0xFF00;
-		//printf("pkt->length = %u\n\n",pkt->length);
+		// Default is to increment index
 		return n+1;
 	}
-  else if (n == pkt->length+6) {
+	else if (n==N_PACKET_HEADERS){
+		// TODO: properly get 16 bit length
+		pkt->length = pkt->len[0];
+		uint16_t sum = pkt->len[0] + (pkt->len[1]<<8) & 0xFF00;
+		printf("pkt->len = %u | %u \n",pkt->len[0],pkt->len[1]);
+		printf("pkt->length = %u, sum = %u\n\n", pkt->length, sum);
+		return n+1;
+	}
+	else if (n == pkt->length+N_PACKET_HEADERS) {
 		uint16_t crc16 = dynamixel_checksum(pkt);
-		// High and Low checks
-	  uint8_t hi_crc = (crc16>>8) & 0x00FF;
-#ifdef CHECK_LOW_CRC
-		// TODO: use both checks or only one for speed?
+		uint8_t hi_crc = (crc16>>8) & 0x00FF;
+#ifdef CHECK_LOW_CRC // TODO: use both checks or only one for speed?
 		uint8_t lo_crc = crc16 & 0x00FF;
-    if (c == hi_crc && ((uint8_t *)pkt)[n-1]==lo_crc)
+		return (c == hi_crc && ((uint8_t *)pkt)[n-1]==lo_crc) ? -1 : 0;
 #else
-		if (c == hi_crc)
+		return (c == hi_crc) ? -1 : 0;
 #endif
-      // Complete packet
-      return -1;
-    else{
-			printf("BAD CHECKSUM!!\n");
-      // Bad checksum
-      return 0;
-		}
-  }
-  else if (n > pkt->length+6)
-    return 0;
-  // Default is to increment index
-  return n+1;
+	}
+	else if (n > pkt->length+N_PACKET_HEADERS)
+		return 0;
+	// Default is to increment index
+	return n+1;
 }
 
 // Generates instruction packet
 DynamixelPacket *dynamixel_instruction(uint8_t id,
-				       uint8_t inst,
-				       uint8_t *parameter,
-				       uint8_t nparameter ) {
-  static DynamixelPacket pkt;
-  int i;
-  pkt.header1 = DYNAMIXEL_PACKET_HEADER;
-  pkt.header2 = DYNAMIXEL_PACKET_HEADER_2;
+uint8_t inst,
+uint8_t *parameter,
+uint8_t nparameter ) {
+	static DynamixelPacket pkt;
+	int i;
+	pkt.header1 = DYNAMIXEL_PACKET_HEADER;
+	pkt.header2 = DYNAMIXEL_PACKET_HEADER_2;
 	pkt.header3 = DYNAMIXEL_PACKET_HEADER_3;
 	pkt.stuffing = DYNAMIXEL_PACKET_STUFFING; // TODO: understand this more
-  pkt.id = id;
-  pkt.length = nparameter + 3; // 2 checksum + 1 instruction byte
+	pkt.id = id;
+	pkt.length = nparameter + 3; // 2 checksum + 1 instruction byte
 	pkt.len[0] = pkt.length & 0x00FF; // low btye
 	pkt.len[1] = (pkt.length>>8) & 0x00FF; // high byte
-  pkt.instruction = inst;
+	pkt.instruction = inst;
 	for (i = 0; i < nparameter; i++)
 		pkt.parameter[i] = parameter[i];
-  pkt.checksum = dynamixel_checksum( &pkt );
-  // Place checksum after parameters:
-  pkt.parameter[nparameter]   = pkt.checksum & 0x00FF;
+	pkt.checksum = dynamixel_checksum( &pkt );
+	// Place checksum after parameters:
+	pkt.parameter[nparameter]   = pkt.checksum & 0x00FF;
 	pkt.parameter[nparameter+1] = (pkt.checksum>>8) & 0x00FF;
-  return &pkt;
-}
-
-DynamixelPacket *dynamixel_instruction_read_data(uint8_t id,
-						 uint8_t address_l, uint8_t address_h,
-						 uint8_t n) {
-  uint8_t inst = INST_READ;
-  uint8_t nparameter = 4;
-  uint8_t parameter[nparameter];
-  parameter[0] = address_l;
-	parameter[1] = address_h;
-  parameter[2] = n; // Just low byte for now
-	parameter[3] = 0; // TODO: add high byte
-  return dynamixel_instruction(id, inst, parameter, nparameter);
+	return &pkt;
 }
 
 DynamixelPacket *dynamixel_instruction_write_data(uint8_t id,
-						  uint8_t address_l, uint8_t address_h,
-						  uint8_t data[], uint8_t n) {
-  uint8_t inst = INST_WRITE;
-  uint8_t nparameter = n+2; // 2 is number of bytes in the checksum
-  uint8_t parameter[nparameter];
-  int i;
-  parameter[0] = address_l;
+uint8_t address_l, uint8_t address_h,
+uint8_t data[], uint8_t n) {
+	uint8_t inst = INST_WRITE;
+	uint8_t nparameter = n+2; // 2 is number of bytes in the checksum
+	uint8_t parameter[nparameter];
+	int i;
+	parameter[0] = address_l;
 	parameter[1] = address_h;
-  for (i = 0; i < n; i++)
-    parameter[i+2] = data[i];
-  return dynamixel_instruction(id, inst, parameter, nparameter);
-}
-
-/*
-DynamixelPacket *dynamixel_instruction_reg_write(uint8_t id,
-						 uint8_t address,
-						 uint8_t data[], uint8_t n) {
-  uint8_t inst = INST_REG_WRITE;
-  uint8_t nparameter = n+1;
-  uint8_t parameter[nparameter];
-  int i;
-  parameter[0] = address;
-  for (i = 0; i < n; i++) {
-    parameter[i+1] = data[i];
-  }
-  return dynamixel_instruction(id, inst, parameter, nparameter);
-}
-*/
-
-/*
-DynamixelPacket *dynamixel_instruction_action() {
-  uint8_t id = DYNAMIXEL_BROADCAST_ID;
-  uint8_t inst = INST_ACTION;
-  return dynamixel_instruction(id, inst, NULL, 0);
-}
-*/
-
-DynamixelPacket *dynamixel_instruction_ping(int id) {
-  uint8_t inst = INST_PING;
-  return dynamixel_instruction(id, inst, NULL, 0);
-}
-
-DynamixelPacket *dynamixel_instruction_reset(int id) {
-  uint8_t inst = INST_RESET;
-  return dynamixel_instruction(id, inst, NULL, 0);
+	for (i = 0; i < n; i++)
+		parameter[i+2] = data[i];
+	return dynamixel_instruction(id, inst, parameter, nparameter);
 }
 
 DynamixelPacket *dynamixel_instruction_sync_write(
 	uint8_t address_l, uint8_t address_h,
-	uint16_t len,
-	uint8_t data[], 
-	uint8_t n) {
+uint16_t len, uint8_t data[], uint8_t n) {
 		
 	uint8_t id   = DYNAMIXEL_BROADCAST_ID;
 	uint8_t inst = INST_SYNC_WRITE;
@@ -238,20 +171,47 @@ DynamixelPacket *dynamixel_instruction_sync_write(
 	return dynamixel_instruction(id, inst, parameter, nparameter);
 }
 
+DynamixelPacket *dynamixel_instruction_read_data(uint8_t id,
+uint8_t address_l, uint8_t address_h,
+uint16_t n) {
+	uint8_t inst = INST_READ;
+	uint8_t nparameter = 4;
+	uint8_t parameter[nparameter];
+	parameter[0] = address_l;
+	parameter[1] = address_h;
+	parameter[2] = n & 0x00FF;
+	parameter[3] = (n>>8) & 0x00FF;
+	return dynamixel_instruction(id, inst, parameter, nparameter);
+}
 
-DynamixelPacket *dynamixel_instruction_bulk_read_data(
-	uint8_t id_cm730, uint8_t id[], uint8_t address, uint8_t len, uint8_t n){
+// Input is array of ids, and address to read, and the length to read
+// TODO: This (may) constrain the bulk_read, but should be OK for our uses
+DynamixelPacket *dynamixel_instruction_sync_read(
+uint8_t address_l, uint8_t address_h, uint16_t len,
+	uint8_t ids[], uint8_t nids){
 
-  uint8_t inst = INST_BULK_READ;
-  uint8_t nparameter = n*3+1;
-  uint8_t parameter[nparameter];
-  int i;
-  parameter[0] = address;
-  for (i = 0; i < n; i++) {
-    parameter[3*i+1] = len;
-    parameter[3*i+2] = id[i];
-    parameter[3*i+3] = address;
-  }
+	uint8_t id   = DYNAMIXEL_BROADCAST_ID;
+	uint8_t inst = INST_BULK_READ;
+	uint8_t nparameter = nids*5;
+	uint8_t parameter[nparameter];
+	int i;
+	for (i = 0; i < nids; i++) {
+		parameter[4*i+0] = ids[i];
+		parameter[4*i+1] = address_l;
+		parameter[4*i+2] = address_h;
+		parameter[4*i+3] = len & 0x00FF;
+		parameter[4*i+4] = (len>>8) & 0x00FF;
+	}
 
-  return dynamixel_instruction(id_cm730, inst, parameter, nparameter);
+	return dynamixel_instruction(id, inst, parameter, nparameter);
+}
+
+DynamixelPacket *dynamixel_instruction_ping(int id) {
+	uint8_t inst = INST_PING;
+	return dynamixel_instruction(id, inst, NULL, 0);
+}
+
+DynamixelPacket *dynamixel_instruction_reset(int id) {
+	uint8_t inst = INST_RESET;
+	return dynamixel_instruction(id, inst, NULL, 0);
 }

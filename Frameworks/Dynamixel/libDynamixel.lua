@@ -239,8 +239,6 @@ function libDynamixel.set_ram(fd,id,addr,value,sz)
 			inst = DynamixelPacket.write_word(id, addr, value)
 		elseif sz==4 then
 			inst = DynamixelPacket.write_dword(id, addr, value)
-		else
-			io.write('BAD SZ OF WRITING')
 		end
 		return unix.write(fd, inst);
 	elseif type(id)=='table' then
@@ -268,7 +266,7 @@ function libDynamixel.get_ram(fd, id, addr, sz)
 	local clear = unix.read(fd); -- clear old status packets
 	local ret = unix.write(fd, inst)
 	local status = libDynamixel.get_status(fd);
-	print('ret/clear/status',ret,clear,status)
+	print('clear/write/status',clear,ret,status)
 	if status then
 		if sz==1 then
 			return status.parameter[1];
@@ -313,6 +311,7 @@ function libDynamixel.parse_status_packet(pkt)
 	return t;
 end
 
+-- Old get status method
 libDynamixel.get_status = function( fd, timeout )
 	-- TODO: Is this the best default timeout for the new PRO series?
 	timeout = timeout or 0.01;
@@ -337,6 +336,35 @@ libDynamixel.get_status = function( fd, timeout )
 	end
 	return nil;
 end
+
+-- New polling get status method
+	--[[
+	local dxl_recv_poll = {}
+	-- TODO: when to clear the str when given lots of malformed packets?
+	-- TODO: Solution - clear str everytime u send a packet...?
+	-- TODO: Start/Stop the poller? w/ timeouts?
+	-- Start/stop may be the easiest
+	dxl_recv_poll.str = ''
+	dxl_recv_poll.pkt_queue = ''
+	dxl_recv_poll.socket_handle = fd
+	dxl_recv_poll.callback = function(self)
+		str = str..unix.read(self.socket_handle)
+		-- Append to the packet
+		pkt = DynamixelPacket.input(str)
+		-- Check if the packet is done
+		if pkt then
+	-- Clear the str buffer for next time
+			self.str=''
+			-- If so, then process it somehow...
+			local status = libDynamixel.parse_status_packet(pkt);
+			-- Maybe put into a queue!
+			table.insert(self.pkt_queue,status)
+			-- Maybe do something else...
+			print(string.format("Status: id=%d error=%d",
+			status.id,status.error));
+		end
+	end
+	--]]
 
 libDynamixel.send_ping = function( self, id )
 	local inst = DynamixelPacket.ping(id);
@@ -373,12 +401,10 @@ end
 libDynamixel.sync_write_byte = function(fd, ids, addr, data)
 	local nid = #ids;
 	local len = 1;
-	
 	if type(data)=='number' then
 		-- All get the same value
 		all_data = data
 	end
-
 	local t = {};
 	local n = 1;
 	for i = 1,nid do
@@ -394,12 +420,10 @@ end
 libDynamixel.sync_write_word = function(fd, ids, addr, data)
 	local nid = #ids;
 	local len = 2;
-	
 	if type(data)=='number' then
 		-- All get the same value
 		all_data = data
 	end
-
 	local t = {};
 	local n = 1;
 	for i = 1,nid do
@@ -415,12 +439,10 @@ end
 libDynamixel.sync_write_dword = function(fd, ids, addr, data)
 	local nid = #ids;
 	local len = 4;
-
 	if type(data)=='number' then
 		-- All get the same value
 		all_data = data
 	end
-
 	local t = {};
 	local n = 1;
 	for i = 1,nid do

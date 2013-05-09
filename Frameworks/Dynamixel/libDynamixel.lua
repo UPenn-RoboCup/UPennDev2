@@ -270,7 +270,7 @@ function libDynamixel.get_ram(fd, id, addr, sz)
 	if not statuses then
 		return nil
 	end
-	for s,status in pairs(statuses) do
+	for s,status in ipairs(statuses) do
 		print('unpacking',s,status)
 		if sz==1 then
 			return status.parameter[1];

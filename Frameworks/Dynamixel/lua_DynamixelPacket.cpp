@@ -7,6 +7,39 @@ Yida Zhang copyright 2013 <yida@seas.upenn.edu>
 #include "dynamixel.h"
 #include <lua.hpp>
 
+const char* errtable[] = {
+"Input Voltage Error",
+"Angle Limit Error",
+"Overheating Error",
+"Range Error",
+"Checksum Error",
+"Overload Error",
+"Instruction Error",
+"Motor status Error"
+};
+
+// Error decoder
+static int lua_dynamixel_error(lua_State *L) {
+	size_t nerrbits;
+	const char *errbits_ptr = luaL_checklstring(L, 1, &nerrbits);
+	// TODO: check that only one byte was given
+	//uint8_t errbits = (uint8_t)(*errbits_ptr);
+	char errbits = *errbits_ptr;
+	uint8_t errmask = 0x01;
+	uint8_t nerr = 0;
+	
+	lua_newtable(L);
+	for (int i = 0; i < 8; i++) {
+		if (errbits & errmask){
+			lua_pushstring(L, errtable[i]);
+			lua_rawseti(L, -2, ++nerr);
+			printf("%d: %d|%d (%.2X): %s\n",errbits,i,nerr,errmask,errtable[i]);
+		}
+		errmask<<=1;
+	} //for
+	return nerr;
+}
+
 static int lua_crc16(lua_State *L) {
 	size_t nstr;
 	const unsigned char *str = (unsigned char *)luaL_checklstring(L, 1, &nstr);
@@ -223,6 +256,7 @@ static const struct luaL_reg dynamixelpacket_functions[] = {
 	{"byte_to_word", lua_dynamixel_byte_to_word},
 	{"byte_to_dword", lua_dynamixel_byte_to_dword},
 	{"crc16", lua_crc16},
+	{"strerr",lua_dynamixel_error},
 	{NULL, NULL}
 };
 

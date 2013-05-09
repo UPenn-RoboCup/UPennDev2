@@ -1,6 +1,6 @@
 local libDynamixel = require('libDynamixel');
 
-local use_real_device = true
+local use_real_device = false
 local test_probe = false
 local test_torque = false
 local test_position = false
@@ -9,7 +9,8 @@ local test_crc = false
 local test_led = false
 local test_sync_led = false
 local test_read_position = true
-local test_sync_read_position = true
+local test_sync_read_position = false
+local test_error = true
 
 -- Fake device for testing?
 local dev_name = 'fake'
@@ -103,6 +104,15 @@ if test_position and false then
 		local ret = Dynamixel:set_mx_command(id,goal)
 		io.write( string.format('Sent %d bytes.\n',ret) )
 		print()
+	end
+end
+
+if test_error then
+	local err_code = string.char(1)
+	local DynamixelPacket = require('DynamixelPacket');
+	local err_msg = DynamixelPacket.strerr(err_code)
+	for i,k in ipairs(err_msg) do
+		print('Error test:',k)
 	end
 end
 

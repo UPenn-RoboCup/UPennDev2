@@ -1,9 +1,10 @@
 #ifndef THOROP_KINEMATICS_H_
 #define THOROP_KINEMATICS_H_
 
+#include "Transform.h"
+#include <stdio.h>
 #include <math.h>
 #include <vector>
-#include "Transform.h"
 
 const double PI = 2*asin(1);
 const double SQRT2 = sqrt(2);

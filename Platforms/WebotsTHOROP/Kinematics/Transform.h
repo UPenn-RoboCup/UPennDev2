@@ -1,6 +1,7 @@
 #ifndef Transform_h_DEFINED
 #define Transform_h_DEFINED
 
+#include <math.h>
 #include <vector>
 
 class Transform {

@@ -7,6 +7,39 @@ Yida Zhang copyright 2013 <yida@seas.upenn.edu>
 #include "dynamixel.h"
 #include <lua.hpp>
 
+const char* errtable[] = {
+"Input Voltage Error",
+"Angle Limit Error",
+"Overheating Error",
+"Range Error",
+"Checksum Error",
+"Overload Error",
+"Instruction Error",
+"Motor status Error"
+};
+
+// Error decoder
+static int lua_dynamixel_error(lua_State *L) {
+	size_t nerrbits;
+	const char *errbits_ptr = luaL_checklstring(L, 1, &nerrbits);
+	// TODO: check that only one byte was given
+	//uint8_t errbits = (uint8_t)(*errbits_ptr);
+	char errbits = *errbits_ptr;
+	uint8_t errmask = 0x01;
+	uint8_t nerr = 0;
+	
+	lua_newtable(L);
+	for (int i = 0; i < 8; i++) {
+		if (errbits & errmask){
+			lua_pushstring(L, errtable[i]);
+			lua_rawseti(L, -2, ++nerr);
+			printf("%d: %d|%d (%.2X): %s\n",errbits,i,nerr,errmask,errtable[i]);
+		}
+		errmask<<=1;
+	} //for
+	return nerr;
+}
+
 static int lua_crc16(lua_State *L) {
 	size_t nstr;
 	const unsigned char *str = (unsigned char *)luaL_checklstring(L, 1, &nstr);
@@ -124,31 +157,20 @@ static int lua_dynamixel_input(lua_State *L) {
 	// TODO: This pkt variable should be part of a metatable, not the *.so
 	DynamixelPacket pkt;
 	int ret = 0;
+	int pkt_cnt = 0;
+	// Packet Table
+	lua_newtable(L);
 	if (str) {
 		for (int i = 0; i < nstr; i++) {
 			nPacket = dynamixel_input(&pkt, str[i], nPacket);
-			if (nPacket < 0)
+			if (nPacket < 0){
 				ret += lua_pushpacket(L, &pkt);
+				lua_rawseti(L, -2, ++pkt_cnt);
+			}
 		} //for
 	} //if str
-	// TODO: push the state (nPacket)
-	// This is important for a polling mechanism to discern 
-	// When to clear the read buffer
-	return ret;
-}
-
-static int lua_dynamixel_byte_to_word(lua_State *L) {
-	int n = lua_gettop(L);
-	int ret = 0;
-	uint16_t word, byteLow, byteHigh;
-	for (int i = 1; i < n; i += 2) {
-		byteLow = luaL_checkint(L, i);
-		byteHigh = luaL_checkint(L, i+1);
-		word = (byteHigh << 8) + byteLow;
-		lua_pushnumber(L, word);
-		ret++;
-	}
-	return ret;
+	lua_pushboolean(L, nPacket==-1);
+	return 2;
 }
 
 static int lua_dynamixel_word_to_byte(lua_State *L) {
@@ -162,26 +184,6 @@ static int lua_dynamixel_word_to_byte(lua_State *L) {
 		lua_pushnumber(L, byteLow);
 		lua_pushnumber(L, byteHigh);
 		ret+=2;
-	}
-	return ret;
-}
-
-static int lua_dynamixel_byte_to_dword(lua_State *L) {
-	int n = lua_gettop(L);
-	int ret = 0;
-	uint32_t dword, byteLow, byteHigh, byteHigher, byteHighest;
-	for (int i = 1; i < n; i += 4) {
-		byteLow = luaL_checkint(L, i);
-		byteHigh = luaL_checkint(L, i+1);
-		byteHigher = luaL_checkint(L, i+2);
-		byteHighest = luaL_checkint(L, i+3);
-		dword = (byteHigh << 24) & 0xFF000000
-					+ (byteHigh << 16) & 0x00FF0000
-					+ (byteHigh << 8)  & 0x0000FF00
-					+ byteLow;
-		/* Push to stack and keep track of how much we pushed (ret) */
-		lua_pushnumber(L, dword);
-		ret++;
 	}
 	return ret;
 }
@@ -205,6 +207,42 @@ static int lua_dynamixel_dword_to_byte(lua_State *L) {
 	return ret;
 }
 
+static int lua_dynamixel_byte_to_word(lua_State *L) {
+	int n = lua_gettop(L);
+	int ret = 0;
+	uint16_t word, byteLow, byteHigh;
+	for (int i = 1; i < n; i += 2) {
+		byteLow = luaL_checkint(L, i);
+		byteHigh = luaL_checkint(L, i+1);
+		word = ((byteHigh<<8)&0xFF00) + byteLow;
+		// All 2 byte registers are signed numbers
+		lua_pushnumber(L, (int16_t)word);
+		ret++;
+	}
+	return ret;
+}
+
+static int lua_dynamixel_byte_to_dword(lua_State *L) {
+	int n = lua_gettop(L);
+	int ret = 0;
+	uint32_t dword, byteLow, byteHigh, byteHigher, byteHighest;
+	for (int i = 1; i < n; i += 4) {
+		byteLow = luaL_checkint(L, i);
+		byteHigh = luaL_checkint(L, i+1);
+		byteHigher = luaL_checkint(L, i+2);
+		byteHighest = luaL_checkint(L, i+3);
+		dword = ((byteHigh << 24) & 0xFF000000)
+					+ ((byteHigh << 16) & 0x00FF0000)
+					+ ((byteHigh << 8)  & 0x0000FF00)
+					+ byteLow;
+		/* Push to stack and keep track of how much we pushed (ret) */
+		// All 4 byte registers are signed numbers
+		lua_pushnumber(L, (int32_t)dword);
+		ret++;
+	}
+	return ret;
+}
+
 static const struct luaL_reg dynamixelpacket_functions[] = {
 	{"input", lua_dynamixel_input},
 	{"ping", lua_dynamixel_instruction_ping},
@@ -220,6 +258,7 @@ static const struct luaL_reg dynamixelpacket_functions[] = {
 	{"byte_to_word", lua_dynamixel_byte_to_word},
 	{"byte_to_dword", lua_dynamixel_byte_to_dword},
 	{"crc16", lua_crc16},
+	{"strerr",lua_dynamixel_error},
 	{NULL, NULL}
 };
 

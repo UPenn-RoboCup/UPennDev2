@@ -5,10 +5,10 @@ local test_probe = false
 local show_pairs = false
 local test_crc = false
 local test_led = false
-local test_sync_led = true
+local test_sync_led = false
 local test_read_position = false
 local test_sync_read_position = true
-local test_torque = true
+local test_torque = false
 local test_command_position = true
 local test_error = false
 local arm_side = 'left' -- Even numbers
@@ -40,12 +40,26 @@ if use_real_device then
 	dev_name = nil
 end
 local Dynamixel = libDynamixel.new_bus( dev_name )
+os.execute('sleep 0.01')
 
 if test_crc then
 	local DynamixelPacket = require('DynamixelPacket');
 	local pkt = string.char(255,255,253,0,7,6,0,3,24,0,0)
 	h,l=DynamixelPacket.crc16( pkt )
 	print(string.format('crc: %x %x %d',l,h, #pkt) )
+end
+
+if test_torque then
+	local val = 1
+	print('\nTesting torque enable with NX motors',val)
+	local my_ids = left_nx_ids
+	for idx,id in ipairs(my_ids) do
+		
+		local ret = Dynamixel:set_nx_torque_enable(id,val)
+		io.write(string.format('ID %d sent %d bytes.\n', id,ret) )
+		os.execute('sleep 0.02')
+		print()
+	end
 end
 
 if show_pairs then
@@ -96,41 +110,37 @@ if test_sync_led then
 	Dynamixel:set_nx_led_red( ids, val )
 end
 
+if test_command_position and true then
+	local goal = 0
+	local ids = {7,9,11}
+	print('Testing position with NX motors. Goal:',goal)
+	os.execute('sleep 0.01')
+	local ret = Dynamixel:set_nx_torque_enable(ids,1)
+	os.execute('sleep 0.01')
+	local ret = Dynamixel:set_nx_command_position(ids,goal)
+	io.write( string.format('Sent %d bytes.\n',ret) )
+end
+
 if test_sync_read_position then
-	local my_ids = left_nx_ids
+	local my_ids = right_nx_ids
 	os.execute('sleep 0.01')
 	print('\nSync Reading Position of IDs', unpack(my_ids) )
-	local res = Dynamixel:get_nx_position( my_ids )
-	for idx,res2 in ipairs(res) do
-		io.write( string.format('ID %2d: %d\n',my_ids[idx], res2 ) )
+	local res = Dynamixel:get_nx_torque_enable( my_ids )
+	if res then
+		for idx,res2 in ipairs(res) do
+			io.write( string.format('ID %2d: %d\n',my_ids[idx], res2 ) )
+		end
 	end
 end
 
-if test_torque then
+if test_command_velocity and true then
+	local id = 8
+	local ret = Dynamixel:set_nx_mode(id,0)--torque
+	local goal = 100;
+	
+	local ret = Dynamixel:set_nx_command_torque(id,goal)
 	os.execute('sleep 0.01')
-	local val = 0
-	print('\nTesting torque enable with NX motors',val)
-	local my_ids = left_nx_ids
-	for idx,id in ipairs(my_ids) do
-		io.write(string.format('ID %d\n', id) )
-		local ret = Dynamixel:set_nx_torque_enable(id,val)
-		io.write( string.format('Sent %d bytes.\n',ret) )
-		os.execute('sleep 0.01')
-		print()
-	end
-end
-
-if test_command_position and false then
-	local goal = 10
-	print('Testing position with MX motors. Goal:',goal)
-	local my_ids = {10,12}
-	os.execute('sleep 0.01')
-	for idx,id in ipairs(my_ids) do
-		io.write(string.format('Position ID %d\n', id,goal) )
-		local ret = Dynamixel:set_nx_command(id,goal)
-		io.write( string.format('Sent %d bytes.\n',ret) )
-		os.execute('sleep 0.01')
-	end
+	io.write( string.format('Sent %d bytes.\n',ret) )
 end
 
 if test_error then

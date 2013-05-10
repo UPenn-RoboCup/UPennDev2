@@ -240,7 +240,11 @@ function libDynamixel.set_ram(fd,id,addr,value,sz)
 		elseif sz==4 then
 			inst = DynamixelPacket.write_dword(id, addr, value)
 		end
-		return unix.write(fd, inst);
+		local clear = unix.read(fd); -- clear old status packets
+		local ret = unix.write(fd, inst)
+		local statuses = libDynamixel.get_status(fd,1);
+		print('got error',statuses[1].error)
+		return ret
 	elseif type(id)=='table' then
 		-- Sync write
 		if sz==1 then

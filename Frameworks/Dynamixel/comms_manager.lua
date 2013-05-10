@@ -2,12 +2,17 @@ local libDynamixel = require('libDynamixel');
 local unix = require 'unix'
 
 -- SHM of the joint positions
---require "dcm"
+local jcm = require'jcm'
 
 local function entry()
 end
 
+-- Update the shared memory table
 local function update()
+	local res= Dynamixel:get_nx_position( jcm.left_nx_ids )
+	local command_position = jcm.set_left_arm_position()
+	local command_position = jcm.get_left_arm_command_position()
+	local ret= Dynamixel:set_nx_command_position(jcm.left_nx_ids,command_position)
 end
 
 local function exit()

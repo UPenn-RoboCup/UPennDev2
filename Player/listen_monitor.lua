@@ -15,7 +15,6 @@ require ('util')
 require ('wcm')
 require ('gcm')
 require ('vcm')
-require ('ocm')
 require ('mcm')
 require ('matcm')
 
@@ -219,7 +218,6 @@ function push_occmap(obj)
   occmap = cutil.test_array();
   name = parse_name(obj.name);
   cutil.string2userdata2(occmap, obj.data, obj.width, obj.height);
-  ocm.set_occ_map(occmap);
 end
 
 function push_data(obj)

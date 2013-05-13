@@ -13,7 +13,6 @@ require('Speak')
 require('Body')
 require('Motion')
 require('gcm')
-require('ocm')
 
 gcm.say_id()
 
@@ -51,7 +50,6 @@ targetvel=vector.zeros(3);
 headangle=vector.new({0,10*math.pi/180});
 headsm_running=0;
 bodysm_running=0;
-ocm.set_vision_update(1);
 
 local count = 0;
 local ncount = 100;
@@ -89,7 +87,6 @@ function process_keyinput()
     if button_pressed[1]==1 then
       if bodysm_running==0 then 
         Motion.event("standup");
-        ocm.set_occ_reset(1);
         Body.set_head_hardness(0.5);
         vcm.set_camera_learned_new_lut(1)
         headsm_running=1;
@@ -146,19 +143,14 @@ function process_keyinput()
 
     -- reset OccMap
     elseif byte==string.byte(".") then
-        ocm.set_occ_reset(1);
 
 --      print("get obstacles");
---      nob = ocm.get_ob_num();
 --      print(nob,' obstacle found');
 --      if (nob > 0) then 
---        obx = ocm.get_ob_x();
 --        print('obstacle x')
 --        util.ptable(obx);
---        oby = ocm.get_ob_y();
 --        print('obstacle y')
 --        util.ptable(oby);
---        obdist = ocm.get_ob_dist();
 --        print('obstacle dist')
 --        util.ptable(obdist);
 --      end

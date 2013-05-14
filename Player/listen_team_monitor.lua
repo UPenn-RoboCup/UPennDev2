@@ -38,7 +38,10 @@ Comm.init(Config.dev.ip_wireless,Config.dev.ip_wireless_port);
 print('Receiving Team Message From',Config.dev.ip_wireless);
 
 function push_labelB(obj,teamOffset)
-  if not obj.labelB then return; end
+  if not obj.labelB then return;
+  else
+--    print(obj);
+  end
   id=obj.id+teamOffset;
   local labelB = cutil.test_array();
   cutil.string2label_rle(labelB,obj.labelB.data);
@@ -236,10 +239,10 @@ end
 count=0;
 tStart=unix.time();
 
-while( true ) do
+while(true) do
   while (Comm.size() > 0) do
+    print ('received')
     msg=Comm.receive();
-
     t = serialization.deserialize(msg);
     if t and (t.teamNumber) then
       t.tReceive = unix.time();
@@ -247,16 +250,16 @@ while( true ) do
       if #teamToTrack==1 then 
         if (t.teamNumber == teamToTrack[1]) and (t.id) then
           push_team_struct(t,0);
-	  push_labelB(t,0);
+	  --push_labelB(t,0);
         end
       else
         if (t.teamNumber == teamToTrack[1]) and (t.id) then
           push_team_struct(t,0);
-	  push_labelB(t,0);
+	  --push_labelB(t,0);
 
         elseif (t.teamNumber == teamToTrack[2]) and (t.id) then
           push_team_struct(t,5);
-	  push_labelB(t,5);
+	  --push_labelB(t,5);
 
         end
       end

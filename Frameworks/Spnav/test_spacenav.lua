@@ -1,4 +1,4 @@
-local Spacenav = require('Spacenav')
+local Spacenav = require('spacenav')
 local ret = Spacenav.open()
 print('ret',ret)
 

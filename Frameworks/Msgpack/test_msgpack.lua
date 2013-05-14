@@ -108,6 +108,7 @@ function TEST_TORCH(aa)
   print('pack size:',#pack_str)
 end
 print("\n================= Test Msgpack for Torch ==================")
+--[[
 local torch = require 'torch'
 aa = torch.DoubleTensor({{3.0, 4.0, 5.24, 6.123, 7.90}, {1,2,3,4,5}})
 TEST_TORCH(aa)
@@ -137,3 +138,4 @@ local na = msgpack.unpack(pack_str, 'torch')
 print("\n Print Torch")
 util.ptorch(na)
 
+--]]

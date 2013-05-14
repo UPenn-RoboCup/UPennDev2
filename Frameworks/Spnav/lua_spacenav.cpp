@@ -98,11 +98,11 @@ static const struct luaL_Reg spacenav_lib [] = {
 #ifdef __cplusplus
 extern "C"
 #endif
-int luaopen_Spacenav(lua_State *L) {
+int luaopen_spacenav(lua_State *L) {
 #if LUA_VERSION_NUM == 502
 	luaL_newlib( L, spacenav_lib );
 #else
-	luaL_register(L, "Spacenav", spacenav_lib);
+	luaL_register(L, "spacenav", spacenav_lib);
 #endif
 	return 1;
 }

@@ -13,7 +13,8 @@ require('World')
 require('Detection') 
 
 comm_inited = false;
-vcm.set_camera_teambroadcast(0);
+enable_team = Config.vision.enable_team_broadcast or 0;
+vcm.set_camera_teambroadcast(enable_team);
 vcm.set_camera_broadcast(0);
 --Now vcm.get_camera_teambroadcast() determines 
 --Whether we use wired monitoring comm or wireless team comm
@@ -100,7 +101,6 @@ end
 function update()
   count = count + 1;
   tstart = unix.time();
-
   -- update vision 
   imageProcessed = Vision.update();
 
@@ -113,16 +113,16 @@ function update()
 
     if (nProcessedImages % 500 == 0) then
       if not webots then
-        print('fps: '..(500 / (unix.time() - tUpdate)));
+        print('team fps: '..(500 / (unix.time() - tUpdate)));
         tUpdate = unix.time();
       end
     end
   end
- 
   if not comm_inited and 
     (vcm.get_camera_broadcast()>0 or
      vcm.get_camera_teambroadcast()>0) then
-    if vcm.get_camera_teambroadcast()>0 then 
+    if vcm.get_camera_teambroadcast()>0 then
+       
       require('Team');
       require('GameControl');
       Team.entry();
@@ -146,79 +146,6 @@ function update()
       broadcast();
     end
   end
-end
-
-
-
-
-
-
-
-
-
-
-
-
-
-function update()
-  count = count + 1;
-  tstart = unix.time();
-
-  -- update vision 
-  imageProcessed = Vision.update();
-
-  World.update_odometry();
-
-  -- update localization
-  if imageProcessed then
-    nProcessedImages = nProcessedImages + 1;
-    World.update_vision();
-
-    if (nProcessedImages % 200 == 0) then
-      if not webots then
-        print('fps: '..(200 / (unix.time() - tUpdate)));
-        Detection.print_time(); 
-        tUpdate = unix.time();
-      end
-    end
-    if enable_freespace_detection == 1 then
-      --OccupancyMap.update();
-    end
-  end
- 
-  if not comm_inited and 
-    (vcm.get_camera_broadcast()>0 or vcm.get_camera_teambroadcast()>0) then
-      if enable_online_colortable_learning == 1 then
-        require('Receive')
-      end
-      if vcm.get_camera_teambroadcast()>0 then 
-        require('Team');
-        require('GameControl');
-        Team.entry();
-        GameControl.entry();
-        print("Starting to send wireless team message..");
-      else
-        require('Broadcast');
-        print("Starting to send wired monitor message..");
-        print("Starting to wired message..");
-      end
-      comm_inited = true;
-  end
-
-  if comm_inited and imageProcessed then
-    if enable_online_colortable_learning == 1 then
-      Receive.update();
-    end
-    if vcm.get_camera_teambroadcast()>0 then 
-      GameControl.update();
-      if nProcessedImages % 3 ==0 then
-        Team.update();
-      end
-    else
-      broadcast();
-    end
-  end
-
 end
 
 -- exit 

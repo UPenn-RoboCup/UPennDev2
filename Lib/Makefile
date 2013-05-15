@@ -74,11 +74,6 @@ comm::
 	@cd $(COMMDIR) && make && cd $(CWD)
 	@echo "\n"
 
-occmap::
-	@echo "Compiling OccupancyMap Lua/C++ Libraries...\n"
-	@cd $(OCCMAPDIR) && make && cd $(CWD)
-	@echo "\n"
-
 util::
 	@echo "Compiling Utility Lua/C++ Libraries...\n"
 	@cd $(UTILDIR) && make && cd $(CWD)
@@ -104,7 +99,7 @@ setup_naov4: naov4 setup_util setup_image setup_comm
 	rm -f $(NAODEPLUA51DIR)/*;
 	@echo "\n"
 
-setup_webots_nao: webots_nao setup_util setup_image setup_webots setup_occmap
+setup_webots_nao: webots_nao setup_util setup_image setup_webots 
 	@echo "Setting up Webots Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
 	find $(WEBOTSNAODIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
@@ -112,7 +107,7 @@ setup_webots_nao: webots_nao setup_util setup_image setup_webots setup_occmap
 	cd $(PLAYERDIR)/Config && ln -s Config_WebotsNao.lua Config.lua && cd $(CWD)
 	@echo "\n"
 
-setup_webots_op: webots_op setup_util setup_image setup_webots setup_occmap
+setup_webots_op: webots_op setup_util setup_image setup_webots 
 	@echo "Setting up Webots OP Lua/C++ Libraries...\n"
 	$(V)mkdir -p $(INSTDIR)
 	$(V)find $(WEBOTSOPDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
@@ -128,7 +123,7 @@ setup_visiontest: visiontest setup_util setup_image
 	cd $(PLAYERDIR)/Config && ln -s Config_VisionTest.lua Config.lua && cd $(CWD)
 	@echo "\n"
 
-setup_op: op setup_util setup_image setup_comm setup_occmap
+setup_op: op setup_util setup_image setup_comm 
 	@echo "Setting up Darwin OP Lua/C++ Libraries...\n"
 	$(V)mkdir -p $(INSTDIR)
 	$(V)find $(OPDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
@@ -179,12 +174,6 @@ setup_comm: comm
 	$(V)find $(COMMDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
 	@echo "\n"
 
-setup_occmap: occmap
-	@echo "Setting up Occupancy Map Lua/C++ Libraries...\n"
-	$(V)mkdir -p $(INSTDIR)
-	$(V)find $(OCCMAPDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
-	@echo "\n"
-
 setup_velocity: velocity
 	@echo "Setting up Velocity Lua/C++ Libraries...\n"
 	mkdir -p $(INSTDIR)
@@ -211,7 +200,6 @@ clean:
 	cd $(WEBOTSOPDIR) && make clean && cd $(CWD)
 	cd $(XOSDIR) && make clean && cd $(CWD) 
 	cd $(OPDIR) && make clean && cd $(CWD)
-	cd $(OCCMAPDIR) && make clean && cd $(CWD)
 	cd $(PLAYERDIR)/Config && rm -f Config.lua && cd $(CWD)
 	cd $(PLAYERDIR) && rm -rf Lib && cd $(CWD)
 	rm -rf $(WEBOTSCONTDIR)

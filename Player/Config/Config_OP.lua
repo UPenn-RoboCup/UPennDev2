@@ -20,16 +20,7 @@ params.Kick = "Slow"
 --params.Kick = "3"
 
 ---Location Specific Camera Parameters--
---params.Camera = "VT"
---params.Camera = "Grasp"
---params.Camera = "Grasp_obs"
---params.Camera = "L512"
---params.Camera = "L512_2130"
---params.Camera = "Grasp"
---params.Camera = "L307"
---params.Camera = "L512_1930"
---params.Camera = "L512_Day"
-params.Camera = "Bowdoin"
+params.Camera = "Grasp"
 
 util.LoadConfig(params, platform)
 
@@ -40,9 +31,7 @@ dev.camera = 'OPCam';
 dev.kinematics = 'OPKinematics';
 dev.ip_wired = '192.168.123.255';
 dev.ip_wired_port = 111111;
---dev.ip_wireless = '192.168.1.255'; --Our Router
---dev.ip_wireless_port = 54321;
-dev.ip_wireless = '139.140.218.255'; --Our Router
+dev.ip_wireless = '192.168.1.255'; --Our Router
 dev.ip_wireless_port = 54321;
 dev.game_control='OPGameControl';
 dev.team='TeamNSL';

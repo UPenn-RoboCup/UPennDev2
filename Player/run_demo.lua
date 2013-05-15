@@ -5,7 +5,7 @@ require('unix')
 require('Config')
 Config.fsm.playMode = 1; --Force demo
 Config.fsm.forcePlayer = 1; --Force attacker
-Config.dev.team = 'TeamBox'; --For mimicing
+--Config.dev.team = 'TeamBox'; --For mimicing
 
 require('shm')
 require('vector')
@@ -18,7 +18,7 @@ require('getch')
 require('Body')
 require('Motion')
 
-require('boxercm') --For mimicing
+--require('boxercm') --For mimicing
 
 gcm.say_id();
 

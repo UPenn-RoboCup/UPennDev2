@@ -29,7 +29,7 @@ global MONITOR %for sending the webots check information
   h.wcmGoal  = shm(sprintf('wcmGoal%d%d%s',  h.teamNumber, h.playerID, h.user));
   h.wcmParticle  = shm(sprintf('wcmParticle%d%d%s',  h.teamNumber, h.playerID, h.user));
   %h.wcmKick
-  h.mcmWalk = shm(sprintf('mcmWalk%d%d%s', h.teamNumber, h.playerID, h.user));
+  %h.mcmWalk = shm(sprintf('mcmWalk%d%d%s', h.teamNumber, h.playerID, h.user));
 
 
   h.wcmTeamdata  = shm(sprintf('wcmTeamdata%d%d%s',  h.teamNumber, h.playerID, h.user));
@@ -38,10 +38,10 @@ global MONITOR %for sending the webots check information
   h.vcmRobot  = shm(sprintf('vcmRobot%d%d%s',  h.teamNumber, h.playerID, h.user)); 
 
   %Be careful this no longer crashes some machines...
-	h.ocmOcc = shm(sprintf('ocmOcc%d%d%s', h.teamNumber, h.playerID, h.user));
-	h.ocmObstacle = shm(sprintf('ocmObstacle%d%d%s', h.teamNumber, h.playerID, h.user));
+	%h.ocmOcc = shm(sprintf('ocmOcc%d%d%s', h.teamNumber, h.playerID, h.user));
+	%h.ocmObstacle = shm(sprintf('ocmObstacle%d%d%s', h.teamNumber, h.playerID, h.user));
 
-	h.matcmControl = shm(sprintf('matcmControl%d%d%s', h.teamNumber, h.playerID, h.user));
+	%h.matcmControl = shm(sprintf('matcmControl%d%d%s', h.teamNumber, h.playerID, h.user));
 
 
 
@@ -275,25 +275,25 @@ global MONITOR %for sending the webots check information
     width = 80;
     height = 60;
     if robotID==1 
-      rawData = h.wcmLabelB().get_p1();
+      rawData = h.wcmLabelB.get_p1();
     elseif robotID==2 
-      rawData = h.wcmLabelB().get_p2();
+      rawData = h.wcmLabelB.get_p2();
     elseif robotID==3 
-      rawData = h.wcmLabelB().get_p3();
+      rawData = h.wcmLabelB.get_p3();
     elseif robotID==4 
-      rawData = h.wcmLabelB().get_p4();
+      rawData = h.wcmLabelB.get_p4();
     elseif robotID==5 
-      rawData = h.wcmLabelB().get_p5();
+      rawData = h.wcmLabelB.get_p5();
     elseif robotID==6 
-      rawData = h.wcmLabelB().get_p6();
+      rawData = h.wcmLabelB.get_p6();
     elseif robotID==7 
-      rawData = h.wcmLabelB().get_p7();
+      rawData = h.wcmLabelB.get_p7();
     elseif robotID==8 
-      rawData = h.wcmLabelB().get_p8();
+      rawData = h.wcmLabelB.get_p8();
     elseif robotID==9 
-      rawData = h.wcmLabelB().get_p9();
+      rawData = h.wcmLabelB.get_p9();
     else
-      rawData = h.wcmLabelB().get_p10();
+      rawData = h.wcmLabelB.get_p10();
     end
     labelB = raw2label(rawData, width, height)';
   end

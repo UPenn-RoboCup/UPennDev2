@@ -113,6 +113,13 @@ end
 
 function exit()
   --Load default walk parameters
+<<<<<<< HEAD
   util.LoadConfig(Config.params, Config.platform)
+=======
+
+
+--SJ: this doesn't work!
+--  Config.loadconfig(Config.param.walk)
+>>>>>>> dcafd56ef60c54c584a2527c571538089c5dc013
 end
 

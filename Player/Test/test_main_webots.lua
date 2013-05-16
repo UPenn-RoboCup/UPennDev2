@@ -57,6 +57,15 @@ controller.wb_robot_keyboard_enable(500);
 
 penalized_state={0,0,0,0,0};
 
+print("=====================================================")
+print("WEBOTS MAIN LOADED")
+print("1,2,3,4,5: Initial / Ready / Set/ Playing / Finished")
+print("8,9: Blue / Red kickoff")
+print("q,w,e,r,t: Penalize player 1/2/3/4/5")
+print("=====================================================")
+
+
+
 function process_keyinput()
   local str = controller.wb_robot_keyboard_get_key();
   if str>0 then
@@ -83,7 +92,7 @@ function process_keyinput()
     elseif byte==string.byte("5") then
       Speak.talk('Finished');
       gcm.set_game_state(4);
-    elseif byte==string.byte("k") then   
+    elseif byte==string.byte("8") then   
       --Blue team kickoff
       if gcm.get_team_color()==0 then
         gcm.set_game_kickoff(1);
@@ -91,32 +100,63 @@ function process_keyinput()
         gcm.set_game_kickoff(0);
       end
       Speak.talk('Blue kickoff');
-    elseif byte==string.byte("l") then   
+    elseif byte==string.byte("9") then   
       if gcm.get_team_color()==0 then
         gcm.set_game_kickoff(0);
       else
         gcm.set_game_kickoff(1);
       end
       Speak.talk('Red kickoff');
+
     elseif byte==string.byte("q") then 
       penalize_player=1;
+      penalize_team = 0;
     elseif byte==string.byte("w") then 
       penalize_player=2;
+      penalize_team = 0;
     elseif byte==string.byte("e") then 
       penalize_player=3;
+      penalize_team = 0;
     elseif byte==string.byte("r") then 
       penalize_player=4;
+      penalize_team = 0;
     elseif byte==string.byte("t") then 
       penalize_player=5;
+      penalize_team = 0;
+
+
+    elseif byte==string.byte("z") then 
+      penalize_player=1;
+      penalize_team = 1;
+    elseif byte==string.byte("x") then 
+      penalize_player=2;
+      penalize_team = 1;
+    elseif byte==string.byte("c") then 
+      penalize_player=3;
+      penalize_team = 1;
+    elseif byte==string.byte("v") then 
+      penalize_player=4;
+      penalize_team = 1;
+    elseif byte==string.byte("b") then 
+      penalize_player=5;
+      penalize_team = 1;
     end
 
-    if penalize_player>0 then
+    if penalize_player>0 and penalize_team == gcm.get_team_color() then
       penalized_state[penalize_player]=1-penalized_state[penalize_player];
       gcm.set_game_penalty(penalized_state) ;
       if penalized_state[penalize_player]>0 then
-        Speak.talk(string.format("Player %d penalized",penalize_player));
+        if penalize_team==0 then
+          Speak.talk(string.format("Red Player %d penalized",penalize_player));
+        else
+          Speak.talk(string.format("Blue Player %d penalized",penalize_player));
+        end
       else
-        Speak.talk(string.format("Player %d unpenalized",penalize_player));
+        if penalize_team==0 then
+          Speak.talk(string.format("Red Player %d unpenalized",penalize_player));
+        else
+          Speak.talk(string.format("Blue Player %d unpenalized",penalize_player));
+        end
       end
     end
 

@@ -1,0 +1,21 @@
+#! /bin/sh
+
+if [ $1 = 'guest' ]; then
+  rm /etc/conf.d/net
+  touch /etc/conf.d/net
+  cat ~nao/UPennDev/Player/network_scripts/conf.d_guest >> /etc/conf.d/net
+  rm /etc/wpa_supplicant/wpa_supplicant.conf
+  touch /etc/wpa_supplicant/wpa_supplicant.conf
+  cat ~nao/UPennDev/Player/network_scripts/wpa_supplicant.conf_guest >> /etc/wpa_supplicant/wpa_supplicant.conf
+
+elif [ $1 = 'robocup' ]; then
+  rm /etc/conf.d/net
+  touch /etc/conf.d/net
+  cat ~nao/UPennDev/Player/network_scripts/conf.d_robocup >> /etc/conf.d/net
+  rm /etc/wpa_supplicant/wpa_supplicant.conf
+  touch /etc/wpa_supplicant/wpa_supplicant.conf
+  cat ~nao/UPennDev/Player/network_scripts/wpa_supplicant.conf_robocup >> /etc/wpa_supplicant/wpa_supplicant.conf
+ else
+   echo 'invalid or unrecognized network :('
+ fi
+/etc/init.d/net.wlan0 stop && /etc/init.d/net.wlan0 start

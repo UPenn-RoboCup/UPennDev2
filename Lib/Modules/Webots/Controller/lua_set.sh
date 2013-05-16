@@ -16,6 +16,7 @@ PLATFORM=webots
 # Need to export
 export PLAYER_ID=$1
 export TEAM_ID=$2
+export USEGPS=$3
 
 echo "===Environment Variables==="
 echo Path: $PATH

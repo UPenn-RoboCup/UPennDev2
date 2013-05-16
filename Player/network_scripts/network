@@ -18,4 +18,6 @@ elif [ $1 = 'robocup' ]; then
  else
    echo 'invalid or unrecognized network :('
  fi
+ echo '/etc/wpa_supplicant/wpa_supplicant.conf and /etc/conf.d/net written'
+ echo 'now restarting network interface'
 /etc/init.d/net.wlan0 stop && /etc/init.d/net.wlan0 start

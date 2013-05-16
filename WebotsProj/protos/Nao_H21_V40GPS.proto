@@ -15,8 +15,8 @@ PROTO Nao_H21_V40GPS [
   field SFBool synchronization FALSE
   field SFFloat gpsResolution 0.0
   field SFFloat cameraFieldOfView 1.064
-  field SFInt32 cameraWidth 160
-  field SFInt32 cameraHeight 120
+  field SFInt32 cameraWidth 320
+  field SFInt32 cameraHeight 240
   field SFVec2f topCameraWindowPosition 0 0
   field SFVec2f bottomCameraWindowPosition 0 1
   field SFFloat cameraPixelSize 1.0

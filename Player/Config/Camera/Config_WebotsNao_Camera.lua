@@ -4,8 +4,8 @@ module(..., package.seeall);
 camera = {};
 camera.ncamera = 2;
 camera.switchFreq = 5; --unused for OP
-camera.width = 160;
-camera.height = 120;
+camera.width = 320; --We use custom model (higher resolution)
+camera.height = 240;
 camera.x_center = camera.width/2;
 camera.y_center = camera.height/2;
 

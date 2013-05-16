@@ -117,6 +117,26 @@ stance.delay = 80; --amount of time to stand still after standing to regain bala
 
 goalie_dive = 2; --1 for arm only, 2 for actual diving
 goalie_dive_waittime = 6.0; --How long does goalie lie down?
+--fsm.goalie_type = 1;--moving/move+stop/stop+dive/stop+dive+move
+--fsm.goalie_type = 2;--moving/move+stop/stop+dive/stop+dive+move
+fsm.goalie_type = 3;--moving/move+stop/stop+dive/stop+dive+move
+--fsm.goalie_type = 4;--moving/move+stop/stop+dive/stop+dive+move
+--fsm.goalie_reposition=0; --No reposition
+fsm.goalie_reposition=1; --Yaw reposition
+--fsm.goalie_reposition=2; --Position reposition
+fsm.bodyAnticipate.thFar = {0.4,0.4,30*math.pi/180};
+fsm.goalie_use_walkkick = 1;--should goalie use walkkick or long kick?
+
+--Diving detection parameters
+fsm.bodyAnticipate.timeout = 3.0;
+fsm.bodyAnticipate.center_dive_threshold_y = 0.05; 
+fsm.bodyAnticipate.dive_threshold_y = 1.0;
+fsm.bodyAnticipate.ball_velocity_th = 1.0; --min velocity for diving
+fsm.bodyAnticipate.ball_velocity_thx = -1.0; --min x velocity for diving
+fsm.bodyAnticipate.rCloseDive = 2.0; --ball distance threshold for diving
+
+
+
 
 --Dummy variables
 bat_low = 999;

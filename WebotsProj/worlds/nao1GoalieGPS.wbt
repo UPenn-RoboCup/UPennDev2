@@ -7,6 +7,7 @@ WorldInfo {
   ]
   title "Robotstadium"
   basicTimeStep 40
+  displayRefresh 4
 }
 Viewpoint {
   orientation -1 0 0 0.8
@@ -46,12 +47,40 @@ DEF BLUE_GOAL KidGoal {
 DEF BALL BallGPS {
   translation 0 0.0323921 0
 }
-DEF PLAYER_1_1 Nao_H21_V40GPS {
+DEF PLAYER_0_1 Nao_H21_V40GPSOnly {
   translation 1.5 0.35 3
   rotation -0.57735 0.57735 0.57735 2.08
   controller "nao_team_0"
-  controllerArgs "1 1"
-  bottomCameraWindowPosition 0 0.2
+  controllerArgs "0 1 1"
   waistBand TRUE
   waistBandColor 0.9 0.5 0.5
 }
+
+DEF SLOPE Solid {
+  translation 0.54 -0.10 0.0798539
+  rotation 0 0 -1 0.2
+  children [
+    DEF slope Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0.201961 0.201961 0.201961
+          emissiveColor 0.201961 0.201961 0.201961
+        }
+      }
+      geometry DEF BOX Box {
+        size 1 0.35 1
+      }
+    }
+  ]
+  boundingObject DEF slope Shape {
+    appearance Appearance {
+      material Material {
+        diffuseColor 0.501961 0.501961 0.501961
+        emissiveColor 0.501961 0.501961 0.501961
+      }
+    }
+    geometry USE BOX
+  }
+  locked TRUE
+}
+

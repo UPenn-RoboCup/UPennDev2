@@ -7,11 +7,11 @@ WorldInfo {
   ]
   title "Robotstadium"
   basicTimeStep 40
-  displayRefresh 8
+  displayRefresh 4
 }
 Viewpoint {
-  orientation -1 0 0 0.8
-  position 0 8 8
+  orientation -0.998164 -0.052807 0.0296619 0.873105
+  position -0.644447 8.30312 7.48074
 }
 Background {
   skyColor [
@@ -46,13 +46,51 @@ DEF BLUE_GOAL KidGoal {
 DEF BALL BallGPS {
   translation 0 0.0323921 0
 }
-DEF PLAYER_1_99 DARwInOPGPS {
-  translation -1.5 0.3 2
+
+DEF PLAYER_1_1 DARwInOPGPSOnly {
+  translation 1.5 0.3 2
   rotation 0 1 0 3.14
   controller "darwin-op_team_0"
-  controllerArgs "1 99"
-  plasticColor 0 0 1
+  controllerArgs "1 1 1"
+  plasticColor 1 0 0
   cameraWindowPosition 0.125 0
   waistBand TRUE
   waistBandColor 1 0 0
 }
+
+DEF PLAYER_2_1 DARwInOPGPSOnly {
+  translation 1.9 0.3 2
+  rotation 0 1 0 3.14
+  controller "darwin-op_team_0"
+  controllerArgs "2 1 1"
+  plasticColor 1 0 0
+  cameraWindowPosition 0.125 0
+  waistBand TRUE
+  waistBandColor 1 0 0
+}
+
+
+
+
+DEF PLAYER_1_0 DARwInOPGPSOnly {
+  translation -1.5 0.3 2
+  rotation 0 1 0 3.14
+  controller "darwin-op_team_0"
+  controllerArgs "1 0 1"
+  plasticColor 0 0 1
+  cameraWindowPosition 0.125 1
+  waistBand TRUE
+  waistBandColor 0 0 1
+}
+
+DEF PLAYER_2_0 DARwInOPGPSOnly {
+  translation -1.9 0.3 2
+  rotation 0 1 0 3.14
+  controller "darwin-op_team_0"
+  controllerArgs "2 0 1"
+  plasticColor 0 0 1
+  cameraWindowPosition 0.125 1
+  waistBand TRUE
+  waistBandColor 0 0 1
+}
+

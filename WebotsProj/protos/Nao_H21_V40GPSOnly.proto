@@ -6,7 +6,7 @@
 # Changes:
 #   Feb 6, 2012 - Created from the Nao_H21_V33.proto
 #
-PROTO Nao_H21_V40 [
+PROTO Nao_H21_V40GPSOnly [
   field SFVec3f translation 0 0.34 0
   field SFRotation rotation 1 0 0 -1.5708
   field SFColor color 0.94 0.41 0.01
@@ -14,12 +14,6 @@ PROTO Nao_H21_V40 [
   field SFString controllerArgs "9559"
   field SFBool synchronization FALSE
   field SFFloat gpsResolution 0.0
-  field SFFloat cameraFieldOfView 1.064
-  field SFInt32 cameraWidth 160
-  field SFInt32 cameraHeight 120
-  field SFVec2f topCameraWindowPosition 0 0
-  field SFVec2f bottomCameraWindowPosition 0 1
-  field SFFloat cameraPixelSize 1.0
   field SFBool waistBand FALSE
   field SFColor waistBandColor 0 0 1
   field SFInt32 channel 0
@@ -907,7 +901,11 @@ PROTO Nao_H21_V40 [
         gradual TRUE
       }
       DEF GPS GPS {
+        name "GPS"
         resolution IS gpsResolution
+      }
+      DEF Compass Compass {
+         name "Compass"
       }
       DEF RECEIVER Receiver {
         channel IS channel
@@ -1008,28 +1006,6 @@ PROTO Nao_H21_V40 [
           }
           DEF HeadPitch Servo {
             children [
-              Camera {
-                translation 0.05871 0 0.06364
-                rotation 0.573277 -0.573277 -0.585411 2.08235
-                name "CameraTop"
-                windowPosition IS topCameraWindowPosition
-                pixelSize IS cameraPixelSize
-                fieldOfView IS cameraFieldOfView
-                width IS cameraWidth
-                height IS cameraHeight
-                near 0.002
-              }
-              Camera {
-                translation 0.05071 0 0.01774
-                rotation 0.391132 -0.391132 -0.833085 1.75241
-                name "CameraBottom"
-                windowPosition IS bottomCameraWindowPosition
-                pixelSize IS cameraPixelSize
-                fieldOfView IS cameraFieldOfView
-                width IS cameraWidth
-                height IS cameraHeight
-                near 0.002
-              }
               DEF CAP Shape {
                 appearance USE SECONDARY_SKIN_APP
                 geometry IndexedFaceSet {
@@ -6152,64 +6128,6 @@ PROTO Nao_H21_V40 [
                           DEF RAnkleRoll Servo {
                             rotation 1 0 0 0
                             children [
-                              DEF RFsrFL TouchSensor {
-                                translation 0.07025 0.0231 -0.042
-                                rotation 0 1 0 3.1416
-                                name "RFsrFL"
-                                contactMaterial IS footContactMaterial
-                                boundingObject DEF FSR_BO Capsule {
-                                  height 0.025
-                                  radius 0.004
-                                }
-                                physics DEF FSR_PHYSICS Physics {
-                                  density -1
-                                  mass 0.02
-                                }
-                                type "force"
-                                lookupTable [
-                                  0 0 0
-                                  25 25 0
-                                ]
-                              }
-                              DEF RFsrFR TouchSensor {
-                                translation 0.07025 -0.029 -0.042
-                                rotation 0 1 0 3.1416
-                                name "RFsrFR"
-                                contactMaterial IS footContactMaterial
-                                boundingObject USE FSR_BO
-                                physics USE FSR_PHYSICS
-                                type "force"
-                                lookupTable [
-                                  0 0 0
-                                  25 25 0
-                                ]
-                              }
-                              DEF RFsrRR TouchSensor {
-                                translation -0.02965 -0.035 -0.042
-                                rotation 0 1 0 3.1416
-                                name "RFsrRR"
-                                contactMaterial IS footContactMaterial
-                                boundingObject USE FSR_BO
-                                physics USE FSR_PHYSICS
-                                type "force"
-                                lookupTable [
-                                  0 0 0
-                                  25 25 0
-                                ]
-                              }
-                              DEF RFsrRL TouchSensor {
-                                translation -0.03025 0.0191 -0.042
-                                rotation 0 1 0 3.1416
-                                name "RFsrRL"
-                                contactMaterial IS footContactMaterial
-                                boundingObject USE FSR_BO
-                                physics USE FSR_PHYSICS
-                                type "force"
-                                lookupTable [
-                                  0 0 0
-                                  25 25 0
-                                ]
-                              }
                               Shape {
                                 appearance USE STRUCTURE_APP
                                 geometry IndexedFaceSet {
@@ -7893,58 +7811,6 @@ PROTO Nao_H21_V40 [
                           DEF LAnkleRoll Servo {
                             rotation 1 0 0 0
                             children [
-                              DEF LFsrFL TouchSensor {
-                                translation 0.07025 0.029 -0.042
-                                rotation 0 1 0 3.1416
-                                name "LFsrFL"
-                                contactMaterial IS footContactMaterial
-                                boundingObject USE FSR_BO
-                                physics USE FSR_PHYSICS
-                                type "force"
-                                lookupTable [
-                                  0 0 0
-                                  25 25 0
-                                ]
-                              }
-                              DEF LFsrFR TouchSensor {
-                                translation 0.07025 -0.0231 -0.042
-                                rotation 0 1 0 3.1416
-                                name "LFsrFR"
-                                contactMaterial IS footContactMaterial
-                                boundingObject USE FSR_BO
-                                physics USE FSR_PHYSICS
-                                type "force"
-                                lookupTable [
-                                  0 0 0
-                                  25 25 0
-                                ]
-                              }
-                              DEF LFsrRR TouchSensor {
-                                translation -0.02965 -0.0191 -0.042
-                                rotation 0 1 0 3.1416
-                                name "LFsrRR"
-                                contactMaterial IS footContactMaterial
-                                boundingObject USE FSR_BO
-                                physics USE FSR_PHYSICS
-                                type "force"
-                                lookupTable [
-                                  0 0 0
-                                  25 25 0
-                                ]
-                              }
-                              DEF LFsrRL TouchSensor {
-                                translation -0.03025 0.035 -0.042
-                                rotation 0 1 0 3.1416
-                                name "LFsrRL"
-                                contactMaterial IS footContactMaterial
-                                boundingObject USE FSR_BO
-                                physics USE FSR_PHYSICS
-                                type "force"
-                                lookupTable [
-                                  0 0 0
-                                  25 25 0
-                                ]
-                              }
                               Shape {
                                 appearance USE STRUCTURE_APP
                                 geometry IndexedFaceSet {

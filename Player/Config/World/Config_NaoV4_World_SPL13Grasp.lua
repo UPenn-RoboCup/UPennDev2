@@ -1,55 +1,57 @@
 module(..., package.seeall);
 require('vector')
 
---Localization parameters 
+--Localization parameters for Testing in Grasp
+--The field is shrinked to 85% of its real size
+--But the size of the boxes and the distance between the goal posts are unchanged
 
 world={};
 world.n = 200;
-world.xLineBoundary = 4.5;
-world.yLineBoundary = 3.0;
-world.xMax = 4.7;
-world.yMax = 3.2;
+world.xLineBoundary = 3.825;
+world.yLineBoundary = 2.55;
+world.xMax = 4;
+world.yMax = 2.75;
 world.goalWidth = 1.60;
 world.goalHeight= 0.85;
 world.goalDiameter=0.10; -- diameter of a post
 world.ballYellow= {{4.5,0.0}};
 world.ballCyan= {{-4.6,0.0}};
 world.postYellow = {};
-world.postYellow[1] = {4.5, 0.80};
-world.postYellow[2] = {4.5, -0.80};
+world.postYellow[1] = {3.825, 0.80};
+world.postYellow[2] = {3.825, -0.80};
 world.postCyan = {};
-world.postCyan[1] = {-4.5, -0.80};
-world.postCyan[2] = {-4.5, 0.80};
+world.postCyan[1] = {-3.825, -0.80};
+world.postCyan[2] = {-3.825, 0.80};
 world.spot = {};
-world.spot[1] = {-2.70, 0};
-world.spot[2] = {2.70, 0};
+world.spot[1] = {-2.295, 0};
+world.spot[2] = {2.295, 0};
 world.cResample = 10; --Resampling interval
 
---They are SPL values
+--They are SPL 2013 values
 world.Lcorner={};
 --Field edge
-world.Lcorner[1]={4.5,3.0};
-world.Lcorner[2]={4.5,-3.0};
-world.Lcorner[3]={-4.5,3.0};
-world.Lcorner[4]={-4.5,-3.0};
+world.Lcorner[1]={3.825,2.55};
+world.Lcorner[2]={3.825,-2.55};
+world.Lcorner[3]={-3.825,2.55};
+world.Lcorner[4]={-3.825,-2.55};
 --Center T edge
-world.Lcorner[5]={0,3.0};
-world.Lcorner[6]={0,-3.0};
+world.Lcorner[5]={0,2.55};
+world.Lcorner[6]={0,-2.55};
 --Penalty box edge
-world.Lcorner[7]={-3.9,1.1};
-world.Lcorner[8]={-3.9,-1.1};
-world.Lcorner[9]={3.9,1.1};
-world.Lcorner[10]={3.9,-1.1};
+world.Lcorner[7]={-3.225,1.1};
+world.Lcorner[8]={-3.225,-1.1};
+world.Lcorner[9]={3.225,1.1};
+world.Lcorner[10]={3.225,-1.1};
 --Penalty box T edge
-world.Lcorner[11]={4.5,1.1};
-world.Lcorner[12]={4.5,-1.1};
-world.Lcorner[13]={-4.5,1.1};
-world.Lcorner[14]={-4.5,-1.1};
+world.Lcorner[11]={3.825,1.1};
+world.Lcorner[12]={3.825,-1.1};
+world.Lcorner[13]={-3.825,1.1};
+world.Lcorner[14]={-3.825,-1.1};
 --Center circle junction
-world.Lcorner[15]={0,0.6};
-world.Lcorner[16]={0,-0.6};
-world.Lcorner[17]={0.6,0};
-world.Lcorner[18]={-0.6,0};
+world.Lcorner[15]={0,0.6375};
+world.Lcorner[16]={0,-0.6375};
+world.Lcorner[17]={0.6375,0};
+world.Lcorner[18]={-0.6375,0};
 
 --same-colored goalposts
 world.use_same_colored_goal=1;
@@ -76,7 +78,7 @@ world.aCornerFilter = 0.05;
 
 -- default positions for our kickoff
 world.initPosition1={
-  {4.2,0},   --Goalie
+  {3.6,0},   --Goalie
   {0.5, 0}, --Attacker
   {1.2,-1}, --Defender
   {1.2, 1}, --Supporter
@@ -84,7 +86,7 @@ world.initPosition1={
 -- default positions for opponents' kickoff
 -- Penalty mark : {1.2,0}
 world.initPosition2={
-  {4.2,0},   --Goalie
+  {3.6,0},   --Goalie
   {2.0, 0}, --Attacker
   {2.5, -1}, --Defender
   {2.5,1}, --Supporter

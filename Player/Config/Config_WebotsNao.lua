@@ -31,7 +31,8 @@ dev.kinematics = 'NaoWebotsKinematics';
 dev.game_control='WebotsGameControl';
 dev.team= 'TeamSPL';
 dev.kick = 'BasicKick';
-dev.walk = 'Walk/NaoV4Walk';
+--dev.walk = 'Walk/NaoV4Walk';
+dev.walk = 'EvenBetterWalk';
 
 -- Game Parameters
 
@@ -43,13 +44,22 @@ game.robotID = game.playerID;
 game.role = game.playerID-1; -- default role, 0 for goalie 
 game.nPlayers = 4;
 
+-- Shutdown Vision and use ground truth gps info only
+--Now auto-detect from 3rd parameter
+use_gps_only = tonumber(os.getenv('USEGPS')) or 0;
+print("GPS:",use_gps_only)
+
+
+
+
 --To handle non-gamecontroller-based team handling for webots
 if game.teamNumber==0 then game.teamColor = 0; --Blue team
 else game.teamColor = 1; --Red team
 end
 
 fsm.game = 'RoboCup';
-fsm.body = {'NaoKickLogic'};
+--fsm.body = {'NaoKickLogic'};
+fsm.body = {'GeneralPlayer'};
 fsm.head = {'NaoPlayer'};
 
 
@@ -107,3 +117,27 @@ stance.delay = 80; --amount of time to stand still after standing to regain bala
 
 goalie_dive = 2; --1 for arm only, 2 for actual diving
 goalie_dive_waittime = 6.0; --How long does goalie lie down?
+--fsm.goalie_type = 1;--moving/move+stop/stop+dive/stop+dive+move
+--fsm.goalie_type = 2;--moving/move+stop/stop+dive/stop+dive+move
+fsm.goalie_type = 3;--moving/move+stop/stop+dive/stop+dive+move
+--fsm.goalie_type = 4;--moving/move+stop/stop+dive/stop+dive+move
+--fsm.goalie_reposition=0; --No reposition
+fsm.goalie_reposition=1; --Yaw reposition
+--fsm.goalie_reposition=2; --Position reposition
+fsm.bodyAnticipate.thFar = {0.4,0.4,30*math.pi/180};
+fsm.goalie_use_walkkick = 1;--should goalie use walkkick or long kick?
+
+--Diving detection parameters
+fsm.bodyAnticipate.timeout = 3.0;
+fsm.bodyAnticipate.center_dive_threshold_y = 0.05; 
+fsm.bodyAnticipate.dive_threshold_y = 1.0;
+fsm.bodyAnticipate.ball_velocity_th = 1.0; --min velocity for diving
+fsm.bodyAnticipate.ball_velocity_thx = -1.0; --min x velocity for diving
+fsm.bodyAnticipate.rCloseDive = 2.0; --ball distance threshold for diving
+
+
+
+
+--Dummy variables
+bat_low = 999;
+bat_med = 999;

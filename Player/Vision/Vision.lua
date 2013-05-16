@@ -202,12 +202,17 @@ function update()
     print "Re-enqueuing of a buffer error...";
     exit()
   end
-
+  
   -- perform the initial labeling
-  labelA.data  = ImageProc.yuyv_to_label(vcm.get_image_yuyv(),
+  if (webots) then
+    --SJ: this fixes the error
+    labelA.data = Camera.get_labelA(vcm.get_image_lut());
+  else
+    labelA.data  = ImageProc.yuyv_to_label(vcm.get_image_yuyv(),
                                           vcm.get_image_lut(),
                                           camera.width,
                                           camera.height);
+  end
 
   -- determine total number of pixels of each color/label
   colorCount = ImageProc.color_count(labelA.data, labelA.npixel);

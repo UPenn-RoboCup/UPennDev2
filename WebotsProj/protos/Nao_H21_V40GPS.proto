@@ -6,7 +6,7 @@
 # Changes:
 #   Feb 6, 2012 - Created from the Nao_H21_V33.proto
 #
-PROTO Nao_H21_V40 [
+PROTO Nao_H21_V40GPS [
   field SFVec3f translation 0 0.34 0
   field SFRotation rotation 1 0 0 -1.5708
   field SFColor color 0.94 0.41 0.01
@@ -6157,64 +6157,6 @@ PROTO Nao_H21_V40 [
                           DEF RAnkleRoll Servo {
                             rotation 1 0 0 0
                             children [
-                              DEF RFsrFL TouchSensor {
-                                translation 0.07025 0.0231 -0.042
-                                rotation 0 1 0 3.1416
-                                name "RFsrFL"
-                                contactMaterial IS footContactMaterial
-                                boundingObject DEF FSR_BO Capsule {
-                                  height 0.025
-                                  radius 0.004
-                                }
-                                physics DEF FSR_PHYSICS Physics {
-                                  density -1
-                                  mass 0.02
-                                }
-                                type "force"
-                                lookupTable [
-                                  0 0 0
-                                  25 25 0
-                                ]
-                              }
-                              DEF RFsrFR TouchSensor {
-                                translation 0.07025 -0.029 -0.042
-                                rotation 0 1 0 3.1416
-                                name "RFsrFR"
-                                contactMaterial IS footContactMaterial
-                                boundingObject USE FSR_BO
-                                physics USE FSR_PHYSICS
-                                type "force"
-                                lookupTable [
-                                  0 0 0
-                                  25 25 0
-                                ]
-                              }
-                              DEF RFsrRR TouchSensor {
-                                translation -0.02965 -0.035 -0.042
-                                rotation 0 1 0 3.1416
-                                name "RFsrRR"
-                                contactMaterial IS footContactMaterial
-                                boundingObject USE FSR_BO
-                                physics USE FSR_PHYSICS
-                                type "force"
-                                lookupTable [
-                                  0 0 0
-                                  25 25 0
-                                ]
-                              }
-                              DEF RFsrRL TouchSensor {
-                                translation -0.03025 0.0191 -0.042
-                                rotation 0 1 0 3.1416
-                                name "RFsrRL"
-                                contactMaterial IS footContactMaterial
-                                boundingObject USE FSR_BO
-                                physics USE FSR_PHYSICS
-                                type "force"
-                                lookupTable [
-                                  0 0 0
-                                  25 25 0
-                                ]
-                              }
                               Shape {
                                 appearance USE STRUCTURE_APP
                                 geometry IndexedFaceSet {
@@ -7898,58 +7840,6 @@ PROTO Nao_H21_V40 [
                           DEF LAnkleRoll Servo {
                             rotation 1 0 0 0
                             children [
-                              DEF LFsrFL TouchSensor {
-                                translation 0.07025 0.029 -0.042
-                                rotation 0 1 0 3.1416
-                                name "LFsrFL"
-                                contactMaterial IS footContactMaterial
-                                boundingObject USE FSR_BO
-                                physics USE FSR_PHYSICS
-                                type "force"
-                                lookupTable [
-                                  0 0 0
-                                  25 25 0
-                                ]
-                              }
-                              DEF LFsrFR TouchSensor {
-                                translation 0.07025 -0.0231 -0.042
-                                rotation 0 1 0 3.1416
-                                name "LFsrFR"
-                                contactMaterial IS footContactMaterial
-                                boundingObject USE FSR_BO
-                                physics USE FSR_PHYSICS
-                                type "force"
-                                lookupTable [
-                                  0 0 0
-                                  25 25 0
-                                ]
-                              }
-                              DEF LFsrRR TouchSensor {
-                                translation -0.02965 -0.0191 -0.042
-                                rotation 0 1 0 3.1416
-                                name "LFsrRR"
-                                contactMaterial IS footContactMaterial
-                                boundingObject USE FSR_BO
-                                physics USE FSR_PHYSICS
-                                type "force"
-                                lookupTable [
-                                  0 0 0
-                                  25 25 0
-                                ]
-                              }
-                              DEF LFsrRL TouchSensor {
-                                translation -0.03025 0.035 -0.042
-                                rotation 0 1 0 3.1416
-                                name "LFsrRL"
-                                contactMaterial IS footContactMaterial
-                                boundingObject USE FSR_BO
-                                physics USE FSR_PHYSICS
-                                type "force"
-                                lookupTable [
-                                  0 0 0
-                                  25 25 0
-                                ]
-                              }
                               Shape {
                                 appearance USE STRUCTURE_APP
                                 geometry IndexedFaceSet {

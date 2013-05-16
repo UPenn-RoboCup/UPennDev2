@@ -31,7 +31,8 @@ dev.kinematics = 'NaoWebotsKinematics';
 dev.game_control='WebotsGameControl';
 dev.team= 'TeamSPL';
 dev.kick = 'BasicKick';
-dev.walk = 'Walk/NaoV4Walk';
+--dev.walk = 'Walk/NaoV4Walk';
+dev.walk = 'EvenBetterWalk';
 
 -- Game Parameters
 
@@ -57,8 +58,8 @@ else game.teamColor = 1; --Red team
 end
 
 fsm.game = 'RoboCup';
-fsm.body = {'NaoKickLogic'};
---fsm.body = {'GeneralPlayer'};
+--fsm.body = {'NaoKickLogic'};
+fsm.body = {'GeneralPlayer'};
 fsm.head = {'NaoPlayer'};
 
 
@@ -116,3 +117,7 @@ stance.delay = 80; --amount of time to stand still after standing to regain bala
 
 goalie_dive = 2; --1 for arm only, 2 for actual diving
 goalie_dive_waittime = 6.0; --How long does goalie lie down?
+
+--Dummy variables
+bat_low = 999;
+bat_med = 999;

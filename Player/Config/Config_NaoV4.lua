@@ -19,7 +19,7 @@ params = {}
 params.name = {"Walk", "World", "Kick", "Vision", "FSM", "Camera"};
 
 ---Location Specific Camera Parameters--
-params.Camera = "GraspChris"
+params.Camera = "Grasp"
 params.Walk = "FastStableAlan"
 params.World = "SPL13"
 

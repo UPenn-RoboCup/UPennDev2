@@ -4,7 +4,7 @@ require('io')
 require('unix');
 require('string');
 
-playerID = 1; --1 for the goalie
+playerID = 2; --1 for the goalie
 teamColor = 0;  --0 is blue team, 1 is red team
 
 hostname = unix.gethostname();

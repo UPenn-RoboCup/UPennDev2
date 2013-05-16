@@ -250,16 +250,16 @@ while(true) do
       if #teamToTrack==1 then 
         if (t.teamNumber == teamToTrack[1]) and (t.id) then
           push_team_struct(t,0);
-	  --push_labelB(t,0);
+	  push_labelB(t,0);
         end
       else
         if (t.teamNumber == teamToTrack[1]) and (t.id) then
           push_team_struct(t,0);
-	  --push_labelB(t,0);
+	  push_labelB(t,0);
 
         elseif (t.teamNumber == teamToTrack[2]) and (t.id) then
           push_team_struct(t,5);
-	  --push_labelB(t,5);
+	  push_labelB(t,5);
 
         end
       end

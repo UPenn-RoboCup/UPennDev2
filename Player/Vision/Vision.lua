@@ -386,13 +386,13 @@ print("V_TL:",unpack(v_TL))
 print("V_TR:",unpack(v_TR))
 print("V_BL:",unpack(v_BL))
 print("V_BR:",unpack(v_BR))
-print("Check 1:",
+print("Top check:",
    check_side(v_TL, ballLocal, v_TR));
-print("Check 2:",
+print("Left check:",
      check_side(v_TL, v_BL, ballLocal) );
-print("Check 3:",
+print("Right check:",
      check_side(v_BR, v_TR, ballLocal) );
-print("Check 4:",
+print("Bottom check:",
      check_side(v_BL, v_BR, ballLocal) );
 --]]
 
@@ -405,6 +405,14 @@ print("Check 4:",
   else
     vcm.set_ball_detect(0);
   end
+
+  --SJ: This check doesnt't work with nao any more (assumes top camera)
+  --Just let it know the ball position all the time for now
+  if Config.platform.name == 'WebotsNao' then
+    vcm.set_ball_detect(1);
+  end
+
+
 end
 
 function check_side(v,v1,v2)

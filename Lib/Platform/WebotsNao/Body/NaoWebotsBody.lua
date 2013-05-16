@@ -5,7 +5,6 @@ controller.wb_robot_init(); timeStep = controller.wb_robot_get_basic_time_step()
 tDelta = .001*timeStep;
 
 gps_enable = 1;
-gps_enable = 0;
 
 -- Get webots tags:
 tags = {};
@@ -358,8 +357,8 @@ function get_sensor_gps( )
   --For GPS enabled Nao
   gps = controller.wb_gps_get_values(tags.gps);
   compass = controller.wb_compass_get_values(tags.compass);
-  angle=math.atan2(compass[1],compass[3]);
-  gps={gps[1],-gps[3],-angle};
+  angle=math.atan2(-compass[2],compass[1]); --Fixed
+  gps={gps[1],-gps[3],angle};
 --  print("Current gps pose:",gps[1],gps[2],gps[3]*180/math.pi)
   return gps;
 end

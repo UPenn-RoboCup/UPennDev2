@@ -58,6 +58,7 @@ end
 
 fsm.game = 'RoboCup';
 fsm.body = {'NaoKickLogic'};
+--fsm.body = {'GeneralPlayer'};
 fsm.head = {'NaoPlayer'};
 
 

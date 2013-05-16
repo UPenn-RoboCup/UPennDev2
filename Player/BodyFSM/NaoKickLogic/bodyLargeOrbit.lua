@@ -46,7 +46,9 @@ function entry()
 
   --If walk parameters are defined for bodyOrbit, then load them
   if Config.fsm.bodyOrbit.walkParam then
-    Config.loadconfig(Config.fsm.bodyOrbit.walkParam)
+--SJ: this makes error (variable walk parm loading)
+-- We won't use this FSM anyway
+--    Config.loadconfig(Config.fsm.bodyOrbit.walkParam)
   end
   walk.set_velocity(0,0,0)
 
@@ -113,6 +115,9 @@ end
 
 function exit()
   --Load default walk parameters
-  Config.loadconfig(Config.param.walk)
+
+
+--SJ: this doesn't work!
+--  Config.loadconfig(Config.param.walk)
 end
 

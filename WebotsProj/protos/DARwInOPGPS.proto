@@ -5356,8 +5356,6 @@ Robot {
       maxForce 2.35
     }
   ]
-  name "DARwIn-OP"
-  model "DARwIn-OP"
   boundingObject Group {
     children [
       Transform {

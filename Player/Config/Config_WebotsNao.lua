@@ -43,6 +43,14 @@ game.robotID = game.playerID;
 game.role = game.playerID-1; -- default role, 0 for goalie 
 game.nPlayers = 4;
 
+-- Shutdown Vision and use ground truth gps info only
+--Now auto-detect from 3rd parameter
+use_gps_only = tonumber(os.getenv('USEGPS')) or 0;
+print("GPS:",use_gps_only)
+
+
+
+
 --To handle non-gamecontroller-based team handling for webots
 if game.teamNumber==0 then game.teamColor = 0; --Blue team
 else game.teamColor = 1; --Red team

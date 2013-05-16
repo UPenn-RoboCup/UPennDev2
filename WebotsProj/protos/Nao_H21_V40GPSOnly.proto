@@ -6,7 +6,7 @@
 # Changes:
 #   Feb 6, 2012 - Created from the Nao_H21_V33.proto
 #
-PROTO Nao_H21_V40 [
+PROTO Nao_H21_V40GPSOnly [
   field SFVec3f translation 0 0.34 0
   field SFRotation rotation 1 0 0 -1.5708
   field SFColor color 0.94 0.41 0.01
@@ -14,12 +14,6 @@ PROTO Nao_H21_V40 [
   field SFString controllerArgs "9559"
   field SFBool synchronization FALSE
   field SFFloat gpsResolution 0.0
-  field SFFloat cameraFieldOfView 1.064
-  field SFInt32 cameraWidth 160
-  field SFInt32 cameraHeight 120
-  field SFVec2f topCameraWindowPosition 0 0
-  field SFVec2f bottomCameraWindowPosition 0 1
-  field SFFloat cameraPixelSize 1.0
   field SFBool waistBand FALSE
   field SFColor waistBandColor 0 0 1
   field SFInt32 channel 0
@@ -907,7 +901,11 @@ PROTO Nao_H21_V40 [
         gradual TRUE
       }
       DEF GPS GPS {
+        name "GPS"
         resolution IS gpsResolution
+      }
+      DEF Compass Compass {
+         name "Compass"
       }
       DEF RECEIVER Receiver {
         channel IS channel
@@ -1008,28 +1006,6 @@ PROTO Nao_H21_V40 [
           }
           DEF HeadPitch Servo {
             children [
-              Camera {
-                translation 0.05871 0 0.06364
-                rotation 0.573277 -0.573277 -0.585411 2.08235
-                name "CameraTop"
-                windowPosition IS topCameraWindowPosition
-                pixelSize IS cameraPixelSize
-                fieldOfView IS cameraFieldOfView
-                width IS cameraWidth
-                height IS cameraHeight
-                near 0.002
-              }
-              Camera {
-                translation 0.05071 0 0.01774
-                rotation 0.391132 -0.391132 -0.833085 1.75241
-                name "CameraBottom"
-                windowPosition IS bottomCameraWindowPosition
-                pixelSize IS cameraPixelSize
-                fieldOfView IS cameraFieldOfView
-                width IS cameraWidth
-                height IS cameraHeight
-                near 0.002
-              }
               DEF CAP Shape {
                 appearance USE SECONDARY_SKIN_APP
                 geometry IndexedFaceSet {

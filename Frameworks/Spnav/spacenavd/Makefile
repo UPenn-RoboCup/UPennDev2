@@ -3,13 +3,15 @@ srcdir = .
 ver = svn-r110
 dbg = -g
 opt = -O2
-xlib = -L/usr/X11/lib -lX11
+xlib = -L/opt/X11/lib -lX11
+add_ldflags = -framework CoreFoundation -framework IOKit
 src = $(wildcard src/*.c) $(wildcard src/serial/*.c) $(wildcard src/magellan/*.c)
 hdr = $(wildcard src/*.h) $(wildcard src/serial/*.h) $(wildcard src/magellan/*.h)
 obj = $(src:.c=.o)
 dep = $(obj:.o=.d)
 bin = spacenavd
-ctl = spnavd_ctl
+ctl = spnavd_ctla
+add_cflags = -I/opt/X11/include
 
 CC = gcc
 INSTALL = install

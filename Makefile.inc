@@ -60,7 +60,7 @@ CC=gcc
 LD=g++
 LDFLAGS=-shared -fpic
 STRIP=strip
-CXXFLAGS=-O3 -mtune=native -march=native
+CXXFLAGS=-O3 -mtune=native -march=native -fpic
 CFLAGS=$(CXXFLAGS)
 LIBOPTS=
 LIBRT=-lrt

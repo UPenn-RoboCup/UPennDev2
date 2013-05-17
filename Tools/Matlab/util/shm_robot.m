@@ -319,12 +319,12 @@ global MONITOR %for sending the webots check information
       pose = h.wcmRobot.get_pose();
       r.robot = {};
       r.robot.pose = struct('x', pose(1), 'y', pose(2), 'a', pose(3));
-      vel = h.mcmWalk.get_vel();
-      r.robot.vel = struct('vx', vel(1), 'vy', vel(2), 'va', vel(3));
+%      vel = h.mcmWalk.get_vel();
+%      r.robot.vel = struct('vx', vel(1), 'vy', vel(2), 'va', vel(3));
 
     %Camera info
 
-		  select = h.vcmImage.get_select();
+      select = h.vcmImage.get_select();
       width = h.vcmImage.get_width();
       height = h.vcmImage.get_height();
 			scaleB = h.vcmImage.get_scaleB();

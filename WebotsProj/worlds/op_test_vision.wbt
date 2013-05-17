@@ -7,7 +7,6 @@ WorldInfo {
   ]
   title "Robotstadium"
   basicTimeStep 40
-  displayRefresh 8
 }
 Viewpoint {
   orientation -1 0 0 0.8

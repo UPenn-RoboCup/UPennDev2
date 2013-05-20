@@ -19,7 +19,7 @@ params = {}
 params.name = {"Walk", "World", "Kick", "Vision", "FSM", "Camera"};
 
 ---Location Specific Camera Parameters--
-params.Camera = "Grasp"
+params.Camera = "GraspChris"
 params.Walk = "FastStableAlan"
 params.World = "SPL13Grasp"
 
@@ -45,7 +45,8 @@ dev.ip_wireless = '192.168.1.255';
 dev.ip_wireless_port = 54321
 dev.game_control = 'NaoGameControl';
 dev.team='TeamSPL';
-dev.walk = 'Walk/NaoV4Walk';
+--dev.walk = 'Walk/NaoV4Walk';
+dev.walk = 'EvenBetterWalk';
 dev.kick = 'Walk/BasicKick';
 
 --Speak enable

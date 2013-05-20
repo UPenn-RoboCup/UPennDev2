@@ -1,10 +1,9 @@
-require('init')
+require ('tester')
 require('unix')
-require('tester')
+require('main')
 
 while 1 do
   tDelay = 0.005*1E6;
-  update();
+  tester.update();
   unix.usleep(tDelay);
 end
-

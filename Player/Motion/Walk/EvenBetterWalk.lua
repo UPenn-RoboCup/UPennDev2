@@ -771,12 +771,12 @@ function update_still()
   pRLeg[1], pRLeg[2], pRLeg[6] = uRight[1], uRight[2], uRight[3];
   
   qLegs = Kinematics.inverse_legs(pLLeg, pRLeg, pTorso, supportLeg);
-  motion_legs(qLegs);
+  motion_legs(qLegs,true);
   motion_arms();
 end
 
 
-function motion_legs(qLegs)
+function motion_legs(qLegs,gyro_off)
   phComp = math.min(1, phSingle/.1, (1-phSingle)/.1);
 
   --Ankle stabilization using gyro feedback
@@ -784,6 +784,9 @@ function motion_legs(qLegs)
 
   gyro_roll0=imuGyr[1];
   gyro_pitch0=imuGyr[2];
+  if gyro_off then
+    gyro_roll0 = 0; gyro_pitch0 = 0;
+  end
 
 
   -------------------------------------------------------------------------------

@@ -29,6 +29,7 @@ function h = plot_field(handle,type)
 
 
   elseif type==1 %SPL
+    %old SPL
     %{
     fieldX = [-3.00  3.00 3.00 -3.00 -3.00];
     fieldY = [-2.00 -2.00 2.00  2.00 -2.00];
@@ -41,7 +42,8 @@ function h = plot_field(handle,type)
     fieldB=[-3.5 3.5 -2.5 2.5];
     %}
 
-    
+    %new SPL field
+    %{
     fieldX = [-4.50  4.50 4.50 -4.50 -4.50];
     fieldY = [-3.00 -3.00 3.00  3.00 -3.00];
     goalX = [4.50 (4.50+0.50) (4.50+0.50) 4.50];
@@ -51,7 +53,19 @@ function h = plot_field(handle,type)
     spotX=2.7;
     circleR = .6;
     fieldB=[-5 5 -3.5 3.5];
-  
+    %}
+    
+    %testing field in Grasp
+    fieldX = [-3.825  3.825 3.825 -3.825 -3.825];
+    fieldY = [-2.55 -2.55 2.55  2.55 -2.55];
+    goalX = [3.825 (3.825+0.50) (3.825+0.50) 3.825];
+    goalY = [-0.80 -0.80 0.80 0.80];
+    penaltyX = [3.825 (3.825-0.60) (3.825-0.60) 3.825];
+    penaltyY = [-1.10 -1.10 1.10 1.10];
+    spotX=2.295;
+    circleR = .6375;
+    fieldB=[-5 5 -3.5 3.5];
+
   elseif type==2 % Teensize
     fieldX = [-4.50  4.50 4.50 -4.50 -4.50];
     fieldY = [-3.00 -3.00 3.00  3.00 -3.00];

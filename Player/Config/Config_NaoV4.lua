@@ -58,8 +58,8 @@ fsm.game = 'RoboCup';
 if game.role == 0 then
   fsm.body = {'NaoGoalie'}
 else
-  fsm.body = {'NaoKickLogic'};
-  --fsm.body = {'GeneralPlayer'};
+  --fsm.body = {'NaoKickLogic'};
+  fsm.body = {'GeneralPlayer'};
 end
 fsm.head = {'NaoPlayer'};
 --fsm.head = {'GeneralPlayer'};

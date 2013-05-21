@@ -49,6 +49,10 @@ fsm.bodyAnticipate={};
 fsm.bodyAnticipate.rClose = 1.0;
 fsm.bodyChase.rFar = 1.2;
 
+fsm.bodyGoaliePosition = {};
+fsm.bodyGoaliePosition.thClose = {.2, .1, 10*math.pi/180}
+
+
 --------------------------------------------------
 --BodyOrbit : make the robot orbit around the ball
 --------------------------------------------------

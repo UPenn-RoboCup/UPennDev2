@@ -291,9 +291,6 @@ function update()
     state.cornerv[1],state.cornerv[2]=v[1],v[2];
   end
 
-  --Now pack state name too
-  state.body_state = gcm.get_fsm_body_state();
-
   --Send lableB wirelessly!
   pack_labelB();
 

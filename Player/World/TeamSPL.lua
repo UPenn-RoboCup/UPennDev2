@@ -169,8 +169,6 @@ end
     state.landmarkv[1],state.landmarkv[2] = v[1],v[2];
   end
   
-  --Now pack state name too
-  state.body_state = gcm.get_fsm_body_state();
   state.corner=0;
   state.cornerv={0,0};
   if vcm.get_corner_detect()>0 then
@@ -178,6 +176,7 @@ end
     local v = vcm.get_corner_v();
     state.cornerv[1],state.cornerv[2]=v[1],v[2];
   end
+
 
   pack_labelB();
 

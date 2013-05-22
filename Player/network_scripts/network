@@ -53,4 +53,5 @@ elif [ $1 = 'robocup' ]; then
  echo '/etc/wpa_supplicant/wpa_supplicant.conf and /etc/conf.d/net written'
  echo 'now restarting network interface'
  /etc/init.d/net.wlan0 stop && /etc/init.d/net.wlan0 start
+ /etc/init.d/sshd restart
 echo 'done'

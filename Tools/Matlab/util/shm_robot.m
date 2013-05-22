@@ -34,6 +34,7 @@ global MONITOR %for sending the webots check information
 
   h.wcmTeamdata  = shm(sprintf('wcmTeamdata%d%d%s',  h.teamNumber, h.playerID, h.user));
   h.wcmRobotNames  = shm(sprintf('wcmRobotNames%d%d%s',  h.teamNumber, h.playerID, h.user));
+  h.wcmBodyStates  = shm(sprintf('wcmBodyStates%d%d%s',  h.teamNumber, h.playerID, h.user));
   h.wcmLabelB  = shm(sprintf('wcmLabelB%d%d%s',  h.teamNumber, h.playerID, h.user));
   h.vcmRobot  = shm(sprintf('vcmRobot%d%d%s',  h.teamNumber, h.playerID, h.user)); 
 
@@ -247,34 +248,34 @@ global MONITOR %for sending the webots check information
       r.robotName='';
       if id==1
         r.robotName = char(h.wcmRobotNames.get_n1());
-        r.bodyState = char(h.wcmbodyStates.get_n1());
+        r.bodyState = char(h.wcmBodyStates.get_n1());
       elseif id==2
         r.robotName = char(h.wcmRobotNames.get_n2());
-        r.bodyState = char(h.wcmbodyStates.get_n2());
+        r.bodyState = char(h.wcmBodyStates.get_n2());
       elseif id==3
         r.robotName = char(h.wcmRobotNames.get_n3());
-        r.bodyState = char(h.wcmbodyStates.get_n3());
+        r.bodyState = char(h.wcmBodyStates.get_n3());
       elseif id==4
         r.robotName = char(h.wcmRobotNames.get_n4());
-        r.bodyState = char(h.wcmbodyStates.get_n4());
+        r.bodyState = char(h.wcmBodyStates.get_n4());
       elseif id==5
         r.robotName = char(h.wcmRobotNames.get_n5());
-        r.bodyState = char(h.wcmbodyStates.get_n5());
+        r.bodyState = char(h.wcmBodyStates.get_n5());
       elseif id==6
         r.robotName = char(h.wcmRobotNames.get_n6());
-        r.bodyState = char(h.wcmbodyStates.get_n6());
+        r.bodyState = char(h.wcmBodyStates.get_n6());
       elseif id==7
         r.robotName = char(h.wcmRobotNames.get_n7());
-        r.bodyState = char(h.wcmbodyStates.get_n7());
+        r.bodyState = char(h.wcmBodyStates.get_n7());
       elseif id==8
         r.robotName = char(h.wcmRobotNames.get_n8());
-        r.bodyState = char(h.wcmbodyStates.get_n8());
+        r.bodyState = char(h.wcmBodyStates.get_n8());
       elseif id==9
         r.robotName = char(h.wcmRobotNames.get_n9());
-        r.bodyState = char(h.wcmbodyStates.get_n9());
+        r.bodyState = char(h.wcmBodyStates.get_n9());
       elseif id==10
         r.robotName = char(h.wcmRobotNames.get_n10());
-        r.bodyState = char(h.wcmbodyStates.get_n10());
+        r.bodyState = char(h.wcmBodyStates.get_n10());
       end
 
     catch

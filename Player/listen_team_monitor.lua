@@ -165,10 +165,6 @@ function push_team_struct(obj,teamOffset)
   states.landmarkv1[id]=obj.landmarkv[1];
   states.landmarkv2[id]=obj.landmarkv[2];
 
-
-  print("Body state:", obj.body_state);
-
-
   if id==1 then  
     wcm.set_robotNames_n1(obj.robotName);
     wcm.set_bodyStates_n1(obj.body_state);
@@ -254,7 +250,7 @@ tStart=unix.time();
 
 while(true) do
   while (Comm.size() > 0) do
-    print ('received')
+--    print ('received')
     msg=Comm.receive();
     t = serialization.deserialize(msg);
     if t and (t.teamNumber) then

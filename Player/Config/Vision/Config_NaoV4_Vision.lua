@@ -18,7 +18,7 @@ vision.maxFPS = 30;
 vision.scaleB = 4;
 
 
-vision.enable_line_detection = 0;
+vision.enable_line_detection = 1;
 vision.enable_corner_detection = 0;
 -- use this to enable spot detection
 vision.enable_spot_detection = 0;
@@ -41,7 +41,7 @@ vision.enable_freespace_detection = 0;
 --use this to print time cosumed by vision functions
 vision.print_time = 0; 
 
-vision.enable_team_broadcast = 1;
+vision.enable_team_broadcast = 0;
 --use this to turn on team broadcast (wireless monitor)
 --If 0, wired monitor will be used.
 ----------------------------

@@ -1,3 +1,6 @@
+--Nao specific walk
+
+
 module(..., package.seeall);
 
 require('Body')
@@ -26,7 +29,6 @@ vaFactor = Config.walk.vaFactor or 0.6;
 velXHigh = Config.walk.velXHigh or 0.06;
 velDeltaXHigh = Config.walk.velDeltaXHigh or 0.01;
 
-
 --Toe/heel overlap checking values
 footSizeX = Config.walk.footSizeX or {-0.05,0.05};
 stanceLimitMarginY = Config.walk.stanceLimitMarginY or 0.015;
@@ -51,7 +53,6 @@ qRArmKick0=Config.walk.qRArmKick;
 --Hardness parameters
 hardnessSupport = Config.walk.hardnessSupport or 0.7;
 hardnessSwing = Config.walk.hardnessSwing or 0.5;
-
 
 hardnessArm0 = Config.walk.hardnessArm or 0.2;
 hardnessArm = Config.walk.hardnessArm or 0.2;
@@ -99,7 +100,9 @@ supportModYInitial = Config.walk.supportModYInitial or 0;
 
 --WalkKick parameters
 walkKickDef = Config.walk.walkKickDef;
-walkKickPh = Config.walk.walkKickPh;
+walkKickPh1 = Config.walk.walkKickPh1;
+walkKickPh2 = Config.walk.walkKickPh2;
+walkKickPh3 = Config.walk.walkKickPh3;
 toeTipCompensation = 0;
 
 use_alternative_trajectory = Config.walk.use_alternative_trajectory or 0;
@@ -183,9 +186,6 @@ phSingle = 0;
 
 --Stance state --0: open, 1: left-front, 2: right-front 
 stance,stance1=0,0; 
-
-velLimitX = {-.05, .05};
-stanceLimitX={-0.08 , 0.08};
 
 --Boxing arm pose
 qLArm1=math.pi/180*vector.new({90,40,-160});
@@ -397,30 +397,6 @@ end
 
 function update()
 
-  if testing then
-    --Stance parameters
-    bodyHeight = Config.walk.bodyHeight;
-    bodyTilt=Config.walk.bodyTilt or 0;
-    footX = mcm.get_footX();
-    footY = Config.walk.footY;
-    supportX = Config.walk.supportX;
-    supportY = Config.walk.supportY;
-
-    tStep0 = Config.walk.tStep;
-    tStep = Config.walk.tStep;
-    tZmp = Config.walk.tZmp;
-    stepHeight0 = Config.walk.stepHeight;
-    stepHeight = Config.walk.stepHeight;
-    ph1Single = Config.walk.phSingle[1];
-    ph2Single = Config.walk.phSingle[2];
-    ph1Zmp,ph2Zmp=ph1Single,ph2Single;
-
-    velLimitX = Config.walk.velLimitX or {-.06, .08};
-    velLimitY = Config.walk.velLimitY or {-.06, .06};
-    velLimitA = Config.walk.velLimitA or {-.4, .4};
-    velDelta = Config.walk.velDelta or {.03,.015,.15};
-  end
-
   advanceMotion();
   footX = mcm.get_footX();
 
@@ -561,30 +537,54 @@ function update()
     dy0=(aYP-aYN)/tZmp + m1Y* (1-math.cosh(ph1Zmp*tStep/tZmp));
     print("max DY:",dy0);
     --]]
-
   end --End new step
 
   xFoot, zFoot = foot_phase(ph);  
   if initial_step>0 then zFoot=0;  end --Don't lift foot at initial step
   pLLeg[3], pRLeg[3] = 0;
+
+
+
+
   if supportLeg == 0 then    -- Left support
-    if current_step_type>1 then --walkkick
-      if xFoot<walkKickPh then uRight = 
+    if current_step_type==3 then --walkkick #3
+      if xFoot<0.5 then uRight = 
         util.se2_interpolate(xFoot*2, uRight1, uRight15);
       else uRight = util.se2_interpolate(xFoot*2-1, uRight15, uRight2);
       end
-    else
+
+    elseif current_step_type==2 then --walkkick #2
+      if xFoot<walkKickPh1 then uRight = uRight1;
+      elseif xFoot<walkKickPh2 then uRight = uRight15;
+      elseif xFoot<walkKickPh3 then  
+        phKick2 = (xFoot-walkKickPh2)/(walkKickPh3-walkKickPh2);
+	uRight = util.se2_interpolate(phKick2, uRight15, uRight2);
+      else
+        uRight = uRight2;
+      end
+
+    else --normal kick
       uRight = util.se2_interpolate(xFoot, uRight1, uRight2);
     end
     pRLeg[3] = stepHeight*zFoot;
+
   else    -- Right support
-    if current_step_type>1 then --walkkick
-      if xFoot<walkKickPh then uLeft = util.se2_interpolate(xFoot*2, uLeft1, uLeft15);
+    if current_step_type==3 then --walkkick
+      if xFoot<0.5 then uLeft = util.se2_interpolate(xFoot*2, uLeft1, uLeft15);
       else uLeft = util.se2_interpolate(xFoot*2-1, uLeft15, uLeft2);      
+      end
+    elseif current_step_type==2 then --walkkick #2
+      if xFoot<walkKickPh1 then uLeft = uLeft1;
+      elseif xFoot<walkKickPh2 then uLeft = uLeft15;
+      elseif xFoot<walkKickPh3 then 
+        phKick2 = (xFoot-walkKickPh2)/(walkKickPh3-walkKickPh2);
+        uLeft = util.se2_interpolate(phKick2, uLeft15, uLeft2);      
+      else
       end
     else
       uLeft = util.se2_interpolate(xFoot, uLeft1, uLeft2);
     end
+
     pLLeg[3] = stepHeight*zFoot;
   end
   uTorsoOld=uTorso;
@@ -691,7 +691,7 @@ function check_walkkick()
       return;
     end
   end
-  --  print("NEWNEWNEWKICK: WALKKICK, count",walkKickRequest);
+  print("NEWNEWNEWKICK: WALKKICK, count",walkKickRequest);
 
   tStep = walkKick[walkKickRequest][1];   
   current_step_type = walkKick[walkKickRequest][2];   
@@ -785,7 +785,7 @@ function motion_legs(qLegs,gyro_off)
   gyro_roll0=imuGyr[1];
   gyro_pitch0=imuGyr[2];
   if gyro_off then
-    gyro_roll0 = 0; gyro_pitch0 = 0;
+--    gyro_roll0 = 0; gyro_pitch0 = 0;
   end
 
 
@@ -800,6 +800,9 @@ function motion_legs(qLegs,gyro_off)
   --    ------------------------------------------------------------------------------
 
 
+
+
+
   --get effective gyro angle considering body angle offset
   if not active then --double support
     yawAngle = (uLeft[3]+uRight[3])/2-uTorsoActual[3];
@@ -808,6 +811,10 @@ function motion_legs(qLegs,gyro_off)
   elseif supportLeg==1 then
     yawAngle = uRight[3]-uTorsoActual[3];
   end
+
+  yawAngle = 0;--hacl
+
+
   gyro_roll = gyro_roll0*math.cos(yawAngle) +
   -gyro_pitch0* math.sin(yawAngle);
   gyro_pitch = gyro_pitch0*math.cos(yawAngle)

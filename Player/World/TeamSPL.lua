@@ -34,7 +34,7 @@ state.teamColor = gcm.get_team_color();
 state.time = Body.get_time();
 state.role = -1;
 state.pose = {x=0, y=0, a=0};
-state.ball = {t=0, x=1, y=0};
+state.ball = {t=0, x=1, y=0, vx=0, vy=0, p=0};
 state.attackBearing = 0.0;--Why do we need this?
 state.penalty = 0;
 state.tReceive = Body.get_time();
@@ -182,6 +182,15 @@ end
     state.landmarkv[1],state.landmarkv[2] = v[1],v[2];
   end
   
+  state.corner=0;
+  state.cornerv={0,0};
+  if vcm.get_corner_detect()>0 then
+    state.corner = vcm.get_corner_type();
+    local v = vcm.get_corner_v();
+    state.cornerv[1],state.cornerv[2]=v[1],v[2];
+  end
+
+
   pack_labelB();
 
   if (math.mod(count, 1) == 0) then

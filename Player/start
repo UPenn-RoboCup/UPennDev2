@@ -106,7 +106,8 @@ run_demo(){
   
   echo "Starting Boxer Cognition..."
   cd $PLAYER_DIR
-  screen $SCREEN_FLAGS cognition $LUA_COM run_cognition_boxer.lua
+  #screen $SCREEN_FLAGS cognition $LUA_COM run_cognition_boxer.lua
+  screen $SCREEN_FLAGS cognition $LUA_COM run_cognition.lua
   # Allow Cognition some time to start
   sleep 3
  

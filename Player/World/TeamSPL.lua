@@ -182,6 +182,9 @@ end
     state.landmarkv[1],state.landmarkv[2] = v[1],v[2];
   end
   
+  --Now pack state name too
+  state.body_state = gcm.get_fsm_body_state();
+
   pack_labelB();
 
   if (math.mod(count, 1) == 0) then

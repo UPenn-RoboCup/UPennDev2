@@ -165,28 +165,41 @@ function push_team_struct(obj,teamOffset)
   states.landmarkv1[id]=obj.landmarkv[1];
   states.landmarkv2[id]=obj.landmarkv[2];
 
+
+  print("Body state:", obj.body_state);
+
+
   if id==1 then  
     wcm.set_robotNames_n1(obj.robotName);
+    wcm.set_bodyStates_n1(obj.body_state);
   elseif id==2 then  
     wcm.set_robotNames_n2(obj.robotName);
+    wcm.set_bodyStates_n2(obj.body_state);
   elseif id==3 then  
     wcm.set_robotNames_n3(obj.robotName);
+    wcm.set_bodyStates_n3(obj.body_state);
   elseif id==4 then  
     wcm.set_robotNames_n4(obj.robotName);
+    wcm.set_bodyStates_n4(obj.body_state);
   elseif id==5 then  
     wcm.set_robotNames_n5(obj.robotName);
+    wcm.set_bodyStates_n5(obj.body_state);
   elseif id==6 then  
     wcm.set_robotNames_n6(obj.robotName);
+    wcm.set_bodyStates_n6(obj.body_state);
   elseif id==7 then  
     wcm.set_robotNames_n7(obj.robotName);
+    wcm.set_bodyStates_n7(obj.body_state);
   elseif id==8 then  
     wcm.set_robotNames_n8(obj.robotName);
+    wcm.set_bodyStates_n8(obj.body_state);
   elseif id==9 then  
     wcm.set_robotNames_n9(obj.robotName);
+    wcm.set_bodyStates_n9(obj.body_state);
   elseif id==10 then  
     wcm.set_robotNames_n10(obj.robotName);
+    wcm.set_bodyStates_n10(obj.body_state);
   end
-
 
 
 --print("Ballx:",obj.ball.x);

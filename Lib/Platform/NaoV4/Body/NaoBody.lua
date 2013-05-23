@@ -48,8 +48,38 @@ nJointRArm = 4;
 
 get_time = function() return dcm.get_sensor_time(1); end
 
-function update()
+--SJ: I define these variable to smooth out the head movement
+head_target=get_head_position();
+head_command=get_head_position();
+head_velocity_limit = {180*math.pi/180, 40*math.pi/180};
+tLastUpdate = 0;
+function set_head_command(val)
+  head_target = val;
 end
+
+function update_head_movement()
+  local t =get_time();
+  if tLastUpdate>0 then
+    local tDiff = t-tLastUpdate;
+    for i=1,2 do
+      local Err = head_target[i]-head_command[i];
+      Err = math.max(-head_velocity_limit[i]*tDiff,
+	     math.min(head_velocity_limit[i]*tDiff,Err));
+      head_command[i] = head_command[i]+Err;
+    end
+    set_actuator_command(head_command, indexHead);
+  end
+  tLastUpdate = t;
+end
+
+function update()
+  update_head_movement();
+end
+
+
+
+
+
 
 -- setup convience functions
 function get_head_position()
@@ -115,9 +145,6 @@ function set_waist_hardness(val)
 end
 
 
-function set_head_command(val)
-  set_actuator_command(val, indexHead);
-end
 function set_lleg_command(val)
   set_actuator_command(val, indexLLeg);
 end

@@ -38,15 +38,39 @@ function update()
   ball = wcm.get_ball();
   ballR = math.sqrt (ball.x^2 + ball.y^2);
 
-  local yaw, pitch =
-	HeadTransform.ikineCam(ball.x, ball.y, trackZ, bottom);
+  local yaw,pitch;
+  --top:0 bottom: 1
+  
+  if Config.platform.name== 'WebotsNao' or
+     Config.platform.name== 'NaoV4' then
+
+    --Bottom camera check
+    yaw, pitchBottom =
+	HeadTransform.ikineCam(ball.x, ball.y, trackZ, 1);
+
+    --Do we need to look down?
+    if pitchBottom > 10*math.pi/180 then
+      pitch = pitchBottom - 10*math.pi/180;
+    else
+      pitch = 0;
+    end
+
+    print(pitchBottom*180/math.pi, pitch*180/math.pi)
+
+  else --OP: look at the ball
+    yaw, pitch =
+	HeadTransform.ikineCam(ball.x, ball.y, trackZ, 1);
+  end
+  
 
   -- Fix head yaw while approaching (to reduce position error)
   if ball.x<fixTh[1] and math.abs(ball.y) < fixTh[2] then
      yaw=0.0; 
   end
-
   Body.set_head_command({yaw, pitch});
+
+
+
 
   if (t - ball.t > tLost) then
     print('Ball lost!');

@@ -60,8 +60,8 @@ else
   fsm.body = {'NaoKickLogic'};
   --fsm.body = {'GeneralPlayer'};
 end
-fsm.head = {'NaoPlayer'};
---fsm.head = {'GeneralPlayer'};
+--fsm.head = {'NaoPlayer'};
+fsm.head = {'GeneralPlayer'};
 
 -- Team Parameters
 

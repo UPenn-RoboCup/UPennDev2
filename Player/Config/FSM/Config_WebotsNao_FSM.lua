@@ -263,7 +263,7 @@ fsm.headTrack = {};
 fsm.headTrack.timeout = 6.0 * speedFactor;
 fsm.headTrack.tLost = 1.5 * speedFactor;
 fsm.headTrack.minDist = 0.30; --If ball is closer than this, don't look up
-fsm.headTrack.fixTh={0.20,0.08}; --Fix yaw axis if ball is within this box
+fsm.headTrack.fixTh={0.20,0.12}; --Fix yaw axis if ball is within this box
 
 --------------------------------------------------
 --HeadReady : Track the horizonal line for localization
@@ -282,12 +282,14 @@ fsm.headReadyLookGoal.timeout = 1.5 * speedFactor;
 --------------------------------------------------
 --HeadScan: Scan around for ball
 --------------------------------------------------
+
+--SJ: NaoV4 has VERY wide FOV
 fsm.headScan={};
-fsm.headScan.pitch0 = 25*math.pi/180;
-fsm.headScan.pitchMag = 25*math.pi/180;
+fsm.headScan.pitch0 = 20*math.pi/180;
+fsm.headScan.pitchMag = 0*math.pi/180;
 fsm.headScan.yawMag = 90*math.pi/180;
 fsm.headScan.pitchTurn0 = 20*math.pi/180;
-fsm.headScan.pitchTurnMag = 20*math.pi/180;
+fsm.headScan.pitchTurnMag = 0*math.pi/180;
 fsm.headScan.yawMagTurn = 45*math.pi/180;
 fsm.headScan.tScan = 3.0*speedFactor;
 
@@ -295,7 +297,7 @@ fsm.headScan.tScan = 3.0*speedFactor;
 --HeadKick: Fix headangle for approaching
 --------------------------------------------------
 fsm.headKick={};
-fsm.headKick.pitch0=25*math.pi/180;
+fsm.headKick.pitch0=20*math.pi/180;
 fsm.headKick.xMax = 0.30;
 fsm.headKick.yMax = 0.07;
 fsm.headKick.tLost = 3.0*speedFactor;
@@ -305,7 +307,7 @@ fsm.headKick.timeout = 3.0*speedFactor;
 --HeadKickFollow: Follow ball after kick
 --------------------------------------------------
 fsm.headKickFollow={};
-fsm.headKickFollow.pitch={50*math.pi/180, 0*math.pi/180};
+fsm.headKickFollow.pitch={20*math.pi/180, 0*math.pi/180};
 fsm.headKickFollow.pitchSide = 30*math.pi/180;
 fsm.headKickFollow.yawMagSide = 90*math.pi/180;
 fsm.headKickFollow.tFollow = 1.0*speedFactor;
@@ -316,6 +318,7 @@ fsm.headKickFollow.tFollow = 1.0*speedFactor;
 fsm.headLookGoal={};
 fsm.headLookGoal.yawSweep = 50*math.pi/180;
 fsm.headLookGoal.tScan = 1.0*speedFactor;
+fsm.headLookGoal.minDist = 0.40;
 
 --------------------------------------------------
 --HeadSweep: Look around to find the goal

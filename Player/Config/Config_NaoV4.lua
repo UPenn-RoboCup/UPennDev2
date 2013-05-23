@@ -58,9 +58,11 @@ if game.role == 0 then
   fsm.body = {'NaoGoalie'}
 else
   fsm.body = {'NaoKickLogic'};
-  --fsm.body = {'GeneralPlayer'};
 end
 --fsm.head = {'NaoPlayer'};
+
+
+fsm.body = {'GeneralPlayer'};
 fsm.head = {'GeneralPlayer'};
 
 -- Team Parameters
@@ -108,3 +110,7 @@ stance.delay = 80; --amount of time to stand still after standing to regain bala
 --Should be more generally handled in Body..
 servo={};
 servo.pid=0;
+
+--dummy variables 
+bat_med = 0;
+bat_low = 0;

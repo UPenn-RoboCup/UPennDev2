@@ -86,6 +86,7 @@ vision.goal.th_goal_separation = {0.35,2.0};
 vision.goal.th_min_area_unknown_post = 200;
 vision.goal.use_centerpost = 1;
 vision.goal.check_for_ground = 0;
+vision.goal.distanceFactorYellow = 1.14
 
 vision.line={};
 vision.line.max_width = 16;

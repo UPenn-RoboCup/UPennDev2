@@ -44,7 +44,6 @@ function update()
   end
 
   if (detectGoal == 1)then
-    print ('waiting...')  
     local td = Body.get_time();
     if (td - t1 > twait) then
       return 'done';

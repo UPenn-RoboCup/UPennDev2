@@ -28,7 +28,12 @@ goal_height_min = Config.vision.goal.height_min or -0.5;
 --@param color The color to use for detection, represented by an int
 --@return Table containing whether a ball was detected
 --If a goal is detected, also contains additional stats about the goal
+
+
+print("DFY:",Config.vision.goal.distanceFactorYellow)
+
 distanceFactorYellow = Config.vision.goal.distanceFactorYellow or 1.0;
+
 	
 --Post dimension
 postDiameter = Config.world.postDiameter or 0.10;

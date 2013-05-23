@@ -205,6 +205,7 @@ function h=show_monitor()
       disp('Empty monitor struct!'); return;
     end
 
+	%r_mon.body
     % AUTO-SWITCH YUYV TYPE
     yuyv_type = r_mon.yuyv_type;
     if MONITOR.enable1
@@ -326,6 +327,7 @@ function h=show_monitor()
       updated=robots{playerNumber(i),teamNumber}.updated;
       tLastUpdate=robots{playerNumber(i),teamNumber}.tLastUpdate;
 
+	r_mon.body
 %      if updated 
         h_c=subplot(5,5,[1:15]);
         plot_robot( r_struct, r_mon,2,MONITOR.enable10);
@@ -378,14 +380,17 @@ function h=show_monitor()
           MONITOR.deadcount(i) = 0;
         end
 
-deadcount_threshold = 50;
+	deadcount_threshold = 50;
 
 
 %        if MONITOR.deadcount(i) < 20 % ~2 sec interval until turning off
         if MONITOR.deadcount(i) < deadcount_threshold % ~5 sec interval until turning off
 
           h_c=subplot(5,5,[6:20]);
-          plot_robot( r_struct, [],2,5,r_struct.robotName);
+          robot_info_str = [r_struct.robotName '(' r_struct.bodyState ')'];
+
+%          plot_robot( r_struct, [],2,5,r_struct.robotName);
+          plot_robot( r_struct, [],2,5,robot_info_str);
           updated = 0;
   	  if i<6 
             h1=subplot(5,5,i);
@@ -399,6 +404,7 @@ deadcount_threshold = 50;
 	  plot_overlay_wireless(r_struct);
           [infostr textcolor]=robot_info(r_struct,[],3,r_struct.robotName);
 
+          infostr = [infostr '\n' r_struct.bodyState];
           set(MONITOR.infoTexts(i),'String',infostr);
 
 %          infostr2 = sprintf('%s\nDC:%d',MONITOR.deadcount(i));

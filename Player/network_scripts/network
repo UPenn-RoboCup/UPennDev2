@@ -6,23 +6,23 @@ if [ $1 = 'guest' ]; then
   case "$2" in
   hook)
   echo 'modifying network scripts for hook'
-  cat ~nao/UPennDev/Player/network_scripts/conf.d_guest_hook >> /etc/conf.d/net ;;
+  cat /home/nao/UPennDev/Player/network_scripts/conf.d_guest_hook >> /etc/conf.d/net ;;
   ruffio)
   echo 'modifying network scripts for ruffio'
-  cat ~nao/UPennDev/Player/network_scripts/conf.d_guest_ruffio >> /etc/conf.d/net ;;
+  cat /home/nao/UPennDev/Player/network_scripts/conf.d_guest_ruffio >> /etc/conf.d/net ;;
   tink)
   echo 'modifying network scripts for tink'
-  cat ~nao/UPennDev/Player/network_scripts/conf.d_guest_tink >> /etc/conf.d/net ;;
+  cat /home/nao/UPennDev/Player/network_scripts/conf.d_guest_tink >> /etc/conf.d/net ;;
   ticktock)
   echo 'modifying network scripts for ticktock'
-  cat ~nao/UPennDev/Player/network_scripts/conf.d_guest_ticktock >> /etc/conf.d/net ;;
+  cat /home/nao/UPennDev/Player/network_scripts/conf.d_guest_ticktock >> /etc/conf.d/net ;;
   pockets)
   echo 'modifying network scripts for pockets'
-  cat ~nao/UPennDev/Player/network_scripts/conf.d_guest_pockets >> /etc/conf.d/net ;;
+  cat /home/nao/UPennDev/Player/network_scripts/conf.d_guest_pockets >> /etc/conf.d/net ;;
   esac
   rm /etc/wpa_supplicant/wpa_supplicant.conf
   touch /etc/wpa_supplicant/wpa_supplicant.conf
-  cat ~nao/UPennDev/Player/network_scripts/wpa_supplicant.conf_guest >> /etc/wpa_supplicant/wpa_supplicant.conf
+  cat /home/nao/UPennDev/Player/network_scripts/wpa_supplicant.conf_guest >> /etc/wpa_supplicant/wpa_supplicant.conf
 
 elif [ $1 = 'robocup' ]; then 
   rm /etc/conf.d/net
@@ -30,23 +30,23 @@ elif [ $1 = 'robocup' ]; then
   case "$2" in
   hook)
   echo 'modifying network scripts for hook'
-  cat ~nao/UPennDev/Player/network_scripts/conf.d_robocup_hook >> /etc/conf.d/net ;;
+  cat /home/nao/UPennDev/Player/network_scripts/conf.d_robocup_hook >> /etc/conf.d/net ;;
   ruffio)
   echo 'modifying network scripts for ruffio'
-  cat ~nao/UPennDev/Player/network_scripts/conf.d_robocup_ruffio >> /etc/conf.d/net ;;
+  cat /home/nao/UPennDev/Player/network_scripts/conf.d_robocup_ruffio >> /etc/conf.d/net ;;
   tink)
   echo 'modifying network scripts for tink'
-  cat ~nao/UPennDev/Player/network_scripts/conf.d_robocup_tink >> /etc/conf.d/net ;;
+  cat /home/nao/UPennDev/Player/network_scripts/conf.d_robocup_tink >> /etc/conf.d/net ;;
   ticktock)
   echo 'modifying network scripts for ticktock'
-  cat ~nao/UPennDev/Player/network_scripts/conf.d_robocup_ticktock >> /etc/conf.d/net ;;
+  cat /home/nao/UPennDev/Player/network_scripts/conf.d_robocup_ticktock >> /etc/conf.d/net ;;
   pockets)
   echo 'modifying network scripts for pockets'
-  cat ~nao/UPennDev/Player/network_scripts/conf.d_robocup_pockets >> /etc/conf.d/net ;;
+  cat /home/nao/UPennDev/Player/network_scripts/conf.d_robocup_pockets >> /etc/conf.d/net ;;
   esac
   rm /etc/wpa_supplicant/wpa_supplicant.conf
   touch /etc/wpa_supplicant/wpa_supplicant.conf
-  cat ~nao/UPennDev/Player/network_scripts/wpa_supplicant.conf_robocup >> /etc/wpa_supplicant/wpa_supplicant.conf
+  cat /home/nao/UPennDev/Player/network_scripts/wpa_supplicant.conf_robocup >> /etc/wpa_supplicant/wpa_supplicant.conf
  else
    echo 'invalid or unrecognized network :('
  fi

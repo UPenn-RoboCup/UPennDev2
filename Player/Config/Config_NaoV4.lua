@@ -114,3 +114,6 @@ servo.pid=0;
 --dummy variables 
 bat_med = 0;
 bat_low = 0;
+
+goalie_dive = 1;--arm motion
+goalie_dive = 2;--actual dive

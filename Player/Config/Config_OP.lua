@@ -16,6 +16,7 @@ if (robotName == 'sally') then
   params.Robot = "Sally_Robot" 
 end
 params.Kick = "Slow"
+params.World = "Grasp"
 
 --params.Kick = "3"
 
@@ -324,12 +325,6 @@ vision.ball.th_headAngle = 10* math.pi/180;
 world.postDiameter = 0.12;  --Thicker 
 world.goalHeight = 0.80;
 world.goalWidth = 1.40;
-
-vision.goal.distanceFactorCyan = 1.15; 
-vision.goal.distanceFactorYellow = 1.25; 
-vision.landmark.distanceFactorCyan = 1.1; 
-vision.landmark.distanceFactorYellow = 1.1; 
-
 
 enable_ceremony = 0;
 ceremony_score = 2;

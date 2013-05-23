@@ -55,7 +55,7 @@ function update()
       pitch = 0;
     end
 
-    print(pitchBottom*180/math.pi, pitch*180/math.pi)
+--    print(pitchBottom*180/math.pi, pitch*180/math.pi)
 
   else --OP: look at the ball
     yaw, pitch =

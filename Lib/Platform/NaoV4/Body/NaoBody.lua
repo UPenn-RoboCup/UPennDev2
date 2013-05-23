@@ -49,9 +49,7 @@ nJointRArm = 4;
 get_time = function() return dcm.get_sensor_time(1); end
 
 --SJ: I define these variable to smooth out the head movement
-head_target=get_head_position();
-head_command=get_head_position();
-head_velocity_limit = {180*math.pi/180, 40*math.pi/180};
+head_velocity_limit = {180*math.pi/180, 120*math.pi/180};
 tLastUpdate = 0;
 function set_head_command(val)
   head_target = val;
@@ -374,3 +372,6 @@ for k,v in actuatorShm.next, actuatorShm do
     end
 end
 --]]
+
+head_target=get_head_position();
+head_command=get_head_position();

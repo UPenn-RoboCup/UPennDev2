@@ -59,7 +59,7 @@ function update()
 
   else --OP: look at the ball
     yaw, pitch =
-	HeadTransform.ikineCam(ball.x, ball.y, trackZ, 1);
+	HeadTransform.ikineCam(ball.x, ball.y, trackZ, 0);
   end
   
 

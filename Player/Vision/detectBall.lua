@@ -120,7 +120,7 @@ function detect(color)
         check_passed = false;
        
 
-      else v[3] > th_height_max then
+      elseif v[3] > th_height_max then
         --Ball height check
         vcm.add_debug_message("Height check fail\n");
         check_passed = false;

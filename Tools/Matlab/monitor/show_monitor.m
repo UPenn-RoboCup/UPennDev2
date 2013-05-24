@@ -327,6 +327,7 @@ function h=show_monitor()
       updated=robots{playerNumber(i),teamNumber}.updated;
       tLastUpdate=robots{playerNumber(i),teamNumber}.tLastUpdate;
 
+	r_mon.body
 %      if updated 
         h_c=subplot(5,5,[1:15]);
         plot_robot( r_struct, r_mon,2,MONITOR.enable10);
@@ -386,10 +387,7 @@ function h=show_monitor()
         if MONITOR.deadcount(i) < deadcount_threshold % ~5 sec interval until turning off
 
           h_c=subplot(5,5,[6:20]);
-          robot_info_str = [r_struct.robotName '(' r_struct.bodyState ')'];
-
-%          plot_robot( r_struct, [],2,5,r_struct.robotName);
-          plot_robot( r_struct, [],2,5,robot_info_str);
+          plot_robot( r_struct, [],2,5,r_struct.robotName);
           updated = 0;
   	  if i<6 
             h1=subplot(5,5,i);
@@ -403,7 +401,7 @@ function h=show_monitor()
 	  plot_overlay_wireless(r_struct);
           [infostr textcolor]=robot_info(r_struct,[],3,r_struct.robotName);
 
-          infostr = [infostr '\n' r_struct.bodyState];
+          infostr = [infostr '\n' r_struct.bodyState]
           set(MONITOR.infoTexts(i),'String',infostr);
 
 %          infostr2 = sprintf('%s\nDC:%d',MONITOR.deadcount(i));

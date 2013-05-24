@@ -374,8 +374,6 @@ function update_gps_only()
   gps_pose = wcm.get_robot_gpspose();
   ballGlobal=wcm.get_robot_gps_ball();  
   
---print("BallGPS:",unpack(ballGlobal))
-
 
 
   --Check whether ball is inside FOV

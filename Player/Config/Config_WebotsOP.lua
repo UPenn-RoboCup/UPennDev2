@@ -25,6 +25,10 @@ dev.ip_wireless_port = 54321;
 dev.walk='EvenBetterWalk'; --Walk with generalized walkkick definitions
 dev.kick='PunchKick'; --Extended kick that supports upper body motion
 
+largestep_enable = true;
+dev.largestep = 'ZMPStepKick';--ZMP Preview motion 
+
+
 -- disable speak for webots which causes lua crash with error if espeak not installed
 speakenable = 0
 

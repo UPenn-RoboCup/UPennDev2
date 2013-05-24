@@ -14,7 +14,7 @@ require('gcm');
 Comm.init(Config.dev.ip_wireless,Config.dev.ip_wireless_port);
 print('Receiving Team Message From',Config.dev.ip_wireless);
 
-playerID = gcm.get_team_player_id(); 
+playerID = gcm.get_team_player_id(); strategy = 0
 
 msgTimeout = Config.team.msgTimeout;
 nonAttackerPenalty = Config.team.nonAttackerPenalty;
@@ -34,7 +34,7 @@ state.teamColor = gcm.get_team_color();
 state.time = Body.get_time();
 state.role = -1;
 state.pose = {x=0, y=0, a=0};
-state.ball = {t=0, x=1, y=0, vx=0, vy=0, p=0};
+state.ball = {t=0, x=1, y=0};
 state.attackBearing = 0.0;--Why do we need this?
 state.penalty = 0;
 state.tReceive = Body.get_time();
@@ -62,6 +62,7 @@ state.cornerv={0,0};
 states = {};
 states[playerID] = state;
 
+strat = {}
 
 ---Receives messages from teammates
 tLastReceived = 0
@@ -81,6 +82,9 @@ function recv_msgs()
         t.tReceive = Body.get_time();
         tLastReceived = Body.get_time();
         states[t.id] = t;
+      elseif (t and (t.strat)) then
+        t.tReceive = Body.get_time();
+        strat = t
       end
     end
   end
@@ -151,13 +155,22 @@ state.goal=0;
      local v1=vcm.get_goal_v1();
      local v2=vcm.get_goal_v2();
      state.goalv1[1],state.goalv1[2]=v1[1],v1[2];
-     state.goalv2[1],state.goalv2[2]=0,0; 
-     centroid1 = vcm.get_goal_postCentroid1();                                 orientation1 = vcm.get_goal_postOrientation1();                           axis1 = vcm.get_goal_postAxis1();                          
-     state.goalB1 = {centroid1[1],centroid1[2],orientation1,axis1[1],axis1[2]};                                    
+     state.goalv2[1],state.goalv2[2]=0,0;
+     
+     centroid1 = vcm.get_goal_postCentroid1();                                                     
+     orientation1 = vcm.get_goal_postOrientation1();                                               
+     axis1 = vcm.get_goal_postAxis1();                                                             
+     state.goalB1 = {centroid1[1],centroid1[2],                                                    
+     orientation1,axis1[1],axis1[2]};                                                              
+     
      if vcm.get_goal_type()==3 then --two goalposts 
-       state.goalv2[1],state.goalv2[2]=v2[1],v2[2];                       
-       centroid2 = vcm.get_goal_postCentroid2();                          
-       orientation2 = vcm.get_goal_postOrientation2();                           axis2 = vcm.get_goal_postAxis2();                                         state.goalB2 = {centroid2[1],centroid2[2],orientation2,axis2[1],axis2[2]};
+       state.goalv2[1],state.goalv2[2]=v2[1],v2[2];                                                
+       centroid2 = vcm.get_goal_postCentroid2();                                                   
+       orientation2 = vcm.get_goal_postOrientation2();                                             
+       axis2 = vcm.get_goal_postAxis2();                                                           
+       state.goalB2 = {centroid2[1],centroid2[2],                                                  
+          orientation2,axis2[1],axis2[2]};
+
     end
 end
 
@@ -169,14 +182,8 @@ end
     state.landmarkv[1],state.landmarkv[2] = v[1],v[2];
   end
   
-  state.corner=0;
-  state.cornerv={0,0};
-  if vcm.get_corner_detect()>0 then
-    state.corner = vcm.get_corner_type();
-    local v = vcm.get_corner_v();
-    state.cornerv[1],state.cornerv[2]=v[1],v[2];
-  end
-
+  --Now pack state name too
+  state.body_state = gcm.get_fsm_body_state();
 
   pack_labelB();
 
@@ -272,8 +279,27 @@ end
   end
   -- goalie never changes role
   if playerID ~= 1 then
-    eta[1] = math.huge;
-    ddefend[1] = math.huge;
+    if strategy <= 0 then
+      eta[1] = math.huge;
+      ddefend[1] = math.huge;
+
+      minETA, minEtaID = min(eta);
+      if minEtaID == playerID then
+        -- attack
+        set_role(1);
+      else
+        -- furthest player back is defender
+        minDDefID = 0;
+        minDDef = math.huge;
+        for id = 2,4 do
+          if id ~= minEtaID and ddefend[id] <= minDDef then
+            minDDefID = id;
+            minDDef = ddefend[id];
+          end
+        end
+			end
+		end
+
     minETA, minEtaID = min(eta);
     if minEtaID == playerID then
       -- attack
@@ -288,14 +314,26 @@ end
           minDDef = ddefend[id];
         end
       end
-      if minDDefID == playerID then
-        -- defense 
-        set_role(2);
-      else
-        -- support
-        set_role(3);
-      end
+    end
 
+
+    gcmstrat = gcm.get_team_strat();
+    stratRole = nil
+    if gcmstrat and (playerID == 2 or playerID == 3) then
+      strategy = gcmstrat[Config.game.playerID - 1]
+-- What are these?
+--      print(strategy, role)
+
+      if strategy == 2 then
+        stratRole = 1
+      elseif strategy == 3 then
+        stratRole = 2
+      elseif strategy == 4 then
+        stratRole = 3
+      end
+      if stratRole then
+        set_role(stratRole)
+      end
     end
   end
   -- update shm
@@ -306,6 +344,7 @@ function update_shm()
   -- update the shm values
   gcm.set_team_role(role);
   
+ -- gcm.set_team_strat(strat.strat)
 end
 
 function exit()

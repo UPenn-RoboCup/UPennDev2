@@ -401,7 +401,8 @@ function h=show_monitor()
 	  plot_overlay_wireless(r_struct);
           [infostr textcolor]=robot_info(r_struct,[],3,r_struct.robotName);
 
-          infostr = [infostr '\n' r_struct.bodyState]
+%NOT WORKING WITH NAO YET
+%          infostr = [infostr '\n' r_struct.bodyState]
           set(MONITOR.infoTexts(i),'String',infostr);
 
 %          infostr2 = sprintf('%s\nDC:%d',MONITOR.deadcount(i));

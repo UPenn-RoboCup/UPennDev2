@@ -15,7 +15,7 @@ walk.stanceLimitA={-0*math.pi/180,40*math.pi/180};
 walk.velLimitX={-.05,.06};
 walk.velLimitY={-.02,.02};
 walk.velLimitA={-.4,.4};
-walk.velDelta={0.15,0.01,0.15} 
+walk.velDelta={0.10,0.005,0.10} 
 
 ---------------------------------------------
 -- Odometry values

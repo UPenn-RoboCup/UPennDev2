@@ -192,6 +192,18 @@ if listen_monitor>0 then
   shared.robotNames.n9 = '';
   shared.robotNames.n10 = '';
 
+  shared.bodyStates = {};
+  shared.bodyStates.n1 = '';
+  shared.bodyStates.n2 = '';
+  shared.bodyStates.n3 = '';
+  shared.bodyStates.n4 = '';
+  shared.bodyStates.n5 = '';
+  shared.bodyStates.n6 = '';
+  shared.bodyStates.n7 = '';
+  shared.bodyStates.n8 = '';
+  shared.bodyStates.n9 = '';
+  shared.bodyStates.n10 = '';
+
 end
 
 util.init_shm_segment(getfenv(), _NAME, shared, shsize);

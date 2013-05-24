@@ -42,9 +42,12 @@ fsm.enable_obstacle_detection = 1;
 fsm.playMode = 3; --Advanced Behavior 
 
 fsm.enable_walkkick = 1;
---fsm.enable_walkkick = 0;
+fsm.enable_walkkick = 0;
 fsm.enable_sidekick = 1;
+fsm.enable_sidekick = 0;
+
 fsm.enable_dribble = 1;
+
 fsm.fast_approach = 0;
 
 --fsm.enable_evade = 0;
@@ -152,7 +155,9 @@ fsm.bodyPosition.rTurn = 0.25;
 fsm.bodyPosition.rDist1 = 0.40; 
 fsm.bodyPosition.rDist2 = 0.20; 
 fsm.bodyPosition.rTurn2 = 0.08; 
-fsm.bodyPosition.rOrbit = 0.40; --Default value 0.60, 0.40 enables ...
+fsm.bodyPosition.rOrbit = 0.40; 
+
+--Default value 0.60, 0.40 enables ...
 -- the bot to get around the ball real fast avoiding wastage of time.
 
 --New params to reduce sidestepping
@@ -162,6 +167,23 @@ fsm.bodyPosition.rDist2 = 0.25;
 
 
 fsm.bodyPosition.rClose = 0.35; 
+
+
+
+
+------------------------------------
+--Nao values
+fsm.bodyPosition.rTurn = 0.25; 
+fsm.bodyPosition.rTurn2 = 0.08; 
+fsm.bodyPosition.rDist1 = 0.60; 
+fsm.bodyPosition.rDist2 = 0.50; 
+fsm.bodyPosition.rClose = 0.55; 
+fsm.bodyPosition.rOrbit = 0.70; 
+ 
+
+
+
+
 --fsm.bodyPosition.thClose = {0.15,0.15,10*math.pi/180};
 fsm.bodyPosition.thClose = {0.3,0.15,20*math.pi/180};
 
@@ -201,17 +223,16 @@ fsm.bodyApproach.aThresholdTurnGoalie = 15*math.pi/180;
 fsm.bodyApproach.aThresholdTurnGoalie = 35*math.pi/180;
 
 --x and y target position for stationary straight kick
-fsm.bodyApproach.xTarget11={0, 0.13,0.14}; --min, target, max
+fsm.bodyApproach.xTarget11={0, 0.16,0.17}; --min, target, max
 fsm.bodyApproach.yTarget11={0.03, 0.045, 0.06}; --min, target ,max
 
 --x and y target position for stationary kick to left
-fsm.bodyApproach.xTarget12={0, 0.13,0.14}; --min, target, max
+fsm.bodyApproach.xTarget12={0, 0.16,0.17}; --min, target, max
 fsm.bodyApproach.yTarget12={-0.015, 0, 0.015}; --min, target ,max
 
 --Target position for straight walkkick 
 fsm.bodyApproach.xTarget21={0, 0.16,0.18}; --min, target, max 
 fsm.bodyApproach.yTarget21={0.03, 0.045, 0.06}; --min, target ,max
-
 
 --Target position for side walkkick to left
 fsm.bodyApproach.xTarget22={0, 0.15,0.18}; --min, target, max
@@ -233,10 +254,10 @@ fsm.bodyKick.tStartWaitMax = 1.0;
 fsm.bodyKick.thGyroMag = 100; 
 
 --ball position checking params
-fsm.bodyKick.kickTargetFront = {0.13,0.045};
+fsm.bodyKick.kickTargetFront = {0.16,0.045};
 
 --For kicking to the left
-fsm.bodyKick.kickTargetSide = {0.13,0.0};
+fsm.bodyKick.kickTargetSide = {0.15,0.0};
 
 --Bal position threshold
 fsm.bodyKick.kickTh = {0.03,0.03};

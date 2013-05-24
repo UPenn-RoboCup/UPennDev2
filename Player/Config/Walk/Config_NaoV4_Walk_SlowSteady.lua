@@ -15,7 +15,7 @@ walk.stanceLimitA={-0*math.pi/180,40*math.pi/180};
 --Max forwards/backwards speed
 walk.velLimitX={-.05,.06};
 --Max left/right speed
-walk.velLimitY={-.02,.02};
+walk.velLimitY={-.04,.04};
 --Max angular rotation speed
 walk.velLimitA={-.4,.4};
 walk.velDelta={0.15,0.01,0.15} 
@@ -33,7 +33,7 @@ walk.bodyHeight = 0.31;
 walk.bodyTilt=0*math.pi/180; 
 walk.footX= 0.0; 
 --Width of the stance; meters
-walk.footY = 0.0500; --Old 0.0450 
+walk.footY = 0.0515; --Old 0.0450 
 --How far behind the torso the ankle joints are positioned
 walk.supportX = 0.020; 
 walk.qLArm = math.pi/180*vector.new({105, 12, -85, -30});

@@ -7,7 +7,6 @@ WorldInfo {
   ]
   title "Robotstadium"
   basicTimeStep 40
-  displayRefresh 8
 }
 Viewpoint {
   orientation -1 0 0 0.8
@@ -43,7 +42,7 @@ DEF BLUE_GOAL KidGoal {
   postColor 0.992157 0.854902 0.219608
   supportColor 0.152941 0.505882 0.733333
 }
-DEF BALL Ball {
+DEF BALL BallGPS {
   translation 0 0.0323921 0
 }
 DEF PLAYER_1_99 DARwInOPGPS {

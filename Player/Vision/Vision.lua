@@ -140,22 +140,24 @@ end
 function camera_init_naov4()
   for c=1,Config.camera.ncamera do
     Camera.select_camera(c-1);   
+    
     Camera.set_param('Brightness', Config.camera.brightness);     
-    Camera.set_param('White Balance, Automatic', 1); 
-    Camera.set_param('Auto Exposure',0);
-    for i,param in ipairs(Config.camera.param) do
-      Camera.set_param(param.key, param.val[c]);
-      unix.usleep (100);
-    end
+    --Camera.set_param('White Balance, Automatic', 1); 
+    --Camera.set_param('Auto Exposure', 1);
     Camera.set_param('White Balance, Automatic', 0);
     Camera.set_param('Auto Exposure',0);
+    Camera.set_param('Auto Exposure Algorithm', 3)
+    for i,param in ipairs(Config.camera.param) do
+        Camera.set_param(param.key, param.val[c]);
+        unix.usleep (100);
+    end
+    --Camera.set_param('White Balance, Automatic', 0);
     local expo = Camera.get_param('Exposure');
     local gain = Camera.get_param('Gain');
     Camera.set_param('Auto Exposure',1);   
     Camera.set_param('Auto Exposure',0);
-    --Camera.set_param ('Exposure', 255);
-    Camera.set_param ('Exposure', expo);
-    Camera.set_param ('Gain', gain);
+    Camera.set_param('Exposure', expo)
+    Camera.set_param('Gain', gain);
     print('Camera #'..c..' set');
   end
 end
@@ -202,12 +204,17 @@ function update()
     print "Re-enqueuing of a buffer error...";
     exit()
   end
-
+  
   -- perform the initial labeling
-  labelA.data  = ImageProc.yuyv_to_label(vcm.get_image_yuyv(),
+  if (webots) then
+    --SJ: this fixes the error
+    labelA.data = Camera.get_labelA(vcm.get_image_lut());
+  else
+    labelA.data  = ImageProc.yuyv_to_label(vcm.get_image_yuyv(),
                                           vcm.get_image_lut(),
                                           camera.width,
                                           camera.height);
+  end
 
   -- determine total number of pixels of each color/label
   colorCount = ImageProc.color_count(labelA.data, labelA.npixel);
@@ -386,13 +393,13 @@ print("V_TL:",unpack(v_TL))
 print("V_TR:",unpack(v_TR))
 print("V_BL:",unpack(v_BL))
 print("V_BR:",unpack(v_BR))
-print("Check 1:",
+print("Top check:",
    check_side(v_TL, ballLocal, v_TR));
-print("Check 2:",
+print("Left check:",
      check_side(v_TL, v_BL, ballLocal) );
-print("Check 3:",
+print("Right check:",
      check_side(v_BR, v_TR, ballLocal) );
-print("Check 4:",
+print("Bottom check:",
      check_side(v_BL, v_BR, ballLocal) );
 --]]
 
@@ -405,6 +412,14 @@ print("Check 4:",
   else
     vcm.set_ball_detect(0);
   end
+
+  --SJ: This check doesnt't work with nao any more (assumes top camera)
+  --Just let it know the ball position all the time for now
+  if Config.platform.name == 'WebotsNao' then
+    vcm.set_ball_detect(1);
+  end
+
+
 end
 
 function check_side(v,v1,v2)

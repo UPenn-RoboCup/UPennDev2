@@ -33,6 +33,9 @@ field_margin = Config.vision.ball.field_margin or 0;
 
 th_headAngle = Config.vision.ball.th_headAngle or -10*math.pi/180;
 
+max_distance = Config.vision.ball.max_distance or 5.0;
+
+
 --function detect(color)
 
 enable_obs_challenge = Config.obs_challenge or 0;
@@ -111,7 +114,13 @@ function detect(color)
       vcm.add_debug_message(string.format(
 	"Ball v0: %.2f %.2f %.2f\n",v[1],v[2],v[3]));
 
-      if v[3] > th_height_max then
+      if v[1]*v[1] + v[2]*v[2] > max_distance*max_distance then
+ 	--Ball distance check
+        vcm.add_debug_message("Distance check fail\n");
+        check_passed = false;
+       
+
+      elseif v[3] > th_height_max then
         --Ball height check
         vcm.add_debug_message("Height check fail\n");
         check_passed = false;

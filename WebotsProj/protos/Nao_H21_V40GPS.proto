@@ -10,14 +10,15 @@ PROTO Nao_H21_V40GPS [
   field SFVec3f translation 0 0.34 0
   field SFRotation rotation 1 0 0 -1.5708
   field SFColor color 0.94 0.41 0.01
-  field SFString controller "void"
-  field SFString controllerArgs ""
+  field SFString controller "naoqisim"
+  field SFString controllerArgs "9559"
   field SFBool synchronization FALSE
   field SFFloat gpsResolution 0.0
-  field SFFloat cameraFieldOfView 0.81
-  field SFInt32 cameraWidth 160
-  field SFInt32 cameraHeight 120
-  field SFVec2f cameraWindowPosition 0 0
+  field SFFloat cameraFieldOfView 1.064
+  field SFInt32 cameraWidth 320
+  field SFInt32 cameraHeight 240
+  field SFVec2f topCameraWindowPosition 0 0
+  field SFVec2f bottomCameraWindowPosition 0 1
   field SFFloat cameraPixelSize 1.0
   field SFBool waistBand FALSE
   field SFColor waistBandColor 0 0 1
@@ -907,7 +908,12 @@ PROTO Nao_H21_V40GPS [
       }
       DEF GPS GPS {
         resolution IS gpsResolution
+	name "GPS"
       }
+      DEF Compass Compass {
+	name "Compass"
+      }
+
       DEF RECEIVER Receiver {
         channel IS channel
       }
@@ -918,14 +924,9 @@ PROTO Nao_H21_V40GPS [
         name "super_emitter"
         channel 2
       }
-      GPS {
-        name "GPS"
-      } 
-      Compass {
-        name "Compass"
-      }
       DEF ACCELEROMETER Accelerometer {
         translation -0.008 0.00606 0.027
+        rotation 1 0 0 3.14159
         lookupTable [
           -19.62 -19.62 0.01
           19.62 19.62 0.01
@@ -938,6 +939,11 @@ PROTO Nao_H21_V40GPS [
           8.726 8.726 0.01
         ]
         zAxis FALSE
+      }
+      DEF INERTIAL_UNIT InertialUnit {
+        translation -0.008 0.006 0.029
+        rotation 1 0 0 1.5708
+        yAxis FALSE
       }
       DEF US1 DistanceSensor {
         translation 0.0537 -0.0341 0.0698
@@ -1007,46 +1013,27 @@ PROTO Nao_H21_V40GPS [
           }
           DEF HeadPitch Servo {
             children [
-              DEF CameraSelect Servo {
-                translation 0 0 0.0679
-                children [
-                  DEF NaoCam Camera {
-                    translation 0.0539 0 0
-                    rotation 0.57735 -0.57735 -0.57735 2.0944
-                    name "camera"
-                    windowPosition IS cameraWindowPosition
-                    pixelSize IS cameraPixelSize
-                    fieldOfView IS cameraFieldOfView
-                    width IS cameraWidth
-                    height IS cameraHeight
-                    near 0.002
-                  }
-                ]
-                name "CameraSelect"
-                maxVelocity 1e+14
-                maxForce 1e+14
-                maxPosition 0.6981
+              Camera {
+                translation 0.05871 0 0.06364
+                rotation 0.573277 -0.573277 -0.585411 2.08235
+                name "CameraTop"
+                windowPosition IS topCameraWindowPosition
+                pixelSize IS cameraPixelSize
+                fieldOfView IS cameraFieldOfView
+                width IS cameraWidth
+                height IS cameraHeight
+                near 0.002
               }
-              DEF CAMERA_COVER_UP Transform {
-                translation 0.053 0 0.05
-                rotation 0 1 0 0.349
-                children [
-                  Shape {
-                    geometry IndexedFaceSet {
-                      coord Coordinate {
-                        point [
-                          0 0.01 0.0173
-                          0 0.01 -0.0197
-                          0 -0.01 -0.0197
-                          0 -0.01 0.0173
-                        ]
-                      }
-                      coordIndex [
-                        0, 1, 2, 3, -1
-                      ]
-                    }
-                  }
-                ]
+              Camera {
+                translation 0.05071 0 0.01774
+                rotation 0.391132 -0.391132 -0.833085 1.75241
+                name "CameraBottom"
+                windowPosition IS bottomCameraWindowPosition
+                pixelSize IS cameraPixelSize
+                fieldOfView IS cameraFieldOfView
+                width IS cameraWidth
+                height IS cameraHeight
+                near 0.002
               }
               DEF CAP Shape {
                 appearance USE SECONDARY_SKIN_APP
@@ -6170,64 +6157,6 @@ PROTO Nao_H21_V40GPS [
                           DEF RAnkleRoll Servo {
                             rotation 1 0 0 0
                             children [
-                              DEF RFsrFL TouchSensor {
-                                translation 0.07025 0.0231 -0.042
-                                rotation 0 1 0 3.1416
-                                name "RFsrFL"
-                                contactMaterial IS footContactMaterial
-                                boundingObject DEF FSR_BO Capsule {
-                                  height 0.025
-                                  radius 0.004
-                                }
-                                physics DEF FSR_PHYSICS Physics {
-                                  density -1
-                                  mass 0.02
-                                }
-                                type "force"
-                                lookupTable [
-                                  0 0 0
-                                  25 25 0
-                                ]
-                              }
-                              DEF RFsrFR TouchSensor {
-                                translation 0.07025 -0.029 -0.042
-                                rotation 0 1 0 3.1416
-                                name "RFsrFR"
-                                contactMaterial IS footContactMaterial
-                                boundingObject USE FSR_BO
-                                physics USE FSR_PHYSICS
-                                type "force"
-                                lookupTable [
-                                  0 0 0
-                                  25 25 0
-                                ]
-                              }
-                              DEF RFsrRR TouchSensor {
-                                translation -0.02965 -0.035 -0.042
-                                rotation 0 1 0 3.1416
-                                name "RFsrRR"
-                                contactMaterial IS footContactMaterial
-                                boundingObject USE FSR_BO
-                                physics USE FSR_PHYSICS
-                                type "force"
-                                lookupTable [
-                                  0 0 0
-                                  25 25 0
-                                ]
-                              }
-                              DEF RFsrRL TouchSensor {
-                                translation -0.03025 0.0191 -0.042
-                                rotation 0 1 0 3.1416
-                                name "RFsrRL"
-                                contactMaterial IS footContactMaterial
-                                boundingObject USE FSR_BO
-                                physics USE FSR_PHYSICS
-                                type "force"
-                                lookupTable [
-                                  0 0 0
-                                  25 25 0
-                                ]
-                              }
                               Shape {
                                 appearance USE STRUCTURE_APP
                                 geometry IndexedFaceSet {
@@ -6595,16 +6524,16 @@ PROTO Nao_H21_V40GPS [
                                 gradual TRUE
                               }
                               DEF RFOOT_RBUMPER TouchSensor {
-                                translation 0.09 -0.022 -0.03
+                                translation 0.09 -0.022 -0.023
                                 name "BumperRFootRight"
                                 boundingObject DEF BUMPER_BO Box {
-                                  size 0.02 0.035 0.024
+                                  size 0.02 0.025 0.01
                                 }
                                 lookupTable [
                                 ]
                               }
                               DEF RFOOT_LBUMPER TouchSensor {
-                                translation 0.09 0.012 -0.03
+                                translation 0.09 0.012 -0.023
                                 name "BumperRFootLeft"
                                 boundingObject USE BUMPER_BO
                                 lookupTable [
@@ -7911,58 +7840,6 @@ PROTO Nao_H21_V40GPS [
                           DEF LAnkleRoll Servo {
                             rotation 1 0 0 0
                             children [
-                              DEF LFsrFL TouchSensor {
-                                translation 0.07025 0.029 -0.042
-                                rotation 0 1 0 3.1416
-                                name "LFsrFL"
-                                contactMaterial IS footContactMaterial
-                                boundingObject USE FSR_BO
-                                physics USE FSR_PHYSICS
-                                type "force"
-                                lookupTable [
-                                  0 0 0
-                                  25 25 0
-                                ]
-                              }
-                              DEF LFsrFR TouchSensor {
-                                translation 0.07025 -0.0231 -0.042
-                                rotation 0 1 0 3.1416
-                                name "LFsrFR"
-                                contactMaterial IS footContactMaterial
-                                boundingObject USE FSR_BO
-                                physics USE FSR_PHYSICS
-                                type "force"
-                                lookupTable [
-                                  0 0 0
-                                  25 25 0
-                                ]
-                              }
-                              DEF LFsrRR TouchSensor {
-                                translation -0.02965 -0.0191 -0.042
-                                rotation 0 1 0 3.1416
-                                name "LFsrRR"
-                                contactMaterial IS footContactMaterial
-                                boundingObject USE FSR_BO
-                                physics USE FSR_PHYSICS
-                                type "force"
-                                lookupTable [
-                                  0 0 0
-                                  25 25 0
-                                ]
-                              }
-                              DEF LFsrRL TouchSensor {
-                                translation -0.03025 0.035 -0.042
-                                rotation 0 1 0 3.1416
-                                name "LFsrRL"
-                                contactMaterial IS footContactMaterial
-                                boundingObject USE FSR_BO
-                                physics USE FSR_PHYSICS
-                                type "force"
-                                lookupTable [
-                                  0 0 0
-                                  25 25 0
-                                ]
-                              }
                               Shape {
                                 appearance USE STRUCTURE_APP
                                 geometry IndexedFaceSet {
@@ -8330,14 +8207,14 @@ PROTO Nao_H21_V40GPS [
                                 gradual TRUE
                               }
                               DEF LFOOT_LBUMPER TouchSensor {
-                                translation 0.09 0.022 -0.03
+                                translation 0.09 0.022 -0.023
                                 name "BumperLFootLeft"
                                 boundingObject USE BUMPER_BO
                                 lookupTable [
                                 ]
                               }
                               DEF LFOOT_RBUMPER TouchSensor {
-                                translation 0.09 -0.012 -0.03
+                                translation 0.09 -0.012 -0.023
                                 name "BumperLFootRight"
                                 boundingObject USE BUMPER_BO
                                 lookupTable [

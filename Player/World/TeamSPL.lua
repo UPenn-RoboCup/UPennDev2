@@ -70,14 +70,22 @@ tLastReceived = 0
 
 function recv_msgs()
   while (Comm.size() > 0) do 
-    t = serialization.deserialize(Comm.receive());
-    if (t and (t.teamNumber) and (t.teamNumber == state.teamNumber) and (t.id) and (t.id ~= playerID)) then
-      t.tReceive = Body.get_time();
-      tLastReceived = Body.get_time();
-      states[t.id] = t;
-    elseif (t and (t.strat)) then
-      t.tReceive = Body.get_time();
-      strat = t
+    msg=Comm.receive();
+    --Ball GPS Info hadling
+    if msg and #msg==14 then --Ball position message
+      ball_gpsx=(tonumber(string.sub(msg,2,6))-5)*2;
+      ball_gpsy=(tonumber(string.sub(msg,8,12))-5)*2;
+      wcm.set_robot_gps_ball({ball_gpsx,ball_gpsy,0});
+    else
+      t = serialization.deserialize(msg);
+      if (t and (t.teamNumber) and (t.teamNumber == state.teamNumber) and (t.id) and (t.id ~= playerID)) then
+        t.tReceive = Body.get_time();
+        tLastReceived = Body.get_time();
+        states[t.id] = t;
+      elseif (t and (t.strat)) then
+        t.tReceive = Body.get_time();
+        strat = t
+      end
     end
   end
 end
@@ -174,6 +182,9 @@ end
     state.landmarkv[1],state.landmarkv[2] = v[1],v[2];
   end
   
+  --Now pack state name too
+  state.body_state = gcm.get_fsm_body_state();
+
   pack_labelB();
 
   if (math.mod(count, 1) == 0) then

@@ -22,12 +22,6 @@ elseif teamID==22 then
   print('football')
   dofile("Player/Test/test_football.lua");
 else
-	--Default
---  dofile("Player/Test/test_joints_webots.lua");
---  dofile("Player/Test/test_walk_webots.lua");
-  dofile("Player/Test/test_vision_webots.lua");
---  dofile("Player/Test/test_main_webots.lua");
---  dofile("Player/main.lua");
---  dofile("Player/Test/test_box.lua");
+  dofile("Player/Test/test_main_webots.lua");
 end
 

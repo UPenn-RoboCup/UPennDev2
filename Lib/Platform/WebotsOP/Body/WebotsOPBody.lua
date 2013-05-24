@@ -235,9 +235,7 @@ end
 
 function update()
 
-if( gps_enable>0 ) then 
-  get_sensor_gps()
-end
+  if( gps_enable>0 ) then get_sensor_gps(); end
   -- Set actuators
   for i = 1,nJoint do
     if actuator.hardness[i] > 0 then

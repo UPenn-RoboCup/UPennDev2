@@ -7,6 +7,7 @@ WorldInfo {
   ]
   title "Robotstadium"
   basicTimeStep 40
+  displayRefresh 4
 }
 Viewpoint {
   orientation -0.998164 -0.052807 0.0296619 0.873105
@@ -46,16 +47,6 @@ DEF BALL BallGPS {
   translation 0 0.0323921 0
 }
 
-DEF PLAYER_0_1 DARwInOPGPS { #goalie
-  translation 2.2 0.3 2
-  rotation 0 1 0 3.14
-  controller "darwin-op_team_0"
-  controllerArgs "0 1"
-  plasticColor 1 0 0
-  cameraWindowPosition 0.125 0
-  waistBand TRUE
-  waistBandColor 1 0 0
-}
 
 
 DEF PLAYER_1_1 DARwInOPGPS {
@@ -64,7 +55,7 @@ DEF PLAYER_1_1 DARwInOPGPS {
   controller "darwin-op_team_0"
   controllerArgs "1 1"
   plasticColor 1 0 0
-  cameraWindowPosition 0.125 0
+  cameraWindowPosition 0.375 0
   waistBand TRUE
   waistBandColor 1 0 0
 }
@@ -75,7 +66,18 @@ DEF PLAYER_2_1 DARwInOPGPS {
   controller "darwin-op_team_0"
   controllerArgs "2 1"
   plasticColor 1 0 0
-  cameraWindowPosition 0.125 0
+  cameraWindowPosition 0.625 0
+  waistBand TRUE
+  waistBandColor 1 0 0
+}
+
+DEF PLAYER_0_1 DARwInOPGPS { #goalie
+  translation 2.2 0.3 2
+  rotation 0 1 0 3.14
+  controller "darwin-op_team_0"
+  controllerArgs "0 1"
+  plasticColor 1 0 0
+  cameraWindowPosition 0.875 0
   waistBand TRUE
   waistBandColor 1 0 0
 }
@@ -83,11 +85,13 @@ DEF PLAYER_2_1 DARwInOPGPS {
 
 
 
-DEF PLAYER_1_0 DARwInOPGPS {
-  translation -1.2 0.3 2
+
+
+DEF PLAYER_0_0 DARwInOPGPS { #goalie
+  translation -2.2 0.3 2
   rotation 0 1 0 3.14
   controller "darwin-op_team_0"
-  controllerArgs "1 0"
+  controllerArgs "0 0"
   plasticColor 0 0 1
   cameraWindowPosition 0.125 1
   waistBand TRUE
@@ -100,19 +104,21 @@ DEF PLAYER_2_0 DARwInOPGPS {
   controller "darwin-op_team_0"
   controllerArgs "2 0"
   plasticColor 0 0 1
-  cameraWindowPosition 0.125 1
+  cameraWindowPosition 0.375 1
   waistBand TRUE
   waistBandColor 0 0 1
 }
 
-DEF PLAYER_0_0 DARwInOPGPS { #goalie
-  translation -2.2 0.3 2
+DEF PLAYER_1_0 DARwInOPGPS {
+  translation -1.2 0.3 2
   rotation 0 1 0 3.14
   controller "darwin-op_team_0"
-  controllerArgs "0 0"
+  controllerArgs "1 0"
   plasticColor 0 0 1
-  cameraWindowPosition 0.125 1
+  cameraWindowPosition 0.625 1
   waistBand TRUE
   waistBandColor 0 0 1
 }
+
+
 

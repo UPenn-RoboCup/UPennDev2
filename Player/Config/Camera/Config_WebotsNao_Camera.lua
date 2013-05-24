@@ -4,10 +4,10 @@ module(..., package.seeall);
 camera = {};
 camera.ncamera = 2;
 camera.switchFreq = 5; --unused for OP
-camera.width = 160;
-camera.height = 120;
-camera.x_center = 160;
-camera.y_center = 120;
+camera.width = 320; --We use custom model (higher resolution)
+camera.height = 240;
+camera.x_center = camera.width/2;
+camera.y_center = camera.height/2;
 
 camera.auto_param = {};
 camera.auto_param[1] = {key='auto_exposure',      val={0, 0}};
@@ -24,8 +24,9 @@ camera.param[6] = {key='red_balance',   val={100, 100}};
 camera.param[7] = {key='blue_balance',  val={120, 120}};
 camera.param[8] = {key='hue',           val={0, 0}};
 
-camera.focal_length = 160; -- in pixels
-camera.focal_base = 160; -- image width used in focal length calculation
+--NaoV4 values
+camera.focal_length = 545.6; -- in pixels
+camera.focal_base = 640; -- image width used in focal length calculation
 
 camera.lut_file = 'lutWebots.raw';
 --Colortable with one colored goal

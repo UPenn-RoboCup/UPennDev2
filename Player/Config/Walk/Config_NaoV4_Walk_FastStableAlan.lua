@@ -48,13 +48,13 @@ walk.hardnessArm=.3;
 -- Gait parameters
 ---------------------------------------------
 --Time between steps.
-walk.tStep = 0.29; 
+walk.tStep = 0.35; 
 --Natural frequency of the inverted pendulum, determined experimentally (based on sqrt(g/L)
 walk.tZmp = 0.17; 
 --How far from the center of the foot the center of mass is positioned during step
 walk.supportY = -0.005; 
 --Larger height, higher step; height given in meters
-walk.stepHeight = 0.017; 
+walk.stepHeight = 0.020; 
 walk.phSingle={0.02,0.98};
 
 --------------------------------------------

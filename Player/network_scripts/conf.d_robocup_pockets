@@ -1,0 +1,10 @@
+# This blank configuration will automatically use DHCP for any net.*
+# scripts in /etc/init.d.  To create a more complete configuration,
+# please review /usr/share/doc/openrc*/net.example* and save your configuration
+# in /etc/conf.d/net (this file :]!).
+
+config_eth0="192.168.123.120 netmask 255.255.255.0"
+
+modules="wpa_supplicant"
+wpa_supplicant_wlan0="-Dnl80211"
+config_wlan0="192.168.1.120 netmask 255.255.255.0"

@@ -22,8 +22,12 @@ dev.ip_wired = '192.168.123.255';
 dev.ip_wired_port = 54321;
 dev.ip_wireless = '192.168.1.255'; --Our Router
 dev.ip_wireless_port = 54321;
-dev.walk='BetterWalk'; --Walk with generalized walkkick definitions
+dev.walk='EvenBetterWalk'; --Walk with generalized walkkick definitions
 dev.kick='PunchKick'; --Extended kick that supports upper body motion
+
+largestep_enable = true;
+dev.largestep = 'ZMPStepKick';--ZMP Preview motion 
+
 
 -- disable speak for webots which causes lua crash with error if espeak not installed
 speakenable = 0
@@ -63,17 +67,68 @@ fsm.game = 'RoboCup';
 fsm.head = {'GeneralPlayer'};
 fsm.body = {'GeneralPlayer'};
 
+--FAST APPROACH TEST
+fsm.fast_approach = 0;
+--fsm.bodyApproach.maxStep = 0.06;
+
+--1 for randomly doing evade kick
+--2 for using obstacle information
+--fsm.enable_evade = 0;
+--fsm.enable_evade = 1;--Randomly do evade kick
+fsm.enable_evade = 2;--Do evade kick when obstructed
+
+-- Team Parameters
+team = {};
+team.msgTimeout = 5.0;
+team.tKickOffWear =7.0;
+
+team.walkSpeed = 0.25; --Average walking speed 
+team.turnSpeed = 2.0; --Average turning time for 360 deg
+team.ballLostPenalty = 4.0; --ETA penalty per ball loss time
+team.fallDownPenalty = 4.0; --ETA penalty per ball loss time
+team.nonAttackerPenalty = 0.8; -- distance penalty from ball
+team.nonDefenderPenalty = 0.5; -- distance penalty from goal
+
+team.force_defender = 0;--Enable this to force defender mode
+
+--if ball is away than this from our goal, go support
+team.support_dist = 3.0; 
+team.supportPenalty = 0.5; --dist from goal
+
+team.force_defender = 0; --Enable this to force defender
+
+team.use_team_ball = 1;
+team.team_ball_timeout = 3.0;  --use team ball info after this delay
+team.team_ball_threshold = 0.5;
+
+team.avoid_own_team = 1;
+team.avoid_other_team = 1;
+
 -- Keyframe files
 km = {};
 km.standup_front = 'km_NSLOP_StandupFromFront.lua';
 km.standup_back = 'km_NSLOP_StandupFromBack.lua';
 km.standup_back2 = 'km_NSLOP_StandupFromBack3.lua';
---km.standup_back = 'km_NSLOP_StandupFromBack3.lua';
---km.kick_right = 'km_NSLOP_taunt1.lua';
---km.kick_left = 'km_NSLOP_StandupFromFront2.lua';
 
 goalie_dive = 2; --1 for arm only, 2 for actual diving
 goalie_dive_waittime = 6.0; --How long does goalie lie down?
+--fsm.goalie_type = 1;--moving/move+stop/stop+dive/stop+dive+move
+--fsm.goalie_type = 2;--moving/move+stop/stop+dive/stop+dive+move
+fsm.goalie_type = 3;--moving/move+stop/stop+dive/stop+dive+move
+--fsm.goalie_type = 4;--moving/move+stop/stop+dive/stop+dive+move
+--fsm.goalie_reposition=0; --No reposition
+fsm.goalie_reposition=1; --Yaw reposition
+--fsm.goalie_reposition=2; --Position reposition
+fsm.bodyAnticipate.thFar = {0.4,0.4,30*math.pi/180};
+fsm.goalie_use_walkkick = 1;--should goalie use walkkick or long kick?
+
+--Diving detection parameters
+fsm.bodyAnticipate.timeout = 3.0;
+fsm.bodyAnticipate.center_dive_threshold_y = 0.05; 
+fsm.bodyAnticipate.dive_threshold_y = 1.0;
+fsm.bodyAnticipate.ball_velocity_th = 1.0; --min velocity for diving
+fsm.bodyAnticipate.ball_velocity_thx = -1.0; --min x velocity for diving
+fsm.bodyAnticipate.rCloseDive = 2.0; --ball distance threshold for diving
 
 -- Low battery level
 bat_med = 122; -- Slow down if voltage drops below 12.2V 
@@ -86,8 +141,9 @@ fallAngle = 40*math.pi/180;
 falling_timeout = 0.3;
 
 -- Shutdown Vision and use ground truth gps info only
-use_gps_only = 0;
---use_gps_only = 1;
+--Now auto-detect from 3rd parameter
+use_gps_only = tonumber(os.getenv('USEGPS')) or 0;
+print("GPS:",use_gps_only)
 
 ------------------------------------
 -- Game-type Specific Configurations

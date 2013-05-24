@@ -20,8 +20,8 @@ params.name = {"Walk", "World", "Kick", "Vision", "FSM", "Camera"};
 
 ---Location Specific Camera Parameters--
 params.Camera = "GraspChris"
-params.Walk = "FastStableAlan"
-params.World = "SPL13"
+params.Walk = "SlowSteady"
+params.World = "SPL13Grasp"
 
 util.LoadConfig(params, platform)
 
@@ -45,7 +45,7 @@ dev.ip_wireless = '192.168.1.255';
 dev.ip_wireless_port = 54321
 dev.game_control = 'NaoGameControl';
 dev.team='TeamSPL';
-dev.walk = 'Walk/NaoV4Walk';
+dev.walk = 'ModestWalk';
 dev.kick = 'Walk/BasicKick';
 
 --Speak enable
@@ -58,10 +58,12 @@ if game.role == 0 then
   fsm.body = {'NaoGoalie'}
 else
   fsm.body = {'NaoKickLogic'};
-  --fsm.body = {'GeneralPlayer'};
 end
-fsm.head = {'NaoPlayer'};
---fsm.head = {'GeneralPlayer'};
+--fsm.head = {'NaoPlayer'};
+
+
+fsm.body = {'GeneralPlayer'};
+fsm.head = {'GeneralPlayer'};
 
 -- Team Parameters
 
@@ -108,3 +110,13 @@ stance.delay = 80; --amount of time to stand still after standing to regain bala
 --Should be more generally handled in Body..
 servo={};
 servo.pid=0;
+
+--dummy variables 
+bat_med = 0;
+bat_low = 0;
+
+goalie_dive = 1;--arm motion
+goalie_dive = 2;--actual dive
+
+
+vision.ball.max_distance = 2.0; --temporary fix for GRASP lab

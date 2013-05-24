@@ -195,7 +195,7 @@ function process_keyinput()
       headsm_running = 1-headsm_running;
       if (headsm_running == 1) then
         Body.set_head_hardness(0.5);
-        HeadFSM.sm:set_state('headLookGoal');
+        HeadFSM.sm:set_state('headScan');
       end
 
     elseif byte==string.byte("2") then	

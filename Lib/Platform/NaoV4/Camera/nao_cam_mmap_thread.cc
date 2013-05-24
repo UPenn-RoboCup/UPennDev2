@@ -195,7 +195,7 @@ int construct_parameter_map(int fd, std::map<std::string, int> &paramMap) {
   printf("querying camera parameters:\n");
 
   // need to increase the range because auto gain is not in the standard range
-  for (queryctrl.id = V4L2_CID_BASE; queryctrl.id < V4L2_CID_LASTP1+1000000; queryctrl.id++) {
+  for (queryctrl.id = V4L2_CID_BASE; queryctrl.id < V4L2_CID_LASTP1+100; queryctrl.id++) {
     if (0 == ioctl(fd, VIDIOC_QUERYCTRL, &queryctrl)) {
       if (queryctrl.flags & V4L2_CTRL_FLAG_DISABLED) {
         continue;
@@ -212,26 +212,40 @@ int construct_parameter_map(int fd, std::map<std::string, int> &paramMap) {
       return -1;
     }
   }
-
-  for (queryctrl.id = V4L2_CID_PRIVATE_BASE; ; queryctrl.id++) {
-    if (0 == ioctl(fd, VIDIOC_QUERYCTRL, &queryctrl)) { 
+  for (queryctrl.id = V4L2_CID_CAMERA_CLASS_BASE; queryctrl.id < V4L2_CID_PRIVACY+100; queryctrl.id++) {
+    if (0 == ioctl(fd, VIDIOC_QUERYCTRL, &queryctrl)) {
       if (queryctrl.flags & V4L2_CTRL_FLAG_DISABLED) {
         continue;
       }
 
       // set control in menu
-      printf("%s\n", queryctrl.name);
+      printf("  %d: %s %d %d %d\n", queryctrl.id, queryctrl.name, queryctrl.minimum, queryctrl.maximum, queryctrl.default_value);
       paramMap[(char *)queryctrl.name] = queryctrl.id;
     } else {
       if (errno == EINVAL) {
-        break;
+        continue;
       }
-
       printf("error querying control: %d\n", queryctrl.id);
       return -1;
     }
   }
+  for (queryctrl.id = V4L2_CID_PRIVATE_BASE; queryctrl.id < V4L2_CID_PRIVATE_BASE+100; queryctrl.id++) {
+    if (0 == ioctl(fd, VIDIOC_QUERYCTRL, &queryctrl)) {
+      if (queryctrl.flags & V4L2_CTRL_FLAG_DISABLED) {
+        continue;
+      }
 
+      // set control in menu
+      printf("  %d: %s %d %d %d\n", queryctrl.id, queryctrl.name, queryctrl.minimum, queryctrl.maximum, queryctrl.default_value);
+      paramMap[(char *)queryctrl.name] = queryctrl.id;
+    } else {
+      if (errno == EINVAL) {
+        continue;
+      }
+      printf("error querying control: %d\n", queryctrl.id);
+      return -1;
+    }
+  }
   return 0;
 }
 

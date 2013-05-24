@@ -61,6 +61,9 @@ state.cornerv={0,0};
 state.gc_latency=0;
 state.tm_latency=0;
 
+--Body state 
+state.bodyState = gcm.get_fsm_body_state();
+
 states = {};
 states[playerID] = state;
 
@@ -89,13 +92,14 @@ function pack_msg(state)
   --posex posey posea
   --time
   --battery
+  --body state
   msg_str=string.format(
-  "{%d,%d,%d,%d,%d,%d,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.2f,%.1f}",
+  "{%d,%d,%d,%d,%d,%d,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.2f,%.1f,%d}",
   state.id, state.teamNumber, state.teamColor,
   state.role,state.penalty,state.fall,
   state.ball.x,state.ball.y,state.ball.t,
   state.pose.x,state.pose.y,state.pose.a,
-  state.time,state.battery_level);
+  state.time,state.battery_level,state.bodyState);
   return msg_str;
 end
 
@@ -117,6 +121,7 @@ function unpack_msg(msg)
   state.pose.x=msg[12];
   state.pose.time=msg[13];
   state.pose.battery_level=msg[14];
+  state.bodyState=msg[15];
   return state;
 end
 
@@ -125,7 +130,7 @@ function recv_msgs()
 
     msg=Comm.receive();
     --Ball GPS Info hadling
-    if msg and #msg==14 then --Ball position message
+    if msg and #msg==15 then --Ball position message
       ball_gpsx=(tonumber(string.sub(msg,2,6))-5)*2;
       ball_gpsy=(tonumber(string.sub(msg,8,12))-5)*2;
       wcm.set_robot_gps_ball({ball_gpsx,ball_gpsy,0});
@@ -238,6 +243,7 @@ function update()
 
   state.battery_level = wcm.get_robot_battery_level();
   state.fall=wcm.get_robot_is_fall_down();
+  state.bodyState = gcm.get_body_state();
 
   if gcm.in_penalty() then  state.penalty = 1;
   else  state.penalty = 0;
@@ -290,6 +296,9 @@ function update()
     local v = vcm.get_corner_v();
     state.cornerv[1],state.cornerv[2]=v[1],v[2];
   end
+
+  --Now pack state name too
+  state.body_state = gcm.get_fsm_body_state();
 
   --Send lableB wirelessly!
   pack_labelB();

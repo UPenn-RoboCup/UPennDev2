@@ -20,7 +20,7 @@ params.name = {"Walk", "World", "Kick", "Vision", "FSM", "Camera"};
 
 ---Location Specific Camera Parameters--
 params.Camera = "GraspChris"
-params.Walk = "SlowSteady"
+params.Walk = "FastImproved"
 params.World = "SPL13Grasp"
 
 util.LoadConfig(params, platform)

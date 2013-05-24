@@ -5,7 +5,7 @@ require('os')
 require('unix');
 require('Config')
 
-local volume = 55;
+local volume = 90;
 local lang = 'en-us';
 local gender = Config.dev.gender or 1;
 if gender == 1 then

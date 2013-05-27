@@ -184,8 +184,6 @@ phSingle = 0;
 --Stance state --0: open, 1: left-front, 2: right-front 
 stance,stance1=0,0; 
 
-velLimitX = {-.05, .05};
-stanceLimitX={-0.08 , 0.08};
 
 --Boxing arm pose
 qLArm1=math.pi/180*vector.new({90,40,-160});

@@ -119,4 +119,4 @@ goalie_dive = 1;--arm motion
 goalie_dive = 2;--actual dive
 
 
-vision.ball.max_distance = 2.0; --temporary fix for GRASP lab
+vision.ball.max_distance = 2.5; --temporary fix for GRASP lab

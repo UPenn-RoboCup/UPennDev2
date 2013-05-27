@@ -53,6 +53,7 @@ function entry()
   else
     pitchDir=-1;
   end
+  vcm.set_camera_command(-1); --switch camera
 end
 
 function update()

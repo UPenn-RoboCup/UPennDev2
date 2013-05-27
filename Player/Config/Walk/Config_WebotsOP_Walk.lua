@@ -367,3 +367,19 @@ walk.motionDef["jableft"]={
 }
 
 walk.walkKickSupportMod = {{0,0},{0,0}}
+
+--ZMP-preview step definitions
+zmpstep = {};
+
+zmpstep.bodyHeight = 0.295; 
+zmpstep.bodyTilt = 20*math.pi/180;
+zmpstep.tZmp = 0.165;
+
+zmpstep.stepHeight = 0.025;
+zmpstep.phSingle={0.1,0.9};
+zmpstep.hipRollCompensation = 3*math.pi/180;
+
+zmpstep.supportX = 0.0;
+zmpstep.supportY = 0.025;
+
+

@@ -25,6 +25,10 @@ dev.ip_wireless_port = 54321;
 dev.walk='EvenBetterWalk'; --Walk with generalized walkkick definitions
 dev.kick='PunchKick'; --Extended kick that supports upper body motion
 
+largestep_enable = false;
+dev.largestep = 'ZMPStepKick';--ZMP Preview motion 
+
+
 -- disable speak for webots which causes lua crash with error if espeak not installed
 speakenable = 0
 
@@ -86,6 +90,7 @@ team.nonAttackerPenalty = 0.8; -- distance penalty from ball
 team.nonDefenderPenalty = 0.5; -- distance penalty from goal
 
 team.force_defender = 0;--Enable this to force defender mode
+team.test_teamplay = 0; --Enable this to immobilize attacker to test team behavior
 
 --if ball is away than this from our goal, go support
 team.support_dist = 3.0; 
@@ -166,3 +171,6 @@ fsm.headTrack.tLost = 1.5 * speedFactor;
 fsm.headTrack.minDist = 0.15; --Default value 0.30,If ball is closer than this, don't look up
 --]]
 
+
+--Enable this to immobilize attacker to test team behavior
+team.test_teamplay = 1; 

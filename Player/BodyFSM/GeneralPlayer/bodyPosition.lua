@@ -21,6 +21,8 @@ timeout = Config.fsm.bodyPosition.timeout;
 thClose = Config.fsm.bodyPosition.thClose;
 rClose= Config.fsm.bodyPosition.rClose;
 fast_approach=Config.fsm.fast_approach or 0;
+test_teamplay = Config.team.test_teamplay or 0;
+
 
 function entry()
   print(_NAME.." entry");
@@ -35,6 +37,7 @@ end
 
 
 function update()
+
   count=count+1;
 
   local t = Body.get_time();
@@ -103,14 +106,12 @@ function update()
   end
 --]]
 
-
-
-
-
-
-
   if role==1 then
     vx,vy,va=position.setAttackerVelocity(homePose);
+    --In teamplay test mode, immobilize attacker
+    if test_teamplay==1 then
+      vx,vy,va = 0,0,0;
+    end
   else
     vx,vy,va=position.setDefenderVelocity(homePose);
   end
@@ -130,8 +131,6 @@ function update()
     --Role specific rejection radius
     if role==0 then --Goalie has the highest priority 
       r_reject = 0.4;
-
-
 
     elseif role==1 then --Attacker
       if obstacle_role[i]==0 then --Our goalie

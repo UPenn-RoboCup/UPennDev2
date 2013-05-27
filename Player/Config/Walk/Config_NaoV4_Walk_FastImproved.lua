@@ -12,7 +12,7 @@ walk.stanceLimitX={-0.10,0.10};
 walk.stanceLimitY={0.09,0.20};
 walk.stanceLimitA={-0*math.pi/180,40*math.pi/180};
 
-walk.velLimitX={-.05,.06};
+walk.velLimitX={-.06,.06};
 walk.velLimitY={-.02,.02};
 walk.velLimitA={-.4,.4};
 walk.velDelta={0.10,0.005,0.10} 
@@ -56,7 +56,7 @@ walk.ankleMod = vector.new({-1,0})/0.12 * 10*math.pi/180;
 --------------------------------------------------------------
 --Imu feedback parameters, alpha / gain / deadband / max
 --------------------------------------------------------------
-walk.gyroFactor = 0.001;
+walk.gyroFactor = 0.001; --In units of degrees per second
 
 walk.ankleImuParamX={0.11, -0.50*walk.gyroFactor,
         1*math.pi/180, 5*math.pi/180};

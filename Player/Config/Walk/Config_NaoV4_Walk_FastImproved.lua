@@ -12,10 +12,10 @@ walk.stanceLimitX={-0.10,0.10};
 walk.stanceLimitY={0.09,0.20};
 walk.stanceLimitA={-0*math.pi/180,40*math.pi/180};
 
-walk.velLimitX={-.07,.07};
-walk.velLimitY={-.02,.02};
+walk.velLimitX={-.04,.07};
+walk.velLimitY={-.03,.03};
 walk.velLimitA={-.4,.4};
-walk.velDelta={0.10,0.005,0.10} 
+walk.velDelta={0.02,0.02,0.15} 
 
 ---------------------------------------------
 -- Odometry values
@@ -51,7 +51,7 @@ walk.phSingle={0.02,0.98};
 -- Compensation parameters
 --------------------------------------------
 walk.hipRollCompensation = 1.5*math.pi/180;
-walk.ankleMod = vector.new({-1,0})/0.12 * 10*math.pi/180;
+walk.ankleMod = vector.new({-1,0})/0.12 * 0*math.pi/180; --({-1,0})/0.12 * 10*math.pi/180;
 
 --------------------------------------------------------------
 --Imu feedback parameters, alpha / gain / deadband / max

@@ -785,7 +785,7 @@ function motion_legs(qLegs,gyro_off)
   gyro_roll0=imuGyr[1];
   gyro_pitch0=imuGyr[2];
   if gyro_off then
---    gyro_roll0 = 0; gyro_pitch0 = 0;
+    gyro_roll0 = 0; gyro_pitch0 = 0;
   end
 
 

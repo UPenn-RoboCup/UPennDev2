@@ -45,27 +45,42 @@ DEF BLUE_GOAL KidGoal {
 DEF BALL BallGPS {
   translation 0 0.0323921 0
 }
-DEF PLAYER_0_0 DARwInOPGPS {
-  translation -1.6 0.3 2
+DEF PLAYER_0_1 DARwInOPGPS {
+  translation 1.6 0.3 2
   rotation 0 1 0 3.14
   controller "darwin-op_team_0"
-  controllerArgs "0 0"
-  plasticColor 0 0 1
+  controllerArgs "0 1"
+  plasticColor 1 0 0
   cameraWindowPosition 0.125 0
   cameraWidth 320
   cameraHeight 240
   waistBand TRUE
   waistBandColor 1 0 0
 }
-DEF PLAYER_1_0 DARwInOPGPS {
-  translation -1.1 0.3 2
-  rotation 0 1 0 3.14
-  controller "darwin-op_team_0"
-  controllerArgs "1 0"
-  plasticColor 0 0 1
-  cameraWindowPosition 0.125 0
-  cameraWidth 320
-  cameraHeight 240
-  waistBand TRUE
-  waistBandColor 1 0 0
+DEF SLOPE Solid {
+  translation 0.54 -0.10 0.0798539
+  rotation 0 0 -1 0.2
+  children [
+    DEF slope Shape {
+     appearance Appearance {
+       material Material {
+         diffuseColor 0.201961 0.201961 0.201961
+         emissiveColor 0.201961 0.201961 0.201961
+       }
+     }
+     geometry DEF BOX Box {
+       size 1 0.15 0.5
+     }
+    }
+  ]
+  boundingObject DEF slope Shape {
+     appearance Appearance {
+       material Material {
+        diffuseColor 0.501961 0.501961 0.501961
+        emissiveColor 0.501961 0.501961 0.501961
+      }
+    }
+    geometry USE BOX
+  }
+  locked TRUE
 }

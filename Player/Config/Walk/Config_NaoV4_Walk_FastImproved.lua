@@ -12,7 +12,7 @@ walk.stanceLimitX={-0.10,0.10};
 walk.stanceLimitY={0.09,0.20};
 walk.stanceLimitA={-0*math.pi/180,40*math.pi/180};
 
-walk.velLimitX={-.06,.06};
+walk.velLimitX={-.07,.07};
 walk.velLimitY={-.02,.02};
 walk.velLimitA={-.4,.4};
 walk.velDelta={0.10,0.005,0.10} 

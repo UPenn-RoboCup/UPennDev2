@@ -12,13 +12,10 @@ walk.stanceLimitX={-0.10,0.10};
 walk.stanceLimitY={0.09,0.20};
 walk.stanceLimitA={-0*math.pi/180,40*math.pi/180};
 
---Max forwards/backwards speed
-walk.velLimitX={-.05,.06};
---Max left/right speed
-walk.velLimitY={-.04,.04};
---Max angular rotation speed
+walk.velLimitX={-.02,.05};
+walk.velLimitY={-.02,.02};
 walk.velLimitA={-.4,.4};
-walk.velDelta={0.15,0.01,0.15} 
+walk.velDelta={0.02,0.02,0.15} 
 
 ---------------------------------------------
 -- Odometry values
@@ -28,14 +25,11 @@ walk.odomScale = {1.09, .92, .84}; --1.06, 1.20, .95
 ----------------------------------------------
 -- Stance parameters
 ---------------------------------------------
---Stand up taller; height given in meters
-walk.bodyHeight = 0.31; 
+walk.bodyHeight = 0.315; 
 walk.bodyTilt=0*math.pi/180; 
 walk.footX= 0.0; 
---Width of the stance; meters
-walk.footY = 0.0515; --Old 0.0450 
---How far behind the torso the ankle joints are positioned
-walk.supportX = 0.020; 
+walk.footY = 0.0500;
+walk.supportX = 0.018;
 walk.qLArm = math.pi/180*vector.new({105, 12, -85, -30});
 walk.qRArm = math.pi/180*vector.new({105, -12, 85, 30});
 walk.qLArmKick = math.pi/180*vector.new({105, 18, -85, -30});
@@ -47,33 +41,22 @@ walk.hardnessArm=.3;
 ---------------------------------------------
 -- Gait parameters
 ---------------------------------------------
---Time between steps.
-walk.tStep = 0.45; 
---Natural frequency of the inverted pendulum, determined experimentally (based on sqrt(g/L)
-walk.tZmp = 0.17; 
---How far from the center of the foot the center of mass is positioned during step
-walk.supportY = 0.004; 
---Larger height, higher step; height given in meters
-walk.stepHeight = 0.022; 
-walk.phSingle={0.18,0.82};
+walk.tStep = 0.26;
+walk.tZmp = 0.17;
+walk.supportY = 0.002;
+walk.stepHeight = 0.020;
+walk.phSingle={0.02,0.98};
 
 --------------------------------------------
 -- Compensation parameters
 --------------------------------------------
---Moves the torso back to vertical as the robot walks.
 walk.hipRollCompensation = 1.5*math.pi/180;
-walk.ankleMod = vector.new({-1,0})/0.12 * 10*math.pi/180;
+walk.ankleMod = vector.new({-1,0})/0.12 * 0*math.pi/180; --({-1,0})/0.12 * 10*math.pi/180;
 
 --------------------------------------------------------------
 --Imu feedback parameters, alpha / gain / deadband / max
 --------------------------------------------------------------
-
---ALPHA alters how quickly the torque is applied in response to perturbation
---GAIN alters how much toque is applied in response to perturbation
---DEADBAND defines the range of values that will not be considered as perturbation
-
---Gyro claibration constant
-walk.gyroFactor = 0.001;
+walk.gyroFactor = 0.001; --In units of degrees per second
 
 walk.ankleImuParamX={0.11, -0.50*walk.gyroFactor,
         1*math.pi/180, 5*math.pi/180};

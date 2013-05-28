@@ -5,7 +5,7 @@ require('vector')
 
 camera = {};
 camera.ncamera = 2;
-camera.switchFreq = 5;
+camera.switchFreq = 1;
 camera.width = 640;
 camera.height = 480;
 camera.x_center = 320;

@@ -3,7 +3,7 @@
 if [ $1 = 'guest' ]; then
   rm /etc/conf.d/net
   touch /etc/conf.d/net
-  case "$2" in
+  case "$HOSTNAME" in
   hook)
   echo 'modifying network scripts for hook'
   cat /home/nao/UPennDev/Player/network_scripts/conf.d_guest_hook >> /etc/conf.d/net ;;
@@ -27,7 +27,7 @@ if [ $1 = 'guest' ]; then
 elif [ $1 = 'robocup' ]; then 
   rm /etc/conf.d/net
   touch /etc/conf.d/net
-  case "$2" in
+  case "$HOSTNAME" in
   hook)
   echo 'modifying network scripts for hook'
   cat /home/nao/UPennDev/Player/network_scripts/conf.d_robocup_hook >> /etc/conf.d/net ;;

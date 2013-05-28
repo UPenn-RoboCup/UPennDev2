@@ -5,7 +5,7 @@ require('vector')
 
 camera = {};
 camera.ncamera = 2;
-camera.switchFreq = 5;
+camera.switchFreq = 1;
 camera.width = 640;
 camera.height = 480;
 camera.x_center = 320;
@@ -24,9 +24,9 @@ camera.param[2] = {key='Saturation'     , val={210 , 215}};
 -- Hue will automatically change to 0 if set to a number between -5 and 5, but cannot be set by other numbers
 camera.param[3] = {key='Hue'            , val={0 , 0}};
 
-camera.param[4] = {key='Exposure'       , val={25 , 35}};
+camera.param[4] = {key='Exposure'       , val={25 , 30}};
 -- Gain should be set between 32 and 255
-camera.param[5] = {key='Gain'           , val={130 , 120}};
+camera.param[5] = {key='Gain'           , val={155 , 225}};
 -- Sharpness should be set between 0 and 7
 camera.param[6] = {key='Sharpness'      , val={3  , 3}};
 

@@ -42,7 +42,6 @@ function entry()
   yaw_0, pitch_0 = HeadTransform.ikineCam(ball.x, ball.y,0);
   local currentYaw = Body.get_head_position()[1];
 
-
   if currentYaw>0 then
     direction = 1;
   else
@@ -53,6 +52,7 @@ function entry()
   else
     pitchDir=-1;
   end
+  vcm.set_camera_command(-1); --switch camera
 end
 
 function update()

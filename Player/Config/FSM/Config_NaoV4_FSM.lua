@@ -306,10 +306,10 @@ fsm.headReadyLookGoal.timeout = 1.5 * speedFactor;
 
 --SJ: NaoV4 has VERY wide FOV
 fsm.headScan={};
-fsm.headScan.pitch0 = 20*math.pi/180;
-fsm.headScan.pitchMag = 0*math.pi/180;
+fsm.headScan.pitch0 = 10*math.pi/180;
+fsm.headScan.pitchMag = 10*math.pi/180;
 fsm.headScan.yawMag = 90*math.pi/180;
-fsm.headScan.pitchTurn0 = 20*math.pi/180;
+fsm.headScan.pitchTurn0 = 15*math.pi/180;
 fsm.headScan.pitchTurnMag = 0*math.pi/180;
 fsm.headScan.yawMagTurn = 45*math.pi/180;
 fsm.headScan.tScan = 3.0*speedFactor;

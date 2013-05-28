@@ -80,6 +80,7 @@ world.initPosition1={
   {0.5, 0}, --Attacker
   {1.2,-1}, --Defender
   {1.2, 1}, --Supporter
+  {2.2, 0}, --Defender2
 }
 -- default positions for opponents' kickoff
 -- Penalty mark : {1.2,0}
@@ -88,6 +89,7 @@ world.initPosition2={
   {2.0, 0}, --Attacker
   {2.5, -1}, --Defender
   {2.5,1}, --Supporter
+  {2.5, 0}, --Defender2
 }
 
 -- use sound localization

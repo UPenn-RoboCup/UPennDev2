@@ -70,19 +70,24 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel,name)
       plot_gps_robot(robot_struct,scale);
       plot_obstacle(robot_struct,scale);
     elseif drawlevel==4
-      plot_robot(robot_struct,scale);
-      plot_info(robot_struct,scale,1);
-      plot_ball(robot_struct,scale);
-      plot_sound(robot_struct,scale);
-      %plot_particle(robot_struct,scale);
-      plot_ball(robot_struct,scale);
-      %plot_particle(r_mon.particle);
-      %plot_goal(r_mon.goal,scale);
+%      plot_robot(robot_struct,scale);
+      plot_particle(r_mon.particle);
+      plot_gps_robot(robot_struct,scale);
+      plot_goal(r_mon.goal,scale);
+      plot_corner(r_mon.corner,scale);
+
+
+
+      %plot_info(robot_struct,scale,1);
+      %plot_ball(robot_struct,scale);
+      %plot_sound(robot_struct,scale);
+
+
+
       %plot_landmark(r_mon.landmark,scale);
       %plot_line(r_mon.line,scale);
-      %plot_corner(r_mon.corner,scale);
       %plot_fov(r_mon.fov);
-      %plot_gps_robot(robot_struct,scale);
+
       plot_obstacle(robot_struct,scale);
     end
   end
@@ -398,9 +403,9 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel,name)
 
     index=[1:10:200]';
 
-    px=robot.xp(index);
-    py=robot.yp(index);
-    pa=robot.ap(index);
+    px=robot.x(index);
+    py=robot.y(index);
+    pa=robot.a(index);
 
 
     pl_len=1;

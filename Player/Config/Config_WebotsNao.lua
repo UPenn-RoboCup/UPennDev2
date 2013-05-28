@@ -8,12 +8,11 @@ platform = {};
 platform.name = 'WebotsNao'
 
 listen_monitor = 1
-
 webots = 1
 
 -- Parameters Files
 params = {}
-params.name = {"Walk", "World", "Kick", "Vision", "FSM", "Camera"};
+params.name = {"Walk", "World", "Kick", "Vision", "FSM", "Camera", "Robot"};
 util.LoadConfig(params, platform)
 
 params.world = 'World/Config_WebotsNao_World'
@@ -29,28 +28,23 @@ dev.body = 'NaoWebotsBody';
 dev.camera = 'NaoWebotsCam';
 dev.kinematics = 'NaoWebotsKinematics';
 dev.game_control='WebotsGameControl';
-dev.team= 'TeamSPL';
+--dev.team= 'TeamSPL';
+dev.team= 'TeamGeneral';
 dev.kick = 'BasicKick';
---dev.walk = 'Walk/NaoV4Walk';
 dev.walk = 'EvenBetterWalk';
 
 -- Game Parameters
-
 game = {};
 game.teamNumber = (os.getenv('TEAM_ID') or 0) + 0;
 -- webots player ids begin at 0 but we use 1 as the first id
 game.playerID = (os.getenv('PLAYER_ID') or 0) + 1;
 game.robotID = game.playerID;
 game.role = game.playerID-1; -- default role, 0 for goalie 
-game.nPlayers = 4;
+game.nPlayers = 5;
 
--- Shutdown Vision and use ground truth gps info only
---Now auto-detect from 3rd parameter
+-- Auto-detect GPS enabling for webots
 use_gps_only = tonumber(os.getenv('USEGPS')) or 0;
 print("GPS:",use_gps_only)
-
-
-
 
 --To handle non-gamecontroller-based team handling for webots
 if game.teamNumber==0 then game.teamColor = 0; --Blue team
@@ -58,65 +52,32 @@ else game.teamColor = 1; --Red team
 end
 
 fsm.game = 'RoboCup';
---fsm.body = {'NaoKickLogic'};
 fsm.body = {'GeneralPlayer'};
-
 fsm.head = {'GeneralPlayer'};
-
-
---fsm.head = {'NaoPlayer'};
-
-
 
 -- Team Parameters
 team = {};
 team.msgTimeout = 5.0;
-team.nonAttackerPenalty = 6.0; -- eta sec
-team.nonDefenderPenalty = 0.5; -- dist from goal
+team.tKickOffWear =7.0;
 
---Head Parameters
+team.walkSpeed = 0.25; --Average walking speed 
+team.turnSpeed = 2.0; --Average turning time for 360 deg
+team.ballLostPenalty = 4.0; --ETA penalty per ball loss time
+team.fallDownPenalty = 4.0; --ETA penalty per ball loss time
+team.nonAttackerPenalty = 0.8; -- distance penalty from ball
+team.nonDefenderPenalty = 0.5; -- distance penalty from goal
+team.force_defender = 0;--Enable this to force defender mode
+team.test_teamplay = 0; --Enable this to immobilize attacker to test team behavior
 
-head = {};
-head.camOffsetZ = 0.41;
-head.pitchMin = -35*math.pi/180;
-head.pitchMax = 30*math.pi/180;
-head.yawMin = -120*math.pi/180;
-head.yawMax = 120*math.pi/180;
-head.cameraPos = {{0.05390, 0.0, 0.06790},
-                  {0.04880, 0.0, 0.02381}}; 
-head.cameraAngle = {{0.0, 0.0, 0.0},
-                    {0.0, 40*math.pi/180, 0.0}};
-head.neckZ=0.14; --From CoM to neck joint
-head.neckX=0;  
+--if ball is away than this from our goal, go support
+team.support_dist = 3.0; 
+team.supportPenalty = 0.5; --dist from goal
+team.use_team_ball = 1;
+team.team_ball_timeout = 3.0;  --use team ball info after this delay
+team.team_ball_threshold = 0.5;
 
-
--- keyframe files
-
-km = {};
-km.kick_right = 'km_WebotsNao_KickForwardRight.lua';
-km.kick_left = 'km_WebotsNao_KickForwardLeft.lua';
-km.standup_front = 'km_WebotsNao_StandupFromFront.lua';
-km.standup_back = 'km_WebotsNao_StandupFromBack.lua';
-
-
-km.standup_front = 'km_WebotsNao_StandupFromFront.lua';
-km.standup_back = 'km_WebotsNao_StandupFromBack.lua';
-km.time_to_stand = 30; -- average time it takes to stand up in seconds
-
-
-
---Sit/stand stance parameters
-stance={};
-stance.bodyHeightSit = 0.225;
-stance.supportXSit = 0;
-stance.dpLimitSit=vector.new({.1,.01,.03,.1,.3,.1});
-stance.bodyHeightDive= 0.25;
-stance.bodyTiltStance=0*math.pi/180; --bodyInitial bodyTilt, 0 for webots
-stance.dpLimitStance = vector.new({.04, .03, .04, .05, .4, .1});
-stance.delay = 80; --amount of time to stand still after standing to regain balance.
-
-
-
+team.avoid_own_team = 1;
+team.avoid_other_team = 1;
 
 
 goalie_dive = 2; --1 for arm only, 2 for actual diving
@@ -138,10 +99,3 @@ fsm.bodyAnticipate.dive_threshold_y = 1.0;
 fsm.bodyAnticipate.ball_velocity_th = 1.0; --min velocity for diving
 fsm.bodyAnticipate.ball_velocity_thx = -1.0; --min x velocity for diving
 fsm.bodyAnticipate.rCloseDive = 2.0; --ball distance threshold for diving
-
-
-
-
---Dummy variables
-bat_low = 999;
-bat_med = 999;

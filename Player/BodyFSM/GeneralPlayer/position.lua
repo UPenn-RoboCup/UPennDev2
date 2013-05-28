@@ -29,6 +29,11 @@ maxY3 = Config.fsm.bodyPosition.maxY3 or 0;
 dapost_check = Config.fsm.daPost_check or 0;
 variable_dapost = Config.fsm.variable_dapost or 0;
 
+defender_pos_0 = Config.team.defender_pos_0 or {1.0,0}; --no goalie
+defender_pos_1 = Config.team.defender_pos_1 or {1.5,0.3}; --1 defender
+defender_pos_2 = Config.team.defender_pos_2 or {1.5,0.5}; --Left defender 
+defender_pos_3 = Config.team.defender_pos_3 or {1.5,-0.5}; --Right defender
+
 function posCalc()
   ball=wcm.get_ball();
   pose=wcm.get_pose();
@@ -230,8 +235,15 @@ function getDefenderHomePose()
     end
   else --Ball in their field
     if attacker_goal_dist < defender_goal_dist - supportPenalty then
-       --Attacker closer to the our goal
-      defending_type = 3; --Supporter
+       --Attacker closer to the our goal, we can move forward and do the support
+
+      --Do we have a supporter player around? then just go back and play defense 
+      supporter_eta = wcm.get_team_supporter_eta();
+      if (supporter_eta<20) then --We have a supporter around
+        defending_type = 2; --Go back
+      else
+        defending_type = 3; --Supporter
+      end
     else
       --Stay in defending position
       --TODO: we can still go support
@@ -240,12 +252,19 @@ function getDefenderHomePose()
     end
   end
 
+
+
+
+
+
+
   if defending_type == 1 then
     --Center defender
     if goalie_alive>0 then 
-      distGoal,sideGoal = 1.5, 0.3;
+      distGoal,sideGoal = defender_pos_1[1],defender_pos_1[1];
+      --TODO: multiple defender handling
     else
-      distGoal,sideGoal = 1.0, 0; --We don't have goalie!
+      distGoal,sideGoal = defender_pos_0[1],defender_pos_0[1];
     end
     homePosition[1]= goal_defend[1]+distGoal * relBallX / RrelBall;
     homePosition[2]= goal_defend[2]+distGoal * relBallY / RrelBall

@@ -21,6 +21,8 @@ function entry()
   print("Head SM:".._NAME.." entry");
 
   t0 = Body.get_time();
+  vcm.set_camera_command(-1); --switch camera
+
 end
 
 function update()

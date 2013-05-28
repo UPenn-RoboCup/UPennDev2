@@ -40,7 +40,7 @@ game.teamNumber = (os.getenv('TEAM_ID') or 0) + 0;
 game.playerID = (os.getenv('PLAYER_ID') or 0) + 1;
 game.robotID = game.playerID;
 game.role = game.playerID-1; -- default role, 0 for goalie 
-game.nPlayers = 4;
+game.nPlayers = 5;
 
 -- Auto-detect GPS enabling for webots
 use_gps_only = tonumber(os.getenv('USEGPS')) or 0;

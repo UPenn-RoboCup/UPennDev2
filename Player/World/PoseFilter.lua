@@ -470,7 +470,6 @@ function goal_observation_unified(pos1,pos2,v)
     pose1,dGoal1=triangulate(pos1,v);
     pose2,dGoal2=triangulate(pos2,v);
   end
-  print(dGoal1)
 
   if dGoal1<triangulation_threshold then 
     --Goal close, triangulate

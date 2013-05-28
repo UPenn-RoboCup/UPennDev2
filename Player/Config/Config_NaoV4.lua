@@ -120,6 +120,6 @@ goalie_dive = 2;--actual dive
 
 
 --vision.ball.max_distance = 2.5; --temporary fix for GRASP lab
-vision.ball.max_distance = 5; --temporary fix for GRASP lab
-vision.ball.fieldsize_factor = 1.2; 
+vision.ball.fieldsize_factor = 1.2; --check whether the ball is inside the field
+vision.ball.max_distance = 2; --if ball is this close, just pass the test
 

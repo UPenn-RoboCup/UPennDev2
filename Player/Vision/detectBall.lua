@@ -118,20 +118,21 @@ function detect(color)
       pose = wcm.get_pose();
       posexya=vector.new( {pose.x, pose.y, pose.a} );
       ballGlobal=util.pose_global({v[1],v[2],0},posexya);
+      pos_check_fail = false;
 
       if ballGlobal[1]>Config.world.xMax * fieldsize_factor or
        ballGlobal[1]<-Config.world.xMax * fieldsize_factor or
        ballGlobal[2]>Config.world.yMax * fieldsize_factor or
        ballGlobal[2]<-Config.world.yMax * fieldsize_factor then
+        pos_check_fail = false;
         vcm.add_debug_message("On-the-field check fail\n");
-        check_passed = false;
+      end
 
-      elseif v[1]*v[1] + v[2]*v[2] > max_distance*max_distance then
- 	--Ball distance check
+      if pos_check_fail and
+         (v[1]*v[1] + v[2]*v[2] > max_distance*max_distance) then
+ 	--Only check distance if the ball is out of field
         vcm.add_debug_message("Distance check fail\n");
         check_passed = false;
-       
-
       elseif v[3] > th_height_max then
         --Ball height check
         vcm.add_debug_message("Height check fail\n");

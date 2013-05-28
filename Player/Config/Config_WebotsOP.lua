@@ -17,7 +17,8 @@ dev.body = 'WebotsOPBody';
 dev.camera = 'WebotsOPCam';
 dev.kinematics = 'OPKinematics';
 dev.game_control='WebotsGameControl';
-dev.team='TeamNSL';
+--dev.team='TeamNSL';
+dev.team='TeamGeneral';
 dev.ip_wired = '192.168.123.255';
 dev.ip_wired_port = 54321;
 dev.ip_wireless = '192.168.1.255'; --Our Router
@@ -88,16 +89,12 @@ team.ballLostPenalty = 4.0; --ETA penalty per ball loss time
 team.fallDownPenalty = 4.0; --ETA penalty per ball loss time
 team.nonAttackerPenalty = 0.8; -- distance penalty from ball
 team.nonDefenderPenalty = 0.5; -- distance penalty from goal
-
 team.force_defender = 0;--Enable this to force defender mode
 team.test_teamplay = 0; --Enable this to immobilize attacker to test team behavior
 
 --if ball is away than this from our goal, go support
 team.support_dist = 3.0; 
 team.supportPenalty = 0.5; --dist from goal
-
-team.force_defender = 0; --Enable this to force defender
-
 team.use_team_ball = 1;
 team.team_ball_timeout = 3.0;  --use team ball info after this delay
 team.team_ball_threshold = 0.5;
@@ -173,4 +170,4 @@ fsm.headTrack.minDist = 0.15; --Default value 0.30,If ball is closer than this, 
 
 
 --Enable this to immobilize attacker to test team behavior
-team.test_teamplay = 1; 
+team.test_teamplay = 0; 

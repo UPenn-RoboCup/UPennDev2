@@ -230,8 +230,15 @@ function getDefenderHomePose()
     end
   else --Ball in their field
     if attacker_goal_dist < defender_goal_dist - supportPenalty then
-       --Attacker closer to the our goal
-      defending_type = 3; --Supporter
+       --Attacker closer to the our goal, we can move forward and do the support
+
+      --Do we have a supporter player around? then just go back and play defense 
+      supporter_eta = wcm.get_team_supporter_eta();
+      if (supporter_eta<20) then --We have a supporter around
+        defending_type = 2; --Go back
+      else
+        defending_type = 3; --Supporter
+      end
     else
       --Stay in defending position
       --TODO: we can still go support
@@ -239,6 +246,12 @@ function getDefenderHomePose()
 --      defending_type = 3;      
     end
   end
+
+
+
+
+
+
 
   if defending_type == 1 then
     --Center defender

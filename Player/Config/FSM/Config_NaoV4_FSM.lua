@@ -199,7 +199,7 @@ fsm.bodyPosition.maxStep1 = 0.06;
 fsm.bodyPosition.maxStep2 = 0.08;
 fsm.bodyPosition.rVel2 = 0.5;
 fsm.bodyPosition.aVel2 = 45*math.pi/180;
-fsm.bodyPosition.maxA2 = 0.1;
+fsm.bodyPosition.maxA2 = 0.2;
 fsm.bodyPosition.maxY2 = 0.02;
 
 --Full speed front dash
@@ -249,8 +249,8 @@ fsm.bodyApproach.pRight = 1.8
 fsm.bodyKick={};
 
 --initial wait 
-fsm.bodyKick.tStartWait = 0.5;
-fsm.bodyKick.tStartWaitMax = 1.0;
+fsm.bodyKick.tStartWait = 1.0;
+fsm.bodyKick.tStartWaitMax = 1.5;
 fsm.bodyKick.thGyroMag = 100; 
 
 --ball position checking params

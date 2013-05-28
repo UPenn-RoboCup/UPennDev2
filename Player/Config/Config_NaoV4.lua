@@ -20,7 +20,7 @@ params.name = {"Walk", "World", "Kick", "Vision", "FSM", "Camera"};
 
 ---Location Specific Camera Parameters--
 params.Camera = "GraspChris"
-params.Walk = "FastImproved"
+params.Walk = "SlowSteady"
 params.World = "SPL13Grasp"
 
 util.LoadConfig(params, platform)
@@ -119,4 +119,7 @@ goalie_dive = 1;--arm motion
 goalie_dive = 2;--actual dive
 
 
-vision.ball.max_distance = 2.0; --temporary fix for GRASP lab
+--vision.ball.max_distance = 2.5; --temporary fix for GRASP lab
+vision.ball.fieldsize_factor = 1.2; --check whether the ball is inside the field
+vision.ball.max_distance = 2; --if ball is this close, just pass the test
+

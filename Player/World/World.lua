@@ -223,10 +223,15 @@ function update_vision()
   -- Reset heading if robot is down
   if (mcm.get_walk_isFallDown() == 1) then
     PoseFilter.reset_heading();
-
     if (useSoundLocalization > 0) then
       SoundFilter.reset();
     end
+  end
+
+  --Flip particles if a localization flip is detected and not corrected for
+  if wcm.get_robot_flipped() == 1 then
+    PoseFilter.flip_particles();
+    wcm.set_robot_flipped(0);
   end
 
   gameState = gcm.get_game_state();

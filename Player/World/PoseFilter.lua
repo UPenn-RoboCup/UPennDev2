@@ -25,6 +25,8 @@ Lcorner = Config.world.Lcorner;
 
 --Triangulation method selection
 use_new_goalposts= Config.world.use_new_goalposts or 0;
+triangulation_threshold=Config.world.triangulation_threshold or 4.0;
+
 
 --For single-colored goalposts
 postUnified = {postYellow[1],postYellow[2],postCyan[1],postCyan[2]};
@@ -118,6 +120,18 @@ function reset_heading()
   ap = 2*math.pi*vector.new(util.randu(n));
   wp = vector.zeros(n);
 end
+
+function flip_particles()
+  xp = -xp;
+  yp = -yp;
+    for i = 1, n do
+      if ap[i] <= math.pi then
+        ap[i] = ap[i] + math.pi;
+      else
+        ap[i] = ap[i] - math.pi;
+      end
+    end
+end 
 
 ---Returns best pose out of all particles
 function get_pose()
@@ -416,12 +430,8 @@ function goal_observation(pos, v)
   local rFilter = rKnownGoalFilter;
   local aFilter = aKnownGoalFilter;
 
---SJ: testing
-triangulation_threshold=4.0;
 
   if dGoal<triangulation_threshold then 
-
-
     for ip = 1,n do
       local xErr = x - xp[ip];
       local yErr = y - yp[ip];
@@ -429,7 +439,6 @@ triangulation_threshold=4.0;
       local aErr = mod_angle(a - ap[ip]);
       local err = (rErr/rSigma)^2 + (aErr/aSigma)^2;
       wp[ip] = wp[ip] - err;
-
       --Filter towards goal:
       xp[ip] = xp[ip] + rFilter*xErr;
       yp[ip] = yp[ip] + rFilter*yErr;
@@ -461,41 +470,49 @@ function goal_observation_unified(pos1,pos2,v)
     pose1,dGoal1=triangulate(pos1,v);
     pose2,dGoal2=triangulate(pos2,v);
   end
+  print(dGoal1)
 
-  local x1,y1,a1=pose1.x,pose1.y,pose1.a;
-  local x2,y2,a2=pose2.x,pose2.y,pose2.a;
-
-  local rSigma1 = .25*dGoal1 + 0.20;
-  local rSigma2 = .25*dGoal2 + 0.20;
-  local aSigma = 5*math.pi/180;
-  local rFilter = rUnknownGoalFilter;
-  local aFilter = aUnknownGoalFilter;
-
-  for ip = 1,n do
-    local xErr1 = x1 - xp[ip];
-    local yErr1 = y1 - yp[ip];
-    local rErr1 = math.sqrt(xErr1^2 + yErr1^2);
-    local aErr1 = mod_angle(a1 - ap[ip]);
-    local err1 = (rErr1/rSigma1)^2 + (aErr1/aSigma)^2;
-
-    local xErr2 = x2 - xp[ip];
-    local yErr2 = y2 - yp[ip];
-    local rErr2 = math.sqrt(xErr2^2 + yErr2^2);
-    local aErr2 = mod_angle(a2 - ap[ip]);
-    local err2 = (rErr2/rSigma2)^2 + (aErr2/aSigma)^2;
-
-    --Filter towards best matching goal:
-     if err1>err2 then
-      wp[ip] = wp[ip] - err2;
-      xp[ip] = xp[ip] + rFilter*xErr2;
-      yp[ip] = yp[ip] + rFilter*yErr2;
-      ap[ip] = ap[ip] + aFilter*aErr2;
-    else
-      wp[ip] = wp[ip] - err1;
-      xp[ip] = xp[ip] + rFilter*xErr1;
-      yp[ip] = yp[ip] + rFilter*yErr1;
-      ap[ip] = ap[ip] + aFilter*aErr1;
+  if dGoal1<triangulation_threshold then 
+    --Goal close, triangulate
+    local x1,y1,a1=pose1.x,pose1.y,pose1.a;
+    local x2,y2,a2=pose2.x,pose2.y,pose2.a;
+    local rSigma1 = .25*dGoal1 + 0.20;
+    local rSigma2 = .25*dGoal2 + 0.20;
+    local aSigma = 5*math.pi/180;
+    local rFilter = rUnknownGoalFilter;
+    local aFilter = aUnknownGoalFilter;
+    for ip = 1,n do
+      local xErr1 = x1 - xp[ip];
+      local yErr1 = y1 - yp[ip];
+      local rErr1 = math.sqrt(xErr1^2 + yErr1^2);
+      local aErr1 = mod_angle(a1 - ap[ip]);
+      local err1 = (rErr1/rSigma1)^2 + (aErr1/aSigma)^2;
+      local xErr2 = x2 - xp[ip];
+      local yErr2 = y2 - yp[ip];
+      local rErr2 = math.sqrt(xErr2^2 + yErr2^2);
+      local aErr2 = mod_angle(a2 - ap[ip]);
+      local err2 = (rErr2/rSigma2)^2 + (aErr2/aSigma)^2;
+      --Filter towards best matching goal:
+      if err1>err2 then
+        wp[ip] = wp[ip] - err2;
+        xp[ip] = xp[ip] + rFilter*xErr2;
+        yp[ip] = yp[ip] + rFilter*yErr2;
+        ap[ip] = ap[ip] + aFilter*aErr2;
+      else
+        wp[ip] = wp[ip] - err1;
+        xp[ip] = xp[ip] + rFilter*xErr1;
+        yp[ip] = yp[ip] + rFilter*yErr1;
+        ap[ip] = ap[ip] + aFilter*aErr1;
+      end
     end
+  else
+    --Goal too far, use a point estimate
+    goalpos1={(pos1[1][1]+pos1[2][1])/2, (pos1[1][2]+pos1[2][2])/2}
+    goalpos2={(pos2[1][1]+pos2[2][1])/2, (pos2[1][2]+pos2[2][2])/2}
+    goalv={(v[1][1]+v[2][1])/2, (v[1][2]+v[2][2])/2}
+    landmark_observation(
+	{goalpos1,goalpos2},
+	 goalv , rKnownGoalFilter, aKnownGoalFilter);
   end
 end
 

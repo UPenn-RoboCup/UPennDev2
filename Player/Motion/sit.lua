@@ -55,7 +55,10 @@ function update()
      t0=Body.get_time();
      return;
   end
-  --For OP, wait a bit to read joint readings
+
+
+--Sit init using joint encoder
+--[[
   if not started then 
     if t-t0>tStartWait then
       started=true;
@@ -91,24 +94,25 @@ function update()
     end
   end
 
-  local dt = t - t0;
-  t0 = t;
+--]]
 
---[[
+--Sit init NOT using joint encoder 
   if not started then 
     started=true;
     --Now we assume that the robot always start sitting from stance position
     pTorso = vector.new({-footX,0,vcm.get_camera_bodyHeight(),
 	  	         0,vcm.get_camera_bodyTilt(),0});
-    pLeft = vector.new({-supportX,footY,0,0,0,0});
-    pRight= vector.new({-supportX,-footY,0,0,0,0});
+    pLLeg = vector.new({-supportX,footY,0,0,0,0});
+    pRLeg= vector.new({-supportX,-footY,0,0,0,0});
     Body.set_lleg_hardness(1);
     Body.set_rleg_hardness(1);
     t0 = Body.get_time();
     tStart=t;
     count=1;
   end
---]]
+
+  local dt = t - t0;
+  t0 = t;
 
   local tol = true;
   local tolLimit = 1e-6;

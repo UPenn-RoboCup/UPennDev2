@@ -88,6 +88,16 @@ cal["sally"]={
   pid = 1, --NEW FIRMWARE
 };
 
+cal["annie"]={
+  servoBias={0,0,0,0,0,0, 0,0,0,0,0,0},
+  footXComp = 0,
+  footYComp = 0,
+  kickXComp = 0,
+  headPitchComp = 0;
+  armBias={0,0,0,0,0,0},
+  pid = 1, --NEW FIRMWARE
+};
+
 
 
 
@@ -299,3 +309,13 @@ cal["lucy"].kickXComp=0.000;
 cal["lucy"].servoBias={19,4,40,0,21,-13,-15,7,-20,2,-7,-4,};
 cal["lucy"].footXComp=-0.003;
 cal["lucy"].kickXComp=0.000;
+
+-- Updated date: Mon May 27 20:35:56 2013
+cal["annie"].servoBias={0,0,0,0,0,0,0,0,0,0,0,0,};
+cal["annie"].footXComp=0.000;
+cal["annie"].kickXComp=0.000;
+
+-- Updated date: Mon May 27 20:48:02 2013
+cal["annie"].servoBias={0,0,0,0,0,0,0,0,0,0,0,0,};
+cal["annie"].footXComp=-0.002;
+cal["annie"].kickXComp=0.000;

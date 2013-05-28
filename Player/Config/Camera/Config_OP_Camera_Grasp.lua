@@ -63,16 +63,17 @@ camera.param[6] = {key='sharpness',     val={0}};
 camera.param[7] = {key='exposure (absolute)',      val={1005}};
 --
 --[[
+=======
+
+>>>>>>> fa9fc25702939fc758c7b6c8e7ec4bc36c15f220
 camera.param = {};
-camera.param[1] = {key='brightness',    val={120}};
-camera.param[2] = {key='contrast',      val={27}};
-camera.param[3] = {key='saturation',    val={28}};
+camera.param[1] = {key='brightness',    val={90}};
+camera.param[2] = {key='contrast',      val={11}};
+camera.param[3] = {key='saturation',    val={61}};
 camera.param[4] = {key='gain',          val={0}};
 camera.param[5] = {key='white balance temperature', val={2000}};
-camera.param[6] = {key='sharpness',     val={0}};
+camera.param[6] = {key='sharpness',     val={255}};
 camera.param[7] = {key='exposure (absolute)',      val={800}};
---]]
---
 --camera.lut_file = 'lut_low_contrast_pink_n_green.raw';
 --camera.lut_file = 'grasp_low_contrast_1643_samarth.raw';
 camera.lut_file = 'grasp_high_contrast_2030_samarth.raw';
@@ -92,3 +93,7 @@ camera.lut_file = 'grasp_high_contrast_2030_samarth.raw';
 --camera.lut_file = 'lut_0811_L512_5PM.raw';
 --camera.lut_file = 'lut_0811_L512_6PM.raw';
 --camera.lut_file = 'lut_0812_L512.raw';
+--camera.lut_file = 'grasp_low_contrast_loc_1800.raw';
+--camera.lut_file = 'grasp_low_contrast_1643_samarth.raw';
+--camera.lut_file = 'grasp_high_contrast_2030_samarth.raw';
+camera.lut_file = 'grasp_samarth_1600.raw';

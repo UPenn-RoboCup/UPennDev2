@@ -42,9 +42,12 @@ fsm.enable_obstacle_detection = 1;
 fsm.playMode = 3; --Advanced Behavior 
 
 fsm.enable_walkkick = 1;
---fsm.enable_walkkick = 0;
+fsm.enable_walkkick = 0;
 fsm.enable_sidekick = 1;
+fsm.enable_sidekick = 0;
+
 fsm.enable_dribble = 1;
+
 fsm.fast_approach = 0;
 
 --fsm.enable_evade = 0;
@@ -152,7 +155,9 @@ fsm.bodyPosition.rTurn = 0.25;
 fsm.bodyPosition.rDist1 = 0.40; 
 fsm.bodyPosition.rDist2 = 0.20; 
 fsm.bodyPosition.rTurn2 = 0.08; 
-fsm.bodyPosition.rOrbit = 0.40; --Default value 0.60, 0.40 enables ...
+fsm.bodyPosition.rOrbit = 0.40; 
+
+--Default value 0.60, 0.40 enables ...
 -- the bot to get around the ball real fast avoiding wastage of time.
 
 --New params to reduce sidestepping
@@ -162,6 +167,23 @@ fsm.bodyPosition.rDist2 = 0.25;
 
 
 fsm.bodyPosition.rClose = 0.35; 
+
+
+
+
+------------------------------------
+--Nao values
+fsm.bodyPosition.rTurn = 0.25; 
+fsm.bodyPosition.rTurn2 = 0.08; 
+fsm.bodyPosition.rDist1 = 0.60; 
+fsm.bodyPosition.rDist2 = 0.50; 
+fsm.bodyPosition.rClose = 0.55; 
+fsm.bodyPosition.rOrbit = 0.70; 
+ 
+
+
+
+
 --fsm.bodyPosition.thClose = {0.15,0.15,10*math.pi/180};
 fsm.bodyPosition.thClose = {0.3,0.15,20*math.pi/180};
 
@@ -201,17 +223,16 @@ fsm.bodyApproach.aThresholdTurnGoalie = 15*math.pi/180;
 fsm.bodyApproach.aThresholdTurnGoalie = 35*math.pi/180;
 
 --x and y target position for stationary straight kick
-fsm.bodyApproach.xTarget11={0, 0.13,0.14}; --min, target, max
+fsm.bodyApproach.xTarget11={0, 0.16,0.17}; --min, target, max
 fsm.bodyApproach.yTarget11={0.03, 0.045, 0.06}; --min, target ,max
 
 --x and y target position for stationary kick to left
-fsm.bodyApproach.xTarget12={0, 0.13,0.14}; --min, target, max
+fsm.bodyApproach.xTarget12={0, 0.16,0.17}; --min, target, max
 fsm.bodyApproach.yTarget12={-0.015, 0, 0.015}; --min, target ,max
 
 --Target position for straight walkkick 
 fsm.bodyApproach.xTarget21={0, 0.16,0.18}; --min, target, max 
 fsm.bodyApproach.yTarget21={0.03, 0.045, 0.06}; --min, target ,max
-
 
 --Target position for side walkkick to left
 fsm.bodyApproach.xTarget22={0, 0.15,0.18}; --min, target, max
@@ -233,10 +254,10 @@ fsm.bodyKick.tStartWaitMax = 1.0;
 fsm.bodyKick.thGyroMag = 100; 
 
 --ball position checking params
-fsm.bodyKick.kickTargetFront = {0.13,0.045};
+fsm.bodyKick.kickTargetFront = {0.16,0.045};
 
 --For kicking to the left
-fsm.bodyKick.kickTargetSide = {0.13,0.0};
+fsm.bodyKick.kickTargetSide = {0.15,0.0};
 
 --Bal position threshold
 fsm.bodyKick.kickTh = {0.03,0.03};
@@ -263,7 +284,7 @@ fsm.headTrack = {};
 fsm.headTrack.timeout = 6.0 * speedFactor;
 fsm.headTrack.tLost = 1.5 * speedFactor;
 fsm.headTrack.minDist = 0.30; --If ball is closer than this, don't look up
-fsm.headTrack.fixTh={0.20,0.08}; --Fix yaw axis if ball is within this box
+fsm.headTrack.fixTh={0.20,0.12}; --Fix yaw axis if ball is within this box
 
 --------------------------------------------------
 --HeadReady : Track the horizonal line for localization
@@ -282,12 +303,14 @@ fsm.headReadyLookGoal.timeout = 1.5 * speedFactor;
 --------------------------------------------------
 --HeadScan: Scan around for ball
 --------------------------------------------------
+
+--SJ: NaoV4 has VERY wide FOV
 fsm.headScan={};
-fsm.headScan.pitch0 = 25*math.pi/180;
-fsm.headScan.pitchMag = 25*math.pi/180;
+fsm.headScan.pitch0 = 20*math.pi/180;
+fsm.headScan.pitchMag = 0*math.pi/180;
 fsm.headScan.yawMag = 90*math.pi/180;
 fsm.headScan.pitchTurn0 = 20*math.pi/180;
-fsm.headScan.pitchTurnMag = 20*math.pi/180;
+fsm.headScan.pitchTurnMag = 0*math.pi/180;
 fsm.headScan.yawMagTurn = 45*math.pi/180;
 fsm.headScan.tScan = 3.0*speedFactor;
 
@@ -295,7 +318,7 @@ fsm.headScan.tScan = 3.0*speedFactor;
 --HeadKick: Fix headangle for approaching
 --------------------------------------------------
 fsm.headKick={};
-fsm.headKick.pitch0=25*math.pi/180;
+fsm.headKick.pitch0=20*math.pi/180;
 fsm.headKick.xMax = 0.30;
 fsm.headKick.yMax = 0.07;
 fsm.headKick.tLost = 3.0*speedFactor;
@@ -305,7 +328,7 @@ fsm.headKick.timeout = 3.0*speedFactor;
 --HeadKickFollow: Follow ball after kick
 --------------------------------------------------
 fsm.headKickFollow={};
-fsm.headKickFollow.pitch={50*math.pi/180, 0*math.pi/180};
+fsm.headKickFollow.pitch={20*math.pi/180, 0*math.pi/180};
 fsm.headKickFollow.pitchSide = 30*math.pi/180;
 fsm.headKickFollow.yawMagSide = 90*math.pi/180;
 fsm.headKickFollow.tFollow = 1.0*speedFactor;
@@ -316,6 +339,7 @@ fsm.headKickFollow.tFollow = 1.0*speedFactor;
 fsm.headLookGoal={};
 fsm.headLookGoal.yawSweep = 50*math.pi/180;
 fsm.headLookGoal.tScan = 1.0*speedFactor;
+fsm.headLookGoal.minDist = 0.40;
 
 --------------------------------------------------
 --HeadSweep: Look around to find the goal

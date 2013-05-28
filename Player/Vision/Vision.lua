@@ -140,22 +140,24 @@ end
 function camera_init_naov4()
   for c=1,Config.camera.ncamera do
     Camera.select_camera(c-1);   
+    
     Camera.set_param('Brightness', Config.camera.brightness);     
-    Camera.set_param('White Balance, Automatic', 1); 
-    Camera.set_param('Auto Exposure',0);
-    for i,param in ipairs(Config.camera.param) do
-      Camera.set_param(param.key, param.val[c]);
-      unix.usleep (100);
-    end
+    --Camera.set_param('White Balance, Automatic', 1); 
+    --Camera.set_param('Auto Exposure', 1);
     Camera.set_param('White Balance, Automatic', 0);
     Camera.set_param('Auto Exposure',0);
+    Camera.set_param('Auto Exposure Algorithm', 3)
+    for i,param in ipairs(Config.camera.param) do
+        Camera.set_param(param.key, param.val[c]);
+        unix.usleep (100);
+    end
+    --Camera.set_param('White Balance, Automatic', 0);
     local expo = Camera.get_param('Exposure');
     local gain = Camera.get_param('Gain');
     Camera.set_param('Auto Exposure',1);   
     Camera.set_param('Auto Exposure',0);
-    --Camera.set_param ('Exposure', 255);
-    Camera.set_param ('Exposure', expo);
-    Camera.set_param ('Gain', gain);
+    Camera.set_param('Exposure', expo)
+    Camera.set_param('Gain', gain);
     print('Camera #'..c..' set');
   end
 end
@@ -372,8 +374,6 @@ function update_gps_only()
   gps_pose = wcm.get_robot_gpspose();
   ballGlobal=wcm.get_robot_gps_ball();  
   
---print("BallGPS:",unpack(ballGlobal))
-
 
 
   --Check whether ball is inside FOV

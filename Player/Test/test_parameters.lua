@@ -89,6 +89,7 @@ function update()
     if (calibrating) then
       if (Body.calibrate(count)) then
         Speak.talk('Calibration done');
+        Speak.talk("Using walk file "..Config.params.Walk)
         calibrating = false;
         ready = true;
       end

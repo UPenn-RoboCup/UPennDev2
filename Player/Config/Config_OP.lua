@@ -16,6 +16,7 @@ if (robotName == 'sally') then
   params.Robot = "Sally_Robot" 
 end
 params.Kick = "Slow"
+params.World = "Grasp"
 
 --params.Kick = "3"
 
@@ -307,12 +308,10 @@ use_rollback_getup = 1;
 -- FOR SEMIFINAL
 fsm.goalie_type = 2;--moving and stop goalie
 fsm.goalie_reposition=1; --Yaw reposition
---[[
 --maximum speed
 fsm.bodyPosition.maxStep1 = 0.06;
 fsm.bodyPosition.maxStep2 = 0.07;
 fsm.bodyPosition.maxStep3 = 0.08;
---]]
 bat_med = 119; -- Slow down walking if voltage drops below this 
 
 fsm.daPostmargin = 20*math.pi/180; --More margin for kick to the side
@@ -324,12 +323,6 @@ vision.ball.th_headAngle = 10* math.pi/180;
 world.postDiameter = 0.12;  --Thicker 
 world.goalHeight = 0.80;
 world.goalWidth = 1.40;
-
-vision.goal.distanceFactorCyan = 1.15; 
-vision.goal.distanceFactorYellow = 1.25; 
-vision.landmark.distanceFactorCyan = 1.1; 
-vision.landmark.distanceFactorYellow = 1.1; 
-
 
 enable_ceremony = 0;
 ceremony_score = 2;
@@ -352,3 +345,5 @@ fsm.avoidance_mode = 0 -- walk towards goal, no ball
 fsm.avoidance_mode = 2 -- walk towards goal, no ball 
 use_rollback_getup = 0;
 -]]
+
+vision.ball.max_distance = 2.0; --temporary fix for GRASP lab

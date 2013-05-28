@@ -308,12 +308,10 @@ use_rollback_getup = 1;
 -- FOR SEMIFINAL
 fsm.goalie_type = 2;--moving and stop goalie
 fsm.goalie_reposition=1; --Yaw reposition
---[[
 --maximum speed
 fsm.bodyPosition.maxStep1 = 0.06;
 fsm.bodyPosition.maxStep2 = 0.07;
 fsm.bodyPosition.maxStep3 = 0.08;
---]]
 bat_med = 119; -- Slow down walking if voltage drops below this 
 
 fsm.daPostmargin = 20*math.pi/180; --More margin for kick to the side
@@ -347,3 +345,5 @@ fsm.avoidance_mode = 0 -- walk towards goal, no ball
 fsm.avoidance_mode = 2 -- walk towards goal, no ball 
 use_rollback_getup = 0;
 -]]
+
+vision.ball.max_distance = 2.0; --temporary fix for GRASP lab

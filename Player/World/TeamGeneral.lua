@@ -287,7 +287,7 @@ function update()
 
   if gcm.get_game_state()==3 and force_defender ==0 then
     -- goalie and reserve player never changes role
-    if role~=ROAL_GOALIE and role<ROLE_RESERVE_PLAYER then 
+    if role~=ROLE_GOALIE and role<ROLE_RESERVE_PLAYER then 
       minETA, minEtaID = util.min(eta);
       if minEtaID == playerID then --Lowest ETA : attacker
         set_role(ROLE_ATTACKER);

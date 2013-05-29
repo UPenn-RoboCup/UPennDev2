@@ -181,6 +181,11 @@ tStance0,tStance1 = 0,0;
 angleTiltOld = 0;
 
 
+
+comdot = {0,0};
+stepkick_ready = false;
+
+
 --Direct control of upper body
 function upper_body_override(qL, qR, bR)
   upper_body_overridden = 1;
@@ -235,12 +240,9 @@ function entry()
   Body.set_larm_hardness(hardnessArm);
   Body.set_rarm_hardness(hardnessArm);
 
-  --Reset push recovery variables 
-  hipStrategy = 0;
-  hipAngle = {0,0};
-  hipTargetAngle = {0,0};
-  hipStrategyTime = Body.get_time() + 1.0;
   walkKickRequest = 0;
+  stepkick_ready = false;
+  stepKickRequest=0;
 end
 
 
@@ -320,6 +322,12 @@ function update()
     shiftFactor = 0.5; --How much should we shift final Torso pose?
 
     check_walkkick(); 
+    check_stepkick(); 
+
+    if stepkick_ready then
+      largestep.init_switch(uLeft,uRight,uTorso,comdot);
+      return "step";
+    end
 
     if walkKickRequest==0 then
       if (stopRequest==1) then  --Final step
@@ -403,12 +411,20 @@ function update()
     aYP, aYN = zmp_solve(uSupport[2], uTorso1[2], uTorso2[2],
     uTorso1[2], uTorso2[2]);
 
-    --Compute COM speed at the end of step 
-    --[[
+    --Compute COM speed at the boundary 
+
     dx0=(aXP-aXN)/tZmp + m1X* (1-math.cosh(ph1Zmp*tStep/tZmp));
     dy0=(aYP-aYN)/tZmp + m1Y* (1-math.cosh(ph1Zmp*tStep/tZmp));
-    print("max DY:",dy0);
-    --]]
+
+    dx1=(aXP*math.exp(tStep/tZmp)-aXN*math.exp(-tStep/tZmp))/tZmp 
+	+ m2X* (1-math.cosh((1-ph2Zmp)*tStep/tZmp));
+    dy1=(aYP*math.exp(tStep/tZmp)-aYN*math.exp(-tStep/tZmp))/tZmp 
+	+ m2Y* (1-math.cosh((1-ph2Zmp)*tStep/tZmp));
+
+--    print("xdot0:",dx0,dy0);
+--    print("xdot1:",dx1,dy1);
+    comdot = {dx1,dy1}; --Final COM velocity 
+
   end --End new step
 
   xFoot, zFoot = foot_phase(ph);  
@@ -486,6 +502,31 @@ function update()
   motion_arms();
   -- end motion_body
 end
+
+function check_stepkick()
+  if stepKickRequest==0 then return; end
+  if stepKickRequest==1 then 
+    --Check current supporLeg and feet positions
+    --and advance steps until ready
+    uFootErr = util.pose_relative(uLeft1,
+       util.pose_global(2*uLRFootOffset,uRight1) );
+    if supportLeg~=stepKickSupport or 
+      math.abs(uFootErr[1])>0.02 or
+      math.abs(uFootErr[2])>0.01 or
+      math.abs(uFootErr[3])>10*math.pi/180 then
+      if supportLeg == 0 then
+        uRight2 = util.pose_global( -2*uLRFootOffset, uLeft1); 
+      else
+        uLeft2 = util.pose_global( 2*uLRFootOffset, uRight1); 
+      end
+      return;
+    end
+  end
+  stepkick_ready = true;
+  return; 
+end
+
+
 
 function check_walkkick()
   --Walkkick def: 
@@ -894,6 +935,26 @@ function doPunch(punchtype)
   end
 end
 
+function doStepKickLeft()
+  if stepKickRequest==0 then
+    stepKickRequest = 1; 
+    stepKickSupport = 0; --should with LS
+    largestep.set_kick_type(1);--left kick
+  end
+end
+
+function doStepKickRight()
+  if stepKickRequest==0 then
+    stepKickRequest = 1; 
+    stepKickSupport = 1;
+    largestep.set_kick_type(2);--right kick
+  end
+end
+
+
+
+
+
 function startMotion(motionname)
   if motion_playing==0 then
     motion_playing = 1;
@@ -1016,6 +1077,11 @@ function zmp_solve(zs, z1, z2, x1, x2)
   local aN = (c1*expTStep - c2)/(expTStep-1/expTStep);
   return aP, aN;
 end
+
+
+
+
+
 
 --Finds the necessary COM for stability and returns it
 function zmp_com(ph)

@@ -214,13 +214,8 @@ stationary_kick_left={
   {2, {0,0,0},{0,0},0.05}, --DS step
   {0, {0.06,-0.02,0},{0,0},0.25}, --LS step  
   {2, {0,0,0},{0,0},0.25}, --DS step
-  {3, {0,0,0},{0,0},0.05}, --DS step
+  {2, {0,0,0},{0,0},0.05,9}, --DS step
 }
-
-
-
-
-
 stationary_kick_right={
 --  {2, {0,0,0},{0,0},0.5}, --DS step
   {2, {0,0,0},{0,0},0.8}, --DS step
@@ -230,15 +225,41 @@ stationary_kick_right={
   {2, {0,0,0},{0,0},0.05}, --DS step
   {1, {0.06,0.02,0},{0,0},0.25}, --LS step  
   {2, {0,0,0},{0,0},0.25}, --DS step
-  {3, {0,0,0},{0,0},0.05}, --DS step
+  {2, {0,0,0},{0,0},0.05,9}, --DS step
+}
+xdot_initial = {0,0};
+
+
+
+
+nonstop_kick_left={
+  {0, {0.06,-0.01,0},{0,0},0.25}, --LS step  
+  {2, {0,0,0},{0,0},0.05}, --DS step
+  {1, {0.12,0,0},{0,0},0.7,1}, --RS step  
+  {2, {0,0,0},{0,0},0.05}, --DS step
+  {0, {0.06,0.02,0},{0,0},0.25}, --LS step  
+  {2, {0,0,0},{0,0},0.25}, --DS step
+  {2, {0,0,0},{0,0},0.05,9}, --DS step
+}
+--NON-stop kick
+nonstop_kick_right={
+  {1, {0.06,0.01,0},{0,0},0.25}, --RS step  
+  {2, {0,0,0},{0,0},0.05}, --DS step
+  {0, {0.12,0,0},{0,0},0.7,1}, --LS step  
+  {2, {0,0,0},{0,0},0.05}, --DS step
+  {1, {0.06,-0.02,0},{0,0},0.25}, --RS step  
+  {2, {0,0,0},{0,0},0.25}, --DS step
+  {2, {0,0,0},{0,0},0.05,9}, --DS step
 }
 
+
 stepdef_current = stationary_kick_left;
+
 function set_kick_type(kicktype)
   if kicktype==1 then
-    stepdef_current = stationary_kick_left;
+    stepdef_current = nonstop_kick_left;
   else
-    stepdef_current = stationary_kick_right;
+    stepdef_current = nonstop_kick_right;
   end
 end
 
@@ -246,7 +267,6 @@ end
 
 
 
-xdot_initial = {0,0};
 preload_num = nPreview-1;
 
 function init_switch(uL,uR,uT,comdot)	
@@ -419,9 +439,13 @@ function update()
   while t>tStateUpdate do  	   
     torso0=vector.new({torso1[1],torso1[2]});
     torso1=update_discrete(tStateUpdate);
-    if not torso1 then --Sequence ended
+    if stepType==9 then --END state
       print("Step done")
+      active = false;
       return "done";
+    --TODO
+    --Set Correct state variable for walk
+    --and resume walking
     end
     --Advance discrete time
     tStateUpdate = tStateUpdate + timeStep;
@@ -477,11 +501,6 @@ end
 
 function update_discrete(tStateUpdate)
   update_zmp_array(tStateUpdate+time_offset);
-  if (supportLegs[1]==3) then --End state reached
-    active = false;
-    return;
-  end
-
   if ph>phs[1] then --New step
     t1=t;
     uLeft, uRight = uLeft1,uRight1;

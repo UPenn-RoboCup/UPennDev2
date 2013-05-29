@@ -24,7 +24,7 @@ dev.ip_wired_port = 54321;
 dev.ip_wireless = '192.168.1.255'; --Our Router
 dev.ip_wireless_port = 54321;
 dev.walk='EvenBetterWalk'; --Walk with generalized walkkick definitions
-dev.walk='CleanWalk';
+--dev.walk='CleanWalk';
 dev.walk='AwesomeWalk';
 dev.kick='PunchKick'; --Extended kick that supports upper body motion
 

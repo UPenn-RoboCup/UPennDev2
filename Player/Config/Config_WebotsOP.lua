@@ -171,3 +171,14 @@ fsm.headTrack.minDist = 0.15; --Default value 0.30,If ball is closer than this, 
 
 --Enable this to immobilize attacker to test team behavior
 team.test_teamplay = 0; 
+
+world.use_new_goalposts = 1;
+world.triangulation_threshold = 4.0; 
+world.angle_update_threshold = 1.0;
+team.flip_correction = 1;
+world.position_update_threshold = 4.5;--Goalie moves too much
+
+
+
+
+

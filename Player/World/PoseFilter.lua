@@ -26,6 +26,7 @@ Lcorner = Config.world.Lcorner;
 --Triangulation method selection
 use_new_goalposts= Config.world.use_new_goalposts or 0;
 triangulation_threshold=Config.world.triangulation_threshold or 4.0;
+position_update_threshold = Config.world.position_update_threshold or 6.0;
 
 
 --For single-colored goalposts
@@ -187,7 +188,7 @@ end
 --distance to landmark
 --@param aLandmarkFilter How much to adjust particles according to 
 --angle to landmark
-function landmark_observation(pos, v, rLandmarkFilter, aLandmarkFilter)
+function landmark_observation(pos, v, rLandmarkFilter, aLandmarkFilter,dont_update_position)
   local r = math.sqrt(v[1]^2 + v[2]^2);
   local a = math.atan2(v[2], v[1]);
   local rSigma = .15*r + 0.10;
@@ -224,9 +225,14 @@ function landmark_observation(pos, v, rLandmarkFilter, aLandmarkFilter)
   --Filter toward best matching landmark position:
   for ip = 1,n do
 --print(string.format("%d %.1f %.1f %.1f",ip,xp[ip],yp[ip],ap[ip]));
-    xp[ip] = xp[ip] + rFilter * (dxp[ip] - r * math.cos(ap[ip] + a));
-    yp[ip] = yp[ip] + rFilter * (dyp[ip] - r * math.sin(ap[ip] + a));
-    ap[ip] = ap[ip] + aFilter * dap[ip];
+    if dont_update_position then
+      --Only fix angle, not position
+      ap[ip] = ap[ip] + aFilter * dap[ip];
+    else
+      xp[ip] = xp[ip] + rFilter * (dxp[ip] - r * math.cos(ap[ip] + a));
+      yp[ip] = yp[ip] + rFilter * (dyp[ip] - r * math.sin(ap[ip] + a));
+      ap[ip] = ap[ip] + aFilter * dap[ip];
+    end
 
     -- check boundary
     xp[ip] = math.min(xMax, math.max(-xMax, xp[ip]));
@@ -504,7 +510,8 @@ function goal_observation_unified(pos1,pos2,v)
         ap[ip] = ap[ip] + aFilter*aErr1;
       end
     end
-  else
+  elseif dGoal1<position_update_threshold then
+    --Goal midrange, use a point update
     --Goal too far, use a point estimate
     goalpos1={(pos1[1][1]+pos1[2][1])/2, (pos1[1][2]+pos1[2][2])/2}
     goalpos2={(pos2[1][1]+pos2[2][1])/2, (pos2[1][2]+pos2[2][2])/2}
@@ -512,6 +519,13 @@ function goal_observation_unified(pos1,pos2,v)
     landmark_observation(
 	{goalpos1,goalpos2},
 	 goalv , rKnownGoalFilter, aKnownGoalFilter);
+  else --Goal VERY far, just update angle only
+    goalpos1={(pos1[1][1]+pos1[2][1])/2, (pos1[1][2]+pos1[2][2])/2}
+    goalpos2={(pos2[1][1]+pos2[2][1])/2, (pos2[1][2]+pos2[2][2])/2}
+    goalv={(v[1][1]+v[2][1])/2, (v[1][2]+v[2][2])/2}
+    landmark_observation(
+	{goalpos1,goalpos2},
+	 goalv , rKnownGoalFilter, aKnownGoalFilter,1);
   end
 end
 

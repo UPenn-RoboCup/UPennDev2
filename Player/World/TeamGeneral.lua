@@ -504,15 +504,26 @@ function check_flip()
   ball_flip_t_threshold = 0.5; --Both robot should be looking at the ball
   local dist_balls = math.abs(ball_global[1]-goalie_ball[1]);
 
-  if math.abs(ball.x) <ball_flip_x_threshold and
---     math.abs(ball.y) <ball_flip_y_threshold and
+
+  if math.abs(ball.x) > ball_flip_x_threshold and
      ball_global[1]*goalie_ball[1] < 0 and
      ball.t < ball_flip_t_threshold and
      goalie_ball[3] < ball_flip_t_threshold and
      goalie_alive >0 and
      dist_balls > ball_flip_dist_threshold then
 
-    print("CORRECTING");
+    print("FLIP DETECTED, CORRECTING");
+    print("FLIP DETECTED, CORRECTING");
+    print("FLIP DETECTED, CORRECTING");
+    print("FLIP DETECTED, CORRECTING");
+    print("FLIP DETECTED, CORRECTING");
+    print("FLIP DETECTED, CORRECTING");
+    print("FLIP DETECTED, CORRECTING");
+    print("FLIP DETECTED, CORRECTING");
+    print("FLIP DETECTED, CORRECTING");
+    print("FLIP DETECTED, CORRECTING");
+    print("FLIP DETECTED, CORRECTING");
+    print("FLIP DETECTED, CORRECTING");
     wcm.set_robot_flipped(1);
   end
 end

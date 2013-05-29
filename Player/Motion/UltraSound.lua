@@ -82,7 +82,7 @@ function update()
         
         leftZeroCount = 0;
       else
-        print ('Invalid Reading!!!')
+        --print ('Invalid Reading!!!')
         leftZeroCount = leftZeroCount + 1;
 
         if (leftZeroCount > zeroCountThres) then
@@ -104,7 +104,7 @@ function update()
         
         rightZeroCount = 0;
       else
-        print ('Invalid Reading!!!')
+        --print ('Invalid Reading!!!')
         rightZeroCount = rightZeroCount + 1;
 
         if (rightZeroCount > zeroCountThres) then
@@ -160,10 +160,10 @@ function update2()
         dSum[2] = dSum[2] + dRightObs[1];
         distance[2] = right[2];
       end
-      print (util.ptable(dLeftObs))
-      print ("dist_left"..dSum[1])
-      print (util.ptable(dRightObs))
-      print ("dist_right"..dSum[2])
+      --print (util.ptable(dLeftObs))
+      --print ("dist_left"..dSum[1])
+      --print (util.ptable(dRightObs))
+      --print ("dist_right"..dSum[2])
     end
   end
 

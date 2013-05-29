@@ -24,9 +24,12 @@ dev.ip_wired_port = 54321;
 dev.ip_wireless = '192.168.1.255'; --Our Router
 dev.ip_wireless_port = 54321;
 dev.walk='EvenBetterWalk'; --Walk with generalized walkkick definitions
+dev.walk='CleanWalk';
+dev.walk='AwesomeWalk';
 dev.kick='PunchKick'; --Extended kick that supports upper body motion
 
 largestep_enable = false;
+largestep_enable = true;
 dev.largestep = 'ZMPStepKick';--ZMP Preview motion 
 
 
@@ -49,8 +52,6 @@ head.bodyTilt = 0;
 -- Game Parameters
 game = {};
 game.nPlayers = 5; --5 total robot (including reserve ones)
---Should be 4 robostadium nao gamecontroller
-game.nPlayers = 4; 
 
 game.teamNumber = (os.getenv('TEAM_ID') or 0) + 0;
 --Webots player id begins at 0 but we use 1 as the first id 
@@ -171,3 +172,14 @@ fsm.headTrack.minDist = 0.15; --Default value 0.30,If ball is closer than this, 
 
 --Enable this to immobilize attacker to test team behavior
 team.test_teamplay = 0; 
+
+world.use_new_goalposts = 1;
+world.triangulation_threshold = 4.0; 
+world.angle_update_threshold = 1.0;
+team.flip_correction = 1;
+world.position_update_threshold = 4.5;--Goalie moves too much
+
+
+
+
+

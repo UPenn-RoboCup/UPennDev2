@@ -130,6 +130,12 @@ function update()
   q = Kinematics.inverse_legs(pLLeg, pRLeg, pTorso, 0);
   Body.set_lleg_command(q);
 
+  if Config.platform.name == 'NaoV4' then
+    for i=1,12 do
+      Body.commanded_joint_angles[6+i] = q[i];
+    end
+  end
+
   if (tol) then
     if tFinish==0 then
       tFinish=t;

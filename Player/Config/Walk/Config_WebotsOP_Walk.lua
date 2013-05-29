@@ -383,3 +383,6 @@ zmpstep.supportX = 0.0;
 zmpstep.supportY = 0.025;
 
 
+zmpstep.supportY = 0.030;
+
+

@@ -48,6 +48,14 @@ nJointRArm = 4;
 
 get_time = function() return dcm.get_sensor_time(1); end
 
+--Last commanded joint angles (for standup with broken encoders)
+commanded_joint_angles=vector.zeros(22);
+
+
+
+
+
+
 --SJ: I define these variable to smooth out the head movement
 head_velocity_limit = {180*math.pi/180, 120*math.pi/180};
 tLastUpdate = 0;

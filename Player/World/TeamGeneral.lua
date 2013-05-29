@@ -24,6 +24,8 @@ ballLostPenalty = Config.team.ballLostPenalty;
 walkSpeed = Config.team.walkSpeed;
 turnSpeed = Config.team.turnSpeed;
 
+flip_correction = Config.team.flip_correction or 0;
+goalie_ball={0,0,0};
 
 --Player ID: 1 to 5
 --to prevent confusion, now we use these definitions
@@ -338,6 +340,7 @@ function update()
   update_shm() 
   update_teamdata();
   update_obstacle();
+  check_flip();
 end
 
 function update_teamdata()
@@ -373,45 +376,51 @@ function update_teamdata()
         if scoreBall > best_scoreBall then
           best_scoreBall = scoreBall;
           posexya=vector.new( 
-          {states[id].pose.x, states[id].pose.y, states[id].pose.a} );
+            {states[id].pose.x, states[id].pose.y, states[id].pose.a} );
           best_ball=util.pose_global(
-          {states[id].ball.x,states[id].ball.y,0}, posexya);
+            {states[id].ball.x,states[id].ball.y,0}, posexya);
         end
       end
 
-      if states[id].role==ROAL_GOALIE then
+      if states[id].role==ROLE_GOALIE then
         goalie_alive =1;
         goalie_pose = {
           states[id].pose.x,states[id].pose.y,states[id].pose.a};
-        elseif states[id].role==ROLE_ATTACKER then
+
+        goalie_ball = util.pose_global(
+          {states[id].ball.x,states[id].ball.y,0},
+	  goalie_pose);
+        goalie_ball[3] = states[id].ball.t;	
+
+      elseif states[id].role==ROLE_ATTACKER then
           attacker_pose = {states[id].pose.x,states[id].pose.y,states[id].pose.a};
           attacker_eta = eta[id];
-        elseif states[id].role==ROLE_DEFENDER then
+      elseif states[id].role==ROLE_DEFENDER then
           defender_pose = {states[id].pose.x,states[id].pose.y,states[id].pose.a};
           defender_eta = eta[id];
-        elseif states[id].role==ROLE_SUPPORTER then
+      elseif states[id].role==ROLE_SUPPORTER then
           supporter_eta = eta[id];
           supporter_pose = {states[id].pose.x,states[id].pose.y,states[id].pose.a};
-        end
       end
     end
-
-    wcm.set_robot_team_ball(best_ball);
-    wcm.set_robot_team_ball_score(best_scoreBall);
-
-    wcm.set_team_attacker_eta(attacker_eta);
-    wcm.set_team_defender_eta(defender_eta);
-    wcm.set_team_supporter_eta(supporter_eta);
-    wcm.set_team_defender2_eta(defender2_eta);
-    wcm.set_team_goalie_alive(goalie_alive);
-
-    wcm.set_team_attacker_pose(attacker_pose);
-    wcm.set_team_defender_pose(defender_pose);
-    wcm.set_team_goalie_pose(goalie_pose);
-    wcm.set_team_supporter_pose(supporter_pose);
-    wcm.set_team_defender2_pose(defender2_pose);
-
   end
+
+  wcm.set_robot_team_ball(best_ball);
+  wcm.set_robot_team_ball_score(best_scoreBall);
+
+  wcm.set_team_attacker_eta(attacker_eta);
+  wcm.set_team_defender_eta(defender_eta);
+  wcm.set_team_supporter_eta(supporter_eta);
+  wcm.set_team_defender2_eta(defender2_eta);
+  wcm.set_team_goalie_alive(goalie_alive);
+
+  wcm.set_team_attacker_pose(attacker_pose);
+  wcm.set_team_defender_pose(defender_pose);
+  wcm.set_team_goalie_pose(goalie_pose);
+  wcm.set_team_supporter_pose(supporter_pose);
+  wcm.set_team_defender2_pose(defender2_pose);
+
+end
 
 function exit() end
 function get_role()   return role; end
@@ -481,6 +490,61 @@ function pack_vision_info()
   end
 end
 
+function check_flip()
+  if flip_correction ==0 then return; end
+  if role==0 then return; end
+
+  --print("Goalie ball");
+  --util.ptable(goalie_ball);
+  --print("Player ball");
+  --util.ptable(state_ball);
+  --d = math.sqrt((-state_ball[1] - goalie_ball[1])^2 + (-state_ball[2] $
+
+  pose = wcm.get_pose();
+  ball = wcm.get_ball();
+
+
+  ball_global = util.pose_global({ball.x,ball.y,0},{pose.x,pose.y,pose.a});
+
+  ball_flip_dist_threshold = 2.0;
+  ball_flip_x_threshold = 1.0;
+  ball_flip_y_threshold = 0.6;
+  ball_flip_t_threshold = 0.5; --Both robot should be looking at the ball
+  local dist_balls = math.abs(ball_global[1]-goalie_ball[1]);
+
+--[[
+  print(string.format("Goalie ball: %.2f %.2f Ball: %.2f %.2f",
+	goalie_ball[1],goalie_ball[2],
+	ball_global[1],ball_global[2]
+
+  ));
+--]]
+  --util.ptable(goalie_ball);
+  --print("Player ball");
+
+
+  if math.abs(ball.x) > ball_flip_x_threshold and
+     ball_global[1]*goalie_ball[1] < 0 and
+     ball.t < ball_flip_t_threshold and
+     goalie_ball[3] < ball_flip_t_threshold and
+     goalie_alive >0 and
+     dist_balls > ball_flip_dist_threshold then
+
+    print("FLIP DETECTED, CORRECTING");
+    print("FLIP DETECTED, CORRECTING");
+    print("FLIP DETECTED, CORRECTING");
+    print("FLIP DETECTED, CORRECTING");
+    print("FLIP DETECTED, CORRECTING");
+    print("FLIP DETECTED, CORRECTING");
+    print("FLIP DETECTED, CORRECTING");
+    print("FLIP DETECTED, CORRECTING");
+    print("FLIP DETECTED, CORRECTING");
+    print("FLIP DETECTED, CORRECTING");
+    print("FLIP DETECTED, CORRECTING");
+    print("FLIP DETECTED, CORRECTING");
+    wcm.set_robot_flipped(1);
+  end
+end
 
 
 

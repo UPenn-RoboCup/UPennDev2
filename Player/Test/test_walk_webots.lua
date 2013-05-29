@@ -127,6 +127,19 @@ function process_keyinput()
 		grip.throw=1;
 		Motion.event("throw");
 --]]
+
+
+	elseif byte==string.byte("f") then
+	   largestep.set_kick_type(1);
+ 	   Motion.event("step");
+
+	elseif byte==string.byte("g") then
+	   largestep.set_kick_type(2);
+ 	   Motion.event("step");
+
+
+
+
 	elseif byte==string.byte("z") then
 --[[
 	    walk.upper_body_override(

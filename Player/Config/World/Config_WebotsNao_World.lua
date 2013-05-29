@@ -55,7 +55,7 @@ world.Lcorner[18]={-0.6,0};
 world.use_same_colored_goal=1;
 
 --should we use new triangulation?
-world.use_new_goalposts=0;
+world.use_new_goalposts=1;
 
 -- filter weights
 world.rGoalFilter = 0.02;
@@ -73,6 +73,12 @@ world.aUnKnownPostFilter = 0.05;
 
 world.rCornerFilter = 0.02;
 world.aCornerFilter = 0.05;
+
+
+world.rCornerFilter = 0.01;
+world.aCornerFilter = 0.03;
+world.aLineFilter = 0.02;
+
 
 -- default positions for our kickoff
 world.initPosition1={

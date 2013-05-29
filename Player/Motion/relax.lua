@@ -36,7 +36,7 @@ function entry()
 
     Body.set_lleg_hardness({0.6,0.6,0.6,0,0,0});
     Body.set_rleg_hardness({0.6,0.6,0.6,0,0,0});
-  else
+  elseif Config.platform.name=='NaoV4' then
     Body.set_body_hardness(0);
   end
   Body.set_syncread_enable(1);
@@ -65,9 +65,23 @@ function update()
     Body.set_actuator_command(qSensor);
   end
 
+  if Config.platform.name == 'NaoV4' then
+    --Hack for pocket (bad ankle encoder)
+    qLLeg = vector.new({0,0,-52,124,-70,3})*math.pi/180;
+    qRLeg = vector.new({0,0,-52,124,-70,3})*math.pi/180;
+    Body.set_lleg_command(qLLeg);
+    Body.set_rleg_command(qRLeg);
+    --Set initial commanded values
+    for i=1,6 do
+      Body.commanded_joint_angles[6+i] = qLLeg[i];
+      Body.commanded_joint_angles[12+i] = qRLeg[i];
+    end
+  else
+   qLLeg = Body.get_lleg_position();
+   qRLeg = Body.get_rleg_position();
+  end   
+
   --update vcm body information
-  local qLLeg = Body.get_lleg_position();
-  local qRLeg = Body.get_rleg_position();
   local dpLLeg = Kinematics.torso_lleg(qLLeg);
   local dpRLeg = Kinematics.torso_rleg(qRLeg);
 

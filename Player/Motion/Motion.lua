@@ -26,6 +26,10 @@ require('dive')
 -- Aux
 require 'grip'
 
+if Config.largestep_enable then
+  require ('largestep')
+end
+
 sit_disable = Config.sit_disable or 0;
 
 if sit_disable==0 then --For smaller robots
@@ -67,6 +71,13 @@ if sit_disable==0 then --For smaller robots
   --dive transitions
   sm:set_transition(walk, 'diveready', divewait);
   sm:set_transition(walk, 'dive', dive);
+
+  --ZMP preview motion transitions
+  if Config.largestep_enable then
+    sm:add_state(largestep);
+    sm:set_transition(walk, 'step', largestep);
+    sm:set_transition(largestep, 'done', stance);
+  end
 
   sm:set_transition(divewait, 'dive', dive);
   sm:set_transition(divewait, 'walk', stance);

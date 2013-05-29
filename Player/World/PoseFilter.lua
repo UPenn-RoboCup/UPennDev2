@@ -25,6 +25,10 @@ Lcorner = Config.world.Lcorner;
 
 --Triangulation method selection
 use_new_goalposts= Config.world.use_new_goalposts or 0;
+triangulation_threshold=Config.world.triangulation_threshold or 4.0;
+position_update_threshold = Config.world.position_update_threshold or 6.0;
+angle_update_threshold = Config.world.angle_update_threshold or 0.6;
+
 
 --For single-colored goalposts
 postUnified = {postYellow[1],postYellow[2],postCyan[1],postCyan[2]};
@@ -119,6 +123,18 @@ function reset_heading()
   wp = vector.zeros(n);
 end
 
+function flip_particles()
+  xp = -xp;
+  yp = -yp;
+    for i = 1, n do
+      if ap[i] <= math.pi then
+        ap[i] = ap[i] + math.pi;
+      else
+        ap[i] = ap[i] - math.pi;
+      end
+    end
+end 
+
 ---Returns best pose out of all particles
 function get_pose()
   local wmax, imax = max(wp);
@@ -173,13 +189,20 @@ end
 --distance to landmark
 --@param aLandmarkFilter How much to adjust particles according to 
 --angle to landmark
-function landmark_observation(pos, v, rLandmarkFilter, aLandmarkFilter)
+function landmark_observation(pos, v, rLandmarkFilter, aLandmarkFilter,dont_update_position)
   local r = math.sqrt(v[1]^2 + v[2]^2);
   local a = math.atan2(v[2], v[1]);
   local rSigma = .15*r + 0.10;
   local aSigma = 5*math.pi/180;
   local rFilter = rLandmarkFilter or 0.02;
   local aFilter = aLandmarkFilter or 0.04;
+
+  --If we see a landmark at very close range
+  --A small positional error can change the angle a lot
+  --So we do not update angle if the distance is very 
+
+  angle_update_threshold = Config.world.angle_update_threshold or 0.6;
+
 
   --Calculate best matching landmark pos to each particle
   local dxp = {};
@@ -196,24 +219,35 @@ function landmark_observation(pos, v, rLandmarkFilter, aLandmarkFilter)
       dy[ipos] = pos[ipos][2] - yp[ip];
       dr[ipos] = math.sqrt(dx[ipos]^2 + dy[ipos]^2) - r;
       da[ipos] = mod_angle(math.atan2(dy[ipos],dx[ipos]) - (ap[ip] + a));
-      err[ipos] = (dr[ipos]/rSigma)^2 + (da[ipos]/aSigma)^2;
+
+      if dont_update_position==1 then --only angle error
+        err[ipos] = (da[ipos]/aSigma)^2;
+      else --position and angle error
+        err[ipos] = (dr[ipos]/rSigma)^2 + (da[ipos]/aSigma)^2;
+      end
     end
     local errMin, imin = min(err);
 
     --Update particle weights:
     wp[ip] = wp[ip] - errMin;
-
     dxp[ip] = dx[imin];
     dyp[ip] = dy[imin];
     dap[ip] = da[imin];
+  
+    --If the ditstance is too close, do not update angle for the particle
+    if dr[imin]< angle_update_threshold then
+      dap[ip] = 0;
+    end
   end
   --Filter toward best matching landmark position:
   for ip = 1,n do
---print(string.format("%d %.1f %.1f %.1f",ip,xp[ip],yp[ip],ap[ip]));
-    xp[ip] = xp[ip] + rFilter * (dxp[ip] - r * math.cos(ap[ip] + a));
-    yp[ip] = yp[ip] + rFilter * (dyp[ip] - r * math.sin(ap[ip] + a));
+    --print(string.format("%d %.1f %.1f %.1f",ip,xp[ip],yp[ip],ap[ip]));
+    if not (dont_update_position==1) then
+      xp[ip] = xp[ip] + rFilter * (dxp[ip] - r * math.cos(ap[ip] + a));
+      yp[ip] = yp[ip] + rFilter * (dyp[ip] - r * math.sin(ap[ip] + a));
+    end
     ap[ip] = ap[ip] + aFilter * dap[ip];
-
+ 
     -- check boundary
     xp[ip] = math.min(xMax, math.max(-xMax, xp[ip]));
     yp[ip] = math.min(yMax, math.max(-yMax, yp[ip]));
@@ -416,12 +450,8 @@ function goal_observation(pos, v)
   local rFilter = rKnownGoalFilter;
   local aFilter = aKnownGoalFilter;
 
---SJ: testing
-triangulation_threshold=4.0;
 
   if dGoal<triangulation_threshold then 
-
-
     for ip = 1,n do
       local xErr = x - xp[ip];
       local yErr = y - yp[ip];
@@ -429,7 +459,6 @@ triangulation_threshold=4.0;
       local aErr = mod_angle(a - ap[ip]);
       local err = (rErr/rSigma)^2 + (aErr/aSigma)^2;
       wp[ip] = wp[ip] - err;
-
       --Filter towards goal:
       xp[ip] = xp[ip] + rFilter*xErr;
       yp[ip] = yp[ip] + rFilter*yErr;
@@ -462,40 +491,55 @@ function goal_observation_unified(pos1,pos2,v)
     pose2,dGoal2=triangulate(pos2,v);
   end
 
-  local x1,y1,a1=pose1.x,pose1.y,pose1.a;
-  local x2,y2,a2=pose2.x,pose2.y,pose2.a;
-
-  local rSigma1 = .25*dGoal1 + 0.20;
-  local rSigma2 = .25*dGoal2 + 0.20;
-  local aSigma = 5*math.pi/180;
-  local rFilter = rUnknownGoalFilter;
-  local aFilter = aUnknownGoalFilter;
-
-  for ip = 1,n do
-    local xErr1 = x1 - xp[ip];
-    local yErr1 = y1 - yp[ip];
-    local rErr1 = math.sqrt(xErr1^2 + yErr1^2);
-    local aErr1 = mod_angle(a1 - ap[ip]);
-    local err1 = (rErr1/rSigma1)^2 + (aErr1/aSigma)^2;
-
-    local xErr2 = x2 - xp[ip];
-    local yErr2 = y2 - yp[ip];
-    local rErr2 = math.sqrt(xErr2^2 + yErr2^2);
-    local aErr2 = mod_angle(a2 - ap[ip]);
-    local err2 = (rErr2/rSigma2)^2 + (aErr2/aSigma)^2;
-
-    --Filter towards best matching goal:
-     if err1>err2 then
-      wp[ip] = wp[ip] - err2;
-      xp[ip] = xp[ip] + rFilter*xErr2;
-      yp[ip] = yp[ip] + rFilter*yErr2;
-      ap[ip] = ap[ip] + aFilter*aErr2;
-    else
-      wp[ip] = wp[ip] - err1;
-      xp[ip] = xp[ip] + rFilter*xErr1;
-      yp[ip] = yp[ip] + rFilter*yErr1;
-      ap[ip] = ap[ip] + aFilter*aErr1;
+  if dGoal1<triangulation_threshold then 
+    --Goal close, triangulate
+    local x1,y1,a1=pose1.x,pose1.y,pose1.a;
+    local x2,y2,a2=pose2.x,pose2.y,pose2.a;
+    local rSigma1 = .25*dGoal1 + 0.20;
+    local rSigma2 = .25*dGoal2 + 0.20;
+    local aSigma = 5*math.pi/180;
+    local rFilter = rUnknownGoalFilter;
+    local aFilter = aUnknownGoalFilter;
+    for ip = 1,n do
+      local xErr1 = x1 - xp[ip];
+      local yErr1 = y1 - yp[ip];
+      local rErr1 = math.sqrt(xErr1^2 + yErr1^2);
+      local aErr1 = mod_angle(a1 - ap[ip]);
+      local err1 = (rErr1/rSigma1)^2 + (aErr1/aSigma)^2;
+      local xErr2 = x2 - xp[ip];
+      local yErr2 = y2 - yp[ip];
+      local rErr2 = math.sqrt(xErr2^2 + yErr2^2);
+      local aErr2 = mod_angle(a2 - ap[ip]);
+      local err2 = (rErr2/rSigma2)^2 + (aErr2/aSigma)^2;
+      --Filter towards best matching goal:
+      if err1>err2 then
+        wp[ip] = wp[ip] - err2;
+        xp[ip] = xp[ip] + rFilter*xErr2;
+        yp[ip] = yp[ip] + rFilter*yErr2;
+        ap[ip] = ap[ip] + aFilter*aErr2;
+      else
+        wp[ip] = wp[ip] - err1;
+        xp[ip] = xp[ip] + rFilter*xErr1;
+        yp[ip] = yp[ip] + rFilter*yErr1;
+        ap[ip] = ap[ip] + aFilter*aErr1;
+      end
     end
+  elseif dGoal1<position_update_threshold then
+    --Goal midrange, use a point update
+    --Goal too far, use a point estimate
+    goalpos1={(pos1[1][1]+pos1[2][1])/2, (pos1[1][2]+pos1[2][2])/2}
+    goalpos2={(pos2[1][1]+pos2[2][1])/2, (pos2[1][2]+pos2[2][2])/2}
+    goalv={(v[1][1]+v[2][1])/2, (v[1][2]+v[2][2])/2}
+    landmark_observation(
+	{goalpos1,goalpos2},
+	 goalv , rKnownGoalFilter, aKnownGoalFilter);
+  else --Goal VERY far, just update angle only
+    goalpos1={(pos1[1][1]+pos1[2][1])/2, (pos1[1][2]+pos1[2][2])/2}
+    goalpos2={(pos2[1][1]+pos2[2][1])/2, (pos2[1][2]+pos2[2][2])/2}
+    goalv={(v[1][1]+v[2][1])/2, (v[1][2]+v[2][2])/2}
+    landmark_observation(
+	{goalpos1,goalpos2},
+	 goalv , rKnownGoalFilter, aKnownGoalFilter,1);
   end
 end
 

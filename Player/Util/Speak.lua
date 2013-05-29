@@ -15,6 +15,13 @@ else
 end
 enable = Config.speakenable or 1
 
+--Turn off espeak for webots (causes init issues)
+if Config.platform.name=='WebotsNao' or
+   Config.platform.name=='WebotsOP' then
+  enable = 0;
+end
+
+
 if enable == 1 then
   -- define speak queue file
   fifo = '/tmp/speakFIFO'..(os.getenv('USER') or '');

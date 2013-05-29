@@ -24,7 +24,7 @@ Solid {
         }
         texture ImageTexture {
           url [
-            "textures/teen_field_quarter.png"
+            "textures/spl_field_quarter.png"
           ]
         }
       }

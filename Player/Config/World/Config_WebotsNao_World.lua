@@ -55,7 +55,7 @@ world.Lcorner[18]={-0.6,0};
 world.use_same_colored_goal=1;
 
 --should we use new triangulation?
-world.use_new_goalposts=0;
+world.use_new_goalposts=1;
 
 -- filter weights
 world.rGoalFilter = 0.02;
@@ -74,12 +74,19 @@ world.aUnKnownPostFilter = 0.05;
 world.rCornerFilter = 0.02;
 world.aCornerFilter = 0.05;
 
+
+world.rCornerFilter = 0.01;
+world.aCornerFilter = 0.03;
+world.aLineFilter = 0.02;
+
+
 -- default positions for our kickoff
 world.initPosition1={
   {4.2,0},   --Goalie
   {0.5, 0}, --Attacker
   {1.2,-1}, --Defender
   {1.2, 1}, --Supporter
+  {2.2, 0}, --Defender2
 }
 -- default positions for opponents' kickoff
 -- Penalty mark : {1.2,0}
@@ -88,6 +95,7 @@ world.initPosition2={
   {2.0, 0}, --Attacker
   {2.5, -1}, --Defender
   {2.5,1}, --Supporter
+  {2.5, 0}, --Defender2
 }
 
 -- use sound localization

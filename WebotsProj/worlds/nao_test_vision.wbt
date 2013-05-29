@@ -48,7 +48,7 @@ DEF BALLGPS BallGPS {
 }
 DEF PLAYER_1_1 Nao_H21_V40GPS {
   translation -1.5 0.35 3
-  rotation -0.57735 0.57735 0.57735 2.08
+  rotation -0.35895 0.660766 0.659797 2.45176
   controller "nao_team_0"
   controllerArgs "1 99"
   bottomCameraWindowPosition 0.160156 0.469388

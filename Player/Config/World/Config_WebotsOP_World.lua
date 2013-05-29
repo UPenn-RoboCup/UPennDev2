@@ -93,7 +93,18 @@ world.initPosition3={
 world.rGoalFilter = 0.02;
 world.aGoalFilter = 0.05;
 world.rPostFilter = 0.02;
-world.aPostFilter = 0.10;
+world.aPostFilter = 0.05;
+world.rKnownGoalFilter = 0.02;
+world.aKnownGoalFilter = 0.20;
+world.rKnownPostFilter = 0.02;
+world.aKnownPostFilter = 0.10;
+world.rUnknownGoalFilter = 0.02;
+world.aUnknownGoalFilter = 0.05;
+world.rUnknownPostFilter = 0.02;
+world.aUnKnownPostFilter = 0.05;
+
+
+
 
 world.rLandmarkFilter = 0.05;
 world.aLandmarkFilter = 0.10;

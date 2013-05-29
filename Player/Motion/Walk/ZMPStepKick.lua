@@ -91,12 +91,22 @@ t1 = Body.get_time();
 ph = 1;
 
 --ZMP preview parameters
-timeStep = 0.010; --10ms
-tPreview = 1.00; --preview interval, 1000ms
-
-
 timeStep = 0.040; --40ms
-tPreview = 2.00; --preview interval, 1000ms
+tPreview = 1.50; --preview interval, 1000ms
+
+--[[
+timeStep = 0.040; --40ms
+timeStep = 0.020; --40ms
+timeStep = 0.010; --40ms
+--]]
+
+timeStep = 0.015; --40ms
+
+
+timeStep = 0.010; 
+timeStep = 0.011; 
+
+
 
 
 nPreview = tPreview / timeStep; 
@@ -174,6 +184,7 @@ step_queue_t0 = 0;
 ----------------------------------------------------------
 
 function precompute()
+
   px={};pu0={};pu={};
   for i=1, nPreview do
     px[i]={1, i*timeStep, i*i*timeStep*timeStep/2 - tZmp*tZmp};
@@ -199,6 +210,7 @@ function precompute()
   for i=1,nPreview do k1[1][i]=param_k[1][i];end
   param_k1 = matrix:new(k1);
   param_k1_px = param_k1 * param_px;
+
 end
 
 
@@ -317,6 +329,13 @@ function entry()
   Body.set_rarm_hardness(hardnessArm);
 
   active = true; --Automatically start stepping
+
+
+  --Init varables
+  tStateUpdate = Body.get_time();  --last discrete update time
+  t = Body.get_time();  	   --actual time
+  torso0 = vector.new({uTorso[1],uTorso[2]});
+  torso1 = vector.new({uTorso[1],uTorso[2]});
 end
 
 function preload_zmp_array()
@@ -348,10 +367,8 @@ function update_zmp_array(t)
     supportLegF = step_queue[step_queue_count][3];
     uLeftF = step_queue[step_queue_count][1];
     uRightF = step_queue[step_queue_count][2];
-
     zaLeftF = step_queue[step_queue_count][5];
     zaRightF = step_queue[step_queue_count][6];
-
     stepTypeF = step_queue[step_queue_count][7];
 
     if supportLegF == 0 then-- Left support
@@ -400,62 +417,27 @@ function update()
     return; 
   end
 
-  t = Body.get_time();
-  update_zmp_array(t+time_offset);
-
-  dpLimit = .1; 
-
-  --Lower the bodyHeight to prepare stepping
-  local bodyHeightDiff = bodyHeight-bodyHeight1;
-
-  bodyHeight = bodyHeight - math.min(
-	bodyHeightDiff, dpLimit*timeStep);
-
-  --Stop when stopping sequence is done
-  if (supportLegs[1]==3) then --End state reached
---    outfile:flush();
-    print("STOPPED")
-    active = false;
-    return "done";
+  t = Body.get_time();  	   --actual time
+  --Run discrete state update
+  while t>tStateUpdate do  	   
+    torso0=vector.new({torso1[1],torso1[2]});
+    torso1=update_discrete(tStateUpdate);
+    if not torso1 then --Sequence ended
+      print("Step done")
+      return "done";
+    end
+    --Advance discrete time
+    tStateUpdate = tStateUpdate + timeStep;
   end
 
-  if ph>phs[1] then --New step
-    t1=t;
-    uLeft = uLeft1;
-    uRight = uRight1;
-    uLeft0 = uLeft1;
-    uRight0 = uRight1;
+  --Interpolate torso position for discrete time steps
+  torsoPh = ( t - (tStateUpdate-timeStep) ) / timeStep;
+  torsoInterpolated = (1-torsoPh)*torso0 + torsoPh*torso1;
 
-    zaLeft0[1],zaLeft0[2] = zaLeft1[1],zaLeft1[2]; 
-    zaRight0[1],zaRight0[2] = zaRight1[1],zaRight1[2];
+--  print(string.format("tS0:%.2f : %.2f tS1: %.2f ph:%.2f",
+--	tStateUpdate-timeStep, 	t,tStateUpdate,torsoPh));
 
-    supportLeg = supportLegs[1];
-    stepType = stepTypes[1];
-
-    if supportLeg==2 then 
-      zaLeft1 = zaLefts[1]; 
-      zaRight1 = zaRights[1];
-    else
-      uLeft1=uLeftTargets[1];
-      uRight1=uRightTargets[1];
-      zaLeft1[1],zaLeft1[2]=zaLefts[1][1],zaLefts[1][2];
-      zaRight1[1],zaRight1[2]=zaRights[1][1],zaRights[1][2];
-    end
-
-    if supportLeg == 0 then --LS
-        Body.set_lleg_hardness(hardnessSupport);
-        Body.set_rleg_hardness(hardnessSwing);
-    elseif supportLeg==1 then --RS
-        Body.set_lleg_hardness(hardnessSwing);
-        Body.set_rleg_hardness(hardnessSupport);
-    end
-
-    print("stepType:",stepType)
-  end
-
-  ph = phs[1];
   phSingle = math.min(math.max(ph-ph1Single, 0)/(ph2Single-ph1Single),1);
-
   xFoot, zFoot = foot_phase(ph);  
   zFoot = zFoot * stepHeight;
   aFoot = 0;
@@ -481,6 +463,56 @@ function update()
       pLLeg[3],pRLeg[3] = 0,0;
     end
   end
+
+  uTorso=vector.new({torsoInterpolated[1],torsoInterpolated[2],
+	(uLeft[3]+uRight[3])/2 });
+  uTorsoActual = util.pose_global(vector.new({-footX,0,0}),uTorso);
+
+  pLLeg[1], pLLeg[2], pLLeg[6] = uLeft[1], uLeft[2], uLeft[3];
+  pRLeg[1], pRLeg[2], pRLeg[6] = uRight[1], uRight[2], uRight[3];
+  pTorso[1], pTorso[2], pTorso[6] = uTorsoActual[1], uTorsoActual[2], uTorsoActual[3];
+  pTorso[3] = bodyHeight;
+
+  qLegs = Kinematics.inverse_legs(pLLeg, pRLeg, pTorso, supportLeg);
+  motion_legs(qLegs);
+  motion_arms();
+end
+
+function update_discrete(tStateUpdate)
+  update_zmp_array(tStateUpdate+time_offset);
+  if (supportLegs[1]==3) then --End state reached
+    active = false;
+    return;
+  end
+
+  if ph>phs[1] then --New step
+    t1=t;
+    uLeft, uRight = uLeft1,uRight1;
+    uLeft0, uRight0 = uLeft1,uRight1;
+    zaLeft0[1],zaLeft0[2] = zaLeft1[1],zaLeft1[2]; 
+    zaRight0[1],zaRight0[2] = zaRight1[1],zaRight1[2];
+    supportLeg = supportLegs[1];
+    stepType = stepTypes[1];
+
+    if supportLeg==2 then 
+      zaLeft1 = zaLefts[1];  zaRight1 = zaRights[1];
+    else
+      uLeft1=uLeftTargets[1];
+      uRight1=uRightTargets[1];
+      zaLeft1[1],zaLeft1[2]=zaLefts[1][1],zaLefts[1][2];
+      zaRight1[1],zaRight1[2]=zaRights[1][1],zaRights[1][2];
+    end
+
+    if supportLeg == 0 then --LS
+        Body.set_lleg_hardness(hardnessSupport);
+        Body.set_rleg_hardness(hardnessSwing);
+    elseif supportLeg==1 then --RS
+        Body.set_lleg_hardness(hardnessSwing);
+        Body.set_rleg_hardness(hardnessSupport);
+    end
+--    print("stepType:",stepType)
+  end
+  ph = phs[1];
 
   -- Get state feedback
   imuAngle = Body.get_sensor_imuAngle();
@@ -539,30 +571,8 @@ function update()
   x[1][2]=x[1][2]+x_err[2]*feedback_gain2;
   x= param_a*x + param_b * matrix:new({{ux,uy}});
 
-  uTorso=vector.new({x[1][1],x[1][2],(uLeft[3]+uRight[3])/2 });
-  uTorsoActual = util.pose_global(vector.new({-footX,0,0}),uTorso);
-
-  pLLeg[1], pLLeg[2], pLLeg[6] = uLeft[1], uLeft[2], uLeft[3];
-  pRLeg[1], pRLeg[2], pRLeg[6] = uRight[1], uRight[2], uRight[3];
-  pTorso[1], pTorso[2], pTorso[6] = uTorsoActual[1], uTorsoActual[2], uTorsoActual[3];
-  pTorso[3] = bodyHeight;
-
-  qLegs = Kinematics.inverse_legs(pLLeg, pRLeg, pTorso, supportLeg);
-  motion_legs(qLegs);
-  motion_arms();
-
---[[
- outfile:write(string.format(
-        "%f %f %f %f %f  %f %f %f  %f %f  %f %f\n", --t ph Lx Ly Lz Rx Ry R
-        t,0,
-        uLeft[1],uLeft[2],pLLeg[3],
-        uRight[1],uRight[2],pRLeg[3],
-        uTorso[1],uTorso[2],
-	zmpx[1],zmpy[1]
-        ));
---]]
+  return  vector.new({x[1][1],x[1][2]}); --current torso position
 end
-
 
 function motion_legs(qLegs)
   phComp = math.min(1, phSingle/.1, (1-phSingle)/.1);
@@ -667,7 +677,7 @@ end
 
 function generate_kick_trajectory(ph,uFoot0,uFoot1)
   local uFoot, zFoot, aFoot;
-  local kick_ph1,kick_ph2 = 0.4, 0.7
+  local kick_ph1,kick_ph2, kick_ph3  = 0.4, 0.7, 0.9
   if ph<kick_ph1 then --Lifting
     local phKick = ph/kick_ph1;
     uFoot = uFoot0;
@@ -677,12 +687,18 @@ function generate_kick_trajectory(ph,uFoot0,uFoot1)
     uFoot = util.se2_interpolate(2.5, uFoot0, uFoot1);
     zFoot = 0.07;
     aFoot = 0;
-  else --Landing
+  elseif ph<kick_ph3 then --Returning
     local phKick = (ph-kick_ph2)/(1-kick_ph2);
     uFoot = util.se2_interpolate(
 	2.5-(2.5-1)*phKick, uFoot0, uFoot1);
-    zFoot = (1-phKick) * 0.07;
+--    zFoot = (1-phKick) * 0.07;
+    zFoot = (1-phKick) * 0.05+0.02;
     aFoot = (1-phKick) * 0;
+  else --Landing
+    local phKick = (ph-kick_ph3)/(1-kick_ph3);
+    uFoot = uFoot1;
+    zFoot = (1-phKick) * 0.02;
+    aFoot = 0;
   end
   return uFoot, zFoot, aFoot;
 end

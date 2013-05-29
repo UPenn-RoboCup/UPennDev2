@@ -91,22 +91,8 @@ t1 = Body.get_time();
 ph = 1;
 
 --ZMP preview parameters
-timeStep = 0.040; --40ms
-tPreview = 1.50; --preview interval, 1000ms
-
---[[
-timeStep = 0.040; --40ms
-timeStep = 0.020; --40ms
 timeStep = 0.010; --40ms
---]]
-
-timeStep = 0.015; --40ms
-
-
-timeStep = 0.010; 
-timeStep = 0.011; 
-
-
+tPreview = 1.50; --preview interval, 1000ms
 
 
 nPreview = tPreview / timeStep; 
@@ -216,23 +202,34 @@ end
 
 --Supportfoot relstep za duration
 
+
+
+--real kick
 stationary_kick_left={
 --  {2, {0,0,0},{0,0},0.5}, --DS step
   {2, {0,0,0},{0,0},0.8}, --DS step
-  {0, {0.06,0.01,0},{0,0},0.5}, --LS step  
-  {1, {0.12,0,0},{0,0},0.8, 1}, --RS step  
-  {0, {0.06,-0.02,0},{0,0},0.5}, --LS step  
-  {2, {0,0,0},{0,0},0.5}, --DS step
+  {0, {0.06,0.01,0},{0,0},0.25}, --LS step  
+  {2, {0,0,0},{0,0},0.05}, --DS step
+  {1, {0.12,0,0},{0,0},0.7,1}, --RS step  
+  {2, {0,0,0},{0,0},0.05}, --DS step
+  {0, {0.06,-0.02,0},{0,0},0.25}, --LS step  
+  {2, {0,0,0},{0,0},0.25}, --DS step
   {3, {0,0,0},{0,0},0.05}, --DS step
 }
+
+
+
+
 
 stationary_kick_right={
 --  {2, {0,0,0},{0,0},0.5}, --DS step
   {2, {0,0,0},{0,0},0.8}, --DS step
-  {1, {0.06,-0.01,0},{0,0},0.5}, --LS step  
-  {0, {0.12,0,0},{0,0},0.8, 1}, --RS step  
-  {1, {0.06,0.02,0},{0,0},0.5}, --LS step  
-  {2, {0,0,0},{0,0},0.5}, --DS step
+  {1, {0.06,-0.01,0},{0,0},0.25}, --LS step  
+  {2, {0,0,0},{0,0},0.05}, --DS step
+  {0, {0.12,0,0},{0,0},0.7,1}, --RS step  
+  {2, {0,0,0},{0,0},0.05}, --DS step
+  {1, {0.06,0.02,0},{0,0},0.25}, --LS step  
+  {2, {0,0,0},{0,0},0.25}, --DS step
   {3, {0,0,0},{0,0},0.05}, --DS step
 }
 
@@ -631,11 +628,36 @@ function motion_legs(qLegs)
 end
 
 function motion_arms()
-  qLArm[1],qLArm[2]=qLArm0[1]+armShift[1],qLArm0[2]+armShift[2];
-  qRArm[1],qRArm[2]=qRArm0[1]+armShift[1],qRArm0[2]+armShift[2];
+  qLArmActual={}
+  qRArmActual={}
+ 
+  qLArmActual[1],qLArmActual[2]=
+	qLArm0[1]+armShift[1],qLArm0[2]+armShift[2];
+  qRArmActual[1],qRArmActual[2]=
+	qRArm0[1]+armShift[1],qRArm0[2]+armShift[2];
 
-  Body.set_larm_command(qLArm);
-  Body.set_rarm_command(qRArm);
+  --Check leg hitting
+  RotLeftA =  util.mod_angle(uLeft[3] - uTorso[3]);
+  RotRightA =  util.mod_angle(uTorso[3] - uRight[3]);
+
+  LLegTorso = util.pose_relative(uLeft,uTorso);
+  RLegTorso = util.pose_relative(uRight,uTorso);
+
+  qLArmActual[2]=math.max(
+    5*math.pi/180 + math.max(0, RotLeftA)/2
+    + math.max(0,LLegTorso[2] - 0.04) /0.02 * 6*math.pi/180
+    ,qLArmActual[2])
+
+  qRArmActual[2]=math.min(
+    -5*math.pi/180 - math.max(0, RotRightA)/2
+    - math.max(0,-RLegTorso[2] - 0.04)/0.02 * 6*math.pi/180
+    ,qRArmActual[2]);
+
+  qLArmActual[3]=qLArm0[3];
+  qRArmActual[3]=qRArm0[3];
+
+  Body.set_larm_command(qLArmActual);
+  Body.set_rarm_command(qRArmActual);
 end
 
 function exit()
@@ -678,19 +700,24 @@ end
 function generate_kick_trajectory(ph,uFoot0,uFoot1)
   local uFoot, zFoot, aFoot;
   local kick_ph1,kick_ph2, kick_ph3  = 0.4, 0.7, 0.9
+  local kick_mag = 1.5;
+
+--  local kick_ph1,kick_ph2, kick_ph3  = 0.4, 0.8, 0.9
+--  local kick_mag = 1.2;
+
   if ph<kick_ph1 then --Lifting
     local phKick = ph/kick_ph1;
     uFoot = uFoot0;
     zFoot = phKick * 0.05;
     aFoot = phKick * 20*math.pi/180;
   elseif ph<kick_ph2 then --Kicking
-    uFoot = util.se2_interpolate(2.5, uFoot0, uFoot1);
+    uFoot = util.se2_interpolate(kick_mag, uFoot0, uFoot1);
     zFoot = 0.07;
     aFoot = 0;
   elseif ph<kick_ph3 then --Returning
     local phKick = (ph-kick_ph2)/(1-kick_ph2);
     uFoot = util.se2_interpolate(
-	2.5-(2.5-1)*phKick, uFoot0, uFoot1);
+	kick_mag-(kick_mag-1)*phKick, uFoot0, uFoot1);
 --    zFoot = (1-phKick) * 0.07;
     zFoot = (1-phKick) * 0.05+0.02;
     aFoot = (1-phKick) * 0;

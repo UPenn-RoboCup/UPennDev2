@@ -120,6 +120,16 @@ function process_keyinput()
 
 
 
+	elseif byte==string.byte("f") then
+            largestep.set_kick_type(1);
+	    Motion.event("step");
+
+	elseif byte==string.byte("g") then
+            largestep.set_kick_type(2);
+	    Motion.event("step");
+
+
+
 	elseif byte==string.byte("b") then
 	    grip.throw=0;
 	    Motion.event("pickup");

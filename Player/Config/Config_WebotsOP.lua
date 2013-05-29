@@ -49,8 +49,6 @@ head.bodyTilt = 0;
 -- Game Parameters
 game = {};
 game.nPlayers = 5; --5 total robot (including reserve ones)
---Should be 4 robostadium nao gamecontroller
-game.nPlayers = 4; 
 
 game.teamNumber = (os.getenv('TEAM_ID') or 0) + 0;
 --Webots player id begins at 0 but we use 1 as the first id 

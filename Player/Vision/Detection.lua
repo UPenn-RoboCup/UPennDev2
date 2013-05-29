@@ -113,9 +113,8 @@ function update()
     line = detectLine.detect();
     Tline = unix.time() - tstart;
     if enableCorner == 1 then
---hack for now
---      corner = detectCorner.detect(line);
---      Tcorner = unix.time() - Tline - tstart; 
+      corner = detectCorner.detect(line);
+      Tcorner = unix.time() - Tline - tstart; 
     end
   end
 

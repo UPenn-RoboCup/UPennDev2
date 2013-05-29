@@ -111,3 +111,6 @@ fsm.bodyAnticipate.rCloseDive = 2.0; --ball distance threshold for diving
 
 world.use_new_goalposts = 1;
 world.triangulation_threshold = 4.0; 
+world.position_update_threshold = 6.0;
+
+team.flip_correction = 1;

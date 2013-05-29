@@ -32,6 +32,7 @@ dev.game_control='WebotsGameControl';
 dev.team= 'TeamGeneral';
 dev.kick = 'BasicKick';
 dev.walk = 'EvenBetterWalk';
+dev.walk = 'CleanWalk';
 
 -- Game Parameters
 game = {};

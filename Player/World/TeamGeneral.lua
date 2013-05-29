@@ -386,8 +386,12 @@ function update_teamdata()
         goalie_alive =1;
         goalie_pose = {
           states[id].pose.x,states[id].pose.y,states[id].pose.a};
-        goalie_ball = {
-          states[id].ball.x,states[id].ball.y,states[id].ball.t};	
+
+        goalie_ball = util.pose_global(
+          {states[id].ball.x,states[id].ball.y,0},
+	  goalie_pose);
+        goalie_ball[3] = states[id].ball.t;	
+
       elseif states[id].role==ROLE_ATTACKER then
           attacker_pose = {states[id].pose.x,states[id].pose.y,states[id].pose.a};
           attacker_eta = eta[id];
@@ -488,14 +492,18 @@ end
 
 function check_flip()
   if flip_correction ==0 then return; end
+  if role==0 then return; end
 
   --print("Goalie ball");
   --util.ptable(goalie_ball);
   --print("Player ball");
   --util.ptable(state_ball);
   --d = math.sqrt((-state_ball[1] - goalie_ball[1])^2 + (-state_ball[2] $
+
   pose = wcm.get_pose();
   ball = wcm.get_ball();
+
+
   ball_global = util.pose_global({ball.x,ball.y,0},{pose.x,pose.y,pose.a});
 
   ball_flip_dist_threshold = 2.0;
@@ -503,6 +511,16 @@ function check_flip()
   ball_flip_y_threshold = 0.6;
   ball_flip_t_threshold = 0.5; --Both robot should be looking at the ball
   local dist_balls = math.abs(ball_global[1]-goalie_ball[1]);
+
+--[[
+  print(string.format("Goalie ball: %.2f %.2f Ball: %.2f %.2f",
+	goalie_ball[1],goalie_ball[2],
+	ball_global[1],ball_global[2]
+
+  ));
+--]]
+  --util.ptable(goalie_ball);
+  --print("Player ball");
 
 
   if math.abs(ball.x) > ball_flip_x_threshold and

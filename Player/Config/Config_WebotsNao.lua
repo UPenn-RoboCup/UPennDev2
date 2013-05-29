@@ -109,8 +109,14 @@ fsm.bodyAnticipate.ball_velocity_thx = -1.0; --min x velocity for diving
 fsm.bodyAnticipate.rCloseDive = 2.0; --ball distance threshold for diving
 
 
+
 world.use_new_goalposts = 1;
 world.triangulation_threshold = 4.0; 
 world.position_update_threshold = 6.0;
-
+world.angle_update_threshold = 1.0;
 team.flip_correction = 1;
+
+
+
+world.triangulation_threshold = 4.0; 
+world.position_update_threshold = 4.5;--Goalie moves too much

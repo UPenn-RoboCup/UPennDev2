@@ -27,6 +27,7 @@ Lcorner = Config.world.Lcorner;
 use_new_goalposts= Config.world.use_new_goalposts or 0;
 triangulation_threshold=Config.world.triangulation_threshold or 4.0;
 position_update_threshold = Config.world.position_update_threshold or 6.0;
+angle_update_threshold = Config.world.angle_update_threshold or 0.6;
 
 
 --For single-colored goalposts
@@ -196,6 +197,13 @@ function landmark_observation(pos, v, rLandmarkFilter, aLandmarkFilter,dont_upda
   local rFilter = rLandmarkFilter or 0.02;
   local aFilter = aLandmarkFilter or 0.04;
 
+  --If we see a landmark at very close range
+  --A small positional error can change the angle a lot
+  --So we do not update angle if the distance is very 
+
+  angle_update_threshold = Config.world.angle_update_threshold or 0.6;
+
+
   --Calculate best matching landmark pos to each particle
   local dxp = {};
   local dyp = {};
@@ -211,29 +219,35 @@ function landmark_observation(pos, v, rLandmarkFilter, aLandmarkFilter,dont_upda
       dy[ipos] = pos[ipos][2] - yp[ip];
       dr[ipos] = math.sqrt(dx[ipos]^2 + dy[ipos]^2) - r;
       da[ipos] = mod_angle(math.atan2(dy[ipos],dx[ipos]) - (ap[ip] + a));
-      err[ipos] = (dr[ipos]/rSigma)^2 + (da[ipos]/aSigma)^2;
+
+      if dont_update_position==1 then --only angle error
+        err[ipos] = (da[ipos]/aSigma)^2;
+      else --position and angle error
+        err[ipos] = (dr[ipos]/rSigma)^2 + (da[ipos]/aSigma)^2;
+      end
     end
     local errMin, imin = min(err);
 
     --Update particle weights:
     wp[ip] = wp[ip] - errMin;
-
     dxp[ip] = dx[imin];
     dyp[ip] = dy[imin];
     dap[ip] = da[imin];
+  
+    --If the ditstance is too close, do not update angle for the particle
+    if dr[imin]< angle_update_threshold then
+      dap[ip] = 0;
+    end
   end
   --Filter toward best matching landmark position:
   for ip = 1,n do
---print(string.format("%d %.1f %.1f %.1f",ip,xp[ip],yp[ip],ap[ip]));
-    if dont_update_position then
-      --Only fix angle, not position
-      ap[ip] = ap[ip] + aFilter * dap[ip];
-    else
+    --print(string.format("%d %.1f %.1f %.1f",ip,xp[ip],yp[ip],ap[ip]));
+    if not (dont_update_position==1) then
       xp[ip] = xp[ip] + rFilter * (dxp[ip] - r * math.cos(ap[ip] + a));
       yp[ip] = yp[ip] + rFilter * (dyp[ip] - r * math.sin(ap[ip] + a));
-      ap[ip] = ap[ip] + aFilter * dap[ip];
     end
-
+    ap[ip] = ap[ip] + aFilter * dap[ip];
+ 
     -- check boundary
     xp[ip] = math.min(xMax, math.max(-xMax, xp[ip]));
     yp[ip] = math.min(yMax, math.max(-yMax, yp[ip]));

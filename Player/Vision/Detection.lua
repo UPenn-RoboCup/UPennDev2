@@ -28,9 +28,9 @@ colorWhite = Config.color.white;
 use_point_goal=Config.vision.use_point_goal;
 
 
-enableLine = Config.vision.enable_line_detection;
-enableCorner = Config.vision.enable_corner_detection;
-enableSpot = Config.vision.enable_spot_detection;
+enableLine = Config.vision.enable_line_detection or 0;
+enableCorner = Config.vision.enable_corner_detection or 0;
+enableSpot = Config.vision.enable_spot_detection or 0;
 enable_freespace_detection = Config.vision.enable_freespace_detection or 0;
 enableBoundary = Config.vision.enable_visible_boundary or 0;
 enableRobot = Config.vision.enable_robot_detection or 0;
@@ -113,8 +113,9 @@ function update()
     line = detectLine.detect();
     Tline = unix.time() - tstart;
     if enableCorner == 1 then
-      corner = detectCorner.detect(line);
-      Tcorner = unix.time() - Tline - tstart; 
+--hack for now
+--      corner = detectCorner.detect(line);
+--      Tcorner = unix.time() - Tline - tstart; 
     end
   end
 

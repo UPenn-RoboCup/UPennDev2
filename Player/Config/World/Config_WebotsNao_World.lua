@@ -55,7 +55,7 @@ world.Lcorner[18]={-0.6,0};
 world.use_same_colored_goal=1;
 
 --should we use new triangulation?
-world.use_new_goalposts=0;
+world.use_new_goalposts=1;
 
 -- filter weights
 world.rGoalFilter = 0.02;

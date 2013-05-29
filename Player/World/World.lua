@@ -74,8 +74,13 @@ function init_particles()
   --Init particles to our side
   goalDefend=get_goal_defend();
   PoseFilter.initialize_unified(
-    vector.new({goalDefend[1]/2, -2,  math.pi/2}),
-    vector.new({goalDefend[1]/2,  2, -math.pi/2}));
+    vector.new({goalDefend[1]/2, -Config.world.yMax,  math.pi/2}),
+    vector.new({goalDefend[1]/2,  Config.world.yMax, -math.pi/2}));
+
+
+
+
+
 --  if (useSoundLocalization > 0) then
 --    SoundFilter.reset();
 --  end

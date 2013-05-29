@@ -59,13 +59,21 @@ end
 function update()
   local t = Body.get_time();
 
-  --For OP, wait a bit to read joint readings
+    --For OP, wait a bit to read joint readings
   if not started then 
     if t-t0>tStartWait then
       started=true;
-
       local qLLeg = Body.get_lleg_position();
       local qRLeg = Body.get_rleg_position();
+
+      --Nao uses last commanded value, not currently read value
+      if Config.platform.name == 'NaoV4' then
+        for i=1,6 do
+	  qLLeg[i] = Body.commanded_joint_angles[6+i];
+	  qRLeg[i] = Body.commanded_joint_angles[12+i];
+	end
+      end
+
       local dpLLeg = Kinematics.torso_lleg(qLLeg);
       local dpRLeg = Kinematics.torso_rleg(qRLeg);
 
@@ -73,28 +81,12 @@ function update()
       pTorsoR=pRLeg+dpRLeg;
       pTorso=(pTorsoL+pTorsoR)*0.5;
 
---[[
-      --For OP, lift hip a bit before starting to standup
-      if(Config.platform.name == 'OP') then
-        print("Initial bodyHeight:",pTorso[3]);
-        if pTorso[3]<0.21 then
-          Body.set_lleg_hardness(0.5);
-          Body.set_rleg_hardness(0.5);
-          Body.set_actuator_command(Config.stance.initangle)
-          unix.usleep(1E6*0.4);
-	  started=false;
-	  return;
-        end
-      end
---]]
-
       Body.set_lleg_command(qLLeg);
       Body.set_rleg_command(qRLeg);
       Body.set_lleg_hardness(hardnessLeg);
       Body.set_rleg_hardness(hardnessLeg);
       t0 = Body.get_time();
       count=1;
-
       Body.set_syncread_enable(0); 
     else 
       Body.set_syncread_enable(1); 

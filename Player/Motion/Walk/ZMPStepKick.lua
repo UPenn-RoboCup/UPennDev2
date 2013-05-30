@@ -175,6 +175,8 @@ end
 ----------------------------------------------------------
 
 function precompute()
+ t0 = unix.time();
+
 
   px={};pu0={};pu={};
   for i=1, nPreview do
@@ -201,6 +203,11 @@ function precompute()
   for i=1,nPreview do k1[1][i]=param_k[1][i];end
   param_k1 = matrix:new(k1);
   param_k1_px = param_k1 * param_px;
+
+ t1 = unix.time();
+
+  print("Precomputation time:",t1-t0)
+
 
 end
 

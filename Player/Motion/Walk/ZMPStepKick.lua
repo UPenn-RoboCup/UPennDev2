@@ -453,13 +453,13 @@ function update()
   aFoot = 0;
 
   if not active then
-  elseif stepType==1 then
+  elseif stepType>0 then
     if supportLeg==0 then --Left support
       uRight, pRLeg[3], pRLeg[5] = 
-	generate_kick_trajectory(ph,uRight0,uRight1);
+	generate_kick_trajectory(ph,uRight0,uRight1,stepType);
     elseif supportLeg==1 then --Right support
       uLeft, pLLeg[3], pLLeg[5] = 
-	generate_kick_trajectory(ph,uLeft0,uLeft1);
+	generate_kick_trajectory(ph,uLeft0,uLeft1,stepType);
     end
   else
     pLLeg[5],pRLeg[5] = 0,0; --angle set as zero
@@ -705,7 +705,7 @@ function foot_phase(ph)
   return xf, zf;
 end
 
-function generate_kick_trajectory(ph,uFoot0,uFoot1)
+function generate_kick_trajectory(ph,uFoot0,uFoot1, stepType)
   local uFoot, zFoot, aFoot;
   local kick_ph1,kick_ph2, kick_ph3  = 0.4, 0.7, 0.9
   local kick_mag = 1.5;
@@ -713,26 +713,21 @@ function generate_kick_trajectory(ph,uFoot0,uFoot1)
 --  local kick_ph1,kick_ph2, kick_ph3  = 0.4, 0.8, 0.9
 --  local kick_mag = 1.2;
 
-  if ph<kick_ph1 then --Lifting
-    local phKick = ph/kick_ph1;
-    uFoot = uFoot0;
-    zFoot = phKick * 0.05;
-    aFoot = phKick * 20*math.pi/180;
-  elseif ph<kick_ph2 then --Kicking
-    uFoot = util.se2_interpolate(kick_mag, uFoot0, uFoot1);
+  if stepType==1 then --Lifting
+    uFoot = util.se2_interpolate(ph,uFoot0,uFoot1);
+    zFoot = ph * 0.05;
+    aFoot = ph * 20*math.pi/180;
+  elseif stepType==2 then --Kicking
+    uFoot = uFoot1;
     zFoot = 0.07;
     aFoot = 0;
-  elseif ph<kick_ph3 then --Returning
-    local phKick = (ph-kick_ph2)/(1-kick_ph2);
-    uFoot = util.se2_interpolate(
-	kick_mag-(kick_mag-1)*phKick, uFoot0, uFoot1);
---    zFoot = (1-phKick) * 0.07;
-    zFoot = (1-phKick) * 0.05+0.02;
-    aFoot = (1-phKick) * 0;
-  else --Landing
-    local phKick = (ph-kick_ph3)/(1-kick_ph3);
-    uFoot = uFoot1;
-    zFoot = (1-phKick) * 0.02;
+  elseif stepType==3 then --Returning (Moving back in space)
+    uFoot = util.se2_interpolate(ph,uFoot0,uFoot1);
+    zFoot = (1-ph) * 0.05+0.02;
+    aFoot = (1-ph) * 0;
+  elseif stepType==4 then  --Landing
+    uFoot = util.se2_interpolate(ph,uFoot0,uFoot1);
+    zFoot = (1-ph) * 0.02;
     aFoot = 0;
   end
   return uFoot, zFoot, aFoot;

@@ -37,7 +37,8 @@ dev.ip_wireless_port = 54321;
 dev.game_control='OPGameControl';
 dev.team='TeamNSL';
 --dev.walk='BetterWalk'
-dev.walk='EvenBetterWalk'
+--dev.walk='EvenBetterWalk'
+dev.walk='AwesomeWalk'
 dev.kick = 'PunchKick'
 dev.gender = 1; -- 1 for boy and 0 for girl 
 
@@ -147,7 +148,7 @@ team.team_ball_threshold = 0.5; --Min score to use team ball
 team.avoid_own_team = 1;
 team.avoid_other_team = 0;
 
-
+team.flip_correction = 0;
 
 -- keyframe files
 km = {};

@@ -170,20 +170,20 @@ qRArm=math.pi/180*vector.new({90,-40,-160});
 --Standard offset 
 uLRFootOffset = vector.new({0,footY,0});
 
---For torso offset change
-tStance0,tStance1 = 0,0;
-
-----------------------------------------------------------
--- End initialization 
-----------------------------------------------------------
-
-
-angleTiltOld = 0;
-
+--Walking/Stepping transition variables
+uLeftI = {0,0,0};
+uRightI = {0,0,0};
+uTorsoI = {0,0,0};
+supportI = 0;
+start_from_step = false;
 
 
 comdot = {0,0};
 stepkick_ready = false;
+
+----------------------------------------------------------
+-- End initialization 
+----------------------------------------------------------
 
 
 --Direct control of upper body
@@ -214,7 +214,6 @@ function upper_body_override(qL, qR, bR)
   bodyRot[2] = 	math.min(30*math.pi/180,math.max(10*math.pi/180,bodyRot[2]));
   -- Limit the yawing so that we can maintain good balance
   bodyRot[3] = 	math.min(30*math.pi/180,math.max(-30*math.pi/180,bodyRot[3]));
-
 end
 
 
@@ -876,17 +875,26 @@ function stopAlign() --Depreciated, we always stop with feet together
 end
 
 function doWalkKickLeft()
+
+  doStepKickLeft();
+
+--[[
   if walkKickRequest==0 then
     walkKickRequest = 1; 
     walkKick = walkKickDef["FrontLeft"];
   end
+--]]
 end
 
 function doWalkKickRight()
+
+  doStepKickRight();
+--[[
   if walkKickRequest==0 then
     walkKickRequest = 1; 
     walkKick = walkKickDef["FrontRight"];
   end
+--]]
 end
 
 function doWalkKickLeft2()
@@ -1025,23 +1033,46 @@ function advanceMotion()
   end
 end
 
+function set_initial_stance(uL,uR,uT,support)
+  uLeftI = uL;
+  uRightI = uR;
+  uTorsoI = uT;
+  supportI = support;
+  start_from_step = true;
+end
+
 
 function stance_reset() --standup/sitdown/falldown handling
-  print("Stance Resetted")
-  uLeft = util.pose_global(vector.new({-supportX, footY, 0}),uTorso);
-  uRight = util.pose_global(vector.new({-supportX, -footY, 0}),uTorso);
+  if start_from_step then
+    uLeft = uLeftI;
+    uRight = uRightI;
+    uTorso = uTorsoI;
+    if supportI ==0 then --start with left support
+      iStep0 = -1;
+      iStep = 0;
+    else
+      iStep0 = 0; --start with right support
+      iStep = 1;
+    end
+    initial_step = 1; --start walking asap
+  else
+    print("Stance Resetted")
+    uLeft = util.pose_global(vector.new({-supportX, footY, 0}),uTorso);
+    uRight = util.pose_global(vector.new({-supportX, -footY, 0}),uTorso);
+    iStep0 = -1;
+    iStep = 0;
+  end
   uLeft1, uLeft2 = uLeft, uLeft;
   uRight1, uRight2 = uRight, uRight;
   uTorso1, uTorso2 = uTorso, uTorso;
   uSupport = uTorso;
   tLastStep=Body.get_time();
   walkKickRequest = 0; 
-  iStep0 = -1;
-  iStep = 0;
   current_step_type=0;
   motion_playing = 0;
   upper_body_overridden=0;
   uLRFootOffset = vector.new({0,footY,0});
+  start_from_step = false;
 end
 
 function switch_stance(stance)

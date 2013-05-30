@@ -383,35 +383,131 @@ zmpstep.supportY = 0.030;
 
 zmpstep.motionDef={};
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+--[[
+--For 10ms simulation timestep
 --Supportfoot relstep zmpmod duration steptype
 
 zmpstep.motionDef["nonstop_kick_left"]={
   support_start = 0, --Left support 
   stepDef={  
-    {0, {0.06,-0.01,0},{0,0},0.25}, --LS step  
+    {0, {0.06,0,0},{0,0},0.25}, --LS step  
     {2, {0,0,0},{0,0},0.05}, --DS step
-    {1, {0.12,0,0},{0,0},0.7,1}, --RS step  
-    {2, {0,0,0},{0,0},0.05}, --DS step
-    {0, {0.06,0.02,0},{0,0},0.25}, --LS step  
-    {2, {0,0,0},{0,0},0.25}, --DS step
-    {2, {0,0,0},{0,0},0.05,9}, --DS step
+
+    {1, {0,-0.01,0},{-0.01,-0.02},0.2,1}, --RS step, lifting
+    {1, {0.18,0,0},{-0.01,-0.02},0.3,2}, --RS step  kicking
+    {1, {-0.06,0.01,0},{-0.01,-0.02},0.1,3}, --RS step  returning
+    {1, {0.0,0,0},{-0.01,-0.02},0.2,4}, --RS step  landing
+
+    {2, {0,0,0},{0,0},0.07}, --DS step
+    {0, {0.06,0,0},{0,0},0.25}, --LS step  
+---------------------------------------------
+    {1, {0.00,0,0},{0,0},0.25,9}, --RS step  
+    {0, {0.00,0,0},{0,0},0.25}, --RS step  
+    {1, {0.00,0,0},{0,0},0.25}, --RS step  
+    {0, {0.00,0,0},{0,0},0.25}, --RS step  
   },
-  support_end = 0,
+  support_end = 1, --should be followed by RS step
 }
 
 zmpstep.motionDef["nonstop_kick_right"]={
   support_start = 1, --Right support 
   stepDef={  
-    {1, {0.06,0.01,0},{0,0},0.25}, --RS step  
+    {1, {0.06,0.0,0},{0,0},0.25}, --RS step  
     {2, {0,0,0},{0,0},0.05}, --DS step
-    {0, {0.12,0,0},{-0.01,0.02},0.7,1}, --LS step  
-    {2, {0,0,0},{0.01,0.02},0.05}, --DS step
+
+    {0, {0,0.01,0},{-0.01,0.02},0.2,1}, --LS step, lifting
+    {0, {0.18,0,0},{-0.01,0.02},0.3,2}, --LS step  kicking
+    {0, {-0.06,-0.01,0},{-0.01,0.02},0.2,3}, --LS step  returning
+    {0, {0.0,0,0},{-0.01,0.02},0.2,4}, --LS step  landing
+
+    {2, {0,0,0},{0.01,0.02},0.07}, --DS step
     {1, {0.06,-0.02,0},{0,0},0.25}, --RS step  
-    {2, {0,0,0},{0,0},0.5}, --DS step
-    {2, {0,0,0},{0,0},0.05,9}, --DS step
+---------------------------------------------
+    {0, {0.00,0,0},{0,0},0.25,9}, --LS step  
+    {1, {0.00,0,0},{0,0},0.25}, --RS step  
+    {0, {0.00,0,0},{0,0},0.25}, --LS step  
+    {1, {0.00,0,0},{0,0},0.25}, --RS step  
   },
-  support_end = 0,
+  support_end = 0, --should be followed by LS step
 }
+--]]
+
+
+
+
+--For 40ms simulation (default)
+
+zmpstep.motionDef["nonstop_kick_left"]={
+  support_start = 0, --Left support 
+  stepDef={  
+    {2, {0,0,0},{0,0},0.10}, --DS step
+    {0, {0.06,0,0},{0,0},0.5}, --LS step  
+    {2, {0,0,0},{0,0},0.05}, --DS step
+
+    {1, {0,-0.01,0},{-0.01,-0.01},0.2,1}, --RS step, lifting
+    {1, {0.18,0,0},{-0.01,-0.01},0.3,2}, --RS step  kicking
+    {1, {-0.06,0.01,0},{-0.0,-0.02},0.1,3}, --RS step  returning
+    {1, {0.0,0,0},{-0.01,-0.0},0.2,4}, --RS step  landing
+
+    {2, {0,0,0},{0,0},0.10}, --DS step
+    {0, {0.06,0,0},{0,0},0.5}, --LS step  
+---------------------------------------------
+    {1, {0.00,0,0},{0,0},0.25,9}, --RS step  
+    {0, {0.00,0,0},{0,0},0.25}, --RS step  
+    {1, {0.00,0,0},{0,0},0.25}, --RS step  
+    {0, {0.00,0,0},{0,0},0.25}, --RS step  
+  },
+  support_end = 1, --should be followed by RS step
+}
+
+zmpstep.motionDef["nonstop_kick_right"]={
+  support_start = 1, --Right support 
+  stepDef={  
+    {2, {0,0,0},{0,0},0.10}, --DS step
+    {1, {0.06,0.0,0},{0,0},0.5}, --RS step  
+    {2, {0,0,0},{0,0},0.05}, --DS step
+
+    {0, {0,0.01,0},{-0.01,0.01},0.2,1}, --LS step, lifting
+    {0, {0.18,0,0},{-0.01,0.01},0.3,2}, --LS step  kicking
+    {0, {-0.06,-0.01,0},{-0.01,0.02},0.2,3}, --LS step  returning
+    {0, {0.0,0,0},{-0.01,0.0},0.2,4}, --LS step  landing
+
+    {2, {0,0,0},{0,0},0.10}, --DS step
+    {1, {0.06,-0.02,0},{0,0},0.5}, --RS step  
+---------------------------------------------
+    {0, {0.00,0,0},{0,0},0.25,9}, --LS step  
+    {1, {0.00,0,0},{0,0},0.25}, --RS step  
+    {0, {0.00,0,0},{0,0},0.25}, --LS step  
+    {1, {0.00,0,0},{0,0},0.25}, --RS step  
+  },
+  support_end = 0, --should be followed by LS step
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 zmpstep.params = true;
 zmpstep.param_k1_px={-826.152540,-303.478776,-33.247242}

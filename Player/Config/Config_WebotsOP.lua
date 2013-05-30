@@ -96,7 +96,7 @@ team.test_teamplay = 0; --Enable this to immobilize attacker to test team behavi
 --if ball is away than this from our goal, go support
 team.support_dist = 3.0; 
 team.supportPenalty = 0.5; --dist from goal
-team.use_team_ball = 1;
+team.use_team_ball = 0;
 team.team_ball_timeout = 3.0;  --use team ball info after this delay
 team.team_ball_threshold = 0.5;
 
@@ -177,9 +177,11 @@ world.use_new_goalposts = 1;
 world.triangulation_threshold = 4.0; 
 world.angle_update_threshold = 1.0;
 team.flip_correction = 1;
-world.position_update_threshold = 4.5;--Goalie moves too much
+world.position_update_threshold = 4.5;--Goalie position shouldn't move 
 
 
 
 
+vision.enable_corner_detection = 0;
 
+--fsm.playMode = 1;--Demo testing

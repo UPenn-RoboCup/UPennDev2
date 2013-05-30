@@ -20,7 +20,7 @@ params.name = {"Walk", "World", "Kick", "Vision", "FSM", "Camera","Robot"};
 
 ---Location Specific Camera Parameters--
 params.Camera = "GraspChris"
-params.Walk = "SlowSteady"
+params.Walk = ""
 params.World = "SPL13Grasp"
 
 util.LoadConfig(params, platform)
@@ -45,7 +45,16 @@ dev.ip_wireless_port = 54321
 dev.game_control = 'NaoGameControl';
 --dev.team='TeamSPL';
 dev.team='TeamGeneral';
+
+--[[
+dev.walk = 'AwesomeWalk';
+dev.largestep = 'ZMPStepKick';
+largestep_enable = true;
+--]]
+
 dev.walk = 'CleanWalk';
+
+
 dev.kick = 'Walk/BasicKick';
 
 --Speak enable
@@ -86,6 +95,8 @@ team.team_ball_timeout = 3.0;  --use team ball info after this delay
 team.team_ball_threshold = 0.5;
 team.avoid_own_team = 1;
 team.avoid_other_team = 1;
+
+team.flip_correction = 0;
 
 -- keyframe files
 km = {};

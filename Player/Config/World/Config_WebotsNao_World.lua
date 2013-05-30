@@ -84,8 +84,8 @@ world.aLineFilter = 0.02;
 world.initPosition1={
   {4.2,0},   --Goalie
   {0.5, 0}, --Attacker
-  {1.2,-1}, --Defender
-  {1.2, 1}, --Supporter
+  {1.2,-1.5}, --Defender
+  {1.2, 1.5}, --Supporter
   {2.2, 0}, --Defender2
 }
 -- default positions for opponents' kickoff
@@ -93,8 +93,8 @@ world.initPosition1={
 world.initPosition2={
   {4.2,0},   --Goalie
   {2.0, 0}, --Attacker
-  {2.5, -1}, --Defender
-  {2.5,1}, --Supporter
+  {2.5, -1.5}, --Defender
+  {2.5,1.5}, --Supporter
   {2.5, 0}, --Defender2
 }
 

@@ -233,8 +233,9 @@ function update()
       roles[id]=states[id].role;
       dgoalPosition = vector.new(wcm.get_goal_defend());-- distance to our goal
 
-      pose = wcm.get_pose();
-      ddefend[id] = math.sqrt((pose.x - dgoalPosition[1])^2 + (pose.y - dgoalPosition[2])^2);
+      ddefend[id] = 
+	math.sqrt((states[id].pose.x - dgoalPosition[1])^2 +
+		 (states[id].pose.y - dgoalPosition[2])^2);
 
       if (states[id].role ~= ROLE_ATTACKER ) then       -- Non attacker penalty:
         eta[id] = eta[id] + nonAttackerPenalty/walkSpeed;
@@ -261,16 +262,6 @@ function update()
     end
   end
 
-  --[[
-  if count % 100 == 0 then
-  print('---------------');
-  print('eta:');
-  util.ptable(eta)
-  print('ddefend:');
-  util.ptable(ddefend)
-  print('---------------');
-  end
-  --]]
 
   --For defender behavior testing
   force_defender = Config.team.force_defender or 0;
@@ -287,6 +278,17 @@ function update()
   --Only switch role during gamePlaying state
   --If role is forced for testing, don't change roles
 
+
+--[[
+    print('---------------');
+    for id=1,5 do
+      print(id,roles[id],eta[id],ddefend[id])
+    end
+    print('---------------');
+--]]
+
+
+
   if gcm.get_game_state()==3 and force_defender ==0 then
     -- goalie and reserve player never changes role
     if role~=ROLE_GOALIE and role<ROLE_RESERVE_PLAYER then 
@@ -297,20 +299,37 @@ function update()
         -- furthest player back is defender
         maxDDefID = 0;
         maxDDef = 0;
+
+        minDDefID = 0;
+        minDDef = math.huge;
+
         --Find the player most away from the defending goal
         --TODO: 2nd defender 
         for id = 1,5 do
-          if id ~= minEtaID and 	   
-            ddefend[id] > maxDDef and
-            roles[id]<ROLE_RESERVE_PLAYER then --goalie and reserve don't count
-            maxDDefID = id;
-            maxDDef = ddefend[id];
+          --goalie, current attacker and and reserve don't count
+          if id ~= minEtaID and 	  
+            roles[id]~=ROLE_ATTACKER and 
+            roles[id]<ROLE_RESERVE_PLAYER then 
+	    --Dead players have infinite ddefend
+            if ddefend[id] > maxDDef and ddefend[id]<20.0 then
+              maxDDefID = id;
+              maxDDef = ddefend[id];
+            end
+            if ddefend[id] < minDDef then
+              minDDefID = id;
+              minDDef = ddefend[id];
+            end
           end
         end
-        if maxDDefID == playerID then
+--	print("min max",minDDefID, maxDDefID)
+        if maxDDefID == minDDefID then --only one player, go defend
+          set_role(ROLE_DEFENDER)
+        elseif maxDDefID == playerID then --the player most away from our goal
           set_role(ROLE_SUPPORTER);    -- support
-        else
+        else --other players go defend
           set_role(ROLE_DEFENDER);    -- defense 
+	  --TODO: WHICH defender?
+
         end
       end
     end
@@ -492,7 +511,7 @@ end
 
 function check_flip()
   if flip_correction ==0 then return; end
-  if role==0 then return; end
+  if state.role==0 then return; end
 
   --print("Goalie ball");
   --util.ptable(goalie_ball);
@@ -506,29 +525,25 @@ function check_flip()
 
   ball_global = util.pose_global({ball.x,ball.y,0},{pose.x,pose.y,pose.a});
 
-  ball_flip_dist_threshold = 2.0;
-  ball_flip_x_threshold = 1.0;
+  ball_flip_dist_threshold = 1;
+  ball_flip_x_threshold = 0.6;
   ball_flip_y_threshold = 0.6;
   ball_flip_t_threshold = 0.5; --Both robot should be looking at the ball
   local dist_balls = math.abs(ball_global[1]-goalie_ball[1]);
 
---[[
-  print(string.format("Goalie ball: %.2f %.2f Ball: %.2f %.2f",
-	goalie_ball[1],goalie_ball[2],
-	ball_global[1],ball_global[2]
-
-  ));
---]]
+  --print("Ball global");
+  --util.ptable(ball_global);
+  --print("Goalie ball");
   --util.ptable(goalie_ball);
-  --print("Player ball");
 
-
-  if math.abs(ball.x) > ball_flip_x_threshold and
+  if (math.abs(ball_global[1]) > ball_flip_x_threshold or
+     math.abs(ball_global[2]) > ball_flip_y_threshold) and
      ball_global[1]*goalie_ball[1] < 0 and
-     ball.t < ball_flip_t_threshold and
-     goalie_ball[3] < ball_flip_t_threshold and
-     goalie_alive >0 and
-     dist_balls > ball_flip_dist_threshold then
+     dist_balls > ball_flip_dist_threshold and
+     gcm.get_game_state() == 3 then
+     --ball.t < ball_flip_t_threshold and
+     --goalie_ball[3] < ball_flip_t_threshold and
+     --goalie_alive >0 and
 
     print("FLIP DETECTED, CORRECTING");
     print("FLIP DETECTED, CORRECTING");

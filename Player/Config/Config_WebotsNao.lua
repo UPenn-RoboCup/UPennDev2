@@ -31,8 +31,10 @@ dev.game_control='WebotsGameControl';
 --dev.team= 'TeamSPL';
 dev.team= 'TeamGeneral';
 dev.kick = 'BasicKick';
-dev.walk = 'EvenBetterWalk';
 dev.walk = 'CleanWalk';
+dev.walk = 'AwesomeWalk';
+dev.largestep = 'ZMPStepKick'
+largestep_enable = true;
 
 -- Game Parameters
 game = {};
@@ -80,11 +82,13 @@ team.team_ball_threshold = 0.5;
 team.avoid_own_team = 1;
 team.avoid_other_team = 1;
 
-team.defender_pos_0={1.0,0}; --In case we don't have a goalie
-team.defender_pos_1={1.5,0.3}; --In case we have only one defender
-team.defender_pos_2={1.5,0.5}; --two defenders, left one
-team.defender_pos_3={1.5,-0.5}; --two defenders, right one
+--defender pos: (dist from goal, side offset)
+team.defender_pos_0={1.5,0}; --In case we don't have a goalie
+team.defender_pos_1={2,0.3}; --In case we have only one defender
+team.defender_pos_2={2,0.5}; --two defenders, left one
+team.defender_pos_3={3,-0.5}; --two defenders, right one
 
+team.supporter_pos = {1.5,2.0};
 
 
 

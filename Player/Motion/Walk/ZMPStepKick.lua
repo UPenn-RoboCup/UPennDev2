@@ -175,33 +175,82 @@ end
 ----------------------------------------------------------
 
 function precompute()
+  ------------------------------------
+  --We only need following parameters
+  -- param_k1_px : 1x3
+  -- param_k1 : 1xnPreview 
+  -- param_a : 3x3
+  -- param_b : 4x1
 
-  px={};pu0={};pu={};
-  for i=1, nPreview do
-    px[i]={1, i*timeStep, i*i*timeStep*timeStep/2 - tZmp*tZmp};
-    pu0[i]=(1+3*(i-1)+3*(i-1)^2)/6 *timeStep^3 - timeStep*tZmp*tZmp;
-    pu[i]={};
-    for j=1, nPreview do pu[i][j]=0; end
-    for j0=1,i do
-      j = i+1-j0;
-      pu[i][j]=pu0[i-j+1];
+  if Config.zmpstep.params then
+    param_k1_px = matrix:new({Config.zmpstep.param_k1_px});
+    param_k1 = matrix:new({Config.zmpstep.param_k1});
+    param_a = matrix:new(Config.zmpstep.param_a);
+    param_b = matrix.transpose(matrix:new({Config.zmpstep.param_b}));
+
+   print("param_k1_px:",matrix.size(param_k1_px))
+   print("param_k1:",matrix.size(param_k1))
+   print("param_a:",matrix.size(param_a))
+   print("param_b:",matrix.size(param_b))
+
+  else
+    px={};pu0={};pu={};
+    for i=1, nPreview do
+      px[i]={1, i*timeStep, i*i*timeStep*timeStep/2 - tZmp*tZmp};
+      pu0[i]=(1+3*(i-1)+3*(i-1)^2)/6 *timeStep^3 - timeStep*tZmp*tZmp;
+      pu[i]={};
+      for j=1, nPreview do pu[i][j]=0; end
+      for j0=1,i do
+        j = i+1-j0;
+        pu[i][j]=pu0[i-j+1];
+      end
     end
-  end
-  param_pu = matrix:new(pu)
-  param_px = matrix:new(px)
-  param_pu_trans = matrix.transpose(param_pu);
-  param_a=matrix {{1,timeStep,timeStep^2/2},{0,1,timeStep},{0,0,1}};
-  param_b=matrix.transpose({{timeStep^3/6, timeStep^2/2, timeStep,timeStep}}) ;
-  param_eye = matrix:new(nPreview,"I");
-  param_k=-matrix.invert(
+    param_pu = matrix:new(pu)
+    param_px = matrix:new(px)
+    param_pu_trans = matrix.transpose(param_pu);
+    param_a=matrix {{1,timeStep,timeStep^2/2},{0,1,timeStep},{0,0,1}};
+    param_b=matrix.transpose({{timeStep^3/6, timeStep^2/2, timeStep,timeStep}}) ;
+    param_eye = matrix:new(nPreview,"I");
+    param_k=-matrix.invert(
         (param_pu_trans * param_pu) + (r_q*param_eye)
         )* param_pu_trans ;
-  k1={};
-  k1[1]={};
-  for i=1,nPreview do k1[1][i]=param_k[1][i];end
-  param_k1 = matrix:new(k1);
-  param_k1_px = param_k1 * param_px;
+    k1={};
+    k1[1]={};
+    for i=1,nPreview do k1[1][i]=param_k[1][i];end
+    param_k1 = matrix:new(k1);
+    param_k1_px = param_k1 * param_px;
 
+  -- param_k1_px : 1x3
+  -- param_k1 : 1xnPreview 
+  -- param_a : 3x3
+  -- param_b : 4x1
+
+   --print out zmp preview params
+--   outfile=assert(io.open("zmpparams.lua","a+")); 
+   outfile=assert(io.open("zmpparams.lua","w")); 
+   data=''
+   data=data..string.format("zmpstep.params = true;\n")
+   data=data..string.format("zmpstep.param_k1_px={%f,%f,%f}\n",
+     param_k1_px[1][1],param_k1_px[1][2],param_k1_px[1][3]);
+   data=data..string.format("zmpstep.param_a={\n");
+   for i=1,3 do
+     data=data..string.format("  {%f,%f,%f},\n",
+	param_a[i][1],param_a[i][2],param_a[i][3]);
+   end
+   data=data..string.format("}\n");
+   data=data..string.format("zmpstep.param_b={%f,%f,%f,%f}\n",
+     param_b[1][1],param_b[2][1],param_b[3][1],param_b[4][1]);
+   data=data..string.format("zmpstep.param_k1={\n    ");
+   
+   for i=1,nPreview do
+     data=data..string.format("%f,",param_k1[1][i]);
+     if i%5==0 then 	data=data.."\n    " ;end
+   end
+   data=data..string.format("}\n");
+   outfile:write(data);
+   outfile:flush();
+   outfile:close();
+ end
 end
 
 function init_switch(uL,uR,uT,comdot)	
@@ -404,13 +453,13 @@ function update()
   aFoot = 0;
 
   if not active then
-  elseif stepType==1 then
+  elseif stepType>0 then
     if supportLeg==0 then --Left support
       uRight, pRLeg[3], pRLeg[5] = 
-	generate_kick_trajectory(ph,uRight0,uRight1);
+	generate_kick_trajectory(ph,uRight0,uRight1,stepType);
     elseif supportLeg==1 then --Right support
       uLeft, pLLeg[3], pLLeg[5] = 
-	generate_kick_trajectory(ph,uLeft0,uLeft1);
+	generate_kick_trajectory(ph,uLeft0,uLeft1,stepType);
     end
   else
     pLLeg[5],pRLeg[5] = 0,0; --angle set as zero
@@ -656,7 +705,7 @@ function foot_phase(ph)
   return xf, zf;
 end
 
-function generate_kick_trajectory(ph,uFoot0,uFoot1)
+function generate_kick_trajectory(ph,uFoot0,uFoot1, stepType)
   local uFoot, zFoot, aFoot;
   local kick_ph1,kick_ph2, kick_ph3  = 0.4, 0.7, 0.9
   local kick_mag = 1.5;
@@ -664,26 +713,21 @@ function generate_kick_trajectory(ph,uFoot0,uFoot1)
 --  local kick_ph1,kick_ph2, kick_ph3  = 0.4, 0.8, 0.9
 --  local kick_mag = 1.2;
 
-  if ph<kick_ph1 then --Lifting
-    local phKick = ph/kick_ph1;
-    uFoot = uFoot0;
-    zFoot = phKick * 0.05;
-    aFoot = phKick * 20*math.pi/180;
-  elseif ph<kick_ph2 then --Kicking
-    uFoot = util.se2_interpolate(kick_mag, uFoot0, uFoot1);
+  if stepType==1 then --Lifting
+    uFoot = util.se2_interpolate(ph,uFoot0,uFoot1);
+    zFoot = ph * 0.05;
+    aFoot = ph * 20*math.pi/180;
+  elseif stepType==2 then --Kicking
+    uFoot = uFoot1;
     zFoot = 0.07;
     aFoot = 0;
-  elseif ph<kick_ph3 then --Returning
-    local phKick = (ph-kick_ph2)/(1-kick_ph2);
-    uFoot = util.se2_interpolate(
-	kick_mag-(kick_mag-1)*phKick, uFoot0, uFoot1);
---    zFoot = (1-phKick) * 0.07;
-    zFoot = (1-phKick) * 0.05+0.02;
-    aFoot = (1-phKick) * 0;
-  else --Landing
-    local phKick = (ph-kick_ph3)/(1-kick_ph3);
-    uFoot = uFoot1;
-    zFoot = (1-phKick) * 0.02;
+  elseif stepType==3 then --Returning (Moving back in space)
+    uFoot = util.se2_interpolate(ph,uFoot0,uFoot1);
+    zFoot = (1-ph) * 0.05+0.02;
+    aFoot = (1-ph) * 0;
+  elseif stepType==4 then  --Landing
+    uFoot = util.se2_interpolate(ph,uFoot0,uFoot1);
+    zFoot = (1-ph) * 0.02;
     aFoot = 0;
   end
   return uFoot, zFoot, aFoot;

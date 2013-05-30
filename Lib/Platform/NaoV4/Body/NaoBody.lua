@@ -153,6 +153,9 @@ end
 
 function set_lleg_command(val)
   set_actuator_command(val, indexLLeg);
+  for i=1,#val do
+    commanded_joint_angles[6+i] = val[i];
+  end
 end
 function set_rleg_command(val)
   set_actuator_command(val, indexRLeg);

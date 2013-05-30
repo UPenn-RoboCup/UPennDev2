@@ -875,17 +875,26 @@ function stopAlign() --Depreciated, we always stop with feet together
 end
 
 function doWalkKickLeft()
+
+  doStepKickLeft();
+
+--[[
   if walkKickRequest==0 then
     walkKickRequest = 1; 
     walkKick = walkKickDef["FrontLeft"];
   end
+--]]
 end
 
 function doWalkKickRight()
+
+  doStepKickRight();
+--[[
   if walkKickRequest==0 then
     walkKickRequest = 1; 
     walkKick = walkKickDef["FrontRight"];
   end
+--]]
 end
 
 function doWalkKickLeft2()

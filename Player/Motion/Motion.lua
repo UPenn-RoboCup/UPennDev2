@@ -76,7 +76,7 @@ if sit_disable==0 then --For smaller robots
   if Config.largestep_enable then
     sm:add_state(largestep);
     sm:set_transition(walk, 'step', largestep);
-    sm:set_transition(largestep, 'done', stance);
+    sm:set_transition(largestep, 'done', walk);
   end
 
   sm:set_transition(divewait, 'dive', dive);

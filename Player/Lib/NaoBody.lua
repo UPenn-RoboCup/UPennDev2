@@ -48,6 +48,14 @@ nJointRArm = 4;
 
 get_time = function() return dcm.get_sensor_time(1); end
 
+--Last commanded joint angles (for standup with broken encoders)
+commanded_joint_angles=vector.zeros(22);
+
+
+
+
+
+
 --SJ: I define these variable to smooth out the head movement
 head_velocity_limit = {180*math.pi/180, 120*math.pi/180};
 tLastUpdate = 0;
@@ -100,16 +108,7 @@ function get_rleg_position()
   local q = get_sensor_position();
   return {unpack(q, indexRLeg, indexRLeg+nJointRLeg-1)};
 end
-function get_all_positions()
---Prints out servo positions for all motors (1-22)
-  for i = 1,22,1 do
-    local str = string.format("Motor %.2d:\t %.15s\t :\t %5.3f", 
-      i, jointNames[i], get_sensor_position()[i])
-    print(str)
 
-    -- print('Motor '..i..' : '..jointNames[i], get_sensor_position()[i]);
-  end
-end
 
 
 function set_body_hardness(val)

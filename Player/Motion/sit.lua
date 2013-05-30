@@ -58,7 +58,6 @@ function update()
 
 
 --Sit init using joint encoder
---[[
   if not started then 
     if t-t0>tStartWait then
       started=true;
@@ -94,8 +93,7 @@ function update()
     end
   end
 
---]]
-
+--[[
 --Sit init NOT using joint encoder 
   if not started then 
     started=true;
@@ -110,7 +108,7 @@ function update()
     tStart=t;
     count=1;
   end
-
+--]]
   local dt = t - t0;
   t0 = t;
 

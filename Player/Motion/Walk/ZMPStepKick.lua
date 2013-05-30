@@ -42,6 +42,11 @@ stepHeight = Config.zmpstep.stepHeight;
 ph1Single = Config.zmpstep.phSingle[1];
 ph2Single = Config.zmpstep.phSingle[2];
 
+kickHeight = Config.zmpstep.kickHeight or 0.07;
+kickAngle0 = Config.zmpstep.kickAngle0 or 20*math.pi/180;
+kickAngle1 = Config.zmpstep.kickAngle1 or 0;
+
+
 --Compensation parameters
 hipRollCompensation = Config.zmpstep.hipRollCompensation;
 
@@ -719,16 +724,21 @@ function generate_kick_trajectory(ph,uFoot0,uFoot1, stepType)
 
   if stepType==1 then --Lifting
     uFoot = util.se2_interpolate(ph,uFoot0,uFoot1);
-    zFoot = ph * 0.05;
-    aFoot = ph * 20*math.pi/180;
+    zFoot = ph * kickHeight;
+    aFoot = ph * kickAngle0;
+  elseif stepType==5 then --Moving
+    uFoot = util.se2_interpolate(ph,uFoot0,uFoot1);
+    zFoot = kickHeight;
+    aFoot = kickAngle1;
+
   elseif stepType==2 then --Kicking
     uFoot = uFoot1;
-    zFoot = 0.07;
-    aFoot = 0;
+    zFoot = kickHeight;
+    aFoot = kickAngle1;
   elseif stepType==3 then --Returning (Moving back in space)
     uFoot = util.se2_interpolate(ph,uFoot0,uFoot1);
-    zFoot = (1-ph) * 0.05+0.02;
-    aFoot = (1-ph) * 0;
+    zFoot = (1-ph) * (kickHeight-0.02)+0.02;
+    aFoot = (1-ph) * kickAngle1;
   elseif stepType==4 then  --Landing
     uFoot = util.se2_interpolate(ph,uFoot0,uFoot1);
     zFoot = (1-ph) * 0.02;

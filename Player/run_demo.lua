@@ -138,6 +138,7 @@ function update()
     if button_state==1 then --Button released
       behavior.cycle_behavior();
     end
+    button_state = 0;
   end
 
   if waiting>0 then --Waiting mode, check role change

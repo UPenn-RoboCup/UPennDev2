@@ -18,8 +18,8 @@ walk.velDelta={0.02,0.02,0.15}
 
 --Foot overlap check variables
 walk.footSizeX = {-0.04,0.08};
-walk.stanceLimitMarginY = 0.015;
-walk.stanceLimitA ={-20*math.pi/180, 40*math.pi/180};
+walk.stanceLimitMarginY = 0.035;
+--walk.stanceLimitA ={-20*math.pi/180, 40*math.pi/180};
 
 ---------------------------------------------
 -- Odometry values

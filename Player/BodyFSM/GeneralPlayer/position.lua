@@ -34,6 +34,9 @@ defender_pos_1 = Config.team.defender_pos_1 or {1.5,0.3}; --1 defender
 defender_pos_2 = Config.team.defender_pos_2 or {1.5,0.5}; --Left defender 
 defender_pos_3 = Config.team.defender_pos_3 or {1.5,-0.5}; --Right defender
 
+supporter_pos = Config.team.supporter_pos or {1.5,1.25};
+
+
 function posCalc()
   ball=wcm.get_ball();
   pose=wcm.get_pose();
@@ -257,14 +260,14 @@ function getDefenderHomePose()
 
 
 
-
   if defending_type == 1 then
     --Center defender
     if goalie_alive>0 then 
-      distGoal,sideGoal = defender_pos_1[1],defender_pos_1[1];
+      distGoal,sideGoal = defender_pos_1[1],defender_pos_1[2];
       --TODO: multiple defender handling
     else
-      distGoal,sideGoal = defender_pos_0[1],defender_pos_0[1];
+      --NO goalie
+      distGoal,sideGoal = defender_pos_0[1],defender_pos_0[2];
     end
     homePosition[1]= goal_defend[1]+distGoal * relBallX / RrelBall;
     homePosition[2]= goal_defend[2]+distGoal * relBallY / RrelBall
@@ -364,12 +367,13 @@ function getSupporterHomePose()
 
   -- move near attacking goal
   homePosition = attackGoalPosition;
-  homePosition[1] = homePosition[1] - util.sign(homePosition[1]) * 1.5;
+  homePosition[1] = homePosition[1] 
+	- util.sign(homePosition[1]) * supporter_pos[1];
 
   if math.abs(ballGlobal[2])< 1.0 then
-    homePosition[2] = util.sign(pose.y)*1.25;
+    homePosition[2] = util.sign(pose.y)*supporter_pos[2];
   else
-    homePosition[2] = -1*util.sign(ballGlobal[2]) * 1.25;
+    homePosition[2] = -1*util.sign(ballGlobal[2]) * supporter_pos[2];
   end
 
   relBallX = ballGlobal[1]-homePosition[1];

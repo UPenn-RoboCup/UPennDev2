@@ -114,6 +114,8 @@ step_queue_count = 0;
 step_queue_t0 = 0;
 support_end = 0;
 
+initial_update_needed = true;
+
 function set_kick_type(kickname)
 print("kick name:",kickname)
   stepdef_current = motionDef[kickname].stepDef;
@@ -332,7 +334,7 @@ function entry()
   Body.set_rarm_hardness(hardnessArm);
 
   active = true; --Automatically start stepping
-
+  initial_update_needed = true;
 
   --Init varables
   tStateUpdate = Body.get_time();  --last discrete update time
@@ -427,7 +429,8 @@ function update()
 
   t = Body.get_time();  	   --actual time
   --Run discrete state update
-  while t>tStateUpdate do  	   
+  while t>tStateUpdate or initial_update_needed do  	   
+    initial_update_needed = false;
     torso0=vector.new({torso1[1],torso1[2]});
     torso1=update_discrete(tStateUpdate);
     if stepType==9 then --END state

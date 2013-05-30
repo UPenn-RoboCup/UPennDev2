@@ -112,6 +112,7 @@ uRightI=vector.new({-supportX,-footY,0});
 uTorsoI=uTorso;
 step_queue_count = 0;
 step_queue_t0 = 0;
+support_end = 0;
 
 function set_kick_type(kickname)
   stepdef_current = motionDef[kickname].stepDef;
@@ -429,12 +430,11 @@ function update()
     torso0=vector.new({torso1[1],torso1[2]});
     torso1=update_discrete(tStateUpdate);
     if stepType==9 then --END state
-      print("Step done")
+      print("Step done!!!")
       active = false;
+      --Transition handling
+      walk.set_initial_stance(uLeft,uRight,uTorso,support_end);
       return "done";
-    --TODO
-    --Set Correct state variable for walk
-    --and resume walking
     end
     --Advance discrete time
     tStateUpdate = tStateUpdate + timeStep;

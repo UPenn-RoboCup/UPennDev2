@@ -130,12 +130,9 @@ function process_keyinput()
 
 
 	elseif byte==string.byte("f") then
-	   largestep.set_kick_type(1);
- 	   Motion.event("step");
-
+           walk.doStepKickLeft();
 	elseif byte==string.byte("g") then
-	   largestep.set_kick_type(2);
- 	   Motion.event("step");
+           walk.doStepKickRight();
 
 
 

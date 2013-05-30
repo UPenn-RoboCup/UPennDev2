@@ -73,12 +73,6 @@ pLLeg = vector.new({-supportX, footY, 0, 0,0,0});
 pRLeg = vector.new({-supportX, -footY, 0, 0,0,0});
 pTorso = vector.new({supportX, 0, bodyHeight, 0,bodyTilt,0});
 
-velCurrent = vector.new({0, 0, 0});
-velCommand = vector.new({0, 0, 0});
-
---ZMP exponential coefficients:
-aXP, aXN, aYP, aYN = 0, 0, 0, 0;
-
 --Gyro stabilization variables
 ankleShift = vector.new({0, 0});
 kneeShift = 0;
@@ -93,10 +87,11 @@ ph = 1;
 --ZMP preview parameters
 timeStep = 0.010; --40ms
 tPreview = 1.50; --preview interval, 1000ms
-
+xdot_initial = {0,0};
 
 nPreview = tPreview / timeStep; 
 r_q = 10^-6; --balacing parameter for optimization
+preload_num = nPreview-1;
 
 --Zmp preview variables
 x={}
@@ -106,24 +101,36 @@ uRightTargets={};
 supportLegs={};
 zaLefts={};
 zaRights={};
+zmpMods={}
 phs={};
 stepTypes={};
+
+motionDef = Config.zmpstep.motionDef;
+stepdef_current={}
+uLeftI=vector.new({-supportX,footY,0});
+uRightI=vector.new({-supportX,-footY,0});
+uTorsoI=uTorso;
+step_queue_count = 0;
+step_queue_t0 = 0;
+
+function set_kick_type(kickname)
+  stepdef_current = motionDef[kickname].stepDef;
+  support_start = motionDef[kickname].support_start;
+  support_end = motionDef[kickname].support_end;
+  return support_start, support_end;
+end
 
 ------------------------------------------------------
 
 --Stepdef definition
 --{
---   {supportLeg, relStep, ZA, duration, steptype}
+--   Supportfoot relstep zmpmod duration steptype
 --}
-
 --Step queue definition
 --{
--- {uLeft, uRight, supportLeg, duration, zaLeft, zaRight}
+-- {uLeft, uRight, supportLeg, duration, zaLeft, zaRight, zmp_mod steptype}
 --}
 
-uLeftI=vector.new({-supportX,footY,0});
-uRightI=vector.new({-supportX,-footY,0});
-uTorsoI=uTorso;
 
 function generate_step_queue(stepdef)
   local step_queue = {};
@@ -137,15 +144,15 @@ function generate_step_queue(stepdef)
   for i=1, #stepdef do
     local supportLeg = stepdef[i][1];
     if supportLeg==0 then --LS
-      uRight= uRight + vector.new(stepdef[i][2]);
-      zaRight = zaRight + vector.new(stepdef[i][3]);
+      uRight= util.pose_global(stepdef[i][2],uRight);
+--      zaRight = zaRight + vector.new(stepdef[i][3]);
     elseif supportLeg==1 then
-      uLeft= uLeft + vector.new(stepdef[i][2]);
-      zaLeft = zaLeft + vector.new(stepdef[i][3]);
+      uLeft= util.pose_global(stepdef[i][2],uLeft);
+--      zaLeft = zaLeft + vector.new(stepdef[i][3]);
     elseif supportLeg ==2 then --DS
       --Body height change
-      zaRight = zaRight - vector.new(stepdef[i][3]);
-      zaLeft = zaLeft - vector.new(stepdef[i][3]);
+--      zaRight = zaRight - vector.new(stepdef[i][3]);
+--      zaLeft = zaLeft - vector.new(stepdef[i][3]);
     end
     step_queue[i]={};
     step_queue[i][1]= {uLeft[1],uLeft[2],uLeft[3]};
@@ -154,16 +161,14 @@ function generate_step_queue(stepdef)
     step_queue[i][4]= stepdef[i][4]; --duration
     step_queue[i][5]= {zaLeft[1],zaLeft[2]};
     step_queue[i][6]= {zaRight[1],zaRight[2]};
-    step_queue[i][7]= stepdef[i][5] or 0; --step type
+    step_queue[i][7]= stepdef[i][3]; --zmp MOD
+    step_queue[i][8]= stepdef[i][5] or 0; --step type
   end
   return step_queue;
 end
 
 function load_step_queue(steptype)
 end
-
-step_queue_count = 0;
-step_queue_t0 = 0;
 
 ----------------------------------------------------------
 -- End initialization 
@@ -198,76 +203,6 @@ function precompute()
   param_k1_px = param_k1 * param_px;
 
 end
-
-
---Supportfoot relstep za duration
-
-
-
---real kick
-stationary_kick_left={
---  {2, {0,0,0},{0,0},0.5}, --DS step
-  {2, {0,0,0},{0,0},0.8}, --DS step
-  {0, {0.06,0.01,0},{0,0},0.25}, --LS step  
-  {2, {0,0,0},{0,0},0.05}, --DS step
-  {1, {0.12,0,0},{0,0},0.7,1}, --RS step  
-  {2, {0,0,0},{0,0},0.05}, --DS step
-  {0, {0.06,-0.02,0},{0,0},0.25}, --LS step  
-  {2, {0,0,0},{0,0},0.25}, --DS step
-  {2, {0,0,0},{0,0},0.05,9}, --DS step
-}
-stationary_kick_right={
---  {2, {0,0,0},{0,0},0.5}, --DS step
-  {2, {0,0,0},{0,0},0.8}, --DS step
-  {1, {0.06,-0.01,0},{0,0},0.25}, --LS step  
-  {2, {0,0,0},{0,0},0.05}, --DS step
-  {0, {0.12,0,0},{0,0},0.7,1}, --RS step  
-  {2, {0,0,0},{0,0},0.05}, --DS step
-  {1, {0.06,0.02,0},{0,0},0.25}, --LS step  
-  {2, {0,0,0},{0,0},0.25}, --DS step
-  {2, {0,0,0},{0,0},0.05,9}, --DS step
-}
-xdot_initial = {0,0};
-
-
-
-
-nonstop_kick_left={
-  {0, {0.06,-0.01,0},{0,0},0.25}, --LS step  
-  {2, {0,0,0},{0,0},0.05}, --DS step
-  {1, {0.12,0,0},{0,0},0.7,1}, --RS step  
-  {2, {0,0,0},{0,0},0.05}, --DS step
-  {0, {0.06,0.02,0},{0,0},0.25}, --LS step  
-  {2, {0,0,0},{0,0},0.25}, --DS step
-  {2, {0,0,0},{0,0},0.05,9}, --DS step
-}
---NON-stop kick
-nonstop_kick_right={
-  {1, {0.06,0.01,0},{0,0},0.25}, --RS step  
-  {2, {0,0,0},{0,0},0.05}, --DS step
-  {0, {0.12,0,0},{0,0},0.7,1}, --LS step  
-  {2, {0,0,0},{0,0},0.05}, --DS step
-  {1, {0.06,-0.02,0},{0,0},0.25}, --RS step  
-  {2, {0,0,0},{0,0},0.25}, --DS step
-  {2, {0,0,0},{0,0},0.05,9}, --DS step
-}
-
-
-stepdef_current = stationary_kick_left;
-
-function set_kick_type(kicktype)
-  if kicktype==1 then
-    stepdef_current = nonstop_kick_left;
-  else
-    stepdef_current = nonstop_kick_right;
-  end
-end
-
-
-
-
-
-preload_num = nPreview-1;
 
 function init_switch(uL,uR,uT,comdot)	
   uLeftI = uL;
@@ -386,15 +321,20 @@ function update_zmp_array(t)
     uRightF = step_queue[step_queue_count][2];
     zaLeftF = step_queue[step_queue_count][5];
     zaRightF = step_queue[step_queue_count][6];
-    stepTypeF = step_queue[step_queue_count][7];
+    zmpModF = step_queue[step_queue_count][7];
+    stepTypeF = step_queue[step_queue_count][8];
 
     if supportLegF == 0 then-- Left support
-      uSupportF = util.pose_global({supportX, supportY, 0}, uLeftF);
+      uSupportF = util.pose_global(
+	{supportX+zmpModF[1], supportY+zmpModF[2], 0}, uLeftF);
     elseif supportLegF == 1 then  -- Right support
-      uSupportF = util.pose_global({supportX, -supportY, 0}, uRightF);
+      uSupportF = util.pose_global(
+	{supportX+zmpModF[1], -supportY+zmpModF[2], 0}, uRightF);
     else --Double support
-      uLeftSupport = util.pose_global({supportX, supportY, 0}, uLeftF);
-      uRightSupport = util.pose_global({supportX, -supportY, 0}, uRightF);
+      uLeftSupport = util.pose_global(
+	{supportX+zmpModF[1], supportY+zmpModF[2], 0}, uLeftF);
+      uRightSupport = util.pose_global(
+	{supportX+zmpModF[1], -supportY+zmpModF[2], 0}, uRightF);
       uSupportF = util.se2_interpolate(0.5,uLeftSupport,uRightSupport);
     end
   end

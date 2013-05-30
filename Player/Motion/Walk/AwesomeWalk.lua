@@ -937,17 +937,19 @@ end
 
 function doStepKickLeft()
   if stepKickRequest==0 then
+    support_start, support_end = 
+	largestep.set_kick_type("nonstop_kick_left");
     stepKickRequest = 1; 
-    stepKickSupport = 0; --should with LS
-    largestep.set_kick_type(1);--left kick
+    stepKickSupport = support_start;
   end
 end
 
 function doStepKickRight()
   if stepKickRequest==0 then
+    support_start, support_end = 
+	largestep.set_kick_type("nonstop_kick_right");
     stepKickRequest = 1; 
-    stepKickSupport = 1;
-    largestep.set_kick_type(2);--right kick
+    stepKickSupport = support_start;
   end
 end
 

@@ -492,7 +492,7 @@ end
 
 function check_flip()
   if flip_correction ==0 then return; end
-  if role==0 then return; end
+  if state.role==0 then return; end
 
   --print("Goalie ball");
   --util.ptable(goalie_ball);
@@ -506,29 +506,25 @@ function check_flip()
 
   ball_global = util.pose_global({ball.x,ball.y,0},{pose.x,pose.y,pose.a});
 
-  ball_flip_dist_threshold = 2.0;
-  ball_flip_x_threshold = 1.0;
+  ball_flip_dist_threshold = 1;
+  ball_flip_x_threshold = 0.6;
   ball_flip_y_threshold = 0.6;
   ball_flip_t_threshold = 0.5; --Both robot should be looking at the ball
   local dist_balls = math.abs(ball_global[1]-goalie_ball[1]);
 
---[[
-  print(string.format("Goalie ball: %.2f %.2f Ball: %.2f %.2f",
-	goalie_ball[1],goalie_ball[2],
-	ball_global[1],ball_global[2]
-
-  ));
---]]
+  --print("Ball global");
+  --util.ptable(ball_global);
+  --print("Goalie ball");
   --util.ptable(goalie_ball);
-  --print("Player ball");
 
-
-  if math.abs(ball.x) > ball_flip_x_threshold and
+  if (math.abs(ball_global[1]) > ball_flip_x_threshold or
+     math.abs(ball_global[2]) > ball_flip_y_threshold) and
      ball_global[1]*goalie_ball[1] < 0 and
-     ball.t < ball_flip_t_threshold and
-     goalie_ball[3] < ball_flip_t_threshold and
-     goalie_alive >0 and
-     dist_balls > ball_flip_dist_threshold then
+     dist_balls > ball_flip_dist_threshold and
+     gcm.get_game_state() == 3 then
+     --ball.t < ball_flip_t_threshold and
+     --goalie_ball[3] < ball_flip_t_threshold and
+     --goalie_alive >0 and
 
     print("FLIP DETECTED, CORRECTING");
     print("FLIP DETECTED, CORRECTING");

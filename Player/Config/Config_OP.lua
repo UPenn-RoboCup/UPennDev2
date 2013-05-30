@@ -147,7 +147,7 @@ team.team_ball_threshold = 0.5; --Min score to use team ball
 team.avoid_own_team = 1;
 team.avoid_other_team = 0;
 
-
+team.flip_correction = 0;
 
 -- keyframe files
 km = {};

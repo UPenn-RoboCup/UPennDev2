@@ -87,6 +87,8 @@ team.team_ball_threshold = 0.5;
 team.avoid_own_team = 1;
 team.avoid_other_team = 1;
 
+team.flip_correction = 0;
+
 -- keyframe files
 km = {};
 km.standup_front = 'km_NaoV4_StandupFromFront.lua';

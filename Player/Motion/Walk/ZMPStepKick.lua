@@ -175,33 +175,82 @@ end
 ----------------------------------------------------------
 
 function precompute()
+  ------------------------------------
+  --We only need following parameters
+  -- param_k1_px : 1x3
+  -- param_k1 : 1xnPreview 
+  -- param_a : 3x3
+  -- param_b : 4x1
 
-  px={};pu0={};pu={};
-  for i=1, nPreview do
-    px[i]={1, i*timeStep, i*i*timeStep*timeStep/2 - tZmp*tZmp};
-    pu0[i]=(1+3*(i-1)+3*(i-1)^2)/6 *timeStep^3 - timeStep*tZmp*tZmp;
-    pu[i]={};
-    for j=1, nPreview do pu[i][j]=0; end
-    for j0=1,i do
-      j = i+1-j0;
-      pu[i][j]=pu0[i-j+1];
+  if Config.zmpstep.params then
+    param_k1_px = matrix:new({Config.zmpstep.param_k1_px});
+    param_k1 = matrix:new({Config.zmpstep.param_k1});
+    param_a = matrix:new(Config.zmpstep.param_a);
+    param_b = matrix.transpose(matrix:new({Config.zmpstep.param_b}));
+
+   print("param_k1_px:",matrix.size(param_k1_px))
+   print("param_k1:",matrix.size(param_k1))
+   print("param_a:",matrix.size(param_a))
+   print("param_b:",matrix.size(param_b))
+
+  else
+    px={};pu0={};pu={};
+    for i=1, nPreview do
+      px[i]={1, i*timeStep, i*i*timeStep*timeStep/2 - tZmp*tZmp};
+      pu0[i]=(1+3*(i-1)+3*(i-1)^2)/6 *timeStep^3 - timeStep*tZmp*tZmp;
+      pu[i]={};
+      for j=1, nPreview do pu[i][j]=0; end
+      for j0=1,i do
+        j = i+1-j0;
+        pu[i][j]=pu0[i-j+1];
+      end
     end
-  end
-  param_pu = matrix:new(pu)
-  param_px = matrix:new(px)
-  param_pu_trans = matrix.transpose(param_pu);
-  param_a=matrix {{1,timeStep,timeStep^2/2},{0,1,timeStep},{0,0,1}};
-  param_b=matrix.transpose({{timeStep^3/6, timeStep^2/2, timeStep,timeStep}}) ;
-  param_eye = matrix:new(nPreview,"I");
-  param_k=-matrix.invert(
+    param_pu = matrix:new(pu)
+    param_px = matrix:new(px)
+    param_pu_trans = matrix.transpose(param_pu);
+    param_a=matrix {{1,timeStep,timeStep^2/2},{0,1,timeStep},{0,0,1}};
+    param_b=matrix.transpose({{timeStep^3/6, timeStep^2/2, timeStep,timeStep}}) ;
+    param_eye = matrix:new(nPreview,"I");
+    param_k=-matrix.invert(
         (param_pu_trans * param_pu) + (r_q*param_eye)
         )* param_pu_trans ;
-  k1={};
-  k1[1]={};
-  for i=1,nPreview do k1[1][i]=param_k[1][i];end
-  param_k1 = matrix:new(k1);
-  param_k1_px = param_k1 * param_px;
+    k1={};
+    k1[1]={};
+    for i=1,nPreview do k1[1][i]=param_k[1][i];end
+    param_k1 = matrix:new(k1);
+    param_k1_px = param_k1 * param_px;
 
+  -- param_k1_px : 1x3
+  -- param_k1 : 1xnPreview 
+  -- param_a : 3x3
+  -- param_b : 4x1
+
+   --print out zmp preview params
+--   outfile=assert(io.open("zmpparams.lua","a+")); 
+   outfile=assert(io.open("zmpparams.lua","w")); 
+   data=''
+   data=data..string.format("zmpstep.params = true;\n")
+   data=data..string.format("zmpstep.param_k1_px={%f,%f,%f}\n",
+     param_k1_px[1][1],param_k1_px[1][2],param_k1_px[1][3]);
+   data=data..string.format("zmpstep.param_a={\n");
+   for i=1,3 do
+     data=data..string.format("  {%f,%f,%f},\n",
+	param_a[i][1],param_a[i][2],param_a[i][3]);
+   end
+   data=data..string.format("}\n");
+   data=data..string.format("zmpstep.param_b={%f,%f,%f,%f}\n",
+     param_b[1][1],param_b[2][1],param_b[3][1],param_b[4][1]);
+   data=data..string.format("zmpstep.param_k1={\n    ");
+   
+   for i=1,nPreview do
+     data=data..string.format("%f,",param_k1[1][i]);
+     if i%5==0 then 	data=data.."\n    " ;end
+   end
+   data=data..string.format("}\n");
+   outfile:write(data);
+   outfile:flush();
+   outfile:close();
+ end
 end
 
 function init_switch(uL,uR,uT,comdot)	

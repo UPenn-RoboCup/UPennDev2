@@ -12,20 +12,15 @@ walk.stanceLimitX={-0.10,0.10};
 walk.stanceLimitY={0.09,0.20};
 walk.stanceLimitA={-0*math.pi/180,40*math.pi/180};
 
-walk.velLimitX={-.02,.05};
-walk.velLimitY={-.02,.02};
+walk.velLimitX={-.05,.05};
+walk.velLimitY={-.03,.03};
 walk.velLimitA={-.4,.4};
-walk.velDelta={0.02,0.02,0.15} 
-
----------------------------------------------
--- Odometry values
---------------------------------------------
-walk.odomScale = {1.09, .92, .84}; --1.06, 1.20, .95  
+walk.velDelta={0.15,0.01,0.15} 
 
 ----------------------------------------------
 -- Stance parameters
 ---------------------------------------------
-walk.bodyHeight = 0.315; 
+walk.bodyHeight = 0.322; 
 walk.bodyTilt=0*math.pi/180; 
 walk.footX= 0.0; 
 walk.footY = 0.0500;
@@ -44,28 +39,33 @@ walk.hardnessArm=.3;
 walk.tStep = 0.26;
 walk.tZmp = 0.17;
 walk.supportY = 0.002;
-walk.stepHeight = 0.020;
-walk.phSingle={0.02,0.98};
+walk.stepHeight = 0.014;
+walk.phSingle={0.04,0.96};
+
+---------------------------------------------
+-- Odometry values
+--------------------------------------------
+walk.odomScale = {.95, 1.0, .75}; --1.06, 1.20, .95  
 
 --------------------------------------------
 -- Compensation parameters
 --------------------------------------------
 walk.hipRollCompensation = 1.5*math.pi/180;
-walk.ankleMod = vector.new({-1,0})/0.12 * 0*math.pi/180; --({-1,0})/0.12 * 10*math.pi/180;
+walk.ankleMod = vector.new({-1,0})/0.12 * 10*math.pi/180;
 
 --------------------------------------------------------------
 --Imu feedback parameters, alpha / gain / deadband / max
 --------------------------------------------------------------
-walk.gyroFactor = 0.001; --In units of degrees per second
+walk.gyroFactor = 0.001;
 
-walk.ankleImuParamX={0.11, -0.50*walk.gyroFactor,
+walk.ankleImuParamX={0.15, -0.40*walk.gyroFactor,
         1*math.pi/180, 5*math.pi/180};
 walk.kneeImuParamX={0.1, -0.3*walk.gyroFactor,
         .5*math.pi/180, 5*math.pi/180};
-walk.ankleImuParamY={0.22, -1.9*walk.gyroFactor,
+walk.ankleImuParamY={0.15, -.5*walk.gyroFactor,
         .5*math.pi/180, 5*math.pi/180};
-walk.hipImuParamY={0.1, -0.3*walk.gyroFactor,
-        .5*math.pi/180, 5*math.pi/180};
+walk.hipImuParamY={0.13, -0.6*walk.gyroFactor,
+        .3*math.pi/180, 5*math.pi/180};
 
 walk.armImuParamX={0.1, 0*walk.gyroFactor,
         1*math.pi/180, 5*math.pi/180};
@@ -111,19 +111,6 @@ walk.walkKickDef["SideRight"]={
 
 walk.walkKickPh=0.5;
 
-
-walk.walkKickVel = {0.03, 0.04} --step / kick / follow 
-walk.walkKickSupportMod = {{-0.03,0},{-0.03,0}}
-walk.walkKickHeightFactor = 1.5;
---walk.tStepWalkKick = 0.35;  --Leave as default for now
-
-walk.sideKickVel1 = {0.04,0.04,0};
-walk.sideKickVel2 = {0.09,0.05,0};
-walk.sideKickVel3 = {0.09,-0.02,0};
-walk.sideKickSupportMod = {{0,0},{0,0}};
-walk.tStepSideKick = 0.70;
-
-
 --------------------------------------------
 -- Robot - specific calibration parameters
 --------------------------------------------
@@ -134,3 +121,4 @@ walk.supportCompR = {0,0,0};
 
 --Shift torso a bit to front when kicking
 walk.kickXComp = -0.01;
+walk.testing = false; --This should be turned off for walkkick

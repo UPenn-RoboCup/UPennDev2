@@ -177,9 +177,11 @@ world.use_new_goalposts = 1;
 world.triangulation_threshold = 4.0; 
 world.angle_update_threshold = 1.0;
 team.flip_correction = 1;
-world.position_update_threshold = 4.5;--Goalie moves too much
+world.position_update_threshold = 4.5;--Goalie position shouldn't move 
 
 
 
 
+vision.enable_corner_detection = 0;
 
+--fsm.playMode = 1;--Demo testing

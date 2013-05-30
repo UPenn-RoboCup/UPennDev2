@@ -59,6 +59,9 @@ world.Lcorner[16]={0,-0.6};
 
 --SJ: OP does not use yaw odometry data (only use gyro)
 world.odomScale = {1, 1, 0};  
+world.gyroScale = 1.5; --heuristic value to prevent overshooting
+
+
 world.imuYaw = 1;
 --Vision only testing (turn off yaw gyro)
 --world.odomScale = {1, 1, 1};  

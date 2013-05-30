@@ -24,8 +24,8 @@ HOST=$(hostname)
 #  NAME="unknown"
 #fi
 
-git config --global --unset user.name
-git config --global --unset user.email
+# git config --global --unset user.name
+# git config --global --unset user.email
 
 #if [ $NAME == "unknown" ]; then
 #  echo "Please Name Yourself For Git:"

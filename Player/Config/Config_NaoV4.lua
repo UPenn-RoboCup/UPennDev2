@@ -45,7 +45,7 @@ dev.ip_wireless_port = 54321
 dev.game_control = 'NaoGameControl';
 --dev.team='TeamSPL';
 dev.team='TeamGeneral';
-dev.walk = 'ModestWalk';
+dev.walk = 'CleanWalk';
 dev.kick = 'Walk/BasicKick';
 
 --Speak enable
@@ -90,7 +90,12 @@ team.avoid_other_team = 1;
 -- keyframe files
 km = {};
 km.standup_front = 'km_NaoV4_StandupFromFront.lua';
-km.standup_back = 'km_NaoV4_StandupFromBack.lua';
+bodyType = 1; -- Old Body(1) // New Body(2)
+if bodyType==1 then
+  km.standup_back = 'km_NaoV4_StandupFromBackOldBody.lua';
+else
+  km.standup_back = 'km_NaoV4_StandupFromBack.lua';
+end
 km.time_to_stand = 30; -- average time it takes to stand up in seconds
 
 --Goalie behavior parameters

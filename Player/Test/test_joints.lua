@@ -5,5 +5,10 @@ require('init')
 require('Body')
 
 function update()
-  Body.get_all_positions()
+  i = 1
+  for i = 1,22,1 do
+    local str = string.format("Motor %.2d:\t %.15s\t :\t %5.3f",
+      i, Body.jointNames[i], Body.get_sensor_position()[i])
+    print(str)
+  end
 end

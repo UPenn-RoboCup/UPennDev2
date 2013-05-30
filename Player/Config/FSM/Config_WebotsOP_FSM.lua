@@ -43,7 +43,7 @@ fsm.enable_obstacle_detection = 1;
 fsm.playMode = 3; --Advanced Behavior 
 
 fsm.enable_walkkick = 1;
-fsm.enable_sidekick = 1;
+fsm.enable_sidekick = 0;
 fsm.enable_dribble = 1;
 fsm.fast_approach = 0;
 
@@ -201,8 +201,15 @@ fsm.bodyApproach.xTarget12={0, 0.12,0.14}; --min, target, max
 fsm.bodyApproach.yTarget12={-0.005, 0.01, 0.025}; --min, target ,max
 
 --Target position for straight walkkick 
-fsm.bodyApproach.xTarget21={0, 0.12,0.14}; --min, target, max
+--fsm.bodyApproach.xTarget21={0, 0.12,0.14}; --min, target, max
+--fsm.bodyApproach.yTarget21={0.015, 0.04, 0.045}; --min, target ,max
+
+--For new StepKick
+fsm.bodyApproach.xTarget21={0, 0.14,0.16}; --min, target, max
 fsm.bodyApproach.yTarget21={0.015, 0.04, 0.045}; --min, target ,max
+
+
+
 
 --Target position for side walkkick to left
 fsm.bodyApproach.xTarget22={0, 0.12,0.14}; --min, target, max

@@ -15,11 +15,19 @@ require('Body')
 require('Motion')
 
 gcm.say_id();
-
 Motion.entry();
 
 darwin = false;
 webots = false;
+
+ROLE_GOALIE = 0;
+ROLE_ATTACKER = 1;
+ROLE_DEFENDER = 2;
+ROLE_SUPPORTER = 3;
+ROLE_DEFENDER2 = 4;
+ROLE_RESERVE_PLAYER = 5;
+ROLE_RESERVE_GOALIE = 6;
+
 
 -- Enable OP specific 
 if(Config.platform.name == 'OP') then
@@ -70,10 +78,10 @@ tUpdate = unix.time();
 gcm.set_team_forced_role(0); --Don't force role
 gcm.set_game_paused(1);
 waiting = 1;
-if Config.game.role==1 then
-  cur_role = 1; --Attacker
+if Config.game.role==ROLE_ATTACKER then
+  cur_role = ROLE_ATTACKER; --Attacker
 else
-  cur_role = 0; --Default goalie
+  cur_role = ROLE_GOALIE; --Default goalie
 end
 
 
@@ -97,10 +105,10 @@ function update()
         Speak.talk('Playing');
         Motion.event("standup");
 	--Change role to active 
-        if cur_role==0 then
-	  gcm.set_team_role(0); --Active goalie
+        if cur_role==ROLE_GOALIE then
+	  gcm.set_team_role(ROLE_GOALIE); --Active goalie
 	else
-	  gcm.set_team_role(1); --Active player
+	  gcm.set_team_role(ROLE_ATTACKER); --Active player
 	end
       else
         Speak.talk('Waiting');
@@ -115,8 +123,8 @@ function update()
 
   if waiting>0 then --Waiting mode, check role change
     gcm.set_game_paused(1);
-    if cur_role==0 then
-      gcm.set_team_role(5); --Reserve goalie
+    if cur_role==ROLE_GOALIE then
+      gcm.set_team_role(ROLE_RESERVE_GOALIE); --Reserve goalie
       Body.set_indicator_ball({0,0,1});
 
       --Both arm up for goalie
@@ -126,7 +134,7 @@ function update()
       Body.set_larm_hardness({0,0,0.5});
 
     else
-      gcm.set_team_role(4); --Reserve player
+      gcm.set_team_role(ROLE_RESERVE_PLAYER); --Reserve player
       Body.set_indicator_ball({1,1,1});
 
       --One arm up for goalie
@@ -139,7 +147,7 @@ function update()
       button_state=1;
     else
       if button_state==1 then --Button released
-        cur_role = 1 - cur_role;
+        cur_role = 1 - cur_role; 
       end
       button_state=0;
     end

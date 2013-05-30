@@ -34,7 +34,7 @@ field_margin = Config.vision.ball.field_margin or 0;
 th_headAngle = Config.vision.ball.th_headAngle or -10*math.pi/180;
 
 max_distance = Config.vision.ball.max_distance or 5.0;
-
+fieldsize_factor = Config.vision.ball.fieldsize_factor or 2.0;
 
 --function detect(color)
 
@@ -114,12 +114,25 @@ function detect(color)
       vcm.add_debug_message(string.format(
 	"Ball v0: %.2f %.2f %.2f\n",v[1],v[2],v[3]));
 
-      if v[1]*v[1] + v[2]*v[2] > max_distance*max_distance then
- 	--Ball distance check
+      --Global ball position check
+      pose = wcm.get_pose();
+      posexya=vector.new( {pose.x, pose.y, pose.a} );
+      ballGlobal=util.pose_global({v[1],v[2],0},posexya);
+      pos_check_fail = false;
+
+      if ballGlobal[1]>Config.world.xMax * fieldsize_factor or
+       ballGlobal[1]<-Config.world.xMax * fieldsize_factor or
+       ballGlobal[2]>Config.world.yMax * fieldsize_factor or
+       ballGlobal[2]<-Config.world.yMax * fieldsize_factor then
+        pos_check_fail = false;
+        vcm.add_debug_message("On-the-field check fail\n");
+      end
+
+      if pos_check_fail and
+         (v[1]*v[1] + v[2]*v[2] > max_distance*max_distance) then
+ 	--Only check distance if the ball is out of field
         vcm.add_debug_message("Distance check fail\n");
         check_passed = false;
-       
-
       elseif v[3] > th_height_max then
         --Ball height check
         vcm.add_debug_message("Height check fail\n");

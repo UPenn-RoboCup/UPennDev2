@@ -127,6 +127,16 @@ function process_keyinput()
 		grip.throw=1;
 		Motion.event("throw");
 --]]
+
+
+	elseif byte==string.byte("f") then
+           walk.doStepKickLeft();
+	elseif byte==string.byte("g") then
+           walk.doStepKickRight();
+
+
+
+
 	elseif byte==string.byte("z") then
 --[[
 	    walk.upper_body_override(

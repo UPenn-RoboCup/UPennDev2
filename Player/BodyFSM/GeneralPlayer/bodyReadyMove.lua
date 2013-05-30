@@ -22,25 +22,20 @@ initPosition2 = Config.world.initPosition2;
 
 -- don't start moving right away
 tstart = Config.fsm.bodyReady.tStart or 5.0;
-
 phase=0; --0 for wait, 1 for approach, 2 for turn, 3 for end
-
 side_y = 0;
 
 function entry()
   print(_NAME.." entry");
   phase=0;
-
   t0 = Body.get_time();
   Motion.event('standup')
-
   pose = wcm.get_pose();
   if pose.y > 0 then
     side_y = 1;
   else
     side_y = -1;
   end
-
 end
 
 function getHomePose()
@@ -72,9 +67,9 @@ function getHomePose()
     home[2] = home[2] + side_y * 0.8;    
   end  
 
-  --Goalie moves differently
+  --Goalie moves differently to avoid hitting the goalpost
   if role==0 and phase==1 then 
-    home=home*0.7;
+    home=home*0.9;
   end;
 
   home=home*util.sign(goal_defend[1]);

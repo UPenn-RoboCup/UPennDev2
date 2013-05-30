@@ -41,6 +41,12 @@ dev.walk='EvenBetterWalk'
 dev.kick = 'PunchKick'
 dev.gender = 1; -- 1 for boy and 0 for girl 
 
+largestep_enable = true;
+dev.largestep = 'ZMPStepKick';
+
+
+
+
 speak = {}
 speak.enable = false; 
 

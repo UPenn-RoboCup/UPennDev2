@@ -199,7 +199,7 @@ fsm.bodyPosition.maxStep1 = 0.06;
 fsm.bodyPosition.maxStep2 = 0.08;
 fsm.bodyPosition.rVel2 = 0.5;
 fsm.bodyPosition.aVel2 = 45*math.pi/180;
-fsm.bodyPosition.maxA2 = 0.1;
+fsm.bodyPosition.maxA2 = 0.2;
 fsm.bodyPosition.maxY2 = 0.02;
 
 --Full speed front dash
@@ -223,7 +223,7 @@ fsm.bodyApproach.aThresholdTurnGoalie = 15*math.pi/180;
 fsm.bodyApproach.aThresholdTurnGoalie = 35*math.pi/180;
 
 --x and y target position for stationary straight kick
-fsm.bodyApproach.xTarget11={0, 0.16,0.17}; --min, target, max
+fsm.bodyApproach.xTarget11={0, 0.14,0.15}; --min, target, max
 fsm.bodyApproach.yTarget11={0.03, 0.045, 0.06}; --min, target ,max
 
 --x and y target position for stationary kick to left
@@ -249,12 +249,12 @@ fsm.bodyApproach.pRight = 1.8
 fsm.bodyKick={};
 
 --initial wait 
-fsm.bodyKick.tStartWait = 0.5;
-fsm.bodyKick.tStartWaitMax = 1.0;
+fsm.bodyKick.tStartWait = 1.0;
+fsm.bodyKick.tStartWaitMax = 1.5;
 fsm.bodyKick.thGyroMag = 100; 
 
 --ball position checking params
-fsm.bodyKick.kickTargetFront = {0.16,0.045};
+fsm.bodyKick.kickTargetFront = {0.14,0.045};
 
 --For kicking to the left
 fsm.bodyKick.kickTargetSide = {0.15,0.0};
@@ -306,12 +306,15 @@ fsm.headReadyLookGoal.timeout = 1.5 * speedFactor;
 
 --SJ: NaoV4 has VERY wide FOV
 fsm.headScan={};
-fsm.headScan.pitch0 = 20*math.pi/180;
-fsm.headScan.pitchMag = 0*math.pi/180;
+fsm.headScan.pitch0 = 10*math.pi/180;
+fsm.headScan.pitchMag = 10*math.pi/180;
 fsm.headScan.yawMag = 90*math.pi/180;
-fsm.headScan.pitchTurn0 = 20*math.pi/180;
+fsm.headScan.yawMagGoalie = 60*math.pi/180;
+fsm.headScan.pitchTurn0 = 15*math.pi/180;
 fsm.headScan.pitchTurnMag = 0*math.pi/180;
 fsm.headScan.yawMagTurn = 45*math.pi/180;
+
+
 fsm.headScan.tScan = 3.0*speedFactor;
 
 --------------------------------------------------

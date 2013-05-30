@@ -378,8 +378,37 @@ zmpstep.tZmp = 0.165;
 zmpstep.stepHeight = 0.025;
 zmpstep.phSingle={0.1,0.9};
 zmpstep.hipRollCompensation = 3*math.pi/180;
-
 zmpstep.supportX = 0.0;
-zmpstep.supportY = 0.025;
+zmpstep.supportY = 0.030;
 
+zmpstep.motionDef={};
 
+--Supportfoot relstep zmpmod duration steptype
+
+zmpstep.motionDef["nonstop_kick_left"]={
+  support_start = 0, --Left support 
+  stepDef={  
+    {0, {0.06,-0.01,0},{0,0},0.25}, --LS step  
+    {2, {0,0,0},{0,0},0.05}, --DS step
+    {1, {0.12,0,0},{0,0},0.7,1}, --RS step  
+    {2, {0,0,0},{0,0},0.05}, --DS step
+    {0, {0.06,0.02,0},{0,0},0.25}, --LS step  
+    {2, {0,0,0},{0,0},0.25}, --DS step
+    {2, {0,0,0},{0,0},0.05,9}, --DS step
+  },
+  support_end = 0,
+}
+
+zmpstep.motionDef["nonstop_kick_right"]={
+  support_start = 1, --Right support 
+  stepDef={  
+    {1, {0.06,0.01,0},{0,0},0.25}, --RS step  
+    {2, {0,0,0},{0,0},0.05}, --DS step
+    {0, {0.12,0,0},{-0.01,0.02},0.7,1}, --LS step  
+    {2, {0,0,0},{0.01,0.02},0.05}, --DS step
+    {1, {0.06,-0.02,0},{0,0},0.25}, --RS step  
+    {2, {0,0,0},{0,0},0.5}, --DS step
+    {2, {0,0,0},{0,0},0.05,9}, --DS step
+  },
+  support_end = 0,
+}

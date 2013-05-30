@@ -97,6 +97,8 @@ function entry()
   vcm.set_camera_reload_LUT(0);
   vcm.set_camera_lut_filename(Config.camera.lut_file);
 
+  --turn on camera switching at beginning
+  vcm.set_camera_command(-1);
   -- Start the HeadTransform machine
   HeadTransform.entry();
 

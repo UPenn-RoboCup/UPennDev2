@@ -1,49 +1,73 @@
-module(... or "", package.seeall)
+cwd = os.getenv('PWD')
+require('init')
 
+require('Config')
 require('unix')
+require('getch')
+require('shm')
+require('vector')
+require('mcm')
+require('vcm')
+require('wcm')
+require('Speak')
+require('Body')
+require('Motion')
+require('gcm')
 
--- mv up to Player directory
-unix.chdir('..');
-
-local cwd = unix.getcwd();
-
-package.cpath = cwd.."/Lib/?.so;"..package.cpath;
-package.path = cwd.."/Util/?.lua;"..package.path;
-package.path = cwd.."/Config/?.lua;"..package.path;
-package.path = cwd.."/Lib/?.lua;"..package.path;
-package.path = cwd.."/Dev/?.lua;"..package.path;
-package.path = cwd.."/Motion/?.lua;"..package.path;
-package.path = cwd.."/Motion/keyframes/?.lua;"..package.path;
-package.path = cwd.."/Vision/?.lua;"..package.path;
-package.path = cwd.."/World/?.lua;"..package.path;
-package.path = cwd.."/BodyFSM/?.lua;"..package.path;
-package.path = cwd.."/HeadFSM/?.lua;"..package.path;
-package.path = cwd.."/GameFSM/?.lua;"..package.path;
-
-require('mcm');
 us = require('UltraSound');
 
---Body.set_actuator_us(68);
---unix.usleep(1000000);
-
-
---[[
-while(1) do
-  left = vector.new(Body.get_sensor_usLeft());
-  right = vector.new(Body.get_sensor_usRight());
-  mcm.set_us_left(left);
-  mcm.set_us_right(right);
-  unix.usleep(10000);
-end
---]]
-
 us.entry();
+Left = false
+Right = false
 
+State_Old= 0
+State = 0
+-- 0: None, 1: left obstacle, 2: right obstacle, 3: front obstacle
 function update()
   us.update();
   -- update shm
   mcm.set_us_left(us.left);
   mcm.set_us_right(us.right);
+  Left, Right = us.check_obstacle()
+  if Left and (not Right) then
+    print('Left')
+  elseif Right and (not Left) then
+    print('Right')
+  elseif Left and Right then
+    print('Front')
+  else
+    print('Clear')
+  end
+
+ 
+ 
+ --[[
+  Left, Right = check_obstacle()  
+  --print ("Left: "..Left.."Right: "..Right) 
+  if Left and (not Right) then
+    State = 1
+    if State_Old ~= 1 then
+      print('Left')
+    end
+  elseif Right and (not Left) then
+    State = 2
+    if State_Old ~= 2 then
+      print('Right')
+    end
+  elseif Left and Right then
+    State = 3
+    if State_Old ~= 3 then
+      print('Front')
+    end
+  else
+    State = 0
+    if State_Old ~= 0 then
+      print('Clear')
+    end
+  end
+  State_Old = State
+  --]]
+
 end
 
 

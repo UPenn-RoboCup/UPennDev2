@@ -327,7 +327,6 @@ function h=show_monitor()
       updated=robots{playerNumber(i),teamNumber}.updated;
       tLastUpdate=robots{playerNumber(i),teamNumber}.tLastUpdate;
 
-	r_mon.body
 %      if updated 
         h_c=subplot(5,5,[1:15]);
         plot_robot( r_struct, r_mon,2,MONITOR.enable10);

@@ -13,34 +13,8 @@ function h = plot_field(handle,type)
     circleR = .625;
     fieldB=[-3.5 3.5 -2.5 2.5];
 
-%{  
-
-%TEMPORARY VALUES FOR EXPO
-    fieldX = [-2.7  2.7 2.7 -2.7 -2.7];
-    fieldY = [-1.75 -1.75 1.75  1.75 -1.75];
-    goalX = [2.7 (2.7+0.40) (2.7+0.40) 2.7];
-    goalY = [-0.80 -0.80 0.80 0.80];
-    penaltyX = [2.7 (2.7-0.65) (2.7-0.65) 2.7];
-    penaltyY = [-1.22 -1.22 1.22 1.22];
-    spotX=1.35;
-    circleR = .1;
-    fieldB=[-3.1 3.1 -2.4 2.4];
-%}  
-
-
   elseif type==1 %SPL
     %old SPL
-    %{
-    fieldX = [-3.00  3.00 3.00 -3.00 -3.00];
-    fieldY = [-2.00 -2.00 2.00  2.00 -2.00];
-    goalX = [3.00 (3.00+0.50) (3.00+0.50) 3.00];
-    goalY = [-0.80 -0.80 0.80 0.80];
-    penaltyX = [3.00 (3.00-0.60) (3.00-0.60) 3.00];
-    penaltyY = [-1.10 -1.10 1.10 1.10];
-    spotX=1.2;
-    circleR = .6;
-    fieldB=[-3.5 3.5 -2.5 2.5];
-    %}
 
     %new SPL field
     %{
@@ -69,12 +43,12 @@ function h = plot_field(handle,type)
   elseif type==2 % Teensize
     fieldX = [-4.50  4.50 4.50 -4.50 -4.50];
     fieldY = [-3.00 -3.00 3.00  3.00 -3.00];
-    goalX = [4.50 (4.50+0.40) (4.50+0.40) 4.50];
-    goalY = [-1.35 -1.35 1.35 1.35];
-    penaltyX = [4.50 (4.50-1.00) (4.50-1.00) 4.50];
-    penaltyY = [-2.25 -2.25 2.25 2.25];
-    spotX=2.4;
-    circleR = .75;
+    goalX = [4.50 (4.50+0.50) (4.50+0.50) 4.50];
+    goalY = [-0.80 -0.80 0.80 0.80];
+    penaltyX = [4.50 (4.50-0.60) (4.50-0.60) 4.50];
+    penaltyY = [-1.10 -1.10 1.10 1.10];
+    spotX=2.7;
+    circleR = .6;
     fieldB=[-5 5 -3.5 3.5];
 
   end

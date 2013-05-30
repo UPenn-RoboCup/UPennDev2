@@ -23,6 +23,8 @@ shared.robot.odomScale = vector.zeros(3);
 
 shared.robot.team_ball = vector.zeros(3);
 shared.robot.team_ball_score = vector.zeros(1);
+shared.robot.flipped = vector.zeros(1);
+
 
 shared.ball = {};
 shared.ball.x = vector.zeros(1);
@@ -42,11 +44,13 @@ shared.team = {};
 
 shared.team.attacker_eta = vector.zeros(1);
 shared.team.defender_eta = vector.zeros(1);
+shared.team.defender2_eta = vector.zeros(1);
 shared.team.supporter_eta = vector.zeros(1);
 shared.team.goalie_alive = vector.zeros(1);
 
 shared.team.attacker_pose = vector.zeros(3);
 shared.team.defender_pose = vector.zeros(3);
+shared.team.defender2_pose = vector.zeros(3);
 shared.team.supporter_pose = vector.zeros(3);
 shared.team.goalie_pose = vector.zeros(3);
 

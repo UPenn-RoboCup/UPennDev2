@@ -31,8 +31,10 @@ dev.game_control='WebotsGameControl';
 --dev.team= 'TeamSPL';
 dev.team= 'TeamGeneral';
 dev.kick = 'BasicKick';
-dev.walk = 'EvenBetterWalk';
 dev.walk = 'CleanWalk';
+dev.walk = 'AwesomeWalk';
+dev.largestep = 'ZMPStepKick'
+largestep_enable = true;
 
 -- Game Parameters
 game = {};

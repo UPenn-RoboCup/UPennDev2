@@ -42,7 +42,7 @@ fsm.enable_obstacle_detection = 1;
 fsm.playMode = 3; --Advanced Behavior 
 
 fsm.enable_walkkick = 1;
-fsm.enable_walkkick = 0;
+--fsm.enable_walkkick = 0;
 fsm.enable_sidekick = 1;
 fsm.enable_sidekick = 0;
 

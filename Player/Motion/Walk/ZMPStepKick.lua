@@ -115,6 +115,7 @@ step_queue_t0 = 0;
 support_end = 0;
 
 function set_kick_type(kickname)
+print("kick name:",kickname)
   stepdef_current = motionDef[kickname].stepDef;
   support_start = motionDef[kickname].support_start;
   support_end = motionDef[kickname].support_end;

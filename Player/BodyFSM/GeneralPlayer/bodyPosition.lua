@@ -85,10 +85,8 @@ function update()
     homePose = position.getSupporterHomePose();
   else
     if Config.fsm.playMode~=3 or kickDir~=1 then --We don't care to turn when we do sidekick
-
-      homePose = position.getAttackerHomePose();
-
---      homePose = position.getDirectAttackerHomePose();
+--      homePose = position.getAttackerHomePose();
+      homePose = position.getDirectAttackerHomePose();
     else
       homePose = position.getAttackerHomePose();
     end	

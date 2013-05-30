@@ -216,7 +216,7 @@ function update()
     button_state=1;
   else
     if button_state==1 then --Button released
---      behavior.cycle_behavior();
+      behavior.cycle_behavior();
       button_state=0;
       if waiting > 0 then --Cycle demo mode while in waiting
         demo_mode = (demo_mode + 1 )%4; --Cycle demo mode
@@ -254,7 +254,7 @@ function update()
 
       --Cycle kick types when in soccer mode
       if t-kick_cycle_t0>kick_cycle_time then 
-        behavior.cycle_behavior();
+   --     behavior.cycle_behavior();
         kick_cycle_t0 = t;
       end
     elseif demo_mode == 2 then -- Mimic mode

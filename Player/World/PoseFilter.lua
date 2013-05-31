@@ -439,17 +439,13 @@ function goal_observation(pos, v)
   else
     pose,dGoal,aGoal=triangulate(pos,v);
   end
-
 --  vcm.add_debug_message(string.format("aGoal: %d\n",aGoal*180/math.pi))
 --  vcm.add_debug_message(string.format("pos: %.1f %.1f\n",pos[1][1],pos[1][2]))
-
   local x,y,a=pose.x,pose.y,pose.a;
-
   local rSigma = .25*dGoal + 0.20;
   local aSigma = 5*math.pi/180;
   local rFilter = rKnownGoalFilter;
   local aFilter = aKnownGoalFilter;
-
 
   if dGoal<triangulation_threshold then 
     for ip = 1,n do
@@ -470,8 +466,6 @@ function goal_observation(pos, v)
     goalv={(v[1][1]+v[2][1])/2, (v[1][2]+v[2][2])/2}
     landmark_observation(goalpos, goalv , rKnownGoalFilter, aKnownGoalFilter);
   end
-
-
 end
 
 
@@ -495,9 +489,19 @@ function goal_observation_unified(pos1,pos2,v)
     --Goal close, triangulate
     local x1,y1,a1=pose1.x,pose1.y,pose1.a;
     local x2,y2,a2=pose2.x,pose2.y,pose2.a;
-    local rSigma1 = .25*dGoal1 + 0.20;
-    local rSigma2 = .25*dGoal2 + 0.20;
+
+    --SJ: I think rSigma is too large / aSigma too small
+    --If the robot has little pos error and big angle error
+    --It will pulled towared flipped position
+
+    local rSigma = .25*dGoal1 + 0.20;
     local aSigma = 5*math.pi/180;
+
+    --New params 
+
+    local aSigma = 10*math.pi/180;
+
+
     local rFilter = rUnknownGoalFilter;
     local aFilter = aUnknownGoalFilter;
     for ip = 1,n do
@@ -505,12 +509,17 @@ function goal_observation_unified(pos1,pos2,v)
       local yErr1 = y1 - yp[ip];
       local rErr1 = math.sqrt(xErr1^2 + yErr1^2);
       local aErr1 = mod_angle(a1 - ap[ip]);
-      local err1 = (rErr1/rSigma1)^2 + (aErr1/aSigma)^2;
+      local err1 = (rErr1/rSigma)^2 + (aErr1/aSigma)^2;
+
       local xErr2 = x2 - xp[ip];
       local yErr2 = y2 - yp[ip];
       local rErr2 = math.sqrt(xErr2^2 + yErr2^2);
       local aErr2 = mod_angle(a2 - ap[ip]);
-      local err2 = (rErr2/rSigma2)^2 + (aErr2/aSigma)^2;
+      local err2 = (rErr2/rSigma)^2 + (aErr2/aSigma)^2;
+
+      --SJ: distant goals are more noisy
+--      updateFactor = 
+ 
       --Filter towards best matching goal:
       if err1>err2 then
         wp[ip] = wp[ip] - err2;
@@ -532,15 +541,16 @@ function goal_observation_unified(pos1,pos2,v)
     goalv={(v[1][1]+v[2][1])/2, (v[1][2]+v[2][2])/2}
     landmark_observation(
 	{goalpos1,goalpos2},
-	 goalv , rKnownGoalFilter, aKnownGoalFilter);
+	 goalv , rUnknownPostFilter, aUnknownGoalFilter);
   else --Goal VERY far, just update angle only
     goalpos1={(pos1[1][1]+pos1[2][1])/2, (pos1[1][2]+pos1[2][2])/2}
     goalpos2={(pos2[1][1]+pos2[2][1])/2, (pos2[1][2]+pos2[2][2])/2}
     goalv={(v[1][1]+v[2][1])/2, (v[1][2]+v[2][2])/2}
     landmark_observation(
 	{goalpos1,goalpos2},
-	 goalv , rKnownGoalFilter, aKnownGoalFilter,1);
+	 goalv , rUnknownGoalFilter, aUnknownGoalFilter,1);
   end
+
 end
 
 
@@ -724,6 +734,7 @@ end
 function add_noise()
   da = 2.0*math.pi/180.0;
   dr = 0.01;
+
   xp = xp + dr * vector.new(util.randn(n));
   yp = yp + dr * vector.new(util.randn(n));
   ap = ap + da * vector.new(util.randn(n));
@@ -793,6 +804,9 @@ function resample()
   yp2 = vector.zeros(n);
   ap2 = vector.zeros(n);
   nsampleSum = 1;
+  
+  n_mirror = 20; --Flip 1 out of 20 particles
+
   ni = 1;
   for i = 1,2*n do
     oi = wSum[i][2];
@@ -805,18 +819,6 @@ function resample()
       nsampleSum = nsampleSum + 1;
     end
   end
-
-  --Mirror some particles
---[[
-  n_mirror = 10;
-  for i=1,n_mirror do
-    if i~=iMax then
-	xp2[i]=-xp[i];
-	yp2[i]=-yp[i];
-	ap2[i]=-ap[i];
-    end
-  end
---]]
 
   -- always put max particle
   xp2[1] = xp[iMax];

@@ -4,7 +4,8 @@ require('vector')
 --Localization parameters 
 
 world={};
-world.n = 100;
+--world.n = 100;
+world.n = 200;
 world.xLineBoundary = 3.0;
 world.yLineBoundary = 2.0;
 world.xMax = 3.2;
@@ -59,7 +60,7 @@ world.Lcorner[16]={0,-0.6};
 
 --SJ: OP does not use yaw odometry data (only use gyro)
 world.odomScale = {1, 1, 0};  
-world.gyroScale = 1.5; --heuristic value to prevent overshooting
+world.gyroScale = 1; --heuristic value to prevent overshooting
 
 
 world.imuYaw = 1;
@@ -93,6 +94,8 @@ world.initPosition3={
 }
 
 -- filter weights
+--old values
+-------------------------------
 world.rGoalFilter = 0.02;
 world.aGoalFilter = 0.05;
 world.rPostFilter = 0.02;
@@ -101,32 +104,32 @@ world.rKnownGoalFilter = 0.02;
 world.aKnownGoalFilter = 0.20;
 world.rKnownPostFilter = 0.02;
 world.aKnownPostFilter = 0.10;
-world.rUnknownGoalFilter = 0.02;
-world.aUnknownGoalFilter = 0.05;
-world.rUnknownPostFilter = 0.02;
-world.aUnKnownPostFilter = 0.05;
+----------------------------------
 
-
-
-
+--for general update(corner, distant goalpost, etc)
 world.rLandmarkFilter = 0.05;
 world.aLandmarkFilter = 0.10;
 
---SJ: Corner shouldn't turn angle too much (may cause flipping)
+--for Two goalposts
+world.rUnknownGoalFilter = 0.02;
+world.aUnknownGoalFilter = 0.05;
+
+--For One goalpost
+world.rUnknownPostFilter = 0.02;
+world.aUnKnownPostFilter = 0.05;
+
+--For corner
 world.rCornerFilter = 0.01;
 world.aCornerFilter = 0.03;
 
+--For line
 world.aLineFilter = 0.02;
 
---New two-goalpost localization
-world.use_new_goalposts=0;
---SJ: Corner shouldn't turn angle too much (may cause flipping)
-world.rCornerFilter = 0.01;
-world.aCornerFilter = 0.03;
 
-world.aLineFilter = 0.02;
-
-world.use_same_colored_goal = 0;
+world.use_same_colored_goal = 1;
 
 --Use line information to fix angle
 world.use_line_angles = 1;
+
+--New two-goalpost localization
+world.use_new_goalposts=1;

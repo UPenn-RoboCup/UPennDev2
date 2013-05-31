@@ -185,3 +185,4 @@ world.position_update_threshold = 4.5;--Goalie position shouldn't move
 vision.enable_corner_detection = 0;
 
 --fsm.playMode = 1;--Demo testing
+min_eta_look = 1.0; 

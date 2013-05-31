@@ -250,6 +250,13 @@ function update()
         eta[id] = eta[id] + fallDownPenalty;
       end
 
+      --Store this
+      if id==playerID then
+        wcm.set_team_my_eta(eta[id]);
+      end
+
+
+
       --Ignore goalie, reserver, penalized player
       if (states[id].penalty > 0) or 
         (t - states[id].tReceive > msgTimeout) or
@@ -423,6 +430,7 @@ function update_teamdata()
       end
     end
   end
+
 
   wcm.set_robot_team_ball(best_ball);
   wcm.set_robot_team_ball_score(best_scoreBall);

@@ -13,6 +13,9 @@ trackZ = Config.vision.ball_diameter;
 timeout = Config.fsm.headTrack.timeout;
 tLost = Config.fsm.headTrack.tLost;
 
+min_eta_look = Config.min_eta_look or 2.0;
+
+
 goalie_dive = Config.goalie_dive or 0;
 goalie_type = Config.fsm.goalie_type;
 
@@ -71,16 +74,17 @@ function update()
   end
   Body.set_head_command({yaw, pitch});
 
-
-
-
   if (t - ball.t > tLost) then
     print('Ball lost!');
     return "lost";
   end
---TODO: generalize this using eta information
-  if (t - t0 > timeout) and
-     ballR > minDist   then
+
+  eta = wcm.get_team_my_eta();
+  if eta<min_eta_look then
+    return;
+  end
+
+  if (t - t0 > timeout) then
      if role==0 then
        return "sweep"; --Goalie, sweep to localize
      else

@@ -400,7 +400,7 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel,name)
   function plot_particle(robot,scale)
 %    plot(particle.x,particle.y,'x')
 
-    index=[1:10:200]';
+    index=[1:5:size(robot.x,2)]';
 
     px=robot.x(index);
     py=robot.y(index);

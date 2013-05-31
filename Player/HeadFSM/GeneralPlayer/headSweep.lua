@@ -9,6 +9,9 @@ tScan = Config.fsm.headSweep.tScan;
 yawMag = Config.head.yawMax;
 dist = Config.fsm.headReady.dist;
 
+min_eta_look = Config.min_eta_look or 2.0;
+
+
 function entry()
 print("headSweep entry")
   print(_NAME..' entry');
@@ -31,6 +34,12 @@ function update()
 	dist*math.cos(yaw0),dist*math.sin(yaw0), height);
 
   Body.set_head_command({yaw, pitch});
+
+  eta = wcm.get_team_my_eta();
+  if eta<min_eta_look then
+    return 'done';
+  end
+
 
   if (t - t0 > tScan) then
     return 'done';

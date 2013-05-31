@@ -258,10 +258,8 @@ fsm.bodyGotoCenter.timeout=10.0*speedFactor;
 --HeadTrack : Track the ball
 --------------------------------------------------
 fsm.headTrack = {};
---fsm.headTrack.timeout = 3.0 * speedFactor;
 fsm.headTrack.timeout = 2.0 * speedFactor;
 fsm.headTrack.tLost = 1.5 * speedFactor;
-fsm.headTrack.minDist = 0.25; --Default value 0.30,If ball is closer than this, don't look up
 fsm.headTrack.fixTh={0.20,0.08}; --Fix yaw axis if ball is within this box
 
 --------------------------------------------------
@@ -318,10 +316,8 @@ fsm.headKickFollow.tFollow = 1.0*speedFactor;
 --HeadLookGoal: Look up to see the goal
 --------------------------------------------------
 fsm.headLookGoal={};
---fsm.headLookGoal.yawSweep = 50*math.pi/180;
 fsm.headLookGoal.yawSweep = 70*math.pi/180;
 fsm.headLookGoal.tScan = 1.0*speedFactor;
-fsm.headLookGoal.minDist = 0.40;
 
 --------------------------------------------------
 --HeadSweep: Look around to find the goal

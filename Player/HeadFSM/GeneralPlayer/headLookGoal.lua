@@ -5,6 +5,7 @@ module(..., package.seeall);
 require('Body')
 require('Config')
 require('vcm')
+require('wcm')
 
 t0 = 0;
 yawSweep = Config.fsm.headLookGoal.yawSweep;
@@ -12,6 +13,8 @@ yawMax = Config.head.yawMax;
 dist = Config.fsm.headReady.dist;
 tScan = Config.fsm.headLookGoal.tScan;
 minDist = Config.fsm.headLookGoal.minDist;
+
+min_eta_look = Config.min_eta_look or 2.0;
 
 function entry()
   print(_NAME.." entry");
@@ -43,9 +46,16 @@ function update()
   ball = wcm.get_ball();
   ballR = math.sqrt (ball.x^2 + ball.y^2);
 
+  --If the player is attacker and about to reach the ball
+
+  eta = wcm.get_team_my_eta();
+  if eta<min_eta_look then
+    return 'timeout';
+  end
+
   if (t - t0 > tScan) then
     tGoal = wcm.get_goal_t();
-    if (tGoal - t0 > 0) or ballR<minDist then
+    if (tGoal - t0 > 0) then
       return 'timeout';
     else
       return 'lost';

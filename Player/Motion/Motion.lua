@@ -162,6 +162,11 @@ function update()
   local imuAngle = Body.get_sensor_imuAngle();
   local maxImuAngle = math.max(math.abs(imuAngle[1]), math.abs(imuAngle[2]-bodyTilt));
   fall = mcm.get_motion_fall_check() --Should we check for fall? 1 = yes
+
+  --SJ: sometimes this becomes nil....
+  fallAngle = fallAngle or 1E6;
+
+
   if (maxImuAngle > fallAngle and fall==1) then
     sm:add_event("fall");
     mcm.set_walk_isFallDown(1); --Notify world to reset heading 

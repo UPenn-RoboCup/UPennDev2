@@ -284,7 +284,15 @@ function get_change_team()
 end
 
 function get_change_role()
-  return 0;
+  bumperLeft = get_sensor_bumperLeft();
+  bumperRight = get_sensor_bumperRight();
+
+  if (bumperLeft[1]+bumperLeft[2])>0 and
+     (bumperRight[1]+bumperRight[2])>0 then
+    return 1;
+  else
+    return 0;
+  end
 end
 
 function get_change_kickoff()

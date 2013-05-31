@@ -22,6 +22,7 @@ function entry()
   print("Head SM:".._NAME.." entry");
   t0 = Body.get_time();
   kick_dir=wcm.get_kick_dir();
+  vcm.set_camera_command(1); --bottom camera
 end
 
 function update()
@@ -100,4 +101,5 @@ function update()
 end
 
 function exit()
+  vcm.set_camera_command(-1); --switch camera
 end

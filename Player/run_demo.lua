@@ -88,14 +88,16 @@ function update()
   vcm.set_camera_teambroadcast(1); --Turn on wireless team broadcast
 
   if (not init) then
-    if (Body.calibrate(count)) then
-      Speak.talk('Calibration done');
-      init = true;
-    end
-    return;
-  else
+    if not calibrating then 
       Speak.talk('Calibrating');
       calibrating = true;
+    else    
+      if (Body.calibrate(count)) then
+        Speak.talk('Calibration done');
+        init = true;
+      end
+    end
+    return;
   end
 
   if (vcm.get_ball_detect() == 1) then  ball_led = {0,1,0}

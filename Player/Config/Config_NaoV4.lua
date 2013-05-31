@@ -21,6 +21,9 @@ params.name = {"Walk", "World", "Kick", "Vision", "FSM", "Camera","Robot"};
 ---Location Specific Camera Parameters--
 params.Camera = "GraspChris"
 params.Walk = ""
+
+params.Walk = "SJTEMP"
+
 params.World = "SPL13Grasp"
 
 util.LoadConfig(params, platform)
@@ -46,13 +49,15 @@ dev.game_control = 'NaoGameControl';
 --dev.team='TeamSPL';
 dev.team='TeamGeneral';
 
---[[
+--dev.walk = 'CleanWalk';
+
+
+--
 dev.walk = 'AwesomeWalk';
 dev.largestep = 'ZMPStepKick';
 largestep_enable = true;
---]]
+--
 
-dev.walk = 'CleanWalk';
 
 
 dev.kick = 'Walk/BasicKick';

@@ -134,3 +134,4 @@ fsm.bodyAnticipate.rCloseDive = 2.0; --ball distance threshold for diving
 vision.ball.fieldsize_factor = 1.2; --check whether the ball is inside the field
 vision.ball.max_distance = 2; --if ball is this close, just pass the test
 
+fallAngle = 1E6; --disable falldown check

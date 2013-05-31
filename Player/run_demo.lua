@@ -5,7 +5,6 @@ require('unix')
 require('Config')
 Config.fsm.playMode = 1; --Force demo
 Config.fsm.forcePlayer = 1; --Force attacker
---Config.dev.team = 'TeamBox'; --For mimicing
 
 require('shm')
 require('vector')
@@ -18,17 +17,13 @@ require('getch')
 require('Body')
 require('Motion')
 
---require('boxercm') --For mimicing
-
 gcm.say_id();
 
 Motion.entry();
 
 darwin = false;
 webots = false;
-
---Demo mode, 0 for soccer, 1 for push recovery, 2 for mimic
-demo_mode = 0; 
+newnao = false;
 
 --Cycle time for kick types
 kick_cycle_time = 15;
@@ -45,19 +40,16 @@ if(Config.platform.name == 'OP') then
   Body.set_lleg_hardness({0.2,0.6,0,0,0,0});
   Body.set_rleg_hardness({0.2,0.6,0,0,0,0});
 end 
-if(Config.platform.name == 'NaoV4') then
-  newnao = true;
-end
 if (string.find(Config.platform.name,'Webots')) then
   webots = true;
 end
 
-
-
-
-
-init = false;
-calibrating = false;
+if(Config.platform.name == 'NaoV4') then
+  newnao = true;
+  init = false;
+else
+  init = true;
+end
 
 smindex = 0;
 initToggle = true;
@@ -94,6 +86,17 @@ function update()
   --Update battery info
   wcm.set_robot_battery_level(Body.get_battery_level());
   vcm.set_camera_teambroadcast(1); --Turn on wireless team broadcast
+
+  if (not init) then
+    if (Body.calibrate(count)) then
+      Speak.talk('Calibration done');
+      init = true;
+    end
+    return;
+  else
+      Speak.talk('Calibrating');
+      calibrating = true;
+  end
 
   if (vcm.get_ball_detect() == 1) then  ball_led = {0,1,0}
   else    ball_led = {0,0,0}

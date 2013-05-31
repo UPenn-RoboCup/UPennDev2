@@ -142,9 +142,14 @@ function update()
   if (Body.get_change_role() == 1) then
     button_state=1;
   else
-    if button_state==1 then --Button released
+    if newnao then
+      if waiting>0 and button_state==1 then
+        behavior.cycle_behavior();
+      end
+    elseif button_state==1 then --Button released
       behavior.cycle_behavior();
     end
+
     button_state = 0;
   end
 

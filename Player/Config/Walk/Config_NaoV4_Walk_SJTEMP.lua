@@ -152,7 +152,7 @@ zmpstep.motionDef={};
 zmpstep.motionDef["nonstop_kick_left"]={
   support_start = 0, --Left support
   stepDef={
-    {2, {0,0,0},   {0,0},0.10}, --DS step
+    {2, {0,0,0},   {0,0},0.20}, --DS step
     {0, {0.06,0,0},{0,0},0.36}, --LS step
     {2, {0,0,0},   {0,-0.02},0.20}, --DS step
 
@@ -160,7 +160,7 @@ zmpstep.motionDef["nonstop_kick_left"]={
     {1, {0.22,0,0}     ,{-0.01,-0.02},0.1,5}, --RS step  kicking
     {1, {0,0,0}     ,{-0.01,-0.025},0.35,5}, --RS step  waiting
     {1, {-0.06,0.02,0} ,{-0.01,-0.01},0.2,3}, --RS step  returning
-    {1, {0.0,0,0}      ,{0.01,-0.0},0.2,4}, --RS step  landing
+    {1, {0.0,0.0,0}      ,{0.01,-0.0},0.2,4}, --RS step  landing
 
     {2, {0,0,0},   {0,0},0.10}, --DS step
     {0, {0.06,0,0},{0,0},0.26}, --LS step
@@ -174,14 +174,14 @@ zmpstep.motionDef["nonstop_kick_left"]={
 zmpstep.motionDef["nonstop_kick_right"]={
   support_start = 1, --Right support
   stepDef={
-    {2, {0,0,0},{0,0},0.10}, --DS step
+    {2, {0,0,0},{0,0},0.20}, --DS step
     {1, {0.06,0.0,0},{0,0},0.36}, --RS step
     {2, {0,0,0},{0,0.02},0.20}, --DS step
 
     {0, {-0.06,0.02,0}      ,{0.01,0.01},0.2,1}, --LS step, lifting
     {0, {0.22,0,0}      ,{-0.01,0.02},0.1,5}, --LS step  kicking
     {0, {0,0,0}         ,{-0.01,0.025},0.35,5}, --LS step  waiting
-    {0, {-0.06,0.02,0}  ,{-0.01,0.01},0.2,3}, --LS step  returning
+    {0, {-0.06,-0.02,0}  ,{-0.01,0.01},0.2,3}, --LS step  returning
     {0, {0.0,0,0}       ,{0.01,0.0},0.2,4}, --LS step  landing
 
     {2, {0,0,0},{0,0},0.10}, --DS step

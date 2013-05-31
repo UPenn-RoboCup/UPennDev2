@@ -13,6 +13,8 @@ require('walk')
 require('behavior')
 require('position')
 
+require('UltraSound');
+
 t0 = 0;
 
 
@@ -23,6 +25,8 @@ rClose= Config.fsm.bodyPosition.rClose;
 fast_approach=Config.fsm.fast_approach or 0;
 test_teamplay = Config.team.test_teamplay or 0;
 
+
+avoid_ultrasound = Config.team.avoid_ultrasound or 0;
 
 function entry()
   print(_NAME.." entry");
@@ -161,6 +165,26 @@ function update()
     end
    end
   end
+
+  if avoid_ultrasound then
+    leftblocked,rightblocked = UltraSound.check_obstacle();
+
+    if leftblocked and rightblocked then
+      vx = -0.02;
+      vy = 0 ;
+      va = 0;
+    elseif leftblocked and not rightblocked then
+      vx = 0;
+      vy = 0 ;
+      va = -0.3;
+    elseif not leftblocked and rightblocked then
+      vx = 0;
+      vy = 0;
+      va = 0.3;
+    end
+  end
+
+
 
   walk.set_velocity(vx,vy,va);
 

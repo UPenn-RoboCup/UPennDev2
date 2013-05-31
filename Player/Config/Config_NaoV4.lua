@@ -20,7 +20,7 @@ params.name = {"Walk", "World", "Kick", "Vision", "FSM", "Camera","Robot"};
 
 ---Location Specific Camera Parameters--
 params.Camera = "GraspChris"
-params.Walk = ""
+--params.Walk = "Alan_0530"
 
 params.Walk = "SJTEMP"
 
@@ -106,7 +106,7 @@ team.flip_correction = 0;
 -- keyframe files
 km = {};
 km.standup_front = 'km_NaoV4_StandupFromFront.lua';
-bodyType = 1; -- Old Body(1) // New Body(2)
+bodyType = 2; -- Old Body(1) // New Body(2)
 if bodyType==1 then
   km.standup_back = 'km_NaoV4_StandupFromBackOldBody.lua';
 else
@@ -135,3 +135,6 @@ vision.ball.fieldsize_factor = 1.2; --check whether the ball is inside the field
 vision.ball.max_distance = 2; --if ball is this close, just pass the test
 
 fallAngle = 1E6; --disable falldown check
+
+--Should we use ultrasound?
+team.avoid_ultrasound = 1;

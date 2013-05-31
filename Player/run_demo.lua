@@ -5,6 +5,8 @@ require('unix')
 require('Config')
 Config.fsm.playMode = 1; --Force demo
 Config.fsm.forcePlayer = 1; --Force attacker
+Config.fsm.enable_walkkick = 1; 
+Config.fsm.enable_sidekick = 1;
 
 require('shm')
 require('vector')

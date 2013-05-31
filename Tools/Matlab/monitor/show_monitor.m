@@ -369,22 +369,16 @@ function h=show_monitor()
       %Alive check
 
       if r_struct.id>0
-
         timepassed = r_struct.time-MONITOR.timestamp(i);
         MONITOR.timestamp(i)=r_struct.time;
-
         if timepassed==0
           MONITOR.deadcount(i) = MONITOR.deadcount(i)+1;
         else
           MONITOR.deadcount(i) = 0;
         end
-
 	deadcount_threshold = 50;
 
-
-%        if MONITOR.deadcount(i) < 20 % ~2 sec interval until turning off
         if MONITOR.deadcount(i) < deadcount_threshold % ~5 sec interval until turning off
-
           h_c=subplot(5,5,[6:20]);
           plot_robot( r_struct, [],2,5,r_struct.robotName);
           updated = 0;
@@ -398,10 +392,7 @@ function h=show_monitor()
             plot_label(labelB);
 	  end
 	  plot_overlay_wireless(r_struct);
-          [infostr textcolor]=robot_info(r_struct,[],3,r_struct.robotName);
-
-%NOT WORKING WITH NAO YET
-%          infostr = [infostr '\n' r_struct.bodyState]
+          [infostr textcolor]=robot_info(r_struct,[],3,r_struct.robotName, r_struct.bodyState);
           set(MONITOR.infoTexts(i),'String',infostr);
 
 %          infostr2 = sprintf('%s\nDC:%d',MONITOR.deadcount(i));

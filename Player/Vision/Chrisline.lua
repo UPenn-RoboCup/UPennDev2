@@ -19,10 +19,10 @@ min_white_pixel = Config.vision.line.min_white_pixel or 200;
 min_green_pixel = Config.vision.line.min_green_pixel or 5000;
 
 --min_width=Config.vision.line.min_width or 4;
-max_width=Config.vision.line.max_width or 8;
+max_width=Config.vision.line.max_width or 5;
 connect_th=Config.vision.line.connect_th or 1.4;
 max_gap=Config.vision.line.max_gap or 1;
-min_length=Config.vision.line.min_length or 10;
+min_length=Config.vision.line.min_length or 3;
 
 headZ = Config.head.camOffsetZ;
 
@@ -43,21 +43,21 @@ function get_crosspoint(x1,y1,x2,y2,x3,y3,x4,y4)
     end
     local x = (y3 - y1 + k1*x1 -k2*x3)/(k1 - k2);
     local y = k1*(x - x2) + y2;
-     vcm.add_debug_message(string.format("\nx is %d y is %d" ,x, y));
+    -- vcm.add_debug_message(string.format("\nx is %d y is %d" ,x, y));
     return {x, y};
   else 
     if (x1 == x2) then 
       local x = x1;
       k = (y2 - y1)/(x2 - x1);
       local y = k * x + y1 - k * x1;
-      vcm.add_debug_message(string.format("\nx is %d y is %d" ,x, y));
+     -- vcm.add_debug_message(string.format("\nx is %d y is %d" ,x, y));
       return {x, y}; 
     end
     if (x3 == x4) then 
       local x = x3;
       k = (y4 - y3)/(x4 - x3);
       local y = k * x + y3 - k * x3;
-      vcm.add_debug_message(string.format("\nx is %d y is %d" ,x, y));
+     -- vcm.add_debug_message(string.format("\nx is %d y is %d" ,x, y));
       return {x, y}; 
     end 
   end
@@ -150,12 +150,12 @@ function detect()
     end
     --print ('goal_posX: '..goal_posX)
     local LWratio = length/line.propsB[i].max_width;
-    
+    vcm.add_debug_message(string.format("\nLWratio is %d\nlength is %d\nline count is %d" ,LWratio, length, linecount));
     if length > min_length and linecount < 6 
   -- lines should be on the ground
   and vendpoint_old[1][3] < 0.3 and vendpoint_old[2][3] < 0.3 
   -- lines should not be too wide
-  and LWratio > 2.5 
+  and LWratio > 1.5 
   -- lines should be below horizon
   and line.propsB[i].endpoint[3] > horizonB and line.propsB[i].endpoint[4] > horizonB  
   -- lines should be in the court, nothing behind the goal posts can be considered as line.

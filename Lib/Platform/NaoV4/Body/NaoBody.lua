@@ -287,7 +287,7 @@ function get_change_role()
   bumperLeft = get_sensor_bumperLeft();
   bumperRight = get_sensor_bumperRight();
 
-  if (bumperLeft[1]+bumperLeft[2])+
+  if (bumperLeft[1]+bumperLeft[2]+
      bumperRight[1]+bumperRight[2])>0 then
     return 1;
   else

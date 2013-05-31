@@ -29,11 +29,16 @@ triangulation_threshold=Config.world.triangulation_threshold or 4.0;
 position_update_threshold = Config.world.position_update_threshold or 6.0;
 angle_update_threshold = Config.world.angle_update_threshold or 0.6;
 
-
 --For single-colored goalposts
 postUnified = {postYellow[1],postYellow[2],postCyan[1],postCyan[2]};
 postLeft={postYellow[1],postCyan[1]}
 postRight={postYellow[2],postCyan[2]}
+
+--Sigma values for determing between candidates
+
+
+
+
 
 rGoalFilter = Config.world.rGoalFilter;
 aGoalFilter = Config.world.aGoalFilter;
@@ -192,8 +197,14 @@ end
 function landmark_observation(pos, v, rLandmarkFilter, aLandmarkFilter,dont_update_position)
   local r = math.sqrt(v[1]^2 + v[2]^2);
   local a = math.atan2(v[2], v[1]);
-  local rSigma = .15*r + 0.10;
-  local aSigma = 5*math.pi/180;
+
+  local rSigmaSingle1 = Config.world.rSigmaSingle1 or .15;
+  local rSigmaSingle2 = Config.world.rSigmaSingle2 or .10;
+  local aSigmaSingle = Config.world.aSigmaSingle or 50*math.pi/180;
+
+  local rSigma = rSigmaSingle1 * r + rSigmaSingle2;
+  local aSigma = aSigmaSingle;
+
   local rFilter = rLandmarkFilter or 0.02;
   local aFilter = aLandmarkFilter or 0.04;
 
@@ -202,6 +213,9 @@ function landmark_observation(pos, v, rLandmarkFilter, aLandmarkFilter,dont_upda
   --So we do not update angle if the distance is very 
 
   angle_update_threshold = Config.world.angle_update_threshold or 0.6;
+
+  angle_update_threshold = math.huge;
+
 
 
   --Calculate best matching landmark pos to each particle
@@ -493,15 +507,14 @@ function goal_observation_unified(pos1,pos2,v)
     --SJ: I think rSigma is too large / aSigma too small
     --If the robot has little pos error and big angle error
     --It will pulled towared flipped position
+    local rSigmaDouble1 = Config.world.rSigmaSingle1 or .25;
+    local rSigmaDouble2 = Config.world.rSigmaSingle2 or .20;
+    local aSigmaDouble = Config.world.aSigmaSingle or 50*math.pi/180;
 
-    local rSigma = .25*dGoal1 + 0.20;
-    local aSigma = 5*math.pi/180;
+    local rSigma = rSigmaDouble1 * dGoal1 + rSigmaDouble2;
+    local aSigma = aSigmaDouble;
 
     --New params 
-
-    local aSigma = 10*math.pi/180;
-
-
     local rFilter = rUnknownGoalFilter;
     local aFilter = aUnknownGoalFilter;
     for ip = 1,n do

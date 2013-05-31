@@ -123,5 +123,5 @@ team.flip_correction = 1;
 
 
 
-world.triangulation_threshold = 4.0; 
-world.position_update_threshold = 4.5;--Goalie moves too much
+world.triangulation_threshold = 5.5; 
+world.position_update_threshold = 6.0;--Goalie moves too much

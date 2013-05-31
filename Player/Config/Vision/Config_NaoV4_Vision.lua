@@ -19,7 +19,7 @@ vision.scaleB = 4;
 
 
 vision.enable_line_detection = 1;
-vision.enable_corner_detection = 1;
+vision.enable_corner_detection = 0;
 -- use this to enable spot detection
 vision.enable_spot_detection = 0;
 -- use this to enable midfield landmark detection
@@ -89,10 +89,10 @@ vision.goal.check_for_ground = 0;
 vision.goal.distanceFactorYellow = 1.14
 
 vision.line={};
-vision.line.max_width = 16;
+vision.line.max_width = 5;
 vision.line.connect_th = 1.4;
-vision.line.max_gap=0;
-vision.line.min_length=10;
+vision.line.max_gap=1;
+vision.line.min_length=3;
 vision.line.min_angle_diff = 15;
 vision.line.max_angle_diff = 70;
 

@@ -39,6 +39,7 @@ dev.team='TeamNSL';
 --dev.walk='BetterWalk'
 --dev.walk='EvenBetterWalk'
 dev.walk='AwesomeWalk'
+--dev.walk='CleanWalk'
 dev.kick = 'PunchKick'
 dev.gender = 1; -- 1 for boy and 0 for girl 
 

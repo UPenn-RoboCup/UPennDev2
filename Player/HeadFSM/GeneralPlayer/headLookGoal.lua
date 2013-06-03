@@ -13,21 +13,49 @@ yawMax = Config.head.yawMax;
 dist = Config.fsm.headReady.dist;
 tScan = Config.fsm.headLookGoal.tScan;
 minDist = Config.fsm.headLookGoal.minDist;
-
 min_eta_look = Config.min_eta_look or 2.0;
+
+yawMax = Config.head.yawMax or 90*math.pi/180;
+fovMargin = 30*math.pi/180;
+
 
 function entry()
   print(_NAME.." entry");
-
   t0 = Body.get_time();
+
+  --SJ: Check which goal to look at
+  --Now we look at the NEARER goal
+  pose = wcm.get_pose();
+  defendGoal = wcm.get_goal_defend();
+  attackdGoal = wcm.get_goal_defend();
+
+  dDefendGoal= math.sqrt((pose.x-defendGoal[1])^2 + (pose.y-defendGoal[2])^2);
+  dAttackGoal= math.sqrt((pose.x-attackGoal[1])^2 + (pose.y-attackGoal[2])^2);
   attackAngle = wcm.get_attack_angle();
   defendAngle = wcm.get_defend_angle();
-  attackClosest = math.abs(attackAngle) < math.abs(defendAngle);
-  if attackClosest then
-    yaw0 = wcm.get_attack_angle();
-  else
-    yaw0 = wcm.get_defend_angle();
+
+  --Can we see both goals?
+  if math.abs(attackAngle)<yawMax + fovMargin and 
+     math.abs(defendAngle)<yawMax + fovMargin  then
+    --Choose the closer one
+    if dAttackGoal < dDefendGoal then
+      yaw0 = attackAngle;
+    else
+      yaw0 = defendAngle;
+    end
+  elseif math.abs(attackAngle)<yawMax + fovMargin then
+    yaw0 = attackAngle;
+  elseif math.abs(defendAngle)<yawMax + fovMargin then
+    yaw0 = defendAngle;
+  else --We cannot see any goals from this position
+    --We can still try to see the goals?
+    if  math.abs(attackAngle) < math.abs(defendAngle) then
+      yaw0 = attackAngle;
+    else
+      yaw0 = defendAngle;
+    end
   end
+
 end
 
 function update()

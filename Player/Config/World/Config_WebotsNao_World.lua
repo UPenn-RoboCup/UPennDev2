@@ -58,26 +58,39 @@ world.use_same_colored_goal=1;
 world.use_new_goalposts=1;
 
 -- filter weights
+--Now ALL posts and goals are unknown, so we don't need separate update params
+
+--Two post observation
 world.rGoalFilter = 0.02;
 world.aGoalFilter = 0.05;
+
+
+world.aGoalFilter = 0.15;
+
+
+--Single post observation
 world.rPostFilter = 0.02;
 world.aPostFilter = 0.05;
-world.rKnownGoalFilter = 0.02;
-world.aKnownGoalFilter = 0.20;
-world.rKnownPostFilter = 0.02;
-world.aKnownPostFilter = 0.10;
-world.rUnknownGoalFilter = 0.02;
-world.aUnknownGoalFilter = 0.05;
-world.rUnknownPostFilter = 0.02;
-world.aUnKnownPostFilter = 0.05;
 
-world.rCornerFilter = 0.02;
-world.aCornerFilter = 0.05;
-
-
+--Corner observation
 world.rCornerFilter = 0.01;
-world.aCornerFilter = 0.03;
+world.aCornerFilter = 0.02;
+
+--Line observation
 world.aLineFilter = 0.02;
+
+--Single landmark determing param
+world.rSigmaSingle1 = .15;
+world.rSigmaSingle2 = .10;
+world.aSigmaSingle = 5*math.pi/180; --Original value
+
+world.aSigmaSingle = 30*math.pi/180; --Original value
+
+--Two post determining param
+world.rSigmaDouble1 = .25;
+world.rSigmaDouble2 = .20;
+world.aSigmaDouble = 30*math.pi/180;
+
 
 
 -- default positions for our kickoff
@@ -101,4 +114,8 @@ world.initPosition2={
 -- use sound localization
 world.enable_sound_localization = 0;
 
-
+world.use_new_goalposts = 1;
+world.triangulation_threshold = 4.0; 
+world.position_update_threshold = 6.0;
+world.angle_update_threshold = 1.0;
+world.flip_correction = 1;

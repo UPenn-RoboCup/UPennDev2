@@ -27,7 +27,7 @@ function entry()
   --Now we look at the NEARER goal
   pose = wcm.get_pose();
   defendGoal = wcm.get_goal_defend();
-  attackdGoal = wcm.get_goal_defend();
+  attackGoal = wcm.get_goal_attack();
 
   dDefendGoal= math.sqrt((pose.x-defendGoal[1])^2 + (pose.y-defendGoal[2])^2);
   dAttackGoal= math.sqrt((pose.x-attackGoal[1])^2 + (pose.y-attackGoal[2])^2);

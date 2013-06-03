@@ -210,7 +210,7 @@ function update_mesh_image( c_buffer ) {
   var tmp = 0;
   for ( var i = 0; i < size; i++ ) {
     tmp = i*4;
-    plane.material.map.image.data[ tmp ] 	  = c_buffer[ tmp ];
+    plane.material.map.image.data[ tmp ] 	 = c_buffer[ tmp ];
     plane.material.map.image.data[ tmp+1 ] = c_buffer[ tmp+1 ];
     plane.material.map.image.data[ tmp+2 ] = c_buffer[ tmp+2 ];
 //    plane.material.map.image.data[ tmp + 3 ] = 255;

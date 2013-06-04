@@ -59,7 +59,7 @@ end
 
 function play(filename)
   if enable == 1 then
-    unix.system('aplay '..filename..' &');
+    unix.system('mpg123 '..filename..' &');
   end
 end
 

@@ -1,0 +1,11 @@
+List of tracks that the Naos will play after scoring and leading by
+a certain margin, or when we tie up a game.
+
+If you would like to add a song, scp it onto the robot and rename it with the
+next number in order from the bottom. Add it to this README, and then modify
+the random number generator in bodyReady.lua accordingly to select it.
+
+KEEP SONGS AROUND 5 (AND ONLY FIVE) SECONDS FOR BREVITY
+-Alan
+
+1 - Gonna Fly Now (Rocky Theme Song)

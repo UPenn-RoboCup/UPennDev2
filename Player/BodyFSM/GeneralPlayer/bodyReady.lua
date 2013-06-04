@@ -24,6 +24,20 @@ function entry()
   phase=0;
   Motion.event('standup')
 
+  -- For Nao's
+  ourScore = gcm.get_game_our_score();
+  oppScore = gcm.get_game_opponent_score();
+
+  if (ourScore > last_score and ourScore >= oppScore + 2) or
+    (ourScore > last_score and ourScore = oppScore) then
+    --Random song generator
+    --song = math.random(1);
+    --Speak.play('Music/'..song..'.mp3');
+    Speak.talk('Ruffio! Ruffio!');
+  end
+  last_score = gcm.get_game_our_score();
+
+  -- For OP's
   if gcm.get_game_our_score() > last_score and
      gcm.get_game_our_score() >= gcm.get_game_opponent_score() +
 	ceremony_score then

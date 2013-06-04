@@ -28,8 +28,8 @@ function entry()
   ourScore = gcm.get_game_our_score();
   oppScore = gcm.get_game_opponent_score();
 
-  if (ourScore > last_score and ourScore >= oppScore + 2) or
-    (ourScore > last_score and ourScore = oppScore) then
+  if ((ourScore > last_score and ourScore >= oppScore + 2) or
+    (ourScore > last_score and ourScore = oppScore)) then
     --Random song generator
     --song = math.random(1);
     --Speak.play('Music/'..song..'.mp3');

@@ -241,7 +241,7 @@ function update()
     if (cmd >= 0 and cmd < camera.ncamera) then
       Camera.select_camera(cmd);
     else
-      print('WARNING: attempting to switch to unkown camera select = '..cmd);
+--      print('WARNING: attempting to switch to unkown camera select = '..cmd);
     end
   end
 

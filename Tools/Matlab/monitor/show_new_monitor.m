@@ -192,7 +192,7 @@ function h=show_new_monitor()
   end
   function button5(varargin)
     filename = 'team_log.mat';
-    save(filename, TEAM_LOG);
+    save(filename, 'TEAM_LOG');
   end
   function button6(varargin)
     TEAM_LOG.is_logging = 0;

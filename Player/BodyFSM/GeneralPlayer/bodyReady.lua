@@ -24,28 +24,39 @@ function entry()
   phase=0;
   Motion.event('standup')
 
-  -- For Nao's
-  ourScore = gcm.get_game_our_score();
-  oppScore = gcm.get_game_opponent_score();
+  --Celebration code
+  --Only consider celebrating if score is being updated by an open game controller.
+  if (gcm.get_game_our_score() ~= nil) then
+    -- For Nao's
 
-  if ((ourScore > last_score and ourScore >= oppScore + 2) or
-    (ourScore > last_score and ourScore == oppScore)) then
-    --Random song generator
-    --song = math.random(1);
-    --Speak.play('Music/'..song..'.mp3');
-    Speak.talk('Ruffio! Ruffio!');
-  end
-  last_score = gcm.get_game_our_score();
+    ourScore = gcm.get_game_our_score();
+    oppScore = gcm.get_game_opponent_score();
 
-  -- For OP's
-  if gcm.get_game_our_score() > last_score and
-     gcm.get_game_our_score() >= gcm.get_game_opponent_score() +
-	ceremony_score then
-    --Only celebrate when we score and we are leading
-    do_motion = true;
+    print('Our last score: '..last_score);
+    print('Our current score: '..ourScore);
+    print('Their current score: '..oppScore);
+
+    if ((ourScore > last_score and ourScore >= oppScore + 2) or
+      (ourScore > last_score and ourScore == oppScore)) then
+      --Random song generator
+      --song = math.random(1);
+      --Speak.play('Music/'..song..'.mp3');
+      Speak.talk('Ruffio! Ruffio!');
+    end
     last_score = gcm.get_game_our_score();
-  else
-    do_motion=false;
+
+
+
+    -- For OP's
+    if gcm.get_game_our_score() > last_score and
+       gcm.get_game_our_score() >= gcm.get_game_opponent_score() +
+    ceremony_score then
+      --Only celebrate when we score and we are leading
+      do_motion = true;
+      last_score = gcm.get_game_our_score();
+    else
+      do_motion=false;
+    end
   end
 end
 

@@ -41,7 +41,7 @@ function entry()
       --Random song generator
       --song = math.random(1);
       --Speak.play('Music/'..song..'.mp3');
-      Speak.talk('Ruffio! Ruffio!');
+      Speak.talk('Rufio! Rufio! Rufio!');
     end
     last_score = gcm.get_game_our_score();
 

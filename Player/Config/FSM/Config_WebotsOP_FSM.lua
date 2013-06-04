@@ -204,9 +204,12 @@ fsm.bodyApproach.yTarget12={-0.005, 0.01, 0.025}; --min, target ,max
 --fsm.bodyApproach.xTarget21={0, 0.12,0.14}; --min, target, max
 --fsm.bodyApproach.yTarget21={0.015, 0.04, 0.045}; --min, target ,max
 
+
+
+
 --For new StepKick
 fsm.bodyApproach.xTarget21={0, 0.14,0.16}; --min, target, max
-fsm.bodyApproach.yTarget21={0.015, 0.04, 0.045}; --min, target ,max
+fsm.bodyApproach.yTarget21={0.025, 0.045, 0.050}; --min, target ,max
 
 
 

@@ -41,7 +41,7 @@ vision.enable_freespace_detection = 0;
 --use this to print time cosumed by vision functions
 vision.print_time = 0; 
 
-vision.enable_team_broadcast = 0;
+vision.enable_team_broadcast = 1;
 --use this to turn on team broadcast (wireless monitor)
 --If 0, wired monitor will be used.
 ----------------------------
@@ -93,8 +93,8 @@ vision.line.max_width = 5;
 vision.line.connect_th = 1.4;
 vision.line.max_gap=1;
 vision.line.min_length=3;
-vision.line.min_angle_diff = 15;
-vision.line.max_angle_diff = 70;
+vision.line.min_angle_diff = 3;
+vision.line.max_angle_diff = 90;
 
 
 vision.corner={};

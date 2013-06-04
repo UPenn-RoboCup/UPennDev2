@@ -24,6 +24,8 @@ fast_approach = Config.fsm.fast_approach or 0;
 enable_evade = Config.fsm.enable_evade or 0;
 evade_count=0;
 
+last_ph = 0;
+
 function check_approach_type()
   is_evading = 0;
   check_angle=1;
@@ -120,7 +122,10 @@ function check_approach_type()
     check_angle = 1; --CHECK angle during approaching
   end
 
-  print("Approach: kick dir /type /angle",kick_dir,kick_type,kick_angle*180/math.pi)
+  print(string.format("Approach: kick dir:%d type:%d angle:%d",
+	kick_dir,kick_type,kick_angle*180/math.pi ))
+  print(string.format("Initial ball pos: %.2f %.2f",ball.x,ball.y));
+
 
   y_inv=0;
   if kick_type==1 then --Stationary 
@@ -136,7 +141,7 @@ function check_approach_type()
       yTarget0 = Config.fsm.bodyApproach.yTarget12;
       y_inv=1;
     end
-  else --walkkick
+  elseif kick_type==2 then --walkkick
     if kick_dir==1 then --Front kick
       xTarget = Config.fsm.bodyApproach.xTarget21;
       yTarget0 = Config.fsm.bodyApproach.yTarget21;
@@ -149,6 +154,10 @@ function check_approach_type()
       yTarget0 = Config.fsm.bodyApproach.yTarget22;
       y_inv=1;
     end
+  else --stepkick
+
+
+
   end
 
   if y_inv>0 then
@@ -184,6 +193,8 @@ function entry()
   else
     aThresholdTurn = Config.fsm.bodyApproach.aThresholdTurn;
   end
+
+  approach_count = 0;
 end
 
 function update()
@@ -273,9 +284,7 @@ function update()
       vStep[3] = 0.5*ballA;
     end    
 
-
     if check_angle>0 then
-
       if angleErrR > 0 then
 --print("TURNLEFT")
         vStep[3]=0.2;
@@ -290,9 +299,7 @@ function update()
 
   --when the ball is on the side of the ROBOT, backstep a bit
   local wAngle = math.atan2 (ball.y,ball.x);
-
   ballYMin = Config.fsm.bodyApproach.ballYMin or 0.20;
-
 
   if math.abs(wAngle) > 45*math.pi/180 then
     vStep[1]=vStep[1] - 0.03;
@@ -307,17 +314,19 @@ function update()
 
   else
     --Otherwise, don't make robot backstep
-    vStep[1]=math.max(0,vStep[1]);
+--    vStep[1]=math.max(0,vStep[1]);
   end
 
-
-
-
-  if walk.ph>0.95 then 
-    print(string.format("Ball position: %.2f %.2f\n",ball.x,ball.y));
-    print(string.format("Approach velocity:%.2f %.2f\n",vStep[1],vStep[2]));
-  end
-
+  if walk.ph<last_ph then 
+    print(string.format("Approach step %d",approach_count));
+    print(string.format("BallX: %.3f  Target: (%.3f  <%.3f> %.3f)",
+	ball.x,xTarget[1],xTarget[2],xTarget[3] ));
+    print(string.format("BallY: %.3f  Target: (%.3f  <%.3f> %.3f)",
+	ball.y,yTarget[1],yTarget[2],yTarget[3] ));
+    print(string.format("Approach velocity:%.2f %.2f %.2f\n",vStep[1],vStep[2],vStep[3]));
+    approach_count = approach_count + 1;
+   end
+  last_ph = walk.ph;
  
   walk.set_velocity(vStep[1],vStep[2],vStep[3]);
 

@@ -28,6 +28,8 @@ function h=show_new_monitor()
   h.timestamp=zeros(1,10);
   h.deadcount=zeros(1,10);
 
+  h.disabled= zeros(1,10);
+
 
   function init(draw_team,target_fps)
     MONITOR.target_fps=target_fps;
@@ -112,8 +114,6 @@ function h=show_new_monitor()
     set(MONITOR.hButton10,'String', sprintf('%d/%d',...
 	TEAM_LOG.viewcount, TEAM_LOG.count));
 
-
-
     TEAM_LOG.log_struct{TEAM_LOG.count} = {};
     TEAM_LOG.log_labelB{TEAM_LOG.count} = {};
     for i=1:10
@@ -155,11 +155,13 @@ function h=show_new_monitor()
         [infostr textcolor]=robot_info(...
 		r_struct,[],3,r_struct.robotName, r_struct.bodyState);
         set(MONITOR.infoTexts(i),'String',infostr);
+        MONITOR.disabled(i)=0;
       else
-        axes(MONITOR.labelAxe(i));
-	cla;
-%        plot_label([0 0;0 0]);
-        set(MONITOR.infoTexts(i),'String','');
+	if MONITOR.disabled(i)==0 
+          axes(MONITOR.labelAxe(i));
+          plot_label([0 0;0 0]);
+	  MONITOR.disabled(i)=1;
+	end
       end
     end
     hold off;

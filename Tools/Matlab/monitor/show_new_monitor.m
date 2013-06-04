@@ -157,7 +157,8 @@ function h=show_new_monitor()
         set(MONITOR.infoTexts(i),'String',infostr);
       else
         axes(MONITOR.labelAxe(i));
-        plot_label(zeros(60,80));
+	cla;
+%        plot_label([0 0;0 0]);
         set(MONITOR.infoTexts(i),'String','');
       end
     end

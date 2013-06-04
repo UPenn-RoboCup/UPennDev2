@@ -97,4 +97,6 @@ world.initPosition2={
 -- use sound localization
 world.enable_sound_localization = 0;
 
+--Trying yaw odometry data [x, y, angle]
+world.odomScale = {1, 1, 0.9};
 

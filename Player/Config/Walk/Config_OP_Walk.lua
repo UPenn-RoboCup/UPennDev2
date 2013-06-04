@@ -425,7 +425,7 @@ zmpstep.motionDef["nonstop_kick_left"]={
     {1, {-0.06,0.01,0},{0.01,0.0},0.1,3}, --RS step  returning
     {1, {0.0,0,0}     ,{0.00,0.0},0.1,4}, --RS step  landing
     {2, {0,0,0}       ,{0.005,0},   0.07}, --DS step
-    {0, {0.06,0,0}    ,{0.005,0},0.25}, --LS step  
+    {0, {0.06,0.0,0}    ,{0.005,0},0.25}, --LS step  
 --------------------------------------------------------------
 
     {1, {0.0,0,0},{0,0},0.25,9}, --LS step  
@@ -435,7 +435,7 @@ zmpstep.motionDef["nonstop_kick_left"]={
     {2, {0,0,0},{0,0},0.25}, --DS step
     {2, {0,0,0},{0,0},0.05}, --DS step
   },
-  support_end = 0,
+  support_end = 1, --Next RS step
 }
 
 zmpstep.motionDef["nonstop_kick_right"]={
@@ -448,7 +448,7 @@ zmpstep.motionDef["nonstop_kick_right"]={
     {0, {-0.06,-0.01,0},{0.01,0.0},0.1,3}, --LS step  returning
     {0, {0.0,0,0}      ,{0.00,0.0},0.1,4}, --LS step  landing
     {2, {0,0,0}        ,{0.005,0.0},  0.07}, --DS step
-    {1, {0.06,0.00,0}  ,{0.005,0},0.25}, --RS step  
+    {1, {0.06,0.0,0}  ,{0.005,0},0.25}, --RS step  
 ---------------------------------------------------------------
 
     {0, {0.0,0,0},{0,0},0.25,9}, --LS step  
@@ -458,7 +458,7 @@ zmpstep.motionDef["nonstop_kick_right"]={
     {2, {0,0,0},{0,0},0.5}, --DS step
     {2, {0,0,0},{0,0},0.05,9}, --DS step
   },
-  support_end = 0,
+  support_end = 0, --next LS step
 }
 
 

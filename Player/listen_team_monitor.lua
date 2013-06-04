@@ -23,8 +23,6 @@ else
   teamToTrack={team1};
 end
 
---Push to (team,1) shm
-
 require ('cutil')
 require ('vector')
 require ('serialization')
@@ -33,6 +31,13 @@ require ('util')
 require ('wcm')
 require ('gcm')
 require ('vcm')
+
+
+--Set # of teams
+wcm.set_teamdata_teamnum(team_num);
+
+--Push to (team,1) shm
+
 
 Comm.init(Config.dev.ip_wireless,Config.dev.ip_wireless_port);
 print('Receiving Team Message From',Config.dev.ip_wireless);
@@ -243,6 +248,7 @@ function push_team_struct(obj,teamOffset)
   wcm.set_teamdata_landmark(states.landmark);
   wcm.set_teamdata_landmarkv1(states.landmarkv1);
   wcm.set_teamdata_landmarkv2(states.landmarkv2);
+
 end
 
 count=0;

@@ -22,7 +22,6 @@ function MonitorWireless(team,player)
 
   %%%%% Init SHM for robots
   t0=tic;
-  draw_team=2; %Wireless Team Monitor Mode
 
   %Check SHM for players
   if shm_check(team,player)>0 
@@ -31,6 +30,8 @@ function MonitorWireless(team,player)
     disp('Team/Player ID error!');
     return;
   end
+
+  draw_team=team_robots.wcmTeamdata.get_teamnum();
 
   %% Init monitor display
   MONITOR=show_new_monitor();

@@ -116,6 +116,7 @@ listen_monitor = Config.listen_monitor or 0;
 
 if listen_monitor>0 then
   shared.teamdata={};
+  shared.teamdata.teamnum=vector.zeros(1);
   shared.teamdata.teamColor=vector.zeros(10);
   shared.teamdata.robotId=vector.zeros(10);
   shared.teamdata.role=vector.zeros(10);

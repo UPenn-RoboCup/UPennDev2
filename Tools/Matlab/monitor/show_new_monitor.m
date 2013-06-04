@@ -34,54 +34,108 @@ function h=show_new_monitor()
   function init(draw_team,target_fps)
     MONITOR.target_fps=target_fps;
     figure(1);
+    MONITOR.teamnum = draw_team;
     clf;
-    set(gcf,'position',[1 1 900 900]);
-    MONITOR.enable10=2;  %Default 2
-    MONITOR.hFpsText=uicontrol('Style','text',...
-	'Units','Normalized', 'Position',[.40 0.93 0.20 0.04]);
-    MONITOR.hButton1=uicontrol('Style','pushbutton','String','FPS -',...
-	'Units','Normalized','Position',[.30 .93 .10 .04],'Callback',@button1);
-    MONITOR.hButton2=uicontrol('Style','pushbutton','String','FPS +',...
-	'Units','Normalized', 'Position',[.60 .93 .10 .04],'Callback',@button2);
+    set(gcf,'position',[1 1 900 600]);
+    if MONITOR.teamnum==1 %single team view
 
-    MONITOR.hButton3=uicontrol('Style','pushbutton','String','Kidsize',...
+      MONITOR.enable10=2;  %Default 2
+      MONITOR.hFpsText=uicontrol('Style','text',...
+	'Units','Normalized', 'Position',[.40 0.97 0.20 0.03]);
+      MONITOR.hButton1=uicontrol('Style','pushbutton','String','FPS -',...
+	'Units','Normalized','Position',[.30 .97 .10 .03],'Callback',@button1);
+      MONITOR.hButton2=uicontrol('Style','pushbutton','String','FPS +',...
+	'Units','Normalized', 'Position',[.60 .97 .10 .03],'Callback',@button2);
+      MONITOR.hButton3=uicontrol('Style','pushbutton','String','Kidsize',...
+	'Units','Normalized', 'Position',[.0 .56 .045 .07],'Callback',@button3);
+
+
+      MONITOR.hButton4=uicontrol('Style','pushbutton','String','Start',...
+	'Units','Normalized', 'Position',[.05 .01 .10 .05],'Callback',@button4);
+      MONITOR.hButton5=uicontrol('Style','pushbutton','String','Save',...
+	'Units','Normalized', 'Position',[.15 .01 .10 .05],'Callback',@button5);
+
+      MONITOR.hButton6=uicontrol('Style','pushbutton','String','<<',...
+	'Units','Normalized', 'Position',[.25 .01 .10 .05],'Callback',@button6);
+      MONITOR.hButton7=uicontrol('Style','pushbutton','String','<',...
+	'Units','Normalized', 'Position',[.35 .01 .10 .05],'Callback',@button7);
+
+      MONITOR.hButton10=uicontrol('Style','pushbutton','String','',...
+	'Units','Normalized', 'Position',[.45 .01 .10 .05]);
+
+      MONITOR.hButton8=uicontrol('Style','pushbutton','String','>',...
+	'Units','Normalized', 'Position',[.55 .01 .10 .05],'Callback',@button8);
+      MONITOR.hButton9=uicontrol('Style','pushbutton','String','>>',...
+	'Units','Normalized', 'Position',[.65 .01 .10 .05],'Callback',@button9);
+
+      MONITOR.mainAxe = axes('position',[0.05 0.06 0.7 0.88], ...
+	  'XTick', [], 'YTick', []);
+
+      for i=1:5
+        MONITOR.labelAxe(i) = axes('position',...
+	[0.76, (i-1)*0.2+0.005,     0.15 0.19]);
+
+        MONITOR.infoTexts(i)=uicontrol('Style','text',...
+	'Units','Normalized', 'Position',...
+	[0.92, (i-1)*0.2+0.005,     0.07 0.19]);
+      end
+
+
+    else % two teams vies
+      MONITOR.enable10=2;  %Default 2
+      MONITOR.hFpsText=uicontrol('Style','text',...
+	'Units','Normalized', 'Position',[.40 0.97 0.20 0.03]);
+      MONITOR.hButton1=uicontrol('Style','pushbutton','String','FPS -',...
+	'Units','Normalized','Position',[.30 .97 .10 .03],'Callback',@button1);
+      MONITOR.hButton2=uicontrol('Style','pushbutton','String','FPS +',...
+	'Units','Normalized', 'Position',[.60 .97 .10 .03],'Callback',@button2);
+
+
+      MONITOR.hButton3=uicontrol('Style','pushbutton','String','Kidsize',...
 	'Units','Normalized', 'Position',[.02 .56 .07 .07],'Callback',@button3);
 
 
-    MONITOR.hButton4=uicontrol('Style','pushbutton','String','Start',...
-	'Units','Normalized', 'Position',[.25 .25 .10 .04],'Callback',@button4);
-    MONITOR.hButton5=uicontrol('Style','pushbutton','String','Save',...
-	'Units','Normalized', 'Position',[.35 .25 .10 .04],'Callback',@button5);
+      MONITOR.hButton4=uicontrol('Style','pushbutton','String','Start',...
+	'Units','Normalized', 'Position',[.9 .65 .10 .05],'Callback',@button4);
+      MONITOR.hButton5=uicontrol('Style','pushbutton','String','Save',...
+	'Units','Normalized', 'Position',[.9 .60 .10 .05],'Callback',@button5);
 
-    MONITOR.hButton6=uicontrol('Style','pushbutton','String','<<',...
-	'Units','Normalized', 'Position',[.50 .25 .10 .04],'Callback',@button6);
-    MONITOR.hButton7=uicontrol('Style','pushbutton','String','<',...
-	'Units','Normalized', 'Position',[.60 .25 .10 .04],'Callback',@button7);
+      MONITOR.hButton6=uicontrol('Style','pushbutton','String','<<',...
+	'Units','Normalized', 'Position',[.9 .50 .10 .05],'Callback',@button6);
+      MONITOR.hButton7=uicontrol('Style','pushbutton','String','<',...
+	'Units','Normalized', 'Position',[.9 .45 .10 .05],'Callback',@button7);
 
-    MONITOR.hButton8=uicontrol('Style','pushbutton','String','>',...
-	'Units','Normalized', 'Position',[.80 .25 .10 .04],'Callback',@button8);
-    MONITOR.hButton9=uicontrol('Style','pushbutton','String','>>',...
-	'Units','Normalized', 'Position',[.90 .25 .10 .04],'Callback',@button9);
+      MONITOR.hButton10=uicontrol('Style','pushbutton','String','',...
+	'Units','Normalized', 'Position',[.9 .40 .10 .05]);
 
-    MONITOR.hButton10=uicontrol('Style','pushbutton','String','',...
-	'Units','Normalized', 'Position',[.70 .25 .10 .04]);
+      MONITOR.hButton8=uicontrol('Style','pushbutton','String','>',...
+	'Units','Normalized', 'Position',[.9 .35 .10 .05],'Callback',@button8);
+      MONITOR.hButton9=uicontrol('Style','pushbutton','String','>>',...
+	'Units','Normalized', 'Position',[.9 .30 .10 .05],'Callback',@button9);
 
+      MONITOR.mainAxe = axes('position',[0.1 0.21 0.8 0.55], ...
+	  'XTick', [], 'YTick', []);
 
+      for i=1:5
+        MONITOR.labelAxe(i) = axes('position',...
+	[(i-1)*0.2+0.005 0.85     0.19 0.12],...
+	  'XTick', [], 'YTick', []);
+        MONITOR.infoTexts(i)=uicontrol('Style','text',...
+	'Units','Normalized', 'Position',...
+	[(i-1)*0.2+0.005 0.77     0.19 0.08]);
+      end
 
-
-    for i=1:5
-      MONITOR.infoTexts(i)=uicontrol('Style','text',...
-	'Units','Normalized', 'Position',[0.16*(i-1)+0.12 0.71 0.145 0.08]);
-      subplot(5,5,i);
-      MONITOR.labelAxe(i) = gca;
-    end
-    for i=6:10
-      MONITOR.infoTexts(i)=uicontrol('Style','text',...
-      'Units','Normalized', 'Position',[0.16*(i-6)+0.12 0.01 0.145 0.08]);
-      subplot(5,5,i+15);
-      MONITOR.labelAxe(i) = gca;
+      for i=6:10
+        MONITOR.labelAxe(i) = axes('position',...
+	[(i-6)*0.2+0.005  0.08     0.19 0.12],...
+	  'XTick', [], 'YTick', []);
+        MONITOR.infoTexts(i)=uicontrol('Style','text',...
+        'Units','Normalized', 'Position',...
+	[(i-6)*0.2+0.005  0.0    0.19 0.08]);
+      end
     end
   end
+
 
   function update(robots,  teamNumber, playerNumber , draw_team, ignore_vision)
     if MONITOR.target_fps==0.5 %Paused state
@@ -137,16 +191,16 @@ function h=show_new_monitor()
   end
 
   function draw_team_wireless(count)
-    h_c=subplot(5,5,[6:20]);
-    cla(h_c);
+    axes(MONITOR.mainAxe);
+    cla;
     hold on;
-    plot_field(h_c,MONITOR.fieldtype);
+    plot_field(MONITOR.mainAxe,MONITOR.fieldtype);
     hold on;
     for i=1:10
       r_struct = TEAM_LOG.log_struct{count}{i};
       if r_struct.id>0
 	labelB = TEAM_LOG.log_labelB{count}{i};
-        h_c=subplot(5,5,[6:20]);
+        axes(MONITOR.mainAxe);
         plot_robot( r_struct, [],2,5,r_struct.robotName);
         updated = 0;
         axes(MONITOR.labelAxe(i));
@@ -166,7 +220,6 @@ function h=show_new_monitor()
     end
     hold off;
   end
-
 
 
   function button1(varargin)
@@ -194,8 +247,10 @@ function h=show_new_monitor()
     end
   end
   function button5(varargin)
-    filename = 'team_log.mat';
-    save(filename, 'TEAM_LOG');
+    savefile1 = ['./logs/teamlog_' datestr(now,30) '.mat'];
+    fprintf('\nSaving team log file: %s...', savefile1)
+    save(savefile1, 'TEAM_LOG'); 
+    disp('Done');
   end
   function button6(varargin)
     TEAM_LOG.is_logging = 0;

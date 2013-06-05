@@ -211,7 +211,7 @@ case "$1" in
     echo "Start Player Mode"
     run_player;;
 	'game')
-		echo "Starting nao main"
+		echo "Starting Game Mode"
 		run_main_nao;;
   'nao')
     echo "start nao"

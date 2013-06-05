@@ -112,8 +112,17 @@ function update()
       -- we received a game control packet
       lastUpdate = unix.time();
 
-      -- upadate game state
+      -- update game state
       gameState = gamePacket.state;
+
+      -- update game score
+      ourScore = gamePacket.teams[teamIndex].score;
+      if (teamIndex == 1) then 
+        enemyIndex = 2;
+      else
+        enemyIndex = 1;
+      end
+      theirScore = gamePacket.teams[enemyIndex].score;
 
       -- update team color
       set_team_color(gamePacket.teams[teamIndex].teamColour); 
@@ -188,6 +197,9 @@ function update_shm()
   gcm.set_game_penalty(get_penalty());
   gcm.set_game_time_remaining(timeRemaining);
   gcm.set_game_last_update(lastUpdate);
+
+  gcm.set_game_our_score(ourScore);
+  gcm.set_game_opponent_score(theirScore);
 
   gcm.set_team_number(teamNumber);
   gcm.set_team_color(teamColor);

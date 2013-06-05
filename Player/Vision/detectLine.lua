@@ -18,6 +18,7 @@ colorWhite = 16;
 min_white_pixel = Config.vision.line.min_white_pixel or 200;
 min_green_pixel = Config.vision.line.min_green_pixel or 5000;
 
+-- Define x and y
 --min_width=Config.vision.line.min_width or 4;
 max_width=Config.vision.line.max_width or 8;
 connect_th=Config.vision.line.connect_th or 2;
@@ -74,6 +75,7 @@ function detect()
     --print('under 200 white pixels');
     return line;
   end
+
   if (Vision.colorCount[colorField] < min_green_pixel) then 
     --print('under 5000 green pixels');
     return line; 
@@ -186,14 +188,50 @@ function detect()
   for i = 1, linecount do
     line_valid[i] = 1;
   end
--- second round check, check pairs of lines
-  
-  for i = 1, linecount do
+  -- Check for line distance
+    for i = 1, linecount do
     for j = 1, linecount do
       local angle_diff = util.mod_angle(line.angle[i] - line.angle[j]);
       angle_diff = math.abs (angle_diff) * 180 / math.pi;
       angle_diff = math.min (angle_diff, 180 - angle_diff);
       local Cross = get_crosspoint (line.v[i][1][1], line.v[i][1][2], line.v[i][2][1], line.v[i][2][2],line.v[j][1][1], line.v[j][1][2], line.v[j][2][1], line.v[j][2][2])
+
+
+-- second round check, check pairs of lines
+  
+  for i = 1, linecount do
+    for j = 1, linecount do
+      local x1 = line.v[i][1][1];
+      local y1 = line.v[i][1][2];
+      local x2 = line.v[i][2][1];
+      local y2 = line.v[i][2][2];
+      local x3 = line.v[j][1][1];
+      local y3 = line.v[j][1][2];
+      local x4 = line.v[j][2][1];
+      local y4 = line.v[j][2][2];
+      local z1 = math.sqrt(x1 * x1 + y1 * y1);
+     -- print('z1 is ' ..z1);
+      if (z1 > 2.8) then
+        line_valid[i] = 0;
+      end
+      local z2 = math.sqrt(x2 * x2 + y2 * y2);
+     -- print('z2 is ' ..z2);
+      if (z2 > 2.8) then
+        line_valid[i] = 0;
+      end
+       local z3 = math.sqrt(x3 * x3 + y3 * y3);
+      -- print('z3 is ' ..z3);
+      if (z3 > 2.8) then
+        line_valid[i] = 0;
+      end
+       local z4 = math.sqrt(x4 * x4 + y4 * y4);
+      -- print('z4 is ' ..z4);
+      if (z4 > 2.8) then
+        line_valid[i] = 0;
+      end
+    end
+  end
+
 -- in all checks on line pairs, always kill the shorter one. 
       if ( line.length[i] < line.length[j] and line_valid[i]*line_valid[j] ==1 ) then 
 -- angle check

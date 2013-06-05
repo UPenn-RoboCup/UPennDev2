@@ -5,6 +5,7 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <assert.h>
+#include <unistd.h>
 #include <sys/ioctl.h>
 #include <sys/mman.h>
 #include <linux/videodev2.h>
@@ -36,12 +37,14 @@
 //added
 
 int video_fd = -1;
-int nbuffer = 1;
-int width = 320;
-int height = 240;
-char invert = 1;
+int nbuffer = 2;
+char invert = 0;
+int width = 640;
+int height = 360;
 
-void yuyv_rotate(uint8_t* frame, int width, int height);
+
+
+uint8_t* yuyv_rotate(uint8_t* frame, int width, int height);
 
 struct buffer {
   void * start;
@@ -244,7 +247,7 @@ int v4l2_init(int resolution) {
 
   if( resolution == 1 ){
     width = 640;
-    height = 480;
+    height = 360;
   } else {
     width = 320;
     height = 240;
@@ -366,9 +369,9 @@ int v4l2_stream_off() {
 void * v4l2_get_buffer(int index, size_t *length) {
   if (length != NULL)
     *length = buffers[index].length;
-
   if( invert==1 ) {
-    yuyv_rotate( (uint8_t*)buffers[index].start, width, height );
+    return (void *) 
+	yuyv_rotate( (uint8_t*)buffers[index].start, width, height );
   }
   return buffers[index].start;
 }
@@ -454,8 +457,36 @@ void yuyv_px_swap( uint8_t* ptr1, uint8_t* ptr2 ){
   memcpy( ptr2, tmp_px, 4*sizeof(uint8_t) );
 }
 
-void yuyv_rotate(uint8_t* frame, int width, int height) {
+uint8_t* yuyv_rotate(uint8_t* frame, int width, int height) {
   int i;
+  //SJ: I maintain a second buffer here
+  //So that we do not directly rewrite on camera buffer address
+
+//  static uint8_t frame2[640*480*4];
+  static uint8_t frame2[640*360*4];
+
+  //printf("WIDTH HEIGHT:%d %d\n",width,height);
+
+  int siz = width*height/2;
+  for (int i=0;i<siz/2;i++){
+    int index_1 = i*4;
+    int index_2 = (siz-1-i)*4;
+    uint8_t x1,x2,x3,x4;
+    frame2[index_2] = frame[index_1+2];
+    frame2[index_2+1] = frame[index_1+1];
+    frame2[index_2+2] = frame[index_1];
+    frame2[index_2+3] = frame[index_1+3];
+
+    frame2[index_1]=frame[index_2+2];
+    frame2[index_1+1]=frame[index_2+1];
+    frame2[index_1+2]=frame[index_2];
+    frame2[index_1+3]=frame[index_2+3];
+
+  }
+  return frame2;
+
+
+/*
   uint32_t* frame32 = (uint32_t*)frame;
 
   // Swap top and bottom
@@ -475,6 +506,7 @@ void yuyv_rotate(uint8_t* frame, int width, int height) {
     }
 
   }
+*/
 
 }
 

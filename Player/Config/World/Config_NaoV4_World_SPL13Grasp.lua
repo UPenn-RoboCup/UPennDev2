@@ -98,5 +98,5 @@ world.initPosition2={
 world.enable_sound_localization = 0;
 
 --Trying yaw odometry data [x, y, angle]
-world.odomScale = {1, 1, 0.9};
+world.odomScale = {1, 1, 1.03};
 

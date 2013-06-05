@@ -30,7 +30,8 @@ util.LoadConfig(params, platform)
 
 game.teamNumber = 25;
 game.robotName = robotName;
-game.playerID = parse_hostname.get_player_id();
+--game.playerID = parse_hostname.get_player_id();
+game.playerID = 1;
 game.robotID = game.playerID;
 game.teamColor = parse_hostname.get_team_color();
 game.role = game.playerID-1; -- 0 for goalie
@@ -64,6 +65,20 @@ dev.kick = 'Walk/BasicKick';
 
 --Speak enable
 speakenable = 1;
+
+--------Setting Player ID's----------
+if (robotName=='tink') then
+  game.playerID = 1;
+elseif (robotName=='ruffio') then
+  game.playerID = 2;
+elseif (robotName=='ticktock') then
+  game.playerID = 3;
+elseif (robotName=='hook') then
+  game.playerID = 4;
+elseif (robotName=='pockets') then
+  game.playerID = 5;
+end
+--------------------------------------
 
 -- FSM Parameters
 fsm.game = 'RoboCup';

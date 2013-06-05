@@ -2,7 +2,6 @@ cwd = os.getenv('PWD')
 require('init')
 require('carray');
 require('vector');
-require('vcm');
 require ('Config')
 
 --Copy data to shm 1-1
@@ -10,7 +9,15 @@ Config.game.teamNumber = 1;
 Config.game.playerID = 1;
 Config.listen_monitor = 1;
 
-require('Camera')
+Config.camera.width = 640;
+Config.camera.height = 360;
+
+require('vcm');
+vcm.set_image_width(640)
+vcm.set_image_height(360)
+
+--require('Camera')
+Camera = require('OverheadCam')
 
 camera = {}
 
@@ -22,11 +29,11 @@ camera.auto_param[4] = {key='exposure, auto',val={1}}; --1 for manual
 camera.auto_param[5] = {key="exposure, auto priority",val={0}};
 
 camera.param = {};
-camera.param[1] = {key='brightness',    val={90}};
-camera.param[2] = {key='contrast',      val={11}};
-camera.param[3] = {key='saturation',    val={61}};
+camera.param[1] = {key='brightness',    val={0}};
+camera.param[2] = {key='contrast',      val={0}};
+camera.param[3] = {key='saturation',    val={0}};
 camera.param[4] = {key='gain',          val={0}};
-camera.param[5] = {key='white balance temperature', val={2000}};
+camera.param[5] = {key='white balance temperature', val={2800}};
 camera.param[6] = {key='sharpness',     val={255}};
 camera.param[7] = {key='exposure (absolute)',      val={800}};
 
@@ -65,6 +72,8 @@ function update()
     return false; 
   end
   vcm.set_image_yuyv(camera.image);
+  print("vcm written")
+
   count = count + 1;
   return true;
 end

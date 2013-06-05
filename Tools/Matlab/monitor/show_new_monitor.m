@@ -29,6 +29,7 @@ function h=show_new_monitor()
   h.deadcount=zeros(1,10);
 
   h.disabled= zeros(1,10);
+  h.robot_num = 10;
 
 
   function init(draw_team,target_fps)
@@ -38,7 +39,7 @@ function h=show_new_monitor()
     clf;
     set(gcf,'position',[1 1 900 600]);
     if MONITOR.teamnum==1 %single team view
-
+      MONITOR.robot_num = 5;
       MONITOR.enable10=2;  %Default 2
       MONITOR.hFpsText=uicontrol('Style','text',...
 	'Units','Normalized', 'Position',[.40 0.97 0.20 0.03]);
@@ -196,7 +197,7 @@ function h=show_new_monitor()
     hold on;
     plot_field(MONITOR.mainAxe,MONITOR.fieldtype);
     hold on;
-    for i=1:10
+    for i=1:MONITOR.robot_num
       r_struct = TEAM_LOG.log_struct{count}{i};
       if r_struct.id>0
 	labelB = TEAM_LOG.log_labelB{count}{i};

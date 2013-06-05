@@ -178,6 +178,25 @@ run_nao_vision(){
   echo "Rock and Roll!"
 }
 
+run_main_nao(){
+	cd $PLAYER_DIR
+	screen $SCREEN_FLAGS naohal /usr/bin/hal
+	sleep 3
+	screen $SCREEN_FLAGS naoqi /usr/bin/naoqi
+	sleep 4
+
+	echo "Starting Nao Cognition..."
+	cd $PLAYER_DIR
+	screen $SCREEN_FLAGS cognition $LUA_COM run_cognition.lua
+	# Allow cognition some time to start
+	sleep 4
+
+	echo "Starting Main..."
+	cd $PLAYER_DIR
+	screen $SCREEN_FLAGS main $LUA_COM run_main.lua
+	sleep 4
+}
+
 case "$KERNEL" in
         *aldebaran*) 
                 PLAYER_DIR=/home/nao/UPennDev/Player
@@ -191,6 +210,9 @@ case "$1" in
   '')
     echo "Start Player Mode"
     run_player;;
+	'game')
+		echo "Starting Game Mode"
+		run_main_nao;;
   'nao')
     echo "start nao"
     run_demo_nao;;

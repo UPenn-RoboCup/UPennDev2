@@ -118,7 +118,6 @@ function update()
     if (t-tButtonRole>1.0) then --Button pressed for 1 sec
       waiting = 1-waiting;
       if waiting==0 then --Start up and start demo
-        Motion.fallAngle = Config.fallAngle; --Enable falldown check
         Speak.talk('Soccer Demo');
         BodyFSM.sm:set_state('bodySearch');   
         HeadFSM.sm:set_state('headScan');

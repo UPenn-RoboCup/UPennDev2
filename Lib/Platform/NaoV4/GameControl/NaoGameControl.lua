@@ -21,7 +21,7 @@ lastUpdate = 0;
 kickoff = -1;
 half = 1;
 
-teamPenalty = {0,0,0,0};
+teamPenalty = {0,0,0,0,0};
 
 penalty = {};
 for t = 1,2 do

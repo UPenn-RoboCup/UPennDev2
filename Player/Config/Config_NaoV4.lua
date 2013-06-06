@@ -31,7 +31,8 @@ util.LoadConfig(params, platform)
 game.teamNumber = 25;
 game.robotName = robotName;
 --game.playerID = parse_hostname.get_player_id();
---game.playerID = 1;
+game.playerID = 0;
+--zero means this is not a robot
 --------Setting Player ID's----------
 if (robotName=='tink') then
   game.playerID = 1;

@@ -1,0 +1,6 @@
+2013.6.06-14.12.54: GC2 1.1
+2013.6.06-14.12.54: League = SPL
+2013.6.06-14.12.54: Play-off = false
+2013.6.06-14.12.54: Using broadcast address 255.255.255.255
+2013.6.06-14.12.54: UPennalizers vs Invisibles
+2013.6.06-14.13.14: Shutdown GameController

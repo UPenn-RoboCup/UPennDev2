@@ -28,7 +28,7 @@ params.World = "SPL13Grasp"
 
 util.LoadConfig(params, platform)
 
-game.teamNumber = 25;
+game.teamNumber = 22;
 game.robotName = robotName;
 --game.playerID = parse_hostname.get_player_id();
 game.playerID = 0;

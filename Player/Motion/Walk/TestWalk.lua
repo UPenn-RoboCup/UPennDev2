@@ -8,6 +8,7 @@ require('mcm')
 require('unix')
 require('util')
 
+testing = Config.walk.testing or false;
 
 -- Walk Parameters
 -- Stance and velocity limit values
@@ -169,20 +170,15 @@ qRArm=math.pi/180*vector.new({90,-40,-160});
 --Standard offset 
 uLRFootOffset = vector.new({0,footY,0});
 
---Walking/Stepping transition variables
-uLeftI = {0,0,0};
-uRightI = {0,0,0};
-uTorsoI = {0,0,0};
-supportI = 0;
-start_from_step = false;
-
-
-comdot = {0,0};
-stepkick_ready = false;
+--For torso offset change
+tStance0,tStance1 = 0,0;
 
 ----------------------------------------------------------
 -- End initialization 
 ----------------------------------------------------------
+
+
+angleTiltOld = 0;
 
 
 --Direct control of upper body
@@ -213,6 +209,7 @@ function upper_body_override(qL, qR, bR)
   bodyRot[2] = 	math.min(30*math.pi/180,math.max(10*math.pi/180,bodyRot[2]));
   -- Limit the yawing so that we can maintain good balance
   bodyRot[3] = 	math.min(30*math.pi/180,math.max(-30*math.pi/180,bodyRot[3]));
+
 end
 
 
@@ -238,13 +235,40 @@ function entry()
   Body.set_larm_hardness(hardnessArm);
   Body.set_rarm_hardness(hardnessArm);
 
+  --Reset push recovery variables 
+  hipStrategy = 0;
+  hipAngle = {0,0};
+  hipTargetAngle = {0,0};
+  hipStrategyTime = Body.get_time() + 1.0;
   walkKickRequest = 0;
-  stepkick_ready = false;
-  stepKickRequest=0;
 end
 
 
 function update()
+
+  if testing then
+    --Stance parameters
+    bodyHeight = Config.walk.bodyHeight;
+    bodyTilt=Config.walk.bodyTilt or 0;
+    footX = mcm.get_footX();
+    footY = Config.walk.footY;
+    supportX = Config.walk.supportX;
+    supportY = Config.walk.supportY;
+
+    tStep0 = Config.walk.tStep;
+    tStep = Config.walk.tStep;
+    tZmp = Config.walk.tZmp;
+    stepHeight0 = Config.walk.stepHeight;
+    stepHeight = Config.walk.stepHeight;
+    ph1Single = Config.walk.phSingle[1];
+    ph2Single = Config.walk.phSingle[2];
+    ph1Zmp,ph2Zmp=ph1Single,ph2Single;
+
+    velLimitX = Config.walk.velLimitX or {-.06, .08};
+    velLimitY = Config.walk.velLimitY or {-.06, .06};
+    velLimitA = Config.walk.velLimitA or {-.4, .4};
+    velDelta = Config.walk.velDelta or {.03,.015,.15};
+  end
 
   advanceMotion();
   footX = mcm.get_footX();
@@ -296,12 +320,6 @@ function update()
     shiftFactor = 0.5; --How much should we shift final Torso pose?
 
     check_walkkick(); 
-    check_stepkick(); 
-
-    if stepkick_ready then
-      largestep.init_switch(uLeft,uRight,uTorso,comdot);
-      return "step";
-    end
 
     if walkKickRequest==0 then
       if (stopRequest==1) then  --Final step
@@ -385,20 +403,12 @@ function update()
     aYP, aYN = zmp_solve(uSupport[2], uTorso1[2], uTorso2[2],
     uTorso1[2], uTorso2[2]);
 
-    --Compute COM speed at the boundary 
-
+    --Compute COM speed at the end of step 
+    --[[
     dx0=(aXP-aXN)/tZmp + m1X* (1-math.cosh(ph1Zmp*tStep/tZmp));
     dy0=(aYP-aYN)/tZmp + m1Y* (1-math.cosh(ph1Zmp*tStep/tZmp));
-
-    dx1=(aXP*math.exp(tStep/tZmp)-aXN*math.exp(-tStep/tZmp))/tZmp 
-	+ m2X* (1-math.cosh((1-ph2Zmp)*tStep/tZmp));
-    dy1=(aYP*math.exp(tStep/tZmp)-aYN*math.exp(-tStep/tZmp))/tZmp 
-	+ m2Y* (1-math.cosh((1-ph2Zmp)*tStep/tZmp));
-
---    print("xdot0:",dx0,dy0);
---    print("xdot1:",dx1,dy1);
-    comdot = {dx1,dy1}; --Final COM velocity 
-
+    print("max DY:",dy0);
+    --]]
   end --End new step
 
   xFoot, zFoot = foot_phase(ph);  
@@ -476,31 +486,6 @@ function update()
   motion_arms();
   -- end motion_body
 end
-
-function check_stepkick()
-  if stepKickRequest==0 then return; end
-  if stepKickRequest==1 then 
-    --Check current supporLeg and feet positions
-    --and advance steps until ready
-    uFootErr = util.pose_relative(uLeft1,
-       util.pose_global(2*uLRFootOffset,uRight1) );
-    if supportLeg~=stepKickSupport or 
-      math.abs(uFootErr[1])>0.02 or
-      math.abs(uFootErr[2])>0.01 or
-      math.abs(uFootErr[3])>10*math.pi/180 then
-      if supportLeg == 0 then
-        uRight2 = util.pose_global( -2*uLRFootOffset, uLeft1); 
-      else
-        uLeft2 = util.pose_global( 2*uLRFootOffset, uRight1); 
-      end
-      return;
-    end
-  end
-  stepkick_ready = true;
-  return; 
-end
-
-
 
 function check_walkkick()
   --Walkkick def: 
@@ -850,26 +835,17 @@ function stopAlign() --Depreciated, we always stop with feet together
 end
 
 function doWalkKickLeft()
-
-  doStepKickLeft();
-
---[[
   if walkKickRequest==0 then
     walkKickRequest = 1; 
     walkKick = walkKickDef["FrontLeft"];
   end
---]]
 end
 
 function doWalkKickRight()
-
-  doStepKickRight();
---[[
   if walkKickRequest==0 then
     walkKickRequest = 1; 
     walkKick = walkKickDef["FrontRight"];
   end
---]]
 end
 
 function doWalkKickLeft2()
@@ -917,28 +893,6 @@ function doPunch(punchtype)
     end
   end
 end
-
-function doStepKickLeft()
-  if stepKickRequest==0 then
-    support_start, support_end = 
-	largestep.set_kick_type("nonstop_kick_left");
-    stepKickRequest = 1; 
-    stepKickSupport = support_start;
-  end
-end
-
-function doStepKickRight()
-  if stepKickRequest==0 then
-    support_start, support_end = 
-	largestep.set_kick_type("nonstop_kick_right");
-    stepKickRequest = 1; 
-    stepKickSupport = support_start;
-  end
-end
-
-
-
-
 
 function startMotion(motionname)
   if motion_playing==0 then
@@ -1008,46 +962,23 @@ function advanceMotion()
   end
 end
 
-function set_initial_stance(uL,uR,uT,support)
-  uLeftI = uL;
-  uRightI = uR;
-  uTorsoI = uT;
-  supportI = support;
-  start_from_step = true;
-end
-
 
 function stance_reset() --standup/sitdown/falldown handling
-  if start_from_step then
-    uLeft = uLeftI;
-    uRight = uRightI;
-    uTorso = uTorsoI;
-    if supportI ==0 then --start with left support
-      iStep0 = -1;
-      iStep = 0;
-    else
-      iStep0 = 0; --start with right support
-      iStep = 1;
-    end
-    initial_step = 1; --start walking asap
-  else
-    print("Stance Resetted")
-    uLeft = util.pose_global(vector.new({-supportX, footY, 0}),uTorso);
-    uRight = util.pose_global(vector.new({-supportX, -footY, 0}),uTorso);
-    iStep0 = -1;
-    iStep = 0;
-  end
+  print("Stance Resetted")
+  uLeft = util.pose_global(vector.new({-supportX, footY, 0}),uTorso);
+  uRight = util.pose_global(vector.new({-supportX, -footY, 0}),uTorso);
   uLeft1, uLeft2 = uLeft, uLeft;
   uRight1, uRight2 = uRight, uRight;
   uTorso1, uTorso2 = uTorso, uTorso;
   uSupport = uTorso;
   tLastStep=Body.get_time();
   walkKickRequest = 0; 
+  iStep0 = -1;
+  iStep = 0;
   current_step_type=0;
   motion_playing = 0;
   upper_body_overridden=0;
   uLRFootOffset = vector.new({0,footY,0});
-  start_from_step = false;
 end
 
 function switch_stance(stance)
@@ -1085,11 +1016,6 @@ function zmp_solve(zs, z1, z2, x1, x2)
   local aN = (c1*expTStep - c2)/(expTStep-1/expTStep);
   return aP, aN;
 end
-
-
-
-
-
 
 --Finds the necessary COM for stability and returns it
 function zmp_com(ph)

@@ -42,7 +42,7 @@ fsm.enable_obstacle_detection = 1;
 fsm.playMode = 3; --Advanced Behavior 
 
 fsm.enable_walkkick = 1;
-fsm.enable_walkkick = 0;
+--fsm.enable_walkkick = 0;
 fsm.enable_sidekick = 1;
 fsm.enable_sidekick = 0;
 
@@ -57,7 +57,7 @@ fsm.enable_evade = 2;--Do evade kick when obstructed
 fsm.wait_kickoff = 0; --initial wait at opponent's kickoff
 fsm.th_front_kick = 10*math.pi/180;
 
-fsm.goalie_type = 1;
+fsm.goalie_type = 0;
 --1: Constantly moving goalie
 --2: Goalie stops when in position
 --3: Diving goalie (stops in position and never move)

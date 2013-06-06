@@ -63,12 +63,11 @@ dev.ip_wireless_port = 54321
 dev.game_control = 'NaoGameControl';
 --dev.team='TeamSPL';
 dev.team='TeamGeneral';
-
---dev.walk = 'CleanWalk';
+--dev.walk = 'AwesomeWalk';
+dev.walk = 'CleanWalk';
 
 
 --
-dev.walk = 'AwesomeWalk';
 dev.largestep = 'ZMPStepKick';
 largestep_enable = true;
 --

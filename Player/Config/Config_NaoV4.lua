@@ -34,7 +34,7 @@ game.robotName = robotName;
 --game.playerID = 1;
 --------Setting Player ID's----------
 if (robotName=='tink') then
-  game.playerID = 1;
+  game.playerID = 5;
 elseif (robotName=='ruffio') then
   game.playerID = 2;
 elseif (robotName=='ticktock') then
@@ -42,14 +42,14 @@ elseif (robotName=='ticktock') then
 elseif (robotName=='hook') then
   game.playerID = 4;
 elseif (robotName=='pockets') then
-  game.playerID = 5;
+  game.playerID = 1;
 end
 --------------------------------------
 
 game.robotID = game.playerID;
 game.teamColor = parse_hostname.get_team_color();
 game.role = game.playerID-1; -- 0 for goalie
-game.nPlayers = 4;
+game.nPlayers = 5;
 
 -- Devive Interface Libraries
 dev = {};

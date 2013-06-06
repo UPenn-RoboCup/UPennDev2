@@ -31,10 +31,11 @@ util.LoadConfig(params, platform)
 game.teamNumber = 25;
 game.robotName = robotName;
 --game.playerID = parse_hostname.get_player_id();
---game.playerID = 1;
+game.playerID = 0;
+--zero means this is not a robot
 --------Setting Player ID's----------
 if (robotName=='tink') then
-  game.playerID = 5;
+  game.playerID = 1;
 elseif (robotName=='ruffio') then
   game.playerID = 2;
 elseif (robotName=='ticktock') then
@@ -42,7 +43,7 @@ elseif (robotName=='ticktock') then
 elseif (robotName=='hook') then
   game.playerID = 4;
 elseif (robotName=='pockets') then
-  game.playerID = 1;
+  game.playerID = 5;
 end
 --------------------------------------
 

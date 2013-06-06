@@ -39,7 +39,7 @@ function entry()
     if ((ourScore > last_score and ourScore >= oppScore + 2) or
       (ourScore > last_score and ourScore == oppScore)) then
       --Random song generator
-      song = math.random(1);
+      song = math.random(7);
       Speak.play('Music/'..song..'.mp3');
       Speak.talk('Rufio! Rufio! Rufio!');
     end

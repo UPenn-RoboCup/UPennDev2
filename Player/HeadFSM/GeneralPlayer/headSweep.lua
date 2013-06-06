@@ -23,6 +23,7 @@ print("headSweep entry")
   else
     direction = -1;
   end
+  vcm.set_camera_command(0); --top camera
 end
 
 function update()
@@ -47,4 +48,5 @@ function update()
 end
 
 function exit()
+  vcm.set_camera_command(-1); --switch camera
 end

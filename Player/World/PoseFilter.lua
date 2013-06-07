@@ -188,7 +188,6 @@ function landmark_observation(pos, v, rLandmarkFilter, aLandmarkFilter,dont_upda
   local r = math.sqrt(v[1]^2 + v[2]^2);
   local a = math.atan2(v[2], v[1]);
 
-
   local rSigma = rSigmaSingle1 * r + rSigmaSingle2;
   local aSigma = aSigmaSingle;
 
@@ -236,6 +235,14 @@ function landmark_observation(pos, v, rLandmarkFilter, aLandmarkFilter,dont_upda
     if dr[imin]< angle_update_threshold then
       dap[ip] = 0;
     end
+
+    --If the distance is too large, do not update position for the particles
+    if dr[imin]> position_update_threshold then
+      dxp[ip] = 0;
+      dyp[ip] = 0;
+    end
+
+
   end
   --Filter toward best matching landmark position:
   for ip = 1,n do

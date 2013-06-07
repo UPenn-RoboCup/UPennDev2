@@ -152,13 +152,14 @@ function update()
 
   kick_away = false;
 --  if goalie_dive~=1 or goalie_type<3 then 
+
+
   if true then --Always reposition
     if t-ball.t<0.1 and ball_v < ball_velocity_th2 then
       --ball is not moving, check whether we go out for kicking      
       if ballX_defend<rCloseX2 or
---       ((ballX_defend<rCloseX or ballR_defend<rClose)
-       (ballR_defend<rClose
-	     and attacker_eta > eta_kickaway) then
+       (ballX_defend<rCloseX or ballR_defend<rClose) then
+--       (ballR_defend<rClosse and attacker_eta and attacker_eta~=0 and attacker_eta > eta_kickaway) then
         Motion.event("walk");
         return "ballClose";
       end

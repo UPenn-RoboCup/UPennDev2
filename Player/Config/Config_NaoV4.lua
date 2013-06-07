@@ -43,7 +43,7 @@ elseif (robotName=='ticktock') then
 elseif (robotName=='hook') then
   game.playerID = 1;
 elseif (robotName=='pockets') then
-  game.playerID = 5;
+  game.playerID = 1;
 end
 --------------------------------------
 
@@ -134,7 +134,7 @@ km.time_to_stand = 30; -- average time it takes to stand up in seconds
 goalie_dive = 1; --1 for arm only, 2 for actual diving
 goalie_dive_waittime = 6.0; --How long does goalie lie down?
 fsm.goalie_type = 3;--moving/move+stop/stop+dive/stop+dive+move
-fsm.goalie_reposition=1; --No reposition / Yaw reposition / Position reposition
+fsm.goalie_reposition=0; --No reposition / Yaw reposition / Position reposition
 fsm.bodyAnticipate.thFar = {0.4,0.4,30*math.pi/180};
 fsm.goalie_use_walkkick = 1;--should goalie use walkkick or long kick?
 

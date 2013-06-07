@@ -27,6 +27,8 @@ else
   processed_img_height = processed_img_height / 2;
 end
 
+
+
 shared.camera = {};
 shared.camera.select = vector.zeros(1);
 shared.camera.command = vector.zeros(1);
@@ -207,6 +209,11 @@ shared.debug.store_goal_detections = vector.zeros(1);
 shared.debug.store_ball_detections = vector.zeros(1);
 shared.debug.store_all_images = vector.zeros(1);
 shared.debug.message='';
+
+--Now we disable vision update until getup sequence is done
+shared.vision={};
+shared.vision.enable = vector.zeros(1);
+
 
 util.init_shm_segment(getfenv(), _NAME, shared, shsize);
 

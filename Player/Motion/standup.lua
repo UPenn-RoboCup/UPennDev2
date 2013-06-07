@@ -6,6 +6,7 @@ require('unix')
 require('Config');
 require('walk');
 require('wcm')
+require('vcm')
 
 local cwd = unix.getcwd();
 if string.find(cwd, "WebotsController") then
@@ -46,6 +47,7 @@ function entry()
       keyframe.do_motion("standupFromBack");
     end
   end
+  vcm.set_vision_enable(0);
 end
 
 function update()

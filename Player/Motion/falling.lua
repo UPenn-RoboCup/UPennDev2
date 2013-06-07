@@ -2,6 +2,7 @@ module(..., package.seeall);
 
 require('Body')
 require('walk')
+require('vcm')
 
 t0 = 0;
 timeout = Config.falling_timeout or 0.3;
@@ -35,6 +36,7 @@ print("UKEMI FRONT")
   t0 = Body.get_time();
   Body.set_syncread_enable(1); --OP specific
   walk.stance_reset();--reset current stance
+  vcm.set_vision_enable(0);
 end
 
 ---

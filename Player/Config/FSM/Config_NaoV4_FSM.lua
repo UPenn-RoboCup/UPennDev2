@@ -57,12 +57,12 @@ fsm.enable_evade = 2;--Do evade kick when obstructed
 fsm.wait_kickoff = 0; --initial wait at opponent's kickoff
 fsm.th_front_kick = 10*math.pi/180;
 
-fsm.goalie_type = 0;
+fsm.goalie_type = 2;
 --1: Constantly moving goalie
 --2: Goalie stops when in position
 --3: Diving goalie (stops in position and never move)
 --4: Diving and repositioning goalie (turns to ball position)
-fsm.goalie_reposition=1; --Yaw reposition
+fsm.goalie_reposition=0; --Yaw reposition
 fsm.goalie_use_walkkick = 1;--should goalie use walkkick or long kick?
 
 fsm.daPost_check = 1;

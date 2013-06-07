@@ -35,6 +35,8 @@ rGoalFilter = Config.world.rGoalFilter or 0.02;
 aGoalFilter = Config.world.aGoalFilter or 0.05;
 rPostFilter = Config.world.rPostFilter or 0.01;
 aPostFilter = Config.world.aPostFilter or 0.03;
+rPostFilter2 = Config.world.rPostFilter2 or 0.01;
+aPostFilter2 = Config.world.aPostFilter2 or 0.03;
 rCornerFilter = Config.world.rCornerFilter or 0.01;
 aCornerFilter = Config.world.aCornerFilter or 0.03;
 
@@ -515,11 +517,11 @@ function post_unified_unknown(v)
 end
 
 function post_unified_left(v)
-  landmark_observation(postLeft, v[1], rPostFilter, aPostFilter);
+  landmark_observation(postLeft, v[1], rPostFilter2, aPostFilter2);
 end
 
 function post_unified_right(v)
-  landmark_observation(postRight, v[1], rPostFilter, aPostFilter);
+  landmark_observation(postRight, v[1], rPostFilter2, aPostFilter2);
 end
 
 function goal_unified(v)

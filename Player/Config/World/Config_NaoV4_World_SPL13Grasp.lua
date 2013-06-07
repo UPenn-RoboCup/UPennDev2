@@ -70,6 +70,10 @@ world.aGoalFilter = 0.15;
 world.rPostFilter = 0.02;
 world.aPostFilter = 0.05;
 
+--Single known post observation
+world.rPostFilter2 = 0.05;
+world.aPostFilter2 = 0.10;
+
 --Corner observation
 world.rCornerFilter = 0.01;
 world.aCornerFilter = 0.02;

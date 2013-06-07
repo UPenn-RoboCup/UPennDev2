@@ -349,6 +349,19 @@ function detect(color)
     end
 --]]
 
+
+--SJ: goal distance check in x-y space
+    distx = goal.v[1][1]-goal.v[2][1];
+    disty = goal.v[1][2]-goal.v[2][2];
+    distxy = math.sqrt(distx*distx+disty*disty);
+    if distxy > Config.world.goalWidth * 2.0 then
+      vcm.add_debug_message("Goal distance check fail\n")
+      return goal;
+    end
+
+
+
+
   else
     goal.v[2] = vector.new({0,0,0,0});
 

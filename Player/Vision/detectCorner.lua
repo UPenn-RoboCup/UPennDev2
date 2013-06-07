@@ -143,14 +143,14 @@ function detect(line)
   for i=1,line.nLines-1 do
     for j=i+1,line.nLines do
       ang=math.abs(util.mod_angle(line.angle[i]-line.angle[j]));
-      if math.abs(ang-math.pi/2)<20*math.pi/180 then
+     if math.abs(ang-math.pi/2)<20*math.pi/180 then
 	--Check endpoint distances in labelB
 	mindist, vc0, v10, v20, cornertype = get_min_dist(line,i,j);
 
         vcm.add_debug_message(string.format(
 		"line %d-%d :angle %d mindist %d type %d\n",
 		i,j,ang*180/math.pi, mindist,cornertype));
-
+       
 	if mindist<dist_threshold and
 	get_line_length(line,i)>length_threshold and
 	get_line_length(line,j)>length_threshold then 
@@ -225,7 +225,7 @@ function detect(line)
   --Distance filter on the corners
   enable_corner_distance_filter = Config.vision.enable_distance_filter or 1;
   if(enable_corner_distance_filter == 1) then
-    corner_distance_filter_threshold = Config.vision.distance_filter_threshold or 1.5;
+    corner_distance_filter_threshold = Config.vision.distance_filter_threshold or 3;
     d = math.sqrt((cornerpos[1]-pose[1])^2 + (cornerpos[2]-pose[2])^2);
     if(d > corner_distance_filter_threshold) then
       vcm.add_debug_message("Corner too far away from the robot");

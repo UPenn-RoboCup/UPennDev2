@@ -20,8 +20,8 @@ min_green_pixel = Config.vision.line.min_green_pixel or 5000;
 
 -- Define x and y
 --min_width=Config.vision.line.min_width or 4;
-max_width=Config.vision.line.max_width or 8;
-connect_th=Config.vision.line.connect_th or 2;
+max_width=Config.vision.line.max_width or 10;
+connect_th=Config.vision.line.connect_th or 1.5;
 max_gap=Config.vision.line.max_gap or 1;
 min_length=Config.vision.line.min_length or 3;
 
@@ -72,7 +72,7 @@ function detect()
   line_second = {};
   line_second.detect  = 0;
   if (Vision.colorCount[colorWhite] < min_white_pixel) then 
-    --print('under 200 white pixels');
+    print('under 200 white pixels');
     return line;
   end
 
@@ -151,17 +151,16 @@ function detect()
       goal_posX = math.min (goal1[1], goal2[1]);
     end
     --print ('goal_posX: '..goal_posX)
-    local LWratio = length/line.propsB[i].max_width;
-   -- vcm.add_debug_message(string.format("\nlength is %d\nwidth is %d\nline count is %d" ,length,line.propsB[i].max_width, linecount));
+     local LWratio = length/line.propsB[i].max_width;
     if length > min_length and linecount < 6 
   -- lines should be on the ground
-  and vendpoint_old[1][3] < 0.1 and vendpoint_old[2][3] < 0.1
+    and vendpoint_old[1][3] < .1 and vendpoint_old[2][3] < .1
   -- lines should not be too wide
-  and LWratio > 2.5 
+    -- and LWratio > 2.5 
   -- lines should be below horizon
   --and line.propsB[i].endpoint[3] > horizonB and line.propsB[i].endpoint[4] > horizonB  
-  -- lines should be in the court, nothing behind the goal posts can be considered as line.
- -- and (goal_posX >= 0.15 or (goal_posX < 0.15 and lineX > goal_posX)) 
+   --lines should be in the court, nothing behind the goal posts can be considered as line.
+   -- and (goal_posX >= 0.15 or (goal_posX < 0.15 and lineX > goal_posX)) 
 --vendpoint[1][1] > goal_posX and vendpoint[2][1] > goal_posX
   then
       linecount=linecount+1;
@@ -232,18 +231,19 @@ function detect()
     end
   end
 
+
 -- in all checks on line pairs, always kill the shorter one. 
-      if ( line.length[i] < line.length[j] and line_valid[i]*line_valid[j] ==1 ) then 
+         if ( line.length[i] < line.length[j] and line_valid[i]*line_valid[j] ==1 ) then 
 -- angle check
-      --[[ if (angle_diff > min_angle_diff and angle_diff < max_angle_diff) then
+        if (angle_diff < min_angle_diff and angle_diff > max_angle_diff) then
           --print ('angle check failed. angle_diff: '..angle_diff..', line'..i..' and line '..j)
           line_valid[i] = 0;
-        end]]
+        end
 -- cross check
         if ((Cross[1] - line.v[i][1][1])*(Cross[1] - line.v[i][2][1]) < 0 and (Cross[1] -  line.v[j][1][1])*(Cross[1] - line.v[j][2][1]) < 0 ) then
 --          print ('cross check failed. line '..i..' and line '..j..' are crossed')
           line_valid[i] = 0;
-        end
+       end
       end
     end 
   end

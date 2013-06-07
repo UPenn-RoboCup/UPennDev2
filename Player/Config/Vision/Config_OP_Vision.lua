@@ -20,6 +20,8 @@ vision.scaleB = 4;
 vision.enable_2_yellow_goals =0;
 -- use this to enable line detection
 vision.enable_line_detection = 1;
+-- use this to enable corner detection
+vision.enable_corner_detection = 1;
 -- use this to enable spot detection
 vision.enable_spot_detection = 0;
 -- use this to enable midfield landmark detection
@@ -125,6 +127,8 @@ vision.corner={};
 vision.corner.dist_threshold = 100; --10 pixel
 vision.corner.length_threshold = 15;
 vision.corner.min_center_dist = 1.5;
+vision.corner.enable_distance_filter = 1;
+vision.corner.distance_filter_threshold = 1.5;
 
 
 

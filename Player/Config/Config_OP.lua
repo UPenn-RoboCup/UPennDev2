@@ -204,6 +204,7 @@ led_on = 1; --turn on eye led
 
 --New multi-blob landmark detection code
 vision.use_multi_landmark = 1;
+vision.enable_corner_detection = 1;
 
 ------------------------------------------------------------------------
 -- Demo setting 1

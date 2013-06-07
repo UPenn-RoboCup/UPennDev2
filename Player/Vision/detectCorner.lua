@@ -222,6 +222,17 @@ function detect(line)
     return corner;
   end
 
+  --Distance filter on the corners
+  enable_corner_distance_filter = Config.vision.enable_distance_filter or 1;
+  if(enable_corner_distance_filter == 1) then
+    corner_distance_filter_threshold = Config.vision.distance_filter_threshold or 1.5;
+    d = math.sqrt((cornerpos[1]-pose[1])^2 + (cornerpos[2]-pose[2])^2);
+    if(d > corner_distance_filter_threshold) then
+      vcm.add_debug_message("Corner too far away from the robot");
+      return corner;
+    end
+  end
+
   if corner.type==1 then
      vcm.add_debug_message("L-corner detected\n");
   else

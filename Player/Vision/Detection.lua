@@ -82,6 +82,8 @@ end
 
 
 function update()
+
+
   
   if( Config.gametype == "stretcher" ) then
     ball = detectEyes.detect(colorOrange);
@@ -129,6 +131,17 @@ function update()
     detectRobot.detect();
     Trobot = unix.time() - tstart;
   end
+
+
+  if vcm.get_vision_enable() ==0 then
+    ball.detect = 0;
+    ballYellow.detect=0; 
+    goalYellow.detect = 0;
+    line.detect = 0;
+    corner.detect = 0;
+  end
+
+
   update_shm();
 end
 
@@ -233,6 +246,8 @@ function update_shm()
     end
       vcm.set_boundary_bottom(boundary.bottom);
   end
+
+
 end
 
 function print_time()

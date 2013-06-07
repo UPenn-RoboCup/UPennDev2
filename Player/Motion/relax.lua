@@ -1,6 +1,7 @@
 module(..., package.seeall);
 
 require('Body')
+require('vcm')
 
 t0 = 0;
 timeout = 1.0;
@@ -40,6 +41,7 @@ function entry()
     Body.set_body_hardness(0);
   end
   Body.set_syncread_enable(1);
+  vcm.set_vision_enable(1);
 end
 
 ---

@@ -54,6 +54,7 @@ function entry()
   t0 = Body.get_time();
 
   walk.active=false;
+  vcm.set_vision_enable(1);
 end
 
 function update()

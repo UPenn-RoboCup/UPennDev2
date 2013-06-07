@@ -57,24 +57,35 @@ world.Lcorner[18]={-0.6375,0};
 world.use_same_colored_goal=1;
 
 --should we use new triangulation?
-world.use_new_goalposts=0;
+world.use_new_goalposts=1;
 
--- filter weights
-world.rGoalFilter = 0.02;
-world.aGoalFilter = 0.05;
+
+
+--Two post observation
+--world.rGoalFilter = 0.02;
+world.rGoalFilter = 0.06;
+world.aGoalFilter = 0.15;
+
+--Single post observation
 world.rPostFilter = 0.02;
 world.aPostFilter = 0.05;
-world.rKnownGoalFilter = 0.02;
-world.aKnownGoalFilter = 0.20;
-world.rKnownPostFilter = 0.02;
-world.aKnownPostFilter = 0.10;
-world.rUnknownGoalFilter = 0.02;
-world.aUnknownGoalFilter = 0.05;
-world.rUnknownPostFilter = 0.02;
-world.aUnKnownPostFilter = 0.05;
 
-world.rCornerFilter = 0.02;
-world.aCornerFilter = 0.05;
+--Corner observation
+world.rCornerFilter = 0.01;
+world.aCornerFilter = 0.02;
+
+--Line observation
+world.aLineFilter = 0.02;
+
+--Single landmark determing param
+world.rSigmaSingle1 = .15;
+world.rSigmaSingle2 = .10;
+world.aSigmaSingle = 5*math.pi/180; --Original value
+
+--Two post determining param
+world.rSigmaDouble1 = .25;
+world.rSigmaDouble2 = .20;
+world.aSigmaDouble = 30*math.pi/180;
 
 -- default positions for our kickoff
 world.initPosition1={
@@ -100,3 +111,11 @@ world.enable_sound_localization = 0;
 --Trying yaw odometry data [x, y, angle]
 world.odomScale = {1, 1, 1.03};
 
+world.triangulation_threshold = 4.0;
+world.position_update_threshold = 6.0;
+
+world.triangulation_threshold = 6.0;
+world.position_update_threshold = 7.0;
+
+--should we use new triangulation?
+world.use_new_goalposts=1;

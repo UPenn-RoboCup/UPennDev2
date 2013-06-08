@@ -44,6 +44,7 @@ function entry()
   Body.set_larm_hardness(.1);
   Body.set_rarm_hardness(.1);
   t0=Body.get_time();
+  mcm.set_walk_isMoving(0); --not walking
 
 end
 

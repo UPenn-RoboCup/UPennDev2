@@ -258,6 +258,7 @@ function update()
   end
 
   if (not active) then 
+    mcm.set_walk_isMoving(0); --not walking
     update_still();
     return; 
   end
@@ -267,6 +268,7 @@ function update()
     tLastStep = Body.get_time();
   end
   ph0=ph;
+  mcm.set_walk_isMoving(1); --walking
 
   --SJ: Variable tStep support for walkkick
   ph = (t-tLastStep)/tStep;

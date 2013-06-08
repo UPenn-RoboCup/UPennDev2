@@ -55,6 +55,7 @@ function entry()
 
   walk.active=false;
   vcm.set_vision_enable(1);
+  mcm.set_walk_isMoving(1); --start walk
 end
 
 function update()

@@ -258,9 +258,12 @@ function update()
   end
 
   if (not active) then 
+    mcm.set_walk_isMoving(0); --not walking
     update_still();
     return; 
   end
+  mcm.set_walk_isMoving(1); --walking
+
 
   if not started then
     started=true;

@@ -219,10 +219,12 @@ function update_vision()
     return;
   end
 
-  -- resample?
-  if count % cResample == 0 then
-    PoseFilter.resample();
-    PoseFilter.add_noise();
+  -- only addnoise / resample while robot is moving
+  if mcm.get_walk_isMoving()>0 then
+    if count % cResample == 0 then
+      PoseFilter.resample();
+      PoseFilter.add_noise();
+    end
   end
 
   -- Reset heading if robot is down

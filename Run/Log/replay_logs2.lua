@@ -1,5 +1,7 @@
 module(... or '', package.seeall)
 
+dofile'../include.lua'
+
 -- Add the required paths
 uname  = io.popen('uname -s')
 system = uname:read();
@@ -11,6 +13,7 @@ package.path = cwd.."/../Vision/?.lua;"..package.path;
 local serialization = require 'serialization'
 local util = require 'util'
 local cutil = require 'cutil'
+local carray = require'carray'
 
 -- Data Type specific
 local dataPath = '~/shadwell/day2_third/logs/';
@@ -18,8 +21,10 @@ local dataStamp = '02.27.2013';
 local dataTypes = {'lidar','arduimu','uvc'}
 local dataTypes = {'lidar','arduimu'}
 local realtime = true;
-local rcm = require 'rcm'
+--local rcm = require 'rcm'
 local unix = require 'unix'
+local simple_ipc = require'simple_ipc'
+
 
 -- Get the list of log files
 function get_log_file_list()
@@ -76,15 +81,17 @@ end
 
 local pushers_tbl = {}
 pushers_tbl[1] = function ( lidar_tbl )
-  rcm.set_lidar_timestamp(lidar_tbl.t);
-  rcm.set_lidar_ranges( lidar_tbl.ranges );
-  rcm.set_lidar_counter(lidar_tbl.counter);
+	print('Lidar', carray.float(lidar_tbl.ranges,1081)[540] )
+  --rcm.set_lidar_timestamp(lidar_tbl.t);
+  --rcm.set_lidar_ranges( lidar_tbl.ranges );
+  --rcm.set_lidar_counter(lidar_tbl.counter);
 end
 pushers_tbl[2] = function ( imu_tbl )
-  rcm.set_imu_timestamp( imu_tbl.t );
-  rcm.set_imu_acc( {imu_tbl.Ax, imu_tbl.Ay, imu_tbl.Az} );
-  rcm.set_imu_gyro( {imu_tbl.Wx, imu_tbl.Wy, imu_tbl.Wz} );
-  rcm.set_imu_rpy( {imu_tbl.R, imu_tbl.P, imu_tbl.Y} );
+	print('imu',imu_tbl.t)
+--  rcm.set_imu_timestamp( imu_tbl.t );
+--  rcm.set_imu_acc( {imu_tbl.Ax, imu_tbl.Ay, imu_tbl.Az} );
+--  rcm.set_imu_gyro( {imu_tbl.Wx, imu_tbl.Wy, imu_tbl.Wz} );
+--  rcm.set_imu_rpy( {imu_tbl.R, imu_tbl.P, imu_tbl.Y} );
 end
 
 function open_log_file( d )

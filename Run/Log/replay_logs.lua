@@ -1,5 +1,5 @@
 module(... or '', package.seeall)
-
+dofile'../include.lua'
 -- Add the required paths
 uname  = io.popen('uname -s')
 system = uname:read();
@@ -17,11 +17,13 @@ local Z = require 'Z'
 local carray = require 'carray'
 -- Data Type specific
 local dataPath = '~/shadwell/day2_third/';
+local dataPath = '/Volumes/TimeMachineSGM/shadwell/day2_third/';
 local dataStamp = '02.27.2013';
 local dataTypes = {'flir','lidar','arduimu'}
 --local dataTypes = {'flir'}
 --local dataTypes = {'lidar','arduimu'}
-local dataChannels = {5555,5556,5557}
+--local dataChannels = {5555,5556,5557}
+local dataChannels = {'flir','lidar','imu'}
 local realtime = true;
 local unix = require 'unix'
 
@@ -104,6 +106,7 @@ parsers_tbl['flir'] = function ( str )
 end
 
 local pushers_tbl = {}
+flir_cnt = 0
 pushers_tbl['lidar'] = function ( lidar_tbl )
   --rcm.set_lidar_ranges( lidar_tbl.ranges );
 	--rcm.set_lidar_timestamp(lidar_tbl.t);
@@ -114,7 +117,12 @@ pushers_tbl['lidar'] = function ( lidar_tbl )
   local to_send = {};
   to_send.startTime = lidar_tbl.t;
   to_send.ranges = lidar_tbl.ranges;
-	ipc_channels['lidar']:send( mp.pack(to_send) )
+	--ipc_channels['lidar']:send( mp.pack(to_send) )
+	flir_cnt = flir_cnt + 1
+	if flir_cnt==5 then
+	ipc_channels['lidar']:send( { tostring(lidar_tbl.t),lidar_tbl.ranges } )
+	flir_cnt = 0
+	end
   --ipc_channels['lidar']:send( lidar_tbl.t..lidar_tbl.ranges );
   --ipc_channels['lidar']:send( lidar_tbl.ranges );
 end
@@ -237,7 +245,8 @@ while true do
   -- If we wish to run in realtime, then sleep accordingly
 		-- Only push data when running in realtime
   if realtime then
-    unix.usleep( 1e6*t_diff*3 );
+    unix.usleep( 1e6*t_diff*2 );
+    --unix.usleep( 1e6*t_diff );
 		pushers_tbl[ dataTypes[d_idx] ]( latest_entry_tbls[d_idx] )
   end
 

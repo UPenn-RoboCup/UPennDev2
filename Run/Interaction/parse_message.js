@@ -4,9 +4,19 @@ var process_message = function (event) {
 	var t0_raw = Date.now()
 	var t0 = t0_raw/1000000;
 	var vertices = new Float32Array(event.data);
-	$("#debug").append("<p>Received "+event.data.byteLength+" at "+t0+" raw time: "+t0_raw+'</p>');
-	$("#debug").append("<p>Converted to "+vertices.length+" element float array</p>");
-	$("#debug").append("<p>Elements:"+vertices[200]+","+vertices[201]+","+vertices[202]+")</b>");
+	/* Debugging information */
+	$("#debug").append(
+		"<p>Received "+event.data.byteLength+" at "+t0+" raw time: "+t0_raw+'</p>'
+	);
+	$("#debug").append(
+		"<p>Converted to "+vertices.length+" element float array</p>"
+	);
+	$("#debug").append(
+		"<p>Elements:"+vertices[0]+","+vertices[1]+","+vertices[2]+")</b>"
+	);
+	/* Put into THREE.js */
+	update_faces(vertices);
+	
 };
 
 // Event listeners
@@ -25,3 +35,4 @@ var ws_listen = function(){
 };
 
 document.addEventListener( "DOMContentLoaded", ws_listen, false );
+document.addEventListener( "DOMContentLoaded", init_faces, false );

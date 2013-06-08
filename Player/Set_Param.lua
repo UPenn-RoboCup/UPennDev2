@@ -56,6 +56,7 @@ function Cam_init()
     Camera.set_param('White Balance, Automatic', 0);
     Camera.set_param('Auto Exposure',0);
     Camera.set_param('Auto Exposure Algorithm', 3)
+    Camera.set_param('Fade to Black', 0)
     for i,param in ipairs(Config.camera.param) do
         Camera.set_param(param.key, param.val[c]);
         unix.usleep (100);

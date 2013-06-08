@@ -115,8 +115,8 @@ function process_keyinput()
   if (Body.get_change_role() == 1) then
     button_pressed[2]=1;
   else
-    if false then
     --if button_pressed[2]==1 then -- Disable broadcast switching
+    if false then
       if broadcast_enable == 0 then 
         broadcast_enable = 2;
         Speak.talk('enable broadcasting');

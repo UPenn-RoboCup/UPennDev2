@@ -1,2 +1,2 @@
 LIBNAME =carray
-include ../../../Makefile.inc
+include ../../../Makefile.am

@@ -4,7 +4,7 @@
 # WEBOTS_INCLUDE_C_DIR         - where to find header for c/c++ developement of controller/supervisor
 # WEBOTS_INCLUDE_CPP_DIR         - where to find header for c/c++ developement of controller/supervisor
 # WEBOTS_INCLUDE_PLUGINS_DIR   - where to find headers for webots plugins devellopement
-# WEBOTS_TEMPLATE_DIR          - where to find template file like controllers/Makefile.include and plugins/physics/physics.c
+# WEBOTS_TEMPLATE_DIR          - where to find template file like controllers/Makefile.amlude and plugins/physics/physics.c
 # WEBOTS_LIBRARIES             - List of libraries to link against, full path
 # WEBOTS_HOME_DIR              - WEBOTS_HOME
 # WEBOTS_CXXFLAGS              - COMPILE_FLAGS to use for Webots Controller
@@ -102,7 +102,7 @@ macro(find_webots_with_home WEBOTS_HOME)
   find_path(WEBOTS_INCLUDE_CPP_DIR webots/Supervisor.hpp PATHS ${WEBOTS_HOME}/include/controller/cpp)
   find_path(WEBOTS_INCLUDE_C_DIR webots/supervisor.h PATHS ${WEBOTS_HOME}/include/controller/c)
   find_path(WEBOTS_INCLUDE_PLUGINS_DIR plugins/physics.h PATHS ${WEBOTS_HOME}/include)
-  find_path(WEBOTS_TEMPLATE_DIR controllers/Makefile.include PATHS ${WEBOTS_HOME}/resources ${WEBOTS_HOME}/projects/default )
+  find_path(WEBOTS_TEMPLATE_DIR controllers/Makefile.amlude PATHS ${WEBOTS_HOME}/resources ${WEBOTS_HOME}/projects/default )
 
 set(SEARCH_OPTIONS "NO_DEFAULT_PATH NO_CMAKE_ENVIRONMENT_PATH NO_CMAKE_PATH NO_SYSTEM_ENVIRONMENT_PATH NO_CMAKE_SYSTEM_PATH")
 #get the Libraries

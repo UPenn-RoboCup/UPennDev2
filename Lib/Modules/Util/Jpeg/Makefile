@@ -1,5 +1,5 @@
 LIBNAME=jpeg
-include ../../../Makefile.inc
+include ../../../Makefile.am
 LIBOPTS=-ljpeg
 
 clean:

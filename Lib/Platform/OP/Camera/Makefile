@@ -3,7 +3,7 @@ all:
 else
 LIBNAME=OPCam
 EXTRA_OBJ=timeScalar.o v4l2.o
-include ../../../Makefile.inc
+include ../../../Makefile.am
 LIBOPTS+=-lm $(LIBRT)
 endif
 clean:

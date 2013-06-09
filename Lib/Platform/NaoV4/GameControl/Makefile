@@ -1,6 +1,6 @@
 LIBNAME=NaoGameControlReceiver
 EXTRA_OBJ=timeScalar.o
-include ../../../Makefile.inc
+include ../../../Makefile.am
 LIBOPTS+=-lm $(LIBRT)
 
 clean:

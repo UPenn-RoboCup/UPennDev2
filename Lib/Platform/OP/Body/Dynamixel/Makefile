@@ -1,6 +1,6 @@
 LIBNAME=DynamixelPacket
 EXTRA_OBJ=dynamixel.o
-include ../../../../Makefile.inc
+include ../../../../Makefile.am
 LIBOPTS+=-lm
 clean:
 	rm -f *.$(SHLIBEXT) *.o

@@ -3,7 +3,7 @@ all:
 else
 LIBNAME=NaoCam
 EXTRA_OBJ=timeScalar.o nao_cam_mmap_thread.o cam_util.o
-include ../../../Makefile.inc
+include ../../../Makefile.am
 LIBOPTS+=-lm $(LIBRT)
 endif
 clean:

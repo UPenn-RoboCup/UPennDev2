@@ -1,4 +1,4 @@
 LIBNAME=GameControlPacket
-include ../../../Makefile.inc
+include ../../../Makefile.am
 clean:
 	rm -f *.o *.$(SHLIBEXT)

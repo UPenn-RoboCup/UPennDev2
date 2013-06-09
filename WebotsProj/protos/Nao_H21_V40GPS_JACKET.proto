@@ -10,6 +10,7 @@ PROTO Nao_H21_V40GPS_JACKET [
   field SFVec3f translation 0 0.34 0
   field SFRotation rotation 1 0 0 -1.5708
   field SFColor color 0.94 0.41 0.01
+  field SFColor shirt_color 0 0.54 0.54
   field SFString controller "naoqisim"
   field SFString controllerArgs "9559"
   field SFBool synchronization FALSE
@@ -59,9 +60,9 @@ PROTO Nao_H21_V40GPS_JACKET [
         ]
       }
       DEF CHEST_MAIN_SKIN Shape {
-        appearance DEF MAIN_SKIN_APP Appearance {
-          material DEF MAIN_SKIN_MAT Material {
-            diffuseColor 1 1 1
+        appearance Appearance {
+          material Material {
+            diffuseColor IS shirt_color
             specularColor 0.4 0.4 0.4
           }
         }
@@ -772,9 +773,9 @@ PROTO Nao_H21_V40GPS_JACKET [
         }
       }
       DEF CHEST_SECONDARY_SKIN Shape {
-        appearance DEF SECONDARY_SKIN_APP Appearance {
-          material DEF SECONDARY_SKIN_MAT Material {
-            diffuseColor IS color
+        appearance Appearance {
+          material Material {
+            diffuseColor IS shirt_color
             shininess 0.8
             specularColor 1 1 1
           }
@@ -827,7 +828,11 @@ PROTO Nao_H21_V40GPS_JACKET [
       }
       DEF CHEST_BUTTON_TEXTURED Shape {
         appearance Appearance {
-          material USE SECONDARY_SKIN_MAT
+          material Material {
+            diffuseColor IS color
+            shininess 0.8
+            specularColor 1 1 1
+          }
           texture ImageTexture {
             url "textures/chest_button.png"
           }
@@ -1036,7 +1041,13 @@ PROTO Nao_H21_V40GPS_JACKET [
                 near 0.002
               }
               DEF CAP Shape {
-                appearance USE SECONDARY_SKIN_APP
+                appearance DEF SECONDARY_SKIN_APP Appearance {
+                  material DEF SECONDARY_SKIN_MAT Material {
+                    diffuseColor IS color
+                    shininess 0.8
+                    specularColor 1 1 1
+                  }
+                }
                 geometry IndexedFaceSet {
                   coord DEF HEAD_COORD Coordinate {
                     point [
@@ -1871,7 +1882,12 @@ PROTO Nao_H21_V40GPS_JACKET [
                 }
               }
               DEF HEAD_MAIN_SKIN Shape {
-                appearance USE MAIN_SKIN_APP
+                appearance DEF MAIN_SKIN_APP Appearance {
+                  material DEF MAIN_SKIN_MAT Material {
+                    diffuseColor 1 1 1
+                    specularColor 0.4 0.4 0.4
+                  }
+                }
                 geometry IndexedFaceSet {
                   coord USE HEAD_COORD
                   coordIndex [

@@ -1,6 +1,6 @@
 LIBNAME=NaoKinematics
 EXTRA_OBJ=naoKinematics.o Transform.o
-include ../../../Makefile.inc
+include ../../../Makefile.am
 LIBOPTS+=-lm
 clean:
 	rm -f *.$(SHLIBEXT) *.o

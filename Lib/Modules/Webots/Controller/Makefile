@@ -1,7 +1,7 @@
 # Makefile used to build Webots files
 EXTRA_OBJ=lua_controller.o
 LIBNAME=controller
-include ../../../Makefile.inc
+include ../../../Makefile.am
 
 lua_controller.c: lua_controller.i
 	@echo "\t" SWIG $@

@@ -87,7 +87,7 @@ else
 	LUA_LIB=`pkg-config lua --libs`
 endif
 
-# Add Lua to the includes
+# Add Lua to the amludes
 ifdef USE_LUAJIT
 	INCLUDES+=$(LUAJIT_INC)
 	LIBOPTS+=$(LUAJIT_LIB)

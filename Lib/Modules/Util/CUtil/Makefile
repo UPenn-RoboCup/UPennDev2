@@ -1,2 +1,2 @@
 LIBNAME = cutil
-include ../../../Makefile.inc
+include ../../../Makefile.am

@@ -1,5 +1,5 @@
 # Makefile used to build libraries
-include ../../../Makefile.inc
+include ../../../Makefile.am
 
 MEXEXT= $(shell mexext)
 ZLIB = zlib-src

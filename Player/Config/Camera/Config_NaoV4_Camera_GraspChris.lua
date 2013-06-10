@@ -20,7 +20,7 @@ camera.param = {};
 -- Contrast should be set between 17 and 64
 camera.param[1] = {key='Contrast'       , val={64 , 16}};
 
-camera.param[2] = {key='Saturation'     , val={140 , 150}};
+camera.param[2] = {key='Saturation'     , val={200 , 200}};
 -- Hue will automatically change to 0 if set to a number between -5 and 5, but cannot be set by other numbers
 camera.param[3] = {key='Hue'            , val={0 , 0}};
 

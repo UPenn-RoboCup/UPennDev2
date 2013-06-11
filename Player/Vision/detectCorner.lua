@@ -3,8 +3,8 @@ module(..., package.seeall);
 require('Config');	-- For Ball and Goal Size
 
 T_thr = 0.15;
-dist_threshold = Config.vision.corner.dist_threshold or 30;
-length_threshold = Config.vision.corner.min_length or 6;
+dist_threshold = Config.vision.corner.dist_threshold or 40;
+length_threshold = Config.vision.corner.min_length or 4;
 min_center_dist = Config.vision.corner.min_center_dist or 1.5;
 
 
@@ -150,7 +150,7 @@ function detect(line)
         vcm.add_debug_message(string.format(
 		"line %d-%d :angle %d mindist %d type %d\n",
 		i,j,ang*180/math.pi, mindist,cornertype));
-       
+      print('line length 1 is '..get_line_length(line,i)..'line length 2 is '..get_line_length(line,j)..'mind dist is '..mindist); 
 	if mindist<dist_threshold and
 	get_line_length(line,i)>length_threshold and
 	get_line_length(line,j)>length_threshold then 

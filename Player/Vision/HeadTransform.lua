@@ -79,14 +79,19 @@ function update(sel,headAngles)
 
   -- cameras are 0 indexed so add one for use here
   sel = sel + 1;
-
+  --when processing images, need to take into consideration of camera's relative position and angle 
+  --first calculate the relative position of the neck
   tNeck = Transform.trans(-footX,0,bodyHeight); 
   tNeck = tNeck*Transform.rotY(bodyTilt);
   tNeck = tNeck*Transform.trans(neckX,0,neckZ);
-
+  
+  --then add the head angles and camera position information
   --pitch0 is Robot specific head angle bias (for OP)
+  --add the yaw and pitch of the head
   tNeck = tNeck*Transform.rotZ(headAngles[1])*Transform.rotY(headAngles[2]+pitch0);
+  --add the position vector of the camera's relative position on the head (fixed value)
   tHead = tNeck*Transform.trans(cameraPos[sel][1], cameraPos[sel][2], cameraPos[sel][3]);
+  --add the tilting angle of the camera (fixed value)
   tHead = tHead*Transform.rotY(cameraAngle[sel][2]);
 
   --update camera position

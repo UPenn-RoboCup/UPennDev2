@@ -130,27 +130,9 @@ else
 end
 km.time_to_stand = 30; -- average time it takes to stand up in seconds
 
---Goalie behavior parameters
-goalie_dive = 1; --1 for arm only, 2 for actual diving
-goalie_dive_waittime = 6.0; --How long does goalie lie down?
-fsm.goalie_type = 3;--moving/move+stop/stop+dive/stop+dive+move
-fsm.goalie_reposition=0; --No reposition / Yaw reposition / Position reposition
-fsm.bodyAnticipate.thFar = {0.4,0.4,30*math.pi/180};
-fsm.goalie_use_walkkick = 1;--should goalie use walkkick or long kick?
-
---Diving detection parameters
-fsm.bodyAnticipate.timeout = 3.0;
-fsm.bodyAnticipate.center_dive_threshold_y = 0.05; 
-fsm.bodyAnticipate.dive_threshold_y = 1.0;
-fsm.bodyAnticipate.ball_velocity_th = 1.0; --min velocity for diving
-fsm.bodyAnticipate.ball_velocity_thx = -1.0; --min x velocity for diving
-fsm.bodyAnticipate.rCloseDive = 2.0; --ball distance threshold for diving
-
 --vision.ball.max_distance = 2.5; --temporary fix for GRASP lab
 vision.ball.fieldsize_factor = 1.2; --check whether the ball is inside the field
 vision.ball.max_distance = 2; --if ball is this close, just pass the test
-
-
 
 --Should we use ultrasound?
 team.avoid_ultrasound = 1;

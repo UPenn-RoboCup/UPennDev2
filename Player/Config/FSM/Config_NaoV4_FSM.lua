@@ -57,12 +57,12 @@ fsm.enable_evade = 2;--Do evade kick when obstructed
 fsm.wait_kickoff = 0; --initial wait at opponent's kickoff
 fsm.th_front_kick = 10*math.pi/180;
 
-fsm.goalie_type = 2;
+fsm.goalie_type = 3;
 --1: Constantly moving goalie
 --2: Goalie stops when in position
 --3: Diving goalie (stops in position and never move)
 --4: Diving and repositioning goalie (turns to ball position)
-fsm.goalie_reposition=0; --Yaw reposition
+fsm.goalie_reposition = 0; --Yaw reposition
 fsm.goalie_use_walkkick = 1;--should goalie use walkkick or long kick?
 
 fsm.daPost_check = 1;
@@ -102,21 +102,24 @@ fsm.bodyAnticipate={};
 fsm.bodyAnticipate.tStartDelay = 2.0*speedFactor; 
 
 fsm.bodyAnticipate.rMinDive = 0.3;
-fsm.bodyAnticipate.rCloseDive = 3.0;
-fsm.bodyAnticipate.center_dive_threshold_y = 0.07; 
+
+--Diving detection parameters
+fsm.bodyAnticipate.center_dive_threshold_y = 0.05; 
 fsm.bodyAnticipate.dive_threshold_y = 1.0;
-
-fsm.bodyAnticipate.center_dive_threshold_y = 0.12; 
-
 fsm.bodyAnticipate.ball_velocity_th = 1.0; --min velocity for diving
-fsm.bodyAnticipate.ball_velocity_thx = -0.8; --min x velocity for diving
+fsm.bodyAnticipate.ball_velocity_thx = -1.0; --min x velocity for diving
+fsm.bodyAnticipate.rCloseDive = 2.0; --ball distance threshold for diving
+
+--Goalie behavior parameters
+fsm.goalie_dive = 1; --1 for arm only, 2 for actual diving
+fsm.goalie_dive_waittime = 6.0; --How long does goalie lie down?
 
 fsm.bodyAnticipate.rClose = 1.5; 
 fsm.bodyAnticipate.rCloseX = 1.0;
 fsm.bodyAnticipate.ball_velocity_th2 = 0.3; --max velocity for start approach
 
 -- How far out of position are we allowed to be?
-fsm.bodyAnticipate.timeout = 20.0*speedFactor;
+fsm.bodyAnticipate.timeout = 3.0*speedFactor;
 fsm.bodyAnticipate.thFar = {0.4,0.4,30*math.pi/180};
 
 fsm.bodyGoaliePosition = {};

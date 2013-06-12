@@ -18,8 +18,8 @@ vision.maxFPS = 30;
 vision.scaleB = 4;
 
 
-vision.enable_line_detection = 0;
-vision.enable_corner_detection = 0;
+vision.enable_line_detection = 1;
+vision.enable_corner_detection = 1;
 -- use this to enable spot detection
 vision.enable_spot_detection = 0;
 -- use this to enable midfield landmark detection
@@ -41,7 +41,7 @@ vision.enable_freespace_detection = 0;
 --use this to print time cosumed by vision functions
 vision.print_time = 0; 
 
-vision.enable_team_broadcast = 1;
+vision.enable_team_broadcast = 0;
 --use this to turn on team broadcast (wireless monitor)
 --If 0, wired monitor will be used.
 ----------------------------
@@ -89,17 +89,17 @@ vision.goal.check_for_ground = 0;
 vision.goal.distanceFactorYellow = 1.14
 
 vision.line={};
-vision.line.max_width = 5;
-vision.line.connect_th = 2;
+vision.line.max_width = 15;
+vision.line.connect_th = 1.5;
 vision.line.max_gap=1;
-vision.line.min_length=3;
+vision.line.min_length=10;
 vision.line.min_angle_diff = 3;
 vision.line.max_angle_diff = 90;
 
 
 vision.corner={};
-vision.corner.dist_threshold = 0.6;
-vision.corner.length_threshold = 6;
+vision.corner.dist_threshold = 15;
+vision.corner.length_threshold = 5;
 vision.corner.min_center_dist = 1.5;
 vision.centercircle_check = 1;
 vision.corner.enable_distance_filter = 1;

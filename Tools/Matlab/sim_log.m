@@ -1,3 +1,7 @@
+% When using the vision simulator, you'd better disable camera switching
+% because camera infomation from the logs do not always match with image.
+% To use the simulator, first start sim_vision.lua in the player folder,
+% then load a log file and start this script. Use the monitor as usual.
 function sim_log(LOG, yuyvMontage, teamNumber, playerID)
 % simulate the robot state from the log file data
   if (nargin < 3)

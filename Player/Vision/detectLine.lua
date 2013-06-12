@@ -20,10 +20,10 @@ min_green_pixel = Config.vision.line.min_green_pixel or 5000;
 
 -- Define x and y
 --min_width=Config.vision.line.min_width or 4;
-max_width=Config.vision.line.max_width or 10;
+max_width=Config.vision.line.max_width or 15;
 connect_th=Config.vision.line.connect_th or 1.5;
 max_gap=Config.vision.line.max_gap or 1;
-min_length=Config.vision.line.min_length or 3;
+min_length=Config.vision.line.min_length or 10;
 
 headZ = Config.head.camOffsetZ;
 
@@ -49,15 +49,15 @@ function get_crosspoint(x1,y1,x2,y2,x3,y3,x4,y4)
   else 
     if (x1 == x2) then 
       local x = x1;
-      k = (y2 - y1)/(x2 - x1);
-      local y = k * x + y1 - k * x1;
+      k = (y4 - y3)/(x4 - x3);
+      local y = k * x + y3 - k * x3;
      -- vcm.add_debug_message(string.format("\nx is %d y is %d" ,x, y));
       return {x, y}; 
     end
     if (x3 == x4) then 
       local x = x3;
-      k = (y4 - y3)/(x4 - x3);
-      local y = k * x + y3 - k * x3;
+      k = (y2 - y1)/(x2 - x1);
+      local y = k * x + y1 - k * x1;
      -- vcm.add_debug_message(string.format("\nx is %d y is %d" ,x, y));
       return {x, y}; 
     end 
@@ -72,7 +72,7 @@ function detect()
   line_second = {};
   line_second.detect  = 0;
   if (Vision.colorCount[colorWhite] < min_white_pixel) then 
-    print('under 200 white pixels');
+    -- print('under 200 white pixels');
     return line;
   end
 
@@ -108,7 +108,7 @@ function detect()
   line.angle={};
   line.length={}
 
-  for i = 1,6 do
+  for i = 1,nLines do
     line.endpoint[i] = vector.zeros(4);
     line.v[i]={};
     line.v[i][1]=vector.zeros(4);
@@ -152,15 +152,15 @@ function detect()
     end
     --print ('goal_posX: '..goal_posX)
      local LWratio = length/line.propsB[i].max_width;
-    if length > min_length and linecount < 6 
+   if length > min_length and linecount < 8 
   -- lines should be on the ground
-    and vendpoint_old[1][3] < .1 and vendpoint_old[2][3] < .1
+    and vendpoint_old[1][3] < .2 and vendpoint_old[2][3] < .2
   -- lines should not be too wide
-    -- and LWratio > 2.5 
+     and LWratio > 2.5 
   -- lines should be below horizon
-  --and line.propsB[i].endpoint[3] > horizonB and line.propsB[i].endpoint[4] > horizonB  
+     and line.propsB[i].endpoint[3] > horizonB and line.propsB[i].endpoint[4] > horizonB  
    --lines should be in the court, nothing behind the goal posts can be considered as line.
-   -- and (goal_posX >= 0.15 or (goal_posX < 0.15 and lineX > goal_posX)) 
+    --  and (goal_posX >= 0.15 or (goal_posX < 0.15 and lineX > goal_posX)) 
 --vendpoint[1][1] > goal_posX and vendpoint[2][1] > goal_posX
   then
       linecount=linecount+1;
@@ -170,7 +170,7 @@ function detect()
       line.v[linecount][1]=vendpoint[1];
       line.v[linecount][2]=vendpoint[2];
       line.angle[linecount]=math.abs(math.atan2(vendpoint[1][2]-vendpoint[2][2], vendpoint[1][1]-vendpoint[2][1]));
-      --print (util.ptable(line.v[linecount]))
+       -- print ('linecount is '..linecount);
      
      -- print(string.format(
 --[[		"Line %d: endpoint1: (%f, %f), endpoint2: (%f, %f), \n endpoint1 in labelB: (%f, %f), endpoint2 in labelB: (%f, %f), horizonB: %f,\n length %d, angle %d, max_width %d\n",
@@ -194,12 +194,10 @@ function detect()
       angle_diff = math.abs (angle_diff) * 180 / math.pi;
       angle_diff = math.min (angle_diff, 180 - angle_diff);
       local Cross = get_crosspoint (line.v[i][1][1], line.v[i][1][2], line.v[i][2][1], line.v[i][2][2],line.v[j][1][1], line.v[j][1][2], line.v[j][2][1], line.v[j][2][2])
-
+    
 
 -- second round check, check pairs of lines
   
-  for i = 1, linecount do
-    for j = 1, linecount do
       local x1 = line.v[i][1][1];
       local y1 = line.v[i][1][2];
       local x2 = line.v[i][2][1];
@@ -209,28 +207,24 @@ function detect()
       local x4 = line.v[j][2][1];
       local y4 = line.v[j][2][2];
       local z1 = math.sqrt(x1 * x1 + y1 * y1);
-     -- print('z1 is ' ..z1);
-      if (z1 > 2.8) then
-        line_valid[i] = 0;
-      end
       local z2 = math.sqrt(x2 * x2 + y2 * y2);
-     -- print('z2 is ' ..z2);
-      if (z2 > 2.8) then
-        line_valid[i] = 0;
-      end
-       local z3 = math.sqrt(x3 * x3 + y3 * y3);
-      -- print('z3 is ' ..z3);
-      if (z3 > 2.8) then
-        line_valid[i] = 0;
-      end
-       local z4 = math.sqrt(x4 * x4 + y4 * y4);
-      -- print('z4 is ' ..z4);
-      if (z4 > 2.8) then
-        line_valid[i] = 0;
-      end
-    end
-  end
-
+      local z3 = math.sqrt(x3 * x3 + y3 * y3);
+      local z4 = math.sqrt(x4 * x4 + y4 * y4);
+     --[[ if (z1 > 40 or z2 > 40 or z3 > 40 or z4 > 40) then
+        print('I am over 50 glitch');
+        print('z1 is ' ..z1);
+      elseif (z1>4) then
+           line_valid[i] = 0;
+        print('z2 is ' ..z2);
+      elseif (z2 > 4) then
+           line_valid[i] = 0;
+        print('z3 is ' ..z3);
+       elseif (z3 > 4) then
+           line_valid[i] = 0;
+         print('z4 is ' ..z4);
+       elseif (z4 > 4) then
+           line_valid[i] = 0;
+       end]]
 
 -- in all checks on line pairs, always kill the shorter one. 
          if ( line.length[i] < line.length[j] and line_valid[i]*line_valid[j] ==1 ) then 
@@ -239,7 +233,7 @@ function detect()
           --print ('angle check failed. angle_diff: '..angle_diff..', line'..i..' and line '..j)
           line_valid[i] = 0;
         end
--- cross check
+
         if ((Cross[1] - line.v[i][1][1])*(Cross[1] - line.v[i][2][1]) < 0 and (Cross[1] -  line.v[j][1][1])*(Cross[1] - line.v[j][2][1]) < 0 ) then
 --          print ('cross check failed. line '..i..' and line '..j..' are crossed')
           line_valid[i] = 0;
@@ -256,7 +250,7 @@ function detect()
   line_second.angle={};
   line_second.length={}
 
-  for i = 1,6 do
+  for i = 1,linecount do
     line_second.endpoint[i] = vector.zeros(4);
     line_second.v[i]={};
     line_second.v[i][1]=vector.zeros(4);

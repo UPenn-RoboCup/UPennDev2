@@ -3,8 +3,8 @@ module(..., package.seeall);
 require('Config');	-- For Ball and Goal Size
 
 T_thr = 0.15;
-dist_threshold = Config.vision.corner.dist_threshold or 30;
-length_threshold = Config.vision.corner.min_length or 6;
+dist_threshold = Config.vision.corner.dist_threshold or 15;
+length_threshold = Config.vision.corner.min_length or 5;
 min_center_dist = Config.vision.corner.min_center_dist or 1.5;
 
 
@@ -20,7 +20,7 @@ function get_min_dist_line(x1,y1,x2,y2,x,y)
     dist = (clx-x)^2 + (cly-y)^2;
     return clx,cly,dist;
   else
-    return 0,0,999;
+   return 0,0,999;
   end
 end
 
@@ -124,7 +124,7 @@ function detect(line)
   corner = {};
   corner.detect = 0;
 
-  if line.detect==0 or line.nLines<2 then 
+  if line.detect==0 or line.nLines<2 then
     return corner;
   end
 
@@ -139,19 +139,18 @@ function detect(line)
 
   -- Check perpendicular lines
   vcm.add_debug_message(string.format("\nCorner: total %d lines\n",line.nLines))
-
   for i=1,line.nLines-1 do
     for j=i+1,line.nLines do
       ang=math.abs(util.mod_angle(line.angle[i]-line.angle[j]));
      if math.abs(ang-math.pi/2)<20*math.pi/180 then
 	--Check endpoint distances in labelB
 	mindist, vc0, v10, v20, cornertype = get_min_dist(line,i,j);
-
         vcm.add_debug_message(string.format(
 		"line %d-%d :angle %d mindist %d type %d\n",
 		i,j,ang*180/math.pi, mindist,cornertype));
-       
-	if mindist<dist_threshold and
+     --  print('i is '..i..' j is '..j..' ang is '..ang*180/math.pi..' mindist is '..mindist..' type is '..cornertype);
+    -- print('line length 1 is '..get_line_length(line,i)..'line length 2 is '..get_line_length(line,j)..'mind dist is '..mindist); 
+    	if mindist<dist_threshold and
 	get_line_length(line,i)>length_threshold and
 	get_line_length(line,j)>length_threshold then 
   	  linepaircount=linepaircount+1;
@@ -162,7 +161,7 @@ function detect(line)
 	  linepairangle[linepaircount]=ang;
 	  linepairdist[linepaircount]=mindist;
 	  linepairtype[linepaircount]=cornertype;
-	end
+        	end
        end
     end
   end

@@ -20,10 +20,10 @@ min_green_pixel = Config.vision.line.min_green_pixel or 5000;
 
 -- Define x and y
 --min_width=Config.vision.line.min_width or 4;
-max_width=Config.vision.line.max_width or 10;
+max_width=Config.vision.line.max_width or 15;
 connect_th=Config.vision.line.connect_th or 1.5;
 max_gap=Config.vision.line.max_gap or 1;
-min_length=Config.vision.line.min_length or 3;
+min_length=Config.vision.line.min_length or 10;
 
 headZ = Config.head.camOffsetZ;
 
@@ -152,7 +152,7 @@ function detect()
     end
     --print ('goal_posX: '..goal_posX)
      local LWratio = length/line.propsB[i].max_width;
-    if length > min_length and linecount < 8 
+   if length > min_length and linecount < 8 
   -- lines should be on the ground
     and vendpoint_old[1][3] < .2 and vendpoint_old[2][3] < .2
   -- lines should not be too wide
@@ -170,7 +170,7 @@ function detect()
       line.v[linecount][1]=vendpoint[1];
       line.v[linecount][2]=vendpoint[2];
       line.angle[linecount]=math.abs(math.atan2(vendpoint[1][2]-vendpoint[2][2], vendpoint[1][1]-vendpoint[2][1]));
-      print ('linecount is '..linecount);
+       -- print ('linecount is '..linecount);
      
      -- print(string.format(
 --[[		"Line %d: endpoint1: (%f, %f), endpoint2: (%f, %f), \n endpoint1 in labelB: (%f, %f), endpoint2 in labelB: (%f, %f), horizonB: %f,\n length %d, angle %d, max_width %d\n",

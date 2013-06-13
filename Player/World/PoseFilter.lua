@@ -19,6 +19,7 @@ spot = Config.world.spot;
 ballYellow = Config.world.ballYellow;
 ballCyan = Config.world.ballCyan;
 Lcorner = Config.world.Lcorner;
+Lgoalie_corner = Config.world.Lgoalie_Corner;
 
 --Triangulation method selection
 use_new_goalposts= Config.world.use_new_goalposts or 0;

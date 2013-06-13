@@ -211,10 +211,10 @@ function detect()
       local z2 = math.sqrt(x2 * x2 + y2 * y2);
       local z3 = math.sqrt(x3 * x3 + y3 * y3);
       local z4 = math.sqrt(x4 * x4 + y4 * y4);
-        print('z1 is ' ..z1); 
-        print('z2 is ' ..z2);
-        print('z3 is ' ..z3);
-        print('z4 is ' ..z4);
+       -- print('z1 is ' ..z1); 
+       -- print('z2 is ' ..z2);
+       -- print('z3 is ' ..z3);
+       -- print('z4 is ' ..z4);
       if ((z1 > 2.5 or z1 < 0.2) and line_valid[i] ~= nil) then
            line_valid[i] = 0;
       elseif ((z2 > 2.5 or z2 < 0.2) and line_valid[i+1] ~= nil) then

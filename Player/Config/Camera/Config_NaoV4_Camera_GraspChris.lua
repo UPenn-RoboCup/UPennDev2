@@ -26,7 +26,7 @@ camera.param[3] = {key='Hue'            , val={0 , 0}};
 
 camera.param[4] = {key='Exposure'       , val={40 , 30}};
 -- Gain should be set between 32 and 255
-camera.param[5] = {key='Gain'           , val={140 , 160}};
+camera.param[5] = {key='Gain'           , val={120 , 160}};
 -- Sharpness should be set between 0 and 7
 camera.param[6] = {key='Sharpness'      , val={3  , 3}};
 

@@ -198,7 +198,7 @@ function detect()
 
 -- second round check, check pairs of line: kills lines on self and
 -- lines too far
-      
+     
       local x1 = line.v[i][1][1];
       local y1 = line.v[i][1][2];
       local x2 = line.v[i][2][1];
@@ -215,27 +215,27 @@ function detect()
         print('z2 is ' ..z2);
         print('z3 is ' ..z3);
         print('z4 is ' ..z4);
-
-      if (z1 > 2.5 or z1 < .1) then
+      if ((z1 > 2.5 or z1 < 0.2) and line_valid[i] ~= nil) then
            line_valid[i] = 0;
-      elseif (z2 > 2.5 or z2 < .1) then
-           line_valid[i] = 0;
-      elseif (z3 > 2.5 or z3 < .1) then
-           line_valid[i] = 0;
-      elseif (z4 > 2.5 or z4 < .1) then
-           line_valid[i] = 0;
-       end
-
+      elseif ((z2 > 2.5 or z2 < 0.2) and line_valid[i+1] ~= nil) then
+           line_valid[i+1] = 0;
+      elseif ((z3 > 2.5 or z3 < 0.2) and line_valid[i+2] ~= nil) then
+           line_valid[i+2] = 0;
+      elseif ((z4 > 2.5 or z4 < 0.2) and line_valid[i+3] ~= nil) then
+          line_valid[i+3] = 0;
+       end 
+          
 -- in all checks on line pairs, always kill the shorter one. 
          if ( line.length[i] < line.length[j] and line_valid[i]*line_valid[j] ==1 ) then 
+
 -- angle check
         if (angle_diff < min_angle_diff and angle_diff > max_angle_diff) then
-          --print ('angle check failed. angle_diff: '..angle_diff..', line'..i..' and line '..j)
+         -- print ('angle check failed. angle_diff: '..angle_diff..', line'..i..' and line '..j)
           line_valid[i] = 0;
         end
 
         if ((Cross[1] - line.v[i][1][1])*(Cross[1] - line.v[i][2][1]) < 0 and (Cross[1] -  line.v[j][1][1])*(Cross[1] - line.v[j][2][1]) < 0 ) then
---          print ('cross check failed. line '..i..' and line '..j..' are crossed')
+         -- print ('cross check failed. line '..i..' and line '..j..' are crossed')
           line_valid[i] = 0;
        end
       end

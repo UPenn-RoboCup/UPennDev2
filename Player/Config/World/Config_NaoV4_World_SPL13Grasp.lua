@@ -53,6 +53,25 @@ world.Lcorner[16]={0,-0.6375};
 world.Lcorner[17]={0.6375,0};
 world.Lcorner[18]={-0.6375,0};
 
+--constrain the goalie to only certain goals
+world.Lgoalie_corner={};
+--Field edge
+world.Lgoalie_corner[1]={3.825,2.55};
+world.Lgoalie_corner[2]={3.825,-2.55};
+world.Lgoalie_corner[3]={-3.825,2.55};
+world.Lgoalie_corner[4]={-3.825,-2.55};
+--Penalty box edge
+world.Lgoalie_corner[5]={-3.225,1.1};
+world.Lgoalie_corner[6]={-3.225,-1.1};
+world.Lgoalie_corner[7]={3.225,1.1};
+world.Lgoalie_corner[8]={3.225,-1.1};
+--Penalty box T edge
+world.Lgoalie_corner[9]={3.825,1.1};
+world.Lgoalie_corner[10]={3.825,-1.1};
+world.Lgoalie_corner[11]={-3.825,1.1};
+world.Lgoalie_corner[12]={-3.825,-1.1};
+
+
 --same-colored goalposts
 world.use_same_colored_goal=1;
 

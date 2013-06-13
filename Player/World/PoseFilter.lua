@@ -3,6 +3,7 @@ module(..., package.seeall);
 require('Config');
 require('vector');
 require('vcm')
+require('gcm')
 require 'util'
 
 n = Config.world.n;
@@ -39,6 +40,10 @@ rPostFilter2 = Config.world.rPostFilter2 or 0.01;
 aPostFilter2 = Config.world.aPostFilter2 or 0.03;
 rCornerFilter = Config.world.rCornerFilter or 0.01;
 aCornerFilter = Config.world.aCornerFilter or 0.03;
+if(gcm.get_team_role() == 0) then
+    rCornerFilter = rCornerFilter + 0.02;
+    aCornerFilter = aCornerFilter + 0.02;
+end
 
 --Sigma values for one landmark observation
 rSigmaSingle1 = Config.world.rSigmaSingle1 or .15;
@@ -536,7 +541,11 @@ function goal_unified(v)
 end
 
 function corner(v,a)
-  landmark_observation(Lcorner,v,rCornerFilter,aCornerFilter);
+  if(gcm.get_team_role() == 0) then
+    landmark_observation(Lgoalie_corner,v,rCornerFilter,aCornerFilter);
+  else
+    landmark_observation(Lcorner,v,rCornerFilter,aCornerFilter);
+  end
 end
 
 function line(v, a)

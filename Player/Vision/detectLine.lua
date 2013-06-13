@@ -154,7 +154,7 @@ function detect()
      local LWratio = length/line.propsB[i].max_width;
    if length > min_length and linecount < 8 
   -- lines should be on the ground
-    and vendpoint_old[1][3] < .2 and vendpoint_old[2][3] < .2
+   -- and vendpoint_old[1][3] < .1 and vendpoint_old[2][3] < .1
   -- lines should not be too wide
      and LWratio > 2.5 
   -- lines should be below horizon
@@ -196,8 +196,9 @@ function detect()
       local Cross = get_crosspoint (line.v[i][1][1], line.v[i][1][2], line.v[i][2][1], line.v[i][2][2],line.v[j][1][1], line.v[j][1][2], line.v[j][2][1], line.v[j][2][2])
     
 
--- second round check, check pairs of lines
-  
+-- second round check, check pairs of line: kills lines on self and
+-- lines too far
+      
       local x1 = line.v[i][1][1];
       local y1 = line.v[i][1][2];
       local x2 = line.v[i][2][1];
@@ -210,21 +211,20 @@ function detect()
       local z2 = math.sqrt(x2 * x2 + y2 * y2);
       local z3 = math.sqrt(x3 * x3 + y3 * y3);
       local z4 = math.sqrt(x4 * x4 + y4 * y4);
-     --[[ if (z1 > 40 or z2 > 40 or z3 > 40 or z4 > 40) then
-        print('I am over 50 glitch');
-        print('z1 is ' ..z1);
-      elseif (z1>4) then
-           line_valid[i] = 0;
+        print('z1 is ' ..z1); 
         print('z2 is ' ..z2);
-      elseif (z2 > 4) then
-           line_valid[i] = 0;
         print('z3 is ' ..z3);
-       elseif (z3 > 4) then
+        print('z4 is ' ..z4);
+
+      if (z1 > 2.5 or z1 < .1) then
            line_valid[i] = 0;
-         print('z4 is ' ..z4);
-       elseif (z4 > 4) then
+      elseif (z2 > 2.5 or z2 < .1) then
            line_valid[i] = 0;
-       end]]
+      elseif (z3 > 2.5 or z3 < .1) then
+           line_valid[i] = 0;
+      elseif (z4 > 2.5 or z4 < .1) then
+           line_valid[i] = 0;
+       end
 
 -- in all checks on line pairs, always kill the shorter one. 
          if ( line.length[i] < line.length[j] and line_valid[i]*line_valid[j] ==1 ) then 

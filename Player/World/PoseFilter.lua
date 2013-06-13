@@ -2,9 +2,9 @@ module(..., package.seeall);
 
 require('Config');
 require('vector');
-require('vcm')
-require('gcm')
-require 'util'
+require('vcm');
+require('gcm');
+require('util');
 
 n = Config.world.n;
 xLineBoundary = Config.world.xLineBoundary;
@@ -19,7 +19,7 @@ spot = Config.world.spot;
 ballYellow = Config.world.ballYellow;
 ballCyan = Config.world.ballCyan;
 Lcorner = Config.world.Lcorner;
-Lgoalie_corner = Config.world.Lgoalie_Corner;
+Lgoalie_corner = Config.world.Lgoalie_corner;
 
 --Triangulation method selection
 use_new_goalposts= Config.world.use_new_goalposts or 0;

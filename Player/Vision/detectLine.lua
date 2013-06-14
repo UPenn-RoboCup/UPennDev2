@@ -151,10 +151,11 @@ function detect()
       goal_posX = math.min (goal1[1], goal2[1]);
     end
     --print ('goal_posX: '..goal_posX)
-     local LWratio = length/line.propsB[i].max_width;
+     local LWratio = length/line.propsB[i].max_width; 
+    
    if length > min_length and linecount < 8 
   -- lines should be on the ground
-   -- and vendpoint_old[1][3] < .1 and vendpoint_old[2][3] < .1
+     and vendpoint_old[1][3] < .2 and vendpoint_old[2][3] < .2
   -- lines should not be too wide
      and LWratio > 2.5 
   -- lines should be below horizon
@@ -162,7 +163,9 @@ function detect()
    --lines should be in the court, nothing behind the goal posts can be considered as line.
     --  and (goal_posX >= 0.15 or (goal_posX < 0.15 and lineX > goal_posX)) 
 --vendpoint[1][1] > goal_posX and vendpoint[2][1] > goal_posX
-  then
+  then 
+  vcm.add_debug_message(string.format(
+    " Length is %d\nLW ratio is %d\nvendpoint 1 is %d\nvendpoint 2 is %d\n",length, LWratio, vendpoint_old[1][3], vendpoint_old[2][3]));
       linecount=linecount+1;
       line.length[linecount]=length;
       line.endpoint[linecount]= line.propsB[i].endpoint;
@@ -224,7 +227,6 @@ function detect()
       elseif ((z4 > 2.5 or z4 < 0.2) and line_valid[i+3] ~= nil) then
           line_valid[i+3] = 0;
        end 
-          
 -- in all checks on line pairs, always kill the shorter one. 
          if ( line.length[i] < line.length[j] and line_valid[i]*line_valid[j] ==1 ) then 
 

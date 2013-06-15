@@ -253,11 +253,14 @@ function landmark_observation(pos, v, rLandmarkFilter, aLandmarkFilter,dont_upda
   --Filter toward best matching landmark position:
   for ip = 1,n do
     --print(string.format("%d %.1f %.1f %.1f",ip,xp[ip],yp[ip],ap[ip]));
-    if not (dont_update_position==1) then
+    if not (dont_update_position==1) and r < position_update_threshold then
       xp[ip] = xp[ip] + rFilter * (dxp[ip] - r * math.cos(ap[ip] + a));
       yp[ip] = yp[ip] + rFilter * (dyp[ip] - r * math.sin(ap[ip] + a));
     end
-    ap[ip] = ap[ip] + aFilter * dap[ip];
+
+    if r > angle_update_threshold then
+      ap[ip] = ap[ip] + aFilter * dap[ip];
+    end
  
     -- check boundary
     xp[ip] = math.min(xMax, math.max(-xMax, xp[ip]));
@@ -461,7 +464,21 @@ function goal_observation_unified(pos1,pos2,v)
     pose2,dGoal2=triangulate(pos2,v);
   end
 
-  if dGoal1<triangulation_threshold then 
+  local p = wcm.get_pose()
+  local d1 = math.sqrt((p.x - pose1.x)^2 + (p.y - pose1.y)^2)
+  local d2 = math.sqrt((p.x - pose2.x)^2 + (p.y - pose2.y)^2)
+  local pose = {}
+  local dGoal = 0
+
+  if d1 > d2 then
+      pose = pose1
+      dGoal = dGoal1
+  else
+      pose = pose2
+      dGoal = dGoal2
+  end
+
+  if dGoal<triangulation_threshold then 
     --Goal close, triangulate
     local x1,y1,a1=pose1.x,pose1.y,pose1.a;
     local x2,y2,a2=pose2.x,pose2.y,pose2.a;
@@ -506,7 +523,7 @@ function goal_observation_unified(pos1,pos2,v)
         ap[ip] = ap[ip] + aFilter*aErr1;
       end
     end
-  elseif dGoal1<position_update_threshold then
+  elseif dGoal<position_update_threshold then
     --Goal midrange, use a point update
     --Goal too far, use a point estimate
     goalpos1={(pos1[1][1]+pos1[2][1])/2, (pos1[1][2]+pos1[2][2])/2}

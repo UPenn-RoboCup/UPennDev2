@@ -137,8 +137,5 @@ world.odomScale = {1, 1, 1.03};
 world.triangulation_threshold = 4.0;
 world.position_update_threshold = 6.0;
 
-world.triangulation_threshold = 4.0;
-world.position_update_threshold = 4.0;
-
 --should we use new triangulation?
 world.use_new_goalposts=1;

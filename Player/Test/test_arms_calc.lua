@@ -139,17 +139,20 @@ end
 function calculate_arm_space()
     local tr_arm={0,0,0,0,0,0};
 
+    local y_offset = 0.219;
+    local z_offset = 0.144;
+
 
     outfile = assert(io.open("armspace.txt","wb"))
 
     for l= -9,9 do -- -90 degree to 90 degree
-      for i=1,100 do
-        for j=-99,100 do
-          for k=-49,50 do
+      for i=1,50 do
+        for j=-49,50 do
+          for k=1,50 do
 
             tr_arm[1]=i/100;    
-            tr_arm[2]=j/100;    
-            tr_arm[3]=k/100;    
+            tr_arm[2]=y_offset + j/100;    
+            tr_arm[3]=z_offset - k/100;    
 	    tr_arm[6]= l * math.pi/18; 
             local qLArmInv = Kinematics.inverse_l_arm(tr_arm);
             local torso_larm_ik = Kinematics.l_arm_torso(qLArmInv);

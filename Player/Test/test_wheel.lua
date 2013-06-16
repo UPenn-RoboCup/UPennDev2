@@ -204,25 +204,35 @@ turnAngle = 0;
 radius = 0.2;
 
 
+if thorop then
+  handle_pos = {0.3,0,1.2};
+else
+  handle_pos = {0.3,0,1.4}; --for atlas
+end
+
+handle_pitch = 0;
+
+
+
+
 function calculate_arm_position()
   --We assume that the wheel is centered at (0.3,0,1.2) and has radius 0.2
-   if thorop then
-     handle_pos = {0.3,0,1.2};
-   else
-     handle_pos = {0.3,0,1.4}; --for atlas
-   end
 
    trGripL = Transform.eye()
        * Transform.trans(handle_pos[1],handle_pos[2],handle_pos[3])
+       * Transform.rotY(handle_pitch)
        * Transform.rotX(turnAngle*rotating_direction)
        * Transform.trans(0,radius,0)
-       * Transform.rotZ(-math.pi/2);
+--       * Transform.rotZ(-math.pi/2);
+       * Transform.rotZ(-math.pi/4);
 
    trGripR = Transform.eye()
        * Transform.trans(handle_pos[1],handle_pos[2],handle_pos[3])
+       * Transform.rotY(handle_pitch)
        * Transform.rotX(-turnAngle*rotating_direction)
        * Transform.trans(0,-radius,0)
-       * Transform.rotZ(math.pi/2);
+--       * Transform.rotZ(math.pi/2);
+       * Transform.rotZ(math.pi/4);
 
    body_pos = Body.get_sensor_gps();
    body_rpy = Body.get_sensor_imuAngle();
@@ -307,6 +317,10 @@ function auto_move_arms()
   radius1 = 0.30;
   angle0 = 23*math.pi/180;
   angle1 = -23*math.pi/180;
+
+  angle0 = 20*math.pi/180;
+  angle1 = -20*math.pi/180;
+
 
   nTurn = 4;
 
@@ -501,7 +515,7 @@ function process_keyinput()
 
 
 
-
+--[[
 
   elseif byte==string.byte("s") then  
     trLArm[1],trLArm[2],trLArm[3],trLArm[4],trLArm[5],trLArm[6]=
@@ -528,6 +542,47 @@ function process_keyinput()
   elseif byte==string.byte("z") then  
     trLArm[3]=trLArm[3]-0.01;
     update_arm = true;
+--]]
+
+  elseif byte==string.byte("w") then  
+    handle_pos[1] = handle_pos[1] + 0.01;
+    calculate_arm_position();
+
+  elseif byte==string.byte("s") then  
+    if thorop then
+      handle_pos = {0.3,0,1.2};
+    else
+      handle_pos = {0.3,0,1.4}; --for atlas
+    end
+    handle_pitch = 0;
+    calculate_arm_position();
+
+  elseif byte==string.byte("x") then  
+    handle_pos[1] = handle_pos[1] - 0.01;
+    calculate_arm_position();
+
+  elseif byte==string.byte("q") then  
+    handle_pos[3] = handle_pos[3] + 0.01;
+    calculate_arm_position();
+
+  elseif byte==string.byte("z") then  
+    handle_pos[3] = handle_pos[3] - 0.01;
+    calculate_arm_position();
+
+
+  elseif byte==string.byte("v") then  
+    handle_pitch = handle_pitch - 1*math.pi/180;
+    calculate_arm_position();
+  elseif byte==string.byte("c") then  
+    handle_pitch = handle_pitch + 1*math.pi/180;
+    calculate_arm_position();
+
+
+
+
+
+
+
   end
 
   if ( update_arm ) then  

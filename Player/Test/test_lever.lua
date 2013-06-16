@@ -5,6 +5,7 @@ cwd = cwd or os.getenv('PWD')
 package.path = cwd.."/?.lua;"..package.path;
 require('init')
 
+require 'carray'
 
 require('Config')
 require('Body')
@@ -96,6 +97,32 @@ is_moving = 0;
 
 --THOR VALUES
 arm_init_motion_thorop={
+  --ARM INITIAL POSITION (LOOKING DOWN)
+  {
+    vector.new({90,0,0,0,-90,0})*math.pi/180,
+    vector.new({90,-0,-0,0,90,0})*math.pi/180,
+    1.0,
+  },
+
+
+  {
+    vector.new({90,0,0,-90,-90,-45})*math.pi/180,
+    vector.new({90,-0,-0,-90,90,45})*math.pi/180,
+    1.0,
+  },
+--[[
+  {
+    vector.new({90,180,0,-90,-90,-45})*math.pi/180,
+    vector.new({90,-180,-0,-90,90,45})*math.pi/180,
+    1.0,
+  },
+--]]
+
+
+
+
+
+--[[
   {
     vector.new({90,90,0,0,0,0})*math.pi/180,
     vector.new({90,-90,0,0,0,0})*math.pi/180,
@@ -111,6 +138,7 @@ arm_init_motion_thorop={
     vector.new({0,-45,-90,-90,90,45})*math.pi/180,
     1.0,
   },
+--]]
 }
 
 
@@ -519,10 +547,6 @@ function process_keyinput()
     Body.set_r_gripper_command({0,0});
 
   elseif byte==string.byte("g") then  --Move to the object
-
-
-print(unpack(trLArm))
-
    is_moving=1;
   end
 
@@ -590,6 +614,9 @@ Motion.event("standup");
 local tDelay = 0.005 * 1E6; -- Loop every 5ms
 
 --calculate_arm_space();
+
+
+
 
 while (true) do
 	-- Run Updates

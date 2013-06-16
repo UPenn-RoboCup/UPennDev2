@@ -31,16 +31,6 @@ function draw_gen(filename)
    ypos_new = C(1,2);
              
    if DATA.button         
-     mov = sqrt((DATA.xpos(DATA.count) - xpos_new)^2+ (DATA.ypos(DATA.count)-ypos_new)^2);                
-     hold on;
-     if mov>size_max*0.0125 
-       add_pos(C(1,1), C(1,2));                
-       hold on;
-       plot([DATA.xpos(DATA.count) DATA.xpos(DATA.count-1)],[DATA.ypos(DATA.count) DATA.ypos(DATA.count-1)]);
-       axis([1,size_x,1,size_y]);
-       drawnow;                
-       hold off;                
-     end                       
      title(gca,[num2str(DATA.strokecount), 'Xstrokes X,Y =(', num2str( C(1,1)), ',' , num2str(C(1,2)),')']);
    else
      title(gca,[num2str(DATA.strokecount), ' strokes X,Y =(', num2str( C(1,1)), ',' , num2str(C(1,2)),')']);
@@ -54,16 +44,25 @@ function draw_gen(filename)
  end
     function buttonDown(object,eventdata)
        if DATA.button==0 
-%         disp('BUTTONDOWN')
          C=get(gca,'CurrentPoint');
-         add_pos(C(1,1), C(1,2));
-         DATA.strokecount = DATA.strokecount + 1;
-         DATA.button = 1;
+         mov = sqrt((DATA.xpos(DATA.count) - xpos_new)^2+ (DATA.ypos(DATA.count)-ypos_new)^2);                
+         hold on;
+         if mov>size_max*0.025 
+           DATA.strokenum(DATA.strokecount)=DATA.count ;
+           %Start a new stroke
+           DATA.strokecount = DATA.strokecount + 1;
+           add_pos(C(1,1), C(1,2));                
+         else
+           add_pos(C(1,1), C(1,2));                
+           hold on;
+           plot([DATA.xpos(DATA.count) DATA.xpos(DATA.count-1)],[DATA.ypos(DATA.count) DATA.ypos(DATA.count-1)]);
+           axis([1,size_x,1,size_y]);
+           drawnow;                
+           hold off;                
+        end
        end
     end
     function buttonUp(object,eventdata)
-        DATA.strokenum(DATA.strokecount)=DATA.count ;
-        DATA.button = 0;
     end
     function keyPressed(object,eventdata)
         disp('GENERATING.....')

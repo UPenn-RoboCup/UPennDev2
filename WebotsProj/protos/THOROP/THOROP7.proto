@@ -1,24 +1,23 @@
 #############################################
-# ATLAS webots prototype file 
-# Based on Gazebo Atlas model and VT's THOR-OP model
-# Mesh converted by Yida
+# THOR-OP webots prototype file with 7DOF arm
+# Based on VT prototype
 # Converted and augmented by SJ
 # 2013/3
 #############################################
 
-PROTO ATLAS [
+PROTO THOROP7 [
   field SFVec3f    translation 0 1 0
   field SFRotation rotation 0 1 0 0
   field SFString   controller "void"
   field SFString   controllerArgs ""
   field SFBool     synchronization TRUE
-  field SFString   name "Atlas"
-  field SFColor    plasticColor 0.301961 0.301961 0.301961
+  field SFString   name "THOROP"
+#  field SFColor    plasticColor 0.301961 0.301961 0.301961
   field SFVec2f    cameraWindowPosition 0 0
   field SFFloat    cameraPixelSize 1.0
   field SFInt32    cameraWidth 160
   field SFInt32    cameraHeight 120
-  field SFInt32    channel 0
+#  field SFInt32    channel 0
 ]
 {
 Robot {
@@ -31,54 +30,47 @@ Robot {
 
   children [
     DEF chest_yaw Servo {
-      translation -0.0125 0 0.14 # ATLAS
+      translation -0.023 0 0.74
       rotation 0 0 1 0
       children [
-        #Atlas has waist roll and pitch too, but haven't implemented them yet..
-	Transform{
-	  translation 0 0 -0.050
-          children[
-            mtorso{} 
-            Transform{
-              translation 0 0 -0.090
-              children[ltorso{}]
-            }
-          ]
-        }
         DEF r_shoulder_pitch Servo {
-          translation 0.024 -0.221 0.289
-          rotation 0 0.5 -0.866025 0   #ATLAS
+          translation 0 -0.219 0
           children [
             DEF r_shoulder_roll Servo {
-              translation 0 -0.075 0.036 #ATLAS
               rotation 1 0 0 0
               children [
-                DEF r_shoulder_yaw Servo { #ATLAS
-                  translation 0 -0.185 0
-                  rotation 0 1 0 0
+                DEF r_shoulder_yaw Servo {
+                  translation 0 0 -0.039
+                  rotation 0 0 1 0
                   children [
                     DEF r_elbow_pitch Servo {
-                      translation 0 -0.121 0.013 #ATLAS ELBOW
-                      rotation 1 0 0 0
+                      translation 0.02991 0 -0.208
                       children [
                         DEF r_wrist_yaw Servo {
-                          translation 0 -0.188 -0.013 #ATLAS WRIST YAW
-                          rotation 0 1 0 0
+                          translation -0.02961 0 -0.187
+                          rotation 0 0 1 0
                           children [
-                            DEF r_wrist_roll Servo { #ATLAS WRIST ROL
-                              translation 0 -0.058 0
+                            DEF r_wrist_roll Servo {
+                              translation 0 0 -0.0543
                               rotation 1 0 0 0
                               children [
+
+                            DEF r_wrist_yaw2 Servo {
+                              translation 0 0 0
+                              rotation 0 0 1 0
+                              children [
+
+
+
   	   	  	        Transform{   #Palm
-                                  translation 0 -0.09 -0
+             			  translation 0 0 -0.065
                                   children [
                                     Shape{geometry Box {size 0.02 0.05 0.05}}
-                                  ]
-                                }
-				#First finger for gripper
-				DEF r_wrist_grip1 Servo{ 
-				  translation 0 -0.10 -0.03
-				  rotation 1 0 0 -1.57
+	                          ]
+			        }
+				DEF r_wrist_grip1 Servo{ #First finger for gripper
+				  translation 0 0.02 -0.04
+				  rotation 1 0 0 0.78
 				  name "r_wrist_grip1"
 				  children[
 				    Transform{
@@ -96,10 +88,9 @@ Robot {
                                   }
                                   physics Physics {}
 				}
-				#Second finger for gripper
-	   	 	        DEF r_wrist_grip2 Servo{ 
-				  translation 0 -0.10 0.03
-				  rotation 1 0 0 -1.57
+	   	 	        DEF r_wrist_grip2 Servo{ #Second finger for gripper
+				  translation 0 -0.02 -0.08
+				  rotation 1 0 0 0.78
 				  name "r_wrist_grip2"
 				  children[
 				    Transform{
@@ -117,152 +108,160 @@ Robot {
                                   }
                                   physics Physics {}
 				}
+
+				]
+				name "r_wrist_yaw2"
+				physics Physics{mass 0.01}
+				} #END WRIST YAW
+
+
+
+
+
                                 DEF r_wrist_roll Transform {
+                                  rotation 1 0 0 1.57
                                   children [
-				     r_hand{}
+				     WRIST_ROLL{}
                                   ]
 				}
 			      ]
                               name "r_wrist_roll"
                               boundingObject Transform {
-                                translation 0 0 0
+                                translation 0 0 -0.0095
                                 children [
-                                  Box {size 0.096 0.096 0.096}
+                                  Box {size 0.096 0.042 0.059}
                                 ]
                               }
-                              physics Physics {#r_hand
-				 mass 2.263
-				 centerOfMass 0 -0.093 0 
-			      }
+                              physics Physics {}
                             }
                             DEF r_wrist_yaw Transform {
+                              rotation 1 0 0 1.57
                               children [
- 				r_farm{}
+ 				WRIST_YAW{}
                               ]
                             }
                           ]
                           name "r_wrist_yaw"
                           boundingObject Transform {
-                            translation 0 0 0
+                            translation 0 0 -0.0375
                             children [
-                              Box {size 0.096 0.096 0.096}
+                              Box {size 0.09 0.048 0.075}
                             ]
                           }
-                          physics Physics {
-			    mass 0.981
-			    centerOfMass 0 -0.041 0
-			  }
+                          physics Physics {}
                           maxForce 10000
                         }
                         DEF r_elbow_pitch Transform {
+                          rotation 1 0 0 1.57
                           children [
-                            r_larm{}
+                            ELBOW_PITCH{}
                           ]
                         }
                       ]
                       name "r_elbow_pitch"
                       boundingObject Transform {
-                        translation 0 0 0
+                        translation -0.0185 0 -0.084
                         children [
-                          Box {size 0.096 0.096 0.096}
+                          Box {size 0.077 0.12 0.208}
                         ]
                       }
-                      physics Physics { #larm
-			mass 2.148
-	 		centerOfMass -0.003 -0.099 -0.014
-		      }
+                      physics Physics {}
                       maxForce 10000
                     }
                     DEF r_shoulder_yaw Transform {
+                      rotation 1 0 0 1.57
                       children [
-                        r_uarm{}
+                        SHOULDER_YAW{}
                       ]
                     }
                   ]
                   name "r_shoulder_yaw"
                   boundingObject Transform {
-                    translation 0 0 0
+                    translation 0.0175 0 -0.123
                     children [
-                      Box {size 0.096 0.096 0.096}
+                      Box {size 0.102 0.114 0.246}
                     ]
                   }
-                  physics Physics { #uarm
-		    mass 1.881
-		    centerOfMass 0.007 -0.114 0.008
-	          }
+                  physics Physics {}
                   maxForce 10000
                 }
                 DEF r_shoulder_roll Transform {
+                  rotation 1 0 0 1.57
                   children [
-                    r_scap{}
+                    SHOULDER_ROLL{}
                   ]
                 }
               ]
               name "r_shoulder_roll"
               boundingObject Transform {
-                translation 0 0 0
+                translation 0 0 -0.006
                 children [
-                  Box {size 0.096 0.096 0.096}
+                  Box {size 0.138 0.054 0.066}
                 ]
               }
-              physics Physics { #scap
-	        mass 2.767
-	        centerOfMass -0.002 0.108 0
-	      }
+              physics Physics {}
               maxForce 10000
             }
             DEF r_shoulder_pitch Transform {
+              rotation -1 0 0 1.57
               children [
-                r_clav{}
+                SHOULDER_PITCH{}
               ]
             }
           ]
           name "r_shoulder_pitch"
           boundingObject Transform {
-            translation 0 0 0
+            translation 0 0.027 0
             children [
-              Box {size 0.096 0.096 0.096}
+              Box {size 0.144 0.108 0.054}
             ]
           }
           physics Physics {
-  	    mass 2.369
-	    centerOfMass 0.014 -0.058 0.029
+            centerOfMass 0 -0.027 0
           }
           maxForce 10000
+
         }
         DEF l_shoulder_pitch Servo {
-          translation 0.024 0.221 0.289
-          rotation 0 0.5 0.866025 0   #ATLAS
+          translation 0 0.219 0
           children [
             DEF l_shoulder_roll Servo {
-              translation 0 0.075 0.036 #ATLAS
               rotation 1 0 0 0
               children [
-                DEF l_shoulder_yaw Servo { #ATLAS
-		  translation 0 0.185 0
-                  rotation 0 1 0 0
+                DEF l_shoulder_yaw Servo {
+                  translation 0 0 -0.039
+                  rotation 0 0 1 0
                   children [
                     DEF l_elbow_pitch Servo {
-		      translation 0 0.121 0.013 #ATLAS ELBOW
-		      rotation 1 0 0 0
+                      translation 0.02991 0 -0.208
                       children [
                         DEF l_wrist_yaw Servo {
-                          translation 0 0.188 -0.013 #ATLAS WRIST YAW
-                          rotation 0 1 0 0
+                          translation -0.02961 0 -0.187
+                          rotation 0 0 1 0
                           children [
                             DEF l_wrist_roll Servo {
-                              translation 0 0.058 0
+                              translation 0 0 -0.0543
                               rotation 1 0 0 0
                               children [
+#Additional DOF
+
+                            DEF l_wrist_yaw2 Servo {
+                              translation 0 0 0
+                              rotation 0 0 1 0
+                              children [
+
+
+
+
 				Transform{   #Palm
-                                  translation 0 0.09 -0
+                                  translation 0 0 -0.065
                                   children [
                                     Shape{geometry Box {size 0.02 0.05 0.05}}
                                   ]
                                 }
 	   	 	        DEF l_wrist_grip1 Servo{ #First finger for gripper
-				  translation 0 0.10 -0.03
-				  rotation 1 0 0 1.57
+				  translation 0 0.02 -0.08
+				  rotation 1 0 0 -0.78
 				  name "l_wrist_grip1"
 				  children[
 				    Transform{
@@ -281,8 +280,8 @@ Robot {
                                   physics Physics {}
 				}
 	   	 	        DEF l_wrist_grip2 Servo{ #Second finger for gripper
-				  translation 0 0.10 0.03
-				  rotation 1 0 0 1.57
+				  translation 0 -0.02 -0.04
+				  rotation 1 0 0 -0.78
 				  name "l_wrist_grip2"
 				  children[
 				    Transform{
@@ -301,132 +300,137 @@ Robot {
                                   physics Physics {}
 				}
 
+				]
+				name "l_wrist_yaw2"
+				physics Physics{mass 0.01}
+				} #END WRIST YAW
+
+
+
+
                                 DEF l_wrist_roll Transform{
+                                  rotation 1 0 0 1.57
                                   children[
-                                    l_hand{}                                  ]
+                                    WRIST_ROLL{}                                  ]
                                 }
                               ]
                               name "l_wrist_roll"
                               boundingObject Transform {
-                                translation 0 0 0
+                                translation 0 0 -0.0095
                                 children [
-                                  Box {size 0.096 0.096 0.096}
+                                  Box {size 0.096 0.042 0.059}
                                 ]
                               }
-                              physics Physics { #l_hand
-				 mass 2.263
-				 centerOfMass 0 0.093 0
-			      }
+                              physics Physics {}
                               maxForce 10000
 
                             }
                             DEF l_wrist_yaw Transform {
+                              rotation 1 0 0 1.57
                               children [
-                                 l_farm{}
+                                 WRIST_YAW{}
                               ]
                             }
                           ]
                           name "l_wrist_yaw"
                           boundingObject Transform {
-                            translation 0 0 0
+                            translation 0 0 -0.0375
                             children [
-                              Box {size 0.096 0.096 0.096}
+                              Box {size 0.09 0.048 0.075}
                             ]
                           }
-                          physics Physics { #l_farm
-			    mass 0.981
-			    centerOfMass 0 0.041 0
-			  }
+                          physics Physics {}
                           maxForce 10000
 
                         }
                         DEF l_elbow_pitch Transform {
+                          rotation 1 0 0 1.57
                           children [
-  			    l_larm{}
+			    ELBOW_PITCH{}
                           ]
                         }
                       ]
                       name "l_elbow_pitch"
                       boundingObject Transform {
-                        translation 0 0 0
+                        translation -0.0185 0 -0.084
                         children [
-                          Box {size 0.096 0.096 0.096}
+                          Box {size 0.077 0.12 0.208}
                         ]
                       }
-                      physics Physics { #l_larm
-			 mass 2.148
-			 centerOfMass -0.003 0.099 -0.014
-		      }
+                      physics Physics {}
                       maxForce 10000
                     }
                     DEF l_shoulder_yaw Transform {
+                      rotation 1 0 0 1.57
                       children [
- 	 	         l_uarm{}
+                        SHOULDER_YAW{}
                       ]
                     }
                   ]
                   name "l_shoulder_yaw"
                   boundingObject Transform {
-                    translation 0 0 0
+                    translation 0.0175 0 -0.123
                     children [
-                      Box {size 0.096 0.096 0.096}
+                      Box {size 0.102 0.114 0.246}
                     ]
                   }
-                  physics Physics {	#l_uarm
-		    mass 1.881
-		    centerOfMass 0.007 0.114 0.008
-		  }
+                  physics Physics {}
                   maxForce 10000
                 }
                 DEF l_shoulder_roll Transform {
+                  rotation 1 0 0 1.57
                   children [
-	            l_scap{}
+                    SHOULDER_ROLL{}
                   ]
                 }
               ]
               name "l_shoulder_roll"
               boundingObject Transform {
-                translation 0 0 0
+                translation 0 0 -0.006
                 children [
-                  Box {size 0.096 0.096 0.096}
+                  Box {size 0.138 0.054 0.066}
                 ]
               }
-              physics Physics { #l_scap
-	        mass 2.767
-	        centerOfMass -0.002 0.108 0
+              physics Physics {
               }
               maxForce 10000
 
             }
             DEF l_shoulder_pitch Transform {
-              children [l_clav{}]
+              rotation 1 0 0 1.57
+              children [SHOULDER_PITCH{}]
             }
           ]
           name "l_shoulder_pitch"
           boundingObject Transform {
-            translation 0 0 0
+            translation 0 -0.027 0
             children [
-              Box {size 0.042 0.042 0.042}
+              Box {size 0.144 0.108 0.054}
             ]
           }
-          physics Physics { #l_clav
-	    mass 2.369
-	    centerOfMass 0.014 0.058 0.029
-	  }
+          physics Physics {}
           maxForce 10000
 
         }
         DEF neck_yaw Servo {
-#         translation 0.16555 0 0.50823 # value based on atlas urdf file 
-          translation 0.01 0 0.43 # This puts head to the utorso
+          translation 0 0 0.027
           rotation 0 0 1 0
           children [
             DEF head_pitch Servo {
-              translation 0 0 0
+              translation 0 0 0.114
               children [
                 DEF head_pitch Transform {
+                  rotation 1 0 0 1.57
                   children[
-		    head{}
+  	            HEAD_PITCH{}
+		    Transform{
+		      translation 0.03 0.07 0
+		      rotation 0 1 0 -1.57
+ 		      children[
+			#ADDED FOR DEPTH SENSING
+#			DEF kinect KinectWithoutFoot{}
+		      ]		      
+		    }
                   ]
                 }
               ]
@@ -440,7 +444,7 @@ Robot {
             DEF neck_yaw Transform {
               rotation 1 0 0 1.57
               children [
-#               NECK_YAW{}
+                NECK_YAW{}
               ]
             }
           ]
@@ -450,11 +454,12 @@ Robot {
               Box {size 0.05 0.05 0.05}
             ]
           }
-
         }
+#       hokuyo_thor {}    
         DEF upper_torso_yaw Transform {
+          rotation 1 0 0 1.57
           children [
-	     utorso{}
+            UPPER_TORSO_YAW{}
           ]
         }
       ]
@@ -465,55 +470,57 @@ Robot {
           Box {size 0.06 0.276 0.171}
         ]
       }
-      physics Physics { #Utorso
-	mass 18.484
-	centerOfMass 0.02 -0.001 0.211 #ATLAS value
-      }
+      physics Physics {}
       maxForce 10000
+
     }
     DEF l_hip_yaw Servo {
-      translation 0 0.089 0
+      translation -0.024 0.0957 0.212
       rotation 0 0 1 0
       children [
         DEF l_hip_roll Servo {
-          translation 0 0 0
+          translation 0.0025 0 0
           rotation 1 0 0 0
           children [
             DEF l_hip_pitch Servo {
-              translation 0.05 0 -0.05
+              translation 0 -0.0015 0
               children [
                 DEF l_knee_pitch Servo {
-                  translation -0.05 0 -0.374 #Atlas
+                  translation 0 0 -0.379
                   children [
                     DEF l_ankle_pitch Servo {
-                      translation 0 0 -0.422 #Atlas
+                      translation 0 0 -0.38
                       children [
                         DEF l_ankle_roll Servo {
                           rotation 1 0 0 0
                           children [
                             DEF l_foot Transform {
+                              rotation 1 0 0 1.57
                               children [
-				 l_foot{}
+                                LFOOT{}
                               ]
                             }
                           ]
                           name "l_ankle_roll"
                           boundingObject Transform {
-                            translation 0.05 0 -0.05
+                            translation 0.0213876 0 -0.0143448
                             children [
-                               Box {size 0.26 0.125 0.0686897}
+ #                             Box {size 0.23 0.125 0.0686897}
+#LARGER FOOT
+                              Box {size 0.33 0.125 0.0686897}
                             ]
                           }
-                          physics Physics { #ATLAS l_foot
+                          physics Physics {
                             density -1
-                            mass 1.634
-                            centerOfMass 0.027 0 -0.067
+                            mass 0.589
+                            centerOfMass 0.003 0 -0.029
                           }
                           maxForce 10000
                         }
                         DEF l_ankle_pitch Transform {
+                          rotation 1 0 0 1.57
                           children [
-                            l_talus{}
+                            ANKLE_PITCH{}
                           ]
                         }
                       ]
@@ -521,16 +528,16 @@ Robot {
                       boundingObject Box {
                         size 0.067 0.067 0.01
                       }
-                      physics Physics {#atlas l_talus
+                      physics Physics {
                         density -1
-                        mass 0.1
-			centerOfMass 0 0 0
+                        mass 0.01
                       }
                       maxForce 10000
                     }
                     DEF l_knee_pitch Transform {
+                      rotation 1 0 0 1.57
                       children [
-		         l_lleg{}
+                        KNEE_PITCH{}
                       ]
                     }
                   ]
@@ -541,16 +548,17 @@ Robot {
                       Box {size 0.045 0.055 0.42}
                     ]
                   }
-                  physics Physics { #ATLAS lleg
+                  physics Physics {
                     density -1
-                    mass 4.367 
-                    centerOfMass 0.001 0 -0.187
+                    mass 2.239
+                    centerOfMass -0.025 0 -0.126
                   }
                   maxForce 10000
                 }
                 DEF l_hip_pitch Transform {
+                  rotation 1 0 0 1.57
                   children [
-		     l_uleg{}
+                    HIP_PITCH{}
                   ]
                 }
               ]
@@ -561,16 +569,17 @@ Robot {
                   Box {size 0.045 0.074 0.419}
                 ]
               }
-              physics Physics { #atlas uleg
+              physics Physics {
                 density -1
-                mass 7.34 
-                centerOfMass 0 0 -0.21
+                mass 2.214
+                centerOfMass -0.009 0.016 -0.159
               }
               maxForce 10000
             }
             DEF l_hip_roll Transform {
+              rotation 1 0 0 1.57
               children [
-                 l_lglut{}
+                HIP_ROLL{}
               ]
             }
           ]
@@ -578,16 +587,16 @@ Robot {
           boundingObject Box {
             size 0.083 0.083 0.01
           }
-          physics Physics { #atlas lglut
+          physics Physics {
             density -1
-            mass 0.69
-	    centerOfMass 0.0133341 0.0170484 -0.0312052
+            mass 0.01
           }
           maxForce 10000
         }
         DEF l_hip_yaw Transform {
+          rotation 1 0 0 1.57
           children [
-            l_uglut{}
+            HIP_YAW{}
           ]
         }
       ]
@@ -595,72 +604,74 @@ Robot {
       boundingObject Box {
         size 0.05 0.05 0.05
       }
-      physics Physics { #atlas uglut
+      physics Physics {
         density -1
-        mass 0.5166
-	centerOfMass 0.00529262 -0.00344732 0.00313
+        mass 0.01
       }
       maxForce 10000
     }
     DEF r_hip_yaw Servo {
-      translation 0 -0.089 0
+      translation -0.024 -0.0957 0.212
       rotation 0 0 1 0
       children [
         DEF r_hip_roll Servo {
-          translation 0 0 0
+          translation 0.0025 0 0
           rotation 1 0 0 0
           children [
             DEF r_hip_pitch Servo {
-              translation 0.05 0 -0.05 #ATLAS
+              translation 0 0.0015 0
               children [
                 DEF r_knee_pitch Servo {
-                  translation -0.05 0 -0.374 #Atlas value
+                  translation 0 0 -0.379
                   children [
                     DEF r_ankle_pitch Servo {
-                      translation 0 0 -0.422 #Atlas value
+                      translation 0 0 -0.38
                       children [
                         DEF r_ankle_roll Servo {
                           rotation 1 0 0 0
                           children [
                             DEF r_foot Transform {
+                              rotation 1 0 0 1.57
                               children [
-                                r_foot{}
+                                LFOOT{}
                               ]
                             }
                           ]
                           name "r_ankle_roll"
                           boundingObject Transform {
-                            translation 0.05 0 -0.05
+                            translation 0.0213876 0 -0.0143448
                             children [
-                               Box {size 0.26 0.125 0.0686897}
+#                              Box {size 0.23 0.125 0.0686897}
+#Larger FOOT
+                             Box {size 0.33 0.125 0.0686897}
                             ]
                           }
-                          physics Physics {#ATLAS r_foot
-                            density -1 
-                            mass 1.634
-                            centerOfMass 0.027 0 -0.067
+                          physics Physics {
+                            density -1
+                            mass 0.589
+                            centerOfMass 0.003 0 -0.029
                           }
                           maxForce 10000
                         }
                         DEF r_ankle_pitch Transform {
+                          rotation 1 0 0 1.57
                           children [
-                            r_talus{}
+                            ANKLE_PITCH{}
                           ]
                         }
                       ]
                       name "r_ankle_pitch"
                       boundingObject Box {size 0.067 0.067 0.01}
-                      physics Physics {#ATLAS r_talus
+                      physics Physics {
                         density -1
-                        mass 0.1
-			centerOfMass 0 0 0
+                        mass 0.01
                       }
                       maxForce 10000
                     }
                     DEF r_knee_pitch Transform {
+                      rotation 1 0 0 1.57
                       children [
-			 r_lleg{}
-
+                        KNEE_PITCH{}
                       ]
                     }
                   ]
@@ -671,18 +682,17 @@ Robot {
                       Box {size 0.045 0.055 0.42}
                     ]
                   }
-               
-                 physics Physics { #ATLAS r_lleg
+                  physics Physics {
                     density -1
-                    mass 4.367 
-                    centerOfMass 0.001 0 -0.187
+                    mass 2.239
+                    centerOfMass -0.025 0 -0.126
                   }
                   maxForce 10000
-
                 }
                 DEF r_hip_pitch Transform {
+                  rotation 1 0 0 1.57
                   children [
-		     r_uleg{}
+                    HIP_PITCH{}
                   ]
                 }
               ]
@@ -693,55 +703,50 @@ Robot {
                   Box {size 0.045 0.074 0.419}
                 ]
               }
-              physics Physics { #atlas r_uleg
+              physics Physics {
                 density -1
-                mass 7.34
-                centerOfMass 0 0 -0.21
+                mass 2.214
+                centerOfMass -0.009 -0.016 -0.159
               }
               maxForce 10000
             }
             DEF r_hip_roll Transform {
+              rotation 1 0 0 1.57
               children [
-                r_lglut{}
+                HIP_ROLL{}
               ]
             }
           ]
           name "r_hip_roll"
           boundingObject Box {size 0.083 0.083 0.01}
-          physics Physics { #atlas lglut
+          physics Physics {
             density -1
-            mass 0.69
-	    centerOfMass 0.0133341 -0.0170484 -0.0312052
+            mass 0.01
           }
           maxForce 10000
         }
         DEF r_hip_yaw Transform {
+          rotation 1 0 0 1.57
           children [
-            r_uglut{}
-	  ]
+            HIP_YAW{}
+          ]
         }
       ]
       name "r_hip_yaw"
       boundingObject Box {
         size 0.05 0.05 0.05
       }
-      physics Physics { #atlas uglut
+      physics Physics {
         density -1
-        mass 0.5166
-	centerOfMass 0.00529262 0.00344732 0.00313
+        mass 0.01
       }
       maxForce 10000
     }
     DEF lower_torso Transform {
-      translation 0 0 0
+      translation -0.023 0 0.287
+      rotation -1 0 0 -1.57
       children [
-	 pelvis{}
-	 Transform {
-           translation -0.0125 0 0
-           children[
-              ltorso{}
-	   ]
-         }
+        LOWER_TORSO{}
       ]
     }
     DEF zero GPS {
@@ -763,13 +768,14 @@ Robot {
     }
     Gyro {
       translation 0.027711 0 0.23735
+ #    rotation -0.57735 0.57735 0.57735 2.0944
       name "Gyro"
       lookupTable [
         -27.925 0 0
         27.925 1024 0
       ]
     }
-   #Those are for sending/receiving team messages for UPenn code
+#SH: those are for sending/receiving team messages
     DEF RECEIVER Receiver {
       name "receiver"
       channel IS channel
@@ -791,7 +797,7 @@ Robot {
       byteSize 96
     }
   ]
-  name "Atlas"
+  name "THOROP"
   boundingObject Transform {
     translation -0.0115 0 0.4115
     children [
@@ -800,10 +806,10 @@ Robot {
       }
     ]
   }
-  physics Physics { #Pelvis 
+  physics Physics {
     density -1
-    mass 14.2529
-    centerOfMass 0.0111 0 0.0271
+    mass 9.846
+    centerOfMass -0.015 0 0.427
   }
   controller "void"
 }

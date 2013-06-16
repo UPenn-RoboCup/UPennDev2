@@ -34,34 +34,13 @@ THOROP {
   translation 0 0.6 0
   rotation -1 0 0 1.57
   controller "darwin-op_team_0"
-  controllerArgs "0 25" 
+  controllerArgs "0 32" 
 }
-
 Solid{
-  translation 0.3 1.2 0
-  rotation 0 0 1 0
+  translation 0.3 1.3 0
+  rotation 0 0 1 1.57
   children[
-    SteeringWheelSmall{}
-  ]
-  locked TRUE
-}
-
-
-Solid{
-  translation 0.3 1.2 1.0
-  rotation 0 0 1 0
-  children[
-    SteeringWheelSmall{}
-  ]
-  locked TRUE
-}
-
-
-Solid{
-  translation 0.3 1.2 2.0
-  rotation 0 0 1 -0.5
-  children[
-    SteeringWheelSmall{}
+    Lever{}
   ]
   locked TRUE
 }

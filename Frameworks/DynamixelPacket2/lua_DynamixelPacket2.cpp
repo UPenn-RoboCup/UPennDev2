@@ -2,7 +2,6 @@
 Lua module to provide process dynamixel packets
 Daniel D. Lee copyright 2010 <ddlee@seas.upenn.edu>
 Stephen G. McGill copyright 2013 <smcgill3@seas.upenn.edu>
-Yida Zhang copyright 2013 <yida@seas.upenn.edu>
 */
 #include "dynamixel.h"
 #include <lua.hpp>
@@ -33,7 +32,7 @@ static int lua_dynamixel_error(lua_State *L) {
 		if (errbits & errmask){
 			lua_pushstring(L, errtable[i]);
 			lua_rawseti(L, -2, ++nerr);
-			printf("%d: %d|%d (%.2X): %s\n",errbits,i,nerr,errmask,errtable[i]);
+			//printf("%d: %d|%d (%.2X): %s\n",errbits,i,nerr,errmask,errtable[i]);
 		}
 		errmask<<=1;
 	} //for
@@ -103,7 +102,10 @@ static int lua_dynamixel_instruction_write_dword(lua_State *L) {
 	size_t naddr;
 	const char *addr = luaL_checklstring(L, 2, &naddr);
 	// TODO: Check that the addr is always of length 2
-	uint32_t dword = luaL_checkint(L, 3);
+	int32_t dword = luaL_checkint(L, 3);
+//	fprintf(stdout,"DWORD: %X\n",dword);
+//	fflush(stdout);
+
 	uint8_t byte[4];
 	byte[0] = (dword & 0x000000FF);
 	byte[1] = (dword & 0x0000FF00)>>8;
@@ -176,11 +178,12 @@ static int lua_dynamixel_input(lua_State *L) {
 static int lua_dynamixel_word_to_byte(lua_State *L) {
 	int n = lua_gettop(L);
 	int ret = 0;
-	uint16_t word, byteLow, byteHigh;
+	int16_t word;
+	uint16_t byteLow, byteHigh;
 	for (int i = 1; i <= n; i++) {
 		word = luaL_checkint(L, i);
 		byteLow  = (word & 0x00FF);
-		byteHigh = (word>>8) & 0x00FF;
+		byteHigh = ((uint16_t)(word & 0xFF00))>>8;
 		lua_pushnumber(L, byteLow);
 		lua_pushnumber(L, byteHigh);
 		ret+=2;
@@ -191,13 +194,15 @@ static int lua_dynamixel_word_to_byte(lua_State *L) {
 static int lua_dynamixel_dword_to_byte(lua_State *L) {
 	int n = lua_gettop(L);
 	int ret = 0;
-	uint32_t dword, byteLow, byteHigh, byteHigher, byteHighest;
+	int32_t dword;
+	uint32_t byteLow, byteHigh, byteHigher, byteHighest;
 	for (int i = 1; i <= n; i++) {
 		dword = luaL_checkint(L, i);
+		//printf("DWORD | %d: %16.8X\n", dword, dword);
 		byteLow     = (dword & 0x000000FF);
-		byteHigh    = (dword & 0x0000FF00)>>8;
-		byteHigher  = (dword & 0x00FF0000)>>16;
-		byteHighest = (dword>>24) & 0x000000FF;
+		byteHigh    = ((uint32_t)(dword & 0x0000FF00))>>8;
+		byteHigher  = ((uint32_t)(dword & 0x00FF0000))>>16;
+		byteHighest = (((uint32_t)(dword & 0xFF000000))>>24) & 0xFF;
 		lua_pushnumber(L, byteLow);
 		lua_pushnumber(L, byteHigh);
 		lua_pushnumber(L, byteHigher);
@@ -210,13 +215,14 @@ static int lua_dynamixel_dword_to_byte(lua_State *L) {
 static int lua_dynamixel_byte_to_word(lua_State *L) {
 	int n = lua_gettop(L);
 	int ret = 0;
-	uint16_t word, byteLow, byteHigh;
+	int16_t word;
+	uint16_t byteLow, byteHigh;
 	for (int i = 1; i < n; i += 2) {
 		byteLow = luaL_checkint(L, i);
 		byteHigh = luaL_checkint(L, i+1);
-		word = ((byteHigh<<8)&0xFF00) + byteLow;
+		word = (int16_t)((byteHigh<<8)&0xFF00) + (int16_t)byteLow;
 		// All 2 byte registers are signed numbers
-		lua_pushnumber(L, (int16_t)word);
+		lua_pushnumber(L, word);
 		ret++;
 	}
 	return ret;
@@ -231,10 +237,12 @@ static int lua_dynamixel_byte_to_dword(lua_State *L) {
 		byteHigh = luaL_checkint(L, i+1);
 		byteHigher = luaL_checkint(L, i+2);
 		byteHighest = luaL_checkint(L, i+3);
-		dword = ((byteHigh << 24) & 0xFF000000)
-					+ ((byteHigh << 16) & 0x00FF0000)
-					+ ((byteHigh << 8)  & 0x0000FF00)
+		// TODO: Check the sign
+		dword = ((byteHighest << 24) & 0xFF000000)
+					+ ((byteHigher << 16) & 0x00FF0000)
+					+ ((byteHigh << 8) & 0x0000FF00)
 					+ byteLow;
+		//printf("%2.2x %2.2x %2.2x %2.2x = %d\n",byteHighest, byteHigher,byteHigh,byteLow,dword);
 		/* Push to stack and keep track of how much we pushed (ret) */
 		// All 4 byte registers are signed numbers
 		lua_pushnumber(L, (int32_t)dword);
@@ -269,7 +277,8 @@ static const struct luaL_reg dynamixelpacket_methods[] = {
 #ifdef __cplusplus
 extern "C"
 #endif
-int luaopen_DynamixelPacket (lua_State *L) {
+int luaopen_DynamixelPacket2 (lua_State *L) {
+	/* Metatables are same for 1 and 2 - probably bad... */
 	luaL_newmetatable(L, "dynamixelpacket_mt");
 
 	// OO access: mt.__index = mt
@@ -278,7 +287,7 @@ int luaopen_DynamixelPacket (lua_State *L) {
 	lua_setfield(L, -2, "__index");
 
 	luaL_register(L, NULL, dynamixelpacket_methods);
-	luaL_register(L, "DynamixelPacket", dynamixelpacket_functions);
+	luaL_register(L, "DynamixelPacket2", dynamixelpacket_functions);
 
 	return 1;
 }

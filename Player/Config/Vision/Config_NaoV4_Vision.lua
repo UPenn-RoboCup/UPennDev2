@@ -15,6 +15,7 @@ vision.ballColor = color.orange;
 vision.goal1Color = color.yellow;
 vision.goal2Color = color.yellow;
 vision.maxFPS = 30;
+vision.scaleA = 2;
 vision.scaleB = 4;
 
 

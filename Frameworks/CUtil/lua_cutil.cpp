@@ -649,6 +649,47 @@ static int lua_bitnot(lua_State *L) {
   return 1;
 }
 
+static int lua_bitset(lua_State *L) {
+	int a = luaL_checkint(L, 1); 
+	int bit = luaL_checkint(L, 2);
+	int value = luaL_checkint(L, 3);
+
+	if (value)
+		lua_pushinteger(L, a | (1 << bit));
+	else
+		lua_pushinteger(L, a & ~(1 << bit));
+
+	return 1;
+}
+
+static int lua_bitget(lua_State *L) {
+	int a = luaL_checkint(L, 1); 
+	int bit = luaL_checkint(L, 2);
+
+	if (a & (1 << bit))
+		lua_pushinteger(L, 1);
+	else
+		lua_pushinteger(L, 0);
+
+	return 1;
+}
+
+static int lua_bitlshift(lua_State *L) {
+	int a = luaL_checkint(L, 1); 
+	int bit = luaL_checkint(L, 2);
+
+  lua_pushinteger(L, a << bit);
+  return 1;
+}
+
+static int lua_bitrshift(lua_State *L) {
+	int a = luaL_checkint(L, 1); 
+	int bit = luaL_checkint(L, 2);
+
+  lua_pushinteger(L, a >> bit);
+  return 1;
+}
+
 static const luaL_Reg cutil_lib [] = {
   {"array2string", lua_array2string},
   {"string2userdata", lua_string2userdata},
@@ -665,6 +706,10 @@ static const luaL_Reg cutil_lib [] = {
   {"bit_or", lua_bitor},
   {"bit_xor", lua_bitxor},
   {"bit_not", lua_bitnot},
+	{"bit_set", lua_bitset},
+	{"bit_get", lua_bitget},
+	{"bit_lshift", lua_bitlshift},
+	{"bit_rshift", lua_bitrshift},
   {"sizeof", lua_sizeof},
   {"test_array", lua_testarray},
 

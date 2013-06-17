@@ -43,7 +43,7 @@ elseif (robotName=='ticktock') then
 elseif (robotName=='hook') then
   game.playerID = 1;
 elseif (robotName=='pockets') then
-  game.playerID = 1;
+  game.playerID = 4;
 end
 --------------------------------------
 

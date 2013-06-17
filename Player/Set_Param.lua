@@ -27,8 +27,8 @@ function Entry()
   camera.ncamera = Config.camera.ncamera;
 
   labelA = {};
-  labelA.m = camera.width/2;
-  labelA.n = camera.height/2;
+  labelA.m = camera.width/Config.vision.scaleA
+  labelA.n = camera.height/Config.vision.scaleA
   labelA.npixel = labelA.m*labelA.n;
   scaleB = Config.vision.scaleB;
   labelB = {};

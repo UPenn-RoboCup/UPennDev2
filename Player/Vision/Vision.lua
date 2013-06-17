@@ -44,15 +44,10 @@ if use_gps_only==0 then
   camera.ncamera = Config.camera.ncamera;
   -- Initialize the Labeling
   labelA = {};
-  -- labeled image is 1/4 the size of the original
-  labelA.m = camera.width/2;
-  labelA.n = camera.height/2;
+  labelA.m = camera.width / Config.vision.scaleA
+  labelA.n = camera.height / Config.vision.scaleA
   labelA.npixel = labelA.m*labelA.n;
-  if  webots == 1 then
-    labelA.m = camera.width;
-    labelA.n = camera.height;
-    labelA.npixel = labelA.m*labelA.n;
-  end
+  vcm.set_image_scaleA(Config.vision.scaleA);
   scaleB = Config.vision.scaleB;
   labelB = {};
   labelB.m = labelA.m/scaleB;

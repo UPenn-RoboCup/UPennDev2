@@ -300,7 +300,8 @@ function update()
   labelA.data = ImageProc.yuyv_to_label(vcm.get_image_yuyv(),
                                           carray.pointer(camera.lut),
                                           camera.width/2,
-                                          camera.height);
+                                          camera.height, 
+                                          Config.vision.scaleA);
   labelB.data = ImageProc.block_bitor(labelA.data, labelA.m, labelA.n, scaleB, scaleB);
  
   vcm.set_image_labelA(labelA.data);

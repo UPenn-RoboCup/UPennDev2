@@ -207,7 +207,8 @@ function update()
     labelA.data  = ImageProc.yuyv_to_label(vcm.get_image_yuyv(),
                                           vcm.get_image_lut(),
                                           camera.width,
-                                          camera.height);
+                                          camera.height,
+                                          Config.vision.scaleA);
   end
 
   -- determine total number of pixels of each color/label

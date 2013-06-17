@@ -364,6 +364,41 @@ static int lua_carray_len(lua_State *L) {
   return 1;
 }
 
+static int lua_carray_bytesize(lua_State *L) {
+  structCArray *p = lua_checkcarray(L, 1);
+  switch (p->type) {
+  case 'b':
+		lua_pushinteger(L, p->size);
+    break;
+  case 'c':
+    lua_pushinteger(L, p->size);
+    break;
+  case 's':
+		lua_pushinteger(L, p->size*sizeof(short));
+    break;
+  case 'l':
+    lua_pushinteger(L, p->size*sizeof(long));
+    break;
+  case 'i':
+    lua_pushinteger(L, p->size*sizeof(int));
+    break;
+  case 'u':
+	lua_pushinteger(L, p->size*sizeof(unsigned int));
+    break;
+  case 'f':
+	lua_pushinteger(L, p->size*sizeof(float));
+    break;
+  case 'd':
+    lua_pushinteger(L, p->size*sizeof(double));
+    break;
+  default:
+    lua_pushnil(L);
+  }
+  return 1;
+}
+
+
+
 static int lua_carray_cast(lua_State *L) {
   /*
   // Check for lightuserdata carray
@@ -613,6 +648,7 @@ static const luaL_Reg carray_functions[] = {
 
 static const luaL_Reg carray_methods[] = {
   {"pointer", lua_carray_pointer},
+	{"bytesize", lua_carray_bytesize},
   {"typename", lua_carray_typename},
   {"table", lua_carray_totable},
   {"string", lua_carray_tostring},

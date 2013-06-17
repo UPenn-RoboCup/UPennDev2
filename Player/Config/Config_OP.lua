@@ -78,6 +78,8 @@ elseif (robotName=='annie') then
   game.playerID = 4; 
 elseif (robotName=='jiminy') then
   game.playerID = 7; 
+elseif (robotName=='andy') then
+  game.playerID = 5; 
 elseif (robotName=='hokie') then
   game.playerID = 7; 
   game.role = 0; --Default goalie

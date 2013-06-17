@@ -62,7 +62,10 @@ fsm.goalie_type = 3;
 --2: Goalie stops when in position
 --3: Diving goalie (stops in position and never move)
 --4: Diving and repositioning goalie (turns to ball position)
-fsm.goalie_reposition = 0; --Yaw reposition
+--fsm.goalie_reposition = 0; --No  reposition
+fsm.goalie_reposition = 1; --Yaw reposition
+
+
 fsm.goalie_use_walkkick = 1;--should goalie use walkkick or long kick?
 
 fsm.daPost_check = 1;

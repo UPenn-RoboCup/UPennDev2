@@ -3,62 +3,69 @@
 -- (c) 2013 Daniel D. Lee
 
 local libDynamixel = {}
-local DynamixelPacket = require('DynamixelPacket');
+local DP1 = require('DynamixelPacket1'); -- 1.0 protocol
+local DP2 = require('DynamixelPacket2'); -- 2.0 protocol
 
--- Legacy support so this code can work with CHARLI/DARwIn-OP
---[[
-local DynamixelPacketLegacy = require('DynamixelPacketLegacy');
--- Legacy
-local legacy_ram_addr = {
+-- RX (uses 1.0)
+local rx_ram_addr = {
 	['id'] = 3,
-	['led'] = string.char(25,0),
-	['battery'] = string.char(42,0),
-	['command'] = string.char(30,0),
-	['temperature'] = string.char(43,0),
-	['delay'] = string.char(5,0),
-	['hardness'] = string.char(34,0), -- in PID verion of the product?
-	['velocity'] = string.char(32,0),
-	['position'] = string.char(36,0),
-	['torque_enable'] = string.char(24,0),
+  ['baud'] = 4,
+	['delay'] = 5,
+	['led'] = 25,
+	['command'] = 30,
+	['position'] = 36,
+	['battery'] = 42,
+	['temperature'] = 43,
+	['torque_enable'] = 24,
 }
-local legacy_ram_sz = {
+local rx_ram_sz = {
 	['id'] = 1,
-	['led'] = 1,
-	['battery'] = 2,
-	['command'] = 2,
-	['temperature'] = 1,
+  ['baud'] = 1,
 	['delay'] = 1,
+	['led'] = 1,
+	['command'] = 2,
 	['hardness'] = 2,
-	['velocity'] = 2,
 	['position'] = 2,
+	['battery'] = 2,
+	['temperature'] = 1,
 	['torque_enable'] = 1,
 }
---]]
 
 -- MX
 local mx_ram_addr = {
-	['id'] = 3,
-	['led'] = string.char(25,0),
-	['battery'] = string.char(42,0),
-	['command'] = string.char(30,0),
-	['temperature'] = string.char(43,0),
+	['id'] = string.char(3,0),
+  ['baud'] = string.char(4,0),
 	['delay'] = string.char(5,0),
-	['hardness'] = string.char(34,0), -- in PID verion of the product?
+	['led'] = string.char(25,0),
+	['command'] = string.char(30,0),
+	['torque_enable'] = string.char(24,0),
+	-- Position PID Gains (position control mode)
+	['position_p'] = string.char(28,0),
+	['position_i'] = string.char(27,0),
+	['position_d'] = string.char(26,0),
+	-- Present information
 	['velocity'] = string.char(32,0),
 	['position'] = string.char(36,0),
-	['torque_enable'] = string.char(24,0),
+	['battery'] = string.char(42,0),
+	['temperature'] = string.char(43,0),
+  ['status_return_level'] = string.char(16,0);
 }
 local mx_ram_sz = {
 	['id'] = 1,
+  ['baud'] = 1,
 	['led'] = 1,
-	['battery'] = 2,
-	['command'] = 2,
-	['temperature'] = 1,
 	['delay'] = 1,
+	['torque_enable'] = 1,
+	['command'] = 2,
 	['hardness'] = 2,
 	['velocity'] = 2,
 	['position'] = 2,
-	['torque_enable'] = 1,
+	['position_p'] = 1,
+	['position_i'] = 1,
+	['position_d'] = 1,
+	['battery'] = 2,
+	['temperature'] = 1,
+  ['status_return_level'] = 1,
 }
 
 -- Dynamixel PRO
@@ -101,9 +108,9 @@ local nx_ram_addr = {
 	['max_position'] = string.char(0x24,0x00),
 	['min_position'] = string.char(0x28,0x00),
 	['shutdown'] = string.char(0x30,0x00),
-	['torque_enable'] = string.char(0x32,0x02), -- Same in new API
 	
 	-- ENTER RAM AREA
+	['torque_enable'] = string.char(0x32,0x02), -- Same in new API
 	-- Position Options --
 	-- Position Commands (position control mode)
 	['command_position'] = string.char(0x54,0x02),
@@ -206,7 +213,7 @@ local nx_ram_sz = {
 -- Add a poor man's unix library
 local unix2 = {}
 unix2.write = function(fd,msg)
-	local str = string.format('%s fd:(%d) sz:(%d)',type(msg),fd,#msg)
+	local str = string.format('\n%s fd:(%d) sz:(%d)',type(msg),fd,#msg)
 	local str2 = 'Dec:\t'
 	local str3 = 'Hex:\t'
 	for i=1,#msg do
@@ -230,21 +237,113 @@ unix2.close = function( fd )
 end
 local unix = unix2
 
+------------------------------------------------
+------------------------------------------------
+-- 1.0 stuff!!
+function libDynamixel.set_ram1(fd,id,addr,value,sz)
+	local inst = nil
+	if type(id) == 'number' then
+		if sz==1 then
+			inst = DP1.write_byte(id, addr, value)
+		elseif sz==2 then
+			inst = DP1.write_word(id, addr, value)
+		elseif sz==4 then
+			inst = DP1.write_dword(id, addr, value)
+		end
+		local clear = unix.read(fd); -- clear old status packets
+		local ret = unix.write(fd, inst)
+		local statuses = libDynamixel.get_status1(fd,1);
+		if not statuses then
+			print('No status packet from the write')
+			return nil
+		end
+		local err_msg  = DP1.strerr(statuses.error)
+		if err_msg then
+			return err_msg
+		end
+	elseif type(id)=='table' then
+		-- Sync write
+		if sz==1 then
+			libDynamixel.sync_write_byte1(fd, id, addr, value)
+		elseif sz==2 then
+			libDynamixel.sync_write_word1(fd, id, addr, value)
+		elseif sz==4 then
+			error('NO SIR!')
+			libDynamixel.sync_write_dword(fd, id, addr, value)
+		end
+	end
+end
+
+-- Get a single element
+function libDynamixel.get_ram1(fd, id, addr, sz)
+	local inst = nil
+	local nids = 1
+	if type(id) == 'number' then
+		inst = DP1.read_data(id, addr, sz);
+		local clear = unix.read(fd); -- clear old status packets
+		local ret = unix.write(fd, inst)
+		local status = libDynamixel.get_status1(fd,nids);
+		if not status then
+			return nil
+		end
+		if sz==1 then
+			return status.parameter,DP1.strerr(status.error)
+		elseif sz==2 then
+			return DP1.byte_to_word(unpack(status.parameter,1,2)),DP1.strerr(status.error)
+		elseif sz==4 then
+			return DP1.byte_to_dword(unpack(status.parameter,1,4)),DP1.strerr(status.error)
+		end
+	elseif type(id)=='table' then -- does not exist!!!!!!
+		error('NO SIR DOES DEOS EXIST IN 1.0!')
+		inst = DP1.sync_read(string.char(unpack(id)), addr, sz)
+		nids = #id
+	else
+		return nil
+	end
+	local clear = unix.read(fd); -- clear old status packets
+	local ret = unix.write(fd, inst)
+	local statuses = libDynamixel.get_status1(fd,nids);
+	if not statuses then
+		return nil
+	end
+	-- Make a return table
+	local status_return = {}
+	local error_return = {}
+	for s,status in ipairs(statuses) do
+		table.insert(error_return, DP1.strerr(status.error) )
+		if sz==1 then
+			table.insert(status_return,status.parameter[1])
+		elseif sz==2 then
+			table.insert(status_return,
+			DP1.byte_to_word(unpack(status.parameter,1,2)) )
+		elseif sz==4 then
+			table.insert(status_return,
+			DP1.byte_to_dword(unpack(status.parameter,1,4)) )
+		end
+	end
+	return status_return, error_return
+end
+-- 1.0 stuff done!!
+------------------------------------------------
+------------------------------------------------
+
 function libDynamixel.set_ram(fd,id,addr,value,sz)
 	local inst = nil
 	if type(id) == 'number' then
 		if sz==1 then
-			inst = DynamixelPacket.write_byte(id, addr, value)
+			inst = DP2.write_byte(id, addr, value)
 		elseif sz==2 then
-			inst = DynamixelPacket.write_word(id, addr, value)
+			inst = DP2.write_word(id, addr, value)
 		elseif sz==4 then
-			inst = DynamixelPacket.write_dword(id, addr, value)
+			inst = DP2.write_dword(id, addr, value)
 		end
 		local clear = unix.read(fd); -- clear old status packets
 		local ret = unix.write(fd, inst)
 		local statuses = libDynamixel.get_status(fd,1);
-		print('got error',statuses[1].error)
-		return ret
+		local err_msg  = DP2.strerr(statuses[1].error)
+		if err_msg then
+			return err_msg
+		end
 	elseif type(id)=='table' then
 		-- Sync write
 		if sz==1 then
@@ -263,10 +362,26 @@ function libDynamixel.get_ram(fd, id, addr, sz)
 	local inst = nil
 	local nids = 1
 	if type(id) == 'number' then
-		inst = DynamixelPacket.read_data(id, addr, sz);
+		inst = DP2.read_data(id, addr, sz);
+		local clear = unix.read(fd); -- clear old status packets
+		local ret = unix.write(fd, inst)
+		local statuses = libDynamixel.get_status(fd,nids);
+		if not statuses then
+			return nil
+		end
+		local status = statuses[1]
+		if sz==1 then
+			return status.parameter,DP2.strerr(status.error)
+		elseif sz==2 then
+			return DP2.byte_to_word(unpack(status.parameter,1,2)),DP2.strerr(status.error)
+		elseif sz==4 then
+			return DP2.byte_to_dword(unpack(status.parameter,1,4)),DP2.strerr(status.error)
+		end
 	elseif type(id)=='table' then
-		inst = DynamixelPacket.sync_read(string.char(unpack(id)), addr, sz)
+		inst = DP2.sync_read(string.char(unpack(id)), addr, sz)
 		nids = #id
+	else
+		return nil
 	end
 	local clear = unix.read(fd); -- clear old status packets
 	local ret = unix.write(fd, inst)
@@ -274,23 +389,22 @@ function libDynamixel.get_ram(fd, id, addr, sz)
 	if not statuses then
 		return nil
 	end
-	
 	-- Make a return table
 	local status_return = {}
+	local error_return = {}
 	for s,status in ipairs(statuses) do
-		--print('unpacking',s,status)
-		--print('Got param:',unpack(status.parameter))
+		table.insert(error_return, DP2.strerr(status.error) )
 		if sz==1 then
 			table.insert(status_return,status.parameter[1])
 		elseif sz==2 then
 			table.insert(status_return,
-			DynamixelPacket.byte_to_word(unpack(status.parameter,1,2)) )
+			DP2.byte_to_word(unpack(status.parameter,1,2)) )
 		elseif sz==4 then
 			table.insert(status_return,
-			DynamixelPacket.byte_to_dword(unpack(status.parameter,1,4)) )
+			DP2.byte_to_dword(unpack(status.parameter,1,4)) )
 		end
 	end
-	return status_return
+	return status_return, error_return
 end
 
 function init_device_handle(obj)
@@ -312,11 +426,54 @@ function init_device_handle(obj)
 			return libDynamixel.get_ram(self.fd, id, addr, nx_ram_sz[key])
 		end
 	end
+	-- RX Series Calls
+	for key,addr in pairs(rx_ram_addr) do
+		obj['set_rx_'..key] = function(self,id,val)
+			return libDynamixel.set_ram1(self.fd, id, addr, val, rx_ram_sz[key])
+		end
+		obj['get_rx_'..key] = function(self,id)
+			return libDynamixel.get_ram1(self.fd, id, addr, rx_ram_sz[key])
+		end
+	end
 	return obj
 end
 
+
+function libDynamixel.parse_status_packet1(pkt)
+   local t = {};
+   t.id = pkt:byte(3);
+   t.length = pkt:byte(4);
+   t.error = pkt:byte(5);
+   t.parameter = {pkt:byte(6,t.length+3)};
+   t.checksum = pkt:byte(t.length+4);
+   return t;
+end
+
+function libDynamixel.get_status1( fd, npkt, timeout )
+	timeout = timeout or 0.010;
+	local t0 = unix.time();
+	local str = "";
+	while (unix.time()-t0 < timeout) do
+		local s = unix.read(fd);
+		if (type(s) == "string") then
+			str = str..s;
+			pkt = DP1.input(str);
+			if pkt then
+				local status = libDynamixel.parse_status_packet1(pkt);
+				--print(string.format("Status: id=%d error=%d",status.id,status.error));
+				return status
+			end
+		end
+		-- TODO: adjust the sleep time
+		unix.usleep(100);
+	end
+	return nil;
+end
+
+
+
 -- TODO: Is the status packet the same in Dynamixel 2.0?
-function libDynamixel.parse_status_packet(pkt)
+libDynamixel.parse_status_packet = function(pkt)
 	local t = {}
 	t.id = pkt:byte(5)
 	t.length = pkt:byte(6)+2^8*pkt:byte(7)
@@ -331,73 +488,64 @@ end
 libDynamixel.get_status = function( fd, npkt, timeout )
 	-- TODO: Is this the best default timeout for the new PRO series?
 	timeout = timeout or 0.1;
+
+timeout = .5
+
 	local t0 = unix.time();
 	local str = "";
 	local pkt_cnt = 0;
 	while unix.time()-t0 < timeout do
 		local s = unix.read(fd);
 		if type(s) == "string" then
-			-- Debugging write
-			--unix2.write(fd,s)
 			str = str..s;
-			local pkt, done = DynamixelPacket.input(str);
+			local pkt, done = DP2.input(str);
 			if done and #pkt>=npkt then
 				local statuses = {}
 				for pp=1,#pkt do
 					local status = libDynamixel.parse_status_packet(pkt[pp]);
 					table.insert(statuses,status)
---print(string.format("Status: id=%d error=%d", status.id, status.error))
 				end
 				return statuses;
 			end
+		else
 		end
+		-- TODO: tune the sleep amount
 		unix.usleep(100);
 	end
+	print('BAD STATUSES',#str,str)
 	return nil;
 end
 
--- New polling get status method
-	--[[
-	local dxl_recv_poll = {}
-	-- TODO: when to clear the str when given lots of malformed packets?
-	-- TODO: Solution - clear str everytime u send a packet...?
-	-- TODO: Start/Stop the poller? w/ timeouts?
-	-- Start/stop may be the easiest
-	dxl_recv_poll.str = ''
-	dxl_recv_poll.pkt_queue = ''
-	dxl_recv_poll.socket_handle = fd
-	dxl_recv_poll.callback = function(self)
-		str = str..unix.read(self.socket_handle)
-		-- Append to the packet
-		pkt = DynamixelPacket.input(str)
-		-- Check if the packet is done
-		if pkt then
-	-- Clear the str buffer for next time
-			self.str=''
-			-- If so, then process it somehow...
-			local status = libDynamixel.parse_status_packet(pkt);
-			-- Maybe put into a queue!
-			table.insert(self.pkt_queue,status)
-			-- Maybe do something else...
-			print(string.format("Status: id=%d error=%d",
-			status.id,status.error));
+
+
+libDynamixel.send_ping1 = function( self, id )
+	local inst = DP1.ping(id);
+	return unix.write(self.fd, inst);
+end
+
+libDynamixel.ping_probe1 = function(self, twait)
+	twait = twait or 0.010;
+	for id = 0,253 do
+		libDynamixel.send_ping1( self, id );
+		local status = libDynamixel.get_status1(self.fd,1,twait);
+		if status then
+			io.write('FOUND 1.0: ',status.id,'\n')
 		end
 	end
-	--]]
+end
 
 libDynamixel.send_ping = function( self, id )
-	local inst = DynamixelPacket.ping(id);
+	local inst = DP2.ping(id);
 	return unix.write(self.fd, inst);
 end
 
 libDynamixel.ping_probe = function(self, twait)
 	twait = twait or 0.010;
 	for id = 0,253 do
-		io.write( string.format("Ping: Dynamixel ID %d\n",id) )
-		self:send_ping( id );
+		libDynamixel.send_ping( self, id );
 		local statuses = libDynamixel.get_status(self.fd,1,twait);
 		if statuses and #statuses==1 then
-			io.write(statuses[1].id)
+			io.write('FOUND 2.0: ',statuses[1].id,'\n')
 		end
 	end
 end
@@ -405,7 +553,7 @@ end
 libDynamixel.sync_read = function(fd, ids, addr, len, twait)
 	twait = twait or 0.100;
 	len  = len or 2;
-	local inst = DynamixelPacket.sync_read( addr, len,
+	local inst = DP2.sync_read( addr, len,
 	string.char(unpack(ids)) );
 	unix.read(fd); -- clear old status packets
 	unix.write(fd, inst)
@@ -415,10 +563,58 @@ libDynamixel.sync_read = function(fd, ids, addr, len, twait)
 	end
 end
 
+
+
+
+
+function libDynamixel.sync_write_byte1(fd, ids, addr, data)
+   local nid = #ids
+   local len = 1
+	 local all_data = nil
+	 if type(data)=='number' then
+		 -- All get the same value
+		 all_data = data
+	 end
+
+   local t = {};
+   local n = 1;
+   for i = 1,nid do
+      t[n] = ids[i];
+      t[n+1] = all_data or data[i];
+      n = n + len + 1;
+   end
+   local inst = DP1.sync_write(addr, len, string.char(unpack(t)))
+   unix.write(fd, inst);
+end
+
+function libDynamixel.sync_write_word1(fd, ids, addr, data)
+   local nid = #ids
+   local len = 2
+	 local all_data = nil
+	 if type(data)=='number' then
+		 -- All get the same value
+		 all_data = data
+	 end
+
+   local t = {}
+   local n = 1
+   for i = 1,nid do
+      t[n] = ids[i]
+      t[n+1],t[n+2] = DP1.word_to_byte(all_data or data[i])
+      n = n + len + 1
+   end
+   local inst = DP1.sync_write(addr, len, string.char(unpack(t)))
+   unix.write(fd, inst);
+end
+
+
+
+
 -- TODO: Reorganize the sync_write commands
 libDynamixel.sync_write_byte = function(fd, ids, addr, data)
 	local nid = #ids;
 	local len = 1;
+	local all_data = nil
 	if type(data)=='number' then
 		-- All get the same value
 		all_data = data
@@ -430,31 +626,38 @@ libDynamixel.sync_write_byte = function(fd, ids, addr, data)
 		t[n+1] = all_data or data[i];
 		n = n + len + 1;
 	end
-	local inst = DynamixelPacket.sync_write(addr, len,
-	string.char(unpack(t)));
+	local inst = DP2.sync_write(addr, len, string.char(unpack(t)));
 	unix.write(fd, inst);
 end
+
 libDynamixel.sync_write_word = function(fd, ids, addr, data)
 	local nid = #ids;
 	local len = 2;
+	local all_data = nil
 	if type(data)=='number' then
+		--print('data type is number!')
 		-- All get the same value
 		all_data = data
 	end
+
 	local t = {};
 	local n = 1;
 	for i = 1,nid do
 		t[n] = ids[i];
-		t[n+1],t[n+2] = DynamixelPacket.word_to_byte(all_data or data[i])
+		local val = all_data or data[i]
+		t[n+1],t[n+2] = DP2.word_to_byte(val)
+		--print("Sync word",t[n],val,t[n+1],t[n+2])
 		n = n + len + 1;
 	end
-	local inst = DynamixelPacket.sync_write(addr, len,
+	local inst = DP2.sync_write(addr, len,
 	string.char(unpack(t)));
 	unix.write(fd, inst);
 end
+
 libDynamixel.sync_write_dword = function(fd, ids, addr, data)
 	local nid = #ids;
 	local len = 4;
+	local all_data = nil
 	if type(data)=='number' then
 		-- All get the same value
 		all_data = data
@@ -463,11 +666,12 @@ libDynamixel.sync_write_dword = function(fd, ids, addr, data)
 	local n = 1;
 	for i = 1,nid do
 		t[n] = ids[i];
+		local val = all_data or data[i]
 		t[n+1],t[n+2],t[n+3],t[n+4] = 
-			DynamixelPacket.dword_to_byte(all_data or data[i])
+			DP2.dword_to_byte(val)
 		n = n + len + 1;
 	end
-	local inst = DynamixelPacket.sync_write(addr, len,
+	local inst = DP2.sync_write(addr, len,
 	string.char(unpack(t)));
 	unix.write(fd, inst);
 end
@@ -528,6 +732,8 @@ function libDynamixel.new_bus( ttyname, ttybaud )
 	end
 	obj.ping = libDynamixel.send_ping
 	obj.ping_probe = libDynamixel.ping_probe
+	obj.ping1 = libDynamixel.send_ping1
+	obj.ping_probe1 = libDynamixel.ping_probe1
 	return obj;
 end
 

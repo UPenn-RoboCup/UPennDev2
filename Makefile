@@ -1,28 +1,29 @@
 # Master Makefile to compile all Lua/C++ libraries
-
 CWD= $(shell pwd)
 PWD= $(subst /,\/,$(CWD)/Player/Lib)
 include $(CWD)/Makefile.inc
 
 all none:
 	@echo " Please select following target: "
-	@echo " make setup_op"
-	@echo " make setup_nao"
-	@echo " make setup_naov4"
-	@echo " make setup_xos"
-	@echo " make setup_webots_op"
-	@echo " make setup_webots_nao"
+	@echo " make op"
+	@echo " make nao3"
+	@echo " make nao"
+	@echo " make xos"
+	@echo " make charli"
+	@echo " make webots_op"
+	@echo " make webots_nao"
+	@echo " make webots_charli"
+	
+# TODO: If contains "webots" then also build webots
+%:
+	$(V)printf "  %b %s\n" $(INFOCOLOR)Making$(ENDCOLOR) $@;
+	$(V)cd Platforms/Transform && make && cd $(CWD)
+	$(V)cd Platforms/$@ && make && cd $(CWD)
 
-nao:
-	@echo "Compiling Nao Lua/C++ Libraries...\n"
-	@cd $(NAODIR) && make && cd $(CWD)
-	@echo "\n"
-
-naov4:
-	@echo $(CTCDIR)
-	@echo "Compiling Nao V4 Lua/C++ Libraries...\n"
-	@cd $(NAOV4DIR) && make && cd $(CWD)
-	@echo "\n"
+webots_%:
+	$(V)printf "  %b %s %s\n" $(INFOCOLOR)Making$(ENDCOLOR) Webots $@;
+	$(V)cd Frameworks/Webots && make && cd $(CWD)
+	$(V)cd Platforms/$@ && make && cd $(CWD)
 
 naoqi:
 	@echo "Compiling Custom Naoqi Modules...\n"
@@ -30,112 +31,6 @@ naoqi:
 	sed -i -e 's/HOME/$(PWD)/g' $(NAOQIDIR)/src/dcmprocess.cpp
 	cd $(NAOQIDIR) && make && cd $(CWD)
 	sed -i -e 's/$(PWD)/HOME/g' $(NAOQIDIR)/src/dcmprocess.cpp
-	@echo "\n"
-
-xos:
-	@echo "Compiling XOS Lua/C++ Libraries...\n"
-	@cd $(XOSDIR) && make && cd $(CWD)
-	@echo "Done compiling XOS Specific set!"
-	@echo "\n"
-
-op:
-	@echo "Compiling Darwin OP Lua/C++ Libraries...\n"
-	@cd $(OPDIR) && make && cd $(CWD)
-	@echo "\n"
-
-charli:
-	@echo "Compiling Charli Lua/C++ Libraries...\n"
-	@cd $(CHARLIDIR) && make && cd $(CWD)
-	@echo "\n"
-
-webots_nao:
-	@echo "Compiling Webots Lua/C++ Libraries...\n"
-	@cd $(WEBOTSNAODIR) && make && cd $(CWD)
-	@echo "\n"
-
-webots_op:
-	@echo "Compiling Webots OP Lua/C++ Libraries...\n"
-	@cd $(WEBOTSOPDIR) && make && cd $(CWD)
-	@echo "\n"
-
-webots_charli:
-	@echo "Compiling Webots CHARLI Lua/C++ Libraries...\n"
-	@cd $(WEBOTSCHARLIDIR) && make && cd $(CWD)
-	@echo "\n"
-
-webots_saffir:
-	@echo "Compiling Webots SAFFIR Lua/C++ Libraries...\n"
-	@cd $(WEBOTSSAFFIRDIR) && make && cd $(CWD)
-	@echo "\n"
-
-webots_thorop:
-	@echo "Compiling Webots THOR-OP Lua/C++ Libraries...\n"
-	@cd $(WEBOTSTHOROPDIR) && make && cd $(CWD)
-	@echo "\n"
-
-webots_atlas:
-	@echo "Compiling Webots Atlas Lua/C++ Libraries...\n"
-	@cd $(WEBOTSATLASDIR) && make && cd $(CWD)
-	@echo "\n"
-
-visiontest:
-	@echo "Compiling Vision Test Lua/C++ Libraries...\n"
-	@cd $(VISIONTESTDIR) && make && cd $(CWD)
-	@echo "\n"
-
-webot:
-	@echo "Compiling Webots Lua/C++ Libraries...\n"
-	@cd $(WEBOTSDIR) && make && cd $(CWD)
-	@echo "\n"
-
-image:
-	@echo "Compiling Image Processing Lua/C++ Libraries...\n"
-	@cd $(IMAGEDIR) && make && cd $(CWD)
-	@echo "\n"
-
-comm:
-	@echo "Compiling Communication Lua/C++ Libraries...\n"
-	@cd $(COMMDIR) && make && cd $(CWD)
-	@echo "\n"
-
-hokuyo:
-	@echo "Compiling Hokuyo Lua/C++ Libraries...\n"
-	@cd $(HOKUYODIR) && make && cd $(CWD)
-	@echo "\n"
-
-serial:
-	@echo "Compiling Serial Lua/C++ Libraries...\n"
-	@cd $(SERIALDIR) && make && cd $(CWD)
-	@echo "\n"
-
-SlamT:
-	@echo "Compiling Slam Torch/Lua/C++ Libraries...\n"
-	cd Modules/$@ && make && cd $(CWD)
-	@echo "\n"
-
-occmap:
-	@echo "Compiling OccupancyMap Lua/C++ Libraries...\n"
-	@cd $(OCCMAPDIR) && make && cd $(CWD)
-	@echo "\n"
-
-util:
-	@echo "Compiling Utility Lua/C++ Libraries...\n"
-	@cd $(UTILDIR) && make && cd $(CWD)
-	@echo "\n"
-
-velocity:
-	@echo "Compiling Velocity Code...\n"
-	@cd $(VELODIR) && make && cd $(CWD)
-	@echo "\n"
-
-primesense:
-	@echo "Compiling PrimeSense Code...\n"
-	@cd $(PRIMEDIR) && make && cd $(CWD)
-	@echo "\n"
-
-hands:
-	@echo "Compiling Hands Code...\n"
-	@cd $(HANDSDIR) && make && cd $(CWD)
 	@echo "\n"
 	
 setup_nao: nao util image comm
@@ -277,13 +172,6 @@ setup_naoqi: naoqi util
 	find $(NAOQIDIR) $(REGEX) -exec cp -v {} $(INSTDIR) \;
 	sed -i -e 's/HOME/$(PWD)/g' $(INSTDIR)/nao_init.lua
 	@echo "\n"
-
-setup_boxer: setup_op setup_hands setup_primesense
-
-setup_webots_boxer: setup_webots_op setup_hands setup_primesense
-	
-setup_saffir_board: serial util hokuyo
-	@echo "Setting up SAFFiR Board...\n"
 	
 clean:
 	cd $(IMAGEDIR) && make clean && cd $(CWD)

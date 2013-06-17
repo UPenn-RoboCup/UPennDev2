@@ -1,3 +1,4 @@
+package.path = '../../Run/Util/?.lua;'..package.path
 K = require 'OPKinematics'
 T = require 'Transform'
 local vector = require 'vector'

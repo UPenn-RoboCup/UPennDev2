@@ -21,7 +21,6 @@ function h=show_new_monitor()
 
   h.logging=0;
   h.lutname=0;
-  h.is_webots=0;
 
   h.fieldtype=1; %0,1,2 for SPL/Kid/Teen
   h.count = 0; %To kill non-responding players from view

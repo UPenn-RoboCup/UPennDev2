@@ -1,4 +1,4 @@
-key0 = dofile("km_WebotsNao_StandupFromFront.lua");
+key0 = dofile("km_WebotsNao_StandupFromBack.lua");
 RAD = math.pi/180;
 
 print("local mot = {};");

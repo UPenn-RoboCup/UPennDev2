@@ -4,12 +4,13 @@
 
 #include <unistd.h>
 #include <stdlib.h>
-#include <string.h>
 #include <fcntl.h>
 #include <dirent.h>
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <string.h>
+#include <math.h>
 
 #include "lua.h"
 #include "lualib.h"
@@ -182,13 +183,58 @@ static int lua_writefd(lua_State *L) {
 
   int i;
   for (i = 2; i <= lua_gettop(L); i++) {
-    size_t len;
     buf = lua_tolstring(L, i, &len);
     ret += write(fd, buf, len);
   }
 
   lua_pushinteger(L, ret);
   return 1;
+}
+
+static int lua_select(lua_State *L) {
+  int i;
+  int status;
+  int fd = 0, nfds = 0, maxfd = 0;
+
+  fd_set fds;
+  FD_ZERO(&fds);
+
+  luaL_checktype(L, 1, LUA_TTABLE);
+#if LUA_VERSION_NUM == 502
+	nfds = lua_rawlen(L, 1);
+#else
+  nfds = lua_objlen(L, 1);
+#endif
+
+  for (i = 1; i <= nfds; i++) {
+    lua_rawgeti(L, 1, i);
+    fd = luaL_checkinteger(L, -1);
+    lua_pop(L, 1);
+    maxfd = fd > maxfd ? fd : maxfd;
+    FD_SET(fd, &fds);
+  }
+
+  if (lua_isnumber(L, 2)) {
+    double timeout = lua_tonumber(L, 2);
+    struct timeval tv = {
+      floor(timeout),
+      (timeout - floor(timeout))*1E6
+    };
+    status = select(maxfd + 1, &fds, 0, 0, &tv);
+  }
+  else {
+    status = select(maxfd + 1, &fds, 0, 0, NULL);
+  }
+  lua_pushinteger(L, status);
+
+  lua_createtable(L, 0, nfds);
+  for (i = 1; i <= nfds; i++) {
+    lua_rawgeti(L, 1, i);
+    fd = luaL_checkinteger(L, -1);
+    lua_pushboolean(L, FD_ISSET(fd, &fds));
+    lua_settable(L, -3);
+  }
+  return 2;
 }
 
 static int lua_mkfifo(lua_State *L) {
@@ -236,7 +282,7 @@ static int lua_fork(lua_State *L) {
 }
 
 
-static const luaL_Reg unix_lib [] = {
+static const struct luaL_Reg unix_lib [] = {
   {"usleep", lua_usleep},
   {"sleep", lua_sleep},
   {"gethostname", lua_gethostname},
@@ -249,6 +295,7 @@ static const luaL_Reg unix_lib [] = {
   {"fdopen", lua_fdopen},
   {"read", lua_readfd},
   {"write", lua_writefd},
+  {"select", lua_select},
   {"chmod", lua_chmod},
   {"fcntl", lua_fcntl},
   {"unlink", lua_unlink},
@@ -274,8 +321,9 @@ static const const_info unix_constants[] = {
 };
 
 int luaopen_unix (lua_State *L) {
+
 #if LUA_VERSION_NUM == 502
-  luaL_newlib(L, unix_lib);
+	  luaL_newlib(L, unix_lib);
 #else
   luaL_register(L, "unix", unix_lib);
 #endif

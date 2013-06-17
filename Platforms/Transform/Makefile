@@ -1,2 +1,3 @@
 include ../../Makefile.inc
-all: Transform.o
+transform: Transform.o
+clean:

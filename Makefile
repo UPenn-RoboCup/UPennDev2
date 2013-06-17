@@ -17,12 +17,15 @@ all none:
 # TODO: If contains "webots" then also build webots
 %:
 	$(V)printf "  %b %s\n" $(INFOCOLOR)Making$(ENDCOLOR) $@;
-	$(V)cd Platforms/Transform && make && cd $(CWD)
+	$(V)cd Platforms/Transform && make transform && cd $(CWD)
 	$(V)cd Platforms/$@ && make && cd $(CWD)
+	$(V)printf "  %b to %s\n" $(INFOCOLOR)Installing$(ENDCOLOR) $(PWD);
+	
 
 webots_%:
 	$(V)printf "  %b %s %s\n" $(INFOCOLOR)Making$(ENDCOLOR) Webots $@;
 	$(V)cd Frameworks/Webots && make && cd $(CWD)
+	$(V)cd Platforms/Transform && make transform && cd $(CWD)
 	$(V)cd Platforms/$@ && make && cd $(CWD)
 
 naoqi:

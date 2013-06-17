@@ -28,6 +28,9 @@ test_teamplay = Config.team.test_teamplay or 0;
 
 avoid_ultrasound = Config.team.avoid_ultrasound or 0;
 
+last_ph = 0;
+
+
 function entry()
   print(_NAME.." entry");
   t0 = Body.get_time();
@@ -37,6 +40,8 @@ function entry()
   ballR = math.sqrt(ball.x^2 + ball.y^2);
   maxStep=maxStep1;
   behavior.update();
+
+  step_count = 0;
 end
 
 
@@ -185,6 +190,15 @@ function update()
   end
 
 
+  if walk.ph<last_ph then 
+    print(string.format("BodyPosition step %d", step_count));
+    print(string.format("Ball: (%.3f, %.3f) %.2fs ago",	
+	ball.x,ball.y, t-ball.t));
+    print(string.format("Walk velocity:%.2f %.2f %.2f\n",vx,vy,va));
+    step_count = step_count + 1;
+   end
+  last_ph = walk.ph;
+ 
 
   walk.set_velocity(vx,vy,va);
 
@@ -197,12 +211,6 @@ function update()
 
   tBall=0.5;
 
-  if Config.fsm.playMode~=3 then
-    if ballR<rClose then
-      print("bodyPosition ballClose")
-      return "ballClose";
-    end
-  end
 
 --  if walk.ph>0.95 then
 --    print(string.format("position error: %.3f %.3f %d\n",
@@ -220,6 +228,19 @@ function update()
   uPose=vector.new({pose.x,pose.y,pose.a})
   homeRelative = util.pose_relative(homePose, uPose);  
   angleToTurn = math.max(0, homeRelative[3] - daPost1);
+
+
+  if Config.fsm.playMode~=3 then
+    if math.abs(homeRelative[1])<thClose[1] and
+       math.abs(homeRelative[2])<thClose[2] and
+       ballR<rClose and
+       t-ball.t<tBall then
+      print("bodyPosition ballClose")
+      return "ballClose";
+    end
+  end
+
+
 
   if math.abs(homeRelative[1])<thClose[1] and
     math.abs(homeRelative[2])<thClose[2] and

@@ -314,11 +314,12 @@ function update()
 
   else
     --Otherwise, don't make robot backstep
---    vStep[1]=math.max(0,vStep[1]);
+    vStep[1]=math.max(-0.01,vStep[1]);
   end
 
   if walk.ph<last_ph then 
-    print(string.format("Approach step %d",approach_count));
+    print(string.format("Approach step %d, ball seen %.2fs ago"
+	,approach_count, t-ball.t));
     print(string.format("BallX: %.3f  Target: (%.3f  <%.3f> %.3f)",
 	ball.x,xTarget[1],xTarget[2],xTarget[3] ));
     print(string.format("BallY: %.3f  Target: (%.3f  <%.3f> %.3f)",

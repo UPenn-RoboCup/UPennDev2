@@ -102,7 +102,13 @@ end
 
 function getDirectAttackerHomePose()
   posCalc();
-  local homepose={ballGlobal[1],ballGlobal[2], aBall};
+
+
+  local homepose={
+        ballGlobal[1]-math.cos(aBall)*rDist2,
+        ballGlobal[2]-math.sin(aBall)*rDist2,
+        aBall};
+
   return homepose;
 end
 

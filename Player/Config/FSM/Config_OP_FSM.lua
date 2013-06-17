@@ -96,7 +96,7 @@ fsm.bodyPosition={};
 --Trajectory parameters
 fsm.bodyPosition.rTurn = 0.25; 
 fsm.bodyPosition.rDist1 = 0.40; 
-fsm.bodyPosition.rDist2 = 0.20; 
+fsm.bodyPosition.rDist2 = 0.25; 
 fsm.bodyPosition.rTurn2 = 0.08; 
 fsm.bodyPosition.rOrbit = 0.60; 
 

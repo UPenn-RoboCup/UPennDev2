@@ -591,12 +591,12 @@ global MONITOR %for sending the webots check information
 
     %Webots vision check 
     %for webots with non-subsampling vision code, use full width/height 
-    scale= length(rawData)*2/width/height;
-    if scale==1
-      width = h.vcmImage.get_width();
-      height = h.vcmImage.get_height();
-      MONITOR.is_webots=1;
-    end
+%    scale= length(rawData)*2/width/height;
+%    if scale==1
+%      width = h.vcmImage.get_width();
+%      height = h.vcmImage.get_height();
+%      MONITOR.is_webots=1;
+%    end
     labelA = raw2label(rawData, width, height)';
   end
 
@@ -604,8 +604,6 @@ global MONITOR %for sending the webots check information
     rawData=label2raw(label');
     h.vcmImage.set_labelA(rawData);
   end
-
-
 
   function labelB = get_labelB()
     % returns the bit-ored labeled image
@@ -615,12 +613,12 @@ global MONITOR %for sending the webots check information
 
     %Webots vision check 
     %for webots with non-subsampling vision code, use 2x width/height 
-    scale= length(rawData)*2/width/height;
-    if scale==1 % TODO: check with webots
-      width = h.vcmImage.get_width()/h.vcmImage.get_scaleB();
-      height = h.vcmImage.get_height()/h.vcmImage.get_scaleB();
-      MONITOR.is_webots=1;
-    end
+%    scale= length(rawData)*2/width/height;
+%    if scale==1 % TODO: check with webots
+%      width = h.vcmImage.get_width()/h.vcmImage.get_scaleB();
+%      height = h.vcmImage.get_height()/h.vcmImage.get_scaleB();
+%      MONITOR.is_webots=1;
+%    end
     labelB = raw2label(rawData, width, height)';
   end
 

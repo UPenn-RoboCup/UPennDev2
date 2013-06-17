@@ -15,34 +15,12 @@ BINCOLOR="\033[37;1m"
 JULCOLOR="\033[34;1m"
 ENDCOLOR="\033[0m"
 
-QUIET_CC = @printf '    %b %b\n' $(CCCOLOR)CC$(ENDCOLOR) $(SRCCOLOR)$(GOAL)$(ENDCOLOR);
-QUIET_LINK = @printf '    %b %b\n' $(LINKCOLOR)LINK$(ENDCOLOR) $(BINCOLOR)$(GOAL)$(ENDCOLOR);
-QUIET_PERL = @printf '    %b %b\n' $(PERLCOLOR)PERL$(ENDCOLOR) $(BINCOLOR)$(GOAL)$(ENDCOLOR);
-QUIET_FLISP = @printf '    %b %b\n' $(FLISPCOLOR)FLISP$(ENDCOLOR) $(BINCOLOR)$(GOAL)$(ENDCOLOR);
-QUIET_JULIA = @printf '    %b %b\n' $(JULIACOLOR)JULIA$(ENDCOLOR) $(BINCOLOR)$(GOAL)$(ENDCOLOR);
-
 ## Path Definition
-FRAMEWORKSDIR = Frameworks
-NAOQIDIR= $(NAOV4DIR)/NaoQi
-WEBOTSDIR = $(FRAMEWORKSDIR)/Webots
-IMAGEDIR= $(FRAMEWORKSDIR)/ImageProc
-COMMDIR= $(FRAMEWORKSDIR)/Comm
-OCCMAPDIR = $(FRAMEWORKSDIR)/OccMap
-UTILDIR= $(FRAMEWORKSDIR)/Util
-MATLABDIR= Tools/Matlab
-COLORTABLEDIR= $(MATLABDIR)/Colortable
-VELODIR= $(FRAMEWORKSDIR)/Velocity
-PRIMEDIR= $(FRAMEWORKSDIR)/PrimeSense
-HANDSDIR= $(FRAMEWORKSDIR)/Hands
-PLATFORMS = nao naov4 op xos webots_nao webots_op visiontest
 INSTDIR= Run/Lib
 WEBOTSCONTDIR= WebotsController
 PLAYERDIR= Run
 NAODEPDIR= Install/dependencies
 NAODEPLUA51DIR= $(NAODEPDIR)/usr/local/lib/lua/5.1
-HOKUYODIR= $(FRAMEWORKSDIR)/Hokuyo
-TORCHDIR= ../Tools/torch
-SERIALDIR=$(FRAMEWORKSDIR)/Serial
 
 # Independent useful options
 ifndef OSTYPE
@@ -117,7 +95,7 @@ REGEX=-regex '.*\($(SHLIBEXT)\|$(LUAEXT)\|sh\)'
 endif
 
 # Verbose mode
-VERBOSE?=yes
+VERBOSE?=no
 V=@
 ifeq ($(VERBOSE),yes)
 V=
@@ -139,4 +117,5 @@ $(LIBNAME): lua_$(LIBNAME).o $(EXTRA_OBJ)
 	$(V)$(LD) $(LDFLAGS) -o $@.$(SHLIBEXT) $^ $(EXTRA_LINK) $(LIB_DIR) $(LIBOPTS)
 
 clean:
-	@rm -f *.so *.o
+	$(V)printf '\t%b %b\n' $(PERLCOLOR)Cleaning$(ENDCOLOR) $(shell pwd);
+	$(V)rm -f *.so *.o

@@ -42,7 +42,7 @@ vision.enable_freespace_detection = 0;
 --use this to print time cosumed by vision functions
 vision.print_time = 0; 
 
-vision.enable_team_broadcast = 1;
+vision.enable_team_broadcast = 0;
 --use this to turn on team broadcast (wireless monitor)
 --If 0, wired monitor will be used.
 ----------------------------
@@ -76,7 +76,7 @@ vision.goal.th_min_color_count=100;
 vision.goal.th_nPostB = 5;
 vision.goal.th_min_area = 40;
 vision.goal.th_min_orientation = 60*math.pi/180;
-vision.goal.th_min_fill_extent=0.75;
+vision.goal.th_min_fill_extent=0.65;
 vision.goal.th_aspect_ratio={2.5, 15};
 vision.goal.th_edge_margin= 5;
 vision.goal.th_bottom_boundingbox=0.9;

@@ -236,18 +236,6 @@ function landmark_observation(pos, v, rLandmarkFilter, aLandmarkFilter,dont_upda
     dxp[ip] = dx[imin];
     dyp[ip] = dy[imin];
     dap[ip] = da[imin];
-  
-    --If the ditstance is too close, do not update angle for the particle
-    if dr[imin]< angle_update_threshold then
-      dap[ip] = 0;
-    end
-
-    --If the distance is too large, do not update position for the particles
-    if dr[imin]> position_update_threshold then
-      dxp[ip] = 0;
-      dyp[ip] = 0;
-    end
-
 
   end
   --Filter toward best matching landmark position:

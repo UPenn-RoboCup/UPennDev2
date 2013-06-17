@@ -3,20 +3,25 @@
 TOP := $(dir $(lastword $(MAKEFILE_LIST)))
 TARGETS = all clean
 .PHONY: $(TARGETS)
+	
+# From Julia Make.inc
+CCCOLOR="\033[34m"
+LINKCOLOR="\033[34;1m"
+PERLCOLOR="\033[35m"
+INFOCOLOR="\033[32m"
+JULIACOLOR="\033[32;1m"
+SRCCOLOR="\033[33m"
+BINCOLOR="\033[37;1m"
+JULCOLOR="\033[34;1m"
+ENDCOLOR="\033[0m"
+
+QUIET_CC = @printf '    %b %b\n' $(CCCOLOR)CC$(ENDCOLOR) $(SRCCOLOR)$(GOAL)$(ENDCOLOR);
+QUIET_LINK = @printf '    %b %b\n' $(LINKCOLOR)LINK$(ENDCOLOR) $(BINCOLOR)$(GOAL)$(ENDCOLOR);
+QUIET_PERL = @printf '    %b %b\n' $(PERLCOLOR)PERL$(ENDCOLOR) $(BINCOLOR)$(GOAL)$(ENDCOLOR);
+QUIET_FLISP = @printf '    %b %b\n' $(FLISPCOLOR)FLISP$(ENDCOLOR) $(BINCOLOR)$(GOAL)$(ENDCOLOR);
+QUIET_JULIA = @printf '    %b %b\n' $(JULIACOLOR)JULIA$(ENDCOLOR) $(BINCOLOR)$(GOAL)$(ENDCOLOR);
 
 ## Path Definition
-
-NAODIR= Platforms/Nao
-NAOV4DIR = Platforms/NaoV4
-WEBOTSNAODIR= Platforms/WebotsNao
-WEBOTSOPDIR= Platforms/WebotsOP
-WEBOTSCHARLIDIR= Platforms/WebotsCharli
-WEBOTSGENERICDIR= Platforms/WebotsGeneric
-WEBOTSSAFFIRDIR= Platforms/WebotsSaffir
-VISIONTESTDIR = Platforms/VisionTest
-OPDIR= Platforms/OP
-XOSDIR= Platforms/XOS
-CHARLIDIR = Platforms/Charli
 FRAMEWORKSDIR = Frameworks
 NAOQIDIR= $(NAOV4DIR)/NaoQi
 WEBOTSDIR = $(FRAMEWORKSDIR)/Webots
@@ -35,9 +40,6 @@ WEBOTSCONTDIR= WebotsController
 PLAYERDIR= Run
 NAODEPDIR= Install/dependencies
 NAODEPLUA51DIR= $(NAODEPDIR)/usr/local/lib/lua/5.1
-
-WEBOTSTHOROPDIR= Platforms/WebotsTHOROP
-WEBOTSATLASDIR= Platforms/WebotsAtlas
 HOKUYODIR= $(FRAMEWORKSDIR)/Hokuyo
 TORCHDIR= ../Tools/torch
 SERIALDIR=$(FRAMEWORKSDIR)/Serial
@@ -115,23 +117,26 @@ REGEX=-regex '.*\($(SHLIBEXT)\|$(LUAEXT)\|sh\)'
 endif
 
 # Verbose mode
-VERBOSE?=no
+VERBOSE?=yes
 V=@
 ifeq ($(VERBOSE),yes)
 V=
 endif
 
 # Default compiling
+QUIET_CC = @printf '    %b %b\n' $(CCCOLOR)CC$(ENDCOLOR) $(SRCCOLOR)$(GOAL)$(ENDCOLOR);
 %.o: %.cpp
-	$(V)echo "\t" CXX $@
+	$(V)printf '\t%b %b\n' $(CCCOLOR)CXX$(ENDCOLOR) $(SRCCOLOR)$@$(ENDCOLOR);
 	$(V)$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
 %.o: %.cc
-	$(V)echo "\t" CXX $@
+	$(V)printf '\t%b %b\n' $(CCCOLOR)CXX$(ENDCOLOR) $(SRCCOLOR)$@$(ENDCOLOR);
 	$(V)$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
 %.o: %.c
-	$(V)echo "\t" CC $@
+	$(V)printf '\t%b %b\n' $(CCCOLOR)CC$(ENDCOLOR) $(SRCCOLOR)$@$(ENDCOLOR);
 	$(V)$(CC) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
 $(LIBNAME): lua_$(LIBNAME).o $(EXTRA_OBJ)
-	@echo "\t" LINK $@
-	$(V)$(LD) $(LDFLAGS) -o $@.$(SHLIBEXT) $^ $(LIB_DIR) $(LIBOPTS)
-	@rm $^
+	$(V)printf '\t%b %b\n' $(LINKCOLOR)LINK$(ENDCOLOR) $(BINCOLOR)$@$(ENDCOLOR);
+	$(V)$(LD) $(LDFLAGS) -o $@.$(SHLIBEXT) $^ $(EXTRA_LINK) $(LIB_DIR) $(LIBOPTS)
+
+clean:
+	@rm -f *.so *.o

@@ -1,18 +1,9 @@
 /*
   Lua module to parse game control packets
 */
-
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-  #include "lua.h"
-  #include "lualib.h"
-  #include "lauxlib.h"
-#ifdef __cplusplus
-}
-#endif
-
+#include "lua.h"
+#include "lualib.h"
+#include "lauxlib.h"
 #include "string.h"
 #include "RoboCupGameControlData.h"
 
@@ -123,16 +114,17 @@ static int lua_gamecontrolpacket_parse(lua_State *L) {
   return 1;
 }
 
-static const struct luaL_reg gamecontrolpacket_functions[] = {
+static const struct luaL_Reg gamecontrolpacket_functions[] = {
   {"parse", lua_gamecontrolpacket_parse},
 
   {NULL, NULL}
 };
 
-#ifdef __cplusplus
-extern "C"
-#endif
 int luaopen_GameControlPacket (lua_State *L) {
+#if LUA_VERSION_NUM == 502
+	luaL_newlib( L, gamecontrolpacket_functions );
+#else
   luaL_register(L, "GameControlPacket", gamecontrolpacket_functions);
+#endif
   return 1;
 }

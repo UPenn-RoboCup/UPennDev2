@@ -1,18 +1,35 @@
-CWD= $(shell pwd)
+# Makefile used to build Webots files
 
-all: controller comm game_control
+TARGETS = all clean
+.PHONY: $(TARGETS)
 
-controller::
-	cd Controller && MODE=$(MODE) make && cd $(CWD)
+include ../../../Makefile.inc
 
-comm::
-	cd Comm && MODE=$(MODE) make && cd $(CWD)
+ifeq ($(OSTYPE),darwin)
+WEBOTS_HOME = /Applications/Webots
+else
+WEBOTS_HOME = /usr/local/webots
+endif
+WEBOTS_INCLUDE_DIR = $(WEBOTS_HOME)/include
+WEBOTS_LIB_DIR = $(WEBOTS_HOME)/lib
 
-game_control::
-	cd GameControl && MODE=$(MODE) make && cd $(CWD)
+INCLUDES+=-I$(WEBOTS_INCLUDE_DIR)/controller/c
 
-clean::
-	cd Controller && make clean && cd $(CWD)
-	cd GameControl && make clean && cd $(CWD)
+all: wbcontroller
 
+controller_wrap.c: controller.i
+	swig -lua -I$(WEBOTS_HOME)/include/controller/c controller.i
 
+controller: controller_wrap.o
+	$(LD) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ -L$(WEBOTS_LIB_DIR) -lController 
+
+wbcontroller: wbcontroller.o config.o
+	$(CXX) -o wbcontroller $^ -I$(WEBOTS_HOME)/include/controller/c -L$(WEBOTS_LIB_DIR) -lController -lzmq -lmsgpack $(LUA_INC) $(LUA_LIB)
+	
+openrave:
+	swig -lua -I/usr/local/include/openrave-0.9 $(INCLUDES) openrave.i
+	c++ $(CXXFLAGS) $(LUAINCLUDE) $(INCLUDES) -I/usr/local/include/openrave-0.9 -o openrave_wrap.o -c openrave_wrap.c
+	$(LD) -o $@.$(SHLIBEXT) $(LIBOPTS) openrave_wrap.o -lopenrave0.9-core -lopenrave0.9
+
+clean:
+	rm -f controller.$(SHLIBEXT) *.o *.so controller_wrap.c wbcontroller

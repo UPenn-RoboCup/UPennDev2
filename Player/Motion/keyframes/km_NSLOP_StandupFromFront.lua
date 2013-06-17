@@ -35,7 +35,8 @@ angles=vector.new({
 1,-1,-97,130,-66,1,
 58,-10,-14
 })*math.pi/180,
-duration = 0.4;
+--duration = 0.4;
+duration = 0.6; --slowed down 0.2sec
 },
 
 --This is the final pose of bodySit

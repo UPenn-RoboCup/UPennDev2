@@ -20,7 +20,6 @@ function h=show_monitor()
 
   h.logging=0;
   h.lutname=0;
-  h.is_webots=0;
 
   % subfunctions
   function init(draw_team,target_fps)
@@ -130,11 +129,11 @@ function h=show_monitor()
       end
 
       %webots use non-subsampled label (2x size of yuyv)
-      if MONITOR.is_webots
-        plot_overlay(r_mon,2*MONITOR.enable1);
-      else
+%      if MONITOR.is_webots
+%        plot_overlay(r_mon,2*MONITOR.enable1);
+%      else
         plot_overlay(r_mon,1*MONITOR.enable1);
-      end
+%      end
     end
 
     if MONITOR.enable2==1

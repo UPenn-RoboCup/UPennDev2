@@ -1,41 +1,9 @@
-include ../../../Makefile.inc
-
-all: launcher
-
-CWD= $(shell pwd)
-ifeq ($(CTCDIR),)
-  ifeq ($(CROSS),true)
-    CTCDIR= $(NaoqiCTC)
-  endif
-endif
-CHAIN= $(CTCDIR)
-
-CXXFLAGS=-O1 -fpic
-
-%.o: %.cc
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
-%.o: %.cpp
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
-%.o: %.c
-	$(CC) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
-
-launcher: lualauncher.o
-	$(CXX) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ $(LIBRT)
-
-
-cross:
-ifeq ($(CHAIN),)
-	@echo Cross compilitation tool not specified. \
-				Please download the ctc tool from \
-				the aldebaran website and follow the \
-				instructions to configure it for your system.
+ifeq ($(shell uname),Darwin)
+all:
+	@echo "No Mac USB API"
 else
-	rm -rf build
-	mkdir build
-	cd build && cmake -DCMAKE_TOOLCHAIN_FILE="$(CHAIN)/toolchain-atom.cmake" .. \
-		&& make && cd $(CWD)
+LIBNAME=launcher
+include ../../Makefile.inc
+LIBOPTS+=`pkg-config libusb-1.0 --libs`
+INCLUDES+=`pkg-config libusb-1.0 --cflags`
 endif
-
-clean:
-	rm -rf build 
-	rm -f *.o *.$(SHLIBEXT) *.$(MEXEXT)

@@ -4,17 +4,7 @@
  * compatible with Dream Cheeky - Thunder model
  */
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-  #include "lua.h"
-  #include "lualib.h"
-  #include "lauxlib.h"
-#ifdef __cplusplus
-}
-#endif
-
+#include <lua.hpp>
 #include <usb.h>
 #include <stdio.h>
 #include <errno.h>
@@ -183,7 +173,7 @@ static int lua_launcherstop(lua_State *L) {
   return 1;
 }
 
-static const struct luaL_reg launcher_lib [] = {
+static const struct luaL_Reg launcher_lib [] = {
   {"down", lua_launcherdown},
   {"up", lua_launcherup},
   {"left", lua_launcherleft},

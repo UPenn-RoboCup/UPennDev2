@@ -1,33 +1,30 @@
 local handle = io.popen('pwd')
-local cwd = handle:read("*a")
+local cwd = handle:read("*a"):gsub("%s+$", "")
 handle:close()
-print("Working in ",cwd)
 local Webots = false
 local HOME = cwd:gsub('Run.*$','')
 HOME = HOME:gsub('Tools.*$','')
 HOME = HOME:gsub('Frameworks.*$','')
+HOME = HOME:gsub('Util.*$','')
 if HOME:find("Webots") ~= nil then
   HOME = HOME:gsub('Webots.*$','')
   Webots = true
 end
+OPERATING_SYSTEM = io.popen('uname'):read('*a'):lower():gsub("%s+$", "")
+print( 'Working Dir:', cwd )
+print( 'Home Dir:', HOME )
+print( 'Operating Sys:', OPERATING_SYSTEM )
 
--- include modules to cpath
-package.cpath = HOME..'Frameworks/?/?.so;'..package.cpath
-package.cpath = HOME..'Frameworks/Util/CArray/?.so;'..package.cpath
-package.cpath = HOME..'Frameworks/Util/CUtil/?.so;'..package.cpath
-package.cpath = HOME..'Frameworks/Util/Shm/?.so;'..package.cpath
-package.cpath = HOME..'Frameworks/Util/Unix/?.so;'..package.cpath
-package.cpath = HOME..'Frameworks/Util/Z/?.so;'..package.cpath
+-- include C modules to cpath
+package.cpath = HOME..'Modules/?/?.so;'..package.cpath
 
-package.cpath = HOME..'Frameworks/Comm/?.so;'..package.cpath
-package.cpath = HOME..'Frameworks/ImageProc/?.so;'..package.cpath
-package.cpath = HOME..'Frameworks/OccMap/?.so;'..package.cpath
-package.cpath = HOME..'Frameworks/OctoMap/?.so;'..package.cpath
-package.cpath = HOME..'Frameworks/Hokuyo/?.so;'..package.cpath
-package.cpath = HOME..'Frameworks/Skeleton/?.so;'..package.cpath
+-- include Lua utilities to path
+package.path = HOME..'Util/?.lua;'..package.path
 
+-- include Config files to path
+package.path = HOME..'Config/?.lua;'..package.path
 
--- include modules to path
+--[[
 package.path = HOME..'Run/?.lua;'..package.path
 package.path = HOME..'Run/GameFSM/?.lua;'..package.path
 package.path = HOME..'Run/Lib/?.lua;'..package.path
@@ -46,6 +43,7 @@ package.path = HOME..'Run/Motion/keyframes/?.lua;'..package.path
 package.path = HOME..'Run/Motion/Walk/?.lua;'..package.path
 package.path = HOME..'Run/Motion/Arms/?.lua;'..package.path
 package.path = HOME..'Run/Config/?.lua;'..package.path
+--]]
 
 -- include webots stuff
 if Webots then

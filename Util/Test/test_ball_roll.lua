@@ -1,6 +1,8 @@
 -- Torch/Lua Kalman Filter test script
 -- (c) 2013 Stephen McGill
 
+dofile'../../include.lua'
+
 local torch = require 'torch'
 torch.Tensor = torch.DoubleTensor
 local libBallTrack = require 'libBallTrack'

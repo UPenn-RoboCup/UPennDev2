@@ -15,14 +15,15 @@ all none:
 	$(V)cd Platforms/$@ && make && cd $(CWD)
 	$(V)printf "  %b to %s\n" $(INFOCOLOR)Installing$(ENDCOLOR) $(PWD);
 	
-webots_%:
+Webots%:
 	$(V)printf "  %b %s %s\n" $(INFOCOLOR)Making$(ENDCOLOR) Webots $@;
-	$(V)cd Frameworks/Webots && make && cd $(CWD)
+	$(V)cd Modules/Webots && make && cd $(CWD)
 	$(V)cd Platforms/Transform && make transform && cd $(CWD)
 	$(V)cd Platforms/$@ && make && cd $(CWD)
+	$(V)printf "  %b for %s\n" $(INFOCOLOR)Configuring$(ENDCOLOR) $@;
+	$(V)rm -f $(CWD)/Config/Config.lua
+	$(V)cd $(CWD)/Config && ln -s Config_$@.lua Config.lua && cd $(CWD)
 	$(V)printf "  %b to %s\n" $(INFOCOLOR)Installing$(ENDCOLOR) $(PWD);
-	rm -f $(PLAYERDIR)/Config/Config.lua
-	cd $(PLAYERDIR)/Config && ln -s Config_WebotsNao.lua Config.lua && cd $(CWD)
 
 naoqi:
 	@echo "Compiling Custom Naoqi Modules...\n"

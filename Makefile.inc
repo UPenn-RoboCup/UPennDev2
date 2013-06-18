@@ -111,4 +111,4 @@ $(LIBNAME): lua_$(LIBNAME).o $(EXTRA_OBJ)
 	$(V)rm $^
 clean:
 	$(V)printf '\t%b %b\n' $(PERLCOLOR)Cleaning$(ENDCOLOR) $(shell pwd);
-	$(V)rm -f *.so *.o
+	$(V)rm -f *.so *.o $(EXTRA_CLEAN)

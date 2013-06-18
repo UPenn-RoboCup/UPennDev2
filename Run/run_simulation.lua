@@ -1,14 +1,7 @@
--- Get Computer for Lib suffix
---package.cpath = './?.so;' .. package.cpath;
---local controller = require('controller');
+print("\nStarting Webots Lua controller...");
 
-cwd = os.getenv('PWD')
-cwd = cwd ..'/Run'
 local playerID = os.getenv('PLAYER_ID') + 0;
 local teamID = os.getenv('TEAM_ID') + 0;
-
-print("\nStarting Webots Lua controller...");
-print("CWD:",cwd)
 print("Team, Player:",teamID,playerID)
 
 --SJ: Team-specific test code running 

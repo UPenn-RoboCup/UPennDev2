@@ -333,7 +333,7 @@ static const struct luaL_Reg kinematics_lib [] = {
 };
 
 extern "C"
-int luaopen_Kinematics (lua_State *L) {
+int luaopen_THOROPKinematics (lua_State *L) {
 #if LUA_VERSION_NUM == 502
 	luaL_newlib(L, kinematics_lib);
 #else

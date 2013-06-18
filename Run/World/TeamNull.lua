@@ -1,13 +1,13 @@
 module(..., package.seeall);
 
 local Config = require('Config');
-local Body = require('Body');
-local Comm = require('Comm')
+local Body = require(Config.dev.body);
+local Comm = require(Config.dev.comm)
 local Speak = require('Speak');
 local vector = require('vector');
 local serialization = require('serialization');
-local wcm = require('wcm');
-local gcm = require('gcm');
+require('wcm');
+require('gcm');
 
 
 playerID = gcm.get_team_player_id();

@@ -2,13 +2,16 @@
 
 module(..., package.seeall);
 
-local Body = require('Body')
-local Kinematics = require('Kinematics')
-local Config = require('Config');
+local Config = require('Config')
+local Body = require(Config.dev.body)
+local Kinematics = require(Config.dev.kinematics)
+local walk = require(Config.dev.walk)
+
 local vector = require('vector')
-local mcm = require('mcm')
 local unix = require('unix')
 local util = require('util')
+
+require('mcm')
 
 -- Walk Parameters
 -- Stance and velocity limit values

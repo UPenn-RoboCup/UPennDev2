@@ -1,18 +1,5 @@
 module(..., package.seeall);
-
-local Body = require('Body')
-local keyframe = require('keyframe')
-local walk = require('walk')
-local vector = require('vector')
-local Config = require('Config')
-local util = require('util')
-
-local cwd = unix.getcwd();
-if string.find(cwd, "WebotsController") then
-  cwd = cwd.."/Player";
-end
-cwd = cwd.."/Motion"
-
+require'common_motion'
 
 bodyHeight = Config.walk.bodyHeight;
 footX = Config.walk.footX or 0;

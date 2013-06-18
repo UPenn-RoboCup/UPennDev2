@@ -1,7 +1,8 @@
 module(..., package.seeall);
 
-local Body = require('Body')
-local Kinematics = require 'Kinematics'
+local Config = require('Config')
+local Body = require(Config.dev.body)
+local Kinematics = require(Config.dev.kinematics)
 
 t0 = 0;
 timeout = 1.0;

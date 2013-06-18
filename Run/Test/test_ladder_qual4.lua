@@ -1,36 +1,21 @@
--- CHARLI laser testing
-print('Testing ARMS')
+print'THOR-OP ladder test'
+dofile'../include.lua'
 
-cwd = cwd or os.getenv('PWD')
-package.path = cwd.."/?.lua;"..package.path;
-local init = require('init')
-
-local carray = require 'carray'
-
-local Config = require('Config')
-local Body = require('Body')
-local Speak = require('Speak')
-local Motion = require('Motion')
-local vector = require('vector')
-
--- Laser getting
---local WebotsLaser = require 'WebotsLaser'
---print( "LIDAR Dim:", WebotsLaser.get_width(), WebotsLaser.get_height())
---nlidar_readings = WebotsLaser.get_width() * WebotsLaser.get_height();
-
-
-local rcm = require 'rcm'
---
-local mcm = require 'mcm'
+print'Initializing modules...'
+local carray = require'carray'
+local Motion = require'Motion'
+local vector = require'vector'
+local Transform = require'Transform'
 
 -- Arms
-local pickercm = require 'pickercm'
-local Kinematics = require ('Kinematics')
-local Transform = require 'Transform'
-
-
-local Team = require 'Team' --To receive the GPS coordinates from objects
-local wcm = require 'wcm'
+print'Requiring Kinematics...'
+local Config = require'Config'
+local Kinematics = require'Kinematics'
+print('Body',Config.dev.body)
+local Body = require(Config.dev.body)
+--To receive the GPS coordinates from objects
+local Team = require(Config.dev.team)
+require 'wcm'
 
 
 --Arm target transforms
@@ -81,6 +66,7 @@ targetvel=vector.zeros(3);
 if (string.find(Config.platform.name,'Webots')) then
   print('On webots!')
   webots = true;
+  controller = require'webots'
 end
 Team.entry();
 
@@ -644,9 +630,9 @@ function check_ik(tr, is_left)
   end
 
   dist = math.sqrt(
-	(torso_arm_ik[1]-tr[1])^2+
-	(torso_arm_ik[2]-tr[2])^2+
-	(torso_arm_ik[3]-tr[3])^2);
+    (torso_arm_ik[1]-tr[1])^2+
+    (torso_arm_ik[2]-tr[2])^2+
+    (torso_arm_ik[3]-tr[3])^2);
   return qInv, dist;
 end
 
@@ -922,7 +908,6 @@ function update()
   if (count ~= lcount) then
     print('count: '..count)
     print('lcount: '..lcount)
-    Speak.talk('missed cycle');
     lcount = count;
   end
   io.stdout:flush();  

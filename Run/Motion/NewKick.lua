@@ -1,11 +1,6 @@
 module(..., package.seeall);
-
-local Body = require('Body')
+require'common_motion'
 local keyframe = require('keyframe')
-local walk = require('walk')
-local vector = require('vector')
-local Config = require('Config')
-local util = require('util')
 
 local cwd = unix.getcwd();
 if string.find(cwd, "WebotsController") then

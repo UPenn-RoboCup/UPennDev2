@@ -1,7 +1,7 @@
 module(..., package.seeall);
 
-local io = require('io')
-local os = require('os')
+--local io = require('io')
+--local os = require('os')
 local unix = require('unix');
 local Config = require('Config')
 

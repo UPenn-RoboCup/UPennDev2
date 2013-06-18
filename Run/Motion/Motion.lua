@@ -1,22 +1,18 @@
 module(..., package.seeall);
+require'common_motion'
 
-local Body = require('Body')
 local UltraSound = require('UltraSound')
 local fsm = require('fsm')
-local vector = require('vector')
-require('mcm')
-require('gcm')
 
 local relax = require('relax')
 local stance = require('stance')
 local nullstate = require('nullstate')
-local walk = require('walk')
 local sit = require('sit')
 local standstill = require('standstill') -- This makes torso straight (for webots robostadium)
 
 local falling = require('falling')
 local standup = require('standup')
-local kick = require('kick')
+local kick = require(Config.dev.kick)
 local align = require('align') -- slow, non-dynamic stepping for fine alignment before kick
 
 --For diving
@@ -27,9 +23,9 @@ local dive = require('dive')
 local grip = require 'grip'
 
 if Config.platform.name~="WebotsOP" then
-  local crawl = require 'crawl'  --Quadruped locomotion controller
-  local largestep = require 'largestep' --Special walk controller with footstep planning
-  local stancetocrawl = require 'stancetocrawl' -- Changes between standing, sitting, crawling state
+  crawl = require(Config.dev.crawl)  --Quadruped locomotion controller
+  largestep = require(Config.dev.largestep) --Special walk controller with footstep planning
+  stancetocrawl = require'stancetocrawl' -- Changes between standing, sitting, crawling state
 end
 
 local sit_disable = Config.sit_disable or 0;

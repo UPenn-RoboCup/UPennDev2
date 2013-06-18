@@ -35,5 +35,6 @@ naoqi:
 modules:
 	cd Modules
 	for dir in `ls Modules`; do \
+		echo $$dir ;\
 	$(MAKE) -C Modules/$$dir; \
 	done

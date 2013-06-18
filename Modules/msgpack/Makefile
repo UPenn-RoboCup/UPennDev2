@@ -1,9 +1,6 @@
 LIBNAME=msgpack
-include ../Makefile.lib
+include ../../Makefile.inc
 LIBOPTS+=-lmsgpack
-torch=true
-ifeq ($(torch),true)
-  CXXFLAGS+=-DTORCH=1
-  LIBOPTS+=-ltorch
-endif
+CXXFLAGS+=-DTORCH=1
+LIBOPTS+=-ltorch
 

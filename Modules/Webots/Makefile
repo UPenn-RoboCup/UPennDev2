@@ -20,4 +20,4 @@ CFLAGS+=-Wno-deprecated-declarations
 endif
 
 clean:
-	rm -f $(LIBNAME).$(SHLIBEXT) *.o *.so lua_controller.c
+	@rm -f $(LIBNAME).$(SHLIBEXT) *.o *.so lua_controller.c

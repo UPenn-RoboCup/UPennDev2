@@ -346,6 +346,10 @@ function entry()
   t = Body.get_time();  	   --actual time
   torso0 = vector.new({uTorso[1],uTorso[2]});
   torso1 = vector.new({uTorso[1],uTorso[2]});
+
+  mcm.set_walk_isStepping(1);
+
+
 end
 
 function preload_zmp_array()
@@ -678,6 +682,7 @@ function motion_arms()
 end
 
 function exit()
+  mcm.set_walk_isStepping(0);
 end
 
 function start()

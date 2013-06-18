@@ -43,6 +43,14 @@ shared.walk.isFallDown = vector.zeros(1);
 --Is the robot spinning in bodySearch?
 shared.walk.isSearching = vector.zeros(1);
 
+--Is the robot doing the ZMP step kick?
+shared.walk.isStepping = vector.zeros(1);
+
+
+
+
+
+
 shared.us = {};
 shared.us.left = vector.zeros(10);
 shared.us.right = vector.zeros(10);

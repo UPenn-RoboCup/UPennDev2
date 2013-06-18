@@ -167,7 +167,12 @@ qRArm=math.pi/180*vector.new({90,-40,-160});
 --qRArm0={qRArm[1],qRArm[2]};
 
 --Standard offset 
-uLRFootOffset = vector.new({0,footY,0});
+uLRFootOffset = vector.new({0,footY+supportY,0});
+
+
+
+
+
 
 --Walking/Stepping transition variables
 uLeftI = {0,0,0};
@@ -479,27 +484,48 @@ function update()
   -- end motion_body
 end
 
+step_check_count = 0;
+
 function check_stepkick()
-  if stepKickRequest==0 then return; end
+  if stepKickRequest==0 then 
+    step_check_count = 0;
+		return; 
+	end
   if stepKickRequest==1 then 
     --Check current supporLeg and feet positions
     --and advance steps until ready
     uFootErr = util.pose_relative(uLeft1,
        util.pose_global(2*uLRFootOffset,uRight1) );
-    if supportLeg~=stepKickSupport or 
-      math.abs(uFootErr[1])>0.02 or
-      math.abs(uFootErr[2])>0.01 or
-      math.abs(uFootErr[3])>10*math.pi/180 then
-      if supportLeg == 0 then
-        uRight2 = util.pose_global( -2*uLRFootOffset, uLeft1); 
-      else
-        uLeft2 = util.pose_global( 2*uLRFootOffset, uRight1); 
+    step_check_count = step_check_count + 1;
+
+--[[
+print("---------------------")
+print("support:",supportLeg,stepKickSupport);
+print("uLeft:",uLeft1[1],uLeft1[2],uLeft1[3]*180/math.pi);
+print("uRight:",uRight1[1],uRight1[2],uRight1[3]*180/math.pi);
+--]]
+
+print("Step check",step_check_count)
+print("Err:",uFootErr[1],uFootErr[2],uFootErr[3]*180/math.pi);
+
+
+    if supportLeg==stepKickSupport then
+      if (step_check_count>2) or 
+      ( math.abs(uFootErr[1])<0.02 and
+        math.abs(uFootErr[2])<0.01 and
+        math.abs(uFootErr[3])<10*math.pi/180) then
+        print("Stepkick Ready!!!");
+        stepkick_ready = true;
+        return; 
       end
-      return;
+    end
+
+    if supportLeg == 0 then
+      uRight2 = util.pose_global( -2*uLRFootOffset, uLeft1); 
+    else
+      uLeft2 = util.pose_global( 2*uLRFootOffset, uRight1); 
     end
   end
-  stepkick_ready = true;
-  return; 
 end
 
 
@@ -922,8 +948,9 @@ end
 
 function doStepKickLeft()
   if stepKickRequest==0 then
+    mcm.set_walk_isStepping(1);
     support_start, support_end = 
-	largestep.set_kick_type("nonstop_kick_left");
+				largestep.set_kick_type("nonstop_kick_left");
     stepKickRequest = 1; 
     stepKickSupport = support_start;
   end
@@ -931,8 +958,9 @@ end
 
 function doStepKickRight()
   if stepKickRequest==0 then
+    mcm.set_walk_isStepping(1);
     support_start, support_end = 
-	largestep.set_kick_type("nonstop_kick_right");
+				largestep.set_kick_type("nonstop_kick_right");
     stepKickRequest = 1; 
     stepKickSupport = support_start;
   end

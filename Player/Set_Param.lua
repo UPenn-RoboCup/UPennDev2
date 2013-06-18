@@ -27,8 +27,8 @@ function Entry()
   camera.ncamera = Config.camera.ncamera;
 
   labelA = {};
-  labelA.m = camera.width/2;
-  labelA.n = camera.height/2;
+  labelA.m = camera.width/Config.vision.scaleA
+  labelA.n = camera.height/Config.vision.scaleA
   labelA.npixel = labelA.m*labelA.n;
   scaleB = Config.vision.scaleB;
   labelB = {};
@@ -299,8 +299,9 @@ function update()
                                          camera.width/2, camera.height,2));
   labelA.data = ImageProc.yuyv_to_label(vcm.get_image_yuyv(),
                                           carray.pointer(camera.lut),
-                                          camera.width/2,
-                                          camera.height);
+                                          camera.width,
+                                          camera.height, 
+                                          Config.vision.scaleA);
   labelB.data = ImageProc.block_bitor(labelA.data, labelA.m, labelA.n, scaleB, scaleB);
  
   vcm.set_image_labelA(labelA.data);

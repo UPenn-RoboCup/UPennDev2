@@ -1,4 +1,4 @@
-#!/bin/bash
+#! /bin/sh
 
 KERNEL=`uname -r`
 
@@ -11,7 +11,7 @@ killall -q naoqi-bin naoqi hal espeak lua luajit luajit2 screen
 rm -f screenlog*
 rm -f /dev/shm/*
 
-SCREEN_FLAGS="-dm -L -s /bin/bash -S"
+SCREEN_FLAGS="-dm -L -s /usr/bin/bash -S"
 
 reset_wb(){
   uvcdynctrl -d video0 -s 'White Balance Temperature, Auto' -- 1
@@ -202,7 +202,7 @@ case "$KERNEL" in
                 PLAYER_DIR=/home/nao/UPennDev/Player
                 LUA_COM=/usr/local/bin/luajit;;
         *)
-                PLAYER_DIR=/home/darwin/current/Player
+                PLAYER_DIR=/home/darwin/UPennDev/Player
                 LUA_COM=/usr/bin/luajit;;
 esac
 

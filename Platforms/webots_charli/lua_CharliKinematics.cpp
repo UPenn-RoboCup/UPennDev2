@@ -5,21 +5,8 @@
   g++ -arch i386 -o CharliKinematics.dylib -bundle -undefined dynamic_lookup luaCharliKinematics.pp CharliKinematics.cc Transform.cc -lm
 */
 
+#include <lua.hpp>
 #include "CharliKinematics.h"
-#include "luaCharliKinematics.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#include "lua.h"
-#include "lualib.h"
-#include "lauxlib.h"
-
-#ifdef __cplusplus
-}
-#endif
-
 
 static void lua_pushvector(lua_State *L, std::vector<double> v) {
   int n = v.size();

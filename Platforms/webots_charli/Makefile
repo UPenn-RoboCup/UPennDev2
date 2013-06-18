@@ -1,5 +1,5 @@
-LIBNAME = OPKinematics
-EXTRA_OBJ = OPKinematics.o
+LIBNAME = CharliKinematics
+EXTRA_OBJ = CharliKinematics.o
 EXTRA_LINK = ../Transform/Transform.o
 include ../../Makefile.inc
 LIBOPTS += -lm

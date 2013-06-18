@@ -140,6 +140,8 @@ goalie_disable_arm = 1;
 goalie_log_balls = 0;
 
 vision.ball.max_distance = 2.0; --temporary fix for GRASP lab
+
+listen_monitor = 1;
 ------------------------------------------------------------------------
 
 

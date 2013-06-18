@@ -103,6 +103,8 @@ team.team_ball_threshold = 0.5;
 team.avoid_own_team = 1;
 team.avoid_other_team = 1;
 
+team.flip_correction = 1;
+
 -- Keyframe files
 km = {};
 km.standup_front = 'km_NSLOP_StandupFromFront.lua';
@@ -139,6 +141,7 @@ use_rollback_getup = 0;
 fallAngle = 40*math.pi/180;
 falling_timeout = 0.3;
 
+listen_monitor = 1;
 -- Shutdown Vision and use ground truth gps info only
 --Now auto-detect from 3rd parameter
 use_gps_only = tonumber(os.getenv('USEGPS')) or 0;

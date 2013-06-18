@@ -527,28 +527,31 @@ function check_flip()
   --util.ptable(state_ball);
   --d = math.sqrt((-state_ball[1] - goalie_ball[1])^2 + (-state_ball[2] $
 
-  pose = wcm.get_pose();
-  ball = wcm.get_ball();
+  local pose = wcm.get_pose();
+  --ball = wcm.get_ball();
+  --ball_global = util.pose_global({ball.x,ball.y,0},{pose.x,pose.y,pose.a});
+  local ball_global = wcm.get_robot_team_ball();
 
 
-  ball_global = util.pose_global({ball.x,ball.y,0},{pose.x,pose.y,pose.a});
 
-  ball_flip_dist_threshold = 1;
-  ball_flip_x_threshold = 0.6;
-  ball_flip_y_threshold = 0.6;
-  ball_flip_t_threshold = 0.5; --Both robot should be looking at the ball
+  local ball_flip_dist_threshold = 1;
+  local ball_flip_x_threshold = 0.7;
+  local ball_flip_y_threshold = 0.7;
+  local ball_flip_t_threshold = 0.5; --Both robot should be looking at the ball
   local dist_balls = math.abs(ball_global[1]-goalie_ball[1]);
 
   --print("Ball global");
   --util.ptable(ball_global);
   --print("Goalie ball");
   --util.ptable(goalie_ball);
+  local d = math.sqrt(pose.x^2 + pose.y^2);
 
   if (math.abs(ball_global[1]) > ball_flip_x_threshold or
      math.abs(ball_global[2]) > ball_flip_y_threshold) and
      ball_global[1]*goalie_ball[1] < 0 and
      dist_balls > ball_flip_dist_threshold and
-     gcm.get_game_state() == 3 then
+     gcm.get_game_state() == 3 and
+     d > 0.5 then
      --ball.t < ball_flip_t_threshold and
      --goalie_ball[3] < ball_flip_t_threshold and
      --goalie_alive >0 and

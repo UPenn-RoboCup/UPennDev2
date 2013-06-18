@@ -1,13 +1,6 @@
 module(..., package.seeall);
 name = ...;
-
-local Config = require('Config')
-local vector = require('vector')
-local Kinematics = require('Kinematics')
-local Body = require('Body')
-local walk = require('walk')
-local mcm = require('mcm')
-
+require'common_motion'
 active = true;
 t0 = 0;
 

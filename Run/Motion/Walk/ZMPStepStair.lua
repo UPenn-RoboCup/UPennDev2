@@ -5,15 +5,7 @@ module(..., package.seeall);
 -- To make robot a number of pre-defined steps
 -- 2013/2 SJ
 ------------------------------------------------
-
-local Body = require('Body')
-local Kinematics = require('Kinematics')
-local Config = require('Config');
-local vector = require('vector')
-local mcm = require('mcm')
-local unix = require('unix')
-local util = require('util')
-
+require'common_motion'
 local matrix = require('matrix_zmp')
 
 --Stance parameters

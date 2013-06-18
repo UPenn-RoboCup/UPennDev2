@@ -1,14 +1,7 @@
 -- Stabilized grip motion state
 -- by SJ, edited by Steve
-
 module(..., package.seeall);
-
-local Body = require('Body')
-local keyframe = require('keyframe')
-local walk = require('walk')
-local vector = require('vector')
-local Config = require('Config')
-local util = require 'util'
+require'common_motion'
 
 -- These should be Config variables...
 footX = Config.walk.footX;

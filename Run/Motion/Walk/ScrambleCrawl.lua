@@ -7,14 +7,7 @@
 ------------------------------------------------
 
 module(..., package.seeall);
-
-local Body = require('Body')
-local Kinematics = require('Kinematics')
-local Config = require('Config');
-local vector = require('vector')
-local mcm = require('mcm')
-local unix = require('unix')
-local util = require('util')
+require'common_motion'
 
 bodyHeight = Config.kneel.bodyHeight;
 bodyTilt = Config.kneel.bodyTilt;

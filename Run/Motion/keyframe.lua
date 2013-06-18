@@ -1,12 +1,6 @@
---DARWIN OP specific keyframe playing file
-
-
 module(..., package.seeall);
 name = ...;
-
-local Body = require('Body')
-local vector = require('vector')
-local walk = require('walk')
+require'common_motion'
 
 --Upperbody only keyframe?
 is_upper=false;
@@ -29,7 +23,6 @@ function load_motion_file(fname, key)
   key = key or fname;
   local mot = dofile(fname);
   motData[key] = mot;
-  
 --  print_motion_file(fname,mot)
 end
 
@@ -39,8 +32,8 @@ function print_motion_file(fname,mot)
     print("{\nangles=vector.new({")
     ang=vector.new(mot.keyframes[i].angles);
     print(string.format(
-	"%d,%d,\n%d,%d,%d,\n%d,%d,%d,%d,%d,%d,\n%d,%d,%d,%d,%d,%d,\n%d,%d,%d",
-      unpack(ang*180/math.pi) ));
+    "%d,%d,\n%d,%d,%d,\n%d,%d,%d,%d,%d,%d,\n%d,%d,%d,%d,%d,%d,\n%d,%d,%d",
+    unpack(ang*180/math.pi) ));
     print"})*math.pi/180,"
     print(string.format("duration = %.1f;\n},",mot.keyframes[i].duration));
   end

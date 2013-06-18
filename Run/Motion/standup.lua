@@ -1,10 +1,7 @@
 module(..., package.seeall);
+require'common_motion'
 
-local Body = require('Body')
 local keyframe = require('keyframe')
-local unix = require('unix')
-local Config = require('Config');
-local walk = require('walk');
 local wcm = require('wcm')
 
 local cwd = unix.getcwd();

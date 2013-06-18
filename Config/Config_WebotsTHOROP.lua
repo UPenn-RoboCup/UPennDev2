@@ -20,6 +20,7 @@ dev.camera = 'WebotsOPCam';
 dev.kinematics = 'THOROPKinematics';
 dev.game_control='WebotsGameControl';
 dev.team='TeamNull';
+dev.comm='WebotsComm'
 
 dev.walk = 'HumbleWalk';
 dev.crawl = 'ScrambleCrawl';

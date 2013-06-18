@@ -1,16 +1,5 @@
 module(..., package.seeall);
-
-local Body = require('Body')
-local keyframe = require('keyframe')
-local walk = require('walk')
-local vector = require('vector')
-local Config = require('Config')
-
-local cwd = unix.getcwd();
-if string.find(cwd, "WebotsController") then
-  cwd = cwd.."/Player";
-end
-cwd = cwd.."/Motion"
+require'common_motion'
 
 -- default kick type
 diveType = "diveLeft";

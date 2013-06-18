@@ -1,5 +1,5 @@
 module(..., package.seeall);
-local controller = require('controller');
+local controller = require('webots');
 
 controller.wb_robot_init();
 timeStep = controller.wb_robot_get_basic_time_step();

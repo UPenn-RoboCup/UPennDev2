@@ -108,6 +108,7 @@ QUIET_CC = @printf '    %b %b\n' $(CCCOLOR)CC$(ENDCOLOR) $(SRCCOLOR)$(GOAL)$(END
 $(LIBNAME): lua_$(LIBNAME).o $(EXTRA_OBJ)
 	$(V)printf '\t%b %b\n' $(LINKCOLOR)LINK$(ENDCOLOR) $(BINCOLOR)$@$(ENDCOLOR);
 	$(V)$(LD) $(LDFLAGS) -o $@.$(SHLIBEXT) $^ $(EXTRA_LINK) $(LIB_DIR) $(LIBOPTS)
+	$(V)rm $^
 clean:
 	$(V)printf '\t%b %b\n' $(PERLCOLOR)Cleaning$(ENDCOLOR) $(shell pwd);
 	$(V)rm -f *.so *.o

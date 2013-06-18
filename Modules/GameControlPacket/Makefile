@@ -1,2 +1,2 @@
 LIBNAME=GameControlPacket
-include ../../../Makefile.inc
+include ../../Makefile.inc

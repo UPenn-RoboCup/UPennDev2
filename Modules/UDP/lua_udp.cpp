@@ -6,7 +6,9 @@ Yida Zhang copyright 2013 <yida@seas.upenn.edu>
 */
 
 #include <string>
+#include <cstring>
 #include <deque>
+#include <map>
 #include <vector>
 #include <algorithm>
 
@@ -25,12 +27,22 @@ Yida Zhang copyright 2013 <yida@seas.upenn.edu>
 
 #include <lua.hpp>
 
-#define MDELAY 2
-#define TTL 16
-//Size for sending 640*480 yuyv data without resampling
-#define MAX_LENGTH 160000
+#define MAX_LENGTH 65536
+#define MAX_BODY_LENGTH 60000
+#define UUID_LENGTH 8 
 
 #define MT_NAME "udp_mt"
+
+using namespace std;
+
+typedef struct {
+  uint8_t uuid[UUID_LENGTH];
+  uint8_t order;
+  uint8_t number;
+  uint16_t size;
+  uint8_t checksum;
+  int8_t data[MAX_BODY_LENGTH];
+} packet;
 
 typedef struct {
   bool init_recv;
@@ -40,10 +52,22 @@ typedef struct {
   int send_fd;
   int send_port;
   const char * send_ip;
-  std::deque<std::string> *recvQueue;
+  std::deque<std::string> *recv_queue;
+  std::deque<std::string> *raw_recv_queue;
 } structUdp;
 
 const int maxQueueSize = 12;
+
+// receiver buffer
+static std::map<std::string, std::map<char, std::string> > uuid_buf;
+
+inline char checksum_gen(const char *header) {
+  char sum = 0;
+  for (int i = 0; i < (UUID_LENGTH+3); i++) {
+    sum ^= header[i];
+  }
+  return sum;
+}
 
 static structUdp * lua_checkudp(lua_State *L, int narg) {
   void *ud = luaL_checkudata(L, narg, MT_NAME);
@@ -57,8 +81,10 @@ static int lua_udp_close(lua_State *L) {
   if (p->recv_fd > 0 && p->init_recv) {
     close(p->recv_fd);
     p->init_recv = false;
-    p->recvQueue->clear();
-    delete p->recvQueue;
+    p->recv_queue->clear();
+    delete p->recv_queue;
+    p->raw_recv_queue->clear();
+    delete p->raw_recv_queue;
     lua_pushboolean(L, 1);
     return 1;
   }
@@ -86,7 +112,8 @@ static int lua_udp_init_recv(lua_State *L) {
 	ud->recv_fd = socket(AF_INET, SOCK_DGRAM, 0);
 	if (ud->recv_fd < 0)
 		return luaL_error(L,"Could not open datagram recv socket!\n");
-  ud->recvQueue = new std::deque<std::string>;
+  ud->recv_queue = new std::deque<std::string>;
+  ud->raw_recv_queue = new std::deque<std::string>;
 
 	struct sockaddr_in local_addr;
 	bzero((char *) &local_addr, sizeof(local_addr));
@@ -150,12 +177,64 @@ static int lua_udp_init_send(lua_State *L) {
 	bcopy(hostptr->h_addr, (char *) &dest_addr.sin_addr, hostptr->h_length);
 	dest_addr.sin_port = htons(ud->send_port);
 
-	if (connect(ud->send_fd, (struct sockaddr *) &dest_addr, sizeof(dest_addr)) < 0)
+	if ( connect(ud->send_fd, 
+				(struct sockaddr *) &dest_addr, 
+				sizeof(dest_addr))
+			< 0 )
 		return luaL_error(L,"Could not connect to destination address\n");
 
   luaL_getmetatable(L, MT_NAME);
   lua_setmetatable(L, -2);
 	return 1;
+}
+
+static int packet_update(structUdp *p) {
+  std::string pkt_msg = p->raw_recv_queue->front();
+  std::string uuid_str = pkt_msg.substr(0, UUID_LENGTH);
+  uint8_t order = pkt_msg[UUID_LENGTH];
+  uint8_t number = pkt_msg[UUID_LENGTH + 1];
+  uint16_t size = pkt_msg[UUID_LENGTH + 3] << 8 | pkt_msg[UUID_LENGTH + 2];
+  uint8_t checksum = pkt_msg[UUID_LENGTH + 4];
+//  printf("checksum %d %d\n", checksum, checksum_gen(pkt_msg.c_str()));
+  if (checksum != checksum_gen(pkt_msg.c_str())) {
+    p->recv_queue->push_back(pkt_msg);
+    return 0;
+  }
+  int8_t * data = (int8_t *)pkt_msg.c_str() + UUID_LENGTH + 5;
+  if (number == 1) {
+    p->recv_queue->push_back(std::string((char *)data));
+    return 0;
+  }
+
+  // update packets
+  std::map<std::string, std::map<char, std::string> >::iterator uuid_it = uuid_buf.find(uuid_str);
+  std::map<char, std::string> * pkt_buf = NULL;
+  if (uuid_it == uuid_buf.end()) {
+    std::map<char, std::string> new_pkt_buf;
+    uuid_buf[uuid_str] = new_pkt_buf;
+    pkt_buf = &uuid_buf[uuid_str];
+  } else {
+    pkt_buf = &uuid_it->second;
+  }
+
+  std::map<char, std::string>::iterator pkt_it = pkt_buf->find(order);
+  std::string msg_buf;
+  if (pkt_it == pkt_buf->end()) {
+    msg_buf.assign((char *)data, size);
+    pkt_buf->insert(std::pair<char, std::string>(order, msg_buf));
+  }
+
+  std::string out_msg;
+  std::map<char, std::string> pkt_inst = *pkt_buf;
+  if (pkt_buf->size() == number) {
+    for (int i = 0; i < number; i++) {
+      out_msg.append(pkt_inst[i]);
+    }
+    p->recv_queue->push_back(out_msg);
+    pkt_buf->clear();
+  }
+
+  return 0;
 }
 
 static int comm_update(structUdp *p) {
@@ -164,25 +243,29 @@ static int comm_update(structUdp *p) {
 	static char data[MAX_LENGTH];
 
 	// Check whether initiated
-	// TODO: associate checks with the metatable
-	//fprintf(stdout,"init recv: %d (%d)\n",p->init_recv,p->recv_fd);
-	//fflush(stdout);
 	assert( p->init_recv );
 	// Process incoming messages:
 	socklen_t source_addr_len = sizeof(source_addr);
 	int len = 
 		recvfrom(p->recv_fd, data, MAX_LENGTH, 0, (struct sockaddr *) &source_addr, &source_addr_len);
+
 	while (len > 0) {
 		std::string msg((const char *) data, len);
-		p->recvQueue->push_back(msg);
+    p->raw_recv_queue->push_back(msg);
+
 		len = recvfrom(p->recv_fd, data, MAX_LENGTH, 0, (struct sockaddr *) &source_addr, &source_addr_len);
 	}
 
-	// Remove older messages
-	while (p->recvQueue->size() > maxQueueSize)
-    p->recvQueue->pop_front();
+  while (p->raw_recv_queue->size() > 0) {
+    packet_update(p);
+    p->raw_recv_queue->pop_front();
+  }
 
-	return p->recvQueue->size();
+	// Remove older messages
+  while (p->recv_queue->size() > maxQueueSize)
+    p->recv_queue->pop_front();
+
+	return p->recv_queue->size();
 }
 
 static int lua_udp_size(lua_State *L) {
@@ -210,18 +293,20 @@ static int lua_udp_receive(lua_State *L) {
 	// Perform an update to receive data
 	//fprintf(stdout,"udp size: %d (%d)\n",p->init_recv,p->recv_fd);
 	//fflush(stdout);
-	int updateRet = comm_update(p);
+	//int updateRet = comm_update(p);
+	comm_update(p);
 
 	// If empty, then return nil
-	if (p->recvQueue->empty()) {
-		lua_pushnil(L);
-		return 1;
-	}
+  if (p->recv_queue->empty()) {
+    lua_pushnil(L);
+    return 1;
+  }
 
 	// Push a light string with the incoming data from the queue
-	lua_pushlstring(L, p->recvQueue->front().c_str(), p->recvQueue->front().size());
+	lua_pushlstring(L, p->recv_queue->front().c_str(), 
+                      p->recv_queue->front().size());
 	// Remove this object from the receiving buffer queue
-	p->recvQueue->pop_front();
+	p->recv_queue->pop_front();
 
 	return 1;
 }
@@ -229,19 +314,24 @@ static int lua_udp_receive(lua_State *L) {
 static int lua_udp_send(lua_State *L) {
 
   structUdp *p = lua_checkudp(L, 1);
-
-	// Grab the data
-	const char *data = luaL_checkstring(L, 2);
-	// Grab the size of the data, if given
-	const int size = luaL_optint(L, 3, strlen(data));
+	/* Src pointer and length */
+	const char *data = NULL;
+	size_t size;
+	if( lua_isstring(L,2) ){
+		data = lua_tolstring( L, 2, &size );
+		/* Grab the size of the data, if given */
+		size = luaL_optinteger( L, 3, size );
+	} else if(lua_islightuserdata(L,2)) {
+		if( (data=(const char *)lua_touserdata(L, 2))==NULL ){
+			return luaL_error(L, "Input src is NULL");
+		}
+		/* Grab the size of the data; required for userdata*/
+		size = luaL_checkinteger( L, 3 );
+	}
 	
 	if( p->send_fd == p->recv_fd || p->send_fd<3 )
-		return luaL_error(L,"Bad file descriptor (%d)!\n", p->send_fd);
+		return luaL_error(L,"Bad send file descriptor (%d)!\n", p->send_fd);
 	
-	// TODO: add a maximum send limit
-	if(size<0)
-		return luaL_error(L,"Negative number of bytes to send!\n");
-
 	// Send the data
 	int ret = send(p->send_fd, data, size, 0);
 	// Debugging message
@@ -254,8 +344,80 @@ static int lua_udp_send(lua_State *L) {
 	return 1;
 }
 
+// for sending data without size limit
+static int lua_udp_send_all(lua_State *L) {
+  structUdp *ud = lua_checkudp(L, 1);
+  if( ud->send_fd == ud->recv_fd || ud->send_fd<3 )
+	  return luaL_error(L,"Bad send all file descriptor (%d)!\n", ud->send_fd);
+
+  size_t size = 0;
+  const char *data = NULL;
+  const char * uuid = NULL;
+  if (lua_isstring(L, 2)) {
+    data = lua_tolstring(L, 2, &size);
+    // Grab the size of the data if given
+    size = luaL_optinteger(L, 3, size);
+    uuid = luaL_optstring(L, 4, NULL);
+  } else if (lua_islightuserdata(L, 2)) {
+    if ((data = (const char *)lua_touserdata(L, 2)) == NULL) {
+      return luaL_error(L, "Input is NULL");
+    }
+    size = luaL_checkinteger(L, 3);
+    uuid = luaL_optstring(L, 4, NULL);
+  }
+  // if no uuid given, send with packing
+  if (uuid == NULL) {
+	  // Send the data
+	  int ret = send(ud->send_fd, data, size, 0);
+	  // Debugging message
+	  // Push the return value
+	  lua_pushinteger(L, ret);
+	  if(ret==-1){
+	  	lua_pushstring( L, strerror(errno) );
+	  	return 2;
+	  }
+	  return 1;
+  }
+
+  size_t uuid_len = strlen(uuid);
+  if (uuid_len > UUID_LENGTH) uuid_len = UUID_LENGTH;
+  
+  uint8_t num_packets = size / MAX_BODY_LENGTH;
+  uint16_t size_last_packets = size % MAX_BODY_LENGTH;
+  if (size_last_packets > 0) num_packets ++;
+  std::vector<packet> packets;
+  for (int i = 0; i < num_packets; i++) {
+    int packet_len = (i < (num_packets - 1))? MAX_BODY_LENGTH : size_last_packets;
+    packet new_packet;
+    memset(new_packet.uuid, 0x0, UUID_LENGTH * sizeof(uint8_t));
+    memcpy(new_packet.uuid, uuid, uuid_len * sizeof(uint8_t));
+    new_packet.order = i;
+    new_packet.number = num_packets;
+    new_packet.size = packet_len;
+    new_packet.checksum = checksum_gen((const char *)&new_packet); 
+    memset(new_packet.data, 0x0, MAX_BODY_LENGTH * sizeof(uint8_t));
+    memcpy(new_packet.data, (uint8_t *)data, packet_len * sizeof(uint8_t));
+    data += packet_len;
+    packets.push_back(new_packet);
+  }
+  
+  useconds_t usec = 10000;
+  size_t raw_len = 0, extra_byte = 0, ret = 0;
+  size_t extra_bytes = 3 * sizeof(uint8_t) + sizeof(uint16_t) +
+                          (UUID_LENGTH + 1) * sizeof(uint8_t);
+
+  for (int i = 0; i < packets.size(); i++) {
+    raw_len = packets[i].size * sizeof(uint8_t) + extra_bytes;
+	  ret = send(ud->send_fd, &packets[i], raw_len, 0);
+//    usleep((useconds_t) usec);
+  }
+
+  return 1;
+}
+
 static int lua_udp_index(lua_State *L) {
-  structUdp *p = lua_checkudp(L, 1);
+  //structUdp *p = lua_checkudp(L, 1);
+  lua_checkudp(L, 1);
   // Get index through metatable:
   if (!lua_getmetatable(L, 1)) {lua_pop(L, 1); return 0;} // push metatable
   lua_pushvalue(L, 2); // copy key
@@ -297,6 +459,7 @@ static const struct luaL_Reg udp_function [] = {
 };
 
 static const luaL_Reg udp_methods[] = {
+  {"send_all", lua_udp_send_all},
   {"send", lua_udp_send},
   {"receive", lua_udp_receive},
 	{"size", lua_udp_size},
@@ -315,15 +478,6 @@ int luaopen_udp (lua_State *L) {
   luaL_newmetatable(L, MT_NAME);
 
 #if LUA_VERSION_NUM == 502
-	/*
-  int i = 0;
-  lua_pushvalue(L, -1);
-  while (udp_methods[i].name) {
-    lua_setfield(L, -2, udp_methods[i].name);
-    lua_pushcfunction(L, udp_methods[i].func);
-		i++;
-  }
-	*/
 	luaL_setfuncs( L, udp_methods, 0 );
 	luaL_newlib(L, udp_function);
 #else

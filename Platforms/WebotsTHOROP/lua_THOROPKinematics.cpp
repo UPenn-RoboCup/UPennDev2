@@ -2,8 +2,8 @@
 (c) 2013 Seung Joon Yi
 */
 
-#include "THOROPKinematics.h"
 #include <lua.hpp>
+#include "THOROPKinematics.h"
 
 static void lua_pushvector(lua_State *L, std::vector<double> v) {
 	int n = v.size();
@@ -333,11 +333,12 @@ static const struct luaL_Reg kinematics_lib [] = {
 };
 
 extern "C"
-int luaopen_THOROPKinematics (lua_State *L) {
+int luaopen_Kinematics (lua_State *L) {
 #if LUA_VERSION_NUM == 502
 	luaL_newlib(L, kinematics_lib);
 #else
-	luaL_register(L, "THOROPKinematics", kinematics_lib);
+	luaL_register(L, "Kinematics", kinematics_lib);
 #endif
 	return 1;
 }
+

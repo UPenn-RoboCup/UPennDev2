@@ -113,7 +113,7 @@ end
 function getRPY(t)
   -- http://planning.cs.uiuc.edu/node103.html
   -- returns [roll, pitch, yaw] vector
-  local e=vector.zeros(3);
+  local e = vector.zeros(3);
   e[1]=math.atan2(t[3][2],t[3][3]); --Roll
   e[2]=math.atan2(-t[3][1],math.sqrt( t[3][2]^2 + t[3][3]^2) ); -- Pitch
   e[3]=math.atan2(t[2][1],t[1][1]); -- Yaw
@@ -140,7 +140,7 @@ function transform6D(p)
   local cwz = math.cos(p[6]);
   local swz = math.sin(p[6]);
 
-  t[1] = vector.new({1,0,0,0});
+  t[1] = vector.new({1, 0, 0, 0});
   t[2] = vector.new({0, 1, 0, 0});
   t[3] = vector.new({0, 0, 1, 0});
   t[4] = vector.new({0, 0, 0, 1});

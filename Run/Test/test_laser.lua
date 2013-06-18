@@ -1,12 +1,9 @@
 -- CHARLI laser testing
 print('Testing LIDAR on CHARLI')
-
-cwd = cwd or os.getenv('PWD')
-package.path = cwd.."/?.lua;"..package.path;
-local init = require('init')
+local cwd = cwd or os.getenv('PWD')
+dofile(cwd..'/include.lua')
 
 local carray = require 'carray'
-
 local Config = require('Config')
 local Body = require('Body')
 local Speak = require('Speak')

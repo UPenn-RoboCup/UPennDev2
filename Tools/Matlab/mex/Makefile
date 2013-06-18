@@ -4,13 +4,16 @@ MEXEXT=$(shell mexext)
 PWD=$(shell pwd)
 LIBRT= $(shell [ `uname` != "Darwin" ] && echo "-lrt")
 
-TARGETS=time mexshm getch udp_recv udp_send cjpeg djpeg msgpack zmq ImageProc Planner tcpopen
+TARGETS=lidartrans time mexshm getch \
+udp_recv udp_send cjpeg djpeg \
+msgpack zmq ImageProc Planner tcpopen \
+serialize deserialize #zlibCompress zlibUncompress
 .PHONY: all clean $(TARGETS)
 	
 all: $(TARGETS)
 
-time: time.cc timeScalar.cc
-	$(MEX) $^
+time:
+	$(MEX) $@.cc
 
 mexshm:
 	$(MEX) $@.cc $(LIBRT)
@@ -20,7 +23,11 @@ getch:
 
 udp_send:
 	$(MEX) $@.cc
+
 udp_recv:
+	$(MEX) $@.cc
+
+lidartrans:
 	$(MEX) $@.cc
 	
 cjpeg:
@@ -45,7 +52,19 @@ msgpack:
 	
 tcpopen:
 	$(MEX) $@.c
+
+serialize:
+	$(MEX) $@.c
+
+deserialize:
+	$(MEX) $@.c
 	
+zlibCompress:
+	$(MEX) $@.cc -lz
+
+zlibUncompress:
+	$(MEX) $@.cc -lz
+
 # Platform dependent modules
 serialopen:
 	$(MEX) $@.c	

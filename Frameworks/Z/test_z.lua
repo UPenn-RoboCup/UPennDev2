@@ -1,10 +1,10 @@
 local Z = require('Z')
 
 src = "lua c api: how to push a string with                                                                                               a null character in the middle?";
-print(src);
-print(#src);
+print('Input string:',src);
+print('Input length:',#src);
 src_c = Z.compress(src, #src)
-print(#src_c);
+print('Compressed length:',#src_c);
 src_uc = Z.uncompress(src_c, #src_c)
-print(#src_uc);
-print(src_uc);
+print('Output length:',#src_uc);
+print('Output string:',src_uc);

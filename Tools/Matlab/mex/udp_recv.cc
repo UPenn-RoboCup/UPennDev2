@@ -25,12 +25,10 @@ Yida Zhang, 04/13 <yida@seas.upenn.edu>
 
 #define MDELAY 2
 #define TTL 16
-#define MAX_LENGTH 16000
-//#define MAX_LENGTH 160000 //Needed for 640*480 yuyv
+#define MAX_LENGTH 65536
+/* #define MAX_LENGTH 16000 */
 
 const int maxQueueSize = 16;
-//static std::deque<std::string> recvQueue;
-//static int recv_fd;
 static mwSize ret_sz[]={1};
 
 std::map<int, std::deque<std::string>*> recv_handles;
@@ -70,8 +68,6 @@ void recv_create(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 	if (fcntl(recv_fd, F_SETFL, flags | O_NONBLOCK) < 0)
 		mexErrMsgTxt("Could not set nonblocking mode");
 	
-	fprintf(stdout, "Setting up udp_recv on port: %d\n", port);
-  fflush(stdout);
 	mexAtExit(recvExit);
 
 	ret_sz[0] = 1;

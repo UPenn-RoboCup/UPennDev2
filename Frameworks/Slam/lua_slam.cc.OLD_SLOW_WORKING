@@ -1,0 +1,535 @@
+/* NOTE: Torch C access begins with 0, not 1 as in Torch's Lua access */
+#include <lua.hpp>
+#ifdef __cplusplus
+extern "C" {
+#endif
+#include "torch/luaT.h"
+#include "torch/TH/TH.h"
+#ifdef __cplusplus
+}
+#endif
+
+#include <stdint.h>
+#include <string.h>
+#include <math.h>
+#include <vector>
+#include <stdbool.h>
+#include <float.h>
+
+
+#define DEFAULT_RESOLUTION 0.05
+#define DEFAULT_INV_RESOLUTION 20
+
+std::vector<int> Count;
+std::vector<double> sumY, sumYY, maxY, minY;
+
+/* Indices helpers for speed */
+unsigned int xis[1081]; // Candidate indices
+unsigned int yis[1081];
+/* Laser points in map coordinates */
+double lxs_map[1081];
+double lys_map[1081];
+
+/* Store the min and max vlaues of the map */
+/* TODO: either make as a module, or pass as arguments. */
+/* TODO: multiple maps of various resolution? */
+double xmin, ymin, xmax, ymax;
+double invxmax, invymax;
+double res = DEFAULT_RESOLUTION, invRes = DEFAULT_INV_RESOLUTION;
+
+/* Set the boundaries for scan matching and map updating */
+int lua_set_boundaries(lua_State *L) {
+	xmin = luaL_checknumber(L, 1);
+	ymin = luaL_checknumber(L, 2);
+	xmax = luaL_checknumber(L, 3);
+	ymax = luaL_checknumber(L, 4);
+	invymax = ymax * DEFAULT_INV_RESOLUTION;
+	invxmax = xmax * DEFAULT_INV_RESOLUTION;
+	return 0;
+}
+
+/* Set the seolution of the map */
+int lua_set_resolution(lua_State *L) {
+	res = luaL_checknumber(L, 1);
+	invRes = 1.0 / res;
+	return 0;
+}
+
+/* Update the map with the laser scan points */
+int lua_update_map(lua_State *L) {
+	static int i = 0, mapLikelihood = 0;
+	static double x=0,y=0;
+	static unsigned int xi = 0, yi = 0;
+	static uint8_t newVal = 0;
+
+	/* Get the map, which is a ByteTensor */
+	const THByteTensor * map_t =
+		(THByteTensor *) luaT_checkudata(L, 1, "torch.ByteTensor");
+	
+	/* Get the updating table */
+	const THDoubleTensor * update_t =
+		(THDoubleTensor *) luaT_checkudata(L, 4, "torch.DoubleTensor");
+
+	/* Grab the updated points */
+	const THDoubleTensor * ps_t =
+		(THDoubleTensor *) luaT_checkudata(L, 2, "torch.DoubleTensor");
+	const long nps  = ps_t->size[0];
+
+	/* Grab the increment value */
+	const int inc = luaL_checknumber(L, 3);
+
+	// TODO: Kill the fastGet2d
+	// TODO: Check if contiguous maybe...?
+	// TODO: Assume x/y stride relationship (Make sure to TH_Assert this or something)
+	
+	//printf("W | Offset (%ld), Stride0 (%ld), Stride1 (%ld), Size0 (%ld), Size1 (%ld)\n",
+	//ps_t->storageOffset, ps_t->stride[0], ps_t->stride[1], 
+	//ps_t->size[0], ps_t->size[1]);
+	
+	double* pts_ptr = ps_t->storage->data;
+	long mystride = ps_t->stride[0];
+	
+	//#pragma omp parallel for
+	for( i=0; i<nps; i++ ) {
+		x = *(pts_ptr);
+		y = *(pts_ptr+1);
+		pts_ptr += mystride;
+		
+		//x = THTensor_fastGet2d( ps_t, i, 0 );
+		//y = THTensor_fastGet2d( ps_t, i, 1 );
+		
+		
+		if( x>xmax || y>ymax || x<xmin || y<ymin ) 
+			continue;
+		/* TODO: ceil or floor these? map_t bounds check? */
+		xi = (unsigned long)( ( x - xmin ) * invRes );
+		yi = (unsigned long)( ( y - ymin ) * invRes );
+		
+		/* Check if this cell has been updated before */
+		if (THTensor_fastGet2d(update_t,xi,yi) == 1){
+			continue;
+		}
+		/* 
+		mapLikelihood = THTensor_fastGet2d(map_t,xi,yi) + inc;
+		if (mapLikelihood > 0)
+			newVal = mapLikelihood > 255 ? mapLikelihood = 255 : mapLikelihood;
+		else
+			newVal = mapLikelihood < 0 ? mapLikelihood = 0 : mapLikelihood;
+		*/
+		
+		mapLikelihood = THTensor_fastGet2d(map_t,xi,yi);
+		if (mapLikelihood + inc > 255){
+			newVal = 255;
+			continue;
+			}
+		
+		if (mapLikelihood + inc < 0){
+			newVal = 0;
+			continue;
+			}
+		
+		newVal = mapLikelihood + inc;
+
+		THTensor_fastSet2d( map_t, xi, yi, newVal );
+		THTensor_fastSet2d( update_t, xi, yi, 1 );
+	}
+	return 0;
+}
+
+
+
+/* Update the height map with the laser scan points */
+/* Currently use same resolution and size as OMAP*/
+int lua_update_hmap(lua_State *L) {
+	static int i = 0;
+	static double x=0,y=0, height=0, currentHeight=0;
+	static unsigned int xi = 0, yi = 0;
+
+	/* Get the map, which is a ByteTensor */
+	const THByteTensor * map_t =
+		(THByteTensor *) luaT_checkudata(L, 1, "torch.ByteTensor");
+
+	/* Grab the updated points */
+	const THDoubleTensor * ps_t =
+		(THDoubleTensor *) luaT_checkudata(L, 2, "torch.DoubleTensor");
+	const long nps  = ps_t->size[0];
+
+	/* Grab the height value */
+	//const double height = luaL_checknumber(L, 3);
+
+#pragma omp parallel for
+	for( i=0; i<nps; i++ ) {
+		x = THTensor_fastGet2d( ps_t, i, 0 );
+		y = THTensor_fastGet2d( ps_t, i, 1 );
+		height = THTensor_fastGet2d( ps_t, i, 2 );
+		if( x>xmax || y>ymax || x<xmin || y<ymin ) 
+			continue;
+		/*  and OMAP.data_update[ xis[i] ][ yis[i] ]==0 */
+		/*  OMAP.data_update[ xis[i] ][ yis[i] ] = 1 */
+		/* TODO: ceil or floor these? map_t bounds check? */
+		xi = (unsigned long)( ( x - xmin ) * invRes );
+		yi = (unsigned long)( ( y - ymin ) * invRes );
+		
+		currentHeight = THTensor_fastGet2d(map_t,xi,yi);
+		
+		if (height > currentHeight){
+			THTensor_fastSet2d( map_t, xi, yi, height );
+		}
+		
+	}
+	return 0;
+}
+
+
+
+/* 2D scan match, with resulting maximum correlation information */
+int lua_match(lua_State *L) {
+
+	/* Initialize max correlation value */
+	double hmax = 0;
+	/* Initialize the max correlation Lua indices */
+	/* Use the C indexing here */
+	unsigned long ixmax = 0;
+	unsigned long iymax = 0;
+	unsigned long ithmax = 0;
+
+	/* Get the map, which is a ByteTensor */
+	const THByteTensor * map_t =
+		(THByteTensor *) luaT_checkudata(L, 1, "torch.ByteTensor");
+	const long sizex = map_t->size[0];
+	const long sizey = map_t->size[1];
+
+	/* Grab the xs and ys from the last laser scan*/
+	const THDoubleTensor * lY_t =
+		(THDoubleTensor *) luaT_checkudata(L, 2, "torch.DoubleTensor");
+	/* The number of laser points to match */
+	const long nps = lY_t->size[0];
+	/* Grab the scanning values for theta, x, y */
+	const THDoubleTensor * pxs_t =
+		(THDoubleTensor *) luaT_checkudata(L, 3, "torch.DoubleTensor");
+	const THDoubleTensor * pys_t =
+		(THDoubleTensor *) luaT_checkudata(L, 4, "torch.DoubleTensor");
+	const THDoubleTensor * pths_t =
+		(THDoubleTensor *) luaT_checkudata(L, 5, "torch.DoubleTensor");
+	long npxs  = pxs_t->size[0];
+	long npys  = pys_t->size[0];
+	long npths = pths_t->size[0];		
+	long pthi;
+
+	/* Grab the output Tensor */
+	THDoubleTensor * likelihoods_t = 
+		(THDoubleTensor *) luaT_checkudata(L, 6, "torch.DoubleTensor");
+	if (likelihoods_t->size[0] != npxs || 
+		likelihoods_t->size[1]!=npys || 
+			likelihoods_t->size[2]!=npths)
+				return luaL_error(L, "Likelihood output wrong");
+
+	/* Loop indices */
+	/* Iterate over all search angles */
+#pragma omp parallel for
+	for ( pthi=0; pthi<npths; pthi++ ) {
+		/* Variables to be used in the threads */
+		int pi, pyi, pxi;
+		double costh, sinth, lx, ly, xd, yd;
+
+		costh = cos( THTensor_fastGet1d(pths_t,pthi) );
+		sinth = sin( THTensor_fastGet1d(pths_t,pthi) );
+
+		/* Iterate over all laser points */
+		/* just ++ normally, not += 2 */
+		for ( pi=0; pi<nps; pi+=2 ) {
+			/* Convert the laser points to the map coordinates */
+			lx = THTensor_fastGet2d( lY_t, pi, 0) * invRes;
+			ly = THTensor_fastGet2d( lY_t, pi, 1) * invRes;
+			xd = lx*costh - ly*sinth;
+			yd = lx*sinth + ly*costh;
+
+			/* Iterate over all search y's */
+			for ( pyi=0; pyi<npys; pyi++ ) {
+				/* Use unsigned int - don't have to check < 0 */
+				int yi  = yd + (THTensor_fastGet1d(pys_t,pyi)-ymin)*invRes;
+				if ( yi >= sizey || yi<0 ){
+					continue;
+				}
+
+				/* Iterate over all search x's */
+				for ( pxi=0; pxi<npxs; pxi++ ) {
+					/* Use unsigned int - don't have to check < 0 */
+					int xi = xd + (THTensor_fastGet1d(pxs_t,pxi)-xmin)*invRes;
+					if ( xi >= sizex || xi<0 ) {
+						continue;
+					}
+
+					double currentLikelihood = 
+						THTensor_fastGet3d(likelihoods_t,pxi,pyi,pthi);
+					uint8_t mapLikelihood = 
+						THTensor_fastGet2d(map_t,xi,yi);
+					double newLikelihood = 
+						currentLikelihood+mapLikelihood;
+					THTensor_fastSet3d(likelihoods_t,pxi,pyi,pthi,newLikelihood);
+
+					/* Find the maximum likelihood */
+					if( newLikelihood > hmax ){
+						hmax = newLikelihood;
+						ixmax = pxi;
+						iymax = pyi;
+						ithmax = pthi;
+					}
+
+				} /* For pose xs */
+			} /* For pose ys */
+		} /* For laser scan points */
+	} /* For yaw values */
+
+	/* Push maximum correlation results to Lua */
+	lua_pushnumber(L,hmax);
+	/* Lua indices start at 1, rather than 0, so +1 each index */
+	lua_pushinteger(L,ixmax+1);
+	lua_pushinteger(L,iymax+1);
+	lua_pushinteger(L,ithmax+1);
+	return 4;
+}
+
+
+/************************************************************************/
+
+
+int lua_binStats(lua_State *L)
+{
+	/* Grab the inputs */
+	
+	// #1 input: Distances from chest lidar
+	const THDoubleTensor * prX =
+		(THDoubleTensor *) luaT_checkudata(L, 1, "torch.DoubleTensor");
+	const long nX  = prX->size[0];
+	
+	// #2 input: Heights from chest lidar
+	const THDoubleTensor * prY =
+		(THDoubleTensor *) luaT_checkudata(L, 2, "torch.DoubleTensor");
+	const long nY  = prY->size[0];
+	
+	// #3 input: Number of bins
+	const int n = luaL_checkint(L, 3);
+	
+	// #4 input: Bin Table containing: "count", "mean", "max", "min", "std"
+	const THDoubleTensor * prT =
+		(THDoubleTensor *) luaT_checkudata(L, 4, "torch.DoubleTensor");
+	
+	// #5 input: Bins
+	const THDoubleTensor * prB =
+		(THDoubleTensor *) luaT_checkudata(L, 5, "torch.DoubleTensor");
+	
+	//fprintf(stdout, "nX, nY, n, BinTable, Bins: %ld \t %ld \t %d \t %ldx%ld \t %ldx%ld \n"
+	//	,nX, nY, n, prT->size[0], prT->size[1], prB->size[0], prB->size[1]);
+   
+	if (nX != nY)
+		luaL_error(L, "Number of elements in inputs should match");
+     
+    
+	/* Initialize statistics vectors */
+	Count.resize(n);
+	sumY.resize(n);
+	sumYY.resize(n);
+	maxY.resize(n);
+	minY.resize(n);
+	
+	for (int i = 0; i < n; i++) {
+		Count[i] = 0;
+		sumY[i] = 0;
+		sumYY[i] = 0;
+		maxY[i] = -__FLT_MAX__;
+		minY[i] = __FLT_MAX__;
+	}
+    
+	
+	/* Calculate all the variables needed for the statistics of the points */		
+	double tmpX, tmp;
+	for (int i = 0; i < nX; i++) {
+		tmpX = THTensor_fastGet1d( prX, i);
+		int j = round(tmpX) - 1;
+		if ((j >= 0) && (j < n)) {
+			Count[j]++;
+			tmp = THTensor_fastGet1d( prY, i);
+			sumY[j] += tmp;
+			sumYY[j] += tmp*tmp;
+			if (tmp > maxY[j]) maxY[j] = tmp;
+			if (tmp < minY[j]) minY[j] = tmp;
+			THTensor_fastSet1d(prB, i, (double)j+1);
+		}
+	} 
+	
+	
+	/* Calculate the statistics of each bin and set the returning Tensor */
+	double mean = 0, std = 0, max = 0, min = 0;    
+	for (int i = 0; i < n; i++) { 
+		mean = 0; std = 0; max = 0; min = 0;
+		if (Count[i] > 0) {
+			mean = sumY[i]/Count[i];
+			std = sqrt((sumYY[i]-sumY[i]*sumY[i]/Count[i])/Count[i]);
+			max = maxY[i];
+			min = minY[i];
+		} 	  
+		THTensor_fastSet2d(prT, i, 0, Count[i]);
+		THTensor_fastSet2d(prT, i, 1, mean);
+		THTensor_fastSet2d(prT, i, 2, max);
+		THTensor_fastSet2d(prT, i, 3, min);
+		THTensor_fastSet2d(prT, i, 4, std);
+	}
+  
+	return 0;
+}
+
+
+
+/* Get the ground points from chest lidar points */
+int lua_get_ground_points(lua_State *L) {
+	static int i = 0;
+	static double x=0,y=0,z=0,w=0;
+
+	/* Get the torch to set */
+	const THDoubleTensor * ps_x =
+		(THDoubleTensor *) luaT_checkudata(L, 1, "torch.DoubleTensor");
+	
+	/* Grab the lidar points */
+	const THDoubleTensor * ps_t =
+		(THDoubleTensor *) luaT_checkudata(L, 2, "torch.DoubleTensor");
+	const long nps_t  = ps_t->size[0];
+
+	/* Grab the total number of points to set */
+	const double nps = luaL_checknumber(L, 3);
+
+#pragma omp parallel for
+	for( i=0; i<nps; i++ ) {
+		x = THTensor_fastGet2d( ps_t, nps_t-i-1, 0 );
+		y = THTensor_fastGet2d( ps_t, nps_t-i-1, 1 );
+		z = THTensor_fastGet2d( ps_t, nps_t-i-1, 2 );
+		w = THTensor_fastGet2d( ps_t, nps_t-i-1, 3 );
+		THTensor_fastSet2d( ps_x, i, 0, x );
+		THTensor_fastSet2d( ps_x, i, 1, y );
+		THTensor_fastSet2d( ps_x, i, 2, z );
+		THTensor_fastSet2d( ps_x, i, 3, w );
+		
+	}
+	return 0;
+}
+
+
+
+/* Get the points from chest lidar points 
+ to update the height map later */
+int lua_get_height_points(lua_State *L) {
+	static int i = 0;
+	static double x=0,y=0,z=0,w=0;
+
+	/* Get the torch to set */
+	const THDoubleTensor * ps_x =
+		(THDoubleTensor *) luaT_checkudata(L, 1, "torch.DoubleTensor");
+	
+	/* Grab the lidar points */
+	const THDoubleTensor * ps_t =
+		(THDoubleTensor *) luaT_checkudata(L, 2, "torch.DoubleTensor");
+	const long nps_t  = ps_t->size[0];
+
+	/* Grab the minimum height of the height map */
+	const double min_height = luaL_checknumber(L, 3);
+	
+	/* Grab the maximum height of the height map */
+	const double max_height = luaL_checknumber(L, 4);
+	
+	/* Grab the chest lidar height */
+	const double offset = luaL_checknumber(L, 5);
+
+#pragma omp parallel for
+	for( i=0; i<nps_t; i++ ) {
+		x = THTensor_fastGet2d( ps_t, i, 0 );
+		y = THTensor_fastGet2d( ps_t, i, 1 );
+		z = THTensor_fastGet2d( ps_t, i, 2 );
+		w = THTensor_fastGet2d( ps_t, i, 3 );
+		THTensor_fastSet2d( ps_x, i, 0, x );
+		THTensor_fastSet2d( ps_x, i, 1, y );
+		THTensor_fastSet2d( ps_x, i, 2, (z + offset - min_height)*(255/(max_height - min_height)) );
+		THTensor_fastSet2d( ps_x, i, 3, w );
+		
+		
+	}
+	return 0;
+}
+
+
+/* Get the chest lidar points 
+ and find the last free ground point before the first obstacle  */
+int lua_find_last_free_point(lua_State *L) {
+	static int i = 0;
+	static double x=0;
+
+	/* Get the torch that contains in which bin each point belongs to */
+	const THDoubleTensor * ps_x =
+		(THDoubleTensor *) luaT_checkudata(L, 1, "torch.DoubleTensor");
+	const long nps  = ps_x->size[0];
+	
+	/* Grab the lidar points 
+	const THDoubleTensor * ps_t =
+		(THDoubleTensor *) luaT_checkudata(L, 2, "torch.DoubleTensor");
+	const long nps_t  = ps_t->size[0];*/
+
+	/* Grab the total number of bins */
+	const double nbins = luaL_checknumber(L, 2);
+	
+	/* Grab the bin that contains the 1st obstacle */
+	const double iFirstObs = luaL_checknumber(L, 3);
+	
+	/* Grab the safe distance that we want to keep from the obstacle */
+	const double safe_distance = luaL_checknumber(L, 4);
+
+
+	bool not_found_last_point = true;
+	int last_point = 1;
+#pragma omp parallel for
+	for( i=0; i<nps; i++ ) {
+		x = THTensor_fastGet2d( ps_x, nps-i-1, 0 );
+		
+		if (x<1) {
+			THTensor_fastSet2d( ps_x, nps-i-1, 0, nbins );
+		}
+		
+		if ((x>iFirstObs-safe_distance)&&(not_found_last_point)){
+			last_point = i + 1;
+			not_found_last_point = false;
+		}
+	}
+	lua_pushinteger(L,last_point);
+	return 1;
+}
+
+
+/************************************************************************/
+
+
+
+static const struct luaL_Reg slam_lib [] = {
+	{"set_boundaries", lua_set_boundaries},	
+	{"set_resolution", lua_set_resolution},
+	{"match", lua_match},
+	{"update_map", lua_update_map},
+	{"binStats", lua_binStats},
+	{"update_hmap", lua_update_hmap},
+	{"get_ground_points", lua_get_ground_points},
+	{"get_height_points", lua_get_height_points},
+	{"get_last_free_point",lua_find_last_free_point},
+	{NULL, NULL}
+};
+
+
+#ifdef __cplusplus
+extern "C"
+#endif
+	
+
+int luaopen_slam (lua_State *L) {
+#if LUA_VERSION_NUM == 502
+	luaL_newlib(L, slam_lib);
+#else
+	luaL_register(L, "slam", slam_lib);
+#endif
+	return 1;
+}

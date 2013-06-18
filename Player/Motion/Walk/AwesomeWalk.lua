@@ -484,47 +484,48 @@ function update()
   -- end motion_body
 end
 
+step_check_count = 0;
+
 function check_stepkick()
-  if stepKickRequest==0 then return; end
+  if stepKickRequest==0 then 
+    step_check_count = 0;
+		return; 
+	end
   if stepKickRequest==1 then 
     --Check current supporLeg and feet positions
     --and advance steps until ready
     uFootErr = util.pose_relative(uLeft1,
        util.pose_global(2*uLRFootOffset,uRight1) );
+    step_check_count = step_check_count + 1;
 
-
+--[[
 print("---------------------")
 print("support:",supportLeg,stepKickSupport);
 print("uLeft:",uLeft1[1],uLeft1[2],uLeft1[3]*180/math.pi);
 print("uRight:",uRight1[1],uRight1[2],uRight1[3]*180/math.pi);
+--]]
+
+print("Step check",step_check_count)
 print("Err:",uFootErr[1],uFootErr[2],uFootErr[3]*180/math.pi);
 
 
-
-    if supportLeg~=stepKickSupport or 
-      math.abs(uFootErr[1])>0.02 or
-      math.abs(uFootErr[2])>0.02 or
-      math.abs(uFootErr[3])>10*math.pi/180 then
-      if supportLeg == 0 then
-        uRight2 = util.pose_global( -2*uLRFootOffset, uLeft1); 
-print("uRight2:",uRight2[1],uRight2[2],uRight2[3]*180/math.pi);
-
-
-      else
-        uLeft2 = util.pose_global( 2*uLRFootOffset, uRight1); 
-print("uLeft2:",uLeft2[1],uLeft2[2],uLeft2[3]*180/math.pi);
-
+    if supportLeg==stepKickSupport then
+      if (step_check_count>2) or 
+      ( math.abs(uFootErr[1])<0.02 and
+        math.abs(uFootErr[2])<0.01 and
+        math.abs(uFootErr[3])<10*math.pi/180) then
+        print("Stepkick Ready!!!");
+        stepkick_ready = true;
+        return; 
       end
+    end
 
-
-
-
-      return;
+    if supportLeg == 0 then
+      uRight2 = util.pose_global( -2*uLRFootOffset, uLeft1); 
+    else
+      uLeft2 = util.pose_global( 2*uLRFootOffset, uRight1); 
     end
   end
-print("Stepkick Ready!!!");
-  stepkick_ready = true;
-  return; 
 end
 
 

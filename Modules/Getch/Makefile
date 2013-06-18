@@ -1,2 +1,2 @@
 LIBNAME=getch
-include ../Makefile.lib
+include ../../Makefile.inc

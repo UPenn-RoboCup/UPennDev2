@@ -15,13 +15,6 @@ BINCOLOR="\033[37;1m"
 JULCOLOR="\033[34;1m"
 ENDCOLOR="\033[0m"
 
-## Path Definition
-INSTDIR= Run/Lib
-WEBOTSCONTDIR= WebotsController
-PLAYERDIR= Run
-NAODEPDIR= Install/dependencies
-NAODEPLUA51DIR= $(NAODEPDIR)/usr/local/lib/lua/5.1
-
 # Independent useful options
 ifndef OSTYPE
   OSTYPE=$(shell uname -s|awk '{print tolower($$0)}')
@@ -115,7 +108,6 @@ QUIET_CC = @printf '    %b %b\n' $(CCCOLOR)CC$(ENDCOLOR) $(SRCCOLOR)$(GOAL)$(END
 $(LIBNAME): lua_$(LIBNAME).o $(EXTRA_OBJ)
 	$(V)printf '\t%b %b\n' $(LINKCOLOR)LINK$(ENDCOLOR) $(BINCOLOR)$@$(ENDCOLOR);
 	$(V)$(LD) $(LDFLAGS) -o $@.$(SHLIBEXT) $^ $(EXTRA_LINK) $(LIB_DIR) $(LIBOPTS)
-
 clean:
 	$(V)printf '\t%b %b\n' $(PERLCOLOR)Cleaning$(ENDCOLOR) $(shell pwd);
 	$(V)rm -f *.so *.o

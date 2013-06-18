@@ -1,2 +1,2 @@
 LIBNAME=signal
-include ../Makefile.lib
+include ../../Makefile.inc

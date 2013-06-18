@@ -1,2 +1,2 @@
 LIBNAME=stty
-include ../Makefile.lib
+include ../../Makefile.inc

@@ -1,2 +1,2 @@
 LIBNAME=unix
-include ../Makefile.lib
+include ../../Makefile.inc

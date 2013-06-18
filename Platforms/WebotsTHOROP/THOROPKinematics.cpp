@@ -547,7 +547,8 @@ THOROP_kinematics_inverse_arm(Transform trArm, int arm, const double *qOrg)
       }
     }
   }
-if (arm==ARM_LEFT) printf("Solutions: %d\n",solution_no);
+if (arm==ARM_LEFT) 
+//printf("Solutions: %d\n",solution_no);
   if (solution_no==0){
     qArm[0] = qOrg[0];
     qArm[1] = qOrg[1];

@@ -121,7 +121,6 @@ if listen_monitor>0 then
   shared.teamdata.robotId=vector.zeros(10);
   shared.teamdata.role=vector.zeros(10);
   shared.teamdata.time=vector.zeros(10);
-
   --Latency information
   shared.teamdata.gclatency=vector.zeros(10);
   shared.teamdata.tmlatency=vector.zeros(10);

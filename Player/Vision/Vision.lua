@@ -148,6 +148,7 @@ function camera_init_naov4()
     end
     local expo = Camera.get_param('Exposure');
     local gain = Camera.get_param('Gain');
+    local white = Camera.get_param('Do White Balance');
     Camera.set_param('Auto Exposure',1);   
     Camera.set_param('Auto Exposure',0);
     Camera.set_param('Exposure', expo)

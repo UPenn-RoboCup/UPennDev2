@@ -137,7 +137,7 @@ vision.ball.th_headAngle = 10* math.pi/180;
 fsm.goalie_type = 3;--moving/move+stop/stop+dive/stop+dive+move
 goalie_dive = 1; --1 for arm only, 2 for actual diving
 goalie_disable_arm = 1; 
-goalie_log_balls = 0;
+goalie_log_balls = 1;
 
 vision.ball.max_distance = 2.0; --temporary fix for GRASP lab
 
@@ -171,3 +171,6 @@ fsm.avoidance_mode = 0 -- walk towards goal, no ball
 fsm.avoidance_mode = 2 -- walk towards goal, no ball 
 use_rollback_getup = 0;
 -]]
+
+use_kalman_velocity = 1;
+

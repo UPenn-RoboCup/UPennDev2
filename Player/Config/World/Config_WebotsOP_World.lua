@@ -24,7 +24,6 @@ world.postCyan[2] = {-3.0, 0.80};
 world.spot = {};
 world.spot[1] = {-1.20, 0};
 world.spot[2] = {1.20, 0};
-world.cResample = 10; --Resampling interval
 
 --Field edge
 --SJ: rule change in 2013 (penalty box width 2.2m)
@@ -55,22 +54,27 @@ world.Lcorner[14]={-3.0,-1.1};
 world.Lcorner[15]={0,0.6};
 world.Lcorner[16]={0,-0.6};
 
-world.Lgoalie_corner = {}
-world.Lgoalie_corner[1]={3.0,2.0};
-world.Lgoalie_corner[2]={3.0,-2.0};
-world.Lgoalie_corner[3]={-3.0,2.0};
-world.Lgoalie_corner[4]={-3.0,-2.0};
---Penalty box edge
-world.Lgoalie_corner[5]={-2.4,1.1};
-world.Lgoalie_corner[6]={-2.4,-1.1};
-world.Lgoalie_corner[7]={2.4,1.1};
-world.Lgoalie_corner[8]={2.4,-1.1};
---Penalty box T edge
-world.Lgoalie_corner[9]={3.0,1.1};
-world.Lgoalie_corner[10]={3.0,-1.1};
-world.Lgoalie_corner[11]={-3.0,1.1};
-world.Lgoalie_corner[12]={-3.0,-1.1};
 
+--Goalie only uses corners near goals
+
+world.Lgoalie_corner = {}
+--Field edge
+world.Lgoalie_corner[1]=world.Lcorner[1];
+world.Lgoalie_corner[2]=world.Lcorner[2];
+world.Lgoalie_corner[3]=world.Lcorner[3];
+world.Lgoalie_corner[4]=world.Lcorner[4];
+
+--Penalty box edge
+world.Lgoalie_corner[5]=world.Lcorner[7];
+world.Lgoalie_corner[6]=world.Lcorner[8];
+world.Lgoalie_corner[7]=world.Lcorner[9];
+world.Lgoalie_corner[8]=world.Lcorner[10];
+
+--Penalty box T edge
+world.Lgoalie_corner[9]=world.Lcorner[11];
+world.Lgoalie_corner[10]=world.Lcorner[12];
+world.Lgoalie_corner[11]=world.Lcorner[13];
+world.Lgoalie_corner[12]=world.Lcorner[14];
 
 
 --SJ: OP does not use yaw odometry data (only use gyro)
@@ -108,18 +112,23 @@ world.initPosition3={
   {0.5,1.0}, --Supporter
 }
 
+--Resampling parameters
+world.cResample = 10; --Resampling interval
+world.daNoise = 2.0*math.pi/180;
+world.drNoise = 0.01;
+
+
 -- filter weights
---old values
--------------------------------
-world.rGoalFilter = 0.02;
-world.aGoalFilter = 0.05;
-world.rPostFilter = 0.02;
-world.aPostFilter = 0.05;
-world.rKnownGoalFilter = 0.02;
-world.aKnownGoalFilter = 0.20;
-world.rKnownPostFilter = 0.02;
-world.aKnownPostFilter = 0.10;
-----------------------------------
+
+--Sigma value for one landmark observation
+world.rSigmaSingle1 = .15;
+world.rSigmaSingle2 = 0.10;
+world.aSigmaSingle = 50*math.pi/180;
+
+--Sigma value for two landmark observation
+world.rSigmaDouble1 = .25;
+world.rSigmaDouble2 = .20;
+world.aSigmaDouble = 50*math.pi/180;
 
 --for general update(corner, distant goalpost, etc)
 world.rLandmarkFilter = 0.05;
@@ -142,9 +151,22 @@ world.aLineFilter = 0.02;
 
 
 world.use_same_colored_goal = 1;
-
---Use line information to fix angle
+world.use_new_goalposts=1;
 world.use_line_angles = 1;
 
---New two-goalpost localization
-world.use_new_goalposts=1;
+world.triangulation_threshold = 4.0; 
+world.position_update_threshold = 6.0;
+world.angle_update_threshold = 1.0;
+
+world.flip_correction = 1;
+world.flip_threshold_x = 2.0;
+world.flip_threshold_y = 2.0;
+
+
+
+
+
+world.dont_reset_orientation = 1;
+
+
+

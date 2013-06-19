@@ -22,7 +22,7 @@ all: luadcm
 
 luadcm: actuator_process.o dcmprocess.o luadcm.o luafifo.o \
 				sensor_process.o shmmap.o shm_util.o
-	$(LD) $(LDFLAGS) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ $(LIB_DIR) -lm -lluajit-5.1 $(NaoQi_LIB)
+	$(LD) $(LDFLAGS) -o $@.$(SHLIBEXT) $(LIBOPTS) $^ $(LIB_DIR) -lm $(LUA_LIB) $(NaoQi_LIB)
 
 clean:
 	rm -f *.$(SHLIBEXT) *.o

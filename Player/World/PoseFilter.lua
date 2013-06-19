@@ -56,6 +56,12 @@ rSigmaDouble1 = Config.world.rSigmaSingle1 or .25;
 rSigmaDouble2 = Config.world.rSigmaSingle2 or .20;
 aSigmaDouble = Config.world.aSigmaSingle or 50*math.pi/180;
 
+daNoise = Config.world.daNoise or 2.0*math.pi/180.0;
+drNoise = Config.world.drNoise or 0.01;
+
+dont_reset_orientation = Config.world.dont_reset_orientation or 0;
+
+
 
 xp = .5*xMax*vector.new(util.randn(n)); -- x coordinate of each particle
 yp = .5*yMax*vector.new(util.randn(n)); -- y coordinate
@@ -120,8 +126,12 @@ end
 ---Sets headings of all particles to random angles with 0 weight
 --@usage For when robot falls down
 function reset_heading()
-  ap = 2*math.pi*vector.new(util.randu(n));
-  wp = vector.zeros(n);
+  if dont_reset_orientation == 0 then
+    ap = 2*math.pi*vector.new(util.randu(n));
+    wp = vector.zeros(n);
+  else
+
+  end
 end
 
 function flip_particles()
@@ -662,8 +672,8 @@ end
 
 ---Adds noise to particle x,y coordinates and angle.
 function add_noise()
-  da = 2.0*math.pi/180.0;
-  dr = 0.01;
+  da = daNoise;
+  dr = drNoise;
   xp = xp + dr * vector.new(util.randn(n));
   yp = yp + dr * vector.new(util.randn(n));
   ap = ap + da * vector.new(util.randn(n));
@@ -766,46 +776,6 @@ end
 
 
 
---Obsolete functions 
-
---[[
-
-
-function goal_observation(pos, v)
-  --Get estimate using triangulation
-  if use_new_goalposts==1 then
-    pose,dGoal,aGoal=triangulate2(pos,v);
-  else
-    pose,dGoal,aGoal=triangulate(pos,v);
-  end
---  vcm.add_debug_message(string.format("aGoal: %d\n",aGoal*180/math.pi))
---  vcm.add_debug_message(string.format("pos: %.1f %.1f\n",pos[1][1],pos[1][2]))
-  local x,y,a=pose.x,pose.y,pose.a;
-  local rSigma = .25*dGoal + 0.20;
-  local aSigma = 5*math.pi/180;
-  local rFilter = rKnownGoalFilter;
-  local aFilter = aKnownGoalFilter;
-
-  if dGoal<triangulation_threshold then 
-    for ip = 1,n do
-      local xErr = x - xp[ip];
-      local yErr = y - yp[ip];
-      local rErr = math.sqrt(xErr^2 + yErr^2);
-      local aErr = mod_angle(a - ap[ip]);
-      local err = (rErr/rSigma)^2 + (aErr/aSigma)^2;
-      wp[ip] = wp[ip] - err;
-      --Filter towards goal:
-      xp[ip] = xp[ip] + rFilter*xErr;
-      yp[ip] = yp[ip] + rFilter*yErr;
-      ap[ip] = ap[ip] + aFilter*aErr;
-    end
-  else
-  --Don't use triangulation for far goals
-    goalpos={{(pos[1][1]+pos[2][1])/2, (pos[1][2]+pos[2][2])/2}}
-    goalv={(v[1][1]+v[2][1])/2, (v[1][2]+v[2][2])/2}
-    landmark_observation(goalpos, goalv , rKnownGoalFilter, aKnownGoalFilter);
-  end
-end
 
 function landmark_cyan(v)
   landmark_observation({landmarkCyan}, v, rLandmarkFilter, aLandmarkFilter);

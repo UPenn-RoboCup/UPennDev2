@@ -50,7 +50,7 @@ DEF PLAYER_1_0 DARwInOPGPS {
   translation 1.5 0.3 2
   rotation 0 1 0 3.14
   controller "darwin-op_team_0"
-  controllerArgs "1 99"
+  controllerArgs "1 1"
   plasticColor 1 0 0
   cameraWindowPosition 0.125 0
   waistBand TRUE

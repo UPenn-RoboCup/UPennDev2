@@ -128,6 +128,10 @@ function process_keyinput()
 		grip.throw=1;
 		Motion.event("throw");
 
+	elseif byte==string.byte("m") then
+		Motion.event("align");
+
+
 
 	elseif byte==string.byte("f") then
            walk.doStepKickLeft();

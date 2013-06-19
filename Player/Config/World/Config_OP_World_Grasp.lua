@@ -53,6 +53,29 @@ world.Lcorner[16]={0,-0.6375};
 world.Lcorner[17]={0.6375,0};
 world.Lcorner[18]={-0.6375,0};
 
+--Goalie only uses corners near goals
+
+world.Lgoalie_corner = {}
+--Field edge
+world.Lgoalie_corner[1]=world.Lcorner[1];
+world.Lgoalie_corner[2]=world.Lcorner[2];
+world.Lgoalie_corner[3]=world.Lcorner[3];
+world.Lgoalie_corner[4]=world.Lcorner[4];
+
+--Penalty box edge
+world.Lgoalie_corner[5]=world.Lcorner[7];
+world.Lgoalie_corner[6]=world.Lcorner[8];
+world.Lgoalie_corner[7]=world.Lcorner[9];
+world.Lgoalie_corner[8]=world.Lcorner[10];
+
+--Penalty box T edge
+world.Lgoalie_corner[9]=world.Lcorner[11];
+world.Lgoalie_corner[10]=world.Lcorner[12];
+world.Lgoalie_corner[11]=world.Lcorner[13];
+world.Lgoalie_corner[12]=world.Lcorner[14];
+
+
+
 --same-colored goalposts
 world.use_same_colored_goal=1;
 

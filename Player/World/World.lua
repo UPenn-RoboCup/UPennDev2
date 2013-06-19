@@ -221,9 +221,6 @@ function update_vision()
     --  Velocity.update_noball();--notify that ball is missing
       Velocity.update(ball.x,ball.y,ball.t);
       ball.vx, ball.vy, dodge  = Velocity.getVelocity();
-    else
-      ball.p = (1-ball_gamma)*ball.p;
-      Velocity.update_noball(ball.t);--notify that ball is missing
     end
     update_shm();
 

@@ -110,9 +110,9 @@ function update()
       ballR=math.sqrt(ball.x^2+ball.y^2);
 
       if ball_v>ball_velocity_th and
-	ball.vx<ball_velocity_thx then
+				ball.vx<ball_velocity_thx then
         print(string.format("B: %.1f %.1f V %.2f %.2f", 
-	ball.x,ball.y,ball.vx,ball.vy));
+				ball.x,ball.y,ball.vx,ball.vy));
       end
 
       if ball.vx<ball_velocity_thx and 
@@ -126,14 +126,19 @@ function update()
         print("Projected y pos:",py);
         if math.abs(py)<dive_threshold_y then
           if py>center_dive_threshold_y then 
-  	    Speak.talk('Left');
+  			    Speak.talk('Left');
             dive.set_dive("diveLeft");
+						print("LEFT DIVE")
+
           elseif py<-center_dive_threshold_y then
-  	    Speak.talk('Right');
+		  	    Speak.talk('Right');
             dive.set_dive("diveRight");
+						print("RIGHT DIVE")
+
           else 
-	    Speak.talk('Center');
+				    Speak.talk('Center');
             dive.set_dive("diveCenter");
+						print("CENTER DIVE")
           end
           Motion.event("dive");
           return "dive";
@@ -154,7 +159,9 @@ function update()
 --  if goalie_dive~=1 or goalie_type<3 then 
 
 
-  if true then --Always reposition
+  --If reposition is set to 3, don't go for the ball to kick away!
+  --For goalie velocity testing
+  if Config.fsm.goalie_reposition~=3 then 
     if t-ball.t<0.1 and ball_v < ball_velocity_th2 then
       --ball is not moving, check whether we go out for kicking      
       if ballX_defend<rCloseX2 or
@@ -168,17 +175,18 @@ function update()
     attackBearing = wcm.get_attack_bearing();
     if Config.fsm.goalie_reposition==1 then --check yaw error only
       if (t - t0 > timeout) and 
-  	math.abs(aBall) > thFar[3] then
-
+				(math.abs(aBall) > thFar[3] and t-ball.t<0.5) then
+        print("Reposition: Yaw", aBall*180/math.pi)
         Motion.event("walk");
         return 'position';
       end
     --check yaw and position error
     elseif Config.fsm.goalie_reposition==2 then 
       if (t - t0 > timeout) and 
-	( rHomeRelative>math.sqrt(thFar[1]^2+thFar[2]^2) or
-  	math.abs(aBall) > thFar[3]) then
-
+				( rHomeRelative>math.sqrt(thFar[1]^2+thFar[2]^2) or
+			  	(math.abs(aBall) > thFar[3] and t-ball.t<0.5)
+					) then
+        print("Reposition: Position", aBall*180/math.pi)
         Motion.event("walk");
         return 'position';
       end

@@ -578,6 +578,7 @@ end
 
 function check_flip2()
   if role~=ROLE_CONFUSED then return; end
+  if role==ROLE_GOALIE then return;end
 
   local pose = wcm.get_pose();
   local ball = wcm.get_ball();
@@ -629,10 +630,12 @@ function check_flip2()
 end
 
 function check_confused()
+
   pose = wcm.get_pose();
 
   --Goalie never get confused
-  if role==ROAL_GOALIE or role >= ROLE_RESERVE_PLAYER then return; end
+  if role==ROLE_GOALIE or role >= ROLE_RESERVE_PLAYER then return; end
+
   if role==ROLE_CONFUSED then
     if gcm.get_game_state() ~= 3 --If game state is not gamePlaying
        or gcm.in_penalty() --Or the robot is penalized

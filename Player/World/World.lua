@@ -22,7 +22,8 @@ end
 
 mod_angle = util.mod_angle;
 
-require('Velocity');	
+--require('Velocity');	
+Velocity = require('kVelocity');	
 
 --Use ground truth pose and ball information for webots?
 use_gps_only = Config.use_gps_only or 0;

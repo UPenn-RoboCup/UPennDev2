@@ -102,8 +102,8 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel,name)
 
     teamColors = ['b', 'r'];
     idColors = ['k', 'r', 'g', 'b'];
-    % Role:  0:Goalie 1:Attack / 2:Defend / 3:Support / 4: R.player 5: R.goalie
-    roleColors = {'g','r','k', 'k--','r--','g--'};
+    % Role:  0:Goalie 1:Attack / 2:Defend / 3:Support / 4: Defender2 5: R.player 6: R.goalie
+    roleColors = {'g','r','k', 'k--', 'k'  ,'r--','g--'};
 
     teamColors = ['b', 'r'];
     hr = fill(xr, yr, teamColors(max(1,robot.teamColor+1)));
@@ -162,8 +162,9 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel,name)
 
     teamColors = ['b', 'r'];
     idColors = ['k', 'r', 'g', 'b'];
-    % Role:  0:Goalie 1:Attack / 2:Defend / 3:Support / 4: R.player 5: R.goalie
-    roleColors = {'g','r','k', 'k--','r--','g--'};
+
+    % Role:  0:Goalie 1:Attack / 2:Defend / 3:Support / 4: Defender2 5: R.player 6: R.goalie
+    roleColors = {'g','r','k', 'k--', 'k'  ,'r--','g--'};
 
     teamColors = ['b', 'r'];
     hr = fill(xr, yr, teamColors(max(1,robot.teamColor+1)));

@@ -25,7 +25,6 @@ world.postCyan[2] = {-3.825, 0.70};
 world.spot = {};
 world.spot[1] = {-2.295, 0};
 world.spot[2] = {2.295, 0};
-world.cResample = 10; --Resampling interval
 
 --They are SPL 2013 values
 world.Lcorner={};
@@ -75,29 +74,12 @@ world.Lgoalie_corner[11]=world.Lcorner[13];
 world.Lgoalie_corner[12]=world.Lcorner[14];
 
 
-
---same-colored goalposts
-world.use_same_colored_goal=1;
-
---should we use new triangulation?
-world.use_new_goalposts=0;
-
--- filter weights
-world.rGoalFilter = 0.02;
-world.aGoalFilter = 0.05;
-world.rPostFilter = 0.02;
-world.aPostFilter = 0.05;
-world.rKnownGoalFilter = 0.02;
-world.aKnownGoalFilter = 0.20;
-world.rKnownPostFilter = 0.02;
-world.aKnownPostFilter = 0.10;
-world.rUnknownGoalFilter = 0.02;
-world.aUnknownGoalFilter = 0.05;
-world.rUnknownPostFilter = 0.02;
-world.aUnKnownPostFilter = 0.05;
-
-world.rCornerFilter = 0.02;
-world.aCornerFilter = 0.05;
+--SJ: OP does not use yaw odometry data (only use gyro)
+world.odomScale = {1, 1, 0};  
+world.imuYaw = 1;
+--Vision only testing (turn off yaw gyro)
+--world.odomScale = {1, 1, 1};  
+--world.imuYaw = 0;
 
 -- default positions for our kickoff
 world.initPosition1={
@@ -115,13 +97,62 @@ world.initPosition2={
   {2.5,1}, --Supporter
 }
 
--- use sound localization
-world.enable_sound_localization = 0;
+-- default positions for dropball
+-- Center circle radius: 0.6
+world.initPosition3={
+  {2.8,0},   --Goalie
+  {0.5,0}, --Attacker
+  {1.5,-1.5}, --Defender
+  {0.5,1.0}, --Supporter
+}
 
---SJ: OP does not use yaw odometry data (only use gyro)
-world.odomScale = {1, 1, 0};  
-world.imuYaw = 1;
---Vision only testing (turn off yaw gyro)
---world.odomScale = {1, 1, 1};  
---world.imuYaw = 0;
+
+
+--Resampling parameters
+world.cResample = 10; --Resampling interval
+world.daNoise = 2.0*math.pi/180;
+world.drNoise = 0.01;
+
+-- filter weights
+
+--Sigma value for one landmark observation
+world.rSigmaSingle1 = .15;
+world.rSigmaSingle2 = 0.10;
+world.aSigmaSingle = 50*math.pi/180;
+
+--Sigma value for two landmark observation
+world.rSigmaDouble1 = .25;
+world.rSigmaDouble2 = .20;
+world.aSigmaDouble = 50*math.pi/180;
+
+--for general update(corner, distant goalpost, etc)
+world.rLandmarkFilter = 0.05;
+world.aLandmarkFilter = 0.10;
+
+--for Two goalposts
+world.rUnknownGoalFilter = 0.02;
+world.aUnknownGoalFilter = 0.05;
+
+--For One goalpost
+world.rUnknownPostFilter = 0.02;
+world.aUnKnownPostFilter = 0.05;
+
+--For corner
+world.rCornerFilter = 0.01;
+world.aCornerFilter = 0.03;
+
+--For line
+world.aLineFilter = 0.02;
+
+
+world.use_same_colored_goal = 1;
+world.use_new_goalposts=1;
+world.use_line_angles = 1;
+
+world.triangulation_threshold = 4.0; 
+world.position_update_threshold = 6.0;
+world.angle_update_threshold = 1.0;
+world.flip_correction = 0;
+
+
 

@@ -219,10 +219,10 @@ function update_vision()
     return;
   end
 
-  -- only addnoise / resample while robot is moving
-  if mcm.get_walk_isMoving()>0 then
-    if count % cResample == 0 then
-      PoseFilter.resample();
+  -- only add noise while robot is moving
+  if count % cResample == 0 then
+    PoseFilter.resample();
+    if mcm.get_walk_isMoving()>0 then
       PoseFilter.add_noise();
     end
   end

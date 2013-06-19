@@ -429,3 +429,8 @@ cal["betty"].kickXComp=0.000;
 cal["betty"].servoBias={8,-10,0,-67,39,-8,-5,6,-51,-24,-43,10,};
 cal["betty"].footXComp=-0.008;
 cal["betty"].kickXComp=-0.005;
+
+-- Updated date: Wed Jun 19 17:26:55 2013
+cal["betty"].servoBias={8,-10,0,-67,39,-8,-5,6,-51,-24,-43,10,};
+cal["betty"].footXComp=-0.008;
+cal["betty"].kickXComp=0.010;

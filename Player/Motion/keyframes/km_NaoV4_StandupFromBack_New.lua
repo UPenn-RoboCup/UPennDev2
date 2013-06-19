@@ -44,14 +44,12 @@ mot.keyframes = {
      duration = 0.200;
 	 },
 	 {	--Spread stance, rotate forearms down, bend knees
-		angles = vector.new({
-         0, 0, 
-         130.1, 0, 0, -20, 
+		angles = vector.new({ 0, 0, 130.1, 0, 0, -20, 
          -60, 20, -60, 50, 40, 0, 
          -60, -20, -60, 50, 40, 0, 
          130.1, 0, 0, 20,
      })*math.pi/180,
-     duration = 0.300;
+     duration = 0.200;
 	 },
    {	--Plant feet 
 		angles = vector.new({
@@ -103,7 +101,7 @@ mot.keyframes = {
 		})*math.pi/180,
 		duration = 0.100;
 	 },
-   {	--Hold for 0.3s
+   {	--Hold for 0.2s
 		angles = vector.new({
 				0, 0,
 				90, 0, 0, 0,

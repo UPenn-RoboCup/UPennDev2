@@ -154,5 +154,5 @@ world.position_update_threshold = 6.0;
 world.angle_update_threshold = 1.0;
 world.flip_correction = 0;
 
-
+world.dont_reset_orientation = 1;
 

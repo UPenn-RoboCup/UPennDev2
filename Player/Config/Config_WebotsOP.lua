@@ -104,6 +104,11 @@ team.avoid_own_team = 1;
 team.avoid_other_team = 1;
 
 team.flip_correction = 1;
+team.flip_threshold_x = 3.0;
+team.flip_threshold_y = 3.0;
+
+
+
 
 -- Keyframe files
 km = {};

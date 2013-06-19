@@ -157,6 +157,16 @@ world.use_line_angles = 1;
 world.triangulation_threshold = 4.0; 
 world.position_update_threshold = 6.0;
 world.angle_update_threshold = 1.0;
+
 world.flip_correction = 1;
+world.flip_threshold_x = 2.0;
+world.flip_threshold_y = 2.0;
+
+
+
+
+
+world.dont_reset_orientation = 1;
+
 
 

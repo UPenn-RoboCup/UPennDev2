@@ -59,6 +59,10 @@ aSigmaDouble = Config.world.aSigmaSingle or 50*math.pi/180;
 daNoise = Config.world.daNoise or 2.0*math.pi/180.0;
 drNoise = Config.world.drNoise or 0.01;
 
+dont_reset_orientation = Config.world.dont_reset_orientation or 0;
+
+
+
 xp = .5*xMax*vector.new(util.randn(n)); -- x coordinate of each particle
 yp = .5*yMax*vector.new(util.randn(n)); -- y coordinate
 ap = 2*math.pi*vector.new(util.randu(n)); -- angle
@@ -122,8 +126,12 @@ end
 ---Sets headings of all particles to random angles with 0 weight
 --@usage For when robot falls down
 function reset_heading()
-  ap = 2*math.pi*vector.new(util.randu(n));
-  wp = vector.zeros(n);
+  if dont_reset_orientation == 0 then
+    ap = 2*math.pi*vector.new(util.randu(n));
+    wp = vector.zeros(n);
+  else
+
+  end
 end
 
 function flip_particles()

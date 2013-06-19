@@ -64,10 +64,16 @@ function Cam_init()
     --Camera.set_param('White Balance, Automatic', 0);
     local expo = Camera.get_param('Exposure');
     local gain = Camera.get_param('Gain');
+    local white = Camera.get_param('Do White Balance');
+    local hue = Camera.get_param('Hue');
+    local backlight = Camera.get_param('Backlight Compensation');
     Camera.set_param('Auto Exposure',1);   
     Camera.set_param('Auto Exposure',0);
-    Camera.set_param('Exposure', expo)
+    Camera.set_param('Do White Balance', white);
+    Camera.set_param('Exposure', expo);
     Camera.set_param('Gain', gain);
+    Camera.set_param('Hue', hue);
+    Camera.set_param('Backlight Compensation', backlight);
     print('Camera #'..c..' set');
   end 
 end
@@ -110,6 +116,9 @@ function Set_Brightness()
   local param = Read_Num();
   local expo = Camera.get_param('Exposure');
   local gain = Camera.get_param('Gain');
+  local white = Camera.get_param('Do White Balance');
+  local hue = Camera.get_param('Hue');
+  local backlight = Camera.get_param('Backlight Compensation');
   while (param == -1 or param > 255 or (param % 4) ~= 0) do
     unix.usleep (10000);
     param = Read_Num(); 
@@ -121,6 +130,9 @@ function Set_Brightness()
   Camera.set_param ('White Balance, Automatic', 0);
   Camera.set_param ('Exposure', expo);
   Camera.set_param ('Gain', gain);
+  Camera.set_param ('Do White Balance', white);
+  Camera.set_param ('Hue', hue);
+  Camera.set_param ('Backlight Compensation', backlight);
   print('Brightness: ' , Camera.get_param('Brightness'))
 end
 
@@ -134,6 +146,18 @@ function Set_Contrast()
   end
   Camera.set_param ('Contrast', param);
   print('Contrast: ', Camera.get_param('Contrast'))
+end
+
+function Set_White_Balance()
+  print('Current white balance is: '..Camera.get_param('Do White Balance')..' type in an integer between 2700 and 6500');
+  local param = Read_Num();
+  while(param < 2700 or param > 6500) do
+   unix.usleep (10000);
+   print ('Type in a integer between 2700 and 6500');
+   param = Read_Num();
+  end
+  Camera.set_param ('Do White Balance', param);
+  print('White balance: ', Camera.get_param('Do White Balance'))
 end
 
 function Set_Saturation()
@@ -184,6 +208,28 @@ function Set_Gain()
   print('Gain: ' , Camera.get_param('Gain'))
 end
 
+
+
+function Set_Hue()
+  print ('Current hue is: '..Camera.get_param('Hue')..' type in an integer between -22 and 22');
+  local param = Read_Num();
+  while (param < -22 or param > 22) do
+    unix.usleep (10000);
+    print('Type in an integer between -22 and 22');
+    param = Read_Num();
+  end
+end
+
+function Set_Backlight_Compensation()
+  print ('Current backlight compensation is: '..Camera.get_param('Backlight Compensation')..' type in an integer between 0 and 4');
+  local param = Read_Num();
+  while (param < 0 or param > 4) do
+    unix.usleep (10000);
+    print('Type in an integer between 0 and 4');
+    param = Read_Num();
+  end
+end
+
 function Set_Sharpness()
   print ('Current sharpness is: '..Camera.get_param('Sharpness')..' type in a integer between 0 and 5');
   local param = Read_Num();
@@ -221,6 +267,9 @@ function Help()
   print ('Press "s" to set Saturation;')
   print ('Press "e" to set Exposure;');
   print ('Press "g" to set Gain;')
+  print ('Press "d" to set Hue;');
+  print ('Press "f" to set Backlight Compensation;');
+  print ('Press "w" to set White Balance;');
   print ('Press "a" to set Sharpness;')
   print ('press "i" to go back to initial parameters from the Config file;')
   print ('Press "p" to see all the current parameters;')
@@ -237,6 +286,9 @@ utilFunctions = {Cam_init,
                  Set_Saturation,
                  Set_Exposure,
                  Set_Gain,
+                 Set_Hue,
+                 Set_Backlight_Compensation,
+                 Set_White_Balance,
                  Set_Sharpness,            
 		 Print_All,
                  Help
@@ -250,6 +302,9 @@ utilCommands =  {'i',
                  's',
                  'e',
                  'g',
+                 'd',
+                 'f',
+                 'w',
                  'a',
                  'p',
                  'h'
@@ -296,9 +351,11 @@ function update()
   vcm.set_image_yuyv(camera.image);
   vcm.set_image_yuyv2(ImageProc.subsample_yuyv2yuyv(
                                          vcm.get_image_yuyv(),
+                     
                                          camera.width/2, camera.height,2));
   labelA.data = ImageProc.yuyv_to_label(vcm.get_image_yuyv(),
-                                          carray.pointer(camera.lut),
+                                         
+  carray.pointer(camera.lut),
                                           camera.width,
                                           camera.height, 
                                           Config.vision.scaleA);

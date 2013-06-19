@@ -22,7 +22,7 @@ vision.scaleB = 4;
 vision.enable_line_detection = 1;
 vision.enable_corner_detection = 1;
 -- use this to enable spot detection
-vision.enable_spot_detection = 0;
+vision.enable_spot_detection = 1;
 -- use this to enable midfield landmark detection
 vision.enable_midfield_landmark_detection = 0;
 -- use this to enable copying images to shm (for colortables, testing)

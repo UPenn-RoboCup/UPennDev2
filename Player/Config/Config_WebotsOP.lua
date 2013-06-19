@@ -103,21 +103,33 @@ team.team_ball_threshold = 0.5;
 team.avoid_own_team = 1;
 team.avoid_other_team = 1;
 
+team.flip_correction = 1;
+team.flip_threshold_x = 3.0;
+team.flip_threshold_y = 3.0;
+
+
+
+
 -- Keyframe files
 km = {};
 km.standup_front = 'km_NSLOP_StandupFromFront.lua';
 km.standup_back = 'km_NSLOP_StandupFromBack.lua';
 km.standup_back2 = 'km_NSLOP_StandupFromBack3.lua';
 
-goalie_dive = 2; --1 for arm only, 2 for actual diving
+goalie_dive = 1; --1 for arm only, 2 for actual diving
 goalie_dive_waittime = 6.0; --How long does goalie lie down?
 --fsm.goalie_type = 1;--moving/move+stop/stop+dive/stop+dive+move
 --fsm.goalie_type = 2;--moving/move+stop/stop+dive/stop+dive+move
 fsm.goalie_type = 3;--moving/move+stop/stop+dive/stop+dive+move
 --fsm.goalie_type = 4;--moving/move+stop/stop+dive/stop+dive+move
---fsm.goalie_reposition=0; --No reposition
-fsm.goalie_reposition=1; --Yaw reposition
+
+--fsm.goalie_reposition=0; --No reposition except for clearing the ball
+--fsm.goalie_reposition=1; --Yaw reposition
 --fsm.goalie_reposition=2; --Position reposition
+fsm.goalie_reposition=3; --No reposition at all (for testing)
+
+
+
 fsm.bodyAnticipate.thFar = {0.4,0.4,30*math.pi/180};
 fsm.goalie_use_walkkick = 1;--should goalie use walkkick or long kick?
 
@@ -139,6 +151,7 @@ use_rollback_getup = 0;
 fallAngle = 40*math.pi/180;
 falling_timeout = 0.3;
 
+listen_monitor = 1;
 -- Shutdown Vision and use ground truth gps info only
 --Now auto-detect from 3rd parameter
 use_gps_only = tonumber(os.getenv('USEGPS')) or 0;

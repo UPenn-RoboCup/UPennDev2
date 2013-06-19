@@ -312,15 +312,10 @@ fsm.variable_dapost = 1;
 fsm.fast_approach = 0;
 --fsm.bodyApproach.maxStep = 0.06;
 
-
-
-
 --1 for randomly doing evade kick
 --2 for using obstacle information
 --fsm.enable_evade = 0;
 fsm.enable_evade = 0;
-
-
 
 goalie_dive = 1; --1 for arm only, 2 for actual diving
 --goalie_dive = 2; --1 for arm only, 2 for actual diving

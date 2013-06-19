@@ -122,7 +122,7 @@ function update()
 
   -- spot detection
   if enableSpot == 1 then
---    spot = detectSpot.detect();
+     spot = detectSpot.detect();
   end
 
   -- Global robot detection

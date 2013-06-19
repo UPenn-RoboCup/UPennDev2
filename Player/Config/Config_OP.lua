@@ -30,7 +30,8 @@ dev.ip_wired_port = 111111;
 dev.ip_wireless = '192.168.1.255'; --Our Router
 dev.ip_wireless_port = 54321;
 dev.game_control='OPGameControl';
-dev.team='TeamNSL';
+--dev.team='TeamNSL';
+dev.team='TeamGeneral';
 dev.walk='AwesomeWalk'
 --dev.walk='CleanWalk'
 dev.kick = 'PunchKick'
@@ -139,6 +140,8 @@ goalie_disable_arm = 1;
 goalie_log_balls = 0;
 
 vision.ball.max_distance = 2.0; --temporary fix for GRASP lab
+
+listen_monitor = 1;
 ------------------------------------------------------------------------
 
 

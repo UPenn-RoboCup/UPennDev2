@@ -42,19 +42,32 @@ bodyYaw1 = 0*math.pi/180;
 bodyShift1 = 0.05;
 
 --Pickup arm
-qLArm1 = math.pi/180*vector.new({30, -10, 0});
-qRArm1 = math.pi/180*vector.new({30, 10,0});
+qLArm1 = math.pi/180*vector.new({35, -10, 0});
+qRArm1 = math.pi/180*vector.new({35, 10,0});
 
 --Grasp arm
-qLArm2 = math.pi/180*vector.new({30, -15, 0});	
-qRArm2 = math.pi/180*vector.new({30, 15,0});	
+qLArm2 = math.pi/180*vector.new({35, -15, 0});	
+qRArm2 = math.pi/180*vector.new({35, 15,0});	
 
 --Repose after grab
 bodyHeight2 = 0.21;
 bodyShift2 = -0.01;
+bodyTilt2 = 0*math.pi/180;
 
 qLArm25 = math.pi/180*vector.new({-90, -15, 0});	
 qRArm25 = math.pi/180*vector.new({-90, 15,0});	
+
+
+
+--[[
+bodyHeight1 = 0.18;
+bodyShift1 = 0.08;
+qLArm1 = math.pi/180*vector.new({40, -10, 0});
+qRArm1 = math.pi/180*vector.new({40, 10,0});
+
+bodyTilt2 = 30*math.pi/180;
+bodyShift2 = 0.05;
+--]]
 
 
 
@@ -175,7 +188,7 @@ function update()
      bodyHeight = ph*bodyHeight2 + (1-ph)*bodyHeight1;
      bodyShift=bodyShift2*ph+ bodyShift1*(1-ph);
      bodyYaw=(1-ph)*bodyYaw1;
-     bodyTilt = ph* bodyTilt0 + (1-ph)*bodyTilt1;
+     bodyTilt = ph* bodyTilt2 + (1-ph)*bodyTilt1;
      bodyRoll = (1-ph)* bodyRoll1;
      qLArm= ph * qLArm25 + (1-ph)*qLArm2;
      qRArm= ph * qRArm25 + (1-ph)*qRArm2;
@@ -183,6 +196,8 @@ function update()
    elseif t<t_pickup[4] then
      --Stand up
      ph=(t-t_pickup[3])/(t_pickup[4]-t_pickup[3]);
+     bodyTilt = ph* bodyTilt0 + (1-ph)*bodyTilt2;
+
      bodyHeight = ph*bodyHeight0 + (1-ph)*bodyHeight2;
      bodyShift=bodyShift0*ph+ bodyShift2*(1-ph);
 

@@ -55,6 +55,21 @@ world.Lcorner[14]={-3.0,-1.1};
 world.Lcorner[15]={0,0.6};
 world.Lcorner[16]={0,-0.6};
 
+world.Lgoalie_corner = {}
+world.Lgoalie_corner[1]={3.0,2.0};
+world.Lgoalie_corner[2]={3.0,-2.0};
+world.Lgoalie_corner[3]={-3.0,2.0};
+world.Lgoalie_corner[4]={-3.0,-2.0};
+--Penalty box edge
+world.Lgoalie_corner[5]={-2.4,1.1};
+world.Lgoalie_corner[6]={-2.4,-1.1};
+world.Lgoalie_corner[7]={2.4,1.1};
+world.Lgoalie_corner[8]={2.4,-1.1};
+--Penalty box T edge
+world.Lgoalie_corner[9]={3.0,1.1};
+world.Lgoalie_corner[10]={3.0,-1.1};
+world.Lgoalie_corner[11]={-3.0,1.1};
+world.Lgoalie_corner[12]={-3.0,-1.1};
 
 
 

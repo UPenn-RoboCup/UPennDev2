@@ -184,6 +184,7 @@ start_from_step = false;
 
 comdot = {0,0};
 stepkick_ready = false;
+has_ball = 0;
 
 ----------------------------------------------------------
 -- End initialization 
@@ -238,10 +239,12 @@ function entry()
   stance_reset();
 
   --Place arms in appropriate position at sides
-  Body.set_larm_command(qLArm0);
-  Body.set_rarm_command(qRArm0);
-  Body.set_larm_hardness(hardnessArm);
-  Body.set_rarm_hardness(hardnessArm);
+  if has_ball==0 then
+    Body.set_larm_command(qLArm0);
+    Body.set_rarm_command(qRArm0);
+    Body.set_larm_hardness(hardnessArm);
+    Body.set_rarm_hardness(hardnessArm);
+  end
 
   walkKickRequest = 0;
   stepkick_ready = false;
@@ -713,6 +716,10 @@ function motion_legs(qLegs,gyro_off)
 end
 
 function motion_arms()
+  if has_ball>0 then
+    return;
+  end
+
   local qLArmActual={};   
   local qRArmActual={};   
 

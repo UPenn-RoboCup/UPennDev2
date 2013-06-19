@@ -1,6 +1,5 @@
-cwd = '.'
+dofile'../include.lua'
 
-local init = require ('init');
 local HeadTransform = require ('HeadTransform');
 local unix = require ('unix');
 local getch = require ('getch');
@@ -12,6 +11,34 @@ local vector = require ('vector');
 local carray = require ('carray');
 local ImageProc = require ('ImageProc');
 local io = require ('io');
+
+utilFunctions = {
+	Cam_init,
+	Switch_to_Top_Camera,
+	Switch_to_Bottom_Camera,
+	Set_Brightness,
+	Set_Contrast,
+	Set_Saturation,
+	Set_Exposure,
+	Set_Gain,
+	Set_Sharpness,            
+	Print_All,
+	Help
+}
+
+utilCommands =  {
+	'i',
+	'+',
+	'-',
+	'b',
+	'c',
+	's',
+	'e',
+	'g',
+	'a',
+	'p',
+	'h'
+}
 
 
 function Entry() 
@@ -221,35 +248,10 @@ function Help()
   print ('press "i" to go back to initial parameters from the Config file;')
   print ('Press "p" to see all the current parameters;')
   print ('Press "h" to see the instruction.')
-end  
+end
 
 
 
-utilFunctions = {Cam_init,
-                 Switch_to_Top_Camera,
-                 Switch_to_Bottom_Camera,
-                 Set_Brightness,
-                 Set_Contrast,
-                 Set_Saturation,
-                 Set_Exposure,
-                 Set_Gain,
-                 Set_Sharpness,            
-		 Print_All,
-                 Help
-                }
-
-utilCommands =  {'i',
-                 '+',
-                 '-',
-                 'b',
-		 'c',
-                 's',
-                 'e',
-                 'g',
-                 'a',
-                 'p',
-                 'h'
-                 }
 
 
 function load_lut(fname)

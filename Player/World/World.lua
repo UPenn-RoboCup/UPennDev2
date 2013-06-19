@@ -22,8 +22,13 @@ end
 
 mod_angle = util.mod_angle;
 
---require('Velocity');	
-Velocity = require('kVelocity');	
+use_kalman_velocity = Config.use_kalman_velocity or 0;
+
+if use_kalman_velocity>0 then
+  Velocity = require('kVelocity');	
+else
+  require('Velocity');	
+end
 
 --Use ground truth pose and ball information for webots?
 use_gps_only = Config.use_gps_only or 0;
@@ -90,7 +95,7 @@ end
 function entry()
   count = 0;
   init_particles();
-  Velocity.entry();
+ -- Velocity.entry();
 end
 
 function init_particles_manual_placement()
@@ -209,11 +214,11 @@ function update_vision()
       ball.p = (1-ball_gamma)*ball.p+ball_gamma;
       ball.t = Body.get_time();
       -- Update the velocity
-      Velocity.update(ball.x,ball.y);
-      ball.vx, ball.vy, dodge  = Velocity.getVelocity();
+     -- Velocity.update(ball.x,ball.y);
+     -- ball.vx, ball.vy, dodge  = Velocity.getVelocity();
     else
       ball.p = (1-ball_gamma)*ball.p;
-      Velocity.update_noball();--notify that ball is missing
+    --  Velocity.update_noball();--notify that ball is missing
     end
     update_shm();
 
@@ -297,12 +302,12 @@ function update_vision()
 --    Velocity.update(v[1],v[2]);
     -- use centroid info only
     ball_v_inf = wcm.get_ball_v_inf();
-    Velocity.update(ball_v_inf[1],ball_v_inf[2]);
+   -- Velocity.update(ball_v_inf[1],ball_v_inf[2]);
 
-    ball.vx, ball.vy, dodge  = Velocity.getVelocity();
+   -- ball.vx, ball.vy, dodge  = Velocity.getVelocity();
   else
     ball.p = (1-ball_gamma)*ball.p;
-    Velocity.update_noball();--notify that ball is missing
+   -- Velocity.update_noball();--notify that ball is missing
     ball_led={0,0,0};
   end
   -- TODO: handle goal detections more generically

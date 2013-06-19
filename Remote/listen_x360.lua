@@ -9,6 +9,35 @@ local simple_ipc = require'simple_ipc'
 local msgpack = require 'msgpack'
 
 
+--[[
+Buttons
+1: D-Pad up  D-Pad up
+2: D-Pad down  D-Pad down
+3: D-Pad left  D-Pad left
+4: D-pad right   D-Pad right
+5: Start button  Button 8
+6: Back button   Button 7
+7: Left stick press  Button 9
+8: Right stick press   Button 10
+9: Button LB   Button 5
+10: Button RB  Button 6
+11: Xbox logo button
+12: Unused
+13: Button A   Button 1
+14: Button B   Button 2
+15: Button X   Button 3
+16: Button Y   Button 4
+
+Axes
+1  Left trigger  Z-axis down
+2  Right trigger   Z-axis up
+3  Left stick X-axis   X-axis
+4  Left stick Y-axis   Y-axis
+5  Right stick X-axis  X-turn
+6  Right stick Y-axis  Y-turn
+7  Unused
+--]]
+
 xbox360.open()
 udp_port = Config.udp.PORT_CONTROL;
 

@@ -96,7 +96,9 @@ function update(newx,newy,t)
   local a,b = newx-oldx,newy-oldy;
   local R = math.sqrt(math.pow(a,2)+math.pow(b,2));
   local position,vel,confidence;
-  if((R>0.1)or(a==0 and b==0)) then
+--  if((R>0.1)or(a==0 and b==0)) then
+
+  if((R>0.3)or(a==0 and b==0)) then
      tracker:reset();
      position, vel, confidence = tracker:update();
   else

@@ -115,3 +115,13 @@ fsm.bodyAnticipate.rCloseDive = 2.0; --ball distance threshold for diving
 
 
 fsm.headLookGoal.yawSweep = 30*math.pi/180;
+
+
+--FILP CORRECTION VARIABLES-------------------------
+team.flip_correction = 1;
+team.confused_threshold_x = 4.0;
+team.confused_threshold_y = 4.0;
+team.flip_threshold_x = 1.0;
+team.flip_threshold_y = 1.5;
+team.flip_check_t = 5.0; --keep confused for 5 sec
+----------------------------------------------------

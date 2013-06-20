@@ -609,7 +609,9 @@ function check_confused()
     --Should we turn confused?
     if wcm.get_robot_is_fall_down()>0 
        and math.abs(pose.x)<confused_threshold_x 
-       and math.abs(pose.y)<confused_threshold_y then
+       and math.abs(pose.y)<confused_threshold_y 
+       and gcm.get_game_state() == 3 --Only get confused during playing
+			  then
       set_role(ROLE_CONFUSED); --Robot gets confused!
       wcm.set_robot_t_confused(t);
     end

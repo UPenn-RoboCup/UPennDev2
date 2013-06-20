@@ -199,10 +199,11 @@ vision.enable_corner_detection = 1;
 min_eta_look = 1.0; 
 --
 
+--FILP CORRECTION VARIABLES-------------------------
 team.flip_correction = 1;
 team.confused_threshold_x = 4.0;
 team.confused_threshold_y = 4.0;
 team.flip_threshold_x = 1.0;
 team.flip_threshold_y = 1.5;
 team.flip_check_t = 5.0; --keep confused for 5 sec
-
+----------------------------------------------------

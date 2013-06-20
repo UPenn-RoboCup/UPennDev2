@@ -201,7 +201,7 @@ function update_vision()
 
   --We may use ground truth data only (for behavior testing)
   if use_gps_only>0 then
-print("WEREINTROUBLE")
+--print("WEREINTROUBLE")
     --Use GPS pose instead of using particle filter
     pose.x,pose.y,pose.a=gps_pose[1],gps_pose[2],gps_pose[3];
     --Use GPS ball pose instead of ball filter

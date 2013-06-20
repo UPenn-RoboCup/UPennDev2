@@ -310,7 +310,6 @@ print("WEREINTROUBLE")
     t_locked = wcm.get_ball_t_locked_on();
     th_locked = 1.5;
 
-print(t_locked)
     if (t_locked > th_locked ) and wcm.get_ball_locked_on() == 1 then
       Velocity.update(ball_v_inf[1],ball_v_inf[2],ball.t);
       ball.vx, ball.vy, dodge  = Velocity.getVelocity();

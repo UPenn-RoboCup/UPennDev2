@@ -115,9 +115,9 @@ function update()
         py = ball.y - (ball.vy/ball.vx) * ball.x;
         if ballR<3.0 then
 
---  			  print(string.format("+Bxy: (%.1f %.1f) R: %.1f  Vel: (%.2f %.2f) ProjY: %.2f",
---	  			ball.x,ball.y,ballR,  ball.vx, ball.vy , py
---  				));
+  			  print(string.format("+Bxy: (%.1f %.1f) R: %.1f  Vel: (%.2f %.2f) ProjY: %.2f",
+	  			ball.x,ball.y,ballR,  ball.vx, ball.vy , py
+  				));
         end
       else
 

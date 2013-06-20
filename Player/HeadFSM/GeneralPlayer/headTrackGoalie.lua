@@ -22,6 +22,7 @@ th_unlock = 15*math.pi/180;
 goalie_dive = Config.goalie_dive or 0;
 goalie_type = Config.fsm.goalie_type;
 
+locked_t0 = 0;
 
 function entry()
   print("Head SM:".._NAME.." entry");
@@ -50,27 +51,34 @@ function update()
   pitchTarget = pitchTarget + pitchOffset;
 
 
+  pitchTarget = math.min(20*math.pi/180,pitchTarget)
+
+
   yaw_error = yawTarget - headAngles[1];
   pitch_error = pitchTarget - headAngles[2];
   angle_error = math.sqrt(yaw_error^2+pitch_error^2);
 
   if not locked_on then
     Body.set_head_command({yawTarget, pitchTarget});
+    wcm.set_ball_t_locked_on(0);
   end
 
   if locked_on then
     if angle_error>th_unlock then
       locked_on=false;
       wcm.set_ball_locked_on(0);
+      wcm.set_ball_t_locked_on(0);
+    else
+      wcm.set_ball_t_locked_on(t-locked_t0);
     end
   else
     if angle_error<th_lock then
       locked_on=true;
 --    Speak.talk("Target Locked On");
       wcm.set_ball_locked_on(1);
+      locked_t0 = t;
     end
   end
-
 
   if (t - ball.t > tLost) then
     print('Ball lost!');
@@ -81,4 +89,6 @@ end
 
 function exit()
   wcm.set_ball_locked_on(0);
+  wcm.set_ball_t_locked_on(0);
+
 end

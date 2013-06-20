@@ -68,6 +68,8 @@ sm:set_transition(headScan, 'timeout', headScan);
 sm:set_transition(headTrack, 'goalie', headTrackGoalie);
 sm:set_transition(headTrackGoalie, 'player', headTrack);
 
+sm:set_transition(headTrackGoalie, 'lost', headScan);
+
 
 
 -- set state debug handle to shared memory settor

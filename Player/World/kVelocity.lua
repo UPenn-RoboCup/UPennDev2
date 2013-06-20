@@ -54,9 +54,18 @@ function add_log(x,y,vx,vy,t)
   log.ballxy = {x,y};
   log.ballvxy = {vx,vy};
   ball_logs[ball_log_count]=log;
+
+--  print(string.format("ball log count %d",ball_log_count));
+
+  if(ball_log_count == 500) then
+    flush_log();
+  end
+
+
 end
 
 function flush_log()
+
   if role~=0 or goalie_log_balls == 0 then
     return;
   end
@@ -68,7 +77,7 @@ function flush_log()
 
   data="";
   for i=1,ball_log_count do
-    data=data..string.format(
+  data=data..string.format(
       "%f %f %f %f %f\n",
      ball_logs[i].time,
      ball_logs[i].ballxy[1],
@@ -125,10 +134,6 @@ function update_noball(t)
     tracker:reset();
     local position,velocity,confidence = tracker:update();
     yes_ball = 0;
-    if(goalie_log_balls) then 
-      print('Goalie logs the ball');
-      flush_log();
-    end
   else  
     local position,velocity,confidence = tracker:update();
     vx = velocity[1] * 30;

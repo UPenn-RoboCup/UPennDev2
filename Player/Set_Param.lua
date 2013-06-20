@@ -64,16 +64,10 @@ function Cam_init()
     --Camera.set_param('White Balance, Automatic', 0);
     local expo = Camera.get_param('Exposure');
     local gain = Camera.get_param('Gain');
-    local white = Camera.get_param('Do White Balance');
-    local hue = Camera.get_param('Hue');
-    local backlight = Camera.get_param('Backlight Compensation');
     Camera.set_param('Auto Exposure',1);   
     Camera.set_param('Auto Exposure',0);
-    Camera.set_param('Do White Balance', white);
     Camera.set_param('Exposure', expo);
     Camera.set_param('Gain', gain);
-    Camera.set_param('Hue', hue);
-    Camera.set_param('Backlight Compensation', backlight);
     print('Camera #'..c..' set');
   end 
 end

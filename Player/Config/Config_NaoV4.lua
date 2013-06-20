@@ -41,7 +41,7 @@ elseif (robotName=='ruffio') then
 elseif (robotName=='ticktock') then
   game.playerID = 3;
 elseif (robotName=='hook') then
-  game.playerID = 1;
+  game.playerID = 4;
 elseif (robotName=='pockets') then
   game.playerID = 5;
 end
@@ -139,3 +139,7 @@ team.avoid_ultrasound = 1;
 
 
 use_kalman_velocity = 0;
+
+team.flip_correction = 1;
+team.flip_threshold_x = 2.5;
+team.flip_threshold_y =2.5;

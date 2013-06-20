@@ -95,7 +95,7 @@ end
 function entry()
   count = 0;
   init_particles();
- -- Velocity.entry();
+  Velocity.entry();
 end
 
 function init_particles_manual_placement()
@@ -201,6 +201,7 @@ function update_vision()
 
   --We may use ground truth data only (for behavior testing)
   if use_gps_only>0 then
+print("WEREINTROUBLE")
     --Use GPS pose instead of using particle filter
     pose.x,pose.y,pose.a=gps_pose[1],gps_pose[2],gps_pose[3];
     --Use GPS ball pose instead of ball filter
@@ -219,6 +220,7 @@ function update_vision()
     else
       ball.p = (1-ball_gamma)*ball.p;
       Velocity.update_noball(ball.t);--notify that ball is missing
+      ball.vx, ball.vy, dodge  = Velocity.getVelocity();
     end
     update_shm();
 
@@ -288,7 +290,6 @@ function update_vision()
   ball_gamma = 0.3;
   if (vcm.get_ball_detect() == 1) then
     tVisionBall = Body.get_time();
-    ball.t = Body.get_time();
     ball.p = (1-ball_gamma)*ball.p+ball_gamma;
     local v = vcm.get_ball_v();
     local dr = vcm.get_ball_dr();
@@ -301,9 +302,12 @@ function update_vision()
     -- Update the velocity
     -- use centroid info only
     ball_v_inf = wcm.get_ball_v_inf();
+
     Velocity.update(ball_v_inf[1],ball_v_inf[2],ball.t);
 
     ball.vx, ball.vy, dodge  = Velocity.getVelocity();
+    ball.t = Body.get_time();
+
   else
     ball.p = (1-ball_gamma)*ball.p;
     Velocity.update_noball(ball.t);--notify that ball is missing

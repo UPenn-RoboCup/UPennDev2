@@ -23,8 +23,9 @@ shared.robot.odomScale = vector.zeros(3);
 
 shared.robot.team_ball = vector.zeros(3);
 shared.robot.team_ball_score = vector.zeros(1);
-shared.robot.flipped = vector.zeros(1);
 
+shared.robot.flipped = vector.zeros(1);
+shared.robot.t_confused = vector.zeros(1);
 
 shared.ball = {};
 shared.ball.x = vector.zeros(1);
@@ -38,6 +39,7 @@ shared.ball.p = vector.zeros(1);
 
 
 shared.ball.v_inf = vector.zeros(2);
+shared.ball.t_locked_on = vector.zeros(1);
 
 
 shared.team = {};

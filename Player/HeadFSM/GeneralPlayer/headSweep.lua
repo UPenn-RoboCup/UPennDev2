@@ -37,7 +37,7 @@ function update()
   Body.set_head_command({yaw, pitch});
 
   eta = wcm.get_team_my_eta();
-  if eta<min_eta_look then
+  if eta<min_eta_look and eta>0 then
     return 'done';
   end
 

@@ -55,7 +55,7 @@ function add_log(x,y,vx,vy,t)
   log.ballvxy = {vx,vy};
   ball_logs[ball_log_count]=log;
 
-  print(string.format("ball log count %d",ball_log_count));
+--  print(string.format("ball log count %d",ball_log_count));
 
   if(ball_log_count == 500) then
     flush_log();

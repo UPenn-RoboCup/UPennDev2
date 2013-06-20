@@ -93,6 +93,16 @@ function initialize_manual_placement(p0, dp)
 end
 
 function initialize_unified(p0,p1,dp)
+  init_override = Config.world.init_override or 0;
+  if init_override == 1 then --High kick challenge
+    for i=1,n do
+      xp[i]=0;
+      yp[i]=0;
+      ap[i]=5*math.pi/180  * (math.random()-.5);
+    end
+    wp = vector.zeros(n);
+    return;
+  end
   --Particle initialization for the same-colored goalpost
   --Half of the particles at p0
   --Half of the particles at p1

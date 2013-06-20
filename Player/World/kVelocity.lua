@@ -61,6 +61,8 @@ function flush_log()
     return;
   end
 
+  print("Flushing log");
+
   filename=string.format("./Data/balllog%d.txt",ball_log_index);
   outfile=assert(io.open(filename,"w"));
 
@@ -123,7 +125,10 @@ function update_noball(t)
     tracker:reset();
     local position,velocity,confidence = tracker:update();
     yes_ball = 0;
-    flush_log();
+    if(goalie_log_balls) then 
+      print('Goalie logs the ball');
+      flush_log();
+    end
   else  
     local position,velocity,confidence = tracker:update();
     vx = velocity[1] * 30;
@@ -134,11 +139,10 @@ end
 
 function getVelocity()
   if(math.abs(vx)>0.5) then
--- Two seconds into the future
-    local pp = (vx / 30) + x;
---     print('Predicted velocity',vx);
+   local n = 1;
+-- n frames into the future
+    local pp = (vx * n/ 30) + x;
      if(pp<0) then 
-     --print(pp,vx,vy,isdodge);
 --     print('Predicted position',pp);
     end
   end

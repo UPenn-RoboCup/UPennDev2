@@ -210,15 +210,15 @@ function update_vision()
     wcm.set_ball_v_inf({ball.x,ball.y}); --for bodyAnticipate
 
     ball_gamma = 0.3;
+    ball.t = Body.get_time();
     if vcm.get_ball_detect()==1 then
       ball.p = (1-ball_gamma)*ball.p+ball_gamma;
-      ball.t = Body.get_time();
       -- Update the velocity
-     -- Velocity.update(ball.x,ball.y);
-     -- ball.vx, ball.vy, dodge  = Velocity.getVelocity();
+      Velocity.update(ball.x,ball.y,ball.t);
+      ball.vx, ball.vy, dodge  = Velocity.getVelocity();
     else
       ball.p = (1-ball_gamma)*ball.p;
-    --  Velocity.update_noball();--notify that ball is missing
+      Velocity.update_noball(ball.t);--notify that ball is missing
     end
     update_shm();
 
@@ -299,15 +299,14 @@ function update_vision()
     ball_led={1,0,0}; 
 
     -- Update the velocity
---    Velocity.update(v[1],v[2]);
     -- use centroid info only
     ball_v_inf = wcm.get_ball_v_inf();
-   -- Velocity.update(ball_v_inf[1],ball_v_inf[2]);
+    Velocity.update(ball_v_inf[1],ball_v_inf[2],ball.t);
 
-   -- ball.vx, ball.vy, dodge  = Velocity.getVelocity();
+    ball.vx, ball.vy, dodge  = Velocity.getVelocity();
   else
     ball.p = (1-ball_gamma)*ball.p;
-   -- Velocity.update_noball();--notify that ball is missing
+    Velocity.update_noball(ball.t);--notify that ball is missing
     ball_led={0,0,0};
   end
   -- TODO: handle goal detections more generically

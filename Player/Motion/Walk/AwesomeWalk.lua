@@ -249,6 +249,8 @@ function entry()
   walkKickRequest = 0;
   stepkick_ready = false;
   stepKickRequest=0;
+  velCurrent = {0,0,0};
+  velCommand = {0,0,0};
 end
 
 

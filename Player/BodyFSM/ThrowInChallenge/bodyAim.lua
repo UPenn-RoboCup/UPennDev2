@@ -6,7 +6,7 @@ require('walk')
 require('vector')
 
 t0 = 0;
-timeout = 5.0;
+timeout = 15.0;
 
 tDelay = 3.0;
 
@@ -23,12 +23,25 @@ end
 function update()
   local t = Body.get_time();
   --Turn to face opponents' goal
-  attackBearing = wcm.get_attack_bearing();
+
+--  attackBearing = wcm.get_attack_bearing();
+
+  pose = wcm.get_pose();
+
+  if (pose.y>0) then
+    pose_target = -math.pi/2;
+  else
+    pose_target = math.pi/2;
+  end
+
+--  attackBearing = wcm.get_attack_bearing();
+  attackBearing = util.mod_angle(pose_target - pose.a);
+
   vx,vy=0,0;
   va = .2*attackBearing;
   va=math.max(math.min(vSpin,va),-va);
 
---  print("attackBearing:",attackBearing*180/math.pi)
+  print("attackBearing:",attackBearing*180/math.pi)
   walk.set_velocity(vx,vy,va);
 
   if (t - t0 > timeout) then

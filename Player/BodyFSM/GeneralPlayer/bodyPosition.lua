@@ -99,7 +99,9 @@ function update()
 
   if (role == ROLE_DEFENDER) then
     homePose = position.getDefenderHomePose();
-  elseif (role == ROLE_SUPORTER) then
+  elseif (role == ROLE_DEFENDER2) then
+    homePose = position.getDefenderLeftHomePose();
+  elseif (role == ROLE_SUPPORTER) then
     homePose = position.getSupporterHomePose();
   elseif (role == ROLE_CONFUSED) then
     homePose = position.getConfusedHomePose();

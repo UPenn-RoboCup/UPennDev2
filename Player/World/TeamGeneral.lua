@@ -346,11 +346,27 @@ function update()
           set_role(ROLE_SUPPORTER);    -- support
         else --other players go defend
           set_role(ROLE_DEFENDER);    -- defense 
-	  --TODO: WHICH defender?
-
         end
       end
     end
+
+    --Switch roles between left and right defender
+    if role==ROLE_DEFENDER then
+      --Are there any other defender?
+      goalDefend =  wcm.get_goal_defend();
+      for id = 1,5 do
+        if id ~= playerID and 	  
+          (roles[id]==ROLE_DEFENDER or roles[id]==ROLE_DEFENDER2) then          
+          --Check if he is on my right side
+          if state.pose.y * goalDefend[1] < 
+							states[id].pose.y * goalDefend[1] then
+					  set_role(ROLE_DEFENDER2);
+          end
+        end
+      end
+    end
+
+
     --We assign role based on player ID during initial and ready state
   elseif gcm.get_game_state()<2 then 
     if role==ROLE_ATTACKER then

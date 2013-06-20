@@ -319,6 +319,65 @@ end
 
 
 
+
+
+--Position for 2nd defender (Nao only)
+function getDefenderLeftHomePose()
+  posCalc();
+
+  goal_defend=wcm.get_goal_defend();
+  relBallX = ballGlobal[1]-goal_defend[1];
+  relBallY = ballGlobal[2]-goal_defend[2];
+  RrelBall = math.sqrt(relBallX^2+relBallY^2)+0.001;
+
+  --Check attacker position
+  attacker_pose = wcm.get_team_attacker_pose();
+  
+  goalie_alive = wcm.get_team_goalie_alive();
+  
+  attacker_goal_dist = math.sqrt(
+	(attacker_pose[1] - goal_defend[1])^2+
+	(attacker_pose[2] - goal_defend[2])^2
+	);
+
+  defender_goal_dist = math.sqrt(
+	(pose.x - goal_defend[1])^2+
+	(pose.y - goal_defend[2])^2
+	);
+
+  homePosition = {};
+
+  --Center defender
+  distGoal,sideGoal = defender_pos_2[1], -defender_pos_2[2];
+
+  homePosition[1]= goal_defend[1]+distGoal * relBallX / RrelBall;
+  homePosition[2]= goal_defend[2]+distGoal * relBallY / RrelBall
+	+ util.sign(goal_defend[1]) * sideGoal;
+  homePosition[3] = math.atan2(relBallY, relBallX);
+
+  return homePosition;
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 --Aditya's defender homepose
 function getDefenderHomePose2()
   posCalc();
@@ -362,6 +421,7 @@ end
 
 --Front supporter
 function getSupporterHomePose()
+
   posCalc();
   goal_defend=wcm.get_goal_defend();
 

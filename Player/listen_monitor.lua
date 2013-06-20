@@ -5,6 +5,7 @@ require ('Config')
 --We always store data from robot to shm (1,1) 
 Config.game.teamNumber = 1; 
 Config.game.playerID = 1; 
+Config.listen_monitor = 1;
 
 require ('cutil')
 require ('vector')

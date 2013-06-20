@@ -31,6 +31,15 @@ avoid_ultrasound = Config.team.avoid_ultrasound or 0;
 last_ph = 0;
 
 
+ROLE_GOALIE = 0;
+ROLE_ATTACKER = 1;
+ROLE_DEFENDER = 2;
+ROLE_SUPPORTER = 3;
+ROLE_DEFENDER2 = 4;
+ROLE_CONFUSED = 5;
+
+
+
 function entry()
   print(_NAME.." entry");
   t0 = Body.get_time();
@@ -85,16 +94,17 @@ function update()
   kickDir = wcm.get_kick_dir();
 
   --Force attacker for demo code
-  if Config.fsm.playMode==1 then role=1; end
-  if role==0 then return "goalie";  end
+  if Config.fsm.playMode==1 then role = ROLE_ATTACKER; end
+  if role==ROLE_GOALIE then return "goalie";  end
 
-  if (role == 2) then
+  if (role == ROLE_DEFENDER) then
     homePose = position.getDefenderHomePose();
-  elseif (role==3) then
+  elseif (role == ROLE_SUPORTER) then
     homePose = position.getSupporterHomePose();
-  else
+  elseif (role == ROLE_CONFUSED) then
+    homePose = position.getConfusedHomePose();
+  else --Attacker
     if Config.fsm.playMode~=3 or kickDir~=1 then --We don't care to turn when we do sidekick
---      homePose = position.getAttackerHomePose();
       homePose = position.getDirectAttackerHomePose();
     else
       homePose = position.getAttackerHomePose();
@@ -113,7 +123,7 @@ function update()
   end
 --]]
 
-  if role==1 then
+  if role==ROLE_ATTACKER then
     vx,vy,va=position.setAttackerVelocity(homePose);
     --In teamplay test mode, immobilize attacker
     if test_teamplay==1 then
@@ -191,15 +201,16 @@ function update()
 
 
   if walk.ph<last_ph then 
+--[[
     print(string.format("BodyPosition step %d", step_count));
     print(string.format("Ball: (%.3f, %.3f) %.2fs ago",	
-	ball.x,ball.y, t-ball.t));
+			ball.x,ball.y, t-ball.t));
     print(string.format("Walk velocity:%.2f %.2f %.2f\n",vx,vy,va));
+--]]
     step_count = step_count + 1;
    end
   last_ph = walk.ph;
  
-
   walk.set_velocity(vx,vy,va);
 
   if (t - ball.t > tLost) then
@@ -211,15 +222,6 @@ function update()
 
   tBall=0.5;
 
-
---  if walk.ph>0.95 then
---    print(string.format("position error: %.3f %.3f %d\n",
---	homeRelative[1],homeRelative[2],homeRelative[3]*180/math.pi))
---    print("ballR:",ballR);
---    print(string.format("Velocity:%.2f %.2f %.2f",vx,vy,va));
---    print("VEL: ",veltype)
---  end
-
   attackAngle = wcm.get_goal_attack_angle2();
   daPost = wcm.get_goal_daPost2();
   daPostMargin = 15 * math.pi/180;
@@ -230,23 +232,26 @@ function update()
   angleToTurn = math.max(0, homeRelative[3] - daPost1);
 
 
+
+  --Confused robot is not allowed to kick the ball :p
   if Config.fsm.playMode~=3 then
     if math.abs(homeRelative[1])<thClose[1] and
        math.abs(homeRelative[2])<thClose[2] and
        ballR<rClose and
-       t-ball.t<tBall then
+       t-ball.t<tBall and
+			 role~=ROLE_CONFUSED  then
       print("bodyPosition ballClose")
       return "ballClose";
     end
   end
 
-
-
   if math.abs(homeRelative[1])<thClose[1] and
     math.abs(homeRelative[2])<thClose[2] and
     math.abs(homeRelative[3])<daPost1 and
     ballR<rClose and
-    t-ball.t<tBall then
+    t-ball.t<tBall and
+	 role~=ROLE_CONFUSED  then
+
       print("bodyPosition done")
       return "done";
   end

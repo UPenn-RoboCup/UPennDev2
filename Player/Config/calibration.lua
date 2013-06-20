@@ -390,7 +390,59 @@ cal["andy"].servoBias={0,0,0,0,0,0,0,0,-16,-14,0,0,};
 cal["andy"].footXComp=-0.003;
 cal["andy"].kickXComp=0.000;
 
+<<<<<<< HEAD
 -- Updated date: Wed Jun 19 20:43:50 2013
 cal["linus"].servoBias={21,-16,37,-13,-8,-3,-31,-4,-30,10,0,16,};
 cal["linus"].footXComp=-0.001;
 cal["linus"].kickXComp=0.005;
+=======
+-- Updated date: Mon Jun 17 17:27:48 2013
+cal["betty"].servoBias={8,-10,18,-67,39,-8,-5,6,-81,-24,-43,10,};
+cal["betty"].footXComp=0.004;
+cal["betty"].kickXComp=0.000;
+
+-- Updated date: Mon Jun 17 17:30:06 2013
+cal["betty"].servoBias={8,-10,18,-67,39,-8,-5,6,-81,-24,-43,10,};
+cal["betty"].footXComp=-0.007;
+cal["betty"].kickXComp=0.000;
+
+-- Updated date: Mon Jun 17 17:32:11 2013
+cal["betty"].servoBias={8,-10,0,-67,39,-8,-5,6,-51,-24,-43,10,};
+cal["betty"].footXComp=-0.007;
+cal["betty"].kickXComp=0.000;
+
+-- Updated date: Mon Jun 17 17:32:45 2013
+cal["betty"].servoBias={8,-10,0,-67,39,-8,-5,6,-51,-24,-43,10,};
+cal["betty"].footXComp=-0.001;
+cal["betty"].kickXComp=0.000;
+
+-- Updated date: Mon Jun 17 17:39:26 2013
+cal["betty"].servoBias={8,-10,0,-67,39,-8,-5,6,-51,-24,-43,10,};
+cal["betty"].footXComp=-0.001;
+cal["betty"].kickXComp=0.000;
+
+-- Updated date: Mon Jun 17 17:40:03 2013
+cal["betty"].servoBias={8,-10,0,-67,39,-8,-5,6,-51,-24,-43,10,};
+cal["betty"].footXComp=-0.001;
+cal["betty"].kickXComp=0.000;
+
+-- Updated date: Mon Jun 17 17:42:42 2013
+cal["betty"].servoBias={8,-10,0,-67,39,-8,-5,6,-51,-24,-43,10,};
+cal["betty"].footXComp=-0.001;
+cal["betty"].kickXComp=0.000;
+
+-- Updated date: Mon Jun 17 17:51:39 2013
+cal["betty"].servoBias={8,-10,0,-67,39,-8,-5,6,-51,-24,-43,10,};
+cal["betty"].footXComp=-0.008;
+cal["betty"].kickXComp=-0.005;
+
+-- Updated date: Wed Jun 19 23:23:51 2013
+cal["lucy"].servoBias={19,4,27,0,18,-13,3,0,-20,2,-7,-4,};
+cal["lucy"].footXComp=-0.003;
+cal["lucy"].kickXComp=0.000;
+
+-- Updated date: Wed Jun 19 23:34:02 2013
+cal["annie"].servoBias={0,0,0,0,0,0,-18,0,0,0,0,0,};
+cal["annie"].footXComp=-0.005;
+cal["annie"].kickXComp=-0.005;
+>>>>>>> 13795957a6fb7874180626d4c4c576ba4c56a287

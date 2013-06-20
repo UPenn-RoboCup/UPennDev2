@@ -464,6 +464,26 @@ function getGoalieHomePose2()
   return homePosition;
 end
 
+function getConfusedHomePose()
+  posCalc();
+
+  if math.abs(pose.y)>1 then
+    if pose.y>0 then
+      homePosition = {0,Config.world.yLineBoundary,-math.pi/2};
+    else
+      homePosition = {0,-Config.world.yLineBoundary,math.pi/2};
+    end
+  else
+    if pose.a>0 then
+      homePosition = {0,Config.world.yLineBoundary,-math.pi/2};
+    else
+      homePosition = {0,-Config.world.yLineBoundary,math.pi/2};
+    end
+  end
+  return homePosition;
+end
+
+
 ---------------------------------------------------------
 -- Velocity Generation
 --------------------------------------------------------

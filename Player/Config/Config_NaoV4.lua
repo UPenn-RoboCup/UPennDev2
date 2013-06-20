@@ -35,7 +35,7 @@ game.playerID = 1;
 --zero means this is not a robot
 --------Setting Player ID's----------
 if (robotName=='tink') then
-  game.playerID = 1;
+  game.playerID = 4;
 elseif (robotName=='ruffio') then
   game.playerID = 2;
 elseif (robotName=='ticktock') then
@@ -43,7 +43,7 @@ elseif (robotName=='ticktock') then
 elseif (robotName=='hook') then
   game.playerID = 1;
 elseif (robotName=='pockets') then
-  game.playerID = 4;
+  game.playerID = 5;
 end
 --------------------------------------
 
@@ -136,3 +136,6 @@ vision.ball.max_distance = 2; --if ball is this close, just pass the test
 
 --Should we use ultrasound?
 team.avoid_ultrasound = 1;
+
+
+use_kalman_velocity = 0;

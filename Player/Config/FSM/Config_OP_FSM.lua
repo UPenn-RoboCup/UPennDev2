@@ -146,6 +146,8 @@ fsm.bodyApproach.tLost = 3.0*speedFactor;--ball detection timeout
 fsm.bodyApproach.aThresholdTurn = 10*math.pi/180;
 fsm.bodyApproach.aThresholdTurnGoalie = 30*math.pi/180;
 
+fsm.bodyApproach.ballYMin = 0.16; 
+
 --x and y target position for stationary straight kick
 fsm.bodyApproach.xTarget11={0, 0.12,0.14}; --min, target, max
 fsm.bodyApproach.yTarget11={0.015, 0.03, 0.045}; --min, target ,max
@@ -158,11 +160,12 @@ fsm.bodyApproach.yTarget12={-0.005, 0.01, 0.025}; --min, target ,max
 fsm.bodyApproach.xTarget21={0, 0.19,0.21}; --min, target, max
 fsm.bodyApproach.yTarget21={0.020, 0.035, 0.050}; --min, target ,max
 
+-----------------------------------------------------------------------------
 --FOR new stepkick
 --fsm.bodyApproach.xTarget21={0, 0.17,0.19}; --min, target, max
 fsm.bodyApproach.xTarget21={0, 0.16,0.18}; --min, target, max
 fsm.bodyApproach.yTarget21={0.020, 0.035, 0.045}; --min, target ,max
-
+-----------------------------------------------------------------------------
 
 
 
@@ -192,13 +195,9 @@ fsm.bodyKick.thGyroMag = 100;
 fsm.bodyKick.tStartWait = 1.0;
 fsm.bodyKick.tStartWaitMax = 1.5;
 
-
-
 fsm.bodyKick.thGyroMag = 10; 
 fsm.bodyKick.tStartWait = 0.2;
 fsm.bodyKick.tStartWaitMax = 1.0;
-
-
 
 --ball position checking params
 fsm.bodyKick.kickTargetFront = {0.12,0.03};
@@ -293,3 +292,54 @@ fsm.headLookGoal.minDist = 0.35;--If ball is closer than this,don'tsweep
 --------------------------------------------------
 fsm.headSweep={};
 fsm.headSweep.tScan=1.0*speedFactor;
+
+
+--Temporary variables here
+
+
+--Behavior flags, should be defined in FSM Configs but can be overrided here
+fsm.enable_obstacle_detection = 0;
+fsm.kickoff_wait_enable = 0;
+fsm.playMode = 3; --1 for demo, 2 for orbit, 3 for direct approach
+fsm.forcePlayer = 0; --1 for attacker, 2 for defender, 3 for goalie 
+fsm.enable_walkkick = 0; --Testing
+fsm.enable_sidekick = 0;
+fsm.daPost_check = 1; --aim to the side when close to the ball
+fsm.daPostmargin = 20*math.pi/180;
+fsm.variable_dapost = 1;
+
+--FAST APPROACH TEST
+fsm.fast_approach = 0;
+--fsm.bodyApproach.maxStep = 0.06;
+
+--1 for randomly doing evade kick
+--2 for using obstacle information
+--fsm.enable_evade = 0;
+fsm.enable_evade = 0;
+
+goalie_dive = 1; --1 for arm only, 2 for actual diving
+--goalie_dive = 2; --1 for arm only, 2 for actual diving
+goalie_dive_waittime = 3.0; --How long does goalie lie down?
+--fsm.goalie_type = 1;--moving/move+stop/stop+dive/stop+dive+move
+--fsm.goalie_type = 2;--moving/move+stop/stop+dive/stop+dive+move
+fsm.goalie_type = 3;--moving/move+stop/stop+dive/stop+dive+move
+fsm.goalie_reposition=0; --No reposition
+--fsm.goalie_reposition=1; --Yaw reposition
+--fsm.goalie_reposition=2; --Position reposition
+
+fsm.goalie_use_walkkick = 1; --should goalie use front walkkick?
+
+--Goalie diving detection parameters
+fsm.bodyAnticipate.timeout = 3.0;
+fsm.bodyAnticipate.center_dive_threshold_y = 0.05; 
+fsm.bodyAnticipate.dive_threshold_y = 1.0;
+fsm.bodyAnticipate.ball_velocity_th = 1.0; --min velocity for diving
+fsm.bodyAnticipate.ball_velocity_thx = -1.0; --min x velocity for diving
+fsm.bodyAnticipate.rCloseDive = 2.0; --ball distance threshold for diving
+
+
+
+
+
+
+

@@ -43,7 +43,7 @@ DEF BLUE_GOAL KidGoal {
   supportColor 0.152941 0.505882 0.733333
 }
 DEF BALL BallGPS {
-  translation 0 0.0323921 0
+  translation -0.7 0.13 0
 }
 DEF PLAYER_0_1 DARwInOPGPS {
   translation 1.6 0.3 2
@@ -57,19 +57,46 @@ DEF PLAYER_0_1 DARwInOPGPS {
   waistBand TRUE
   waistBandColor 1 0 0
 }
+
+
 DEF SLOPE Solid {
-  translation 0.54 -0.10 0.0798539
-  rotation 0 0 -1 0.2
+  translation 0 -0.02 0
+  rotation 0 0 -1 0.1
+  children [
+     DEF slope Shape {
+     appearance Appearance {
+       material Material {
+         diffuseColor 0 0.67 0.33
+       }
+     }
+
+     geometry DEF BOX Box {
+       size 1 0.15 1
+     }
+    }
+  ]
+  boundingObject DEF slope Shape {
+     appearance Appearance {
+       material Material {
+      }
+    }
+    geometry USE BOX
+  }
+  locked TRUE
+}
+
+DEF SLOPE2 Solid {
+  translation -0.98 0.03 0
+  rotation 0 0 -1 0
   children [
     DEF slope Shape {
      appearance Appearance {
        material Material {
-         diffuseColor 0.201961 0.201961 0.201961
-         emissiveColor 0.201961 0.201961 0.201961
+         diffuseColor 0 0.67 0.33
        }
      }
      geometry DEF BOX Box {
-       size 1 0.15 0.5
+       size 1 0.15 1
      }
     }
   ]

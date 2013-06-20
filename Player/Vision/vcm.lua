@@ -4,10 +4,6 @@ require("shm");
 require("util");
 require("vector");
 require('Config');
--- Enable Webots specific
-if (string.find(Config.platform.name,'Webots')) then
-  webots = true;
-end
 
 enable_lut_for_obstacle = Config.vision.enable_lut_for_obstacle or 0;
 enable_robot_detection = Config.vision.enable_robot_detection or 0;
@@ -19,15 +15,6 @@ shsize = {};
 
 processed_img_width = Config.camera.width;
 processed_img_height = Config.camera.height;
-if( webots ) then
-  processed_img_width = processed_img_width;
-  processed_img_height = processed_img_height;
-else
-  processed_img_width = processed_img_width / 2;
-  processed_img_height = processed_img_height / 2;
-end
-
-
 
 shared.camera = {};
 shared.camera.select = vector.zeros(1);
@@ -69,20 +56,14 @@ shared.image.yuyv3 = 2*Config.camera.width*Config.camera.height/4/4;
 
 shared.image.width = vector.zeros(1);
 shared.image.height = vector.zeros(1);
+shared.image.scaleA = vector.zeros(1);
 shared.image.scaleB = vector.zeros(1);
 
-shared.image.labelA = (processed_img_width)*(processed_img_height);
+shared.image.labelA = (processed_img_width/Config.vision.scaleA)*(processed_img_height/Config.vision.scaleA);
 shared.image.labelB = ((processed_img_width)/Config.vision.scaleB)*((processed_img_height)/Config.vision.scaleB);
 
 shared.image.lut = 262144;
 shared.image.lut_updated = vector.zeros(1);
---if enable_lut_for_obstacle == 1 then
---  shared.image.labelA_obs = (processed_img_width)*(processed_img_height);
---  shared.image.labelB_obs = ((processed_img_width)/Config.vision.scaleB)*((processed_img_height)/Config.vision.scaleB);
---else
---  shared.image.labelA_obs = 0;
---  shared.image.labelB_obs = 0;
---end
 
 -- calculate image shm size
 --shsize.image = (shared.image.yuyv + shared.image.yuyv2+ 

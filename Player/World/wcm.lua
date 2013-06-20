@@ -38,6 +38,7 @@ shared.ball.p = vector.zeros(1);
 
 
 shared.ball.v_inf = vector.zeros(2);
+shared.ball.t_locked_on = vector.zeros(1);
 
 
 shared.team = {};

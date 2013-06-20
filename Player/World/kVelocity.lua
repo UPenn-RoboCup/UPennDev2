@@ -27,7 +27,7 @@ local observation = torch.Tensor( 2 * myDim ):zero()
 -- Initialize the filter
 local tracker = libBallTrack.new_tracker();
 
-max_distance = 4.0; --Only check velocity within this radius
+max_distance = 3.0; --Only check velocity within this radius
 max_velocity = 4.0; --Ignore if velocity exceeds this
 
 oldx,oldy = 0,0;
@@ -107,9 +107,9 @@ function update(newx,newy,t)
   local a,b = newx-oldx,newy-oldy;
   local R = math.sqrt(math.pow(a,2)+math.pow(b,2));
   local position,vel,confidence;
---  if((R>0.1)or(a==0 and b==0)) then
+  local dist = math.sqrt(math.pow(newx,2)+math.pow(newy,2));
 
-  if((R>0.3)or(a==0 and b==0)) then
+  if( (R>0.3) or (a==0 and b==0) or (dist>max_distance) ) then
      tracker:reset();
      position, vel, confidence = tracker:update();
   else

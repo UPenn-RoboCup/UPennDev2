@@ -201,6 +201,7 @@ function update_vision()
 
   --We may use ground truth data only (for behavior testing)
   if use_gps_only>0 then
+print("WEREINTROUBLE")
     --Use GPS pose instead of using particle filter
     pose.x,pose.y,pose.a=gps_pose[1],gps_pose[2],gps_pose[3];
     --Use GPS ball pose instead of ball filter
@@ -287,7 +288,6 @@ function update_vision()
     
   -- ball
   ball_gamma = 0.3;
-    ball.t = Body.get_time();
   if (vcm.get_ball_detect() == 1) then
     tVisionBall = Body.get_time();
     ball.p = (1-ball_gamma)*ball.p+ball_gamma;
@@ -306,6 +306,8 @@ function update_vision()
     Velocity.update(ball_v_inf[1],ball_v_inf[2],ball.t);
 
     ball.vx, ball.vy, dodge  = Velocity.getVelocity();
+    ball.t = Body.get_time();
+
   else
     ball.p = (1-ball_gamma)*ball.p;
     Velocity.update_noball(ball.t);--notify that ball is missing

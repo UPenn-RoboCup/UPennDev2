@@ -23,6 +23,7 @@ goalie_dive = Config.goalie_dive or 0;
 goalie_type = Config.fsm.goalie_type;
 
 
+
 function entry()
   print("Head SM:".._NAME.." entry");
   t0 = Body.get_time();
@@ -50,6 +51,9 @@ function update()
   pitchTarget = pitchTarget + pitchOffset;
 
 
+  pitchTarget = math.min(20*math.pi/180,pitchTarget)
+
+
   yaw_error = yawTarget - headAngles[1];
   pitch_error = pitchTarget - headAngles[2];
   angle_error = math.sqrt(yaw_error^2+pitch_error^2);
@@ -71,6 +75,7 @@ function update()
     end
   end
 
+print("ball seen time:",t-ball.t)
 
   if (t - ball.t > tLost) then
     print('Ball lost!');

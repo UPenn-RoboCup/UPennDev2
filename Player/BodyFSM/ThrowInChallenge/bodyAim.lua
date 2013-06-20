@@ -47,7 +47,7 @@ function update()
   if (t - t0 > timeout) then
     return "timeout";
   end
-  if (math.abs(attackBearing)<10*math.pi/180) and
+  if (math.abs(attackBearing)<5*math.pi/180) and
 	t-t0> tDelay then
     return "done";
   end

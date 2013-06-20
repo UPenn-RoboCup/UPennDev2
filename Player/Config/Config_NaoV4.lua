@@ -43,7 +43,7 @@ elseif (robotName=='ticktock') then
 elseif (robotName=='hook') then
   game.playerID = 4;
 elseif (robotName=='pockets') then
-  game.playerID = 5;
+  game.playerID = 1;
 end
 --------------------------------------
 
@@ -138,7 +138,7 @@ vision.ball.max_distance = 2; --if ball is this close, just pass the test
 team.avoid_ultrasound = 1;
 
 
-use_kalman_velocity = 0;
+use_kalman_velocity = 1;
 
 team.flip_correction = 1;
 team.flip_threshold_x = 2.5;

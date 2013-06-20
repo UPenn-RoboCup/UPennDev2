@@ -16,7 +16,8 @@ params.Kick = "Slow"
 params.World = "Grasp"
 
 ---Location Specific Camera Parameters--
-params.Camera = "Grasp"
+--params.Camera = "Grasp"
+params.Camera = "Grasp_lowE_pink"
 
 util.LoadConfig(params, platform)
 
@@ -44,7 +45,8 @@ speak.enable = false;
 
 -- Game Parameters
 game = {};
-game.teamNumber = 17;   --17 at RC12
+--game.teamNumber = 17;   --17 at RC12
+game.teamNumber = 26;   --17 at RC12
 
 --Default role: 0 for goalie, 1 for attacker, 2 for defender
 ball_shift={0,0};

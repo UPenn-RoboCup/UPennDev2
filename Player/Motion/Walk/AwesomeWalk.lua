@@ -366,6 +366,10 @@ function update()
       end
     end
 
+
+
+
+
     --Apply velocity-based support point modulation for uSupport
     if supportLeg == 0 then --LS
       local uLeftTorso = util.pose_relative(uLeft1,uTorso1);
@@ -474,6 +478,12 @@ function update()
     pTorso[4], pTorso[5],pTorso[6] = 
     0,bodyTilt,0;
   end
+
+  if has_ball>0 then
+    turnCompX = turnCompX - 0.01;
+  end
+
+
 
   uTorsoActual = util.pose_global(
     vector.new({-footX+frontCompX+turnCompX+armPosCompX,armPosCompY,0}),

@@ -33,8 +33,8 @@ function entry()
   ball = wcm.get_ball();
 
 
-xTarget = {0.02,0.03,0.04};
-yTarget = {0.10,0.11,0.12};
+  xTarget = {0.13,0.15,0.17};
+  yTarget = {-0.03,0.0,0.03};
 
 end
 

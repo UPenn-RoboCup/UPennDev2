@@ -189,9 +189,7 @@ team.test_teamplay = 0;
 world.use_new_goalposts = 1;
 world.triangulation_threshold = 4.0; 
 world.angle_update_threshold = 1.0;
-team.flip_correction = 1;
 world.position_update_threshold = 4.5;--Goalie position shouldn't move 
-
 
 
 
@@ -199,3 +197,13 @@ vision.enable_corner_detection = 1;
 
 --fsm.playMode = 1;--Demo testing
 min_eta_look = 1.0; 
+--
+
+--FILP CORRECTION VARIABLES-------------------------
+team.flip_correction = 1;
+team.confused_threshold_x = 4.0;
+team.confused_threshold_y = 4.0;
+team.flip_threshold_x = 1.0;
+team.flip_threshold_y = 1.5;
+team.flip_check_t = 5.0; --keep confused for 5 sec
+----------------------------------------------------

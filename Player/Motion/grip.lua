@@ -41,21 +41,40 @@ bodyTilt1 = 30*math.pi/180;
 bodyYaw1 = 0*math.pi/180;
 bodyShift1 = 0.05;
 
+
+
+
+bodyHeight1 = 0.19;
+bodyRoll1 = 0*math.pi/180;
+bodyTilt1 = 40*math.pi/180;
+bodyYaw1 = 0*math.pi/180;
+bodyShift1 = 0.06;
+
+
+
+
+
+
+
+
+
+
+
 --Pickup arm
-qLArm1 = math.pi/180*vector.new({35, -10, 0});
-qRArm1 = math.pi/180*vector.new({35, 10,0});
+qLArm1 = math.pi/180*vector.new({40, 30, 0});
+qRArm1 = math.pi/180*vector.new({40, -30,0});
 
 --Grasp arm
-qLArm2 = math.pi/180*vector.new({35, -15, 0});	
-qRArm2 = math.pi/180*vector.new({35, 15,0});	
+qLArm2 = math.pi/180*vector.new({40, 0, 0});	
+qRArm2 = math.pi/180*vector.new({40, 0,0});	
 
 --Repose after grab
 bodyHeight2 = 0.21;
 bodyShift2 = -0.01;
 bodyTilt2 = 0*math.pi/180;
 
-qLArm25 = math.pi/180*vector.new({-90, -15, 0});	
-qRArm25 = math.pi/180*vector.new({-90, 15,0});	
+qLArm25 = math.pi/180*vector.new({-90, 0, -40});	
+qRArm25 = math.pi/180*vector.new({-90, 0,-40});	
 
 
 
@@ -77,10 +96,11 @@ bodyHeight3 = 0.24;
 bodyShift_windup = -0.015;
 bodyShift_throw = 0;
 bodyShift3 = 0;
+bodyTilt3 = -5*math.pi/180;
 
 
-qLArm3 = math.pi/180*vector.new({-120, -15, 0});	
-qRArm3 = math.pi/180*vector.new({-120, 15,0});	
+qLArm3 = math.pi/180*vector.new({-120, 0, -90});	
+qRArm3 = math.pi/180*vector.new({-120, 0,-90});	
 
 --Throw
 qLArm4 = math.pi/180*vector.new({60, 15, 0});	
@@ -214,6 +234,9 @@ function update()
      qRArm= ph * qRArm3 + (1-ph)*qRArm25;
      bodyShift = bodyShift_windup*ph + bodyShift3*(1-ph);
      bodyHeight = ph*bodyHeight3 + (1-ph)*bodyHeight0;
+     bodyTilt = ph* bodyTilt3 + (1-ph)*bodyTilt0;
+
+
 
    elseif t<t_pickup[2] then
      --Throw
@@ -228,7 +251,9 @@ function update()
      qRArm = ph * qRArm0 + (1-ph)*qRArm4;
 
      bodyHeight = ph*bodyHeight0 + (1-ph)*bodyHeight3;
-     bodyShift = bodyShift0*ph+ bodyShift3*(1-ph);
+     bodyShift = bodyShift0*ph+ bodyShift_windup*(1-ph);
+     bodyTilt = ph* bodyTilt0 + (1-ph)*bodyTilt3;
+
    else
      walk.has_ball=0;
      return "done";	

@@ -166,7 +166,7 @@ function h=show_monitor()
       MONITOR.hDebugText=uicontrol('Style','text',...
 	'Units','Normalized', 'Position',[.76 .10 .22 .83]);
 
-set(MONITOR.hDebugText,'FontSize',6);
+set(MONITOR.hDebugText,'FontSize',12);
 
     end
   end

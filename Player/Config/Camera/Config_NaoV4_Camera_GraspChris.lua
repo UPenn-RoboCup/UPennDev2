@@ -18,15 +18,15 @@ camera.focal_base = 640; -- image width used in focal length calculation
 
 camera.param = {};
 -- Contrast should be set between 17 and 64
-camera.param[1] = {key='Contrast'       , val={45 , 40}};
+camera.param[1] = {key='Contrast'       , val={35 , 40}};
 
-camera.param[2] = {key='Saturation'     , val={160 , 170}};
+camera.param[2] = {key='Saturation'     , val={150 , 180}};
 -- Hue will automatically change to 0 if set to a number between -5 and 5, but cannot be set by other numbers
 camera.param[3] = {key='Hue'            , val={0 , 0}};
 
 camera.param[4] = {key='Exposure'       , val={25 , 25}};
 -- Gain should be set between 32 and 255
-camera.param[5] = {key='Gain'           , val={150 , 120}};
+camera.param[5] = {key='Gain'           , val={150 , 150}};
 -- Sharpness should be set between 0 and 7
 camera.param[6] = {key='Sharpness'      , val={3  , 3}};
 
@@ -34,7 +34,7 @@ camera.param[7] = {key='Horizontal Flip', val={1  , 0}};
 
 camera.param[8] = {key='Vertical Flip'  , val={1  , 0}};
 
-camera.param[9] = {key='Do White Balance' , val={3300, 3400}}
+camera.param[9] = {key='Do White Balance' , val={3500, 3500}}
 
 camera.param[10] = {key='Backlight Compensation' , val={1, 1}}
 --camera.param[10] = {key='Brightness',    val={100, 100}};
@@ -42,5 +42,5 @@ camera.param[10] = {key='Backlight Compensation' , val={1, 1}}
 -- brightness has to be set seperately from other parameters, and it can only be set to multiple of 4
 camera.brightness = 200;
 
-camera.lut_file = 'lut_nightgrasp.raw';
+camera.lut_file = 'lut_graspchris.raw';
 

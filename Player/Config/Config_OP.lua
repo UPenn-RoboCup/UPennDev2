@@ -177,3 +177,4 @@ use_rollback_getup = 0;
 use_kalman_velocity = 1;
 
 fsm.goalie_reposition=3; --No reposition at all (for testing)
+use_rollback_getup = 0;

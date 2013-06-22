@@ -167,6 +167,7 @@ function h=show_monitor()
 	'Units','Normalized', 'Position',[.76 .10 .22 .83]);
 
 set(MONITOR.hDebugText,'FontSize',6);
+set(MONITOR.hDebugText,'FontSize',10);
 
     end
   end

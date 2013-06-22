@@ -93,11 +93,13 @@ function update()
   role = gcm.get_team_role();
   kickDir = wcm.get_kick_dir();
 
-  --Force attacker for demo code
-  if Config.fsm.playMode==1 then role = ROLE_ATTACKER; end
   if role==ROLE_GOALIE then return "goalie";  end
 
-  if (role == ROLE_DEFENDER) then
+  is_confused = wcm.get_robot_is_confused();
+
+  --Force attacker for demo code
+  if Config.fsm.playMode==1 then role = ROLE_ATTACKER; 
+  elseif (role == ROLE_DEFENDER) then
     homePose = position.getDefenderHomePose();
   elseif (role == ROLE_DEFENDER2) then
     homePose = position.getDefenderLeftHomePose();
@@ -106,7 +108,8 @@ function update()
   elseif (role == ROLE_CONFUSED) then
     homePose = position.getConfusedHomePose();
   else --Attacker
-    if Config.fsm.playMode~=3 or kickDir~=1 then --We don't care to turn when we do sidekick
+    --We don't care to turn when we do sidekick
+    if Config.fsm.playMode~=3 or kickDir~=1 or is_confused>0 then 
       homePose = position.getDirectAttackerHomePose();
     else
       homePose = position.getAttackerHomePose();
@@ -234,19 +237,21 @@ function update()
   angleToTurn = math.max(0, homeRelative[3] - daPost1);
 
 
-
-  --Confused robot is not allowed to kick the ball :p
-  if Config.fsm.playMode~=3 then
+  --Direct kick check
+  if Config.fsm.playMode~=3 or is_confused>0 then
     if math.abs(homeRelative[1])<thClose[1] and
        math.abs(homeRelative[2])<thClose[2] and
        ballR<rClose and
        t-ball.t<tBall and
 			 role~=ROLE_CONFUSED  then
+
+      --if current role is confused, we are not allowed to kick the ball
       print("bodyPosition ballClose")
       return "ballClose";
     end
   end
 
+  --Curved approach check
   if math.abs(homeRelative[1])<thClose[1] and
     math.abs(homeRelative[2])<thClose[2] and
     math.abs(homeRelative[3])<daPost1 and

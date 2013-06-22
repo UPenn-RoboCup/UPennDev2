@@ -30,12 +30,12 @@ flip_correction = Config.team.flip_correction or 0;
 
 confused_threshold_x= Config.team.confused_threshold_x or 3.0;
 confused_threshold_y= Config.team.confused_threshold_y or 3.0;
-
 flip_threshold_x= Config.team.flip_threshold_x or 1.0;
 flip_threshold_y= Config.team.flip_threshold_y or 1.5;
 flip_threshold_t= Config.team.flip_threshold_t or 0.5;
 flip_check_t = Config.team_flip_check_t or 3.0;
 
+confusion_handling = Config.confusion_handling or 0;
 
 
 goalie_ball={0,0,0};
@@ -547,8 +547,8 @@ function pack_vision_info()
 end
 
 function check_flip2()
-  if role~=ROLE_CONFUSED then return; end
-  if role==ROLE_GOALIE then return;end
+  local is_confused = wcm.get_robot_is_confused();
+  if is_confused==0 then return; end
 
   local pose = wcm.get_pose();
   local ball = wcm.get_ball();
@@ -574,18 +574,28 @@ function check_flip2()
        if ball_global[1]*goalie_ball[1]<0 then
          wcm.set_robot_flipped(1);
        end
-       set_role(ROLE_ATTACKER);
+       --Now we are sure about our position
+       wcm.set_robot_is_confused(0);
+       if confusion_handling == 1 then
+         set_role(ROLE_ATTACKER);
+       end
+
      --Check Y position
      elseif (math.abs(ball_global[2])>flip_threshold_y) and
             (math.abs(goalie_ball[2])>flip_threshold_y) then
        if ball_global[2]*goalie_ball[2]<0 then
          wcm.set_robot_flipped(1);
        end
-       set_role(ROLE_ATTACKER);
+
+       --Now we are sure about our position
+       wcm.set_robot_is_confused(0);
+       if confusion_handling == 1 then
+         set_role(ROLE_ATTACKER);
+       end
      end
   end
 
-  if role~=ROLE_CONFUSED then
+  if wcm.get_robot_is_confused()==0 then
     print("CONFUSION FIXED")
     print("CONFUSION FIXED")
     print("CONFUSION FIXED")
@@ -602,24 +612,36 @@ end
 
 function check_confused()
 
-  if flip_correction==0 then return; end
+  if flip_correction==0 then 
+    wcm.set_robot_is_confused(0);
+	  return; 
+  end
   goalie_alive =  wcm.get_team_goalie_alive();
-  if goalie_alive==0 then return; end --Goalie's dead, we cannot get confused
-
-
+  if goalie_alive==0 then 
+    wcm.set_robot_is_confused(0);
+	  return; 
+  end --Goalie's dead, we cannot correct flip
 
   pose = wcm.get_pose();
   t = Body.get_time();
 
-  --Goalie never get confused
-  if role==ROLE_GOALIE or role >= ROLE_RESERVE_PLAYER then return; end
+  --Goalie or reserve players never get confused
+  if role==ROLE_GOALIE or role >= ROLE_RESERVE_PLAYER then 
+    wcm.set_robot_is_confused(0);
+		return; 
+	end
+  is_confused = wcm.get_robot_is_confused();
 
-  if role==ROLE_CONFUSED then
+  if is_confused>0 then
     --Currently confused
     if gcm.get_game_state() ~= 3 --If game state is not gamePlaying
        or gcm.in_penalty() --Or the robot is penalized
        then 
-      set_role(ROLE_ATTACKER); --Robot gets out of confused state!
+      --Robot gets out of confused state!
+      wcm.set_robot_is_confused(0);
+      if role==ROLE_CONFUSED then
+        set_role(ROLE_ATTACKER); 
+      end
     end
   else
     --Should we turn confused?
@@ -628,8 +650,19 @@ function check_confused()
        and math.abs(pose.y)<confused_threshold_y 
        and gcm.get_game_state() == 3 --Only get confused during playing
 			  then
-      set_role(ROLE_CONFUSED); --Robot gets confused!
+      wcm.set_robot_is_confused(1);
       wcm.set_robot_t_confused(t);
+      print("CONFUSED")
+      print("CONFUSED")
+      print("CONFUSED")
+      print("CONFUSED")
+      print("CONFUSED")
+
+      if confusion_handling == 1 then
+        set_role(ROLE_CONFUSED); --Robot gets confused!
+      elseif confusion_handling == 2 then
+        --Robot maintains current role
+      end
     end
   end
 end

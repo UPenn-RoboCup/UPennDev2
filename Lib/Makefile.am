@@ -75,7 +75,7 @@ endif
 ifeq ($(shell pkg-config --exists luajit && echo 0),0)
 	LUAJIT_INC=`pkg-config luajit --cflags`
 	LUAJIT_LIB=`pkg-config luajit --libs`
-	#USE_LUAJIT=yes
+	USE_LUAJIT=yes
 endif
 # Find Pure Lua
 LUA_VERSION=5.1

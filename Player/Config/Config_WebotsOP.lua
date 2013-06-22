@@ -221,3 +221,22 @@ fsm.body = {'HighKickChallenge'};
 world.init_override = 1; --Init at the center circle, facing red goal
 game.teamColor = 0; --Blue team, kicking to red goal
 --]]
+
+
+
+
+
+
+--For THROW-IN---------------------------------------------------
+--[[
+walk.qLArm=math.pi/180*vector.new({90,25,-20});
+walk.qRArm=math.pi/180*vector.new({90,-25,-20});
+stance.qLArmSit = math.pi/180*vector.new({140,25,-40});
+stance.qRArmSit = math.pi/180*vector.new({140,-25,-40});
+use_rollback_getup = 0;
+km.standup_front = 'km_NSLOP_StandupFromFront_Throw.lua';
+km.standup_back = 'km_NSLOP_StandupFromBack_Throw.lua';
+fsm.head = {'GeneralPlayer'};
+fsm.body = {'ThrowinChallenge'};
+--]]
+-----------------------------------------------------------------

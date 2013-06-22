@@ -143,9 +143,10 @@ function update()
   is_confused = wcm.get_robot_is_confused();
   if is_confused>0 then
     kickType=2;
-    if math.abs(angleRot)<45*math.pi/180 or
-       math.abs(angleRot)>135*math.pi/180 then
+    if math.abs(angleRot)<40*math.pi/180 or
+       math.abs(angleRot)>140*math.pi/180 then
       --We are facing one of the goal.... do the sidekick
+      print("CONFUSED: SIDE KICK", angleRot*180/math.pi)
 
       --TODO: kick towards OUTSIDE of the field      
       kickDir=2; --Sidekick to the left
@@ -156,6 +157,8 @@ function update()
       kickAngle = -90*math.pi/180;
 --]]
     else  --We are facing sideways, do straight kick
+      print("CONFUSED: FRONT KICK", angleRot*180/math.pi)
+
       kickDir=1; 
       kickAngle = 0*math.pi/180; --Straight kick
     end

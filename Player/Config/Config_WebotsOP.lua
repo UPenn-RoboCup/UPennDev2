@@ -206,6 +206,11 @@ team.confused_threshold_y = 4.0;
 team.flip_threshold_x = 1.0;
 team.flip_threshold_y = 1.5;
 team.flip_check_t = 5.0; --keep confused for 5 sec
+
+team.confusion_handling = 0; --don't check for flipping
+team.confusion_handling = 1; --use CONFUSED role 
+team.confusion_handling = 2; --keep the current role, move the ball to the side
+
 ----------------------------------------------------
 
 

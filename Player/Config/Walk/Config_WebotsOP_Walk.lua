@@ -552,7 +552,7 @@ zmpstep.param_k1={
 
 
 --Testing
-
+--[[
 
 zmpstep.motionDef["nonstop_kick_right"]={
   support_start = 1, --Right support 
@@ -645,7 +645,7 @@ zmpstep.motionDef["nonstop_kick_left"]={
   support_end = 1, --should be followed by RS step
 }
 
-
+--]]
 
 
 --[[

@@ -207,3 +207,12 @@ team.flip_threshold_x = 1.0;
 team.flip_threshold_y = 1.5;
 team.flip_check_t = 5.0; --keep confused for 5 sec
 ----------------------------------------------------
+
+
+
+--[[
+dev.team='TeamNull'; --Turn off teamplay for challenges
+fsm.body = {'HighKickChallenge'};
+world.init_override = 1; --Init at the center circle, facing red goal
+game.teamColor = 0; --Blue team, kicking to red goal
+--]]

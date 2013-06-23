@@ -152,4 +152,5 @@ vision.ball.th_headAngle = -15*math.pi/180;
 -----------------------------------------------------
 -- GRASP FIELD VALUES
 
-vision.goal.distanceFactorYellow = 1.1; 
+--vision.goal.distanceFactorYellow = 1.1; 
+vision.goal.distanceFactorYellow = 1.22; 

@@ -193,3 +193,8 @@ fsm.head = {'GeneralPlayer'};
 fsm.body = {'ThrowinChallenge'};
 --]]
 -----------------------------------------------------------------
+
+fsm.bodyPosition.maxStep2 = 0.07;
+fsm.bodyPosition.maxStep3 = 0.10;
+walk.velLimitX={-.03,.10};
+

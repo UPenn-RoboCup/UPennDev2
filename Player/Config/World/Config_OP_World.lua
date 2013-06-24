@@ -7,51 +7,51 @@ require('vector')
 
 world={};
 world.n = 200;
-world.xLineBoundary = 3.825;
-world.yLineBoundary = 2.55;
+world.xLineBoundary = 3;
+world.yLineBoundary = 2;
 --world.xMax = 4;
-world.xMax = 3;
-world.yMax = 2;
-world.goalWidth = 1.40;
+world.xMax = 3.2;
+world.yMax = 2.2;
+world.goalWidth = 1.60;
 world.goalHeight= 0.85;
 world.goalDiameter=0.10; -- diameter of a post
 world.ballYellow= {{4.5,0.0}};
 world.ballCyan= {{-4.6,0.0}};
 world.postYellow = {};
-world.postYellow[1] = {3.825, 0.70};
-world.postYellow[2] = {3.825, -0.70};
+world.postYellow[1] = {3, 0.80};
+world.postYellow[2] = {3, -0.80};
 world.postCyan = {};
-world.postCyan[1] = {-3.825, -0.70};
-world.postCyan[2] = {-3.825, 0.70};
+world.postCyan[1] = {-3, -0.80};
+world.postCyan[2] = {-3, 0.80};
 world.spot = {};
-world.spot[1] = {-2.295, 0};
-world.spot[2] = {2.295, 0};
+world.spot[1] = {-1.2, 0};
+world.spot[2] = {1.2, 0};
 
 --They are SPL 2013 values
 world.Lcorner={};
 --Field edge
-world.Lcorner[1]={3.825,2.55};
-world.Lcorner[2]={3.825,-2.55};
-world.Lcorner[3]={-3.825,2.55};
-world.Lcorner[4]={-3.825,-2.55};
+world.Lcorner[1]={3,2};
+world.Lcorner[2]={3,-2};
+world.Lcorner[3]={-3,2};
+world.Lcorner[4]={-3,-2};
 --Center T edge
-world.Lcorner[5]={0,2.55};
-world.Lcorner[6]={0,-2.55};
+world.Lcorner[5]={0,2};
+world.Lcorner[6]={0,-2};
 --Penalty box edge
-world.Lcorner[7]={-3.225,1.1};
-world.Lcorner[8]={-3.225,-1.1};
-world.Lcorner[9]={3.225,1.1};
-world.Lcorner[10]={3.225,-1.1};
+world.Lcorner[7]={-2.4,1.1};
+world.Lcorner[8]={-2.4,-1.1};
+world.Lcorner[9]={2.4,1.1};
+world.Lcorner[10]={2.4,-1.1};
 --Penalty box T edge
-world.Lcorner[11]={3.825,1.1};
-world.Lcorner[12]={3.825,-1.1};
-world.Lcorner[13]={-3.825,1.1};
-world.Lcorner[14]={-3.825,-1.1};
+world.Lcorner[11]={3,1.1};
+world.Lcorner[12]={3,-1.1};
+world.Lcorner[13]={-3,1.1};
+world.Lcorner[14]={-3,-1.1};
 --Center circle junction
-world.Lcorner[15]={0,0.6375};
-world.Lcorner[16]={0,-0.6375};
-world.Lcorner[17]={0.6375,0};
-world.Lcorner[18]={-0.6375,0};
+world.Lcorner[15]={0,0.6};
+world.Lcorner[16]={0,-0.6};
+world.Lcorner[17]={0.6,0};
+world.Lcorner[18]={-0.6,0};
 
 --Goalie only uses corners near goals
 
@@ -84,24 +84,24 @@ world.imuYaw = 1;
 
 -- default positions for our kickoff
 world.initPosition1={
-  {3.6,0},   --Goalie
+  {2.8,0},   --Goalie
   {0.5, 0}, --Attacker
-  {1.2,-1}, --Defender
-  {1.2, 1}, --Supporter
+  {1.5,-1.25}, --Defender
+  {0.5, 1}, --Supporter
 }
 -- default positions for opponents' kickoff
 -- Penalty mark : {1.2,0}
 world.initPosition2={
-  {3.6,0},   --Goalie
-  {2.0, 0}, --Attacker
-  {2.5, -1}, --Defender
-  {2.5,1}, --Supporter
+  {2.8,0},   --Goalie
+  {0.8, 0}, --Attacker
+  {1.5, -0.5}, --Defender
+  {1.75,1}, --Supporter
 }
 
 -- default positions for dropball
 -- Center circle radius: 0.6
 world.initPosition3={
-  {2.8,0},   --Goalie
+  {2.0,0},   --Goalie
   {0.5,0}, --Attacker
   {1.5,-1.5}, --Defender
   {0.5,1.0}, --Supporter

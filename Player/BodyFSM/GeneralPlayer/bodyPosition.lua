@@ -99,6 +99,7 @@ function update()
 
   --Force attacker for demo code
   if Config.fsm.playMode==1 then role = ROLE_ATTACKER; 
+    homePose = position.getDirectAttackerHomePose();
   elseif (role == ROLE_DEFENDER) then
     homePose = position.getDefenderHomePose();
   elseif (role == ROLE_DEFENDER2) then

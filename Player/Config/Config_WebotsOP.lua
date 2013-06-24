@@ -240,3 +240,8 @@ fsm.head = {'GeneralPlayer'};
 fsm.body = {'ThrowinChallenge'};
 --]]
 -----------------------------------------------------------------
+
+--INITIAL TEST
+--Disable walkkicks and sidekicks 
+fsm.enable_walkkick = 0;  
+fsm.enable_sidekick = 0;

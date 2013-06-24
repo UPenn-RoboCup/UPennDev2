@@ -223,8 +223,10 @@ function landmark_observation(pos, v, rLandmarkFilter, aLandmarkFilter,dont_upda
   local rSigma = rSigmaSingle1 * r + rSigmaSingle2;
   local aSigma = aSigmaSingle;
 
+--[[
     print("rSigma "..rSigma.." "..r);
     print("aSigma "..aSigma);
+--]]
 
   local rFilter = rLandmarkFilter or 0.02;
   local aFilter = aLandmarkFilter or 0.04;
@@ -511,7 +513,10 @@ function goal_observation_unified(pos1,pos2,v)
 
     local rSigma = rSigmaDouble1 * dGoal1 + rSigmaDouble2;
     local aSigma = aSigmaDouble;
-
+--[[
+    print("rSigma "..rSigma.." "..r);
+    print("aSigma "..aSigma);
+--]]
     local rFilter = rGoalFilter;
     local aFilter = aGoalFilter;
 

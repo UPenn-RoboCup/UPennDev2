@@ -556,6 +556,8 @@ end
 
 
 function setAttackerVelocity(homePose)
+posCalc();
+
   uPose=vector.new({pose.x,pose.y,pose.a})
   homeRelative = util.pose_relative(homePose, uPose);  
   rHomeRelative = math.sqrt(homeRelative[1]^2 + homeRelative[2]^2);

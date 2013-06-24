@@ -13,11 +13,11 @@ platform.name = 'OP'
 params = {}
 params.name = {"Robot", "Walk", "World", "Kick", "Vision", "FSM", "Camera"};
 params.Kick = "Slow"
-params.World = "Grasp"
 
 ---Location Specific Camera Parameters--
 --params.Camera = "Grasp"
-params.Camera = "Grasp_lowE_pink"
+--params.Camera = "Grasp_lowE_pink"
+params.Camera = "Eindhoven_lowC"
 
 util.LoadConfig(params, platform)
 
@@ -193,3 +193,8 @@ fsm.head = {'GeneralPlayer'};
 fsm.body = {'ThrowinChallenge'};
 --]]
 -----------------------------------------------------------------
+
+fsm.bodyPosition.maxStep2 = 0.07;
+fsm.bodyPosition.maxStep3 = 0.10;
+walk.velLimitX={-.03,.10};
+

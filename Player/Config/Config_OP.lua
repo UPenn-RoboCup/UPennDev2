@@ -17,7 +17,8 @@ params.World = "Grasp"
 
 ---Location Specific Camera Parameters--
 --params.Camera = "Grasp"
-params.Camera = "Grasp_lowE_pink"
+--params.Camera = "Grasp_lowE_pink"
+params.Camera = "Eindhoven_lowC"
 
 util.LoadConfig(params, platform)
 

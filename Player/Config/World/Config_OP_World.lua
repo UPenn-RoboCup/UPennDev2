@@ -1,57 +1,59 @@
 module(..., package.seeall);
 require('vector')
 
---Localization parameters 
+--Localization parameters for Testing in Grasp
+--The field is shrinked to 85% of its real size
+--But the size of the boxes and the distance between the goal posts are unchanged
 
 world={};
-world.n = 100;
-world.xLineBoundary = 3.0;
-world.yLineBoundary = 2.0;
-world.xMax = 3.2;
-world.yMax = 2.2;
-world.goalWidth = 1.60;
+world.n = 200;
+world.xLineBoundary = 3.825;
+world.yLineBoundary = 2.55;
+--world.xMax = 4;
+world.xMax = 3;
+world.yMax = 2;
+world.goalWidth = 1.40;
 world.goalHeight= 0.85;
-world.ballYellow= {{3.0,0.0}};
-world.ballCyan= {{-3.0,0.0}};
-
+world.goalDiameter=0.10; -- diameter of a post
+world.ballYellow= {{4.5,0.0}};
+world.ballCyan= {{-4.6,0.0}};
 world.postYellow = {};
-world.postYellow[1] = {3.0, 0.80};
-world.postYellow[2] = {3.0, -0.80};
+world.postYellow[1] = {3.825, 0.70};
+world.postYellow[2] = {3.825, -0.70};
 world.postCyan = {};
-world.postCyan[1] = {-3.0, -0.80};
-world.postCyan[2] = {-3.0, 0.80};
+world.postCyan[1] = {-3.825, -0.70};
+world.postCyan[2] = {-3.825, 0.70};
 world.spot = {};
-world.spot[1] = {-1.20, 0};
-world.spot[2] = {1.20, 0};
+world.spot[1] = {-2.295, 0};
+world.spot[2] = {2.295, 0};
 
---Field edge
---SJ: rule change in 2013 (penalty box width 2.2m)
-
+--They are SPL 2013 values
 world.Lcorner={};
-world.Lcorner[1]={3.0,2.0};
-world.Lcorner[2]={3.0,-2.0};
-world.Lcorner[3]={-3.0,2.0};
-world.Lcorner[4]={-3.0,-2.0};
-
+--Field edge
+world.Lcorner[1]={3.825,2.55};
+world.Lcorner[2]={3.825,-2.55};
+world.Lcorner[3]={-3.825,2.55};
+world.Lcorner[4]={-3.825,-2.55};
 --Center T edge
-world.Lcorner[5]={0,2.0};
-world.Lcorner[6]={0,-2.0};
-
+world.Lcorner[5]={0,2.55};
+world.Lcorner[6]={0,-2.55};
 --Penalty box edge
-world.Lcorner[7]={-2.4,1.1};
-world.Lcorner[8]={-2.4,-1.1};
-world.Lcorner[9]={2.4,1.1};
-world.Lcorner[10]={2.4,-1.1};
-
+world.Lcorner[7]={-3.225,1.1};
+world.Lcorner[8]={-3.225,-1.1};
+world.Lcorner[9]={3.225,1.1};
+world.Lcorner[10]={3.225,-1.1};
 --Penalty box T edge
-world.Lcorner[11]={3.0,1.1};
-world.Lcorner[12]={3.0,-1.1};
-world.Lcorner[13]={-3.0,1.1};
-world.Lcorner[14]={-3.0,-1.1};
-
+world.Lcorner[11]={3.825,1.1};
+world.Lcorner[12]={3.825,-1.1};
+world.Lcorner[13]={-3.825,1.1};
+world.Lcorner[14]={-3.825,-1.1};
 --Center circle junction
-world.Lcorner[15]={0,0.6};
-world.Lcorner[16]={0,-0.6};
+world.Lcorner[15]={0,0.6375};
+world.Lcorner[16]={0,-0.6375};
+world.Lcorner[17]={0.6375,0};
+world.Lcorner[18]={-0.6375,0};
+
+--Goalie only uses corners near goals
 
 world.Lgoalie_corner = {}
 --Field edge
@@ -72,20 +74,28 @@ world.Lgoalie_corner[10]=world.Lcorner[12];
 world.Lgoalie_corner[11]=world.Lcorner[13];
 world.Lgoalie_corner[12]=world.Lcorner[14];
 
+
+--SJ: OP does not use yaw odometry data (only use gyro)
+world.odomScale = {1, 1, 0};  
+world.imuYaw = 1;
+--Vision only testing (turn off yaw gyro)
+--world.odomScale = {1, 1, 1};  
+--world.imuYaw = 0;
+
 -- default positions for our kickoff
 world.initPosition1={
-  {2.8,0},   --Goalie
-  {0.5,0}, --Attacker
-  {1.5,-1.25}, --Defender
-  {0.5,1.0}, --Supporter
+  {3.6,0},   --Goalie
+  {0.5, 0}, --Attacker
+  {1.2,-1}, --Defender
+  {1.2, 1}, --Supporter
 }
 -- default positions for opponents' kickoff
--- Center circle radius: 0.6
+-- Penalty mark : {1.2,0}
 world.initPosition2={
-  {2.8,0},   --Goalie
-  {0.8,0}, --Attacker
-  {1.5,-0.5}, --Defender
-  {1.75,1.0}, --Supporter
+  {3.6,0},   --Goalie
+  {2.0, 0}, --Attacker
+  {2.5, -1}, --Defender
+  {2.5,1}, --Supporter
 }
 
 -- default positions for dropball
@@ -97,20 +107,12 @@ world.initPosition3={
   {0.5,1.0}, --Supporter
 }
 
---SJ: OP does not use yaw odometry data (only use gyro)
-world.odomScale = {1, 1, 0};  
-world.imuYaw = 1;
---Vision only testing (turn off yaw gyro)
---world.odomScale = {1, 1, 1};  
---world.imuYaw = 0;
-
 
 
 --Resampling parameters
 world.cResample = 10; --Resampling interval
 world.daNoise = 2.0*math.pi/180;
 world.drNoise = 0.01;
-
 
 -- filter weights
 
@@ -154,3 +156,6 @@ world.triangulation_threshold = 4.0;
 world.position_update_threshold = 6.0;
 world.angle_update_threshold = 1.0;
 world.flip_correction = 0;
+
+world.dont_reset_orientation = 1;
+

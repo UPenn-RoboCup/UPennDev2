@@ -13,7 +13,6 @@ platform.name = 'OP'
 params = {}
 params.name = {"Robot", "Walk", "World", "Kick", "Vision", "FSM", "Camera"};
 params.Kick = "Slow"
-params.World = "Grasp"
 
 ---Location Specific Camera Parameters--
 --params.Camera = "Grasp"

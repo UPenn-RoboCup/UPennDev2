@@ -121,13 +121,17 @@ world.drNoise = 0.01;
 -- filter weights
 
 --Sigma value for one landmark observation
-world.rSigmaSingle1 = .15;
-world.rSigmaSingle2 = 0.10;
+--world.rSigmaSingle1 = .15;
+--world.rSigmaSingle2 = 0.10;
+world.rSigmaSingle1 = .55;
+world.rSigmaSingle2 = .40;
 world.aSigmaSingle = 50*math.pi/180;
 
 --Sigma value for two landmark observation
-world.rSigmaDouble1 = .25;
-world.rSigmaDouble2 = .20;
+--world.rSigmaDouble1 = .25;
+--world.rSigmaDouble2 = .20;
+world.rSigmaDouble1 = .55;
+world.rSigmaDouble2 = .50;
 world.aSigmaDouble = 50*math.pi/180;
 
 --for general update(corner, distant goalpost, etc)

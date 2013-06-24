@@ -8,6 +8,7 @@ require('vector')
 require('Transform')
 require('vcm')
 require('mcm')
+require('walk')
 
 active = true;
 t0 = 0;
@@ -121,7 +122,19 @@ function update()
   vcm.set_camera_bodyTilt(pTorso[5]);
 --print("BodyHeight/Tilt:",pTorso[3],pTorso[5]*180/math.pi)
 
-  q = Kinematics.inverse_legs(pLLeg, pRLeg, pTorso, 0);
+  pTorsoActual = {
+	pTorso[1],
+	pTorso[2],
+	pTorso[3],
+	pTorso[4],
+	pTorso[5],
+	pTorso[6]}
+
+  if walk.has_ball and walk.has_ball>0 then
+    pTorsoActual[1] = pTorsoActual[1] - 0.01;
+  end
+
+  q = Kinematics.inverse_legs(pLLeg, pRLeg, pTorsoActual, 0);
   Body.set_lleg_command(q);
 
   if (tol) then

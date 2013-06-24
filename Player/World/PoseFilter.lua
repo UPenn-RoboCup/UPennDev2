@@ -211,11 +211,22 @@ end
 --@param aLandmarkFilter How much to adjust particles according to 
 --angle to landmark
 function landmark_observation(pos, v, rLandmarkFilter, aLandmarkFilter,dont_update_position)
+
+  local p = wcm.get_pose()
+  if math.sqrt(p.x^2 + p.y^2) < 1 then
+      dont_update_position = 1
+  end
+
   local r = math.sqrt(v[1]^2 + v[2]^2);
   local a = math.atan2(v[2], v[1]);
 
   local rSigma = rSigmaSingle1 * r + rSigmaSingle2;
   local aSigma = aSigmaSingle;
+
+--[[
+    print("rSigma "..rSigma.." "..r);
+    print("aSigma "..aSigma);
+--]]
 
   local rFilter = rLandmarkFilter or 0.02;
   local aFilter = aLandmarkFilter or 0.04;
@@ -256,7 +267,12 @@ function landmark_observation(pos, v, rLandmarkFilter, aLandmarkFilter,dont_upda
     dxp[ip] = dx[imin];
     dyp[ip] = dy[imin];
     dap[ip] = da[imin];
-
+--[[
+    if ip % 40 == 0 then
+        print("drp[ip] "..math.sqrt(dxp[ip]^2 + dyp[ip]^2));
+        print("dap[ip] "..dap[ip]);
+    end
+]]--
   end
   --Filter toward best matching landmark position:
   for ip = 1,n do
@@ -497,10 +513,12 @@ function goal_observation_unified(pos1,pos2,v)
 
     local rSigma = rSigmaDouble1 * dGoal1 + rSigmaDouble2;
     local aSigma = aSigmaDouble;
-
+--[[
+    print("rSigma "..rSigma.." "..r);
+    print("aSigma "..aSigma);
+--]]
     local rFilter = rGoalFilter;
     local aFilter = aGoalFilter;
-
 
     for ip = 1,n do
       local xErr1 = x1 - xp[ip];

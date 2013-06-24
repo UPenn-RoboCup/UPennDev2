@@ -206,4 +206,37 @@ team.confused_threshold_y = 4.0;
 team.flip_threshold_x = 1.0;
 team.flip_threshold_y = 1.5;
 team.flip_check_t = 5.0; --keep confused for 5 sec
+
+team.confusion_handling = 0; --don't check for flipping
+team.confusion_handling = 1; --use CONFUSED role 
+team.confusion_handling = 2; --keep the current role, move the ball to the side
+
 ----------------------------------------------------
+
+
+
+--[[
+dev.team='TeamNull'; --Turn off teamplay for challenges
+fsm.body = {'HighKickChallenge'};
+world.init_override = 1; --Init at the center circle, facing red goal
+game.teamColor = 0; --Blue team, kicking to red goal
+--]]
+
+
+
+
+
+
+--For THROW-IN---------------------------------------------------
+--[[
+walk.qLArm=math.pi/180*vector.new({90,25,-20});
+walk.qRArm=math.pi/180*vector.new({90,-25,-20});
+stance.qLArmSit = math.pi/180*vector.new({140,25,-40});
+stance.qRArmSit = math.pi/180*vector.new({140,-25,-40});
+use_rollback_getup = 0;
+km.standup_front = 'km_NSLOP_StandupFromFront_Throw.lua';
+km.standup_back = 'km_NSLOP_StandupFromBack_Throw.lua';
+fsm.head = {'GeneralPlayer'};
+fsm.body = {'ThrowinChallenge'};
+--]]
+-----------------------------------------------------------------

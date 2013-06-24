@@ -178,3 +178,19 @@ use_rollback_getup = 0;
 use_kalman_velocity = 1;
 
 fsm.goalie_reposition=3; --No reposition at all (for testing)
+use_rollback_getup = 0;
+
+
+--For THROW-IN---------------------------------------------------
+--[[
+walk.qLArm=math.pi/180*vector.new({90,25,-20});
+walk.qRArm=math.pi/180*vector.new({90,-25,-20});
+stance.qLArmSit = math.pi/180*vector.new({140,25,-40});
+stance.qRArmSit = math.pi/180*vector.new({140,-25,-40});
+use_rollback_getup = 0;
+km.standup_front = 'km_NSLOP_StandupFromFront_Throw.lua';
+km.standup_back = 'km_NSLOP_StandupFromBack_Throw.lua';
+fsm.head = {'GeneralPlayer'};
+fsm.body = {'ThrowinChallenge'};
+--]]
+-----------------------------------------------------------------

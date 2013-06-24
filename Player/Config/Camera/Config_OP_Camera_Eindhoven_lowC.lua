@@ -53,4 +53,4 @@ camera.param[5] = {key='white balance temperature', val={0}};
 camera.param[6] = {key='sharpness',     val={200}};
 camera.param[7] = {key='exposure (absolute)',      val={1900}};
 
-camera.lut_file = 'eindhoven_samarth_1722.raw';
+camera.lut_file = 'eindhoven_samarth_1722_fieldA.raw';

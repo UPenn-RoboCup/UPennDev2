@@ -271,4 +271,4 @@ fsm.thDistStationaryKick = 2.0; --try do some stationary kick
 
 --goalie testing
 use_kalman_velocity = 1;
-goalie_log_balls =1;
+goalie_log_balls =0;

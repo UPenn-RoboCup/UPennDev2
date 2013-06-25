@@ -29,6 +29,7 @@ function entry()
   if (gcm.get_game_our_score() ~= nil) then
     -- For Nao's
 
+--[[
     ourScore = gcm.get_game_our_score();
     oppScore = gcm.get_game_opponent_score();
 
@@ -44,7 +45,7 @@ function entry()
       Speak.talk('Rufio! Rufio! Rufio!');
     end
     last_score = gcm.get_game_our_score();
-
+--]]
 
 
     -- For OP's

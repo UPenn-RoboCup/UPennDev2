@@ -28,9 +28,8 @@ camera.param[1] = {key='brightness',    val={151}};
 camera.param[2] = {key='contrast',      val={26}};
 camera.param[3] = {key='saturation',    val={20}};
 camera.param[4] = {key='gain',          val={100}};
-camera.param[5] = {key='white balance temperature', val={770}};
+camera.param[5] = {key='white balance temperature', val={870}};
 camera.param[6] = {key='sharpness',     val={0}};
 camera.param[7] = {key='exposure (absolute)',      val={1100}};
 
---camera.lut_file = 'eindhoven_samarth_1722_fieldA.raw';
-camera.lut_file = 'field_B_high_contrast.raw';
+camera.lut_file = 'lut_field_b.raw';

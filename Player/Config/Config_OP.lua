@@ -46,7 +46,6 @@ speak.enable = false;
 
 -- Game Parameters
 game = {};
---game.teamNumber = 17;   --17 at RC12
 game.teamNumber = 19;   --17 at RC12
 
 --Default role: 0 for goalie, 1 for attacker, 2 for defender
@@ -107,6 +106,25 @@ team.team_ball_threshold = 0.5; --Min score to use team ball
 team.avoid_own_team = 1;
 team.avoid_other_team = 0;
 team.flip_correction = 0;
+team.vision_send_interval = 10; --one labelB out of 10 team message
+
+
+--FILP CORRECTION VARIABLES-------------------------
+team.flip_correction = 1;
+team.confused_threshold_x = 4.0;
+team.confused_threshold_y = 4.0;
+team.flip_threshold_x = 1.0;
+team.flip_threshold_y = 1.5;
+team.flip_check_t = 5.0; --keep confused for 5 sec
+
+--team.confusion_handling = 0; --don't check for flipping
+--team.confusion_handling = 1; --use CONFUSED role 
+team.confusion_handling = 2; --keep the current role, move the ball to the side
+-------------------------------------------------------------
+
+
+
+
 
 -- keyframe files
 km = {};
@@ -210,8 +228,8 @@ walk.velLimitX={-.03,.10};
 led_on = 1; --turn on eye led
 --Slow down maximum speed (for testing)
 fsm.bodyPosition.maxStep1 = 0.04; 
-fsm.bodyPosition.maxStep2 = 0.05;
-fsm.bodyPosition.maxStep3 = 0.05;
+fsm.bodyPosition.maxStep2 = 0.06;
+fsm.bodyPosition.maxStep3 = 0.06;
 --Disable sidekick
 fsm.enable_walkkick = 1;  
 fsm.enable_sidekick = 0;
@@ -223,8 +241,3 @@ largestep_enable = false;
 fsm.playMode = 2;--Orbit FSM
 fsm.thDistStationaryKick = 2.0; --try do some stationary kick
 -------------------------------------------------------------
-
-
-
-
-

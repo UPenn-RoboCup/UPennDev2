@@ -28,7 +28,7 @@ dev.camera = 'OPCam';
 dev.kinematics = 'OPKinematics';
 dev.ip_wired = '192.168.123.255';
 dev.ip_wired_port = 111111;
-dev.ip_wireless = '192.168.119.255'; --Our Router
+dev.ip_wireless = '192.168.255.255'; --Our Router
 dev.ip_wireless_port = 54321;
 dev.game_control='OPGameControl';
 --dev.team='TeamNSL';
@@ -138,8 +138,8 @@ vision.ball.th_headAngle = 10* math.pi/180;
 --Let goalie log all the ball positions
 fsm.goalie_type = 3;--moving/move+stop/stop+dive/stop+dive+move
 goalie_dive = 1; --1 for arm only, 2 for actual diving
-goalie_disable_arm = 1; 
-goalie_log_balls = 1;
+goalie_disable_arm = 0; 
+goalie_log_balls = 0;
 
 vision.ball.max_distance = 2.0; --temporary fix for GRASP lab
 
@@ -220,6 +220,19 @@ largestep_enable = false;
 fsm.playMode = 2;--Orbit FSM
 fsm.thDistStationaryKick = 2.0; --try do some stationary kick
 -------------------------------------------------------------
+
+
+
+
+
+--Goalie diving detection parameters
+fsm.bodyAnticipate.timeout = 3.0;
+fsm.bodyAnticipate.center_dive_threshold_y = 0.05; 
+fsm.bodyAnticipate.dive_threshold_y = 1.0;
+fsm.bodyAnticipate.ball_velocity_th = 0.6; --min velocity for diving
+fsm.bodyAnticipate.ball_velocity_thx = -0.5; --min x velocity for diving
+fsm.bodyAnticipate.rCloseDive = 2.0; --ball distance threshold for diving
+
 
 
 

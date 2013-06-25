@@ -28,7 +28,7 @@ dev.camera = 'OPCam';
 dev.kinematics = 'OPKinematics';
 dev.ip_wired = '192.168.123.255';
 dev.ip_wired_port = 111111;
-dev.ip_wireless = '192.168.1.255'; --Our Router
+dev.ip_wireless = '192.168.119.255'; --Our Router
 dev.ip_wireless_port = 54321;
 dev.game_control='OPGameControl';
 --dev.team='TeamNSL';
@@ -46,7 +46,7 @@ speak.enable = false;
 -- Game Parameters
 game = {};
 --game.teamNumber = 17;   --17 at RC12
-game.teamNumber = 26;   --17 at RC12
+game.teamNumber = 19;   --17 at RC12
 
 --Default role: 0 for goalie, 1 for attacker, 2 for defender
 ball_shift={0,0};

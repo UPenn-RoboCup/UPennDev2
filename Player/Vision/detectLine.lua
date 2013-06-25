@@ -151,21 +151,28 @@ function detect()
       goal_posX = math.min (goal1[1], goal2[1]);
     end
     --print ('goal_posX: '..goal_posX)
-     local LWratio = length/line.propsB[i].max_width; 
-    
+     local LWratio = length/line.propsB[i].max_width;
+
+    print("length "..length)
+    print("minlength "..min_length)
+    print("vendpoint_old "..vendpoint_old[1][3].." "..vendpoint_old[2][3]);
+    print("LWratio "..LWratio)
+    print("horizonB "..horizonB.." endpoint "..line.propsB[i].endpoint[3].." "..line.propsB[i].endpoint[4]);
+
+
    if length > min_length and linecount < 8 
   -- lines should be on the ground
      and vendpoint_old[1][3] < .2 and vendpoint_old[2][3] < .2
   -- lines should not be too wide
      and LWratio > 2.5 
   -- lines should be below horizon
-     and line.propsB[i].endpoint[3] > horizonB and line.propsB[i].endpoint[4] > horizonB  
+--     and line.propsB[i].endpoint[3] > horizonB and line.propsB[i].endpoint[4] > horizonB  
    --lines should be in the court, nothing behind the goal posts can be considered as line.
     --  and (goal_posX >= 0.15 or (goal_posX < 0.15 and lineX > goal_posX)) 
 --vendpoint[1][1] > goal_posX and vendpoint[2][1] > goal_posX
   then 
-  -- vcm.add_debug_message(string.format(
-   -- " Length is %d\nLW ratio is %d\nvendpoint 1 is %d\nvendpoint 2 is %d\n",length, LWratio, vendpoint_old[1][3], vendpoint_old[2][3]));
+   vcm.add_debug_message(string.format(
+    " Length is %d\nLW ratio is %d\nvendpoint 1 is %d\nvendpoint 2 is %d\n",length, LWratio, vendpoint_old[1][3], vendpoint_old[2][3]));
       linecount=linecount+1;
       line.length[linecount]=length;
       line.endpoint[linecount]= line.propsB[i].endpoint;
@@ -173,10 +180,10 @@ function detect()
       line.v[linecount][1]=vendpoint[1];
       line.v[linecount][2]=vendpoint[2];
       line.angle[linecount]=math.abs(math.atan2(vendpoint[1][2]-vendpoint[2][2], vendpoint[1][1]-vendpoint[2][1]));
-       -- print ('linecount is '..linecount);
-     
-     -- print(string.format(
---[[		"Line %d: endpoint1: (%f, %f), endpoint2: (%f, %f), \n endpoint1 in labelB: (%f, %f), endpoint2 in labelB: (%f, %f), horizonB: %f,\n length %d, angle %d, max_width %d\n",
+      print ('linecount is '..linecount);
+---[[     
+     print(string.format(
+		"Line %d: endpoint1: (%f, %f), endpoint2: (%f, %f), \n endpoint1 in labelB: (%f, %f), endpoint2 in labelB: (%f, %f), horizonB: %f,\n length %d, angle %d, max_width %d\n",
 		linecount,line.v[linecount][1][1], line.v[linecount][1][2],
     line.v[linecount][2][1], line.v[linecount][2][2],
     line.propsB[i].endpoint[1], line.propsB[i].endpoint[3], line.propsB[i].endpoint[2], line.propsB[i].endpoint[4], horizonB,
@@ -184,6 +191,7 @@ function detect()
 		line.angle[linecount]*180/math.pi, line.propsB[i].max_width));
   --]]
     end
+
   end
 
   local line_valid = {};
@@ -191,9 +199,9 @@ function detect()
     line_valid[i] = 1;
   end
   -- Check for line distance
-    for i = 1, linecount do
+  for i = 1, linecount do
     for j = 1, linecount do
-      local angle_diff = util.mod_angle(line.angle[i] - line.angle[j]);
+    local angle_diff = util.mod_angle(line.angle[i] - line.angle[j]);
       angle_diff = math.abs (angle_diff) * 180 / math.pi;
       angle_diff = math.min (angle_diff, 180 - angle_diff);
       local Cross = get_crosspoint (line.v[i][1][1], line.v[i][1][2], line.v[i][2][1], line.v[i][2][2],line.v[j][1][1], line.v[j][1][2], line.v[j][2][1], line.v[j][2][2])
@@ -226,21 +234,20 @@ function detect()
            line_valid[i+2] = 0;
       elseif ((z4 > 2.5 or z4 < 0.2) and line_valid[i+3] ~= nil) then
           line_valid[i+3] = 0;
-       end 
--- in all checks on line pairs, always kill the shorter one. 
-         if ( line.length[i] < line.length[j] and line_valid[i]*line_valid[j] ==1 ) then 
-
--- angle check
-        if (angle_diff < min_angle_diff and angle_diff > max_angle_diff) then
-         -- print ('angle check failed. angle_diff: '..angle_diff..', line'..i..' and line '..j)
-          line_valid[i] = 0;
-        end
-
-        if ((Cross[1] - line.v[i][1][1])*(Cross[1] - line.v[i][2][1]) < 0 and (Cross[1] -  line.v[j][1][1])*(Cross[1] - line.v[j][2][1]) < 0 ) then
-         -- print ('cross check failed. line '..i..' and line '..j..' are crossed')
-          line_valid[i] = 0;
+      end 
+       -- in all checks on line pairs, always kill the shorter one. 
+       if ( line.length[i] < line.length[j] and line_valid[i]*line_valid[j] ==1 ) then 
+       -- angle check
+       if (angle_diff < min_angle_diff and angle_diff > max_angle_diff) then
+       print ('angle check failed. angle_diff: '..angle_diff..', line'..i..' and line '..j)
+       line_valid[i] = 0;
        end
-      end
+
+       if ((Cross[1] - line.v[i][1][1])*(Cross[1] - line.v[i][2][1]) < 0 and (Cross[1] -  line.v[j][1][1])*(Cross[1] - line.v[j][2][1]) < 0 ) then
+       print ('cross check failed. line '..i..' and line '..j..' are crossed')
+       line_valid[i] = 0;
+       end
+       end
     end 
   end
 
@@ -260,6 +267,8 @@ function detect()
     line_second.angle[i] = 0;
   end
 
+  print("line_valid")
+  util.ptable(line_valid)
 
   for i = 1, linecount do
     --print ('valid: '..line_valid[i])
@@ -283,10 +292,12 @@ function detect()
     --angle: -pi to pi
     sumx=sumx+line.angle[i];
     sumxx=sumxx+line.angle[i]*line.angle[i];
-
   --]]
   if nLines>0 then
     line_second.detect = 1;
   end
+
+print('ive detected',nLines," lines:)")
+
   return line_second;
 end

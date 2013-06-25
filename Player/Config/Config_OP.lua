@@ -18,6 +18,7 @@ params.Kick = "Slow"
 --params.Camera = "Grasp"
 --params.Camera = "Grasp_lowE_pink"
 params.Camera = "Eindhoven_lowC"
+--params.Camera = "Eindhoven_highC"
 
 util.LoadConfig(params, platform)
 

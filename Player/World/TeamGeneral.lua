@@ -201,7 +201,15 @@ function update()
   state.tm_latency=Body.get_time()-tLastMessage;
 
   pack_vision_info(); --Vision info
-  pack_labelB(); --labelB info
+
+  vision_send_interval = Config.team.vision_send_interval or 10;
+
+  --Now send labelB once in a while
+  if count%vision_send_interval==0 then
+    pack_labelB(); --labelB info
+  end
+
+
 
   --Now pack state name too
   state.body_state = gcm.get_fsm_body_state();

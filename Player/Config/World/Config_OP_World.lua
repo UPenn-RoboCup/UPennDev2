@@ -141,11 +141,14 @@ world.rUnknownPostFilter = 0.02;
 world.aUnKnownPostFilter = 0.05;
 
 --For corner
-world.rCornerFilter = 0.01;
-world.aCornerFilter = 0.03;
+--world.rCornerFilter = 0.01;
+--world.aCornerFilter = 0.03;
 
+world.rCornerFilter = 0.1;
+world.aCornerFilter = 0.1;
 --For line
-world.aLineFilter = 0.02;
+--world.aLineFilter = 0.02;
+world.aLineFilter = 0.075;
 
 
 world.use_same_colored_goal = 1;

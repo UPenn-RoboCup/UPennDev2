@@ -67,6 +67,8 @@ elseif (robotName=='annie') then
 elseif (robotName=='andy') then
   game.playerID = 1; 
   game.role = 0; --Default goalie
+elseif (robotName=='jiminy') then
+  game.playerID = 3; 
 end
 
 --Default team: 0 for blue, 1 for red  

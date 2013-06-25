@@ -18,10 +18,9 @@ params.Kick = "Slow"
 --params.Camera = "Grasp"
 --params.Camera = "Grasp_lowE_pink"
 --params.Camera = "Eindhoven_lowC"
---params.Camera = "Eindhoven_B"
+params.Camera = "Eindhoven_B"
 --params.Camera = "Eindhoven_highC"
-params.Camera = "RC_13_25"
-
+--params.Camera = "RC_13_25"
 
 util.LoadConfig(params, platform)
 
@@ -33,6 +32,7 @@ dev.kinematics = 'OPKinematics';
 dev.ip_wired = '192.168.123.255';
 dev.ip_wired_port = 111111;
 dev.ip_wireless = '192.168.119.255'; --Our Router
+--dev.ip_wireless = '192.168..255'; --Our Router
 dev.ip_wireless_port = 54321;
 dev.game_control='OPGameControl';
 --dev.team='TeamNSL';
@@ -103,7 +103,7 @@ team.support_dist = 3.0;
 team.supportPenalty = 0.5; --dist from goal
 
 --Team ball parameters
-team.use_team_ball = 1;
+team.use_team_ball = 0;
 team.team_ball_timeout = 3.0;  --use team ball info after this delay
 team.team_ball_threshold = 0.5; --Min score to use team ball
 team.avoid_own_team = 1;

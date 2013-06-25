@@ -12,6 +12,9 @@ require('mcm');
 
 -- intialize sound localization if needed
 useSoundLocalization = Config.world.enable_sound_localization or 0;
+dont_reset_orientation = Config.world.dont_reset_orientation or 0;
+
+
 if (useSoundLocalization > 0) then
   require('SoundFilter');
 end
@@ -75,6 +78,39 @@ yaw0 =0;
 --Track gcm state
 gameState = 0;
 
+function init_particles_set()
+  goalDefend=get_goal_defend();
+  dp = vector.new({0.04,0.04,math.pi/8});
+
+  PoseFilter.initialize(vector.new({goalDefend[1]*0.93,0,math.pi}), dp);
+
+  if gcm.get_team_role() == 0 then
+  -- goalie initialized to different place
+    if goalDefend[1] > 0 then
+      PoseFilter.initialize(vector.new({goalDefend[1]*0.93,0,math.pi}), dp);
+    else
+      PoseFilter.initialize(vector.new({goalDefend[1]*0.93,0,0}), dp);
+    end
+  elseif gcm.get_team_role() == 1 then --attacker
+
+
+    if goalDefend[1] > 0 then
+      PoseFilter.initialize(vector.new({1.0,0,math.pi}), dp);
+    else
+      PoseFilter.initialize(vector.new({-1.0,0,0}), dp);
+    end
+
+
+  else --defender
+    if goalDefend[1] > 0 then
+      PoseFilter.initialize(vector.new({1.5,0,math.pi}), dp);
+    else
+      PoseFilter.initialize(vector.new({-1.5,0,0}), dp);
+    end
+  end
+end
+
+
 function init_particles()
   --Now we ALWAYS use the same colored goalposts
   --Init particles to our side
@@ -82,10 +118,6 @@ function init_particles()
   PoseFilter.initialize_unified(
     vector.new({goalDefend[1]/2, -Config.world.yMax,  math.pi/2}),
     vector.new({goalDefend[1]/2,  Config.world.yMax, -math.pi/2}));
-
-
-
-
 
 --  if (useSoundLocalization > 0) then
 --    SoundFilter.reset();
@@ -98,11 +130,11 @@ function entry()
   Velocity.entry();
 end
 
+--[[
 function init_particles_manual_placement()
   if gcm.get_team_role() == 0 then
   -- goalie initialized to different place
     goalDefend=get_goal_defend();
-    util.ptable(goalDefend);
     dp = vector.new({0.04,0.04,math.pi/8});
     if goalDefend[1] > 0 then
       PoseFilter.initialize(vector.new({goalDefend[1],0,math.pi}), dp);
@@ -116,6 +148,7 @@ function init_particles_manual_placement()
     end
   end
 end
+--]]
 
 function allLessThanTenth(table)
   for k,v in pairs(table) do
@@ -236,7 +269,12 @@ function update_vision()
   end
 
   -- Reset heading if robot is down
-  if (mcm.get_walk_isFallDown() == 1) then
+  if (mcm.get_walk_isFallDown() == 1) and
+     dont_reset_orientation==0 then
+print("RESETHEADING")
+print("RESETHEADING")
+print("RESETHEADING")
+print("RESETHEADING")
     PoseFilter.reset_heading();
     if (useSoundLocalization > 0) then
       SoundFilter.reset();
@@ -252,9 +290,19 @@ function update_vision()
   gameState = gcm.get_game_state();
   if (gameState == 0) then
     init_particles();
-
   end
 
+
+  --Robot is in set state
+  --Fix all the particle positions
+  if gcm.get_game_state() == 2 then
+    init_particles_set();
+  end
+  if gcm.in_penalty() then
+    init_particles()
+  end
+
+--[[
   --If robot was in penalty and game switches to set, initialize particles
   --for manual placement
   if wcm.get_robot_penalty() == 1 and gcm.get_game_state() == 2 then
@@ -262,6 +310,7 @@ function update_vision()
   elseif gcm.in_penalty() then
     init_particles()
   end
+--]]
 
   -- Penalized?
   if gcm.in_penalty() then
@@ -269,6 +318,8 @@ function update_vision()
   else
     wcm.set_robot_penalty(0);
   end
+
+--[[
 
   webots = Config.webots
   if not webots or webots==0 then
@@ -283,8 +334,9 @@ function update_vision()
         end
       end
     end
-
   end
+--]]
+
     
   -- ball
   ball_gamma = 0.3;

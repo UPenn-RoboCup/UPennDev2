@@ -194,7 +194,34 @@ fsm.body = {'ThrowinChallenge'};
 --]]
 -----------------------------------------------------------------
 
+--[[
+--For testing fast approach
 fsm.bodyPosition.maxStep2 = 0.07;
 fsm.bodyPosition.maxStep3 = 0.10;
 walk.velLimitX={-.03,.10};
+--]]
+
+-------------------------------------------------------------
+--FOR DEMO MATCH DAY 1
+
+led_on = 1; --turn on eye led
+--Slow down maximum speed (for testing)
+fsm.bodyPosition.maxStep1 = 0.04; 
+fsm.bodyPosition.maxStep2 = 0.05;
+fsm.bodyPosition.maxStep3 = 0.05;
+--Disable sidekick
+fsm.enable_walkkick = 1;  
+fsm.enable_sidekick = 0;
+
+--Disable stepkick
+dev.walk='CleanWalk';
+largestep_enable = false;
+
+fsm.playMode = 2;--Orbit FSM
+fsm.thDistStationaryKick = 2.0; --try do some stationary kick
+-------------------------------------------------------------
+
+
+
+
 

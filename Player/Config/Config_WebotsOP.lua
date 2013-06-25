@@ -28,8 +28,11 @@ dev.walk='EvenBetterWalk'; --Walk with generalized walkkick definitions
 dev.walk='AwesomeWalk';
 dev.kick='PunchKick'; --Extended kick that supports upper body motion
 
-largestep_enable = false;
 largestep_enable = true;
+
+--
+--
+
 dev.largestep = 'ZMPStepKick';--ZMP Preview motion 
 
 
@@ -243,5 +246,29 @@ fsm.body = {'ThrowinChallenge'};
 
 --INITIAL TEST
 --Disable walkkicks and sidekicks 
+
+led_on = 1; --turn on eye led
+--Slow down maximum speed (for testing)
+fsm.bodyPosition.maxStep1 = 0.04; 
+fsm.bodyPosition.maxStep2 = 0.05;
+fsm.bodyPosition.maxStep3 = 0.05;
+--Disable walkkicks and sidekicks 
 fsm.enable_walkkick = 0;  
+fsm.enable_walkkick = 1;  
 fsm.enable_sidekick = 0;
+
+--Disable stepkick
+dev.walk='CleanWalk';
+largestep_enable = false;
+
+
+fsm.playMode = 2;--Orbit FSM
+fsm.thDistStationaryKick = 2.0; --try do some stationary kick
+
+
+
+
+
+--goalie testing
+use_kalman_velocity = 1;
+goalie_log_balls =1;

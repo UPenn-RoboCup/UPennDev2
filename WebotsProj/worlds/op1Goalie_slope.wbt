@@ -44,6 +44,8 @@ DEF BLUE_GOAL KidGoal {
 }
 DEF BALL BallGPS {
   translation -0.7 0.13 0
+  linearDamping 0.17
+  angularDamping 0.33
 }
 DEF PLAYER_0_1 DARwInOPGPS {
   translation 1.6 0.3 2

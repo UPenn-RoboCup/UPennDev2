@@ -85,17 +85,32 @@ function update()
     thSideKick2 = Config.fsm.thSideKick2 or 135*math.pi/180;  
     thDistSideKick = Config.fsm.thDistSideKick or 3.0;
 
+    thDistStationaryKick = Config.fsm.thDistStationaryKick or 4.5;
+
     ball = wcm.get_ball();
+    ballxy=vector.new( {ball.x,ball.y,0} );  
+    posexya=vector.new( {pose.x, pose.y, pose.a} );
+    ballGlobal=util.pose_global(ballxy,posexya);
+    goalGlobal=wcm.get_goal_attack();
+    rGoalBall = math.sqrt( (goalGlobal[2]-ballGlobal[2])^2+
+      (goalGlobal[1]-ballGlobal[1])^2);
 
 
     rBall = math.sqrt(ball.x^2+ball.y^2);
 
-    if rBall > thDistSideKick or
+
+    if rGoalBall > thDistSideKick or
        math.abs(angleRot)<thSideKick1 or 
        math.abs(angleRot)>thSideKick2 	then
 --print("STRAIGHT",angleRot*180/math.pi)
       kickDir=1;
       kickAngle = 0;
+
+      if rGoalBall > thDistStationaryKick then
+        kickType = 1;
+      end
+
+
     elseif angleRot>0 then --should kick to the left
 --print("LEFT",angleRot*180/math.pi)
       kickDir=2;
@@ -105,14 +120,6 @@ function update()
       kickDir=3;
       kickAngle = -70*math.pi/180;
     end
-
-
-
-
-
-
-
-
 
 
 

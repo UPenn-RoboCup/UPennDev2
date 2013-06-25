@@ -10,7 +10,8 @@ PROTO BallGPS [
   field SFFloat radius 0.0325
   field SFFloat mass 0.055
   field MFVec3f centerOfMass [0 -0.0001 0]
-  field SFFloat linearDamping 0.17
+#  field SFFloat linearDamping 0.17
+  field SFFloat linearDamping 0.9
   field SFFloat angularDamping 0.33
   field SFString contactMaterial "default"
   field SFString controller "ballGPS"

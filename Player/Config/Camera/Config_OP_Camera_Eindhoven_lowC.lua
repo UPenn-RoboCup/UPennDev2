@@ -38,7 +38,7 @@ queryctrl: "Power Line Frequency" 0x980918
 
 camera.auto_param = {};
 camera.auto_param[1] = {key='white balance temperature, auto', val={0}};
-camera.auto_param[2] = {key='power line frequency',   val={0}};
+camera.auto_param[2] = {key='power line frequency',   val={50}};
 camera.auto_param[3] = {key='backlight compensation', val={0}};
 camera.auto_param[4] = {key='exposure, auto',val={1}}; --1 for manual
 camera.auto_param[5] = {key="exposure, auto priority",val={0}};
@@ -53,4 +53,5 @@ camera.param[5] = {key='white balance temperature', val={0}};
 camera.param[6] = {key='sharpness',     val={200}};
 camera.param[7] = {key='exposure (absolute)',      val={1900}};
 
-camera.lut_file = 'eindhoven_samarth_1722_fieldA.raw';
+--camera.lut_file = 'eindhoven_samarth_1722_fieldA.raw';
+camera.lut_file = 'eindhoven_samarth_2200_fieldAD.raw';

@@ -18,8 +18,9 @@ params.Kick = "Slow"
 --params.Camera = "Grasp"
 --params.Camera = "Grasp_lowE_pink"
 --params.Camera = "Eindhoven_lowC"
-params.Camera = "Eindhoven_B"
+--params.Camera = "Eindhoven_B"
 --params.Camera = "Eindhoven_highC"
+params.Camera = "Steve"
 
 util.LoadConfig(params, platform)
 
@@ -63,7 +64,7 @@ elseif (robotName=='betty') then
 elseif (robotName=='lucy') then
   game.playerID = 4; 
 elseif (robotName=='annie') then
-  game.playerID = 5; 
+  game.playerID = 3; 
 elseif (robotName=='andy') then
   game.playerID = 1; 
   game.role = 0; --Default goalie
@@ -239,6 +240,6 @@ fsm.enable_sidekick = 0;
 dev.walk='CleanWalk';
 largestep_enable = false;
 
-fsm.playMode = 2;--Orbit FSM
+--fsm.playMode = 2;--Orbit FSM
 fsm.thDistStationaryKick = 2.0; --try do some stationary kick
 -------------------------------------------------------------

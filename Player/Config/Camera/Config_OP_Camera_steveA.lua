@@ -50,7 +50,7 @@ camera.param[2] = {key='contrast',      val={8}};
 camera.param[3] = {key='saturation',    val={16}};
 camera.param[4] = {key='gain',          val={128}};
 camera.param[5] = {key='white balance temperature', val={0}};
-camera.param[6] = {key='sharpness',     val={128}};
+camera.param[6] = {key='sharpness',     val={0}};
 camera.param[7] = {key='exposure (absolute)',      val={750}};
 
 camera.lut_file = 'lut_steveA_6.raw';

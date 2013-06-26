@@ -18,8 +18,10 @@ params.Kick = "Slow"
 --params.Camera = "Grasp"
 --params.Camera = "Grasp_lowE_pink"
 --params.Camera = "Eindhoven_lowC"
-params.Camera = "Eindhoven_B"
+--params.Camera = "Eindhoven_B"
 --params.Camera = "Eindhoven_highC"
+--params.Camera = "Eindhoven_B_night"
+params.Camera = "Eindhoven_A_morning"
 --params.Camera = "RC_13_25"
 
 util.LoadConfig(params, platform)

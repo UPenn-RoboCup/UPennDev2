@@ -448,7 +448,14 @@ function update_imu()
     (1-Config.angle.accFactor)*iAngle[2]+Config.angle.accFactor*angP;
   end
 
-  sensor.imuAngle[1],sensor.imuAngle[2],sensor.imuAngle[3] = iAngle[1],iAngle[2],iAngle[3];
+ --SJ: don't update yaw angle if robot is tilted a lot
+  if math.abs(iAngle[1])>45*math.pi/180 or
+    math.abs(iAngle[2])>45*math.pi/180 then
+    sensor.imuAngle[1],sensor.imuAngle[2]= iAngle[1],iAngle[2];
+  else
+    sensor.imuAngle[1],sensor.imuAngle[2],sensor.imuAngle[3] =
+  		iAngle[1],iAngle[2],iAngle[3];
+  end
 end
 
 function update()

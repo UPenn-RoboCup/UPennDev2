@@ -39,13 +39,13 @@ function update()
 
   local t = Body.get_time();
 
-
+--[[
   Body.set_head_command({0,-10*math.pi/180});
   wcm.set_ball_t_locked_on(t-locked_t0);
   wcm.set_ball_locked_on(1);
-
   return;
---[[
+	--]]
+
 
 
 
@@ -94,7 +94,6 @@ function update()
     print('Ball lost!');
     return "lost";
   end
---]]
 end
 
 function exit()

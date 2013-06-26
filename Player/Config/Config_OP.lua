@@ -54,20 +54,22 @@ ball_shift={0,0};
 game.playerID = 1;
 game.role = 1;  --Default role: attacker
 
-if (robotName=='scarface') then
-  game.playerID = 5; 
-elseif (robotName=='linus') then
-  game.playerID = 4; 
-elseif (robotName=='betty') then
-  game.playerID = 3; 
-elseif (robotName=='lucy') then
+if (robotName=='lucy') then
   game.playerID = 1; 
---elseif (robotName=='andy') then
---  game.playerID = 1; 
 elseif (robotName=='annie') then
   game.playerID = 2; 
 elseif (robotName=='jiminy') then
   game.playerID = 3; 
+elseif (robotName=='linus') then
+  game.playerID = 4; 
+elseif (robotName=='scarface') then
+  game.playerID = 5; 
+elseif (robotName=='betty') then
+  game.playerID = 3; 
+elseif (robotName=='betty') then
+  game.playerID = 1; 
+elseif (robotName=='andy') then
+  game.playerID = 2;
 end
 
 --Default team: 0 for blue, 1 for red  

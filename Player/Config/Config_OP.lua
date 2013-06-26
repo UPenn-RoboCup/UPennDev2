@@ -64,11 +64,12 @@ elseif (robotName=='betty') then
   game.playerID = 3; 
 elseif (robotName=='lucy') then
   game.playerID = 4; 
-elseif (robotName=='annie') then
-  game.playerID = 3; 
+
+
 elseif (robotName=='andy') then
   game.playerID = 1; 
-  game.role = 0; --Default goalie
+elseif (robotName=='annie') then
+  game.playerID = 2; 
 elseif (robotName=='jiminy') then
   game.playerID = 3; 
 end
@@ -231,7 +232,7 @@ walk.velLimitX={-.03,.10};
 
 led_on = 1; --turn on eye led
 --Slow down maximum speed (for testing)
-fsm.bodyPosition.maxStep1 = 0.04; 
+fsm.bodyPosition.maxStep1 = 0.06; 
 fsm.bodyPosition.maxStep2 = 0.06;
 fsm.bodyPosition.maxStep3 = 0.06;
 --Disable sidekick
@@ -246,3 +247,9 @@ largestep_enable = false;
 fsm.thDistStationaryKick = 2.0; --try do some stationary kick
 -------------------------------------------------------------
 
+
+
+------------------------------------------------------------------
+-- FOR MATCH 1
+led_on = 0; --turn on eye led
+fsm.goalie_reposition=3; --No reposition at all (for testing)

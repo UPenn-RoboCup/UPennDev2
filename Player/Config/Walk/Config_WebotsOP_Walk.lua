@@ -670,3 +670,42 @@ zmpstep.motionDef["nonstop_kick_left"]={
   support_end = 1, --should be followed by RS step
 }
 --]]
+
+
+
+zmpstep.motionDef["nonstop_kick_right"]={
+  support_start = 0, --Left support 
+  stepDef={  
+    {2, {0,0,0},{0,0},0.10}, --DS step
+    {1, {0.0, 0.04 , 0.6 },{0,0},0.5}, --LS step  
+
+    {2, {0,0,0},{0,0},0.10}, --DS step
+
+    {0, {0.0,0.0,0},{-0.01,-0.01},0.2,1}, --RS step, lifting
+
+    {0, {0.06,-0.16, 0.90,0},{-0.01,-0.01},0.1,5}, --RS step  moving
+    {0, {0.0,-0.9, 0.0,0},{-0.01,-0.01},0.2,5}, --RS step  moving
+
+
+    {0, {-0.15,-0.017, -0.3 },{-0.01,-0.01},0.2,5}, --RS step  moving
+
+
+
+    {0, {0,0,0},{0,0,0},2,4}, --RS step  landing
+
+
+
+    {2, {0,0,0},{0,0},0.10}, --DS step
+    {1, {0.0,0,0},{0,0},0.5}, --LS step  
+---------------------------------------------
+    {0, {0.00,0,0},{0,0},0.25,9}, --RS step  
+    {1, {0.00,0,0},{0,0},0.25}, --RS step  
+    {0, {0.00,0,0},{0,0},0.25}, --RS step  
+    {1, {0.00,0,0},{0,0},0.25}, --RS step  
+  },
+  support_end = 1, --should be followed by RS step
+
+}
+
+
+

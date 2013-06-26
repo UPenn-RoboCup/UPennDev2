@@ -258,9 +258,10 @@ fsm.enable_walkkick = 1;
 fsm.enable_sidekick = 0;
 
 --Disable stepkick
+--[[
 dev.walk='CleanWalk';
 largestep_enable = false;
-
+--]]
 
 fsm.playMode = 2;--Orbit FSM
 fsm.thDistStationaryKick = 2.0; --try do some stationary kick

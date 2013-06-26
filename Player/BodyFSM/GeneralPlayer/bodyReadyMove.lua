@@ -111,8 +111,7 @@ function update()
   obstacle_dist = wcm.get_obstacle_dist();
 
 
-  --Now larger rejection radius 
-  local r_reject = 1.0;
+  local r_reject = 0.6;
 
   for i=1,obstacle_num do
 --print(string.format("%d XYD:%.2f %.2f %.2f",

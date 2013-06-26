@@ -30,6 +30,8 @@ function h=show_new_monitor()
   h.disabled= zeros(1,10);
   h.robot_num = 10;
 
+  h.is_flip = 0;
+
 
   function init(draw_team,target_fps)
     MONITOR.target_fps=target_fps;
@@ -48,6 +50,11 @@ function h=show_new_monitor()
 	'Units','Normalized', 'Position',[.60 .97 .10 .03],'Callback',@button2);
       MONITOR.hButton3=uicontrol('Style','pushbutton','String','Kidsize',...
 	'Units','Normalized', 'Position',[.0 .56 .045 .07],'Callback',@button3);
+
+      MONITOR.hButtonFlip=uicontrol('Style','pushbutton','String','Flip',...
+	'Units','Normalized', 'Position',[.0 .46 .045 .07],'Callback',@buttonFlip);
+
+
 
 
       MONITOR.hButton4=uicontrol('Style','pushbutton','String','Start',...
@@ -272,4 +279,19 @@ function h=show_new_monitor()
     TEAM_LOG.viewcount = min(TEAM_LOG.count,TEAM_LOG.viewcount + 10);
     set(MONITOR.hButton4,'String', 'Start');
   end
+
+  function buttonFlip(varargin)
+    MONITOR.is_flip = 1- MONITOR.is_flip;
+    if MONITOR.is_flip>0 
+      set(MONITOR.mainAxe, 'XDir', 'reverse');
+      set(MONITOR.mainAxe, 'YDir', 'reverse');
+    else
+      set(MONITOR.mainAxe, 'XDir', 'normal');
+      set(MONITOR.mainAxe, 'YDir', 'normal');
+    end
+
+    disp('FLIP')
+  end
+
+
 end

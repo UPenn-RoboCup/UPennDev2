@@ -17,8 +17,10 @@ params.Kick = "Slow"
 ---Location Specific Camera Parameters--
 --params.Camera = "Grasp"
 --params.Camera = "Grasp_lowE_pink"
-params.Camera = "Eindhoven_lowC"
+--params.Camera = "Eindhoven_lowC"
+params.Camera = "Eindhoven_B"
 --params.Camera = "Eindhoven_highC"
+-params.Camera = "RC_13_25"
 
 util.LoadConfig(params, platform)
 
@@ -29,7 +31,8 @@ dev.camera = 'OPCam';
 dev.kinematics = 'OPKinematics';
 dev.ip_wired = '192.168.123.255';
 dev.ip_wired_port = 111111;
-dev.ip_wireless = '192.168.255.255'; --Our Router
+dev.ip_wireless = '192.168.119.255'; --Our Router
+--dev.ip_wireless = '192.168..255'; --Our Router
 dev.ip_wireless_port = 54321;
 dev.game_control='OPGameControl';
 --dev.team='TeamNSL';
@@ -46,7 +49,6 @@ speak.enable = false;
 
 -- Game Parameters
 game = {};
---game.teamNumber = 17;   --17 at RC12
 game.teamNumber = 19;   --17 at RC12
 
 --Default role: 0 for goalie, 1 for attacker, 2 for defender
@@ -55,18 +57,19 @@ game.playerID = 1;
 game.role = 1;  --Default role: attacker
 
 if (robotName=='scarface') then
-  game.playerID = 1; 
+  game.playerID = 5; 
 elseif (robotName=='linus') then
-  game.playerID = 2; 
+  game.playerID = 4; 
 elseif (robotName=='betty') then
   game.playerID = 3; 
 elseif (robotName=='lucy') then
-  game.playerID = 4; 
-elseif (robotName=='annie') then
-  game.playerID = 5; 
-elseif (robotName=='andy') then
   game.playerID = 1; 
-  game.role = 0; --Default goalie
+--elseif (robotName=='andy') then
+--  game.playerID = 1; 
+elseif (robotName=='annie') then
+  game.playerID = 2; 
+elseif (robotName=='jiminy') then
+  game.playerID = 3; 
 end
 
 --Default team: 0 for blue, 1 for red  
@@ -99,12 +102,31 @@ team.support_dist = 3.0;
 team.supportPenalty = 0.5; --dist from goal
 
 --Team ball parameters
-team.use_team_ball = 1;
+team.use_team_ball = 0;
 team.team_ball_timeout = 3.0;  --use team ball info after this delay
 team.team_ball_threshold = 0.5; --Min score to use team ball
 team.avoid_own_team = 1;
 team.avoid_other_team = 0;
 team.flip_correction = 0;
+team.vision_send_interval = 10; --one labelB out of 10 team message
+
+
+--FILP CORRECTION VARIABLES-------------------------
+team.flip_correction = 1;
+team.confused_threshold_x = 4.0;
+team.confused_threshold_y = 4.0;
+team.flip_threshold_x = 1.0;
+team.flip_threshold_y = 1.5;
+team.flip_check_t = 5.0; --keep confused for 5 sec
+
+--team.confusion_handling = 0; --don't check for flipping
+--team.confusion_handling = 1; --use CONFUSED role 
+team.confusion_handling = 2; --keep the current role, move the ball to the side
+-------------------------------------------------------------
+
+
+
+
 
 -- keyframe files
 km = {};
@@ -139,8 +161,10 @@ vision.ball.th_headAngle = 10* math.pi/180;
 --Let goalie log all the ball positions
 fsm.goalie_type = 3;--moving/move+stop/stop+dive/stop+dive+move
 goalie_dive = 1; --1 for arm only, 2 for actual diving
-goalie_disable_arm = 0; 
+goalie_disable_arm = 1; 
+goalie_log_balls = 1;
 goalie_log_balls = 0;
+
 
 vision.ball.max_distance = 2.0; --temporary fix for GRASP lab
 
@@ -207,9 +231,9 @@ walk.velLimitX={-.03,.10};
 
 led_on = 1; --turn on eye led
 --Slow down maximum speed (for testing)
-fsm.bodyPosition.maxStep1 = 0.04; 
-fsm.bodyPosition.maxStep2 = 0.05;
-fsm.bodyPosition.maxStep3 = 0.05;
+fsm.bodyPosition.maxStep1 = 0.06; 
+fsm.bodyPosition.maxStep2 = 0.06;
+fsm.bodyPosition.maxStep3 = 0.06;
 --Disable sidekick
 fsm.enable_walkkick = 1;  
 fsm.enable_sidekick = 0;
@@ -218,12 +242,13 @@ fsm.enable_sidekick = 0;
 dev.walk='CleanWalk';
 largestep_enable = false;
 
-fsm.playMode = 2;--Orbit FSM
+--fsm.playMode = 2;--Orbit FSM
 fsm.thDistStationaryKick = 2.0; --try do some stationary kick
 -------------------------------------------------------------
 
 
 
+<<<<<<< HEAD
 
 
 --Goalie diving detection parameters
@@ -239,3 +264,6 @@ fsm.bodyAnticipate.rCloseDive = 2.0; --ball distance threshold for diving
 
 
 
+------------------------------------------------------------------
+-- FOR MATCH 1
+led_on = 0; --turn on eye led

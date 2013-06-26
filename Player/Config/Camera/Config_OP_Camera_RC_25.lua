@@ -45,15 +45,13 @@ camera.auto_param[5] = {key="exposure, auto priority",val={0}};
 
 
 camera.param = {};
-camera.param[1] = {key='brightness',    val={0}};
-camera.param[2] = {key='contrast',      val={4}};
---camera.param[3] = {key='saturation',    val={28}};
-camera.param[3] = {key='saturation',    val={24}};
+camera.param[1] = {key='brightness',    val={180}};
+camera.param[2] = {key='contrast',      val={39}};
+camera.param[3] = {key='saturation',    val={39}};
 camera.param[4] = {key='gain',          val={255}};
-camera.param[5] = {key='white balance temperature', val={1000}};
+camera.param[5] = {key='white balance temperature', val={440}};
 camera.param[6] = {key='sharpness',     val={200}};
-camera.param[7] = {key='exposure (absolute)',      val={1900}};
+camera.param[7] = {key='exposure (absolute)',      val={1248}};
 
 --camera.lut_file = 'eindhoven_samarth_1722_fieldA.raw';
---camera.lut_file = 'eindhoven_samarth_2200_fieldAD.raw';
-camera.lut_file = 'highC_1741_fieldD.raw';
+camera.lut_file = 'eindhoven_samarth_2200_fieldAD.raw';

@@ -52,6 +52,7 @@ if role~=0 or goalie_log_balls == 0 then
 
   local log={};
 
+
   ball_log_count = ball_log_count+1;
   log.time = t;
   log.ballxy = {x,y};
@@ -69,10 +70,6 @@ if role~=0 or goalie_log_balls == 0 then
 end
 
 function flush_log()
-
-  if role~=0 or goalie_log_balls == 0 then
-    return;
-  end
 
   print("Flushing log");
 

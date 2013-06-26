@@ -152,12 +152,13 @@ function detect()
     end
     --print ('goal_posX: '..goal_posX)
      local LWratio = length/line.propsB[i].max_width;
-
+--[[
     print("length "..length)
     print("minlength "..min_length)
     print("vendpoint_old "..vendpoint_old[1][3].." "..vendpoint_old[2][3]);
     print("LWratio "..LWratio)
     print("horizonB "..horizonB.." endpoint "..line.propsB[i].endpoint[3].." "..line.propsB[i].endpoint[4]);
+--]]
 
 
    if length > min_length and linecount < 8 
@@ -179,9 +180,10 @@ function detect()
             line.v[linecount]={};
       line.v[linecount][1]=vendpoint[1];
       line.v[linecount][2]=vendpoint[2];
+
       line.angle[linecount]=math.abs(math.atan2(vendpoint[1][2]-vendpoint[2][2], vendpoint[1][1]-vendpoint[2][1]));
-      print ('linecount is '..linecount);
----[[     
+--      print ('linecount is '..linecount);
+--[[     
      print(string.format(
 		"Line %d: endpoint1: (%f, %f), endpoint2: (%f, %f), \n endpoint1 in labelB: (%f, %f), endpoint2 in labelB: (%f, %f), horizonB: %f,\n length %d, angle %d, max_width %d\n",
 		linecount,line.v[linecount][1][1], line.v[linecount][1][2],
@@ -189,7 +191,7 @@ function detect()
     line.propsB[i].endpoint[1], line.propsB[i].endpoint[3], line.propsB[i].endpoint[2], line.propsB[i].endpoint[4], horizonB,
     line.length[linecount],
 		line.angle[linecount]*180/math.pi, line.propsB[i].max_width));
-  --]]
+  --]]--
     end
 
   end
@@ -239,12 +241,12 @@ function detect()
        if ( line.length[i] < line.length[j] and line_valid[i]*line_valid[j] ==1 ) then 
        -- angle check
        if (angle_diff < min_angle_diff and angle_diff > max_angle_diff) then
-       print ('angle check failed. angle_diff: '..angle_diff..', line'..i..' and line '..j)
+--       print ('angle check failed. angle_diff: '..angle_diff..', line'..i..' and line '..j)
        line_valid[i] = 0;
        end
 
        if ((Cross[1] - line.v[i][1][1])*(Cross[1] - line.v[i][2][1]) < 0 and (Cross[1] -  line.v[j][1][1])*(Cross[1] - line.v[j][2][1]) < 0 ) then
-       print ('cross check failed. line '..i..' and line '..j..' are crossed')
+--       print ('cross check failed. line '..i..' and line '..j..' are crossed')
        line_valid[i] = 0;
        end
        end
@@ -267,9 +269,10 @@ function detect()
     line_second.angle[i] = 0;
   end
 
+--[[
   print("line_valid")
   util.ptable(line_valid)
-
+--]]
   for i = 1, linecount do
     --print ('valid: '..line_valid[i])
     if (line_valid[i] == 1) then
@@ -297,7 +300,7 @@ function detect()
     line_second.detect = 1;
   end
 
-print('ive detected',nLines," lines:)")
+--print('ive detected',nLines," lines:)")
 
   return line_second;
 end

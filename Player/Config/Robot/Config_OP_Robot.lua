@@ -13,15 +13,18 @@ stance.qRArmSit = math.pi/180*vector.new({140,-8,-40});
 stance.dpLimitSit=vector.new({.03,.01,.06,.1,.3,.3});
 
 --This makes correct sideways dive
-stance.bodyHeightDive= 0.25;
-stance.bodyTiltDive= 0;
+--stance.bodyHeightDive= 0.25;
 
---stance.bodyHeightDive= 0.28;
+stance.bodyHeightDive= 0.295;
 stance.dpLimitDive=vector.new({.06,.06,.09,.9,.9,.9});
 
 --Same stance as walking, with zero tilt
-stance.bodyHeightDive= 0.295;
 stance.bodyTiltDive= 0*math.pi/180;
+
+
+stance.bodyTiltDive= 10*math.pi/180;
+
+
 stance.dpLimitDive=vector.new({.06,.06,.06,.7,.7,.7});
 
 stance.bodyTiltStance=20*math.pi/180; --bodyInitial bodyTilt, 0 for webots

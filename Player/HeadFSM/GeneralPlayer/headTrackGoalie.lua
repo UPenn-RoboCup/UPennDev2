@@ -39,6 +39,16 @@ function update()
 
   local t = Body.get_time();
 
+
+  Body.set_head_command({0,-10*math.pi/180});
+  wcm.set_ball_t_locked_on(t-locked_t0);
+  wcm.set_ball_locked_on(1);
+
+  return;
+--[[
+
+
+
   -- update head position based on ball location
   ball = wcm.get_ball();
   ballR = math.sqrt (ball.x^2 + ball.y^2);
@@ -84,7 +94,7 @@ function update()
     print('Ball lost!');
     return "lost";
   end
-
+--]]
 end
 
 function exit()

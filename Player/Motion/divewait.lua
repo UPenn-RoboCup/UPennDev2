@@ -91,6 +91,8 @@ function update()
 
 --Sit init NOT using joint encoder
   if not started then 
+    print("Initial tilt:",vcm.get_camera_bodyTilt()*180/math.pi)
+    
     started=true;
     --Now we assume that the robot always start sitting from stance position
     pTorso = vector.new({-footX,0,vcm.get_camera_bodyHeight(),
@@ -151,5 +153,7 @@ function update()
 end
 
 function exit()
+    print("Final tilt:",vcm.get_camera_bodyTilt()*180/math.pi)
+
   Body.set_syncread_enable(1); 
 end

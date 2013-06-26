@@ -83,8 +83,11 @@ if sit_disable==0 then --For smaller robots
   sm:set_transition(divewait, 'walk', stance);
   sm:set_transition(divewait, 'standup', stance);
   sm:set_transition(divewait, 'sit', sit);
-
-  sm:set_transition(dive, 'done', stance);
+  if Config.fsm.goalie_reposition~=3 then
+    sm:set_transition(dive, 'done', stance);
+  else
+    sm:set_transition(dive, 'done', divewait);
+  end
   sm:set_transition(dive, 'divedone', falling);
 
   --standstill makes the robot stand still with 0 bodytilt (for webots)

@@ -315,6 +315,7 @@ function update_vision()
       ball.vx, ball.vy, dodge  = Velocity.getVelocity();
     else
       Velocity.update_noball(ball.t);--notify that ball is missing
+      ball.vx, ball.vy, dodge  = 0,0,0;
     end
   else
     ball.p = (1-ball_gamma)*ball.p;

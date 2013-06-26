@@ -20,7 +20,7 @@ params.Kick = "Slow"
 --params.Camera = "Eindhoven_lowC"
 params.Camera = "Eindhoven_B"
 --params.Camera = "Eindhoven_highC"
---params.Camera = "RC_13_25"
+-params.Camera = "RC_13_25"
 
 util.LoadConfig(params, platform)
 
@@ -57,15 +57,15 @@ game.playerID = 1;
 game.role = 1;  --Default role: attacker
 
 if (robotName=='scarface') then
-  game.playerID = 1; 
+  game.playerID = 5; 
 elseif (robotName=='linus') then
-  game.playerID = 2; 
+  game.playerID = 4; 
 elseif (robotName=='betty') then
   game.playerID = 3; 
 elseif (robotName=='lucy') then
-  game.playerID = 4; 
-elseif (robotName=='andy') then
   game.playerID = 1; 
+--elseif (robotName=='andy') then
+--  game.playerID = 1; 
 elseif (robotName=='annie') then
   game.playerID = 2; 
 elseif (robotName=='jiminy') then

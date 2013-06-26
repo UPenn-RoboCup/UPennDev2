@@ -44,11 +44,11 @@ print("GOALIE",goalie_log_balls);
 function add_log(x,y,vx,vy,t)
   role = gcm.get_team_role(); -- Goalie => role = 0 
 
-  print("Adding log ",ball_log_count);
 
-if role~=0 or goalie_log_balls == 0 then
+  if role~=0 or goalie_log_balls == 0 then
     return;
   end
+  print("Adding log ",ball_log_count);
 
   local log={};
 

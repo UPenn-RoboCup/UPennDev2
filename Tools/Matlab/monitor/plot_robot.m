@@ -97,7 +97,7 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel,name)
 %subfunctions
 
   function plot_fallen_robot(robot,scale)
-    xr = x0+[-0.10  0  .10  0]*2/scale;
+    xr = x0+[-0.20  0  .10  0]*2/scale;
     yr = y0+[0    .10   0 -.10]*2/scale;
 
     teamColors = ['b', 'r'];

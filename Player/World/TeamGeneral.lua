@@ -403,6 +403,8 @@ function update()
   update_obstacle();
   check_confused();
   check_flip2();
+  check_flip_const();
+
 end
 
 function update_teamdata()
@@ -554,6 +556,59 @@ function pack_vision_info()
   end
 end
 
+function check_flip_const()
+  if flip_correction~=2 then 
+    return;
+  end
+  if confusion_handling ~= 2 then
+    return;
+  end
+
+  --Continuous filp correction
+  local pose = wcm.get_pose();
+  local ball = wcm.get_ball();
+  local ball_global = util.pose_global({ball.x,ball.y,0},{pose.x,pose.y,pose.a});
+  local t = Body.get_time();
+
+  if t-ball.t<flip_threshold_t	and goalie_ball[3]<flip_threshold_t then
+     --Check X position
+     if (math.abs(ball_global[1])>flip_threshold_x) and
+        (math.abs(goalie_ball[1])>flip_threshold_x) then
+       if ball_global[1]*goalie_ball[1]<0 then
+         wcm.set_robot_flipped(1);
+       end
+       --Now we are sure about our position
+       wcm.set_robot_is_confused(0);
+      --Check Y position
+       elseif (math.abs(ball_global[2])>flip_threshold_y) and
+          (math.abs(goalie_ball[2])>flip_threshold_y) then
+       if ball_global[2]*goalie_ball[2]<0 then
+         wcm.set_robot_flipped(1);
+       end
+       --Now we are sure about our position
+       wcm.set_robot_is_confused(0);
+     end
+  end
+
+  if wcm.get_robot_is_confused()==0 then
+    print("CONFUSION FIXED")
+    print("CONFUSION FIXED")
+    print("CONFUSION FIXED")
+    print("CONFUSION FIXED")
+    print("CONFUSION FIXED")
+    print("CONFUSION FIXED")
+    print("CONFUSION FIXED")
+    print("CONFUSION FIXED")
+    print("CONFUSION FIXED")
+    print("CONFUSION FIXED")
+    print("CONFUSION FIXED")
+  end
+
+end
+
+
+
+
 function check_flip2()
   local is_confused = wcm.get_robot_is_confused();
   if is_confused==0 then return; end
@@ -566,14 +621,6 @@ function check_flip2()
 
   --Wait a bit before trying correction
   if t-t_confused < flip_check_t then return; end
-
---[[
-  print(string.format("Goalie ball :%.1f %.1f %.1f",
-		goalie_ball[1],goalie_ball[2],goalie_ball[3] ));
-  print(string.format("Player ball: %.1f %.1f %.1f", 
-		ball_global[1],ball_global[2],t-ball.t));
---]]
-
 
   if t-ball.t<flip_threshold_t	and goalie_ball[3]<flip_threshold_t then
      --Check X position
@@ -617,6 +664,13 @@ function check_flip2()
     print("CONFUSION FIXED")
   end
 end
+
+
+
+
+
+
+
 
 function check_confused()
 

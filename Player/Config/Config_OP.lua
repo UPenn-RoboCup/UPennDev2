@@ -114,7 +114,9 @@ team.vision_send_interval = 10; --one labelB out of 10 team message
 
 
 --FILP CORRECTION VARIABLES-------------------------
-team.flip_correction = 1;
+team.flip_correction = 1; --only correct after falldown
+team.flip_correction = 2; --ALWAYS correct 
+
 team.confused_threshold_x = 4.0;
 team.confused_threshold_y = 4.0;
 team.flip_threshold_x = 1.0;
@@ -268,3 +270,7 @@ fsm.bodyAnticipate.rCloseDive = 2.0; --ball distance threshold for diving
 ------------------------------------------------------------------
 -- FOR MATCH 1
 led_on = 0; --turn on eye led
+
+
+
+team.flip_correction = 2; --ALWAYS correct 

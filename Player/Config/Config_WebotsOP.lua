@@ -203,7 +203,8 @@ min_eta_look = 1.0;
 --
 
 --FILP CORRECTION VARIABLES-------------------------
-team.flip_correction = 1;
+--team.flip_correction = 1;
+team.flip_correction = 2;
 team.confused_threshold_x = 4.0;
 team.confused_threshold_y = 4.0;
 team.flip_threshold_x = 1.0;

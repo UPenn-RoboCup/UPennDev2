@@ -33,4 +33,4 @@ camera.param[6] = {key='sharpness',     val={0}};
 camera.param[7] = {key='exposure (absolute)',      val={2000}};
 
 --camera.lut_file = 'eindhoven_samarth_1722_fieldA.raw';
-camera.lut_file = 'field_B_high_contrast.raw';
+camera.lut_file = 'field_B_night.raw';

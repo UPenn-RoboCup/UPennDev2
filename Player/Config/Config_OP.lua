@@ -17,8 +17,10 @@ params.Kick = "Slow"
 ---Location Specific Camera Parameters--
 --params.Camera = "Grasp"
 --params.Camera = "Grasp_lowE_pink"
-params.Camera = "RC_25"
+--params.Camera = "Eindhoven_lowC"
+params.Camera = "Eindhoven_B"
 --params.Camera = "Eindhoven_highC"
+--params.Camera = "RC_13_25"
 
 util.LoadConfig(params, platform)
 
@@ -30,6 +32,7 @@ dev.kinematics = 'OPKinematics';
 dev.ip_wired = '192.168.123.255';
 dev.ip_wired_port = 111111;
 dev.ip_wireless = '192.168.119.255'; --Our Router
+--dev.ip_wireless = '192.168..255'; --Our Router
 dev.ip_wireless_port = 54321;
 dev.game_control='OPGameControl';
 --dev.team='TeamNSL';
@@ -61,11 +64,12 @@ elseif (robotName=='betty') then
   game.playerID = 3; 
 elseif (robotName=='lucy') then
   game.playerID = 4; 
-elseif (robotName=='annie') then
-  game.playerID = 5; 
+
+
 elseif (robotName=='andy') then
   game.playerID = 1; 
-  game.role = 0; --Default goalie
+elseif (robotName=='annie') then
+  game.playerID = 2; 
 elseif (robotName=='jiminy') then
   game.playerID = 3; 
 end
@@ -100,7 +104,7 @@ team.support_dist = 3.0;
 team.supportPenalty = 0.5; --dist from goal
 
 --Team ball parameters
-team.use_team_ball = 1;
+team.use_team_ball = 0;
 team.team_ball_timeout = 3.0;  --use team ball info after this delay
 team.team_ball_threshold = 0.5; --Min score to use team ball
 team.avoid_own_team = 1;
@@ -161,6 +165,7 @@ fsm.goalie_type = 3;--moving/move+stop/stop+dive/stop+dive+move
 goalie_dive = 1; --1 for arm only, 2 for actual diving
 goalie_disable_arm = 1; 
 goalie_log_balls = 1;
+goalie_log_balls = 0;
 
 vision.ball.max_distance = 2.0; --temporary fix for GRASP lab
 
@@ -227,7 +232,7 @@ walk.velLimitX={-.03,.10};
 
 led_on = 1; --turn on eye led
 --Slow down maximum speed (for testing)
-fsm.bodyPosition.maxStep1 = 0.04; 
+fsm.bodyPosition.maxStep1 = 0.06; 
 fsm.bodyPosition.maxStep2 = 0.06;
 fsm.bodyPosition.maxStep3 = 0.06;
 --Disable sidekick
@@ -238,6 +243,13 @@ fsm.enable_sidekick = 0;
 dev.walk='CleanWalk';
 largestep_enable = false;
 
-fsm.playMode = 2;--Orbit FSM
+--fsm.playMode = 2;--Orbit FSM
 fsm.thDistStationaryKick = 2.0; --try do some stationary kick
 -------------------------------------------------------------
+
+
+
+------------------------------------------------------------------
+-- FOR MATCH 1
+led_on = 0; --turn on eye led
+fsm.goalie_reposition=3; --No reposition at all (for testing)

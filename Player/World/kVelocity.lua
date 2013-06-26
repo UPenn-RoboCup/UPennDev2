@@ -49,6 +49,7 @@ function add_log(x,y,vx,vy,t)
 
   local log={};
 
+
   ball_log_count = ball_log_count+1;
   log.time = t;
   log.ballxy = {x,y};
@@ -66,10 +67,6 @@ function add_log(x,y,vx,vy,t)
 end
 
 function flush_log()
-
-  if role~=0 or goalie_log_balls == 0 then
-    return;
-  end
 
   print("Flushing log");
 

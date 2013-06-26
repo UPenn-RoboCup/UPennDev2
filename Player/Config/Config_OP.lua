@@ -161,8 +161,6 @@ ceremony_score = 2; --Start ceremony if we are leading by this score
 vision.ball.th_headAngle = 10* math.pi/180;
 
 --Let goalie log all the ball positions
---fsm.goalie_type = 3;--moving/move+stop/stop+dive/stop+dive+move
---goalie_dive = 1; --1 for arm only, 2 for actual diving
 goalie_disable_arm = 1; 
 --goalie_log_balls = 1;
 goalie_log_balls = 0;
@@ -233,8 +231,8 @@ walk.velLimitX={-.03,.10};
 
 led_on = 1; --turn on eye led
 --Slow down maximum speed (for testing)
-fsm.bodyPosition.maxStep1 = 0.06; 
-fsm.bodyPosition.maxStep2 = 0.06;
+fsm.bodyPosition.maxStep1 = 0.04; 
+fsm.bodyPosition.maxStep2 = 0.05;
 fsm.bodyPosition.maxStep3 = 0.06;
 --Disable sidekick
 fsm.enable_walkkick = 1;  
@@ -270,5 +268,8 @@ fsm.bodyAnticipate.rCloseDive = 2.0; --ball distance threshold for diving
 led_on = 0; --turn on eye led
 
 
-
 team.flip_correction = 2; --ALWAYS correct 
+
+fsm.goalie_type = 3;--moving/move+stop/stop+dive/stop+dive+move
+goalie_dive = 1; --1 for arm only, 2 for actual diving
+fsm.goalie_reposition=1; --Yaw reposition

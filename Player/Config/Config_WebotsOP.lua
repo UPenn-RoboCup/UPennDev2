@@ -127,9 +127,9 @@ fsm.goalie_type = 3;--moving/move+stop/stop+dive/stop+dive+move
 --fsm.goalie_type = 4;--moving/move+stop/stop+dive/stop+dive+move
 
 --fsm.goalie_reposition=0; --No reposition except for clearing the ball
---fsm.goalie_reposition=1; --Yaw reposition
+fsm.goalie_reposition=1; --Yaw reposition
 --fsm.goalie_reposition=2; --Position reposition
-fsm.goalie_reposition=3; --No reposition at all (for testing)
+--fsm.goalie_reposition=3; --No reposition at all (for testing)
 
 
 
@@ -252,20 +252,17 @@ led_on = 1; --turn on eye led
 --Slow down maximum speed (for testing)
 fsm.bodyPosition.maxStep1 = 0.04; 
 fsm.bodyPosition.maxStep2 = 0.05;
-fsm.bodyPosition.maxStep3 = 0.05;
+fsm.bodyPosition.maxStep3 = 0.06;
 --Disable walkkicks and sidekicks 
 fsm.enable_walkkick = 0;  
 fsm.enable_walkkick = 1;  
 fsm.enable_sidekick = 0;
 
 --Disable stepkick
---[[
+--
 dev.walk='CleanWalk';
 largestep_enable = false;
---]]
-
-fsm.playMode = 2;--Orbit FSM
-fsm.thDistStationaryKick = 2.0; --try do some stationary kick
+fsm.thDistStationaryKick = 4.0; --try do some stationary kick
 
 
 

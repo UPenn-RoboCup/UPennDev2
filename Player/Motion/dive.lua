@@ -37,10 +37,14 @@ qRArm0=math.pi/180*vector.new({90,-16,-40});
 bodyHeight = Config.walk.bodyHeight;
 footX = Config.walk.footX;
 footY = Config.walk.footY;
-bodyTilt=Config.stance.bodyTiltDive;
+local bodyTiltDive=Config.stance.bodyTiltDive;
+
+
+
+print("tilt0:",bodyTiltDive*180/math.pi)
 
 supportX = Config.walk.supportX;
-pTorso = vector.new({0, 0, bodyHeight, 0,bodyTilt,0});
+local pTorso = vector.new({0, 0, bodyHeight, 0,bodyTiltDive,0});
 pLLeg=vector.zeros(6);
 pRLeg=vector.zeros(6);
 
@@ -93,11 +97,12 @@ function update()
   else --Arm motion
     divedone=dodive2();
     if divedone then 
-
       Body.set_larm_command(qLArm0);
       Body.set_rarm_command(qRArm0);
 
-      walk.start();
+      if Config.fsm.goalie_reposition~=3 then
+        walk.start();
+      end
       return "done"
     end
   end
@@ -173,6 +178,7 @@ function dosquat()
 end
 
 function dodive()
+
     if diveType == "diveCenter" then
         return dosquat();
     else
@@ -277,7 +283,6 @@ end
 
 
 function dodive2()
-
  tDelay1=0.0;
  tDelay2=2.0;
 

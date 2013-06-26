@@ -18,8 +18,10 @@ params.Kick = "Slow"
 --params.Camera = "Grasp"
 --params.Camera = "Grasp_lowE_pink"
 --params.Camera = "Eindhoven_lowC"
-params.Camera = "Eindhoven_B"
+--params.Camera = "Eindhoven_B"
 --params.Camera = "Eindhoven_highC"
+--params.Camera = "Eindhoven_B_night"
+params.Camera = "Eindhoven_A_morning"
 --params.Camera = "RC_13_25"
 
 util.LoadConfig(params, platform)
@@ -57,17 +59,15 @@ game.playerID = 1;
 game.role = 1;  --Default role: attacker
 
 if (robotName=='scarface') then
-  game.playerID = 1; 
+  game.playerID = 5; 
 elseif (robotName=='linus') then
-  game.playerID = 2; 
+  game.playerID = 4; 
 elseif (robotName=='betty') then
   game.playerID = 3; 
 elseif (robotName=='lucy') then
-  game.playerID = 4; 
-
-
-elseif (robotName=='andy') then
   game.playerID = 1; 
+--elseif (robotName=='andy') then
+--  game.playerID = 1; 
 elseif (robotName=='annie') then
   game.playerID = 2; 
 elseif (robotName=='jiminy') then
@@ -161,11 +161,12 @@ ceremony_score = 2; --Start ceremony if we are leading by this score
 vision.ball.th_headAngle = 10* math.pi/180;
 
 --Let goalie log all the ball positions
-fsm.goalie_type = 3;--moving/move+stop/stop+dive/stop+dive+move
-goalie_dive = 1; --1 for arm only, 2 for actual diving
+--fsm.goalie_type = 3;--moving/move+stop/stop+dive/stop+dive+move
+--goalie_dive = 1; --1 for arm only, 2 for actual diving
 goalie_disable_arm = 1; 
-goalie_log_balls = 1;
+--goalie_log_balls = 1;
 goalie_log_balls = 0;
+
 
 vision.ball.max_distance = 2.0; --temporary fix for GRASP lab
 
@@ -249,7 +250,21 @@ fsm.thDistStationaryKick = 2.0; --try do some stationary kick
 
 
 
+
+
+--Goalie diving detection parameters
+fsm.bodyAnticipate.timeout = 3.0;
+fsm.bodyAnticipate.center_dive_threshold_y = 0.05; 
+fsm.bodyAnticipate.dive_threshold_y = 1.0;
+fsm.bodyAnticipate.ball_velocity_th = 0.6; --min velocity for diving
+fsm.bodyAnticipate.ball_velocity_thx = -0.5; --min x velocity for diving
+fsm.bodyAnticipate.rCloseDive = 2.0; --ball distance threshold for diving
+
+
+
+
+
+
 ------------------------------------------------------------------
 -- FOR MATCH 1
 led_on = 0; --turn on eye led
-fsm.goalie_reposition=3; --No reposition at all (for testing)

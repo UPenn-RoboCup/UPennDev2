@@ -28,7 +28,8 @@ local observation = torch.Tensor( 2 * myDim ):zero()
 local tracker = libBallTrack.new_tracker();
 
 max_distance = 3.0; --Only check velocity within this radius
-max_velocity = 4.0; --Ignore if velocity exceeds this
+max_velocity = -4.0; --Ignore if velocity exceeds this
+inst_vel_thresh = max_velocity/30; --Ignore if instantaneous velocity exceeds this
 
 oldx,oldy = 0,0;
 olda,oldR = 0,0;
@@ -43,7 +44,9 @@ print("GOALIE",goalie_log_balls);
 function add_log(x,y,vx,vy,t)
   role = gcm.get_team_role(); -- Goalie => role = 0 
 
-  if role~=0 or goalie_log_balls == 0 then
+  print("Adding log ",ball_log_count);
+
+if role~=0 or goalie_log_balls == 0 then
     return;
   end
 
@@ -70,13 +73,11 @@ function flush_log()
 
   print("Flushing log");
 
-  filename=string.format("./Data/balllog%d.txt",ball_log_index);
-  outfile=assert(io.open(filename,"w"));
-
   data="";
   for i=1,ball_log_count do
   data=data..string.format(
-      "%f %f %f %f %f\n",
+      "%d    %f %f %f %f %f\n",
+     ball_log_index,
      ball_logs[i].time,
      ball_logs[i].ballxy[1],
      ball_logs[i].ballxy[2],
@@ -85,8 +86,10 @@ function flush_log()
   end
 
 
+  filename=string.format("ball_log%d.txt",ball_log_index);
+  outfile=assert(io.open(filename,"w"));
+
   outfile:write(data);
-  outfile:flush();
   outfile:close();
 
   ball_logs={};
@@ -97,18 +100,20 @@ end
 function entry()
   x,y,vx,vy,isdodge=0,0,0,0,0;
   oldx,oldy = 0,0;
+  oldt = 0;
 end
 
-function update(newx,newy,t)
-
+function update(newx,newy,newt)
   -- Perform correction
   local observation = {newx,newy};
   local a,b = newx-oldx,newy-oldy;
-  local R = math.sqrt(math.pow(a,2)+math.pow(b,2));
+  local dR = math.sqrt(math.pow(a,2)+math.pow(b,2));
+  local dt = newt - oldt;
+  local inst_vel = dR/dt;
   local position,vel,confidence;
   local dist = math.sqrt(math.pow(newx,2)+math.pow(newy,2));
 
-  if( (R>0.3) or (a==0 and b==0) or (dist>max_distance) ) then
+  if( (dR/dt<inst_vel_thresh) or (dist>max_distance)) then
      tracker:reset();
      position, vel, confidence = tracker:update();
   else
@@ -121,9 +126,10 @@ function update(newx,newy,t)
   end
   oldx = newx;
   oldy = newy;
+  oldt = newt;
   vx = vel[1] * 30;
   vy = vel[2] * 30;
-  add_log(oldx,oldy,vx,vy,t);
+  add_log(oldx,oldy,vx,vy,oldt);
 end
 
 function update_noball(t)

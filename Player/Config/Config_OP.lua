@@ -17,7 +17,7 @@ params.Kick = "Slow"
 ---Location Specific Camera Parameters--
 --params.Camera = "Eindhoven_B_night"
 --params.Camera = "Eindhoven_A_morning"
-params.Camera = "Eindhoven_A_night"
+params.Camera = "Eindhoven_C_night"
 --params.Camera = "steveA"
 
 util.LoadConfig(params, platform)

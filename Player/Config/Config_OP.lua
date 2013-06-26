@@ -63,7 +63,7 @@ elseif (robotName=='betty') then
 elseif (robotName=='lucy') then
   game.playerID = 4; 
 elseif (robotName=='annie') then
-  game.playerID = 5; 
+  game.playerID = 3; 
 elseif (robotName=='andy') then
   game.playerID = 1; 
   game.role = 0; --Default goalie
@@ -162,6 +162,8 @@ fsm.goalie_type = 3;--moving/move+stop/stop+dive/stop+dive+move
 goalie_dive = 1; --1 for arm only, 2 for actual diving
 goalie_disable_arm = 1; 
 goalie_log_balls = 1;
+goalie_log_balls = 0;
+
 
 vision.ball.max_distance = 2.0; --temporary fix for GRASP lab
 
@@ -239,6 +241,6 @@ fsm.enable_sidekick = 0;
 dev.walk='CleanWalk';
 largestep_enable = false;
 
-fsm.playMode = 2;--Orbit FSM
+--fsm.playMode = 2;--Orbit FSM
 fsm.thDistStationaryKick = 2.0; --try do some stationary kick
 -------------------------------------------------------------

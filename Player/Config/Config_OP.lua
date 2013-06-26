@@ -17,7 +17,7 @@ params.Kick = "Slow"
 ---Location Specific Camera Parameters--
 --params.Camera = "Grasp"
 --params.Camera = "Grasp_lowE_pink"
-params.Camera = "Eindhoven_lowC"
+params.Camera = "RC_25"
 --params.Camera = "Eindhoven_highC"
 
 util.LoadConfig(params, platform)

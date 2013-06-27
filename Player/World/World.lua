@@ -27,6 +27,10 @@ mod_angle = util.mod_angle;
 
 use_kalman_velocity = Config.use_kalman_velocity or 0;
 
+init_override = Config.world.init_override or 0;
+
+
+
 if use_kalman_velocity>0 then
   Velocity = require('kVelocity');	
 else
@@ -295,7 +299,8 @@ print("RESETHEADING")
 
   --Robot is in set state
   --Fix all the particle positions
-  if gcm.get_game_state() == 2 then
+  if gcm.get_game_state() == 2 and
+    init_override ==0 then
     init_particles_set();
   end
   if gcm.in_penalty() then

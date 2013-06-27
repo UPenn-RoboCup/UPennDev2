@@ -30,7 +30,7 @@ kickTh=Config.fsm.bodyKick.kickTh or {0.03,0.025};
 
 kickTargetFront={0.09,0.03};
 
-kickTargetFront={0.07,0.04};
+kickTargetFront={0.12,0.03};
 
 
 

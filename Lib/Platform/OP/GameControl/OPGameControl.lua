@@ -201,7 +201,7 @@ function update()
     if gcm.get_game_paused()==0 then
       if (Body.get_change_state() == 0) then
         if buttonPressed == 1 then
-		      --Did we long press the button?
+          --Did we long press the button?
           if t-t_button_pressed>2.0 then
             --Do nothing 
           else --Short press and release 
@@ -217,14 +217,15 @@ function update()
         buttonPressed = 0;
   			t_button_pressed = 0;
       else
-		    if buttonPressed == 0 then
-					t_button_pressed = t;
-        end
-        buttonPressed = 1;
-        --Long state press, directly go to set
-        if t-t_button_pressed > 2.0 then 
-          gameState = 2; --Set state
-        end
+       if buttonPressed == 0 then
+ 	 t_button_pressed = t;
+       end
+       buttonPressed = 1;
+       --Long state press, directly go to set
+       if t-t_button_pressed > 2.0 then 
+         gameState = 2; --Set state
+         teamPenalty[playerID] = 0;
+       end
       end
     end
 

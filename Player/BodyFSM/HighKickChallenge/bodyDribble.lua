@@ -134,7 +134,7 @@ function update()
 highKickTest = Config.highKickTest or 0; 
   if highKickTest>0 and  ballR < 0.15 then return "ballClose"; end
 
-  if math.abs(goalGlobal[1] - ballGlobal[1])<1.0 and
+  if math.abs(goalGlobal[1] - ballGlobal[1])<0.6 and
     ballR < 0.15 then
     return "ballClose"; 
   end  

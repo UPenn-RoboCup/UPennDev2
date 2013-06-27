@@ -61,6 +61,7 @@ drNoise = Config.world.drNoise or 0.01;
 
 dont_reset_orientation = Config.world.dont_reset_orientation or 0;
 
+init_override = Config.world.init_override or 0;
 
 
 xp = .5*xMax*vector.new(util.randn(n)); -- x coordinate of each particle
@@ -93,13 +94,21 @@ function initialize_manual_placement(p0, dp)
 end
 
 function initialize_unified(p0,p1,dp)
-  init_override = Config.world.init_override or 0;
   if init_override == 1 then --High kick challenge
     for i=1,n do
       xp[i]=0;
       yp[i]=0;
       ap[i]=5*math.pi/180  * (math.random()-.5);
     end
+    wp = vector.zeros(n);
+    return;
+  elseif init_override==2 then --Double pass challenge
+    for i=1,n do
+      ap[i]= math.pi + 5*math.pi/180  * (math.random()-.5);
+    end
+    xp =  2.7*vector.ones(n);
+    yp =  1*(vector.new(util.randn(n))-0.5*vector.ones(n));
+    
     wp = vector.zeros(n);
     return;
   end

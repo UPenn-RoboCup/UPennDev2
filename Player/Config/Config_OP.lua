@@ -320,10 +320,8 @@ fsm.bodyPosition.maxStep3 = 0.07;
 
 
 --Awesome config
---[[
 dev.walk='AwesomeWalk'
 largestep_enable = true;
 fsm.bodyPosition.maxStep1 = 0.06; 
 fsm.bodyPosition.maxStep2 = 0.07;
 fsm.bodyPosition.maxStep3 = 0.10;
---]]

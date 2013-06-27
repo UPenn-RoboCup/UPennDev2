@@ -148,7 +148,8 @@ world.rCornerFilter = 0.1;
 world.aCornerFilter = 0.1;
 --For line
 --world.aLineFilter = 0.02;
-world.aLineFilter = 0.075;
+--world.aLineFilter = 0.075;
+world.aLineFilter = 0.05;
 
 
 world.use_same_colored_goal = 1;

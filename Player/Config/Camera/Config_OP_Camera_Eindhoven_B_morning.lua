@@ -32,4 +32,4 @@ camera.param[5] = {key='white balance temperature', val={1550}};
 camera.param[6] = {key='sharpness',     val={0}};
 camera.param[7] = {key='exposure (absolute)',      val={2000}};
 
-camera.lut_file = 'field_A_night.raw';
+camera.lut_file = 'field_B_morning.raw';

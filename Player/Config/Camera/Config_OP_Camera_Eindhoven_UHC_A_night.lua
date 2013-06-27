@@ -25,10 +25,10 @@ camera.auto_param[5] = {key="exposure, auto priority",val={0}};
 
 camera.param = {};
 camera.param[1] = {key='brightness',    val={0}};
-camera.param[2] = {key='contrast',      val={10}};
-camera.param[3] = {key='saturation',    val={15}};
+camera.param[2] = {key='contrast',      val={17}};
+camera.param[3] = {key='saturation',    val={21}};
 camera.param[4] = {key='gain',          val={255}};
-camera.param[5] = {key='white balance temperature', val={1550}};
+camera.param[5] = {key='white balance temperature', val={0}};
 camera.param[6] = {key='sharpness',     val={0}};
 camera.param[7] = {key='exposure (absolute)',      val={2000}};
 

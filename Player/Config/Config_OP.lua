@@ -30,6 +30,8 @@ params.Camera = "Eindhoven_A_noon"
 --params.Camera = "Eindhoven_D_morning"
 --params.Camera = "Eindhoven_D_noon"
 --params.Camera = "Eindhoven_D_night"
+
+--params.Camera = "Eindhoven_UHC_A_night"
 --params.Camera = "steveA"
 
 util.LoadConfig(params, platform)

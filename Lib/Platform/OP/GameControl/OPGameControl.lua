@@ -99,6 +99,9 @@ end
 
 count = 0;
 updateCount = 1;
+
+t_button_pressed = 0;
+
 function update()
   -- get latest game control packet
   gamePacket = receive();
@@ -179,6 +182,7 @@ function update()
   --GameController Latency
   gcm.set_game_gc_latency(math.min(999, unix.time() - lastUpdate));
 
+  local t = unix.time();
   if (unix.time() - lastUpdate > gcTimeout) then
     -- we have not received a game control packet in over 10 seconds
     if (updateCount < count - 1 ) then
@@ -197,17 +201,31 @@ function update()
     if gcm.get_game_paused()==0 then
       if (Body.get_change_state() == 0) then
         if buttonPressed == 1 then
-          -- advance state when button is released
-          if (gameState < 3) then
-            gameState = gameState + 1;
-          elseif (gameState == 3) then
-            -- playing - toggle penalty state
-            teamPenalty[playerID] = 1 - teamPenalty[playerID]; 
+          --Did we long press the button?
+          if t-t_button_pressed>2.0 then
+            --Do nothing 
+          else --Short press and release 
+             -- advance state when button is released
+            if (gameState < 3) then
+              gameState = gameState + 1;
+            elseif (gameState == 3) then
+              -- playing - toggle penalty state
+              teamPenalty[playerID] = 1 - teamPenalty[playerID]; 
+            end
           end
         end
         buttonPressed = 0;
+  			t_button_pressed = 0;
       else
-        buttonPressed = 1;
+       if buttonPressed == 0 then
+ 	 t_button_pressed = t;
+       end
+       buttonPressed = 1;
+       --Long state press, directly go to set
+       if t-t_button_pressed > 2.0 then 
+         gameState = 2; --Set state
+         teamPenalty[playerID] = 0;
+       end
       end
     end
 

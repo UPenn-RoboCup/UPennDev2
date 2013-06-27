@@ -285,3 +285,45 @@ team.flip_correction = 2; --ALWAYS correct
 fsm.goalie_type = 3;--moving/move+stop/stop+dive/stop+dive+move
 goalie_dive = 1; --1 for arm only, 2 for actual diving
 fsm.goalie_reposition=1; --Yaw reposition
+
+
+
+
+
+
+
+
+
+
+---------------------------------------------------------------------
+-- For 2nd round robin
+---------------------------------------------------------------------
+
+--Increase head pitch during spinning
+--fsm.headScan.pitchTurn0 = 20*math.pi/180;
+--fsm.headScan.pitchTurnMag = 20*math.pi/180;
+fsm.headScan.pitchTurn0 = 25*math.pi/180;
+fsm.headScan.pitchTurnMag = 20*math.pi/180;
+
+--Fix goalie 
+--Use position reposition with big threshold
+fsm.goalie_reposition=2; --Position reposition
+fsm.bodyAnticipate.thFar = {1.0,1.0,90*math.pi/180};
+
+
+
+fsm.thDistStationaryKick = 4.0; --try do some stationary kick
+
+fsm.bodyPosition.maxStep1 = 0.06; 
+fsm.bodyPosition.maxStep2 = 0.06;
+fsm.bodyPosition.maxStep3 = 0.07;
+
+
+--Awesome config
+--[[
+dev.walk='AwesomeWalk'
+largestep_enable = true;
+fsm.bodyPosition.maxStep1 = 0.06; 
+fsm.bodyPosition.maxStep2 = 0.07;
+fsm.bodyPosition.maxStep3 = 0.10;
+--]]

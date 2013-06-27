@@ -271,3 +271,9 @@ fsm.thDistStationaryKick = 4.0; --try do some stationary kick
 --goalie testing
 use_kalman_velocity = 1;
 goalie_log_balls =0;
+
+--Fix goalie 
+--Use position reposition with big threshold
+fsm.goalie_reposition=2; --Position reposition
+fsm.bodyAnticipate.thFar = {1.0,1.0,90*math.pi/180};
+

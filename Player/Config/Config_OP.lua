@@ -15,8 +15,8 @@ params.name = {"Robot", "Walk", "World", "Kick", "Vision", "FSM", "Camera"};
 params.Kick = "Slow"
 
 ---Location Specific Camera Parameters--
---params.Camera = "Eindhoven_A_morning"
-params.Camera = "Eindhoven_A_noon"
+params.Camera = "Eindhoven_A_morning"
+--params.Camera = "Eindhoven_A_noon"
 --params.Camera = "Eindhoven_A_night"
 
 --params.Camera = "Eindhoven_B_morning"
@@ -80,7 +80,7 @@ elseif (robotName=='scarface') then
   game.playerID = 5; 
 elseif (robotName=='betty') then
   game.playerID = 3; 
-elseif (robotName=='betty') then
+elseif (robotName=='sally') then
   game.playerID = 1; 
 elseif (robotName=='andy') then
   game.playerID = 2;
@@ -131,6 +131,12 @@ team.flip_correction = 2; --ALWAYS correct
 
 team.confused_threshold_x = 4.0;
 team.confused_threshold_y = 4.0;
+
+
+team.confused_threshold_x = 0.5;
+team.confused_threshold_y = 0.5;
+
+
 team.flip_threshold_x = 1.0;
 team.flip_threshold_y = 1.5;
 team.flip_check_t = 5.0; --keep confused for 5 sec

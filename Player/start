@@ -77,6 +77,12 @@ run_obplay(){
 }
 
 run_demo(){
+  uvcdynctrl -d video0 -s 'White Balance Temperature, Auto' -- 1
+  echo "Reset WB. Make Sure Robot Facing Field"
+  sleep 2;
+  uvcdynctrl -d video0 -s 'White Balance Temperature, Auto' -- 0
+  sleep 2;
+
   echo "Starting DCM..."
   cd $PLAYER_DIR
   screen $SCREEN_FLAGS dcm $LUA_COM run_dcm.lua
@@ -91,7 +97,7 @@ run_demo(){
  
   echo "Starting Player..."
   cd $PLAYER_DIR
-  screen $SCREEN_FLAGS player $LUA_COM run_demo.lua
+  screen $SCREEN_FLAGS player $LUA_COM run_main_op.lua
   
   echo "Rock and Roll!"
 }

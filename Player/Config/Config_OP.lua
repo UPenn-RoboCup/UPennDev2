@@ -327,3 +327,27 @@ largestep_enable = true;
 fsm.bodyPosition.maxStep1 = 0.06; 
 fsm.bodyPosition.maxStep2 = 0.07;
 fsm.bodyPosition.maxStep3 = 0.10;
+
+---------------------------------------------------------------------
+-- Config for day 3
+dev.walk='AwesomeWalk'
+largestep_enable = true;
+fsm.bodyPosition.maxStep1 = 0.06;
+fsm.bodyPosition.maxStep2 = 0.07;
+fsm.bodyPosition.maxStep3 = 0.08;
+fsm.daPostmargin = 30*math.pi/180; --kick more close to the center of the posts
+
+if (robotName=='sally') then
+  --Sally does the challenge bot
+
+end
+
+fsm.thDistStationaryKick = 10.0; --try do some stationary kick
+
+--[[
+fsm.bodyPosition.maxStep1 = 0.06;
+fsm.bodyPosition.maxStep2 = 0.08;
+fsm.bodyPosition.maxStep3 = 0.10;
+--]]
+
+

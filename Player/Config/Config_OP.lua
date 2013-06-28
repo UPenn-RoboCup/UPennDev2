@@ -359,7 +359,8 @@ fsm.bodyPosition.maxStep3 = 0.10;
 
 
 
-
+------------------------------------------------
+-- Goal classification
 
 vision.use_white_wall = 1;
 vision.white_wall_is_blue = 1;
@@ -370,6 +371,4 @@ vision.use_nonwhite_wall = 1;
 vision.nonwhite_wall_min_area = 3000;
 vision.nonwhite_wall_max_rate = 0.2;
 
-
---Temporary
---vision.nonwhite_wall_max_rate = 0.3;
+------------------------------------------------

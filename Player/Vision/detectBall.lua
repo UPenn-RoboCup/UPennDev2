@@ -174,8 +174,12 @@ th_min_green3 = 50;
 
             whiteBBoxStats = ImageProc.color_stats(Vision.labelA.data,
     	      Vision.labelA.m, Vision.labelA.n, colorWhite, fieldBBox);
+
+          vcm.add_debug_message(string.format("White check:%d\n",
+		   	   whiteBBoxStats.area));
+
             if (whiteBBoxStats.area < th_min_green2) and
-								(fieldBBoxStats.area > th_min_green3) then
+								(fieldBBoxStats.area < th_min_green3) then
               vcm.add_debug_message("Green check fail\n");
               check_passed = false;
             end

@@ -357,3 +357,19 @@ fsm.bodyPosition.maxStep3 = 0.10;
 --]]
 
 
+
+
+
+
+vision.use_white_wall = 1;
+vision.white_wall_is_blue = 1;
+vision.white_wall_min_count = 3000;
+vision.white_wall_min_rate = 0.5;
+
+vision.use_nonwhite_wall = 1;
+vision.nonwhite_wall_min_area = 3000;
+vision.nonwhite_wall_max_rate = 0.2;
+
+
+--Temporary
+--vision.nonwhite_wall_max_rate = 0.3;

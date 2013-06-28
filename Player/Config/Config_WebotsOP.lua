@@ -288,7 +288,7 @@ world.init_override = 1; --Init at the center circle, facing red goal
 dev.walk='AwesomeWalk';
 --]]
 
---
+--[[
 dev.team='TeamDoublePass';
 fsm.body={'DoublePassChallenge'};
 fsm.headTrack.timeout = 2.0 * speedFactor;
@@ -297,6 +297,21 @@ fsm.headTrack.minDist = 0.15; --Default value 0.30,If ball is closer than this, 
 fsm.headScan.pitchTurn0 = 25*math.pi/180;
 fsm.headScan.pitchTurnMag = 25*math.pi/180;
 world.init_override = 2; --Init at the penalty box edge
---
+--]]
 
 ---------------------------------------------------------------------------
+
+
+
+
+
+vision.use_white_wall = 1;
+vision.white_wall_is_blue = 1;
+
+
+
+vision.white_wall_min_count = 3000;
+vision.white_wall_min_rate = 0.5;
+
+vision.nonwhite_wall_min_area = 3000;
+vision.nonwhite_wall_max_rate = 0.2;

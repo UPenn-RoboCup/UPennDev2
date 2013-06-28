@@ -389,22 +389,31 @@ print("RESETHEADING")
     local v2 = vcm.get_goal_v2();
     local v = {v1, v2};
 
-    if (goalType == 0) then
-      PoseFilter.post_unified_unknown(v);
-      goal_led = {1,1,0}
-      --Body.set_indicator_goal({1,1,0});
-    elseif(goalType == 1) then
-      PoseFilter.post_unified_left(v);
-      goal_led = {1,1,0}
-      --Body.set_indicator_goal({1,1,0});
-    elseif(goalType == 2) then
-      PoseFilter.post_unified_right(v);
-      goal_led = {1,1,0}
-      --Body.set_indicator_goal({1,1,0});
-    elseif(goalType == 3) then
-      PoseFilter.goal_unified(v);
-      goal_led = {0,0,1}
-      --Body.set_indicator_goal({0,0,1});
+    if color==0 then --Ambiguous post
+      if (goalType == 0) then --single post
+        PoseFilter.post_unified_unknown(v);
+        goal_led = {1,1,1}
+      elseif(goalType == 1) then --left post
+        PoseFilter.post_unified_left(v);
+        goal_led = {1,1,1}
+      elseif(goalType == 2) then --right post
+        PoseFilter.post_unified_right(v);
+        goal_led = {1,1,1}
+      elseif(goalType == 3) then --two posts
+        PoseFilter.goal_unified(v);
+        goal_led = {1,1,1}
+      end
+    elseif color==1 then --Blue team goal
+      if(goalType == 3) then
+print("BLUE GOAL")
+        PoseFilter.goal_cyan(v);
+      end
+    elseif color==2 then --Red team goal
+      if(goalType == 3) then
+print("RED GOAL")
+
+        PoseFilter.goal_yellow(v);
+      end
     end
 
     --Old colored goalpost observation

@@ -41,6 +41,16 @@ postHeight = Config.world.goalHeight or 0.80;
 goalWidth = Config.world.goalWidth or 1.40;
 
 
+use_white_wall = Config.vision.use_white_wall or 0;
+white_wall_is_blue = Config.vision.white_wall_is_blue or 0;
+white_wall_min_count = Config.vision.white_wall_min_count or 0;
+white_wall_min_rate = Config.vision.white_wall_min_rate or 0;
+
+nonwhite_wall_min_area = Config.vision.nonwhite_wall_min_area or 0;
+nonwhite_wall_max_rate = Config.vision.nonwhite_wall_max_rate or 0;
+
+
+
 
 --------------------------------------------------------------
 --Vision threshold values (to support different resolutions)
@@ -60,6 +70,9 @@ th_min_area_unknown_post = Config.vision.goal.th_min_area_unknown_post;
 
 function detect(color)
   vcm.add_debug_message("\nGoal: Yellow post check\n")
+  vcm.set_goal_color(0);-- Unknown color
+
+
   local goal = {};
   goal.detect = 0;
 
@@ -359,9 +372,64 @@ function detect(color)
       return goal;
     end
 
+--White check around the goalpost
+    local bboxAL =  Vision.bboxB2A(goal.propsB[1].boundingBox);
+    local bboxAR =  Vision.bboxB2A(goal.propsB[2].boundingBox);
+
+    local goalBBox={};
+    goalBBox[1] = bboxAL[1];
+    goalBBox[2] = bboxAR[2];
+    goalBBox[3] = math.max(bboxAL[3],bboxAR[3]);
+    goalBBox[4] = math.min(bboxAL[4],bboxAR[4]);
+
+    local goalBBoxStats;
+    if use_tilted_bbox>0 then
+        -- color stats for the bbox
+      goalBBoxStats = ImageProc.tilted_color_stats(Vision.labelA.data, 
+     Vision.labelA.m,Vision.labelA.n,colorWhite,goalBBox,tiltAngle);
+    else
+      goalBBoxStats = ImageProc.color_stats(Vision.labelA.data, 
+    	Vision.labelA.m,Vision.labelA.n,colorWhite,goalBBox,tiltAngle);
+    end
+    local goalBBoxArea = Vision.bboxArea(goalBBox);
+    white_ratio = goalBBoxStats.area / goalBBoxArea;
+    vcm.add_debug_message(string.format("White area: %d/%d  rate: %.2f\n",
+		  goalBBoxStats.area,goalBBoxArea, white_ratio));
+
+--[[
+    print(string.format("White area: %d/%d  rate: %.2f\n",
+		  goalBBoxStats.area,goalBBoxArea, white_ratio));
+--]]
 
 
+    if use_white_wall>0 then
+      if goalBBoxStats.area > white_wall_min_count and
+        white_ratio > white_wall_min_rate then
 
+        --White wall behind the goal
+        if white_wall_is_blue>0 then
+
+          vcm.add_debug_message("Blue goal detected\n");
+          vcm.set_goal_color(1);-- Blue team goal
+        else
+          vcm.add_debug_message("Red goal detected\n");
+          vcm.set_goal_color(2);-- Red team goal
+        end  
+      end
+
+      if goalBBoxArea > nonwhite_wall_min_area and
+        white_ratio < nonwhite_wall_max_rate then
+
+        if white_wall_is_blue>0 then
+          vcm.add_debug_message("Red goal detected\n");
+          vcm.set_goal_color(2);-- Red team goal
+        else
+          vcm.add_debug_message("Blue goal detected\n");
+          vcm.set_goal_color(1);-- Red team goal
+        end  
+      end
+
+    end
   else
     goal.v[2] = vector.new({0,0,0,0});
 

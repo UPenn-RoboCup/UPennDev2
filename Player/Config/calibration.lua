@@ -494,3 +494,18 @@ cal["jiminy"].kickXComp=0.000;
 cal["jiminy"].servoBias={15,0,41,12,0,-14,-20,0,-23,-8,-32,-8,};
 cal["jiminy"].footXComp=0.009;
 cal["jiminy"].kickXComp=0.000;
+
+-- Updated date: Fri Jun 28 16:06:46 2013
+cal["annie"].servoBias={0,0,56,0,0,0,-18,0,-48,0,116,0,};
+cal["annie"].footXComp=-0.011;
+cal["annie"].kickXComp=-0.005;
+
+-- Updated date: Fri Jun 28 16:09:08 2013
+cal["annie"].servoBias={0,0,56,0,0,0,-18,0,-48,0,116,0,};
+cal["annie"].footXComp=-0.005;
+cal["annie"].kickXComp=-0.005;
+
+-- Updated date: Fri Jun 28 16:11:27 2013
+cal["annie"].servoBias={0,0,56,0,0,0,-18,0,-48,0,116,0,};
+cal["annie"].footXComp=0.000;
+cal["annie"].kickXComp=-0.005;

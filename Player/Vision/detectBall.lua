@@ -168,12 +168,20 @@ function detect(color)
           if (fieldBBoxStats.area < th_min_green1) then
             -- if there is no field under the ball 
       	    -- it may be because its on a white line
+
+--There should be some green too
+th_min_green3 = 50;
+
             whiteBBoxStats = ImageProc.color_stats(Vision.labelA.data,
- 	      Vision.labelA.m, Vision.labelA.n, colorWhite, fieldBBox);
-            if (whiteBBoxStats.area < th_min_green2) then
+    	      Vision.labelA.m, Vision.labelA.n, colorWhite, fieldBBox);
+            if (whiteBBoxStats.area < th_min_green2) and
+								(fieldBBoxStats.area > th_min_green3) then
               vcm.add_debug_message("Green check fail\n");
               check_passed = false;
             end
+
+
+
           end --end white line check
         end --end bottom margin check
       end --End ball height, ground check

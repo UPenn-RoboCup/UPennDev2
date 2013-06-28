@@ -350,11 +350,6 @@ end
 
 fsm.thDistStationaryKick = 10.0; --try do some stationary kick
 
---[[
-fsm.bodyPosition.maxStep1 = 0.06;
-fsm.bodyPosition.maxStep2 = 0.08;
-fsm.bodyPosition.maxStep3 = 0.10;
---]]
 
 
 
@@ -372,3 +367,8 @@ vision.nonwhite_wall_min_area = 3000;
 vision.nonwhite_wall_max_rate = 0.2;
 
 ------------------------------------------------
+
+fsm.bodyPosition.maxStep1 = 0.06;
+fsm.bodyPosition.maxStep2 = 0.08;
+fsm.bodyPosition.maxStep3 = 0.10;
+walk.velLimitX={-.03,.10};

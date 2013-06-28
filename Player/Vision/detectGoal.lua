@@ -42,6 +42,7 @@ goalWidth = Config.world.goalWidth or 1.40;
 
 
 use_white_wall = Config.vision.use_white_wall or 0;
+use_nonwhite_wall = Config.vision.use_nonwhite_wall or 0;
 white_wall_is_blue = Config.vision.white_wall_is_blue or 0;
 white_wall_min_count = Config.vision.white_wall_min_count or 0;
 white_wall_min_rate = Config.vision.white_wall_min_rate or 0;
@@ -417,7 +418,8 @@ function detect(color)
         end  
       end
 
-      if goalBBoxArea > nonwhite_wall_min_area and
+      if use_nonwhite_wall >0 and 
+         goalBBoxArea > nonwhite_wall_min_area and
         white_ratio < nonwhite_wall_max_rate then
 
         if white_wall_is_blue>0 then

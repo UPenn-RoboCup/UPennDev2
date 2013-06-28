@@ -231,13 +231,14 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel,name)
 
   function plot_goal_team(robot,scale)
     goal=robot.goal;
-    if( goal>0) 
-      marker='m';
+    if( goal>0)
+      goalcolor = robot.goalcolor;
+      if(goalcolor==1) marker = 'b';
+      elseif (goalcolor==2)  marker = 'm';
+      else marker = 'k'; %ambiguous 
+      end
       marker2 = strcat(marker,'--');
 
-%      if(goal.color==2) marker = 'm';% yellow
-%      else marker = 'b';end
-%      marker2 = strcat(marker,'--');
       if goal ==1 
         marker1 = strcat(marker,'+');%Unknown post
       elseif goal==3
@@ -312,11 +313,11 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel,name)
   
   function plot_goal(goal,scale)
     if( goal.detect==1 )
-      if(goal.color==2) marker = 'm';% yellow
-      else marker = 'b';end
+      if(goal.color==1) marker = 'b';% blue team goal
+      elseif(goal.color==2) marker = 'm';% red team goal
+      else marker = 'k';end % Unknown goal
       marker2 = strcat(marker,'--');
       if( goal.v1.scale ~= 0 )
-
         if goal.type==0 
           marker1 = strcat(marker,'+');%Unknown post
 	elseif goal.type==2

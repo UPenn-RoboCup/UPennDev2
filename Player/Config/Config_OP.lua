@@ -133,8 +133,9 @@ team.confused_threshold_x = 4.0;
 team.confused_threshold_y = 4.0;
 
 
-team.confused_threshold_x = 0.5;
-team.confused_threshold_y = 0.5;
+--Disabled
+team.confused_threshold_x = -0.5;
+team.confused_threshold_y = -0.5;
 
 
 team.flip_threshold_x = 1.0;

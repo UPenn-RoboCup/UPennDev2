@@ -378,6 +378,6 @@ walk.velLimitX={-.03,.10};
 ------------------------------------------------------------------------
 -- Config for 8-final
 
-fsm.bodyAnticipate.thFar = {0.60,0.6,30*math.pi/180};
+fsm.bodyAnticipate.thFar = {1.0,1.0,30*math.pi/180};
 
 

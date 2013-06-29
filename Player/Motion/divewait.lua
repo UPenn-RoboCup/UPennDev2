@@ -55,6 +55,10 @@ function update()
      t0=Body.get_time();
      return;
   end
+
+--SJ: HACK HERE TO FIX BODY BOB
+  finished = true;
+
   if finished then 
     return; 
   end
@@ -125,6 +129,18 @@ function update()
   end
 
   pTorso=pTorso+dpTorso;
+
+
+--[[
+  pTorsoActual = 0;
+
+  uTorso = vector.new({pTorso[1],pTorso[2],pTorso[6]});
+  uTorsoActual = util.pose_global(
+    vector.new({-footX,0,0}),
+    uTorso);
+
+
+--]]
 
   vcm.set_camera_bodyHeight(pTorso[3]);
   vcm.set_camera_bodyTilt(pTorso[5]);

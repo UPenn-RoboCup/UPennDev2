@@ -384,7 +384,7 @@ fsm.bodyAnticipate.thFar = {1.0,1.0,45*math.pi/180};
 vision.use_white_wall = 1;
 vision.white_wall_is_blue = 0; --white wall is on the red side
 vision.white_wall_min_count = 3000;
-vision.white_wall_min_rate = 0.5;
+vision.white_wall_min_rate = 0.4;
 
 vision.use_nonwhite_wall = 0; --disabled
 vision.nonwhite_wall_min_area = 3000;
@@ -396,3 +396,7 @@ game.teamColor = 0; --Blue team
 
 use_kalman_velocity = 0;--this may crash some robot
 -------------------------------------------------------------------------
+
+team.flip_threshold_x = 1;
+team.flip_threshold_y = 1;
+

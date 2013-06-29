@@ -61,9 +61,6 @@ function update()
   pitchTarget = pitchTarget + pitchOffset;
 
 
-  pitchTarget = math.min(20*math.pi/180,pitchTarget)
-
-
   yaw_error = yawTarget - headAngles[1];
   pitch_error = pitchTarget - headAngles[2];
   angle_error = math.sqrt(yaw_error^2+pitch_error^2);
@@ -94,6 +91,13 @@ function update()
     print('Ball lost!');
     return "lost";
   end
+
+  if (t - t0 > timeout) then
+     return "sweep"; --Goalie, sweep to localize
+  end
+
+
+
 end
 
 function exit()

@@ -255,8 +255,8 @@ fsm.enable_sidekick = 0;
 
 --Disable stepkick
 --
-dev.walk='CleanWalk';
-largestep_enable = false;
+--dev.walk='CleanWalk';
+--largestep_enable = false;
 fsm.thDistStationaryKick = 4.0; --try do some stationary kick
 
 
@@ -300,18 +300,23 @@ world.init_override = 2; --Init at the penalty box edge
 --]]
 
 ---------------------------------------------------------------------------
+vision.th_headAngleDown = 30*math.pi/180; --small ball check
 
 
 
 
+
+--------------------------------------
 
 vision.use_white_wall = 1;
 vision.white_wall_is_blue = 1;
-
-
 
 vision.white_wall_min_count = 3000;
 vision.white_wall_min_rate = 0.5;
 
 vision.nonwhite_wall_min_area = 3000;
 vision.nonwhite_wall_max_rate = 0.2;
+----------------------------------------
+
+
+fsm.bodyAnticipate.thFar = {0.60,0.6,30*math.pi/180};

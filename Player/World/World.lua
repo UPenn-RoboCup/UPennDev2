@@ -405,12 +405,12 @@ print("RESETHEADING")
       end
     elseif color==1 then --Blue team goal
       if(goalType == 3) then
-print("BLUE GOAL")
+--print("BLUE GOAL")
         PoseFilter.goal_cyan(v);
       end
     elseif color==2 then --Red team goal
       if(goalType == 3) then
-print("RED GOAL")
+--print("RED GOAL")
 
         PoseFilter.goal_yellow(v);
       end

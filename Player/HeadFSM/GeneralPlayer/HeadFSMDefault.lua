@@ -69,6 +69,7 @@ sm:set_transition(headTrack, 'goalie', headTrackGoalie);
 sm:set_transition(headTrackGoalie, 'player', headTrack);
 
 sm:set_transition(headTrackGoalie, 'lost', headScan);
+sm:set_transition(headTrackGoalie, 'sweep', headSweep);
 
 
 

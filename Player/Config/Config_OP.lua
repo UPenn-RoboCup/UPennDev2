@@ -373,3 +373,11 @@ fsm.bodyPosition.maxStep1 = 0.06;
 fsm.bodyPosition.maxStep2 = 0.08;
 fsm.bodyPosition.maxStep3 = 0.10;
 walk.velLimitX={-.03,.10};
+
+
+------------------------------------------------------------------------
+-- Config for 8-final
+
+fsm.bodyAnticipate.thFar = {0.60,0.6,30*math.pi/180};
+
+

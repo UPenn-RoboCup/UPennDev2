@@ -83,7 +83,7 @@ elseif (robotName=='betty') then
 elseif (robotName=='sally') then
   game.playerID = 1; 
 elseif (robotName=='andy') then
-  game.playerID = 2;
+  game.playerID = 3;
 end
 
 --Default team: 0 for blue, 1 for red  

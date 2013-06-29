@@ -390,4 +390,5 @@ vision.use_nonwhite_wall = 0; --disabled
 vision.nonwhite_wall_min_area = 3000;
 vision.nonwhite_wall_max_rate = -0.15; --disabled
 
+use_kalman_velocity = 0;--this may crash some robot
 -------------------------------------------------------------------------

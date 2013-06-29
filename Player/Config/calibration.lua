@@ -529,3 +529,13 @@ cal["jiminy"].kickXComp=0.000;
 cal["jiminy"].servoBias={52,0,-2,12,1,-14,-13,0,60,11,-7,-8,};
 cal["jiminy"].footXComp=0.005;
 cal["jiminy"].kickXComp=0.000;
+
+-- Updated date: Sat Jun 29 19:17:12 2013
+cal["lucy"].servoBias={19,4,6,0,18,-13,3,14,-20,2,3,-4,};
+cal["lucy"].footXComp=-0.003;
+cal["lucy"].kickXComp=0.000;
+
+-- Updated date: Sat Jun 29 19:18:08 2013
+cal["lucy"].servoBias={19,4,6,0,18,-13,3,14,-20,2,3,-4,};
+cal["lucy"].footXComp=0.001;
+cal["lucy"].kickXComp=0.000;

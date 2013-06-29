@@ -7,6 +7,7 @@ WorldInfo {
   ]
   title "Robotstadium"
   basicTimeStep 40
+  displayRefresh 4
 }
 Viewpoint {
   orientation -0.998164 -0.052807 0.0296619 0.873105
@@ -43,17 +44,17 @@ DEF BLUE_GOAL KidGoal {
   supportColor 0.152941 0.505882 0.733333
 }
 DEF BALL BallGPS {
-  translation 0 0.03 -2.3
+  translation 0 0.0323921 0
 }
-DEF PLAYER_1_1 DARwInOPGPS {
-  translation 0 0.3 0
-  rotation 0 1 0 1.57
+
+DEF PLAYER_0_0 DARwInOPGPSOnly {
+  translation 1.5 0.3 2
+  rotation 0 1 0 3.14
   controller "darwin-op_team_0"
-  controllerArgs "1 1"
+  controllerArgs "0 1 1"
   plasticColor 1 0 0
   cameraWindowPosition 0.125 0
-  cameraWidth 320
-  cameraHeight 240
   waistBand TRUE
   waistBandColor 1 0 0
 }
+

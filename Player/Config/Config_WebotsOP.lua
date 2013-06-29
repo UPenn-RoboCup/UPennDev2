@@ -178,11 +178,6 @@ fsm.body = {'ThrowInChallenge'};
 
 -- Doublepass challenge
 --[[
-dev.team='TeamDoublePass';
-fsm.body={'DoublePassChallenge'};
-fsm.headTrack.timeout = 2.0 * speedFactor;
-fsm.headTrack.tLost = 1.5 * speedFactor;
-fsm.headTrack.minDist = 0.15; --Default value 0.30,If ball is closer than this, don't look up
 --]]
 
 
@@ -260,8 +255,8 @@ fsm.enable_sidekick = 0;
 
 --Disable stepkick
 --
-dev.walk='CleanWalk';
-largestep_enable = false;
+--dev.walk='CleanWalk';
+--largestep_enable = false;
 fsm.thDistStationaryKick = 4.0; --try do some stationary kick
 
 
@@ -277,3 +272,51 @@ goalie_log_balls =0;
 fsm.goalie_reposition=2; --Position reposition
 fsm.bodyAnticipate.thFar = {1.0,1.0,90*math.pi/180};
 
+
+---------------------------------------------------------------------------
+--[[
+dev.team='TeamNull'; --Turn off teamplay for challenges
+fsm.body = {'HighKickChallenge'};
+world.init_override = 1; --Init at the center circle, facing red goal
+game.teamColor = 0; --Blue team, kicking to red goal
+--]]
+
+--[[
+fsm.head = {'GeneralPlayer'};
+fsm.body = {'ThrowInChallenge'};
+world.init_override = 1; --Init at the center circle, facing red goal
+dev.walk='AwesomeWalk';
+--]]
+
+--[[
+dev.team='TeamDoublePass';
+fsm.body={'DoublePassChallenge'};
+fsm.headTrack.timeout = 2.0 * speedFactor;
+fsm.headTrack.tLost = 1.5 * speedFactor;
+fsm.headTrack.minDist = 0.15; --Default value 0.30,If ball is closer than this, don't look up
+fsm.headScan.pitchTurn0 = 25*math.pi/180;
+fsm.headScan.pitchTurnMag = 25*math.pi/180;
+world.init_override = 2; --Init at the penalty box edge
+--]]
+
+---------------------------------------------------------------------------
+vision.th_headAngleDown = 30*math.pi/180; --small ball check
+
+
+
+
+
+--------------------------------------
+
+vision.use_white_wall = 1;
+vision.white_wall_is_blue = 1;
+
+vision.white_wall_min_count = 3000;
+vision.white_wall_min_rate = 0.5;
+
+vision.nonwhite_wall_min_area = 3000;
+vision.nonwhite_wall_max_rate = 0.2;
+----------------------------------------
+
+
+fsm.bodyAnticipate.thFar = {0.60,0.6,30*math.pi/180};

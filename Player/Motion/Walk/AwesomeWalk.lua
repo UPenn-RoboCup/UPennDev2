@@ -315,8 +315,8 @@ function update()
       return "step";
     end
 
-    if walkKickRequest==0 then
-      if (stopRequest==1) then  --Final step
+    if walkKickRequest==0 and stepKickRequest == 0 then
+      if (stopRequest==1) then 
         stopRequest=2;
         velCurrent=vector.new({0,0,0});
         velCommand=vector.new({0,0,0});
@@ -526,8 +526,13 @@ print("Err:",uFootErr[1],uFootErr[2],uFootErr[3]*180/math.pi);
 
     if supportLeg==stepKickSupport then
       if (step_check_count>2) or 
+--      ( math.abs(uFootErr[1])<0.02 and
+--        math.abs(uFootErr[2])<0.01 and
+
       ( math.abs(uFootErr[1])<0.02 and
         math.abs(uFootErr[2])<0.01 and
+
+
         math.abs(uFootErr[3])<10*math.pi/180) then
         print("Stepkick Ready!!!");
         stepkick_ready = true;

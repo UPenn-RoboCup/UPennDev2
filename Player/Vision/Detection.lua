@@ -159,7 +159,8 @@ function update_shm()
 
   vcm.set_goal_detect(goalYellow.detect);
   if (goalYellow.detect == 1) then
-    vcm.set_goal_color(colorYellow);
+-- now handled in detectGoal
+--    vcm.set_goal_color(colorYellow);
     vcm.set_goal_type(goalYellow.type);
     vcm.set_goal_v1(goalYellow.v[1]);
     vcm.set_goal_v2(goalYellow.v[2]);

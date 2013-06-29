@@ -61,6 +61,7 @@ drNoise = Config.world.drNoise or 0.01;
 
 dont_reset_orientation = Config.world.dont_reset_orientation or 0;
 
+init_override = Config.world.init_override or 0;
 
 
 xp = .5*xMax*vector.new(util.randn(n)); -- x coordinate of each particle
@@ -93,13 +94,21 @@ function initialize_manual_placement(p0, dp)
 end
 
 function initialize_unified(p0,p1,dp)
-  init_override = Config.world.init_override or 0;
   if init_override == 1 then --High kick challenge
     for i=1,n do
       xp[i]=0;
       yp[i]=0;
       ap[i]=5*math.pi/180  * (math.random()-.5);
     end
+    wp = vector.zeros(n);
+    return;
+  elseif init_override==2 then --Double pass challenge
+    for i=1,n do
+      ap[i]= math.pi + 5*math.pi/180  * (math.random()-.5);
+    end
+    xp =  2.7*vector.ones(n);
+    yp =  1*(vector.new(util.randn(n))-0.5*vector.ones(n));
+    
     wp = vector.zeros(n);
     return;
   end
@@ -567,6 +576,51 @@ function goal_observation_unified(pos1,pos2,v)
 	 goalv , rUnknownGoalFilter, aUnknownGoalFilter,1);
   end
 end
+
+
+--Known goal observation!!!!!!
+function goal_observation(pos,v)
+
+  --Get pose estimate from two goalpost locations
+  pose,dGoal=triangulate2(pos,v);
+
+  if dGoal<triangulation_threshold then 
+    --Goal close, triangulate
+    local x,y,a=pose.x,pose.y,pose.a;
+
+    local rSigma = rSigmaDouble1 * dGoal + rSigmaDouble2;
+    local aSigma = aSigmaDouble;
+
+    local rFilter = rGoalFilter;
+    local aFilter = aGoalFilter;
+
+    for ip = 1,n do
+      local xErr = x - xp[ip];
+      local yErr = y - yp[ip];
+      local rErr = math.sqrt(xErr^2 + yErr^2);
+      local aErr = mod_angle(a - ap[ip]);
+      local err = (rErr/rSigma)^2 + (aErr/aSigma)^2;
+      wp[ip] = wp[ip] - err;
+      xp[ip] = xp[ip] + rFilter*xErr;
+      yp[ip] = yp[ip] + rFilter*yErr;
+      ap[ip] = ap[ip] + aFilter*aErr;
+    end
+  elseif dGoal<position_update_threshold then
+    --Goal midrange, use a point update
+    --Goal too far, use a point estimate
+    goalpos={(pos[1][1]+pos[2][1])/2, (pos[1][2]+pos[2][2])/2}
+    goalv={(v[1][1]+v[2][1])/2, (v[1][2]+v[2][2])/2}
+    landmark_observation(	{goalpos}, goalv , rUnknownPostFilter, aUnknownGoalFilter);
+  else --Goal VERY far, just update angle only
+    goalpos={(pos[1][1]+pos[2][1])/2, (pos[1][2]+pos[2][2])/2}
+    goalv={(v[1][1]+v[2][1])/2, (v[1][2]+v[2][2])/2}
+    landmark_observation(
+		{goalpos},goalv , rUnknownGoalFilter, aUnknownGoalFilter,1);
+  end
+end
+
+
+
 
 function post_unified_unknown(v)
   landmark_observation(postUnified, v[1], rPostFilter, aPostFilter);

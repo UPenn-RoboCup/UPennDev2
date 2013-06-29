@@ -52,6 +52,7 @@ camera.param[4] = {key='gain',          val={0}};
 camera.param[5] = {key='white balance temperature', val={2000}};
 camera.param[6] = {key='sharpness',     val={255}};
 camera.param[7] = {key='exposure (absolute)',      val={800}};
+
 --camera.lut_file = 'lut_low_contrast_pink_n_green.raw';
 --camera.lut_file = 'grasp_low_contrast_1643_samarth.raw';
 --camera.lut_file = 'lut_Grasp_Greenonly.raw';

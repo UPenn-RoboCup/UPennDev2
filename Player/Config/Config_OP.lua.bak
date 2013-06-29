@@ -16,26 +16,20 @@ params.Kick = "Slow"
 
 ---Location Specific Camera Parameters--
 --params.Camera = "Eindhoven_A_morning"
---params.Camera = "Eindhoven_A_noon"
+params.Camera = "Eindhoven_A_noon"
 --params.Camera = "Eindhoven_A_night"
---params.Camera = "Eindhoven_A_UHC_night"
 
 --params.Camera = "Eindhoven_B_morning"
 --params.Camera = "Eindhoven_B_noon"
 --params.Camera = "Eindhoven_B_night"
---params.Camera = "Eindhoven_B_UHC_night"
 
 --params.Camera = "Eindhoven_C_morning"
-params.Camera = "Eindhoven_C_noon"
+--params.Camera = "Eindhoven_C_noon"
 --params.Camera = "Eindhoven_C_night"
---params.Camera = "Eindhoven_C_UHC_night"
 
 --params.Camera = "Eindhoven_D_morning"
 --params.Camera = "Eindhoven_D_noon"
 --params.Camera = "Eindhoven_D_night"
---params.Camera = "Eindhoven_D_UHC_night"
-
---params.Camera = "Eindhoven_UHC_A_night"
 --params.Camera = "steveA"
 
 util.LoadConfig(params, platform)
@@ -74,20 +68,24 @@ game.role = 1;  --Default role: attacker
 
 if (robotName=='lucy') then
   game.playerID = 1; 
+elseif (robotName=='andy') then
+  game.playerID = 2;
+
 elseif (robotName=='annie') then
   game.playerID = 2; 
+
 elseif (robotName=='jiminy') then
+  game.playerID = 3;
+elseif (robotName=='sally') then
   game.playerID = 3; 
+ 
 elseif (robotName=='linus') then
   game.playerID = 4; 
+
 elseif (robotName=='scarface') then
   game.playerID = 5; 
 elseif (robotName=='betty') then
   game.playerID = 3; 
-elseif (robotName=='sally') then
-  game.playerID = 1; 
-elseif (robotName=='andy') then
-  game.playerID = 3;
 end
 
 --Default team: 0 for blue, 1 for red  
@@ -135,13 +133,6 @@ team.flip_correction = 2; --ALWAYS correct
 
 team.confused_threshold_x = 4.0;
 team.confused_threshold_y = 4.0;
-
-
---Disabled
-team.confused_threshold_x = -0.5;
-team.confused_threshold_y = -0.5;
-
-
 team.flip_threshold_x = 1.0;
 team.flip_threshold_y = 1.5;
 team.flip_check_t = 5.0; --keep confused for 5 sec
@@ -323,27 +314,18 @@ fsm.headScan.pitchTurnMag = 20*math.pi/180;
 fsm.goalie_reposition=2; --Position reposition
 fsm.bodyAnticipate.thFar = {1.0,1.0,90*math.pi/180};
 
-
-
 fsm.thDistStationaryKick = 4.0; --try do some stationary kick
-
 fsm.bodyPosition.maxStep1 = 0.06; 
 fsm.bodyPosition.maxStep2 = 0.06;
 fsm.bodyPosition.maxStep3 = 0.07;
 
-
 --Awesome config
-dev.walk='AwesomeWalk'
-largestep_enable = true;
-fsm.bodyPosition.maxStep1 = 0.06; 
-fsm.bodyPosition.maxStep2 = 0.07;
-fsm.bodyPosition.maxStep3 = 0.10;
 
 ---------------------------------------------------------------------
 -- Config for day 3
 dev.walk='AwesomeWalk'
 largestep_enable = true;
-fsm.bodyPosition.maxStep1 = 0.06;
+fsm.bodyPosition.maxStep1 = 0.06; 
 fsm.bodyPosition.maxStep2 = 0.07;
 fsm.bodyPosition.maxStep3 = 0.08;
 fsm.daPostmargin = 30*math.pi/180; --kick more close to the center of the posts
@@ -353,45 +335,8 @@ if (robotName=='sally') then
 
 end
 
-fsm.thDistStationaryKick = 10.0; --try do some stationary kick
-
-
-
-
-
-------------------------------------------------
--- Goal classification
-
-vision.use_white_wall = 1;
-vision.white_wall_is_blue = 1;
-vision.white_wall_min_count = 3000;
-vision.white_wall_min_rate = 0.5;
-
-vision.use_nonwhite_wall = 1;
-vision.nonwhite_wall_min_area = 3000;
-vision.nonwhite_wall_max_rate = 0.2;
-
-------------------------------------------------
-
-fsm.bodyPosition.maxStep1 = 0.06;
+--[[
+fsm.bodyPosition.maxStep1 = 0.06; 
 fsm.bodyPosition.maxStep2 = 0.08;
 fsm.bodyPosition.maxStep3 = 0.10;
-walk.velLimitX={-.03,.10};
-
-
-------------------------------------------------------------------------
--- Config for 8-final
-
-fsm.bodyAnticipate.thFar = {1.0,1.0,30*math.pi/180};
-
---Field B
-vision.use_white_wall = 1;
-vision.white_wall_is_blue = 0;
-vision.white_wall_min_count = 3000;
-vision.white_wall_min_rate = 0.6;
-
-vision.use_nonwhite_wall = 1;
-vision.nonwhite_wall_min_area = 3000;
-vision.nonwhite_wall_max_rate = 0.15;
-
--------------------------------------------------------------------------
+--]]

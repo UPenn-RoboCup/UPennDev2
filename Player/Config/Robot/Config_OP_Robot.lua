@@ -20,9 +20,10 @@ stance.dpLimitDive=vector.new({.06,.06,.09,.9,.9,.9});
 
 --Same stance as walking, with zero tilt
 stance.bodyTiltDive= 0*math.pi/180;
-
-
 stance.bodyTiltDive= 10*math.pi/180;
+stance.bodyTiltDive= 20*math.pi/180; --Zero bodytilt for waiting
+
+
 
 
 stance.dpLimitDive=vector.new({.06,.06,.06,.7,.7,.7});

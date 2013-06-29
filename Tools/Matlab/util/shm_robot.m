@@ -112,6 +112,7 @@ global MONITOR %for sending the webots check information
           r.goal = h.vcmGoal.get_type()+1;
           r.goalv1 = h.vcmGoal.get_v1();
           r.goalv2 = h.vcmGoal.get_v2();
+          r.goalcolor = h.vcmGoal.get_color()+0;
         else
           r.goal=0;
         end

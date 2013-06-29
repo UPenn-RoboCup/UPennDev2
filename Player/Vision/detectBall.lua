@@ -26,6 +26,9 @@ th_height_max=Config.vision.ball.th_height_max;
 th_ground_boundingbox=Config.vision.ball.th_ground_boundingbox;
 th_min_green1=Config.vision.ball.th_min_green1;
 th_min_green2=Config.vision.ball.th_min_green2;
+th_min_green3=Config.vision.ball.th_min_green3 or 50;
+
+
 
 check_for_ground = Config.vision.ball.check_for_ground;
 check_for_field = Config.vision.ball.check_for_field or 0;
@@ -90,13 +93,25 @@ function detect(color)
     local fill_rate = ball.propsA.area / 
 	Vision.bboxArea(ball.propsA.boundingBox);
 
-    vcm.add_debug_message(string.format("Area:%d\nFill rate:%2f\n",
-       ball.propsA.area,fill_rate));
+    vcm.add_debug_message(string.format("Area:%d\n HeadAngle:%d Fill rate:%2f\n",
+       ball.propsA.area, headAngle[2]*180/math.pi ,fill_rate));
+
+
+th_min_color3 = 50;
+th_headAngleDown = -25*math.pi/180;
+
 
     if ball.propsA.area < th_min_color2 then
       --Area check
       vcm.add_debug_message("Area check fail\n");
       check_passed = false;
+
+--We check tiny balls around the robot
+    elseif ball.propsA.area < th_min_color3 and
+        headAngle[2] > th_headAngleDown then
+      vcm.add_debug_message("Tiny ball check fail\n");
+      check_passed = false;
+
     elseif fill_rate < th_min_fill_rate then
       --Fill rate check
       vcm.add_debug_message("Fillrate check fail\n");
@@ -138,9 +153,7 @@ function detect(color)
         vcm.add_debug_message("Height check fail\n");
         check_passed = false;
 
-      elseif check_for_ground>0  then
--- COMMENT HEAD ANGLE OUT TO CHECK ON NAOS - ASSUMING ITS AN OP PARAM
---        headAngle[2] < th_headAngle then
+      elseif check_for_ground>0  and headAngle[2] < th_headAngle then
         -- ground check
         -- is ball cut off at the bottom of the image?
         local vmargin=Vision.labelA.n-ballCentroid[2];
@@ -168,12 +181,24 @@ function detect(color)
           if (fieldBBoxStats.area < th_min_green1) then
             -- if there is no field under the ball 
       	    -- it may be because its on a white line
+
+	    --There should be some green with white too
+	    th_min_green3 = 50;
+
             whiteBBoxStats = ImageProc.color_stats(Vision.labelA.data,
- 	      Vision.labelA.m, Vision.labelA.n, colorWhite, fieldBBox);
-            if (whiteBBoxStats.area < th_min_green2) then
+    	      Vision.labelA.m, Vision.labelA.n, colorWhite, fieldBBox);
+
+            vcm.add_debug_message(string.format("White check:%d\n",
+		   	   whiteBBoxStats.area));
+
+            if (whiteBBoxStats.area < th_min_green2) or
+               (fieldBBoxStats.area < th_min_green3) then
               vcm.add_debug_message("Green check fail\n");
               check_passed = false;
             end
+
+
+
           end --end white line check
         end --end bottom margin check
       end --End ball height, ground check

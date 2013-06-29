@@ -7,7 +7,7 @@ require('wcm')
 require('Speak')
 
 t0=0;
-timeout = 3.0;
+timeout = 6.0; --2 sec standup + 4 sec walk forward
 
 function entry()
   print(_NAME..' entry');

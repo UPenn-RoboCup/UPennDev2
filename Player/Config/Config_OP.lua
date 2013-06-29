@@ -138,7 +138,7 @@ team.confused_threshold_x = -0.5;
 team.confused_threshold_y = -0.5;
 
 
-team.flip_threshold_x = 1.0;
+team.flip_threshold_x = 1.5;
 team.flip_threshold_y = 1.5;
 team.flip_check_t = 5.0; --keep confused for 5 sec
 
@@ -378,16 +378,16 @@ walk.velLimitX={-.03,.10};
 ------------------------------------------------------------------------
 -- Config for 8-final
 
-fsm.bodyAnticipate.thFar = {1.0,1.0,30*math.pi/180};
+fsm.bodyAnticipate.thFar = {1.0,1.0,45*math.pi/180};
 
 --Field B
 vision.use_white_wall = 1;
 vision.white_wall_is_blue = 0;
 vision.white_wall_min_count = 3000;
-vision.white_wall_min_rate = 0.6;
+vision.white_wall_min_rate = 0.5;
 
-vision.use_nonwhite_wall = 1;
+vision.use_nonwhite_wall = 0; --disabled
 vision.nonwhite_wall_min_area = 3000;
-vision.nonwhite_wall_max_rate = 0.15;
+vision.nonwhite_wall_max_rate = -0.15; --disabled
 
 -------------------------------------------------------------------------

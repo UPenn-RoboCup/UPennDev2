@@ -6,8 +6,8 @@ stance={};
 stance.bodyHeightSit = 0.20;
 stance.supportXSit = -0.010;
 stance.bodyHeightDive= 0.295;
-stance.bodyTiltDive = 0;
-stance.bodyTiltStance=0*math.pi/180; --bodyInitial bodyTilt, 0 for webots
+stance.bodyTiltDive = 20*math.pi/180;
+stance.bodyTiltStance=20*math.pi/180; --bodyInitial bodyTilt, 0 for webots
 stance.dpLimitStance=vector.new({.04, .03, .07, .4, .4, .4});
 stance.dpLimitSit=vector.new({.1,.01,.06,.1,.3,.1});
 

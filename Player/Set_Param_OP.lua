@@ -47,29 +47,21 @@ function Entry()
 end
 
 function Cam_init()
-  for c=1,Config.camera.ncamera do
-    Camera.select_camera(c-1);   
-    
-    Camera.set_param('Brightness', Config.camera.brightness);     
-    --Camera.set_param('White Balance, Automatic', 1); 
-    --Camera.set_param('Auto Exposure', 1);
-    Camera.set_param('White Balance, Automatic', 0);
-    Camera.set_param('Auto Exposure',0);
-    Camera.set_param('Auto Exposure Algorithm', 3)
-    Camera.set_param('Fade to Black', 0)
+  for c=1,Config.camera.ncamera do 
+    Camera.select_camera(c-1);
+    for i,auto_param in ipairs(Config.camera.auto_param) do
+      print('Camera '..c..': setting '..auto_param.key..': '..auto_param.val[c]);
+      Camera.set_param(auto_param.key, auto_param.val[c]);
+      unix.usleep(100000);
+      print('Camera '..c..': set to '..auto_param.key..': '..Camera.get_param(auto_param.key));
+    end   
     for i,param in ipairs(Config.camera.param) do
-        Camera.set_param(param.key, param.val[c]);
-        unix.usleep (100);
+      print('Camera '..c..': setting '..param.key..': '..param.val[c]);
+      Camera.set_param(param.key, param.val[c]);
+      unix.usleep(10000);
+      print('Camera '..c..': set to '..param.key..': '..Camera.get_param(param.key));
     end
-    --Camera.set_param('White Balance, Automatic', 0);
-    local expo = Camera.get_param('Exposure');
-    local gain = Camera.get_param('Gain');
-    Camera.set_param('Auto Exposure',1);   
-    Camera.set_param('Auto Exposure',0);
-    Camera.set_param('Exposure', expo);
-    Camera.set_param('Gain', gain);
-    print('Camera #'..c..' set');
-  end 
+  end
 end
 
 
@@ -92,17 +84,6 @@ function Read_Num()
     result = result + (num [i]- 48)*(10 ^ (#num - i));
   end
   return result;
-end
-
-
-function Switch_to_Top_Camera()
-  Camera.select_camera (0);
-  print ('Switched to Top Camera (Camera 0)')
-end
-
-function Switch_to_Bottom_Camera()
-  Camera.select_camera(1);
-  print ('Switched to Bottom Camera (Camera 1)')
 end
 
 function Set_Brightness()
@@ -202,28 +183,6 @@ function Set_Gain()
   print('Gain: ' , Camera.get_param('Gain'))
 end
 
-
-
-function Set_Hue()
-  print ('Current hue is: '..Camera.get_param('Hue')..' type in an integer between -22 and 22');
-  local param = Read_Num();
-  while (param < -22 or param > 22) do
-    unix.usleep (10000);
-    print('Type in an integer between -22 and 22');
-    param = Read_Num();
-  end
-end
-
-function Set_Backlight_Compensation()
-  print ('Current backlight compensation is: '..Camera.get_param('Backlight Compensation')..' type in an integer between 0 and 4');
-  local param = Read_Num();
-  while (param < 0 or param > 4) do
-    unix.usleep (10000);
-    print('Type in an integer between 0 and 4');
-    param = Read_Num();
-  end
-end
-
 function Set_Sharpness()
   print ('Current sharpness is: '..Camera.get_param('Sharpness')..' type in a integer between 0 and 5');
   local param = Read_Num();
@@ -254,15 +213,11 @@ end
 
 function Help()
   print ('This is a tool to set camera parameters for NaoV4')
-  print ('Press "+" to switch to the top camera;')
-  print ('Press "-" to switch to the bottom camera;')
   print ('Press "c" to set Contrast;')
   print ('Press "b" to set Brightness;')
   print ('Press "s" to set Saturation;')
   print ('Press "e" to set Exposure;');
   print ('Press "g" to set Gain;')
-  print ('Press "d" to set Hue;');
-  print ('Press "f" to set Backlight Compensation;');
   print ('Press "w" to set White Balance;');
   print ('Press "a" to set Sharpness;')
   print ('press "i" to go back to initial parameters from the Config file;')
@@ -273,8 +228,6 @@ end
 
 
 utilFunctions = {Cam_init,
-                 Switch_to_Top_Camera,
-                 Switch_to_Bottom_Camera,
                  Set_Brightness,
                  Set_Contrast,
                  Set_Saturation,
@@ -284,7 +237,7 @@ utilFunctions = {Cam_init,
                  Set_Backlight_Compensation,
                  Set_White_Balance,
                  Set_Sharpness,            
-		 Print_All,
+            		 Print_All,
                  Help
                 }
 

@@ -97,8 +97,8 @@ function detect(color)
        ball.propsA.area, headAngle[2]*180/math.pi ,fill_rate));
 
 
-th_min_color3 = 50;
-th_headAngleDown = -25*math.pi/180;
+th_min_color3 = Config.vision.th_min_color3 or 50;
+th_headAngleDown = Config.vision.th_headAngleDown or -25*math.pi/180;
 
 
     if ball.propsA.area < th_min_color2 then

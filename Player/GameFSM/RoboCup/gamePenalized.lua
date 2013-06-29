@@ -22,6 +22,7 @@ function entry()
 end
 
 function update()
+  gcm.set_game_was_penalized(1);
   local state = gcm.get_game_state();
   -- check for penalty 
   if not gcm.in_penalty() then

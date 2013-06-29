@@ -29,6 +29,7 @@ require('bodyDive')
 
 
 require('bodyReadyMove')
+require('bodyUnpenalized')
 
 
 
@@ -54,6 +55,7 @@ sm:add_state(bodyDive);
 sm:add_state(bodyChase);
 
 sm:add_state(bodyReadyMove);
+sm:add_state(bodyUnpenalized);
 
 
 
@@ -62,6 +64,7 @@ sm:add_state(bodyReadyMove);
 ------------------------------------------------------
 
 sm:set_transition(bodyStart, 'done', bodyPosition);
+sm:set_transition(bodyUnpenalized, 'done', bodyPosition);
 
 sm:set_transition(bodyPosition, 'timeout', bodyPosition);
 sm:set_transition(bodyPosition, 'ballLost', bodySearch);

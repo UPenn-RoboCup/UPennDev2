@@ -27,6 +27,10 @@ shared.game.tm_latency = vector.zeros(1);--Team message latency
 shared.game.our_score = vector.zeros(1);
 shared.game.opponent_score = vector.zeros(1);
 
+shared.game.was_penalized = vector.zeros(1);
+shared.game.was_set = vector.zeros(1);
+
+
 shared.team = {};
 shared.team.number = vector.zeros(1);
 shared.team.player_id = vector.zeros(1);

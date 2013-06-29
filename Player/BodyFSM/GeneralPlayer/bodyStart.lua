@@ -69,17 +69,17 @@ function update()
 
       role = gcm.get_team_role();
       if role==1 then 
-	 tKickOff=10.0; 
+	   	  tKickOff=10.0; 
       else
-	 tKickOff=10.0; 
+	   	  tKickOff=10.0; 
       end
 
       tRemaining = tKickOff-(t-t0);
       if tRemaining<0 then 
         return 'done';
       elseif t>tLastCount then
-	tLastCount=tLastCount+1;
-	countdown=string.format("%d",tRemaining)
+	     	tLastCount=tLastCount+1;
+       	countdown=string.format("%d",tRemaining)
         print("Count: ",countdown)
 --        Speak.talk(countdown);
       end

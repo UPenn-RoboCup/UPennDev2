@@ -29,6 +29,7 @@ function entry()
 end
 
 function update()
+  gcm.set_game_was_set(1);
 
   t = Body.get_time();
   --Update kickoff timer

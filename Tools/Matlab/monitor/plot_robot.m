@@ -231,6 +231,7 @@ function h = plot_robot_monitor_struct(robot_struct,r_mon,scale,drawlevel,name)
 
   function plot_goal_team(robot,scale)
     goal=robot.goal;
+    robot.goalcolor = 0; %Not working for now 
     if( goal>0)
       goalcolor = robot.goalcolor;
       if(goalcolor==1) marker = 'b';

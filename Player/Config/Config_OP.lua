@@ -15,7 +15,7 @@ params.name = {"Robot", "Walk", "World", "Kick", "Vision", "FSM", "Camera"};
 params.Kick = "Slow"
 
 ---Location Specific Camera Parameters--
-params.Camera = "Eindhoven_A_morning"
+--params.Camera = "Eindhoven_A_morning"
 --params.Camera = "Eindhoven_A_noon"
 --params.Camera = "Eindhoven_A_night"
 
@@ -24,7 +24,7 @@ params.Camera = "Eindhoven_A_morning"
 --params.Camera = "Eindhoven_B_night"
 
 --params.Camera = "Eindhoven_C_morning"
---params.Camera = "Eindhoven_C_noon"
+params.Camera = "Eindhoven_C_noon"
 --params.Camera = "Eindhoven_C_night"
 
 --params.Camera = "Eindhoven_D_morning"
@@ -380,4 +380,14 @@ walk.velLimitX={-.03,.10};
 
 fsm.bodyAnticipate.thFar = {1.0,1.0,30*math.pi/180};
 
+--Field B
+vision.use_white_wall = 1;
+vision.white_wall_is_blue = 0;
+vision.white_wall_min_count = 3000;
+vision.white_wall_min_rate = 0.6;
 
+vision.use_nonwhite_wall = 1;
+vision.nonwhite_wall_min_area = 3000;
+vision.nonwhite_wall_max_rate = 0.15;
+
+-------------------------------------------------------------------------

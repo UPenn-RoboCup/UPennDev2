@@ -382,12 +382,16 @@ fsm.bodyAnticipate.thFar = {1.0,1.0,45*math.pi/180};
 
 --Field B
 vision.use_white_wall = 1;
-vision.white_wall_is_blue = 0;
+vision.white_wall_is_blue = 0; --white wall is on the red side
 vision.white_wall_min_count = 3000;
 vision.white_wall_min_rate = 0.5;
 
 vision.use_nonwhite_wall = 0; --disabled
 vision.nonwhite_wall_min_area = 3000;
 vision.nonwhite_wall_max_rate = -0.15; --disabled
+
+game.teamColor = 0; --Blue team
+--game.teamColor = 1; --Red team
+
 
 -------------------------------------------------------------------------

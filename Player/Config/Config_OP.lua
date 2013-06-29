@@ -400,3 +400,10 @@ use_kalman_velocity = 0;--this may crash some robot
 team.flip_threshold_x = 1;
 team.flip_threshold_y = 1;
 
+
+------------------------------------------------------------------------
+--Config for the final match
+vision.white_wall_min_rate = 0.5;
+vision.nonwhite_wall_max_rate = 0.15;
+bat_med = 117; -- Slow down walking if voltage drops below this 
+bat_low = 113; -- 11.7V warning for head LED (red blinking)

@@ -529,3 +529,23 @@ cal["jiminy"].kickXComp=0.000;
 cal["jiminy"].servoBias={52,0,-2,12,1,-14,-13,0,60,11,-7,-8,};
 cal["jiminy"].footXComp=0.005;
 cal["jiminy"].kickXComp=0.000;
+
+-- Updated date: Sat Jun 29 16:34:39 2013
+cal["linus"].servoBias={21,-16,37,-13,-8,-3,-31,-4,-30,-16,0,16,};
+cal["linus"].footXComp=-0.001;
+cal["linus"].kickXComp=0.005;
+
+-- Updated date: Sat Jun 29 16:38:12 2013
+cal["linus"].servoBias={21,5,24,1,-11,-3,-31,-4,-30,-11,0,16,};
+cal["linus"].footXComp=0.002;
+cal["linus"].kickXComp=0.005;
+
+-- Updated date: Sat Jun 29 16:41:36 2013
+cal["linus"].servoBias={21,-19,24,1,-10,-3,-31,-20,-30,-11,0,-3,};
+cal["linus"].footXComp=0.002;
+cal["linus"].kickXComp=0.005;
+
+-- Updated date: Sat Jun 29 16:43:33 2013
+cal["linus"].servoBias={21,-19,24,1,-10,-3,-31,-20,-30,-11,0,-3,};
+cal["linus"].footXComp=0.001;
+cal["linus"].kickXComp=0.005;

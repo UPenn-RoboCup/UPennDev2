@@ -9,5 +9,6 @@ alias so='start obstacle'
 alias sob='start obstacleplay'
 alias sx='start boxer'
 alias c='connectop'
+alias b='cd /home/darwin/UPennDev/Player && luajit check_battery.lua'
 
 /bin/bash /home/darwin/UPennDev/Tools/.git_setup.sh

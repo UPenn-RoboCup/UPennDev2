@@ -15,7 +15,7 @@ params.name = {"Robot", "Walk", "World", "Kick", "Vision", "FSM", "Camera"};
 params.Kick = "Slow"
 
 ---Location Specific Camera Parameters-
-params.Camera = "Eindhoven_A_morning"
+--params.Camera = "Eindhoven_A_morning"
 --params.Camera = "Eindhoven_A_noon"
 --params.Camera = "Eindhoven_A_night"
 
@@ -24,7 +24,7 @@ params.Camera = "Eindhoven_A_morning"
 --params.Camera = "Eindhoven_B_night"
 
 --params.Camera = "Eindhoven_C_morning"
---params.Camera = "Eindhoven_C_noon"
+params.Camera = "Eindhoven_C_noon"
 --params.Camera = "Eindhoven_C_night"
 
 --params.Camera = "Eindhoven_D_morning"
@@ -413,5 +413,23 @@ bat_low = 113; -- 11.7V warning for head LED (red blinking)
 -- TESTING SETUP FOR FIELD A
 vision.white_wall_min_rate = 0.6;
 vision.nonwhite_wall_max_rate = 0.2;
-vision.white_wall_is_blue = 1; --white wall is on the red side
 
+
+----------------------------------------------
+----------------------------------------------
+----------------------------------------------
+----------------------------------------------
+----------------------------------------------
+----------------------------------------------
+----------------------------------------------
+-- FINAL MATCH CONFIG
+
+vision.white_wall_min_rate = 0.55;
+vision.nonwhite_wall_max_rate = 0.2;
+vision.white_wall_is_blue = 0; --white wall is on the red side
+fsm.bodyAnticipate.thFar = {1.5,1.5,45*math.pi/180};
+
+--MANUAL TEAM SELECTION
+--game.teamColor = 0; --Blue team
+game.teamColor = 1; --Red team
+----------------------------------------------

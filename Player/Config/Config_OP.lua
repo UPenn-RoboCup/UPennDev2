@@ -428,8 +428,8 @@ vision.nonwhite_wall_max_rate = 0.2;
 ----------------------------------------------
 -- FINAL MATCH CONFIG
 
-vision.white_wall_min_rate = 0.35;
-vision.nonwhite_wall_max_rate = 0.07;
+vision.white_wall_min_rate = 0.45;
+vision.nonwhite_wall_max_rate = 0.15;
 vision.white_wall_is_blue = 0; --white wall is on the red side
 fsm.bodyAnticipate.thFar = {1.5,1.5,45*math.pi/180};
 

@@ -72,18 +72,22 @@ if (robotName=='lucy') then
   game.playerID = 1; 
 elseif (robotName=='annie') then
   game.playerID = 2; 
+elseif (robotName=='andy') then
+  game.playerID = 3;
+elseif (robotName=='sally') then
+  game.playerID = 4; 
 elseif (robotName=='jiminy') then
-  game.playerID = 3; 
+  game.playerID = 5; 
+
+
+
 elseif (robotName=='linus') then
   game.playerID = 4; 
 elseif (robotName=='scarface') then
   game.playerID = 5; 
 elseif (robotName=='betty') then
   game.playerID = 3; 
-elseif (robotName=='sally') then
-  game.playerID = 1; 
-elseif (robotName=='andy') then
-  game.playerID = 3;
+
 end
 
 --Default team: 0 for blue, 1 for red  
@@ -424,8 +428,8 @@ vision.nonwhite_wall_max_rate = 0.2;
 ----------------------------------------------
 -- FINAL MATCH CONFIG
 
-vision.white_wall_min_rate = 0.5;
-vision.nonwhite_wall_max_rate = 0.2;
+vision.white_wall_min_rate = 0.35;
+vision.nonwhite_wall_max_rate = 0.07;
 vision.white_wall_is_blue = 0; --white wall is on the red side
 fsm.bodyAnticipate.thFar = {1.5,1.5,45*math.pi/180};
 

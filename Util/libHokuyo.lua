@@ -174,6 +174,7 @@ end
 
 ---------------------------
 -- Grab the scan from the buffer
+-- TODO: Add a timeout
 local get_scan = function(self)
 	--  local t0 = unix.time()
 	local raw_scan = ''

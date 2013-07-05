@@ -118,20 +118,24 @@ static int lua_dynamixel_instruction_sync_write(lua_State *L) {
 }
 
 static int lua_dynamixel_input(lua_State *L) {
-  size_t nstr;
-  const char *str = luaL_checklstring(L, 1, &nstr);
-  int nPacket = luaL_optinteger(L, 2, 1)-1;
-  DynamixelPacket pkt;
-  int ret = 0;
-  if (str) {
-    for (int i = 0; i < nstr; i++) {
-      nPacket = dynamixel_input(&pkt, str[i], nPacket);
-      if (nPacket < 0) {
-	ret += lua_pushpacket(L, &pkt);
-      }
-    }
-  }
-  return ret;
+	size_t nstr;
+	const char *str = luaL_checklstring(L, 1, &nstr);
+	int nPacket = luaL_optinteger(L, 2, 1)-1;
+	DynamixelPacket pkt;
+	int ret = 0;
+	// Packet Table
+	lua_newtable(L);
+	if (str) {
+		for (int i = 0; i < nstr; i++) {
+			nPacket = dynamixel_input(&pkt, str[i], nPacket);
+			if (nPacket < 0) {
+				ret += lua_pushpacket(L, &pkt);
+				lua_rawseti(L, -2, ret);
+			}
+		} //for
+	} //if str
+	lua_pushboolean(L, nPacket==-1);
+	return 2;
 }
 
 static int lua_dynamixel_byte_to_word(lua_State *L) {

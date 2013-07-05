@@ -156,10 +156,8 @@ static int lua_dynamixel_input(lua_State *L) {
 	size_t nstr;
 	const char *str = luaL_checklstring(L, 1, &nstr);
 	int nPacket = luaL_optinteger(L, 2, 1)-1;
-	// TODO: This pkt variable should be part of a metatable, not the *.so
 	DynamixelPacket pkt;
 	int ret = 0;
-	int pkt_cnt = 0;
 	// Packet Table
 	lua_newtable(L);
 	if (str) {
@@ -167,7 +165,7 @@ static int lua_dynamixel_input(lua_State *L) {
 			nPacket = dynamixel_input(&pkt, str[i], nPacket);
 			if (nPacket < 0){
 				ret += lua_pushpacket(L, &pkt);
-				lua_rawseti(L, -2, ++pkt_cnt);
+				lua_rawseti(L, -2, ret);
 			}
 		} //for
 	} //if str

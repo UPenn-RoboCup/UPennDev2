@@ -401,9 +401,76 @@ function libDynamixel.new_bus( ttyname, ttybaud )
 	end
 	-- new_bus not allowed on a current bus
 	obj.new_bus = nil
+	obj.service = nil
 	-------------------
 	
 	return obj
 end
+
+---------------------------
+-- Service multiple hokuyos
+-- TODO: This seems pretty generic already - make it more so
+libDynamixel.service = function( buses, main )
+
+	local t0 = unix.time()
+	-- Start the streaming of each hokuyo
+	local projected_timestamps = {}
+	local who_to_service = nil
+	local t_future = math.huge
+	for i,o in ipairs(objs) do
+		local t_now = unix.time()
+		local t_to_wait = o:stream_on()
+		local future_time = t_now + o.update_time
+		if future_time<t_future then
+			who_to_service = o
+			t_future = future_time
+		end
+		projected_timestamps[i] = future_time
+	end
+
+	-- TODO: Perform a main loop here?
+
+	-- Loop and sleep appropriately
+	while true do
+
+		-- Sleep until ready to service
+		local t_now = unix.time()
+		local t_sleep = 1e6*(t_future-t_now)
+		-- TODO: Debug if negative
+		if t_sleep>0 then
+			unix.usleep( t_sleep )
+		end
+
+		-- Service the correct Hokuyo
+		local result = who_to_service:get_scan()
+		if type( result ) == 'string' then
+			-- Process the callback
+			who_to_service.callback( result )
+			-- Expect a new scan result
+			projected_timestamps[i] = t_now + who_to_service.update_time
+		else
+			-- Update the next timestamp
+			t_future = math.huge
+			local mindex = -1
+			for i,pt in ipairs(projected_timestamps) do
+				if pt<t_future then
+					mindex = i
+					t_future = future_time
+				end
+			end
+			-- Setup the correct hokuyo
+			assert(mindex>0,'No object slated for next update!')
+			who_to_service = objs[mindex]
+		end
+
+		-- Execute a main loop if desired, during the sleeping time
+		if main then
+			main()
+		end
+
+	end
+
+end
+
 
 return libDynamixel

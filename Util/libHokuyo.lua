@@ -302,7 +302,6 @@ libHokuyo.service = function( hokuyos, main )
 	local t0 = unix.time()
 	-- Start the streaming of each hokuyo
 	local projected_timestamps = {}
-	assert(#objs==#callbacks,'Bad callback setup')
 	local who_to_service = nil
 	local t_future = math.huge
 	for i,o in ipairs(objs) do

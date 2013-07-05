@@ -18,7 +18,7 @@ libHokuyo.MAX_NUM_HOKUYO = 255
 local write_command = function(fd, cmd, expected_resp)
 	-- Should get one of these... '00', '02', '03', '04'
 	expected_resp = expected_resp or '00'
-		
+
 	--------------------
 	-- Write the command
 	local ret = unix.write(fd, cmd)
@@ -56,21 +56,21 @@ local write_command = function(fd, cmd, expected_resp)
 		assert( type(append)=='string', 'Did not receive appended response' )
 		response = response..append
 	end
-	end_of_reponse = response:find('\n')
-	assert(end_of_reponse,'Cannot find the end of the response')
-	--------------------
-  
-	--------------------
-	-- Assume a good response until otherwise checked
-	local actual = response:sub(1, 2)
-	assert(
-	actual==expected_response,
-	string.format('Expected response (%s) but got (%s)', 
-	expected_response, actual )
-	)
-	--------------------
+end_of_reponse = response:find('\n')
+assert(end_of_reponse,'Cannot find the end of the response')
+--------------------
 
-	return response
+--------------------
+-- Assume a good response until otherwise checked
+local actual = response:sub(1, 2)
+assert(
+actual==expected_response,
+string.format('Expected response (%s) but got (%s)', 
+expected_response, actual )
+)
+--------------------
+
+return response
 end
 
 local create_scan_request = 
@@ -107,13 +107,14 @@ local stream_off = function(self)
 end
 
 local stream_on = function(self)
-	
+
 	-- Ensure that we stream_off before we stream_on again
 	stream_off(self)
 
 	local ret = write_command( self.fd, 'BM\n' )
 
 	-- scan_start, scan_end, scan_skip, encoding, scan_type, num_scans 
+	-- TODO: Check encoding types
 	local scan_req = create_scan_request(0, 1080, 1, 3, 0, 0);
 	-- TODO: Does the scan request expect a return, 
 	-- or just the actual streaming data?
@@ -123,9 +124,15 @@ end
 
 local get_sensor_params = function(self)
 	local res = write_command( self.fd, 'PP\n' )
-	
+
 	local sensor_params = {}
 	local params = HokuyoPacket.parse_info(res, 8)
+	--[[
+	if not obj.params then
+	obj:close()
+	error('Could not set Hokuyo sensor parameters')
+	end
+	--]]
 	sensor_params.model = params[1]
 	sensor_params.min_distance = tonumber(params[2])
 	sensor_params.max_distance = tonumber(params[3])
@@ -144,6 +151,12 @@ local get_sensor_info = function(self)
 
 	local sensor_info = {}
 	local info = HokuyoPacket.parse_info(res, 5)
+	--[[
+	if not obj.info then
+	obj:close()
+	error()
+	end
+	--]]
 	sensor_info.vender = info[1]
 	sensor_info.product = info[2]
 	sensor_info.firmware = info[3]
@@ -231,7 +244,7 @@ libHokuyo.new_hokuyo = function(ttyname, serial, ttybaud )
 
 	-----------
 	-- Open the Serial device with the proper settings
-	io.write( 'Opening ',name,' at ', baud, ' baud')
+	--io.write( 'Opening ',name,' at ', baud, ' baud')
 	local fd = unix.open( name, unix.O_RDWR + unix.O_NOCTTY)
 	assert( fd>2, string.format("Open: %s, (%d)\n", name, fd)	)
 	stty.raw(fd)
@@ -244,7 +257,7 @@ libHokuyo.new_hokuyo = function(ttyname, serial, ttybaud )
 	-- Begin the Hokuyo object
 	local obj = {}
 	-----------
-	
+
 	-----------
 	-- Set the serial port data
 	-----------
@@ -256,31 +269,13 @@ libHokuyo.new_hokuyo = function(ttyname, serial, ttybaud )
 	end
 
 	-----------
-	-- Get the sensor parameters
+	-- Setup the Hokuyo properly
 	-----------
-	print(name, 'Get sensor parameters')
-	obj.params = get_sensor_params(obj)
-	if not obj.params then
-		obj:close()
-		error('Could not set Hokuyo sensor parameters')
-	end
-	
-	-----------
-	-- Get the sensor information
-	-----------
-	print(name, 'Get sensor info')
-	obj.info = get_sensor_info(obj)
-	if not obj.info then
-		obj:close()
-		error()
-	end
-
-	-----------
-	-- Set the baud rate
-	print(name, 'Set baud rate')
 	set_baudrate(obj, baud)
+	obj.params = get_sensor_params(obj)
+	obj.info = get_sensor_info(obj)
 	-----------
-	
+
 	-----------
 	-- Set the methods for accessing the data
 	-----------
@@ -288,8 +283,10 @@ libHokuyo.new_hokuyo = function(ttyname, serial, ttybaud )
 	obj.stream_off = stream_off
 	obj.get_scan = get_scan
 	obj.callback = nil
+	-- TODO: Use sensor_params.scan_rate
+	obj.update_time = 1/40
 	-----------
-	
+
 	-----------
 	-- Return the hokuyo object
 	return obj
@@ -298,7 +295,7 @@ end
 
 ---------------------------
 -- Service multiple hokuyos
--- TODO: Hokuyos should have a callback associated with it
+-- TODO: This seems pretty generic already - make it more so
 libHokuyo.service = function( hokuyos, main )
 
 	local t0 = unix.time()
@@ -310,13 +307,15 @@ libHokuyo.service = function( hokuyos, main )
 	for i,o in ipairs(objs) do
 		local t_now = unix.time()
 		local t_to_wait = o:stream_on()
-		local future_time = t_now + t_to_wait
+		local future_time = t_now + o.update_time
 		if future_time<t_future then
 			who_to_service = o
 			t_future = future_time
 		end
 		projected_timestamps[i] = future_time
 	end
+
+	-- TODO: Perform a main loop here?
 
 	-- Loop and sleep appropriately
 	while true do
@@ -334,9 +333,8 @@ libHokuyo.service = function( hokuyos, main )
 		if type( result ) == 'string' then
 			-- Process the callback
 			who_to_service.callback( result )
-			-- Expect a new scan result at 40Hz, so project 1/40 seconds in advance
-			-- TODO: Make a general update rate
-			projected_timestamps[i] = t_now + 1/40
+			-- Expect a new scan result
+			projected_timestamps[i] = t_now + who_to_service.update_time
 		else
 			-- Update the next timestamp
 			t_future = math.huge
@@ -348,7 +346,7 @@ libHokuyo.service = function( hokuyos, main )
 				end
 			end
 			-- Setup the correct hokuyo
-			assert(mindex>0,'No objected slated for next update!')
+			assert(mindex>0,'No object slated for next update!')
 			who_to_service = objs[mindex]
 		end
 

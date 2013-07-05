@@ -516,6 +516,7 @@ static int lua_msgpack_unpacker(lua_State *L) {
   bool ret = msgpack_unpacker_next(ud->pac, ud->msg);
   if (ret) {
     msgpack_object obj = ud->msg->data;
+		/* TODO: Push the encoded data as well as the decoded data */
     re = (*unPackMap[obj.type])(L, obj, opt);
   } else lua_pushnil(L);
   return 1;

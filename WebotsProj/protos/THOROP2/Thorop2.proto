@@ -2,6 +2,7 @@ PROTO Thorop2 [
   field SFVec3f translation 0 1.168 0
   field SFRotation rotation 0 1 0 -1.5708
   field SFString controller "void"
+	field SFString controllerArgs ""
 ]
 {
 Robot {
@@ -55580,5 +55581,6 @@ Robot {
     mass 1
   }
   controller IS controller
+	controllerArgs IS controllerArgs
 }
 }

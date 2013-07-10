@@ -1,0 +1,17 @@
+PROTO ThorAppearance [
+]
+{
+Appearance {
+  material Material {
+		# From ATLAS
+    #diffuseColor 0.8 0.8 0.8
+    #specularColor 1.0 1.0 1.0
+		
+		# From Robotis
+    diffuseColor 0.243 0.243 0.243
+    emissiveColor 0.08 0.08 0.08
+    shininess 0.5
+    specularColor 0.1 0.1 0.1
+  }
+}
+}

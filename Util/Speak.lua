@@ -1,7 +1,5 @@
 module(..., package.seeall);
 
---local io = require('io')
---local os = require('os')
 local unix = require('unix');
 local Config = require('Config')
 
@@ -26,15 +24,11 @@ if enable == 1 then
   unix.system('mkdir -p /tmp/');
   
   -- create the queue file (438 = 0666 permissions)
-  if (unix.mkfifo(fifo, 438) ~= 0) then
-    error('Could not create FIFO: '..fifo);
-  end
+  assert(unix.mkfifo(fifo, 438) == 0, 'Could not create FIFO: '..fifo);
   
   -- open the fifo
-  fid = io.open(fifo, 'a+');
-  if not fid then
-    error('could not open fifo: '..fifo);
-  end
+  fid = io.open(fifo, 'a+')
+	assert(fid,string.format('could not open fifo (%s) ',fifo))
   
   -- start espeak background process
   if (unix.system('(/usr/bin/env espeak --stdout -v '..lang..girl..' -s 130 -a '..volume..' < '..fifo..' | aplay) > /dev/null 2>&1 &') ~= 0) then

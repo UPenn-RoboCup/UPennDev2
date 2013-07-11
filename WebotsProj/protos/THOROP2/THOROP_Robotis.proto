@@ -67,7 +67,7 @@ Robot {
     }
     Accelerometer {
       translation 0 0 0.02
-      rotation 0 0.707107 0.707107 3.14
+      rotation 0 0.707107 0.707107 3.14159
       name "Accelerometer"
       lookupTable [
         -39.24 0 0
@@ -1079,6 +1079,7 @@ Robot {
           rotation -1 0 0 -0.17
           children [
             Camera {
+						  rotation 0 1 0 3.14159
               translation 0 0.072 0.0785
               name "Camera"
               windowPosition IS cameraWindowPosition

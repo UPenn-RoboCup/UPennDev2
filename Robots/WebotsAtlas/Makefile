@@ -1,17 +1,22 @@
-CWD= $(shell pwd)
+# Makefile used to build libraries
+include ../../../Makefile.inc
 
-all:: body camera kinematics 
+TARGETS = all clean
+.PHONY: $(TARGETS)
 
-body::
-	cd Body && make && cd $(CWD)
+LIBNAME=AtlasKinematics
 
-camera::
-	cd Camera && make && cd $(CWD)
+all:: kinematics
 
-kinematics::
-	cd Kinematics && MODE=$(MODE) make && cd $(CWD)
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
+%.o: %.cc
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
+%.o: %.c
+	$(CC) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
 
-clean::
-	cd Body && make clean && cd $(CWD)
-	cd Camera && make clean && cd $(CWD)
-	cd Kinematics && make clean && cd $(CWD)
+kinematics:: luaAtlasKinematics.o AtlasKinematics.o Transform.o
+	$(LD) $(LDFLAGS) -o $(LIBNAME).$(SHLIBEXT) $(LIBOPTS) $^ $(LIB_DIR) -lm
+
+clean:
+	rm -f *.$(SHLIBEXT) *.o

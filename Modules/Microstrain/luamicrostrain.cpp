@@ -1,7 +1,16 @@
+#ifdef _cplusplus
+extern "C" {
+#endif
+#include <lua.h>
+#include <lualib.h>
+#include <lauxlib.h>
+#ifdef _cplusplus
+}
+#endif
+
 #include <math.h>
 #include <stdint.h>
 #include "Microstrain.h"
-#include "luamicrostrain.h"
 
 Microstrain imu;
 
@@ -79,7 +88,7 @@ static int lua_microstrain_close(lua_State *L)
   return 0;
 }
 
-static const struct luaL_reg microstrain_functions [] =
+static const struct luaL_Reg microstrain_functions [] =
 {
   {"open", lua_microstrain_open},
   {"init_gyros", lua_microstrain_init_gyros},
@@ -93,6 +102,6 @@ static const struct luaL_reg microstrain_functions [] =
 extern "C"
 int luaopen_microstrain(lua_State *L)
 {
-  luaL_register(L, "microstrain", microstrain_functions);
+  luaL_register(L, "Microstrain", microstrain_functions);
   return 1;
 }

@@ -5,9 +5,6 @@
   g++ -arch i386 -o WebotsSaffirKinematics.dylib -bundle -undefined dynamic_lookup luaWebotsSaffirKinematics.pp SaffirKinematics.cc Transform.cc -lm
 */
 
-#include "SaffirKinematics.h"
-#include "luaSaffirKinematics.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -20,6 +17,7 @@ extern "C" {
 }
 #endif
 
+#include "SaffirKinematics.h"
 
 static void lua_pushvector(lua_State *L, std::vector<double> v) {
   int n = v.size();

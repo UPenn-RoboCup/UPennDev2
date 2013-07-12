@@ -1,7 +1,7 @@
 module(..., package.seeall);
 
 local controller = require('webots')
-local GameControlPacket = require('GameControlPacket')
+--local GameControlPacket = require('GameControlPacket')
 
 timeStep = controller.wb_robot_get_basic_time_step();
 channel = 13;

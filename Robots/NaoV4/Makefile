@@ -1,24 +1,28 @@
 CWD= $(shell pwd)
-
 ifeq ($(CTCDIR),)
   ifeq ($(CROSS),true)
-    CTCDIR=$(NaoqiCTC)
+    CTCDIR= $(NaoqiCTC)
   endif
 endif
+CHAIN= $(CTCDIR)
 
-export CTCDIR
+all: naoqi 
 
-all:
-	cd Body && make && cd $(CWD)
-	cd Camera && make && cd $(CWD)
-	cd GameControl && make && cd $(CWD)
-	cd Kinematics && make && cd $(CWD)
-#	cd Sound && make && cd $(CWD)
+naoqi:
+ifeq ($(CHAIN),)
+#	@echo Cross compilitation tool not specified. \
+#				Please download the ctc tool from \
+#				the aldebaran website and follow the \
+#				instructions to configure it for your system \
+
+	make -f Makefile.local
+else
+	rm -rf build
+	mkdir build
+	cd build && cmake -DCMAKE_TOOLCHAIN_FILE="$(CHAIN)/toolchain-atom.cmake" .. \
+		&& make && cd $(CWD)
+endif
 
 clean:
-	cd Body && make clean && cd $(CWD)
-	cd Camera && make clean && cd $(CWD)
-	cd Kinematics && make clean && cd $(CWD)
-	cd GameControl && make clean && cd $(CWD)
-#	cd Sound && make clean && cd $(CWD)
-
+	make -f Makefile.local clean	
+	rm -rf build

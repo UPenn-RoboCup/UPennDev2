@@ -1,5 +1,5 @@
-#ifndef THOROP_KINEMATICS_H_
-#define THOROP_KINEMATICS_H_
+#ifndef THOROP_KINEMATICS_HPP_
+#define THOROP_KINEMATICS_HPP_
 
 #include "Transform.h"
 #include <stdio.h>

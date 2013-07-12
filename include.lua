@@ -2,7 +2,7 @@ local handle = io.popen('pwd')
 local cwd = handle:read("*a"):gsub("%s+$", "")
 handle:close()
 local Webots = false
-local HOME = cwd:gsub('Run.*$','')
+local HOME = cwd:gsub('Player.*$','')
 HOME = HOME:gsub('Tools.*$','')
 HOME = HOME:gsub('Frameworks.*$','')
 HOME = HOME:gsub('Util.*$','')
@@ -28,28 +28,28 @@ package.path = HOME..'Config/?.lua;'..package.path
 package.path = HOME..'Memory/?.lua;'..package.path
 
 -- include Motion files to path
-package.path = HOME..'Run/Motion/?.lua;'..package.path
-package.path = HOME..'Run/Motion/keyframes/?.lua;'..package.path
-package.path = HOME..'Run/Motion/Walk/?.lua;'..package.path
-package.path = HOME..'Run/Motion/Arms/?.lua;'..package.path
+package.path = HOME..'Player/Motion/?.lua;'..package.path
+package.path = HOME..'Player/Motion/keyframes/?.lua;'..package.path
+package.path = HOME..'Player/Motion/Walk/?.lua;'..package.path
+package.path = HOME..'Player/Motion/Arms/?.lua;'..package.path
 
 -- include World files to the path
-package.path = HOME..'Run/World/?.lua;'..package.path
+package.path = HOME..'Player/World/?.lua;'..package.path
 
 --[[
-package.path = HOME..'Run/?.lua;'..package.path
-package.path = HOME..'Run/GameFSM/?.lua;'..package.path
-package.path = HOME..'Run/Lib/?.lua;'..package.path
-package.path = HOME..'Run/Test/?.lua;'..package.path
-package.path = HOME..'Run/Interaction/?.lua;'..package.path
-package.path = HOME..'Run/Vision/?.lua;'..package.path
-package.path = HOME..'Run/HeadFSM/?.lua;'..package.path
-package.path = HOME..'Run/Slam/?.lua;'..package.path
-package.path = HOME..'Run/Log/?.lua;'..package.path
-package.path = HOME..'Run/Dev/?.lua;'..package.path
-package.path = HOME..'Run/BodyFSM/?.lua;'..package.path
-package.path = HOME..'Run/Util/?.lua;'..package.path
-package.path = HOME..'Run/Config/?.lua;'..package.path
+package.path = HOME..'Player/?.lua;'..package.path
+package.path = HOME..'Player/GameFSM/?.lua;'..package.path
+package.path = HOME..'Player/Lib/?.lua;'..package.path
+package.path = HOME..'Player/Test/?.lua;'..package.path
+package.path = HOME..'Player/Interaction/?.lua;'..package.path
+package.path = HOME..'Player/Vision/?.lua;'..package.path
+package.path = HOME..'Player/HeadFSM/?.lua;'..package.path
+package.path = HOME..'Player/Slam/?.lua;'..package.path
+package.path = HOME..'Player/Log/?.lua;'..package.path
+package.path = HOME..'Player/Dev/?.lua;'..package.path
+package.path = HOME..'Player/BodyFSM/?.lua;'..package.path
+package.path = HOME..'Player/Util/?.lua;'..package.path
+package.path = HOME..'Player/Config/?.lua;'..package.path
 --]]
 
 -- include webots stuff
@@ -63,10 +63,10 @@ end
 
 -- include platform specific modules
 local Config = require 'Config'
-local Platform = dofile(HOME..'Platforms/'..Config.platform.name..'/Platform.lua')
+local Platform = dofile(HOME..'Robots/'..Config.platform.name..'/Platform.lua')
 for i = 1, #Platform.path do
-  package.path = HOME..'Platforms/'..Config.platform.name..Platform.path[i]..package.path
+  package.path = HOME..'Robots/'..Config.platform.name..Platform.path[i]..package.path
 end
 for i = 1, #Platform.cpath do
-  package.cpath = HOME..'Platforms/'..Config.platform.name..Platform.cpath[i]..package.cpath
+  package.cpath = HOME..'Robots/'..Config.platform.name..Platform.cpath[i]..package.cpath
 end

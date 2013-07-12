@@ -7,9 +7,14 @@ EXT_TERM=0
 LUA=lua
 #LUA=luajit
 
-echo $OSTYPE
-echo `which xterm`
-echo $PATH
+# Go into the Player directory
+cd Player
+#echo $PWD
+#echo $PATH
+#echo $OSTYPE
+#echo `which xterm`
+
+# Set up the right settings for a mac
 COMPUTER=`uname`
 export COMPUTER
 if [ "$COMPUTER" = "Darwin" ]
@@ -24,17 +29,16 @@ TERM=`which xterm`
 # Otherwise, LD_LIBRARY_PATH gets unset in xterm
 export PLAYER_ID=$1
 export TEAM_ID=$2
+export PLATFORM=webots
 
-PLATFORM=webots
-export PLATFORM
-
+# Spawn the right terminal
 if [ "$EXT_TERM" -gt "0" ]
 then
   # In separate xterms
-  exec $TERM -l -e "$LUA ../Run/run_simulation.lua"
+  exec $TERM -l -e "$LUA Test/test_ladder.lua"
 else
   # In webots console
-  exec $LUA ../Run/run_simulation.lua
+  exec $LUA Test/test_ladder.lua
 fi
 
 #exec luajit -l controller start.lua

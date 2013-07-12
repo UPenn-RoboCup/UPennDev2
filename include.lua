@@ -27,6 +27,9 @@ package.path = HOME..'Config/?.lua;'..package.path
 -- include Shared Memory files to path
 package.path = HOME..'Memory/?.lua;'..package.path
 
+-- include Robot Agnostic wrappers
+package.path = HOME..'Player/Dev/?.lua;'..package.path
+
 -- include Motion files to path
 package.path = HOME..'Player/Motion/?.lua;'..package.path
 package.path = HOME..'Player/Motion/keyframes/?.lua;'..package.path

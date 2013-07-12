@@ -4,26 +4,24 @@ dofile'../include.lua'
 
 local carray = require 'carray'
 local Config = require('Config')
-local Body = require(Config.dev.body)
+require'Kinematics'
+require'Body'
+require'Team'
 local Speak = require('Speak')
 local Motion = require('Motion')
 local vector = require('vector')
 local webots = require'webots'
+local mcm = require 'mcm'
+--To receive the GPS coordinates from objects
+local wcm = require 'wcm'
+-- Arms
+
+local Transform = require 'Transform'
 
 -- Laser getting
 --local WebotsLaser = require 'WebotsLaser'
 --print( "LIDAR Dim:", WebotsLaser.get_width(), WebotsLaser.get_height())
 --nlidar_readings = WebotsLaser.get_width() * WebotsLaser.get_height();
-
-local mcm = require 'mcm'
-
--- Arms
-local Kinematics = require ('Kinematics')
-local Transform = require 'Transform'
-
-
-local Team = require(Config.dev.team) --To receive the GPS coordinates from objects
-local wcm = require 'wcm'
 
 
 --Arm target transforms
@@ -75,11 +73,12 @@ if (string.find(Config.platform.name,'Webots')) then
   print('On webots!')
   is_webots = true;
 end
-Team.entry();
+
+Team.entry()
 
 
 -- Key Input
-if is_webots  then
+if is_webots then
   webots.wb_robot_keyboard_enable( 100 );
 else
   local getch = require 'getch'
@@ -692,7 +691,7 @@ function update()
 
   walk.active = false;
 
-  -- Update State Machines 
+  -- Update State Machines
   if arm_initing>0 then
     Motion.update();
   end

@@ -13,11 +13,6 @@ Viewpoint {
   orientation -0.570406 -0.772963 -0.277786 1.12441
   position -1.85696 2.59764 1.28767
 }
-Background {
-  skyColor [
-    0.678431 0.847059 0.901961
-  ]
-}
 DirectionalLight {
   ambientIntensity 1.6
   direction -0.5 -2 -0.5
@@ -70,6 +65,7 @@ WoodBox {
 }
 THOROP_Robotis {
   translation 0 1.168 0
-  controller "darwin-op_team_0"
-  controllerArgs "0 23"
+#  controller "darwin-op_team_0"
+  controller "void"
+  controllerArgs "0 98"
 }

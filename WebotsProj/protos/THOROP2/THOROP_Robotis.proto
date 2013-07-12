@@ -19,7 +19,6 @@ PROTO THOROP_Robotis [
 	field SFFloat    cameraFov 1.0472
 #  field SFInt32    channel 0
 ]
-
 {
 Robot {
   translation IS translation
@@ -82,6 +81,31 @@ Robot {
         27.925 1024 0
       ]
     }
+    DEF Chest_Lidar_yaw Servo {
+      translation 0 -0.05 0.1
+      rotation 0 1 0 1.046 #60 deg
+      children [
+        Solid{
+          rotation 0 0 1 1.57
+	        children [ 
+            hokuyo{
+              name "ChestLidar"
+						}
+          ]
+          physics Physics{
+					  density -1
+				    mass 0.2
+				  } 
+        }
+      ]
+      physics Physics {
+        density -1
+        mass 0.2
+      }
+      maxVelocity 16
+      maxForce 40
+    }
+
     DEF Right_shoulder_pitch Servo {
       translation -0.216 -0.008 0
       rotation -1 0 0 0
@@ -1078,6 +1102,12 @@ Robot {
           translation 0 0.161 0
           rotation -1 0 0 -0.17
           children [
+            hokuyo{
+						  rotation 0 1 0 3.14159
+#              translation 0 0.072 0.0785
+              translation 0 0.1 0
+              name "HeadLidar"
+						}
             Camera {
 						  rotation 0 1 0 3.14159
               translation 0 0.072 0.0785
@@ -1087,6 +1117,7 @@ Robot {
               width IS cameraWidth
               height IS cameraHeight
               pixelSize IS cameraPixelSize
+              near 0.02
             }
             DEF CAM Transform {
               scale 0.001 0.001 0.001

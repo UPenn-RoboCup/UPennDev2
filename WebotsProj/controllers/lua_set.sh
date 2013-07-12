@@ -35,10 +35,12 @@ export PLATFORM=webots
 if [ "$EXT_TERM" -gt "0" ]
 then
   # In separate xterms
-  exec $TERM -l -e "$LUA Test/test_ladder.lua"
+#  exec $TERM -l -e "$LUA Test/test_ladder.lua"
+  exec $TERM -l -e "$LUA Test/test_walk_webots.lua"
 else
   # In webots console
-  exec $LUA Test/test_ladder.lua
+#  exec $LUA Test/test_ladder.lua
+  exec $LUA Test/test_walk_webots.lua
 fi
 
 #exec luajit -l controller start.lua

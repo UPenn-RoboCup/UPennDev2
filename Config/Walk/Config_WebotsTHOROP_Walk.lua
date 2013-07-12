@@ -108,12 +108,8 @@ walk.footX= 0.01;
 walk.footY = 0.09;
 walk.supportX = 0;
 walk.supportY = 0.0;
---walk.qLArm = math.pi/180*vector.new({110, 12, -0, -40,0,0});
---walk.qRArm = math.pi/180*vector.new({110, -12, 0, -40,0,0});
-
-walk.qLArm = math.pi/180*vector.new({110, 0, -0, -40,0,0});
-walk.qRArm = math.pi/180*vector.new({110, -0, 0, -40,0,0});
-
+walk.qLArm = math.pi/180*vector.new({110, 12, -0, -40,0,0});
+walk.qRArm = math.pi/180*vector.new({110, -12, 0, -40,0,0});
 
 walk.qLArmKick = math.pi/180*vector.new({110, 12, -0, -40,0,0});
 walk.qRArmKick = math.pi/180*vector.new({110, -12, 0, -40,0,0});
@@ -210,3 +206,12 @@ walk.velLimitY={-.20,.20};
 walk.velLimitA={-.3,.3};
 walk.velDelta={0.15,0.10,0.3} 
 walk.velXHigh = 0.30;
+
+
+------------------------------------
+--Robotis THOR-OP values
+
+walk.stepHeight = 0.052;
+walk.supportY = 0.02;
+walk.footY = 0.10;
+walk.hipRollCompensation = 1*math.pi/180;

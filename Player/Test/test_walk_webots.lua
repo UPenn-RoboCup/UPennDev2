@@ -1,21 +1,16 @@
 dofile'../include.lua'
 
 local Config = require('Config');
-smindex = 0;
-package.path = cwd..'/BodyFSM/'..Config.fsm.body[smindex+1]..'/?.lua;'..package.path;
-package.path = cwd..'/HeadFSM/'..Config.fsm.head[smindex+1]..'/?.lua;'..package.path;
-
 local shm = require('shm')
-local Body = require('Body')
+require('Body')
 local vector = require('vector')
-local getch = require('getch')
 local Motion = require('Motion');
-local walk = require('walk');
+require('walk');
 local dive = require('dive');
 local Speak = require('Speak')
 local util = require('util')
 darwin = false;
-webots = false;
+is_webots = false;
 
 local grip = require('grip')
 local crawl = require('crawl')
@@ -28,11 +23,17 @@ end
 
 -- Enable Webots specific
 if (string.find(Config.platform.name,'Webots')) then
-  webots = true;
+  is_webots = true;
+  webots = require('webots')
 end
 
-getch.enableblock(1);
---unix.usleep(1E6*1.0);
+-- Key Input
+if is_webots then
+  webots.wb_robot_keyboard_enable( 100 );
+else
+  local getch = require 'getch'
+  getch.enableblock(1);
+end
 
 
 -- initialize state machines
@@ -41,7 +42,6 @@ Motion.entry();
 
 Body.set_head_hardness({0.4,0.4});
 
-controller.wb_robot_keyboard_enable(100);
 -- main loop
 count = 0;
 vcmcount=0;
@@ -72,13 +72,18 @@ Body.set_lleg_command({0,0,0,0,0,0,0,0,0,0,0,0})
 
 
 function process_keyinput()
-  local str = controller.wb_robot_keyboard_get_key();
-  if str>0 then
+
+  if is_webots then
+    str = webots.wb_robot_keyboard_get_key()
     byte = str;
-	-- Webots only return captal letter number
-	if byte>=65 and byte<=90 then
-		byte = byte + 32;
-	end
+    -- Webots only return captal letter number
+    if byte>=65 and byte<=90 then
+      byte = byte + 32;
+    end
+  else
+    str  = getch.get();
+    byte = string.byte(str,1);
+  end
 
   -- Walk velocity setting
 --	if byte==string.byte("i") then	targetvel[1]=targetvel[1]+0.02;
@@ -205,8 +210,6 @@ function process_keyinput()
 --	walk.set_velocity(unpack(targetvel));
 	Motion.set_walk_velocity(unpack(targetvel));
         print("Command velocity:",unpack(walk.velCommand))
-
-  end
 
 end
 

@@ -5,25 +5,25 @@ PWD= $(subst /,\/,$(CWD)/Player/Lib)
 
 all none: modules
 	@for dir in `ls Robots`; do \
-	printf "  %b \n" $(INFOCOLOR)$$dir$(ENDCOLOR) ; \
+	printf "  %b \n" $$dir ; \
 	$(MAKE) -C Robots/$$dir; \
 	done
 	
 %:
-	@printf "  %b %s\n" $(INFOCOLOR)Making$(ENDCOLOR) $@;
+	@printf "  %b %s\n" Making $@;
 	@cd Robots/Transform && make transform && cd $(CWD)
 	@cd Robots/$@ && make && cd $(CWD)
-	@printf "  %b to %s\n" $(INFOCOLOR)Installing$(ENDCOLOR) $(PWD);
+	@printf "  %b to %s\n" Installing $(PWD);
 	
 Webots%:
-	@printf "  %b %s %s\n" $(INFOCOLOR)Making$(ENDCOLOR) Webots $@;
+	@printf "  %b %s %s\n" Making Webots $@;
 	@cd Modules/Webots && make && cd $(CWD)
 	@cd Robots/Transform && make transform && cd $(CWD)
 	@cd Robots/$@ && make && cd $(CWD)
-	@printf "  %b for %s\n" $(INFOCOLOR)Configuring$(ENDCOLOR) $@;
+	@printf "  %b for %s\n" Configuring $@;
 	@rm -f $(CWD)/Config/Config.lua
 	@cd $(CWD)/Config && ln -s Config_$@.lua Config.lua && cd $(CWD)
-	@printf "  %b to %s\n" $(INFOCOLOR)Installing$(ENDCOLOR) $(PWD);
+	@printf "  %b to %s\n" Installing $(PWD);
 
 #naoqi:
 #	@echo "Compiling Custom Naoqi Modules...\n"
@@ -35,17 +35,17 @@ Webots%:
 	
 modules:
 	@for dir in `ls Modules`; do \
-	printf "  %b \n" $(INFOCOLOR)$$dir$(ENDCOLOR) ; \
+	printf "  %b \n" $$dir ; \
 	$(MAKE) -C Modules/$$dir clean; \
 	$(MAKE) -C Modules/$$dir; \
 	done
 
 clean:
 	@for dir in `ls Modules`; do \
-	printf "  %b \n" $(INFOCOLOR)$$dir$(ENDCOLOR) ; \
+	printf "  %b \n" $$dir ; \
 	$(MAKE) -C Modules/$$dir clean; \
 	done
 	@for dir in `ls Robots`; do \
-	printf "  %b \n" $(INFOCOLOR)$$dir$(ENDCOLOR) ; \
+	printf "  %b \n" $$dir ; \
 	$(MAKE) -C Robots/$$dir clean; \
 	done

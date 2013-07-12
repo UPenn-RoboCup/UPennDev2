@@ -5,9 +5,6 @@
   g++ -arch i386 -o AtlasKinematics.dylib -bundle -undefined dynamic_lookup luaAtlasKinematics.pp AtlasKinematics.cc Transform.cc -lm
 */
 
-#include "AtlasKinematics.h"
-#include "luaAtlasKinematics.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -19,6 +16,8 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
+
+#include "AtlasKinematics.hpp"
 
 
 static void lua_pushvector(lua_State *L, std::vector<double> v) {

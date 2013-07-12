@@ -1,4 +1,4 @@
-#include "AtlasKinematics.h"
+#include "AtlasKinematics.hpp"
 #include "Transform.h"
 #include <math.h>
 #include <stdio.h>

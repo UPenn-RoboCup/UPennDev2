@@ -65,7 +65,7 @@ WoodBox {
 }
 THOROP_Robotis {
   translation 0 1.168 0
-#  controller "darwin-op_team_0"
-  controller "void"
+  controller "thor"
+#  controller "void"
   controllerArgs "0 98"
 }

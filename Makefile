@@ -11,15 +11,15 @@ all none:
 	
 %:
 	$(V)printf "  %b %s\n" $(INFOCOLOR)Making$(ENDCOLOR) $@;
-	$(V)cd Platforms/Transform && make transform && cd $(CWD)
-	$(V)cd Platforms/$@ && make && cd $(CWD)
+	$(V)cd Robots/Transform && make transform && cd $(CWD)
+	$(V)cd Robots/$@ && make && cd $(CWD)
 	$(V)printf "  %b to %s\n" $(INFOCOLOR)Installing$(ENDCOLOR) $(PWD);
 	
 Webots%:
 	$(V)printf "  %b %s %s\n" $(INFOCOLOR)Making$(ENDCOLOR) Webots $@;
 	$(V)cd Modules/Webots && make && cd $(CWD)
-	$(V)cd Platforms/Transform && make transform && cd $(CWD)
-	$(V)cd Platforms/$@ && make && cd $(CWD)
+	$(V)cd Robots/Transform && make transform && cd $(CWD)
+	$(V)cd Robots/$@ && make && cd $(CWD)
 	$(V)printf "  %b for %s\n" $(INFOCOLOR)Configuring$(ENDCOLOR) $@;
 	$(V)rm -f $(CWD)/Config/Config.lua
 	$(V)cd $(CWD)/Config && ln -s Config_$@.lua Config.lua && cd $(CWD)
@@ -37,5 +37,6 @@ modules:
 	cd Modules
 	for dir in `ls Modules`; do \
 		echo $$dir ;\
+	$(MAKE) -C Modules/$$dir clean; \
 	$(MAKE) -C Modules/$$dir; \
 	done

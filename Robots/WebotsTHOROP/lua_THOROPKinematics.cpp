@@ -3,7 +3,7 @@
 */
 
 #include <lua.hpp>
-#include "THOROPKinematics.h"
+#include "THOROPKinematics.hpp"
 
 static void lua_pushvector(lua_State *L, std::vector<double> v) {
 	int n = v.size();

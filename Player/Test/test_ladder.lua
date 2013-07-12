@@ -1,35 +1,28 @@
 -- CHARLI laser testing
 print('Testing ARMS')
-
-cwd = cwd or os.getenv('PWD')
-package.path = cwd.."/?.lua;"..package.path;
-local init = require('init')
+dofile'../include.lua'
 
 local carray = require 'carray'
-
 local Config = require('Config')
-local Body = require('Body')
+local Body = require(Config.dev.body)
 local Speak = require('Speak')
 local Motion = require('Motion')
 local vector = require('vector')
+local webots = require'webots'
 
 -- Laser getting
 --local WebotsLaser = require 'WebotsLaser'
 --print( "LIDAR Dim:", WebotsLaser.get_width(), WebotsLaser.get_height())
 --nlidar_readings = WebotsLaser.get_width() * WebotsLaser.get_height();
 
-
-local rcm = require 'rcm'
---
 local mcm = require 'mcm'
 
 -- Arms
-local pickercm = require 'pickercm'
 local Kinematics = require ('Kinematics')
 local Transform = require 'Transform'
 
 
-local Team = require 'Team' --To receive the GPS coordinates from objects
+local Team = require(Config.dev.team) --To receive the GPS coordinates from objects
 local wcm = require 'wcm'
 
 
@@ -71,7 +64,7 @@ Body.set_l_gripper_hardness({1,1});
 Body.set_r_gripper_hardness({1,1});
 
 -- Initialize Variables
-webots = false;
+is_webots = false;
 teamID   = Config.game.teamNumber;
 playerID = Config.game.playerID;
 print '=====================';
@@ -80,14 +73,14 @@ print '=====================';
 targetvel=vector.zeros(3);
 if (string.find(Config.platform.name,'Webots')) then
   print('On webots!')
-  webots = true;
+  is_webots = true;
 end
 Team.entry();
 
 
 -- Key Input
-if( webots ) then
-  controller.wb_robot_keyboard_enable( 100 );
+if is_webots  then
+  webots.wb_robot_keyboard_enable( 100 );
 else
   local getch = require 'getch'
   getch.enableblock(1);
@@ -556,8 +549,8 @@ end
 
 -- Process Key Inputs
 function process_keyinput()
-  if( webots ) then
-    str = controller.wb_robot_keyboard_get_key()
+  if is_webots then
+    str = webots.wb_robot_keyboard_get_key()
     byte = str;
     -- Webots only return captal letter number
     if byte>=65 and byte<=90 then

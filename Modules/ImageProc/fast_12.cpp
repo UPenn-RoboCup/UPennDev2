@@ -71,7 +71,7 @@ int fast12_corner(const byte* im,
 
       if (nA >= 12) {
 	for (int j = 0; j < nNeighbors; j++) {
-	  if (maskA & signature[j] == signature[j]) {
+	  if ( (maskA & signature[j]) == signature[j]) {
 	    xc.push_back(ix);
 	    yc.push_back(iy);
 	    break;
@@ -80,7 +80,7 @@ int fast12_corner(const byte* im,
       }
       else if (nB >= 12) {
 	for (int j = 0; j < nNeighbors; j++) {
-	  if (maskB & signature[j] == signature[j]) {
+	  if ( (maskB & signature[j]) == signature[j]) {
 	    xc.push_back(ix);
 	    yc.push_back(iy);
 	    break;

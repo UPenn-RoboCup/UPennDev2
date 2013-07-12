@@ -8,9 +8,9 @@ extern "C" {
 }
 #endif
 
+#include "Microstrain.h"
 #include <math.h>
 #include <stdint.h>
-#include "Microstrain.h"
 
 Microstrain imu;
 

@@ -9,7 +9,7 @@ local vector = require('vector')
 
 --local log = io.open('Logs/pgain_02_squat_4s_imu.txt', 'w+')
 
-local imu = require('microstrain')
+local imu = require('Microstrain')
 imu.open('/dev/ttyACM0')
 imu.set_continuous(0)
 

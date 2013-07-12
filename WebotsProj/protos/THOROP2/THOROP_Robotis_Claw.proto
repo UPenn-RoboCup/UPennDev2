@@ -98,6 +98,7 @@ Robot {
 				  } 
         }
       ]
+      name "ChestLidar"
       physics Physics {
         density -1
         mass 0.2
@@ -130,86 +131,79 @@ Robot {
                     DEF Right_wrist_yaw Servo {
                       translation 0 -0.216 -0.03
                       children [
-                        DEF Left_wrist_roll Servo {
+                        DEF Right_wrist_roll Servo {
                           rotation 0 0 -1 0
                           children [
 
-#                           DEF Right_gripper Transform {
-														Solid{
-							                translation 0 0 0
-                              rotation 1 0 0 -1.57
-#                             scale 0.001 0.001 0.001
-                              children [
-#												      	RIGHT_GRIPPER{}
 
 ######################################################################
 # RGRIP START
 
               Transform{   #Palm
-                translation 0 0 -0.065
+                translation 0 -0.065 0
                 children [
-                  Shape{geometry Box {size 0.02 0.05 0.05}}
+                  Shape{geometry Box {size 0.05 0.065 0.02}}
                 ]
               }
 			        DEF r_wrist_grip1 Servo{ #First finger for gripper
-      			    translation 0 0.02 -0.04
-			          rotation 1 0 0 0.78
+      			    translation 0.02 -0.04 0
+			          rotation 0 0 1 0.78
 			          name "r_wrist_grip1"
 			          children[
 			            Transform{
-		                translation 0 0 -0.06
+		                translation 0 -0.06 0
                     children [
-                      Shape{geometry Box {size 0.02 0.02 0.12}}
+                      Shape{geometry Box {size 0.02 0.12 0.02}}
 			              ]
                   }
       			      Transform{
-                    translation 0 -0.025 -0.12
+                    translation -0.025 -0.12 0
                     children [
-                      Shape{geometry Box {size 0.02 0.05 0.02}}
+                      Shape{geometry Box {size 0.05 0.02 0.02}}
 			              ]
                   }
       			    ]
                 boundingObject Group{
                   children[
                     Transform {
-                      translation 0 0 -0.06
-                      children [Box {size 0.02 0.02 0.12}]
+                      translation 0 -0.06 0
+                      children [Box {size 0.02 0.12 0.02}]
                     }
 		                Transform {
-                      translation 0 -0.025 -0.12
-                      children [Box {size 0.02 0.05 0.02}]
+                      translation -0.025 -0.12 0
+                      children [Box {size 0.05 0.02 0.02}]
                     }
                   ]
                }
                physics Physics {}
              }
 						 DEF r_wrist_grip2 Servo{ #Second finger for gripper
-		           translation 0 -0.02 -0.08
-     		       rotation 1 0 0 0.78
+		           translation -0.02 -0.08 0
+     		       rotation 0 0 1 0.78
 			         name "r_wrist_grip2"
       		     children[
 	               Transform{
-                   translation 0 0 -0.06
+                   translation 0 -0.06 0
                    children [
-                     Shape{geometry Box {size 0.02 0.02 0.12}}
+                     Shape{geometry Box {size 0.02 0.12 0.02}}
      			         ]
                  }
           			 Transform{
-                   translation 0 0.025 -0.12
+                   translation 0.025 -0.12 0
                    children [
-                     Shape{geometry Box {size 0.02 0.05 0.02}}
+                     Shape{geometry Box {size 0.05 0.02 0.02}}
                    ]
                  }
 		          ]
               boundingObject Group{
                 children[
                   Transform{
-                    translation 0 0 -0.06
-                    children [Box {size 0.02 0.02 0.12}]
+                    translation 0 -0.06 0
+                    children [Box {size 0.02 0.12 0.02}]
                   }
                   Transform{
-                    translation 0 0.025 -0.12
-                    children [Box {size 0.02 0.05 0.02}]
+                    translation 0.025 -0.12 0
+                    children [Box {size 0.05 0.02 0.02}]
                   }
                 ]
               }
@@ -217,9 +211,6 @@ Robot {
            }
 
 
-
-                              ]
-                            }
 # RGRIP END
 ######################################################################
 
@@ -227,27 +218,6 @@ Robot {
 
                           ]
                           name "RightWristRoll"
-                          boundingObject Group {
-                            children [
-                              Transform {
-                                translation 0.01 -0.14 0
-                                rotation 0 0 1 0.7854
-                                children [
-                                  Box {
-                                    size 0.1 0.1 0.1
-                                  }
-                                ]
-                              }
-                              Transform {
-                                translation 0 -0.033 0
-                                children [
-                                  Box {
-                                    size 0.06 0.135 0.1
-                                  }
-                                ]
-                              }
-                            ]
-                          }
                           physics Physics {
                             density -1
                             mass 0.4
@@ -401,35 +371,100 @@ Robot {
                         DEF Left_wrist_roll Servo {
                           rotation 0 0 -1 0
                           children [
-                            DEF Left_gripper Transform {
-                              scale 0.001 0.001 0.001
-                              children [
-                               LEFT_GRIPPER{}                                
-                              ]
-                            }
+
+
+###########################################################
+## LGRIP START
+
+                   Transform{   #Palm
+                     translation 0 -0.065 0 
+                     children [
+                       Shape{geometry Box {size 0.05 0.065 0.02}}
+                     ]
+                   }
+                   DEF l_wrist_grip1 Servo{ #First finger for gripper
+					          translation 0.02 -0.08 0
+          					rotation 0 0 1 -0.78
+					          name "l_wrist_grip1"
+					          children[
+					            Transform{
+                        translation 0 -0.06 0
+                        children [
+                          Shape{geometry Box {size 0.02 0.12 0.02}}
+          					    ]
+                      }
+					            Transform{
+                        translation -0.025 -0.12 0
+                        children [
+                          Shape{geometry Box {size 0.05 0.02 0.02}}
+          					    ]
+                      }
+					          ]
+                    boundingObject Group{
+                      children[
+                        Transform {
+                          translation 0 -0.06 0
+                          children [Box {size 0.02 0.12 0.02}]
+                        }
+                        Transform {
+                          translation -0.025 -0.12 0
+                          children [Box {size 0.05 0.02 0.02}]
+                        }
+                      ]
+                    }
+                    physics Physics {}
+					        }
+                  DEF l_wrist_grip2 Servo{ #Second finger for gripper
+					          translation -0.02 -0.04 0
+          					rotation 0 0 1 -0.78
+					          name "l_wrist_grip2"
+					          children[
+					            Transform{
+                        translation 0 -0.06 0
+                        children [
+                          Shape{geometry Box {size 0.02 0.12 0.02}}
+           						  ]
+                      }
+					            Transform{
+                        translation 0.025 -0.12 0
+                        children [
+                          Shape{geometry Box {size 0.05 0.02 0.02}}
+          					    ]
+					            }
+					          ]
+                    boundingObject Group{
+                      children[
+                        Transform {
+                          translation 0 -0.06 0
+                            children [Box {size 0.02 0.12 0.02}]
+                        }
+                        Transform {
+                          translation 0.025 -0.12 0
+                          children [Box {size 0.05 0.02 0.02}]
+                        }
+                      ]
+                    }
+                    physics Physics {}
+        }
+
+
+
+
+
+###########################################################
+
+#                            DEF Left_gripper Transform {
+#                              scale 0.001 0.001 0.001
+#                              children [
+#                               LEFT_GRIPPER{}                                
+#                              ]
+#                            }
+
+
                           ]
+
+
                           name "LeftWristRoll"
-                          boundingObject Group {
-                            children [
-                              Transform {
-                                translation -0.01 -0.14 0
-                                rotation 0 0 1 0.7854
-                                children [
-                                  Box {
-                                    size 0.1 0.1 0.1
-                                  }
-                                ]
-                              }
-                              Transform {
-                                translation 0 -0.033 0
-                                children [
-                                  Box {
-                                    size 0.06 0.135 0.1
-                                  }
-                                ]
-                              }
-                            ]
-                          }
                           physics Physics {
                             density -1
                             mass 0.4
@@ -834,7 +869,7 @@ Robot {
                   maxForce 100
                   controlP 16
                 }
-                DEF Left_hip_yaw Transform {
+                DEF Right_hip_yaw Transform {
                   translation 0 0.063 0
                   scale 0.001 0.001 0.001
                   children [

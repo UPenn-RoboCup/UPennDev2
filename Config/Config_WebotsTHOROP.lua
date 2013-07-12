@@ -15,7 +15,8 @@ util.LoadConfig(params, platform)
 
 -- Device Interface Libraries
 dev = {};
-dev.body = 'WebotsTHOROPBody'; 
+--dev.body = 'WebotsTHOROPBody'; 
+dev.body = 'WebotsTHOROP2Body'; 
 dev.camera = 'WebotsOPCam';
 dev.kinematics = 'THOROPKinematics';
 dev.game_control='WebotsGameControl';

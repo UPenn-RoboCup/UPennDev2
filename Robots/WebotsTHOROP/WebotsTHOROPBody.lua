@@ -1,5 +1,5 @@
 module(..., package.seeall);
-local controller = require('webots');
+controller = require('webots');
 
 controller.wb_robot_init();
 timeStep = controller.wb_robot_get_basic_time_step();
@@ -262,11 +262,15 @@ function update()
       else
 	    actuator.position[i] = actuator.command[i];
       end
+
       controller.wb_servo_set_position(tags.joints[i],
                                         actuator.position[i]);
+
     end
   end
+	print('update imu')
   update_IMU();
+	print'done imu'
   if (controller.wb_robot_step(timeStep) < 0) then
     --Shut down controller:
     os.exit();
@@ -303,6 +307,7 @@ function update_IMU()
   end
 
   compass=get_sensor_compass();
+	print'done compass'
   imuAngle[3] = math.atan2(compass[2],compass[1]);
 
 --  print("Robot RPY:",imuAngle[1]*180/math.pi,imuAngle[2]*180/math.pi,imuAngle[3]*180/math.pi);
@@ -349,9 +354,11 @@ end
 
 function get_sensor_compass()
 --Checked with THOROP model and the world
+compass = vector.zeros(3)
+if tags.compass>0 then
   compass = controller.wb_compass_get_values(tags.compass);
-  return {compass[1],-compass[2],compass[3]};
-
+end
+return {compass[1],-compass[2],compass[3]};
 end
 
 

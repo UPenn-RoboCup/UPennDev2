@@ -17,28 +17,9 @@ This is a work of the University of Pennsylvania along with help from:
   * RoMeLa at Virginia Tech: http://www.romela.org/main/Robotics_and_Mechanisms_Laboratory
 
 
-Documentation:
-  The GitHub Wiki hosts the main source of documentation for this project:
-    - https://github.com/UPenn-RoboCup/UPennalizers/wiki 
-
-  Faculty and students at the IPRE project have been adding additional documentation
-  on their site:
-    - http://calicoproject.org/Luar
-
-
-Mailing List:
-  Anyone using the project is invited to join the mailing list for additional discussion.
-    To register visit: http://myro.roboteducation.org/mailman/listinfo/luar-users
-
-  Thank you to IPRE for setting this up.
-
-
 Copyright:
-  All code sources associated with this project are freely available under the
-  GPLv3 license.
-
+  All code sources associated with this project are (c) 2013 Stephen McGill, Seung-Joon Yi, Daniel D. Lee, Yida Zhang, Spyridon Karachalios, Qin He.  Exceptions are noted on a per file basis.
 
 Contact Information:
-  UPenn EMail:      upennalizers@gmail.com
+  UPenn E-mail:      upennalizers@gmail.com
   UPenn Website:    https://fling.seas.upenn.edu/~robocup/wiki/index.php
-

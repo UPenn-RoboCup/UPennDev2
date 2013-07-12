@@ -5,8 +5,6 @@
   g++ -arch i386 -o GenericKinematics.dylib -bundle -undefined dynamic_lookup luaGenericKinematics.pp GenericKinematics.cc Transform.cc -lm
 */
 
-#include "HuboKinematics.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -18,6 +16,8 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
+
+#include "HuboKinematics.hpp"
 
 
 static void lua_pushvector(lua_State *L, std::vector<double> v) {

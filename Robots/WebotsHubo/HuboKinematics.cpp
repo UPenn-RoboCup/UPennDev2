@@ -1,4 +1,4 @@
-#include "HuboKinematics.h"
+#include "HuboKinematics.hpp"
 #include "Transform.h"
 #include <math.h>
 #include <stdio.h>

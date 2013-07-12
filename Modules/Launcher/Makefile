@@ -1,6 +1,8 @@
 ifeq ($(shell uname),Darwin)
 all:
 	@echo "No Mac USB API"
+clean:
+	@echo "No cleaning needed"
 else
 LIBNAME=launcher
 include ../../Makefile.inc

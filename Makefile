@@ -1,25 +1,17 @@
 # Master Makefile to compile all Lua/C++ libraries
 CWD= $(shell pwd)
 PWD= $(subst /,\/,$(CWD)/Player/Lib)
-.PHONY: all none clean modules robots
+.PHONY: all none clean transform modules robots
 
 all none: modules robots
-	
+
 %:
-	@printf "  %b %s\n" Making $@;
-	@cd Robots/Transform && make transform && cd $(CWD)
+	@cd Robots/Transform && make && cd $(CWD)
+	@printf "  %s %s\n" Making $@;
 	@cd Robots/$@ && make && cd $(CWD)
-	@printf "  %b to %s\n" Installing $(PWD);
-	
-Webots%:
-	@printf "  %b %s %s\n" Making Webots $@;
-	@cd Modules/Webots && make && cd $(CWD)
-	@cd Robots/Transform && make transform && cd $(CWD)
-	@cd Robots/$@ && make && cd $(CWD)
-	@printf "  %b for %s\n" Configuring $@;
+	@printf "  %s %s\n" Configuring $@;
 	@rm -f $(CWD)/Config/Config.lua
-	@cd $(CWD)/Config && ln -s Config_$@.lua Config.lua && cd $(CWD)
-	@printf "  %b to %s\n" Installing $(PWD);
+	@ln -s $(CWD)/Config/Config_$@.lua $(CWD)/Config/Config.lua
 
 #naoqi:
 #	@echo "Compiling Custom Naoqi Modules...\n"
@@ -28,7 +20,7 @@ Webots%:
 #	cd $(NAOQIDIR) && make && cd $(CWD)
 #	sed -i -e 's/$(PWD)/HOME/g' $(NAOQIDIR)/src/dcmprocess.cpp
 #	@echo "\n"
-	
+
 modules:
 	@for dir in `ls Modules`; do \
 	printf "  %b \n" $$dir ; \
@@ -36,7 +28,9 @@ modules:
 	$(MAKE) -C Modules/$$dir; \
 	done
 
+# Must make transform first
 robots:
+	@cd Robots/Transform && make && cd $(CWD)
 	@for dir in `ls Robots`; do \
 	printf "  %b \n" $$dir ; \
 	$(MAKE) -C Robots/$$dir clean; \

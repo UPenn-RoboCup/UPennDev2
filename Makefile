@@ -1,7 +1,7 @@
 # Master Makefile to compile all Lua/C++ libraries
 CWD= $(shell pwd)
 PWD= $(subst /,\/,$(CWD)/Player/Lib)
-.PHONY: all none clean transform modules robots
+.PHONY: all none clean transform modules robots gazebo
 
 all none: modules robots
 
@@ -35,6 +35,12 @@ robots:
 	printf "  %b \n" $$dir ; \
 	$(MAKE) -C Robots/$$dir clean; \
 	$(MAKE) -C Robots/$$dir; \
+	done
+
+gazebo:
+	@for dir in `ls Gazebo`; do \
+	printf "  %b \n" $$dir ; \
+	$(MAKE) -C Gazebo/$$dir; \
 	done
 
 clean:

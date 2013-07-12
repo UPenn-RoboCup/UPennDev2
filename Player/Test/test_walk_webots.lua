@@ -1,6 +1,4 @@
-cwd = cwd or os.getenv('PWD')
-package.path = cwd.."/?.lua;"..package.path;
-local init = require('init')
+dofile'../include.lua'
 
 local Config = require('Config');
 smindex = 0;

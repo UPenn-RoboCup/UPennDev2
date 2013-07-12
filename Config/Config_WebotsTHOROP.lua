@@ -1,6 +1,6 @@
 module(..., package.seeall);
 local util = require('util')
-local parse_hostname = require('parse_hostname')
+--local parse_hostname = require('parse_hostname')
 local vector = require('vector')
 local os = require('os')
 

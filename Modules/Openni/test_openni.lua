@@ -25,6 +25,11 @@ NITE_JOINT_RIGHT_FOOT = 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15
 local test_joint = NITE_JOINT_RIGHT_HAND
 
 local openni = require 'openni'
+
+if test_skeleton then
+	openni.enable_skeleton()
+end
+
 local n_users = openni.startup()
 print( "Number of Skeletons:", n_users )
 
@@ -88,6 +93,6 @@ print( "Number of Skeletons:", n_users )
 local cloud_id, cloud_type = openni.update_cloud()
 local visible = openni.update_skeleton()
 --]]
-print("Shutting down the openni device...")
+print("Shutting down the openni device twice...")
 local shutdown_status = openni.shutdown()
 print("Shutdown",shutdown_status)

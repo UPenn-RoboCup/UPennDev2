@@ -30,6 +30,7 @@
 #define MAX_USERS 2 //10 was used before...
 
 char init = 0;
+int use_skeleton = 0;
 
 // Use the right namespace
 using namespace openni;
@@ -55,9 +56,6 @@ VideoFrameRef* cframe;
 Device device;
 Recorder recorder;
 Status rc;
-int changedIndex;
-uint16_t* pDepth;
-uint8_t* pColor;
 
 // Skeleton Updating function
 void updateUserState(const nite::UserData& user, unsigned long long ts) {
@@ -68,6 +66,16 @@ void updateUserState(const nite::UserData& user, unsigned long long ts) {
 	for(int jj=0;jj<NITE_JOINT_COUNT;jj++)
 		g_skeletonJoints[user_id][jj] = 
 			user.getSkeleton().getJoint((nite::JointType)jj);
+}
+
+static int lua_enable_skeleton(lua_State *L) {
+	use_skeleton = 1;
+	return 0;
+}
+
+static int lua_disable_skeleton(lua_State *L) {
+	use_skeleton = 0;
+	return 0;
 }
 
 static int lua_startup(lua_State *L) {
@@ -101,14 +109,25 @@ static int lua_startup(lua_State *L) {
 		return luaL_error(L,"Device failed\n%s\n",OpenNI::getExtendedError());
 
 	m_streams = new VideoStream[2];
+	
 	depth = &m_streams[0];
 	color = &m_streams[1];
 	dframe = new VideoFrameRef;
 	cframe = new VideoFrameRef;
+	
 	// Setup depth
 	if (device.getSensorInfo(SENSOR_DEPTH) == NULL)
 		return luaL_error(L,"No depth sensor\n%s\n", OpenNI::getExtendedError());
 	rc = depth->create(device, SENSOR_DEPTH);
+	
+	/*
+      openni::VideoMode mode = Stream.getVideoMode();
+      mode.setResolution(resolution_x, resolution_y);
+      mode.setFps(FPS);
+      Stream.setVideoMode(mode);
+      Stream.setMirroringEnabled(false);
+	*/
+	
 	if (rc != STATUS_OK)
 		return luaL_error(L,"Depth create\n%s\n", OpenNI::getExtendedError());
 	rc = depth->start();
@@ -122,7 +141,7 @@ static int lua_startup(lua_State *L) {
 		return luaL_error(L,"No color sensor\n%s\n", OpenNI::getExtendedError());
 	rc = color->create(device, SENSOR_COLOR);
 	if (rc != STATUS_OK)
-		return luaL_error(L,"Depth create\n%s\n", OpenNI::getExtendedError());
+		return luaL_error(L,"Color create\n%s\n", OpenNI::getExtendedError());
 	rc = color->start();
 	if (rc != STATUS_OK) {
 		color->destroy();
@@ -139,45 +158,82 @@ static int lua_startup(lua_State *L) {
 	}
 	
 	/* Initialize the Skeleton Tracking system */
-	nite::NiTE::initialize();
-	userTracker = new nite::UserTracker;
-	niteRc = userTracker->create(&device);
-	if (niteRc != nite::STATUS_OK)
-		return luaL_error(L, "Couldn't create user tracker!\n" );
-	
-	// Push the number of users to be tracked
+	if(use_skeleton==1){
+		nite::NiTE::initialize();
+		userTracker = new nite::UserTracker;
+		niteRc = userTracker->create(&device);
+		if (niteRc != nite::STATUS_OK)
+			return luaL_error(L, "Couldn't create user tracker!\n" );
+		// Push the number of users to be tracked
+		lua_pushinteger( L, MAX_USERS );
+	} else{
+		lua_pushinteger( L, 0 );
+	}
+
+	/*
+	VideoMode dmode = depth->getVideoMode();
+	int resX = dmode.getResolutionX();
+	int resY = dmode.getResolutionY();
+	int fps = dmode.getFps();
+	printf("Depth %d x %d @ %d\n",resX,resY,fps);
+	VideoMode cmode = color->getVideoMode();
+	resX = cmode.getResolutionX();
+	resY = cmode.getResolutionY();
+	fps = cmode.getFps();
+	printf("Color %d x %d @ %d\n",resX,resY,fps);
+	*/
 	init = 1;
-	lua_pushinteger( L, MAX_USERS );
 	return 1;
 }
 
-static int lua_update_cloud(lua_State *L) {
+static int lua_stream_info(lua_State *L) {
+	
+	// Depth
+	VideoMode dmode = depth->getVideoMode();
+	int resX = dmode.getResolutionX();
+	int resY = dmode.getResolutionY();
+	int fps = dmode.getFps();
+	lua_newtable(L);
+	lua_pushstring(L, "width");
+	lua_pushnumber(L,resX);
+	lua_rawset(L, -3);
+	lua_pushstring(L, "height");
+	lua_pushnumber(L,resY);
+	lua_rawset(L, -3);
+	lua_pushstring(L, "fps");
+	lua_pushnumber(L,fps);
+	lua_rawset(L, -3);
+	
+	// Color
+	VideoMode cmode = color->getVideoMode();
+	resX = cmode.getResolutionX();
+	resY = cmode.getResolutionY();
+	fps = cmode.getFps();
+	lua_newtable(L);
+	lua_pushstring(L, "width");
+	lua_pushnumber(L,resX);
+	lua_rawset(L, -3);
+	lua_pushstring(L, "height");
+	lua_pushnumber(L,resY);
+	lua_rawset(L, -3);
+	lua_pushstring(L, "fps");
+	lua_pushnumber(L,fps);
+	lua_rawset(L, -3);
+	
+	return 2;
+}
+
+static int lua_update_rgbd(lua_State *L) {
+	int changedIndex;
 	rc = OpenNI::waitForAnyStream( &m_streams, 2, &changedIndex);
 	if (rc != STATUS_OK)
 		return luaL_error(L, "Wait failed!\n" );
 
-	// See which one got updated
-	switch (changedIndex) {
-		// Depth
-		case 0:
-		depth->readFrame( dframe );
-		pDepth = (uint16_t*)dframe->getData();
-		lua_pushnumber( L, 0 );
-		lua_pushstring( L, "d" );
-		break;
-		// Color
-		case 1:
-		color->readFrame( cframe );
-		pColor = (uint8_t*)cframe->getData();
-		lua_pushnumber( L, 1 );
-		lua_pushstring( L, "c" );
-		break;
-		// Something went wrong
-		default:
-		return luaL_error(L, "Error in changedIndex!\n" );
-	} // Switch case
+	depth->readFrame( dframe );
+	color->readFrame( cframe );
+	lua_pushlightuserdata( L, (void*)(dframe->getData()) );
+	lua_pushlightuserdata( L, (void*)(cframe->getData()) );
 	
-	// The index and string of the type was pushed
 	return 2;
 }
 
@@ -273,17 +329,6 @@ static int lua_retrieve_joint(lua_State *L) {
 	return 3;
 }
 
-static int lua_retrieve_cloud(lua_State *L) {
-	int i = luaL_checkint( L, 1 );
-	if(i==0)
-		lua_pushlightuserdata( L, pDepth );
-	else if(i==1)
-		lua_pushlightuserdata( L, pColor );
-	else
-		return 0;
-	return 1;
-}
-
 static int lua_skeleton_shutdown(lua_State *L) {
 	
 	if(init==0)
@@ -303,7 +348,9 @@ static int lua_skeleton_shutdown(lua_State *L) {
 	device.close();
 	
 	// Shutdown the NiTE and OpenNI systems
-	nite::NiTE::shutdown();
+	if(use_skeleton==1){
+		nite::NiTE::shutdown();
+	}
 	openni::OpenNI::shutdown();
 #ifdef DEBUG
 	printf("Done shutting down NiTE and OpenNI\n");
@@ -314,11 +361,13 @@ static int lua_skeleton_shutdown(lua_State *L) {
 }
 
 static const struct luaL_Reg openni_lib [] = {
+	{"enable_skeleton", lua_enable_skeleton},
+	{"disable_skeleton", lua_disable_skeleton},
 	{"startup", lua_startup},
+	{"stream_info", lua_stream_info},
 	{"update_skeleton", lua_update_skeleton},
-	{"update_cloud", lua_update_cloud},
+	{"update_rgbd", lua_update_rgbd},
 	{"joint", lua_retrieve_joint},
-	{"cloud", lua_retrieve_cloud},
 	{"shutdown", lua_skeleton_shutdown},
 	{NULL, NULL}
 };

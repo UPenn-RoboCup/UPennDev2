@@ -47,9 +47,7 @@ local lidar_channel_0 = nil
 local lidar_channel_1 = nil
 local hokuyo0_poll = {}
 local hokuyo1_poll = {}
-local wait_channels = {}
-lidar_channel_0 = simple_ipc.new_publisher('lidar0') --head lidar
-lidar_channel_1 = simple_ipc.new_publisher('lidar1') --chest lidar
+
 
 -----------------------------------------
 --Lidar scan accumulation variables
@@ -167,129 +165,56 @@ function lidar_update(lidartype, data, is_panning)
    end
 end
 
-
-function send_lidar_data(senddata,lidar_num)
-  if lidar_num==0 then
-    lidar_channel_0:send(senddata);
-    lidar0_panning = lcm:get_head_lidar_panning()[1];
-    lidar_update(0, senddata,lidar0_panning);
-  else
-    lidar_channel_1:send(senddata);
-    lidar1_panning = lcm:get_chest_lidar_panning()[1];
-    lidar_update(1, senddata,lidar1_panning);	
-  end
-end
-
---Callback functions
-local function hokuyo0_callback()
-  local data = hokuyo_0:get_scan()
-  local t = unix.time()
-  if not data then
-	  print('BAD DATA')
-	  return
-  end
-  
-  local senddata = { tostring(t), data };
-  local metadata = { scm:get_pose_odom() }
-  if lidar_0_head then
-	  table.insert( metadata, Body.get_neck_position() )
-	  table.insert( senddata, messagepack.pack(metadata) )
-	  send_lidar_data(senddata,0);
-  else
-	  table.insert( metadata, Body.get_lidar_position()[1] )
-	  table.insert( senddata, messagepack.pack(metadata) )
-	  send_lidar_data(senddata,1);
-  end 
-end
-
-local function hokuyo1_callback()
-  local data = hokuyo_1:get_scan()
-  local t = unix.time()
-  if not data then print('BAD DATA'); return; end
-  local senddata = {tostring(t),data};
-  local metadata = { scm:get_pose_odom() }
-  if lidar_0_head then
-	  table.insert( metadata, Body.get_lidar_position()[1] )
-	  table.insert( senddata, messagepack.pack(metadata) )
-	  send_lidar_data(senddata,1)
-  else
-	  table.insert( metadata, Body.get_neck_position() )
-	  table.insert( senddata, messagepack.pack(metadata) )
-	  send_lidar_data(senddata,0)
-  end 
-end
-
--- Open the lidars
-hokuyo_0 = libHokuyo.open()
-print( string.format('Got serial %s',hokuyo_0.info.serial_number))
-hokuyo_1 = nil
--- Check if the IDs are swapped
-if hokuyo_0.info.serial_number ~= head_serial then
-	-- Not the head
-	assert(hokuyo_0.info.serial_number==chest_serial,
-	"Expected "..chest_serial.." but got "..hokuyo_0.info.serial_number)
-	-- Swap
-	if use_second_lidar then
-		print('Swapped!')
-		hokuyo_1 = hokuyo_0
-	else
-		hokuyo_0:close()
-	end
-	hokuyo_0 = libHokuyo.open()
-
-	assert(
-	hokuyo_0.info.serial_number==head_serial,
-	"Expected "..head_serial.." but got "..hokuyo_0.info.serial_number
-	)
-end
-if use_second_lidar and not hokuyo_1 then
-	hokuyo_1 = libHokuyo.open()
-	print( string.format('Got serial %s',hokuyo_1.info.serial_number))
-	if hokuyo_1.info.serial_number ~= chest_serial then
-		error('Unknown chest lidar!')
-	end
-end
-
--- Setup the callbacks
-hokuyo0_poll.socket_handle = hokuyo_0.fd
-hokuyo0_poll.callback = hokuyo0_callback;
-hokuyo_0:stream_on()
-table.insert( wait_channels, hokuyo0_poll )
+------------------------------
+-- Callback functions
+local function chest_callback()
+	local metadata, has_more = lidar_channel_0:receive()
+	assert(has_more,'Head | No payload')
+	local ranges_str = lidar_channel_0:receive()
 	
-
-if use_second_lidar then
-	if not hokuyo_1 then
-		error('Cannot use second lidar!')
+	assert(metadata.pose,'Head | No pose')
+	assert(metadata.chest,'Head | No chest lidar position')
+	
+	if swept_chest then
+		mesh_ch_udp:send()
 	end
-  hokuyo1_poll.socket_handle = hokuyo_1.fd
-  hokuyo1_poll.callback = hokuyo1_callback;
-  hokuyo_1:stream_on()
-  table.insert( wait_channels, hokuyo1_poll )
+
 end
 
+local function head_callback()
+	local metadata, has_more = lidar_channel_0:receive()
+	assert(has_more,'Head | No payload')
+	local ranges_str = lidar_channel_0:receive()
+	
+	assert(metadata.pose,'Head | No pose')
+	assert(metadata.neck,'Head | No neck position')
+	
+	if swept_head then
+		mesh_ch_udp:send()
+	end
 
-
--- Ensure that we shutdown the devices properly
-function shutdown()
-  print'Shutting down the Hokuyos...'
-  hokuyo_0:stream_off()
-  hokuyo_0:close()
-  print'Closed Hokuyo 0'
-  if use_second_lidar then
-    hokuyo_1:stream_off()
-    hokuyo_1:close()
-    print'Closed Hokuyo 1'
-  end
-  error()
 end
+------------------------------
 
-
-signal.signal("SIGINT", shutdown)
-signal.signal("SIGTERM", shutdown)
-
+------------------------------
 -- Polling with zeromq
+local wait_channels = {}
+-- Add the head lidar data
+head_lidar_ch = simple_ipc.new_subscriber('head_lidar')
+head_lidar_ch.callback = head_callback
+table.insert( wait_channels, head_lidar_ch )
+-- Add the chest lidar data
+chest_lidar_ch = simple_ipc.new_subscriber('chest_lidar')
+head_lidar_ch.callback = chest_callback
+table.insert( wait_channels, chest_lidar_ch )
+
+-- Setup the callbacks for ZMQ
 local channel_polls = simple_ipc.wait_on_channels( wait_channels )
+-- Just wait for callbacks...
+--channel_polls:start()
+
 local channel_timeout = 100;
 while true do
   local npoll = channel_polls:poll(channel_timeout)
 end
+------------------------------

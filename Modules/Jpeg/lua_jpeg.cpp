@@ -266,7 +266,7 @@ static int lua_jpeg_compress_16(lua_State *L) {
 		return luaL_error(L, "Bad JPEG Compress 16 input");
 	global_shift = shift_amt;
 
-  int lenPacked = CompressData(data, width, height, 1, 1, scale, JCS_GRAYSCALE, assign_data_16);
+  int lenPacked = CompressData(data, width, height, 2, 1, scale, JCS_GRAYSCALE, assign_data_16);
   if (lenPacked > 0)
     lua_pushlstring(L, (const char *)&(destBuf[0]), lenPacked);
   else

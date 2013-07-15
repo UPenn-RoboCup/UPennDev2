@@ -44,7 +44,6 @@ local right_width, right_height =
   Config.camera.hand_resolution[1],Config.camera.hand_resolution[2]; 
 local right_frame_rate = Config.camera.hand_fps;
 
-
 local head_dev = Config.camera.head_device
 local left_dev = Config.camera.left_device
 local right_dev = Config.camera.right_device

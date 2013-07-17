@@ -1,3 +1,4 @@
+(c) 2013 Stephen McGill
 module(... or "",package.seeall)
 local unix = require 'unix'
 matrix = require 'matrix'

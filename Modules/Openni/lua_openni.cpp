@@ -263,12 +263,14 @@ static int lua_update_skeleton(lua_State *L) {
 	}
 	// http://lua-users.org/wiki/SimpleLuaApiExample
 	// Begin to return data
-	lua_newtable(L);
+	//lua_newtable(L);
+	lua_createtable(L, MAX_USERS, 0);
 	for(int u = 1; u <= MAX_USERS; u++) {
-		//printf("setting %d\n", (int)g_visibleUsers[u-1] );
-		lua_pushnumber(L, u);   /* Push the table index */
+		//printf("setting %d: %d\n", u, (int)g_visibleUsers[u-1] );
+		//lua_pushnumber(L, u);   /* Push the table index */
 		lua_pushboolean(L, g_visibleUsers[u-1] ); /* Push the cell value */
-		lua_rawset(L, -3);      /* Stores the pair in the table */
+		//lua_rawset(L, -3);      /* Stores the pair in the table */
+		lua_rawseti(L, -2, u);
 	}
 	return 1;
 
@@ -288,28 +290,25 @@ static int lua_retrieve_joint(lua_State *L) {
 
 	// Get the joint
 	nite::SkeletonJoint j = g_skeletonJoints[user_id-1][joint_id-1];
-
-	// Position
-	lua_newtable(L);
-	lua_pushstring(L, "confidence");
-	lua_pushnumber(L,j.getPositionConfidence());
-	lua_rawset(L, -3);
-	lua_pushstring(L, "x");   /* Push the table index */
-	lua_pushnumber(L,j.getPosition().x); /* Push the cell value */
-	lua_rawset(L, -3);      /* Stores the pair in the table */
-	lua_pushstring(L, "y");
-	lua_pushnumber(L,j.getPosition().y);
-	lua_rawset(L, -3);
-	lua_pushstring(L, "z");
-	lua_pushnumber(L,j.getPosition().z);
-	lua_rawset(L, -3);
-	
-	// Orientation
-	lua_newtable(L);
-	lua_pushnumber(L, j.getOrientationConfidence());
-	lua_setfield(L, -2, "confidence");
 	nite::Quaternion q = j.getOrientation();
-	lua_pushstring(L, "quaternion");
+
+	// Return the result as a single table
+	//lua_newtable(L);
+	lua_createtable(L, 0, 5);
+	
+	// Position table (in meters)
+	lua_pushstring(L, "position");
+	lua_createtable(L, 3, 0);
+	lua_pushnumber(L, j.getPosition().x);
+	lua_rawseti(L, -2, 1);
+	lua_pushnumber(L, j.getPosition().y);
+	lua_rawseti(L, -2, 2);
+	lua_pushnumber(L, j.getPosition().z);
+	lua_rawseti(L, -2, 3);
+	lua_settable(L, -3);
+	
+	// Orientation table (as a quaternion)
+	lua_pushstring(L, "orientation");
 	lua_createtable(L, 4, 0);
 	lua_pushnumber(L, q.x);
 	lua_rawseti(L, -2, 1);
@@ -320,13 +319,21 @@ static int lua_retrieve_joint(lua_State *L) {
 	lua_pushnumber(L, q.w);
 	lua_rawseti(L, -2, 4);
 	lua_settable(L, -3);
+	//lua_rawset(L, -3);
 	
-	// Timestamp needed?
+	// Confidence
+	lua_pushnumber(L,j.getPositionConfidence());
+	lua_setfield(L, -2, "position_confidence");
+	lua_pushnumber(L, j.getOrientationConfidence());
+	lua_setfield(L, -2, "orientation_confidence");
+	
+	// Timestamp
 	//http://www.lua.org/pil/2.3.html
 	lua_pushnumber(L,g_skeletonTime[user_id-1]);
+	lua_setfield(L, -2, "timestamp");
 	
-	// Returning the Position, Orientation, Timestamp
-	return 3;
+	// Returning a single table
+	return 1;
 }
 
 static int lua_skeleton_shutdown(lua_State *L) {

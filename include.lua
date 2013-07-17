@@ -3,6 +3,7 @@ local cwd = handle:read("*a"):gsub("%s+$", "")
 handle:close()
 local Webots = false
 local HOME = cwd:gsub('Player.*$','')
+HOME = cwd:gsub('Operate.*$','')
 HOME = HOME:gsub('Tools.*$','')
 HOME = HOME:gsub('Frameworks.*$','')
 HOME = HOME:gsub('Util.*$','')
@@ -67,7 +68,7 @@ if Webots then
 end
 
 -- include platform specific modules
-local Config = require 'Config'
+local Config = require'Config'
 local Platform = dofile(HOME..'Robots/'..Config.platform.name..'/Platform.lua')
 for i = 1, #Platform.path do
   package.path = HOME..'Robots/'..Config.platform.name..Platform.path[i]..package.path

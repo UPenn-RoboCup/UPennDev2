@@ -30,6 +30,7 @@ NITE_JOINT_LEFT_FOOT,
 NITE_JOINT_RIGHT_FOOT = 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15
 local nJoints = 15
 
+--[[
 local function pack_positions(user_id)
 	local jp = ''
 	for j=1,nJoints do
@@ -37,6 +38,15 @@ local function pack_positions(user_id)
 		jp = jp..mp.pack(joint.position)
 	end
 	return jp
+end
+--]]
+
+local function pack_positions(user_id)
+	local jp = {}
+	for j=1,nJoints do
+		jp[j] = openni.joint(user_id,j)
+	end
+	return mp.pack(jp)
 end
 
 -- Set up the UDP sending
@@ -97,7 +107,7 @@ while true do
 	end
 	
 	-- Debug the timing
-  cnt = cnt+1;
+  cnt = cnt+1
   if t-t_last>t_debug then
     local msg = string.format("%.2f FPS.  Tracking", cnt/t_debug)
 		if encoded_joints1 then

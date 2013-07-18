@@ -1,1 +1,7 @@
+In /usr/local/include:
+ln -s ~/src/OpenNI2/Include ./OpenNI2
+
+In /usr/local/lib:
+ln -s ~/src/OpenNI2/Bin/x64-Release/lib* .
+
 You must put the ini file with the .so file in the same directory wherever you go

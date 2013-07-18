@@ -1,4 +1,8 @@
 LIBNAME=openni
 include ../../Makefile.inc
-INCLUDES+=-I/usr/local/include/OpenNI2 -I/usr/local/include/NiTE
-LIBOPTS+=-lOpenNI2 -lNiTE2
+INCLUDES+=-I/usr/local/include/OpenNI2
+LIBOPTS+=-lOpenNI2
+ifdef USE_NITE_SKELETON
+INCLUDES+=-I/usr/local/include/NiTE -DUSE_NITE_SKELETON
+LIBOPTS+=-lNiTE2
+endif

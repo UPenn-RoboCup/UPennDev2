@@ -22,20 +22,15 @@
 	Lua Wrapper for some OpenNI2 functionality
 	(c) Stephen McGill 2013
 */
+#define MAX_USERS 2 //10 was used before...
 #include <stdio.h>
 #include <string>
 #include <OpenNI.h>
-#include <NiTE.h>
 #include <lua.hpp>
-#define MAX_USERS 2 //10 was used before...
 
-char init = 0;
-int use_skeleton = 0;
-
-// Use the right namespace
-using namespace openni;
-
+#ifdef USE_NITE_SKELETON
 /* User Tracking information */
+#include <NiTE.h>
 nite::UserTracker *userTracker;
 nite::Status niteRc;
 // Keep track of the skeletons
@@ -43,6 +38,14 @@ bool g_visibleUsers[MAX_USERS] = {false};
 nite::SkeletonState g_skeletonStates[MAX_USERS] = {nite::SKELETON_NONE};
 nite::SkeletonJoint g_skeletonJoints[MAX_USERS][NITE_JOINT_COUNT];
 unsigned long long g_skeletonTime[MAX_USERS];
+#endif
+
+/* Device state variables */
+char init = 0;
+int use_skeleton = 0;
+
+// Use the right namespace
+using namespace openni;
 
 /* Cloud information */
 // Establish the streams
@@ -57,6 +60,8 @@ Device device;
 Recorder recorder;
 Status rc;
 
+
+#ifdef USE_NITE_SKELETON
 // Skeleton Updating function
 void updateUserState(const nite::UserData& user, unsigned long long ts) {
 	int user_id = user.getId();
@@ -68,7 +73,47 @@ void updateUserState(const nite::UserData& user, unsigned long long ts) {
 			user.getSkeleton().getJoint((nite::JointType)jj);
 }
 
+static int lua_update_skeleton(lua_State *L) {
+	nite::UserTrackerFrameRef userTrackerFrame;
+	niteRc = userTracker->readFrame(&userTrackerFrame);
+	if (niteRc != nite::STATUS_OK)
+		return luaL_error(L, "NiTE readFrame failed!\n" );
+
+	const nite::Array<nite::UserData>& users = userTrackerFrame.getUsers();
+	for (int i = 0; i < users.getSize(); ++i)
+	{
+		const nite::UserData& user = users[i];
+		updateUserState(user,userTrackerFrame.getTimestamp());
+		if (user.isNew())
+		{
+			userTracker->startSkeletonTracking(user.getId());
+		}
+		else if (user.getSkeleton().getState() == nite::SKELETON_TRACKED)
+		{
+#ifdef DEBUG
+			const nite::SkeletonJoint& head = user.getSkeleton().getJoint(nite::JOINT_HEAD);
+			if (head.getPositionConfidence() > .5)
+				printf("%d. (%5.2f, %5.2f, %5.2f)\n", user.getId(), head.getPosition().x, head.getPosition().y, head.getPosition().z);
+#endif
+		}
+	}
+	// http://lua-users.org/wiki/SimpleLuaApiExample
+	// Begin to return data
+	//lua_newtable(L);
+	lua_createtable(L, MAX_USERS, 0);
+	for(int u = 1; u <= MAX_USERS; u++) {
+		//printf("setting %d: %d\n", u, (int)g_visibleUsers[u-1] );
+		//lua_pushnumber(L, u);   /* Push the table index */
+		lua_pushboolean(L, g_visibleUsers[u-1] ); /* Push the cell value */
+		//lua_rawset(L, -3);      /* Stores the pair in the table */
+		lua_rawseti(L, -2, u);
+	}
+	return 1;
+
+}
+
 static int lua_enable_skeleton(lua_State *L) {
+
 	use_skeleton = 1;
 	return 0;
 }
@@ -77,6 +122,67 @@ static int lua_disable_skeleton(lua_State *L) {
 	use_skeleton = 0;
 	return 0;
 }
+
+// Get a single joint
+static int lua_retrieve_joint(lua_State *L) {
+	int user_id  = luaL_checkint( L, 1 );
+	int joint_id = luaL_checkint( L, 2 );
+	
+	if( joint_id>NITE_JOINT_COUNT || user_id>MAX_USERS ){
+#ifdef DEBUG
+		printf("User %d. Joint %d.\n",user_id,joint_id);
+#endif
+		return luaL_error(L, "Joint or user out of range!\n" );
+	}
+
+	// Get the joint
+	nite::SkeletonJoint j = g_skeletonJoints[user_id-1][joint_id-1];
+	nite::Quaternion q = j.getOrientation();
+
+	// Return the result as a single table
+	//lua_newtable(L);
+	lua_createtable(L, 0, 5);
+	
+	// Position table (in meters)
+	lua_pushstring(L, "position");
+	lua_createtable(L, 3, 0);
+	lua_pushnumber(L, j.getPosition().x);
+	lua_rawseti(L, -2, 1);
+	lua_pushnumber(L, j.getPosition().y);
+	lua_rawseti(L, -2, 2);
+	lua_pushnumber(L, j.getPosition().z);
+	lua_rawseti(L, -2, 3);
+	lua_settable(L, -3);
+	
+	// Orientation table (as a quaternion)
+	lua_pushstring(L, "orientation");
+	lua_createtable(L, 4, 0);
+	lua_pushnumber(L, q.x);
+	lua_rawseti(L, -2, 1);
+	lua_pushnumber(L, q.y);
+	lua_rawseti(L, -2, 2);
+	lua_pushnumber(L, q.z);
+	lua_rawseti(L, -2, 3);
+	lua_pushnumber(L, q.w);
+	lua_rawseti(L, -2, 4);
+	lua_settable(L, -3);
+	//lua_rawset(L, -3);
+	
+	// Confidence
+	lua_pushnumber(L,j.getPositionConfidence());
+	lua_setfield(L, -2, "position_confidence");
+	lua_pushnumber(L, j.getOrientationConfidence());
+	lua_setfield(L, -2, "orientation_confidence");
+	
+	// Timestamp
+	//http://www.lua.org/pil/2.3.html
+	lua_pushnumber(L,g_skeletonTime[user_id-1]);
+	lua_setfield(L, -2, "timestamp");
+	
+	// Returning a single table
+	return 1;
+}
+#endif
 
 static int lua_startup(lua_State *L) {
 	
@@ -157,6 +263,7 @@ static int lua_startup(lua_State *L) {
 		recorder.start();
 	}
 	
+#ifdef USE_NITE_SKELETON
 	/* Initialize the Skeleton Tracking system */
 	if(use_skeleton==1){
 		nite::NiTE::initialize();
@@ -164,25 +271,16 @@ static int lua_startup(lua_State *L) {
 		niteRc = userTracker->create(&device);
 		if (niteRc != nite::STATUS_OK)
 			return luaL_error(L, "Couldn't create user tracker!\n" );
-		// Push the number of users to be tracked
+	}
+#endif
+	// Push the number of users to be tracked
+	if(use_skeleton==1){
 		lua_pushinteger( L, MAX_USERS );
-	} else{
+	} else {
 		lua_pushinteger( L, 0 );
 	}
-
-	/*
-	VideoMode dmode = depth->getVideoMode();
-	int resX = dmode.getResolutionX();
-	int resY = dmode.getResolutionY();
-	int fps = dmode.getFps();
-	printf("Depth %d x %d @ %d\n",resX,resY,fps);
-	VideoMode cmode = color->getVideoMode();
-	resX = cmode.getResolutionX();
-	resY = cmode.getResolutionY();
-	fps = cmode.getFps();
-	printf("Color %d x %d @ %d\n",resX,resY,fps);
-	*/
-	init = 1;
+	
+init = 1;
 	return 1;
 }
 
@@ -237,104 +335,7 @@ static int lua_update_rgbd(lua_State *L) {
 	return 2;
 }
 
-static int lua_update_skeleton(lua_State *L) {
-	nite::UserTrackerFrameRef userTrackerFrame;
-	niteRc = userTracker->readFrame(&userTrackerFrame);
-	if (niteRc != nite::STATUS_OK)
-		return luaL_error(L, "NiTE readFrame failed!\n" );
 
-	const nite::Array<nite::UserData>& users = userTrackerFrame.getUsers();
-	for (int i = 0; i < users.getSize(); ++i)
-	{
-		const nite::UserData& user = users[i];
-		updateUserState(user,userTrackerFrame.getTimestamp());
-		if (user.isNew())
-		{
-			userTracker->startSkeletonTracking(user.getId());
-		}
-		else if (user.getSkeleton().getState() == nite::SKELETON_TRACKED)
-		{
-#ifdef DEBUG
-			const nite::SkeletonJoint& head = user.getSkeleton().getJoint(nite::JOINT_HEAD);
-			if (head.getPositionConfidence() > .5)
-				printf("%d. (%5.2f, %5.2f, %5.2f)\n", user.getId(), head.getPosition().x, head.getPosition().y, head.getPosition().z);
-#endif
-		}
-	}
-	// http://lua-users.org/wiki/SimpleLuaApiExample
-	// Begin to return data
-	//lua_newtable(L);
-	lua_createtable(L, MAX_USERS, 0);
-	for(int u = 1; u <= MAX_USERS; u++) {
-		//printf("setting %d: %d\n", u, (int)g_visibleUsers[u-1] );
-		//lua_pushnumber(L, u);   /* Push the table index */
-		lua_pushboolean(L, g_visibleUsers[u-1] ); /* Push the cell value */
-		//lua_rawset(L, -3);      /* Stores the pair in the table */
-		lua_rawseti(L, -2, u);
-	}
-	return 1;
-
-}
-
-// Get a single joint
-static int lua_retrieve_joint(lua_State *L) {
-	int user_id  = luaL_checkint( L, 1 );
-	int joint_id = luaL_checkint( L, 2 );
-	
-	if( joint_id>NITE_JOINT_COUNT || user_id>MAX_USERS ){
-#ifdef DEBUG
-		printf("User %d. Joint %d.\n",user_id,joint_id);
-#endif
-		return luaL_error(L, "Joint or user out of range!\n" );
-	}
-
-	// Get the joint
-	nite::SkeletonJoint j = g_skeletonJoints[user_id-1][joint_id-1];
-	nite::Quaternion q = j.getOrientation();
-
-	// Return the result as a single table
-	//lua_newtable(L);
-	lua_createtable(L, 0, 5);
-	
-	// Position table (in meters)
-	lua_pushstring(L, "position");
-	lua_createtable(L, 3, 0);
-	lua_pushnumber(L, j.getPosition().x);
-	lua_rawseti(L, -2, 1);
-	lua_pushnumber(L, j.getPosition().y);
-	lua_rawseti(L, -2, 2);
-	lua_pushnumber(L, j.getPosition().z);
-	lua_rawseti(L, -2, 3);
-	lua_settable(L, -3);
-	
-	// Orientation table (as a quaternion)
-	lua_pushstring(L, "orientation");
-	lua_createtable(L, 4, 0);
-	lua_pushnumber(L, q.x);
-	lua_rawseti(L, -2, 1);
-	lua_pushnumber(L, q.y);
-	lua_rawseti(L, -2, 2);
-	lua_pushnumber(L, q.z);
-	lua_rawseti(L, -2, 3);
-	lua_pushnumber(L, q.w);
-	lua_rawseti(L, -2, 4);
-	lua_settable(L, -3);
-	//lua_rawset(L, -3);
-	
-	// Confidence
-	lua_pushnumber(L,j.getPositionConfidence());
-	lua_setfield(L, -2, "position_confidence");
-	lua_pushnumber(L, j.getOrientationConfidence());
-	lua_setfield(L, -2, "orientation_confidence");
-	
-	// Timestamp
-	//http://www.lua.org/pil/2.3.html
-	lua_pushnumber(L,g_skeletonTime[user_id-1]);
-	lua_setfield(L, -2, "timestamp");
-	
-	// Returning a single table
-	return 1;
-}
 
 static int lua_skeleton_shutdown(lua_State *L) {
 	
@@ -353,11 +354,14 @@ static int lua_skeleton_shutdown(lua_State *L) {
 	depth->stop();
 	depth->destroy();
 	device.close();
+
 	
+#ifdef USE_NITE_SKELETON
 	// Shutdown the NiTE and OpenNI systems
 	if(use_skeleton==1){
 		nite::NiTE::shutdown();
 	}
+#endif
 	openni::OpenNI::shutdown();
 #ifdef DEBUG
 	printf("Done shutting down NiTE and OpenNI\n");
@@ -368,14 +372,16 @@ static int lua_skeleton_shutdown(lua_State *L) {
 }
 
 static const struct luaL_Reg openni_lib [] = {
-	{"enable_skeleton", lua_enable_skeleton},
-	{"disable_skeleton", lua_disable_skeleton},
 	{"startup", lua_startup},
 	{"stream_info", lua_stream_info},
-	{"update_skeleton", lua_update_skeleton},
 	{"update_rgbd", lua_update_rgbd},
-	{"joint", lua_retrieve_joint},
 	{"shutdown", lua_skeleton_shutdown},
+#ifdef USE_NITE_SKELETON
+	{"enable_skeleton", lua_enable_skeleton},
+	{"disable_skeleton", lua_disable_skeleton},
+	{"update_skeleton", lua_update_skeleton},
+	{"joint", lua_retrieve_joint},
+#endif
 	{NULL, NULL}
 };
 

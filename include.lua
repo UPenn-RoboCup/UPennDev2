@@ -3,7 +3,7 @@ local cwd = handle:read("*a"):gsub("%s+$", "")
 handle:close()
 local Webots = false
 local HOME = cwd:gsub('Player.*$','')
-HOME = cwd:gsub('Operate.*$','')
+HOME = HOME:gsub('Operate.*$','')
 HOME = HOME:gsub('Tools.*$','')
 HOME = HOME:gsub('Frameworks.*$','')
 HOME = HOME:gsub('Util.*$','')
@@ -11,6 +11,7 @@ if HOME:find("Webots") ~= nil then
   HOME = HOME:gsub('Webots.*$','')
   Webots = true
 end
+--HOME = HOME..'/'
 OPERATING_SYSTEM = io.popen('uname'):read('*a'):lower():gsub("%s+$", "")
 print( 'Working Dir:', cwd )
 print( 'Home Dir:', HOME )

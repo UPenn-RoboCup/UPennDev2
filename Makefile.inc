@@ -1,11 +1,6 @@
 # Makefile Includes
 
-# Verbose mode check
-VERBOSE?=no
-V=@
-ifeq ($(VERBOSE),yes)
-V=
-endif
+OSTYPE=$(shell uname -s|awk '{print tolower($$0)}')
 	
 # From Julia Make.inc
 ENDCOLOR="\033[0m"
@@ -31,8 +26,9 @@ CFLAGS=-O3 -mtune=native -march=native -fpic
 LIBRT=-lrt
 SHLIBEXT=so
 
+#USE_TORCH=1
+
 # OS Specific overrides
-OSTYPE=$(shell uname -s|awk '{print tolower($$0)}')
 ifeq ($(OSTYPE),darwin)
   LIBRT=
   LD=ld -macosx_version_min 10.7
@@ -62,6 +58,12 @@ ifdef USE_LUAJIT
 else
 	INCLUDES+=$(LUA_INC)
 	LIBOPTS+=$(LUA_LIB)
+endif
+
+# Verbose mode check
+V=@
+ifdef VERBOSE
+V=
 endif
 
 # Default compiling for modules

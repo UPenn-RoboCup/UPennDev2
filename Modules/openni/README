@@ -1,3 +1,6 @@
+OpenNI2
+make ALLOW_WARNINGS=1
+
 In /usr/local/include:
 ln -s ~/src/OpenNI2/Include ./OpenNI2
 

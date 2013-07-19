@@ -8,16 +8,25 @@ local stty = require 'stty'
 local unix = require 'unix'
 
 --------------------
--- libHokuyo constants and internal parameters
-HOKUYO_SCAN_REGULAR = 0
-HOKUYO_2DIGITS = 2
-HOKUYO_3DIGITS = 3
+-- libHokuyo constants
+local HOKUYO_SCAN_REGULAR = 0
+local HOKUYO_2DIGITS = 2
+local HOKUYO_3DIGITS = 3
+
+-- Coroutine read yielding
+local FAST_READ_THRESHOLD = 2000 -- bytes
+local N_SCAN_BYTES = 3372
+local SLOW_WAIT_US = 11000  -- 11ms (to be tuned.  uses usleep)
+local FAST_WAIT_SEC = -0.050 -- 50ms (uses select, denote with negative number)
+
+--------------------
+-- Internal paramters
 libHokuyo.CURRENT_HOKUYO = -1
 libHokuyo.MAX_NUM_HOKUYO = 255
 
-local write_command = function(fd, cmd, expected_resp)
+local write_command = function(fd, cmd, expected_response)
 	-- Should get one of these... '00', '02', '03', '04'
-	expected_resp = expected_resp or '00'
+	expected_response = expected_response or '00'
 
 	--------------------
 	-- Write the command
@@ -29,16 +38,18 @@ local write_command = function(fd, cmd, expected_resp)
 	local iCmd = nil
 	local t_write = unix.time()
 	while not iCmd do
-		-- TODO: Sleep for each loop in wait of the response
 		-- Ensure we get a prompt response
+		-- TODO: Append here?
 		local t_diff = unix.time() - t_write
 		assert( t_diff<response_timeout, 
 		string.format('Response timeout for command (%s)',cmd)
 		)
 		-- Read from the Hokuyo
+		-- TODO: Sleep for each loop in wait of the response
+		--unix.usleep(5000)--11ms
 		response = unix.read(fd)
 		if type(response)=='string' then
-			iCmd = res:find(cmd)
+			iCmd = response:find(cmd)
 		end
 	end
 	--------------------
@@ -47,43 +58,57 @@ local write_command = function(fd, cmd, expected_resp)
 	-- Check the correctness of the response
 	-- Filter to only the response
 	response = response:sub(iCmd+#cmd)
+	-- TODO: To save time, do not use find, just check the last character
+	----[[
+	-- TODO: Soft fail
+	-- Last byte is 10 (\n)
+	assert(response:byte(#response)==10,
+	string.format('Bad end of response! %s',response) 
+	)
+	--]]
+	--[[
 	local end_of_reponse = response:find('\n')
 	-- Wait for and append more data if we cannot find the full response
 	if not end_of_response then
+		io.write('Got|',response,'|',cmd)
 		-- TODO: Yield an expected response time.  Have a smart sleep time
 		unix.usleep(1000)
 		local append = unix.read(fd)
-		assert( type(append)=='string', 'Did not receive appended response' )
+		assert( type(append)=='string', 
+		string.format('Bad appended response (%s) of %d',type(append), #response ) 
+		)
 		response = response..append
 	end
-end_of_reponse = response:find('\n')
-assert(end_of_reponse,'Cannot find the end of the response')
---------------------
+	end_of_reponse = response:find('\n')
+	assert(end_of_reponse,'Cannot find the end of the response')
+	--]]
+	--------------------
 
---------------------
--- Assume a good response until otherwise checked
-local actual = response:sub(1, 2)
-assert(
-actual==expected_response,
-string.format('Expected response (%s) but got (%s)', 
-expected_response, actual )
-)
---------------------
+	--------------------
+	-- Assume a good response until otherwise checked
+	--print('Resp',response)
+	local actual = response:sub(1,2)
+	assert(
+	actual==expected_response,
+	string.format('Cmd (%s)Expected response (%s) but got (%s)', 
+	cmd, expected_response, actual )
+	)
+	--------------------
 
-return response
+	return response
 end
 
 local create_scan_request = 
 function(scan_start, scan_end, scan_skip, encoding, scan_type, num_scans)
-	-- TODO range checks and more types support
-	local request = nil
-	local base_request = string.format(
-	"MD%04d%04d%02x0%02d\n", scan_start,scan_end,scan_skip,num_scans
-	);
-	if num_scans==0 then
-		if scan_type == HOKUYO_SCAN_REGULAR then
-			if encoding == HOKUYO_3DIGITS then
-				request = 'MD'..base_request
+-- TODO range checks and more types support
+local request = nil
+local base_request = string.format(
+"%04d%04d%02x0%02d\n", scan_start, scan_end, scan_skip, num_scans
+);
+if num_scans==0 then
+	if scan_type == HOKUYO_SCAN_REGULAR then
+		if encoding == HOKUYO_3DIGITS then
+			request = 'MD'..base_request
 			elseif encoding == HOKUYO_2DIGITS then
 				request = 'MS'..base_request
 			end
@@ -175,16 +200,17 @@ end
 ---------------------------
 -- Grab the scan from the buffer
 -- TODO: Add a timeout
+-- NOTE: This is actually a coroutine
 local get_scan = function(self)
 	--  local t0 = unix.time()
 	local raw_scan = ''
 	local buf = ''
 	while true do
-		raw_scan = unix.read(self.fd, 3372-#buf )
+		raw_scan = unix.read(self.fd, N_SCAN_BYTES-#buf )
 		--raw_scan = unix.read(self.fd, 3372 )
 		if raw_scan then
 			raw_scan = buf..raw_scan
-			if #raw_scan==3372 then
+			if #raw_scan==N_SCAN_BYTES then
 				break
 			end
 			-- We may need to try again!
@@ -197,10 +223,12 @@ local get_scan = function(self)
 		--unix.usleep(12100)
 		-- BEST OF BOTH
 		-- TODO: Debug how many times each is called
-		if not raw_scan or #raw_scan>2000 then
-			unix.select({self.fd},0.050)
+		if not raw_scan or #raw_scan>FAST_READ_THRESHOLD then
+			--unix.select({self.fd},0.050)
+			coroutine.yield( FAST_WAIT_SEC )
 		else
-			unix.usleep(11000)
+			--unix.usleep(11000)
+			coroutine.yield( SLOW_WAIT_US )
 		end
 
 	end
@@ -247,7 +275,14 @@ libHokuyo.new_hokuyo = function(ttyname, serial, ttybaud )
 	-- Open the Serial device with the proper settings
 	--io.write( 'Opening ',name,' at ', baud, ' baud')
 	local fd = unix.open( name, unix.O_RDWR + unix.O_NOCTTY)
-	assert( fd>2, string.format("Open: %s, (%d)\n", name, fd)	)
+	
+	-- Check if opened correctly
+	--assert( fd>2, string.format("Open: %s, (%d)\n", name, fd)	)
+	-- Use soft fail
+	if fd<3 then
+		return nil
+	end
+	
 	stty.raw(fd)
 	stty.serial(fd)
 	stty.speed(fd, baud)
@@ -301,18 +336,17 @@ libHokuyo.service = function( hokuyos, main )
 
 	local t0 = unix.time()
 	-- Start the streaming of each hokuyo
-	local projected_timestamps = {}
 	local who_to_service = nil
 	local t_future = math.huge
-	for i,o in ipairs(objs) do
+	for i,hokuyo in ipairs(hokuyos) do
 		local t_now = unix.time()
-		local t_to_wait = o:stream_on()
-		local future_time = t_now + o.update_time
+		local t_to_wait = hokuyo:stream_on()
+		local future_time = t_now + hokuyo.update_time
 		if future_time<t_future then
-			who_to_service = o
+			who_to_service = hokuyo
 			t_future = future_time
 		end
-		projected_timestamps[i] = future_time
+		hokuyo.deadline = future_time
 	end
 
 	-- TODO: Perform a main loop here?
@@ -330,6 +364,8 @@ libHokuyo.service = function( hokuyos, main )
 
 		-- Service the correct Hokuyo
 		local result = who_to_service:get_scan()
+		
+		-- Process the result of the scan
 		if type( result ) == 'string' then
 			-- Process the callback
 			who_to_service.callback( result )
@@ -347,7 +383,7 @@ libHokuyo.service = function( hokuyos, main )
 			end
 			-- Setup the correct hokuyo
 			assert(mindex>0,'No object slated for next update!')
-			who_to_service = objs[mindex]
+			who_to_service = hokuyos[mindex]
 		end
 
 		-- Execute a main loop if desired, during the sleeping time

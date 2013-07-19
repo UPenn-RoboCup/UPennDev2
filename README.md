@@ -23,3 +23,8 @@ Copyright:
 Contact Information:
   UPenn E-mail:      upennalizers@gmail.com
   UPenn Website:    https://fling.seas.upenn.edu/~robocup/wiki/index.php
+  
+`brew install lua boost png libusb jpeg-turbo msgpack zeromq`
+`brew link --force jpeg-turbo`
+`brew tap smcgill3/grasp-brew`
+`brwe install torch openni octomap`

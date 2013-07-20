@@ -14,10 +14,13 @@ local HOKUYO_2DIGITS = 2
 local HOKUYO_3DIGITS = 3
 
 -- Coroutine read yielding
-local FAST_READ_THRESHOLD = 2000 -- bytes
 local N_SCAN_BYTES = 3372
-local SLOW_WAIT_US = 11000  -- 11ms (uses usleep)
-local FAST_WAIT_SEC = 0.050 -- 50ms (uses select)
+-- Regular read
+local FAST_READ_THRESHOLD = 3000 -- bytes
+local SLOW_WAIT_US = 12000  -- (uses usleep)
+local FAST_WAIT_SEC = 0.05 -- (uses select)
+-- For the coroutine
+local PREDICT_SLACK = 1.5e-3 -- Data comes in slightly earlier
 
 --------------------
 -- Internal paramters
@@ -61,13 +64,17 @@ local write_command = function(fd, cmd, expected_response)
 	-- Just checking the last byte for now
 	-- Filter to only the response
 	response = response:sub(iCmd+#cmd)
-	----[[
-	-- TODO: Soft fail
+	-- Soft fail
+	if response:byte(#response)~=10 then
+		print(string.format('Bad end of response!'))
+		return nil
+	end
 	-- Last byte is 10 (\n)
+	--[[
 	assert(response:byte(#response)==10,
 	string.format('Bad end of response! %s',response) 
 	)
-	--]]
+	]]
 	--------------------
 
 	--------------------
@@ -109,40 +116,19 @@ end
 -- Grab the scan from the buffer
 -- TODO: Add a timeout
 -- NOTE: This is actually a coroutine
-local get_scan = function(hokuyo)
-	-- local t0 = unix.time()
-	local raw_scan = ''
+local get_scan = function(self)
 	local buf = ''
 	while true do
-		raw_scan = unix.read(hokuyo.fd, N_SCAN_BYTES-#buf )
-		--raw_scan = unix.read(hokuyo.fd, 3372 )
+		unix.select({self.fd},FAST_WAIT_SEC)
+		local raw_scan = unix.read( self.fd, N_SCAN_BYTES )
 		if raw_scan then
-			raw_scan = buf..raw_scan
-			if #raw_scan==N_SCAN_BYTES then
+			buf = buf..raw_scan
+			if #buf==N_SCAN_BYTES then
 				break
 			end
-			-- We may need to try again!
-			buf = raw_scan
 		end
-		-- TODO: Yield expected response time
-		-- FASTER data
-		--unix.select({hokuyo.fd},0.050)
-		-- LESS CPU, SLOWER DATA
-		--unix.usleep(12100)
-		-- BEST OF BOTH
-		-- TODO: Debug how many times each is called
-		if not raw_scan or #raw_scan>FAST_READ_THRESHOLD then
-			unix.select({hokuyo.fd},FAST_WAIT_SEC)
-		else
-			unix.usleep(SLOW_WAIT_US)
-		end
-
 	end
-	-- Reset the buffer
-	buf = ''
-	--  local t1 = unix.time()
-	--  print( string.format('Took %5.2f ms to get data\n',1000*(t1-t0)))
-	return HokuyoPacket.parse(raw_scan)
+	return HokuyoPacket.parse(buf)
 end
 
 -------------------------
@@ -310,7 +296,7 @@ libHokuyo.new_hokuyo = function(ttyname, serial, ttybaud )
 	-----------
 	obj.stream_on = stream_on
 	obj.stream_off = stream_off
-	obj.get_scan = get_scan--get_scan
+	obj.get_scan = get_scan
 	obj.callback = nil
 	-- TODO: Use sensor_params.scan_rate
 	obj.update_time = 1/40
@@ -346,39 +332,30 @@ libHokuyo.service = function( hokuyos, main )
 		hokuyo.thread = coroutine.create( 
 		function()
 			while true do
-				-- local t0 = unix.time()
-				local raw_scan = ''
 				local buf = ''
 				local nbuf = 0
 				repeat
-					raw_scan = unix.read(hokuyo.fd, N_SCAN_BYTES-nbuf )
+					local raw_scan = unix.read(hokuyo.fd, N_SCAN_BYTES-nbuf )
 					if raw_scan then
 						buf = buf..raw_scan
 						nbuf = #buf
-					else
-						coroutine.yield( 'select', FAST_WAIT_SEC )
 					end
-
-					if nbuf>FAST_READ_THRESHOLD then
-						coroutine.yield( 'select', FAST_WAIT_SEC )
-					else
-						coroutine.yield( 'sleep', SLOW_WAIT_US )
-					end
-
-					until nbuf>=N_SCAN_BYTES
-	
-					-- Return the string to be parsed
-					coroutine.yield( 'packet',raw_scan )
-				end
-			end
-			)
+					--print('nbuf_intra_select',nbuf,unix.time())
+					coroutine.yield( FAST_WAIT_SEC )
+				until nbuf>=N_SCAN_BYTES
+				-- Return the string to be parsed
+				coroutine.yield( buf )
+			end --while true
+			end -- coroutine function
+		)
 	end
 
 	-- TODO: Perform a main loop here?
 
 	-- Loop and sleep appropriately
-	local who_to_service = hokuyos[1]
-	local t_future = hokuyos[1].deadline
+	local who_to_service_id = 1
+	local who_to_service = hokuyos[who_to_service_id]
+	local t_future = who_to_service.deadline
 	while true do
 
 		-- Sleep until ready to service
@@ -392,44 +369,44 @@ libHokuyo.service = function( hokuyos, main )
 		
 		-- Resume the thread
 		--print('Servicing',who_to_service.info.serial_number)
-		local status_code, command, param = coroutine.resume( who_to_service.thread )
+		local status_code, param = coroutine.resume( who_to_service.thread )
 		
 		-- Process the yielded result
+		t_now = unix.time()
 		if status_code then
 			-- Process the result of the scan
-			if command=='packet' then
+			if type(param)=='string' then
 				local t_diff = t_now-who_to_service.t_last
-				print('Packet',who_to_service.info.serial_number,1/t_diff..' FPS')
 				who_to_service.t_last = t_now
 				
 				-- Process the callback
 				if who_to_service.callback then
-					who_to_service.callback( HokuyoPacket.parse(param) )
+					local pkt = HokuyoPacket.parse(param)
+					--print(who_to_service.info.serial_number,1/t_diff..' FPS')
+					who_to_service.callback( pkt )
+					--print()
 				end
 				-- Expect a new scan result
-				who_to_service.deadline = t_now + who_to_service.update_time
-			elseif command=='sleep' then
-				--print(command,t_now,param)
-				who_to_service.deadline = t_now + param/1e6
-			elseif command=='select' then
-				--print(command,t_now,param)
-				--who_to_service.deadline = t_now + param
-				who_to_service.deadline = t_now
-				unix.select({who_to_service.fd},param)
+				who_to_service.deadline = t_now + who_to_service.update_time - PREDICT_SLACK
 			else
-				print('Yielded', command, param)
+				-- Quickly update
+				unix.select({who_to_service.fd},param)
+				who_to_service.deadline = t_now
 			end
 		else
 			print('Dead hokuyo!',who_to_service.info.serial_number)
+			table.remove(hokuyos,who_to_service_id)
 		end
 		
 		-- Update the next timestamp
 		t_future = math.huge
 		who_to_service = nil
-		for _,hokuyo in pairs( hokuyos ) do
+		who_to_service_id = -1
+		for i,hokuyo in pairs( hokuyos ) do
 			local d = hokuyo.deadline
 			if d<t_future then
 				who_to_service = hokuyo
+				who_to_service_id = i
 				t_future = d
 			end
 		end

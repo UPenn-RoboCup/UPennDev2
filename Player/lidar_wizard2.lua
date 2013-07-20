@@ -23,7 +23,7 @@ local chest_lidar_ch = simple_ipc.new_publisher('chest_lidar') --chest lidar
 -- Acquire Hokuyo data
 if OPERATING_SYSTEM=='darwin' then
   head_device = "/dev/cu.usbmodem1411"
-  chest_device = "/dev/cu.usbmodem1422"
+  chest_device = "/dev/cu.usbmodem1421"
 end
 local hokuyos = {}
 local head_hokuyo = libHokuyo.new_hokuyo(head_device)

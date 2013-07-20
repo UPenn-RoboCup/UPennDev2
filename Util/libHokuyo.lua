@@ -16,14 +16,16 @@ local HOKUYO_3DIGITS = 3
 -- Coroutine read yielding
 local FAST_READ_THRESHOLD = 2000 -- bytes
 local N_SCAN_BYTES = 3372
-local SLOW_WAIT_US = 11000  -- 11ms (to be tuned.  uses usleep)
-local FAST_WAIT_SEC = -0.050 -- 50ms (uses select, denote with negative number)
+local SLOW_WAIT_US = 11000  -- 11ms (uses usleep)
+local FAST_WAIT_SEC = 0.050 -- 50ms (uses select)
 
 --------------------
 -- Internal paramters
 libHokuyo.CURRENT_HOKUYO = -1
 libHokuyo.MAX_NUM_HOKUYO = 255
 
+-------------------------
+-- Write a command to a hokuyo
 local write_command = function(fd, cmd, expected_response)
 	-- Should get one of these... '00', '02', '03', '04'
 	expected_response = expected_response or '00'
@@ -45,8 +47,8 @@ local write_command = function(fd, cmd, expected_response)
 		string.format('Response timeout for command (%s)',cmd)
 		)
 		-- Read from the Hokuyo
-		-- TODO: Sleep for each loop in wait of the response
-		--unix.usleep(5000)--11ms
+		-- Sleep for each loop in wait of the response
+		unix.usleep(5000)
 		response = unix.read(fd)
 		if type(response)=='string' then
 			iCmd = response:find(cmd)
@@ -56,9 +58,9 @@ local write_command = function(fd, cmd, expected_response)
 
 	--------------------
 	-- Check the correctness of the response
+	-- Just checking the last byte for now
 	-- Filter to only the response
 	response = response:sub(iCmd+#cmd)
-	-- TODO: To save time, do not use find, just check the last character
 	----[[
 	-- TODO: Soft fail
 	-- Last byte is 10 (\n)
@@ -66,27 +68,10 @@ local write_command = function(fd, cmd, expected_response)
 	string.format('Bad end of response! %s',response) 
 	)
 	--]]
-	--[[
-	local end_of_reponse = response:find('\n')
-	-- Wait for and append more data if we cannot find the full response
-	if not end_of_response then
-		io.write('Got|',response,'|',cmd)
-		-- TODO: Yield an expected response time.  Have a smart sleep time
-		unix.usleep(1000)
-		local append = unix.read(fd)
-		assert( type(append)=='string', 
-		string.format('Bad appended response (%s) of %d',type(append), #response ) 
-		)
-		response = response..append
-	end
-	end_of_reponse = response:find('\n')
-	assert(end_of_reponse,'Cannot find the end of the response')
-	--]]
 	--------------------
 
 	--------------------
-	-- Assume a good response until otherwise checked
-	--print('Resp',response)
+	-- Check the response
 	local actual = response:sub(1,2)
 	assert(
 	actual==expected_response,
@@ -98,6 +83,8 @@ local write_command = function(fd, cmd, expected_response)
 	return response
 end
 
+-------------------------
+-- Form the stream command
 local create_scan_request = 
 function(scan_start, scan_end, scan_skip, encoding, scan_type, num_scans)
 -- TODO range checks and more types support
@@ -118,6 +105,48 @@ if num_scans==0 then
 	return request
 end
 
+---------------------------
+-- Grab the scan from the buffer
+-- TODO: Add a timeout
+-- NOTE: This is actually a coroutine
+local get_scan = function(hokuyo)
+	-- local t0 = unix.time()
+	local raw_scan = ''
+	local buf = ''
+	while true do
+		raw_scan = unix.read(hokuyo.fd, N_SCAN_BYTES-#buf )
+		--raw_scan = unix.read(hokuyo.fd, 3372 )
+		if raw_scan then
+			raw_scan = buf..raw_scan
+			if #raw_scan==N_SCAN_BYTES then
+				break
+			end
+			-- We may need to try again!
+			buf = raw_scan
+		end
+		-- TODO: Yield expected response time
+		-- FASTER data
+		--unix.select({hokuyo.fd},0.050)
+		-- LESS CPU, SLOWER DATA
+		--unix.usleep(12100)
+		-- BEST OF BOTH
+		-- TODO: Debug how many times each is called
+		if not raw_scan or #raw_scan>FAST_READ_THRESHOLD then
+			unix.select({hokuyo.fd},FAST_WAIT_SEC)
+		else
+			unix.usleep(SLOW_WAIT_US)
+		end
+
+	end
+	-- Reset the buffer
+	buf = ''
+	--  local t1 = unix.time()
+	--  print( string.format('Took %5.2f ms to get data\n',1000*(t1-t0)))
+	return HokuyoPacket.parse(raw_scan)
+end
+
+-------------------------
+-- Turn off data streaming
 local stream_off = function(self)
 	local ntries = 5
 	local stop_delay = 5e4
@@ -131,6 +160,8 @@ local stream_off = function(self)
 	end
 end
 
+-------------------------
+-- Turn on data streaming
 local stream_on = function(self)
 
 	-- Ensure that we stream_off before we stream_on again
@@ -147,6 +178,8 @@ local stream_on = function(self)
 
 end
 
+-------------------------
+-- Get sensor parameters from the hokuyo
 local get_sensor_params = function(self)
 	local res = write_command( self.fd, 'PP\n' )
 
@@ -170,6 +203,8 @@ local get_sensor_params = function(self)
 	return sensor_params
 end
 
+-------------------------
+-- Get Hokuyo sensor information
 local get_sensor_info = function(self)
 	local cmd = 'VV\n'
 	local res = write_command( self.fd, cmd )
@@ -195,48 +230,6 @@ end
 local set_baudrate = function(self, baud)
 	local cmd = 'SS'..string.format("%6d", baud)..'\n';
 	local res = write_command(self.fd, cmd, '04')
-end
-
----------------------------
--- Grab the scan from the buffer
--- TODO: Add a timeout
--- NOTE: This is actually a coroutine
-local get_scan = function(self)
-	--  local t0 = unix.time()
-	local raw_scan = ''
-	local buf = ''
-	while true do
-		raw_scan = unix.read(self.fd, N_SCAN_BYTES-#buf )
-		--raw_scan = unix.read(self.fd, 3372 )
-		if raw_scan then
-			raw_scan = buf..raw_scan
-			if #raw_scan==N_SCAN_BYTES then
-				break
-			end
-			-- We may need to try again!
-			buf = raw_scan
-		end
-		-- TODO: Yield expected response time
-		-- FASTER data
-		--unix.select({self.fd},0.050)
-		-- LESS CPU, SLOWER DATA
-		--unix.usleep(12100)
-		-- BEST OF BOTH
-		-- TODO: Debug how many times each is called
-		if not raw_scan or #raw_scan>FAST_READ_THRESHOLD then
-			--unix.select({self.fd},0.050)
-			coroutine.yield( FAST_WAIT_SEC )
-		else
-			--unix.usleep(11000)
-			coroutine.yield( SLOW_WAIT_US )
-		end
-
-	end
-	-- Reset the buffer
-	buf = ''
-	--  local t1 = unix.time()
-	--  print( string.format('Took %5.2f ms to get data\n',1000*(t1-t0)))
-	return HokuyoPacket.parse(raw_scan)
 end
 
 ---------------------------
@@ -317,7 +310,7 @@ libHokuyo.new_hokuyo = function(ttyname, serial, ttybaud )
 	-----------
 	obj.stream_on = stream_on
 	obj.stream_off = stream_off
-	obj.get_scan = get_scan
+	obj.get_scan = get_scan--get_scan
 	obj.callback = nil
 	-- TODO: Use sensor_params.scan_rate
 	obj.update_time = 1/40
@@ -338,7 +331,10 @@ libHokuyo.service = function( hokuyos, main )
 	-- Start the streaming of each hokuyo
 	local who_to_service = nil
 	local t_future = math.huge
-	for i,hokuyo in ipairs(hokuyos) do
+	
+	for _,hokuyo in pairs(hokuyos) do
+		print('Setting up',hokuyo.info.serial_number)
+		io.flush()
 		local t_now = unix.time()
 		local t_to_wait = hokuyo:stream_on()
 		local future_time = t_now + hokuyo.update_time
@@ -347,6 +343,35 @@ libHokuyo.service = function( hokuyos, main )
 			t_future = future_time
 		end
 		hokuyo.deadline = future_time
+		hokuyo.thread = coroutine.create( 
+		function()
+			while true do
+				-- local t0 = unix.time()
+				local raw_scan = ''
+				local buf = ''
+				local nbuf = 0
+				repeat
+					raw_scan = unix.read(hokuyo.fd, N_SCAN_BYTES-nbuf )
+					if raw_scan then
+						buf = buf..raw_scan
+						nbuf = #buf
+					else
+						coroutine.yield( 'select', FAST_WAIT_SEC )
+					end
+
+					if nbuf>FAST_READ_THRESHOLD then
+						coroutine.yield( 'select', FAST_WAIT_SEC )
+					else
+						coroutine.yield( 'sleep', SLOW_WAIT_US )
+					end
+
+					until nbuf>=N_SCAN_BYTES
+	
+					-- Return the string to be parsed
+					coroutine.yield( 'packet',raw_scan )
+				end
+			end
+			)
 	end
 
 	-- TODO: Perform a main loop here?
@@ -359,32 +384,64 @@ libHokuyo.service = function( hokuyos, main )
 		local t_sleep = 1e6*(t_future-t_now)
 		-- TODO: Debug if negative
 		if t_sleep>0 then
+			--print('sleeping',t_sleep)
 			unix.usleep( t_sleep )
 		end
 
 		-- Service the correct Hokuyo
-		local result = who_to_service:get_scan()
-		
-		-- Process the result of the scan
-		if type( result ) == 'string' then
-			-- Process the callback
-			who_to_service.callback( result )
-			-- Expect a new scan result
-			projected_timestamps[i] = t_now + who_to_service.update_time
-		else
-			-- Update the next timestamp
-			t_future = math.huge
-			local mindex = -1
-			for i,pt in ipairs(projected_timestamps) do
-				if pt<t_future then
-					mindex = i
-					t_future = future_time
-				end
-			end
-			-- Setup the correct hokuyo
-			assert(mindex>0,'No object slated for next update!')
-			who_to_service = hokuyos[mindex]
+		--local result = who_to_service:get_scan()
+		--[[
+		if coroutine.status(who_to_service.thread)=='suspended' then
+			print('Resuming',who_to_service.info.serial_number)
 		end
+		--]]
+		
+		-- Resume the thread
+		local status_code, command, param = coroutine.resume( who_to_service.thread )
+		
+		-- Process the yielded result
+		if status_code then
+			-- Process the result of the scan
+			if command=='packet' then
+				
+				--print'got a packet!'
+				--print('FPS',1/(t_now-(t_last or t_now)))
+				t_last = t_now
+				
+				-- Process the callback
+				if who_to_service.callback then
+					who_to_service.callback( HokuyoPacket.parse(param) )
+				end
+				-- Expect a new scan result
+				who_to_service.deadline = t_now + who_to_service.update_time
+			elseif command=='sleep' then
+				--print(command,t_now,param)
+				who_to_service.deadline = t_now + param/1e6
+			elseif command=='select' then
+				--print(command,t_now,param)
+				--who_to_service.deadline = t_now + param
+				who_to_service.deadline = t_now
+				unix.select({who_to_service.fd},param)
+			else
+				print('Yielded', command, param)
+			end
+		else
+			print('Dead hokuyo!',who_to_service.info.serial_number)
+		end
+		
+		-- Update the next timestamp
+		t_future = math.huge
+		local who_to_service = nil
+		for i,hokuyo in pairs( hokuyos ) do
+			local d = hokuyo.deadline
+			if d<t_future then
+				who_to_service = hokuyo
+				t_future = d
+			end
+		end
+		-- Setup the correct hokuyo
+		assert(who_to_service,'No hokuyo slated for next update!')
+		
 
 		-- Execute a main loop if desired, during the sleeping time
 		if main then

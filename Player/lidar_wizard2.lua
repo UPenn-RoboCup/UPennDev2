@@ -55,4 +55,5 @@ signal.signal("SIGTERM", shutdown)
 
 -- Begin to service
 assert(#hokuyos>0,"No hokuyos detected!")
+print('Servicing',#hokuyos)
 libHokuyo.service( hokuyos )

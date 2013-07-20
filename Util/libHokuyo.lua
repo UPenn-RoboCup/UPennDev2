@@ -329,19 +329,19 @@ libHokuyo.service = function( hokuyos, main )
 
 	local t0 = unix.time()
 	-- Start the streaming of each hokuyo
-	local who_to_service = nil
-	local t_future = math.huge
-	
 	for _,hokuyo in pairs(hokuyos) do
 		print('Setting up',hokuyo.info.serial_number)
 		io.flush()
 		local t_now = unix.time()
 		local t_to_wait = hokuyo:stream_on()
 		local future_time = t_now + hokuyo.update_time
+		--[[
 		if future_time<t_future then
 			who_to_service = hokuyo
 			t_future = future_time
 		end
+		--]]
+		hokuyo.t_last = t_now
 		hokuyo.deadline = future_time
 		hokuyo.thread = coroutine.create( 
 		function()
@@ -377,6 +377,8 @@ libHokuyo.service = function( hokuyos, main )
 	-- TODO: Perform a main loop here?
 
 	-- Loop and sleep appropriately
+	local who_to_service = hokuyos[1]
+	local t_future = hokuyos[1].deadline
 	while true do
 
 		-- Sleep until ready to service
@@ -387,26 +389,18 @@ libHokuyo.service = function( hokuyos, main )
 			--print('sleeping',t_sleep)
 			unix.usleep( t_sleep )
 		end
-
-		-- Service the correct Hokuyo
-		--local result = who_to_service:get_scan()
-		--[[
-		if coroutine.status(who_to_service.thread)=='suspended' then
-			print('Resuming',who_to_service.info.serial_number)
-		end
-		--]]
 		
 		-- Resume the thread
+		--print('Servicing',who_to_service.info.serial_number)
 		local status_code, command, param = coroutine.resume( who_to_service.thread )
 		
 		-- Process the yielded result
 		if status_code then
 			-- Process the result of the scan
 			if command=='packet' then
-				
-				--print'got a packet!'
-				--print('FPS',1/(t_now-(t_last or t_now)))
-				t_last = t_now
+				local t_diff = t_now-who_to_service.t_last
+				print('Packet',who_to_service.info.serial_number,1/t_diff..' FPS')
+				who_to_service.t_last = t_now
 				
 				-- Process the callback
 				if who_to_service.callback then
@@ -431,14 +425,15 @@ libHokuyo.service = function( hokuyos, main )
 		
 		-- Update the next timestamp
 		t_future = math.huge
-		local who_to_service = nil
-		for i,hokuyo in pairs( hokuyos ) do
+		who_to_service = nil
+		for _,hokuyo in pairs( hokuyos ) do
 			local d = hokuyo.deadline
 			if d<t_future then
 				who_to_service = hokuyo
 				t_future = d
 			end
 		end
+		
 		-- Setup the correct hokuyo
 		assert(who_to_service,'No hokuyo slated for next update!')
 		
@@ -447,8 +442,7 @@ libHokuyo.service = function( hokuyos, main )
 		if main then
 			main()
 		end
-
-	end
+	end -- while
 
 end
 

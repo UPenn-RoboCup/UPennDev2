@@ -45,7 +45,7 @@ if chest_hokuyo then
   chest_hokuyo.callback = function(data)
     local serialized = mp.pack({chest_hokuyo.t_last,data})
     local ret = chest_lidar_ch:send(serialized)
-    --[[
+    ----[[
     local t_diff = chest_hokuyo.t_last - (last_chest or unix.time())
     last_chest = chest_hokuyo.t_last
     print('chest',ret,#serialized,1/t_diff..' Hz')
@@ -56,18 +56,13 @@ end
 -- Ensure that we shutdown the devices properly
 function shutdown()
   print'Shutting down the Hokuyos...'
-  if head_hokuyo then
-    head_hokuyo:stream_off()
-    head_hokuyo:close()
-    print'Closed Head Hokuyo'
+  for i,h in ipairs(hokuyos) do
+    h:stream_off()
+    h:close()
+    print('Closed Hokuyo',i)
+    table.remove(hokuyos,i)
+    unix.usleep(1e6)
   end
-  if chest_hokuyo then
-    chest_hokuyo:stream_off()
-    chest_hokuyo:close()
-    print'Closed Chest Hokuyo'
-  end
-  io.flush()
-  --error()
 end
 signal.signal("SIGINT", shutdown)
 signal.signal("SIGTERM", shutdown)
@@ -102,4 +97,11 @@ while true do
 end
 --]]
 
-libHokuyo.service( hokuyos )
+local main = function()
+  while true do
+    print('hi there!')
+    coroutine.yield()
+  end
+end
+
+libHokuyo.service( hokuyos, main )

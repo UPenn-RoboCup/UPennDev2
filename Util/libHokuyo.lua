@@ -350,7 +350,11 @@ libHokuyo.service = function( hokuyos, main )
 		)
 	end
 
-	-- TODO: Perform a main loop here?
+  local main_thread = nil
+  if main then
+    print('create main thread!')
+    main_thread = coroutine.create( main )
+  end
 
 	-- Loop and sleep appropriately
 	local who_to_service_id = 1
@@ -361,9 +365,12 @@ libHokuyo.service = function( hokuyos, main )
 		-- Sleep until ready to service
 		local t_now = unix.time()
 		local t_sleep = 1e6*(t_future-t_now)
-		-- TODO: Debug if negative
 		if t_sleep>0 then
-			--print('sleeping',t_sleep)
+      print(t_sleep)
+      if t_sleep>0.01 and main_thread then
+        --print('Running main!')
+        coroutine.resume( main_thread )
+      end
 			unix.usleep( t_sleep )
 		end
 		
@@ -413,12 +420,6 @@ libHokuyo.service = function( hokuyos, main )
 		
 		-- Setup the correct hokuyo
 		assert(who_to_service,'No hokuyo slated for next update!')
-		
-
-		-- Execute a main loop if desired, during the sleeping time
-		if main then
-			main()
-		end
 	end -- while
 
 end

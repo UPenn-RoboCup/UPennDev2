@@ -34,7 +34,14 @@ if head_hokuyo then
   local head_lidar_ch = simple_ipc.new_publisher('head_lidar') --head lidar
   table.insert(hokuyos,head_hokuyo)
   head_hokuyo.callback = function(data)
-    --print('head_hokuyo got',#data)
+    local serialized = mp.pack({head_hokuyo.t_last,data})
+    local ret = head_lidar_ch:send(serialized)
+    ----[[
+    local t_diff = head_hokuyo.t_last - (last_head or unix.time())
+    last_head = head_hokuyo.t_last
+    print('head',ret,#serialized,1/t_diff..' Hz')
+    --]]
+    
   end
 end
 
@@ -60,16 +67,16 @@ function shutdown()
     h:stream_off()
     h:close()
     print('Closed Hokuyo',i)
-    table.remove(hokuyos,i)
-    unix.usleep(1e6)
   end
+  error('Finished!')
 end
 signal.signal("SIGINT", shutdown)
 signal.signal("SIGTERM", shutdown)
 
 -- Begin to service
 assert(#hokuyos>0,"No hokuyos detected!")
-print('Servicing',#hokuyos)
+io.write('Servicing ',#hokuyos,' Hokuyos\n\n')
+io.flush()
 
 --[[
 local fds = {}
@@ -95,13 +102,16 @@ while true do
   t_last = t_now
   print(1/t_diff,'Hz')
 end
+return
 --]]
 
 local main = function()
   while true do
-    print('hi there!')
+    local t_now = unix.time()
+    local t_diff = t_now - (t_last or unix.time())
+    t_last = t_now
+    --print('Main loop:',1/t_diff..' Hz')
     coroutine.yield()
   end
 end
-
 libHokuyo.service( hokuyos, main )

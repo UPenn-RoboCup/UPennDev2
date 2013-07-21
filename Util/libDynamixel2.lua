@@ -5,8 +5,8 @@
 local libDynamixel = {}
 local DP1 = require('DynamixelPacket1') -- 1.0 protocol
 local DP2 = require('DynamixelPacket2') -- 2.0 protocol
-unix = require('unix')
-stty = require('stty')
+local unix = require('unix')
+local stty = require('stty')
 local using_status_return = false
 
 -- RX (uses 1.0)
@@ -249,7 +249,7 @@ local function get_status( protocol, fd, npkt, expected_sz, timeout )
 end
 
 --------------------
--- Set functions
+-- Initialize functions for reading/writing to NX motors
 local nx_single_write = {}
 nx_single_write[1] = DP2.write_byte
 nx_single_write[2] = DP2.write_word
@@ -260,19 +260,20 @@ nx_sync_write[1] = sync_write_byte
 nx_sync_write[2] = sync_write_word
 nx_sync_write[4] = sync_write_dword
 
+--------------------
+-- Set NX functions
 for k,v in pairs( nx_registers ) do
 	libDynamixel['set_nx_'..k] = function( bus, motor_ids, values )
 		local addr = v[1]
 		local sz = v[2]
 		local fd = bus.fd
 		
-		-- Use single writes or sync write
-		local single = type(motor_ids)=='table'
-		
+    -- TODO: The I/O should be handled elsewhere
 		-- Clear old status packets
 		local clear = unix.read(fd)
 		
 		-- Construct the instruction (single or sync)
+    local single = type(motor_ids)=='table' 
 		local instruction = nil
 		if single then
 			instruction = nx_single_write[sz](motor_ids, addr, values)
@@ -294,15 +295,12 @@ for k,v in pairs( nx_registers ) do
 end
 
 --------------------
--- Get functions
+-- Get NX functions
 for k,v in pairs( nx_registers ) do
 	libDynamixel['get_nx_'..k] = function( bus, motor_ids, values )
 		local addr = v[1]
 		local sz = v[2]
 		local fd = bus.fd
-		
-		-- Use single writes or sync write
-		local single = type(motor_ids)=='table'
 		
 		-- Clear old status packets
 		local clear = unix.read(fd)
@@ -310,7 +308,7 @@ for k,v in pairs( nx_registers ) do
 		-- Construct the instruction (single or sync)
 		local instruction = nil
 		local nids = 1
-		if single then
+		if type(motor_ids)=='table' then
 			instruction = DP2.read_data(id, addr, sz);
 		else
 			instruction = DP2.sync_read(string.char(unpack(motor_ids)), addr, sz)
@@ -321,13 +319,14 @@ for k,v in pairs( nx_registers ) do
 		local ret = unix.write(fd, instruction)
 		
 		-- Grab the status of the register
-		-- TODO: Provide an expected size
 		local status = libDynamixel.get_status( 2, fd, nids, nil )
+    return status
 		
 	end --function
 end
 
--- TODO: Provide expected ping response size
+--------------------
+-- Ping functions
 libDynamixel.send_ping = function( self, id, protocol )
 	protocol = protocol or 2
 	local instruction = nil
@@ -341,6 +340,7 @@ libDynamixel.send_ping = function( self, id, protocol )
 end
 
 libDynamixel.ping_probe = function(self, protocol, twait)
+  protocol = protocol or 2
 	twait = twait or 0.010
 	for id = 0,253 do
 		local status = libDynamixel.send_ping( self, id, protocol );
@@ -350,6 +350,8 @@ libDynamixel.ping_probe = function(self, protocol, twait)
 	end
 end
 
+--------------------
+-- Generator of a new bus
 function libDynamixel.new_bus( ttyname, ttybaud )
 	-------------------------------
 	-- Find the device
@@ -406,71 +408,5 @@ function libDynamixel.new_bus( ttyname, ttybaud )
 	
 	return obj
 end
-
----------------------------
--- Service multiple hokuyos
--- TODO: This seems pretty generic already - make it more so
-libDynamixel.service = function( buses, main )
-
-	local t0 = unix.time()
-	-- Start the streaming of each hokuyo
-	local projected_timestamps = {}
-	local who_to_service = nil
-	local t_future = math.huge
-	for i,o in ipairs(objs) do
-		local t_now = unix.time()
-		local t_to_wait = o:stream_on()
-		local future_time = t_now + o.update_time
-		if future_time<t_future then
-			who_to_service = o
-			t_future = future_time
-		end
-		projected_timestamps[i] = future_time
-	end
-
-	-- TODO: Perform a main loop here?
-
-	-- Loop and sleep appropriately
-	while true do
-
-		-- Sleep until ready to service
-		local t_now = unix.time()
-		local t_sleep = 1e6*(t_future-t_now)
-		-- TODO: Debug if negative
-		if t_sleep>0 then
-			unix.usleep( t_sleep )
-		end
-
-		-- Service the correct Hokuyo
-		local result = who_to_service:get_scan()
-		if type( result ) == 'string' then
-			-- Process the callback
-			who_to_service.callback( result )
-			-- Expect a new scan result
-			projected_timestamps[i] = t_now + who_to_service.update_time
-		else
-			-- Update the next timestamp
-			t_future = math.huge
-			local mindex = -1
-			for i,pt in ipairs(projected_timestamps) do
-				if pt<t_future then
-					mindex = i
-					t_future = future_time
-				end
-			end
-			-- Setup the correct hokuyo
-			assert(mindex>0,'No object slated for next update!')
-			who_to_service = objs[mindex]
-		end
-
-		-- Execute a main loop if desired, during the sleeping time
-		if main then
-			main()
-		end
-
-	end
-
-end
-
 
 return libDynamixel

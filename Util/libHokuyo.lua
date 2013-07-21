@@ -46,14 +46,22 @@ local write_command = function(fd, cmd, expected_response)
 		-- Ensure we get a prompt response
 		-- TODO: Append here?
 		local t_diff = unix.time() - t_write
+    if t_diff>response_timeout then
+  		--print( string.format('Response timeout for command (%s)',cmd) )
+      return nil
+    end
+    --[[
 		assert( t_diff<response_timeout, 
 		string.format('Response timeout for command (%s)',cmd)
 		)
+    --]]
 		-- Read from the Hokuyo
 		-- Sleep for each loop in wait of the response
-		unix.usleep(5000)
+		--unix.usleep(5000)
+    unix.select( {fd}, 0.050 )
 		response = unix.read(fd)
 		if type(response)=='string' then
+      --print('write got',#response)
 			iCmd = response:find(cmd)
 		end
 	end
@@ -80,11 +88,16 @@ local write_command = function(fd, cmd, expected_response)
 	--------------------
 	-- Check the response
 	local actual = response:sub(1,2)
+  if actual~=expected_response then
+    return nil
+  end
+  --[[
 	assert(
 	actual==expected_response,
 	string.format('Cmd (%s)Expected response (%s) but got (%s)', 
 	cmd, expected_response, actual )
 	)
+  --]]
 	--------------------
 
 	return response
@@ -92,24 +105,24 @@ end
 
 -------------------------
 -- Form the stream command
+-- TODO range checks and more types support
 local create_scan_request = 
 function(scan_start, scan_end, scan_skip, encoding, scan_type, num_scans)
--- TODO range checks and more types support
 local request = nil
 local base_request = string.format(
 "%04d%04d%02x0%02d\n", scan_start, scan_end, scan_skip, num_scans
 );
 if num_scans==0 then
-	if scan_type == HOKUYO_SCAN_REGULAR then
-		if encoding == HOKUYO_3DIGITS then
-			request = 'MD'..base_request
-			elseif encoding == HOKUYO_2DIGITS then
-				request = 'MS'..base_request
-			end
-		end
-	end
-	assert(request,'Invalid character encoding')
-	return request
+  if scan_type == HOKUYO_SCAN_REGULAR then
+    if encoding == HOKUYO_3DIGITS then
+      request = 'MD'..base_request
+      elseif encoding == HOKUYO_2DIGITS then
+        request = 'MS'..base_request
+      end
+    end
+  end
+  assert(request,'Invalid character encoding')
+  return request
 end
 
 ---------------------------
@@ -134,16 +147,17 @@ end
 -------------------------
 -- Turn off data streaming
 local stream_off = function(self)
-	local ntries = 5
+	local ntries = 3
 	local stop_delay = 5e4
 	for i=1,ntries do
 		local resp = write_command( self.fd, 'QT\n' )
 		if resp then
-			break
+			return true
 		end
 		-- TODO: Yield the delay time between stop attempts
 		unix.usleep(stop_delay)
 	end
+  return false
 end
 
 -------------------------
@@ -252,7 +266,8 @@ libHokuyo.new_hokuyo = function(ttyname, serial, ttybaud )
 
 	-----------
 	-- Open the Serial device with the proper settings
-	--io.write( 'Opening ',name,' at ', baud, ' baud')
+	io.write( 'Opening ',name,' at ', baud, ' baud\n\n')
+  io.flush()
 	local fd = unix.open( name, unix.O_RDWR + unix.O_NOCTTY)
 	
 	-- Check if opened correctly
@@ -282,24 +297,31 @@ libHokuyo.new_hokuyo = function(ttyname, serial, ttybaud )
 	obj.close = function(self)
 		return unix.close(self.fd) == 0
 	end
-
-	-----------
-	-- Setup the Hokuyo properly
-	-----------
-	set_baudrate(obj, baud)
-	obj.params = get_sensor_params(obj)
-	obj.info = get_sensor_info(obj)
-	-----------
-
+  
 	-----------
 	-- Set the methods for accessing the data
 	-----------
 	obj.stream_on = stream_on
 	obj.stream_off = stream_off
 	obj.get_scan = get_scan
-	obj.callback = nil
+  obj.set_baudrate = set_baudrate
+  obj.get_sensor_params = get_sensor_params
+  obj.get_sensor_info = get_sensor_info
+  obj.callback = nil
 	-- TODO: Use sensor_params.scan_rate
 	obj.update_time = 1/40
+	-----------
+
+	-----------
+	-- Setup the Hokuyo properly
+	-----------
+  if not obj:stream_off() then
+    obj:close()
+    return nil
+  end
+	obj:set_baudrate(baud)
+	obj.params = obj:get_sensor_params()
+	obj.info = obj:get_sensor_info()
 	-----------
 
 	-----------
@@ -312,116 +334,103 @@ end
 -- Service multiple hokuyos
 -- TODO: This seems pretty generic already - make it more so
 libHokuyo.service = function( hokuyos, main )
+  
+  -- Enable the main function as a coroutine thread
+  local main_thread = nil
+  if main then
+    main_thread = coroutine.create( main )
+  end
 
-	local t0 = unix.time()
 	-- Start the streaming of each hokuyo
-	for _,hokuyo in pairs(hokuyos) do
-		print('Setting up',hokuyo.info.serial_number)
-		io.flush()
-		local t_now = unix.time()
-		local t_to_wait = hokuyo:stream_on()
-		local future_time = t_now + hokuyo.update_time
-		--[[
-		if future_time<t_future then
-			who_to_service = hokuyo
-			t_future = future_time
-		end
-		--]]
-		hokuyo.t_last = t_now
-		hokuyo.deadline = future_time
+  -- Instantiate the hokuyo coroutine thread
+  local hokuyo_fds = {}
+  local fd_to_hokuyo = {}
+  local fd_to_hokuyo_id = {}
+	for i,hokuyo in ipairs(hokuyos) do
+    fd_to_hokuyo[hokuyo.fd] = hokuyo
+    fd_to_hokuyo_id[hokuyo.fd] = i
+    table.insert(hokuyo_fds,hokuyo.fd)
+		hokuyo:stream_on()
+		hokuyo.t_last = unix.time()
 		hokuyo.thread = coroutine.create( 
 		function()
+      print('Starting coroutine for',hokuyo.info.serial_number)
+      -- The coroutine should never end
 			while true do
-				local buf = ''
-				local nbuf = 0
-				repeat
-					local raw_scan = unix.read(hokuyo.fd, N_SCAN_BYTES-nbuf )
-					if raw_scan then
-						buf = buf..raw_scan
-						nbuf = #buf
-					end
-					--print('nbuf_intra_select',nbuf,unix.time())
-					coroutine.yield( FAST_WAIT_SEC )
-				until nbuf>=N_SCAN_BYTES
-				-- Return the string to be parsed
-				coroutine.yield( buf )
+				local scan_str = ''
+				while true do -- extract buffer
+          -- Grab the latest data from the hokuyo buffer
+					local scan_buf = unix.read(hokuyo.fd, N_SCAN_BYTES-#scan_str )
+          -- If no return, something maybe went awry with the hokuyo
+          if not scan_buf then
+            print('BAD READ',type(scan_buf),hokuyo.info.serial_number)
+            --coroutine.yield()
+            return
+          end
+          if #scan_str==0 then
+            -- This is where the start of the packet is
+            local start_of_scan = 17
+            local idx = scan_buf:find('99b')
+            if idx then
+              --print('idx',idx)
+              scan_str = scan_buf:sub(idx)
+            end
+          else
+            -- Append it to the scan string
+  					scan_str = scan_str..scan_buf
+          end
+          
+          -- Check if we are done
+          if #scan_str>=N_SCAN_BYTES then
+            break
+          end
+          -- Wait for the hokuyo buffer to fill again
+          coroutine.yield()
+        end -- while extract buffer
+				-- Return the scan string to be parsed
+        hokuyo.t_last = unix.time()
+				coroutine.yield( scan_str )
 			end --while true
 			end -- coroutine function
 		)
 	end
+  
+  -- Loop and sleep appropriately
+	while #hokuyos>0 do
 
-  local main_thread = nil
-  if main then
-    print('create main thread!')
-    main_thread = coroutine.create( main )
-  end
-
-	-- Loop and sleep appropriately
-	local who_to_service_id = 1
-	local who_to_service = hokuyos[who_to_service_id]
-	local t_future = who_to_service.deadline
-	while true do
-
-		-- Sleep until ready to service
-		local t_now = unix.time()
-		local t_sleep = 1e6*(t_future-t_now)
-		if t_sleep>0 then
-      print(t_sleep)
-      if t_sleep>0.01 and main_thread then
-        --print('Running main!')
-        coroutine.resume( main_thread )
+    -- Perform Select on all hokuyos
+    local status, ready = unix.select( hokuyo_fds )
+    for i,is_ready in pairs(ready) do
+      if is_ready then
+        local who_to_service = fd_to_hokuyo[i]
+        -- Resume the thread
+        local status_code, param = coroutine.resume( who_to_service.thread )
+        if not status_code then
+          print('Dead hokuyo coroutine!',who_to_service.info.serial_number)
+          who_to_service:stream_off()
+          who_to_service:close()
+          local h_id = fd_to_hokuyo_id[i]
+          table.remove(hokuyos,h_id)
+          table.remove(hokuyo_fds,h_id)
+        end
+        -- Process the callback
+        --print('Callback?', type(param) )
+        if param and who_to_service.callback then
+          local ranges = HokuyoPacket.parse(param)
+          if ranges then
+            who_to_service.callback( ranges )
+          else
+            print('Bad data!', #param, ranges)
+          end
+        end
       end
-			unix.usleep( t_sleep )
-		end
-		
-		-- Resume the thread
-		--print('Servicing',who_to_service.info.serial_number)
-		local status_code, param = coroutine.resume( who_to_service.thread )
-		
-		-- Process the yielded result
-		t_now = unix.time()
-		if status_code then
-			-- Process the result of the scan
-			if type(param)=='string' then
-				local t_diff = t_now-who_to_service.t_last
-				who_to_service.t_last = t_now
-				
-				-- Process the callback
-				if who_to_service.callback then
-					local pkt = HokuyoPacket.parse(param)
-					--print(who_to_service.info.serial_number,1/t_diff..' FPS')
-					who_to_service.callback( pkt )
-					--print()
-				end
-				-- Expect a new scan result
-				who_to_service.deadline = t_now + who_to_service.update_time - PREDICT_SLACK
-			else
-				-- Quickly update
-				unix.select({who_to_service.fd},param)
-				who_to_service.deadline = t_now
-			end
-		else
-			print('Dead hokuyo!',who_to_service.info.serial_number)
-			table.remove(hokuyos,who_to_service_id)
-		end
-		
-		-- Update the next timestamp
-		t_future = math.huge
-		who_to_service = nil
-		who_to_service_id = -1
-		for i,hokuyo in pairs( hokuyos ) do
-			local d = hokuyo.deadline
-			if d<t_future then
-				who_to_service = hokuyo
-				who_to_service_id = i
-				t_future = d
-			end
-		end
-		
-		-- Setup the correct hokuyo
-		assert(who_to_service,'No hokuyo slated for next update!')
-	end -- while
-
+    end
+    -- Process the main thread
+    if main_thread then
+      coroutine.resume( main_thread )
+    end
+	end -- while servicing
+  print'Nothing left to service!'
 end
 
 return libHokuyo

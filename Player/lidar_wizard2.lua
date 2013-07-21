@@ -31,12 +31,13 @@ local chest_hokuyo = libHokuyo.new_hokuyo(chest_device)
 
 -- Head Hokuyo
 if head_hokuyo then
+  head_hokuyo.name = 'Head'
   local head_lidar_ch = simple_ipc.new_publisher('head_lidar') --head lidar
   table.insert(hokuyos,head_hokuyo)
   head_hokuyo.callback = function(data)
     local serialized = mp.pack({head_hokuyo.t_last,data})
     local ret = head_lidar_ch:send(serialized)
-    ----[[
+    --[[
     local t_diff = head_hokuyo.t_last - (last_head or unix.time())
     last_head = head_hokuyo.t_last
     print('head',ret,#serialized,1/t_diff..' Hz')
@@ -47,12 +48,13 @@ end
 
 -- Chest Hokuyo
 if chest_hokuyo then
+  chest_hokuyo.name = 'Chest'
   table.insert(hokuyos,chest_hokuyo)
   local chest_lidar_ch = simple_ipc.new_publisher('chest_lidar') --chest lidar
   chest_hokuyo.callback = function(data)
     local serialized = mp.pack({chest_hokuyo.t_last,data})
     local ret = chest_lidar_ch:send(serialized)
-    ----[[
+    --[[
     local t_diff = chest_hokuyo.t_last - (last_chest or unix.time())
     last_chest = chest_hokuyo.t_last
     print('chest',ret,#serialized,1/t_diff..' Hz')
@@ -106,11 +108,21 @@ return
 --]]
 
 local main = function()
+  local main_cnt = 0
+  local t0 = unix.time()
   while true do
+    main_cnt = main_cnt + 1
     local t_now = unix.time()
-    local t_diff = t_now - (t_last or unix.time())
-    t_last = t_now
-    --print('Main loop:',1/t_diff..' Hz')
+    local t_diff = t_now - t0
+    if t_diff>1 then
+      io.write('\nMain loop: ',math.floor(main_cnt/t_diff),' Hz\n')
+      for i,h in ipairs(hokuyos) do
+        io.write(h.name,' Hokuyo is alive\n')
+      end
+      io.flush()
+      t0 = t_now
+      main_cnt = 0
+    end
     coroutine.yield()
   end
 end

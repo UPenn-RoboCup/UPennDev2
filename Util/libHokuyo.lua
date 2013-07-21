@@ -266,8 +266,8 @@ libHokuyo.new_hokuyo = function(ttyname, serial, ttybaud )
 
 	-----------
 	-- Open the Serial device with the proper settings
-	io.write( 'Opening ',name,' at ', baud, ' baud\n\n')
-  io.flush()
+	--io.write( 'Opening ',name,' at ', baud, ' baud\n\n')
+  --io.flush()
 	local fd = unix.open( name, unix.O_RDWR + unix.O_NOCTTY)
 	
 	-- Check if opened correctly
@@ -356,42 +356,42 @@ libHokuyo.service = function( hokuyos, main )
 		function()
       print('Starting coroutine for',hokuyo.info.serial_number)
       -- The coroutine should never end
-			while true do
-				local scan_str = ''
-				while true do -- extract buffer
-          -- Grab the latest data from the hokuyo buffer
-					local scan_buf = unix.read(hokuyo.fd, N_SCAN_BYTES-#scan_str )
-          -- If no return, something maybe went awry with the hokuyo
-          if not scan_buf then
-            print('BAD READ',type(scan_buf),hokuyo.info.serial_number)
-            --coroutine.yield()
-            return
+      local scan_str = ''
+			while true do -- extract buffer
+        -- Grab the latest data from the hokuyo buffer
+				local scan_buf = unix.read(hokuyo.fd, N_SCAN_BYTES-#scan_str )
+        -- If no return, something maybe went awry with the hokuyo
+        if not scan_buf then
+          print('BAD READ',type(scan_buf),hokuyo.info.serial_number)
+          return
+        end
+        if #scan_str==0 then
+          -- This is where the start of the packet is
+          local start_of_scan = 17
+          local idx = scan_buf:find('99b')
+          -- If we do not find the preamble of the scan, ignore read
+          if idx then
+            -- The scan string starts at the index of 99b
+            -- TODO: Read the documentation for why
+            scan_str = scan_buf:sub(idx)
           end
-          if #scan_str==0 then
-            -- This is where the start of the packet is
-            local start_of_scan = 17
-            local idx = scan_buf:find('99b')
-            if idx then
-              --print('idx',idx)
-              scan_str = scan_buf:sub(idx)
-            end
-          else
-            -- Append it to the scan string
-  					scan_str = scan_str..scan_buf
-          end
-          
-          -- Check if we are done
-          if #scan_str>=N_SCAN_BYTES then
-            break
-          end
+        else
+          -- Append it to the scan string
+					scan_str = scan_str..scan_buf
+        end
+        -- Check if we are done
+        if #scan_str>=N_SCAN_BYTES then
+    			-- Return the scan string to be parsed
+          hokuyo.t_last = unix.time()
+    			coroutine.yield( scan_str )
+          scan_str = ''
+        else
           -- Wait for the hokuyo buffer to fill again
           coroutine.yield()
-        end -- while extract buffer
-				-- Return the scan string to be parsed
-        hokuyo.t_last = unix.time()
-				coroutine.yield( scan_str )
-			end --while true
-			end -- coroutine function
+        end
+      end -- while extract buffer
+
+		end -- coroutine function
 		)
 	end
   
@@ -405,6 +405,7 @@ libHokuyo.service = function( hokuyos, main )
         local who_to_service = fd_to_hokuyo[i]
         -- Resume the thread
         local status_code, param = coroutine.resume( who_to_service.thread )
+        -- Check if there were errors in the coroutine
         if not status_code then
           print('Dead hokuyo coroutine!',who_to_service.info.serial_number)
           who_to_service:stream_off()
@@ -414,14 +415,8 @@ libHokuyo.service = function( hokuyos, main )
           table.remove(hokuyo_fds,h_id)
         end
         -- Process the callback
-        --print('Callback?', type(param) )
         if param and who_to_service.callback then
-          local ranges = HokuyoPacket.parse(param)
-          if ranges then
-            who_to_service.callback( ranges )
-          else
-            print('Bad data!', #param, ranges)
-          end
+          who_to_service.callback( HokuyoPacket.parse(param) )
         end
       end
     end

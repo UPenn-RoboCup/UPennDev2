@@ -14,7 +14,12 @@ local signal = require'signal'
 local carray = require'carray'
 local mp = require 'msgpack'
 local simple_ipc = require'simple_ipc'
-local libDynamixel = require'libdynamixel'
+local libDynamixel = require'libDynamixel2'
+
+local test_dynamixel = libDynamixel.new_bus()
+print('Using',test_dynamixel.ttyname)
+local found = test_dynamixel:ping_probe(1)
+if true then return end
 
 -- Setup the dynamixels array
 local dynamixels = {}
@@ -75,15 +80,18 @@ local main = function()
     local t_now = unix.time()
     local t_diff = t_now - t0
     if t_diff>1 then
-      io.write('\nMain loop: ',math.floor(main_cnt/t_diff),' Hz\n')
-      for i,h in ipairs(dynamixels) do
-        io.write(h.name,' dynamixel is alive\n')
+      local debug_str = string.format('\nMain loop: %7.2f Hz',main_cnt/t_diff)
+      for i,d in ipairs(dynamixels) do
+        debug_str = debug_str..string.format(
+        '\n\tDynamixel %s chain was seen %5.3f seconds ago',
+        d.name,t_now-d.t_last)
       end
-      io.flush()
+      print(debug_str)
       t0 = t_now
       main_cnt = 0
     end
     coroutine.yield()
   end
 end
+
 libdynamixel.service( dynamixels, main )

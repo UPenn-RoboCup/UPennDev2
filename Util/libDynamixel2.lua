@@ -13,7 +13,7 @@ local using_status_return = false
 -- RX (uses 1.0)
 -- Format: { Register Address, Register Byte Size}
 local rx_registers = {
-	['id'] = {3,1}
+	['id'] = {3,1},
   ['baud'] = {4,1},
 	['delay'] = {5,1},
 	['torque_enable'] = {24,1},
@@ -26,7 +26,7 @@ local rx_registers = {
 
 -- MX
 local mx_registers = {
-	['id'] = {3,1}
+	['id'] = {3,1},
   ['baud'] = {4,1},
 	['delay'] = {5,1},
 	['status_return_level'] = {16,1},
@@ -212,9 +212,10 @@ local function parse_status_packet2(pkt) -- 2.0 protocol
 end
 
 -- Old get status method
-local function get_status( protocol, fd, npkt, expected_sz, timeout )
+local function get_status( fd, protocol, npkt, timeout )
 	-- TODO: Is this the best default timeout for the new PRO series?
-	timeout = timeout or 0.1;
+	timeout = timeout or 0.05
+  npkt = npkt or 1
 
 	local parser = parse_status_packet2
 	local inp_segmenter = DP2.input
@@ -223,9 +224,9 @@ local function get_status( protocol, fd, npkt, expected_sz, timeout )
 	  inp_segmenter = DP1.input
 	end
 
-	local t0 = unix.time();
-	local str = "";
-	local pkt_cnt = 0;
+	local t0 = unix.time()
+	local str = ""
+	local pkt_cnt = 0
 	local statuses = {}
 	while unix.time()-t0<timeout do
 		local s = unix.read(fd);
@@ -237,13 +238,11 @@ local function get_status( protocol, fd, npkt, expected_sz, timeout )
 					local status = parser( pkt )
 					table.insert( statuses, status )
 				end
-				if #statuses==npkt then
-					return statuses
-				end
+				if #statuses==npkt then return statuses end
 			end -- if pkts
 		end
 		-- TODO: yield the sleep amount
-		unix.usleep(100);
+		unix.usleep(100)
 	end
 	-- Did we timeout?
 	return nil
@@ -295,7 +294,8 @@ for k,v in pairs( nx_registers ) do
 		
     -- Grab any status returns
     if using_status_return and single then
-      local status = libDynamixel.get_status( 2, fd, 1, nil )
+      local status = libDynamixel.get_status( fd, 2, 1 )
+      return status[1]
     end
 		
 	end --function
@@ -335,15 +335,14 @@ for k,v in pairs( nx_registers ) do
     local ret = unix.write(fd, instruction)
 		
     -- Grab the status of the register
-    local status = libDynamixel.get_status( 2, fd, nids, nil )
-    return status
+    return libDynamixel.get_status( fd, 2, nids )
 		
 	end --function
 end
 
 --------------------
 -- Ping functions
-libDynamixel.send_ping = function( self, id, protocol )
+libDynamixel.send_ping = function( self, id, protocol, twait )
 	protocol = protocol or 2
 	local instruction = nil
 	if protocol==1 then
@@ -351,8 +350,10 @@ libDynamixel.send_ping = function( self, id, protocol )
 	else
 		instruction = DP2.ping(id)
 	end
-	unix.write(self.fd, instruction);
-	return libDynamixel.get_status1(protocol,self.fd,1,nil,twait)
+  local fd = self.fd
+	unix.write(self.fd, instruction)
+  local status = get_status( fd, protocol, 1, twait )
+  if status then return status[1] end
 end
 
 libDynamixel.ping_probe = function(self, protocol, twait)
@@ -360,18 +361,19 @@ libDynamixel.ping_probe = function(self, protocol, twait)
 	twait = twait or 0.010
   local found_ids = {}
 	for id = 0,253 do
-		local status = libDynamixel.send_ping( self, id, protocol )
+		local status = libDynamixel.send_ping( self, id, protocol, twait )
 		if status then
-			io.write('FOUND 1.0: ',status.id,'\n')
+      print( string.format('Found %d.0 Motor: %d\n',protocol,status.id) )
       table.insert( found_ids, status.id )
 		end
+    unix.sleep( twait )
 	end
   return found_ids
 end
 
 --------------------
 -- Generator of a new bus
-function libDynamixel.new_dynamixel_bus( ttyname, ttybaud )
+function libDynamixel.new_bus( ttyname, ttybaud )
 	-------------------------------
 	-- Find the device
 	local baud = ttybaud or 1000000;
@@ -392,9 +394,9 @@ function libDynamixel.new_dynamixel_bus( ttyname, ttybaud )
 	-- Setup serial port
 	local fd = unix.open(ttyname, unix.O_RDWR+unix.O_NOCTTY+unix.O_NONBLOCK);
 	assert(fd > 2, string.format("Could not open port %s, (%d)", ttyname, fd) );
-	stty.raw(fd);
-	stty.serial(fd);
-	stty.speed(fd, baud);
+	stty.raw(fd)
+	stty.serial(fd)
+	stty.speed(fd, baud)
 	-------------------
 
 	-------------------

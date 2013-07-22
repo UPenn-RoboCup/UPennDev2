@@ -441,11 +441,11 @@ end
 
 function libDynamixel.parse_status_packet1(pkt)
    local t = {};
-   t.id = pkt:byte(3);
-   t.length = pkt:byte(4);
-   t.error = pkt:byte(5);
-   t.parameter = {pkt:byte(6,t.length+3)};
-   t.checksum = pkt:byte(t.length+4);
+   t.id = pkt:byte(3)
+   t.length = pkt:byte(4)
+   t.error = pkt:byte(5)
+   t.parameter = {pkt:byte(6,t.length+3)}
+   t.checksum = pkt:byte(t.length+4)
    return t;
 end
 
@@ -459,7 +459,7 @@ function libDynamixel.get_status1( fd, npkt, timeout )
 			str = str..s;
 			pkt = DP1.input(str);
 			if pkt then
-				local status = libDynamixel.parse_status_packet1(pkt);
+				local status = libDynamixel.parse_status_packet1(pkt[1]);
 				--print(string.format("Status: id=%d error=%d",status.id,status.error));
 				return status
 			end

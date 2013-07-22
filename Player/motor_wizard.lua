@@ -38,7 +38,8 @@ else
 end
 local newpos = 1024-value
 print('setting position to',newpos)
-local status, value = test_dynamixel:set_rx_command( {6}, newpos )
+local status, value = test_dynamixel:set_rx_command( 6, newpos )
+print('Write:',status, value)
 if true then return end
 --]]
 

@@ -559,11 +559,12 @@ libDynamixel.service = function( dynamixels, main )
       local fd = dynamixel.fd
       local led_state = 1
       local time_elapsed = unix.time()
-			while true do -- read/write loop        
+			while true do -- read/write loop
+        
         -- Ask for data on the chain
         -- TODO: Clear the bus with a unix.read()?
         local read_ret = unix.write(fd, single_read_cmd)
-        if read_ret==-1 then error('BAD READ REQUEST on '..dynamixel.name) end
+        assert(read_ret~=-1,string.format('BAD READ REQ on %s',dynamixel.name))
 		
         -- Grab the status return from the bus
         local status_str = ''
@@ -573,7 +574,7 @@ libDynamixel.service = function( dynamixels, main )
           -- Read from the buffer
           local status_buf = unix.read( fd, single_read_sz-#status_str )
           -- If no return, something maybe went awry with the dynamixel
-          if status_buf==-1 then error('BAD READ on '..dynamixel.name) end
+          assert(status_buf~=-1,string.format('BAD READ on %s',dynamixel.name))
           --print('Read',status_buf,'bytes')
           -- Append it to the status string
           if status_buf then
@@ -588,16 +589,15 @@ libDynamixel.service = function( dynamixels, main )
         local status = DP1.parse_status_packet(status_str)
         local value = byte_to_number[2]( unpack(status.parameter) )
         coroutine.yield( value )
+        
 
         -- Write data to the chain
         local t_diff_elapsed = unix.time()-time_elapsed
         if t_diff_elapsed>1 then
-          --print'switch led'
           local single_led_cmd, single_led_sz = 
             dynamixel:set_rx_led( 6, led_state, true )
           local ret = unix.write(fd, single_led_cmd)
-          if read_ret==-1 then error('BAD READ REQUEST on '..dynamixel.name) end
-          print('Write ret',ret)
+          assert(ret~=-1,string.format('BAD WRITE on %s',dynamixel.name))
           led_state = 1-led_state
           time_elapsed = unix.time()
         end

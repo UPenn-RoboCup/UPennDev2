@@ -115,11 +115,12 @@ local main = function()
     local t_now = unix.time()
     local t_diff = t_now - t0
     if t_diff>1 then
-      io.write('\nMain loop: ',math.floor(main_cnt/t_diff),' Hz\n')
+      local debug_str = string.format('\nMain loop: %7.2f Hz',main_cnt/t_diff)
       for i,h in ipairs(hokuyos) do
-        io.write(h.name,' Hokuyo is alive\n')
+        debug_str = debug_str..string.format(
+        '\n\t%s Hokuyo was seen %5.3f seconds ago',h.name,t_now - h.t_last)
       end
-      io.flush()
+      print(debug_str)
       t0 = t_now
       main_cnt = 0
     end

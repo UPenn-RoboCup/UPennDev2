@@ -3,9 +3,9 @@
 -- Hokuyo Library
 
 local libHokuyo = {}
-local HokuyoPacket = require 'HokuyoPacket'
-local stty = require 'stty'
-local unix = require 'unix'
+local HokuyoPacket = require'HokuyoPacket'
+local stty = require'stty'
+local unix = require'unix'
 
 --------------------
 -- libHokuyo constants
@@ -13,58 +13,48 @@ local HOKUYO_SCAN_REGULAR = 0
 local HOKUYO_2DIGITS = 2
 local HOKUYO_3DIGITS = 3
 
--- Coroutine read yielding
+-- Reading properties
 local N_SCAN_BYTES = 3372
--- Regular read
-local FAST_READ_THRESHOLD = 3000 -- bytes
-local SLOW_WAIT_US = 12000  -- (uses usleep)
-local FAST_WAIT_SEC = 0.05 -- (uses select)
--- For the coroutine
-local PREDICT_SLACK = 1.5e-3 -- Data comes in slightly earlier
-
---------------------
--- Internal paramters
-libHokuyo.CURRENT_HOKUYO = -1
-libHokuyo.MAX_NUM_HOKUYO = 255
+local TIMEOUT = 0.05 -- (uses select)
 
 -------------------------
 -- Write a command to a hokuyo
 local write_command = function(fd, cmd, expected_response)
 	-- Should get one of these... '00', '02', '03', '04'
 	expected_response = expected_response or '00'
-
+  local response_timeout = 2
+  
 	--------------------
 	-- Write the command
-	local ret = unix.write(fd, cmd)
-	-- TODO: What is the expected response time? Should yield this
-	-- Gather the response from the hokuyo
 	local response = ''
-	local response_timeout = 2
-	local iCmd = nil
-	local t_write = unix.time()
+	local ret = unix.write(fd, cmd)
+  local t_write = unix.time()
+  
+  -- Attempt to find the correct response
+  local iCmd = nil
 	while not iCmd do
-		-- Ensure we get a prompt response
-		-- TODO: Append here?
-		local t_diff = unix.time() - t_write
-    if t_diff>response_timeout then
-  		--print( string.format('Response timeout for command (%s)',cmd) )
-      return nil
-    end
-    --[[
-		assert( t_diff<response_timeout, 
-		string.format('Response timeout for command (%s)',cmd)
-		)
-    --]]
+    
 		-- Read from the Hokuyo
-		-- Sleep for each loop in wait of the response
-		--unix.usleep(5000)
-    unix.select( {fd}, 0.050 )
-		response = unix.read(fd)
-		if type(response)=='string' then
-      --print('write got',#response)
+		-- Wait for the response
+    local status, ready = unix.select( {fd}, TIMEOUT )
+    -- Check the timeout
+    if not status then return nil end
+    
+		local response_buf = unix.read(fd)
+		if response then
+      response = response..response_buf
 			iCmd = response:find(cmd)
 		end
-	end
+    
+		-- Timeout if not finding the response in time
+		local t_diff = unix.time() - t_write
+    if t_diff>response_timeout then
+      -- TODO: DEBUG should be error or print
+  		--DEBUG( string.format('Response timeout for command (%s)',cmd) )
+      return nil
+    end
+    
+    end -- not iCmd
 	--------------------
 
 	--------------------
@@ -72,32 +62,21 @@ local write_command = function(fd, cmd, expected_response)
 	-- Just checking the last byte for now
 	-- Filter to only the response
 	response = response:sub(iCmd+#cmd)
-	-- Soft fail
+	-- Last byte is 10 (\n)
 	if response:byte(#response)~=10 then
-		print(string.format('Bad end of response!'))
+		--DEBUG(string.format('Bad end of response!'))
 		return nil
 	end
-	-- Last byte is 10 (\n)
-	--[[
-	assert(response:byte(#response)==10,
-	string.format('Bad end of response! %s',response) 
-	)
-	]]
+	
 	--------------------
 
 	--------------------
 	-- Check the response
-	local actual = response:sub(1,2)
-  if actual~=expected_response then
+  if response:sub(1,2)~=expected_response then
+    --DEBUG(string.format('Cmd (%s)Expected response (%s) but got (%s)', 
+    --cmd, expected_response, response:sub(1,2) ))
     return nil
   end
-  --[[
-	assert(
-	actual==expected_response,
-	string.format('Cmd (%s)Expected response (%s) but got (%s)', 
-	cmd, expected_response, actual )
-	)
-  --]]
 	--------------------
 
 	return response
@@ -127,22 +106,29 @@ end
 
 ---------------------------
 -- Grab the scan from the buffer
--- TODO: Add a timeout
--- NOTE: This is actually a coroutine
 local get_scan = function(self)
-	local buf = ''
+	local scan_str = ''
 	while true do
-		unix.select({self.fd},FAST_WAIT_SEC)
-		local raw_scan = unix.read( self.fd, N_SCAN_BYTES )
-		if raw_scan then
-			buf = buf..raw_scan
-			if #buf==N_SCAN_BYTES then
+		local status, ready = unix.select({self.fd},TIMEOUT)
+    if not status then return nil end
+		local scan_buf = unix.read( self.fd, N_SCAN_BYTES )
+		if scan_buf then
+			scan_str = scan_str..scan_buf
+      if #scan_str==0 then
+        local idx = scan_buf:find('99b')
+        if idx then scan_str = scan_buf:sub(idx) end
+      else
+      	scan_str = scan_str..scan_buf -- Append it to the scan string
+      end
+      if #scan_str>=N_SCAN_BYTES then
 				break
 			end
 		end
 	end
-	return HokuyoPacket.parse(buf)
+	return HokuyoPacket.parse(scan_str)
 end
+
+
 
 -------------------------
 -- Turn off data streaming
@@ -174,7 +160,7 @@ local stream_on = function(self)
 	local scan_req = create_scan_request(0, 1080, 1, 3, 0, 0);
 	-- TODO: Does the scan request expect a return, 
 	-- or just the actual streaming data?
-	write_command( self.fd, scan_req )
+	ret = write_command( self.fd, scan_req )
 
 end
 
@@ -185,12 +171,8 @@ local get_sensor_params = function(self)
 
 	local sensor_params = {}
 	local params = HokuyoPacket.parse_info(res, 8)
-	--[[
-	if not obj.params then
-	obj:close()
-	error('Could not set Hokuyo sensor parameters')
-	end
-	--]]
+  if not params then return nil end
+
 	sensor_params.model = params[1]
 	sensor_params.min_distance = tonumber(params[2])
 	sensor_params.max_distance = tonumber(params[3])
@@ -211,12 +193,9 @@ local get_sensor_info = function(self)
 
 	local sensor_info = {}
 	local info = HokuyoPacket.parse_info(res, 5)
-	--[[
-	if not obj.info then
-	obj:close()
-	error()
-	end
-	--]]
+  
+	if not info then return nil end
+  
 	sensor_info.vender = info[1]
 	sensor_info.product = info[2]
 	sensor_info.firmware = info[3]
@@ -233,66 +212,45 @@ local set_baudrate = function(self, baud)
 end
 
 ---------------------------
--- Acquire the next Hokuyo
-libHokuyo.next_hokuyo = function(self, serial, ttybaud)
-	local current_lidar = libHokuyo.CURRENT_HOKUYO
-	-- TODO: Prefix: Allow for usage on a Mac, too
-	local hokuyo_prefix = "/dev/ttyACM"
-	local found_device = nil
-	while not found_device and current_lidar<self.MAX_NUM_HOKUYO do
-		current_lidar = current_lidar + 1
-		local device = hokuyo_prefix..current_lidar
-		-- Test the character device to see if it exists
-		if os.execute("test -c "..device)==0 then
-			local in_use = false
-			-- TODO: Use fuser
-			--local in_use = os.execute"test (fuser "..device.." )"==0
-			if not in_use then
-				found_device = device
+-- Service multiple hokuyos
+libHokuyo.new_hokuyo = function(ttyname, serial, ttybaud )
+  
+  local baud = ttybaud or 115200
+  
+	if not ttyname then
+		local ttys = unix.readdir("/dev");
+		for i=1,#ttys do
+			if ttys[i]:find("cu.usbmodem") or ttys[i]:find("ttyACM") then
+				ttyname = "/dev/"..ttys[i]
+        -- TODO: Test if in use
+				break
 			end
 		end
 	end
-	assert( found_device, 'Did not find a Hokuyo' )
-	-- Increment the current lidar
-	libHokuyo.CURRENT_HOKUYO = current_lidar
-	return self.new_hokuyo( found_device, serial, ttybaud )
-end
-
----------------------------
--- Service multiple hokuyos
-libHokuyo.new_hokuyo = function(ttyname, serial, ttybaud )
-	local name = ttyname
-	local baud = ttybaud or 115200
 
 	-----------
 	-- Open the Serial device with the proper settings
-	--io.write( 'Opening ',name,' at ', baud, ' baud\n\n')
-  --io.flush()
-	local fd = unix.open( name, unix.O_RDWR + unix.O_NOCTTY)
-	
+	local fd = unix.open( ttyname, unix.O_RDWR + unix.O_NOCTTY)
 	-- Check if opened correctly
-	--assert( fd>2, string.format("Open: %s, (%d)\n", name, fd)	)
-	-- Use soft fail
 	if fd<3 then
+    -- DEBUG(string.format("Open: %s, (%d)\n", name, fd))
 		return nil
 	end
-	
+  
+  -----------
+  -- Serial port settings
 	stty.raw(fd)
 	stty.serial(fd)
 	stty.speed(fd, baud)
-	assert( fd>2, string.format("stty parameter: %s, (%d)\n", name, fd)	)
-	-----------
 
 	-----------
 	-- Begin the Hokuyo object
 	local obj = {}
-	-----------
 
 	-----------
 	-- Set the serial port data
-	-----------
 	obj.fd = fd
-	obj.ttyname = name
+	obj.ttyname = ttyname
 	obj.baud = baud
 	obj.close = function(self)
 		return unix.close(self.fd) == 0
@@ -300,7 +258,6 @@ libHokuyo.new_hokuyo = function(ttyname, serial, ttybaud )
   
 	-----------
 	-- Set the methods for accessing the data
-	-----------
 	obj.stream_on = stream_on
 	obj.stream_off = stream_off
 	obj.get_scan = get_scan
@@ -314,7 +271,6 @@ libHokuyo.new_hokuyo = function(ttyname, serial, ttybaud )
 
 	-----------
 	-- Setup the Hokuyo properly
-	-----------
   if not obj:stream_off() then
     obj:close()
     return nil
@@ -327,7 +283,6 @@ libHokuyo.new_hokuyo = function(ttyname, serial, ttybaud )
 	-----------
 	-- Return the hokuyo object
 	return obj
-	-----------
 end
 
 ---------------------------
@@ -367,7 +322,6 @@ libHokuyo.service = function( hokuyos, main )
         end
         if #scan_str==0 then
           -- This is where the start of the packet is
-          local start_of_scan = 17
           local idx = scan_buf:find('99b')
           -- If we do not find the preamble of the scan, ignore read
           if idx then
@@ -395,7 +349,7 @@ libHokuyo.service = function( hokuyos, main )
 		)
 	end
   
-  -- Loop and sleep appropriately
+  -- Loop while the hokuyos are alive
 	while #hokuyos>0 do
 
     -- Perform Select on all hokuyos
@@ -408,11 +362,10 @@ libHokuyo.service = function( hokuyos, main )
         -- Check if there were errors in the coroutine
         if not status_code then
           print('Dead hokuyo coroutine!',who_to_service.info.serial_number)
-          who_to_service:stream_off()
           who_to_service:close()
           local h_id = fd_to_hokuyo_id[i]
-          table.remove(hokuyos,h_id)
-          table.remove(hokuyo_fds,h_id)
+          table.remove( hokuyos, h_id )
+          table.remove( hokuyo_fds, h_id )
         end
         -- Process the callback
         if param and who_to_service.callback then

@@ -1,6 +1,7 @@
 -- Dynamixel Library
 -- (c) 2013 Stephen McGill
 -- (c) 2013 Daniel D. Lee
+-- Support: http://support.robotis.com/en/product/dynamixel_pro/communication/instruction_status_packet.htm
 
 local libDynamixel = {}
 local DP1 = require('DynamixelPacket1') -- 1.0 protocol
@@ -263,7 +264,7 @@ nx_sync_write[4] = sync_write_dword
 --------------------
 -- Set NX functions
 for k,v in pairs( nx_registers ) do
-	libDynamixel['set_nx_'..k] = function( bus, motor_ids, values )
+	libDynamixel['set_nx_'..k] = function( bus, motor_ids, values, serviced )
 		local addr = v[1]
 		local sz = v[2]
 		local fd = bus.fd
@@ -282,14 +283,20 @@ for k,v in pairs( nx_registers ) do
 			instruction = DP2.sync_write(addr, sz, string.char(unpack(msg)))
 		end
 		
-		-- Write the instruction to the bus 
-		local ret = unix.write(fd, instruction)
+    -- TODO: Just queue the instruction on the bus
+    -- TODO: Give expected status size in bytes
+    -- TODO: How to return data to the sender?
+    if serviced then
+      return instruction
+    end
+
+    -- Write the instruction to the bus 
+    local ret = unix.write(fd, instruction)
 		
-		-- Grab any status returns
-		if using_status_return and single then
-			-- TODO: Provide an expected size
-			local status = libDynamixel.get_status( 2, fd, 1, nil )
-		end
+    -- Grab any status returns
+    if using_status_return and single then
+      local status = libDynamixel.get_status( 2, fd, 1, nil )
+    end
 		
 	end --function
 end
@@ -297,29 +304,38 @@ end
 --------------------
 -- Get NX functions
 for k,v in pairs( nx_registers ) do
-	libDynamixel['get_nx_'..k] = function( bus, motor_ids, values )
+	libDynamixel['get_nx_'..k] = function( bus, motor_ids, serviced )
 		local addr = v[1]
 		local sz = v[2]
 		local fd = bus.fd
-		
-		-- Clear old status packets
-		local clear = unix.read(fd)
 		
 		-- Construct the instruction (single or sync)
 		local instruction = nil
 		local nids = 1
 		if type(motor_ids)=='table' then
-			instruction = DP2.read_data(id, addr, sz);
-		else
 			instruction = DP2.sync_read(string.char(unpack(motor_ids)), addr, sz)
 			nids = #motor_ids
+		else
+      -- Single motor
+			instruction = DP2.read_data(id, addr, sz)
 		end
 		
-		-- Write the instruction to the bus 
-		local ret = unix.write(fd, instruction)
+    -- TODO: Just queue the instruction on the bus
+    -- TODO: Give expected status size in btyes
+    -- TODO: How to return data to the sender?
+    if serviced then
+      local status_sz = 11 + sz*nids
+      return instruction, status_sz
+    end
+    
+		-- Clear old status packets
+		local clear = unix.read(fd)
+    
+    -- Write the instruction to the bus 
+    local ret = unix.write(fd, instruction)
 		
-		-- Grab the status of the register
-		local status = libDynamixel.get_status( 2, fd, nids, nil )
+    -- Grab the status of the register
+    local status = libDynamixel.get_status( 2, fd, nids, nil )
     return status
 		
 	end --function
@@ -336,32 +352,35 @@ libDynamixel.send_ping = function( self, id, protocol )
 		instruction = DP2.ping(id)
 	end
 	unix.write(self.fd, instruction);
-	return libDynamixel.get_status1(protocol,self.fd,1,nil,twait);
+	return libDynamixel.get_status1(protocol,self.fd,1,nil,twait)
 end
 
 libDynamixel.ping_probe = function(self, protocol, twait)
   protocol = protocol or 2
 	twait = twait or 0.010
+  local found_ids = {}
 	for id = 0,253 do
-		local status = libDynamixel.send_ping( self, id, protocol );
+		local status = libDynamixel.send_ping( self, id, protocol )
 		if status then
 			io.write('FOUND 1.0: ',status.id,'\n')
+      table.insert( found_ids, status.id )
 		end
 	end
+  return found_ids
 end
 
 --------------------
 -- Generator of a new bus
-function libDynamixel.new_bus( ttyname, ttybaud )
+function libDynamixel.new_dynamixel_bus( ttyname, ttybaud )
 	-------------------------------
 	-- Find the device
 	local baud = ttybaud or 1000000;
 	if not ttyname then
 		local ttys = unix.readdir("/dev");
 		for i=1,#ttys do
-			if (string.find(ttys[i], "tty.usb") or
-			string.find(ttys[i], "ttyUSB")) then
-				ttyname = "/dev/"..ttys[i];
+			if ttys[i]:find("tty.usb") or ttys[i]:find("ttyUSB") then
+				ttyname = "/dev/"..ttys[i]
+        -- TODO: Test if in use
 				break
 			end
 		end
@@ -391,7 +410,7 @@ function libDynamixel.new_bus( ttyname, ttybaud )
 	-- Reset the device
 	obj.reset = function(self)
 		self:close()
-		unix.usleep( 1e5 )
+		unix.usleep( 1e3 )
 		self.fd = libDynamixel.open( self.ttyname )
 	end
 	-------------------
@@ -407,6 +426,124 @@ function libDynamixel.new_bus( ttyname, ttybaud )
 	-------------------
 	
 	return obj
+end
+
+---------------------------
+-- Service multiple Dynamixel buses
+libDynamixel.service = function( dynamixels, main )
+  
+  -- Enable the main function as a coroutine thread
+  local main_thread = nil
+  if main then
+    main_thread = coroutine.create( main )
+  end
+
+	-- Start the streaming of each dynamixel
+  -- Instantiate the dynamixel coroutine thread
+  local dynamixel_fds = {}
+  local fd_to_dynamixel = {}
+  local fd_to_dynamixel_id = {}
+	for i,dynamixel in ipairs(dynamixels) do
+    -- Set up easy access to select IDs
+    fd_to_dynamixel[dynamixel.fd] = dynamixel
+    fd_to_dynamixel_id[dynamixel.fd] = i
+    table.insert(dynamixel_fds,dynamixel.fd)
+    -- Check which ids are on this chain
+    io.write('Checking ids on ',dynamixel.name,' chain')
+		dynamixel.ids_on_bus = dynamixel:ping_probe()
+		dynamixel.t_last = unix.time()
+		dynamixel.thread = coroutine.create( 
+		function()
+      print('Starting coroutine for',dynamixel.info.serial_number)
+      
+      -- Make a read-all command
+      local sync_read_all_cmd, sync_read_all_status_sz = 
+        dynamixel:get_nx_position( dynamixel.ids_on_bus, true )
+      -- TODO: Make read commands for each individual joint
+      
+      -- The coroutine should never end
+      local fd = dynamixel.fd
+			while true do -- read/write loop
+        
+        -- TODO: Use read and writes from a queue?
+        
+        -- Ask for data on the chain
+        -- TODO: Clear the bus with a unix.read()?
+        local ret = unix.write(fd, sync_read_all_cmd)
+		
+        -- Grab the status return from the bus
+        local status_str = ''
+        while #scan_str<sync_read_all_status_sz do
+          -- Wait for the buffer to fill
+          coroutine.yield()
+          -- Read from the buffer
+          local status_buf = unix.read( fd, sync_read_all_status_sz-#scan_str )
+          -- If no return, something maybe went awry with the dynamixel
+          if not scan_buf then
+            print('BAD READ', type(scan_buf), dynamixel.name)
+            return
+          end
+          -- Append it to the status string
+					scan_str = scan_str..scan_buf
+        end
+        
+        -- Yield the status string returned from the chain
+        dynamixel.t_last = unix.time()
+        -- TODO: queue the coroutine to be resumed, independent of select
+        coroutine.yield( scan_str )
+
+        -- Write data to the chain
+        -- TODO: Deal with status return packet or not...
+
+      end -- read/write loop
+
+		end -- coroutine function
+		)
+	end
+  
+  -- Loop and sleep appropriately
+	while #dynamixels>0 do
+    
+    -- Begin to re-enqueue commands on the chains
+    -- TODO: Use the dynamixel objects somehow to accept more commands...
+    -- TODO: Can you select on the finish of write?
+    -- TODO: Change from positio reading to other reading?
+    --[[
+    for i,is_commanded in pairs(command_queue) do
+      local status_code, param = coroutine.resume( who_to_service.thread )
+    end
+    --]]
+
+    -- Perform Select on all dynamixels
+    local status, ready = unix.select( dynamixel_fds )
+    for i,is_ready in pairs(ready) do
+      if is_ready then
+        -- Grab the dynamixel
+        local who_to_service = fd_to_dynamixel[i]
+        -- Resume the thread
+        local status_code, param = coroutine.resume( who_to_service.thread )
+        -- Check if there were errors in the coroutine
+        if not status_code then
+          print( 'Dead dynamixel coroutine!', who_to_service.name )
+          who_to_service:close()
+          local d_id = fd_to_dynamixel_id[i]
+          table.remove(dynamixels,d_id)
+          table.remove(dynamixel_fds,d_id)
+        end
+        -- Process the callback
+        if param and who_to_service.callback then
+          -- TODO: Put this into shared memory via callback
+          who_to_service.callback( dynamixelPacket.parse(param) )
+        end
+      end
+    end
+    
+    -- Process the main thread
+    if main_thread then
+      coroutine.resume( main_thread )
+    end
+	end -- while servicing
+  print'Nothing left to service!'
 end
 
 return libDynamixel

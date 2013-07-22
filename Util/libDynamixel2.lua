@@ -4,10 +4,10 @@
 -- Support: http://support.robotis.com/en/product/dynamixel_pro/communication/instruction_status_packet.htm
 
 local libDynamixel = {}
-local DP1 = require('DynamixelPacket1') -- 1.0 protocol
-local DP2 = require('DynamixelPacket2') -- 2.0 protocol
-local unix = require('unix')
-local stty = require('stty')
+local DP1 = require'DynamixelPacket1' -- 1.0 protocol
+local DP2 = require'DynamixelPacket2' -- 2.0 protocol
+local unix = require'unix'
+local stty = require'stty'
 local using_status_return = false
 
 --------------------
@@ -154,8 +154,8 @@ local nx_registers = {
 --------------------
 -- Convienence functions for constructing Sync Write instructions
 local function sync_write_byte(ids, addr, data)
-	local nid = #ids
-	local all_data = nil
+	local nid = 1
+	local all_data = #ids
 	if type(data)=='number' then
 		-- All get the same value
 		all_data = data
@@ -172,12 +172,13 @@ local function sync_write_byte(ids, addr, data)
 end
 
 local function sync_write_word(ids, addr, data)
-	local nid = #ids;
 	local all_data = nil
+  local nid = #ids
 	if type(data)=='number' then
 		-- All get the same value
 		all_data = data
 	end
+
 	local t = {}
 	local n = 1
 	local len = 2 -- word
@@ -192,8 +193,8 @@ local function sync_write_word(ids, addr, data)
 end
 
 local function sync_write_dword(ids, addr, data)
-	local nid = #ids;
-	local len = 4;
+	local nid = #ids
+	local len = 4
 	local all_data = nil
 	if type(data)=='number' then
 		-- All get the same value
@@ -212,7 +213,7 @@ local function sync_write_dword(ids, addr, data)
 end
 
 -- Old get status method
-local function get_status( fd, protocol, npkt, timeout )
+local function get_status( fd, npkt, protocol, timeout )
 	-- TODO: Is this the best default timeout for the new PRO series?
 	timeout = timeout or 0.05
   npkt = npkt or 1
@@ -221,14 +222,15 @@ local function get_status( fd, protocol, npkt, timeout )
 	if protocol==1 then DP = DP1 end
 
 	local t0 = unix.time()
-	local str = ""
+	local status_str = ''
 	local pkt_cnt = 0
 	local statuses = {}
 	while unix.time()-t0<timeout do
 		local s = unix.read(fd);
 		if s then
-			str = str..s
-			local pkts = DP.input(str)
+			status_str = status_str..s
+			local pkts = DP.input(status_str)
+      --print('Status sz',#status_str)
 			if pkts then
 				for p,pkt in ipairs(pkts) do
 					local status = DP.parse_status_packet( pkt )
@@ -251,10 +253,15 @@ nx_single_write[1] = DP2.write_byte
 nx_single_write[2] = DP2.write_word
 nx_single_write[4] = DP2.write_dword
 
-local nx_sync_write = {}
-nx_sync_write[1] = sync_write_byte
-nx_sync_write[2] = sync_write_word
-nx_sync_write[4] = sync_write_dword
+local rx_single_write = {}
+rx_single_write[1] = DP1.write_byte
+rx_single_write[2] = DP1.write_word
+rx_single_write[4] = DP1.write_dword
+
+local sync_write = {}
+sync_write[1] = sync_write_byte
+sync_write[2] = sync_write_word
+sync_write[4] = sync_write_dword
 
 local byte_to_number = {}
 byte_to_number[1] = function(byte)
@@ -276,12 +283,12 @@ for k,v in pairs( nx_registers ) do
 		local clear = unix.read(fd)
 		
 		-- Construct the instruction (single or sync)
-    local single = type(motor_ids)=='table' 
+    local single = type(motor_ids)=='number'
 		local instruction = nil
 		if single then
 			instruction = nx_single_write[sz](motor_ids, addr, values)
 		else
-			local msg = nx_sync_write[sz](motor_ids, addr, values)
+			local msg = sync_write[sz](motor_ids, addr, values)
 			instruction = DP2.sync_write(addr, sz, string.char(unpack(msg)))
 		end
 		
@@ -297,7 +304,7 @@ for k,v in pairs( nx_registers ) do
 		
     -- Grab any status returns
     if using_status_return and single then
-      local status = get_status( fd, 2, 1 )
+      local status = get_status( fd, 1 )
       return status[1]
     end
 		
@@ -338,7 +345,48 @@ for k,v in pairs( nx_registers ) do
     local ret = unix.write(fd, instruction)
 		
     -- Grab the status of the register
-    return get_status( fd, 2, nids )
+    return get_status( fd, nids )
+		
+	end --function
+end
+
+--------------------
+-- Set RX functions
+for k,v in pairs( rx_registers ) do
+	libDynamixel['set_rx_'..k] = function( bus, motor_ids, values, serviced )
+		local addr = v[1]
+		local sz = v[2]
+		local fd = bus.fd
+		
+    -- TODO: The I/O should be handled elsewhere
+		-- Clear old status packets
+		local clear = unix.read(fd)
+		
+		-- Construct the instruction (single or sync)
+    local single = type(motor_ids)=='number' 
+		local instruction = nil
+		if single then
+			instruction = rx_single_write[sz](motor_ids, addr, values)
+		else
+			local msg = sync_write[sz](motor_ids, addr, values)
+			instruction = DP1.sync_write(addr, sz, string.char(unpack(msg)))
+		end
+		
+    -- TODO: Just queue the instruction on the bus
+    -- TODO: Give expected status size in bytes
+    -- TODO: How to return data to the sender?
+    if serviced then
+      return instruction
+    end
+
+    -- Write the instruction to the bus 
+    local ret = unix.write(fd, instruction)
+		
+    -- Grab any status returns
+    if using_status_return and single then
+      local status = get_status( fd, 1 )
+      return status[1]
+    end
 		
 	end --function
 end
@@ -346,29 +394,22 @@ end
 --------------------
 -- Get RX functions
 for k,v in pairs( rx_registers ) do
-	libDynamixel['get_rx_'..k] = function( bus, motor_ids, serviced )
+	libDynamixel['get_rx_'..k] = function( bus, motor_id, serviced )
 		local addr = v[1]
 		local sz = v[2]
 		local fd = bus.fd
 		
 		-- Construct the instruction (single or sync)
 		local instruction = nil
-		local nids = 1
-		if type(motor_ids)=='table' then
-      -- TODO: No sync read!
-			instruction = DP1.sync_read(string.char(unpack(motor_ids)), addr, sz)
-			nids = #motor_ids
-		else
-      -- Single motor
-			instruction = DP1.read_data(motor_ids, addr, sz)
-		end
+    -- Single motor
+		instruction = DP1.read_data(motor_id, addr, sz)
 		
     -- TODO: Just queue the instruction on the bus
     -- TODO: Give expected status size in btyes
     -- TODO: How to return data to the sender?
     if serviced then
-      local status_sz = 11 + sz*nids
-      return instruction, status_sz
+      -- Return the instruction and expected status packet size
+      return instruction, 6 + sz
     end
     
 		-- Clear old status packets
@@ -378,7 +419,7 @@ for k,v in pairs( rx_registers ) do
     local ret = unix.write(fd, instruction)
 		
     -- Grab the status of the register
-    local status = get_status( fd, 1, nids )
+    local status = get_status( fd, 1, 1 )
     local value = byte_to_number[sz]( unpack(status[1].parameter) )
     return status, value
 		

@@ -39,7 +39,9 @@ if status then
 else
   print('not found!!')
 end
---local status, value = test_dynamixel:set_rx_position(6,512)
+local newpos = 1024-value
+print('setting position to',newpos)
+local status, value = test_dynamixel:set_rx_command( {6}, newpos )
 if true then return end
 
 -- Setup the dynamixels array
@@ -115,4 +117,4 @@ local main = function()
   end
 end
 
-libdynamixel.service( dynamixels, main )
+libDynamixel.service( dynamixels, main )

@@ -16,30 +16,38 @@ local mp = require 'msgpack'
 local simple_ipc = require'simple_ipc'
 local libDynamixel = require'libDynamixel2'
 
---[[
+----[[
 local test_dynamixel = libDynamixel.new_bus()
 print('Using',test_dynamixel.ttyname)
---local found = test_dynamixel:ping_probe(1)
-print'Position of 6 is'
-local status, value = test_dynamixel:get_rx_position(6)
-if status then
-  print('Position value:',value)
-  for k,v in pairs(status[1]) do
-    if type(v)=='table' then
-      for i,vv in ipairs(v) do
-        print(i,vv)
+--local found = test_dynamixel:ping_probe()
+found = {14,18}
+for k,m in ipairs(found) do
+  print(k,m)
+  print('Position of '..m..' is')
+  local status, value = test_dynamixel:get_mx_position(m)
+  ----[[
+  if status then
+    print('Position value:',value)
+    for k,v in pairs(status[1]) do
+      if type(v)=='table' then
+        for i,vv in ipairs(v) do
+          print(i,vv)
+        end
+      else
+        print(k,v)
       end
-    else
-      print(k,v)
     end
   end
-else
-  print('not found!!')
+  --]]
+  print('Setting led on...',m)
+  test_dynamixel:set_mx_led(m,1)
+
 end
-local newpos = 1024-value
+
+local newpos = 2048
 print('setting position to',newpos)
-local status, value = test_dynamixel:set_rx_command( 6, newpos )
-print('Write:',status, value)
+local status, value = test_dynamixel:set_mx_command( 14, newpos )
+print('Write:', status, value)
 if true then return end
 --]]
 

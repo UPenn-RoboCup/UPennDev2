@@ -205,8 +205,7 @@ local function sync_write_dword(ids, addr, data)
 	for i = 1,nid do
 		t[n] = ids[i];
 		local val = all_data or data[i]
-		t[n+1],t[n+2],t[n+3],t[n+4] = 
-			DP2.dword_to_byte(val)
+		t[n+1],t[n+2],t[n+3],t[n+4] = DP2.dword_to_byte(val)
 		n = n + len + 1;
 	end
 	return t
@@ -501,6 +500,7 @@ function libDynamixel.new_bus( ttyname, ttybaud )
 		unix.usleep( 1e3 )
 		self.fd = libDynamixel.open( self.ttyname )
 	end
+  obj.t_last = unix.time()
 	-------------------
 	
 	-------------------
@@ -537,50 +537,72 @@ libDynamixel.service = function( dynamixels, main )
     fd_to_dynamixel_id[dynamixel.fd] = i
     table.insert(dynamixel_fds,dynamixel.fd)
     -- Check which ids are on this chain
-    io.write('Checking ids on ',dynamixel.name,' chain')
+    io.write('Checking ids on ',dynamixel.name,' chain...')
+    io.flush()
 		dynamixel.ids_on_bus = dynamixel:ping_probe()
+    io.write'Done!\n'
+    io.flush()
 		dynamixel.t_last = unix.time()
 		dynamixel.thread = coroutine.create( 
 		function()
-      print('Starting coroutine for',dynamixel.info.serial_number)
       
       -- Make a read-all command
+      --[[
       local sync_read_all_cmd, sync_read_all_status_sz = 
         dynamixel:get_nx_position( dynamixel.ids_on_bus, true )
       -- TODO: Make read commands for each individual joint
+      -]]
+      local single_read_cmd, single_read_sz = 
+        dynamixel:get_rx_position( 6, true )
       
       -- The coroutine should never end
       local fd = dynamixel.fd
-			while true do -- read/write loop
-        
-        -- TODO: Use read and writes from a queue?
-        
+      local led_state = 1
+      local time_elapsed = unix.time()
+			while true do -- read/write loop        
         -- Ask for data on the chain
         -- TODO: Clear the bus with a unix.read()?
-        local ret = unix.write(fd, sync_read_all_cmd)
+        local read_ret = unix.write(fd, single_read_cmd)
+        if read_ret==-1 then error('BAD READ REQUEST on '..dynamixel.name) end
 		
         -- Grab the status return from the bus
         local status_str = ''
-        while #scan_str<sync_read_all_status_sz do
+        while true do -- Status packet buffer fill
           -- Wait for the buffer to fill
           coroutine.yield()
           -- Read from the buffer
-          local status_buf = unix.read( fd, sync_read_all_status_sz-#scan_str )
+          local status_buf = unix.read( fd, single_read_sz-#status_str )
           -- If no return, something maybe went awry with the dynamixel
-          if not scan_buf then
-            print('BAD READ', type(scan_buf), dynamixel.name)
-            return
-          end
+          if status_buf==-1 then error('BAD READ on '..dynamixel.name) end
+          --print('Read',status_buf,'bytes')
           -- Append it to the status string
-					scan_str = scan_str..scan_buf
-        end
+          if status_buf then
+            status_str = status_str..status_buf
+            if #status_str>=single_read_sz then break end
+          end
+        end -- Status packet buffer fill
         
         -- Yield the status string returned from the chain
         dynamixel.t_last = unix.time()
         -- TODO: queue the coroutine to be resumed, independent of select
-        coroutine.yield( scan_str )
+        local status = DP1.parse_status_packet(status_str)
+        local value = byte_to_number[2]( unpack(status.parameter) )
+        coroutine.yield( value )
 
         -- Write data to the chain
+        local t_diff_elapsed = unix.time()-time_elapsed
+        if t_diff_elapsed>1 then
+          --print'switch led'
+          local single_led_cmd, single_led_sz = 
+            dynamixel:set_rx_led( 6, led_state, true )
+          local ret = unix.write(fd, single_led_cmd)
+          if read_ret==-1 then error('BAD READ REQUEST on '..dynamixel.name) end
+          print('Write ret',ret)
+          led_state = 1-led_state
+          time_elapsed = unix.time()
+        end
+        
+        
         -- TODO: Deal with status return packet or not...
 
       end -- read/write loop
@@ -588,6 +610,12 @@ libDynamixel.service = function( dynamixels, main )
 		end -- coroutine function
 		)
 	end
+  
+  -- Initialize them
+  for i,dynamixel in ipairs(dynamixels) do
+    print('initializing thread for',dynamixel.name)
+    local status_code, param = coroutine.resume( dynamixel.thread )
+  end
   
   -- Loop and sleep appropriately
 	while #dynamixels>0 do
@@ -603,7 +631,9 @@ libDynamixel.service = function( dynamixels, main )
     --]]
 
     -- Perform Select on all dynamixels
-    local status, ready = unix.select( dynamixel_fds )
+    local status_timeout = 1 -- 1 second timeout
+    local status, ready = unix.select( dynamixel_fds, status_timeout )
+    --print('Post select',status, ready)
     for i,is_ready in pairs(ready) do
       if is_ready then
         -- Grab the dynamixel
@@ -612,16 +642,17 @@ libDynamixel.service = function( dynamixels, main )
         local status_code, param = coroutine.resume( who_to_service.thread )
         -- Check if there were errors in the coroutine
         if not status_code then
-          print( 'Dead dynamixel coroutine!', who_to_service.name )
+          print( 'Dead dynamixel coroutine!', who_to_service.name, param )
           who_to_service:close()
           local d_id = fd_to_dynamixel_id[i]
           table.remove(dynamixels,d_id)
           table.remove(dynamixel_fds,d_id)
-        end
-        -- Process the callback
-        if param and who_to_service.callback then
+        elseif param and who_to_service.callback then
+          -- Process the callback
           -- TODO: Put this into shared memory via callback
-          who_to_service.callback( dynamixelPacket.parse(param) )
+          who_to_service.callback( param )
+          local status_code, param = coroutine.resume( who_to_service.thread )
+          --print('Post callback resume',status_code, param)
         end
       end
     end

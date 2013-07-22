@@ -18,7 +18,28 @@ local libDynamixel = require'libDynamixel2'
 
 local test_dynamixel = libDynamixel.new_bus()
 print('Using',test_dynamixel.ttyname)
-local found = test_dynamixel:ping_probe(1)
+--local found = test_dynamixel:ping_probe(1)
+print'Position of 6 is'
+local status, value = test_dynamixel:get_rx_position(6)
+
+if status then
+  print(value)
+  --[[
+  --print(pos[1])
+  for k,v in pairs(status[1]) do
+    if type(v)=='table' then
+      for i,vv in ipairs(v) do
+        print(i,vv)
+      end
+    else
+      print(k,v)
+    end
+  end
+  --]]
+else
+  print('not found!!')
+end
+--local status, value = test_dynamixel:set_rx_position(6,512)
 if true then return end
 
 -- Setup the dynamixels array

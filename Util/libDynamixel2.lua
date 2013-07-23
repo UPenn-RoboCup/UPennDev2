@@ -19,7 +19,7 @@ DP1.parse_status_packet = function(pkt) -- 1.0 protocol
    t.error = pkt:byte(5)
    t.parameter = {pkt:byte(6,t.length+3)}
    t.checksum = pkt:byte(t.length+4)
-   return t;
+   return t
 end
 
 DP2.parse_status_packet = function(pkt) -- 2.0 protocol
@@ -30,7 +30,7 @@ DP2.parse_status_packet = function(pkt) -- 2.0 protocol
 	t.error = pkt:byte(9)
 	t.parameter = {pkt:byte(10,t.length+5)}
 	t.checksum = string.char( pkt:byte(t.length+6), pkt:byte(t.length+7) );
-	return t;
+	return t
 end
 
 -- RX (uses 1.0)
@@ -49,24 +49,25 @@ local rx_registers = {
 
 -- MX
 local mx_registers = {
+  ['firmware'] = {string.char(2,0),1},
 	['id'] = {string.char(3,0),1},
   ['baud'] = {string.char(4,0),1},
 	['delay'] = {string.char(5,0),1},
-	['status_return_level'] = {string.char(16,0),1},
+  ['status_return_level'] = {string.char(16,0),1},
 	['torque_enable'] = {string.char(24,0),1},
 	['led'] = {string.char(25,0),1},
 	
 	-- Position PID Gains (position control mode)
-	['position_p'] = {28,1},
-	['position_i'] = {27,1},
-	['position_d'] = {26,1},
+	['position_p'] = {string.char(28,0),1},
+	['position_i'] = {string.char(27,0),1},
+	['position_d'] = {string.char(26,0),1},
 	
-	['command'] = {30,2},
-	['velocity'] = {32,2},
+	['command'] = {string.char(30,0),2},
+	['velocity'] = {string.char(32,0),2},
 	['position'] = {string.char(36,0),2},
 	
-	['battery'] = {42,2},
-	['temperature'] = {43,1},
+	['battery'] = {string.char(42,0),2},
+	['temperature'] = {string.char(43,0),1},
 }
 
 -- Dynamixel PRO
@@ -154,12 +155,10 @@ local nx_registers = {
 --------------------
 -- Convienence functions for constructing Sync Write instructions
 local function sync_write_byte(ids, addr, data)
-	local nid = 1
+	local nid = #ids
 	local all_data = #ids
-	if type(data)=='number' then
-		-- All get the same value
-		all_data = data
-	end
+  -- All get the same value
+	if type(data)=='number' then all_data = data end
 	local t = {}
 	local n = 1
 	local len = 1 -- byte
@@ -211,6 +210,35 @@ local function sync_write_dword(ids, addr, data)
 	return t
 end
 
+--------------------
+-- Initialize functions for reading/writing to NX motors
+local nx_single_write = {}
+nx_single_write[1] = DP2.write_byte
+nx_single_write[2] = DP2.write_word
+nx_single_write[4] = DP2.write_dword
+
+local mx_single_write = {}
+mx_single_write[1] = DP2.write_byte
+mx_single_write[2] = DP2.write_word
+mx_single_write[4] = DP2.write_dword
+
+local rx_single_write = {}
+rx_single_write[1] = DP1.write_byte
+rx_single_write[2] = DP1.write_word
+rx_single_write[4] = DP1.write_dword
+
+local sync_write = {}
+sync_write[1] = sync_write_byte
+sync_write[2] = sync_write_word
+sync_write[4] = sync_write_dword
+
+local byte_to_number = {}
+byte_to_number[1] = function(byte)
+  return byte
+end
+byte_to_number[2] = DP2.byte_to_word
+byte_to_number[4] = DP2.byte_to_dword
+
 -- Old get status method
 local function get_status( fd, npkt, protocol, timeout )
 	-- TODO: Is this the best default timeout for the new PRO series?
@@ -245,35 +273,6 @@ local function get_status( fd, npkt, protocol, timeout )
 	-- Did we timeout?
 	return nil
 end
-
---------------------
--- Initialize functions for reading/writing to NX motors
-local nx_single_write = {}
-nx_single_write[1] = DP2.write_byte
-nx_single_write[2] = DP2.write_word
-nx_single_write[4] = DP2.write_dword
-
-local mx_single_write = {}
-mx_single_write[1] = DP2.write_byte
-mx_single_write[2] = DP2.write_word
-mx_single_write[4] = DP2.write_dword
-
-local rx_single_write = {}
-rx_single_write[1] = DP1.write_byte
-rx_single_write[2] = DP1.write_word
-rx_single_write[4] = DP1.write_dword
-
-local sync_write = {}
-sync_write[1] = sync_write_byte
-sync_write[2] = sync_write_word
-sync_write[4] = sync_write_dword
-
-local byte_to_number = {}
-byte_to_number[1] = function(byte)
-  return byte
-end
-byte_to_number[2] = DP2.byte_to_word
-byte_to_number[4] = DP2.byte_to_dword
 
 --------------------
 -- Set NX functions
@@ -380,17 +379,16 @@ for k,v in pairs( mx_registers ) do
     -- TODO: Just queue the instruction on the bus
     -- TODO: Give expected status size in bytes
     -- TODO: How to return data to the sender?
-    if serviced then
-      return instruction
-    end
+    if serviced then return instruction end
 
-    -- Write the instruction to the bus 
+    -- Write the instruction to the bus
     local ret = unix.write(fd, instruction)
 		
     -- Grab any status returns
     if using_status_return and single then
-      local status = get_status( fd, 1 )
-      return status[1]
+      local status = get_status( fd )[1]
+      local value = byte_to_number[sz]( unpack(status.parameter) )
+      return status, value
     end
 		
 	end --function

@@ -19,35 +19,41 @@ local libDynamixel = require'libDynamixel2'
 ----[[
 local test_dynamixel = libDynamixel.new_bus()
 print('Using',test_dynamixel.ttyname)
---local found = test_dynamixel:ping_probe()
-found = {14,18}
+local found = test_dynamixel:ping_probe()
+--found = {14,18}
 for k,m in ipairs(found) do
-  print(k,m)
-  print('Position of '..m..' is')
-  local status, value = test_dynamixel:get_mx_position(m)
-  ----[[
-  if status then
-    print('Position value:',value)
-    for k,v in pairs(status[1]) do
-      if type(v)=='table' then
-        for i,vv in ipairs(v) do
-          print(i,vv)
-        end
-      else
-        print(k,v)
-      end
+  --[[
+  local status, value = test_dynamixel:get_mx_status_return_level(m)
+  if value then 
+    print('Status return',m,value)
+    if value~=1 then
+      local status, value = test_dynamixel:set_mx_status_return_level(m,1)
     end
   end
   --]]
-  print('Setting led on...',m)
-  test_dynamixel:set_mx_led(m,1)
+
+  --[[
+  status, value = test_dynamixel:get_mx_delay(m)
+  if value then 
+    print('Return delay',m,value)
+    if value>0 then
+      local status, value = test_dynamixel:set_mx_delay(m,0)
+    end
+  end
+  --]]
+
+  --status, value = test_dynamixel:get_mx_firmware(m)
+  --if value then print('Firmware',m,value) end
 
 end
 
-local newpos = 2048
-print('setting position to',newpos)
-local status, value = test_dynamixel:set_mx_command( 14, newpos )
-print('Write:', status, value)
+--status, value = test_dynamixel:set_mx_torque_enable( found, 0 )
+status, value = test_dynamixel:set_mx_led( found, 1 )
+status, value = test_dynamixel:set_mx_command( found, 2048 )
+if status then
+  print('write return',status, value )
+  for k,v in pairs(status) do print(k,v) end
+end
 if true then return end
 --]]
 

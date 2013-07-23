@@ -253,22 +253,20 @@ local function get_status( fd, npkt, protocol, timeout )
 	local pkt_cnt = 0
 	local statuses = {}
 	while unix.time()-t0<timeout do
-		local s = unix.read(fd);
+		local s = unix.read(fd)
 		if s then
 			status_str = status_str..s
 			local pkts = DP.input(status_str)
       --print('Status sz',#status_str)
 			if pkts then
 				for p,pkt in ipairs(pkts) do
-          --print( 'pkt',status_str:byte(1,#status_str) )
 					local status = DP.parse_status_packet( pkt )
 					table.insert( statuses, status )
 				end
 				if #statuses==npkt then return statuses end
 			end -- if pkts
 		end
-		--unix.usleep(100)
-    unix.select({fd},0.0001)
+    unix.select({fd},0.001)
 	end
 	-- Did we timeout?
 	return nil
@@ -338,7 +336,7 @@ for k,v in pairs( nx_registers ) do
     -- TODO: Give expected status size in btyes
     -- TODO: How to return data to the sender?
     if serviced then
-      local status_sz = 11 + sz*nids
+      local status_sz = nids*(11 + sz)
       return instruction, status_sz
     end
     
@@ -417,7 +415,7 @@ for k,v in pairs( mx_registers ) do
     -- TODO: Give expected status size in btyes
     -- TODO: How to return data to the sender?
     if serviced then
-      local status_sz = 11 + sz*nids
+      local status_sz = nids*(11 + sz)
       return instruction, status_sz
     end
     
@@ -537,7 +535,7 @@ libDynamixel.ping_probe = function(self, protocol, twait)
 	for id = 0,253 do
 		local status = libDynamixel.send_ping( self, id, protocol, twait )
 		if status then
-      print( string.format('Found %d.0 Motor: %d\n',protocol,status.id) )
+      --print( string.format('Found %d.0 Motor: %d\n',protocol,status.id) )
       table.insert( found_ids, status.id )
 		end
     unix.sleep( twait )
@@ -636,63 +634,71 @@ libDynamixel.service = function( dynamixels, main )
 		function()
       
       -- Make a read-all command
-      --[[
-      local sync_read_all_cmd, sync_read_all_status_sz = 
-        dynamixel:get_nx_position( dynamixel.ids_on_bus, true )
-      -- TODO: Make read commands for each individual joint
-      -]]
-      local single_read_cmd, single_read_sz = 
-        dynamixel:get_rx_position( 6, true )
+      local DP = DP2
+      local sync_read_all_cmd = dynamixel:get_nx_position( dynamixel.ids_on_bus, true )
+      local read_param_sz = mx_registers['position'][2]
+      local param_to_val = byte_to_number[read_param_sz]
       
       -- The coroutine should never end
+      local nMotors = #dynamixel.ids_on_bus
       local fd = dynamixel.fd
       local led_state = 1
       local time_elapsed = unix.time()
+      local response = nil
 			while true do -- read/write loop
         
-        -- Ask for data on the chain
-        -- TODO: Clear the bus with a unix.read()?
-        local read_ret = unix.write(fd, single_read_cmd)
-        assert(read_ret~=-1,string.format('BAD READ REQ on %s',dynamixel.name))
-		
-        -- Grab the status return from the bus
-        local status_str = ''
-        while true do -- Status packet buffer fill
-          -- Wait for the buffer to fill
-          coroutine.yield()
-          -- Read from the buffer
-          local status_buf = unix.read( fd, single_read_sz-#status_str )
+        -- Use sync read
+        if true or dynamixel.use_read then
+          -- Ask for data on the chain
+          -- TODO: Clear the bus with a unix.read()?
+          local req_ret = unix.write(fd, sync_read_all_cmd)
+          assert(req_ret~=-1,string.format('BAD READ REQ on %s',dynamixel.name))
+          response = coroutine.yield( nMotors )
+          -- Read the packets
+          local status_str = unix.read( fd )
           -- If no return, something maybe went awry with the dynamixel
-          assert(status_buf~=-1,string.format('BAD READ on %s',dynamixel.name))
-          --print('Read',status_buf,'bytes')
+          assert(status_str~=-1,string.format('BAD READ: %s',dynamixel.name))
           -- Append it to the status string
-          if status_buf then
-            status_str = status_str..status_buf
-            if #status_str>=single_read_sz then break end
+          assert(status_str, string.format('NO READ: %s',dynamixel.name))
+          -- Grab the status return packets from the bus
+          local pkts, done = DP.input( status_str )
+          -- Yield the packets
+          dynamixel.t_last = unix.time()
+          local values = {}
+          for p,pkt in ipairs(pkts) do
+            local status = DP.parse_status_packet( pkt )
+            local value = param_to_val( unpack(status.parameter) )
+            values[status.id] = value
           end
-        end -- Status packet buffer fill
+          -- Yield the table of motor values
+          response = coroutine.yield( values )
+          -- Did we actually receive more?
+          if response then
+            print'reading more from the buffer...'
+            local more_status_str = unix.read( fd )
+            print('#more_status_str',#more_status_str)
+          end
+        end -- if use read
         
-        -- Yield the status string returned from the chain
-        dynamixel.t_last = unix.time()
-        -- TODO: queue the coroutine to be resumed, independent of select
-        local status = DP1.parse_status_packet(status_str)
-        local value = byte_to_number[2]( unpack(status.parameter) )
-        coroutine.yield( value )
-        
-
-        -- Write data to the chain
+        -- Sync write desired positions
+        local sync_command_cmd = 
+          dynamixel:set_mx_command( dynamixel.ids_on_bus, 2048, true )
+        local command_ret = unix.write( fd, sync_command_cmd )
+        -- Yield true for syncing
+        response = coroutine.yield( true )
+          
+        -- Sync Write LED data to the chain
         local t_diff_elapsed = unix.time()-time_elapsed
         if t_diff_elapsed>1 then
-          local single_led_cmd, single_led_sz = 
-            dynamixel:set_rx_led( 6, led_state, true )
-          local ret = unix.write(fd, single_led_cmd)
+          local sync_led_cmd = 
+            dynamixel:set_mx_led( dynamixel.ids_on_bus, led_state, true )
+          local ret = unix.write(fd, sync_led_cmd)
           assert(ret~=-1,string.format('BAD WRITE on %s',dynamixel.name))
           led_state = 1-led_state
           time_elapsed = unix.time()
+          -- Yield nothing for syncing leds
+          response = coroutine.yield(  )
         end
-        
-        
-        -- TODO: Deal with status return packet or not...
 
       end -- read/write loop
 
@@ -702,54 +708,63 @@ libDynamixel.service = function( dynamixels, main )
   
   -- Initialize them
   for i,dynamixel in ipairs(dynamixels) do
-    print('initializing thread for',dynamixel.name)
+    print('Initializing thread for',dynamixel.name)
     local status_code, param = coroutine.resume( dynamixel.thread )
+    -- Syncing?
+    dynamixel.is_syncing = false
+    if type(param)=='boolean' then 
+      dynamixel.is_syncing = true
+    end
   end
   
-  -- Loop and sleep appropriately
+  -- Loop and select appropriately
+  local status_timeout = 1/120 -- 120Hz timeout
+  --local status_timeout = 0 -- Instant timeout
 	while #dynamixels>0 do
     
-    -- Begin to re-enqueue commands on the chains
     -- TODO: Use the dynamixel objects somehow to accept more commands...
-    -- TODO: Can you select on the finish of write?
-    -- TODO: Change from positio reading to other reading?
-    --[[
-    for i,is_commanded in pairs(command_queue) do
-      local status_code, param = coroutine.resume( who_to_service.thread )
-    end
-    --]]
+    -- TODO: Change from position reading to other reading?
 
     -- Perform Select on all dynamixels
-    local status_timeout = 1 -- 1 second timeout
     local status, ready = unix.select( dynamixel_fds, status_timeout )
-    --print('Post select',status, ready)
+    --print('Post select', status )
     for i,is_ready in pairs(ready) do
-      if is_ready then
-        -- Grab the dynamixel
-        local who_to_service = fd_to_dynamixel[i]
+      -- Grab the dynamixel
+      local who_to_service = fd_to_dynamixel[i]
+      local is_syncing = who_to_service.is_syncing
+      --print('\nselect',is_ready,is_syncing)
+      -- Check if the Dynamixel has information available
+      if is_ready or is_syncing then
         -- Resume the thread
         local status_code, param = coroutine.resume( who_to_service.thread )
+        local param_type = type(param)
+        --rint('resuming...',status_code, param,param_type)
+        
         -- Check if there were errors in the coroutine
         if not status_code then
           print( 'Dead dynamixel coroutine!', who_to_service.name, param )
           who_to_service:close()
           local d_id = fd_to_dynamixel_id[i]
+          -- TODO: Maybe not insert for dynamixel, as getting who_to_service
+          -- may mess up within this loop upon a dead usb2dynamixel
           table.remove(dynamixels,d_id)
           table.remove(dynamixel_fds,d_id)
-        elseif param and who_to_service.callback then
-          -- Process the callback
-          -- TODO: Put this into shared memory via callback
+        elseif param_type=='table' and who_to_service.callback then
+          -- Process the callback for read data
           who_to_service.callback( param )
-          local status_code, param = coroutine.resume( who_to_service.thread )
-          --print('Post callback resume',status_code, param)
-        end
-      end
-    end
+          who_to_service.is_syncing = true
+        elseif param_type=='number' then
+          --print('requesting data from',param,'motors')
+          who_to_service.is_syncing = false
+        else
+          who_to_service.is_syncing = true
+        end -- status_code
+      end -- is_ready 
+    end -- pairs(ready)
     
     -- Process the main thread
-    if main_thread then
-      coroutine.resume( main_thread )
-    end
+    local main_response = nil
+    if main_thread then main_response = coroutine.resume( main_thread ) end
 	end -- while servicing
   print'Nothing left to service!'
 end

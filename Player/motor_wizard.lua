@@ -1,85 +1,20 @@
 -----------------------------------------------------------------
--- Combined Lidar manager for Team THOR
--- Reads and sends raw lidar data
--- As well as accumulate them as a map
--- and send to UDP
--- (c) Stephen McGill, Seung Joon Yi, 2013
+-- Dynamixel Motor Communication
+-- Performs callbacks on read/writes to the chain
+-- (c) Stephen McGill, 2013
 ---------------------------------
 
 dofile'include.lua'
 
 -- Libraries
 local unix = require 'unix'
-local signal = require'signal'
-local carray = require'carray'
-local mp = require 'msgpack'
-local simple_ipc = require'simple_ipc'
 local libDynamixel = require'libDynamixel2'
-
-----[[
-local test_dynamixel = libDynamixel.new_bus()
-print('Using',test_dynamixel.ttyname)
-local found = test_dynamixel:ping_probe()
---found = {14,18}
-for k,m in ipairs(found) do
-  --[[
-  local status, value = test_dynamixel:get_mx_status_return_level(m)
-  if value then 
-    print('Status return',m,value)
-    if value~=1 then
-      local status, value = test_dynamixel:set_mx_status_return_level(m,1)
-    end
-  end
-  --]]
-
-  --[[
-  status, value = test_dynamixel:get_mx_delay(m)
-  if value then 
-    print('Return delay',m,value)
-    if value>0 then
-      local status, value = test_dynamixel:set_mx_delay(m,0)
-    end
-  end
-  --]]
-
-  --status, value = test_dynamixel:get_mx_firmware(m)
-  --if value then print('Firmware',m,value) end
-
-end
-
-status, value = test_dynamixel:set_mx_torque_enable( found, 0 )
-status, value = test_dynamixel:set_mx_led( found, 1 )
---[[
-status, value = test_dynamixel:set_mx_command( 14, 2048 )
-if status then
-  print('write return',status, value )
-  for k,v in pairs(status) do print(k,v) end
-end
---]]
-local t0 = unix.time()
-status, values = test_dynamixel:get_mx_position( found )
-local t1 = unix.time()
-print('Positions',unpack(values))
-print('time',t1-t0)
---[[
-if status then
-  print("read status",status, unpack(values) )
-  for k,v in pairs(status) do
-    print(k,v)
-    for kk,vv in pairs(v) do
-      print(kk,vv)
-    end
-  end
-end
---]]
-if true then return end
---]]
 
 -- Setup the dynamixels array
 local dynamixels = {}
 
 -- Initialize the dynamixels
-local spine_dynamixel = libDynamixel.new_bus(chest_device)
+local spine_dynamixel = libDynamixel.new_bus()
 
 -- Spine dynamixel
 if spine_dynamixel then
@@ -93,9 +28,11 @@ if spine_dynamixel then
     local t_diff = spine_dynamixel.t_last - last_spine
     if t_diff>1 then
       local spine_fps = spine_cnt / t_diff
-      local spine_debug = string.format('%s chain running at %.2f Hz | Position: %d.',
-      spine_dynamixel.name,spine_fps,data)
+      local spine_debug = string.format('%s chain running at %.2f Hz',
+      spine_dynamixel.name,spine_fps)
+      print()
       print(spine_debug)
+      for k,v in pairs(data) do print('Motor',k,'at',v) end
       spine_cnt = 0
       last_spine = spine_dynamixel.t_last
     end
@@ -107,8 +44,6 @@ end
 assert(#dynamixels>0,"No dynamixels detected!")
 io.write('Servicing ',#dynamixels,' dynamixels\n\n')
 io.flush()
-
-
 
 local main = function()
   local main_cnt = 0

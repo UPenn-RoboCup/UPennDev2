@@ -608,7 +608,7 @@ function libDynamixel.new_bus( ttyname, ttybaud )
   obj.t_last_read = 0
   obj.t_last_write = 0
   obj.instructions = {}
-  obj.use_read = false
+  obj.perform_read = false
   obj.is_syncing = true
   -------------------
 	
@@ -653,7 +653,7 @@ libDynamixel.service = function( dynamixels, main )
       local param_to_val = byte_to_number[read_param_sz]
       
       -- Start off reading all chains
-      dynamixel.use_read = true
+      dynamixel.perform_read = true
       
       -- The coroutine should never end
       local nMotors = #dynamixel.ids_on_bus
@@ -663,8 +663,9 @@ libDynamixel.service = function( dynamixels, main )
       local response = nil
 			while true do -- read/write loop
         
+        --------------------
         -- Use sync read
-        if dynamixel.use_read then
+        if dynamixel.perform_read then
           -- Ask for data on the chain
           -- TODO: Clear the bus with a unix.read()?
           local req_ret = unix.write(fd, sync_read_all_cmd)
@@ -686,11 +687,6 @@ libDynamixel.service = function( dynamixels, main )
             local value = param_to_val( unpack(status.parameter) )
             values[status.id] = value
           end
-          --[[
-          print('Got',#pkts, done,#status_str)
-          local status, ready = unix.select( {fd}, 1 )
-          print(status, ready)
-          --]]
           -- Yield the table of motor values
           response = coroutine.yield( values )
           -- Did we actually receive more?
@@ -702,6 +698,7 @@ libDynamixel.service = function( dynamixels, main )
           end
         end -- if use read
         
+        --------------------
         -- Sync Write LED data to the chain
         if unix.time()-time_elapsed>1 then
           local sync_led_cmd = 
@@ -715,6 +712,7 @@ libDynamixel.service = function( dynamixels, main )
           response = coroutine.yield( true )
         end
         
+        --------------------
         -- Sync write an instruction in the queue
         if #dynamixel.instructions>0 then
           local instruction = dynamixel.instructions[1]

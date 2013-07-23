@@ -23,6 +23,7 @@ DP1.parse_status_packet = function(pkt) -- 1.0 protocol
 end
 
 DP2.parse_status_packet = function(pkt) -- 2.0 protocol
+  --print('status pkt',pkt:byte(1,#pkt) )
 	local t = {}
 	t.id = pkt:byte(5)
 	t.length = pkt:byte(6)+2^8*pkt:byte(7)
@@ -48,6 +49,8 @@ local rx_registers = {
 }
 
 -- MX
+-- http://support.robotis.com/en/product/dynamixel/mx_series/mx-28.htm
+-- Convention: {string.char( ADDR_LOW_BYTE, ADDR_HIGH_BYTE ), n_bytes_of_value}
 local mx_registers = {
   ['firmware'] = {string.char(2,0),1},
 	['id'] = {string.char(3,0),1},
@@ -73,6 +76,7 @@ local mx_registers = {
 -- Dynamixel PRO
 -- English to Hex Addresses of various commands/information
 -- Convention: string.char( LOW_BYTE, HIGH_BYTE )
+-- http://support.robotis.com/en/product/dynamixel_pro/control_table.htm
 local nx_registers = {
 	
 	-- New API --
@@ -587,7 +591,6 @@ function libDynamixel.new_bus( ttyname, ttybaud )
 		unix.usleep( 1e3 )
 		self.fd = libDynamixel.open( self.ttyname )
 	end
-  obj.t_last = unix.time()
 	-------------------
 	
 	-------------------
@@ -599,6 +602,15 @@ function libDynamixel.new_bus( ttyname, ttybaud )
 	obj.new_bus = nil
 	obj.service = nil
 	-------------------
+  
+  -------------------
+  -- Read/write properties
+  obj.t_last_read = 0
+  obj.t_last_write = 0
+  obj.instructions = {}
+  obj.use_read = false
+  obj.is_syncing = true
+  -------------------
 	
 	return obj
 end
@@ -626,18 +638,22 @@ libDynamixel.service = function( dynamixels, main )
     -- Check which ids are on this chain
     io.write('Checking ids on ',dynamixel.name,' chain...')
     io.flush()
-		dynamixel.ids_on_bus = dynamixel:ping_probe()
+		--dynamixel.ids_on_bus = dynamixel:ping_probe()
+    dynamixel.ids_on_bus = {14,16,18}
     io.write'Done!\n'
     io.flush()
-		dynamixel.t_last = unix.time()
+		dynamixel.t_last_read = unix.time()
 		dynamixel.thread = coroutine.create( 
 		function()
       
       -- Make a read-all command
       local DP = DP2
-      local sync_read_all_cmd = dynamixel:get_nx_position( dynamixel.ids_on_bus, true )
+      local sync_read_all_cmd = dynamixel:get_mx_position( dynamixel.ids_on_bus, true )
       local read_param_sz = mx_registers['position'][2]
       local param_to_val = byte_to_number[read_param_sz]
+      
+      -- Start off reading all chains
+      dynamixel.use_read = true
       
       -- The coroutine should never end
       local nMotors = #dynamixel.ids_on_bus
@@ -648,7 +664,7 @@ libDynamixel.service = function( dynamixels, main )
 			while true do -- read/write loop
         
         -- Use sync read
-        if true or dynamixel.use_read then
+        if dynamixel.use_read then
           -- Ask for data on the chain
           -- TODO: Clear the bus with a unix.read()?
           local req_ret = unix.write(fd, sync_read_all_cmd)
@@ -663,83 +679,102 @@ libDynamixel.service = function( dynamixels, main )
           -- Grab the status return packets from the bus
           local pkts, done = DP.input( status_str )
           -- Yield the packets
-          dynamixel.t_last = unix.time()
+          dynamixel.t_last_read = unix.time()
           local values = {}
           for p,pkt in ipairs(pkts) do
             local status = DP.parse_status_packet( pkt )
             local value = param_to_val( unpack(status.parameter) )
             values[status.id] = value
           end
+          --[[
+          print('Got',#pkts, done,#status_str)
+          local status, ready = unix.select( {fd}, 1 )
+          print(status, ready)
+          --]]
           -- Yield the table of motor values
           response = coroutine.yield( values )
           -- Did we actually receive more?
           if response then
+            -- Straggler bytes
             print'reading more from the buffer...'
             local more_status_str = unix.read( fd )
             print('#more_status_str',#more_status_str)
           end
         end -- if use read
         
-        -- Sync write desired positions
-        local sync_command_cmd = 
-          dynamixel:set_mx_command( dynamixel.ids_on_bus, 2048, true )
-        local command_ret = unix.write( fd, sync_command_cmd )
-        -- Yield true for syncing
-        response = coroutine.yield( true )
-          
         -- Sync Write LED data to the chain
-        local t_diff_elapsed = unix.time()-time_elapsed
-        if t_diff_elapsed>1 then
+        if unix.time()-time_elapsed>1 then
           local sync_led_cmd = 
             dynamixel:set_mx_led( dynamixel.ids_on_bus, led_state, true )
           local ret = unix.write(fd, sync_led_cmd)
           assert(ret~=-1,string.format('BAD WRITE on %s',dynamixel.name))
           led_state = 1-led_state
           time_elapsed = unix.time()
-          -- Yield nothing for syncing leds
-          response = coroutine.yield(  )
+          dynamixel.t_last_write = unix.time()
+          -- Sync write yields true
+          response = coroutine.yield( true )
         end
-
+        
+        -- Sync write an instruction in the queue
+        if #dynamixel.instructions>0 then
+          local instruction = dynamixel.instructions[1]
+          local command_ret = unix.write( fd, instruction )
+          dynamixel.t_last_write = unix.time()
+          -- Pop the item
+          table.remove(dynamixel.instructions,1)
+          -- Yield true for syncing
+          response = coroutine.yield( true )
+        else
+          -- Yield if nothing
+          response = coroutine.yield( false )
+        end
+        
       end -- read/write loop
-
 		end -- coroutine function
 		)
 	end
   
   -- Initialize them
+  --[[
   for i,dynamixel in ipairs(dynamixels) do
     print('Initializing thread for',dynamixel.name)
     local status_code, param = coroutine.resume( dynamixel.thread )
+    print(type(param),param)
     -- Syncing?
     dynamixel.is_syncing = false
     if type(param)=='boolean' then 
       dynamixel.is_syncing = true
     end
   end
+  --]]
   
   -- Loop and select appropriately
   local status_timeout = 1/120 -- 120Hz timeout
+  --local status_timeout = 1/60 -- 120Hz timeout
   --local status_timeout = 0 -- Instant timeout
 	while #dynamixels>0 do
     
     -- TODO: Use the dynamixel objects somehow to accept more commands...
     -- TODO: Change from position reading to other reading?
 
+    --------------------
     -- Perform Select on all dynamixels
     local status, ready = unix.select( dynamixel_fds, status_timeout )
-    --print('Post select', status )
+    
+    --------------------
+    -- Loop through the dynamixel chains
     for i,is_ready in pairs(ready) do
-      -- Grab the dynamixel
+      -- Grab the dynamixel chain
       local who_to_service = fd_to_dynamixel[i]
-      local is_syncing = who_to_service.is_syncing
-      --print('\nselect',is_ready,is_syncing)
       -- Check if the Dynamixel has information available
-      if is_ready or is_syncing then
+      if is_ready or who_to_service.is_syncing then
+
+        --------------------
         -- Resume the thread
         local status_code, param = coroutine.resume( who_to_service.thread )
         local param_type = type(param)
-        --rint('resuming...',status_code, param,param_type)
         
+        --------------------
         -- Check if there were errors in the coroutine
         if not status_code then
           print( 'Dead dynamixel coroutine!', who_to_service.name, param )
@@ -759,12 +794,19 @@ libDynamixel.service = function( dynamixels, main )
         else
           who_to_service.is_syncing = true
         end -- status_code
+        
       end -- is_ready 
     end -- pairs(ready)
     
-    -- Process the main thread
-    local main_response = nil
-    if main_thread then main_response = coroutine.resume( main_thread ) end
+    --------------------
+    -- Process the main thread after each coroutine yields
+    -- This main loop should update the dynamixel chain commands
+    local main_param = nil
+    if main_thread then
+      local status_code, main_param = coroutine.resume( main_thread )
+      if not status_code then print(main_param) end
+    end
+    
 	end -- while servicing
   print'Nothing left to service!'
 end

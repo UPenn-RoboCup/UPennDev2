@@ -267,8 +267,8 @@ local function get_status( fd, npkt, protocol, timeout )
 				if #statuses==npkt then return statuses end
 			end -- if pkts
 		end
-		-- TODO: yield the sleep amount
-		unix.usleep(100)
+		--unix.usleep(100)
+    unix.select({fd},0.0001)
 	end
 	-- Did we timeout?
 	return nil
@@ -429,8 +429,11 @@ for k,v in pairs( mx_registers ) do
 		
     -- Grab the status of the register
     local status = get_status( fd, nids )
-    local value = byte_to_number[sz]( unpack(status[1].parameter) )
-    return status, value
+    local values = {}
+    for i,s in ipairs(status) do
+      table.insert(values,byte_to_number[sz]( unpack(s.parameter) ))
+    end
+    return status, values
 		
 	end --function
 end

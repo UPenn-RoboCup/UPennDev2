@@ -47,13 +47,31 @@ for k,m in ipairs(found) do
 
 end
 
---status, value = test_dynamixel:set_mx_torque_enable( found, 0 )
+status, value = test_dynamixel:set_mx_torque_enable( found, 0 )
 status, value = test_dynamixel:set_mx_led( found, 1 )
-status, value = test_dynamixel:set_mx_command( found, 2048 )
+--[[
+status, value = test_dynamixel:set_mx_command( 14, 2048 )
 if status then
   print('write return',status, value )
   for k,v in pairs(status) do print(k,v) end
 end
+--]]
+local t0 = unix.time()
+status, values = test_dynamixel:get_mx_position( found )
+local t1 = unix.time()
+print('Positions',unpack(values))
+print('time',t1-t0)
+--[[
+if status then
+  print("read status",status, unpack(values) )
+  for k,v in pairs(status) do
+    print(k,v)
+    for kk,vv in pairs(v) do
+      print(kk,vv)
+    end
+  end
+end
+--]]
 if true then return end
 --]]
 

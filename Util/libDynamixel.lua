@@ -627,7 +627,6 @@ libDynamixel.sync_write_byte = function(fd, ids, addr, data)
 		n = n + len + 1;
 	end
 	local inst = DP2.sync_write(addr, len, string.char(unpack(t)));
-  print('sending',inst:byte(1,#inst))
 	unix.write(fd, inst);
 end
 

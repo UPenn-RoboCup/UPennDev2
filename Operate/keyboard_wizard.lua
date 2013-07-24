@@ -17,6 +17,16 @@ local debug = true
 local current_joint = 1
 local current_arm = 'left'
 
+-- Joint changing
+local delta_joint = 0.1 -- Change in radians for each +/-
+
+-- Keyframing
+local keyframe_num = 0
+local function save_keyframe()
+  keyframe_num = keyframe_num+1
+end
+
+-- Joint tables
 local min_joint, max_joint = 1, 6
 
 local joint_names = {
@@ -47,10 +57,6 @@ local joint_ids = {
     }
   }
 
-print('\n\n=========')
-print(string.format('Starting on %s joint on the %s arm.',
-joint_names[current_joint],current_arm))
-
 -- Print Message helpers
 local switch_msg = function()
   return string.format('Switched to %s joint on the %s arm.', 
@@ -66,6 +72,7 @@ local change_msg = function(old,new)
   current_arm,inc_dec,joint_names[current_joint],new)
 end
 
+-- Joint access helpers
 local function get_joint()
   local joint_id = joint_ids[current_arm][current_joint]
   local joints = jcm.get_commanded_position()
@@ -124,14 +131,20 @@ local function process_character(key_code,key_char,key_char_lower)
   -- +/- Increases and decreases
   if key_char=='-' then
     local current = get_joint()
-    local new = current - .1
+    local new = current - delta_joint
     set_joint(new)
     return change_msg(current,new)
   elseif key_char=='=' then -- +/= are the same key
     local current = get_joint()
-    local new = current + .1
+    local new = current + delta_joint
     set_joint(new)
     return change_msg(current,new)
+  end
+  
+  -- +/- Increases and decreases
+  if key_char=='k' then
+    local keyframe = save_keyframe()
+    return string.format('Saved keyframe %d!',keyframe_num)
   end
   
   -- Help and debugging
@@ -146,6 +159,11 @@ local function process_character(key_code,key_char,key_char_lower)
   
 end
 
+------------
+-- Start processing
+print('\n\n=========')
+print(string.format('Keyboard Wizard on %s joint on the %s arm.',
+joint_names[current_joint],current_arm))
 local t0 = unix.time()
 while true do
   

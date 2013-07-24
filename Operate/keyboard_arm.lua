@@ -10,20 +10,42 @@ dofile'include.lua'
 local unix = require'unix'
 local getch = require'getch'
 
+-- Getting/Setting shared memory
 require'jcm'
 
 local debug = true
 local current_joint = 1
 local current_arm = 'left'
 
+local min_joint, max_joint = 1, 6
+
 local joint_names = {
   [1]='wrist',
   [2]='wrist',
-  [3]='wrist',
-  [4]='wrist',
-  [5]='wrist',
-  [6]='wrist',
+  [3]='elbow',
+  [4]='shoulder',
+  [5]='shoulder',
+  [6]='shoulder',
 }
+
+local joint_ids = {
+  ['left'] = {
+    [1]=1,
+    [2]=2,
+    [3]=3,
+    [4]=4,
+    [5]=5,
+    [6]=6
+    },
+    ['right'] = {
+      [1]=1,
+      [2]=2,
+      [3]=3,
+      [4]=4,
+      [5]=5,
+      [6]=6
+    }
+  }
 
 print('\n\n=========')
 print(string.format('Starting on %s joint on the %s arm.',
@@ -44,12 +66,39 @@ local change_msg = function(old,new)
   current_arm,inc_dec,joint_names[current_joint],new)
 end
 
+local function get_joint()
+  local joint_id = joint_ids[current_arm][current_joint]
+  local joints = jcm.get_commanded_position()
+  local current = joints[joint_id]
+  return current
+end
+
+local function set_joint(val)
+  assert(type(val)=='number','Bad set!')
+  local joint_id = joint_ids[current_arm][current_joint]
+  local joints = jcm.get_commanded_position()
+  joints[joint_id] = val
+  jcm.set_commanded_position(joints)
+end
+
 -- Character processing
 local function process_character(key_code,key_char,key_char_lower)
 
   -- Number keys switch the joint on the arm chain
+  -- Number 0 zeros the joint
   local switch_joint = tonumber(key_char)  
   if switch_joint then
+    -- Zero the motor
+    if switch_joint==0 then
+      local current = get_joint()
+      set_joint(0)
+      return change_msg(current,0)
+    end
+    -- Check that the joint number is in range
+    if switch_joint<min_joint or switch_joint>max_joint then
+      return 'Joint '..switch_joint..' out of range!'
+    end
+    -- Switch to that joint
     current_joint = switch_joint
     return switch_msg()
   end
@@ -74,9 +123,22 @@ local function process_character(key_code,key_char,key_char_lower)
   
   -- +/- Increases and decreases
   if key_char=='-' then
-    return change_msg(1,0)
+    local current = get_joint()
+    local new = current - .1
+    set_joint(new)
+    return change_msg(current,new)
   elseif key_char=='=' then -- +/= are the same key
-    return change_msg(0,1)
+    local current = get_joint()
+    local new = current + .1
+    set_joint(new)
+    return change_msg(current,new)
+  end
+  
+  -- Help and debugging
+  if key_char=='h' then
+    return'HELP'
+  elseif key_char=='p' then
+    return'Print arm status'
   end
   
   -- Default message
@@ -98,8 +160,8 @@ while true do
   -- Measure the timing
   local t = unix.time()
   local t_diff = t-t0
-  local fps = 1/t_diff
   t0 = t
+  local fps = 1/t_diff
   
   -- Print debugging message
   if debug then

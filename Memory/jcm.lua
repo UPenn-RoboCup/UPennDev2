@@ -1,7 +1,6 @@
 ---------------------------------------------------------------------------
 -- Joint Communication Module
 -- (c) 2013 Stephen McGill
--- with code from Mike Hopkins as a base
 -- SJ: Re-wrote for easy generalization over multiple dcms
 ---------------------------------------------------------------------------
 local vector = require'vector'

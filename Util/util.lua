@@ -176,8 +176,8 @@ function util.init_shm_segment(name, shared, shsize, tid, pid)
     fenv = _G[name]
   end
 
-  local tid = tid or 0; --Config.game.teamNumber;
-  local pid = pid or 1; --Config.game.playerID;
+  local tid = tid or 0
+  local pid = pid or 1
   -- initialize shm segments from the *cm format
   for shtable, shval in pairs(shared) do
     -- create shared memory segment
@@ -201,50 +201,40 @@ function util.init_shm_segment(name, shared, shsize, tid, pid)
 
     for k,v in pairs(shared[shtable]) do
       shmPointer[k] = carray.cast(shmHandle:pointer(k));
-      if (type(v) == 'string') then
-        -- setup accessors for a string
-        fenv['get_'..shtable..'_'..k] =
-          function()
+      if type(v) == 'string' then
+        -- Get String
+        fenv['get_'..shtable..'_'..k] = function()
             local bytes = shmHandle:get(k);
             if (bytes == nil) then
               return '';
             else
-	      for i=1,#bytes do
-	        if not (bytes[i]>0) then --Testing NaN
-		  print("NaN Detected at string!");
-	          return;
-		end
-	      end
+              for i=1,#bytes do
+                --Testing NaN
+                if not (bytes[i]>0) then 
+                  print("NaN Detected at string!") return
+                end
+              end
               return string.char(unpack(bytes));
             end
           end
-        fenv['set_'..shtable..'_'..k] =
-          function(val)
-            return shmHandle:set(k, {string.byte(val, 1, string.len(val))});
-          end
+        -- Set string
+        fenv['set_'..shtable..'_'..k] = function(val)
+          return shmHandle:set(k, {string.byte(val, 1, string.len(val))});
+        end
       elseif (type(v) == 'number') then
-        -- setup accessors for a userdata
-        fenv['get_'..shtable..'_'..k] =
-          function()
-            return shmHandle:pointer(k);
-          end
-        fenv['set_'..shtable..'_'..k] =
-          function(val)
-            return shmHandle:set(k, val, v);
-          end
-      elseif (type(v) == 'table') then
+        -- Get userdata
+        fenv['get_'..shtable..'_'..k] = function() return shmHandle:pointer(k) end
+        -- Set userdata
+        fenv['set_'..shtable..'_'..k] = function(val) return shmHandle:set(k, val, v) end
+      elseif type(v) == 'table' then
         -- setup accessors for a number/vector 
-        fenv['get_'..shtable..'_'..k] =
-          function()
-            val = shmHandle:get(k);
-            if type(val) == 'table' then
-              val = vector.new(val);
-            end
-            return val;
+        fenv['get_'..shtable..'_'..k] = function()
+            val = shmHandle:get(k)
+            if type(val) == 'table' then val = vector.new(val) end
+            return val
           end
-        fenv['set_'..shtable..'_'..k] =
-          function(val, ...)
-            return shmHandle:set(k, val, ...);
+        fenv['set_'..shtable..'_'..k] = function(val, ...)
+            return shmHandle:set(k, val, ...)
           end
       else
         -- unsupported type

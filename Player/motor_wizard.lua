@@ -10,6 +10,7 @@ dofile'include.lua'
 local unix = require'unix'
 local signal = require'signal'
 local libDynamixel = require'libDynamixel2'
+--local dcm = require'dcm'
 
 -- Setup the dynamixels array
 local dynamixels = {}
@@ -29,8 +30,13 @@ if spine_dynamixel then
     
     -- Update the shared memory
     for k,v in pairs(data) do
+      -- k is the motor id
+      -- v is the value
+      -- TODO: Convert to radians...
+      --dcm:set_joint_position(v,k)
       spine_dynamixel.data[k] = v
     end
+    
     
     -- If finished a read, then stop the reading process
     spine_dynamixel.perform_read = false
